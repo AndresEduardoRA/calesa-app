@@ -371,7 +371,7 @@ vista (`UnaSolaVista`, según el `user-agent`).
 - Lo medido se arma en una transacción que se revierte: `session_replication_role = replica`, 195.000 vehículos con la fase 3 en 15.000 y después 105.000 más a ella (sumar y no mover: mover deja filas
   muertas en los índices y cambia lo que se mide).
 - JS en frío (`e2e/presupuesto-js.spec.ts`): `/logistica` ≤ 390 KB (medido 365,0 en 26 chunks; el kanban marcaba 401,0) y `/logistica/fase/[fase]` ≤ 390 KB (medido 367,0 en 27 chunks): sobre lo medido más un 5 %, a la decena.
-- Nodos del DOM, medidos en el recorrido: NODOS.
+- Nodos del DOM, medidos en el recorrido (`page.evaluate`, sin spec nuevo): la portada entera con 5 grupos de 5 filas, 334; la gráfica de 5 fases, 53; la lista de una fase con 50 vehículos en escritorio, 1.039.
 - Sin volumen de interfaz propio: `e2e/logistica-cadena.spec.ts` prueba «Siguiente» con 51 y `e2e/logistica-bandeja-del-dia.spec.ts` los 21 demorados, no miden nodos de miles.
 - Lote de mover: selección y lotes ≤ 200 (`TOPE_DEL_LOTE`) en **una llamada** (`previsualizar_cambio_fase_lote`, `cambiar_fase_lote`). Los
   destinos de la fase son configuración (`TOPE_DE_DESTINOS`). «Unidades de un grupo (lote)»: `vehiculos` con `transportes!inner` por
