@@ -102,7 +102,7 @@ begin
     raise exception 'C4: vehiculos_cadena_idx no es parcial sin las no ganadas: %', pg_get_indexdef('public.vehiculos_cadena_idx'::regclass);
   end if;
   -- Las consultas que lo usan: ocho de una columna (cuatro para «todos», cuatro para lo propio), las demoradas y las dos de las alertas.
-  foreach c in array array['_logistica_columna:8', 'logistica_cadena_resumen:4', '_bandeja_demoradas:1', 'alertas_demora:2'] loop
+  foreach c in array array['_logistica_columna:8', 'logistica_cadena_resumen:4', '_bandeja_dia_demorados:3', '_bandeja_demoradas:1', 'alertas_demora:2'] loop
     if (select count(*) from pg_proc p, regexp_matches(pg_get_functiondef(p.oid), $r$v\.situacion <> 'no_ganada'$r$, 'g') m
          where p.proname = split_part(c, ':', 1) and p.pronamespace = 'public'::regnamespace) <> split_part(c, ':', 2)::int then
       raise exception 'C4: % no lleva el literal en cada consulta de vehiculos_cadena_idx', c;

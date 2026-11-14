@@ -52,6 +52,9 @@ const VARIABLES_DE_PAGINA = {
     ),
   ),
   tam_columna: constante('src/shared/lib/paginacion.ts', 'TAMANO_DE_COLUMNA'),
+  // La logística para cientos de miles de vehículos (`medir-logistica.sql`): la lista de una fase y la bandeja del día.
+  tam_fase: constante('src/shared/lib/paginacion.ts', 'TAMANO_DE_LA_FASE'),
+  tam_bandeja: constante('src/shared/lib/paginacion.ts', 'TAMANO_DE_LA_BANDEJA'),
   tope_cargado: constante('src/shared/lib/paginacion.ts', 'TOPE_DE_LO_CARGADO'),
   lotes: constante('src/shared/lib/paginacion.ts', 'LOTES_POR_PAGINA'),
   tope_equipo: constante('src/shared/lib/paginacion.ts', 'TOPE_DEL_EQUIPO'),

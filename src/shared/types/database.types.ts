@@ -7571,6 +7571,44 @@ export type Database = {
           vence: string
         }[]
       }
+      _bandeja_dia_alcance: {
+        Args: { p_clave: string }
+        Returns: {
+          origenes: string[]
+          propios: string[]
+          todos: string[]
+        }[]
+      }
+      _bandeja_dia_demorados: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_hoy: { Args: Record<PropertyKey, never>; Returns: string }
+      _bandeja_dia_llegadas: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_por_aprobar: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_por_vencer: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_recortar: { Args: { p_filas: Json; p_n: number }; Returns: Json }
+      _bandeja_dia_salidas: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_sin_resolver: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_trabados: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
       _bandeja_por_aprobar: { Args: { p_n: number }; Returns: Json }
       _bandeja_trabados: { Args: { p_demoradas: Json; p_n: number }; Returns: Json }
       _borrador_formula_empezado_por: { Args: { p_creado_por: string }; Returns: string }
@@ -10554,6 +10592,16 @@ export type Database = {
       }
       limpieza_ultima: { Args: Record<PropertyKey, never>; Returns: Json }
       logistica_bandeja: { Args: { p_tope?: number }; Returns: Json }
+      logistica_bandeja_grupo: {
+        Args: {
+          p_conteo?: number
+          p_desde?: string
+          p_grupo: string
+          p_id?: string
+          p_tope?: number
+        }
+        Returns: Json
+      }
       logistica_cadena: {
         Args: { p_filtros?: Json; p_origen: string; p_tope?: number }
         Returns: Json

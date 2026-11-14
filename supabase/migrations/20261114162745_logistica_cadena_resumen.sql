@@ -35,14 +35,17 @@ begin
     -- Una sola pasada sobre lo propio (acotado por la cartera de la persona): vehiculos_pkey por cada id.
     v_propios := public._logistica_lo_propio(p_origen);
     v_cortado := cardinality(v_propios) > 10000;
+    -- Los días con que alerta cada fase se calculan una vez por fase (materializados): unidos fila a fila, `_logistica_dias` se pagaba por vehículo.
+    with d as materialized (
+      select f.id, public._logistica_dias(f.id) as dias
+        from public.fases f join public.flujos fl on fl.id = f.flujo_id
+       where fl.ambito = 'vehiculos' and fl.origen_id = p_origen),
+    m as materialized (
+      select v.fase_id, v.fase_desde from unnest(v_propios[1:10000]) as u(id) join public.vehiculos v on v.id = u.id)
     select coalesce(jsonb_object_agg(g.k, jsonb_build_object('n', g.n, 'dem', g.dem)), '{}'::jsonb) into v_cuentas
-      from (select coalesce(v.fase_id::text, 'sin') as k, count(*) as n,
-                   count(*) filter (where x.dias is not null and v.fase_desde < now() - make_interval(days => x.dias)) as dem
-              from unnest(v_propios[1:10000]) as u(id)
-              join public.vehiculos v on v.id = u.id
-              left join (select f.id, public._logistica_dias(f.id) as dias
-                           from public.fases f join public.flujos fl on fl.id = f.flujo_id
-                          where fl.ambito = 'vehiculos' and fl.origen_id = p_origen) x on x.id = v.fase_id
+      from (select coalesce(m.fase_id::text, 'sin') as k, count(*) as n,
+                   count(*) filter (where d.dias is not null and m.fase_desde < now() - make_interval(days => d.dias)) as dem
+              from m left join d on d.id = m.fase_id
              group by 1) g;
   end if;
 
@@ -62,11 +65,13 @@ begin
         select count(*) into c from (select 1 from public.vehiculos v
                                       where v.origen_id = p_origen and v.eliminado_en is null and v.situacion <> 'no_ganada'
                                         and v.fase_id is null and v.fase_desde is null
+                                      order by v.fase_id, v.fase_desde, v.id
                                       limit v_n + 1) x;
       else
-        -- vehiculos_cadena_idx: (origen_id, fase_id) fijos.
+        -- vehiculos_cadena_idx: (origen_id, fase_id) fijos. El `order by` es el del índice: sin él el planificador puede preferir recorrer vehiculos_fase_id_idx.
         select count(*) into c from (select 1 from public.vehiculos v
                                       where v.origen_id = p_origen and v.fase_id = r.id and v.eliminado_en is null and v.situacion <> 'no_ganada'
+                                      order by v.fase_id, v.fase_desde, v.id
                                       limit v_n + 1) x;
       end if;
       v_vehiculos := jsonb_build_object('n', least(c, v_n), 'hay_mas', c > v_n);
@@ -85,6 +90,7 @@ begin
         select count(*) into d from (select 1 from public.vehiculos v
                                       where v.origen_id = p_origen and v.fase_id = r.id and v.eliminado_en is null and v.situacion <> 'no_ganada'
                                         and v.fase_desde < now() - make_interval(days => r.dias)
+                                      order by v.fase_id, v.fase_desde, v.id
                                       limit v_n + 1) x;
         v_demorados := jsonb_build_object('n', least(d, v_n), 'hay_mas', d > v_n);
       else
