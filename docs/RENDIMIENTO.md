@@ -570,10 +570,15 @@ fallar.
   `_cotizaciones_aprobadas_rellenar()` (inserta sin triggers). `/cotizaciones/[id]`: 453,7 de 460 KB (+1,5 por la isla, sin Base UI nuevo).
   La pantalla (`e2e/cotizaciones-listado.spec.ts`, `e2e/listas-por-pagina-volumen.spec.ts`): una vista, 8 columnas, el máximo sin pedidos
   del navegador ni acciones: ≤ 39.500 B y ≤ 2.200 nodos; diez «Siguiente» no los suben. El resumen `?cotizacion=`: abrir desde la fila no
-  pide nada; fuera de la página cuesta un pedido por `cotizaciones_pkey` y un `cotizaciones_listado()` de tamaño 1, más sus tres nombres.
+  le pide nada a la página ni a la lista; lo único que lee es la pestaña «Todo» (sus tres lecturas, abajo); fuera de la página cuesta un pedido por `cotizaciones_pkey` y un `cotizaciones_listado()` de tamaño 1, más sus tres nombres.
   `router.refresh()` sólo si la URL trae una que nadie trajo (una vez por id) y en cada «Reintentar». Los nombres de la página (cliente,
   vehículo, autor) son tres lecturas por PK de ≤ 100 ids en paralelo (`leads_vista_por_ids`, `vehiculos_pkey`, `perfiles_pkey`): límite sin
   assert.
+  **Las pestañas del resumen** (`e2e/cotizaciones-listado-pestanas.spec.ts`; sin lectura nueva en la base, sólo las ya medidas: `cotizacion_comentarios` y
+  `cotizacion_revisiones` por sus índices y `cotizaciones_adjuntos` por `cotizaciones_adjuntos_cotizacion_id_idx`, `limit 21`; los comprobantes, por
+  `comprobantes_cotizacion_id_idx`, `limit 21`). Cada pestaña se lee al elegirla, con su `diferido()`, de a `TAMANO_DE_VER_MAS` y hasta `TOPE_DE_LO_CARGADO`. «Todo» pide una página de
+  cada fuente al abrirse (tres lecturas en paralelo) y dibuja sólo hasta donde llegó la que menos retrocedió; «Ver más» le pide la siguiente sólo a esa fuente y se detiene al
+  sumar `TOPE_DE_LO_CARGADO` entre las tres. `/cotizaciones` no paga su código (las pestañas llegan con el resumen, que ya es diferido); `/cotizaciones/[id]` no cambia.
   Límites sin assert: el costo fijo de cada llamada, ≈ 160–240 buffers de `mis_permisos()` (abierto 4-77, `docs/PENDIENTES.md`); la preventa
   va por filtro; Ana «finales» filtra la clase sobre sus propias; con un vehículo muy cotizado, un `en_cartera()` por cada ajena; una tanda
   contigua en la papelera dentro de un índice entero se lee antes de descartarse. Los `count(*)` por origen de `origenes_resumen()` y del
