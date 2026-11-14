@@ -8573,6 +8573,7 @@ export type Database = {
       }
       _logistica_dias: { Args: { p_fase: string }; Returns: number }
       _logistica_filtros: { Args: { p: Json }; Returns: Json }
+      _logistica_lo_propio: { Args: { p_origen: string }; Returns: string[] }
       _lote_papelera_tocar: { Args: { p_lote: string }; Returns: string }
       _monto_en_base: {
         Args: { p_moneda: string; p_monto: number; p_tipo_cambio: string; p_valor?: number }
@@ -10568,6 +10569,7 @@ export type Database = {
         }
         Returns: Json
       }
+      logistica_cadena_resumen: { Args: { p_origen: string; p_tope?: number }; Returns: Json }
       logistica_donde_esta: { Args: { p_buscar: string; p_tope?: number }; Returns: Json }
       logistica_unidad: { Args: { p_vehiculo: string }; Returns: Json }
       margen_vehiculo: { Args: { p_vehiculo: string }; Returns: Json }

@@ -129,6 +129,7 @@ declare
     ('embudo_etapas_guardar(uuid,timestamp with time zone,jsonb)', 'M'),
     -- Lecturas de oportunidades: la RLS da sólo las propias sobre leads vivos de la cartera.
     ('_lead_vivo_en_mi_cartera(uuid)', 'L'),
+    ('_logistica_lo_propio(uuid)', 'L'),   -- lee vehiculos.lead_id sólo para el alcance «propios» de la cadena: devuelve ids de vehículos
     ('_tarjeta_json(oportunidades,jsonb,jsonb)', 'L'),
     ('lead_oportunidades(uuid,boolean,timestamp with time zone,uuid,integer)', 'L'),
     ('etiqueta_guardar(uuid,timestamp with time zone,text,text)', 'M'),
