@@ -41,7 +41,7 @@ test('con logistica.ver ve la unidad: título, origen, fase y días en la fase',
   await expect(page.getByRole('heading', { name: terreno.enFase.titulo })).toBeVisible()
   await expect(page.getByText(terreno.origen.nombre)).toBeVisible()
   await expect(page.getByText(terreno.fase.nombre)).toBeVisible()
-  await expect(page.getByText('Desde hace 3 días en esta fase')).toBeVisible()
+  await expect(page.locator('#contenido').getByText('Desde hace 3 días en esta fase')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Abrir ficha' })).toHaveAttribute(
     'href',
     `/vehiculos/${terreno.enFase.id}`,
@@ -92,7 +92,7 @@ test('?vehiculo=<id> lleva a la página de la unidad, sin drawer', async ({ page
   await page.goto(`/logistica?vehiculo=${terreno.enFase.id}&fase=${terreno.fase.id}`)
   await expect(page).toHaveURL(new RegExp(`/logistica/vehiculo/${terreno.enFase.id}$`))
   await expect(page.getByRole('heading', { name: terreno.enFase.titulo })).toBeVisible()
-  await expect(page.getByText('Desde hace 3 días en esta fase')).toBeVisible()
+  await expect(page.locator('#contenido').getByText('Desde hace 3 días en esta fase')).toBeVisible()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 })
 
