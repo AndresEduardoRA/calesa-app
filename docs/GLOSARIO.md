@@ -33,6 +33,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Aviso de acceso** — `?aviso=clave` / `AVISOS`: por qué alguien llegó redirigido a una pantalla de acceso; el texto sale del catálogo.
 - **Aviso con acciones** — `AccionesDeUnAviso` / `resolverAcciones()`, `<AccionesDelAviso>`, `avisarError(error, { acciones })`: aviso de
   error, advertencia o bloqueo que ofrece ahí mismo de 1 a 3 salidas (ir, abrir un panel, reintentar, deshacer, recargar), filtradas por permiso.
+- **Subasta cerrada (aviso al cotizar)** — `subastaCerrada()` / `<AvisoDeSubastaCerrada>`, `avisoDeSubastaCerrada()`: aviso de la hoja de cotizar cuando el
+  vehículo elegido sigue en el tramo de subasta y su subasta ya pasó; con «Refrescar la subasta», «La ganamos» / «No la ganamos», «Elegir otro
+  vehículo» y «Cotizar igual». Información con salida: no bloquea. No es la situación: la usa y la nombra.
 - **Causa (de un error)** — `ErrorApp.causa`: clave estable de la regla que frenó (viaja en `hint`); de ella salen las acciones del aviso.
 - **Canje** — `/auth/callback` / `canjearAcceso()`: convertir el código de Google o el enlace de un correo en una sesión.
 - **Primer registro** — `ajustes_acceso().primer_registro`: aún no hay nadie en el equipo; la primera cuenta nace con el rol dueño.
@@ -253,7 +256,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   por lead).
 - **Color de etiqueta** — `etiquetas.color` / `CLAVES_DE_COLOR`, `--etiqueta-<clave>`: uno de ocho de la paleta cerrada, guardado como clave.
 - **Favorito / Tachado** — `leads_favoritos`, `leads_tachados` / `lead_favorito_poner()`, `lead_tachado_poner()`: marcas por persona; no
-  reordenan. Una cotización también se marca favorita (`cotizaciones_favoritos` / `cotizacion_favorito_poner()`).
+  reordenan. Una cotización también se marca favorita (`cotizaciones_favoritos` / `cotizacion_favorito_poner()`: de quien mira,
+  `poner(valor)`, sin versión; en la guardada y en el «⋯» del listado).
 - **Tus marcas** — `SECCION_MARCAS` / `filtrosDeMarcas()`: sección de arriba del panel de filtros («Solo las ves tú»).
 - **Tachados ocultos** — `?tachados=` (`ocultar` · `incluir` · `solo`) / `ocultaTachados()`, `ocultos`: el listado oculta lo tachado y avisa
   cuántos, con «Mostrarlos».
@@ -582,7 +586,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Conflicto** — `PT409` / `<AvisoDeConflicto>`: otra persona guardó antes; quién y cuándo, con «Ver cómo quedó» y «Recargar».
 - **Borrador** — `useBorrador()`, `useBorradorDeEstado()`: lo escrito y no guardado de un formulario, en la pestaña; se repone al volver.
 - **Tablero** — `/tablero`: métricas y gráficas por rol con widgets.
-- **Vista guardada** — `vistas_guardadas` / `VistaGuardada`, `<MenuDeVistas>`: filtros de un listado con nombre, por persona; aplicarla es navegar.
+- **Vista guardada** — `vistas_guardadas` / `VistaGuardada`, `<MenuDeVistas>`: filtros de un listado con nombre, por persona; aplicarla es navegar. La
+  tienen leads, vehículos y cotizaciones (`RUTA_DE_PANTALLA`); con la búsqueda, guarda también `?q=`.
+- **Buscador del listado de cotizaciones** — `?q=` / `cotizaciones_buscar()`, `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`, `TOPE_DE_COINCIDENCIAS`: número, cliente,
+  vehículo (título, VIN o lote) y autor; distinto del buscador global (`buscador_cotizaciones()`).
+- **Menú de la fila (cotizaciones)** — `accionesDeCotizacion()`, `MenuDeUnaFila`, `<MenuDeLaFila>`: el «⋯» de una cotización del listado, con la lista única de
+  acciones (`aprobar`, `final`, `favorita`, `reportar`, `invalidar`, `descartar`, `reactivar`, `papelera`) y lo que cada rol ve.
 - **Importación** — `importaciones`: carga CSV con vista previa por fila.
 - **Importación total** — `importacion_crear()`, `importaciones` con `archivo_ruta`: la de `/datos`, que `importar-csv` procesa por lotes a
   nombre de quien importa y para un destino (`asignar_a`).

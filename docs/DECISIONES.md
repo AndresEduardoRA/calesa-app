@@ -119,6 +119,13 @@ las trampas, en `docs/LECCIONES.md`.
   contar (su situación es la fase; el resultado queda guardado), y la vuelta a subasta sólo limpia el resultado de una unidad que sigue en el
   tramo: una ganada que ya pasó a otra fase y cuyo lote se relista conserva «ganada». Así nada queda oculto por un dato que ya no aplica.
 - **«No ganada» en femenino**: concuerda con la subasta, no con el sustantivo del origen.
+- **El aviso de subasta cerrada al cotizar sale de la situación real**, no de una fecha comparada en la pantalla: avisan «Sin resolver» y «No
+  ganada» (más «En subasta» con el cierre vencido, los hasta 10 min que tarda el job). Un vehículo en su fase ya se ganó o salió del tramo:
+  cotizarlo es lo normal y avisar sería ruido. Si el origen no tiene fase de subasta, nada figura «Sin resolver» y no hay aviso (lo dice
+  «Revisar»). La fecha sale de `subasta_fin_en` o `subasta_en` (la columna `cierre_subasta_en` es nula con la subasta cerrada).
+- **«Refrescar la subasta» del aviso pide un toque** porque cada consulta a apibara gasta cuota; «Reintentar» sólo se ofrece si el fallo es del
+  momento (`sePuedeReintentar`), nunca con la cuota agotada. Las acciones del aviso (refrescar, resolver, cotizar igual) son botones locales:
+  el patrón `AccionDelAviso` no tiene «refrescar» ni «cerrar» y ampliar `src/shared` por esto disparaba el e2e completo.
 
 - **Se escriben sólo por RPC.** `vehiculo_crear(p_id…)` idempotente con id del navegador y `vehiculo_guardar` con versión; el alta entra a la fase inicial sólo si no hay nada que decidir (si no, «Sin fase»).
 - **El alta dice desde dónde (`p_contexto`) y la base exige el permiso de ese contexto.** `vehiculos.crear` (alta suelta) y
@@ -221,6 +228,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **Lo que no se ve no viaja.** `cotizaciones` con grant por columna; `cotizacion_leer/revisiones/tabla/evaluar` recortan por nivel sin ser oráculo; un detector sobre `pg_proc` exige registrar toda función que devuelva contenido.
 - **Niveles.** `cotizaciones.nivel.<clave>.ver|editar`, tope 10, sólo estrechan; recortan con `_nodos_visibles()`; ver restringido + editar abierto se rechaza. La fórmula sólo viaja a `cotizaciones.configurar`.
 - **Crear y guardar sólo por RPC.** `cotizacion_crear` (única alta) y `cotizacion_guardar` (calcula con SU versión, conserva lo oculto, intento + huella). `_cotizacion_puede_guardar()` decide antes y después del candado; quien no ve recibe 42501 antes de todo.
+- **Buscar cotizaciones: una función aparte, invocadora, con tope por fuente.** `cotizaciones_buscar()` no toca `cotizaciones_listado()`: cada fuente (número, cliente, vehículo, autor) es una ruta por su índice y el texto sobre `cotizaciones` no es condición de índice bajo la RLS (`ilike` no es seguro), así que nombra ids (clientes por `leads_candidatos()`, vehículos por origen, autores por `perfiles`) y de cada uno lee una página por su índice. Hasta 50 por fuente (`acotada` si se pasa). Quien no ve al lead o al vehículo no encuentra por él. El título de la cotización no se busca (no lo pidió la persona; ya lo hace el buscador global). Por autor, la cotización de otra persona sólo se busca donde se ve «todos»: con «propios» costaba un `en_cartera()` por cada una (98 ms con 7.000) para no encontrar nada que el listado de siempre no muestre por su cartera.
+- **El «⋯» del listado de cotizaciones se compone en `src/app`.** Un área no importa otra: la lista única (`accionesDeCotizacion()`) vive en `listado`; quién ve qué lo calcula el servidor con las reglas de cada área sobre lo que la página leyó (`menus-de-la-pagina.ts`; sin permisos al navegador) y las actions y los diálogos son los de la guardada. Las marcas y la versión de la página salen de tres lecturas por clave primaria; una fila sin ellas no tiene «⋯» (no se ofrece lo que depende de una versión que no se leyó). «Enviar a la papelera» se ofrece con el espejo de `_cotizacion_puede_guardar()` (editar por alcance, o es suya); la cartera del lead no se adivina: la dice la base.
+- **Las vistas de cotizaciones llegan tras hidratar.** `<MenuDeVistas>` pesa ≈ 70 KB gz y `/cotizaciones` estaba a 358 de 380: va con `diferido()` y un botón «Vistas» apagado en su lugar (`VistasDeCotizacionesDiferido`).
 - **Listado por rutas e invocador.** `cotizaciones_listado()` deja decidir a la RLS; «Mías» = `creado_por`; salen todas las versiones; `p_lead`/`p_vehiculo` filtran fuera del esquema de filtros. Máx. 100. Lead no visible = «—».
 
 ### La fórmula

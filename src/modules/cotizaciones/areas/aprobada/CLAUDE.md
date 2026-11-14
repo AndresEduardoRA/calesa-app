@@ -24,6 +24,9 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
 - **Las lecturas por página** (`leerAprobadasDeVehiculos(ids)` para `/vehiculos`, `leerAprobadasDeCotizaciones(ids)` para el listado): una consulta por clave
   primaria o por el único, de ≤ 100 ids, con `.limit(ids.length)`; sin ids no consultan. El monto cruza como texto (`monto::text`).
 
+- **El listado** (`pantallas/aprobada-listado.ts`): «Aprobar» del «⋯» de cada fila llama a `aprobarLaCotizacion()` con la versión de la página; el listado no tiene lo
+  tipeado de una hoja, así que `alCambiar` refresca la página (la anterior aprobada del vehículo deja de serlo). No se ofrece en la que ya es la aprobada.
+
 ## En la base
 
 `cotizacion_aprobar(id, versión)` y el mantenimiento al confirmar: `docs/COTIZADOR.md`. Pruebas: `supabase/tests/areas/aprobada/`,

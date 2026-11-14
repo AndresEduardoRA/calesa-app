@@ -6,7 +6,13 @@ import { AbrirResumen, TarjetaDeLista } from '@/shared/ui/lista'
 import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
 import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
-import { nombreDelOrigen, SIN_NOMBRE, type FilaDeCotizacion, type OrigenDelListado } from './tipos'
+import {
+  nombreDelOrigen,
+  SIN_NOMBRE,
+  type FilaDeCotizacion,
+  type MenuDeFila,
+  type OrigenDelListado,
+} from './tipos'
 import { Vigencia } from './vigencia'
 
 type Props = {
@@ -15,10 +21,18 @@ type Props = {
   alAbrir: (id: string) => void
   // La cotización abierta en el resumen, para marcarla.
   abierta: string | null
+  // El «⋯» de cada tarjeta; sin él no hay botón.
+  menuDeFila?: MenuDeFila | undefined
 }
 
-// Las cotizaciones de la página en el celular: una tarjeta por cotización, con lo mismo que la fila de la tabla. Un toque en la tarjeta abre el resumen; «N.º n» arriba es su botón (`<AbrirResumen>`).
-export function TarjetasDeCotizaciones({ cotizaciones, origenes, alAbrir, abierta }: Props) {
+// Las cotizaciones de la página en el celular: una tarjeta por cotización, con lo mismo que la fila de la tabla. Un toque en la tarjeta abre el resumen; «N.º n» arriba es su botón (`<AbrirResumen>`) y el «⋯» de la derecha, sus acciones (T15).
+export function TarjetasDeCotizaciones({
+  cotizaciones,
+  origenes,
+  alAbrir,
+  abierta,
+  menuDeFila,
+}: Props) {
   const { zonaHoraria } = useRegional()
   return (
     <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
@@ -26,6 +40,7 @@ export function TarjetasDeCotizaciones({ cotizaciones, origenes, alAbrir, abiert
         <TarjetaDeLista
           key={cotizacion.id}
           abierta={abierta === cotizacion.id}
+          acciones={menuDeFila?.(cotizacion)}
           alAbrir={() => {
             alAbrir(cotizacion.id)
           }}

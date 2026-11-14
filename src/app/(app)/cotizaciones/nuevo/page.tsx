@@ -41,6 +41,7 @@ import { puede, type Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
+import { AvisoDeSubastaDeLaHoja } from './aviso-de-subasta'
 import { BarraConHistorial } from './barra-con-historial'
 
 // Lo que el área `formula` llena en la hoja (`pantallas/formula-hoja.ts`): el enlace de «Falta publicar la fórmula».
@@ -288,6 +289,7 @@ async function HojaDelOrigen({
         paraElegir={paraElegir}
         abierta={apertura.hoja.abierta}
       />
+      <AvisoDeSubastaDeLaHoja elegido={elegido} origen={origen} permisos={sesion.permisos} />
       <BarraDelClienteDeLaHoja cliente={cliente} permisos={sesion.permisos} />
       <ConProveedorDeLaHoja
         origenId={origen.id}

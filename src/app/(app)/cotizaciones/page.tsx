@@ -20,9 +20,8 @@ import {
   type FilaDelListado,
   type LecturaDelServidor,
 } from '@/modules/cotizaciones'
-import { ListadoDeCotizaciones } from '@/modules/cotizaciones/pantallas/listado'
 import { HUECOS_DE_PAPELERA_EN_EL_LISTADO } from '@/modules/cotizaciones/pantallas/papelera-listado'
-import { requerirSesion } from '@/modules/equipo'
+import { leerVistas, requerirSesion } from '@/modules/equipo'
 import { leerNombresDeLeads } from '@/modules/leads'
 import { getOrigenes } from '@/modules/origenes'
 import { leerTitulosDeVehiculos, leerVehiculo } from '@/modules/vehiculos'
@@ -33,6 +32,8 @@ import { puede, type Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { EsqueletoListado } from '@/shared/ui/esqueletos'
+import { ListadoConAcciones } from './listado-con-acciones'
+import { menusDeLaPagina } from './menus-de-la-pagina'
 
 export const metadata: Metadata = { title: 'Cotizaciones' }
 
@@ -125,12 +126,15 @@ async function Listado({
   const idDelResumenUrl = idDelResumen(unParametro(parametros[CLAVE_DE_RESUMEN_DE_COTIZACION]))
   const faltaLaDelResumen =
     idDelResumenUrl !== null && !pagina.filas.some((fila) => fila.id === idDelResumenUrl)
-  const [nombres, delServidor, deUnLead] = await Promise.all([
+  const [nombres, delServidor, deUnLead, vistas] = await Promise.all([
     nombresDe(sesion.permisos, pagina.filas),
     faltaLaDelResumen ? leerLaDelResumen(sesion.permisos, idDelResumenUrl) : null,
     nombreDelLead(sesion.permisos, pedido.leadId),
+    leerVistas('cotizaciones'),
   ])
   const filas = filasConNombres(pagina.filas, nombres)
+  // El «⋯» de cada fila: su versión, sus marcas y lo que ofrece a quien mira (tres lecturas por clave primaria para toda la página).
+  const menus = await menusDeLaPagina(sesion, filas)
   // Con `?vehiculo=`, de quién son estas cotizaciones: el título sólo si quien mira ve el vehículo (la lectura es nula si no existe o no se ve).
   const deUnVehiculo =
     pedido.vehiculoId === undefined
@@ -141,9 +145,12 @@ async function Listado({
   const { Junto } = HUECOS_DE_PAPELERA_EN_EL_LISTADO
 
   return (
-    <ListadoDeCotizaciones
+    <ListadoConAcciones
       esquema={esquema}
       pagina={{ ...pagina, filas }}
+      acotada={pagina.acotada}
+      vistas={datosO(vistas)}
+      menus={menus}
       delServidor={delServidor}
       porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_COTIZACIONES) }}
       origenes={visibles.map((origen) => ({ id: origen.id, nombre: origen.nombre }))}
