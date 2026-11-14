@@ -49,7 +49,7 @@ export { editablesDe, eliminablesDe, leadsVisiblesDe } from './features/permisos
 
 // Los filtros de un origen, desde su layout: el esquema que dibuja FilterShell y las condiciones
 // que entiende `buscarVehiculos()`
-export { FILTRO_FASE, condicionesDe, esquemaDeFiltros } from './entities/filtros'
+export { FILTRO_SITUACION, condicionesDe, esquemaDeFiltros } from './entities/filtros'
 
 // La vitrina: qué se ve en la web pública y quién publica. Las dos lecturas no tumban la pantalla
 export { vistaPreviaDe, vitrinaDelOrigen } from './features/vitrina/lecturas'
@@ -64,7 +64,7 @@ export {
 // la base; acá sólo se lee y se dice. Las lecturas no tumban la pantalla.
 export { limpiezaDe, ultimaLimpieza } from './features/limpieza/lecturas'
 // La situación real del vehículo (la calcula la base) y quién puede resolver una subasta sin resolver.
-export { resolucionDeSubasta } from './features/situacion/lecturas'
+export { resolucionDeSubasta, sinResolverDe } from './features/situacion/lecturas'
 export {
   puedeResolverLaSubasta,
   type ResolucionDeSubasta,

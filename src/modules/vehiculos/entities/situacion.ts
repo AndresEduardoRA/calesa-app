@@ -5,11 +5,21 @@
 //   no_ganada    alguien la marcó así: deja de contar en logística, Inicio y el inventario por defecto;
 //   fase         en cualquier otro caso: su situación es su fase.
 import { z } from 'zod'
+import type { ValorDeFiltro } from '@/shared/lib/filtros'
 import { puede, type Permisos } from '@/shared/lib/permisos'
 
 export const SITUACIONES = ['en_subasta', 'sin_resolver', 'no_ganada', 'fase'] as const
 
 export type Situacion = (typeof SITUACIONES)[number]
+
+// Las que no son una fase: las que el filtro «Situación» nombra aparte, en su orden.
+export const SITUACIONES_PROPIAS = ['en_subasta', 'sin_resolver', 'no_ganada'] as const
+
+export type SituacionPropia = (typeof SITUACIONES_PROPIAS)[number]
+
+export function esPropia(valor: string): valor is SituacionPropia {
+  return (SITUACIONES_PROPIAS as readonly string[]).includes(valor)
+}
 
 // Una situación que la app no conoce no tumba la lista: se muestra la fase.
 export const esquemaDeSituacion = z.enum(SITUACIONES).catch('fase')
@@ -61,6 +71,20 @@ export function accionesDeSituacion({
     noLaGanamos: puedeResolver && situacion === 'sin_resolver',
     deshacer: puedeResolver && situacion === 'no_ganada',
   }
+}
+
+// El atajo «Sin resolver» del inventario cuenta hasta acá y lo dice «99+»: es trabajo pendiente, no un total exacto.
+export const TOPE_DE_SIN_RESOLVER = 99
+
+// El valor del filtro «Situación» que pone el atajo, y si el filtro está puesto así (sólo «Sin resolver»: el atajo se prende y se apaga, no suma).
+export function soloSinResolverComoFiltro(): ValorDeFiltro {
+  return { tipo: 'opciones', valores: ['sin_resolver'] }
+}
+
+export function soloSinResolver(valor: ValorDeFiltro | undefined): boolean {
+  return (
+    valor?.tipo === 'opciones' && valor.valores.length === 1 && valor.valores[0] === 'sin_resolver'
+  )
 }
 
 // Lo que el inventario pide siempre: sin las no ganadas (el filtro para verlas es aparte).

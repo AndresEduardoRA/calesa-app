@@ -3,11 +3,15 @@ import type { Permisos } from '@/shared/lib/permisos'
 import {
   accionesDeSituacion,
   CONDICION_POR_DEFECTO,
+  esPropia,
   esquemaDeSituacion,
   etiquetaDeSituacion,
   pedidoParaResolver,
   puedeResolverLaSubasta,
   SITUACIONES,
+  SITUACIONES_PROPIAS,
+  soloSinResolver,
+  soloSinResolverComoFiltro,
   textoDelAvisoDeSituacion,
 } from './situacion'
 
@@ -163,5 +167,25 @@ describe('textoDelAvisoDeSituacion', () => {
     expect(pedidoParaResolver('Copart')).toBe(
       'Para resolverla hace falta poder mover de fase en «Copart»: pídeselo a quien administra los roles.',
     )
+  })
+})
+
+describe('las situaciones propias del filtro', () => {
+  it('son las de SITUACIONES menos la fase, y esPropia las reconoce', () => {
+    expect([...SITUACIONES_PROPIAS]).toEqual(SITUACIONES.filter((uno) => uno !== 'fase'))
+    expect(SITUACIONES_PROPIAS.every(esPropia)).toBe(true)
+    expect(esPropia('fase')).toBe(false)
+    expect(esPropia('ninguna')).toBe(false)
+    expect(esPropia('00000000-0000-0000-0000-0000000000a1')).toBe(false)
+  })
+
+  it('el atajo «Sin resolver» está puesto sólo con ese único valor', () => {
+    expect(soloSinResolver(soloSinResolverComoFiltro())).toBe(true)
+    expect(soloSinResolver(undefined)).toBe(false)
+    expect(soloSinResolver({ tipo: 'opciones', valores: ['sin_resolver', 'en_subasta'] })).toBe(
+      false,
+    )
+    expect(soloSinResolver({ tipo: 'opciones', valores: ['en_subasta'] })).toBe(false)
+    expect(soloSinResolver({ tipo: 'booleano', valor: true })).toBe(false)
   })
 })

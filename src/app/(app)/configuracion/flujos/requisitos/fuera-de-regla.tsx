@@ -1,7 +1,7 @@
 import { leerFueraDeRegla, armarFueraDeRegla, type GrupoDelPanel } from '@/modules/flujos'
 import type { FlujoParaConfigurar } from '@/modules/flujos'
 import { AvisoDeFueraDeRegla } from '@/modules/flujos/pantallas/requisitos'
-import { FILTRO_FASE, leerTitulosDeVehiculos } from '@/modules/vehiculos'
+import { FILTRO_SITUACION, leerTitulosDeVehiculos } from '@/modules/vehiculos'
 import { ok } from '@/shared/lib/errores'
 import { Aviso } from '@/shared/ui/aviso'
 import { RUTAS } from '@/shared/lib/rutas'
@@ -11,7 +11,7 @@ function caminoAlInventario(flujo: FlujoParaConfigurar, faseId: string): string 
   if (flujo.ambito !== 'vehiculos' || flujo.origenId === null) {
     return null
   }
-  const parametros = new URLSearchParams({ origen: flujo.origenId, [FILTRO_FASE]: faseId })
+  const parametros = new URLSearchParams({ origen: flujo.origenId, [FILTRO_SITUACION]: faseId })
   return `${RUTAS.vehiculos}?${parametros.toString()}`
 }
 

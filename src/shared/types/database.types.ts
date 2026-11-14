@@ -9623,7 +9623,7 @@ export type Database = {
       }
       _vehiculos_cotizado_rellenar: { Args: Record<PropertyKey, never>; Returns: number }
       _vehiculos_inventario_condicion: {
-        Args: { p_columna: string; p_i: number; p_tipo: string }
+        Args: { p_columna: string; p_filtro?: Json; p_i: number; p_tipo: string }
         Returns: string
       }
       _vehiculos_inventario_patron: { Args: { p_i: number }; Returns: string }
