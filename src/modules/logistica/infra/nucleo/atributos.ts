@@ -2,9 +2,9 @@ import 'server-only'
 import { z } from 'zod'
 import { errorDePostgrest, ok } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/server'
-import type { LectorDeAtributos } from '../../entities/cadena/repositorios'
+import type { LectorDeAtributos } from '../../entities/nucleo/repositorios'
 
-// Los atributos de las tarjetas de una columna, para nombrarlas por el campo principal del origen (6.13). Por clave primaria (`vehiculos_pkey`), en tandas de `POR_TANDA` ids (la URL
+// Los atributos de unos vehículos (la bandeja, la lista de una fase, «dónde está»), para nombrarlos por el campo principal del origen (6.13). Por clave primaria (`vehiculos_pkey`), en tandas de `POR_TANDA` ids (la URL
 // de PostgREST es corta) y bajo la RLS «vehiculos: leer»: un vehículo que quien mira no ve no vuelve, y su tarjeta queda con el título. Una tanda fallida es un error: quien llama decide.
 export const POR_TANDA = 100
 

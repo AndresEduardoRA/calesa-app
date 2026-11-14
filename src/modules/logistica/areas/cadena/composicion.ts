@@ -11,12 +11,12 @@ import type {
 } from '../../entities/cadena/leer'
 import type { PedidoDeLaColumna } from '../../entities/cadena/repositorios'
 import { dondeEstaDe } from '../../features/cadena/donde-esta'
-import { nombrarLasTarjetas } from '../../features/cadena/identidad'
+import { nombrarVehiculos } from '../../features/nucleo/identidad-de-vehiculos'
 import {
   origenesDeLaCadena,
   type OrigenesDeLaCadena,
 } from '../../features/cadena/origenes-de-la-cadena'
-import { leerAtributosDeLaBase } from '../../infra/cadena/atributos'
+import { leerAtributosDeLaBase } from '../../infra/nucleo/atributos'
 import { leerCadenaDeLaBase, leerColumnaDeLaBase } from '../../infra/cadena/cadena'
 import { leerDondeEstaDeLaBase } from '../../infra/cadena/donde-esta'
 import { leerNavieras } from '../../infra/cadena/navieras'
@@ -30,7 +30,7 @@ export async function leerCadena(
 ): Promise<Resultado<CadenaLeida>> {
   const leida = await leerCadenaDeLaBase(origenId, filtros)
   if (!leida.ok) return leida
-  const nombradas = await nombrarLasTarjetas(
+  const nombradas = await nombrarVehiculos(
     origenId,
     leida.data.columnas.flatMap((columna) => columna.tarjetas),
     leerAtributosDeLaBase,
@@ -53,7 +53,7 @@ export async function leerMasDeLaColumna(
 ): Promise<Resultado<PaginaDeLaColumna>> {
   const leida = await leerColumnaDeLaBase(pedido)
   if (!leida.ok) return leida
-  const tarjetas = await nombrarLasTarjetas(
+  const tarjetas = await nombrarVehiculos(
     pedido.origenId,
     leida.data.tarjetas,
     leerAtributosDeLaBase,

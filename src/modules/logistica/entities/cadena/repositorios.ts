@@ -21,8 +21,4 @@ export type LectorDeLaCadena = (
 export type LectorDeLaColumna = (pedido: PedidoDeLaColumna) => Promise<Resultado<PaginaDeLaColumna>>
 // `logistica_donde_esta()`: dónde está lo que se busca, en todos los orígenes de la persona.
 export type LectorDeDondeEsta = (buscar: string) => Promise<Resultado<ResultadoDeDondeEsta>>
-// Los atributos de unos vehículos por su id, bajo la RLS de quien mira: lo que no ve no vuelve.
-export type LectorDeAtributos = (
-  ids: readonly string[],
-) => Promise<Resultado<Map<string, Record<string, unknown>>>>
 export type LectorDeNavieras = () => Promise<Resultado<NavieraParaFiltrar[]>>
