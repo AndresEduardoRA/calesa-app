@@ -11,7 +11,7 @@ declare
     'vehiculos_inventario', 'p_origen uuid, p_tamano integer, p_filtros jsonb, p_cursor_en timestamp with time zone, p_cursor_id uuid, p_hacia_atras boolean',
     '_vehiculos_inventario_sql', 'p_filtros jsonb, p_rutas text, p_sentido text',
     '_vehiculos_inventario_validar', 'p_filtros jsonb',
-    '_vehiculos_inventario_condicion', 'p_tipo text, p_columna text, p_i integer',
+    '_vehiculos_inventario_condicion', 'p_tipo text, p_columna text, p_i integer, p_filtro jsonb',
     '_vehiculos_inventario_patron', 'p_i integer');
   v_devuelve constant jsonb := jsonb_build_object('_vehiculos_inventario_sql', 'text', '_vehiculos_inventario_validar', 'void',
     '_vehiculos_inventario_condicion', 'text', '_vehiculos_inventario_patron', 'text');
@@ -179,6 +179,13 @@ declare
     '[{"tipo": "situacion_fuera_de", "valores": []}]', '[{"tipo": "situacion_fuera_de", "valores": ["perdida"]}]', '[{"tipo": "situacion_fuera_de", "valores": [1]}]',
     '[{"tipo": "situacion_fuera_de", "valores": "no_ganada"}]', '[{"tipo": "situacion_fuera_de"}]',
     '[{"tipo": "situacion_fuera_de", "valores": ["fase", "en_subasta", "sin_resolver", "no_ganada", "fase"]}]',
+    '[{"tipo": "situacion_en"}]', '[{"tipo": "situacion_en", "situaciones": [], "fases": []}]', '[{"tipo": "situacion_en", "situaciones": [], "fases": [], "sinFase": "si"}]',
+    '[{"tipo": "situacion_en", "situaciones": "no_ganada", "fases": [], "sinFase": false}]', '[{"tipo": "situacion_en", "situaciones": ["fase"], "fases": [], "sinFase": false}]',
+    '[{"tipo": "situacion_en", "situaciones": ["perdida"], "fases": [], "sinFase": false}]', '[{"tipo": "situacion_en", "situaciones": [1], "fases": [], "sinFase": false}]',
+    '[{"tipo": "situacion_en", "situaciones": ["en_subasta", "sin_resolver", "no_ganada", "no_ganada"], "fases": [], "sinFase": false}]',
+    '[{"tipo": "situacion_en", "situaciones": ["no_ganada", "no_ganada"], "fases": [], "sinFase": false}]',
+    '[{"tipo": "situacion_en", "situaciones": ["no_ganada"], "fases": [], "sinFase": false}, {"tipo": "situacion_en", "situaciones": ["sin_resolver"], "fases": [], "sinFase": false}]',
+    '[{"tipo": "situacion_en", "situaciones": [], "fases": ["x"], "sinFase": false}]', '[{"tipo": "situacion_en", "situaciones": [], "fases": {}, "sinFase": false}]',
     -- Los topes: 501 por arreglo, 1.001 sumando todo el pedido, 1.001 caracteres por texto y por alternativa.
     jsonb_build_array(jsonb_build_object('tipo', 'columna_en', 'columna', 'fase_id', 'valores', u500 || to_jsonb(gen_random_uuid()), 'incluirNulo', false)),
     jsonb_build_array(jsonb_build_object('tipo', 'en_vitrina', 'valor', true, 'fases', u500 || to_jsonb(gen_random_uuid()))),
@@ -191,6 +198,7 @@ declare
   v_buenos jsonb[] := array[
     null, '[]', '[{"tipo": "columna_en", "columna": "categoria_id", "valores": [], "incluirNulo": true}]', '[{"tipo": "columna_rango", "columna": "anio", "min": 2000, "max": 2010}]',
     '[{"tipo": "situacion_fuera_de", "valores": ["no_ganada"]}]', '[{"tipo": "situacion_fuera_de", "valores": ["en_subasta", "sin_resolver", "no_ganada", "fase"]}]',
+    '[{"tipo": "situacion_en", "situaciones": [], "fases": [], "sinFase": false}]', '[{"tipo": "situacion_en", "situaciones": ["en_subasta", "sin_resolver", "no_ganada"], "fases": [], "sinFase": true}]',
     '[{"tipo": "atributos_contienen", "alternativas": [{"color": "rojo"}, {"usado": true}, {"extras": ["techo", "gps"]}]}]',
     '[{"tipo": "por_limpiar", "valor": false, "hasta": "2028-02-29"}, {"tipo": "atributo_rango_numero", "clave": "km", "min": null, "max": -3.25}]',
     jsonb_build_array(jsonb_build_object('tipo', 'columna_en', 'columna', 'fase_id', 'valores', u500, 'incluirNulo', false)),
@@ -221,6 +229,9 @@ begin
     'select public._vehiculos_inventario_sql(''[]'', ''origen'', ''ultima'')', 'select public._vehiculos_inventario_sql(''[]'', ''propios'', null)',
     'select public._vehiculos_inventario_condicion(''otro'', null, 0)', 'select public._vehiculos_inventario_condicion(null, null, 0)',
     'select public._vehiculos_inventario_condicion(''columna_en'', ''creado_por'', 0)', 'select public._vehiculos_inventario_condicion(''columna_rango'', ''precio'', 0)',
+    'select public._vehiculos_inventario_condicion(''situacion_en'', null, 0)', 'select public._vehiculos_inventario_condicion(''situacion_en'', null, 0, ''[]'')',
+    'select public._vehiculos_inventario_condicion(''situacion_en'', ''p9'', 0, ''{"situaciones": ["no_ganada"], "fases": [], "sinFase": false}'')',
+    'select public._vehiculos_inventario_condicion(''situacion_en'', ''columna'', 0, ''{"situaciones": ["no_ganada"], "fases": [], "sinFase": false}'')',
     'select public._vehiculos_inventario_condicion(''busqueda'', null, -1)', 'select public._vehiculos_inventario_condicion(''busqueda'', null, null)'] loop
     if pg_temp.vf_error(r) <> '22023/forma' then raise exception 'L1c: «%» da % (debía 22023/forma)', r, pg_temp.vf_error(r); end if;
   end loop;

@@ -295,7 +295,7 @@ test('la dueña vuelve bloqueante un dato, ve el impacto y las unidades fuera de
   await expect(panel.getByText('Le falta 1 requisito').first()).toBeVisible()
   await expect(
     panel.getByRole('link', { name: 'Verlas en el inventario' }).first(),
-  ).toHaveAttribute('href', new RegExp(`fase=${fase.id}`))
+  ).toHaveAttribute('href', new RegExp(`situacion=${fase.id}`))
   await page.keyboard.press('Escape')
   await expect(panel).toBeHidden()
   await expect(page).not.toHaveURL(/panel=fuera-de-regla/)

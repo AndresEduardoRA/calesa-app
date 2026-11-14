@@ -4,6 +4,7 @@ import type { ErrorApp, Resultado } from '@/shared/lib/errores'
 import type { Cursor, Pagina } from '@/shared/lib/paginacion'
 import type { DatosDeVehiculo } from './esquema'
 import type { Condicion } from './filtros'
+import type { ConteoAcotado } from '@/shared/lib/conteo'
 import type { ResolucionDeSubasta, Situacion } from './situacion'
 import type { FuenteDelInventario } from './fuente-del-inventario'
 import type { Foto, FotoEliminada, FotoSubida, Galeria } from './foto'
@@ -127,6 +128,9 @@ export type RepositorioDeSituacion = {
 export type LectorDeResolucionDeSubasta = (
   vehiculoId: string,
 ) => Promise<Resultado<ResolucionDeSubasta | null>>
+
+// Cuántas subastas sin resolver hay en un origen, hasta el tope (`TOPE_DE_SIN_RESOLVER`), con la RLS de quien mira.
+export type LectorDeSinResolver = (origenId: string) => Promise<Resultado<ConteoAcotado>>
 
 export type RepositorioDeLimpieza = {
   conservar: (pedido: {

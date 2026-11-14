@@ -119,4 +119,23 @@ describe('situación', () => {
       pedidosDe({ tipo: 'situacion_fuera_de', valores: ['sin_resolver', 'no_ganada'] }),
     ).toEqual(['or=(situacion.not.in.(sin_resolver,no_ganada))'])
   })
+
+  it('«situación»: las propias, las fases (con la situación fase) y «sin fase», cada una un término del or', () => {
+    expect(
+      pedidosDe({ tipo: 'situacion_en', situaciones: ['en_subasta'], fases: [], sinFase: false }),
+    ).toEqual(['or=(situacion.in.(en_subasta))'])
+    expect(
+      pedidosDe({
+        tipo: 'situacion_en',
+        situaciones: ['sin_resolver', 'no_ganada'],
+        fases: ['f1', 'f2'],
+        sinFase: true,
+      }),
+    ).toEqual([
+      'or=(situacion.in.(sin_resolver,no_ganada),and(situacion.eq.fase,fase_id.in.(f1,f2)),and(situacion.eq.fase,fase_id.is.null))',
+    ])
+    expect(pedidosDe({ tipo: 'situacion_en', situaciones: [], fases: [], sinFase: true })).toEqual([
+      'or=(and(situacion.eq.fase,fase_id.is.null))',
+    ])
+  })
 })

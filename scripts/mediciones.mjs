@@ -142,6 +142,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'mediana de 5 de 7 corridas',
   ],
   [
+    'supabase/tests/medir-vehiculos-inventario-situacion.sql',
+    'El filtro «Situación» del inventario (situacion_en) con 50.000 y con 250.000 vivos, como la dueña con el plan normal: una situación propia por vehiculos_situacion_idx bajo su Limit, sin ordenar todas las de la situación ni descartar filas; dos propias, una fase y «sin fase» sin recorrer vehiculos; y los bloques de vehiculos sin crecer con N',
+    UNA,
+  ],
+  [
     'supabase/tests/medir-vehiculos-inventario-costo-fijo.sql',
     'El costo fijo de cada llamada al inventario (4-77): origenes_con_alcance() de una persona con una concesión y de otra con una por cada permiso y origen, sin volumen (ms y buffers del EXPLAIN, bloques de perfiles, usuarios_roles y roles_permisos, y las filas de mis_permisos())',
     'mediana de 5 de 7 corridas',

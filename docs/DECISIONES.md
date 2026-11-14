@@ -118,7 +118,13 @@ las trampas, en `docs/LECCIONES.md`.
 - **Fuera del tramo de subasta manda la fase, también sobre el resultado.** Una no ganada que alguien mueve a una fase real vuelve a
   contar (su situación es la fase; el resultado queda guardado), y la vuelta a subasta sólo limpia el resultado de una unidad que sigue en el
   tramo: una ganada que ya pasó a otra fase y cuyo lote se relista conserva «ganada». Así nada queda oculto por un dato que ya no aplica.
-- **«No ganada» en femenino**: concuerda con la subasta, no con el sustantivo del origen.
+- **«No ganada» en femenino**: concuerda con la subasta, no con el sustantivo del origen. En el filtro, plural («No ganadas»): habla de vehículos.
+- **«Situación» reemplaza a «Fase» en el inventario.** Una fase es una situación (`fase`), y dos filtros que dicen casi lo mismo confunden: la clave de la URL pasa de
+  `fase` a `situacion` (la migración reescribe las vistas guardadas; una URL vieja con `?fase=` se ignora). Una fase filtra por `situacion = 'fase'` y su `fase_id`:
+  «En subasta» y «Sin resolver» salen sólo por su opción, no al elegir la fase de subasta. El atajo «Sin resolver» cuenta con `tope + 1` por `vehiculos_situacion_idx`
+  y lo dice «99+»; cambia sólo «Situación» y deja los demás filtros.
+- **`situacion_en` arma una igualdad por situación propia, no un `= any`.** Una sola igualdad con el valor plegado deja que `vehiculos_situacion_idx` conduzca el orden; el
+  arreglo de una subconsulta no (el planificador no sabe que trae uno). Por eso `_vehiculos_inventario_condicion` recibe la condición entera (`p_filtro`).
 
 - **Se escriben sólo por RPC.** `vehiculo_crear(p_id…)` idempotente con id del navegador y `vehiculo_guardar` con versión; el alta entra a la fase inicial sólo si no hay nada que decidir (si no, «Sin fase»).
 - **El alta dice desde dónde (`p_contexto`) y la base exige el permiso de ese contexto.** `vehiculos.crear` (alta suelta) y
