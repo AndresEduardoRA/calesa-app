@@ -338,7 +338,8 @@ vista (`UnaSolaVista`, según el `user-agent`).
 
 - `logistica_bandeja(5)` (definer, máx. 20): demoradas = por par (origen visible, fase que alerta) un rango de `vehiculos_cadena_idx` con
   `limit 50` (cuesta los pares, no las unidades). Trabados: hasta 50 `evaluar_requisitos`. Por aprobar: `documentos_por_revisar_idx` con
-  `limit n + 1`. Sin volumen: rangos acotados de índices ya medidos.
+  `limit n + 1`. Sin volumen: rangos acotados de índices ya medidos. Con el alcance «propios» recorre la fase (pendiente: `docs/PENDIENTES.md`). La bandeja del día de `/logistica` es otra
+  lectura (`logistica_bandeja_grupo`), medida: ver «La cadena de logística».
 - `alertas_demora()` (job `alertas-demora`, cada hora en el minuto 12): ≤ 2.000 unidades por corrida, de a 200 por cursor
   `(fase_desde, id)` sobre `vehiculos_cadena_idx`; destinatarios una vez por origen. «Ya avisé», «abierto» y el cierre al mover
   (`trg_alertas_cerrar_al_mover`, también en un `cambiar_fase_lote` de 200) van por
@@ -352,13 +353,26 @@ vista (`UnaSolaVista`, según el `user-agent`).
 
 ## La cadena de logística
 
-- `/logistica`: `logistica_cadena()` trae la primera página de cada columna (`TAMANO_DE_COLUMNA`), «Ver más» de a 50 por
-  `verMasDeLaColumna` hasta `TOPE_DE_LO_CARGADO` con `<AvisoDeTope>`; el número de la columna es `50+`, nunca un total. Índice
-  `vehiculos_cadena_idx (origen_id, fase_id, fase_desde, id) where eliminado_en is null and situacion <> 'no_ganada'` (parcial: cada consulta
-  lleva el literal). Nada por tarjeta: los atributos del nombre van en tandas de 100 ids por PK.
-  Sin foto ni «⋯». Una sola vista en el DOM.
-- JS en frío ≤ 410 KB (al borde: 401,0).
-- Sin volumen de interfaz: `e2e/logistica-cadena.spec.ts` prueba «Ver más» con 51, no mide nodos.
+- `/logistica`: la bandeja del día y la gráfica de la cadena; `/logistica/fase/[fase]`, la lista de una fase; `/logistica/bandeja/[grupo]`, un grupo entero. Todo por cursor, con tope y sin
+  ningún total (`1.000+`, `100+`).
+- **Gráfica:** `logistica_cadena_resumen()` cuenta por fase con `limit tope + 1` sobre `vehiculos_cadena_idx (origen_id, fase_id, fase_desde, id) where eliminado_en is null and situacion <> 'no_ganada'`
+  (parcial: cada consulta lleva el literal y el `order by` del índice); los trabados, las primeras 50 demoradas de cada fase con `evaluar_requisitos` (por `documentos_unidad_tipo_idx`). Con el
+  alcance «propios» parte de `_logistica_lo_propio` (hasta 10.001 ids). Server Component, sin JS propio.
+- **Lista de una fase:** `logistica_cadena_columna()` de a 50 (`TAMANO_DE_LA_FASE`) por cursor `(fase_desde, id)`; una sola vista en el DOM (tabla desde 768 px, tarjetas por debajo); nada por fila
+  (los atributos del nombre van en tandas de 100 ids por PK). Selección de hasta 200.
+- **Bandeja del día:** `logistica_bandeja_grupo()`, un ayudante e índice por grupo (`vehiculos_cadena_idx` para demorados y trabados, `documentos_por_revisar_idx`, `documentos_vencen_idx`,
+  `transportes_llegadas_idx`, `transportes_salidas_idx`, `vehiculos_situacion_idx`); la portada lee 5 filas por grupo con el conteo hasta 100 (`TOPE_DE_LA_BANDEJA`), una página de un grupo, 20
+  (`TAMANO_DE_LA_BANDEJA`). Lo recorrido con fecha para al leer 2.000 (`cortada`) y trabados evalúa 200 demoradas por llamada.
+- **Medido** (`supabase/tests/medir-logistica.sql`, 300.000 vehículos vivos en un origen, 40 % con transporte y 25 % con documento; en una transacción sin VACUUM: el índice visita la tabla, así que es
+  pesimista): el resumen de la dueña 11–20 ms y 2,8 KB, el de Ana («propios», 12.000 propios y 3.000 de su cartera) 80–155 ms; los bloques del índice con la fase 3 a 15.000 y a 120.000 no crecen
+  (106 / 107; vehiculos 8.545 / 8.598); cada grupo de la portada de la dueña 8–20 ms (trabados, 42) y ≤ 2 KB, el de Ana 130–290 ms (trae lo propio una vez por grupo); una página de 20 con cursor profundo
+  7–13 ms y ≤ 6 KB; la lista de la fase 1,8 ms y 13 KB (Ana, 58–125 ms). Presupuestos: resumen ≤ 50 / 250 ms (dueña / Ana) y 4 KB; portada ≤ 60 ms (trabados 100) / 300 ms y 6 KB; página con cursor ≤ 40 ms y
+  12 KB; lista de la fase ≤ 10 / 200 ms y 24 KB.
+- Lo medido se arma en una transacción que se revierte: `session_replication_role = replica`, 195.000 vehículos con la fase 3 en 15.000 y después 105.000 más a ella (sumar y no mover: mover deja filas
+  muertas en los índices y cambia lo que se mide).
+- JS en frío (`e2e/presupuesto-js.spec.ts`): `/logistica` ≤ 390 KB (medido 365,0 en 26 chunks; el kanban marcaba 401,0) y `/logistica/fase/[fase]` ≤ 390 KB (medido 367,0 en 27 chunks): sobre lo medido más un 5 %, a la decena.
+- Nodos del DOM, medidos en el recorrido: NODOS.
+- Sin volumen de interfaz propio: `e2e/logistica-cadena.spec.ts` prueba «Siguiente» con 51 y `e2e/logistica-bandeja-del-dia.spec.ts` los 21 demorados, no miden nodos de miles.
 - Lote de mover: selección y lotes ≤ 200 (`TOPE_DEL_LOTE`) en **una llamada** (`previsualizar_cambio_fase_lote`, `cambiar_fase_lote`). Los
   destinos de la fase son configuración (`TOPE_DE_DESTINOS`). «Unidades de un grupo (lote)»: `vehiculos` con `transportes!inner` por
   `transportes_contenedor_idx` / `transportes_booking_idx`, `limit 201`. Las casillas y el contexto van en el JS de `/logistica`; la barra,

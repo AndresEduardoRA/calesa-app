@@ -163,7 +163,9 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** El resumen del contenedor pone «Mover el grupo» debajo de toda la lista: con 8 unidades hay que desplazar para llegar a «Marcar que llegó».
 - **[—]** `/logistica/embarques` › Contenedores dice «Las primeras.» sobre la lista sin decir de qué.
 - **[—]** El margen sin gastos dice «Real USD 0,00» junto a «Sin venta registrada» y parece un costo cargado — «Sin gastos» lo diría sin cifra.
-- **[—]** La cadena de la dueña: en el celular las pestañas de origen parten en dos líneas y la última queda cortada; en escritorio la tercera columna se corta sin indicio de que se desplaza.
+- **[—]** `logistica_bandeja` de Inicio con el alcance «propios» recorre la fase entera (su rama por fila no parte de `_logistica_lo_propio`): pasarla a esa lectura y medirla con volumen.
+- **[—]** Con más de 10.001 vehículos propios en un origen, sólo el resumen de la cadena lo avisa («+»): los grupos de la bandeja del día y la lista de una fase de ese alcance no dicen que `_logistica_lo_propio` cortó (`_bandeja_dia_alcance` podría devolver un `cortado`).
+- **[—]** `/logistica/gastos` todavía abre el panel de la unidad en un drawer (`?vehiculo=`): llevarlo a `/logistica/vehiculo/[id]` como el resto de logística y borrar `drawer-de-la-unidad.tsx` y `clave-de-unidad.ts`.
 - **[—]** El inspector de fase no se miró al 200 % (los bloques anidados miden con `minmax(0, 1fr)`).
 - **[—]** Al 200 % la burbuja del chat puede tapar la última línea de una página.
 - **[—]** Las 200 compras por proyecto llevan `<AvisoDeTope>` sin camino a lo antiguo — filtro por fecha si aparece.
