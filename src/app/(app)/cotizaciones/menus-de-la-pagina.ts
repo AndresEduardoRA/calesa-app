@@ -10,9 +10,11 @@ import {
   puedeModerarLaCotizacion,
   type CotizacionDelListado,
   type MarcasDeUnaFila,
+  type LecturaDelServidor,
   type MenuDeUnaFila,
   type OfertasDelMenuDeCotizacion,
 } from '@/modules/cotizaciones'
+import type { QuienDelResumen } from '@/modules/cotizaciones/pantallas/listado'
 import type { Permisos } from '@/shared/lib/permisos'
 
 type Quien = { permisos: Permisos; usuarioId: string }
@@ -72,4 +74,23 @@ export async function menusDeLaPagina(
     }
   }
   return menus
+}
+
+// Lo que quien mira puede hacer con cada cotización abierta en el resumen (adjuntar y moderar), con las mismas reglas del «⋯» y sobre lo que la página ya leyó: no pide nada a la base. Una
+// fila de otra página (la que abrió la URL) entra con las suyas. La base decide al actuar.
+export function quienesDelResumen(
+  quien: Quien,
+  filas: readonly CotizacionDelListado[],
+  delServidor: LecturaDelServidor | null,
+): Record<string, QuienDelResumen> {
+  const todas = delServidor?.estado === 'listo' ? [...filas, delServidor.cotizacion] : filas
+  return Object.fromEntries(
+    todas.map((fila) => [
+      fila.id,
+      {
+        puedeAdjuntar: puedeGuardarDesdeElListado(fila, quien.permisos, quien.usuarioId),
+        puedeModerar: puedeModerarLaCotizacion(fila, quien.permisos),
+      },
+    ]),
+  )
 }

@@ -23,8 +23,9 @@ type Props = {
   pedirQuitar: (adjunto: Adjunto) => void
 }
 
-// Un adjunto de la lista (4.27-3): su icono, el nombre, el tamaño, quién y cuándo; «Descargar» pide la URL al tocarlo y «Quitar» abre su diálogo.
-export function FilaDeAdjunto({ adjunto, quitable, pedirQuitar }: Props) {
+// Lo de un adjunto, sin la caja que lo envuelve (la lista de adjuntos y la línea de tiempo del resumen le ponen cada una una `grid` con `gap-1`): su icono, el nombre, el tamaño, quién y
+// cuándo; «Descargar» pide la URL al tocarlo y «Quitar» abre su diálogo.
+export function ContenidoDeAdjunto({ adjunto, quitable, pedirQuitar }: Props) {
   const { zonaHoraria, locale } = useRegional()
   const [bajando, setBajando] = useState(false)
   const [error, setError] = useState<ErrorApp | null>(null)
@@ -38,7 +39,7 @@ export function FilaDeAdjunto({ adjunto, quitable, pedirQuitar }: Props) {
   }
 
   return (
-    <li className="grid min-w-0 gap-1">
+    <>
       <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
         <Icono aria-hidden className="size-5 shrink-0 text-(--color-ink-soft)" />
         <div className="grid min-w-0 flex-1">
@@ -91,6 +92,15 @@ export function FilaDeAdjunto({ adjunto, quitable, pedirQuitar }: Props) {
           {error.mensaje}
         </p>
       ) : null}
+    </>
+  )
+}
+
+// Un adjunto de la lista (4.27-3).
+export function FilaDeAdjunto(props: Props) {
+  return (
+    <li className="grid min-w-0 gap-1">
+      <ContenidoDeAdjunto {...props} />
     </li>
   )
 }

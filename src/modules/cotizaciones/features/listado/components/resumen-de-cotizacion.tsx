@@ -18,6 +18,7 @@ import {
   type LecturaDelServidor,
   type VistaDelResumen,
 } from '../../../entities/listado/resumen-del-listado'
+import type { HuecosDelResumen, QuienDelResumen } from '../../hoja/components/huecos-del-resumen'
 import { usePedidoAlServidor } from '../hooks/use-pedido-al-servidor'
 import { useResumenDeCotizacion } from '../hooks/use-resumen-de-cotizacion'
 import { nombreDelOrigen, SIN_NOMBRE, type FilaDeCotizacion, type OrigenDelListado } from './tipos'
@@ -29,6 +30,9 @@ type Props = {
   origenes: readonly OrigenDelListado[]
   // Lo que el servidor leyó de la cotización de la URL cuando no está en la página.
   delServidor: LecturaDelServidor | null
+  // Lo que las áreas llenan bajo el detalle (las pestañas) y lo que quien mira puede hacer con cada cotización (por id). Sin ellos, el resumen es sólo lo que trae la fila.
+  huecos?: HuecosDelResumen
+  quienes?: Readonly<Record<string, QuienDelResumen>>
 }
 
 function EsqueletoDelResumen() {
@@ -52,7 +56,18 @@ function Dato({ nombre, children }: { nombre: string; children: React.ReactNode 
   )
 }
 
-function DetalleDeLaCotizacion({ cotizacion }: { cotizacion: FilaDeCotizacion }) {
+function DetalleDeLaCotizacion({
+  cotizacion,
+  abierto,
+  huecos,
+  quien,
+}: {
+  cotizacion: FilaDeCotizacion
+  abierto: boolean
+  huecos: HuecosDelResumen
+  quien: QuienDelResumen
+}) {
+  const { Pestanas, Comprobantes } = huecos
   const { zonaHoraria } = useRegional()
   return (
     <div className="grid gap-4">
@@ -82,18 +97,34 @@ function DetalleDeLaCotizacion({ cotizacion }: { cotizacion: FilaDeCotizacion })
       >
         Abrir cotización
       </Link>
+      {Pestanas === undefined ? null : (
+        <Pestanas
+          cotizacion={{ id: cotizacion.id, numero: cotizacion.numero, clase: cotizacion.clase }}
+          puedeAdjuntar={quien.puedeAdjuntar}
+          puedeModerar={quien.puedeModerar}
+          abierto={abierto}
+          Comprobantes={Comprobantes}
+        />
+      )}
     </div>
   )
 }
+
+// Quien mira sin lo que el servidor calculó (una cotización que no estaba en la página ni la leyó): nada de adjuntar ni de moderar, que es lo conservador.
+const SIN_PERMISOS: QuienDelResumen = { puedeAdjuntar: false, puedeModerar: false }
 
 function ContenidoDelResumen({
   vista,
   ultimo,
   reintentar,
+  huecos,
+  quienes,
 }: {
   vista: VistaDelResumen
   ultimo: FilaDeCotizacion | null
   reintentar: () => void
+  huecos: HuecosDelResumen
+  quienes: Readonly<Record<string, QuienDelResumen>>
 }) {
   if (vista.tipo === 'no_disponible') {
     return (
@@ -120,14 +151,19 @@ function ContenidoDelResumen({
   return cotizacion === null ? (
     <EsqueletoDelResumen />
   ) : (
-    <DetalleDeLaCotizacion cotizacion={cotizacion} />
+    <DetalleDeLaCotizacion
+      cotizacion={cotizacion}
+      abierto={vista.tipo === 'cotizacion'}
+      huecos={huecos}
+      quien={quienes[cotizacion.id] ?? SIN_PERMISOS}
+    />
   )
 }
 
-// El resumen de una cotización (`?cotizacion=`) sin salir del listado: lo que ya trae su fila, con «Abrir cotización» a su página. De sólo lectura: sin «⋯» ni otra acción (son de los
-// pasos 4.2x). Si la cotización no está en la página, la leyó el servidor (`delServidor`); si tampoco, se le pide una vez (`router.refresh()`) y, si no llega, dice «error» con «Reintentar».
+// El resumen de una cotización (`?cotizacion=`) sin salir del listado: lo que ya trae su fila, con «Abrir cotización» a su página y, debajo, las pestañas «Todo», «Adjuntos»,
+// «Revisiones» y «Comentarios» que llenan las áreas (`huecos`). Sin «⋯»: las acciones de la cotización son de la fila. Si la cotización no está en la página, la leyó el servidor (`delServidor`); si tampoco, se le pide una vez (`router.refresh()`) y, si no llega, dice «error» con «Reintentar».
 // Una que no existe o que quien mira no ve dice lo mismo, sin explicar por qué.
-export function ResumenDeCotizacion({ filas, origenes, delServidor }: Props) {
+export function ResumenDeCotizacion({ filas, origenes, delServidor, huecos, quienes }: Props) {
   const resumen = useResumenDeCotizacion()
   const base = vistaDelResumen({ texto: resumen.texto, filas, delServidor, yaPedido: false })
   const pedido = usePedidoAlServidor(resumen.id, base.tipo === 'cargando')
@@ -160,7 +196,13 @@ export function ResumenDeCotizacion({ filas, origenes, delServidor }: Props) {
           : nombreDelOrigen(origenes, mostrada.origenId)
       }
     >
-      <ContenidoDelResumen vista={vista} ultimo={ultimo} reintentar={pedido.pedir} />
+      <ContenidoDelResumen
+        vista={vista}
+        ultimo={ultimo}
+        reintentar={pedido.pedir}
+        huecos={huecos ?? {}}
+        quienes={quienes ?? {}}
+      />
     </Drawer>
   )
 }

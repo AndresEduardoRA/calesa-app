@@ -45,6 +45,16 @@ reporte propios de una página, por clave primaria, ≤ 100 ids) alimenta el «�
 «Reportar…» y moderar abren los mismos modal y `<Confirmar>` por `?panel=reportar|moderar&para=<id>` (`<DialogosDeMarcasDeLaFila>`, `usePanelDeFila()`: se revisan
 al llegar y una fila o acción que ya no está avisa y limpia la URL). e2e: `e2e/cotizaciones-listado-acciones.spec.ts`.
 
+## El resumen
+
+Las pestañas del resumen de `/cotizaciones` (`?cotizacion=`, `?pestana=`; hueco `Pestanas`, `pantallas/comentarios-resumen.ts`): `<PestanasDeLaCotizacion>`
+(`components/resumen/`, `diferido()`; mientras el resumen se cierra se queda en la pestaña que tenía) elige una de cuatro y cada una llega por su `diferido()` y lee al
+montarse (`key` de la cotización): «Comentarios» es `<Comentarios conAdjuntos={false}>`; «Adjuntos», `<Adjuntos>` más el hueco `Comprobantes`; «Revisiones», `useRevisiones` con
+`<ContenidoDeRevisiones>` (el mismo del panel de la guardada; el resumen no sabe la versión y usa el id); «Todo», `useLineaDeTiempo()`: una página de cada fuente por
+`useFuenteDeLaLinea()` (comentarios por cursor `(creado_en, id)`, revisiones por id, adjuntos enteros) y `lineaDeTiempo()` (`entities/comentarios/linea-de-tiempo.ts`, puro) las
+mezcla sólo hasta el borde que marca la fuente que menos retrocedió; «Ver más» le pide a ésa y se detiene en `TOPE_DE_LO_CARGADO` entre las tres. Una fuente que falla dice
+cuál con su «Reintentar», sin tocar las otras. «Todo» es de sólo lectura (cada entrada se actúa en su pestaña). e2e: `e2e/cotizaciones-listado-pestanas.spec.ts`.
+
 Los tres `<Confirmar>` están registrados en `scripts/guardas/areas-c/confirmar-con-url.ts`.
 
 ## No se rompe

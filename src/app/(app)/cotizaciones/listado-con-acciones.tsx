@@ -3,14 +3,25 @@
 import type { ComponentProps } from 'react'
 import type { MenuDeUnaFila } from '@/modules/cotizaciones/pantallas/listado'
 import { DialogosDeMarcasDeLaFila } from '@/modules/cotizaciones/pantallas/comentarios-listado'
+import { HUECOS_DE_COMENTARIOS_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/comentarios-resumen'
+import { HUECOS_DE_COMPROBANTES_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/comprobantes-resumen'
 import { DialogoDeMarcarFinalDeLaFila } from '@/modules/cotizaciones/pantallas/final-listado'
 import { ListadoDeCotizaciones } from '@/modules/cotizaciones/pantallas/listado'
 import { MenuDeLaFila } from './menu-de-la-fila'
 import { useAccionesDeLaLista } from './use-acciones-de-la-lista'
 
-type Props = Omit<ComponentProps<typeof ListadoDeCotizaciones>, 'menuDeFila' | 'dialogos'> & {
+type Props = Omit<
+  ComponentProps<typeof ListadoDeCotizaciones>,
+  'menuDeFila' | 'dialogos' | 'huecosDelResumen'
+> & {
   // El menú de cada fila de la página (versión, marcas y lo que ofrece), por id: lo calcula el servidor (`menus-de-la-pagina.ts`). Una fila sin menú no tiene «⋯».
   menus: Readonly<Record<string, MenuDeUnaFila>>
+}
+
+// Lo que las áreas `comentarios` y `comprobantes` llenan en el resumen: las pestañas y, en «Adjuntos», los comprobantes. Sólo cáscaras con `diferido()`: el listado no paga su código.
+const HUECOS_DEL_RESUMEN = {
+  ...HUECOS_DE_COMENTARIOS_EN_EL_RESUMEN,
+  ...HUECOS_DE_COMPROBANTES_EN_EL_RESUMEN,
 }
 
 // El listado de cotizaciones con su columna de acciones: une el «⋯» de cada fila con lo que hace cada área (aprobar, marcar final, favorita, reportar, moderar y la papelera: las mismas
@@ -21,6 +32,7 @@ export function ListadoConAcciones({ menus, ...props }: Props) {
   return (
     <ListadoDeCotizaciones
       {...props}
+      huecosDelResumen={HUECOS_DEL_RESUMEN}
       menuDeFila={(fila) => {
         const menu = menus[fila.id]
         return menu === undefined ? null : (

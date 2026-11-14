@@ -6,11 +6,15 @@ import {
   CLAVE_DE_RESUMEN_DE_COTIZACION,
   idDelResumen,
 } from '../../../entities/listado/resumen-del-listado'
+import { CLAVE_DE_PESTANA_DEL_RESUMEN } from '../../../entities/pestanas-del-resumen'
 
-const PARAMETROS = { [CLAVE_DE_RESUMEN_DE_COTIZACION]: parseAsString }
+const PARAMETROS = {
+  [CLAVE_DE_RESUMEN_DE_COTIZACION]: parseAsString,
+  [CLAVE_DE_PESTANA_DEL_RESUMEN]: parseAsString,
+}
 
-// Qué cotización está abierta en el resumen, en la URL (`?cotizacion=`): sobrevive a recargar y se puede compartir. Abrir suma al historial («atrás» lo cierra) y abrir la que ya está
-// abierta no suma otra. Sin `shallow: false`: abrirlo no pide nada al servidor; el resumen se dibuja con la fila de la página. `texto` es la URL tal cual (abre el resumen aunque no sea
+// Qué cotización está abierta en el resumen, en la URL (`?cotizacion=`): sobrevive a recargar y se puede compartir. Abrir suma al historial («atrás» lo cierra), empieza en la
+// pestaña «Todo» (`?pestana=` se borra al abrir y al cerrar) y abrir la que ya está abierta no suma otra. Sin `shallow: false`: abrirlo no pide nada al servidor; el resumen se dibuja con la fila de la página. `texto` es la URL tal cual (abre el resumen aunque no sea
 // un guid: dice «no disponible») e `id` es el guid en minúsculas, o null. Tras recargar con el resumen abierto, «atrás» devuelve el foco a quien lo abrió (`vuelta-del-foco.ts`).
 export function useResumenDeCotizacion() {
   const [parametros, setParametros] = useQueryStates(PARAMETROS)
@@ -24,12 +28,21 @@ export function useResumenDeCotizacion() {
       abrirConVuelta(
         CLAVE_DE_RESUMEN_DE_COTIZACION,
         () =>
-          setParametros({ [CLAVE_DE_RESUMEN_DE_COTIZACION]: cotizacionId }, { history: 'push' }),
+          setParametros(
+            {
+              [CLAVE_DE_RESUMEN_DE_COTIZACION]: cotizacionId,
+              [CLAVE_DE_PESTANA_DEL_RESUMEN]: null,
+            },
+            { history: 'push' },
+          ),
         id === idDelResumen(cotizacionId),
       )
     },
     cerrar: () => {
-      void setParametros({ [CLAVE_DE_RESUMEN_DE_COTIZACION]: null })
+      void setParametros({
+        [CLAVE_DE_RESUMEN_DE_COTIZACION]: null,
+        [CLAVE_DE_PESTANA_DEL_RESUMEN]: null,
+      })
     },
   }
 }

@@ -40,6 +40,9 @@ empresa: {razon_social, nit}, valores, totales, tipos_cambio, etiquetas}`. El re
   (hueco `Acciones`, `<Confirmar>` diferido en `?panel=emitir-comprobante`, registrado en `scripts/guardas/areas-c/confirmar-con-url.ts`) y la sección
   «Comprobantes» (hueco `Debajo`, «Anular» con un `ModalDeFormulario` diferido en `?panel=anular-comprobante`); en Empresa, `SerieDeComprobantes`
   (`pantallas/comprobantes-empresa.ts`), que dibuja `src/app/(app)/configuracion/empresa/comprobantes/seccion.tsx`.
+- **En el resumen de `/cotizaciones`** (`pantallas/comprobantes-resumen.ts`, hueco `Comprobantes` bajo «Adjuntos»): `<ComprobantesDelResumen>` lee por el navegador
+  (`infra/comprobantes/leer.client.ts`, `limit 21`) al abrir la pestaña y dibuja, de sólo lectura, lo mismo que la guardada con su regla `seVenLosComprobantes()`. El `select` y la
+  forma de la fila son de `entities/comprobantes/lectura.ts`, comunes con la lectura del servidor.
 - La pestaña «Comprobantes» de Empresa pide `empresa.ajustes.gestionar`: nadie nuevo entra a Empresa.
 - Los textos de error de las tres RPC se muestran tal cual (la excepción está en la ficha del módulo).
 
