@@ -10602,10 +10602,6 @@ export type Database = {
         }
         Returns: Json
       }
-      logistica_cadena: {
-        Args: { p_filtros?: Json; p_origen: string; p_tope?: number }
-        Returns: Json
-      }
       logistica_cadena_columna: {
         Args: {
           p_desde?: string

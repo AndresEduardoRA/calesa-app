@@ -8,9 +8,18 @@ import { marcarNoGanada } from '../actions/marcar-no-ganada'
 
 export const NO_SE_GUARDO = 'No pudimos guardar el resultado. Intenta de nuevo.'
 
-// «No la ganamos» con «Deshacer» de 10 s, y «Deshacer» de la ficha de una no ganada. Un envío a la vez. Un conflicto (otra persona la resolvió) queda
+// «No la ganamos» con «Deshacer» de 10 s, y «Deshacer» de la ficha de una no ganada (la bandeja de `logistica` también la usa). Un envío a la vez. Un conflicto (otra persona la resolvió) queda
 // con el texto de la base, que nombra a quien; un error, con su texto; sin red, un aviso.
-export function useNoGanada({ vehiculoId, origenId }: { vehiculoId: string; origenId: string }) {
+export function useNoGanada({
+  vehiculoId,
+  origenId,
+  alLograrlo,
+}: {
+  vehiculoId: string
+  origenId: string
+  // Se llama al lograr marcarla o deshacerlo (la bandeja de logística refresca su lista: la fila ya no es de este grupo).
+  alLograrlo?: () => void
+}) {
   const { executeAsync, isPending } = useAction(marcarNoGanada)
   const [conflicto, setConflicto] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -21,6 +30,7 @@ export function useNoGanada({ vehiculoId, origenId }: { vehiculoId: string; orig
     setError(null)
     const hecho = await respuestaDe(executeAsync({ vehiculoId, origenId, noGanada }))
     if (hecho.ok) {
+      alLograrlo?.()
       if (noGanada) {
         avisarConDeshacer(
           'La marcaste como no ganada: ya no cuenta en logística ni en Inicio.',

@@ -201,11 +201,15 @@ test('E2E situación · «Sin resolver» → «No la ganamos» deja de contar y 
   await expect(page.getByText(ganada.titulo).first()).toBeVisible()
   await expect(page.getByText(perdida.titulo)).toHaveCount(0)
 
-  // La cadena tampoco: la columna «Subasta» queda sin ella (en el celular se ve una columna a la vez: la primera es «Subasta»).
+  // La cadena tampoco: la gráfica no la cuenta y la lista de «Comprado» no la trae.
   await page.goto(`/logistica?origen=${terreno.origen}`)
-  await expect(page.getByText('Comprado').first()).toBeVisible()
-  await expect(page.getByText('Sin vehículos en esta fase.').first()).toBeVisible()
-  await expect(page.locator(`[data-tarjeta="${perdida.id}"]`)).toHaveCount(0)
+  await expect(page.locator('a[data-fase]').filter({ hasText: 'Subasta' }).first()).toHaveAttribute(
+    'aria-label',
+    'Subasta: 0 vehículos',
+  )
+  await page.goto(`/logistica/fase/${terreno.comprado}?origen=${terreno.origen}`)
+  await expect(page.getByText(ganada.titulo).first()).toBeVisible()
+  await expect(page.getByText(perdida.titulo)).toHaveCount(0)
 
   // «Deshacer» desde la ficha la devuelve a «Sin resolver».
   await page.goto(`/vehiculos/${perdida.id}`)

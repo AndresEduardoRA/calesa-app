@@ -17,7 +17,7 @@ import {
 } from './soporte/mover'
 
 // Mover varias unidades a la vez (6.04-3): el lote de un contenedor con una unidad sin su documento (la vista previa la marca, «Mover los 7 que pueden», el resultado entero y «Reintentar» tras
-// aprobarlo), y la selección por casillas desde la cadena. El resultado por unidad, el conflicto y los permisos ya tienen su prueba SQL (6.02): aquí se prueba que la pantalla los dice.
+// aprobarlo), y la selección por casillas desde la lista de una fase. El resultado por unidad, el conflicto y los permisos ya tienen su prueba SQL (6.02): aquí se prueba que la pantalla los dice.
 test.describe.configure({ mode: 'serial' })
 
 let proyecto = ''
@@ -74,16 +74,21 @@ test('E2E lote · un contenedor con una unidad sin su documento: mueve las siete
   await expect(resultado(page).getByText('Se movió 1 de 1.')).toBeVisible()
   await resultado(page).getByRole('button', { name: 'Cerrar' }).click()
   await expect(page.getByRole('heading', { name: 'Mover varias unidades' })).toBeHidden()
-  // Las ocho están en la columna de destino.
-  await page.goto(`/logistica?origen=${terreno.origen.id}&fase=${terreno.c.id}`)
-  await expect(page.getByRole('region', { name: `${terreno.c.nombre}: 8 vehículos` })).toBeVisible()
+  // Las ocho están en la lista de la fase de destino y la gráfica dice lo mismo.
+  await page.goto(`/logistica/fase/${terreno.c.id}?origen=${terreno.origen.id}`)
+  await expect(page.locator('tbody tr, li > article')).toHaveCount(8)
+  await page.goto(`/logistica?origen=${terreno.origen.id}`)
+  await expect(page.locator(`a[data-fase="${terreno.c.id}"]`)).toHaveAttribute(
+    'aria-label',
+    `${terreno.c.nombre}: 8 vehículos`,
+  )
 })
 
 test('E2E lote · elegir una unidad con su casilla, mover a otra fase y limpiar la selección', async ({
   page,
 }) => {
   await entrar(page, terreno.primera.correo)
-  await page.goto(`/logistica?origen=${terreno.origen.id}&fase=${terreno.b.id}`)
+  await page.goto(`/logistica/fase/${terreno.b.id}?origen=${terreno.origen.id}`)
   const casilla = page.getByRole('checkbox', { name: new RegExp(`Elegir .*${lote.suelta.titulo}`) })
   await casilla.click()
   const barra = page.locator('[data-barra-del-lote]')

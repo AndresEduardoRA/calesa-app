@@ -12,7 +12,7 @@ import type {
 export type SeleccionDeLaCadena = {
   estado: EstadoDeLaSeleccion
   alternar: (fase: FaseElegida, unidad: UnidadElegida) => void
-  elegirLaColumna: (fase: FaseElegida, unidades: readonly UnidadElegida[]) => void
+  elegirLaPagina: (fase: FaseElegida, unidades: readonly UnidadElegida[]) => void
   vaciar: () => void
 }
 

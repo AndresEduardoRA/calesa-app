@@ -2,10 +2,12 @@
 // registro que `paginas.test.ts` cruza con las migraciones: la última definición de cada RPC acota ese parámetro con
 // `_acotar_pagina(parámetro, por_defecto, máximo)`, y su máximo no es menor que lo que pide el código. Una RPC nueva con
 // tamaño que no figura acá rompe `pnpm test`; una que figura y ya nadie llama, también.
+import { TOPE_DEL_CONTEO } from '../../src/shared/lib/conteo'
 import {
   LOTES_POR_PAGINA,
   PRIMEROS_DEL_LOTE,
   TAMANO_DE_COLUMNA,
+  TAMANO_DE_LA_FASE,
   TAMANO_DE_VER_MAS,
   TOPE_DE_LO_CARGADO,
   TOPE_DEL_EQUIPO,
@@ -103,18 +105,19 @@ export const RPC_PAGINADAS_DEL_NUCLEO: readonly RpcPaginada[] = [
     pideElCodigo: TAMANO_DE_COLUMNA,
     lista: 'kanban, «Ver más»',
   },
-  // La cadena de logística (6.03): cada columna lee `TAMANO_DE_COLUMNA` y «Ver más» pide lo mismo por cursor `(fase_desde, id)`; la base acota con `_acotar_pagina(…, 50, 100)`.
+  // La logística para cientos de miles de vehículos (6.03): el número de cada fase es un conteo con tope (`limit tope + 1`, `TOPE_DEL_CONTEO`), no una página; la lista de una fase lee
+  // `TAMANO_DE_LA_FASE` por cursor `(fase_desde, id)`. La base acota las dos con `_acotar_pagina`.
   {
-    rpc: 'logistica_cadena',
+    rpc: 'logistica_cadena_resumen',
     parametro: 'p_tope',
-    pideElCodigo: TAMANO_DE_COLUMNA,
-    lista: 'cadena de logística, cada columna',
+    pideElCodigo: TOPE_DEL_CONTEO,
+    lista: 'cadena de logística, el número de cada fase',
   },
   {
     rpc: 'logistica_cadena_columna',
     parametro: 'p_tope',
-    pideElCodigo: TAMANO_DE_COLUMNA,
-    lista: 'cadena de logística, «Ver más» de una columna',
+    pideElCodigo: TAMANO_DE_LA_FASE,
+    lista: 'cadena de logística, la lista de una fase',
   },
   // «Dónde está» pide 10 (`TOPE_DE_DONDE_ESTA`, un literal de la infra); su máximo en la base lo acota `_acotar_pagina`.
   {

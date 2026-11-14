@@ -3,7 +3,7 @@
 -- `medir-escala.sql` › «La cadena».
 --
 -- Qué asegura:
---   C1. La cadena: una no ganada no sale en su columna (`logistica_cadena_columna`), ni en «Sin fase», ni en `logistica_cadena`; la sin resolver sí, y
+--   C1. La cadena: una no ganada no sale en su columna (`logistica_cadena_columna`), ni en «Sin fase», ni en el número de cada fase (`logistica_cadena_resumen`); la sin resolver sí, y
 --       su tarjeta trae `situacion`.
 --   C2. La bandeja de Inicio: la no ganada no sale en demoradas ni en «Por aprobar»; la sin resolver sí, y la fila de demoradas trae `situacion`.
 --   C3. `alertas_demora()` avisa la sin resolver y no la no ganada.
@@ -77,9 +77,10 @@ begin
   perform pg_temp.sc_igual('C1 la tarjeta trae la situación', r #>> '{tarjetas,0,situacion}', 'sin_resolver');
   r := pg_temp.sc_corre(u, format('select public.logistica_cadena_columna(%L, null, null, null, 50, %L)', o, '{}'));
   perform pg_temp.sc_igual('C1 «Sin fase»', pg_temp.sc_ids(r), array[sr_sin]);
-  r := pg_temp.sc_corre(u, format('select public.logistica_cadena(%L, 50, %L)', o, '{}'));
-  perform pg_temp.sc_igual('C1 la cadena entera', (select array_agg(x order by x) from unnest(pg_temp.sc_ids(r)) x),
-                           (select array_agg(x order by x) from unnest(array[sr, sr_sin]) x));
+  r := pg_temp.sc_corre(u, format('select public.logistica_cadena_resumen(%L)', o));
+  perform pg_temp.sc_igual('C1 el resumen: la subasta cuenta sólo la sin resolver', (select e #>> '{vehiculos,n}' from jsonb_array_elements(r -> 'fases') e where e ->> 'nombre' = 'Subasta'), '1');
+  perform pg_temp.sc_igual('C1 el resumen: «Sin fase» cuenta sólo la sin resolver', (select e #>> '{vehiculos,n}' from jsonb_array_elements(r -> 'fases') e where e ->> 'nombre' is null), '1');
+  perform pg_temp.sc_igual('C1 el resumen: demorados', (select e #>> '{demorados,n}' from jsonb_array_elements(r -> 'fases') e where e ->> 'nombre' = 'Subasta'), '1');
   r := pg_temp.sc_corre(u, format('select public.logistica_cadena_columna(%L, %L, null, null, 50, %L)', o, sub, '{"demoradas": true}'));
   perform pg_temp.sc_igual('C1 la columna con «Demoradas»', pg_temp.sc_ids(r), array[sr]);
 

@@ -13,8 +13,10 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   '/cotizaciones/nuevo': 460,
   // La página de una cotización guardada (4.15-3), con una cotización sembrada en la subasta de la semilla: el mismo marco y la misma hoja, sin las barras del vehículo y del cliente: medido 438,6 KB en 27 chunks, más un 2 % hacia arriba. Con la burbuja del chat en el marco (7.11-1: el botón, el contador y su store; el panel y Realtime van con `diferido()`) pasó de 447,3 a 449,2 KB en 28 chunks: 452. Con las acciones de los avisos (`avisarError` con `<AccionesDelAviso>`, que importa `toasts.ts`) llegó a 452,2: 460 (regla del 5 %).
   '/cotizaciones/[id]': 460,
-  // La cadena de logística (6.03-2), con la dueña de la prueba y el primer origen de la semilla con la logística encendida: medido 388,9 KB en 30 chunks, más un 5 % hacia arriba a la decena.
-  '/logistica': 410,
+  // La bandeja del día y la cadena como gráfica (T19): medido 365,0 KB en 26 chunks (el kanban marcaba 401,0), más un 5 % hacia arriba a la decena.
+  '/logistica': 390,
+  // La lista de una fase (T19): medido 367,0 KB en 27 chunks, más un 5 % hacia arriba a la decena.
+  '/logistica/fase/[fase]': 390,
 }
 
 // Lo que una sección de la ficha puede aportar al documento sobre `/perfil`, en KB. Era 44 hasta la 9e; con el shell delgado (`/perfil` ya

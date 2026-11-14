@@ -1,18 +1,16 @@
 // Bloque «Documentos por aprobar»: los documentos de vehículos que alguien subió y esperan revisión, el más viejo arriba (6.12-2; los de repuestos los
 // suma 8.05). Lee por la entrada pública de `logistica` (`bandejaLogistica`, la misma lectura que los otros dos bloques de logística). Cada fila abre
-// el panel del vehículo, donde se aprueba; «Ver todas» lleva a la cadena filtrada por «por aprobar».
-import { CLAVE_DE_POR_APROBAR, bandejaLogistica } from '@/modules/logistica'
+// la página del vehículo, donde se aprueba; «Ver todas» lleva al grupo «Documentos por aprobar» de la bandeja del día de logística.
+import { bandejaLogistica, rutaDelGrupoDeLaBandeja } from '@/modules/logistica'
 import { cantidadAcotada } from '@/shared/lib/conteo'
 import { fechaRelativa } from '@/shared/lib/fechas'
-import { RUTAS, unidadDeLogistica } from '@/shared/lib/rutas'
+import { unidadDeLogistica } from '@/shared/lib/rutas'
 import { TOPE_DE_BLOQUE } from '../../../entities/bandeja'
 import { ErrorDeBloque } from '../components/error-de-bloque'
 import { ListaDeBloque } from '../components/lista-de-bloque'
 import { VacioDeBloque } from '../components/vacio-de-bloque'
 import { VerTodasDelBloque } from '../components/ver-todas-del-bloque'
 import type { CuerpoDeBloque } from './tipos'
-
-const RUTA_DE_POR_APROBAR = `${RUTAS.logistica}?${new URLSearchParams({ [CLAVE_DE_POR_APROBAR]: 'si' }).toString()}`
 
 export const CuerpoDocumentosPorAprobar: CuerpoDeBloque = async ({ bloque, zona }) => {
   const lectura = await bandejaLogistica(TOPE_DE_BLOQUE)
@@ -38,7 +36,7 @@ export const CuerpoDocumentosPorAprobar: CuerpoDeBloque = async ({ bloque, zona 
           plural: 'documentos por aprobar',
         })}
       />
-      <VerTodasDelBloque ruta={RUTA_DE_POR_APROBAR} />
+      <VerTodasDelBloque ruta={rutaDelGrupoDeLaBandeja('por_aprobar')} />
     </>
   )
 }

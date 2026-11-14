@@ -134,7 +134,7 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
 ## Tablas
 
 `flujos`, `flujos_reglas`, `fases`, `fases_transiciones`, `fases_roles`, `fases_transiciones_roles`, `tipos_documento`, `fases_requisitos`, `historial_fases`, `flujos_transporte_oferta`.
-RPC: `cambiar_fase`, `cambiar_fase_lote`, `previsualizar_cambio_fase`, `previsualizar_cambio_fase_lote`, `revisar_flujo`, `fase_crear`, `fase_guardar`, `fase_mover`, `fase_impacto`, `fase_eliminar`, `fase_reactivar`, `requisito_crear`, `requisito_guardar`, `requisito_mover`, `requisito_eliminar`, `requisito_impacto`, `flujo_fuera_de_regla`, `claves_dato_requisito`, `flujo_regla_impacto`, `flujo_regla_cambiar`, `flujo_oferta_guardar`, `flujo_oferta`, `logistica_cadena`, `logistica_cadena_columna`, `logistica_unidad`, `logistica_donde_esta`.
+RPC: `cambiar_fase`, `cambiar_fase_lote`, `previsualizar_cambio_fase`, `previsualizar_cambio_fase_lote`, `revisar_flujo`, `fase_crear`, `fase_guardar`, `fase_mover`, `fase_impacto`, `fase_eliminar`, `fase_reactivar`, `requisito_crear`, `requisito_guardar`, `requisito_mover`, `requisito_eliminar`, `requisito_impacto`, `flujo_fuera_de_regla`, `claves_dato_requisito`, `flujo_regla_impacto`, `flujo_regla_cambiar`, `flujo_oferta_guardar`, `flujo_oferta`, `logistica_cadena_resumen`, `logistica_cadena_columna`, `logistica_bandeja_grupo`, `logistica_unidad`, `logistica_donde_esta`.
 
 ## No se rompe
 
@@ -150,12 +150,15 @@ RPC: `cambiar_fase`, `cambiar_fase_lote`, `previsualizar_cambio_fase`, `previsua
   llaman `definer` que ya miraron el acceso); el `detalle` de un requisito trae `tipo_documento_id` o `clave_dato`.
 - Quitar lo que pide la fase actual (un documento, la declaración, el transporte, un pago confirmado, un gasto de tributos) toma la unidad `for share` antes
   de mirar la fase: espera y hace esperar a `cambiar_fase`. Lo prueban las carreras de `supabase/tests/areas/{aduana,dinero}/`.
-- La cadena: `logistica_cadena(p_origen, p_tope, p_filtros)` y `logistica_cadena_columna(p_origen, p_fase, p_desde, p_id, p_tope, p_filtros)` son `security
-definer` (las policies de `transportes` y `documentos` preguntan por fila): alcance = el menor de `logistica.ver` y `vehiculos.ver` del origen
-  (`_logistica_alcance`, una vez; sin él 42501 hint `acceso`); toda consulta empieza por `origen_id` y fuera de la papelera. Cuatro consultas fijas en
-  `_logistica_columna` sobre `vehiculos_cadena_idx (origen_id, fase_id, fase_desde, id)`; «Sin fase» es `fase_id` nulo (check
-  `vehiculos_fase_desde_coherente`: `fase_desde` existe si y sólo si hay fase; lo completa `trg_0_fase_desde_coherente`). Se miden en
-  `supabase/tests/medir-escala.sql` › «La cadena».
+- La cadena: `logistica_cadena_resumen(p_origen, p_tope)` (el número de cada fase: vehículos, demorados y trabados, conteo con tope por `vehiculos_cadena_idx`, nunca un total) y
+  `logistica_cadena_columna(p_origen, p_fase, p_desde, p_id, p_tope, p_filtros)` (la lista de una fase, por cursor) son `security definer` (las policies de `transportes` y
+  `documentos` preguntan por fila): alcance = el menor de `logistica.ver` y `vehiculos.ver` del origen (`_logistica_alcance`, una vez; sin él 42501 hint `acceso`); toda consulta
+  empieza por `origen_id` y fuera de la papelera. Con el alcance «propios» parten de `_logistica_lo_propio(p_origen)` (hasta 10.001 ids: lo creado y lo de la cartera, por
+  `vehiculos_creador_idx` y `leads_asesores_usuario_vigente_idx`), no del predicado por fila. Cuatro consultas fijas por alcance en `_logistica_columna` sobre
+  `vehiculos_cadena_idx (origen_id, fase_id, fase_desde, id)`; «Sin fase» es `fase_id` nulo (check `vehiculos_fase_desde_coherente`: `fase_desde` existe si y sólo si hay fase; lo
+  completa `trg_0_fase_desde_coherente`). Se miden en `supabase/tests/medir-logistica.sql` y `medir-escala.sql` › «La cadena».
+- `logistica_bandeja_grupo(p_grupo, p_tope, p_conteo, p_desde, p_id)`: siete grupos por cursor (`_bandeja_dia_<grupo>`, cada uno con su índice y su `limit`), con el mismo alcance; los
+  trabados llaman `evaluar_requisitos`, que pregunta por `documentos_unidad_tipo_idx` (no por `is not distinct from`: recorría los documentos de todas las unidades).
 - `logistica_unidad(p_vehiculo)` (definer, mismo acceso) da `demorada`, `fuera_de_regla` con `faltan` (bloqueantes sin cumplir de su fase) y `movida` (última
   fila de `historial_fases`, sin la nota); inexistente, papelera o sin acceso: un solo 42501 hint `acceso`. `logistica_donde_esta(p_buscar, p_tope)` busca hasta
   10 por título, VIN o lote (trigramas, hasta 1.000 candidatas y las propias por `vehiculos_creador_idx`) sólo en orígenes con la regla `logistica`; corto o

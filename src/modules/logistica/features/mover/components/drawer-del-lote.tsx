@@ -21,7 +21,7 @@ function SinUnidades({ alCerrar }: { alCerrar: () => void }) {
     <div className="grid gap-3">
       <p className="text-(length:--text-sm) text-(--color-ink)">No elegiste ninguna unidad.</p>
       <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-        Elige unidades de una columna de la cadena y vuelve a abrir «Mover a…».
+        Elige unidades en la lista de una fase y vuelve a abrir «Mover a…».
       </p>
       <Button
         type="button"

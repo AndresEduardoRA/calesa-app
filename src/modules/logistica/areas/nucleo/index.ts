@@ -6,3 +6,8 @@ export { huecosVisibles, ORDEN_DE_HUECOS } from '../../entities/nucleo/hueco'
 export type { HuecoDeLaUnidad } from '../../entities/nucleo/hueco'
 export type { GrupoDeLogistica, HuecoDelGrupo } from '../../entities/nucleo/grupo'
 export type { CatalogoDeLogistica, EnlaceDeLogistica } from '../../entities/nucleo/enlaces'
+export {
+  CLAVE_DEL_HUECO_ABIERTO,
+  esHuecoConocido,
+  rutaDeLaUnidad,
+} from '../../entities/nucleo/enlaces'

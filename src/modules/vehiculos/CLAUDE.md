@@ -33,7 +33,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   `claveDeAtributo` y sus tipos (cada fila se valida con el esquema del alta).
 - **Situación en la ficha** (`features/situacion/`, `pantallas/ficha.ts` › `<AvisoDeSituacion>`): «Sin resolver» con «La ganamos» (el `href` lo
   arma `src/app`: `vehiculos` no conoce `logistica`) y «No la ganamos» (`marcarNoGanada`, con «Deshacer» 10 s); «No ganada» con quién y cuándo
-  (`resolucionDeSubasta`, de `index.ts`) y «Deshacer». `puedeResolverLaSubasta(permisos, origen)`: `flujos.mover` o `.cualquiera` y `logistica.ver`.
+  (`resolucionDeSubasta`, de `index.ts`) y «Deshacer». `puedeResolverLaSubasta(permisos, origen)`: `flujos.mover` o `.cualquiera` y `logistica.ver`. `useNoGanada({ vehiculoId, origenId, alLograrlo })` sale por `client.ts`: `logistica` lo usa en la fila de «Subastas sin resolver» de su bandeja del día (con `router.refresh()` al lograrlo).
 - «Cotizar» del resumen: `paraCotizar` (`entities/ruta-para-cotizar.ts`, o `null` si no cotiza: `origenesParaCotizar()`); abre la hoja sin lead.
 - **«Cotización aprobada»** (columna de la tabla y línea de la tarjeta): `ListadoDeVehiculos` recibe `aprobadas` (`AprobadasDeLaPagina`, por id de vehículo:
   `{ ruta, monto, moneda }`, o `null` si quien mira no tiene `cotizaciones.ver` en algún origen: la columna no se dibuja) y lo arma `src/app/(app)/vehiculos/aprobadas.ts`

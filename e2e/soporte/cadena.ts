@@ -1,7 +1,8 @@
 // El terreno de los e2e de la cadena de logística (6.03): tres orígenes `e2e_…` con la logística encendida (la regla va encendida por omisión al crear el flujo) y una persona con `logistica.ver` y
 // `vehiculos.ver` en dos de ellos, no en el tercero.
-//   A: tres fases (la 2.ª con `demora_dias = 1`) y cinco vehículos con VIN: uno sin fase, uno en la 1.ª, dos en la 2.ª (uno desde hace 3 días: demorado) y uno en la 3.ª con contenedor y ETA.
-//   B: una fase con 51 vehículos (una página de 50 y uno más): el camino de «Ver más».
+//   A: tres fases (la 2.ª con `demora_dias = 1`) y cinco vehículos con VIN: uno sin fase, uno en la 1.ª, dos en la 2.ª (uno desde hace 3 días: demorado) y uno en la 3.ª con contenedor y ETA;
+//      más una fase jubilada con un vehículo (sale al final de la gráfica, con «Jubilada»).
+//   B: una fase con 51 vehículos (una página de 50 y uno más): el camino de «Siguientes».
 //   C: el origen vecino, sin permisos de la persona.
 import { CONTRASENA } from './alta'
 import { admin, correoDePrueba, crearPersona, darRolDePrueba, PREFIJO_ROL_E2E } from './base'
@@ -15,12 +16,13 @@ export type TerrenoDeLaCadena = {
   a: Origen
   b: Origen
   c: Origen
-  fases: { puerto: string; transito: string; entrega: string; cola: string }
+  fases: { puerto: string; transito: string; entrega: string; jubilada: string; cola: string }
   sinFase: Unidad
   enPuerto: Unidad
   demorado: Unidad
   reciente: Unidad
   conTransporte: Unidad
+  enLaJubilada: Unidad
   contenedor: string
   persona: string
 }
@@ -105,7 +107,17 @@ export async function sembrarCadena(proyecto: string): Promise<TerrenoDeLaCadena
     demora_dias: 1,
   })
   const entrega = await crearFase(a.id, { nombre: `Entrega ${proyecto}`, orden: 3 })
+  const jubilada = await crearFase(a.id, { nombre: `Jubilada ${proyecto}`, orden: 4 })
   const cola = await crearFase(b.id, { nombre: `Cola ${proyecto}`, orden: 1, es_inicial: true })
+  return sembrarLosVehiculos(proyecto, { a, b, c }, { puerto, transito, entrega, jubilada, cola })
+}
+
+async function sembrarLosVehiculos(
+  proyecto: string,
+  { a, b, c }: { a: Origen; b: Origen; c: Origen },
+  fases: TerrenoDeLaCadena['fases'],
+): Promise<TerrenoDeLaCadena> {
+  const { puerto, transito, entrega, jubilada, cola } = fases
   const hace = (dias: number) => new Date(Date.now() - dias * DIA).toISOString()
   const titulos = {
     sinFase: `E2E Cadena sin fase ${proyecto}`,
@@ -113,6 +125,7 @@ export async function sembrarCadena(proyecto: string): Promise<TerrenoDeLaCadena
     demorado: `E2E Cadena demorado ${proyecto}`,
     reciente: `E2E Cadena reciente ${proyecto}`,
     conTransporte: `E2E Cadena con contenedor ${proyecto}`,
+    enLaJubilada: `E2E Cadena en la jubilada ${proyecto}`,
   }
   const ids = await cargarVehiculos(a.id, [
     { titulo: titulos.sinFase, vin: vinDe(proyecto, 1) },
@@ -125,7 +138,19 @@ export async function sembrarCadena(proyecto: string): Promise<TerrenoDeLaCadena
       fase_id: entrega,
       fase_desde: hace(2),
     },
+    {
+      titulo: titulos.enLaJubilada,
+      vin: vinDe(proyecto, 6),
+      fase_id: jubilada,
+      fase_desde: hace(1),
+    },
   ])
+  // La fase se jubila con su vehículo adentro (no es destino, pero sigue nombrando lo que quedó ahí).
+  const { error: errorDeJubilar } = await admin()
+    .from('fases')
+    .update({ activa: false })
+    .eq('id', jubilada)
+  exigir(errorDeJubilar, 'jubilar la fase')
   const unidad = (clave: keyof typeof titulos, n: number): Unidad => ({
     id: ids.get(titulos[clave]) ?? '',
     titulo: titulos[clave],
@@ -150,12 +175,13 @@ export async function sembrarCadena(proyecto: string): Promise<TerrenoDeLaCadena
     a,
     b,
     c,
-    fases: { puerto, transito, entrega, cola },
+    fases: { puerto, transito, entrega, jubilada, cola },
     sinFase: unidad('sinFase', 1),
     enPuerto: unidad('enPuerto', 2),
     demorado: unidad('demorado', 3),
     reciente: unidad('reciente', 4),
     conTransporte,
+    enLaJubilada: unidad('enLaJubilada', 6),
     contenedor,
     persona: await crearLaPersona(proyecto, [a.id, b.id]),
   }

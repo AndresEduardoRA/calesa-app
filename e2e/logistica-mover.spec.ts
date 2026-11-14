@@ -64,9 +64,9 @@ test('E2E mover · con la nota obligatoria el botón está apagado y dice por qu
   await expect(mover).toBeEnabled()
   await page.getByLabel('Nota interna (obligatoria)').press('Control+Enter')
   await expect(page.getByText(`${terreno.enA.titulo} pasó a «${terreno.b.nombre}».`)).toBeVisible()
-  // La tarjeta cambió de columna: en la columna B ahora hay dos vehículos.
-  await page.goto(`/logistica?fase=${terreno.b.id}`)
-  await expect(page.getByRole('region', { name: `${terreno.b.nombre}: 2 vehículos` })).toBeVisible()
+  // El vehículo cambió de fase: en la lista de la fase B ahora hay dos.
+  await page.goto(`/logistica/fase/${terreno.b.id}?origen=${terreno.origen.id}`)
+  await expect(page.locator('tbody tr, li > article')).toHaveCount(2)
 })
 
 test('E2E mover · un requisito bloqueante sin aprobar apaga el botón y dice cuál; al aprobarlo se habilita', async ({
