@@ -119,6 +119,13 @@ las trampas, en `docs/LECCIONES.md`.
   contar (su situación es la fase; el resultado queda guardado), y la vuelta a subasta sólo limpia el resultado de una unidad que sigue en el
   tramo: una ganada que ya pasó a otra fase y cuyo lote se relista conserva «ganada». Así nada queda oculto por un dato que ya no aplica.
 - **«No ganada» en femenino**: concuerda con la subasta, no con el sustantivo del origen.
+- **El aviso de subasta cerrada al cotizar sale de la situación real**, no de una fecha comparada en la pantalla: avisan «Sin resolver» y «No
+  ganada» (más «En subasta» con el cierre vencido, los hasta 10 min que tarda el job). Un vehículo en su fase ya se ganó o salió del tramo:
+  cotizarlo es lo normal y avisar sería ruido. Si el origen no tiene fase de subasta, nada figura «Sin resolver» y no hay aviso (lo dice
+  «Revisar»). La fecha sale de `subasta_fin_en` o `subasta_en` (la columna `cierre_subasta_en` es nula con la subasta cerrada).
+- **«Refrescar la subasta» del aviso pide un toque** porque cada consulta a apibara gasta cuota; «Reintentar» sólo se ofrece si el fallo es del
+  momento (`sePuedeReintentar`), nunca con la cuota agotada. Las acciones del aviso (refrescar, resolver, cotizar igual) son botones locales:
+  el patrón `AccionDelAviso` no tiene «refrescar» ni «cerrar» y ampliar `src/shared` por esto disparaba el e2e completo.
 
 - **Se escriben sólo por RPC.** `vehiculo_crear(p_id…)` idempotente con id del navegador y `vehiculo_guardar` con versión; el alta entra a la fase inicial sólo si no hay nada que decidir (si no, «Sin fase»).
 - **El alta dice desde dónde (`p_contexto`) y la base exige el permiso de ese contexto.** `vehiculos.crear` (alta suelta) y

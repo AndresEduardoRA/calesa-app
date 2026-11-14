@@ -33,6 +33,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Aviso de acceso** — `?aviso=clave` / `AVISOS`: por qué alguien llegó redirigido a una pantalla de acceso; el texto sale del catálogo.
 - **Aviso con acciones** — `AccionesDeUnAviso` / `resolverAcciones()`, `<AccionesDelAviso>`, `avisarError(error, { acciones })`: aviso de
   error, advertencia o bloqueo que ofrece ahí mismo de 1 a 3 salidas (ir, abrir un panel, reintentar, deshacer, recargar), filtradas por permiso.
+- **Subasta cerrada (aviso al cotizar)** — `subastaCerrada()` / `<AvisoDeSubastaCerrada>`, `avisoDeSubastaCerrada()`: aviso de la hoja de cotizar cuando el
+  vehículo elegido sigue en el tramo de subasta y su subasta ya pasó; con «Refrescar la subasta», «La ganamos» / «No la ganamos», «Elegir otro
+  vehículo» y «Cotizar igual». Información con salida: no bloquea. No es la situación: la usa y la nombra.
 - **Causa (de un error)** — `ErrorApp.causa`: clave estable de la regla que frenó (viaja en `hint`); de ella salen las acciones del aviso.
 - **Canje** — `/auth/callback` / `canjearAcceso()`: convertir el código de Google o el enlace de un correo en una sesión.
 - **Primer registro** — `ajustes_acceso().primer_registro`: aún no hay nadie en el equipo; la primera cuenta nace con el rol dueño.

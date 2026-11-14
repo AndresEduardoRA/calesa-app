@@ -73,6 +73,16 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
      (plegado, se lee al desplegarlo, «Ver más»); la barra dice «Cotizado (n)». En «Elegido», el tipo de vehículo se elige entre las filas
      de la tabla, con el del vehículo marcado; un toque lo guarda en el vehículo, cierra el panel y la hoja recalcula (quien no puede editar
      el vehículo lo ve sin elegir; la celda sin valor dice que se elige en «Vehículo»).
+     **Subasta cerrada:** al elegir (o abrir con) un vehículo de un origen de subasta que sigue en el tramo de subasta con la subasta ya pasada
+     («Sin resolver», «No ganada», o «En subasta» con el cierre vencido que la base aún no actualizó), un aviso bajo la barra del vehículo dice
+     «La subasta de este vehículo cerró el <fecha con zona>. Situación: <situación>.» (sin fecha, «…ya cerró.») con «Refrescar la subasta»
+     (con apibara encendida y permiso de editar el vehículo; pide un toque, «Consultar a apibara gasta cuota. ¿Refrescar la subasta ahora?»,
+     «Sí, refrescar» / «No, volver»; si vuelve viva, el aviso se va; si sigue cerrada, «Consultada: la subasta sigue cerrada.»; fallo del
+     momento: el motivo con «Reintentar»; clave o cuota: el motivo con «Ir a Integraciones» para quien configura, sin «Reintentar»), «La
+     ganamos» y «No la ganamos» (las de la ficha; sin permiso de mover, «Para resolverla hace falta poder mover de fase en «<origen>»:
+     pídeselo a quien administra los roles.»), «Elegir otro vehículo» (abre el panel en «Cierre subasta») y «Cotizar igual» (lo cierra para
+     esta hoja). No bloquea guardar. Un vehículo en su fase (ya se ganó) no avisa. En el panel, la fila de una subasta cerrada dice «Subasta
+     cerrada · <situación>» y «Cerró <fecha>».
    - **Cliente:** búsqueda desde 3 letras o `#n`; sin buscar, «míos» por `reciente_en` (el último seguimiento o el alta) en las pestañas
      «Todos», «Prospecto» y «Cliente» (abre en «Todos»); busca entre los leads que quien cotiza ve, como el listado, y el tipo de cada lead
      va como texto; el elegido tiene «Quitar»; «+» abre «Nuevo lead» del shell (borrador y verificación del teléfono) y al guardar la hoja

@@ -12,3 +12,14 @@ export const PanelDelVehiculoDiferido = diferido(() =>
 export const AltaDesdeElPanelDiferida = diferido(() =>
   import('./alta-desde-el-panel').then((modulo) => modulo.AltaDesdeElPanel),
 )
+
+// El aviso de la subasta cerrada de la hoja (va en la carga en frío de `/cotizaciones/nuevo`, al borde de su presupuesto de JS): su código se pide sólo
+// cuando hay un aviso que dibujar. Mientras llega, un hueco de su alto para que la hoja no salte.
+export const AvisoDeSubastaCerradaDiferido = diferido(
+  () => import('./aviso-de-subasta-cerrada').then((modulo) => modulo.AvisoDeSubastaCerrada),
+  {
+    esqueleto: (
+      <div aria-hidden className="h-24 rounded-(--radius-md) bg-(--color-surface-3) md:h-16" />
+    ),
+  },
+)
