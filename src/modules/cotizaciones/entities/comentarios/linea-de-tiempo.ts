@@ -32,11 +32,19 @@ export type LineaDeTiempo = {
   porPedir: FuenteDeLaLinea[]
 }
 
-// Cuando varias entradas son del mismo instante, el orden no cambia entre lecturas: tipo y luego id.
+// Cuando varias entradas son del mismo instante, el orden no cambia entre lecturas: primero el tipo (comentario, revisión, adjunto) y, dentro de un tipo, como la base: el id mayor
+// primero (el de una revisión es un número; el de un comentario o un adjunto, un uuid).
 const ORDEN_DEL_TIPO: Record<EntradaDeLaLinea['tipo'], number> = {
   comentario: 0,
   revision: 1,
   adjunto: 2,
+}
+
+function masAltoPrimero(a: EntradaDeLaLinea, b: EntradaDeLaLinea): number {
+  if (a.tipo === 'revision' && b.tipo === 'revision') {
+    return b.revision.id - a.revision.id
+  }
+  return a.id < b.id ? 1 : a.id > b.id ? -1 : 0
 }
 
 export function esMasNueva(a: EntradaDeLaLinea, b: EntradaDeLaLinea): number {
@@ -45,10 +53,7 @@ export function esMasNueva(a: EntradaDeLaLinea, b: EntradaDeLaLinea): number {
     return diferencia
   }
   const tipos = ORDEN_DEL_TIPO[a.tipo] - ORDEN_DEL_TIPO[b.tipo]
-  if (tipos !== 0) {
-    return tipos
-  }
-  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0
+  return tipos !== 0 ? tipos : masAltoPrimero(a, b)
 }
 
 function entradasDe(lecturas: LecturasDeLaLinea): EntradaDeLaLinea[] {

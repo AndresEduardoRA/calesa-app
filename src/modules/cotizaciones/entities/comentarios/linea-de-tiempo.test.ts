@@ -107,6 +107,16 @@ describe('lineaDeTiempo', () => {
 })
 
 describe('lineaDeTiempo: hasta dónde se dibuja', () => {
+  it('con el mismo instante y el mismo tipo, el id mayor primero (el de una revisión, como número)', () => {
+    const l = lineaDeTiempo(
+      lecturas({
+        revisiones: fuente([revision(10, dia(2)), revision(9, dia(2))]),
+        comentarios: fuente([comentario('c1', dia(2)), comentario('c2', dia(2))]),
+      }),
+    )
+    expect(ids(l)).toEqual(['comentario:c2', 'comentario:c1', 'revision:10', 'revision:9'])
+  })
+
   it('sólo dibuja hasta donde llegó la fuente que menos retrocedió y le pide a ella', () => {
     // Los comentarios llegaron hasta el día 10 y tienen más; las revisiones, hasta el 2 y tienen más: lo del 3 al 9 aún puede tener un comentario sin leer.
     const l = lineaDeTiempo(
