@@ -4,6 +4,7 @@
 // (`docs/RENDIMIENTO.md`, panel del vehículo).
 import { z } from 'zod'
 import { POR_ALTA, type OrdenDeCursor } from '@/shared/lib/paginacion'
+import { esquemaDeSituacion, type Situacion } from './situacion'
 import type { Vehiculo } from './vehiculo'
 
 // «Cierre subasta» muestra también las que cerraron hace poco (P5 del 4.14-1): una subasta que cerró hace unas horas todavía se cotiza.
@@ -36,7 +37,7 @@ export const ORDEN_DEL_PANEL: Record<ListaDelPanel, OrdenDeCursor> = {
 
 // Lo que se pide de cada vehículo: lo que dibuja su tarjeta, con la miniatura de la portada embebida (`FILTRO_DE_PORTADA`).
 export const COLUMNAS_DEL_PANEL =
-  'id, numero, titulo, anio, lote, precio, cotizado_en, cierre_subasta_en, vehiculos_imagenes(ruta_miniatura)'
+  'id, numero, titulo, anio, lote, precio, cotizado_en, cierre_subasta_en, situacion, vehiculos_imagenes(ruta_miniatura)'
 
 // La búsqueda pagina por alta: pide además `creado_en`. Las pestañas no lo piden (cada fila de más pesa en la primera respuesta, con tope de bytes).
 export function columnasDelPanel(lista: ListaDelPanel): string {
@@ -54,6 +55,8 @@ export type VehiculoDelPanel = {
   creadoEn: string | null
   cotizadoEn: string | null
   cierreSubastaEn: string | null
+  // La situación real (la calcula la base): con ella la fila marca la subasta que ya cerró (`subastaCerrada()`).
+  situacion: Situacion
   portadaRuta: string | null
 }
 
@@ -68,6 +71,7 @@ const esquemaDelPanel = z.array(
     creado_en: z.string().nullish(),
     cotizado_en: z.string().nullable(),
     cierre_subasta_en: z.string().nullable(),
+    situacion: esquemaDeSituacion,
     vehiculos_imagenes: z.array(z.object({ ruta_miniatura: z.string() })).catch([]),
   }),
 )
@@ -100,6 +104,7 @@ export function vehiculosDelPanelDesde(
     creadoEn: fila.creado_en ?? null,
     cotizadoEn: fila.cotizado_en,
     cierreSubastaEn: fila.cierre_subasta_en,
+    situacion: fila.situacion,
     portadaRuta: fila.vehiculos_imagenes[0]?.ruta_miniatura ?? null,
   }))
   return vehiculos.every((vehiculo) => instanteDelPanel(lista, vehiculo) !== null)

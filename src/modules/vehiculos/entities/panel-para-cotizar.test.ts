@@ -76,12 +76,23 @@ describe('vehiculosDelPanelDesde', () => {
         creadoEn: '2026-10-01T08:00:00.5+00:00',
         cotizadoEn: '2026-10-29T08:00:00.123456+00:00',
         cierreSubastaEn: null,
+        situacion: 'fase',
         portadaRuta: 'v/abc.webp',
       },
     ])
     expect(
       vehiculosDelPanelDesde([fila({ vehiculos_imagenes: [] })], 'ultima')?.[0]?.portadaRuta,
     ).toBeNull()
+  })
+
+  it('la situación real viene de la base; una que la app no conoce se muestra como su fase', () => {
+    expect(
+      vehiculosDelPanelDesde([fila({ situacion: 'sin_resolver' })], 'ultima')?.[0]?.situacion,
+    ).toBe('sin_resolver')
+    expect(vehiculosDelPanelDesde([fila({ situacion: 'rara' })], 'ultima')?.[0]?.situacion).toBe(
+      'fase',
+    )
+    expect(COLUMNAS_DEL_PANEL).toContain('situacion')
   })
 
   it('una fila de la búsqueda sin `creado_en` hace de la lectura un error; las pestañas no lo piden', () => {

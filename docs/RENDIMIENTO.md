@@ -215,8 +215,8 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   Límites sin assert: el plan genérico de la profunda de un vehículo muy cotizado a veces ordena las suyas (crece con las cotizaciones del
   vehículo, no con N); la chica recorre lo cotizado y lo vivo de su origen; el historial de quien ve «propios» recorre las del vehículo; la
   portada embebida de cada fila (≤ 21 lecturas por `vehiculos_portada_unica`) no tiene medición SQL.
-- En pantalla (`e2e/cotizar-panel-del-vehiculo.spec.ts`): con 20 tarjetas sin foto y el buscador, ≤ 299 nodos y ≤ 4.900 B la primera
-  respuesta (con portada, cada fila suma su ruta de miniatura); cambiar de pestaña o de página no pide al servidor. La búsqueda tiene la
+- En pantalla (`e2e/cotizar-panel-del-vehiculo.spec.ts`): con 20 tarjetas sin foto y el buscador, ≤ 299 nodos y ≤ 5.150 B la primera
+  respuesta (con portada, cada fila suma su ruta de miniatura; la columna `situacion` marca la subasta cerrada: 4.900 → 5.150, regla del 5 %); cambiar de pestaña o de página no pide al servidor. La búsqueda tiene la
   forma de la del inventario (título, VIN o lote por `vehiculos_origen_listado_idx`, de a 21, desde 3 letras o números, pausa de 300 ms) y
   sólo ella pide `creado_en` (en las pestañas pasaría el tope de bytes). Sin medir, como en el inventario: el `lote` en el `or` y el texto que
   no coincide (recorre el origen).
@@ -450,8 +450,8 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 530, `/perfil` 440, `/vehiculos` 500, `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
   subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410; `/cotizaciones/papelera` 440 (en su spec). Al borde:
-  `/cotizaciones/[id]` 452,2 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %) y `/cotizaciones/nuevo`, que llegó a 459,0 de 460 (abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
-  a la hoja va con `diferido()`. La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
+  `/cotizaciones/[id]` 452,2 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %) y `/cotizaciones/nuevo` en 448,8 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
+  a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`
   falla, con el camino, si un `index.ts` llega a un `'use client'`.
 - **Trampa:** con `loading.tsx` importando el barril de pantallas, sumar un Client Component a la página baja dos chunks casi iguales (el de

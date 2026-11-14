@@ -22,7 +22,7 @@ test.describe.configure({ mode: 'serial' })
 // estructura = 370; una fila de la respuesta ≈ 450 bytes × 21 ≈ 9.500, 12.000 con holgura. Lo medido que pasa el presupuesto para el paso; lo que cabe fija el tope en lo
 // medido más un 5 %, con techo en el presupuesto. Medido en el 4.14-2a, con 20 tarjetas sin foto y en los dos proyectos: 284 nodos y 4.660 bytes.
 const TOPE_DE_NODOS = 299
-const TOPE_DE_BYTES = 4_900
+const TOPE_DE_BYTES = 5_150
 
 let subasta = { id: '', nombre: '' }
 let manual = { id: '', nombre: '' }
