@@ -2,7 +2,9 @@ import 'server-only'
 import { z } from 'zod'
 import { errorDePostgrest, ok } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/server'
-import type { LectorDeResolucionDeSubasta } from '../../entities/repositorios'
+import { conteoAcotado } from '@/shared/lib/conteo'
+import type { LectorDeResolucionDeSubasta, LectorDeSinResolver } from '../../entities/repositorios'
+import { TOPE_DE_SIN_RESOLVER } from '../../entities/situacion'
 
 const fila = z.object({
   subasta_resultado: z.enum(['ganada', 'no_ganada']).nullable().catch(null),
@@ -31,4 +33,21 @@ export const getResolucionDeSubasta: LectorDeResolucionDeSubasta = async (vehicu
     resueltaEn: leida.data.subasta_resuelta_en,
     nombre: leida.data.resuelta?.nombre?.trim() || null,
   })
+}
+
+// Cuántas «Sin resolver» hay en el origen, hasta el tope: pide `tope + 1` filas (de una sola columna: no es una página del inventario) por `vehiculos_situacion_idx` (origen_id, situacion, creado_en desc, id desc), nunca
+// un `count`. Con la RLS de quien mira (en «propios», las suyas).
+export const getCantidadSinResolver: LectorDeSinResolver = async (origenId) => {
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('vehiculos')
+    .select('situacion')
+    .eq('origen_id', origenId)
+    .eq('situacion', 'sin_resolver')
+    .is('eliminado_en', null)
+    .order('creado_en', { ascending: false })
+    .order('id', { ascending: false })
+    .limit(TOPE_DE_SIN_RESOLVER + 1)
+  if (error) return { ok: false, error: errorDePostgrest(error) }
+  return ok(conteoAcotado(data.length, TOPE_DE_SIN_RESOLVER))
 }

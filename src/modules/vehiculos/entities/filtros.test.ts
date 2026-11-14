@@ -53,10 +53,10 @@ const FUENTES = { campos: CAMPOS, fases: FASES, categorias: CATEGORIAS }
 describe('esquemaDeFiltros', () => {
   const esquema = esquemaDeFiltros(FUENTES)
 
-  it('los fijos van primero: fase (con «Sin fase»), categoría (sólo activas), año y vitrina', () => {
+  it('los fijos van primero: situación (las fases y «Sin fase»), categoría (sólo activas), año y vitrina', () => {
     expect(esquema.busqueda?.clave).toBe('q')
     expect(esquema.filtros.slice(0, 4).map((filtro) => filtro.clave)).toEqual([
-      'fase',
+      'situacion',
       'categoria',
       'anio',
       'vitrina',
@@ -117,10 +117,10 @@ describe('condicionesDe', () => {
 
   it('la búsqueda y los fijos', () => {
     expect(
-      condiciones({ q: 'rav4', fase: 'f1,ninguna', categoria: 'c1', 'anio.min': '2015' }),
+      condiciones({ q: 'rav4', situacion: 'f1,ninguna', categoria: 'c1', 'anio.min': '2015' }),
     ).toEqual([
       { tipo: 'busqueda', texto: 'rav4' },
-      { tipo: 'columna_en', columna: 'fase_id', valores: ['f1'], incluirNulo: true },
+      { tipo: 'situacion_en', situaciones: [], fases: ['f1'], sinFase: true },
       { tipo: 'columna_en', columna: 'categoria_id', valores: ['c1'], incluirNulo: false },
       { tipo: 'columna_rango', columna: 'anio', min: 2015, max: null },
     ])
@@ -174,6 +174,88 @@ describe('condicionesDe', () => {
       porClave: { 'a.motor': { tipo: 'texto' as const, texto: 'v8' } },
     }
     expect(pedidas(CAMPOS, colado)).toEqual([])
+  })
+})
+
+describe('el filtro «Situación»', () => {
+  const FUENTES_DE_SUBASTA = { ...FUENTES, conSubasta: true }
+  const deSubasta = esquemaDeFiltros(FUENTES_DE_SUBASTA)
+  const opciones = (esquema: ReturnType<typeof esquemaDeFiltros>) => {
+    const filtro = esquema.filtros.find((uno) => uno.clave === 'situacion')
+    return filtro?.tipo === 'opciones' ? filtro.opciones.map((o) => [o.valor, o.etiqueta]) : null
+  }
+
+  it('en un origen de subasta ofrece primero las situaciones propias, y siempre las fases y «Sin fase»', () => {
+    expect(opciones(deSubasta)).toEqual([
+      ['en_subasta', 'En subasta'],
+      ['sin_resolver', 'Sin resolver'],
+      ['no_ganada', 'No ganadas'],
+      ['f1', 'En subasta'],
+      ['ninguna', 'Sin fase'],
+    ])
+    expect(opciones(esquemaDeFiltros(FUENTES))).toEqual([
+      ['f1', 'En subasta'],
+      ['ninguna', 'Sin fase'],
+    ])
+  })
+
+  it('sin fases en un origen de subasta, igual existe; sin fases y sin subasta, no', () => {
+    expect(
+      opciones(esquemaDeFiltros({ ...FUENTES_DE_SUBASTA, fases: [] }))?.map(([valor]) => valor),
+    ).toEqual(['en_subasta', 'sin_resolver', 'no_ganada', 'ninguna'])
+    expect(opciones(esquemaDeFiltros({ ...FUENTES, fases: [] }))).toBeNull()
+  })
+
+  it('en un origen sin subasta, una situación propia que llegue por la URL se descarta', () => {
+    const filtros = leerFiltros(esquemaDeFiltros(FUENTES), { situacion: 'sin_resolver,f1' })
+    expect(condicionesDe(CAMPOS, filtros)[0]).toEqual({
+      tipo: 'situacion_en',
+      situaciones: [],
+      fases: ['f1'],
+      sinFase: false,
+    })
+  })
+
+  it('cada situación propia es una condición y conserva la de siempre (sin las no ganadas)', () => {
+    for (const valor of ['en_subasta', 'sin_resolver'] as const) {
+      expect(condicionesDe(CAMPOS, leerFiltros(deSubasta, { situacion: valor }))).toEqual([
+        { tipo: 'situacion_en', situaciones: [valor], fases: [], sinFase: false },
+        CONDICION_POR_DEFECTO,
+      ])
+    }
+  })
+
+  it('pedir las no ganadas es verlas: la de siempre ya no va', () => {
+    expect(condicionesDe(CAMPOS, leerFiltros(deSubasta, { situacion: 'no_ganada' }))).toEqual([
+      { tipo: 'situacion_en', situaciones: ['no_ganada'], fases: [], sinFase: false },
+    ])
+    expect(
+      condicionesDe(
+        CAMPOS,
+        leerFiltros(deSubasta, { situacion: 'f1,no_ganada,en_subasta,ninguna' }),
+      ),
+    ).toEqual([
+      {
+        tipo: 'situacion_en',
+        situaciones: ['en_subasta', 'no_ganada'],
+        fases: ['f1'],
+        sinFase: true,
+      },
+    ])
+  })
+
+  it('se combina con los demás filtros', () => {
+    expect(
+      condicionesDe(
+        CAMPOS,
+        leerFiltros(deSubasta, { situacion: 'sin_resolver', 'anio.min': '2018', q: 'rav4' }),
+      ),
+    ).toEqual([
+      { tipo: 'busqueda', texto: 'rav4' },
+      { tipo: 'situacion_en', situaciones: ['sin_resolver'], fases: [], sinFase: false },
+      { tipo: 'columna_rango', columna: 'anio', min: 2018, max: null },
+      CONDICION_POR_DEFECTO,
+    ])
   })
 })
 

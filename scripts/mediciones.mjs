@@ -122,6 +122,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'mediana y p95 de 200 llamadas',
   ],
   [
+    'supabase/tests/medir-logistica.sql',
+    'La logística con 300.000 vehículos vivos en un origen (8 fases, la fase 3 de 15.000 a 120.000, 40 % con transporte y 25 % con documento), como authenticated y con el plan genérico: el número de cada fase (resumen: la dueña y Ana, bytes y bloques del índice y de vehiculos sin crecer con N), la lista de una fase con cursor profundo (la dueña por vehiculos_cadena_idx y Ana por lo propio) y cada grupo de la bandeja del día (la portada con su conteo y una página con cursor; cada consulta por su índice, sin recorrer la tabla)',
+    'mediana de 5 de 7 corridas',
+  ],
+  [
     'supabase/tests/medir-vehiculos-lectura.sql',
     'La lectura de vehículos con 50.000 y con 250.000 vivos, como authenticated y con el plan genérico: una página de n + 1 del inventario (primera y profunda por cursor) de la dueña («todos»), de Pía («propios», lo que creó) y de Beto («propios», 50.000 leads en su cartera), y puede_vehiculo() de Beto, con la policy por fila (ms y buffers del EXPLAIN, y las llamadas por página); la «chica», sin assert de tiempo (4-23)',
     'mediana de 5 de 7 corridas',
@@ -140,6 +145,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'supabase/tests/medir-vehiculos-inventario-guarda.sql',
     'La guarda del inventario: lo de hoy (PostgREST sobre la tabla) para la «chica» crece con N de 50.000 a 250.000 vivos (bloques de vehiculos y ms); si no, la medición de la función no prueba nada',
     'mediana de 5 de 7 corridas',
+  ],
+  [
+    'supabase/tests/medir-vehiculos-inventario-situacion.sql',
+    'El filtro «Situación» del inventario (situacion_en) con 50.000 y con 250.000 vivos, como la dueña con el plan normal: una situación propia por vehiculos_situacion_idx bajo su Limit, sin ordenar todas las de la situación ni descartar filas; dos propias, una fase y «sin fase» sin recorrer vehiculos; y los bloques de vehiculos sin crecer con N',
+    UNA,
   ],
   [
     'supabase/tests/medir-vehiculos-inventario-costo-fijo.sql',

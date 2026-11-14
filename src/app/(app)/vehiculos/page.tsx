@@ -21,6 +21,7 @@ import {
   permisoDeAlta,
   permisoDeVitrina,
   puedeAbrirLaPapelera,
+  sinResolverDe,
   vitrinaDelOrigen,
 } from '@/modules/vehiculos'
 import { ListadoDeVehiculos } from '@/modules/vehiculos/pantallas/listado'
@@ -65,6 +66,18 @@ async function deLaPagina(
   return { editables, eliminables, leadsVisibles, aprobadas }
 }
 
+// De a cuántos: lo que pide la URL, si no lo que eligió la persona.
+function tamanoDeLaPagina(
+  parametros: Record<string, string | string[] | undefined>,
+  preferencia: number | null,
+): number {
+  return tamanoDePagina({
+    pedido: leerPorPagina(unParametro(parametros[CLAVE_DE_POR_PAGINA])),
+    preferencia,
+    maximo: MAXIMO_DE_PAGINA_DE_VEHICULOS,
+  })
+}
+
 // El inventario, una pestaña por origen. Las pestañas son los orígenes donde la persona tiene
 // `vehiculos.ver` (también los desactivados); lo que ve adentro lo decide la RLS. El origen, los
 // filtros y la página vienen en la URL, y lo que no corresponde se ignora.
@@ -78,6 +91,8 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
     )
   }
 
+  // «En subasta», «Sin resolver» y «No ganadas» (el filtro y su atajo) sólo existen en un origen de subasta.
+  const deSubasta = origen.tipo === 'subasta'
   const [layout, fases, vistas, ajustes, vitrina, apibaraActiva, politica] = await Promise.all([
     leerLayout(origen.id, { conUso: false }),
     leerFasesDeOrigen(origen.id),
@@ -85,26 +100,23 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
     getAjustes(),
     vitrinaDelOrigen(origen.id),
     // Sólo un origen de subasta trae fichas de apibara; el resto ni pregunta.
-    origen.tipo === 'subasta' ? integracionActiva('apibara') : Promise.resolve(false),
+    deSubasta ? integracionActiva('apibara') : Promise.resolve(false),
     getPoliticaDeLimpieza(),
   ])
   const { campos, categorias } = datosO(layout)
   const fuentes = { campos, categorias, fases: datosO(fases), vitrina }
   // La limpieza automática sólo existe en un origen de subasta y con el interruptor encendido:
   // apagada, no hay filtro ni insignias. «Hoy» es el de la zona de la empresa.
-  const limpiezaActiva = origen.tipo === 'subasta' && politica.activa
+  const limpiezaActiva = deSubasta && politica.activa
   const hoy = hoyEnZona(ajustes.zonaHoraria)
   // De a cuántos: lo que pide la URL, si no lo que eligió la persona (ya viene en la sesión: ninguna consulta de más).
-  const tamano = tamanoDePagina({
-    pedido: leerPorPagina(unParametro(parametros[CLAVE_DE_POR_PAGINA])),
-    preferencia: sesion.preferencias.porPagina,
-    maximo: MAXIMO_DE_PAGINA_DE_VEHICULOS,
-  })
+  const tamano = tamanoDeLaPagina(parametros, sesion.preferencias.porPagina)
   const esquema = esquemaDeFiltros({
     ...fuentes,
     ...(limpiezaActiva ? { limpieza: { activa: true } } : {}),
+    conSubasta: deSubasta,
   })
-  const [leida, enEdicion] = await Promise.all([
+  const [leida, enEdicion, sinResolver] = await Promise.all([
     buscarVehiculos({
       fuente: fuenteDelInventario(sesion.permisos, origen.id),
       origenId: origen.id,
@@ -117,6 +129,7 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
       tamano,
     }),
     vehiculoEnEdicion(parametros, sesion, origen.id),
+    deSubasta ? sinResolverDe(origen.id) : Promise.resolve(null),
   ])
   const pagina = datosO(leida)
   const { editables, eliminables, leadsVisibles, aprobadas } = await deLaPagina(
@@ -145,6 +158,7 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
       publicar={permisoDeVitrina(sesion.permisos, origen)}
       paraCotizar={paraCotizarDe(sesion.permisos, origen)}
       vistaPreferida={sesion.preferencias.vistaDeVehiculos}
+      sinResolver={sinResolver}
       enEdicion={enEdicion}
       apibara={{
         activa: apibaraActiva,

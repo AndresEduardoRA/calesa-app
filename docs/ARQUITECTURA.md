@@ -106,10 +106,10 @@ Un módulo tiene **dos entradas** y nada más se importa desde afuera:
 
 «Mover un vehículo a la fase Embarcado» (tarea de oro 3):
 
-1. `app/(app)/logistica/page.tsx` (Server Component) lee la cadena con `leerCadena()` de
-   `@/modules/logistica` (RPC `logistica_cadena()`, bajo RLS del usuario) y la dibuja con
-   `CadenaDeLogistica` de `pantallas/cadena`.
-2. El usuario abre el panel del vehículo: la action `previsualizarCambio` de `flujos` → RPC
+1. `app/(app)/logistica/page.tsx` (Server Component) lee el número de cada fase con `leerResumenDeLaCadena()` de
+   `@/modules/logistica` (RPC `logistica_cadena_resumen()`, con la sesión del usuario) y lo dibuja con
+   `GraficaDeLaCadena` de `pantallas/cadena`; clic en una fase y en un vehículo llevan a su página.
+2. El usuario abre la página del vehículo: la action `previsualizarCambio` de `flujos` → RPC
    `previsualizar_cambio_fase` → devuelve `ok`, motivos y requisitos evaluados; la UI muestra «qué
    falta» antes del clic.
 3. Clic en «Mover a Embarcado» → `cambiarFase` (action con `next-safe-action`): valida con Zod,

@@ -62,6 +62,21 @@ function situacionFueraDe<Consulta extends Filtrable<Consulta>>(
   return consulta.or(`situacion.not.in.(${valores.join(',')})`)
 }
 
+// «Situación» = alguna de las propias, o una de esas fases, o sin fase: cada parte, un término del `or()` (una fase o «sin fase» sólo cuenta con la situación
+// `fase`: la propia gana, y la base la calcula). Valores fijos y ids que el esquema ya validó contra las opciones: no llevan nada que escapar. Un término solo
+// va como filtro llano; sin ninguno no se pide nada (el esquema nunca lo arma así).
+function situacionEn<Consulta extends Filtrable<Consulta>>(
+  consulta: Consulta,
+  { situaciones, fases, sinFase }: Extract<Condicion, { tipo: 'situacion_en' }>,
+): Consulta {
+  const terminos = [
+    ...(situaciones.length > 0 ? [`situacion.in.(${situaciones.join(',')})`] : []),
+    ...(fases.length > 0 ? [`and(situacion.eq.fase,fase_id.in.(${fases.join(',')}))`] : []),
+    ...(sinFase ? ['and(situacion.eq.fase,fase_id.is.null)'] : []),
+  ]
+  return terminos.length === 0 ? consulta.in('id', []) : consulta.or(terminos.join(','))
+}
+
 function aplicarUna<Consulta extends Filtrable<Consulta>>(
   consulta: Consulta,
   condicion: Condicion,
@@ -85,6 +100,8 @@ function aplicarUna<Consulta extends Filtrable<Consulta>>(
       return porLimpiar(consulta, condicion)
     case 'situacion_fuera_de':
       return situacionFueraDe(consulta, condicion)
+    case 'situacion_en':
+      return situacionEn(consulta, condicion)
     case 'atributos_contienen':
     case 'atributo_rango_numero':
     case 'atributo_rango_texto':

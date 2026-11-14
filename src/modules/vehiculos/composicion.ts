@@ -17,6 +17,7 @@ import type {
   RepositorioDeLimpieza,
   RepositorioDeSituacion,
   LectorDeResolucionDeSubasta,
+  LectorDeSinResolver,
   LectorDeSubasta,
   LectorDeVehiculo,
   LectorDeVistaPrevia,
@@ -31,7 +32,7 @@ import type {
 import { fotosSupabase } from './infra/fotos'
 import { limpiezaSupabase } from './infra/limpieza'
 import { situacionSupabase } from './infra/situacion'
-import { getResolucionDeSubasta } from './infra/queries/situacion'
+import { getCantidadSinResolver, getResolucionDeSubasta } from './infra/queries/situacion'
 import { getLimpiezaAutomatica, getUltimaLimpieza } from './infra/queries/limpieza'
 import { papeleraSupabase } from './infra/papelera'
 import { getEditables, getLeadsVisibles } from './infra/queries/editables'
@@ -71,5 +72,6 @@ export const leerUltimaLimpieza: LectorDeUltimaLimpieza = getUltimaLimpieza
 export const repositorioDeLimpieza: RepositorioDeLimpieza = limpiezaSupabase
 export const repositorioDeSituacion: RepositorioDeSituacion = situacionSupabase
 export const leerResolucionDeSubasta: LectorDeResolucionDeSubasta = getResolucionDeSubasta
+export const leerSinResolver: LectorDeSinResolver = getCantidadSinResolver
 export const leerVehiculosDelLead: LectorDeVehiculosDelLead = getVehiculosDelLead
 export const repositorioDeVinculo: RepositorioDeVinculo = vinculoSupabase

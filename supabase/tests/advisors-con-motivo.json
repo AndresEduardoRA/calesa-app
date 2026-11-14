@@ -316,6 +316,11 @@
       "patron": "web.solicitar_asesor",
       "avisos": 2,
       "motivo": "Una variable declarada o asignada que no se lee: cosmético."
+    },
+    {
+      "patron": "public._bandeja_dia_salidas",
+      "avisos": 1,
+      "motivo": "Parámetro p_desde sin usar a propósito: las salidas se paginan por id (transportes_salidas_idx) y la función comparte firma con los demás grupos de la bandeja para que bandeja_dia los despache igual; la cubren las pruebas de su área (bandeja-del-dia.sql)."
     }
   ]
 }

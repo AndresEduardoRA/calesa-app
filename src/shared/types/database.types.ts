@@ -7571,6 +7571,44 @@ export type Database = {
           vence: string
         }[]
       }
+      _bandeja_dia_alcance: {
+        Args: { p_clave: string }
+        Returns: {
+          origenes: string[]
+          propios: string[]
+          todos: string[]
+        }[]
+      }
+      _bandeja_dia_demorados: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_hoy: { Args: Record<PropertyKey, never>; Returns: string }
+      _bandeja_dia_llegadas: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_por_aprobar: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_por_vencer: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_recortar: { Args: { p_filas: Json; p_n: number }; Returns: Json }
+      _bandeja_dia_salidas: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_sin_resolver: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
+      _bandeja_dia_trabados: {
+        Args: { p_desde: string; p_id: string; p_leer: number }
+        Returns: Json
+      }
       _bandeja_por_aprobar: { Args: { p_n: number }; Returns: Json }
       _bandeja_trabados: { Args: { p_demoradas: Json; p_n: number }; Returns: Json }
       _borrador_formula_empezado_por: { Args: { p_creado_por: string }; Returns: string }
@@ -8573,6 +8611,7 @@ export type Database = {
       }
       _logistica_dias: { Args: { p_fase: string }; Returns: number }
       _logistica_filtros: { Args: { p: Json }; Returns: Json }
+      _logistica_lo_propio: { Args: { p_origen: string }; Returns: string[] }
       _lote_papelera_tocar: { Args: { p_lote: string }; Returns: string }
       _monto_en_base: {
         Args: { p_moneda: string; p_monto: number; p_tipo_cambio: string; p_valor?: number }
@@ -9584,7 +9623,7 @@ export type Database = {
       }
       _vehiculos_cotizado_rellenar: { Args: Record<PropertyKey, never>; Returns: number }
       _vehiculos_inventario_condicion: {
-        Args: { p_columna: string; p_i: number; p_tipo: string }
+        Args: { p_columna: string; p_filtro?: Json; p_i: number; p_tipo: string }
         Returns: string
       }
       _vehiculos_inventario_patron: { Args: { p_i: number }; Returns: string }
@@ -10584,8 +10623,14 @@ export type Database = {
       }
       limpieza_ultima: { Args: Record<PropertyKey, never>; Returns: Json }
       logistica_bandeja: { Args: { p_tope?: number }; Returns: Json }
-      logistica_cadena: {
-        Args: { p_filtros?: Json; p_origen: string; p_tope?: number }
+      logistica_bandeja_grupo: {
+        Args: {
+          p_conteo?: number
+          p_desde?: string
+          p_grupo: string
+          p_id?: string
+          p_tope?: number
+        }
         Returns: Json
       }
       logistica_cadena_columna: {
@@ -10599,6 +10644,7 @@ export type Database = {
         }
         Returns: Json
       }
+      logistica_cadena_resumen: { Args: { p_origen: string; p_tope?: number }; Returns: Json }
       logistica_donde_esta: { Args: { p_buscar: string; p_tope?: number }; Returns: Json }
       logistica_unidad: { Args: { p_vehiculo: string }; Returns: Json }
       margen_vehiculo: { Args: { p_vehiculo: string }; Returns: Json }

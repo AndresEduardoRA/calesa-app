@@ -991,15 +991,12 @@ begin
   perform pg_temp.escala('cadena: «Sin fase» por cursor, página 10 (la consulta)', 'duena',
     format('execute medir_cadena_sin_fase(%L, %L, true, %L, %s)', v_otro, v_sf, duena, n + 1),
     25, 'vehiculos_cadena_idx', '{vehiculos}', 0, 'postgres');
-  -- Las RPC, como cada persona: el tablero, «Ver más» y buscar sin resultados (recorre la columna entera: lo peor de un filtro de fila). Medido el 2026-11-11
+  -- Las RPC, como cada persona: la lista de una fase por cursor y buscar sin resultados (recorre la columna entera: lo peor de un filtro de fila). Medido el 2026-11-11
   -- con 3.333 vehículos en la columna: 3,3 / 1,6 / 10,7 ms y Ana 3,2 ms; las consultas, < 0,1 ms.
-  perform pg_temp.escala('cadena: el tablero del origen', 'duena', format('select public.logistica_cadena(%L, %s)', o, n), 30);
   perform pg_temp.escala('cadena: «Ver más» de la columna, página 10', 'duena',
     format('select public.logistica_cadena_columna(%L, %L, %L, %L, %s)', o, v_fase, v_desde, v_id, n), 15);
   perform pg_temp.escala('cadena: buscar sin resultados en la columna', 'duena',
     format('select public.logistica_cadena_columna(%L, %L, null, null, %s, %L)', o, v_fase, n, '{"q": "zzzz nada"}'), 50);
-  -- Ana («propios»: ningún vehículo sembrado es suyo) recorre la columna entera sin juntar una tarjeta: el peor caso del filtro de fila.
-  perform pg_temp.escala('cadena: el tablero del origen', 'ana', format('select public.logistica_cadena(%L, %s)', o, n), 30);
 end $cadena$;
 deallocate medir_cadena_fase;
 deallocate medir_cadena_cursor;

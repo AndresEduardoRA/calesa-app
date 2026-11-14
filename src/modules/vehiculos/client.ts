@@ -14,3 +14,4 @@ export { validarVehiculo, type DatosDeVehiculo, type Fuentes } from './entities/
 export { camposComunes, type CampoComun, type ClaveComun, type TipoComun } from './entities/comunes'
 export { camposActivos, type CampoDeVehiculo, type CategoriaDeVehiculo } from './entities/campo'
 export { claveDeAtributo } from './entities/formulario'
+export { useNoGanada } from './features/situacion/hooks/use-no-ganada'

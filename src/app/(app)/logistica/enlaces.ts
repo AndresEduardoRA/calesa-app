@@ -17,3 +17,14 @@ export function enlacesDeLogistica(permisos: Permisos): EnlaceDelMenu[] {
   )
   return [{ titulo: 'Cadena', ruta: RUTAS.logistica }, ...deLasAreas]
 }
+
+// Las rutas que son de la cadena aunque no sean `/logistica`: la lista de una fase y la página de un grupo de la bandeja. «Cadena» queda marcada en ellas.
+const RUTAS_DE_LA_CADENA = [`${RUTAS.logistica}/fase/`, `${RUTAS.logistica}/bandeja/`]
+
+/** ¿Es este enlace el de la página donde está la persona? Un enlace es el actual en su ruta y debajo de ella; «Cadena» también en la lista de una fase y la de un grupo de la bandeja. */
+export function esEnlaceActual(enlace: EnlaceDelMenu, ruta: string): boolean {
+  if (enlace.ruta === ruta) return true
+  if (enlace.ruta === RUTAS.logistica)
+    return RUTAS_DE_LA_CADENA.some((prefijo) => ruta.startsWith(prefijo))
+  return ruta.startsWith(`${enlace.ruta}/`)
+}

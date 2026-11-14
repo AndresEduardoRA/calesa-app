@@ -4,7 +4,7 @@ import type { Route } from 'next'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from 'cn'
-import type { EnlaceDelMenu } from './enlaces'
+import { esEnlaceActual, type EnlaceDelMenu } from './enlaces'
 
 // La sub-navegación de `/logistica`: Cadena y las áreas que ya tienen página. Marca la actual con `aria-current`.
 export function SubNavegacion({ enlaces }: { enlaces: readonly EnlaceDelMenu[] }) {
@@ -12,9 +12,7 @@ export function SubNavegacion({ enlaces }: { enlaces: readonly EnlaceDelMenu[] }
   return (
     <nav aria-label="Logística" className="flex flex-wrap gap-1">
       {enlaces.map((enlace) => {
-        const actual =
-          enlace.ruta === ruta ||
-          (enlace.ruta !== '/logistica' && ruta.startsWith(`${enlace.ruta}/`))
+        const actual = esEnlaceActual(enlace, ruta)
         return (
           <Link
             key={enlace.ruta}
