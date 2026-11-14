@@ -206,7 +206,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     Cotizaciones» (`/cotizaciones?lead=` o `?vehiculo=`); se lee al abrirla; esqueleto, error con «Reintentar», «Sin cotizaciones que
     puedas ver.». Cada fila lleva la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura).
 - **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila y «Abrir cotización»; una que no se
-  ve dice que ya no está disponible); filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin
+  ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
+  número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
+  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **«Vistas»** guardadas como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
+  de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
+  si es inválida), «Marcar final…» (`cotizaciones.final.gestionar`, en una preventa; apagada sin vehículo o cliente), casilla «Favorita», «Reportar…»,
+  moderar («Invalidar…», «Descartar los reportes…», «Reactivar…», con `cotizaciones.moderar`) y, al final y separada, «Enviar a la papelera» (sin preguntar,
+  con «Deshacer»). Son las mismas actions de la guardada; «Marcar final…», «Reportar…» y moderar abren su diálogo en `?panel=…&para=<id>`; filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin
   chip y «Limpiar» no los borra; arriba, de quién o de qué son, con «Ver todas», y su vacío propio); «Vencida» en la fila y la insignia «Aprobada» (tabla, tarjeta y resumen); `nuevo` abre la
   hoja. «Papelera» (para quien puede enviar a ella o vaciarla) lleva a `/cotizaciones/papelera`: lotes por cursor (5, las primeras 20 de
   cada uno y «Mostrar los N»), «Restaurar» y «Purgar» una o el lote (`cotizaciones.papelera.purgar`,
