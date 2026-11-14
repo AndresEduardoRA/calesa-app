@@ -105,7 +105,7 @@ declare
   v_clave constant text := format('(%s ->> ''clave'')', c);
   v_fases constant text := format('array(select jsonb_array_elements_text(%s -> ''fases''))::uuid[]', c);
   v_hasta constant text := format('(%s ->> ''hasta'')::date', c);
-  v_partes text[] := '{}'; k integer;
+  v_partes text[] := '{}'::text[];
 begin
   if p_i is null or p_i < 0 then
     raise exception 'La forma del inventario no es válida.' using errcode = '22023', hint = 'forma';
@@ -182,7 +182,7 @@ declare
     || 'v.acepta_permuta, v.placado, v.kilometraje, v.categoria_id, v.fase_id, v.atributos, v.lead_id, v.publicado_web, v.destacado_web, v.precio_web, v.precio_web_hasta, '
     || 'v.precio_web_nota, v.creado_por, v.creado_en, v.actualizado_en, v.estado_subasta, v.situacion';
   v_f jsonb := coalesce(p_filtros, '[]'::jsonb);
-  v_d text; v_cursor text; v_pred text := ''; v_rutas text; v_sit integer; v_preds text[]; v_p text; v_ramas text[] := '{}'; k integer; v_resto boolean;
+  v_d text; v_cursor text; v_pred text := ''; v_rutas text; v_sit integer; v_preds text[]; v_p text; v_ramas text[] := '{}'::text[]; k integer; v_resto boolean;
 begin
   if p_rutas is null or p_rutas not in ('origen', 'propios') or p_sentido is null or p_sentido not in ('primera', 'siguiente', 'anterior') then
     raise exception 'La forma del inventario no es válida.' using errcode = '22023', hint = 'forma';
