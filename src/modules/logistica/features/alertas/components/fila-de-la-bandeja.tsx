@@ -44,7 +44,7 @@ export function FilaDeLaBandeja({ fila, detalle, accion, origen }: Props) {
           href={accion.href as Route}
           prefetch={false}
           aria-label={`${accion.texto}: ${fila.nombre}`}
-          className={buttonVariants({ variant: 'outline', size: 'sm' })}
+          className={buttonVariants({ variant: 'outline', size: 'sm', className: 'h-11 md:h-8' })}
         >
           {accion.texto}
         </Link>

@@ -25,7 +25,7 @@ export function EnlaceALaUnidad({ id, nombre, hueco, className }: Props) {
       data-unidad={id}
       className={
         className ??
-        'rounded-(--radius-input) text-(length:--text-sm) font-medium break-words text-(--color-ink) underline-offset-2 outline-none hover:underline focus-visible:shadow-(--shadow-focus)'
+        'inline-flex min-h-11 items-center rounded-(--radius-input) text-(length:--text-sm) font-medium break-words text-(--color-ink) underline-offset-2 outline-none hover:underline focus-visible:shadow-(--shadow-focus) md:min-h-0'
       }
     >
       <span data-abre-resumen="">{nombre}</span>

@@ -46,7 +46,7 @@ function DondeEstas() {
       <span>Siguientes a los anteriores.</span>
       <Link
         href={`${ruta}?${parametros.toString()}` as Route}
-        className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        className={buttonVariants({ variant: 'outline', size: 'sm', className: 'h-11 md:h-8' })}
       >
         Volver al principio
       </Link>
@@ -83,7 +83,10 @@ export function ResultadoDeLaFase({
       <EstadoVacio
         titulo="No hay vehículos en esta fase."
         accion={
-          <Link href={hrefDeLaCadena as Route} className={buttonVariants({ variant: 'outline' })}>
+          <Link
+            href={hrefDeLaCadena as Route}
+            className={buttonVariants({ variant: 'outline', className: 'h-11 md:h-9' })}
+          >
             Ver la cadena
           </Link>
         }

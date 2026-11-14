@@ -93,7 +93,7 @@ test('E2E «Ver todos» abre la página del grupo, de a 20 por cursor', async ({
   await grupo(page, 'demorados').getByRole('link', { name: 'Ver todos: Demorados' }).click()
   await expect(page).toHaveURL(/\/logistica\/bandeja\/demorados$/)
   await expect(page.getByRole('heading', { name: 'Demorados', level: 1 })).toBeVisible()
-  const filas = page.locator('main li').filter({ hasText: 'Mover' })
+  const filas = page.locator('main li:has(a[aria-label^="Mover:"])')
   await expect(filas).toHaveCount(20)
   await capturar(page, info, 'grupo-demorados')
   await page.getByRole('link', { name: 'Siguiente' }).click()

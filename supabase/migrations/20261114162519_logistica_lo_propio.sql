@@ -13,21 +13,24 @@ begin
   if v_uid is null or p_origen is null then
     return '{}';
   end if;
+  -- El conjunto se corta siempre por el mismo orden (lo más nuevo primero): con más de 10.001 propios, la página de un cursor se arma sobre lo mismo que la anterior.
   return array(
     select x.id from (
       -- vehiculos_creador_idx (creado_por, origen_id, creado_en desc, id desc).
-      (select v.id from public.vehiculos v
+      (select v.id, v.creado_en from public.vehiculos v
         where v.creado_por = v_uid and v.origen_id = p_origen and v.eliminado_en is null and v.situacion <> 'no_ganada'
         order by v.creado_en desc, v.id desc
         limit 10001)
       union
       -- leads_asesores_usuario_vigente_idx (usuario_id, lead_id) y vehiculos_lead_id_idx.
-      (select v.id from public.leads_asesores la
+      (select v.id, v.creado_en from public.leads_asesores la
          join public.vehiculos v on v.lead_id = la.lead_id
         where la.usuario_id = v_uid and la.revocado_en is null
           and v.origen_id = p_origen and v.eliminado_en is null and v.situacion <> 'no_ganada'
+        order by v.creado_en desc, v.id desc
         limit 10001)
     ) x
+    order by x.creado_en desc, x.id desc
     limit 10001);
 end;
 $$;

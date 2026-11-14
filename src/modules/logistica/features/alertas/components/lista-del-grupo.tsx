@@ -54,7 +54,10 @@ export function ListaDelGrupo({
       })
     : null
   const volver = (
-    <Link href={RUTAS.logistica as Route} className={buttonVariants({ variant: 'outline' })}>
+    <Link
+      href={RUTAS.logistica as Route}
+      className={buttonVariants({ variant: 'outline', className: 'h-11 md:h-9' })}
+    >
       Ver la bandeja
     </Link>
   )
@@ -68,7 +71,7 @@ export function ListaDelGrupo({
         </p>
         <Link
           href={rutaDelGrupoDeLaBandeja(grupo, siguiente) as Route}
-          className={buttonVariants({ variant: 'outline' })}
+          className={buttonVariants({ variant: 'outline', className: 'h-11 md:h-9' })}
         >
           Seguir buscando
         </Link>

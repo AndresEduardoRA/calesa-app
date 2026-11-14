@@ -32,13 +32,14 @@ export function ResolverLaSubasta({ vehiculoId, origenId, nombre, hrefDeLaGanamo
         href={hrefDeLaGanamos as Route}
         prefetch={false}
         aria-label={`La ganamos: ${nombre}`}
-        className={buttonVariants({ variant: 'outline', size: 'sm' })}
+        className={buttonVariants({ variant: 'outline', size: 'sm', className: 'h-11 md:h-8' })}
       >
         La ganamos
       </Link>
       <Button
         variant="outline"
         size="sm"
+        className="h-11 md:h-8"
         disabled={enviando}
         aria-label={`No la ganamos: ${nombre}`}
         onClick={() => {

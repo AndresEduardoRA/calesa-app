@@ -29,7 +29,7 @@ export function EstadoDeLaGrafica({ tipo, enlaceAFlujos = false }: Props) {
           enlaceAFlujos ? (
             <Link
               href={RUTAS.configuracionDeFlujos as Route}
-              className={buttonVariants({ variant: 'outline' })}
+              className={buttonVariants({ variant: 'outline', className: 'h-11 md:h-9' })}
             >
               Configurar los flujos
             </Link>

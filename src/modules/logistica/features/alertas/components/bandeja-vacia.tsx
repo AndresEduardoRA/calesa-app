@@ -11,7 +11,10 @@ export function BandejaVacia() {
       titulo="Nada pendiente hoy"
       descripcion="No hay vehículos demorados ni documentos esperando."
       accion={
-        <Link href={'#cadena' as Route} className={buttonVariants({ variant: 'outline' })}>
+        <Link
+          href={'#cadena' as Route}
+          className={buttonVariants({ variant: 'outline', className: 'h-11 md:h-9' })}
+        >
           Ver la cadena
         </Link>
       }
