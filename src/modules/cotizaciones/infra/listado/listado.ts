@@ -1,9 +1,13 @@
 import 'server-only'
 import { z } from 'zod'
 import { MAXIMO_DE_PAGINA_DE_COTIZACIONES } from '../../entities/listado/listado'
-import type { FilaDelListado, PedidoDelListado } from '../../entities/listado/listado'
+import type {
+  FilaDelListado,
+  PaginaDelListado,
+  PedidoDelListado,
+} from '../../entities/listado/listado'
 import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errores'
-import { armarPagina, type Pagina } from '@/shared/lib/paginacion'
+import { armarPagina } from '@/shared/lib/paginacion'
 import { createClient } from '@/shared/lib/supabase/server'
 
 // Una página del listado `/cotizaciones` (4.16-1): UNA llamada a `cotizaciones_listado()`, que corre como quien mira (la RLS decide) y lee cada ruta por su
@@ -15,6 +19,7 @@ const esquemaDelPedido = z.object({
   mias: z.boolean().optional(),
   vehiculoId: z.guid().optional(),
   leadId: z.guid().optional(),
+  texto: z.string().min(1).max(100).optional(),
   cursor: z
     .object({
       instante: z.string().min(1),
@@ -41,6 +46,9 @@ const esquemaDeFila = z.object({
   vence_el: z.string(),
   vencida: z.boolean(),
 })
+
+// La búsqueda suma a cada fila si alguna fuente se pasó del tope (la misma en todas).
+const esquemaDeFilaBuscada = esquemaDeFila.extend({ acotada: z.boolean().optional() })
 
 function filaDesde(f: z.infer<typeof esquemaDeFila>): FilaDelListado {
   return {
@@ -85,23 +93,33 @@ function filtrosDe({
 
 export async function getListadoDeCotizaciones(
   pedido: PedidoDelListado,
-): Promise<Resultado<Pagina<FilaDelListado>>> {
+): Promise<Resultado<PaginaDelListado>> {
   const valido = esquemaDelPedido.safeParse(pedido)
   if (!valido.success) {
     return fallo('validacion', 'Ese filtro del listado no es válido.')
   }
   const supabase = await createClient()
+  const texto = valido.data.texto
   // El tamaño, del pedido validado (nunca escrito a mano: `scripts/guardas/paginas.test.ts`).
-  const { data, error } = await supabase.rpc('cotizaciones_listado', {
-    p_tamano: valido.data.tamano,
-    ...filtrosDe(valido.data),
-  })
+  const { data, error } =
+    texto === undefined
+      ? await supabase.rpc('cotizaciones_listado', {
+          p_tamano: valido.data.tamano,
+          ...filtrosDe(valido.data),
+        })
+      : // Con texto, la búsqueda: sus propias rutas por índice (`cotizaciones_buscar()`).
+        await supabase.rpc('cotizaciones_buscar', {
+          p_texto: texto,
+          p_tamano: valido.data.tamano,
+          ...filtrosDe(valido.data),
+        })
   if (error) {
     return { ok: false, error: errorDePostgrest(error) }
   }
-  const filas = z.array(esquemaDeFila).safeParse(data)
+  const filas = z.array(esquemaDeFilaBuscada).safeParse(data)
   if (!filas.success) {
     return fallo('inesperado', 'No pudimos leer el listado. Recarga para volver a intentar.')
   }
-  return ok(armarPagina(filas.data.map(filaDesde), valido.data.tamano, valido.data.cursor))
+  const pagina = armarPagina(filas.data.map(filaDesde), valido.data.tamano, valido.data.cursor)
+  return ok({ ...pagina, acotada: filas.data.some((fila) => fila.acotada === true) })
 }

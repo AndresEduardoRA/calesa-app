@@ -312,7 +312,9 @@ vista (`UnaSolaVista`, según el `user-agent`).
   ~7 nodos y ~70 B comprimidos por fila llena (100 filas llenas: 4.035 nodos y 52,9 KB en escritorio; 4.419 nodos y 51,2 KB en celular). Es lo que el listado
   dice de cada lead; bajarlo pide un máximo de 50 por página.
 - Inventario de vehículos: 100; ≤ 6.000 nodos y 63.000 B gz (60.000 + 5 % por la columna «Cotización aprobada»: 61,2 KB con 100 filas; las props son un `Record` por id de vehículo con la ruta, el monto y la moneda de su aprobada).
-- Listado de cotizaciones: 100; ≤ 2.200 nodos (2.130 + 3 % por la insignia «Aprobada»: 2.147 en escritorio) y 39.500 B gz.
+- Listado de cotizaciones: 100; ≤ 2.700 nodos y 49.500 B gz (lo medido + 5 %: la columna de acciones, `<MasAcciones>` de 4 nodos por fila, y el menú de cada fila —versión,
+  marcas y lo que ofrece— llevaron 2.147 nodos y 38 KB a 2.556 y 46,8 KB en escritorio la dueña; 2.540 y 45,4 KB Ana; 2.499 y 44,7 KB en el celular). Bajarlo pide un
+  máximo de 50 por página, como en leads. Las vistas guardadas van por `diferido()`: `/cotizaciones` en frío mide 368,6 KB de 380 (con el menú de vistas a la vista subía a 440).
 - Sin selector: las papeleras (5 lotes × 20), «Ver más» de seguimientos y recordatorios, la columna del kanban (50, tope 500,
   `TAMANO_DE_COLUMNA`) y las listas de tope fijo.
 - En la base cada RPC con tamaño acota con `_acotar_pagina(pedido, por_defecto, máximo)`: seguimientos y recordatorios 20 hasta 50;
@@ -388,6 +390,14 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   las coincidencias (≤ 1.000 × su profundidad); la ruta de las propias crece con las propias; con «todos» y más de 1.000 coincidencias, las
   propias no tienen prioridad (se llega por `#número` o afinando). Con el plan a medida (las 5 primeras llamadas de una sesión) un título muy
   común va por un `Seq Scan` con `limit 1000`: se queda así. Guarda: sin `cotizaciones_titulo_trgm`, lo raro recorre la tabla.
+- Búsqueda del listado de cotizaciones (`cotizaciones_buscar()`, invocadora; `medir-cotizaciones-buscar.sql`, 50.000 y 250.000; `?q=`): el número por
+  `cotizaciones_numero_key` (≈ 1,5 ms, 4 bloques); cada fuente nombra ≤ 50 ids —clientes por la ventana de `leads_candidatos()` y `leads_vista_por_ids()`, vehículos
+  por origen por `vehiculos_origen_listado_idx` (la RLS no deja usar su trigrama), autores por `perfiles` (decenas de filas)— y de cada uno una página por
+  `cotizaciones_lead_creado_idx`, `cotizaciones_vehiculo_creado_idx` o `cotizaciones_creador_idx`, fundidas y sin repetir. Presupuestos: número 20 ms, cliente raro
+  80, cliente común 400, vehículo raro 150, vehículo común 400, autor 60 (el doble para Ana); medido ≈ 35 ms los de texto (el piso es `leads_candidatos()` y el
+  recorrido de los vehículos de cada origen) y ≈ 13 ms los comunes de vehículo. Ningún recorrido entero de `cotizaciones`; número, cliente raro y vehículo raro no
+  crecen con N (≤ 1,2 × los bloques y 1,5 × el tiempo de 50.000). **Límites declarados:** un texto de vehículo que no coincide con nada recorre los vehículos vivos de cada
+  origen visible (como `buscador_vehiculos()`); con «propios», por autor sólo se buscan las propias (nada de un `en_cartera()` por cada cotización de otra persona).
 - Últimos abiertos (`leerUltimosAbiertos()`): ≤ 16 visitas propias por `visitados_usuario_visto_idx` y hasta tres lecturas en paralelo por
   PK (≤ 16 ids cada una, bajo la RLS de cada tabla); se muestran 8.
 - Una búsqueda: hasta 4 pedidos en paralelo, cada uno ≤ 6 filas; espera de 250 ms entre teclas.
@@ -454,7 +464,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 530, `/perfil` 440, `/vehiculos` 500, `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
   subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410; `/cotizaciones/papelera` 440 (en su spec). Al borde:
-  `/cotizaciones/[id]` 452,2 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %) y `/cotizaciones/nuevo` en 448,8 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
+  `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 452,2 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %) y `/cotizaciones/nuevo` en 448,8 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`
   falla, con el camino, si un `index.ts` llega a un `'use client'`.

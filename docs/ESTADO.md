@@ -4,7 +4,7 @@
 > un verde que dejó de serlo). Qué existe en el código lo dice `docs/MAPA.md`; lo que falta, `docs/PENDIENTES.md`; cómo se trabaja,
 > `docs/FLUJO.md`. Las versiones anteriores: `git log -p docs/ESTADO.md`.
 
-**Última actualización:** 2026-11-13
+**Última actualización:** 2026-11-14
 **Estado:** **terminado (fases 0 a 9) y listo para desplegar.** Desplegar es de la persona (`docs/DESPLIEGUE.md`). Desde aquí el proyecto
 recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en verde.
 
@@ -17,7 +17,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 - **Leads:** listado y kanban con cartera, teléfono único y enmascarado, campos configurables y privados, seguimientos, oportunidades,
   importar y exportar, limpieza automática, papelera.
 - **Cotizaciones:** la fórmula como grafo versionado (motor en TS con su espejo SQL), el diseño de la hoja, niveles de acceso, la hoja de
-  cotizar, guardar con revisiones, la tarjeta y el PDF, la final, la aprobada (una por vehículo, con su primer resultado en la lista de vehículos), comprobantes, comentarios y papelera.
+  cotizar, guardar con revisiones, la tarjeta y el PDF, la final, la aprobada (una por vehículo, con su primer resultado en la lista de vehículos), comprobantes, comentarios y papelera; el listado con buscador (número, cliente, vehículo y autor), vistas guardadas y columna de acciones.
 - **Flujos y logística:** fases, transiciones, requisitos y reglas por RPC; `/logistica` (la cadena, «qué falta», mover y el lote,
   documentos, embarques, aduana, gastos, pagos y margen).
 - **Repuestos:** proyectos, ítems, compras, stock, cotizador propio y pagos.

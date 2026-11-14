@@ -276,6 +276,7 @@ declare
     'lead_campo_guardar', 'devuelve la versión del campo guardado (9.04-2: nombra el tipo «número» por el rango): nada de leads',
     'lead_campo_impacto', 'devuelve el impacto del campo (9.04-2): cuántos leads tienen valor, por opción y fuera del rango, nunca un número de un lead',
     'cotizaciones_listado', 'devuelve cotizaciones (4.16-1): su número de cotización y el id de su lead, con la RLS de quien llama; nunca el número de un lead',
+    'cotizaciones_buscar', 'devuelve cotizaciones (T15): su número de cotización y el id de su lead, con la RLS de quien llama; busca clientes por nombre (leads_candidatos) y nunca devuelve ni compara el número de un lead',
     'vehiculos_inventario', 'devuelve vehículos (4.16-2a): su número de vehículo y el id de su lead, con la RLS de quien llama; nunca el número de un lead',
     '_vehiculos_inventario_sql', 'devuelve el texto de la consulta del inventario (4.16-2a): nombra el número del vehículo y lead_id, sin datos ni valores',
     'leads_candidatos', 'devuelve ids de leads (los que quien llama ve), si hay más y hasta dónde llegó: nunca un número; la página la lee leads_vista_por_ids, que tiene su sonda',

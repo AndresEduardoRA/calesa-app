@@ -7,6 +7,7 @@ import { z } from 'zod'
 export const RUTA_DE_PANTALLA = {
   leads: '/leads',
   vehiculos: '/vehiculos',
+  cotizaciones: '/cotizaciones',
 } as const
 
 export type PantallaConVistas = keyof typeof RUTA_DE_PANTALLA
