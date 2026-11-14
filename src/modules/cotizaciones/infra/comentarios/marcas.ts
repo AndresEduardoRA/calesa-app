@@ -4,6 +4,10 @@ import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errore
 import { createClient } from '@/shared/lib/supabase/server'
 import type { MarcasDeLaCotizacion } from '../../entities/comentarios/moderacion'
 import {
+  marcasDeLaPaginaDesde,
+  type MarcasDeUnaFila,
+} from '../../entities/comentarios/marcas-de-la-pagina'
+import {
   esquemaDeLaFavorita,
   esquemaDeLaModeracion,
   esquemaDelReporte,
@@ -61,6 +65,54 @@ export const leerMarcasDeLaCotizacion = cache(
     return marcas ? ok(marcas) : fallo('inesperado', NO_SE_LEYERON)
   },
 )
+
+// Las marcas de las cotizaciones de una página del listado (el «⋯» de cada fila): tres lecturas por clave primaria en paralelo, de ≤ 100 ids (una página cortada), ninguna por fila.
+// Lo que quien mira no ve no llega y la fila queda sin menú de lo que depende de ello.
+export async function leerMarcasDeLaPagina(
+  cotizacionIds: readonly string[],
+): Promise<Resultado<ReadonlyMap<string, MarcasDeUnaFila>>> {
+  if (cotizacionIds.length === 0) {
+    return ok(new Map())
+  }
+  const supabase = await createClient()
+  const { data: sesion } = await supabase.auth.getClaims()
+  const yo = sesion?.claims.sub
+  if (!yo) {
+    return fallo('no_autenticado', NO_SE_LEYERON)
+  }
+  const ids = [...cotizacionIds]
+  const [cotizaciones, favoritas, reportes] = await Promise.all([
+    // Por `cotizaciones_pkey`.
+    supabase
+      .from('cotizaciones')
+      .select('id, actualizado_en, estado, reportes_count')
+      .in('id', ids)
+      .limit(ids.length),
+    // Por `cotizaciones_favoritos_pkey (cotizacion_id, usuario_id)`: la RLS deja ver sólo las propias.
+    supabase
+      .from('cotizaciones_favoritos')
+      .select('cotizacion_id')
+      .in('cotizacion_id', ids)
+      .limit(ids.length),
+    // Por `cotizaciones_reportes_pkey (cotizacion_id, usuario_id)`. Quien modera lee todos: el filtro por quien mira es obligatorio.
+    supabase
+      .from('cotizaciones_reportes')
+      .select('cotizacion_id, motivo')
+      .in('cotizacion_id', ids)
+      .eq('usuario_id', yo)
+      .limit(ids.length),
+  ])
+  const error = cotizaciones.error ?? favoritas.error ?? reportes.error
+  if (error) {
+    return { ok: false, error: errorDePostgrest(error) }
+  }
+  const marcas = marcasDeLaPaginaDesde({
+    cotizaciones: cotizaciones.data,
+    favoritas: favoritas.data,
+    reportes: reportes.data,
+  })
+  return marcas ? ok(marcas) : fallo('inesperado', NO_SE_LEYERON)
+}
 
 export const marcasSupabase: RepositorioDeMarcas = {
   ponerFavorita: async ({ cotizacionId, valor }) => {

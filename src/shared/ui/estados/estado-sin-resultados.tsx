@@ -8,10 +8,12 @@ type Props = {
   // Sin esto no se ofrece limpiar (una búsqueda de un solo campo se limpia en el campo).
   alLimpiar?: () => void
   descripcion?: string
+  // Lo que dice el botón; «Limpiar filtros» si no se dice (con sólo una búsqueda puesta, «Limpiar búsqueda»).
+  etiquetaDeLimpiar?: string
 }
 
 // Vacío por filtro: hay datos, pero ninguno cumple lo que se pidió. Ofrece limpiar los filtros.
-export function EstadoSinResultados({ alLimpiar, descripcion }: Props) {
+export function EstadoSinResultados({ alLimpiar, descripcion, etiquetaDeLimpiar }: Props) {
   return (
     <MarcoEstado
       Icono={SearchXIcon}
@@ -20,7 +22,7 @@ export function EstadoSinResultados({ alLimpiar, descripcion }: Props) {
       accion={
         alLimpiar ? (
           <Button variant="outline" onClick={alLimpiar}>
-            Limpiar filtros
+            {etiquetaDeLimpiar ?? 'Limpiar filtros'}
           </Button>
         ) : undefined
       }

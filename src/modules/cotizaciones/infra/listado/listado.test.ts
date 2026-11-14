@@ -106,6 +106,62 @@ describe('getListadoDeCotizaciones: lo que le pide a la base', () => {
   })
 })
 
+describe('getListadoDeCotizaciones: la búsqueda', () => {
+  beforeEach(() => {
+    llamadas.length = 0
+    respuesta = { data: [], error: null }
+  })
+
+  it('con texto llama a la búsqueda, con los mismos filtros y cursor, y sin texto a la de siempre', async () => {
+    await getListadoDeCotizaciones({
+      texto: 'García',
+      origenId: ORIGEN,
+      mias: true,
+      cursor: { instante: INSTANTE, id: ORIGEN, sentido: 'siguiente' },
+      tamano: 10,
+    })
+    expect(llamadas[0]?.[0]).toBe('cotizaciones_buscar')
+    expect(llamadas[0]?.[1]).toMatchObject({
+      p_texto: 'García',
+      p_tamano: 10,
+      p_origen: ORIGEN,
+      p_mias: true,
+      p_cursor_en: INSTANTE,
+      p_cursor_id: ORIGEN,
+      p_hacia_atras: false,
+    })
+    await getListadoDeCotizaciones({ cursor: null, tamano: 10 })
+    expect(llamadas[1]?.[0]).toBe('cotizaciones_listado')
+    expect(llamadas[1]?.[1]).not.toHaveProperty('p_texto')
+  })
+
+  it('un texto vacío o de más de 100 caracteres no llega a la base', async () => {
+    for (const texto of ['', 'x'.repeat(101)]) {
+      const r = await getListadoDeCotizaciones({ texto, cursor: null, tamano: 10 })
+      expect(r.ok).toBe(false)
+    }
+    expect(llamadas).toEqual([])
+  })
+
+  it('acotada llega de la base en cada fila; sin búsqueda es falso', async () => {
+    respuesta = { data: [fila(1, { acotada: true }), fila(2, { acotada: true })], error: null }
+    const buscada = await getListadoDeCotizaciones({ texto: 'garcia', cursor: null, tamano: 10 })
+    if (!buscada.ok) throw new Error(buscada.error.mensaje)
+    expect(buscada.data.acotada).toBe(true)
+    respuesta = { data: [fila(1, { acotada: false })], error: null }
+    const entera = await getListadoDelCotizacionesSinTexto()
+    expect(entera.acotada).toBe(false)
+    respuesta = { data: [fila(1)], error: null }
+    expect((await getListadoDelCotizacionesSinTexto()).acotada).toBe(false)
+  })
+})
+
+async function getListadoDelCotizacionesSinTexto() {
+  const r = await getListadoDeCotizaciones({ cursor: null, tamano: 10 })
+  if (!r.ok) throw new Error(r.error.mensaje)
+  return r.data
+}
+
 describe('getListadoDeCotizaciones: lo que devuelve', () => {
   beforeEach(() => {
     llamadas.length = 0

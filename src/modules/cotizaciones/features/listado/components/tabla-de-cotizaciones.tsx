@@ -13,7 +13,13 @@ import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
-import { nombreDelOrigen, SIN_NOMBRE, type FilaDeCotizacion, type OrigenDelListado } from './tipos'
+import {
+  nombreDelOrigen,
+  SIN_NOMBRE,
+  type FilaDeCotizacion,
+  type MenuDeFila,
+  type OrigenDelListado,
+} from './tipos'
 import { Vigencia } from './vigencia'
 
 type Props = {
@@ -22,13 +28,42 @@ type Props = {
   alAbrir: (id: string) => void
   // La cotización abierta en el resumen, para marcarla.
   abierta: string | null
+  // El «⋯» de cada fila, a la derecha; sin él no hay columna.
+  menuDeFila?: MenuDeFila | undefined
 }
 
 const VACIO = <span className="text-(--color-ink-faint)">{SIN_NOMBRE}</span>
 
+// «N.º n» (el botón de la fila, la parada de Tab) y, debajo, su título, pegados a la izquierda.
+function CeldaDelNumero({ cotizacion }: { cotizacion: FilaDeCotizacion }) {
+  return (
+    <CeldaPegada lado="nombre">
+      <div className="grid min-w-0">
+        <AbrirResumen
+          nombre={`N.º ${String(cotizacion.numero)}`}
+          className="w-fit font-medium text-(--color-ink) tabular-nums"
+        >
+          N.º {cotizacion.numero}
+        </AbrirResumen>
+        {cotizacion.titulo ? (
+          <span className="max-w-60 truncate text-(length:--text-xs) text-(--color-ink-soft)">
+            {cotizacion.titulo}
+          </span>
+        ) : null}
+      </div>
+    </CeldaPegada>
+  )
+}
+
 // Las cotizaciones de la página en escritorio, con el patrón de lista (`@/shared/ui/lista`): «N.º n» es el botón de la fila (`<AbrirResumen>`, la parada de Tab) y, debajo, su título. Un clic en la
-// fila abre el resumen `?cotizacion=` (4.16-4b); sin «⋯»: las acciones son de los pasos 4.2x.
-export function TablaDeCotizaciones({ cotizaciones, origenes, alAbrir, abierta }: Props) {
+// fila abre el resumen `?cotizacion=` (4.16-4b), salvo el «⋯» de la derecha (T15): las acciones de la lista única, según el rol.
+export function TablaDeCotizaciones({
+  cotizaciones,
+  origenes,
+  alAbrir,
+  abierta,
+  menuDeFila,
+}: Props) {
   const { zonaHoraria } = useRegional()
   return (
     <TablaDeLista>
@@ -42,6 +77,11 @@ export function TablaDeCotizaciones({ cotizaciones, origenes, alAbrir, abierta }
           <TableHead className="text-right">Total</TableHead>
           <TableHead>Vigencia</TableHead>
           <TableHead>Creada</TableHead>
+          {menuDeFila ? (
+            <CabeceraPegada lado="acciones">
+              <span className="sr-only">Acciones</span>
+            </CabeceraPegada>
+          ) : null}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -53,21 +93,7 @@ export function TablaDeCotizaciones({ cotizaciones, origenes, alAbrir, abierta }
               alAbrir(cotizacion.id)
             }}
           >
-            <CeldaPegada lado="nombre">
-              <div className="grid min-w-0">
-                <AbrirResumen
-                  nombre={`N.º ${String(cotizacion.numero)}`}
-                  className="w-fit font-medium text-(--color-ink) tabular-nums"
-                >
-                  N.º {cotizacion.numero}
-                </AbrirResumen>
-                {cotizacion.titulo ? (
-                  <span className="max-w-60 truncate text-(length:--text-xs) text-(--color-ink-soft)">
-                    {cotizacion.titulo}
-                  </span>
-                ) : null}
-              </div>
-            </CeldaPegada>
+            <CeldaDelNumero cotizacion={cotizacion} />
             <TableCell className="max-w-48 truncate">{cotizacion.cliente ?? VACIO}</TableCell>
             <TableCell className="max-w-48 truncate">{cotizacion.vehiculo ?? VACIO}</TableCell>
             <TableCell className="max-w-40 truncate">
@@ -90,6 +116,11 @@ export function TablaDeCotizaciones({ cotizaciones, origenes, alAbrir, abierta }
             <TableCell className="text-(length:--text-sm) text-(--color-ink-soft)">
               {fechaRelativa(cotizacion.creadoEn, { zona: zonaHoraria })} · {cotizacion.autor}
             </TableCell>
+            {menuDeFila ? (
+              <CeldaPegada lado="acciones" className="text-right">
+                {menuDeFila(cotizacion)}
+              </CeldaPegada>
+            ) : null}
           </FilaDeLista>
         ))}
       </TableBody>
