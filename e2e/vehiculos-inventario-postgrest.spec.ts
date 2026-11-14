@@ -12,6 +12,7 @@ import {
   prepararInventarioPostgrest,
   type TerrenoPostgrest,
 } from './soporte/inventario-postgrest'
+import { casosDeSituacion } from './soporte/inventario-situacion-casos'
 import { sesionDe } from './soporte/leads-alta'
 
 // @sin-celular-archivo: no abre ninguna página: compara dos lecturas de la base por PostgREST
@@ -136,6 +137,7 @@ function casosDe({ fases, categorias, hasta }: TerrenoPostgrest): Caso[] {
       tipo: 'situacion_fuera_de',
       valores: ['sin_resolver', 'no_ganada'],
     }),
+    ...casosDeSituacion(fases),
     enCorea('opción: una', contiene({ [opcion]: 'nafta' })),
     enCorea('opción: varias', contiene({ [opcion]: 'nafta' }, { [opcion]: 'diesel' })),
     enCorea('multi_opcion', contiene({ [lista]: ['rojo'] })),

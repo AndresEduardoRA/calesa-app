@@ -4,7 +4,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 
 ## Entra y sale
 
-- Entra: `/vehiculos` (`?origen=`, filtros, `?cursor=`, `?vitrina=si|no`, `?vehiculo=<id>` abre el resumen con `?pestana=fotos|interesados`),
+- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`, `?vehiculo=<id>` abre el resumen con `?pestana=fotos|interesados`),
   `/vehiculos/papelera`, `/vehiculos/[id]` (`?seccion=ficha|fotos|cotizaciones`; la última sólo con `cotizaciones.ver` del origen, la dibuja
   `cotizaciones/pantallas/vehiculo` compuesta por `src/app`; sin esa clave abre «Ficha»). Paneles: `?panel=nuevo`, `?editar=<id>`,
   `?panel=vitrina`, `?panel=desvincular` (con `&luego=papelera`, desde el aviso «Quitar el vínculo»: el aviso de desvinculado ofrece la papelera),
@@ -35,6 +35,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 - `client.ts`: `<BadgeDeSituacion>` (la situación real; con `fase` delega en `<BadgeDeFase>`. Lo importa `logistica`: nada pesado puede colgar de ahí),
   `Situacion`, `SITUACIONES`, `esquemaDeSituacion`, `etiquetaDeSituacion`, `Vehiculo`; para la importación de `datos`, `validarVehiculo`, `camposComunes`, `camposActivos`,
   `claveDeAtributo` y sus tipos (cada fila se valida con el esquema del alta).
+- **Filtro «Situación»** (`entities/filtros.ts`, `FILTRO_SITUACION`, condición `situacion_en`): sus fases y «Sin fase» en todo origen y, en uno de subasta (`conSubasta`), «En subasta», «Sin resolver» y «No ganadas» (`SITUACIONES_PROPIAS`); reemplaza al de «Fase». `condicionesDe()` suelta `CONDICION_POR_DEFECTO` si se pide «No ganadas». `<AtajoSinResolver>` (`features/listado/`) recibe `sinResolver` (`ConteoAcotado | null`, de `sinResolverDe()`: `tope + 1` por `vehiculos_situacion_idx`, «99+») y pone o quita ese filtro.
 - **Situación en la ficha** (`features/situacion/`, `pantallas/ficha.ts` › `<AvisoDeSituacion>`): «Sin resolver» con «La ganamos» (el `href` lo
   arma `src/app`: `vehiculos` no conoce `logistica`) y «No la ganamos» (`marcarNoGanada`, con «Deshacer» 10 s); «No ganada» con quién y cuándo
   (`resolucionDeSubasta`, de `index.ts`) y «Deshacer». `puedeResolverLaSubasta(permisos, origen)`: `flujos.mover` o `.cualquiera` y `logistica.ver`.
@@ -92,7 +93,7 @@ SQL; la usa `buscarVehiculos()` para «propios», por `fuenteDelInventario()`). 
   En `atributos` nunca un nulo: vaciar quita la clave.
 - Los filtros salen del layout (clave de `origenes_campos`, nunca de la URL); texto de la persona por `citar()` o `patronContiene()` antes de un
   `or()`. `buscarVehiculos()` no filtra por permiso (la RLS) y `fuenteDelInventario()` es un camino, no un permiso. Cada filtro tiene dos copias,
-  `aplicarCondiciones` y `_vehiculos_inventario_sql` (todo valor por `using`), atadas por `e2e/vehiculos-inventario-postgrest.spec.ts`. Si la base
+  `aplicarCondiciones` y `_vehiculos_inventario_sql` (todo valor por `using`; `situacion_en` pasa la condición entera a `_vehiculos_inventario_condicion`), atadas por `e2e/vehiculos-inventario-postgrest.spec.ts`. Si la base
   rechaza los filtros, esa página se lee por la tabla (`inventario.test.ts` ata `Condicion` con la base).
 - **Fotos:** commit diferido (elegir no sube; «Subir N» sube los dos objetos y **una** action registra). Sólo por RPC; las tres de edición mandan la
   versión **de las fotos** (`vehiculos_imagenes_version`). Máx. 24 y una portada (la base). Sin duplicados (hash). Objetos

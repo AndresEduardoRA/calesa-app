@@ -143,6 +143,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Límites aceptados
 
+- **[T14]** Una fase rara (pocas unidades en un origen grande) del filtro «Situación» recorre el origen en orden por `vehiculos_origen_listado_idx`, como el filtro de fase de antes; un índice `(origen_id, fase_id, creado_en desc, id desc)` lo acotaría si llega a notarse.
 - **[T02]** Una no ganada en una fase de subasta que no es la inicial queda retenida de la limpieza por «fase» o «bloqueo», como hoy.
 - **[—]** Un aviso de limpieza no se repite tras quitar «Conservar» o restaurar; con `aviso_dias` > 90 un vencimiento puede avisar dos veces.
 - **[—]** Tablero: «Finales» cuenta por cohorte de creación, porque no hay fecha de marca final.

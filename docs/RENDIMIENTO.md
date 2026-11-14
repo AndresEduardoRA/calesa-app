@@ -192,6 +192,10 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   con su `limit`; `limpieza_el` sobre lo leído por R1 o R2, y R3 relee sólo las de la página. Topes: Pía, la chica y Beto ≤ 10 ms (Pía con
   un atributo sin coincidencias ≤ 20), Vera (cartera de 5.000) ≤ 40; bloques del índice de la ruta: Pía ≤ 12, la chica ≤ 6, Beto ≤ 20;
   bloques de `vehiculos` con 250.000 ≤ 1,2 × + 20. El tiempo no se compara entre volúmenes (el ruido lo confundía con crecimiento).
+  **«Situación»** (`situacion_en`; `medir-vehiculos-inventario-situacion.sql`): una situación propia es una igualdad sobre `vehiculos_situacion_idx` bajo su `Limit`
+  (≈ 100 bloques de `vehiculos` y ≈ 4 ms con 50.000 y con 250.000, sin filas descartadas); con varias propias o con fases, una ruta por rama unidas con `union all`
+  (Postgres no ordena por `creado_en` a través de varios valores de un índice: con un `= any` la misma lista leía todas las de la situación y crecía con N). Las fases
+  siguen por `vehiculos_origen_listado_idx` como el filtro de fase de antes. El atajo «Sin resolver» pide `tope + 1` (100) filas por el mismo índice.
   Límites sin assert: más de 5.000 en la cartera recorre el origen (R1); R3 crece con los vehículos de la cartera, no con N; un filtro sin
   coincidencias recorre todo lo que la persona creó; 500 alternativas sin coincidencias ≈ 144 ms (el tope de la validación);
   `por_limpiar` llama a `limpieza_el(v)` por candidata; el costo fijo de una llamada no crece con las concesiones.

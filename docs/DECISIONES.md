@@ -118,7 +118,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Fuera del tramo de subasta manda la fase, también sobre el resultado.** Una no ganada que alguien mueve a una fase real vuelve a
   contar (su situación es la fase; el resultado queda guardado), y la vuelta a subasta sólo limpia el resultado de una unidad que sigue en el
   tramo: una ganada que ya pasó a otra fase y cuyo lote se relista conserva «ganada». Así nada queda oculto por un dato que ya no aplica.
-- **«No ganada» en femenino**: concuerda con la subasta, no con el sustantivo del origen.
+- **«No ganada» en femenino**: concuerda con la subasta, no con el sustantivo del origen. En el filtro, plural («No ganadas»): habla de vehículos.
 - **El aviso de subasta cerrada al cotizar sale de la situación real**, no de una fecha comparada en la pantalla: avisan «Sin resolver» y «No
   ganada» (más «En subasta» con el cierre vencido, los hasta 10 min que tarda el job). Un vehículo en su fase ya se ganó o salió del tramo:
   cotizarlo es lo normal y avisar sería ruido. Si el origen no tiene fase de subasta, nada figura «Sin resolver» y no hay aviso (lo dice
@@ -126,6 +126,12 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Refrescar la subasta» del aviso pide un toque** porque cada consulta a apibara gasta cuota; «Reintentar» sólo se ofrece si el fallo es del
   momento (`sePuedeReintentar`), nunca con la cuota agotada. Las acciones del aviso (refrescar, resolver, cotizar igual) son botones locales:
   el patrón `AccionDelAviso` no tiene «refrescar» ni «cerrar» y ampliar `src/shared` por esto disparaba el e2e completo.
+- **«Situación» reemplaza a «Fase» en el inventario.** Una fase es una situación (`fase`), y dos filtros que dicen casi lo mismo confunden: la clave de la URL pasa de
+  `fase` a `situacion` (la migración reescribe las vistas guardadas; una URL vieja con `?fase=` se ignora). Una fase filtra por `situacion = 'fase'` y su `fase_id`:
+  «En subasta» y «Sin resolver» salen sólo por su opción, no al elegir la fase de subasta. El atajo «Sin resolver» cuenta con `tope + 1` por `vehiculos_situacion_idx`
+  y lo dice «99+»; cambia sólo «Situación» y deja los demás filtros.
+- **`situacion_en` arma una igualdad por situación propia, no un `= any`.** Una sola igualdad con el valor plegado deja que `vehiculos_situacion_idx` conduzca el orden; el
+  arreglo de una subconsulta no (el planificador no sabe que trae uno). Por eso `_vehiculos_inventario_condicion` recibe la condición entera (`p_filtro`).
 
 - **Se escriben sólo por RPC.** `vehiculo_crear(p_id…)` idempotente con id del navegador y `vehiculo_guardar` con versión; el alta entra a la fase inicial sólo si no hay nada que decidir (si no, «Sin fase»).
 - **El alta dice desde dónde (`p_contexto`) y la base exige el permiso de ese contexto.** `vehiculos.crear` (alta suelta) y
