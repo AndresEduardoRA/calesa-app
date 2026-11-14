@@ -1,9 +1,13 @@
-import type { Cursor } from '@/shared/lib/paginacion'
+import type { Cursor, Pagina } from '@/shared/lib/paginacion'
 import type { Database } from '@/shared/types/database.types'
 
 // El máximo de filas por página del listado `/cotizaciones` (el selector ofrece hasta acá): medido con 250.000 cotizaciones en
 // `supabase/tests/medir-cotizaciones-listado.sql` (`docs/RENDIMIENTO.md`). `cotizaciones_listado()` lo escribe igual en su `_acotar_pagina`.
 export const MAXIMO_DE_PAGINA_DE_COTIZACIONES = 100
+
+// La búsqueda nombra a lo sumo tanto clientes, vehículos y personas (el más nuevo primero): `cotizaciones_buscar()` lo escribe igual en `v_tope`. Si una fuente se pasa, la
+// página lo dice (`acotada`) y el listado pide afinar la búsqueda: no se nombra a todos los «García» de la empresa.
+export const TOPE_DE_COINCIDENCIAS = 50
 
 export type ClaseDeCotizacion = Database['public']['Enums']['clase_cotizacion']
 export type EstadoDeCotizacion = Database['public']['Enums']['estado_cotizacion']
@@ -17,6 +21,8 @@ export type PedidoDelListado = {
   vehiculoId?: string
   // Las de un lead: el camino a lo antiguo de la sección «Cotizaciones» de su ficha, tras sus 500 (4.17-4b).
   leadId?: string
+  // Lo que se busca (número, cliente, vehículo o autor), ya con el mínimo cumplido: sin él, el listado de siempre.
+  texto?: string
   cursor: Cursor | null
   tamano: number
 }
@@ -40,3 +46,6 @@ export type FilaDelListado = {
   venceEl: string
   vencida: boolean
 }
+
+// Una página del listado: con búsqueda, `acotada` dice que alguna fuente (clientes, vehículos o personas) tenía más coincidencias que el tope y quedaron fuera las más viejas.
+export type PaginaDelListado = Pagina<FilaDelListado> & { acotada: boolean }

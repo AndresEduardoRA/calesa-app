@@ -6,5 +6,6 @@
 export { leerPapeleraDeCotizaciones } from './composicion'
 export {
   puedeAbrirLaPapeleraDeCotizaciones,
+  puedeEnviarLaCotizacion,
   puedePurgarLaPapeleraDeCotizaciones,
 } from '../../entities/papelera/acceso'

@@ -12,14 +12,22 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   cliente dice «Para guardar, elige el cliente en «Cliente».» (`FALTA_EL_LEAD`; igual sin `leads.ver`). El borrador de la hoja va por persona, origen y
   vehículo, **sin el lead** (elegir el cliente remonta la hoja y repone lo tipeado); el pendiente del guardado va por lead. Guardar: la action
   `features/hoja/actions/crear-cotizacion.ts` (`cotizacion_crear`, siempre `ok(ResultadoDeCrear)`, sin `revalidatePath`).
-- **`/cotizaciones`** (`cotizaciones.ver` en algún origen): `?origen=` (sólo con 2 o más), `?clase=preventa|final`, `?cuales=mias` (las que creó quien
+- **`/cotizaciones`** (`cotizaciones.ver` en algún origen): `?q=` (el buscador: número, cliente, vehículo y autor; 3 letras o un número,
+  `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`; con texto la página lee `cotizaciones_buscar()` en vez de `cotizaciones_listado()`, con los mismos filtros y cursor, y la
+  página dice `acotada` si una fuente nombró más de `TOPE_DE_COINCIDENCIAS`), «Vistas» guardadas (`pantalla = 'cotizaciones'`, `VistasDeCotizacionesDiferido`:
+  `<MenuDeVistas>` pesa ≈ 70 KB gz y el presupuesto de la ruta es 380), `?origen=` (sólo con 2 o más), `?clase=preventa|final`, `?cuales=mias` (las que creó quien
   mira), `?por=`, `?cursor=`; `?vehiculo=` y `?lead=` no son del esquema (ni chip ni los borra «Limpiar»): los escribe `rutaDelListado()` como camino a
   lo antiguo del historial del vehículo y del lead, y el aviso de arriba (`textoDelAviso()`) sólo nombra lo que quien mira ve. Los nombres llegan por
   clave primaria (leads sólo con `leads.ver`) y los une `filasConNombres()`: lo que no llega es «—». Lee `cotizaciones_listado()` (invocadora: decide la
   RLS) por cursor, con `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (100). El clic abre el resumen `?cotizacion=` (de sólo lectura, por `diferido()`); la que no está
   en la página la lee el servidor con `leerUnaDelListado()` (su fila y `cotizaciones_listado()` de tamaño `UNA` con el cursor `(creado_en, id + 1)`) y, si
   no llega, `usePedidoAlServidor()` pide una vez y luego «Reintentar»; `idDelResumen()` es la única lectura de la clave. «Nueva cotización»
-  (`origenParaNueva()`) y la tecla `N`.
+  (`origenParaNueva()`) y la tecla `N`. **El «⋯» de cada fila** (`accionesDeCotizacion()`: aprobar, marcar final, favorita, reportar, invalidar / descartar /
+  reactivar y, al final, la papelera) se compone en `src/app/(app)/cotizaciones/`: `menus-de-la-pagina.ts` (servidor) lee las marcas y la versión de la
+  página (`leerMarcasDeLaPagina()`, tres lecturas por clave primaria) y arma lo que cada fila ofrece con las reglas de cada área (`ofertasDeLaFila()`;
+  `puedeGuardarDesdeElListado()` espeja `_cotizacion_puede_guardar()`); `listado-con-acciones.tsx` y `use-acciones-de-la-lista.ts` (navegador) llaman a las
+  actions de la guardada y montan una vez los diálogos de marcar final, reportar y moderar (`?panel=…&para=<id>`, `CLAVE_DE_LA_FILA`, `usePanelDeFila()`). Una
+  fila sin sus marcas no tiene «⋯». La lista del menú sale por `pantallas/listado.ts`, nunca por `client.ts` (ese barril trae el JS de la hoja).
 - **`/cotizaciones/[id]`** (`cotizaciones.ver`): la hoja de una guardada con SU versión (`cotizacion_hoja_guardada()` y `cotizacion_evaluar(p_cotizacion)`
   con lo guardado; `entradasDeLoGuardado()` espeja `_cotizacion_entradas_de`); sin `puede_guardar` de la base, sólo lectura. El recálculo usa tablas y
   vehículo de hoy: si difiere (`difiereAlAbrir()`) se dice y se muestra «Total guardado». «Guardar» (`cotizacion_guardar`, siempre
@@ -80,7 +88,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `dato_del_vehiculo`**; `cifrasDelDiseno()` evalúa con datos en 0 y nunca lanza. Dibuja con las piezas del núcleo y **no con `LugaresDeLaHoja`** (lee
   `?ayuda=` y `?panel=`, que chocarían con la pestaña); un hijo de ancho propio en px dentro de una caja con scroll (los cortes `@4xl/hoja` y `@5xl` miran al
   hijo); «200 %» es 206 px con `zoom: 2`. Va `inert`, en un `diferido()` aparte.
-- Depende de `leads`, `vehiculos`, `empresa` (tipos de cambio); los orígenes entran por props desde `src/app`.
+- Depende de `leads`, `vehiculos`, `empresa` (tipos de cambio) y `equipo` (`<MenuDeVistas>`); los orígenes entran por props desde `src/app`.
 
 ## Áreas
 
@@ -149,7 +157,7 @@ RPC: `formula_guardar_borrador`, `formula_publicar`, `formula_descartar_borrador
 la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las filas, sube la versión y publica la N+1 de cada fórmula que la usa),
 `tono_crear|guardar|eliminar`, `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
 `validar_plantilla`, `evaluar_formula`, `cotizacion_evaluar`, `cotizacion_hoja`, `cotizacion_tabla`, `cotizacion_tarjeta`, `cotizacion_crear`,
-`cotizacion_guardar`, `cotizaciones_listado`, `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
+`cotizacion_guardar`, `cotizaciones_listado`, `cotizaciones_buscar` (la búsqueda del listado, invocadora), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
 nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
 `cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.
@@ -164,7 +172,10 @@ nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con l
   leakproof; la final va por parciales con `'final'` literal) y `lead_id` y `origen_id` tienen un solo índice entero al frente
   (`cotizaciones_lead_creado_idx`, `cotizaciones_origen_creado_idx`; L8 de `cotizaciones-listado.sql`). Con `p_lead` es una sola ruta por
   `cotizaciones_lead_creado_idx`, sin la cartera, y el vehículo es un filtro sobre esas filas (L9). Lo que devuelve es la regla (L2 de
-  `cotizaciones-visibilidad.sql`).
+  `cotizaciones-visibilidad.sql`). **La búsqueda** (`cotizaciones_buscar()`, `supabase/tests/areas/cotizaciones/buscar.sql`, `medir-cotizaciones-buscar.sql`) es
+  invocadora: nombra hasta `v_tope` (50) ids por fuente —clientes por `leads_candidatos()` y `leads_vista_por_ids()`, vehículos por origen, autores por
+  `perfiles`— y de cada uno lee una página por `cotizaciones_lead_creado_idx`, `cotizaciones_vehiculo_creado_idx` o `cotizaciones_creador_idx` (el número, por
+  `cotizaciones_numero_key`); lo que quien busca no ve no se nombra. La cotización de otra persona sólo se busca por autor donde se ve «todos».
 - Crear con un vehículo, o guardar una que pasa a otro, mueve `vehiculos.cotizado_en` (trigger `trg_vehiculo_cotizado`, «sólo si es mayor»): cotizar toma
   la fila del vehículo `for no key update` hasta confirmar. Historial y «Cotizado (n)» van por `cotizaciones_vehiculo_creado_idx`
   (`vehiculo_id, creado_en desc, id desc`).

@@ -1,7 +1,13 @@
 // Los filtros del listado `/cotizaciones` (`docs/UX.md` › «Cotizaciones»): qué ofrece su barra y qué pide cada URL a `cotizaciones_listado()`. Puro: la página
 // lee la URL con `leerFiltros()` y este archivo la vuelve un pedido. Un valor que no corresponde se descarta al leer (nunca un error).
 import { z } from 'zod'
-import type { EsquemaDeFiltros, OpcionDeFiltro, ValoresDeFiltros } from '@/shared/lib/filtros'
+import {
+  cumpleElMinimo,
+  type EsquemaDeFiltros,
+  type MinimoDeBusqueda,
+  type OpcionDeFiltro,
+  type ValoresDeFiltros,
+} from '@/shared/lib/filtros'
 import type { Cursor } from '@/shared/lib/paginacion'
 import type { Permisos } from '@/shared/lib/permisos'
 import type { ClaseDeCotizacion, PedidoDelListado } from './listado'
@@ -9,6 +15,7 @@ import { ETIQUETA_DE_CLASE } from '../historial-del-vehiculo'
 import { origenesParaCotizar } from '../origenes-para-cotizar'
 import { CLAVE_DE_ORIGEN } from '../ruta-de-la-hoja'
 
+export const CLAVE_DE_BUSQUEDA = 'q'
 export const CLAVE_DE_CLASE = 'clase'
 export const CLAVE_DE_CUALES = 'cuales'
 
@@ -16,6 +23,14 @@ export const CLAVE_DE_CUALES = 'cuales'
 const TODOS = 'todos'
 const TODAS = 'todas'
 const MIAS = 'mias'
+
+// Lo que pide la búsqueda para buscar: el mismo mínimo de `_buscador_interpretar()` (3 letras o dígitos seguidos; un número, «5» o «#5», vale con menos y busca el número).
+// Con menos no hay qué buscarle a un índice de trigramas: la base lo recorrería entero.
+export const MINIMO_DE_BUSQUEDA_DE_COTIZACIONES: MinimoDeBusqueda = {
+  letras: 3,
+  numerosLibres: true,
+  aviso: 'Escribe al menos 3 letras o un número',
+}
 
 type OrigenParaFiltrar = { id: string; nombre: string }
 
@@ -27,7 +42,12 @@ export function esquemaDelListado(origenes: readonly OrigenParaFiltrar[]): Esque
     { valor: 'final', etiqueta: ETIQUETA_DE_CLASE.final },
   ]
   return {
-    busqueda: null,
+    busqueda: {
+      clave: CLAVE_DE_BUSQUEDA,
+      etiqueta: 'Buscar por número, cliente, vehículo o autor',
+      marcador: 'Número, cliente, vehículo o autor',
+      minimo: MINIMO_DE_BUSQUEDA_DE_COTIZACIONES,
+    },
     filtros: [
       ...(origenes.length >= 2
         ? [
@@ -70,7 +90,7 @@ function eleccion(valores: ValoresDeFiltros, clave: string): string | null {
   return valor?.tipo === 'eleccion' ? valor.valor : null
 }
 
-// Lo que pide la URL, ya leída con el esquema: el origen sólo es uno de los que se ofrecen, la clase una de las dos y «Mías» la única que no es el valor por defecto.
+// Lo que pide la URL, ya leída con el esquema: el texto (sólo si alcanza el mínimo), el origen sólo uno de los que se ofrecen, la clase una de las dos y «Mías» la única que no es el valor por defecto.
 export function pedidoDelListado(
   valores: ValoresDeFiltros,
   // `vehiculo` y `lead` son el texto de `?vehiculo=` y `?lead=` tal como llegó: sólo vale un guid. No son filtros del esquema (ni chip, ni los borra «Limpiar»).
@@ -85,7 +105,9 @@ export function pedidoDelListado(
   const clase = eleccion(valores, CLAVE_DE_CLASE)
   const vehiculo = z.guid().safeParse(resto.vehiculo)
   const lead = z.guid().safeParse(resto.lead)
+  const texto = valores.busqueda.trim()
   return {
+    ...(cumpleElMinimo(texto, MINIMO_DE_BUSQUEDA_DE_COTIZACIONES) ? { texto } : {}),
     ...(origenId === null ? {} : { origenId }),
     ...(clase === 'preventa' || clase === 'final'
       ? { clase: clase satisfies ClaseDeCotizacion }

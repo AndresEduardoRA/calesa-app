@@ -130,6 +130,13 @@ export const RPC_PAGINADAS_DEL_NUCLEO: readonly RpcPaginada[] = [
     pideElCodigo: MAXIMO_DE_PAGINA_DE_COTIZACIONES,
     lista: 'listado de cotizaciones',
   },
+  // La búsqueda del listado `/cotizaciones` (T15): el mismo tamaño y el mismo máximo que el listado, con su cursor.
+  {
+    rpc: 'cotizaciones_buscar',
+    parametro: 'p_tamano',
+    pideElCodigo: MAXIMO_DE_PAGINA_DE_COTIZACIONES,
+    lista: 'búsqueda del listado de cotizaciones',
+  },
   // El inventario de quien ve «propios» (4.16-2b): la pantalla pide su tamaño de página (hasta 100) y sin pedido la base da 100.
   {
     rpc: 'vehiculos_inventario',

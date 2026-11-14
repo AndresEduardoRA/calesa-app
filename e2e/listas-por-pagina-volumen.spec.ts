@@ -40,7 +40,7 @@ const ANA = 'ana-volumen@ejemplo.com'
 // (la tabla o las tarjetas): leads a 100 filas, 5.020 → 2.594 en escritorio y 5.015 → 2.781 en el celular; inventario
 // 7.894 → 4.916 y 7.888 → 3.295. Antes las dos vistas estaban en el DOM.
 // T07: las columnas «Último seguimiento» y «Recordatorio» con las 100 filas llenas pesan ~720 nodos (escritorio 4.035; celular 4.419).
-const NODOS_MAXIMOS = { leads: 4_650, vehiculos: 6_000, cotizaciones: 2_200 }
+const NODOS_MAXIMOS = { leads: 4_650, vehiculos: 6_000, cotizaciones: 2_700 }
 // Lo que pesa, comprimido, el documento de la primera respuesta (el HTML y el flujo de React) con el máximo de la lista:
 // lo medido con un margen. Cierre 1: leads a 100, 46,5 → 37,6 KB (705 → 465 KB crudos en escritorio, 427 en el celular);
 // inventario 57,2 → 47,3 KB (1,39 MB → 920 KB crudos; 740 en el celular). Un peso que de pronto se duplica es una columna
@@ -48,7 +48,9 @@ const NODOS_MAXIMOS = { leads: 4_650, vehiculos: 6_000, cotizaciones: 2_200 }
 // T07: esas dos columnas pesan ~7 KB comprimidos a 100 filas llenas (52,9 KB en escritorio, 51,2 en el celular): tope = lo medido + 5 %.
 // Con «Cotización aprobada»: inventario 60.000 → 63.000 B (61,2 KB en escritorio: el id de cada vehículo y de su cotización viajan como props) y cotizaciones 2.130 → 2.200 nodos
 // (2.147 en escritorio: la insignia «Aprobada»), cada uno a lo sumo un 5 % (`docs/RENDIMIENTO.md`).
-const BYTES_MAXIMOS_DEL_DOCUMENTO = { leads: 55_500, vehiculos: 63_000, cotizaciones: 39_500 }
+// T15: la columna de acciones («⋯» de cada fila: 4 nodos) y el menú de cada fila (versión, marcas y lo que ofrece) pasan las cotizaciones a 2.556 nodos y 46,8 KB comprimidos con
+// 100 filas (escritorio, la dueña; 2.540 y 45,4 KB Ana; 2.499 y 44,7 KB en el celular): lo medido + 5 %, como las columnas de leads (T07). Es lo que el listado dice de cada fila.
+const BYTES_MAXIMOS_DEL_DOCUMENTO = { leads: 55_500, vehiculos: 63_000, cotizaciones: 49_500 }
 
 // Las cotizaciones (4.16-4a, 8 columnas) a 100 filas, medidas con las 50.000 de la siembra: 482 KB crudos y 37,1 KB comprimidos la dueña, 514 KB y 37,5 KB Ana (escritorio);
 // 400 y 431 KB crudos y 35,9 y 36,3 KB comprimidos en el celular; 1.979 nodos en escritorio y 2.024 en el celular. Los topes, lo medido más un 5 % (previos: 40.000 B y 3.000 nodos).
