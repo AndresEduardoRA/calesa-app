@@ -97,6 +97,7 @@ tope, índice y presupuesto está en `docs/RENDIMIENTO.md`.
 - `cotizacion_crear()` con volumen → `supabase/tests/medir-cotizacion-crear.sql` (`pnpm db:medir`)
 - `cotizacion_guardar()` con volumen → `supabase/tests/medir-cotizacion-guardar.sql` (`pnpm db:medir`)
 - Baja de una persona con 200.000 leads → `supabase/tests/medir-bajas.sql` (`pnpm db:medir:volumen`)
+- La búsqueda del listado de cotizaciones (`cotizaciones_buscar()`: número, cliente y vehículo raros y comunes, autor; ningún recorrido, el número y lo raro sin crecer con N) con volumen → `supabase/tests/medir-cotizaciones-buscar.sql` (`MEDIR_SOLO=medir-cotizaciones-buscar pnpm db:medir:volumen`)
 - `buscador_cotizaciones()` (número, título común y raro, la dueña y Ana; la guarda sin el GIN) con volumen → `supabase/tests/medir-buscador.sql` (`MEDIR_SOLO=medir-buscador pnpm db:medir:volumen`)
 - JS en frío por ruta → `e2e/presupuesto-js.spec.ts`, `e2e/soporte/presupuestos.ts` (`pnpm test:e2e`)
 - Nodos del DOM del drawer, listado y columna del kanban; una sola vista en el HTML → `e2e/leads-rapido-volumen.spec.ts`, `e2e/leads-escala.spec.ts`, `e2e/vehiculos-por-pagina.spec.ts` (`pnpm test:e2e`)

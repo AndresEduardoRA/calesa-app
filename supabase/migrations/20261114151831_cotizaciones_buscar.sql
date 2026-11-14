@@ -32,6 +32,9 @@ declare
   -- TOPE_DE_COINCIDENCIAS (src/modules/cotizaciones/entities/listado/listado.ts): cuántos clientes, vehículos o autores nombra una búsqueda.
   v_tope constant integer := 50;
   v_uid uuid := (select auth.uid());
+  -- Los orígenes donde quien busca ve «todos» y todos los que ve: lo ajeno sólo se busca por autor donde ve «todos» (abajo).
+  v_todos uuid[] := coalesce((select public.origenes_con_alcance('cotizaciones.ver', 'todos')), '{}');
+  v_ver uuid[] := coalesce((select public.origenes_con_alcance('cotizaciones.ver', 'propios')), '{}');
   b record;
   v_patron text;
   v_candidatos uuid[];
@@ -110,18 +113,21 @@ begin
     || ' union all (select x.* from unnest($2) l (id) cross join lateral (' || v_ruta || 'c.lead_id = l.id' || v_filtros || ') x)'
     -- Cada vehículo, por `cotizaciones_vehiculo_creado_idx (vehiculo_id, creado_en desc, id desc) where eliminado_en is null`.
     || ' union all (select x.* from unnest($3) v (id) cross join lateral (' || v_ruta || 'c.vehiculo_id = v.id' || v_filtros || ') x)'
-    -- Cada autor, por `cotizaciones_creador_idx (creado_por, creado_en desc, id desc) where eliminado_en is null`.
-    || ' union all (select x.* from unnest($4) a (id) cross join lateral (' || v_ruta || 'c.creado_por = a.id' || v_filtros || ') x)'
+    -- Cada autor, por `cotizaciones_creador_idx (creado_por, creado_en desc, id desc) where eliminado_en is null`. Las propias, en todo lo que se ve; las de otra persona, sólo donde se
+    -- ve «todos»: con «propios» se verían las de su cartera, y encontrarlas pagaría `en_cartera()` por cada cotización de esa persona (7.000 de un asesor: 98 ms y 6.900 llamadas
+    -- para no encontrar nada). Sin ningún origen donde buscar, ni se lee el índice; si no, `origen_id = any(...)` (un operador seguro) corre antes que la RLS.
+    || ' union all (select x.* from unnest($4) a (id) cross join lateral (select o from (select case when a.id = $8 then $19 else $18 end as o) y where cardinality(y.o) > 0) z cross join lateral ('
+    || v_ruta || 'c.creado_por = a.id and c.origen_id = any (z.o)' || v_filtros || ') x)'
     || ') select d.id, d.numero, d.origen_id, d.lead_id, d.vehiculo_id, d.creado_por, d.clase, d.estado, d.titulo, d.total_base, d.moneda_mostrar, d.creado_en,'
     || ' (d.creado_en at time zone $14)::date + $15, (d.creado_en at time zone $14)::date + $15 < $16, $17'
     || ' from (select distinct on (f.id) f.* from filas f) d'
     || ' order by d.creado_en ' || v_sentido || ', d.id ' || v_sentido || ' limit $11'
     using b.numero, v_leads, v_vehiculos, v_autores, p_origen, v_clases, coalesce(p_mias, false), v_uid, p_vehiculo, p_lead, v_n, p_cursor_en, p_cursor_id,
-          v_zona, v_dias, v_hoy, v_acotada;
+          v_zona, v_dias, v_hoy, v_acotada, v_todos, v_ver || v_todos;
 end $$;
 
 revoke all on function public.cotizaciones_buscar(text, integer, uuid, public.clase_cotizacion, boolean, uuid, uuid, timestamptz, uuid, boolean) from public, anon, authenticated;
 grant execute on function public.cotizaciones_buscar(text, integer, uuid, public.clase_cotizacion, boolean, uuid, uuid, timestamptz, uuid, boolean) to authenticated, service_role;
 
 comment on function public.cotizaciones_buscar(text, integer, uuid, public.clase_cotizacion, boolean, uuid, uuid, timestamptz, uuid, boolean) is
-  'La búsqueda del listado /cotizaciones: por número exacto (cotizaciones_numero_key), por cliente (leads_candidatos y leads_vista_por_ids, cotizaciones_lead_creado_idx), por vehículo (título, VIN o lote, vehiculos_origen_listado_idx y cotizaciones_vehiculo_creado_idx) y por quien la creó (por nombre en perfiles, cotizaciones_creador_idx), de la más nueva a la más vieja (creado_en desc, id desc), sin repetir, por cursor y con los filtros del listado. Invocadora: la RLS decide qué se ve y qué se puede nombrar. Cada fuente nombra hasta 50 ids (el más nuevo primero); acotada dice si alguna se pasó. Mínimo de _buscador_interpretar. Lo mide supabase/tests/medir-cotizaciones-buscar.sql.';
+  'La búsqueda del listado /cotizaciones: por número exacto (cotizaciones_numero_key), por cliente (leads_candidatos y leads_vista_por_ids, cotizaciones_lead_creado_idx), por vehículo (título, VIN o lote, vehiculos_origen_listado_idx y cotizaciones_vehiculo_creado_idx) y por quien la creó (por nombre en perfiles, cotizaciones_creador_idx), de la más nueva a la más vieja (creado_en desc, id desc), sin repetir, por cursor y con los filtros del listado. Invocadora: la RLS decide qué se ve y qué se puede nombrar. Cada fuente nombra hasta 50 ids (el más nuevo primero); acotada dice si alguna se pasó. Por autor, la de otra persona sólo se busca donde se ve «todos» (con «propios» se verían las de la cartera, a un en_cartera() por cotización). Mínimo de _buscador_interpretar. Lo mide supabase/tests/medir-cotizaciones-buscar.sql.';
