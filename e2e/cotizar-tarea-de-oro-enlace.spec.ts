@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { CONTRASENA, Teclado, entrar } from './soporte/alta'
 import {
+  COPART,
   ENLACE_DE_COPART,
   fallo,
   ficha,
@@ -46,6 +47,19 @@ let subasta = ''
 let lead = ''
 let vin = ''
 let apibaraAntes: EstadoDeApibara | null = null
+
+// La ficha grabada trae la fecha de su subasta (14 oct 2026): pasada ya, la hoja avisa que cerró y suma paradas de Tab. Esta tarea es la de un vehículo vivo, así que la subasta se
+// mueve a dentro de cinco días.
+const subastaViva = (): Record<string, unknown> => {
+  const en = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
+  return {
+    ...(COPART['auction'] as Record<string, unknown>),
+    state: 'open',
+    full_date: en,
+    ad: en,
+    auction_at: en,
+  }
+}
 
 const borrarElVehiculo = () => {
   sql(`
@@ -98,7 +112,10 @@ test('tarea de oro 2 con un enlace de Copart: de la hoja vacía a la cotización
   const titulo = `2024 ORO ENLACE ${info.project.name.toUpperCase()}`
   await simularApibara(page, (entrada) =>
     entrada === ENLACE_DE_COPART
-      ? ficha(otroCopart({ vin, lot_number: lote, title: titulo }), ENLACE_DE_COPART)
+      ? ficha(
+          otroCopart({ vin, lot_number: lote, title: titulo, auction: subastaViva() }),
+          ENLACE_DE_COPART,
+        )
       : fallo('no_encontrado'),
   )
   const guardados = await vigilarGuardados(page)

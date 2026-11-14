@@ -30,6 +30,9 @@ export {
 export type { Galeria } from './entities/foto'
 // El vehículo de la hoja de cotizar, como lo dibuja su barra (`pantallas/cotizar`)
 export { elegidoDesde, type VehiculoElegido } from './entities/panel-para-cotizar'
+// El aviso de la hoja cuando la subasta del vehículo elegido ya cerró (`pantallas/cotizar` › `<AvisoDeSubastaCerrada>`): lo que necesita, leído en el servidor
+export { avisoDeSubastaCerrada } from './features/panel-para-cotizar/lecturas'
+export type { DatosDelAviso as DatosDelAvisoDeSubastaCerrada } from './entities/subasta-cerrada'
 // El dato del elegido que se elige entre las filas de una tabla de la hoja (4.14-2c3): qué datos de la hoja se ofrecen, con su valor y la versión
 export { datosParaElegirDe, type ParaElegir } from './entities/dato-para-elegir'
 
