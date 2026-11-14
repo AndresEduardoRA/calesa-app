@@ -33,7 +33,7 @@ import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { EsqueletoListado } from '@/shared/ui/esqueletos'
 import { ListadoConAcciones } from './listado-con-acciones'
-import { menusDeLaPagina } from './menus-de-la-pagina'
+import { menusDeLaPagina, quienesDelResumen } from './menus-de-la-pagina'
 
 export const metadata: Metadata = { title: 'Cotizaciones' }
 
@@ -135,6 +135,8 @@ async function Listado({
   const filas = filasConNombres(pagina.filas, nombres)
   // El «⋯» de cada fila: su versión, sus marcas y lo que ofrece a quien mira (tres lecturas por clave primaria para toda la página).
   const menus = await menusDeLaPagina(sesion, filas)
+  // Lo que cada pestaña del resumen deja hacer (adjuntar y moderar): las de la página y la que abrió la URL.
+  const quienes = quienesDelResumen(sesion, filas, delServidor)
   // Con `?vehiculo=`, de quién son estas cotizaciones: el título sólo si quien mira ve el vehículo (la lectura es nula si no existe o no se ve).
   const deUnVehiculo =
     pedido.vehiculoId === undefined
@@ -151,6 +153,7 @@ async function Listado({
       acotada={pagina.acotada}
       vistas={datosO(vistas)}
       menus={menus}
+      quienesDelResumen={quienes}
       delServidor={delServidor}
       porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_COTIZACIONES) }}
       origenes={visibles.map((origen) => ({ id: origen.id, nombre: origen.nombre }))}

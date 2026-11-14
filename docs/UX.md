@@ -215,7 +215,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   - **Pestaña de cotizaciones** (lead y vehículo): las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
     Cotizaciones» (`/cotizaciones?lead=` o `?vehiculo=`); se lee al abrirla; esqueleto, error con «Reintentar», «Sin cotizaciones que
     puedas ver.». Cada fila lleva la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura).
-- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila y «Abrir cotización»; una que no se
+- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila, «Abrir cotización» y debajo las
+  **pestañas** `?pestana=`: «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
+  para guardarla, «Adjuntar»—, «Adjuntos» —los archivos y, en una final o con alguno, sus comprobantes de sólo lectura—, «Revisiones» y «Comentarios»; cada una se lee al elegirla, por
+  cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
   ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
   resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **«Vistas»** guardadas como en leads y vehículos (la búsqueda y los filtros) y, a la derecha

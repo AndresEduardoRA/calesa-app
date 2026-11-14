@@ -19,9 +19,12 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   mira), `?por=`, `?cursor=`; `?vehiculo=` y `?lead=` no son del esquema (ni chip ni los borra «Limpiar»): los escribe `rutaDelListado()` como camino a
   lo antiguo del historial del vehículo y del lead, y el aviso de arriba (`textoDelAviso()`) sólo nombra lo que quien mira ve. Los nombres llegan por
   clave primaria (leads sólo con `leads.ver`) y los une `filasConNombres()`: lo que no llega es «—». Lee `cotizaciones_listado()` (invocadora: decide la
-  RLS) por cursor, con `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (100). El clic abre el resumen `?cotizacion=` (de sólo lectura, por `diferido()`); la que no está
+  RLS) por cursor, con `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (100). El clic abre el resumen `?cotizacion=` (por `diferido()`; abrir o cerrar borra `?pestana=`); la que no está
   en la página la lee el servidor con `leerUnaDelListado()` (su fila y `cotizaciones_listado()` de tamaño `UNA` con el cursor `(creado_en, id + 1)`) y, si
-  no llega, `usePedidoAlServidor()` pide una vez y luego «Reintentar»; `idDelResumen()` es la única lectura de la clave. «Nueva cotización»
+  no llega, `usePedidoAlServidor()` pide una vez y luego «Reintentar»; `idDelResumen()` es la única lectura de la clave. **Las pestañas del resumen** (`?pestana=todo|adjuntos|revisiones|comentarios`, `entities/pestanas-del-resumen.ts`; «Todo» no escribe nada) son un hueco
+  (`HuecosDelResumen`, `features/hoja/components/huecos-del-resumen.ts`): `src/app` une `pantallas/comentarios-resumen.ts` (`Pestanas`, sólo la cáscara `diferido()`) y
+  `pantallas/comprobantes-resumen.ts` (`Comprobantes`, bajo los adjuntos) en `listado-con-acciones.tsx`, y el servidor manda `quienesDelResumen()` (`puedeAdjuntar` y `puedeModerar` por
+  id, de las reglas del «⋯» sobre la fila: ninguna pregunta a la base; una cotización sin entrada ahí no adjunta ni modera). Detalle: `areas/comentarios/CLAUDE.md` › «El resumen». «Nueva cotización»
   (`origenParaNueva()`) y la tecla `N`. **El «⋯» de cada fila** (`accionesDeCotizacion()`: aprobar, marcar final, favorita, reportar, invalidar / descartar /
   reactivar y, al final, la papelera) se compone en `src/app/(app)/cotizaciones/`: `menus-de-la-pagina.ts` (servidor) lee las marcas y la versión de la
   página (`leerMarcasDeLaPagina()`, tres lecturas por clave primaria) y arma lo que cada fila ofrece con las reglas de cada área (`ofertasDeLaFila()`;

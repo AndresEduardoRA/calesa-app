@@ -14,6 +14,7 @@ import { ResumenDeCotizacionDiferido, VistasDeCotizacionesDiferido } from './dif
 import { NuevaCotizacion } from './nueva-cotizacion'
 import { ResultadoDelListado } from './resultado-del-listado'
 import type { FilaDeCotizacion, MenuDeFila, OrigenDelListado } from './tipos'
+import type { HuecosDelResumen, QuienDelResumen } from '../../hoja/components/huecos-del-resumen'
 
 type Props = {
   esquema: EsquemaDeFiltros
@@ -38,6 +39,9 @@ type Props = {
   delServidor: LecturaDelServidor | null
   // Lo que un área suma junto a «Nueva cotización» (4.15-6b, la papelera del 4.24): ya dibujado por la página y antes de «Nueva». Sin él, la barra queda como siempre.
   junto?: ReactNode
+  // Lo que las áreas llenan en el resumen (las pestañas) y lo que quien mira puede hacer con cada cotización de la página, por id (lo calcula el servidor).
+  huecosDelResumen?: HuecosDelResumen
+  quienesDelResumen?: Readonly<Record<string, QuienDelResumen>>
 }
 
 // El listado de cotizaciones: búsqueda, filtros, vistas guardadas, «Nueva cotización» y la lista con su «⋯». Todo el estado (filtros, página) vive en la URL.
@@ -55,6 +59,8 @@ export function ListadoDeCotizaciones({
   lead,
   delServidor,
   junto,
+  huecosDelResumen,
+  quienesDelResumen,
 }: Props) {
   const resumen = useResumenDeCotizacion()
   // El resumen llega recién al abrirse (`diferido()`) y, una vez visto, queda montado para irse con su animación.
@@ -102,6 +108,8 @@ export function ListadoDeCotizaciones({
           filas={pagina.filas}
           origenes={origenes}
           delServidor={delServidor}
+          huecos={huecosDelResumen}
+          quienes={quienesDelResumen}
         />
       ) : null}
     </div>

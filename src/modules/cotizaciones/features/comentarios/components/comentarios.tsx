@@ -81,9 +81,12 @@ function ListaDeComentarios({ comentarios, escritura, acciones }: PropsDeLaLista
 export function Comentarios({
   cotizacionId,
   puedeAdjuntar,
+  conAdjuntos = true,
 }: {
   cotizacionId: string
   puedeAdjuntar: boolean
+  // La sección de la guardada lleva los adjuntos arriba del campo; la pestaña «Comentarios» del resumen los tiene en su propia pestaña.
+  conAdjuntos?: boolean
 }) {
   const { zonaHoraria } = useRegional()
   const comentarios = useComentarios(cotizacionId, zonaHoraria)
@@ -108,10 +111,12 @@ export function Comentarios({
   }
   return (
     <div className="grid min-w-0 gap-4">
-      <Adjuntos
-        cotizacionId={cotizacionId}
-        quien={{ puedeAdjuntar, puedeModerar: comentarios.puedeModerar }}
-      />
+      {conAdjuntos ? (
+        <Adjuntos
+          cotizacionId={cotizacionId}
+          quien={{ puedeAdjuntar, puedeModerar: comentarios.puedeModerar }}
+        />
+      ) : null}
       <CampoDeComentario
         etiqueta="Escribe un comentario"
         texto={nuevo}
