@@ -339,8 +339,27 @@ las trampas, en `docs/LECCIONES.md`.
 - **La cadena excluye las no ganadas con un índice parcial** (`vehiculos_cadena_idx … where situacion <> 'no_ganada'`): un filtro sin índice
   descartaría filas que crecen con la tabla. Cada consulta lleva el literal.
 
-- **La cadena no ordena ni pliega columnas.** El orden es el de la base; «Sin fase» la pone la base (primera, sólo con tarjetas); cursor sólo por `id`.
-- **Tarjeta sin foto, `<principal> · <título>`, armada en el servidor** (atributos por PK en tandas ≤ 100, bajo la RLS); «Ver más» es una Server Action de lectura para armarla igual.
+- **La cadena es una gráfica y no un kanban.** Con cientos de miles de vehículos una columna con «Ver más» no da un número útil: cada fase dice cuántos vehículos tiene y cuántos están demorados o
+  trabados; la lista de una fase (tabla por cursor) y el lote viven en su propia página. «Sin fase» la pone la base (primera, sólo con vehículos); el orden es el de la base. Un vehículo se abre
+  siempre en su página (`/logistica/vehiculo/[id]`), nunca en un drawer.
+- **El número de cada fase es un conteo con tope por índice, no una tabla resumen.** `limit 1.001` sobre `vehiculos_cadena_idx` (por fase, «1.000+»): el costo depende de las fases y no de la tabla
+  (se midió con la fase 3 de 15.000 a 120.000: los bloques del índice no crecen), el número siempre está fresco (la demora depende del reloj) y respeta el alcance de quien mira. Una tabla resumen
+  habría puesto una fila caliente en cada mover y en cada lote de 200 (bloqueos, riesgo de deadlock), quedaría desfasada en demorados y trabados, seguiría necesitando el conteo vivo para «propios»
+  y daría totales exactos, contra la regla.
+- **Trabados de la gráfica: las primeras 50 demoradas de cada fase.** Acota `evaluar_requisitos` (la mayoría de las fases cuestan 0: sin requisito bloqueante en la fase siguiente no se evalúa nada) y
+  `hay_mas` lo dice (`3+`). Para que esto cueste lo que dice, `evaluar_requisitos` pregunta por `documentos_unidad_tipo_idx`: con `is not distinct from` recorría los documentos de todas las unidades.
+- **«Propios» no recorre la fase.** `_logistica_lo_propio` junta hasta 10.001 ids propios del origen (lo creado y lo de la cartera, por sus índices) y la columna, el resumen y los grupos parten de ahí:
+  el pedido lo acota la cartera de la persona y no la tabla. Si se cortó, todo número lleva «+». Lo materializan (`with … as materialized`) antes de unirlo a los pares: unido a la vez, el planificador
+  recorría `vehiculos` entera.
+- **Quién ve cada grupo de la bandeja** (decidido sin preguntar, lo conservador: el alcance de la bandeja de Inicio): lo visible (`_logistica_alcance`); «por aprobar», además `logistica.documentos.aprobar`;
+  «por vencer», además `logistica.documentos.subir` (como el job que avisa). La acción sale sólo con su permiso y, sin él, la fila conserva el enlace al detalle. Mostrar de más es reversible; esconder no.
+- **Ventanas de la bandeja** (decidido sin preguntar): «por vencer» = `vence_el` entre hoy y hoy + `aviso_dias` del tipo, aprobados, con modo `renovar` o `solicitar` (lo vencido ya bloquea y sale como trabado);
+  «llegadas esperadas» = ETA de hoy o anterior, sin arribo, con la fase no final; «salen hoy» = zarpe de hoy (no hay zarpe real: no se detecta uno atrasado). «Hoy» es el día de la empresa, como
+  `documentos_vencimientos()`.
+- **«Revisar» no aprueba en la fila.** Aprobar un documento sin ver el archivo es aprobar a ciegas: «Revisar» (y «Renovar») llevan a la página del vehículo con «Documentos» abierto (`?hueco=documentos`),
+  donde se aprueba de un toque. «No la ganamos» sí se hace en la fila: es reversible (hacer + «Deshacer» de 10 s, `.claude/rules/ui.md`).
+- **La fila de la bandeja y de la lista lleva a la página, no a un resumen** (excepción al patrón de lista: lo pidió la persona). El nombre es un enlace de verdad (Ctrl+clic abre otra pestaña) en un
+  `span` marcado dentro (`EnlaceALaUnidad`): así `esClicPropio` no cuenta el clic en el enlace y no se navega dos veces, y el «visto» de la lista tiene dónde enchufarse.
 - **Las lecturas de la cadena son `security definer`.** Las policies de `transportes`/`documentos` preguntan por fila; la definer resuelve el alcance una vez por origen (el menor de `logistica.ver` y `vehiculos.ver`).
 - **Inexistente, en papelera o sin acceso: un solo texto y 42501 hint `acceso`.** El nombre de quien movió (PT409) sólo llega a quien pasó el acceso; sin acceso a la cadena, 42501, no cadena vacía.
 - **Mover.** `cambiar_fase` toma la unidad `for no key update`; la esperada nula vale sólo para unidad sin fase. El lote no mezcla fases y mueve «los N que pueden»; sin actualización optimista.

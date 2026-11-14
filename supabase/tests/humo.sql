@@ -894,6 +894,8 @@ select set_config('request.jwt.claim.sub', '', false);
 do $$ declare r record; v_faltan text[] := '{}'; v_listadas constant text[] := array[
   -- desde quien llama (su propia fila de la cartera)
   '_lead_vivo_en_mi_cartera', 'en_cartera', 'mis_leads', 'telefono_lead', 'leads_cartera_corta',
+  -- lo propio de logística: los vehículos de SUS leads (`usuario_id = auth.uid()`), como `en_cartera` pero por lote
+  '_logistica_lo_propio',
   -- escriben la cartera tras `_lead_aplicar_bajas` sobre el lead que bloquearon, o la revocan ellas mismas
   'lead_compartir', 'lead_revocar_acceso', 'lead_salir', 'lead_transferir', 'lead_cartera_candidatos',
   -- la propia baja y el cálculo de la cartera (la fuente, con todos los vigentes)

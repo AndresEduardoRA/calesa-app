@@ -18,8 +18,8 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
   importar y exportar, limpieza automática, papelera.
 - **Cotizaciones:** la fórmula como grafo versionado (motor en TS con su espejo SQL), el diseño de la hoja, niveles de acceso, la hoja de
   cotizar, guardar con revisiones, la tarjeta y el PDF, la final, la aprobada (una por vehículo, con su primer resultado en la lista de vehículos), comprobantes, comentarios y papelera; el listado con buscador (número, cliente, vehículo y autor), vistas guardadas y columna de acciones.
-- **Flujos y logística:** fases, transiciones, requisitos y reglas por RPC; `/logistica` (la cadena, «qué falta», mover y el lote,
-  documentos, embarques, aduana, gastos, pagos y margen).
+- **Flujos y logística:** fases, transiciones, requisitos y reglas por RPC; `/logistica` (la bandeja del día con siete grupos, la cadena como gráfica por fase, la lista de cada fase,
+  «qué falta», mover y el lote, documentos, embarques, aduana, gastos, pagos y margen), medida con 300.000 vehículos.
 - **Repuestos:** proyectos, ítems, compras, stock, cotizador propio y pagos.
 - **Agenda, chat, notificaciones y buscador:** calendario y tareas, canales y grupos con realtime, la campana y el push (sin claves
   VAPID todavía), la paleta `Ctrl/Cmd+K`.
@@ -27,7 +27,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
   `api/portal/*`.
 - **Actividad, datos y tablero:** `/actividad` con el diff recortado por cartera y su purga, `/datos` (exportar e importar todo con
   `importar-csv`), `/tablero` con widgets por persona, Inicio con sus bloques, la PWA.
-- **Tareas de oro** (KLM, en `escritorio` y `movil`): registrar 18,3 s de 25; cotizar 58,1 s de 90; mover 1 en 11,3 s de 15 y el
+- **Tareas de oro** (KLM, en `escritorio` y `movil`): registrar 18,3 s de 25; cotizar 58,1 s de 90; mover 1 en 13,9 s de 15 (desde la cadena: fase → vehículo → destino → nota) y el
   contenedor de 8 en 14,6 de 60; «Contacté» en 1 toque y el portal en 8,5 s de 30.
 
 ## Verdes

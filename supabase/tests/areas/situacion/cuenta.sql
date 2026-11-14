@@ -3,7 +3,7 @@
 -- `medir-escala.sql` › «La cadena».
 --
 -- Qué asegura:
---   C1. La cadena: una no ganada no sale en su columna (`logistica_cadena_columna`), ni en «Sin fase», ni en `logistica_cadena`; la sin resolver sí, y
+--   C1. La cadena: una no ganada no sale en su columna (`logistica_cadena_columna`), ni en «Sin fase», ni en el número de cada fase (`logistica_cadena_resumen`); la sin resolver sí, y
 --       su tarjeta trae `situacion`.
 --   C2. La bandeja de Inicio: la no ganada no sale en demoradas ni en «Por aprobar»; la sin resolver sí, y la fila de demoradas trae `situacion`.
 --   C3. `alertas_demora()` avisa la sin resolver y no la no ganada.
@@ -77,9 +77,10 @@ begin
   perform pg_temp.sc_igual('C1 la tarjeta trae la situación', r #>> '{tarjetas,0,situacion}', 'sin_resolver');
   r := pg_temp.sc_corre(u, format('select public.logistica_cadena_columna(%L, null, null, null, 50, %L)', o, '{}'));
   perform pg_temp.sc_igual('C1 «Sin fase»', pg_temp.sc_ids(r), array[sr_sin]);
-  r := pg_temp.sc_corre(u, format('select public.logistica_cadena(%L, 50, %L)', o, '{}'));
-  perform pg_temp.sc_igual('C1 la cadena entera', (select array_agg(x order by x) from unnest(pg_temp.sc_ids(r)) x),
-                           (select array_agg(x order by x) from unnest(array[sr, sr_sin]) x));
+  r := pg_temp.sc_corre(u, format('select public.logistica_cadena_resumen(%L)', o));
+  perform pg_temp.sc_igual('C1 el resumen: la subasta cuenta sólo la sin resolver', (select e #>> '{vehiculos,n}' from jsonb_array_elements(r -> 'fases') e where e ->> 'nombre' = 'Subasta'), '1');
+  perform pg_temp.sc_igual('C1 el resumen: «Sin fase» cuenta sólo la sin resolver', (select e #>> '{vehiculos,n}' from jsonb_array_elements(r -> 'fases') e where e ->> 'nombre' is null), '1');
+  perform pg_temp.sc_igual('C1 el resumen: demorados', (select e #>> '{demorados,n}' from jsonb_array_elements(r -> 'fases') e where e ->> 'nombre' = 'Subasta'), '1');
   r := pg_temp.sc_corre(u, format('select public.logistica_cadena_columna(%L, %L, null, null, 50, %L)', o, sub, '{"demoradas": true}'));
   perform pg_temp.sc_igual('C1 la columna con «Demoradas»', pg_temp.sc_ids(r), array[sr]);
 
@@ -101,8 +102,8 @@ begin
   if pg_get_indexdef('public.vehiculos_cadena_idx'::regclass) !~ $r$situacion <> 'no_ganada'$r$ then
     raise exception 'C4: vehiculos_cadena_idx no es parcial sin las no ganadas: %', pg_get_indexdef('public.vehiculos_cadena_idx'::regclass);
   end if;
-  -- Las siete consultas que lo usan: cuatro de una columna, las demoradas y las dos de las alertas.
-  foreach c in array array['_logistica_columna:4', '_bandeja_demoradas:1', 'alertas_demora:2'] loop
+  -- Las consultas que lo usan: ocho de una columna (cuatro para «todos», cuatro para lo propio), las demoradas y las dos de las alertas.
+  foreach c in array array['_logistica_columna:8', 'logistica_cadena_resumen:4', '_bandeja_dia_demorados:3', '_bandeja_demoradas:1', 'alertas_demora:2'] loop
     if (select count(*) from pg_proc p, regexp_matches(pg_get_functiondef(p.oid), $r$v\.situacion <> 'no_ganada'$r$, 'g') m
          where p.proname = split_part(c, ':', 1) and p.pronamespace = 'public'::regnamespace) <> split_part(c, ':', 2)::int then
       raise exception 'C4: % no lleva el literal en cada consulta de vehiculos_cadena_idx', c;

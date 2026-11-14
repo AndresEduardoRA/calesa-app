@@ -1,4 +1,5 @@
 import { expect, test } from './soporte/prueba'
+import { capturar } from './soporte/recorrido'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -13,9 +14,9 @@ import {
   type TerrenoDeLaCadena,
 } from './soporte/cadena'
 
-// La cadena de `/logistica` (6.03), en escritorio: un origen de tres fases con cinco vehículos (uno sin fase, uno demorado, uno con contenedor y ETA), las columnas en el orden de la base y con su
-// número; «Demorado» dicho con texto; la búsqueda por VIN en la URL con «dónde está»; el clic que abre el panel sobre los filtros y «Limpiar»; las pestañas de origen (el vecino sin permiso no está,
-// el otro cambia de origen y suelta los filtros); y «Ver más» de una columna de 51 (que prueba que la fecha que vuelve de la base pasa la validación de la acción).
+// La cadena de `/logistica` (6.03), en escritorio: la gráfica de un origen de tres fases y una jubilada (una línea con una fase por punto, en el orden de la base, con su número y el demorado dicho con
+// texto), el clic en una fase que lleva a su lista (filtros en la URL, búsqueda, «Siguientes» en una fase de 51), el clic en un vehículo que lleva a su página (nunca un drawer), «dónde está», las
+// pestañas de origen (el vecino sin permiso no está) y las URL viejas del kanban que se redirigen.
 test.describe.configure({ mode: 'serial' })
 
 let proyecto = ''
@@ -46,78 +47,140 @@ test.beforeEach(({}, info) => {
   test.skip(info.project.name !== 'escritorio', 'La cadena se recorre en escritorio.')
 })
 
-test('las columnas van en el orden de la base con su número y el demorado lo dice con texto', async ({
+const BUSCAR = 'Buscar por nombre, VIN o lote'
+
+test('E2E la gráfica va en el orden de la base con su número, el demorado lo dice con texto y la jubilada va al final', async ({
   page,
-}) => {
+}, info) => {
   await entrar(page, terreno.persona, { fresco: true })
   await page.goto(`/logistica?origen=${terreno.a.id}`)
-  const etiquetas = page.locator('section[aria-label*=": "]')
-  await expect(etiquetas).toHaveCount(4)
-  await expect(etiquetas.nth(0)).toHaveAttribute('aria-label', 'Sin fase: 1 vehículo')
-  await expect(etiquetas.nth(1)).toHaveAttribute('aria-label', `Puerto ${proyecto}: 1 vehículo`)
-  await expect(etiquetas.nth(2)).toHaveAttribute('aria-label', `Tránsito ${proyecto}: 2 vehículos`)
-  await expect(etiquetas.nth(3)).toHaveAttribute('aria-label', `Entrega ${proyecto}: 1 vehículo`)
-  // El demorado dice «Demorado» y sólo él; el reciente de su misma fase no.
-  await expect(page.getByText('Demorado', { exact: true })).toHaveCount(1)
-  const demorado = page.getByRole('article').filter({ hasText: terreno.demorado.titulo })
-  await expect(demorado.getByText('Demorado', { exact: true })).toBeVisible()
-  await expect(demorado.getByText('3 días en la fase')).toBeVisible()
-  const reciente = page.getByRole('article').filter({ hasText: terreno.reciente.titulo })
-  await expect(reciente.getByText('Entró hoy')).toBeVisible()
-  await expect(reciente.getByText('Demorado')).toHaveCount(0)
-  // El contenedor y la ETA, sólo donde hay transporte.
-  const conTransporte = page.getByRole('article').filter({ hasText: terreno.conTransporte.titulo })
-  await expect(conTransporte.getByText(`Contenedor ${terreno.contenedor}`)).toBeVisible()
-  await expect(conTransporte.getByText(/ETA 15 dic 2026/)).toBeVisible()
+  const fases = page.locator('ol a[data-fase]')
+  await expect(fases).toHaveCount(5)
+  await expect(fases.nth(0)).toHaveAttribute('aria-label', 'Sin fase: 1 vehículo')
+  await expect(fases.nth(1)).toHaveAttribute('aria-label', `Puerto ${proyecto}: 1 vehículo`)
+  await expect(fases.nth(2)).toHaveAttribute(
+    'aria-label',
+    `Tránsito ${proyecto}: 2 vehículos, 1 demorado`,
+  )
+  await expect(fases.nth(3)).toHaveAttribute('aria-label', `Entrega ${proyecto}: 1 vehículo`)
+  await expect(fases.nth(4)).toHaveAttribute('aria-label', `Jubilada ${proyecto}: 1 vehículo`)
+  // Con texto, nunca sólo color: el demorado y la jubilada se dicen.
+  await expect(fases.nth(2)).toContainText('1 demorado')
+  await expect(fases.nth(4)).toContainText('Jubilada')
+  await capturar(page, info, 'grafica')
+  await expect(page.getByText('Todavía no hay vehículos en la cadena de este origen.')).toHaveCount(
+    0,
+  )
 })
 
-test('la búsqueda por VIN deja una tarjeta, dice dónde está y sobrevive a recargar', async ({
+test('E2E clic en una fase lleva a su lista, con la búsqueda y los filtros en la URL', async ({
   page,
-}) => {
+}, info) => {
   await entrar(page, terreno.persona, { fresco: true })
   await page.goto(`/logistica?origen=${terreno.a.id}`)
-  const buscar = page.getByRole('searchbox', { name: 'Buscar por nombre, VIN o lote' })
-  await buscar.fill(terreno.demorado.vin ?? '')
-  await expect(page).toHaveURL(new RegExp(`q=${terreno.demorado.vin ?? ''}`))
-  await expect(page.getByRole('article')).toHaveCount(1)
-  await expect(page.getByRole('article')).toContainText(terreno.demorado.titulo)
-  const franja = page.getByRole('region', { name: 'Dónde está' })
-  await expect(franja).toContainText(`en «Tránsito ${proyecto}» hace 3 días`)
+  await page.locator(`a[data-fase="${terreno.fases.transito}"]`).click()
+  await expect(page).toHaveURL(
+    new RegExp(`/logistica/fase/${terreno.fases.transito}\\?origen=${terreno.a.id}`),
+  )
+  await expect(page.getByRole('heading', { name: `Tránsito ${proyecto}`, level: 1 })).toBeVisible()
+  const filas = page.locator('tbody tr')
+  await expect(filas).toHaveCount(2)
+  await capturar(page, info, 'lista-de-la-fase')
+  // El demorado dice «Demorado» con texto y sólo él; el reciente de su misma fase no.
+  await expect(page.getByText('Demorado', { exact: true })).toHaveCount(1)
+  await expect(filas.filter({ hasText: terreno.demorado.titulo })).toContainText(
+    '3 días en la fase',
+  )
+  await expect(filas.filter({ hasText: terreno.reciente.titulo })).toContainText('Entró hoy')
 
+  await page.getByRole('searchbox', { name: BUSCAR }).fill(terreno.demorado.vin ?? '')
+  await expect(page).toHaveURL(new RegExp(`q=${terreno.demorado.vin ?? ''}`))
+  await expect(filas).toHaveCount(1)
+  await expect(filas).toContainText(terreno.demorado.titulo)
   await page.reload()
-  await expect(page.getByRole('article')).toHaveCount(1)
-  await expect(page.getByRole('searchbox', { name: 'Buscar por nombre, VIN o lote' })).toHaveValue(
+  await expect(filas).toHaveCount(1)
+  await expect(page.getByRole('searchbox', { name: BUSCAR })).toHaveValue(
     terreno.demorado.vin ?? '',
   )
-  await expect(franja).toContainText(`en «Tránsito ${proyecto}»`)
-})
-
-test('el clic en una tarjeta abre el panel sobre los filtros, Esc lo cierra y «Limpiar» vuelve a las cinco', async ({
-  page,
-}) => {
-  await entrar(page, terreno.persona, { fresco: true })
-  await page.goto(`/logistica?origen=${terreno.a.id}&q=${terreno.demorado.vin ?? ''}`)
-  await page.getByRole('link', { name: terreno.demorado.titulo, exact: false }).first().click()
-  const panel = page.getByRole('dialog')
-  await expect(panel.getByRole('heading', { name: terreno.demorado.titulo })).toBeVisible()
-  await expect(page).toHaveURL(new RegExp(`vehiculo=${terreno.demorado.id}`))
-  await expect(page).toHaveURL(new RegExp(`q=${terreno.demorado.vin ?? ''}`))
-
-  await page.keyboard.press('Escape')
-  await expect(panel).toBeHidden()
-  await expect(page).not.toHaveURL(/vehiculo=/)
-  await expect(page).toHaveURL(new RegExp(`q=${terreno.demorado.vin ?? ''}`))
-  await expect(page.getByRole('article')).toHaveCount(1)
-
   await page.getByRole('button', { name: 'Limpiar', exact: true }).click()
-  await expect(page.getByRole('article')).toHaveCount(5)
+  await expect(filas).toHaveCount(2)
+
+  // El contenedor viaja en la URL: sólo el de la fase Entrega lo tiene; con otro, el vacío por filtro.
+  await page.goto(
+    `/logistica/fase/${terreno.fases.entrega}?origen=${terreno.a.id}&contenedor=${terreno.contenedor}`,
+  )
+  await expect(filas).toHaveCount(1)
+  await expect(filas).toContainText(terreno.conTransporte.titulo)
+  await expect(filas).toContainText(`${terreno.contenedor}`)
+  await page.goto(
+    `/logistica/fase/${terreno.fases.entrega}?origen=${terreno.a.id}&contenedor=NOEXISTE1`,
+  )
+  await expect(page.getByText('Ningún vehículo coincide con los filtros.')).toBeVisible()
 })
 
-test('las pestañas de origen: el vecino sin permiso no está y el otro cambia de origen y suelta los filtros', async ({
+test('E2E una fase de 51 trae 50 y «Siguiente» trae el que falta, sin total', async ({
+  page,
+}, info) => {
+  await entrar(page, terreno.persona, { fresco: true })
+  await page.goto(`/logistica?origen=${terreno.b.id}`)
+  // La cifra no es un total exacto: la fase de 51 dice «51» porque cabe en el tope, y la lista pagina de a 50.
+  await expect(page.locator('ol a[data-fase]').first()).toHaveAttribute(
+    'aria-label',
+    `Cola ${proyecto}: 51 vehículos`,
+  )
+  await page.locator('ol a[data-fase]').first().click()
+  const filas = page.locator('tbody tr')
+  await expect(filas).toHaveCount(50)
+  await capturar(page, info, 'lista-de-50')
+  await page.getByRole('link', { name: 'Siguiente' }).click()
+  await expect(page).toHaveURL(/cursor=/)
+  await expect(filas).toHaveCount(CANTIDAD_EN_LA_COLA - 50)
+  await expect(page.getByRole('link', { name: 'Volver al principio' })).toBeVisible()
+  await page.getByRole('link', { name: 'Volver al principio' }).click()
+  await expect(filas).toHaveCount(50)
+})
+
+test('E2E clic en un vehículo de la lista lleva a su página, no a un drawer', async ({ page }) => {
+  await entrar(page, terreno.persona, { fresco: true })
+  await page.goto(`/logistica/fase/${terreno.fases.transito}?origen=${terreno.a.id}`)
+  await page.getByRole('link', { name: terreno.demorado.titulo }).click()
+  await expect(page).toHaveURL(new RegExp(`/logistica/vehiculo/${terreno.demorado.id}$`))
+  await expect(page.getByRole('heading', { name: terreno.demorado.titulo })).toBeVisible()
+  await expect(page.getByRole('dialog')).toHaveCount(0)
+  // Un clic en el resto de la fila también va ahí.
+  await page.goBack()
+  await page
+    .locator('tbody tr')
+    .filter({ hasText: terreno.reciente.titulo })
+    .getByText('Entró hoy')
+    .click()
+  await expect(page).toHaveURL(new RegExp(`/logistica/vehiculo/${terreno.reciente.id}$`))
+})
+
+test('E2E «dónde está» dice en qué fase está y lleva a la página del vehículo', async ({
   page,
 }) => {
   await entrar(page, terreno.persona, { fresco: true })
-  await page.goto(`/logistica?origen=${terreno.a.id}&q=${terreno.demorado.vin ?? ''}`)
+  await page.goto(`/logistica?origen=${terreno.a.id}`)
+  await page.getByRole('searchbox', { name: BUSCAR }).fill(terreno.demorado.vin ?? '')
+  await page.getByRole('searchbox', { name: BUSCAR }).press('Enter')
+  await expect(page).toHaveURL(new RegExp(`q=${terreno.demorado.vin ?? ''}`))
+  const franja = page.getByRole('region', { name: 'Resultado de dónde está' })
+  await expect(franja).toContainText(`en «Tránsito ${proyecto}» hace 3 días`)
+  await page.reload()
+  await expect(franja).toContainText(`en «Tránsito ${proyecto}»`)
+  await expect(page.getByRole('searchbox', { name: BUSCAR })).toHaveValue(
+    terreno.demorado.vin ?? '',
+  )
+  await franja.getByRole('link', { name: terreno.demorado.titulo }).click()
+  await expect(page).toHaveURL(new RegExp(`/logistica/vehiculo/${terreno.demorado.id}$`))
+})
+
+test('E2E las pestañas de origen: el vecino sin permiso no está y cambiar de origen cambia la gráfica', async ({
+  page,
+}) => {
+  await entrar(page, terreno.persona, { fresco: true })
+  await page.goto(`/logistica?origen=${terreno.a.id}`)
   const pestanas = page.getByRole('navigation', { name: 'Orígenes' })
   await expect(pestanas.getByRole('link', { name: terreno.a.nombre })).toHaveAttribute(
     'aria-current',
@@ -126,21 +189,29 @@ test('las pestañas de origen: el vecino sin permiso no está y el otro cambia d
   await expect(pestanas.getByRole('link', { name: terreno.c.nombre })).toHaveCount(0)
   await pestanas.getByRole('link', { name: terreno.b.nombre }).click()
   await expect(page).toHaveURL(new RegExp(`origen=${terreno.b.id}`))
-  await expect(page).not.toHaveURL(/q=/)
-  await expect(page.getByRole('region', { name: /Cola .*: más de 50 vehículos/ })).toBeVisible()
+  await expect(page.locator('ol a[data-fase]')).toHaveCount(1)
+  // Un origen que la persona no ve no se muestra: ni la gráfica ni la lista de una fase suya.
+  await page.goto(`/logistica/fase/sin_fase?origen=${terreno.c.id}`)
+  await expect(page.getByText('No tienes permiso', { exact: false })).toBeVisible()
 })
 
-test('«Ver más» trae la que falta de una columna de 51 y el número deja de ser «50+»', async ({
+test('E2E las URL del kanban viejo se redirigen: ?vehiculo= a la página de la unidad y ?fase= a la lista', async ({
   page,
 }) => {
   await entrar(page, terreno.persona, { fresco: true })
-  await page.goto(`/logistica?origen=${terreno.b.id}`)
-  const cola = page.getByRole('region', { name: /^Cola /i })
-  await expect(cola.getByRole('article')).toHaveCount(50)
-  await expect(cola.getByText('50+', { exact: true })).toBeVisible()
-  await cola.getByRole('button', { name: 'Ver más' }).click()
-  await expect(cola.getByRole('article')).toHaveCount(CANTIDAD_EN_LA_COLA)
-  await expect(page.getByRole('region', { name: `Cola ${proyecto}: 51 vehículos` })).toBeVisible()
-  await expect(cola.getByRole('button', { name: 'Ver más' })).toHaveCount(0)
-  await expect(page.getByText('Se cargó 1 más.')).toBeAttached()
+  await page.goto(`/logistica?origen=${terreno.a.id}&vehiculo=${terreno.demorado.id}`)
+  await expect(page).toHaveURL(new RegExp(`/logistica/vehiculo/${terreno.demorado.id}$`))
+  await page.goto(`/logistica?origen=${terreno.a.id}&fase=${terreno.fases.transito}`)
+  await expect(page).toHaveURL(
+    new RegExp(`/logistica/fase/${terreno.fases.transito}\\?origen=${terreno.a.id}`),
+  )
+  // Un id que no es válido se ignora y queda la portada.
+  await page.goto(`/logistica?origen=${terreno.a.id}&vehiculo=no-es-un-id`)
+  await expect(page).toHaveURL(/\/logistica\?/)
+  await expect(page.locator('ol a[data-fase]')).toHaveCount(5)
+  // Una fase que ya no está lo dice, con el camino a la cadena.
+  await page.goto(`/logistica/fase/abc?origen=${terreno.a.id}`)
+  await expect(page.getByText('Esta fase ya no está en la cadena de este origen.')).toBeVisible()
+  await page.getByRole('link', { name: 'Ver la cadena' }).click()
+  await expect(page.locator('ol a[data-fase]')).toHaveCount(5)
 })

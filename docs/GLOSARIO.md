@@ -480,12 +480,19 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   la lee, con tope.
 - **Revisar** — `revisar_flujo()`: avisos de coherencia del flujo (sin salida, inalcanzable, esperas cruzadas…), de nivel error, aviso o
   información (`AvisoDeRevision`); la franja sobre el flujo los resume.
-- **Cadena** — `/logistica`: kanban de unidades por fase.
+- **Cadena** — `/logistica`: la gráfica por fase de un origen (`logistica_cadena_resumen`: cuántos vehículos tiene cada fase y cuántos están demorados o trabados, con tope) y,
+  al hacer clic en una fase, la lista de esa fase (`/logistica/fase/[fase]`). Ya no es un kanban. No: «tablero», «columna».
+- **Bandeja del día** — `/logistica` (`logistica_bandeja_grupo`): lo que le toca hoy a quien mira, por grupos y con la acción de cada fila a un toque. No: «bandeja de Inicio»
+  (ésa es `logistica_bandeja`, tres listas cortas).
+- **Grupo (de la bandeja del día)** — uno de siete: Demorados, Trabados, Documentos por aprobar, Documentos por vencer, Llegadas esperadas, Salen hoy y Subastas sin resolver. Cada uno
+  tiene su página (`/logistica/bandeja/[grupo]`), por cursor.
+- **Lista de la fase** — `/logistica/fase/[fase]`: los vehículos de una fase (o «Sin fase»), de a 50 por cursor, con filtros en la URL y la selección del lote (hasta 200).
+- **Llegada esperada** — un transporte de vehículo sin arribo cargado cuya ETA es de hoy o anterior y cuyo vehículo sigue en una fase que no es final; de la más reciente a la más vieja.
 - **Mover** — `cambiar_fase()` / `previsualizar_cambio_fase()`: cambiar de fase, con vista previa de qué falta.
 - **Alerta por demora** — `fases.demora_dias` / `alertas_demora()`: aviso cuando una unidad lleva más días de lo esperado en una fase. Job
   `alertas-demora` cada hora; se reabre pasado `fases.alerta_cada_horas` (nulo = 72 h) y mover la cierra.
-- **Trabado** — `logistica_bandeja().trabados`: unidad demorada a la que le falta un requisito bloqueante de su fase siguiente (la activa de
-  menor orden con transición desde la suya); se miran las primeras 50 demoradas. No: «bloqueado», «atascado».
+- **Trabado** — `logistica_bandeja().trabados`, el grupo «Trabados» y el número de la gráfica de la cadena: unidad demorada a la que le falta un requisito bloqueante de su fase siguiente (la
+  activa de menor orden con transición desde la suya); en la gráfica se miran las primeras 50 demoradas de cada fase y en el grupo hasta 200 por llamada. No: «bloqueado», «atascado».
 - **Documento por vencer** — aviso `documento_por_vencer` / `documentos_vencimientos()`: un documento aprobado entró en su ventana
   (`vence_el - tipos_documento.aviso_dias`); una vez por persona y documento.
 - **Documento** — `documentos`, `tipos_documento`: archivo del ciclo con estado pendiente/subido/aprobado/rechazado y vencimiento.
@@ -684,7 +691,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Unidad** — `Unidad` (`logistica/entities/nucleo/unidad.ts`): el vehículo o repuesto sobre el que se opera en logística (`tipo`);
   documentos, gastos, pagos, notas y transporte cuelgan por `vehiculo_id` o `repuesto_id`, uno y sólo uno (`refDeUnidad`).
 - **Panel de la unidad** — `<PanelDeLaUnidad>` (`logistica/features/nucleo`): cabecera y huecos de cada área en orden fijo
-  (`ORDEN_DE_HUECOS`); drawer `?vehiculo=<id>` sobre la cadena y página en `/logistica/vehiculo/<id>`.
+  (`ORDEN_DE_HUECOS`); página en `/logistica/vehiculo/<id>` (con `?hueco=documentos` abre ese bloque). Un vehículo se abre siempre ahí; el drawer `?vehiculo=` sólo queda en `/logistica/gastos`.
 - **Despliegue en seco** — `pnpm despliegue:en-seco` / `scripts/despliegue/en-seco.sh`, `revisar-base.mjs`: ensayo local de un despliegue
   (base, pruebas, advisors, jobs, buckets, Vault, funciones, variables, build) sin tocar la nube; termina en «listo» o con lo que falta y las
   líneas «Para la persona» (`docs/DESPLIEGUE.md`). No: «deploy de prueba».

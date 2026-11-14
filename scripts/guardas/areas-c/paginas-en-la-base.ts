@@ -1,6 +1,10 @@
 // Parte del registro de RPC con tamaño de página: los comentarios de una cotización (4.27-2) y las demás de abajo. La guarda
 // (`paginas-en-la-base.ts`) suma esta parte a `RPC_PAGINADAS` con `import.meta.glob('./areas-*/paginas-en-la-base.ts')` (`registros-de-carriles.ts`).
-import { TAMANO_DE_PAGINA_POR_DEFECTO, TAMANO_DE_VER_MAS } from '../../../src/shared/lib/paginacion'
+import {
+  TAMANO_DE_LA_BANDEJA,
+  TAMANO_DE_PAGINA_POR_DEFECTO,
+  TAMANO_DE_VER_MAS,
+} from '../../../src/shared/lib/paginacion'
 import { TOPE_DE_FUERA_DE_REGLA } from '../../../src/modules/flujos/entities/requisitos/fuera-de-regla'
 import { TOPE_DE_IMPACTO } from '../../../src/modules/flujos/entities/requisitos/impacto'
 import { TOPE_DE_ESPERAS } from '../../../src/modules/repuestos/entities/flujo/esperas'
@@ -8,6 +12,14 @@ import { TOPE_DE_BLOQUE } from '../../../src/modules/tablero/entities/bandeja'
 import type { RpcPaginada } from '../paginas-en-la-base'
 
 export const REGISTRO: readonly RpcPaginada[] = [
+  // La bandeja del día de `/logistica`: la página de un grupo lee `TAMANO_DE_LA_BANDEJA` por cursor y la portada pide menos (`PRIMERAS_DE_LA_BANDEJA`); el conteo hasta `TOPE_DE_LA_BANDEJA` lo acota la base
+  // con `_acotar_pagina(p_conteo, 100, 100)`.
+  {
+    rpc: 'logistica_bandeja_grupo',
+    parametro: 'p_tope',
+    pideElCodigo: TAMANO_DE_LA_BANDEJA,
+    lista: 'bandeja del día de logística, un grupo',
+  },
   // De a `TAMANO_DE_VER_MAS` raíces, cada una con sus primeras `TAMANO_DE_VER_MAS` respuestas («Ver más comentarios», hasta `TOPE_DE_LO_CARGADO`).
   {
     rpc: 'cotizacion_comentarios',

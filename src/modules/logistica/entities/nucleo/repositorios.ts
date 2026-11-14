@@ -7,3 +7,7 @@ import type { Unidad } from './unidad'
 export type LectorDeUnidad = (id: string) => Promise<Resultado<Unidad | null>>
 // La misma lectura, con los atributos del vehículo (de ahí sale su identidad, 6.13).
 export type LectorDeUnidadLeida = (id: string) => Promise<Resultado<UnidadLeida | null>>
+// Los atributos de unos vehículos por su id, bajo la RLS de quien mira: lo que no ve no vuelve. De ahí sale el nombre de un vehículo (6.13).
+export type LectorDeAtributos = (
+  ids: readonly string[],
+) => Promise<Resultado<Map<string, Record<string, unknown>>>>

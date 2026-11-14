@@ -3,7 +3,7 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import {
   alternar,
-  elegirLaColumna,
+  elegirLaPagina,
   SELECCION_VACIA,
   vaciar,
   type EstadoDeLaSeleccion,
@@ -33,8 +33,8 @@ export function ProveedorDeLaSeleccion({ origenId, firmaDelPedido, children }: P
       alternar: (fase, unidad) => {
         setEstado((actual) => alternar(actual, fase, unidad))
       },
-      elegirLaColumna: (fase, unidades) => {
-        setEstado((actual) => elegirLaColumna(actual, fase, unidades))
+      elegirLaPagina: (fase, unidades) => {
+        setEstado((actual) => elegirLaPagina(actual, fase, unidades))
       },
       vaciar: () => {
         setEstado(vaciar())

@@ -2,7 +2,7 @@ import type { Route } from 'next'
 import Link from 'next/link'
 import { puede } from '@/modules/equipo'
 import { leerFasesDeOrigen, leerFlujoDeOrigen } from '@/modules/flujos'
-import { leerUnidad } from '@/modules/logistica'
+import { esHuecoConocido, leerUnidad } from '@/modules/logistica'
 import { PanelDeLaUnidad } from '@/modules/logistica/pantallas/unidad'
 import { getOrigenes } from '@/modules/origenes'
 import { datosO } from '@/shared/lib/errores'
@@ -27,10 +27,19 @@ export function UnidadNoDisponible() {
   )
 }
 
-// La unidad con ese id y su panel, o el estado que toque (6.01). La usan la página de la unidad y, en la parte 3, el drawer de la cadena. Exige las dos cosas (D3): la fila bajo la
+// La unidad con ese id y su panel, o el estado que toque (6.01). La usan la página de la unidad y el drawer de gastos. Exige las dos cosas (D3): la fila bajo la
 // RLS de `vehiculos` (`vehiculos.ver`) y `logistica.ver` en el origen de la unidad. Un error de lectura sube al `error.tsx` de `(app)`, que ofrece «Reintentar»; el del flujo del
 // origen no tumba el panel: deja apagados los huecos que piden una regla y lo dice.
-export async function UnidadAbierta({ id, permisos }: { id: string; permisos: Permisos }) {
+export async function UnidadAbierta({
+  id,
+  permisos,
+  huecoAbierto,
+}: {
+  id: string
+  permisos: Permisos
+  // `?hueco=documentos`: el bloque que un enlace (la bandeja del día) pide ver abierto desde el principio. Una clave desconocida se ignora.
+  huecoAbierto?: string
+}) {
   const unidad = datosO(await leerUnidad(id))
   if (!unidad) {
     return <UnidadNoDisponible />
@@ -46,12 +55,17 @@ export async function UnidadAbierta({ id, permisos }: { id: string; permisos: Pe
   const origen = datosO(origenes).find((uno) => uno.id === unidad.origenId)
   const fase = datosO(fases).find((una) => una.id === unidad.faseId) ?? null
   const { huecos, aviso } = huecosDeLaUnidad(HUECOS_DE_LA_UNIDAD, { unidad, permisos, flujo })
+  const conElPedido = esHuecoConocido(huecoAbierto)
+    ? huecos.map((hueco) =>
+        hueco.clave === huecoAbierto ? { ...hueco, abiertoAlInicio: true } : hueco,
+      )
+    : huecos
   return (
     <PanelDeLaUnidad
       unidad={unidad}
       origen={origen?.nombre ?? ''}
       fase={fase}
-      huecos={huecos}
+      huecos={conElPedido}
       aviso={aviso}
     />
   )
