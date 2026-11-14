@@ -96,13 +96,13 @@ create function public._bandeja_dia_alcance(p_clave text)
   language plpgsql stable security definer
   set search_path = ''
 as $$
-declare v_o uuid[]; v_t uuid[]; v_p uuid[] := '{}'; o uuid;
+declare v_o uuid[]; v_t uuid[]; v_p uuid[] := '{}'::uuid[]; o uuid;
 begin
   if (select auth.uid()) is null then
     return query select '{}'::uuid[], '{}'::uuid[], '{}'::uuid[];
     return;
   end if;
-  select coalesce(array_agg(x.o), '{}'), coalesce(array_agg(x.o) filter (where x.alc = 'todos' and x.ex = 'todos'), '{}')
+  select coalesce(array_agg(x.o), '{}'::uuid[]), coalesce(array_agg(x.o) filter (where x.alc = 'todos' and x.ex = 'todos'), '{}'::uuid[])
     into v_o, v_t
     from (select fl.origen_id as o, public._logistica_alcance(fl.origen_id) as alc,
                  case when p_clave is null then 'todos'::public.alcance_permiso else public.alcance_de(p_clave, fl.origen_id) end as ex

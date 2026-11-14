@@ -11,7 +11,7 @@ as $$
 declare v_uid uuid := (select auth.uid());
 begin
   if v_uid is null or p_origen is null then
-    return '{}';
+    return '{}'::uuid[];
   end if;
   -- El conjunto se corta siempre por el mismo orden (lo más nuevo primero): con más de 10.001 propios, la página de un cursor se arma sobre lo mismo que la anterior.
   return array(

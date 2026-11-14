@@ -13,7 +13,7 @@ declare
   v_n integer := public._acotar_pagina(p_tope, 1000, 1000);
   v_alcance public.alcance_permiso;
   v_todos boolean;
-  v_propios uuid[] := '{}';
+  v_propios uuid[] := '{}'::uuid[];
   v_cortado boolean := false;
   v_cuentas jsonb := '{}'::jsonb;
   v_filas jsonb := '[]'::jsonb;
