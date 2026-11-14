@@ -7,7 +7,7 @@ import {
   accionesDeCotizacion,
   type ClaveDeAccionDeCotizacion,
   type MenuDeUnaFila,
-} from '@/modules/cotizaciones/client'
+} from '@/modules/cotizaciones/pantallas/listado'
 import { MasAcciones, type AccionDeMenu } from '@/shared/ui/lista'
 
 // Lo que pasa al elegir cada acción: lo decide quien compone la pantalla (`listado-con-acciones.tsx`), con las actions y los diálogos de cada área.

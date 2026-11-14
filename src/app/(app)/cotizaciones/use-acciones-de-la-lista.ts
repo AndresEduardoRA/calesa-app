@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useMemo, useState } from 'react'
-import type { MenuDeUnaFila } from '@/modules/cotizaciones/client'
+import type { MenuDeUnaFila } from '@/modules/cotizaciones/pantallas/listado'
 import { aprobarLaCotizacion } from '@/modules/cotizaciones/pantallas/aprobada-listado'
 import {
   useAbrirMarcasDeLaFila,

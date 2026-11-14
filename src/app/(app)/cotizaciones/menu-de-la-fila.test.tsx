@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import type { MenuDeUnaFila } from '@/modules/cotizaciones/client'
+import type { MenuDeUnaFila } from '@/modules/cotizaciones/pantallas/listado'
 import { MenuDeLaFila, type AccionesDeLaFila } from './menu-de-la-fila'
 
 afterEach(cleanup)

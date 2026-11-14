@@ -11,7 +11,10 @@ vi.mock('next/navigation', () => ({
 }))
 // Las vistas guardadas traen las actions de `equipo` (de servidor): acá no se llaman.
 vi.mock('server-only', () => ({}))
-vi.mock('./diferidos', () => ({ ResumenDeCotizacionDiferido: () => null }))
+vi.mock('./diferidos', () => ({
+  ResumenDeCotizacionDiferido: () => null,
+  VistasDeCotizacionesDiferido: () => <button>Vistas</button>,
+}))
 
 beforeAll(() => {
   // jsdom no trae matchMedia: se prueba como una pantalla angosta.

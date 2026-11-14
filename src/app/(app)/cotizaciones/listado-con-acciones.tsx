@@ -1,7 +1,7 @@
 'use client'
 
 import type { ComponentProps } from 'react'
-import type { MenuDeUnaFila } from '@/modules/cotizaciones/client'
+import type { MenuDeUnaFila } from '@/modules/cotizaciones/pantallas/listado'
 import { DialogosDeMarcasDeLaFila } from '@/modules/cotizaciones/pantallas/comentarios-listado'
 import { DialogoDeMarcarFinalDeLaFila } from '@/modules/cotizaciones/pantallas/final-listado'
 import { ListadoDeCotizaciones } from '@/modules/cotizaciones/pantallas/listado'

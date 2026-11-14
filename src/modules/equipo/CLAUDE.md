@@ -15,7 +15,7 @@ Autenticación, perfiles, roles y permisos (RBAC puro), invitaciones, bloqueo, b
 
 - `entities/sesion.ts` — `Sesion` desde `mi_sesion()` (permisos **efectivos**). `entities/preferencias.ts` — última escritura gana, sin versión.
 - `entities/dominancia.ts` — espejo de `concesion_dominada()` y `rol_dominado()`. `puede()` y el catálogo de claves: `@/shared/lib/permisos`.
-- `entities/vista.ts` — `RUTA_DE_PANTALLA`: un listado nuevo que guarda vistas se suma ahí.
+- `entities/vista.ts` — `RUTA_DE_PANTALLA`: un listado nuevo que guarda vistas se suma ahí (hoy leads, vehículos y cotizaciones; la columna `pantalla` es texto, sin migración).
 - `infra/invitaciones.ts` — **la excepción del cliente admin**: `conAdminDeAuth()` comprueba `equipo.usuarios.gestionar` y entrega sólo `auth.admin`
   (lo cuida el lint). Crear rol o invitar no es idempotente.
 

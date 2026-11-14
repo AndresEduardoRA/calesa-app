@@ -10,11 +10,10 @@ import { textoDelAviso, textoDelVacio } from '../../../entities/listado/aviso-de
 import type { LecturaDelServidor } from '../../../entities/listado/resumen-del-listado'
 import { useResumenDeCotizacion } from '../hooks/use-resumen-de-cotizacion'
 import { AvisoDeLoFiltrado } from './aviso-de-lo-filtrado'
-import { ResumenDeCotizacionDiferido } from './diferidos'
+import { ResumenDeCotizacionDiferido, VistasDeCotizacionesDiferido } from './diferidos'
 import { NuevaCotizacion } from './nueva-cotizacion'
 import { ResultadoDelListado } from './resultado-del-listado'
 import type { FilaDeCotizacion, MenuDeFila, OrigenDelListado } from './tipos'
-import { VistasDeCotizaciones } from './vistas-de-cotizaciones'
 
 type Props = {
   esquema: EsquemaDeFiltros
@@ -80,7 +79,7 @@ export function ListadoDeCotizaciones({
         esquema={esquema}
         porPagina={porPagina}
         acciones={acciones}
-        vistas={<VistasDeCotizaciones esquema={esquema} vistas={vistas} />}
+        vistas={<VistasDeCotizacionesDiferido esquema={esquema} vistas={vistas} />}
       >
         {aviso === null ? null : <AvisoDeLoFiltrado texto={aviso} />}
         <ResultadoDelListado
