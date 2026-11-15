@@ -226,6 +226,9 @@ export type Database = {
           id: number
           portal_actualizado_en: string
           portal_mensaje: string | null
+          telefonos_actualizado_en: string
+          telefonos_extra_como_principal: boolean
+          telefonos_extra_maximo: number
         }
         ComputedFields: never
         Insert: {
@@ -234,6 +237,9 @@ export type Database = {
           id?: number
           portal_actualizado_en?: string
           portal_mensaje?: string | null
+          telefonos_actualizado_en?: string
+          telefonos_extra_como_principal?: boolean
+          telefonos_extra_maximo?: number
         }
         Update: {
           embudo_actualizado_en?: string
@@ -241,6 +247,9 @@ export type Database = {
           id?: number
           portal_actualizado_en?: string
           portal_mensaje?: string | null
+          telefonos_actualizado_en?: string
+          telefonos_extra_como_principal?: boolean
+          telefonos_extra_maximo?: number
         }
         Relationships: []
       }
@@ -10521,6 +10530,7 @@ export type Database = {
           telefono: string
         }[]
       }
+      lead_telefonos_leer: { Args: { p_lead: string }; Returns: Json }
       lead_transferir: {
         Args: { p_destino: string; p_dueno_esperado: string; p_lead: string }
         Returns: Json
@@ -11283,6 +11293,11 @@ export type Database = {
         Returns: Json
       }
       telefono_lead: { Args: { p_lead: string }; Returns: string }
+      telefonos_extra_ajustes_guardar: {
+        Args: { p_actualizado_en_esperado: string; p_como_principal: boolean; p_maximo: number }
+        Returns: string
+      }
+      telefonos_extra_choques: { Args: { p_despues?: string; p_tamano?: number }; Returns: Json }
       tiene_permiso: { Args: { p_clave: string; p_origen?: string }; Returns: boolean }
       tipo_cambio_crear: {
         Args: {
@@ -11618,6 +11633,10 @@ export type Database = {
       vehiculos_situacion_al_cerrar: { Args: Record<PropertyKey, never>; Returns: number }
       verificar_telefono: { Args: { p_cc: string; p_tel: string }; Returns: Json }
       verificar_telefono_de_lead: {
+        Args: { p_cc: string; p_lead: string; p_tel: string }
+        Returns: Json
+      }
+      verificar_telefono_extra: {
         Args: { p_cc: string; p_lead: string; p_tel: string }
         Returns: Json
       }
