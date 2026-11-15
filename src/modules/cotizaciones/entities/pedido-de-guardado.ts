@@ -6,7 +6,8 @@ import type { EntradasDelPedido } from './entradas'
 export type PedidoDeGuardado = {
   intento: string
   origenId: string
-  leadId: string
+  // Nulo con `cotizaciones.crear.sin_lead` del origen: la base lo acepta (y sin esa clave lo rechaza).
+  leadId: string | null
   vehiculoId: string | null
   abierta: string
   entradas: EntradasDelPedido
@@ -20,7 +21,8 @@ export function argumentosDeCrear(p: PedidoDeGuardado) {
   return {
     p_id: p.intento,
     p_origen: p.origenId,
-    p_lead: p.leadId,
+    // El tipo generado dice `string`, pero la base acepta nulo con `cotizaciones.crear.sin_lead` (como `p_padre` de los comentarios).
+    p_lead: p.leadId as string,
     p_entradas: p.entradas,
     p_abierta: p.abierta,
     ...(p.vehiculoId === null ? {} : { p_vehiculo: p.vehiculoId }),

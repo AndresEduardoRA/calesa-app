@@ -9,8 +9,8 @@ export const ACTUALIZADO_EN = '2026-11-03T14:20:31.123456+00:00'
 
 export const crudaDeUnaGuardada = (mas: Record<string, unknown> = {}) => {
   // El diseño de la hoja de prueba, sin lo que sólo tiene la hoja nueva: ni la hoja abierta, ni su hora, ni si el vehículo es obligatorio.
-  const { estado: _estado, abierta_en, abierta, vehiculo_obligatorio, ...diseno } = crudaDeLaHoja()
-  void [abierta_en, abierta, vehiculo_obligatorio]
+  const { estado: _estado, abierta_en, abierta, ...diseno } = crudaDeLaHoja()
+  void [abierta_en, abierta]
   return {
     cotizacion: {
       id: ID_DE_LA_COTIZACION,

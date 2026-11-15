@@ -74,7 +74,12 @@ const SECCIONES: Record<Pestana, (pedido: Pedido) => ReactNode> = {
   ),
   ajustes: ({ permisos }) => (
     <Suspense fallback={<EsqueletoFormulario bloques={1} campos={2} />}>
-      <SeccionAjustes puedeCambiar={puedeCambiarAjustesDeCotizacion(permisos)} />
+      <SeccionAjustes
+        puedeCambiar={puedeCambiarAjustesDeCotizacion(permisos)}
+        puedeIrARoles={
+          puede(permisos, 'equipo.roles.ver') || puede(permisos, 'equipo.roles.gestionar')
+        }
+      />
     </Suspense>
   ),
 }

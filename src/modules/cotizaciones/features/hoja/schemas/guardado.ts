@@ -12,7 +12,7 @@ export const esquemaDeEntradas = z.object({
 export const esquemaDeGuardado = z.object({
   intento: z.guid(),
   origenId: z.guid(),
-  leadId: z.guid(),
+  leadId: z.guid().nullable(),
   vehiculoId: z.guid().nullable(),
   abierta: z.string().min(1).max(300),
   entradas: esquemaDeEntradas,

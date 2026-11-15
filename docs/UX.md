@@ -87,9 +87,13 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
      «Todos», «Prospecto» y «Cliente» (abre en «Todos»); busca entre los leads que quien cotiza ve, como el listado, y el tipo de cada lead
      va como texto; el elegido tiene «Quitar»; «+» abre «Nuevo lead» del shell (borrador y verificación del teléfono) y al guardar la hoja
      elige al creado, conservando lo tipeado. Los dos paneles van por cursor (Anterior y Siguiente), nunca «Página N de M».
-   - **El lead es obligatorio siempre** (preseleccionado desde su ficha: «Cotizar», en la cabecera junto a «Editar», abre la hoja con ese
-     lead en el primer origen donde se cotiza). El vehículo, salvo que el ajuste «Vehículo obligatorio al cotizar» diga que no; una final lo
-     exige siempre.
+   - **Lead y vehículo son obligatorios salvo con las claves del rol en ese origen** («Guardar sin lead» y «Guardar sin vehículo», en «Roles
+     y permisos» por origen; una final los exige siempre). Cliente preseleccionado desde su ficha: «Cotizar», en la cabecera junto a «Editar», abre la
+     hoja con ese lead en el primer origen donde se cotiza. Lo que falta: «Guardar» apagado, el motivo junto al botón («Para guardar, elige el
+     cliente en «Cliente».» o «…el vehículo en «Vehículo».», el cliente primero), «Elegir el cliente» o «Elegir el vehículo» (abre `?panel=cliente`
+     o `?panel=vehiculo`; sin `leads.ver` o sin `vehiculos.ver` del origen, en su lugar «Para elegir el …, pídeselo a quien administra los
+     roles.») y la insignia «Obligatorio» en su barra. Cambiar de origen recalcula la regla; «Ver como» aplica la del rol mirado. Si la regla cambió
+     con la hoja abierta, el rechazo dice «Tu rol ahora pide el cliente (o el vehículo) para guardar en este origen.» con el mismo «Elegir…».
 3. **La hoja:** secciones en el orden declarado; cada monto en una **XCell** (`Tab` avanza, tipear abre edición, `Esc` cancela) con el tono
    de su grupo, ayuda y ⚙ si el permiso lo da. Lo **sugerido** lleva un punto; sobrescrito queda **modificado** (anillo y ↺). Atajos (chips
    de año), **variante** (Moto, Auto Gasolina…), **interruptores** (habilitar fila, mostrar garantía). **Una celda que quien mira no puede
@@ -951,18 +955,18 @@ Configuración › Cotización (`?seccion=tablas&origen=<id>`): editar y publica
 
 ### Cotización: ajustes (estados propios)
 
-Configuración › Cotización (`?seccion=ajustes`): la vigencia y el vehículo obligatorio al cotizar, una fila para todas las cotizaciones.
+Configuración › Cotización (`?seccion=ajustes`): la vigencia, una fila para todas las cotizaciones.
 
 - **Quién:** la pestaña (la última) la ve quien tiene `cotizaciones.configurar` en algún origen; la cambia quien la tiene en todos (la
   concesión sin origen). Sin eso, los campos apagados con su motivo arriba y sin «Guardar». La base lo vuelve a exigir en
   `empresa_guardar_ajustes_de_cotizacion()`.
-- **Formulario:** bloque «Vigencia y vehículo» con «Vigencia (días)» (1 a 365; fuera de rango, el motivo junto al campo con el foco) y el
-  interruptor «Vehículo obligatorio al cotizar». Sin borrador. Esqueleto; si la lectura falla, el error de la ruta (nunca los de fábrica).
+- **Formulario:** bloque «Vigencia» con «Vigencia (días)» (1 a 365; fuera de rango, el motivo junto al campo con el foco), y una línea: «Si una
+  cotización pide vehículo y lead se decide por rol y origen en «Roles y permisos».», con el enlace «Ir a Roles y permisos» para quien ve o gestiona
+  los roles. Sin borrador. Esqueleto; si la lectura falla, el error de la ruta (nunca los de fábrica).
 - **Guardar:** «Guardando…» con los campos apagados; entró: aviso y el formulario se monta con lo guardado. Otra persona cambió la fila
   (aquí o en Empresa): el texto de la base con «Recargar» y lo tipeado queda; igual sin conexión o sin permiso.
 - **Dónde se nota:** la vigencia mueve «Vencida», «vence el», la tarjeta y el PDF de todas las cotizaciones, también las guardadas (se
-  calcula al leer); el vehículo obligatorio rige en la hoja que se abre después (apagado, una preventa se guarda sin vehículo; una final
-  siempre lo pide).
+  calcula al leer).
 
 ### Cotización: diseño (estados propios)
 

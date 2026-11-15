@@ -149,7 +149,6 @@ export type Database = {
           registro_abierto: boolean
           telefono: string | null
           telefono_cc: string | null
-          vehiculo_obligatorio_al_cotizar: boolean
           vigencia_dias: number
           whatsapp: string | null
           zona_horaria: string
@@ -181,7 +180,6 @@ export type Database = {
           registro_abierto?: boolean
           telefono?: string | null
           telefono_cc?: string | null
-          vehiculo_obligatorio_al_cotizar?: boolean
           vigencia_dias?: number
           whatsapp?: string | null
           zona_horaria?: string
@@ -212,7 +210,6 @@ export type Database = {
           registro_abierto?: boolean
           telefono?: string | null
           telefono_cc?: string | null
-          vehiculo_obligatorio_al_cotizar?: boolean
           vigencia_dias?: number
           whatsapp?: string | null
           zona_horaria?: string
@@ -10195,11 +10192,7 @@ export type Database = {
         Returns: string
       }
       empresa_guardar_ajustes_de_cotizacion: {
-        Args: {
-          p_actualizado_en_esperado: string
-          p_vehiculo_obligatorio: boolean
-          p_vigencia_dias: number
-        }
+        Args: { p_actualizado_en_esperado: string; p_vigencia_dias: number }
         Returns: string
       }
       en_cartera: { Args: { p_lead: string }; Returns: boolean }

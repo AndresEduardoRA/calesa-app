@@ -7,6 +7,7 @@ import {
   crearPersona,
   darRolDePrueba,
 } from './soporte/base'
+import { darRolDeLaSemilla } from './soporte/rol-de-la-semilla'
 import { limpiarGuardado, prepararGuardado } from './soporte/cotizar-guardar'
 import { literal, sql } from './soporte/sql'
 
@@ -16,14 +17,23 @@ test.describe.configure({ mode: 'serial' })
 
 const TITULO = 'Resumen para cotizar'
 let origen = { id: '', nombre: '' }
-let duena = ''
 let lectora = ''
+let asesora = ''
 let vehiculo = ''
 
 test.beforeAll(async ({}, info) => {
   const proyecto = info.project.name
   await borrarRolesDePrueba()
-  ;({ origen, duena } = await prepararGuardado(proyecto, 'rescot'))
+  ;({ origen } = await prepararGuardado(proyecto, 'rescot'))
+  // La dueña guarda sin lead (tiene `sin_lead`); quien no, y ve el motivo, es el Asesor de la semilla.
+  asesora = correoDePrueba(`asesora-rescot-${proyecto}`)
+  await crearPersona({
+    email: asesora,
+    contrasena: CONTRASENA,
+    nombre: 'Ana Asesora',
+    invitada: true,
+  })
+  await darRolDeLaSemilla(asesora, 'asesor')
   lectora = correoDePrueba(`lectora-rescot-${proyecto}`)
   await crearPersona({
     email: lectora,
@@ -60,7 +70,7 @@ async function abrirElResumen(page: Page, correo: string): Promise<void> {
 test('E2E «Cotizar» lleva a la hoja de ese origen con el vehículo en la barra, y «Guardar» dice por qué no', async ({
   page,
 }) => {
-  await abrirElResumen(page, duena)
+  await abrirElResumen(page, asesora)
   const cotizar = resumen(page).getByRole('link', { name: 'Cotizar' })
   await expect(cotizar).toHaveAttribute(
     'href',

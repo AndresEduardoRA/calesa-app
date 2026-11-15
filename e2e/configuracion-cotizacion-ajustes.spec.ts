@@ -12,8 +12,8 @@ import {
 } from './soporte/base'
 import { sql } from './soporte/sql'
 
-// La pestaña «Ajustes» de Configuración › Cotización (4.20-4b, `docs/UX.md` › «Cotización: ajustes (estados propios)»): la vigencia y el vehículo obligatorio al
-// cotizar. La ve quien tiene `cotizaciones.configurar` en algún origen y la cambia quien la tiene en todos. El conflicto de versión lo prueba la T3 de
+// La pestaña «Ajustes» de Configuración › Cotización (4.20-4b, `docs/UX.md` › «Cotización: ajustes (estados propios)»): la vigencia (si el vehículo y el lead son
+// obligatorios se decide por rol y origen en «Roles y permisos»; la línea de abajo lleva allí). La ve quien tiene `cotizaciones.configurar` en algún origen y la cambia quien la tiene en todos. El conflicto de versión lo prueba la T3 de
 // `supabase/tests/empresa-ajustes-de-cotizacion.sql`. La fila es única: se restaura al final (el e2e corre con un solo worker).
 test.describe.configure({ mode: 'serial' })
 
@@ -24,9 +24,7 @@ let antes = ''
 
 test.beforeAll(async ({}, info) => {
   proyecto = info.project.name
-  antes = sql(
-    "select vigencia_dias || ',' || vehiculo_obligatorio_al_cotizar from public.ajustes_empresa",
-  )
+  antes = sql('select vigencia_dias from public.ajustes_empresa')
   await borrarPersonasDePrueba()
   await borrarRolesDePrueba()
   duena = correoDePrueba(`duena-ajustes-cot-${proyecto}`)
@@ -50,26 +48,19 @@ test.beforeAll(async ({}, info) => {
 })
 
 test.afterAll(async () => {
-  const [vigencia, obligatorio] = antes.split(',')
-  if (vigencia && obligatorio) {
-    sql(
-      `update public.ajustes_empresa set vigencia_dias = ${Number(vigencia)}, vehiculo_obligatorio_al_cotizar = ${obligatorio === 'true'}`,
-    )
+  if (antes !== '') {
+    sql(`update public.ajustes_empresa set vigencia_dias = ${Number(antes)}`)
   }
   await borrarPersonasDePrueba()
   await borrarRolesDePrueba()
 })
 
 const vigencia = (page: Page) => page.getByLabel('Vigencia (días)')
-const vehiculoObligatorio = (page: Page) =>
-  page.getByRole('switch', { name: 'Vehículo obligatorio al cotizar' })
 
-test('la dueña cambia la vigencia y el vehículo obligatorio desde el hub, y quedan guardados', async ({
+test('la dueña cambia la vigencia desde el hub y queda guardada; la línea de «Roles y permisos» la lleva allí', async ({
   page,
 }) => {
-  sql(
-    'update public.ajustes_empresa set vigencia_dias = 15, vehiculo_obligatorio_al_cotizar = true',
-  )
+  sql('update public.ajustes_empresa set vigencia_dias = 15')
   await entrar(page, duena, { fresco: true })
   await page.goto('/configuracion')
   await page.getByRole('link', { name: /Cotización/ }).click()
@@ -78,21 +69,23 @@ test('la dueña cambia la vigencia y el vehículo obligatorio desde el hub, y qu
   await expect(page.getByRole('tab', { name: 'Ajustes' })).toHaveAttribute('aria-selected', 'true')
   await expect(page.getByRole('heading', { name: 'Ajustes', level: 2 })).toBeVisible()
   await expect(vigencia(page)).toHaveValue('15')
-  await expect(vehiculoObligatorio(page)).toBeChecked()
+  await expect(
+    page.getByText(
+      'Si una cotización pide vehículo y lead se decide por rol y origen en «Roles y permisos».',
+    ),
+  ).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Ir a Roles y permisos' })).toHaveAttribute(
+    'href',
+    '/configuracion/roles',
+  )
 
   await vigencia(page).fill('30')
-  await vehiculoObligatorio(page).click()
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Ajustes de cotización guardados')).toBeVisible()
-  expect(
-    sql(
-      "select vigencia_dias || ',' || vehiculo_obligatorio_al_cotizar from public.ajustes_empresa",
-    ),
-  ).toBe('30,false')
+  expect(sql('select vigencia_dias from public.ajustes_empresa')).toBe('30')
 
   await page.reload()
   await expect(vigencia(page)).toHaveValue('30')
-  await expect(vehiculoObligatorio(page)).not.toBeChecked()
 })
 
 test('quien configura un solo origen ve los ajustes apagados, con el motivo y sin «Guardar»', async ({
@@ -108,6 +101,5 @@ test('quien configura un solo origen ve los ajustes apagados, con el motivo y si
     page.getByText('Cambiar estos ajustes pide configurar el cotizador en todos los orígenes.'),
   ).toBeVisible()
   await expect(vigencia(page)).toBeDisabled()
-  await expect(vehiculoObligatorio(page)).toBeDisabled()
   await expect(page.getByRole('button', { name: 'Guardar' })).toHaveCount(0)
 })

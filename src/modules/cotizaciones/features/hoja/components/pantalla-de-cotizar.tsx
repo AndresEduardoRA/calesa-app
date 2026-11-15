@@ -5,6 +5,10 @@ import { guardarBorradorDeEstado } from '@/shared/lib/borrador'
 import type { RecalculoInicial } from '../../../entities/apertura'
 import { claveDeLaHoja, claveDelBorrador } from '../../../entities/claves-de-la-hoja'
 import type { HojaLista } from '../../../entities/hoja'
+import type {
+  EleccionesDeLaHoja,
+  ObligatoriosAlCotizar,
+} from '../../../entities/obligatorios-al-cotizar'
 import { useGuardado } from '../hooks/use-guardado'
 import { useSoltarLoAbierto } from '../hooks/urls-de-la-hoja'
 import { CotizacionGuardada } from './cotizacion-guardada'
@@ -15,6 +19,9 @@ type PropsDeLaHoja = {
   inicial: RecalculoInicial
   vehiculoId: string | null
   vehiculoSoltado: boolean
+  // Lo que el rol pide elegir en este origen y cómo se elige: la página los calcula con los permisos de la sesión (booleanos y textos; `permisos.ts` no viaja).
+  obligatorios: ObligatoriosAlCotizar
+  elecciones: EleccionesDeLaHoja
 }
 
 type Props = PropsDeLaHoja & {

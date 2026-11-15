@@ -151,8 +151,9 @@ export function resultadoDeCrear(respuesta: {
 }
 
 // La salida que acompaña al texto: `d2` son las dos de la hoja desactualizada; `recargar` reabre la hoja (lo tipeado vuelve con el borrador); `reintentar`, otro guardado;
-// `ingresar`, la sesión. Nula: un botón que no arregla nada no se ofrece.
-export type SalidaDelAviso = 'd2' | 'recargar' | 'reintentar' | 'ingresar' | null
+// `ingresar`, la sesión; `elegir_lead` y `elegir_vehiculo`, el panel de lo que la regla del rol ahora pide. Nula: un botón que no arregla nada no se ofrece.
+export type SalidaDelAviso =
+  'd2' | 'recargar' | 'reintentar' | 'ingresar' | 'elegir_lead' | 'elegir_vehiculo' | null
 export type TextoDelAviso = { texto: string; salida: SalidaDelAviso }
 
 const RECARGAR_HOJA = 'Esta hoja ya no se puede guardar: recárgala. Lo que escribiste vuelve.'
@@ -160,7 +161,7 @@ const NO_SE_PUDO = 'No se pudo guardar. Vuelve a intentar en un momento.'
 export const VALOR_DESCARTADO =
   'Hay un valor que esta hoja no acepta: restablece la celda con aviso.'
 export const FALTA_EL_LEAD = 'Para guardar, elige el cliente en «Cliente».'
-export const FALTA_EL_VEHICULO = 'Este origen pide un vehículo para guardar.'
+export const FALTA_EL_VEHICULO = 'Para guardar, elige el vehículo en «Vehículo».'
 const AL_RECARGAR = 'Al recargar se abre esa versión; lo que escribiste no vuelve.'
 
 // Exhaustivo: un motivo nuevo sin su texto no compila.
@@ -204,8 +205,15 @@ const TEXTOS: Readonly<Record<MotivoDeRechazo, TextoDelAviso>> = {
     texto: 'Esta cotización cambió mientras la tenías abierta: recárgala.',
     salida: 'recargar',
   },
-  falta_lead: { texto: FALTA_EL_LEAD, salida: null },
-  falta_vehiculo: { texto: FALTA_EL_VEHICULO, salida: null },
+  // La regla cambió con la hoja abierta (`cotizacion_crear` pide lo que la hoja ya no pedía): elegirlo cambia la URL y la página vuelve con los permisos al día.
+  falta_lead: {
+    texto: 'Tu rol ahora pide el cliente para guardar en este origen.',
+    salida: 'elegir_lead',
+  },
+  falta_vehiculo: {
+    texto: 'Tu rol ahora pide el vehículo para guardar en este origen.',
+    salida: 'elegir_vehiculo',
+  },
   // Los seis orígenes del 42501 sin detalle (sin permiso, la cuenta bloqueada, el lead, el vehículo, el id ajeno, la propia action) dicen lo mismo: no confirman qué existe.
   sin_acceso: {
     texto:

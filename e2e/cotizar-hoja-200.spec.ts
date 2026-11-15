@@ -66,6 +66,9 @@ test.beforeAll(async ({}, info) => {
     permisos: [
       'cotizaciones.ver',
       'cotizaciones.crear',
+      // Sin guardar sin vehículo ni sin lead, su hoja dibujaría «Elegir el vehículo»: un nodo que la dueña no tiene y que no es de un ⚙.
+      'cotizaciones.crear.sin_vehiculo',
+      'cotizaciones.crear.sin_lead',
       'cotizaciones.nivel.costos.ver',
       'cotizaciones.nivel.costos.editar',
     ],

@@ -8,10 +8,14 @@ import type { RecalculoInicial } from '../../../entities/apertura'
 import type { CalculoDeLaTarjeta } from '../../../entities/calculo-de-la-tarjeta'
 import { seccionSeDibuja, type ContextoDeHoja } from '../../../entities/binding'
 import { nombreDelModo } from '../../../entities/cabecera-de-la-hoja'
-import { FALTA_EL_VEHICULO } from '../../../entities/guardado'
 import type { HojaLista } from '../../../entities/hoja'
-import { useGuardarLaGuardada, type EdicionDeLaHoja } from '../hooks/use-guardar-la-guardada'
-import { useGuardarLaHoja } from '../hooks/use-guardar-la-hoja'
+import type {
+  EleccionesDeLaHoja,
+  ObligatoriosAlCotizar,
+} from '../../../entities/obligatorios-al-cotizar'
+import { useBotonesDeGuardar } from '../hooks/use-botones-de-guardar'
+import type { EdicionDeLaHoja } from '../hooks/use-guardar-la-guardada'
+import type { useGuardarLaHoja } from '../hooks/use-guardar-la-hoja'
 import type { Guardado, VistaDelGuardado } from '../hooks/use-nucleo-del-guardado'
 import { useHoja, type AperturaDeHoja } from '../hooks/use-hoja'
 import { AvisoDelGuardado } from './aviso-de-guardado'
@@ -27,6 +31,10 @@ type Props = {
   // El vehículo de la URL que la base no dejó usar: se calculó sin él.
   vehiculoSoltado: boolean
   leadId: string | null
+  // Lo que el rol pide elegir antes de guardar en este origen y cómo se elige (`obligatoriosAlCotizar()` y `eleccionesDeLaHoja()`, calculados en el servidor). Sin ellos, la hoja no
+  // pide nada: una guardada no los trae.
+  obligatorios?: ObligatoriosAlCotizar
+  elecciones?: EleccionesDeLaHoja
   // Nulo: la hoja no guarda (una guardada de sólo lectura, o todavía sin «Guardar»).
   guardado: Guardado | null
   // El borrador de lo tipeado: su clave en la pestaña (de quien cotiza) y «Descartar», con el que el marco vuelve a montar la hoja vacía. Sin él, no hay borrador.
@@ -50,6 +58,7 @@ type Props = {
   deLoGuardado?: { calculo: CalculoDeLaTarjeta; difiere: boolean }
 }
 
+// Puede cotizar en el origen pero su rol no ve ningún dato de la hoja (`cotizaciones.ver`): no hay nada que dibujar ni un total que dar.
 function SinDatosQueVer() {
   return (
     <EstadoSinPermiso
@@ -57,13 +66,6 @@ function SinDatosQueVer() {
       descripcion="Tu rol puede cotizar en este origen, pero no ve los datos de su hoja. Pídeselo a quien administra los roles."
     />
   )
-}
-
-function avisoDelVehiculo(vehiculoSoltado: boolean, faltaVehiculo: boolean) {
-  if (vehiculoSoltado) {
-    return 'No se puede usar ese vehículo.'
-  }
-  return faltaVehiculo ? FALTA_EL_VEHICULO : null
 }
 
 // Lo que ven las celdas: el índice, lo tipeado, la última respuesta y los campos que se eligen en el panel del vehículo.
@@ -90,7 +92,8 @@ type PropsDelResumen = Pick<Props, 'hoja' | 'totalGuardado' | 'alRecargar'> & {
   confirmacion: string | null
   h: ReturnType<typeof useHoja>
   contexto: ContextoDeHoja
-  vehiculo: { id: string | null; soltado: boolean }
+  vehiculoSoltado: boolean
+  elecciones: EleccionesDeLaHoja | undefined
   boton: ReturnType<typeof useGuardarLaHoja>['boton']
   soloLectura: boolean
 }
@@ -100,7 +103,8 @@ function ResumenDeLaHoja({
   hoja,
   h,
   contexto,
-  vehiculo,
+  vehiculoSoltado,
+  elecciones,
   guardado,
   confirmacion,
   boton,
@@ -118,10 +122,7 @@ function ResumenDeLaHoja({
       modo={nombreDelModo(hoja.cabecera, h.entradas.modoTc)}
       contexto={contexto}
       estado={h.estado}
-      avisoDelVehiculo={avisoDelVehiculo(
-        vehiculo.soltado,
-        hoja.vehiculoObligatorio && vehiculo.id === null,
-      )}
+      avisoDelVehiculo={vehiculoSoltado ? 'No se puede usar ese vehículo.' : null}
       alReintentar={h.reintentar}
       alRecargar={recargar}
       guardar={boton}
@@ -136,10 +137,71 @@ function ResumenDeLaHoja({
             version={hoja.formula.version}
             alRecargar={recargar}
             confirmacion={confirmacion}
+            elecciones={elecciones}
           />
         )
       }
     />
+  )
+}
+
+// Los iconos y los tonos, una sola vez por hoja.
+function SimbolosYTonos({ tonos }: { tonos: HojaLista['tonos'] }) {
+  return (
+    <>
+      <SimbolosDeXCell />
+      <EstiloDeTonos tonos={tonos} />
+    </>
+  )
+}
+
+// «Recargar»: sin nada, vuelve a pedir la página al servidor; el marco de una guardada lo suma para volver a montar la hoja con lo que llegue (4.15-3).
+function useRecargar(alRecargar: (() => void) | undefined): () => void {
+  const router = useRouter()
+  return alRecargar ?? router.refresh
+}
+
+// La columna de la izquierda: lo que se pone encima (el aviso de versión de una guardada), la cabecera (modos y «Ver total Bs») y las secciones del diseño.
+function ColumnaDeLaHoja({
+  hoja,
+  h,
+  contexto,
+  secciones,
+  guardando,
+  soloLectura,
+  encima,
+  alRecargar,
+}: {
+  hoja: HojaLista
+  h: ReturnType<typeof useHoja>
+  contexto: ContextoDeHoja
+  secciones: HojaLista['secciones']
+  guardando: boolean
+  soloLectura: boolean
+  encima: ReactNode
+  alRecargar: () => void
+}) {
+  return (
+    <div className="grid min-w-0 flex-1 gap-4">
+      {encima}
+      <CabeceraDeHoja
+        cabecera={hoja.cabecera}
+        modoElegido={h.entradas.modoTc}
+        alElegirModo={h.acciones.alElegirModo}
+        verTotalBs={h.verTotalBs}
+        alCambiarVerTotalBs={h.alCambiarVerTotalBs}
+        deshabilitado={soloLectura}
+      />
+      <SeccionesDeLaHoja
+        secciones={secciones}
+        contexto={contexto}
+        acciones={h.acciones}
+        guardando={guardando}
+        de={h.de}
+        formula={hoja.formula}
+        alRecargar={alRecargar}
+      />
+    </div>
   )
 }
 
@@ -152,6 +214,8 @@ export function HojaDeCotizar({
   vehiculoId,
   vehiculoSoltado,
   leadId,
+  obligatorios,
+  elecciones,
   borrador,
   guardado,
   seEligen,
@@ -164,10 +228,8 @@ export function HojaDeCotizar({
   deLoGuardado,
 }: Props) {
   const raiz = useRef<HTMLDivElement>(null)
-  const router = useRouter()
-  const recargar = alRecargar ?? router.refresh
-  // El guardado que ve la hoja: el de la guardada que edita o el de la nueva.
-  const vista = edicion?.guardado ?? guardado
+  const recargar = useRecargar(alRecargar)
+  const vista = edicion?.guardado ?? guardado // el de la guardada que edita o el de la nueva
   const h = useHoja({
     hoja,
     inicial,
@@ -177,52 +239,50 @@ export function HojaDeCotizar({
     ...abre,
   })
   const contexto = useContextoDeLaHoja(h, seEligen)
-  const botonDeLaNueva = useGuardarLaHoja({ h, contexto, hoja, leadId, vehiculoId, guardado, raiz })
-  const botonDeLaGuardada = useGuardarLaGuardada({ h, contexto, edicion: edicion ?? null, raiz })
-  const boton = botonDeLaNueva.boton ?? botonDeLaGuardada.boton
+  const { boton, hayCambios } = useBotonesDeGuardar({
+    h,
+    contexto,
+    hoja,
+    leadId,
+    vehiculoId,
+    obligatorios,
+    elecciones,
+    guardado,
+    edicion,
+    raiz,
+  })
   const guardando = vista?.estado.tipo === 'guardando'
   const dibujadas = hoja.secciones.filter((seccion) => seccionSeDibuja(seccion, contexto))
-  // Puede cotizar en el origen pero su rol no ve ningún dato de la hoja (`cotizaciones.ver`): no hay nada que dibujar ni un total que dar.
   if (dibujadas.length === 0) {
     return <SinDatosQueVer />
   }
   return (
     <div ref={raiz} data-hoja="" inert={guardando} className="@container/hoja grid min-w-0 gap-4">
-      <SimbolosDeXCell />
-      <EstiloDeTonos tonos={hoja.tonos} />
+      <SimbolosYTonos tonos={hoja.tonos} />
       <div className="flex min-w-0 flex-col gap-4 @4xl/hoja:flex-row @4xl/hoja:items-start">
-        <div className="grid min-w-0 flex-1 gap-4">
-          {encima?.(botonDeLaGuardada.hayCambios)}
-          <CabeceraDeHoja
-            cabecera={hoja.cabecera}
-            modoElegido={h.entradas.modoTc}
-            alElegirModo={h.acciones.alElegirModo}
-            verTotalBs={h.verTotalBs}
-            alCambiarVerTotalBs={h.alCambiarVerTotalBs}
-            deshabilitado={soloLectura}
-          />
-          <SeccionesDeLaHoja
-            secciones={dibujadas}
-            contexto={contexto}
-            acciones={h.acciones}
-            guardando={guardando}
-            de={h.de}
-            formula={hoja.formula}
-            alRecargar={recargar}
-          />
-        </div>
+        <ColumnaDeLaHoja
+          hoja={hoja}
+          h={h}
+          contexto={contexto}
+          secciones={dibujadas}
+          guardando={guardando}
+          soloLectura={soloLectura}
+          encima={encima?.(hayCambios)}
+          alRecargar={recargar}
+        />
         <ResumenDeLaHoja
           hoja={hoja}
           h={h}
           contexto={contexto}
-          vehiculo={{ id: vehiculoId, soltado: vehiculoSoltado }}
+          vehiculoSoltado={vehiculoSoltado}
+          elecciones={elecciones}
           guardado={vista}
           confirmacion={edicion ? 'Cambios guardados.' : null}
           boton={boton}
           soloLectura={soloLectura}
           totalGuardado={totalGuardado}
           alRecargar={alRecargar}
-          laTarjeta={{ ...deLoGuardado, hayCambios: botonDeLaGuardada.hayCambios }}
+          laTarjeta={{ ...deLoGuardado, hayCambios }}
         />
       </div>
     </div>

@@ -10,7 +10,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   `?panel=vitrina`, `?panel=desvincular` (con `&luego=papelera`, desde el aviso «Quitar el vínculo»: el aviso de desvinculado ofrece la papelera),
   `?panel=purgar&lote=`. Layout, categorías y orígenes (`origenes`), fases (`flujos`) y vistas guardadas
   (`equipo`) los lee la página y los pasa por props.
-- Hoja de cotizar (`/cotizaciones/nuevo`, la compone `app/`): `<BarraDelVehiculo>` (`pantallas/cotizar`) abre
+- Hoja de cotizar (`/cotizaciones/nuevo`, la compone `app/`): `<BarraDelVehiculo>` (`pantallas/cotizar`, con `obligatorio`: sin vehículo elegido, la etiqueta «Obligatorio»; de ahí sale también `PANEL_DEL_VEHICULO`, que la página pasa a la hoja para su «Elegir el vehículo») abre
   `?panel=vehiculo&lista=ultima|cierre&buscar=&cursor=`:
   - Búsqueda por nombre, VIN o lote (`?buscar=`, desde 3 letras o números, `entities/texto-del-panel.ts`) y las listas «Últ. cotización» y, en
     subasta, «Cierre subasta», leídas desde el navegador (`infra/panel-para-cotizar.client.ts`) sin ir al servidor. Elegir escribe en `claveDeLaUrl`.

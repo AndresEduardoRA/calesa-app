@@ -247,29 +247,28 @@ begin
 end $$;
 rollback;
 
--- @test cotizacion_crear: el vehículo es obligatorio según el ajuste de la empresa (y siempre en una final); uno que no existe, de la papelera o que no se ve dan el mismo error
+-- @test cotizacion_crear: el vehículo es obligatorio salvo con cotizaciones.crear.sin_vehiculo del origen (y siempre en una final); uno que no existe, de la papelera o que no se ve dan el mismo error
 begin;
 do $$
 declare
   t jsonb := pg_temp.cc_preparar(); r jsonb; r_in jsonb; r_pap jsonb; r_sv jsonb; r_ev jsonb; v2 uuid; c public.cotizaciones;
   o uuid := (t ->> 'o')::uuid; l uuid := (t ->> 'l')::uuid; v uuid := (t ->> 'v')::uuid; a uuid := (t ->> 'a')::uuid; fg uuid := (t ->> 'fg')::uuid;
 begin
-  if (select vehiculo_obligatorio_al_cotizar from public.ajustes_empresa where id = 1) is not true then raise exception 'el ajuste debía nacer en sí'; end if;
-  -- Con «sí» (de fábrica): sin vehículo, 22023.
+  -- Sin la clave (la persona de la prueba no la tiene): sin vehículo, 22023.
   r := pg_temp.cc_corre(a, pg_temp.cc_sql(gen_random_uuid(), o, l, '{}', null));
-  if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'vehiculo' then raise exception 'sin vehículo y con el ajuste en sí debía dar 22023: %', r; end if;
+  if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'vehiculo' then raise exception 'sin vehículo y sin la clave debía dar 22023: %', r; end if;
   -- Los dos a la vez, no.
   r := pg_temp.cc_corre(a, pg_temp.cc_sql(gen_random_uuid(), o, l, '{}', v, jsonb_build_object('id', gen_random_uuid(), 'datos', jsonb_build_object('titulo', 'x'))::text));
   if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'vehiculo' then raise exception 'un vehículo y otro a mano a la vez debía dar 22023: %', r; end if;
-  -- Con «no»: una preventa se guarda sin vehículo; una final sigue exigiéndolo.
-  update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = false where id = 1;
+  -- Con la clave: una preventa se guarda sin vehículo; una final sigue exigiéndolo.
+  insert into public.roles_permisos (rol_id, permiso_clave, alcance) select ur.rol_id, 'cotizaciones.crear.sin_vehiculo', 'todos' from public.usuarios_roles ur where ur.usuario_id in (a, fg);
   r := pg_temp.cc_corre(a, pg_temp.cc_sql(gen_random_uuid(), o, l, '{}', null));
-  if r ? 'error' then raise exception 'con el ajuste en no, una preventa sin vehículo debía guardarse: %', r; end if;
+  if r ? 'error' then raise exception 'con la clave, una preventa sin vehículo debía guardarse: %', r; end if;
   select * into c from public.cotizaciones where id = (r -> 'cotizacion' ->> 'id')::uuid;
   if c.vehiculo_id is not null then raise exception 'la cotización sin vehículo trae uno'; end if;
   r := pg_temp.cc_corre(fg, pg_temp.cc_sql(gen_random_uuid(), o, l, '{}', null, null, null, 'final'));
-  if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'vehiculo' then raise exception 'una final sin vehículo debía dar 22023 aun con el ajuste en no: %', r; end if;
-  update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = true where id = 1;
+  if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'vehiculo' then raise exception 'una final sin vehículo debía dar 22023 aun con la clave: %', r; end if;
+  delete from public.roles_permisos rp using public.usuarios_roles ur where rp.rol_id = ur.rol_id and rp.permiso_clave = 'cotizaciones.crear.sin_vehiculo' and ur.usuario_id in (a, fg);
 
   -- Un vehículo que no existe, uno en la papelera y uno que quien llama no ve: el mismo error (el de `cotizacion_evaluar` con un vehículo que no existe).
   r_in := pg_temp.cc_corre(a, pg_temp.cc_sql(gen_random_uuid(), o, l, '{}', gen_random_uuid()));
@@ -418,7 +417,7 @@ begin
   if exists (select 1 from public.vehiculos where id = vn2 or titulo in ('CC sin permiso', 'CC sin ver')) then raise exception 'un rechazo dejó un vehículo a mano'; end if;
   -- Un origen sin fórmula publicada.
   insert into public.origenes (clave, nombre) values ('cc_sinf_' || substr(gen_random_uuid()::text, 1, 6), 'CC sin fórmula') returning id into o2;
-  update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = false where id = 1;
+  insert into public.roles_permisos (rol_id, permiso_clave, alcance) select ur.rol_id, 'cotizaciones.crear.sin_vehiculo', 'todos' from public.usuarios_roles ur where ur.usuario_id = a;
   r := pg_temp.cc_corre(a, pg_temp.cc_sql(gen_random_uuid(), o2, l, '{}', null, p_abierta => gen_random_uuid()));  -- (una hoja no se abre sin fórmula: el id es uno cualquiera)
   if r ->> 'error' is distinct from '22023' or r ->> 'detail' is distinct from 'origen_sin_formula' then raise exception 'un origen sin fórmula debía dar origen_sin_formula: %', r; end if;
 end $$;

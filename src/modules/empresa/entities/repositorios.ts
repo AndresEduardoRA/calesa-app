@@ -18,11 +18,10 @@ export type RepositorioEmpresa = {
   }) => Promise<Resultado<Editado>>
 }
 
-// La vigencia y el vehículo obligatorio al cotizar, con la misma versión de la fila que el formulario de Empresa.
+// La vigencia de las cotizaciones, con la misma versión de la fila que el formulario de Empresa.
 export type RepositorioAjustesDeCotizacion = {
   guardar: (pedido: {
     vigenciaDias: number
-    vehiculoObligatorioAlCotizar: boolean
     actualizadoEnEsperado: string
   }) => Promise<Resultado<Editado>>
 }
@@ -94,5 +93,5 @@ export type LectorDeHistorial = (tipoCambioId: string) => Promise<Resultado<Camb
 export type LectorDeIntegraciones = () => Promise<Resultado<Integracion[]>>
 // Cuántos vehículos publicados empiezan o dejan de verse al encender o apagar la web pública.
 export type LectorDeVehiculosQueCambian = () => Promise<Resultado<ConteoAcotado>>
-// La vigencia y el vehículo obligatorio con la versión de la fila; falla en vez de dar los de fábrica.
+// La vigencia con la versión de la fila; falla en vez de dar los de fábrica.
 export type LectorDeAjustesDeCotizacion = () => Promise<Resultado<AjustesDeCotizacion>>

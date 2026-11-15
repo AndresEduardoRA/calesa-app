@@ -20,6 +20,8 @@ type Props = {
   puedeCrear: boolean
   // La clave de la URL donde la hoja lleva su lead: este módulo no la conoce.
   claveDeLaUrl: string
+  // El rol no puede guardar sin lead en este origen (`cotizaciones.crear.sin_lead`): sin cliente elegido, la barra dice «Obligatorio».
+  obligatorio?: boolean
 }
 
 // La barra del cliente sobre la hoja de cotizar: una sola parada de Tab que abre el panel del cliente (`?panel=cliente`). Va fuera de la hoja (`[data-hoja]`) y del
@@ -30,6 +32,7 @@ export function BarraDelCliente({
   numeroGlobal,
   puedeCrear,
   claveDeLaUrl,
+  obligatorio = false,
 }: Props) {
   const panel = usePanelPorUrl(PANEL_DEL_CLIENTE, [
     CLAVE_DE_CLASE,
@@ -68,7 +71,15 @@ export function BarraDelCliente({
             />
           </>
         ) : (
-          <span className="flex-1 text-(--color-ink-soft)">Selecciona un cliente</span>
+          <>
+            <span className="flex-1 text-(--color-ink-soft)">Selecciona un cliente</span>
+            {/* Una etiqueta propia y no `<Badge>` (Base UI a la carga en frío de la hoja); en su propio `<span>`: «Selecciona un cliente» no se parte. */}
+            {obligatorio ? (
+              <span className="inline-flex h-5 shrink-0 items-center rounded-4xl bg-(--color-peligro-soft) px-2 text-xs font-medium whitespace-nowrap text-(--color-peligro-ink)">
+                Obligatorio
+              </span>
+            ) : null}
+          </>
         )}
       </button>
       {montado ? (

@@ -182,7 +182,9 @@ begin
        or split_part(r ->> 'abierta', '.', 2)::bigint is distinct from round(extract(epoch from (r ->> 'abierta_en')::timestamptz) * 1000000)::bigint then
       raise exception '%: la hoja abierta no es la de la lectura: %', v_clave, r ->> 'abierta';
     end if;
-    if jsonb_typeof(r -> 'vehiculo_obligatorio') is distinct from 'boolean' or (r -> 'origen' ->> 'id')::uuid is distinct from o then raise exception '%: origen o ajuste: %', v_clave, r; end if;
+    if (r -> 'origen' ->> 'id')::uuid is distinct from o then raise exception '%: origen: %', v_clave, r; end if;
+    -- Si el vehículo y el lead son obligatorios ya no lo dice la hoja: lo deciden las claves del rol (`cotizaciones.crear.sin_vehiculo` y `sin_lead`).
+    if r ? 'vehiculo_obligatorio' then raise exception '%: la hoja trae vehiculo_obligatorio: %', v_clave, r; end if;
     if pg_temp.ch_items(r) is distinct from pg_temp.ch_items_del_diseno(f.id) then
       raise exception '%: los ítems no son los del diseño, en su orden: % contra %', v_clave, pg_temp.ch_items(r), pg_temp.ch_items_del_diseno(f.id);
     end if;
@@ -434,12 +436,11 @@ declare
 begin
   insert into public.origenes (clave, nombre) values ('ch_d2', 'CH D2') returning id into o;
   perform pg_temp.ch_formula(o, 'costos', 'd2');
-  -- Sin vehículo: el ajuste de la empresa lo permite (se revierte con el bloque).
-  update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = false where id = 1;
+  -- Sin vehículo: la dueña tiene `sin_vehiculo`.
   insert into public.leads (nombre, telefono_principal, creado_por, origen_lead_id, atributos)
   values ('CH lead', '7215' || lpad(nextval('pg_temp.ch_telefono')::text, 4, '0'), duena, (select id from public.origenes_lead where clave = 'web'), '{}') returning id into l;
   h := pg_temp.ch_corre(duena, format('select public.cotizacion_hoja(%L)', o));
-  if (h ->> 'vehiculo_obligatorio')::boolean is not false then raise exception 'el ajuste del vehículo no viaja: %', h ->> 'vehiculo_obligatorio'; end if;
+  if h ? 'vehiculo_obligatorio' then raise exception 'la hoja no debe traer el ajuste del vehículo: %', h ->> 'vehiculo_obligatorio'; end if;
   r := pg_temp.ch_corre(duena, format('select public.cotizacion_crear(gen_random_uuid(), %L, %L, ''{"inputs": {"pub": 10}}''::jsonb, %L)', o, l, h ->> 'abierta'));
   if r ? 'error' or r -> 'cotizacion' ->> 'id' is null then raise exception 'crear con lo que entregó la lectura falla: %', r; end if;
   -- Una versión nueva: la hoja que se abrió antes ya no es la vigente.

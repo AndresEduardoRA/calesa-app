@@ -6,7 +6,6 @@ const USA = '11111111-1111-4111-8111-111111111111'
 
 type Pedido = {
   vigenciaDias: number
-  vehiculoObligatorioAlCotizar: boolean
   actualizadoEnEsperado: string
 }
 
@@ -44,7 +43,6 @@ const { guardarAjustesDeCotizacion } = await import('./guardar-ajustes-de-cotiza
 
 const pedido = {
   vigenciaDias: 30,
-  vehiculoObligatorioAlCotizar: false,
   actualizadoEnEsperado: '2026-11-08T05:00:00.000001+00:00',
 }
 const sinPermiso = {

@@ -12,7 +12,6 @@ describe('hojaDesde: lo que abre la hoja de cotizar', () => {
     expect(hoja.formula).toEqual({ id: ID, version: 3 })
     expect(hoja.abiertaEn).toBe('2026-10-26T14:00:00.123456+00:00')
     expect(hoja.abierta).toBe(ABIERTA)
-    expect(hoja.vehiculoObligatorio).toBe(true)
     expect(hoja.cabecera).toEqual({
       modos: [{ clave: 'unificado', nombre: 'Unificado' }],
       verTotalBs: true,

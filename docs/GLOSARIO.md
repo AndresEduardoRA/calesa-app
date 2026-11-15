@@ -421,9 +421,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cadena (anterior y versión nueva).
 - **Desactualizada** — `cotizacion_crear(… p_abierta …)` (PT409 `desactualizada`): la fórmula o un tipo de cambio cambió tras abrir la hoja:
   «Usar la versión N+1» o «Guardar con la N». No es «vencida».
-- **Vehículo obligatorio al cotizar** — `ajustes_empresa.vehiculo_obligatorio_al_cotizar` (sí por defecto): con «no», una preventa se guarda
-  sin vehículo (ver «Ajustes de cotización»).
-- **Ajustes de cotización** — `AjustesDeCotizacion` (`empresa`): vigencia y vehículo obligatorio, de `ajustes_empresa`; los cambia
+- **Guardar sin vehículo** — `cotizaciones.crear.sin_vehiculo` (por origen, sin alcance): guardar una preventa sin elegir su vehículo. Sin ella en ese
+  origen el vehículo es obligatorio; una final lo pide siempre. También rige al cotizar encima de una anterior sin vehículo.
+- **Guardar sin lead** — `cotizaciones.crear.sin_lead` (por origen, sin alcance): guardar una preventa sin elegir su lead (en la hoja, «Cliente»). Sin ella
+  en ese origen el lead es obligatorio; una final lo pide siempre. También rige al cotizar encima de una anterior sin lead.
+- **Obligatorios al cotizar** — `ObligatoriosAlCotizar` (`cotizaciones`): `{ lead, vehiculo }`, lo que la hoja exige elegir según las dos claves de arriba
+  para quien cotiza en ese origen; la página lo calcula con los permisos de la sesión (con «Ver como», los del rol elegido). La base decide con los reales.
+- **Ajustes de cotización** — `AjustesDeCotizacion` (`empresa`): la vigencia, de `ajustes_empresa`; los cambia
   `empresa_guardar_ajustes_de_cotizacion()` con `cotizaciones.configurar` en todos los orígenes y la versión de la fila (Configuración ›
   Cotización › Ajustes).
 - **Intento (de una cotización)** — `id` uuid del cliente: `cotizacion_crear` (`p_id`), `cotizacion_guardar` (`p_intento`): repetirlo devuelve

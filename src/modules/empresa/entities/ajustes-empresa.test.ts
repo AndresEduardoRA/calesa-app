@@ -29,7 +29,6 @@ const fila: Tables<'ajustes_empresa'> = {
   lead_dormido_meses: 3,
   limpieza_automatica: true,
   limpieza_dias_gracia: 7,
-  vehiculo_obligatorio_al_cotizar: true,
   actualizado_en: '2026-10-12T14:00:00.123456+00:00',
   actualizado_por: null,
 }

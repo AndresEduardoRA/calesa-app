@@ -3,14 +3,13 @@ import { esperaAlRecalculo, motivoParaNoGuardar } from './se-puede-guardar'
 
 const LIBRE = {
   estado: { tipo: 'al_dia' } as const,
-  leadId: 'l',
-  faltaVehiculo: false,
+  falta: null,
   total: { tipo: 'valor', usd: 10 } as const,
   descartoLoTipeado: false,
 }
 
 describe('motivoParaNoGuardar', () => {
-  it('al día, con lead y con total, se guarda', () => {
+  it('al día, sin nada que falte y con total, se guarda', () => {
     expect(motivoParaNoGuardar(LIBRE)).toBeNull()
   })
 
@@ -20,13 +19,13 @@ describe('motivoParaNoGuardar', () => {
     )
   })
 
-  it('sin la variante elegida, sin lead o sin el vehículo que el ajuste pide, tampoco', () => {
+  it('sin la variante elegida, sin el cliente o sin el vehículo que el rol pide, tampoco', () => {
     expect(motivoParaNoGuardar({ ...LIBRE, estado: { tipo: 'sin_variante' } })).not.toBeNull()
-    expect(motivoParaNoGuardar({ ...LIBRE, leadId: null })).toBe(
+    expect(motivoParaNoGuardar({ ...LIBRE, falta: 'lead' })).toBe(
       'Para guardar, elige el cliente en «Cliente».',
     )
-    expect(motivoParaNoGuardar({ ...LIBRE, faltaVehiculo: true })).toBe(
-      'Este origen pide un vehículo para guardar.',
+    expect(motivoParaNoGuardar({ ...LIBRE, falta: 'vehiculo' })).toBe(
+      'Para guardar, elige el vehículo en «Vehículo».',
     )
   })
 
@@ -56,19 +55,16 @@ describe('esperaAlRecalculo', () => {
 })
 
 describe('motivoParaNoGuardar de una cotización guardada (4.15-3)', () => {
-  it('sin cliente y con `exigeLead` falso no pide el cliente; con él (por defecto), sí', () => {
-    expect(motivoParaNoGuardar({ ...LIBRE, leadId: null })).not.toBeNull()
-    expect(motivoParaNoGuardar({ ...LIBRE, leadId: null, exigeLead: false })).toBeNull()
+  it('sin nada que falte (una guardada no pide lo que no cambia) no hay motivo', () => {
+    expect(motivoParaNoGuardar({ ...LIBRE, falta: null })).toBeNull()
   })
 
-  it('con `exigeLead` falso el resto de las guardas siguen: el recálculo que falló no deja guardar', () => {
+  it('lo que falta va antes que el resto de las guardas; sin él, el recálculo que falló no deja guardar', () => {
     expect(
-      motivoParaNoGuardar({
-        ...LIBRE,
-        leadId: null,
-        exigeLead: false,
-        estado: { tipo: 'fallo', recargar: false },
-      }),
-    ).toMatch(/recalcular/)
+      motivoParaNoGuardar({ ...LIBRE, falta: 'lead', estado: { tipo: 'fallo', recargar: false } }),
+    ).toBe('Para guardar, elige el cliente en «Cliente».')
+    expect(motivoParaNoGuardar({ ...LIBRE, estado: { tipo: 'fallo', recargar: false } })).toMatch(
+      /recalcular/,
+    )
   })
 })
