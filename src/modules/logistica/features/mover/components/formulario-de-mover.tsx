@@ -112,7 +112,8 @@ export function FormularioDeMover({ unidad, destino, puedeMover, borrador, relee
           <p>{fallo}</p>
         </Aviso>
       ) : null}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* En la zona principal de la página, la caja se desplaza: la fila del botón se queda pegada abajo para que «Mover a …» nunca quede escondido. */}
+      <div className="flex flex-wrap items-center gap-2 in-[[data-zona=principal]]:sticky in-[[data-zona=principal]]:bottom-0 in-[[data-zona=principal]]:bg-(--color-surface) in-[[data-zona=principal]]:py-1">
         <Button
           type="submit"
           className="min-h-11 md:min-h-9"

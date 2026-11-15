@@ -22,7 +22,7 @@ type Args = {
 
 // «Subir N documentos» (6.06-2): por cada archivo, primero el objeto al bucket y recién entonces `documento_registrar` (commit diferido). El `id` del intento es de cada archivo y se
 // conserva mientras no cambie lo escrito: reintentar no duplica. Los registrados salen de la bandeja; los que fallan quedan con su motivo y el botón dice «Reintentar los N que
-// faltan». Un solo envío a la vez: una referencia, no el estado, porque un doble clic llega antes de que el estado cambie.
+// faltan». `subir()` dice si terminó con todo registrado y sin fallos (para quien cierra algo al terminar). Un solo envío a la vez: una referencia, no el estado, porque un doble clic llega antes de que el estado cambie.
 export function useSubirLaBandeja({ destino, tipo, valores, entran, alRegistrar }: Args) {
   const router = useRouter()
   const [enCurso, setEnCurso] = useState(false)
@@ -48,12 +48,12 @@ export function useSubirLaBandeja({ destino, tipo, valores, entran, alRegistrar 
     return nuevo
   }
 
-  async function subir(): Promise<void> {
-    if (ocupado.current) return
+  async function subir(): Promise<boolean> {
+    if (ocupado.current) return false
     setIntentado(true)
     setDeLaBase({})
     if (Object.keys(erroresDeLaBandeja({ tipo, cantidad: entran.length, ...valores })).length > 0) {
-      return
+      return false
     }
     ocupado.current = true
     setEnCurso(true)
@@ -94,6 +94,7 @@ export function useSubirLaBandeja({ destino, tipo, valores, entran, alRegistrar 
     }
     setEnCurso(false)
     ocupado.current = false
+    return Object.keys(nuevosFallos).length === 0 && registrados.length > 0
   }
 
   return { subir, enCurso, avance, fallos, errores }

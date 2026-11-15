@@ -7,6 +7,7 @@ import {
 } from './soporte/cotizaciones-final'
 import { borrarDineroDeEsteOrigen, sembrarDinero } from './soporte/dinero'
 import { expect, test, type Page } from './soporte/prueba'
+import { abrirSeccionDeLaUnidad } from './soporte/unidad'
 
 // El tablero de métricas (9.08-1, fila del tablero en `docs/UX.md`): la dueña ve las cinco cifras; al marcar final una cotización, «Convertidos» sube en uno
 // (se compara el aumento, no un valor fijo: otros specs también convierten leads este mes); el período vive en la URL y uno desconocido cae en «Este mes».
@@ -221,7 +222,7 @@ test('T7 la dueña ve subir el margen del mes al confirmar un pago', async ({ pa
   const antes = await leerMargen(page)
 
   await page.goto(`/logistica/vehiculo/${terreno.enFase.id}`)
-  await page.getByText('Pagos', { exact: true }).click()
+  await abrirSeccionDeLaUnidad(page, 'pagos')
   await page.getByRole('button', { name: 'Registrar pago' }).click()
   const formulario = page.getByRole('dialog', { name: 'Registrar pago' })
   await expect(formulario).toBeVisible()

@@ -18,6 +18,7 @@ import {
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 import { formatearNumero } from '../src/shared/lib/formato'
+import { abrirSeccionDeLaUnidad } from './soporte/unidad'
 
 // El recorrido de la IA del cierre de la Fase 6 (paso 6.14): la tarea de oro 3 (`docs/UX.md`), con dos cuentas, logística («Primera Mueve», con `flujos.mover` del
 // origen) y la dueña. Mover 1 unidad desde la cadena en ≤ 15 s; marcar que llegó un contenedor de 8 desde `/logistica/embarques` en ≤ 60 s viendo antes qué falta en
@@ -240,7 +241,7 @@ test('E2E R5 la dueña ve el margen de una unidad sin venta: «Sin venta registr
   const unidad = lote.delContenedor[0] ?? { id: '', titulo: '' }
   await entrar(page, duena.correo, { fresco: true })
   await page.goto(`/logistica/vehiculo/${unidad.id}`)
-  await page.getByText('Margen', { exact: true }).click()
+  await abrirSeccionDeLaUnidad(page, 'margen')
   const margen = page.locator('[data-hueco="margen"]')
   for (const cifra of ['venta', 'margen']) {
     const lugar = margen.locator(`[data-cifra="${cifra}"]`)

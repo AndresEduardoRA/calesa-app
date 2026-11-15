@@ -20,3 +20,8 @@ export const RelacionadosDelResumenDeLeadDiferido = diferido(() =>
     (modulo) => modulo.RelacionadosDelResumenDeLead,
   ),
 )
+
+// El grupo de un chip de «Relacionados en una línea»: el popover se monta al primer clic.
+export const PopoverDelGrupoDiferido = diferido(() =>
+  import('./popover-del-grupo').then((modulo) => modulo.PopoverDelGrupo),
+)

@@ -1,10 +1,12 @@
 'use client'
 
 import { diferido } from '@/shared/ui/diferido'
+import { EsqueletoDelHueco } from '../../nucleo/components/esqueleto-del-hueco'
 
 // El hueco «Aduana» se pide recién al abrir su bloque (`BloqueDelHueco` no lo monta antes): el panel de la unidad no carga su código para dibujarse. Un hueco recibe sólo `{ unidad }`.
-export const HuecoDeAduanaDiferido = diferido(() =>
-  import('./hueco-de-aduana').then((modulo) => modulo.HuecoDeAduana),
+export const HuecoDeAduanaDiferido = diferido(
+  () => import('./hueco-de-aduana').then((modulo) => modulo.HuecoDeAduana),
+  { aviso: 'aqui', esqueleto: <EsqueletoDelHueco /> },
 )
 
 // El buscador de vehículos de la composición (6.09-2) y el formulario de la declaración se piden al usarse: el resumen y la lista no cargan su código.

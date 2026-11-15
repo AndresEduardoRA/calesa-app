@@ -12,6 +12,8 @@ type Props<C extends string> = {
   pestanas: readonly Pestana<C>[]
   activa: C
   alElegir: (clave: C) => void
+  // `'contenido'` (por defecto): el alto es el de lo que se dibuja. `'lleno'`: ocupa el alto de su contenedor (que debe tenerlo), la lista arriba y el panel con el resto, para que cada pestaña se desplace dentro de su marco.
+  alto?: 'contenido' | 'lleno'
   // Lo de la pestaña elegida: sólo se dibuja ésa, y cada una lee y carga lo suyo al elegirse.
   children: ReactNode
 }
@@ -43,6 +45,7 @@ export function PestanasDelResumen<C extends string>({
   pestanas,
   activa,
   alElegir,
+  alto = 'contenido',
   children,
 }: Props<C>) {
   const id = useId()
@@ -63,7 +66,9 @@ export function PestanasDelResumen<C extends string>({
     lista.current?.querySelector<HTMLElement>(`[data-pestana="${destino}"]`)?.focus()
   }
   return (
-    <div className="grid min-w-0 gap-4">
+    <div
+      className={`grid min-w-0 gap-4 ${alto === 'lleno' ? 'h-full grid-rows-[auto_minmax(0,1fr)]' : ''}`}
+    >
       <div className="relative min-w-0 md:w-fit">
         <div
           ref={lista}
@@ -98,7 +103,12 @@ export function PestanasDelResumen<C extends string>({
         </div>
         <PistaDeDesborde {...desborde} />
       </div>
-      <div role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-${activa}`}>
+      <div
+        role="tabpanel"
+        id={`${id}-panel`}
+        aria-labelledby={`${id}-${activa}`}
+        className={alto === 'lleno' ? 'min-h-0' : undefined}
+      >
         {children}
       </div>
     </div>

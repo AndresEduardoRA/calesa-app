@@ -38,6 +38,8 @@ type Props = {
   avisos?: AvisosDelMenu
   // El resumen lee en el navegador: tras una acción lograda vuelve a leer.
   alCambiar?: () => void
+  // La unidad de logística lo pide en una línea de chips; el resto, el bloque.
+  presentacion?: 'bloque' | 'linea'
 }
 
 const claveDeLaFila = (grupo: string, fila: FilaRelacionada<LeadRelacionado>) =>
@@ -66,6 +68,32 @@ function armarContexto(
   return { ancla, contexto, delVehiculo }
 }
 
+// «Ver todos» de un grupo: sólo si hay más que ver; desde un resumen lleva a la ficha, en los demás abre el drawer.
+function verTodosDelGrupo({
+  datos,
+  grupo,
+  lugar,
+  ancla,
+  abrir,
+}: {
+  datos: RelacionadosDelVehiculo
+  grupo: GrupoDeRelacionados<LeadRelacionado>
+  lugar: LugarDeRelacionados
+  ancla: AnclaDeVehiculo
+  abrir: (tipo: GrupoDeRelacionados<LeadRelacionado>['tipo']) => void
+}) {
+  if (!(grupo.tipo === 'vinculado' ? datos.conAnteriores : grupo.hayMas)) {
+    return null
+  }
+  return lugar === 'resumen'
+    ? { href: rutaDeVerTodos(ancla, grupo.tipo) }
+    : {
+        abrir: () => {
+          abrir(grupo.tipo)
+        },
+      }
+}
+
 // El bloque «Relacionados» de un vehículo (sus leads): lo comparten la ficha, la unidad de logística y el resumen del inventario. Cada acción hace lo suyo en el lugar o lleva a la ficha con el
 // panel abierto (los selectores y la confirmación de desvincular viven en la URL de la ficha; en un resumen o en la unidad no caben).
 export function RelacionadosDeUnVehiculo({
@@ -78,6 +106,7 @@ export function RelacionadosDeUnVehiculo({
   ofrecerPapelera = false,
   avisos,
   alCambiar,
+  presentacion = 'bloque',
 }: Props) {
   const { ancla, contexto, delVehiculo } = armarContexto(datos, vehiculoId, lugar, para)
   const acciones = useAccionesDeRelacionados(
@@ -103,6 +132,7 @@ export function RelacionadosDeUnVehiculo({
   return (
     <>
       <Relacionados
+        presentacion={presentacion}
         grupos={datos.grupos}
         contexto={contexto}
         enCurso={acciones.enCurso}
@@ -112,18 +142,9 @@ export function RelacionadosDeUnVehiculo({
         filasDe={(grupo: GrupoDeRelacionados<LeadRelacionado>) =>
           grupo.filas.map((fila) => filaDe(fila, claveDeLaFila(grupo.tipo, fila)))
         }
-        verTodosDe={(grupo) => {
-          if (!(grupo.tipo === 'vinculado' ? datos.conAnteriores : grupo.hayMas)) {
-            return null
-          }
-          return lugar === 'resumen'
-            ? { href: rutaDeVerTodos(ancla, grupo.tipo) }
-            : {
-                abrir: () => {
-                  verTodos.abrir(grupo.tipo)
-                },
-              }
-        }}
+        verTodosDe={(grupo) =>
+          verTodosDelGrupo({ datos, grupo, lugar, ancla, abrir: verTodos.abrir })
+        }
       />
       {lugar === 'ficha' ? (
         <PanelesDeLaFicha

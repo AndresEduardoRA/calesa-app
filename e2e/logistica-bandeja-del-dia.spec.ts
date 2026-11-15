@@ -79,12 +79,11 @@ test('E2E los grupos con su número y la acción de cada fila', async ({ page },
   await expect(page).toHaveURL(
     new RegExp(`/logistica/vehiculo/${terreno.conBl.id}\\?hueco=documentos$`),
   )
-  // El bloque «Documentos» nace abierto (y su formulario ya está a la vista), el de «Transporte» no.
-  await expect(page.locator('[data-bloque-del-hueco="documentos"] details')).toHaveAttribute(
-    'open',
-    '',
-  )
-  await expect(page.getByRole('heading', { name: 'Subir documentos' })).toBeVisible()
+  // «Documentos» abre de entrada: en escritorio es la primera pestaña, en el celular el bloque abierto por `?hueco=`. Su hueco se ve sin tocar nada, con «Subir documentos» adentro (botón o encabezado).
+  await expect(page.locator('[data-hueco="documentos"]')).toBeVisible()
+  await expect(
+    page.locator('[data-hueco="documentos"]').getByText('Subir documentos').first(),
+  ).toBeVisible()
 })
 
 test('E2E «Ver todos» abre la página del grupo, de a 20 por cursor', async ({ page }, info) => {

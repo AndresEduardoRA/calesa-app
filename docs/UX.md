@@ -250,8 +250,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Logística** — `/logistica` (`logistica.ver` en algún origen): la **bandeja del día** y la **cadena como gráfica**; en la URL: `?origen=` (orígenes con la logística encendida), `q` («dónde está»:
   nombre, VIN o lote; 3 letras o números) y `?panel=lote` (el lote de un contenedor o un booking). `/logistica/fase/[fase]` (la lista de una fase: `[fase]` es el id o `sin_fase`;
   `?origen=`, `q`, `demoradas`, `por_aprobar`, `contenedor`, `booking`, `naviera`, `cursor`), `/logistica/bandeja/[grupo]` (un grupo entero: `demorados`, `trabados`, `por-aprobar`, `por-vencer`,
-  `llegadas`, `salidas`, `sin-resolver`; `cursor`), `/logistica/vehiculo/[id]` (la página de la unidad, a la que lleva todo vehículo y la notificación de demora; `?hueco=documentos` abre ese
-  bloque), `/embarques`, `/aduana`, `/gastos` (`?ver=gastos|pagos`). La página de la unidad tiene el hueco «Repuestos» (con `repuestos.ver`): «Espera N repuestos», cada ítem con su proyecto,
+  `llegadas`, `salidas`, `sin-resolver`; `cursor`), `/logistica/vehiculo/[id]` (la página de la unidad, a la que lleva todo vehículo y la notificación de demora; `?hueco=documentos` abre esa
+  pestaña o ese bloque; **meta:** en escritorio, a 1440×900 y a 1280×800, la unidad entra sin desplazar la página, y mover, subir y anotar se hacen sin salir de ella), `/embarques`, `/aduana`, `/gastos` (`?ver=gastos|pagos`). La página de la unidad tiene el hueco «Repuestos» (con `repuestos.ver`): «Espera N repuestos», cada ítem con su proyecto,
   «Para pasar a «X» espera que llegue a «Y».» y el enlace a su panel; sin espera, «Este vehículo no espera ningún repuesto.». Ver «Logística: estados propios».
 - **Repuestos** — `/repuestos` (`repuestos.ver`): proyectos por cursor `numero` (`?q=` de 3 letras o un número,
   `?estado=abiertos|cerrados|todos`, `?por=`, `?cursor=`) con número, vehículo o «Externo», cliente, estado derivado, ítems («200+») y
@@ -512,9 +512,14 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 ### Relacionados (estados propios)
 
 El mismo bloque arriba de cada detalle: la ficha del vehículo (entre los avisos y las pestañas, con `leads.ver`), su resumen del inventario, la unidad de logística (bajo la
-cabecera, con `leads.ver`; el hueco `relacionados` de `PanelDeLaUnidad`), la ficha del lead (tras los avisos, antes de las secciones, con `vehiculos.ver`) y el resumen del listado de leads.
+cabecera, con `leads.ver`, **en una línea**: ver abajo), la ficha del lead (tras los avisos, antes de las secciones, con `vehiculos.ver`) y el resumen del listado de leads.
 `<section aria-label="Relacionados">` con tres grupos en grilla `@container` (tres columnas desde `@3xl`, una debajo): **Vinculado**, **Interesado** y **Cotizado** (éste sólo con
 `cotizaciones.ver`), cada uno con `h3` «<Tipo> · n» (`conteoCorto`, «100+»), su leyenda, hasta 3 filas, «Ver todos» y sus acciones.
+
+- **En una línea** (`presentacion="linea"`, la unidad de logística, donde tres grupos apilados no caben sin desplazar): `<section aria-label="Relacionados">` sin encabezado, con un chip por grupo
+  («Vinculado · n», «Interesado · n», «Cotizado · n»; 44 px en el celular, 32 en escritorio). Cada chip abre un popover (su código se pide al primer clic) con el mismo grupo: leyenda, filas, acciones
+  y «Ver todos» (que cierra el popover antes de abrir su drawer). Todo vacío: la frase «Sin relacionados todavía.» con sus acciones. Cargando: tres chips de esqueleto del mismo alto; error: la frase
+  con «Reintentar», sin encabezado.
 
 - **Filas:** desde un vehículo, el lead (nombre enlazado, números como siempre, «Fuera de tu cartera» si se ve enmascarado, nunca el teléfono); desde un lead, el vehículo (miniatura que abre
   la galería, título enlazado, origen y n.º). Debajo, lo propio del tipo: «Desde el <fecha>», la nota del interés con quién lo marcó, o «Cotización N.º n · <fecha>». «⋯» con las acciones.
@@ -679,15 +684,20 @@ el flujo; la base vuelve a decidir.
 
 ### Logística: estados propios
 
-El panel de la unidad (`<PanelDeLaUnidad>`) se dibuja igual en `/logistica/vehiculo/<id>` y, dentro de un drawer, en `/logistica?vehiculo=<id>`.
+La unidad se dibuja de dos maneras: en su página `/logistica/vehiculo/<id>`, **en zonas** (escritorio) o **en bloques con una barra «Mover»** (celular y tableta vertical; `<PaginaDeLaUnidad>`), y, dentro
+de un drawer (`/logistica/gastos?vehiculo=<id>`, el ítem de repuesto `?item=`), como **bloques plegables** (`<PanelDeLaUnidad>`).
 
 - **Entrada:** la unidad se lee bajo la RLS de `vehiculos` y se pide `logistica.ver` en su origen; sin esa clave, «No tienes permiso para
   ver esto». Lo que no existe, está en la papelera, no se ve o trae un id inválido: «Este vehículo ya no está disponible» con «No existe o
   ya no tienes acceso.» e «Ir a Logística» (nunca «sin permiso»: confirmaría que existe). En el drawer, el mismo estado va dentro.
-- **Panel de la unidad:** cabecera con título, origen, situación (`<BadgeDeSituacion>`: la fase, «Sin fase», «En subasta» o «Sin resolver»), «Desde hace N días en esta fase» y «Abrir
-  ficha». Bajo la cabecera, «Relacionados» de un vehículo (con `leads.ver`; el hueco `relacionados`, que `src/app` llena con el bloque de `vehiculos`; «Desvincular» y los selectores de leads llevan a la ficha, que es donde viven esos paneles). Debajo, un bloque plegado por hueco (qué falta, documentos, transporte, aduana, gastos, pagos, margen, notas, historial), en ese
-  orden, que lee al abrirse con la sesión de quien mira y sólo aparece con su permiso en el origen y su regla del flujo encendida. Si el
-  flujo del origen no se pudo leer, los bloques que piden una regla no se dibujan y una línea lo dice; el resto sigue. La ficha del
+- **Cabecera** (≤ 7,5 rem en la página): la portada (`w-28`, 4:3, con las fotos en el lugar), título (el primer `h2`), origen, situación (`<BadgeDeSituacion>`: la fase, «Sin fase», «En subasta» o «Sin resolver»), «Desde hace N días en esta fase», «Abrir
+  ficha» y «Relacionados» de un vehículo **en una línea** (con `leads.ver`; ver «Relacionados (estados propios)»; «Desvincular» y los selectores de leads llevan a la ficha). En un drawer, la cabecera es una columna suelta y los relacionados, el bloque de tres grupos.
+- **Zonas** (página, desde 1024 px de pantalla; las dos columnas con alto fijo desde 56 rem de contenedor, por debajo una columna con alto natural): **principal**, «Qué falta» con mover, siempre a la vista, hasta el 55 % del alto, con su propio desplazamiento y la fila del botón pegada abajo;
+  debajo, **pestañas** con su propio desplazamiento cada una: Documentos · Transporte · Repuestos · Aduana · **Dinero** (gastos, pagos y margen apilados); a la derecha, **lateral**: Notas · Historial. Cada hueco aparece con su permiso en el origen y su regla del flujo encendida; una pestaña sin
+  huecos no se dibuja («Dinero» existe si hay alguno de los tres) y una zona vacía deja que la grilla se reacomode. La pestaña elegida va en `?hueco=` (sin recargar, sin sumar al historial). Lo de cada pestaña se monta la primera vez que se elige y queda montado: la nota a medias, el borrador de transporte
+  y la bandeja de documentos no se pierden. Los atajos («Ir a Documentos», «Ir a Gastos») eligen la pestaña y llevan el foco a ella. **Subir documentos** va en un drawer (`?subir=documentos`) abierto por el botón «Subir documentos» del hueco (apagado, con «Necesitas permiso para subir documentos.» escrito debajo, sin `logistica.documentos.subir`); con archivos en la bandeja cerrar pregunta, y al terminar sin fallos se cierra solo (con fallos queda abierto con «Reintentar los N que faltan»). En el celular y en los drawers la bandeja sigue en línea. En escritorio se piden al abrir tres huecos (Qué falta, Documentos, Notas); en el celular, uno.
+- **Celular y tableta vertical:** una columna, un bloque plegado por hueco en este orden —qué falta (abierto), documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen— y una barra «Mover» pegada abajo (44 px, sólo con `flujos.mover` del origen y el hueco «Qué falta»)
+  que lo abre, lo trae a la vista y le da el foco. Si el flujo del origen no se pudo leer, los huecos que piden una regla no se dibujan y una línea lo dice; el resto sigue. La ficha del
   vehículo lleva «Ver en logística» (antes de «Editar», con `logistica.ver`) a `/logistica/vehiculo/<id>`.
 - **«Qué falta» y mover** (abierto al inicio, el primero): una tarjeta por destino (las salidas de la fase actual; sin fase, las iniciales)
   con cada requisito y su estado **dicho con texto** («Cumplido» / «Falta»), «Obligatorio» / «Informativo», su detalle («1 de 2
@@ -711,7 +721,7 @@ El panel de la unidad (`<PanelDeLaUnidad>`) se dibuja igual en `/logistica/vehic
   formulario con «Recargar», que conserva lo escrito. Sin `logistica.transporte.editar` del origen, campos apagados con su motivo. Vacíos:
   sin transporte cargado; sin navieras (con `logistica.catalogos.gestionar`, «Cargar navieras»). Guardar relee «Qué falta». Una unidad de
   repuesto: `TEXTO_DE_REPUESTO`.
-- **Notas e historial** (plegados): «Notas» con «Escribir una nota» (`<Textarea>`, contador de 2.000, «Guardar nota», `Ctrl/Cmd+Enter`; el
+- **Notas e historial** (zona lateral en la página; plegados en un drawer o en el celular): «Notas» con «Escribir una nota» (`<Textarea>`, contador de 2.000, «Guardar nota», `Ctrl/Cmd+Enter`; el
   error junto al botón y el texto queda) y las notas de la más nueva: quién, cuándo, texto; la que dejó un cambio de fase dice «al pasar a
   «<fase>»» y no se edita. «Editar» sólo la propia, en el lugar. **No hay «Borrar»**: la base no deja el borrado suave por `update` (pide
   una RPC). «Historial», sólo lectura: una línea por cambio, quién («Sistema» sin persona), cuándo y la nota. Las dos: de a 20 con «Ver
@@ -778,8 +788,13 @@ El panel de la unidad (`<PanelDeLaUnidad>`) se dibuja igual en `/logistica/vehic
   desactivarla y no se cierra); el orden es un número del modal; una de propósito «Tributos» no cambia de propósito (Aduana la lee).
   **Prorratear** (hueco del resumen de un grupo, `?panel=prorratear`): muestra cuánto le toca a cada unidad y la suma antes de confirmar;
   sin unidades no hay nada que repartir; más de 200 no se reparte; el equivalente en base lo calcula la base.
-- **Estados:** esqueleto de detalle (`loading.tsx` y el del `Suspense`), error con «Reintentar» (el de `(app)`), sin permiso y no
-  disponible.
+- **Estados de la página de la unidad:**
+  - Cargando: `EsqueletoDeLaUnidad`, con la forma de las zonas (en `loading.tsx` y en el `Suspense`); un hueco, `EsqueletoDelHueco` mientras llega su código y después el suyo; la foto y los relacionados, esqueletos del mismo tamaño, sin salto.
+  - No existe, papelera o no se ve: «Este vehículo ya no está disponible» (igual que antes, sin confirmar que existe); sin `logistica.ver`: «No tienes permiso para ver esto».
+  - Sin permiso para un hueco: no aparece, ni su pestaña; la zona vacía no se dibuja. Flujo ilegible: aviso en la cabecera y los huecos con regla no se dibujan. Sin fase: «Sin fase», sin días, y «Qué falta» con los destinos iniciales. «Sin resolver»: la insignia y «La ganamos» en «Qué falta».
+  - Error de lectura de un hueco: el suyo, con «Reintentar», dentro de su zona. Error al dibujar un hueco: «No pudimos mostrar «<título>».» con «Reintentar» (`LimiteDelHueco`); sin red al pedir su código: el aviso de `diferido` en su zona. Conflicto (`PT409`): como en mover, transporte y documentos.
+  - Topes: documentos 50 con `<AvisoDeTope>`; notas e historial «Ver más» hasta 500 con «Ir a una fecha»; gastos y pagos 50 con «Ver todos en Gastos».
+  - Límites: con «Ver como» la franja hace desplazar la página; redimensionar cruzando 1024 px remonta los huecos y pierde lo escrito (`docs/PENDIENTES.md`).
 
 ### Tablero: estados propios
 

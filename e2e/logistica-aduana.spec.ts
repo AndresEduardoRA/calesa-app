@@ -14,6 +14,7 @@ import {
   sembrarTributos,
   type TerrenoDeAduana,
 } from './soporte/aduana'
+import { abrirSeccionDeLaUnidad } from './soporte/unidad'
 
 // La aduana (6.09): quien gestiona crea una declaración, le suma dos vehículos de la fase que permite aduana, le asigna el canal (la composición queda fija: no se agrega ni se quita) y, cuando
 // los dos vehículos tienen su gasto de tributos (sembrado por la base, no por la pantalla), la fila dice «Pagada» y el panel de la unidad dice «Tributos pagados: sí». Quien no gestiona no ve
@@ -111,6 +112,6 @@ test('E2E crear una declaración con dos vehículos, asignarle el canal y verla 
 
   // Y el panel de la unidad lo dice.
   await page.goto(`/logistica/vehiculo/${terreno.enFase.id}`)
-  await page.locator('span:text-is("Aduana")').click()
+  await abrirSeccionDeLaUnidad(page, 'aduana')
   await expect(page.getByText('Tributos pagados: sí')).toBeVisible()
 })

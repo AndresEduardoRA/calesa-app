@@ -17,6 +17,7 @@ import {
   transporteDe,
   type TerrenoDeTransporte,
 } from './soporte/transporte'
+import { abrirSeccionDeLaUnidad } from './soporte/unidad'
 
 // El transporte de la unidad (6.08-2): quien lo edita carga naviera, contenedor y fechas desde el hueco «Transporte» del panel y la base lo guarda en mayúsculas; un rechazo (la ETA antes del
 // zarpe) queda junto a su campo; si otra persona cargó el transporte mientras tanto, el aviso de conflicto conserva lo escrito; y quien sólo ve la logística lo lee sin poder editarlo.
@@ -27,7 +28,7 @@ let terreno: TerrenoDeTransporte
 
 async function abrirElHueco(page: Page, vehiculoId: string) {
   await page.goto(`/logistica/vehiculo/${vehiculoId}`)
-  await page.locator('span:text-is("Transporte")').click()
+  await abrirSeccionDeLaUnidad(page, 'transporte')
   return page.locator('[data-hueco="transporte"]')
 }
 

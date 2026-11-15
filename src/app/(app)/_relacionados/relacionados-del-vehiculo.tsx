@@ -13,6 +13,8 @@ type Props = {
   // La ficha: la papelera que ofrece el aviso de desvinculado y lo que ofrece si la base rechaza el envío.
   ofrecerPapelera?: boolean
   avisos?: AvisosDelMenu
+  // La unidad de logística pide «Relacionados» en una línea de chips.
+  presentacion?: 'bloque' | 'linea'
 }
 
 // «Relacionados» de un vehículo, leído en el servidor (la ficha y la unidad de logística), detrás de su `<Suspense>`. Un error de lectura no tumba la pantalla: el bloque dice «No pudimos cargar los
@@ -23,6 +25,7 @@ export async function RelacionadosDelVehiculoServidor({
   lugar,
   ofrecerPapelera = false,
   avisos,
+  presentacion,
 }: Props) {
   const [leido, origenes] = await Promise.all([
     leerRelacionadosDelVehiculo(vehiculoId),
@@ -37,6 +40,7 @@ export async function RelacionadosDelVehiculoServidor({
       numeroGlobal={puede(permisos, 'leads.numero_global.ver')}
       ofrecerPapelera={ofrecerPapelera}
       {...(avisos ? { avisos } : {})}
+      {...(presentacion ? { presentacion } : {})}
     />
   )
 }

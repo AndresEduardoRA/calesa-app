@@ -33,6 +33,10 @@ const destinoDe = (ruta: string): string => {
     )
     return `/logistica/fase/${fase}?origen=${origen}`
   }
+  if (ruta === '/logistica/vehiculo/[id]') {
+    // La unidad del vehículo medido (de la subasta de la semilla: la dueña la ve).
+    return `/logistica/vehiculo/${sql(`select id from public.vehiculos where titulo = ${literal(TITULO_DEL_VEHICULO_MEDIDO)}`)}`
+  }
   return ruta === '/cotizaciones/[id]' ? `/cotizaciones/${cotizacionMedida}` : ruta
 }
 

@@ -1,0 +1,55 @@
+'use client'
+
+import { useId } from 'react'
+import { Button } from '@/shared/ui/button'
+import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
+import type { Unidad } from '../../../entities/nucleo/unidad'
+import { useEnZonas } from '../../nucleo/disposicion'
+import { CLAVE_DE_SUBIR } from '../../nucleo/hooks/use-pestana-de-la-zona'
+import type { DatoDeDocumentos } from '../hooks/use-documentos-de-la-unidad'
+import { usePuedeSubirALaUnidad } from '../hooks/use-puede-subir-a-la-unidad'
+import { DrawerParaSubirDiferido } from './diferidos'
+import { ZonaParaSubirDeLaUnidad } from './zona-para-subir-de-la-unidad'
+
+const SIN_PERMISO = 'Necesitas permiso para subir documentos.'
+
+// Cómo se ofrece subir en el hueco «Documentos»: en las zonas de la página, un botón «Subir documentos» que abre el drawer (`?subir=documentos`); en los bloques (celular, drawers y la ficha del vehículo),
+// la bandeja en línea, como siempre. Sin permiso, el botón queda apagado con su motivo escrito debajo.
+export function SubidaDeLaUnidad({ unidad, dato }: { unidad: Unidad; dato: DatoDeDocumentos }) {
+  const enZonas = useEnZonas()
+  if (!enZonas) return <ZonaParaSubirDeLaUnidad unidad={unidad} dato={dato} />
+  return <SubidaEnUnDrawer unidad={unidad} dato={dato} />
+}
+
+function SubidaEnUnDrawer({ unidad, dato }: { unidad: Unidad; dato: DatoDeDocumentos }) {
+  const puedeSubir = usePuedeSubirALaUnidad(unidad)
+  const subir = usePanelPorUrl('documentos', [], { clave: CLAVE_DE_SUBIR })
+  const idDelMotivo = useId()
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+      <Button
+        type="button"
+        className="min-h-11 md:min-h-9"
+        disabled={puedeSubir !== true}
+        aria-describedby={puedeSubir === false ? idDelMotivo : undefined}
+        onClick={() => {
+          subir.abrir()
+        }}
+      >
+        Subir documentos
+      </Button>
+      {puedeSubir === false ? (
+        <p id={idDelMotivo} className="text-(length:--text-sm) text-(--color-ink-soft)">
+          {SIN_PERMISO}
+        </p>
+      ) : null}
+      {/* Una URL a mano no abre lo que el permiso no deja. */}
+      <DrawerParaSubirDiferido
+        abierto={subir.abierto && puedeSubir === true}
+        alCerrar={subir.cerrar}
+        unidad={unidad}
+        dato={dato}
+      />
+    </div>
+  )
+}
