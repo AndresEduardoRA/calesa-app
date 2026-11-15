@@ -14,6 +14,7 @@ import {
 } from '../../src/shared/lib/paginacion'
 import { MAXIMO_DE_PAGINA_DE_COTIZACIONES } from '../../src/modules/cotizaciones/entities/listado/listado'
 import { MAXIMO_DE_PAGINA_DE_VEHICULOS } from '../../src/modules/vehiculos/entities/vehiculo'
+import { PRIMEROS_DE_RELACIONADOS } from '../../src/modules/vehiculos/entities/relacionados'
 import { RPC_PAGINADAS_DE_LA_PAPELERA } from './paginas-en-la-base-papelera'
 import { sumarListas } from './registros-de-carriles'
 
@@ -35,6 +36,32 @@ export const RPC_PAGINADAS_DEL_NUCLEO: readonly RpcPaginada[] = [
     parametro: 'p_tamano',
     pideElCodigo: TAMANO_DE_VER_MAS,
     lista: '«Ver más» de oportunidades de un lead',
+  },
+  // «Relacionados» (T17): el resumen de un bloque trae las primeras `PRIMEROS_DE_RELACIONADOS` filas visibles de cada grupo (la base acota con `_acotar_pagina(…, 3, 5)`) y «Ver todos»
+  // pide de a `TAMANO_DE_VER_MAS` (`_acotar_pagina(…, 20, 20)`, y la base trae una de más para saber si hay otra página).
+  {
+    rpc: 'vehiculo_relacionados',
+    parametro: 'p_primeros',
+    pideElCodigo: PRIMEROS_DE_RELACIONADOS,
+    lista: 'relacionados de un vehículo, las primeras filas de cada grupo',
+  },
+  {
+    rpc: 'lead_relacionados',
+    parametro: 'p_primeros',
+    pideElCodigo: PRIMEROS_DE_RELACIONADOS,
+    lista: 'relacionados de un lead, las primeras filas de cada grupo',
+  },
+  {
+    rpc: 'vehiculo_relacionados_pagina',
+    parametro: 'p_tamano',
+    pideElCodigo: TAMANO_DE_VER_MAS,
+    lista: '«Ver todos» de los relacionados de un vehículo',
+  },
+  {
+    rpc: 'lead_relacionados_pagina',
+    parametro: 'p_tamano',
+    pideElCodigo: TAMANO_DE_VER_MAS,
+    lista: '«Ver todos» de los relacionados de un lead',
   },
   {
     rpc: 'lead_seguimientos',

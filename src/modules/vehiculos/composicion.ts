@@ -10,7 +10,8 @@ import type {
   LectorDeLimpiezaPendiente,
   LectorDePapelera,
   LectorDeGaleria,
-  LectorDeRelaciones,
+  LectorDeRelacionadosDelLead,
+  LectorDeRelacionadosDelVehiculo,
   LectorDeConsultaDeApibara,
   LectorDeLimpiezaAutomatica,
   LectorDeUltimaLimpieza,
@@ -40,7 +41,7 @@ import { getGaleria } from './infra/queries/fotos'
 import { getConPermiso, getLimpiezaPendiente, getPapelera } from './infra/queries/papelera'
 import { getConsultaDeApibara, getSubasta } from './infra/queries/subasta'
 import { getVehiculosDelLead } from './infra/queries/vehiculos-del-lead'
-import { getRelaciones } from './infra/queries/vinculo'
+import { getRelacionadosDelLead, getRelacionadosDelVehiculo } from './infra/queries/relacionados'
 import { getVistaPrevia, getVitrinaDelOrigen } from './infra/queries/vitrina'
 import { buscarVehiculos as buscarEnSupabase, getVehiculo } from './infra/queries/listado'
 import { getTitulosDeVehiculos } from './infra/queries/titulos-de-vehiculos'
@@ -57,7 +58,10 @@ export const leerGaleria: LectorDeGaleria = getGaleria
 export const leerSubasta: LectorDeSubasta = getSubasta
 export const leerConsultaDeApibara: LectorDeConsultaDeApibara = getConsultaDeApibara
 export const repositorioFotos: RepositorioFotos = fotosSupabase
-export const leerRelaciones: LectorDeRelaciones = getRelaciones
+// Los relacionados de un vehículo y de un lead (`vehiculo_relacionados()`, `lead_relacionados()`).
+export const leerRelacionadosDelVehiculo: LectorDeRelacionadosDelVehiculo =
+  getRelacionadosDelVehiculo
+export const leerRelacionadosDelLead: LectorDeRelacionadosDelLead = getRelacionadosDelLead
 export const consultarEditables: ConsultaDeEditables = getEditables
 export const consultarLeadsVisibles: ConsultaDeLeadsVisibles = getLeadsVisibles
 export const repositorioVitrina: RepositorioVitrina = vitrinaSupabase

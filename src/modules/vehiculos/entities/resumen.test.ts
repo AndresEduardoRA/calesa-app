@@ -59,26 +59,16 @@ const entrada = (resto: Partial<Parameters<typeof vistaDelResumen>[0]> = {}) => 
 })
 
 describe('pestanasDelResumen y pestanaDelResumen', () => {
-  it('«Interesados» sólo existe con `leads.ver`', () => {
-    expect(pestanasDelResumen({ verInteresados: true }).map((p) => p.clave)).toEqual([
-      'resumen',
-      'fotos',
-      'interesados',
-    ])
-    expect(pestanasDelResumen({ verInteresados: false }).map((p) => p.clave)).toEqual([
-      'resumen',
-      'fotos',
-    ])
+  it('son «Resumen» y «Fotos»: lo relacionado va dentro de «Resumen», arriba de las pestañas', () => {
+    expect(pestanasDelResumen().map((p) => p.clave)).toEqual(['resumen', 'fotos'])
   })
 
-  it('lo que no es una pestaña que existe, o que no se ve, abre «Resumen»', () => {
-    const con = pestanasDelResumen({ verInteresados: true })
-    const sin = pestanasDelResumen({ verInteresados: false })
-    expect(pestanaDelResumen('fotos', con)).toBe('fotos')
-    expect(pestanaDelResumen('interesados', con)).toBe('interesados')
-    expect(pestanaDelResumen('interesados', sin)).toBe('resumen')
-    expect(pestanaDelResumen('otra', con)).toBe('resumen')
-    expect(pestanaDelResumen(null, con)).toBe('resumen')
+  it('lo que no es una pestaña que existe abre «Resumen», también un `interesados` viejo', () => {
+    const pestanas = pestanasDelResumen()
+    expect(pestanaDelResumen('fotos', pestanas)).toBe('fotos')
+    expect(pestanaDelResumen('interesados', pestanas)).toBe('resumen')
+    expect(pestanaDelResumen('otra', pestanas)).toBe('resumen')
+    expect(pestanaDelResumen(null, pestanas)).toBe('resumen')
   })
 })
 

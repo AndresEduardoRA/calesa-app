@@ -192,6 +192,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'mediana de 5 de 7 corridas',
   ],
   [
+    'supabase/tests/medir-relacionados.sql',
+    'Los relacionados de un vehículo y de un lead (vehiculo_relacionados(), lead_relacionados() y sus páginas «Ver todos») con un vehículo de 5.000 interesados y 2.000 cotizaciones sobre 300 leads, y un lead de 1.000 vinculados, 1.000 interesados y 2.000 cotizaciones, como Ana («propios») y la dueña con el plan genérico: el plan de cada consulta por su índice, sin Sort ni Seq Scan; los bloques leídos no crecen con N (5.000 contra 300); ≤ 20 ms por llamada',
+    'mediana de 5 de 7 corridas',
+  ],
+  [
     'supabase/tests/medir-telefonos-choques.sql',
     'Los choques de teléfonos extra (telefonos_extra_choques()) con 30.000 y con 60.000 extras sin choque (el recorrido tiene tope de 10.000 filas: no crece con N) y con choques repartidos, como la dueña: el plan de la consulta de recorrido por leads_telefonos_pkey, leads_telefono_unico y leads_telefonos_telefono_idx, y los bloques por relación de la llamada real',
     'mediana de 5 de 7 corridas',

@@ -8947,6 +8947,17 @@ export type Database = {
         }
       }
       _recordatorio_titulo: { Args: { p_hint: string; p_valor: string }; Returns: string }
+      _relacion_de_lead: {
+        Args: {
+          p_cartera: string[]
+          p_edita: boolean
+          p_global: boolean
+          p_lead: string
+          p_nombre: string
+          p_yo: string
+        }
+        Returns: Json
+      }
       _repuesto_ante_espera: { Args: { p_fase: string; p_item: string }; Returns: string }
       _repuesto_catalogo: {
         Args: { p_catalogo: string; p_clave: string; p_datos: Json }
@@ -10501,6 +10512,17 @@ export type Database = {
         }
         Returns: Json
       }
+      lead_relacionados: { Args: { p_lead: string; p_primeros?: number }; Returns: Json }
+      lead_relacionados_pagina: {
+        Args: {
+          p_cursor_en?: string
+          p_cursor_id?: string
+          p_lead: string
+          p_tamano?: number
+          p_tipo: string
+        }
+        Returns: Json
+      }
       lead_revocar_acceso: { Args: { p_lead: string; p_usuario: string }; Returns: Json }
       lead_salir: { Args: { p_lead: string }; Returns: Json }
       lead_seguimiento: { Args: { p_id: string; p_lead: string }; Returns: Json }
@@ -11503,6 +11525,17 @@ export type Database = {
         }[]
       }
       vehiculo_limpieza: { Args: { p_vehiculo: string }; Returns: Json }
+      vehiculo_relacionados: { Args: { p_primeros?: number; p_vehiculo: string }; Returns: Json }
+      vehiculo_relacionados_pagina: {
+        Args: {
+          p_cursor_en?: string
+          p_cursor_id?: string
+          p_tamano?: number
+          p_tipo: string
+          p_vehiculo: string
+        }
+        Returns: Json
+      }
       vehiculo_subasta_ganada: {
         Args: {
           p_fase_destino: string
