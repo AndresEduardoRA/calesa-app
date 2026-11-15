@@ -5,13 +5,12 @@ import { Button } from '@/shared/ui/button'
 import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
 import type { Unidad } from '../../../entities/nucleo/unidad'
 import { useEnZonas } from '../../nucleo/disposicion'
+import { CLAVE_DE_SUBIR } from '../../nucleo/hooks/use-pestana-de-la-zona'
 import type { DatoDeDocumentos } from '../hooks/use-documentos-de-la-unidad'
 import { usePuedeSubirALaUnidad } from '../hooks/use-puede-subir-a-la-unidad'
 import { DrawerParaSubirDiferido } from './diferidos'
 import { ZonaParaSubirDeLaUnidad } from './zona-para-subir-de-la-unidad'
 
-// La clave de la URL del drawer de subir: aparte de `?panel=` (que cerraría el drawer del ítem de repuesto) para convivir con `?vehiculo=` e `?item=`.
-const CLAVE_DE_SUBIR = 'subir'
 const SIN_PERMISO = 'Necesitas permiso para subir documentos.'
 
 // Cómo se ofrece subir en el hueco «Documentos»: en las zonas de la página, un botón «Subir documentos» que abre el drawer (`?subir=documentos`); en los bloques (celular, drawers y la ficha del vehículo),

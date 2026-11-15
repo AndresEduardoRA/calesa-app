@@ -6,7 +6,7 @@ import { ORDEN_DE_HUECOS } from '../../../entities/nucleo/hueco'
 import { CLAVE_DEL_HUECO_ABIERTO } from '../../../entities/nucleo/enlaces'
 import { pestanaDelHueco, pestanaInicial } from '../../../entities/nucleo/zonas'
 
-// La clave de la URL con la que un enlace abre el drawer de subir documentos (`?subir=documentos`): la zona de pestañas debe abrir en Documentos para que su hueco esté montado.
+// La clave de la URL del drawer de subir documentos (`?subir=documentos`): aparte de `?panel=` (que cerraría el drawer del ítem de repuesto) para convivir con `?vehiculo=` e `?item=`. La zona de pestañas abre en Documentos con ella, para que su hueco esté montado; `SubidaDeLaUnidad` usa la misma clave.
 export const CLAVE_DE_SUBIR = 'subir'
 
 type Pestana = { clave: string; huecos: readonly { clave: string }[] }
@@ -24,6 +24,8 @@ export function usePestanaDeLaZona(pestanas: readonly Pestana[]) {
   const delUrl = pestanaDelHueco(huecoDeLaUrl)
   const existe = (clave: string | null): clave is string =>
     clave !== null && pestanas.some((p) => p.clave === clave)
+  // Lo que pidió la URL también se recuerda: si la otra zona escribe `?hueco=` después, ésta no vuelve a su primera pestaña.
+  if (existe(delUrl) && ultima !== delUrl) setUltima(delUrl)
   const activa = existe(delUrl)
     ? delUrl
     : existe(ultima)

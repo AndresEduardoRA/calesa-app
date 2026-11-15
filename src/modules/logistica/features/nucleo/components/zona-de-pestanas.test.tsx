@@ -57,6 +57,30 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+describe('dos zonas que comparten ?hueco=', () => {
+  it('elegir en la lateral no devuelve la de pestañas a su primera pestaña', async () => {
+    const lateral = zonasDeLaUnidad([seccion('notas', 'Notas'), seccion('historial', 'Historial')])
+    render(
+      <div data-slot="panel-de-la-unidad">
+        <NuqsTestingAdapter searchParams="?hueco=transporte" hasMemory>
+          <ZonaDePestanas etiqueta="Secciones de la unidad" pestanas={zonas.pestanas} />
+          <ZonaDePestanas etiqueta="Notas e historial" pestanas={lateral.lateral} />
+        </NuqsTestingAdapter>
+      </div>,
+    )
+    const delPrimero = () =>
+      screen
+        .getByRole('tablist', { name: 'Secciones de la unidad' })
+        .querySelector('[aria-selected=true]')?.textContent
+    expect(delPrimero()).toBe('Transporte')
+    // «Notas» es la primera de su zona: escribe `hueco` en null.
+    fireEvent.click(screen.getByRole('tab', { name: 'Notas' }))
+    await waitFor(() => {
+      expect(delPrimero()).toBe('Transporte')
+    })
+  })
+})
+
 describe('ZonaDePestanas', () => {
   it('abre en la primera y lo que no se eligió no se monta', () => {
     dibujar()
