@@ -388,8 +388,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   el objeto; masivas irreversibles = confirmación tipeada.
 - **Fotos:** toda foto de una entidad abre el visor (`?visor=`) con ← →, Esc, «3 de 12» y miniaturas; la cabecera de la ficha y la del resumen
   del vehículo llevan el carrusel en su lugar (flechas, puntos y gesto). Las galerías («Fotos» del resumen, imágenes de un ítem) abren el visor en la foto tocada.
-- **Vistos:** en las listas de vehículos y leads (y las que se sumen), lo que la persona abrió en ese módulo se apaga como un enlace visitado y
-  lo último lleva borde de acento y «Último visto». `/perfil` › «Vistos»: marcar o no, recordar 7, 30, 90 días o 1 año, marcar o no el último.
+- **Vistos:** en las listas de vehículos, leads (lista y kanban), cotizaciones, proyectos de repuestos, los chips de la agenda y las de logística (bandeja del
+  día, fase, «dónde está», gastos y pagos, unidades de un grupo), lo que la persona abrió en ese módulo se apaga como un enlace visitado y lo último lleva
+  borde de acento y «Último visto». En el chip de la agenda, «visto» lleva una tilde (y el texto para el lector): el fondo es de la clase y apagarlo rompería el
+  contraste. Aduana y las notificaciones no marcan. `/perfil` › «Vistos»: marcar o no, recordar 7, 30, 90 días o 1 año, marcar o no el último.
 - **Avisos con acciones:** un aviso de error, advertencia o bloqueo que tiene salida la ofrece ahí mismo (de 1 a 3, la que destraba primero;
   sin permiso, a quién pedírselo) — `.claude/rules/ui.md` › «Avisos con acciones».
 - **Fechas de subasta:** en la zona de quien mira (`/perfil` › «Zona horaria»; sin elegir, la de la empresa), con la abreviatura («14:00

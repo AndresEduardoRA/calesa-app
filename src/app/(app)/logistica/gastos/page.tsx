@@ -24,6 +24,7 @@ import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { EsqueletoDetalle, EsqueletoListado } from '@/shared/ui/esqueletos'
 import { CLAVE_DE_UNIDAD } from '../clave-de-unidad'
 import { DrawerDeLaUnidad } from '../drawer-de-la-unidad'
+import { MarcasDeLogistica } from '../marcas-de-logistica'
 import { UnidadAbierta } from '../unidad-abierta'
 
 export const metadata: Metadata = { title: 'Gastos' }
@@ -85,12 +86,18 @@ async function Listado({
   const unidad = unParametro(parametros[CLAVE_DE_UNIDAD])
   return (
     <>
-      <ListadoDeDinero
-        lista={lista}
-        vistas={vistasPermitidas(permisos)}
-        esquema={esquema}
-        claveDeUnidad={CLAVE_DE_UNIDAD}
-      />
+      {/* La fila abre el panel de su unidad (`?vehiculo=`): ahí se registra, una vez, y el resto de la lista lo marca. */}
+      <MarcasDeLogistica
+        ids={lista.pagina.filas.map((fila) => fila.vehiculoId)}
+        parametro={CLAVE_DE_UNIDAD}
+      >
+        <ListadoDeDinero
+          lista={lista}
+          vistas={vistasPermitidas(permisos)}
+          esquema={esquema}
+          claveDeUnidad={CLAVE_DE_UNIDAD}
+        />
+      </MarcasDeLogistica>
       {unidad ? (
         <DrawerDeLaUnidad>
           <Suspense key={unidad} fallback={<EsqueletoDetalle />}>

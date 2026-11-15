@@ -21,7 +21,14 @@ test.beforeAll(async ({}, info) => {
   t = await prepararListado(info.project.name)
 })
 
+// Lo que esta persona abrió en el origen de la prueba: se borra al terminar (y antes de la prueba de lo visto, que parte de cero).
+const borrarVistos = (): string =>
+  sql(
+    `delete from public.vistos where modulo = 'cotizaciones' and referencia_id in (select id from public.cotizaciones where origen_id = ${literal(t.origen.id)}::uuid)`,
+  )
+
 test.afterAll(async () => {
+  borrarVistos()
   await limpiarGuardado()
   await borrarRolesDePrueba()
 })
@@ -179,4 +186,32 @@ test('R5 quien sólo ve cotizaciones abre una fuera de la página con el cliente
     resumen(page).getByText('Cliente').locator('xpath=following-sibling::*[1]'),
   ).toHaveText('—')
   await expect(page.getByText(t.nombreDelLeadDeLaDuena)).toHaveCount(0)
+})
+
+test('R6 abrir el resumen marca la fila como el último visto, y se recuerda al recargar', async ({
+  page,
+}) => {
+  borrarVistos()
+  await irAlListado(page, t.duena)
+  const primera = filas(page).first()
+  await expect(primera).not.toHaveAttribute('data-visto', /.+/)
+  await expect(primera.getByText('Último visto')).toHaveCount(0)
+  await abrirConUnClic(page, primera)
+  await expect(resumen(page)).toBeVisible()
+  // La marca la pone la URL del resumen: se espera su clave antes de cerrar y de recargar.
+  await expect(page).toHaveURL(/[?&]cotizacion=/)
+  await page.keyboard.press('Escape')
+  await expect(resumen(page)).toHaveCount(0)
+  await expect(primera).toHaveAttribute('data-visto', 'ultimo')
+  await expect(primera.getByText('Último visto')).toBeVisible()
+  // Al recargar la trae la base: hay que esperar a que el registro llegue.
+  await expect
+    .poll(() =>
+      sql(
+        `select count(*) from public.vistos where modulo = 'cotizaciones' and tipo = 'cotizacion' and referencia_id in (select id from public.cotizaciones where origen_id = ${literal(t.origen.id)}::uuid)`,
+      ),
+    )
+    .toBe('1')
+  await page.reload()
+  await expect(filas(page).first()).toHaveAttribute('data-visto', 'ultimo')
 })

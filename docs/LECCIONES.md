@@ -156,6 +156,7 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Nombra un archivo de `pantallas/` con el prefijo de su área: sin prefijo es núcleo, y el núcleo no importa áreas.
 - Si un área o módulo necesita algo de otro, lo compone `src/app` (render prop desde un Client Component de la ruta, con el cast de `ComponentType`): una función no cruza de Server a Client.
 - No nombres un archivo como un SDK vetado (`resend.ts`): el lint lo veta por patrón de ruta.
+- Un componente de `equipo` en la lista de otro módulo se monta desde `src/app` por `pantallas/`, no desde `@/modules/equipo/client`: el barril costó ≈ 50 KB en `/cotizaciones`. La E/S con supabase-js se pide con `import()` al usarse.
 
 ## Interfaz
 
@@ -197,6 +198,7 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 
 ## Escala y rendimiento
 
+- Una lista de ids que una función invocadora recorta dentro de la consulta (`= any (coalesce(p_ids[1:100], '{}'))`) no entra al índice bajo RLS y recorre todo el rango: recórtala a una variable antes. Se ve en los bloques de la llamada real (`pg_stat_get_xact_blocks_fetched`), no en el `EXPLAIN` de la consulta suelta ni como `postgres`.
 - Bajo RLS una comparación de enum (`enum_eq`, no leakproof) no es condición de índice: usa índices parciales con el literal en su rama.
 - Deja un solo índice entero por columna que se sondea: dos que sirven a la misma consulta compiten en el plan genérico según el volumen.
 - Un índice para un cursor `(creado_en, id) < (c, i)` lleva las dos columnas en el sentido del orden (`creado_en desc, id desc`): si no, la tupla deja de ser condición de índice.

@@ -4,6 +4,7 @@ import type { Route } from 'next'
 import Link from 'next/link'
 import { fechaRelativa } from '@/shared/lib/fechas'
 import { RUTAS } from '@/shared/lib/rutas'
+import { CLASES_DE_VISTO, SufijoDeVisto, useVistoDeLista } from '@/shared/ui/lista'
 import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
 import type { EtapaGuardada } from '../../../entities/embudo'
@@ -23,15 +24,17 @@ type Props = {
   alPedirMotivo: (etapa: EtapaGuardada) => void
 }
 
-// Una oportunidad en el kanban: título, de qué lead (lleva a su sección en la ficha), monto, vehículo,
+// Una oportunidad en el kanban: título, de qué lead (lleva a su sección en la ficha, y es lo que marca «visto»: la ficha del lead se registra en el módulo leads), monto, vehículo,
 // desde cuándo está en la etapa y «Mover a…». Ganada o perdida lo dice con texto.
 export function TarjetaDeOportunidad({ tarjeta, etapas, enCurso, alMover, alPedirMotivo }: Props) {
   const { zonaHoraria } = useRegional()
+  const visto = useVistoDeLista(tarjeta.lead.id)
   const href = `${RUTAS.leads}/${tarjeta.lead.id}?${CLAVE_DE_SECCION}=oportunidades` as Route
   return (
     <article
       aria-label={tarjeta.titulo}
-      className="grid grid-cols-[minmax(0,1fr)] gap-2 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) p-3"
+      data-visto={visto ?? undefined}
+      className={`grid grid-cols-[minmax(0,1fr)] gap-2 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) p-3 ${CLASES_DE_VISTO}`}
     >
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-(length:--text-sm) font-medium break-words text-(--color-ink)">
@@ -44,8 +47,11 @@ export function TarjetaDeOportunidad({ tarjeta, etapas, enCurso, alMover, alPedi
         className="flex w-fit max-w-full items-baseline gap-1 text-(length:--text-sm) text-(--color-ink-soft) underline-offset-2 hover:underline"
       >
         {/* Un nombre sin espacios no se parte: se corta con «…» y el número queda a la vista. */}
-        <span className="min-w-0 truncate">{tarjeta.lead.nombre}</span>
+        <span data-abre-resumen="" className="min-w-0 truncate">
+          {tarjeta.lead.nombre}
+        </span>
         <NumeroDeLead numeros={tarjeta.lead.numeros} />
+        <SufijoDeVisto id={tarjeta.lead.id} />
       </Link>
       {tarjeta.monto === null && !tarjeta.vehiculo ? null : (
         <dl className="grid grid-cols-[minmax(0,1fr)] gap-0.5 text-(length:--text-xs) text-(--color-ink-soft)">

@@ -1,8 +1,10 @@
 'use client'
 
 import type { Route } from 'next'
+import { CheckIcon } from 'lucide-react'
 import Link from 'next/link'
 import { abreviaturaDeZona, formatearHora } from '@/shared/lib/fechas'
+import { CLASES_DE_VISTO, SufijoDeVisto, useVistoDeLista } from '@/shared/ui/lista'
 import { useRegional } from '@/shared/ui/regional'
 import { claseDe, type ClaveDeClase, type EntradaDeAgenda } from '../../../entities/agenda'
 
@@ -34,29 +36,37 @@ function HoraDelChip({ entrada, zona }: Props) {
   )
 }
 
-// Una cosa de la agenda, en un día. Lleva su clase con texto, la hora y el título; con `ruta` es un enlace (hoy sólo la subasta, a su vehículo).
+// Una cosa de la agenda, en un día. Lleva su clase con texto, la hora y el título; con `ruta` es un enlace (al panel del evento o de la tarea, o al
+// vehículo de la subasta). Un evento o una tarea ya abiertos se marcan «visto» (la tilde y el texto para el lector: el tono del chip es el de su
+// clase y apagarlo rompería el contraste) y el último, con el borde de acento y «Último visto».
 export function ChipEvento({ entrada, zona }: Props) {
   const clase = claseDe(entrada.clave)
+  const visto = useVistoDeLista(entrada.id)
   const contenido = (
     <>
+      {visto === null ? null : (
+        <CheckIcon aria-hidden className="mr-1 inline size-3.5 align-text-bottom" />
+      )}
       <span className="font-semibold">{clase.nombre}</span>{' '}
       <HoraDelChip entrada={entrada} zona={zona} />{' '}
       <span className={entrada.hecha ? 'line-through' : undefined}>{entrada.titulo}</span>
       {entrada.hecha ? <span> · Hecha</span> : null}
       {entrada.detalle ? <span className="sr-only"> ({entrada.detalle})</span> : null}
+      <SufijoDeVisto id={entrada.id} />
     </>
   )
-  const estilo = `block min-w-0 rounded-md px-2 py-1 text-(length:--text-sm) break-words ${ESTILO_DE_CLASE[entrada.clave]}`
+  const estilo = `block min-w-0 rounded-md px-2 py-1 text-(length:--text-sm) break-words ${ESTILO_DE_CLASE[entrada.clave]} ${CLASES_DE_VISTO}`
   return entrada.ruta ? (
     <Link
       href={entrada.ruta as Route}
+      data-visto={visto ?? undefined}
       title={entrada.detalle ?? undefined}
       className={`${estilo} transition hover:brightness-95 max-md:min-h-11`}
     >
       {contenido}
     </Link>
   ) : (
-    <span title={entrada.detalle ?? undefined} className={estilo}>
+    <span title={entrada.detalle ?? undefined} data-visto={visto ?? undefined} className={estilo}>
       {contenido}
     </span>
   )

@@ -344,9 +344,14 @@ vista (`UnaSolaVista`, según el `user-agent`).
 
 ## Vistos
 
-- `vistos_de(módulo, tipo, ids)`: una llamada por página dibujada, ≤ 100 ids por la PK `(usuario, módulo, tipo, referencia_id)` y el último
-  por `vistos_ultimo_idx (usuario, módulo, tipo, visto_en desc)` con `limit 1`: no crece con lo que la persona vio. `visto_registrar`, un upsert
-  por PK. `vistos_purgar()` cada hora, por persona por `vistos_usuario_visto_idx`, lotes de 5.000 y 50.000 por corrida (el orden rota con la hora); techo de 20.000 filas por persona, contado con tope sólo al insertar.
+- `vistos_de(módulo, tipo, ids)`: una lectura por pantalla dibujada, de a ≤ 100 ids por llamada (dos llamadas por tipo como mucho: tope de 200 ids por tipo) por la PK
+  `(usuario, módulo, tipo, referencia_id)` y el último por `vistos_ultimo_idx (usuario, módulo, tipo, visto_en desc)` con `limit 1`. La lista recortada
+  va a una variable antes de consultar: dentro de la consulta la RLS la deja como filtro y se recorre todo el par. En la agenda (evento y tarea), un `select` por la PK
+  (`vistos_pkey`, ≤ 2 filas) dice cuál de los dos últimos es el más reciente. `supabase/tests/medir-vistos.sql` (`MEDIR_SOLO=medir-vistos pnpm db:medir:volumen`):
+  con 2.000 y con 20.000 vistos por persona, `vistos_de` con 100 ids 0,3–0,5 ms y 129 bloques con 20.000 (sube un nivel del árbol por sonda, nunca con las filas del par); el
+  último de la agenda por la PK 0,03 ms y 13 bloques, igual con las dos cargas. `visto_registrar`, un upsert por PK; uno nuevo con 19.999 filas cuenta hasta el techo: ≈ 3 ms.
+  La E/S (supabase-js) se pide al usarse y no está en el JS en frío de la lista: `/cotizaciones` 370,4 de 380 KB y `/cotizaciones/[id]` 454,3 de 460 (con el barril de
+  `equipo/client` eran 434,7). `vistos_purgar()` cada hora, por persona por `vistos_usuario_visto_idx`, lotes de 5.000 y 50.000 por corrida (el orden rota con la hora); techo de 20.000 filas por persona, contado con tope sólo al insertar.
 
 ## Alertas y bandeja de logística
 

@@ -6,6 +6,7 @@ import {
   CabeceraPegada,
   CeldaPegada,
   FilaDeLista,
+  SufijoDeVisto,
   TablaDeLista,
 } from '@/shared/ui/lista'
 import { useRegional } from '@/shared/ui/regional'
@@ -38,6 +39,7 @@ export function TablaDePagos({ pagos, alAbrir, abierta }: Props) {
         {pagos.map((pago) => (
           <FilaDeLista
             key={pago.id}
+            idDeVisto={pago.vehiculoId}
             abierta={abierta === pago.vehiculoId}
             alAbrir={() => {
               alAbrir(pago.vehiculoId)
@@ -45,12 +47,16 @@ export function TablaDePagos({ pagos, alAbrir, abierta }: Props) {
           >
             <CeldaPegada lado="nombre">
               <div className="grid min-w-0">
-                <AbrirResumen
-                  nombre={`unidad ${pago.vehiculoTitulo}, pago ${pago.concepto}`}
-                  className="max-w-60 truncate font-medium text-(--color-ink)"
-                >
-                  {pago.concepto}
-                </AbrirResumen>
+                <span className="flex items-center">
+                  <AbrirResumen
+                    nombre={`unidad ${pago.vehiculoTitulo}, pago ${pago.concepto}`}
+                    className="max-w-60 truncate font-medium text-(--color-ink)"
+                  >
+                    {pago.concepto}
+                  </AbrirResumen>
+                  {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
+                  <SufijoDeVisto id={pago.vehiculoId} />
+                </span>
                 <span className="max-w-60 truncate text-(length:--text-xs) text-(--color-ink-soft)">
                   {pago.vehiculoTitulo}
                 </span>

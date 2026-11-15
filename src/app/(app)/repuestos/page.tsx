@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { puede, requerirSesion } from '@/modules/equipo'
+import { MarcasDeVistoDeLaPagina } from '@/modules/equipo/pantallas/marcas-de-visto'
 import {
   MAXIMO_DE_PAGINA_DE_REPUESTOS,
   CLAVE_DE_VEHICULO,
@@ -117,13 +118,19 @@ async function Listado({
   return (
     <div className="grid gap-4">
       <VistasDeRepuestos vista="proyectos" />
-      <ListadoDeProyectos
-        pagina={pagina}
-        esquema={esquema}
-        estado={estado}
-        porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_REPUESTOS) }}
-        nuevo={puedeEditar ? <BotonNuevoProyecto /> : null}
-      />
+      {/* La fila abre `/repuestos/<id>`, que lo registra visto: acá no hay resumen abierto, sin `parametro`. */}
+      <MarcasDeVistoDeLaPagina
+        modulo="repuestos"
+        consultas={[{ tipo: 'proyecto_repuestos', ids: pagina.filas.map((fila) => fila.id) }]}
+      >
+        <ListadoDeProyectos
+          pagina={pagina}
+          esquema={esquema}
+          estado={estado}
+          porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_REPUESTOS) }}
+          nuevo={puedeEditar ? <BotonNuevoProyecto /> : null}
+        />
+      </MarcasDeVistoDeLaPagina>
       <NuevoProyecto
         puedeEditar={puedeEditar}
         puedeVerLeads={puede(sesion.permisos, 'leads.ver')}

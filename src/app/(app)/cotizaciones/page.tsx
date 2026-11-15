@@ -22,6 +22,7 @@ import {
 } from '@/modules/cotizaciones'
 import { HUECOS_DE_PAPELERA_EN_EL_LISTADO } from '@/modules/cotizaciones/pantallas/papelera-listado'
 import { leerVistas, requerirSesion } from '@/modules/equipo'
+import { MarcasDeVistoDeLaPagina } from '@/modules/equipo/pantallas/marcas-de-visto'
 import { leerNombresDeLeads } from '@/modules/leads'
 import { getOrigenes } from '@/modules/origenes'
 import { leerTitulosDeVehiculos, leerVehiculo } from '@/modules/vehiculos'
@@ -147,22 +148,34 @@ async function Listado({
   const { Junto } = HUECOS_DE_PAPELERA_EN_EL_LISTADO
 
   return (
-    <ListadoConAcciones
-      esquema={esquema}
-      pagina={{ ...pagina, filas }}
-      acotada={pagina.acotada}
-      vistas={datosO(vistas)}
-      menus={menus}
-      quienesDelResumen={quienes}
-      delServidor={delServidor}
-      porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_COTIZACIONES) }}
-      origenes={visibles.map((origen) => ({ id: origen.id, nombre: origen.nombre }))}
-      {...(deUnVehiculo === undefined ? {} : { vehiculo: deUnVehiculo })}
-      {...(deUnLead === undefined ? {} : { lead: deUnLead })}
-      rutaDeNueva={
-        origenDeNueva === null ? null : rutaDeLaHoja({ origen: origenDeNueva, lead: null })
-      }
-      junto={Junto === undefined ? undefined : <Junto permisos={sesion.permisos} />}
-    />
+    // El resumen de `?cotizacion=` y las filas de la página marcan lo visto en el módulo (una lectura por página).
+    <MarcasDeVistoDeLaPagina
+      modulo="cotizaciones"
+      consultas={[
+        {
+          tipo: 'cotizacion',
+          ids: pagina.filas.map((fila) => fila.id),
+          parametro: CLAVE_DE_RESUMEN_DE_COTIZACION,
+        },
+      ]}
+    >
+      <ListadoConAcciones
+        esquema={esquema}
+        pagina={{ ...pagina, filas }}
+        acotada={pagina.acotada}
+        vistas={datosO(vistas)}
+        menus={menus}
+        quienesDelResumen={quienes}
+        delServidor={delServidor}
+        porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_COTIZACIONES) }}
+        origenes={visibles.map((origen) => ({ id: origen.id, nombre: origen.nombre }))}
+        {...(deUnVehiculo === undefined ? {} : { vehiculo: deUnVehiculo })}
+        {...(deUnLead === undefined ? {} : { lead: deUnLead })}
+        rutaDeNueva={
+          origenDeNueva === null ? null : rutaDeLaHoja({ origen: origenDeNueva, lead: null })
+        }
+        junto={Junto === undefined ? undefined : <Junto permisos={sesion.permisos} />}
+      />
+    </MarcasDeVistoDeLaPagina>
   )
 }

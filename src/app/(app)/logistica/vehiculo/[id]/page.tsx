@@ -19,6 +19,7 @@ export default async function PaginaDeLaUnidad({
       <UnidadAbierta
         id={id}
         permisos={sesion.permisos}
+        registraElVisto
         huecoAbierto={unParametro(parametros[CLAVE_DEL_HUECO_ABIERTO])}
       />
     </div>
