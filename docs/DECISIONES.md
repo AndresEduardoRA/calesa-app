@@ -62,6 +62,16 @@ las trampas, en `docs/LECCIONES.md`.
   20.000 filas por persona (el id no se valida contra su tabla), lectura de los ids de la página que se dibuja (una llamada) y purga cada hora
   por la retención de cada persona, en un orden que rota. Qué está
   visto lo pone `equipo` en un contexto de `@/shared/ui/lista`; la fila y la tarjeta lo leen con `idDeVisto`, sin pasar props por cada nivel.
+- **Dónde se marca «visto».** Vehículos, leads (lista y kanban), cotizaciones, proyectos de repuestos, los chips de la agenda y las listas de logística. **No** las
+  notificaciones (su «leída» ya es eso), ni aduana (su fila es una declaración, sin tipo en la lista cerrada, y sus vehículos son texto sin enlace), ni
+  los bloques de Inicio, las papeleras y las listas de configuración. Embarques marca las unidades de un grupo (no la fila del grupo: su clave no es un uuid) y
+  «Tareas sin fecha» queda sin marcas (se lee al abrirse). El contexto logística es la página `/logistica/vehiculo/[id]` o el panel de gastos.
+- **La E/S de «visto» se pide al usarse y no por Server Action.** Una lista no carga supabase-js en frío (`import()` desde `pedidos-de-vistos.ts`, sólo con «Vistos»
+  encendido); el router ejecuta las actions de a una y una lectura por montaje haría esperar a las mutaciones reales. Las marcas se montan desde `src/app` por una
+  entrada chica de `pantallas/` (no por el barril de `client.ts`, que trae el menú de vistas). Un registro por apertura: el resumen o panel por URL (`parametro`) o la
+  página, nunca los dos.
+- **El último visto es el del módulo, de cualquiera de sus tipos** (`TIPOS_DEL_MODULO`): en la agenda, un evento o una tarea, nunca dos «Último visto». «Ver como» no
+  registra a nombre del otro (`visto_registrar` escribe con `auth.uid()`).
 
 - **El guardián cuenta la unión de roles.** Debe quedar una persona operativa (activa, sin bloqueo, invitación aceptada) cuyos roles sumen los permisos de administración.
 - **Dominancia sobre la persona.** Bloquear, desbloquear, dar de baja y asignar/quitar roles exigen dominarla (`rol_dominado()`); el dueño (rol de clave `dueno`) domina a todos. Orden: `_dominancia_tomar()` → permiso → propia → perfil `for update` → dominancia (42501) → estado (PT409).

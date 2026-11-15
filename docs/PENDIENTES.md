@@ -18,6 +18,10 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Decisiones de producto que esperan a la persona
 
+### Vistos
+
+- La decisión original pedía 30 días de memoria y «Último que abriste»; lo integrado usa 7 días por defecto y «Último visto» (el término del glosario). Confirmar cuál queda.
+
 ### Cotizaciones
 
 - **[4-71]** Cambiar el vehículo de una preventa guardada desde `/cotizaciones/[id]` — la base lo admite; falta la barra del vehículo en la guardada, o elegir sólo entre vehículos ya cargados.
@@ -180,6 +184,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - Multiidioma. Offline real (modo sin conexión y sincronización en segundo plano). Editor de artes (Konva). Directorio de contactos/empresas.
 - API de WhatsApp/Meta. Multi-empresa por despliegue.
 - La web pública en sí (repo aparte con `sitio-marketing` sobre el esquema `web`).
+- «Visto» en «Tareas sin fecha» de la agenda y en los bloques de Inicio.
 
 De esta versión, además: línea de tiempo dentro de las fichas (hay «Ver actividad» en el «⋯»), exportar la actividad; cambiar qué permisos
 existen o la matriz de Roles; cambiar embudos ya existentes (la plantilla sólo toca los que nacen después); exportar seguimientos,
