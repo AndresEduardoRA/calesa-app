@@ -130,7 +130,7 @@ describe('huecos del panel de un ítem de repuesto', () => {
       permisos: [concede('repuestos.ver', null)],
       flujo: todo,
     })
-    expect(claves(conVer)).toEqual(['que-falta', 'documentos', 'transporte', 'notas', 'historial'])
+    expect(claves(conVer)).toEqual(['que-falta', 'documentos', 'notas', 'historial', 'transporte'])
     // Cada uno trae el componente de su variante: el de un ítem nunca cae en el de un vehículo.
     expect(conVer.huecos.every((h) => h.repuesto?.componente !== undefined)).toBe(true)
     const sinVer = huecosDeLaUnidad(HUECOS_DE_LA_UNIDAD, {

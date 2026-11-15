@@ -72,7 +72,7 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   (sin `componente` no dibuja nada; el `componente` del hueco nunca recibe un ítem); sin variante no se dibuja para un ítem (Aduana, Gastos, Pagos, Margen).
   `huecosVisibles({ tipo: 'repuesto', origenId: null })` filtra por `repuestos.ver` global; el filtro de tipo va antes de descartar repetidos. El transporte de un
   ítem lo dibuja el núcleo (`pantallas/unidad-item.ts`, `textoDelTransporteDelItem`; 8-13b).
-- **Hueco «Repuestos»:** en `ORDEN_DE_HUECOS` entre `transporte` y `aduana`; lo declara `repuestos` (`pantallas/flujo-esperas.ts`) y lo suma
+- **Hueco «Repuestos»:** en `ORDEN_DE_HUECOS` entre `transporte` y `aduana` (el orden va por lo que más se hace: que-falta, documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen); lo declara `repuestos` (`pantallas/flujo-esperas.ts`) y lo suma
   `src/app/(app)/logistica/huecos-de-la-unidad.tsx` (`repuestos.ver` y regla `esperas`; sin variante `repuesto`). `logistica` sólo conoce la clave.
 - **Área `mover`, «Qué falta» y mover** (`pantallas/mover-unidad.ts`, hueco `que-falta` abierto al inicio). `useParaMover` lee con `leerParaMover` de `flujos`
   y relee al volver el foco (5 s de mínimo), al cambiar la fase y con `logistica:unidad-cambio`; `useMoverLaUnidad` envía con `faseEsperada = unidad.faseId`

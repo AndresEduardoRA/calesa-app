@@ -29,6 +29,22 @@ describe('huecosVisibles', () => {
     )
   })
 
+  it('las notas y el historial van justo después de los documentos, antes de lo ocasional', () => {
+    const todos = ORDEN_DE_HUECOS.map((c) => hueco(c)).reverse()
+    expect(claves(huecosVisibles(todos, ctx()))).toEqual([
+      'que-falta',
+      'documentos',
+      'notas',
+      'historial',
+      'transporte',
+      'repuestos',
+      'aduana',
+      'gastos',
+      'pagos',
+      'margen',
+    ])
+  })
+
   it('el hueco «repuestos» va entre «transporte» y «aduana»', () => {
     const lista = ['aduana', 'repuestos', 'transporte'].map((c) => hueco(c))
     expect(claves(huecosVisibles(lista, ctx()))).toEqual(['transporte', 'repuestos', 'aduana'])

@@ -28,18 +28,18 @@ export type HuecoDeLaUnidad = {
   abiertoAlInicio?: boolean
 }
 
-/** El orden fijo del panel, sea cual sea el archivo que declara cada hueco. */
+/** El orden fijo del panel, sea cual sea el archivo que declara cada hueco: por lo que más se hace (mover, documentos, notas, y después lo ocasional). */
 export const ORDEN_DE_HUECOS = [
   'que-falta',
   'documentos',
+  'notas',
+  'historial',
   'transporte',
   'repuestos',
   'aduana',
   'gastos',
   'pagos',
   'margen',
-  'notas',
-  'historial',
 ] as const
 
 type ParaFiltrar = Pick<HuecoDeLaUnidad, 'clave' | 'permisos' | 'regla' | 'repuesto'>
