@@ -9,7 +9,7 @@ import {
 import { borrarCadena, sembrarCadena, type TerrenoDeLaCadena } from './soporte/cadena'
 import { literal, sql } from './soporte/sql'
 
-// «Visto» y «último visto» son de cada módulo (A3b, `docs/TANDA.md`): abrir un vehículo en su ficha de Vehículos lo marca ahí y no en Logística, y abrirlo en
+// «Visto» y «último visto» son de cada módulo: abrir un vehículo en su ficha de Vehículos lo marca ahí y no en Logística, y abrirlo en
 // `/logistica/vehiculo/[id]` lo marca en Logística y no en Vehículos. Los dos contextos usan el mismo tipo (`vehiculo`): sólo el módulo los separa.
 test.describe.configure({ mode: 'serial' })
 

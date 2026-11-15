@@ -12,7 +12,7 @@ import {
   type TerrenoDelResumen,
 } from './soporte/vehiculos-resumen'
 
-// «Visto» y «último visto» por persona y módulo (A3a, `docs/TANDA.md`): abrir el resumen de un vehículo lo marca en la lista de Vehículos, se
+// «Visto» y «último visto» por persona y módulo: abrir el resumen de un vehículo lo marca en la lista de Vehículos, se
 // recuerda al volver, y «Vistos» apagado en `/perfil` no marca nada.
 test.describe.configure({ mode: 'serial' })
 

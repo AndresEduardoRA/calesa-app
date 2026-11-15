@@ -8,7 +8,7 @@ import {
 } from './soporte/inventario'
 import { PREFIJO_ROL_E2E, correoDePrueba, crearPersona, darRolDePrueba } from './soporte/base'
 
-// Quién da de alta y cómo (B1, `docs/TANDA.md`): con sólo la clave de cotizar, «Nuevo» del inventario se ve apagado con su motivo y ofrece
+// Quién da de alta y cómo: con sólo la clave de cotizar, «Nuevo» del inventario se ve apagado con su motivo y ofrece
 // «Cotizar un vehículo nuevo», que abre la hoja de cotizar con el panel del vehículo en el alta.
 let corea = { id: '', nombre: '' }
 let cotizadora = ''
