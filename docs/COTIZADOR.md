@@ -445,9 +445,9 @@ totales, tipos_cambio, repetido}`, recortado por `_cotizacion_respuesta()` (el r
 2. **El intento** (`p_id`, lo manda el cliente): un candado consultivo por id ordena dos llamadas a la vez; si el id existe y es **mío,
    de este origen y de una cotización viva**, se devuelve con `repetido: true`; un id ajeno no se mira (42501 en el `insert`, para no
    servir de sonda). Después se lee la hoja abierta («La hoja abierta (4.13-3a)»).
-3. **El lead es obligatorio** y tiene que verlo quien llama (`leads.ver`); se bloquea con `for key share`. Una final pide además el lead en
+3. **El lead es obligatorio** (22023 `lead`, el primero que se mira) salvo con `cotizaciones.crear.sin_lead` de ese origen, y nunca en una final; con uno, tiene que verlo quien llama (`leads.ver`); se bloquea con `for key share`. Una final pide además el lead en
    la cartera con `leads.editar` y lo toma `for no key update`.
-4. **El vehículo:** obligatorio si `ajustes_empresa.vehiculo_obligatorio_al_cotizar` (sí por defecto) y siempre en una final.
+4. **El vehículo:** obligatorio (22023 `vehiculo`) salvo con `cotizaciones.crear.sin_vehiculo` de ese origen, y siempre en una final.
    `p_vehiculo_nuevo` llama a `vehiculo_crear()` en la misma transacción (la pantalla no lo usa: «Cargar a mano» crea el vehículo antes).
    Uno que quien llama no ve: 42501.
 5. **La fórmula** publicada, `for share` (publicar espera a las altas en curso; si publicaron, se relee: tres vueltas y PT409).
@@ -514,7 +514,7 @@ de 24 h y, si esa versión ya no es la publicada, dejó de serlo hace menos de 2
 **`cotizacion_hoja(origen)`** es UNA lectura al abrir la pantalla de cotizar: el diseño publicado **recortado al nivel de quien mira** y
 lo que la hoja necesita para dibujarse. No lee `cotizaciones` ni el snapshot. **Orden:** el permiso **antes de mirar nada** (`cotizaciones.crear`
 y `cotizaciones.ver` del origen); sin versión publicada, `{estado: 'sin_publicar', origen, puede_configurar}`; con ella, `{estado: 'lista',
-formula: {id, version}, abierta_en, abierta, vehiculo_obligatorio, cabecera, secciones, tarjeta_total, tonos}`. La `cabecera` es `{modos,
+formula: {id, version}, abierta_en, abierta, cabecera, secciones, tarjeta_total, tonos}`. La `cabecera` es `{modos,
 ver_total_bs, moneda_bs}`.
 
 - **`cabecera.moneda_bs`:** la `moneda_a` del tipo de cambio **activo** que nombra el `total_en` de esa versión (una fila por
@@ -574,7 +574,7 @@ el mismo texto.
 - `publicada: {id, version}` (la de hoy del origen, o nula), `vence_el` y `vencida`: el día de `creado_en` en la zona de la empresa +
   `ajustes_empresa.vigencia_dias`, vencida si ese día ya pasó (por día, no por hora);
 - `anterior: {id, numero, version}` si se ve; `encima`, la versión nueva viva: `{id, numero, version}` si se ve, `{"oculta": true}` si no;
-- `puede_cotizar_encima`: `cotizaciones.crear` del origen, ve su lead, ve su vehículo (o no lleva y no es obligatorio), sin versión nueva
+- `puede_cotizar_encima`: `cotizaciones.crear` del origen, ve su lead (o no lleva y tiene `cotizaciones.crear.sin_lead`), ve su vehículo (o no lleva y tiene `cotizaciones.crear.sin_vehiculo`), sin versión nueva
   viva y con publicada.
 
 `cotizacion_encima(p_id, p_anterior)` crea **en el acto** la versión nueva: otra cotización, preventa (también encima de una final), con
@@ -583,11 +583,11 @@ la publicada y las tarifas de hoy. La anterior no cambia. **Una viva por anterio
 papelera no cuenta). Sin `p_abierta` (no sale de una hoja vista).
 
 - **El orden y los errores:** `assert_activo`; ver la anterior (lo que no existe, está en la papelera o no se ve: el 42501 de
-  `cotizacion_leer`, antes que todo lo demás); `cotizaciones.crear` y `ver` del origen; su lead (nulo: 22023 `lead`; no visible: 42501);
+  `cotizacion_leer`, antes que todo lo demás); `cotizaciones.crear` y `ver` del origen; su lead (nulo sin `cotizaciones.crear.sin_lead` del origen: 22023 `lead`; no visible: 42501);
   el intento (el candado de `cotizacion_crear`: repetido devuelve la misma; mío con otra anterior: 22023 `intento_reusado`); el lead y el
   vehículo de la anterior `for key share` y después la anterior `for share` (lead → vehículo → cotización; si su lead o su vehículo cambió
   mientras esperaba, se vuelven a tomar), otra vez visible; ya tiene una nueva viva: PT409 `ya_tiene_encima` (el id en el hint sólo a quien
-  la ve); el lead y el vehículo otra vez visibles (o 22023 `vehiculo` si es obligatorio); la publicada `for share`; el total (22023
+  la ve); el lead y el vehículo otra vez visibles (o 22023 `vehiculo` si no lleva y falta `cotizaciones.crear.sin_vehiculo`); la publicada `for share`; el total (22023
   `total_sin_valor`: no se crea).
 - **Lo que se lleva** (`_cotizacion_lo_que_se_lleva`): lo tipeado de cada nodo que sigue en la versión de hoy con un tipo que lo acepta,
   **también lo que quien llama no ve** (se guarda y no se le devuelve); la variante sólo si es opción de hoy; el modo si sigue (si no, el

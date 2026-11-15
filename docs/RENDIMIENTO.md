@@ -486,7 +486,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 530, `/perfil` 440, `/vehiculos` 500, `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
   subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410; `/cotizaciones/papelera` 440 (en su spec). Al borde:
-  `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 452,2 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %) y `/cotizaciones/nuevo` en 448,8 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
+  `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 454,9 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %; el «Elegir…» de lo que falta sumó 2,7 KB) y `/cotizaciones/nuevo` en 450,1 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`
   falla, con el camino, si un `index.ts` llega a un `'use client'`.

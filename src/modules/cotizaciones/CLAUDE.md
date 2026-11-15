@@ -8,8 +8,13 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
 
 - **`/cotizaciones/nuevo?origen=&lead=&vehiculo=`** (pide `cotizaciones.crear` y `cotizaciones.ver` del origen, 4-32). Lead y vehículo son ids,
   sin importar esos módulos: sobre la hoja van la barra del vehículo de `vehiculos/pantallas/cotizar` (`?panel=vehiculo`, escribe `CLAVE_DE_VEHICULO`)
-  y la del cliente de `leads/pantallas/cotizar` (`?panel=cliente`, `CLAVE_DE_LEAD`); un lead o vehículo que quien mira no ve se suelta. «Guardar» sin
-  cliente dice «Para guardar, elige el cliente en «Cliente».» (`FALTA_EL_LEAD`; igual sin `leads.ver`). El borrador de la hoja va por persona, origen y
+  y la del cliente de `leads/pantallas/cotizar` (`?panel=cliente`, `CLAVE_DE_LEAD`); un lead o vehículo que quien mira no ve se suelta. Lead y vehículo son
+  **obligatorios salvo con `cotizaciones.crear.sin_lead` y `cotizaciones.crear.sin_vehiculo` del origen** (una final, siempre): la página los calcula con
+  `sesion.permisos` (`obligatoriosAlCotizar()`, `eleccionesDeLaHoja()`: con «Ver como», los del rol elegido; la base usa los reales) y manda booleanos y
+  textos; `loQueFalta()` (el lead primero, como la base) da el motivo junto a «Guardar» (`FALTA_EL_LEAD`, `FALTA_EL_VEHICULO`) y `<ElegirLoQueFalta>` el
+  botón «Elegir el cliente» o «Elegir el vehículo» (abre `?panel=cliente` o `?panel=vehiculo`, nombres que pasa `src/app`) o, sin `leads.ver` o
+  `vehiculos.ver` del origen, el pedido a quien administra los roles; si la regla cambió con la hoja abierta, el rechazo (`falta_lead`, `falta_vehiculo`) trae
+  la misma salida. El pedido lleva `leadId` nulo con la clave. El borrador de la hoja va por persona, origen y
   vehículo, **sin el lead** (elegir el cliente remonta la hoja y repone lo tipeado); el pendiente del guardado va por lead. Guardar: la action
   `features/hoja/actions/crear-cotizacion.ts` (`cotizacion_crear`, siempre `ok(ResultadoDeCrear)`, sin `revalidatePath`).
 - **`/cotizaciones`** (`cotizaciones.ver` en algún origen): `?q=` (el buscador: número, cliente, vehículo y autor; 3 letras o un número,
@@ -55,7 +60,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
 - **La cadena** (`cadena` de `cotizacion_hoja_guardada`): «Versión V de la n.º N» con enlace a la anterior si se ve, «Hay una versión nueva: n.º M
   (versión W).» o «Hay una versión nueva que no puedes ver.».
 - **«Cotizar encima»** (`features/encima/`): el aviso (`avisoDeVersion()`: otra versión que la publicada hoy, o vencida) lo ve todo el que abre; el
-  botón, sólo con `cadena.puedeCotizarEncima` (lo decide la base, no `puede()`). El intento es el id de la nueva y se conserva sólo tras una pérdida; con
+  botón, sólo con `cadena.puedeCotizarEncima` (lo decide la base, no `puede()`: una anterior sin lead pide `sin_lead` y una sin vehículo, `sin_vehiculo`). El intento es el id de la nueva y se conserva sólo tras una pérdida; con
   cambios sin guardar o un pendiente el botón espera, porque la nueva lleva lo guardado.
 - **Historial** (pestaña de `/vehiculos/[id]` con `cotizaciones.ver` del origen del vehículo; sección de `/leads/[id]` con `cotizaciones.ver` en algún
   origen, sin mirar la cartera: la RLS recorta): se lee al montarse desde el navegador por `composicion-historial.client.ts` (por
