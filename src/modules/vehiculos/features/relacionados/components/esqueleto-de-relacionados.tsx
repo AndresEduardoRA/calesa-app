@@ -1,7 +1,24 @@
 import { Skeleton } from '@/shared/ui/skeleton'
 
-// El lugar del bloque «Relacionados» mientras llega: del alto de uno con sus tres grupos, para que la ficha no salte al aparecer.
-export function EsqueletoDeRelacionados() {
+// El lugar del bloque «Relacionados» mientras llega: del alto de uno con sus tres grupos, para que la ficha no salte al aparecer. En una línea (la unidad de logística), tres chips del alto de uno.
+export function EsqueletoDeRelacionados({
+  presentacion = 'bloque',
+}: {
+  presentacion?: 'bloque' | 'linea'
+}) {
+  if (presentacion === 'linea') {
+    return (
+      <section
+        aria-busy="true"
+        aria-label="Cargando los relacionados"
+        className="flex min-w-0 flex-wrap items-center gap-2"
+      >
+        {[0, 1, 2].map((n) => (
+          <Skeleton key={n} className="h-11 w-28 rounded-(--radius-md) md:h-8" />
+        ))}
+      </section>
+    )
+  }
   return (
     <section
       aria-busy="true"

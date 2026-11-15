@@ -31,7 +31,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   - `identidadDeVehiculo(vehiculo, principal, formato)` e `identidadEnUnaLinea()` (logística): con campo principal activo y un valor no vacío ni
     monto, el valor nombra y el título acompaña; si no, el título. Fila, tarjeta y resumen: `useIdentidad(campos)`; ficha, PDF, web y hoja: el título.
   - `leerTitulosDeVehiculos(ids)`: títulos de una página de `/cotizaciones` por pk, con la RLS de quien mira y sin papelera; hasta 100 ids.
-- **«Relacionados»** (`features/relacionados/`, `pantallas/relacionados.ts`; glosario): el mismo bloque arriba de la ficha del vehículo, su resumen, la unidad de logística, la ficha del lead y su resumen. Tres grupos:
+- **«Relacionados»** (`features/relacionados/`, `pantallas/relacionados.ts`; glosario; `presentacion="linea"` lo dibuja como un chip por grupo con su popover diferido, para la unidad de logística): el mismo bloque arriba de la ficha del vehículo, su resumen, la unidad de logística, la ficha del lead y su resumen. Tres grupos:
   Vinculado, Interesado y Cotizado (éste sólo con `cotizaciones.ver`). Lo leen cuatro RPC `security definer` con el predicado de las policies y el alcance resuelto una vez
   (`vehiculo_relacionados()`, `lead_relacionados()`, `*_pagina()` para «Ver todos» por cursor `(fecha, id)`); `set random_page_cost = 1.1` en las cuatro, o el plan genérico ordena todo lo de un vehículo caliente.
   **Lo que quien mira no ve llega contado (`ocultos`) y sin ningún dato** (ni id, ni nombre, ni nota); lo que está en una papelera no cuenta; el cursor es siempre una fila visible. Índices:

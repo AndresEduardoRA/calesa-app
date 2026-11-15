@@ -512,9 +512,14 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 ### Relacionados (estados propios)
 
 El mismo bloque arriba de cada detalle: la ficha del vehículo (entre los avisos y las pestañas, con `leads.ver`), su resumen del inventario, la unidad de logística (bajo la
-cabecera, con `leads.ver`; el hueco `relacionados` de `PanelDeLaUnidad`), la ficha del lead (tras los avisos, antes de las secciones, con `vehiculos.ver`) y el resumen del listado de leads.
+cabecera, con `leads.ver`, **en una línea**: ver abajo), la ficha del lead (tras los avisos, antes de las secciones, con `vehiculos.ver`) y el resumen del listado de leads.
 `<section aria-label="Relacionados">` con tres grupos en grilla `@container` (tres columnas desde `@3xl`, una debajo): **Vinculado**, **Interesado** y **Cotizado** (éste sólo con
 `cotizaciones.ver`), cada uno con `h3` «<Tipo> · n» (`conteoCorto`, «100+»), su leyenda, hasta 3 filas, «Ver todos» y sus acciones.
+
+- **En una línea** (`presentacion="linea"`, la unidad de logística, donde tres grupos apilados no caben sin desplazar): `<section aria-label="Relacionados">` sin encabezado, con un chip por grupo
+  («Vinculado · n», «Interesado · n», «Cotizado · n»; 44 px en el celular, 32 en escritorio). Cada chip abre un popover (su código se pide al primer clic) con el mismo grupo: leyenda, filas, acciones
+  y «Ver todos» (que cierra el popover antes de abrir su drawer). Todo vacío: la frase «Sin relacionados todavía.» con sus acciones. Cargando: tres chips de esqueleto del mismo alto; error: la frase
+  con «Reintentar», sin encabezado.
 
 - **Filas:** desde un vehículo, el lead (nombre enlazado, números como siempre, «Fuera de tu cartera» si se ve enmascarado, nunca el teléfono); desde un lead, el vehículo (miniatura que abre
   la galería, título enlazado, origen y n.º). Debajo, lo propio del tipo: «Desde el <fecha>», la nota del interés con quién lo marcó, o «Cotización N.º n · <fecha>». «⋯» con las acciones.
