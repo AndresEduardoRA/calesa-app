@@ -17,6 +17,7 @@ import {
   vigilarGuardados,
 } from './soporte/cotizar-guardar'
 import { crearLead } from './soporte/leads'
+import { capturar } from './soporte/recorrido'
 import { telefonoAlAzar } from './soporte/leads-alta'
 import { darRolDeLaSemilla } from './soporte/rol-de-la-semilla'
 import { literal, sql } from './soporte/sql'
@@ -91,13 +92,14 @@ async function personaConClaves(
 
 test('E2E el Asesor de la semilla no guarda sin cliente ni vehículo: lo dice, marca «Obligatorio» y lleva a elegirlos', async ({
   page,
-}) => {
+}, info) => {
   const guardados = await vigilarGuardados(page)
   await entrar(page, asesora, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origenA.id}`)
   await expect(guardar(page)).toBeDisabled()
   await expect(page.getByText(CLIENTE)).toBeVisible()
   await expect(page.getByText('Obligatorio', { exact: true })).toHaveCount(2)
+  await capturar(page, info, 'sin-cliente-ni-vehiculo')
   await page.getByRole('button', { name: 'Elegir el cliente' }).click()
   await expect(page).toHaveURL(/panel=cliente/)
   const panelDelCliente = page.getByRole('dialog', { name: 'Cliente', exact: true })
@@ -110,6 +112,7 @@ test('E2E el Asesor de la semilla no guarda sin cliente ni vehículo: lo dice, m
   await expect(guardar(page)).toBeDisabled()
   await expect(page.getByText(VEHICULO)).toBeVisible()
   await expect(page.getByText('Obligatorio', { exact: true })).toHaveCount(1)
+  await capturar(page, info, 'falta-el-vehiculo')
   await page.getByRole('button', { name: 'Elegir el vehículo' }).click()
   await expect(page).toHaveURL(/panel=vehiculo/)
   const panelDelVehiculo = page.getByRole('dialog', { name: 'Vehículo', exact: true })
@@ -197,7 +200,7 @@ test('E2E «Ver como» el Asesor desde la dueña: la hoja pide el cliente', asyn
 
 test('E2E la regla cambió con la hoja abierta: el rechazo lo dice y ofrece elegir el cliente', async ({
   page,
-}) => {
+}, info) => {
   const persona = await personaConClaves('cambia', [
     { clave: 'cotizaciones.crear.sin_lead', origenId: origenA.id },
   ])
@@ -216,6 +219,7 @@ test('E2E la regla cambió con la hoja abierta: el rechazo lo dice y ofrece eleg
     page.getByText('Tu rol ahora pide el cliente para guardar en este origen.'),
   ).toBeVisible()
   expect(guardados.pedidos).toHaveLength(1)
+  await capturar(page, info, 'la-regla-cambio')
   await page.getByRole('button', { name: 'Elegir el cliente' }).first().click()
   await expect(page).toHaveURL(/panel=cliente/)
 })
