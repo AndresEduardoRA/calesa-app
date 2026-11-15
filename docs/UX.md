@@ -27,7 +27,7 @@ Cada meta la hace cumplir su e2e, en escritorio y celular.
   (cliente elegido o creado con el «+»), `…-recorrido.spec.ts` (del listado al PDF, con dos cuentas). Nunca: guardar con una constante
   vencida sin saberlo; un total que no cuadre con las líneas.
 - **3. Mover vehículos de fase con documentos** (logística, ~40/día). Meta: mover 1 en ≤ 15 s; marcar llegada de un contenedor de 8 en
-  ≤ 60 s; ver _antes_ de confirmar qué falta en cada uno. `e2e/logistica-tarea-de-oro.spec.ts` (el contenedor desde `/logistica/embarques`).
+  ≤ 60 s; ver _antes_ de confirmar qué falta en cada uno. `e2e/logistica-tarea-de-oro.spec.ts`: mover 1 desde la cadena (la fase en la gráfica → su lista → la página del vehículo → destino → nota; 4 gestos, 7 teclas y 5 decisiones: KLM 13,9 s) y el contenedor desde `/logistica/embarques`.
   Nunca: mover sin el documento bloqueante; perder un archivo subido; pisar el cambio de otro.
 - **4. Atender un turno de la web y dar acceso al portal** (asesor, ~5/día). Meta: «contacté» en 2 toques desde el celular (hoy, 1 desde
   Inicio, `e2e/web-turno.spec.ts`); otorgar portal desde la ficha en ≤ 30 s con sólo el teclado (`e2e/leads-portal-acceso.spec.ts`). Nunca:
@@ -73,6 +73,16 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
      (plegado, se lee al desplegarlo, «Ver más»); la barra dice «Cotizado (n)». En «Elegido», el tipo de vehículo se elige entre las filas
      de la tabla, con el del vehículo marcado; un toque lo guarda en el vehículo, cierra el panel y la hoja recalcula (quien no puede editar
      el vehículo lo ve sin elegir; la celda sin valor dice que se elige en «Vehículo»).
+     **Subasta cerrada:** al elegir (o abrir con) un vehículo de un origen de subasta que sigue en el tramo de subasta con la subasta ya pasada
+     («Sin resolver», «No ganada», o «En subasta» con el cierre vencido que la base aún no actualizó), un aviso bajo la barra del vehículo dice
+     «La subasta de este vehículo cerró el <fecha con zona>. Situación: <situación>.» (sin fecha, «…ya cerró.») con «Refrescar la subasta»
+     (con apibara encendida y permiso de editar el vehículo; pide un toque, «Consultar a apibara gasta cuota. ¿Refrescar la subasta ahora?»,
+     «Sí, refrescar» / «No, volver»; si vuelve viva, el aviso se va; si sigue cerrada, «Consultada: la subasta sigue cerrada.»; fallo del
+     momento: el motivo con «Reintentar»; clave o cuota: el motivo con «Ir a Integraciones» para quien configura, sin «Reintentar»), «La
+     ganamos» y «No la ganamos» (las de la ficha; sin permiso de mover, «Para resolverla hace falta poder mover de fase en «<origen>»:
+     pídeselo a quien administra los roles.»), «Elegir otro vehículo» (abre el panel en «Cierre subasta») y «Cotizar igual» (lo cierra para
+     esta hoja). No bloquea guardar. Un vehículo en su fase (ya se ganó) no avisa. En el panel, la fila de una subasta cerrada dice «Subasta
+     cerrada · <situación>» y «Cerró <fecha>».
    - **Cliente:** búsqueda desde 3 letras o `#n`; sin buscar, «míos» por `reciente_en` (el último seguimiento o el alta) en las pestañas
      «Todos», «Prospecto» y «Cliente» (abre en «Todos»); busca entre los leads que quien cotiza ve, como el listado, y el tipo de cada lead
      va como texto; el elegido tiene «Quitar»; «+» abre «Nuevo lead» del shell (borrador y verificación del teléfono) y al guardar la hoja
@@ -142,13 +152,13 @@ Estados propios:
 
 ### Flujo 3 — Mover de fase
 
-1. `/logistica` abre la **cadena**: columnas por fase del flujo del origen, tarjetas con alerta por demora, filtros en URL.
-2. Clic en un vehículo → panel lateral «Qué falta para pasar a …» (documentos aprobados/faltantes, datos, esperas de repuestos, en vivo).
+1. `/logistica` abre la **bandeja del día** (lo que le toca hoy a quien mira, por grupos con su acción) y al lado la **cadena** como gráfica: una fase por punto con cuántos vehículos tiene y cuántos están demorados o trabados. Clic en una fase → su lista (tabla paginada, filtros en URL).
+2. Clic en un vehículo (de la bandeja, de la lista o de «dónde está») → su página `/logistica/vehiculo/<id>` con «Qué falta para pasar a …» abierto (documentos aprobados/faltantes, datos, esperas de repuestos, en vivo).
 3. Subir documento desde el panel (arrastrar o cámara); se sube al confirmar, nunca antes; queda «subido» hasta que alguien con permiso lo
    aprueba.
 4. «Mover a <fase>» pide nota interna (obligatoria si la fase lo exige) → RPC con `fase_esperada`; conflicto: «Rosa Mamani la movió a
    «<fase>» hace 1 min.», «No se movió nada.» y «Recargar», que conserva la nota escrita (nunca pisa).
-5. Lote: en la cadena, elegir unidades de una fase (su casilla o «Elegir los de esta columna»), o desde el resumen de un contenedor en
+5. Lote: en la lista de una fase, elegir unidades (su casilla o «Elegir los de esta página»), o desde el resumen de un contenedor en
    `/logistica/embarques`, «Marcar que llegó» (abre el lote con ese contenedor) → destino → vista previa por unidad («Lista» / «Falta:
    <documento> aprobado.») → «Mover los N que pueden» → resultado parcial explícito («Se movieron 7 de 8.») con «Reintentar» de los que no.
 
@@ -185,12 +195,15 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   (`vehiculos.ver`; `?panel=agregar-vehiculo`), «Oportunidades» (`?panel=nueva-oportunidad`, `editar-oportunidad&oportunidad=<id>`),
   «Cotizaciones» (con `cotizaciones.ver` en algún origen; ver «Pestaña de cotizaciones») y «Portal». Ninguna pestaña se dibuja vacía.
 - **Vehículos** — `/vehiculos` (`vehiculos.*`): tabla + panel de filtros + resumen. Pestaña por origen (`?origen=`); filtros en URL (`q`,
-  `fase`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; resumen `?vehiculo=<id>` (`?pestana=fotos|interesados`);
+  `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; resumen `?vehiculo=<id>` (`?pestana=fotos|interesados`);
   alta `?panel=nuevo` (sin el alta suelta pero con la de cotizar: «Nuevo» apagado con «Cotizar un vehículo nuevo», que abre la hoja con el panel
   del vehículo en alta); edición `?editar=`; `?vitrina=si|no`, `?limpieza=si|no`; junto al estado de vitrina de cada fila, «Publicar» / «Sacar de la
   web» con un toque y «Deshacer» (con `vehiculos.vitrina` del origen; sin precio público, `?panel=vitrina-rapida&para=<id>` pide sólo el precio).
   En escritorio, «Tabla | Tarjetas» (`?vista=`, recordada en `vehiculos.vista`; las tarjetas van en grilla, con el carrusel en la foto). En un
-  origen de subasta con el campo de la puja, «Precio» es «Puja actual» (USD, «final» si terminó o se vendió; sin puja, «—»).
+  origen de subasta con el campo de la puja, «Precio» es «Puja actual» (USD, «final» si terminó o se vendió; sin puja, «—»). Con
+  `cotizaciones.ver` en algún origen, la columna «Cotización aprobada» (en la tarjeta, «Cotización aprobada» y el monto): el primer resultado de la
+  aprobada del vehículo con su moneda, enlazado a esa cotización (sin total, «Sin total»; sin aprobada o una que no se ve, «—»); sin la clave no se
+  dibuja ni se consulta.
   `/vehiculos/papelera` (por lote).
 - **Vehículo** — `/vehiculos/[id]` (según origen): cabecera con portada y fase de sólo lectura; «Publicar en la web» en `?panel=vitrina`;
   `?seccion=`: «Ficha» (por layout del origen; edición `?editar=`; banner de limpieza; en un origen de subasta, el bloque «Subasta» con
@@ -201,10 +214,19 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   «Reintentar».
   - **Pestaña de cotizaciones** (lead y vehículo): las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
     Cotizaciones» (`/cotizaciones?lead=` o `?vehiculo=`); se lee al abrirla; esqueleto, error con «Reintentar», «Sin cotizaciones que
-    puedas ver.».
-- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila y «Abrir cotización»; una que no se
-  ve dice que ya no está disponible); filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin
-  chip y «Limpiar» no los borra; arriba, de quién o de qué son, con «Ver todas», y su vacío propio); «Vencida» en la fila; `nuevo` abre la
+    puedas ver.». Cada fila lleva la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura).
+- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila, «Abrir cotización» y debajo las
+  **pestañas** `?pestana=`: «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
+  para guardarla, «Adjuntar»—, «Adjuntos» —los archivos y, en una final o con alguno, sus comprobantes de sólo lectura—, «Revisiones» y «Comentarios»; cada una se lee al elegirla, por
+  cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
+  ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
+  número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
+  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **«Vistas»** guardadas como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
+  de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
+  si es inválida), «Marcar final…» (`cotizaciones.final.gestionar`, en una preventa; apagada sin vehículo o cliente), casilla «Favorita», «Reportar…»,
+  moderar («Invalidar…», «Descartar los reportes…», «Reactivar…», con `cotizaciones.moderar`) y, al final y separada, «Enviar a la papelera» (sin preguntar,
+  con «Deshacer»). Son las mismas actions de la guardada; «Marcar final…», «Reportar…» y moderar abren su diálogo en `?panel=…&para=<id>`; filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin
+  chip y «Limpiar» no los borra; arriba, de quién o de qué son, con «Ver todas», y su vacío propio); «Vencida» en la fila y la insignia «Aprobada» (tabla, tarjeta y resumen); `nuevo` abre la
   hoja. «Papelera» (para quien puede enviar a ella o vaciarla) lleva a `/cotizaciones/papelera`: lotes por cursor (5, las primeras 20 de
   cada uno y «Mostrar los N»), «Restaurar» y «Purgar» una o el lote (`cotizaciones.papelera.purgar`,
   `?panel=purgar&lote=<id>[&cotizacion=<id>]`, nombra lo que borra; un lote de varios pide tipear «purgar N»; una final con comprobante
@@ -212,19 +234,20 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Cotizar** — `/cotizaciones/nuevo` (`cotizaciones.crear`): formulario hoja (XCell); `?origen=&lead=&vehiculo=&returnTo=` (se validan y
   se llevan; el vehículo va al recálculo); sin entrada en la navegación. Ver Flujo 2.
 - **Cotización guardada** — `/cotizaciones/[id]` (`cotizaciones.ver`; edita quien la puede guardar, `puede_guardar` de la base): la hoja de
-  SU versión; quien sólo ve, en sólo lectura. Cabecera: «Revisiones», la cadena, «Cotizar encima» si no está al día, «Marcar final» (en una
+  SU versión; quien sólo ve, en sólo lectura. Cabecera: la insignia «Aprobada» (todos los que la ven) o «Aprobar» (con `cotizaciones.aprobar` del
+  origen: sin confirmar; apagado con su motivo sin vehículo o si es inválida; al entrar pasa a la insignia y el aviso ofrece «Deshacer» 10 s;
+  PT409 con quién y cuándo y «Recargar»), «Revisiones», la cadena, «Cotizar encima» si no está al día, «Marcar final» (en una
   preventa, con `cotizaciones.final.gestionar` del origen; `?panel=marcar-final`), «Emitir comprobante» (en una final activa sin
   comprobante vigente, con `cotizaciones.comprobantes.emitir`; `?panel=emitir-comprobante`, el aviso nombra el número «S-N») y «Enviar a la
   papelera» (quien puede guardarla o, en una preventa, quien tiene `cotizaciones.moderar`; vuelve al listado con «Deshacer»). Bajo la hoja,
   «Comprobantes» (en una final o en una que ya tiene alguno): del más nuevo, «Vigente» o «Anulado» con quién, cuándo y motivo, hasta 20
   con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Estados en Flujo 2.
-- **Logística** — `/logistica` (`logistica.ver` en algún origen): cadena (kanban por fase) + panel de la unidad en un `<Drawer>` por URL
-  (`?vehiculo=<id>`, lo abre el clic en una tarjeta); en la URL: `?origen=` (orígenes con la logística encendida), `?fase=` (celular: una
-  fase a la vez), `q` (nombre, VIN o lote; 3 letras o números), `demoradas`, `por_aprobar`, `contenedor`, `booking` y `naviera`.
-  `/logistica/vehiculo/[id]` (el mismo panel en su página: a ella apunta la notificación de demora), `/embarques`, `/aduana`, `/gastos`
-  (`?ver=gastos|pagos`). El panel de la unidad tiene el hueco «Repuestos» (con `repuestos.ver`): «Espera N repuestos», cada ítem con su
-  proyecto, «Para pasar a «X» espera que llegue a «Y».» y el enlace a su panel; sin espera, «Este vehículo no espera ningún repuesto.». Ver
-  «Logística: estados propios».
+- **Logística** — `/logistica` (`logistica.ver` en algún origen): la **bandeja del día** y la **cadena como gráfica**; en la URL: `?origen=` (orígenes con la logística encendida), `q` («dónde está»:
+  nombre, VIN o lote; 3 letras o números) y `?panel=lote` (el lote de un contenedor o un booking). `/logistica/fase/[fase]` (la lista de una fase: `[fase]` es el id o `sin_fase`;
+  `?origen=`, `q`, `demoradas`, `por_aprobar`, `contenedor`, `booking`, `naviera`, `cursor`), `/logistica/bandeja/[grupo]` (un grupo entero: `demorados`, `trabados`, `por-aprobar`, `por-vencer`,
+  `llegadas`, `salidas`, `sin-resolver`; `cursor`), `/logistica/vehiculo/[id]` (la página de la unidad, a la que lleva todo vehículo y la notificación de demora; `?hueco=documentos` abre ese
+  bloque), `/embarques`, `/aduana`, `/gastos` (`?ver=gastos|pagos`). La página de la unidad tiene el hueco «Repuestos» (con `repuestos.ver`): «Espera N repuestos», cada ítem con su proyecto,
+  «Para pasar a «X» espera que llegue a «Y».» y el enlace a su panel; sin espera, «Este vehículo no espera ningún repuesto.». Ver «Logística: estados propios».
 - **Repuestos** — `/repuestos` (`repuestos.ver`): proyectos por cursor `numero` (`?q=` de 3 letras o un número,
   `?estado=abiertos|cerrados|todos`, `?por=`, `?cursor=`) con número, vehículo o «Externo», cliente, estado derivado, ítems («200+») y
   última actividad; «Nuevo proyecto» (`repuestos.editar`, `N`, `?panel=nuevo-proyecto`, `&vehiculo=<id>` lo abre vinculado).
@@ -444,7 +467,11 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Entrar:** `vehiculos.ver` en algún origen; pestañas = orígenes donde lo tiene, también desactivados («Inactivo»); sin ninguno, «sin
   permiso» diciendo a quién pedírselo. Origen desactivado: se edita lo que hay; «Nuevo», `N` y `?panel=nuevo` no abren nada.
 - **Lista:** esqueleto; vacío de primera vez con la frase del origen y «Nuevo» si puede; vacío por filtro con «Limpiar filtros»; error.
-  Filtros: los «filtrables» del origen más fase, categoría y año; lo inválido en la URL se ignora; cambiar de pestaña suelta los filtros.
+  Filtros: los «filtrables» del origen más situación, categoría y año; lo inválido en la URL se ignora; cambiar de pestaña suelta los filtros.
+  «Situación» (`?situacion=`, varias a la vez): en un origen de subasta, «En subasta», «Sin resolver» y «No ganadas», y en todo origen sus fases y «Sin fase»; sin
+  elegir, la lista no trae las no ganadas, y elegirlas es la forma de verlas. En un origen de subasta, un atajo «Sin resolver N» (hasta «99+») arriba de la lista
+  pone o quita ese filtro de un toque; sin ninguna pendiente y sin el filtro puesto, no se dibuja. «Subasta» (la fase) filtra a las que no están en subasta
+  ni sin resolver: las demás figuran por su situación.
 - **Alta y edición (panel):** «Datos principales», «Precio» y un bloque por grupo del layout (con obligatorio nace abierto; con error se
   abre solo); rechazos junto al campo (VIN o lote repetido también). Conflicto: quién y cuándo, «Ver cómo quedó» y «Recargar».
 - **Fotos:** elegir (selector, soltar o cámara) las deja en una bandeja sin subir que dice lo que no entra y por qué (no es foto, > 25 MB,
@@ -459,7 +486,15 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   pide tipear «purgar N»; si otra persona ya actuó, no se purga nada.
 - **Limpieza automática** (importados de subasta, con el interruptor encendido): dentro de 3 días, banner en la ficha con «Conservar»;
   conservado, «Quitar». Listado: filtro «Se limpiará pronto» e insignia con fecha.
-- **Resumen (`?vehiculo=<id>`):** portada, identificación, fase («Sin fase»), «Editar» (abre el panel encima y vuelve al resumen al día) y
+- **Situación** (`<BadgeDeSituacion>`, en la tabla, la tarjeta, la ficha, el resumen y el panel de logística): la fase con su color, o
+  «En subasta», «Sin resolver» o «No ganada» con su texto cuando la subasta manda. Las no ganadas no salen en el inventario por defecto.
+  **Aviso de la ficha** (bajo la cabecera, sólo «Sin resolver» y «No ganada»): «La subasta terminó y sigue en «<fase>». ¿La ganamos?»
+  (o «…y todavía no tiene fase.») con «La ganamos» (enlace al mover de logística en su modo) y «No la ganamos» (hecho con «Deshacer» 10 s);
+  enviando, «Guardando…» apagado. Sin permiso de mover en el origen, el texto sin botones y «Para resolverla hace falta poder mover de fase
+  en «<origen>»: pídeselo a quien administra los roles.». Conflicto: el texto de la base con el nombre, «No se cambió nada.» y «Recargar».
+  Error: «No pudimos guardar el resultado. Intenta de nuevo.»; sin red, el aviso de siempre. No ganada: «No ganada · la marcó <nombre> el
+  <fecha>. Ya no cuenta en logística ni en Inicio.» (sin el nombre si no se pudo leer) con «Deshacer». En subasta o en su fase, sin aviso.
+- **Resumen (`?vehiculo=<id>`):** portada, identificación, situación (su fase o «Sin fase»), «Editar» (abre el panel encima y vuelve al resumen al día) y
   «⋯»; pestañas `?pestana=fotos|interesados` que se leen al elegirlas. Inexistente, en la papelera o de otro origen: «Este vehículo ya no
   está disponible: no existe o ya no tienes acceso.».
 
@@ -538,7 +573,8 @@ Lo que la lista de fases y el inspector › Datos suman a «Flujos: configuraci�
   elimina (no se deshace); con ellas se jubila (siguen en ella, deja de ser destino, se puede reactivar). Bloqueada (otras fases la
   esperan, única inicial activa): el motivo y «Confirmar» apagado. Si el uso cambió en el medio, decide la base y el aviso lo dice.
 - **Inspector › Datos** (`?fase=<id>`, `bloques.datos`): cinco bloques plegables: **Identidad** (abierto: nombre, descripción, color,
-  icono), **En el flujo** (inicial, final, pide nota al entrar, es logística), **Alerta por demora** (días: vacío usa la de la empresa, 0
+  icono), **En el flujo** (inicial, final, pide nota al entrar, es logística, «Es la subasta»: apagado con «Sólo en el flujo de un origen de
+  subasta.» fuera de uno), **Alerta por demora** (días: vacío usa la de la empresa, 0
   la apaga; repetir cada 1 a 720 horas), **Transporte y aduana** (permite contenedor, permite aduana, llegada de repuestos) y **Web y
   portal** (se publica en la web, visible en el portal, nombre y descripción para el cliente). Manda sólo lo que cambió y queda abierto.
   - Errores junto a su campo, con el bloque abierto y el foco en el primero (inicial y final a la vez; portal sin nombre para el cliente).
@@ -566,7 +602,7 @@ Bloque del inspector (`?fase=<id>`): el resumen («Datos: 1 (bloquea)»), la lis
   confirma en línea (no destruye nada) diciendo cuántas y que no se mueven, quedan marcadas («Más de 50…»; si la base revisó 1.000, lo
   dice). Recargar descarta el aviso; el foco vuelve al interruptor.
 - **Fuera de regla** (`?panel=fuera-de-regla`): sobre la lista de fases, «N unidades fuera de regla» (acotado) con «Ver cuáles»: por fase,
-  el título y cuántos requisitos le faltan; «Verlas en el inventario» (`/vehiculos?origen=&fase=`, no en repuestos). Lo oculto dice «Un
+  el título y cuántos requisitos le faltan; «Verlas en el inventario» (`/vehiculos?origen=&situacion=<fase>`, no en repuestos). Lo oculto dice «Un
   vehículo que no puedes ver». Tope 50 con aviso. Sólo lista.
 - **Quitar** (`?eliminar=requisito&quitar=<id>`, `<Confirmar>`): irreversible.
 - **Estados:** sin requisitos, tope de 500 con aviso, error al leer los tipos, conflicto (el aviso del flujo), sin permiso (`42501`).
@@ -615,7 +651,7 @@ El panel de la unidad (`<PanelDeLaUnidad>`) se dibuja igual en `/logistica/vehic
 - **Entrada:** la unidad se lee bajo la RLS de `vehiculos` y se pide `logistica.ver` en su origen; sin esa clave, «No tienes permiso para
   ver esto». Lo que no existe, está en la papelera, no se ve o trae un id inválido: «Este vehículo ya no está disponible» con «No existe o
   ya no tienes acceso.» e «Ir a Logística» (nunca «sin permiso»: confirmaría que existe). En el drawer, el mismo estado va dentro.
-- **Panel de la unidad:** cabecera con título, origen, fase (`<BadgeDeFase>`; «Sin fase»), «Desde hace N días en esta fase» y «Abrir
+- **Panel de la unidad:** cabecera con título, origen, situación (`<BadgeDeSituacion>`: la fase, «Sin fase», «En subasta» o «Sin resolver»), «Desde hace N días en esta fase» y «Abrir
   ficha». Debajo, un bloque plegado por hueco (qué falta, documentos, transporte, aduana, gastos, pagos, margen, notas, historial), en ese
   orden, que lee al abrirse con la sesión de quien mira y sólo aparece con su permiso en el origen y su regla del flujo encendida. Si el
   flujo del origen no se pudo leer, los bloques que piden una regla no se dibujan y una línea lo dice; el resto sigue. La ficha del
@@ -625,6 +661,12 @@ El panel de la unidad (`<PanelDeLaUnidad>`) se dibuja igual en `/logistica/vehic
   aprobados») y, en una falta obligatoria, el enlace al hueco que la resuelve. «Elegir» abre en el bloque la nota interna (obligatoria si
   la fase o la salida la piden) y el botón con la acción de la salida; apagado, su motivo va escrito debajo («Falta: BL aprobado.», rol,
   nota, permiso del origen). `Ctrl/Cmd+Enter` envía. Al lograrlo la tarjeta cambia de columna y el foco vuelve al título del panel.
+  **«La ganamos»** (`?ganada=si`, desde la ficha o desde la línea «La subasta terminó y nadie dijo si la ganamos.» · «La ganamos» de este
+  bloque): cabecera «La ganamos: elige a qué fase pasa. Se anota como ganada al moverla.», sólo los destinos que no son la subasta, el
+  primero abierto con su vista previa; mover la anota ganada en la misma operación y avisa «La ganamos: <título> pasó a «X».». Ya no sin
+  resolver: «Esta subasta ya no está sin resolver.» y la lista de siempre. Sin destinos fuera de la subasta: «Desde aquí no hay una fase
+  después de la subasta.» o, sin fase, «Primero muévela a su fase inicial; después, «La ganamos» ofrece la siguiente.». Rechazos y
+  conflicto, como al mover.
   **Conflicto:** dentro del formulario, quién la movió y cuándo, «No se movió nada.», «Ver cómo quedó» (otra pestaña) y «Recargar», que
   conserva la nota. Una unidad **fuera de regla** lo dice arriba. Estados: esqueleto, error con «Reintentar», sin fase, sin destinos, tope
   de 12 destinos con aviso, «Actualizando…» al releer (al volver el foco, mínimo 5 s entre lecturas); sin permiso de mover, la lista sin
@@ -641,31 +683,40 @@ El panel de la unidad (`<PanelDeLaUnidad>`) se dibuja igual en `/logistica/vehic
   «<fase>»» y no se edita. «Editar» sólo la propia, en el lugar. **No hay «Borrar»**: la base no deja el borrado suave por `update` (pide
   una RPC). «Historial», sólo lectura: una línea por cambio, quién («Sistema» sin persona), cuándo y la nota. Las dos: de a 20 con «Ver
   más» hasta 500 (`<AvisoDeTope>`), «Ir a una fecha» y «Volver a los más recientes»; esqueleto, vacíos y error dentro del bloque.
-- **Lote** — con `flujos.mover` en el origen, cada tarjeta lleva casilla de 44 px y cada columna «Elegir los de esta columna» (lo cargado y
-  filtrado, hasta 200). Una sola fase: elegir en otra vacía la selección y lo dice. Con elegidos, barra fija abajo («N elegidos en «F»»,
+- **Lote** — con `flujos.mover` en el origen, cada fila de la lista de una fase lleva casilla de 44 px y la cabecera «Elegir los de esta página» (los de la página, hasta 200; «Sin fase» no ofrece selección). Una sola fase: elegir en otra vacía la selección y lo dice. Con elegidos, barra fija abajo («N elegidos en «F»»,
   «Limpiar», «Mover a…») que abre `?panel=lote` (claves `destino`, `contenedor`, `booking`; la selección no sobrevive a recargar). El
   drawer: un botón por salida; con destino, «N listas, M no pueden entrar» y una línea por unidad (las primeras 20 con «Mostrar todas»), la
   nota común, «Mover los N que pueden» (apagado con motivo si ninguna puede) y «Elegir otro destino». El resultado se dice entero («Se
   movieron 6 de 8.», una línea por unidad que no pasó), con «Reintentar los 2» (vuelve a la vista previa con esas) y «Cerrar».
   `?contenedor=` o `?booking=` abre el mismo drawer con las unidades del grupo que estén en una misma fase, y dice cuántas quedan fuera.
-- **Drawer de `/logistica`:** `?vehiculo=<id>` lo abre al cargar; Esc, ✕ o «atrás» lo cierran y quitan el parámetro; sólo muestra, así que
-  cerrar no pregunta.
-- **`/logistica` (la cadena):** pestañas de origen (con uno solo no se dibujan; cambiar suelta filtros, fase y panel), `<FilterShell>` y las
-  columnas en el orden de la base. Estados: esqueleto de tablero; origen sin fases (con «Configurar los flujos» si tiene
-  `flujos.configurar`); ningún origen con la logística encendida; vacío por filtro con «Limpiar» y columna vacía; error con «Reintentar» y
-  «No se pudo comprobar N origen(es).». **Columna:** nombre sobre el color de la fila, «Sin fase» (la pone la base, primera y sólo con
-  tarjetas), «Jubilada» en texto, número acotado (`50+`); «Ver más» hasta 500 y en el tope «Mostrando las 500 que llevan más tiempo en la
-  fase.»; un fallo de «Ver más» deja la columna como estaba. **Tarjeta:** identidad «<principal> · <título>» como enlace, VIN y lote, días
-  en la fase, «Demorado» en texto (lo calcula la base), contenedor y ETA; sin foto. **Dónde está** (con `q` válido): hasta 10 de todos tus
-  orígenes con su fase, cada una a su origen con el panel abierto, y «Hay más: escribe más para afinar.». **Celular:** una fase a la vez
-  (`?fase=`). La sub-navegación (Cadena · Embarques · Aduana · Gastos) dibuja sólo lo que la persona puede ver; con uno solo, nada.
+- **`/logistica` (la bandeja del día):** a la izquierda en escritorio (arriba en el celular), un bloque por grupo con su título y su número con tope («37», «100+»), las primeras 5 filas y «Ver todos»;
+  el orden es Demorados, Trabados, Documentos por aprobar, Documentos por vencer, Llegadas esperadas, Salen hoy y Subastas sin resolver. Cada fila: el nombre del vehículo (enlace a su página; chip de
+  origen si hay más de uno), el detalle («Tránsito» · Desde hace 9 días en esta fase, «Falta para «Aduana»: Documento: BL», vence el…, ETA…, zarpa hoy) y su acción a un toque, sólo con su permiso:
+  «Mover», «Ver qué falta», «Revisar» (abre «Documentos»), «Renovar» y, en «sin resolver», «La ganamos» y «No la ganamos» (en la fila, con «Deshacer» de 10 s; si otra persona la resolvió, lo dice).
+  Estados: esqueleto de tres grupos; **vacía** «Nada pendiente hoy» con «Ver la cadena»; error de **un** grupo «No se pudo cargar «Demorados»» con «Reintentar», sin tumbar los demás; un grupo vacío
+  no se dibuja; sin `logistica.documentos.aprobar` o `.subir` esos grupos no aparecen.
+- **`/logistica` (la cadena):** pestañas de origen (con uno solo no se dibujan), «dónde está» y la gráfica: una línea con un punto por fase (el color de la fase), su nombre, la cifra grande a la
+  derecha (número acotado: `1.000+`), una barra proporcional al máximo del origen con los tramos de demorados y trabados y, en texto, «12 demorados · 3 trabados» (nunca sólo color). Orden: «Sin fase»
+  (sólo con vehículos), las activas por orden, las jubiladas con vehículos al final, con «Jubilada» en texto. Cada fase es un enlace a su lista. Estados: esqueleto de la línea; origen sin fases
+  (con «Configurar los flujos» si tiene `flujos.configurar`); ningún origen con la logística encendida; sin vehículos («Todavía no hay vehículos en la cadena de este origen.»); error con
+  «Reintentar» y «No se pudo comprobar N origen(es).». Un origen sin permiso no tiene pestaña. **Dónde está** (con `q` válido): hasta 10 de todos tus orígenes con su fase; cada nombre lleva a la página
+  del vehículo; «Ningún vehículo coincide.», «No se pudo comprobar dónde está.» y «Hay más: escribe más para afinar.». La sub-navegación (Cadena · Embarques · Aduana · Gastos) dibuja sólo lo que la
+  persona puede ver; «Cadena» queda marcada también en la lista de una fase y en la de un grupo.
+- **`/logistica/fase/[fase]` (la lista de una fase):** encabezado «‹ La cadena», el nombre de la fase («Jubilada» en texto) y su origen si hay varios; `<FilterShell>` (búsqueda y filtros) y una tabla
+  desde 768 px (tarjetas por debajo): casilla, vehículo (nombre «<principal> · <título>» como enlace, VIN y lote), estado (días en la fase, «En subasta» o «Sin resolver», «Demorado» en texto),
+  contenedor, booking y ETA. De a 50 por cursor, sin total y sin «Anterior» («Siguiente» y «Volver al principio»); la selección sobrevive a «Siguiente». Estados: esqueleto de tabla; vacía «No hay
+  vehículos en esta fase.» con «Ver la cadena»; por filtro «Ningún vehículo coincide con los filtros.» con «Limpiar»; página sin filas; error con «Reintentar»; «Esta fase ya no está en la cadena
+  de este origen.»; un origen ajeno, «No tienes permiso para ver esto».
+- **`/logistica/bandeja/[grupo]`:** el grupo entero, con las mismas filas y acciones que la portada, de a 20 por cursor (con el número «37 en este grupo.» o «100+ en este grupo.» sólo en la primera
+  página). Estados: vacío «No hay demorados hoy.» con «Ver la bandeja»; página sin filas; error con «Reintentar»; un grupo que no existe, «Esa bandeja no existe.»; uno que no ve, «No tienes permiso para
+  ver esto». En «Trabados» y en los de documentos, si la base paró de recorrer, lo dice («Se revisaron 200 demorados sin encontrar más trabados.») y ofrece «Seguir buscando».
 - **Listas de `/logistica/*`** (gastos, embarques, aduana): por cursor de a 50, sin selector, sin total y sin «Anterior» (la base camina
   sólo hacia adelante: «Siguiente» y «Volver al principio»); filtros en la URL; estados: esqueleto de lista, vacío de primera vez, por
   filtro con «Limpiar filtros», página sin filas con «Volver al principio» y error con «Reintentar». Sin permiso, «No tienes permiso para
   ver esto».
 - **`/logistica/gastos`** (`logistica.ver` y `logistica.gastos.ver` o `pagos.ver`): vista `?ver=gastos|pagos` (sólo con las dos claves;
   cambiar no conserva filtros); filtros origen (con dos o más), categoría, «Sin confirmar» y rango de fecha; **ninguna suma**. La fila abre
-  el panel de la unidad (`?vehiculo=`) sin perder filtros ni página y la lista se relee al cerrarlo. El pago confirmado dice «Confirmado»
+  el panel de la unidad (`?vehiculo=` de `/logistica/gastos`, el único drawer de la unidad que queda) sin perder filtros ni página y la lista se relee al cerrarlo. El pago confirmado dice «Confirmado»
   con su fecha (quién, en el sello del panel). «Ver todos en Gastos» sale del tope de los huecos «Gastos» y «Pagos», filtrado por origen.
 - **`/logistica/embarques`** (`logistica.ver`): `?grupo=embarques|contenedores`; filtros naviera, puertos (de los catálogos activos),
   estado («En tránsito», «Ya llegaron») y búsqueda por booking o contenedor (3). Fila: la clave (abre el resumen), naviera, ruta, zarpe,
@@ -1103,7 +1154,8 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
   «Solo la cartera» se recorta en la base, no en la pantalla.
 - Empresa es una pantalla con pestañas: quien tiene uno de sus dos permisos ve la otra parte deshabilitada con motivo. El tipo de cambio se
   cambia en un panel con su historial a la vista.
-- La fase de un vehículo se ve en el inventario y se cambia en logística. Un vehículo nace en la fase inicial cuando hay una sola; si no,
+- La situación de un vehículo (su fase, o «En subasta», «Sin resolver» o «No ganada») se ve en el inventario, la ficha y logística; la fase
+  se cambia en logística y la subasta se resuelve desde la ficha. Un vehículo nace en la fase inicial cuando hay una sola; si no,
   «Sin fase».
 - `Ctrl/Cmd+Enter` en un alta guarda y deja el panel listo para otro; `Ctrl/Cmd+S` guarda y cierra, salvo en «Nuevo lead», donde guarda y
   deja el drawer listo.

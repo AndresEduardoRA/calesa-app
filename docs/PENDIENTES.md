@@ -39,6 +39,9 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Logística
 
+- **[T02]** Un bloque «Subastas sin resolver» en Inicio (hoy se ven en el inventario y, con el filtro de situación, se filtran).
+- **[T02]** El filtro del inventario para ver las no ganadas (T14): hasta entonces, «vacío de primera vez» puede salir aunque haya no ganadas
+  ocultas.
 - **[A1c]** Avisos sin salida que quedaron: el bloqueo de eliminar una fase no enlaza «las fases que esperan» ni «las unidades en ella» (`ImpactoDeFase` sólo trae conteos; pide los ids); «Editar grupo» con más unidades de las que se muestran y «súbelo por partes» de documentos de un grupo de más de 100 no dicen el paso siguiente; «No pudimos leer los títulos» del panel de fuera de regla no ofrece «Reintentar».
 - **[6-2]** Publicar en la vitrina mueve la versión de la ficha (`vehiculo_vitrina` usa `vehiculos.actualizado_en`) — una columna `vitrina_actualizado_en` que la RPC exija y devuelva.
 - **[6-4]** Se puede pedir un requisito de dato cuya regla está apagada (`transporte.*`, `aduana.*`, `pagos.*`) y nadie puede cumplirlo — que `revisar_flujo()` lo avise con un código propio o que la RPC lo rechace.
@@ -141,6 +144,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Límites aceptados
 
+- **[T14]** Una fase rara (pocas unidades en un origen grande) del filtro «Situación» recorre el origen en orden por `vehiculos_origen_listado_idx`, como el filtro de fase de antes; un índice `(origen_id, fase_id, creado_en desc, id desc)` lo acotaría si llega a notarse.
+- **[T02]** Una no ganada en una fase de subasta que no es la inicial queda retenida de la limpieza por «fase» o «bloqueo», como hoy.
 - **[—]** Un aviso de limpieza no se repite tras quitar «Conservar» o restaurar; con `aviso_dias` > 90 un vencimiento puede avisar dos veces.
 - **[—]** Tablero: «Finales» cuenta por cohorte de creación, porque no hay fecha de marca final.
 - **[—]** `cambiar_fase` acepta `p_fase_esperada` nulo; despublicar no revoca la URL de una foto; «Ver como» acota la interfaz, no las filas.
@@ -161,7 +166,9 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** El resumen del contenedor pone «Mover el grupo» debajo de toda la lista: con 8 unidades hay que desplazar para llegar a «Marcar que llegó».
 - **[—]** `/logistica/embarques` › Contenedores dice «Las primeras.» sobre la lista sin decir de qué.
 - **[—]** El margen sin gastos dice «Real USD 0,00» junto a «Sin venta registrada» y parece un costo cargado — «Sin gastos» lo diría sin cifra.
-- **[—]** La cadena de la dueña: en el celular las pestañas de origen parten en dos líneas y la última queda cortada; en escritorio la tercera columna se corta sin indicio de que se desplaza.
+- **[—]** `logistica_bandeja` de Inicio con el alcance «propios» recorre la fase entera (su rama por fila no parte de `_logistica_lo_propio`): pasarla a esa lectura y medirla con volumen.
+- **[—]** Con más de 10.001 vehículos propios en un origen, sólo el resumen de la cadena lo avisa («+»): los grupos de la bandeja del día y la lista de una fase de ese alcance no dicen que `_logistica_lo_propio` cortó (`_bandeja_dia_alcance` podría devolver un `cortado`).
+- **[—]** `/logistica/gastos` todavía abre el panel de la unidad en un drawer (`?vehiculo=`): llevarlo a `/logistica/vehiculo/[id]` como el resto de logística y borrar `drawer-de-la-unidad.tsx` y `clave-de-unidad.ts`.
 - **[—]** El inspector de fase no se miró al 200 % (los bloques anidados miden con `minmax(0, 1fr)`).
 - **[—]** Al 200 % la burbuja del chat puede tapar la última línea de una página.
 - **[—]** Las 200 compras por proyecto llevan `<AvisoDeTope>` sin camino a lo antiguo — filtro por fecha si aparece.

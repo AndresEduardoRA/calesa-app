@@ -105,25 +105,29 @@ test.afterAll(async () => {
 
 test('E2E R1 logística mueve una unidad desde la cadena en ≤ 15 s', async ({ page }, info) => {
   await entrar(page, terreno.primera.correo, { fresco: true })
-  await page.goto(`/logistica?origen=${terreno.origen.id}&fase=${terreno.a.id}`)
-  const tarjeta = page.getByRole('link', { name: terreno.enA.titulo }).first()
-  await expect(tarjeta).toBeVisible()
+  await page.goto(`/logistica?origen=${terreno.origen.id}`)
+  const fase = page.locator(`a[data-fase="${terreno.a.id}"]`)
+  await expect(fase).toBeVisible()
   await capturar(page, info, 'cadena')
   const g = new Gestos(page)
   const inicio = performance.now()
 
-  await g.tocar(tarjeta)
-  const panel = page.getByRole('dialog')
-  await expect(panel.getByRole('heading', { name: terreno.enA.titulo })).toBeVisible()
-  await g.tocar(panel.getByRole('button', { name: `Elegir el destino «${terreno.b.nombre}»` }))
-  await g.escribir(panel.getByLabel('Nota interna (obligatoria)'), 'Zarpó.')
-  await capturar(page, info, 'panel-con-destino')
+  // La cadena como gráfica → la lista de la fase → la página del vehículo (nunca un drawer).
+  await g.tocar(fase)
+  const vehiculo = page.getByRole('link', { name: terreno.enA.titulo }).first()
+  await expect(vehiculo).toBeVisible()
+  await capturar(page, info, 'lista-de-la-fase')
+  await g.tocar(vehiculo)
+  await expect(page.getByRole('heading', { name: terreno.enA.titulo })).toBeVisible()
+  await g.tocar(page.getByRole('button', { name: `Elegir el destino «${terreno.b.nombre}»` }))
+  await g.escribir(page.getByLabel('Nota interna (obligatoria)'), 'Zarpó.')
+  await capturar(page, info, 'unidad-con-destino')
   await g.pulsar('Control+Enter')
   await expect(page.getByText(`${terreno.enA.titulo} pasó a «${terreno.b.nombre}».`)).toBeVisible()
   const fin = performance.now()
 
-  // Las decisiones: la unidad, el destino, la nota y confirmar.
-  const klm = g.klm(4)
+  // Las decisiones: la fase, el vehículo, el destino, la nota y confirmar.
+  const klm = g.klm(5)
   const robot = (fin - inicio) / 1000
   anotar(info, g, { tramo: 'mover 1', meta: 15, robot, klm })
   await capturar(page, info, 'movida')

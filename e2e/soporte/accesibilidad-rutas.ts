@@ -55,6 +55,8 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/leads/[id]': (t) => ({ url: `/leads/${t.lead}` }),
   '/vehiculos/[id]': (t) => ({ url: `/vehiculos/${t.vehiculo}` }),
   '/logistica/vehiculo/[id]': (t) => ({ url: `/logistica/vehiculo/${t.vehiculo}` }),
+  '/logistica/bandeja/[grupo]': () => ({ url: '/logistica/bandeja/demorados' }),
+  '/logistica/fase/[fase]': (t) => ({ url: `/logistica/fase/sin_fase?origen=${t.origen}` }),
   '/configuracion/origenes/[id]': (t) => ({ url: `/configuracion/origenes/${t.origen}` }),
   '/repuestos/[id]': (t) => ({ url: `/repuestos/${t.proyectoDeRepuestos}` }),
   '/cotizaciones/[id]': (t) => ({ url: `/cotizaciones/${t.cotizacion}` }),

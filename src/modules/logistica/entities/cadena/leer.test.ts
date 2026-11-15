@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cadenaDesde, dondeEstaDesde, paginaDeLaColumnaDesde } from './leer'
+import { dondeEstaDesde, paginaDeLaFaseDesde } from './leer'
 
 const A = '11111111-1111-4111-8111-111111111111'
 const B = '22222222-2222-4222-8222-222222222222'
@@ -11,6 +11,7 @@ const tarjeta = (id: string, extra: Record<string, unknown> = {}) => ({
   vin: 'VIN1',
   lote: null,
   fase_desde: '2026-11-01T10:00:00+00:00',
+  situacion: 'fase',
   demorada: false,
   contenedor: null,
   booking: null,
@@ -18,67 +19,42 @@ const tarjeta = (id: string, extra: Record<string, unknown> = {}) => ({
   ...extra,
 })
 
-const columna = (extra: Record<string, unknown> = {}) => ({
-  fase_id: B,
-  nombre: 'En tránsito',
-  color: '#00aaff',
-  orden: 2,
-  activa: true,
-  es_final: false,
-  demora_dias: 10,
-  tarjetas: [tarjeta(A)],
-  hay_mas: false,
-  ...extra,
-})
-
-describe('cadenaDesde', () => {
-  it('lee las columnas, con «Sin fase» de fase_id nulo, en el orden que dio la base', () => {
-    const leida = cadenaDesde({
-      columnas: [
-        columna({ fase_id: null, nombre: null, color: null, activa: null, demora_dias: null }),
-        columna({ tarjetas: [tarjeta(A, { demorada: true }), tarjeta(C)], hay_mas: true }),
-      ],
+describe('paginaDeLaFaseDesde', () => {
+  it('lee los vehículos, con el título como nombre, y si hay más', () => {
+    const leida = paginaDeLaFaseDesde({
+      tarjetas: [tarjeta(A, { demorada: true, situacion: 'sin_resolver' }), tarjeta(C)],
+      hay_mas: true,
     })
     expect(leida.ok).toBe(true)
     if (!leida.ok) return
-    expect(leida.data.columnas.map((c) => c.faseId)).toEqual([null, B])
-    expect(leida.data.columnas[0]?.nombre).toBeNull()
-    expect(leida.data.columnas[1]?.tarjetas.map((t) => t.id)).toEqual([A, C])
-    expect(leida.data.columnas[1]?.tarjetas[0]?.demorada).toBe(true)
-    expect(leida.data.columnas[1]?.hayMas).toBe(true)
-    // Mientras la infra no arma la identidad, el nombre de la tarjeta es el título.
-    expect(leida.data.columnas[1]?.tarjetas[0]?.nombre).toBe('Toyota Hilux')
+    expect(leida.data.hayMas).toBe(true)
+    expect(leida.data.vehiculos.map((v) => v.id)).toEqual([A, C])
+    expect(leida.data.vehiculos[0]).toMatchObject({
+      nombre: 'Toyota Hilux',
+      demorada: true,
+      situacion: 'sin_resolver',
+    })
   })
 
-  it('sin columnas es una cadena vacía válida', () => {
-    expect(cadenaDesde({ columnas: [] })).toEqual({ ok: true, data: { columnas: [] } })
+  it('una página vacía es válida', () => {
+    expect(paginaDeLaFaseDesde({ tarjetas: [], hay_mas: false })).toEqual({
+      ok: true,
+      data: { vehiculos: [], hayMas: false },
+    })
   })
 
-  it('una forma ajena es «inesperado», nunca una columna cortada', () => {
+  it('una forma ajena es «inesperado», nunca una fila cortada', () => {
     for (const mala of [
       null,
       {},
-      { columnas: 'x' },
-      { columnas: [columna({ tarjetas: [{ id: 'no-es-guid' }] })] },
-      { columnas: [columna({ fase_id: 'no-es-guid' })] },
-      { columnas: [columna({ hay_mas: 'sí' })] },
+      { tarjetas: 'x', hay_mas: false },
+      { tarjetas: [tarjeta('no-es-guid')], hay_mas: false },
+      { tarjetas: [tarjeta(A)], hay_mas: 'sí' },
     ]) {
-      const leida = cadenaDesde(mala)
+      const leida = paginaDeLaFaseDesde(mala)
       expect(leida.ok).toBe(false)
       if (!leida.ok) expect(leida.error.codigo).toBe('inesperado')
     }
-  })
-})
-
-describe('paginaDeLaColumnaDesde', () => {
-  it('lee las tarjetas y si hay más', () => {
-    const leida = paginaDeLaColumnaDesde({ tarjetas: [tarjeta(A)], hay_mas: true })
-    expect(leida.ok && leida.data.hayMas).toBe(true)
-    expect(leida.ok && leida.data.tarjetas[0]?.id).toBe(A)
-  })
-
-  it('un id que no es guid es «inesperado»', () => {
-    expect(paginaDeLaColumnaDesde({ tarjetas: [tarjeta('x')], hay_mas: false }).ok).toBe(false)
   })
 })
 

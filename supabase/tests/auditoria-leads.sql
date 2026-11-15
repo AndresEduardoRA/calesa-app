@@ -129,6 +129,7 @@ declare
     ('embudo_etapas_guardar(uuid,timestamp with time zone,jsonb)', 'M'),
     -- Lecturas de oportunidades: la RLS da sólo las propias sobre leads vivos de la cartera.
     ('_lead_vivo_en_mi_cartera(uuid)', 'L'),
+    ('_logistica_lo_propio(uuid)', 'L'),   -- lee vehiculos.lead_id sólo para el alcance «propios» de la cadena: devuelve ids de vehículos
     ('_tarjeta_json(oportunidades,jsonb,jsonb)', 'L'),
     ('lead_oportunidades(uuid,boolean,timestamp with time zone,uuid,integer)', 'L'),
     ('etiqueta_guardar(uuid,timestamp with time zone,text,text)', 'M'),
@@ -146,6 +147,8 @@ declare
     ('comprobante_emitir(uuid,timestamp with time zone)', 'X'),
     -- Moderar (4.27-1): recibe una cotización, no un lead; pide ver (antes y con la fila tomada), moderar y, en una final, final.gestionar del origen; su matriz, `areas/comentarios/reportar-y-moderar.sql`.
     ('cotizacion_moderar(uuid,timestamp with time zone,estado_cotizacion)', 'X'),
+    -- Aprobar (B4): recibe una cotización, no un lead; pide verla (antes y con la fila tomada) y `cotizaciones.aprobar` del origen; sólo copia `lead_id` a `cotizaciones_aprobadas` (la policy que espeja «cotizaciones: leer»); `areas/aprobada/aprobar.sql`.
+    ('cotizacion_aprobar(uuid,timestamp with time zone)', 'X'),
     -- Comentarios y adjuntos (4.27-1): reciben una cotización, no un lead, y piden verla (`puede_cotizacion`); sus pruebas, `areas/comentarios/`.
     ('cotizacion_puede_adjuntar(uuid)', 'L'),
     ('cotizacion_comentarios(uuid,timestamp with time zone,uuid,integer,integer)', 'L'),
@@ -170,6 +173,9 @@ declare
     -- El listado de cotizaciones (4.16-1): invocadora, la RLS de cotizaciones decide; devuelve el id del lead de cada fila (la cartera la saca de mis_leads()) y recibe un lead
     -- (`p_lead`, 4.17-4a) sólo como filtro de sus filas.
     ('cotizaciones_listado(integer,uuid,clase_cotizacion,boolean,uuid,timestamp with time zone,uuid,boolean,uuid)', 'L'),
+    -- La búsqueda del listado (T15): invocadora, la RLS de cotizaciones decide; nombra a los leads por `leads_candidatos()` y `leads_vista_por_ids()` (sólo los que quien busca ve), y recibe un lead
+    -- (`p_lead`) sólo como filtro de sus filas, como el listado.
+    ('cotizaciones_buscar(text,integer,uuid,clase_cotizacion,boolean,uuid,uuid,timestamp with time zone,uuid,boolean)', 'L'),
     -- El inventario por rutas (4.16-2a): invocadora, la RLS de vehiculos decide; devuelve el lead_id de cada vehículo y no recibe ninguno (la cartera la saca de mis_leads()).
     ('vehiculos_inventario(uuid,integer,jsonb,timestamp with time zone,uuid,boolean)', 'L'),
     -- Crear una cotización (4.10-2): el lead es obligatorio y se pide visible (`leads.ver`, la regla de la policy de insert que se fue), no de la cartera: una cotización cuelga de un lead que quien

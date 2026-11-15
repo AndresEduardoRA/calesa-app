@@ -13,12 +13,14 @@ type Props = {
   etiquetas: ReadonlyMap<string, string>
 }
 
-// Una revisión: quién y cuándo, qué cambió (las primeras tres cosas y «y N más») y, si el nivel de quien mira lo deja ver, el total antes y después.
-export function Revision({ revision, etiquetas }: Props) {
+// Lo de una revisión sin su marco (la lista del panel y la línea de tiempo del resumen le ponen cada una el suyo, una caja `grid` con `gap-1`; un nodo de más por fila cuenta en el
+// presupuesto de nodos del panel): quién y cuándo, qué cambió (las primeras tres cosas y «y N más») y,
+// si el nivel de quien mira lo deja ver, el total antes y después.
+export function ContenidoDeLaRevision({ revision, etiquetas }: Props) {
   const { zonaHoraria } = useRegional()
   const cambios = cambiosDeLaRevision(revision.diff, etiquetas)
   return (
-    <li className="grid min-w-0 gap-1 rounded-(--radius-md) border border-(--color-border) p-3 text-(length:--text-sm)">
+    <>
       <p className="font-medium [overflow-wrap:anywhere] text-(--color-ink)">
         {autorDeLaRevision(revision)} · {fechaRelativa(revision.creadoEn, { zona: zonaHoraria })}
       </p>
@@ -50,6 +52,15 @@ export function Revision({ revision, etiquetas }: Props) {
           )}
         </>
       )}
+    </>
+  )
+}
+
+// Una revisión de la lista del panel.
+export function Revision(props: Props) {
+  return (
+    <li className="grid min-w-0 gap-1 rounded-(--radius-md) border border-(--color-border) p-3 text-(length:--text-sm)">
+      <ContenidoDeLaRevision {...props} />
     </li>
   )
 }

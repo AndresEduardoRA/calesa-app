@@ -31,6 +31,8 @@ type Props = {
 // Una página de la lista del panel: sus estados (cargando, error, vacío) y, al pie, «Anterior» y «Siguiente» sin ir al servidor.
 export function ListaDelPanel(props: Props) {
   const { lista, texto, leida, elegidoId, alElegir, alIr, alReintentar } = props
+  // Contra qué instante se marca la subasta que ya cerró: el de abrir la lista, como el borde de «Cierre subasta».
+  const [ahora] = useState(() => new Date())
   if (leida.estado === 'cargando') {
     return <EsqueletoDeLaLista />
   }
@@ -57,6 +59,7 @@ export function ListaDelPanel(props: Props) {
             key={vehiculo.id}
             vehiculo={vehiculo}
             seleccionado={vehiculo.id === elegidoId}
+            ahora={ahora}
             alElegir={alElegir}
           />
         ))}

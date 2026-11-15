@@ -33,6 +33,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Aviso de acceso** — `?aviso=clave` / `AVISOS`: por qué alguien llegó redirigido a una pantalla de acceso; el texto sale del catálogo.
 - **Aviso con acciones** — `AccionesDeUnAviso` / `resolverAcciones()`, `<AccionesDelAviso>`, `avisarError(error, { acciones })`: aviso de
   error, advertencia o bloqueo que ofrece ahí mismo de 1 a 3 salidas (ir, abrir un panel, reintentar, deshacer, recargar), filtradas por permiso.
+- **Subasta cerrada (aviso al cotizar)** — `subastaCerrada()` / `<AvisoDeSubastaCerrada>`, `avisoDeSubastaCerrada()`: aviso de la hoja de cotizar cuando el
+  vehículo elegido sigue en el tramo de subasta y su subasta ya pasó; con «Refrescar la subasta», «La ganamos» / «No la ganamos», «Elegir otro
+  vehículo» y «Cotizar igual». Información con salida: no bloquea. No es la situación: la usa y la nombra.
 - **Causa (de un error)** — `ErrorApp.causa`: clave estable de la regla que frenó (viaja en `hint`); de ella salen las acciones del aviso.
 - **Canje** — `/auth/callback` / `canjearAcceso()`: convertir el código de Google o el enlace de un correo en una sesión.
 - **Primer registro** — `ajustes_acceso().primer_registro`: aún no hay nadie en el equipo; la primera cuenta nace con el rol dueño.
@@ -89,7 +92,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Vehículo** — `vehiculos`: el dato central; recorre el flujo de su origen.
 - **Atributos** — `vehiculos.atributos`, `leads.atributos`: campos del layout que no son columna. En un lead se leen por `leads_vista`, recortados.
 - **Dato común** — `camposComunes()` / columnas de `vehiculos`: lo que tiene todo vehículo y es columna (título, marca, año, VIN, precio…).
-- **Sin fase** — `vehiculos.fase_id` nulo / `<BadgeDeFase>`: aún no entró al flujo de su origen; lo ubica quien mueve.
+- **Sin fase** — `vehiculos.fase_id` nulo / `<BadgeDeFase>` (dentro de `<BadgeDeSituacion>`): aún no entró al flujo de su origen; lo ubica quien mueve.
 - **Inventario** — `/vehiculos` / `<ListadoDeVehiculos>`: listado de vehículos, una pestaña por origen; con «propios» se lee por
   `vehiculos_inventario()` (por rutas, filtros en SQL), con «todos» por PostgREST (`fuenteDelInventario()`).
 - **Lote (de mover)** — `cambiar_fase_lote()` / `<DrawerDelLote>`, `?panel=lote`: 1 a 200 vehículos de una fase movidos a otra con nota
@@ -208,6 +211,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   («N.º 1.234»); nulo sin el permiso.
 - **Resumen** — `?lead=`, `?vehiculo=`, `?cotizacion=` / `<DrawerDeLead>`, `<ResumenDeVehiculo>`, `<ResumenDeCotizacion>`: vistazo sin salir
   de la lista («drawer rápido» en el código).
+- **Línea de tiempo (de una cotización)** — pestaña «Todo» del resumen (`?pestana=`, `useLineaDeTiempo`, `lineaDeTiempo()`): adjuntos, revisiones y comentarios
+  mezclados por fecha, lo más nuevo arriba; una página de cada fuente y sólo se dibuja hasta donde llegó la que menos retrocedió. Las otras pestañas del resumen:
+  «Adjuntos», «Revisiones» y «Comentarios».
 - **Patrón de lista** — `@/shared/ui/lista` (`<UnaSolaVista>`, `<FilaDeLista>`, `<MasAcciones>`…): tabla o tarjetas, nombre a la izquierda,
   «⋯» a la derecha.
 - **Vista de la lista** — `VistaDeLista` (`tabla` | `tarjetas`), `?vista=`, `<ConmutadorDeVista>`: cómo se ve una lista en escritorio; en el
@@ -253,7 +259,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   por lead).
 - **Color de etiqueta** — `etiquetas.color` / `CLAVES_DE_COLOR`, `--etiqueta-<clave>`: uno de ocho de la paleta cerrada, guardado como clave.
 - **Favorito / Tachado** — `leads_favoritos`, `leads_tachados` / `lead_favorito_poner()`, `lead_tachado_poner()`: marcas por persona; no
-  reordenan. Una cotización también se marca favorita (`cotizaciones_favoritos` / `cotizacion_favorito_poner()`).
+  reordenan. Una cotización también se marca favorita (`cotizaciones_favoritos` / `cotizacion_favorito_poner()`: de quien mira,
+  `poner(valor)`, sin versión; en la guardada y en el «⋯» del listado).
 - **Tus marcas** — `SECCION_MARCAS` / `filtrosDeMarcas()`: sección de arriba del panel de filtros («Solo las ves tú»).
 - **Tachados ocultos** — `?tachados=` (`ocultar` · `incluir` · `solo`) / `ocultaTachados()`, `ocultos`: el listado oculta lo tachado y avisa
   cuántos, con «Mostrarlos».
@@ -290,6 +297,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Dirección de la web** — `ajustes_web.direccion_publica` / `leerDireccionPublica()`: la dirección pública del sitio.
 - **Cotización** — `cotizaciones`: cálculo de una fórmula para un lead/vehículo, con snapshot.
 - **Preventa / Final** — `clase_cotizacion`: borrador comercial / la que cierra el vehículo (una activa por vehículo).
+- **Cotización aprobada** — `cotizaciones_aprobadas`, `cotizacion_aprobar()`, `cotizaciones.aprobar` (por origen): la elegida de un vehículo, una sola por
+  vehículo (la clave primaria es el vehículo). Nace aprobada la primera activa; si la aprobada se invalida o va a la papelera pasa a la más antigua que sigue
+  activa. No es la **Final** (marcar una no aprueba ni al revés). Se ve como la insignia «Aprobada» y como la columna «Cotización aprobada» de `/vehiculos`.
+- **Primer resultado** — `entities/primer-resultado.ts`, `cotizaciones_aprobadas.monto` y `moneda`: lo que la hoja dibuja primero en la tarjeta del total
+  (`totales.usd`, en USD). La aprobada lo lleva congelado para que la lista de vehículos lo lea sin unir cotizaciones.
 - **Papelera de cotizaciones** — `cotizaciones_papelera_*`, `cotizaciones.papelera.purgar`, `/cotizaciones/papelera`: borrado reversible por
   lote, con versión; mandar una pide verla y poder guardarla (una final, `cotizaciones.final.gestionar`). Las que se fueron con su vehículo
   están en la papelera de vehículos. La purga automática también la vacía.
@@ -473,12 +485,19 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   la lee, con tope.
 - **Revisar** — `revisar_flujo()`: avisos de coherencia del flujo (sin salida, inalcanzable, esperas cruzadas…), de nivel error, aviso o
   información (`AvisoDeRevision`); la franja sobre el flujo los resume.
-- **Cadena** — `/logistica`: kanban de unidades por fase.
+- **Cadena** — `/logistica`: la gráfica por fase de un origen (`logistica_cadena_resumen`: cuántos vehículos tiene cada fase y cuántos están demorados o trabados, con tope) y,
+  al hacer clic en una fase, la lista de esa fase (`/logistica/fase/[fase]`). Ya no es un kanban. No: «tablero», «columna».
+- **Bandeja del día** — `/logistica` (`logistica_bandeja_grupo`): lo que le toca hoy a quien mira, por grupos y con la acción de cada fila a un toque. No: «bandeja de Inicio»
+  (ésa es `logistica_bandeja`, tres listas cortas).
+- **Grupo (de la bandeja del día)** — uno de siete: Demorados, Trabados, Documentos por aprobar, Documentos por vencer, Llegadas esperadas, Salen hoy y Subastas sin resolver. Cada uno
+  tiene su página (`/logistica/bandeja/[grupo]`), por cursor.
+- **Lista de la fase** — `/logistica/fase/[fase]`: los vehículos de una fase (o «Sin fase»), de a 50 por cursor, con filtros en la URL y la selección del lote (hasta 200).
+- **Llegada esperada** — un transporte de vehículo sin arribo cargado cuya ETA es de hoy o anterior y cuyo vehículo sigue en una fase que no es final; de la más reciente a la más vieja.
 - **Mover** — `cambiar_fase()` / `previsualizar_cambio_fase()`: cambiar de fase, con vista previa de qué falta.
 - **Alerta por demora** — `fases.demora_dias` / `alertas_demora()`: aviso cuando una unidad lleva más días de lo esperado en una fase. Job
   `alertas-demora` cada hora; se reabre pasado `fases.alerta_cada_horas` (nulo = 72 h) y mover la cierra.
-- **Trabado** — `logistica_bandeja().trabados`: unidad demorada a la que le falta un requisito bloqueante de su fase siguiente (la activa de
-  menor orden con transición desde la suya); se miran las primeras 50 demoradas. No: «bloqueado», «atascado».
+- **Trabado** — `logistica_bandeja().trabados`, el grupo «Trabados» y el número de la gráfica de la cadena: unidad demorada a la que le falta un requisito bloqueante de su fase siguiente (la
+  activa de menor orden con transición desde la suya); en la gráfica se miran las primeras 50 demoradas de cada fase y en el grupo hasta 200 por llamada. No: «bloqueado», «atascado».
 - **Documento por vencer** — aviso `documento_por_vencer` / `documentos_vencimientos()`: un documento aprobado entró en su ventana
   (`vence_el - tipos_documento.aviso_dias`); una vez por persona y documento.
 - **Documento** — `documentos`, `tipos_documento`: archivo del ciclo con estado pendiente/subido/aprobado/rechazado y vencimiento.
@@ -572,7 +591,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Conflicto** — `PT409` / `<AvisoDeConflicto>`: otra persona guardó antes; quién y cuándo, con «Ver cómo quedó» y «Recargar».
 - **Borrador** — `useBorrador()`, `useBorradorDeEstado()`: lo escrito y no guardado de un formulario, en la pestaña; se repone al volver.
 - **Tablero** — `/tablero`: métricas y gráficas por rol con widgets.
-- **Vista guardada** — `vistas_guardadas` / `VistaGuardada`, `<MenuDeVistas>`: filtros de un listado con nombre, por persona; aplicarla es navegar.
+- **Vista guardada** — `vistas_guardadas` / `VistaGuardada`, `<MenuDeVistas>`: filtros de un listado con nombre, por persona; aplicarla es navegar. La
+  tienen leads, vehículos y cotizaciones (`RUTA_DE_PANTALLA`); con la búsqueda, guarda también `?q=`.
+- **Buscador del listado de cotizaciones** — `?q=` / `cotizaciones_buscar()`, `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`, `TOPE_DE_COINCIDENCIAS`: número, cliente,
+  vehículo (título, VIN o lote) y autor; distinto del buscador global (`buscador_cotizaciones()`).
+- **Menú de la fila (cotizaciones)** — `accionesDeCotizacion()`, `MenuDeUnaFila`, `<MenuDeLaFila>`: el «⋯» de una cotización del listado, con la lista única de
+  acciones (`aprobar`, `final`, `favorita`, `reportar`, `invalidar`, `descartar`, `reactivar`, `papelera`) y lo que cada rol ve.
 - **Importación** — `importaciones`: carga CSV con vista previa por fila.
 - **Importación total** — `importacion_crear()`, `importaciones` con `archivo_ruta`: la de `/datos`, que `importar-csv` procesa por lotes a
   nombre de quien importa y para un destino (`asignar_a`).
@@ -594,6 +618,25 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Cierre (de una subasta)** — `vehiculos.cierre_subasta_en` (generada): `coalesce(subasta_fin_en, subasta_en)` de una subasta abierta o en
   vivo; nula si no está viva. Ordena «Cierre subasta» del panel del vehículo, desde ahora menos 24 h.
 - **Estado de subasta** — `vehiculos.estado_subasta` / `EstadoDeSubasta`: `abierta`, `en vivo`, `terminada` o `vendida`; lo deriva la base.
+  No es la situación: «vendida» no dice que la ganamos.
+- **Situación (de un vehículo)** — `vehiculos.situacion` / `Situacion`, `<BadgeDeSituacion>`: la que la app muestra en todos lados, calculada
+  por la base (`_vehiculo_situacion()`): «En subasta» (`en_subasta`: subasta viva en el tramo de subasta), «Sin resolver» (`sin_resolver`:
+  cerrada en el tramo y sin resultado), «No ganada» (`no_ganada`: se marcó así y sigue en el tramo; no cuenta) o su fase (`fase`). El tramo
+  (`_vehiculo_en_tramo()`) es estar en una fase de subasta o no tener fase en un origen que tiene una.
+- **Situación (filtro)** — `?situacion=` / `FILTRO_SITUACION`, condición `situacion_en`: «Situación» en el panel de filtros del inventario. Reemplaza al filtro «Fase»: una fase
+  es una situación. Ofrece, en un origen de subasta, «En subasta», «Sin resolver» y «No ganadas» (`SITUACIONES_PROPIAS`) y, en todo origen, sus fases y «Sin fase»
+  (`ninguna`). Una fase sólo trae lo que tiene esa situación (`fase`): lo de la subasta figura por la suya. Pedir «No ganadas» es la única forma de verlas en el inventario.
+- **Atajo «Sin resolver»** — `<AtajoSinResolver>` / `sinResolverDe()`: botón arriba del inventario de un origen de subasta con las pendientes (hasta `TOPE_DE_SIN_RESOLVER`, «99+»); pone o quita «Situación: Sin resolver».
+- **Fase de subasta** — `fases.es_subasta` / «Es la subasta» (Datos de la fase): la fase que representa la subasta en el flujo de un origen
+  de subasta; puede haber varias. Sin ninguna, «Revisar» avisa `sin_fase_de_subasta` y nada figura «Sin resolver».
+- **Resultado de la subasta** — `vehiculos.subasta_resultado` (`ganada` | `no_ganada`), con `subasta_resuelta_por` y `subasta_resuelta_en`:
+  lo escriben sólo las RPC de resolver; nunca se infiere de apibara; si la subasta vuelve a estar viva, se limpia.
+- **La ganamos** — `vehiculo_subasta_ganada()` / `ganarLaSubasta`, `?ganada=si` en «Qué falta»: mover a una fase que no es la subasta y
+  anotarla ganada, todo o nada.
+- **No la ganamos** — `vehiculo_subasta_no_ganada()` / `marcarNoGanada`: la marca no ganada (con «Deshacer»); deja de contar en logística,
+  Inicio y el inventario por defecto.
+- **Cierre de subastas** — job `situacion-al-cerrar` / `vehiculos_situacion_al_cerrar()`: cada 10 min pasa las «En subasta» cuyo cierre ya
+  pasó a «Sin resolver» (hasta 500 por corrida).
 - **Puja actual** — `atributos.<campo de pricing.current_bid_usd>` / `columnaDePrecio()`, `precioDeLaFila()`: lo que va de la subasta, en
   USD. En un origen de subasta con ese campo, la columna «Precio» del inventario se llama así; nunca es el precio del vehículo.
 - **Puja final** — la puja actual de una subasta `terminada` o `vendida`: la celda lleva «final» y la tarjeta dice «Puja final».
@@ -612,8 +655,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   vence.
 - **Limpieza automática** — `limpieza_automatica_correr()`, `ajustes_empresa.limpieza_automatica`: cada madrugada manda a la papelera, en un
   lote, los importados de subasta terminada hace más de los días de gracia y sin ancla.
-- **Ancla** — `_limpieza_ancla()`: lo que retiene de la limpieza: «Conservar», vínculo con lead, fase posterior a la inicial, documentos,
-  gastos o pagos, estar publicado, una cotización final activa.
+- **Ancla** — `_limpieza_ancla()`: lo que retiene de la limpieza: «Conservar», vínculo con lead, una subasta sin resolver o ganada, fase
+  posterior a la inicial, documentos, gastos o pagos, estar publicado, una cotización final activa.
 - **Conservar** — `vehiculos_conservados` / `vehiculo_conservar()`, `<BotonConservar>`: marca que saca un vehículo de la limpieza.
 - **Días de gracia** — `ajustes_empresa.limpieza_dias_gracia`: días desde que terminó la subasta hasta que se limpia: 7 por defecto, de 1 a 90.
 - **Se limpiará pronto** — `FILTRO_LIMPIEZA`, `limpieza_el()`, `VENTANA_DE_AVISO_DIAS`: filtro e insignia «Se limpia el dd/mm» de lo que se
@@ -653,7 +696,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Unidad** — `Unidad` (`logistica/entities/nucleo/unidad.ts`): el vehículo o repuesto sobre el que se opera en logística (`tipo`);
   documentos, gastos, pagos, notas y transporte cuelgan por `vehiculo_id` o `repuesto_id`, uno y sólo uno (`refDeUnidad`).
 - **Panel de la unidad** — `<PanelDeLaUnidad>` (`logistica/features/nucleo`): cabecera y huecos de cada área en orden fijo
-  (`ORDEN_DE_HUECOS`); drawer `?vehiculo=<id>` sobre la cadena y página en `/logistica/vehiculo/<id>`.
+  (`ORDEN_DE_HUECOS`); página en `/logistica/vehiculo/<id>` (con `?hueco=documentos` abre ese bloque). Un vehículo se abre siempre ahí; el drawer `?vehiculo=` sólo queda en `/logistica/gastos`.
 - **Despliegue en seco** — `pnpm despliegue:en-seco` / `scripts/despliegue/en-seco.sh`, `revisar-base.mjs`: ensayo local de un despliegue
   (base, pruebas, advisors, jobs, buckets, Vault, funciones, variables, build) sin tocar la nube; termina en «listo» o con lo que falta y las
   líneas «Para la persona» (`docs/DESPLIEGUE.md`). No: «deploy de prueba».

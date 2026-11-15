@@ -4,12 +4,14 @@ import type { VistaGuardada } from '@/modules/equipo/client'
 import type { ComponentProps } from 'react'
 import type { OrigenResumen } from '@/modules/origenes/client'
 import type { EsquemaDeFiltros } from '@/shared/lib/filtros'
+import type { ConteoAcotado } from '@/shared/lib/conteo'
 import type { Pagina } from '@/shared/lib/paginacion'
 import { Aviso } from '@/shared/ui/aviso'
 import { FilterShell } from '@/shared/ui/filtros'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import type { VistaDeLista } from '@/shared/lib/vista-de-lista'
 import type { AlcanceDeAvisos } from '../../../entities/avisos-de-vehiculo'
+import type { AprobadasDeLaPagina } from '../../../entities/cotizacion-aprobada-de-la-fila'
 import { camposFiltrables } from '../../../entities/filtros'
 import type { PermisoDeAlta } from '../../../entities/permisos'
 import type { ParaCotizar } from '../../../entities/ruta-para-cotizar'
@@ -22,6 +24,7 @@ import { EnlaceAPapelera } from '../../papelera/components/enlace-a-papelera'
 import { ResumenDeVehiculoDiferido } from '../../resumen/components/diferidos'
 import { useResumenDeVehiculo } from '../../resumen/hooks/use-resumen-de-vehiculo'
 import { useVistaDelInventario } from '../hooks/use-vista-del-inventario'
+import { AtajoSinResolver } from './atajo-sin-resolver'
 import { PestanasDeOrigen } from './pestanas-de-origen'
 import { PieDeFiltros } from './pie-de-filtros'
 import { ResultadoDelListado } from './resultado-del-listado'
@@ -53,6 +56,8 @@ type Props = DatosDelOrigen & {
   leadsVisibles: readonly string[]
   alcance: AlcanceDeAvisos
   verPapelera: boolean
+  // La cotización aprobada de cada vehículo de la página, armada por `src/app` (la ruta de cada una es de `cotizaciones`); nulo si quien mira no ve cotizaciones.
+  aprobadas: AprobadasDeLaPagina | null
   // Si el alta de este origen puede traer la ficha de apibara.
   apibara: DisponibilidadDeApibara
   // Si puede publicar en la web lo de este origen.
@@ -63,6 +68,8 @@ type Props = DatosDelOrigen & {
   paraCotizar: ParaCotizar | null
   // Tabla o tarjetas en escritorio, lo que eligió la última vez (`vehiculos.vista`); null = nunca eligió.
   vistaPreferida: VistaDeLista | null
+  // Cuántas subastas esperan resolverse en este origen (hasta el tope), para el atajo «Sin resolver»; null = el origen no tiene subasta o no se pudo leer.
+  sinResolver: ConteoAcotado | null
 }
 
 // Por qué «Nuevo» está apagado (el origen está desactivado), arriba de la lista.
@@ -111,6 +118,22 @@ function ResultadoConVistos(props: ComponentProps<typeof ResultadoDelListado>) {
     >
       <ResultadoDelListado {...props} />
     </ProveedorDeMarcasDeVisto>
+  )
+}
+
+// La lista y, arriba, el atajo a lo que espera una decisión.
+function CuerpoDelListado({
+  esquema,
+  sinResolver,
+  ...resultado
+}: { esquema: EsquemaDeFiltros; sinResolver: ConteoAcotado | null } & ComponentProps<
+  typeof ResultadoDelListado
+>) {
+  return (
+    <div className="grid gap-3">
+      <AtajoSinResolver esquema={esquema} conteo={sinResolver} />
+      <ResultadoConVistos {...resultado} />
+    </div>
   )
 }
 
@@ -174,8 +197,9 @@ export function ListadoDeVehiculos(props: Props) {
           />
         }
       >
-        <ResultadoConVistos
+        <CuerpoDelListado
           {...resto}
+          esquema={esquema}
           vista={vista.vista}
           alCambiarVista={vista.cambiar}
           alAbrir={resumen.abrir}

@@ -11,8 +11,9 @@ Toda la configuración se escribe por RPC con la versión del flujo. Abiertos (`
   `vehiculos` para mostrar y filtrar la fase. Del área `mover`: `leerFlujoDeOrigen(origenId)` → `FlujoDeOrigen | null` (`flujoId`, `reglasActivas` y por fase
   `notaObligatoria`, `permiteContenedor`, `permiteAduana`, `demoraDias`; error visible si una lista llega al tope) y `reglaActiva(flujo, regla)`. Por `client.ts`,
   sus tipos y `reglaActiva`.
-- **Mover**, por `client.ts`: las actions `leerParaMover`, `previsualizarCambio`, `previsualizarCambioLote`, `cambiarFase`, `cambiarFaseLote` y
-  `destinosDeLaFase` (las salidas de una fase, sin vista previa). Exigen `flujos.mover` o `flujos.mover.cualquiera` en el origen y la base decide otra vez.
+- **Mover**, por `client.ts`: las actions `leerParaMover`, `previsualizarCambio`, `previsualizarCambioLote`, `cambiarFase`, `cambiarFaseLote`,
+  `destinosDeLaFase` (las salidas de una fase, sin vista previa) y `ganarLaSubasta` («La ganamos»: `vehiculo_subasta_ganada`, que mueve con
+  `cambiar_fase` hacia una fase que no es la subasta y anota la subasta ganada, todo o nada; sólo vehículos). Cada destino trae `esSubasta`. Exigen `flujos.mover` o `flujos.mover.cualquiera` en el origen y la base decide otra vez.
   `leerParaMover`, `previsualizarCambio` y `cambiarFase` aceptan `vehiculo` **o** `repuesto` (`unidadDelPedido` → `unidad: { tipo, … }`; `origenId` sólo para
   vehículo); un ítem se mueve con `repuestos.mover` global (`puedeMoverUnRepuesto`), nunca con `flujos.mover`. `destinosDeLaFase` y el lote son sólo de vehículo.
   Reglas puras: `estadoDelBoton`, `textoDelBoton`, `motivoLegible`, `etiquetaDeRequisito`, `detalleDeRequisito`, `anclaDeRequisito`. Lo consume `logistica`.
@@ -89,6 +90,9 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
   explica y no se confirma. `useListaDeFases` escribe una a la vez con la `version`; `PT409` → `avisarConflicto()`. El selector sólo ofrece flujos configurables.
 - **Inspector › Datos:** `<DatosDeLaFase>` (`bloques.datos`), cinco `<Bloque>`s con `<InterruptorConMotivo>` (la regla apagada lo deshabilita).
   `useFormularioDeDatos` manda a `fase_guardar` sólo `cambiosParaGuardar`, borrador `fase-<id>` en `sessionStorage`; se reinicia con `key` (`fase.id` + versión).
+  «En el flujo» lleva «Es la subasta» (`fases.es_subasta`, la **fase de subasta**): sólo en el flujo de un origen de tipo subasta
+  (`FlujoParaConfigurar.origenEsSubasta`, del tipo del origen embebido; fuera, apagado con `motivoDeEsSubasta`) y nunca con «Es final». Puede haber
+  varias. La lee `vehiculos` para calcular la situación del vehículo.
 - Nada de esta área sale por `index.ts` ni `client.ts`.
 
 ## Requisitos
@@ -105,7 +109,7 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
   (`entities/requisitos/vista-de-fase.ts`; en `scripts/guardas/areas-c/confirmar-con-url.ts`).
 - **Bloqueante:** `leerImpactoDeRequisito` (`requisito_impacto`) alimenta `useBloqueanteDeRequisito`; aviso en línea (`<ConfirmarBloqueo>`). **Fuera de regla:**
   `leerFueraDeRegla` (`flujo_fuera_de_regla`, `tope + 1`) sale por `areas/requisitos/index.ts`; lo lee `src/app/(app)/configuracion/flujos/requisitos/fuera-de-regla.tsx`
-  (títulos con `leerTitulosDeVehiculos` de `vehiculos`, `href` con `FILTRO_FASE`) y lo entrega a `PantallaDelFlujo` por `sobreLaLista`, una **prop de
+  (títulos con `leerTitulosDeVehiculos` de `vehiculos`, `href` con `FILTRO_SITUACION`) y lo entrega a `PantallaDelFlujo` por `sobreLaLista`, una **prop de
   servidor** tras su `<Suspense fallback={null}>`. `?panel=fuera-de-regla`, registrado `sinFormulario` en `scripts/guardas/areas-c/drawers-con-salida.ts`; las
   dos RPC en `areas-c/paginas-en-la-base.ts` (defecto 50).
 
@@ -130,7 +134,7 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
 ## Tablas
 
 `flujos`, `flujos_reglas`, `fases`, `fases_transiciones`, `fases_roles`, `fases_transiciones_roles`, `tipos_documento`, `fases_requisitos`, `historial_fases`, `flujos_transporte_oferta`.
-RPC: `cambiar_fase`, `cambiar_fase_lote`, `previsualizar_cambio_fase`, `previsualizar_cambio_fase_lote`, `revisar_flujo`, `fase_crear`, `fase_guardar`, `fase_mover`, `fase_impacto`, `fase_eliminar`, `fase_reactivar`, `requisito_crear`, `requisito_guardar`, `requisito_mover`, `requisito_eliminar`, `requisito_impacto`, `flujo_fuera_de_regla`, `claves_dato_requisito`, `flujo_regla_impacto`, `flujo_regla_cambiar`, `flujo_oferta_guardar`, `flujo_oferta`, `logistica_cadena`, `logistica_cadena_columna`, `logistica_unidad`, `logistica_donde_esta`.
+RPC: `cambiar_fase`, `cambiar_fase_lote`, `previsualizar_cambio_fase`, `previsualizar_cambio_fase_lote`, `revisar_flujo`, `fase_crear`, `fase_guardar`, `fase_mover`, `fase_impacto`, `fase_eliminar`, `fase_reactivar`, `requisito_crear`, `requisito_guardar`, `requisito_mover`, `requisito_eliminar`, `requisito_impacto`, `flujo_fuera_de_regla`, `claves_dato_requisito`, `flujo_regla_impacto`, `flujo_regla_cambiar`, `flujo_oferta_guardar`, `flujo_oferta`, `logistica_cadena_resumen`, `logistica_cadena_columna`, `logistica_bandeja_grupo`, `logistica_unidad`, `logistica_donde_esta`.
 
 ## No se rompe
 
@@ -146,12 +150,15 @@ RPC: `cambiar_fase`, `cambiar_fase_lote`, `previsualizar_cambio_fase`, `previsua
   llaman `definer` que ya miraron el acceso); el `detalle` de un requisito trae `tipo_documento_id` o `clave_dato`.
 - Quitar lo que pide la fase actual (un documento, la declaración, el transporte, un pago confirmado, un gasto de tributos) toma la unidad `for share` antes
   de mirar la fase: espera y hace esperar a `cambiar_fase`. Lo prueban las carreras de `supabase/tests/areas/{aduana,dinero}/`.
-- La cadena: `logistica_cadena(p_origen, p_tope, p_filtros)` y `logistica_cadena_columna(p_origen, p_fase, p_desde, p_id, p_tope, p_filtros)` son `security
-definer` (las policies de `transportes` y `documentos` preguntan por fila): alcance = el menor de `logistica.ver` y `vehiculos.ver` del origen
-  (`_logistica_alcance`, una vez; sin él 42501 hint `acceso`); toda consulta empieza por `origen_id` y fuera de la papelera. Cuatro consultas fijas en
-  `_logistica_columna` sobre `vehiculos_cadena_idx (origen_id, fase_id, fase_desde, id)`; «Sin fase» es `fase_id` nulo (check
-  `vehiculos_fase_desde_coherente`: `fase_desde` existe si y sólo si hay fase; lo completa `trg_0_fase_desde_coherente`). Se miden en
-  `supabase/tests/medir-escala.sql` › «La cadena».
+- La cadena: `logistica_cadena_resumen(p_origen, p_tope)` (el número de cada fase: vehículos, demorados y trabados, conteo con tope por `vehiculos_cadena_idx`, nunca un total) y
+  `logistica_cadena_columna(p_origen, p_fase, p_desde, p_id, p_tope, p_filtros)` (la lista de una fase, por cursor) son `security definer` (las policies de `transportes` y
+  `documentos` preguntan por fila): alcance = el menor de `logistica.ver` y `vehiculos.ver` del origen (`_logistica_alcance`, una vez; sin él 42501 hint `acceso`); toda consulta
+  empieza por `origen_id` y fuera de la papelera. Con el alcance «propios» parten de `_logistica_lo_propio(p_origen)` (hasta 10.001 ids: lo creado y lo de la cartera, por
+  `vehiculos_creador_idx` y `leads_asesores_usuario_vigente_idx`), no del predicado por fila. Cuatro consultas fijas por alcance en `_logistica_columna` sobre
+  `vehiculos_cadena_idx (origen_id, fase_id, fase_desde, id)`; «Sin fase» es `fase_id` nulo (check `vehiculos_fase_desde_coherente`: `fase_desde` existe si y sólo si hay fase; lo
+  completa `trg_0_fase_desde_coherente`). Se miden en `supabase/tests/medir-logistica.sql` y `medir-escala.sql` › «La cadena».
+- `logistica_bandeja_grupo(p_grupo, p_tope, p_conteo, p_desde, p_id)`: siete grupos por cursor (`_bandeja_dia_<grupo>`, cada uno con su índice y su `limit`), con el mismo alcance; los
+  trabados llaman `evaluar_requisitos`, que pregunta por `documentos_unidad_tipo_idx` (no por `is not distinct from`: recorría los documentos de todas las unidades).
 - `logistica_unidad(p_vehiculo)` (definer, mismo acceso) da `demorada`, `fuera_de_regla` con `faltan` (bloqueantes sin cumplir de su fase) y `movida` (última
   fila de `historial_fases`, sin la nota); inexistente, papelera o sin acceso: un solo 42501 hint `acceso`. `logistica_donde_esta(p_buscar, p_tope)` busca hasta
   10 por título, VIN o lote (trigramas, hasta 1.000 candidatas y las propias por `vehiculos_creador_idx`) sólo en orígenes con la regla `logistica`; corto o
@@ -166,7 +173,8 @@ jubilada|eliminada, version}`. Los conteos de `_fase_uso` llegan como tope + 1 (
 - `revisar_flujo(p_flujo)` (`security definer`) sólo responde a quien configura el flujo (`puede_configurar_flujo`); a los demás, cero filas sin error. Devuelve
   `{nivel, codigo, mensaje, fase_id}` sin orden. Códigos: error `sin_inicial`; aviso `sin_salida`, `inalcanzable`, `orden_duplicado`,
   `contenedor_inalcanzable`, `espera_jubilada`, `espera_cruzada`, `rol_sin_personas` (roles sin persona `activo and not bloqueado`),
-  `tipo_documento_inactivo`, `salida_a_jubilada`; info `sin_bloqueantes`, `entrada_no_automatica` (sólo vehículos, espejo de `_vehiculo_fase_de_entrada`).
+  `tipo_documento_inactivo`, `salida_a_jubilada`, `sin_fase_de_subasta` (origen de subasta sin ninguna fase con `es_subasta`, activa o jubilada: nada
+  figura «Sin resolver»); info `sin_bloqueantes`, `entrada_no_automatica` (sólo vehículos, espejo de `_vehiculo_fase_de_entrada`).
   Lo prueba `supabase/tests/flujos-revisar.sql`. Avisa y nunca impide guardar.
 - Un requisito nace informativo; volverlo bloqueante muestra cuántas unidades quedan «fuera de regla» y pide confirmación.
 - Las esperas se evalúan al entrar a la fase y nunca mueven en cascada.
@@ -188,7 +196,9 @@ jubilada|eliminada, version}`. Los conteos de `_fase_uso` llegan como tope + 1 (
 - La versión cruza como texto ISO tal cual (microsegundos), nunca por un `Date` de JS: se quedaría en milisegundos y daría `PT409` en cada guardado.
 - `authenticated` no tiene `insert` ni `update` sobre `fases` ni `update` sobre `flujos`. `fase_crear(p_id, p_flujo, p_actualizado_en_esperado, p_datos)` y
   `fase_guardar(p_fase, p_actualizado_en_esperado, p_cambios)`: lista cerrada de claves (`22023` con la clave en `hint`), validaciones con el campo en `hint`,
-  reglas del flujo (`23514`) y únicos con mensaje humano (`23505`).
+  reglas del flujo (`23514`) y únicos con mensaje humano (`23505`). `es_subasta` fuera del flujo de un origen de subasta → `23514` (hint `es_subasta`,
+  también en el trigger `fase_validar` sin hint; `_flujo_de_subasta()`); con `es_final` → `22023` (hint `es_subasta`). Lo prueba
+  `supabase/tests/areas/flujos/fases-subasta.sql`.
 
 ## Ojo
 

@@ -1,16 +1,12 @@
-// La API de cliente de el área `cadena` de `logistica` (6.03-1): lo puro y los tipos que un componente de la cadena necesita (la clave de una columna, qué se puede pedir, los textos de
-// los días). Nada de servidor. Sale por el `client.ts` de la raíz.
+// La API de cliente de el área `cadena` de `logistica`: lo puro y los tipos que un componente de la cadena necesita (la clave de una fase, el cursor, los textos de los días). Nada de
+// servidor. Sale por el `client.ts` de la raíz.
 export {
   CLAVE_DE_SIN_FASE,
-  agregarTarjetas,
-  claveDeColumna,
-  columnaElegida,
-  cursorDeLaColumna,
-  enElTope,
-  numeroDeLaColumna,
-  puedeVerMas,
-  type CursorDeLaColumna,
-} from '../../entities/cadena/columna'
+  claveDeFase,
+  codificarCursorDeLaFase,
+  rutaDeLaFase,
+  type CursorDeLaFase,
+} from '../../entities/cadena/fase'
 export { textoDeLosDiasEnLaFase } from '../../entities/cadena/dias'
 export {
   CLAVE_DE_BOOKING,
@@ -27,10 +23,9 @@ export {
 } from '../../entities/cadena/filtros'
 export { origenElegido, type OrigenDeLaCadena } from '../../entities/cadena/origenes'
 export type {
-  CadenaLeida,
-  ColumnaDeLaCadena,
-  PaginaDeLaColumna,
+  PaginaDeLaFase,
   ResultadoDeDondeEsta,
-  TarjetaDeLaCadena,
   UnidadDondeEsta,
+  VehiculoDeLaFase,
 } from '../../entities/cadena/leer'
+export type { FaseDelResumen, ResumenDeLaCadena } from '../../entities/cadena/resumen'

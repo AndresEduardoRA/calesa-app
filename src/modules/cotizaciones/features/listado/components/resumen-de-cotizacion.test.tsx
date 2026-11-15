@@ -4,6 +4,7 @@ import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { CotizacionDelListado } from '../../../entities/listado/filas-del-listado'
 import type { LecturaDelServidor } from '../../../entities/listado/resumen-del-listado'
+import type { HuecosDelResumen, QuienDelResumen } from '../../hoja/components/huecos-del-resumen'
 
 const refresh = vi.fn()
 // Un pedido que no termina: `useTransition` queda pendiente mientras `enCamino` sea true (el `refresh` de verdad devuelve el control y el pedido sigue).
@@ -54,6 +55,7 @@ const cotizacion = (extra: Partial<CotizacionDelListado> = {}): CotizacionDelLis
   cliente: null,
   vehiculo: null,
   autor: 'Ana',
+  aprobada: false,
   ...extra,
 })
 
@@ -61,6 +63,8 @@ function dibujar(opciones: {
   busqueda: string
   filas?: CotizacionDelListado[]
   delServidor?: LecturaDelServidor | null
+  huecos?: HuecosDelResumen
+  quienes?: Record<string, QuienDelResumen>
 }) {
   return render(
     <NuqsTestingAdapter searchParams={opciones.busqueda} hasMemory>
@@ -68,6 +72,8 @@ function dibujar(opciones: {
         filas={opciones.filas ?? []}
         origenes={origenes}
         delServidor={opciones.delServidor ?? null}
+        huecos={opciones.huecos}
+        quienes={opciones.quienes}
       />
     </NuqsTestingAdapter>,
   )
@@ -154,5 +160,31 @@ describe('ResumenDeCotizacion', () => {
   it('sin la clave, cerrado: no hay diálogo', () => {
     dibujar({ busqueda: '', filas: [cotizacion()] })
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})
+
+describe('ResumenDeCotizacion con pestañas', () => {
+  it('con el hueco de las pestañas lo dibuja bajo el detalle, con lo que quien mira puede hacer; sin lo calculado, nada de adjuntar ni moderar', () => {
+    const Pestanas: NonNullable<HuecosDelResumen['Pestanas']> = (props) => (
+      <p data-testid="pestanas">
+        {props.cotizacion.id}:{props.cotizacion.clase}:{String(props.puedeAdjuntar)}:
+        {String(props.puedeModerar)}:{String(props.abierto)}
+      </p>
+    )
+    dibujar({
+      busqueda: `?cotizacion=${ID}`,
+      filas: [cotizacion()],
+      huecos: { Pestanas },
+      quienes: { [ID]: { puedeAdjuntar: true, puedeModerar: false } },
+    })
+    expect(screen.getByTestId('pestanas').textContent).toBe(`${ID}:preventa:true:false:true`)
+    cleanup()
+    dibujar({ busqueda: `?cotizacion=${ID}`, filas: [cotizacion()], huecos: { Pestanas } })
+    expect(screen.getByTestId('pestanas').textContent).toBe(`${ID}:preventa:false:false:true`)
+  })
+
+  it('sin hueco no hay pestañas', () => {
+    dibujar({ busqueda: `?cotizacion=${ID}`, filas: [cotizacion()] })
+    expect(screen.queryByTestId('pestanas')).toBeNull()
   })
 })

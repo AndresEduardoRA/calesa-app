@@ -21,6 +21,10 @@ cliente. Crear una final directo con `cotizacion_crear` hace lo mismo. `client.t
   entra, el diálogo dice el motivo; el 23505 del índice (otra final se confirmó antes) es «Otra cotización de este vehículo ya es la final. Recarga para
   verla.».
 
+**En el listado** (`pantallas/final-listado.ts`): «Marcar final…» del «⋯» de cada fila abre el mismo `<Confirmar>` en `?panel=marcar-final&para=<id>`
+(`<DialogoDeMarcarFinalDeLaFila>`, `useAbrirMarcarFinalDeLaFila()`); apagado, con el motivo de `motivoParaNoMarcar()` (falta el vehículo o el cliente). Al entrar,
+la action revalida `/cotizaciones` y la lista se vuelve a dibujar.
+
 ## En la base
 
 Orden de candados, uno solo para marcar y para crear una final: **lead → vehículo → la cotización y las vivas del vehículo** (en una pasada por id).

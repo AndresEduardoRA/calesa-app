@@ -26,6 +26,7 @@ import { carrerasDeNiveles } from './carreras/niveles.mjs'
 import { carrerasDePlantillas } from './carreras/plantillas.mjs'
 import { carrerasDeCotizaciones } from './carreras/cotizaciones.mjs'
 import { carrerasDeGuardar } from './carreras/cotizaciones-guardar.mjs'
+import { carrerasDeAprobada } from './carreras/cotizaciones-aprobada.mjs'
 import { carrerasDeEncima } from './carreras/cotizaciones-encima.mjs'
 import { carrerasDeCandadosDePapelera } from './carreras/candados-papelera.mjs'
 import { carrerasDePurgaContraRestaurar } from './carreras/purga-contra-restaurar.mjs'
@@ -54,6 +55,7 @@ import {
 import { carrerasDeFases } from '../supabase/tests/areas/flujos/carreras.mjs'
 import { carrerasDeDocumentos } from '../supabase/tests/areas/documentos/carreras.mjs'
 import { carrerasDeMover } from '../supabase/tests/areas/mover/carreras.mjs'
+import { carrerasDeSituacion } from '../supabase/tests/areas/situacion/carreras.mjs'
 import { carrerasDeFinal, limpiarFinal } from '../supabase/tests/areas/final/carreras.mjs'
 import { carrerasDelPrincipal } from '../supabase/tests/areas/origenes/carreras.mjs'
 import {
@@ -378,6 +380,7 @@ try {
   await carrerasDeCotizaciones({ orquesta, carrera, espero, conectar, esperarBloqueo })
   await carrerasDeGuardar({ orquesta, carrera, espero, conectar, esperarBloqueo })
   await carrerasDeEncima({ orquesta, carrera, espero })
+  await carrerasDeAprobada({ orquesta, carrera, espero, conectar })
   await carrerasDeFinal({ orquesta, carrera, espero, conectar })
   await carrerasDeCandadosDePapelera({ orquesta, espero, conectar })
   await carrerasDePurgaContraRestaurar({ orquesta, espero, conectar })
@@ -396,6 +399,7 @@ try {
   await carrerasDeFases({ orquesta, carrera, espero, conectar })
   await carrerasDeDocumentos({ orquesta, carrera, espero })
   await carrerasDeMover({ orquesta, carrera, espero, conectar })
+  await carrerasDeSituacion({ orquesta, carrera, espero })
   await carrerasDelPrincipal({ orquesta, carrera, espero })
   await carrerasDeTransporte({ orquesta, espero, conectar, esperarBloqueo })
   await carrerasDeAduana({ orquesta, espero, conectar, esperarBloqueo })

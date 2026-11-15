@@ -6,24 +6,12 @@ import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errore
 import { TAMANO_DE_VER_MAS } from '@/shared/lib/paginacion'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { ComprobantesDeLaCotizacion } from '../../entities/comprobantes/comprobante'
+import { COLUMNAS_DE_COMPROBANTES, comprobantesDesde } from '../../entities/comprobantes/lectura'
 
 // Los comprobantes de una cotización para la guardada (4.26-2), con el cliente de quien mira: la RLS deja leerlos a quien ve la cotización (base, «comprobantes:
-// leer»). No se lee `datos` (P4 a). Los nombres de quien emitió y de quien anuló salen de `perfiles`, que lee todo usuario activo.
+// leer»). No se lee `datos` (P4 a).
 
 const NO_SE_LEYERON = 'No se pudieron leer los comprobantes de esta cotización.'
-
-const esquemaDelNombre = z.object({ nombre: z.string().nullable() }).nullable()
-
-const esquemaDeLaFila = z.object({
-  id: z.guid(),
-  serie: z.string().min(1),
-  numero: z.number().int().positive(),
-  emitido_en: z.string().min(10),
-  anulado_en: z.string().min(10).nullable(),
-  motivo_anulacion: z.string().nullable(),
-  emisor: esquemaDelNombre,
-  anulador: esquemaDelNombre,
-})
 
 const esquemaDelEstado = z.object({ estado: z.enum(['activa', 'reportada', 'invalida']) })
 
@@ -37,9 +25,7 @@ export const leerComprobantesDeLaCotizacion = cache(
       supabase.from('cotizaciones').select('estado').eq('id', cotizacionId).maybeSingle(),
       supabase
         .from('comprobantes')
-        .select(
-          'id, serie, numero, emitido_en, anulado_en, motivo_anulacion, emisor:perfiles!comprobantes_emitido_por_fkey(nombre), anulador:perfiles!comprobantes_anulado_por_fkey(nombre)',
-        )
+        .select(COLUMNAS_DE_COMPROBANTES)
         .eq('cotizacion_id', cotizacionId)
         .order('emitido_en', { ascending: false })
         .order('numero', { ascending: false })
@@ -50,23 +36,14 @@ export const leerComprobantesDeLaCotizacion = cache(
       return { ok: false, error: errorDePostgrest(error) }
     }
     const estado = esquemaDelEstado.safeParse(cotizacion.data)
-    const filas = z.array(esquemaDeLaFila).safeParse(comprobantes.data)
-    if (!estado.success || !filas.success) {
+    const filas = comprobantesDesde(comprobantes.data)
+    if (!estado.success || filas === null) {
       return fallo('inesperado', NO_SE_LEYERON)
     }
-    const { filas: cortadas, hayMas } = cortarAlTope(filas.data, TAMANO_DE_VER_MAS)
+    const { filas: cortadas, hayMas } = cortarAlTope(filas, TAMANO_DE_VER_MAS)
     return ok({
       estado: estado.data.estado,
-      filas: cortadas.map((fila) => ({
-        id: fila.id,
-        serie: fila.serie,
-        numero: fila.numero,
-        emitidoEn: fila.emitido_en,
-        emitidoPor: fila.emisor?.nombre ?? null,
-        anuladoEn: fila.anulado_en,
-        anuladoPor: fila.anulador?.nombre ?? null,
-        motivo: fila.motivo_anulacion,
-      })),
+      filas: cortadas,
       hayMas,
     })
   },

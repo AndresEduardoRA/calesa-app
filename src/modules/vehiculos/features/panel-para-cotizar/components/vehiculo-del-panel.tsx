@@ -5,19 +5,24 @@ import { Badge } from '@/shared/ui/badge'
 import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
 import type { VehiculoDelPanel as Vehiculo } from '../../../entities/panel-para-cotizar'
+import { situacionDelAviso, subastaCerrada } from '../../../entities/subasta-cerrada'
 import { Miniatura } from '../../listado/components/miniatura'
 import { FechaDeSubasta } from '../../subasta/components/fecha-de-subasta'
 
 type Props = {
   vehiculo: Vehiculo
   seleccionado: boolean
+  // Contra qué instante se decide si su subasta ya cerró.
+  ahora: Date
   alElegir: (id: string) => void
 }
 
 // Un vehículo de la lista del panel: un botón que lo elige. El título se corta con «…»; el lote, el precio, cuándo cierra su subasta y
-// cuándo se cotizó, si los tiene.
-export function VehiculoDelPanel({ vehiculo, seleccionado, alElegir }: Props) {
+// cuándo se cotizó, si los tiene; y «Subasta cerrada» (con su situación) si la subasta ya pasó.
+export function VehiculoDelPanel({ vehiculo, seleccionado, ahora, alElegir }: Props) {
   const { zonaHoraria } = useRegional()
+  const cerrada = subastaCerrada(vehiculo, ahora)
+  const situacion = situacionDelAviso(vehiculo.situacion)
   return (
     <li className="min-w-0">
       <button
@@ -39,11 +44,16 @@ export function VehiculoDelPanel({ vehiculo, seleccionado, alElegir }: Props) {
           )}
           {vehiculo.cierreSubastaEn ? (
             <span>
-              Cierra <FechaDeSubasta iso={vehiculo.cierreSubastaEn} />
+              {cerrada ? 'Cerró' : 'Cierra'} <FechaDeSubasta iso={vehiculo.cierreSubastaEn} />
             </span>
           ) : null}
           {vehiculo.cotizadoEn ? (
             <span>Cotizado {fechaRelativa(vehiculo.cotizadoEn, { zona: zonaHoraria })}</span>
+          ) : null}
+          {cerrada ? (
+            <span className="font-medium text-(--color-aviso-ink)">
+              Subasta cerrada{situacion ? ` · ${situacion}` : ''}
+            </span>
           ) : null}
           {seleccionado ? <Badge className="w-fit">Seleccionado</Badge> : null}
         </span>

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   alternar,
   AVISO_DE_OTRA_FASE,
-  elegirLaColumna,
+  elegirLaPagina,
   idsElegidos,
   SELECCION_VACIA,
   TOPE_DE_LA_SELECCION,
@@ -24,7 +24,7 @@ describe('selección de una sola fase', () => {
   })
 
   it('elegir en otra fase reemplaza lo anterior y lo avisa', () => {
-    const en = elegirLaColumna(SELECCION_VACIA, B, [unidad(1), unidad(2)])
+    const en = elegirLaPagina(SELECCION_VACIA, B, [unidad(1), unidad(2)])
     const otra = alternar(en, C, unidad(9))
     expect(otra.fase).toEqual(C)
     expect(idsElegidos(otra)).toEqual(['u9'])
@@ -33,17 +33,17 @@ describe('selección de una sola fase', () => {
     expect(alternar(otra, C, unidad(10)).aviso).toBeNull()
   })
 
-  it('elegir la columna en otra fase también reemplaza y avisa', () => {
+  it('elegir la página en otra fase también reemplaza y avisa', () => {
     const en = alternar(SELECCION_VACIA, B, unidad(1))
-    const otra = elegirLaColumna(en, C, [unidad(5)])
+    const otra = elegirLaPagina(en, C, [unidad(5)])
     expect(idsElegidos(otra)).toEqual(['u5'])
     expect(otra.aviso).toBe(AVISO_DE_OTRA_FASE)
   })
 
-  it('el tope es 200: elegir la columna recorta y lo dice; una más suelta no entra', () => {
+  it('el tope es 200: elegir la página recorta y lo dice; una más suelta no entra', () => {
     expect(TOPE_DE_LA_SELECCION).toBe(200)
     const muchas = Array.from({ length: 230 }, (_, i) => unidad(i))
-    const estado = elegirLaColumna(SELECCION_VACIA, B, muchas)
+    const estado = elegirLaPagina(SELECCION_VACIA, B, muchas)
     expect(estado.elegidos.size).toBe(200)
     expect(estado.recortada).toBe(true)
     const mas = alternar(estado, B, unidad(999))
@@ -51,9 +51,9 @@ describe('selección de una sola fase', () => {
     expect(mas.aviso).toContain('200')
   })
 
-  it('elegir la columna suma a lo ya elegido sin repetir', () => {
+  it('elegir la página suma a lo ya elegido sin repetir', () => {
     const uno = alternar(SELECCION_VACIA, B, unidad(1))
-    const todas = elegirLaColumna(uno, B, [unidad(1), unidad(2), unidad(3)])
+    const todas = elegirLaPagina(uno, B, [unidad(1), unidad(2), unidad(3)])
     expect(idsElegidos(todas)).toEqual(['u1', 'u2', 'u3'])
   })
 

@@ -1,6 +1,12 @@
-// La API de servidor de el área `cadena` de `logistica` (6.03-1): la lectura de la cadena, «Ver más» de una columna, «dónde está» y las pestañas de origen, con sus filtros y tipos.
-// La pantalla (6.03-2) los consume por `pantallas/cadena.ts`; la Fase 7 (Inicio, el buscador) por aquí. Sale por el `index.ts` de la raíz.
-export { dondeEsta, leerCadena, leerNavieras, leerOrigenesDeLaCadena } from './composicion'
+// La API de servidor de el área `cadena` de `logistica`: el número de cada fase (la gráfica), la lista de una fase, «dónde está» y las pestañas de origen, con sus filtros y tipos.
+// La pantalla la consume por `pantallas/cadena.ts` y `pantallas/cadena-fase.ts`. Sale por el `index.ts` de la raíz.
+export {
+  dondeEsta,
+  leerLaFase,
+  leerNavieras,
+  leerOrigenesDeLaCadena,
+  leerResumenDeLaCadena,
+} from './composicion'
 export type { OrigenesDeLaCadena } from '../../features/cadena/origenes-de-la-cadena'
 export {
   CLAVE_DE_BOOKING,
@@ -20,17 +26,18 @@ export {
 } from '../../entities/cadena/filtros'
 export {
   CLAVE_DE_SIN_FASE,
-  claveDeColumna,
-  columnaElegida,
-  numeroDeLaColumna,
-  puedeVerMas,
-} from '../../entities/cadena/columna'
+  claveDeFase,
+  codificarCursorDeLaFase,
+  faseDeLaClave,
+  leerCursorDeLaFase,
+  rutaDeLaFase,
+  type CursorDeLaFase,
+} from '../../entities/cadena/fase'
 export { origenElegido, type OrigenDeLaCadena } from '../../entities/cadena/origenes'
 export type {
-  CadenaLeida,
-  ColumnaDeLaCadena,
-  PaginaDeLaColumna,
+  PaginaDeLaFase,
   ResultadoDeDondeEsta,
-  TarjetaDeLaCadena,
   UnidadDondeEsta,
+  VehiculoDeLaFase,
 } from '../../entities/cadena/leer'
+export type { FaseDelResumen, ResumenDeLaCadena } from '../../entities/cadena/resumen'

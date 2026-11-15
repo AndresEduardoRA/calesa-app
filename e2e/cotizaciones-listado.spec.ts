@@ -178,8 +178,13 @@ test('E6 «Nueva cotización» abre la hoja en el origen del filtro y la tecla N
   if (!esMovil(page)) {
     await page.goto(enElOrigen())
     await expect(filas(page).first()).toBeVisible()
-    await page.locator('body').press('n')
-    await expect(page).toHaveURL(/\/cotizaciones\/nuevo\?origen=/)
+    // El atajo de la pantalla existe recién cuando hidrató; antes la «n» la toma el «Nuevo lead» del marco (de respaldo): se lo cierra y se insiste, y con la hoja ya pedida no se pulsa de nuevo.
+    await expect(async () => {
+      const url = page.url()
+      if (url.includes('panel=nuevo-lead')) await page.keyboard.press('Escape')
+      else if (!/\/cotizaciones\/nuevo\?origen=/.test(url)) await page.locator('body').press('n')
+      await expect(page).toHaveURL(/\/cotizaciones\/nuevo\?origen=/, { timeout: 1000 })
+    }).toPass()
   }
 })
 

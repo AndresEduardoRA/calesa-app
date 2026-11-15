@@ -4,7 +4,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 
 ## Entra y sale
 
-- Entra: `/vehiculos` (`?origen=`, filtros, `?cursor=`, `?vitrina=si|no`, `?vehiculo=<id>` abre el resumen con `?pestana=fotos|interesados`),
+- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`, `?vehiculo=<id>` abre el resumen con `?pestana=fotos|interesados`),
   `/vehiculos/papelera`, `/vehiculos/[id]` (`?seccion=ficha|fotos|cotizaciones`; la última sólo con `cotizaciones.ver` del origen, la dibuja
   `cotizaciones/pantallas/vehiculo` compuesta por `src/app`; sin esa clave abre «Ficha»). Paneles: `?panel=nuevo`, `?editar=<id>`,
   `?panel=vitrina`, `?panel=desvincular` (con `&luego=papelera`, desde el aviso «Quitar el vínculo»: el aviso de desvinculado ofrece la papelera),
@@ -21,6 +21,10 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   - En «Elegido», el dato que casa con una tabla de la hoja se elige entre sus filas (`dato-del-elegido.tsx`, `datosParaElegirDe()`; a lo sumo 50,
     con «Buscar en las opciones»): un toque guarda con `guardarDatoDelVehiculo` (sólo ese atributo, con versión, por `vehiculo_guardar`); quien no
     edita lo ve sin elegir.
+  - **Subasta cerrada** (`features/panel-para-cotizar/`): `avisoDeSubastaCerrada()` (de `index.ts`, lee `leerSubasta` sólo si el vehículo es de un origen de
+    subasta y no está en su fase) arma `DatosDelAviso`; `<AvisoDeSubastaCerrada>` (`pantallas/cotizar`, con `diferido()`) lo dibuja bajo la barra. La regla es
+    `entities/subasta-cerrada.ts` (`subastaCerrada`, sobre la situación de la base). «Refrescar la subasta» pide un toque y usa `useRefrescoDeSubasta().consultar`
+    (el mismo de la ficha, que devuelve cómo terminó); «La ganamos» lo arma `src/app` (`vehiculos` no conoce `logistica`). La fila del panel lee `situacion`.
 - `index.ts` (sin componentes): `buscarVehiculos`, `leerVehiculo` (null si no existe, está en papelera o no se ve), `condicionesDe`, `editablesDe`,
   `leerPapelera`, `leerSubasta`, `limpiezaDe`… (ver `docs/MAPA.md`), `MAXIMO_DE_PAGINA_DE_VEHICULOS` (100) y:
   - `camposComunes(tipo)` y sus tipos (`CampoComun`, `ClaveComun`, `TipoComun`), para exportar en `datos`.
@@ -28,9 +32,18 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
     monto, el valor nombra y el título acompaña; si no, el título. Fila, tarjeta y resumen: `useIdentidad(campos)`; ficha, PDF, web y hoja: el título.
   - `leerTitulosDeVehiculos(ids)`: títulos de una página de `/cotizaciones` por pk, con la RLS de quien mira y sin papelera; hasta 100 ids.
 - Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `papelera`, `vehiculos-del-lead`, `cotizar`).
-- `client.ts`: `<BadgeDeFase>` (lo importa `logistica`: nada pesado puede colgar de ahí), `Vehiculo`; para la importación de `datos`, `validarVehiculo`, `camposComunes`, `camposActivos`,
+- `client.ts`: `<BadgeDeSituacion>` (la situación real; con `fase` delega en `<BadgeDeFase>`. Lo importa `logistica`: nada pesado puede colgar de ahí),
+  `Situacion`, `SITUACIONES`, `esquemaDeSituacion`, `etiquetaDeSituacion`, `Vehiculo`; para la importación de `datos`, `validarVehiculo`, `camposComunes`, `camposActivos`,
   `claveDeAtributo` y sus tipos (cada fila se valida con el esquema del alta).
+- **Filtro «Situación»** (`entities/filtros.ts`, `FILTRO_SITUACION`, condición `situacion_en`): sus fases y «Sin fase» en todo origen y, en uno de subasta (`conSubasta`), «En subasta», «Sin resolver» y «No ganadas» (`SITUACIONES_PROPIAS`); reemplaza al de «Fase». `condicionesDe()` suelta `CONDICION_POR_DEFECTO` si se pide «No ganadas». `<AtajoSinResolver>` (`features/listado/`) recibe `sinResolver` (`ConteoAcotado | null`, de `sinResolverDe()`: `tope + 1` por `vehiculos_situacion_idx`, «99+») y pone o quita ese filtro.
+- **Situación en la ficha** (`features/situacion/`, `pantallas/ficha.ts` › `<AvisoDeSituacion>`): «Sin resolver» con «La ganamos» (el `href` lo
+  arma `src/app`: `vehiculos` no conoce `logistica`) y «No la ganamos» (`marcarNoGanada`, con «Deshacer» 10 s); «No ganada» con quién y cuándo
+  (`resolucionDeSubasta`, de `index.ts`) y «Deshacer». `puedeResolverLaSubasta(permisos, origen)`: `flujos.mover` o `.cualquiera` y `logistica.ver`. `useNoGanada({ vehiculoId, origenId, alLograrlo })` sale por `client.ts`: `logistica` lo usa en la fila de «Subastas sin resolver» de su bandeja del día (con `router.refresh()` al lograrlo).
 - «Cotizar» del resumen: `paraCotizar` (`entities/ruta-para-cotizar.ts`, o `null` si no cotiza: `origenesParaCotizar()`); abre la hoja sin lead.
+- **«Cotización aprobada»** (columna de la tabla y línea de la tarjeta): `ListadoDeVehiculos` recibe `aprobadas` (`AprobadasDeLaPagina`, por id de vehículo:
+  `{ ruta, monto, moneda }`, o `null` si quien mira no tiene `cotizaciones.ver` en algún origen: la columna no se dibuja) y lo arma `src/app/(app)/vehiculos/aprobadas.ts`
+  con `leerAprobadasDeVehiculos()` de `cotizaciones` (este módulo no la importa). `entities/cotizacion-aprobada-de-la-fila.ts`; `celda-de-aprobada.tsx` dibuja
+  `<Monto valor moneda>` enlazado (`data-no-abre`), «Sin total» sin monto y «—» sin aprobada. El monto cruza como texto.
 - Depende de `origenes`, `flujos`, `equipo`; no importa `cotizaciones`. `leads` no importa `vehiculos`: vínculo e interesados viven acá aunque se
   vean en la ficha del lead.
 
@@ -52,9 +65,12 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 
 `vehiculos`, `vehiculos_imagenes`, `vehiculos_imagenes_version`, `vehiculos_interesados`, `vehiculos_vinculos`, `vehiculos_conservados`,
 `apibara_consultas` y `limpieza_corridas` (sólo `service_role`), `cola_gc_*` (cola de Storage de todos los buckets), `lotes_papelera` (compartida).
-Lectura `vehiculos_inventario` (una página por rutas con los filtros del layout en SQL; la usa `buscarVehiculos()` para «propios», por
-`fuenteDelInventario()`). Escritura: `vehiculo_crear|guardar|subasta_refrescar|vincular|vitrina|conservar`, `vehiculo_fotos_agregar`,
-`vehiculo_foto_mover|portada|eliminar`, `vehiculo_interesado_marcar|quitar`, `vehiculos_papelera_enviar|restaurar|purgar`. `vehiculos`,
+Columnas de la situación: `situacion` (derivada), `subasta_resultado`, `subasta_resuelta_por`, `subasta_resuelta_en`; índice
+`vehiculos_situacion_idx (origen_id, situacion, creado_en desc, id desc)` sin las que son su fase. Job `situacion-al-cerrar`
+(`vehiculos_situacion_al_cerrar()`, 500 por corrida). Lectura `vehiculos_inventario` (una página por rutas con los filtros del layout en
+SQL; la usa `buscarVehiculos()` para «propios», por `fuenteDelInventario()`). Escritura: `vehiculo_crear|guardar|subasta_refrescar|vincular|vitrina|conservar`, `vehiculo_fotos_agregar`,
+`vehiculo_foto_mover|portada|eliminar`, `vehiculo_subasta_no_ganada` («No la ganamos» y su «Deshacer»; «La ganamos» es
+`vehiculo_subasta_ganada`, que llama `flujos`), `vehiculo_interesado_marcar|quitar`, `vehiculos_papelera_enviar|restaurar|purgar`. `vehiculos`,
 `vehiculos_imagenes` y `vehiculos_interesados` son de sólo lectura para la app.
 
 ## No se rompe
@@ -62,6 +78,13 @@ Lectura `vehiculos_inventario` (una página por rutas con los filtros del layout
 - **La ficha se escribe sólo por RPC** (`vehiculo_crear`, `vehiculo_guardar`): lista cerrada de claves; `fase_id`, `publicado_web`, `lead_id`,
   `creado_por` se rechazan. `fase_id` lo escribe `cambiar_fase` y, al nacer, `vehiculo_crear` (si el flujo tiene una única inicial sin nota ni
   requisitos; si no, «Sin fase»).
+- **La situación real** (`situacion`: `en_subasta | sin_resolver | no_ganada | fase`, `entities/situacion.ts`) la calcula sólo la base
+  (`_vehiculo_situacion()` desde `trg_0_situacion`, `trg_fase_situacion` al cambiar `fases.es_subasta` y el job `situacion-al-cerrar` cuando
+  vence el cierre): nunca una copia en TypeScript. Se ve con `<BadgeDeSituacion>` (con `fase`, delega en `<BadgeDeFase>`). El inventario
+  siempre pide `CONDICION_POR_DEFECTO` (sin las no ganadas). El resultado (`subasta_resultado`, `subasta_resuelta_por|en`) sólo por RPC y
+  nunca se infiere de apibara; si la subasta vuelve a estar viva y la unidad sigue en el tramo, el trigger lo limpia. Fuera del tramo
+  (`_vehiculo_en_tramo()`) la situación es la fase, también para una no ganada que alguien movió. Cambiar la situación o el resultado sin tocar la
+  subasta (`apibara_sync_en`, `estado_subasta`, `subasta_en`, `subasta_fin_en`) no mueve la versión ni se audita.
 - **`cotizado_en`** la escribe sólo el trigger `trg_vehiculo_cotizado` de `cotizaciones` (nunca retrocede); si sólo cambia ella, ni
   `trg_actualizado_en` mueve la versión ni `trg_auditar_cambio` escribe en `actividad`. **`cierre_subasta_en`** es generada
   (`coalesce(subasta_fin_en, subasta_en)` si la subasta está viva); entra en `antes`/`despues` de `actividad`. En `vehiculos` no va un trigger
@@ -70,7 +93,7 @@ Lectura `vehiculos_inventario` (una página por rutas con los filtros del layout
   En `atributos` nunca un nulo: vaciar quita la clave.
 - Los filtros salen del layout (clave de `origenes_campos`, nunca de la URL); texto de la persona por `citar()` o `patronContiene()` antes de un
   `or()`. `buscarVehiculos()` no filtra por permiso (la RLS) y `fuenteDelInventario()` es un camino, no un permiso. Cada filtro tiene dos copias,
-  `aplicarCondiciones` y `_vehiculos_inventario_sql` (todo valor por `using`), atadas por `e2e/vehiculos-inventario-postgrest.spec.ts`. Si la base
+  `aplicarCondiciones` y `_vehiculos_inventario_sql` (todo valor por `using`; `situacion_en` pasa la condición entera a `_vehiculos_inventario_condicion`), atadas por `e2e/vehiculos-inventario-postgrest.spec.ts`. Si la base
   rechaza los filtros, esa página se lee por la tabla (`inventario.test.ts` ata `Condicion` con la base).
 - **Fotos:** commit diferido (elegir no sube; «Subir N» sube los dos objetos y **una** action registra). Sólo por RPC; las tres de edición mandan la
   versión **de las fotos** (`vehiculos_imagenes_version`). Máx. 24 y una portada (la base). Sin duplicados (hash). Objetos
