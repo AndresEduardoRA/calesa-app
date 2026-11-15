@@ -26,6 +26,7 @@ import type { Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { BandejaDeLaPortada } from './bandeja-del-dia'
+import { MarcasDeLogistica } from './marcas-de-logistica'
 import { resolverElOrigen } from './origen-de-la-cadena'
 import { destinoDeLaUrlVieja } from './url-vieja'
 
@@ -177,7 +178,15 @@ async function Portada({
 async function DondeEsta({ q }: { q: string }) {
   await connection()
   const donde = await dondeEsta(q)
-  return <FranjaDeDondeEsta resultado={donde.ok ? donde.data : null} ahora={new Date()} />
+  const franja = <FranjaDeDondeEsta resultado={donde.ok ? donde.data : null} ahora={new Date()} />
+  // Hasta 10 vehículos: su «visto» es el de `/logistica/vehiculo/[id]`.
+  return donde.ok ? (
+    <MarcasDeLogistica ids={donde.data.unidades.map((unidad) => unidad.id)}>
+      {franja}
+    </MarcasDeLogistica>
+  ) : (
+    franja
+  )
 }
 
 // La gráfica de un origen. Si falla la lectura, el error con «Reintentar»; un origen sin fases dice dónde configurarlas.

@@ -1,6 +1,7 @@
 import type { Route } from 'next'
 import Link from 'next/link'
 import { puede } from '@/modules/equipo'
+import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import { leerFasesDeOrigen, leerFlujoDeOrigen } from '@/modules/flujos'
 import { esHuecoConocido, leerUnidad } from '@/modules/logistica'
 import { PanelDeLaUnidad } from '@/modules/logistica/pantallas/unidad'
@@ -34,11 +35,14 @@ export async function UnidadAbierta({
   id,
   permisos,
   huecoAbierto,
+  registraElVisto = false,
 }: {
   id: string
   permisos: Permisos
   // `?hueco=documentos`: el bloque que un enlace (la bandeja del día) pide ver abierto desde el principio. Una clave desconocida se ignora.
   huecoAbierto?: string
+  // Sólo la página de la unidad registra el «visto» del contexto logística; el drawer de gastos no: ahí lo registra la lista, por `?vehiculo=`.
+  registraElVisto?: boolean
 }) {
   const unidad = datosO(await leerUnidad(id))
   if (!unidad) {
@@ -61,12 +65,17 @@ export async function UnidadAbierta({
       )
     : huecos
   return (
-    <PanelDeLaUnidad
-      unidad={unidad}
-      origen={origen?.nombre ?? ''}
-      fase={fase}
-      huecos={conElPedido}
-      aviso={aviso}
-    />
+    <>
+      {registraElVisto ? (
+        <RegistrarVisto modulo="logistica" tipo="vehiculo" id={unidad.id} />
+      ) : null}
+      <PanelDeLaUnidad
+        unidad={unidad}
+        origen={origen?.nombre ?? ''}
+        fase={fase}
+        huecos={conElPedido}
+        aviso={aviso}
+      />
+    </>
   )
 }

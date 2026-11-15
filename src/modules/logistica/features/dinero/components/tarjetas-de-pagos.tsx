@@ -1,7 +1,7 @@
 'use client'
 
 import { formatearFecha } from '@/shared/lib/fechas'
-import { AbrirResumen, TarjetaDeLista } from '@/shared/ui/lista'
+import { AbrirResumen, SufijoDeVisto, TarjetaDeLista } from '@/shared/ui/lista'
 import { useRegional } from '@/shared/ui/regional'
 import type { FilaDePago } from '../../../entities/dinero/listas'
 import { EstadoDelPago } from './estado-del-pago'
@@ -21,6 +21,7 @@ export function TarjetasDePagos({ pagos, alAbrir, abierta }: Props) {
       {pagos.map((pago) => (
         <TarjetaDeLista
           key={pago.id}
+          idDeVisto={pago.vehiculoId}
           abierta={abierta === pago.vehiculoId}
           alAbrir={() => {
             alAbrir(pago.vehiculoId)
@@ -33,6 +34,8 @@ export function TarjetasDePagos({ pagos, alAbrir, abierta }: Props) {
             >
               {pago.concepto}
             </AbrirResumen>
+            {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
+            <SufijoDeVisto id={pago.vehiculoId} />
             <MontoDeLaFila monto={pago.monto} moneda={pago.moneda} montoBase={pago.montoBase} />
           </div>
           <p className="text-(length:--text-sm) [overflow-wrap:anywhere] text-(--color-ink-soft)">

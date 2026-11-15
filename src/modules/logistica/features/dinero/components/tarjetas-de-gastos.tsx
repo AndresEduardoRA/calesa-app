@@ -1,7 +1,7 @@
 'use client'
 
 import { formatearFecha } from '@/shared/lib/fechas'
-import { AbrirResumen, TarjetaDeLista } from '@/shared/ui/lista'
+import { AbrirResumen, SufijoDeVisto, TarjetaDeLista } from '@/shared/ui/lista'
 import { useRegional } from '@/shared/ui/regional'
 import type { FilaDeGasto } from '../../../entities/dinero/listas'
 import { MontoDeLaFila } from './monto-de-la-fila'
@@ -20,6 +20,7 @@ export function TarjetasDeGastos({ gastos, alAbrir, abierta }: Props) {
       {gastos.map((gasto) => (
         <TarjetaDeLista
           key={gasto.id}
+          idDeVisto={gasto.vehiculoId}
           abierta={abierta === gasto.vehiculoId}
           alAbrir={() => {
             alAbrir(gasto.vehiculoId)
@@ -32,6 +33,8 @@ export function TarjetasDeGastos({ gastos, alAbrir, abierta }: Props) {
             >
               {gasto.vehiculoTitulo}
             </AbrirResumen>
+            {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
+            <SufijoDeVisto id={gasto.vehiculoId} />
             <MontoDeLaFila monto={gasto.monto} moneda={gasto.moneda} montoBase={gasto.montoBase} />
           </div>
           <p className="text-(length:--text-sm) [overflow-wrap:anywhere] text-(--color-ink-soft)">

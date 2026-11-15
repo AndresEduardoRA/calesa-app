@@ -32,6 +32,7 @@ import type { Permisos } from '@/shared/lib/permisos'
 import { RUTAS, unParametro } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoSinPermiso, EstadoVacio } from '@/shared/ui/estados'
+import { MarcasDeLogistica } from '../../marcas-de-logistica'
 import { resolverElOrigen } from '../../origen-de-la-cadena'
 
 export const metadata: Metadata = { title: 'Fase · Logística' }
@@ -180,22 +181,24 @@ async function LaFase({
   const { pagina, siguiente, esquema, filtros } = leida
 
   const lectura = (
-    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
-      <EncabezadoDeLaFase
-        nombre={fase?.nombre ?? 'Sin fase'}
-        jubilada={fase !== null && !fase.activa}
-        hrefDeLaCadena={hrefDeLaCadena}
-        origen={conVariosOrigenes ? origen.nombre : null}
-      />
-      <ListaDeLaFase
-        vehiculos={pagina.vehiculos}
-        siguiente={siguiente}
-        esquema={esquema}
-        fase={fase === null ? null : { id: fase.id, nombre: fase.nombre }}
-        ahora={new Date().toISOString()}
-        hrefDeLaCadena={hrefDeLaCadena}
-      />
-    </div>
+    <MarcasDeLogistica ids={pagina.vehiculos.map((vehiculo) => vehiculo.id)}>
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
+        <EncabezadoDeLaFase
+          nombre={fase?.nombre ?? 'Sin fase'}
+          jubilada={fase !== null && !fase.activa}
+          hrefDeLaCadena={hrefDeLaCadena}
+          origen={conVariosOrigenes ? origen.nombre : null}
+        />
+        <ListaDeLaFase
+          vehiculos={pagina.vehiculos}
+          siguiente={siguiente}
+          esquema={esquema}
+          fase={fase === null ? null : { id: fase.id, nombre: fase.nombre }}
+          ahora={new Date().toISOString()}
+          hrefDeLaCadena={hrefDeLaCadena}
+        />
+      </div>
+    </MarcasDeLogistica>
   )
   // La selección del lote sólo con `flujos.mover` en el origen y en una fase de verdad; la base vuelve a decidir al mover.
   if (fase === null || !puedeMoverEn(permisos, origen.id)) return lectura
