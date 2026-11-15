@@ -10,6 +10,7 @@ import {
   PantallaDeUnaGuardada,
 } from '@/modules/cotizaciones/pantallas/cotizacion'
 import { requerirSesion } from '@/modules/equipo'
+import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import { leerClienteElegido } from '@/modules/leads'
 import { leerVehiculo } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
@@ -88,6 +89,7 @@ async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>[
   return (
     <>
       <RegistrarVisita tipo="cotizacion" id={hoja.cotizacion.id} />
+      <RegistrarVisto modulo="cotizaciones" tipo="cotizacion" id={hoja.cotizacion.id} />
       <CabeceraDeLaGuardada
         id={hoja.cotizacion.id}
         numero={hoja.cotizacion.numero}

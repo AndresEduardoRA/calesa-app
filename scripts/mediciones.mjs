@@ -226,6 +226,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'La búsqueda del listado /cotizaciones (cotizaciones_buscar()) con 50.000 y con 250.000 cotizaciones, como authenticated con el plan genérico: #número, cliente y vehículo (raro y común, con su tope de coincidencias) y autor, de la dueña y de Ana («propios») (ms y bloques por relación de la llamada entera; ningún recorrido, cada caso por el índice de su ruta, el número y lo raro sin crecer con N)',
     'mediana de 5 de 7 corridas',
   ],
+  [
+    'supabase/tests/medir-vistos.sql',
+    'Lo visto por persona (vistos_de con 100 ids, el último de la agenda por la PK y visto_registrar de uno nuevo) con 2.000 y con 19.999 vistos por persona (el techo es 20.000), como authenticated: ms y bloques de vistos (heap e índices) de la llamada; la lectura de una página por vistos_pkey y vistos_ultimo_idx sin Seq Scan y sin crecer con lo visto; visto_registrar cuenta hasta el techo (su costo se anota)',
+    'mediana de 5 de 7 corridas',
+  ],
 ]
 
 // Lo que una medición lee del repo: la base no lee archivos, así que se le antepone a la entrada de psql una tabla temporal

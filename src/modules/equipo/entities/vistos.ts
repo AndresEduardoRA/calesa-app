@@ -25,6 +25,18 @@ export const TIPOS_DE_VISTOS = [
 ] as const
 export type TipoDeVistos = (typeof TIPOS_DE_VISTOS)[number]
 
+// Los tipos de registro que cada módulo puede marcar: el «último visto» es el más reciente del módulo, de cualquiera de ellos. Sólo la agenda
+// tiene dos (el calendario muestra eventos y tareas).
+export const TIPOS_DEL_MODULO: Record<ModuloDeVistos, readonly TipoDeVistos[]> = {
+  vehiculos: ['vehiculo'],
+  leads: ['lead'],
+  cotizaciones: ['cotizacion'],
+  agenda: ['evento', 'tarea'],
+  logistica: ['vehiculo'],
+  repuestos: ['proyecto_repuestos'],
+  notificaciones: ['notificacion'],
+}
+
 // Cuánto se recuerda lo visto (el `check` de `preferencias_usuario`).
 export const DIAS_DE_VISTOS = [7, 30, 90, 365] as const
 export type DiasDeVistos = (typeof DIAS_DE_VISTOS)[number]
@@ -87,4 +99,64 @@ export function unidas(leida: LecturaDeVistos, local: LecturaDeVistos): LecturaD
     vistos: new Set([...leida.vistos, ...local.vistos]),
     ultimo: local.ultimo ?? leida.ultimo,
   }
+}
+
+// --- Qué se pide a la base por página ---
+
+// `vistos_de()` mira hasta 100 ids por llamada (`p_ids[1:100]`). Una pantalla marca como mucho 200 por tipo (lo que trae la agenda por clase,
+// o el kanban de leads): con más, se marcan 200 (los de menor id, no los primeros dibujados) y el resto se ve sin marca.
+export const IDS_POR_LLAMADA = 100
+export const TOPE_DE_IDS_POR_TIPO = 200
+
+export type ConsultaDeVistos = { tipo: TipoDeVistos; ids: readonly string[] }
+
+// Los ids de un tipo, únicos, ordenados y hasta el tope, en tandas de lo que cabe en una llamada.
+export function tandasDeIds(ids: readonly string[]): string[][] {
+  const unicos = [...new Set(ids)].sort().slice(0, TOPE_DE_IDS_POR_TIPO)
+  const tandas: string[][] = []
+  for (let desde = 0; desde < unicos.length; desde += IDS_POR_LLAMADA) {
+    tandas.push(unicos.slice(desde, desde + IDS_POR_LLAMADA))
+  }
+  return tandas
+}
+
+// Qué lee una pantalla, como texto: los ids únicos y ordenados de cada tipo. Mover una tarjeta o reordenar una lista no cambia la firma, así que
+// no vuelve a leer. Una consulta sin ids no entra; nada que leer da `''`.
+export function firmaDeConsultas(consultas: readonly ConsultaDeVistos[]): string {
+  const porTipo = new Map<TipoDeVistos, string[]>()
+  for (const { tipo, ids } of consultas) porTipo.set(tipo, [...(porTipo.get(tipo) ?? []), ...ids])
+  return [...porTipo.entries()]
+    .map(([tipo, ids]) => ({ tipo, ids: tandasDeIds(ids).flat() }))
+    .filter((consulta) => consulta.ids.length > 0)
+    .sort((a, b) => a.tipo.localeCompare(b.tipo))
+    .map(({ tipo, ids }) => `${tipo}:${ids.join(',')}`)
+    .join('|')
+}
+
+export function consultasDeLaFirma(firma: string): ConsultaDeVistos[] {
+  if (firma === '') return []
+  return firma.split('|').flatMap((parte) => {
+    const [tipo, ids] = parte.split(':')
+    const conocido = TIPOS_DE_VISTOS.find((uno) => uno === tipo)
+    return conocido === undefined || !ids ? [] : [{ tipo: conocido, ids: ids.split(',') }]
+  })
+}
+
+// El último visto del módulo cuando varios de sus tipos tienen uno: el de `visto_en` más reciente (nulo si ninguno).
+export function ultimoDelContexto(
+  candidatos: readonly { id: string; vistoEn: string }[],
+): string | null {
+  let mejor: { id: string; vistoEn: number } | null = null
+  for (const { id, vistoEn } of candidatos) {
+    const cuando = Date.parse(vistoEn)
+    if (Number.isNaN(cuando)) continue
+    if (mejor === null || cuando > mejor.vistoEn) mejor = { id, vistoEn: cuando }
+  }
+  return mejor?.id ?? null
+}
+
+// El id que trae un parámetro de la URL (`?cotizacion=`, `?evento=`): un uuid en minúsculas, o nulo. Lo inválido no se registra.
+export function idDeLaUrl(texto: string | null | undefined): string | null {
+  const id = z.guid().safeParse(texto)
+  return id.success ? id.data.toLowerCase() : null
 }

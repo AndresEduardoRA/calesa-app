@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { connection } from 'next/server'
 import { Suspense, type ComponentProps, type ReactNode } from 'react'
 import { puede, requerirSesion } from '@/modules/equipo'
+import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import { itemAbiertoDe, leerCatalogosDeRepuestos } from '@/modules/repuestos'
 import {
   PROYECTO_YA_NO_ESTA,
@@ -101,6 +102,7 @@ async function Proyecto({
       puedeEditar={puedeEditar}
       sinItems={hoja.filas.length === 0}
     >
+      <RegistrarVisto modulo="repuestos" tipo="proyecto_repuestos" id={proyecto.id} />
       {llenas.length > 1 ? <PestanasDelProyecto pestanas={llenas} /> : null}
       {seccion}
     </CabeceraDeProyecto>

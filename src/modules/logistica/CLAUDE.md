@@ -59,6 +59,10 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   sale sólo con su permiso: «Mover» (`flujos.mover` del origen), «Ver qué falta», «Revisar» y «Renovar» (llevan a `?hueco=documentos`; **no se aprueba en la fila**: se aprueba mirando el archivo) y,
   en «sin resolver», «La ganamos» (`?ganada=si`) y «No la ganamos» (`useNoGanada` con «Deshacer» de 10 s y `router.refresh()`). Quién ve cada grupo: lo visible (`_logistica_alcance`); por aprobar,
   además `logistica.documentos.aprobar`; por vencer, además `logistica.documentos.subir`. Con «propios», la base parte de `_logistica_lo_propio` y nunca lee `lead_id`.
+- **«Visto» en logística** (`docs/GLOSARIO.md`). El contexto `logistica` es el detalle del vehículo en este módulo: `/logistica/vehiculo/[id]` (`UnidadAbierta registraElVisto`, sólo la página) o el panel de
+  gastos y pagos (`?vehiculo=`, que registra la lista, no el drawer: un registro por apertura); la ficha de `/vehiculos` es otro contexto. Marcan, con `MarcasDeLogistica` de `src/app` (`equipo/pantallas/marcas-de-visto`):
+  la bandeja del día y la de un grupo, la lista de una fase, «dónde está», gastos y pagos y las unidades de un grupo de embarques (`EnlaceALaUnidad` baja el tono del nombre; el sufijo, «Último visto»). **Aduana no:**
+  su fila es una declaración y sus vehículos son texto sin enlace.
 - **Una subasta no ganada no cuenta** (`situacion = 'no_ganada'`): fuera de la cadena (también «Sin fase»), de las demoradas y «Por aprobar» de la bandeja
   y de `alertas_demora`. `vehiculos_cadena_idx` es parcial sin ellas: toda consulta que lo usa lleva el literal `situacion <> 'no_ganada'`
   (`supabase/tests/areas/situacion/cuenta.sql` lo cuenta).

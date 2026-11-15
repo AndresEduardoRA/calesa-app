@@ -3,7 +3,7 @@
 import type { Route } from 'next'
 import Link from 'next/link'
 import { buttonVariants } from '@/shared/ui/button'
-import { useVistoDeLista } from '@/shared/ui/lista'
+import { CLASES_DE_VISTO, useVistoDeLista } from '@/shared/ui/lista'
 import type { AccionDeLaFila } from '../accion-de-la-fila'
 import type { FilaDeLaBandeja } from '../../../entities/alertas/grupo-leido'
 import { EnlaceALaUnidad } from '../../nucleo/components/enlace-a-la-unidad'
@@ -26,7 +26,7 @@ export function FilaDeLaBandeja({ fila, detalle, accion, origen }: Props) {
   return (
     <li
       data-visto={visto ?? undefined}
-      className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-(--color-line) py-2 last:border-b-0 data-[visto=visto]:[&_[data-abre-resumen]]:text-(--color-ink-soft)"
+      className={`flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-(--color-line) py-2 last:border-b-0 ${CLASES_DE_VISTO}`}
     >
       <div className="grid min-w-0 flex-1 basis-56 gap-0.5">
         <span className="flex min-w-0 flex-wrap items-baseline gap-x-2">
