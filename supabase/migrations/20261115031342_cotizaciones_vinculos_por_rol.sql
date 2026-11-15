@@ -508,3 +508,5 @@ grant execute on function public.empresa_guardar_ajustes_de_cotizacion(integer, 
 comment on function public.empresa_guardar_ajustes_de_cotizacion(integer, timestamptz) is 'Guarda la vigencia de las cotizaciones (1 a 365 días; cotizaciones.configurar en todos los orígenes). Misma versión de la fila que empresa_guardar_ajustes: PT409 si cambió; 22023 con hint por valor fuera de rango. Si el vehículo y el lead son obligatorios no se decide acá: es por rol y origen (cotizaciones.crear.sin_vehiculo y cotizaciones.crear.sin_lead).';
 
 alter table public.ajustes_empresa drop column if exists vehiculo_obligatorio_al_cotizar;
+
+comment on table public.ajustes_empresa is 'Fila única (id = 1). Marca, país, locale, zona horaria, moneda base y políticas globales. Del cotizador sólo vive acá la vigencia de las cotizaciones: lo demás (fórmulas, tablas, plantillas) es de formulas y tablas_referencia, y si el vehículo y el lead son obligatorios al cotizar lo deciden los permisos cotizaciones.crear.sin_vehiculo y cotizaciones.crear.sin_lead.';
