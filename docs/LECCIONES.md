@@ -53,6 +53,9 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - No nombres `p_cantidad` ni `p_tamano` un parámetro que no es una página: `escala.sql` lo trata como tamaño y exige `_acotar_pagina`.
 - No llames a un ayudante con un prefijo que una prueba cuenta por patrón (`_formula_%` lo cuenta `validar-formula.sql`).
 - Si dos ramas reescriben entera la misma función, la que se integra segunda se rehace sobre la otra: si no, la pisa sin conflicto de git.
+- Una migración integrada con fecha anterior a la última que ya tiene la demo traba `demo.yml` entero (`db push` no aplica ninguna). No la
+  muevas al final tal cual: pisaría lo que una posterior redefine. Bórrala y crea una nueva al final sólo con lo que ninguna posterior
+  redefine, y compara `scripts/db/huella-de-la-base.sh` antes y después (uuids y horas aparte, igual).
 
 - Al regenerar SQL desde el catálogo (`pg_policies.qual`, `pg_get_triggerdef`), consulta con el `search_path` vacío: si no, los nombres salen sin esquema (`uid()` por `auth.uid()`) y la policy no aplica.
 - `format('%s', un_booleano)` escribe `t` o `f`, que no es SQL: usa `case when … then 'true' else 'false' end` al generar un `insert`.
