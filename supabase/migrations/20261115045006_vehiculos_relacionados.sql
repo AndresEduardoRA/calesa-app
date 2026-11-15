@@ -455,7 +455,7 @@ declare
   v_cartera boolean := public.en_cartera(p_lead);
   c refcursor;
   r record;
-  v_ids uuid[] := '{}';
+  v_ids uuid[] := array[]::uuid[];
   v_filas jsonb := '[]'::jsonb;
   v_vistas int := 0;
   v_recorridas int := 0;

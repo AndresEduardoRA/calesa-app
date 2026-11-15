@@ -15,6 +15,7 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - En un bucle plpgsql asigna `v_arr[i]` a una variable antes de usarlo en una consulta (si no, cada vuelta recibe el arreglo entero) y arma el jsonb con `jsonb_object_agg`, no concatenando.
 - Rechaza `NaN` explícito junto a `monto > 0` en toda RPC de dinero: en Postgres `'NaN' > 0` es verdadero y `numeric(18,2)` lo guarda, así que el `check` no basta.
 - Declara STABLE, no IMMUTABLE, una función que usa `jsonb_build_object`: esa función es STABLE y `db:lint` lo avisa.
+- Inicia un `uuid[]` vacío con `array[]::uuid[]`, no con `'{}'`: `db:lint` avisa el cast de `text` y el CI no admite avisos sin motivo.
 - Un trigger `before insert` corre antes del `with check` de la policy: quien no puede recibe 23514 en vez de 42501. Ordena las defensas sabiéndolo.
 - Los triggers BEFORE corren en orden alfabético del nombre: el que depende de otros se nombra para ir último (`trg_lead_z_cliente_desde`).
 - Un borrado suave por `update` da 42501 si la policy de leer no admite la fila nueva (aun sin `returning`): borrar así pide una RPC `security definer`.
@@ -226,6 +227,7 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Sobre listas de cientos de filas busca por texto, no `*ByRole`: calcular el nombre accesible de cada enlace agota el timeout con un CPU.
 - Usa `exact: true` en botones genéricos («Guardar») y cuando un nombre o texto contiene a otro («Ir a la versión» dentro de «Revertir a la versión N»): si no, coincide con el de otra barra.
 - Busca dentro de `main` o `#contenido`, nunca por `.fixed` ni una clase genérica: el marco repite textos («Sin conexión», la navegación) y sus barras fijas (campana, chat) coinciden.
+- El «Más acciones de …» de la cabecera de una ficha no es el único de la página: las filas de «Relacionados» llevan el suyo. Usa `menuDeLaFicha()`, que las excluye, no un `getByRole` suelto.
 - Filtra lo visible en un localizador de filas (`tr, li`): Next conserva la pantalla anterior escondida en el DOM y aparecen dos filas.
 - En el celular una fila de tabla es una tarjeta: un localizador por fila funciona en escritorio y cae en `movil`.
 - Con un modal o `<Drawer>` abierto lo de atrás sale del árbol de accesibilidad: ciérralo antes de afirmar sobre la página (un `toHaveCount(0)` sería un falso verde).
