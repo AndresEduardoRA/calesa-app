@@ -11,7 +11,7 @@ import { literal, sql } from './sql'
 export type PedidoDeGuardadoVisto = {
   intento: string
   origenId: string
-  leadId: string
+  leadId: string | null
   vehiculoId: string | null
   abierta: string
   entradas: {
@@ -106,9 +106,7 @@ export const formulaVigente = (origenId: string): string =>
     `select id from public.formulas where origen_id = ${literal(origenId)}::uuid and estado = 'publicada'`,
   )
 
-let vehiculoObligatorioDeAntes: string | null = null
-
-// Lo que preparan los specs del guardado: un origen con la fórmula de prueba, una dueña y un lead suyo. `proyecto` va en los nombres: dos proyectos no se pisan.
+// Lo que preparan los specs del guardado: un origen con la fórmula de prueba, una dueña (guarda sin vehículo y sin lead: tiene las dos claves) y un lead suyo. `proyecto` va en los nombres: dos proyectos no se pisan.
 export async function prepararGuardado(
   proyecto: string,
   resto: string,
@@ -117,11 +115,6 @@ export async function prepararGuardado(
   borrarOrigenesDeCotizar()
   await borrarLeadsDePrueba()
   await borrarPersonasDePrueba()
-  // El ajuste de la empresa pide un vehículo para guardar (por defecto, sí): estos specs guardan sin vehículo, y el de antes vuelve al limpiar.
-  vehiculoObligatorioDeAntes ??= sql(
-    'select vehiculo_obligatorio_al_cotizar from public.ajustes_empresa',
-  )
-  sql('update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = false')
   const origen = await crearOrigenDeCotizar(proyecto, resto, true, dosModos)
   const duena = correoDePrueba(`duena-${resto}-${proyecto}`)
   await crearDuenaDePrueba({ email: duena, contrasena: CONTRASENA, nombre: 'Gala Guarda' })
@@ -134,12 +127,6 @@ export async function prepararGuardado(
 }
 
 export async function limpiarGuardado(): Promise<void> {
-  if (vehiculoObligatorioDeAntes !== null) {
-    sql(
-      `update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = ${vehiculoObligatorioDeAntes === 't'}`,
-    )
-    vehiculoObligatorioDeAntes = null
-  }
   borrarOrigenesDeCotizar()
   await borrarLeadsDePrueba()
   await borrarPersonasDePrueba()

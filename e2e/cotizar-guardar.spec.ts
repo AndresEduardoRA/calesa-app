@@ -14,6 +14,9 @@ import {
   totalDeLaHoja,
   vigilarGuardados,
 } from './soporte/cotizar-guardar'
+import { CONTRASENA } from './soporte/alta'
+import { correoDePrueba, crearPersona } from './soporte/base'
+import { darRolDeLaSemilla } from './soporte/rol-de-la-semilla'
 import { idDe } from './soporte/leads'
 import { formatearMonto } from '../src/shared/lib/formato'
 
@@ -78,9 +81,20 @@ test('una celda abierta se confirma al guardar; con «abc» y un clic en «Guard
   expect(guardados.pedidos).toHaveLength(1)
 })
 
-test('sin lead, «Guardar» está apagado con su motivo y Ctrl+S no manda nada', async ({ page }) => {
+test('sin lead, «Guardar» está apagado con su motivo y Ctrl+S no manda nada (un rol sin «Guardar sin lead»)', async ({
+  page,
+}, info) => {
+  // La dueña guarda sin lead (tiene `cotizaciones.crear.sin_lead`): quien no, es el Asesor de la semilla.
+  const asesora = correoDePrueba(`asesora-guardar-${info.project.name}`)
+  await crearPersona({
+    email: asesora,
+    contrasena: CONTRASENA,
+    nombre: 'Ana Asesora',
+    invitada: true,
+  })
+  await darRolDeLaSemilla(asesora, 'asesor')
   const guardados = await vigilarGuardados(page)
-  await entrar(page, duena, { fresco: true })
+  await entrar(page, asesora, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origen.id}`)
   await expect(page.getByRole('button', { name: 'Guardar', exact: true })).toBeDisabled()
   await expect(page.getByText('Para guardar, elige el cliente en «Cliente».')).toBeVisible()
