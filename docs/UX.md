@@ -192,10 +192,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   oportunidades propias (`?etapa=` en el celular; `?panel=etapas`, `?panel=nuevo-embudo`).
 - **Lead** — `/leads/[id]` (`leads.ver` y acceso): «Datos» (`?panel=editar-lead`; «Cotizar» en la cabecera para quien cotiza),
   «Seguimientos» (`?seccion=seguimientos`; `?panel=anotar-seguimiento`, `editar-seguimiento&seguimiento=<id>`), «Vehículos»
-  (`vehiculos.ver`; `?panel=agregar-vehiculo`), «Oportunidades» (`?panel=nueva-oportunidad`, `editar-oportunidad&oportunidad=<id>`),
+  (`vehiculos.ver`; `?panel=agregar-vehiculo`; es donde se gestiona: lo que se ve de un vistazo es **Relacionados**, arriba de las secciones), «Oportunidades» (`?panel=nueva-oportunidad`, `editar-oportunidad&oportunidad=<id>`),
   «Cotizaciones» (con `cotizaciones.ver` en algún origen; ver «Pestaña de cotizaciones») y «Portal». Ninguna pestaña se dibuja vacía.
 - **Vehículos** — `/vehiculos` (`vehiculos.*`): tabla + panel de filtros + resumen. Pestaña por origen (`?origen=`); filtros en URL (`q`,
-  `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; resumen `?vehiculo=<id>` (`?pestana=fotos|interesados`);
+  `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; resumen `?vehiculo=<id>` (`?pestana=fotos`; los relacionados van arriba de las pestañas);
   alta `?panel=nuevo` (sin el alta suelta pero con la de cotizar: «Nuevo» apagado con «Cotizar un vehículo nuevo», que abre la hoja con el panel
   del vehículo en alta); edición `?editar=`; `?vitrina=si|no`, `?limpieza=si|no`; junto al estado de vitrina de cada fila, «Publicar» / «Sacar de la
   web» con un toque y «Deshacer» (con `vehiculos.vitrina` del origen; sin precio público, `?panel=vitrina-rapida&para=<id>` pide sólo el precio).
@@ -205,7 +205,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   aprobada del vehículo con su moneda, enlazado a esa cotización (sin total, «Sin total»; sin aprobada o una que no se ve, «—»); sin la clave no se
   dibuja ni se consulta.
   `/vehiculos/papelera` (por lote).
-- **Vehículo** — `/vehiculos/[id]` (según origen): cabecera con portada y fase de sólo lectura; «Publicar en la web» en `?panel=vitrina`;
+- **Vehículo** — `/vehiculos/[id]` (según origen): cabecera con portada y fase de sólo lectura; **«Relacionados»** (con `leads.ver`) entre los avisos y las pestañas,
+  en todas ellas (ver «Relacionados (estados propios)»); «Publicar en la web» en `?panel=vitrina`;
   `?seccion=`: «Ficha» (por layout del origen; edición `?editar=`; banner de limpieza; en un origen de subasta, el bloque «Subasta» con
   «Editar fechas» en `?panel=fechas-de-subasta` para quien edita: inicio y cierre en su zona, vacío borra; «Vínculo e interesados» con
   «Desvincular» confirmado), «Fotos» (≤ 24, portada, orden), «Repuestos» (con `repuestos.ver`, la última; sin proyecto, «Este vehículo no tiene proyecto
@@ -498,8 +499,31 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   Error: «No pudimos guardar el resultado. Intenta de nuevo.»; sin red, el aviso de siempre. No ganada: «No ganada · la marcó <nombre> el
   <fecha>. Ya no cuenta en logística ni en Inicio.» (sin el nombre si no se pudo leer) con «Deshacer». En subasta o en su fase, sin aviso.
 - **Resumen (`?vehiculo=<id>`):** portada, identificación, situación (su fase o «Sin fase»), «Editar» (abre el panel encima y vuelve al resumen al día) y
-  «⋯»; pestañas `?pestana=fotos|interesados` que se leen al elegirlas. Inexistente, en la papelera o de otro origen: «Este vehículo ya no
+  «⋯»; «Relacionados» (con `leads.ver`) entre la cabecera y las pestañas, que se lee al abrir; pestañas `?pestana=fotos` que se lee al elegirla (un `?pestana=interesados`
+  viejo abre «Resumen»). Inexistente, en la papelera o de otro origen: «Este vehículo ya no
   está disponible: no existe o ya no tienes acceso.».
+
+### Relacionados (estados propios)
+
+El mismo bloque arriba de cada detalle: la ficha del vehículo (entre los avisos y las pestañas, con `leads.ver`), su resumen del inventario, la unidad de logística (bajo la
+cabecera, con `leads.ver`; el hueco `relacionados` de `PanelDeLaUnidad`), la ficha del lead (tras los avisos, antes de las secciones, con `vehiculos.ver`) y el resumen del listado de leads.
+`<section aria-label="Relacionados">` con tres grupos en grilla `@container` (tres columnas desde `@3xl`, una debajo): **Vinculado**, **Interesado** y **Cotizado** (éste sólo con
+`cotizaciones.ver`), cada uno con `h3` «<Tipo> · n» (`conteoCorto`, «100+»), su leyenda, hasta 3 filas, «Ver todos» y sus acciones.
+
+- **Filas:** desde un vehículo, el lead (nombre enlazado, números como siempre, «Fuera de tu cartera» si se ve enmascarado, nunca el teléfono); desde un lead, el vehículo (miniatura que abre
+  la galería, título enlazado, origen y n.º). Debajo, lo propio del tipo: «Desde el <fecha>», la nota del interés con quién lo marcó, o «Cotización N.º n · <fecha>». «⋯» con las acciones.
+- **Leyendas:** vehículo: «El lead dueño o comprador de este vehículo.», «Leads que mostraron interés en este vehículo.», «Leads con una cotización activa de este vehículo.». Lead:
+  «Vehículos de los que este lead es dueño o comprador.», «Vehículos que le interesan a este lead.», «Vehículos con una cotización activa para este lead.».
+- **Acciones** (cada una por su permiso y sus banderas; la base vuelve a exigirlas): «Cotizar», «Ver cotización», «Quitar interés» (en el lugar, con «Deshacer»), «Desvincular» (desde un
+  vehículo, su confirmación `?panel=desvincular`; desde un lead, con la cartera en el lugar con «Deshacer», sin ella lleva a `?seccion=vehiculos&panel=desvincular&vinculado=<id>`), «Vincular a un lead» (sin
+  vínculo) y «Marcar un interesado» (los dos abren el selector de leads de la ficha: `?panel=vincular-lead`, `?panel=marcar-interesado`; en un resumen o en la unidad llevan a la ficha con el panel
+  abierto), «Vincular o marcar un vehículo» (desde un lead: lleva a `?seccion=vehiculos&panel=agregar-vehiculo`) y «Ver todos» (`?relacionados=vinculado|interesado|cotizado`: un `<Drawer>` de a 20 por cursor con
+  «Ver más» hasta 500, `AvisoDeTope`; desde un resumen lleva a la ficha con el drawer abierto; el de Vinculado en un vehículo trae el vínculo vigente y los anteriores).
+- **Estados:** cargando, `EsqueletoDeRelacionados` del alto del bloque (ficha y unidad) o `aria-busy` «Cargando los relacionados» (resúmenes, que siguen mostrando lo anterior mientras releen);
+  error «No pudimos cargar los relacionados.» con «Reintentar» (la pantalla sigue); vacío total «Sin relacionados todavía.» con las acciones que haya; vacío de un grupo («Sin vínculo.», «Nadie marcó
+  interés todavía.», «Sin cotizaciones activas.», y desde un lead «Ningún vehículo vinculado.», «Sin vehículos de interés.») con «Cotizar» si cotiza; lo que quien mira no ve, «1 que no puedes
+  ver» / «3 que no puedes ver», sin datos (un vínculo oculto no ofrece vincular); sin `leads.ver` (o `vehiculos.ver` desde un lead) no hay bloque; sin `cotizaciones.ver` no hay grupo Cotizado;
+  conflicto `PT409` con el texto de la base y «Recargar»; tope «100+» en el grupo y, en «Ver todos», «No pudimos revisar el resto: hay muchos que no puedes ver.» si el recorrido se cortó.
 
 ### Leads: configuración (estados propios)
 
@@ -655,7 +679,7 @@ El panel de la unidad (`<PanelDeLaUnidad>`) se dibuja igual en `/logistica/vehic
   ver esto». Lo que no existe, está en la papelera, no se ve o trae un id inválido: «Este vehículo ya no está disponible» con «No existe o
   ya no tienes acceso.» e «Ir a Logística» (nunca «sin permiso»: confirmaría que existe). En el drawer, el mismo estado va dentro.
 - **Panel de la unidad:** cabecera con título, origen, situación (`<BadgeDeSituacion>`: la fase, «Sin fase», «En subasta» o «Sin resolver»), «Desde hace N días en esta fase» y «Abrir
-  ficha». Debajo, un bloque plegado por hueco (qué falta, documentos, transporte, aduana, gastos, pagos, margen, notas, historial), en ese
+  ficha». Bajo la cabecera, «Relacionados» de un vehículo (con `leads.ver`; el hueco `relacionados`, que `src/app` llena con el bloque de `vehiculos`; «Desvincular» y los selectores de leads llevan a la ficha, que es donde viven esos paneles). Debajo, un bloque plegado por hueco (qué falta, documentos, transporte, aduana, gastos, pagos, margen, notas, historial), en ese
   orden, que lee al abrirse con la sesión de quien mira y sólo aparece con su permiso en el origen y su regla del flujo encendida. Si el
   flujo del origen no se pudo leer, los bloques que piden una regla no se dibujan y una línea lo dice; el resto sigue. La ficha del
   vehículo lleva «Ver en logística» (antes de «Editar», con `logistica.ver`) a `/logistica/vehiculo/<id>`.
@@ -1016,7 +1040,7 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
   (cartera y `leads.editar`, abren el modal de la ficha con `?panel=…&para=<id>`) · «Etiquetas…», «Favorito», «Tachado» (con «Deshacer») ·
   «Enviar a la papelera» (`leads.eliminar`).
 - **Vacíos:** sin leads, con «Nuevo lead» y «Ver todos» según permiso; por filtro, con «Limpiar filtros». Esqueleto; error.
-- **Resumen (`?lead=`):** tipo, marcas, «Editar» (cartera y `leads.editar`), «Abrir ficha», «⋯»; pestañas
+- **Resumen (`?lead=`):** tipo, marcas, «Editar» (cartera y `leads.editar`), «Abrir ficha», «⋯»; «Relacionados» (con `vehiculos.ver`, se lee al abrir) entre la cabecera y las pestañas; pestañas
   `?pestana=seguimientos|recordatorios` que se piden al elegirlas; nombre, número, tipo, teléfono tal como lo entrega la vista, origen y
   campos activos. Uno que deja de verse: «Este lead ya no está disponible: no existe o ya no tienes acceso.».
 
@@ -1035,7 +1059,8 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
   mira. «Quitar acceso» con «Deshacer»; «Salir de este lead» confirma. Al dueño se le transfiere, no se le quita.
 - **Enviar a la papelera:** último ítem del «⋯» (`leads.eliminar`); sin preguntar, con «Deshacer» 10 s. Con un vehículo vinculado visible,
   apagado con motivo y «Ir a «Vehículos»»; si lo frena uno que no se ve, la base rechaza nombrando al lead, no al vehículo.
-- **Vehículos** (`?seccion=vehiculos`, con `vehiculos.ver`): «Vinculados», «Interesados» (con nota) y «Vínculos anteriores», sólo lo que
+- **Relacionados** (con `vehiculos.ver`): el bloque de arriba, tras los avisos y antes de las secciones, en todas ellas (ver «Relacionados (estados propios)»).
+- **Vehículos** (`?seccion=vehiculos`, con `vehiculos.ver`): donde se gestiona: «Vinculados», «Interesados» (con nota) y «Vínculos anteriores», sólo lo que
   quien mira ve. «Agregar vehículo» (cartera y `leads.editar`): busca por título, VIN, lote o #número, «Vincular» y nota de interés ≤ 500.
   «Desvincular» (quien edita el vehículo): con la cartera, con «Deshacer»; sin ella, confirma.
 
@@ -1079,6 +1104,7 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 - **Exportar:** con más de 5.000 leads en los filtros no exporta y pide filtrar más.
 - **Embudo:** cabecera de columna y pestaña dicen «37» o «500+». Una columna dibuja a lo sumo 500 y ahí ofrece «Buscar en el embudo»
   (`?q=`, desde 2 caracteres; busca título y nombre del lead en todas las columnas; es de la vista de embudo).
+- **Relacionados:** cada grupo muestra «n» o «100+» (una ventana de 101 por grupo, lo que no se ve incluido, nunca un total exacto), hasta 3 filas y «Ver todos» de a 20 por cursor hasta 500 con `<AvisoDeTope>`.
 - **Vehículos y ficha:** los bloques de vínculos, interesados y «Agregar vehículo» dicen su tope al pie con `<AvisoDeTope>`;
   «Oportunidades» muestra las 10 más recientes (abiertas primero) con «Ver más» de a 20 desde el navegador, hasta 500 (en el tope,
   «Buscarlas en tu embudo»).

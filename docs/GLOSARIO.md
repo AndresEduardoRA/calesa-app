@@ -111,11 +111,20 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Cola de limpieza** — `cola_gc_storage` / `storage_gc_reclamar()`, `storage_gc_confirmar()`: objetos de Storage quizá sin uso.
 - **Bandeja de subida** — `reducirBandeja()` / `<BandejaDeSubida>`: lo elegido para subir que aún no es foto; nada toca Storage hasta confirmar.
 - **Interesado** — `vehiculos_interesados` / `vehiculo_interesado_marcar()`, `vehiculo_interesado_quitar()`: lead interesado en un vehículo
-  (N:M), nota ≤ 500.
+  (N:M), nota ≤ 500. Es un tipo de **Relacionados**.
+- **Relacionados** — `vehiculo_relacionados()`, `lead_relacionados()` (y `*_pagina()`), `<Relacionados>` / `?relacionados=<tipo>`: el bloque siempre
+  visible arriba de cada detalle (ficha del vehículo, su resumen, la unidad de logística, ficha del lead y su resumen) con tres grupos por tipo:
+  **Vinculado**, **Interesado** y **Cotizado**. Desde un vehículo se ven leads; desde un lead, vehículos. Cada grupo lleva su cantidad (con tope),
+  sus primeras filas, lo que quien mira no ve contado («1 que no puedes ver») y «Ver todos» por cursor. Lo que está en una papelera no cuenta.
+- **Vinculado** — tipo de relación (`TipoDeRelacion` `vinculado`): el lead dueño o comprador de un vehículo (el vínculo vigente), y desde un
+  lead, sus vehículos vinculados. Su «Ver todos» en un vehículo incluye los vínculos anteriores.
+- **Cotizado (relación)** — tipo de relación `cotizado`: leads con una **cotización activa** de ese vehículo (y al revés), una fila por
+  contraparte con su cotización visible más nueva. No es **Cotizado (n)**, el conteo de cotizaciones de un vehículo.
+- **Cotización activa** — `eliminado_en is null and estado in ('activa','reportada')`: la que cuenta para «Cotizado» y su índice parcial.
 - **Vínculo** — `vehiculos.lead_id` + `vehiculos_vinculos` / `vehiculo_vincular()`: lead dueño o comprador actual, uno a la vez, con historial.
 - **Vincular / Desvincular** — `vehiculo_vincular(p_vehiculo, p_actualizado_en_esperado, p_lead)` (nulo desvincula): con la versión del vehículo.
-- **Vehículos del lead** — `lead_vehiculos()`, `<SeccionVehiculosDelLead>`, `?seccion=vehiculos`: vinculados, interesados y anteriores, sólo
-  lo visible.
+- **Vehículos del lead** — `lead_vehiculos()`, `<SeccionVehiculosDelLead>`, `?seccion=vehiculos`: la sección donde se gestiona (agregar un vehículo,
+  la nota del interés, los vínculos anteriores y la confirmación de desvincular); lo que se ve de un vistazo es **Relacionados**. Sólo lo visible.
 - **Agregar vehículo** — `vehiculos_para_lead()`, `?panel=agregar-vehiculo`: buscar entre los vehículos visibles para vincular uno o marcar
   interés desde el lead.
 - **Vehículo de una nota** — `seguimientos.vehiculo_id`, `recordatorios.vehiculo_id`: vehículo opcional del lead que quien escribe ve.

@@ -13,9 +13,9 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 - **Equipo y permisos:** registro e invitaciones, roles libres sobre un catálogo fijo de permisos, por origen y con alcance, dominancia
   sobre la persona, bajas con traspaso de cartera, «Ver como».
 - **Empresa y orígenes:** ajustes, monedas y tipos de cambio, integraciones (apibara, web pública), campos por origen con rango.
-- **Vehículos:** inventario por origen con rutas e índices por caso, ficha con fotos y documentos, vitrina, papelera, subastas por apibara.
+- **Vehículos:** inventario por origen con rutas e índices por caso, ficha con fotos y documentos, vitrina, papelera, subastas por apibara; «relacionados» (vinculado, interesado y cotizado) arriba de cada detalle.
 - **Leads:** listado y kanban con cartera, teléfono único y enmascarado, campos configurables y privados, seguimientos, oportunidades,
-  importar y exportar, limpieza automática, papelera.
+  «relacionados» arriba de la ficha y del resumen, importar y exportar, limpieza automática, papelera.
 - **Cotizaciones:** la fórmula como grafo versionado (motor en TS con su espejo SQL), el diseño de la hoja, niveles de acceso, la hoja de
   cotizar, guardar con revisiones, la tarjeta y el PDF, la final, la aprobada (una por vehículo, con su primer resultado en la lista de vehículos), comprobantes, comentarios y papelera; el listado con buscador (número, cliente, vehículo y autor), vistas guardadas, columna de acciones y un resumen con pestañas (todo, adjuntos, revisiones y comentarios).
 - **Flujos y logística:** fases, transiciones, requisitos y reglas por RPC; `/logistica` (la bandeja del día con siete grupos, la cadena como gráfica por fase, la lista de cada fase,
