@@ -138,6 +138,8 @@ test('sin red al abrir el resumen lo dice con «Reintentar», y sin red al elegi
   await contenido.getByRole('button', { name: 'Reintentar' }).click()
   const resumen = resumenDe(page, TITULO)
   await expect(resumen).toBeVisible()
+  // «Relacionados» ya llegó (si no, la red cortada lo dejaría en error con su propio «Reintentar»).
+  await expect(resumen.getByText('Sin relacionados todavía.')).toBeVisible()
   // Lo mismo con una pestaña cuyo código no se pidió.
   await context.setOffline(true)
   await resumen.getByRole('tab', { name: 'Fotos' }).click()

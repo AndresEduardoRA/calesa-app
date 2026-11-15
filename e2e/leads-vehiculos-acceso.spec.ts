@@ -71,6 +71,10 @@ test('el compartido ve el vinculado (se lo da el vínculo) y no el interés en u
     page.getByText('Este lead no mostró interés en ningún vehículo que puedas ver.'),
   ).toBeVisible()
   await expect(page.getByText(interes)).toHaveCount(0)
+  // El bloque «Relacionados» de arriba cuenta lo que no ve, sin nombrarlo.
+  await expect(
+    page.getByRole('region', { name: 'Interesado', exact: true }).getByText('1 que no puedes ver'),
+  ).toBeVisible()
 })
 
 test('la supervisión ve todo y no agrega (ni por la URL), pero desvincula con confirmación', async ({
