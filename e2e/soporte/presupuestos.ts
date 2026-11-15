@@ -17,7 +17,7 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   '/logistica': 390,
   // La lista de una fase (T19): medido 367,0 KB en 27 chunks, más un 5 % hacia arriba a la decena.
   '/logistica/fase/[fase]': 390,
-  // El detalle de un vehículo en logística (T20), con el vehículo medido de la subasta de la semilla: medido 438,9 KB en 28 chunks, más un 5 % hacia arriba a la decena.
+  // El detalle de un vehículo en logística (T20), con el vehículo medido de la subasta de la semilla: medido 438,9 KB en 28 chunks antes de las zonas y 442,3 KB en 27 después, más un 5 % hacia arriba a la decena.
   '/logistica/vehiculo/[id]': 470,
 }
 

@@ -416,23 +416,9 @@ T02 y T03 corriendo. La persona eligió pausarlo y que la tanda la haga esta ses
 - Lleva **recorrido** con capturas, como dueña y con un rol de sólo `logistica.ver`.
 - **Medir:** el JS de `/logistica` (≤ 410 KB, hoy 401).
 
-### [ ] E2 · El detalle del vehículo en logística (`feat(logistica): rediseñar el detalle del vehículo`)
+### [x] E2 · El detalle del vehículo en logística (`feat(logistica): disponer el detalle del vehículo en zonas`)
 
-- **Disposición:**
-  - `PanelDeLaUnidad` suma `disposicion: 'pagina'`. `entities/nucleo/` declara `AREAS_DE_LA_PAGINA` (clave de hueco → área: `mover`,
-    `documentos`, `dinero`, `transporte` y `secundarias`).
-  - El orden sigue saliendo de `ORDEN_DE_HUECOS` y `huecosVisibles`. Ningún área importa otra.
-  - Cambia la disposición, no los contratos.
-- **Escritorio, sin scroll en 1366×768:**
-  - Cabecera: identidad, fase, días en fase, aviso de B5 y visor de A2.
-  - Columna izquierda: «Qué falta» y mover.
-  - Columna derecha: documentos.
-  - Debajo: gastos y pagos compactos, y transporte.
-  - Aduana, repuestos, notas, historial y margen, en pestañas.
-- **Celular:** el mismo orden apilado, con «Mover» fijo abajo (sticky, 44 px).
-- **e2e:** `logistica-unidad`, `logistica-documentos`, `logistica-gastos-y-pagos`, `logistica-transporte`, `logistica-aduana`,
-  `logistica-tarea-de-oro` (R1, R2 y R5). «Mover 1» contra su presupuesto (11,3 de 15 s).
-- Lleva **recorrido** con capturas.
+- Lo hizo T20. La disposición vigente (zonas en escritorio a 1440×900 y 1280×800, bloques con la barra «Mover» en el celular) está en `docs/UX.md` y en `docs/DECISIONES.md` › «La cadena y la unidad».
 
 ### [ ] F · Cerrar la tanda (`docs(docs): cerrar la tanda de mejoras`)
 
