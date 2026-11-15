@@ -7,6 +7,7 @@ import {
   estadoDeLaEtapa,
   etapaElegida,
   firmaDelTablero,
+  idsDeLeadsDelTablero,
   paginaDeEtapaDesde,
   tableroDesde,
   totalDelTablero,
@@ -157,5 +158,22 @@ describe('busquedaDelEmbudo (cierre 1)', () => {
     expect(busquedaDelEmbudo('   ')).toBeNull()
     expect(busquedaDelEmbudo(null)).toBeNull()
     expect(busquedaDelEmbudo('x'.repeat(80))).toHaveLength(60)
+  })
+})
+
+describe('idsDeLeadsDelTablero', () => {
+  it('trae los leads de todas las columnas, una vez cada uno', () => {
+    expect(idsDeLeadsDelTablero(leido())).toEqual([id(201), id(202), id(203)])
+    // Un lead con dos oportunidades (en columnas distintas) cuenta una vez.
+    const base = leido()
+    const [primera, segunda, tercera] = base.columnas
+    const repetida = base.columnas[0]?.tarjetas[0]
+    if (!primera || !segunda || !tercera || !repetida) throw new Error('falta terreno')
+    const conRepetida: Tablero = {
+      ...base,
+      columnas: [primera, { ...segunda, tarjetas: [{ ...repetida, id: id(999) }] }, tercera],
+    }
+    expect(idsDeLeadsDelTablero(conRepetida)).toEqual([id(201), id(202), id(203)])
+    expect(idsDeLeadsDelTablero({ ...base, columnas: [] })).toEqual([])
   })
 })

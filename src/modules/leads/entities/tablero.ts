@@ -277,6 +277,11 @@ export function etapaElegida(tablero: Tablero, deLaUrl: string | null): string |
   return (columnas.find((c) => c.etapa.esInicial) ?? columnas[0])?.etapa.id ?? null
 }
 
+// Los ids de los leads que el tablero dibuja, únicos y en el orden de las columnas: lo que pide la lectura de «visto» (un lead con varias oportunidades cuenta una vez).
+export function idsDeLeadsDelTablero(tablero: Tablero): string[] {
+  return [...new Set(tablero.columnas.flatMap((c) => c.tarjetas.map((t) => t.lead.id)))]
+}
+
 // Cuántas hay en todo el embudo (para decir «Todavía no tienes oportunidades en este embudo»).
 export function totalDelTablero(tablero: Tablero): number {
   return tablero.columnas.reduce((suma, c) => suma + c.total.n, 0)
