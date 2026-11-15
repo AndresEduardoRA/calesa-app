@@ -10,7 +10,7 @@ La tarea de oro 3 la prueba `e2e/logistica-tarea-de-oro.spec.ts`. Abiertos (`doc
 - Entra: acciones de logística en `/logistica/*`, subida de documentos (también desde cámara), confirmación de pagos, cron de alertas.
 - Sale (núcleo): `leerUnidad(id)` (la unidad de vehículo bajo la RLS de quien mira; nula si no existe, está en la papelera o no la ve; `titulo` =
   «<principal> · <título>» si el origen tiene campo principal y se puede leer: `features/nucleo/unidad-con-identidad.ts`), `huecosVisibles`,
-  `ORDEN_DE_HUECOS`, `refDeUnidad`, los tipos de la unidad y de los huecos; por `pantallas/unidad.ts`, `<PanelDeLaUnidad>`.
+  `ORDEN_DE_HUECOS`, `refDeUnidad`, los tipos de la unidad y de los huecos; por `pantallas/unidad.ts`, `<PanelDeLaUnidad>`, que recibe `relacionados?: ReactNode` (el bloque «Relacionados» de un vehículo, bajo la cabecera y antes de los huecos; lo compone `src/app/(app)/logistica/unidad-abierta.tsx` con `leads.ver`: `logistica` no conoce `vehiculos/relacionados`).
 - Área `cadena`: `leerResumenDeLaCadena(origenId)` (el número de cada fase: vehículos, demorados y trabados, con tope), `leerLaFase(pedido)` (una página de la lista de una fase,
   con los vehículos nombrados por el campo principal), `dondeEsta(busqueda)` (hasta 10, en todos los orígenes de la persona; texto corto no llama a la base),
   `leerOrigenesDeLaCadena(permisos)` (las pestañas), `leerNavieras()`, `esquemaDeFiltrosDeLaCadena`, `pedidoDeLaCadena`, `claveDeFase`, `faseDeLaClave`, `rutaDeLaFase`, el cursor de una

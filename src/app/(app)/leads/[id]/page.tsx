@@ -31,6 +31,8 @@ import {
 import { RegistrarVisita } from '@/modules/buscador/pantallas/visita'
 import { getOrigenes } from '@/modules/origenes'
 import { opcionesDeVehiculoDelLead } from '@/modules/vehiculos'
+import { EsqueletoDeRelacionados } from '@/modules/vehiculos/pantallas/relacionados'
+import { RelacionadosDelLeadServidor } from '../../_relacionados/relacionados-del-lead'
 import {
   EsqueletoDeVehiculosDelLead,
   SeccionVehiculosDelLead,
@@ -172,6 +174,13 @@ export default async function PaginaLead({ params, searchParams }: PageProps<'/l
           duenoDe(datos.cartera)?.usuarioId ?? null,
           sesion.usuarioId,
         )}
+        relacionados={
+          ve.vehiculos ? (
+            <Suspense fallback={<EsqueletoDeRelacionados />}>
+              <RelacionadosDelLeadServidor leadId={datos.ficha.id} permisos={sesion.permisos} />
+            </Suspense>
+          ) : null
+        }
         {...seccionesDe(datos, seccion, ve)}
       />
     </>

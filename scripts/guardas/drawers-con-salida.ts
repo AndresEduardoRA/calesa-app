@@ -14,6 +14,14 @@ export type RegistroDeDrawer =
 
 // Los del núcleo. Los de un área van en su archivo (`drawers-con-salida-formula.ts`, `areas-*/drawers-con-salida.ts`) y se suman abajo.
 export const DRAWERS_DEL_NUCLEO: Record<string, RegistroDeDrawer> = {
+  // --- vehiculos: «Relacionados» (T17). «Ver todos» de un grupo (`?relacionados=<tipo>`): sólo muestra filas y su «Ver más»; lo que se hace con una fila es de su «⋯» (acciones en el lugar o un enlace).
+  'src/modules/vehiculos/features/relacionados/components/drawer-de-relacionados.tsx': {
+    sinFormulario:
+      'sólo muestra las filas de un grupo y su «Ver más»; lo que se hace con una fila es de su «⋯»',
+  },
+  'src/modules/vehiculos/features/relacionados/components/drawer-de-vinculos.tsx': {
+    sinFormulario: 'sólo muestra el vínculo vigente de un vehículo y los anteriores',
+  },
   // --- leads
   // El único `<Drawer>` de «Nuevo lead»: monta el marco (siempre cerrado hasta que se abre) y el formulario, que tiene su estado afuera
   // para no perderlo al cerrar, dibuja adentro; la pregunta de descartar la hace él mismo (`useCierreConCambios`).

@@ -36,6 +36,7 @@ import type { DatosDeLaLista } from './tipos'
 import type { DatosDeUltimoContacto } from './ultimo-contacto'
 import { VistasDeLeads } from './vistas-de-leads'
 import { ProveedorDeMarcasDeVisto } from '@/modules/equipo/client'
+import type { HuecosDelRapido } from '../../rapido/huecos'
 
 type Props = DatosDeLaLista & {
   esquema: EsquemaDeFiltros
@@ -58,6 +59,8 @@ type Props = DatosDeLaLista & {
   ahora: string
   puedeEditarExtras: boolean
   puedeConfigurar: boolean
+  // Lo que `src/app` llena en el resumen del drawer (el bloque «Relacionados»: `leads` no importa `vehiculos`).
+  huecosDelResumen?: HuecosDelRapido
 }
 
 // Lo que va arriba de la lista: lo que la URL traía y ya no vale, y la aclaración de un filtro

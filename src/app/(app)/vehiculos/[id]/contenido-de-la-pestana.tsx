@@ -1,10 +1,9 @@
 import { Suspense } from 'react'
 import type { LayoutDeOrigen, OrigenResumen } from '@/modules/origenes'
-import { type AvisosDelMenu, type Vehiculo } from '@/modules/vehiculos'
+import { type Vehiculo } from '@/modules/vehiculos'
 import { EsqueletoDeResumen } from '@/modules/repuestos/pantallas/proyectos-vehiculo'
 import { EsqueletoDeFotos } from '@/modules/vehiculos/pantallas/ficha'
 import { BloqueSubasta } from './bloque-subasta'
-import { BloqueVinculo } from './bloque-vinculo'
 import type { PestanaDeVehiculo } from './pestanas'
 import { SeccionCotizaciones } from './seccion-cotizaciones'
 import { SeccionDocumentos } from './seccion-documentos'
@@ -20,24 +19,10 @@ type Props = {
   layout: LayoutDeOrigen
   // Si quien mira puede editar el vehículo.
   editable: boolean
-  // Si quien mira ve leads (para el vínculo y los interesados).
-  verLeads: boolean
-  // Si, sin el vínculo, iría a la papelera (lo ofrece el aviso de desvinculado tras «Quitar el vínculo»).
-  ofrecerPapelera: boolean
-  avisos?: AvisosDelMenu
 }
 
 // Lo que va debajo de la cabecera según la pestaña de `?seccion=`.
-export function ContenidoDeLaPestana({
-  pestana,
-  vehiculo,
-  origen,
-  layout,
-  editable,
-  verLeads,
-  ofrecerPapelera,
-  avisos,
-}: Props) {
+export function ContenidoDeLaPestana({ pestana, vehiculo, origen, layout, editable }: Props) {
   if (pestana === 'fotos') {
     return (
       // La cabecera y las pestañas ya están: las fotos llegan en su propio hueco.
@@ -78,17 +63,6 @@ export function ContenidoDeLaPestana({
         </Suspense>
       ) : null}
       <SeccionFicha vehiculo={vehiculo} origen={origen} layout={layout} />
-      {/* A quién pertenece y a quién le interesa: sólo para quien ve leads. */}
-      {verLeads ? (
-        <Suspense fallback={null}>
-          <BloqueVinculo
-            vehiculo={vehiculo}
-            editable={editable}
-            ofrecerPapelera={ofrecerPapelera}
-            avisos={avisos}
-          />
-        </Suspense>
-      ) : null}
     </>
   )
 }

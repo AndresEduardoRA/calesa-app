@@ -31,6 +31,7 @@ import type { Permisos } from '@/shared/lib/permisos'
 import { leerCursor, leerPorPagina, tamanoDePagina, tamanosHasta } from '@/shared/lib/paginacion'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
+import { paraElResumenDe } from '../_relacionados/para-relacionados'
 import { aprobadasDeLaPagina } from './aprobadas'
 import { vehiculoEnEdicion } from './edicion'
 
@@ -154,7 +155,7 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
       alcance={alcanceDeAvisos(sesion.permisos, origen.id)}
       verPapelera={puedeAbrirLaPapelera(sesion.permisos)}
       aprobadas={aprobadas}
-      verInteresados={puede(sesion.permisos, 'leads.ver')}
+      para={paraElResumenDe(sesion.permisos, visibles)}
       publicar={permisoDeVitrina(sesion.permisos, origen)}
       paraCotizar={paraCotizarDe(sesion.permisos, origen)}
       vistaPreferida={sesion.preferencias.vistaDeVehiculos}

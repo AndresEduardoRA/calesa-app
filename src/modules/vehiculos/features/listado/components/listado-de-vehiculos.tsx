@@ -14,6 +14,7 @@ import type { AlcanceDeAvisos } from '../../../entities/avisos-de-vehiculo'
 import type { AprobadasDeLaPagina } from '../../../entities/cotizacion-aprobada-de-la-fila'
 import { camposFiltrables } from '../../../entities/filtros'
 import type { PermisoDeAlta } from '../../../entities/permisos'
+import type { ParaRelacionados } from '../../../entities/acciones-de-relacionados'
 import type { ParaCotizar } from '../../../entities/ruta-para-cotizar'
 import type { Vehiculo } from '../../../entities/vehiculo'
 import type { PermisoDeVitrina } from '../../../entities/vitrina'
@@ -62,8 +63,8 @@ type Props = DatosDelOrigen & {
   apibara: DisponibilidadDeApibara
   // Si puede publicar en la web lo de este origen.
   publicar: PermisoDeVitrina
-  // «Interesados» del resumen: sólo con `leads.ver`.
-  verInteresados: boolean
+  // El bloque «Relacionados» del resumen y lo que sus acciones necesitan de `cotizaciones` y `leads` (lo arma `src/app`); nulo sin `leads.ver`: el resumen no lo dibuja.
+  para: ParaRelacionados | null
   // «Cotizar» del resumen: la hoja de cotizar de este origen, o null si no cotiza en él (lo decide la página).
   paraCotizar: ParaCotizar | null
   // Tabla o tarjetas en escritorio, lo que eligió la última vez (`vehiculos.vista`); null = nunca eligió.
@@ -151,12 +152,11 @@ function rutaDeAltaEnLaHoja(para: ParaCotizar): string {
 export function ListadoDeVehiculos(props: Props) {
   const { origenes, esquema, vistas, puedeConfigurarCampos, permisoDeAlta, enEdicion, ...demas } =
     props
-  const { verPapelera, apibara, verInteresados, paraCotizar, porPagina, vistaPreferida, ...resto } =
-    demas
+  const { verPapelera, apibara, para, paraCotizar, porPagina, vistaPreferida, ...resto } = demas
   const vista = useVistaDelInventario(vistaPreferida)
   const { origen, campos, categorias, fases, vitrina, limpiezaHoy, pagina, editables } = resto
   const nuevo = <BotonNuevoVehiculo origen={origen} permiso={permisoDeAlta} />
-  const resumen = useResumenDeVehiculo({ verInteresados })
+  const resumen = useResumenDeVehiculo()
   // El resumen llega recién al abrirse (`diferido()`) y, una vez visto, queda montado para irse con su animación.
   const resumenMontado = useAbiertoAlgunaVez(resumen.id !== null)
   // El panel de edición va una vez por pantalla: con el resumen abierto se dibuja adentro (se apila encima: Esc, «Cancelar» y guardar
@@ -221,7 +221,7 @@ export function ListadoDeVehiculos(props: Props) {
           leadsVisibles={new Set(resto.leadsVisibles)}
           alcance={resto.alcance}
           publicar={resto.publicar}
-          verInteresados={verInteresados}
+          para={para}
           paraCotizar={paraCotizar}
         >
           {panel}

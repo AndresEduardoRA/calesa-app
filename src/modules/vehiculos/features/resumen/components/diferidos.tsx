@@ -21,8 +21,3 @@ export const FotosDelResumenDiferido = diferido(
   () => import('./fotos-del-resumen').then((modulo) => modulo.FotosDelResumen),
   { esqueleto: Esqueleto, aviso: 'aqui' },
 )
-
-export const InteresadosDelResumenDiferido = diferido(
-  () => import('./interesados-del-resumen').then((modulo) => modulo.InteresadosDelResumen),
-  { esqueleto: Esqueleto, aviso: 'aqui' },
-)

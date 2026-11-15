@@ -22,9 +22,9 @@ const PARAMETROS = {
 // resumen). Sin `shallow: false`: abrirlo no pide nada al servidor; el resumen se dibuja con la fila de la página y lee lo suyo por
 // su cuenta. `editando` dice que el panel de edición está encima (`?editar=`): mientras tanto el resumen no vuelve a leer. Tras recargar
 // con el resumen abierto, «atrás» devuelve el foco a quien lo abrió (`vuelta-del-foco.ts`).
-export function useResumenDeVehiculo(opciones: { verInteresados: boolean }) {
+export function useResumenDeVehiculo() {
   const [parametros, setParametros] = useQueryStates(PARAMETROS)
-  const pestanas = pestanasDelResumen(opciones)
+  const pestanas = pestanasDelResumen()
   const id = parametros[CLAVE_DE_RESUMEN]
   useVueltaDelFoco(CLAVE_DE_RESUMEN, id !== null)
   return {
