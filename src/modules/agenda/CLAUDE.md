@@ -8,7 +8,7 @@ Abierto: **7-4** (`tarea_crear` y `agenda_quienes_reciben` con el canal global; 
 
 - Entra: alta desde la agenda, desde el chat (`/tarea`, `/evento`) y desde la ficha del lead (recordatorios); fechas de subasta de `vehiculos`.
 - `index.ts`: `leerAgenda({ desde, hasta, deTodos })`, `leerEvento`, `leerTarea`, `leerRecordatorio`, `leerMisTareas({ tope })` (para `tablero`),
-  `crearTarea()`. `client.ts`: `<ChipEvento>` y, para el chat, el selector de personas, las reglas puras del formulario y la action `completarTarea`.
+  `crearTarea()`. `client.ts`: `<ChipEvento>` (dibuja «visto» —tilde y texto para el lector— y «Último visto» de un evento o una tarea; las marcas las monta `src/app` con `equipo/pantallas/marcas-de-visto`) y, para el chat, el selector de personas, las reglas puras del formulario y la action `completarTarea`.
 - Depende de `leads` (action `completarRecordatorio`), `vehiculos`, `cotizaciones`. `chat` depende de `agenda`, no al revés: la conversación de una
   tarea llega por la RPC `mensaje_tarea_crear`.
 
