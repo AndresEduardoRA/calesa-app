@@ -1,13 +1,11 @@
-// El vínculo de un vehículo (el lead dueño o comprador, uno a la vez, con historial) y sus
-// interesados (los leads que mostraron interés). Acá sólo se leen: se escriben desde la ficha del
-// lead. El nombre de un lead sólo llega si quien mira lo ve; si no, es nulo.
+// El vínculo de un vehículo (el lead dueño o comprador, uno a la vez, con historial). Acá sólo se lee: se escribe por RPC (`vehiculo_vincular`). El nombre de un
+// lead sólo llega si quien mira lo ve; si no, es nulo. Los interesados y todo lo demás que lo relaciona con leads: `relacionados.ts`.
 import { z } from 'zod'
 import { cortarAlTope } from '@/shared/lib/conteo'
 import { numerosDesde, type NumerosDeLead } from '@/shared/lib/numeros-de-lead'
 
 // Lo que se lee de un vehículo (cierre 1): las RPC traen uno de más para saber si hay otros y decirlo.
 export const TOPE_DE_VINCULOS = 50
-export const TOPE_DE_INTERESADOS = 100
 
 export type Vinculo = {
   leadId: string
@@ -22,24 +20,13 @@ export type Vinculo = {
   porNombre: string | null
 }
 
-export type Interesado = {
-  leadId: string
-  leadNombre: string
-  leadNumeros: NumerosDeLead
-  nota: string | null
-  creadoEn: string
-  porNombre: string | null
-}
-
-export type Relaciones = {
+export type VinculosDelVehiculo = {
   // El vínculo activo; null = el vehículo no es de ningún lead.
   vinculo: Vinculo | null
   // Los anteriores, del más reciente al más viejo; `historialHayMas`: había más que el tope (`TOPE_DE_VINCULOS`, el vigente
   // incluido) y no se ven.
   historial: Vinculo[]
   historialHayMas: boolean
-  interesados: Interesado[]
-  interesadosHayMas: boolean
 }
 
 const filasDeVinculo = z.array(
@@ -54,22 +41,9 @@ const filasDeVinculo = z.array(
   }),
 )
 
-const filasDeInteresado = z.array(
-  z.object({
-    lead_id: z.guid(),
-    lead_nombre: z.string(),
-    lead_numero: z.number().nullable(),
-    lead_numero_propio: z.number().nullable(),
-    nota: z.string().nullable(),
-    creado_en: z.string(),
-    por_nombre: z.string().nullable(),
-  }),
-)
-
-// Lo que devuelven `vehiculo_vinculos()` y `vehiculo_interesados()`.
-export function relacionesDesde(vinculos: unknown, interesados: unknown): Relaciones {
+// Lo que devuelve `vehiculo_vinculos()`.
+export function vinculosDesde(vinculos: unknown): VinculosDelVehiculo {
   const leidos = cortarAlTope(filasDeVinculo.parse(vinculos), TOPE_DE_VINCULOS)
-  const deInteres = cortarAlTope(filasDeInteresado.parse(interesados), TOPE_DE_INTERESADOS)
   const todos = leidos.filas.map((fila) => ({
     leadId: fila.lead_id,
     leadNombre: fila.lead_nombre,
@@ -82,18 +56,6 @@ export function relacionesDesde(vinculos: unknown, interesados: unknown): Relaci
     vinculo: todos.find((uno) => uno.hasta === null) ?? null,
     historial: todos.filter((uno) => uno.hasta !== null),
     historialHayMas: leidos.hayMas,
-    interesadosHayMas: deInteres.hayMas,
-    interesados: deInteres.filas.map((fila) => ({
-      leadId: fila.lead_id,
-      leadNombre: fila.lead_nombre,
-      leadNumeros: numerosDesde({
-        numero: fila.lead_numero,
-        numero_propio: fila.lead_numero_propio,
-      }),
-      nota: fila.nota,
-      creadoEn: fila.creado_en,
-      porNombre: fila.por_nombre,
-    })),
   }
 }
 

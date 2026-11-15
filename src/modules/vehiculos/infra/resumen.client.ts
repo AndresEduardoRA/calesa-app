@@ -4,9 +4,8 @@
 import { errorDePostgrest, ok } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/browser'
 import { COLUMNAS_DE_FOTO, MAXIMO_DE_FOTOS, fotosDesde } from '../entities/foto'
-import type { LectorDeFotos, LectorDeRelaciones, LectorDeVehiculo } from '../entities/repositorios'
+import type { LectorDeFotos, LectorDeVehiculo } from '../entities/repositorios'
 import { COLUMNAS_DE_VEHICULO, FILTRO_DE_PORTADA, vehiculosDesde } from '../entities/vehiculo'
-import { relacionesDesde } from '../entities/vinculo'
 
 // Un vehículo por su id con la miniatura de su portada: un pedido. Lo mismo que `getVehiculo()` del servidor.
 export const leerVehiculoDelResumen: LectorDeVehiculo = async (id) => {
@@ -35,18 +34,4 @@ export const leerFotosDelResumen: LectorDeFotos = async (vehiculoId) => {
     return { ok: false, error: errorDePostgrest(error) }
   }
   return ok(fotosDesde(data))
-}
-
-// El vínculo con su historial y los interesados: dos RPC a la vez, con la RLS de quien llama (el nombre de un lead sólo llega si lo ve).
-export const leerRelacionesDelResumen: LectorDeRelaciones = async (vehiculoId) => {
-  const supabase = createClient()
-  const [vinculos, interesados] = await Promise.all([
-    supabase.rpc('vehiculo_vinculos', { p_vehiculo: vehiculoId }),
-    supabase.rpc('vehiculo_interesados', { p_vehiculo: vehiculoId }),
-  ])
-  const error = vinculos.error ?? interesados.error
-  if (error) {
-    return { ok: false, error: errorDePostgrest(error) }
-  }
-  return ok(relacionesDesde(vinculos.data, interesados.data))
 }

@@ -305,9 +305,10 @@ begin
      where i.indrelid = 'public.cotizaciones'::regclass and i.indkey[0] = (select a.attnum from pg_attribute a where a.attrelid = 'public.cotizaciones'::regclass and a.attname = v_col);
     if cardinality(v_enteros) <> 1 then raise exception 'L8: % debía tener exactamente un índice entero al frente y tiene %', v_col, v_enteros; end if;
     -- (un `if` termina en el primer `then`, también el de un `case`: lo esperado va a una variable)
-    v_esperados := case when v_col = 'origen_id' then array['cotizaciones_origen_finales_idx'] else '{}'::text[] end;
+    -- (los de «Relacionados» —T17— son parciales de la cotización activa, con lead_id o vehiculo_id al frente: sólo los lee esa lectura)
+    v_esperados := case when v_col = 'origen_id' then array['cotizaciones_origen_finales_idx'] else array['cotizaciones_relacion_lead_idx'] end;
     if v_parciales is distinct from v_esperados then
-      raise exception 'L8: los parciales con % al frente son % (con lead_id, ninguno; con origen_id, sólo el de la final)', v_col, v_parciales;
+      raise exception 'L8: los parciales con % al frente son % (con lead_id, sólo el de los relacionados; con origen_id, sólo el de la final)', v_col, v_parciales;
     end if;
   end loop;
   foreach v_col in array array['cotizaciones_finales_idx', 'cotizaciones_origen_finales_idx'] loop

@@ -95,6 +95,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Rendimiento y escala
 
+- **[T17]** Retirar `vehiculo_interesados()`: la app ya no la llama (el bloque «Relacionados» lee `vehiculo_relacionados()`); `humo.sql` y `numero-global.sql` la siguen probando — migración que la quite y sus sondas.
 - **[4-79]** `origenes_resumen()` cuenta con `count(*)` exacto vehículos y cotizaciones por origen, contra la regla de escala — `limit n + 1` por origen con `conteoCorto()`, o quitar el número.
 - **[4-67]** El conteo de exportar (`contarLeadsHasta`) de una cartera recién sembrada de 5.001 elige `Seq Scan on leads` tras `analyze` (≈ 3 s) — cierre: páginas sin seq scan, que no crecen y bajo 50 ms en `db:medir:volumen`.
 - **[4-77]** Cada lectura con la policy de `cotizaciones` paga ≈ 160–240 buffers fijos (`mis_permisos()`), sin reproducir — causa sin medir; arreglarlo toca una `security definer` de todas las policies.

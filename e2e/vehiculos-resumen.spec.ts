@@ -18,7 +18,7 @@ import {
 } from './soporte/vehiculos-resumen'
 
 // El resumen de un vehículo (`?vehiculo=`, 9i): un clic en cualquier parte de la fila o la tarjeta lo abre; arriba la portada, lo que
-// lo identifica y su estado, con «Editar» y «Abrir ficha»; «Resumen», «Fotos» e «Interesados», y lo que cuesta. Editarlo, y los casos
+// lo identifica y su estado, con «Editar» y «Abrir ficha»; «Resumen» (con el bloque «Relacionados» arriba de las pestañas) y «Fotos», y lo que cuesta. Editarlo, y los casos
 // que no son el feliz, en `vehiculos-resumen-casos.spec.ts`. Capturas: `E2E_CAPTURAS=e2e-capturas/9i`.
 test.describe.configure({ mode: 'serial' })
 
@@ -90,7 +90,9 @@ test('«Editar» del «⋯» de la fila abre el panel de edición, no el resumen
   await panel.getByRole('button', { name: 'Cancelar' }).click()
 })
 
-test('«Fotos» e «Interesados» leen al elegirse, sin sumar al historial', async ({ page }, info) => {
+test('«Relacionados» llega arriba de las pestañas y «Fotos» lee al elegirse, sin sumar al historial', async ({
+  page,
+}, info) => {
   await sembrarFotos(t.id, 3)
   const marta = await crearLead({
     nombre: 'Marta Resumen',
@@ -101,27 +103,32 @@ test('«Fotos» e «Interesados» leen al elegirse, sin sumar al historial', asy
 
   await entrar(page, t.lector)
   await alInventario(page, t.terreno.corea.id)
-  const resumen = await abrirConUnClic(page, TITULO)
-  // Abrir el resumen no leyó las fotos ni los interesados: cada pestaña paga lo suyo al elegirse.
   const pedidos: string[] = []
   page.on('request', (pedido) => {
     if (pedido.url().includes('/rest/v1/') && !esDelMarco(pedido.url())) {
       pedidos.push(pedido.url())
     }
   })
+  const resumen = await abrirConUnClic(page, TITULO)
+  // Los relacionados están en «Resumen», sin elegir nada: una lectura (`vehiculo_relacionados`). Las fotos no se leyeron: cada pestaña paga lo suyo al elegirse.
+  const relacionados = resumen.getByRole('region', { name: 'Relacionados' })
+  await expect(relacionados.getByText('E2E Marta Resumen')).toBeVisible()
+  await expect(relacionados.getByText('Pidió el precio')).toBeVisible()
+  await expect(relacionados.getByRole('region', { name: 'Interesado', exact: true })).toBeVisible()
+  expect(pedidos.filter((url) => url.includes('vehiculo_relacionados'))).toHaveLength(1)
+  // La portada de la cabecera ya pudo leer sus fotos al acercarse; «Fotos» suma una lectura más al elegirla.
+  const imagenesAlAbrir = pedidos.filter((url) =>
+    url.includes('/rest/v1/vehiculos_imagenes'),
+  ).length
+  await capturar(page, info, 'resumen-relacionados')
   await resumen.getByRole('tab', { name: 'Fotos' }).click()
   await expect(page).toHaveURL(/pestana=fotos/)
   await expect(resumen.getByRole('button', { name: 'Ver la foto 1 de 3 (portada)' })).toBeVisible()
   await expect(resumen.getByRole('button', { name: /^Ver la foto \d de 3/ })).toHaveCount(3)
-  expect(pedidos.filter((url) => url.includes('vehiculos_imagenes'))).toHaveLength(1)
+  expect(pedidos.filter((url) => url.includes('/rest/v1/vehiculos_imagenes'))).toHaveLength(
+    imagenesAlAbrir + 1,
+  )
   await capturar(page, info, 'resumen-fotos')
-
-  await resumen.getByRole('tab', { name: 'Interesados' }).click()
-  await expect(page).toHaveURL(/pestana=interesados/)
-  await expect(resumen.getByText('E2E Marta Resumen')).toBeVisible()
-  await expect(resumen.getByText('Pidió el precio')).toBeVisible()
-  expect(pedidos.filter((url) => url.includes('vehiculo_interesados'))).toHaveLength(1)
-  expect(pedidos.filter((url) => url.includes('vehiculo_vinculos'))).toHaveLength(1)
 
   // Cambiar de pestaña no sumó al historial: «atrás» cierra el resumen.
   await page.goBack()
@@ -147,7 +154,7 @@ test('«Fotos» e «Interesados» leen al elegirse, sin sumar al historial', asy
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
-test('quien no ve leads no tiene «Interesados», y una pestaña que no existe abre «Resumen»', async ({
+test('quien no ve leads no tiene «Relacionados», y una pestaña que ya no existe abre «Resumen»', async ({
   page,
 }) => {
   await entrar(page, t.lectorSinLeads)
@@ -159,7 +166,7 @@ test('quien no ve leads no tiene «Interesados», y una pestaña que no existe a
     'aria-selected',
     'true',
   )
-  await expect(resumen.getByRole('tab', { name: 'Interesados' })).toHaveCount(0)
+  await expect(resumen.getByRole('region', { name: 'Relacionados' })).toHaveCount(0)
 })
 
 test('abrir el resumen cuesta un pedido a la base y nada antes de abrirlo', async ({ page }) => {
@@ -176,7 +183,8 @@ test('abrir el resumen cuesta un pedido a la base y nada antes de abrirlo', asyn
   await abrirConUnClic(page, TITULO)
   await expect.poll(() => pedidos.length).toBeGreaterThan(0)
   await page.waitForLoadState('networkidle')
-  expect(pedidos.length).toBeLessThanOrEqual(2)
+  // El vehículo, sus fotos al acercarse y sus relacionados (una RPC): tres pedidos.
+  expect(pedidos.length).toBeLessThanOrEqual(3)
   expect(pedidos[0]).toContain('/rest/v1/vehiculos')
 })
 

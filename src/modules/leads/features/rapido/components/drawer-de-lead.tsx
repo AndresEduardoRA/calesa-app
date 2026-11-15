@@ -31,6 +31,7 @@ import {
   type PropsDeDatos,
 } from './cuerpo-del-rapido'
 import { MenuDelResumen } from './menu-del-resumen'
+import type { HuecosDelRapido } from '../huecos'
 import { PestanasDelRapido } from './pestanas-del-rapido'
 
 type Props = DatosDeLaLista & {
@@ -47,6 +48,8 @@ type Props = DatosDeLaLista & {
   puedeConfigurar: boolean
   // Lo que necesita el «⋯»: las etiquetas de quien mira, «Gestionar» y qué leads se pueden enviar a la papelera.
   marcar: ParaMarcar
+  // Lo que `src/app` llena en el resumen (el bloque «Relacionados»).
+  huecosDelResumen?: HuecosDelRapido
 }
 
 const ES_GUID = z.guid()
@@ -101,6 +104,7 @@ type PropsDelContenido = {
   alEditar: (() => void) | null
   // El «⋯» de un lead.
   menu: (lead: FilaDeLead) => ReactNode
+  huecos: HuecosDelRapido | undefined
 }
 
 // Lo que va adentro del drawer según cómo esté la lectura.
@@ -115,6 +119,7 @@ function ContenidoDelRapido({
   telefonos,
   alEditar,
   menu,
+  huecos,
 }: PropsDelContenido) {
   if (vista.tipo === 'no_disponible') {
     return (
@@ -148,6 +153,7 @@ function ContenidoDelRapido({
         alEditar={lead.enCartera ? alEditar : null}
         menu={menu(lead)}
       />
+      {huecos?.Relacionados ? <huecos.Relacionados key={lead.id} leadId={lead.id} /> : null}
       <PestanasDelRapido
         leadId={lead.id}
         pestana={pestana}
@@ -259,6 +265,7 @@ export function DrawerDeLead({
         datos={datos}
         telefonos={{ puedeEditarExtras, puedeConfigurar, revision, editando }}
         alEditar={puedeEditar ? editar : null}
+        huecos={datos.huecosDelResumen}
         menu={(lead) => (
           <MenuDelResumen
             lead={lead}

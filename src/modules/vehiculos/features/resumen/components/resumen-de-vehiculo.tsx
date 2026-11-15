@@ -14,6 +14,7 @@ import {
 } from '../../../entities/resumen'
 import type { AlcanceDeAvisos } from '../../../entities/avisos-de-vehiculo'
 import type { IdentidadDeVehiculo } from '../../../entities/identidad'
+import type { ParaRelacionados } from '../../../entities/acciones-de-relacionados'
 import type { ParaCotizar } from '../../../entities/ruta-para-cotizar'
 import type { Vehiculo } from '../../../entities/vehiculo'
 import type { PermisoDeVitrina } from '../../../entities/vitrina'
@@ -23,7 +24,8 @@ import { useIdentidad } from '../../listado/hooks/use-identidad'
 import { useResumenDeVehiculo } from '../hooks/use-resumen-de-vehiculo'
 import { useVehiculoDelResumen } from '../hooks/use-vehiculo-del-resumen'
 import { CabeceraDelResumen } from './cabecera-del-resumen'
-import { FotosDelResumenDiferido, InteresadosDelResumenDiferido } from './diferidos'
+import { RelacionadosDelResumenDiferido } from '../../relacionados/components/diferidos'
+import { FotosDelResumenDiferido } from './diferidos'
 
 type Props = DatosDelOrigen & {
   // Las filas de la página: de ahí sale lo que se ve de inmediato, mientras llega la lectura.
@@ -36,8 +38,8 @@ type Props = DatosDelOrigen & {
   leadsVisibles: ReadonlySet<string>
   alcance: AlcanceDeAvisos
   publicar: PermisoDeVitrina
-  // «Interesados» existe sólo con `leads.ver`.
-  verInteresados: boolean
+  // Lo que las acciones del bloque «Relacionados» necesitan de `cotizaciones` y `leads` (lo arma `src/app`: `para-relacionados.ts`); nulo sin `leads.ver`: el bloque no se dibuja.
+  para: ParaRelacionados | null
   // «Cotizar» de la cabecera: la hoja de cotizar de este origen, o null si la persona no cotiza en él.
   paraCotizar: ParaCotizar | null
   // El panel de edición: se dibuja dentro del resumen para que Esc, «Cancelar» y guardar cierren sólo el de arriba y el resumen quede
@@ -77,6 +79,7 @@ type PropsDelContenido = DatosDelOrigen & {
   alcance: AlcanceDeAvisos
   publicar: PermisoDeVitrina
   paraCotizar: ParaCotizar | null
+  para: ParaRelacionados | null
   vista: VistaDelResumen
   // Hay un vehículo en la URL (el resumen no se está cerrando).
   abierto: boolean
@@ -100,6 +103,7 @@ function ConVehiculo(
     eliminables,
     leadsVisibles,
     resumen,
+    para,
     ...datos
   } = props
   const { origen, campos, categorias } = datos
@@ -113,6 +117,9 @@ function ConVehiculo(
         leadVisible={leadsVisibles.has(vehiculo.id)}
         alEnviado={resumen.cerrar}
       />
+      {para !== null ? (
+        <RelacionadosDelResumenDiferido key={vehiculo.id} vehiculoId={vehiculo.id} para={para} />
+      ) : null}
       <PestanasDelResumen
         etiqueta="Secciones del vehículo"
         pestanas={resumen.pestanas}
@@ -125,8 +132,6 @@ function ConVehiculo(
             vehiculoId={vehiculo.id}
             titulo={vehiculo.titulo}
           />
-        ) : resumen.pestana === 'interesados' ? (
-          <InteresadosDelResumenDiferido key={vehiculo.id} vehiculoId={vehiculo.id} />
         ) : (
           <div className="grid gap-4">
             {completo ? null : <EsqueletoDelResumen etiqueta="Cargando los datos" />}
@@ -190,11 +195,11 @@ function ContenidoDelResumen(props: PropsDelContenido) {
 }
 
 // El resumen de un vehículo (`?vehiculo=`) sin salir del inventario: arriba su portada, lo que lo identifica y su estado, con «Editar» y
-// «Abrir ficha»; debajo, «Resumen», «Fotos» e «Interesados» (`?pestana=`). Se dibuja enseguida con la fila de la página y se completa con
+// «Abrir ficha»; debajo, «Resumen» y «Fotos» (`?pestana=`), con el bloque «Relacionados» entre la cabecera y las pestañas. Se dibuja enseguida con la fila de la página y se completa con
 // su lectura (un pedido). Si el vehículo desaparece, o deja de ser visible, mientras está abierto lo dice sin explicar por qué. «Editar»
 // abre el panel de edición encima y, al guardar o cancelar, se vuelve a este resumen con el dato al día (la página trae la fila nueva).
-export function ResumenDeVehiculo({ filas, editables, verInteresados, children, ...datos }: Props) {
-  const resumen = useResumenDeVehiculo({ verInteresados })
+export function ResumenDeVehiculo({ filas, editables, children, ...datos }: Props) {
+  const resumen = useResumenDeVehiculo()
   const { id } = resumen
   const idValido = id !== null && ES_GUID.safeParse(id).success
   const { lectura, reintentar } = useVehiculoDelResumen(idValido ? id : null, resumen.editando)

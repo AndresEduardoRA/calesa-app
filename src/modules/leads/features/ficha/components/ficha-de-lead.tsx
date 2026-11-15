@@ -52,6 +52,8 @@ type Props = {
   seguimientos: ReactNode
   // La sección «Vehículos»: vive en `vehiculos` y la compone la página (`leads` no importa `vehiculos`).
   vehiculos: ReactNode
+  // El bloque «Relacionados»: siempre visible arriba de las secciones, vive en `vehiculos` y lo compone la página (detrás de `<Suspense>`). Nulo si quien mira no ve vehículos.
+  relacionados: ReactNode
   // La sección «Oportunidades» (detrás de `<Suspense>`): la página la monta sólo con `?seccion=oportunidades`.
   oportunidades: ReactNode
   // La sección «Cotizaciones»: vive en `cotizaciones` y la compone la página (`leads` no importa `cotizaciones`); se lee desde el navegador al abrirla.
@@ -169,6 +171,7 @@ export function FichaDeLead({
   seccion,
   seguimientos,
   vehiculos,
+  relacionados,
   oportunidades,
   cotizaciones,
   portal,
@@ -215,6 +218,7 @@ export function FichaDeLead({
         }
       />
       <AvisoDeVencidos leadId={ficha.id} vencidos={ficha.recordatoriosVencidos} seccion={seccion} />
+      {relacionados}
       <BarraDeSecciones leadId={ficha.id} actual={seccion} ve={ve} />
       {CONTENIDO_DE_SECCION[seccion]({
         ficha,

@@ -15,7 +15,7 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   - Bandeja de Inicio (`tablero`): `leerRecordatoriosDeHoy({ hasta, tope })` (mis pendientes, `recordatorios_vista`) y
     `leerLeadsSinSeguimiento({ creadosAntesDe, tope })` (mi cartera sin seguimiento y de más de 24 h, `leads_cartera_vista`); piden `tope + 1` y
     devuelven `{ filas, hayMas }` (`entities/bandeja.ts`: `finDeHoy()`, `creadoAntesDe()`, `rutaDeSeguimientos()`).
-- Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `importar`, `papelera`, `configuracion`, `cotizar`, `turno`; sólo `src/app`).
+- Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `importar`, `papelera`, `configuracion`, `cotizar`, `turno`, `relacionados`; sólo `src/app`).
 - `client.ts`: reglas puras, tipos, `<AltaDeLead>`, `normalizarTelefono()`, `interpretarBusqueda()`, `MINIMO_DE_BUSQUEDA` (para `buscador`), la
   action `completarRecordatorio` (panel `?recordatorio=` de `/agenda`; la RPC exige que sea de quien actúa) y lo puro de la importación de `datos`
   (`prepararFilas`, `preparadorDeFilas` por tramos con el mismo resultado que una pasada, `emparejarColumnas`, `convertir*`, `fecha*`, `usePaises`…):
@@ -41,6 +41,9 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `src/app/(app)/_inicio/vincular-turno.tsx`; «+» abre el alta con `?elegir=vincular` y vuelve con `?vincular=<id>`.
 - «Escribirle por chat» (`features/chat/`): en el aviso «Lo tiene <persona>» del teléfono principal, enlace a `/chat?con=<duenoId>` sólo si el layout
   dijo `chat.participar` (falso por omisión) y la base mandó `dueno_id`. La base decide si se puede (`chat_directa`).
+- **«Relacionados» en el lead** (`vehiculos` lo dibuja; `leads` no lo importa): `FichaDeLead` recibe el nodo `relacionados` (tras `AvisoDeVencidos`, antes de `BarraDeSecciones`) y el resumen del listado,
+  `huecosDelResumen: HuecosDelRapido` (`features/rapido/huecos.ts`: `Relacionados({ leadId })`, entre la cabecera y las pestañas del drawer), que llena `src/app/(app)/leads/listado-con-relacionados.tsx` con `diferido()`.
+  `pantallas/relacionados.ts` reexporta el selector de leads (`PanelParaVincularDiferido`, con `titulo?`) para «Vincular a un lead» y «Marcar un interesado» de un vehículo.
 - Sin código: `getLead()`, `buscarLeads()`, `<ChipLead>`, `telefonoDe(leadId)`.
 
 ## Archivos clave

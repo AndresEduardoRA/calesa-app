@@ -26,7 +26,16 @@ import type {
   RespuestaDeVinculo,
   VehiculosDelLead,
 } from './vehiculos-del-lead'
-import type { Relaciones } from './vinculo'
+import type { VinculosDelVehiculo } from './vinculo'
+import type {
+  CursorDeRelacionados,
+  LeadRelacionado,
+  PaginaDeRelacionados,
+  RelacionadosDelLead,
+  RelacionadosDelVehiculo,
+  TipoDeRelacion,
+  VehiculoRelacionado,
+} from './relacionados'
 import type { DatosDeVitrina, VistaPreviaDeVitrina, VitrinaDelOrigen } from './vitrina'
 import type { ContextoDeAlta } from './permisos'
 
@@ -190,9 +199,29 @@ export type RepositorioFotos = {
   }) => Promise<Resultado<{ actualizadoEn: string | null; foto: FotoEliminada | null }>>
 }
 
-// El vínculo activo, su historial y los interesados, con el nombre de cada lead sólo si quien
-// llama lo ve.
-export type LectorDeRelaciones = (vehiculoId: string) => Promise<Resultado<Relaciones>>
+// El vínculo activo y su historial, con el nombre de cada lead sólo si quien llama lo ve.
+export type LectorDeVinculos = (vehiculoId: string) => Promise<Resultado<VinculosDelVehiculo>>
+
+// Los relacionados de un vehículo y de un lead (`vehiculo_relacionados()` y `lead_relacionados()`): una lectura por bloque, con lo que quien llama no ve contado
+// y sin datos. Una forma que no se entiende da error (el bloque dice «No pudimos cargar los relacionados»).
+export type LectorDeRelacionadosDelVehiculo = (
+  vehiculoId: string,
+) => Promise<Resultado<RelacionadosDelVehiculo>>
+export type LectorDeRelacionadosDelLead = (
+  leadId: string,
+) => Promise<Resultado<RelacionadosDelLead>>
+
+// «Ver todos»: una página de leads de un vehículo (interesado | cotizado) o de vehículos de un lead, tras el cursor de la última fila visible que se mostró.
+export type LectorDePaginaDeLeads = (pedido: {
+  vehiculoId: string
+  tipo: Exclude<TipoDeRelacion, 'vinculado'>
+  cursor: CursorDeRelacionados | null
+}) => Promise<Resultado<PaginaDeRelacionados<LeadRelacionado>>>
+export type LectorDePaginaDeVehiculos = (pedido: {
+  leadId: string
+  tipo: TipoDeRelacion
+  cursor: CursorDeRelacionados | null
+}) => Promise<Resultado<PaginaDeRelacionados<VehiculoRelacionado>>>
 
 // De estos ids, cuáles puede editar quien llama: lo responde la base.
 export type ConsultaDeEditables = (ids: readonly string[]) => Promise<Resultado<string[]>>

@@ -1,6 +1,5 @@
-// Qué muestra el resumen de un vehículo (`?vehiculo=`), sin salir de la lista: «Resumen» (sus datos, como la ficha), «Fotos» (las de
-// siempre, de sólo lectura) e «Interesados» (el vínculo y quiénes mostraron interés, sólo con `leads.ver`). Cada pestaña lee lo suyo
-// al elegirse (`?pestana=`, sin sumar al historial). Editarlo abre el panel de edición encima del resumen y, al guardar o cancelar,
+// Qué muestra el resumen de un vehículo (`?vehiculo=`), sin salir de la lista: «Resumen» (sus datos, como la ficha, con el bloque «Relacionados» arriba de las pestañas) y «Fotos» (las de
+// siempre, de sólo lectura). Cada pestaña lee lo suyo al elegirse (`?pestana=`, sin sumar al historial). Un `?pestana=interesados` viejo cae en «Resumen». Editarlo abre el panel de edición encima del resumen y, al guardar o cancelar,
 // vuelve a él (`?editar=`).
 import type { Vehiculo } from './vehiculo'
 
@@ -15,16 +14,15 @@ export const MENSAJE_DE_VEHICULO_NO_DISPONIBLE =
 const PESTANAS = [
   { clave: 'resumen', titulo: 'Resumen' },
   { clave: 'fotos', titulo: 'Fotos' },
-  { clave: 'interesados', titulo: 'Interesados' },
 ] as const
 export type PestanaDelResumen = (typeof PESTANAS)[number]['clave']
 
-// Las pestañas que ve quien mira: «Interesados» existe sólo con `leads.ver` (el bloque de la ficha, lo mismo).
-export function pestanasDelResumen(opciones: { verInteresados: boolean }) {
-  return PESTANAS.filter((p) => p.clave !== 'interesados' || opciones.verInteresados)
+// Las pestañas del resumen.
+export function pestanasDelResumen() {
+  return PESTANAS
 }
 
-// La de la URL; lo que no es una pestaña que existe, o que quien mira no ve, abre «Resumen».
+// La de la URL; lo que no es una pestaña que existe abre «Resumen».
 export function pestanaDelResumen(
   valor: string | null,
   pestanas: ReturnType<typeof pestanasDelResumen>,

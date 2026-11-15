@@ -120,6 +120,11 @@ declare
     ('vehiculo_vinculos(uuid)', 'L'),
     ('vehiculo_interesados(uuid)', 'L'),
     ('lead_vehiculos(uuid)', 'L'),
+    -- Los relacionados (T17): definer con el predicado de las policies; lo que quien llama no ve llega como un número, sin ningún dato (relacionados.sql R1 y R2).
+    ('vehiculo_relacionados(uuid,integer)', 'L'),
+    ('vehiculo_relacionados_pagina(uuid,text,timestamp with time zone,uuid,integer)', 'L'),
+    ('lead_relacionados(uuid,integer)', 'L'),
+    ('lead_relacionados_pagina(uuid,text,timestamp with time zone,uuid,integer)', 'L'),
     ('vehiculos_para_lead(uuid,text)', 'L'),
     ('vehiculos_con_lead_visible(uuid[])', 'L'),   -- de unos vehículos, los de un lead que `puede_lead(…, leads.ver)` deja abrir: no devuelve nada del lead
     ('puede_evento(uuid)', 'L'),

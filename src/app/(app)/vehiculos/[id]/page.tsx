@@ -3,7 +3,6 @@ import type { Metadata, Route } from 'next'
 import Link from 'next/link'
 import { z } from 'zod'
 import { rutaDeActividadDe } from '@/modules/actividad'
-import { RegistrarVisita } from '@/modules/buscador/pantallas/visita'
 import { puede, requerirSesion, type Permisos } from '@/modules/equipo'
 import { leerFasesDeOrigen } from '@/modules/flujos'
 import { getOrigenes, leerLayout } from '@/modules/origenes'
@@ -23,6 +22,7 @@ import { vehiculoEnEdicion } from '../edicion'
 import { AvisosBajoLaCabecera } from './avisos-bajo-la-cabecera'
 import { papeleraYAvisosDe } from './avisos-de-la-ficha'
 import { ContenidoDeLaPestana } from './contenido-de-la-pestana'
+import { RegistrarLaVisita } from './registrar-la-visita'
 import { Encabezado } from './encabezado'
 import { Paneles } from './paneles'
 import {
@@ -32,7 +32,7 @@ import {
   pestanasDeQuienMira,
 } from './pestanas'
 import { PestanasDeVehiculo } from './pestanas-de-vehiculo'
-import { RegistrarVisto } from '@/modules/equipo/client'
+import { RelacionadosDeLaFicha } from '../../_relacionados/relacionados-del-vehiculo'
 
 export const metadata: Metadata = { title: 'Vehículo' }
 
@@ -118,8 +118,7 @@ export default async function PaginaVehiculo({
   const pestana = pestanaDeVehiculo(unParametro(parametros[CLAVE_DE_PESTANA]), pestanas)
   return (
     <div className="grid max-w-4xl gap-4">
-      <RegistrarVisita tipo="vehiculo" id={encontrado.id} />
-      <RegistrarVisto modulo="vehiculos" tipo="vehiculo" id={encontrado.id} />
+      <RegistrarLaVisita id={encontrado.id} />
       <VolverAlOrigen origen={origen} />
       <Encabezado
         vehiculo={encontrado}
@@ -140,6 +139,12 @@ export default async function PaginaVehiculo({
         permisos={sesion.permisos}
         editable={editable}
       />
+      <RelacionadosDeLaFicha
+        vehiculoId={encontrado.id}
+        permisos={sesion.permisos}
+        ofrecerPapelera={ofrecerPapelera}
+        avisos={avisos}
+      />
       {hayBarraDePestanas(pestanas) ? <PestanasDeVehiculo pestanas={pestanas} /> : null}
       <ContenidoDeLaPestana
         pestana={pestana}
@@ -147,9 +152,6 @@ export default async function PaginaVehiculo({
         origen={origen}
         layout={suLayout}
         editable={editable}
-        verLeads={puede(sesion.permisos, 'leads.ver')}
-        ofrecerPapelera={ofrecerPapelera}
-        avisos={avisos}
       />
       <Paneles
         vehiculo={encontrado}

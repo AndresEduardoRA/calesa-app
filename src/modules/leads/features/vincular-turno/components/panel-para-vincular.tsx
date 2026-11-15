@@ -33,6 +33,8 @@ type Props = {
   claveDeLaUrl: string
   // Por qué no se pudo vincular, si no se pudo; el panel sigue abierto.
   error?: string | null
+  // El título del panel: «Vincular a un lead» salvo que lo use otro caso («Marcar un interesado»).
+  titulo?: string
 }
 
 const PESTANAS = PESTANAS_DEL_PANEL.map((clave) => ({
@@ -51,6 +53,7 @@ export function PanelParaVincular({
   numeroGlobal,
   claveDeLaUrl,
   error = null,
+  titulo = 'Vincular a un lead',
 }: Props) {
   const parsers = useMemo(
     () =>
@@ -78,7 +81,7 @@ export function PanelParaVincular({
     )
   }
   return (
-    <Drawer abierto={abierto} alCerrar={alCerrar} titulo="Vincular a un lead">
+    <Drawer abierto={abierto} alCerrar={alCerrar} titulo={titulo}>
       {abierto ? (
         <Contenido
           numeroGlobal={numeroGlobal}

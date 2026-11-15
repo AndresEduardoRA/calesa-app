@@ -9,16 +9,15 @@ import {
   leerListadoDeLeads,
   leerVistaDeEmbudo,
 } from '@/modules/leads'
-import {
-  EsqueletoDeTablero,
-  ListadoDeLeads,
-  VistaDeEmbudo,
-} from '@/modules/leads/pantallas/listado'
+import { EsqueletoDeTablero, VistaDeEmbudo } from '@/modules/leads/pantallas/listado'
 import { datosO } from '@/shared/lib/errores'
 import { ZONA_POR_DEFECTO } from '@/shared/lib/fechas'
 import type { ParametrosDeUrl } from '@/shared/lib/filtros'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
+import { getOrigenes } from '@/modules/origenes'
+import { paraRelacionadosDe } from '../_relacionados/para-relacionados'
+import { ListadoConRelacionados } from './listado-con-relacionados'
 
 export const metadata: Metadata = { title: 'Leads' }
 
@@ -44,7 +43,12 @@ export default async function PaginaLeads({ searchParams }: PageProps<'/leads'>)
       </Suspense>
     )
   }
-  const [ajustesLeidos, vistas] = await Promise.all([leerAjustes(), leerVistas('leads')])
+  const [ajustesLeidos, vistas, origenes] = await Promise.all([
+    leerAjustes(),
+    leerVistas('leads'),
+    // Para dónde se puede cotizar desde el bloque «Relacionados» del resumen: sólo quien ve vehículos.
+    puede(sesion.permisos, 'vehiculos.ver') ? getOrigenes(true) : null,
+  ])
   // Si no se pueden leer, el listado se dibuja igual: zona por defecto y el teléfono con «+».
   const ajustes = ajustesLeidos.ok ? ajustesLeidos.data.ajustes : null
   const listado = datosO(
@@ -57,8 +61,13 @@ export default async function PaginaLeads({ searchParams }: PageProps<'/leads'>)
     }),
   )
   return (
-    <ListadoDeLeads
+    <ListadoConRelacionados
       {...listado}
+      para={
+        origenes === null
+          ? null
+          : paraRelacionadosDe(sesion.permisos, origenes.ok ? origenes.data : [])
+      }
       vistas={datosO(vistas)}
       puedeCrear={puede(sesion.permisos, 'leads.crear')}
       puedeExportar={puede(sesion.permisos, 'leads.exportar')}

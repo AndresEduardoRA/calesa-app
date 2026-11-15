@@ -6,11 +6,14 @@ import { leerFasesDeOrigen, leerFlujoDeOrigen } from '@/modules/flujos'
 import { esHuecoConocido, leerUnidad } from '@/modules/logistica'
 import { PanelDeLaUnidad } from '@/modules/logistica/pantallas/unidad'
 import { getOrigenes } from '@/modules/origenes'
+import { EsqueletoDeRelacionados } from '@/modules/vehiculos/pantallas/relacionados'
+import { Suspense } from 'react'
 import { datosO } from '@/shared/lib/errores'
 import type { Permisos } from '@/shared/lib/permisos'
 import { RUTAS } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoSinPermiso, EstadoVacio } from '@/shared/ui/estados'
+import { RelacionadosDelVehiculoServidor } from '../_relacionados/relacionados-del-vehiculo'
 import { HUECOS_DE_LA_UNIDAD, huecosDeLaUnidad } from './huecos-de-la-unidad'
 
 // Lo que no existe, lo que está en la papelera y lo que la persona no ve se muestran igual: decir «no tienes permiso» confirmaría que existe.
@@ -75,6 +78,19 @@ export async function UnidadAbierta({
         fase={fase}
         huecos={conElPedido}
         aviso={aviso}
+        // Los relacionados de un vehículo (no de un ítem de repuesto), bajo la cabecera: el mismo bloque que la ficha y el resumen. La confirmación de desvincular y los selectores de leads
+        // son de la ficha: acá llevan a ella.
+        relacionados={
+          unidad.tipo === 'vehiculo' && puede(permisos, 'leads.ver') ? (
+            <Suspense fallback={<EsqueletoDeRelacionados />}>
+              <RelacionadosDelVehiculoServidor
+                vehiculoId={unidad.id}
+                permisos={permisos}
+                lugar="logistica"
+              />
+            </Suspense>
+          ) : null
+        }
       />
     </>
   )

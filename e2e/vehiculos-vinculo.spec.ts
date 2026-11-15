@@ -13,8 +13,7 @@ import {
 import { borrarLeadsDePrueba, crearLead, marcarInteres, vincular } from './soporte/leads'
 import { cargarVehiculos, vehiculoPorTitulo } from './soporte/vehiculos'
 
-// El vínculo a un lead y los interesados, vistos desde la ficha del vehículo (todavía no hay
-// pantalla que los escriba: se cargan directo). Y lo que el vínculo otorga: con alcance «propios»,
+// El vínculo a un lead y los interesados, vistos desde el bloque «Relacionados» de la ficha del vehículo (se cargan directo). Y lo que el vínculo otorga: con alcance «propios»,
 // quien tiene al lead en su cartera edita el vehículo aunque no lo haya creado.
 test.describe.configure({ mode: 'serial' })
 
@@ -85,8 +84,9 @@ async function abrirFicha(page: Page, vehiculoId: string, titulo: string) {
   await page.goto(`/vehiculos/${vehiculoId}`)
   await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeVisible()
 }
-const vinculo = (page: Page) => page.getByRole('region', { name: 'Vínculo', exact: true })
-const interesados = (page: Page) => page.getByRole('region', { name: 'Interesados' })
+// El bloque «Relacionados» de arriba: sus grupos Vinculado e Interesado (el de cotizaciones sólo existe con `cotizaciones.ver`).
+const vinculo = (page: Page) => page.getByRole('region', { name: 'Vinculado', exact: true })
+const interesados = (page: Page) => page.getByRole('region', { name: 'Interesado', exact: true })
 
 test('quien tiene al lead en su cartera ve el vínculo y edita el vehículo que no creó', async ({
   page,
@@ -138,18 +138,19 @@ test('quien no tiene al lead en su cartera sabe que hay un vínculo, no de quié
 }) => {
   await entrar(page, colega)
   await abrirFicha(page, vinculado, VINCULADO)
-  await expect(vinculo(page).getByText('Un lead que no está en tu cartera')).toBeVisible()
+  await expect(vinculo(page).getByText('1 que no puedes ver')).toBeVisible()
   await expect(page.getByText(LEAD)).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Editar' })).toHaveCount(0)
   // El interés de un lead ajeno no le aparece.
   await abrirFicha(page, suelto, SUELTO)
-  await expect(interesados(page).getByText(/Ninguno de los leads que ves/)).toBeVisible()
+  await expect(interesados(page).getByText('1 que no puedes ver')).toBeVisible()
+  await expect(page.getByText(LEAD)).toHaveCount(0)
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
 test('sin permiso sobre leads el bloque no existe', async ({ page }) => {
   await entrar(page, soloCorea)
   await abrirFicha(page, vinculado, VINCULADO)
-  await expect(page.getByText('Vínculo e interesados')).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Relacionados' })).toHaveCount(0)
   await expect(page.getByText(LEAD)).toHaveCount(0)
 })

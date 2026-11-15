@@ -1,5 +1,6 @@
 import type { Route } from 'next'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 import { BadgeDeSituacion } from '@/modules/vehiculos/client'
 import { RUTAS } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
@@ -18,6 +19,8 @@ type Props = {
   huecos: readonly HuecoDeLaUnidad[]
   // Una línea de aviso bajo la cabecera (p. ej. que no se pudo leer el flujo del origen).
   aviso?: string | null
+  // Lo que va bajo la cabecera, antes de los huecos: el bloque «Relacionados» de un vehículo (vive en `vehiculos` y lo compone la página; `logistica` no lo conoce). Nulo en un ítem de repuesto.
+  relacionados?: ReactNode
 }
 
 // «Abrir ficha» para un vehículo; «Abrir proyecto» para un ítem (sin su proyecto, ningún enlace).
@@ -48,7 +51,14 @@ function ContenidoDelHueco({ hueco, unidad }: { hueco: HuecoDeLaUnidad; unidad: 
 
 // El panel de la unidad (6.01): la cabecera con el título, el origen, la fase y los días en ella, y debajo un bloque plegado por hueco. No lee nada: recibe lo que se dibuja. Sirve
 // igual en la página de la unidad y dentro del drawer de la cadena. Un hueco recibe sólo `{ unidad }` (datos serializables) y carga lo suyo al abrirse.
-export function PanelDeLaUnidad({ unidad, origen, fase, huecos, aviso = null }: Props) {
+export function PanelDeLaUnidad({
+  unidad,
+  origen,
+  fase,
+  huecos,
+  aviso = null,
+  relacionados = null,
+}: Props) {
   const dias = textoDeDiasEnLaFase(unidad.faseDesde)
   return (
     <div className="grid gap-4" data-slot="panel-de-la-unidad">
@@ -69,6 +79,7 @@ export function PanelDeLaUnidad({ unidad, origen, fase, huecos, aviso = null }: 
         </div>
         {aviso ? <p className="text-(length:--text-sm) text-(--color-ink-soft)">{aviso}</p> : null}
       </header>
+      {relacionados}
       {huecos.length > 0 ? (
         <div className="grid gap-3">
           {huecos.map((hueco) => (

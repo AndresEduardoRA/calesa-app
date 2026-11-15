@@ -96,11 +96,11 @@ test('vincular y marcar interés con su nota desde el lead; la ficha del vehícu
   // Del lado del vehículo, lo mismo.
   await page.goto(`/vehiculos/${sedanId}`)
   await expect(
-    page.getByRole('region', { name: 'Vínculo', exact: true }).getByText(lead.nombre),
+    page.getByRole('region', { name: 'Vinculado', exact: true }).getByText(lead.nombre),
   ).toBeVisible()
   await page.goto(`/vehiculos/${camionetaId}`)
   await expect(
-    page.getByRole('region', { name: 'Interesados' }).getByText('La quiere en rojo'),
+    page.getByRole('region', { name: 'Interesado', exact: true }).getByText('La quiere en rojo'),
   ).toBeVisible()
 })
 
@@ -258,7 +258,10 @@ test('reemplazar nombra al lead que lo pierde; uno de otra cartera no se reempla
   await expect(panel.getByText(deCora.nombre)).toHaveCount(0)
   // Desde la ficha del vehículo, quien lo edita lo desvincula (con confirmación: desde ahí no hay «Deshacer»).
   await page.goto(`/vehiculos/${ajenoId}`)
-  const disparador = page.getByRole('button', { name: 'Desvincular' })
+  // El lead vinculado no se ve (no está en su cartera): sin fila, «Desvincular» es una acción del grupo Vinculado, en el bloque «Relacionados» de arriba.
+  const disparador = page
+    .getByRole('region', { name: 'Vinculado', exact: true })
+    .getByRole('button', { name: 'Desvincular' })
   const dialogo = page.getByRole('dialog', { name: /^Desvincular/ })
   await cicloDeUnaConfirmacion(page, {
     abrir: () => disparador.click(),
@@ -270,7 +273,10 @@ test('reemplazar nombra al lead que lo pierde; uno de otra cartera no se reempla
   await sinRedNoConfirma(context, dialogo, confirmar)
   expect(await dobleClicManda(page, confirmar)).toBe(1)
   await expect.poll(() => leadDelVehiculo(ajenoId)).toBeNull()
-  await expect(page.getByText(/^Sin vínculo/)).toBeVisible()
+  // Sin vínculo y sin nada más que lo relacione: el bloque de arriba lo dice en una línea.
+  await expect(
+    page.getByRole('region', { name: 'Relacionados' }).getByText('Sin relacionados todavía.'),
+  ).toBeVisible()
 })
 
 test('compartir un lead con vehículos vinculados avisa que el vínculo se los da', async ({

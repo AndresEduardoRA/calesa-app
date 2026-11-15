@@ -1,10 +1,8 @@
 'use client'
 
-import { UnlinkIcon } from 'lucide-react'
 import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { RUTAS } from '@/shared/lib/rutas'
-import { Button } from '@/shared/ui/button'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
 import { salirSinPerder } from '@/shared/ui/salida-con-cambios'
@@ -28,11 +26,16 @@ type Props = {
   avisos?: AvisosDelMenu
 }
 
-// «Desvincular» en la ficha del vehículo, para quien lo puede editar (la base lo vuelve a decidir). Es la
-// salida cuando el vehículo está vinculado a un lead que quien mira no tiene en su cartera. Pregunta
-// antes (`?panel=desvincular`): desde acá no hay «Deshacer» (volver a vincular pide la cartera de ese lead).
-// Si se llegó desde el aviso «Está vinculado a un lead» (`?luego=papelera`), el aviso de desvinculado ofrece enviarlo a la papelera.
-export function BotonDesvincular({ vehiculo, origenId, ofrecerPapelera, avisos }: Props) {
+// La confirmación de «Desvincular» en la ficha del vehículo, para quien lo puede editar (la base lo vuelve a decidir). Es la salida cuando el vehículo está vinculado a un
+// lead que quien mira no tiene en su cartera. Se abre por la URL (`?panel=desvincular`): desde la acción «Desvincular» de la fila de Vinculado (`<Relacionados>`) o desde el
+// aviso «Está vinculado a un lead» (`?luego=papelera`), y se puede recargar. Pregunta antes: desde acá no hay «Deshacer» (volver a vincular pide la cartera de ese lead).
+// Si se llegó desde el aviso, el aviso de desvinculado ofrece enviarlo a la papelera.
+export function PanelDesvincularDelVehiculo({
+  vehiculo,
+  origenId,
+  ofrecerPapelera,
+  avisos,
+}: Props) {
   const acciones = useVinculo(null)
   const papelera = useEnvioAPapelera()
   const router = useRouter()
@@ -41,18 +44,6 @@ export function BotonDesvincular({ vehiculo, origenId, ofrecerPapelera, avisos }
   const conPapelera = ofrecerPapelera && panel.valor(CLAVE_DE_LUEGO) === LUEGO_PAPELERA
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
-        className="min-h-11 w-fit md:min-h-8"
-        disabled={acciones.enCurso}
-        onClick={() => {
-          panel.abrir()
-        }}
-      >
-        <UnlinkIcon aria-hidden />
-        Desvincular
-      </Button>
       {montar ? (
         <ConfirmarDesvincularDiferido
           abierto={panel.abierto}

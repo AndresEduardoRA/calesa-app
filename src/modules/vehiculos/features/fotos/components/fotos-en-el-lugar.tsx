@@ -12,12 +12,14 @@ type Props = {
   vehiculo: { id: string; titulo: string; portadaRuta: string | null }
   // `abrir` en la fila de la tabla (no caben flechas de 44 px en 56 px); `carrusel` en la tarjeta y las cabeceras.
   modo?: 'carrusel' | 'abrir'
+  // Qué visor abre `?visor=`: por defecto el id del vehículo. El mismo vehículo en dos lugares de una pantalla (dos grupos de «Relacionados») lleva una clave por lugar, o se abrirían dos.
+  clave?: string
   className?: string
 }
 
 // Las fotos de un vehículo donde se nombra (fila, tarjeta, resumen, ficha, hoja de cotizar): la portada y, al acercarse, el resto por
 // `leerFotosDelResumen` (a lo sumo 24, una sola lectura). Siempre del mismo tamaño (4:3): con o sin foto, la lista no salta.
-export function FotosEnElLugar({ vehiculo, modo = 'carrusel', className }: Props) {
+export function FotosEnElLugar({ vehiculo, modo = 'carrusel', clave, className }: Props) {
   const { id: vehiculoId, titulo, portadaRuta: portada } = vehiculo
   const cargar = useCallback(async (): Promise<readonly ImagenDelVisor[] | null> => {
     const leidas = await leerFotosDelResumen(vehiculoId)
@@ -30,7 +32,7 @@ export function FotosEnElLugar({ vehiculo, modo = 'carrusel', className }: Props
   }, [vehiculoId])
   return (
     <CarruselEnElLugar
-      clave={vehiculoId}
+      clave={clave ?? vehiculoId}
       titulo={titulo}
       portada={portada ? urlPublica('vehiculos', portada) : null}
       cargar={cargar}

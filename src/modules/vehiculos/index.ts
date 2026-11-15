@@ -7,7 +7,6 @@
 export {
   buscarVehiculos,
   leerGaleria,
-  leerRelaciones,
   leerSubasta,
   leerTitulosDeVehiculos,
   leerVehiculo,
@@ -107,11 +106,15 @@ export {
 export { CLAVE_DE_EDICION } from './features/alta/claves'
 export { SIN_APIBARA, type DisponibilidadDeApibara } from './entities/apibara'
 
-// El vínculo a un lead y los interesados: lo que lee el bloque de la ficha del vehículo y la sección «Vehículos»
-// de la ficha del lead (vive acá y la compone `app/`: `leads` no importa `vehiculos`; sus componentes salen
-// por `pantallas/ficha` y `pantallas/vehiculos-del-lead`)
-export type { Relaciones } from './entities/vinculo'
-export { leerVehiculosDelLead } from './composicion'
+// El vínculo a un lead y los interesados: la sección «Vehículos» de la ficha del lead (gestionar: vive acá y la compone `app/`: `leads` no importa `vehiculos`; sus componentes salen
+// por `pantallas/vehiculos-del-lead`) y el bloque «Relacionados» de cada detalle (lo que lee el servidor: `pantallas/relacionados` lo dibuja)
+export {
+  leerRelacionadosDelLead,
+  leerRelacionadosDelVehiculo,
+  leerVehiculosDelLead,
+} from './composicion'
+export type { ParaRelacionados } from './entities/acciones-de-relacionados'
+export type { RelacionadosDelLead, RelacionadosDelVehiculo } from './entities/relacionados'
 export type { VehiculosDelLead } from './entities/vehiculos-del-lead'
 export { opcionesDeVehiculoDelLead, type OpcionDeVehiculo } from './features/vinculo/lecturas'
 

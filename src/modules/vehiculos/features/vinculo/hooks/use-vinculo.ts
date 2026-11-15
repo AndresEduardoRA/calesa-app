@@ -1,7 +1,6 @@
 'use client'
 
-import { useAction } from 'next-safe-action/hooks'
-import { enviarAccion, type Envio } from '@/shared/lib/enviar-accion'
+import type { Envio } from '@/shared/lib/enviar-accion'
 import { avisarConDeshacer, avisarError, avisarExito } from '@/shared/ui/toasts'
 import {
   textoDeInteres,
@@ -9,10 +8,7 @@ import {
   type RespuestaDeInteres,
   type RespuestaDeVinculo,
 } from '../../../entities/vehiculos-del-lead'
-import { marcarInteres } from '../actions/marcar-interes'
-import { MENSAJE_DE_VALIDACION } from '../actions/resultado'
-import { quitarInteres } from '../actions/quitar-interes'
-import { vincularVehiculo } from '../actions/vincular-vehiculo'
+import { usePedidosDeVinculo } from './use-pedidos-de-vinculo'
 
 type Vehiculo = { id: string; titulo: string; numero: number; actualizadoEn: string }
 
@@ -58,32 +54,22 @@ function exigirLead(leadId: string | null): string {
 
 // Vincular, desvincular, marcar y quitar interés. Cada pedido se dice entero en un aviso; la pantalla
 // se vuelve a dibujar por la action (revalida la ficha del lead y la del vehículo). `leadId` es el
-// lead de la ficha: nulo en la del vehículo, donde sólo se desvincula.
-export function useVinculo(leadId: string | null) {
-  const acciones = {
-    vincular: useAction(vincularVehiculo),
-    marcar: useAction(marcarInteres),
-    quitar: useAction(quitarInteres),
-  }
+// lead de la ficha: nulo en la del vehículo, donde sólo se desvincula; con otro lead cada llamada lo trae (`lead`: el bloque «Relacionados» de un vehículo
+// vincula y marca a leads distintos). `alCambiar` corre tras todo envío logrado, también «Deshacer»: el resumen, que lee en el navegador, vuelve a leer.
+export function useVinculo(leadId: string | null, { alCambiar }: { alCambiar?: () => void } = {}) {
+  const { enCurso, pedirVinculo, pedirInteres, pedirQuitar } = usePedidosDeVinculo(alCambiar)
 
-  const pedirVinculo = (vehiculoId: string, actualizadoEnEsperado: string, lead: string | null) =>
-    enviarAccion<RespuestaDeVinculo>(
-      acciones.vincular.executeAsync({ vehiculoId, actualizadoEnEsperado, leadId: lead }),
-      MENSAJE_DE_VALIDACION,
-    )
-
-  const pedirInteres = (vehiculoId: string, lead: string, nota: string | null) =>
-    enviarAccion<RespuestaDeInteres>(
-      acciones.marcar.executeAsync({ vehiculoId, leadId: lead, nota }),
-      MENSAJE_DE_VALIDACION,
-    )
-
-  // `anterior` nombra al lead que lo pierde, si se reemplaza.
+  // `anterior` nombra al lead que lo pierde, si se reemplaza; `lead`, a quién se vincula si no es el de la ficha.
   async function vincular(
     vehiculo: Vehiculo,
     anterior?: string,
+    lead?: string,
   ): Promise<Envio<RespuestaDeVinculo>> {
-    const envio = await pedirVinculo(vehiculo.id, vehiculo.actualizadoEn, exigirLead(leadId))
+    const envio = await pedirVinculo(
+      vehiculo.id,
+      vehiculo.actualizadoEn,
+      exigirLead(lead ?? leadId),
+    )
     if (envio.ok) {
       avisarExito(textoDeVinculo(envio.data, vehiculo, anterior))
     }
@@ -95,8 +81,9 @@ export function useVinculo(leadId: string | null) {
   // con la versión que devolvió, también si ya estaba sin vínculo.
   async function desvincular(
     vehiculo: Vehiculo,
-    { deshacer, luego }: { deshacer: boolean; luego?: LuegoDeDesvincular },
+    { deshacer, luego, lead }: { deshacer: boolean; luego?: LuegoDeDesvincular; lead?: string },
   ) {
+    const deEste = lead ?? leadId
     const envio = await pedirVinculo(vehiculo.id, vehiculo.actualizadoEn, null)
     if (!envio.ok) {
       avisarError(envio.error)
@@ -105,8 +92,8 @@ export function useVinculo(leadId: string | null) {
     const texto = textoDeVinculo(envio.data, vehiculo)
     const version = envio.data.actualizadoEn
     const volver =
-      deshacer && leadId && envio.data.resultado === 'desvinculado'
-        ? deshacerCon(() => pedirVinculo(vehiculo.id, version, leadId))
+      deshacer && deEste && envio.data.resultado === 'desvinculado'
+        ? deshacerCon(() => pedirVinculo(vehiculo.id, version, deEste))
         : null
     avisarDesvinculado(texto, version, { luego, volver })
     return envio
@@ -115,8 +102,9 @@ export function useVinculo(leadId: string | null) {
   async function marcar(
     vehiculo: Vehiculo,
     nota: string | null,
+    lead?: string,
   ): Promise<Envio<RespuestaDeInteres>> {
-    const envio = await pedirInteres(vehiculo.id, exigirLead(leadId), nota)
+    const envio = await pedirInteres(vehiculo.id, exigirLead(lead ?? leadId), nota)
     if (envio.ok) {
       avisarExito(textoDeInteres(envio.data, vehiculo))
     }
@@ -124,12 +112,9 @@ export function useVinculo(leadId: string | null) {
   }
 
   // Se hace y ofrece «Deshacer», que lo vuelve a marcar con la misma nota.
-  async function quitar(vehiculo: Vehiculo) {
-    const lead = exigirLead(leadId)
-    const envio = await enviarAccion<RespuestaDeInteres>(
-      acciones.quitar.executeAsync({ vehiculoId: vehiculo.id, leadId: lead }),
-      MENSAJE_DE_VALIDACION,
-    )
+  async function quitar(vehiculo: Vehiculo, deEste?: string) {
+    const lead = exigirLead(deEste ?? leadId)
+    const envio = await pedirQuitar(vehiculo.id, lead)
     if (!envio.ok) {
       avisarError(envio.error)
     } else if (envio.data.resultado === 'quitado') {
@@ -143,7 +128,7 @@ export function useVinculo(leadId: string | null) {
   }
 
   return {
-    enCurso: Object.values(acciones).some((accion) => accion.isPending),
+    enCurso,
     vincular,
     desvincular,
     marcar,

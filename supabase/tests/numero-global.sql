@@ -84,6 +84,8 @@ insert into sondas (nombre, plantilla, control) values
   ('recordatorio_restaurar', $q$select public.recordatorio_restaurar('{rec}', (select actualizado_en from public.recordatorios where id = '{rec}'))$q$, false),
   ('vehiculo_vinculos', $q$select * from public.vehiculo_vinculos('{veh}')$q$, true),
   ('vehiculo_interesados', $q$select * from public.vehiculo_interesados('{veh}')$q$, true),
+  ('vehiculo_relacionados', $q$select public.vehiculo_relacionados('{veh}', 5)$q$, true),
+  ('vehiculo_relacionados_pagina', $q$select public.vehiculo_relacionados_pagina('{veh}', 'interesado', null, null, 20)$q$, true),
   ('vehiculos_para_lead', $q$select public.vehiculos_para_lead('{lp}', 'Matriz')$q$, false);
 
 -- Una vista previa de lo que la sonda devuelve a quien sí lo ve, para que el control signifique algo.
@@ -288,6 +290,8 @@ declare
     'buscador_cotizaciones', 'devuelve cotizaciones del buscador (7.12-1): su número de cotización, título, clase y estado; del lead sólo mira en_cartera, nunca su número',
     'repuesto_proyecto_crear', 'devuelve id, número del proyecto de repuestos y actualizado_en (8.08-1): del lead sólo guarda el id, que trg_lead_visible exige visible; nunca su número',
     'declaracion_leer', 'devuelve una declaración de aduana (6.07-3): su número de declaración y los vehículos que quien llama ve; del lead sólo mira lead_id para el alcance propios (en_cartera), nunca su número',
+    'lead_relacionados', 'devuelve vehículos (T17): su número de vehículo, con el predicado de las policies de quien llama; del lead sólo mira puedo_actuar, nunca su número',
+    'lead_relacionados_pagina', 'devuelve vehículos (T17): su número de vehículo y la fecha de su relación; nunca el número de un lead',
     'actividad_diff', 'devuelve el diff de un cambio recortado por _actividad_recortar() (9.01-1): de un lead, la lista cerrada que quita numero, numero_propio y telefono_principal (que lead_auditar ya no guarda); areas/actividad/actividad.sql T3',
     'actividad_listar', 'devuelve la página de la actividad (9.01-1): la cabecera y los nombres de los campos que cambiaron según _actividad_recortar(), nunca un valor; areas/actividad/listar.sql T3');
   r record; v_fallas text := '';
