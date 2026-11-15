@@ -162,6 +162,11 @@ test('E2E escritorio · los huecos ocasionales están en pestañas y «Dinero» 
   await capturar(page, info, 'escritorio-1440-duena-dinero')
   await page.reload()
   await expect(page.getByRole('tab', { name: 'Dinero' })).toHaveAttribute('aria-selected', 'true')
+  // A 1280×800 la dueña tampoco desplaza la página.
+  await page.setViewportSize({ width: 1280, height: 800 })
+  await expect(page.locator('[data-hueco="margen"]')).toBeVisible()
+  expect(await sinDesplazarLaPagina(page)).toBe(true)
+  await capturar(page, info, 'escritorio-1280-duena-dinero')
 })
 
 test('E2E escritorio · quien sólo ve no tiene «Dinero» ni formularios, y la unidad sigue sin desplazarse', async ({
@@ -196,10 +201,12 @@ test('E2E celular · la barra «Mover» siempre a mano lleva a «Qué falta»', 
   await expect(resumen).toBeFocused()
 })
 
-test('E2E celular · sin permiso de mover no hay barra', async ({ page }) => {
+test('E2E celular · sin permiso de mover no hay barra', async ({ page }, info) => {
   test.skip(!esMovil(page), 'Celular: la barra «Mover» es de la forma plegable.')
   await entrar(page, correoDeQuienSoloVe, { fresco: true })
   await page.goto(`/logistica/vehiculo/${terreno.enB.id}`)
   await expect(page.locator('[data-bloque-del-hueco="notas"]')).toBeAttached()
   await expect(page.getByRole('button', { name: 'Mover', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: terreno.c.nombre, level: 3 })).toBeVisible()
+  await capturar(page, info, 'celular-solo-ve')
 })
