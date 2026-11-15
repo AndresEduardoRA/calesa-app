@@ -1,7 +1,7 @@
 'use client'
 
 import { formatearFecha } from '@/shared/lib/fechas'
-import { AbrirResumen, TarjetaDeLista } from '@/shared/ui/lista'
+import { AbrirResumen, SufijoDeVisto, TarjetaDeLista } from '@/shared/ui/lista'
 import { useRegional } from '@/shared/ui/regional'
 import {
   estadoDeLaFila,
@@ -23,6 +23,7 @@ export function TarjetasDeProyectos({ proyectos, alAbrir }: Props) {
         return (
           <TarjetaDeLista
             key={proyecto.id}
+            idDeVisto={proyecto.id}
             alAbrir={() => {
               alAbrir(proyecto.id)
             }}
@@ -34,6 +35,8 @@ export function TarjetasDeProyectos({ proyectos, alAbrir }: Props) {
               >
                 #{proyecto.numero} · {vehiculo.titulo}
               </AbrirResumen>
+              {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
+              <SufijoDeVisto id={proyecto.id} />
               <EstadoDelProyecto estado={estadoDeLaFila(proyecto)} />
             </div>
             {vehiculo.detalle ? (

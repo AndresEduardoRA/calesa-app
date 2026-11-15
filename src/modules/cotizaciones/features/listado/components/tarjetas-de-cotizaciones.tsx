@@ -2,7 +2,7 @@
 
 import { fechaRelativa } from '@/shared/lib/fechas'
 import { Badge } from '@/shared/ui/badge'
-import { AbrirResumen, TarjetaDeLista } from '@/shared/ui/lista'
+import { AbrirResumen, SufijoDeVisto, TarjetaDeLista } from '@/shared/ui/lista'
 import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
 import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
@@ -39,6 +39,7 @@ export function TarjetasDeCotizaciones({
       {cotizaciones.map((cotizacion) => (
         <TarjetaDeLista
           key={cotizacion.id}
+          idDeVisto={cotizacion.id}
           abierta={abierta === cotizacion.id}
           acciones={menuDeFila?.(cotizacion)}
           alAbrir={() => {
@@ -52,6 +53,8 @@ export function TarjetasDeCotizaciones({
             >
               N.º {cotizacion.numero}
             </AbrirResumen>
+            {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
+            <SufijoDeVisto id={cotizacion.id} />
             <Badge variant="secondary">{ETIQUETA_DE_CLASE[cotizacion.clase]}</Badge>
             {cotizacion.aprobada ? <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge> : null}
             <span className="ml-auto font-medium tabular-nums">

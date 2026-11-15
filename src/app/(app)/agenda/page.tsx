@@ -21,6 +21,7 @@ import {
 import { CalendarioDeAgenda, PanelesDeAgenda } from '@/modules/agenda/pantallas/agenda'
 import { leerAjustes } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
+import { MarcasDeVistoDeLaPagina } from '@/modules/equipo/pantallas/marcas-de-visto'
 import { CORTE_DE_LA_TABLA } from '@/shared/lib/ancho'
 import { anchoDeEstaPeticion } from '@/shared/lib/ancho.server'
 import { datosO } from '@/shared/lib/errores'
@@ -105,16 +106,25 @@ export default async function PaginaDeAgenda({ searchParams }: PageProps<'/agend
   const detalleDeRecordatorio = lecturaDeRecordatorio ? datosO(lecturaDeRecordatorio) : null
   return (
     <>
-      <CalendarioDeAgenda
-        agenda={agenda}
-        vista={vista}
-        fecha={fecha}
-        hoy={hoy}
-        zona={zona}
-        clases={clases}
-        puedeVerTodo={puedeVerTodo}
-        deTodos={deTodos}
-      />
+      {/* Los chips de eventos y tareas marcan lo visto (una lectura por pantalla); abrir `?evento=` o `?tarea=` lo registra. */}
+      <MarcasDeVistoDeLaPagina
+        modulo="agenda"
+        consultas={[
+          { tipo: 'evento', ids: agenda.eventos.map((e) => e.id), parametro: 'evento' },
+          { tipo: 'tarea', ids: agenda.tareas.map((t) => t.id), parametro: 'tarea' },
+        ]}
+      >
+        <CalendarioDeAgenda
+          agenda={agenda}
+          vista={vista}
+          fecha={fecha}
+          hoy={hoy}
+          zona={zona}
+          clases={clases}
+          puedeVerTodo={puedeVerTodo}
+          deTodos={deTodos}
+        />
+      </MarcasDeVistoDeLaPagina>
       <PanelesDeAgenda
         evento={eventoPedido(eventoId, detalleDeEvento, yo, sesion.permisos)}
         tarea={tareaPedida(tareaId, detalleDeTarea, yo, sesion.permisos)}

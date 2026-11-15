@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useMemo, type ReactNode } from 'react'
 import { ProveedorDeVistosDeLista } from '@/shared/ui/lista'
 import type { ModuloDeVistos, TipoDeVistos } from '../../../entities/vistos'
 import { useVistos } from '../hooks/use-vistos'
@@ -17,9 +17,10 @@ type Props = {
 
 // Las marcas de «visto» de una página de una lista: las filas y tarjetas de `@/shared/ui/lista` las leen solas con `idDeVisto`.
 export function ProveedorDeMarcasDeVisto({ modulo, tipo, ids, abierto, children }: Props) {
-  const { marca, abrir } = useVistos(modulo, tipo, ids)
+  const consultas = useMemo(() => [{ tipo, ids }], [tipo, ids])
+  const { marca, abrir } = useVistos(modulo, consultas)
   useEffect(() => {
-    if (abierto !== null) abrir(abierto)
-  }, [abierto, abrir])
+    if (abierto !== null) abrir(tipo, abierto)
+  }, [abierto, abrir, tipo])
   return <ProveedorDeVistosDeLista marca={marca}>{children}</ProveedorDeVistosDeLista>
 }

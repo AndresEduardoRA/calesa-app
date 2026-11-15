@@ -1,11 +1,13 @@
 'use client'
 
 import { PlusIcon, Settings2Icon } from 'lucide-react'
+import { useMemo } from 'react'
+import { ProveedorDeMarcasDeVisto } from '@/modules/equipo/client'
 import { Aviso } from '@/shared/ui/aviso'
 import { Button } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
 import type { Embudo } from '../../../entities/embudo'
-import { totalDelTablero, type Tablero } from '../../../entities/tablero'
+import { idsDeLeadsDelTablero, totalDelTablero, type Tablero } from '../../../entities/tablero'
 import { DialogoDeEtiquetas } from '../../etiquetas/components/dialogo-de-etiquetas'
 import { RefrescarAlVolver } from '../../ficha/components/refrescar-al-volver'
 import { AccionesDeFila } from '../../listado/components/acciones-de-fila'
@@ -83,6 +85,8 @@ function ConTablero(props: {
   const estado = useTablero(inicial)
   const embudo = embudos.find((e) => e.id === inicial.embudo.id)
   const vacio = totalDelTablero(estado.tablero) === 0
+  // «Visto» del módulo leads en cada tarjeta (el enlace al lead): una lectura por pantalla, los primeros 200 leads.
+  const idsDeLeads = useMemo(() => idsDeLeadsDelTablero(estado.tablero), [estado.tablero])
   // El «⋯» de cada tarjeta es el del lead (`MenuDeLead`): sus etiquetas, «Gestionar» y los modales de anotar y agendar viven acá, una vez.
   const menu = useMenuDelEmbudo(paraElMenu)
   return (
@@ -111,14 +115,16 @@ function ConTablero(props: {
         />
       ) : null}
       <ProveedorDelMenuDelEmbudo valor={menu.valor}>
-        <TableroDeEmbudo
-          estado={estado}
-          etapaDeLaUrl={vista.etapa}
-          alElegirEtapa={vista.elegirEtapa}
-          alIrABuscar={() => {
-            document.getElementById(ID_DE_LA_BUSQUEDA_DEL_EMBUDO)?.focus()
-          }}
-        />
+        <ProveedorDeMarcasDeVisto modulo="leads" tipo="lead" ids={idsDeLeads} abierto={null}>
+          <TableroDeEmbudo
+            estado={estado}
+            etapaDeLaUrl={vista.etapa}
+            alElegirEtapa={vista.elegirEtapa}
+            alIrABuscar={() => {
+              document.getElementById(ID_DE_LA_BUSQUEDA_DEL_EMBUDO)?.focus()
+            }}
+          />
+        </ProveedorDeMarcasDeVisto>
       </ProveedorDelMenuDelEmbudo>
       {vista.etapasAbierto && embudo ? (
         <PanelDeEtapas

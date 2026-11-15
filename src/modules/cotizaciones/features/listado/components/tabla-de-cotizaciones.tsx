@@ -7,6 +7,7 @@ import {
   CabeceraPegada,
   CeldaPegada,
   FilaDeLista,
+  SufijoDeVisto,
   TablaDeLista,
 } from '@/shared/ui/lista'
 import { Monto } from '@/shared/ui/monto'
@@ -39,12 +40,16 @@ function CeldaDelNumero({ cotizacion }: { cotizacion: FilaDeCotizacion }) {
   return (
     <CeldaPegada lado="nombre">
       <div className="grid min-w-0">
-        <AbrirResumen
-          nombre={`N.º ${String(cotizacion.numero)}`}
-          className="w-fit font-medium text-(--color-ink) tabular-nums"
-        >
-          N.º {cotizacion.numero}
-        </AbrirResumen>
+        <span className="flex items-center">
+          <AbrirResumen
+            nombre={`N.º ${String(cotizacion.numero)}`}
+            className="w-fit font-medium text-(--color-ink) tabular-nums"
+          >
+            N.º {cotizacion.numero}
+          </AbrirResumen>
+          {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
+          <SufijoDeVisto id={cotizacion.id} />
+        </span>
         {cotizacion.titulo ? (
           <span className="max-w-60 truncate text-(length:--text-xs) text-(--color-ink-soft)">
             {cotizacion.titulo}
@@ -88,6 +93,7 @@ export function TablaDeCotizaciones({
         {cotizaciones.map((cotizacion) => (
           <FilaDeLista
             key={cotizacion.id}
+            idDeVisto={cotizacion.id}
             abierta={abierta === cotizacion.id}
             alAbrir={() => {
               alAbrir(cotizacion.id)

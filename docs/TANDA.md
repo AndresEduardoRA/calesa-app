@@ -104,11 +104,15 @@ T02 y T03 corriendo. La persona eligió pausarlo y que la tanda la haga esta ses
 - Aplicado en `/vehiculos` y `/leads` (resumen y ficha registran).
 - **Migración:** `equipo_vistos`. Prueba: `areas/equipo/vistos.sql`. **e2e:** `vistos` (nuevo), `leads-listado`, `vehiculos`, `perfil-*`.
 
-### [ ] A3b · Visto en el resto de las listas (`feat(app): marcar lo visto en todas las listas`)
+### [x] A3b · Visto en el resto de las listas (`feat(app): marcar lo visto en todas las listas`)
 
-- Cotizaciones, agenda (eventos y tareas), repuestos (proyectos), notificaciones (abrir una = vista) y logística (aplica cuando exista la
-  lista de E1; hasta entonces, `/logistica/vehiculo/[id]` registra).
-- **e2e:** `cotizaciones-listado`, `agenda`, `repuestos-*` del listado, `notificaciones-campana`.
+- Cotizaciones (filas, tarjetas y `/cotizaciones/[id]`), repuestos (proyectos y `/repuestos/[id]`), agenda (chips de eventos y tareas, con tilde), logística
+  (bandeja del día y de un grupo, fase, «dónde está», gastos y pagos, unidades de un grupo, `/logistica/vehiculo/[id]`) y el kanban de leads. Notificaciones y
+  aduana no marcan.
+- `equipo`: E/S de «visto» pedida al usarse (`composicion-vistos.client.ts`, `pedidos-de-vistos.ts`), último del módulo de cualquier tipo (`TIPOS_DEL_MODULO`),
+  `pantallas/marcas-de-visto` y `pantallas/visto-de-la-ficha`. `@/shared/ui/lista` exporta `CLASES_DE_VISTO`.
+- **Migración:** `equipo_vistos_de_por_la_pk` (`vistos_de` recortaba la lista dentro de la consulta y la RLS la dejaba como filtro). **Medición:** `medir-vistos.sql`.
+- **e2e:** `vistos-por-modulo` y `agenda-vistos` (nuevos), R6 de `cotizaciones-listado-resumen`, y los de cada módulo y `presupuesto-js`.
 
 ### [x] A4a · Zona horaria de las fechas de subasta (`feat(shared): mostrar la zona de las fechas de subasta`)
 

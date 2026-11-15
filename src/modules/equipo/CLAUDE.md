@@ -19,9 +19,18 @@ Autenticación, perfiles, roles y permisos (RBAC puro), invitaciones, bloqueo, b
 - `infra/invitaciones.ts` — **la excepción del cliente admin**: `conAdminDeAuth()` comprueba `equipo.usuarios.gestionar` y entrega sólo `auth.admin`
   (lo cuida el lint). Crear rol o invitar no es idempotente.
 
-- «Visto» (`features/vistos/`, `entities/vistos.ts`): `ProveedorDeMarcasDeVisto` (una lectura de `vistos_de` por página y el abierto marcado al
-  abrirse), `RegistrarVisto` (la ficha), `VistosDelPerfil` y la preferencia `vistos` (en `ProveedorPreferencias`). Las marcas se dibujan en
-  `@/shared/ui/lista` (`idDeVisto`, `<SufijoDeVisto>`).
+- «Visto» (`features/vistos/`, `entities/vistos.ts`): la preferencia `vistos` (en `ProveedorPreferencias`) y `VistosDelPerfil`; las marcas se
+  dibujan en `@/shared/ui/lista` (`idDeVisto`, `<SufijoDeVisto>`, `useVistoDeLista`).
+  - Una lectura por pantalla (`useVistos(modulo, consultas)`: ids únicos por tipo, hasta 200, en tandas de 100 a `vistos_de`) y el **último del
+    módulo, de cualquiera de sus tipos** (`TIPOS_DEL_MODULO`: la agenda tiene evento y tarea; con dos últimos, un `select` por la PK dice cuál es
+    más reciente). Si algo falla, sin marcas.
+  - **La E/S (supabase-js) se pide al usarse**: `features/vistos/pedidos-de-vistos.ts` hace `import('../../composicion-vistos.client')`, sólo con
+    «Vistos» encendido; la guarda de `diferidos.test.ts` la permite. No son Server Actions: el router las ejecuta de a una.
+  - Quién monta las marcas: vehículos y leads, `ProveedorDeMarcasDeVisto` (`client.ts`). **Un módulo ajeno, desde `src/app`** por
+    `pantallas/marcas-de-visto` (`MarcasDeVistoDeLaPagina`: ids de la página y, por consulta, el `parametro` de la URL que abre el detalle sobre la
+    lista) y, en la página de un registro ya encontrado, `pantallas/visto-de-la-ficha` (`RegistrarVisto`). No por `client.ts`: su barril cuesta ≈ 50 KB.
+  - Quién registra: el resumen o panel por URL (`parametro`) o la página con `<RegistrarVisto>`; uno por apertura. Usan las marcas cotizaciones,
+    repuestos, agenda, logística, vehículos y leads (lista y kanban).
 
 ## Tablas
 

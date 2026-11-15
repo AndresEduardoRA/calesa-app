@@ -57,6 +57,8 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `entities/ficha.ts`, `edicion.ts`, `infra/ficha.ts`.
 - `features/seguimientos/`, `features/recordatorios/`, `features/marcas/components/menu-de-lead.tsx` (el «⋯»; «Ver actividad» sólo en la ficha, con
   `actividad.ver` y la ruta de `rutaDeActividadDe`); cartera, papelera, portal, embudo, oportunidades: `entities/<x>.ts` + `infra/<x>.ts`.
+- «Visto»: el listado y el kanban del embudo marcan el lead (`ProveedorDeMarcasDeVisto` de `equipo/client`, contexto leads); la tarjeta del kanban lleva `data-visto` y el sufijo en el enlace al lead
+  (`idsDeLeadsDelTablero`: los primeros 200 leads del tablero). La ficha del lead lo registra (`RegistrarVisto`).
 - CSV: `entities/exportacion.ts`, `entities/importacion/`, `infra/importacion.ts`. Catálogos: `leads_catalogos()`, una llamada para listado, ficha y
   exportación. Números: `@/shared/lib/numeros-de-lead`.
 

@@ -6,6 +6,7 @@ import {
   CabeceraPegada,
   CeldaPegada,
   FilaDeLista,
+  SufijoDeVisto,
   TablaDeLista,
 } from '@/shared/ui/lista'
 import { useRegional } from '@/shared/ui/regional'
@@ -38,18 +39,23 @@ export function TablaDeGastos({ gastos, alAbrir, abierta }: Props) {
         {gastos.map((gasto) => (
           <FilaDeLista
             key={gasto.id}
+            idDeVisto={gasto.vehiculoId}
             abierta={abierta === gasto.vehiculoId}
             alAbrir={() => {
               alAbrir(gasto.vehiculoId)
             }}
           >
             <CeldaPegada lado="nombre">
-              <AbrirResumen
-                nombre={`unidad ${gasto.vehiculoTitulo}`}
-                className="max-w-60 truncate font-medium text-(--color-ink)"
-              >
-                {gasto.vehiculoTitulo}
-              </AbrirResumen>
+              <span className="flex items-center">
+                <AbrirResumen
+                  nombre={`unidad ${gasto.vehiculoTitulo}`}
+                  className="max-w-60 truncate font-medium text-(--color-ink)"
+                >
+                  {gasto.vehiculoTitulo}
+                </AbrirResumen>
+                {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
+                <SufijoDeVisto id={gasto.vehiculoId} />
+              </span>
             </CeldaPegada>
             <TableCell>{gasto.categoriaNombre}</TableCell>
             <TableCell className="max-w-48 truncate">

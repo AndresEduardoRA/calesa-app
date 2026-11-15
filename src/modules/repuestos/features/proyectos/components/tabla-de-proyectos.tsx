@@ -6,6 +6,7 @@ import {
   CabeceraPegada,
   CeldaPegada,
   FilaDeLista,
+  SufijoDeVisto,
   TablaDeLista,
 } from '@/shared/ui/lista'
 import { useRegional } from '@/shared/ui/regional'
@@ -41,6 +42,7 @@ export function TablaDeProyectos({ proyectos, alAbrir }: Props) {
           return (
             <FilaDeLista
               key={proyecto.id}
+              idDeVisto={proyecto.id}
               alAbrir={() => {
                 alAbrir(proyecto.id)
               }}
@@ -52,6 +54,8 @@ export function TablaDeProyectos({ proyectos, alAbrir }: Props) {
                 >
                   #{proyecto.numero}
                 </AbrirResumen>
+                {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
+                <SufijoDeVisto id={proyecto.id} />
               </CeldaPegada>
               <TableCell className="max-w-64">
                 <span className="block truncate">{vehiculo.titulo}</span>

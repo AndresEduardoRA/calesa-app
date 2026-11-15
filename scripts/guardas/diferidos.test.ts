@@ -47,11 +47,12 @@ describe('el código diferido', () => {
 
   it('un import() de un componente fuera de diferido() no se hace en src/ (salvo datos)', () => {
     // Los `import()` que quedan son de datos o de reglas (la tabla de países, el seguimiento del alta)
+    // la E/S de «visto» (`composicion-vistos.client`: supabase-js, que una lista no carga en frío)
     // o el renderer del PDF de una cotización, que corre sólo en el servidor (4.18-3a: así otra ruta que
     // importa `@/modules/cotizaciones` no carga react-pdf): nunca de un componente del navegador. Un
     // componente diferido va en un `diferidos.tsx`.
     const permitidos =
-      /import\(\s*['"][^'"]*\/(tabla|primer-seguimiento|papaparse|leer|infra\/tarjeta\/pdf\/pdf-de-la-tarjeta)[^'"]*['"]\s*\)/
+      /import\(\s*['"][^'"]*\/(tabla|primer-seguimiento|papaparse|leer|composicion-vistos\.client|infra\/tarjeta\/pdf\/pdf-de-la-tarjeta)[^'"]*['"]\s*\)/
     const componentes = fuentes.flatMap((f) =>
       [...f.texto.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)]
         .filter((m) => !permitidos.test(m[0]) && !f.archivo.endsWith('/diferidos.tsx'))

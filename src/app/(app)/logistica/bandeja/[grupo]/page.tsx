@@ -18,6 +18,7 @@ import { RUTAS, unParametro } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoSinPermiso, EstadoVacio } from '@/shared/ui/estados'
 import { contextoDeLaBandeja } from '../../contexto-de-la-bandeja'
+import { MarcasDeLogistica } from '../../marcas-de-logistica'
 
 export const metadata: Metadata = { title: 'Bandeja del día · Logística' }
 
@@ -82,20 +83,22 @@ async function Grupo({
         <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">{titulo}</h1>
       </header>
       {lectura.ok ? (
-        <ListaDelGrupo
-          grupo={grupo}
-          titulo={
-            lectura.data.conteo
-              ? `${conteoCorto(lectura.data.conteo)} en este grupo.`
-              : 'Siguientes del grupo.'
-          }
-          lectura={lectura.data}
-          hayCursor={cursor !== null}
-          permisos={sesion.permisos}
-          ahora={new Date()}
-          zona={contexto.zona}
-          origenes={contexto.origenes}
-        />
+        <MarcasDeLogistica ids={lectura.data.filas.map((fila) => fila.vehiculoId)}>
+          <ListaDelGrupo
+            grupo={grupo}
+            titulo={
+              lectura.data.conteo
+                ? `${conteoCorto(lectura.data.conteo)} en este grupo.`
+                : 'Siguientes del grupo.'
+            }
+            lectura={lectura.data}
+            hayCursor={cursor !== null}
+            permisos={sesion.permisos}
+            ahora={new Date()}
+            zona={contexto.zona}
+            origenes={contexto.origenes}
+          />
+        </MarcasDeLogistica>
       ) : (
         <ErrorDelGrupo titulo={titulo} />
       )}
