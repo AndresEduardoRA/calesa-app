@@ -44,17 +44,20 @@ test('E2E subir un PDF: la bandeja no sube nada hasta «Subir» y la fila queda 
   await entrar(page, terreno.quienSube.correo, { fresco: true })
   await page.goto(`/logistica/vehiculo/${terreno.enB.id}`)
   await expect(page.getByRole('heading', { name: terreno.enB.titulo })).toBeVisible()
-  await abrirSeccionDeLaUnidad(page, 'documentos')
-  const hueco = page.locator('[data-hueco="documentos"]')
-  await expect(hueco.getByLabel('Tipo de documento')).toBeVisible()
+  const hueco = await abrirSeccionDeLaUnidad(page, 'documentos')
+  // Subir va en un drawer (`?subir=documentos`): el botón del hueco lo abre.
+  await hueco.getByRole('button', { name: 'Subir documentos' }).click()
+  const bandeja = page.getByRole('dialog', { name: 'Subir documentos' })
+  await expect(bandeja.getByLabel('Tipo de documento')).toBeVisible()
+  await expect(page).toHaveURL(/subir=documentos/)
 
-  await hueco.getByLabel('Tipo de documento').selectOption({ label: terreno.tipoDeBl.nombre })
-  await hueco.locator('input[type="file"]:not([capture])').setInputFiles({
+  await bandeja.getByLabel('Tipo de documento').selectOption({ label: terreno.tipoDeBl.nombre })
+  await bandeja.locator('input[type="file"]:not([capture])').setInputFiles({
     name: 'bl.pdf',
     mimeType: 'application/pdf',
     buffer: Buffer.from(`%PDF-1.4 e2e ${proyecto} ${Date.now()}`),
   })
-  await expect(hueco.getByRole('list', { name: 'Archivos para subir' })).toContainText('bl.pdf')
+  await expect(bandeja.getByRole('list', { name: 'Archivos para subir' })).toContainText('bl.pdf')
   // Elegir no sube: todavía no hay fila.
   const antes = await admin()
     .from('documentos')
@@ -63,9 +66,11 @@ test('E2E subir un PDF: la bandeja no sube nada hasta «Subir» y la fila queda 
     .limit(1)
   expect(antes.data).toEqual([])
 
-  await hueco.getByRole('button', { name: 'Subir 1 documento' }).click()
+  await bandeja.getByRole('button', { name: 'Subir 1 documento' }).click()
+  // Sin fallos, el drawer se cierra solo y la fila queda «Subido» en la lista.
+  await expect(bandeja).toBeHidden()
+  await expect(page).not.toHaveURL(/subir=documentos/)
   await expect(hueco.getByText('Subido', { exact: true })).toBeVisible()
-  await expect(hueco.getByRole('list', { name: 'Archivos para subir' })).toHaveCount(0)
   const despues = await admin()
     .from('documentos')
     .select('estado, nombre_archivo, mime, subido_por')
@@ -79,13 +84,15 @@ test('E2E subir un PDF: la bandeja no sube nada hasta «Subir» y la fila queda 
   })
 })
 
-test('E2E quien no puede subir ve la zona apagada y el motivo', async ({ page }) => {
+test('E2E quien no puede subir ve el botón apagado y el motivo', async ({ page }) => {
   await entrar(page, terreno.primera.correo, { fresco: true })
   await page.goto(`/logistica/vehiculo/${terreno.enB.id}`)
-  await abrirSeccionDeLaUnidad(page, 'documentos')
-  const hueco = page.locator('[data-hueco="documentos"]')
+  const hueco = await abrirSeccionDeLaUnidad(page, 'documentos')
+  // El botón queda apagado con su motivo escrito debajo (no desaparece).
+  const boton = hueco.getByRole('button', { name: 'Subir documentos' })
+  await expect(boton).toBeDisabled()
   await expect(hueco.getByText('Necesitas permiso para subir documentos.')).toBeVisible()
-  await expect(hueco.getByRole('button', { name: 'Elegir archivos' })).toBeDisabled()
+  await expect(boton).toHaveAccessibleDescription('Necesitas permiso para subir documentos.')
 })
 
 test('E2E sin la clave de aprobar, «Aprobar» queda apagado y dice por qué', async ({ page }) => {

@@ -20,10 +20,23 @@ type Props = {
   tipos: readonly TipoDeDocumento[]
   // `null` mientras se leen los permisos; `false` sin `logistica.documentos.subir` en el origen.
   puedeSubir: boolean | null
+  // Dentro de un drawer que ya tiene el título, el `h4` sobra.
+  conTitulo?: boolean
+  // Se llama al terminar una subida con todo registrado y sin fallos: el drawer se cierra solo. Con fallos no se llama: queda abierto con «Reintentar los N que faltan».
+  alTerminar?: () => void
 }
 
 const SIN_PERMISO = 'Necesitas permiso para subir documentos.'
 const SIN_CONEXION = 'Sin conexión: vuelve a intentarlo cuando regrese.'
+
+// Por qué la zona está apagada, si lo está.
+function motivoDelApagado(puedeSubir: boolean | null, enLinea: boolean): string | null {
+  if (puedeSubir === false) return SIN_PERMISO
+  return enLinea ? null : SIN_CONEXION
+}
+
+const ayudaDelTipo = (tipo: TipoDeDocumento | null) =>
+  tipo ? `Admite ${formatosLegibles(tipo.formatos)}. Hasta 25 MB.` : 'Hasta 25 MB.'
 
 function textoDelBoton(n: number, faltan: number, enCurso: boolean): string {
   if (enCurso) return 'Subiendo…'
@@ -33,7 +46,14 @@ function textoDelBoton(n: number, faltan: number, enCurso: boolean): string {
 
 // Subir documentos a la unidad (6.06-2): elegir archivos los deja en una bandeja sin subir; «Subir N documentos» sube cada objeto y recién entonces lo registra. Cerrar el panel con
 // archivos en la bandeja pregunta; en la pestaña de la ficha, que no tiene panel, lo hace el navegador. Se apaga con su motivo, nunca desaparece.
-export function ZonaParaSubir({ destino, titulo, tipos, puedeSubir }: Props) {
+export function ZonaParaSubir({
+  destino,
+  titulo,
+  tipos,
+  puedeSubir,
+  conTitulo = true,
+  alTerminar,
+}: Props) {
   const b = useBandeja(tipos)
   const enLinea = useEnLinea()
   const s = useSubirLaBandeja({
@@ -55,17 +75,19 @@ export function ZonaParaSubir({ destino, titulo, tipos, puedeSubir }: Props) {
     escribir: b.escribir,
   }
   const faltan = Object.keys(s.fallos).length
-  const motivoDeApagado = puedeSubir === false ? SIN_PERMISO : !enLinea ? SIN_CONEXION : null
+  const motivoDeApagado = motivoDelApagado(puedeSubir, enLinea)
   return (
     <form
       className="grid gap-3 rounded-(--radius-card) border border-(--color-line) p-3"
       aria-label="Subir documentos"
       onSubmit={(evento) => {
         evento.preventDefault()
-        void s.subir()
+        void s.subir().then((terminoBien) => {
+          if (terminoBien) alTerminar?.()
+        })
       }}
     >
-      <h4 className="font-medium">{titulo}</h4>
+      {conTitulo ? <h4 className="font-medium">{titulo}</h4> : null}
       <CampoDelTipo {...campos} />
       <ZonaDeArchivos
         aceptar={aceptarDelTipo(b.tipo)}
@@ -73,9 +95,7 @@ export function ZonaParaSubir({ destino, titulo, tipos, puedeSubir }: Props) {
         etiquetaDeElegir="Elegir archivos"
         etiquetaDeCamara="Sacar una foto"
         deshabilitada={bloqueada}
-        ayuda={
-          b.tipo ? `Admite ${formatosLegibles(b.tipo.formatos)}. Hasta 25 MB.` : 'Hasta 25 MB.'
-        }
+        ayuda={ayudaDelTipo(b.tipo)}
       />
       {motivoDeApagado ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">{motivoDeApagado}</p>

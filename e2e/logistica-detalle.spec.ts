@@ -22,6 +22,7 @@ let proyecto = ''
 let terreno: TerrenoDeDocumentos
 let correoDeLaDuena = ''
 let correoDeQuienSoloVe = ''
+let correoDeQuienMueveYSube = ''
 
 test.beforeAll(async ({}, info) => {
   proyecto = info.project.name
@@ -35,6 +36,23 @@ test.beforeAll(async ({}, info) => {
     nombre: 'Dalia Detalle',
   })
   terreno = await sembrarDocumentos(proyecto)
+  correoDeQuienMueveYSube = correoDePrueba(`mueve-y-sube-detalle-${proyecto}`)
+  await crearPersona({
+    email: correoDeQuienMueveYSube,
+    contrasena: CONTRASENA,
+    nombre: 'Mara Mueve',
+    invitada: true,
+  })
+  await darRolDePrueba({
+    email: correoDeQuienMueveYSube,
+    rol: {
+      nombre: `${PREFIJO_ROL_E2E}mueve y sube detalle ${proyecto}`,
+      clave: `e2e_mueve_y_sube_detalle_${proyecto}`,
+    },
+    permisos: ['logistica.ver', 'vehiculos.ver', 'flujos.mover', 'logistica.documentos.subir'].map(
+      (clave) => ({ clave, origenId: terreno.origen.id }),
+    ),
+  })
   correoDeQuienSoloVe = correoDePrueba(`solo-ve-detalle-${proyecto}`)
   await crearPersona({
     email: correoDeQuienSoloVe,
@@ -75,13 +93,29 @@ test('E2E escritorio · la unidad entra sin desplazar la página y mover y anota
     esMovil(page),
     'Escritorio: en el celular la unidad va en bloques con la barra «Mover».',
   )
-  await entrar(page, terreno.primera.correo, { fresco: true })
+  await entrar(page, correoDeQuienMueveYSube, { fresco: true })
   const ruta = `/logistica/vehiculo/${terreno.enA.id}`
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto(ruta)
   await esperarLaUnidad(page, terreno.b.nombre)
   expect(await sinDesplazarLaPagina(page)).toBe(true)
   await capturar(page, info, 'escritorio-1440-quien-mueve')
+
+  // Subir un documento: el botón abre un drawer; al terminar sin fallos se cierra solo y la fila queda «Subido».
+  const documentos = page.locator('[data-hueco="documentos"]')
+  await documentos.getByRole('button', { name: 'Subir documentos' }).click()
+  const bandeja = page.getByRole('dialog', { name: 'Subir documentos' })
+  await bandeja.getByLabel('Tipo de documento').selectOption({ label: terreno.tipoDeBl.nombre })
+  await bandeja.locator('input[type="file"]:not([capture])').setInputFiles({
+    name: 'bl.pdf',
+    mimeType: 'application/pdf',
+    buffer: Buffer.from(`%PDF-1.4 e2e detalle ${proyecto} ${Date.now()}`),
+  })
+  await capturar(page, info, 'escritorio-1440-drawer-de-subir')
+  await bandeja.getByRole('button', { name: 'Subir 1 documento' }).click()
+  await expect(bandeja).toBeHidden()
+  await expect(documentos.getByText('Subido', { exact: true })).toBeVisible()
+  expect(await sinDesplazarLaPagina(page)).toBe(true)
 
   // Anotar: una nota en un toque, ahí mismo.
   const notas = page.locator('[data-hueco="notas"]')

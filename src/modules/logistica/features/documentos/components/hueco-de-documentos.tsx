@@ -20,7 +20,7 @@ import { useClavesDeDocumentos } from '../hooks/use-claves-de-documentos'
 import type { ContextoDeLaFila } from './contexto-de-la-fila'
 import { ConfirmarEliminarDocumento } from './confirmar-eliminar-documento'
 import { GrupoDeTipoDeDocumento } from './grupo-de-tipo'
-import { ZonaParaSubirDeLaUnidad } from './zona-para-subir-de-la-unidad'
+import { SubidaDeLaUnidad } from './subida-de-la-unidad'
 
 function ErrorDeLectura({ mensaje, reintentar }: { mensaje: string; reintentar: () => void }) {
   return (
@@ -108,7 +108,7 @@ export function HuecoDeDocumentos({ unidad }: { unidad: Unidad }) {
   return (
     <div className="grid gap-3" data-hueco="documentos">
       <EstadoDeLaLectura lectura={lectura} reintentar={reintentar} />
-      {dato ? <ZonaParaSubirDeLaUnidad unidad={unidad} dato={dato} /> : null}
+      {dato ? <SubidaDeLaUnidad unidad={unidad} dato={dato} /> : null}
       {dato && grupos.length === 0 ? (
         <EstadoVacio compacto titulo="Esta unidad no tiene documentos." />
       ) : null}
