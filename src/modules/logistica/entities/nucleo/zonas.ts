@@ -100,3 +100,13 @@ export function pestanaInicial(
   if (delHueco !== null && pestanas.some((p) => p.clave === delHueco)) return delHueco
   return pestanas[0]?.clave ?? null
 }
+
+/** Todos los huecos de las zonas, otra vez en el orden del panel (`ORDEN_DE_HUECOS`): lo que dibujan los bloques del celular. */
+export function enOrdenDelPanel<H extends ConClave>(zonas: ZonasDeLaUnidad<H>): H[] {
+  const todos = [
+    ...zonas.principal,
+    ...zonas.pestanas.flatMap((p) => p.huecos),
+    ...zonas.lateral.flatMap((p) => p.huecos),
+  ]
+  return ORDEN_DE_HUECOS.flatMap((clave) => todos.filter((h) => h.clave === clave))
+}

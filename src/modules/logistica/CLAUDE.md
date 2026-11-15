@@ -10,7 +10,7 @@ La tarea de oro 3 la prueba `e2e/logistica-tarea-de-oro.spec.ts`. Abiertos (`doc
 - Entra: acciones de logística en `/logistica/*`, subida de documentos (también desde cámara), confirmación de pagos, cron de alertas.
 - Sale (núcleo): `leerUnidad(id)` (la unidad de vehículo bajo la RLS de quien mira; nula si no existe, está en la papelera o no la ve; `titulo` =
   «<principal> · <título>» si el origen tiene campo principal y se puede leer: `features/nucleo/unidad-con-identidad.ts`), `huecosVisibles`,
-  `ORDEN_DE_HUECOS`, `refDeUnidad`, los tipos de la unidad y de los huecos; por `pantallas/unidad.ts`, `<PanelDeLaUnidad>`, que recibe `relacionados?: ReactNode` (el bloque «Relacionados» de un vehículo, bajo la cabecera y antes de los huecos; lo compone `src/app/(app)/logistica/unidad-abierta.tsx` con `leads.ver`: `logistica` no conoce `vehiculos/relacionados`).
+  `ORDEN_DE_HUECOS`, `refDeUnidad`, los tipos de la unidad y de los huecos; por `pantallas/unidad.ts`, `<PanelDeLaUnidad>` (los drawers: cabecera y bloques plegables), que recibe `relacionados?: ReactNode` (el bloque «Relacionados» de un vehículo, bajo la cabecera y antes de los huecos; lo compone `src/app/(app)/logistica/unidad-abierta.tsx` con `leads.ver`: `logistica` no conoce `vehiculos/relacionados`); por `pantallas/unidad-pagina.ts`, `<PaginaDeLaUnidad>` (la página: cabecera compacta con `foto` y `relacionados` en una línea, y los huecos en zonas o en bloques con la barra «Mover»; lo compone `src/app/(app)/logistica/vehiculo/[id]/unidad-en-su-pagina.tsx`) y, por `pantallas/unidad-esqueletos.ts`, `EsqueletoDeLaUnidad` y `EsqueletoDeLaFoto` (sólo para `loading.tsx`: importar el barril de `unidad-pagina` bajaría su chunk dos veces); `ZONA_DEL_HUECO`, `zonasDeLaUnidad` y `pestanaInicial` (`entities/nucleo/zonas.ts`).
 - Área `cadena`: `leerResumenDeLaCadena(origenId)` (el número de cada fase: vehículos, demorados y trabados, con tope), `leerLaFase(pedido)` (una página de la lista de una fase,
   con los vehículos nombrados por el campo principal), `dondeEsta(busqueda)` (hasta 10, en todos los orígenes de la persona; texto corto no llama a la base),
   `leerOrigenesDeLaCadena(permisos)` (las pestañas), `leerNavieras()`, `esquemaDeFiltrosDeLaCadena`, `pedidoDeLaCadena`, `claveDeFase`, `faseDeLaClave`, `rutaDeLaFase`, el cursor de una
@@ -19,7 +19,7 @@ La tarea de oro 3 la prueba `e2e/logistica-tarea-de-oro.spec.ts`. Abiertos (`doc
   `detalleDeDemorada` y `detalleDeTrabado`, para los bloques de Inicio de `tablero`, que arman su «Ver todas» con `rutaDelGrupoDeLaBandeja`; y la bandeja del día:
   `leerGrupoDeLaBandeja`, `gruposVisibles(permisos)`, `grupoDelSlug`, `rutaDelGrupoDeLaBandeja`, los textos y la acción de cada fila.
 - Núcleo, para las áreas: `nombrarVehiculos` (el nombre «<principal> · <título>», `features/nucleo/identidad-de-vehiculos.ts`), `EnlaceALaUnidad`, `useIrALaUnidad` y
-  `rutaDeLaUnidad(id, hueco?)` (`?hueco=documentos` abre ese bloque de la página de la unidad).
+  `rutaDeLaUnidad(id, hueco?)` (`?hueco=documentos` abre esa pestaña —o ese bloque, en el celular— de la página de la unidad).
 - Lo consumen `tablero`, `vehiculos` (ficha) y `web` (portal: fases y documentos visibles).
 - Depende de: `vehiculos`, `origenes`, `empresa`, `flujos`, `cotizaciones`.
 
@@ -43,7 +43,7 @@ y `pantallas/<área>.ts` (y `pantallas/<área>-<pantalla>.ts`). El **núcleo** (
 
 **Los huecos.** El panel no sabe qué lleva: cada área los declara en su `pantallas/` (`<área>-unidad.ts` → `HUECOS_DE_<ÁREA>_EN_LA_UNIDAD`; `<área>-grupo.ts`;
 `<área>-enlace.ts`; `<área>-catalogos.ts`) y sólo `src/app` los junta. Un hueco se dibuja si la persona tiene alguna de sus claves **en el origen de la unidad**
-y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el del archivo. Se monta al abrir su bloque (`BloqueDelHueco`). Cada hueco va en su `LimiteDelHueco` (si se rompe al dibujarse: «No pudimos mostrar «<título>».» con «Reintentar», y el resto sigue) y su `diferido()` avisa y muestra su esqueleto _en su lugar_ (`aviso: 'aqui'`, `EsqueletoDelHueco`). El panel exige
+y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el del archivo. Se monta al abrir su bloque (`BloqueDelHueco`). Cada hueco va en su `LimiteDelHueco` (si se rompe al dibujarse: «No pudimos mostrar «<título>».» con «Reintentar», y el resto sigue) y su `diferido()` avisa y muestra su esqueleto _en su lugar_ (`aviso: 'aqui'`, `EsqueletoDelHueco`). **En su página** (`PaginaDeLaUnidad`) los huecos van en tres **zonas** que decide `ZONA_DEL_HUECO` (un solo mapa junto a `ORDEN_DE_HUECOS`, con `Record`: una clave nueva exige zona): `principal` («Qué falta» con mover, siempre a la vista), `pestanas` (Documentos · Transporte · Repuestos · Aduana · **Dinero** = gastos, pagos y margen apilados) y `lateral` (Notas · Historial). La forma se elige por el ancho de la pantalla (`DisposicionDeLaPagina`, `useAlMenos(CORTE_DEL_PANEL)`: desde 1024 px, `DisposicionEnZonas`; por debajo, `DisposicionPlegable` = `BloquesDeLaUnidad` + `BarraDeMover`); el alto fijo sólo desde 56 rem del contenedor (`@container/unidad`) y lo pone `src/app` (`--alto-del-detalle`, `vehiculo/[id]/alto-del-detalle.ts`). Cada contenido se dibuja **una sola vez**, en la forma elegida (nunca dos instancias: se duplicarían los `data-bloque-del-hueco` y los `?panel=`). Un hueco de pestañas se monta al elegirla (`ZonaDePestanas`) y queda montado; la pestaña va en `?hueco=` (nuqs, `shallow`, `replace`, `usePestanaDeLaZona`). `EnvoltorioDelHueco` existe desde el primer render (`useHayHueco` no se suscribe) y `abrirHueco` elige la pestaña y, ya visible, trae el hueco a la vista y enfoca la pestaña (un `focus()` sobre algo `hidden` no hace nada; en zonas nunca `querySelector('details')`). `useEnZonas()` (`features/nucleo/disposicion.ts`) le dice a un área en qué forma está. En un drawer, `PanelDeLaUnidad` sigue con bloques plegables. El panel exige
 `logistica.ver` en el origen **y** que la RLS de `vehiculos` deje leer la fila: con sólo una, «No tienes permiso» o «ya no está disponible».
 
 ## Archivos clave
@@ -59,7 +59,7 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   sale sólo con su permiso: «Mover» (`flujos.mover` del origen), «Ver qué falta», «Revisar» y «Renovar» (llevan a `?hueco=documentos`; **no se aprueba en la fila**: se aprueba mirando el archivo) y,
   en «sin resolver», «La ganamos» (`?ganada=si`) y «No la ganamos» (`useNoGanada` con «Deshacer» de 10 s y `router.refresh()`). Quién ve cada grupo: lo visible (`_logistica_alcance`); por aprobar,
   además `logistica.documentos.aprobar`; por vencer, además `logistica.documentos.subir`. Con «propios», la base parte de `_logistica_lo_propio` y nunca lee `lead_id`.
-- **«Visto» en logística** (`docs/GLOSARIO.md`). El contexto `logistica` es el detalle del vehículo en este módulo: `/logistica/vehiculo/[id]` (`UnidadAbierta registraElVisto`, sólo la página) o el panel de
+- **«Visto» en logística** (`docs/GLOSARIO.md`). El contexto `logistica` es el detalle del vehículo en este módulo: `/logistica/vehiculo/[id]` (`UnidadEnSuPagina` registra el visto, sólo la página) o el panel de
   gastos y pagos (`?vehiculo=`, que registra la lista, no el drawer: un registro por apertura); la ficha de `/vehiculos` es otro contexto. Marcan, con `MarcasDeLogistica` de `src/app` (`equipo/pantallas/marcas-de-visto`):
   la bandeja del día y la de un grupo, la lista de una fase, «dónde está», gastos y pagos y las unidades de un grupo de embarques (`EnlaceALaUnidad` baja el tono del nombre; el sufijo, «Último visto»). **Aduana no:**
   su fila es una declaración y sus vehículos son texto sin enlace.
@@ -83,7 +83,7 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   al lograrlo quita `?ganada` con `shallow: false`, sin `router.refresh()`. Fuera del modo, con la subasta sin resolver y permiso de mover, una línea
   ofrece «La ganamos». La situación llega en `Unidad.situacion` (`entities/nucleo/situacion.ts`, espejo del `check` de la base: una entidad no
   importa `vehiculos`).
-- **Área `mover`, notas e historial** (plegados). Se leen con la sesión de quien mira de a `TAMANO_DE_VER_MAS` por cursor `(creado_en, id)` hasta
+- **Área `mover`, notas e historial** (la zona lateral de la página; plegados en un drawer y en el celular). Se leen con la sesión de quien mira de a `TAMANO_DE_VER_MAS` por cursor `(creado_en, id)` hasta
   `TOPE_DE_LO_CARGADO`; un ítem por `repuesto_id`. «Ir a una fecha» usa `entities/mover/hasta-de-un-dia.ts` (copia de la de `cotizaciones`). Escriben
   `crearNota` (`vehiculo` xor `repuesto`; `logistica.ver` del origen o `repuestos.ver` para un ítem; autor del servidor) y `editarNota`, directo bajo la RLS
   de `notas`, sin RPC ni versión. **No hay «Borrar»:** el borrado suave por `update` lo rechaza la policy de lectura (`supabase/tests/areas/mover/notas.sql`;

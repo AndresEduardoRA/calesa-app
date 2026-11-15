@@ -9,6 +9,7 @@ import {
   crearDuenaDePrueba,
 } from './soporte/base'
 import { aprobarElBl, borrarMover, sembrarMover, type TerrenoDeMover } from './soporte/mover'
+import { abrirSeccionDeLaUnidad } from './soporte/unidad'
 
 // Mover desde el panel de la unidad (6.04-1): «Qué falta» abre solo; con nota obligatoria el botón está apagado y dice por qué; con el documento bloqueante sin aprobar dice cuál falta y se
 // habilita al aprobarlo (la lectura se repite al volver el foco); y si otra persona movió antes, el aviso de conflicto la nombra y conserva la nota. Permisos, conflicto y carrera de la base
@@ -126,8 +127,6 @@ test('E2E mover · si otra persona movió antes, el aviso de conflicto la nombra
   await otra.context().close()
 })
 
-const bloque = (page: Page, clave: string) => page.locator(`[data-bloque-del-hueco="${clave}"]`)
-
 test('E2E mover · el historial dice quién movió y con qué nota; las notas se escriben y se corrigen; la ficha enlaza a logística', async ({
   page,
 }) => {
@@ -135,15 +134,13 @@ test('E2E mover · el historial dice quién movió y con qué nota; las notas se
   await page.goto(`/logistica/vehiculo/${conCambioDeOtra}`)
 
   // Historial: el cambio que hizo la otra persona, con su nombre y su nota.
-  await bloque(page, 'historial').locator('summary').click()
-  const historial = page.locator('[data-hueco="historial"]')
+  const historial = await abrirSeccionDeLaUnidad(page, 'historial')
   await expect(historial.getByText(`«${terreno.a.nombre}» → «${terreno.b.nombre}»`)).toBeVisible()
   await expect(historial).toContainText('Rosa Mamani')
   await expect(historial).toContainText('Yo primero.')
 
   // Notas: la del cambio de fase dice de dónde nació y no se edita (no es de esta cuenta ni se corrige).
-  await bloque(page, 'notas').locator('summary').click()
-  const notas = page.locator('[data-hueco="notas"]')
+  const notas = await abrirSeccionDeLaUnidad(page, 'notas')
   const delCambio = notas.locator('[data-nota]').filter({ hasText: 'Yo primero.' })
   await expect(delCambio).toContainText(`al pasar a «${terreno.b.nombre}»`)
   await expect(delCambio.getByRole('button', { name: 'Editar' })).toHaveCount(0)

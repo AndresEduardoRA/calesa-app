@@ -14,6 +14,7 @@ import {
   tipoDeCambioPorDefecto,
   type TerrenoDeDinero,
 } from './soporte/dinero'
+import { abrirSeccionDeLaUnidad } from './soporte/unidad'
 
 // Gastos, pagos y margen en el panel de la unidad (6.11). Tramo 1: con `logistica.gastos.ver` y `editar` se registra un gasto en otra moneda con el tipo de cambio por defecto y la lista muestra
 // el equivalente que devolvió la base; el hueco «Margen» dice «Sin cotización final» y «Sin venta registrada» (nunca 0) y su real es el gasto. Quien no tiene `logistica.gastos.ver` ni
@@ -46,15 +47,17 @@ test.afterAll(async () => {
 const formato = (n: number) =>
   new Intl.NumberFormat('es-BO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)
 
-test('E2E sin los permisos de dinero la unidad no dibuja «Gastos», «Pagos» ni «Margen»', async ({
+test('E2E sin los permisos de dinero la unidad no tiene la pestaña «Dinero» ni dibuja «Gastos», «Pagos» ni «Margen»', async ({
   page,
 }) => {
   await entrar(page, terreno.conLogistica, { fresco: true })
   await page.goto(`/logistica/vehiculo/${terreno.enFase.id}`)
   await expect(page.getByRole('heading', { name: terreno.enFase.titulo })).toBeVisible()
-  await expect(page.getByText('Gastos', { exact: true })).toHaveCount(0)
-  await expect(page.getByText('Pagos', { exact: true })).toHaveCount(0)
-  await expect(page.getByText('Margen', { exact: true })).toHaveCount(0)
+  await expect(page.getByRole('tab', { name: 'Dinero' })).toHaveCount(0)
+  await expect(page.locator('[data-bloque-del-hueco]').first()).toBeAttached()
+  for (const clave of ['gastos', 'pagos', 'margen']) {
+    await expect(page.locator(`[data-bloque-del-hueco="${clave}"]`)).toHaveCount(0)
+  }
 })
 
 test('E2E registrar un gasto en otra moneda muestra su equivalente y el margen sin venta', async ({
@@ -67,8 +70,8 @@ test('E2E registrar un gasto en otra moneda muestra su equivalente y el margen s
 
   await entrar(page, terreno.conDinero, { fresco: true })
   await page.goto(`/logistica/vehiculo/${terreno.enFase.id}`)
-  // El título del bloque, no el enlace «Gastos» de la sub-navegación de Logística.
-  await page.locator('span:text-is("Gastos")').click()
+  // La pestaña «Dinero» (gastos, pagos y margen juntos), no el enlace «Gastos» de la sub-navegación de Logística.
+  await abrirSeccionDeLaUnidad(page, 'gastos')
   await expect(page.getByText('Esta unidad no tiene gastos registrados.')).toBeVisible()
 
   await page.getByRole('button', { name: 'Registrar gasto' }).click()
@@ -86,7 +89,7 @@ test('E2E registrar un gasto en otra moneda muestra su equivalente y el margen s
   await expect(lista.getByText('Flete marítimo')).toBeVisible()
   await expect(lista.getByText(/Equivale a/)).toContainText(equivalente)
 
-  await page.getByText('Margen', { exact: true }).click()
+  await abrirSeccionDeLaUnidad(page, 'margen')
   const margen = page.locator('[data-hueco="margen"]')
   await expect(margen.locator('[data-cifra="cotizado"]')).toContainText('Sin cotización final')
   await expect(margen.locator('[data-cifra="desviacion"]')).toContainText('Sin cotización final')
@@ -106,7 +109,7 @@ test('E2E registrar un pago, confirmarlo con otra cuenta y ver la venta en el ma
 
   await entrar(page, terreno.conDinero, { fresco: true })
   await page.goto(`/logistica/vehiculo/${terreno.enFase.id}`)
-  await page.getByText('Pagos', { exact: true }).click()
+  await abrirSeccionDeLaUnidad(page, 'pagos')
   await expect(page.getByText('Esta unidad no tiene pagos registrados.')).toBeVisible()
 
   await page.getByRole('button', { name: 'Registrar pago' }).click()
@@ -130,10 +133,10 @@ test('E2E registrar un pago, confirmarlo con otra cuenta y ver la venta en el ma
   try {
     await entrar(otra, terreno.conConfirmacion, { fresco: true })
     await otra.goto(`/logistica/vehiculo/${terreno.enFase.id}`)
-    await otra.getByText('Margen', { exact: true }).click()
+    await abrirSeccionDeLaUnidad(otra, 'margen')
     const margen = otra.locator('[data-hueco="margen"]')
     await expect(margen.locator('[data-cifra="venta"]')).toContainText('Sin venta registrada')
-    await otra.getByText('Pagos', { exact: true }).click()
+    await abrirSeccionDeLaUnidad(otra, 'pagos')
     const pagos = otra.getByRole('list', { name: 'Pagos de la unidad' })
     await expect(pagos.getByText('Anticipo e2e')).toBeVisible()
     // Quien confirma no tiene la clave de editar: ni «Registrar pago» ni «Editar».

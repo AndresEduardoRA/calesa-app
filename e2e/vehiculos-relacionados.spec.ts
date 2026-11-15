@@ -89,6 +89,26 @@ async function ven(raiz: Page | Locator) {
   ).toBeVisible()
 }
 
+// La unidad de logística los dice en una línea de chips («Vinculado · n»…): cada chip abre su grupo en un popover con las mismas filas y leyenda.
+async function venEnLaUnidad(page: Page) {
+  const linea = bloque(page)
+  await expect(linea).toBeVisible()
+  await expect(linea.getByRole('heading')).toHaveCount(0)
+  const grupos = [
+    ['Vinculado', nombres.a, 'El lead dueño o comprador de este vehículo.'],
+    ['Interesado', nombres.b, 'Lo quiere en blanco'],
+    ['Cotizado', nombres.c, null],
+  ] as const
+  for (const [nombre, lead, leyenda] of grupos) {
+    await linea.getByRole('button', { name: new RegExp(`^${nombre} · \\d`) }).click()
+    const popover = page.getByRole('dialog', { name: `Relacionados: ${nombre}` })
+    await expect(popover.getByText(lead)).toBeVisible()
+    if (leyenda) await expect(popover.getByText(leyenda)).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(popover).toBeHidden()
+  }
+}
+
 test('E2E la ficha del vehículo, su resumen y la unidad de logística muestran los mismos relacionados', async ({
   page,
 }, info) => {
@@ -105,7 +125,7 @@ test('E2E la ficha del vehículo, su resumen y la unidad de logística muestran 
   await capturar(page, info, 'resumen-del-vehiculo')
 
   await page.goto(`/logistica/vehiculo/${vehiculos.principal}`)
-  await ven(page)
+  await venEnLaUnidad(page)
   await capturar(page, info, 'unidad-de-logistica')
 })
 

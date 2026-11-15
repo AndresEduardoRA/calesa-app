@@ -3,6 +3,7 @@
 import { entrar } from './alta'
 import { abrirEdicion, irAFicha } from './leads-ficha'
 import { expect, type Locator, type Page } from './prueba'
+import { abrirSeccionDeLaUnidad } from './unidad'
 
 // El recorrido cambia de cuenta **dentro** de una prueba: `/ingreso` con una sesión viva no dibuja el formulario (lleva a Inicio), así que
 // primero se sueltan las cookies, como hace `e2e/tablero.spec.ts:37-38`.
@@ -97,7 +98,7 @@ export async function registrarElPago(
   page: Page,
   pago: { concepto: string; monto: number },
 ): Promise<void> {
-  await page.getByText('Pagos', { exact: true }).click()
+  await abrirSeccionDeLaUnidad(page, 'pagos')
   await page.getByRole('button', { name: 'Registrar pago' }).click()
   const formulario = page.getByRole('dialog', { name: 'Registrar pago' })
   await expect(formulario).toBeVisible()
@@ -110,7 +111,7 @@ export async function registrarElPago(
 }
 
 export async function confirmarElPago(page: Page, concepto: string): Promise<void> {
-  await page.getByText('Pagos', { exact: true }).click()
+  await abrirSeccionDeLaUnidad(page, 'pagos')
   await page.getByRole('button', { name: 'Confirmar pago' }).click()
   const confirmar = page.getByRole('dialog', { name: `Confirmar el pago «${concepto}»` })
   await expect(confirmar).toBeVisible()

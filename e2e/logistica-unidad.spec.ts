@@ -10,7 +10,7 @@ import { borrarLogistica, sembrarLogistica, type TerrenoDeLogistica } from './so
 
 // El panel de la unidad de logística (6.01-2), en su propia página: con `logistica.ver` y `vehiculos.ver` del origen se ve el título, el origen, la fase y los días en ella; con sólo
 // `vehiculos.ver` (la RLS de `vehiculos` lee con ésa) el panel dice que no hay permiso; una unidad que no existe, el estado «ya no está disponible». Los huecos de las áreas
-// llegan con su paso: hoy el panel no lleva ningún bloque.
+// los prueba el spec de cada una; la disposición en zonas, `logistica-detalle.spec.ts`.
 test.describe.configure({ mode: 'serial' })
 
 let proyecto = ''

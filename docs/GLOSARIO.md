@@ -717,8 +717,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cambio de cada bucket). Con ella se escribe `totales.bs`.
 - **Unidad** — `Unidad` (`logistica/entities/nucleo/unidad.ts`): el vehículo o repuesto sobre el que se opera en logística (`tipo`);
   documentos, gastos, pagos, notas y transporte cuelgan por `vehiculo_id` o `repuesto_id`, uno y sólo uno (`refDeUnidad`).
-- **Panel de la unidad** — `<PanelDeLaUnidad>` (`logistica/features/nucleo`): cabecera y huecos de cada área en orden fijo
-  (`ORDEN_DE_HUECOS`); página en `/logistica/vehiculo/<id>` (con `?hueco=documentos` abre ese bloque). Un vehículo se abre siempre ahí; el drawer `?vehiculo=` sólo queda en `/logistica/gastos`.
+- **Panel de la unidad** — la cabecera y los huecos de cada área en el orden de `ORDEN_DE_HUECOS` (lo que más se hace primero). En su página `/logistica/vehiculo/<id>` (`<PaginaDeLaUnidad>`) se reparte en **zonas** en escritorio y en bloques con una barra «Mover» en el celular (con `?hueco=documentos` abre esa pestaña o ese bloque); en un drawer (`<PanelDeLaUnidad>`: el `?vehiculo=` de `/logistica/gastos` y el ítem de repuesto) son bloques plegables. Un vehículo se abre siempre en su página.
+- **Zona (de la unidad)** — dónde se dibuja un hueco en la página de la unidad en escritorio (`ZONA_DEL_HUECO`, junto a `ORDEN_DE_HUECOS`): **principal** («Qué falta» con mover, siempre a la vista), **pestañas** (Documentos, Transporte, Repuestos, Aduana y **Dinero**, que junta gastos, pagos y margen) y **lateral** (Notas e Historial). No: «zona horaria» (la de quien mira).
 - **Despliegue en seco** — `pnpm despliegue:en-seco` / `scripts/despliegue/en-seco.sh`, `revisar-base.mjs`: ensayo local de un despliegue
   (base, pruebas, advisors, jobs, buckets, Vault, funciones, variables, build) sin tocar la nube; termina en «listo» o con lo que falta y las
   líneas «Para la persona» (`docs/DESPLIEGUE.md`). No: «deploy de prueba».

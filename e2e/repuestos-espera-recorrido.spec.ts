@@ -12,6 +12,7 @@ import {
 } from './soporte/base'
 import { REPUESTO_DE_LA_ESPERA, limpiarEspera, sembrarEspera } from './soporte/repuestos-espera'
 import { sql } from './soporte/sql'
+import { abrirSeccionDeLaUnidad } from './soporte/unidad'
 
 // El assert del paso 8.13: un vehículo en «En taller» con una espera a «Recibido» y un ítem de repuesto «En tránsito» → su panel de logística dice que espera un repuesto y «Qué falta» lo
 // marca → quien tiene `repuestos.mover` pasa el ítem a «Recibido» con la vista previa, desde la Cadena → el vehículo ya puede pasar de fase; y sin `repuestos.mover`, mover está apagado con su
@@ -76,7 +77,7 @@ test('la dueña ve en el panel del vehículo que espera un repuesto y llega a su
   await expect(page.locator('[data-motivo-del-boton]')).toHaveText('Falta: Esperar a «Recibido».')
   await expect(page.getByRole('button', { name: 'Mover a «Listo»' })).toBeDisabled()
 
-  await bloque(page, 'repuestos').locator('summary').click()
+  await abrirSeccionDeLaUnidad(page, 'repuestos')
   const hueco = bloque(page, 'repuestos')
   await expect(hueco.getByText('Espera 1 repuesto')).toBeVisible()
   await expect(hueco.getByText(/Para pasar a «Listo» espera que llegue a «Recibido»/)).toBeVisible()
@@ -127,7 +128,7 @@ test('la dueña pasa el ítem a «Recibido» desde la Cadena y el vehículo ya p
 
   // El vehículo: ya no espera nada y «Qué falta» lo da por cumplido.
   await page.goto(`/logistica/vehiculo/${vehiculo}`)
-  await bloque(page, 'repuestos').locator('summary').click()
+  await abrirSeccionDeLaUnidad(page, 'repuestos')
   await expect(
     bloque(page, 'repuestos').getByText('Este vehículo no espera ningún repuesto.'),
   ).toBeVisible()

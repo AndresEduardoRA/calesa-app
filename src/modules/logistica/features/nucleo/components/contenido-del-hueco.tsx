@@ -1,5 +1,6 @@
 import { esUnidadDeVehiculo, type UnidadAbierta } from '../../../entities/nucleo/unidad'
 import type { HuecoDeLaUnidad } from '../../../entities/nucleo/hueco'
+import type { ReactNode } from 'react'
 import { LimiteDelHueco } from './limite-del-hueco'
 
 // Un vehículo dibuja el `componente` del hueco (las áreas que sólo tratan vehículos); un ítem, la `repuesto.componente` de su variante, y sin ella no dibuja nada.
@@ -24,4 +25,24 @@ export function ContenidoDelHueco({
       <ComponenteDelHueco hueco={hueco} unidad={unidad} />
     </LimiteDelHueco>
   )
+}
+
+// Lo que se dibuja de un hueco, serializable de servidor a cliente: la clave, el título y su contenido ya armado (con su límite de error). La página lo reparte en zonas o en bloques sin dibujarlo dos veces.
+export type SeccionDeLaUnidad = {
+  clave: string
+  titulo: string
+  abiertoAlInicio?: boolean
+  contenido: ReactNode
+}
+
+export function seccionesDeLaUnidad(
+  unidad: UnidadAbierta,
+  huecos: readonly HuecoDeLaUnidad[],
+): SeccionDeLaUnidad[] {
+  return huecos.map((hueco) => ({
+    clave: hueco.clave,
+    titulo: hueco.titulo,
+    ...(hueco.abiertoAlInicio ? { abiertoAlInicio: true } : {}),
+    contenido: <ContenidoDelHueco hueco={hueco} unidad={unidad} />,
+  }))
 }

@@ -9,6 +9,7 @@ import {
   crearDuenaDePrueba,
 } from './soporte/base'
 import { borrarDocumentos, sembrarDocumentos, type TerrenoDeDocumentos } from './soporte/documentos'
+import { abrirSeccionDeLaUnidad } from './soporte/unidad'
 
 // Documentos de la unidad (6.06). Parte 2: quien tiene `logistica.documentos.subir` elige un PDF, lo deja en la bandeja (sin subir nada), elige el tipo «E2E BL» y «Subir 1 documento»: el
 // objeto va al bucket y la fila queda «Subido» en la lista. Quien no tiene esa clave ve la zona apagada y su motivo. Parte 3: otra cuenta con `logistica.documentos.aprobar` aprueba ese BL, la fila
@@ -43,7 +44,7 @@ test('E2E subir un PDF: la bandeja no sube nada hasta «Subir» y la fila queda 
   await entrar(page, terreno.quienSube.correo, { fresco: true })
   await page.goto(`/logistica/vehiculo/${terreno.enB.id}`)
   await expect(page.getByRole('heading', { name: terreno.enB.titulo })).toBeVisible()
-  await page.locator('span:text-is("Documentos")').click()
+  await abrirSeccionDeLaUnidad(page, 'documentos')
   const hueco = page.locator('[data-hueco="documentos"]')
   await expect(hueco.getByLabel('Tipo de documento')).toBeVisible()
 
@@ -81,7 +82,7 @@ test('E2E subir un PDF: la bandeja no sube nada hasta «Subir» y la fila queda 
 test('E2E quien no puede subir ve la zona apagada y el motivo', async ({ page }) => {
   await entrar(page, terreno.primera.correo, { fresco: true })
   await page.goto(`/logistica/vehiculo/${terreno.enB.id}`)
-  await page.locator('span:text-is("Documentos")').click()
+  await abrirSeccionDeLaUnidad(page, 'documentos')
   const hueco = page.locator('[data-hueco="documentos"]')
   await expect(hueco.getByText('Necesitas permiso para subir documentos.')).toBeVisible()
   await expect(hueco.getByRole('button', { name: 'Elegir archivos' })).toBeDisabled()
@@ -90,7 +91,7 @@ test('E2E quien no puede subir ve la zona apagada y el motivo', async ({ page })
 test('E2E sin la clave de aprobar, «Aprobar» queda apagado y dice por qué', async ({ page }) => {
   await entrar(page, terreno.quienSube.correo, { fresco: true })
   await page.goto(`/logistica/vehiculo/${terreno.enB.id}`)
-  await page.locator('span:text-is("Documentos")').click()
+  await abrirSeccionDeLaUnidad(page, 'documentos')
   const hueco = page.locator('[data-hueco="documentos"]')
   await expect(hueco.getByText('Subido', { exact: true })).toBeVisible()
   await expect(hueco.getByRole('button', { name: 'Aprobar' })).toBeDisabled()
@@ -109,7 +110,7 @@ test('E2E aprobar el BL: la fila queda «Aprobado» y «Qué falta» cumple el r
   await expect(bloque.getByText('Falta', { exact: true })).toBeVisible()
   await expect(bloque.getByRole('button', { name: `Mover a «${terreno.c.nombre}»` })).toBeDisabled()
 
-  await page.locator('span:text-is("Documentos")').click()
+  await abrirSeccionDeLaUnidad(page, 'documentos')
   const hueco = page.locator('[data-hueco="documentos"]')
   await expect(hueco.getByText('Subido', { exact: true })).toBeVisible()
   await hueco.getByRole('button', { name: 'Aprobar' }).click()

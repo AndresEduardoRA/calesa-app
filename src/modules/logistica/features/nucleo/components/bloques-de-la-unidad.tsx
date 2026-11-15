@@ -1,27 +1,19 @@
-import type { HuecoDeLaUnidad } from '../../../entities/nucleo/hueco'
-import type { UnidadAbierta } from '../../../entities/nucleo/unidad'
+import type { SeccionDeLaUnidad } from './contenido-del-hueco'
 import { BloqueDelHueco } from './bloque-del-hueco'
-import { ContenidoDelHueco } from './contenido-del-hueco'
 
 // Los huecos como bloques plegables, uno bajo otro, en el orden recibido: el panel de un drawer y la página en el celular. Cada uno se monta al abrirse.
-export function BloquesDeLaUnidad({
-  unidad,
-  huecos,
-}: {
-  unidad: UnidadAbierta
-  huecos: readonly HuecoDeLaUnidad[]
-}) {
-  if (huecos.length === 0) return null
+export function BloquesDeLaUnidad({ secciones }: { secciones: readonly SeccionDeLaUnidad[] }) {
+  if (secciones.length === 0) return null
   return (
     <div className="grid gap-3">
-      {huecos.map((hueco) => (
+      {secciones.map((seccion) => (
         <BloqueDelHueco
-          key={hueco.clave}
-          clave={hueco.clave}
-          titulo={hueco.titulo}
-          abiertoAlInicio={hueco.abiertoAlInicio}
+          key={seccion.clave}
+          clave={seccion.clave}
+          titulo={seccion.titulo}
+          abiertoAlInicio={seccion.abiertoAlInicio}
         >
-          <ContenidoDelHueco hueco={hueco} unidad={unidad} />
+          {seccion.contenido}
         </BloqueDelHueco>
       ))}
     </div>

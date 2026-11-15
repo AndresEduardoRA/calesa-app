@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ORDEN_DE_HUECOS } from './hueco'
 import {
+  enOrdenDelPanel,
   pestanaDelHueco,
   pestanaInicial,
   ZONA_DEL_HUECO,
@@ -118,5 +119,21 @@ describe('pestanaInicial', () => {
 
   it('una zona sin pestañas no tiene inicial', () => {
     expect(pestanaInicial([], 'notas', true)).toBeNull()
+  })
+})
+
+describe('enOrdenDelPanel', () => {
+  it('vuelve a juntar las zonas en el orden de ORDEN_DE_HUECOS', () => {
+    const revueltos = ['historial', 'margen', 'que-falta', 'aduana', 'notas', 'documentos'].map(
+      hueco,
+    )
+    expect(claves(enOrdenDelPanel(zonasDeLaUnidad(revueltos)))).toEqual([
+      'que-falta',
+      'documentos',
+      'notas',
+      'historial',
+      'aduana',
+      'margen',
+    ])
   })
 })
