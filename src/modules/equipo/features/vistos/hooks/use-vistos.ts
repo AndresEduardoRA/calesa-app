@@ -51,8 +51,9 @@ export function useVistos(modulo: ModuloDeVistos, consultas: readonly ConsultaDe
   const marca = useMemo(
     () =>
       (id: string): MarcaDeVisto =>
-        marcaDeVisto(id, unidas(leida, local), preferencia),
-    [leida, local, preferencia],
+        // Una pantalla conservada que se queda sin filas no arrastra el último de la anterior.
+        marcaDeVisto(id, unidas(firma === '' ? SIN_VISTOS : leida, local), preferencia),
+    [firma, leida, local, preferencia],
   )
   return { marca, abrir }
 }

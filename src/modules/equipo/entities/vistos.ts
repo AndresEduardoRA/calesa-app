@@ -104,7 +104,7 @@ export function unidas(leida: LecturaDeVistos, local: LecturaDeVistos): LecturaD
 // --- Qué se pide a la base por página ---
 
 // `vistos_de()` mira hasta 100 ids por llamada (`p_ids[1:100]`). Una pantalla marca como mucho 200 por tipo (lo que trae la agenda por clase,
-// o el kanban de leads): con más, se marcan los primeros 200 y el resto se ve sin marca.
+// o el kanban de leads): con más, se marcan 200 (los de menor id, no los primeros dibujados) y el resto se ve sin marca.
 export const IDS_POR_LLAMADA = 100
 export const TOPE_DE_IDS_POR_TIPO = 200
 
