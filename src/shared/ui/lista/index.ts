@@ -12,6 +12,7 @@ export { ID_DEL_ICONO_MAS, IconoDeLista } from './simbolos-de-lista'
 export { TarjetaDeLista } from './tarjeta-de-lista'
 export { UnaSolaVista } from './una-sola-vista'
 export {
+  CLASES_DE_VISTO,
   ProveedorDeVistosDeLista,
   SufijoDeVisto,
   useVistoDeLista,
