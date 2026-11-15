@@ -167,7 +167,6 @@ export const esquemaLista = esquemaDeDiseno.extend({
   abierta_en: z.string().min(1),
   // La hoja abierta que firma la base: lo único que `cotizacion_crear` y `cotizacion_evaluar` aceptan como `p_abierta`. Para la pantalla es opaca.
   abierta: z.string().min(1),
-  vehiculo_obligatorio: z.boolean(),
 })
 const esquemaSinPublicar = z.object({
   estado: z.literal('sin_publicar'),

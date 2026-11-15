@@ -8,7 +8,6 @@ const guardar: RepositorioAjustesDeCotizacion['guardar'] = async (pedido) => {
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('empresa_guardar_ajustes_de_cotizacion', {
     p_vigencia_dias: pedido.vigenciaDias,
-    p_vehiculo_obligatorio: pedido.vehiculoObligatorioAlCotizar,
     p_actualizado_en_esperado: pedido.actualizadoEnEsperado,
   })
   if (error) {

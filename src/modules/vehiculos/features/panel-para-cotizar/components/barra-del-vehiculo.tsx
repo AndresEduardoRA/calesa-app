@@ -30,6 +30,8 @@ type Props = {
   historial: ReactNode
   // El dato del elegido que se elige entre las filas de una tabla de la hoja (4.14-2c3), con su lector: lo arma `src/app` (`vehiculos` no conoce `cotizaciones`). null = ninguno.
   paraElegir?: ParaElegirConLector | null
+  // El rol no puede guardar sin vehículo en este origen (`cotizaciones.crear.sin_vehiculo`): sin vehículo elegido, la barra dice «Obligatorio».
+  obligatorio?: boolean
 }
 
 // La barra del vehículo sobre la hoja de cotizar: una sola parada de Tab que abre el panel del vehículo (`?panel=vehiculo`). Va fuera de
@@ -37,6 +39,7 @@ type Props = {
 export function BarraDelVehiculo(props: Props) {
   const { origenId, esSubasta, elegido, alta, puedeVer, claveDeLaUrl, cotizado, historial } = props
   const paraElegir = props.paraElegir ?? null
+  const obligatorio = props.obligatorio ?? false
   const panel = usePanelPorUrl(PANEL_DEL_VEHICULO, [
     CLAVE_DE_LISTA,
     CLAVE_DE_BUSQUEDA,
@@ -81,7 +84,15 @@ export function BarraDelVehiculo(props: Props) {
             )}
           </>
         ) : (
-          <span className="flex-1 text-(--color-ink-soft)">Selecciona un vehículo</span>
+          <>
+            <span className="flex-1 text-(--color-ink-soft)">Selecciona un vehículo</span>
+            {/* Una etiqueta propia y no `<Badge>` (Base UI a la carga en frío de la hoja); en su propio `<span>`: «Selecciona un vehículo» no se parte. */}
+            {obligatorio ? (
+              <span className="inline-flex h-5 shrink-0 items-center rounded-4xl bg-(--color-peligro-soft) px-2 text-xs font-medium whitespace-nowrap text-(--color-peligro-ink)">
+                Obligatorio
+              </span>
+            ) : null}
+          </>
         )}
       </button>
       {montado ? (

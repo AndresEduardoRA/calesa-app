@@ -4,8 +4,8 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
 
 ## Entra y sale
 
-- Entra: Configuración › Empresa (`/configuracion/empresa`): ajustes y logo. Configuración › Cotización › Ajustes (`?seccion=ajustes`): la vigencia y
-  el vehículo obligatorio al cotizar.
+- Entra: Configuración › Empresa (`/configuracion/empresa`): ajustes y logo. Configuración › Cotización › Ajustes (`?seccion=ajustes`): la vigencia de
+  las cotizaciones (si el vehículo y el lead son obligatorios se decide por rol y origen, en «Roles y permisos»).
 - Sale (`index.ts`, **sin componentes**):
   - `getAjustes()`: lo mínimo de la empresa (nombre, logos, color, íconos, formato regional, zona, moneda base, registro abierto, primer registro), una
     lectura por request, sin sesión; nunca tumba (si la base no responde, identidad neutra con registro cerrado y error en el log). Lo usan `app/` y
@@ -91,7 +91,7 @@ sin origen), `empresa_con_datos_cargados`, `moneda_crear`, `moneda_guardar`, `ti
   también `esquemaGuardarSecreto`.
 - «Retención» = `papelera_dias` y `actividad_dias`. La limpieza (`limpieza_automatica`, `limpieza_dias_gracia`, 1 a 90) se edita en «Políticas»; su
   regla es de `vehiculos`. `demora_dias_default` y `lead_dormido_meses` sin interfaz. `logo_oscuro_ruta` tiene su campo en «Marca» y lo devuelve
-  `web.ajustes_acceso()`; íconos, tarjeta y PDF usan el logo normal. `vigencia_dias` y `vehiculo_obligatorio_al_cotizar` sólo por
-  `guardarAjustesDeCotizacion` (`empresa_guardar_ajustes()` las rechaza).
+  `web.ajustes_acceso()`; íconos, tarjeta y PDF usan el logo normal. `vigencia_dias` sólo por
+  `guardarAjustesDeCotizacion` (`empresa_guardar_ajustes()` la rechaza).
 - Los paneles de tipo de cambio y de moneda apagan sus campos mientras `enCurso` (el `<fieldset>` no basta con Base UI; remontan con
   `key={id-actualizadoEn}`) y avisan de lo escrito (`useHayCambiosEnFormulario()`). La barra superior dibuja el tipo de cambio desde 24 rem.

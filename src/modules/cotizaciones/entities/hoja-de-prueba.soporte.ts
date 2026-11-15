@@ -126,7 +126,6 @@ export const crudaDeLaHoja = (cabecera: Partial<CabeceraCruda> = {}) => ({
   formula: { id: ID, version: 3 },
   abierta_en: '2026-10-26T14:00:00+00:00',
   abierta: `${ID}.1792850400000000.${'a'.repeat(64)}`,
-  vehiculo_obligatorio: false,
   cabecera: { modos: [], ver_total_bs: false, moneda_bs: 'BOB', ...cabecera },
   secciones: [
     {

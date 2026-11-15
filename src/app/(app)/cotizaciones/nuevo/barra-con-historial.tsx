@@ -15,6 +15,7 @@ export function BarraConHistorial({
   puedeVer,
   paraElegir,
   abierta,
+  obligatorio,
 }: {
   origen: { id: string; tipo: string }
   elegido: VehiculoElegido | null
@@ -23,6 +24,8 @@ export function BarraConHistorial({
   puedeVer: boolean
   paraElegir: ParaElegir | null
   abierta: string
+  // Sin vehículo elegido y el rol no guarda sin él en este origen: la barra dice «Obligatorio».
+  obligatorio: boolean
 }) {
   const cotizado = elegido && conteo?.ok ? conteo.data : null
   // El «n» de la insignia ya escrito («2», «20+»); con 0, sin insignia. La barra va en la carga en frío de la hoja y recibe el texto, no el conteo.
@@ -38,6 +41,7 @@ export function BarraConHistorial({
       cotizado={insignia}
       paraElegir={paraElegir}
       abierta={abierta}
+      obligatorio={obligatorio}
       historial={
         elegido ? (
           <HistorialDelVehiculo key={elegido.id} vehiculoId={elegido.id} conteo={cotizado} />

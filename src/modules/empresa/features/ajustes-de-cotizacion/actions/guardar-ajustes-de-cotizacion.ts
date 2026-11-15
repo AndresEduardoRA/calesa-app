@@ -9,7 +9,7 @@ import { puedeCambiarAjustesDeCotizacion } from '../../../entities/ajustes-de-co
 import { MOTIVO_SIN_PERMISO_AJUSTES_DE_COTIZACION } from '../../../entities/motivos'
 import { esquemaGuardarAjustesDeCotizacion } from '../schemas/ajustes-de-cotizacion'
 
-// La vigencia y el vehículo obligatorio al cotizar. Cambiar la vigencia mueve también la de las cotizaciones ya guardadas (D1 la
+// La vigencia de las cotizaciones. Cambiar la vigencia mueve también la de las cotizaciones ya guardadas (D1 la
 // calcula al leer). La base vuelve a exigir el permiso, el rango y la versión.
 export const guardarAjustesDeCotizacion = actionClient
   .inputSchema(esquemaGuardarAjustesDeCotizacion)
@@ -19,7 +19,6 @@ export const guardarAjustesDeCotizacion = actionClient
     }
     const guardado = await repositorioAjustesDeCotizacion.guardar({
       vigenciaDias: parsedInput.vigenciaDias,
-      vehiculoObligatorioAlCotizar: parsedInput.vehiculoObligatorioAlCotizar,
       actualizadoEnEsperado: parsedInput.actualizadoEnEsperado,
     })
     if (guardado.ok) {

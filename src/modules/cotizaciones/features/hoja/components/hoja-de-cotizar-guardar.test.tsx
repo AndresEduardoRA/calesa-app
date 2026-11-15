@@ -6,6 +6,10 @@ import { fallo, ok } from '@/shared/lib/errores'
 import { ProveedorAtajos } from '@/shared/ui/atajos'
 import type { RecalculoInicial } from '../../../entities/apertura'
 import { hojaDePrueba, respuestaDePrueba } from '../../../entities/hoja-de-prueba.soporte'
+import type {
+  EleccionesDeLaHoja,
+  ObligatoriosAlCotizar,
+} from '../../../entities/obligatorios-al-cotizar'
 import type { Armar, Guardado, PedidoArmado } from '../hooks/use-guardado'
 import { HojaDeCotizar } from './hoja-de-cotizar'
 
@@ -15,6 +19,12 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: () => {} }) }))
 
 // Lo que la hoja hace al guardar (paso 4.13-3b): confirma la celda abierta, espera al total al día (P8) y arma el pedido. El guardado es un doble que anota lo armado.
 const LEAD = '1b7a2f0e-1c2d-4e5f-8a9b-0c1d2e3f4a5b'
+// Un rol sin `sin_lead` ni `sin_vehiculo` pediría los dos; la hoja de la mayoría de estas pruebas pide el cliente (como la hoja de siempre).
+const PIDE_EL_CLIENTE: ObligatoriosAlCotizar = { lead: true, vehiculo: false }
+const ELECCIONES: EleccionesDeLaHoja = {
+  lead: { panel: 'cliente' },
+  vehiculo: { panel: 'vehiculo' },
+}
 const AL_DIA: RecalculoInicial = {
   respuesta: respuestaDePrueba({ usd: 2350, valores: { remate: 0 } }),
   estado: { tipo: 'al_dia' },
@@ -40,7 +50,15 @@ function guardadoDePrueba(mas: Partial<Guardado> = {}) {
 
 const montar = (
   guardado: Guardado,
-  { inicial = AL_DIA, leadId = LEAD }: { inicial?: RecalculoInicial; leadId?: string | null } = {},
+  {
+    inicial = AL_DIA,
+    leadId = LEAD,
+    obligatorios = PIDE_EL_CLIENTE,
+  }: {
+    inicial?: RecalculoInicial
+    leadId?: string | null
+    obligatorios?: ObligatoriosAlCotizar
+  } = {},
 ) =>
   render(
     <HojaDeCotizar
@@ -49,6 +67,8 @@ const montar = (
       vehiculoId={null}
       vehiculoSoltado={false}
       leadId={leadId}
+      obligatorios={obligatorios}
+      elecciones={ELECCIONES}
       borrador={{ clave: 'cotizar:prueba', alDescartar: () => {} }}
       guardado={guardado}
     />,
@@ -161,6 +181,15 @@ describe('HojaDeCotizar › cuándo «Guardar» no guarda', () => {
     montar(guardado, { leadId: null })
     expect(botonGuardar()).toHaveProperty('disabled', true)
     expect(screen.getByText('Para guardar, elige el cliente en «Cliente».')).toBeTruthy()
+  })
+
+  it('sin lead y con la clave `sin_lead`, se guarda y el pedido lleva el lead nulo', () => {
+    const { guardado, armados } = guardadoDePrueba()
+    montar(guardado, { leadId: null, obligatorios: { lead: false, vehiculo: false } })
+    expect(botonGuardar()).toHaveProperty('disabled', false)
+    fireEvent.click(botonGuardar())
+    expect(armados).toHaveLength(1)
+    expect(armados[0]).toMatchObject({ leadId: null, vehiculoId: null })
   })
 
   it('con el total nulo, apagado (P9)', () => {

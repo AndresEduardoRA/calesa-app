@@ -110,7 +110,6 @@ export type HojaLista = DisenoDeHoja & {
   // `p_abierta` a `cotizacion_evaluar` (el recálculo calcula con esta versión y estas tarifas, 4-28) y a `cotizacion_crear` (D2, 4-27). Opaca: la pantalla no la lee.
   abiertaEn: string
   abierta: string
-  vehiculoObligatorio: boolean
 }
 export type HojaSinPublicar = {
   estado: 'sin_publicar'
@@ -221,7 +220,6 @@ function listaDe(h: Crudo<typeof esquemaLista>): HojaLista {
     estado: 'lista',
     abiertaEn: h.abierta_en,
     abierta: h.abierta,
-    vehiculoObligatorio: h.vehiculo_obligatorio,
   }
 }
 

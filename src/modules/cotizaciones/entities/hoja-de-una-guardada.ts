@@ -60,7 +60,7 @@ export type HojaDeUnaGuardada = {
 // El diseño de una guardada como la hoja que dibuja `HojaDeCotizar`. No tiene hoja abierta ni su hora (calcula por su cotización, `DeDondeCalcula`: nunca se lee) y el vehículo
 // no se pide para guardar: ya lo tiene o no lo necesita.
 export function hojaSinAbierta(diseno: DisenoDeHoja): HojaLista {
-  return { ...diseno, estado: 'lista', abiertaEn: '', abierta: '', vehiculoObligatorio: false }
+  return { ...diseno, estado: 'lista', abiertaEn: '', abierta: '' }
 }
 
 const mismoTotal = (guardado: LoGuardado, recalculo: RespuestaDeRecalculo) =>

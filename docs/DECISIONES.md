@@ -99,7 +99,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Color de marca con contraste.** Se rechaza el color sobre el que ni blanco ni tinta oscura llegan a 4,5:1; el mejor va a `--color-sobre-primario`. Entra por un `<style>`, no por `<html style>`.
 - **Íconos y logo.** Íconos dibujados con Canvas en el navegador, subidos a `marca/iconos/<hash>.png` y servidos por el manifest (sin `sharp`). El logo no se comprime como foto: SVG sin código ≤ 200 KB; raster ≤ 1024 px o PNG sin pérdida; tope 1 MB.
 - **Monedas y tipos de cambio.** Moneda base + N tipos de cambio nombrados con historial; la fórmula declara buckets → clave de TC y la cotización congela los TC usados. El modo Live oculta cifras y símbolos en toda la app.
-- **Ajustes de cotización aparte.** Vigencia y vehículo obligatorio los cambia sólo `cotizaciones.configurar` concedida sin origen, por `empresa_guardar_ajustes_de_cotizacion` (dos permisos no se mezclan en una RPC); comparte versión con Empresa y revalida las dos pantallas.
+- **Ajustes de cotización aparte.** La vigencia la cambia sólo `cotizaciones.configurar` concedida sin origen, por `empresa_guardar_ajustes_de_cotizacion` (dos permisos no se mezclan en una RPC; si el vehículo y el lead son obligatorios ya no es un ajuste de empresa: es por rol y origen, abajo); comparte versión con Empresa y revalida las dos pantallas.
 
 ## Orígenes
 
@@ -247,7 +247,7 @@ las trampas, en `docs/LECCIONES.md`.
 ### Estructura y reglas de base
 
 - **Áreas y núcleo.** El módulo se parte en `areas/<área>/{index,client,composicion}.ts` más un núcleo que no importa áreas (guarda en `areas-de-cotizaciones.test.ts`); segundas pantallas en `pantallas/<área>-<pantalla>.ts`.
-- **Reglas de base.** Vencida = `creado_en` + `vigencia_dias` por día en la zona de la empresa (sin estado); desactualizada al publicar una fórmula nueva; lead obligatorio; número global por empresa.
+- **Reglas de base.** Vencida = `creado_en` + `vigencia_dias` por día en la zona de la empresa (sin estado); desactualizada al publicar una fórmula nueva; lead obligatorio salvo con `cotizaciones.crear.sin_lead` del origen (y siempre en una final); número global por empresa.
 - **Lo que no se ve no viaja.** `cotizaciones` con grant por columna; `cotizacion_leer/revisiones/tabla/evaluar` recortan por nivel sin ser oráculo; un detector sobre `pg_proc` exige registrar toda función que devuelva contenido.
 - **Niveles.** `cotizaciones.nivel.<clave>.ver|editar`, tope 10, sólo estrechan; recortan con `_nodos_visibles()`; ver restringido + editar abierto se rechaza. La fórmula sólo viaja a `cotizaciones.configurar`.
 - **Crear y guardar sólo por RPC.** `cotizacion_crear` (única alta) y `cotizacion_guardar` (calcula con SU versión, conserva lo oculto, intento + huella). `_cotizacion_puede_guardar()` decide antes y después del candado; quien no ve recibe 42501 antes de todo.
@@ -272,6 +272,7 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### La hoja
 
+- **Vehículo y lead obligatorios: dos libertades por rol y origen.** `cotizaciones.crear.sin_vehiculo` y `cotizaciones.crear.sin_lead` (por origen, sin alcance; se suman, sin deny) reemplazan al ajuste global de la empresa: sin la clave en ese origen el vínculo es obligatorio. Una final pide siempre los dos y cotizar encima aplica las mismas claves a la anterior (una anterior sin lead se cotiza encima sólo con `sin_lead` de su origen). Las hace cumplir la base (`cotizacion_crear`, `cotizacion_encima`, `_cotizacion_cadena`); la hoja decide con `sesion.permisos` (con «Ver como», los del rol elegido, un subconjunto de los reales: nunca afloja). El rol dueño las tiene sin origen: sin ellas nadie podría concederlas (`concesion_dominada()`) ni editar un rol que las tenga (`rol_dominado()`), y el dueño es «todo el catálogo». La migración trasladó el ajuste global a la clave de vehículo de cada concesión de cotizar; el lead quedó obligatorio.
 - **La hoja abierta la firma la base.** `cotizacion_hoja()` devuelve `abierta` con HMAC (clave en Vault); crear, evaluar y la ayuda de tabla reciben `p_abierta` y calculan con esa versión. Firma también la huella de las tarifas de la apertura, no sus valores: `crear` la compara con las que reconstruye del historial, porque un `cambiado_en` anterior a la apertura puede confirmar después. Cotizar pide `crear` y `ver` del origen.
 - **Cotizar encima.** La N+1 nace al tocar (`cotizacion_encima`), siempre preventa, con lo guardado de la última de la cadena; índice parcial `cotizaciones_encima_unica`. Quien no ve la N+1 sólo sabe que existe.
 - **Revisiones con totales por clave.** El diff se compara después de recortar (`_cotizacion_diff_recortado()`); «Ir a una fecha» es `p_hasta` exclusivo en `cotizacion_revisiones()`, anclando y paginando por id.

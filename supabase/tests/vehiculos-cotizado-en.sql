@@ -92,8 +92,7 @@ do $$
 declare t jsonb := pg_temp.vc_preparar(); r jsonb; v1 uuid := (t ->> 'v1')::uuid; v2 uuid := (t ->> 'v2')::uuid; vn uuid := gen_random_uuid(); c public.cotizaciones;
 begin
   if pg_temp.vc_cot(v1) is not null or pg_temp.vc_cot(v2) is not null then raise exception 'un vehículo nuevo debía nacer sin cotizar'; end if;
-  -- Una preventa sin vehículo sólo se guarda con el ajuste en «no».
-  update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = false where id = 1;
+  -- La dueña guarda una preventa sin vehículo (tiene `sin_vehiculo`).
   r := pg_temp.vc_crear(t, null);
   if pg_temp.vc_cot(v1) is not null or pg_temp.vc_cot(v2) is not null then raise exception 'crear sin vehículo tocó uno'; end if;
   r := pg_temp.vc_crear(t, v1);

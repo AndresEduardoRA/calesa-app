@@ -29,7 +29,8 @@ export function trasElEnvio(envio: EnvioDeGuardado): 'conservar' | 'soltar' {
 const esquemaDelPendiente = z.object({
   intento: z.string().min(1),
   origenId: z.string(),
-  leadId: z.string(),
+  // Un pendiente de antes del despliegue siempre trae el lead; sin `sin_lead`, nulo no se manda.
+  leadId: z.string().nullable(),
   vehiculoId: z.string().nullable(),
   abierta: z.string(),
   entradas: z.object({

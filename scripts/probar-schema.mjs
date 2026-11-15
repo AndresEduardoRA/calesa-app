@@ -149,6 +149,18 @@ console.log(`✓ ${ok} archivos aplicados`)
 
 // Los datos que una prueba lee del repo, por archivo (las clases de dato, en `scripts/lib/datos-de-prueba.mjs`). Una prueba que vuelve a
 // ejecutar el texto de una migración de datos (`{ ruta, texto: true }`) se borra con ella al aplastar: `pnpm db:aplastar`.
+// La ruta de la migración (no la base) que contiene ese texto: las pruebas no nombran archivos de migración, que un aplastado borra.
+function migracionPorContenido(texto) {
+  const dir = path.join(base, 'migrations')
+  const archivo = fs
+    .readdirSync(dir)
+    .find(
+      (f) => !f.endsWith('_base.sql') && fs.readFileSync(path.join(dir, f), 'utf8').includes(texto),
+    )
+  if (!archivo) throw new Error(`ninguna migración contiene «${texto}»`)
+  return path.join(dir, archivo)
+}
+
 const DATOS_DE_PRUEBA = {
   // splinter sobre el esquema de la prueba, con los esquemas que expone la API, y la lista de avisos aceptados con su motivo (9.13-1).
   'advisors.sql': {
@@ -183,6 +195,13 @@ const DATOS_DE_PRUEBA = {
   },
   'plantilla-validar.sql': {
     _juego_de_plantilla: 'src/modules/cotizaciones/entities/plantilla/casos-de-plantilla.json',
+  },
+  // Una migración de datos que la prueba vuelve a ejecutar: se busca por su contenido y no por su nombre. Se borra al aplastar, con su prueba.
+  'areas/cotizaciones/vinculos-por-rol-migracion.sql': {
+    _migracion_de_vinculos: {
+      ruta: migracionPorContenido('drop column if exists vehiculo_obligatorio_al_cotizar'),
+      texto: true,
+    },
   },
 }
 

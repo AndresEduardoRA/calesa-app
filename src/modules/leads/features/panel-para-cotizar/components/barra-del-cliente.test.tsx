@@ -42,6 +42,19 @@ function montar(props: Partial<Parameters<typeof BarraDelCliente>[0]> = {}, url 
 }
 
 describe('BarraDelCliente', () => {
+  it('«Obligatorio» sólo si el rol no guarda sin lead y no hay cliente, en su propio texto: «Selecciona un cliente» no se parte', () => {
+    montar({ obligatorio: true })
+    expect(screen.getByText('Obligatorio')).toBeTruthy()
+    expect(screen.getByText('Selecciona un cliente')).toBeTruthy()
+    expect(screen.getAllByRole('button')).toHaveLength(1)
+    cleanup()
+    montar()
+    expect(screen.queryByText('Obligatorio')).toBeNull()
+    cleanup()
+    montar({ obligatorio: true, elegido: ELEGIDO })
+    expect(screen.queryByText('Obligatorio')).toBeNull()
+  })
+
   it('sin cliente invita a elegir uno, con una sola parada de Tab', () => {
     montar()
     expect(screen.getByRole('button', { name: /Selecciona un cliente/ })).toBeTruthy()

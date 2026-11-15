@@ -230,22 +230,6 @@ describe('HojaDeCotizar: cuando el recálculo falla', () => {
 })
 
 describe('HojaDeCotizar: avisos y atajos', () => {
-  it('el aviso del vehículo: el ajuste lo pide y no hay', () => {
-    const hoja = hojaDePrueba()
-    render(
-      <HojaDeCotizar
-        hoja={{ ...hoja, vehiculoObligatorio: true }}
-        inicial={AL_DIA}
-        vehiculoId={null}
-        vehiculoSoltado={false}
-        leadId={null}
-        borrador={{ clave: 'cotizar:prueba', alDescartar: () => {} }}
-        guardado={QUIETO}
-      />,
-    )
-    expect(screen.getByText('Este origen pide un vehículo para guardar.')).toBeTruthy()
-  })
-
   it('si el rol puede cotizar pero no ve nada de la hoja, lo dice en vez de dibujar una hoja vacía con un total', () => {
     render(
       <HojaDeCotizar

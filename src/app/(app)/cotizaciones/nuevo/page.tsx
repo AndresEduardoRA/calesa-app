@@ -3,17 +3,11 @@ import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { z } from 'zod'
 import {
-  aperturaDe,
-  contarCotizacionesDelVehiculo,
-  datosDelVehiculoDeLaHoja,
   CLAVE_DE_LEAD,
   CLAVE_DE_ORIGEN,
   CLAVE_DE_VEHICULO,
-  leerHojaParaCotizar,
-  modoInicial,
   origenElegido,
   origenesParaCotizar,
-  recalcularAlAbrir,
 } from '@/modules/cotizaciones'
 import {
   EsqueletoDeHoja,
@@ -23,19 +17,10 @@ import {
 } from '@/modules/cotizaciones/pantallas/cotizar'
 import { HUECOS_DE_FORMULA_EN_LA_HOJA } from '@/modules/cotizaciones/pantallas/formula-hoja'
 import { nombreVisible, requerirSesion } from '@/modules/equipo'
-import { leerClienteElegido, type ClienteElegido } from '@/modules/leads'
+import { type ClienteElegido } from '@/modules/leads'
 import { BarraDelCliente } from '@/modules/leads/pantallas/cotizar'
-import { integracionActiva } from '@/modules/empresa'
-import { getOrigenes, leerLayout, type OrigenResumen } from '@/modules/origenes'
-import {
-  datosParaElegirDe,
-  editablesDe,
-  elegidoDesde,
-  leerVehiculo,
-  permisoDeAlta,
-  type Vehiculo,
-} from '@/modules/vehiculos'
-import type { AltaDelPanel, ParaElegir } from '@/modules/vehiculos/pantallas/cotizar'
+import { getOrigenes, type OrigenResumen } from '@/modules/origenes'
+import { elegidoDesde } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
 import { puede, type Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
@@ -43,6 +28,14 @@ import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
 import { AvisoDeSubastaDeLaHoja } from './aviso-de-subasta'
 import { BarraConHistorial } from './barra-con-historial'
+import {
+  camposQueSeEligen,
+  leerLoDeLaHoja,
+  paraElegirDe,
+  reglasDeLaHoja,
+  type Quien,
+  type VehiculoDeLaUrl,
+} from './lecturas-de-la-hoja'
 
 // Lo que el área `formula` llena en la hoja (`pantallas/formula-hoja.ts`): el enlace de «Falta publicar la fórmula».
 const { EnlaceSinPublicar } = HUECOS_DE_FORMULA_EN_LA_HOJA
@@ -68,92 +61,6 @@ const esId = z.guid()
 const idDeUrl = (valor: string | string[] | undefined): string | null => {
   const leido = esId.safeParse(unParametro(valor))
   return leido.success ? leido.data : null
-}
-
-// La hoja y, con la hoja abierta que ella entrega, el primer cálculo (4-28: el total es el de la versión y las tarifas que se dibujan): llega dibujada con sus valores y el
-// navegador no pide nada al abrir. Un pedido más en serie, que se ahorra cuando no hay hoja que calcular (sin permiso, sin publicar).
-async function abrirLaHoja(origenId: string, vehiculoId: string | null) {
-  const hoja = await leerHojaParaCotizar(origenId)
-  const alAbrir =
-    hoja.ok && hoja.data.estado === 'lista'
-      ? await recalcularAlAbrir({
-          origenId,
-          vehiculoId,
-          abierta: hoja.data.abierta,
-          modoTc: modoInicial(hoja.data.cabecera),
-        })
-      : null
-  return {
-    apertura: aperturaDe(hoja, alAbrir?.resultado ?? null),
-    vehiculoSoltado: alAbrir?.vehiculoSoltado ?? false,
-  }
-}
-
-type Quien = { permisos: Permisos; usuarioId: string }
-
-// El vehículo de la URL, con si quien mira lo puede editar (en serie: `editablesDe` necesita el vehículo leído; casi siempre sin ir a la base); null si no vino, no existe o
-// no se ve.
-async function elegidoDeLaUrl(quien: Quien, id: string | null) {
-  if (id === null) {
-    return null
-  }
-  const leido = await leerVehiculo(id)
-  if (!leido.ok || !leido.data) {
-    return null
-  }
-  const editables = await editablesDe(quien, [leido.data])
-  return { vehiculo: leido.data, editable: editables.has(leido.data.id) }
-}
-
-// El lead de la URL para la barra del cliente (4.14-3b), con la sesión de quien mira: null si no vino, si quien mira no ve los leads o si la lectura no lo encontró (no
-// existe, está en la papelera o no se ve: la hoja y las pestañas de origen lo sueltan, y guardar pide elegir otro). Un error de la lectura sube al `error.tsx`: no es «no se ve».
-async function clienteDeLaUrl(
-  permisos: Permisos,
-  id: string | null,
-): Promise<ClienteElegido | null> {
-  return id === null || !puede(permisos, 'leads.ver') ? null : datosO(await leerClienteElegido(id))
-}
-
-// El layout del origen sólo hace falta con un vehículo: dice qué datos del vehículo se eligen en el panel.
-const layoutSiHayVehiculo = (origenId: string, vehiculo: string | null) =>
-  vehiculo === null ? null : leerLayout(origenId, { conUso: false })
-
-// Lo que el panel ofrece elegir del vehículo entre las filas de una tabla de la hoja (4.14-2c3, el tipo de vehículo del transporte): sólo con un elegido y su layout.
-function paraElegirDe(
-  hoja: Parameters<typeof datosDelVehiculoDeLaHoja>[0],
-  elegido: { vehiculo: Vehiculo; editable: boolean } | null,
-  layout: Awaited<ReturnType<typeof leerLayout>> | null,
-): ParaElegir | null {
-  if (elegido === null || layout === null || !layout.ok) {
-    return null
-  }
-  const datos = datosDelVehiculoDeLaHoja(hoja)
-  return datos.length === 0
-    ? null
-    : datosParaElegirDe(elegido.vehiculo, datos, layout.data.campos, elegido.editable)
-}
-
-// Los campos que quien mira elige en el panel: la celda sin valor por uno de ellos dice dónde se elige.
-const camposQueSeEligen = (paraElegir: ParaElegir | null): string[] =>
-  paraElegir?.editable ? paraElegir.datos.map((dato) => dato.campo) : []
-
-// Lo que el panel del vehículo necesita para dar de alta desde él: sólo si quien mira ve los vehículos del origen y puede crearlos en él (el origen de la hoja está
-// siempre activo). Se lee a la vez que la hoja. El layout del origen no viaja: el alta lo lee desde el navegador al abrirse (P2 del 4.14-2c).
-async function altaDelPanelDe(
-  permisos: Permisos,
-  origen: OrigenResumen,
-): Promise<AltaDelPanel | null> {
-  if (
-    !puede(permisos, 'vehiculos.ver', origen.id) ||
-    permisoDeAlta(permisos, origen, 'cotizar').estado !== 'habilitado'
-  ) {
-    return null
-  }
-  const activa = origen.tipo === 'subasta' ? await integracionActiva('apibara') : false
-  return {
-    origen,
-    apibara: { activa, puedeConfigurar: puede(permisos, 'empresa.ajustes.gestionar') },
-  }
 }
 
 async function Hoja({
@@ -207,13 +114,15 @@ function tituloDelElegido(elegido: { vehiculo: { titulo: string } } | null) {
   return elegido?.vehiculo.titulo ?? null
 }
 
-// La barra del cliente de la hoja: lo que puede hacer quien mira con los leads.
+// La barra del cliente de la hoja: lo que puede hacer quien mira con los leads, y si su rol no deja guardar sin cliente en este origen.
 function BarraDelClienteDeLaHoja({
   cliente,
   permisos,
+  obligatorio,
 }: {
   cliente: ClienteElegido | null
   permisos: Permisos
+  obligatorio: boolean
 }) {
   return (
     <BarraDelCliente
@@ -222,7 +131,50 @@ function BarraDelClienteDeLaHoja({
       numeroGlobal={puede(permisos, 'leads.numero_global.ver')}
       puedeCrear={puede(permisos, 'leads.crear')}
       claveDeLaUrl={CLAVE_DE_LEAD}
+      obligatorio={obligatorio}
     />
+  )
+}
+
+// Las dos barras de arriba de la hoja y el aviso de subasta cerrada: fuera de la hoja (`[data-hoja]`) y del componente con `key`, así elegir otro vehículo o cliente no la vuelve a
+// montar. Cada barra dice «Obligatorio» si el rol de quien mira no puede guardar sin ese vínculo en este origen.
+function BarrasDeLaHoja({
+  sesion,
+  origen,
+  elegido,
+  cliente,
+  reglas,
+}: {
+  sesion: { permisos: Permisos }
+  origen: OrigenResumen
+  elegido: VehiculoDeLaUrl
+  cliente: ClienteElegido | null
+  reglas: Pick<Awaited<ReturnType<typeof leerLoDeLaHoja>>, 'conteo' | 'alta'> & {
+    obligatorios: { lead: boolean; vehiculo: boolean }
+    paraElegir: ReturnType<typeof paraElegirDe>
+    abierta: string
+  }
+}) {
+  const { obligatorios, conteo, alta, paraElegir, abierta } = reglas
+  return (
+    <>
+      <BarraConHistorial
+        origen={origen}
+        elegido={elegido ? elegidoDesde(elegido.vehiculo) : null}
+        conteo={conteo}
+        alta={alta}
+        puedeVer={puede(sesion.permisos, 'vehiculos.ver', origen.id)}
+        paraElegir={paraElegir}
+        abierta={abierta}
+        obligatorio={obligatorios.vehiculo}
+      />
+      <AvisoDeSubastaDeLaHoja elegido={elegido} origen={origen} permisos={sesion.permisos} />
+      <BarraDelClienteDeLaHoja
+        cliente={cliente}
+        permisos={sesion.permisos}
+        obligatorio={obligatorios.lead}
+      />
+    </>
   )
 }
 
@@ -243,16 +195,11 @@ async function HojaDelOrigen({
 }) {
   const lead = idDeUrl(url[CLAVE_DE_LEAD])
   const vehiculo = idDeUrl(url[CLAVE_DE_VEHICULO])
-  // El vehículo de la barra y su «Cotizado (n)» se leen a la vez que la hoja; si la hoja lo suelta, la barra queda sin él.
-  // Con un vehículo, el layout del origen (qué datos del vehículo se eligen en el panel) también va en paralelo.
-  const [{ apertura, vehiculoSoltado }, leido, conteo, alta, layout, cliente] = await Promise.all([
-    abrirLaHoja(origen.id, vehiculo),
-    elegidoDeLaUrl(sesion, vehiculo),
-    vehiculo === null ? null : contarCotizacionesDelVehiculo(vehiculo),
-    altaDelPanelDe(sesion.permisos, origen),
-    layoutSiHayVehiculo(origen.id, vehiculo),
-    clienteDeLaUrl(sesion.permisos, lead),
-  ])
+  const { apertura, vehiculoSoltado, leido, conteo, alta, layout, cliente } = await leerLoDeLaHoja(
+    sesion,
+    origen,
+    { lead, vehiculo },
+  )
   if (apertura.tipo === 'sin_permiso') {
     return (
       <EstadoSinPermiso descripcion="No tienes permiso para cotizar en este origen. Pídeselo a quien administra los roles." />
@@ -276,21 +223,17 @@ async function HojaDelOrigen({
   const vehiculoUsado = vehiculoSoltado ? null : vehiculo
   const elegido = vehiculoSoltado ? null : leido
   const paraElegir = paraElegirDe(apertura.hoja, elegido, layout)
+  const { obligatorios, elecciones } = reglasDeLaHoja(sesion.permisos, origen.id)
   return (
     <>
       {pestanas}
-      {/* Fuera de la hoja (`[data-hoja]`) y del componente con `key`: elegir otro vehículo no la vuelve a montar. */}
-      <BarraConHistorial
+      <BarrasDeLaHoja
+        sesion={sesion}
         origen={origen}
-        elegido={elegido ? elegidoDesde(elegido.vehiculo) : null}
-        conteo={conteo}
-        alta={alta}
-        puedeVer={puede(sesion.permisos, 'vehiculos.ver', origen.id)}
-        paraElegir={paraElegir}
-        abierta={apertura.hoja.abierta}
+        elegido={elegido}
+        cliente={cliente}
+        reglas={{ obligatorios, conteo, alta, paraElegir, abierta: apertura.hoja.abierta }}
       />
-      <AvisoDeSubastaDeLaHoja elegido={elegido} origen={origen} permisos={sesion.permisos} />
-      <BarraDelClienteDeLaHoja cliente={cliente} permisos={sesion.permisos} />
       <ConProveedorDeLaHoja
         origenId={origen.id}
         cotizacionId={null}
@@ -304,6 +247,8 @@ async function HojaDelOrigen({
           vehiculoId={vehiculoUsado}
           vehiculoSoltado={vehiculoSoltado}
           leadId={leadUsado}
+          obligatorios={obligatorios}
+          elecciones={elecciones}
           personaId={sesion.usuarioId}
           // La celda sin valor por un dato que quien mira elige en el panel dice dónde se elige (4.14-2c3).
           seEligen={camposQueSeEligen(paraElegir)}

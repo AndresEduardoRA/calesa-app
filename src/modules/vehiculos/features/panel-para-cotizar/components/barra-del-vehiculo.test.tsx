@@ -43,6 +43,22 @@ describe('BarraDelVehiculo', () => {
     expect(screen.getByRole('button', { name: /Selecciona un vehículo/ })).toBeTruthy()
   })
 
+  it('«Obligatorio» sólo si el rol no guarda sin vehículo y no hay vehículo, en su propio texto: «Selecciona un vehículo» no se parte', () => {
+    montar({ obligatorio: true })
+    expect(screen.getByText('Obligatorio')).toBeTruthy()
+    expect(screen.getByText('Selecciona un vehículo')).toBeTruthy()
+    expect(screen.getAllByRole('button')).toHaveLength(1)
+    cleanup()
+    montar()
+    expect(screen.queryByText('Obligatorio')).toBeNull()
+    cleanup()
+    montar({
+      obligatorio: true,
+      elegido: { id: ID, numero: 12, titulo: 'Toyota Corolla', lote: '4455', portadaRuta: null },
+    })
+    expect(screen.queryByText('Obligatorio')).toBeNull()
+  })
+
   it('con vehículo dice su título, su número y su lote', () => {
     montar({
       elegido: { id: ID, numero: 12, titulo: 'Toyota Corolla', lote: '4455', portadaRuta: null },
