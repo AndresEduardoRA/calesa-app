@@ -122,6 +122,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'mediana y p95 de 200 llamadas',
   ],
   [
+    'supabase/tests/medir-logistica.sql',
+    'La logística con 300.000 vehículos vivos en un origen (8 fases, la fase 3 de 15.000 a 120.000, 40 % con transporte y 25 % con documento), como authenticated y con el plan genérico: el número de cada fase (resumen: la dueña y Ana, bytes y bloques del índice y de vehiculos sin crecer con N), la lista de una fase con cursor profundo (la dueña por vehiculos_cadena_idx y Ana por lo propio) y cada grupo de la bandeja del día (la portada con su conteo y una página con cursor; cada consulta por su índice, sin recorrer la tabla)',
+    'mediana de 5 de 7 corridas',
+  ],
+  [
     'supabase/tests/medir-vehiculos-lectura.sql',
     'La lectura de vehículos con 50.000 y con 250.000 vivos, como authenticated y con el plan genérico: una página de n + 1 del inventario (primera y profunda por cursor) de la dueña («todos»), de Pía («propios», lo que creó) y de Beto («propios», 50.000 leads en su cartera), y puede_vehiculo() de Beto, con la policy por fila (ms y buffers del EXPLAIN, y las llamadas por página); la «chica», sin assert de tiempo (4-23)',
     'mediana de 5 de 7 corridas',
@@ -140,6 +145,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'supabase/tests/medir-vehiculos-inventario-guarda.sql',
     'La guarda del inventario: lo de hoy (PostgREST sobre la tabla) para la «chica» crece con N de 50.000 a 250.000 vivos (bloques de vehiculos y ms); si no, la medición de la función no prueba nada',
     'mediana de 5 de 7 corridas',
+  ],
+  [
+    'supabase/tests/medir-vehiculos-inventario-situacion.sql',
+    'El filtro «Situación» del inventario (situacion_en) con 50.000 y con 250.000 vivos, como la dueña con el plan normal: una situación propia por vehiculos_situacion_idx bajo su Limit, sin ordenar todas las de la situación ni descartar filas; dos propias, una fase y «sin fase» sin recorrer vehiculos; y los bloques de vehiculos sin crecer con N',
+    UNA,
   ],
   [
     'supabase/tests/medir-vehiculos-inventario-costo-fijo.sql',
@@ -169,6 +179,11 @@ export const MEDICIONES_CON_VOLUMEN = [
   [
     'supabase/tests/medir-historial-del-vehiculo.sql',
     'El historial de un vehículo con 5.000 cotizaciones entre 50.000 y 250.000, como authenticated y con el plan genérico: una página de n + 1 (primera y profunda por cursor) de la dueña, por cotizaciones_vehiculo_creado_idx (ms y buffers del EXPLAIN); Ana («propios»), sin assert',
+    'mediana de 5 de 7 corridas',
+  ],
+  [
+    'supabase/tests/medir-cotizaciones-aprobadas.sql',
+    'La cotización aprobada con 50.000 cotizaciones, como authenticated y con el plan genérico: la lectura de 100 ids por vehículo (clave primaria) y por cotización (único) de la dueña y de Ana, sin recorrer la tabla (ms y buffers del EXPLAIN); y la reposición al confirmar sobre un vehículo con 100 y otro con 1.000 cotizaciones (los bloques de cotizaciones no crecen)',
     'mediana de 5 de 7 corridas',
   ],
   [
@@ -204,6 +219,11 @@ export const MEDICIONES_CON_VOLUMEN = [
   [
     'supabase/tests/medir-buscador.sql',
     'buscador_cotizaciones() con 50.000 y con 250.000 cotizaciones, como authenticated con el plan genérico: #número, un título común y uno raro, de la dueña y de Ana («propios», 100 propias fijas) (ms y bloques por relación de la llamada entera; ningún recorrido, el número y lo raro sin crecer con N, el heap de lo común tampoco; la guarda sin el GIN del título)',
+    'mediana de 5 de 7 corridas',
+  ],
+  [
+    'supabase/tests/medir-cotizaciones-buscar.sql',
+    'La búsqueda del listado /cotizaciones (cotizaciones_buscar()) con 50.000 y con 250.000 cotizaciones, como authenticated con el plan genérico: #número, cliente y vehículo (raro y común, con su tope de coincidencias) y autor, de la dueña y de Ana («propios») (ms y bloques por relación de la llamada entera; ningún recorrido, cada caso por el índice de su ruta, el número y lo raro sin crecer con N)',
     'mediana de 5 de 7 corridas',
   ],
 ]

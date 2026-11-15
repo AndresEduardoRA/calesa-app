@@ -8,6 +8,7 @@ import {
   type CondicionDeAtributo,
   type DefFiltro,
   type EsquemaDeFiltros,
+  type OpcionDeFiltro,
   type ValorDeFiltro,
   type ValoresDeFiltros,
 } from '@/shared/lib/filtros'
@@ -17,11 +18,21 @@ import {
   type CategoriaDeVehiculo,
   type FaseDeVehiculo,
 } from './campo'
+import {
+  CONDICION_POR_DEFECTO,
+  esPropia,
+  etiquetaDeSituacion,
+  SITUACIONES_PROPIAS,
+  type Situacion,
+  type SituacionPropia,
+} from './situacion'
 import { VITRINA_CERRADA, vitrinaAbierta, type VitrinaDelOrigen } from './vitrina'
 
 // Las claves de URL de los fijos. Las de los campos del layout van con el prefijo `a.`: una clave
 // de campo no lleva punto, así que nunca choca con `origen`, `panel`, `cursor` ni con un fijo.
-export const FILTRO_FASE = 'fase'
+// «Situación» (lo que la app muestra en todos lados, `entities/situacion.ts`): las situaciones propias de la subasta («En subasta», «Sin resolver»,
+// «No ganadas») y las fases del origen. Reemplaza al filtro «Fase»: una fase es una situación, y no hay dos filtros que digan casi lo mismo.
+export const FILTRO_SITUACION = 'situacion'
 export const FILTRO_CATEGORIA = 'categoria'
 export const FILTRO_ANIO = 'anio'
 // Sí = se ve hoy en la web pública; no = todo lo demás (sin publicar, o publicado y no visible).
@@ -30,7 +41,7 @@ export const FILTRO_VITRINA = 'vitrina'
 // regla son de la base y de `entities/limpieza.ts`); no = todo lo demás. Sólo existe en un origen de
 // subasta con la limpieza encendida.
 export const FILTRO_LIMPIEZA = 'limpieza'
-// En el filtro de fase: lo que todavía no entró al flujo.
+// En el filtro de situación: lo que todavía no entró al flujo (y no está en un tramo de subasta).
 export const SIN_FASE = 'ninguna'
 
 const BUSQUEDA = {
@@ -46,22 +57,39 @@ type Fuentes = {
   // La limpieza automática de este origen: con `activa` el filtro «Se limpiará pronto» existe. La
   // página lo resuelve (sólo un origen de subasta con el interruptor encendido).
   limpieza?: { activa: boolean }
+  // Un origen de subasta: sólo ahí existen «En subasta», «Sin resolver» y «No ganadas».
+  conSubasta?: boolean
 }
 
 // Los campos del layout que hoy se pueden filtrar.
 export { camposFiltrables }
 
-function filtrosFijos({ fases, categorias, limpieza }: Fuentes): DefFiltro[] {
+// Las situaciones propias, en el orden del filtro. «No ganadas» en plural: el filtro habla de vehículos, y la insignia («No ganada») concuerda con la subasta.
+const ETIQUETA_DE_FILTRO: Record<SituacionPropia, string> = {
+  en_subasta: etiquetaDeSituacion('en_subasta', null).texto,
+  sin_resolver: etiquetaDeSituacion('sin_resolver', null).texto,
+  no_ganada: 'No ganadas',
+}
+
+function opcionesDeSituacion({ fases, conSubasta }: Fuentes): OpcionDeFiltro[] {
+  return [
+    ...(conSubasta
+      ? SITUACIONES_PROPIAS.map((valor) => ({ valor, etiqueta: ETIQUETA_DE_FILTRO[valor] }))
+      : []),
+    ...fases.map((fase) => ({ valor: fase.id, etiqueta: fase.nombre, color: fase.color })),
+    { valor: SIN_FASE, etiqueta: 'Sin fase' },
+  ]
+}
+
+function filtrosFijos(fuentes: Fuentes): DefFiltro[] {
+  const { fases, categorias, limpieza, conSubasta } = fuentes
   const fijos: DefFiltro[] = []
-  if (fases.length > 0) {
+  if (fases.length > 0 || conSubasta) {
     fijos.push({
       tipo: 'opciones',
-      clave: FILTRO_FASE,
-      etiqueta: 'Fase',
-      opciones: [
-        ...fases.map((fase) => ({ valor: fase.id, etiqueta: fase.nombre, color: fase.color })),
-        { valor: SIN_FASE, etiqueta: 'Sin fase' },
-      ],
+      clave: FILTRO_SITUACION,
+      etiqueta: 'Situación',
+      opciones: opcionesDeSituacion(fuentes),
     })
   }
   const activas = categorias.filter((categoria) => categoria.activa)
@@ -116,6 +144,11 @@ export type Condicion =
   // lo contrario. El día llega calculado por la página con la zona de la empresa; la fecha de cada
   // vehículo (`limpieza_el`) la calcula la base: nada de esto copia la regla.
   | { tipo: 'por_limpiar'; valor: boolean; hasta: string }
+  // La situación real (`vehiculos.situacion`, la calcula la base) no es ninguna de esas. Por defecto, sin las no ganadas.
+  | { tipo: 'situacion_fuera_de'; valores: Situacion[] }
+  // Está en alguna de esas situaciones propias, o en alguna de esas fases (con la situación `fase`: su fase es su situación), o sin fase (y sin tramo de subasta
+  // que decida): lo que eligió la persona en «Situación». Cada parte puede estar vacía.
+  | { tipo: 'situacion_en'; situaciones: SituacionPropia[]; fases: string[]; sinFase: boolean }
   | CondicionDeAtributo
 
 function condicionFija(
@@ -141,12 +174,12 @@ function condicionFija(
   if (valor.tipo !== 'opciones') {
     return null
   }
-  if (clave === FILTRO_FASE) {
+  if (clave === FILTRO_SITUACION) {
     return {
-      tipo: 'columna_en',
-      columna: 'fase_id',
-      valores: valor.valores.filter((fase) => fase !== SIN_FASE),
-      incluirNulo: valor.valores.includes(SIN_FASE),
+      tipo: 'situacion_en',
+      situaciones: SITUACIONES_PROPIAS.filter((situacion) => valor.valores.includes(situacion)),
+      fases: valor.valores.filter((uno) => uno !== SIN_FASE && !esPropia(uno)),
+      sinFase: valor.valores.includes(SIN_FASE),
     }
   }
   if (clave === FILTRO_CATEGORIA) {
@@ -160,8 +193,8 @@ function condicionFija(
   return null
 }
 
-// Las condiciones de lo que la persona filtró. La clave de un atributo sale siempre del layout
-// (nunca de la URL): un filtro de un campo que ya no es filtrable se ignora.
+// Las condiciones de lo que la persona filtró, más la de siempre: sin las no ganadas (`CONDICION_POR_DEFECTO`), salvo que pida verlas. La clave de
+// un atributo sale siempre del layout (nunca de la URL): un filtro de un campo que ya no es filtrable se ignora.
 export function condicionesDe(
   campos: readonly CampoDeVehiculo[],
   valores: ValoresDeFiltros,
@@ -182,6 +215,13 @@ export function condicionesDe(
     if (condicion) {
       condiciones.push(condicion)
     }
+  }
+  // Pedir las no ganadas es la única manera de verlas: entonces la de siempre sobra.
+  const pideLasNoGanadas = condiciones.some(
+    (condicion) => condicion.tipo === 'situacion_en' && condicion.situaciones.includes('no_ganada'),
+  )
+  if (!pideLasNoGanadas) {
+    condiciones.push({ ...CONDICION_POR_DEFECTO, valores: [...CONDICION_POR_DEFECTO.valores] })
   }
   return condiciones
 }

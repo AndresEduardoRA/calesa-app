@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Permisos } from '@/shared/lib/permisos'
-import { enlacesDeLogistica } from './enlaces'
+import { enlacesDeLogistica, esEnlaceActual } from './enlaces'
 
 const concede = (clave: string, origenId: string | null = null): Permisos[number] => ({
   clave: clave as Permisos[number]['clave'],
@@ -38,5 +38,29 @@ describe('enlaces de la sub-navegación de logística', () => {
       { titulo: 'Embarques', ruta: '/logistica/embarques' },
       { titulo: 'Aduana', ruta: '/logistica/aduana' },
     ])
+  })
+})
+
+describe('el enlace actual', () => {
+  const cadena = { titulo: 'Cadena', ruta: '/logistica' }
+  const aduana = { titulo: 'Aduana', ruta: '/logistica/aduana' }
+
+  it('«Cadena» es la actual en la portada, en la lista de una fase y en la de un grupo de la bandeja', () => {
+    expect(esEnlaceActual(cadena, '/logistica')).toBe(true)
+    expect(esEnlaceActual(cadena, '/logistica/fase/sin_fase')).toBe(true)
+    expect(esEnlaceActual(cadena, '/logistica/bandeja/demorados')).toBe(true)
+  })
+
+  it('no lo es en las otras áreas ni en la página de un vehículo', () => {
+    expect(esEnlaceActual(cadena, '/logistica/aduana')).toBe(false)
+    expect(esEnlaceActual(cadena, '/logistica/embarques')).toBe(false)
+    expect(esEnlaceActual(cadena, '/logistica/vehiculo/abc')).toBe(false)
+  })
+
+  it('las áreas marcan su ruta y lo que cuelga de ella, y no las de las otras', () => {
+    expect(esEnlaceActual(aduana, '/logistica/aduana')).toBe(true)
+    expect(esEnlaceActual(aduana, '/logistica/aduana/algo')).toBe(true)
+    expect(esEnlaceActual(aduana, '/logistica')).toBe(false)
+    expect(esEnlaceActual(aduana, '/logistica/aduanas')).toBe(false)
   })
 })

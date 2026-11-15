@@ -16,6 +16,10 @@ export { MAXIMO_DE_PAGINA_DE_VEHICULOS } from './entities/vehiculo'
 // De dónde se lee una página del inventario: quien ve «propios» por `vehiculos_inventario()`, el resto por la tabla (4.16-2b)
 export { fuenteDelInventario, type FuenteDelInventario } from './entities/fuente-del-inventario'
 export type { Vehiculo } from './entities/vehiculo'
+export type {
+  AprobadasDeLaPagina,
+  CotizacionAprobadaDeLaFila,
+} from './entities/cotizacion-aprobada-de-la-fila'
 // Qué nombra a un vehículo: su campo principal o su título (6.13). Logística lo compone con el principal de `origenes`
 export {
   identidadDeVehiculo,
@@ -26,6 +30,9 @@ export {
 export type { Galeria } from './entities/foto'
 // El vehículo de la hoja de cotizar, como lo dibuja su barra (`pantallas/cotizar`)
 export { elegidoDesde, type VehiculoElegido } from './entities/panel-para-cotizar'
+// El aviso de la hoja cuando la subasta del vehículo elegido ya cerró (`pantallas/cotizar` › `<AvisoDeSubastaCerrada>`): lo que necesita, leído en el servidor
+export { avisoDeSubastaCerrada } from './features/panel-para-cotizar/lecturas'
+export type { DatosDelAviso as DatosDelAvisoDeSubastaCerrada } from './entities/subasta-cerrada'
 // El dato del elegido que se elige entre las filas de una tabla de la hoja (4.14-2c3): qué datos de la hoja se ofrecen, con su valor y la versión
 export { datosParaElegirDe, type ParaElegir } from './entities/dato-para-elegir'
 
@@ -42,7 +49,7 @@ export { editablesDe, eliminablesDe, leadsVisiblesDe } from './features/permisos
 
 // Los filtros de un origen, desde su layout: el esquema que dibuja FilterShell y las condiciones
 // que entiende `buscarVehiculos()`
-export { FILTRO_FASE, condicionesDe, esquemaDeFiltros } from './entities/filtros'
+export { FILTRO_SITUACION, condicionesDe, esquemaDeFiltros } from './entities/filtros'
 
 // La vitrina: qué se ve en la web pública y quién publica. Las dos lecturas no tumban la pantalla
 export { vistaPreviaDe, vitrinaDelOrigen } from './features/vitrina/lecturas'
@@ -56,6 +63,13 @@ export {
 // vehículo (cuándo se va, si se conserva), la ventana del aviso y la última noche. La regla es de
 // la base; acá sólo se lee y se dice. Las lecturas no tumban la pantalla.
 export { limpiezaDe, ultimaLimpieza } from './features/limpieza/lecturas'
+// La situación real del vehículo (la calcula la base) y quién puede resolver una subasta sin resolver.
+export { resolucionDeSubasta, sinResolverDe } from './features/situacion/lecturas'
+export {
+  puedeResolverLaSubasta,
+  type ResolucionDeSubasta,
+  type Situacion,
+} from './entities/situacion'
 export {
   hoyEnZona,
   limiteDeAviso,

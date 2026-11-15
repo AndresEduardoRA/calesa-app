@@ -55,6 +55,7 @@ const vehiculo = (id: string, titulo: string): VehiculoDelPanel => ({
   creadoEn: '2026-10-01T08:00:00Z',
   cotizadoEn: '2026-10-29T08:00:00Z',
   cierreSubastaEn: null,
+  situacion: 'fase',
   portadaRuta: null,
 })
 let filas = [vehiculo(ELEGIDO, 'Corolla elegido'), vehiculo(OTRO, 'Civic otro')]

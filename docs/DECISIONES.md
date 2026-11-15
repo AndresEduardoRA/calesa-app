@@ -105,6 +105,34 @@ las trampas, en `docs/LECCIONES.md`.
 
 ## Vehículos
 
+- **Una sola situación real, guardada.** `vehiculos.situacion` (texto con `check`, no enum: bajo RLS la igualdad de un enum no es condición de
+  índice) la calcula la base en `trg_0_situacion`, al cambiar `fases.es_subasta` y con el job `situacion-al-cerrar` (10 min de desfase son
+  aceptables). Nada se mueve solo: lo ambiguo queda «Sin resolver». «En subasta» y «Sin resolver» sólo existen en el tramo de subasta: una
+  subasta viva de un vehículo que ya pasó a «Comprado» es un dato viejo y manda la fase.
+- **El resultado vive en la fila** (`subasta_resultado`, `subasta_resuelta_por|en`) para calcular la situación dentro del trigger. Resolver no
+  mueve la versión ni pasa por la auditoría genérica (como mover): la constancia la deja la RPC (`vehiculo.subasta_resuelta`). Sin versión
+  esperada: el estado hace de versión, como `cambiar_fase` y `vehiculo_conservar`. Si la subasta vuelve a estar viva, el trigger limpia el
+  resultado (lo audita el refresco o la edición de fechas, que sí mueven la versión).
+- **«No ganada» deja de contar** en la cadena, la bandeja de Inicio, las alertas y el inventario por defecto. El tablero no se toca: sus
+  números salen de pagos confirmados y esconder dinero confirmado sería peor.
+- **Fuera del tramo de subasta manda la fase, también sobre el resultado.** Una no ganada que alguien mueve a una fase real vuelve a
+  contar (su situación es la fase; el resultado queda guardado), y la vuelta a subasta sólo limpia el resultado de una unidad que sigue en el
+  tramo: una ganada que ya pasó a otra fase y cuyo lote se relista conserva «ganada». Así nada queda oculto por un dato que ya no aplica.
+- **«No ganada» en femenino**: concuerda con la subasta, no con el sustantivo del origen. En el filtro, plural («No ganadas»): habla de vehículos.
+- **El aviso de subasta cerrada al cotizar sale de la situación real**, no de una fecha comparada en la pantalla: avisan «Sin resolver» y «No
+  ganada» (más «En subasta» con el cierre vencido, los hasta 10 min que tarda el job). Un vehículo en su fase ya se ganó o salió del tramo:
+  cotizarlo es lo normal y avisar sería ruido. Si el origen no tiene fase de subasta, nada figura «Sin resolver» y no hay aviso (lo dice
+  «Revisar»). La fecha sale de `subasta_fin_en` o `subasta_en` (la columna `cierre_subasta_en` es nula con la subasta cerrada).
+- **«Refrescar la subasta» del aviso pide un toque** porque cada consulta a apibara gasta cuota; «Reintentar» sólo se ofrece si el fallo es del
+  momento (`sePuedeReintentar`), nunca con la cuota agotada. Las acciones del aviso (refrescar, resolver, cotizar igual) son botones locales:
+  el patrón `AccionDelAviso` no tiene «refrescar» ni «cerrar» y ampliar `src/shared` por esto disparaba el e2e completo.
+- **«Situación» reemplaza a «Fase» en el inventario.** Una fase es una situación (`fase`), y dos filtros que dicen casi lo mismo confunden: la clave de la URL pasa de
+  `fase` a `situacion` (la migración reescribe las vistas guardadas; una URL vieja con `?fase=` se ignora). Una fase filtra por `situacion = 'fase'` y su `fase_id`:
+  «En subasta» y «Sin resolver» salen sólo por su opción, no al elegir la fase de subasta. El atajo «Sin resolver» cuenta con `tope + 1` por `vehiculos_situacion_idx`
+  y lo dice «99+»; cambia sólo «Situación» y deja los demás filtros.
+- **`situacion_en` arma una igualdad por situación propia, no un `= any`.** Una sola igualdad con el valor plegado deja que `vehiculos_situacion_idx` conduzca el orden; el
+  arreglo de una subconsulta no (el planificador no sabe que trae uno). Por eso `_vehiculos_inventario_condicion` recibe la condición entera (`p_filtro`).
+
 - **Se escriben sólo por RPC.** `vehiculo_crear(p_id…)` idempotente con id del navegador y `vehiculo_guardar` con versión; el alta entra a la fase inicial sólo si no hay nada que decidir (si no, «Sin fase»).
 - **El alta dice desde dónde (`p_contexto`) y la base exige el permiso de ese contexto.** `vehiculos.crear` (alta suelta) y
   `vehiculos.crear.desde_cotizar` son dos claves por origen; `vehiculo_crear(…, p_contexto)` pide la que corresponde y la deja en
@@ -209,6 +237,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **Lo que no se ve no viaja.** `cotizaciones` con grant por columna; `cotizacion_leer/revisiones/tabla/evaluar` recortan por nivel sin ser oráculo; un detector sobre `pg_proc` exige registrar toda función que devuelva contenido.
 - **Niveles.** `cotizaciones.nivel.<clave>.ver|editar`, tope 10, sólo estrechan; recortan con `_nodos_visibles()`; ver restringido + editar abierto se rechaza. La fórmula sólo viaja a `cotizaciones.configurar`.
 - **Crear y guardar sólo por RPC.** `cotizacion_crear` (única alta) y `cotizacion_guardar` (calcula con SU versión, conserva lo oculto, intento + huella). `_cotizacion_puede_guardar()` decide antes y después del candado; quien no ve recibe 42501 antes de todo.
+- **Buscar cotizaciones: una función aparte, invocadora, con tope por fuente.** `cotizaciones_buscar()` no toca `cotizaciones_listado()`: cada fuente (número, cliente, vehículo, autor) es una ruta por su índice y el texto sobre `cotizaciones` no es condición de índice bajo la RLS (`ilike` no es seguro), así que nombra ids (clientes por `leads_candidatos()`, vehículos por origen, autores por `perfiles`) y de cada uno lee una página por su índice. Hasta 50 por fuente (`acotada` si se pasa). Quien no ve al lead o al vehículo no encuentra por él. El título de la cotización no se busca (no lo pidió la persona; ya lo hace el buscador global). Por autor, la cotización de otra persona sólo se busca donde se ve «todos»: con «propios» costaba un `en_cartera()` por cada una (98 ms con 7.000) para no encontrar nada que el listado de siempre no muestre por su cartera.
+- **El «⋯» del listado de cotizaciones se compone en `src/app`.** Un área no importa otra: la lista única (`accionesDeCotizacion()`) vive en `listado`; quién ve qué lo calcula el servidor con las reglas de cada área sobre lo que la página leyó (`menus-de-la-pagina.ts`; sin permisos al navegador) y las actions y los diálogos son los de la guardada. Las marcas y la versión de la página salen de tres lecturas por clave primaria; una fila sin ellas no tiene «⋯» (no se ofrece lo que depende de una versión que no se leyó). «Enviar a la papelera» se ofrece con el espejo de `_cotizacion_puede_guardar()` (editar por alcance, o es suya); la cartera del lead no se adivina: la dice la base.
+- **Las vistas de cotizaciones llegan tras hidratar.** `<MenuDeVistas>` pesa ≈ 70 KB gz y `/cotizaciones` estaba a 358 de 380: va con `diferido()` y un botón «Vistas» apagado en su lugar (`VistasDeCotizacionesDiferido`).
 - **Listado por rutas e invocador.** `cotizaciones_listado()` deja decidir a la RLS; «Mías» = `creado_por`; salen todas las versiones; `p_lead`/`p_vehiculo` filtran fuera del esquema de filtros. Máx. 100. Lead no visible = «—».
 
 ### La fórmula
@@ -258,6 +289,19 @@ las trampas, en `docs/LECCIONES.md`.
 - **Qué congela un comprobante.** El recorte del nivel «todos», la cotización, el origen, la razón social y el NIT; del cliente y del vehículo sólo los ids. Emitir pide la versión. Una cotización con comprobante, anulado o no, no va a la papelera.
 - **Reportar no mueve la versión.** «Descartar los reportes» modera a `activa`; las marcas de reporte se leen en el servidor (tras `<Suspense>`, con `cache()`). Tope de 20 adjuntos sin candado (pueden quedar 21; aceptado).
 - **Adjuntos sin miniaturas.** La URL firmada se pide al hacer clic (60 s), nunca al leer la lista.
+- **Las pestañas del resumen.** «Todo» mezcla una página de cada fuente (comentarios, revisiones, adjuntos) y sólo dibuja hasta donde llegó la que menos retrocedió: mezclar sin ese borde saltaría lo que aún no se leyó. «Adjuntos» son los archivos (`cotizaciones_adjuntos`); un comprobante no es un archivo sino un documento emitido por la base, y va bajo los adjuntos, de sólo lectura, con la regla de la guardada. Las cuatro piden sólo ver la cotización (como la guardada): ninguna se esconde, y si la base niega una lectura (papelera, acceso perdido) esa pestaña lo dice. Adjuntar y moderar salen de las mismas reglas del «⋯» sobre la fila (`puedeGuardarDesdeElListado()`: sin ellas el resumen no pregunta a la base); un alcance «propios» sobre una cotización ajena que la cartera sí deja editar queda sin «Adjuntar» en el resumen y se adjunta desde la guardada.
+
+### La cotización aprobada
+
+- **Una tabla aparte, mantenida al confirmar.** `cotizaciones_aprobadas` (PK = vehículo) y no una columna: aprobar mueve la versión y la revisión de la
+  cotización (un PT409 a quien edita) y `vehiculos` se lee entero (el monto saldría a quien ve el vehículo y no la cotización). Un trigger por fila anota y
+  uno diferido repone con el candado por vehículo: así cubre todas las RPC que cambian cotizaciones sin reescribirlas. Sin FK a `vehiculos` (cerraría un
+  ciclo con su papelera al confirmar): la integridad la da la reposición.
+- **Una sola regla de reposición.** La aprobada se queda mientras esté activa; si no, la más antigua activa; restaurar o reactivar no quita la marca. Dos
+  reglas («la última» y «la primera») darían un resultado distinto según el orden de los eventos.
+- **Aprobar es reversible, sin confirmar.** Se aprueba de una y el aviso ofrece «Deshacer» (aprueba la anterior con su versión); no mueve versiones y exige
+  la versión de la cotización que se aprueba. La clave `cotizaciones.aprobar` se concede a quien ya cierra finales, en su origen.
+- **Primer resultado = `totales.usd`.** Lo que la hoja dibuja en la tarjeta del total, en USD y sin convertir; cada celda lleva la moneda congelada con él.
 
 ### Papelera
 
@@ -268,6 +312,10 @@ las trampas, en `docs/LECCIONES.md`.
 - **Quién restaura.** Quien envió el lote lo restaura entero aunque ya no vea alguna; los demás necesitan `purgar`. Restaurar es todo o nada; purgar no. Las genéricas `papelera_enviar|restaurar|purgar` siguen vivas sobre los mismos ayudantes.
 
 ## Flujos
+
+- **«Es la subasta» es un atributo de la fase** (`fases.es_subasta`), sólo en el flujo de un origen de tipo subasta (el tipo no cambia) y
+  nunca con «Es final»; ningún texto fijo nombra la fase. La migración marcó sólo la candidata única por flujo (inicial, activa, no de
+  logística y con «subasta» en el nombre); si no la hay, «Revisar» lo pide.
 
 - **Un solo motor de flujos.** Uno por origen + uno de repuestos, con fases, transiciones y requisitos; tablas hijas con dos FK nullable (`vehiculo_id` | `repuesto_id`) + CHECK y una única RPC `cambiar_fase`. Un origen nuevo es una fila y su flujo nace por trigger.
 - **Versión por flujo, no por fila.** Toda RPC de configuración pasa por `_flujo_para_editar()`/`_flujo_tocar()`; dos personas en el mismo flujo chocan con PT409 (aceptable en pantalla de dueño). Renombrar un origen también la mueve: no se exceptúa.
@@ -290,8 +338,32 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### La cadena y la unidad
 
-- **La cadena no ordena ni pliega columnas.** El orden es el de la base; «Sin fase» la pone la base (primera, sólo con tarjetas); cursor sólo por `id`.
-- **Tarjeta sin foto, `<principal> · <título>`, armada en el servidor** (atributos por PK en tandas ≤ 100, bajo la RLS); «Ver más» es una Server Action de lectura para armarla igual.
+- **«La ganamos» es el mover de siempre** (`?ganada=si`), sólo hacia fases que no son la subasta; `vehiculo_subasta_ganada` envuelve
+  `cambiar_fase` en una transacción: nunca queda un «ganada» que sigue en la subasta. `cambiar_fase` no se toca.
+- **La cadena excluye las no ganadas con un índice parcial** (`vehiculos_cadena_idx … where situacion <> 'no_ganada'`): un filtro sin índice
+  descartaría filas que crecen con la tabla. Cada consulta lleva el literal.
+
+- **La cadena es una gráfica y no un kanban.** Con cientos de miles de vehículos una columna con «Ver más» no da un número útil: cada fase dice cuántos vehículos tiene y cuántos están demorados o
+  trabados; la lista de una fase (tabla por cursor) y el lote viven en su propia página. «Sin fase» la pone la base (primera, sólo con vehículos); el orden es el de la base. Un vehículo se abre
+  siempre en su página (`/logistica/vehiculo/[id]`), nunca en un drawer.
+- **El número de cada fase es un conteo con tope por índice, no una tabla resumen.** `limit 1.001` sobre `vehiculos_cadena_idx` (por fase, «1.000+»): el costo depende de las fases y no de la tabla
+  (se midió con la fase 3 de 15.000 a 120.000: los bloques del índice no crecen), el número siempre está fresco (la demora depende del reloj) y respeta el alcance de quien mira. Una tabla resumen
+  habría puesto una fila caliente en cada mover y en cada lote de 200 (bloqueos, riesgo de deadlock), quedaría desfasada en demorados y trabados, seguiría necesitando el conteo vivo para «propios»
+  y daría totales exactos, contra la regla.
+- **Trabados de la gráfica: las primeras 50 demoradas de cada fase.** Acota `evaluar_requisitos` (la mayoría de las fases cuestan 0: sin requisito bloqueante en la fase siguiente no se evalúa nada) y
+  `hay_mas` lo dice (`3+`). Para que esto cueste lo que dice, `evaluar_requisitos` pregunta por `documentos_unidad_tipo_idx`: con `is not distinct from` recorría los documentos de todas las unidades.
+- **«Propios» no recorre la fase.** `_logistica_lo_propio` junta hasta 10.001 ids propios del origen (lo creado y lo de la cartera, por sus índices) y la columna, el resumen y los grupos parten de ahí:
+  el pedido lo acota la cartera de la persona y no la tabla. Si se cortó, todo número lleva «+». Lo materializan (`with … as materialized`) antes de unirlo a los pares: unido a la vez, el planificador
+  recorría `vehiculos` entera.
+- **Quién ve cada grupo de la bandeja** (decidido sin preguntar, lo conservador: el alcance de la bandeja de Inicio): lo visible (`_logistica_alcance`); «por aprobar», además `logistica.documentos.aprobar`;
+  «por vencer», además `logistica.documentos.subir` (como el job que avisa). La acción sale sólo con su permiso y, sin él, la fila conserva el enlace al detalle. Mostrar de más es reversible; esconder no.
+- **Ventanas de la bandeja** (decidido sin preguntar): «por vencer» = `vence_el` entre hoy y hoy + `aviso_dias` del tipo, aprobados, con modo `renovar` o `solicitar` (lo vencido ya bloquea y sale como trabado);
+  «llegadas esperadas» = ETA de hoy o anterior, sin arribo, con la fase no final; «salen hoy» = zarpe de hoy (no hay zarpe real: no se detecta uno atrasado). «Hoy» es el día de la empresa, como
+  `documentos_vencimientos()`.
+- **«Revisar» no aprueba en la fila.** Aprobar un documento sin ver el archivo es aprobar a ciegas: «Revisar» (y «Renovar») llevan a la página del vehículo con «Documentos» abierto (`?hueco=documentos`),
+  donde se aprueba de un toque. «No la ganamos» sí se hace en la fila: es reversible (hacer + «Deshacer» de 10 s, `.claude/rules/ui.md`).
+- **La fila de la bandeja y de la lista lleva a la página, no a un resumen** (excepción al patrón de lista: lo pidió la persona). El nombre es un enlace de verdad (Ctrl+clic abre otra pestaña) en un
+  `span` marcado dentro (`EnlaceALaUnidad`): así `esClicPropio` no cuenta el clic en el enlace y no se navega dos veces, y el «visto» de la lista tiene dónde enchufarse.
 - **Las lecturas de la cadena son `security definer`.** Las policies de `transportes`/`documentos` preguntan por fila; la definer resuelve el alcance una vez por origen (el menor de `logistica.ver` y `vehiculos.ver`).
 - **Inexistente, en papelera o sin acceso: un solo texto y 42501 hint `acceso`.** El nombre de quien movió (PT409) sólo llega a quien pasó el acceso; sin acceso a la cadena, 42501, no cadena vacía.
 - **Mover.** `cambiar_fase` toma la unidad `for no key update`; la esperada nula vale sólo para unidad sin fase. El lote no mezcla fases y mueve «los N que pueden»; sin actualización optimista.

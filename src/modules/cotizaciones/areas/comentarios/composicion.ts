@@ -15,4 +15,4 @@ export const repositorioDeAdjuntos: RepositorioDeAdjuntos = adjuntosSupabase
 
 // Favorita, reportar y moderar (4.27-4): las escrituras van por las actions; la lectura de las marcas la hacen los huecos de la guardada, en el servidor.
 export const repositorioDeMarcas: RepositorioDeMarcas = marcasSupabase
-export { leerMarcasDeLaCotizacion } from '../../infra/comentarios/marcas'
+export { leerMarcasDeLaCotizacion, leerMarcasDeLaPagina } from '../../infra/comentarios/marcas'

@@ -4,6 +4,7 @@ import type { Concesion, Permisos } from '@/shared/lib/permisos'
 import {
   CLAVE_DE_CLASE,
   CLAVE_DE_CUALES,
+  MINIMO_DE_BUSQUEDA_DE_COTIZACIONES,
   esquemaDelListado,
   origenParaNueva,
   pedidoDelListado,
@@ -30,8 +31,11 @@ describe('esquemaDelListado', () => {
     expect(claves([origenes[0]!])).toEqual([CLAVE_DE_CLASE, CLAVE_DE_CUALES])
   })
 
-  it('no tiene búsqueda: la lectura no la tiene', () => {
-    expect(esquemaDelListado(origenes).busqueda).toBeNull()
+  it('tiene búsqueda por número, cliente, vehículo o autor, con el mínimo del buscador', () => {
+    expect(esquemaDelListado(origenes).busqueda).toMatchObject({
+      clave: 'q',
+      minimo: MINIMO_DE_BUSQUEDA_DE_COTIZACIONES,
+    })
   })
 
   it('Origen lista a todos y a cada origen con su nombre; Clase y Cuáles empiezan en «Todas»', () => {
@@ -56,6 +60,24 @@ describe('esquemaDelListado', () => {
 describe('pedidoDelListado', () => {
   it('sin nada en la URL no filtra: la primera página del tamaño pedido', () => {
     expect(pedido({})).toEqual({ cursor: null, tamano: 50 })
+  })
+
+  it('lee lo que se busca, sin los espacios de los bordes, junto a los demás filtros', () => {
+    expect(pedido({ q: '  García  ', clase: 'final' })).toEqual({
+      texto: 'García',
+      clase: 'final',
+      cursor: null,
+      tamano: 50,
+    })
+    // Un número busca con menos del mínimo de letras («5», «#5»).
+    expect(pedido({ q: '#5' })).toEqual({ texto: '#5', cursor: null, tamano: 50 })
+    expect(pedido({ q: '1234' })).toEqual({ texto: '1234', cursor: null, tamano: 50 })
+  })
+
+  it('un texto que no alcanza el mínimo no busca: la URL escrita a mano o una vista vieja lo descartan', () => {
+    expect(pedido({ q: 'ab' })).toEqual({ cursor: null, tamano: 50 })
+    expect(pedido({ q: '   ' })).toEqual({ cursor: null, tamano: 50 })
+    expect(pedido({ q: '__' })).toEqual({ cursor: null, tamano: 50 })
   })
 
   it('lee origen, clase y mías', () => {

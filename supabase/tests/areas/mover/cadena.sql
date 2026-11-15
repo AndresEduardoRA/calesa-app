@@ -1,5 +1,5 @@
--- La cadena de logística (paso 6.02-2): `logistica_cadena` y `logistica_cadena_columna`. No depende de otro archivo (`SOLO=areas/mover/cadena.sql`).
--- Cada bloque abre su transacción y la revierte. El plan por su índice, con volumen: `supabase/tests/medir-escala.sql` › «La cadena».
+-- La lista de una fase de la cadena de logística (paso 6.02-2): `logistica_cadena_columna`. No depende de otro archivo (`SOLO=areas/mover/cadena.sql`).
+-- Cada bloque abre su transacción y la revierte. El plan por su índice, con volumen: `supabase/tests/medir-escala.sql` › «La cadena» y `medir-logistica.sql`.
 --
 -- Qué asegura:
 --   CA1. Sin `logistica.ver` del origen (aunque la tenga de otro), o sin `vehiculos.ver`: 42501 hint `acceso` en las dos; `authenticated` no ejecuta
@@ -7,8 +7,8 @@
 --   CA2. «Propios» ve la que creó y la de un lead de su cartera, no la ajena; `logistica.ver` todos con `vehiculos.ver` propios ve sólo la suya; la
 --        dueña ve todas. Nunca sale una de otro origen ni una de la papelera, en una fase o sin fase.
 --   CA3. El cursor no repite ni salta (empates en `fase_desde`, y «Sin fase» por id); el tope se acota a 100 con `hay_mas`.
---   CA4. La forma de la cadena: «Sin fase» primera sólo con unidades, activas de logística por orden (vacías también), jubiladas con unidades al
---        final; `demorada` con la regla `alerta_demora`.
+--   CA4. `demorada` sólo con la regla `alerta_demora` (la forma de la cadena —«Sin fase» primera, activas por orden, jubiladas al final— es de
+--        `resumen.sql`).
 --   CA5. Los filtros y las entradas malas.
 --   CA6 (que «Sin fase» es `fase_id` nulo y nada más): `fase-desde.sql`.
 
@@ -77,10 +77,6 @@ begin
   return coalesce(v, '{}'::jsonb);
 end $f$;
 
-create or replace function pg_temp.mc_cadena(p_quien uuid, p_origen uuid, p_filtros jsonb default '{}') returns jsonb language sql as $f$
-  select pg_temp.mc_corre(p_quien, format('select public.logistica_cadena(%L, 50, %L)', p_origen, p_filtros));
-$f$;
-
 create or replace function pg_temp.mc_columna(p_quien uuid, p_origen uuid, p_fase uuid, p_desde text default null, p_id uuid default null,
                                               p_tope int default 50, p_filtros jsonb default '{}') returns jsonb language sql as $f$
   select pg_temp.mc_corre(p_quien, format('select public.logistica_cadena_columna(%L, %L, %L, %L, %s, %L)',
@@ -119,10 +115,8 @@ declare
   q text; fn text;
 begin
   perform pg_temp.mc_vehiculo(o, f);
-  perform pg_temp.mc_es('CA1 cadena sin logistica.ver del origen', pg_temp.mc_cadena(sin_log, o), '42501', 'acceso');
   perform pg_temp.mc_es('CA1 columna sin logistica.ver del origen', pg_temp.mc_columna(sin_log, o, f), '42501', 'acceso');
   perform pg_temp.mc_es('CA1 «Sin fase» sin logistica.ver del origen', pg_temp.mc_columna(sin_log, o, null), '42501', 'acceso');
-  perform pg_temp.mc_es('CA1 cadena sin vehiculos.ver', pg_temp.mc_cadena(sin_veh, o), '42501', 'acceso');
   perform pg_temp.mc_es('CA1 columna sin vehiculos.ver', pg_temp.mc_columna(sin_veh, o, f), '42501', 'acceso');
   foreach q in array array[
     format('select to_jsonb(public._logistica_alcance(%L))', o),
@@ -131,7 +125,7 @@ begin
     format('select public._logistica_columna(%L, null, null, null, 5, ''{}'', true, null)', o)] loop
     if pg_temp.mc_corre(sin_veh, q) ->> 'error' is distinct from '42501' then raise exception 'CA1: authenticated ejecutó %', q; end if;
   end loop;
-  foreach fn in array array['public.logistica_cadena(uuid,integer,jsonb)', 'public.logistica_cadena_columna(uuid,uuid,timestamptz,uuid,integer,jsonb)',
+  foreach fn in array array['public.logistica_cadena_columna(uuid,uuid,timestamptz,uuid,integer,jsonb)',
     'public._logistica_alcance(uuid)', 'public._logistica_dias(uuid)', 'public._logistica_filtros(jsonb)',
     'public._logistica_columna(uuid,uuid,timestamptz,uuid,integer,jsonb,boolean,integer)'] loop
     if has_function_privilege('anon', fn, 'execute') then raise exception 'CA1: anon ejecuta %', fn; end if;
@@ -173,13 +167,10 @@ begin
     raise exception 'la prueba necesita el lead en la cartera de quien lo creó';
   end if;
 
-  perform pg_temp.mc_mismos('CA2 propios, cadena', pg_temp.mc_ids(pg_temp.mc_cadena(prop, o)), array[v_mia, v_cartera]);
   perform pg_temp.mc_mismos('CA2 propios, columna', pg_temp.mc_ids(pg_temp.mc_columna(prop, o, f)), array[v_mia, v_cartera]);
   perform pg_temp.mc_mismos('CA2 propios, «Sin fase»', pg_temp.mc_ids(pg_temp.mc_columna(prop, o, null)), '{}');
-  perform pg_temp.mc_mismos('CA2 logistica todos y vehiculos propios, cadena', pg_temp.mc_ids(pg_temp.mc_cadena(mixta, o)), array[v_mixta]);
   perform pg_temp.mc_mismos('CA2 logistica todos y vehiculos propios, columna', pg_temp.mc_ids(pg_temp.mc_columna(mixta, o, f)), array[v_mixta]);
   todas := array[v_mia, v_ajena, v_cartera, v_mixta];
-  perform pg_temp.mc_mismos('CA2 dueña, cadena', pg_temp.mc_ids(pg_temp.mc_cadena(duena, o)), todas || v_sf);
   perform pg_temp.mc_mismos('CA2 dueña, columna', pg_temp.mc_ids(pg_temp.mc_columna(duena, o, f)), todas);
   perform pg_temp.mc_mismos('CA2 dueña, «Sin fase»', pg_temp.mc_ids(pg_temp.mc_columna(duena, o, null)), array[v_sf]);
 end $$;
@@ -219,39 +210,25 @@ begin
 end $$;
 rollback;
 
--- @test cadena: «Sin fase» primera, activas de logística por orden, jubiladas con unidades al final; demorada con la regla (CA4)
+-- @test cadena: la tarjeta sale demorada sólo con la regla alerta_demora (CA4)
 begin;
 do $$
 declare
-  a uuid := pg_temp.mc_flujo(); o uuid := pg_temp.mc_origen_de(a);
-  f1 uuid := pg_temp.mc_fase(a, 'mc uno', 10); f2 uuid := pg_temp.mc_fase(a, 'mc dos', 20); f3 uuid := pg_temp.mc_fase(a, 'mc no logística', 15, false);
-  f4 uuid := pg_temp.mc_fase(a, 'mc jubilada', 5); f5 uuid := pg_temp.mc_fase(a, 'mc jubilada vacía', 6);
+  a uuid := pg_temp.mc_flujo(); o uuid := pg_temp.mc_origen_de(a); f1 uuid := pg_temp.mc_fase(a, 'mc uno', 10);
   duena uuid := pg_temp.mc_persona(array['logistica.ver', 'vehiculos.ver']);
-  v uuid; r jsonb;
+  r jsonb;
 begin
   update public.fases set demora_dias = 2 where id = f1;
-  v := pg_temp.mc_vehiculo(o, f1, null, now() - interval '3 days');
-  perform pg_temp.mc_vehiculo(o, f3);
-  perform pg_temp.mc_vehiculo(o, f4);
-  update public.fases set activa = false where id in (f4, f5);
+  perform pg_temp.mc_vehiculo(o, f1, null, now() - interval '3 days');
   perform pg_temp.mc_regla(a, true);
-  r := pg_temp.mc_cadena(duena, o);
-  if jsonb_path_query_array(r, '$.columnas[*].fase_id') is distinct from jsonb_build_array(f1, f2, f4) then
-    raise exception 'CA4: sin unidades sin fase, las columnas debían ser [uno, dos, jubilada] y dieron %', jsonb_path_query_array(r, '$.columnas[*].fase_id');
+  r := pg_temp.mc_columna(duena, o, f1);
+  if jsonb_path_query_first(r, '$.tarjetas[0].demorada') is distinct from 'true'::jsonb then
+    raise exception 'CA4: con alerta_demora debía estar demorada (2 días) y dio %', r;
   end if;
-  if jsonb_path_query_first(r, '$.columnas[0].tarjetas[0].demorada') is distinct from 'true'::jsonb
-     or jsonb_path_query_first(r, '$.columnas[0].demora_dias') is distinct from '2'::jsonb then
-    raise exception 'CA4: con alerta_demora debía estar demorada (2 días) y dio %', r -> 'columnas' -> 0;
-  end if;
-  perform pg_temp.mc_vehiculo(o, null);
   perform pg_temp.mc_regla(a, false);
-  r := pg_temp.mc_cadena(duena, o);
-  if jsonb_path_query_array(r, '$.columnas[*].fase_id') is distinct from jsonb_build_array(null, f1, f2, f4) then
-    raise exception 'CA4: con una sin fase debía ir primera y dio %', jsonb_path_query_array(r, '$.columnas[*].fase_id');
-  end if;
-  if jsonb_path_query_first(r, '$.columnas[1].tarjetas[0].demorada') is distinct from 'false'::jsonb
-     or jsonb_path_query_first(r, '$.columnas[1].demora_dias') is distinct from 'null'::jsonb then
-    raise exception 'CA4: con la regla apagada no debía estar demorada y dio %', r -> 'columnas' -> 1;
+  r := pg_temp.mc_columna(duena, o, f1);
+  if jsonb_path_query_first(r, '$.tarjetas[0].demorada') is distinct from 'false'::jsonb then
+    raise exception 'CA4: con la regla apagada no debía estar demorada y dio %', r;
   end if;
 end $$;
 rollback;
@@ -280,10 +257,10 @@ begin
   perform pg_temp.mc_mismos('CA5 contenedor', pg_temp.mc_ids(pg_temp.mc_columna(duena, o, f, p_filtros => '{"contenedor": " abcu1234567 "}')), array[v_tr]);
   perform pg_temp.mc_mismos('CA5 naviera', pg_temp.mc_ids(pg_temp.mc_columna(duena, o, f, p_filtros => jsonb_build_object('naviera', nav))), array[v_tr]);
   perform pg_temp.mc_mismos('CA5 q por título', pg_temp.mc_ids(pg_temp.mc_columna(duena, o, f, p_filtros => '{"q": "hilux"}')), array[v_q]);
-  perform pg_temp.mc_mismos('CA5 q por prefijo de booking', pg_temp.mc_ids(pg_temp.mc_cadena(duena, o, '{"q": "bk778"}')), array[v_tr]);
+  perform pg_temp.mc_mismos('CA5 q por prefijo de booking', pg_temp.mc_ids(pg_temp.mc_columna(duena, o, f, p_filtros => '{"q": "bk778"}')), array[v_tr]);
   perform pg_temp.mc_mismos('CA5 q corto se ignora', pg_temp.mc_ids(pg_temp.mc_columna(duena, o, f, p_filtros => '{"q": "hi"}')),
     array[v_dem, v_apr, v_tr, v_q]);
-  perform pg_temp.mc_es('CA5 clave desconocida', pg_temp.mc_cadena(duena, o, '{"x": 1}'), '22023', 'filtros');
+  perform pg_temp.mc_es('CA5 clave desconocida', pg_temp.mc_columna(duena, o, f, p_filtros => '{"x": 1}'), '22023', 'filtros');
   perform pg_temp.mc_es('CA5 naviera que no es uuid', pg_temp.mc_columna(duena, o, f, p_filtros => '{"naviera": "x"}'), '22023', 'filtros');
   perform pg_temp.mc_es('CA5 fase de otro origen', pg_temp.mc_columna(duena, o, fb), '22023', 'p_fase');
   perform pg_temp.mc_es('CA5 cursor sin p_desde', pg_temp.mc_columna(duena, o, f, null, v_q), '22023', 'cursor');

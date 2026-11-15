@@ -1,15 +1,10 @@
 'use client'
 
-import { HistoryIcon } from 'lucide-react'
 import type { RefObject } from 'react'
-import { DesdeUnaFecha } from '@/shared/ui/desde-una-fecha'
 import { Drawer } from '@/shared/ui/drawer'
-import { EstadoError, EstadoVacio } from '@/shared/ui/estados'
 import { useRegional } from '@/shared/ui/regional'
 import { useRevisiones } from '../hooks/use-revisiones'
-import { EsqueletoDeRevisiones } from './esqueleto-de-revisiones'
-import { PieDeRevisiones } from './pie-de-revisiones'
-import { Revision } from './revision'
+import { ContenidoDeRevisiones } from './contenido-de-revisiones'
 
 type Props = {
   abierto: boolean
@@ -41,70 +36,7 @@ export function PanelDeRevisiones({
       titulo={`Revisiones de la cotización n.º ${String(numero)}`}
       focoAlCerrar={() => botonDeRevisiones.current ?? true}
     >
-      <Contenido revisiones={revisiones} zona={zonaHoraria} />
+      <ContenidoDeRevisiones revisiones={revisiones} zona={zonaHoraria} />
     </Drawer>
-  )
-}
-
-function Contenido({
-  revisiones,
-  zona,
-}: {
-  revisiones: ReturnType<typeof useRevisiones>
-  zona: string
-}) {
-  if (!revisiones.leido) {
-    return revisiones.error ? (
-      <div role="alert">
-        <EstadoError
-          titulo="No se pudieron cargar las revisiones."
-          alReintentar={revisiones.reintentar}
-        />
-      </div>
-    ) : (
-      <EsqueletoDeRevisiones />
-    )
-  }
-  if (revisiones.revisiones.length === 0 && revisiones.desde === null) {
-    return <EstadoVacio Icono={HistoryIcon} titulo="Todavía no tiene cambios guardados." compacto />
-  }
-  return (
-    <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
-      <DesdeLaFecha revisiones={revisiones} zona={zona} />
-      {revisiones.revisiones.length === 0 ? (
-        <p className="text-(length:--text-sm) text-(--color-ink-faint)">
-          No hay revisiones hasta esa fecha.
-        </p>
-      ) : (
-        <ul aria-label="Revisiones" className="grid grid-cols-[minmax(0,1fr)] gap-2">
-          {revisiones.revisiones.map((revision) => (
-            <Revision
-              key={revision.id}
-              revision={revision}
-              etiquetas={revisiones.etiquetas.nodos}
-            />
-          ))}
-        </ul>
-      )}
-      <PieDeRevisiones revisiones={revisiones} zona={zona} />
-    </div>
-  )
-}
-
-function DesdeLaFecha({
-  revisiones,
-  zona,
-}: {
-  revisiones: ReturnType<typeof useRevisiones>
-  zona: string
-}) {
-  return revisiones.desde === null ? null : (
-    <DesdeUnaFecha
-      dia={revisiones.desde}
-      zona={zona}
-      ocupado={revisiones.ocupado}
-      volver="Volver a las más recientes"
-      alVolver={revisiones.volverALasMasRecientes}
-    />
   )
 }

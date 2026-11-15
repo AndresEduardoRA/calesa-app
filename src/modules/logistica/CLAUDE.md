@@ -11,11 +11,15 @@ La tarea de oro 3 la prueba `e2e/logistica-tarea-de-oro.spec.ts`. Abiertos (`doc
 - Sale (núcleo): `leerUnidad(id)` (la unidad de vehículo bajo la RLS de quien mira; nula si no existe, está en la papelera o no la ve; `titulo` =
   «<principal> · <título>» si el origen tiene campo principal y se puede leer: `features/nucleo/unidad-con-identidad.ts`), `huecosVisibles`,
   `ORDEN_DE_HUECOS`, `refDeUnidad`, los tipos de la unidad y de los huecos; por `pantallas/unidad.ts`, `<PanelDeLaUnidad>`.
-- Área `cadena`: `leerCadena(origenId, filtros)` (columnas con la primera página de tarjetas nombradas por el campo principal), `dondeEsta(busqueda)`
-  (hasta 10, en todos los orígenes de la persona; texto corto no llama a la base), `leerOrigenesDeLaCadena(permisos)` (las pestañas), `leerNavieras()`,
-  `esquemaDeFiltrosDeLaCadena`, `pedidoDeLaCadena` y sus claves de URL (`origen`, `fase`, `q`, `demoradas`, `por_aprobar`, `contenedor`, `booking`, `naviera`).
+- Área `cadena`: `leerResumenDeLaCadena(origenId)` (el número de cada fase: vehículos, demorados y trabados, con tope), `leerLaFase(pedido)` (una página de la lista de una fase,
+  con los vehículos nombrados por el campo principal), `dondeEsta(busqueda)` (hasta 10, en todos los orígenes de la persona; texto corto no llama a la base),
+  `leerOrigenesDeLaCadena(permisos)` (las pestañas), `leerNavieras()`, `esquemaDeFiltrosDeLaCadena`, `pedidoDeLaCadena`, `claveDeFase`, `faseDeLaClave`, `rutaDeLaFase`, el cursor de una
+  fase y las claves de URL de los filtros (`origen`, `q`, `demoradas`, `por_aprobar`, `contenedor`, `booking`, `naviera`).
 - Área `alertas`: `bandejaLogistica(tope)` (demoradas, trabados y por aprobar de quien mira; una lectura de `logistica_bandeja` por request con `cache()`),
-  `detalleDeDemorada` y `detalleDeTrabado`, para los bloques de Inicio de `tablero` (que arman su «Ver todas» con las claves de URL de `cadena`).
+  `detalleDeDemorada` y `detalleDeTrabado`, para los bloques de Inicio de `tablero`, que arman su «Ver todas» con `rutaDelGrupoDeLaBandeja`; y la bandeja del día:
+  `leerGrupoDeLaBandeja`, `gruposVisibles(permisos)`, `grupoDelSlug`, `rutaDelGrupoDeLaBandeja`, los textos y la acción de cada fila.
+- Núcleo, para las áreas: `nombrarVehiculos` (el nombre «<principal> · <título>», `features/nucleo/identidad-de-vehiculos.ts`), `EnlaceALaUnidad`, `useIrALaUnidad` y
+  `rutaDeLaUnidad(id, hueco?)` (`?hueco=documentos` abre ese bloque de la página de la unidad).
 - Lo consumen `tablero`, `vehiculos` (ficha) y `web` (portal: fases y documentos visibles).
 - Depende de: `vehiculos`, `origenes`, `empresa`, `flujos`, `cotizaciones`.
 
@@ -29,13 +33,13 @@ y `pantallas/<área>.ts` (y `pantallas/<área>-<pantalla>.ts`). El **núcleo** (
 | Área         | Qué es                                                                                                              |
 | ------------ | ------------------------------------------------------------------------------------------------------------------- |
 | `nucleo`     | `Unidad`, `HuecoDeLaUnidad`, el panel de la unidad, el orden de sus huecos y la selección del lote                  |
-| `cadena`     | el kanban por fase de `/logistica`: columnas con «Ver más», tarjeta, filtros en la URL y «dónde está»               |
+| `cadena`     | la gráfica de la cadena por origen de `/logistica`, la lista de una fase (`/logistica/fase/[fase]`) y «dónde está»  |
 | `mover`      | «Qué falta», mover con nota, notas, historial y el lote                                                             |
 | `documentos` | subir, aprobar o rechazar, editar fechas, «Visible en el portal», eliminar y subir a un grupo                       |
 | `transporte` | embarques y contenedores (hueco «Transporte», `/logistica/embarques`, «Editar grupo», catálogos Puertos y Navieras) |
 | `aduana`     | declaraciones (hueco «Aduana», `/logistica/aduana`, alta, edición, composición y canal)                             |
 | `dinero`     | gastos, pagos y margen (tres huecos, `/logistica/gastos`, prorratear, categorías de gasto, pagos de un proyecto)    |
-| `alertas`    | alertas por demora y por vencimiento, bandeja en Inicio                                                             |
+| `alertas`    | alertas por demora y por vencimiento, la bandeja del día de `/logistica` y la bandeja de Inicio                     |
 
 **Los huecos.** El panel no sabe qué lleva: cada área los declara en su `pantallas/` (`<área>-unidad.ts` → `HUECOS_DE_<ÁREA>_EN_LA_UNIDAD`; `<área>-grupo.ts`;
 `<área>-enlace.ts`; `<área>-catalogos.ts`) y sólo `src/app` los junta. Un hueco se dibuja si la persona tiene alguna de sus claves **en el origen de la unidad**
@@ -44,7 +48,20 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
 
 ## Archivos clave
 
-- **Cadena:** `useCadena` siembra por firma y pide una página a la vez por columna; la tarjeta es un enlace con `?vehiculo=`, nunca arrastrar.
+- **Cadena:** `/logistica` dibuja la bandeja del día y, al lado, la cadena como gráfica (un Server Component sin JS propio: `GraficaDeLaCadena`, una `<ol>` con un punto por fase, su cifra y su
+  barra, con «demorados» y «trabados» dichos con texto). Cada fase es un enlace a `/logistica/fase/[fase]` (`[fase]` = el id o `sin_fase`): la lista de a 50 por cursor `(fase_desde, id)`, con
+  `FilterShell`, búsqueda y la selección del lote. **Un vehículo se abre siempre en su página** (`/logistica/vehiculo/[id]`), nunca en un drawer: el nombre es un `EnlaceALaUnidad` y un clic
+  en el resto de la fila va ahí (`useIrALaUnidad`). La fila dice «En subasta» o «Sin resolver» cuando la subasta manda (`situacion` de `vehiculos`, la calcula la base). Las URL del kanban
+  viejo (`?vehiculo=`, `?fase=`, `?demoradas=si`, `?por_aprobar=si`) las redirige `src/app/(app)/logistica/url-vieja.ts`. «Dónde está» es un formulario (`?q=`) bajo las pestañas de origen.
+- **Bandeja del día** (área `alertas`, `/logistica`): siete grupos en este orden —Demorados, Trabados, Documentos por aprobar, Documentos por vencer, Llegadas esperadas, Salen hoy,
+  Subastas sin resolver— que lee `logistica_bandeja_grupo` (una lectura por grupo, en paralelo, cada una con su error aparte; un grupo vacío no se dibuja y todos vacíos dicen «Nada pendiente
+  hoy»). La portada trae las primeras 5 de cada uno con el conteo hasta 100 y «Ver todos» → `/logistica/bandeja/[grupo]` (de a 20 por cursor, `leerCursor`). La acción de la fila (`features/alertas/accion-de-la-fila.ts`)
+  sale sólo con su permiso: «Mover» (`flujos.mover` del origen), «Ver qué falta», «Revisar» y «Renovar» (llevan a `?hueco=documentos`; **no se aprueba en la fila**: se aprueba mirando el archivo) y,
+  en «sin resolver», «La ganamos» (`?ganada=si`) y «No la ganamos» (`useNoGanada` con «Deshacer» de 10 s y `router.refresh()`). Quién ve cada grupo: lo visible (`_logistica_alcance`); por aprobar,
+  además `logistica.documentos.aprobar`; por vencer, además `logistica.documentos.subir`. Con «propios», la base parte de `_logistica_lo_propio` y nunca lee `lead_id`.
+- **Una subasta no ganada no cuenta** (`situacion = 'no_ganada'`): fuera de la cadena (también «Sin fase»), de las demoradas y «Por aprobar» de la bandeja
+  y de `alertas_demora`. `vehiculos_cadena_idx` es parcial sin ellas: toda consulta que lo usa lleva el literal `situacion <> 'no_ganada'`
+  (`supabase/tests/areas/situacion/cuenta.sql` lo cuenta).
 - **Unidad de un ítem de repuesto.** El panel abre una `UnidadAbierta`: `Unidad` (`origenId: string`; la única que ven las áreas sólo de vehículos) o un ítem
   (`origenId` nulo, `proyecto?: { id, vehiculoId }`); `esUnidadDeVehiculo(u)` estrecha. Sólo `mover` y el núcleo tipan con `UnidadAbierta`. `repuestos` arma la
   unidad (`src/app/(app)/repuestos/item-abierto.tsx`); `logistica` no importa `repuestos`. Un hueco declara su variante `repuesto?: { permisos, regla, componente? }`
@@ -57,14 +74,19 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   y relee al volver el foco (5 s de mínimo), al cambiar la fase y con `logistica:unidad-cambio`; `useMoverLaUnidad` envía con `faseEsperada = unidad.faseId`
   (éxito = `router.refresh()`). El atajo de un requisito abre el bloque de otro hueco (`logistica:abrir-hueco`, `features/nucleo/hooks/eventos-de-la-unidad.ts`);
   un hueco que el panel no dibuja no ofrece atajo. Textos y estado del botón son de `flujos`. Un ítem manda `{ repuesto }` (`unidadAMover`).
+- **Área `mover`, «La ganamos»** (`?ganada=si`, `useModoGanada`; la clave `CLAVE_DE_GANADA` sale por `index.ts` para el enlace de la ficha del
+  vehículo): «Qué falta» ofrece sólo los destinos que no son la subasta (`entities/mover/ganada.ts`), abre el primero y mover llama `ganarLaSubasta`;
+  al lograrlo quita `?ganada` con `shallow: false`, sin `router.refresh()`. Fuera del modo, con la subasta sin resolver y permiso de mover, una línea
+  ofrece «La ganamos». La situación llega en `Unidad.situacion` (`entities/nucleo/situacion.ts`, espejo del `check` de la base: una entidad no
+  importa `vehiculos`).
 - **Área `mover`, notas e historial** (plegados). Se leen con la sesión de quien mira de a `TAMANO_DE_VER_MAS` por cursor `(creado_en, id)` hasta
   `TOPE_DE_LO_CARGADO`; un ítem por `repuesto_id`. «Ir a una fecha» usa `entities/mover/hasta-de-un-dia.ts` (copia de la de `cotizaciones`). Escriben
   `crearNota` (`vehiculo` xor `repuesto`; `logistica.ver` del origen o `repuestos.ver` para un ítem; autor del servidor) y `editarNota`, directo bajo la RLS
   de `notas`, sin RPC ni versión. **No hay «Borrar»:** el borrado suave por `update` lo rechaza la policy de lectura (`supabase/tests/areas/mover/notas.sql`;
   6-7). La nota de un cambio de fase no se edita (`quePuedeHacerConLaNota`). «Ver en logística» de la ficha lo pone `src/app`.
 - **Área `mover`, el lote.** La **selección vive en el núcleo** (`entities/nucleo/seleccion.ts`: una sola fase, hasta 200; `useSeleccionDeLaCadena()`, `null`
-  sin proveedor). La cadena sólo la lee; `mover` la provee (`ProveedorDeLaSeleccion`, que `src/app/(app)/logistica/page.tsx` monta sólo con `flujos.mover` en
-  el origen y vacía al cambiar origen o filtros) y dibuja `BarraDelLote` y `DrawerDelLote` (`?panel=lote` con `destino`, `contenedor`, `booking`). El drawer usa
+  sin proveedor). La lista de una fase sólo la lee («Elegir los de esta página»: la página, hasta 200); `mover` la provee (`ProveedorDeLaSeleccion`, que montan `src/app/(app)/logistica/fase/[fase]/page.tsx` sólo con `flujos.mover` en
+  el origen y en una fase de verdad —se vacía al cambiar de fase, origen o filtros, y sobrevive a «Siguiente»— y la portada, con `?panel=lote`, para un grupo) y dibuja `BarraDelLote` y `DrawerDelLote` (`?panel=lote` con `destino`, `contenedor`, `booking`). El drawer usa
   `destinosDeLaFase`, `previsualizarCambioLote` (una llamada, hasta 200) y `cambiarFaseLote`; el resultado es el de **todo** el lote (las que la vista dejó
   afuera cuentan como no movidas) y «Reintentar» vuelve a la vista previa con las no movidas. Un grupo (`?contenedor=` o `?booking=`) lee sus unidades de a
   201 y entran las de una misma fase; `pantallas/mover-grupo.ts` declara «Mover el grupo» con «Marcar que llegó» para un contenedor.
@@ -132,7 +154,7 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
 ## Tablas
 
 `documentos`, `puertos`, `navieras`, `transportes` (1:1 con la unidad), `declaraciones_aduana`, `declaraciones_vehiculos`, `categorias_gasto`, `gastos`, `pagos`, `notas`.
-RPC: `margen_vehiculo`, `alertas_demora` (cron), `storage_refcount`; mover vía `flujos`. La oferta de transporte es de `flujos` (`flujo_oferta_guardar`);
+RPC: `margen_vehiculo`, `alertas_demora` (cron), `storage_refcount`, `logistica_cadena_resumen`, `logistica_cadena_columna` (la lista de una fase), `logistica_bandeja_grupo` (índices `transportes_llegadas_idx` y `transportes_salidas_idx`) y los ayudantes `_logistica_lo_propio` y `_bandeja_dia_*`; mover vía `flujos`. La oferta de transporte es de `flujos` (`flujo_oferta_guardar`);
 logística sólo la lee con `flujo_oferta()`. Gastos y pagos se escriben sólo por RPC: `gasto_registrar`, `gasto_guardar`, `gasto_eliminar`, `gastos_prorratear`,
 `pago_registrar`, `pago_registrar_proyecto`, `pago_guardar`, `pago_eliminar`, `pago_confirmar`, `pago_anular`; se leen por cursor con `gastos_listar` y
 `pagos_listar`. El bucket `comprobantes` lo abre `comprobante_puede` (la fila que nombra el objeto).

@@ -16,7 +16,7 @@ export type EstadoDeLaSeleccion = {
   elegidos: ReadonlyMap<string, { nombre: string }>
   // Lo que acaba de pasar y la persona debe saber (cambió de fase, llegó al tope).
   aviso: string | null
-  // «Elegir los de esta columna» no cupo entera.
+  // «Elegir los de esta página» no cupo entera.
   recortada: boolean
 }
 
@@ -62,8 +62,8 @@ export function alternar(
   return { fase, elegidos, aviso, recortada: false }
 }
 
-/** «Elegir los de esta columna»: lo cargado, hasta el tope. Si no cupo todo, `recortada`. */
-export function elegirLaColumna(
+/** «Elegir los de esta página»: lo de la página, hasta el tope. Si no cupo todo, `recortada`. */
+export function elegirLaPagina(
   estado: EstadoDeLaSeleccion,
   fase: FaseElegida,
   unidades: readonly UnidadElegida[],

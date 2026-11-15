@@ -28,7 +28,7 @@ export const LISTA_VACIA: ListaDeComentarios = { raices: [], hayMas: false, curs
 const UUID_NULO = '00000000-0000-0000-0000-000000000000'
 
 // Un instante de la base («2026-11-08T05:31:19.12345+00:00») como microsegundos, para ordenar sin perder lo que `Date` corta.
-function microsegundos(iso: string): number {
+export function microsegundos(iso: string): number {
   const fraccion = /\.(\d+)/.exec(iso)?.[1] ?? ''
   const sinFraccion = iso.replace(/\.\d+/, '')
   return Date.parse(sinFraccion) * 1000 + Number(fraccion.padEnd(6, '0').slice(0, 6))

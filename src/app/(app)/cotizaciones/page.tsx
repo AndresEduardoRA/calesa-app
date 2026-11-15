@@ -7,6 +7,7 @@ import {
   filasConNombres,
   idDelResumen,
   idsDe,
+  leerAprobadasDeCotizaciones,
   leerAutoresDeCotizaciones,
   leerListadoDeCotizaciones,
   leerUnaDelListado,
@@ -19,9 +20,8 @@ import {
   type FilaDelListado,
   type LecturaDelServidor,
 } from '@/modules/cotizaciones'
-import { ListadoDeCotizaciones } from '@/modules/cotizaciones/pantallas/listado'
 import { HUECOS_DE_PAPELERA_EN_EL_LISTADO } from '@/modules/cotizaciones/pantallas/papelera-listado'
-import { requerirSesion } from '@/modules/equipo'
+import { leerVistas, requerirSesion } from '@/modules/equipo'
 import { leerNombresDeLeads } from '@/modules/leads'
 import { getOrigenes } from '@/modules/origenes'
 import { leerTitulosDeVehiculos, leerVehiculo } from '@/modules/vehiculos'
@@ -32,6 +32,8 @@ import { puede, type Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { EsqueletoListado } from '@/shared/ui/esqueletos'
+import { ListadoConAcciones } from './listado-con-acciones'
+import { menusDeLaPagina, quienesDelResumen } from './menus-de-la-pagina'
 
 export const metadata: Metadata = { title: 'Cotizaciones' }
 
@@ -47,14 +49,21 @@ export default function PaginaDeCotizaciones({ searchParams }: PageProps<'/cotiz
 
 // Los nombres de unas filas, una vez y por clave primaria: el cliente sólo con `leads.ver`; lo que quien mira no ve no llega y se dibuja «—».
 async function nombresDe(permisos: Permisos, filas: readonly FilaDelListado[]) {
-  const [clientes, vehiculos, autores] = await Promise.all([
+  const [clientes, vehiculos, autores, aprobadas] = await Promise.all([
     puede(permisos, 'leads.ver')
       ? leerNombresDeLeads(idsDe(filas, 'leadId'))
       : Promise.resolve({ ok: true as const, data: new Map<string, string>() }),
     leerTitulosDeVehiculos(idsDe(filas, 'vehiculoId')),
     leerAutoresDeCotizaciones(idsDe(filas, 'creadoPor')),
+    // Cuáles son la aprobada de su vehículo: por el único de `cotizaciones_aprobadas`, con la RLS de quien mira.
+    leerAprobadasDeCotizaciones(filas.map((fila) => fila.id)),
   ])
-  return { clientes: datosO(clientes), vehiculos: datosO(vehiculos), autores: datosO(autores) }
+  return {
+    clientes: datosO(clientes),
+    vehiculos: datosO(vehiculos),
+    autores: datosO(autores),
+    aprobadas: datosO(aprobadas),
+  }
 }
 
 // Con `?lead=`, de quién son estas cotizaciones: el nombre sólo con `leads.ver` y si la lectura lo devuelve (la RLS de leads); si no, nulo, sin distinguir un lead que no existe de uno que no
@@ -117,12 +126,17 @@ async function Listado({
   const idDelResumenUrl = idDelResumen(unParametro(parametros[CLAVE_DE_RESUMEN_DE_COTIZACION]))
   const faltaLaDelResumen =
     idDelResumenUrl !== null && !pagina.filas.some((fila) => fila.id === idDelResumenUrl)
-  const [nombres, delServidor, deUnLead] = await Promise.all([
+  const [nombres, delServidor, deUnLead, vistas] = await Promise.all([
     nombresDe(sesion.permisos, pagina.filas),
     faltaLaDelResumen ? leerLaDelResumen(sesion.permisos, idDelResumenUrl) : null,
     nombreDelLead(sesion.permisos, pedido.leadId),
+    leerVistas('cotizaciones'),
   ])
   const filas = filasConNombres(pagina.filas, nombres)
+  // El «⋯» de cada fila: su versión, sus marcas y lo que ofrece a quien mira (tres lecturas por clave primaria para toda la página).
+  const menus = await menusDeLaPagina(sesion, filas)
+  // Lo que cada pestaña del resumen deja hacer (adjuntar y moderar): las de la página y la que abrió la URL.
+  const quienes = quienesDelResumen(sesion, filas, delServidor)
   // Con `?vehiculo=`, de quién son estas cotizaciones: el título sólo si quien mira ve el vehículo (la lectura es nula si no existe o no se ve).
   const deUnVehiculo =
     pedido.vehiculoId === undefined
@@ -133,9 +147,13 @@ async function Listado({
   const { Junto } = HUECOS_DE_PAPELERA_EN_EL_LISTADO
 
   return (
-    <ListadoDeCotizaciones
+    <ListadoConAcciones
       esquema={esquema}
       pagina={{ ...pagina, filas }}
+      acotada={pagina.acotada}
+      vistas={datosO(vistas)}
+      menus={menus}
+      quienesDelResumen={quienes}
       delServidor={delServidor}
       porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_COTIZACIONES) }}
       origenes={visibles.map((origen) => ({ id: origen.id, nombre: origen.nombre }))}

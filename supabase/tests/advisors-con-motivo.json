@@ -233,6 +233,11 @@
       "motivo": "Variables de un FOR (i, k, g) que plpgsql_check ve como sombra de otra o sin uso: cosmético, no cambia el resultado."
     },
     {
+      "patron": "public.cotizaciones_buscar",
+      "avisos": 15,
+      "motivo": "RETURN QUERY llena las columnas OUT y plpgsql_check no lo sigue: los 15 avisos son una por columna de salida («maybe unmodified»), como en vehiculos_inventario."
+    },
+    {
       "patron": "public.evaluar_formula",
       "avisos": 15,
       "motivo": "Una asignación con conversión implícita entre tipos (jsonb, text, numeric, un enum), la buscada; la cubren las pruebas de su área; variables de un FOR (i, k, g) que plpgsql_check ve como sombra de otra o sin uso: cosmético, no cambia el resultado."
@@ -304,13 +309,18 @@
     },
     {
       "patron": "public.vehiculos_inventario",
-      "avisos": 31,
+      "avisos": 32,
       "motivo": "RETURN QUERY llena las columnas OUT y plpgsql_check no lo sigue."
     },
     {
       "patron": "web.solicitar_asesor",
       "avisos": 2,
       "motivo": "Una variable declarada o asignada que no se lee: cosmético."
+    },
+    {
+      "patron": "public._bandeja_dia_salidas",
+      "avisos": 1,
+      "motivo": "Parámetro p_desde sin usar a propósito: las salidas se paginan por id (transportes_salidas_idx) y la función comparte firma con los demás grupos de la bandeja para que bandeja_dia los despache igual; la cubren las pruebas de su área (bandeja-del-dia.sql)."
     }
   ]
 }

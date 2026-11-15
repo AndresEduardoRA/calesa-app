@@ -894,6 +894,8 @@ select set_config('request.jwt.claim.sub', '', false);
 do $$ declare r record; v_faltan text[] := '{}'; v_listadas constant text[] := array[
   -- desde quien llama (su propia fila de la cartera)
   '_lead_vivo_en_mi_cartera', 'en_cartera', 'mis_leads', 'telefono_lead', 'leads_cartera_corta',
+  -- lo propio de logística: los vehículos de SUS leads (`usuario_id = auth.uid()`), como `en_cartera` pero por lote
+  '_logistica_lo_propio',
   -- escriben la cartera tras `_lead_aplicar_bajas` sobre el lead que bloquearon, o la revocan ellas mismas
   'lead_compartir', 'lead_revocar_acceso', 'lead_salir', 'lead_transferir', 'lead_cartera_candidatos',
   -- la propia baja y el cálculo de la cartera (la fuente, con todos los vigentes)
@@ -2918,6 +2920,10 @@ reset role;
 select set_config('request.jwt.claim.sub', '', false);
 -- Estado conocido: encendida, 7 días, zona de La Paz (UTC−4, sin horario de verano).
 update public.ajustes_empresa set limpieza_automatica = true, limpieza_dias_gracia = 7, zona_horaria = 'America/La_Paz' where id = 1;
+-- Estas cuatro pruebas miden la regla de siempre: sin fase de subasta, lo importado sin fase no está en el tramo y nunca figura «Sin resolver»
+-- (que es un ancla: lo prueba areas/situacion/regla.sql). La última la vuelve a marcar.
+update public.fases f set es_subasta = false from public.flujos fl join public.origenes o on o.id = fl.origen_id
+ where f.flujo_id = fl.id and o.clave = 'subasta_usa' and f.es_subasta;
 -- Una fase que no es la inicial, en el flujo de la subasta de EE. UU.
 insert into public.fases (flujo_id, nombre) select fl.id, 'Humo posterior' from public.flujos fl join public.origenes o on o.id = fl.origen_id where o.clave = 'subasta_usa';
 -- «ahora» de esta prueba: 2030-06-15 08:00 en La Paz. Subasta terminada hace 10 días = vence el 13.
@@ -3219,6 +3225,8 @@ begin
   if not exists (select 1 from cron.job where jobname = 'limpieza-automatica' and schedule = '7 * * * *' and command like '%limpieza_automatica_correr%') then
     raise exception 'el job de la limpieza no está programado'; end if;
 end $$;
+update public.fases f set es_subasta = true from public.flujos fl join public.origenes o on o.id = fl.origen_id
+ where f.flujo_id = fl.id and o.clave = 'subasta_usa' and f.nombre = 'En subasta';
 
 -- @test leads: el layout de fábrica, y crear, ordenar, desactivar y eliminar un campo con sus reglas
 -- Dos asesores propios de estas pruebas: los de antes ya se dieron de baja.
@@ -6831,6 +6839,54 @@ begin
   if (select embudo_etapas from public.ajustes_leads where id = 1) is distinct from v_etapas then
     raise exception 'embudo_plantilla_guardar no guardó la plantilla';
   end if;
+  reset role;
+end $$;
+rollback;
+
+-- @test cotizaciones: la aprobada de un vehículo la lee quien ve esa cotización (propios: la suya) y no quien no la ve; nadie la escribe directo (policy «cotizaciones_aprobadas: leer», B4)
+begin;
+do $$
+declare
+  v_ana uuid := '00000000-0000-4000-8000-000000130001'; v_otra uuid := '00000000-0000-4000-8000-000000130002';
+  v_rol uuid; v_o uuid; v_f uuid; v_v uuid; v_c uuid; v_n integer; v_codigo text;
+begin
+  insert into auth.users (id, email, raw_app_meta_data) values (v_ana, 'humo.aprobada.ana@ejemplo.com', '{"invitado": true}'), (v_otra, 'humo.aprobada.otra@ejemplo.com', '{"invitado": true}');
+  delete from public.usuarios_roles where usuario_id in (v_ana, v_otra);
+  insert into public.roles (clave, nombre) values ('humo_aprobada', 'Humo aprobada') returning id into v_rol;
+  insert into public.usuarios_roles (usuario_id, rol_id, es_principal) values (v_ana, v_rol, true), (v_otra, v_rol, true);
+  insert into public.roles_permisos (rol_id, permiso_clave, alcance) values (v_rol, 'cotizaciones.ver', 'propios');
+  insert into public.origenes (clave, nombre) values ('humo_aprobada', 'Humo aprobada') returning id into v_o;
+  insert into public.formulas (origen_id, version, estado, definicion, params, diseno, visibilidad)
+  values (v_o, 1, 'publicada', '{"nodos": []}', '{}', '{}', '{}') returning id into v_f;
+  insert into public.vehiculos (origen_id, titulo, marca) values (v_o, 'Humo aprobada', 'toyota') returning id into v_v;
+  insert into public.cotizaciones (origen_id, creado_por, formula_id, vehiculo_id, valores, fuentes, tipos_cambio, totales, total_base)
+  values (v_o, v_ana, v_f, v_v, '{}', '{}', '{}', '{"usd": 10}', 10) returning id into v_c;
+  set constraints public.trg_cotizaciones_aprobadas_al_confirmar immediate;
+  set constraints public.trg_cotizaciones_aprobadas_al_confirmar deferred;
+  perform set_config('request.jwt.claim.sub', v_ana::text, true);
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
+  set local role authenticated;
+  select count(*) into v_n from public.cotizaciones_aprobadas where vehiculo_id = v_v and cotizacion_id = v_c and monto = 10 and moneda = 'USD';
+  if v_n <> 1 then raise exception 'quien creó la cotización no leyó su aprobada (%)', v_n; end if;
+  begin
+    update public.cotizaciones_aprobadas set monto = 1 where vehiculo_id = v_v;
+    v_codigo := 'sin error';
+  exception when others then v_codigo := sqlstate;
+  end;
+  if v_codigo <> '42501' then raise exception 'el update directo de cotizaciones_aprobadas dio %', v_codigo; end if;
+  reset role;
+  perform set_config('request.jwt.claim.sub', v_otra::text, true);
+  set local role authenticated;
+  select count(*) into v_n from public.cotizaciones_aprobadas where vehiculo_id = v_v;
+  if v_n <> 0 then raise exception 'quien no ve la cotización leyó su aprobada (%)', v_n; end if;
+  reset role;
+  set local role anon;
+  begin
+    perform 1 from public.cotizaciones_aprobadas limit 1;
+    v_codigo := 'sin error';
+  exception when others then v_codigo := sqlstate;
+  end;
+  if v_codigo <> '42501' then raise exception 'anon leyó cotizaciones_aprobadas (%)', v_codigo; end if;
   reset role;
 end $$;
 rollback;

@@ -46,6 +46,10 @@ guardarla o, en una preventa, quien modera (`puedeEnviarLaCotizacion`, espejo de
 envió a la papelera.» y «Deshacer» 10 s, que restaura ese lote con la versión que devolvió el envío; si la base la rechaza (PT409 con «Recargar»; sin
 permiso), avisa y se queda. No mira lo tipeado sin guardar. `Debajo` queda vacío.
 
+En el listado (`pantallas/papelera-listado.ts`): «Enviar a la papelera» del «⋯» de cada fila es el mismo envío de la guardada (`enviarLaCotizacionALaPapelera`, sin
+preguntar, con «Deshacer» 10 s); se ofrece con `puedeEnviarLaCotizacion()` sobre el espejo de `_cotizacion_puede_guardar()` del listado. La action revalida
+`/cotizaciones` y la lista se vuelve a dibujar.
+
 ## Lo que no se rompe
 
 - Enviar manda la versión de la página **tal cual** (`cotizacion.actualizadoEn`, el texto de la base): nunca pasa por `Date` ni se relee antes de mandar.

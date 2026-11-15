@@ -25,6 +25,12 @@ export const CLAVE_DE_PREFERENCIA_POR_PAGINA = 'listas.por_pagina'
 export const TAMANO_DE_VER_MAS = 20
 export const TOPE_DE_LO_CARGADO = 500
 export const TAMANO_DE_COLUMNA = 50
+// La logística para cientos de miles de vehículos: la lista de una fase (una página de a 50, por cursor `(fase_desde, id)`) y la bandeja del día
+// (un grupo en la portada = sus primeras 5 filas con un conteo hasta 100; la página de un grupo, de a 20).
+export const TAMANO_DE_LA_FASE = 50
+export const TAMANO_DE_LA_BANDEJA = 20
+export const PRIMERAS_DE_LA_BANDEJA = 5
+export const TOPE_DE_LA_BANDEJA = 100
 export const LOTES_POR_PAGINA = 5
 // La lista del equipo (5a-21): las primeras por nombre. Se pide uno más para saber si hay otras; la base lo acota a 101 (`equipo_lista`).
 export const TOPE_DEL_EQUIPO = 100
