@@ -43,7 +43,7 @@ y `pantallas/<área>.ts` (y `pantallas/<área>-<pantalla>.ts`). El **núcleo** (
 
 **Los huecos.** El panel no sabe qué lleva: cada área los declara en su `pantallas/` (`<área>-unidad.ts` → `HUECOS_DE_<ÁREA>_EN_LA_UNIDAD`; `<área>-grupo.ts`;
 `<área>-enlace.ts`; `<área>-catalogos.ts`) y sólo `src/app` los junta. Un hueco se dibuja si la persona tiene alguna de sus claves **en el origen de la unidad**
-y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el del archivo. Se monta al abrir su bloque (`BloqueDelHueco`). El panel exige
+y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el del archivo. Se monta al abrir su bloque (`BloqueDelHueco`). Cada hueco va en su `LimiteDelHueco` (si se rompe al dibujarse: «No pudimos mostrar «<título>».» con «Reintentar», y el resto sigue) y su `diferido()` avisa y muestra su esqueleto _en su lugar_ (`aviso: 'aqui'`, `EsqueletoDelHueco`). El panel exige
 `logistica.ver` en el origen **y** que la RLS de `vehiculos` deje leer la fila: con sólo una, «No tienes permiso» o «ya no está disponible».
 
 ## Archivos clave

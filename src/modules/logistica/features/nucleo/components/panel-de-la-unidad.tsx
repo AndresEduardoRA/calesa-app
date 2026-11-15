@@ -6,8 +6,8 @@ import { RUTAS } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { textoDeDiasEnLaFase } from '../../../entities/nucleo/dias-en-la-fase'
 import type { HuecoDeLaUnidad } from '../../../entities/nucleo/hueco'
-import { esUnidadDeVehiculo, type UnidadAbierta } from '../../../entities/nucleo/unidad'
-import { BloqueDelHueco } from './bloque-del-hueco'
+import type { UnidadAbierta } from '../../../entities/nucleo/unidad'
+import { BloquesDeLaUnidad } from './bloques-de-la-unidad'
 
 type Props = {
   unidad: UnidadAbierta
@@ -38,15 +38,6 @@ function EnlaceDeLaUnidad({ unidad }: { unidad: UnidadAbierta }) {
       {esItem ? 'Abrir proyecto' : 'Abrir ficha'}
     </Link>
   )
-}
-
-// Un vehículo dibuja el `componente` del hueco (las áreas que sólo tratan vehículos); un ítem, la `repuesto.componente` de su variante, y sin ella no dibuja nada.
-function ContenidoDelHueco({ hueco, unidad }: { hueco: HuecoDeLaUnidad; unidad: UnidadAbierta }) {
-  if (unidad.tipo === 'repuesto') {
-    const Componente = hueco.repuesto?.componente
-    return Componente === undefined ? null : <Componente unidad={unidad} />
-  }
-  return esUnidadDeVehiculo(unidad) ? <hueco.componente unidad={unidad} /> : null
 }
 
 // El panel de la unidad (6.01): la cabecera con el título, el origen, la fase y los días en ella, y debajo un bloque plegado por hueco. No lee nada: recibe lo que se dibuja. Sirve
@@ -80,20 +71,7 @@ export function PanelDeLaUnidad({
         {aviso ? <p className="text-(length:--text-sm) text-(--color-ink-soft)">{aviso}</p> : null}
       </header>
       {relacionados}
-      {huecos.length > 0 ? (
-        <div className="grid gap-3">
-          {huecos.map((hueco) => (
-            <BloqueDelHueco
-              key={hueco.clave}
-              clave={hueco.clave}
-              titulo={hueco.titulo}
-              abiertoAlInicio={hueco.abiertoAlInicio}
-            >
-              <ContenidoDelHueco hueco={hueco} unidad={unidad} />
-            </BloqueDelHueco>
-          ))}
-        </div>
-      ) : null}
+      <BloquesDeLaUnidad unidad={unidad} huecos={huecos} />
     </div>
   )
 }
