@@ -51,6 +51,9 @@ begin
     insert into public.roles_permisos (rol_id, permiso_clave, origen_id, alcance)
     values (v_rol, c ->> 'clave', nullif(c ->> 'origen', '')::uuid, coalesce(c ->> 'alcance', 'todos')::public.alcance_permiso);
   end loop;
+  -- Las sondas que crean no piden vehículo: quien cotiza en un origen lo puede guardar sin vehículo en ese origen (el lead sigue obligatorio).
+  insert into public.roles_permisos (rol_id, permiso_clave, origen_id, alcance)
+  select rp.rol_id, 'cotizaciones.crear.sin_vehiculo', rp.origen_id, 'todos' from public.roles_permisos rp where rp.rol_id = v_rol and rp.permiso_clave = 'cotizaciones.crear';
 end $f$;
 
 -- El recorte con los argumentos de los tests: lo visible, la definición y lo que la visibilidad nombra y quien lee no ve (el contexto lo arma _cotizacion_contexto()).
@@ -1057,8 +1060,7 @@ begin
   set local role authenticated;
   perform public.nivel_crear(v_nuevo, 'Gerencia CV');
   reset role;
-  -- Las sondas que crean (`cotizacion_crear`) no piden vehículo: el ajuste de la empresa lo dice (se revierte con el bloque).
-  update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = false where id = 1;
+  -- Las sondas que crean (`cotizacion_crear`) no piden vehículo: `cv_persona` concede `sin_vehiculo` con cada `cotizaciones.crear`.
   v_niveles := array(select clave from public.cotizaciones_niveles where clave <> 'todos' order by clave);
   if cardinality(v_niveles) < 2 or not 'costos' = any (v_niveles) or not 'gerencia_cv' = any (v_niveles) then raise exception 'esperaba al menos costos y el creado: %', v_niveles; end if;
   foreach v_nivel in array v_niveles loop
@@ -1825,7 +1827,6 @@ declare
     jsonb_build_object('id', 'visible', 'tipo', 'input', 'etiqueta', 'Visible', 'bucket', 'origen'),
     jsonb_build_object('id', 'oculto_costos', 'tipo', 'input', 'etiqueta', 'Oculto', 'bucket', 'origen'));
 begin
-  update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = false where id = 1;
   perform pg_temp.cv_persona(sin, (select jsonb_agg(jsonb_build_object('clave', c)) from unnest(base) c));
   perform pg_temp.cv_persona(otro, (select jsonb_agg(jsonb_build_object('clave', c)) from unnest(base) c));
   perform pg_temp.cv_persona(sin_lv, jsonb_build_array(jsonb_build_object('clave', 'cotizaciones.ver'), jsonb_build_object('clave', 'cotizaciones.crear')));

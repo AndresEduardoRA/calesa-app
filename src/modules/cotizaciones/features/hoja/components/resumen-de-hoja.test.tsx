@@ -23,7 +23,13 @@ function resumen(modo: string | null, respuesta = GARANTIA_ACTIVA) {
       avisoDelVehiculo={null}
       alReintentar={() => {}}
       alRecargar={() => {}}
-      guardar={{ motivo: null, motivoYaDicho: false, ocupado: false, alGuardar: () => {} }}
+      guardar={{
+        motivo: null,
+        motivoYaDicho: false,
+        ocupado: false,
+        alGuardar: () => {},
+        paraElegir: null,
+      }}
       avisoDeGuardado={null}
     />,
   )

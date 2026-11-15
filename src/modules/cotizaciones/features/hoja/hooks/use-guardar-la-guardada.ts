@@ -52,9 +52,7 @@ export function useGuardarLaGuardada({
     entradasIguales(h.entradas, h.iniciales) && h.verTotalBs === h.verTotalBsInicial
   const generico = motivoParaNoGuardar({
     estado: h.estado,
-    leadId: null,
-    exigeLead: false,
-    faltaVehiculo: false,
+    falta: null,
     total,
     descartoLoTipeado: descartoLoTipeado(h.respuesta, h.entradas.overrides),
   })
@@ -69,9 +67,7 @@ export function useGuardarLaGuardada({
       }
       const alDia = motivoParaNoGuardar({
         estado: { tipo: 'al_dia' },
-        leadId: null,
-        exigeLead: false,
-        faltaVehiculo: false,
+        falta: null,
         total: totalDelResumen({ indice: h.indice, entradas: r.entradas, respuesta: r.respuesta }),
         descartoLoTipeado: descartoLoTipeado(r.respuesta, r.entradas.overrides),
       })
@@ -102,6 +98,7 @@ export function useGuardarLaGuardada({
           motivoYaDicho: total.tipo === 'faltante',
           ocupado: guardado.ocupado,
           alGuardar,
+          paraElegir: null,
         }
   return { boton, hayCambios }
 }

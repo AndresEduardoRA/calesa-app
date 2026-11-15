@@ -12,12 +12,12 @@ type Opciones = {
   formulario: RefObject<HTMLFormElement | null>
 }
 
-// Guardar la vigencia y el vehículo obligatorio. Lo tipeado queda siempre: si algo falla, el foco va al primer error. Con `ok`, la
+// Guardar la vigencia. Lo tipeado queda siempre: si algo falla, el foco va al primer error. Con `ok`, la
 // revalidación trae la fila nueva y la sección vuelve a montar el formulario (su `key` es la versión).
 export function useGuardarAjustesDeCotizacion({ actualizadoEn, formulario }: Opciones) {
   const { executeAsync, result, isPending } = useAction(guardarAjustesDeCotizacion)
 
-  async function guardar(vehiculoObligatorioAlCotizar: boolean): Promise<void> {
+  async function guardar(): Promise<void> {
     const elemento = formulario.current
     if (!elemento) {
       return
@@ -27,7 +27,6 @@ export function useGuardarAjustesDeCotizacion({ actualizadoEn, formulario }: Opc
       await conRed(
         executeAsync({
           vigenciaDias: Number(vigenciaDias),
-          vehiculoObligatorioAlCotizar,
           actualizadoEnEsperado: actualizadoEn,
         }),
       ),

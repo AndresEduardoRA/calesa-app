@@ -97,3 +97,11 @@ export { contarCotizacionesDelVehiculo } from './composicion'
 // El dato del vehículo de una tabla de la hoja (4.14-2c3): qué campos casan con qué tablas. La página lo pasa al panel del vehículo, que decide cuáles se eligen.
 export { datosDelVehiculoDeLaHoja } from '../../entities/dato-del-vehiculo'
 export type { DatoDeLaHoja } from '../../entities/dato-del-vehiculo'
+
+// Lo que la hoja de cotizar exige elegir según las claves `cotizaciones.crear.sin_lead` y `cotizaciones.crear.sin_vehiculo` del rol en ese origen: la página los calcula en el
+// servidor con los permisos de la sesión y manda a la hoja booleanos y textos.
+export { eleccionesDeLaHoja, obligatoriosAlCotizar } from '../../entities/obligatorios-por-rol'
+export type {
+  EleccionesDeLaHoja,
+  ObligatoriosAlCotizar,
+} from '../../entities/obligatorios-al-cotizar'

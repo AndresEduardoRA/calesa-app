@@ -19,7 +19,6 @@ describe('hojaSinAbierta: el diseño de una guardada como la hoja que dibuja Hoj
     expect(hoja.estado).toBe('lista')
     expect(hoja.abierta).toBe('')
     expect(hoja.abiertaEn).toBe('')
-    expect(hoja.vehiculoObligatorio).toBe(false)
     expect(hoja.secciones).toBe(h.diseno.secciones)
   })
 })

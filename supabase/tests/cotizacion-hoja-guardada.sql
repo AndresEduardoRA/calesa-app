@@ -224,7 +224,7 @@ rollback;
 begin;
 do $$
 declare duena constant uuid := '00000000-0000-0000-0000-000000000001';
-  t jsonb := pg_temp.hg_terreno(); d uuid; sv uuid; sc uuid; nl uuid; nv uuid; r jsonb;
+  t jsonb := pg_temp.hg_terreno(); d uuid; sv uuid; sc uuid; nl uuid; nv uuid; r jsonb; sinl uuid; p0 uuid; p_sv uuid; p_sl uuid;
 begin
   sc := pg_temp.hg_persona(gen_random_uuid(), pg_temp.hg_c('cotizaciones.ver', 'leads.ver', 'vehiculos.ver'));
   nl := pg_temp.hg_persona(gen_random_uuid(), pg_temp.hg_c('cotizaciones.ver', 'cotizaciones.crear', 'vehiculos.ver'));
@@ -234,11 +234,22 @@ begin
   if (pg_temp.hg_hoja(sc, d) -> 'puede_cotizar_encima')::boolean is distinct from false then raise exception 'L6: sin crear'; end if;
   if (pg_temp.hg_hoja(nl, d) -> 'puede_cotizar_encima')::boolean is distinct from false then raise exception 'L6: sin ver el lead'; end if;
   if (pg_temp.hg_hoja(nv, d) -> 'puede_cotizar_encima')::boolean is distinct from false then raise exception 'L6: sin ver el vehículo'; end if;
-  -- Sin vehículo: depende del ajuste «obligatorio».
+  -- Sin vehículo o sin lead: depende de `sin_vehiculo` y de `sin_lead` de quien mira (la dueña las tiene; p0 no).
+  p0 := pg_temp.hg_persona(gen_random_uuid(), pg_temp.hg_c('cotizaciones.ver', 'cotizaciones.crear', 'leads.ver', 'vehiculos.ver'));
+  p_sv := pg_temp.hg_persona(gen_random_uuid(), pg_temp.hg_c('cotizaciones.ver', 'cotizaciones.crear', 'leads.ver', 'vehiculos.ver', 'cotizaciones.crear.sin_vehiculo'));
+  p_sl := pg_temp.hg_persona(gen_random_uuid(), pg_temp.hg_c('cotizaciones.ver', 'cotizaciones.crear', 'leads.ver', 'vehiculos.ver', 'cotizaciones.crear.sin_lead'));
+  if (pg_temp.hg_hoja(p0, d) -> 'puede_cotizar_encima')::boolean is distinct from true then raise exception 'L6: con lead y vehículo, sin claves'; end if;
   sv := pg_temp.hg_cot(t, duena, p_sin_vehiculo => true);
-  if (pg_temp.hg_hoja(duena, sv) -> 'puede_cotizar_encima')::boolean is distinct from false then raise exception 'L6: sin vehículo y obligatorio'; end if;
-  update public.ajustes_empresa set vehiculo_obligatorio_al_cotizar = false where id = 1;
-  if (pg_temp.hg_hoja(duena, sv) -> 'puede_cotizar_encima')::boolean is distinct from true then raise exception 'L6: sin vehículo y no obligatorio'; end if;
+  if (pg_temp.hg_hoja(p0, sv) -> 'puede_cotizar_encima')::boolean is distinct from false then raise exception 'L6: sin vehículo y sin la clave'; end if;
+  if (pg_temp.hg_hoja(p_sl, sv) -> 'puede_cotizar_encima')::boolean is distinct from false then raise exception 'L6: sin vehículo y con la clave del lead'; end if;
+  if (pg_temp.hg_hoja(p_sv, sv) -> 'puede_cotizar_encima')::boolean is distinct from true then raise exception 'L6: sin vehículo y con la clave'; end if;
+  if (pg_temp.hg_hoja(duena, sv) -> 'puede_cotizar_encima')::boolean is distinct from true then raise exception 'L6: sin vehículo y la dueña'; end if;
+  sinl := pg_temp.hg_cot(t, duena);
+  update public.cotizaciones set lead_id = null where id = sinl;
+  if (pg_temp.hg_hoja(p0, sinl) -> 'puede_cotizar_encima')::boolean is distinct from false then raise exception 'L6: sin lead y sin la clave'; end if;
+  if (pg_temp.hg_hoja(p_sv, sinl) -> 'puede_cotizar_encima')::boolean is distinct from false then raise exception 'L6: sin lead y con la clave del vehículo'; end if;
+  if (pg_temp.hg_hoja(p_sl, sinl) -> 'puede_cotizar_encima')::boolean is distinct from true then raise exception 'L6: sin lead y con la clave'; end if;
+  if (pg_temp.hg_hoja(duena, sinl) -> 'puede_cotizar_encima')::boolean is distinct from true then raise exception 'L6: sin lead y la dueña'; end if;
   -- Con una versión nueva viva, no.
   perform pg_temp.hg_cot(t, duena, d);
   if (pg_temp.hg_hoja(duena, d) -> 'puede_cotizar_encima')::boolean is distinct from false then raise exception 'L6: con una versión nueva'; end if;

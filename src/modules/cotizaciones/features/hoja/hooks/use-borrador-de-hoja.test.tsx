@@ -6,6 +6,7 @@ import type { RecalculoInicial } from '../../../entities/apertura'
 import { claveDelBorrador } from '../../../entities/claves-de-la-hoja'
 import { entradasIniciales, indiceDeHoja, type Entradas } from '../../../entities/entradas'
 import { hojaDePrueba, respuestaDePrueba } from '../../../entities/hoja-de-prueba.soporte'
+import { SIN_ELECCIONES, SIN_OBLIGATORIOS } from '../../../entities/obligatorios-al-cotizar'
 import type { PedidoDeRecalculo } from '../../../entities/pedido-de-recalculo'
 import type { RespuestaDeRecalculo } from '../../../entities/recalculo'
 import { PantallaDeCotizar } from '../components/pantalla-de-cotizar'
@@ -37,6 +38,8 @@ const montar = () =>
         vehiculoId={null}
         vehiculoSoltado={false}
         leadId={LEAD}
+        obligatorios={SIN_OBLIGATORIOS}
+        elecciones={SIN_ELECCIONES}
         personaId={PERSONA}
       />
     </NuqsTestingAdapter>,

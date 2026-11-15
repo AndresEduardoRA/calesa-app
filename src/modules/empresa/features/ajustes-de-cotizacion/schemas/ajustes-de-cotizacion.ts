@@ -9,7 +9,6 @@ export const esquemaGuardarAjustesDeCotizacion = z.object({
     .int({ error: RANGO_DE_VIGENCIA })
     .min(VIGENCIA_MINIMA_DIAS, { error: RANGO_DE_VIGENCIA })
     .max(VIGENCIA_MAXIMA_DIAS, { error: RANGO_DE_VIGENCIA }),
-  vehiculoObligatorioAlCotizar: z.boolean(),
   // El `actualizado_en` que tenía en pantalla quien edita: detecta un cambio ajeno.
   actualizadoEnEsperado: z.string().min(1),
 })

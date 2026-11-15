@@ -174,13 +174,15 @@ rollback;
 begin;
 do $$
 declare duena constant uuid := '00000000-0000-0000-0000-000000000001';
-  t jsonb := pg_temp.ce_terreno(); a uuid; ap uuid; ap2 uuid; asl uuid; asv uuid; nc uuid; nl uuid; nlv uuid; nv uuid; r jsonb; v_antes bigint := (select count(*) from public.cotizaciones);
+  t jsonb := pg_temp.ce_terreno(); a uuid; ap uuid; ap2 uuid; asl uuid; asv uuid; sinc uuid; nc uuid; nl uuid; nlv uuid; nv uuid; r jsonb; v_antes bigint := (select count(*) from public.cotizaciones);
   c_no constant text := 'No tienes acceso a esta cotización.';
 begin
   nc := pg_temp.ce_persona('cotizaciones.ver', 'leads.ver', 'vehiculos.ver');
   nl := pg_temp.ce_persona('cotizaciones.ver:propios', 'cotizaciones.crear', 'vehiculos.ver');
   nlv := pg_temp.ce_persona('cotizaciones.ver', 'cotizaciones.crear', 'vehiculos.ver');
   nv := pg_temp.ce_persona('cotizaciones.ver', 'cotizaciones.crear', 'leads.ver');
+  -- Quien cotiza y ve lead y vehículo pero sin `sin_lead` ni `sin_vehiculo` (la dueña las tiene: lo prueba `areas/cotizaciones/vinculos-por-rol.sql`).
+  sinc := pg_temp.ce_persona('cotizaciones.ver', 'cotizaciones.crear', 'leads.ver', 'vehiculos.ver');
   a := pg_temp.ce_ant(t, duena);
   ap := pg_temp.ce_ant(t, duena, p_vehiculo => (t ->> 'v2')::uuid);
   update public.cotizaciones set eliminado_en = now() where id = ap;
@@ -203,11 +205,11 @@ begin
   r := pg_temp.ce_encima(nv, a);
   if r ->> 'error' is distinct from '42501' or r ->> 'mensaje' is distinct from 'No tienes acceso a este vehículo.' then raise exception 'E4: sin ver el vehículo: %', r; end if;
   asl := pg_temp.ce_ant(t, duena, p_sin_lead => true);
-  r := pg_temp.ce_encima(duena, asl);
+  r := pg_temp.ce_encima(sinc, asl);
   if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'lead' then raise exception 'E4: sin lead: %', r; end if;
   asv := pg_temp.ce_ant(t, duena, p_sin_vehiculo => true);
-  r := pg_temp.ce_encima(duena, asv);
-  if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'vehiculo' then raise exception 'E4: sin vehículo y obligatorio: %', r; end if;
+  r := pg_temp.ce_encima(sinc, asv);
+  if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'vehiculo' then raise exception 'E4: sin vehículo y sin la clave: %', r; end if;
   update public.formulas set estado = 'archivada' where origen_id = (t ->> 'o')::uuid;
   r := pg_temp.ce_encima(duena, a);
   if r ->> 'detail' is distinct from 'origen_sin_formula' then raise exception 'E4: sin publicada: %', r; end if;

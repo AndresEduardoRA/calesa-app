@@ -10,8 +10,10 @@ import {
 } from '../../../entities/binding'
 import type { HojaLista } from '../../../entities/hoja'
 import { MONEDA_DEL_PRIMER_RESULTADO } from '../../../entities/primer-resultado'
+import type { EleccionDeLoQueFalta, LoQueFalta } from '../../../entities/obligatorios-al-cotizar'
 import type { EstadoDeRecalculo } from '../../../entities/recalculo'
 import { useResumenPlegado } from '../hooks/use-resumen-plegado'
+import { ElegirLoQueFalta } from './elegir-lo-que-falta'
 import { LiveDelResumen } from './live-del-resumen'
 import { ModoDelResumen } from './modo-del-resumen'
 import { TotalEnMonedaLocal } from './total-en-moneda-local'
@@ -25,7 +27,7 @@ type Props = {
   modo: string | null
   contexto: ContextoDeHoja
   estado: EstadoDeRecalculo
-  // Lo que se dice del vehículo: el ajuste lo pide y no hay, o el de la URL no se pudo usar.
+  // Lo que se dice del vehículo: el de la URL no se pudo usar.
   avisoDelVehiculo: string | null
   alReintentar: () => void
   alRecargar: () => void
@@ -44,16 +46,18 @@ type Props = {
 export type BotonDeGuardar = {
   // Por qué no se guarda ahora, dicho junto al botón; nulo, se puede.
   motivo: string | null
-  // El resumen ya lo dice (sin total, el vehículo que falta): no se repite junto al botón.
+  // El resumen ya lo dice (sin total): no se repite junto al botón.
   motivoYaDicho: boolean
   // Esperando el total al día o guardando: «Guardando…» y apagado (nunca un doble envío).
   ocupado: boolean
   alGuardar: () => void
+  // Lo que falta elegir y cómo se elige (el botón de su panel o el pedido): bajo el motivo. Nulo, nada falta.
+  paraElegir: { que: LoQueFalta; eleccion: EleccionDeLoQueFalta } | null
 }
 
 // «Guardar», además de `Ctrl/Cmd+S` (el celular no tiene atajo). Frena el `mousedown`: así el foco no sale de una celda abierta (un clic afuera descartaría lo que no es un
 // número) y el clic hace lo mismo que el atajo, que confirma la celda antes de guardar.
-function BotonGuardar({ motivo, motivoYaDicho, ocupado, alGuardar }: BotonDeGuardar) {
+function BotonGuardar({ motivo, motivoYaDicho, ocupado, alGuardar, paraElegir }: BotonDeGuardar) {
   const dicho = motivo !== null && !motivoYaDicho
   return (
     <div className="mr-auto grid gap-1">
@@ -72,6 +76,9 @@ function BotonGuardar({ motivo, motivoYaDicho, ocupado, alGuardar }: BotonDeGuar
         <p id="motivo-para-no-guardar" className="text-(length:--text-sm) text-(--color-ink-soft)">
           {motivo}
         </p>
+      )}
+      {paraElegir === null ? null : (
+        <ElegirLoQueFalta que={paraElegir.que} eleccion={paraElegir.eleccion} />
       )}
     </div>
   )

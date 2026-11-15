@@ -2,7 +2,10 @@
 
 import { RUTAS } from '@/shared/lib/rutas'
 import { Button } from '@/shared/ui/button'
+import type { EleccionesDeLaHoja } from '../../../entities/obligatorios-al-cotizar'
+import type { SalidaDelAviso } from '../../../entities/guardado'
 import type { EstadoDelGuardado, VistaDelGuardado } from '../hooks/use-nucleo-del-guardado'
+import { ElegirLoQueFalta } from './elegir-lo-que-falta'
 
 type Props = {
   estado: EstadoDelGuardado
@@ -17,6 +20,8 @@ type Props = {
   alGuardarConLaAbierta: () => void
   // Una cotización guardada confirma lo guardado (4.15-3): «Cambios guardados.», hasta el próximo cambio.
   confirmacion: string | null
+  // Cómo se elige lo que la regla del rol ahora pide (la hoja nueva; una guardada no la trae).
+  elecciones: EleccionesDeLaHoja | undefined
 }
 
 function SalidasD2({
@@ -45,6 +50,21 @@ function SalidasD2({
 }
 
 const CLASE_DEL_BOTON = 'min-h-11 md:min-h-8'
+
+// La regla del rol cambió con la hoja abierta: el botón (o el pedido) de lo que ahora pide. Una guardada no trae `elecciones`: nada que ofrecer.
+function SalidaDeElegir({
+  salida,
+  elecciones,
+}: {
+  salida: SalidaDelAviso
+  elecciones: EleccionesDeLaHoja | undefined
+}) {
+  if (!elecciones || (salida !== 'elegir_lead' && salida !== 'elegir_vehiculo')) {
+    return null
+  }
+  const que = salida === 'elegir_lead' ? 'lead' : 'vehiculo'
+  return <ElegirLoQueFalta que={que} eleccion={elecciones[que]} />
+}
 
 function Confirmacion({
   confirmacion,
@@ -85,6 +105,7 @@ function AvisoDeGuardado({
   alUsarLaNueva,
   alGuardarConLaAbierta,
   confirmacion,
+  elecciones,
 }: Props) {
   const aviso = estado.tipo === 'aviso' ? estado.aviso : null
   return (
@@ -103,6 +124,7 @@ function AvisoDeGuardado({
               alGuardarConLaAbierta={alGuardarConLaAbierta}
             />
           ) : null}
+          <SalidaDeElegir salida={aviso.salida} elecciones={elecciones} />
           {aviso.salida === 'recargar' ? (
             <Button variant="outline" className={CLASE_DEL_BOTON} onClick={alRecargar}>
               Recargar
@@ -146,12 +168,14 @@ export function AvisoDelGuardado({
   version,
   alRecargar,
   confirmacion = null,
+  elecciones,
 }: {
   guardado: VistaDelGuardado
   alReintentar: () => void
   version: number
   alRecargar: () => void
   confirmacion?: string | null
+  elecciones?: EleccionesDeLaHoja | undefined
 }) {
   return (
     <AvisoDeGuardado
@@ -164,6 +188,7 @@ export function AvisoDelGuardado({
       alUsarLaNueva={alRecargar}
       alGuardarConLaAbierta={guardado.guardarConLaAbierta}
       confirmacion={confirmacion}
+      elecciones={elecciones}
     />
   )
 }

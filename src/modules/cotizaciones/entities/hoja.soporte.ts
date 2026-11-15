@@ -72,7 +72,6 @@ export const lista = () => ({
   formula: { id: ID, version: 3 },
   abierta_en: '2026-10-26T14:00:00.123456+00:00',
   abierta: ABIERTA,
-  vehiculo_obligatorio: true,
   cabecera: {
     modos: [{ clave: 'unificado', nombre: 'Unificado' }],
     ver_total_bs: true,

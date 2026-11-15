@@ -5,6 +5,13 @@ import { ofreceVerTotalBs } from '../../../entities/cabecera-de-la-hoja'
 import { totalDelResumen, type ContextoDeHoja } from '../../../entities/binding'
 import { entradasDelPedido, type Entradas } from '../../../entities/entradas'
 import type { HojaLista } from '../../../entities/hoja'
+import {
+  loQueFalta,
+  SIN_ELECCIONES,
+  SIN_OBLIGATORIOS,
+  type EleccionesDeLaHoja,
+  type ObligatoriosAlCotizar,
+} from '../../../entities/obligatorios-al-cotizar'
 import type { RespuestaDeRecalculo } from '../../../entities/recalculo'
 import { motivoParaNoGuardar } from '../../../entities/se-puede-guardar'
 import type { BotonDeGuardar } from '../components/resumen-de-hoja'
@@ -24,6 +31,8 @@ export function useGuardarLaHoja({
   hoja,
   leadId,
   vehiculoId,
+  obligatorios,
+  elecciones,
   guardado,
   raiz,
 }: {
@@ -32,31 +41,33 @@ export function useGuardarLaHoja({
   hoja: HojaLista
   leadId: string | null
   vehiculoId: string | null
+  // Lo que el rol pide elegir en este origen (la página lo calcula con los permisos: `obligatoriosAlCotizar()`) y cómo se elige.
+  obligatorios: ObligatoriosAlCotizar | undefined
+  elecciones: EleccionesDeLaHoja | undefined
   // Nulo: la hoja no guarda (una guardada de sólo lectura, o todavía sin «Guardar»): ni botón ni `Ctrl/Cmd+S`.
   guardado: Guardado | null
   raiz: RefObject<HTMLDivElement | null>
 }) {
-  const faltaVehiculo = hoja.vehiculoObligatorio && vehiculoId === null
+  // Sin ellos (una guardada, o una hoja que no los trae) la hoja no pide nada.
+  const falta = loQueFalta(obligatorios ?? SIN_OBLIGATORIOS, { leadId, vehiculoId })
   // Un pendiente se reenvía tal cual: las guardas de la hoja no le aplican (4-21).
   const motivo = guardado?.hayPendiente
     ? null
     : motivoParaNoGuardar({
         estado: h.estado,
-        leadId,
-        faltaVehiculo,
+        falta,
         total: totalDelResumen(contexto),
         descartoLoTipeado: descartoLoTipeado(h.respuesta, h.entradas),
       })
   const armar: Armar = (listo) => {
     h.alQuedarAlDia((r) => {
-      if (!r.ok || leadId === null) {
+      if (!r.ok || falta !== null) {
         listo(null)
         return
       }
       const motivoAlDia = motivoParaNoGuardar({
         estado: { tipo: 'al_dia' },
-        leadId,
-        faltaVehiculo,
+        falta,
         total: totalDelResumen({ indice: h.indice, entradas: r.entradas, respuesta: r.respuesta }),
         descartoLoTipeado: descartoLoTipeado(r.respuesta, r.entradas),
       })
@@ -82,9 +93,14 @@ export function useGuardarLaHoja({
       ? null
       : {
           motivo,
-          motivoYaDicho: total.tipo === 'faltante' || faltaVehiculo,
+          motivoYaDicho: total.tipo === 'faltante',
           ocupado: guardado.ocupado,
           alGuardar,
+          // Con un pendiente no hay motivo (se reenvía tal cual): nada que elegir.
+          paraElegir:
+            motivo !== null && falta !== null
+              ? { que: falta, eleccion: (elecciones ?? SIN_ELECCIONES)[falta] }
+              : null,
         }
   return { boton }
 }
