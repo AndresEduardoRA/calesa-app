@@ -82,7 +82,8 @@ pnpm exec supabase db push --dry-run
 - Si la nube tiene una migración que el repo no, **para**: alguien migró a mano. Se resuelve en el repo antes de seguir.
 - Si una migración del repo es **más vieja** que la última de la nube (pasa con ramas en paralelo), `db push`
   la rechaza y te propone `--include-all`. No lo fuerces a ciegas: confirma que no depende del orden ni choca con lo ya aplicado y
-  recién entonces agrega `--include-all` al `--dry-run` y al push; o pide a una sesión que la renumere con una fecha posterior en `main`.
+  recién entonces agrega `--include-all` al `--dry-run` y al push; o pide a una sesión que la rehaga al final en `main`
+  (`docs/LECCIONES.md` › «Migraciones»).
 - Los índices se crean sin `concurrently` (las migraciones van en transacción): en la demo el bloqueo es de segundos; con muchos datos,
   aplica en un horario tranquilo.
 
