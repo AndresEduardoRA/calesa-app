@@ -50,6 +50,6 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 
 ## Siguiente
 
-- **Para la persona:** producción (variables, secretos, `db push`) y la lista de `docs/DESPLIEGUE.md` › «Lo que sólo una persona
+- **Para la persona:** producción (variables, secretos, Vercel) y la lista de `docs/DESPLIEGUE.md` › «Lo que sólo una persona
   comprueba»; después, las decisiones de producto de `docs/PENDIENTES.md`.
 - **Para una sesión:** lo que la persona pida, o lo de `docs/PENDIENTES.md` › «Seguridad y dinero» primero.

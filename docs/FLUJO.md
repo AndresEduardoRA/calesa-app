@@ -83,7 +83,8 @@ Ningún doc lleva historia («se encontró X y se arregló»): eso es el PR. Lo 
 - **Aplastar:** cuando las migraciones pasan de unas cuarenta, o antes de un despliegue grande, `pnpm db:aplastar` las funde en una
   base nueva y comprueba que deja la misma base (esquema, ACL, policies, triggers, catálogo, jobs, buckets). Va en su propio PR. Lo
   que hay que hacer después en un proyecto remoto: `docs/DESPLIEGUE.md` › «Tras aplastar las migraciones».
-- Producción (variables, secretos, `db push`) es de la persona: `docs/DESPLIEGUE.md`.
+- Producción (variables, secretos, Vercel) es de la persona; la base remota del proyecto (`db push`, `--include-seed`, `db reset
+--linked`) la cambia también la sesión: `docs/DESPLIEGUE.md` › «La base remota».
 
 ## La historia
 

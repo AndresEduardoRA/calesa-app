@@ -77,4 +77,4 @@ El título del PR sigue la misma regla: es el commit que queda en `main` (squash
 una tabla sin RLS, un `security definer` sin `set search_path = ''`, `auth.uid()` suelto (va `(select auth.uid())`) · `if (rol === 'dueno')`
 en la UI (va `puede(permisos, clave, origen)`) · dinero sin `<Monto>` o fecha sin `formato.ts` · empujar `main`, forzar un push o integrar
 con el CI en rojo · historia en un doc («se encontró X y se arregló»: va la regla que lo evita, en `docs/LECCIONES.md`) · producción
-(variables, secretos, `db push`): es de la persona (`docs/DESPLIEGUE.md`).
+(variables, secretos, Vercel): es de la persona (`docs/DESPLIEGUE.md`) · b_ip, la base en la nube de otra app.
