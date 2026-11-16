@@ -15,3 +15,4 @@ src/modules/cotizaciones/entities/casos-de-diseno.json
 supabase/tests/corpus-de-diseno.json
 supabase/tests/corpus-de-contraste.json
 .claude/worktrees
+.orquestador

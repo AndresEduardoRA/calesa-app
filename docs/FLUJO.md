@@ -59,6 +59,10 @@ puertos (a, b o c: +100, +200, +300 sobre la principal; `docs/ENTORNOS.md` › �
 `pnpm db:*` y `pnpm test:e2e` usan su pila; nunca `supabase` suelto. Al terminar: `bash scripts/worktree/quitar.sh` y se borra el
 worktree. La base local y el e2e de una pila son de una sesión a la vez (`scripts/candado.sh`).
 
+Una tanda de varias actualizaciones que corre sola durante días va con el **orquestador** del proyecto (`scripts/orquestador/README.md`):
+una tarea por archivo en `.orquestador/cola/`, cada una en su carril, su sesión de `claude -p` y su PR. Es de este repo: el de otro
+proyecto corre a la vez sin cruzarse (sólo comparten la RAM y el límite del plan de Claude).
+
 Si dos PR tocan lo mismo, el segundo choca: `git merge origin/main` en su rama (nunca rebase con push forzado), se resuelve, se
 commitea y se vuelve a publicar. Una migración que quedó antes de una ya integrada se crea de nuevo con
 `pnpm exec supabase migration new` (el CI lo exige).
