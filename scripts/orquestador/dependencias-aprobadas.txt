@@ -1,0 +1,14 @@
+# Dependencias aprobadas: lo único que una sesión puede agregar con pnpm (lo vigila .claude/hooks/bloquear-peligrosos.sh).
+# Un paquete por línea, sin versión, con una línea de comentario encima: para qué tarea y por qué. Sumar uno es el último
+# recurso y va en el mismo PR, con la sección «Dependencias nuevas» en su cuerpo (scripts/orquestador/prompts/tarea.md).
+
+# T38: el diagrama de fases (nodos, aristas, zoom y arrastre): hacerlo a mano en SVG es escribir un editor de grafos.
+@xyflow/react
+# T39: ordenar secciones y columnas del diseño de la hoja arrastrando, también con teclado (el núcleo de dnd-kit).
+@dnd-kit/core
+# T39: las listas ordenables sobre @dnd-kit/core.
+@dnd-kit/sortable
+# T39: las transformaciones CSS que usan core y sortable.
+@dnd-kit/utilities
+# T30: pasar un nodo del DOM a imagen, sólo si ImageResponse de Next no alcanza.
+html-to-image
