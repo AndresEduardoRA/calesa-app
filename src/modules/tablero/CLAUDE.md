@@ -15,7 +15,8 @@ Abierto: **9-14a** (la dueña no actúa sobre un lead ajeno sin tenerlo; `docs/P
 - `entities/bandeja.ts` — `BLOQUES_BANDEJA` (cada bloque con sus permisos), `TOPE_DE_BLOQUE` (5: pide 6 y dice «5» o «más de 5»).
 - `features/bandeja/bloques/<clave>.tsx` y `features/metricas/widgets/<clave>.tsx` — **un archivo por bloque o widget**, unidos por su `registro.ts`
   (un `Record` que exige todas las claves): quien llena un hueco edita sólo su archivo. Cada uno lee por la entrada pública del módulo dueño, tras su
-  propio `<Suspense>` con `await connection()` (uno lento o caído no frena a los demás), con estado de error («Reintentar») y vacío. «Ver todas» lo
+  propio `<Suspense>` con `await connection()` (uno lento o caído no frena a los demás), con estado de error («Reintentar») y vacío. `<LimiteDeBloque>`
+  envuelve cada `<Suspense>`: un bloque que se rompe al dibujarse deja su marco con el error y «Reintentar», nunca la pantalla entera. «Ver todas» lo
   dibuja cada bloque que lo necesita. El título del bloque lo pone el marco, no el bloque.
 - `entities/widgets.ts` — `WIDGETS_TABLERO` (permisos, grupo de RPC, tamaño). `entities/cifras.ts`: una tasa nula es «Sin datos», nunca «0 %»; un margen
   nulo, «Sin venta registrada».
@@ -33,7 +34,8 @@ Ninguna propia. Lee `preferencias_usuario` (equipo) y las vistas/RPC de los otro
 
 ## No se rompe
 
-- La bandeja se arma por permisos, nunca por nombre de rol; un bloque nuevo declara sus permisos en `BLOQUES_BANDEJA`.
+- La bandeja se arma por permisos, nunca por nombre de rol; un bloque nuevo declara sus permisos en `BLOQUES_BANDEJA`. Un bloque declara sólo las
+  claves cuyo contenido su lectura puede traer (si no, saldría vacío siempre). `e2e/inicio-por-rol.spec.ts` recorre cada rol de referencia.
 - Cada contador de la bandeja lleva a la lista ya filtrada (misma URL con `nuqs`).
 - Un widget se muestra sólo con su permiso; sin datos, el estado vacío con la acción que lo llena.
 - Métricas de dinero pasan por `<Monto>` (Modo Live).

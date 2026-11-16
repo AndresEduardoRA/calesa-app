@@ -4,10 +4,15 @@ import { Suspense } from 'react'
 import { ZONA_POR_DEFECTO } from '@/shared/lib/fechas'
 import { puede, type Permisos } from '@/shared/lib/permisos'
 import { EstadoVacio } from '@/shared/ui/estados'
+import { BLOQUES_BANDEJA } from '../../../entities/bandeja'
 import { bloquesParaMontar } from '../bloques/registro'
 import { EsqueletoDeBloque } from './esqueleto-de-bloque'
+import { LimiteDeBloque } from './limite-de-bloque'
 import { MarcoDeBloque } from './marco-de-bloque'
 import { MontajeDeBloque } from './montaje-de-bloque'
+
+// Lo que la bandeja puede mostrar (sale del catálogo, nunca de una lista aparte) y a quién pedir acceso.
+const DESCRIPCION_SIN_BLOQUES = `Acá aparecen ${BLOQUES_BANDEJA.map((bloque) => bloque.titulo.toLowerCase()).join(', ')}, según lo que permite tu rol, y el tuyo no incluye ninguno todavía. Si te falta acceso, pídeselo a quien administra el equipo.`
 
 type Props = {
   nombre: string
@@ -54,7 +59,7 @@ export function Bandeja({ nombre, permisos, sinRol, zona = ZONA_POR_DEFECTO }: P
           ) : (
             <EstadoVacio
               titulo="Tu rol todavía no tiene trabajo en la bandeja"
-              descripcion="Los permisos de tu rol no incluyen ninguna de las tareas que se muestran acá. Si falta alguno, avisa a quien administra el equipo."
+              descripcion={DESCRIPCION_SIN_BLOQUES}
             />
           )}
         </div>
@@ -62,9 +67,11 @@ export function Bandeja({ nombre, permisos, sinRol, zona = ZONA_POR_DEFECTO }: P
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {bloques.map((montaje) => (
             <MarcoDeBloque key={montaje.bloque.clave} bloque={montaje.bloque}>
-              <Suspense fallback={<EsqueletoDeBloque />}>
-                <MontajeDeBloque montaje={montaje} zona={zona} />
-              </Suspense>
+              <LimiteDeBloque>
+                <Suspense fallback={<EsqueletoDeBloque />}>
+                  <MontajeDeBloque montaje={montaje} zona={zona} />
+                </Suspense>
+              </LimiteDeBloque>
             </MarcoDeBloque>
           ))}
         </div>
