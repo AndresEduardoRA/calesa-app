@@ -392,5 +392,7 @@ export default defineConfig([
     'supabase/functions/**',
     // Un worktree de otra sesión no es código de este árbol (el ESLint plano no ignora carpetas con punto).
     '.claude/worktrees/**',
+    // Los worktrees del orquestador (scripts/orquestador), por lo mismo.
+    '.orquestador/**',
   ]),
 ])
