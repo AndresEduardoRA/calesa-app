@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Resetea la demo (el proyecto de Supabase enlazado) con las migraciones del árbol, y comprueba que quedó como el repo:
 #   1. respalda el esquema y los datos en respaldos/<fecha>/ (ignorado por git, permisos 600);
-#   2. `supabase db reset --linked` (las migraciones y el seed);
+#   2. `supabase db reset --linked --no-seed` y las semillas de `[db.seed]` (config.toml), una por una;
 #   3. el dueño: la cuenta de `DEMO_DUENO_EMAIL` con `DEMO_DUENO_CLAVE`, su perfil y el rol dueño (`sql-del-dueno.sh`);
 #   4. pone `url_proyecto` en Vault (la usan los jobs que llaman a una función edge);
 #   5. comprueba: `migration list` alineado, `db diff --linked` vacío, los jobs en `cron.job` y la colación de la base.
@@ -40,12 +40,25 @@ if [ "${1:-}" != --sin-respaldo ]; then
   echo "✓ respaldo en $DIR ($(du -sh "$DIR" | cut -f1))"
 fi
 
-# 2. Reset
-sb db reset --linked --yes
-echo "✓ reset con $(find supabase/migrations -name '*.sql' | wc -l | tr -d ' ') migraciones y el seed"
+# Corre un archivo SQL en el remoto; si falla, muestra el error de la base y corta.
+consulta() {
+  local salida
+  if ! salida=$(pnpm exec supabase db query --linked -f "$1" 2>&1); then
+    printf '✗ %s:\n%s\n' "$2" "$(printf '%s' "$salida" | grep -v -i -E 'new version|recommend|login role' | tail -5)" >&2
+    exit 1
+  fi
+}
+
+# 2. Reset, sin el seed de la CLI: con --linked no siembra (visto con la 2.120). Las semillas van después, una por una.
+sb db reset --linked --yes --no-seed
+echo "✓ reset con $(find supabase/migrations -name '*.sql' | wc -l | tr -d ' ') migraciones"
+SEMILLAS=$(sed -n '/^\[db\.seed\]/,/^\[/{/sql_paths/,/\]/p}' supabase/config.toml | grep -oE '"[^"]+\.sql"' | tr -d '"')
+[ -n "$SEMILLAS" ] || { echo "✗ no encontré [db.seed] sql_paths en supabase/config.toml" >&2; exit 1; }
+for s in $SEMILLAS; do consulta "supabase/${s#./}" "la semilla $s"; done
+echo "✓ semillas: $(printf '%s ' $SEMILLAS)"
 
 # 3. El dueño
-sb db query --linked -f "$DUENO" >/dev/null
+consulta "$DUENO" "crear al dueño"
 echo "✓ dueño: $(printf '%s' "$DEMO_DUENO_EMAIL" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
 
 # 4. La URL del proyecto en Vault
@@ -69,8 +82,18 @@ fallo=0
 desalineadas=$(sb migration list --linked --output-format json | jq -r '.migrations[] | select(.local != .remote) | "\(.local) ≠ \(.remote)"')
 if [ -z "$desalineadas" ]; then echo "✓ migration list: alineado"; else echo "✗ migration list desalineado:"; echo "$desalineadas"; fallo=1; fi
 diff_salida=$(bash scripts/candado.sh db:diff -- pnpm exec supabase db diff --linked 2>&1 | grep -v -i -E 'new version|recommend' || true)
-if printf '%s' "$diff_salida" | grep -q -i 'no schema changes found'; then echo "✓ db diff --linked: vacío"
-else echo "✗ db diff --linked no está vacío:"; printf '%s\n' "$diff_salida" | tail -20; fallo=1; fi
+# La CLI nueva responde JSON. Los triggers de Storage que llaman a funciones de `storage` son de Supabase (la nube corre una versión
+# más nueva que la pila local), no de las migraciones: no cuentan.
+diff_json=$(printf '%s\n' "$diff_salida" | grep -E '^\{"diff"' | tail -1 || true)
+if [ -n "$diff_json" ]; then
+  propio=$(printf '%s' "$diff_json" | jq -r '.diff' | grep -v -E '^\s*$|^CREATE TRIGGER [a-z_]+ .* ON storage\.[a-z_]+ .*EXECUTE FUNCTION storage\.' || true)
+elif printf '%s' "$diff_salida" | grep -q -i 'no schema changes found'; then
+  propio=""
+else
+  propio="$diff_salida"
+fi
+if [ -z "$propio" ]; then echo "✓ db diff --linked: vacío (sin contar lo interno de Storage)"
+else echo "✗ db diff --linked no está vacío:"; printf '%s\n' "$propio" | tail -20; fallo=1; fi
 jobs=$(sb db query --linked --output-format json "select jobname from cron.job order by 1" | jq -r '.. | .jobname? // empty' | paste -sd ' ')
 esperados=$(grep -hoE "cron\.schedule\('[a-z-]+'" supabase/migrations/*.sql | sed -E "s/.*'([a-z-]+)'/\1/" | sort -u | paste -sd ' ')
 if [ "$jobs" = "$esperados" ]; then echo "✓ cron.job: $jobs"; else echo "✗ cron.job tiene «$jobs» y las migraciones programan «$esperados»"; fallo=1; fi

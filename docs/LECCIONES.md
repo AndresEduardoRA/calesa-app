@@ -297,6 +297,11 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Con dos cuentas en `gh`, no cambies la activa: pide el token de la dueña del repo por llamada (`GH_TOKEN=$(gh auth token --user <dueña>)`), como hace `scripts/flujo/publicar.sh`.
 - `gh pr merge --auto` sin protección en `main` integra en el acto, antes del CI: el auto-merge sólo espera lo que la rama exige («Listo · todo en verde»).
 - La cuenta de líneas de `max-lines` (300) vale también para un `.test.ts`: una prueba nueva que no cabe va en su propio archivo.
+- `supabase db reset --linked` (CLI 2.120) no siembra aunque `[db.seed]` esté encendido: resetea con `--no-seed` y aplica cada
+  semilla con `db query --linked -f`, cortando si una falla (`scripts/demo/resetear.sh`). Sin el seed no hay rol dueño y la primera
+  cuenta nace sin permisos.
+- `db diff --linked` muestra triggers de `storage.buckets` que llaman a funciones de `storage`: son del Storage de la nube, más nuevo
+  que la pila local, no de las migraciones. Fíltralos; un trigger propio llama a una función de `public` o `interno`.
 
 ## Por módulo
 
