@@ -145,7 +145,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `supabase/tests/medir-jobs.sql` corre la limpieza con `now() + 12 h`: entre las 12:00 y las 15:00 de La Paz no mide nada.
 - **[—]** `fase_mover` con `orden` repetido previo y ancla compartida deja la movida detrás de la otra fase — desempatar si molesta.
 - **[—]** `logistica/entities/dinero/reparto.test.ts` («para cualquier monto…», ~2700 casos) pasa de los 5 s de Vitest con la máquina cargada (`pnpm test` junto a `db:probar`) — menos casos o un `timeout` propio.
-- **[—]** `bloquear-peligrosos.sh` desenvuelve `pnpm exec`/`dlx` sólo si van pegados a `pnpm` y con ese nombre: con una opción delante (`pnpm -C x exec playwright test`) o por ruta (`/usr/bin/pnpm exec …`) el candado, `vercel` y `next upgrade` no se miran — saltar las opciones globales también en `revisar_segmento` y comparar por `${W[0]##*/}`.
+- **[—]** `bloquear-peligrosos.sh` lee texto: una orden armada con expansiones (`x=add; pnpm $x …`, `$P add`) o corrida por otro comando (`find -exec`, `watch`, `flock`, `bash guion.sh`, `echo … | bash`) no se mira, ni un `.npmrc` escrito con Write — una guarda de CI que exija que toda dependencia nueva de `package.json` esté en `scripts/orquestador/dependencias-aprobadas.txt` y que el PR que suma a la lista lleve «Dependencias nuevas».
 - **[—]** `e2e/cotizaciones-listado.spec.ts` E6 y E8 fallan a veces en el CI y pasan en local: la tecla N abre `panel=nuevo-lead` en vez de la hoja, y «Ver todas» pierde `clase=preventa` — esperar la hidratación o el `href` ya filtrado antes de actuar.
 
 ### Límites aceptados

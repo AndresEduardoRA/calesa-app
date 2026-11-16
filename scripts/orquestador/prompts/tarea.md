@@ -31,7 +31,7 @@ hacerlo desde cero sería un problema mayor), se suma a esa lista en el mismo PR
 por qué), y el cuerpo del PR lleva una sección «Dependencias nuevas»: por qué no alcanza lo que hay, peso (gzip), licencia,
 mantenimiento (último release, actividad) y la versión verificada hoy (`pnpm view <paquete> version time`). Nunca dos librerías para
 lo mismo. Se agrega con versión exacta, sola y desde la raíz del worktree (`pnpm add -E <paquete>@<versión>`, con `-D` si es de
-desarrollo). Aunque ya esté en la lista, la versión se verifica hoy y va en el PR. Actualizar, quitar, instalar global, `npm`/`yarn`
+desarrollo). Aunque ya esté en la lista, la versión se verifica hoy y va en el PR. Actualizar, quitar, instalar global, `npm`/`yarn`/`bun`
 y los codemods siguen bloqueados.
 
 ## Verificar (Nivel 1) y publicar
