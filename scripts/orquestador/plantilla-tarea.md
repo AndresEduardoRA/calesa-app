@@ -1,5 +1,5 @@
 ---
-id: { { ID } }
+id: {{ID}}
 # Mientras diga «borrador: si» el orquestador no la lanza. Bórrala cuando la spec esté lista.
 borrador: si
 titulo: qué cambia, en una frase en infinitivo (va en el aviso y en el PR)

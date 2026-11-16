@@ -11,6 +11,18 @@ RAMA=$(git symbolic-ref --quiet --short HEAD || echo '(HEAD suelto)')
 SUCIOS=$(git status --porcelain | wc -l | tr -d ' ')
 echo "· rama $RAMA, $([ "$SUCIOS" = 0 ] && echo 'árbol limpio' || echo "$SUCIOS archivos sin commitear")"
 
+# Lo que una sesión anterior dejó a medias y nadie más mira: ramas locales que no están en ningún worktree (ni son main ni la actual)
+# y trabajo apartado con `git stash`. No frena: se publica, se descarta o se borra antes de que se junte.
+SUELTAS=$(git for-each-ref --format='%(refname:short)%09%(worktreepath)' refs/heads |
+  awk -F'\t' -v actual="$RAMA" '$2 == "" && $1 != "main" && $1 != actual { print $1 }' | paste -sd' ' -)
+if [ -n "$SUELTAS" ]; then
+  echo "· ramas locales sin worktree: $SUELTAS — integradas: node scripts/flujo/limpiar-ramas.mjs; las demás se publican o se descartan"
+fi
+STASHES=$(git stash list 2>/dev/null | wc -l | tr -d ' ')
+if [ "$STASHES" != 0 ]; then
+  echo "· $STASHES cambios apartados (git stash list): trabajo que no está en ninguna rama; se recupera o se descarta"
+fi
+
 command -v gh >/dev/null 2>&1 || { echo "· sin gh: no se mira GitHub."; exit 0; }
 DUENO=$(git remote get-url origin 2>/dev/null | sed -nE 's#.*github\.com[:/]([^/]+)/.*#\1#p')
 if [ -z "${GH_TOKEN:-}" ] && [ -n "$DUENO" ] && TOKEN=$(gh auth token --user "$DUENO" 2>/dev/null) && [ -n "$TOKEN" ]; then

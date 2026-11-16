@@ -5,8 +5,10 @@ una rama, un PR y un commit en `main`. Nadie integra a mano ni espera a nadie: e
 
 ## Una actualización
 
-0. **Mirar el estado:** `bash scripts/flujo/estado.sh` (la rama, los PR abiertos, el CI de `main` y el e2e completo de la noche). Un PR
-   abierto en rojo o una noche caída van antes que lo pedido: nadie más los mira.
+0. **Mirar el estado:** `bash scripts/flujo/estado.sh` (la rama, las ramas locales sin worktree, los cambios apartados con
+   `git stash`, los PR abiertos, el CI de `main` y el e2e completo de la noche). Un PR abierto en rojo o una noche caída van antes
+   que lo pedido: nadie más los mira. Una rama suelta o un stash es trabajo de otra sesión que no llegó a `main`: se publica o se
+   le dice a la persona; una sesión no los borra.
 1. **Rama** desde `main` al día: `git switch main && git pull --ff-only && git switch -c <tipo>/<tema>` (`feat/`, `fix/`, `chore/`,
    `docs/`, `refactor/`, `perf/`, `test/`). Una rama, un cambio: si el título necesita «y», son dos actualizaciones.
 2. **Trabajo.** Lo pedido sale de la persona o de `docs/PENDIENTES.md`. Una pantalla o un caso de uso: skill `feature`. Mientras se

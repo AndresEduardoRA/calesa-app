@@ -68,6 +68,22 @@ esac`)
     expect(r.salida).toContain('gh run view 7 --log-failed')
   })
 
+  it('nombra las ramas locales sin worktree y los cambios apartados que dejó otra sesión', () => {
+    gh('exit 1')
+    const git = (...args: string[]) =>
+      execFileSync('git', ['-c', 'user.name=a', '-c', 'user.email=a@a.a', ...args], { cwd: repo })
+    git('add', '.')
+    git('commit', '-q', '-m', 'a')
+    expect(estado().salida).not.toMatch(/ramas locales|apartados/)
+    git('branch', 'feat/a-medias')
+    writeFileSync(join(repo, 'a.txt'), 'b\n')
+    git('stash', '-q')
+    const r = estado()
+    expect(r.estado).toBe(0)
+    expect(r.salida).toContain('· ramas locales sin worktree: feat/a-medias')
+    expect(r.salida).toContain('· 1 cambios apartados (git stash list)')
+  })
+
   it('un PR abierto con «Listo» en rojo va marcado: se arregla o se cierra antes que lo nuevo', () => {
     gh(`case "$1 $2" in
   "auth token") exit 1 ;;
