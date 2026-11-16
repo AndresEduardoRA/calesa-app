@@ -24,6 +24,16 @@ otras ramas ni otros worktrees. Hoy es {{FECHA}}.
    `pnpm db:medir:volumen`) si es de una tabla que crece. Respeta los presupuestos de `docs/RENDIMIENTO.md` (JS por ruta, KB por
    pantalla); si uno se pasa, `diferido()` o recorta; subir un tope sólo con la regla del 5 % y anotado.
 
+## Dependencias
+
+Una dependencia entra si está en `scripts/orquestador/dependencias-aprobadas.txt` y la tarea la necesita. Como último recurso (cuando
+hacerlo desde cero sería un problema mayor), se suma a esa lista en el mismo PR, con una línea de comentario encima (para qué tarea y
+por qué), y el cuerpo del PR lleva una sección «Dependencias nuevas»: por qué no alcanza lo que hay, peso (gzip), licencia,
+mantenimiento (último release, actividad) y la versión verificada hoy (`pnpm view <paquete> version time`). Nunca dos librerías para
+lo mismo. Se agrega con versión exacta, sola y desde la raíz del worktree (`pnpm add -E <paquete>@<versión>`, con `-D` si es de
+desarrollo). Aunque ya esté en la lista, la versión se verifica hoy y va en el PR. Actualizar, quitar, instalar global, `npm`/`yarn`/`bun`
+y los codemods siguen bloqueados.
+
 ## Verificar (Nivel 1) y publicar
 
 - `pnpm lint`, `pnpm typecheck`, `pnpm test`. Con `supabase/` tocado: migración nueva (`pnpm exec supabase migration new`), `pnpm db:reset`,
@@ -36,20 +46,22 @@ otras ramas ni otros worktrees. Hoy es {{FECHA}}.
   agente `revisor` (Agent, subagent_type `revisor`) sobre `git diff origin/main...HEAD`; aplica lo que encuentre que sea real.
 - Docs según `docs/FLUJO.md` › «Docs: qué se toca» (sin historia en los docs).
 - Publica con la skill `entregar`, pero con **`bash scripts/flujo/publicar.sh --sin-esperar --titulo '<tipo(scope): descripción>' --cuerpo <archivo>`**.
-  El cuerpo: qué cambió, por qué, cómo se verificó (comandos y specs), «Decisiones tomadas sin preguntar» y lo que quedó fuera.
+  El cuerpo: qué cambió, por qué, cómo se verificó (comandos y specs), «Decisiones tomadas sin preguntar», «Dependencias nuevas» si
+  sumaste una a la lista y lo que quedó fuera.
   No esperes al CI: el orquestador lo vigila, pone la rama al día si otro PR se integró antes y, si cae, abre otra sesión para
   arreglarlo. `gh pr edit` falla en este repo: para editar el PR, `gh api -X PATCH 'repos/{owner}/{repo}/pulls/<n>'`.
 
 ## Si no puedes terminar
 
 Si algo te impide terminar de verdad (falta un dato o un permiso que sólo la persona tiene, la spec contradice una regla del proyecto,
-haría falta una dependencia nueva —`pnpm add` está bloqueado—, o un fallo que no es de esta tarea), **no inventes ni rodees la regla**:
+haría falta una dependencia que no está en la lista aprobada y ni como último recurso se justifica —«Dependencias», arriba—, o un
+fallo que no es de esta tarea), **no inventes ni rodees la regla**:
 commitea lo hecho en la rama (sin publicar) y termina con la línea `RESULTADO: TRABADA — <motivo en una línea>`.
 
 ## No hagas
 
 Preguntar · empujar `main` o forzar un push · tocar variables, secretos, funciones o Vercel de producción (la base remota sí: `docs/DESPLIEGUE.md` › «La base remota»; b_ip
-nunca) · cambiar dependencias · desactivar una
+nunca) · actualizar o quitar dependencias · desactivar una
 regla de lint o saltarte un hook · editar la migración `…_base.sql` · empezar otra tarea de la cola aunque parezca el paso obvio · dejar
 cambios sin commitear.
 
