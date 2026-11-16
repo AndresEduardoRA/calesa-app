@@ -74,6 +74,20 @@ describe('bloquear-peligrosos.sh', () => {
       expect(r.status, entrada).toBe(0)
     }
   })
+
+  it('con b_ip enlazada, lo que va al enlazado se rechaza; con un ref nombrado, no', () => {
+    const conBip = repo('con-bip', 'otra')
+    mkdirSync(join(conBip, 'supabase/.temp'), { recursive: true })
+    writeFileSync(join(conBip, 'supabase/.temp/project-ref'), 'baursalbatwztsaevlef\n')
+    for (const c of [
+      'supabase db push',
+      'npx supabase db reset --linked',
+      'supabase db dump --linked -f x.sql',
+    ])
+      expect(correr(c, { cwd: conBip }).estado, c).toBe(2)
+    expect(correr('supabase db push --project-ref abc', { cwd: conBip }).estado).toBe(0)
+    expect(correr('supabase db push', { cwd: enOtra }).estado).toBe(0)
+  })
 })
 
 // Una sesión empuja sólo la rama en la que está; main lo integra la persona al aprobar el PR.

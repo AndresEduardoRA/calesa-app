@@ -14,7 +14,8 @@ type Ajustes = {
 }
 const ajustes = JSON.parse(readFileSync(join(RAIZ, '.claude/settings.json'), 'utf8')) as Ajustes
 
-// Lo que ninguna sesión corre sola (lo irreversible, lo remoto y las dependencias); el hook de Bash lo repite con más matices.
+// Lo que ninguna sesión corre sola (lo irreversible, lo remoto que no es la base y las dependencias); el hook de Bash lo repite
+// con más matices. La base remota del proyecto sí (docs/DESPLIEGUE.md › «La base remota»).
 const DENEGADAS = [
   'git commit --no-verify*',
   'git commit -n *',
@@ -28,11 +29,8 @@ const DENEGADAS = [
   'gh workflow run*',
   'vercel*',
   'npx vercel*',
-  'supabase link*',
-  'npx supabase link*',
   'supabase secrets*',
   'npx supabase secrets*',
-  'npx supabase db push*',
   'pnpm add*',
   'pnpm up*',
   'npx next upgrade*',

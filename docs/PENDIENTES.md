@@ -5,7 +5,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Para desplegar (sólo la persona)
 
-- **[—]** Producción: variables, secretos, `db push` y la lista de `docs/DESPLIEGUE.md` — el ensayo en seco está en `listo`.
+- **[—]** Producción: variables, secretos, el primer `db push` y la lista de `docs/DESPLIEGUE.md` — el ensayo en seco está en `listo`.
 - **[9-6]** Las dos corridas de `db:carreras` por `workflow_dispatch` que faltan (cuenta 3 de 5) para pasarlas al job `base` — una sesión no puede disparar un workflow; comandos en `docs/DESPLIEGUE.md` › «Lo que sólo una persona comprueba».
 - **[9-11]** El dispatch con un spec que cae a propósito debe dejar en `e2e-fallos/` los cinco archivos de `scripts/ci/volcar-base.sh` — el resto está hecho; misma lista.
 - **[9-12]** «¿Guardar contraseña?» de Chrome con el Modo Live (`XCell` abre su entrada como `password`) — pide un Chrome con sesión y gestor; si lo ofrece, se decide de nuevo (`type="text"` deja el valor en el árbol de accesibilidad).

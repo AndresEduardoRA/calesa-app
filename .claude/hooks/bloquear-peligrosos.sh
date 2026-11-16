@@ -3,8 +3,9 @@
 # que es lo que Claude recibe). Lee la entrada con jq (`tool_input.command`, `cwd`). Se prueba en `bloquear-peligrosos.test.ts`.
 #
 #   Lo irreversible (reset --hard, clean, checkout --, branch -D…), publicar en main (una sesión empuja sólo su rama, sin forzar, o
-#   una etiqueta nueva; main avanza por PR: docs/FLUJO.md), lo remoto (supabase --linked salvo leer, config push, gh api …/dispatches,
-#   vercel), cambiar dependencias y saltarse el candado de la base (`scripts/candado.sh`).
+#   una etiqueta nueva; main avanza por PR: docs/FLUJO.md), lo remoto que no es la base (secrets, config push,
+#   functions deploy, gh api …/dispatches, vercel), b_ip (otra app, con datos reales), cambiar dependencias y saltarse el candado
+#   de la base (`scripts/candado.sh`).
 #
 # Un comando se parte en segmentos (`&&`, `||`, `;`, `|`, `$(`, comillas invertidas, saltos de línea) y de cada uno se
 # descartan los envoltorios (`VAR=x`, `sudo`, `npx`, `pnpm exec`, `bash -c`, `scripts/candado.sh <nombre> --`) hasta el comando
@@ -22,11 +23,14 @@ bloquear() {
   exit 2
 }
 
+# La base remota del proyecto (`db push`, `--include-seed`, `db reset --linked`, `migration repair`…) la cambia la sesión desde
+# 2026-11-16 (docs/DESPLIEGUE.md › «La base remota»). b_ip no: es otra app con datos reales, ni por su ref ni enlazada.
+REF_INTOCABLE=baursalbatwztsaevlef
+
 # --- Sobre el comando entero (lo de siempre) ---
 case "$CMD" in
   *"--no-verify"*) bloquear "Nunca git commit --no-verify: si un hook falla, el problema es el código." ;;
-  *"supabase db push"*) bloquear "supabase db push contra el proyecto remoto lo corre una persona, con --dry-run primero." ;;
-  *"supabase db reset --linked"*) bloquear "db reset --linked borra la base remota." ;;
+  *"$REF_INTOCABLE"*) bloquear "b_ip ($REF_INTOCABLE) es la base en la nube con datos reales de otra app: nunca se toca." ;;
   *"rm -rf /"* | *"rm -rf ~"* | *"rm -rf .."*) bloquear "rm -rf fuera del proyecto." ;;
   *"npm i -g"* | *"npm install -g"* | *"pnpm add -g"*) bloquear "Nada global: contamina la máquina del usuario." ;;
   *"SUPABASE_SECRET_KEY"* | *"sb_secret_"*) bloquear "No imprimas ni manipules la secret key desde Bash." ;;
@@ -164,23 +168,26 @@ revisar_gh() {
 }
 
 revisar_supabase() {
-  local sub="${A[0]:-}" sub2="${A[1]:-}"
-  case "$ARGS" in
-    *" --linked"* | *" --project-ref"*)
-      # Sólo lectura del proyecto remoto: volcar, listar migraciones, comparar e inspeccionar.
-      # Lo que cambia la demo pasa por scripts/demo/*.sh, que corre una persona o la sesión con su aviso.
-      case "$sub $sub2" in
-        "db dump" | "migration list" | "db diff") ;;
-        inspect\ *) ;;
-        *) bloquear "supabase con --linked o --project-ref toca el proyecto remoto: lo hace una persona (sólo se leen db dump, migration list, db diff e inspect)." ;;
-      esac ;;
-  esac
+  local sub="${A[0]:-}" sub2="${A[1]:-}" remoto=0
+  # Un push sin bandera también va al proyecto enlazado.
+  case "$ARGS" in *" --linked"* | *" --project-ref"* | *" --db-url"*) remoto=1 ;; esac
+  [ "$sub $sub2" = "db push" ] && remoto=1
+  if [ "$remoto" = 1 ]; then
+    local raiz enlazado=""
+    raiz=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$CWD")
+    [ -r "$raiz/supabase/.temp/project-ref" ] && enlazado=$(tr -d '[:space:]' <"$raiz/supabase/.temp/project-ref")
+    if [ "$enlazado" = "$REF_INTOCABLE" ] && [[ "$ARGS" != *" --project-ref"* ]] && [[ "$ARGS" != *" --db-url"* ]]; then
+      bloquear "El proyecto enlazado es b_ip ($REF_INTOCABLE): nunca se toca. Enlaza el de importadora antes."
+    fi
+  fi
   case "$ARGS" in
     *"functions deploy"*) bloquear "supabase functions deploy publica en el proyecto remoto: lo hace una persona." ;;
     *"config push"*) bloquear "supabase config push cambia la configuración del proyecto remoto: va por scripts/demo/restaurar.sh." ;;
   esac
-  case "$sub" in link | secrets) bloquear "supabase $sub toca el proyecto remoto: lo hace una persona." ;; esac
+  case "$sub" in secrets) bloquear "supabase secrets toca los secretos del proyecto remoto: lo hace una persona." ;; esac
   [ "$CON_CANDADO" = 1 ] && return 0
+  # Contra el remoto no hay base local que cuidar, salvo `db diff`, que arma una sombra local.
+  [ "$remoto" = 1 ] && [ "$sub $sub2" != "db diff" ] && return 0
   case "$sub $sub2" in
     "db reset" | "db lint" | "db diff" | "gen types")
       bloquear "supabase $sub $sub2 usa la base local, que es de una a la vez: pasa por el candado (pnpm db:reset | db:lint | db:diff | db:types)." ;;

@@ -1,8 +1,24 @@
 # Despliegue
 
-La lista de la persona para desplegar: en orden, con la orden de cada paso y **qué mirar** en su salida. Ninguna sesión de IA corre
-nada de esta guía: una sesión prepara y verifica en seco (`pnpm despliegue:en-seco`), y lo que toca la nube lo hace la persona. Sirve
-para la demo y para un cliente; lo que cambia en un cliente está en «La instalación de un cliente».
+La lista para desplegar: en orden, con la orden de cada paso y **qué mirar** en su salida. Una sesión prepara y verifica en seco
+(`pnpm despliegue:en-seco`) y puede cambiar la base remota del proyecto («La base remota», abajo); variables, secretos, Vercel,
+funciones y Auth los hace la persona. Sirve para la demo y para un cliente; lo que cambia en un cliente está en «La instalación de un
+cliente».
+
+## La base remota
+
+Decisión de la persona (2026-11-16): una sesión, el orquestador o un bucle pueden cambiar la base del proyecto enlazado sin preguntar:
+`db push` (con `--include-seed`, `--include-all` o `--dry-run`), `db reset --linked`, `migration repair` y `migration up`, `db
+pull`, `link` y SQL de escritura. Siguen siendo de la persona `secrets`, `config push`, `functions deploy` y Vercel. El hook
+`bloquear-peligrosos.sh` lo aplica.
+
+- **El ref antes que nada.** `cat supabase/.temp/project-ref`: la orden actúa sobre ése. Si no es el esperado, no se corre.
+- **b_ip nunca** (`baursalbatwztsaevlef`): es otra app, con datos reales. El hook rechaza su ref y toda orden al remoto mientras esté
+  enlazada.
+- **Respaldo antes de borrar.** Antes de `db reset --linked`, de `--include-seed` o de un push que reescribe datos en un proyecto
+  con datos, el respaldo de «3. Respaldo»; en la demo sin datos reales se salta.
+- **Push con su `--dry-run`.** Primero el `--dry-run` y lo de «4. Migraciones» (qué mirar); después el push, `migration list` y `db
+diff`. Un push lo cuenta la sesión al terminar (proyecto, migraciones aplicadas).
 
 Qué se configura y dónde vive cada variable está en `docs/ENTORNOS.md` (una sola fuente); esta guía agrega el orden y qué mirar.
 
