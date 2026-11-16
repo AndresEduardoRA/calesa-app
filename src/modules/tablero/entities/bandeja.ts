@@ -41,7 +41,8 @@ export const BLOQUES_BANDEJA = [
     clave: 'documentos-por-aprobar',
     titulo: 'Documentos por aprobar',
     vacio: 'Sin documentos por aprobar. Aparecen acá los que alguien subió y esperan revisión.',
-    permisos: ['logistica.documentos.aprobar', 'repuestos.documentos.aprobar'],
+    // Sólo los de vehículos (`bandeja_por_aprobar`): quien sólo aprueba documentos de repuestos no tiene qué ver acá (`docs/PENDIENTES.md`).
+    permisos: ['logistica.documentos.aprobar'],
   },
   {
     clave: 'alertas-demora',
