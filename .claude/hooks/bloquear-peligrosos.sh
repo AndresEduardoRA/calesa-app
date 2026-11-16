@@ -276,7 +276,6 @@ revisar_segmento() {
   local cmd="${W[0]##*/}"
   # `npx pnpm@11 …` es pnpm.
   case "$cmd" in pnpm@* | npm@* | yarn@*) cmd="${cmd%%@*}" ;; esac
-  [ "$cmd" = pnpm ] || pnpm_metido "${L[@]}"
   A=("${W[@]:1}")
   ARGS=" ${A[*]:-} "
   case "$cmd" in
@@ -300,6 +299,8 @@ revisar_segmento() {
         bloquear "${A[0]} usa la base local, que es de una a la vez: corre por su script de pnpm (candado) o por scripts/candado.sh."
       fi ;;
   esac
+  # Después de las reglas de cada comando, que dan un motivo más preciso.
+  [ "$cmd" = pnpm ] || pnpm_metido "${L[@]}"
   return 0
 }
 
