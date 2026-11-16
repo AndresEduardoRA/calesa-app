@@ -4,12 +4,14 @@
 #
 #   Lo irreversible (reset --hard, clean, checkout --, branch -D…), publicar en main (una sesión empuja sólo su rama, sin forzar, o
 #   una etiqueta nueva; main avanza por PR: docs/FLUJO.md), lo remoto que no es la base (secrets, config push,
-#   functions deploy, gh api …/dispatches, vercel), b_ip (otra app, con datos reales), cambiar dependencias y saltarse el candado
-#   de la base (`scripts/candado.sh`).
+#   functions deploy, gh api …/dispatches, vercel), b_ip (otra app, con datos reales), cambiar dependencias (salvo agregar con
+#   pnpm lo de `scripts/orquestador/dependencias-aprobadas.txt`, ver docs/DECISIONES.md › «Stack y arquitectura») y saltarse el
+#   candado de la base (`scripts/candado.sh`).
 #
 # Un comando se parte en segmentos (`&&`, `||`, `;`, `|`, `$(`, comillas invertidas, saltos de línea) y de cada uno se
-# descartan los envoltorios (`VAR=x`, `sudo`, `npx`, `pnpm exec`, `bash -c`, `scripts/candado.sh <nombre> --`) hasta el comando
-# de verdad. No entiende comillas: el texto de un mensaje que nombre una de estas órdenes también se bloquea (mejor sobrar que faltar).
+# descartan los envoltorios (`VAR=x`, `sudo`, `env`, `timeout`, `eval`, `npx`, `corepack`, `pnpm exec`, `bash -c`,
+# `scripts/candado.sh <nombre> --`) hasta el comando de verdad. No entiende comillas ni expansiones: el texto de un mensaje que
+# nombre una de estas órdenes también se bloquea (mejor sobrar que faltar), y una orden armada con `$x` no se ve.
 set -uo pipefail
 
 ENTRADA=$(cat)
@@ -26,6 +28,19 @@ bloquear() {
 # La base remota del proyecto (`db push`, `--include-seed`, `db reset --linked`, `migration repair`…) la cambia la sesión desde
 # 2026-11-16 (docs/DESPLIEGUE.md › «La base remota»). b_ip no: es otra app con datos reales, ni por su ref ni enlazada.
 REF_INTOCABLE=baursalbatwztsaevlef
+
+# La raíz del repo del cwd (el cwd, si no hay repo).
+raiz_del_repo() { git -C "$CWD" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$CWD"; }
+
+# Hay un `cd` (o `pushd`, `chdir`) en el comando, también entre paréntesis o comillas: lo que sigue corre en otra carpeta y el
+# hook no ve cuál.
+junto_a_un_cd() { printf '%s' "$CMD" | grep -qE '(^|[^[:alnum:]_./-])(cd|pushd|chdir)([[:space:]]|$)'; }
+
+# Lo de pnpm y la lista aprobada vive en `bloquear-peligrosos-dependencias.sh`. Sin ese archivo el hook no sabe qué dejar pasar:
+# bloquea todo (mejor sobrar que faltar).
+DEPENDENCIAS="$(dirname "${BASH_SOURCE[0]}")/bloquear-peligrosos-dependencias.sh"
+# shellcheck source=bloquear-peligrosos-dependencias.sh
+. "$DEPENDENCIAS" 2>/dev/null || bloquear "Falta $DEPENDENCIAS (las reglas de dependencias del hook): sin él no corre nada."
 
 # --- Sobre el comando entero (lo de siempre) ---
 case "$CMD" in
@@ -48,20 +63,6 @@ rama_de() {
   git -C "$d" symbolic-ref --quiet --short HEAD 2>/dev/null
 }
 
-# Hay un argumento que no es una opción ni el valor de una (`--filter web`, `--dir x`): un paquete.
-hay_posicional() {
-  local t saltar=0
-  for t in "$@"; do
-    if [ "$saltar" = 1 ]; then saltar=0; continue; fi
-    case "$t" in
-      --filter | -F | --dir | -C | --prefix | --registry | --store-dir | --reporter | --loglevel) saltar=1 ;;
-      -*) ;;
-      *) return 0 ;;
-    esac
-  done
-  return 1
-}
-
 # Una sesión empuja sólo la rama en la que está (la de su PR), sin forzar ni borrar, y nunca main: main avanza al integrarse el PR
 # (docs/FLUJO.md). `cd x && git push` cambiaría de rama sin que el hook lo vea: se rechaza. Una etiqueta nueva (`git push origin
 # refs/tags/<nombre>`) sí se empuja, desde cualquier rama: no mueve ninguna.
@@ -77,9 +78,7 @@ revisar_push() {
       *) pos+=("$t") ;;
     esac
   done
-  if printf '%s' "$CMD" | grep -qE '(^|[[:space:];&|])cd[[:space:]]'; then
-    bloquear "git push junto a un cd: el hook no ve en qué rama queda. Usa git -C <carpeta> push."
-  fi
+  junto_a_un_cd && bloquear "git push junto a un cd: el hook no ve en qué rama queda. Usa git -C <carpeta> push."
   if [ "${#pos[@]}" = 2 ] && [[ "${pos[1]}" =~ ^refs/tags/[A-Za-z0-9._/-]+$ ]]; then
     return 0
   fi
@@ -174,7 +173,7 @@ revisar_supabase() {
   [ "$sub $sub2" = "db push" ] && remoto=1
   if [ "$remoto" = 1 ]; then
     local raiz enlazado=""
-    raiz=$(git -C "$CWD" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$CWD")
+    raiz=$(raiz_del_repo)
     [ -r "$raiz/supabase/.temp/project-ref" ] && enlazado=$(tr -d '[:space:]' <"$raiz/supabase/.temp/project-ref")
     if [ "$enlazado" = "$REF_INTOCABLE" ] && [[ "$ARGS" != *" --project-ref"* ]] && [[ "$ARGS" != *" --db-url"* ]]; then
       bloquear "El proyecto enlazado es b_ip ($REF_INTOCABLE): nunca se toca. Enlaza el de importadora antes."
@@ -194,21 +193,10 @@ revisar_supabase() {
   esac
 }
 
-revisar_pnpm() {
-  local sub="${A[0]:-}"
-  case "$sub" in
-    add* | up | update | upgrade | up*) bloquear "pnpm $sub cambia dependencias: se verifican y las decide una persona." ;;
-    remove | rm | uninstall | un) bloquear "pnpm $sub cambia dependencias: lo decide una persona." ;;
-    i | install)
-      hay_posicional "${A[@]:1}" && bloquear "pnpm $sub <paquete> cambia dependencias: lo decide una persona." ;;
-    next) [ "${A[1]:-}" = upgrade ] && bloquear "next upgrade lo decide una persona." ;;
-  esac
-}
-
 revisar_segmento() {
-  local W=() t
-  # Sin comillas: `bash -c 'git clean -fd'` y `git commit -m "x"` se leen igual que sin ellas.
-  read -ra W <<<"${1//[\"\']/}"
+  local W=() t cabeza
+  # Sin comillas ni barras invertidas: `bash -c 'git clean -fd'`, `git commit -m "x"` y `\pnpm` se leen igual que sin ellas.
+  read -ra W <<<"${1//[\"\'\\]/}"
   # Una redirección (`> f`, `2>/dev/null`, `>> f`, `< f`) no es un argumento: se descarta con su archivo.
   local L=("${W[@]}") saltar=0
   W=()
@@ -218,22 +206,55 @@ revisar_segmento() {
     [[ "$t" =~ ^[0-9]*(\>\>?|\<). ]] && continue
     W+=("$t")
   done
+  # Lo que agregar con pnpm no admite delante: otra carpeta (`env -C`, `pnpm -C x exec`) o variables (`npm_config_registry=…`).
   CON_CANDADO=0
+  OTRA_CARPETA=0
+  CON_VARIABLES=0
   while :; do
     [ "${#W[@]}" -eq 0 ] && return 0
-    case "${W[0]}" in
+    # Por su nombre, sin la ruta (`/usr/bin/pnpm` es pnpm); una asignación (`PATH=/x/y`) queda entera.
+    cabeza="${W[0]}"
+    case "$cabeza" in [A-Za-z_]*=*) ;; *) cabeza="${cabeza##*/}" ;; esac
+    case "$cabeza" in
       '') W=("${W[@]:1}") ;;
-      [A-Za-z_]*=*) W=("${W[@]:1}") ;;
-      sudo | env | command | nohup | time | exec | xargs) W=("${W[@]:1}") ;;
-      npx | bunx)
+      [A-Za-z_]*=*) CON_VARIABLES=1; W=("${W[@]:1}") ;;
+      sudo | env)
         W=("${W[@]:1}")
-        while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do W=("${W[@]:1}"); done ;;
-      pnpm | npm)
+        quitar_opciones_de_sudo_o_env ;;
+      command | nohup | time | exec | xargs | eval | timeout | nice | setsid | stdbuf)
+        W=("${W[@]:1}")
+        while [ "${#W[@]}" -gt 0 ]; do
+          case "${W[0]}" in
+            -s | -I | -E | -d | -a | --signal) W=("${W[@]:2}") ;;
+            -* | [0-9]*) W=("${W[@]:1}") ;;
+            *) break ;;
+          esac
+        done ;;
+      corepack)
         case "${W[1]:-}" in
+          use | up) bloquear "corepack ${W[1]} cambia la versión de pnpm del proyecto: lo decide una persona." ;;
+        esac
+        W=("${W[@]:1}") ;;
+      npx | bunx | pnpx)
+        W=("${W[@]:1}")
+        quitar_opciones_de_ejecutar ;;
+      pnpm | npm | pnpm@* | npm@*)
+        # Tras las opciones globales (`pnpm -C x exec …`), que dejan lo que corre en otra carpeta.
+        t=1
+        while [ "$t" -lt "${#W[@]}" ]; do
+          case "${W[$t]}" in
+            recursive | multi | m | -*) es_opcion_con_valor "${W[$t]}" && t=$((t + 1)); t=$((t + 1)) ;;
+            *) break ;;
+          esac
+        done
+        case "${W[$t]:-}" in
           exec | dlx | x)
-            W=("${W[@]:2}")
-            while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do W=("${W[@]:1}"); done ;;
-          playwright | supabase | vercel | next | ncu) W=("${W[@]:1}") ;;
+            [ "$t" -gt 1 ] && OTRA_CARPETA=1
+            W=("${W[@]:$((t + 1))}")
+            quitar_opciones_de_ejecutar ;;
+          playwright | supabase | vercel | next | ncu)
+            [ "$t" -gt 1 ] && OTRA_CARPETA=1
+            W=("${W[@]:$t}") ;;
           *) break ;;
         esac ;;
       *candado.sh)
@@ -253,6 +274,8 @@ revisar_segmento() {
     esac
   done
   local cmd="${W[0]##*/}"
+  # `npx pnpm@11 …` es pnpm.
+  case "$cmd" in pnpm@* | npm@* | yarn@*) cmd="${cmd%%@*}" ;; esac
   A=("${W[@]:1}")
   ARGS=" ${A[*]:-} "
   case "$cmd" in
@@ -260,11 +283,7 @@ revisar_segmento() {
     gh) revisar_gh ;;
     supabase) revisar_supabase ;;
     pnpm) revisar_pnpm ;;
-    npm | yarn)
-      case "${A[0]:-}" in
-        add) bloquear "$cmd add cambia dependencias: lo decide una persona." ;;
-        i | install) hay_posicional "${A[@]:1}" && bloquear "$cmd ${A[0]} <paquete> cambia dependencias: lo decide una persona." ;;
-      esac ;;
+    npm | yarn | bun | deno) revisar_otro_gestor ;;
     vercel) bloquear "vercel despliega o cambia el proyecto remoto: lo hace una persona." ;;
     ncu)
       for t in "${A[@]}"; do
@@ -280,12 +299,16 @@ revisar_segmento() {
         bloquear "${A[0]} usa la base local, que es de una a la vez: corre por su script de pnpm (candado) o por scripts/candado.sh."
       fi ;;
   esac
+  # Después de las reglas de cada comando, que dan un motivo más preciso.
+  [ "$cmd" = pnpm ] || pnpm_metido "${L[@]}"
   return 0
 }
 
 A=()
 ARGS=""
 CON_CANDADO=0
+OTRA_CARPETA=0
+CON_VARIABLES=0
 # `2>&1` y `&>` llevan un `&` que no separa comandos: se reducen antes de partir.
 SEGMENTOS=$(printf '%s' "$CMD" | sed -E 's/[0-9]*[<>]&[0-9-]*//g; s/&>>?/>/g' | sed -E 's/(&&|\|\||;|\||`|\$\(|\(|\)|&)/\n/g')
 while IFS= read -r segmento; do
