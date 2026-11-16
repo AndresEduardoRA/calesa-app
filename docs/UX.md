@@ -1097,7 +1097,7 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
 - **Teléfonos de la ficha:** los extras se editan con la cartera y `leads.telefonos_extra.editar`; el principal, con la cartera y
   `leads.editar`; si no, enmascarados y sin botones. «Cambiar el principal» (`?panel=cambiar-telefono`): el actual pasa a extra «Anterior»; el
   nuevo se verifica al tipear y uno existente, ajeno o el mismo deshabilitan el botón con su frase. Extras (`?panel=agregar-telefono` en la
-  ficha, `?extra=nuevo` dentro del panel de edición y del resumen del listado; hasta el máximo de la empresa, 6 de fábrica): número con país y
+  ficha, `?extra=nuevo` dentro del panel de edición, que también abre un `?lead=<id>&extra=nuevo`; el resumen del listado los muestra sólo para leer; hasta el máximo de la empresa, 6 de fábrica): número con país y
   etiqueta ≤ 40, «Quitar» con «Deshacer». El número se verifica al tipear: con «Los teléfonos extra cuentan como el principal» un número
   de otro lead bloquea (con «Ver ese lead» si lo ve); sin ella, avisa. Con el máximo alcanzado «Agregar» se apaga con su frase; con más del
   máximo, «quita K para agregar otro» y, con `leads.configurar`, «Cambiar el máximo».
