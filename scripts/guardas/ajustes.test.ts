@@ -14,8 +14,9 @@ type Ajustes = {
 }
 const ajustes = JSON.parse(readFileSync(join(RAIZ, '.claude/settings.json'), 'utf8')) as Ajustes
 
-// Lo que ninguna sesión corre sola (lo irreversible, lo remoto que no es la base y las dependencias); el hook de Bash lo repite
-// con más matices. La base remota del proyecto sí (docs/DESPLIEGUE.md › «La base remota»).
+// Lo que ninguna sesión corre sola (lo irreversible, lo remoto que no es la base y cambiar dependencias, salvo agregar lo de la
+// lista aprobada, que decide el hook); el hook de Bash lo repite con más matices. La base remota del proyecto sí
+// (docs/DESPLIEGUE.md › «La base remota»).
 const DENEGADAS = [
   'git commit --no-verify*',
   'git commit -n *',
@@ -31,7 +32,6 @@ const DENEGADAS = [
   'npx vercel*',
   'supabase secrets*',
   'npx supabase secrets*',
-  'pnpm add*',
   'pnpm up*',
   'npx next upgrade*',
   'pnpm next upgrade*',
@@ -41,6 +41,11 @@ const DENEGADAS = [
 describe('.claude/settings.json › permisos', () => {
   it.each(DENEGADAS)('deniega Bash(%s)', (regla) => {
     expect(ajustes.permissions.deny).toContain(`Bash(${regla})`)
+  })
+
+  // Un deny vale en todo modo de permisos y gana al hook: de vuelta en la lista, las sesiones no podrían agregar ni lo aprobado.
+  it('agregar con pnpm no se deniega: lo decide el hook con la lista aprobada', () => {
+    expect(ajustes.permissions.deny.filter((r) => r.startsWith('Bash(pnpm add'))).toEqual([])
   })
 
   it('sigue leyendo sin permiso los .env', () => {
