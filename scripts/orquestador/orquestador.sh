@@ -66,7 +66,23 @@ campo() {
 }
 cuerpo() { awk 'BEGIN{s=0} s<2 && $0=="---" {s++; next} s>=2' "$1"; }
 
-ids() { for f in "$COLA"/T*.md; do [ -e "$f" ] && campo "$f" id; done; }
+# Los ids de la cola. Una spec cuyo `id` no es T<número> o no es el de su archivo no existe para el bucle: la nombra `cola_invalida`.
+id_valido() { [[ "$(campo "$1" id)" =~ ^T[0-9]+$ ]] && [[ "$(basename "$1")" == "$(campo "$1" id)"[-.]* ]]; }
+ids() { local f; for f in "$COLA"/T*.md; do [ -e "$f" ] && id_valido "$f" && campo "$f" id; done; }
+cola_invalida() { # imprime lo que está mal en la cola; devuelve 1 si hay algo
+  local f id ok=0 vistos=" "
+  for f in "$COLA"/*.md; do
+    [ -e "$f" ] || continue
+    id=$(campo "$f" id)
+    if ! id_valido "$f"; then
+      echo "✗ $(basename "$f"): su «id: ${id:-(vacío)}» no es T<número> o no es el de su nombre (T07-tema.md lleva «id: T07»). No se lanza."; ok=1
+      continue
+    fi
+    if [[ "$vistos" == *" $id "* ]]; then echo "✗ $(basename "$f"): el id $id está repetido en la cola."; ok=1; fi
+    vistos="$vistos$id "
+  done
+  return $ok
+}
 spec_de() { local f; for f in "$COLA/$1"-*.md "$COLA/$1".md; do [ -e "$f" ] && { echo "$f"; return 0; }; done; return 1; }
 
 est_get() { cat "$EST/$1/$2" 2>/dev/null || true; }
@@ -505,6 +521,21 @@ despues_de_la_sesion() {
   pr=$(ghr pr list --head "$RAMA" --state open --json number --jq '.[0].number // empty' 2>/dev/null)
   git -C "$WT" fetch -q origin "$RAMA" 2>/dev/null
   local_head=$(git -C "$WT" rev-parse HEAD 2>/dev/null)
+
+  # Un PR chico puede integrarse antes de que esta función mire: ya no está abierto y GitHub borró su rama. Si el PR integrado
+  # es el de esta punta y no quedó nada sin commitear, la tarea terminó: no se retoma.
+  if [ -z "$pr" ] && [ -n "$local_head" ] && [ -z "$(git -C "$WT" status --porcelain 2>/dev/null)" ]; then
+    local hecho
+    hecho=$(ghr pr list --head "$RAMA" --state merged --json number,headRefOid \
+      --jq "[.[] | select(.headRefOid == \"$local_head\")][0].number // empty" 2>/dev/null)
+    if [ -n "$hecho" ]; then
+      est_set "$ID" pr "$hecho"
+      est_del "$ID" motivo_retomar
+      log "$ID: el PR #$hecho ya estaba integrado al terminar la sesión"
+      integrada "$ID" "$hecho"
+      return
+    fi
+  fi
   remoto=$(git -C "$WT" rev-parse "origin/$RAMA" 2>/dev/null || true)
 
   if [ -n "$pr" ] && [ "$local_head" = "$remoto" ] && [ -z "$(git -C "$WT" status --porcelain 2>/dev/null)" ]; then
@@ -532,6 +563,7 @@ despues_de_la_sesion() {
 
 cmd_estado() {
   local id s pr extra
+  cola_invalida
   printf '%-4s %-13s %-6s %-5s %s\n' ID ESTADO PR INT TÍTULO
   for id in $(ids); do
     s=$(estado_de "$id")
@@ -549,6 +581,7 @@ cmd_estado() {
 
 cmd_plan() {
   local id s quien d faltan
+  cola_invalida
   for id in $(ids); do
     s=$(estado_de "$id")
     case "$s" in
@@ -637,6 +670,7 @@ cmd_verificar() {
     echo "✗ claude -p no respondió en modo ${MODO_EJECUTAR:-auto} (¿sesión iniciada? ¿tu versión tiene ese modo? prueba MODO_EJECUTAR=acceptEdits)"; ok=0
   fi
   echo "== Cola"
+  cola_invalida || ok=0
   for id in $(ids); do
     f=$(spec_de "$id")
     [ -n "$(campo "$f" rama)" ] && [ -n "$(campo "$f" titulo)" ] || { echo "✗ $id sin rama o título"; ok=0; }
@@ -657,7 +691,14 @@ cmd_nueva() { # ID tema
   [[ "$id" =~ ^T[0-9]+$ ]] && [ -n "$tema" ] || { echo "uso: nueva T23 tema-en-kebab" >&2; exit 64; }
   spec_de "$id" >/dev/null && { echo "ya existe $(spec_de "$id")" >&2; exit 64; }
   f="$COLA/$id-$tema.md"
+  [[ "$tema" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || { echo "el tema va en kebab (minúsculas, números y guiones): $tema" >&2; exit 64; }
   sed -e "s/{{ID}}/$id/g" -e "s/{{TEMA}}/$tema/g" "$ORQ/plantilla-tarea.md" >"$f"
+  # La plantilla tiene que haber dejado una spec que el bucle lea: si un formateador le tocó los marcadores, se dice aquí y no al lanzar.
+  if ! id_valido "$f" || grep -q '{{' "$f"; then
+    rm -f "$f"
+    echo "✗ scripts/orquestador/plantilla-tarea.md está dañada: no dejó «id: $id» o le quedaron marcadores {{…}} sin reemplazar." >&2
+    exit 70
+  fi
   echo "Escribe la spec en $f y quita la línea «borrador: si»: recién entonces el orquestador la toma."
 }
 

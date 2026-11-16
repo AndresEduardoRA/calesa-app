@@ -302,6 +302,7 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
   cuenta nace sin permisos.
 - `db diff --linked` muestra triggers de `storage.buckets` que llaman a funciones de `storage`: son del Storage de la nube, más nuevo
   que la pila local, no de las migraciones. Fíltralos; un trigger propio llama a una función de `public` o `interno`.
+- No dejes que Prettier formatee una plantilla con marcadores `{{X}}`: en un frontmatter YAML los reescribe como `{ { X } }` y el reemplazo deja de encontrarlos. Va en `.prettierignore` y con una prueba que use la plantilla real (`scripts/orquestador/orquestador.test.ts`).
 
 ## Por módulo
 
