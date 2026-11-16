@@ -2,14 +2,15 @@
 # Resetea la demo (el proyecto de Supabase enlazado) con las migraciones del árbol, y comprueba que quedó como el repo:
 #   1. respalda el esquema y los datos en respaldos/<fecha>/ (ignorado por git, permisos 600);
 #   2. `supabase db reset --linked` (las migraciones y el seed);
-#   3. pone `url_proyecto` en Vault (la usan los jobs que llaman a una función edge);
-#   4. comprueba: `migration list` alineado, `db diff --linked` vacío, los jobs en `cron.job` y la colación de la base.
+#   3. el dueño: la cuenta de `DEMO_DUENO_EMAIL` con `DEMO_DUENO_CLAVE`, su perfil y el rol dueño (`sql-del-dueno.sh`);
+#   4. pone `url_proyecto` en Vault (la usan los jobs que llaman a una función edge);
+#   5. comprueba: `migration list` alineado, `db diff --linked` vacío, los jobs en `cron.job` y la colación de la base.
 #
 #   bash scripts/demo/resetear.sh [--sin-respaldo]
 #
-# La demo no tiene datos reales y se puede resetear; las guardas de las sesiones sólo dejan pasar lecturas remotas
-# sueltas, así que esto lo corre la persona o una sesión que se lo avisó antes (docs/ENTORNOS.md). Lee `.env.demo` si existe:
-# `DEMO_SUPABASE_URL` (si no, https://<ref>.supabase.co). Ningún valor secreto pasa por aquí ni se imprime.
+# La demo no tiene datos reales y se puede resetear; lo corre la persona o una sesión (docs/DESPLIEGUE.md › «La base remota»).
+# Lee `.env.demo`: `DEMO_DUENO_EMAIL` y `DEMO_DUENO_CLAVE` (obligatorias: sin ellas no resetea) y `DEMO_SUPABASE_URL` (si no,
+# https://<ref>.supabase.co). Ningún valor secreto se imprime.
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 sb() { pnpm exec supabase "$@" 2> >(grep -v -i -E 'new version|recommend updating|^We recommend' >&2); }
@@ -21,6 +22,13 @@ URL="${DEMO_SUPABASE_URL:-https://${REF}.supabase.co}"
 URL="${URL%/}"
 [[ "$URL" =~ ^https://[a-z0-9.-]+$ ]] || { echo "✗ DEMO_SUPABASE_URL no es una URL https sin ruta: «$URL»" >&2; exit 64; }
 echo "demo: $REF ($URL)"
+
+# El SQL del dueño antes de borrar nada: si faltan sus credenciales, no se resetea.
+SQL=$(mktemp)
+DUENO=$(mktemp)
+trap 'rm -f "$SQL" "$DUENO"' EXIT
+chmod 600 "$DUENO"
+bash scripts/demo/sql-del-dueno.sh >"$DUENO"
 
 # 1. Respaldo
 if [ "${1:-}" != --sin-respaldo ]; then
@@ -36,9 +44,11 @@ fi
 sb db reset --linked --yes
 echo "✓ reset con $(find supabase/migrations -name '*.sql' | wc -l | tr -d ' ') migraciones y el seed"
 
-# 3. La URL del proyecto en Vault
-SQL=$(mktemp)
-trap 'rm -f "$SQL"' EXIT
+# 3. El dueño
+sb db query --linked -f "$DUENO" >/dev/null
+echo "✓ dueño: $(printf '%s' "$DEMO_DUENO_EMAIL" | tr '[:upper:]' '[:lower:]' | tr -d '[:space:]')"
+
+# 4. La URL del proyecto en Vault
 cat > "$SQL" <<SQL
 do \$\$
 declare v_id uuid;
@@ -54,7 +64,7 @@ SQL
 sb db query --linked -f "$SQL" >/dev/null
 echo "✓ url_proyecto en Vault"
 
-# 4. Comprobaciones
+# 5. Comprobaciones
 fallo=0
 desalineadas=$(sb migration list --linked --output-format json | jq -r '.migrations[] | select(.local != .remote) | "\(.local) ≠ \(.remote)"')
 if [ -z "$desalineadas" ]; then echo "✓ migration list: alineado"; else echo "✗ migration list desalineado:"; echo "$desalineadas"; fallo=1; fi

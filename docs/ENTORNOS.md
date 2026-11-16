@@ -10,7 +10,7 @@ servidor (`src/shared/config/`). El orden de un despliegue y qué mirar en cada 
 - **Local:** la pila de Supabase de la principal o la de un carril (abajo, «Pilas locales»). `.env.local` sale de
   `supabase status -o env` más lo que no es de Supabase, copiado de la principal.
 - **Demo = producción:** Supabase Pro (`calesa.app`, ref `fjvrjndglytyhvlxifeb`) y Vercel. **Sin datos reales**: se resetea cuando
-  hace falta. Registro apagado; el dueño lo crea el script. `.github/workflows/demo.yml` le aplica las migraciones y las funciones al
+  hace falta. Registro apagado; el dueño (`DEMO_DUENO_EMAIL`) lo crea `scripts/demo/resetear.sh` en cada reset. `.github/workflows/demo.yml` le aplica las migraciones y las funciones al
   integrar en `main` (antes alinea el historial con `scripts/demo/alinear-historial.sh`, por si se aplastaron).
   `bash scripts/demo/restaurar.sh` la deja de cero (lee `.env.demo`); con `--local` hace lo mismo con la pila local.
 - **Previews de Vercel** (uno por PR): apuntan a la misma demo. Nunca aplican migraciones: eso pasa sólo al integrar en `main`.
@@ -76,7 +76,7 @@ DEMO_CLAVE_PUBLICA=          # sb_publishable_… de la demo
 DEMO_CLAVE_SECRETA=          # sb_secret_… de la demo (sólo la API de admin de Auth)
 DEMO_SITE_URL=               # la URL de producción en Vercel
 DEMO_VERCEL_EQUIPO=          # el slug del equipo, para el comodín de los previews (opcional)
-DEMO_DUENO_EMAIL=
+DEMO_DUENO_EMAIL=            # sin ésta y la clave, resetear.sh no resetea
 DEMO_DUENO_CLAVE=            # 12 o más caracteres
 DEMO_CLAVE_USUARIOS=         # la de los usuarios de demo por rol, 12 o más
 SMTP_HOST=smtp.resend.com    # Cloudflare: smtp.mx.cloudflare.net
