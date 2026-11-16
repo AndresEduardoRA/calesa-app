@@ -15,8 +15,9 @@ pull`, `link` y SQL de escritura. Siguen siendo de la persona `secrets`, `config
 - **El ref antes que nada.** `cat supabase/.temp/project-ref`: la orden actúa sobre ése. Si no es el esperado, no se corre.
 - **b_ip nunca** (`baursalbatwztsaevlef`): es otra app, con datos reales. El hook rechaza su ref y toda orden al remoto mientras esté
   enlazada.
-- **Un reset de la demo va por `bash scripts/demo/resetear.sh`**, no por `db reset --linked` suelto: respalda, resetea y deja al
-  dueño (`DEMO_DUENO_EMAIL` y `DEMO_DUENO_CLAVE` de `.env.demo`) listo para entrar; sin esas dos no resetea.
+- **Un reset de la demo va por `bash scripts/demo/resetear.sh`**, no por `db reset --linked` suelto (que no siembra): respalda,
+  resetea, aplica las semillas y deja al dueño (`DEMO_DUENO_EMAIL` y `DEMO_DUENO_CLAVE` de `.env.demo`) listo para entrar; sin esas
+  dos no resetea.
 - **Respaldo antes de borrar.** Antes de `db reset --linked`, de `--include-seed` o de un push que reescribe datos en un proyecto
   con datos, el respaldo de «3. Respaldo»; en la demo sin datos reales se salta.
 - **Push con su `--dry-run`.** Primero el `--dry-run` y lo de «4. Migraciones» (qué mirar); después el push, `migration list` y `db
