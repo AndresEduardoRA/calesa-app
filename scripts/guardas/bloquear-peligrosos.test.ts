@@ -1,15 +1,24 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { BLOQUEA, PASA } from './bloquear-peligrosos.casos'
 
 // `bloquear-peligrosos.sh` es el hook PreToolUse de Bash: lo irreversible, lo de afuera, las dependencias y saltarse el candado de
-// la base se rechazan siempre; una etiqueta nueva sí se empuja.
+// la base se rechazan siempre; una etiqueta nueva sí se empuja, y agregar con pnpm, sólo lo de la lista aprobada del repo.
 // Se prueba con el hook de verdad: una tabla de comandos → bloquea (exit 2 y el motivo por stderr) / pasa (exit 0), con repos de
 // git temporales para la rama del push (el patrón de `scripts/ci-cambios.test.ts`).
 const HOOK = resolve('.claude/hooks/bloquear-peligrosos.sh')
+const LISTA = 'scripts/orquestador/dependencias-aprobadas.txt'
 
 let raiz = ''
 let enMain = ''
@@ -30,8 +39,14 @@ function repo(nombre: string, rama: string): string {
   return dir
 }
 
-function correr(command: string, opciones: { cwd?: string } = {}) {
-  const r = spawnSync('bash', [HOOK], {
+// La lista aprobada de un repo temporal (`texto` vacío no la escribe).
+function escribirLista(dir: string, texto: string) {
+  mkdirSync(join(dir, 'scripts/orquestador'), { recursive: true })
+  if (texto) writeFileSync(join(dir, LISTA), texto)
+}
+
+function correr(command: string, opciones: { cwd?: string; hook?: string } = {}) {
+  const r = spawnSync('bash', [opciones.hook ?? HOOK], {
     input: JSON.stringify({
       tool_name: 'Bash',
       tool_input: { command },
@@ -50,6 +65,8 @@ beforeAll(() => {
   raiz = mkdtempSync(join(tmpdir(), 'bloquear-peligrosos-'))
   enMain = repo('en-main', 'main')
   enOtra = repo('en-otra', 'otra')
+  escribirLista(enMain, '')
+  copyFileSync(resolve(LISTA), join(enMain, LISTA))
 })
 
 afterAll(() => {
@@ -116,5 +133,63 @@ describe('la rama del push', () => {
   it('un push junto a un `cd` se rechaza: el hook no ve en qué rama queda', () => {
     expect(correr('cd ../en-otra && git push', { cwd: enMain }).estado).toBe(2)
     expect(correr('cd ../en-otra && git push origin otra', { cwd: enOtra }).estado).toBe(2)
+  })
+})
+
+// Agregar con pnpm pasa sólo con lo de `scripts/orquestador/dependencias-aprobadas.txt` del repo donde corre (el worktree).
+describe('la lista aprobada', () => {
+  it('sin lista, vacía o ilegible, no entra ningún paquete', () => {
+    const sinLista = repo('sin-lista', 'otra')
+    const vacia = repo('lista-vacia', 'otra')
+    escribirLista(vacia, '# sólo comentarios\n\n   \n# html-to-image\n')
+    const carpeta = repo('lista-carpeta', 'otra')
+    mkdirSync(join(carpeta, LISTA), { recursive: true })
+    for (const cwd of [sinLista, vacia, carpeta]) {
+      const { estado, motivo } = correr('pnpm add html-to-image', { cwd })
+      expect(estado, cwd).toBe(2)
+      expect(motivo).toContain(join(realpathSync(cwd), LISTA))
+    }
+  })
+
+  it('se lee de la raíz del repo donde corre, también desde una subcarpeta', () => {
+    const propio = repo('lista-propia', 'otra')
+    escribirLista(propio, '# prueba\r\n  otro-paquete  # con espacios y CRLF\r\nultimo-sin-salto')
+    expect(correr('pnpm add otro-paquete ultimo-sin-salto', { cwd: propio }).estado).toBe(0)
+    expect(correr('pnpm add html-to-image', { cwd: propio }).estado).toBe(2)
+    expect(correr('pnpm add otro-paquete').estado).toBe(2)
+    mkdirSync(join(enMain, 'src'), { recursive: true })
+    expect(correr('pnpm add html-to-image', { cwd: join(enMain, 'src') }).estado).toBe(0)
+  })
+
+  it('sin bloquear-peligrosos-dependencias.sh al lado, el hook no sabe qué dejar pasar y bloquea todo', () => {
+    const suelto = join(raiz, 'hook-suelto')
+    mkdirSync(suelto)
+    copyFileSync(HOOK, join(suelto, 'bloquear-peligrosos.sh'))
+    const { estado, motivo } = correr('git status', {
+      hook: join(suelto, 'bloquear-peligrosos.sh'),
+    })
+    expect(estado).toBe(2)
+    expect(motivo).toContain('bloquear-peligrosos-dependencias.sh')
+  })
+
+  it('el motivo dice cuál falta y dónde está la lista', () => {
+    const { estado, motivo } = correr('pnpm add @xyflow/react lodash')
+    expect(estado).toBe(2)
+    expect(motivo).toContain('lodash')
+    expect(motivo).toContain(LISTA)
+    expect(motivo).not.toContain('@xyflow/react')
+  })
+
+  it('la lista del repo: un nombre de npm por línea, cada uno con su comentario encima, sin repetir', () => {
+    const lineas = readFileSync(resolve(LISTA), 'utf8').split('\n')
+    const paquetes: string[] = []
+    lineas.forEach((linea, i) => {
+      if (linea.trim() === '' || linea.startsWith('#')) return
+      expect(linea).toMatch(/^(@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/)
+      expect(lineas[i - 1] ?? '', linea).toMatch(/^#\s*\S/)
+      paquetes.push(linea)
+    })
+    expect(paquetes.length).toBeGreaterThan(0)
+    expect(new Set(paquetes).size).toBe(paquetes.length)
   })
 })

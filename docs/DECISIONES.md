@@ -10,7 +10,7 @@ las trampas, en `docs/LECCIONES.md`.
 ## Stack y arquitectura
 
 - **Lo descartado del arranque.** TS 7, Biome, husky y Serwist se descartaron a propósito; boundaries va con la sintaxis v7 (`policies`, elementos como carpetas): la legacy muere en la v8.
-- **Sin paquetes nuevos para lo que se resuelve con lo que hay.** Gráficas en HTML y SVG propio, la cookie del portal con `node:crypto`, el barrido AA por CDP (sin `@axe-core/playwright`). Sumar una dependencia lo decide la persona.
+- **Sin paquetes nuevos para lo que se resuelve con lo que hay.** Gráficas en HTML y SVG propio, la cookie del portal con `node:crypto`, el barrido AA por CDP (sin `@axe-core/playwright`). Una sesión agrega sólo lo que está en `scripts/orquestador/dependencias-aprobadas.txt` (lo vigila `.claude/hooks/bloquear-peligrosos.sh`: con pnpm, sin `cd`, `-C`/`--filter` ni variables delante, nombre o nombre@versión, sin alias, git ni tarballs); fuera de ella, como último recurso, la suma a la lista en el mismo PR con la sección «Dependencias nuevas» (por qué no alcanza lo que hay, peso gzip, licencia, mantenimiento, versión verificada hoy), con versión exacta y nunca dos librerías para lo mismo. Aunque esté en la lista, la versión se verifica el día que se agrega. Actualizar o quitar dependencias lo decide la persona. Sin lista legible, el hook no deja agregar nada. Una orden de pnpm que cambia dependencias dentro de otro comando, aunque sea el texto de un grep o de un mensaje de commit, también se bloquea (se busca por «dependencia»; el mensaje va por `git commit -F`). El hook frena el descuido (otro paquete, otro gestor, otra carpeta, una versión que es una ruta), no a una sesión que edite la lista: eso lo frena la regla del prompt y queda a la vista en la sección «Dependencias nuevas» del PR.
 - **Fuera a propósito.** Editor de artes (Konva) y directorio de contactos: navieras es un catálogo plano y los proveedores son texto en gastos.
 - **Componer desde `src/app` por ranuras.** Un módulo no importa otro para dibujar algo ajeno: la página pasa un `ReactNode` o datos serializables (el historial en la barra del vehículo, el lector de opciones de cotizaciones).
 - **El motor de campos es de `shared`.** `shared/lib/campos` (puro) y `shared/ui/campos`; en SQL, `_campo_*` sin leer tablas. Cada módulo conserva su política; `shared` no sabe qué es un lead. Íconos: catálogo cerrado en `shared/lib/iconos.ts`.
@@ -506,6 +506,8 @@ las trampas, en `docs/LECCIONES.md`.
 - **Ranking por dueño vigente**: sin dueño o en baja cuenta en el total y no en el ranking.
 - **El margen del mes cuenta cada vehículo en el mes de su último pago confirmado vivo.** Un mes pasado cambia si se confirma o anula un pago: no se presenta como cerrado.
 - **Gráficas en HTML y SVG propio.** Texto en HTML, el SVG sólo pinta barras (`preserveAspectRatio="none"`), tokens `--viz-*`; leyenda en texto y «Ver como tabla» en `<details>`.
+- **«Documentos por aprobar» pide sólo `logistica.documentos.aprobar`.** Con `repuestos.documentos.aprobar` el bloque salía vacío siempre (la lectura es la bandeja de logística, de vehículos); hasta que traiga los ítems, quien sólo aprueba los de repuestos no lo ve.
+- **Cada bloque de Inicio lleva su límite de error** (`<LimiteDeBloque>`): lo que se rompe al dibujar apaga sólo ese bloque, como ya hacía un error de lectura.
 - **Widgets por permiso, no por rol**, cada uno con su error. La preferencia guarda `orden` con las ocultas; una clave que ya no existe se ignora y un widget nuevo cae al final.
 
 ## Datos

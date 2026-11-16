@@ -23,6 +23,40 @@ describe('bloquesVisibles', () => {
     expect(claves).toEqual(['vehiculos-trabados', 'documentos-por-aprobar', 'alertas-demora'])
   })
 
+  it('quien tiene dos roles ve la unión, sin repetir y en el orden de la bandeja', () => {
+    const claves = bloquesVisibles(
+      concesiones(
+        'logistica.documentos.aprobar',
+        'logistica.ver',
+        'agenda.tareas.recibir',
+        'leads.crear',
+        'leads.ver',
+        'web.cola.gestionar',
+      ),
+    ).map((b) => b.clave)
+    expect(claves).toEqual([
+      'recordatorios',
+      'leads-sin-seguimiento',
+      'turnos-web',
+      'vehiculos-trabados',
+      'documentos-por-aprobar',
+      'alertas-demora',
+      'tareas',
+    ])
+  })
+
+  it('quien sólo aprueba documentos de repuestos no ve «Documentos por aprobar» (la bandeja sólo trae los de vehículos)', () => {
+    const claves = bloquesVisibles(
+      concesiones('repuestos.ver', 'repuestos.mover', 'repuestos.documentos.aprobar'),
+    ).map((b) => b.clave)
+    expect(claves).toEqual(['repuestos-por-mover', 'esperas-repuestos'])
+  })
+
+  it('quien administra el equipo ve «Personas sin rol» y nada más', () => {
+    const claves = bloquesVisibles(concesiones('equipo.usuarios.gestionar')).map((b) => b.clave)
+    expect(claves).toEqual(['equipo-sin-rol'])
+  })
+
   it('un permiso acotado a un origen alcanza para ver el bloque', () => {
     const permisos: Permisos = [{ clave: 'logistica.ver', origenId: 'origen-1', alcance: 'todos' }]
     expect(bloquesVisibles(permisos).map((b) => b.clave)).toContain('vehiculos-trabados')

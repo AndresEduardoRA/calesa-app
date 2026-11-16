@@ -15,12 +15,16 @@ Primero entiende el estado: `git log --oneline origin/main..HEAD`, `git status -
   no se reintenta hasta que pase: diagnostica con sus artefactos (`e2e-fallos/`, la traza) y arregla el producto o la prueba con
   evidencia. Si lo que cae no tiene nada que ver con esta rama (también cae en `main`), no lo arregles aquí: `RESULTADO: TRABADA —`
   con el job y la evidencia.
+- **Una dependencia** que el arreglo necesite sigue la misma regla que la tarea: entra si está en
+  `scripts/orquestador/dependencias-aprobadas.txt`; si no, como último recurso, se suma a esa lista en el mismo PR con la sección
+  «Dependencias nuevas» en el cuerpo (por qué no alcanza lo que hay, peso gzip, licencia, mantenimiento, versión verificada hoy con
+  `pnpm view <paquete> version time`). Versión exacta, sola y desde la raíz del worktree; nunca dos librerías para lo mismo.
 - Verifica (Nivel 1): `pnpm lint`, `pnpm typecheck`, `pnpm test`, lo de base si tocaste `supabase/`, y los e2e que cayeron más los del
   módulo, nombrados.
 - Publica de nuevo con `bash scripts/flujo/publicar.sh --sin-esperar --titulo '<el título actual del PR>'`. Agrega al cuerpo del PR
   (`gh pr edit` falla en este repo: `gh api -X PATCH 'repos/{owner}/{repo}/pulls/{{PR}}' -F body=@<archivo>`) qué cayó y cómo se arregló, en dos líneas.
 
-No hagas: preguntar · empujar `main` o forzar · desactivar una regla de lint o un test · cambiar dependencias · tocar variables, secretos, funciones o Vercel de producción (la base remota sí:
+No hagas: preguntar · empujar `main` o forzar · desactivar una regla de lint o un test · actualizar o quitar dependencias · tocar variables, secretos, funciones o Vercel de producción (la base remota sí:
 `docs/DESPLIEGUE.md` › «La base remota»; b_ip nunca).
 
 Tu última línea, siempre: `RESULTADO: PUBLICADO #{{PR}}` o `RESULTADO: TRABADA — <motivo>`.

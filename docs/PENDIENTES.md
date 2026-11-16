@@ -43,6 +43,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Logística
 
+- **[T22]** «Documentos por aprobar» de Inicio sólo trae los documentos de vehículos (`_bandeja_por_aprobar`): quien sólo aprueba los de repuestos no ve el bloque. Sumar los de los ítems pide ampliar esa RPC y su medición.
+- **[T22]** Un bloque «Leads sin seguimiento» y «Personas sin rol» no llevan a una lista filtrada: ni `/leads` ni Equipo tienen ese filtro (cada fila abre su ficha o a la persona).
 - **[T02]** Un bloque «Subastas sin resolver» en Inicio (hoy se ven en el inventario y, con el filtro de situación, se filtran).
 - **[T02]** El filtro del inventario para ver las no ganadas (T14): hasta entonces, «vacío de primera vez» puede salir aunque haya no ganadas
   ocultas.
@@ -145,6 +147,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `supabase/tests/medir-jobs.sql` corre la limpieza con `now() + 12 h`: entre las 12:00 y las 15:00 de La Paz no mide nada.
 - **[—]** `fase_mover` con `orden` repetido previo y ancla compartida deja la movida detrás de la otra fase — desempatar si molesta.
 - **[—]** `logistica/entities/dinero/reparto.test.ts` («para cualquier monto…», ~2700 casos) pasa de los 5 s de Vitest con la máquina cargada (`pnpm test` junto a `db:probar`) — menos casos o un `timeout` propio.
+- **[—]** `bloquear-peligrosos.sh` lee el texto del comando: un agregar que no aparece en él (dentro de `bash guion.sh`, armado con `printf`/`base64`, un `.npmrc` o un `package.json` escritos con Write) no se mira — una guarda de CI que exija que toda dependencia nueva de `package.json` esté en `scripts/orquestador/dependencias-aprobadas.txt` y que el PR que suma a la lista lleve «Dependencias nuevas».
 - **[—]** `e2e/cotizaciones-listado.spec.ts` E6 y E8 fallan a veces en el CI y pasan en local: la tecla N abre `panel=nuevo-lead` en vez de la hoja, y «Ver todas» pierde `clase=preventa` — esperar la hidratación o el `href` ya filtrado antes de actuar.
 
 ### Límites aceptados

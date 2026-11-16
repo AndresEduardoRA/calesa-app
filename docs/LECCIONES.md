@@ -293,7 +293,8 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Usa `set -o pipefail` en los arneses: el código de salida de una tubería es el del último comando y una mutación «cae» o «pasa» en falso.
 - Tras traer main corre `pnpm db:reset` antes de culpar al código por e2e que caen: la base local puede no tener las migraciones nuevas.
 - Antes de culpar al código, mira que la base del carril tenga tus migraciones (`supabase_migrations.schema_migrations`): dos worktrees con la misma letra en `.env.carril` comparten la pila y se pisan; `bash scripts/worktree/preparar.sh <letra libre>` pasa el worktree a otra.
-- El hook de Bash lee el texto entero del comando, heredocs incluidos: un guion que nombre un push, la bandera de saltar hooks o una orden remota de Supabase se escribe en un archivo (Write) y se corre desde ahí.
+- El hook de Bash lee el texto entero del comando, heredocs incluidos: un guion que nombre un push, la bandera de saltar hooks o una orden remota de Supabase se escribe en un archivo (Write) y se corre desde ahí. Lo mismo un mensaje de commit que nombre una orden de pnpm: va por `git commit -F <archivo>`.
+- En un hook, busca el subcomando saltando las opciones globales (`pnpm -C x up`, `pnpm --filter web …`): mirar el primer argumento deja pasar la orden con una opción delante.
 - Con dos cuentas en `gh`, no cambies la activa: pide el token de la dueña del repo por llamada (`GH_TOKEN=$(gh auth token --user <dueña>)`), como hace `scripts/flujo/publicar.sh`.
 - `gh pr merge --auto` sin protección en `main` integra en el acto, antes del CI: el auto-merge sólo espera lo que la rama exige («Listo · todo en verde»).
 - La cuenta de líneas de `max-lines` (300) vale también para un `.test.ts`: una prueba nueva que no cabe va en su propio archivo.
