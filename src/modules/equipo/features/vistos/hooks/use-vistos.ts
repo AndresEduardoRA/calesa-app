@@ -5,6 +5,7 @@ import {
   conAbierto,
   consultasDeLaFirma,
   firmaDeConsultas,
+  idsCubiertosDeLaFirma,
   marcaDeVisto,
   SIN_VISTOS,
   unidas,
@@ -23,7 +24,11 @@ import { leerVistosAlUsar, registrarVistoAlUsar } from '../pedidos-de-vistos'
 export function useVistos(modulo: ModuloDeVistos, consultas: readonly ConsultaDeVistos[]) {
   const preferencia = usePreferenciaDeVistos()
   // Lo leído de la base y lo abierto en esta pestaña, aparte: una lectura que llega tarde no borra lo recién abierto.
-  const [leida, setLeida] = useState<LecturaDeVistos>(SIN_VISTOS)
+  // La firma de lo leído: una lectura de otra página (o aún sin llegar) no dice qué falta por ver aquí.
+  const [leida, setLeida] = useState<{ firma: string | null; lectura: LecturaDeVistos }>({
+    firma: null,
+    lectura: SIN_VISTOS,
+  })
   const [local, setLocal] = useState<LecturaDeVistos>(SIN_VISTOS)
   const firma = firmaDeConsultas(consultas)
 
@@ -31,8 +36,8 @@ export function useVistos(modulo: ModuloDeVistos, consultas: readonly ConsultaDe
     if (!preferencia.activado || firma === '') return
     let vigente = true
     void leerVistosAlUsar(modulo, consultasDeLaFirma(firma)).then((nueva) => {
-      // Una lectura que falla deja la pantalla sin marcas, nunca con las de otra página.
-      if (vigente) setLeida(nueva ?? SIN_VISTOS)
+      // Una lectura que falla deja la pantalla sin marcas (ni «nuevo»), nunca con las de otra página.
+      if (vigente) setLeida({ firma: nueva === null ? null : firma, lectura: nueva ?? SIN_VISTOS })
     })
     return () => {
       vigente = false
@@ -48,12 +53,14 @@ export function useVistos(modulo: ModuloDeVistos, consultas: readonly ConsultaDe
     [modulo, preferencia.activado],
   )
 
-  const marca = useMemo(
-    () =>
-      (id: string): MarcaDeVisto =>
-        // Una pantalla conservada que se queda sin filas no arrastra el último de la anterior.
-        marcaDeVisto(id, unidas(firma === '' ? SIN_VISTOS : leida, local), preferencia),
-    [firma, leida, local, preferencia],
-  )
+  const marca = useMemo(() => {
+    const llegada = firma !== '' && leida.firma === firma
+    const cubiertos = llegada ? idsCubiertosDeLaFirma(firma) : null
+    // Una pantalla conservada que se queda sin filas no arrastra el último de la anterior.
+    const base = firma === '' ? SIN_VISTOS : leida.lectura
+    const total = unidas(base, local)
+    return (id: string): MarcaDeVisto =>
+      marcaDeVisto(id, total, preferencia, cubiertos?.has(id) ?? false)
+  }, [firma, leida, local, preferencia])
   return { marca, abrir }
 }

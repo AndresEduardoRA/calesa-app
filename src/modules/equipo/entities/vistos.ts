@@ -75,17 +75,27 @@ export function lecturaDeVistosDesde(dato: unknown): LecturaDeVistos | null {
   return { vistos: new Set(leido.data.vistos.map((v) => v.id)), ultimo: leido.data.ultimo }
 }
 
-// Cómo se marca una fila: «último visto» si es el último del módulo (y la persona lo quiere ver), «visto» si se abrió, o nada.
-export type MarcaDeVisto = 'visto' | 'ultimo' | null
+// Cómo se marca una fila: «último visto» si es el último del módulo (y la persona lo quiere ver), «visto» si se abrió, «nuevo» si no (la lista lo
+// pone en negrita, como un correo sin leer) o nada. «Nuevo» exige saber qué se leyó: con «Vistos» apagado, sin lectura todavía, con una lectura
+// fallida o para un id que la lectura no cubrió (pasó el tope por tipo), no hay marca y la fila queda en su peso de siempre.
+export type MarcaDeVisto = 'visto' | 'ultimo' | 'nuevo' | null
 
 export function marcaDeVisto(
   id: string,
   lectura: LecturaDeVistos,
   preferencia: PreferenciaDeVistos,
+  // ¿Esta lectura cubre este id? (la de su página, ya llegada, y dentro del tope).
+  cubierto = false,
 ): MarcaDeVisto {
   if (!preferencia.activado) return null
   if (preferencia.ultimo && lectura.ultimo === id) return 'ultimo'
-  return lectura.vistos.has(id) || lectura.ultimo === id ? 'visto' : null
+  if (lectura.vistos.has(id) || lectura.ultimo === id) return 'visto'
+  return cubierto ? 'nuevo' : null
+}
+
+// Los ids que `vistos_de()` mira por una firma de consultas: hasta el tope por tipo (`tandasDeIds`). Fuera de ellos no se sabe si se vieron.
+export function idsCubiertosDeLaFirma(firma: string): ReadonlySet<string> {
+  return new Set(consultasDeLaFirma(firma).flatMap(({ ids }) => ids))
 }
 
 // Abrir un registro lo vuelve el último visto de inmediato, sin esperar a releer.

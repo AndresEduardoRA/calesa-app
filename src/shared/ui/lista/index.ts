@@ -13,6 +13,7 @@ export { TarjetaDeLista } from './tarjeta-de-lista'
 export { UnaSolaVista } from './una-sola-vista'
 export {
   CLASES_DE_VISTO,
+  pesoDelNombre,
   ProveedorDeVistosDeLista,
   SufijoDeVisto,
   useVistoDeLista,
