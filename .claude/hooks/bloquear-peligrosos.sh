@@ -9,9 +9,9 @@
 #   candado de la base (`scripts/candado.sh`).
 #
 # Un comando se parte en segmentos (`&&`, `||`, `;`, `|`, `$(`, comillas invertidas, saltos de línea) y de cada uno se
-# descartan los envoltorios (`VAR=x`, `sudo`, `npx`, `corepack`, `pnpm exec`, `bash -c`, `scripts/candado.sh <nombre> --`) hasta
-# el comando de verdad. No entiende comillas: el texto de un mensaje que nombre una de estas órdenes también se bloquea (mejor
-# sobrar que faltar).
+# descartan los envoltorios (`VAR=x`, `sudo`, `env`, `timeout`, `eval`, `npx`, `corepack`, `pnpm exec`, `bash -c`,
+# `scripts/candado.sh <nombre> --`) hasta el comando de verdad. No entiende comillas ni expansiones: el texto de un mensaje que
+# nombre una de estas órdenes también se bloquea (mejor sobrar que faltar), y una orden armada con `$x` no se ve.
 set -uo pipefail
 
 ENTRADA=$(cat)
@@ -32,8 +32,9 @@ REF_INTOCABLE=baursalbatwztsaevlef
 # La raíz del repo del cwd (el cwd, si no hay repo).
 raiz_del_repo() { git -C "$CWD" rev-parse --show-toplevel 2>/dev/null || printf '%s' "$CWD"; }
 
-# Hay un `cd` en el comando: lo que sigue corre en otra carpeta y el hook no ve cuál.
-junto_a_un_cd() { printf '%s' "$CMD" | grep -qE '(^|[[:space:];&|])cd[[:space:]]'; }
+# Hay un `cd` (o `pushd`, `chdir`) en el comando, también entre paréntesis o comillas: lo que sigue corre en otra carpeta y el
+# hook no ve cuál.
+junto_a_un_cd() { printf '%s' "$CMD" | grep -qE '(^|[^[:alnum:]_./-])(cd|pushd|chdir)([[:space:]]|$)'; }
 
 # Lo de pnpm y la lista aprobada vive en `bloquear-peligrosos-dependencias.sh`. Sin ese archivo el hook no sabe qué dejar pasar:
 # bloquea todo (mejor sobrar que faltar).
@@ -192,10 +193,24 @@ revisar_supabase() {
   esac
 }
 
+# Las opciones de `npx`, `pnpm exec` y `pnpm dlx` antes del comando que corren. `-p`/`--package` llevan su valor (`npx -p pnpm pnpm
+# add x`); cualquier otra (`-C`, `--filter`, `-r`…) puede dejarlo en otra carpeta. Cambia W y OTRA_CARPETA de revisar_segmento.
+quitar_opciones_de_ejecutar() {
+  while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do
+    case "${W[0]}" in
+      -p | --package) W=("${W[@]:2}") ;;
+      -y | --yes) W=("${W[@]:1}") ;;
+      *)
+        OTRA_CARPETA=1
+        if es_opcion_con_valor "${W[0]}"; then W=("${W[@]:2}"); else W=("${W[@]:1}"); fi ;;
+    esac
+  done
+}
+
 revisar_segmento() {
-  local W=() t
-  # Sin comillas: `bash -c 'git clean -fd'` y `git commit -m "x"` se leen igual que sin ellas.
-  read -ra W <<<"${1//[\"\']/}"
+  local W=() t cabeza
+  # Sin comillas ni barras invertidas: `bash -c 'git clean -fd'`, `git commit -m "x"` y `\pnpm` se leen igual que sin ellas.
+  read -ra W <<<"${1//[\"\'\\]/}"
   # Una redirección (`> f`, `2>/dev/null`, `>> f`, `< f`) no es un argumento: se descarta con su archivo.
   local L=("${W[@]}") saltar=0
   W=()
@@ -205,27 +220,62 @@ revisar_segmento() {
     [[ "$t" =~ ^[0-9]*(\>\>?|\<). ]] && continue
     W+=("$t")
   done
+  # Lo que agregar con pnpm no admite delante: otra carpeta (`env -C`, `pnpm -C x exec`) o variables (`npm_config_registry=…`).
   CON_CANDADO=0
+  OTRA_CARPETA=0
+  CON_VARIABLES=0
   while :; do
     [ "${#W[@]}" -eq 0 ] && return 0
-    case "${W[0]}" in
+    # Por su nombre, sin la ruta (`/usr/bin/pnpm` es pnpm); una asignación (`PATH=/x/y`) queda entera.
+    cabeza="${W[0]}"
+    case "$cabeza" in [A-Za-z_]*=*) ;; *) cabeza="${cabeza##*/}" ;; esac
+    case "$cabeza" in
       '') W=("${W[@]:1}") ;;
-      [A-Za-z_]*=*) W=("${W[@]:1}") ;;
-      sudo | env | command | nohup | time | exec | xargs) W=("${W[@]:1}") ;;
+      [A-Za-z_]*=*) CON_VARIABLES=1; W=("${W[@]:1}") ;;
+      sudo | env)
+        W=("${W[@]:1}")
+        while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do
+          case "${W[0]}" in
+            -C | -D | -R | --chdir | --chroot) OTRA_CARPETA=1; W=("${W[@]:2}") ;;
+            --chdir=* | --chroot=*) OTRA_CARPETA=1; W=("${W[@]:1}") ;;
+            -u | -g | -h | -p | -r | -t | -T | -U | --unset | --user | --group) W=("${W[@]:2}") ;;
+            *) W=("${W[@]:1}") ;;
+          esac
+        done ;;
+      command | nohup | time | exec | xargs | eval | timeout | nice | setsid | stdbuf)
+        W=("${W[@]:1}")
+        while [ "${#W[@]}" -gt 0 ]; do
+          case "${W[0]}" in
+            -s | -I | -E | -d | -a | --signal) W=("${W[@]:2}") ;;
+            -* | [0-9]*) W=("${W[@]:1}") ;;
+            *) break ;;
+          esac
+        done ;;
       corepack)
         case "${W[1]:-}" in
           use | up) bloquear "corepack ${W[1]} cambia la versión de pnpm del proyecto: lo decide una persona." ;;
         esac
         W=("${W[@]:1}") ;;
-      npx | bunx)
+      npx | bunx | pnpx)
         W=("${W[@]:1}")
-        while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do W=("${W[@]:1}"); done ;;
+        quitar_opciones_de_ejecutar ;;
       pnpm | npm | pnpm@* | npm@*)
-        case "${W[1]:-}" in
+        # Tras las opciones globales (`pnpm -C x exec …`), que dejan lo que corre en otra carpeta.
+        t=1
+        while [ "$t" -lt "${#W[@]}" ]; do
+          case "${W[$t]}" in
+            recursive | multi | m | -*) es_opcion_con_valor "${W[$t]}" && t=$((t + 1)); t=$((t + 1)) ;;
+            *) break ;;
+          esac
+        done
+        case "${W[$t]:-}" in
           exec | dlx | x)
-            W=("${W[@]:2}")
-            while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do W=("${W[@]:1}"); done ;;
-          playwright | supabase | vercel | next | ncu) W=("${W[@]:1}") ;;
+            [ "$t" -gt 1 ] && OTRA_CARPETA=1
+            W=("${W[@]:$((t + 1))}")
+            quitar_opciones_de_ejecutar ;;
+          playwright | supabase | vercel | next | ncu)
+            [ "$t" -gt 1 ] && OTRA_CARPETA=1
+            W=("${W[@]:$t}") ;;
           *) break ;;
         esac ;;
       *candado.sh)
@@ -254,13 +304,7 @@ revisar_segmento() {
     gh) revisar_gh ;;
     supabase) revisar_supabase ;;
     pnpm) revisar_pnpm ;;
-    npm | yarn)
-      case "${A[0]:-}" in
-        add) bloquear "$cmd add cambia dependencias: se agrega con pnpm y sólo lo de $LISTA_APROBADA." ;;
-        i | install)
-          hay_posicional "${A[@]:1}" &&
-            bloquear "$cmd ${A[0]} <paquete> cambia dependencias: se agrega con pnpm y sólo lo de $LISTA_APROBADA." ;;
-      esac ;;
+    npm | yarn | bun | deno) revisar_otro_gestor ;;
     vercel) bloquear "vercel despliega o cambia el proyecto remoto: lo hace una persona." ;;
     ncu)
       for t in "${A[@]}"; do
@@ -282,6 +326,8 @@ revisar_segmento() {
 A=()
 ARGS=""
 CON_CANDADO=0
+OTRA_CARPETA=0
+CON_VARIABLES=0
 # `2>&1` y `&>` llevan un `&` que no separa comandos: se reducen antes de partir.
 SEGMENTOS=$(printf '%s' "$CMD" | sed -E 's/[0-9]*[<>]&[0-9-]*//g; s/&>>?/>/g' | sed -E 's/(&&|\|\||;|\||`|\$\(|\(|\)|&)/\n/g')
 while IFS= read -r segmento; do
