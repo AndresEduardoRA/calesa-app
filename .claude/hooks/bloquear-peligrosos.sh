@@ -193,20 +193,6 @@ revisar_supabase() {
   esac
 }
 
-# Las opciones de `npx`, `pnpm exec` y `pnpm dlx` antes del comando que corren. `-p`/`--package` llevan su valor (`npx -p pnpm pnpm
-# add x`); cualquier otra (`-C`, `--filter`, `-r`…) puede dejarlo en otra carpeta. Cambia W y OTRA_CARPETA de revisar_segmento.
-quitar_opciones_de_ejecutar() {
-  while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do
-    case "${W[0]}" in
-      -p | --package) W=("${W[@]:2}") ;;
-      -y | --yes) W=("${W[@]:1}") ;;
-      *)
-        OTRA_CARPETA=1
-        if es_opcion_con_valor "${W[0]}"; then W=("${W[@]:2}"); else W=("${W[@]:1}"); fi ;;
-    esac
-  done
-}
-
 revisar_segmento() {
   local W=() t cabeza
   # Sin comillas ni barras invertidas: `bash -c 'git clean -fd'`, `git commit -m "x"` y `\pnpm` se leen igual que sin ellas.
@@ -234,14 +220,7 @@ revisar_segmento() {
       [A-Za-z_]*=*) CON_VARIABLES=1; W=("${W[@]:1}") ;;
       sudo | env)
         W=("${W[@]:1}")
-        while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do
-          case "${W[0]}" in
-            -C | -D | -R | --chdir | --chroot) OTRA_CARPETA=1; W=("${W[@]:2}") ;;
-            --chdir=* | --chroot=*) OTRA_CARPETA=1; W=("${W[@]:1}") ;;
-            -u | -g | -h | -p | -r | -t | -T | -U | --unset | --user | --group) W=("${W[@]:2}") ;;
-            *) W=("${W[@]:1}") ;;
-          esac
-        done ;;
+        quitar_opciones_de_sudo_o_env ;;
       command | nohup | time | exec | xargs | eval | timeout | nice | setsid | stdbuf)
         W=("${W[@]:1}")
         while [ "${#W[@]}" -gt 0 ]; do
@@ -297,6 +276,7 @@ revisar_segmento() {
   local cmd="${W[0]##*/}"
   # `npx pnpm@11 …` es pnpm.
   case "$cmd" in pnpm@* | npm@* | yarn@*) cmd="${cmd%%@*}" ;; esac
+  [ "$cmd" = pnpm ] || pnpm_metido "${L[@]}"
   A=("${W[@]:1}")
   ARGS=" ${A[*]:-} "
   case "$cmd" in

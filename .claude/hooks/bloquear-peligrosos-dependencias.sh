@@ -2,11 +2,14 @@
 # Las dependencias en el hook de Bash: lo carga `bloquear-peligrosos.sh` (que pone `bloquear`, `raiz_del_repo`, `junto_a_un_cd`,
 # `A`, `CWD`, `CMD`, `OTRA_CARPETA` y `CON_VARIABLES`) y se prueba con él (`scripts/guardas/bloquear-peligrosos.test.ts`).
 # Actualizar, quitar, lo global, npm/yarn/bun y `next upgrade` se rechazan; agregar con pnpm, sólo lo de la lista aprobada del
-# repo donde corre (docs/DECISIONES.md › «Stack y arquitectura»).
+# repo donde corre (docs/DECISIONES.md › «Stack y arquitectura»). También lee las opciones de los envoltorios que pueden dejar el
+# agregar en otra carpeta (`npx`, `pnpm exec`, `sudo`, `env`) y la orden de pnpm metida en otro comando.
 
 # Lo único que una sesión agrega con pnpm. Se lee de la raíz del repo donde corre (el worktree), no de una ruta fija.
 LISTA_APROBADA=scripts/orquestador/dependencias-aprobadas.txt
 APROBADOS=()
+# Lo que, en cualquier parte del comando, cambia de dónde baja pnpm o adónde escribe (`export HOME=…; pnpm add x`).
+VARIABLES_DE_PNPM='(npm|pnpm)_config_|node_options|pnpm_home|corepack_|(^|[^[:alnum:]_])(export|declare|typeset|set -a)([[:space:]]|$)'
 
 # Una opción de pnpm que lleva su valor aparte (`--filter web`, `-C dir`).
 es_opcion_con_valor() {
@@ -63,7 +66,7 @@ nombre_sin_version() {
 # que empieza con `.` y como tarball lo que termina en `.tgz`/`.tar`: eso metería código propio con un nombre aprobado.
 version_valida() {
   local re='^([0-9^~*v=][A-Za-z0-9._^~*+-]*|[A-Za-z][A-Za-z0-9-]*)$'
-  [[ "$1" =~ $re ]] || return 1
+  [[ "$1" =~ $re ]] && [[ "$1" =~ [A-Za-z0-9*]$ ]] || return 1
   case "${1,,}" in *.tgz | *.tar | *.tar.gz) return 1 ;; esac
   return 0
 }
@@ -77,8 +80,8 @@ revisar_agregar() {
   junto_a_un_cd && bloquear "pnpm add junto a un cd: el hook no ve en qué repo queda. Córrelo desde la raíz del worktree."
   [ "$OTRA_CARPETA" = 1 ] &&
     bloquear "pnpm add en otra carpeta (env -C, sudo -D, pnpm -C … exec, npx con opciones): córrelo solo, desde la raíz del worktree."
-  { [ "$CON_VARIABLES" = 1 ] || printf '%s' "$CMD" | grep -qiE '(npm|pnpm)_config_|node_options|pnpm_home|corepack_'; } &&
-    bloquear "pnpm add con variables (npm_config_*, NODE_OPTIONS…): cambian de dónde baja o adónde va. Córrelo solo."
+  { [ "$CON_VARIABLES" = 1 ] || printf '%s' "$CMD" | grep -qiE "$VARIABLES_DE_PNPM"; } &&
+    bloquear "pnpm add con variables (npm_config_*, NODE_OPTIONS, export…): cambian de dónde baja o adónde va. Córrelo solo."
   lista="$(raiz_del_repo)/$LISTA_APROBADA"
   leer_lista "$lista"
   [ "${#APROBADOS[@]}" -gt 0 ] ||
@@ -111,8 +114,10 @@ revisar_sub_pnpm() {
         bloquear "pnpm $antes … add: corre pnpm add solo, desde la raíz del repo de la lista (sin -C, --dir, --filter, -r ni -w)."
       revisar_agregar "$@" ;;
     add* | up | update | upgrade | up*) bloquear "pnpm $sub cambia dependencias: se verifican y las decide una persona." ;;
-    remove | rm | uninstall | un | link | ln | dedupe | import | patch-commit | patch-remove)
+    remove | rm | uninstall | un | link | ln | import | patch-commit | patch-remove)
       bloquear "pnpm $sub cambia dependencias: lo decide una persona." ;;
+    dedupe) case " $* " in *" --check "*) ;; *) bloquear "pnpm dedupe reescribe el lockfile: lo decide una persona." ;; esac ;;
+    \$*) bloquear "pnpm con el subcomando en una variable ($sub): el hook no ve cuál es." ;;
     i | install)
       hay_posicional "$@" &&
         bloquear "pnpm $sub <paquete> cambia dependencias: se agrega con pnpm add y sólo lo de $LISTA_APROBADA." ;;
@@ -146,8 +151,12 @@ revisar_otro_gestor() {
       hay_posicional "${R[@]}" &&
         bloquear "$cmd $sub <paquete> cambia dependencias: se agrega con pnpm y sólo lo de $LISTA_APROBADA." ;;
     add | a | up | update | udpate | upgrade | upgrade-interactive | uninstall | unlink | un | remove | rm | r | link | ln | \
-      dedupe | ddp | global | dlx | patch-commit)
+      dedupe | ddp | global | dlx | patch-commit | workspace | workspaces | plugin | set)
       bloquear "$cmd $sub cambia dependencias: se agrega con pnpm y sólo lo de $LISTA_APROBADA." ;;
+    config | c)
+      case "${R[0]:-}" in
+        set | delete | rm | edit) bloquear "$cmd $sub ${R[0]} cambia de dónde bajan los paquetes (también para pnpm): lo decide una persona." ;;
+      esac ;;
   esac
   return 0
 }
@@ -173,5 +182,53 @@ revisar_pnpm() {
   # Una opción con valor que no está en es_opcion_con_valor dejaría su valor como subcomando: con opciones delante, también se
   # mira el que sigue (`pnpm --workspace-concurrency 4 up`).
   [ -n "$antes" ] && revisar_sub_pnpm "${R[@]:1}"
+  return 0
+}
+
+# Las opciones de `npx`, `pnpm exec` y `pnpm dlx` antes del comando que corren. `-p`/`--package` llevan su valor (`npx -p pnpm pnpm
+# add x`); cualquier otra (`-C`, `--filter`, `-r`…) puede dejarlo en otra carpeta. Cambia W y OTRA_CARPETA de revisar_segmento.
+quitar_opciones_de_ejecutar() {
+  while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do
+    case "${W[0]}" in
+      -p | --package) W=("${W[@]:2}") ;;
+      -y | --yes) W=("${W[@]:1}") ;;
+      *)
+        OTRA_CARPETA=1
+        if es_opcion_con_valor "${W[0]}"; then W=("${W[@]:2}"); else W=("${W[@]:1}"); fi ;;
+    esac
+  done
+}
+
+# Las opciones de `sudo` y `env` antes del comando, también juntas (`-iC dir`, `-DE`, `-C/tmp`): C, D o R lo dejan en otra carpeta,
+# y si la última letra lleva valor, el valor va aparte. Cambia W y OTRA_CARPETA de revisar_segmento.
+quitar_opciones_de_sudo_o_env() {
+  local o
+  while [ "${#W[@]}" -gt 0 ] && [[ "${W[0]}" == -* ]]; do
+    o="${W[0]}"
+    case "$o" in
+      --chdir=* | --chroot=*) OTRA_CARPETA=1; W=("${W[@]:1}") ;;
+      --chdir | --chroot) OTRA_CARPETA=1; W=("${W[@]:2}") ;;
+      --unset | --user | --group) W=("${W[@]:2}") ;;
+      --*) W=("${W[@]:1}") ;;
+      *)
+        [[ "$o" == *[CDR]* ]] && OTRA_CARPETA=1
+        if [[ "$o" =~ ^-[A-Za-z]*[CDRughprtTU]$ ]]; then W=("${W[@]:2}"); else W=("${W[@]:1}"); fi ;;
+    esac
+  done
+}
+
+# Una orden de pnpm que cambia dependencias metida en otro comando (`find -exec`, `watch`, `echo … | bash`, un mensaje, un grep):
+# el hook no ve cómo corre y la bloquea igual (mejor sobrar que faltar). `$P add` cuenta: pnpm puede estar en la variable.
+pnpm_metido() {
+  local t visto=""
+  for t in "$@"; do
+    if [ -n "$visto" ]; then
+      case "$t" in
+        add | up | update | upgrade | remove | rm | uninstall | un | link | ln)
+          bloquear "«$visto $t» dentro de otro comando: el hook no ve cómo corre. Córrelo solo; para buscarlo, busca «dependencia»." ;;
+      esac
+    fi
+    case "${t##*/}" in pnpm | pnpm@* | \$*) visto="$t" ;; esac
+  done
   return 0
 }
