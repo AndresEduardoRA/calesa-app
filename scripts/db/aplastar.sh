@@ -114,5 +114,5 @@ fi
 SHA=$(sha256sum "$MIGRACIONES/$BASE" | cut -d' ' -f1)
 sed -i -E "s/^const BASE = '[^']+'$/const BASE = '$BASE'/; s/^const SHA256_DE_LA_BASE = '[0-9a-f]+'$/const SHA256_DE_LA_BASE = '$SHA'/" "$GUARDA"
 echo "✓ ${#VIEJAS[@]} migraciones → $MIGRACIONES/$BASE ($(wc -l <"$MIGRACIONES/$BASE") líneas), huella idéntica; sha256 fijado en $GUARDA."
-echo "  Sigue: pnpm db:reset && pnpm db:types && pnpm db:probar, y las rutas de migraciones viejas que citen las pruebas (git grep '${VIEJAS[0]%%_*}')."
+echo "  Sigue: pnpm db:reset && pnpm db:types && pnpm db:probar, las rutas de migraciones viejas que citen las pruebas (git grep '${VIEJAS[0]%%_*}') y las pruebas de una migración de datos (las entradas con migracionPorContenido de scripts/probar-schema.mjs), que se borran con su entrada."
 echo "  Las viejas quedaron en $TRABAJO/viejas (también en git)."

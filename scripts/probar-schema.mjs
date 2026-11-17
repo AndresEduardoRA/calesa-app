@@ -196,13 +196,7 @@ const DATOS_DE_PRUEBA = {
   'plantilla-validar.sql': {
     _juego_de_plantilla: 'src/modules/cotizaciones/entities/plantilla/casos-de-plantilla.json',
   },
-  // Una migración de datos que la prueba vuelve a ejecutar: se busca por su contenido y no por su nombre. Se borra al aplastar, con su prueba.
-  'areas/cotizaciones/vinculos-por-rol-migracion.sql': {
-    _migracion_de_vinculos: {
-      ruta: migracionPorContenido('drop column if exists vehiculo_obligatorio_al_cotizar'),
-      texto: true,
-    },
-  },
+  // Una migración de datos que una prueba vuelve a ejecutar va aquí como `{ ruta: migracionPorContenido('<texto>'), texto: true }`.
 }
 
 // Pruebas: el humo y, después, lo que se apoya en su base (la matriz de leads y el cinturón de la

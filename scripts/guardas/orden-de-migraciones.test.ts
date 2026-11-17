@@ -9,8 +9,8 @@ import { describe, expect, it } from 'vitest'
 // - Toda migración nueva sale de `supabase migration new <nombre>`: su prefijo es la fecha y hora reales en UTC, no una del futuro.
 // - Lo que se agrega va después de la última ya integrada (un reset aplica por el orden del nombre): contra HEAD en local y contra main
 //   en el CI de un PR (`MIGRACIONES_BASE`). Si otro PR integró antes una posterior, la tuya se crea de nuevo con `supabase migration new`.
-const BASE = '20261113065630_base.sql'
-const SHA256_DE_LA_BASE = 'ca1d48f94531fbcad522dcf795f1d620245c2c27abb3d3f623ef64966dfcbc5f'
+const BASE = '20261117104552_base.sql'
+const SHA256_DE_LA_BASE = '1a988b2992e5af9d1665d249e0a3403bb2dec5356abc8f0915946bd74b09afd0'
 const NOMBRE = /^(\d{14})_[a-z0-9_]+\.sql$/
 // Margen para el reloj de otra máquina: una migración «de dentro de una hora» todavía es de hoy.
 const MARGEN_MS = 60 * 60 * 1000
