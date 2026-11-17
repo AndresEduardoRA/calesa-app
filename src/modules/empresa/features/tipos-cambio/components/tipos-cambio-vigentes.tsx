@@ -33,7 +33,7 @@ function TipoALaVista({ tipo, className }: { tipo: TipoEnLaBarra; className?: st
 }
 
 // Los tipos de cambio de la barra superior: a la vista los que eligió la empresa y, al abrirlo, todos los vigentes con su último cambio.
-// El primero se ve siempre; los demás, cuando la barra tiene lugar (56 rem: el escritorio); si no, «+N» y se ven en el popover. En la
+// El primero se ve siempre; los demás, cuando la barra tiene lugar (56 rem: el escritorio); si no, «+N» en la esquina y se ven en el popover. En la
 // copia del menú del celular no hay contenedor que medir: va compacta. El contenido (la lectura y la edición) se pide al abrir.
 export function TiposCambioVigentes({ tipos, puedeGestionar }: Props) {
   const [abierto, setAbierto] = useState(false)
@@ -59,7 +59,7 @@ export function TiposCambioVigentes({ tipos, puedeGestionar }: Props) {
       <PopoverTrigger
         aria-label="Tipos de cambio"
         onPointerEnter={adelantarElContenido}
-        className="inline-flex h-11 items-center gap-2 rounded-(--radius-md) px-2 text-(length:--text-sm) whitespace-nowrap text-(--color-ink) outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) md:h-9"
+        className="relative inline-flex h-11 items-center gap-2 rounded-(--radius-md) px-2 text-(length:--text-sm) whitespace-nowrap text-(--color-ink) outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) md:h-9"
       >
         <TipoALaVista tipo={principal} className="inline-flex" />
         {demas.map((tipo) => (
@@ -70,8 +70,14 @@ export function TiposCambioVigentes({ tipos, puedeGestionar }: Props) {
             <TipoALaVista tipo={tipo} className="hidden @min-[56rem]:inline-flex" />
           </Fragment>
         ))}
+        {/* «+N» va en la esquina, como el contador de la campana: no ensancha la barra (el buscador cede su ancho y se taparía). */}
         {demas.length > 0 ? (
-          <span className="text-(--color-ink-soft) @min-[56rem]:hidden">+{demas.length}</span>
+          <span
+            aria-hidden
+            className="absolute -top-1 -right-0.5 rounded-full border border-(--color-line) bg-(--color-surface-3) px-1 text-[10px] leading-4 font-medium text-(--color-ink-soft) tabular-nums @min-[56rem]:hidden"
+          >
+            +{demas.length}
+          </span>
         ) : null}
       </PopoverTrigger>
       <PopoverContent align="end" className="w-96 max-w-[calc(100vw-1rem)]">
