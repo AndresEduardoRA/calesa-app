@@ -29,7 +29,7 @@ Cada meta la hace cumplir su e2e, en escritorio y celular.
 - **3. Mover vehículos de fase con documentos** (logística, ~40/día). Meta: mover 1 en ≤ 15 s; marcar llegada de un contenedor de 8 en
   ≤ 60 s; ver _antes_ de confirmar qué falta en cada uno. `e2e/logistica-tarea-de-oro.spec.ts`: mover 1 desde la cadena (la fase en la gráfica → su lista → la página del vehículo → destino → nota; 4 gestos, 7 teclas y 5 decisiones: KLM 13,9 s) y el contenedor desde `/logistica/embarques`.
   Nunca: mover sin el documento bloqueante; perder un archivo subido; pisar el cambio de otro.
-- **4. Atender un turno de la web y dar acceso al portal** (asesor, ~5/día). Meta: «contacté» en 2 toques desde el celular (hoy, 1 desde
+- **4. Atender un turno de la web y dar acceso al portal** (asesor, ~5/día). Meta: «contacté» en 2 toques desde el celular (1 desde
   Inicio, `e2e/web-turno.spec.ts`); otorgar portal desde la ficha en ≤ 30 s con sólo el teclado (`e2e/leads-portal-acceso.spec.ts`). Nunca:
   dejar vencer un turno sin aviso (el vencido queda «Vencido» en Inicio y avisa en `/notificaciones`); un código que no se pueda dictar.
 
@@ -195,7 +195,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   dice el error con «Reintentar». Sin ningún bloque: «Tu rol todavía no tiene trabajo en la bandeja», con los bloques que existen y a quién pedir
   acceso; sin rol, «Aún no tienes un rol, avisa al dueño».
 - **Leads** — `/leads` (`leads.ver`): tabla + resumen. «Míos» por defecto; con alcance «todos», `?alcance=`. Filtros del layout
-  (`a.<campo>`), tipo, origen, `?q=`, `?cursor=`, vistas guardadas; resumen `?lead=` (`?pestana=seguimientos|recordatorios`); marcas
+  (`a.<campo>`), tipo, origen, `?q=`, `?cursor=`, vistas guardadas; resumen `?lead=` (un `?pestana=` viejo lleva a la ficha); marcas
   `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo» (en «Vista y opciones», con el alcance, las vistas guardadas, «Ítems
   por página» y «Más»: exportar, importar y papelera): `?vista=embudo&embudo=<id>` es el kanban de las oportunidades propias (`?etapa=` en el celular;
   a la vista, el selector de embudo y la búsqueda; en «Vista y opciones», «Lista | Embudo», «Etapas…» `?panel=etapas` y «Nuevo embudo…» `?panel=nuevo-embudo`).
@@ -468,7 +468,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     papelera)—, cada grupo con su permiso de siempre; «Más» sin nada adentro no aparece y una lista sin nada que agrupar no tiene botón. Es un
     popover desde 768 px y una hoja inferior por debajo, sin URL (un menú: «atrás» no lo cierra); cambiar el ancho con el panel abierto pasa
     de uno a otro sin cerrarlo. El botón dice lo activo («Vista y opciones · Lista · Míos · 25 por página») y crece en alto al 200 %. Lo
-    elegido adentro sigue en la URL como antes (`?vista=`, `?alcance=`, `?por=`). Cambiar algo en el lugar (alcance, tabla o tarjetas, ítems
+    elegido adentro va en la URL (`?vista=`, `?alcance=`, `?por=`). Cambiar algo en el lugar (alcance, tabla o tarjetas, ítems
     por página) no lo cierra; lo que lleva a otra lista o pantalla (la vista, una vista guardada, la papelera, importar) sí. Esc y la ✕ lo
     cierran y el foco vuelve al botón; con un tamaño a medio elegir con flechas, el primer Esc lo deshace. El panel llega con `diferido()` al
     abrirlo por primera vez (sin red esa vez: «Sin conexión. No se pudo abrir esto.» con «Reintentar»). Sin red con el panel abierto, una
@@ -482,7 +482,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Ítems por página:** en cada lista con Anterior/Siguiente y filtros (leads, vehículos), selector «Ítems por página» (10, 25, 50, 100) en
   «Vista y opciones» (en la hoja, en el celular; `<select>` de 44 px). Sus avisos («Sin conexión: se aplicará cuando vuelva la red.», «No se
   pudo guardar tu preferencia…» con «Reintentar») van en el panel y, con el panel cerrado, bajo la barra. Se guarda en la cuenta (`listas.por_pagina`, también en el
-  perfil); `?por=` la fija para esa página; cada lista tiene un máximo (hoy 100). Cambiarlo vuelve a la primera página y conserva filtros y
+  perfil); `?por=` la fija para esa página; cada lista tiene un máximo (100). Cambiarlo vuelve a la primera página y conserva filtros y
   búsqueda. No lo llevan el kanban ni las papeleras (`docs/RENDIMIENTO.md`).
 - **Barra superior:** «Nuevo» (a la izquierda del tipo de cambio) abre un modal sin pantalla propia (`?panel=crear`: recargar lo reabre, «atrás» lo cierra) con lo que quien mira
   puede crear, en este orden y filtrado con `puede()` (lo que nunca podrá no aparece; «Ver como»: las del rol mirado): **Lead** (`leads.crear`) → el drawer `?panel=nuevo-lead` en la
@@ -609,7 +609,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 ### Relacionados (estados propios)
 
 Arriba de cada detalle, en dos presentaciones que elige cada lugar (`presentacion`, obligatoria): **en una línea** en los resúmenes (`/vehiculos?vehiculo=`, `/leads?lead=`) y en logística
-(la página de la unidad y el drawer de `/logistica/gastos?unidad=`), y **compacta** en las fichas (`/vehiculos/[id]`, un bloque de la columna derecha, con `leads.ver`; `/leads/[id]`, un bloque
+(la página de la unidad y el drawer de `/logistica/gastos?vehiculo=`), y **compacta** en las fichas (`/vehiculos/[id]`, un bloque de la columna derecha, con `leads.ver`; `/leads/[id]`, un bloque
 de la columna derecha con la gestión de «Vehículos» al pie, con `vehiculos.ver`). Tres grupos: **Vinculado**, **Interesado** y **Cotizado** (éste sólo con `cotizaciones.ver`). **Un grupo sin nada (ni lo que no se ve) no
 se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «Relacionados»» del bloque o de la línea.
 
@@ -830,8 +830,8 @@ y enfoca su título).
   con cada requisito y su estado **dicho con texto** («Cumplido» / «Falta»), «Obligatorio» / «Informativo», su detalle («1 de 2
   aprobados») y, en cada falta (obligatoria o informativa), **lo que la destraba**: un botón chico con el verbo («Subir», «Revisar», «Completar»,
   «Registrar», «Ir a Documentos/Transporte/Aduana/Pagos/Repuestos/Cotizaciones», «Ir al vehículo», «Ir al proyecto», «Vincular», «Pedirlo»; el nombre accesible
-  lleva el objeto: «Subir «BL»») y, si hay más, hasta dos en el «⋯» del requisito («Más acciones de «BL»»). Mide lo que medía el enlace de antes (44 px en
-  el celular): la tarjeta no crece. «Subir» abre «Subir documentos» con el tipo elegido (drawer en escritorio, la bandeja del bloque en el celular); con uno
+  lleva el objeto: «Subir «BL»») y, si hay más, hasta dos en el «⋯» del requisito («Más acciones de «BL»»). Mide 44 px en
+  el celular: la tarjeta no crece. «Subir» abre «Subir documentos» con el tipo elegido (drawer en escritorio, la bandeja del bloque en el celular); con uno
   ya subido, «Revisar» lleva a Documentos con el grupo del tipo a la vista (no se aprueba sin mirar el archivo); «Completar» lleva el foco al campo del
   transporte; «Registrar» abre «Registrar pago» vacío. Quien no puede: «Pedirlo» (con `agenda.tareas.asignar`) o «Pídeselo a quien administra los roles.»
   (en la línea sin otra acción; como nota del «⋯» si hay una). Lo que nunca podrá no aparece. Regla apagada (quien tiene la clave del hueco y el hueco no
@@ -902,7 +902,7 @@ y enfoca su título).
   ver esto».
 - **`/logistica/gastos`** (`logistica.ver` y `logistica.gastos.ver` o `pagos.ver`): vista `?ver=gastos|pagos` (sólo con las dos claves;
   cambiar no conserva filtros); filtros origen (con dos o más), categoría, «Sin confirmar» y rango de fecha; **ninguna suma**. La fila abre
-  el panel de la unidad (`?vehiculo=` de `/logistica/gastos`, el único drawer de la unidad que queda) sin perder filtros ni página y la lista se relee al cerrarlo. El pago confirmado dice «Confirmado»
+  el panel de la unidad en un drawer (`?vehiculo=`) sin perder filtros ni página y la lista se relee al cerrarlo. El pago confirmado dice «Confirmado»
   con su fecha (quién, en el sello del panel). «Ver todos en Gastos» sale del tope de los huecos «Gastos» y «Pagos», filtrado por origen.
 - **`/logistica/embarques`** (`logistica.ver`): `?grupo=embarques|contenedores`; filtros naviera, puertos (de los catálogos activos),
   estado («En tránsito», «Ya llegaron») y búsqueda por booking o contenedor (3). Fila: la clave (abre el resumen), naviera, ruta, zarpe,
@@ -933,7 +933,7 @@ y enfoca su título).
   sin unidades no hay nada que repartir; más de 200 no se reparte; el equivalente en base lo calcula la base.
 - **Estados de la página de la unidad:**
   - Cargando: `EsqueletoDeLaUnidad`, con la forma de las zonas (en `loading.tsx` y en el `Suspense`); un hueco, `EsqueletoDelHueco` mientras llega su código y después el suyo; la foto y los relacionados, esqueletos del mismo tamaño, sin salto.
-  - No existe, papelera o no se ve: «Este vehículo ya no está disponible» (igual que antes, sin confirmar que existe); sin `logistica.ver`: «No tienes permiso para ver esto».
+  - No existe, papelera o no se ve: «Este vehículo ya no está disponible» (sin confirmar que existe); sin `logistica.ver`: «No tienes permiso para ver esto».
   - Sin permiso para un hueco: no aparece, ni su pestaña; la zona vacía no se dibuja. Flujo ilegible: aviso en la cabecera y los huecos con regla no se dibujan. Sin fase: «Sin fase», sin días, y «Qué falta» con los destinos iniciales. «Sin resolver»: la insignia y «La ganamos» en «Qué falta».
   - Error de lectura de un hueco: el suyo, con «Reintentar», dentro de su zona. Error al dibujar un hueco: «No pudimos mostrar «<título>».» con «Reintentar» (`LimiteDelHueco`); sin red al pedir su código: el aviso de `diferido` en su zona. Conflicto (`PT409`): como en mover, transporte y documentos.
   - Topes: documentos 50 con `<AvisoDeTope>`; notas e historial «Ver más» hasta 500 con «Ir a una fecha»; gastos y pagos 50 con «Ver todos en Gastos».
@@ -1225,8 +1225,8 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
 - **Resumen (`?lead=`), la versión corta de la ficha, sin pestañas:** título con nombre y número; tipo, marcas, «Editar» (cartera y `leads.editar`),
   «Abrir ficha», «⋯»; «Relacionados» en una línea (con `vehiculos.ver`, se lee al abrir); «Teléfono» (tal como lo entrega la vista), «Origen del lead»,
   «Último seguimiento» y «Recordatorio» (los de la fila: «Sin seguimientos», «—»). «Anotar seguimiento…» y «Agendar recordatorio…» del «⋯» abren su modal
-  dentro del resumen (`?lead=<id>&panel=…`, sin `para`); al guardar, el resumen relee su lead y la lista su página. `?lead=<id>&pestana=seguimientos|recordatorios`
-  (de antes) lleva a la ficha en su bloque. Uno que deja de verse: «Este lead ya no está disponible: no existe o ya no tienes acceso.».
+  dentro del resumen (`?lead=<id>&panel=…`, sin `para`); al guardar, el resumen relee su lead y la lista su página. Un `?lead=<id>&pestana=seguimientos|recordatorios`
+  viejo lleva a la ficha en su bloque. Uno que deja de verse: «Este lead ya no está disponible: no existe o ya no tienes acceso.».
 
 ### Leads: ficha (estados propios)
 
@@ -1414,7 +1414,8 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 
 - Inicio = bandeja de trabajo por rol, no dashboard; el tablero analítico vive en `/tablero`.
 - El teléfono principal se verifica al tipear, no al guardar: el duplicado no cuesta un formulario entero.
-- Mover de fase con el mismo panel de requisitos desde la cadena y desde la ficha; nunca drag & drop (oculta el porqué del rechazo).
+- Mover de fase en la página de la unidad, con «Qué falta» a la vista (la bandeja, la cadena y la ficha llevan ahí); nunca drag & drop (oculta el
+  porqué del rechazo).
   Documentos se suben al confirmar, nunca al elegir el archivo.
 - Chat con menciones `#` que abren el drawer de la entidad sin salir; referenciar no otorga acceso.
 - Los roles de una persona se cambian con un interruptor por rol (permisos = unión de sus roles); la matriz guarda cada celda sola.
