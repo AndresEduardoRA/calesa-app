@@ -10,7 +10,6 @@ import {
 } from './soporte/leads-listado'
 import {
   elegirTamano,
-  esperarHidratado,
   filasDelListado,
   fijarPreferencia,
   paginaSiguiente,
@@ -18,7 +17,7 @@ import {
   preferenciaDe,
   registrarRed,
   type LineaDeRed,
-  selectorDeTamano,
+  abrirSelectorDeTamano,
 } from './soporte/listas-por-pagina'
 import { capturar, demorarAcciones, tactil } from './soporte/recorrido'
 import { MAXIMO_DE_PAGINA_DE_LEADS } from '../src/modules/leads/entities/listado'
@@ -82,19 +81,18 @@ test('sin haber elegido, la lista trae 50 y el selector lo dice; elegir cambia, 
   await entrar(page, t.personas.berta)
   await irALeads(page, consulta())
   await expect(filasDelListado(page)).toHaveCount(50)
-  await expect(selectorDeTamano(page)).toHaveValue('50')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('50')
   expect(parametrosDe(page).has('por')).toBe(false)
-  await tactil(page, selectorDeTamano(page))
-
+  await tactil(page, await abrirSelectorDeTamano(page))
   // El selector ofrece hasta el máximo de ESTA lista (50: a 100 el plan del listado de la dueña deja el índice).
-  expect(await selectorDeTamano(page).locator('option').allTextContents()).toEqual(
+  expect(await (await abrirSelectorDeTamano(page)).locator('option').allTextContents()).toEqual(
     tamanosHasta(MAXIMO_DE_PAGINA_DE_LEADS).map(String),
   )
   // Cada valor: la página trae esa cantidad y la URL lo pide.
   for (const tamano of [10, 25, 50]) {
     await elegirTamano(page, tamano)
     await expect(filasDelListado(page)).toHaveCount(tamano)
-    await expect(selectorDeTamano(page)).toHaveValue(String(tamano))
+    await expect(await abrirSelectorDeTamano(page)).toHaveValue(String(tamano))
     expect(parametrosDe(page).get('por')).toBe(String(tamano))
     expect(parametrosDe(page).has('cursor')).toBe(false)
   }
@@ -104,7 +102,7 @@ test('sin haber elegido, la lista trae 50 y el selector lo dice; elegir cambia, 
   await expect.poll(() => preferenciaDe(t.personas.berta)).toBe(25)
   await irALeads(page, consulta())
   await expect(filasDelListado(page)).toHaveCount(25)
-  await expect(selectorDeTamano(page)).toHaveValue('25')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
   expect(parametrosDe(page).has('por')).toBe(false)
   await capturar(page, info, 'leads-25')
 })
@@ -152,7 +150,7 @@ for (const ms of [1_000, 6_000]) {
     await expect(page).toHaveURL(/cursor=/)
     const acciones = await demorarAcciones(page, ms)
     await elegirTamano(page, 25)
-    await expect(selectorDeTamano(page)).toHaveValue('25')
+    await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
     // Mientras el guardado no termina, la página es la de antes.
     expect(parametrosDe(page).has('por')).toBe(false)
     expect(parametrosDe(page).has('cursor')).toBe(true)
@@ -164,7 +162,7 @@ for (const ms of [1_000, 6_000]) {
     await expect.poll(() => preferenciaDe(t.personas.berta)).toBe(25)
     // Un solo guardado: ni se repitió ni quedó otro en vuelo.
     expect(acciones).toHaveLength(1)
-    await expect(selectorDeTamano(page)).toHaveValue('25')
+    await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
   })
 }
 
@@ -182,10 +180,10 @@ test('si la lectura de la página nueva tarda, el selector sigue en lo elegido y
     await ruta.fallback()
   })
   await elegirTamano(page, 25)
-  await expect(selectorDeTamano(page)).toHaveValue('25')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
   await expect(filasDelListado(page)).toHaveCount(25, { timeout: 20_000 })
   expect(parametrosDe(page).get('por')).toBe('25')
-  await expect(selectorDeTamano(page)).toHaveValue('25')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
   await expect.poll(() => preferenciaDe(t.personas.berta)).toBe(25)
 })
 
@@ -197,12 +195,12 @@ test('un valor manipulado en la URL se ignora y manda la preferencia; uno válid
   for (const malo of ['7', '100000', 'abc', '-5', '0', '25.5', '1e2', '', '%20', '10;DROP']) {
     await irALeads(page, consulta(`&por=${malo}`))
     await expect(filasDelListado(page)).toHaveCount(25)
-    await expect(selectorDeTamano(page)).toHaveValue('25')
+    await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
   }
   // Un tamaño del selector pero más alto que el máximo de la lista se acota a ese máximo: 100 se ve como 50.
   await irALeads(page, consulta('&por=100'))
   await expect(filasDelListado(page)).toHaveCount(MAXIMO_DE_PAGINA_DE_LEADS)
-  await expect(selectorDeTamano(page)).toHaveValue(String(MAXIMO_DE_PAGINA_DE_LEADS))
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue(String(MAXIMO_DE_PAGINA_DE_LEADS))
   await irALeads(page, consulta('&por=10'))
   await expect(filasDelListado(page)).toHaveCount(10)
   // Pedirlo por la URL no cambia lo que recuerda la cuenta: eso sólo lo hace elegir en el selector.
@@ -220,7 +218,7 @@ test('una lista con menos filas que la página no ofrece páginas, y el selector
   expect(filas).toBeGreaterThan(1)
   expect(filas).toBeLessThan(25)
   await expect(page.getByRole('link', { name: 'Siguiente' })).toHaveCount(0)
-  await expect(selectorDeTamano(page)).toHaveValue('50')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('50')
 })
 
 test('dos pestañas con valores distintos se mantienen; al recargar sin `?por=` manda lo último guardado', async ({
@@ -258,7 +256,7 @@ test('la preferencia viaja de un dispositivo al otro', async ({ page, browser })
   await entrar(otro, t.personas.berta, { fresco: true })
   await otro.goto(`/leads${consulta()}`)
   await expect(filasDelListado(otro)).toHaveCount(10)
-  await expect(selectorDeTamano(otro)).toHaveValue('10')
+  await expect(await abrirSelectorDeTamano(otro)).toHaveValue('10')
   await contexto.close()
 })
 
@@ -269,12 +267,13 @@ test('sin red el cambio se muestra, no navega ni se pierde, y sale solo al volve
   await entrar(page, t.personas.berta)
   await irALeads(page, consulta())
   await expect(filasDelListado(page)).toHaveCount(50)
+  await abrirSelectorDeTamano(page) // con red: el código del panel llega la primera vez que se abre
   await page.context().setOffline(true)
   await elegirTamano(page, 25)
   await expect(
     page.getByText('Sin conexión: se aplicará cuando vuelva la red.').first(),
   ).toBeVisible()
-  await expect(selectorDeTamano(page)).toHaveValue('25')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
   expect(parametrosDe(page).has('por')).toBe(false)
   await expect(filasDelListado(page)).toHaveCount(50)
   expect(await preferenciaDe(t.personas.berta)).toBe(50)
@@ -294,8 +293,7 @@ test('con el teclado las flechas recorren sin ir al servidor y Enter confirma; E
   await fijarPreferencia(t.personas.berta, 50)
   await entrar(page, t.personas.berta)
   await irALeads(page, consulta())
-  const selector = selectorDeTamano(page)
-  await esperarHidratado(page)
+  const selector = await abrirSelectorDeTamano(page) // ya hidratada la página
   await selector.focus()
   await page.keyboard.press('ArrowUp')
   await expect(selector).toHaveValue('25')
@@ -303,7 +301,7 @@ test('con el teclado las flechas recorren sin ir al servidor y Enter confirma; E
   expect(parametrosDe(page).has('por')).toBe(false)
   await expect(filasDelListado(page)).toHaveCount(50)
   await page.keyboard.press('Escape')
-  await expect(selector).toHaveValue('50')
+  await expect(selector).toHaveValue('50') // y el panel sigue abierto: el primer Esc no lo cierra
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('ArrowUp')
   await expect(selector).toHaveValue('10')
@@ -329,7 +327,7 @@ test('«Ver como»: manda la preferencia de quien mira, no la de la persona vist
     .addCookies([{ name: 'perspectiva', value: rol?.id ?? '', url: new URL(page.url()).origin }])
   await irALeads(page, `?q=${BUSCAR}D`)
   await expect(filasDelListado(page)).toHaveCount(25)
-  await expect(selectorDeTamano(page)).toHaveValue('25')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
 })
 
 test('una preferencia de 100 (la de otra lista) se ve como el máximo de ésta, sin cambiarla', async ({
@@ -339,7 +337,7 @@ test('una preferencia de 100 (la de otra lista) se ve como el máximo de ésta, 
   await entrar(page, t.personas.berta)
   await irALeads(page, consulta())
   await expect(filasDelListado(page)).toHaveCount(MAXIMO_DE_PAGINA_DE_LEADS)
-  await expect(selectorDeTamano(page)).toHaveValue(String(MAXIMO_DE_PAGINA_DE_LEADS))
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue(String(MAXIMO_DE_PAGINA_DE_LEADS))
   // Mirar la lista no toca lo que recuerda la cuenta: en el inventario, que admite 100, sigue siendo 100.
   expect(await preferenciaDe(t.personas.berta)).toBe(100)
 })

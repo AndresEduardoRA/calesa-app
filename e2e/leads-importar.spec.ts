@@ -8,6 +8,7 @@ import { aLaVista } from './soporte/inventario'
 import { borrarLeadsDePrueba, camposDeLead, exigir } from './soporte/leads'
 import { telefonoAlAzar } from './soporte/leads-alta'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
+import { exigirQueNoOfrece } from './soporte/vista-y-opciones'
 
 // Importar leads desde un CSV (parte 8) contra la app compilada y el Supabase local: el archivo de
 // ejemplo, un archivo con filas buenas y malas (las válidas entran, las demás se explican), descargar los
@@ -60,8 +61,7 @@ const delResultado = (page: Page, texto: string) =>
 test('sin leads.crear no se ofrece importar y la pantalla lo dice', async ({ page }) => {
   await entrar(page, t.personas.sinCrear)
   await page.goto('/leads')
-  await expect(page.getByRole('link', { name: 'Importar' })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'CSV' })).toHaveCount(0)
+  await exigirQueNoOfrece(page, 'Importar…', 'Vista')
   await page.goto('/leads/importar')
   await expect(page.getByText('No tienes permiso para importar leads.')).toBeVisible()
 })

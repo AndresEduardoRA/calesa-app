@@ -15,6 +15,7 @@ import { crearPurgadora, estadoDeLead, loteDe } from './soporte/leads-papelera'
 import { embudoPorDefecto, irAlEmbudo } from './soporte/leads-oportunidades'
 import { borrarLotesDePrueba } from './soporte/papelera'
 import { sql } from './soporte/sql'
+import { elegirEnVistaYOpciones } from './soporte/vista-y-opciones'
 
 // Las confirmaciones de leads que no tenían URL (cierre 2): salir de un lead, purgar de la papelera y eliminar un embudo. Cada una
 // con su `?panel=`: se abre, Esc devuelve el foco, «atrás» y la recarga, sin red, doble clic, y una URL que no se puede abrir.
@@ -144,7 +145,7 @@ test('eliminar un embudo: su URL junto al panel de etapas, Esc, atrás, recarga,
   expect(creado.error).toBeNull()
   await entrar(page, t.personas.berta)
   await irAlEmbudo(page, `&embudo=${id}`)
-  await page.getByRole('button', { name: 'Etapas', exact: true }).click()
+  await elegirEnVistaYOpciones(page, 'Etapas…')
   const panel = page.getByRole('dialog', { name: /Etapas de/ })
   await expect(panel).toBeVisible()
   const disparador = panel.getByRole('button', { name: 'Eliminar embudo' })

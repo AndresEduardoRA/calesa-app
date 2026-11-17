@@ -24,6 +24,7 @@ import {
 import { borrarLotesDePrueba } from './soporte/papelera'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
+import { exigirQueNoOfrece } from './soporte/vista-y-opciones'
 
 // La papelera de leads: enviar desde la ficha y desde el «⋯» de la fila con «Deshacer», restaurar
 // (también con el teléfono tomado), purgar con confirmación y quién ve qué.
@@ -180,7 +181,7 @@ test('sin permiso: la papelera no abre, no hay enlace y el «⋯» de la ficha n
     page.getByText('No tienes permiso para enviar leads a la papelera ni para vaciarla.'),
   ).toBeVisible()
   await irALeads(page)
-  await expect(page.getByRole('link', { name: 'Papelera' })).toHaveCount(0)
+  await exigirQueNoOfrece(page, 'Papelera', 'Vista')
   await irAFicha(page, lead.id)
   await expect(tituloDeLaFicha(page, lead.nombre)).toBeVisible()
   // El «⋯» de la ficha tiene las marcas (basta con ver el lead), pero no «Enviar a la papelera».

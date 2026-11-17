@@ -11,6 +11,7 @@ import {
   prepararRecorrido,
   type TerrenoDelRecorrido,
 } from './soporte/recorrido'
+import { elegirEnVistaYOpciones } from './soporte/vista-y-opciones'
 
 // Los paneles con formulario preguntan al salir desde un aviso (cierre 3, hallazgo 2): con algo escrito en el panel, pulsar «Abrir ficha»
 // de un aviso (`sale: true`) pregunta en su pie («Tienes cambios sin guardar.»), «Seguir editando» no tira nada y «Descartar» sigue.
@@ -94,7 +95,7 @@ const PANELES: Panel[] = [
     abrir: async (page) => {
       const panel = page.getByRole('dialog', { name: /^Etapas de/ })
       await expect(async () => {
-        await aLaVista(page.getByRole('button', { name: 'Etapas', exact: true })).click()
+        await elegirEnVistaYOpciones(page, 'Etapas…')
         await expect(panel).toBeVisible({ timeout: 1000 })
       }).toPass()
       return panel

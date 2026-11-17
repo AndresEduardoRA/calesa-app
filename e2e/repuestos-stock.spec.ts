@@ -2,6 +2,7 @@ import { expect, test } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
 import { borrarPersonasDePrueba, correoDePrueba, crearDuenaDePrueba } from './soporte/base'
 import { sql } from './soporte/sql'
+import { abrirVistaYOpciones } from './soporte/vista-y-opciones'
 
 // El stock de un ítem de repuestos (8.10-2 y 8.10-3): en la hoja de `/repuestos/[id]`, la dueña abre «Stock» de un ítem de 3 unidades, pasa 2 a stock con una nota, la
 // fila dice «En stock: 2» y el historial lista el movimiento; recargar con la URL del panel lo vuelve a abrir. Después, en la vista «Stock» de `/repuestos` la fila dice 2,
@@ -103,7 +104,10 @@ test('en la vista «Stock»: reasignar 1 a otro proyecto y vender suelto lo que 
   const nDestino = numeroDe(idDestino)
 
   await page.goto('/repuestos')
-  await page
+  // «Vista y opciones» › «Qué ver» › «Stock».
+  await (
+    await abrirVistaYOpciones(page)
+  )
     .getByRole('navigation', { name: 'Qué ver' })
     .getByRole('link', { name: 'Stock' })
     .click()

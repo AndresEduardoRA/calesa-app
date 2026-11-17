@@ -10,8 +10,9 @@ import {
 } from './soporte/leads-listado'
 import { irAlEmbudo } from './soporte/leads-oportunidades'
 import { capturar } from './soporte/recorrido'
+import { abrirVistaYOpciones, botonDeVistaYOpciones } from './soporte/vista-y-opciones'
 
-// Las etiquetas de los botones chicos («Nuevo lead», «Filtros», «Vistas», «Importar», «Papelera», «Etapas») crecen con el texto
+// Las etiquetas de los botones chicos («Nuevo lead», «Filtros», «Vista y opciones», «Etapas…») crecen con el texto
 // (cierre 3, hallazgo 4). El botón base animaba todo con `transition-all`, también `font-size` y el alto: al cambiar la raíz el
 // texto crecía a medio camino y una captura o una medición tomada enseguida lo veía casi igual (13 px y no 26), mientras los
 // campos y los títulos, sin transición, ya estaban al doble. Se lee en el mismo instante del cambio, sin esperar.
@@ -61,19 +62,16 @@ function exigirElDoble(medidas: { antes: number[]; despues: number[] }, nombres:
   })
 }
 
-test('Filtros, Vistas, Importar y Papelera doblan su texto con la raíz al 200 %', async ({
+test('«Filtros» y «Vista y opciones» doblan su texto con la raíz al 200 %', async ({
   page,
 }, info) => {
   await entrar(page, t.personas.berta)
   await irALeads(page)
-  const nombres = ['Filtros', 'Vistas', 'Importar', 'Papelera']
-  const botones = nombres.map((nombre) =>
-    aLaVista(
-      page
-        .getByRole('button', { name: nombre, exact: true })
-        .or(page.getByRole('link', { name: nombre, exact: true })),
-    ).first(),
-  )
+  const nombres = ['Filtros', 'Vista y opciones']
+  const botones = [
+    aLaVista(page.getByRole('button', { name: 'Filtros', exact: true })).first(),
+    botonDeVistaYOpciones(page).first(),
+  ]
   for (const boton of botones) await expect(boton).toBeVisible()
   exigirElDoble(await tamanos(page, botones), nombres)
   await page.evaluate(() => {
@@ -83,12 +81,13 @@ test('Filtros, Vistas, Importar y Papelera doblan su texto con la raíz al 200 %
   await capturar(page, info, 'botones-200')
 })
 
-test('«Etapas» dobla su texto con la raíz al 200 %', async ({ page }) => {
+test('«Etapas…» dobla su texto con la raíz al 200 %', async ({ page }) => {
   await entrar(page, t.personas.berta)
   await irAlEmbudo(page)
-  const etapas = aLaVista(page.getByRole('button', { name: 'Etapas', exact: true })).first()
+  const panel = await abrirVistaYOpciones(page)
+  const etapas = panel.getByRole('button', { name: 'Etapas…', exact: true })
   await expect(etapas).toBeVisible()
-  exigirElDoble(await tamanos(page, [etapas]), ['Etapas'])
+  exigirElDoble(await tamanos(page, [etapas]), ['Etapas…'])
 })
 
 test('«Nuevo» de la barra superior dobla su texto donde se dibuja con texto', async ({ page }) => {
