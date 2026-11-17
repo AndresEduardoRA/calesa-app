@@ -127,6 +127,7 @@ export async function restaurarEmpresa(instantanea?: InstantaneaDeEmpresa): Prom
             actividad_dias: 14,
             limpieza_automatica: true,
             limpieza_dias_gracia: 7,
+            leyenda_tipos_cambio: null,
           },
     )
     .eq('id', 1)

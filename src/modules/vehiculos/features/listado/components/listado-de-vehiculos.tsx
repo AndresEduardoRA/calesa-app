@@ -21,7 +21,6 @@ import type { PermisoDeVitrina } from '../../../entities/vitrina'
 import { BotonNuevoVehiculo, ID_DEL_MOTIVO_DE_ALTA } from '../../alta/components/botones'
 import type { DisponibilidadDeApibara } from '../../../entities/apibara'
 import { PanelDeVehiculo } from '../../alta/components/panel-de-vehiculo'
-import { EnlaceAPapelera } from '../../papelera/components/enlace-a-papelera'
 import { ResumenDeVehiculoDiferido } from '../../resumen/components/diferidos'
 import { useResumenDeVehiculo } from '../../resumen/hooks/use-resumen-de-vehiculo'
 import { useVistaDelInventario } from '../hooks/use-vista-del-inventario'
@@ -30,7 +29,7 @@ import { PestanasDeOrigen } from './pestanas-de-origen'
 import { PieDeFiltros } from './pie-de-filtros'
 import { ResultadoDelListado } from './resultado-del-listado'
 import type { DatosDelOrigen, FilaDeVehiculo } from './tipos'
-import { VistasDeVehiculos } from './vistas-de-vehiculos'
+import { useOpcionesDelListado } from './opciones-del-listado'
 import { ProveedorDeMarcasDeVisto } from '@/modules/equipo/client'
 import { resolverAcciones, SIN_ACCIONES } from '@/shared/lib/acciones-del-aviso'
 import { CLAVE_DE_PANEL } from '@/shared/lib/filtros/url'
@@ -148,12 +147,14 @@ function rutaDeAltaEnLaHoja(para: ParaCotizar): string {
 }
 
 // El inventario: una pestaña por origen y, adentro, los filtros de ese origen, su lista y el
-// panel de alta y edición. Todo el estado (origen, filtros, página, panel) vive en la URL.
+// panel de alta y edición. Todo el estado (origen, filtros, página, panel) vive en la URL. `vistas` y `verPapelera` van a «Vista y opciones»
+// con `props`: acá sólo se apartan de lo que viaja al resto.
 export function ListadoDeVehiculos(props: Props) {
-  const { origenes, esquema, vistas, puedeConfigurarCampos, permisoDeAlta, enEdicion, ...demas } =
-    props
-  const { verPapelera, apibara, para, paraCotizar, porPagina, vistaPreferida, ...resto } = demas
+  const { origenes, esquema, vistas: _v, puedeConfigurarCampos, permisoDeAlta, ...demas } = props
+  const { verPapelera: _p, enEdicion, apibara, para, paraCotizar, porPagina, ...otros } = demas
+  const { vistaPreferida, ...resto } = otros
   const vista = useVistaDelInventario(vistaPreferida)
+  const opciones = useOpcionesDelListado({ ...props, origenId: props.origen.id, vista })
   const { origen, campos, categorias, fases, vitrina, limpiezaHoy, pagina, editables } = resto
   const nuevo = <BotonNuevoVehiculo origen={origen} permiso={permisoDeAlta} />
   const resumen = useResumenDeVehiculo()
@@ -182,13 +183,8 @@ export function ListadoDeVehiculos(props: Props) {
         key={origen.id}
         esquema={esquema}
         porPagina={porPagina}
-        vistas={<VistasDeVehiculos esquema={esquema} origenId={origen.id} vistas={vistas} />}
-        acciones={
-          <>
-            {verPapelera ? <EnlaceAPapelera /> : null}
-            {nuevo}
-          </>
-        }
+        opciones={opciones}
+        acciones={nuevo}
         pieDelPanel={
           <PieDeFiltros
             origen={origen}
@@ -201,7 +197,6 @@ export function ListadoDeVehiculos(props: Props) {
           {...resto}
           esquema={esquema}
           vista={vista.vista}
-          alCambiarVista={vista.cambiar}
           alAbrir={resumen.abrir}
           abierto={resumen.id}
           accionDeVacio={permisoDeAlta.estado === 'habilitado' ? nuevo : undefined}

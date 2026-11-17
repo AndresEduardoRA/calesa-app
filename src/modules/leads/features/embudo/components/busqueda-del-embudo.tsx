@@ -49,7 +49,7 @@ export function BusquedaDelEmbudo() {
   })
 
   return (
-    <div className="grid gap-1">
+    <div className="grid min-w-0 flex-1 basis-56 gap-1">
       <label htmlFor={ID_DE_LA_BUSQUEDA_DEL_EMBUDO} className="sr-only">
         Buscar en el embudo
       </label>
@@ -62,7 +62,7 @@ export function BusquedaDelEmbudo() {
           id={ID_DE_LA_BUSQUEDA_DEL_EMBUDO}
           type="search"
           placeholder="Título o lead"
-          className="h-11 w-full pl-8 sm:w-64 md:h-9"
+          className="h-11 w-full pl-8 md:h-9"
           value={texto}
           onChange={(evento) => {
             setTexto(evento.target.value)

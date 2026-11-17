@@ -9,6 +9,7 @@ import {
   type TerrenoDelRecorrido,
 } from './soporte/recorrido'
 import { contraste } from '../src/shared/lib/color'
+import { elegirEnVistaYOpciones } from './soporte/vista-y-opciones'
 
 // Un aviso con descripción (cierre 4, pendiente 3): el único que hoy la lleva es el de la sesión vencida («Tu sesión venció»,
 // «Lo que escribiste sigue acá…», con «Ingresar»). Sonner le fija el ancho, mide su alto una sola vez y pinta la descripción con un
@@ -39,7 +40,7 @@ const haceHex = (rgb: string): string => {
 // Con el panel de «Etapas» abierto y un cambio hecho, se pierde la sesión (otra pestaña la cerró) y se guarda: el aviso de «sesión
 // vencida» sale con su descripción, encima del pie del panel, sin cerrarlo ni perder lo hecho.
 async function sesionVencida(page: Page) {
-  await page.getByRole('button', { name: 'Etapas', exact: true }).click()
+  await elegirEnVistaYOpciones(page, 'Etapas…')
   const panel = page.getByRole('dialog', { name: /Etapas de/ })
   await expect(panel).toBeVisible()
   await panel.getByRole('button', { name: 'Bajar Nuevo' }).click()

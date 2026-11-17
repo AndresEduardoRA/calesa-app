@@ -183,6 +183,7 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Modela un filtro sí/no como elección de valores (todas / sí / no), no como booleano: un «No» tri-estado no filtra y el chip dice lo contrario.
 - Nunca pongas un monto en el título de un `<Confirmar>`, en `aria-label`, `title` ni `<option>`: esquiva `<Monto>` y el Modo Live lo deja a la vista. Etiqueta neutra y el monto al lado.
 - Dibuja como texto, nunca como enlace ni HTML, un texto libre de un visitante anónimo (`ruta`, `fuente`).
+- Mira `navigator.onLine` también después de cada `await` antes de navegar: si la red se fue mientras se guardaba, la navegación del router falla y Next recarga la página, que sin red queda en blanco. Lo elegido queda pendiente y sale al volver.
 - Pon `method="post"` en todo `<form>` con credenciales o datos sensibles: enviado antes de hidratar sale por GET y deja la contraseña en la URL.
 - Si falla la lectura de un permiso o una regla, apaga el botón con motivo y nunca lo habilites (`dominada: null` → apagado).
 - Al comparar rutas por prefijo, `/` sólo coincide consigo misma: si no, vuelve «disponible» cualquier ruta.
@@ -243,6 +244,7 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Un `toHaveURL` que la página anterior ya cumple no prueba nada: espera el estado nuevo con `expect.poll` (que exista la cotización nueva) y recién entonces mira la URL.
 - nuqs dibuja al instante y escribe la URL después: espera la clave en la URL antes de `reload()` o «atrás», o recarga la URL de antes (pasa en el celular).
 - Un clic antes de hidratar se pierde: reintenta con tope corto hasta que la URL pida el panel y para si ya lo pide, porque cada clic de más suma una entrada al historial y rompe «atrás».
+- Abre un popover o una hoja sólo con la pantalla en su forma final: la primera visita al embudo cambia de rama al llegar el tablero y desmonta lo abierto. `abrirVistaYOpciones()` reabre si se cerró solo.
 - Mide cajas dentro de un diálogo sólo cuando termina la animación (`quieto()`): durante la escala 44 px miden 42 y `getBoundingClientRect` miente.
 - Centra el botón antes del clic: tras `scrollIntoViewIfNeeded` queda al borde inferior, debajo de la burbuja del chat.
 - Un `input type=date` conserva el foco en su subcampo y `blur()` no lo suelta: reintenta y descarta si sigue enfocado, o la medición de foco visible se compara consigo misma.

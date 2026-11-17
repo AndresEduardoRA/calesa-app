@@ -9,6 +9,7 @@ import { CLAVE_DE_PANEL, camposFiltrables, type EsquemaDeFiltros } from '@/share
 import type { Pagina } from '@/shared/lib/paginacion'
 import { Button } from '@/shared/ui/button'
 import { FilterShell, useFiltrosDelListado } from '@/shared/ui/filtros'
+import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import type { ModoDelListado } from '../../../entities/alcance'
 import type { CampoDeLead } from '../../../entities/campo'
 import { privadosFiltrando } from '../../../entities/filtros'
@@ -16,13 +17,12 @@ import type { FiltroDescartado } from '../../../entities/filtros-descartados'
 import { SECCION_MARCAS } from '../../../entities/filtros-de-marcas'
 import type { FilaDeLead } from '../../../entities/listado'
 import type { RecorridoAcotado } from '../../../entities/candidatos'
-import { ConmutadorDeVista } from '../../embudo/components/conmutador-de-vista'
-import { AccionesDeCsv } from '../../exportar/components/acciones-de-csv'
+import { DialogoDeExportarDiferido } from '../../exportar/components/diferidos'
+import { usePanelDeExportar } from '../../exportar/hooks/use-panel-de-exportar'
 import { DialogoDeEtiquetas } from '../../etiquetas/components/dialogo-de-etiquetas'
 import { useEtiquetas } from '../../etiquetas/hooks/use-etiquetas'
 import { usePanelDeEtiquetas } from '../../etiquetas/hooks/use-panel-de-etiquetas'
 import { RefrescarAlVolver } from '../../ficha/components/refrescar-al-volver'
-import { EnlaceAPapeleraDeLeads } from '../../papelera/components/enlace-a-papelera'
 import { DrawerDeLead } from '../../rapido/components/drawer-de-lead'
 import { useDrawerDeLead } from '../../rapido/hooks/use-drawer-de-lead'
 import { useAccionDeFila } from '../hooks/use-accion-de-fila'
@@ -32,10 +32,9 @@ import { AvisoDePrivados } from './aviso-de-privados'
 import { AvisoDeTachadosOcultos } from './aviso-de-tachados-ocultos'
 import { PieDeFiltros } from './pie-de-filtros'
 import { ResultadoDelListado } from './resultado-del-listado'
-import { SelectorDeAlcance } from './selector-de-alcance'
+import { opcionesDelListado } from './opciones-del-listado'
 import type { DatosDeLaLista } from './tipos'
 import type { DatosDeUltimoContacto } from './ultimo-contacto'
-import { VistasDeLeads } from './vistas-de-leads'
 import { ProveedorDeMarcasDeVisto } from '@/modules/equipo/client'
 import type { HuecosDelRapido } from '../../rapido/huecos'
 
@@ -104,25 +103,6 @@ function PieDelPanel(props: { campos: readonly CampoDeLead[]; puedeConfigurar: b
   )
 }
 
-// Lo que va a la derecha de la barra de filtros: la vista, el alcance, exportar y la papelera, cada
-// uno sólo para quien puede.
-function AccionesDelListado({
-  modo,
-  puedeVerTodos,
-  puedeExportar,
-  puedeCrear,
-  puedeAbrirPapelera,
-}: Pick<Props, 'modo' | 'puedeVerTodos' | 'puedeExportar' | 'puedeCrear' | 'puedeAbrirPapelera'>) {
-  return (
-    <>
-      <ConmutadorDeVista actual="lista" />
-      {puedeVerTodos ? <SelectorDeAlcance modo={modo} /> : null}
-      <AccionesDeCsv puedeExportar={puedeExportar} puedeImportar={puedeCrear} />
-      {puedeAbrirPapelera ? <EnlaceAPapeleraDeLeads /> : null}
-    </>
-  )
-}
-
 // Anotar o agendar desde el «⋯»: al guardar, la página se relee y la fila muestra el seguimiento o el recordatorio nuevo (la URL no cambia).
 function AccionesDeFilaConRelectura(props: { filas: readonly FilaDeLead[]; puedeAnotar: boolean }) {
   const router = useRouter()
@@ -157,7 +137,8 @@ export function ListadoDeLeads(props: Props) {
     esquema,
     pagina,
     porPagina,
-    vistas,
+    // Van a «Vista y opciones» con `props`; acá sólo se apartan de lo que viaja al resto.
+    vistas: _vistas,
     modo,
     puedeVerTodos,
     puedeCrear,
@@ -167,7 +148,7 @@ export function ListadoDeLeads(props: Props) {
     ocultos,
     recorrido,
     eliminables,
-    puedeAbrirPapelera,
+    puedeAbrirPapelera: _puedeAbrirPapelera,
     puedeAnotar,
     tiposDeSeguimiento,
     ahora,
@@ -178,6 +159,10 @@ export function ListadoDeLeads(props: Props) {
   const [panel] = useQueryState(CLAVE_DE_PANEL, parseAsString)
   const etiquetas = useEtiquetas(delServidor.etiquetas)
   const gestionar = usePanelDeEtiquetas()
+  // El diálogo de exportar vive acá y no en la opción: así `?panel=exportar` lo abre con «Vista y opciones» cerrado (una sola llamada a
+  // `usePanelDeExportar`: `useVueltaDelFoco` no admite dos).
+  const exportar = usePanelDeExportar()
+  const exportarMontado = useAbiertoAlgunaVez(exportar.abierto) && puedeExportar
   // La lista local: una etiqueta recién creada nombra la fila antes de que vuelva el servidor.
   const datos = { ...delServidor, etiquetas: etiquetas.lista }
   const alAccion = puedeAnotar ? accionDeFila.abrir : null
@@ -190,16 +175,7 @@ export function ListadoDeLeads(props: Props) {
       <FilterShell
         esquema={esquema}
         porPagina={porPagina}
-        vistas={<VistasDeLeads esquema={esquema} vistas={vistas} modo={modo} />}
-        acciones={
-          <AccionesDelListado
-            modo={modo}
-            puedeVerTodos={puedeVerTodos}
-            puedeExportar={puedeExportar}
-            puedeCrear={puedeCrear}
-            puedeAbrirPapelera={puedeAbrirPapelera}
-          />
-        }
+        opciones={opcionesDelListado({ ...props, alExportar: exportar.abrir })}
         accionesDeSeccion={{ [SECCION_MARCAS]: <GestionarEtiquetas alAbrir={gestionar.abrir} /> }}
         pieDelPanel={<PieDelPanel campos={datos.campos} puedeConfigurar={puedeConfigurarCampos} />}
       >
@@ -228,6 +204,9 @@ export function ListadoDeLeads(props: Props) {
       </FilterShell>
       <DrawerDeLead {...datos} {...delDrawer} marcar={marcar} />
       <DialogoDeEtiquetas etiquetas={etiquetas} />
+      {exportarMontado ? (
+        <DialogoDeExportarDiferido abierto={exportar.abierto} alCerrar={exportar.cerrar} />
+      ) : null}
       <AccionesDeFilaConRelectura filas={pagina.filas} puedeAnotar={puedeAnotar} />
       {/* Lo de otra pestaña aparece al volver; con un panel abierto, no (relee la página). */}
       <RefrescarAlVolver activo={panel === null} />

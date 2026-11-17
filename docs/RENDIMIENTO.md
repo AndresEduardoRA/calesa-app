@@ -197,7 +197,10 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   (sin él el plan genérico ordena todo lo del vehículo caliente: 20 mil bloques). Las imágenes, la miniatura de 480 px; el visor, la grande. Sin caché de cliente: la ficha y la unidad se releen al actuar (`revalidarVinculo()`), el resumen
   lee al abrir y tras cada acción. El resumen de un lead pasa de 2 a 3 pedidos al abrir (`leads_vista`, `lead_telefonos_leer()` y `lead_relacionados()`, en paralelo; el bloque va con `diferido()` y por su propia pantalla,
   `pantallas/relacionados-resumen-de-lead.ts`: con el barril entero `/leads` pasaba de 530). El del vehículo, de 1 a 2 (más las fotos de la portada al acercarse).
-  JS en frío medido con el cambio: `/leads` 527,7 KB de 530 (el hueco con `diferido()` y el contexto cuestan ≈ 3,4 KB) y `/vehiculos` 496,1 de 500 (el bloque viaja dentro del resumen ya diferido y sale la pestaña «Interesados»).
+  Dos presentaciones (en una línea y compacta), sin grupos vacíos: lo que no tiene nada no se dibuja y las filas de una línea existen sólo en su popover (diferido, montado al primer clic).
+  Con un vínculo y 4 interesados (`section[aria-label="Relacionados"]`, escritorio): la ficha del vehículo 8.078 B, 58 nodos y 213 px de alto (332 px en el celular); la ficha del lead con un
+  vínculo 3.350 B, 30 nodos y 143 px; el resumen del vehículo, en una línea, 1.689 B, 8 nodos y 32 px.
+  JS en frío: `/leads` 528,9 KB de 530 (el bloque va en el resumen diferido), `/vehiculos` 497,4 de 500 (dentro del resumen ya diferido) y `/logistica/vehiculo/[id]` 443,6. El documento de la ficha del lead aporta 23,6 KB sobre `/perfil` (el lead que mide no tiene relacionados).
   El documento de la ficha del lead lleva el bloque leído en el servidor: «Datos» y «Oportunidades» siguen dentro de su tope (43 y 66 KB).
 
 - Inventario: 50 por cursor (máx. 100, `MAXIMO_DE_PAGINA_DE_VEHICULOS`), `vehiculos_origen_listado_idx`; 20 ms página, 100 / 150 ms
@@ -323,8 +326,8 @@ creado_en desc, id desc) where eliminado_en is null and situacion <> 'fase'`; re
 ## Ítems por página: qué lista lo admite y su máximo
 
 Elige 10, 25, 50 o 100 (`listas.por_pagina`, `?por=`); cada lista declara su máximo. Un máximo se gana midiendo: `db:medir:volumen` y
-`e2e/listas-por-pagina-volumen.spec.ts` (bytes, nodos, página profunda). En el celular el selector va arriba de la lista y se dibuja una sola
-vista (`UnaSolaVista`, según el `user-agent`).
+`e2e/listas-por-pagina-volumen.spec.ts` (bytes, nodos, página profunda). El selector va en «Vista y opciones» (popover o, en el celular, hoja
+inferior), que no se dibuja hasta abrirse: la carga sólo paga el botón. En el celular se dibuja una sola vista (`UnaSolaVista`, según el `user-agent`).
 
 - Listado de leads: 100; ≤ 3.610 nodos en escritorio y 3.070 en celular con filas sin seguimientos (`leads-escala.spec.ts` con `?por=100`: 3.435 y 2.920 medidos; 2.100 y 1.810 con 50:
   1.985 y 1.720 medidos). La fila no lleva un botón «+ Oportunidad» (5 nodos por fila de la tabla y 3 por tarjeta): «Nueva oportunidad…» es una línea del «⋯»; con
@@ -530,6 +533,10 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
   (`scripts/guardas/xyflow-diferido.test.ts`). Una sola lectura del flujo como antes (los topes de `leerFlujoParaConfigurar`); hasta 200 cajas y 500
   flechas, con `onlyRenderVisibleElements`.
+- «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`).
+  Medido con el cambio: `/leads` 529,4 de 530, `/vehiculos` 498,1 de 500, `/cotizaciones` 371,9 de 380, `/logistica` 367,2 y `/logistica/fase/[fase]` 369,8
+  de 390 (el botón viaja con `FilterShell` aunque esas listas no lo dibujen). `/leads` queda a 0,6 KB del tope: lo próximo que sume a su carga va con
+  `diferido()` o sube el tope con la regla del 5 %.
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`
   falla, con el camino, si un `index.ts` llega a un `'use client'`.
 - **Trampa:** con `loading.tsx` importando el barril de pantallas, sumar un Client Component a la página baja dos chunks casi iguales (el de
@@ -718,7 +725,8 @@ fallar.
   Ninguna pantalla se ensancha al 200 % (`sinScrollHorizontal()`), el texto no se corta (`sinTextoCortado()`, `exigirMarcadorQueCabe`) y los
   botones del pie del modal miden 44 px.
 - La barra del listado: las cajas siguen el orden de lectura; el buscador mide 44 × 44 px y desde 24 rem muestra «Buscar» entero
-  (`barra-de-filtros-200.spec.ts`, `barra-de-filtros-vehiculos-200.spec.ts`).
+  (`barra-de-filtros-200.spec.ts`, `barra-de-filtros-vehiculos-200.spec.ts`). El buscador ocupa el ancho libre de su fila (`min-w-0 flex-1 basis-56`:
+  con menos de 14 rem toma la fila entera; `barra-compacta.spec.ts`) y «Vista y opciones» crece en alto al 200 % en vez de ensanchar la página.
 - Matriz de Roles a 412 px al 200 %: 0 de 72 filas con el control fuera de la vista, sin ensanchar la página.
 - El celular corre en e2e sólo lo que tiene rama propia (tarjetas, hoja de filtros, pestañas del kanban, panel desde abajo, menú, pie del
   modal, foto, «Rol a la vista»): las pruebas marcadas se deciden con `E2E_HUELLA` + `scripts/comparar-anchos.mjs`. `E2E_ESTRES=1` repite

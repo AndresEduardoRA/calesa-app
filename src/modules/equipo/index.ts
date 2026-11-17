@@ -36,6 +36,6 @@ export { idDePersona } from './entities/persona'
 export { leerPersonasSinRol } from './composicion'
 export { rutaDeLaPersona, type PersonaSinRol, type PersonasSinRol } from './entities/sin-rol'
 
-// Vistas guardadas de un listado (`<MenuDeVistas>` sale por `client.ts`)
+// Vistas guardadas de un listado (`<VistasGuardadas>` sale por `client.ts`)
 export { leerVistas } from './composicion'
 export type { VistaGuardada } from './entities/vista'

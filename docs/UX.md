@@ -195,8 +195,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   acceso; sin rol, «Aún no tienes un rol, avisa al dueño».
 - **Leads** — `/leads` (`leads.ver`): tabla + resumen. «Míos» por defecto; con alcance «todos», `?alcance=`. Filtros del layout
   (`a.<campo>`), tipo, origen, `?q=`, `?cursor=`, vistas guardadas; resumen `?lead=` (`?pestana=seguimientos|recordatorios`); marcas
-  `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo»: `?vista=embudo&embudo=<id>` es el kanban de las
-  oportunidades propias (`?etapa=` en el celular; `?panel=etapas`, `?panel=nuevo-embudo`).
+  `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo» (en «Vista y opciones», con el alcance, las vistas guardadas, «Ítems
+  por página» y «Más»: exportar, importar y papelera): `?vista=embudo&embudo=<id>` es el kanban de las oportunidades propias (`?etapa=` en el celular;
+  a la vista, el selector de embudo y la búsqueda; en «Vista y opciones», «Lista | Embudo», «Etapas…» `?panel=etapas` y «Nuevo embudo…» `?panel=nuevo-embudo`).
 - **Lead** — `/leads/[id]` (`leads.ver` y acceso): «Datos» (`?panel=editar-lead`; «Cotizar» en la cabecera para quien cotiza),
   «Seguimientos» (`?seccion=seguimientos`; `?panel=anotar-seguimiento`, `editar-seguimiento&seguimiento=<id>`), «Vehículos»
   (`vehiculos.ver`; `?panel=agregar-vehiculo`; es donde se gestiona: lo que se ve de un vistazo es **Relacionados**, arriba de las secciones), «Oportunidades» (`?panel=nueva-oportunidad`, `editar-oportunidad&oportunidad=<id>`),
@@ -206,13 +207,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   alta `?panel=nuevo` (sin el alta suelta pero con la de cotizar: «Nuevo» apagado con «Cotizar un vehículo nuevo», que abre la hoja con el panel
   del vehículo en alta); edición `?editar=`; `?vitrina=si|no`, `?limpieza=si|no`; junto al estado de vitrina de cada fila, «Publicar» / «Sacar de la
   web» con un toque y «Deshacer» (con `vehiculos.vitrina` del origen; sin precio público, `?panel=vitrina-rapida&para=<id>` pide sólo el precio).
-  En escritorio, «Tabla | Tarjetas» (`?vista=`, recordada en `vehiculos.vista`; las tarjetas van en grilla, con el carrusel en la foto). En un
+  En escritorio, «Tabla | Tarjetas» en «Vista y opciones», con las vistas guardadas, «Ítems por página» y la papelera (`?vista=`, recordada en `vehiculos.vista`; las tarjetas van en grilla, con el carrusel en la foto). En un
   origen de subasta con el campo de la puja, «Precio» es «Puja actual» (USD, «final» si terminó o se vendió; sin puja, «—»). Con
   `cotizaciones.ver` en algún origen, la columna «Cotización aprobada» (en la tarjeta, «Cotización aprobada» y el monto): el primer resultado de la
   aprobada del vehículo con su moneda, enlazado a esa cotización (sin total, «Sin total»; sin aprobada o una que no se ve, «—»); sin la clave no se
   dibuja ni se consulta.
   `/vehiculos/papelera` (por lote).
-- **Vehículo** — `/vehiculos/[id]` (según origen): cabecera con portada y fase de sólo lectura; **«Relacionados»** (con `leads.ver`) entre los avisos y las pestañas,
+- **Vehículo** — `/vehiculos/[id]` (según origen): cabecera con portada y fase de sólo lectura; **«Relacionados»** compacto (con `leads.ver`) entre los avisos y las pestañas,
   en todas ellas (ver «Relacionados (estados propios)»); «Publicar en la web» en `?panel=vitrina`;
   `?seccion=`: «Ficha» (por layout del origen; edición `?editar=`; banner de limpieza; en un origen de subasta, el bloque «Subasta» con
   «Editar fechas» en `?panel=fechas-de-subasta` para quien edita: inicio y cierre en su zona, vacío borra; «Vínculo e interesados» con
@@ -229,13 +230,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
   ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
-  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **«Vistas»** guardadas como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
+  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
   de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
   si es inválida), «Marcar final…» (`cotizaciones.final.gestionar`, en una preventa; apagada sin vehículo o cliente), casilla «Favorita», «Reportar…»,
   moderar («Invalidar…», «Descartar los reportes…», «Reactivar…», con `cotizaciones.moderar`) y, al final y separada, «Enviar a la papelera» (sin preguntar,
   con «Deshacer»). Son las mismas actions de la guardada; «Marcar final…», «Reportar…» y moderar abren su diálogo en `?panel=…&para=<id>`; filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin
   chip y «Limpiar» no los borra; arriba, de quién o de qué son, con «Ver todas», y su vacío propio); «Vencida» en la fila y la insignia «Aprobada» (tabla, tarjeta y resumen); `nuevo` abre la
-  hoja. «Papelera» (para quien puede enviar a ella o vaciarla) lleva a `/cotizaciones/papelera`: lotes por cursor (5, las primeras 20 de
+  hoja. «Papelera» (en «Vista y opciones» › «Más», para quien puede enviar a ella o vaciarla) lleva a `/cotizaciones/papelera`: lotes por cursor (5, las primeras 20 de
   cada uno y «Mostrar los N»), «Restaurar» y «Purgar» una o el lote (`cotizaciones.papelera.purgar`,
   `?panel=purgar&lote=<id>[&cotizacion=<id>]`, nombra lo que borra; un lote de varios pide tipear «purgar N»; una final con comprobante
   queda y el aviso dice por qué); las que se fueron con su vehículo están en la papelera de vehículos.
@@ -269,7 +270,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     (mover a la próxima fase, con la acción de la transición: abre el panel del ítem con el destino ya elegido, `?item=<id>&destino=<fase>`;
     o «Nueva cotización» / «Registrar pago» si el destino pide ese hito como bloqueante y falta). Nunca arrastrar. Los enlaces viejos
     `?panel=compra&compra=…` y los de pagos sin `?pestana=` redirigen con su panel; `?panel=stock|imagenes&item=` e `?item=` siguen igual.
-  - Vistas «Stock» (`?vista=stock`) y «Cadena» (`?vista=cadena`: una columna por fase del flujo de repuestos, más «Sin fase» si tiene
+  - Vistas «Stock» (`?vista=stock`) y «Cadena» (`?vista=cadena`; las tres se eligen en «Vista y opciones» › «Qué ver»: una columna por fase del flujo de repuestos, más «Sin fase» si tiene
     ítems, de a 50, tarjeta con «Proyecto #N» y días en la fase; `?q=`, `?proyecto=` y, en el celular, `?fase=`).
   - El panel del ítem (`?item=<id>`, sobre el proyecto o la Cadena) es el panel de la unidad de logística **con sus secciones a la vista**,
     sin acordeones: «Qué falta» primero (con el destino de `?destino=` ya abierto), «Imágenes», «Stock», «Compras» (con
@@ -420,7 +421,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   de teclado» (la lista del catálogo; no se dispara mientras se escribe). En un alta de vehículo `Ctrl/Cmd+S` guarda y cierra; en «Nuevo
   lead» deja el drawer listo para el siguiente.
 - **Filtros:** panel lateral plegable si el listado mide 40 rem o más (si no, hoja inferior) + chips activos + «limpiar»; esquema
-  declarativo por listado; estado en URL (nuqs, `shallow:false`); vistas guardadas por usuario. Formularios en drawer/modal con bloques
+  declarativo por listado; estado en URL (nuqs, `shallow:false`); vistas guardadas por usuario (en «Vista y opciones»). Formularios en drawer/modal con bloques
   plegables; `returnTo` para volver.
 - **Patrón de lista** (`.claude/rules/ui.md`): toda lista de registros se dibuja igual. Desde 768 px, tabla con **nombre pegado a la
   izquierda** (entero hasta 16 rem; más largo, «…» y completo en `title`) y **«⋯» a la derecha**, que se desplaza de costado dentro de su
@@ -441,14 +442,27 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Confirmaciones con URL** (`?panel=mover-oportunidad&oportunidad=<id>&destino=<id>`, `salir-lead`, `purgar&lote=<id>`,
   `deshacer-importacion&importacion=<id>`, `desvincular`, `etapas&eliminar=embudo`, `eliminar-origen`): «atrás» las cierra, recargar las
   reabre, Esc devuelve el foco, no se cierran mientras actúan. Si lo que nombra ya no existe, avisa y limpia la URL.
-- **Barra de un listado (`<FilterShell>`):** búsqueda, «Filtros», «Vistas», acciones y «Ítems por página». Con contenedor de 48 rem o más
-  las acciones van a la derecha; si no, cada pieza envuelve a la izquierda. **El marcador de búsqueda es corto** («Nombre o número»,
-  «Título, VIN o lote», «Título o lead») para caber al 200 % en el celular.
+- **Barra de un listado (`<FilterShell>`):** búsqueda (crece y ocupa el ancho libre; con menos de 14 rem toma su propia fila), «Filtros»,
+  «Vista y opciones» y «Nuevo». Una barra plana: cada pieza envuelve a la izquierda, en el orden en que se lee.
+  - **«Vista y opciones»** (`<VistaYOpciones>`): un solo botón que agrupa lo que no se usa a cada rato —la vista («Lista | Embudo», «Tabla |
+    Tarjetas», «Qué ver» de repuestos), el alcance («Míos | Todos»), «Ítems por página», las vistas guardadas y «Más» (exportar, importar, la
+    papelera)—, cada grupo con su permiso de siempre; «Más» sin nada adentro no aparece y una lista sin nada que agrupar no tiene botón. Es un
+    popover desde 768 px y una hoja inferior por debajo, sin URL (un menú: «atrás» no lo cierra); cambiar el ancho con el panel abierto pasa
+    de uno a otro sin cerrarlo. El botón dice lo activo («Vista y opciones · Lista · Míos · 25 por página») y crece en alto al 200 %. Lo
+    elegido adentro sigue en la URL como antes (`?vista=`, `?alcance=`, `?por=`). Cambiar algo en el lugar (alcance, tabla o tarjetas, ítems
+    por página) no lo cierra; lo que lleva a otra lista o pantalla (la vista, una vista guardada, la papelera, importar) sí. Esc y la ✕ lo
+    cierran y el foco vuelve al botón; con un tamaño a medio elegir con flechas, el primer Esc lo deshace. El panel llega con `diferido()` al
+    abrirlo por primera vez (sin red esa vez: «Sin conexión. No se pudo abrir esto.» con «Reintentar»). Sin red con el panel abierto, una
+    línea dice «Sin conexión: lo que necesita la red se activa cuando vuelva.» y lo que navegaría queda apagado (`inert`); «Ítems por página»
+    y «Tabla | Tarjetas» siguen.
+  - **El marcador de búsqueda es corto** («Nombre o número»,
+    «Título, VIN o lote», «Título o lead») para caber al 200 % en el celular.
 - **Mínimo para buscar por nombre:** 3 letras o dígitos seguidos; un número (`5`, `#5`) busca por número desde un dígito. Mientras no
   alcanza, el campo lo deja escrito, dice «Escribe al menos 3 letras» y **no escribe `?q=`, no pide nada, no deja chip ni toca los
   tachados**; un `?q=ab` por URL igual (`e2e/leads-listado-busqueda-minima.spec.ts`).
 - **Ítems por página:** en cada lista con Anterior/Siguiente y filtros (leads, vehículos), selector «Ítems por página» (10, 25, 50, 100) en
-  la barra desde `md` y, por debajo, arriba de la lista (`<select>` de 44 px). Se guarda en la cuenta (`listas.por_pagina`, también en el
+  «Vista y opciones» (en la hoja, en el celular; `<select>` de 44 px). Sus avisos («Sin conexión: se aplicará cuando vuelva la red.», «No se
+  pudo guardar tu preferencia…» con «Reintentar») van en el panel y, con el panel cerrado, bajo la barra. Se guarda en la cuenta (`listas.por_pagina`, también en el
   perfil); `?por=` la fija para esa página; cada lista tiene un máximo (hoy 100). Cambiarlo vuelve a la primera página y conserva filtros y
   búsqueda. No lo llevan el kanban ni las papeleras (`docs/RENDIMIENTO.md`).
 - **Barra superior:** «Nuevo» (a la izquierda del tipo de cambio) abre un modal sin pantalla propia (`?panel=crear`: recargar lo reabre, «atrás» lo cierra) con lo que quien mira
@@ -465,7 +479,14 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   los vigentes con quién y cuándo cambió el valor por última vez (nunca el correo) y, para quien gestiona los tipos de cambio, el lápiz
   «Cambiar el valor de <nombre>»: Enter guarda, Esc cancela, el motivo junto al campo; con algo escrito el popover no se cierra al tocar
   afuera; sin red, lo escrito queda y se guarda al volver; un `PT409` dice «<Nombre> lo cambió a <monto> hace N minutos» con «Recargar».
-  Con el Modo Live, cifras ocultas y sin lápiz. Al pie, «Configurar los tipos de cambio» (quien gestiona). En el
+  Con el Modo Live, cifras ocultas y sin lápiz. Al pie, «Compartir» (toda persona; con el Modo Live no se ofrece, y con un valor a medio
+  editar espera: «Termina de cambiar el valor para compartir.») y «Configurar los tipos de cambio» (quien gestiona). **«Compartir»** cambia el
+  contenido del popover por su panel (`Volver a los tipos de cambio`): casillas de los activos (por defecto los de la barra; sólo para ese envío),
+  la imagen y el texto tal como saldrán (logo, nombre, momento en la zona de la empresa, un tipo por línea, leyenda) y los botones, que se apagan
+  con su motivo («Elige al menos un tipo de cambio.», «Este navegador no permite copiar imágenes.»). Celular con menú del sistema: «Compartir» (imagen
+  y texto; sin archivos, sólo el texto), «Copiar texto» y «Descargar»; escritorio: «Copiar texto», «Copiar imagen» y «Descargar» (PNG). Si la imagen
+  falla, «No se pudo armar la imagen.» con «Reintentar» y el texto sigue disponible; sin red, «No hay conexión.»; el panel se desplaza con los botones a
+  la vista. En el
   celular menú, Live y avatar miden 44 px y la barra cabe al 200 %; el tipo de cambio sólo se dibuja con 24 rem o más. El botón «Buscar»
   (44 px) abre la paleta (`Ctrl/Cmd+K`) y la campana trae los avisos; el widget del chat flota fuera de `/chat` y no va en la barra.
 - **Permisos en UI**: ocultar lo que nunca va a usar; deshabilitar con motivo lo que espera poder hacer (**dominancia**: lo que no puede dar
@@ -501,7 +522,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Tipos de cambio:** cada uno abre su panel con el valor listo y su historial. El por defecto no se desactiva; nada se borra. El
   interruptor «En la barra superior» va en el mismo «Guardar»: apagado con su motivo si el tipo está inactivo o ya hay 3 («quita uno para
   sumar este»); quitarlo siempre se puede; sin ninguno marcado, avisa que la barra muestra el por defecto. La lista dice el tope y lleva
-  el badge «En la barra» en los que se ven.
+  el badge «En la barra» en los que se ven. Debajo, «Leyenda al compartir»: la leyenda de lo que se comparte (un campo, «n de 120»
+  sin `maxLength`, «Guardar leyenda»; sin `empresa.tipos_cambio.gestionar`, apagado con su motivo; `PT409` con «Recargar»).
   **Integraciones:** apibara no se activa sin su clave, que nunca se muestra («Reemplazar»).
 
 ### Vehículos (estados propios)
@@ -537,22 +559,24 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   Error: «No pudimos guardar el resultado. Intenta de nuevo.»; sin red, el aviso de siempre. No ganada: «No ganada · la marcó <nombre> el
   <fecha>. Ya no cuenta en logística ni en Inicio.» (sin el nombre si no se pudo leer) con «Deshacer». En subasta o en su fase, sin aviso.
 - **Resumen (`?vehiculo=<id>`):** portada, identificación, situación (su fase o «Sin fase»), «Editar» (abre el panel encima y vuelve al resumen al día) y
-  «⋯»; «Relacionados» (con `leads.ver`) entre la cabecera y las pestañas, que se lee al abrir; pestañas `?pestana=fotos` que se lee al elegirla (un `?pestana=interesados`
+  «⋯»; «Relacionados» en una línea (con `leads.ver`) entre la cabecera y las pestañas, que se lee al abrir; pestañas `?pestana=fotos` que se lee al elegirla (un `?pestana=interesados`
   viejo abre «Resumen»). Inexistente, en la papelera o de otro origen: «Este vehículo ya no
   está disponible: no existe o ya no tienes acceso.».
 
 ### Relacionados (estados propios)
 
-El mismo bloque arriba de cada detalle: la ficha del vehículo (entre los avisos y las pestañas, con `leads.ver`), su resumen del inventario, la unidad de logística (bajo la
-cabecera, con `leads.ver`, **en una línea**: ver abajo), la ficha del lead (tras los avisos, antes de las secciones, con `vehiculos.ver`) y el resumen del listado de leads.
-`<section aria-label="Relacionados">` con tres grupos en grilla `@container` (tres columnas desde `@3xl`, una debajo): **Vinculado**, **Interesado** y **Cotizado** (éste sólo con
-`cotizaciones.ver`), cada uno con `h3` «<Tipo> · n» (`conteoCorto`, «100+»), su leyenda, hasta 3 filas, «Ver todos» y sus acciones.
+Arriba de cada detalle, en dos presentaciones que elige cada lugar (`presentacion`, obligatoria): **en una línea** en los resúmenes (`/vehiculos?vehiculo=`, `/leads?lead=`) y en logística
+(la página de la unidad y el drawer de `/logistica/gastos?unidad=`), y **compacta** en las fichas (`/vehiculos/[id]`, entre los avisos y las pestañas, con `leads.ver`; `/leads/[id]`, tras los
+avisos y antes de las secciones, con `vehiculos.ver`). Tres grupos: **Vinculado**, **Interesado** y **Cotizado** (éste sólo con `cotizaciones.ver`). **Un grupo sin nada (ni lo que no se ve) no
+se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «Relacionados»» del bloque o de la línea.
 
-- **En una línea** (`presentacion="linea"`, la unidad de logística, donde tres grupos apilados no caben sin desplazar): `<section aria-label="Relacionados">` sin encabezado, con un chip por grupo
-  («Vinculado · n», «Interesado · n», «Cotizado · n»; 44 px en el celular, 32 en escritorio). Cada chip abre un popover (su código se pide al primer clic) con el mismo grupo: leyenda, filas, acciones
-  y «Ver todos» (que cierra el popover antes de abrir su drawer). Todo vacío: la frase «Sin relacionados todavía.» con sus acciones. Cargando: tres chips de esqueleto del mismo alto; error: la frase
-  con «Reintentar», sin encabezado.
-
+- **En una línea:** `<section aria-label="Relacionados">` sin encabezado, con un chip por grupo con algo («Vinculado · n»; 44 px en el celular, 32 en escritorio) y, si hay acciones de grupos
+  que no se dibujan, el «⋯» pegado al último chip. Cada chip abre un popover (su código se pide al primer clic) con el grupo: leyenda a la vista, filas, acciones y «Ver todos» (que cierra el
+  popover antes de abrir su drawer). Al 200 % los chips y el «⋯» bajan de renglón; el popover no pasa del ancho de la pantalla.
+- **Compacta:** `<section aria-label="Relacionados">` con el `h2` «Relacionados» y su «⋯», y los grupos con algo en una grilla en rem (`auto-fill`, mínimo 16 rem: una columna en el celular o
+  en una lateral angosta, hasta tres a lo ancho; al 200 % caen columnas, no ensancha), sin borde por grupo. Cada grupo: una línea de título con el `h3` «<Tipo> · n», «Ver todos» y el «⋯» del
+  grupo («Más acciones de «<Tipo>»»), hasta 3 filas y lo que no se ve contado. **Sin leyendas a la vista:** la leyenda es el `title` del `h3` y la descripción del grupo para el lector
+  (`aria-describedby` a un texto `sr-only`). Sin botones sueltos: las acciones del grupo, en su «⋯»; las de cada fila, en el de la fila.
 - **Filas:** desde un vehículo, el lead (nombre enlazado, números como siempre, «Fuera de tu cartera» si se ve enmascarado, nunca el teléfono); desde un lead, el vehículo (miniatura que abre
   la galería, título enlazado, origen y n.º). Debajo, lo propio del tipo: «Desde el <fecha>», la nota del interés con quién lo marcó, o «Cotización N.º n · <fecha>». «⋯» con las acciones.
 - **Leyendas:** vehículo: «El lead dueño o comprador de este vehículo.», «Leads que mostraron interés en este vehículo.», «Leads con una cotización activa de este vehículo.». Lead:
@@ -561,12 +585,13 @@ cabecera, con `leads.ver`, **en una línea**: ver abajo), la ficha del lead (tra
   vehículo, su confirmación `?panel=desvincular`; desde un lead, con la cartera en el lugar con «Deshacer», sin ella lleva a `?seccion=vehiculos&panel=desvincular&vinculado=<id>`), «Vincular a un lead» (sin
   vínculo) y «Marcar un interesado» (los dos abren el selector de leads de la ficha: `?panel=vincular-lead`, `?panel=marcar-interesado`; en un resumen o en la unidad llevan a la ficha con el panel
   abierto), «Vincular o marcar un vehículo» (desde un lead: lleva a `?seccion=vehiculos&panel=agregar-vehiculo`) y «Ver todos» (`?relacionados=vinculado|interesado|cotizado`: un `<Drawer>` de a 20 por cursor con
-  «Ver más» hasta 500, `AvisoDeTope`; desde un resumen lleva a la ficha con el drawer abierto; el de Vinculado en un vehículo trae el vínculo vigente y los anteriores).
-- **Estados:** cargando, `EsqueletoDeRelacionados` del alto del bloque (ficha y unidad) o `aria-busy` «Cargando los relacionados» (resúmenes, que siguen mostrando lo anterior mientras releen);
-  error «No pudimos cargar los relacionados.» con «Reintentar» (la pantalla sigue); vacío total «Sin relacionados todavía.» con las acciones que haya; vacío de un grupo («Sin vínculo.», «Nadie marcó
-  interés todavía.», «Sin cotizaciones activas.», y desde un lead «Ningún vehículo vinculado.», «Sin vehículos de interés.») con «Cotizar» si cotiza; lo que quien mira no ve, «1 que no puedes
-  ver» / «3 que no puedes ver», sin datos (un vínculo oculto no ofrece vincular); sin `leads.ver` (o `vehiculos.ver` desde un lead) no hay bloque; sin `cotizaciones.ver` no hay grupo Cotizado;
-  conflicto `PT409` con el texto de la base y «Recargar»; tope «100+» en el grupo y, en «Ver todos», «No pudimos revisar el resto: hay muchos que no puedes ver.» si el recorrido se cortó.
+  «Ver más» hasta 500, `AvisoDeTope`; desde un resumen lleva a la ficha con el drawer abierto; el de Vinculado en un vehículo trae el vínculo vigente y los anteriores; el enlace abre su drawer
+  aunque el grupo no se dibuje).
+- **Estados:** cargando, `EsqueletoDeRelacionados` del alto de lo que viene (tres chips en una línea; el `h2` y tres celdas en la compacta) o, al releer un resumen, lo anterior con `aria-busy`;
+  error «No pudimos cargar los relacionados.» con «Reintentar» (sin encabezado en una línea, bajo el `h2` en la compacta; la pantalla sigue); vacío total «Sin relacionados todavía.» con **una**
+  acción a la vista (la primera: vincular) y el resto en el «⋯»; lo que quien mira no ve, «1 que no puedes ver» / «3 que no puedes ver», sin datos (el grupo se dibuja; un vínculo oculto no
+  ofrece vincular, y «Desvincular» queda en su grupo); sin `leads.ver` (o `vehiculos.ver` desde un lead) no hay bloque; sin `cotizaciones.ver` no hay grupo Cotizado;
+  conflicto `PT409` con el texto de la base y «Recargar»; tope «100+» en el chip o en el título del grupo y, en «Ver todos», «No pudimos revisar el resto: hay muchos que no puedes ver.» si el recorrido se cortó.
 
 ### Leads: configuración (estados propios)
 
@@ -750,7 +775,7 @@ y enfoca su título).
   ver esto». Lo que no existe, está en la papelera, no se ve o trae un id inválido: «Este vehículo ya no está disponible» con «No existe o
   ya no tienes acceso.» e «Ir a Logística» (nunca «sin permiso»: confirmaría que existe). En el drawer, el mismo estado va dentro.
 - **Cabecera** (≤ 7,5 rem en la página): la portada (`w-28`, 4:3, con las fotos en el lugar), título (el primer `h2`), origen, situación (`<BadgeDeSituacion>`: la fase, «Sin fase», «En subasta» o «Sin resolver»), «Desde hace N días en esta fase», «Abrir
-  ficha» y «Relacionados» de un vehículo **en una línea** (con `leads.ver`; ver «Relacionados (estados propios)»; «Desvincular» y los selectores de leads llevan a la ficha). En un drawer, la cabecera es una columna suelta y los relacionados, el bloque de tres grupos.
+  ficha» y «Relacionados» de un vehículo **en una línea** (con `leads.ver`; ver «Relacionados (estados propios)»; «Desvincular» y los selectores de leads llevan a la ficha). En un drawer, la cabecera es una columna suelta y los relacionados, también en una línea.
 - **Zonas** (página, desde 1024 px de pantalla; las dos columnas con alto fijo desde 56 rem de contenedor, por debajo una columna con alto natural): **principal**, «Qué falta» con mover, siempre a la vista, hasta el 55 % del alto, con su propio desplazamiento y la fila del botón pegada abajo;
   debajo, **pestañas** con su propio desplazamiento cada una: Documentos · Transporte · Repuestos · Aduana · **Dinero** (gastos, pagos y margen apilados); a la derecha, **lateral**: Notas · Historial. Cada hueco aparece con su permiso en el origen y su regla del flujo encendida; una pestaña sin
   huecos no se dibuja («Dinero» existe si hay alguno de los tres) y una zona vacía deja que la grilla se reacomode. La pestaña elegida va en `?hueco=` (sin recargar, sin sumar al historial). Lo de cada pestaña se monta la primera vez que se elige y queda montado: la nota a medias, el borrador de transporte
@@ -1135,7 +1160,7 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
   rechazo deja el modal abierto con lo escrito) y «Cancelar». Se lee al abrir el modal, con esqueleto; si falla, lo dice con «Reintentar» y «Crear igual» sigue ahí.
   Sin oportunidades, abre directo en el formulario.
 - **Vacíos:** sin leads, con «Nuevo lead» y «Ver todos» según permiso; por filtro, con «Limpiar filtros». Esqueleto; error.
-- **Resumen (`?lead=`):** tipo, marcas, «Editar» (cartera y `leads.editar`), «Abrir ficha», «⋯»; «Relacionados» (con `vehiculos.ver`, se lee al abrir) entre la cabecera y las pestañas; pestañas
+- **Resumen (`?lead=`):** tipo, marcas, «Editar» (cartera y `leads.editar`), «Abrir ficha», «⋯»; «Relacionados» en una línea (con `vehiculos.ver`, se lee al abrir) entre la cabecera y las pestañas; pestañas
   `?pestana=seguimientos|recordatorios` que se piden al elegirlas; nombre, número, tipo, teléfono tal como lo entrega la vista, origen y
   campos activos. Uno que deja de verse: «Este lead ya no está disponible: no existe o ya no tienes acceso.».
 
@@ -1154,7 +1179,7 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
   mira. «Quitar acceso» con «Deshacer»; «Salir de este lead» confirma. Al dueño se le transfiere, no se le quita.
 - **Enviar a la papelera:** último ítem del «⋯» (`leads.eliminar`); sin preguntar, con «Deshacer» 10 s. Con un vehículo vinculado visible,
   apagado con motivo y «Ir a «Vehículos»»; si lo frena uno que no se ve, la base rechaza nombrando al lead, no al vehículo.
-- **Relacionados** (con `vehiculos.ver`): el bloque de arriba, tras los avisos y antes de las secciones, en todas ellas (ver «Relacionados (estados propios)»).
+- **Relacionados** (con `vehiculos.ver`): el bloque compacto de arriba, tras los avisos y antes de las secciones, en todas ellas (ver «Relacionados (estados propios)»).
 - **Vehículos** (`?seccion=vehiculos`, con `vehiculos.ver`): donde se gestiona: «Vinculados», «Interesados» (con nota) y «Vínculos anteriores», sólo lo que
   quien mira ve. «Agregar vehículo» (cartera y `leads.editar`): busca por título, VIN, lote o #número, «Vincular» y nota de interés ≤ 500.
   «Desvincular» (quien edita el vehículo): con la cartera, con «Deshacer»; sin ella, confirma.
@@ -1199,7 +1224,7 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 - **Exportar:** con más de 5.000 leads en los filtros no exporta y pide filtrar más.
 - **Embudo:** cabecera de columna y pestaña dicen «37» o «500+». Una columna dibuja a lo sumo 500 y ahí ofrece «Buscar en el embudo»
   (`?q=`, desde 2 caracteres; busca título y nombre del lead en todas las columnas; es de la vista de embudo).
-- **Relacionados:** cada grupo muestra «n» o «100+» (una ventana de 101 por grupo, lo que no se ve incluido, nunca un total exacto), hasta 3 filas y «Ver todos» de a 20 por cursor hasta 500 con `<AvisoDeTope>`.
+- **Relacionados:** cada grupo muestra «n» o «100+» en su chip o en su título (una ventana de 101 por grupo, lo que no se ve incluido, nunca un total exacto), hasta 3 filas y «Ver todos» de a 20 por cursor hasta 500 con `<AvisoDeTope>`.
 - **Vehículos y ficha:** los bloques de vínculos, interesados y «Agregar vehículo» dicen su tope al pie con `<AvisoDeTope>`;
   «Oportunidades» muestra las 10 más recientes (abiertas primero) con «Ver más» de a 20 desde el navegador, hasta 500 (en el tope,
   «Buscarlas en tu embudo»).
@@ -1214,7 +1239,7 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
   filtro «Abiertos» aclara que los cerrados no se muestran); vacío por filtro con «Limpiar filtros»; cursor fuera de rango con «Volver al
   principio»; error de `(app)`; sin `repuestos.ver`, «No tienes permiso».
 - **Sin «Anterior»:** «Siguiente» y, con cursor, «Volver al principio». Más de 200 ítems se escribe «200+».
-- **Vista «Stock»:** enlaces «Proyectos» y «Stock» arriba (cambiar no conserva filtros ni página; «Nuevo proyecto» sólo en «Proyectos»).
+- **Vista «Stock»:** «Proyectos», «Cadena» y «Stock» en «Vista y opciones» › «Qué ver» (en «Stock», que no tiene barra, el botón va solo arriba a la izquierda; cambiar no conserva filtros ni página; «Nuevo proyecto» sólo en «Proyectos»).
   Columnas: ítem, proyecto (`#N` · vehículo, con «Cerrado»), en stock y desde; sin filtros, por cursor. Vacío: «No hay repuestos en
   stock.» con «Lo que sobra de un ítem se pasa a stock desde la hoja de su proyecto.». La fila abre el ítem en la hoja de su proyecto con
   su panel de stock. El «⋯» (sólo con `repuestos.editar`, también con el proyecto cerrado): «Reasignar a un proyecto» (destino abierto,

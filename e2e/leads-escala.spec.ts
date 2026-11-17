@@ -30,6 +30,7 @@ import {
   TOPE_DE_LO_CARGADO,
 } from '../src/shared/lib/paginacion'
 import { stackLocal } from '../scripts/lib/stack-local.mjs'
+import { botonDeVistaYOpciones } from './soporte/vista-y-opciones'
 
 // Los pedidos a la API de Supabase de ESTE worktree (la principal o un carril).
 const A_LA_BASE = new RegExp(`:${String(stackLocal().puertoApi)}/`)
@@ -136,8 +137,9 @@ test('con 100 por página el listado cabe en su presupuesto de nodos y el HTML l
   const n = await nodos(page)
   info.annotations.push({ type: 'nodos con 100 filas', description: String(n) })
   expect(n).toBeLessThan(PRESUPUESTO_DE_NODOS.listadoDe100[info.project.name as Proyecto])
-  // El selector a la vista sin bajar (en el celular, arriba de la lista), en claro, en oscuro y con el texto al 200 %.
-  await expect(page.getByLabel('Ítems por página')).toBeInViewport()
+  // «Vista y opciones» (con «Ítems por página» adentro) a la vista sin bajar y diciendo el tamaño, en claro, en oscuro y con el texto al 200 %.
+  await expect(botonDeVistaYOpciones(page)).toBeInViewport()
+  await expect(botonDeVistaYOpciones(page)).toContainText('100 por página')
   await sinScrollHorizontal(page)
   await capturar(page, info, 'listado-100-claro')
   await page.emulateMedia({ colorScheme: 'dark' })
@@ -146,7 +148,7 @@ test('con 100 por página el listado cabe en su presupuesto de nodos y el HTML l
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '200%'
   })
-  await expect(page.getByLabel('Ítems por página')).toBeVisible()
+  await expect(botonDeVistaYOpciones(page)).toBeVisible()
   await capturar(page, info, 'listado-100-texto-grande')
 })
 

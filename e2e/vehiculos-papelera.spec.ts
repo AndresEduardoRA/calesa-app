@@ -21,6 +21,7 @@ import {
 } from './soporte/papelera'
 import { cargarVehiculos, vehiculoPorTitulo } from './soporte/vehiculos'
 import { crearFaseInterna, ponerEnFase } from './soporte/vitrina'
+import { elegirEnVistaYOpciones, exigirQueNoOfrece } from './soporte/vista-y-opciones'
 
 // La papelera de vehículos contra la app compilada y el Supabase local (Storage y la función
 // `storage-gc` incluidos). Una historia en orden: enviar y deshacer, lo que no entra, un lote,
@@ -120,7 +121,7 @@ test('sin el permiso no hay casillas, ni envío en el «⋯», ni papelera', asy
   await irAlOrigen(page, corea)
   await expect(fila(page, T.uno)).toBeVisible()
   await expect(aLaVista(page.getByRole('checkbox', { name: /^Seleccionar / }))).toHaveCount(0)
-  await expect(page.getByRole('link', { name: 'Papelera', exact: true })).toBeHidden()
+  await exigirQueNoOfrece(page, 'Papelera', 'Vistas guardadas')
   await abrirFicha(page, T.uno)
   await menu(page, T.uno).click() // el «⋯» de la ficha existe (publicar), sin «Enviar a la papelera»
   await expect(page.getByRole('menuitem', { name: 'Enviar a la papelera' })).toHaveCount(0)
@@ -203,7 +204,7 @@ test('la papelera lista por lote y restaura uno; un VIN que ya tomó otro queda 
   const tomador = (await vehiculoPorTitulo(TOMADOR))?.id ?? ''
   await ponerVin(tomador, VIN)
 
-  await page.getByRole('link', { name: 'Papelera', exact: true }).click()
+  await elegirEnVistaYOpciones(page, 'Papelera')
   await expect(page.getByRole('heading', { name: 'Papelera de vehículos', level: 1 })).toBeVisible()
   const lote = loteDe(page, T.a)
   await expect(lote.getByText('Lote de 3', { exact: true })).toBeVisible()

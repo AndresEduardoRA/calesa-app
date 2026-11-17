@@ -21,6 +21,11 @@ import {
   sinResultados,
   type TerrenoDelListado,
 } from './soporte/leads-listado'
+import {
+  abrirVistaYOpciones,
+  botonDeVistaYOpciones,
+  cerrarVistaYOpciones,
+} from './soporte/vista-y-opciones'
 
 // El listado de leads (`/leads`) contra la app compilada y el Supabase local: quién ve qué según su
 // alcance, el teléfono enmascarado, los privados (ni filtrando se revelan), el limbo, la papelera y
@@ -58,7 +63,11 @@ test('«propios» ve sólo lo suyo y no tiene el selector de «todos»', async (
   await irALeads(page)
   await expect(fila(page, PROPIO_BERTA)).toBeVisible()
   await expect(fila(page, AJENO_CARLOS)).toHaveCount(0)
+  // Con «Vista y opciones» abierto: cerrado, la ausencia pasaría siempre.
+  const panel = await abrirVistaYOpciones(page)
+  await expect(panel.getByRole('region', { name: 'Vista', exact: true })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Qué leads ver' })).toHaveCount(0)
+  await cerrarVistaYOpciones(page)
   // Pedir «todos» por la URL no amplía nada.
   await irALeads(page, '?alcance=todos')
   await expect(fila(page, PROPIO_BERTA)).toBeVisible()
@@ -75,10 +84,14 @@ test('«todos» ve lo ajeno con el teléfono enmascarado y sin los privados', as
   // Por defecto, «míos»: sólo lo de su cartera.
   await expect(fila(page, PROPIO_DALIA)).toBeVisible()
   await expect(fila(page, AJENO_CARLOS)).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Míos' })).toHaveAttribute('aria-pressed', 'true')
+  await expect(botonDeVistaYOpciones(page)).toContainText('Míos')
+  const panel = await abrirVistaYOpciones(page)
+  await expect(panel.getByRole('button', { name: 'Míos' })).toHaveAttribute('aria-pressed', 'true')
 
-  await page.getByRole('button', { name: 'Todos', exact: true }).click()
+  await panel.getByRole('button', { name: 'Todos', exact: true }).click()
   await expect(page).toHaveURL(/alcance=todos/)
+  await expect(botonDeVistaYOpciones(page)).toContainText('Todos')
+  await cerrarVistaYOpciones(page)
   const delAjeno = delLead(page, AJENO_CARLOS)
   await expect(delAjeno).toBeVisible()
   // Enmascarado, y sin la cédula, que es «solo la cartera»: lo dice en vez de un guion.

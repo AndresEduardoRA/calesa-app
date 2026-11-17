@@ -6,7 +6,7 @@ export { usePerspectiva } from './features/perspectiva/hooks/use-perspectiva'
 export type { Perspectiva, RolParaVerComo } from './entities/perspectiva'
 
 // Vistas guardadas de un listado: el menú que las aplica, las guarda y las elimina.
-export { MenuDeVistas } from './features/vistas/components/menu-de-vistas'
+export { VistasGuardadas } from './features/vistas/components/vistas-guardadas'
 export type { ParamsDeVista, VistaGuardada } from './entities/vista'
 
 // Las preferencias de la persona que se guardan desde otra pantalla (`tablero.widgets`, `vehiculos.vista`): la acción valida con `esquemaPreferencia` y escribe sólo en la fila de quien

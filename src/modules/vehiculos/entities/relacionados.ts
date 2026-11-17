@@ -37,19 +37,6 @@ export const LEYENDAS: Record<LadoDeRelacionados, Record<TipoDeRelacion, string>
   },
 }
 
-export const VACIOS: Record<LadoDeRelacionados, Record<TipoDeRelacion, string>> = {
-  vehiculo: {
-    vinculado: 'Sin vínculo.',
-    interesado: 'Nadie marcó interés todavía.',
-    cotizado: 'Sin cotizaciones activas.',
-  },
-  lead: {
-    vinculado: 'Ningún vehículo vinculado.',
-    interesado: 'Sin vehículos de interés.',
-    cotizado: 'Sin cotizaciones activas.',
-  },
-}
-
 export const TEXTO_DE_TODO_VACIO = 'Sin relacionados todavía.'
 export const TEXTO_DE_ERROR = 'No pudimos cargar los relacionados.'
 export const TEXTO_DE_CORTADA = 'No pudimos revisar el resto: hay muchos que no puedes ver.'
@@ -163,9 +150,19 @@ export function cursorDeLaFila(
   return { en: detalle.tipo === 'vinculado' ? (detalle.desde ?? '') : detalle.creadoEn, id }
 }
 
-// Si todo está vacío (nada en ningún grupo, ni oculto): una sola línea con las acciones.
-export function todoVacio(grupos: GruposDeRelacionados<unknown>): boolean {
-  return [grupos.vinculado, grupos.interesado, grupos.cotizado].every(
-    (grupo) => grupo === null || (grupo.filas.length === 0 && grupo.ocultos === 0),
+// Cómo se dibuja el bloque: `'linea'`, un chip por grupo con su popover (los resúmenes y logística); `'compacta'`, los grupos con sus filas, sin leyendas a la vista ni botones
+// sueltos (las fichas). La elige cada lugar: no hay una por defecto.
+export type PresentacionDeRelacionados = 'linea' | 'compacta'
+
+// Un grupo con algo (filas o lo que no se ve): uno sin nada no se dibuja.
+const conAlgo = (grupo: GrupoDeRelacionados<unknown> | null): boolean =>
+  grupo !== null && (grupo.filas.length > 0 || grupo.ocultos > 0)
+
+// Los grupos que se dibujan, en su orden (Vinculado, Interesado, Cotizado): sin los que no existen (`null`) ni los vacíos. Uno con sólo lo que no se ve se queda.
+export function gruposALaVista<Contraparte>(
+  grupos: GruposDeRelacionados<Contraparte>,
+): GrupoDeRelacionados<Contraparte>[] {
+  return [grupos.vinculado, grupos.interesado, grupos.cotizado].filter(
+    (grupo): grupo is GrupoDeRelacionados<Contraparte> => conAlgo(grupo),
   )
 }

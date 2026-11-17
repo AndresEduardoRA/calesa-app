@@ -3,7 +3,7 @@
 import { SlidersHorizontalIcon } from 'lucide-react'
 import { useRef, useState, type ReactNode, type RefObject } from 'react'
 import { cn } from 'cn'
-import { CORTE_DEL_PANEL, CORTE_DE_LA_TABLA } from '@/shared/lib/ancho'
+import { CORTE_DEL_PANEL } from '@/shared/lib/ancho'
 import type { EsquemaDeFiltros } from '@/shared/lib/filtros'
 import { useAlMenos } from '../ancho-de-pantalla'
 import { Button } from '../button'
@@ -12,9 +12,17 @@ import { ChipsDeFiltros } from './chips-de-filtros'
 import { ContextoDeFiltros } from './contexto'
 import { CampoDeBusqueda } from './controles-de-texto'
 import { PanelDeFiltros } from './panel-de-filtros'
-import { SelectorDelListado, type PorPaginaDeLaLista } from './selector-de-por-pagina'
+import { ordenarConPorPagina } from '../vista-y-opciones/grupos'
+import type { GrupoDeVistaYOpciones } from '../vista-y-opciones/tipos'
+import { VistaYOpciones } from '../vista-y-opciones/vista-y-opciones'
+import {
+  AvisosDePorPagina,
+  SelectorDePorPagina,
+  type PorPaginaDeLaLista,
+} from './selector-de-por-pagina'
 import { useFiltros } from './use-filtros'
 import { usePanelAlCostado } from './use-panel-al-costado'
+import { usePorPaginaDelListado, type PorPaginaDelListado } from './use-por-pagina-del-listado'
 
 // El panel de filtros entra al costado si el contenedor del listado mide 40 rem o más (`REM_PARA_EL_PANEL_AL_COSTADO`); si no, en una hoja
 // inferior. Antes el corte era `lg` (1.024 px de pantalla): con el texto al 200 % los 15 rem del panel son 480 px y dejaban 176 a la lista
@@ -108,34 +116,66 @@ function CuerpoDeLaLista(props: {
   )
 }
 
+// El grupo «Ítems por página» de «Vista y opciones». Sigue sin red: lo elegido queda pendiente y sale solo al volver.
+function grupoDePorPagina(
+  porPagina: PorPaginaDeLaLista | undefined,
+  estado: PorPaginaDelListado,
+): GrupoDeVistaYOpciones | null {
+  if (!porPagina) {
+    return null
+  }
+  return {
+    clave: 'por-pagina',
+    titulo: 'Ítems por página',
+    resumen: `${estado.visto} por página`,
+    sinRed: 'sigue',
+    contenido: (
+      <SelectorDePorPagina
+        opciones={porPagina.opciones}
+        estado={estado}
+        etiquetaOculta
+        className="justify-items-start"
+      />
+    ),
+  }
+}
+
 type Props = {
   esquema: EsquemaDeFiltros
-  // El menú de vistas guardadas, si el listado las tiene.
-  vistas?: ReactNode
-  // A la derecha de la barra: «Nuevo», exportar…
+  // Los grupos de «Vista y opciones» (vista, alcance, vistas guardadas, «Más»…), ya filtrados por permisos. Sin ellos ni `porPagina`, no hay botón.
+  opciones?: readonly GrupoDeVistaYOpciones[]
+  // Al final de la barra: «Nuevo». Lo que no se usa a cada rato va en `opciones`.
   acciones?: ReactNode
   // Al pie del panel de filtros.
   pieDelPanel?: ReactNode
   // Al pie de una sección del panel (por su clave).
   accionesDeSeccion?: Readonly<Record<string, ReactNode>>
   // «Ítems por página» de este listado: lo que dibuja la página y los tamaños que ofrece (hasta su máximo). Sin esto, el
-  // listado no lo ofrece. Va una sola vez: en la barra desde `md` y, por debajo, arriba de la lista (con 100 tarjetas, al
-  // pie quedaba a ~40.000 px).
+  // listado no lo ofrece. Va en «Vista y opciones»; su estado vive acá, así lo elegido sin red sale solo con el panel cerrado.
   porPagina?: PorPaginaDeLaLista
   // La lista. Adentro puede usar `useFiltrosDelListado()`.
   children: ReactNode
 }
 
-// El armazón de un listado con filtros: búsqueda, botón «Filtros», chips de lo que está activo y
-// «Limpiar»; el panel al costado en escritorio (plegable) y en una hoja inferior en el celular.
-// Todo el estado vive en la URL. No sabe de ningún módulo: cada listado le pasa su esquema.
+// El armazón de un listado con filtros: búsqueda (ocupa el ancho libre), botón «Filtros», «Vista y opciones», «Nuevo», chips de lo que
+// está activo y «Limpiar»; el panel al costado en escritorio (plegable) y en una hoja inferior en el celular.
+// Todo el estado vive en la URL. No sabe de ningún módulo: cada listado le pasa su esquema y sus opciones.
 export function FilterShell(props: Props) {
-  const { esquema, vistas, acciones, pieDelPanel, accionesDeSeccion, porPagina, children } = props
+  const {
+    esquema,
+    opciones = [],
+    acciones,
+    pieDelPanel,
+    accionesDeSeccion,
+    porPagina,
+    children,
+  } = props
   const filtros = useFiltros(esquema)
   const raiz = useRef<HTMLDivElement>(null)
   const alLado = usePanelAlLado(raiz)
-  const selectorEnLaBarra = useAlMenos(CORTE_DE_LA_TABLA)
-  const selector = <SelectorDelListado porPagina={porPagina} aplicar={filtros.aplicarPorPagina} />
+  const porPaginaEstado = usePorPaginaDelListado(porPagina?.valor ?? 0, filtros.aplicarPorPagina)
+  const grupos = ordenarConPorPagina(opciones, grupoDePorPagina(porPagina, porPaginaEstado))
+  const [opcionesAbiertas, setOpcionesAbiertas] = useState(false)
   const [plegado, setPlegado] = useState(false)
   const hayPanel = esquema.filtros.length > 0 || pieDelPanel !== undefined
   const panel = (
@@ -175,17 +215,13 @@ export function FilterShell(props: Props) {
               }}
             />
           ) : null}
-          {vistas}
-          {/* Con sitio de sobra (un contenedor de 48 rem o más) las acciones van juntas a la derecha; sin él, cada botón envuelve por su
-              cuenta —`contents`—, a la izquierda y en el orden en que se leen: un grupo que salta de fila como un bloque y reparte a la
-              derecha dejaba «Vistas» sola y los botones desparejos al 200 % (cierre 5b, defecto 4.1). «Ítems por página» va al final. */}
-          <div className="contents @3xl:ml-auto @3xl:flex @3xl:min-w-0 @3xl:flex-wrap @3xl:items-center @3xl:justify-end @3xl:gap-2">
-            {acciones}
-            {selectorEnLaBarra ? selector : null}
-          </div>
+          {/* Una barra plana: cada pieza envuelve por su cuenta, a la izquierda y en el orden en que se leen; el buscador crece y llena el
+              resto de la fila. */}
+          <VistaYOpciones grupos={grupos} alCambiarAbierto={setOpcionesAbiertas} />
+          {acciones}
         </div>
+        {opcionesAbiertas || !porPagina ? null : <AvisosDePorPagina estado={porPaginaEstado} />}
         <ChipsDeFiltros esquema={esquema} />
-        {selectorEnLaBarra ? null : selector}
         <CuerpoDeLaLista
           conPanel={hayPanel && !plegado}
           panel={panel}

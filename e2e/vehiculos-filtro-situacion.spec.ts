@@ -12,6 +12,7 @@ import { aLaVista, cerrarPanelDeFiltros, panelDeFiltros, vehiculo } from './sopo
 import { PREFIJO_CLAVE_E2E, borrarOrigenes, crearOrigenDePrueba } from './soporte/origenes'
 import { capturar } from './soporte/recorrido'
 import { borrarVehiculosDe, vistasDe } from './soporte/vehiculos'
+import { abrirVistaYOpciones } from './soporte/vista-y-opciones'
 
 // El filtro «Situación» del inventario (docs/UX.md › «Vehículos»): las fases del origen más «En subasta», «Sin resolver» y «No ganadas», que se combina con
 // los demás filtros, vive en la URL y se guarda en una vista. Y el atajo «Sin resolver» con su conteo. La equivalencia de las dos copias de cada condición
@@ -258,7 +259,7 @@ test('E2E situación filtro · una vista guardada vuelve a poner la situación',
   await entrar(page, correo)
   await irA(page, '&situacion=no_ganada&anio.min=2018')
   await exigirLista(page, ['noGanada'])
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByLabel('Guardar los filtros de ahora').fill('Las que perdimos')
   await page.getByRole('button', { name: 'Guardar vista' }).click()
   await expect(page.getByText('Vista «Las que perdimos» guardada')).toBeVisible()
@@ -270,7 +271,7 @@ test('E2E situación filtro · una vista guardada vuelve a poner la situación',
   ])
 
   await page.goto(`/vehiculos?origen=${terreno.otro}`)
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByRole('button', { name: 'Las que perdimos', exact: true }).click()
   await expect(page).toHaveURL(/situacion=no_ganada/)
   await exigirLista(page, ['noGanada'])

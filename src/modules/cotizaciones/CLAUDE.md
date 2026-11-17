@@ -19,8 +19,8 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `features/hoja/actions/crear-cotizacion.ts` (`cotizacion_crear`, siempre `ok(ResultadoDeCrear)`, sin `revalidatePath`).
 - **`/cotizaciones`** (`cotizaciones.ver` en algún origen): `?q=` (el buscador: número, cliente, vehículo y autor; 3 letras o un número,
   `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`; con texto la página lee `cotizaciones_buscar()` en vez de `cotizaciones_listado()`, con los mismos filtros y cursor, y la
-  página dice `acotada` si una fuente nombró más de `TOPE_DE_COINCIDENCIAS`), «Vistas» guardadas (`pantalla = 'cotizaciones'`, `VistasDeCotizacionesDiferido`:
-  `<MenuDeVistas>` pesa ≈ 70 KB gz y el presupuesto de la ruta es 380), `?origen=` (sólo con 2 o más), `?clase=preventa|final`, `?cuales=mias` (las que creó quien
+  página dice `acotada` si una fuente nombró más de `TOPE_DE_COINCIDENCIAS`), las vistas guardadas en «Vista y opciones» (`pantalla = 'cotizaciones'`, `VistasDeCotizacionesDiferido`:
+  `<VistasGuardadas>` pesa ≈ 70 KB gz y el presupuesto de la ruta es 380), `?origen=` (sólo con 2 o más), `?clase=preventa|final`, `?cuales=mias` (las que creó quien
   mira), `?por=`, `?cursor=`; `?vehiculo=` y `?lead=` no son del esquema (ni chip ni los borra «Limpiar»): los escribe `rutaDelListado()` como camino a
   lo antiguo del historial del vehículo y del lead, y el aviso de arriba (`textoDelAviso()`) sólo nombra lo que quien mira ve. Los nombres llegan por
   clave primaria (leads sólo con `leads.ver`) y los une `filasConNombres()`: lo que no llega es «—». Lee `cotizaciones_listado()` (invocadora: decide la
@@ -96,7 +96,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `dato_del_vehiculo`**; `cifrasDelDiseno()` evalúa con datos en 0 y nunca lanza. Dibuja con las piezas del núcleo y **no con `LugaresDeLaHoja`** (lee
   `?ayuda=` y `?panel=`, que chocarían con la pestaña); un hijo de ancho propio en px dentro de una caja con scroll (los cortes `@4xl/hoja` y `@5xl` miran al
   hijo); «200 %» es 206 px con `zoom: 2`. Va `inert`, en un `diferido()` aparte.
-- Depende de `leads`, `vehiculos`, `empresa` (tipos de cambio) y `equipo` (`<MenuDeVistas>`); los orígenes entran por props desde `src/app`.
+- Depende de `leads`, `vehiculos`, `empresa` (tipos de cambio) y `equipo` (`<VistasGuardadas>`); los orígenes entran por props desde `src/app`.
 
 ## Áreas
 
@@ -128,7 +128,8 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   hoja, fuera del proveedor del ⚙). Los llenan `pantallas/{final,comprobantes,comentarios,papelera}-cotizacion.ts` (cada uno con un vacío en
   `features/<área>/components/huecos-en-la-guardada.ts`) y `src/app/(app)/cotizaciones/[id]/huecos-de-la-guardada.tsx` los ordena: final, comprobantes,
   comentarios y papelera (la destructiva al final). Cada componente recibe `{ cotizacion, puedeGuardar, permisos }`. Fichas: `areas/<área>/CLAUDE.md`.
-- **El listado** (`HuecosDelListado`): `Junto`, antes de «Nueva cotización» (el vacío ofrece sólo «Nueva»); lo llena `pantallas/papelera-listado.ts`.
+- **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
+  `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
 - **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`; la llena
   `<ProveedorDeLaTarjeta>` (`pantallas/tarjeta.ts`) con la cáscara del modal y lo que sabe la página (vehículo, asesor, número, logo). El modal lee
   `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `modeloDeLaTarjeta()` (puro). El pie: Live y «Copiar texto»

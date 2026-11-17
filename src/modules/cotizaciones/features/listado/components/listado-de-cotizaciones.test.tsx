@@ -1,4 +1,4 @@
-import { cleanup, screen } from '@testing-library/react'
+import { cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { EsquemaDeFiltros } from '@/shared/lib/filtros'
 import { render } from '../../hoja/components/render-con-url.soporte'
@@ -11,6 +11,12 @@ vi.mock('next/navigation', () => ({
 }))
 // Las vistas guardadas traen las actions de `equipo` (de servidor): acá no se llaman.
 vi.mock('server-only', () => ({}))
+// El panel de «Vista y opciones» sin `lazy`.
+vi.mock('@/shared/ui/vista-y-opciones/diferidos', async () => {
+  const { PanelDeVistaYOpciones } =
+    await import('@/shared/ui/vista-y-opciones/panel-de-vista-y-opciones')
+  return { PanelDeVistaYOpcionesDiferido: PanelDeVistaYOpciones }
+})
 vi.mock('./diferidos', () => ({
   ResumenDeCotizacionDiferido: () => null,
   VistasDeCotizacionesDiferido: () => <button>Vistas</button>,
@@ -39,24 +45,32 @@ const base = {
   vistas: [],
 }
 
-// Los hijos del contenedor de acciones del `<FilterShell>`: el que tiene a «Nueva cotización» (el primero con ese botón, el de la barra).
-function accionesDeLaBarra() {
-  const nuevas = screen.getAllByRole('link', { name: 'Nueva cotización' })
-  const barra = nuevas[0]?.parentElement
-  if (!barra) throw new Error('No está la barra de acciones')
-  return { nuevas, barra }
+const botonDeOpciones = () =>
+  screen.getByRole('button', { name: /^Vista y opciones/, hidden: true })
+
+// Abre «Vista y opciones» y devuelve su panel (en jsdom, una pantalla angosta: la hoja inferior).
+async function abrirOpciones() {
+  fireEvent.click(botonDeOpciones())
+  return screen.findByRole('dialog', { name: 'Vista y opciones' })
 }
 
-describe('ListadoDeCotizaciones: lo que va junto a «Nueva cotización» (4.15-6b, C5)', () => {
-  it('con `junto`, va antes de «Nueva cotización» en el contenedor de acciones', () => {
+describe('ListadoDeCotizaciones: la papelera en «Vista y opciones» (4.15-6b, C5)', () => {
+  it('con `junto`, va en «Más» dentro de «Vista y opciones», no en la barra', async () => {
     render(<ListadoDeCotizaciones {...base} junto={<button>Papelera de prueba</button>} />)
-    const { barra } = accionesDeLaBarra()
-    const junto = screen.getByRole('button', { name: 'Papelera de prueba' })
-    expect(junto.parentElement).toBe(barra)
-    expect(junto.nextElementSibling?.textContent).toBe('Nueva cotización')
+    expect(screen.queryByRole('button', { name: 'Papelera de prueba' })).toBeNull()
+    const panel = await abrirOpciones()
+    const mas = within(panel).getByRole('region', { name: 'Más' })
+    expect(within(mas).getByRole('button', { name: 'Papelera de prueba' })).toBeTruthy()
   })
 
-  it('con `junto` y sin ruta de «Nueva», sólo `junto`', () => {
+  it('sin `junto`, no hay «Más»', async () => {
+    render(<ListadoDeCotizaciones {...base} />)
+    const panel = await abrirOpciones()
+    expect(within(panel).queryByRole('region', { name: 'Más' })).toBeNull()
+    expect(within(panel).getByRole('region', { name: 'Vistas guardadas' })).toBeTruthy()
+  })
+
+  it('con `junto` y sin ruta de «Nueva», el botón sigue y no hay «Nueva cotización»', async () => {
     render(
       <ListadoDeCotizaciones
         {...base}
@@ -65,13 +79,8 @@ describe('ListadoDeCotizaciones: lo que va junto a «Nueva cotización» (4.15-6
       />,
     )
     expect(screen.queryByRole('link', { name: 'Nueva cotización' })).toBeNull()
-    expect(screen.getByRole('button', { name: 'Papelera de prueba' })).toBeTruthy()
-  })
-
-  it('sin `junto`, la barra tiene un solo hijo con «Nueva cotización», como siempre (C9)', () => {
-    render(<ListadoDeCotizaciones {...base} />)
-    const { barra } = accionesDeLaBarra()
-    expect(barra.children).toHaveLength(1)
+    const panel = await abrirOpciones()
+    expect(within(panel).getByRole('button', { name: 'Papelera de prueba' })).toBeTruthy()
   })
 
   it('con la página vacía, el vacío ofrece sólo «Nueva cotización» aunque haya `junto`', () => {
@@ -149,8 +158,15 @@ describe('ListadoDeCotizaciones: la búsqueda (T15)', () => {
     expect(screen.queryByText(/Escribe más para afinarla/)).toBeNull()
   })
 
-  it('el menú de vistas guardadas está en la barra', () => {
+  it('«Vista y opciones» está en la barra con «Nueva cotización» a la vista, y trae las vistas guardadas', async () => {
     render(<ListadoDeCotizaciones {...base} />)
-    expect(screen.getByRole('button', { name: /Vistas/ })).toBeTruthy()
+    const barra = botonDeOpciones().parentElement
+    expect(barra?.hasAttribute('data-barra-de-filtros')).toBe(true)
+    expect(
+      barra?.querySelector('a')?.textContent,
+      '«Nueva cotización» queda en la barra, después del botón',
+    ).toBe('Nueva cotización')
+    const panel = await abrirOpciones()
+    expect(within(panel).getByRole('button', { name: 'Vistas' })).toBeTruthy()
   })
 })

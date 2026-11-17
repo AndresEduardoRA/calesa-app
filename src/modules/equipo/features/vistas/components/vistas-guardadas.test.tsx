@@ -1,7 +1,7 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { VistaGuardada } from '../../../entities/vista'
-import { MenuDeVistas } from './menu-de-vistas'
+import { VistasGuardadas } from './vistas-guardadas'
 
 const navegar = vi.fn()
 vi.mock('next/navigation', () => ({
@@ -12,6 +12,11 @@ const guardar = vi.fn(() => Promise.resolve(true))
 const eliminar = vi.fn(() => Promise.resolve())
 vi.mock('../hooks/use-vistas', () => ({
   useVistas: () => ({ guardar, eliminar, enCurso: false, errorDeNombre: undefined }),
+}))
+
+const cerrar = vi.fn()
+vi.mock('@/shared/ui/vista-y-opciones', () => ({
+  useVistaYOpciones: () => ({ cerrar, cerrarYLuego: vi.fn() }),
 }))
 
 afterEach(() => {
@@ -32,9 +37,9 @@ const VISTAS: VistaGuardada[] = [
   },
 ]
 
-function abrir(props: Partial<Parameters<typeof MenuDeVistas>[0]> = {}) {
+function dibujar(props: Partial<Parameters<typeof VistasGuardadas>[0]> = {}) {
   render(
-    <MenuDeVistas
+    <VistasGuardadas
       pantalla="vehiculos"
       vistas={VISTAS}
       actuales={{ origen: 'o', fase: 'a' }}
@@ -42,12 +47,11 @@ function abrir(props: Partial<Parameters<typeof MenuDeVistas>[0]> = {}) {
       {...props}
     />,
   )
-  fireEvent.click(screen.getByRole('button', { name: 'Vistas' }))
 }
 
-describe('MenuDeVistas', () => {
+describe('VistasGuardadas', () => {
   it('lista las vistas y marca la que se está viendo', () => {
-    abrir()
+    dibujar()
     expect(screen.getByRole('button', { name: /^Automáticos/ }).getAttribute('aria-current')).toBe(
       'true',
     )
@@ -57,22 +61,27 @@ describe('MenuDeVistas', () => {
   })
 
   it('aplicar una vista es navegar a su URL', () => {
-    abrir()
+    dibujar()
     fireEvent.click(screen.getByRole('button', { name: 'Con llave' }))
     expect(navegar).toHaveBeenCalledWith('/vehiculos?a.llave=si&origen=o')
+    // Antes de navegar se cierra «Vista y opciones».
+    expect(cerrar).toHaveBeenCalledTimes(1)
   })
 
-  it('guarda los filtros de ahora con el nombre escrito', () => {
-    abrir()
+  it('guarda los filtros de ahora con el nombre escrito y cierra el panel', async () => {
+    dibujar()
     fireEvent.change(screen.getByLabelText('Guardar los filtros de ahora'), {
       target: { value: 'Mis filtros' },
     })
     fireEvent.click(screen.getByRole('button', { name: 'Guardar vista' }))
     expect(guardar).toHaveBeenCalledWith('Mis filtros', { origen: 'o', fase: 'a' })
+    await waitFor(() => {
+      expect(cerrar).toHaveBeenCalledTimes(1)
+    })
   })
 
   it('sin filtros puestos no hay nada que guardar, y lo dice', () => {
-    abrir({ puedeGuardar: false })
+    dibujar({ puedeGuardar: false })
     expect(screen.getByLabelText('Guardar los filtros de ahora').hasAttribute('disabled')).toBe(
       true,
     )
@@ -80,13 +89,13 @@ describe('MenuDeVistas', () => {
   })
 
   it('eliminar nombra la vista', () => {
-    abrir()
+    dibujar()
     fireEvent.click(screen.getByRole('button', { name: 'Eliminar la vista Con llave' }))
     expect(eliminar).toHaveBeenCalledWith(VISTAS[1])
   })
 
   it('sin vistas explica para qué sirven', () => {
-    abrir({ vistas: [] })
+    dibujar({ vistas: [] })
     expect(screen.getByText(/Todavía no guardaste ninguna/)).toBeDefined()
   })
 })

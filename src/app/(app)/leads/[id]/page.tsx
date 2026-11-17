@@ -176,7 +176,7 @@ export default async function PaginaLead({ params, searchParams }: PageProps<'/l
         )}
         relacionados={
           ve.vehiculos ? (
-            <Suspense fallback={<EsqueletoDeRelacionados />}>
+            <Suspense fallback={<EsqueletoDeRelacionados presentacion="compacta" />}>
               <RelacionadosDelLeadServidor leadId={datos.ficha.id} permisos={sesion.permisos} />
             </Suspense>
           ) : null

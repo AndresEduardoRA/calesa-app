@@ -95,7 +95,7 @@ export function CampoDeBusqueda(props: {
   const insuficiente = minimo !== undefined && recortado(texto) !== '' && buscable(texto) === ''
   return (
     <>
-      <div className="min-w-0 flex-1 basis-56 md:max-w-sm">
+      <div className="min-w-0 flex-1 basis-56">
         <label htmlFor={id} className="sr-only">
           {props.etiqueta}
         </label>

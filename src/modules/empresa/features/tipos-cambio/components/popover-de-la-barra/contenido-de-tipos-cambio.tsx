@@ -7,8 +7,10 @@ import { PopoverDescription, PopoverHeader, PopoverTitle } from '@/shared/ui/pop
 import { useRegional } from '@/shared/ui/regional'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { useTiposCambioVigentes } from '../../hooks/use-tipos-cambio-vigentes'
+import { PanelDeCompartirDiferido } from './diferidos'
 import { ListaDeTiposCambio } from './lista-de-tipos-cambio'
 import { PieDelPopover } from './pie-del-popover'
+import { useCompartirDelPopover } from './use-compartir-del-popover'
 
 type Props = {
   // Quien gestiona los tipos de cambio cambia el valor ahí mismo y tiene a mano ir a configurarlos.
@@ -16,6 +18,8 @@ type Props = {
   alCerrar: () => void
   // Lo pide el editor mientras tiene algo sin guardar: el popover no se cierra al tocar afuera ni con Esc.
   alRetener: (retener: boolean) => void
+  // Los que la empresa puso en la barra: lo que «Compartir» marca de entrada.
+  idsEnLaBarra: readonly string[]
 }
 
 function EsqueletoDeTipos() {
@@ -31,10 +35,27 @@ function EsqueletoDeTipos() {
 // Lo que se dibuja dentro del popover de la barra: todos los vigentes (el por defecto adelante, hasta 30), cada uno con su último cambio y,
 // para quien los gestiona, el lápiz para cambiar el valor. Con el Modo Live no se ofrece: el campo mostraría la cifra, y un editor abierto
 // se cierra. Su código viaja diferido (`diferidos.tsx`) y lee al abrirse: el marco no lo paga hasta que alguien lo abre.
-export function ContenidoDeTiposCambio({ puedeGestionar, alCerrar, alRetener }: Props) {
+export function ContenidoDeTiposCambio({
+  puedeGestionar,
+  alCerrar,
+  alRetener,
+  idsEnLaBarra,
+}: Props) {
   const { zonaHoraria } = useRegional()
   const { live } = useLive()
   const { vigentes, releer, reintentar } = useTiposCambioVigentes()
+  const hayTipos = vigentes.estado === 'listo' && vigentes.filas.length > 0
+  const compartir = useCompartirDelPopover(hayTipos && !live, alRetener)
+
+  if (compartir.compartiendo && vigentes.estado === 'listo') {
+    return (
+      <PanelDeCompartirDiferido
+        filas={vigentes.filas}
+        idsEnLaBarra={idsEnLaBarra}
+        alVolver={compartir.alVolver}
+      />
+    )
+  }
 
   return (
     <div className="grid min-w-0 gap-2">
@@ -60,10 +81,15 @@ export function ContenidoDeTiposCambio({ puedeGestionar, alCerrar, alRetener }: 
           hayMas={vigentes.hayMas}
           puedeCambiar={puedeGestionar && !live}
           releer={releer}
-          alRetener={alRetener}
+          alRetener={compartir.retener}
         />
       ) : null}
-      <PieDelPopover puedeGestionar={puedeGestionar} alCerrar={alCerrar} />
+      <PieDelPopover
+        puedeGestionar={puedeGestionar}
+        alCerrar={alCerrar}
+        alCompartir={compartir.alCompartir}
+        motivoSinCompartir={compartir.motivoSinCompartir}
+      />
     </div>
   )
 }

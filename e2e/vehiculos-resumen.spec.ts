@@ -111,11 +111,16 @@ test('«Relacionados» llega arriba de las pestañas y «Fotos» lee al elegirse
   })
   const resumen = await abrirConUnClic(page, TITULO)
   // Los relacionados están en «Resumen», sin elegir nada: una lectura (`vehiculo_relacionados`). Las fotos no se leyeron: cada pestaña paga lo suyo al elegirse.
+  // En una línea de chips: el grupo, con sus filas, en el popover del chip.
   const relacionados = resumen.getByRole('region', { name: 'Relacionados' })
-  await expect(relacionados.getByText('E2E Marta Resumen')).toBeVisible()
-  await expect(relacionados.getByText('Pidió el precio')).toBeVisible()
-  await expect(relacionados.getByRole('region', { name: 'Interesado', exact: true })).toBeVisible()
+  await expect(relacionados.getByRole('button', { name: /^Interesado · 1/ })).toBeVisible()
   expect(pedidos.filter((url) => url.includes('vehiculo_relacionados'))).toHaveLength(1)
+  await relacionados.getByRole('button', { name: /^Interesado · 1/ }).click()
+  const popover = page.getByRole('dialog', { name: 'Relacionados: Interesado' })
+  await expect(popover.getByText('E2E Marta Resumen')).toBeVisible()
+  await expect(popover.getByText('Pidió el precio')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(popover).toBeHidden()
   // La portada de la cabecera ya pudo leer sus fotos al acercarse; «Fotos» suma una lectura más al elegirla.
   const imagenesAlAbrir = pedidos.filter((url) =>
     url.includes('/rest/v1/vehiculos_imagenes'),

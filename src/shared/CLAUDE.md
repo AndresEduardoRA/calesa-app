@@ -25,7 +25,9 @@ locale)`, el único lector de un número tipeado.
 - Formularios con `useAction`: `lib/enviar-accion.ts` (envío con `sinRed`), `lib/formularios.ts` (errores por campo), `lib/borrador.ts` +
   `ui/use-borrador.ts` (borrador en `sessionStorage`).
 - `lib/filtros/`: filtros declarativos sin nuqs (`EsquemaDeFiltros`, `leerFiltros()`, `chipsDe()`, `cumpleElMinimo()`; `campos.ts`: campos del
-  layout a filtros). `ui/filtros/`: `<FilterShell>`; `ui/por-pagina.tsx`, `ui/paginacion.tsx` (con `alIr`, sin ir al servidor),
+  layout a filtros). `ui/filtros/`: `<FilterShell>` (barra plana: buscador que crece, «Filtros», «Vista y opciones» con `opciones` y «Ítems por página»,
+  y `acciones` para «Nuevo»); `ui/vista-y-opciones/`: `<VistaYOpciones grupos>` (el botón en frío; el panel, popover o hoja, con `diferido()`),
+  `useVistaYOpciones()` (`cerrar`, `cerrarYLuego`: lo que abre otro panel corre al terminar de cerrarse), `CLASE_DE_OPCION`; `ui/por-pagina.tsx`, `ui/paginacion.tsx` (con `alIr`, sin ir al servidor),
   `ui/aviso-de-tope.tsx`, `ui/ir-a-una-fecha.tsx` y `ui/desde-una-fecha.tsx` (entregan un día `YYYY-MM-DD`; el instante lo arma quien lee).
 - `lib/campos/`: motor de campos configurables sin I/O (`TIPOS_DE_CAMPO`, `esquemaDeValor()`, `valorMostrado()`, `campoDeFormulario()`; `rango.ts`,
   espejo de `_valor_fuera_de_rango` y `_campo_rango`). `ui/campos/`: `<EditorDeCampos>` (`campo-rango.tsx`), `<DatosPorGrupo>`, `<CampoDeFormulario>`.
@@ -48,7 +50,7 @@ locale)`, el único lector de un número tipeado.
   historial; con `router.push`: `abrirConVuelta(clave, () => { push(url); return alLlegarA(url) })`. La usa `usePanelPorUrl()`.
 - `ui/visor-de-imagenes/`: `<CarruselEnElLugar>` (la portada y, al acercarse, el resto por la `cargar` que recibe; `modo="abrir"` en un lugar
   chico) y `useVisorDeGaleria()` (una galería ya leída); el visor vive en `?visor=<clave>&foto=<n>` (la foto cambia con `replace`).
-- `ui/lista/`: `UnaSolaVista` (con `preferida`), `ConmutadorDeVista` («Tabla | Tarjetas», `lib/vista-de-lista.ts`), `TablaDeLista`,
+- `ui/lista/`: `UnaSolaVista` (con `preferida`), `ConmutadorDeVista` («Tabla | Tarjetas», `lib/vista-de-lista.ts`; va en «Vista y opciones»), `TablaDeLista`,
   `FilaDeLista`, `TarjetaDeLista`, `MasAcciones`, `AbrirResumen`, `SimbolosDeLista`, `PestanasDelResumen` (con `alto="lleno"` ocupa el alto de su contenedor y cada pestaña se desplaza en su marco).
 - `ui/monto.tsx` + `live.ts` + `guion-live.tsx` (Modo Live), `regional.tsx`, `densidad.tsx`, `marca.tsx`, `estilo-de-marca.tsx`.
 - `lib/acciones-del-aviso.ts` (las acciones de un aviso como datos: `AccionDelAviso`, `resolverAcciones()`, `pedidoDe()`, `hrefDePanel()`; `ErrorApp.causa`)

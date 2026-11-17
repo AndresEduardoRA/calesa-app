@@ -7,6 +7,7 @@ import {
   prepararRecorrido,
   type TerrenoDelRecorrido,
 } from './soporte/recorrido'
+import { elegirEnVistaYOpciones } from './soporte/vista-y-opciones'
 
 // El recorrido del cierre 4 con la dueña y una asesora (la de la semilla): los modales que ahora preguntan al descartar (nuevo rol,
 // invitar, nuevo embudo, etiquetas), lo que dicen junto al campo y sin conexión, en claro y en oscuro, con el texto normal y al 200 %,
@@ -87,7 +88,7 @@ test('Ana · nuevo embudo: la pregunta al descartar y lo escrito sin conexión',
 }, info) => {
   await entrar(page, r.ana.email)
   await irAlEmbudo(page)
-  await page.getByRole('button', { name: 'Nuevo embudo' }).click()
+  await elegirEnVistaYOpciones(page, 'Nuevo embudo…')
   const dialogo = page.getByRole('dialog', { name: 'Nuevo embudo' })
   await dialogo.getByLabel('Nombre').fill('Embudo del recorrido')
   await page.keyboard.press('Escape')

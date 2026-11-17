@@ -23,6 +23,7 @@ import {
   ponerMarcaDe,
 } from './soporte/leads-marcas'
 import { vistasDe } from './soporte/vehiculos'
+import { abrirVistaYOpciones } from './soporte/vista-y-opciones'
 
 // El listado con las marcas de quien mira: los tachados se ocultan por defecto (y el aviso dice
 // cuántos, con «Mostrarlos»), salvo mientras se busca; favoritos y etiquetas («cualquiera de»)
@@ -170,7 +171,7 @@ test('una vista guarda las marcas; si su etiqueta se borró, o la URL trae algo 
   await entrar(page, t.personas.berta)
   await irALeads(page, `?etiqueta=${id}&tachados=incluir`)
   await expect(fila(page, corto)).toBeVisible()
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByLabel('Guardar los filtros de ahora').fill(`Etiquetada ${info.project.name}`)
   await page.getByRole('button', { name: 'Guardar vista' }).click()
   await expect(page.getByText(`Vista «Etiquetada ${info.project.name}» guardada`)).toBeVisible()
@@ -183,7 +184,7 @@ test('una vista guarda las marcas; si su etiqueta se borró, o la URL trae algo 
   const { error } = await admin().from('etiquetas').delete().eq('id', id)
   exigir(error, 'borrar la etiqueta')
   await irALeads(page)
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByRole('button', { name: `Etiquetada ${info.project.name}`, exact: true }).click()
   await expect(page.getByText('Se quitó del filtro una etiqueta que ya no existe.')).toBeVisible()
   await expect(fila(page, corto)).toBeVisible()

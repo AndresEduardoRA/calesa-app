@@ -1,15 +1,12 @@
 'use client'
 
-import type { Route } from 'next'
-import Link from 'next/link'
 import { conteoCorto } from '@/shared/lib/conteo'
-import { Button, buttonVariants } from '@/shared/ui/button'
 import { AccionSuelta, claveDeLaAccion } from './accion-suelta'
+import { VerTodosDelGrupo, type VerTodosDeUnGrupo } from './ver-todos-del-grupo'
 import type { AccionDeRelacionados } from '../../../entities/acciones-de-relacionados'
 import {
   LEYENDAS,
   NOMBRE_DEL_TIPO,
-  VACIOS,
   textoDeOcultos,
   type GrupoDeRelacionados,
   type LadoDeRelacionados,
@@ -23,14 +20,13 @@ type Props = {
   alElegir: (accion: AccionDeRelacionados) => void
   enCurso: boolean
   // «Ver todos»: un enlace a la ficha (desde un resumen) o un botón que abre el drawer; null = no hay más que ver.
-  verTodos: { href: string } | { abrir: () => void } | null
+  verTodos: VerTodosDeUnGrupo | null
   // Las filas ya armadas (`<li>`).
   children: React.ReactNode
 }
 
-const ACCION = 'min-h-11 w-fit md:min-h-8'
-
-// Un grupo de «Relacionados»: su título con la cantidad (con tope), su leyenda, las primeras filas, lo que no se ve contado, su vacío y sus acciones.
+// El grupo dentro del popover de un chip de «Relacionados en una línea»: su título con la cantidad (con tope), su leyenda, las primeras filas, lo que no se ve contado y sus acciones. Nunca
+// vacío: un grupo sin nada no tiene chip.
 export function UnGrupoDeRelacionados({
   lado,
   grupo,
@@ -41,7 +37,6 @@ export function UnGrupoDeRelacionados({
   children,
 }: Props) {
   const nombre = NOMBRE_DEL_TIPO[grupo.tipo]
-  const vacio = grupo.filas.length === 0 && grupo.ocultos === 0
   return (
     <section
       aria-label={nombre}
@@ -62,11 +57,6 @@ export function UnGrupoDeRelacionados({
       {grupo.filas.length > 0 ? (
         <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">{children}</ul>
       ) : null}
-      {vacio ? (
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          {VACIOS[lado][grupo.tipo]}
-        </p>
-      ) : null}
       {grupo.ocultos > 0 ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">
           {textoDeOcultos(grupo.ocultos)}
@@ -82,25 +72,7 @@ export function UnGrupoDeRelacionados({
               alElegir={alElegir}
             />
           ))}
-          {verTodos && 'href' in verTodos ? (
-            <Link
-              href={verTodos.href as Route}
-              className={`${buttonVariants({ variant: 'ghost', size: 'sm' })} ${ACCION}`}
-            >
-              Ver todos
-            </Link>
-          ) : null}
-          {verTodos && 'abrir' in verTodos ? (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className={ACCION}
-              onClick={verTodos.abrir}
-            >
-              Ver todos
-            </Button>
-          ) : null}
+          {verTodos ? <VerTodosDelGrupo verTodos={verTodos} /> : null}
         </div>
       ) : null}
     </section>

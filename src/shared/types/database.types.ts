@@ -135,6 +135,7 @@ export type Database = {
           iconos: Json | null
           id: number
           lead_dormido_meses: number
+          leyenda_tipos_cambio: string | null
           limpieza_automatica: boolean
           limpieza_dias_gracia: number
           locale: string
@@ -166,6 +167,7 @@ export type Database = {
           iconos?: Json | null
           id?: number
           lead_dormido_meses?: number
+          leyenda_tipos_cambio?: string | null
           limpieza_automatica?: boolean
           limpieza_dias_gracia?: number
           locale?: string
@@ -196,6 +198,7 @@ export type Database = {
           iconos?: Json | null
           id?: number
           lead_dormido_meses?: number
+          leyenda_tipos_cambio?: string | null
           limpieza_automatica?: boolean
           limpieza_dias_gracia?: number
           locale?: string
@@ -10203,6 +10206,10 @@ export type Database = {
       }
       empresa_guardar_ajustes_de_cotizacion: {
         Args: { p_actualizado_en_esperado: string; p_vigencia_dias: number }
+        Returns: string
+      }
+      empresa_guardar_leyenda_de_tipos_cambio: {
+        Args: { p_actualizado_en_esperado: string; p_leyenda: string }
         Returns: string
       }
       en_cartera: { Args: { p_lead: string }; Returns: boolean }

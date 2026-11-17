@@ -1,21 +1,21 @@
 'use client'
 
 import { Button } from '@/shared/ui/button'
-import { TEXTO_DE_ERROR } from '../../../entities/relacionados'
+import { TEXTO_DE_ERROR, type PresentacionDeRelacionados } from '../../../entities/relacionados'
 
 type Props = {
   alReintentar: () => void
-  // En una línea (la unidad de logística) no hay encabezado: la misma frase y su botón.
-  presentacion?: 'bloque' | 'linea'
+  // En una línea no hay encabezado: la misma frase y su botón. Compacta, bajo el título «Relacionados».
+  presentacion: PresentacionDeRelacionados
 }
 
 // Un error de lectura deja el bloque en error con «Reintentar» y la pantalla sigue: es un bloque de arriba, no tumba la ficha.
-export function ErrorDeRelacionados({ alReintentar, presentacion = 'bloque' }: Props) {
+export function ErrorDeRelacionados({ alReintentar, presentacion }: Props) {
   return (
     <section aria-label="Relacionados" className="grid min-w-0 gap-2">
-      {presentacion === 'bloque' ? (
+      {presentacion === 'linea' ? null : (
         <h2 className="text-(length:--text-sm) font-medium text-(--color-ink)">Relacionados</h2>
-      ) : null}
+      )}
       <div role="alert" className="flex flex-wrap items-center gap-2">
         <p className="text-(length:--text-sm) text-(--color-ink)">{TEXTO_DE_ERROR}</p>
         <Button

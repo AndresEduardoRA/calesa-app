@@ -3,7 +3,6 @@ import type { Page, TestInfo } from '@playwright/test'
 import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { admin } from './soporte/base'
-import { aLaVista } from './soporte/inventario'
 import { exigir } from './soporte/leads'
 import { idDePersona } from './soporte/leads-alta'
 import { nuevoLead } from './soporte/leads-ficha'
@@ -17,6 +16,7 @@ import {
   type TerrenoDelRecorrido,
   volcarArbol,
 } from './soporte/recorrido'
+import { elegirEnVistaYOpciones } from './soporte/vista-y-opciones'
 
 // @sin-celular-archivo: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
 
@@ -157,14 +157,9 @@ test('F · la dueña exporta su cartera: UTF-8 con BOM, las columnas del layout 
   await entrar(page, r.t.personas.duena)
   await page.goto('/leads')
   const dialogo = page.getByRole('dialog', { name: 'Exportar leads' })
-  await expect(async () => {
-    if (!(await dialogo.isVisible())) {
-      const renglon = page.getByRole('menuitem', { name: 'Exportar…' })
-      if (await renglon.isVisible()) await renglon.click()
-      else await aLaVista(page.getByRole('button', { name: /^Exportar$|^CSV$/ })).click()
-    }
-    await expect(dialogo).toBeVisible({ timeout: 1500 })
-  }).toPass()
+  // «Vista y opciones» › «Exportar…».
+  await elegirEnVistaYOpciones(page, 'Exportar…')
+  await expect(dialogo).toBeVisible()
   await capturar(page, info, 'exportar')
   await volcarArbol(dialogo, info, `exportar-${info.project.name}`)
   const [descarga] = await Promise.all([
