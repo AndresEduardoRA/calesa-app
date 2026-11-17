@@ -10,20 +10,20 @@ type Props = {
   origen: OrigenResumen
   // La fase actual, entre las del flujo del origen; null = sin fase.
   fase: FaseResumen | null
-  // «Publicar en la web», «Editar» y lo demás que la persona puede hacer.
+  // «Editar», el «⋯» y lo demás que la persona puede hacer.
   acciones?: ReactNode
   // Lo que va al lado de la fase (si está en la vitrina).
   insignias?: ReactNode
 }
 
-// Lo que se ve de un vehículo arriba de todas sus pestañas: su portada, su título, su número, su
-// origen y su fase. La fase se muestra y no se cambia acá (se mueve desde logística).
+// La cabecera de la ficha de un vehículo, arriba de la columna izquierda: el carrusel a todo el ancho de la tarjeta, su título, su
+// número, su origen y su situación, y debajo las acciones. La fase se muestra y no se cambia acá (se mueve desde logística).
 export function CabeceraDeVehiculo({ vehiculo, origen, fase, acciones, insignias }: Props) {
   return (
-    <header className="flex flex-wrap items-start gap-4">
-      <FotosEnElLugar vehiculo={vehiculo} className="w-40" />
-      <div className="grid min-w-0 flex-1 gap-1.5">
-        <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">
+    <header className="grid min-w-0 gap-3">
+      <FotosEnElLugar vehiculo={vehiculo} className="w-full" />
+      <div className="grid min-w-0 gap-1.5">
+        <h1 className="text-(length:--text-xl) font-semibold break-words text-(--color-ink)">
           {vehiculo.titulo}
         </h1>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-(length:--text-sm) text-(--color-ink-soft)">
@@ -40,7 +40,7 @@ export function CabeceraDeVehiculo({ vehiculo, origen, fase, acciones, insignias
           {insignias}
         </div>
       </div>
-      {acciones ? <div className="flex flex-wrap items-start gap-2">{acciones}</div> : null}
+      {acciones ? <div className="flex flex-wrap items-center gap-2">{acciones}</div> : null}
     </header>
   )
 }

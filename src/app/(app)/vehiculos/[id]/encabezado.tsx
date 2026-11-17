@@ -1,5 +1,3 @@
-import type { Route } from 'next'
-import Link from 'next/link'
 import type { FaseResumen } from '@/modules/flujos'
 import type { OrigenResumen } from '@/modules/origenes'
 import {
@@ -16,8 +14,6 @@ import {
   InsigniaDeVitrina,
   MenuDeVehiculoDeLaFicha,
 } from '@/modules/vehiculos/pantallas/ficha'
-import { unidadDeLogistica } from '@/shared/lib/rutas'
-import { buttonVariants } from '@/shared/ui/button'
 
 type Props = {
   vehiculo: Vehiculo
@@ -30,27 +26,15 @@ type Props = {
   papelera: PermisoDePapelera
   // Qué ofrece el aviso si la base rechaza el envío (comprobante, documentos, pagos…): el vehículo con lo que la página resolvió y lo que puede abrir.
   avisos: { vehiculo: VehiculoDelAviso; alcance: AlcanceDeAvisos }
-  // `logistica.ver` en el origen del vehículo: sin él no hay enlace (D25). Lo decide la página con `puede()`.
-  verEnLogistica: boolean
   // `/actividad` de este vehículo, con `actividad.ver` (la arma la página); null si no la ve: «Ver actividad» en el «⋯».
   paraActividad: string | null
 }
 
-// La cabecera de la ficha con lo que la persona puede hacer desde ahí: «Ver en logística», «Editar» y el «⋯» con la lista de siempre (publicar en la web,
-// apagado y con el motivo si no tiene el permiso, y, separada, enviar a la papelera).
+// La cabecera de la ficha, arriba de la columna izquierda, con lo que la persona puede hacer desde ahí: «Editar» y el «⋯» con la lista de siempre (publicar en la
+// web, apagado y con el motivo si no tiene el permiso, y, separada, enviar a la papelera). «Ver en logística» va en el bloque «Fase y qué falta».
 export function Encabezado(props: Props) {
-  const {
-    vehiculo,
-    origen,
-    fase,
-    previa,
-    publicar,
-    editable,
-    papelera,
-    verEnLogistica,
-    paraActividad,
-    avisos,
-  } = props
+  const { vehiculo, origen, fase, previa, publicar, editable, papelera, paraActividad, avisos } =
+    props
   return (
     <CabeceraDeVehiculo
       vehiculo={vehiculo}
@@ -68,14 +52,6 @@ export function Encabezado(props: Props) {
       }
       acciones={
         <>
-          {verEnLogistica ? (
-            <Link
-              href={unidadDeLogistica(vehiculo.id) as Route}
-              className={buttonVariants({ variant: 'outline', className: 'min-h-11 md:min-h-8' })}
-            >
-              Ver en logística
-            </Link>
-          ) : null}
           {editable ? <BotonEditarVehiculo vehiculo={vehiculo} /> : null}
           <MenuDeVehiculoDeLaFicha
             vehiculo={vehiculo}

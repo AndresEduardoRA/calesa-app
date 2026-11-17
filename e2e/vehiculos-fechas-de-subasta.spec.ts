@@ -58,7 +58,8 @@ async function fechasGuardadas() {
 test('las fechas se escriben en la zona de quien edita y se guardan en UTC', async ({ page }) => {
   await entrar(page, duena)
   await page.goto(`/vehiculos/${vehiculoId}`)
-  const bloque = page.getByRole('region', { name: 'Subasta' })
+  // El bloque de la columna izquierda (el primero): el grupo «Subasta» del layout también es una región, en «Ficha».
+  const bloque = page.getByRole('region', { name: 'Subasta' }).first()
   await expect(bloque).toContainText('Sin fecha')
   await bloque.getByRole('button', { name: 'Editar fechas' }).click()
   await expect(page).toHaveURL(/[?&]panel=fechas-de-subasta/)

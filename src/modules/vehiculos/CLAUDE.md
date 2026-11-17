@@ -5,8 +5,9 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 ## Entra y sale
 
 - Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`, `?vehiculo=<id>` abre el resumen con `?pestana=fotos`; un `?pestana=interesados` viejo abre «Resumen»),
-  `/vehiculos/papelera`, `/vehiculos/[id]` (`?seccion=ficha|fotos|cotizaciones`; la última sólo con `cotizaciones.ver` del origen, la dibuja
-  `cotizaciones/pantallas/vehiculo` compuesta por `src/app`; sin esa clave abre «Ficha»). Paneles: `?panel=nuevo`, `?editar=<id>`,
+  `/vehiculos/papelera`, `/vehiculos/[id]` (la ficha en dos columnas: a la izquierda `CabeceraDeVehiculo` apilada, `DatosPrincipalesDelVehiculo` y la
+  subasta; a la derecha el índice y los bloques por permiso, que compone `src/app` con `logistica`, `cotizaciones` y `repuestos`. `?seccion=<bloque>` lleva
+  a su bloque si quien mira lo ve —si no, se queda arriba— y los paneles de «Relacionados» y `?relacionados=` llevan a «Relacionados»). Paneles: `?panel=nuevo`, `?editar=<id>`,
   `?panel=vitrina`, `?panel=desvincular` (con `&luego=papelera`, desde el aviso «Quitar el vínculo»: el aviso de desvinculado ofrece la papelera),
   `?panel=purgar&lote=`. Layout, categorías y orígenes (`origenes`), fases (`flujos`) y vistas guardadas
   (`equipo`) los lee la página y los pasa por props.
@@ -76,7 +77,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 - El listado dibuja una sola vista (tabla o tarjetas) elegida en servidor; los e2e buscan filas con `tbody tr, li article`. En escritorio,
   «Tabla | Tarjetas» en «Vista y opciones», con las vistas guardadas y la papelera (`useOpcionesDelListado`; `useVistaDelInventario`: `?vista=` o la preferencia `vehiculos.vista`; cambiar no pide la página). La columna de precio
   sale de `entities/precio-de-la-fila.ts` (`columnaDePrecio`, `precioDeLaFila`): en subasta, la puja con su nombre.
-- Pestañas de la ficha: `src/app/(app)/vehiculos/[id]/pestanas.ts`, cada una con su `seccion-<clave>.tsx`.
+- Bloques de la ficha: `src/app/(app)/vehiculos/[id]/bloques.ts` (`BLOQUES_DE_LA_FICHA`, `bloquesDeQuienMira()`, `anclaDeLaUrl()`), los que leen con su `bloque-<ancla>.tsx`.
 
 ## Tablas
 

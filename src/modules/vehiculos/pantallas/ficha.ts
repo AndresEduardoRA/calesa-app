@@ -1,9 +1,9 @@
-// Pantalla: La ficha de un vehículo (`/vehiculos/[id]`): cabecera, ficha, fotos, subasta, vitrina, limpieza y el panel de edición. Sólo `src/app` importa este archivo (`.claude/rules/modulos.md`): reexporta lo que esa pantalla dibuja y nada más.
+// Pantalla: La ficha de un vehículo (`/vehiculos/[id]`, en dos columnas): cabecera, datos principales, ficha, fotos (diferidas), subasta, vitrina, limpieza y el panel de edición. Sólo `src/app` importa este archivo (`.claude/rules/modulos.md`): reexporta lo que esa pantalla dibuja y nada más.
 export { AvisoDeLimpieza } from '../features/limpieza/components/aviso-de-limpieza'
 export { AvisoDeSituacion } from '../features/situacion/components/aviso-de-situacion'
 export { BloqueDeSubasta } from '../features/subasta/components/bloque-de-subasta'
 export { EsqueletoDeFotos } from '../features/fotos/components/esqueleto-de-fotos'
-export { SeccionDeFotos } from '../features/fotos/components/seccion-de-fotos'
+export { SeccionDeFotosDiferida } from '../features/fotos/components/diferidos'
 export { BotonEditarVehiculo } from '../features/alta/components/botones'
 export { CabeceraDeVehiculo } from '../features/ficha/components/cabecera-de-vehiculo'
 export { InsigniaDeVitrina } from '../features/vitrina/components/insignia-de-vitrina'
@@ -11,3 +11,4 @@ export { MenuDeVehiculoDeLaFicha } from '../features/acciones/components/menu-de
 export { PanelDeVehiculo } from '../features/alta/components/panel-de-vehiculo'
 export { PanelDeVitrina } from '../features/vitrina/components/panel-de-vitrina'
 export { FichaDeVehiculo } from '../features/ficha/components/ficha-de-vehiculo'
+export { DatosPrincipalesDelVehiculo } from '../features/ficha/components/datos-principales-del-vehiculo'

@@ -110,11 +110,15 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-const pestanas = (page: Page): Locator => page.getByRole('tab')
+// El índice de la ficha (un enlace por bloque que quien mira ve) y el bloque «Cotizaciones».
+const indice = (page: Page): Locator =>
+  page.getByRole('navigation', { name: 'Índice de la ficha' }).getByRole('link')
+const bloque = (page: Page): Locator =>
+  page.getByRole('region', { name: 'Cotizaciones', exact: true })
 const lista = (page: Page): Locator => page.getByRole('list', { name: 'Cotizaciones del vehículo' })
 const filas = (page: Page): Locator => lista(page).getByRole('listitem')
 
-// Los pedidos del navegador a `cotizaciones` (la pestaña lee desde el navegador; el servidor no lee cotizaciones para la ficha).
+// Los pedidos del navegador a `cotizaciones` (el bloque lee desde el navegador al acercarse; el servidor no lee cotizaciones para la ficha).
 function vigilarLecturas(page: Page): string[] {
   const lecturas: string[] = []
   page.on('request', (pedido) => {
@@ -125,27 +129,35 @@ function vigilarLecturas(page: Page): string[] {
   return lecturas
 }
 
-test('E2E la dueña: en «Ficha» no se lee nada; al elegir «Cotizaciones» llegan 20 y «Ver más» lleva a 22', async ({
+test('E2E la dueña: lejos del bloque no se lee nada; al saltar a «Cotizaciones» llegan 20 y «Ver más» lleva a 22', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/vehiculos/${vehiculos.veintidos}`)
-  await expect(pestanas(page)).toHaveText([
-    'Ficha',
-    'Fotos',
-    'Documentos',
-    'Cotizaciones',
-    'Repuestos',
-  ])
+  // Una ventana baja: el bloque «Cotizaciones» (el tercero) queda lejos de la vista al llegar.
+  const ancho = page.viewportSize()?.width ?? 1280
+  await page.setViewportSize({ width: ancho, height: 320 })
   const lecturas = vigilarLecturas(page)
-  await expect(pestanas(page).first()).toHaveAttribute('aria-selected', 'true')
+  await page.goto(`/vehiculos/${vehiculos.veintidos}`)
+  await expect(indice(page)).toHaveText([
+    'Qué falta',
+    'Relacionados',
+    'Cotizaciones',
+    'Documentos',
+    'Ficha',
+    'Repuestos',
+    'Fotos',
+  ])
+  await expect(page.getByRole('navigation', { name: 'Índice de la ficha' })).toHaveAttribute(
+    'data-hidratado',
+    'true',
+  )
   expect(lecturas).toEqual([])
 
   const respuesta = page.waitForResponse(
     (r) => new URL(r.url()).pathname === '/rest/v1/cotizaciones',
   )
-  await pestanas(page).getByText('Cotizaciones').click()
-  await expect(page).toHaveURL(/seccion=cotizaciones/)
+  await indice(page).getByText('Cotizaciones').click()
+  await expect(bloque(page).getByRole('heading', { name: 'Cotizaciones' })).toBeFocused()
   const bytes = (await (await respuesta).body()).length
   await expect(filas(page)).toHaveCount(20)
   expect(lecturas).toHaveLength(1)
@@ -166,9 +178,9 @@ test('E2E la dueña: en «Ficha» no se lee nada; al elegir «Cotizaciones» lle
     'href',
     /^\/cotizaciones\/[0-9a-f-]{36}$/,
   )
-  await page.getByRole('button', { name: 'Ver más' }).click()
+  await bloque(page).getByRole('button', { name: 'Ver más' }).click()
   await expect(filas(page)).toHaveCount(22)
-  await expect(page.getByRole('button', { name: 'Ver más' })).toHaveCount(0)
+  await expect(bloque(page).getByRole('button', { name: 'Ver más' })).toHaveCount(0)
   expect(lecturas).toHaveLength(2)
 })
 
@@ -185,10 +197,10 @@ test('E2E con 520: «Ver más» llega a 500, dice el tope y «Ver todas en Cotiz
   await page.goto(`/vehiculos/${vehiculos.quinientas}?seccion=cotizaciones`)
   await expect(filas(page)).toHaveCount(20)
   for (let ronda = 2; ronda <= 25; ronda += 1) {
-    await page.getByRole('button', { name: 'Ver más' }).click()
+    await bloque(page).getByRole('button', { name: 'Ver más' }).click()
     await expect(filas(page)).toHaveCount(Math.min(20 * ronda, 500))
   }
-  await expect(page.getByRole('button', { name: 'Ver más' })).toHaveCount(0)
+  await expect(bloque(page).getByRole('button', { name: 'Ver más' })).toHaveCount(0)
   await expect(page.getByText('Mostrando las 500 más recientes.')).toBeVisible()
   const nodos = await lista(page).evaluate((e) => e.querySelectorAll('*').length + 1)
   const primera = tamanos[0] ?? 0
@@ -207,36 +219,37 @@ test('E2E con 520: «Ver más» llega a 500, dice el tope y «Ver todas en Cotiz
   await expect(page.getByText('Cotizaciones de Pestaña quinientas.')).toBeVisible()
 })
 
-test('E2E sin cotizaciones.ver no hay pestaña y ?seccion=cotizaciones abre «Ficha»', async ({
+test('E2E sin cotizaciones.ver no hay bloque ni entrada en el índice y ?seccion=cotizaciones se queda arriba', async ({
   page,
 }) => {
   await entrar(page, sinClave, { fresco: true })
   const lecturas = vigilarLecturas(page)
   await page.goto(`/vehiculos/${vehiculos.propios}?seccion=cotizaciones`)
-  await expect(pestanas(page)).toHaveText(['Ficha', 'Fotos'])
-  await expect(pestanas(page).first()).toHaveAttribute('aria-selected', 'true')
-  await expect(page.getByRole('heading', { name: 'Pestaña propios', level: 1 })).toBeVisible()
+  await expect(indice(page).getByText('Ficha')).toBeVisible()
+  await expect(indice(page).getByText('Cotizaciones')).toHaveCount(0)
+  await expect(bloque(page)).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Pestaña propios', level: 1 })).toBeInViewport()
   expect(lecturas).toEqual([])
 })
 
-test('E2E con «propios» la pestaña está y lista sólo la suya (la RLS decide las filas)', async ({
+test('E2E con «propios» el bloque está y lista sólo la suya (la RLS decide las filas)', async ({
   page,
 }) => {
   await entrar(page, ana, { fresco: true })
   await page.goto(`/vehiculos/${vehiculos.propios}`)
-  await expect(pestanas(page)).toHaveText(['Ficha', 'Fotos', 'Cotizaciones'])
-  await pestanas(page).getByText('Cotizaciones').click()
+  await expect(indice(page).getByText('Cotizaciones')).toBeVisible()
+  await indice(page).getByText('Cotizaciones').click()
   await expect(filas(page)).toHaveCount(1)
   await expect(filas(page).first()).toContainText('Ana Propios')
   await expect(lista(page)).not.toContainText('Gala Guarda')
 })
 
-test('E2E un vehículo sin cotizaciones: recargar con la pestaña abierta dice que no hay', async ({
+test('E2E un vehículo sin cotizaciones: llegar a su bloque por la URL dice que no hay', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto(`/vehiculos/${vehiculos.ninguna}?seccion=cotizaciones`)
-  await expect(pestanas(page).getByText('Cotizaciones')).toHaveAttribute('aria-selected', 'true')
+  await expect(bloque(page).getByRole('heading', { name: 'Cotizaciones' })).toBeFocused()
   await expect(page.getByText('Sin cotizaciones que puedas ver.')).toBeVisible()
   await page.reload()
   await expect(page.getByText('Sin cotizaciones que puedas ver.')).toBeVisible()

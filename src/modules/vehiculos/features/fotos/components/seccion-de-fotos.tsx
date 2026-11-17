@@ -19,12 +19,12 @@ type Props = {
 
 const SIN_PERMISO = 'No tienes permiso para cambiar las fotos de este vehículo.'
 
-// La pestaña «Fotos» de un vehículo. Quien no puede editarlo las ve igual, sin controles y con
+// El bloque «Fotos» de la ficha de un vehículo (la región la pone el bloque). Quien no puede editarlo las ve igual, sin controles y con
 // el motivo; quien puede, las sube, elige la portada, las ordena y las elimina.
 export function SeccionDeFotos({ vehiculoId, galeria, puedeEditar, deSubasta }: Props) {
   const sinFotos = galeria.fotos.length === 0
   return (
-    <section aria-label="Fotos" className="grid gap-4">
+    <div className="grid gap-4">
       {puedeEditar ? <SubidaDeFotos vehiculoId={vehiculoId} fotos={galeria.fotos} /> : null}
       {puedeEditar && deSubasta && deSubasta.fotas.length > 0 ? (
         <Aviso>
@@ -56,6 +56,6 @@ export function SeccionDeFotos({ vehiculoId, galeria, puedeEditar, deSubasta }: 
       ) : (
         <GaleriaDeFotos vehiculoId={vehiculoId} galeria={galeria} puedeEditar={puedeEditar} />
       )}
-    </section>
+    </div>
   )
 }

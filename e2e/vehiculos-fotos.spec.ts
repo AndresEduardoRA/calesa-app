@@ -69,7 +69,11 @@ const id = (titulo: string) => vehiculos[titulo] ?? ''
 async function abrirFotos(page: Page, titulo: string) {
   await page.goto(`/vehiculos/${id(titulo)}?seccion=fotos`)
   await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Fotos' })).toHaveAttribute('aria-selected', 'true')
+  await expect(
+    page
+      .getByRole('region', { name: 'Fotos', exact: true })
+      .getByRole('heading', { name: 'Fotos' }),
+  ).toBeFocused()
 }
 
 // El selector de archivos (el `<input>` que abre el botón «Elegir fotos», no el de la cámara).
