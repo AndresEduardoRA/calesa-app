@@ -31,7 +31,7 @@ type Pendiente = { desde: number }
 
 type Pedido = Extract<PedidoDeOportunidadRapida, { tipo: 'crear' }>
 
-// «+ Oportunidad» desde la lista: título (con el nombre del lead) y monto. El id del intento vive con el modal, así un reintento (o
+// «Nueva oportunidad…» del «⋯»: título (con el nombre del lead) y monto. El id del intento vive con el modal, así un reintento (o
 // volver la red) no crea dos. Un rechazo deja lo escrito y dice su motivo junto al campo o arriba; sin red, sale solo al volver.
 export function useFormularioDeOportunidadRapida({
   leadId,

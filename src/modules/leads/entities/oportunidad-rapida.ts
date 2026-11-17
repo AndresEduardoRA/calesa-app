@@ -1,4 +1,4 @@
-// «+ Oportunidad» desde una fila del listado: un formulario corto con todo precargado. El embudo (el de por defecto de quien mira), la etapa
+// «Nueva oportunidad…» desde el «⋯» de un lead: un formulario corto con todo precargado. El embudo (el de por defecto de quien mira), la etapa
 // (la inicial) y el estado los pone la base al crear; acá sólo se escribe el título (con el nombre del lead de sugerencia) y, si se quiere,
 // el monto. Lo demás (notas, vehículo) se completa después con «Editar» en la ficha.
 import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'

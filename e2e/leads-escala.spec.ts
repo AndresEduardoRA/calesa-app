@@ -59,11 +59,12 @@ const nodos = (page: Page) => page.evaluate(() => document.querySelectorAll('*')
 // (la tabla o las tarjetas): 50 filas, ~1.500 nodos (eran ~2.700); 100 filas, ~2.600 en escritorio y ~2.800 en el celular
 // (eran ~5.000: la tabla y las tarjetas estaban las dos en el DOM). `?por=100` entra a la corrida normal.
 const PRESUPUESTO_DE_NODOS = {
-  // «+ Oportunidad» de cada fila de la tabla (T08): contenedor, botón, `<svg>`, `<use>` y rótulo, 5 nodos por fila: 2.285 medidos, tope +5 %.
-  listado: { escritorio: 2_400, movil: 2_200 },
-  // El último seguimiento y el recordatorio de cada fila (T07) suman ~9 nodos por fila en la tabla: 3.532 medidos, tope +5 %. Con «+ Oportunidad»
-  // (T08, 5 nodos por fila de la tabla y 3 por tarjeta): 4.035 medidos en la tabla, tope +5 %; la tarjeta sigue bajo su tope.
-  listadoDe100: { escritorio: 4_250, movil: 3_500 },
+  // Sin el «+ Oportunidad» de cada fila (T25: «Nueva oportunidad…» pasó al «⋯»; eran 5 nodos por fila de la tabla y 3 por tarjeta): 1.985 medidos en la tabla
+  // (eran 2.285) y 1.720 en las tarjetas, tope +5 %.
+  listado: { escritorio: 2_100, movil: 1_810 },
+  // El último seguimiento y el recordatorio de cada fila (T07) suman ~9 nodos por fila en la tabla. Con filas sin seguimientos, 100 por página: 3.435 medidos
+  // en la tabla y 2.920 en las tarjetas, tope +5 %.
+  listadoDe100: { escritorio: 3_610, movil: 3_070 },
   // 9i: el «⋯» de cada tarjeta sumaba 6 nodos (3.000 en 500 tarjetas): 8.212 → 11.212 y el presupuesto, 11.800. 9j: el «⋯» es un
   // `<svg>` con un `<use>` (3 nodos con el botón): 9.718 medidos, más un 5 %.
   kanban: { escritorio: 10_250, movil: 6_000 },

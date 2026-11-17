@@ -1,7 +1,8 @@
-import type { Locator, Page } from '@playwright/test'
+import type { Locator, Page, TestInfo } from '@playwright/test'
 import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { admin } from './soporte/base'
+import { capturar } from './soporte/recorrido'
 import { exigir } from './soporte/leads'
 import { irAFicha, nuevoLead } from './soporte/leads-ficha'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
@@ -67,11 +68,14 @@ async function elegir(menu: Locator, item: string) {
 }
 
 // Aviso → «Crear igual» → formulario → «Crear oportunidad».
-async function crearIgual(page: Page, nombreDelLead: string) {
+async function crearIgual(page: Page, nombreDelLead: string, info?: TestInfo) {
   const dialogo = modal(page)
   await expect(dialogo.getByText(nombreDelLead, { exact: true }).first()).toBeVisible()
   await dialogo.getByRole('button', { name: 'Crear igual' }).click()
   await expect(dialogo.getByLabel('Título')).toHaveValue(nombreDelLead)
+  if (info) {
+    await capturar(page, info, 'formulario-tras-crear-igual')
+  }
   await dialogo.getByRole('button', { name: 'Crear oportunidad' }).click()
   await expect(page.getByText(`Oportunidad creada para «${nombreDelLead}».`)).toBeVisible()
   await expect(dialogo).toHaveCount(0)
@@ -83,10 +87,11 @@ test('desde el «⋯» de la fila: el aviso lista la base, «Cancelar» no crea 
   const lead = await leadConBase(`Aviso Fila ${info.project.name}`)
   await entrar(page, t.personas.berta)
   await irALeads(page, conElLead(lead.nombre))
-  // Ya no hay un «+ Oportunidad» al costado: la puerta es el «⋯».
+  // Ya no hay un botón «+ Oportunidad» al costado: la puerta es el «⋯».
   await expect(page.getByRole('button', { name: /^\+ Oportunidad/ })).toHaveCount(0)
 
   let menu = await abrirMenuDelLead(page, lead.nombre)
+  await capturar(page, info, 'menu-con-oportunidades')
   await elegir(menu, 'Nueva oportunidad…')
   await expect(page).toHaveURL(new RegExp(`panel=oportunidad-rapida&para=${lead.id}`))
   const dialogo = modal(page)
@@ -95,6 +100,7 @@ test('desde el «⋯» de la fila: el aviso lista la base, «Cancelar» no crea 
   await expect(item).toHaveCount(1)
   await expect(item.getByText('Abierta')).toBeVisible()
   await expect(item.getByRole('link', { name: /^Ver/ })).toBeVisible()
+  await capturar(page, info, 'aviso-con-la-base')
   await dialogo.getByRole('button', { name: 'Cancelar' }).click()
   await expect(dialogo).toHaveCount(0)
   await expect(page).not.toHaveURL(/para=/)
@@ -102,7 +108,7 @@ test('desde el «⋯» de la fila: el aviso lista la base, «Cancelar» no crea 
 
   menu = await abrirMenuDelLead(page, lead.nombre)
   await elegir(menu, 'Nueva oportunidad…')
-  await crearIgual(page, lead.nombre)
+  await crearIgual(page, lead.nombre, info)
   expect(await deLaBase(lead.id)).toHaveLength(2)
 })
 
@@ -161,6 +167,7 @@ test('con más de cinco, el aviso muestra cinco y dice «y 1 más» con «Ver to
   await expect(dialogo.getByRole('listitem')).toHaveCount(5)
   await expect(dialogo.getByText('y 1 más')).toBeVisible()
   await expect(dialogo.getByRole('link', { name: 'Ver todas' })).toBeVisible()
+  await capturar(page, info, 'aviso-con-mas-de-cinco')
 })
 
 test('desde el resumen: el aviso, «Crear igual» y «Ver oportunidades»', async ({ page }, info) => {
