@@ -1,48 +1,82 @@
 'use client'
 
-import { useState } from 'react'
+import { Fragment, useMemo, type ReactNode } from 'react'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import type { FlujoParaConfigurar } from '../../../entities/flujo'
 import type { RolLeido } from '../../../entities/lectura-de-fase'
-import { useFaseAbierta } from '../hooks/use-fase-abierta'
-import { InspectorDeFaseDiferido } from './diferidos'
-import type { HuecosDelFlujo } from './huecos'
-import { ListaDeFases } from './lista-de-fases'
+import { SECCIONES_DEL_PANEL } from '../../../entities/panel-del-flujo'
+import { useContenidoDelPanel } from '../hooks/use-contenido-del-panel'
+import { ContextoDeSeccionesDelPanel } from '../hooks/use-panel-del-flujo'
+import { BarraDelFlujo } from './barra-del-flujo'
+import { PanelDelFlujoDiferido } from './diferidos'
+import type { HuecosDelFlujo, SeccionesDelPanel } from './huecos'
 import { ProveedorDelFlujo } from './proveedor-del-flujo'
+import { VistaDelFlujo } from './vista-del-flujo'
 
 type Props = {
   flujo: FlujoParaConfigurar
   nombreDelFlujo: string
   roles: readonly RolLeido[]
   huecos: HuecosDelFlujo
+  secciones: SeccionesDelPanel
 }
 
-// El flujo abierto: su proveedor de versión, la lista de fases y, montado la primera vez que se abre, el inspector de la fase que dice `?fase=`. Un id que no es
-// de una fase del flujo se ignora: no abre nada ni escribe la URL.
-export function FlujoAbierto({ flujo, nombreDelFlujo, roles, huecos }: Props) {
-  const { texto, abrir, cerrar } = useFaseAbierta()
-  const fase = flujo.fases.find((f) => f.id === texto)
-  // La última fase abierta se conserva mientras el panel se cierra con su animación.
-  const [ultima, setUltima] = useState(fase)
-  if (fase && fase !== ultima) {
-    setUltima(fase)
-  }
-  const montado = useAbiertoAlgunaVez(fase !== undefined)
-  const mostrada = fase ?? ultima
+const SinOrden = ({ children }: { flujo: FlujoParaConfigurar; children: ReactNode }) => (
+  <Fragment>{children}</Fragment>
+)
+
+// El flujo abierto: su proveedor de versión, el orden de las fases (hueco del área `fases`), la barra, las fases (diagrama o lista) y, montado la primera vez
+// que se abre, el panel al costado con la fase de `?fase=` o la sección de `?seccion=`.
+export function FlujoAbierto({ flujo, nombreDelFlujo, roles, huecos, secciones }: Props) {
+  const disponibles = useMemo(
+    () => SECCIONES_DEL_PANEL.filter((clave) => secciones[clave] !== undefined),
+    [secciones],
+  )
   return (
-    <ProveedorDelFlujo flujoId={flujo.id} version={flujo.version}>
-      <ListaDeFases flujo={flujo} nombreDelFlujo={nombreDelFlujo} huecos={huecos} alAbrir={abrir} />
-      {montado && mostrada ? (
-        <InspectorDeFaseDiferido
-          abierto={fase !== undefined}
-          alCerrar={cerrar}
+    <ContextoDeSeccionesDelPanel value={disponibles}>
+      <ProveedorDelFlujo flujoId={flujo.id} version={flujo.version}>
+        <Abierto
           flujo={flujo}
           nombreDelFlujo={nombreDelFlujo}
-          fase={mostrada}
+          roles={roles}
+          huecos={huecos}
+          secciones={secciones}
+        />
+      </ProveedorDelFlujo>
+    </ContextoDeSeccionesDelPanel>
+  )
+}
+
+function Abierto({ flujo, nombreDelFlujo, roles, huecos, secciones }: Props) {
+  const panel = useContenidoDelPanel(flujo)
+  const montado = useAbiertoAlgunaVez(panel.abierto)
+  const Orden = huecos.ordenDeFases ?? SinOrden
+  const mostrado = panel.mostrado
+  return (
+    <Orden flujo={flujo}>
+      <section aria-labelledby="titulo-de-fases" className="grid min-w-0 gap-3">
+        <BarraDelFlujo flujo={flujo} huecos={huecos} />
+        <VistaDelFlujo
+          flujo={flujo}
+          nombreDelFlujo={nombreDelFlujo}
+          roles={roles}
+          huecos={huecos}
+          faseAbierta={panel.faseAbierta}
+          alAbrir={panel.abrirFase}
+        />
+      </section>
+      {montado && mostrado ? (
+        <PanelDelFlujoDiferido
+          abierto={panel.abierto}
+          alCerrar={panel.cerrar}
+          flujo={flujo}
+          nombreDelFlujo={nombreDelFlujo}
+          mostrado={mostrado}
+          seccion={mostrado.tipo === 'seccion' ? (secciones[mostrado.clave] ?? null) : null}
           roles={roles}
           huecos={huecos}
         />
       ) : null}
-    </ProveedorDelFlujo>
+    </Orden>
   )
 }

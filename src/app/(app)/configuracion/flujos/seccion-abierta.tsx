@@ -1,17 +1,17 @@
 import { Suspense } from 'react'
-import { PantallaDelFlujo } from '@/modules/flujos/pantallas/configuracion'
+import { PantallaDelFlujo, type SeccionesDelPanel } from '@/modules/flujos/pantallas/configuracion'
 import { leerRolesParaElegir } from '@/modules/equipo'
 import { getOrigenes } from '@/modules/origenes'
 import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
-import { SECCIONES_DE_DOCUMENTOS } from './documentos/seccion'
+import { PANELES_DE_DOCUMENTOS, SECCIONES_DE_DOCUMENTOS } from './documentos/seccion'
 import { SECCIONES_DE_FASES } from './fases/seccion'
 import { HUECOS_DE_FLUJOS } from './huecos'
-import type { PedidoDeFlujos, SeccionDeFlujos } from './pestanas'
-import { SECCIONES_DE_REGLAS } from './reglas/seccion'
+import type { PanelDeFlujos, PedidoDeFlujos, SeccionDeFlujos } from './pestanas'
+import { PANELES_DE_REGLAS, SECCIONES_DE_REGLAS } from './reglas/seccion'
 import { FueraDeReglaDelFlujo } from './requisitos/fuera-de-regla'
 import { SECCIONES_DE_REQUISITOS } from './requisitos/seccion'
 
-// Lo que dibuja cada pestaña de un área, por su clave: cada área llena el suyo en su carpeta.
+// Lo que dibuja en la página cada sección de un área, por su clave (para quien no ve «Fases»): cada área llena el suyo en su carpeta.
 const SECCIONES: Record<string, SeccionDeFlujos> = {
   ...SECCIONES_DE_REQUISITOS,
   ...SECCIONES_DE_DOCUMENTOS,
@@ -19,9 +19,46 @@ const SECCIONES: Record<string, SeccionDeFlujos> = {
   ...SECCIONES_DE_FASES,
 }
 
-// El cuerpo de la pestaña abierta. «Fases» es del núcleo: se lee detrás de `<Suspense>` y se reinicia al cambiar de flujo.
-export function SeccionAbierta({ pestana, ...pedido }: PedidoDeFlujos & { pestana: string }) {
-  if (pestana === 'fases') {
+// Lo que se abre en el panel del flujo desde su barra, por su clave.
+const PANELES: Record<string, PanelDeFlujos> = { ...PANELES_DE_DOCUMENTOS, ...PANELES_DE_REGLAS }
+
+type Props = PedidoDeFlujos & {
+  // La sección que abre la página (la primera visible si la URL no dice una).
+  pestana: string
+  // Las que esta persona ve.
+  visibles: readonly string[]
+  // `?seccion=` tal cual: la que el panel muestra abierta.
+  seccionPedida: string | undefined
+}
+
+// Las secciones del panel que esta persona ve: la que pide la URL se lee (detrás de su `<Suspense>`); las otras van con su esqueleto, así el panel abre en el
+// acto y la sección llega del servidor.
+function seccionesDelPanel(
+  visibles: readonly string[],
+  seccionPedida: string | undefined,
+  pedido: PedidoDeFlujos,
+): SeccionesDelPanel {
+  return Object.fromEntries(
+    Object.entries(PANELES)
+      .filter(([clave]) => visibles.includes(clave))
+      .map(([clave, panel]) => [
+        clave,
+        {
+          titulo: panel.titulo,
+          contenido: (
+            <Suspense fallback={panel.esqueleto()}>
+              {seccionPedida === clave ? panel.contenido(pedido) : panel.esqueleto()}
+            </Suspense>
+          ),
+        },
+      ]),
+  )
+}
+
+// El cuerpo de la página. Con «Fases» visible, la pantalla del flujo (del núcleo, detrás de `<Suspense>`, se reinicia al cambiar de flujo) con las demás
+// secciones en su panel; sin ella, la sección que corresponde.
+export function SeccionAbierta({ pestana, visibles, seccionPedida, ...pedido }: Props) {
+  if (visibles.includes('fases')) {
     return (
       <Suspense
         key={`${pedido.origenPedido ?? ''}:${pedido.ambitoPedido ?? ''}`}
@@ -35,6 +72,7 @@ export function SeccionAbierta({ pestana, ...pedido }: PedidoDeFlujos & { pestan
           ambitoPedido={pedido.ambitoPedido}
           huecos={HUECOS_DE_FLUJOS}
           sobreLaLista={(flujo) => <FueraDeReglaDelFlujo flujo={flujo} />}
+          secciones={seccionesDelPanel(visibles, seccionPedida, pedido)}
         />
       </Suspense>
     )

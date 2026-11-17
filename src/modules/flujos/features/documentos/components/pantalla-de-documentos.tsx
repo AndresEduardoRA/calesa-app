@@ -23,6 +23,8 @@ type Props = {
   // `?origen=` y `?ambito=`: una URL que no es de los suyos abre el primero.
   origenPedido: string | undefined
   ambitoPedido: string | undefined
+  // Dentro del panel del flujo (`?seccion=documentos`): sin su selector, el flujo ya está elegido en la pantalla.
+  enElPanel?: boolean
 }
 
 // Un grupo leído con la sesión de quien mira. El uso de cada tipo sólo se pide a quien puede cambiar el grupo: a los demás la base les diría 42501.
@@ -34,7 +36,7 @@ async function leerGrupo(flujoId: string | null, puedeCambiar: boolean): Promise
   return { grupo: datosO(grupo), puedeCambiar, uso: uso === null ? null : datosO(uso) }
 }
 
-// La pestaña «Documentos» de Configuración › Flujos (5.09), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: los tipos de toda la
+// Los tipos de documento de Configuración › Flujos (5.09), en el panel del flujo o, para quien sólo gestiona los catálogos de logística, en la página; leídos en el servidor con la sesión de quien mira y detrás de `<Suspense>`: los tipos de toda la
 // empresa (se ven siempre; se cambian con `logistica.catalogos.gestionar`) y los del flujo elegido (los de un flujo que quien mira puede configurar).
 // La base vuelve a decidir cada escritura. Una lectura que falla sube al `error.tsx` de `(app)`, que ofrece «Reintentar».
 export async function PantallaDeDocumentos({
@@ -42,6 +44,7 @@ export async function PantallaDeDocumentos({
   origenes,
   origenPedido,
   ambitoPedido,
+  enElPanel = false,
 }: Props) {
   const [flujos, listaDeOrigenes] = await Promise.all([leerFlujosConfigurables(permisos), origenes])
   const entradas = armarSelector(datosO(flujos), datosO(listaDeOrigenes))
@@ -59,7 +62,7 @@ export async function PantallaDeDocumentos({
       vistas={{ empresa, flujo }}
       nombreDelFlujo={entrada?.titulo ?? null}
       selector={
-        entrada ? (
+        enElPanel ? null : entrada ? (
           <SelectorDeFlujo
             entradas={entradas.map(({ clave, titulo }) => ({ clave, titulo }))}
             valor={entrada.clave}

@@ -1,6 +1,6 @@
-// Las pestañas de Configuración › Flujos. Cuál está abierta vive en la URL (`?seccion=`). Hoy hay una sola, «Fases»; cada área suma las suyas en su carpeta
-// (`fases/`, `requisitos/`, `documentos/` y `reglas/`: `PESTANAS_DE_<ÁREA>`, vacías hasta que su paso las llena) y se juntan abajo, así este archivo no se vuelve a editar.
-// Una pestaña no existe hasta que su paso la llena: nunca un botón muerto. Con una sola visible, la barra no se dibuja.
+// Las secciones de Configuración › Flujos y quién ve cada una. «Fases» es la pantalla (el diagrama o la lista); las demás («Documentos», «Reglas») se abren
+// en el panel del flujo desde su barra (`?seccion=documentos|reglas`, `PANELES_DE_<ÁREA>`). Quien no ve «Fases» (sólo los catálogos de logística) ve su
+// sección en la página. Cada área suma las suyas en su carpeta (`PESTANAS_DE_<ÁREA>`) y se juntan abajo, así este archivo no se vuelve a editar.
 import type { ReactNode } from 'react'
 import { puede, type ClavePermiso, type Permisos } from '@/shared/lib/permisos'
 import type { AlMenosUna } from '../empresa/pestanas'
@@ -25,6 +25,13 @@ export type PedidoDeFlujos = {
 
 export type SeccionDeFlujos = (pedido: PedidoDeFlujos) => ReactNode
 
+// Una sección que se abre en el panel del flujo: su título, lo que dibuja cuando la URL la pide y el esqueleto mientras no.
+export type PanelDeFlujos = {
+  titulo: string
+  contenido: SeccionDeFlujos
+  esqueleto: () => ReactNode
+}
+
 export const PESTANAS: readonly PestanaDeFlujos[] = [
   { clave: 'fases', titulo: 'Fases', permisos: ['flujos.configurar', 'repuestos.configurar'] },
   ...PESTANAS_DE_FASES,
@@ -33,12 +40,12 @@ export const PESTANAS: readonly PestanaDeFlujos[] = [
   ...PESTANAS_DE_REGLAS,
 ]
 
-// Las pestañas que esta persona puede abrir, en su orden.
+// Las secciones que esta persona puede abrir, en su orden.
 export function pestanasVisibles(permisos: Permisos): PestanaDeFlujos[] {
   return PESTANAS.filter((pestana) => pestana.permisos.some((clave) => puede(permisos, clave)))
 }
 
-// Lo que viene en la URL lo puede escribir cualquiera: lo que no es una pestaña visible abre la primera visible.
+// Lo que viene en la URL lo puede escribir cualquiera: lo que no es una sección visible abre la primera visible.
 export function pestanaDe(
   valor: string | undefined,
   visibles: AlMenosUna<{ clave: string }>,

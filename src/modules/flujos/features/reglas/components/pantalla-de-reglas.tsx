@@ -11,7 +11,6 @@ import {
   elegirEntrada,
   type OrigenDelSelector,
 } from '../../../entities/selector-de-flujos'
-import { SelectorDeFlujo } from '../../configuracion/components/selector-de-flujo'
 import { ConfiguracionDeReglas } from './configuracion-de-reglas'
 
 type Props = {
@@ -32,9 +31,9 @@ async function leerTransporte(flujoId: string) {
   return { oferta: datosO(oferta), catalogo: datosO(catalogo) }
 }
 
-// La pestaña «Reglas» de Configuración › Flujos (5.11), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: el flujo elegido, sus
-// reglas y, con «Transporte» encendida, su oferta y los puertos y navieras que se pueden marcar. La base vuelve a decidir cada escritura. Una lectura que
-// falla sube al `error.tsx` de `(app)`, que ofrece «Reintentar».
+// Las reglas de Configuración › Flujos (5.11), en el panel del flujo (`?seccion=reglas`: sin selector, el flujo ya está elegido en la pantalla), leídas en
+// el servidor con la sesión de quien mira y detrás de `<Suspense>`: el flujo elegido, sus reglas y, con «Transporte» encendida, su oferta y los puertos y
+// navieras que se pueden marcar. La base vuelve a decidir cada escritura. Una lectura que falla sube al `error.tsx` de `(app)`, que ofrece «Reintentar».
 export async function PantallaDeReglas({ permisos, origenes, origenPedido, ambitoPedido }: Props) {
   const [flujos, listaDeOrigenes] = await Promise.all([leerFlujosConfigurables(permisos), origenes])
   const entradas = armarSelector(datosO(flujos), datosO(listaDeOrigenes))
@@ -48,37 +47,23 @@ export async function PantallaDeReglas({ permisos, origenes, origenPedido, ambit
     )
   }
   const flujo = datosO(await leerFlujoParaConfigurar(entrada.flujo.id))
-  const selector = (
-    <SelectorDeFlujo
-      entradas={entradas.map(({ clave, titulo }) => ({ clave, titulo }))}
-      valor={entrada.clave}
-    />
-  )
   if (!flujo) {
-    return (
-      <div className="grid gap-4">
-        {selector}
-        <EstadoVacio Icono={WorkflowIcon} titulo="Este flujo ya no existe." compacto />
-      </div>
-    )
+    return <EstadoVacio Icono={WorkflowIcon} titulo="Este flujo ya no existe." compacto />
   }
   const transporte = reglaEncendida(flujo.reglas, 'transporte')
     ? await leerTransporte(flujo.id)
     : null
   return (
-    <div className="grid gap-4">
-      {selector}
-      <ConfiguracionDeReglas
-        flujoId={flujo.id}
-        claveDelFlujo={entrada.clave}
-        ambito={flujo.ambito}
-        version={flujo.version}
-        reglas={flujo.reglas}
-        motivoSinPermiso={motivoSinPermisoDeReglas(permisos, flujo.ambito, flujo.origenId)}
-        transporte={transporte}
-        // Sin puertos o navieras que ofrecer, quien gestiona esos catálogos ve el enlace a cargarlos.
-        puedeCargarCatalogos={puede(permisos, 'logistica.catalogos.gestionar')}
-      />
-    </div>
+    <ConfiguracionDeReglas
+      flujoId={flujo.id}
+      claveDelFlujo={entrada.clave}
+      ambito={flujo.ambito}
+      version={flujo.version}
+      reglas={flujo.reglas}
+      motivoSinPermiso={motivoSinPermisoDeReglas(permisos, flujo.ambito, flujo.origenId)}
+      transporte={transporte}
+      // Sin puertos o navieras que ofrecer, quien gestiona esos catálogos ve el enlace a cargarlos.
+      puedeCargarCatalogos={puede(permisos, 'logistica.catalogos.gestionar')}
+    />
   )
 }
