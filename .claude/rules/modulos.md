@@ -34,3 +34,4 @@ paths:
   los grupos van en subcarpeta con `index.ts`. Se parte por responsabilidad, no por líneas.
 - Las fichas `CLAUDE.md` de cada módulo son contrato: si cambias lo que entra, sale o las tablas,
   actualiza la ficha en el mismo commit. Sin ficha, `scripts/mapa.sh --check` falla.
+- Si necesitas algo de otro módulo, usa su entrada pública (`index.ts`, `client.ts`…), nunca un import a sus tripas.

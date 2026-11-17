@@ -15,10 +15,10 @@
 # candado: lo que deje vivo detrás no lo retiene. Uso mal hecho: 64.
 set -uo pipefail
 
-[ "$#" -ge 3 ] && [ "$2" = -- ] || {
+if [ "$#" -lt 3 ] || [ "$2" != -- ]; then
   echo "uso: bash scripts/candado.sh <nombre> -- <comando…>" >&2
   exit 64
-}
+fi
 NOMBRE="$1"
 shift 2
 # shellcheck source=lib/carril.sh

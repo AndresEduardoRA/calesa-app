@@ -5,6 +5,7 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 import { ReporterDeSalida } from './scripts/reporter-de-salida'
 import { CARPETA_DE_SALIDAS, nombreDeCorrida } from './scripts/salida-de-test'
 
+// `pnpm test` corre esto y después las pruebas del kit con `node --test` (`pnpm test:kit`).
 // Cada corrida guarda su salida y su JSON en `test-salidas/<corrida>/` (ignorada por git; quedan las cinco últimas).
 // Al fijar `reporters` Vitest ya no elige solo entre `agent` y `default`: se repite su elección (con su `std-env`).
 const { isAgent } = createRequire(createRequire(import.meta.url).resolve('vitest/package.json'))(
@@ -24,10 +25,16 @@ export default defineConfig({
       'design/**/*.test.ts',
     ],
     // Vitest NO puede testear Server Components async. Esos van a Playwright (e2e/).
-    exclude: ['**/node_modules/**', '**/e2e/**', '**/.next*/**'],
+    exclude: [
+      '**/node_modules/**',
+      '**/e2e/**',
+      '**/.next*/**',
+      '.claude/worktrees/**',
+      '.orquestador/**',
+    ],
     passWithNoTests: true,
-    // En el runner de CI (2 vCPU) una prueba de componente con jsdom rozaba los 5 s de fábrica: `historial-del-vehiculo.test.tsx` cayó
-    // seis veces con 5,3–5,6 s, dos de ellas en main, y cada rojo de main contagia a los PR que salen de él.
+    // En el runner de CI (2 vCPU) una prueba de componente con jsdom rozaba los 5 s de fábrica (en calesa-app cayó seis veces con
+    // 5,3–5,6 s), y cada rojo de main contagia a los PR que salen de él.
     testTimeout: process.env['CI'] ? 15_000 : 5_000,
     reporters: [
       isAgent ? 'agent' : 'default',

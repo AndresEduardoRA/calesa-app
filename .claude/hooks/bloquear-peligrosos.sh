@@ -2,11 +2,19 @@
 # Hook PreToolUse sobre Bash: bloquea lo que ninguna sesión de IA debería correr sola (exit 2 y el motivo por stderr,
 # que es lo que Claude recibe). Lee la entrada con jq (`tool_input.command`, `cwd`). Se prueba en `bloquear-peligrosos.test.ts`.
 #
-#   Lo irreversible (reset --hard, clean, checkout --, branch -D…), publicar en main (una sesión empuja sólo su rama, sin forzar, o
-#   una etiqueta nueva; main avanza por PR: docs/FLUJO.md), lo remoto que no es la base (secrets, config push,
-#   functions deploy, gh api …/dispatches, vercel), b_ip (otra app, con datos reales), cambiar dependencias (salvo agregar con
-#   pnpm lo de `scripts/orquestador/dependencias-aprobadas.txt`, ver docs/DECISIONES.md › «Stack y arquitectura») y saltarse el
-#   candado de la base (`scripts/candado.sh`).
+#   Lo bloqueado:   lo irreversible (reset --hard, clean, checkout --, branch -D…), publicar en main (una sesión empuja sólo su rama,
+#                   sin forzar, o una etiqueta nueva; main avanza por PR: docs/FLUJO.md; la única excepción es el primer push de main
+#                   de un repo nuevo, abajo en `primer_push_de_main`), lo remoto que no es la base (secrets, config push, functions
+#                   deploy, gh api …/dispatches, vercel), b_ip (otra app, con datos reales), cambiar dependencias (salvo agregar con
+#                   pnpm lo de `scripts/orquestador/dependencias-aprobadas.txt`, ver docs/DECISIONES.md › «Stack y arquitectura») y
+#                   saltarse el candado de la base (`scripts/candado.sh`).
+#   Dependencias:   la tarea con `permite: dependencias` (el orquestador la corre con ORQ_PERMITE=dependencias) sí corre
+#                   `pnpm update` dentro de los rangos de package.json (sin --latest, -g, -i ni una versión) y `pnpm dedupe`. ORQ_PERMITE se
+#                   lee del entorno del hook, que es el del proceso `claude`: un `ORQ_PERMITE=x pnpm …` escrito en el comando no cuenta.
+#                   Lo de pnpm vive en `bloquear-peligrosos-dependencias.sh`.
+#   El revisor:     su Bash es de sólo lectura (`solo-lectura.sh`) aunque la carpeta no esté confiada: los hooks del frontmatter de
+#                   `.claude/agents/revisor.md` sólo corren con la carpeta confiada y `claude -p` (el orquestador) no la confía; los de
+#                   settings sí corren y su entrada trae `agent_type`.
 #
 # Un comando se parte en segmentos (`&&`, `||`, `;`, `|`, `$(`, comillas invertidas, saltos de línea) y de cada uno se
 # descartan los envoltorios (`VAR=x`, `sudo`, `env`, `timeout`, `eval`, `npx`, `corepack`, `pnpm exec`, `bash -c`,
@@ -19,6 +27,10 @@ CMD=$(printf '%s' "$ENTRADA" | jq -r '.tool_input.command // empty' 2>/dev/null)
 CWD=$(printf '%s' "$ENTRADA" | jq -r '.cwd // empty' 2>/dev/null)
 [ -z "$CMD" ] && exit 0
 [ -z "$CWD" ] && CWD="$PWD"
+
+if [ "$(printf '%s' "$ENTRADA" | jq -r '.agent_type // empty' 2>/dev/null)" = revisor ]; then
+  printf '%s' "$ENTRADA" | bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/solo-lectura.sh" || exit $?
+fi
 
 bloquear() {
   printf '%s\n' "$1" >&2
@@ -66,6 +78,35 @@ rama_de() {
 # Una sesión empuja sólo la rama en la que está (la de su PR), sin forzar ni borrar, y nunca main: main avanza al integrarse el PR
 # (docs/FLUJO.md). `cd x && git push` cambiaría de rama sin que el hook lo vea: se rechaza. Una etiqueta nueva (`git push origin
 # refs/tags/<nombre>`) sí se empuja, desde cualquier rama: no mueve ninguna.
+# El primer push de main de un repo recién creado (la skill semilla-a-repo, docs/semillas/LECCIONES.md › «GitHub»): sólo
+# `git [-C <carpeta>] push [-u|--set-upstream|-q] origin main`, desde main, a un `origin` que existe y no tiene main todavía
+# (`ls-remote --exit-code` sale con 2). Sin red, sin remoto, con main ya publicado o con cualquier otra forma, no hay excepción:
+# tampoco con una variable `GIT_*`, un `git -c`, más de un `-C` o una URL de push distinta de la de origin (el ls-remote miraría
+# otro remoto que el push).
+primer_push_de_main() {
+  local dir="$1" t d rc=0 pos=()
+  shift
+  case "$CMD" in *GIT_* | *" -c "* | *" -C "*" -C "*) return 1 ;; esac
+  for t in "$@"; do
+    case "$t" in
+      -u | --set-upstream | -q | --quiet) ;;
+      -*) return 1 ;;
+      *) pos+=("$t") ;;
+    esac
+  done
+  [ "${#pos[@]}" = 2 ] || return 1
+  [ "${pos[0]}" = origin ] || return 1
+  [ "${pos[1]}" = main ] || return 1
+  case "$dir" in
+    '') d="$CWD" ;;
+    /*) d="$dir" ;;
+    *) d="$CWD/$dir" ;;
+  esac
+  [ "$(git -C "$d" remote get-url --push origin 2>/dev/null)" = "$(git -C "$d" remote get-url origin 2>/dev/null)" ] || return 1
+  GIT_TERMINAL_PROMPT=0 timeout 30 git -C "$d" ls-remote --exit-code --heads origin main >/dev/null 2>&1 || rc=$?
+  [ "$rc" = 2 ]
+}
+
 revisar_push() {
   local dir="$1"
   shift
@@ -85,7 +126,9 @@ revisar_push() {
   rama=$(rama_de "$dir")
   case "$rama" in
     '') bloquear "git push sin una rama (HEAD suelto o fuera de un repo): no se sabe qué se publica." ;;
-    main) bloquear "git push desde main: main avanza por PR (docs/FLUJO.md). Trabaja en tu rama y empújala." ;;
+    main)
+      primer_push_de_main "$dir" "$@" && return 0
+      bloquear "git push desde main: main avanza por PR (docs/FLUJO.md). Trabaja en tu rama y empújala." ;;
   esac
   case "${#pos[@]}" in
     0 | 1) ;;

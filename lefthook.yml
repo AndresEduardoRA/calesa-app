@@ -16,8 +16,8 @@ pre-commit:
     - name: mapa
       run: bash scripts/mapa.sh --check # docs/MAPA.md no se versiona y va en .prettierignore
 
-# El schema en PGlite con sus pruebas: una vez al empujar SQL, no en cada commit, y en su modo rápido (sin los 7 bloques [lento],
-# ≈ 1,5 min en vez de 5). El job «Base» del CI corre el completo, también contra la base real (.claude/rules/migraciones.md).
+# El schema en PGlite con sus pruebas: una vez al empujar SQL, no en cada commit, y en su modo rápido (sin los bloques `-- @test [lento] …`
+# de scripts/probar-schema.mjs). El job «Base» del CI corre el completo, también contra la base real (.claude/rules/migraciones.md).
 pre-push:
   jobs:
     - name: schema

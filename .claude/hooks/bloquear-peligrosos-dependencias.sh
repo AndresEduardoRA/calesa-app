@@ -1,9 +1,12 @@
 # shellcheck shell=bash
+# `cmd` lo define revisar_segmento (bloquear-peligrosos.sh), que llama a estas funciones.
+# shellcheck disable=SC2154
 # Las dependencias en el hook de Bash: lo carga `bloquear-peligrosos.sh` (que pone `bloquear`, `raiz_del_repo`, `junto_a_un_cd`,
 # `A`, `CWD`, `CMD`, `OTRA_CARPETA` y `CON_VARIABLES`) y se prueba con él (`scripts/guardas/bloquear-peligrosos.test.ts`).
 # Actualizar, quitar, lo global, npm/yarn/bun y `next upgrade` se rechazan; agregar con pnpm, sólo lo de la lista aprobada del
-# repo donde corre (docs/DECISIONES.md › «Stack y arquitectura»). También lee las opciones de los envoltorios que pueden dejar el
-# agregar en otra carpeta (`npx`, `pnpm exec`, `sudo`, `env`) y la orden de pnpm metida en otro comando.
+# repo donde corre (docs/DECISIONES.md › «Stack y arquitectura»); actualizar dentro de los rangos y `dedupe`, sólo la tarea con
+# `permite: dependencias` (ORQ_PERMITE). También lee las opciones de los envoltorios que pueden dejar el agregar en otra carpeta
+# (`npx`, `pnpm exec`, `sudo`, `env`) y la orden de pnpm metida en otro comando.
 
 # Lo único que una sesión agrega con pnpm. Se lee de la raíz del repo donde corre (el worktree), no de una ruta fija.
 LISTA_APROBADA=scripts/orquestador/dependencias-aprobadas.txt
@@ -103,6 +106,31 @@ revisar_agregar() {
   [ "$paquetes" -gt 0 ] || bloquear "pnpm add sin paquete: nombra uno de $LISTA_APROBADA."
 }
 
+# Un permiso que el orquestador le dio a esta sesión (`permite:` de la spec → ORQ_PERMITE, separados por espacio o coma).
+permite() {
+  local p=${ORQ_PERMITE:-}
+  [[ " ${p//,/ } " == *" $1 "* ]]
+}
+
+# `pnpm update` de la tarea de dependencias: dentro de los rangos de package.json. Sólo las opciones de esta lista (pnpm acepta una
+# opción larga abreviada, `--lat` es `--latest`: una lista negra no alcanza). --latest (-L), global (-g), interactivo (-i),
+# `--workspace` o una versión pedida (`zod@4`) salen de los rangos: eso lo decide una persona.
+revisar_update_permitido() {
+  local t
+  [ "$global" = 1 ] && bloquear "Nada global: contamina la máquina del usuario."
+  for t in "$@"; do
+    case "$t" in
+      --recursive | --depth | --depth=* | --dev | --prod | --no-optional | --no-save | --dir | --dir=* | --filter | --filter=* | \
+        --workspace-root | --yes | --stream | --use-stderr | --aggregate-output | --color | --no-color | --silent | \
+        --loglevel | --loglevel=* | --reporter=* | --help) ;;
+      --*) bloquear "pnpm update $t: con «permite: dependencias» sólo valen las opciones que no salen de los rangos de package.json (sin --latest, --global, --interactive ni --workspace)." ;;
+      -[DCPrwyhF]*) [[ "$t" =~ ^-[DCPrwyhF]+$ ]] || bloquear "pnpm update $t (-L, -g o -i) sale de los rangos de package.json: lo decide una persona." ;;
+      -*) bloquear "pnpm update $t (-L, -g o -i) sale de los rangos de package.json: lo decide una persona." ;;
+      ?*@*) bloquear "pnpm update $t pide una versión: sólo dentro de los rangos de package.json." ;;
+    esac
+  done
+}
+
 # El subcomando de pnpm y lo que le sigue. Usa `antes` y `global` de revisar_pnpm (bash ve las locales de quien llama).
 revisar_sub_pnpm() {
   local sub="${1:-}"
@@ -113,10 +141,18 @@ revisar_sub_pnpm() {
       [ -n "$antes" ] &&
         bloquear "pnpm $antes … add: corre pnpm add solo, desde la raíz del repo de la lista (sin -C, --dir, --filter, -r ni -w)."
       revisar_agregar "$@" ;;
-    add* | up | update | upgrade | up*) bloquear "pnpm $sub cambia dependencias: se verifican y las decide una persona." ;;
+    up | update | upgrade)
+      if permite dependencias; then
+        revisar_update_permitido "$@"
+      else
+        bloquear "pnpm $sub cambia dependencias: se verifican y las decide una persona (la tarea de dependencias lo corre con «permite: dependencias»)."
+      fi ;;
+    add* | up*) bloquear "pnpm $sub cambia dependencias: se verifican y las decide una persona." ;;
     remove | rm | uninstall | un | link | ln | import | patch-commit | patch-remove)
       bloquear "pnpm $sub cambia dependencias: lo decide una persona." ;;
-    dedupe) case " $* " in *" --check "*) ;; *) bloquear "pnpm dedupe reescribe el lockfile: lo decide una persona." ;; esac ;;
+    dedupe)
+      [[ " $* " == *" --check "* ]] || permite dependencias ||
+        bloquear "pnpm dedupe reescribe pnpm-lock.yaml: lo hace la tarea de dependencias (permite: dependencias)." ;;
     \$*) bloquear "pnpm con el subcomando en una variable ($sub): el hook no ve cuál es." ;;
     i | install)
       hay_posicional "$@" &&

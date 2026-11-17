@@ -1,7 +1,8 @@
-# La pila local de Supabase en un job de ci.yml (`pnpm exec supabase start`), con sus puertos reservados antes de levantarla.
-# Los puertos de `supabase/config.toml` (546xx, y los 543xx que la CLI usa por defecto) caen en el rango efímero de Linux (32768–60999): mientras
-# `supabase start` baja sus imágenes en paralelo, una conexión saliente puede tomar uno y el contenedor cae con «address already in use»
-# (CI 42308509323: 0.0.0.0:54622, la base). Reservados en `ip_local_reserved_ports`, el kernel no los da como puerto de origen (vale también para IPv6).
+# La pila local de Supabase en un job de ci.yml (`pnpm exec supabase start`), con sus puertos reservados antes de levantarla. Los
+# puertos de `supabase/config.toml` (los heredados de este repo, 546xx, sin bloque, y los 543xx que la CLI usa por defecto) caen en el
+# rango efímero de Linux (32768–60999): mientras `supabase start` baja sus imágenes en paralelo, una conexión saliente puede tomar uno
+# y el contenedor cae con «address already in use». Reservados en `ip_local_reserved_ports`, el kernel no los da como puerto de origen
+# (vale también para IPv6).
 name: pila
 description: Supabase local con sus puertos reservados
 inputs:

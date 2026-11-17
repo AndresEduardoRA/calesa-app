@@ -17,6 +17,7 @@ sb() { pnpm exec supabase "$@" 2> >(grep -v -i -E 'new version|recommend updatin
 
 REF=$(cat supabase/.temp/project-ref 2>/dev/null || true)
 [ -n "$REF" ] || { echo "✗ no hay proyecto enlazado: \`supabase link\` lo hace la persona." >&2; exit 64; }
+# shellcheck disable=SC1091
 if [ -f .env.demo ]; then set -a; . ./.env.demo; set +a; fi
 URL="${DEMO_SUPABASE_URL:-https://${REF}.supabase.co}"
 URL="${URL%/}"
@@ -55,6 +56,7 @@ echo "✓ reset con $(find supabase/migrations -name '*.sql' | wc -l | tr -d ' '
 SEMILLAS=$(sed -n '/^\[db\.seed\]/,/^\[/{/sql_paths/,/\]/p}' supabase/config.toml | grep -oE '"[^"]+\.sql"' | tr -d '"')
 [ -n "$SEMILLAS" ] || { echo "✗ no encontré [db.seed] sql_paths en supabase/config.toml" >&2; exit 1; }
 for s in $SEMILLAS; do consulta "supabase/${s#./}" "la semilla $s"; done
+# shellcheck disable=SC2086 # una semilla por palabra
 echo "✓ semillas: $(printf '%s ' $SEMILLAS)"
 
 # 3. El dueño

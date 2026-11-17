@@ -37,6 +37,7 @@ const config = {
         'deps',
         'config',
         'docs',
+        'kit',
       ],
     ],
   },
