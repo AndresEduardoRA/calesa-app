@@ -5,14 +5,20 @@ const marca = (nivel: MarcaDelDiagrama['nivel']): MarcaDelDiagrama => ({ nivel, 
 
 describe('resumenDeMarcas', () => {
   it('cuenta errores y avisos; el nivel es el más alto', () => {
-    expect(resumenDeMarcas([marca('aviso')])).toEqual({ nivel: 'aviso', texto: '1 aviso' })
+    expect(resumenDeMarcas([marca('aviso')])).toEqual({
+      nivel: 'aviso',
+      texto: '1 aviso',
+      cuantos: 1,
+    })
     expect(resumenDeMarcas([marca('error'), marca('aviso'), marca('aviso')])).toEqual({
       nivel: 'error',
       texto: '1 error y 2 avisos',
+      cuantos: 3,
     })
     expect(resumenDeMarcas([marca('error'), marca('error')])).toEqual({
       nivel: 'error',
       texto: '2 errores',
+      cuantos: 2,
     })
   })
 

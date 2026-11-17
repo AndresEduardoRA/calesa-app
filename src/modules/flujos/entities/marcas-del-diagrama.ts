@@ -23,7 +23,8 @@ export const SIN_MARCAS: MarcasDelDiagrama = {
   delFlujo: [],
 }
 
-export type ResumenDeMarcas = { nivel: 'error' | 'aviso'; texto: string }
+// `cuantos`: errores y avisos juntos (el número del ícono de la caja).
+export type ResumenDeMarcas = { nivel: 'error' | 'aviso'; texto: string; cuantos: number }
 
 const contar = (n: number, singular: string, plural: string) =>
   `${formatearNumero(n)} ${n === 1 ? singular : plural}`
@@ -38,5 +39,9 @@ export function resumenDeMarcas(marcas: readonly MarcaDelDiagrama[]): ResumenDeM
     errores > 0 ? contar(errores, 'error', 'errores') : null,
     avisos > 0 ? contar(avisos, 'aviso', 'avisos') : null,
   ].filter((p) => p !== null)
-  return { nivel: errores > 0 ? 'error' : 'aviso', texto: partes.join(' y ') }
+  return {
+    nivel: errores > 0 ? 'error' : 'aviso',
+    texto: partes.join(' y '),
+    cuantos: errores + avisos,
+  }
 }
