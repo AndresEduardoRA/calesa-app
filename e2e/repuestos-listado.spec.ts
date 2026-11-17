@@ -79,8 +79,8 @@ test('la dueña crea un proyecto externo con N y lo ve en la lista; la búsqueda
   await nuevo(page).getByRole('button', { name: 'Crear proyecto' }).click()
   await expect(nuevo(page).getByText('Escribe qué vehículo es.')).toBeVisible()
 
+  // Con `leads.ver`, el cliente es «Cliente (lead)» (opcional): el cliente escrito a mano de un proyecto viejo se prueba en `repuestos-proyecto-con-lead.spec.ts`.
   await nuevo(page).getByLabel('Vehículo', { exact: true }).fill(ETIQUETA)
-  await nuevo(page).getByLabel('Cliente (opcional)', { exact: true }).fill('Taller Los Pinos')
   await nuevo(page).getByRole('button', { name: 'Crear proyecto' }).click()
   await expect(nuevo(page)).toBeHidden()
 
@@ -90,7 +90,6 @@ test('la dueña crea un proyecto externo con N y lo ve en la lista; la búsqueda
   await page.goto('/repuestos')
   const principal = page.getByRole('main')
   await expect(principal.getByText(`Externo · ${ETIQUETA}`)).toBeVisible()
-  await expect(principal.getByText('Taller Los Pinos')).toBeVisible()
   await expect(principal.getByText('Sin ítems').first()).toBeVisible()
 
   // La búsqueda por `?q=` lo deja; otro texto no deja filas y dice que nada coincide.

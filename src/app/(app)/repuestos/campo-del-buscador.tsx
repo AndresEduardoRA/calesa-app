@@ -15,6 +15,7 @@ type Props = {
   hayLista: boolean
   error?: string
   disabled: boolean
+  elige?: string
   alEscribir: (texto: string) => void
   alTeclear: (evento: KeyboardEvent) => void
 }
@@ -31,6 +32,7 @@ export function CampoDelBuscador({
   hayLista,
   error,
   disabled,
+  elige,
   alEscribir,
   alTeclear,
 }: Props) {
@@ -48,6 +50,7 @@ export function CampoDelBuscador({
         aria-activedescendant={idActiva}
         aria-invalid={error ? true : undefined}
         autoComplete="off"
+        data-elige={elige}
         className="h-11 md:h-9"
         placeholder={marcador}
         disabled={disabled}

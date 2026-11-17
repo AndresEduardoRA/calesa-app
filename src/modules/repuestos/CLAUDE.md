@@ -12,8 +12,17 @@ Abiertos que lo tocan: **8-13a** a **8-13c** y la revisión de seguridad del sto
   lo compone `src/app/(app)/repuestos/` (render prop, hueco o props).
 - **`proyectos`** — `index.ts`: `proyectoDe(vehiculoId)`, `leerResumenDeVehiculo(vehiculoId)`, `esquemaDelListado`, `pedidoDelListado`,
   `leerCursorDeProyectos`, `leerProyectosDelListado` (cursor = `numero`, sin «Anterior»), `estadoDelProyecto`. `pantallas/proyectos.ts`:
-  `<ListadoDeProyectos>`, `<BotonNuevoProyecto>`, `<DrawerDeNuevoProyectoDiferido>`, `useNuevoProyectoPorUrl`, `<CabeceraDeProyecto>`,
-  `buscarProyectoAbierto`. La cabecera recibe el **cliente** ya resuelto (`clienteDeLaCabecera({ leadId, clienteNombre, lead })` de `index.ts`: `lead`,
+  `<ListadoDeProyectos>`, `<BotonNuevoProyecto>`, `useNuevoProyectoPorUrl`, `<CabeceraDeProyecto>`, `buscarProyectoAbierto`.
+  `pantallas/proyectos-nuevo.ts` (sólo la composición diferida de `src/app`, `nuevo-proyecto-abierto.tsx`): `<DrawerDeNuevoProyecto>` y sus tipos
+  (`BuscadorDeProyecto`, `LectorDelLeadDelVehiculo`, `LeadDeLaUrl`). **El cliente en «Nuevo proyecto»** (glosario: «Cliente (de un proyecto)»): con
+  `leads.ver`, «Cliente (lead)» en los dos orígenes (`<CampoDelCliente>`; las reglas, puras, en `entities/proyectos/cliente-del-formulario.ts`: el
+  lead del vehículo se propone si el campo no se tocó y no cuenta como escrito, `baseDelBorrador`); sin él, el cliente y el teléfono escritos del
+  externo. `validarProyecto(b, { conLead })` no manda lo que no se muestra; la autoridad es el trigger `lead_visible_al_escribir`. Claves
+  (`entities/proyectos/paneles.ts`): `?panel=nuevo-proyecto` abre, `?nuevo=proyecto` lo conserva debajo de «Nuevo lead» (`nuevoProyectoEnLaUrl`,
+  `nuevoProyectoALaVista`; `dejarDebajo()` la escribe antes de abrir el alta), `?lead=<id>` es donde el alta deja al creado (`?elegir=lead`) y el
+  enlace directo; el servidor lo resuelve y el formulario lo elige y lo suelta (`soltarLead()`). Lo que cruza módulos llega por props desde
+  `src/app`: los buscadores, `leerLeadDelVehiculo` (de `vehiculos/pantallas/proyecto-de-repuestos`) y `alNuevoLead` (de
+  `leads/pantallas/proyecto-de-repuestos`, con `leads.ver` y `leads.crear`). La cabecera recibe el **cliente** ya resuelto (`clienteDeLaCabecera({ leadId, clienteNombre, lead })` de `index.ts`: `lead`,
   `oculto`, `libre` o `ninguno`; manda el lead, nunca el teléfono) y lo dibuja `<ClienteDelProyecto>`; el lead lo lee `src/app` con `leerLeadParaEnlazar`
   de `leads` sólo con `lead_id` y `leads.ver` (`ProyectoDetallado.leadId`). `pantallas/proyectos-vehiculo.ts`: `<ResumenRepuestos>`, la pestaña «Repuestos» de `/vehiculos/[id]` (`repuestos.ver` global;
   ítems por fase, ≤ 201 leídos). El módulo no importa `buscador`: los buscadores de vehículo y lead los compone `src/app`.

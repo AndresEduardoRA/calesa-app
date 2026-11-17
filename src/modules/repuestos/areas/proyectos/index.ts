@@ -25,9 +25,11 @@ export {
 } from '../../entities/proyectos/listado'
 export { estadoDelProyecto, type EstadoDelProyecto } from '../../entities/proyectos/estado'
 export {
+  CLAVE_DE_LEAD_DEL_PROYECTO,
   CLAVE_DE_VEHICULO,
   MENSAJE_VEHICULO_QUE_NO_SE_VE,
   PANEL_NUEVO_PROYECTO,
+  nuevoProyectoEnLaUrl,
 } from '../../entities/proyectos/paneles'
 export {
   leerResumenDeVehiculo,

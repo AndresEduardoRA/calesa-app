@@ -438,6 +438,13 @@ las trampas, en `docs/LECCIONES.md`.
 - **El cliente de un proyecto es un lead** (`lead_id`); los viejos conservan `cliente_nombre` y `cliente_telefono`. Nada se copia del lead al proyecto: el
   teléfono escrito quedaría fuera del enmascarado y el nombre a la vista de quien no ve el lead. Si hay lead y nombre escrito, manda el lead, y un lead que
   no se ve se dice «Cliente que no puedes ver» aunque haya nombre. La cabecera de un proyecto viejo muestra el nombre, nunca el teléfono.
+- **Con `leads.ver`, «Cliente (lead)» reemplaza el cliente y el teléfono escritos** en «Nuevo proyecto»: con un lead a mano, un teléfono escrito queda fuera del
+  enmascarado y dos campos «cliente» confunden. Sin ese permiso el formulario queda como antes. El cliente no se cambia en un proyecto ya creado (`PENDIENTES`).
+- **«Nuevo lead» del formulario es el alta del shell**, no una propia (duplicaría la verificación del teléfono y el borrador): el formulario deja `?nuevo=proyecto`
+  antes de abrirla, se esconde mientras está encima (el contenido de un drawer se desmonta y el borrador lo repone) y el creado vuelve en `?lead=`, que resuelve
+  el servidor. Sin drawers apilados: dos raíces de Base UI sin anidar, con Esc, clic afuera y foco sin precedente.
+- **El lead propuesto por el vehículo no cuenta como escrito** (`baseDelBorrador`): abrir desde la ficha y cerrar no deja borrador. Se lee en el navegador al
+  elegir el vehículo (`vehiculo_vinculos`, invocadora) y no se distingue «no tiene» de «no lo ves».
 - **Un proyecto sólo se elimina vacío** (borrado suave con «Deshacer»); cerrado no recibe ítems. «Borrar sólo sin uso» de catálogos es un trigger `before delete`.
 - **Stock: cantidad siempre positiva, el sentido sale del motivo** (`sobrante` entra; `vendido`, `devuelto`, `ajuste` salen; `reasignado` sólo por reasignar), validado en la RPC. «Vender suelto» no registra precio.
 - **Una sola unidad en stock saca el ítem de la espera** (`en_stock_desde`); lo que entra por `sobrante` tiene tope.

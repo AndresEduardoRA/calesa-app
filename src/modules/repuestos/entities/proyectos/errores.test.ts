@@ -24,6 +24,18 @@ describe('rechazoDeProyecto', () => {
     expect(r).toMatchObject({ porCampo: { vehiculoEtiqueta: 'Escribe qué vehículo es.' } })
   })
 
+  it('un lead que no se ve (o en la papelera o el limbo) va junto al campo del cliente con el texto de la base', () => {
+    const r = rechazoDeProyecto({
+      code: '42501',
+      message: 'No encontramos este lead o no tienes acceso.',
+      hint: 'lead_id',
+    })
+    expect(r).toMatchObject({
+      ok: false,
+      porCampo: { leadId: 'No encontramos este lead o no tienes acceso.' },
+    })
+  })
+
   it('el identificador repetido no apunta a ningún campo', () => {
     const r = rechazoDeProyecto({
       code: '23505',

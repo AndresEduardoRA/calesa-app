@@ -258,7 +258,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   «Para pasar a «X» espera que llegue a «Y».» y el enlace a su panel; sin espera, «Este vehículo no espera ningún repuesto.». Ver «Logística: estados propios».
 - **Repuestos** — `/repuestos` (`repuestos.ver`): proyectos por cursor `numero` (`?q=` de 3 letras o un número,
   `?estado=abiertos|cerrados|todos`, `?por=`, `?cursor=`) con número, vehículo o «Externo», cliente, estado derivado, ítems («200+») y
-  última actividad; «Nuevo proyecto» (`repuestos.editar`, `N`, `?panel=nuevo-proyecto`, `&vehiculo=<id>` lo abre vinculado).
+  última actividad; «Nuevo proyecto» (`repuestos.editar`, `N`, `?panel=nuevo-proyecto`, `&vehiculo=<id>` lo abre vinculado, `&lead=<id>` con el
+  cliente elegido; `?nuevo=proyecto` lo conserva en la URL debajo de «Nuevo lead»).
   - `/repuestos/[id]`: «Cerrar proyecto» o «Reabrir proyecto» (y «Eliminar proyecto» sin ítems: sin confirmación, con «Deshacer») y la hoja
     de ítems editable celda a celda. Pestañas «Compras» (`?pestana=compras`, `repuestos.costos.ver`; escribir con
     `repuestos.costos.editar` en `?panel=compra&compra=<id|nueva>`), «Cotizaciones» (`?pestana=cotizaciones`, `repuestos.cotizar`) y
@@ -1159,8 +1160,21 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
   distinto del de origen, y cantidad), «Vender suelto» y «Devolver al proveedor» (cantidad y nota); cada uno un drawer con URL que, si el
   ítem ya no está en la página, avisa y limpia la URL. Tras el éxito se cierra, la página se relee y un aviso lo dice (reasignar, con «Ver
   proyecto»).
-- **Nuevo proyecto:** «De un vehículo» (buscador del inventario) o «Externo» (vehículo, VIN, cliente, teléfono y, con `leads.ver`, lead);
-  un `?vehiculo=` que no se ve abre como «Externo» con un aviso.
+- **Nuevo proyecto:** «De un vehículo» (buscador del inventario) o «Externo» (vehículo y VIN); un `?vehiculo=` que no se ve abre como
+  «Externo» con un aviso. El cliente:
+  - Con `leads.ver`, **«Cliente (lead)»** en los dos orígenes (opcional): el buscador de leads (≥ 3 letras o `#n`, nunca por teléfono, sólo lo
+    que quien mira ve) y, con el campo vacío y `leads.crear`, «Nuevo lead» (44 px y a lo ancho en el celular). En «De un vehículo» viene puesto
+    el lead vinculado al vehículo («Vinculado al vehículo»; mientras se lee, «Buscando el cliente del vehículo…» y «Crear proyecto» espera);
+    «Cambiar» lo vacía y cambiar o quitar el vehículo, o pasar a «Externo», sólo quita ese propuesto. Un vehículo sin lead, o con uno que no se
+    ve, deja el campo vacío sin texto. Si la lectura falla: «No pudimos traer el cliente del vehículo. Búscalo aquí.».
+  - «Nuevo lead» abre el alta del shell (`?nuevo=proyecto&panel=nuevo-lead&elegir=lead`, con `replace`): el formulario se esconde y, al
+    cerrar el alta (Esc, «Cancelar»), vuelve con lo escrito y el aviso del borrador; al guardar, «Trayendo el lead que creaste…» y el creado
+    elegido. Un `?lead=` que no se ve: «No encontramos ese lead o no tienes acceso.». «Atrás» desde el alta sale del formulario (lo escrito
+    queda en el borrador).
+  - Sin `leads.ver`, como siempre: en el externo, «Cliente (opcional)» y «Teléfono del cliente (opcional)» escritos; en «De un vehículo»,
+    sin cliente.
+  - Un lead que la base rechaza al crear (dejó de verse, papelera, limbo) se suelta y su motivo queda junto al buscador, con el foco ahí;
+    lo demás queda escrito.
 
 ### Repuestos: proyecto (estados propios)
 

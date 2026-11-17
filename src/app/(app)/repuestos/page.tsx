@@ -5,27 +5,25 @@ import { puede, requerirSesion } from '@/modules/equipo'
 import { MarcasDeVistoDeLaPagina } from '@/modules/equipo/pantallas/marcas-de-visto'
 import {
   MAXIMO_DE_PAGINA_DE_REPUESTOS,
+  CLAVE_DE_LEAD_DEL_PROYECTO,
   CLAVE_DE_VEHICULO,
   CLAVE_DE_VISTA_DE_LA_CADENA,
   CLAVE_DE_VISTA_DE_REPUESTOS,
-  PANEL_NUEVO_PROYECTO,
   esVistaDeLaCadena,
   esVistaDeStock,
   esquemaDelListado,
   estadoDelListadoDe,
   leerCursorDeProyectos,
   leerProyectosDelListado,
+  nuevoProyectoEnLaUrl,
   pedidoDelListado,
 } from '@/modules/repuestos'
 import { BotonNuevoProyecto, ListadoDeProyectos } from '@/modules/repuestos/pantallas/proyectos'
+import { leerLeadParaEnlazar } from '@/modules/leads'
 import { leerVehiculo } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
-import {
-  CLAVE_DE_CURSOR,
-  CLAVE_DE_PANEL,
-  CLAVE_DE_POR_PAGINA,
-  leerFiltros,
-} from '@/shared/lib/filtros'
+import { CLAVE_DE_CURSOR, CLAVE_DE_POR_PAGINA, leerFiltros } from '@/shared/lib/filtros'
+import type { Permisos } from '@/shared/lib/permisos'
 import { leerPorPagina, tamanoDePagina, tamanosHasta } from '@/shared/lib/paginacion'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
@@ -33,7 +31,7 @@ import { EsqueletoListado } from '@/shared/ui/esqueletos'
 import { z } from 'zod'
 import { ListadoDeLaCadena } from './listado-de-la-cadena'
 import { ListadoDeStock } from './listado-de-stock'
-import { NuevoProyecto, type VehiculoDeLaUrl } from './nuevo-proyecto'
+import { NuevoProyecto, type LeadResueltoDeLaUrl, type VehiculoDeLaUrl } from './nuevo-proyecto'
 import { VistasDeRepuestos } from './vistas-de-repuestos'
 
 export const metadata: Metadata = { title: 'Repuestos' }
@@ -52,19 +50,36 @@ export default function PaginaDeRepuestos({ searchParams }: PageProps<'/repuesto
   )
 }
 
-// El `?vehiculo=` con que se abre «Nuevo proyecto»: sólo se lee con el panel abierto y con `repuestos.editar`; el título sale bajo la RLS de quien mira (nulo si no existe o no se ve).
-async function vehiculoDeLaUrl(
-  parametros: Record<string, string | string[] | undefined>,
-): Promise<VehiculoDeLaUrl | null> {
+type Parametros = Record<string, string | string[] | undefined>
+
+// El `?vehiculo=` con que se abre «Nuevo proyecto»: sólo se lee con el formulario en la URL y con `repuestos.editar`; el título sale bajo la RLS de quien mira (nulo si no
+// existe o no se ve).
+async function vehiculoDeLaUrl(parametros: Parametros): Promise<VehiculoDeLaUrl | null> {
   const id = unParametro(parametros[CLAVE_DE_VEHICULO])
-  if (
-    unParametro(parametros[CLAVE_DE_PANEL]) !== PANEL_NUEVO_PROYECTO ||
-    !z.guid().safeParse(id).success
-  ) {
+  if (!nuevoProyectoEnLaUrl(parametros) || !z.guid().safeParse(id).success) {
     return null
   }
   const vehiculo = datosO(await leerVehiculo(id ?? ''))
   return { id: id ?? '', titulo: vehiculo?.titulo ?? null }
+}
+
+// El `?lead=` del formulario (el que deja «Nuevo lead» al guardar, o un enlace): sólo con el formulario en la URL, `repuestos.editar` y `leads.ver`. Su nombre sale bajo la
+// RLS de quien mira (nulo si no existe, está en la papelera o el limbo, o no se ve), nunca su teléfono.
+async function leadDeLaUrl(
+  parametros: Parametros,
+  permisos: Permisos,
+): Promise<LeadResueltoDeLaUrl | null> {
+  const id = unParametro(parametros[CLAVE_DE_LEAD_DEL_PROYECTO])
+  if (
+    !nuevoProyectoEnLaUrl(parametros) ||
+    !puede(permisos, 'repuestos.editar') ||
+    !puede(permisos, 'leads.ver') ||
+    !z.guid().safeParse(id).success
+  ) {
+    return null
+  }
+  const lead = datosO(await leerLeadParaEnlazar(id ?? ''))
+  return { id: id ?? '', titulo: lead === null ? null : lead.nombre.trim() || 'Sin nombre' }
 }
 
 async function Listado({
@@ -110,9 +125,10 @@ async function Listado({
     tamano,
   })
   const puedeEditar = puede(sesion.permisos, 'repuestos.editar')
-  const [pagina, delVehiculo] = await Promise.all([
+  const [pagina, delVehiculo, delLead] = await Promise.all([
     leerProyectosDelListado(pedido).then(datosO),
     puedeEditar ? vehiculoDeLaUrl(parametros) : Promise.resolve(null),
+    leadDeLaUrl(parametros, sesion.permisos),
   ])
   const estado = estadoDelListadoDe(filtros)
   return (
@@ -134,7 +150,9 @@ async function Listado({
       <NuevoProyecto
         puedeEditar={puedeEditar}
         puedeVerLeads={puede(sesion.permisos, 'leads.ver')}
+        puedeCrearLeads={puede(sesion.permisos, 'leads.crear')}
         vehiculoDeLaUrl={delVehiculo}
+        leadDeLaUrl={delLead}
       />
     </div>
   )

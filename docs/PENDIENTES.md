@@ -60,6 +60,9 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 - **[8-13a]** Un ítem no dice «fuera de regla» ni quién lo movió, y «Esperas que destraban vehículos» no cruza los ítems con la fase del vehículo — `logistica_unidad` es sólo de vehículo; pide una RPC `security definer` (o sería N+1).
 - **[8-13b]** El transporte propio de un ítem sin vehículo es sólo texto — falta el formulario; `transportes.repuesto_id` y `transporte_guardar(p_repuesto)` ya existen.
+- **[T35]** El cliente de un proyecto ya creado no se cambia — haría falta una RPC con versión (`PT409`) para `lead_id`: decidir si se puede cambiar y quién.
+- **[T35]** En la lista de proyectos, uno que sólo tiene lead dice «—» en «Cliente» — `repuestos_proyectos_listar` no trae el lead; sumarlo pide leer
+  `leads_vista` por página: decidir si la lista debe nombrarlo.
 
 ### Chat
 

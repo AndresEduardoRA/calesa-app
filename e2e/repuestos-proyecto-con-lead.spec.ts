@@ -1,12 +1,20 @@
-import { CONTRASENA, entrar, limpiarAlta, prepararAlta, type PersonasDelAlta } from './soporte/alta'
+import {
+  CONTRASENA,
+  dialogo as dialogoDelAlta,
+  entrar,
+  limpiarAlta,
+  prepararAlta,
+  type PersonasDelAlta,
+} from './soporte/alta'
 import { correoDePrueba, crearPersona, darRolDePrueba, PREFIJO_ROL_E2E } from './soporte/base'
 import { telefonoAlAzar } from './soporte/leads-alta'
-import { expect, test } from './soporte/prueba'
+import { expect, test, type Page } from './soporte/prueba'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
 // El cliente de un proyecto de repuestos como lead (T35): la cabecera de `/repuestos/<id>` muestra el lead (enlazado, con sus números y «Fuera de tu cartera»), «Cliente que
-// no puedes ver» a quien no lo ve, y un proyecto viejo con cliente y teléfono escritos a mano se ve igual (sin el teléfono). Lo que siembra lleva «E2E Con lead» y se limpia.
+// no puedes ver» a quien no lo ve, y un proyecto viejo con cliente y teléfono escritos a mano se ve igual (sin el teléfono). En «Nuevo proyecto», «De un vehículo» trae el lead
+// vinculado al vehículo y «Nuevo lead» (el alta del shell) vuelve al formulario con lo escrito y el creado elegido. Lo que siembra lleva «E2E Con lead» y se limpia.
 test.describe.configure({ mode: 'serial' })
 
 const PREFIJO = 'E2E Con lead'
@@ -114,4 +122,116 @@ test('la cabecera enlaza el lead de otra cartera con sus números; quien no ve l
   await expect(principal.getByText('Cliente que no puedes ver')).toBeVisible()
   await expect(principal.getByText(LEAD_AJENO)).toHaveCount(0)
   await expect(principal.getByRole('link', { name: LEAD_AJENO })).toHaveCount(0)
+})
+
+const formulario = (page: Page) => page.getByRole('dialog', { name: 'Nuevo proyecto' })
+
+async function abrirElFormulario(page: Page): Promise<void> {
+  await entrar(page, personas.duena, { fresco: true })
+  await page.goto('/repuestos?panel=nuevo-proyecto')
+  await expect(formulario(page)).toBeVisible()
+}
+
+async function crearYEsperarLaCabecera(page: Page): Promise<void> {
+  await formulario(page).getByRole('button', { name: 'Crear proyecto' }).click()
+  await expect(formulario(page)).toBeHidden()
+  await expect(page).toHaveURL(/\/repuestos\/[0-9a-f-]{36}$/)
+  await expect(page.getByRole('heading', { name: /^Proyecto #\d+$/ })).toBeVisible()
+}
+
+test('«De un vehículo» trae el lead vinculado al vehículo y el proyecto nace con él', async ({
+  page,
+}, info) => {
+  const titulo = `${PREFIJO} Hilux ${info.project.name}`
+  const nombre = `${PREFIJO} Vinculada ${info.project.name}`
+  const lead = sembrarLead(nombre, personas.duena)
+  const origen = sql("select id from public.origenes where clave = 'subasta_usa'")
+  const vehiculo = sql(`
+    insert into public.vehiculos (origen_id, titulo) values (${literal(origen)}::uuid, ${literal(titulo)}) returning id`)
+  sql(
+    `update public.vehiculos set lead_id = ${literal(lead)}::uuid where id = ${literal(vehiculo)}::uuid`,
+  )
+
+  await abrirElFormulario(page)
+  await formulario(page).getByRole('radio', { name: 'De un vehículo' }).check()
+  await formulario(page).getByRole('combobox', { name: 'Vehículo' }).fill(titulo)
+  await formulario(page).getByRole('option', { name: titulo }).click()
+  const cliente = formulario(page).locator('[data-elegido]').filter({ hasText: nombre })
+  await expect(cliente).toBeVisible()
+  await expect(formulario(page).getByText('Vinculado al vehículo')).toBeVisible()
+  await capturar(page, info, 'formulario-con-el-lead-del-vehiculo')
+
+  await crearYEsperarLaCabecera(page)
+  await expect(page.getByRole('main').getByRole('link', { name: nombre })).toHaveAttribute(
+    'href',
+    `/leads/${lead}`,
+  )
+  expect(
+    sql(
+      `select lead_id from public.repuestos_proyectos where vehiculo_id = ${literal(vehiculo)}::uuid`,
+    ),
+  ).toBe(lead)
+})
+
+test('«Externo» con «Nuevo lead»: Esc vuelve con lo escrito; guardar el lead lo deja elegido y el proyecto nace con él', async ({
+  page,
+}, info) => {
+  const etiqueta = `${PREFIJO} externo ${info.project.name}`
+  const nombre = `${PREFIJO} Creada ${info.project.name}`
+  await abrirElFormulario(page)
+  await formulario(page).getByLabel('Vehículo', { exact: true }).fill(etiqueta)
+  const nuevoLead = formulario(page).getByRole('button', { name: 'Nuevo lead' })
+
+  // Esc cierra el alta y vuelve el formulario con lo escrito.
+  await nuevoLead.click()
+  const alta = dialogoDelAlta(page)
+  await expect(alta).toBeVisible()
+  await expect(alta.getByLabel('Teléfono principal')).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(alta).toBeHidden()
+  await expect(formulario(page)).toBeVisible()
+  await expect(formulario(page).getByLabel('Vehículo', { exact: true })).toHaveValue(etiqueta)
+
+  // Con el alta encima, el formulario sigue en la URL por su clave propia y no está a la vista.
+  await nuevoLead.click()
+  await expect(alta).toBeVisible()
+  await expect(formulario(page)).toBeHidden()
+  const url = new URL(page.url())
+  expect(url.searchParams.get('panel')).toBe('nuevo-lead')
+  expect(url.searchParams.get('elegir')).toBe('lead')
+  expect(url.searchParams.get('nuevo')).toBe('proyecto')
+  await capturar(page, info, 'alta-sobre-el-formulario')
+  await alta.getByLabel('Teléfono principal').fill(telefonoAlAzar())
+  await alta.getByLabel('Nombre').fill(nombre)
+  await alta.getByRole('button', { name: 'Guardar lead' }).click()
+  await expect
+    .poll(() => sql(`select id from public.leads where nombre = ${literal(nombre)}`))
+    .not.toBe('')
+  const creado = sql(`select id from public.leads where nombre = ${literal(nombre)}`)
+
+  // Vuelve el formulario con lo escrito y el lead creado elegido; la URL ya no lleva el lead ni el alta.
+  await expect(alta).toBeHidden()
+  await expect(formulario(page)).toBeVisible()
+  await expect(formulario(page).getByLabel('Vehículo', { exact: true })).toHaveValue(etiqueta)
+  await expect(formulario(page).locator('[data-elegido]')).toContainText(
+    nombre.replace(/^E2E /, ''),
+  )
+  await expect
+    .poll(() => {
+      const vuelta = new URL(page.url()).searchParams
+      return [vuelta.get('lead'), vuelta.get('panel'), vuelta.get('elegir')]
+    })
+    .toEqual([null, null, null])
+  await capturar(page, info, 'formulario-con-el-lead-creado')
+
+  await crearYEsperarLaCabecera(page)
+  await expect(
+    page.getByRole('main').getByRole('link', { name: nombre.replace(/^E2E /, '') }),
+  ).toHaveAttribute('href', `/leads/${creado}`)
+  await capturar(page, info, 'cabecera-con-el-lead-creado')
+  expect(
+    sql(
+      `select lead_id from public.repuestos_proyectos where vehiculo_etiqueta = ${literal(etiqueta)}`,
+    ),
+  ).toBe(creado)
 })

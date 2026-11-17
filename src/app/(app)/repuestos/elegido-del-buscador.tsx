@@ -8,11 +8,19 @@ type Props = {
   elegido: ElegidoDelBuscador
   error?: string
   disabled: boolean
+  elige?: string
   alCambiar: () => void
 }
 
 // Lo elegido en un buscador: su nombre y «Cambiar».
-export function ElegidoDeUnBuscador({ etiqueta, elegido, error, disabled, alCambiar }: Props) {
+export function ElegidoDeUnBuscador({
+  etiqueta,
+  elegido,
+  error,
+  disabled,
+  elige,
+  alCambiar,
+}: Props) {
   return (
     <div className="grid gap-1.5">
       <span className="text-(length:--text-sm) font-medium text-(--color-ink)">{etiqueta}</span>
@@ -20,7 +28,14 @@ export function ElegidoDeUnBuscador({ etiqueta, elegido, error, disabled, alCamb
         <span className="min-w-0 break-words" data-elegido="">
           {elegido.titulo}
         </span>
-        <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={alCambiar}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={disabled}
+          data-elige={elige}
+          onClick={alCambiar}
+        >
           Cambiar
         </Button>
       </div>
