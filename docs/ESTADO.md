@@ -22,8 +22,9 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 - **Flujos y logística:** fases, transiciones, requisitos y reglas por RPC, configurados sobre el diagrama del flujo (cajas y flechas, ordenar
   arrastrando, avisos de «Revisar» encima) con el panel de cada fase al costado; `/logistica` (la bandeja del día con siete grupos, la cadena como gráfica por fase, la lista de cada fase,
   «qué falta» con la acción que destraba cada requisito (hacerlo, ir a donde se hace o pedírselo a quien puede con una tarea), mover y el lote, documentos, embarques, aduana, gastos, pagos y margen), medida con 300.000 vehículos.
-- **En todo el sistema:** avisos con acciones (cada bloqueo dice cómo destrabarlo), el visor de fotos con carrusel, «visto» y «último
-  visto» por persona y módulo en las listas.
+- **En todo el sistema:** avisos con acciones (cada bloqueo dice cómo destrabarlo), el visor de fotos con carrusel, «visto» (negrita lo no
+  abierto) y «último visto» por persona y módulo en las listas, «Vista y opciones» en cada lista, y la barra superior con «Nuevo» (lo que
+  la persona puede crear) y los tipos de cambio elegidos (cambiar el valor ahí y compartirlos como imagen o texto).
 - **Repuestos:** proyectos guiados por pasos (las fases del flujo y sus hitos, con el siguiente de cada ítem), ítems, compras, stock, cotizador propio y pagos.
 - **Agenda, chat, notificaciones y buscador:** la agenda como libreta del día con sus pendientes (semana y mes a un clic, eventos con su lead), canales y grupos con realtime, la campana y el push (sin claves
   VAPID todavía), la paleta `Ctrl/Cmd+K`.
@@ -36,8 +37,8 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 
 ## Verdes
 
-- `lint`, `typecheck`, `test` (10.300+ pruebas), `db:probar` (1.483 bloques), `db:lint`, `db:carreras` y `mapa.sh --check`.
-- **Último e2e completo de escritorio** (el de la noche, en 4 bloques): en verde sobre `78b9b348`, 2026-11-15. El último con celular
+- `lint`, `typecheck`, `test` (11.400+ pruebas), `db:probar` (1.483 bloques), `db:lint`, `db:carreras` y `mapa.sh --check`.
+- **Último e2e completo de escritorio** (el de la noche, en 4 bloques): en verde sobre `c143d0bd`, 2026-11-16. El último con celular
   (Nivel 3, sobre `20815f1c`): 898 en verde, 31 saltadas, 0 caídas, 38,2 min.
 - **CI:** Nivel 1 siempre, «Base» si cambia código, los e2e dirigidos (o el completo de escritorio en 4 bloques si toca un disparador),
   y `Listo · todo en verde`, el único check que `main` exige; el completo de escritorio, cada noche.
