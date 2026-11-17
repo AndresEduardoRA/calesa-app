@@ -25,7 +25,12 @@ import {
   getVehiculosQueCambian,
   integracionActiva,
 } from './infra/queries/integraciones'
-import { getHistorial, getMonedasYTiposCambio, getTiposCambio } from './infra/queries/tipos-cambio'
+import {
+  getHistorial,
+  getMonedasYTiposCambio,
+  getTiposCambio,
+  getTiposCambioDeLaBarra,
+} from './infra/queries/tipos-cambio'
 import { probarRevalidacion } from './infra/revalidacion-prueba'
 import { tiposCambioSupabase } from './infra/tipos-cambio'
 
@@ -44,4 +49,10 @@ export const leerVehiculosQueCambian: LectorDeVehiculosQueCambian = getVehiculos
 export const leerAjustesDeCotizacion: LectorDeAjustesDeCotizacion = getAjustesDeCotizacion
 
 // Lo que consumen el shell y otros módulos: nunca tumban una pantalla.
-export { getAjustes, getPoliticaDeLimpieza, getTiposCambio, integracionActiva }
+export {
+  getAjustes,
+  getPoliticaDeLimpieza,
+  getTiposCambio,
+  getTiposCambioDeLaBarra,
+  integracionActiva,
+}

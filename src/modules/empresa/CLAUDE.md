@@ -22,7 +22,8 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
     por `client.ts`: la usa `<FormularioDeAjustesDeCotizacion>`, de este módulo.
 - Pantallas: `pantallas/configuracion-empresa.ts` (`<FormularioEmpresa>`, `<MonedasYTiposCambio>`, `<Integraciones>`, `<IconosDeLaApp>`) y
   `pantallas/configuracion-cotizacion.ts` (`<FormularioDeAjustesDeCotizacion>`).
-- `shell.ts`: `getAjustes()`, `getTiposCambio()`, `<TiposCambioVigentes>`.
+- `shell.ts`: `getAjustes()`, `getTiposCambioDeLaBarra()` (los de la barra: hasta 3, sólo `{id, nombre, monedaA, valor}`, de la misma lectura
+  por request), `<TiposCambioVigentes>` (el botón de la barra; el popover lee `tipos_cambio_vigentes()` al abrirse).
 - `client.ts`: `guardarTipoCambio` y `EntradaDeGuardarTipoCambio`, para el ⚙ de un tipo de cambio de la hoja (`cotizaciones`); la action exige
   `empresa.tipos_cambio.gestionar` en el servidor.
 - Depende de ningún otro módulo.
@@ -34,11 +35,13 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
   (`validarColorDeMarca()`: contraste AA con motivo y tono cercano; reglas del SVG), `regional.ts` (contra `Intl`), `tipos-cambio.ts`
   (`CAMBIOS_A_LA_VISTA` = 30; «En la barra»: `TOPE_EN_LA_BARRA` = 3, espejo de la RPC, `tiposEnLaBarra()` y `motivoParaNoMarcar()`), `integraciones.ts` (`CLAVES_INTEGRACION`), `iconos.ts`, `uso-apibara.ts`, `motivos.ts`, `repositorios.ts`.
 - `infra/queries/` (`server-only`); `infra/{empresa,tipos-cambio,integraciones}.ts` escriben por RPC; `infra/{logo,iconos}.client.ts` (Storage);
+  `infra/tipos-cambio-vigentes.client.ts` (el popover de la barra, por `composicion-barra.client.ts`: sólo lo pide su contenido diferido);
   `infra/apibara.client.ts` (`consultarUso()` por `invocarFuncion()`). `infra/revalidacion-prueba.ts`, **excepción del cliente admin**:
   `probarRevalidacion()` comprueba el permiso y valida la dirección guardada antes de crear el admin, que sólo llama
   `integracion_secreto('web_publica')`. `composicion.ts` / `composicion.client.ts`.
 - `features/empresa/` (`guardar-con-logo.ts`: commit diferido contra puertos), `features/iconos/`, `features/integraciones/` (apibara, web pública,
-  avisos push; `<CampoSecreto>` con un `nombre` de campo propio por tarjeta), `features/tipos-cambio/` (`<AvisoDeTope>` con más de 30 cambios),
+  avisos push; `<CampoSecreto>` con un `nombre` de campo propio por tarjeta), `features/tipos-cambio/` (`<AvisoDeTope>` con más de 30 cambios; `components/popover-de-la-barra/`, el contenido diferido del popover
+  de la barra, con `<PieDelPopover>` para las acciones sobre todos; `entities/tipos-cambio-vigentes.ts`, sus filas y el conflicto),
   `features/ajustes-de-cotizacion/` (sin borrador, remonta con `key` = versión).
 
 ## Tablas
@@ -78,6 +81,8 @@ quien lo hizo, nunca el correo.
 - «En la barra» se elige en el panel de cada tipo de cambio, en el mismo «Guardar» que el valor (una versión por fila): sumarlo pide activo y
   lugar (hasta 3 activos marcados; la base lo repite tras su candado), quitarlo siempre se puede y desactivar no lo quita. La barra muestra
   `tiposEnLaBarra()`: los activos marcados (un inactivo marcado no se ve) y, sin ninguno, el por defecto.
+- El último cambio de cada tipo de cambio (popover de la barra) sale del historial, no de `actualizado_*` (que se mueve al renombrar o marcar), y
+  lo ve toda persona activa con el nombre, nunca el correo; el historial entero sigue siendo de quien gestiona.
 - `registro_abierto = false` lo aplica la base (trigger en `auth.users`); `registroDisponible()` lo repite: registro abierto **o** todavía no hay
   nadie (la primera cuenta nace siempre, y dueña).
 

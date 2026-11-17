@@ -7,9 +7,11 @@ import type { LectorDeHistorial, LectorDeMonedasYTiposCambio } from '../../entit
 import {
   historialDesde,
   monedasDesde,
+  paraLaBarra,
   tiposCambioDesde,
   vigentes,
   type TipoCambio,
+  type TipoEnLaBarra,
   CAMBIOS_A_LA_VISTA,
 } from '../../entities/tipos-cambio'
 
@@ -38,6 +40,17 @@ export async function getTiposCambio(): Promise<TipoCambio[]> {
     return []
   }
   return vigentes(todos.data)
+}
+
+// Los que la barra superior de toda pantalla muestra a la vista (hasta 3, sólo lo que se dibuja: viajan en el documento de todas). Sale de
+// la misma lectura por request que el resto. Nunca tumba una pantalla: si la base no responde, ninguno y el error en el log.
+export async function getTiposCambioDeLaBarra(): Promise<TipoEnLaBarra[]> {
+  const todos = await getTodos()
+  if (!todos.ok) {
+    console.error('No se pudieron leer los tipos de cambio', todos.error)
+    return []
+  }
+  return paraLaBarra(todos.data)
 }
 
 export const getMonedasYTiposCambio: LectorDeMonedasYTiposCambio = cache(async () => {

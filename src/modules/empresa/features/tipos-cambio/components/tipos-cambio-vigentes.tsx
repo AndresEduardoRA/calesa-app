@@ -1,78 +1,70 @@
 'use client'
 
-import type { Route } from 'next'
-import Link from 'next/link'
-import { formatearFechaHora } from '@/shared/lib/fechas'
-import { RUTAS } from '@/shared/lib/rutas'
-import {
-  Popover,
-  PopoverContent,
-  PopoverDescription,
-  PopoverHeader,
-  PopoverTitle,
-  PopoverTrigger,
-} from '@/shared/ui/popover'
+import { Fragment, useState } from 'react'
+import { cn } from 'cn'
 import { Monto } from '@/shared/ui/monto'
-import { useRegional } from '@/shared/ui/regional'
-import { decimalesDeValor, type TipoCambio } from '../../../entities/tipos-cambio'
-import { ValorDeCambio } from './valor-de-cambio'
+import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
+import { decimalesDeValor, type TipoEnLaBarra } from '../../../entities/tipos-cambio'
+import { adelantarElContenido, ContenidoDeTiposCambioDiferido } from './popover-de-la-barra'
 
 type Props = {
-  // Los vigentes, con el por defecto adelante.
-  tipos: readonly TipoCambio[]
-  // Quien los gestiona tiene a mano el enlace para cambiarlos.
+  // Los que la empresa eligió para la barra (hasta 3, el por defecto adelante; sin ninguno, el por defecto).
+  tipos: readonly TipoEnLaBarra[]
+  // Quien los gestiona tiene a mano ir a configurarlos.
   puedeGestionar: boolean
 }
 
-// El tipo de cambio del día en la barra superior: a la vista el por defecto; al abrirlo, todos
-// los vigentes con la fecha de su último cambio, en la zona horaria de la empresa.
+function TipoALaVista({ tipo, className }: { tipo: TipoEnLaBarra; className?: string }) {
+  return (
+    <span className={cn('items-baseline gap-1.5', className)}>
+      <span className="hidden text-(--color-ink-soft) sm:inline">{tipo.nombre}</span>
+      <Monto
+        valor={tipo.valor}
+        moneda={tipo.monedaA}
+        decimales={decimalesDeValor(tipo.valor)}
+        className="font-medium"
+      />
+    </span>
+  )
+}
+
+// Los tipos de cambio de la barra superior: a la vista los que eligió la empresa y, al abrirlo, todos los vigentes con su último cambio.
+// El primero se ve siempre; los demás, cuando la barra tiene lugar (56 rem: el escritorio); si no, «+N» y se ven en el popover. En la
+// copia del menú del celular no hay contenedor que medir: va compacta. El contenido (la lectura y la edición) se pide al abrir.
 export function TiposCambioVigentes({ tipos, puedeGestionar }: Props) {
-  const { zonaHoraria } = useRegional()
-  const [principal] = tipos
+  const [abierto, setAbierto] = useState(false)
+  const [principal, ...demas] = tipos
   if (!principal) {
     return null
   }
 
   return (
-    <Popover>
+    <Popover open={abierto} onOpenChange={setAbierto}>
       <PopoverTrigger
         aria-label="Tipos de cambio"
-        className="inline-flex h-11 items-center gap-1.5 rounded-(--radius-md) px-2 text-(length:--text-sm) text-(--color-ink) outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) md:h-9"
+        onPointerEnter={adelantarElContenido}
+        className="inline-flex h-11 items-center gap-2 rounded-(--radius-md) px-2 text-(length:--text-sm) whitespace-nowrap text-(--color-ink) outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) md:h-9"
       >
-        <span className="hidden text-(--color-ink-soft) sm:inline">{principal.nombre}</span>
-        <Monto
-          valor={principal.valor}
-          moneda={principal.monedaA}
-          decimales={decimalesDeValor(principal.valor)}
-          className="font-medium"
-        />
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 max-w-[calc(100vw-2rem)]">
-        <PopoverHeader>
-          <PopoverTitle>Tipos de cambio</PopoverTitle>
-          <PopoverDescription>Las horas están en {zonaHoraria}.</PopoverDescription>
-        </PopoverHeader>
-        <ul className="grid gap-2">
-          {tipos.map((tipo) => (
-            <li key={tipo.id} className="grid gap-0.5">
-              <span className="flex items-baseline justify-between gap-3">
-                <span className="font-medium text-(--color-ink)">{tipo.nombre}</span>
-                <ValorDeCambio tipo={tipo} />
-              </span>
-              <span className="text-(length:--text-xs) text-(--color-ink-faint)">
-                Desde el {formatearFechaHora(tipo.actualizadoEn, { zona: zonaHoraria })}
-              </span>
-            </li>
-          ))}
-        </ul>
-        {puedeGestionar ? (
-          <Link
-            href={`${RUTAS.empresa}?seccion=monedas` as Route}
-            className="text-(length:--text-sm) font-medium text-(--color-primario-ink) underline-offset-4 outline-none hover:underline focus-visible:shadow-(--shadow-focus)"
-          >
-            Cambiar los tipos de cambio
-          </Link>
+        <TipoALaVista tipo={principal} className="inline-flex" />
+        {demas.map((tipo) => (
+          <Fragment key={tipo.id}>
+            <span aria-hidden className="hidden text-(--color-ink-faint) @min-[56rem]:inline">
+              ·
+            </span>
+            <TipoALaVista tipo={tipo} className="hidden @min-[56rem]:inline-flex" />
+          </Fragment>
+        ))}
+        {demas.length > 0 ? (
+          <span className="text-(--color-ink-soft) @min-[56rem]:hidden">+{demas.length}</span>
         ) : null}
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-96 max-w-[calc(100vw-1rem)]">
+        <ContenidoDeTiposCambioDiferido
+          puedeGestionar={puedeGestionar}
+          alCerrar={() => {
+            setAbierto(false)
+          }}
+        />
       </PopoverContent>
     </Popover>
   )

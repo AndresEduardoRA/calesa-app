@@ -1,5 +1,5 @@
 import { Suspense, type ReactNode } from 'react'
-import { TiposCambioVigentes, getAjustes, getTiposCambio } from '@/modules/empresa/shell'
+import { TiposCambioVigentes, getAjustes, getTiposCambioDeLaBarra } from '@/modules/empresa/shell'
 import {
   BannerPerspectiva,
   ProveedorPerspectiva,
@@ -34,7 +34,7 @@ async function Shell({ children }: { children: ReactNode }) {
   const [sesion, ajustes, tiposCambio, ancho] = await Promise.all([
     requerirSesion(),
     getAjustes(),
-    getTiposCambio(),
+    getTiposCambioDeLaBarra(),
     anchoDeEstaPeticion(),
   ])
   const nombre = nombreVisible(sesion)
@@ -73,7 +73,7 @@ async function Shell({ children }: { children: ReactNode }) {
                   />
                 }
                 navegacion={<BarraLateral permisos={sesion.permisos} />}
-                // Sin tipos de cambio vigentes el hueco no ocupa lugar.
+                // Los que la empresa eligió para la barra (hasta 3; sin ninguno, el por defecto). Sin tipos de cambio vigentes el hueco no ocupa lugar.
                 tipoCambio={
                   tiposCambio.length > 0 ? (
                     <TiposCambioVigentes

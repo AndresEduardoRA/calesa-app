@@ -6,6 +6,7 @@ import type { AjustesDeCotizacion } from './ajustes-de-cotizacion'
 import type { AjustesEmpresa, CambiosDeAjustes } from './ajustes-empresa'
 import type { ClaveIntegracion, Integracion } from './integraciones'
 import type { CambioDeValor, Moneda, TipoCambio } from './tipos-cambio'
+import type { TipoCambioVigente } from './tipos-cambio-vigentes'
 
 // Toda edición manda la versión que tenía en pantalla quien edita; la base responde `conflicto`
 // si otra persona lo cambió, y devuelve la versión nueva para seguir editando sin recargar.
@@ -91,6 +92,8 @@ export type LectorDeAjustes = () => Promise<Resultado<AjustesParaEditar>>
 // Todos, también los inactivos: es lo que edita la pantalla.
 export type LectorDeMonedasYTiposCambio = () => Promise<Resultado<MonedasYTiposCambio>>
 export type LectorDeHistorial = (tipoCambioId: string) => Promise<Resultado<CambioDeValor[]>>
+// Los vigentes con su último cambio, para el popover de la barra: hasta TOPE_DEL_POPOVER + 1 (el de más dice que hay otros).
+export type LectorDeTiposCambioVigentes = () => Promise<Resultado<TipoCambioVigente[]>>
 export type LectorDeIntegraciones = () => Promise<Resultado<Integracion[]>>
 // Cuántos vehículos publicados empiezan o dejan de verse al encender o apagar la web pública.
 export type LectorDeVehiculosQueCambian = () => Promise<Resultado<ConteoAcotado>>
