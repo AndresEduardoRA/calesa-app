@@ -126,8 +126,8 @@ test('cambiar el tamaño en la página 3 con filtros y búsqueda vuelve a la pri
   expect(url.get('por')).toBe('25')
   expect(url.get('q')).toBe(BUSCAR)
   expect(url.get('tipo')).toBe('prospecto')
-  // Y las páginas siguientes siguen con el tamaño nuevo.
-  await page.getByRole('link', { name: 'Siguiente' }).click()
+  // Y las páginas siguientes siguen con el tamaño nuevo (`paginaSiguiente` cierra antes «Vista y opciones»: en el celular la hoja tapa la lista).
+  await paginaSiguiente(page)
   await expect(filasDelListado(page)).toHaveCount(25)
   expect(parametrosDe(page).get('por')).toBe('25')
 })

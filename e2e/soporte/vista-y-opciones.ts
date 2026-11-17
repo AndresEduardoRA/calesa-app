@@ -4,8 +4,10 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { aLaVista } from './inventario'
 
+// Por su marca y no por su rol: con la hoja inferior abierta (modal) el botón sale del árbol de accesibilidad, y hay que poder leerlo (lo que
+// dice, el foco al cerrar).
 export const botonDeVistaYOpciones = (page: Page): Locator =>
-  aLaVista(page.locator('main').getByRole('button', { name: /^Vista y opciones/ }))
+  aLaVista(page.locator('main button[data-vista-y-opciones]'))
 
 export const panelDeVistaYOpciones = (page: Page): Locator =>
   page.getByRole('dialog', { name: 'Vista y opciones' })
@@ -16,13 +18,10 @@ export const seccionDeVistaYOpciones = (page: Page, titulo: string): Locator =>
 
 // La página llega pintada por el servidor antes de que React enganche el botón: un clic en ese instante se pierde. El botón lleva
 // `data-hidratado`, que React pone recién cuando lo enganchó.
-// Se busca por su marca y no por su rol: con un panel modal abierto encima (el resumen de una fila) el botón sale del árbol de accesibilidad.
 export async function esperarBotonHidratado(page: Page, tope = 5_000): Promise<void> {
-  await expect(aLaVista(page.locator('main [data-vista-y-opciones]')).first()).toHaveAttribute(
-    'data-hidratado',
-    'true',
-    { timeout: tope },
-  )
+  await expect(botonDeVistaYOpciones(page).first()).toHaveAttribute('data-hidratado', 'true', {
+    timeout: tope,
+  })
 }
 
 // Abre el panel y espera a que esté (la primera vez llega su código). Si ya está abierto, no hace nada: un clic de más lo cerraría.
