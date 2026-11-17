@@ -212,7 +212,7 @@ test('la raíz de proyectos es <kit>/../..', () => {
   assert.equal(raizDeProyectos('/p/_herramientas/kit'), '/p')
 })
 
-test('la CLI da el nombre, la cuenta y el bloque del repo propio (por el remoto)', () => {
+test('la CLI da el nombre, la cuenta, el bloque y la etapa del repo propio (por el remoto)', () => {
   const raiz = carpetaTemporal('cli-')
   execFileSync('git', ['init', '-q', '-b', 'main', raiz])
   execFileSync('git', [
@@ -231,6 +231,8 @@ test('la CLI da el nombre, la cuenta y el bloque del repo propio (por el remoto)
   assert.equal(cli('nombre'), 'calesa-web')
   assert.equal(cli('cuenta'), 'AndresEduardoRA')
   assert.equal(cli('bloque'), '5')
+  assert.equal(cli('etapa'), leerManifiesto(CALESA).repos.find((r) => r.rol === 'web').etapa)
+  assert.match(cli('etapa'), /^(construccion|mantenimiento)$/)
   // El de app tiene puertos heredados: no hay bloque que imprimir.
   execFileSync('git', [
     '-C',
