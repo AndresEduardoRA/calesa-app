@@ -89,6 +89,9 @@ source "$ORQ/al-dia.sh"
 # Lo que una tarea pide hacer al integrarse (`al_integrar: etiquetar <nombre>`).
 # shellcheck source=al-integrar.sh
 source "$ORQ/al-integrar.sh"
+# Lo que se arregla sin abrir una sesión: el reintento de e2e ajenos al PR y el choque sólo de docs.
+# shellcheck source=sin-sesion.sh
+source "$ORQ/sin-sesion.sh"
 # Las mejoras del flujo entre el kit y este proyecto: la tarea semanal y lo que sube al kit al integrar.
 # shellcheck source=kit.sh
 source "$ORQ/kit.sh"
@@ -366,9 +369,10 @@ vigilar_prs() {
       CLOSED) trabar "$id" "El PR #$pr se cerró sin integrarse."; continue ;;
     esac
     if [ "$mergeable" = CONFLICTING ]; then
-      a_arreglar "$id" "El PR #$pr choca con main (conflicto de merge). Lo integrado mientras tanto en main tocó lo mismo."
+      fusionar_docs "$id" "$pr" ||
+        a_arreglar "$id" "El PR #$pr choca con main (conflicto de merge). Lo integrado mientras tanto en main tocó lo mismo."
     elif [ "$listo" = FAILURE ] || [ "$listo" = CANCELLED ]; then
-      a_arreglar "$id" "$(motivo_ci "$pr" "$j")"
+      reintentar_ci_una_vez "$id" "$pr" "$j" || a_arreglar "$id" "$(motivo_ci "$pr" "$j")"
     elif [ "$merge_state" = BEHIND ]; then
       # main exige la rama al día: GitHub la pone al día con un merge (nunca fuerza). Una vez cada 15 min como mucho.
       local ult
