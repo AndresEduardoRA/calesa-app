@@ -27,6 +27,8 @@ type Props = {
 }
 
 const CAJA = 'rounded-(--radius-card) border border-(--color-line) bg-(--color-surface)'
+// El nivel de los bloques de afuera de un panel (bajo su título, un `h2`).
+const NIVEL_DE_AFUERA = 3
 const CUERPO = 'grid grid-cols-[minmax(0,1fr)] gap-4'
 
 // Sección plegable de un formulario o de una ficha. Es un <details> nativo: funciona con teclado
@@ -90,6 +92,7 @@ function BloqueALaVista({
   nivel,
 }: Props & { nivel: number }) {
   const id = useId()
+  const anidado = nivel > NIVEL_DE_AFUERA
   const avisado = useRef(false)
   const avisar = useEffectEvent(() => {
     onAbrir?.()
@@ -114,7 +117,12 @@ function BloqueALaVista({
     <section
       data-slot="bloque"
       aria-labelledby={id}
-      className={cn('grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3 p-4', CAJA, className)}
+      // El de afuera es una caja; los de adentro, sin caja propia (sólo una línea arriba): no queda una caja dentro de otra.
+      className={cn(
+        'grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3',
+        anidado ? 'border-t border-(--color-line) pt-4 first:border-t-0 first:pt-0' : ['p-4', CAJA],
+        className,
+      )}
     >
       <div className="grid gap-0.5">
         {encabezado}

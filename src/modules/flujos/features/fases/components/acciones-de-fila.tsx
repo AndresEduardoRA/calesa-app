@@ -7,7 +7,11 @@ import {
   type Movimiento,
 } from '@/shared/ui/lista-de-catalogo/use-foco-tras-mover'
 import { MasAcciones } from '@/shared/ui/lista'
-import { despuesDeAlMover, motivoSinMover } from '../../../entities/fases/orden-de-fases'
+import {
+  despuesDeAlMover,
+  motivoSinMover,
+  motivoSinOrdenDeFases,
+} from '../../../entities/fases/orden-de-fases'
 import { firmaDelOrdenDeFases } from '../../../entities/fases/panel-de-fase'
 import type { FaseParaConfigurar, FlujoParaConfigurar } from '../../../entities/flujo'
 import { useFaseAbierta } from '../../configuracion/hooks/use-fase-abierta'
@@ -20,7 +24,7 @@ type Props = { flujo: FlujoParaConfigurar; fase: FaseParaConfigurar }
 const PREFIJO = 'fase'
 
 // El hueco `accionesDeFila`: «Subir» y «Bajar» con el teclado y el «⋯» (Editar, Jubilar o eliminar, Reactivar). Son botones propios de la fila: su clic
-// no abre el inspector. Un movimiento a la vez; el foco vuelve al botón cuando la página trae el orden nuevo (la fila cambia de lugar después de la respuesta).
+// no abre el panel. Un movimiento a la vez; el foco vuelve al botón cuando la página trae el orden nuevo (la fila cambia de lugar después de la respuesta).
 // Las jubiladas también cuentan en el orden: la base las renumera con las demás.
 export function AccionesDeFila({ flujo, fase }: Props) {
   const lista = useListaDeFases(flujo)
@@ -28,6 +32,8 @@ export function AccionesDeFila({ flujo, fase }: Props) {
   const abrirQuitar = useAbrirEliminarFase()
   const [movimiento, setMovimiento] = useState<(Movimiento & { firmaAntes: string }) | null>(null)
   const firma = firmaDelOrdenDeFases(flujo.fases)
+  // Con la lista cortada por el tope, «Subir» y «Bajar» se apagan con el motivo.
+  const sinOrden = motivoSinOrdenDeFases(flujo)
   useFocoTrasMover(PREFIJO, movimiento && firma !== movimiento.firmaAntes ? movimiento : null)
 
   async function mover(direccion: 'subir' | 'bajar') {
@@ -52,8 +58,9 @@ export function AccionesDeFila({ flujo, fase }: Props) {
         prefijo={PREFIJO}
         id={fase.id}
         nombre={fase.nombre}
-        puedeSubir={motivoSinMover(flujo.fases, fase.id, 'subir') === null}
-        puedeBajar={motivoSinMover(flujo.fases, fase.id, 'bajar') === null}
+        puedeSubir={sinOrden === null && motivoSinMover(flujo.fases, fase.id, 'subir') === null}
+        puedeBajar={sinOrden === null && motivoSinMover(flujo.fases, fase.id, 'bajar') === null}
+        motivoSinOrden={sinOrden ?? undefined}
         alMover={(direccion) => void mover(direccion)}
       />
       <MasAcciones

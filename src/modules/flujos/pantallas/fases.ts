@@ -3,3 +3,6 @@
 export { AccionesDeLaLista } from '../features/fases/components/acciones-de-la-lista'
 export { AccionesDeFila } from '../features/fases/components/acciones-de-fila'
 export { DatosDeLaFase } from '../features/fases/components/datos-de-la-fase'
+export { ProveedorDeOrden } from '../features/fases/components/proveedor-de-orden'
+export { AccionesDelPanel } from '../features/fases/components/acciones-del-panel'
+export { ReglasDeLaFase } from '../features/fases/components/reglas-de-la-fase'
