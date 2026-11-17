@@ -11,10 +11,23 @@ describe('la situación en logística', () => {
     const texto = migracionesEnOrden()
       .map((m) => m.texto)
       .join('\n')
-    const check = /vehiculos_situacion_check check \(situacion in \(([^)]*)\)\)/.exec(texto)?.[1]
-    expect(check?.split(',').map((v) => v.trim().replaceAll("'", ''))).toEqual([
-      ...SITUACIONES_DE_LA_UNIDAD,
-    ])
+    // La última definición del check: en una migración (`check (situacion in (…))`) o en la base aplastada, como la escribe el volcado
+    // (`CHECK (("situacion" = ANY (ARRAY['…'::"text", …])))`).
+    const formas = [
+      /vehiculos_situacion_check check \(situacion in \(([^)]*)\)\)/g,
+      /"vehiculos_situacion_check" CHECK \(\("situacion" = ANY \(ARRAY\[([^\]]*)\]/g,
+    ]
+    const ultima = formas
+      .flatMap((forma) => [...texto.matchAll(forma)])
+      .sort((a, b) => a.index - b.index)
+      .at(-1)?.[1]
+    const valores = ultima?.split(',').map((v) =>
+      v
+        .trim()
+        .replace(/::"?text"?$/, '')
+        .replaceAll("'", ''),
+    )
+    expect(valores).toEqual([...SITUACIONES_DE_LA_UNIDAD])
   })
 
   it('sólo se dice aparte cuando la subasta manda; una desconocida es su fase', () => {
