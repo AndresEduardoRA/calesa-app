@@ -12,6 +12,7 @@ import type { Etiquetas } from '../../etiquetas/hooks/use-etiquetas'
 import { useEtiquetas } from '../../etiquetas/hooks/use-etiquetas'
 import { usePanelDeEtiquetas } from '../../etiquetas/hooks/use-panel-de-etiquetas'
 import { useAccionDeFila } from '../../listado/hooks/use-accion-de-fila'
+import { useIrALasOportunidades } from '../../oportunidades/hooks/use-ir-a-las-oportunidades'
 import { MenuDeLead } from '../../marcas/components/menu-de-lead'
 import type { ParaElMenuDelEmbudo } from '../lecturas'
 
@@ -71,11 +72,30 @@ type Lectura =
 
 const MENSAJE_DE_FALLO = 'No se pudo cargar. Cierra el menú y vuelve a abrirlo.'
 
+// Anotar, agendar y «Nueva oportunidad…»: con `leads.editar` y el lead (ya leído) en la cartera de quien mira.
+function accionesDeLaTarjeta(menu: ValorDelMenuDelEmbudo, fila: FilaDeLead | null, leadId: string) {
+  if (!fila || !menu.editar || !fila.enCartera) {
+    return undefined
+  }
+  return {
+    alAnotar: () => {
+      menu.alAccion('anotar', leadId)
+    },
+    alAgendar: () => {
+      menu.alAccion('agendar', leadId)
+    },
+    alNuevaOportunidad: () => {
+      menu.alAccion('oportunidad', leadId)
+    },
+  }
+}
+
 // El «⋯» del lead de una tarjeta del kanban, con la lista de siempre. La tarjeta no trae las marcas ni la cartera del lead, y leerlos de cada
 // tarjeta sería una consulta por tarjeta: se lee uno (`leads_vista` por su id, un pedido) al abrir el menú. Mientras llega dice «Cargando…»;
 // si el lead ya no se ve o no se pudo leer, lo dice en el menú. Lo ya leído se muestra enseguida al abrir otra vez, y se vuelve a leer.
 export function MenuDeLeadDeLaTarjeta({ lead }: { lead: LeadDeTarjeta }) {
   const menu = use(ContextoDelMenu)
+  const irALasOportunidades = useIrALasOportunidades()
   const [lectura, setLectura] = useState<Lectura>({ tipo: 'sin_pedir' })
   if (menu === null) {
     return null
@@ -115,15 +135,11 @@ export function MenuDeLeadDeLaTarjeta({ lead }: { lead: LeadDeTarjeta }) {
       puedeEnviar={
         fila ? puedeEnviarConAlcance(menu.eliminar, fila.duenoId, menu.usuarioId) : false
       }
-      acciones={
-        fila && menu.editar && fila.enCartera
-          ? {
-              alAnotar: () => {
-                menu.alAccion('anotar', lead.id)
-              },
-              alAgendar: () => {
-                menu.alAccion('agendar', lead.id)
-              },
+      acciones={accionesDeLaTarjeta(menu, fila, lead.id)}
+      verOportunidades={
+        fila?.enCartera
+          ? () => {
+              irALasOportunidades(lead.id)
             }
           : undefined
       }

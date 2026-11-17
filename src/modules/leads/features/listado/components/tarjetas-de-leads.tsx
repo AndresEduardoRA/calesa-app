@@ -3,14 +3,20 @@
 import { AbrirResumen, TarjetaDeLista } from '@/shared/ui/lista'
 import { tipoDelCatalogo } from '../../../entities/catalogos'
 import { camposDeLaTarjeta, type FilaDeLead } from '../../../entities/listado'
-import { BotonDeOportunidad } from './boton-de-oportunidad'
+import { useIrALasOportunidades } from '../../oportunidades/hooks/use-ir-a-las-oportunidades'
 import { MenuDeLead } from '../../marcas/components/menu-de-lead'
 import { BadgeDeTipo } from './badge-de-tipo'
 import { CeldaDeCampo } from './celda-de-campo'
 import { NombreDeFila } from './nombre-de-fila'
 import { telefonoDeLista } from './telefono-de-lista'
 import { OrigenDeLaTarjeta } from './origen-del-lead'
-import { accionesDelMenu, type DatosDeLaLista, origenDelCatalogo, type ParaMarcar } from './tipos'
+import {
+  accionesDelMenu,
+  type DatosDeLaLista,
+  origenDelCatalogo,
+  type ParaMarcar,
+  verOportunidadesDelMenu,
+} from './tipos'
 import {
   UltimoContactoDeTarjeta,
   useContextoDeUltimoContacto,
@@ -73,6 +79,7 @@ export function TarjetasDeLeads(props: Props) {
     ultimoContacto,
   } = props
   const contexto = useContextoDeUltimoContacto(ultimoContacto)
+  const irALasOportunidades = useIrALasOportunidades()
   return (
     <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
       {leads.map((lead) => {
@@ -88,7 +95,6 @@ export function TarjetasDeLeads(props: Props) {
             }}
             acciones={
               <>
-                <BotonDeOportunidad lead={lead} marcar={marcar} conTexto={false} />
                 <MenuDeLead
                   leadId={lead.id}
                   nombre={lead.nombre}
@@ -97,6 +103,7 @@ export function TarjetasDeLeads(props: Props) {
                   alGestionar={marcar.alGestionar}
                   puedeEnviar={marcar.eliminables.includes(lead.id)}
                   acciones={accionesDelMenu(marcar, lead)}
+                  verOportunidades={verOportunidadesDelMenu(irALasOportunidades, lead)}
                 />
               </>
             }

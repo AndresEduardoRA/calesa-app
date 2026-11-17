@@ -28,13 +28,11 @@ type Props = {
   alLeerTipos: (tipos: readonly TipoDeSeguimiento[]) => void
 }
 
-// Lo que abrió la acción en esa fila: el «⋯» o el «+ Oportunidad» (la tabla y las tarjetas lo dibujan las dos; se busca el que se ve).
-function origenDeLaAccion(atributo: string, leadId: string): HTMLElement | boolean {
-  const origenes = document.querySelectorAll<HTMLElement>(`[${atributo}="${leadId}"]`)
+// Lo que abrió la acción en esa fila: su «⋯» (la tabla y las tarjetas lo dibujan las dos; se busca el que se ve).
+function menuDeLaFila(leadId: string): HTMLElement | boolean {
+  const origenes = document.querySelectorAll<HTMLElement>(`[data-mas-acciones="${leadId}"]`)
   return Array.from(origenes).find((origen) => origen.offsetParent !== null) ?? true
 }
-
-const menuDeLaFila = (leadId: string) => origenDeLaAccion('data-mas-acciones', leadId)
 
 // Los tipos activos, leídos una vez (sin RPC nueva: la misma consulta de la ficha).
 function useTipos(tipos: Props['tipos'], alLeerTipos: Props['alLeerTipos']) {
@@ -166,7 +164,7 @@ function AnotarDesdeLaFila({
   )
 }
 
-// Anotar un seguimiento, agendar un recordatorio (desde el «⋯» de una fila) o crear una oportunidad («+ Oportunidad»): los modales de la
+// Anotar un seguimiento, agendar un recordatorio o crear una oportunidad (desde el «⋯» de una fila): los modales de la
 // ficha, sobre ese lead, sin abrir el drawer. Al guardar un seguimiento o un recordatorio, un aviso de éxito y `alGuardar` (el listado relee su página
 // y la fila lo muestra); una oportunidad no se ve en la fila. El vehículo no se ofrece: el listado no lee los vehículos del lead.
 export function ModalDeAccionDeFila({ accion, ...props }: Props) {
@@ -186,7 +184,7 @@ export function ModalDeAccionDeFila({ accion, ...props }: Props) {
           avisarExito(`Oportunidad creada para «${lead.nombre}».`)
           alCerrar()
         }}
-        focoAlCerrar={() => origenDeLaAccion('data-nueva-oportunidad', lead.id)}
+        focoAlCerrar={() => menuDeLaFila(lead.id)}
       />
     )
   }

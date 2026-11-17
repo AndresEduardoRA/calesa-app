@@ -17,7 +17,7 @@ export {
   leerSeguimiento,
   leerTiposDeSeguimiento,
 } from './infra/seguimientos.client'
-export { leerMasOportunidades } from './infra/oportunidades.client'
+export { leerMasOportunidades, leerOportunidadesDelAviso } from './infra/oportunidades.client'
 export { leerPaginaDeRecordatorios, leerRecordatorio } from './infra/recordatorios.client'
 export { leerEtiquetasConUso } from './infra/etiquetas.client'
 export { leerCandidatosDeCartera } from './infra/cartera.client'

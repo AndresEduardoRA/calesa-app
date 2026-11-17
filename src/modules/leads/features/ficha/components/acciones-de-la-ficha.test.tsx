@@ -3,9 +3,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { LeadDeFicha } from '../../../entities/ficha'
 import { AccionesDeLaFicha } from './acciones-de-la-ficha'
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }))
 vi.mock('../../marcas/components/menu-de-lead', () => ({
   MenuDeLeadConMarcas: () => <button type="button">Más acciones</button>,
+}))
+vi.mock('../../oportunidades/hooks/use-panel-de-oportunidad-rapida', () => ({
+  usePanelDeOportunidadRapida: () => ({ abierto: false, abrir: vi.fn(), cerrar: vi.fn() }),
+}))
+vi.mock('../../oportunidades/components/nueva-oportunidad-del-lead', () => ({
+  NuevaOportunidadDelLead: () => null,
 }))
 vi.mock('./boton-editar-lead', () => ({
   BotonEditarLead: () => <button type="button">Editar</button>,
