@@ -1,11 +1,12 @@
 // Los paneles del hueco «Pagos» en la URL de la pantalla que lo muestra (6.11-2): `?panel=pago&pago=<id|nuevo>` abre el formulario; `?panel=confirmar-pago`, `?panel=eliminar-pago` y
-// `?panel=anular-pago` con `&pago=<id>`, sus diálogos. Van aparte del `?vehiculo=` del panel de la unidad.
-export const PANEL_PAGO = 'pago'
+// `?panel=anular-pago` con `&pago=<id>`, sus diálogos. Van aparte del `?vehiculo=` del panel de la unidad. Las del formulario viven en el núcleo («Qué falta» abre
+// «Registrar pago»).
+import { CLAVE_DE_PAGO, PAGO_NUEVO, PANEL_PAGO } from '../nucleo/paneles-de-la-unidad'
+
+export { CLAVE_DE_PAGO, PAGO_NUEVO, PANEL_PAGO }
 export const PANEL_CONFIRMAR_PAGO = 'confirmar-pago'
 export const PANEL_ELIMINAR_PAGO = 'eliminar-pago'
 export const PANEL_ANULAR_PAGO = 'anular-pago'
-export const CLAVE_DE_PAGO = 'pago'
-export const PAGO_NUEVO = 'nuevo'
 
 export const MENSAJE_PAGO_YA_NO_ESTA = 'Ese pago ya no está.'
 

@@ -1,12 +1,15 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { avisarCambioDeLaUnidad } from '../../nucleo/hooks/eventos-de-la-unidad'
 
 // Lo que pasa en el dinero de una unidad se avisa por el navegador, no por la URL: el hueco «Gastos» guarda y el hueco «Margen», que es de la misma unidad, vuelve a leer (6.11-1).
 const EVENTO = 'logistica:dinero-de-la-unidad'
 
+// También es un cambio de la unidad: «Qué falta» se relee (un pago confirmado o un gasto de tributos cumplen requisitos). Un id de proyecto no lo escucha nadie.
 export function avisarCambioDeDinero(unidadId: string): void {
   window.dispatchEvent(new CustomEvent<string>(EVENTO, { detail: unidadId }))
+  avisarCambioDeLaUnidad(unidadId)
 }
 
 // Llama `alCambiar` cada vez que cambia el dinero de esa unidad.

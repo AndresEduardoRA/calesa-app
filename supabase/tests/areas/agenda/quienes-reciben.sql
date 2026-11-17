@@ -117,7 +117,7 @@ rollback;
 -- @test agenda: agenda_quienes_reciben es definer, con search_path vacío, de authenticated y no de anon ni PUBLIC (Q3)
 begin;
 do $$
-declare f record; v_oid oid := 'public.agenda_quienes_reciben(text, uuid)'::regprocedure;
+declare f record; v_oid oid := 'public.agenda_quienes_reciben(text, uuid, text, uuid)'::regprocedure;
 begin
   select p.prosecdef, p.proconfig into f from pg_proc p where p.oid = v_oid;
   if not f.prosecdef or f.proconfig is distinct from array['search_path=""'] then raise exception 'definer % y config %', f.prosecdef, f.proconfig; end if;

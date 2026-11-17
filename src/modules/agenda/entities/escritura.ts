@@ -59,7 +59,11 @@ export type RepositorioDeEventos = {
 }
 
 export type RepositorioDeTareas = {
-  crear: (pedido: { id: string; datos: DatosDeTarea }) => RespuestaDeEscritura
+  // Al crear, la tarea puede nacer vinculada a un vehículo (la base exige verlo); el vínculo no se edita después.
+  crear: (pedido: {
+    id: string
+    datos: DatosDeTarea & { vehiculo_id?: string }
+  }) => RespuestaDeEscritura
   guardar: (pedido: {
     id: string
     actualizadoEnEsperado: string

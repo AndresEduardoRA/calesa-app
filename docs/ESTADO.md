@@ -4,7 +4,7 @@
 > un verde que dejó de serlo). Qué existe en el código lo dice `docs/MAPA.md`; lo que falta, `docs/PENDIENTES.md`; cómo se trabaja,
 > `docs/FLUJO.md`. Las versiones anteriores: `git log -p docs/ESTADO.md`.
 
-**Última actualización:** 2026-11-15
+**Última actualización:** 2026-11-16
 **Estado:** **terminado (fases 0 a 9) y listo para desplegar.** Desplegar es de la persona (`docs/DESPLIEGUE.md`). Desde aquí el proyecto
 recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en verde.
 
@@ -19,7 +19,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 - **Cotizaciones:** la fórmula como grafo versionado (motor en TS con su espejo SQL), el diseño de la hoja, niveles de acceso, la hoja de
   cotizar (vehículo y lead obligatorios por rol y origen, aviso con la subasta vencida), guardar con revisiones, la tarjeta y el PDF, la final, la aprobada (una por vehículo, con su primer resultado en la lista de vehículos), comprobantes, comentarios y papelera; el listado con buscador (número, cliente, vehículo y autor), vistas guardadas, columna de acciones y un resumen con pestañas (todo, adjuntos, revisiones y comentarios).
 - **Flujos y logística:** fases, transiciones, requisitos y reglas por RPC; `/logistica` (la bandeja del día con siete grupos, la cadena como gráfica por fase, la lista de cada fase,
-  «qué falta», mover y el lote, documentos, embarques, aduana, gastos, pagos y margen), medida con 300.000 vehículos.
+  «qué falta» con la acción que destraba cada requisito (hacerlo, ir a donde se hace o pedírselo a quien puede con una tarea), mover y el lote, documentos, embarques, aduana, gastos, pagos y margen), medida con 300.000 vehículos.
 - **En todo el sistema:** avisos con acciones (cada bloqueo dice cómo destrabarlo), el visor de fotos con carrusel, «visto» y «último
   visto» por persona y módulo en las listas.
 - **Repuestos:** proyectos, ítems, compras, stock, cotizador propio y pagos.

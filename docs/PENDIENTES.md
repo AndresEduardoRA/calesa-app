@@ -51,6 +51,10 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[A1c]** Avisos sin salida que quedaron: el bloqueo de eliminar una fase no enlaza «las fases que esperan» ni «las unidades en ella» (`ImpactoDeFase` sólo trae conteos; pide los ids); «Editar grupo» con más unidades de las que se muestran y «súbelo por partes» de documentos de un grupo de más de 100 no dicen el paso siguiente; «No pudimos leer los títulos» del panel de fuera de regla no ofrece «Reintentar».
 - **[6-2]** Publicar en la vitrina mueve la versión de la ficha (`vehiculo_vitrina` usa `vehiculos.actualizado_en`) — una columna `vitrina_actualizado_en` que la RPC exija y devuelva.
 - **[6-4]** Se puede pedir un requisito de dato cuya regla está apagada (`transporte.*`, `aduana.*`, `pagos.*`) y nadie puede cumplirlo — que `revisar_flujo()` lo avise con un código propio o que la RPC lo rechace.
+- **[—]** «Qué falta» no marca un requisito «ya pedido»: pedirlo dos veces da dos tareas (el id del intento sólo evita el doble clic). Marcarlo pide una lectura nueva.
+- **[—]** «Pedirlo» en un ítem de repuesto (hoy, «Pídeselo a quien administra los roles.»): haría falta vincular una tarea a un ítem.
+- **[—]** Acciones en la franja «fuera de regla» de «Qué falta» (hoy sólo su enlace al hueco).
+- **[—]** Junto a 6-4: con una regla apagada, quien no tiene la clave del hueco igual ve «Pedirlo» (saberlo exige leer las reglas en «Qué falta»).
 - **[6-6]** Prorratear un gasto por el valor del vehículo u otro criterio; hoy se reparte en partes iguales — base e interfaz.
 - **[6-7]** Borrar una nota propia con una RPC `security definer` (el `update` da `42501`), que además impida a su autora cambiar el cuerpo de una nota de cambio de fase (hoy lo frena sólo la action).
 - **[—]** Vincular un pago a un lead: sin interfaz (el alta manda `p_lead` nulo).
