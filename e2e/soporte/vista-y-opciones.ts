@@ -24,20 +24,19 @@ export async function esperarBotonHidratado(page: Page, tope = 5_000): Promise<v
   })
 }
 
-// Abre el panel y espera a que esté (la primera vez llega su código). Si ya está abierto, no hace nada: un clic de más lo cerraría.
+// Abre el panel y espera a que esté (la primera vez llega su código). Si ya está abierto, no hace nada: un clic de más lo cerraría. Si se
+// cerró solo (la pantalla cambió de rama debajo, como el embudo la primera vez que llega su tablero), lo vuelve a abrir.
 export async function abrirVistaYOpciones(page: Page): Promise<Locator> {
   const boton = botonDeVistaYOpciones(page)
   const panel = panelDeVistaYOpciones(page)
   await esperarBotonHidratado(page)
-  if ((await boton.getAttribute('aria-expanded')) !== 'true') {
-    await expect(async () => {
-      if ((await boton.getAttribute('aria-expanded')) !== 'true') {
-        await boton.click()
-      }
-      await expect(boton).toHaveAttribute('aria-expanded', 'true', { timeout: 1_000 })
-    }).toPass({ timeout: 10_000 })
-  }
-  await expect(panel).toBeVisible({ timeout: 10_000 })
+  await expect(async () => {
+    if ((await boton.getAttribute('aria-expanded')) !== 'true') {
+      await boton.click()
+    }
+    await expect(boton).toHaveAttribute('aria-expanded', 'true', { timeout: 1_000 })
+    await expect(panel).toBeVisible({ timeout: 2_000 })
+  }).toPass({ timeout: 15_000 })
   return panel
 }
 

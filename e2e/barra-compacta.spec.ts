@@ -77,6 +77,8 @@ test('E2E leads — «Vista y opciones» agrupa vista, alcance y más; la URL ca
   await elegirEnVistaYOpciones(page, 'Embudo')
   await expect.poll(() => parametro(page, 'vista')).toBe('embudo')
   await expect(botonDeVistaYOpciones(page)).toContainText('Embudo')
+  // La primera vez se prepara el embudo por defecto: se espera a su tablero (con otro botón) antes de abrir.
+  await expect(page.getByText('Aquí ves tus oportunidades.', { exact: false })).toBeVisible()
   const delEmbudo = await abrirVistaYOpciones(page)
   await expect(delEmbudo.getByRole('button', { name: 'Etapas…' })).toBeVisible()
   await expect(delEmbudo.getByRole('button', { name: 'Nuevo embudo…' })).toBeVisible()
