@@ -2,6 +2,7 @@
 
 import type { VistaGuardada } from '@/modules/equipo/client'
 import type { ComponentProps } from 'react'
+import { useRouter } from 'next/navigation'
 import { parseAsString, useQueryState } from 'nuqs'
 import type { ConteoAcotado } from '@/shared/lib/conteo'
 import { CLAVE_DE_PANEL, camposFiltrables, type EsquemaDeFiltros } from '@/shared/lib/filtros'
@@ -122,6 +123,19 @@ function AccionesDelListado({
   )
 }
 
+// Anotar o agendar desde el «⋯»: al guardar, la página se relee y la fila muestra el seguimiento o el recordatorio nuevo (la URL no cambia).
+function AccionesDeFilaConRelectura(props: { filas: readonly FilaDeLead[]; puedeAnotar: boolean }) {
+  const router = useRouter()
+  return (
+    <AccionesDeFila
+      {...props}
+      alGuardar={() => {
+        router.refresh()
+      }}
+    />
+  )
+}
+
 // La lista con las marcas de «visto» de su página (una lectura) y el abierto marcado al abrirse.
 function ResultadoConVistos(props: ComponentProps<typeof ResultadoDelListado>) {
   return (
@@ -214,7 +228,7 @@ export function ListadoDeLeads(props: Props) {
       </FilterShell>
       <DrawerDeLead {...datos} {...delDrawer} marcar={marcar} />
       <DialogoDeEtiquetas etiquetas={etiquetas} />
-      <AccionesDeFila filas={pagina.filas} puedeAnotar={puedeAnotar} />
+      <AccionesDeFilaConRelectura filas={pagina.filas} puedeAnotar={puedeAnotar} />
       {/* Lo de otra pestaña aparece al volver; con un panel abierto, no (relee la página). */}
       <RefrescarAlVolver activo={panel === null} />
     </div>

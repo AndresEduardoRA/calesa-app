@@ -72,7 +72,7 @@ export function TarjetasDeLeads(props: Props) {
     numeroBuscado,
     ultimoContacto,
   } = props
-  const contextoDe = useContextoDeUltimoContacto(ultimoContacto, marcar)
+  const contexto = useContextoDeUltimoContacto(ultimoContacto)
   return (
     <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
       {leads.map((lead) => {
@@ -122,7 +122,7 @@ export function TarjetasDeLeads(props: Props) {
               {telefonoDeLista(lead.telefono, codigoDePais)}
             </span>
             <OrigenDeLaTarjeta origen={origen} />
-            <UltimoContactoDeTarjeta lead={lead} contexto={contextoDe(lead)} />
+            <UltimoContactoDeTarjeta lead={lead} contexto={contexto} />
             <DatosDeLaTarjeta datos={datos} lead={lead} />
           </TarjetaDeLista>
         )
