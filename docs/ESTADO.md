@@ -4,7 +4,7 @@
 > un verde que dejó de serlo). Qué existe en el código lo dice `docs/MAPA.md`; lo que falta, `docs/PENDIENTES.md`; cómo se trabaja,
 > `docs/FLUJO.md`. Las versiones anteriores: `git log -p docs/ESTADO.md`.
 
-**Última actualización:** 2026-11-16
+**Última actualización:** 2026-11-17
 **Estado:** **terminado (fases 0 a 9) y listo para desplegar.** Desplegar es de la persona (`docs/DESPLIEGUE.md`). Desde aquí el proyecto
 recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en verde.
 
@@ -22,7 +22,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
   «qué falta» con la acción que destraba cada requisito (hacerlo, ir a donde se hace o pedírselo a quien puede con una tarea), mover y el lote, documentos, embarques, aduana, gastos, pagos y margen), medida con 300.000 vehículos.
 - **En todo el sistema:** avisos con acciones (cada bloqueo dice cómo destrabarlo), el visor de fotos con carrusel, «visto» y «último
   visto» por persona y módulo en las listas.
-- **Repuestos:** proyectos, ítems, compras, stock, cotizador propio y pagos.
+- **Repuestos:** proyectos guiados por pasos (las fases del flujo y sus hitos, con el siguiente de cada ítem), ítems, compras, stock, cotizador propio y pagos.
 - **Agenda, chat, notificaciones y buscador:** calendario y tareas, canales y grupos con realtime, la campana y el push (sin claves
   VAPID todavía), la paleta `Ctrl/Cmd+K`.
 - **Web y portal:** el contenido de la web pública por el esquema `web`, la cola con rueda y turnos, el portal del cliente por

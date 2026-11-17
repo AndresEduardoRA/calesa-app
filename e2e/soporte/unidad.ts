@@ -10,7 +10,7 @@ const PESTANA_DEL_HUECO: Readonly<Record<string, string>> = {
 }
 
 /**
- * Abre la sección de ese hueco: si la página tiene la pestaña, la toca; si no, abre el bloque (`<summary>`) cuando está cerrado. Devuelve el contenido del hueco (`[data-hueco=<clave>]`).
+ * Abre la sección de ese hueco: si la página tiene la pestaña, la toca; si no, abre el bloque (`<summary>`) cuando está cerrado (una sección a la vista ya lo está). Devuelve el contenido del hueco (`[data-hueco=<clave>]`).
  * Espera a que el hueco exista (con permiso y regla) antes de decidir la forma.
  */
 export async function abrirSeccionDeLaUnidad(page: Page, clave: string): Promise<Locator> {
@@ -27,8 +27,12 @@ export async function abrirSeccionDeLaUnidad(page: Page, clave: string): Promise
       await expect(tab).toHaveAttribute('aria-selected', 'true', { timeout: 1000 })
     }).toPass()
   } else {
+    // El panel de un ítem va con sus secciones a la vista: sin `<details>` no hay nada que abrir.
     const bloque = envoltorio.locator('details')
-    if (!(await bloque.evaluate((detalles: HTMLDetailsElement) => detalles.open))) {
+    if (
+      (await bloque.count()) > 0 &&
+      !(await bloque.evaluate((detalles: HTMLDetailsElement) => detalles.open))
+    ) {
       await bloque.locator('summary').click()
     }
   }

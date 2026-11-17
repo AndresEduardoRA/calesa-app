@@ -27,30 +27,48 @@ Abiertos que lo tocan: **8-13a** a **8-13c** y la revisión de seguridad del sto
   de `leads` sólo con `lead_id` y `leads.ver` (`ProyectoDetallado.leadId`). `pantallas/proyectos-vehiculo.ts`: `<ResumenRepuestos>`, la pestaña «Repuestos» de `/vehiculos/[id]` (`repuestos.ver` global;
   ítems por fase, ≤ 201 leídos). El módulo no importa `buscador`: los buscadores de vehículo y lead los compone `src/app`.
 - **`items`** — `pantallas/items.ts`: `<HojaDeItems>` (`/repuestos/[id]`) con el panel `?panel=imagenes&item=`; `index.ts`: `leerProyecto`,
-  `leerItemsDelProyecto`, `leerItem`, `cuentasDeLaHoja`, `FilaDeItem`.
-- **`stock`** — la hoja expone un hueco (`HuecoDeLaHoja`: `accionDeFila(fila)`, `panel(api)` con `cambiarFila`) que llena `hoja-con-stock.tsx` con
+  `leerItemsDelProyecto`, `leerItem`, `cuentasDeLaHoja`, `FilaDeItem`. El hueco de la hoja (`HuecoDeLaHoja`) tiene cuatro ranuras: `accionDeFila(fila)`,
+  `panel(api)`, `arriba(api)` (antes de la hoja, con sus filas vivas: los pasos y el panel del paso) y `pasoDeFila(fila)` (junto a la fase, en la columna
+  «Paso»: el botón del siguiente). `pantallas/items-del-panel.ts`: `ImagenesDelItemDiferido` (`ContenidoDeImagenes`, el mismo del panel de imágenes), el
+  bloque «Imágenes» del panel del ítem.
+- **`stock`** — la hoja expone un hueco (`HuecoDeLaHoja`: `accionDeFila(fila)`, `panel(api)` con `cambiarFila`) que llena `hoja-del-proyecto.tsx` con
   `pantallas/stock.ts` (`BotonDeStock`, `PanelDeStock`, `useStockPorUrl`; `?panel=stock&item=`). Vista `/repuestos?vista=stock`: `leerStock`,
-  `leerCursorDeStock`, `esVistaDeStock`, `CLAVE_DE_VISTA_DE_REPUESTOS` (`areas/stock/index.ts`) y `<VistaDeStock>` (`pantallas/stock-vista.ts`), con
+  `leerCursorDeStock`, `esVistaDeStock`, `CLAVE_DE_VISTA_DE_REPUESTOS` (`areas/stock/index.ts`) y `<VistaDeStock>` (`pantallas/stock-vista.ts`). El bloque
+  «Stock» del panel del ítem (`pantallas/stock-del-panel.ts`: `<BloqueDeStockDelItem>`, Server Component sin JS) dice «En stock: N de M» y enlaza a
+  `?panel=stock&item=` de la hoja (el formulario cambia la fila sin releerla). La vista de stock va con
   `?panel=reasignar-stock|vender-stock|devolver-stock&item=`; el destino lo busca `buscarProyectoAbierto` por render prop.
-- **`compras`** — `?pestana=compras` de `/repuestos/[id]`: `leerComprasDelProyecto` (tope 200), `leerMargenDelProyecto`, `<MargenDelProyecto>`,
-  `<ComprasDelProyecto>` (`pantallas/compras.ts`); Drawer `?panel=compra&compra=<id|nueva>`. `?pestana=pagos` la dibuja `PagosDelProyectoDiferido` de
+- **`compras`** — el panel «Compras» de `/repuestos/[id]` (`?pestana=compras`): `leerComprasDelProyecto` (tope 200), `leerMargenDelProyecto`,
+  `MargenDelProyectoDiferido`, `ComprasDelProyectoDiferido` (`pantallas/compras.ts`, con `diferido()`); Drawer `?panel=compra&compra=<id|nueva>`, con
+  `&item_de_compra=<id>` (`CLAVE_DEL_ITEM_DE_COMPRA`: el ítem ya elegido al registrar; sólo si está entre los de la hoja; se borra al cerrar). `hayPagoDelCliente`
+  (una fila de `pagos`, sólo con `repuestos.costos.ver`) para los pasos. El bloque «Compras» del panel del ítem (`pantallas/compras-del-panel.ts`:
+  `ComprasDelItemDiferido`) lee con la action `leerComprasDelItem` (pide `repuestos.costos.ver` antes de la base; `TAMANO_DE_VER_MAS` por
+  `repuestos_compras_item_id_idx`) y enlaza a registrar y a «Ver todas en Compras» (los `href` los arma `src/app`). `?pestana=pagos` la dibuja `PagosDelProyectoDiferido` de
   `logistica`: registrar, corregir y eliminar piden `repuestos.costos.editar` y `repuestos.ver` (`pago_registrar_proyecto`, `pago_guardar`, `pago_eliminar`),
   confirmar y anular `logistica.pagos.confirmar`; un pago de proyecto no lleva lead (`pago_guardar` da 22023, hint `lead_id`).
   Un pago vivo cumple `proyecto.pago_cliente`: `pago_anular` y `pago_eliminar` no quitan el último si un ítem vivo está en una fase que lo pide. Las dos pestañas sólo
-  existen con `repuestos.costos.ver` (`pestanasLlenas(permisos)`; sin él la URL abre «Ítems» y no se lee nada de costos).
+  existen con `repuestos.costos.ver` (`panelesDisponibles(permisos)` en `src/app`; sin él la URL deja sólo la hoja y no se lee nada de costos).
 - **`cotizador`** — `?seccion=cotizador` de `/configuracion/repuestos`: `leerConfiguracionDelCotizador()` (vigente, historial tope 20, tramos y cajas tope
   200), `<ConfiguracionDelCotizador>` (`pantallas/cotizador-configuracion.ts`), modales `?panel=tramo|caja&tramo|caja=<id|nuevo>&moneda=`.
-  `?pestana=cotizaciones` de `/repuestos/[id]`, sólo con `repuestos.cotizar`: `leerCotizacionesDelProyecto` (tope 50), `<CotizacionesDelProyecto>`
+  `?pestana=cotizaciones` de `/repuestos/[id]`, sólo con `repuestos.cotizar`: `leerCotizacionesDelProyecto` (tope 50), `CotizacionesDelProyectoDiferido`
   (`pantallas/cotizador.ts`). `/repuestos/[id]/cotizaciones/[cotizacion]`: `leerCotizacion(proyectoId, id)`, `<HojaDeLectura>` (los montos guardados,
   nada se recalcula) o, si es borrador con proyecto abierto y snapshot válido, `<HojaEditable key={actualizadoEn}>` y `<AccionesDeCotizacion>`
   (`?panel=aceptar-cotizacion|anular-cotizacion`) por `pantallas/cotizador-cotizacion.ts`. Los ítems para «Agregar desde un ítem» los pasa la página
   (`ItemParaCotizar[]`).
 - **`catalogos`** — `index.ts`: `leerCatalogosDeRepuestos()` (los cuatro, con desactivados, tope 200 cada uno), `CATALOGOS_DE_REPUESTOS`; `client.ts`: lo
   puro del formulario (`validarValor`, `cambiosDeValor`, `ordenSiguiente`…); `pantallas/catalogos.ts`: `<CatalogosDeRepuestos>`.
-- **`flujo`** — panel del ítem: `?item=<id>` abre `<PanelDeLaUnidad>` de `logistica` (`item-abierto.tsx`: `repuestos` lee, `logistica` dibuja; mover,
-  documentos, notas e historial son de `logistica`, variante `repuesto`; el transporte sólo dice «Sigue al vehículo», 8-13b). `index.ts`:
-  `leerItemDelPanel(id)` (nulo si no existe, está en la papelera, no se ve o su proyecto no se ve: los cuatro se dicen igual), `itemAbiertoDe(parametros)`
-  (el guid de `?item=` **sólo sin `?panel=`**), `ItemDelPanel`; `pantallas/flujo.ts`: `<DrawerDelItem>`, `<BotonDelPanelDelItem>`, `useItemPorUrl()`.
+- **`flujo`** — panel del ítem: `?item=<id>` abre `<PanelDeLaUnidadALaVista>` de `logistica` (`item-abierto.tsx`: `repuestos` lee, `logistica` dibuja,
+  con las secciones a la vista; mover, documentos, notas e historial son de `logistica`, variante `repuesto`; el transporte sólo dice «Sigue al vehículo»,
+  8-13b) con los bloques Imágenes, Stock y Compras (éste con `repuestos.costos.ver`) que compone `src/app`. `index.ts`: `leerItemDelPanel(id)` (nulo si no
+  existe, está en la papelera, no se ve o su proyecto no se ve: los cuatro se dicen igual; trae cantidad, stock y si el proyecto está cerrado),
+  `itemAbiertoDe(parametros)` (el guid de `?item=` **sólo sin `?panel=`**), `destinoDelPanelDe(parametros)` (`?destino=<fase>`, sólo con un ítem abierto: el
+  destino que «Qué falta» abre solo), `ItemDelPanel`; `pantallas/flujo.ts`: `<DrawerDelItem>`, `<BotonDelPanelDelItem>`, `useItemPorUrl()` (`abrir(id, destino?)`).
+- **`flujo`** — los **pasos** de `/repuestos/[id]` (`docs/GLOSARIO.md` › «Paso (de un proyecto)», «Hito (de un paso)», «Siguiente (de un ítem)»):
+  `leerFlujoDeLosPasos()` (`infra/flujo/pasos.ts`: fases, salidas y requisitos de dato con una clave de hito del flujo de repuestos, tres lecturas con tope 30 /
+  360 / 60 más uno; un error no lanza: `ilegible`), `LecturaDeLosPasos`, `PANELES_DEL_PASO`, `TITULO_DEL_PANEL`. Las reglas, puras y con test:
+  `entities/flujo/pasos-del-flujo.ts` (`CLAVES_DE_HITO`), `pasos.ts` (`indexarFlujo`, `armarPasos`, `panelesFueraDeLosPasos`, `llegaronA`) y `siguiente.ts`
+  (`siguienteDelItem`). `pantallas/flujo-pasos.ts` (aparte, para que la Cadena no pague su JS): `<PasosDelProyecto>`, `<PasoDelItem>`, `useIndiceDelFlujo`;
+  los calcula el navegador sobre las filas vivas de la hoja con los booleanos de `puede()` que manda el servidor. Lo compone `src/app/(app)/repuestos/[id]/`
+  (`hoja-del-proyecto.tsx`, `paneles.ts`: `?pestana=` y los enlaces viejos).
 - **`flujo`** — esperas: `esperasQueDestraban(vehiculoId)` (`Resultado<{ items, hayMas }>`, hasta 50, por `repuestos_pendientes_de_vehiculo`, que oculta los
   nombres de fase sin `logistica.ver`). `pantallas/flujo-esperas.ts`: `HUECOS_DE_ESPERAS_EN_LA_UNIDAD` (`repuestos.ver`, regla `esperas`, tipo estructural
   propio: no importa `logistica`; el cast va en `huecos-de-la-unidad.tsx` de logística); lee con `leerEsperasDelVehiculo` al abrir y si cambia la fase,
@@ -143,8 +161,12 @@ El módulo se parte por **área**, como `logistica`: `features|entities|infra/<�
 - **El margen** (`repuestos_proyecto_margen`) lo calcula la base por moneda: Σ cantidad × `precio_cliente` de los ítems vivos − Σ compras vivas. Con algún
   ítem vivo sin precio **o con precio y sin moneda**, el margen es nulo en todas las monedas; `sin_precio` corta en 201. Pide `repuestos.costos.ver` y
   `repuestos.ver`. Usa la cantidad pedida: lo que pasó a stock o se reasignó no la descuenta. En pantalla, nulo es «Sin precio en N ítems» y 0 es un monto.
-- Las pestañas de costos se esconden con `puede(permisos, 'repuestos.costos.ver')`, nunca por rol; es comodidad: la autoridad es la RLS y el
-  `assert_permiso` del margen. «Cotizaciones» pide `repuestos.cotizar`, no basta `repuestos.costos.ver`.
+- Los paneles de costos (Pagos, Compras, el bloque «Compras» del ítem y lo que el hito de pago dice del pago) se esconden con
+  `puede(permisos, 'repuestos.costos.ver')`, nunca por rol; es comodidad: la autoridad es la RLS y el `assert_permiso` del margen. «Cotizaciones» pide
+  `repuestos.cotizar`, no basta `repuestos.costos.ver`. Cada botón del siguiente sale con la clave que la base exige para eso (`repuestos.mover`,
+  `repuestos.cotizar`, `repuestos.costos.editar`); sin ella, «Sigue: «X»».
+- Ningún nombre de fase se lee para armar los pasos: un hito sale de la clave del requisito (`CLAVES_DE_HITO`) y va justo antes de la primera fase activa que
+  la pide; sin la clave, no aparece. Compras no tiene clave: va en «Del proyecto».
 - `repuestos_cotizador_config` es append-only: la vigente es la de id más alto; una cotización congela su `config_snapshot`. Configuración, tramos y cajas
   se escriben directo bajo la RLS de `repuestos.configurar` (no otorgan permisos); publicar agrega una fila (`creado_por` = quien pide, lo exige la policy)
   y sólo afecta a las cotizaciones nuevas. Tramos y cajas se desactivan, no se borran; un tramo no tiene montos negativos

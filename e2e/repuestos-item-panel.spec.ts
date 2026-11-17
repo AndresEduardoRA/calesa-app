@@ -1,4 +1,3 @@
-import type { Page } from '@playwright/test'
 import { expect, test } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
@@ -62,8 +61,6 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-const bloque = (page: Page, clave: string) => page.locator(`[data-bloque-del-hueco="${clave}"]`)
-
 test('la dueña abre el panel de un ítem, lo pasa a «Comprado» y escribe una nota', async ({
   page,
 }) => {
@@ -90,19 +87,23 @@ test('la dueña abre el panel de un ítem, lo pasa a «Comprado» y escribe una 
   await expect(panel.getByRole('heading', { name: REPUESTO })).toBeVisible()
   const numero = sql(`select numero from repuestos_proyectos where id = '${proyecto}'`).trim()
   await expect(panel.getByText(`Proyecto #${numero}`)).toBeVisible()
-  await expect(panel.getByText('Por cotizar')).toBeVisible()
+  await expect(panel.getByText('Por cotizar', { exact: true })).toBeVisible()
   await expect(panel.getByRole('link', { name: 'Abrir proyecto' })).toBeVisible()
 
+  // Las secciones van a la vista, sin acordeones: «Qué falta» primero.
+  await expect(panel.locator('details')).toHaveCount(0)
+  await expect(panel.locator('[data-bloque-del-hueco]').first()).toHaveAttribute(
+    'data-bloque-del-hueco',
+    'que-falta',
+  )
   // Transporte: el proyecto es externo, no hay vehículo al que seguir.
-  await bloque(page, 'transporte').locator('summary').click()
   await expect(panel.getByText(/Este proyecto no tiene vehículo/)).toBeVisible()
   // Documentos: la zona de subir está habilitada para quien tiene `repuestos.documentos.subir`.
-  await bloque(page, 'documentos').locator('summary').click()
   const zona = panel.getByRole('form', { name: 'Subir documentos' })
   await expect(zona).toBeVisible()
   await expect(zona.getByLabel('Tipo de documento')).toBeEnabled()
 
-  // «Qué falta» nace abierto: se elige «Comprado» y se mueve.
+  // «Qué falta» está a la vista: se elige «Comprado» y se mueve.
   await panel.getByRole('button', { name: 'Elegir el destino «Comprado»' }).click()
   await panel.getByRole('button', { name: 'Comprar' }).click()
   await expect(page.getByText(`${REPUESTO} pasó a «Comprado».`)).toBeVisible()
@@ -113,7 +114,6 @@ test('la dueña abre el panel de un ítem, lo pasa a «Comprado» y escribe una 
   expect(enLaBase.trim()).toBe('Comprado:2')
 
   // Una nota del ítem.
-  await bloque(page, 'notas').locator('summary').click()
   const notas = page.locator('[data-hueco="notas"]')
   await notas.getByLabel('Escribir una nota').fill('Llega con el flete')
   await notas.getByRole('button', { name: 'Guardar nota' }).click()
@@ -148,10 +148,8 @@ test('con sólo repuestos.ver: el panel abre, mover y subir apagados con su moti
   await expect(panel.getByRole('button', { name: 'Elegir el destino «Comprado»' })).toBeDisabled()
   await expect(panel.getByText('No tienes permiso para mover repuestos.')).toBeVisible()
 
-  await bloque(page, 'documentos').locator('summary').click()
   await expect(panel.getByRole('form', { name: 'Subir documentos' })).toContainText(/permiso/i)
 
-  await bloque(page, 'notas').locator('summary').click()
   const notas = page.locator('[data-hueco="notas"]')
   await notas.getByLabel('Escribir una nota').fill('Visto por Lola')
   await notas.getByRole('button', { name: 'Guardar nota' }).click()

@@ -6,6 +6,8 @@ import {
   PANEL_CONFIRMAR_PAGO,
   PANEL_ELIMINAR_PAGO,
   PANEL_PAGO,
+  PANELES_DEL_PAGO,
+  PARAMETROS_DE_REGISTRAR_PAGO,
   pagoDeLaUrl,
 } from './paneles-de-pago'
 
@@ -69,5 +71,12 @@ describe('pagoDeLaUrl', () => {
     expect(pagoDeLaUrl(pagos, 'nuevo')).toBeNull()
     expect(pagoDeLaUrl(pagos, null)).toBeNull()
     expect(pagoDeLaUrl(null, 'a')).toBeNull()
+  })
+})
+
+describe('las claves del hueco «Pagos» para otra pantalla', () => {
+  it('los cuatro paneles, y «Registrar pago» como `?panel=pago&pago=nuevo`', () => {
+    expect(PANELES_DEL_PAGO).toEqual(['pago', 'confirmar-pago', 'eliminar-pago', 'anular-pago'])
+    expect(PARAMETROS_DE_REGISTRAR_PAGO).toEqual({ panel: 'pago', pago: 'nuevo' })
   })
 })

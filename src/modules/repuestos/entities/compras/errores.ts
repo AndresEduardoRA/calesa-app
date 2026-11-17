@@ -4,6 +4,9 @@
 import type { ResultadoDeAccion } from '@/shared/lib/enviar-accion'
 import { errorDePostgrest } from '@/shared/lib/errores'
 
+/** El error del bloque «Compras» del panel del ítem (con «Reintentar»). */
+export const MENSAJE_COMPRAS_DEL_ITEM = 'No se pudieron cargar las compras del ítem.'
+export const SIN_PERMISO_PARA_VER_COMPRAS = 'No tienes permiso para ver las compras.'
 export const SIN_PERMISO_PARA_COMPRAS = 'No tienes permiso para registrar ni cambiar compras.'
 export const NO_SE_LEYO_LA_RESPUESTA = 'No pudimos leer la respuesta. Recarga para ver cómo quedó.'
 

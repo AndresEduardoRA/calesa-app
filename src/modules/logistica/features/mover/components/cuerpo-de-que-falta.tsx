@@ -1,6 +1,10 @@
 'use client'
 
-import { estadoDelModoGanada, vistaDelHueco } from '../../../entities/mover/ganada'
+import {
+  estadoDelModoGanada,
+  vistaDelHueco,
+  type VistaDelHueco,
+} from '../../../entities/mover/ganada'
 import {
   HAY_MAS_DESTINOS,
   SIN_CONEXION_EN_QUE_FALTA,
@@ -8,6 +12,7 @@ import {
   SIN_FASE,
 } from '../../../entities/mover/textos'
 import type { UnidadAbierta } from '../../../entities/nucleo/unidad'
+import { useDestinoInicialDelMover } from '../../nucleo/destino-inicial'
 import type { QueFalta } from '../actions/leer-que-falta'
 import { useAccionesDeQueFalta } from '../hooks/use-acciones-de-que-falta'
 import { conAbiertoPorDefecto, type BorradorDeMover } from '../hooks/use-borrador-de-mover'
@@ -27,13 +32,26 @@ type Props = {
   modoGanada: ModoGanada
 }
 
+// El destino que abre solo: el de «La ganamos» o, fuera de ese modo, el que pidió el botón del siguiente (`?destino=`) si está entre los leídos. Si la unidad cambió de
+// fase, ese destino ya no está y no se abre nada.
+function abiertoPorDefecto(
+  vista: VistaDelHueco<{ faseId: string }>,
+  modo: unknown,
+  destinoInicial: string | null,
+): string | null {
+  if (vista.abiertoPorDefecto) return vista.abiertoPorDefecto
+  if (modo !== null || destinoInicial === null) return null
+  return vista.destinos.some((d) => d.faseId === destinoInicial) ? destinoInicial : null
+}
+
 // El modo «La ganamos», la lista que toca y el borrador con que se mueve (en el modo, con el primer destino abierto y anotando la subasta ganada).
 function armarLaLista({
   unidad,
   dato,
   borrador,
   modoGanada,
-}: Omit<Props, 'actualizando' | 'releer'>) {
+  destinoInicial,
+}: Omit<Props, 'actualizando' | 'releer'> & { destinoInicial: string | null }) {
   const esVehiculo = unidad.tipo === 'vehiculo'
   const modo =
     modoGanada.activo && esVehiculo
@@ -44,9 +62,8 @@ function armarLaLista({
         })
       : null
   const vista = vistaDelHueco(modo, dato.destinos)
-  const conDefecto = vista.abiertoPorDefecto
-    ? conAbiertoPorDefecto(borrador, vista.abiertoPorDefecto)
-    : borrador
+  const porDefecto = abiertoPorDefecto(vista, modo, destinoInicial)
+  const conDefecto = porDefecto ? conAbiertoPorDefecto(borrador, porDefecto) : borrador
   return {
     modo,
     vista,
@@ -58,7 +75,8 @@ function armarLaLista({
 // Lo que dibuja «Qué falta» con la lectura lista: los destinos (o los de «La ganamos») y lo que cada uno pide.
 export function CuerpoDeQueFalta(props: Props) {
   const { unidad, dato, actualizando, releer, modoGanada } = props
-  const { modo, vista, borrador, ofrecer } = armarLaLista(props)
+  const destinoInicial = useDestinoInicialDelMover()
+  const { modo, vista, borrador, ofrecer } = armarLaLista({ ...props, destinoInicial })
   const acciones = useAccionesDeQueFalta(unidad, dato.acciones)
   return (
     <div className="grid gap-3" data-hueco="que-falta" data-estado="listo">

@@ -561,6 +561,15 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Nota** — `notas`: bloc de notas de una unidad; la del cambio de fase apunta a su historial.
 - **Proyecto de repuestos** — `repuestos_proyectos`: un proyecto por vehículo (o externo).
 - **Ítem de repuesto** — `repuestos_items`: el repuesto que recorre el flujo de repuestos.
+- **Paso (de un proyecto)** — `PasoDelProyecto` (`entities/flujo/pasos.ts`): cada parada del camino de la venta sobre la hoja de `/repuestos/[id]`:
+  una fase activa del flujo de repuestos (su nombre, en su orden) o un hito, con su progreso en texto («3 de 5», «37+ de 200+»). No: «etapa»
+  (es del embudo).
+- **Hito (de un paso)** — `HitoDelPaso` (`CLAVES_DE_HITO`): lo que no es fase y el flujo pide como requisito de dato: «Precio al cliente»
+  (`repuesto.precio`) y «Pago del cliente» (`proyecto.pago_cliente`). Va justo antes de la primera fase activa que lo pide; si ninguna lo
+  pide, no aparece. Lleva su panel (Cotizaciones o Pagos); lo que no tiene hito va en «Del proyecto».
+- **Siguiente (de un ítem)** — `SiguienteDelItem` (`siguienteDelItem`): lo que toca hacer para que el ítem avance y el botón que lo hace: mover
+  a su próxima fase (la acción de la transición), o «Nueva cotización» / «Registrar pago» si el destino pide ese hito como bloqueante y falta.
+  Sin permiso, sólo «Sigue: «X»».
 - **Stock** — `repuestos_items.stock_cantidad`, `_stock_movimientos`: sobrantes disponibles; se mueve sólo por `repuesto_stock_mover` y
   `repuesto_stock_reasignar`; nunca negativo.
 - **Movimiento de stock** — `repuestos_stock_movimientos`: entrada o salida del stock de un ítem con motivo (`sobrante`, `vendido`,

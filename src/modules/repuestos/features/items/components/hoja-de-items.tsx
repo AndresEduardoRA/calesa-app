@@ -90,55 +90,63 @@ export function HojaDeItems(props: PropsDeLaHoja) {
     alPedirEliminar: eliminacion.abrir,
     alPedirImagenes: imagenes.abrir,
     accionDeFila: accionDelHueco(props.hueco),
+    pasoDeFila: pasoDelHueco(props.hueco),
   }
   const filaNueva = cabeOtro(editable, hoja.filas, props.hayMas) ? (
     <FilaNueva alAgregar={hoja.agregar} />
   ) : null
   const hayFilas = hoja.filas.length > 0
+  const api: ApiDelHueco = {
+    filas: hoja.filas,
+    puedeEditar: props.puedeEditar,
+    cerrado: props.cerrado,
+    cambiarFila: hoja.cambiarFila,
+  }
 
   return (
-    <section aria-label="Ítems del proyecto" className="grid grid-cols-[minmax(0,1fr)] gap-3">
-      <SimbolosDeXCell />
-      {props.cerrado ? <AvisoDeCerrado /> : null}
-      {hoja.conflicto ? (
-        <AvisoDeConflictoDeLaHoja mensaje={hoja.conflicto} alRecargar={hoja.olvidarConflicto} />
-      ) : null}
-      {hayFilas ? null : <HojaVacia />}
-      {hayFilas || filaNueva !== null ? (
-        <Vistas filas={hoja.filas} contexto={contexto} filaNueva={filaNueva} />
-      ) : null}
-      {props.hayMas ? <AvisoDeTopeDeLaHoja /> : null}
-      {montarEliminar ? (
-        <ConfirmarEliminarItemDiferido
-          abierto={eliminacion.abierto}
-          alCerrar={eliminacion.cerrar}
-          item={aEliminar}
-          alEliminar={hoja.eliminar}
-          focoAlCerrar={() => focoDeEliminar(aEliminar)}
-        />
-      ) : null}
-      {montarImagenes ? (
-        <DrawerDeImagenesDiferido
-          abierto={imagenes.abierto}
-          alCerrar={imagenes.cerrar}
-          apertura={imagenes.apertura}
-          item={deImagenes}
-          editable={editable}
-          cerrado={props.cerrado}
-          focoAlCerrar={() => focoDeImagenes(deImagenes)}
-        />
-      ) : null}
-      {panelDelHueco(props.hueco, {
-        filas: hoja.filas,
-        puedeEditar: props.puedeEditar,
-        cerrado: props.cerrado,
-        cambiarFila: hoja.cambiarFila,
-      })}
-    </section>
+    <>
+      {arribaDelHueco(props.hueco, api)}
+      <section aria-label="Ítems del proyecto" className="grid grid-cols-[minmax(0,1fr)] gap-3">
+        <SimbolosDeXCell />
+        {props.cerrado ? <AvisoDeCerrado /> : null}
+        {hoja.conflicto ? (
+          <AvisoDeConflictoDeLaHoja mensaje={hoja.conflicto} alRecargar={hoja.olvidarConflicto} />
+        ) : null}
+        {hayFilas ? null : <HojaVacia />}
+        {hayFilas || filaNueva !== null ? (
+          <Vistas filas={hoja.filas} contexto={contexto} filaNueva={filaNueva} />
+        ) : null}
+        {props.hayMas ? <AvisoDeTopeDeLaHoja /> : null}
+        {montarEliminar ? (
+          <ConfirmarEliminarItemDiferido
+            abierto={eliminacion.abierto}
+            alCerrar={eliminacion.cerrar}
+            item={aEliminar}
+            alEliminar={hoja.eliminar}
+            focoAlCerrar={() => focoDeEliminar(aEliminar)}
+          />
+        ) : null}
+        {montarImagenes ? (
+          <DrawerDeImagenesDiferido
+            abierto={imagenes.abierto}
+            alCerrar={imagenes.cerrar}
+            apertura={imagenes.apertura}
+            item={deImagenes}
+            editable={editable}
+            cerrado={props.cerrado}
+            focoAlCerrar={() => focoDeImagenes(deImagenes)}
+          />
+        ) : null}
+        {panelDelHueco(props.hueco, api)}
+      </section>
+    </>
   )
 }
 
 const accionDelHueco = (hueco: HuecoDeLaHoja | undefined) => hueco?.accionDeFila
+const pasoDelHueco = (hueco: HuecoDeLaHoja | undefined) => hueco?.pasoDeFila
+const arribaDelHueco = (hueco: HuecoDeLaHoja | undefined, api: ApiDelHueco) =>
+  hueco?.arriba ? hueco.arriba(api) : null
 const panelDelHueco = (hueco: HuecoDeLaHoja | undefined, api: ApiDelHueco) =>
   hueco ? hueco.panel(api) : null
 

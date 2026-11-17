@@ -23,6 +23,11 @@ export function PanelDeCompra({ panel, proyectoId, items, monedas }: Props) {
       apertura={panel.apertura}
       proyectoId={proyectoId}
       original={panel.original}
+      itemInicial={
+        panel.itemInicial !== null && items.some((i) => i.id === panel.itemInicial)
+          ? panel.itemInicial
+          : null
+      }
       items={items}
       monedas={monedas}
     />

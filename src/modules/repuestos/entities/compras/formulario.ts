@@ -33,9 +33,14 @@ export function borradorDeCompra(
 }
 
 /** «Registrar compra»: en la moneda base y con la fecha de hoy (`YYYY-MM-DD`, en la zona de la empresa). */
-export function borradorNuevoDeCompra(monedaBase: string, hoy: string): BorradorDeCompra {
+export function borradorNuevoDeCompra(
+  monedaBase: string,
+  hoy: string,
+  // El ítem ya elegido (`?item_de_compra=`, desde el panel del ítem); vacío, ninguno.
+  itemId = '',
+): BorradorDeCompra {
   return {
-    itemId: '',
+    itemId,
     proveedor: '',
     moneda: monedaBase,
     monto: '',

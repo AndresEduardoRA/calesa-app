@@ -189,6 +189,7 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Pon el motivo de un botón o pestaña apagada en texto visible (`aria-describedby`), no sólo en `title`: un `TabsTrigger` deshabilitado no recibe foco y el lector no lo lee.
 - Al cambiar un token de color corre `design/tokens.test.ts` (contraste AA) y actualiza su espejo del PDF (`estilos-del-documento.ts`) y `e2e/xcell-geometria.spec.ts`.
 - Dale a toda página nueva su `loading.tsx`, un `h1` (`sr-only` si no se ve) fuera del `Suspense` y un `<title>` único: lo exigen `estados-de-ruta.test.ts` y `accesibilidad.spec.ts`.
+- Dale `relative` a la lista que se desplaza de costado (`overflow-x-auto`) si lleva un `sr-only` adentro: es absoluto y, si su bloque contenedor queda afuera, escapa del recorte y ensancha la página en el celular (el clic cae en otro lado). Mídelo con `scrollWidth` del documento, no a ojo.
 - Chrome ignora `autocomplete="off"` en un `type="password"` y el Chromium de Playwright no lo reproduce: eso sólo se comprueba a mano, no lo des por probado.
 
 ## Realtime y notificaciones
