@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test'
+import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
 import { expect, test } from './soporte/prueba'
 import {
   cicloDeUnaConfirmacion,
@@ -15,6 +16,7 @@ import { capturar } from './soporte/recorrido'
 import {
   elegirVehiculo,
   interesados,
+  accionDeLaFila,
   irAVehiculos,
   leadDe,
   leadDelVehiculo,
@@ -22,7 +24,7 @@ import {
   notaDelInteres,
   numeroDe,
   prepararVehiculosDelLead,
-  seccionVehiculos,
+  relacionadosDelLead,
   vehiculoDe,
   vinculados,
   type TerrenoDeVehiculos,
@@ -67,9 +69,7 @@ test('vincular y marcar interés con su nota desde el lead; la ficha del vehícu
   const camionetaId = await vehiculoDe(corea, camioneta, t.ada)
   await entrar(page, t.ada)
   await irAVehiculos(page, lead.id)
-  await expect(
-    seccionVehiculos(page).getByText('Este lead no tiene vehículos que puedas ver'),
-  ).toBeVisible()
+  await expect(relacionadosDelLead(page).getByText('Sin relacionados todavía.')).toBeVisible()
 
   let panel = await elegirVehiculo(page, sedan)
   await expect(page).toHaveURL(/panel=agregar-vehiculo/)
@@ -177,18 +177,14 @@ test('desvincular y quitar interés se hacen y se deshacen', async ({ page }) =>
   await entrar(page, t.ada)
   await irAVehiculos(page, lead.id)
 
-  await vinculados(page)
-    .getByRole('button', { name: `Desvincular ${auto}` })
-    .click()
+  await accionDeLaFila(vinculados(page), auto, 'Desvincular')
   await expect(page.getByText(new RegExp(`Se desvinculó «${auto}`))).toBeVisible()
   await expect.poll(() => leadDelVehiculo(autoId)).toBeNull()
   // El «Deshacer» de ese aviso: el de otro puede seguir en pantalla mientras se va.
   await deshacerDe(page, `Se desvinculó «${auto}`)
   await expect.poll(() => leadDelVehiculo(autoId)).toBe(lead.id)
 
-  await interesados(page)
-    .getByRole('button', { name: `Quitar el interés en ${otro}` })
-    .click()
+  await accionDeLaFila(interesados(page), otro, 'Quitar interés')
   await expect(page.getByText(new RegExp(`Se quitó el interés en «${otro}`))).toBeVisible()
   await expect.poll(() => notaDelInteres(otroId, lead.id)).toBeUndefined()
   await deshacerDe(page, `Se quitó el interés en «${otro}`)
@@ -210,12 +206,13 @@ test('con un vehículo vinculado, la papelera se apaga con el motivo; desvincula
   await expect(
     page.getByText('Tiene un vehículo vinculado: desvincúlalo en «Vehículos» antes de enviarlo.'),
   ).toBeVisible()
+  // «Ir a «Vehículos»» salta a Relacionados, en la misma página, y le da el foco a su título.
   await page.getByRole('menuitem', { name: 'Ir a «Vehículos»' }).click()
-  await expect(seccionVehiculos(page)).toBeVisible()
+  await expect(
+    relacionadosDelLead(page).getByRole('heading', { name: 'Relacionados' }),
+  ).toBeFocused()
 
-  await vinculados(page)
-    .getByRole('button', { name: `Desvincular ${auto}` })
-    .click()
+  await accionDeLaFila(vinculados(page), auto, 'Desvincular')
   await expect.poll(() => leadDelVehiculo(autoId)).toBeNull()
   await page.reload()
   await page.getByRole('button', { name: `Más acciones de ${lead.nombre}` }).click()
@@ -299,7 +296,7 @@ test('compartir un lead con vehículos vinculados avisa que el vínculo se los d
   ).toBeVisible()
 })
 
-test('lo que aporta la ficha con la sección «Vehículos»', async ({ page }, info) => {
+test('lo que aporta la ficha entera con un vehículo vinculado', async ({ page }, info) => {
   const lead = await leadDe(t.ada, `Pesa ${p}`)
   const autoId = await vehiculoDe(corea, `Liviano ${p}`, t.ada)
   await vincular(autoId, lead.id)
@@ -310,9 +307,10 @@ test('lo que aporta la ficha con la sección «Vehículos»', async ({ page }, i
   const base = await largo('/perfil')
   const datos = await largo(`/leads/${lead.id}`)
   const vehiculos = await largo(`/leads/${lead.id}?seccion=vehiculos`)
-  const resumen = `«Datos» aporta ${kb(datos - base)} KB · «Vehículos» aporta ${kb(vehiculos - base)} KB`
+  const resumen = `la ficha aporta ${kb(datos - base)} KB · con ?seccion=vehiculos ${kb(vehiculos - base)} KB`
   console.warn(`[ficha con vehículos] ${info.project.name}: ${resumen}`)
   info.annotations.push({ type: 'KB de la ficha con vehículos', description: resumen })
-  expect(datos - base).toBeLessThan(44 * 1024)
-  expect(vehiculos - base).toBeLessThan(44 * 1024)
+  // Todo a la vista: `?seccion=` sólo cambia a qué bloque se salta, no el documento.
+  expect(datos - base).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_EN_KB * 1024)
+  expect(vehiculos - base).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_EN_KB * 1024)
 })

@@ -5,30 +5,31 @@ import type { Route } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { RUTAS } from '@/shared/lib/rutas'
+import { Skeleton } from '@/shared/ui/skeleton'
+import {
+  BloqueDeFicha,
+  FichaEnDosColumnas,
+  IndiceDeBloques,
+  useIrAlLlegar,
+} from '@/shared/ui/ficha-en-bloques'
 import type { AccionesDeCartera, PersonaDeCartera } from '../../../entities/cartera'
 import type { TipoDeLeadEnCatalogo } from '../../../entities/catalogos'
 import type { CampoDeLead } from '../../../entities/campo'
 import type { Etiqueta } from '../../../entities/etiqueta'
 import {
-  quienLoTiene,
-  type LeadDeFicha,
-  type LoQueVe,
-  type SeccionDeLead,
-} from '../../../entities/ficha'
-import { DialogoDeEtiquetas } from '../../etiquetas/components/dialogo-de-etiquetas'
-import { useEtiquetas } from '../../etiquetas/hooks/use-etiquetas'
+  anclaDeLaSeccion,
+  bloquesDelIndice,
+  type AnclaDeBloque,
+} from '../../../entities/bloques-de-la-ficha'
+import type { LeadDeFicha, LoQueVe, SeccionDeLead } from '../../../entities/ficha'
+import { useEtiquetas, type Etiquetas } from '../../etiquetas/hooks/use-etiquetas'
 import { usePanelDeEtiquetas } from '../../etiquetas/hooks/use-panel-de-etiquetas'
 import { InsigniasDeMarcas } from '../../marcas/components/insignias-de-marcas'
-import { useMarcas } from '../../marcas/hooks/use-marcas'
-import { usePanelDeLead } from '../hooks/use-panel-de-lead'
-import { AvisoDeVencidos } from './aviso-de-vencidos'
-import { BarraDeSecciones } from './barra-de-secciones'
+import { useMarcas, type Marcas } from '../../marcas/hooks/use-marcas'
 import { AccionesDeLaFicha } from './acciones-de-la-ficha'
-import { CabeceraDeLead } from './cabecera-de-lead'
-import { EdicionDeLaFicha } from './edicion-de-la-ficha'
-import { PanelDeTelefono } from './panel-de-telefono'
-import { RefrescarAlVolver } from './refrescar-al-volver'
-import { SeccionDatos } from './seccion-datos'
+import { AvisoDeVencidos } from './aviso-de-vencidos'
+import { LateralDeLaFicha } from './lateral-de-la-ficha'
+import { PanelesDeLaFicha } from './paneles-de-la-ficha'
 
 type Props = {
   ficha: LeadDeFicha
@@ -37,30 +38,26 @@ type Props = {
   // El origen y el tipo de este lead, también apagados: lo nombran. Los catálogos completos los lee el panel de edición al abrirse.
   origen: { nombre: string; activo: boolean; icono: string | null } | null
   tipo: TipoDeLeadEnCatalogo | null
-  // Quien mira: para decir «lo tienes tú».
-  usuarioId: string
   puedeEditar: boolean
-  // Cartera y `leads.editar`: cambiar el principal.
+  // Cartera y `leads.editar`: «Cambiar el principal» en el panel de edición.
   puedeCambiarTelefono: boolean
-  // Cartera y `leads.telefonos_extra.editar`: administrar los extras (en «Datos» y en el panel de edición).
+  // Cartera y `leads.telefonos_extra.editar`: administrar los extras en el panel de edición (sin `leads.editar`, el panel abre sólo con
+  // los teléfonos).
   puedeEditarExtras: boolean
   // `leads.configurar`: el enlace «Cambiar el máximo».
   puedeConfigurar: boolean
-  // La sección de `?seccion=`.
+  // El bloque al que lleva `?seccion=` (los enlaces de siempre).
   seccion: SeccionDeLead
-  // Lo que la página lee en el servidor para la sección «Seguimientos» (detrás de `<Suspense>`).
+  // Los bloques, cada uno detrás de su `<Suspense>` (los compone la página: los de `vehiculos` y `cotizaciones` viven en esos módulos).
+  // Uno que quien mira no ve llega nulo y no se dibuja ni aparece en el índice (`ve`).
   seguimientos: ReactNode
-  // La sección «Vehículos»: vive en `vehiculos` y la compone la página (`leads` no importa `vehiculos`).
-  vehiculos: ReactNode
-  // El bloque «Relacionados»: siempre visible arriba de las secciones, vive en `vehiculos` y lo compone la página (detrás de `<Suspense>`). Nulo si quien mira no ve vehículos.
-  relacionados: ReactNode
-  // La sección «Oportunidades» (detrás de `<Suspense>`): la página la monta sólo con `?seccion=oportunidades`.
   oportunidades: ReactNode
-  // La sección «Cotizaciones»: vive en `cotizaciones` y la compone la página (`leads` no importa `cotizaciones`); se lee desde el navegador al abrirla.
+  // Relacionados con la gestión de «Vehículos» al pie.
+  relacionados: ReactNode
+  // «Cotizaciones»: se pide al acercarse a la vista.
   cotizaciones: ReactNode
-  // La sección «Portal» (detrás de `<Suspense>`): la página la monta sólo con `?seccion=portal`.
+  // «Acceso al portal», en la columna de la izquierda.
   portal: ReactNode
-  // Lo que quien mira ve: decide qué secciones se dibujan.
   ve: LoQueVe
   // Las etiquetas de quien mira (para nombrar las del lead y elegir otras).
   etiquetas: readonly Etiqueta[]
@@ -75,106 +72,76 @@ type Props = {
   paraActividad: string | null
 }
 
-type DatosDeSeccion = {
-  ficha: LeadDeFicha
-  campos: readonly CampoDeLead[]
-  origen: { nombre: string; activo: boolean; icono: string | null } | null
-  tipo: TipoDeLeadEnCatalogo | null
-  puedeCambiarTelefono: boolean
-  puedeEditarExtras: boolean
-  puedeConfigurar: boolean
-  seguimientos: ReactNode
-  vehiculos: ReactNode
-  oportunidades: ReactNode
-  cotizaciones: ReactNode
-  portal: ReactNode
-  cartera: readonly PersonaDeCartera[]
-  accionesDeCartera: AccionesDeCartera
-  // Quien mira gestiona el acceso del cliente: transferir avisa si está vigente.
-  vePortal: boolean
-}
+// «Cotizaciones» hasta acercarse a la vista (se lee recién ahí): del alto aproximado del bloque, para que un salto no se mueva.
+const ESQUELETO_DE_COTIZACIONES = (
+  <div aria-hidden className="grid gap-2">
+    <Skeleton className="h-16 rounded-(--radius-card)" />
+    <Skeleton className="h-16 rounded-(--radius-card)" />
+  </div>
+)
 
-// Lo que va bajo la cabecera según `?seccion=`. Cada sección nueva suma su entrada acá (y su
-// pestaña en `SECCIONES_DE_LEAD`) cuando exista su contenido.
-const CONTENIDO_DE_SECCION: Record<SeccionDeLead, (datos: DatosDeSeccion) => ReactNode> = {
-  datos: (datos) => <SeccionDatos {...datos} />,
-  seguimientos: (datos) => datos.seguimientos,
-  vehiculos: (datos) => datos.vehiculos,
-  oportunidades: (datos) => datos.oportunidades,
-  cotizaciones: (datos) => datos.cotizaciones,
-  portal: (datos) => datos.portal,
-}
-
-// El enlace de vuelta al listado, arriba de la cabecera.
+// El enlace de vuelta al listado, arriba de todo.
 function VolverALeads() {
   return (
     <Link
       href={RUTAS.leads as Route}
       className="inline-flex min-h-11 w-fit items-center gap-1.5 text-(length:--text-sm) text-(--color-ink-soft) underline-offset-2 hover:text-(--color-ink) hover:underline md:min-h-8"
     >
-      <ArrowLeftIcon aria-hidden className="size-4" />
+      <ArrowLeftIcon aria-hidden />
       Leads
     </Link>
   )
 }
 
-type PropsDeLosPaneles = {
-  ficha: LeadDeFicha
-  puedeEditar: boolean
-  puedeCambiarTelefono: boolean
-  puedeEditarExtras: boolean
-  puedeConfigurar: boolean
-  etiquetas: ReturnType<typeof useEtiquetas>
-  // Ningún panel abierto: la ficha vuelve a leer al volver a la pestaña.
-  refrescaAlVolver: boolean
+type PropsDelLateral = Pick<
+  Props,
+  | 'ficha'
+  | 'campos'
+  | 'origen'
+  | 'tipo'
+  | 'puedeEditar'
+  | 'puedeEnviarAPapelera'
+  | 'paraCotizar'
+  | 'paraActividad'
+  | 'cartera'
+  | 'accionesDeCartera'
+  | 'portal'
+> & {
+  marcas: Marcas
+  etiquetas: Etiquetas
+  alGestionar: () => void
+  conEditarTelefonos: boolean
 }
 
-// Lo que se abre encima de la ficha: editar el lead, cambiar el teléfono, gestionar etiquetas. Cada uno vive en su `?panel=`.
-function PanelesDeLaFicha(props: PropsDeLosPaneles) {
-  const {
-    ficha,
-    puedeEditar,
-    puedeCambiarTelefono,
-    puedeEditarExtras,
-    puedeConfigurar,
-    etiquetas,
-  } = props
+// La columna de la izquierda con las acciones de la cabecera («Editar», «Cotizar» y el «⋯») y las insignias de quien mira.
+function LateralConAcciones({ marcas, etiquetas, alGestionar, ...props }: PropsDelLateral) {
+  const { ficha, puedeEditar, puedeEnviarAPapelera, paraCotizar, paraActividad } = props
   return (
-    <>
-      <EdicionDeLaFicha
-        ficha={ficha}
-        puedeEditar={puedeEditar}
-        puedeEditarExtras={puedeEditarExtras}
-        puedeConfigurar={puedeConfigurar}
-      />
-      <PanelDeTelefono ficha={ficha} puedeCambiar={puedeCambiarTelefono} />
-      <DialogoDeEtiquetas etiquetas={etiquetas} />
-      <RefrescarAlVolver activo={props.refrescaAlVolver} />
-    </>
+    <LateralDeLaFicha
+      {...props}
+      acciones={
+        <AccionesDeLaFicha
+          {...{ ficha, marcas, etiquetas, alGestionar, puedeEditar }}
+          {...{ puedeEnviarAPapelera, paraCotizar, paraActividad }}
+        />
+      }
+      marcas={
+        <InsigniasDeMarcas marcas={marcas.marcas} etiquetas={etiquetas.lista} conFavorito={false} />
+      }
+    />
   )
 }
 
-// Una sola columna que no crece con su contenido: sin `minmax(0, 1fr)`, la barra de secciones (con
-// cinco, más ancha que un celular) ensanchaba toda la ficha y los modales quedaban cortados.
-const COLUMNA_DE_LA_FICHA = 'grid max-w-4xl grid-cols-[minmax(0,1fr)] gap-4'
-
-// La ficha de un lead: su cabecera, la barra de secciones y la sección de `?seccion=` («Datos»,
-// «Seguimientos», «Vehículos», «Oportunidades», «Cotizaciones» o «Portal»). Las demás (historial) llegan
-// con su parte y no se dibujan hasta entonces.
+// La ficha de un lead en dos columnas: a la izquierda (pegajosa) quién es, sus datos, teléfonos, quién lo tiene y el portal; a la derecha
+// el índice y los bloques a la vista —seguimientos y recordatorios, oportunidades, relacionados y cotizaciones—, sin pestañas ni
+// acordeones. `?seccion=` lleva a su bloque y le da el foco a su título.
 export function FichaDeLead({
   ficha,
   campos,
   origen,
   tipo,
-  usuarioId,
   puedeEditar,
   seccion,
-  seguimientos,
-  vehiculos,
-  relacionados,
-  oportunidades,
-  cotizaciones,
-  portal,
   ve,
   etiquetas: lista,
   cartera,
@@ -182,63 +149,67 @@ export function FichaDeLead({
   puedeEnviarAPapelera,
   paraCotizar,
   paraActividad,
-  // Lo que queda son las tres marcas de teléfonos: el principal, los extras y el máximo.
+  seguimientos,
+  oportunidades,
+  relacionados,
+  cotizaciones,
+  portal,
   ...telefonos
 }: Props) {
-  const panel = usePanelDeLead()
   const marcas = useMarcas(ficha.id, ficha.marcas)
   const etiquetas = useEtiquetas(lista)
   const gestionar = usePanelDeEtiquetas()
+  useIrAlLlegar(anclaDeLaSeccion(seccion))
+  const bloques = bloquesDelIndice(ve)
+  const contenido: Record<AnclaDeBloque, ReactNode> = {
+    seguimientos,
+    oportunidades,
+    relacionados,
+    cotizaciones,
+  }
   return (
-    <div className={COLUMNA_DE_LA_FICHA}>
-      <VolverALeads />
-      <CabeceraDeLead
-        ficha={ficha}
-        origen={origen}
-        tipo={tipo}
-        quien={quienLoTiene(ficha, usuarioId)}
-        acciones={
-          <AccionesDeLaFicha
-            ficha={ficha}
-            marcas={marcas}
-            etiquetas={etiquetas}
+    <>
+      <FichaEnDosColumnas
+        antes={
+          <>
+            <VolverALeads />
+            <AvisoDeVencidos vencidos={ficha.recordatoriosVencidos} />
+          </>
+        }
+        etiquetaDelLateral={`Datos de ${ficha.nombre}`}
+        lateral={
+          <LateralConAcciones
+            {...{ ficha, campos, origen, tipo, puedeEditar, puedeEnviarAPapelera, paraCotizar }}
+            {...{ paraActividad, cartera, accionesDeCartera, marcas, etiquetas }}
             alGestionar={gestionar.abrir}
-            puedeEditar={puedeEditar}
-            puedeEnviarAPapelera={puedeEnviarAPapelera}
-            paraCotizar={paraCotizar}
-            paraActividad={paraActividad}
+            conEditarTelefonos={telefonos.puedeEditarExtras && !puedeEditar}
+            portal={ve.portal ? portal : null}
           />
         }
-        marcas={
-          <InsigniasDeMarcas
-            marcas={marcas.marcas}
-            etiquetas={etiquetas.lista}
-            conFavorito={false}
-          />
+        indice={
+          <IndiceDeBloques bloques={bloques.map(({ ancla, etiqueta }) => ({ ancla, etiqueta }))} />
         }
-      />
-      <AvisoDeVencidos leadId={ficha.id} vencidos={ficha.recordatoriosVencidos} seccion={seccion} />
-      {relacionados}
-      <BarraDeSecciones leadId={ficha.id} actual={seccion} ve={ve} />
-      {CONTENIDO_DE_SECCION[seccion]({
-        ficha,
-        campos,
-        origen,
-        tipo,
-        ...telefonos,
-        seguimientos,
-        vehiculos,
-        oportunidades,
-        cotizaciones,
-        portal,
-        cartera,
-        accionesDeCartera,
-        vePortal: ve.portal,
-      })}
+      >
+        {bloques.map((bloque) => (
+          <BloqueDeFicha
+            key={bloque.ancla}
+            ancla={bloque.ancla}
+            titulo={bloque.titulo}
+            {...(bloque.ancla === 'cotizaciones'
+              ? { conTitulo: true, alAcercarse: true, esqueleto: ESQUELETO_DE_COTIZACIONES }
+              : {})}
+          >
+            {contenido[bloque.ancla]}
+          </BloqueDeFicha>
+        ))}
+      </FichaEnDosColumnas>
       <PanelesDeLaFicha
-        {...{ ficha, puedeEditar, ...telefonos, etiquetas }}
-        refrescaAlVolver={!panel.hayPanel && !gestionar.abierto}
+        ficha={ficha}
+        puedeEditar={puedeEditar}
+        {...telefonos}
+        etiquetas={etiquetas}
+        gestionando={gestionar.abierto}
       />
-    </div>
+    </>
   )
 }

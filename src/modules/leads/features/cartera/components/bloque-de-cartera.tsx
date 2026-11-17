@@ -3,8 +3,8 @@
 import { LogOutIcon, SendIcon, UserMinusIcon, UserPlusIcon } from 'lucide-react'
 import { formatearFecha } from '@/shared/lib/fechas'
 import { Badge } from '@/shared/ui/badge'
-import { Bloque } from '@/shared/ui/bloque'
 import { Button } from '@/shared/ui/button'
+import { TITULO_DE_BLOQUE } from '@/shared/ui/ficha-en-bloques'
 import { useRegional } from '@/shared/ui/regional'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import {
@@ -125,7 +125,7 @@ function BotonesDeCartera({
   )
 }
 
-// «Quién lo tiene», en la sección «Datos» de la ficha: nombres y tipo de acceso de todas las personas
+// «Quién lo tiene», en la columna de la izquierda de la ficha: nombres y tipo de acceso de todas las personas
 // que lo tienen, para quien ve el lead. Compartir, transferir (con confirmación), quitar acceso y
 // «Salir de este lead» se dibujan sólo para quien puede; la base lo vuelve a decidir.
 export function BloqueDeCartera({ lead, cartera: inicial, acciones }: Props) {
@@ -140,7 +140,10 @@ export function BloqueDeCartera({ lead, cartera: inicial, acciones }: Props) {
   const montarSalir = useAbiertoAlgunaVez(saliendo)
 
   return (
-    <Bloque titulo={TITULO_DE_CARTERA}>
+    <section aria-labelledby="quien-lo-tiene" className="grid gap-2">
+      <h2 id="quien-lo-tiene" className={TITULO_DE_BLOQUE}>
+        {TITULO_DE_CARTERA}
+      </h2>
       <div className="grid gap-3">
         <ul className="divide-y divide-(--color-line)">
           {cartera.cartera.map((persona) => (
@@ -187,6 +190,6 @@ export function BloqueDeCartera({ lead, cartera: inicial, acciones }: Props) {
           cartera={cartera}
         />
       ) : null}
-    </Bloque>
+    </section>
   )
 }

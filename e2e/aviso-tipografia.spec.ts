@@ -1,7 +1,7 @@
 import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { irAFicha, ponerExtras } from './soporte/leads-ficha'
-import { nacional } from './soporte/leads-ficha-telefonos'
+import { abrirPanelConTelefonos, nacional } from './soporte/leads-ficha-telefonos'
 import { limpiarRecorrido, prepararRecorrido, type TerrenoDelRecorrido } from './soporte/recorrido'
 
 // @sin-celular-archivo: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -26,7 +26,9 @@ for (const esquema of ['light', 'dark'] as const) {
     await ponerExtras(r.dos.id, [{ telefono: `${r.t.codigo}${nacional()}`, etiqueta: 'Casa' }])
     await entrar(page, r.ana.email)
     await irAFicha(page, r.dos.id)
-    await page.getByRole('button', { name: 'Quitar' }).click()
+    // Los extras se quitan en el panel de edición (la ficha los muestra sólo para leer).
+    const panel = await abrirPanelConTelefonos(page)
+    await panel.getByRole('button', { name: 'Quitar' }).click()
     const aviso = page.locator('[data-sonner-toast]').filter({ hasText: 'Teléfono quitado.' })
     await expect(aviso).toBeVisible()
     const fuentes = await aviso.evaluate((el) => ({

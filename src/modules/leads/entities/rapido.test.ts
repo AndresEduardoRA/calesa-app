@@ -1,64 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import type { CampoDeLead } from './campo'
 import { SIN_ULTIMO_CONTACTO, type FilaDeLead } from './listado'
 import {
-  gruposDelRapido,
-  hayPrivadosSinRecibir,
-  hayModalEnLaPestana,
-  pestanaDelRapido,
+  destinoDeLaPestanaVieja,
+  hayModalEnElResumen,
   vistaDelRapido,
   type LecturaDelRapido,
 } from './rapido'
 import { SIN_MARCAS } from './marcas'
-
-const campo = (clave: string, extra: Partial<CampoDeLead> = {}) =>
-  ({
-    clave,
-    etiqueta: clave.toUpperCase(),
-    activo: true,
-    grupo: null,
-    soloCartera: false,
-    ...extra,
-  }) as CampoDeLead
-
-describe('gruposDelRapido', () => {
-  const campos = [
-    campo('ciudad', { grupo: 'Ubicación' }),
-    campo('pais', { grupo: 'Ubicación' }),
-    campo('edad'),
-    campo('notas', { activo: false }),
-  ]
-
-  it('agrupa lo que tiene valor, en el orden del layout, y salta lo vacío y lo apagado', () => {
-    const grupos = gruposDelRapido(campos, { ciudad: 'La Paz', pais: '', edad: 31, notas: 'x' })
-    expect(grupos.map((g) => [g.nombre, g.datos.map((d) => d.campo.clave)])).toEqual([
-      ['Ubicación', ['ciudad']],
-      [null, ['edad']],
-    ])
-  })
-
-  it('un grupo sin datos no aparece; sin nada, vacío', () => {
-    expect(gruposDelRapido(campos, {})).toEqual([])
-    expect(gruposDelRapido(campos, { pais: [] })).toEqual([])
-  })
-
-  it('un valor «falso» o cero sí se muestra', () => {
-    const grupos = gruposDelRapido([campo('vip'), campo('hijos')], { vip: false, hijos: 0 })
-    expect(grupos[0]?.datos.map((d) => d.campo.clave)).toEqual(['vip', 'hijos'])
-  })
-})
-
-describe('hayPrivadosSinRecibir', () => {
-  it('sólo cuando no es de su cartera y existe algún privado activo', () => {
-    const campos = [campo('ci', { soloCartera: true })]
-    expect(hayPrivadosSinRecibir(campos, false)).toBe(true)
-    expect(hayPrivadosSinRecibir(campos, true)).toBe(false)
-    expect(hayPrivadosSinRecibir([campo('ci', { soloCartera: true, activo: false })], false)).toBe(
-      false,
-    )
-    expect(hayPrivadosSinRecibir([campo('ciudad')], false)).toBe(false)
-  })
-})
 
 describe('vistaDelRapido', () => {
   const lead = (extra: Partial<FilaDeLead> = {}): FilaDeLead => ({
@@ -124,26 +72,68 @@ describe('vistaDelRapido', () => {
   })
 })
 
-describe('pestanaDelRapido', () => {
-  it('«seguimientos» y «recordatorios» la abren; cualquier otra cosa, «Resumen»', () => {
-    expect(pestanaDelRapido('seguimientos')).toBe('seguimientos')
-    expect(pestanaDelRapido('recordatorios')).toBe('recordatorios')
-    expect(pestanaDelRapido(null)).toBe('resumen')
-    expect(pestanaDelRapido('portal')).toBe('resumen')
-    expect(pestanaDelRapido('Recordatorios')).toBe('resumen')
+describe('hayModalEnElResumen', () => {
+  it('el panel de edición y los modales del «⋯» cuentan; lo demás, no', () => {
+    expect(hayModalEnElResumen('editar-lead')).toBe(true)
+    expect(hayModalEnElResumen('oportunidad-rapida')).toBe(true)
+    expect(hayModalEnElResumen('anotar-seguimiento')).toBe(true)
+    expect(hayModalEnElResumen('agendar-recordatorio')).toBe(true)
+    expect(hayModalEnElResumen('editar-seguimiento')).toBe(false)
+    expect(hayModalEnElResumen('filtros')).toBe(false)
+    expect(hayModalEnElResumen(null)).toBe(false)
   })
 })
 
-describe('hayModalEnLaPestana', () => {
-  it('cada pestaña, sólo sus modales', () => {
-    expect(hayModalEnLaPestana('seguimientos', 'anotar-seguimiento')).toBe(true)
-    expect(hayModalEnLaPestana('seguimientos', 'editar-seguimiento')).toBe(true)
-    expect(hayModalEnLaPestana('recordatorios', 'agendar-recordatorio')).toBe(true)
-    expect(hayModalEnLaPestana('recordatorios', 'editar-recordatorio')).toBe(true)
-    expect(hayModalEnLaPestana('seguimientos', 'editar-recordatorio')).toBe(false)
-    expect(hayModalEnLaPestana('recordatorios', 'anotar-seguimiento')).toBe(false)
-    expect(hayModalEnLaPestana('resumen', 'anotar-seguimiento')).toBe(false)
-    expect(hayModalEnLaPestana('seguimientos', 'filtros')).toBe(false)
-    expect(hayModalEnLaPestana('seguimientos', null)).toBe(false)
+describe('destinoDeLaPestanaVieja', () => {
+  const LEAD = '4a1f5b0e-6f0a-4f6e-9a55-1b6e2a1f0c11'
+  const OTRO = '9b2c7d1e-1f3a-4b6c-8d4e-2a5f6b7c8d90'
+
+  it('`?lead=<id>&pestana=seguimientos|recordatorios` lleva a la ficha en el bloque de seguimientos', () => {
+    expect(destinoDeLaPestanaVieja({ lead: LEAD, pestana: 'seguimientos' })).toBe(
+      `/leads/${LEAD}?seccion=seguimientos`,
+    )
+    expect(destinoDeLaPestanaVieja({ lead: LEAD, pestana: 'recordatorios' })).toBe(
+      `/leads/${LEAD}?seccion=seguimientos`,
+    )
+  })
+
+  it('lleva el modal que traía, con su id', () => {
+    expect(
+      destinoDeLaPestanaVieja({
+        lead: LEAD,
+        pestana: 'seguimientos',
+        panel: 'editar-seguimiento',
+        seguimiento: OTRO,
+      }),
+    ).toBe(`/leads/${LEAD}?seccion=seguimientos&panel=editar-seguimiento&seguimiento=${OTRO}`)
+    expect(
+      destinoDeLaPestanaVieja({
+        lead: LEAD,
+        pestana: 'recordatorios',
+        panel: 'editar-recordatorio',
+        recordatorio: OTRO,
+      }),
+    ).toBe(`/leads/${LEAD}?seccion=seguimientos&panel=editar-recordatorio&recordatorio=${OTRO}`)
+  })
+
+  it('lo que no es de entonces no pasa: un panel ajeno o un id que no es un id', () => {
+    expect(
+      destinoDeLaPestanaVieja({ lead: LEAD, pestana: 'seguimientos', panel: 'etiquetas' }),
+    ).toBe(`/leads/${LEAD}?seccion=seguimientos`)
+    expect(
+      destinoDeLaPestanaVieja({
+        lead: LEAD,
+        pestana: 'seguimientos',
+        panel: 'editar-seguimiento',
+        seguimiento: '1; drop',
+      }),
+    ).toBe(`/leads/${LEAD}?seccion=seguimientos&panel=editar-seguimiento`)
+  })
+
+  it('sin lead, con un lead que no es un id o con otra pestaña, no redirige', () => {
+    expect(destinoDeLaPestanaVieja({ lead: undefined, pestana: 'seguimientos' })).toBeNull()
+    expect(destinoDeLaPestanaVieja({ lead: 'abc', pestana: 'seguimientos' })).toBeNull()
+    expect(destinoDeLaPestanaVieja({ lead: LEAD, pestana: 'resumen' })).toBeNull()
+    expect(destinoDeLaPestanaVieja({ lead: LEAD, pestana: undefined })).toBeNull()
   })
 })

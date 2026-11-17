@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { useApertura } from '@/shared/ui/use-apertura'
 import { useRevisionAlAbrir } from '@/shared/ui/use-revision-al-abrir'
 import { useUltimo } from '@/shared/ui/use-ultimo'
@@ -11,6 +12,7 @@ import {
   type RecordatorioParaEditar,
 } from '../../../entities/recordatorios'
 import { usePanelDeRecordatorio } from './use-panel-de-recordatorio'
+import { focoDeQuienAbrio, recordarQuienAbre } from '@/shared/ui/foco-de-quien-abre'
 
 type Args = {
   lista: readonly Recordatorio[]
@@ -18,6 +20,8 @@ type Args = {
   // Se está leyendo la lista, o el de la URL por su id (no estaba entre lo cargado): todavía no se
   // decide si «no está».
   buscando?: boolean
+  // Falso: otro dueño de los modales responde a la URL (`usePanelDeRecordatorio`).
+  atiendeLaUrl?: boolean
 }
 
 // Por qué no se puede editar el de la URL (nulo si se puede, o si no se está editando).
@@ -50,11 +54,18 @@ function claveDeRevision(apertura: number, editando: string | null, buscando: bo
 // Qué muestra el modal de recordatorios según la URL. Agendar sólo con `puedeAgendar`. Editar abre el
 // de `?recordatorio=<id>` entre los de quien mira (ajeno, eliminado o inventado «no está»); mientras
 // se busca, no abre ni dice nada.
-export function useModalDeRecordatorio({ lista, puedeAgendar, buscando = false }: Args) {
-  const panel = usePanelDeRecordatorio()
+export function useModalDeRecordatorio({
+  lista,
+  puedeAgendar,
+  buscando = false,
+  atiendeLaUrl,
+}: Args) {
+  const panel = usePanelDeRecordatorio({ atiendeLaUrl })
   const editando = panel.editando
   const objetivo = editando === null || buscando ? null : recordatorioParaEditar(lista, editando)
   const enLaUrl = panel.agendando || editando !== null
+  // Llegó abierto con la página (recarga o enlace) y nadie lo abrió después: al cerrarse, el foco lo devuelven Base UI y la vuelta del historial.
+  const llegoAbierto = useRef(enLaUrl)
   const apertura = useApertura(enLaUrl)
   const motivo = motivoDe(objetivo)
   const revision = claveDeRevision(apertura, editando, buscando)
@@ -76,13 +87,26 @@ export function useModalDeRecordatorio({ lista, puedeAgendar, buscando = false }
     llave: `${String(apertura)}:${destino ?? ''}`,
     original,
     noDisponible: editandoAbierto ? motivo : null,
-    abrirAgendar: panel.abrirAgendar,
+    // Quien lo abre (este botón o el «⋯» de la cabecera de la ficha) se recuerda: al cerrarse, el foco vuelve ahí.
+    abrirAgendar: () => {
+      llegoAbierto.current = false
+      recordarQuienAbre()
+      panel.abrirAgendar()
+    },
     abrirEdicion: panel.abrirEdicion,
     cerrar: panel.cerrar,
-    // El «Editar» del que se estaba editando, si sigue en la lista.
-    focoAlCerrar: (): HTMLElement | null =>
-      original
-        ? document.querySelector<HTMLElement>(`[data-recordatorio-editar="${original.id}"]`)
-        : null,
+    // El «Editar» del que se estaba editando, si sigue en la lista; al crear, quien lo abrió si sigue en la página (en la ficha el bloque está
+    // siempre montado: sin esto, abierto desde la cabecera devolvería el foco al botón del bloque). `true`: el de Base UI (llegó abierto con la
+    // página; tras un «atrás» lo devuelve `vuelta-del-foco`). Nulo: el modal elige su botón.
+    focoAlCerrar: (): HTMLElement | boolean | null => {
+      if (original) {
+        return document.querySelector<HTMLElement>(`[data-recordatorio-editar="${original.id}"]`)
+      }
+      const quien = focoDeQuienAbrio()
+      if (typeof quien !== 'boolean') {
+        return quien
+      }
+      return llegoAbierto.current ? true : null
+    },
   }
 }

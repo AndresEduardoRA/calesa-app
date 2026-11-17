@@ -11,6 +11,7 @@ import {
   claveDelBorradorDeSeguimiento,
   MENSAJE_SIN_TIPOS_DE_SEGUIMIENTO,
 } from '../../../entities/edicion-de-seguimiento'
+import { PRIMEROS_DE_SEGUIMIENTOS } from '../../../entities/bloques-de-la-ficha'
 import type { Recordatorio } from '../../../entities/recordatorios'
 import { puedeEditarSeguimiento } from '../../../entities/seguimiento'
 import { useEliminarSeguimiento } from '../hooks/use-eliminar-seguimiento'
@@ -28,9 +29,15 @@ type Props = {
   // El próximo contacto que entró con un seguimiento: va a «Tus recordatorios» si están a la vista (en
   // el drawer viven en su pestaña, que lo lee al abrirse).
   alAgendar?: (recordatorio: Recordatorio) => void
-  // Dentro de una pestaña del drawer rápido: si al cerrarse el modal la pestaña ya no está (un «atrás» a otra), no devuelve el foco a ciegas (a
-  // «Editar», que lo tenía al abrirse el drawer) y lo deja a la vuelta del foco, que lo lleva al «⋯» del resumen que abrió el modal (4-58).
-  enPestana?: boolean
+  // Dentro del drawer «Ver todos»: si al cerrarse el modal el drawer ya no está (un «atrás»), no devuelve el foco a ciegas y lo deja a la
+  // vuelta del foco (4-58).
+  enDrawer?: boolean
+  // «resumen» (el bloque de la ficha): los últimos `PRIMEROS_DE_SEGUIMIENTOS`, sin «Ver más» ni «Ir a una fecha», y «Ver todos los
+  // seguimientos» si hay más. «completa» (el drawer): toda la línea de tiempo.
+  forma?: 'completa' | 'resumen'
+  alVerTodos?: () => void
+  // Falso: otro dueño de los modales responde a la URL (el drawer «Ver todos» abierto encima del resumen).
+  atiendeLaUrl?: boolean
 }
 
 const sinSuscripcion = () => () => undefined
@@ -102,19 +109,22 @@ function Anotar({
   )
 }
 
-// Los seguimientos, o el vacío. Editar y eliminar, sólo lo propio con la cartera.
+// Los seguimientos (hasta `tope`, en el resumen), o el vacío. Editar y eliminar, sólo lo propio con la cartera.
 function Lista({
   seguimientos,
   zona,
   alEditar,
   eliminacion,
+  tope,
 }: {
   seguimientos: Seguimientos
   zona: string
   alEditar: (id: string) => void
   eliminacion: ReturnType<typeof useEliminarSeguimiento>
+  tope?: number
 }) {
   const { puedoAnotar } = seguimientos
+  const lista = tope === undefined ? seguimientos.lista : seguimientos.lista.slice(0, tope)
   if (seguimientos.lista.length === 0 && seguimientos.desde !== null) {
     return (
       <p className="text-(length:--text-sm) text-(--color-ink-faint)">
@@ -138,7 +148,7 @@ function Lista({
   }
   return (
     <ol className="grid gap-2">
-      {seguimientos.lista.map((s) => (
+      {lista.map((s) => (
         // Fuera de la vista no se dibuja: cargar 500 no cuesta 500 dibujos.
         <li key={s.id} className="[contain-intrinsic-size:auto_9rem] [content-visibility:auto]">
           <ItemDeSeguimiento
@@ -157,26 +167,74 @@ function Lista({
   )
 }
 
+const SUBTITULO = 'text-(length:--text-sm) font-semibold text-(--color-ink)'
+
+// Debajo de la lista: en el resumen, «Ver todos los seguimientos»; en la línea completa, «Ver más» e «Ir a una fecha».
+function PieDeLaForma({
+  resumen,
+  seguimientos,
+  zona,
+  alVerTodos,
+}: {
+  resumen: boolean
+  seguimientos: Seguimientos
+  zona: string
+  alVerTodos: (() => void) | undefined
+}) {
+  if (!resumen) {
+    return <PieDeLaLinea seguimientos={seguimientos} zona={zona} />
+  }
+  return alVerTodos ? <VerTodos seguimientos={seguimientos} alVerTodos={alVerTodos} /> : null
+}
+
+// El pie del resumen: «Ver todos los seguimientos», sin número (contarlos insinuaría los privados de otros), si hay más de los que se ven.
+function VerTodos({
+  seguimientos,
+  alVerTodos,
+}: {
+  seguimientos: Seguimientos
+  alVerTodos: () => void
+}) {
+  if (!seguimientos.hayMas && seguimientos.lista.length <= PRIMEROS_DE_SEGUIMIENTOS) {
+    return null
+  }
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="min-h-11 w-fit md:min-h-9"
+      onClick={alVerTodos}
+    >
+      Ver todos los seguimientos
+    </Button>
+  )
+}
+
 // La línea de tiempo de un lead, más recientes primero: «Anotar», los seguimientos (editar y eliminar
 // lo propio), «Ver más» hasta el tope e «Ir a una fecha». Anotar y editar abren el modal con su URL. Lo que cada quien ve lo decidió la
-// base; acá no se cuenta nada, para no insinuar los privados de otros. La usan la ficha y la pestaña
-// «Seguimientos» del drawer (el modal se dibuja adentro: Base UI lo anida).
+// base; acá no se cuenta nada, para no insinuar los privados de otros. La usan el resumen del bloque de la ficha (`forma="resumen"`) y
+// «Ver todos» (el modal se dibuja adentro del drawer: Base UI lo anida).
 export function LineaDeSeguimientos({
   leadId,
   tipos,
   zona,
   seguimientos,
   alAgendar,
-  enPestana = false,
+  enDrawer = false,
+  forma,
+  alVerTodos,
+  atiendeLaUrl,
 }: Props) {
   const boton = useRef<HTMLButtonElement>(null)
   const { puedoAnotar } = seguimientos
+  const resumen = forma === 'resumen'
   const eliminacion = useEliminarSeguimiento(seguimientos.poner)
-  const modal = useModalDeSeguimiento({ seguimientos, hayTipos: tipos.length > 0 })
+  const modal = useModalDeSeguimiento({ seguimientos, hayTipos: tipos.length > 0, atiendeLaUrl })
   const montar = useAbiertoAlgunaVez(modal.abierto)
   const conBorrador = useHayBorrador(leadId) && puedoAnotar && !modal.abierto
   return (
     <section aria-label="Seguimientos" className="grid min-w-0 content-start gap-3">
+      {resumen ? <h3 className={SUBTITULO}>Últimos seguimientos</h3> : null}
       {puedoAnotar ? (
         <Anotar
           boton={boton}
@@ -185,7 +243,7 @@ export function LineaDeSeguimientos({
           alAbrir={modal.abrirAnotar}
         />
       ) : null}
-      {seguimientos.desde !== null ? (
+      {!resumen && seguimientos.desde !== null ? (
         <DesdeUnaFechaDiferido
           dia={seguimientos.desde}
           zona={zona}
@@ -199,8 +257,14 @@ export function LineaDeSeguimientos({
         zona={zona}
         alEditar={modal.abrirEdicion}
         eliminacion={eliminacion}
+        tope={resumen ? PRIMEROS_DE_SEGUIMIENTOS : undefined}
       />
-      <PieDeLaLinea seguimientos={seguimientos} zona={zona} />
+      <PieDeLaForma
+        resumen={resumen}
+        seguimientos={seguimientos}
+        zona={zona}
+        alVerTodos={alVerTodos}
+      />
       {montar ? (
         <ModalDeSeguimientoDiferido
           key={modal.llave}
@@ -218,7 +282,7 @@ export function LineaDeSeguimientos({
             }
             modal.cerrar()
           }}
-          focoAlCerrar={() => modal.focoAlCerrar() ?? boton.current ?? !enPestana}
+          focoAlCerrar={() => modal.focoAlCerrar() ?? boton.current ?? !enDrawer}
           // «Recargar» tras un conflicto: la primera página y, si no vino ahí, el que se edita por su id.
           recargar={() => void seguimientos.releer(modal.original?.id ?? null)}
           recargando={seguimientos.cargando}

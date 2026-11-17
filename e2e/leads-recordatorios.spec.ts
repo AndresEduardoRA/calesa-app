@@ -2,7 +2,7 @@ import { expect, test } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
 import { idDePersona, sesionDe } from './soporte/leads-alta'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
-import { nuevoLead } from './soporte/leads-ficha'
+import { esperarFichaHidratada, nuevoLead } from './soporte/leads-ficha'
 import { esMovil } from './soporte/inventario'
 import { cabeEnLaPantalla, completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import {
@@ -101,7 +101,8 @@ test('completar es poner: dos veces no cambia nada; reabrir lo devuelve', async 
     recordarEn: new Date(Date.now() + 86400_000).toISOString(),
   })
   await entrar(page, t.personas.berta)
-  await irASeguimientos(page, lead.id)
+  // «Completados» vive en «Ver todos tus recordatorios»: el bloque de la ficha muestra sólo los pendientes más próximos.
+  await irASeguimientos(page, lead.id, '', { todos: 'recordatorios' })
   await recordatorio(page, 'Mandar la cotización')
     .getByRole('button', { name: 'Completar' })
     .click()
@@ -146,8 +147,12 @@ test('un vencido se avisa arriba de la ficha; completarlo quita el aviso', async
   await page.goto(`/leads/${lead.id}`)
   const aviso = page.getByText('Tienes 1 recordatorio vencido sobre este lead.')
   await expect(aviso).toBeVisible()
+  // «Verlos» salta al bloque «Seguimientos y recordatorios» de la misma página y le da el foco a su título.
+  await esperarFichaHidratada(page)
   await page.getByRole('link', { name: 'Verlos' }).click()
-  await expect(page).toHaveURL(/seccion=seguimientos/)
+  await expect(
+    page.getByRole('heading', { name: 'Seguimientos y recordatorios', level: 2 }),
+  ).toBeFocused()
   const vencido = recordatorio(page, 'Era para ayer')
   await expect(vencido.getByText('Vencido')).toBeVisible()
   await vencido.getByRole('button', { name: 'Completar' }).click()

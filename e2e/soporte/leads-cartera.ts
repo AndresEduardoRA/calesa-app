@@ -48,11 +48,9 @@ export async function crearSupervision(
   return { email, nombre }
 }
 
-// El bloque «Quién lo tiene» de la ficha.
+// El bloque «Quién lo tiene» de la columna de la izquierda de la ficha.
 export const bloqueDeCartera = (page: Page): Locator =>
-  aLaVista(
-    page.locator('details').filter({ has: page.getByText('Quién lo tiene', { exact: true }) }),
-  )
+  aLaVista(page.getByRole('region', { name: 'Quién lo tiene', exact: true }))
 
 export const filaDeCartera = (page: Page, nombre: string): Locator =>
   bloqueDeCartera(page).locator('li').filter({ hasText: nombre })

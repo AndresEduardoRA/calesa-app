@@ -6,6 +6,7 @@ import {
   PRESUPUESTO_DE_JS_EN_KB,
 } from './soporte/presupuestos'
 import { expect, test } from './soporte/prueba'
+import { crearLead } from './soporte/leads'
 import { literal, sql } from './soporte/sql'
 
 // El JS que paga quien llega por primera vez a una pantalla (`e2e/soporte/js-en-frio.ts`), contra el build.
@@ -21,6 +22,8 @@ let restaurar = async () => {}
 // una sembrada en esa misma subasta (4.15-3), que el spec crea y quita.
 const TITULO_DEL_VEHICULO_MEDIDO = 'E2E JS de una cotización guardada'
 let cotizacionMedida = ''
+// La ficha de un lead de la dueña de la prueba (`/leads/[id]`), con todos sus bloques: lo crea el spec.
+let leadMedido = ''
 const destinoDe = (ruta: string): string => {
   if (ruta === '/cotizaciones/nuevo') {
     return `${ruta}?origen=${sql("select id from public.origenes where clave = 'subasta_usa'")}`
@@ -36,6 +39,9 @@ const destinoDe = (ruta: string): string => {
   if (ruta === '/logistica/vehiculo/[id]') {
     // La unidad del vehículo medido (de la subasta de la semilla: la dueña la ve).
     return `/logistica/vehiculo/${sql(`select id from public.vehiculos where titulo = ${literal(TITULO_DEL_VEHICULO_MEDIDO)}`)}`
+  }
+  if (ruta === '/leads/[id]') {
+    return `/leads/${leadMedido}`
   }
   return ruta === '/cotizaciones/[id]' ? `/cotizaciones/${cotizacionMedida}` : ruta
 }
@@ -67,10 +73,18 @@ test.beforeAll(async ({}, info) => {
   restaurar = terreno.restaurarCatalogos
   quitarLaCotizacionMedida()
   sembrarLaCotizacionMedida(idDePersona(personas.duena))
+  leadMedido = await crearLead({
+    nombre: `JS de la ficha ${info.project.name}`,
+    telefono: info.project.name === 'escritorio' ? '59170990011' : '59170990012',
+    deQuien: personas.duena,
+  })
 })
 
 test.afterAll(async () => {
   quitarLaCotizacionMedida()
+  if (leadMedido !== '') {
+    sql(`delete from public.leads where id = ${literal(leadMedido)}::uuid`)
+  }
   await limpiarAlta(restaurar)
 })
 

@@ -11,8 +11,12 @@ export async function quieto(lugar: Locator): Promise<void> {
     const cuadro = () => new Promise<void>((seguir) => requestAnimationFrame(() => seguir()))
     await cuadro()
     await cuadro()
+    // Una animación sin fin (el pulso de un esqueleto que espera a acercarse a la vista) nunca termina: no se espera.
     await Promise.all(
-      e.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => undefined)),
+      e
+        .getAnimations({ subtree: true })
+        .filter((a) => a.effect?.getTiming().iterations !== Infinity)
+        .map((a) => a.finished.catch(() => undefined)),
     )
   })
 }

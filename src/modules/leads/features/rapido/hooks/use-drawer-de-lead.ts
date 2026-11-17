@@ -6,33 +6,29 @@ import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
 import { recordarQuienAbre } from '@/shared/ui/foco-de-quien-abre'
 import { abrirConVuelta, useVueltaDelFoco } from '@/shared/ui/vuelta-del-foco'
 import { PANEL_EDITAR_LEAD } from '../../../entities/edicion'
-import { CLAVE_DE_SEGUIMIENTO } from '../../../entities/edicion-de-seguimiento'
 import {
-  CLAVE_DE_PESTANA,
-  hayModalEnLaPestana,
-  pestanaDelRapido,
-  type PestanaDelRapido,
-} from '../../../entities/rapido'
+  CLAVE_DE_SEGUIMIENTO,
+  PANEL_ANOTAR_SEGUIMIENTO,
+} from '../../../entities/edicion-de-seguimiento'
+import { hayModalEnElResumen } from '../../../entities/rapido'
 import { PANEL_OPORTUNIDAD_RAPIDA } from '../../../entities/oportunidad-rapida'
-import { CLAVE_DE_RECORDATORIO } from '../../../entities/recordatorios'
+import { CLAVE_DE_RECORDATORIO, PANEL_AGENDAR_RECORDATORIO } from '../../../entities/recordatorios'
 import { CLAVE_DE_EXTRA_EN_PANEL, VALOR_DE_EXTRA_NUEVO } from '../../../entities/telefonos'
 
-// Qué lead está abierto en el drawer rápido, en la URL (`?lead=`), y en qué pestaña (`?pestana=`):
-// sobrevive a recargar y se puede compartir. Abrir suma al historial («atrás» lo cierra) y empieza
-// en «Resumen»; cambiar de pestaña no suma (así «atrás» cierra el drawer). Tras recargar, «atrás» devuelve el foco a quien abrió el drawer
-// o su panel (dos claves: `lead` y `panel`). Sin `shallow: false`: abrirlo no pide nada al servidor; el drawer lee su lead por su cuenta.
+// Qué lead está abierto en el drawer rápido, en la URL (`?lead=`): sobrevive a recargar y se puede compartir. Abrir suma al historial
+// («atrás» lo cierra). Lo que se abre encima (editar, anotar, agendar, nueva oportunidad) va en `?panel=`. Tras recargar, «atrás» devuelve el
+// foco a quien abrió el drawer o su panel (dos claves: `lead` y `panel`). Sin `shallow: false`: abrirlo no pide nada al servidor; el drawer lee su lead por su cuenta.
 export const CLAVE_DE_LEAD = 'lead'
 
 const PARAMETROS = {
   [CLAVE_DE_LEAD]: parseAsString,
-  [CLAVE_DE_PESTANA]: parseAsString,
   [CLAVE_DE_PANEL]: parseAsString,
   [CLAVE_DE_SEGUIMIENTO]: parseAsString,
   [CLAVE_DE_RECORDATORIO]: parseAsString,
   [CLAVE_DE_EXTRA_EN_PANEL]: parseAsString,
 }
 
-// Lo de la pestaña que se va con ella (un modal que quedó en la URL no salta al volver).
+// Lo de adentro que se va con el drawer (un modal que quedó en la URL no salta al volver a abrirlo).
 const SIN_MODAL = {
   [CLAVE_DE_PANEL]: null,
   [CLAVE_DE_SEGUIMIENTO]: null,
@@ -41,9 +37,9 @@ const SIN_MODAL = {
 
 export function useDrawerDeLead() {
   const [parametros, setParametros] = useQueryStates(PARAMETROS)
-  const pestana = pestanaDelRapido(parametros[CLAVE_DE_PESTANA])
   const id = parametros[CLAVE_DE_LEAD]
-  const conModal = hayModalEnLaPestana(pestana, parametros[CLAVE_DE_PANEL])
+  const panel = parametros[CLAVE_DE_PANEL]
+  const conModal = hayModalEnElResumen(panel)
   const editando = parametros[CLAVE_DE_PANEL] === PANEL_EDITAR_LEAD
   // Montado con un panel encima (tras recargar), la ficha de `lead` no está en la entrada del panel: el hook se ve «cerrado» para `lead` hasta que
   // queda sin panel, y entonces toma la ficha de esa entrada (la del primer «atrás»). Sin recargar no cambia nada: abrir un panel no olvida la ficha
@@ -64,9 +60,17 @@ export function useDrawerDeLead() {
   useVueltaDelFoco(CLAVE_DE_PANEL, editando || conModal)
   return {
     id,
-    pestana,
-    // Un modal de la pestaña abierto: el drawer no vuelve a leer su lead.
+    // Un modal abierto encima: el drawer no vuelve a leer su lead.
     conModal,
+    // «Anotar seguimiento…» o «Agendar recordatorio…» del «⋯» está abierto dentro del drawer.
+    accion:
+      id === null
+        ? null
+        : panel === PANEL_ANOTAR_SEGUIMIENTO
+          ? ('anotar' as const)
+          : panel === PANEL_AGENDAR_RECORDATORIO
+            ? ('agendar' as const)
+            : null,
     // «Nueva oportunidad…» está encima del resumen (`?lead=<id>&panel=oportunidad-rapida`).
     nuevaOportunidad: id !== null && parametros[CLAVE_DE_PANEL] === PANEL_OPORTUNIDAD_RAPIDA,
     cerrarModal: () => {
@@ -82,39 +86,31 @@ export function useDrawerDeLead() {
         editando,
       )
     },
-    // Elegir una pestaña y abrir su modal a la vez (el «⋯» del resumen: anotar o agendar), con el id de lo que se edita vacío.
-    abrirModal: (pestanaDelModal: PestanaDelRapido, panel: string) => {
+    // Abrir un modal del «⋯» encima del resumen (anotar, agendar, nueva oportunidad), con el id de lo que se edita vacío.
+    abrirModal: (modal: string) => {
       abrirConVuelta(
         CLAVE_DE_PANEL,
         () =>
           setParametros(
             {
-              [CLAVE_DE_PESTANA]: pestanaDelModal === 'resumen' ? null : pestanaDelModal,
-              [CLAVE_DE_PANEL]: panel,
+              [CLAVE_DE_PANEL]: modal,
               [CLAVE_DE_SEGUIMIENTO]: null,
               [CLAVE_DE_RECORDATORIO]: null,
             },
             { history: 'push' },
           ),
-        pestana === pestanaDelModal && parametros[CLAVE_DE_PANEL] === panel,
+        panel === modal,
       )
     },
     abrir: (leadId: string) => {
       abrirConVuelta(
         CLAVE_DE_LEAD,
-        () =>
-          setParametros({ [CLAVE_DE_LEAD]: leadId, [CLAVE_DE_PESTANA]: null }, { history: 'push' }),
+        () => setParametros({ [CLAVE_DE_LEAD]: leadId }, { history: 'push' }),
         id === leadId,
       )
     },
-    elegirPestana: (pestana: PestanaDelRapido) => {
-      void setParametros({
-        [CLAVE_DE_PESTANA]: pestana === 'resumen' ? null : pestana,
-        ...SIN_MODAL,
-      })
-    },
     cerrar: () => {
-      void setParametros({ [CLAVE_DE_LEAD]: null, [CLAVE_DE_PESTANA]: null, ...SIN_MODAL })
+      void setParametros({ [CLAVE_DE_LEAD]: null, ...SIN_MODAL })
     },
   }
 }

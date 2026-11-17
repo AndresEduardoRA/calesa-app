@@ -149,20 +149,24 @@ test('un extra de otro lead avisa sin bloquear', async ({ page }, info) => {
   expect(await telefonoDeLead(lead.id)).toBe(completoCon(t, extra))
 })
 
-test('con la edición abierta «Cambiar» está deshabilitado y dice por qué', async ({
+test('«Cambiar el principal» vive en la edición: con cambios escritos se apaga y dice por qué', async ({
   page,
 }, info) => {
   const lead = await fichaDeBerta(t, page, `Edicion ${info.project.name}`)
-  await abrirEdicion(page)
-  const boton = page.getByRole('button', { name: 'Cambiar', exact: true, includeHidden: true })
-  await expect(boton).toBeDisabled()
+  // La ficha muestra los teléfonos sólo para leer.
+  await expect(page.getByRole('button', { name: /^Cambiar/ })).toHaveCount(0)
+  const panel = await abrirEdicion(page)
+  await expect(botonCambiar(page)).toBeEnabled()
+  await panel.getByLabel('Nombre').fill(`${lead.nombre} cambiado`)
+  await expect(botonCambiar(page)).toBeDisabled()
   await expect(
-    page.getByText('Termina o cierra la edición para cambiarlo.', { exact: true }),
+    page.getByText('Guarda o descarta los cambios para cambiarlo.', { exact: true }),
   ).toHaveCount(1)
-  // Cerrada la edición, vuelve; y el panel del teléfono no convive con el de edición.
-  await panelDeEdicion(page).getByRole('button', { name: 'Cancelar' }).click()
+  // Sin cambios vuelve; pasa al panel del cambio y la edición se cierra (los dos no conviven).
+  await panel.getByLabel('Nombre').fill(lead.nombre)
   await expect(botonCambiar(page)).toBeEnabled()
   await abrirCambioDeTelefono(page)
+  await expect(page).toHaveURL(/panel=cambiar-telefono/)
   await expect(panelDeEdicion(page)).toHaveCount(0)
   expect(await telefonoDeLead(lead.id)).toBe(completoCon(t, lead.nac))
 })

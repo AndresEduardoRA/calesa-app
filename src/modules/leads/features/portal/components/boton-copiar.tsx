@@ -1,13 +1,21 @@
 'use client'
 
 import { CheckIcon, CopyIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type Ref } from 'react'
 import { Button } from '@/shared/ui/button'
 import { avisar } from '@/shared/ui/toasts'
 
 // Copia un texto al portapapeles y lo dice en el botón. Si el navegador no deja, pide copiarlo a mano
 // (el texto está a la vista y se puede seleccionar).
-export function BotonCopiar({ texto, etiqueta }: { texto: string; etiqueta: string }) {
+export function BotonCopiar({
+  texto,
+  etiqueta,
+  ref,
+}: {
+  texto: string
+  etiqueta: string
+  ref?: Ref<HTMLButtonElement>
+}) {
   const [copiado, setCopiado] = useState(false)
   async function copiar() {
     try {
@@ -19,6 +27,7 @@ export function BotonCopiar({ texto, etiqueta }: { texto: string; etiqueta: stri
   }
   return (
     <Button
+      ref={ref}
       type="button"
       variant="outline"
       className="h-11 md:h-8"

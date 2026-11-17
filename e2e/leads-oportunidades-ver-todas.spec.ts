@@ -12,7 +12,7 @@ import {
   oportunidadesPorSql,
   titulosEnElOrdenDeLaBase,
 } from './soporte/leads-oportunidades'
-import { PRESUPUESTO_DE_LA_FICHA_CON_10_OPORTUNIDADES_EN_KB } from './soporte/presupuestos'
+import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
 
 // La sección «Oportunidades» de la ficha: el servidor dibuja las 10 más recientes (las abiertas primero) y «Ver más» lee de a 20 desde el
 // navegador, hasta 500 (5a-12, 4.17-2). Lo que no se ve no viaja con el documento de la ficha. El resto de la sección va en
@@ -143,7 +143,7 @@ test('con 1.000 (600 abiertas y 400 cerradas): el documento pesa lo de 10, cada 
   const deDiez = await deLaFicha(conDiez.id)
 
   // El documento no crece con lo que hay: la sección trae 10 con 10 o con 1.000.
-  expect(conMil).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_CON_10_OPORTUNIDADES_EN_KB * 1024)
+  expect(conMil).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_EN_KB * 1024)
   expect(conMil).toBeLessThanOrEqual(deDiez + 2 * 1024)
 
   await page.goto(`/leads/${lead.id}?seccion=oportunidades`)

@@ -2,12 +2,9 @@
 // siguiente), la primera página y los tipos del drawer. La RLS decide qué llega; acá no se decide nada.
 import { errorDePostgrest, fallo, ok } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/browser'
-import type {
-  LectorDeSeguimiento,
-  LectorDeSeguimientos,
-  LectorDeTiposDeSeguimiento,
-} from '../entities/repositorios'
+import type { LectorDeSeguimiento, LectorDeTiposDeSeguimiento } from '../entities/repositorios'
 import {
+  type LectorDeSeguimientos,
   paginaDeSeguimientosDesde,
   seguimientoDesde,
   TAMANO_DE_PAGINA_DE_SEGUIMIENTOS,

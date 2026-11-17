@@ -1,23 +1,23 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import type { PaginaDeRecordatorios } from '../../../entities/pagina-de-recordatorios'
 import type { Recordatorio } from '../../../entities/recordatorios'
 import { useRecordatorios } from '../hooks/use-recordatorios'
-import { BloqueDeRecordatorios } from './bloque-de-recordatorios'
+import { BloqueDeRecordatorios, type FormaDelBloque } from './bloque-de-recordatorios'
 
 type Props = {
   leadId: string
   zona: string
   // Los que nacieron con un seguimiento (el «Próximo contacto» de la ficha): se ponen en su lugar.
   agendados?: readonly Recordatorio[]
-  // La pestaña del drawer rápido (`BloqueDeRecordatorios`).
-  enPestana?: boolean
-}
+  // Lo leído en el servidor (el resumen de la ficha): sin esto, se lee la primera página al montar.
+  inicial?: PaginaDeRecordatorios
+} & FormaDelBloque
 
-// «Tus recordatorios» de un lead con su lectura por páginas: lo que montan la sección de la ficha
-// (diferido: su código no viaja con el resto de la pantalla) y la pestaña del drawer.
-export function RecordatoriosDelLead({ leadId, zona, agendados = [], enPestana = false }: Props) {
-  const recordatorios = useRecordatorios(leadId)
+// «Tus recordatorios» de un lead con su lectura por páginas: lo que montan el resumen del bloque de la ficha (con `inicial`) y «Ver todos».
+export function RecordatoriosDelLead({ leadId, zona, agendados = [], inicial, ...forma }: Props) {
+  const recordatorios = useRecordatorios(leadId, inicial)
   const puestos = useRef(new Set<string>())
   const { poner } = recordatorios
   useEffect(() => {
@@ -29,11 +29,6 @@ export function RecordatoriosDelLead({ leadId, zona, agendados = [], enPestana =
     }
   }, [agendados, poner])
   return (
-    <BloqueDeRecordatorios
-      leadId={leadId}
-      zona={zona}
-      recordatorios={recordatorios}
-      enPestana={enPestana}
-    />
+    <BloqueDeRecordatorios leadId={leadId} zona={zona} recordatorios={recordatorios} {...forma} />
   )
 }

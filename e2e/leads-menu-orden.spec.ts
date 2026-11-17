@@ -180,28 +180,28 @@ test('anotar y agendar abren su modal donde se pidieron: el resumen, la ficha y 
   await oportunidad(t.personas.berta, lead.id, { titulo })
   await entrar(page, t.personas.berta)
 
-  // El resumen elige la pestaña y abre el modal dentro.
+  // El resumen (sin pestañas) abre el modal dentro, sobre su lead.
   await irALeads(page)
   await fila(page, corto).click()
   let menu = await menuDelResumen(page, corto)
   await menu.getByRole('menuitem', { name: 'Anotar seguimiento…' }).click()
-  await expect(page).toHaveURL(/pestana=seguimientos/)
+  await expect(page).toHaveURL(new RegExp(`lead=${lead.id}`))
   await expect(page).toHaveURL(/panel=anotar-seguimiento/)
+  await expect(page).not.toHaveURL(/pestana=|para=/)
   await expect(page.getByRole('dialog', { name: 'Anotar seguimiento' })).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog', { name: 'Anotar seguimiento' })).toBeHidden()
   await expect(resumenDe(page, corto)).toBeVisible()
   menu = await menuDelResumen(page, corto)
   await menu.getByRole('menuitem', { name: 'Agendar recordatorio…' }).click()
-  await expect(page).toHaveURL(/pestana=recordatorios/)
+  await expect(page).toHaveURL(/panel=agendar-recordatorio/)
   await expect(page.getByRole('dialog', { name: 'Agendar recordatorio' })).toBeVisible()
   await page.keyboard.press('Escape')
 
-  // La ficha va a «Seguimientos» con el modal abierto.
+  // La ficha abre el modal (el bloque «Seguimientos y recordatorios» ya está a la vista, sin navegar).
   await irAFicha(page, lead.id)
   menu = await abrirMenuDeLaFicha(page)
   await menu.getByRole('menuitem', { name: 'Anotar seguimiento…' }).click()
-  await expect(page).toHaveURL(/seccion=seguimientos/)
   await expect(page).toHaveURL(/panel=anotar-seguimiento/)
   await expect(page.getByRole('dialog', { name: 'Anotar seguimiento' })).toBeVisible()
 

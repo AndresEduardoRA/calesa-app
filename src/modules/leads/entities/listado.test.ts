@@ -176,6 +176,27 @@ describe('leadCompletoDesde', () => {
     expect(lead?.atributos).toEqual({ ciudad: 'La Paz', edad: 30 })
   })
 
+  it('trae el último seguimiento y el próximo recordatorio, como la fila: el resumen los dibuja al releer', () => {
+    const lead = leadCompletoDesde({
+      ...FILA,
+      atributos: {},
+      ultimo_seguimiento_en: '2026-11-10T12:00:00Z',
+      ultimo_seguimiento_visible: { tipo_id: FILA.tipo_lead_id, titulo: 'Llamé' },
+      proximo_recordatorio: {
+        id: FILA.id,
+        titulo: 'Volver a llamar',
+        recordar_en: '2026-11-16T12:00:00Z',
+      },
+    })
+    expect(lead?.ultimoSeguimientoEn).toBe('2026-11-10T12:00:00Z')
+    expect(lead?.ultimoSeguimiento).toEqual({ tipoId: FILA.tipo_lead_id, titulo: 'Llamé' })
+    expect(lead?.proximoRecordatorio).toEqual({
+      id: FILA.id,
+      titulo: 'Volver a llamar',
+      recordarEn: '2026-11-16T12:00:00Z',
+    })
+  })
+
   it('sin atributos (no lo ve) viene vacío; algo que no es un lead, null', () => {
     expect(leadCompletoDesde({ ...FILA, atributos: null })?.atributos).toEqual({})
     expect(leadCompletoDesde({ nada: true })).toBeNull()

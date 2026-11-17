@@ -14,7 +14,6 @@ import type {
   LectorDeLayoutDeLeads,
   LectorDeCatalogosDeLead,
   LectorDePapeleraDeLeads,
-  LectorDeSeguimientos,
   LectorDeTiposDeSeguimiento,
   RepositorioCamposDeLead,
   RepositorioDeAlta,
@@ -100,6 +99,9 @@ import { getChoquesDeTelefonos } from './infra/queries/choques-de-telefonos'
 import { portalSupabase } from './infra/portal'
 import { papeleraDeLeadsSupabase } from './infra/papelera'
 import { recordatoriosSupabase } from './infra/recordatorios'
+import type { LectorDeRecordatoriosDelLead } from './entities/pagina-de-recordatorios'
+import type { LectorDeSeguimientos } from './entities/seguimiento'
+import { getRecordatoriosDelLead } from './infra/queries/recordatorios-del-lead'
 import { getSeguimientos, getTiposDeSeguimiento } from './infra/queries/seguimientos'
 import { seguimientosSupabase } from './infra/seguimientos'
 import { telefonosSupabase } from './infra/telefonos'
@@ -155,6 +157,7 @@ export const repositorioDeTelefonos: RepositorioDeTelefonos = telefonosSupabase
 export const repositorioDeSeguimientos: RepositorioDeSeguimientos = seguimientosSupabase
 
 export const leerSeguimientos: LectorDeSeguimientos = getSeguimientos
+export const leerRecordatoriosDelLead: LectorDeRecordatoriosDelLead = getRecordatoriosDelLead
 
 export const leerTiposDeSeguimiento: LectorDeTiposDeSeguimiento = getTiposDeSeguimiento
 

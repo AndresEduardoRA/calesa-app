@@ -8,10 +8,36 @@ import { irAFicha } from './leads-ficha'
 
 export const SECCION = '?seccion=seguimientos'
 
-// `mas`: el resto de la URL (`&panel=…`).
-export async function irASeguimientos(page: Page, leadId: string, mas = ''): Promise<void> {
-  await irAFicha(page, leadId, `${SECCION}${mas}`)
-  await expect(page.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+// El drawer «Ver todos» de la ficha (`?todos=seguimientos|recordatorios`).
+export const drawerDeTodos = (page: Page): Locator =>
+  page.getByRole('dialog', { name: /^(Seguimientos de|Tus recordatorios sobre) / })
+
+// `mas`: el resto de la URL (`&panel=…`). Con `todos`, abre además «Ver todos» (la línea de tiempo completa o todos los recordatorios,
+// con «Ver más», «Ir a una fecha» y «Completados»): con el drawer abierto, lo de atrás sale del árbol de accesibilidad y los localizadores
+// por rol ven sólo lo del drawer. Sin él, el bloque de la ficha muestra lo último y lo próximo.
+export async function irASeguimientos(
+  page: Page,
+  leadId: string,
+  mas = '',
+  { todos }: { todos?: 'seguimientos' | 'recordatorios' } = {},
+): Promise<void> {
+  await irAFicha(page, leadId, `${SECCION}${todos ? `&todos=${todos}` : ''}${mas}`)
+  const region = todos === 'recordatorios' ? 'Tus recordatorios' : 'Seguimientos'
+  await expect(
+    (todos ? drawerDeTodos(page) : page).getByRole('region', { name: region, exact: true }),
+  ).toBeVisible()
+}
+
+// Abre «Ver todos» desde el bloque de la ficha con su botón.
+export async function abrirTodos(
+  page: Page,
+  cual: 'seguimientos' | 'recordatorios',
+): Promise<Locator> {
+  const nombre =
+    cual === 'seguimientos' ? 'Ver todos los seguimientos' : 'Ver todos tus recordatorios'
+  await page.getByRole('button', { name: nombre }).click()
+  await expect(drawerDeTodos(page)).toBeVisible()
+  return drawerDeTodos(page)
 }
 
 // El modal de anotar o editar (`?panel=anotar-seguimiento`, `?panel=editar-seguimiento&seguimiento=`):
@@ -22,7 +48,9 @@ export const editorDe = (formulario: Locator): Locator =>
   formulario.getByRole('textbox', { name: 'Detalle (opcional)' })
 // Dentro de la línea de tiempo: un recordatorio puede llevar el mismo título.
 export const seguimiento = (page: Page, titulo: string): Locator =>
-  page.getByRole('region', { name: 'Seguimientos' }).getByRole('article', { name: titulo })
+  page
+    .getByRole('region', { name: 'Seguimientos', exact: true })
+    .getByRole('article', { name: titulo })
 
 // Abre el modal con «Anotar seguimiento»; antes de hidratar el clic no vale, así que se insiste. El
 // foco queda en el resumen y el editor llega aparte (carga diferida).
@@ -197,35 +225,29 @@ export async function meterRecordatorio(datos: {
 export const modalDeRecordatorio = (page: Page, modo: 'Agendar' | 'Editar'): Locator =>
   page.getByRole('dialog', { name: `${modo} recordatorio` })
 
+// El bloque de la ficha llega dibujado del servidor: antes de hidratar el clic no vale, así que se insiste.
 export async function abrirAgendar(page: Page): Promise<Locator> {
-  await bloqueDeRecordatorios(page).getByRole('button', { name: 'Agendar recordatorio' }).click()
   const modal = modalDeRecordatorio(page, 'Agendar')
+  await expect(async () => {
+    if (!page.url().includes('panel=agendar-recordatorio')) {
+      await bloqueDeRecordatorios(page)
+        .getByRole('button', { name: 'Agendar recordatorio' })
+        .click()
+    }
+    await expect(modal).toBeVisible({ timeout: 1000 })
+  }).toPass()
   await expect(modal.getByLabel('De qué es')).toBeFocused()
   return modal
 }
 
 export async function abrirEdicionDeRecordatorio(page: Page, titulo: string): Promise<Locator> {
-  await recordatorio(page, titulo).getByRole('button', { name: 'Editar' }).click()
   const modal = modalDeRecordatorio(page, 'Editar')
+  await expect(async () => {
+    if (!page.url().includes('panel=editar-recordatorio')) {
+      await recordatorio(page, titulo).getByRole('button', { name: 'Editar' }).click()
+    }
+    await expect(modal).toBeVisible({ timeout: 1000 })
+  }).toPass()
   await expect(modal.getByLabel('De qué es')).toBeFocused()
   return modal
-}
-
-// La pestaña «Seguimientos» del drawer rápido: se elige (se insiste hasta hidratar) y espera la línea
-// de tiempo, que se lee recién ahí.
-export async function abrirPestanaDeSeguimientos(page: Page, drawer: Locator): Promise<void> {
-  await expect(async () => {
-    await drawer.getByRole('tab', { name: 'Seguimientos', exact: true }).click()
-    await expect(page).toHaveURL(/pestana=seguimientos/, { timeout: 1000 })
-  }).toPass()
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
-}
-
-// La pestaña «Recordatorios» del drawer (9d-2): «Tus recordatorios», leída al elegirla.
-export async function abrirPestanaDeRecordatorios(page: Page, drawer: Locator): Promise<void> {
-  await expect(async () => {
-    await drawer.getByRole('tab', { name: 'Recordatorios', exact: true }).click()
-    await expect(page).toHaveURL(/pestana=recordatorios/, { timeout: 1000 })
-  }).toPass()
-  await expect(drawer.getByRole('region', { name: 'Tus recordatorios' })).toBeVisible()
 }
