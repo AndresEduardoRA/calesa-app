@@ -8,6 +8,10 @@ import { entradasIniciales, indiceDeHoja } from '../../../entities/entradas'
 import type { RespuestaDeRecalculo } from '../../../entities/recalculo'
 import type { AccionesDeHoja } from '../../hoja/hooks/use-hoja'
 import { CabeceraDeHoja } from '../../hoja/components/cabecera-de-hoja'
+import {
+  CONTENEDOR_DE_SECCIONES,
+  REJILLA_DE_SECCIONES,
+} from '../../hoja/components/clases-de-la-rejilla'
 import { ResumenDeHoja } from '../../hoja/components/resumen-de-hoja'
 import { SeccionDeHoja } from '../../hoja/components/seccion-de-hoja'
 
@@ -28,7 +32,7 @@ const ESTADO_AL_DIA = { tipo: 'al_dia' } as const
 
 const plural = (n: number) => (n === 1 ? 'sección va' : 'secciones van')
 
-// La hoja de cotizar con el diseño que se edita (4.22-5): los mismos componentes de la hoja de verdad (cabecera, secciones y resumen), con sus mismos cortes por contenedor, sobre cifras
+// La hoja de cotizar con el diseño que se edita (4.22-5): los mismos componentes de la hoja de verdad (cabecera, secciones y resumen), con su misma rejilla y sus mismos cortes por contenedor, sobre cifras
 // de prueba. No usa `LugaresDeLaHoja` (arrastra `?ayuda=` y `?panel=` de la URL, que aquí chocarían con la pestaña) ni dibuja las secciones «avanzado»: las nombra aparte.
 export function HojaDePrueba({ hoja, respuesta }: Props) {
   const indice = useMemo(
@@ -64,14 +68,15 @@ export function HojaDePrueba({ hoja, respuesta }: Props) {
             verTotalBs={false}
             alCambiarVerTotalBs={nada}
           />
-          <div data-secciones="" className="@container min-w-0">
-            <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 @5xl:grid-cols-2">
+          <div data-secciones="" className={CONTENEDOR_DE_SECCIONES}>
+            <div className={REJILLA_DE_SECCIONES}>
               {principales.map((seccion) => (
                 <SeccionDeHoja
                   key={seccion.id}
                   seccion={seccion}
                   contexto={contexto}
                   acciones={ACCIONES_QUIETAS}
+                  enLaRejilla
                 />
               ))}
             </div>

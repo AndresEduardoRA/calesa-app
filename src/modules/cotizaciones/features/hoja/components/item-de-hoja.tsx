@@ -5,19 +5,12 @@ import type { ItemDeHoja as Item } from '../../../entities/hoja'
 import type { AccionesDeHoja } from '../hooks/use-hoja'
 import { AtajosDeHoja } from './atajos-de-hoja'
 import { CeldaDeHoja } from './celda-de-hoja'
+import { claseDelItem } from './clases-de-la-rejilla'
 import { InterruptorDeHoja } from './interruptor-de-hoja'
 import { SubtotalDeHoja } from './subtotal-de-hoja'
 import { VarianteDeHoja } from './variante-de-hoja'
 
 type Props = { item: Item; contexto: ContextoDeHoja; acciones: AccionesDeHoja }
-
-// Cada ancho del diseño es un tramo de la grilla de 12 pistas de su sección: `mitad` desde 32 rem de la sección y `tercio` desde 48; por debajo, la fila entera. Los
-// nombres completos van escritos: Tailwind no ve una clase armada con un trozo.
-const ANCHO = {
-  completo: 'col-span-12',
-  mitad: 'col-span-12 @lg:col-span-6',
-  tercio: 'col-span-12 @3xl:col-span-4',
-} as const
 
 function Atajos({ item, contexto, acciones }: Props & { item: Extract<Item, { tipo: 'atajos' }> }) {
   const celda = contexto.indice.lados.get(item.nodo)?.celda
@@ -40,24 +33,26 @@ function Atajos({ item, contexto, acciones }: Props & { item: Extract<Item, { ti
   )
 }
 
-// Un ítem de una sección, con su `data-nodo` (lo que miran los e2e: el orden del DOM es el declarado).
+// Un ítem de una sección, con su `data-nodo` (lo que miran los e2e: el orden del DOM es el declarado). Su lugar en la rejilla de 12 pistas de su sección (columnas,
+// filas, letra y énfasis) sale de su aspecto (`claseDelItem()`): sin él, la celda con su ancho con nombre y lo demás a lo ancho, como siempre.
 export function ItemDeHoja({ item, contexto, acciones }: Props) {
+  const clase = claseDelItem(item)
   switch (item.tipo) {
     case 'celda':
       return (
-        <div data-nodo={item.nodo} className={ANCHO[item.ancho]}>
+        <div data-nodo={item.nodo} className={clase}>
           <CeldaDeHoja celda={item} contexto={contexto} acciones={acciones} />
         </div>
       )
     case 'atajos':
       return (
-        <div data-atajos={item.nodo} className="col-span-12">
+        <div data-atajos={item.nodo} className={clase}>
           <Atajos item={item} contexto={contexto} acciones={acciones} />
         </div>
       )
     case 'variante':
       return (
-        <div data-nodo={item.nodo} className="col-span-12">
+        <div data-nodo={item.nodo} className={clase}>
           <VarianteDeHoja
             item={item}
             elegida={contexto.entradas.variante ?? item.porDefecto}
@@ -67,7 +62,7 @@ export function ItemDeHoja({ item, contexto, acciones }: Props) {
       )
     case 'interruptor':
       return (
-        <div data-nodo={item.nodo} className="col-span-12">
+        <div data-nodo={item.nodo} className={clase}>
           <InterruptorDeHoja
             item={item}
             encendido={contexto.entradas.banderas.has(item.nodo)}
@@ -78,7 +73,7 @@ export function ItemDeHoja({ item, contexto, acciones }: Props) {
       )
     case 'subtotal':
       return (
-        <div data-nodo={item.nodo} className="col-span-12">
+        <div data-nodo={item.nodo} className={clase}>
           <SubtotalDeHoja item={item} valor={valorDeSubtotal(item.nodo, contexto.respuesta)} />
         </div>
       )

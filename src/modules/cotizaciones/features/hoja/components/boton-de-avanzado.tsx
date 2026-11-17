@@ -2,6 +2,7 @@
 
 import { ChevronRightIcon } from 'lucide-react'
 import type { Ref } from 'react'
+import { COLUMNAS_DE_LA_SECCION } from './clases-de-la-rejilla'
 
 type Props = {
   // Los títulos de las secciones que esconde, ya unidos.
@@ -14,10 +15,10 @@ type Props = {
 
 export const AVISO_POR_REVISAR = 'Hay datos por revisar.'
 
-// El botón «Avanzado» (paso 4.13-4a): va en el lugar de la primera sección avanzada y dice qué hay detrás. Lo que abre es un modal con su URL (`ModalDeAvanzado`).
+// El botón «Avanzado» (paso 4.13-4a): va en el lugar de la primera sección avanzada (en la rejilla, como una sección «Automática») y dice qué hay detrás. Lo que abre es un modal con su URL (`ModalDeAvanzado`).
 export function BotonDeAvanzado({ titulos, porRevisar, alAbrir, boton }: Props) {
   return (
-    <div data-avanzado="" className="min-w-0">
+    <div data-avanzado="" className={`${COLUMNAS_DE_LA_SECCION.AUTOMATICA} min-w-0`}>
       <button
         ref={boton}
         type="button"
