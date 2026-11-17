@@ -14,11 +14,14 @@ import { PanelSinFormulario } from './panel-sin-formulario'
 
 type Props = {
   ficha: LeadDeFicha
-  // Cartera y `leads.editar`: sin esto el panel no se abre aunque la URL lo pida.
+  // Cartera y `leads.editar`: todo el formulario.
   puedeEditar: boolean
-  // Cartera y `leads.telefonos_extra.editar`: los extras del panel se administran; sin esto se ven sin acciones.
+  // Cartera y `leads.telefonos_extra.editar`: los extras del panel se administran. Sin `puedeEditar`, el panel abre sólo con los
+  // teléfonos; sin ninguno de los dos, no se abre aunque la URL lo pida.
   puedeEditarExtras: boolean
   puedeConfigurar: boolean
+  // Cartera y `leads.editar`: «Cambiar el principal» en el bloque de teléfonos del panel.
+  puedeCambiarTelefono: boolean
 }
 
 type PropsDelLector = Props & { abierto: boolean; alCerrar: () => void }
@@ -30,6 +33,7 @@ function LectorDeCatalogos({
   puedeEditar,
   puedeEditarExtras,
   puedeConfigurar,
+  puedeCambiarTelefono,
   abierto,
   alCerrar,
 }: PropsDelLector) {
@@ -46,6 +50,7 @@ function LectorDeCatalogos({
         puedeEditar={puedeEditar}
         puedeEditarExtras={puedeEditarExtras}
         puedeConfigurar={puedeConfigurar}
+        puedeCambiarTelefono={puedeCambiarTelefono}
       />
     )
   }
@@ -78,7 +83,7 @@ export function EdicionDeLaFicha(props: Props) {
   const panel = usePanelDeLead()
   const apertura = useApertura(panel.abierto)
   const visto = useAbiertoAlgunaVez(panel.abierto)
-  if (!visto || !props.puedeEditar) {
+  if (!visto || !(props.puedeEditar || props.puedeEditarExtras)) {
     return null
   }
   return (

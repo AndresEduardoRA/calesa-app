@@ -143,8 +143,9 @@ export const tituloDeLaFicha = (page: Page, nombre: string): Locator =>
 export const panelDeEdicion = (page: Page): Locator =>
   page.getByRole('dialog', { name: /^Editar / })
 
+// «Editar» de la cabecera de la ficha (el `<header>` de la columna de la izquierda): seguimientos y recordatorios también tienen el suyo.
 export const botonEditar = (page: Page): Locator =>
-  aLaVista(page.getByRole('button', { name: 'Editar', exact: true }))
+  aLaVista(page.locator('main header').getByRole('button', { name: 'Editar', exact: true }))
 
 // Abre el panel con el botón y espera a que esté (la página hidrata antes de que el clic valga).
 export async function abrirEdicion(page: Page): Promise<Locator> {
@@ -244,15 +245,17 @@ export async function constanciasDe(leadId: string, accion: string): Promise<num
 export const panelDeTelefono = (page: Page): Locator =>
   page.getByRole('dialog', { name: 'Cambiar teléfono principal' })
 
+// «Cambiar el principal» vive en el bloque de teléfonos del panel de edición (la ficha los muestra sólo para leer).
 export const botonCambiar = (page: Page): Locator =>
-  aLaVista(page.getByRole('button', { name: 'Cambiar', exact: true }))
+  page.getByRole('button', { name: 'Cambiar el principal' })
 
-// Abre el panel con «Cambiar» (la página hidrata antes de que el clic valga).
+// Abre la edición con «Editar» y, desde ahí, el panel del cambio con «Cambiar el principal».
 export async function abrirCambioDeTelefono(page: Page): Promise<Locator> {
   const panel = panelDeTelefono(page)
-  await expect(async () => {
-    await botonCambiar(page).click()
-    await expect(panel).toBeVisible({ timeout: 1000 })
-  }).toPass()
+  if (!(await panelDeEdicion(page).isVisible())) {
+    await abrirEdicion(page)
+  }
+  await botonCambiar(page).click()
+  await expect(panel).toBeVisible()
   return panel
 }

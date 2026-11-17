@@ -11,7 +11,7 @@ import type { LeadDeFicha } from '../../../entities/ficha'
 import { BadgeDeTipo } from '../../listado/components/badge-de-tipo'
 import { OrigenDelLead } from '../../listado/components/origen-del-lead'
 import { BloqueDeCartera } from '../../cartera/components/bloque-de-cartera'
-import { BloqueDeTelefonos } from './bloque-de-telefonos'
+import { TelefonosDeLaFicha } from './telefonos-de-la-ficha'
 
 type Props = {
   ficha: LeadDeFicha
@@ -42,7 +42,6 @@ export function SeccionDatos({
   tipo,
   puedeCambiarTelefono,
   puedeEditarExtras,
-  puedeConfigurar,
   cartera,
   accionesDeCartera,
   vePortal,
@@ -66,11 +65,9 @@ export function SeccionDatos({
           <Dato etiqueta="Creado">{formatearFechaHora(ficha.creadoEn, { zona: zonaHoraria })}</Dato>
         </RejillaDeDatos>
       </Bloque>
-      <BloqueDeTelefonos
+      <TelefonosDeLaFicha
         ficha={ficha}
-        puedeCambiar={puedeCambiarTelefono}
-        puedeEditarExtras={puedeEditarExtras}
-        puedeConfigurar={puedeConfigurar}
+        conEditarTelefonos={puedeEditarExtras && !puedeCambiarTelefono}
       />
       <BloqueDeCartera
         lead={{

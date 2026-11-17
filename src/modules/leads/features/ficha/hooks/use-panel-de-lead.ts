@@ -6,19 +6,18 @@ import { recordarQuienAbre } from '@/shared/ui/foco-de-quien-abre'
 import { abrirConVuelta, useVueltaDelFoco } from '@/shared/ui/vuelta-del-foco'
 import { PANEL_COMPARTIR, PANEL_SALIR, PANEL_TRANSFERIR } from '../../../entities/cartera'
 import { PANEL_EDITAR_LEAD } from '../../../entities/edicion'
-import { PANEL_AGREGAR_TELEFONO, PANEL_CAMBIAR_TELEFONO } from '../../../entities/telefonos'
+import { PANEL_CAMBIAR_TELEFONO } from '../../../entities/telefonos'
 
 const PANELES = new Set([
   PANEL_EDITAR_LEAD,
   PANEL_CAMBIAR_TELEFONO,
-  PANEL_AGREGAR_TELEFONO,
   PANEL_COMPARTIR,
   PANEL_TRANSFERIR,
   PANEL_SALIR,
 ])
 
-// Qué panel de la ficha está abierto, en la URL (`?panel=editar-lead`, `cambiar-telefono`,
-// `agregar-telefono`, `compartir-lead`, `transferir-lead` o `salir-lead`). Comparten la clave: no pueden estar
+// Qué panel de la ficha está abierto, en la URL (`?panel=editar-lead`, `cambiar-telefono`, `compartir-lead`, `transferir-lead` o
+// `salir-lead`; el viejo `agregar-telefono` lo reemplaza la ficha por `editar-lead&extra=nuevo`). Comparten la clave: no pueden estar
 // abiertos a la vez. Abrir suma al historial («atrás» lo cierra; tras recargar, devuelve el foco a quien lo abrió: `vuelta-del-foco.ts`).
 // Sin `shallow: false`: abrirlo no necesita al servidor, la ficha ya está.
 export function usePanelDeLead() {
@@ -36,16 +35,13 @@ export function usePanelDeLead() {
     abierto: panel === PANEL_EDITAR_LEAD,
     abrir: abre(PANEL_EDITAR_LEAD),
     cerrar: cierra,
-    // El cambio del teléfono principal.
+    // El cambio del teléfono principal: se llega desde el panel de edición, que reemplaza su entrada del historial («atrás» no vuelve
+    // a la edición con lo escrito ya descartado).
     telefono: {
       abierto: panel === PANEL_CAMBIAR_TELEFONO,
-      abrir: abre(PANEL_CAMBIAR_TELEFONO),
-      cerrar: cierra,
-    },
-    // Un teléfono extra (un modal).
-    extra: {
-      abierto: panel === PANEL_AGREGAR_TELEFONO,
-      abrir: abre(PANEL_AGREGAR_TELEFONO),
+      reemplazar: () => {
+        void setPanel(PANEL_CAMBIAR_TELEFONO, { history: 'replace' })
+      },
       cerrar: cierra,
     },
     // Dar el lead a otra persona, o pasárselo.

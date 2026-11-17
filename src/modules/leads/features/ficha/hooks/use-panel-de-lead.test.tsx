@@ -1,7 +1,6 @@
 import { probarLaVuelta } from '@/shared/ui/vuelta-del-foco.soporte'
 import { PANEL_COMPARTIR, PANEL_SALIR, PANEL_TRANSFERIR } from '../../../entities/cartera'
 import { PANEL_EDITAR_LEAD } from '../../../entities/edicion'
-import { PANEL_AGREGAR_TELEFONO, PANEL_CAMBIAR_TELEFONO } from '../../../entities/telefonos'
 import { usePanelDeLead } from './use-panel-de-lead'
 
 type Panel = ReturnType<typeof usePanelDeLead>
@@ -20,22 +19,6 @@ probarLaVuelta({
       },
       abierta: `?panel=${PANEL_EDITAR_LEAD}`,
       abierto: (panel: Panel) => panel.abierto,
-    },
-    {
-      nombre: 'telefono.abrir',
-      abrir: (panel: Panel) => {
-        panel.telefono.abrir()
-      },
-      abierta: `?panel=${PANEL_CAMBIAR_TELEFONO}`,
-      abierto: (panel: Panel) => panel.telefono.abierto,
-    },
-    {
-      nombre: 'extra.abrir',
-      abrir: (panel: Panel) => {
-        panel.extra.abrir()
-      },
-      abierta: `?panel=${PANEL_AGREGAR_TELEFONO}`,
-      abierto: (panel: Panel) => panel.extra.abierto,
     },
     {
       nombre: 'compartir.abrir',

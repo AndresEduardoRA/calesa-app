@@ -21,6 +21,7 @@ import { usePanelDeEtiquetas } from '../../etiquetas/hooks/use-panel-de-etiqueta
 import { InsigniasDeMarcas } from '../../marcas/components/insignias-de-marcas'
 import { useMarcas } from '../../marcas/hooks/use-marcas'
 import { usePanelDeLead } from '../hooks/use-panel-de-lead'
+import { usePanelViejoDeTelefono } from '../hooks/use-panel-viejo-de-telefono'
 import { AvisoDeVencidos } from './aviso-de-vencidos'
 import { BarraDeSecciones } from './barra-de-secciones'
 import { AccionesDeLaFicha } from './acciones-de-la-ficha'
@@ -139,6 +140,7 @@ function PanelesDeLaFicha(props: PropsDeLosPaneles) {
     puedeConfigurar,
     etiquetas,
   } = props
+  usePanelViejoDeTelefono(puedeEditar || puedeEditarExtras)
   return (
     <>
       <EdicionDeLaFicha
@@ -146,6 +148,7 @@ function PanelesDeLaFicha(props: PropsDeLosPaneles) {
         puedeEditar={puedeEditar}
         puedeEditarExtras={puedeEditarExtras}
         puedeConfigurar={puedeConfigurar}
+        puedeCambiarTelefono={puedeCambiarTelefono}
       />
       <PanelDeTelefono ficha={ficha} puedeCambiar={puedeCambiarTelefono} />
       <DialogoDeEtiquetas etiquetas={etiquetas} />

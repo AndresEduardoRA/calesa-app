@@ -29,7 +29,10 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `cotizaciones.ver` en algún origen, sin mirar la cartera, la compone `src/app` con `cotizaciones/pantallas/lead`), `/leads/papelera`,
   `/leads/importar` (`leads.crear`), `POST /leads/exportar` (`leads.exportar`), `/configuracion/leads` («Campos» y las `lead_campo_*` piden
   `leads.campos.gestionar`; orígenes, tipos de lead y de seguimiento y `?seccion=embudo|portal|telefonos` (`features/plantillas/`), `leads.configurar`).
-  El modal «Agregar teléfono» es `?panel=agregar-telefono` en la ficha y `?extra=nuevo` dentro del panel de edición (`?panel=` ya es el panel; el resumen sólo lee los teléfonos).
+  Los teléfonos se administran en el panel de edición (la ficha y el resumen sólo los leen): «Cambiar el principal» (cartera y `leads.editar`, sólo en la ficha;
+  apagado con cambios escritos) pasa a `?panel=cambiar-telefono` reemplazando la entrada; «Agregar teléfono» es `?extra=nuevo` dentro del panel. Con la cartera y
+  `leads.telefonos_extra.editar` sin `leads.editar`, «Editar teléfonos» abre el mismo panel en modo teléfonos («Teléfonos de <nombre>», sólo los teléfonos). Un
+  `?panel=agregar-telefono` viejo se reemplaza por `?panel=editar-lead&extra=nuevo` (o se quita sin permiso: `reemplazoDelPanelViejo()`).
   Todo modal en `?panel=` (`PANEL_*`); los de una fila llevan `para=<id>` y con `?lead=` no responden.
 - «Nueva oportunidad…» del «⋯» (`?panel=oportunidad-rapida&para=<id>` en la lista y el kanban; sin `para` en la ficha y el resumen, `NuevaOportunidadDelLead`;
   `features/oportunidades/components/modal-de-oportunidad-rapida.tsx`): sólo `leads.editar` y el lead en la cartera, como anotar y agendar. Primero el aviso de las que el lead

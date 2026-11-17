@@ -34,13 +34,35 @@ export async function fichaDeBerta(
   return { ...lead, nac }
 }
 
-// «Agregar teléfono» es un modal con su URL (`?panel=agregar-telefono`).
+// «Agregar teléfono» es un modal con su URL dentro del panel de edición (`?panel=editar-lead&extra=nuevo`): la ficha muestra los teléfonos
+// sólo para leer.
 export const modalDeExtra = (page: Page) => page.getByRole('dialog', { name: 'Agregar teléfono' })
 
+// El panel que administra los teléfonos: la edición («Editar …») o, sin `leads.editar`, el modo teléfonos («Teléfonos de …»).
+export const panelConTelefonos = (page: Page) =>
+  page.getByRole('dialog', { name: /^(Editar|Teléfonos de) / })
+
 export const botonAgregarTelefono = (page: Page) =>
-  page.getByRole('button', { name: 'Agregar teléfono' })
+  panelConTelefonos(page).getByRole('button', { name: 'Agregar teléfono' })
+
+// Abre el panel con «Editar» de la cabecera o, sin él, con «Editar teléfonos» (la página hidrata antes de que el clic valga).
+export async function abrirPanelConTelefonos(page: Page) {
+  const panel = panelConTelefonos(page)
+  if (await panel.isVisible()) {
+    return panel
+  }
+  await expect(async () => {
+    const editar = page.locator('main header').getByRole('button', { name: 'Editar', exact: true })
+    await (
+      (await editar.isVisible()) ? editar : page.getByRole('button', { name: 'Editar teléfonos' })
+    ).click()
+    await expect(panel).toBeVisible({ timeout: 1000 })
+  }).toPass()
+  return panel
+}
 
 export async function abrirAgregarTelefono(page: Page) {
+  await abrirPanelConTelefonos(page)
   await botonAgregarTelefono(page).click()
   await expect(modalDeExtra(page).getByLabel('Teléfono extra')).toBeFocused()
   return modalDeExtra(page)

@@ -30,7 +30,7 @@ export const DRAWERS_DEL_NUCLEO: Record<string, RegistroDeDrawer> = {
     mecanismo: 'propio',
   },
   'src/modules/leads/features/ficha/components/panel-de-edicion.tsx': {
-    formulario: 'src/modules/leads/features/ficha/components/panel-de-edicion.tsx',
+    formulario: 'src/modules/leads/features/ficha/components/contenido-de-la-edicion.tsx',
     mecanismo: 'contexto',
   },
   'src/modules/leads/features/ficha/components/panel-de-telefono.tsx': {
