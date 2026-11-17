@@ -32,9 +32,15 @@ const modalDeNuevo = (page: Page) => page.getByRole('dialog', { name: 'Nuevo', e
 
 // «Nuevo en la agenda» (insiste hasta que la página hidrata) y lo que ofrece.
 async function abrirNuevoEnLaAgenda(page: Page): Promise<string[]> {
+  // Un clic antes de hidratar se pierde: se repite sólo si el modal no llegó (con el modal abierto, el botón queda tapado).
   await expect(async () => {
-    await page.getByRole('main').getByRole('button', { name: 'Nuevo en la agenda' }).click()
-    await expect(modalDeNuevo(page)).toBeVisible({ timeout: 1000 })
+    if (!(await modalDeNuevo(page).isVisible())) {
+      await page
+        .getByRole('main')
+        .getByRole('button', { name: 'Nuevo en la agenda' })
+        .click({ timeout: 2000 })
+    }
+    await expect(modalDeNuevo(page)).toBeVisible({ timeout: 3000 })
   }).toPass()
   return modalDeNuevo(page)
     .getByRole('list', { name: 'Qué crear' })

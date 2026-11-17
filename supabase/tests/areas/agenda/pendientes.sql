@@ -4,7 +4,7 @@
 -- Qué asegura:
 --   P1. «vencidas»: sólo mis tareas (responsable) pendientes, vivas y vencidas, la más vieja primero: no las hechas, canceladas, eliminadas,
 --       futuras, sin fecha ni la que di a otra persona (la RLS me la deja ver: prueba el filtro). Página de 2 con 3 → 2 y `hay_mas`; el cursor
---       trae la tercera. Claves exactas de la fila.
+--       trae la tercera; con dos del mismo vencimiento, el cursor no pierde ni repite ninguna. Claves exactas de la fila.
 --   P2. «recordatorios»: sólo los míos pendientes con recordar_en < p_hasta: no los completados, eliminados, ajenos ni posteriores. Con dos de la
 --       misma hora, el cursor no pierde ni repite ninguno. Sin p_hasta → 22023 hint `hasta`.
 --   P3. Errores: grupo inválido → 22023 `grupo`; cursor a medias → 22023 `cursor`; bloqueada → 42501. `p_tamano` 999 da 50 y por defecto 20.
@@ -83,7 +83,7 @@ begin;
 do $$
 declare
   yo uuid := pg_temp.apd_persona(array['agenda.tareas.recibir']); otra uuid := pg_temp.apd_persona(array['agenda.tareas.recibir']);
-  v1 uuid; v2 uuid; v3 uuid; hecha uuid; cancelada uuid; borrada uuid; futura uuid; sin_fecha uuid; dada uuid; r jsonb;
+  v1 uuid; v2 uuid; v3 uuid; hecha uuid; cancelada uuid; borrada uuid; futura uuid; sin_fecha uuid; dada uuid; r jsonb; v_empate uuid[];
 begin
   v1 := pg_temp.apd_tarea(yo, yo, interval '-3 days');
   v2 := pg_temp.apd_tarea(yo, yo, interval '-2 days');
@@ -113,6 +113,15 @@ begin
   if pg_temp.apd_ids(r) is distinct from array[v3] or r -> 'hay_mas' is distinct from 'false'::jsonb then raise exception 'la página del cursor: %', r; end if;
   r := pg_temp.apd_pagina(otra, 'vencidas');
   if pg_temp.apd_ids(r) is distinct from array[dada] then raise exception 'la responsable de la que di recibió %', r; end if;
+  -- Empate: v2 y una más con el mismo vencimiento salen una vez cada una, de a una por página.
+  update public.tareas set vence_en = (select vence_en from public.tareas where id = v2) where id = v3;
+  r := pg_temp.apd_pagina(yo, 'vencidas', null, 1, pg_temp.apd_cursor(pg_temp.apd_pagina(yo, 'vencidas', null, 1), 0, 'vence_en'),
+                          pg_temp.apd_cursor(pg_temp.apd_pagina(yo, 'vencidas', null, 1), 0, 'id'));
+  v_empate := pg_temp.apd_ids(r);
+  r := pg_temp.apd_pagina(yo, 'vencidas', null, 1, pg_temp.apd_cursor(r, 0, 'vence_en'), pg_temp.apd_cursor(r, 0, 'id'));
+  v_empate := v_empate || pg_temp.apd_ids(r);
+  if array_length(v_empate, 1) is distinct from 2 or not (v_empate @> array[v2, v3]) or r -> 'hay_mas' is distinct from 'false'::jsonb then
+    raise exception 'el empate de vencimientos por cursor dio % (hay_mas %)', v_empate, r -> 'hay_mas'; end if;
 end $$;
 rollback;
 

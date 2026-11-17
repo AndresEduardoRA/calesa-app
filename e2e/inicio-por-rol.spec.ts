@@ -15,6 +15,7 @@ import {
   type TerrenoPorRol,
 } from './soporte/inicio-por-rol'
 import { idDePersona } from './soporte/leads-alta'
+import { botonDeVistaYOpciones } from './soporte/vista-y-opciones'
 
 // Inicio (`/`) por rol: cada persona ve exactamente los bloques que le dan sus permisos, en el orden de `BLOQUES_BANDEJA`, y cada «Ver todas» lleva a la
 // lista ya filtrada con la misma URL que produce el filtro. Los roles de referencia de `docs/UX.md` › Roles: asesor, logística y repuestos (los de la semilla),
@@ -49,15 +50,9 @@ test.describe('asesor', () => {
     )
     await recordatorios.getByRole('link', { name: 'Ver todas' }).click()
     await expect(page).toHaveURL(/\/agenda\?ver=recordatorio$/)
-    const queVer = page.getByRole('list', { name: 'Qué ver' })
-    await expect(queVer.getByRole('button', { name: 'Recordatorio' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    await expect(queVer.getByRole('button', { name: 'Tarea' })).toHaveAttribute(
-      'aria-pressed',
-      'false',
-    )
+    // «Qué ver» va en «Vista y opciones», que dice lo elegido.
+    await expect(botonDeVistaYOpciones(page)).toContainText('Recordatorios')
+    await expect(botonDeVistaYOpciones(page)).not.toContainText('Tareas')
 
     await page.goto('/')
     const tareas = page.getByRole('region', { name: BLOQUES.tareas })
@@ -70,12 +65,8 @@ test.describe('asesor', () => {
     )
     await tareas.getByRole('link', { name: 'Ver todas' }).click()
     await expect(page).toHaveURL(/\/agenda\?ver=tarea$/)
-    await expect(
-      page.getByRole('list', { name: 'Qué ver' }).getByRole('button', { name: 'Tarea' }),
-    ).toHaveAttribute('aria-pressed', 'true')
-    await expect(
-      page.getByRole('list', { name: 'Qué ver' }).getByRole('button', { name: 'Recordatorio' }),
-    ).toHaveAttribute('aria-pressed', 'false')
+    await expect(botonDeVistaYOpciones(page)).toContainText('Tareas')
+    await expect(botonDeVistaYOpciones(page)).not.toContainText('Recordatorios')
   })
 })
 
