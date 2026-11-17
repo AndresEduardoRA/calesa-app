@@ -4,14 +4,21 @@ import { connection } from 'next/server'
 import { Suspense, type ComponentProps, type ReactNode } from 'react'
 import { puede, requerirSesion } from '@/modules/equipo'
 import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
-import { destinoDelPanelDe, itemAbiertoDe, leerCatalogosDeRepuestos } from '@/modules/repuestos'
 import {
   PROYECTO_YA_NO_ESTA,
+  TITULO_DEL_PANEL,
   clienteDeLaCabecera,
   cuentasDeLaHoja,
+  destinoDelPanelDe,
   estadoDelProyecto,
+  hayPagoDelCliente,
+  itemAbiertoDe,
+  leerCatalogosDeRepuestos,
+  leerFlujoDeLosPasos,
   leerItemsDelProyecto,
   leerProyecto,
+  type PanelDelPaso,
+  type ProyectoDetallado,
 } from '@/modules/repuestos'
 import { CabeceraDeProyecto } from '@/modules/repuestos/pantallas/proyectos'
 import { PagosDelProyectoDiferido } from '@/modules/logistica/pantallas/dinero-proyecto'
@@ -19,26 +26,32 @@ import { leerMonedasYTiposCambio } from '@/modules/empresa'
 import { leerLeadParaEnlazar } from '@/modules/leads'
 import { leerVehiculo } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
+import { redirigir } from '@/shared/lib/navegacion'
 import type { Permisos } from '@/shared/lib/permisos'
 import { RUTAS, unParametro } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoSinPermiso, EstadoVacio } from '@/shared/ui/estados'
 import { EsqueletoListado } from '@/shared/ui/esqueletos'
 import { PanelDelItem } from '../panel-del-item'
-import { HojaConStock } from './hoja-con-stock'
-import { pestanaDe, pestanasLlenas } from './pestanas'
-import { PestanasDelProyecto } from './pestanas-del-proyecto'
+import { HojaDelProyecto } from './hoja-del-proyecto'
+import { CargandoUnProyectoCuerpo } from './loading'
+import {
+  CLAVE_DEL_PANEL_DEL_PASO,
+  panelAbiertoDe,
+  panelesDisponibles,
+  redireccionDeEnlaceViejo,
+} from './paneles'
 import { SeccionDeCompras } from './seccion-compras'
 import { SeccionDeCotizaciones } from './seccion-cotizaciones'
 
 export const metadata: Metadata = { title: 'Proyecto de repuestos' }
 
-// Un proyecto de repuestos (`docs/UX.md` › «Repuestos»): su cabecera y la hoja de ítems o, con `repuestos.costos.ver` y `?pestana=compras`, sus compras y el margen
-// (`?pestana=pagos`, los pagos del cliente, 8.13-5), o, con
-// `repuestos.cotizar` y `?pestana=cotizaciones`, sus cotizaciones. Lo que no existe, está eliminado o quien mira no ve se dicen igual (D49), con un enlace al listado.
+// Un proyecto de repuestos (`docs/UX.md` › «Repuestos»): su cabecera, los pasos del proyecto (las fases del flujo de repuestos y sus hitos, con su progreso), el panel del
+// paso abierto (`?pestana=cotizaciones|pagos|compras`, cada uno con su permiso) y la hoja de ítems, siempre a la vista, con el botón del siguiente en cada fila. Lo que
+// no existe, está eliminado o quien mira no ve se dicen igual (D49), con un enlace al listado.
 export default function PaginaDeUnProyecto({ params, searchParams }: PageProps<'/repuestos/[id]'>) {
   return (
-    <Suspense fallback={<EsqueletoListado filas={6} columnas={6} />}>
+    <Suspense fallback={<CargandoUnProyectoCuerpo />}>
       <Proyecto params={params} searchParams={searchParams} />
     </Suspense>
   )
@@ -57,6 +70,27 @@ function NoDisponible() {
   )
 }
 
+// Las lecturas de la página tras el proyecto. Las que fallan suben al `error.tsx` (con «Reintentar»); el vehículo o el lead que quien mira no ve quedan en nulo. El lead
+// del cliente se lee sólo si lo hay y con `leads.ver`. El flujo de los pasos no lanza (dice que no se pudo leer) y el pago vivo se lee sólo con `repuestos.costos.ver`:
+// si falla, queda en nulo (los pasos no dicen nada del pago).
+async function leerLoDelProyecto(proyecto: ProyectoDetallado, permisos: Permisos) {
+  return Promise.all([
+    leerItemsDelProyecto(proyecto.id).then(datosO),
+    leerCatalogosDeRepuestos().then(datosO),
+    leerMonedasYTiposCambio().then(datosO),
+    proyecto.vehiculoId === null
+      ? Promise.resolve(null)
+      : leerVehiculo(proyecto.vehiculoId).then(datosO),
+    proyecto.leadId !== null && puede(permisos, 'leads.ver')
+      ? leerLeadParaEnlazar(proyecto.leadId).then(datosO)
+      : Promise.resolve(null),
+    leerFlujoDeLosPasos(),
+    puede(permisos, 'repuestos.costos.ver')
+      ? hayPagoDelCliente(proyecto.id).then((r) => (r.ok ? r.data : null))
+      : Promise.resolve(null),
+  ])
+}
+
 async function Proyecto({
   params,
   searchParams,
@@ -66,41 +100,23 @@ async function Proyecto({
   if (!puede(sesion.permisos, 'repuestos.ver')) {
     return <EstadoSinPermiso />
   }
+  // Sin la clave de un panel no se lee nada suyo: `?pestana=compras` sin `repuestos.costos.ver` deja sólo la hoja. Un enlace viejo (`?panel=compra…` o de pagos sin
+  // `?pestana=`) va a la misma URL con su panel.
+  const disponibles = panelesDisponibles(sesion.permisos)
+  const redireccion = redireccionDeEnlaceViejo(id, parametros, disponibles)
+  if (redireccion !== null) redirigir(redireccion)
   const proyecto = datosO(await leerProyecto(id))
   if (proyecto === null) {
     return <NoDisponible />
   }
-  // Las lecturas que fallan suben al `error.tsx` (con «Reintentar»); el vehículo o el lead que quien mira no ve quedan en nulo. El lead del cliente se lee
-  // sólo si lo hay y con `leads.ver`: sin él, la cabecera dice «Cliente que no puedes ver».
-  const [hoja, catalogos, monedas, vehiculo, lead] = await Promise.all([
-    leerItemsDelProyecto(proyecto.id).then(datosO),
-    leerCatalogosDeRepuestos().then(datosO),
-    leerMonedasYTiposCambio().then(datosO),
-    proyecto.vehiculoId === null
-      ? Promise.resolve(null)
-      : leerVehiculo(proyecto.vehiculoId).then(datosO),
-    proyecto.leadId !== null && puede(sesion.permisos, 'leads.ver')
-      ? leerLeadParaEnlazar(proyecto.leadId).then(datosO)
-      : Promise.resolve(null),
-  ])
-  const puedeEditar = puede(sesion.permisos, 'repuestos.editar')
-  const estado = estadoDelProyecto({
-    cerradoEn: proyecto.cerradoEn,
-    ...cuentasDeLaHoja(hoja.filas),
-  })
-  // Sin `repuestos.costos.ver` la pestaña «Compras» no está y `?pestana=compras` abre «Ítems»: no se lee ninguna compra ni el margen.
-  const llenas = pestanasLlenas(sesion.permisos)
-  const abierta = pestanaDe(unParametro(parametros['pestana']), llenas)
-  const seccion = seccionAbierta(abierta, {
-    proyectoId: proyecto.id,
-    hoja,
-    catalogos,
-    monedas: monedas.monedas.filter((m) => m.activa),
-    permisos: sesion.permisos,
-    cerrado: proyecto.cerradoEn !== null,
-    itemId: itemAbiertoDe(parametros),
-    destino: destinoDelPanelDe(parametros),
-  })
+  const [hoja, catalogos, monedas, vehiculo, lead, lectura, pago] = await leerLoDelProyecto(
+    proyecto,
+    sesion.permisos,
+  )
+  const permisos = sesion.permisos
+  const cerrado = proyecto.cerradoEn !== null
+  const activas = monedas.monedas.filter((m) => m.activa)
+  const abierto = panelAbiertoDe(unParametro(parametros[CLAVE_DEL_PANEL_DEL_PASO]), disponibles)
   return (
     <CabeceraDeProyecto
       proyecto={proyecto}
@@ -110,34 +126,68 @@ async function Proyecto({
         clienteNombre: proyecto.clienteNombre,
         lead,
       })}
-      estado={estado}
-      puedeEditar={puedeEditar}
+      estado={estadoDelProyecto({ cerradoEn: proyecto.cerradoEn, ...cuentasDeLaHoja(hoja.filas) })}
+      puedeEditar={puede(permisos, 'repuestos.editar')}
       sinItems={hoja.filas.length === 0}
     >
       <RegistrarVisto modulo="repuestos" tipo="proyecto_repuestos" id={proyecto.id} />
-      {llenas.length > 1 ? <PestanasDelProyecto pestanas={llenas} /> : null}
-      {seccion}
+      <HojaDelProyecto
+        proyectoId={proyecto.id}
+        filas={hoja.filas}
+        hayMas={hoja.hayMas}
+        catalogos={catalogos}
+        monedas={activas}
+        puedeEditar={puede(permisos, 'repuestos.editar')}
+        cerrado={cerrado}
+        lectura={lectura}
+        pago={pago}
+        disponibles={disponibles}
+        titulos={TITULO_DEL_PANEL}
+        panelDelServidor={
+          abierto === null
+            ? null
+            : {
+                panel: abierto,
+                contenido: contenidoDelPanel(abierto, {
+                  proyectoId: proyecto.id,
+                  hoja,
+                  monedas: activas,
+                  permisos,
+                  cerrado,
+                }),
+              }
+        }
+        puede={{
+          mover: puede(permisos, 'repuestos.mover'),
+          cotizar: puede(permisos, 'repuestos.cotizar'),
+          registrarPago: puede(permisos, 'repuestos.costos.editar'),
+          configurar: puede(permisos, 'repuestos.configurar'),
+        }}
+      />
+      <PanelDelItem
+        itemId={itemAbiertoDe(parametros)}
+        destino={destinoDelPanelDe(parametros)}
+        permisos={permisos}
+      />
     </CabeceraDeProyecto>
   )
 }
 
-type DatosDeLaSeccion = {
+type DatosDelPanel = {
   proyectoId: string
-  hoja: { filas: ComponentProps<typeof HojaConStock>['filas']; hayMas: boolean }
-  catalogos: ComponentProps<typeof HojaConStock>['catalogos']
-  monedas: (ComponentProps<typeof HojaConStock>['monedas'][number] & { nombre: string })[]
+  hoja: { filas: ComponentProps<typeof HojaDelProyecto>['filas'] }
+  monedas: { codigo: string; nombre: string }[]
   permisos: Permisos
   cerrado: boolean
-  itemId: string | null
-  destino: string | null
 }
 
-// Lo que dibuja la pestaña abierta. Compras y cotizaciones se leen recién al abrirse (`escala.md` › «Carga del cliente»).
-function seccionAbierta(abierta: string, datos: DatosDeLaSeccion): ReactNode {
-  const { proyectoId, hoja, catalogos, monedas, permisos, cerrado, itemId, destino } = datos
-  if (abierta === 'compras') {
+// Lo que dibuja el panel abierto bajo los pasos. Compras y cotizaciones se leen recién al abrirse (`escala.md` › «Carga del cliente»); los pagos los lee el navegador.
+function contenidoDelPanel(abierto: PanelDelPaso, datos: DatosDelPanel): ReactNode {
+  const { proyectoId, hoja, monedas, permisos, cerrado } = datos
+  const esqueleto = <EsqueletoListado filas={4} columnas={4} />
+  if (abierto === 'compras') {
     return (
-      <Suspense fallback={<EsqueletoListado filas={4} columnas={4} />}>
+      <Suspense fallback={esqueleto}>
         <SeccionDeCompras
           proyectoId={proyectoId}
           items={hoja.filas.map((f) => ({ id: f.id, descripcion: f.descripcion }))}
@@ -148,43 +198,24 @@ function seccionAbierta(abierta: string, datos: DatosDeLaSeccion): ReactNode {
       </Suspense>
     )
   }
-  if (abierta === 'pagos') {
-    // El código del hueco de pagos (de `logistica`) se pide al abrir la pestaña; lee los pagos desde el navegador, bajo la policy.
+  if (abierto === 'pagos') {
     return (
-      <Suspense fallback={<EsqueletoListado filas={4} columnas={4} />}>
-        <PagosDelProyectoDiferido
-          proyectoId={proyectoId}
-          cerrado={cerrado}
-          puedeEditar={puede(permisos, 'repuestos.costos.editar')}
-          puedeConfirmar={puede(permisos, 'logistica.pagos.confirmar')}
-        />
-      </Suspense>
-    )
-  }
-  if (abierta === 'cotizaciones') {
-    return (
-      <Suspense fallback={<EsqueletoListado filas={4} columnas={4} />}>
-        <SeccionDeCotizaciones
-          proyectoId={proyectoId}
-          monedas={monedas}
-          cerrado={cerrado}
-          puedeConfigurar={puede(permisos, 'repuestos.configurar')}
-        />
-      </Suspense>
+      <PagosDelProyectoDiferido
+        proyectoId={proyectoId}
+        cerrado={cerrado}
+        puedeEditar={puede(permisos, 'repuestos.costos.editar')}
+        puedeConfirmar={puede(permisos, 'logistica.pagos.confirmar')}
+      />
     )
   }
   return (
-    <>
-      <HojaConStock
+    <Suspense fallback={esqueleto}>
+      <SeccionDeCotizaciones
         proyectoId={proyectoId}
-        filas={hoja.filas}
-        hayMas={hoja.hayMas}
-        catalogos={catalogos}
         monedas={monedas}
-        puedeEditar={puede(permisos, 'repuestos.editar')}
         cerrado={cerrado}
+        puedeConfigurar={puede(permisos, 'repuestos.configurar')}
       />
-      <PanelDelItem itemId={itemId} destino={destino} permisos={permisos} />
-    </>
+    </Suspense>
   )
 }

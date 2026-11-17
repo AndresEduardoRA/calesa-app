@@ -13,7 +13,9 @@ import {
 import { puede, type ClavePermiso, type Permisos } from '@/shared/lib/permisos'
 import { RUTAS } from '@/shared/lib/rutas'
 
-export const CLAVE_DEL_PANEL_DEL_PASO = 'pestana'
+import { CLAVE_DEL_PANEL_DEL_PASO } from './clave-del-panel'
+
+export { CLAVE_DEL_PANEL_DEL_PASO }
 
 const PERMISO_DEL_PANEL: Readonly<Record<PanelDelPaso, ClavePermiso>> = {
   cotizaciones: 'repuestos.cotizar',

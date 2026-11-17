@@ -91,9 +91,12 @@ test('con costos: la pestaña «Compras» lista la compra y el margen; sin preci
   )
   await page.reload()
 
-  await page.getByRole('tab', { name: 'Compras' }).click()
+  await page.getByRole('button', { name: 'Compras', exact: true }).click()
   await expect(page).toHaveURL(/[?&]pestana=compras/)
-  await expect(page.getByRole('tab', { name: 'Compras', selected: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Compras', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
 
   const compras = page.getByRole('list', { name: 'Compras del proyecto' })
   const fila = compras.getByRole('listitem').filter({ hasText: PROVEEDOR })
@@ -114,11 +117,11 @@ test('con costos: la pestaña «Compras» lista la compra y el margen; sin preci
   await expect(valorDe('Margen').locator('[data-monto]')).toHaveCount(0)
 })
 
-test('sin costos: no hay pestaña «Compras» y su URL abre la hoja', async ({ page }) => {
+test('sin costos: no hay botón «Compras» y su URL abre la hoja', async ({ page }) => {
   await entrar(page, lectora, { fresco: true })
   await page.goto(`/repuestos/${proyecto}?pestana=compras`)
   await expect(page.getByText(BOMBA)).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Compras' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Compras', exact: true })).toHaveCount(0)
   await expect(page.getByText(PROVEEDOR)).toHaveCount(0)
   await expect(page.getByRole('region', { name: 'Margen del proyecto' })).toHaveCount(0)
 })

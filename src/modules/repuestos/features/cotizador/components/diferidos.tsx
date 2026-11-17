@@ -11,3 +11,9 @@ export const ModalDeTramoDiferido = diferido(() =>
 export const ModalDeCajaDiferido = diferido(() =>
   import('./modal-de-caja').then((modulo) => modulo.ModalDeCaja),
 )
+
+// El panel «Cotizaciones» bajo los pasos de `/repuestos/[id]`: la lista se pide al elegirlo, no viaja con la hoja.
+export const CotizacionesDelProyectoDiferido = diferido(
+  () => import('./cotizaciones-del-proyecto').then((modulo) => modulo.CotizacionesDelProyecto),
+  { aviso: 'aqui' },
+)

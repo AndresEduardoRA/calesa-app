@@ -14,7 +14,7 @@ type Props = {
   filaNueva: ReactNode
 }
 
-// La hoja en escritorio (8.09-2, C8): una fila por ítem con sus columnas, editable celda a celda. Los números a la derecha; el precio, por `<Monto>` o `XCell`. La fase es sólo lectura. La fila nueva va al
+// La hoja en escritorio (8.09-2, C8): una fila por ítem con sus columnas, editable celda a celda. Los números a la derecha; el precio, por `<Monto>` o `XCell`. La columna «Paso» lleva la fase y, si el hueco lo pone, el botón del siguiente. La fila nueva va al
 // final con la descripción: el resto de las columnas se llena después, con el teclado.
 export function TablaDeItems({ filas, contexto, filaNueva }: Props) {
   return (
@@ -31,7 +31,7 @@ export function TablaDeItems({ filas, contexto, filaNueva }: Props) {
           <TableHead>Moneda</TableHead>
           <TableHead>Tracking</TableHead>
           <TableHead>Notas</TableHead>
-          <TableHead>Fase</TableHead>
+          <TableHead>Paso</TableHead>
           <TableHead>Acciones</TableHead>
         </TableRow>
       </TableHeader>

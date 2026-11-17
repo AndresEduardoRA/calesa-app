@@ -80,7 +80,7 @@ test('crear una cotización lleva a su hoja; la lista y la hoja muestran lo que 
   await expect(page).toHaveURL(/\/repuestos\/[0-9a-f-]{36}$/)
   proyecto = new URL(page.url()).pathname.split('/').pop() ?? ''
 
-  await page.getByRole('tab', { name: 'Cotizaciones' }).click()
+  await page.getByRole('button', { name: 'Cotizaciones', exact: true }).click()
   await expect(page).toHaveURL(/[?&]pestana=cotizaciones/)
   await expect(page.getByText('Todavía no hay cotizaciones en este proyecto.')).toBeVisible()
 
@@ -124,7 +124,7 @@ test('crear una cotización lleva a su hoja; la lista y la hoja muestran lo que 
   await expect(page.locator('footer').filter({ hasText: 'Total' })).toContainText(monto(375))
 })
 
-test('sin `repuestos.cotizar`: no hay pestaña y la hoja dice que no hay permiso', async ({
+test('sin `repuestos.cotizar`: no hay botón «Cotizaciones» y la hoja dice que no hay permiso', async ({
   page,
 }) => {
   await entrar(page, lectora, { fresco: true })
@@ -133,7 +133,7 @@ test('sin `repuestos.cotizar`: no hay pestaña y la hoja dice que no hay permiso
   await expect(page.getByRole('heading', { level: 1, name: /^Proyecto #\d+$/ })).toBeVisible()
   await expect(page.getByText('Este proyecto todavía no tiene ítems.')).toBeVisible()
   await expect(page.getByLabel('Nuevo ítem: descripción')).toHaveCount(0)
-  await expect(page.getByRole('tab')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Cotizaciones', exact: true })).toHaveCount(0)
   await expect(page.getByRole('list', { name: 'Cotizaciones del proyecto' })).toHaveCount(0)
   await page.goto(rutaDeLaPrimera)
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
