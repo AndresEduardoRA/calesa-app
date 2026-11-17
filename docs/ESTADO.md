@@ -23,7 +23,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 - **En todo el sistema:** avisos con acciones (cada bloqueo dice cómo destrabarlo), el visor de fotos con carrusel, «visto» y «último
   visto» por persona y módulo en las listas.
 - **Repuestos:** proyectos guiados por pasos (las fases del flujo y sus hitos, con el siguiente de cada ítem), ítems, compras, stock, cotizador propio y pagos.
-- **Agenda, chat, notificaciones y buscador:** calendario y tareas, canales y grupos con realtime, la campana y el push (sin claves
+- **Agenda, chat, notificaciones y buscador:** la agenda como libreta del día con sus pendientes (semana y mes a un clic, eventos con su lead), canales y grupos con realtime, la campana y el push (sin claves
   VAPID todavía), la paleta `Ctrl/Cmd+K`.
 - **Web y portal:** el contenido de la web pública por el esquema `web`, la cola con rueda y turnos, el portal del cliente por
   `api/portal/*`.

@@ -285,7 +285,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     abierto). Las demás, y la borrador con el proyecto cerrado, en sólo lectura con la configuración con que se calculó y el total de la
     base.
   - Ver «Repuestos: listado (estados propios)» y «Repuestos: proyecto (estados propios)».
-- **Agenda** — `/agenda` (todos): calendario mes/semana/día + drawer; eventos, tareas, recordatorios, subastas.
+- **Agenda** — `/agenda` (todos): una libreta. Al entrar (sin `?vista=`, en todo ancho), la **hoja del día**: las horas de la jornada (08:00 a 19:00) siempre a la
+  vista con lo que pasa en cada una (eventos, tareas con vencimiento, recordatorios, cierres de subasta), «Antes de las 08:00» y «Desde las 20:00» sólo si traen algo,
+  y la hora actual marcada «Ahora» (borde de acento y texto). Al costado (debajo en el celular, y debajo de semana y mes), los **pendientes** de quien mira:
+  «Vencidas», «Recordatorios» (vencidos o de hoy) y «Sin fecha», cada uno con «Completar» en un toque (toast con «Deshacer») y «Ver más». A la vista: «‹ Hoy ›», la
+  fecha, «Ir a una fecha», Día/Semana/Mes y un solo **«Nuevo»** (tecla `N`), que abre el modal «Nuevo» de la barra filtrado a Evento, Tarea y Recordatorio
+  (`?panel=nuevo-en-la-agenda`) sin salir de la vista y la fecha. «Vista y opciones» lleva «Qué agenda ver» (Mi agenda | De todos, sólo con `agenda.ver_todo`) y
+  «Qué ver» (las clases). Paneles por URL (drawer) como siempre; el formulario del evento suma «Lead (opcional)» con `leads.ver`.
 - **Chat** — `/chat` (`chat.participar`; `?c=<conversación>`, `?panel=nueva|grupo|salir|borrar-mensaje&mensaje=<id>`; estados en «Chat
   (estados propios)»): maestro-detalle; menciones `#` de vehículo/lead/cotización, `/tarea`, `/evento`; widget flotante fuera de `/chat`.
 - **Notificaciones** — `/notificaciones` (todos): lista; la campana trae las que piden acción. Arriba, «Preferencias de avisos» a
@@ -467,7 +473,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   pantalla de ahora; **Vehículo** (`vehiculos.crear`; sólo con el alta de cotizar, la hoja con el vehículo en alta) → `/vehiculos?panel=nuevo`; **Cotización** (`cotizaciones.crear`) →
   `/cotizaciones/nuevo`; **Proyecto de repuestos** (`repuestos.editar`) → `/repuestos?panel=nuevo-proyecto`; **Seguimiento** y **Recordatorio** (`leads.editar`) → un segundo paso
   del mismo modal: se busca un lead **de tu cartera** (3 letras o un número, nunca por teléfono; hasta 5, «Escribe más» si hay otros; «Atrás» vuelve) y se abre su ficha en «Seguimientos» con
-  el modal de anotar o agendar; **Evento** y **Tarea** (siempre: para uno mismo no piden permiso) → `/agenda?panel=nuevo-evento|nueva-tarea`. El modal abre con «Lead» enfocado (con
+  el modal de anotar o agendar; **Evento** y **Tarea** (siempre: para uno mismo no piden permiso) → `/agenda?panel=nuevo-evento|nueva-tarea` (ya en la agenda, sólo su `?panel=`: conserva la vista y la fecha). «Nuevo» de la agenda abre este mismo modal con «¿Qué quieres agendar?» y sólo Evento, Tarea y Recordatorio (`?panel=nuevo-en-la-agenda`). El modal abre con «Lead» enfocado (con
   flechas y Tab se recorre; Intro elige); elegir cierra el modal y abre la puerta (un modal nunca abre otro). Con una sola opción el botón la abre directo. Sin nada que crear no hay
   botón. En el celular mide 44 px, con sólo el icono si la barra mide menos de 24 rem. Estados del paso del lead: bajo el mínimo, la pista; «Buscando…»; sin resultados («Sólo se ofrecen los de
   tu cartera»); error y sin conexión con «Reintentar». Lo recibe el layout como claves, no como permisos. La paleta conserva «Nuevo lead», «Nuevo vehículo» y «Nueva cotización».
@@ -491,6 +497,25 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Conflictos:** todo formulario de edición manda `actualizado_en` esperado; `PT409` → «X cambió esto hace N min · ver / recargar». Barras
   que se desplazan: degradado en el borde por donde siguen. **Movimiento**: transiciones con View Transitions (un fundido corto) y
   `prefers-reduced-motion`.
+
+### Agenda (estados propios)
+
+| Estado                       | Qué se ve                                                                                                                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cargando                     | Esqueleto de la barra, las filas de la hoja y la columna; los pendientes con su propio esqueleto (la hoja no los espera). «Ver más» dice «Cargando…» y queda apagado.  |
+| Día vacío                    | Las 12 horas y arriba «Nada agendado hoy.» (otro día: «Nada agendado este día.») con «Nuevo». Si «Qué ver» excluye lo que hay: «Nada de lo que elegiste ver este día.» |
+| Semana o mes vacío           | «Nada agendado en este rango.» con qué cambiar.                                                                                                                        |
+| Sin pendientes               | «Nada pendiente.» · «Lo vencido y lo que no tiene fecha aparece aquí.» Un grupo vacío no se dibuja.                                                                    |
+| Tope de 200 por clase        | `<AvisoDeTope>`: en semana y mes, «Mira un día o quita clases en «Vista y opciones».» con «Ver el día»; en el día, quitar clases (o «Mi agenda» con «De todos»).       |
+| Tope de pendientes           | «Mostrando los 500 más antiguos.» («las 500 más recientes» en «Sin fecha»).                                                                                            |
+| Error del día                | La pantalla de error con «Reintentar».                                                                                                                                 |
+| Error de pendientes          | En la columna, «No pudimos leer tus pendientes» con «Reintentar»; la hoja sigue. «Ver más» que falla: el motivo y «Reintentar», sin perder lo cargado.                 |
+| Sin permiso para crear       | «Nuevo» siempre está: Evento y Tarea no piden permiso; Recordatorio sólo con `leads.editar`. Sin `leads.ver`, el evento no ofrece «Lead (opcional)».                   |
+| Sin `agenda.ver_todo`        | No existe «Qué agenda ver»; `?de=todos` se ignora. Con «De todos», los pendientes siguen siendo «Los tuyos.».                                                          |
+| Lead que no se ve al guardar | Junto al campo: «No encontramos este lead o no tienes acceso.»                                                                                                         |
+| Conflicto `PT409`            | Los paneles con su aviso y «Recargar»; «Completar», el toast de conflicto con «Recargar».                                                                              |
+| Sin red                      | «Vista y opciones» apagado; «Completar» avisa que no llegó; «Ver más» con «Reintentar».                                                                                |
+| Texto al 200 %               | La columna pasa debajo (consulta de contenedor en rem), la hora en `minmax(0,4.5rem)`, chips con `break-words` y barras con `flex-wrap`: nada ensancha la página.      |
 
 ### Chat (estados propios)
 
