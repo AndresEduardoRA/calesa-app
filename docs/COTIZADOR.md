@@ -259,7 +259,7 @@ Lo puro en `entities/formula/`: nunca lanza, no toca lo que recibe y es lineal c
 `formulas.diseno` (jsonb), versionado y publicado con la fórmula (un cambio de diseño publica la N+1). Lo validan `validarDiseno()`
 (`entities/validar-diseno.ts`, sobre el Zod de `entities/diseno.ts`) y `validar_diseno()` en la base, con juego
 (`entities/casos-de-diseno.json`) y corpus. **Declarativo:** nada de CSS, clases, HTML ni hex.
-Forma: `{ cabecera: {modos[], ver_total_bs}, secciones[], tarjeta_total: {nodo, secundarios[]} }`.
+Forma: `{ cabecera: {modos[], ver_total_bs, …aspecto}, secciones[], tarjeta_total: {nodo, secundarios[]} }`.
 
 - **`cabecera.modos[]`** `{clave, nombre, buckets: [{bucket, nodo}], total_en}`: nombra **nodos `tipo_cambio`** (no claves) y llena
   **exactamente** los buckets de la fórmula; no hay modos en una fórmula sin `total_en`.
@@ -271,9 +271,18 @@ Forma: `{ cabecera: {modos[], ver_total_bs}, secciones[], tarjeta_total: {nodo, 
   `filas` como chips); `variante` (el nodo `opcion` como chips; obligatoria si hay variante); `interruptor` (una `bandera` con `efecto`
   `habilita`, que deshabilita lo que condiciona, o `muestra`, que apagada no lo dibuja; toda bandera que condiciona algo o pide un dato
   tiene su interruptor); `subtotal` (un `calculo` como franja).
+- **El aspecto** (`docs/GLOSARIO.md` › «Aspecto»): claves planas y opcionales, de escalas cerradas; sin la clave, lo de siempre. Ítem:
+  `ancho` (la celda, obligatorio: `completo`|`mitad`|`tercio` o un entero de 1 a 12, y los con nombre valen 12, 6 y 4; los demás ítems, un
+  entero de 1 a 12, sin él la fila entera), `alto` (1 a 4 filas), `letra` (`chica`|`normal`|`grande`) y `enfasis` (`normal`|`fuerte`).
+  Sección: `ancho` (1 a 12; sin él, «Automática»), `alto`, `relleno` (`chico`|`medio`|`grande`), `separacion` (`chica`|`media`|`grande`),
+  `densidad` (`compacta`|`comoda`), `letra`, `enfasis` y `tono` (una clave del catálogo). Cabecera: `tono`, `relleno`, `letra` y `enfasis`
+  (no lleva ancho ni alto: va sola en su fila). Los enteros se leen como JS (`0.99999999999999999` es 1). La tarjeta no lleva aspecto.
+  Lo dibuja la **rejilla de la hoja** (`entities/rejilla-de-la-hoja.ts`, clases en `features/hoja/components/clases-de-la-rejilla.ts`): una
+  pieza de N columnas toma su ancho cuando le tocan 16 rem; el PDF y la tarjeta no lo siguen.
 - **`tarjeta_total`:** el nodo total y sus `secundarios` (`aparte`). Un nodo aparece a lo sumo una vez. Nivel efectivo de un ítem: el
-  suyo (sólo la celda), si no el de su sección, si no `todos`. El diseño no lleva `solo_en`. **El tono es del grupo de la fórmula**
-  (`definicion.grupos[].tono`).
+  suyo (sólo la celda), si no el de su sección, si no `todos`. El diseño no lleva `solo_en`. **El tono de una celda es el del grupo de la
+  fórmula** (`definicion.grupos[].tono`); el de una sección pinta su borde y sus celdas sin grupo, sus franjas y sus chips (no su fondo ni sus
+  textos sueltos); el de la cabecera, sus chips de los modos.
 
 ### Las reglas
 
@@ -281,7 +290,8 @@ Forma: `{ cabecera: {modos[], ver_total_bs}, secciones[], tarjeta_total: {nodo, 
 secciones (principal o avanzado; la cabecera y la tarjeta no cuentan), con `donde` = la sección en la que la suma pasa del tope
 (`MAXIMO_DE_ITEMS_DEL_DISENO`; en la base, `_diseno_maximo_de_items()`). El borrador lo admite; publicar lo rechaza. **Después, 28 reglas
 cruzadas** con código estable (lista en `entities/motivos-de-diseno.ts`; `donde` = id del nodo, sección, modo o grupo; en la base,
-`hint`). Las de nivel: `nivel_no_admitido` (el total, lo `aparte` o la variante con nivel efectivo de ver que no es «todos»: la base
+`hint`). La última, `tono_inexistente`, revisa el tono de cada grupo, después el de la cabecera (`donde` = `cabecera`) y después el de cada
+sección (`donde` = su id), en ese orden. Las de nivel: `nivel_no_admitido` (el total, lo `aparte` o la variante con nivel efectivo de ver que no es «todos»: la base
 siempre manda el total y lo `aparte`) y `editar_sin_ver` (ver restringido con editar ausente o «todos»; **ver abierto con editar
 restringido vale**). El primero que falla manda. **La definición llega ya validada.** `validar_diseno(def, diseno, niveles, retirados,
 tonos)`: STABLE, invoker, `search_path` vacío, 22023 con la regla en DETAIL y `donde` en HINT.
@@ -296,14 +306,16 @@ la pide.
   `diseno_faltante`; `check` `formulas_publicada_con_diseno`, también en las archivadas).
 - **Guardar:** `formula_guardar_borrador(origen, definición, params, diseño, nota?, …)` valida la fórmula y sólo la **forma** del diseño.
   **Publicar** (`formula_publicar()` → `_publicar_formula()`; el ⚙ y revertir → `_publicar_version()`): toma el borrador `for update` y
-  los tonos de sus grupos `for key share`, valida fórmula y diseño completo (`_preparar_publicacion()`) y compila `visibilidad`. Dos a la
-  vez: PT409 («Versiones (4.20-1)»).
+  los tonos de sus grupos y de su diseño (`_tonos_de_grupos()` y `_tonos_del_diseno()`) `for key share`, valida fórmula y diseño completo
+  (`_preparar_publicacion()`) y compila `visibilidad`. Dos a la vez: PT409 («Versiones (4.20-1)»). `validar_diseno()` lee las secciones
+  del diseño una vez a una variable: un diseño fuera de línea (TOAST) se relee entero en cada `->`.
 - **`visibilidad`** = `{nodo: {ver, editar}}` con **claves de nivel**, no permisos (`_compilar_visibilidad()`): cada ítem da su nodo con
   su nivel efectivo (y el `pct` de una celda con `secundario`); el total y lo `aparte` tienen `ver: todos`; lo que no se dibuja entra
   como `{ver: todos, editar: null}`. Lo que no figura no viaja, salvo a quien configura.
 - **Tonos** (`tonos`: clave, nombre, fondo/borde/tinta en claro y oscuro): sólo por `tono_crear|guardar|eliminar`
   (`cotizaciones.configurar`); hasta **24**. **El AA se valida en la base** (tinta sobre fondo ≥ 4,5:1); el texto sobre un tono va en
-  su **tinta**. Un tono o un nivel que alguna versión nombra no se elimina (23503).
+  su **tinta**. Un tono o un nivel que alguna versión nombra no se elimina (23503): `_tono_en_uso()` busca la clave en los grupos
+  (`formulas_tonos_idx`) y en la cabecera y las secciones del diseño (`formulas_tonos_del_diseno_idx`, GIN sobre `_tonos_del_diseno(diseno)`).
 - **La fórmula sólo la lee quien la configura** (`cotizaciones.configurar` del origen), y `formula_auditar()` no copia `definicion`,
   `params`, `diseno` ni `visibilidad` a `actividad`. Semilla: `subasta_usa`, `planilla_usa`, `oficina` (`supabase/semillas/`).
 

@@ -527,7 +527,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 560, `/perfil` 440, `/vehiculos` 500, `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
   subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410; `/cotizaciones/papelera` 440 (en su spec). Al borde:
-  `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 454,9 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %; el «Elegir…» de lo que falta sumó 2,7 KB) y `/cotizaciones/nuevo` en 450,1 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
+  `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 457,2 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %; el «Elegir…» de lo que falta sumó 2,7 KB; la rejilla y el aspecto de la hoja, sus tablas de clases) y `/cotizaciones/nuevo` en 452,9 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` sumaba 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/configuracion/flujos`: 409,0 KB en frío (28 chunks; 404,5 antes del diagrama), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
@@ -579,8 +579,11 @@ fallar.
   ítems ≤ 55 ms y 2.350 buffers, 2.018 ≤ 550 ms y 20.600 (razón ≤ 12); `formula_guardar_borrador` ≤ 36 / 320 ms; `_compilar_visibilidad`
   ≤ 4 / 27 ms y, con columna externa, ≤ 60 / 375 buffers. El ⚙ (`formula_cambiar_constante`) ≤ 60 / 550 ms y 2.300 / 5.200 buffers;
   `formula_revertir` ≤ 60 / 600 ms y 2.700 / 21.600 (razón ≤ 12); sus topes de ms pasan los de publicar sólo por el redondeo. Sondas de uso
-  (`_tono_en_uso`, `_nivel_uso`; `formulas_tonos_idx`, `formulas_niveles_idx`, CTE `materialized` para que el GIN conduzca): se miden por
-  crecimiento: 1.800 versiones más suman ≤ 1/3 de lo que suma una copia sin GIN.
+  (`_tono_en_uso`, con sus dos ramas, y `_nivel_uso`; `formulas_tonos_idx`, `formulas_tonos_del_diseno_idx`, `formulas_niveles_idx`, CTE
+  `materialized` para que el GIN conduzca): se miden por crecimiento: 1.800 versiones más suman ≤ 1/3 de lo que suma una copia sin GIN, y
+  cada sonda usa su GIN con el plan genérico. Medido con el aspecto: publicar 20,4 / 192,6 ms y 1.573 / 2.550 buffers; el ⚙ 19,8 / 184,8 ms y
+  1.992 / 4.494 buffers; revertir 19,8 / 189,4 ms y 2.342 / 18.199; `validar_diseno()` con columna externa 290 / 1.860 buffers (lee sus
+  secciones una vez: releerlas del parámetro por sección pasaba de 13.000).
 - `_nodos_visibles()` (`medir-nodos-visibles.sql`): razón 255 → 2.487 nodos ≤ 12 en ms y buffers, ≤ 20 ms con 2.487, nunca más que leer la
   fila de la fórmula + 600 buffers. `_nivel_uso()` ≤ 100 ms con 2.000 versiones; `niveles_con_uso()` (9 niveles en uso) ≤ 60 ms con 200
   versiones por nivel y ≤ 400 con 2.000.
@@ -588,7 +591,10 @@ fallar.
   tabla viva de 1.000 filas ≤ 12 bloques de `tablas_referencia_filas`; sintética de 255 nodos ≤ 25 ms, de 2.487 ≤ 300 ms, razón ≤ 15; 0
   bloques de `cotizaciones` y `cotizaciones_revisiones`. Lineal (~140 B por ítem); un diseño publicable tiene ≤ 40 ítems
   (`demasiados_items`). Las sintéticas no producen ningún dato: el camino con `dato_del_vehiculo` lo miden las semillas. Una sola función SQL
-  por nodo: cada llamada de más a una función con `set search_path` cuesta ~50 µs por ítem.
+  por nodo: cada llamada de más a una función con `set search_path` cuesta ~50 µs por ítem. **El aspecto no la hace crecer:** la hoja de
+  las capturas con aspecto en la cabecera, en cada sección y en cada ítem lee los mismos bloques de cada relación que la de siempre (lo
+  afirma la medición) y bajo el mismo tope de 10 ms (medido 5,0 sin y 5,4 con); pesa 3.045 B más (10.868 → 13.913 B, ~64 B por pieza, bajo
+  el tope de 16 KB). Un diseño sin aspecto, +0 B.
 - La hoja de una guardada (`cotizacion_hoja_guardada()`, `medir-cotizacion-hoja-guardada.sql`, 50.000 y 250.000): ≤ 20 ms y 1.500
   buffers, razón de `cotizacion_crear`, 0 recorridos de `cotizaciones` (la anterior por la clave; la nueva viva por `cotizacion_padre_id`),
   `_nodos_visibles` 2 veces y la respuesta de la dueña ≤ 14.230 B. Guarda: buscar la nueva sin índice recorre.
@@ -663,7 +669,8 @@ fallar.
   contigua en la papelera dentro de un índice entero se lee antes de descartarse. Los `count(*)` por origen de `origenes_resumen()` y del
   borrado de un origen recorren la tabla (tope 100 ms con las 50.000 sembradas; el total exacto es el abierto 4-79, `docs/PENDIENTES.md`).
 - La hoja dibujada (`e2e/cotizar-hoja-200.spec.ts`, 100 % y 200 %): `[data-hoja]` más «Avanzado» abierto ≤ 500 nodos con la fórmula más
-  grande, como quien cotiza sin ⚙ (~13 nodos por celda); está cerca del techo: lo que sume nodos a la hoja se para y se reporta. Al abrir,
+  grande, como quien cotiza sin ⚙ (~13 nodos por celda); está cerca del techo: lo que sume nodos a la hoja se para y se reporta. El aspecto
+  (rejilla, espacios, letra y tono) va en clases y variables sobre los nodos de siempre: ningún nodo por celda ni por sección. Al abrir,
   2 llamadas desde el servidor (+ `leerVehiculo` con un vehículo en la URL, + `leerClienteElegido` con un `?lead=`, + `integracionActiva`
   con `vehiculos.crear` en un origen de subasta, todas en el mismo `Promise.all`) y ninguna del navegador hasta abrir un panel; después un
   pedido por pausa de tecleo, con 1 en vuelo como máximo (`e2e/cotizar-hoja.spec.ts`).
