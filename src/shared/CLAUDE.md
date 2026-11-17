@@ -40,7 +40,8 @@ locale)`, el único lector de un número tipeado.
 - `config/esquemas.ts`: el entorno en Zod (`entornoPublico()`, `entornoDelServidor()`, `pnpm env:check`; lectores en `scripts/lib/entornos/`).
   `config/app.ts`: nombre y colores.
 - `ui/diferido.tsx`: `diferido()`. `ui/modal.tsx`, `ui/drawer.tsx`, `ui/confirmar.tsx`: diálogos por URL; `ui/modal-de-formulario.tsx`,
-  `ui/use-envio-de-modal.ts` (envío sin versión).
+  `ui/use-envio-de-modal.ts` (envío sin versión). `<Drawer alCostado>`: no modal y sin fondo (lo de atrás se sigue usando; tocar afuera no
+  cierra, Esc y la ✕ sí), para el panel que acompaña a una pantalla ancha.
 - `ui/vuelta-del-foco.ts`: `abrirConVuelta()` y `useVueltaDelFoco()`: tras recargar con un panel por URL, «atrás» devuelve el foco a quien lo abrió
   (marca en `history.state`; desde un menú, al botón del menú). La entrada queda también en `sessionStorage` porque `shallow: false` la borra del
   historial; con `router.push`: `abrirConVuelta(clave, () => { push(url); return alLlegarA(url) })`. La usa `usePanelPorUrl()`.
