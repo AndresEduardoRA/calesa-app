@@ -9,7 +9,8 @@ Abierto: **7-4** (`tarea_crear` y `agenda_quienes_reciben` con el canal global; 
 - Entra: alta desde la agenda, desde el chat (`/tarea`, `/evento`) y desde la ficha del lead (recordatorios); fechas de subasta de `vehiculos`.
 - `index.ts`: `leerAgenda({ desde, hasta, deTodos })`, `leerEvento`, `leerTarea`, `leerRecordatorio`, `leerMisTareas({ tope })` (para `tablero`) y,
   para `logistica` («Pedirlo» de «Qué falta»), `leerQuienesPuedenRecibir({ texto?, permiso, vehiculoId })` (quienes tienen ese permiso en el origen de la
-  unidad, la ven y reciben tareas; hasta 20). `client.ts`: `<ChipEvento>` (dibuja «visto» —tilde y texto para el lector— y «Último visto» de un evento o una tarea; las marcas las monta `src/app` con `equipo/pantallas/marcas-de-visto`) y, para el chat, el selector de personas, las reglas puras del formulario y la action `completarTarea`.
+  unidad, la ven y reciben tareas; hasta 20) y `darTareaVinculada({ id, titulo, responsableId, vehiculoId })` (una tarea sin fecha para otra persona,
+  vinculada al vehículo, por `tarea_crear`). El alta desde la agenda es la action `crearTarea` de `features/tareas` (no sale por las entradas). `client.ts`: `<ChipEvento>` (dibuja «visto» —tilde y texto para el lector— y «Último visto» de un evento o una tarea; las marcas las monta `src/app` con `equipo/pantallas/marcas-de-visto`) y, para el chat, el selector de personas, las reglas puras del formulario y la action `completarTarea`.
 - Depende de `leads` (action `completarRecordatorio`), `vehiculos`, `cotizaciones`. `chat` depende de `agenda`, no al revés: la conversación de una
   tarea llega por la RPC `mensaje_tarea_crear`. Lo consume `logistica` («Pedirlo» de «Qué falta»), por funciones de servidor de `index.ts`.
 

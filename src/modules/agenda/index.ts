@@ -9,6 +9,11 @@ export {
   leerTarea,
 } from './composicion'
 export type { PedidoDeQuienesPueden, PersonasEncontradas } from './entities/personas'
+export {
+  darTareaVinculada,
+  type PedidoDeTareaVinculada,
+} from './features/tareas/dar-tarea-vinculada'
+export type { ResultadoDeEscritura } from './entities/escritura'
 export { estaVencida, type TareaPendiente } from './entities/mis-tareas'
 export {
   CLASES_DE_AGENDA,
