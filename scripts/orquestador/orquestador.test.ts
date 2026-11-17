@@ -56,9 +56,12 @@ describe('orquestador.sh: la cola', () => {
 
   it('sin lugar en la máquina no lanza y dice qué está lleno', () => {
     orquestador('nueva', 'T07', 'uno')
-    // Con el tope en 100 % libre, cualquier disco cuenta como lleno; con 0 %, sólo uno al 100 %.
+    // Con el tope en 100 % libre, cualquier disco cuenta como lleno; con 0 %, sólo uno al 100 %. El punto de montaje varía
+    // (en CI /tmp no es un tmpfs propio): se mira la frase, no la ruta.
     writeFileSync(join(datos, 'config.local.env'), 'MIN_LIBRE_PCT=100\n')
-    expect(orquestador('plan').salida).toMatch(/⛔ Máquina sin lugar.*\/tmp con el \d+ % /)
+    expect(orquestador('plan').salida).toMatch(
+      /⛔ Máquina sin lugar.* con el \d+ % de los inodos usados/,
+    )
     writeFileSync(join(datos, 'config.local.env'), 'MIN_LIBRE_PCT=0\n')
     expect(orquestador('plan').salida).not.toContain('sin lugar')
   })
