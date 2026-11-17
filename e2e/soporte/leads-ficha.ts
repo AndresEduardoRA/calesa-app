@@ -138,9 +138,10 @@ export async function irAFicha(page: Page, leadId: string, consulta = ''): Promi
 }
 
 // La ficha llega dibujada por el servidor antes de que React enganche sus controles: un clic en ese instante se pierde. El índice lleva
-// `data-hidratado`, que React pone recién cuando lo enganchó.
+// `data-hidratado`, que React pone recién cuando lo enganchó. Se busca por CSS y no por rol: con un panel modal abierto por la URL
+// (`?todos=`), al hidratar el resto de la página sale del árbol accesible y `getByRole` deja de verlo.
 export async function esperarFichaHidratada(page: Page): Promise<void> {
-  await expect(page.getByRole('navigation', { name: 'Índice de la ficha' })).toHaveAttribute(
+  await expect(page.locator('nav[aria-label="Índice de la ficha"]')).toHaveAttribute(
     'data-hidratado',
     'true',
   )
