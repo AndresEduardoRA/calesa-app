@@ -41,7 +41,11 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   (resúmenes y «Ver todos»: `infra/relacionados.client.ts`). El selector de leads (`HuecosDeRelacionados.ElegirLead`) lo une `src/app` con el panel de `leads`; un componente no cruza de servidor a cliente
   como prop, por eso `relacionados-del-vehiculo.client.tsx`. `?panel=desvincular`, `?panel=vincular-lead`, `?panel=marcar-interesado` y `?relacionados=<tipo>` viven en la ficha del vehículo; en un resumen o en la unidad
   «Desvincular», los selectores y «Ver todos» llevan a la ficha con eso abierto. «Quitar interés» y «Cotizar» funcionan en el lugar. `vehiculo_interesados()` ya no la llama la app (`docs/PENDIENTES.md`).
-- Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `papelera`, `vehiculos-del-lead`, `cotizar`, `relacionados`, `unidad-de-logistica`: `FotosEnElLugar` para la cabecera de la unidad de logística).
+- Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `papelera`, `vehiculos-del-lead`, `cotizar`, `relacionados`, `unidad-de-logistica`: `FotosEnElLugar` para la cabecera de la unidad de logística;
+  `proyecto-de-repuestos`: `leerLeadVinculado(vehiculoId)` para el lead por defecto de «Nuevo proyecto» de repuestos).
+- `leerLeadVinculado(vehiculoId)` (`features/vinculo/hooks/leer-lead-vinculado.ts`): el vínculo vigente por `vehiculo_vinculos` (invocadora, desde el
+  navegador) vuelto `LeadVinculado | null` con `leadVinculadoDe()`: nulo si no tiene o quien mira no lo ve, sin distinguirlos. Su código se pide con
+  `import()` de `composicion-vinculo.client.ts` (sólo esa lectura) y nunca lanza.
 - `client.ts`: `<BadgeDeSituacion>` (la situación real; con `fase` delega en `<BadgeDeFase>`. Lo importa `logistica`: nada pesado puede colgar de ahí),
   `Situacion`, `SITUACIONES`, `esquemaDeSituacion`, `etiquetaDeSituacion`, `Vehiculo`; para la importación de `datos`, `validarVehiculo`, `camposComunes`, `camposActivos`,
   `claveDeAtributo` y sus tipos (cada fila se valida con el esquema del alta).
