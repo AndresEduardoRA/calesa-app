@@ -1,6 +1,6 @@
 import { expect, test } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
-import { descartarAviso, esMovil } from './soporte/inventario'
+import { esMovil } from './soporte/inventario'
 import { sesionDe } from './soporte/leads-alta'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
 import {
@@ -76,9 +76,11 @@ test('agrega, rotula, quita y deshace un extra, sin mover la versión', async ({
   await modal.getByLabel('Etiqueta (opcional)').fill('Casa')
   await page.keyboard.press('Enter')
   await expect(page.getByText('Teléfono agregado.')).toBeVisible()
-  // En el celular el aviso tapa el panel: se descarta apenas sale (se va solo mientras la ficha se vuelve a leer).
+  // En el celular el aviso tapa el panel, y con el panel abierto no se puede cerrar (lo de atrás queda inerte): se espera a que se vaya.
   if (esMovil(page)) {
-    await descartarAviso(page, 'Teléfono agregado.')
+    await expect(
+      page.locator('[data-sonner-toast]').filter({ hasText: 'Teléfono agregado.' }),
+    ).toBeHidden({ timeout: 15_000 })
   }
   await expect(modal).toHaveCount(0)
   // El foco queda en el panel (al volver a leer la ficha va a su primer campo: docs/PENDIENTES.md › «Pulido de interfaz»).

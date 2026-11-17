@@ -186,8 +186,9 @@ export async function accionDeLaFila(
 export async function abrirAgregarVehiculo(page: Page): Promise<Locator> {
   const panel = panelAgregar(page)
   const nombre = 'Vincular o marcar un vehículo'
-  // Cada vuelta mira primero si el panel ya está, y los clics tienen su tope: en el celular un aviso puede tapar el «⋯» un momento, y un clic
-  // sin tope esperaría hasta vencer la prueba.
+  // El de la vez anterior termina de cerrarse antes de abrirlo de nuevo. Cada vuelta mira primero si el panel ya está, y los clics tienen su
+  // tope: en el celular un aviso puede tapar el «⋯» un momento, y un clic sin tope esperaría hasta vencer la prueba.
+  await expect(panel).toBeHidden()
   await expect(async () => {
     if (await panel.isVisible()) {
       return
