@@ -51,7 +51,8 @@ function Fila({
       }`}
     >
       <span className="grid text-(length:--text-sm) break-words text-(--color-ink-soft) tabular-nums">
-        {etiqueta}
+        {/* La hora en su propio elemento: «Ahora» va al lado, no pegado al mismo texto («12:00Ahora»). */}
+        <span>{etiqueta}</span>
         {ahora ? <span className="font-semibold text-(--color-primario-ink)">Ahora</span> : null}
       </span>
       <div className="min-w-0">{children}</div>

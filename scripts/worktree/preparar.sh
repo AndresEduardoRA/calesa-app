@@ -54,8 +54,17 @@ echo "✓ carril $CARRIL: stack $SUPABASE_PROJECT_ID, API $SUPABASE_API_PORT, ba
 [ -d node_modules ] || pnpm install --frozen-lockfile --prefer-offline >/dev/null
 echo "✓ dependencias"
 
-# 3) El stack del carril.
+# 3) El stack del carril. Si algo de aquí en adelante falla, se baja el stack y se suelta la letra (lo de quitar.sh): un carril a
+# medio preparar dejaba su Supabase arriba y su letra tomada, y el siguiente intento elegía otra.
 sb() { pnpm exec supabase "$@" 2> >(grep -v -i -E 'new version|recommend updating|^We recommend' >&2); }
+soltar_al_fallar() {
+  local codigo=$?
+  [ "$codigo" = 0 ] && return 0
+  echo "✗ preparar.sh cayó ($codigo): bajo el stack $SUPABASE_PROJECT_ID y suelto el carril $CARRIL." >&2
+  pnpm exec supabase stop --no-backup >/dev/null 2>&1 || true
+  rm -f .env.carril
+}
+trap soltar_al_fallar EXIT
 if sb status >/dev/null 2>&1; then
   echo "✓ stack $SUPABASE_PROJECT_ID ya estaba arriba"
 else
@@ -80,16 +89,24 @@ mv .env.local.nuevo .env.local
 pnpm --silent env:check local >/dev/null || { pnpm --silent env:check local >&2; falta ".env.local incompleta (arriba, lo que falta)."; }
 echo "✓ .env.local"
 
-# 5) La base: con datos de demo si hay credenciales (en .env.demo, que se copia de la principal por .worktreeinclude, o en el entorno).
-if [ -f .env.demo ] || [ -n "${DEMO_DUENO_EMAIL:-}" ]; then
+# 5) La base: con datos de demo si están las tres credenciales que pide restaurar.sh (en .env.demo, que se copia de la principal por
+# .worktreeinclude, o en el entorno); si falta alguna, la base sin demo y se dice cuál (no es motivo para no preparar el carril).
+faltan_de_demo=$(
+  set +u
+  # shellcheck disable=SC1091
+  if [ -f .env.demo ]; then set -a && . ./.env.demo && set +a; fi
+  for v in DEMO_DUENO_EMAIL DEMO_DUENO_CLAVE DEMO_CLAVE_USUARIOS; do [ -n "${!v:-}" ] || printf '%s ' "$v"; done
+)
+if [ -z "$faltan_de_demo" ]; then
   bash scripts/demo/restaurar.sh --local
 else
   pnpm db:reset >/dev/null 2>&1 || pnpm db:reset >/dev/null
-  echo "✓ base reseteada (sin datos de demo: falta .env.demo)"
+  echo "✓ base reseteada (sin datos de demo: falta ${faltan_de_demo% } en .env.demo o en el entorno)"
 fi
 
 # 6) El mapa de este árbol.
 bash scripts/mapa.sh >/dev/null
 echo "✓ mapa"
+trap - EXIT
 echo
 echo "Listo. App: pnpm dev (http://localhost:$PUERTO_APP) · funciones: pnpm funciones · e2e: pnpm test:e2e <spec> (puerto $E2E_PORT)"
