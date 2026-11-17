@@ -14,7 +14,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
   sobre la persona, bajas con traspaso de cartera, «Ver como».
 - **Empresa y orígenes:** ajustes, monedas y tipos de cambio, integraciones (apibara, web pública), campos por origen con rango.
 - **Vehículos:** inventario por origen con rutas e índices por caso, ficha en dos columnas con todo a la vista (fase y qué falta, relacionados, cotizaciones, documentos, ficha, repuestos y fotos) y un resumen corto, vitrina, papelera, subastas por apibara con su zona horaria; una sola situación real (fase y subasta) con su filtro, tarjetas o tabla, alta suelta o desde cotizar, vitrina desde la lista; «relacionados» (vinculado, interesado y cotizado) arriba de cada detalle.
-- **Leads:** listado y kanban con cartera, teléfono único y enmascarado con teléfonos extra configurables, último seguimiento y recordatorio en la lista, campos configurables y privados, seguimientos, oportunidades (la base al nacer y una nueva desde la fila),
+- **Leads:** listado y kanban con cartera, teléfono único y enmascarado con teléfonos extra configurables, último seguimiento y recordatorio en la lista, campos configurables y privados, seguimientos, oportunidades (la base al nacer y otra desde el «⋯» con aviso de las que ya tiene),
   la ficha en dos columnas con todo a la vista (índice de bloques, seguimientos y recordatorios resumidos con «Ver todos», relacionados con la
   gestión de vehículos al pie) y el resumen del listado como su versión corta, importar y exportar, limpieza automática, papelera.
 - **Cotizaciones:** la fórmula como grafo versionado (motor en TS con su espejo SQL), el diseño de la hoja (rejilla de 12, orden arrastrando, espacios, letra y tono), niveles de acceso, la hoja de
@@ -25,7 +25,8 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 - **En todo el sistema:** avisos con acciones (cada bloqueo dice cómo destrabarlo), el visor de fotos con carrusel, «visto» (negrita lo no
   abierto) y «último visto» por persona y módulo en las listas, «Vista y opciones» en cada lista, y la barra superior con «Nuevo» (lo que
   la persona puede crear) y los tipos de cambio elegidos (cambiar el valor ahí y compartirlos como imagen o texto).
-- **Repuestos:** proyectos guiados por pasos (las fases del flujo y sus hitos, con el siguiente de cada ítem), ítems, compras, stock, cotizador propio y pagos.
+- **Repuestos:** proyectos guiados por pasos (las fases del flujo y sus hitos, con el siguiente de cada ítem) y con su cliente como lead, ítems, compras, stock,
+  cotizador propio y pagos.
 - **Agenda, chat, notificaciones y buscador:** la agenda como libreta del día con sus pendientes (semana y mes a un clic, eventos con su lead), canales y grupos con realtime, la campana y el push (sin claves
   VAPID todavía), la paleta `Ctrl/Cmd+K`.
 - **Web y portal:** el contenido de la web pública por el esquema `web`, la cola con rueda y turnos, el portal del cliente por
@@ -38,7 +39,8 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 ## Verdes
 
 - `lint`, `typecheck`, `test` (11.400+ pruebas), `db:probar` (1.483 bloques), `db:lint`, `db:carreras` y `mapa.sh --check`.
-- **Último e2e completo de escritorio** (el de la noche, en 4 bloques): en verde sobre `c143d0bd`, 2026-11-16. El último con celular
+- **Último e2e completo de escritorio** (el de la noche, en 4 bloques): el último verde, sobre `c143d0bd` (2026-11-16); los dos
+  specs que cayeron la noche del 2026-11-17 se arreglaron en #296 y #297. El último con celular
   (Nivel 3, sobre `20815f1c`): 898 en verde, 31 saltadas, 0 caídas, 38,2 min.
 - **CI:** Nivel 1 siempre, «Base» si cambia código, los e2e dirigidos (o el completo de escritorio en 4 bloques si toca un disparador),
   y `Listo · todo en verde`, el único check que `main` exige; el completo de escritorio, cada noche.

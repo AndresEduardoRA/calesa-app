@@ -20,13 +20,13 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Vistos
 
-- La decisión original pedía 30 días de memoria y «Último que abriste»; lo integrado usa 7 días por defecto y «Último visto» (el término del glosario). Confirmar cuál queda.
+- **[—]** Retención y nombre de «Vistos» — lo pedido eran 30 días y «Último que abriste»; el código usa 7 días por defecto (`VISTOS_POR_DEFECTO`) y «Último visto» (el término del glosario). Confirmar cuál queda.
 
 ### Cotizaciones
 
 - **[4-71]** Cambiar el vehículo de una preventa guardada desde `/cotizaciones/[id]` — la base lo admite; falta la barra del vehículo en la guardada, o elegir sólo entre vehículos ya cargados.
 - **[4-72]** Quien ve una cotización pero no su vehículo no puede recalcularla («No se pudo recalcular») — que el recálculo de una guardada no dependa del vehículo, o que la pantalla diga por qué.
-- **[4-94]** «Cotizar» desde la ficha `/vehiculos/[id]` y el «⋯» del inventario; hoy está sólo en el resumen de `/vehiculos` y en la barra de la hoja.
+- **[4-94]** «Cotizar» suelto (sin lead) en la cabecera de la ficha `/vehiculos/[id]` y en el «⋯» del inventario — hoy está en el resumen de `/vehiculos`, en la barra de la hoja y, con su lead, en cada fila de «Relacionados».
 - **[4-101]** El editor de la tarjeta no reordena, suma ni quita grupos a mano (manda la fórmula) — decidir viendo la vista previa.
 - **[4-103]** La vista previa de la tarjeta no muestra la `descripcion` del nodo, el nombre del tipo de cambio ni el título de la variante — llevarlos cuesta ≈ 20 KB sobre el tope del primer HTML.
 - **[—]** Editor de la fórmula: sumar o quitar grupos y editar `buckets`, `total_en` y los modos — espera a que la plantilla de la tarjeta se edite junto con la fórmula.
@@ -45,16 +45,13 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 - **[T22]** «Documentos por aprobar» de Inicio sólo trae los documentos de vehículos (`_bandeja_por_aprobar`): quien sólo aprueba los de repuestos no ve el bloque. Sumar los de los ítems pide ampliar esa RPC y su medición.
 - **[T22]** Un bloque «Leads sin seguimiento» y «Personas sin rol» no llevan a una lista filtrada: ni `/leads` ni Equipo tienen ese filtro (cada fila abre su ficha o a la persona).
-- **[T02]** Un bloque «Subastas sin resolver» en Inicio (hoy se ven en el inventario y, con el filtro de situación, se filtran).
-- **[T02]** El filtro del inventario para ver las no ganadas (T14): hasta entonces, «vacío de primera vez» puede salir aunque haya no ganadas
-  ocultas.
+- **[T02]** Un bloque «Subastas sin resolver» en Inicio — hoy es un grupo de la bandeja del día de `/logistica` y una opción de «Situación» en el inventario.
 - **[A1c]** Avisos sin salida que quedaron: el bloqueo de eliminar una fase no enlaza «las fases que esperan» ni «las unidades en ella» (`ImpactoDeFase` sólo trae conteos; pide los ids); «Editar grupo» con más unidades de las que se muestran y «súbelo por partes» de documentos de un grupo de más de 100 no dicen el paso siguiente; «No pudimos leer los títulos» del panel de fuera de regla no ofrece «Reintentar».
 - **[6-2]** Publicar en la vitrina mueve la versión de la ficha (`vehiculo_vitrina` usa `vehiculos.actualizado_en`) — una columna `vitrina_actualizado_en` que la RPC exija y devuelva.
-- **[6-4]** Se puede pedir un requisito de dato cuya regla está apagada (`transporte.*`, `aduana.*`, `pagos.*`) y nadie puede cumplirlo — que `revisar_flujo()` lo avise con un código propio o que la RPC lo rechace.
+- **[6-4]** Se puede pedir un requisito de dato cuya regla está apagada (`transporte.*`, `aduana.*`, `pagos.*`) y nadie puede cumplirlo, y «Qué falta» igual ofrece «Pedirlo» a quien no tiene la clave del hueco — que `revisar_flujo()` lo avise con un código propio o que la RPC lo rechace (saberlo en «Qué falta» exige leer las reglas).
 - **[—]** «Qué falta» no marca un requisito «ya pedido»: pedirlo dos veces da dos tareas (el id del intento sólo evita el doble clic). Marcarlo pide una lectura nueva.
 - **[—]** «Pedirlo» en un ítem de repuesto (hoy, «Pídeselo a quien administra los roles.»): haría falta vincular una tarea a un ítem.
 - **[—]** Acciones en la franja «fuera de regla» de «Qué falta» (hoy sólo su enlace al hueco).
-- **[—]** Junto a 6-4: con una regla apagada, quien no tiene la clave del hueco igual ve «Pedirlo» (saberlo exige leer las reglas en «Qué falta»).
 - **[6-6]** Prorratear un gasto por el valor del vehículo u otro criterio; hoy se reparte en partes iguales — base e interfaz.
 - **[6-7]** Borrar una nota propia con una RPC `security definer` (el `update` da `42501`), que además impida a su autora cambiar el cuerpo de una nota de cambio de fase (hoy lo frena sólo la action).
 - **[—]** Vincular un pago a un lead: sin interfaz (el alta manda `p_lead` nulo).
@@ -123,10 +120,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `vehiculos_papelera_listar()` y `leads_papelera_listar()` usan el mismo `exists` por lote: sin medir si con poco volumen leen el índice entero.
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
 - **[—]** El bloque «Leads sin seguimiento» de Inicio cuesta lo que pesa la cartera de quien mira; no se midió con volumen.
-- **[4-73]** Presupuestos al borde: JS de `/cotizaciones/nuevo` 439,5 de 460 KB, la hoja 491 nodos de 500, la ficha del lead entera 130,8 de 138 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
+- **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 492 nodos de 500, JS de `/cotizaciones/nuevo` 453,6 y de `/cotizaciones/[id]` 458,6 de 460 KB, la ficha del lead entera 130,8 de 138 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
 - **[T33]** «Vincular o marcar un vehículo» de la ficha del lead (`?panel=agregar-vehiculo`, `shallow: false`) y cada cambio de un recordatorio (`router.refresh()`) releen todos los bloques de la ficha: con todo a la vista cuesta más que antes; se acota cuando moleste (que cada bloque relea lo suyo).
-- **[T32]** La tarea de oro 2 entera de la asesora mide 65 teclas y KLM 59,2 s en escritorio sobre `be965565` (`docs/ESTADO.md` dice 58,1): cuatro paradas más del marco antes del contenido, de un cambio anterior — dentro de los 90 s; actualizar el número o quitar las paradas.
-- **[T27]** El tope de JS de `/logistica` es 390 KB en `e2e/soporte/presupuestos.ts` y 410 en `docs/RENDIMIENTO.md` › «JS en frío» — dejar uno solo (lo medido, 365,0, entra en los dos).
 - **[—]** Tope de 40 ítems por diseño: `subasta_usa` tiene 39 — para crecer, subir `_diseno_maximo_de_items()` y la constante midiendo la hoja, o partir la hoja.
 
 ### Archivos y funciones sobre el tope
@@ -188,6 +183,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
   arreglo va en el marco del alta (no avisar «Lead creado» cuando vuelve a un formulario con `?elegir=`) o en el borrador (no avisar al reponer tras el alta).
 - **[T20]** Con «Ver como» la franja del aviso (≈ 2,25 rem) hace desplazar la página de la unidad de logística en escritorio: el alto fijo (`--alto-del-detalle`) no la descuenta.
 - **[T20]** Redimensionar la ventana cruzando los 1024 px remonta los huecos de la unidad (zonas ⇄ bloques) y se pierde lo escrito y no guardado; la forma se elige por el ancho de la pantalla.
+- **[—]** Con sólo no ganadas en un origen, el inventario sin filtros dice el vacío de primera vez (el filtro por defecto las oculta) — que diga que hay no ganadas y ofrezca verlas con «Situación».
 - **[—]** «Nueva oportunidad…» del «⋯» no ofrece vehículo: haría falta una lectura de los vehículos del lead desde `src/app` (una Server Action de `vehiculos` pasada por props) — hoy se agrega con «Editar» en la ficha.
 - **[4-20]** Ancho contra altura del aviso de escritorio: a 22 rem, al 200 % tapa texto de la última fila de una lista — decidir (ancho, angosto o que se aparte) y afirmarlo en `e2e/avisos-con-descripcion.spec.ts` (`--ancho-del-aviso`; `avisosAbajo()` cambia con el ancho).
 - **[R7]** Blancos táctiles bajo 44 px en componentes de toda pantalla (`Tabs`, `Switch`, `Checkbox`, `Popover` de Roles, «Nuevo lead» del marco, «Saltar al contenido», «Abrir» de las listas, el botón de 32 px): 121 en `BLANCOS_CONOCIDOS` — rediseño; se cierra vaciando la lista.
