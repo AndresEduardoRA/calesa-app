@@ -21,7 +21,7 @@ La tarea de oro 3 la prueba `e2e/logistica-tarea-de-oro.spec.ts`. Abiertos (`doc
 - Núcleo, para las áreas: `nombrarVehiculos` (el nombre «<principal> · <título>», `features/nucleo/identidad-de-vehiculos.ts`), `EnlaceALaUnidad`, `useIrALaUnidad` y
   `rutaDeLaUnidad(id, hueco?)` (`?hueco=documentos` abre esa pestaña —o ese bloque, en el celular— de la página de la unidad).
 - Lo consumen `tablero`, `vehiculos` (ficha) y `web` (portal: fases y documentos visibles).
-- Depende de: `vehiculos`, `origenes`, `empresa`, `flujos`, `cotizaciones`.
+- Depende de: `vehiculos`, `origenes`, `empresa`, `flujos`, `cotizaciones`, `agenda` («Pedirlo» de «Qué falta»: `leerQuienesPuedenRecibir` y `darTareaVinculada`, funciones de servidor que llaman sus actions; ningún componente de `agenda` entra al JS de la página).
 
 ## Áreas
 
@@ -84,7 +84,11 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   (`useEnLaPagina()`, que da `DisposicionDeLaPagina`) y sin red todo se apaga con «Sin conexión…» en la línea viva. `useHacerAccionDelRequisito` las ejecuta:
   «Subir» abre `?subir=documentos&tipo_documento=` (en zonas, en una sola escritura con `?hueco=`), «Revisar» y «Completar» abren el hueco y enfocan
   `data-tipo-de-documento-id` o `data-clave-de-dato` (`enfocarAlAparecer`, hasta 5 s), «Registrar» abre `?panel=pago&pago=nuevo`. La franja «fuera de
-  regla» sigue con su atajo (`AtajoDeRequisito`). `useMoverLaUnidad` envía con `faseEsperada = unidad.faseId` (éxito = `router.refresh()`). Textos y estado
+  regla» sigue con su atajo (`AtajoDeRequisito`). **«Pedirlo»** (`?pedir=requisito&falta=<id>`, `usePedirloPorUrl`: se revisa al abrir contra la lectura,
+  «Eso ya no falta.») abre el modal «Pedírselo a alguien» con `diferido()` al primer uso (`diferidos-de-que-falta.tsx`, montado una vez por
+  `PedirloDeQueFalta`): `leerQuienesPueden` (hasta 20; con más, busca desde 3 letras con 300 ms) y `pedirLoQueFalta` (una tarea sin fecha vinculada al
+  vehículo, con el id del intento; 23514 → «Esa persona ya no puede recibir tareas. Elige otra.» y relee). Las dos piden `agenda.tareas.asignar`; un ítem
+  no ofrece «Pedirlo» (una tarea no se vincula a un ítem). `useMoverLaUnidad` envía con `faseEsperada = unidad.faseId` (éxito = `router.refresh()`). Textos y estado
   del botón de mover son de `flujos`. Un ítem manda `{ repuesto }` (`unidadAMover`).
 - **Área `mover`, «La ganamos»** (`?ganada=si`, `useModoGanada`; la clave `CLAVE_DE_GANADA` sale por `index.ts` para el enlace de la ficha del
   vehículo): «Qué falta» ofrece sólo los destinos que no son la subasta (`entities/mover/ganada.ts`), abre el primero y mover llama `ganarLaSubasta`;

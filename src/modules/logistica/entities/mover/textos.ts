@@ -31,6 +31,8 @@ export const QUIEN_PUEDE = 'Quién puede hacerlo'
 export const BUSCAR_A_QUIEN = 'Busca por nombre'
 export const NO_SE_LEYO_QUIEN = 'No pudimos leer quién puede hacerlo.'
 export const SIN_PERMISO_DE_DAR_TAREAS = 'Necesitas permiso para dar tareas.'
+/** La causa del rechazo cuando quien pide no puede dar tareas: el modal dice a quién pedírselo. */
+export const CAUSA_SIN_ASIGNAR = 'asignar'
 export const SIN_ACCESO_A_LA_UNIDAD = 'Ya no tienes acceso a esta unidad.'
 export const YA_NO_FALTA = 'Eso ya no falta.'
 export const YA_NO_RECIBE = 'Esa persona ya no puede recibir tareas. Elige otra.'

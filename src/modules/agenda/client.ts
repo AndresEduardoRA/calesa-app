@@ -23,3 +23,4 @@ export {
 } from './entities/edicion'
 export { TOPE_DE_DESTINATARIOS } from './entities/visibilidad'
 export type { PersonasEncontradas } from './entities/personas'
+export type { ResultadoDeEscritura } from './entities/escritura'

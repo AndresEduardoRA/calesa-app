@@ -15,6 +15,7 @@ import type { ModoGanada } from '../hooks/use-modo-ganada'
 import { DestinoDeMover } from './destino-de-mover'
 import { FueraDeRegla } from './fuera-de-regla'
 import { LineaDeGanada } from './linea-de-ganada'
+import { PedirloDeQueFalta } from './pedirlo-de-que-falta'
 
 type Props = {
   unidad: UnidadAbierta
@@ -93,6 +94,9 @@ export function CuerpoDeQueFalta(props: Props) {
       ) : null}
       {dato.hayMasDestinos ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">{HAY_MAS_DESTINOS}</p>
+      ) : null}
+      {unidad.tipo === 'vehiculo' ? (
+        <PedirloDeQueFalta vehiculoId={unidad.id} acciones={dato.acciones} />
       ) : null}
     </div>
   )
