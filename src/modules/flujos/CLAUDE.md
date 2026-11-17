@@ -17,6 +17,8 @@ Toda la configuración se escribe por RPC con la versión del flujo. Abiertos (`
   `leerParaMover`, `previsualizarCambio` y `cambiarFase` aceptan `vehiculo` **o** `repuesto` (`unidadDelPedido` → `unidad: { tipo, … }`; `origenId` sólo para
   vehículo); un ítem se mueve con `repuestos.mover` global (`puedeMoverUnRepuesto`), nunca con `flujos.mover`. `destinosDeLaFase` y el lote son sólo de vehículo.
   Reglas puras: `estadoDelBoton`, `textoDelBoton`, `motivoLegible`, `etiquetaDeRequisito`, `detalleDeRequisito`, `anclaDeRequisito`. Lo consume `logistica`.
+  Por `index.ts`, `leerParaMoverDe(pedido, permisos)` (función de servidor) y `esquemaLeerParaMover`: lo que lee «Qué falta», que `logistica` envuelve en
+  su action `leerQueFalta` para sumar las acciones de cada requisito (con `etiquetaDeRequisito`, `faltaDeRequisito` y los tipos `ParaMover`, `RequisitoVista`).
 - El flujo de repuestos (`ambito = 'repuestos'`, sin origen) viene en la base, sin fases y con sus 7 reglas; las fases las siembra `seed.sql` o se crean en «Fases».
 - Depende de: `origenes`.
 
@@ -61,7 +63,7 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
   frase de cada rechazo, el estado del botón), `infra/mover/{mover,destinos}.ts` (destinos con `tope + 1`).
 - **El rechazo llega como campo:** `porCampo: { <hint>: mensaje }` con `conflicto`, `requisitos`, `rol`, `nota`, `transicion` o `acceso`. El `PT409` conserva
   el texto de la base, que nombra a quien movió.
-- `leerParaMover` junta `logistica_unidad`, los destinos (hasta 12) y una vista previa por destino en paralelo; la que falla dice su error sin tumbar a las
+- `leerParaMoverDe` junta `logistica_unidad`, los destinos (hasta 12) y una vista previa por destino en paralelo; la que falla dice su error sin tumbar a las
   demás. `cambiarFase` no revalida: la pantalla se repinta con `router.refresh()`.
 - Un ítem de repuesto se lee de `repuestos_items` bajo la RLS (`logistica_unidad` es sólo de vehículo): sin «fuera de regla» ni «quién la movió», con vista
   previa por destino (`previsualizar_cambio_fase(p_repuesto)`); sus destinos salen del flujo de repuestos. 8-13a.
