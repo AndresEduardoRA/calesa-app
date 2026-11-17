@@ -60,8 +60,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 - **[8-13a]** Un ítem no dice «fuera de regla» ni quién lo movió, y «Esperas que destraban vehículos» no cruza los ítems con la fase del vehículo — `logistica_unidad` es sólo de vehículo; pide una RPC `security definer` (o sería N+1).
 - **[8-13b]** El transporte propio de un ítem sin vehículo es sólo texto — falta el formulario; `transportes.repuesto_id` y `transporte_guardar(p_repuesto)` ya existen.
-- **[T35]** El cliente de un proyecto ya creado no se cambia — haría falta una RPC con versión (`PT409`) para `lead_id`: decidir si se puede cambiar y quién.
-- **[T35]** En la lista de proyectos, uno que sólo tiene lead dice «—» en «Cliente» — `repuestos_proyectos_listar` no trae el lead; sumarlo pide leer
+- **[—]** El cliente de un proyecto ya creado no se cambia — haría falta una RPC con versión (`PT409`) para `lead_id`: decidir si se puede cambiar y quién.
+- **[—]** En la lista de proyectos, uno que sólo tiene lead dice «—» en «Cliente» — `repuestos_proyectos_listar` no trae el lead; sumarlo pide leer
   `leads_vista` por página: decidir si la lista debe nombrarlo.
 
 ### Chat
@@ -166,6 +166,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
+- **[—]** Al volver de «Nuevo lead» a «Nuevo proyecto» se apilan dos avisos («Lead creado» y «Recuperamos lo que habías escrito y no guardaste.») — el
+  arreglo va en el marco del alta (no avisar «Lead creado» cuando vuelve a un formulario con `?elegir=`) o en el borrador (no avisar al reponer tras el alta).
 - **[T20]** Con «Ver como» la franja del aviso (≈ 2,25 rem) hace desplazar la página de la unidad de logística en escritorio: el alto fijo (`--alto-del-detalle`) no la descuenta.
 - **[T20]** Redimensionar la ventana cruzando los 1024 px remonta los huecos de la unidad (zonas ⇄ bloques) y se pierde lo escrito y no guardado; la forma se elige por el ancho de la pantalla.
 - **[—]** «+ Oportunidad» de la lista no ofrece vehículo: haría falta una lectura de los vehículos del lead desde `src/app` (una Server Action de `vehiculos` pasada por props) — hoy se agrega con «Editar» en la ficha.
