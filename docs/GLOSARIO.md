@@ -132,8 +132,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Cotización activa** — `eliminado_en is null and estado in ('activa','reportada')`: la que cuenta para «Cotizado» y su índice parcial.
 - **Vínculo** — `vehiculos.lead_id` + `vehiculos_vinculos` / `vehiculo_vincular()`: lead dueño o comprador actual, uno a la vez, con historial.
 - **Vincular / Desvincular** — `vehiculo_vincular(p_vehiculo, p_actualizado_en_esperado, p_lead)` (nulo desvincula): con la versión del vehículo.
-- **Vehículos del lead** — `lead_vehiculos()`, `<SeccionVehiculosDelLead>`, `?seccion=vehiculos`: la sección donde se gestiona (agregar un vehículo,
-  la nota del interés, los vínculos anteriores y la confirmación de desvincular); lo que se ve de un vistazo es **Relacionados**. Sólo lo visible.
+- **Vehículos del lead** — `lead_vehiculos()`, `<GestionDeVehiculosDelLead>`, `?seccion=vehiculos`: la gestión al pie del bloque **Relacionados** de la
+  ficha (los vínculos anteriores, «Vincular o marcar un vehículo» y la confirmación de desvincular); vinculados e interesados, con sus acciones, son los
+  grupos de Relacionados. Sólo lo visible.
 - **Agregar vehículo** — `vehiculos_para_lead()`, `?panel=agregar-vehiculo`: buscar entre los vehículos visibles para vincular uno o marcar
   interés desde el lead.
 - **Vehículo de una nota** — `seguimientos.vehiculo_id`, `recordatorios.vehiculo_id`: vehículo opcional del lead que quien escribe ve.
@@ -234,7 +235,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Número global** — `leads.numero` / `leads_numeros_globales`, `leads.numero_global.ver`, `NumerosDeLead.numero`: consecutivo de la empresa
   («N.º 1.234»); nulo sin el permiso.
 - **Resumen** — `?lead=`, `?vehiculo=`, `?cotizacion=` / `<DrawerDeLead>`, `<ResumenDeVehiculo>`, `<ResumenDeCotizacion>`: vistazo sin salir
-  de la lista («drawer rápido» en el código).
+  de la lista («drawer rápido» en el código). El de un lead es la versión corta de su ficha: datos clave, lo último que pasó, las acciones, Relacionados en
+  chips y «Abrir ficha», sin pestañas.
 - **Línea de tiempo (de una cotización)** — pestaña «Todo» del resumen (`?pestana=`, `useLineaDeTiempo`, `lineaDeTiempo()`): adjuntos, revisiones y comentarios
   mezclados por fecha, lo más nuevo arriba; una página de cada fuente y sólo se dibuja hasta donde llegó la que menos retrocedió. Las otras pestañas del resumen:
   «Adjuntos», «Revisiones» y «Comentarios».
@@ -246,7 +248,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   «atrás» devuelve el foco a quien lo abrió (desde un menú, al botón del menú).
 - **Más acciones («⋯»)** — `<MasAcciones>` / `accionesDeLead()`, `accionesDeVehiculo()`: menú de fila, tarjeta, resumen o ficha.
 - **Filtro descartado** — `filtrosDescartados()` / `<AvisoDeFiltrosDescartados>`: filtro de la URL sobre un campo desactivado o eliminado.
-- **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: cabecera, «Datos», edición en `?panel=editar-lead`.
+- **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: en dos columnas (`<FichaEnDosColumnas>`): a la izquierda cabecera, «Datos»,
+  «Teléfonos», «Quién lo tiene» y «Acceso al portal»; a la derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados,
+  cotizaciones). Edición en `?panel=editar-lead`.
 - **Teléfono extra** — `leads_telefonos` / `lead_telefonos()`, `lead_telefono_guardar()`, `lead_telefono_quitar()`: número alterno con
   etiqueta opcional; se edita en la ficha, el panel de edición y el resumen (`<TelefonosExtra>`).
 - **Máximo de teléfonos extra** — `ajustes_leads.telefonos_extra_maximo` / `telefonos.maximo`: cuántos extras admite un lead (0 a 20; 6 de
