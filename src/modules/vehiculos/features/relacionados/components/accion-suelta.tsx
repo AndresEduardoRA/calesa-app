@@ -2,6 +2,7 @@
 
 import type { Route } from 'next'
 import Link from 'next/link'
+import { cn } from 'cn'
 import { Button, buttonVariants } from '@/shared/ui/button'
 import type { AccionDeRelacionados } from '../../../entities/acciones-de-relacionados'
 
@@ -14,14 +15,15 @@ type Props = {
   alElegir: (accion: AccionDeRelacionados) => void
 }
 
-const TAMANO = 'min-h-11 w-fit md:min-h-8'
+// Con el texto al 200 % en una columna angosta, la frase se parte en vez de ensanchar la página.
+const TAMANO = 'h-auto min-h-11 w-fit max-w-full whitespace-normal text-left md:min-h-8'
 
 // Una acción de un grupo (o de la línea de «todo vacío») dibujada como botón: un enlace navega y lo demás lo hace `alElegir`.
 export function AccionSuelta({ accion, enCurso, alElegir }: Props) {
   return accion.tipo === 'enlace' ? (
     <Link
       href={accion.href as Route}
-      className={`${buttonVariants({ variant: 'outline', size: 'sm' })} ${TAMANO}`}
+      className={cn(buttonVariants({ variant: 'outline', size: 'sm', className: TAMANO }))}
     >
       {accion.etiqueta}
     </Link>
