@@ -1,0 +1,316 @@
+import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { formatearNumero } from '../src/shared/lib/formato'
+import { entrar } from './soporte/alta'
+import { esMovil } from './soporte/inventario'
+import { idDe, marcarInteres, vincular } from './soporte/leads'
+import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
+import {
+  esperarFichaHidratada,
+  irAFicha,
+  nuevoLead,
+  panelDeEdicion,
+  tituloDeLaFicha,
+} from './soporte/leads-ficha'
+import {
+  irALeads,
+  limpiarListado,
+  prepararListado,
+  type TerrenoDelListado,
+} from './soporte/leads-listado'
+import { embudoPorDefecto, etapa, oportunidadesPorSql } from './soporte/leads-oportunidades'
+import { otorgarComo } from './soporte/leads-portal'
+import { drawerDeTodos } from './soporte/leads-seguimientos'
+import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
+import { capturar } from './soporte/recorrido'
+import { literal, sql } from './soporte/sql'
+
+// La ficha del lead en dos columnas (T33): todo a la vista sin un clic (sin pestañas ni acordeones), el índice que salta a cada bloque y
+// marca el actual, los enlaces de siempre (`?seccion=`, `?panel=`) que llevan a su bloque o abren lo suyo, la forma en escritorio (dos
+// columnas) y en el celular (una, en el orden del índice), «Ver todos» y el documento de la ficha entera: igual con 10 que con 1.000.
+test.describe.configure({ mode: 'serial' })
+
+let t: TerrenoDelListado
+const MARCA = 'E2E 2col'
+const ORIGEN = "(select id from public.origenes where clave = 'subasta_usa')"
+
+test.beforeAll(async ({}, info) => {
+  test.setTimeout(180_000)
+  t = await prepararListado(`${info.project.name}-2col`)
+})
+
+test.afterAll(async () => {
+  sql(`
+    begin;
+    create temporary table de_la_prueba on commit drop as
+      select id from public.leads where nombre like ${literal(`%${MARCA}%`)};
+    set local session_replication_role = replica;
+    delete from public.seguimientos where lead_id in (select id from de_la_prueba);
+    delete from public.recordatorios where lead_id in (select id from de_la_prueba);
+    delete from public.oportunidades where lead_id in (select id from de_la_prueba);
+    delete from public.vehiculos_interesados where lead_id in (select id from de_la_prueba);
+    delete from public.vehiculos_vinculos where lead_id in (select id from de_la_prueba);
+    set local session_replication_role = origin;
+    delete from public.vehiculos where titulo like ${literal(`${MARCA}%`)};
+    commit;
+  `)
+  await limpiarListado(t)
+})
+
+// Seguimientos de la dueña con un detalle de verdad (cada 30 minutos hacia atrás), recordatorios pendientes (la mitad vencidos) y
+// oportunidades, por SQL: con 10 o con 1.000, el documento de la ficha pesa lo mismo (lo que crece va por «Ver todos» o «Ver más»).
+async function sembrar(leadId: string, cuantos: number): Promise<void> {
+  const duena = await idDe(t.personas.duena)
+  const lead = literal(leadId)
+  const persona = literal(duena)
+  sql(`
+    begin;
+    set local session_replication_role = replica;
+    insert into public.seguimientos (lead_id, usuario_id, tipo_id, titulo, detalle_doc, detalle_texto, ocurrido_en)
+    select ${lead}, ${persona},
+           (select id from public.tipos_seguimiento where activo order by orden limit 1),
+           'Llamada ' || g,
+           jsonb_build_object('type', 'doc', 'content', jsonb_build_array(jsonb_build_object('type', 'paragraph',
+             'content', jsonb_build_array(jsonb_build_object('type', 'text',
+               'text', 'Habló del vehículo, pidió el precio puesto en La Paz y quedó en volver a llamar el jueves, nota ' || g))))),
+           'Habló del vehículo, pidió el precio puesto en La Paz y quedó en volver a llamar el jueves, nota ' || g,
+           now() - make_interval(mins => g * 30)
+      from generate_series(1, ${String(cuantos)}) g;
+    insert into public.recordatorios (usuario_id, lead_id, titulo, recordar_en)
+    select ${persona}, ${lead}, 'Mandarle la cotización ' || g,
+           case when g % 2 = 0 then now() - make_interval(hours => g) else now() + make_interval(hours => g) end
+      from generate_series(1, ${String(cuantos)}) g;
+    set local session_replication_role = origin;
+    update public.leads set ultimo_seguimiento_en = now() - interval '30 minutes' where id = ${lead};
+    commit;
+  `)
+  const embudo = await embudoPorDefecto(t.personas.duena)
+  oportunidadesPorSql({
+    usuarioId: duena,
+    leadId,
+    embudoId: embudo.id,
+    etapaAbierta: etapa(embudo, 'Nuevo'),
+    etapaCerrada: etapa(embudo, 'Ganado'),
+    abiertas: Math.ceil(cuantos * 0.6),
+    cerradas: Math.floor(cuantos * 0.4),
+  })
+}
+
+// Un vehículo vinculado y cuatro interesados de la subasta de la semilla.
+async function conVehiculos(leadId: string, corto: string): Promise<void> {
+  const titulos = [0, 1, 2, 3, 4].map((n) => `${MARCA} ${corto} ${String(n)}`)
+  sql(
+    `insert into public.vehiculos (origen_id, titulo) select ${ORIGEN}, unnest(array[${titulos.map(literal).join(', ')}])`,
+  )
+  const ids = sql(
+    `select id from public.vehiculos where titulo like ${literal(`${MARCA} ${corto} %`)} order by titulo`,
+  ).split('\n')
+  const [vinculado, ...interesados] = ids
+  await vincular(vinculado ?? '', leadId)
+  for (const vehiculoId of interesados) {
+    await marcarInteres({
+      vehiculoId,
+      leadId,
+      quien: t.personas.duena,
+      nota: 'Lo quiere en blanco',
+    })
+  }
+}
+
+// Un lead de la dueña con todo: seguimientos, recordatorios, oportunidades, vehículos y el portal otorgado.
+async function leadCompleto(corto: string, cuantos: number) {
+  const lead = await nuevoLead({
+    corto: `${MARCA} ${corto}`,
+    telefono: completoCon(t, nacional()),
+    deQuien: t.personas.duena,
+  })
+  await sembrar(lead.id, cuantos)
+  await conVehiculos(lead.id, corto)
+  await otorgarComo(t.personas.duena, lead.id, 'clave-de-la-prueba-1')
+  return lead
+}
+
+let completo: Awaited<ReturnType<typeof leadCompleto>>
+
+const indice = (page: Page): Locator => page.getByRole('navigation', { name: 'Índice de la ficha' })
+const titulo = (page: Page, nombre: string): Locator =>
+  page.getByRole('heading', { name: nombre, exact: true, level: 2 })
+const BLOQUES = [
+  ['Seguimientos', 'Seguimientos y recordatorios'],
+  ['Oportunidades', 'Tus oportunidades'],
+  ['Relacionados', 'Relacionados'],
+  ['Cotizaciones', 'Cotizaciones'],
+] as const
+
+test('todo a la vista sin un clic: la izquierda, el índice y los cuatro bloques; sin pestañas ni acordeones', async ({
+  page,
+}, info) => {
+  test.setTimeout(90_000)
+  completo = await leadCompleto(`Completo ${info.project.name}`, 10)
+  await entrar(page, t.personas.duena)
+  await irAFicha(page, completo.id)
+  await expect(tituloDeLaFicha(page, completo.nombre)).toBeVisible()
+  for (const nombre of ['Datos', 'Teléfonos', 'Quién lo tiene', 'Acceso al portal']) {
+    await expect(titulo(page, nombre)).toBeAttached()
+  }
+  await expect(indice(page).getByRole('link')).toHaveText(BLOQUES.map(([etiqueta]) => etiqueta))
+  for (const [, nombre] of BLOQUES) {
+    await titulo(page, nombre).scrollIntoViewIfNeeded()
+    await expect(titulo(page, nombre)).toBeVisible()
+  }
+  // Lo que hay en cada uno, sin abrir nada: los 3 últimos seguimientos, los vínculos y el portal.
+  await expect(
+    page.getByRole('region', { name: 'Seguimientos', exact: true }).getByRole('article'),
+  ).toHaveCount(3)
+  await expect(page.getByRole('button', { name: 'Ver todos los seguimientos' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Vinculado', exact: true })).toBeVisible()
+  await expect(
+    page.getByRole('region', { name: 'Acceso al portal' }).getByText('Activo', { exact: true }),
+  ).toBeVisible()
+  await expect(page.locator('main details')).toHaveCount(0)
+  await expect(page.getByRole('tablist')).toHaveCount(0)
+  await expect(page.getByRole('navigation', { name: 'Secciones del lead' })).toHaveCount(0)
+  await page.evaluate(() => {
+    window.scrollTo(0, 0)
+  })
+  await capturar(page, info, 'ficha-dos-columnas')
+})
+
+test('el índice salta a cada bloque: su título queda enfocado y a la vista, y su enlace marcado', async ({
+  page,
+}) => {
+  await entrar(page, t.personas.duena)
+  await irAFicha(page, completo.id)
+  await esperarFichaHidratada(page)
+  for (const [etiqueta, nombre] of BLOQUES) {
+    const enlace = indice(page).getByRole('link', { name: etiqueta })
+    await enlace.click()
+    await expect(titulo(page, nombre)).toBeFocused()
+    await expect(titulo(page, nombre)).toBeInViewport()
+    await expect(enlace).toHaveAttribute('aria-current', 'location')
+    // El índice sigue a la vista (pegajoso) y la página no se ensancha.
+    await expect(indice(page)).toBeInViewport()
+  }
+})
+
+test('los enlaces de siempre: `?seccion=` lleva a su bloque y `?panel=` abre lo suyo', async ({
+  page,
+}) => {
+  await entrar(page, t.personas.duena)
+  const casos = [
+    ['seguimientos', 'Seguimientos y recordatorios'],
+    ['vehiculos', 'Relacionados'],
+    ['oportunidades', 'Tus oportunidades'],
+    ['portal', 'Acceso al portal'],
+  ] as const
+  for (const [seccion, nombre] of casos) {
+    await irAFicha(page, completo.id, `?seccion=${seccion}`)
+    await expect(titulo(page, nombre)).toBeFocused()
+    await expect(titulo(page, nombre)).toBeInViewport()
+  }
+  await irAFicha(page, completo.id, '?seccion=seguimientos&panel=anotar-seguimiento')
+  await expect(page.getByRole('dialog', { name: 'Anotar seguimiento' })).toBeVisible()
+  // El de «Agregar teléfono» de cuando el modal vivía en la ficha: la edición con el modal abierto.
+  await irAFicha(page, completo.id, '?panel=agregar-telefono')
+  await expect(page).toHaveURL(/panel=editar-lead&extra=nuevo/)
+  await expect(panelDeEdicion(page)).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'Agregar teléfono' })).toBeVisible()
+})
+
+test('la forma: en escritorio, «Datos» a la izquierda de los bloques; en el celular, una columna en el orden del índice', async ({
+  page,
+}, info) => {
+  await entrar(page, t.personas.duena)
+  await irAFicha(page, completo.id)
+  await esperarFichaHidratada(page)
+  const caja = async (localizador: Locator) => {
+    const medida = await localizador.boundingBox()
+    if (!medida) {
+      throw new Error('sin caja')
+    }
+    return medida
+  }
+  const datos = await caja(titulo(page, 'Datos'))
+  const seguimientos = await caja(titulo(page, 'Seguimientos y recordatorios'))
+  if (esMovil(page)) {
+    const orden = [
+      page.getByRole('heading', { level: 1 }),
+      titulo(page, 'Datos'),
+      titulo(page, 'Acceso al portal'),
+      indice(page),
+      ...BLOQUES.map(([, nombre]) => titulo(page, nombre)),
+    ]
+    const alturas: number[] = []
+    for (const localizador of orden) {
+      const medida = await localizador.evaluate(
+        (e) => e.getBoundingClientRect().top + window.scrollY,
+      )
+      alturas.push(medida)
+    }
+    expect(alturas).toEqual([...alturas].sort((a, b) => a - b))
+    await capturar(page, info, 'ficha-celular')
+  } else {
+    expect(datos.x + datos.width).toBeLessThanOrEqual(seguimientos.x)
+    expect(Math.abs(datos.y - seguimientos.y)).toBeLessThan(400)
+  }
+  // Ninguna de las dos formas ensancha la página.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  )
+})
+
+test('«Ver todos los seguimientos» abre la línea completa en su drawer (`?todos=`) y Esc lo cierra', async ({
+  page,
+}) => {
+  await entrar(page, t.personas.duena)
+  await irAFicha(page, completo.id)
+  await esperarFichaHidratada(page)
+  await page.getByRole('button', { name: 'Ver todos los seguimientos' }).click()
+  await expect(page).toHaveURL(/todos=seguimientos/)
+  const drawer = drawerDeTodos(page)
+  await expect(drawer.getByRole('article')).toHaveCount(10)
+  await page.keyboard.press('Escape')
+  await expect(drawer).toBeHidden()
+  await expect(page).not.toHaveURL(/todos=/)
+  await expect(page.getByRole('button', { name: 'Ver todos los seguimientos' })).toBeFocused()
+})
+
+test('el documento de la ficha entera pesa lo mismo con 10 que con 1.000 seguimientos, recordatorios y oportunidades', async ({
+  page,
+}, info) => {
+  test.setTimeout(120_000)
+  const conMil = await leadCompleto(`Mil ${info.project.name}`, 1000)
+  await entrar(page, t.personas.duena)
+  const documento = async (ruta: string) =>
+    ((await (await page.goto(ruta))?.body())?.length ?? 0) as number
+  const base = await documento('/perfil')
+  const deDiez = (await documento(`/leads/${completo.id}`)) - base
+  const deMil = (await documento(`/leads/${conMil.id}`)) - base
+  const kb = (bytes: number) => formatearNumero(bytes / 1024, { decimales: 1 })
+  const resumen = `la ficha entera aporta ${kb(deDiez)} KB con 10 y ${kb(deMil)} KB con 1.000 (presupuesto ${String(PRESUPUESTO_DE_LA_FICHA_EN_KB)})`
+  console.warn(`[ficha entera] ${info.project.name}: ${resumen}`)
+  info.annotations.push({ type: 'KB de la ficha entera', description: resumen })
+  expect(deDiez).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_EN_KB * 1024)
+  expect(deMil).toBeLessThanOrEqual(deDiez + 2 * 1024)
+})
+
+test('el resumen del listado es la versión corta de la ficha, y `?pestana=` de antes lleva a la ficha', async ({
+  page,
+}) => {
+  await entrar(page, t.personas.duena)
+  await irALeads(page, `?lead=${completo.id}`)
+  const drawer = page.getByRole('dialog', { name: completo.nombre })
+  await expect(drawer).toBeVisible()
+  await expect(drawer.getByRole('tablist')).toHaveCount(0)
+  for (const dato of ['Teléfono', 'Origen del lead', 'Último seguimiento', 'Recordatorio']) {
+    await expect(drawer.getByText(dato, { exact: true })).toBeVisible()
+  }
+  await expect(drawer.getByRole('link', { name: 'Abrir ficha' })).toBeVisible()
+  await expect(drawer.getByRole('button', { name: 'Editar' })).toBeVisible()
+  await expect(
+    drawer.getByRole('button', { name: `Más acciones de ${completo.nombre}` }),
+  ).toBeVisible()
+  await expect(drawer.getByRole('region', { name: 'Relacionados' })).toBeVisible()
+  await page.goto(`/leads?lead=${completo.id}&pestana=seguimientos`)
+  await expect(page).toHaveURL(new RegExp(`/leads/${completo.id}\\?seccion=seguimientos`))
+  await expect(titulo(page, 'Seguimientos y recordatorios')).toBeFocused()
+})

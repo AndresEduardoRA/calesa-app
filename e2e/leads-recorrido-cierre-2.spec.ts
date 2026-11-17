@@ -199,17 +199,17 @@ test('Ana · el kanban con «Mover a…» en una línea y el modal del motivo', 
   await capturar(page, info, 'ana-kanban-modal-pregunta')
 })
 
-test('Ana · la ficha: la barra de secciones del celular, «Portal» a la vista', async ({
+test('Ana · la ficha: el índice de los bloques, y `?seccion=portal` lleva a «Acceso al portal»', async ({
   page,
 }, info) => {
   await entrar(page, r.ana.email)
   await irAFicha(page, r.uno.id)
-  await expect(page.getByRole('navigation', { name: 'Secciones del lead' })).toBeVisible()
-  await variantes(page, info, 'ana-ficha-barra', true)
+  await expect(page.getByRole('navigation', { name: 'Índice de la ficha' })).toBeVisible()
+  await variantes(page, info, 'ana-ficha-indice', true)
   await irAFicha(page, r.uno.id, '?seccion=portal')
-  await expect(page.getByRole('link', { name: 'Portal' })).toHaveAttribute('aria-current', 'page')
-  // La barra de secciones se desplaza hasta la abierta recién al hidratar: se captura con «Portal» ya a la vista.
-  await aLaVistaAlAcomodarse(page.getByRole('link', { name: 'Portal' }), 'la sección «Portal»')
+  const titulo = page.getByRole('heading', { name: 'Acceso al portal', level: 2 })
+  await expect(titulo).toBeFocused()
+  await aLaVistaAlAcomodarse(titulo, 'el bloque «Acceso al portal»')
   await variantes(page, info, 'ana-ficha-portal')
 })
 

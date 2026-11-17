@@ -137,6 +137,15 @@ export async function irAFicha(page: Page, leadId: string, consulta = ''): Promi
   await page.goto(`/leads/${leadId}${consulta}`)
 }
 
+// La ficha llega dibujada por el servidor antes de que React enganche sus controles: un clic en ese instante se pierde. El índice lleva
+// `data-hidratado`, que React pone recién cuando lo enganchó.
+export async function esperarFichaHidratada(page: Page): Promise<void> {
+  await expect(page.getByRole('navigation', { name: 'Índice de la ficha' })).toHaveAttribute(
+    'data-hidratado',
+    'true',
+  )
+}
+
 export const tituloDeLaFicha = (page: Page, nombre: string): Locator =>
   page.getByRole('heading', { name: nombre, level: 1 })
 

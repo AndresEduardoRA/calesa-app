@@ -6,13 +6,12 @@ import { idDePersona } from './soporte/leads-alta'
 import { abrirEdicion, extrasDeLead, irAFicha, tituloDeLaFicha } from './soporte/leads-ficha'
 import { abrirAgregarTelefono, modalDeExtra, nacional } from './soporte/leads-ficha-telefonos'
 import { nombre } from './soporte/leads-listado'
+import { abrirMenuDelLead } from './soporte/leads-marcas'
 import { dialogoDeOtorgar, GENERAR, seccionPortal } from './soporte/leads-portal'
 import {
   abrirAgendar,
   abrirAnotar,
   abrirEdicionDeSeguimiento,
-  abrirPestanaDeRecordatorios,
-  abrirPestanaDeSeguimientos,
   compartirCon,
   irASeguimientos,
   modalDeRecordatorio,
@@ -56,26 +55,26 @@ async function pieUsable(page: Page, modal: Locator, principal: string) {
   await tactil(page, boton)
 }
 
-test('la ficha con sus seis secciones cabe en el celular, y su modal también (la ✕ a la vista)', async ({
+test('la ficha con todos sus bloques cabe en el celular, y su modal también (la ✕ a la vista)', async ({
   page,
 }) => {
   await entrar(page, r.ana.email)
   const montada = {
-    '': page.getByRole('navigation', { name: 'Secciones del lead' }),
+    '': page.getByRole('navigation', { name: 'Índice de la ficha' }),
     '?seccion=seguimientos': page.getByRole('region', { name: 'Seguimientos', exact: true }),
     '?seccion=portal': seccionPortal(page),
   }
   for (const [seccion, contenido] of Object.entries(montada)) {
     await irAFicha(page, r.uno.id, seccion)
     await expect(tituloDeLaFicha(page, r.uno.nombre)).toBeVisible()
-    // Las secciones son `diferido()`: se mide con su contenido ya montado y quieto, no con el cascarón que llega primero.
+    // Cada bloque llega tras su `<Suspense>`: se mide con su contenido ya montado y quieto, no con el esqueleto que llega primero.
     await expect(contenido).toBeVisible({ timeout: 15_000 })
     await quieto(page.locator('main'))
     await sinScrollHorizontal(page)
   }
   await expect(
-    page.getByRole('navigation', { name: 'Secciones del lead' }).getByRole('link'),
-  ).toHaveCount(6)
+    page.getByRole('navigation', { name: 'Índice de la ficha' }).getByRole('link'),
+  ).toHaveCount(4)
   await irAFicha(page, r.uno.id)
   const modal = await abrirAgregarTelefono(page)
   await quieto(modal)
@@ -197,8 +196,13 @@ test('C · desde el drawer: anotar y agendar abren sobre el drawer y Esc cierra 
   await entrar(page, r.ana.email)
   await page.goto(`/leads?lead=${r.uno.id}`)
   const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await abrirPestanaDeSeguimientos(page, drawer)
-  await drawer.getByRole('button', { name: 'Anotar seguimiento' }).click()
+  await expect(drawer).toBeVisible()
+  // Desde el «⋯» del resumen (no tiene pestañas): el modal va dentro del drawer.
+  await (
+    await abrirMenuDelLead(page, r.uno.nombre)
+  )
+    .getByRole('menuitem', { name: 'Anotar seguimiento…' })
+    .click()
   const anotar = modalDeSeguimiento(page, 'Anotar')
   await expect(anotar.getByLabel('Resumen')).toBeFocused()
   await pieUsable(page, anotar, 'Guardar')
@@ -207,8 +211,11 @@ test('C · desde el drawer: anotar y agendar abren sobre el drawer y Esc cierra 
   await expect(anotar).toHaveCount(0)
   await expect(drawer).toBeVisible()
 
-  await abrirPestanaDeRecordatorios(page, drawer)
-  await drawer.getByRole('button', { name: 'Agendar recordatorio' }).click()
+  await (
+    await abrirMenuDelLead(page, r.uno.nombre)
+  )
+    .getByRole('menuitem', { name: 'Agendar recordatorio…' })
+    .click()
   const agendar = modalDeRecordatorio(page, 'Agendar')
   await expect(agendar.getByLabel('De qué es')).toBeFocused()
   await capturar(page, info, 'drawer-agendar')

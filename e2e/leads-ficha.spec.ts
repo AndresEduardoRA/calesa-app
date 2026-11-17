@@ -25,7 +25,10 @@ import {
   telefonoDeLead,
   tituloDeLaFicha,
 } from './soporte/leads-ficha'
-import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
+import {
+  PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB,
+  PRESUPUESTO_DE_LA_FICHA_EN_KB,
+} from './soporte/presupuestos'
 import { sql } from './soporte/sql'
 
 // La ficha de un lead (`/leads/[id]`) contra la app compilada y el Supabase local: a dónde llegan
@@ -56,16 +59,20 @@ test('la cartera ve su ficha: teléfono completo, quién lo tiene y sus datos', 
   await expect(
     page.getByText(`Tu n.º ${formatearNumero(t.numeroPropioDeBerta, { decimales: 0 })}`).first(),
   ).toBeVisible()
-  await expect(page.getByText('Lo tienes tú')).toBeVisible()
-  // Un dato propio con valor y los cuatro fijos en «Datos principales».
+  // «Quién lo tiene», a la vista en la columna de la izquierda: quien mira, marcado.
+  await expect(
+    page.getByRole('region', { name: 'Quién lo tiene', exact: true }).getByText('(tú)'),
+  ).toBeVisible()
+  // Un dato propio con valor y los fijos en «Datos», a la vista (sin plegar).
   await expect(aLaVista(page.getByText('rojo', { exact: true }))).toBeVisible()
-  await expect(page.getByText('Datos principales')).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Datos', exact: true })).toBeVisible()
   // El teléfono completo, como enlace de llamada, y nada que diga que está enmascarado.
   const llamada = page.locator('a[href^="tel:"]').first()
   await expect(llamada).toBeVisible()
   await expect(page.getByText('Completo solo para su cartera.')).toHaveCount(0)
-  // Sin pestañas: «Datos» es la única sección y no se dibuja una barra con un solo elemento.
+  // Sin pestañas ni acordeones.
   await expect(page.getByRole('tablist')).toHaveCount(0)
+  await expect(page.locator('main details')).toHaveCount(0)
 })
 
 test('desde el drawer del listado: «Abrir ficha» lleva a la ficha, ya con el nombre vigente', async ({
@@ -144,7 +151,11 @@ test('la dueña con «todos» ve la ficha ajena con los teléfonos enmascarados 
   expect(html).not.toContain(CI_DE_CARLOS)
   // Lo que sí ve quien ve el lead.
   await expect(aLaVista(cuerpo.getByText('azul', { exact: true }))).toBeVisible()
-  await expect(cuerpo.getByText('Lo tiene Carlos Alta Prueba')).toBeVisible()
+  await expect(
+    cuerpo
+      .getByRole('region', { name: 'Quién lo tiene', exact: true })
+      .getByText('Carlos Alta Prueba'),
+  ).toBeVisible()
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -250,7 +261,7 @@ test('abrir la ficha trae poco: lo que aporta sobre el resto de la pantalla y lo
   // volvió de 48 a 44 KB en la 6b. Lo que pesa son las props (RSC) y el HTML de «Datos»: los paneles
   // cerrados no suman nada, diferidos o no (docs/DECISIONES.md, 2026-10-15).
   expect(ficha - base.total).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_EN_KB * 1024)
-  expect(rsc).toBeLessThan(40 * 1024)
+  expect(rsc).toBeLessThan(PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB * 1024)
   // Móvil: la cabecera cabe sin desplazar de costado.
   if (esMovil(page)) {
     const ancho = await page.evaluate(() => document.documentElement.scrollWidth)

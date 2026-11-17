@@ -2,11 +2,15 @@ import { expect, test } from './soporte/prueba'
 import { abrirNuevoLeadDeLaBarra, entrar } from './soporte/alta'
 import { idDePersona } from './soporte/leads-alta'
 import { extrasDeLead, irAFicha, meterSeguimiento, ponerExtras } from './soporte/leads-ficha'
-import { abrirAgregarTelefono, nacional } from './soporte/leads-ficha-telefonos'
+import {
+  abrirAgregarTelefono,
+  abrirPanelConTelefonos,
+  nacional,
+} from './soporte/leads-ficha-telefonos'
 import { irALeads, nombre } from './soporte/leads-listado'
 import { abrirMenuDelLead } from './soporte/leads-marcas'
 import {
-  abrirPestanaDeSeguimientos,
+  drawerDeTodos,
   modalDeSeguimiento,
   seguimientosEnLaBase,
 } from './soporte/leads-seguimientos'
@@ -38,7 +42,8 @@ test('D · un aviso con un modal sucio abierto: su botón recibe el clic y el mo
   await ponerExtras(r.dos.id, [{ telefono: `${r.t.codigo}${nacional()}`, etiqueta: 'Casa' }])
   await entrar(page, r.ana.email)
   await irAFicha(page, r.dos.id)
-  await page.getByRole('button', { name: 'Quitar' }).click()
+  // Los extras se quitan en el panel de edición (la ficha los muestra sólo para leer).
+  await (await abrirPanelConTelefonos(page)).getByRole('button', { name: 'Quitar' }).click()
   const aviso = page.locator('[data-sonner-toast]').filter({ hasText: 'Teléfono quitado.' })
   await expect(aviso).toBeVisible()
   // Lo que anuncia el lector de pantalla, en español (sonner lo trae en inglés).
@@ -115,9 +120,10 @@ test('E · sin red: lo escrito en el modal queda y sale una vez; «Ver más» di
   }
   const antes = (await seguimientosEnLaBase(r.dos.id)).length
   await entrar(page, r.ana.email)
-  await page.goto(`/leads?lead=${r.dos.id}`)
-  const drawer = page.getByRole('dialog', { name: r.dos.nombre })
-  await abrirPestanaDeSeguimientos(page, drawer)
+  // La línea completa vive en «Ver todos» de la ficha (`?todos=seguimientos`).
+  await page.goto(`/leads/${r.dos.id}?seccion=seguimientos&todos=seguimientos`)
+  const drawer = drawerDeTodos(page)
+  await expect(drawer).toBeVisible()
   const linea = drawer.getByRole('region', { name: 'Seguimientos', exact: true })
 
   // El código del modal se pide al abrirlo por primera vez: se abre una vez con red.

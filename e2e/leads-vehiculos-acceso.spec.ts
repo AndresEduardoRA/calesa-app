@@ -67,9 +67,6 @@ test('el compartido ve el vinculado (se lo da el vínculo) y no el interés en u
   await entrar(page, t.cora)
   await irAVehiculos(page, lead.id)
   await expect(vinculados(page).getByRole('link', { name: vinculado })).toBeVisible()
-  await expect(
-    page.getByText('Este lead no mostró interés en ningún vehículo que puedas ver.'),
-  ).toBeVisible()
   await expect(page.getByText(interes)).toHaveCount(0)
   // El bloque «Relacionados» de arriba cuenta lo que no ve, sin nombrarlo.
   await expect(
@@ -85,7 +82,7 @@ test('la supervisión ve todo y no agrega (ni por la URL), pero desvincula con c
   await entrar(page, t.sol)
   await irAVehiculos(page, lead.id, '&panel=agregar-vehiculo')
   await expect(panelAgregar(page)).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Agregar vehículo' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Vincular o marcar un vehículo' })).toHaveCount(0)
   await expect(interesados(page).getByText('Solo de Ada')).toBeVisible()
   // La base tampoco la deja: vincular pide la cartera del lead.
   const rechazo = await rpcComo(t.sol, 'vehiculo_vincular', {
@@ -95,10 +92,14 @@ test('la supervisión ve todo y no agrega (ni por la URL), pero desvincula con c
   })
   expect(rechazo.error?.message).toBe('No encontramos este lead o no tienes acceso.')
   // La confirmación tiene su URL: Esc, «atrás», recarga, sin red y un solo pedido.
-  const disparador = vinculados(page).getByRole('button', { name: `Desvincular ${vinculado}` })
+  // «Desvincular» va en el «⋯» de su fila de Relacionados; sin la cartera lleva a la confirmación (`?panel=desvincular&vinculado=`).
+  const disparador = vinculados(page).getByRole('button', { name: `Más acciones de ${vinculado}` })
   const dialogo = page.getByRole('dialog', { name: /^Desvincular/ })
   await cicloDeUnaConfirmacion(page, {
-    abrir: () => disparador.click(),
+    abrir: async () => {
+      await disparador.click()
+      await page.getByRole('menuitem', { name: 'Desvincular', exact: true }).click()
+    },
     dialogo,
     disparador,
     url: /panel=desvincular&vinculado=/,
@@ -117,11 +118,15 @@ test('la supervisión ve todo y no agrega (ni por la URL), pero desvincula con c
   )
 })
 
-test('sin permiso sobre vehículos no hay sección, ni por la URL', async ({ page }) => {
+test('sin permiso sobre vehículos no hay bloque Relacionados ni su gestión, ni por la URL', async ({
+  page,
+}) => {
   const lead = await leadDe(t.lia, `Sin vehículos ${p}`)
   await entrar(page, t.lia)
-  await page.goto(`/leads/${lead.id}?seccion=vehiculos`)
+  await page.goto(`/leads/${lead.id}?seccion=vehiculos&panel=agregar-vehiculo`)
   await expect(tituloDeLaFicha(page, lead.nombre)).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Vehículos', exact: true })).toHaveCount(0)
-  await expect(page.getByRole('region', { name: 'Vehículos', exact: true })).toHaveCount(0)
+  const indice = page.getByRole('navigation', { name: 'Índice de la ficha' })
+  await expect(indice.getByRole('link', { name: 'Relacionados' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Relacionados', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('dialog', { name: 'Agregar vehículo' })).toHaveCount(0)
 })

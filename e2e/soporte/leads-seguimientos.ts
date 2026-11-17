@@ -251,22 +251,3 @@ export async function abrirEdicionDeRecordatorio(page: Page, titulo: string): Pr
   await expect(modal.getByLabel('De qué es')).toBeFocused()
   return modal
 }
-
-// La pestaña «Seguimientos» del drawer rápido: se elige (se insiste hasta hidratar) y espera la línea
-// de tiempo, que se lee recién ahí.
-export async function abrirPestanaDeSeguimientos(page: Page, drawer: Locator): Promise<void> {
-  await expect(async () => {
-    await drawer.getByRole('tab', { name: 'Seguimientos', exact: true }).click()
-    await expect(page).toHaveURL(/pestana=seguimientos/, { timeout: 1000 })
-  }).toPass()
-  await expect(drawer.getByRole('region', { name: 'Seguimientos', exact: true })).toBeVisible()
-}
-
-// La pestaña «Recordatorios» del drawer (9d-2): «Tus recordatorios», leída al elegirla.
-export async function abrirPestanaDeRecordatorios(page: Page, drawer: Locator): Promise<void> {
-  await expect(async () => {
-    await drawer.getByRole('tab', { name: 'Recordatorios', exact: true }).click()
-    await expect(page).toHaveURL(/pestana=recordatorios/, { timeout: 1000 })
-  }).toPass()
-  await expect(drawer.getByRole('region', { name: 'Tus recordatorios' })).toBeVisible()
-}
