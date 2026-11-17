@@ -203,7 +203,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   (`vehiculos.ver`; `?panel=agregar-vehiculo`; es donde se gestiona: lo que se ve de un vistazo es **Relacionados**, arriba de las secciones), «Oportunidades» (`?panel=nueva-oportunidad`, `editar-oportunidad&oportunidad=<id>`),
   «Cotizaciones» (con `cotizaciones.ver` en algún origen; ver «Pestaña de cotizaciones») y «Portal». Ninguna pestaña se dibuja vacía.
 - **Vehículos** — `/vehiculos` (`vehiculos.*`): tabla + panel de filtros + resumen. Pestaña por origen (`?origen=`); filtros en URL (`q`,
-  `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; resumen `?vehiculo=<id>` (`?pestana=fotos`; los relacionados van arriba de las pestañas);
+  `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; resumen `?vehiculo=<id>` (la versión corta de la ficha, sin pestañas; un `?pestana=fotos` viejo abre el visor);
   alta `?panel=nuevo` (sin el alta suelta pero con la de cotizar: «Nuevo» apagado con «Cotizar un vehículo nuevo», que abre la hoja con el panel
   del vehículo en alta); edición `?editar=`; `?vitrina=si|no`, `?limpieza=si|no`; junto al estado de vitrina de cada fila, «Publicar» / «Sacar de la
   web» con un toque y «Deshacer» (con `vehiculos.vitrina` del origen; sin precio público, `?panel=vitrina-rapida&para=<id>` pide sólo el precio).
@@ -213,16 +213,22 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   aprobada del vehículo con su moneda, enlazado a esa cotización (sin total, «Sin total»; sin aprobada o una que no se ve, «—»); sin la clave no se
   dibuja ni se consulta.
   `/vehiculos/papelera` (por lote).
-- **Vehículo** — `/vehiculos/[id]` (según origen): cabecera con portada y fase de sólo lectura; **«Relacionados»** compacto (con `leads.ver`) entre los avisos y las pestañas,
-  en todas ellas (ver «Relacionados (estados propios)»); «Publicar en la web» en `?panel=vitrina`;
-  `?seccion=`: «Ficha» (por layout del origen; edición `?editar=`; banner de limpieza; en un origen de subasta, el bloque «Subasta» con
-  «Editar fechas» en `?panel=fechas-de-subasta` para quien edita: inicio y cierre en su zona, vacío borra; «Vínculo e interesados» con
-  «Desvincular» confirmado), «Fotos» (≤ 24, portada, orden), «Repuestos» (con `repuestos.ver`, la última; sin proyecto, «Este vehículo no tiene proyecto
-  de repuestos.» con «Crear proyecto de repuestos» sólo si se puede editar; con él, «Proyecto #N», su estado y los ítems por fase) y
-  «Cotizaciones» (sólo con `cotizaciones.ver` del origen del vehículo). Las pestañas que se leen al abrirlas tienen esqueleto y error con
-  «Reintentar».
-  - **Pestaña de cotizaciones** (lead y vehículo): las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
-    Cotizaciones» (`/cotizaciones?lead=` o `?vehiculo=`); se lee al abrirla; esqueleto, error con «Reintentar», «Sin cotizaciones que
+- **Vehículo** — `/vehiculos/[id]` (según origen): **ficha en dos columnas**, todo a la vista sin un clic (sin pestañas ni acordeones). **Izquierda**
+  (pegajosa desde 56 rem de contenedor): la cabecera con el carrusel a todo el ancho, título, número, origen, situación (`<BadgeDeSituacion>`, la única vez),
+  la insignia de vitrina, «Editar» y el «⋯»; «Datos principales» (marca, modelo, año, VIN, categoría, km, placado y, en subasta, lote, plataforma y
+  enlace); en un origen de subasta, el bloque «Subasta» con «Editar fechas» (`?panel=fechas-de-subasta`, inicio y cierre en su zona, vacío borra).
+  **Derecha**: el índice pegajoso («Índice de la ficha») y los bloques que quien mira ve, en este orden: «Fase y qué falta» (`logistica.ver` del origen:
+  «Ver en logística» en su título y «Qué falta» de sólo lectura, ver «Logística: estados propios»), «Relacionados» compacto (`leads.ver`: el vinculado con
+  «Desvincular» confirmado, los interesados y lo cotizado; ver «Relacionados (estados propios)»), «Cotizaciones» (`cotizaciones.ver` del origen, el
+  historial completo, al acercarse), «Documentos» (`logistica.ver`, el hueco de la unidad, al acercarse), «Ficha» («Precio» y un grupo por layout del
+  origen; edición `?editar=`), «Repuestos» (`repuestos.ver`; sin proyecto, «Este vehículo no tiene proyecto de repuestos.» con «Crear proyecto de
+  repuestos» sólo si se puede editar; con él, «Proyecto #N», su estado y los ítems por fase) y «Fotos» (≤ 24, portada, orden; al acercarse). Un bloque sin
+  permiso no está, tampoco en el índice. Arriba de las dos columnas, «Volver» y los avisos (limpieza, situación). En el celular y con el texto al 200 %,
+  una columna en el mismo orden. `?seccion=ficha|fotos|documentos|cotizaciones|repuestos` lleva a su bloque (si no lo ve, se queda arriba);
+  `?panel=desvincular|vincular-lead|marcar-interesado` y `?relacionados=<tipo>` llevan a «Relacionados» y abren lo suyo; `?editar=`, `?panel=vitrina`
+  («Publicar en la web») y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».» con «Reintentar»).
+  - **Cotizaciones del lead y del vehículo** (pestaña o bloque): las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
+    Cotizaciones» (`/cotizaciones?lead=` o `?vehiculo=`); se lee al abrirla (en la ficha del vehículo, al acercarse el bloque); esqueleto, error con «Reintentar», «Sin cotizaciones que
     puedas ver.». Cada fila lleva la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura).
 - **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila, «Abrir cotización» y debajo las
   **pestañas** `?pestana=`: «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
@@ -583,15 +589,20 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   en «<origen>»: pídeselo a quien administra los roles.». Conflicto: el texto de la base con el nombre, «No se cambió nada.» y «Recargar».
   Error: «No pudimos guardar el resultado. Intenta de nuevo.»; sin red, el aviso de siempre. No ganada: «No ganada · la marcó <nombre> el
   <fecha>. Ya no cuenta en logística ni en Inicio.» (sin el nombre si no se pudo leer) con «Deshacer». En subasta o en su fase, sin aviso.
-- **Resumen (`?vehiculo=<id>`):** portada, identificación, situación (su fase o «Sin fase»), «Editar» (abre el panel encima y vuelve al resumen al día) y
-  «⋯»; «Relacionados» en una línea (con `leads.ver`) entre la cabecera y las pestañas, que se lee al abrir; pestañas `?pestana=fotos` que se lee al elegirla (un `?pestana=interesados`
-  viejo abre «Resumen»). Inexistente, en la papelera o de otro origen: «Este vehículo ya no
+- **Resumen (`?vehiculo=<id>`):** la versión corta de la ficha, sin pestañas: portada con carrusel, identificación, situación (su fase o «Sin fase»),
+  «Editar» (abre el panel encima y vuelve al resumen al día), «Cotizar», «Abrir ficha» y «⋯»; «Relacionados» en una línea de chips (con `leads.ver`), que se
+  lee al abrir. Un `?pestana=fotos` viejo abre el visor del carrusel del resumen (`?visor=<id>-resumen`) y otro `?pestana=` se quita, sin sumar al
+  historial. Relectura fallida: «No se pudieron actualizar los datos.» con «Reintentar». Inexistente, en la papelera o de otro origen: «Este vehículo ya no
   está disponible: no existe o ya no tienes acceso.».
+- **Ficha (`/vehiculos/[id]`):** sin `logistica.ver`, ni «Qué falta», ni «Documentos», ni «Ver en logística»; sin `cotizaciones.ver`, ni «Cotizaciones» ni el
+  grupo Cotizado; sin `leads.ver`, sin «Relacionados»; el índice siempre tiene «Ficha» y «Fotos». Origen sin flujo legible: el error de «Qué falta» con
+  «Reintentar» y el resto sigue. Sin fase: «Sin fase» en la cabecera y «Todavía no tiene fase.» en «Qué falta». Subasta sin resolver: el aviso de arriba
+  con «La ganamos» (no se repite en «Qué falta»). Sin red: el índice funciona (son anclas); lo diferido dice «Sin conexión» en su lugar con «Reintentar».
 
 ### Relacionados (estados propios)
 
 Arriba de cada detalle, en dos presentaciones que elige cada lugar (`presentacion`, obligatoria): **en una línea** en los resúmenes (`/vehiculos?vehiculo=`, `/leads?lead=`) y en logística
-(la página de la unidad y el drawer de `/logistica/gastos?unidad=`), y **compacta** en las fichas (`/vehiculos/[id]`, entre los avisos y las pestañas, con `leads.ver`; `/leads/[id]`, tras los
+(la página de la unidad y el drawer de `/logistica/gastos?unidad=`), y **compacta** en las fichas (`/vehiculos/[id]`, un bloque de la columna derecha, con `leads.ver`; `/leads/[id]`, tras los
 avisos y antes de las secciones, con `vehiculos.ver`). Tres grupos: **Vinculado**, **Interesado** y **Cotizado** (éste sólo con `cotizaciones.ver`). **Un grupo sin nada (ni lo que no se ve) no
 se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «Relacionados»» del bloque o de la línea.
 
@@ -807,7 +818,7 @@ y enfoca su título).
   y la bandeja de documentos no se pierden. Los atajos («Ir a Documentos», «Ir a Gastos») eligen la pestaña y llevan el foco a ella. **Subir documentos** va en un drawer (`?subir=documentos`) abierto por el botón «Subir documentos» del hueco (apagado, con «Necesitas permiso para subir documentos.» escrito debajo, sin `logistica.documentos.subir`); con archivos en la bandeja cerrar pregunta, y al terminar sin fallos se cierra solo (con fallos queda abierto con «Reintentar los N que faltan»). En el celular y en los drawers la bandeja sigue en línea. En escritorio se piden al abrir tres huecos (Qué falta, Documentos, Notas); en el celular, uno.
 - **Celular y tableta vertical:** una columna, un bloque plegado por hueco en este orden —qué falta (abierto), documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen— y una barra «Mover» pegada abajo (44 px, sólo con `flujos.mover` del origen y el hueco «Qué falta»)
   que lo abre, lo trae a la vista y le da el foco. Si el flujo del origen no se pudo leer, los huecos que piden una regla no se dibujan y una línea lo dice; el resto sigue. La ficha del
-  vehículo lleva «Ver en logística» (antes de «Editar», con `logistica.ver`) a `/logistica/vehiculo/<id>`.
+  vehículo lleva «Ver en logística» (en el título de su bloque «Fase y qué falta», con `logistica.ver`) a `/logistica/vehiculo/<id>`.
 - **«Qué falta» y mover** (abierto al inicio, el primero): una tarjeta por destino (las salidas de la fase actual; sin fase, las iniciales)
   con cada requisito y su estado **dicho con texto** («Cumplido» / «Falta»), «Obligatorio» / «Informativo», su detalle («1 de 2
   aprobados») y, en cada falta (obligatoria o informativa), **lo que la destraba**: un botón chico con el verbo («Subir», «Revisar», «Completar»,
@@ -817,7 +828,10 @@ y enfoca su título).
   ya subido, «Revisar» lleva a Documentos con el grupo del tipo a la vista (no se aprueba sin mirar el archivo); «Completar» lleva el foco al campo del
   transporte; «Registrar» abre «Registrar pago» vacío. Quien no puede: «Pedirlo» (con `agenda.tareas.asignar`) o «Pídeselo a quien administra los roles.»
   (en la línea sin otra acción; como nota del «⋯» si hay una). Lo que nunca podrá no aparece. Regla apagada (quien tiene la clave del hueco y el hueco no
-  se dibuja): ninguna acción. **En un drawer** (gastos, ítem), lo que sacaría de la pantalla dice «Abrir la unidad». **Sin red**: todo apagado y
+  se dibuja): ninguna acción. **En un drawer** (gastos, ítem), lo que sacaría de la pantalla dice «Abrir la unidad». **En la ficha del vehículo**
+  (bloque «Fase y qué falta»), de sólo lectura: «N días en la fase», por destino «Para pasar a «<destino>»» y sus requisitos (o «Listo para pasar a
+  «<destino>».»), sin «Elegir» ni «La ganamos»; «Subir» y «Revisar» se hacen en el bloque «Documentos» de la misma ficha y lo de otro hueco dice «Abrir la
+  unidad» (a ese hueco de la página de la unidad). **Sin red**: todo apagado y
   «Sin conexión: las acciones vuelven con la red.» en la línea viva. La franja «fuera de regla» sigue con su enlace. **«Pedírselo a alguien»**
   (`?pedir=requisito&falta=<id>`, un modal): la descripción es el título de la tarea («Falta: BL aprobado para pasar a «Embarcado»»); cargando, tres
   renglones; quién puede como radios (una sola persona, ya elegida; con más de 20, «Busca por nombre» desde 3 letras); nadie: «Nadie que pueda recibir
