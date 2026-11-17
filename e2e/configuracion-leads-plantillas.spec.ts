@@ -1,4 +1,4 @@
-import { expect, test, type Page } from './soporte/prueba'
+import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { admin } from './soporte/base'
 import { exigir } from './soporte/leads'
@@ -52,6 +52,15 @@ const irA = async (page: Page, seccion: 'portal' | 'embudo') => {
   await page.goto(`/configuracion/leads?seccion=${seccion}`)
 }
 
+// Un `fill` antes de hidratar escribe en el HTML del servidor y React no se entera: el botón sigue apagado y el clic no guarda. Se reescribe hasta que el formulario
+// nota el cambio (el `fill` de después de hidratar reemplaza todo el valor).
+async function escribirYEsperarElCambio(campo: Locator, texto: string, guardar: Locator) {
+  await expect(async () => {
+    await campo.fill(texto)
+    await expect(guardar).toBeEnabled({ timeout: 500 })
+  }).toPass()
+}
+
 test('la dueña cambia el mensaje del portal', async ({ page }) => {
   const empresa = await nombreDeLaEmpresa()
   await irA(page, 'portal')
@@ -63,7 +72,7 @@ test('la dueña cambia el mensaje del portal', async ({ page }) => {
   await expect(guardar).toBeDisabled()
 
   // Sin {clave} el motivo sale junto al campo y no se envía.
-  await campo.fill('Hola {cliente}, tu código es {codigo}.')
+  await escribirYEsperarElCambio(campo, 'Hola {cliente}, tu código es {codigo}.', guardar)
   await guardar.click()
   await expect(
     page.getByText(
@@ -112,7 +121,7 @@ test('la plantilla del embudo se guarda y se restablece', async ({ page }) => {
   await expect(segunda).toHaveValue('Contactado')
   await expect(page.getByRole('button', { name: 'Restablecer' })).toBeDisabled()
 
-  await segunda.fill('Llamado')
+  await escribirYEsperarElCambio(segunda, 'Llamado', page.getByRole('button', { name: 'Guardar' }))
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Plantilla del embudo guardada.')).toBeVisible()
   await page.reload()

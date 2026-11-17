@@ -114,6 +114,31 @@ export async function entrar(
 
 export const dialogo = (page: Page): Locator => page.getByRole('dialog', { name: 'Nuevo lead' })
 
+// «Nuevo» de la barra superior (el botón y su modal) y la opción que se elige ahí.
+export const botonNuevoDeLaBarra = (page: Page): Locator =>
+  page.locator('header').getByRole('button', { name: 'Nuevo', exact: true })
+export const modalDeNuevo = (page: Page): Locator =>
+  page.getByRole('dialog', { name: 'Nuevo', exact: true })
+
+// Abre «Nuevo» desde la barra. Se insiste mientras la página no hidrató: antes, el clic no abre nada.
+export async function abrirNuevo(page: Page): Promise<void> {
+  await expect(async () => {
+    await botonNuevoDeLaBarra(page).click()
+    await expect(modalDeNuevo(page)).toBeVisible({ timeout: 1000 })
+  }).toPass()
+}
+
+// Abre «Nuevo» y elige una opción (su nombre empieza con `opcion`).
+export async function elegirEnNuevo(page: Page, opcion: string): Promise<void> {
+  await abrirNuevo(page)
+  await modalDeNuevo(page)
+    .getByRole('button', { name: new RegExp(`^${opcion}`) })
+    .click()
+}
+
+// «Nuevo» › «Lead»: el mismo drawer que la tecla N.
+export const abrirNuevoLeadDeLaBarra = (page: Page): Promise<void> => elegirEnNuevo(page, 'Lead')
+
 // La tecla N abre «Nuevo lead» recién cuando la página terminó de hidratar: se insiste hasta que
 // abre. Con el panel ya pedido (la URL lo dice) no se vuelve a pulsar: la segunda «n» caería en el
 // teléfono, que toma el foco. Con `teclado`, cuenta sólo la pulsación que abrió y devuelve el
