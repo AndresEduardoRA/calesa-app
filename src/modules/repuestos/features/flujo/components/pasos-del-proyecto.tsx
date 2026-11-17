@@ -81,7 +81,7 @@ export function PasosDelProyecto(props: Props) {
   return (
     <section
       aria-labelledby="pasos-del-proyecto"
-      className="grid min-w-0 gap-2"
+      className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2"
       data-pasos-del-proyecto=""
     >
       <h2 id="pasos-del-proyecto" className="text-(length:--text-base) font-semibold">

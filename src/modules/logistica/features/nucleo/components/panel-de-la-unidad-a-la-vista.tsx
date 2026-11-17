@@ -50,7 +50,7 @@ export function PanelDeLaUnidadALaVista({
   }))
   return (
     <ProveedorDelDestinoInicial destino={destinoInicial}>
-      <div className="grid min-w-0 gap-4" data-slot="panel-de-la-unidad">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4" data-slot="panel-de-la-unidad">
         <CabeceraDeLaUnidad unidad={unidad} origen={origen} fase={fase} aviso={aviso} />
         {[...queFalta, ...propios, ...resto].map((seccion) => (
           <Seccion key={seccion.clave} seccion={seccion} />

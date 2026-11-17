@@ -79,7 +79,7 @@ export function BloqueDeComprasDelItem({
   }
   const { filas, hayMas } = lectura.dato
   return (
-    <div className="grid gap-3">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
       {filas.length === 0 ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">
           Este ítem no tiene compras registradas.
