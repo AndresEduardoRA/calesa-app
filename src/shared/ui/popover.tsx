@@ -19,17 +19,20 @@ function PopoverContent({
   side = 'bottom',
   sideOffset = 4,
   anchor,
+  collisionAvoidance,
   ...props
 }: PopoverPrimitive.Popup.Props &
   Pick<
     PopoverPrimitive.Positioner.Props,
-    'align' | 'alignOffset' | 'side' | 'sideOffset' | 'anchor'
+    'align' | 'alignOffset' | 'side' | 'sideOffset' | 'anchor' | 'collisionAvoidance'
   >) {
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Positioner
         // Sin `anchor`, contra el disparador; con él, contra otro elemento (un popover que abre un menú).
         anchor={anchor}
+        // Sin esto, el de Base UI (se da vuelta si no cabe).
+        {...(collisionAvoidance ? { collisionAvoidance } : {})}
         align={align}
         alignOffset={alignOffset}
         side={side}

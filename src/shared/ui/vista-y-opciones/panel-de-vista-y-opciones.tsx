@@ -80,6 +80,8 @@ function ComoPopover(props: Props & { alCerrarDelTodo: () => void; children: Rea
       <PopoverContent
         anchor={boton}
         align="end"
+        // Siempre bajo el botón, sin taparlo: si no cabe, se acorta al alto disponible y se desplaza adentro.
+        collisionAvoidance={{ side: 'none', align: 'shift', fallbackAxisSide: 'none' }}
         finalFocus={boton}
         className="max-h-(--available-height) w-[22rem] max-w-(--available-width) gap-0 overflow-y-auto p-0"
       >
