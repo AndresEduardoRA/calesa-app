@@ -4,14 +4,13 @@
 // un objeto estricto, y la rechazan igual Zod y `validar_diseno()`. Lo que cruza el diseño con la fórmula vive en `validar-diseno*.ts`.
 import { z } from 'zod'
 import { esquemaId } from './nodos'
+import { COLUMNAS_DE_LA_REJILLA, MAXIMO_DE_FILAS } from './rejilla-de-la-hoja'
 
 export const ANCHOS = ['completo', 'mitad', 'tercio'] as const
 // El aspecto (docs/GLOSARIO.md › «Aspecto»): cómo se ve cada pieza en la rejilla de la hoja. Todo es opcional y su ausencia dibuja lo de siempre; los
 // valores salen de escalas cerradas (nada de px, CSS ni hex). Las claves no se llaman `estilo`, `clase`, `css`, `color` ni `html`: esas las rechaza el juego.
-// La rejilla de cada sección y la de las secciones tienen 12 columnas; `completo`, `mitad` y `tercio` de una celda son 12, 6 y 4.
-export const COLUMNAS_DE_LA_REJILLA = 12
-// Las filas de la rejilla que puede ocupar una pieza; sin `alto`, las que pida su contenido.
-export const MAXIMO_DE_FILAS = 4
+// La rejilla de cada sección y la de las secciones tienen 12 columnas (`rejilla-de-la-hoja.ts`); `completo`, `mitad` y `tercio` de una celda son 12, 6 y 4.
+export { COLUMNAS_DE_LA_REJILLA, MAXIMO_DE_FILAS }
 export const RELLENOS = ['chico', 'medio', 'grande'] as const
 export const SEPARACIONES = ['chica', 'media', 'grande'] as const
 export const DENSIDADES_DE_SECCION = ['compacta', 'comoda'] as const

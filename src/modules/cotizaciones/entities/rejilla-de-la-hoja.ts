@@ -1,7 +1,12 @@
 // La rejilla de la hoja (docs/GLOSARIO.md › «Rejilla de la hoja»): 12 columnas en cada sección (para sus ítems) y 12 para las secciones. Una pieza
 // de N columnas toma su ancho cuando le tocan al menos 16 rem; si no, ocupa la fila entera. Como los cortes van en rem, al 200 % la rejilla colapsa
-// sola. Puro: las clases que lo dibujan son las de `features/hoja/components/clases-de-la-rejilla.ts`.
-import { COLUMNAS_DE_LA_REJILLA, type AnchoDeCelda } from './diseno'
+// sola. Puro y sin Zod (la hoja lo lleva al navegador sin el esquema del diseño): las clases que lo dibujan son las de
+// `features/hoja/components/clases-de-la-rejilla.ts`.
+import type { AnchoDeCelda } from './diseno'
+
+// Las columnas de cada rejilla y las filas que puede ocupar una pieza (sin `alto`, las que pida su contenido). `diseno.ts` las valida.
+export const COLUMNAS_DE_LA_REJILLA = 12
+export const MAXIMO_DE_FILAS = 4
 
 // Los anchos con nombre de los diseños guardados, en columnas.
 export const COLUMNAS_DE_CADA_ANCHO = { completo: 12, mitad: 6, tercio: 4 } as const

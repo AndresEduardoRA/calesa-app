@@ -5,14 +5,10 @@
 // Los ítems se miden contra su sección (el contenedor sin nombre más cercano) y las secciones contra `@container/secciones`. Bajo el primer corte todo
 // ocupa las 12 pistas y no hay hueco de columna: al 200 % los 11 huecos no caben (docs/LECCIONES.md › «Interfaz»).
 import type { AspectoDeCabecera, AspectoDeSeccion } from '../../../entities/aspecto-de-la-hoja'
-import {
-  COLUMNAS_DE_LA_REJILLA,
-  type AnchoDeCelda,
-  type Enfasis,
-  type Letra,
-} from '../../../entities/diseno'
+import type { AnchoDeCelda, Enfasis, Letra } from '../../../entities/diseno'
 import {
   altoSirve,
+  COLUMNAS_DE_LA_REJILLA,
   columnasDeLaCelda,
   corteDe,
   SECCION_AUTOMATICA,
