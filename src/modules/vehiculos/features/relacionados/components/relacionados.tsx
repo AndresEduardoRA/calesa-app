@@ -1,21 +1,18 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import {
-  accionesDelGrupo,
-  accionesDeTodoVacio,
-  type AccionDeRelacionados,
-  type ContextoDeAcciones,
+import type {
+  AccionDeRelacionados,
+  ContextoDeAcciones,
 } from '../../../entities/acciones-de-relacionados'
-import {
-  TEXTO_DE_TODO_VACIO,
-  todoVacio,
-  type GrupoDeRelacionados,
-  type GruposDeRelacionados,
+import type {
+  GrupoDeRelacionados,
+  GruposDeRelacionados,
+  PresentacionDeRelacionados,
 } from '../../../entities/relacionados'
-import { AccionSuelta, claveDeLaAccion } from './accion-suelta'
-import { UnGrupoDeRelacionados } from './grupo-de-relacionados'
+import { RelacionadosCompactos } from './relacionados-compactos'
 import { RelacionadosEnLinea } from './relacionados-en-linea'
+import type { VerTodosDeUnGrupo } from './ver-todos-del-grupo'
 
 type Props<Contraparte> = {
   grupos: GruposDeRelacionados<Contraparte>
@@ -25,76 +22,17 @@ type Props<Contraparte> = {
   // Las filas de un grupo (`<li>`), armadas por quien conoce a la contraparte.
   filasDe: (grupo: GrupoDeRelacionados<Contraparte>) => ReactNode
   // «Ver todos» de un grupo: hay más que ver (el vínculo anterior de un vehículo, o más filas) y a dónde lleva; null = nada más.
-  verTodosDe: (
-    grupo: GrupoDeRelacionados<Contraparte>,
-  ) => { href: string } | { abrir: () => void } | null
-  // `'bloque'` (por defecto): los tres grupos a la vista. `'linea'`: un chip por grupo con su cantidad y el grupo en un popover (la unidad de logística).
-  presentacion?: 'bloque' | 'linea'
+  verTodosDe: (grupo: GrupoDeRelacionados<Contraparte>) => VerTodosDeUnGrupo | null
+  // `'linea'`: un chip por grupo con su popover (los resúmenes y logística). `'compacta'`: los grupos con sus filas (las fichas).
+  presentacion: PresentacionDeRelacionados
 }
 
-// La presentación compartida del bloque «Relacionados»: tres grupos (Vinculado, Interesado y, con `cotizaciones.ver`, Cotizado), igual desde cualquier detalle. Si no hay nada (ni
-// lo que no se ve), una sola línea con las acciones. Los datos, las acciones y las filas las pone quien lo usa.
-export function Relacionados<Contraparte>({
-  grupos,
-  contexto,
-  enCurso,
-  alElegir,
-  filasDe,
-  verTodosDe,
-  presentacion = 'bloque',
-}: Props<Contraparte>) {
-  if (presentacion === 'linea') {
-    return (
-      <RelacionadosEnLinea
-        grupos={grupos}
-        contexto={contexto}
-        enCurso={enCurso}
-        alElegir={alElegir}
-        filasDe={filasDe}
-        verTodosDe={verTodosDe}
-      />
-    )
-  }
-  const lista = [grupos.vinculado, grupos.interesado, grupos.cotizado].filter(
-    (grupo): grupo is GrupoDeRelacionados<Contraparte> => grupo !== null,
-  )
-  return (
-    <section aria-label="Relacionados" className="@container grid min-w-0 gap-2">
-      <h2 className="text-(length:--text-sm) font-medium text-(--color-ink)">Relacionados</h2>
-      {todoVacio(grupos) ? (
-        <div className="flex flex-wrap items-center gap-2 text-(length:--text-sm) text-(--color-ink-soft)">
-          <p>{TEXTO_DE_TODO_VACIO}</p>
-          {accionesDeTodoVacio(contexto).map((accion) => (
-            <AccionSuelta
-              key={claveDeLaAccion(accion)}
-              accion={accion}
-              enCurso={enCurso}
-              alElegir={alElegir}
-            />
-          ))}
-        </div>
-      ) : (
-        <div
-          className={`grid min-w-0 gap-3 ${lista.length === 3 ? '@3xl:grid-cols-3' : '@3xl:grid-cols-2'}`}
-        >
-          {lista.map((grupo) => (
-            <UnGrupoDeRelacionados
-              key={grupo.tipo}
-              lado={contexto.ancla.lado}
-              grupo={grupo}
-              acciones={accionesDelGrupo(
-                { tipo: grupo.tipo, filas: grupo.filas.length, ocultos: grupo.ocultos },
-                contexto,
-              )}
-              alElegir={alElegir}
-              enCurso={enCurso}
-              verTodos={verTodosDe(grupo)}
-            >
-              {filasDe(grupo)}
-            </UnGrupoDeRelacionados>
-          ))}
-        </div>
-      )}
-    </section>
+// El bloque «Relacionados»: Vinculado, Interesado y, con `cotizaciones.ver`, Cotizado; un grupo sin nada no se dibuja. Cada lugar dice cómo se ve; los datos, las acciones y las filas las
+// pone quien lo usa.
+export function Relacionados<Contraparte>({ presentacion, ...props }: Props<Contraparte>) {
+  return presentacion === 'compacta' ? (
+    <RelacionadosCompactos {...props} />
+  ) : (
+    <RelacionadosEnLinea {...props} />
   )
 }

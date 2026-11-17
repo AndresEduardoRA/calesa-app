@@ -12,17 +12,18 @@ type Props = {
   para: ParaRelacionados
 }
 
-// El bloque «Relacionados» de un lead con lo que leyó el servidor (la ficha del lead). Cada acción lograda revalida la pantalla (`revalidarVinculo()`).
+// El bloque «Relacionados» de un lead con lo que leyó el servidor (la ficha del lead, en su presentación compacta). Cada acción lograda revalida la pantalla (`revalidarVinculo()`).
 export function RelacionadosDelLeadCliente({ datos, para }: Props) {
   const router = useRouter()
   if (datos === null) {
     return (
       <ErrorDeRelacionados
+        presentacion="compacta"
         alReintentar={() => {
           router.refresh()
         }}
       />
     )
   }
-  return <RelacionadosDeUnLead datos={datos} lugar="ficha" para={para} />
+  return <RelacionadosDeUnLead datos={datos} lugar="ficha" para={para} presentacion="compacta" />
 }

@@ -30,14 +30,15 @@ export function RelacionadosDelResumen({ vehiculoId, para }: Props) {
           vehiculoId={vehiculoId}
           lugar="resumen"
           para={para}
+          presentacion="linea"
           alCambiar={reintentar}
         />
       </div>
     )
   }
   return lectura.estado === 'fallo' ? (
-    <ErrorDeRelacionados alReintentar={reintentar} />
+    <ErrorDeRelacionados presentacion="linea" alReintentar={reintentar} />
   ) : (
-    <EsqueletoDeRelacionados />
+    <EsqueletoDeRelacionados presentacion="linea" />
   )
 }

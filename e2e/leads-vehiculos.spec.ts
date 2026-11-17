@@ -258,13 +258,16 @@ test('reemplazar nombra al lead que lo pierde; uno de otra cartera no se reempla
   await expect(panel.getByText(deCora.nombre)).toHaveCount(0)
   // Desde la ficha del vehículo, quien lo edita lo desvincula (con confirmación: desde ahí no hay «Deshacer»).
   await page.goto(`/vehiculos/${ajenoId}`)
-  // El lead vinculado no se ve (no está en su cartera): sin fila, «Desvincular» es una acción del grupo Vinculado, en el bloque «Relacionados» de arriba.
+  // El lead vinculado no se ve (no está en su cartera): sin fila, «Desvincular» es una acción del grupo Vinculado, en su «⋯» del bloque «Relacionados» de arriba.
   const disparador = page
     .getByRole('region', { name: 'Vinculado', exact: true })
-    .getByRole('button', { name: 'Desvincular' })
+    .getByRole('button', { name: 'Más acciones de «Vinculado»' })
   const dialogo = page.getByRole('dialog', { name: /^Desvincular/ })
   await cicloDeUnaConfirmacion(page, {
-    abrir: () => disparador.click(),
+    abrir: async () => {
+      await disparador.click()
+      await page.getByRole('menuitem', { name: 'Desvincular' }).click()
+    },
     dialogo,
     disparador,
     url: /panel=desvincular/,

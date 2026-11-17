@@ -54,15 +54,16 @@ export async function UnidadAbierta({
       fase={fase}
       huecos={huecos}
       aviso={aviso}
-      // Los relacionados de un vehículo (no de un ítem de repuesto), bajo la cabecera: el mismo bloque que la ficha y el resumen. La confirmación de desvincular y los selectores de leads
+      // Los relacionados de un vehículo (no de un ítem de repuesto), bajo la cabecera, en una línea de chips como en los drawers. La confirmación de desvincular y los selectores de leads
       // son de la ficha: acá llevan a ella.
       relacionados={
         unidad.tipo === 'vehiculo' && puede(permisos, 'leads.ver') ? (
-          <Suspense fallback={<EsqueletoDeRelacionados />}>
+          <Suspense fallback={<EsqueletoDeRelacionados presentacion="linea" />}>
             <RelacionadosDelVehiculoServidor
               vehiculoId={unidad.id}
               permisos={permisos}
               lugar="logistica"
+              presentacion="linea"
             />
           </Suspense>
         ) : null
