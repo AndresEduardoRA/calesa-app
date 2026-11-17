@@ -132,6 +132,9 @@ describe('fusionar_docs', () => {
     git(otro, 'commit', '-q', '-m', 'inicio')
     git(otro, 'push', '-q', 'origin', 'main')
     execFileSync('git', ['clone', '-q', origin, wt])
+    // fusionar_docs commitea con la identidad del repo, como en la máquina del orquestador (en CI no hay una global).
+    git(wt, 'config', 'user.name', 't')
+    git(wt, 'config', 'user.email', 't@ejemplo.test')
     git(wt, 'switch', '-q', '-c', 'feat/x')
     writeFileSync(join(wt, 'docs/PENDIENTES.md'), '# Pendientes\n\n- uno\n- de la tarea\n')
     if (tambienCodigo) writeFileSync(join(wt, 'src/a.ts'), 'export const a = 2\n')
