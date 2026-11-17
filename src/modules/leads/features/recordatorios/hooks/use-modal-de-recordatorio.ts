@@ -11,6 +11,7 @@ import {
   type RecordatorioParaEditar,
 } from '../../../entities/recordatorios'
 import { usePanelDeRecordatorio } from './use-panel-de-recordatorio'
+import { focoDeQuienAbrio, recordarQuienAbre } from '@/shared/ui/foco-de-quien-abre'
 
 type Args = {
   lista: readonly Recordatorio[]
@@ -83,13 +84,21 @@ export function useModalDeRecordatorio({
     llave: `${String(apertura)}:${destino ?? ''}`,
     original,
     noDisponible: editandoAbierto ? motivo : null,
-    abrirAgendar: panel.abrirAgendar,
+    // Quien lo abre (este botón o el «⋯» de la cabecera de la ficha) se recuerda: al cerrarse, el foco vuelve ahí.
+    abrirAgendar: () => {
+      recordarQuienAbre()
+      panel.abrirAgendar()
+    },
     abrirEdicion: panel.abrirEdicion,
     cerrar: panel.cerrar,
-    // El «Editar» del que se estaba editando, si sigue en la lista.
-    focoAlCerrar: (): HTMLElement | null =>
-      original
-        ? document.querySelector<HTMLElement>(`[data-recordatorio-editar="${original.id}"]`)
-        : null,
+    // El «Editar» del que se estaba editando, si sigue en la lista; al crear, quien lo abrió si sigue en la página (en la ficha el bloque está
+    // siempre montado: sin esto, abierto desde la cabecera devolvería el foco al botón del bloque). Nulo: el modal elige su botón.
+    focoAlCerrar: (): HTMLElement | null => {
+      if (original) {
+        return document.querySelector<HTMLElement>(`[data-recordatorio-editar="${original.id}"]`)
+      }
+      const quien = focoDeQuienAbrio()
+      return typeof quien === 'boolean' ? null : quien
+    },
   }
 }

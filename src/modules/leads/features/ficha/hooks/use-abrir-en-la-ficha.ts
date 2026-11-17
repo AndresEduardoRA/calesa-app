@@ -1,6 +1,7 @@
 'use client'
 
 import { irAlBloque } from '@/shared/ui/ficha-en-bloques'
+import { recordarQuienAbre } from '@/shared/ui/foco-de-quien-abre'
 import { usePanelDeRecordatorio } from '../../recordatorios/hooks/use-panel-de-recordatorio'
 import { usePanelDeSeguimiento } from '../../seguimientos/hooks/use-panel-de-seguimiento'
 
@@ -32,12 +33,14 @@ export function useAbrirEnLaFicha(navegar: (url: string) => void) {
     // Se abre cuando el «⋯» ya devolvió el foco a su botón: el modal lo toma como a quien devolvérselo al cerrarse («atrás», Esc).
     anotar: () => {
       trasCerrarElMenu(() => {
+        recordarQuienAbre()
         seguimiento.abrirAnotar()
         irAlBloque('seguimientos', { enfocar: false })
       })
     },
     agendar: () => {
       trasCerrarElMenu(() => {
+        recordarQuienAbre()
         recordatorio.abrirAgendar()
         irAlBloque('seguimientos', { enfocar: false })
       })
