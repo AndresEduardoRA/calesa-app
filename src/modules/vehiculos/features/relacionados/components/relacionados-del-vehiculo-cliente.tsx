@@ -6,7 +6,10 @@ import type {
   ParaRelacionados,
 } from '../../../entities/acciones-de-relacionados'
 import type { AvisosDelMenu } from '../../../entities/avisos-de-vehiculo'
-import type { RelacionadosDelVehiculo } from '../../../entities/relacionados'
+import type {
+  PresentacionDeRelacionados,
+  RelacionadosDelVehiculo,
+} from '../../../entities/relacionados'
 import { ErrorDeRelacionados } from './error-de-relacionados'
 import type { HuecosDeRelacionados } from './huecos'
 import { RelacionadosDeUnVehiculo } from './relacionados-de-un-vehiculo'
@@ -22,7 +25,7 @@ type Props = {
   ofrecerPapelera: boolean
   avisos?: AvisosDelMenu
   // La unidad de logística: «Relacionados» en una línea.
-  presentacion?: 'bloque' | 'linea'
+  presentacion?: 'bloque' | PresentacionDeRelacionados
 }
 
 // El bloque «Relacionados» de un vehículo con lo que leyó el servidor (la ficha y la unidad de logística): `src/app` lo envuelve en un Client Component que le pone sus huecos, porque un

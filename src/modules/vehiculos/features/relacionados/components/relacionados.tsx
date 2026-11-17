@@ -12,9 +12,11 @@ import {
   todoVacio,
   type GrupoDeRelacionados,
   type GruposDeRelacionados,
+  type PresentacionDeRelacionados,
 } from '../../../entities/relacionados'
 import { AccionSuelta, claveDeLaAccion } from './accion-suelta'
 import { UnGrupoDeRelacionados } from './grupo-de-relacionados'
+import { RelacionadosCompactos } from './relacionados-compactos'
 import { RelacionadosEnLinea } from './relacionados-en-linea'
 
 type Props<Contraparte> = {
@@ -28,8 +30,8 @@ type Props<Contraparte> = {
   verTodosDe: (
     grupo: GrupoDeRelacionados<Contraparte>,
   ) => { href: string } | { abrir: () => void } | null
-  // `'bloque'` (por defecto): los tres grupos a la vista. `'linea'`: un chip por grupo con su cantidad y el grupo en un popover (la unidad de logística).
-  presentacion?: 'bloque' | 'linea'
+  // `'bloque'` (por defecto): los tres grupos a la vista. `'linea'`: un chip por grupo con su cantidad y el grupo en un popover. `'compacta'`: las fichas.
+  presentacion?: 'bloque' | PresentacionDeRelacionados
 }
 
 // La presentación compartida del bloque «Relacionados»: tres grupos (Vinculado, Interesado y, con `cotizaciones.ver`, Cotizado), igual desde cualquier detalle. Si no hay nada (ni
@@ -43,6 +45,18 @@ export function Relacionados<Contraparte>({
   verTodosDe,
   presentacion = 'bloque',
 }: Props<Contraparte>) {
+  if (presentacion === 'compacta') {
+    return (
+      <RelacionadosCompactos
+        grupos={grupos}
+        contexto={contexto}
+        enCurso={enCurso}
+        alElegir={alElegir}
+        filasDe={filasDe}
+        verTodosDe={verTodosDe}
+      />
+    )
+  }
   if (presentacion === 'linea') {
     return (
       <RelacionadosEnLinea

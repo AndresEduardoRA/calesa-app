@@ -15,6 +15,7 @@ import type {
   FilaRelacionada,
   GrupoDeRelacionados,
   LeadRelacionado,
+  PresentacionDeRelacionados,
   RelacionadosDelVehiculo,
 } from '../../../entities/relacionados'
 import { useAccionesDeRelacionados } from '../hooks/use-acciones-de-relacionados'
@@ -39,7 +40,7 @@ type Props = {
   // El resumen lee en el navegador: tras una acción lograda vuelve a leer.
   alCambiar?: () => void
   // La unidad de logística lo pide en una línea de chips; el resto, el bloque.
-  presentacion?: 'bloque' | 'linea'
+  presentacion?: 'bloque' | PresentacionDeRelacionados
 }
 
 const claveDeLaFila = (grupo: string, fila: FilaRelacionada<LeadRelacionado>) =>
