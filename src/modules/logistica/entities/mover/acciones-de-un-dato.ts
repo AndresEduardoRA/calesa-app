@@ -11,9 +11,6 @@ import {
 } from './accion-de-requisito'
 import type { CapacidadesDeQueFalta } from './capacidades-de-que-falta'
 
-/** La marca del campo que cumple cada clave de dato (`data-clave-de-dato`): «Completar» le lleva el foco. */
-export const ATRIBUTO_DE_CLAVE_DE_DATO = 'data-clave-de-dato'
-
 const fichaDelVehiculo = (id: string, consulta: string) =>
   `${RUTAS.vehiculos}/${encodeURIComponent(id)}?${consulta}`
 
