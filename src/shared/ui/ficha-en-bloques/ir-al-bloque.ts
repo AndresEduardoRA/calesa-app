@@ -2,7 +2,7 @@ import { ATRIBUTO_DE_BLOQUE, EVENTO_DE_SALTO } from './estilos'
 
 // El título de un bloque: el `h2` que dibuja el marco o el primero que trae el bloque. Se le da `tabindex=-1` si no lo tiene, para
 // poder llevarle el foco (no entra al orden del Tab).
-function tituloDe(bloque: HTMLElement): HTMLElement | null {
+export function tituloDe(bloque: HTMLElement): HTMLElement | null {
   const titulo = bloque.querySelector<HTMLElement>('h2')
   if (titulo && !titulo.hasAttribute('tabindex')) {
     titulo.tabIndex = -1

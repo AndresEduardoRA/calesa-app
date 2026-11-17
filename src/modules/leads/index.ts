@@ -82,7 +82,7 @@ export { puedeAbrirLaPapelera, puedeEnviarLead, puedePurgarLeads } from './entit
 export { puedeCambiarTelefonoDeLead, puedeEditarTelefonosExtra } from './entities/telefonos'
 export { leerChoquesDeTelefonos } from './composicion'
 export { CLAVE_DE_SECCION, seccionDeLead } from './entities/ficha'
-// La sección «Seguimientos»: la lee el servidor con la sesión de quien mira y va detrás de
+// El bloque «Seguimientos y recordatorios» (`pantallas/ficha`): lo lee el servidor con la sesión de quien mira y va detrás de
 // `<Suspense>` (su esqueleto es `<EsqueletoDeSeguimientos>`). Quién ve qué y quién anota lo decide
 // la base; un co-asesor ve sólo lo «Visible para el cliente» de los demás.
 // La sección «Oportunidades»: las de quien mira sobre el lead (sólo con la cartera), leída en el servidor

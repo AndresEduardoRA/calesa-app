@@ -1,4 +1,4 @@
-import { cleanup, render } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { LeadDeFicha } from '../../../entities/ficha'
 import { CabeceraDeLead } from './cabecera-de-lead'
@@ -9,33 +9,21 @@ const ficha = {
   id: 'l-1',
   nombre: 'Ana Prieto',
   numeros: { numero: 12, numeroPropio: null, creadorDelPropio: null },
-  telefono: '+591 ••••••04',
+  telefono: '59170000004',
   telefonoCc: null,
+  tieneNombre: 'Rosa Mamani',
 } as unknown as LeadDeFicha
 
-describe('CabeceraDeLead: el origen apagado', () => {
-  it('se lee «Facebook (inactivo)» de corrido: el espacio es texto y no sólo el hueco entre cajas', () => {
+describe('CabeceraDeLead', () => {
+  it('dice quién es (nombre y número) y nada de lo que la columna dice más abajo', () => {
     const { container } = render(
-      <CabeceraDeLead
-        ficha={ficha}
-        origen={{ nombre: 'Facebook', activo: false, icono: 'compartir' }}
-        tipo={null}
-        quien={null}
-      />,
+      <CabeceraDeLead ficha={ficha} acciones={<button type="button">Editar</button>} />,
     )
-    expect(container.textContent).toContain('Facebook (inactivo)')
-  })
-
-  it('uno activo no lleva marca', () => {
-    const { container } = render(
-      <CabeceraDeLead
-        ficha={ficha}
-        origen={{ nombre: 'Facebook', activo: true, icono: null }}
-        tipo={null}
-        quien={null}
-      />,
-    )
-    expect(container.textContent).toContain('Facebook')
-    expect(container.textContent).not.toContain('(inactivo)')
+    expect(screen.getByRole('heading', { level: 1, name: 'Ana Prieto' })).toBeTruthy()
+    expect(container.textContent).toContain('12')
+    // El teléfono va en «Teléfonos» y quién lo tiene, en su bloque: no se repiten en la misma columna.
+    expect(container.textContent).not.toContain('70000004')
+    expect(container.textContent).not.toContain('Rosa Mamani')
+    expect(screen.getByRole('button', { name: 'Editar' })).toBeTruthy()
   })
 })

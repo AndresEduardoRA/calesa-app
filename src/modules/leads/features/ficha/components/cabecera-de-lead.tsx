@@ -1,46 +1,28 @@
 import type { ReactNode } from 'react'
-import type { TipoDeLeadEnCatalogo } from '../../../entities/catalogos'
-import { telefonoDeFicha, type LeadDeFicha } from '../../../entities/ficha'
-import { BadgeDeTipo } from '../../listado/components/badge-de-tipo'
-import { OrigenDelLead } from '../../listado/components/origen-del-lead'
+import type { LeadDeFicha } from '../../../entities/ficha'
 import { NumeroDeLead } from '@/shared/ui/numero-de-lead'
 
 type Props = {
   ficha: LeadDeFicha
-  // El origen del lead (con su icono); null si no tiene o ya no existe.
-  origen: { nombre: string; activo: boolean; icono: string | null } | null
-  // El tipo del lead (con su estado); null si ya no está en el catálogo.
-  tipo: TipoDeLeadEnCatalogo | null
-  // «Lo tienes tú», «Lo tiene Rosa Mamani».
-  quien: string | null
-  // «Editar» y lo demás que la persona puede hacer.
+  // «Editar», «Cotizar» y el «⋯»: lo que la persona puede hacer.
   acciones?: ReactNode
   // Lo que quien mira marcó (sus insignias), bajo el nombre.
   marcas?: ReactNode
 }
 
-// Lo que se ve de un lead arriba de todas sus secciones: su nombre, su número, su tipo, de dónde
-// vino, su teléfono principal tal como lo entrega la base (completo sólo para la cartera) y quién
-// lo tiene. En el celular son dos líneas: nombre y número, y el resto debajo.
-// En el celular las acciones bajan debajo del título: lado a lado, con cuatro botones, lo aplastaban y lo tapaban.
-export function CabeceraDeLead({ ficha, origen, tipo, quien, acciones, marcas }: Props) {
+// Lo que identifica al lead arriba de la columna de la izquierda: su nombre, sus números y las marcas de quien mira, con las acciones
+// debajo (en 24 rem no entran al lado). Tipo y origen van en «Datos»; el teléfono, en «Teléfonos»; quién lo tiene, en su bloque: nada
+// se dice dos veces en la misma columna.
+export function CabeceraDeLead({ ficha, acciones, marcas }: Props) {
   return (
-    <header className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
-      <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)] gap-1.5">
-        <h1 className="text-(length:--text-xl) font-semibold break-words text-(--color-ink)">
-          {ficha.nombre}
-        </h1>
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-(length:--text-sm) text-(--color-ink-soft)">
-          <NumeroDeLead numeros={ficha.numeros} conSecundario />
-          <BadgeDeTipo tipo={tipo} />
-          {origen ? (
-            <OrigenDelLead nombre={origen.nombre} icono={origen.icono} activo={origen.activo} />
-          ) : null}
-          <span className="tabular-nums">{telefonoDeFicha(ficha.telefono, ficha.telefonoCc)}</span>
-          {quien ? <span>{quien}</span> : null}
-        </div>
-        {marcas}
+    <header className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
+      <h1 className="text-(length:--text-xl) font-semibold break-words text-(--color-ink)">
+        {ficha.nombre}
+      </h1>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-(length:--text-sm) text-(--color-ink-soft)">
+        <NumeroDeLead numeros={ficha.numeros} conSecundario />
       </div>
+      {marcas}
       {acciones ? <div className="flex flex-wrap items-start gap-2">{acciones}</div> : null}
     </header>
   )
