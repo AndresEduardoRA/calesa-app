@@ -52,6 +52,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   congela en cada cotización.
 - **Tipo de cambio por defecto** — `tipos_cambio.es_default`: el que se usa entre dos monedas si no se elige otro; uno por par.
 - **Historial de un tipo de cambio** — `tipos_cambio_historial` / `CambioDeValor`: de cuánto a cuánto, quién y cuándo; lo escribe un trigger.
+- **En la barra** — `tipos_cambio.en_la_barra` / `TipoCambio.enLaBarra`, `tiposEnLaBarra()`: el tipo de cambio que la empresa eligió para verlo
+  a la vista en la barra superior; hasta 3 activos; sin ninguno, la barra muestra el por defecto.
+- **Último cambio de un tipo de cambio** — `tipos_cambio_vigentes()` / `UltimoCambio`: quién (el nombre, nunca el correo) y cuándo cambió el
+  valor por última vez; sale del historial, así que renombrar o marcar no lo mueve.
 - **Monto en moneda base** — `gastos.monto_base`, `pagos.monto_base` / `_monto_en_base()`: lo calcula la base con el tipo de cambio elegido
   (su valor queda en `tipo_cambio_aplicado`); quien carga nunca lo manda.
 - **Prorratear** — `gastos_prorratear()` / `gastos.lote_id`: repartir un gasto entre 1 y 200 vehículos en partes iguales; los centavos que
