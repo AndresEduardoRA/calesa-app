@@ -7,13 +7,15 @@ Abiertos que lo tocan: **8-13a** a **8-13c** y la revisión de seguridad del sto
 ## Entra y sale
 
 - Entra: proyectos desde la ficha del vehículo o sueltos, hoja de ítems editable celda a celda, compras, movimientos de stock, cotizaciones de repuestos.
-- Depende de: `vehiculos`, `flujos`, `leads`. Lo consumen `vehiculos`, `logistica`, `tablero`, `buscador`.
+- Depende de: `vehiculos`, `flujos`, `leads` (sólo por `src/app`: el módulo no los importa). Lo consumen `vehiculos`, `logistica`, `tablero`, `buscador`.
 - Las actions **no salen por los barriles** (las importan en relativo sus hooks) y comprueban su permiso con `puede()` antes de la base. Lo que cruza áreas
   lo compone `src/app/(app)/repuestos/` (render prop, hueco o props).
 - **`proyectos`** — `index.ts`: `proyectoDe(vehiculoId)`, `leerResumenDeVehiculo(vehiculoId)`, `esquemaDelListado`, `pedidoDelListado`,
   `leerCursorDeProyectos`, `leerProyectosDelListado` (cursor = `numero`, sin «Anterior»), `estadoDelProyecto`. `pantallas/proyectos.ts`:
   `<ListadoDeProyectos>`, `<BotonNuevoProyecto>`, `<DrawerDeNuevoProyectoDiferido>`, `useNuevoProyectoPorUrl`, `<CabeceraDeProyecto>`,
-  `buscarProyectoAbierto`. `pantallas/proyectos-vehiculo.ts`: `<ResumenRepuestos>`, la pestaña «Repuestos» de `/vehiculos/[id]` (`repuestos.ver` global;
+  `buscarProyectoAbierto`. La cabecera recibe el **cliente** ya resuelto (`clienteDeLaCabecera({ leadId, clienteNombre, lead })` de `index.ts`: `lead`,
+  `oculto`, `libre` o `ninguno`; manda el lead, nunca el teléfono) y lo dibuja `<ClienteDelProyecto>`; el lead lo lee `src/app` con `leerLeadParaEnlazar`
+  de `leads` sólo con `lead_id` y `leads.ver` (`ProyectoDetallado.leadId`). `pantallas/proyectos-vehiculo.ts`: `<ResumenRepuestos>`, la pestaña «Repuestos» de `/vehiculos/[id]` (`repuestos.ver` global;
   ítems por fase, ≤ 201 leídos). El módulo no importa `buscador`: los buscadores de vehículo y lead los compone `src/app`.
 - **`items`** — `pantallas/items.ts`: `<HojaDeItems>` (`/repuestos/[id]`) con el panel `?panel=imagenes&item=`; `index.ts`: `leerProyecto`,
   `leerItemsDelProyecto`, `leerItem`, `cuentasDeLaHoja`, `FilaDeItem`.

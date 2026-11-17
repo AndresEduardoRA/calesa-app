@@ -2,6 +2,11 @@
 export { leerProyectosDelListado } from '../../infra/proyectos/listar'
 export { leerProyecto } from '../../infra/proyectos/leer'
 export { PROYECTO_YA_NO_ESTA, type ProyectoDetallado } from '../../entities/proyectos/detalle'
+export {
+  clienteDeLaCabecera,
+  type ClienteDeLaCabecera,
+  type LeadDeLaCabecera,
+} from '../../entities/proyectos/cliente-de-la-cabecera'
 export { rutaDelProyecto } from '../../entities/proyectos/rutas'
 export {
   CLAVE_DE_BUSQUEDA_DE_PROYECTOS,

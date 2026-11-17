@@ -433,7 +433,11 @@ las trampas, en `docs/LECCIONES.md`.
 
 ## Repuestos
 
-- **Sin INSERT directo de proyectos**: quien tenía `repuestos.editar` creaba uno de un vehículo que no ve. La lista no trae lead ni teléfono; busca por etiqueta, VIN y cliente.
+- **Sin INSERT directo de proyectos**: quien tenía `repuestos.editar` creaba uno de un vehículo que no ve. La lista no trae lead ni teléfono (un proyecto que
+  sólo tiene lead dice «—» en «Cliente»); busca por etiqueta, VIN y cliente. La cabecera lee el lead por id (`leerLeadParaEnlazar`), sólo con `leads.ver`.
+- **El cliente de un proyecto es un lead** (`lead_id`); los viejos conservan `cliente_nombre` y `cliente_telefono`. Nada se copia del lead al proyecto: el
+  teléfono escrito quedaría fuera del enmascarado y el nombre a la vista de quien no ve el lead. Si hay lead y nombre escrito, manda el lead, y un lead que
+  no se ve se dice «Cliente que no puedes ver» aunque haya nombre. La cabecera de un proyecto viejo muestra el nombre, nunca el teléfono.
 - **Un proyecto sólo se elimina vacío** (borrado suave con «Deshacer»); cerrado no recibe ítems. «Borrar sólo sin uso» de catálogos es un trigger `before delete`.
 - **Stock: cantidad siempre positiva, el sentido sale del motivo** (`sobrante` entra; `vendido`, `devuelto`, `ajuste` salen; `reasignado` sólo por reasignar), validado en la RPC. «Vender suelto» no registra precio.
 - **Una sola unidad en stock saca el ítem de la espera** (`en_stock_desde`); lo que entra por `sobrante` tiene tope.

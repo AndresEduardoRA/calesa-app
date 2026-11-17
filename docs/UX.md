@@ -1175,6 +1175,10 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 - **Conflicto:** «Otra persona cambió este ítem. Recarga para ver lo nuevo.» con «Recargar»; lo escrito no se guarda. **Eliminar:**
   `<Confirmar>` con URL que nombra el ítem; uno con historial, documentos, compras, gastos o stock dice por qué y no se elimina.
 - **Cerrar:** sin confirmación; toast con «Deshacer».
+- **Cliente** (en la cabecera): con lead y `leads.ver`, el nombre enlazado a `/leads/<id>`, sus números (`<NumeroDeLead conSecundario>`) y, si no
+  es de la cartera de quien mira, «Fuera de tu cartera»; un lead que no se ve (otra cartera sin alcance, papelera, limbo) o sin `leads.ver`, «Cliente
+  que no puedes ver», sin datos; un proyecto viejo, el nombre escrito a mano; sin cliente, «—». Nunca el teléfono. Si falla la lectura del lead, el
+  error de `(app)` con «Reintentar».
 - **Imágenes del ítem:** «Imágenes» en las acciones de cada fila, también sin `repuestos.editar`; abre `?panel=imagenes&item=<id>` (se
   recarga; «atrás» lo cierra y el foco vuelve al botón). Esqueleto, error con «Reintentar», vacío (con permiso, la zona de subir). Con
   imágenes: «3 de 8 imágenes» (exacto: el tope es duro), rejilla de 2 a 4 columnas que enlaza al original, «Quitar» de 44 px con

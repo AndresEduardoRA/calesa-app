@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-// Un proyecto de repuestos para su pantalla `/repuestos/[id]` (8.09-2, C1). Puro: `infra/proyectos/leer.ts` lo arma. No trae el teléfono ni el lead del cliente (D50: la lista
-// tampoco, y leerlos pediría `leads.ver`).
+// Un proyecto de repuestos para su pantalla `/repuestos/[id]` (8.09-2, C1). Puro: `infra/proyectos/leer.ts` lo arma. Trae el id del lead del cliente (la página lo lee
+// aparte, con `leads.ver`, para la cabecera) y nunca el teléfono escrito a mano.
 export type ProyectoDetallado = {
   id: string
   numero: number
@@ -9,6 +9,8 @@ export type ProyectoDetallado = {
   // Del proyecto externo: lo que la persona escribió en vez de un vehículo.
   vehiculoEtiqueta: string | null
   vin: string | null
+  // El cliente: el lead (sólo su id; nulo en un proyecto sin lead) o, en los viejos, el nombre escrito a mano.
+  leadId: string | null
   clienteNombre: string | null
   notas: string | null
   // ISO; nulo = abierto.
@@ -18,7 +20,7 @@ export type ProyectoDetallado = {
 }
 
 export const COLUMNAS_DE_PROYECTO =
-  'id, numero, vehiculo_id, vehiculo_etiqueta, vin, cliente_nombre, notas, cerrado_en, actualizado_en'
+  'id, numero, vehiculo_id, vehiculo_etiqueta, vin, lead_id, cliente_nombre, notas, cerrado_en, actualizado_en'
 
 const esquemaDeProyecto = z.object({
   id: z.guid(),
@@ -26,6 +28,7 @@ const esquemaDeProyecto = z.object({
   vehiculo_id: z.guid().nullable(),
   vehiculo_etiqueta: z.string().nullable(),
   vin: z.string().nullable(),
+  lead_id: z.guid().nullable(),
   cliente_nombre: z.string().nullable(),
   notas: z.string().nullable(),
   cerrado_en: z.string().nullable(),
@@ -45,6 +48,7 @@ export function proyectoDetalladoDesde(dato: unknown): ProyectoDetallado | null 
     vehiculoId: p.vehiculo_id,
     vehiculoEtiqueta: p.vehiculo_etiqueta,
     vin: p.vin,
+    leadId: p.lead_id,
     clienteNombre: p.cliente_nombre,
     notas: p.notas,
     cerradoEn: p.cerrado_en,
