@@ -348,6 +348,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Versión del flujo** — `flujos.actualizado_en` como texto ISO: la lee la pantalla de Flujos y la devuelve cada escritura para detectar
   cambio ajeno (`PT409`); `useVersionDelFlujo()` la entrega a las acciones.
 - **Inspector de fase** — panel `?fase=<id>` de Configuración › Flujos: «Datos», «Salidas y quién mueve» y «Requisitos para entrar» de una fase.
+- **Diagrama del flujo** — `DiagramaDelFlujo` (`disponerDiagrama()`): las fases como cajas en su orden y las salidas como flechas (ramas arriba,
+  vueltas atrás abajo); apoyo visual de Configuración › Flujos, la lista es la versión navegable. No: «grafo», «tablero».
 - **Versión de la fórmula** — `formulas.version`: número de una publicada o archivada, por origen (el borrador no tiene).
 - **Borrador de la fórmula** — `formulas.estado = 'borrador'`: a lo sumo uno por origen, sin número; lo publicado no cambia hasta publicarlo.
   «Descartar…» (`<Confirmar>`) no se deshace. No es la «Pregunta al descartar» ni el «Borrador» de un formulario (`useBorrador()`).

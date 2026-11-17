@@ -3,14 +3,16 @@
 import { formatearNumero } from '@/shared/lib/formato'
 import type { FaseParaConfigurar, FlujoParaConfigurar, RequisitoParaConfigurar } from './flujo'
 
-export type MarcaDeFase = 'Inicial' | 'Final' | 'Jubilada'
+export type MarcaDeFase = 'Inicial' | 'Final' | 'Subasta' | 'Jubilada'
 
+// Lo que se dice de una fase junto a su nombre, en la lista y en el diagrama: «Subasta» es la fase de subasta (`es_subasta`).
 export function marcasDeLaFase(
-  fase: Pick<FaseParaConfigurar, 'esInicial' | 'esFinal' | 'activa'>,
+  fase: Pick<FaseParaConfigurar, 'esInicial' | 'esFinal' | 'esSubasta' | 'activa'>,
 ): MarcaDeFase[] {
   const marcas: MarcaDeFase[] = []
   if (fase.esInicial) marcas.push('Inicial')
   if (fase.esFinal) marcas.push('Final')
+  if (fase.esSubasta) marcas.push('Subasta')
   if (!fase.activa) marcas.push('Jubilada')
   return marcas
 }
@@ -83,4 +85,29 @@ export function resumenDeRequisitos(
     resumen.push(`${ROTULO_DE_TIPO[tipo]}: ${formatearNumero(deEsteTipo.length)}${aviso}`)
   }
   return resumen
+}
+
+// Los requisitos de una fase en una línea, para la caja del diagrama: «2 requisitos · 1 bloquea», «1 requisito» o «Sin requisitos».
+export function requisitosEnCorto(
+  requisitos: readonly RequisitoParaConfigurar[],
+  faseId: string,
+): string {
+  const deLaFase = requisitos.filter((r) => r.faseId === faseId)
+  if (deLaFase.length === 0) return 'Sin requisitos'
+  const cuantos = `${formatearNumero(deLaFase.length)} ${deLaFase.length === 1 ? 'requisito' : 'requisitos'}`
+  const bloquean = deLaFase.filter((r) => r.bloqueante).length
+  return bloquean === 0
+    ? cuantos
+    : `${cuantos} · ${formatearNumero(bloquean)} ${bloquean === 1 ? 'bloquea' : 'bloquean'}`
+}
+
+const NOMBRES_EN_CORTO = 2
+
+// Quién puede mover hasta la fase en una línea: «Mueve: cualquiera con permiso», «Mueve: Logística», «Mueven: A, B» o «Mueven: A, B y 3 más».
+export function quienMueveEnCorto(nombres: readonly string[]): string {
+  if (nombres.length === 0) return 'Mueve: cualquiera con permiso'
+  const vistos = nombres.slice(0, NOMBRES_EN_CORTO).join(', ')
+  const resto = nombres.length - NOMBRES_EN_CORTO
+  const lista = resto > 0 ? `${vistos} y ${formatearNumero(resto)} más` : vistos
+  return `${nombres.length === 1 ? 'Mueve' : 'Mueven'}: ${lista}`
 }
