@@ -1,6 +1,7 @@
 // Lo que el navegador hace con las acciones ya resueltas de un requisito antes de dibujarlas: lo que sólo se sabe por el DOM y el lugar. Si quien mira tiene
 // la clave del hueco y el hueco no está, su regla está apagada: nada (tampoco «Pedirlo»). Lo que lleva a un hueco ausente se descarta; en un drawer, lo que
-// sacaría de la pantalla lleva a la página de la unidad; «Ir al proyecto» arma su ruta con el proyecto del ítem. Sin red, todo se dibuja apagado. Puro.
+// sacaría de la pantalla lleva a la página de la unidad; lo que lleva a un hueco que existe pero no está en esta pantalla (la ficha del vehículo), a ese hueco
+// de la unidad; «Ir al proyecto» arma su ruta con el proyecto del ítem. Sin red, todo se dibuja apagado. Puro.
 import { RUTAS } from '@/shared/lib/rutas'
 import { rutaDeLaUnidad } from '../nucleo/enlaces'
 import {
@@ -27,6 +28,9 @@ export type LugarDeLasAcciones = {
   enLaPagina: boolean
   unidad: { tipo: 'vehiculo' | 'repuesto'; id: string; proyecto?: { id: string } | null }
   enLinea: boolean
+  // El hueco está dibujado en esta pantalla (no sólo en la unidad). Falta = lo mismo que `hayHueco` (la unidad y los drawers). En la ficha del
+  // vehículo sólo está «Documentos»: lo que lleva a otro hueco que existe pasa a «Abrir la unidad» en ese hueco.
+  aMano?: (hueco: HuecoDeAccion) => boolean
 }
 
 export const NADA_QUE_DIBUJAR: AccionesADibujar = {
@@ -45,9 +49,30 @@ function huecoDe(a: AccionDeRequisito): HuecoDeAccion | null {
   return null
 }
 
+// «Abrir la unidad» (en ese hueco, si lo hay): lo que en este lugar no se puede hacer.
+function abrirLaUnidad(a: AccionDeRequisito, id: string, hueco?: HuecoDeAccion): AccionADibujar {
+  return {
+    tipo: 'ir',
+    ruta: rutaDeLaUnidad(id, hueco),
+    etiqueta: ABRIR_LA_UNIDAD,
+    nombre: `${ABRIR_LA_UNIDAD}: ${a.nombre}`,
+  }
+}
+
+// Una acción que lleva a un hueco: nada si el hueco no está; a la unidad si está pero no en esta pantalla; si no, como viene.
+function ajustarAlHueco(
+  a: AccionDeRequisito,
+  hueco: HuecoDeAccion,
+  lugar: LugarDeLasAcciones,
+): AccionADibujar | null {
+  if (!lugar.hayHueco(hueco)) return null
+  if (lugar.aMano && !lugar.aMano(hueco)) return abrirLaUnidad(a, lugar.unidad.id, hueco)
+  return a.tipo === 'proyecto' ? null : a
+}
+
 function ajustar(a: AccionDeRequisito, lugar: LugarDeLasAcciones): AccionADibujar | null {
   const hueco = huecoDe(a)
-  if (hueco !== null && !lugar.hayHueco(hueco)) return null
+  if (hueco !== null) return ajustarAlHueco(a, hueco, lugar)
   if (a.tipo === 'proyecto') {
     const proyecto = lugar.unidad.proyecto?.id
     if (!proyecto) return null
@@ -55,12 +80,7 @@ function ajustar(a: AccionDeRequisito, lugar: LugarDeLasAcciones): AccionADibuja
     return { tipo: 'ir', ruta, etiqueta: a.etiqueta, nombre: a.nombre }
   }
   if (a.tipo === 'ir' && !lugar.enLaPagina && lugar.unidad.tipo === 'vehiculo') {
-    return {
-      tipo: 'ir',
-      ruta: rutaDeLaUnidad(lugar.unidad.id),
-      etiqueta: ABRIR_LA_UNIDAD,
-      nombre: `${ABRIR_LA_UNIDAD}: ${a.nombre}`,
-    }
+    return abrirLaUnidad(a, lugar.unidad.id)
   }
   return a
 }

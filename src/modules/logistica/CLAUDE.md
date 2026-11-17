@@ -102,6 +102,12 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   al lograrlo quita `?ganada` con `shallow: false`, sin `router.refresh()`. Fuera del modo, con la subasta sin resolver y permiso de mover, una línea
   ofrece «La ganamos». La situación llega en `Unidad.situacion` (`entities/nucleo/situacion.ts`, espejo del `check` de la base: una entidad no
   importa `vehiculos`).
+- **Área `mover`, «Qué falta» en la ficha del vehículo** (`pantallas/mover-ficha.ts`, `QueFaltaDeLaFicha` con `diferido()`): la misma lectura
+  (`useParaMover`), de sólo lectura: cuánto lleva en la fase, `SIN_FASE`, fuera de regla y, por destino, «Para pasar a «<destino>»» con sus requisitos y
+  botones (o «Listo para pasar a «<destino>».»), sin «Elegir», sin el formulario de mover y sin «La ganamos» (está en el aviso de situación de la ficha).
+  `useAccionesDeQueFalta(unidad, resueltas, true)` no mira el DOM: todo hueco cuenta como existente y sólo «Documentos» está a mano
+  (`LugarDeLasAcciones.aMano`); lo que lleva a otro hueco pasa a «Abrir la unidad» → `rutaDeLaUnidad(id, hueco)`. Sin `aMano` (la unidad, los drawers) nada
+  cambia. En la ficha no se sabe si la regla del flujo de un hueco está apagada: «Abrir la unidad» lleva igual.
 - **Área `mover`, notas e historial** (la zona lateral de la página; plegados en un drawer y en el celular). Se leen con la sesión de quien mira de a `TAMANO_DE_VER_MAS` por cursor `(creado_en, id)` hasta
   `TOPE_DE_LO_CARGADO`; un ítem por `repuesto_id`. «Ir a una fecha» usa `entities/mover/hasta-de-un-dia.ts` (copia de la de `cotizaciones`). Escriben
   `crearNota` (`vehiculo` xor `repuesto`; `logistica.ver` del origen o `repuestos.ver` para un ítem; autor del servidor) y `editarNota`, directo bajo la RLS
@@ -116,7 +122,9 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
 - **Área `documentos`.** `entities/documentos/`: `admision.ts` (qué entra a la bandeja, fechas por modo de vencimiento), vencimiento («vence hoy» aún vale),
   qué cuenta para un requisito (aprobado, vivo, sin vencer, mime **del requisito**, entre min y max: repite `evaluar_requisitos` sólo para «N de M») y
   `revision.ts` (`quePuedeHacer`: cada acción oculta, habilitada o apagada con motivo). `pantallas/documentos-unidad.ts` declara «Documentos» (`logistica.ver`,
-  sin regla) y lo reexporta como `DocumentosDeLaUnidad` para `/vehiculos/[id]`. El navegador lee con la sesión de quien mira (vivos con tope 50, URL firmada de
+  sin regla) y lo reexporta como `DocumentosDeLaUnidad` para el bloque «Documentos» de `/vehiculos/[id]`, con `DocumentosEnLaFicha`: el marcador
+  `data-bloque-del-hueco="documentos"` (`contents`) desde el primer dibujo, aunque el bloque espere a acercarse, y `useAlPedirAbrirElHueco` que salta al
+  bloque (`irAlBloque`): así «Subir» y «Revisar» de «Qué falta» se hacen en la ficha. El navegador lee con la sesión de quien mira (vivos con tope 50, URL firmada de
   60 s del bucket privado `documentos`).
   **Subir:** en las zonas de la página, un botón «Subir documentos» abre `DrawerParaSubir` en `?subir=documentos` (clave propia: `?panel=` cerraría el drawer del ítem; `useEnZonas()` decide; sin `logistica.documentos.subir`, botón apagado con su motivo escrito; la zona de pestañas abre en Documentos con `?subir=` para que el hueco esté montado); se cierra solo al terminar sin fallos, con fallos queda abierto con «Reintentar los N que faltan». En bloques (celular, drawers, ficha del vehículo, ítem) la bandeja sigue en línea. Con `&tipo_documento=<id>` (lo pone «Subir» de «Qué falta») la bandeja vacía arranca con ese tipo (`useBandeja(tipos, tipoPedido)`: nunca pisa lo elegido con archivos puestos) y un envío sin fallos lo quita; cada grupo de un tipo lleva `data-tipo-de-documento-id` («Revisar» lo enfoca). Las claves compartidas entre áreas (`CLAVE_DE_SUBIR`, `CLAVE_DEL_TIPO_A_SUBIR`, las del formulario de un pago y los atributos `data-tipo-de-documento-id` y `data-clave-de-dato`) viven en el núcleo (`entities/nucleo/paneles-de-la-unidad.ts`). La bandeja queda **sin subir** hasta enviar (`useBandeja`: formato del tipo, 25 MB, repetido por hash, hasta 20; aviso desde 10 MB); se sube por
   hash (`<unidad>/<sha>.<ext>`) y recién entonces `registrarDocumentos` (`documento_registrar`, id del intento por archivo); cerrar con bandeja pregunta.
