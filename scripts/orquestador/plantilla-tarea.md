@@ -3,7 +3,8 @@
 borrador: si
 titulo: qué cambia, en una frase en infinitivo (va en el aviso y en el PR)
 rama: feat/{{TEMA}}
-# depende: T<n> (una tarea de esta cola) o <repo>:<rama> (un PR integrado; kit:<rama> es el kit), separadas por espacios.
+# depende: T<n> (una tarea de esta cola) o <repo>:<rama> (un PR integrado; kit:<rama> es el kit), separadas por espacios. Si el
+# cuerpo nombra otra tarea («igual que T33», «usa lo de T33»), esa va aquí (`plan` avisa si falta).
 depende:
 conflicto:
 planificar: no
