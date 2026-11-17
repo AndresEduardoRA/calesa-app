@@ -3,33 +3,22 @@
 import { Button } from '@/shared/ui/button'
 import { useLecturaAlMontar } from '@/shared/ui/use-lectura-al-montar'
 import { leerTelefonosDelLead } from '../../../composicion.client'
-import { useAgregarExtraEnPanel } from '../../ficha/hooks/use-agregar-extra-en-panel'
 import { TelefonosExtra } from '../../ficha/components/telefonos-extra'
 import { NumeroDeTelefono } from '../../ficha/components/numero-de-telefono'
 import { EsqueletoDelRapido } from './cuerpo-del-rapido'
+
+const SIN_APERTURA = { abierto: false, abrir: () => undefined, cerrar: () => undefined }
 
 type Props = {
   leadId: string
   // Cambia cuando se guardó el lead desde el panel de edición (el principal o los extras pudieron cambiar): se vuelve a leer.
   revision: number
-  // `leads.telefonos_extra.editar` (con el lead en la cartera, que dice la lectura).
-  puedeEditarExtras: boolean
-  puedeConfigurar: boolean
-  // El panel de edición está abierto encima: él atiende `?extra=nuevo`, no el resumen (nunca dos modales).
-  editando: boolean
 }
 
-// El teléfono del resumen del listado: el principal y los extras con las mismas reglas que la ficha (agregar, rotular, quitar). Los lee
+// El teléfono del resumen del listado: el principal y los extras, sólo para leer (se editan con «Editar», en el panel). Los lee
 // `lead_telefonos_leer()` al abrir la pestaña «Resumen» (el listado trae sólo el principal): enmascarados fuera de la cartera. Mientras
 // lee, esqueleto; si falla, «Reintentar».
-export function TelefonosDelResumen({
-  leadId,
-  revision,
-  puedeEditarExtras,
-  puedeConfigurar,
-  editando,
-}: Props) {
-  const apertura = useAgregarExtraEnPanel({ activo: !editando })
+export function TelefonosDelResumen({ leadId, revision }: Props) {
   const { lectura, reintentar } = useLecturaAlMontar(
     () => leerTelefonosDelLead(leadId),
     `${leadId}|${String(revision)}`,
@@ -63,9 +52,9 @@ export function TelefonosDelResumen({
         </li>
         <TelefonosExtra
           lead={lead}
-          puedeAdministrar={puedeEditarExtras && lead.enCartera}
-          apertura={apertura}
-          puedeConfigurar={puedeConfigurar}
+          puedeAdministrar={false}
+          apertura={SIN_APERTURA}
+          puedeConfigurar={false}
         />
       </ul>
       {lead.enCartera ? null : (

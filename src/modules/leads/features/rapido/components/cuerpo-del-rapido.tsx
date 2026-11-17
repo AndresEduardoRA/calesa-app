@@ -34,13 +34,9 @@ export function EsqueletoDelRapido({ etiqueta }: { etiqueta: string }) {
 
 export type PropsDeDatos = DatosDeLaLista & { lead: FilaDeLead }
 
-// Lo que el resumen necesita para los teléfonos extra: los permisos de quien mira, qué tan al día están (`revision`) y si el panel de
-// edición está encima.
+// Lo que el resumen necesita para los teléfonos: qué tan al día están (`revision`; los extras se editan en el panel de edición).
 export type ParaLosTelefonos = {
-  puedeEditarExtras: boolean
-  puedeConfigurar: boolean
   revision: number
-  editando: boolean
 }
 
 // Los datos propios del lead que le llegaron a quien mira, agrupados como el layout.

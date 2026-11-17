@@ -21,6 +21,8 @@ Autenticación, perfiles, roles y permisos (RBAC puro), invitaciones, bloqueo, b
 
 - «Visto» (`features/vistos/`, `entities/vistos.ts`): la preferencia `vistos` (en `ProveedorPreferencias`) y `VistosDelPerfil`; las marcas se
   dibujan en `@/shared/ui/lista` (`idDeVisto`, `<SufijoDeVisto>`, `useVistoDeLista`).
+  - Marcas: `ultimo`, `visto` y `nuevo` (lo no visto: negrita en la lista; sólo con «Vistos» encendido, la lectura de la página llegada y el id dentro de lo leído; `null` en
+    cualquier otro caso: nada se pone en negrita sin saber).
   - Una lectura por pantalla (`useVistos(modulo, consultas)`: ids únicos por tipo, hasta 200, en tandas de 100 a `vistos_de`) y el **último del
     módulo, de cualquiera de sus tipos** (`TIPOS_DEL_MODULO`: la agenda tiene evento y tarea; con dos últimos, un `select` por la PK dice cuál es
     más reciente). Si algo falla, sin marcas.

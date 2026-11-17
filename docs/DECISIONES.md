@@ -71,6 +71,11 @@ las trampas, en `docs/LECCIONES.md`.
   encendido); el router ejecuta las actions de a una y una lectura por montaje haría esperar a las mutaciones reales. Las marcas se montan desde `src/app` por una
   entrada chica de `pantallas/` (no por el barril de `client.ts`, que trae el menú de vistas). Un registro por apertura: el resumen o panel por URL (`parametro`) o la
   página, nunca los dos.
+- **«Visto» se lee como un correo: lo no visto en negrita, lo visto en peso normal.** La marca tiene un tercer valor, `nuevo`, que `useVistos` sólo da con «Vistos»
+  encendido, la lectura de esa página ya llegada y el id dentro de lo que se leyó (tope de 200 por tipo): antes de leer, tras una lectura fallida o fuera del tope no
+  hay marca y el nombre queda en su peso de siempre (así nunca parpadea una negrita falsa ni se castiga a quien no usa «Vistos»). El peso es una clase sobre el
+  `[data-abre-resumen]` de la fila o tarjeta (`CLASES_DE_VISTO`, `pesoDelNombre()`), no un nodo. El chip de la agenda conserva la tilde: su etiqueta de clase ya va en
+  negrita y la del título se confundía con ella.
 - **El último visto es el del módulo, de cualquiera de sus tipos** (`TIPOS_DEL_MODULO`): en la agenda, un evento o una tarea, nunca dos «Último visto». «Ver como» no
   registra a nombre del otro (`visto_registrar` escribe con `auth.uid()`).
 
@@ -191,7 +196,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Teléfonos extra por función.** `leads_telefonos` sin grant, se lee por `lead_telefonos()`; el principal cambia con `cambiar_telefono_lead` y el anterior queda como «Anterior». El máximo es de la empresa (`ajustes_leads.telefonos_extra_maximo`, 0 a 20, 6 de fábrica, con versión propia) y lo aplica «agregar»: rotular y quitar no lo miran, y quien ya tiene más conserva los suyos.
 - **«Extras como el principal» se valida en `_lead_verificar`, con un candado por número, no con un índice.** Un índice único no abarca dos tablas y los duplicados que ya existen al encenderla deben quedar (rige para altas y ediciones desde ahí; «Choques» los lista). Orden de candados: la fila del lead y después el número, y sólo con la regla encendida. Apagada, un extra repetido sólo avisa y un `limbo` no se nombra. Restaurar de la papelera la mira sólo para el principal.
 - **Los choques muestran el número enmascarado aunque el lead no se vea** (los tres primeros y los dos últimos dígitos, como el principal fuera de la cartera); el nombre y el enlace sólo salen de un lead que quien configura ve.
-- **`leads.telefonos_extra.editar` es independiente de `leads.editar`** (cambiar el principal sigue con `leads.editar`); la migración se la dio a quien tenía `leads.editar`, con su alcance. El alta de un extra desde el panel o el resumen usa `?extra=nuevo`, porque `?panel=` ya lo ocupa el panel de edición.
+- **`leads.telefonos_extra.editar` es independiente de `leads.editar`** (cambiar el principal sigue con `leads.editar`); la migración se la dio a quien tenía `leads.editar`, con su alcance. El alta de un extra se hace sólo en el panel de edición (el resumen del listado los lee) y usa `?extra=nuevo`, porque `?panel=` ya lo ocupa el panel de edición.
 - **Tipos de lead con clase fija.** Clase «prospecto»/«cliente» inmutable; el sistema razona por la clase, nunca por nombre; siempre queda uno activo de cada clase.
 - **Alta rápida.** Un solo `<Drawer>` montado cerrado que cambia de cuerpo; el primer seguimiento es opcional; Ctrl/Cmd+Enter avanza, Ctrl/Cmd+S guarda. `N` abre lo propio de la pantalla y cae a «Nuevo lead».
 
