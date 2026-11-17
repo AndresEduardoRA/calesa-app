@@ -203,6 +203,7 @@ test('con el máximo en 2 y un lead de 3, el aviso dice cuántos quitar y la due
   await fijarAjustesDeTelefonos(2, false)
   await entrar(page, t.personas.duena)
   await irAFicha(page, propio.id)
+  await abrirEdicion(page)
   await expect(page.getByRole('button', { name: 'Agregar teléfono' })).toBeDisabled()
   await expect(
     page.getByText(

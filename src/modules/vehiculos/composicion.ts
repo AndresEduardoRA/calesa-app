@@ -2,6 +2,7 @@
 // de `entities/repositorios`. Los casos de uso de `features/` importan de este archivo, nunca de
 // `infra/` (lo verifica eslint-plugin-boundaries).
 import 'server-only'
+import { cache } from 'react'
 import type {
   BuscadorDeVehiculos,
   ConsultaDeEditables,
@@ -77,5 +78,7 @@ export const repositorioDeLimpieza: RepositorioDeLimpieza = limpiezaSupabase
 export const repositorioDeSituacion: RepositorioDeSituacion = situacionSupabase
 export const leerResolucionDeSubasta: LectorDeResolucionDeSubasta = getResolucionDeSubasta
 export const leerSinResolver: LectorDeSinResolver = getCantidadSinResolver
-export const leerVehiculosDelLead: LectorDeVehiculosDelLead = getVehiculosDelLead
+// Una lectura de `lead_vehiculos()` por pedido: la ficha del lead la pide para la gestión de «Vehículos» y para elegir un vehículo en un
+// seguimiento, un recordatorio o una oportunidad. Sólo la usan lecturas (ninguna action relee tras escribir).
+export const leerVehiculosDelLead: LectorDeVehiculosDelLead = cache(getVehiculosDelLead)
 export const repositorioDeVinculo: RepositorioDeVinculo = vinculoSupabase

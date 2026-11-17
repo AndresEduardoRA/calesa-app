@@ -19,10 +19,12 @@ const PARAMETROS = {
 // «Agendar recordatorio» (`?panel=agendar-recordatorio`) y «Editar» (`?panel=editar-recordatorio&
 // recordatorio=<id>`) en la URL de la ficha: recargar los vuelve a abrir. Comparten la clave con los
 // demás paneles: nunca se apilan. Abrir suma al historial («atrás» lo cierra; tras recargar, devuelve el foco a quien lo abrió: `vuelta-del-foco.ts`).
-export function usePanelDeRecordatorio() {
+// `atiendeLaUrl` falso: otro dueño de estos modales responde a la URL (el resumen de la ficha con «Ver todos» abierto encima): éste no
+// abre nada ni vigila el foco.
+export function usePanelDeRecordatorio({ atiendeLaUrl = true }: { atiendeLaUrl?: boolean } = {}) {
   const [parametros, setParametros] = useQueryStates(PARAMETROS)
   // Con `?para=` el panel es del listado (el «⋯» de una fila), no de la ficha ni del drawer.
-  const panel = parametros[CLAVE_PARA] === null ? parametros[CLAVE_DE_PANEL] : null
+  const panel = atiendeLaUrl && parametros[CLAVE_PARA] === null ? parametros[CLAVE_DE_PANEL] : null
   const agendando = panel === PANEL_AGENDAR_RECORDATORIO
   const editando =
     panel === PANEL_EDITAR_RECORDATORIO ? (parametros[CLAVE_DE_RECORDATORIO] ?? '') : null

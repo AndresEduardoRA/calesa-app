@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { abrirNuevoLeadDeLaBarra, entrar } from './soporte/alta'
 import { aLaVista } from './soporte/inventario'
-import { abrirEdicion, irAFicha } from './soporte/leads-ficha'
+import { abrirCambioDeTelefono, abrirEdicion, irAFicha } from './soporte/leads-ficha'
 import { nacional } from './soporte/leads-ficha-telefonos'
 import { nombre } from './soporte/leads-listado'
 import { irAlEmbudo } from './soporte/leads-oportunidades'
@@ -66,14 +66,8 @@ const PANELES: Panel[] = [
   {
     nombre: 'Cambiar teléfono (pie dentro del cuerpo)',
     ir: (page) => irAFicha(page, r.dos.id),
-    abrir: async (page) => {
-      const panel = page.getByRole('dialog', { name: 'Cambiar teléfono principal' })
-      await expect(async () => {
-        await aLaVista(page.getByRole('button', { name: 'Cambiar', exact: true })).click()
-        await expect(panel).toBeVisible({ timeout: 1000 })
-      }).toPass()
-      return panel
-    },
+    // «Cambiar el principal» vive en el panel de edición.
+    abrir: (page) => abrirCambioDeTelefono(page),
     escribir: (panel) => panel.getByLabel('Teléfono nuevo').fill(`+${nacional()}`),
   },
   {

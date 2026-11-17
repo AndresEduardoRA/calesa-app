@@ -22,18 +22,21 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   '/logistica/fase/[fase]': 390,
   // El detalle de un vehículo en logística (T20), con el vehículo medido de la subasta de la semilla: medido 438,9 KB en 28 chunks antes de las zonas y 442,3 KB en 27 después, más un 5 % hacia arriba a la decena.
   '/logistica/vehiculo/[id]': 470,
+  // La ficha de un lead (T33), sin tope hasta las dos columnas: medido 548,5 KB en 36 chunks con pestañas y 554,7 KB en 36 con todo a la vista
+  // (el marco de bloques, el índice y el resumen de seguimientos), con un lead recién creado; más un 5 % hacia arriba a la decena.
+  '/leads/[id]': 590,
 }
 
-// Lo que una sección de la ficha puede aportar al documento sobre `/perfil`, en KB. Era 44 hasta la 9e; con el shell delgado (`/perfil` ya
-// no lleva la ficha) se midió 45,3 («Datos») y 44,3 («Oportunidades») y se fijó en 48. En el cierre 5b la ficha dejó de mandar el layout
-// completo y los catálogos de lead (el panel de edición los lee al abrirse) y se midió 39,2 a 40,3: sobre lo medido más un 5 %, 43. Con
-// 100 orígenes y 100 tipos aporta lo mismo (`e2e/leads-ficha.spec.ts`); con las props de antes habrían sido 70 KB.
-export const PRESUPUESTO_DE_LA_FICHA_EN_KB = 43
+// Lo que aporta la ficha del lead **entera** al documento sobre `/perfil`, en KB (T33: con todo a la vista, `?seccion=` sólo dice a qué bloque
+// saltar y no cambia el documento). Se mide con un lead con 10 oportunidades, 3 seguimientos con detalle (de 10), 3 recordatorios pendientes,
+// un vínculo, cuatro interesados y el portal otorgado (`e2e/leads-ficha-dos-columnas.spec.ts`): 130,8 KB (con 1.000 de cada uno, 131,6); sobre
+// lo medido más un 5 %, a la unidad. Lo que pesa: el HTML de los ítems con sus acciones (cada botón trae sus clases) y su payload RSC; lo que
+// crece va por «Ver todos» y «Ver más». Antes se medía por sección: «Datos» 43 y «Oportunidades» con 10, 66.
+export const PRESUPUESTO_DE_LA_FICHA_EN_KB = 138
 
-// La ficha con la sección «Oportunidades» llena (cierre 5b, `e2e/leads-oportunidades-ver-todas.spec.ts`), en KB sobre `/perfil`: cada
-// oportunidad pesa ~3,5 KB en el documento. El servidor dibuja las 10 más recientes (lo máximo por defecto) y «Ver más» lee el resto desde el
-// navegador: con 10 o con 1.000 el documento pesa lo mismo (se midió 62,3 con 10). Sobre lo medido más un 5 %.
-export const PRESUPUESTO_DE_LA_FICHA_CON_10_OPORTUNIDADES_EN_KB = 66
+// Lo que viaja (RSC) al abrir la ficha desde «Abrir ficha» del resumen del listado, en KB (`e2e/leads-ficha.spec.ts`): medido 30,7 en
+// escritorio y 36,6 en el celular con el lead de la semilla de ese spec (T33); sobre lo mayor más un 5 %, a la unidad. Antes, 40 escrito en el spec.
+export const PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB = 39
 
 // El documento de `/perfil` (los bytes del HTML con el payload RSC, sin comprimir), en KB, con 100 orígenes y 100 tipos de lead: lo que paga
 // toda pantalla del marco (`e2e/presupuesto-js.spec.ts`). Antes del cierre 5b-fix el shell mandaba el contexto del alta de lead (los

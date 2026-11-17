@@ -25,19 +25,22 @@ presupuesto no se sube para hacer pasar una medición: se explica o se arregla (
 
 ## Seguimientos de un lead
 
-Sección «Seguimientos» de la ficha y pestaña del drawer.
+Bloque «Seguimientos y recordatorios» de la ficha y su «Ver todos» (`?todos=seguimientos`).
 
-- 20 por «Ver más», hasta 500 (`TAMANO_DE_VER_MAS`, `TOPE_DE_LO_CARGADO`); más allá, «Ir a una fecha». Lectura: `lead_seguimientos()`.
+- En la ficha, los últimos 3 (`PRIMEROS_DE_SEGUIMIENTOS`), leídos en el servidor con `lead_seguimientos(p_tamano := 3)` (pide uno de más: «Ver
+  todos» sólo si hay). «Ver todos»: 20 por «Ver más», hasta 500 (`TAMANO_DE_VER_MAS`, `TOPE_DE_LO_CARGADO`); más allá, «Ir a una fecha».
 - Índices: `seguimientos_lead_autor_idx (lead_id, usuario_id, ocurrido_en desc, id desc)` y `seguimientos_lead_publicos_idx` (parcial).
   «Recargar» tras un conflicto: primera página + `lead_seguimiento(p_lead, p_id)` por la PK, ≤ 2 pedidos.
-- Primera respuesta < 24 KB con 20 ítems; 1 pedido al abrir la pestaña (+ los tipos activos). Nodos del drawer ≤ 2.500 tras 5 «Ver más» y
-  ≤ 9.000 en el tope (`content-visibility: auto` por ítem).
-- Mide: `db:medir` (página 1 y 501); `e2e/leads-rapido-volumen.spec.ts`.
+- Primera respuesta de «Ver todos» < 24 KB con 20 ítems; 1 pedido al abrirlo (+ los tipos activos); el navegador no pide nada al llegar a la
+  ficha. Nodos del drawer ≤ 2.500 tras 5 «Ver más» y ≤ 9.000 en el tope (`content-visibility: auto` por ítem).
+- Mide: `db:medir` (página 1 y 501); `e2e/leads-rapido-volumen.spec.ts` (el «Ver todos» de la ficha con 20.000).
 
 ## Recordatorios de un lead
 
-- 20 por «Ver más», hasta 500 por lista; «Completados» no se lee hasta abrirse. Lectura: `lead_recordatorios(p_lead, p_completados, …)`;
-  por id, `recordatorios_vista`.
+- En la ficha, los 3 pendientes más próximos (`PRIMEROS_DE_RECORDATORIOS`, `recordar_en` ascendente: los vencidos primero), leídos en el
+  servidor con `lead_recordatorios(p_lead, false, null, null, 3)`; «Ver todos» (`?todos=recordatorios`): 20 por «Ver más», hasta 500 por lista;
+  «Completados» no se lee hasta abrirse. Lectura: `lead_recordatorios(p_lead, p_completados, …)`; por id, `recordatorios_vista`. Cada cambio
+  vuelve a leer la ficha (`router.refresh()`, por el aviso de vencidos): relee todos sus bloques.
 - Índices (parciales): `recordatorios_lead_pendientes_idx (usuario_id, lead_id, recordar_en, id)` y
   `recordatorios_lead_completados_idx (usuario_id, lead_id, completado_en desc, id desc)`.
 - Primera respuesta < 14 KB con 20 ítems; 1 pedido al abrir, 1 más al abrir «Completados»; «Recargar»: 1 pedido, por su id.
@@ -171,7 +174,9 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 - Buscar `#n`: `leads_ids_del_numero(p_numero, p_todos)`, hasta 100 ids; `leads_numeros_globales_numero_key` y
   `leads_numeros_propios_creador_idx (creado_por, numero)`; ≤ 5 ms, sin `Seq Scan`. Los números del listado son subconsultas escalares;
   `tiene_permiso('leads.numero_global.ver')` se evalúa una vez por consulta. Alta (número propio): `leads_contadores` por PK, 80 ms.
-- Ficha: «más de 100 vehículos» (`vehiculos_lead_id_idx`), 80 ms. Oportunidades: cursor de a 20 (máx. 100), las abiertas primero, por
+- Ficha: «más de 100 vehículos» (`vehiculos_lead_id_idx`), 80 ms; `lead_vehiculos` se lee **una vez por pedido** (`leerVehiculosDelLead` es
+  `cache()`: la gestión de «Vehículos» al pie de Relacionados y las opciones de vehículo de seguimientos y oportunidades la comparten).
+  «Vincular o marcar un vehículo» (`?panel=agregar-vehiculo`, `shallow: false`) relee toda la ficha. Oportunidades: cursor de a 20 (máx. 100), las abiertas primero, por
   `oportunidades_lead_abiertas_idx` y `oportunidades_lead_cerradas_idx`; bloques que no crecen con la profundidad
   (`medir-lead-oportunidades.sql`); `medir-escala.sql` mide la primera de 20 (150 ms). La pantalla pide 10 en el servidor y 20 por «Ver más».
 - Papelera de leads: 5 lotes por cursor (`LOTES_POR_PAGINA`), de cada uno los primeros 20 (`PRIMEROS_DEL_LOTE`) y «Mostrar los N» (≤ 200);
@@ -532,7 +537,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 ## JS en frío (con gzip, lo que el documento nombra)
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 560, `/perfil` 440, `/vehiculos` 530 (500 hasta que el «Nuevo» de la barra sumó el de la agenda: 500,3 KB, regla del 5 %), `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
-  subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410; `/cotizaciones/papelera` 440 (en su spec). Al borde:
+  subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410, `/leads/[id]` 590 (medido 548,5 con pestañas y 554,7 con las dos columnas, a la decena); `/cotizaciones/papelera` 440 (en su spec). Al borde:
   `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 454,9 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %; el «Elegir…» de lo que falta sumó 2,7 KB) y `/cotizaciones/nuevo` en 450,1 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/configuracion/flujos`: 409,0 KB en frío (28 chunks; 404,5 antes del diagrama), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega
@@ -562,8 +567,13 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   hueco del buscador; el formulario de «Tu ficha en la web» se monta y se pide con `diferido()` al abrirla. El layout `(app)` no manda
   catálogos al alta: `<AltaDeLead>` no recibe nada y los lee del navegador (`infra/contexto-de-alta.client.ts`, memoria de 60 s en
   `shared/lib/memoria-de-lectura.ts`).
-- Ficha, «Datos»: ≤ 43 KB sobre `/perfil` (`PRESUPUESTO_DE_LA_FICHA_EN_KB`), igual con la semilla y con 100 orígenes + 100 tipos (manda los
-  campos activos y el origen y tipo del lead; el panel de edición los lee al abrirse, `leerCatalogosDeEdicion()`); `e2e/leads-ficha.spec.ts`.
+- Ficha del lead entera (todo a la vista: `?seccion=` no cambia el documento): ≤ 138 KB sobre `/perfil` (`PRESUPUESTO_DE_LA_FICHA_EN_KB`),
+  medido 130,8 con 10 oportunidades, 3 de 10 seguimientos, 3 recordatorios, un vínculo, cuatro interesados y el portal, y 131,6 con 1.000 de cada uno
+  (`e2e/leads-ficha-dos-columnas.spec.ts`); lo que más pesa es el HTML de los ítems con sus acciones (≈ 31 KB el bloque de seguimientos, ≈ 30 KB
+  las 10 oportunidades, 11 Relacionados, 6 el portal) y su payload RSC. Igual con la semilla y con 100 orígenes + 100 tipos (manda los campos
+  activos y el origen y tipo del lead; el panel de edición los lee al abrirse, `leerCatalogosDeEdicion()`); `e2e/leads-ficha.spec.ts`. Al abrirla
+  desde «Abrir ficha», ≤ 39 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 30,7 en escritorio y 36,6 en el celular). «Cotizaciones» lee 21 desde el navegador al acercarse
+  a la vista (200 px), no con la ficha.
   «Cotizar» de la cabecera suma, para quien tiene `cotizaciones.crear`, `getOrigenes()` (una por request) y ~90 B.
 - «Nuevo lead» es un solo drawer: 1 montaje y 1 entrada animada por apertura, 1 lectura de cada pedido (`e2e/leads-alta-un-drawer.spec.ts`).
 

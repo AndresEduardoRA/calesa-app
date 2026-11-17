@@ -5,7 +5,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { CONTRASENA } from './alta'
 import { PREFIJO_ROL_E2E, admin, correoDePrueba, crearPersona, darRolDePrueba } from './base'
-import { aLaVista } from './inventario'
 import { exigir } from './leads'
 import { rpcComo } from './leads-cartera'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './leads-listado'
@@ -157,9 +156,6 @@ export async function actividadDelPortal(leadId: string): Promise<string> {
 
 export const seccionPortal = (page: Page): Locator =>
   page.getByRole('region', { name: 'Acceso al portal' })
-
-export const pestanaPortal = (page: Page): Locator =>
-  aLaVista(page.getByRole('link', { name: 'Portal', exact: true }))
 
 // «Dar acceso al portal» o «Volver a otorgar el acceso», antes de otorgar (después, el diálogo se
 // llama «<lead> ya tiene acceso al portal»).

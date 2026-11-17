@@ -1,6 +1,6 @@
 import { expect, test } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
-import { descartarAviso, esMovil } from './soporte/inventario'
+import { esMovil } from './soporte/inventario'
 import { sesionDe } from './soporte/leads-alta'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
 import {
@@ -17,7 +17,9 @@ import {
 } from './soporte/leads-ficha'
 import {
   abrirAgregarTelefono,
+  abrirPanelConTelefonos,
   botonAgregarTelefono,
+  panelConTelefonos,
   cabeEnLaPantalla,
   completoCon,
   fichaDeBerta,
@@ -25,8 +27,8 @@ import {
   nacional,
 } from './soporte/leads-ficha-telefonos'
 
-// Los teléfonos extra de la ficha: agregar (un modal con su URL, `?panel=agregar-telefono`), rotular
-// y quitar en la fila, «Deshacer», sus reglas junto al campo, el máximo de la empresa (6 de fábrica) y lo que ve (y no puede)
+// Los teléfonos extra de la ficha, que se administran en el panel de edición (la ficha los muestra sólo para leer): agregar (un modal
+// con su URL, `?panel=editar-lead&extra=nuevo`; el viejo `?panel=agregar-telefono` lleva ahí), rotular y quitar en la fila, «Deshacer», sus reglas junto al campo, el máximo de la empresa (6 de fábrica) y lo que ve (y no puede)
 // quien no tiene el lead en su cartera.
 test.describe.configure({ mode: 'serial' })
 
@@ -47,7 +49,7 @@ test('agrega, rotula, quita y deshace un extra, sin mover la versión', async ({
 
   // Esc sin nada escrito cierra; con algo escrito pregunta en el mismo modal, y un segundo Esc vuelve.
   let modal = await abrirAgregarTelefono(page)
-  await expect(page).toHaveURL(/panel=agregar-telefono/)
+  await expect(page).toHaveURL(/panel=editar-lead&extra=nuevo/)
   await page.keyboard.press('Escape')
   await expect(modal).toHaveCount(0)
   await expect(botonAgregarTelefono(page)).toBeFocused()
@@ -61,7 +63,7 @@ test('agrega, rotula, quita y deshace un extra, sin mover la versión', async ({
   await modal.getByRole('button', { name: 'Cancelar' }).click()
   await modal.getByRole('button', { name: 'Descartar' }).click()
   await expect(modal).toHaveCount(0)
-  await expect(page).not.toHaveURL(/panel=/)
+  await expect(page).not.toHaveURL(/extra=/)
   expect(await extrasDeLead(lead.id)).toEqual([])
 
   // Cada apertura empieza vacía; Enter confirma, cierra y devuelve el foco al botón.
@@ -74,20 +76,24 @@ test('agrega, rotula, quita y deshace un extra, sin mover la versión', async ({
   await modal.getByLabel('Etiqueta (opcional)').fill('Casa')
   await page.keyboard.press('Enter')
   await expect(page.getByText('Teléfono agregado.')).toBeVisible()
+  // En el celular el aviso tapa el panel, y con el panel abierto no se puede cerrar (lo de atrás queda inerte): se espera a que se vaya.
+  if (esMovil(page)) {
+    await expect(
+      page.locator('[data-sonner-toast]').filter({ hasText: 'Teléfono agregado.' }),
+    ).toBeHidden({ timeout: 15_000 })
+  }
   await expect(modal).toHaveCount(0)
-  await expect(botonAgregarTelefono(page)).toBeFocused()
-  await expect(page.getByText('Casa', { exact: true })).toBeVisible()
+  // El foco queda en el panel (al volver a leer la ficha va a su primer campo: docs/PENDIENTES.md › «Pulido de interfaz»).
+  await expect(panelConTelefonos(page).locator(':focus')).toHaveCount(1)
+  await expect(panelConTelefonos(page).getByText('Casa', { exact: true })).toBeVisible()
   const [agregado] = await extrasDeLead(lead.id)
   expect(agregado).toMatchObject({ telefono: completoCon(t, casa), etiqueta: 'Casa' })
-  if (esMovil(page)) {
-    await descartarAviso(page, 'Teléfono agregado.')
-  }
 
   // Rotular, también con Enter.
   await page.getByRole('button', { name: 'Rotular' }).click()
   await page.getByLabel('Etiqueta', { exact: true }).fill('Trabajo')
   await page.keyboard.press('Enter')
-  await expect(page.getByText('Trabajo', { exact: true })).toBeVisible()
+  await expect(panelConTelefonos(page).getByText('Trabajo', { exact: true })).toBeVisible()
   expect((await extrasDeLead(lead.id))[0]?.etiqueta).toBe('Trabajo')
 
   // Quitar, y «Deshacer» lo vuelve con el mismo id y la misma etiqueta.
@@ -134,11 +140,13 @@ test('con el máximo de extras no se agrega otro, y la ficha lo dice', async ({ 
     Array.from({ length: 6 }, () => ({ telefono: completoCon(t, nacional()), etiqueta: null })),
   )
   await irAFicha(page, lead.id)
+  await abrirPanelConTelefonos(page)
   await expect(botonAgregarTelefono(page)).toBeDisabled()
   await expect(page.getByText(/hasta 6 teléfonos extra/)).toBeVisible()
-  // Escribir la URL a mano tampoco lo abre.
+  // Escribir la URL a mano tampoco lo abre (la vieja lleva a la edición, sin el modal).
   await irAFicha(page, lead.id, '?panel=agregar-telefono')
-  await expect(tituloDeLaFicha(page, lead.nombre)).toBeVisible()
+  await expect(panelConTelefonos(page)).toBeVisible()
+  await expect(page).toHaveURL(/panel=editar-lead&extra=nuevo/)
   await expect(modalDeExtra(page)).toHaveCount(0)
 })
 
@@ -148,8 +156,12 @@ test('el modal vive en la URL: recargar lo reabre y «atrás» lo cierra', async
   await abrirAgregarTelefono(page)
   await page.reload()
   await expect(modalDeExtra(page).getByLabel('Teléfono extra')).toBeVisible()
+  // «Atrás» cierra el modal y deja la edición abierta (se abrió antes); otro «atrás» la cierra.
   await page.goBack()
   await expect(modalDeExtra(page)).toHaveCount(0)
+  await expect(panelConTelefonos(page)).toBeVisible()
+  await page.goBack()
+  await expect(panelConTelefonos(page)).toHaveCount(0)
   await expect(tituloDeLaFicha(page, lead.nombre)).toBeVisible()
 })
 
@@ -192,6 +204,9 @@ test('la dueña con «todos» y sin cartera no ve ninguna acción y la base la r
   await irAFicha(page, ajeno.id)
   await expect(tituloDeLaFicha(page, ajeno.nombre)).toBeVisible()
   await expect(page.getByText('Completo solo para su cartera.')).toBeVisible()
+  await expect(page.getByText('Casa', { exact: true })).toBeVisible()
+  await expect(page.locator('main header').getByRole('button', { name: 'Editar' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Editar teléfonos' })).toHaveCount(0)
   await expect(botonCambiar(page)).toHaveCount(0)
   await expect(botonAgregarTelefono(page)).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Quitar' })).toHaveCount(0)
@@ -202,7 +217,9 @@ test('la dueña con «todos» y sin cartera no ve ninguna acción y la base la r
   await expect(panelDeTelefono(page)).toHaveCount(0)
   await irAFicha(page, ajeno.id, '?panel=agregar-telefono')
   await expect(tituloDeLaFicha(page, ajeno.nombre)).toBeVisible()
+  await expect(page).not.toHaveURL(/panel=/)
   await expect(modalDeExtra(page)).toHaveCount(0)
+  await expect(panelConTelefonos(page)).toHaveCount(0)
 
   // Llamada a mano con su sesión: la RPC la rechaza.
   const sesion = await sesionDe(t.personas.duena, CONTRASENA)

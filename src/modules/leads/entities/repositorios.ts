@@ -25,12 +25,7 @@ import type {
 import type { ResultadoDeMarca } from './marcas'
 import type { CursorDeRecordatorios, PaginaDeRecordatorios } from './pagina-de-recordatorios'
 import type { Recordatorio } from './recordatorios'
-import type {
-  CambiosDeSeguimiento,
-  PaginaDeSeguimientos,
-  Seguimiento,
-  Visibilidad,
-} from './seguimiento'
+import type { CambiosDeSeguimiento, Seguimiento, Visibilidad } from './seguimiento'
 import type {
   CambioDeExtras,
   CambioDeTelefono,
@@ -223,13 +218,6 @@ export type RepositorioDeSeguimientos = {
     actualizadoEnEsperado: string
   }) => Promise<{ ok: true; data: ResultadoDeSeguimiento } | FalloDeSeguimiento>
 }
-
-// Una página de los seguimientos que quien mira ve de un lead (la RLS decide), desde el cursor.
-// Un lead que no ve: una página vacía.
-export type LectorDeSeguimientos = (pedido: {
-  leadId: string
-  antes: { antesEn: string; antesId: string } | null
-}) => Promise<Resultado<PaginaDeSeguimientos>>
 
 // Uno por su id (9d-2: «Recargar» tras un conflicto cuando no está en la primera página). Lo que
 // quien mira no ve, eliminado o de otro lead: null.

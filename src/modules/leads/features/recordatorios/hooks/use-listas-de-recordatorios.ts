@@ -38,6 +38,24 @@ const vacia = (leadId: string): Lectura => ({
   sueltos: [],
 })
 
+// Lo leído en el servidor (el resumen de la ficha): la primera página, sin otra lectura al montar.
+const desdePagina = (leadId: string, pagina: PaginaDeRecordatorios): Lectura => ({
+  ...vacia(leadId),
+  estado: 'listo',
+  listas: {
+    pendientes: { lista: pagina.recordatorios, hayMas: pagina.hayMas },
+    completados: null,
+    hayCompletados: pagina.hayCompletados,
+  },
+  puedoAgendar: pagina.puedoAgendar,
+})
+
+// Lo que identifica la página que trae el servidor: si cambia (se volvió a leer la ficha), lo local se vuelve a sembrar con lo que llegó.
+const firmaDe = (pagina: PaginaDeRecordatorios) =>
+  `${String(pagina.puedoAgendar)}|${String(pagina.hayMas)}|${String(pagina.hayCompletados)}|${pagina.recordatorios
+    .map((r) => `${r.id}:${r.actualizadoEn}`)
+    .join(',')}`
+
 const SIN_RED: ErrorApp = { codigo: 'inesperado', mensaje: 'No pudimos llegar al servidor.' }
 
 // Una página de una de las dos listas. Nulo si falló (`avisar`: con un toast; la primera lectura lo
@@ -111,12 +129,24 @@ function sinUno(lectura: Lectura, id: string): Lectura {
   }
 }
 
-// La primera página de pendientes, al montar (la pestaña o la sección se abrió) y al reintentar. Una
-// lectura de otro lead (se cambió de lead) no vale.
-function usePrimeraPagina(leadId: string) {
-  const [lectura, setLectura] = useState<Lectura>(() => vacia(leadId))
+// La primera página de pendientes, al montar (se abrió «Ver todos») y al reintentar; con `inicial` (leída en el servidor), ésa, sin
+// leer, y se vuelve a sembrar cuando el servidor manda otra. Una lectura de otro lead (se cambió de lead) no vale.
+function usePrimeraPagina(leadId: string, inicial: PaginaDeRecordatorios | undefined) {
+  const [lectura, setLectura] = useState<Lectura>(() =>
+    inicial ? desdePagina(leadId, inicial) : vacia(leadId),
+  )
   const [intento, setIntento] = useState(0)
+  const firma = inicial ? firmaDe(inicial) : null
+  const [firmaVista, setFirmaVista] = useState(firma)
+  if (inicial && firma !== firmaVista) {
+    setFirmaVista(firma)
+    setLectura(desdePagina(leadId, inicial))
+  }
+  const leerAlMontar = inicial === undefined || intento > 0
   useEffect(() => {
+    if (!leerAlMontar) {
+      return
+    }
     let vigente = true
     void leerPagina(leadId, 'pendientes', null, false).then((pagina) => {
       if (!vigente) {
@@ -140,7 +170,7 @@ function usePrimeraPagina(leadId: string) {
     return () => {
       vigente = false
     }
-  }, [leadId, intento])
+  }, [leadId, intento, leerAlMontar])
   return {
     lectura: lectura.leadId === leadId ? lectura : vacia(leadId),
     setLectura,
@@ -154,8 +184,11 @@ function usePrimeraPagina(leadId: string) {
 // Los recordatorios de quien mira sobre un lead, en dos listas por cursor (los pendientes al abrir;
 // los completados al abrir su plegado), con «Ver más» hasta el tope. Ninguna lectura cuesta más con
 // lo cargado: buscar uno o «Recargar» tras un conflicto lo leen por su id.
-export function useListasDeRecordatorios(leadId: string) {
-  const { lectura, setLectura, reintentar } = usePrimeraPagina(leadId)
+export function useListasDeRecordatorios(
+  leadId: string,
+  { inicial }: { inicial?: PaginaDeRecordatorios } = {},
+) {
+  const { lectura, setLectura, reintentar } = usePrimeraPagina(leadId, inicial)
   const [cargandoMas, setCargandoMas] = useState<Cual | null>(null)
   const enVuelo = useRef(new Set<Cual>())
   const deEste = (cambio: (antes: Lectura) => Lectura) => {

@@ -6,6 +6,7 @@ import { leerVistas, puede, requerirSesion } from '@/modules/equipo'
 import {
   CLAVE_DE_VISTA,
   VISTA_EMBUDO,
+  destinoDeLaPestanaVieja,
   leerListadoDeLeads,
   leerVistaDeEmbudo,
 } from '@/modules/leads'
@@ -13,6 +14,7 @@ import { EsqueletoDeTablero, VistaDeEmbudo } from '@/modules/leads/pantallas/lis
 import { datosO } from '@/shared/lib/errores'
 import { ZONA_POR_DEFECTO } from '@/shared/lib/fechas'
 import type { ParametrosDeUrl } from '@/shared/lib/filtros'
+import { redirigir } from '@/shared/lib/navegacion'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { getOrigenes } from '@/modules/origenes'
@@ -20,6 +22,20 @@ import { paraRelacionadosDe } from '../_relacionados/para-relacionados'
 import { ListadoConRelacionados } from './listado-con-relacionados'
 
 export const metadata: Metadata = { title: 'Leads' }
+
+// El resumen tenía pestañas (`?lead=<id>&pestana=seguimientos|recordatorios`): un enlace de entonces lleva a la ficha en ese bloque.
+function redirigirLaPestanaVieja(parametros: Awaited<PageProps<'/leads'>['searchParams']>) {
+  const destino = destinoDeLaPestanaVieja({
+    lead: unParametro(parametros['lead']),
+    pestana: unParametro(parametros['pestana']),
+    panel: unParametro(parametros['panel']),
+    seguimiento: unParametro(parametros['seguimiento']),
+    recordatorio: unParametro(parametros['recordatorio']),
+  })
+  if (destino) {
+    redirigir(destino)
+  }
+}
 
 // Los leads que la persona puede ver. Quién ve qué lo decide la base (`leads_vista` y la RLS de
 // `leads`): «propios» sólo lo de su cartera; «todos», todo, con el teléfono enmascarado y sin los
@@ -32,6 +48,7 @@ export default async function PaginaLeads({ searchParams }: PageProps<'/leads'>)
       <EstadoSinPermiso descripcion="No tienes permiso para ver leads. Pídeselo a quien administra los roles." />
     )
   }
+  redirigirLaPestanaVieja(parametros)
   // La vista de embudo: el kanban de las oportunidades propias. Los filtros de la lista no aplican.
   if (unParametro(parametros[CLAVE_DE_VISTA] ?? undefined) === VISTA_EMBUDO) {
     return (

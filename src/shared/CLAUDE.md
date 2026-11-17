@@ -55,6 +55,11 @@ locale)`, el único lector de un número tipeado.
 - `ui/monto.tsx` + `live.ts` + `guion-live.tsx` (Modo Live), `regional.tsx`, `densidad.tsx`, `marca.tsx`, `estilo-de-marca.tsx`.
 - `lib/acciones-del-aviso.ts` (las acciones de un aviso como datos: `AccionDelAviso`, `resolverAcciones()`, `pedidoDe()`, `hrefDePanel()`; `ErrorApp.causa`)
   y `ui/acciones-del-aviso.tsx` (`<AccionesDelAviso>`, todo `<Button>`: en un toast sólo los botones reciben el puntero).
+- `ui/ficha-en-bloques/`: `<FichaEnDosColumnas>` (desde 56 rem de contenedor, `@container/ficha`: la izquierda pegajosa hasta 24 rem, que se
+  desplaza sola si no cabe; por debajo una columna), `<IndiceDeBloques>` (barra pegajosa de enlaces `#ancla`, `aria-current="location"` del bloque a la
+  vista por `lib/bloque-a-la-vista.ts`), `<BloqueDeFicha>` (ancla, título, límite de error y `alAcercarse`), `irAlBloque()` (desplaza y enfoca el `h2`),
+  `useIrAlLlegar()` y `<EsqueletoDeFichaEnDosColumnas>` (el `loading.tsx` lo importa por su ruta, no por el barril). `ui/use-a-la-vista.ts`: si un nodo ya
+  estuvo a 200 px de la vista (leer o pedir código recién ahí).
 - `ui/estados/`, `ui/esqueletos/`; `ui/toasts.ts` (`avisarError()`, `avisarConDeshacer()`), `ui/sonner.tsx`, `ui/pie-del-panel.tsx`,
   `ui/zona-de-archivos.tsx`. `types/database.types.ts`: lo genera `pnpm db:types`; no se edita.
 

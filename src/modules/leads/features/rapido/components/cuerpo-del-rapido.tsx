@@ -1,16 +1,17 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { valorMostrado } from '@/shared/lib/campos'
-import { formatearFechaHora } from '@/shared/lib/fechas'
 import { Button } from '@/shared/ui/button'
-import { ValorMostrado } from '@/shared/ui/campos'
-import { useRegional } from '@/shared/ui/regional'
 import { Skeleton } from '@/shared/ui/skeleton'
 import type { FilaDeLead } from '../../../entities/listado'
-import { gruposDelRapido, hayPrivadosSinRecibir } from '../../../entities/rapido'
 import { OrigenDelLead } from '../../listado/components/origen-del-lead'
 import { origenDelCatalogo, type DatosDeLaLista } from '../../listado/components/tipos'
+import {
+  RecordatorioDeFila,
+  UltimoSeguimientoDeFila,
+  useContextoDeUltimoContacto,
+  type DatosDeUltimoContacto,
+} from '../../listado/components/ultimo-contacto'
 import { TelefonosDelResumenDiferido } from './diferidos'
 
 function Dato({ etiqueta, children }: { etiqueta: string; children: ReactNode }) {
@@ -39,42 +40,6 @@ export type ParaLosTelefonos = {
   revision: number
 }
 
-// Los datos propios del lead que le llegaron a quien mira, agrupados como el layout.
-function DatosDelLayout({ lead, campos }: PropsDeDatos) {
-  const { locale, zonaHoraria } = useRegional()
-  const grupos = gruposDelRapido(campos, lead.atributos)
-  return (
-    <>
-      {grupos.map((grupo) => (
-        <section key={grupo.nombre ?? '__sin_grupo'} className="grid gap-2">
-          {grupo.nombre ? (
-            <h3 className="text-(length:--text-sm) font-semibold text-(--color-ink)">
-              {grupo.nombre}
-            </h3>
-          ) : null}
-          <dl className="grid gap-3 sm:grid-cols-2">
-            {grupo.datos.map(({ campo, valor }) => (
-              <Dato key={campo.clave} etiqueta={campo.etiqueta}>
-                <ValorMostrado valor={valorMostrado(campo, valor, { locale, zona: zonaHoraria })} />
-              </Dato>
-            ))}
-          </dl>
-        </section>
-      ))}
-      {grupos.length === 0 ? (
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          Todavía no tiene más datos cargados.
-        </p>
-      ) : null}
-      {hayPrivadosSinRecibir(campos, lead.enCartera) ? (
-        <p className="text-(length:--text-xs) text-(--color-ink-soft)">
-          Algunos datos son solo de su cartera.
-        </p>
-      ) : null}
-    </>
-  )
-}
-
 function OrigenDeLaLinea({ origen }: { origen: ReturnType<typeof origenDelCatalogo> }) {
   return origen ? (
     <OrigenDelLead nombre={origen.nombre} icono={origen.icono ?? null} activo={origen.activo} />
@@ -84,38 +49,40 @@ function OrigenDeLaLinea({ origen }: { origen: ReturnType<typeof origenDelCatalo
 }
 
 type PropsDelCuerpo = PropsDeDatos & {
-  completo: boolean
   fallo: boolean
   reintentar: () => void
   telefonos: ParaLosTelefonos
+  // Los tipos de seguimiento y el instante de la página: lo mismo que usan las filas para «hace 3 días».
+  ultimoContacto: DatosDeUltimoContacto
 }
 
-// «Resumen»: lo que se sabe del lead. Editarlo es de la ficha.
+// Lo que se sabe del lead de un vistazo: el teléfono (como lo entrega la base), de dónde vino y lo último que pasó (el último seguimiento y
+// el próximo recordatorio de quien mira, los mismos de la fila, sin otra lectura). Los campos del layout y el alta son de la ficha.
 export function CuerpoDelRapido({
-  completo,
   fallo,
   reintentar,
   telefonos,
+  ultimoContacto,
   ...datos
 }: PropsDelCuerpo) {
-  const { zonaHoraria } = useRegional()
   const { lead, origenes } = datos
+  const contexto = useContextoDeUltimoContacto(ultimoContacto)
   return (
     <div className="grid gap-4">
-      <dl className="grid grid-cols-[minmax(0,1fr)] gap-3">
+      <dl className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,14rem),1fr))] gap-3">
         <Dato etiqueta="Teléfono">
           <TelefonosDelResumenDiferido leadId={lead.id} {...telefonos} />
         </Dato>
         <Dato etiqueta="Origen del lead">
           <OrigenDeLaLinea origen={origenDelCatalogo(origenes, lead.origenId)} />
         </Dato>
-        <Dato etiqueta="Creado">{formatearFechaHora(lead.creadoEn, { zona: zonaHoraria })}</Dato>
+        <Dato etiqueta="Último seguimiento">
+          <UltimoSeguimientoDeFila lead={lead} contexto={contexto} />
+        </Dato>
+        <Dato etiqueta="Recordatorio">
+          <RecordatorioDeFila lead={lead} contexto={contexto} />
+        </Dato>
       </dl>
-      {completo ? (
-        <DatosDelLayout {...datos} />
-      ) : (
-        <EsqueletoDelRapido etiqueta="Cargando los datos" />
-      )}
       {fallo ? (
         <div role="alert" className="flex flex-wrap items-center gap-2">
           <p className="text-(length:--text-sm) text-(--color-ink)">

@@ -1,6 +1,8 @@
 'use client'
 
 import { diferido } from '@/shared/ui/diferido'
+import { EsqueletoDeRecordatorios } from '../../recordatorios/components/esqueleto-de-recordatorios'
+import { EsqueletoDeSeguimientos } from './esqueleto-de-seguimientos'
 
 // El modal de anotar y editar se pide recién al abrirse (y con él, el editor): la línea de tiempo no
 // carga su código para mostrarse. Se monta con `useAbiertoAlgunaVez()`.
@@ -26,3 +28,18 @@ export const DesdeUnaFechaDiferido = diferido(() => ventana().then(([, m]) => m.
 export const AvisoDelTopeDiferido = diferido(() => ventana().then(([, , m]) => m.AvisoDelTope), {
   aviso: 'aqui',
 })
+
+// Lo de adentro de «Ver todos» (`?todos=`) se pide al abrirlo: la ficha no carga la línea completa ni los recordatorios con «Completados».
+// Sin red, el aviso va en su lugar.
+export const TodosLosSeguimientosDiferido = diferido(
+  () => import('./todos-los-seguimientos').then((modulo) => modulo.TodosLosSeguimientos),
+  { esqueleto: <EsqueletoDeSeguimientos forma="linea" />, aviso: 'aqui' },
+)
+
+export const TodosLosRecordatoriosDiferido = diferido(
+  () =>
+    import('../../recordatorios/components/todos-los-recordatorios').then(
+      (modulo) => modulo.TodosLosRecordatorios,
+    ),
+  { esqueleto: <EsqueletoDeRecordatorios etiqueta="Cargando los recordatorios" />, aviso: 'aqui' },
+)

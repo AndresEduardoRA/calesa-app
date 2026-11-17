@@ -11,7 +11,7 @@ import { CLAVE_DE_LEAD, useDrawerDeLead } from './use-drawer-de-lead'
 const ID = '2f1c3a4b-5d6e-4f70-8a9b-0c1d2e3f4a5b'
 
 // El lead rápido (`?lead=<id>`), y encima «Editar» (`&panel=editar-lead`) o anotar desde el «⋯» del resumen
-// (`&pestana=seguimientos&panel=anotar-seguimiento`): tras recargar con el panel abierto, «atrás» devuelve el foco a quien lo abrió (4-49).
+// (`&panel=anotar-seguimiento`): tras recargar con el panel abierto, «atrás» devuelve el foco a quien lo abrió (4-49).
 probarLaVuelta({
   hook: 'useDrawerDeLead',
   usar: useDrawerDeLead,
@@ -49,14 +49,14 @@ probarLaVuelta({
     {
       nombre: 'abrirModal',
       abrir: (drawer) => {
-        drawer.abrirModal('seguimientos', PANEL_ANOTAR_SEGUIMIENTO)
+        drawer.abrirModal(PANEL_ANOTAR_SEGUIMIENTO)
       },
-      abierta: `?lead=${ID}&pestana=seguimientos&panel=${PANEL_ANOTAR_SEGUIMIENTO}`,
-      abierto: (drawer) => drawer.pestana === 'seguimientos' && drawer.conModal,
+      abierta: `?lead=${ID}&panel=${PANEL_ANOTAR_SEGUIMIENTO}`,
+      abierto: (drawer) => drawer.accion === 'anotar' && drawer.conModal,
     },
   ],
   cerrar: (drawer) => {
-    drawer.elegirPestana('resumen')
+    drawer.cerrarModal()
   },
 })
 
@@ -98,7 +98,7 @@ it('montado con un panel encima (tras recargar), al quedar sin panel toma la fic
   // La entrada `?lead=<id>` a la que lleva el primer «atrás», con la ficha de `lead`.
   history.replaceState({ vueltaDesde: { lead: 'f-tras-recargar' } }, '')
   act(() => {
-    result.current.elegirPestana('resumen')
+    result.current.cerrarModal()
   })
   await waitFor(() => {
     expect(result.current.editando).toBe(false)
@@ -123,9 +123,9 @@ it('sin recargar, abrir un panel y cerrarlo en otra URL no olvida la ficha del l
     expect(result.current.editando).toBe(true)
   })
   // Cerrar con Esc reemplaza la entrada: otra URL, sin la ficha de `lead` ni guardada para ella.
-  history.replaceState(null, '', `/?lead=${ID}&pestana=seguimientos`)
+  history.replaceState(null, '', `/?lead=${ID}`)
   act(() => {
-    result.current.elegirPestana('seguimientos')
+    result.current.cerrarModal()
   })
   await waitFor(() => {
     expect(result.current.editando).toBe(false)

@@ -74,3 +74,15 @@ it('con la edición de un ítem abierta, abrir la de otro marca la entrada', asy
     ?.vueltaDelFoco
   expect(marcas?.[CLAVE_DE_PANEL]?.ficha).toEqual(expect.any(String))
 })
+
+it('sin atender la URL (el drawer «Ver todos» es el dueño de los modales), no abre nada', () => {
+  const { result } = renderHook(() => usePanelDeSeguimiento({ atiendeLaUrl: false }), {
+    wrapper: ({ children }: { children: ReactNode }) => (
+      <NuqsTestingAdapter searchParams={`?panel=${PANEL_ANOTAR_SEGUIMIENTO}`}>
+        {children}
+      </NuqsTestingAdapter>
+    ),
+  })
+  expect(result.current.anotando).toBe(false)
+  expect(result.current.editando).toBeNull()
+})

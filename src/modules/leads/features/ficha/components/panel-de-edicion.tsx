@@ -1,329 +1,172 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useId, useMemo, useRef, type RefObject } from 'react'
-import { agruparCampos } from '@/shared/lib/campos'
-import { enfocarPrimerError } from '@/shared/lib/formularios'
-import { RUTAS } from '@/shared/lib/rutas'
-import { AvisosDelFormulario } from '@/shared/ui/avisos-del-formulario'
-import { useCambiosSinGuardar } from '@/shared/ui/cambios-del-panel'
-import { Campo } from '@/shared/ui/campo'
-import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
-import { BloqueDeCampos } from '@/shared/ui/campos'
+import { useRef } from 'react'
+import { SIN_NUMEROS } from '@/shared/lib/numeros-de-lead'
+import { Button } from '@/shared/ui/button'
 import { Drawer } from '@/shared/ui/drawer'
 import { focoDeQuienAbrio } from '@/shared/ui/foco-de-quien-abre'
-import { PieDelPanel } from '@/shared/ui/pie-del-panel'
-import { avisarExito } from '@/shared/ui/toasts'
-import { useUltimo } from '@/shared/ui/use-ultimo'
-import {
-  SUFIJO_DE_INACTIVO,
-  tiposOfrecidos,
-  type TipoDeLeadEnCatalogo,
-} from '../../../entities/catalogos'
-import type { CampoDeLead } from '../../../entities/campo'
-import {
-  CLAVE_DE_EDICION,
-  campoDeEdicion,
-  camposEditables,
-  origenesOfrecidos,
-} from '../../../entities/edicion'
-import type { LeadDeFicha, OrigenConEstado } from '../../../entities/ficha'
-import { useFormularioDeLead, type FormularioDeLead } from '../hooks/use-formulario-de-lead'
-import { SIN_NUMEROS } from '@/shared/lib/numeros-de-lead'
 import { useNumeroEscrito } from '@/shared/ui/numero-de-lead'
-import { usePanelDeLead } from '../hooks/use-panel-de-lead'
-import { TelefonosDelPanel } from './telefonos-del-panel'
+import { useUltimo } from '@/shared/ui/use-ultimo'
+import type { LeadDeFicha } from '../../../entities/ficha'
 import { telefonosDeLaFicha } from '../../../entities/telefonos'
+import { usePanelDeLead } from '../hooks/use-panel-de-lead'
+import {
+  ContenidoDeLaEdicion,
+  type Datos,
+  type EdicionEnElResumen,
+} from './contenido-de-la-edicion'
+import { TelefonosDelPanel } from './telefonos-del-panel'
 
-type Datos = {
-  ficha: LeadDeFicha
-  // Todo el layout: acá se ofrecen los activos que quien edita recibe.
-  campos: readonly CampoDeLead[]
-  origenes: readonly OrigenConEstado[]
-  // Los tipos de lead, también los apagados: se ofrecen los activos y el apagado que el lead ya tiene, marcado.
-  tipos: readonly TipoDeLeadEnCatalogo[]
-  zona: string
-}
-
-// Lo que cambia cuando el panel se abre desde el resumen de la lista y no desde la ficha: nada se vuelve a leer con `router.refresh()`
-// (la ficha no está debajo), así que el resumen dice qué hacer con cada cosa.
-export type EdicionEnElResumen = {
-  // Otra persona cambió el lead: traer su versión (el panel descarta lo escrito).
-  alRecargar: () => void
-  // Se guardó (o no había nada que guardar): el resumen vuelve a leer el lead.
-  alGuardado: () => void
-  // Quien edita ya no ve el lead: el resumen vuelve a leer y lo dice.
-  alPerderElLead: () => void
-}
+export type { EdicionEnElResumen } from './contenido-de-la-edicion'
 
 type Props = Datos & {
-  // Quien mira puede editar este lead: sin esto el panel no se abre aunque la URL lo pida.
+  // Cartera y `leads.editar`: todo el formulario.
   puedeEditar: boolean
-  // Cartera y `leads.telefonos_extra.editar`: los extras se administran desde el panel; sin esto se ven sin acciones.
+  // Cartera y `leads.telefonos_extra.editar`: los extras se administran desde el panel. Sin `puedeEditar`, el panel abre sólo con los
+  // teléfonos (el «modo teléfonos»).
   puedeEditarExtras: boolean
   // `leads.configurar`: el enlace «Cambiar el máximo».
   puedeConfigurar: boolean
+  // Cartera y `leads.editar`, en la ficha: «Cambiar el principal» en el bloque de teléfonos.
+  puedeCambiarTelefono?: boolean
   enResumen?: EdicionEnElResumen
 }
 
-const idDe = (clave: string) => `lead-editar-${clave}`
-
-const texto = (valor: unknown) => (typeof valor === 'string' ? valor : '')
-
-type PropsDeFijos = {
-  ficha: LeadDeFicha
-  origenes: readonly OrigenConEstado[]
-  tipos: readonly TipoDeLeadEnCatalogo[]
-  estado: FormularioDeLead
-}
-
-// Los cuatro fijos que se editan acá: nombre, tipo y origen (el teléfono se cambia aparte). Un
-// origen apagado que el lead ya tiene se ofrece marcado, para poder conservarlo.
-function DatosFijos({ ficha, origenes, tipos, estado }: PropsDeFijos) {
-  const ofrecidos = origenesOfrecidos(origenes, ficha.origenId)
-  const sinOrigenes = ofrecidos.length === 0
-  return (
-    <>
-      <Campo
-        nombre={idDe(CLAVE_DE_EDICION.nombre)}
-        etiqueta="Nombre"
-        autoComplete="off"
-        autoFocus
-        value={texto(estado.valores[CLAVE_DE_EDICION.nombre])}
-        onChange={(evento) => {
-          estado.cambiar(CLAVE_DE_EDICION.nombre, evento.target.value)
-        }}
-        error={estado.errores[CLAVE_DE_EDICION.nombre]}
-        disabled={estado.enCurso}
-      />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <CampoSeleccion
-          nombre={idDe(CLAVE_DE_EDICION.tipo)}
-          etiqueta="Tipo"
-          opciones={tiposOfrecidos(tipos, ficha.tipoLeadId).map((tipo) => ({
-            valor: tipo.id,
-            etiqueta: tipo.activo ? tipo.nombre : `${tipo.nombre} ${SUFIJO_DE_INACTIVO}`,
-          }))}
-          value={texto(estado.valores[CLAVE_DE_EDICION.tipo])}
-          onChange={(evento) => {
-            estado.cambiar(CLAVE_DE_EDICION.tipo, evento.target.value)
-          }}
-          error={estado.errores[CLAVE_DE_EDICION.tipo]}
-          disabled={estado.enCurso}
-        />
-        <CampoSeleccion
-          nombre={idDe(CLAVE_DE_EDICION.origen)}
-          etiqueta="Origen del lead"
-          opciones={[
-            ...(ficha.origenId === null || sinOrigenes
-              ? [{ valor: '', etiqueta: 'Sin origen' }]
-              : []),
-            ...ofrecidos.map((origen) => ({
-              valor: origen.id,
-              etiqueta: origen.activo ? origen.nombre : `${origen.nombre} (inactivo)`,
-            })),
-          ]}
-          value={texto(estado.valores[CLAVE_DE_EDICION.origen])}
-          onChange={(evento) => {
-            estado.cambiar(CLAVE_DE_EDICION.origen, evento.target.value)
-          }}
-          error={estado.errores[CLAVE_DE_EDICION.origen]}
-          disabled={estado.enCurso || sinOrigenes}
-        />
-      </div>
-    </>
-  )
-}
-
-type PropsDeGrupos = {
-  ficha: LeadDeFicha
-  campos: readonly CampoDeLead[]
-  estado: FormularioDeLead
-}
-
-// Un bloque por cada grupo del layout, con sus nombres. Uno con algo obligatorio nace abierto y uno
-// con un error se abre solo; los demás, plegados.
-function GruposDeCampos({ ficha, campos, estado }: PropsDeGrupos) {
-  return (
-    <>
-      {agruparCampos(campos).map((grupo) => (
-        <BloqueDeCampos
-          key={grupo.nombre ?? ''}
-          titulo={grupo.nombre ?? 'Otros datos'}
-          campos={grupo.campos.map((campo) => campoDeEdicion(campo, ficha.atributos[campo.clave]))}
-          valores={estado.valores}
-          errores={estado.errores}
-          alCambiar={estado.cambiar}
-          deshabilitado={estado.enCurso}
-          plegado={!grupo.campos.some((campo) => campo.requerido)}
-        />
-      ))}
-    </>
-  )
-}
-
-// Lo que pasa cuando el panel termina: se guardó (o no había nada) o quien edita ya no ve el lead. Desde el resumen de la lista
-// no hay ficha debajo que volver a leer: el resumen dice qué hacer.
-function salidasDelPanel(
-  alCerrar: () => void,
-  enResumen: EdicionEnElResumen | undefined,
-  recargar: () => void,
-) {
-  return {
-    alGuardar: (sinCambios: boolean) => {
-      if (!sinCambios) {
-        avisarExito('Cambios guardados')
-      }
-      enResumen?.alGuardado()
-      alCerrar()
-    },
-    // Sin acceso ya no hay nada que editar: el servidor vuelve a leer y muestra la pantalla de lo que no se ve.
-    alPerderElLead: () => {
-      if (enResumen) {
-        alCerrar()
-        enResumen.alPerderElLead()
-      } else {
-        recargar()
-      }
-    },
-  }
-}
-
-function useFocoEnElPrimerError(
-  formulario: RefObject<HTMLFormElement | null>,
-  errores: Record<string, string>,
-) {
-  const hayErrores = Object.keys(errores).length > 0
-  useEffect(() => {
-    if (hayErrores) {
-      enfocarPrimerError(formulario.current)
-    }
-  }, [errores, hayErrores, formulario])
-}
-
-// Lo de adentro del panel. Se monta al abrirlo (y de nuevo si cambia la versión de lo que se
-// edita, por ejemplo tras «Recargar»): así cada apertura arranca de lo guardado.
-function Contenido({
+// El «modo teléfonos»: quien sólo administra los extras (sin `leads.editar`) ve los teléfonos y nada más; lo demás no se le ofrece.
+function SoloTelefonos({
   ficha,
-  campos,
-  origenes,
-  tipos,
-  zona,
-  alCerrar,
-  enResumen,
-  puedeEditarExtras,
   puedeConfigurar,
-}: Datos & {
-  alCerrar: () => void
-  enResumen: EdicionEnElResumen | undefined
-  puedeEditarExtras: boolean
+  alCerrar,
+  alCambiar,
+}: {
+  ficha: LeadDeFicha
   puedeConfigurar: boolean
+  alCerrar: () => void
+  alCambiar?: () => void
 }) {
-  const idFormulario = useId()
   const router = useRouter()
-  const refrescarLaFicha = () => {
-    router.refresh()
-  }
-  const formulario = useRef<HTMLFormElement>(null)
-  const editables = useMemo(
-    () => camposEditables(campos, ficha.enCartera),
-    [campos, ficha.enCartera],
-  )
-  const estado = useFormularioDeLead({
-    ficha,
-    campos: editables,
-    origenes,
-    tipos,
-    zona,
-    ...salidasDelPanel(alCerrar, enResumen, refrescarLaFicha),
-  })
-
-  // Con algo escrito, la acción de un aviso que sale de la pantalla («Abrir ficha») pregunta en el pie; descartar tira el borrador.
-  useCambiosSinGuardar(estado.hayCambios, estado.descartarBorrador)
-
-  // El foco va al primer campo con un motivo, también cuando se guarda con Ctrl/Cmd+S.
-  useFocoEnElPrimerError(formulario, estado.errores)
-
   return (
     <div className="grid gap-4">
-      <form
-        id={idFormulario}
-        ref={formulario}
-        noValidate
-        className="grid gap-3"
-        onSubmit={(evento) => {
-          evento.preventDefault()
-          void estado.enviar()
-        }}
-      >
-        <AvisosDelFormulario
-          enLinea={estado.enLinea}
-          esperandoConexion={estado.esperandoConexion}
-          enCurso={estado.enCurso}
-          conflicto={estado.conflicto}
-          aviso={estado.aviso}
-          hrefVer={`${RUTAS.leads}/${ficha.id}`}
-          alReintentar={() => void estado.enviar()}
-          alRecargar={() => {
-            // Trae la versión de la otra persona: lo escrito acá se descarta a propósito.
-            estado.descartarBorrador()
-            if (enResumen) {
-              enResumen.alRecargar()
-            } else {
-              router.refresh()
-            }
-          }}
-        />
-        <DatosFijos ficha={ficha} origenes={origenes} tipos={tipos} estado={estado} />
-        <GruposDeCampos ficha={ficha} campos={editables} estado={estado} />
-      </form>
-      {/* Fuera del `<form>`: rotular una fila es otro formulario, y no se anidan. Se guardan al momento. */}
+      <p className="text-(length:--text-sm) text-(--color-ink-soft)">
+        Los demás datos los edita quien tiene el permiso.
+      </p>
       <TelefonosDelPanel
         lead={telefonosDeLaFicha(ficha)}
-        puedeEditarExtras={puedeEditarExtras}
+        puedeEditarExtras
         puedeConfigurar={puedeConfigurar}
-        alCambiar={enResumen ? enResumen.alGuardado : refrescarLaFicha}
+        alCambiar={alCambiar ?? router.refresh}
+        cambiarElPrincipal={null}
       />
-      <PieDelPanel idFormulario={idFormulario} enCurso={estado.enCurso} alCancelar={alCerrar} />
+      <div className="flex justify-end border-t border-(--color-line) pt-3">
+        <Button type="button" variant="outline" className="min-h-11 md:min-h-9" onClick={alCerrar}>
+          Cerrar
+        </Button>
+      </div>
     </div>
   )
 }
 
-// El panel de edición de la ficha (`?panel=editar-lead`). Sólo se abre si quien mira puede editar
-// este lead: sin permiso no hay botón y la URL no abre nada. Se queda a pantalla completa en el
-// celular y con «Guardar» siempre a la vista.
-export function PanelDeEdicion({
-  puedeEditar,
+const tituloDelPanel = (ficha: LeadDeFicha | null, soloTelefonos: boolean) => {
+  if (!ficha) {
+    return 'Editar lead'
+  }
+  return soloTelefonos ? `Teléfonos de ${ficha.nombre}` : `Editar ${ficha.nombre}`
+}
+
+type PropsDelCuerpo = Omit<Props, 'puedeEditar' | 'puedeCambiarTelefono'> & {
+  soloTelefonos: boolean
+  alCerrar: () => void
+  alCambiarElPrincipal: (() => void) | null
+}
+
+// Lo de adentro: el modo teléfonos o el formulario completo.
+function CuerpoDelPanel({
+  soloTelefonos,
+  alCerrar,
+  enResumen,
   puedeEditarExtras,
   puedeConfigurar,
-  enResumen,
+  alCambiarElPrincipal,
   ...datos
-}: Props) {
+}: PropsDelCuerpo) {
+  const { ficha } = datos
+  if (soloTelefonos) {
+    return (
+      <SoloTelefonos
+        ficha={ficha}
+        puedeConfigurar={puedeConfigurar}
+        alCerrar={alCerrar}
+        alCambiar={enResumen?.alGuardado}
+      />
+    )
+  }
+  return (
+    <ContenidoDeLaEdicion
+      // Otra versión de lo que se edita (se recargó tras un conflicto) arranca de nuevo.
+      key={`${ficha.id}-${ficha.actualizadoEn}`}
+      {...datos}
+      alCerrar={alCerrar}
+      enResumen={enResumen}
+      puedeEditarExtras={puedeEditarExtras}
+      puedeConfigurar={puedeConfigurar}
+      alCambiarElPrincipal={alCambiarElPrincipal}
+    />
+  )
+}
+
+// Mientras se cierra, el panel sigue mostrando lo que tenía, con su número bajo el título.
+function useFichaALaVista(abierto: boolean, ficha: LeadDeFicha) {
+  const aLaVista = useUltimo(abierto ? ficha : null)
+  const mostrada = abierto ? ficha : aLaVista
+  const numero = useNumeroEscrito(mostrada?.numeros ?? SIN_NUMEROS)
+  return { ficha: mostrada, descripcion: mostrada ? (numero.principal ?? undefined) : undefined }
+}
+
+// «Cambiar el principal»: pasa al panel del cambio reemplazando la entrada, y este panel se cierra sin devolver el foco (es del que abre).
+function usePasoAlTelefono(panel: ReturnType<typeof usePanelDeLead>, habilitado: boolean) {
+  const pasando = useRef(false)
+  return {
+    alCambiar: habilitado
+      ? () => {
+          pasando.current = true
+          panel.telefono.reemplazar()
+        }
+      : null,
+    focoAlCerrar: () => {
+      const paso = pasando.current
+      pasando.current = false
+      return paso ? false : focoDeQuienAbrio()
+    },
+  }
+}
+
+// El panel de edición de la ficha (`?panel=editar-lead`). Abre con `leads.editar` (todo el formulario) o, sin él, con
+// `leads.telefonos_extra.editar` (sólo los teléfonos), siempre con el lead en la cartera: sin permiso no hay botón y la URL no abre
+// nada. Se queda a pantalla completa en el celular y con «Guardar» siempre a la vista. «Cambiar el principal» pasa al panel del cambio
+// (`?panel=cambiar-telefono`, reemplazando la entrada del historial): éste se cierra sin devolver el foco, que es del que abre.
+export function PanelDeEdicion({ puedeEditar, puedeCambiarTelefono, ...resto }: Props) {
   const panel = usePanelDeLead()
-  const abierto = puedeEditar && panel.abierto
-  // Mientras se cierra, el panel sigue mostrando lo que tenía.
-  const aLaVista = useUltimo(abierto ? datos.ficha : null)
-  const ficha = abierto ? datos.ficha : aLaVista
-  const numero = useNumeroEscrito(ficha?.numeros ?? SIN_NUMEROS)
+  const soloTelefonos = !puedeEditar && resto.puedeEditarExtras
+  const abierto = (puedeEditar || resto.puedeEditarExtras) && panel.abierto
+  const { ficha, descripcion } = useFichaALaVista(abierto, resto.ficha)
+  const paso = usePasoAlTelefono(panel, Boolean(puedeCambiarTelefono) && !resto.enResumen)
   return (
     <Drawer
       abierto={abierto}
       alCerrar={panel.cerrar}
-      titulo={ficha ? `Editar ${ficha.nombre}` : 'Editar lead'}
-      descripcion={ficha ? (numero.principal ?? undefined) : undefined}
+      titulo={tituloDelPanel(ficha, soloTelefonos)}
+      descripcion={descripcion}
       ancho="amplio"
-      focoAlCerrar={focoDeQuienAbrio}
+      focoAlCerrar={paso.focoAlCerrar}
     >
       {ficha ? (
-        <Contenido
-          // Otra versión de lo que se edita (se recargó tras un conflicto) arranca de nuevo.
-          key={`${ficha.id}-${ficha.actualizadoEn}`}
-          {...datos}
+        <CuerpoDelPanel
+          {...resto}
           ficha={ficha}
+          soloTelefonos={soloTelefonos}
           alCerrar={panel.cerrar}
-          enResumen={enResumen}
-          puedeEditarExtras={puedeEditarExtras}
-          puedeConfigurar={puedeConfigurar}
+          alCambiarElPrincipal={paso.alCambiar}
         />
       ) : null}
     </Drawer>

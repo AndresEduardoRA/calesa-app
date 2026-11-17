@@ -169,6 +169,7 @@ export function ListadoDeLeads(props: Props) {
   const marcar = { etiquetas, alGestionar: gestionar.abrir, eliminables, alAccion }
   // `puedeEditarExtras` y `puedeConfigurar` viajan con `datos` hasta el drawer.
   const delDrawer = { filas: pagina.filas, soloMios: !puedeVerTodos, puedeEditar: puedeAnotar }
+  const ultimoContacto = { tipos: tiposDeSeguimiento, ahora }
   return (
     <div className="grid gap-4">
       <h1 className="sr-only">Leads</h1>
@@ -198,11 +199,11 @@ export function ListadoDeLeads(props: Props) {
             marcar={marcar}
             ocultos={ocultos}
             recorrido={recorrido}
-            ultimoContacto={{ tipos: tiposDeSeguimiento, ahora }}
+            ultimoContacto={ultimoContacto}
           />
         </div>
       </FilterShell>
-      <DrawerDeLead {...datos} {...delDrawer} marcar={marcar} />
+      <DrawerDeLead {...datos} {...delDrawer} marcar={marcar} ultimoContacto={ultimoContacto} />
       <DialogoDeEtiquetas etiquetas={etiquetas} />
       {exportarMontado ? (
         <DialogoDeExportarDiferido abierto={exportar.abierto} alCerrar={exportar.cerrar} />

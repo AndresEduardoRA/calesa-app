@@ -126,7 +126,7 @@ test('una vista guardada vuelve a poner sus filtros, y si el campo se apagó lo 
   await expect(page.getByText('Se quitó un filtro de un campo que ya no existe.')).toBeVisible()
 })
 
-test('el drawer rápido: se abre en la URL en «Resumen», con sus dos pestañas, y sobrevive a recargar', async ({
+test('el drawer rápido: se abre en la URL, es la versión corta de la ficha (sin pestañas) y sobrevive a recargar', async ({
   page,
 }) => {
   await entrar(page, t.personas.duena)
@@ -135,25 +135,16 @@ test('el drawer rápido: se abre en la URL en «Resumen», con sus dos pestañas
   const drawer = page.getByRole('dialog', { name: nombre(AJENO_CARLOS) })
   await expect(drawer).toBeVisible()
   await expect(page).toHaveURL(/lead=/)
-  // Lo que le llega a quien mira: el color sí, la cédula no, el teléfono enmascarado.
-  await expect(drawer.getByText('azul')).toBeVisible()
-  await expect(drawer.getByText('Color E2E')).toBeVisible()
+  // Lo que le llega a quien mira: el teléfono enmascarado y nada privado. Los campos del layout son de la ficha.
+  await expect(drawer.getByText('Color E2E')).toHaveCount(0)
   await expect(drawer.getByText('Cédula E2E')).toHaveCount(0)
   await expect(drawer).not.toContainText(CI_DE_CARLOS)
   await expect(drawer).not.toContainText(t.telefonoDeCarlos)
   await expect(drawer).toContainText('•')
-  await expect(drawer.getByText('Algunos datos son solo de su cartera.')).toBeVisible()
-  // Abre en «Resumen»; «Seguimientos» al lado, sin número. Los datos no se editan acá: el único
-  // enlace es «Abrir ficha», a la ficha de ese lead.
-  await expect(drawer.getByRole('tab', { name: 'Resumen' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
-  await expect(drawer.getByRole('tab', { name: 'Seguimientos', exact: true })).toBeVisible()
-  const enlaces = drawer.getByRole('link')
-  await expect(enlaces).toHaveCount(1)
-  await expect(enlaces.first()).toHaveText('Abrir ficha')
-  await expect(enlaces.first()).toHaveAttribute('href', /\/leads\/[0-9a-f-]{36}$/)
+  // Sin pestañas. Los datos no se editan acá (es ajeno): «Abrir ficha» lleva a la ficha de ese lead.
+  await expect(drawer.getByRole('tablist')).toHaveCount(0)
+  const abrir = drawer.getByRole('link', { name: 'Abrir ficha' })
+  await expect(abrir).toHaveAttribute('href', /\/leads\/[0-9a-f-]{36}$/)
 
   await page.reload()
   await expect(page.getByRole('dialog', { name: nombre(AJENO_CARLOS) })).toBeVisible()
@@ -176,13 +167,14 @@ test('si le quitan el acceso con el drawer abierto, lo dice al volver', async ({
     nombre: 'Revocable',
     telefono,
     deQuien: t.personas.berta,
-    atributos: { e2e_color: 'verde' },
   })
   await entrar(page, t.personas.berta)
   await irALeads(page)
   await fila(page, 'Revocable').click()
   const drawer = page.getByRole('dialog', { name: nombre('Revocable') })
-  await expect(drawer.getByText('verde')).toBeVisible()
+  // El resumen es la versión corta de la ficha (sin los campos del layout): sus datos clave.
+  const datos = page.getByRole('dialog').getByText('Origen del lead', { exact: true })
+  await expect(drawer.getByText('Origen del lead', { exact: true })).toBeVisible()
 
   // Mientras tanto, el lead deja de ser suyo (se revoca su acceso y queda en el limbo).
   await mandarAlLimbo(id)
@@ -191,7 +183,7 @@ test('si le quitan el acceso con el drawer abierto, lo dice al volver', async ({
     window.dispatchEvent(new Event('focus'))
   })
   await expect(page.getByText('Este lead ya no está disponible')).toBeVisible()
-  await expect(drawer.getByText('verde')).toHaveCount(0)
+  await expect(datos).toHaveCount(0)
 })
 
 test('el lead que crea el alta aparece en la lista', async ({ page }) => {

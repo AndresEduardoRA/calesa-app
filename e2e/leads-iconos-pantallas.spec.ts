@@ -59,16 +59,11 @@ test('el listado dibuja el icono del origen y el del tipo junto a sus nombres, t
   await capturar(page, info, 'iconos-listado')
 })
 
-test('la ficha dibuja los dos en la cabecera y en «Datos», y el tipo del seguimiento en la línea de tiempo', async ({
+test('la ficha dibuja los dos en «Datos», y el tipo del seguimiento en la línea de tiempo', async ({
   page,
 }, info) => {
   await entrar(page, r.t.personas.duena)
   await page.goto(`/leads/${r.uno.id}`)
-  const cabecera = page
-    .locator('header')
-    .filter({ has: page.getByRole('heading', { level: 1, name: r.uno.nombre }) })
-  await conUnIcono(cabecera, 'compartir')
-  await conUnIcono(cabecera, 'persona')
   const datos = page.locator('dl').filter({ hasText: 'Origen del lead' }).first()
   await conUnIcono(datos, 'compartir')
   await conUnIcono(datos, 'persona')
@@ -81,7 +76,7 @@ test('la ficha dibuja los dos en la cabecera y en «Datos», y el tipo del segui
   await capturar(page, info, 'iconos-ficha-seguimientos')
 })
 
-test('el resumen del drawer dibuja el icono del tipo y del origen, y la pestaña «Seguimientos», el del seguimiento', async ({
+test('el resumen del drawer dibuja el icono del tipo y del origen, y `?pestana=seguimientos` lleva a la ficha con el del seguimiento', async ({
   page,
 }, info) => {
   await entrar(page, r.t.personas.duena)
@@ -92,7 +87,8 @@ test('el resumen del drawer dibuja el icono del tipo y del origen, y la pestaña
   await conUnIcono(drawer, 'compartir')
   await capturar(page, info, 'iconos-rapido')
   await page.goto(`/leads?lead=${r.uno.id}&pestana=seguimientos`)
-  await conUnIcono(drawer.getByRole('article', { name: 'Llamada de los iconos' }), 'telefono')
+  await expect(page).toHaveURL(new RegExp(`/leads/${r.uno.id}\\?seccion=seguimientos`))
+  await conUnIcono(page.getByRole('article', { name: 'Llamada de los iconos' }), 'telefono')
 })
 
 test('sin icono no se dibuja nada; una clave desconocida se dibuja neutra y nada se rompe; un tipo apagado sigue nombrando y con su icono', async ({
@@ -105,13 +101,11 @@ test('sin icono no se dibuja nada; una clave desconocida se dibuja neutra y nada
   `)
   await entrar(page, r.t.personas.duena)
   await page.goto(`/leads/${r.uno.id}`)
-  const cabecera = page
-    .locator('header')
-    .filter({ has: page.getByRole('heading', { level: 1, name: r.uno.nombre }) })
-  await expect(cabecera.getByText('Facebook')).toBeVisible()
-  await expect(cabecera.locator('svg[data-icono="compartir"]')).toHaveCount(0)
-  await expect(cabecera.locator('svg[data-icono="desconocido"]')).toHaveCount(1)
-  await expect(cabecera.getByText('Prospecto')).toBeVisible()
+  const datos = page.locator('dl').filter({ hasText: 'Origen del lead' }).first()
+  await expect(datos.getByText('Facebook')).toBeVisible()
+  await expect(datos.locator('svg[data-icono="compartir"]')).toHaveCount(0)
+  await expect(datos.locator('svg[data-icono="desconocido"]')).toHaveCount(1)
+  await expect(datos.getByText('Prospecto')).toBeVisible()
   await page.goto(`/leads/${r.uno.id}?seccion=seguimientos`)
   const nota = page.getByRole('article', { name: 'Llamada de los iconos' })
   await expect(nota.getByText('Llamada', { exact: true })).toBeVisible()

@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { admin } from './soporte/base'
 import { exigir } from './soporte/leads'
-import { irAFicha, nuevoLead } from './soporte/leads-ficha'
+import { esperarFichaHidratada, irAFicha, nuevoLead } from './soporte/leads-ficha'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import {
   GENERAR,
@@ -102,6 +102,7 @@ test('al dar acceso, el texto para WhatsApp sale del mensaje de la empresa', asy
   })
   await entrar(page, t.pia.email)
   await irAFicha(page, lead.id, '?seccion=portal')
+  await esperarFichaHidratada(page)
   await seccionPortal(page).getByRole('button', { name: 'Dar acceso' }).click()
   await dialogoDeOtorgar(page).getByRole('button', { name: GENERAR }).click()
   const listo = page.getByRole('dialog', { name: `${lead.nombre} ya tiene acceso al portal` })

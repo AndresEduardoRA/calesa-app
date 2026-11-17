@@ -3,11 +3,9 @@ import {
   CLAVE_DE_SECCION,
   MENSAJE_DE_LEAD_NO_DISPONIBLE,
   fichaDesde,
-  hayBarraDeSecciones,
   origenDeLaFicha,
   quienLoTiene,
   seccionDeLead,
-  seccionesDisponibles,
   telefonoDeFicha,
   TOPE_DE_VENCIDOS,
   type LeadDeFicha,
@@ -141,7 +139,7 @@ describe('teléfono de la ficha', () => {
   })
 })
 
-describe('secciones', () => {
+describe('secciones (`?seccion=` de los enlaces de siempre)', () => {
   const conVehiculos = { vehiculos: true, oportunidades: false, cotizaciones: false, portal: false }
   const sinVehiculos = {
     vehiculos: false,
@@ -150,51 +148,23 @@ describe('secciones', () => {
     portal: false,
   }
   const todo = { vehiculos: true, oportunidades: true, cotizaciones: true, portal: true }
-  it('«Datos», «Seguimientos» y «Vehículos»: hay barra de pestañas, sin números', () => {
-    expect(hayBarraDeSecciones(conVehiculos)).toBe(true)
-    expect(seccionesDisponibles(conVehiculos)).toEqual([
-      { clave: 'datos', titulo: 'Datos' },
-      { clave: 'seguimientos', titulo: 'Seguimientos' },
-      { clave: 'vehiculos', titulo: 'Vehículos' },
-    ])
-  })
-  it('sin ver vehículos, «Vehículos» no aparece ni se abre por la URL', () => {
-    expect(seccionesDisponibles(sinVehiculos).map((s) => s.clave)).toEqual([
-      'datos',
-      'seguimientos',
-    ])
+  it('sin ver vehículos, «Vehículos» no se abre por la URL', () => {
     expect(seccionDeLead('vehiculos', sinVehiculos)).toBe('datos')
     expect(seccionDeLead('vehiculos', conVehiculos)).toBe('vehiculos')
   })
-  it('«Oportunidades» sólo con el lead en la cartera; «Portal» con la cartera y el permiso, al final', () => {
-    expect(seccionesDisponibles(todo).map((s) => s.clave)).toEqual([
-      'datos',
-      'seguimientos',
-      'vehiculos',
-      'oportunidades',
-      'cotizaciones',
-      'portal',
-    ])
+  it('«Oportunidades» sólo con el lead en la cartera; «Portal» con la cartera y el permiso', () => {
     expect(seccionDeLead('oportunidades', todo)).toBe('oportunidades')
     expect(seccionDeLead('oportunidades', conVehiculos)).toBe('datos')
     expect(seccionDeLead('portal', todo)).toBe('portal')
     expect(seccionDeLead('portal', { ...todo, portal: false })).toBe('datos')
   })
-  it('«Cotizaciones» sólo con `cotizaciones.ver` en algún origen, entre «Oportunidades» y «Portal»; sin eso abre «Datos»', () => {
+  it('«Cotizaciones» sólo con `cotizaciones.ver` en algún origen; sin eso es «Datos»', () => {
     const sola = { ...sinVehiculos, cotizaciones: true }
-    expect(seccionesDisponibles(sola).map((s) => s.clave)).toEqual([
-      'datos',
-      'seguimientos',
-      'cotizaciones',
-    ])
     expect(seccionDeLead('cotizaciones', sola)).toBe('cotizaciones')
     expect(seccionDeLead('cotizaciones', sinVehiculos)).toBe('datos')
     expect(seccionDeLead('cotizaciones', { ...todo, cotizaciones: false })).toBe('datos')
-    expect(seccionesDisponibles(sola).find((s) => s.clave === 'cotizaciones')?.titulo).toBe(
-      'Cotizaciones',
-    )
   })
-  it('lo que no es una sección que existe abre «Datos»', () => {
+  it('lo que no es una sección que existe es «Datos»', () => {
     expect(seccionDeLead(undefined, conVehiculos)).toBe('datos')
     expect(seccionDeLead('seguimientos', conVehiculos)).toBe('seguimientos')
     expect(seccionDeLead('cotizaciones', conVehiculos)).toBe('datos')
