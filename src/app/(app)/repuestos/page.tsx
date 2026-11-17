@@ -28,11 +28,12 @@ import { leerPorPagina, tamanoDePagina, tamanosHasta } from '@/shared/lib/pagina
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { EsqueletoListado } from '@/shared/ui/esqueletos'
+import { VistaYOpciones } from '@/shared/ui/vista-y-opciones'
 import { z } from 'zod'
 import { ListadoDeLaCadena } from './listado-de-la-cadena'
 import { ListadoDeStock } from './listado-de-stock'
 import { NuevoProyecto, type LeadResueltoDeLaUrl, type VehiculoDeLaUrl } from './nuevo-proyecto'
-import { VistasDeRepuestos } from './vistas-de-repuestos'
+import { grupoDeVista } from './vistas-de-repuestos'
 
 export const metadata: Metadata = { title: 'Repuestos' }
 
@@ -41,7 +42,7 @@ export const metadata: Metadata = { title: 'Repuestos' }
 export default function PaginaDeRepuestos({ searchParams }: PageProps<'/repuestos'>) {
   return (
     <>
-      {/* El h1 va fuera del Suspense: está también cargando y sin permiso (9.12-5, R3). Sin cabecera visible: la ocupa las vistas y la barra de filtros. */}
+      {/* El h1 va fuera del Suspense: está también cargando y sin permiso (9.12-5, R3). Sin cabecera visible: la ocupa la barra de filtros. */}
       <h1 className="sr-only">Repuestos</h1>
       <Suspense fallback={<EsqueletoListado filas={8} columnas={6} />}>
         <Listado searchParams={searchParams} />
@@ -96,8 +97,11 @@ async function Listado({
   if (esVistaDeLaCadena(unParametro(parametros[CLAVE_DE_VISTA_DE_LA_CADENA]))) {
     return (
       <div className="grid gap-4">
-        <VistasDeRepuestos vista="cadena" />
-        <ListadoDeLaCadena parametros={parametros} permisos={sesion.permisos} />
+        <ListadoDeLaCadena
+          parametros={parametros}
+          permisos={sesion.permisos}
+          opciones={[grupoDeVista('cadena')]}
+        />
       </div>
     )
   }
@@ -105,7 +109,10 @@ async function Listado({
   if (esVistaDeStock(unParametro(parametros[CLAVE_DE_VISTA_DE_REPUESTOS]))) {
     return (
       <div className="grid gap-4">
-        <VistasDeRepuestos vista="stock" />
+        {/* Stock no tiene barra: «Vista y opciones» va solo, arriba a la izquierda. */}
+        <div className="flex">
+          <VistaYOpciones grupos={[grupoDeVista('stock')]} />
+        </div>
         <ListadoDeStock
           parametros={parametros}
           puedeEditar={puede(sesion.permisos, 'repuestos.editar')}
@@ -133,7 +140,6 @@ async function Listado({
   const estado = estadoDelListadoDe(filtros)
   return (
     <div className="grid gap-4">
-      <VistasDeRepuestos vista="proyectos" />
       {/* La fila abre `/repuestos/<id>`, que lo registra visto: acá no hay resumen abierto, sin `parametro`. */}
       <MarcasDeVistoDeLaPagina
         modulo="repuestos"
@@ -145,6 +151,7 @@ async function Listado({
           estado={estado}
           porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_REPUESTOS) }}
           nuevo={puedeEditar ? <BotonNuevoProyecto /> : null}
+          opciones={[grupoDeVista('proyectos')]}
         />
       </MarcasDeVistoDeLaPagina>
       <NuevoProyecto

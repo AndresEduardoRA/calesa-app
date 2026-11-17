@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { useMemo } from 'react'
 import { CLAVE_DE_CURSOR, type EsquemaDeFiltros } from '@/shared/lib/filtros'
 import { buttonVariants } from '@/shared/ui/button'
-import { FilterShell } from '@/shared/ui/filtros'
+import { FilterShell, type GrupoDeVistaYOpciones } from '@/shared/ui/filtros'
 import {
   CLAVE_DE_PROYECTO_DE_LA_CADENA,
   cadenaFiltrada,
@@ -32,6 +32,8 @@ type Props = {
   ahora: string
   // La persona puede configurar flujos: «el flujo todavía no tiene fases» lleva ahí.
   enlaceAFlujos: boolean
+  // Los grupos de «Vista y opciones» que arma la página («Qué ver»).
+  opciones?: readonly GrupoDeVistaYOpciones[]
 }
 
 // «Mostrando un solo proyecto» con «Ver todos», que lo quita de la URL (el filtro de proyecto no tiene control propio: viene de «Ver todas» de Inicio y de los enlaces de proyecto).
@@ -50,7 +52,14 @@ function AvisoDelProyecto({ hrefSinProyecto }: { hrefSinProyecto: string }) {
 }
 
 // La Cadena de repuestos (8.13-3): la búsqueda arriba y las columnas por fase. Abrir una tarjeta pone `?item=` y lo abre el panel de `src/app` (el mismo de la hoja, parte 2).
-export function CadenaDeRepuestos({ cadena, filtros, esquema, ahora, enlaceAFlujos }: Props) {
+export function CadenaDeRepuestos({
+  cadena,
+  filtros,
+  esquema,
+  ahora,
+  enlaceAFlujos,
+  opciones,
+}: Props) {
   const estado = useCadenaDeRepuestos(cadena, filtros)
   const item = useItemPorUrl()
   const ruta = usePathname()
@@ -77,7 +86,7 @@ export function CadenaDeRepuestos({ cadena, filtros, esquema, ahora, enlaceAFluj
   const vacia = estado.columnas.every((c) => c.tarjetas.length === 0)
   const sinFases = estado.columnas.every((c) => c.faseId === null)
   return (
-    <FilterShell esquema={esquema}>
+    <FilterShell esquema={esquema} {...(opciones ? { opciones } : {})}>
       <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3">
         {filtros.proyecto ? <AvisoDelProyecto hrefSinProyecto={hrefSinProyecto} /> : null}
         {sinFases ? (
