@@ -8,26 +8,41 @@ import { limpiarListado, prepararListado, type TerrenoDelListado } from './sopor
 import { nuevoLead } from './soporte/leads-ficha'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import { meterRecordatorio } from './soporte/leads-seguimientos'
+import {
+  abrirVistaYOpciones,
+  botonDeVistaYOpciones,
+  cerrarVistaYOpciones,
+  seccionDeVistaYOpciones,
+} from './soporte/vista-y-opciones'
 
-// Agenda (7.07-1, sólo lectura): el calendario en el día. El evento «seleccionados» de la dueña lo ve la asesora invitada y no un tercero; la tarea
-// de la asesora la ve ella en su día y la dueña, sólo con «Ver la de todos». `?de=todos` sin permiso no rompe ni dibuja el interruptor.
+// Agenda (7.07-1, sólo lectura): la hoja del día. El evento «seleccionados» de la dueña lo ve la asesora invitada y no un tercero; la tarea
+// de la asesora la ve ella en su día y la dueña, sólo con «Vista y opciones» › «De todos». `?de=todos` sin permiso no rompe ni dibuja el grupo.
 // 7.07-2: la dueña crea, ve, edita y elimina un evento por la interfaz y le da una tarea a la asesora; la asesora los ve.
-// 7.07-3: la asesora completa y reabre su tarea (sin poder cambiar de responsable), ve sus tareas sin fecha y completa un recordatorio; la bandeja lo refleja.
+// 7.07-3: la asesora completa y reabre su tarea (sin poder cambiar de responsable), ve sus tareas sin fecha en los pendientes y completa un recordatorio; la bandeja lo refleja.
 test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDelListado
 let eventoId = ''
 let tareaId = ''
 const rotulo = (proyecto: string) => `Agenda e2e ${proyecto}`
+// Los chips: los de la hoja del día (una tarea vencida sale también en «Pendientes»).
+const hojaDe = (page: Page) => page.getByRole('region', { name: 'Hoja del día' })
 
-// «Nuevo evento» con la tecla N (insiste hasta que la página termina de hidratar): «Seleccionados» con la asesora de invitada.
-async function crearEventoParaLaAsesora(page: Page, titulo: string, nombre: string) {
-  // La tecla N abre «Nuevo evento» (insiste hasta que la página termina de hidratar).
-  const nuevo = page.getByRole('dialog', { name: 'Nuevo evento', exact: true })
+// La tecla N abre «Nuevo» (insiste hasta que la página termina de hidratar) y ahí se elige qué agendar.
+async function nuevoEnLaAgenda(page: Page, que: 'Evento' | 'Tarea') {
+  const modal = page.getByRole('dialog', { name: 'Nuevo', exact: true })
   await expect(async () => {
     await page.keyboard.press('n')
-    await expect(nuevo).toBeVisible({ timeout: 1000 })
+    await expect(modal).toBeVisible({ timeout: 1000 })
   }).toPass()
+  await modal.getByRole('button', { name: new RegExp(`^${que}`) }).click()
+}
+
+// «Nuevo» › «Evento»: «Seleccionados» con la asesora de invitada.
+async function crearEventoParaLaAsesora(page: Page, titulo: string, nombre: string) {
+  const nuevo = page.getByRole('dialog', { name: 'Nuevo evento', exact: true })
+  await nuevoEnLaAgenda(page, 'Evento')
+  await expect(nuevo).toBeVisible()
   await nuevo.getByLabel('Título', { exact: true }).fill(titulo)
   await nuevo.getByRole('radio', { name: /Seleccionados/ }).check()
   await nuevo.getByLabel('¿Con quién?').fill(nombre)
@@ -36,9 +51,13 @@ async function crearEventoParaLaAsesora(page: Page, titulo: string, nombre: stri
   await nuevo.getByRole('button', { name: 'Crear evento' }).click()
 }
 
-// «Nueva tarea» para la asesora, que vence hoy al final del día.
+// «Nuevo en la agenda» › «Tarea» para la asesora, que vence hoy al final del día.
 async function crearTareaParaLaAsesora(page: Page, tarea: string, nombre: string, hoy: string) {
-  await page.getByRole('button', { name: 'Nueva tarea' }).click()
+  await page.getByRole('button', { name: 'Nuevo en la agenda' }).click()
+  await page
+    .getByRole('dialog', { name: 'Nuevo', exact: true })
+    .getByRole('button', { name: /^Tarea/ })
+    .click()
   const nueva = page.getByRole('dialog', { name: 'Nueva tarea', exact: true })
   await nueva.getByLabel('Título', { exact: true }).fill(tarea)
   await nueva.getByLabel('Vence').fill(`${hoy}T23:59`)
@@ -131,15 +150,19 @@ test('la asesora ve el evento y su tarea en el día; un tercero no ve el evento'
 
   await entrar(page, t.personas.berta)
   await page.goto('/agenda?vista=dia')
-  const dia = page.getByRole('main')
+  // La tarea vence «ahora»: sale también en «Pendientes»; los chips son los de la hoja.
+  const dia = hojaDe(page)
   await expect(
     dia.getByRole('listitem').filter({ hasText: evento }).getByText('Evento'),
   ).toBeVisible()
   await expect(
     dia.getByRole('listitem').filter({ hasText: tarea }).getByText('Tarea'),
   ).toBeVisible()
-  // Sin `agenda.ver_todo` no hay interruptor, y pedir la de todos por la URL no rompe: se ve la suya.
-  await expect(page.getByRole('switch', { name: 'Ver la de todos' })).toBeHidden()
+  // Sin `agenda.ver_todo` no hay «Qué agenda ver», y pedir la de todos por la URL no rompe: se ve la suya.
+  await abrirVistaYOpciones(page)
+  await expect(seccionDeVistaYOpciones(page, 'Qué ver')).toBeVisible()
+  await expect(seccionDeVistaYOpciones(page, 'Qué agenda ver')).toHaveCount(0)
+  await cerrarVistaYOpciones(page)
   await page.goto('/agenda?vista=dia&de=todos')
   await expect(dia.getByText(evento)).toBeVisible()
 
@@ -152,17 +175,23 @@ test('la asesora ve el evento y su tarea en el día; un tercero no ve el evento'
   await expect(page.getByText(tarea)).toBeHidden()
 })
 
-test('la dueña ve la tarea de la asesora con «Ver la de todos» y lo elegido queda en la URL', async ({
+test('la dueña ve la tarea de la asesora con «De todos» y lo elegido queda en la URL', async ({
   page,
 }, info) => {
   const tarea = new RegExp(`${rotulo(info.project.name)} llamar`)
   await entrar(page, t.personas.duena)
   await page.goto('/agenda?vista=dia')
   await expect(page.getByText(tarea)).toBeHidden()
-  const interruptor = page.getByRole('switch', { name: 'Ver la de todos' })
-  await interruptor.click()
+  await expect(botonDeVistaYOpciones(page)).toContainText('Mi agenda')
+  await abrirVistaYOpciones(page)
+  await seccionDeVistaYOpciones(page, 'Qué agenda ver')
+    .getByRole('button', { name: 'De todos', exact: true })
+    .click()
   await expect(page).toHaveURL(/de=todos/)
-  await expect(page.getByText(tarea)).toBeVisible()
+  await cerrarVistaYOpciones(page)
+  await expect(botonDeVistaYOpciones(page)).toContainText('De todos')
+  // La tarea de la asesora en la hoja; los pendientes siguen siendo los de la dueña.
+  await expect(hojaDe(page).getByText(tarea)).toBeVisible()
 
   // Navegar guarda lo elegido en la URL.
   await page.getByRole('tab', { name: 'Semana' }).click()
@@ -202,7 +231,7 @@ test('E2E la dueña crea, ve, edita y elimina un evento y le da una tarea a la a
   await expect(page).toHaveURL(/evento=/)
   await page.keyboard.press('Escape')
   await expect(detalle).toBeHidden()
-  await expect(page.getByRole('main').getByRole('link', { name: new RegExp(titulo) })).toBeVisible()
+  await expect(hojaDe(page).getByRole('link', { name: new RegExp(titulo) })).toBeVisible()
 
   // La tarea para la asesora, que vence hoy al final del día.
   await crearTareaParaLaAsesora(page, tarea, nombre, hoy)
@@ -215,8 +244,7 @@ test('E2E la dueña crea, ve, edita y elimina un evento y le da una tarea a la a
   await expect(detalleDeTarea).toBeHidden()
 
   // Editar el título del evento desde su panel.
-  await page
-    .getByRole('main')
+  await hojaDe(page)
     .getByRole('link', { name: new RegExp(titulo) })
     .click()
   await detalle.getByRole('button', { name: 'Editar' }).click()
@@ -231,7 +259,7 @@ test('E2E la dueña crea, ve, edita y elimina un evento y le da una tarea a la a
   await page.context().clearCookies()
   await entrar(page, t.personas.berta)
   await page.goto('/agenda?vista=dia')
-  const dia = page.getByRole('main')
+  const dia = hojaDe(page)
   // El chip dice su clase con texto, además del título.
   await expect(
     dia.getByRole('link', { name: new RegExp(`^Evento [0-9]+:[0-9]+ ${editado}`) }),
@@ -260,8 +288,7 @@ test('E2E la dueña crea, ve, edita y elimina un evento y le da una tarea a la a
   await page.context().clearCookies()
   await entrar(page, t.personas.duena)
   await page.goto('/agenda?vista=dia')
-  await page
-    .getByRole('main')
+  await hojaDe(page)
     .getByRole('link', { name: new RegExp(editado) })
     .click()
   await detalle.getByRole('button', { name: 'Eliminar' }).click()
@@ -271,7 +298,7 @@ test('E2E la dueña crea, ve, edita y elimina un evento y le da una tarea a la a
   await expect(page.getByRole('main').getByText(editado)).toBeHidden()
 })
 
-// @sin-celular: el camino feliz de la sección «Sin fecha» y del recordatorio es el mismo en el celular; los paneles se miden aparte en la Fase 9
+// @sin-celular: el camino feliz del grupo «Sin fecha» y del recordatorio es el mismo en el celular; los paneles se miden aparte en la Fase 9
 test('E2E la asesora ve sus tareas sin fecha y completa un recordatorio', async ({
   page,
 }, info) => {
@@ -301,16 +328,16 @@ test('E2E la asesora ve sus tareas sin fecha y completa un recordatorio', async 
 
   await entrar(page, t.personas.berta)
   await page.goto('/agenda?vista=dia')
-  // «Tareas sin fecha» nace cerrada y se lee al abrirla.
-  const seccion = page.getByRole('button', { name: 'Tareas sin fecha', exact: true })
-  await expect(seccion).toHaveAttribute('aria-expanded', 'false')
-  await seccion.click()
-  await expect(seccion).toHaveAttribute('aria-expanded', 'true')
-  await expect(page.getByRole('link', { name: new RegExp(sinFecha) })).toBeVisible()
+  // Las tareas sin fecha son el grupo «Sin fecha» de los pendientes.
+  await expect(
+    page
+      .getByRole('region', { name: 'Pendientes' })
+      .getByRole('region', { name: 'Sin fecha' })
+      .getByRole('link', { name: new RegExp(sinFecha) }),
+  ).toBeVisible()
 
-  // El recordatorio abre su panel y se completa.
-  await page
-    .getByRole('main')
+  // El recordatorio abre su panel desde la hoja y se completa.
+  await hojaDe(page)
     .getByRole('link', { name: new RegExp(`^Recordatorio [0-9]+:[0-9]+ ${recordar}`) })
     .click()
   const panel = page.getByRole('dialog', { name: 'Recordatorio', exact: true })
