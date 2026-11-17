@@ -11,12 +11,7 @@ import {
   panelDeEdicion,
   tituloDeLaFicha,
 } from './soporte/leads-ficha'
-import {
-  irALeads,
-  limpiarListado,
-  prepararListado,
-  type TerrenoDelListado,
-} from './soporte/leads-listado'
+import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
 import { embudoPorDefecto, etapa, oportunidadesPorSql } from './soporte/leads-oportunidades'
 import { otorgarComo } from './soporte/leads-portal'
 import { drawerDeTodos } from './soporte/leads-seguimientos'
@@ -297,7 +292,8 @@ test('el resumen del listado es la versión corta de la ficha, y `?pestana=` de 
   page,
 }) => {
   await entrar(page, t.personas.duena)
-  await irALeads(page, `?lead=${completo.id}`)
+  // Directo al resumen: en el celular el drawer es modal y deja la lista de atrás fuera del árbol de accesibilidad.
+  await page.goto(`/leads?lead=${completo.id}`)
   const drawer = page.getByRole('dialog', { name: completo.nombre })
   await expect(drawer).toBeVisible()
   await expect(drawer.getByRole('tablist')).toHaveCount(0)

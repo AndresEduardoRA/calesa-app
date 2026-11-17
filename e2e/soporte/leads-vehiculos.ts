@@ -186,16 +186,21 @@ export async function accionDeLaFila(
 export async function abrirAgregarVehiculo(page: Page): Promise<Locator> {
   const panel = panelAgregar(page)
   const nombre = 'Vincular o marcar un vehículo'
+  // Cada vuelta mira primero si el panel ya está, y los clics tienen su tope: en el celular un aviso puede tapar el «⋯» un momento, y un clic
+  // sin tope esperaría hasta vencer la prueba.
   await expect(async () => {
+    if (await panel.isVisible()) {
+      return
+    }
     const suelta = relacionadosDelLead(page).getByRole('link', { name: nombre })
     if (await suelta.isVisible()) {
-      await suelta.click()
+      await suelta.click({ timeout: 2000 })
     } else {
       await relacionadosDelLead(page)
         .getByRole('button', { name: /^Más acciones de «(Relacionados|Vinculado|Interesado)»$/ })
         .first()
-        .click()
-      await page.getByRole('menuitem', { name: nombre }).click()
+        .click({ timeout: 2000 })
+      await page.getByRole('menuitem', { name: nombre }).click({ timeout: 2000 })
     }
     await expect(panel).toBeVisible({ timeout: 2000 })
   }).toPass()

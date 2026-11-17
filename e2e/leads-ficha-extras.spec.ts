@@ -76,15 +76,16 @@ test('agrega, rotula, quita y deshace un extra, sin mover la versión', async ({
   await modal.getByLabel('Etiqueta (opcional)').fill('Casa')
   await page.keyboard.press('Enter')
   await expect(page.getByText('Teléfono agregado.')).toBeVisible()
+  // En el celular el aviso tapa el panel: se descarta apenas sale (se va solo mientras la ficha se vuelve a leer).
+  if (esMovil(page)) {
+    await descartarAviso(page, 'Teléfono agregado.')
+  }
   await expect(modal).toHaveCount(0)
   // El foco queda en el panel (al volver a leer la ficha va a su primer campo: docs/PENDIENTES.md › «Pulido de interfaz»).
   await expect(panelConTelefonos(page).locator(':focus')).toHaveCount(1)
   await expect(panelConTelefonos(page).getByText('Casa', { exact: true })).toBeVisible()
   const [agregado] = await extrasDeLead(lead.id)
   expect(agregado).toMatchObject({ telefono: completoCon(t, casa), etiqueta: 'Casa' })
-  if (esMovil(page)) {
-    await descartarAviso(page, 'Teléfono agregado.')
-  }
 
   // Rotular, también con Enter.
   await page.getByRole('button', { name: 'Rotular' }).click()

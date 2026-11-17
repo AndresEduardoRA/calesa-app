@@ -34,9 +34,9 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
 // crece va por «Ver todos» y «Ver más». Antes se medía por sección: «Datos» 43 y «Oportunidades» con 10, 66.
 export const PRESUPUESTO_DE_LA_FICHA_EN_KB = 138
 
-// Lo que viaja (RSC) al abrir la ficha desde «Abrir ficha» del resumen del listado, en KB (`e2e/leads-ficha.spec.ts`): medido 30,7 con el lead
-// de la semilla de ese spec (T33); sobre lo medido más un 5 %, a la unidad. Antes, 40 escrito en el spec.
-export const PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB = 33
+// Lo que viaja (RSC) al abrir la ficha desde «Abrir ficha» del resumen del listado, en KB (`e2e/leads-ficha.spec.ts`): medido 30,7 en
+// escritorio y 36,6 en el celular con el lead de la semilla de ese spec (T33); sobre lo mayor más un 5 %, a la unidad. Antes, 40 escrito en el spec.
+export const PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB = 39
 
 // El documento de `/perfil` (los bytes del HTML con el payload RSC, sin comprimir), en KB, con 100 orígenes y 100 tipos de lead: lo que paga
 // toda pantalla del marco (`e2e/presupuesto-js.spec.ts`). Antes del cierre 5b-fix el shell mandaba el contexto del alta de lead (los
