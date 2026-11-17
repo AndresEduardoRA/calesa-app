@@ -5,6 +5,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Para desplegar (sólo la persona)
 
+- **[—]** Actualizar Next (hoy `16.4.3`): `next build` avisa de una vulnerabilidad conocida (`SecurityFatalError`, que corta el primer build de cada sesión de IA y `scripts/compilar-e2e.sh` repite) — la actualización con la versión verificada el día y el e2e completo; la decide la persona antes de desplegar.
 - **[—]** Producción: variables, secretos, el primer `db push` y la lista de `docs/DESPLIEGUE.md` — el ensayo en seco está en `listo`.
 - **[9-6]** Las dos corridas de `db:carreras` por `workflow_dispatch` que faltan (cuenta 3 de 5) para pasarlas al job `base` — una sesión no puede disparar un workflow; comandos en `docs/DESPLIEGUE.md` › «Lo que sólo una persona comprueba».
 - **[9-11]** El dispatch con un spec que cae a propósito debe dejar en `e2e-fallos/` los cinco archivos de `scripts/ci/volcar-base.sh` — el resto está hecho; misma lista.

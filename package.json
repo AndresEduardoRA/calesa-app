@@ -13,7 +13,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "NEXT_DIST_DIR=.next-e2e next build && E2E_PROD=1 bash scripts/candado.sh test:e2e -- playwright test",
+    "test:e2e": "bash scripts/compilar-e2e.sh && E2E_PROD=1 bash scripts/candado.sh test:e2e -- playwright test",
     "test:e2e:completo": "bash scripts/candado.sh test:e2e:completo -- node scripts/e2e-completo.mjs",
     "db:reset": "bash scripts/candado.sh db:reset -- supabase db reset",
     "db:types": "bash scripts/candado.sh db:types -- sh -c 'supabase gen types typescript --local --schema public --schema web > src/shared/types/database.types.ts' && prettier --ignore-path .gitignore --write src/shared/types/database.types.ts",
