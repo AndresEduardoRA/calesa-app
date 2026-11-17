@@ -30,10 +30,12 @@ export async function leerFlujoDeLosPasos(): Promise<LecturaDeLosPasos> {
       .eq('flujo.ambito', 'repuestos')
       .order('id', { ascending: true })
       .limit(TOPE_DE_SALIDAS_DE_LOS_PASOS + 1),
-    // Por `fases_requisitos_fase_id_idx`: sólo los de dato con una clave de hito.
+    // Por `fases_requisitos_fase_id_idx`: sólo los de dato con una clave de hito. La fase va por su FK (`espera_fase_id` también apunta a `fases`).
     supabase
       .from('fases_requisitos')
-      .select('fase_id, clave_dato, bloqueante, fase:fases!inner(flujo:flujos!inner(ambito))')
+      .select(
+        'fase_id, clave_dato, bloqueante, fase:fases!fases_requisitos_fase_id_fkey!inner(flujo:flujos!inner(ambito))',
+      )
       .eq('fase.flujo.ambito', 'repuestos')
       .eq('tipo', 'dato')
       .in('clave_dato', CLAVES_DATO_DE_HITO)
