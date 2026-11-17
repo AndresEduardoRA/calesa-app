@@ -1,7 +1,11 @@
 'use client'
 
 import { Interruptor } from '@/shared/ui/interruptor'
-import { MOTIVO_INACTIVO_EN_LA_BARRA, MOTIVO_TOPE_EN_LA_BARRA } from '../../../entities/motivos'
+import {
+  MOTIVO_FUERA_DEL_TOPE_DE_LA_BARRA,
+  MOTIVO_INACTIVO_EN_LA_BARRA,
+  MOTIVO_TOPE_EN_LA_BARRA,
+} from '../../../entities/motivos'
 import {
   motivoParaNoMarcar,
   tiposEnLaBarra,
@@ -31,8 +35,14 @@ function ayudaDe({ tipo, tipos, activo }: Pick<Props, 'tipo' | 'tipos' | 'activo
   if (motivo === 'inactivo' || !activo) {
     return MOTIVO_INACTIVO_EN_LA_BARRA
   }
-  const ninguno = !tipos.some((uno) => uno.activo && uno.enLaBarra)
-  const porDefecto = ninguno ? tiposEnLaBarra(tipos)[0] : undefined
+  // Lo que mostraría la barra con el «Activo» del formulario: al reactivar uno marcado con 3 ya a la vista, la barra corta por el orden.
+  const conElFormulario = tipos.map((uno) => (uno.id === tipo.id ? { ...uno, activo } : uno))
+  const aLaVista = tiposEnLaBarra(conElFormulario)
+  if (tipo.enLaBarra && !aLaVista.some((uno) => uno.id === tipo.id)) {
+    return MOTIVO_FUERA_DEL_TOPE_DE_LA_BARRA
+  }
+  const ninguno = !conElFormulario.some((uno) => uno.activo && uno.enLaBarra)
+  const porDefecto = ninguno ? aLaVista[0] : undefined
   if (porDefecto && porDefecto.id !== tipo.id) {
     return `Hoy la barra muestra el por defecto (${porDefecto.nombre}). Si marcas este, deja de verse: márcalo también si quieres los dos.`
   }

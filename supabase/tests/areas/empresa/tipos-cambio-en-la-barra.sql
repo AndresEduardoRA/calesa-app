@@ -145,6 +145,10 @@ begin
   if pg_temp.tcb_marcados() <> 'b(inactivo),c,d,e' then raise exception 'un marcado inactivo contó para el tope: %', pg_temp.tcb_marcados(); end if;
   v_r := pg_temp.tcb_rechazo(g, 'a', p_en_la_barra => true);
   if v_r <> '22023/en_la_barra' then raise exception 'con 3 activos marcados y uno inactivo, el cuarto activo dio %', v_r; end if;
+  -- Reactivar uno que quedó marcado no se rechaza ni lo desmarca (la barra corta en 3 por su orden): no se cambia un dato en silencio.
+  v_r := pg_temp.tcb_rechazo(g, 'b', p_activo => true);
+  if v_r <> 'ok' then raise exception 'reactivar uno marcado con 3 a la vista dio %', v_r; end if;
+  if pg_temp.tcb_marcados() <> 'b,c,d,e' then raise exception 'reactivar cambió las marcas: %', pg_temp.tcb_marcados(); end if;
 end $$;
 rollback;
 

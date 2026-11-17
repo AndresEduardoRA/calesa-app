@@ -15,6 +15,8 @@ export const MOTIVO_TOPE_EN_LA_BARRA = `Ya hay ${TOPE_EN_LA_BARRA} en la barra s
 export const MOTIVO_INACTIVO_EN_LA_BARRA =
   'Un tipo de cambio inactivo no se ve en la barra superior.'
 
+export const MOTIVO_FUERA_DEL_TOPE_DE_LA_BARRA = `Está marcado, pero ya se ven ${TOPE_EN_LA_BARRA} antes que este: quita uno para que se vea.`
+
 export const MOTIVO_MONEDA_BASE_CON_DATOS =
   'La moneda base no se cambia con datos cargados: los montos ya están guardados en ella.'
 
