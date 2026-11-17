@@ -7,6 +7,7 @@ import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import { itemAbiertoDe, leerCatalogosDeRepuestos } from '@/modules/repuestos'
 import {
   PROYECTO_YA_NO_ESTA,
+  clienteDeLaCabecera,
   cuentasDeLaHoja,
   estadoDelProyecto,
   leerItemsDelProyecto,
@@ -15,6 +16,7 @@ import {
 import { CabeceraDeProyecto } from '@/modules/repuestos/pantallas/proyectos'
 import { PagosDelProyectoDiferido } from '@/modules/logistica/pantallas/dinero-proyecto'
 import { leerMonedasYTiposCambio } from '@/modules/empresa'
+import { leerLeadParaEnlazar } from '@/modules/leads'
 import { leerVehiculo } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
 import type { Permisos } from '@/shared/lib/permisos'
@@ -68,14 +70,18 @@ async function Proyecto({
   if (proyecto === null) {
     return <NoDisponible />
   }
-  // Las lecturas que fallan suben al `error.tsx` (con «Reintentar»); el vehículo que quien mira no ve queda en nulo.
-  const [hoja, catalogos, monedas, vehiculo] = await Promise.all([
+  // Las lecturas que fallan suben al `error.tsx` (con «Reintentar»); el vehículo o el lead que quien mira no ve quedan en nulo. El lead del cliente se lee
+  // sólo si lo hay y con `leads.ver`: sin él, la cabecera dice «Cliente que no puedes ver».
+  const [hoja, catalogos, monedas, vehiculo, lead] = await Promise.all([
     leerItemsDelProyecto(proyecto.id).then(datosO),
     leerCatalogosDeRepuestos().then(datosO),
     leerMonedasYTiposCambio().then(datosO),
     proyecto.vehiculoId === null
       ? Promise.resolve(null)
       : leerVehiculo(proyecto.vehiculoId).then(datosO),
+    proyecto.leadId !== null && puede(sesion.permisos, 'leads.ver')
+      ? leerLeadParaEnlazar(proyecto.leadId).then(datosO)
+      : Promise.resolve(null),
   ])
   const puedeEditar = puede(sesion.permisos, 'repuestos.editar')
   const estado = estadoDelProyecto({
@@ -98,6 +104,11 @@ async function Proyecto({
     <CabeceraDeProyecto
       proyecto={proyecto}
       tituloDelVehiculo={vehiculo?.titulo ?? null}
+      cliente={clienteDeLaCabecera({
+        leadId: proyecto.leadId,
+        clienteNombre: proyecto.clienteNombre,
+        lead,
+      })}
       estado={estado}
       puedeEditar={puedeEditar}
       sinItems={hoja.filas.length === 0}

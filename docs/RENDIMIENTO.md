@@ -474,6 +474,11 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `TOPE_DE_LO_CARGADO`. Abierto 8-13c (`docs/PENDIENTES.md`): un índice `(fase_id, fase_desde, id)` si llega a
   miles. `/repuestos` no tiene presupuesto de JS.
 - Sin volumen ni `EXPLAIN` en `db:medir:volumen`: `repuestos_*` no están entre las tablas que crecen de `escala.md`.
+- El cliente de un proyecto: la cabecera de `/repuestos/[id]` lee un lead por su PK de `leads_vista` (`limit 1`) sólo con `lead_id` y `leads.ver`; el
+  `?lead=` de «Nuevo proyecto», igual, sólo con el formulario en la URL. El lead del vehículo, en el navegador al elegirlo: `vehiculo_vinculos`
+  (≤ 51 filas por vehículo, una lectura por elección). El buscador de leads es el de siempre (`_acotar_pagina`). La lista no suma lecturas.
+- JS en frío: «Nuevo proyecto» (formulario, buscadores, lectura del vínculo y supabase-js) llega con `diferido()` desde `src/app` al abrirlo:
+  `/repuestos` pesa 376,3 KB y `/repuestos/[id]` 459,6 (build de e2e, `medirJsEnFrio`). Sin tope propio.
 - Imágenes de un ítem: `limit 9` por `repuestos_items_imagenes_item_id_idx`, sólo al abrir el panel; el trigger cuenta con `limit 8` bajo
   un candado por ítem. **Excepción a «nunca el original»:** sin miniatura y con `unoptimized`, cada imagen baja el WebP de ≤ 1600 px (≤ 8
   por panel abierto).

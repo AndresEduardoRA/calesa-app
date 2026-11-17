@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { esIdDeProyecto, proyectoDetalladoDesde } from './detalle'
+import { COLUMNAS_DE_PROYECTO, esIdDeProyecto, proyectoDetalladoDesde } from './detalle'
 
 const ID = '7f9c1d2e-3a4b-4c5d-8e6f-0123456789ab'
 const fila = {
@@ -8,6 +8,7 @@ const fila = {
   vehiculo_id: null,
   vehiculo_etiqueta: 'E2E Hilux',
   vin: null,
+  lead_id: null,
   cliente_nombre: 'Rosa',
   notas: null,
   cerrado_en: null,
@@ -22,11 +23,19 @@ describe('proyectoDetalladoDesde', () => {
       vehiculoId: null,
       vehiculoEtiqueta: 'E2E Hilux',
       vin: null,
+      leadId: null,
       clienteNombre: 'Rosa',
       notas: null,
       cerradoEn: null,
       actualizadoEn: '2026-11-12T10:00:00+00:00',
     })
+  })
+  it('trae el id del lead del cliente', () => {
+    const lead = '00000000-0000-4000-8000-000000000009'
+    expect(proyectoDetalladoDesde({ ...fila, lead_id: lead })?.leadId).toBe(lead)
+  })
+  it('nunca pide el teléfono escrito a mano', () => {
+    expect(COLUMNAS_DE_PROYECTO).not.toMatch(/telefono/)
   })
   it('una fila de otra forma es nula', () => {
     expect(proyectoDetalladoDesde({ ...fila, numero: 'doce' })).toBeNull()
