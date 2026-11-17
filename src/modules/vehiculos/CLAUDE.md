@@ -4,7 +4,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 
 ## Entra y sale
 
-- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`, `?vehiculo=<id>` abre el resumen con `?pestana=fotos`; un `?pestana=interesados` viejo abre «Resumen»),
+- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`, `?vehiculo=<id>` abre el resumen, la versión corta de la ficha, sin pestañas: un `?pestana=fotos` viejo abre el visor del carrusel del resumen —`claveDelVisorDelResumen()`— y otro `?pestana=` se quita),
   `/vehiculos/papelera`, `/vehiculos/[id]` (la ficha en dos columnas: a la izquierda `CabeceraDeVehiculo` apilada, `DatosPrincipalesDelVehiculo` y la
   subasta; a la derecha el índice y los bloques por permiso, que compone `src/app` con `logistica`, `cotizaciones` y `repuestos`. `?seccion=<bloque>` lleva
   a su bloque si quien mira lo ve —si no, se queda arriba— y los paneles de «Relacionados» y `?relacionados=` llevan a «Relacionados»). Paneles: `?panel=nuevo`, `?editar=<id>`,

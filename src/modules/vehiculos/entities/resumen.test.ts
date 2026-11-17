@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
   MENSAJE_DE_VEHICULO_NO_DISPONIBLE,
-  pestanaDelResumen,
-  pestanasDelResumen,
+  claveDelVisorDelResumen,
+  destinoDeLaPestanaVieja,
   vistaDelResumen,
   type LecturaDelResumen,
 } from './resumen'
@@ -58,17 +58,17 @@ const entrada = (resto: Partial<Parameters<typeof vistaDelResumen>[0]> = {}) => 
   ...resto,
 })
 
-describe('pestanasDelResumen y pestanaDelResumen', () => {
-  it('son «Resumen» y «Fotos»: lo relacionado va dentro de «Resumen», arriba de las pestañas', () => {
-    expect(pestanasDelResumen().map((p) => p.clave)).toEqual(['resumen', 'fotos'])
+describe('lo viejo de las pestañas del resumen', () => {
+  it('el visor del resumen tiene su clave, aparte de la del vehículo', () => {
+    expect(claveDelVisorDelResumen(ID)).toBe(`${ID}-resumen`)
+    expect(claveDelVisorDelResumen(ID)).not.toBe(ID)
   })
 
-  it('lo que no es una pestaña que existe abre «Resumen», también un `interesados` viejo', () => {
-    const pestanas = pestanasDelResumen()
-    expect(pestanaDelResumen('fotos', pestanas)).toBe('fotos')
-    expect(pestanaDelResumen('interesados', pestanas)).toBe('resumen')
-    expect(pestanaDelResumen('otra', pestanas)).toBe('resumen')
-    expect(pestanaDelResumen(null, pestanas)).toBe('resumen')
+  it('`fotos` abre el visor del resumen; otra pestaña sólo se quita; sin pestaña, nada', () => {
+    expect(destinoDeLaPestanaVieja('fotos', ID)).toEqual({ visor: `${ID}-resumen` })
+    expect(destinoDeLaPestanaVieja('interesados', ID)).toEqual({ visor: null })
+    expect(destinoDeLaPestanaVieja('resumen', ID)).toEqual({ visor: null })
+    expect(destinoDeLaPestanaVieja(null, ID)).toBeNull()
   })
 })
 

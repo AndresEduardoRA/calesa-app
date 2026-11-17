@@ -1,9 +1,10 @@
-// Qué muestra el resumen de un vehículo (`?vehiculo=`), sin salir de la lista: «Resumen» (sus datos, como la ficha, con el bloque «Relacionados» arriba de las pestañas) y «Fotos» (las de
-// siempre, de sólo lectura). Cada pestaña lee lo suyo al elegirse (`?pestana=`, sin sumar al historial). Un `?pestana=interesados` viejo cae en «Resumen». Editarlo abre el panel de edición encima del resumen y, al guardar o cancelar,
-// vuelve a él (`?editar=`).
+// Qué muestra el resumen de un vehículo (`?vehiculo=`), sin salir de la lista: la versión corta de su ficha (portada con carrusel, datos clave, situación,
+// «Relacionados» en chips, acciones y «Abrir ficha»), sin pestañas. Un `?pestana=fotos` viejo abre el visor del carrusel; otro `?pestana=` se quita. Editarlo
+// abre el panel de edición encima del resumen y, al guardar o cancelar, vuelve a él (`?editar=`).
 import type { Vehiculo } from './vehiculo'
 
 export const CLAVE_DE_RESUMEN = 'vehiculo'
+// Sólo para lo viejo: el resumen tuvo pestañas (`?pestana=fotos`).
 export const CLAVE_DE_PESTANA = 'pestana'
 
 // El mismo texto que el resumen de un lead, dicho para un vehículo: no se distingue por qué ya no está (no existe, está en la
@@ -11,23 +12,21 @@ export const CLAVE_DE_PESTANA = 'pestana'
 export const MENSAJE_DE_VEHICULO_NO_DISPONIBLE =
   'Este vehículo ya no está disponible: no existe o ya no tienes acceso.'
 
-const PESTANAS = [
-  { clave: 'resumen', titulo: 'Resumen' },
-  { clave: 'fotos', titulo: 'Fotos' },
-] as const
-export type PestanaDelResumen = (typeof PESTANAS)[number]['clave']
-
-// Las pestañas del resumen.
-export function pestanasDelResumen() {
-  return PESTANAS
+/** La clave del visor del carrusel del resumen (`?visor=<id>-resumen`): la fila de la lista usa la del vehículo, y con la misma se abrirían dos. */
+export function claveDelVisorDelResumen(vehiculoId: string): string {
+  return `${vehiculoId}-resumen`
 }
 
-// La de la URL; lo que no es una pestaña que existe abre «Resumen».
-export function pestanaDelResumen(
-  valor: string | null,
-  pestanas: ReturnType<typeof pestanasDelResumen>,
-): PestanaDelResumen {
-  return pestanas.find((p) => p.clave === valor)?.clave ?? 'resumen'
+/**
+ * Qué hacer con un `?pestana=` viejo (el resumen ya no tiene pestañas): `fotos` abre el visor del carrusel del resumen; cualquier otro valor sólo
+ * se quita (`visor: null`); sin pestaña, nada (`null`).
+ */
+export function destinoDeLaPestanaVieja(
+  pestana: string | null,
+  vehiculoId: string,
+): { visor: string | null } | null {
+  if (pestana === null) return null
+  return { visor: pestana === 'fotos' ? claveDelVisorDelResumen(vehiculoId) : null }
 }
 
 // Cómo está la lectura del vehículo abierto. `no_disponible` junta lo que no existe, lo que está en la papelera y lo que quien mira
