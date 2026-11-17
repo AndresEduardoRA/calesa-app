@@ -48,14 +48,16 @@ export const botonAgregarTelefono = (page: Page) =>
 // Abre el panel con «Editar» de la cabecera o, sin él, con «Editar teléfonos» (la página hidrata antes de que el clic valga).
 export async function abrirPanelConTelefonos(page: Page) {
   const panel = panelConTelefonos(page)
-  if (await panel.isVisible()) {
-    return panel
-  }
+  // Cada vuelta mira primero si el panel ya está (tras guardar se vuelve a dibujar) y el clic tiene su tope: con el panel encima, «Editar»
+  // queda tapado y un clic sin tope esperaría hasta vencer la prueba.
   await expect(async () => {
+    if (await panel.isVisible()) {
+      return
+    }
     const editar = page.locator('main header').getByRole('button', { name: 'Editar', exact: true })
     await (
       (await editar.isVisible()) ? editar : page.getByRole('button', { name: 'Editar teléfonos' })
-    ).click()
+    ).click({ timeout: 1000 })
     await expect(panel).toBeVisible({ timeout: 1000 })
   }).toPass()
   return panel
