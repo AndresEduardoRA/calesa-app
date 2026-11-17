@@ -97,7 +97,8 @@ export function FormularioDeMover({ unidad, destino, puedeMover, borrador, relee
       {borrador.conflicto ? (
         <AvisoDeConflicto
           mensaje={borrador.conflicto.mensaje}
-          hrefVer={unidadDeLogistica(unidad.id)}
+          // La página de la unidad es de un vehículo: un ítem sólo recarga (su panel ya es el lugar donde se ve cómo quedó).
+          {...(unidad.tipo === 'vehiculo' ? { hrefVer: unidadDeLogistica(unidad.id) } : {})}
           alRecargar={recargar}
           detalle="No se movió nada. Recargar trae su estado y conserva tu nota."
         />
