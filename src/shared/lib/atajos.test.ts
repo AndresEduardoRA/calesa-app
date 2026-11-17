@@ -24,6 +24,12 @@ describe('combinacionDe', () => {
     expect(combinacionDe(tecla('Escape'))).toBe('escape')
     expect(combinacionDe(tecla('N'))).toBe('n')
   })
+
+  it('Mayús cuenta con una letra suelta, no con `?` ni con Ctrl', () => {
+    expect(combinacionDe(tecla('N', { shiftKey: true }))).toBe('shift+n')
+    expect(combinacionDe(tecla('?', { shiftKey: true }))).toBe('?')
+    expect(combinacionDe(tecla('S', { ctrlKey: true, shiftKey: true }))).toBe('mod+s')
+  })
 })
 
 describe('atajoDe', () => {
@@ -31,6 +37,8 @@ describe('atajoDe', () => {
     expect(atajoDe(tecla('Escape'))).toBe('cerrar')
     expect(atajoDe(tecla('k', { metaKey: true }))).toBe('buscar')
     expect(atajoDe(tecla('n'))).toBe('nuevo')
+    expect(atajoDe(tecla('N', { shiftKey: true }))).toBe('abrirNuevo')
+    expect(atajoDe(tecla('?', { shiftKey: true }))).toBe('ayuda')
     expect(atajoDe(tecla('Enter', { ctrlKey: true }))).toBe('guardarYSeguir')
   })
 
@@ -70,6 +78,7 @@ describe('teclasDelAtajo', () => {
     expect(teclasDelAtajo('guardarYSeguir', { mac: false })).toEqual(['Ctrl', 'Intro'])
     expect(teclasDelAtajo('cerrar', { mac: false })).toEqual(['Esc'])
     expect(teclasDelAtajo('nuevo', { mac: false })).toEqual(['N'])
+    expect(teclasDelAtajo('abrirNuevo', { mac: false })).toEqual(['Mayús', 'N'])
     expect(teclasDelAtajo('ayuda', { mac: false })).toEqual(['?'])
   })
 

@@ -5,6 +5,7 @@ export const ATAJOS = {
   cerrar: { combinacion: 'escape', descripcion: 'Cerrar el panel abierto' },
   buscar: { combinacion: 'mod+k', descripcion: 'Buscar y ejecutar comandos' },
   nuevo: { combinacion: 'n', descripcion: 'Nuevo, según la pantalla' },
+  abrirNuevo: { combinacion: 'shift+n', descripcion: 'Abrir «Nuevo»: elegir qué crear' },
   guardar: { combinacion: 'mod+s', descripcion: 'Guardar' },
   guardarYSeguir: { combinacion: 'mod+enter', descripcion: 'Guardar y seguir' },
   ayuda: { combinacion: '?', descripcion: 'Ver la lista de atajos' },
@@ -18,13 +19,18 @@ export type Tecla = {
   ctrlKey: boolean
   metaKey: boolean
   altKey: boolean
+  shiftKey?: boolean
 }
 
-// `mod` es Ctrl en Windows y Linux y Cmd en macOS: se aceptan los dos en cualquier sistema.
+const esLetra = (key: string) => key.length === 1 && key.toLowerCase() !== key.toUpperCase()
+
+// `mod` es Ctrl en Windows y Linux y Cmd en macOS: se aceptan los dos en cualquier sistema. `shift` sólo cuenta con una letra suelta: `?` ya lleva el
+// Mayús puesto en su `key`, `Ctrl+Shift+S` sigue siendo guardar, y con Bloq Mayús una `N` llega como `N` sin `shiftKey`: sigue siendo `n`.
 export function combinacionDe(tecla: Tecla): string {
   const key = tecla.key.toLowerCase()
   const mod = tecla.ctrlKey || tecla.metaKey
-  return `${mod ? 'mod+' : ''}${tecla.altKey ? 'alt+' : ''}${key}`
+  const mayus = tecla.shiftKey === true && esLetra(key) && !mod && !tecla.altKey
+  return `${mod ? 'mod+' : ''}${tecla.altKey ? 'alt+' : ''}${mayus ? 'shift+' : ''}${key}`
 }
 
 export function atajoDe(tecla: Tecla): ClaveAtajo | null {
@@ -48,7 +54,7 @@ export function esMac(plataforma: string): boolean {
   return /mac|iphone|ipad/i.test(plataforma)
 }
 
-const NOMBRE_DE_TECLA: Record<string, string> = { enter: 'Intro', escape: 'Esc' }
+const NOMBRE_DE_TECLA: Record<string, string> = { enter: 'Intro', escape: 'Esc', shift: 'Mayús' }
 
 // Las teclas de un atajo como se muestran: `mod` es Ctrl, o ⌘ en macOS; una letra va en mayúscula.
 export function teclasDelAtajo(clave: ClaveAtajo, { mac }: { mac: boolean }): string[] {

@@ -1,6 +1,5 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
-import { entrar } from './soporte/alta'
-import { aLaVista } from './soporte/inventario'
+import { abrirNuevoLeadDeLaBarra, entrar } from './soporte/alta'
 import { abrirEdicion, irAFicha } from './soporte/leads-ficha'
 import { nacional } from './soporte/leads-ficha-telefonos'
 import { irALeads, nombre } from './soporte/leads-listado'
@@ -35,12 +34,8 @@ const alDoscientos = (page: Page) =>
 // Con la pantalla ya abierta: abre «Nuevo lead», crea uno con Ctrl+S (el panel queda abierto para el siguiente) y devuelve el aviso con «Abrir ficha».
 async function altaConAviso(page: Page, corto: string) {
   const alta = page.getByRole('dialog', { name: 'Nuevo lead' })
-  await expect(async () => {
-    await aLaVista(page.getByRole('button', { name: /^Nuevo lead/ }))
-      .first()
-      .click()
-    await expect(alta).toBeVisible({ timeout: 1000 })
-  }).toPass()
+  await abrirNuevoLeadDeLaBarra(page)
+  await expect(alta).toBeVisible()
   await alta.getByLabel('Teléfono principal').fill(nacional())
   await alta.getByLabel('Nombre').fill(nombre(corto))
   await page.keyboard.press('Control+s')

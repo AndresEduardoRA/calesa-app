@@ -119,6 +119,18 @@ begin return public._acotar_pagina(p_tamano, 25, 100); end $_$;`,
   })
 })
 
+// El defecto de la base es el del código; salvo una lectura que pide a propósito más (`pideMasQueElDefecto`), donde el defecto no puede ser mayor.
+function exigirElDefecto(r: (typeof RPC_PAGINADAS)[number], defecto: number | undefined): void {
+  if (r.pideMasQueElDefecto) {
+    expect(
+      defecto ?? 0,
+      `${r.rpc} pide más que el defecto: el defecto no es mayor`,
+    ).toBeLessThanOrEqual(r.pideElCodigo)
+    return
+  }
+  expect(defecto, `el valor por defecto de ${r.rpc} no es el del código`).toBe(r.pideElCodigo)
+}
+
 describe('cada RPC con tamaño de página acota en la base', () => {
   for (const r of RPC_PAGINADAS) {
     it(`${r.rpc}(${r.parametro}): ${r.lista}`, () => {
@@ -137,9 +149,7 @@ describe('cada RPC con tamaño de página acota en la base', () => {
         `el máximo de ${r.rpc} es menor que lo que pide el código`,
       ).toBeGreaterThanOrEqual(r.pideElCodigo)
       // Y el valor por defecto (cuando el cliente no manda nada) es el del código, así nadie ve otra cosa sin pedirla.
-      expect(cota?.defecto, `el valor por defecto de ${r.rpc} no es el del código`).toBe(
-        r.pideElCodigo,
-      )
+      exigirElDefecto(r, cota?.defecto)
       expect(cota?.defecto ?? 0).toBeLessThanOrEqual(cota?.maximo ?? 0)
     })
   }
