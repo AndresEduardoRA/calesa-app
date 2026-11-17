@@ -1,9 +1,11 @@
 'use client'
 
 import { Interruptor } from '@/shared/ui/interruptor'
+import type { Tono } from '@/shared/ui/xcell'
 import type { Diseno } from '../../../entities/diseno'
 import type { TipoDeCambioDelDiseno } from '../../../entities/diseno/edicion-de-la-cabecera'
 import type { EdicionesDelDiseno } from '../hooks/use-ediciones-del-diseno'
+import { CamposDelAspectoDeLaCabecera, type ErrorDelAspecto, type TonoDelCatalogo } from './aspecto'
 import { ModoEditable } from './modo-editable'
 import { SumarUnModo } from './sumar-un-modo'
 
@@ -18,9 +20,14 @@ type Props = {
   tipos: readonly TipoDeCambioDelDiseno[]
   ediciones: EdicionesDelDiseno
   ocupado: boolean
+  // El catálogo de tonos (nulo si no se pudo leer), sus colores y el rechazo de forma del aspecto de la cabecera, si es suyo.
+  catalogo: readonly TonoDelCatalogo[] | null
+  colores: readonly Tono[]
+  error: ErrorDelAspecto
 }
 
-// La cabecera de la hoja: si ofrece «Ver total en moneda local» y los modos de tipo de cambio. Los modos que ya hubiera siguen editables aunque la fórmula ya no los admita.
+// La cabecera de la hoja: si ofrece «Ver total en moneda local», los modos de tipo de cambio y su aspecto. Los modos que ya hubiera siguen editables aunque la
+// fórmula ya no los admita.
 export function CabeceraDelDiseno({
   cabecera,
   tieneTotalEn,
@@ -28,6 +35,9 @@ export function CabeceraDelDiseno({
   tipos,
   ediciones,
   ocupado,
+  catalogo,
+  colores,
+  error,
 }: Props) {
   const sinTipos = tipos.length === 0 || nBuckets === 0
   const motivo = !tieneTotalEn ? SIN_TOTAL_EN : sinTipos ? SIN_TIPOS_DE_CAMBIO : null
@@ -67,6 +77,14 @@ export function CabeceraDelDiseno({
         ))}
       </ul>
       <SumarUnModo motivo={motivo} ocupado={ocupado} alSumar={ediciones.sumarModo} />
+      <CamposDelAspectoDeLaCabecera
+        cabecera={cabecera}
+        catalogo={catalogo}
+        colores={colores}
+        ocupado={ocupado}
+        error={error}
+        alPoner={ediciones.ponerAspectoDeLaCabecera}
+      />
     </section>
   )
 }

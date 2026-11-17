@@ -9,11 +9,12 @@ import { tablasParaAyuda } from '../../../entities/diseno/edicion-de-items'
 import type { DisenoParaEditar, NivelDelDiseno } from '../../../entities/diseno/edicion-del-diseno'
 import { useEdicionesDelDiseno } from '../hooks/use-ediciones-del-diseno'
 import { useEditorDelDiseno } from '../hooks/use-editor-del-diseno'
+import type { TonoDelCatalogo } from './aspecto'
 import { AvisosDelDiseno } from './avisos-del-diseno'
 import { BarraDeGuardado } from './barra-de-guardado'
 import { CabeceraDelDiseno } from './cabecera-del-diseno'
 import { PanelDeLaVistaPrevia } from './panel-de-la-vista-previa'
-import { SeccionEditable } from './seccion-editable'
+import { SeccionesDelDiseno } from './secciones-del-diseno'
 import { TarjetaDelDiseno } from './tarjeta-del-diseno'
 
 type Props = {
@@ -21,29 +22,42 @@ type Props = {
   leida: DisenoParaEditar
   disenoLeido: Diseno
   niveles: readonly NivelDelDiseno[]
-  // Los tonos del catálogo, para pintar las celdas de la vista previa.
+  // Los tonos del catálogo, para pintar la vista previa y las muestras.
   tonos: readonly Tono[]
+  // Sus claves y nombres para elegir el color de una sección o de la cabecera; nulo si no se pudo leer.
+  catalogo: readonly TonoDelCatalogo[] | null
   recargando: boolean
   alRecargar: () => void
 }
 
-// El diseño de un origen en edición (4.22-2 y 4.22-3): «Guardar el borrador», el aviso y las secciones con sus ítems. Cada cambio se aplica en el acto y `validarDiseno()` lo revisa; mientras guarda, todo espera.
+// El diseño de un origen en edición (4.22-2 y 4.22-3): «Guardar el borrador», el aviso y las secciones con sus ítems, que se ordenan arrastrando o con el
+// teclado. Cada cambio se aplica en el acto y `validarDiseno()` lo revisa; mientras guarda, todo espera.
 export function EditorDelDiseno({
   origen,
   leida,
   disenoLeido,
   niveles,
   tonos,
+  catalogo,
   recargando,
   alRecargar,
 }: Props) {
-  const editor = useEditorDelDiseno({ origenId: origen.id, leida, disenoLeido, niveles })
+  const claves = useMemo(() => catalogo?.map((t) => t.clave) ?? null, [catalogo])
+  const editor = useEditorDelDiseno({
+    origenId: origen.id,
+    leida,
+    disenoLeido,
+    niveles,
+    catalogo: claves,
+  })
   const { guardado } = editor
   const ediciones = useEdicionesDelDiseno(editor.aplicar, leida.definicion)
   const tablas = useMemo(() => tablasParaAyuda(leida.definicion), [leida.definicion])
   const totales = useMemo(() => totalesPosibles(leida.definicion), [leida.definicion])
   const apartes = useMemo(() => apartesPosibles(leida.definicion), [leida.definicion])
   const tipos = useMemo(() => tiposDeCambio(leida.definicion), [leida.definicion])
+  const { rechazo } = editor
+  const lugar = rechazo?.lugar ?? null
   return (
     <div className="grid min-w-0 gap-3">
       <BarraDeGuardado
@@ -64,30 +78,22 @@ export function EditorDelDiseno({
         tipos={tipos}
         ediciones={ediciones}
         ocupado={editor.ocupado}
+        catalogo={catalogo}
+        colores={tonos}
+        error={
+          lugar?.pieza === 'cabecera' && rechazo
+            ? { clave: lugar.clave, mensaje: rechazo.mensaje }
+            : null
+        }
       />
-      <ul className="grid grid-cols-[minmax(0,1fr)] gap-3">
-        {editor.trabajo.secciones.map((seccion) => (
-          <SeccionEditable
-            key={seccion.id}
-            seccion={seccion}
-            nodos={editor.nodos}
-            etiquetas={editor.nombresDeNodos}
-            niveles={niveles}
-            tablas={tablas}
-            ediciones={ediciones}
-            ocupado={editor.ocupado}
-            alPonerSeccion={(cambios) => {
-              editor.ponerSeccion(seccion.id, cambios)
-            }}
-            alPonerAncho={(nodo, ancho) => {
-              editor.ponerAncho(seccion.id, nodo, ancho)
-            }}
-            alPonerNiveles={(nodo, cambios) => {
-              editor.ponerNiveles(seccion.id, nodo, cambios)
-            }}
-          />
-        ))}
-      </ul>
+      <SeccionesDelDiseno
+        editor={editor}
+        ediciones={ediciones}
+        niveles={niveles}
+        tablas={tablas}
+        catalogo={catalogo}
+        colores={tonos}
+      />
       <TarjetaDelDiseno
         tarjeta={editor.trabajo.tarjeta_total}
         totales={totales}

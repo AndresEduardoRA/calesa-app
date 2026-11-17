@@ -2,9 +2,13 @@
 
 import { Campo } from '@/shared/ui/campo'
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
-import { MAXIMO_DE_ATAJOS } from '../../../entities/diseno'
+import { MAXIMO_DE_ATAJOS, type ItemDeDiseno } from '../../../entities/diseno'
+import type { CambioDeAspectoDeItem } from '../../../entities/diseno/edicion-del-aspecto'
+import type { FilaOrdenable } from '../hooks/use-fila-ordenable'
+import { CamposDelAspectoDelItem, type ErrorDelAspecto } from './aspecto'
+import { TituloConAsa } from './orden'
 
-type Atajos = { nodo: string; columna: string; filas: number }
+type Atajos = Extract<ItemDeDiseno, { tipo: 'atajos' }>
 
 type Props = {
   seccionId: string
@@ -13,7 +17,10 @@ type Props = {
   // Las columnas que la base permite para estos atajos (la actual siempre va).
   columnas: readonly string[]
   ocupado: boolean
+  fila: FilaOrdenable
+  error: ErrorDelAspecto
   alPonerAtajos: (cambios: { columna?: string; filas?: number }) => void
+  alPonerAspecto: (cambios: CambioDeAspectoDeItem) => void
 }
 
 // Atajos: chips con las primeras filas de la tabla de un nodo que ponen su valor en la celda. Se elige la columna y cuántos chips.
@@ -23,17 +30,24 @@ export function ItemDeAtajos({
   etiqueta,
   columnas,
   ocupado,
+  fila: { alMontar, estilo, asa },
+  error,
   alPonerAtajos,
+  alPonerAspecto,
 }: Props) {
   const base = `${seccionId}__${item.nodo}-atajos`
   return (
     <li
-      className="@container min-w-0 rounded-(--radius-md) border border-(--color-line) p-3"
+      ref={alMontar}
+      style={estilo}
+      className="@container min-w-0 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) p-3"
       data-item={`atajos:${item.nodo}`}
     >
-      <p className="mb-2 text-(length:--text-sm) font-medium text-(--color-ink)">
-        {`Atajos de ${etiqueta}.`}
-      </p>
+      <TituloConAsa etiquetaDelAsa={`Mover los atajos de «${etiqueta}»`} asa={asa}>
+        <p className="text-(length:--text-sm) font-medium text-(--color-ink)">
+          {`Atajos de ${etiqueta}.`}
+        </p>
+      </TituloConAsa>
       <div className="grid min-w-0 gap-2 @md:grid-cols-2">
         <CampoSeleccion
           nombre={`${base}-columna`}
@@ -60,6 +74,13 @@ export function ItemDeAtajos({
           }}
         />
       </div>
+      <CamposDelAspectoDelItem
+        base={base}
+        item={item}
+        ocupado={ocupado}
+        error={error}
+        alPoner={alPonerAspecto}
+      />
     </li>
   )
 }

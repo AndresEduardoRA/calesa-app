@@ -122,3 +122,24 @@ describe('hayCambiosEnElDiseno', () => {
     ).toBe(true)
   })
 })
+
+describe('el ancho en columnas y el catálogo de tonos', () => {
+  it('ponerAncho acepta de 1 a 12 columnas y los anchos con nombre; otro valor no se escribe', () => {
+    const d = disenoDe([seccion('s', [celda('a')])])
+    expect(ponerAncho(d, 's', 'a', 8).secciones[0]?.items[0]).toMatchObject({ ancho: 8 })
+    expect(ponerAncho(d, 's', 'a', 'tercio').secciones[0]?.items[0]).toMatchObject({
+      ancho: 'tercio',
+    })
+    for (const malo of [0, 13, 6.5]) expect(ponerAncho(d, 's', 'a', malo)).toBe(d)
+  })
+
+  it('el contexto suma el catálogo a los tonos de los grupos; sin catálogo, los que el diseño nombra', () => {
+    const d = disenoDe([seccion('s', [celda('a')], { tono: 'verde' })])
+    expect(contextoDelEditor(formulaDePrueba, [], ['verde', 'azul']).tonos).toStrictEqual([
+      'verde',
+      'azul',
+    ])
+    expect(contextoDelEditor(formulaDePrueba, [], null, d).tonos).toStrictEqual(['verde'])
+    expect(contextoDelEditor(formulaDePrueba, []).tonos).toStrictEqual([])
+  })
+})

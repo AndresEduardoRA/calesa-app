@@ -42,7 +42,7 @@ export async function SeccionDelDiseno({ origenes, permisos, origenPedido }: Pro
     leerNivelesDelDiseno(),
     leerTonosDelCatalogo(),
   ])
-  // El tono es adorno de la vista previa: si su lectura falla, la hoja se dibuja sin colores y la pestaña sigue.
+  // El tono es adorno: si su lectura falla, la vista previa se dibuja sin colores, el color de una sección no se elige (`catalogo` nulo) y la pestaña sigue.
   const tonos = catalogo.ok
     ? catalogo.data.tonos.map((t) => ({
         clave: t.clave,
@@ -57,6 +57,9 @@ export async function SeccionDelDiseno({ origenes, permisos, origenPedido }: Pro
       leida={datosO(leida)}
       niveles={datosO(niveles)}
       tonos={tonos}
+      catalogo={
+        catalogo.ok ? catalogo.data.tonos.map((t) => ({ clave: t.clave, nombre: t.nombre })) : null
+      }
     />
   )
 }

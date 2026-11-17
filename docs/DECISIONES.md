@@ -313,6 +313,18 @@ las trampas, en `docs/LECCIONES.md`.
 - **Tarjeta declarativa, sin hex.** Tonos del catálogo y nodos por id: con hex nadie valida el contraste y un texto libre podría nombrar cualquier nodo. Sin subtotales por grupo: serían dinero calculado fuera de la base.
 - **La tarjeta lee la moneda de SU versión y la plantilla publicada de hoy.** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` quedan sin uso y se quitan juntas (4-45): no volver a darles uso.
 - **PDF en servidor.** `@react-pdf/renderer` desde la plantilla versionada; la tarjeta en pantalla usa el mismo modelo de vista. Sin imágenes de cotización generadas en el cliente.
+- **El aspecto de la hoja es declarativo, cerrado y plano.** Claves opcionales junto a las de siempre (`ancho`, `alto`, `relleno`, `separacion`, `densidad`, `letra`, `enfasis`, `tono`), de escalas
+  cerradas y validadas igual en TS y en SQL: nada de px, CSS ni hex. No se llaman `estilo`, `clase` ni `color` (el juego las rechaza). Sin la clave, lo de siempre, así un diseño viejo se ve igual;
+  el editor quita la clave en vez de escribir el valor por defecto. La cabecera no lleva ancho ni alto (va sola en su fila) y la tarjeta del resumen no lleva aspecto (es fija).
+- **La regla de los 16 rem.** Una pieza de N columnas toma su ancho cuando le tocan 16 rem o más (lo que ya hacían `mitad` desde 32 rem y `tercio` desde 48); si no, la fila entera. Los cortes
+  van en rem, así al 200 % la rejilla colapsa sola, y bajo el primer corte no hay hueco de columna. Una sección sin ancho es «Automática» (la mitad desde 64 rem, como siempre). El alto son filas de
+  la rejilla desde el mismo corte. Todo en clases y variables sobre los nodos de siempre: la hoja está a 491 nodos de 500.
+- **El tono de una sección no pinta su fondo.** Su borde, sus celdas sin grupo, sus franjas y sus chips toman el tono; el fondo, el título y los textos sueltos (leyendas, interruptor) quedan en
+  los tokens: la base sólo valida el AA de la tinta sobre el fondo del tono, no del texto de la interfaz sobre él. El tono del grupo gana en su celda; un chip marcado vuelve al primario.
+  Es el catálogo de tonos (sin lista nueva de tokens): ya es de la empresa y con contraste validado.
+- **Las celdas se ordenan dentro de su sección.** Pasar un ítem a otra sección cambiaría quién lo ve (hereda el nivel de la sección); para eso sigue el JSON del diseño. Se ordena con dnd-kit (sólo
+  en la pestaña «Diseño», con `diferido()`) y su sensor de teclado sobre el asa, con anuncios en español.
+- **El PDF, la tarjeta y el resumen no siguen el aspecto.** Siguen con su plantilla: el aspecto es de la hoja en pantalla (la de cotizar y la de una guardada, que son el mismo componente).
 
 ### Tablas de referencia
 
