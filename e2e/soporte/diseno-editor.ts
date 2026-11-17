@@ -125,9 +125,13 @@ export type DisenoEnLaBase = {
       presentacion: string
       nivel_ver?: string
       nivel_editar?: string
+      ancho?: number
+      densidad?: string
+      tono?: string
       items: {
         tipo?: string
         nodo: string
+        ancho?: string | number
         efecto?: string
         ayuda?: { texto?: string; tabla?: string }
         nivel_ver?: string
@@ -155,4 +159,65 @@ export function definicionYParamsComoLaPublicada(origenId: string): boolean {
      where b.origen_id = ${literal(origenId)}::uuid and b.estado = 'borrador' and p.estado = 'publicada'`) ===
     'true'
   )
+}
+
+// Publica el borrador del origen como la versión siguiente por la validación entera de la base (`_preparar_publicacion()`: la forma, los tonos y los niveles del
+// diseño), como `formula_publicar()` pero sin su sesión: la publicada pasa a archivada.
+export function publicarElBorradorDelDiseno(origenId: string): void {
+  sql(`
+    do $f$
+    declare b public.formulas; v_ver int;
+    begin
+      select * into b from public.formulas where origen_id = ${literal(origenId)}::uuid and estado = 'borrador';
+      if b.id is null then raise exception 'no hay borrador'; end if;
+      select coalesce(max(version), 0) + 1 into v_ver from public.formulas where origen_id = b.origen_id;
+      update public.formulas set estado = 'archivada' where origen_id = b.origen_id and estado = 'publicada';
+      update public.formulas set estado = 'publicada', version = v_ver, nota = 'E2E aspecto', publicado_en = now(),
+             visibilidad = public._preparar_publicacion(b.definicion, b.params, b.diseno, false)
+       where id = b.id;
+    end $f$`)
+}
+
+// El diseño de tres sumandos con el aspecto que arma el recorrido de la rejilla: «Resumen» primero, «Base» a lo ancho, compacta y con un tono, y «Precio» en
+// 8 de 12 columnas.
+export function disenoConAspecto(tono: string) {
+  const [base, extras, resumen] = diseno.secciones
+  return {
+    ...diseno,
+    secciones: [
+      resumen,
+      {
+        ...base,
+        ancho: 12,
+        densidad: 'compacta',
+        tono,
+        items: [{ ...celda('precio'), ancho: 8 }, celda('flete')],
+      },
+      extras,
+    ],
+  }
+}
+
+// Publica la versión siguiente del origen con ese diseño (la fórmula de tres sumandos, por `_preparar_publicacion()`).
+export function publicarLaVersionConAspecto(origenId: string, tono: string): void {
+  sql(`
+    do $f$
+    declare v_def jsonb := ${json(definicion)}; v_par jsonb := '{}'::jsonb; v_dis jsonb := ${json(disenoConAspecto(tono))}; v_ver int;
+    begin
+      select coalesce(max(version), 0) + 1 into v_ver from public.formulas where origen_id = ${literal(origenId)}::uuid;
+      update public.formulas set estado = 'archivada' where origen_id = ${literal(origenId)}::uuid and estado = 'publicada';
+      insert into public.formulas (origen_id, version, estado, definicion, params, diseno, visibilidad, nota, publicado_en)
+      values (${literal(origenId)}::uuid, v_ver, 'publicada', v_def, v_par, v_dis, public._preparar_publicacion(v_def, v_par, v_dis, false), 'E2E aspecto', now());
+    end $f$`)
+}
+
+// Un tono propio del recorrido (los colores del amarillo de la semilla, que pasan el AA). Se borra después que las fórmulas que lo nombran.
+export function crearTonoDePrueba(clave: string): void {
+  sql(`
+    insert into public.tonos (clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+    values (${literal(clave)}, ${literal(`E2E ${clave}`)}, '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
+    on conflict (clave) do nothing`)
+}
+export function borrarTonoDePrueba(clave: string): void {
+  sql(`delete from public.tonos where clave = ${literal(clave)}`)
 }
