@@ -4,7 +4,9 @@
 // `/vehiculos` 505 KB. Medido en el cierre 5b, con el `index.ts` de cada módulo sin componentes (una pantalla paga lo que
 // reexporta lo que importa): `/leads` 498,6 KB, `/perfil` 413,0 KB, `/vehiculos` 467,7 KB (antes 565,4, 443,3 y 520,0).
 export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
-  '/leads': 530,
+  // Con el «Nuevo» de la barra que abre también el de la agenda (T37: el grupo, el destino en la misma pantalla y sus constantes compartidas con
+  // `/agenda`, en un chunk aparte) pasó de 529,2 KB en 35 chunks a 531,2 en 36: regla del 5 %, lo medido más un 5 % a la decena.
+  '/leads': 560,
   '/perfil': 440,
   '/vehiculos': 500,
   // El listado de cotizaciones (4.16-4a), sin el resumen (4.16-4b): medido 358,4 KB en 23 chunks, más un 5 % hacia arriba a la decena.
