@@ -89,17 +89,9 @@ async function venEnLaFicha(page: Page) {
   )
 }
 
-// El resumen del inventario (todavía el bloque de tres grupos).
-async function venEnElBloque(raiz: Locator) {
-  await expect(bloque(raiz)).toBeVisible()
-  await expect(grupo(raiz, 'Vinculado').getByText(nombres.a)).toBeVisible()
-  await expect(grupo(raiz, 'Interesado').getByText(nombres.b)).toBeVisible()
-  await expect(grupo(raiz, 'Cotizado').getByText(nombres.c)).toBeVisible()
-}
-
-// La unidad de logística los dice en una línea de chips («Vinculado · n»…): cada chip abre su grupo en un popover con las mismas filas y leyenda.
-async function venEnLaUnidad(page: Page) {
-  const linea = bloque(page)
+// El resumen del inventario y la unidad de logística los dicen en una línea de chips («Vinculado · n»…): cada chip abre su grupo en un popover con las mismas filas y leyenda.
+async function venEnLinea(page: Page, raiz: Page | Locator) {
+  const linea = bloque(raiz)
   await expect(linea).toBeVisible()
   await expect(linea.getByRole('heading')).toHaveCount(0)
   const grupos = [
@@ -129,11 +121,13 @@ test('E2E la ficha del vehículo, su resumen y la unidad de logística muestran 
   await page.goto(`/vehiculos?origen=${origen.id}&vehiculo=${vehiculos.principal}`)
   const resumen = page.getByRole('dialog', { name: titulos.principal, exact: true })
   await expect(resumen).toBeVisible()
-  await venEnElBloque(resumen)
+  await venEnLinea(page, resumen)
+  // El popover se cerró con Esc y el resumen (un drawer) sigue abierto.
+  await expect(resumen).toBeVisible()
   await capturar(page, info, 'resumen-del-vehiculo')
 
   await page.goto(`/logistica/vehiculo/${vehiculos.principal}`)
-  await venEnLaUnidad(page)
+  await venEnLinea(page, page)
   await capturar(page, info, 'unidad-de-logistica')
 })
 

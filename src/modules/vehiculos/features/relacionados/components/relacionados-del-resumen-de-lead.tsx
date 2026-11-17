@@ -23,13 +23,19 @@ export function RelacionadosDelResumenDeLead({ leadId, para }: Props) {
   if (datos !== null && datos.leadId === leadId) {
     return (
       <div aria-busy={lectura.estado === 'leyendo'}>
-        <RelacionadosDeUnLead datos={datos} lugar="resumen" para={para} alCambiar={reintentar} />
+        <RelacionadosDeUnLead
+          datos={datos}
+          lugar="resumen"
+          para={para}
+          alCambiar={reintentar}
+          presentacion="linea"
+        />
       </div>
     )
   }
   return lectura.estado === 'fallo' ? (
-    <ErrorDeRelacionados alReintentar={reintentar} />
+    <ErrorDeRelacionados presentacion="linea" alReintentar={reintentar} />
   ) : (
-    <EsqueletoDeRelacionados />
+    <EsqueletoDeRelacionados presentacion="linea" />
   )
 }
