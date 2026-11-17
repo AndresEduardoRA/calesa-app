@@ -147,7 +147,8 @@ RPC: `cambiar_fase`, `cambiar_fase_lote`, `previsualizar_cambio_fase`, `previsua
 - `cambiar_fase_lote(p_unidades jsonb, p_fase_destino, p_nota)`: 1–200 `{vehiculo, fase_esperada}` (mal formado o repetido → `22023` hint `p_unidades`, sin
   mover nada); mueve en orden de id, devuelve en el de entrada `{vehiculo_id, ok, codigo, motivo, historial_id}`; sólo atrapa PT409, 23514, 42501 y 22023.
   `previsualizar_cambio_fase_lote(p_vehiculos uuid[], p_fase)`, invocadora, ≤ 200. `evaluar_requisitos` y `unidad_llego_a_fase` no son de `authenticated` (las
-  llaman `definer` que ya miraron el acceso); el `detalle` de un requisito trae `tipo_documento_id` o `clave_dato`.
+  llaman `definer` que ya miraron el acceso); el `detalle` de un requisito trae `tipo_documento_id` o `clave_dato`; el de un documento, además, `aprobados`,
+  `min`, `max` y `por_revisar` (los subidos que contarían si se aprobaran: mismo tipo, formato y vigencia; «Qué falta» ofrece «Revisar» antes que «Subir»).
 - Quitar lo que pide la fase actual (un documento, la declaración, el transporte, un pago confirmado, un gasto de tributos) toma la unidad `for share` antes
   de mirar la fase: espera y hace esperar a `cambiar_fase`. Lo prueban las carreras de `supabase/tests/areas/{aduana,dinero}/`.
 - La cadena: `logistica_cadena_resumen(p_origen, p_tope)` (el número de cada fase: vehículos, demorados y trabados, conteo con tope por `vehiculos_cadena_idx`, nunca un total) y
