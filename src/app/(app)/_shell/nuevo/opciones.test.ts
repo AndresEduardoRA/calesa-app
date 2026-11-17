@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ClavePermiso, Concesion, Permisos } from '@/shared/lib/permisos'
-import { CLAVES_DE_NUEVO, CATALOGO_DE_NUEVO } from './catalogo'
+import { CLAVES_DE_NUEVO, CATALOGO_DE_NUEVO, delGrupo, panelEnLaMismaPantalla } from './catalogo'
 import { opcionesDeNuevo } from './opciones'
 
 const con = (...claves: ClavePermiso[]): Permisos =>
@@ -68,5 +68,26 @@ describe('opcionesDeNuevo', () => {
     for (const clave of CLAVES_DE_NUEVO) {
       expect(CATALOGO_DE_NUEVO[clave].clave).toBe(clave)
     }
+  })
+})
+
+describe('delGrupo', () => {
+  it('la agenda ofrece sólo lo que se agenda, el evento primero; sin grupo, todo', () => {
+    const todas = opcionesDeNuevo(con('leads.crear', 'cotizaciones.crear', 'leads.editar'))
+    expect(delGrupo(todas, 'agenda')).toEqual(['evento', 'tarea', 'recordatorio'])
+    expect(delGrupo(opcionesDeNuevo(con()), 'agenda')).toEqual(['evento', 'tarea'])
+    expect(delGrupo(todas, null)).toEqual(todas)
+  })
+})
+
+describe('panelEnLaMismaPantalla', () => {
+  it('evento y tarea en la agenda sólo escriben su panel; desde otra pantalla, o lo demás, navegan', () => {
+    expect(panelEnLaMismaPantalla(CATALOGO_DE_NUEVO.evento.destino, '/agenda')).toBe('nuevo-evento')
+    expect(panelEnLaMismaPantalla(CATALOGO_DE_NUEVO.tarea.destino, '/agenda')).toBe('nueva-tarea')
+    expect(panelEnLaMismaPantalla(CATALOGO_DE_NUEVO.evento.destino, '/leads')).toBeNull()
+    expect(
+      panelEnLaMismaPantalla(CATALOGO_DE_NUEVO.cotizacion.destino, '/cotizaciones/nuevo'),
+    ).toBeNull()
+    expect(panelEnLaMismaPantalla(CATALOGO_DE_NUEVO.lead.destino, '/agenda')).toBeNull()
   })
 })

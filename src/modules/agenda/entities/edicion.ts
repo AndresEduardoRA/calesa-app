@@ -3,7 +3,10 @@
 // ahorra el viaje y pone el motivo junto a su campo. Las fechas se escriben en la hora de la empresa (`aaaa-mm-ddThh:mm`, un `datetime-local`) y
 // cruzan como ISO UTC con `instanteDeLocal()`. Los campos del error son los `hint` de la base.
 import { instanteDeLocal, localDeInstante, sumarDias } from '@/shared/lib/fechas'
+import { cambioDelLead, type LeadElegido } from './lead-del-evento'
 import { TOPE_DE_DESTINATARIOS, type Visibilidad } from './visibilidad'
+
+export type { LeadElegido } from './lead-del-evento'
 
 export const LARGO_MAXIMO_DE_TITULO = 120
 export const LARGO_MAXIMO_DE_DESCRIPCION = 2000
@@ -23,6 +26,8 @@ export type ValoresDeEvento = {
   terminaEn: string
   visibilidad: Visibilidad
   destinatarios: PersonaElegida[]
+  // Opcional: el chat (`/evento`) no lo edita.
+  lead?: LeadElegido | null
 }
 
 export type ValoresDeTarea = {
@@ -42,6 +47,7 @@ export type OriginalDeEvento = {
   visibilidad: Visibilidad
   // Nulo cuando quien mira no es el creador (no se le enseña la lista).
   destinatarios: PersonaElegida[] | null
+  lead: LeadElegido | null
 }
 
 export type OriginalDeTarea = {
@@ -51,8 +57,7 @@ export type OriginalDeTarea = {
   responsable: PersonaElegida | null
 }
 
-export type CampoDeEvento =
-  'titulo' | 'descripcion' | 'lugar' | 'inicia_en' | 'termina_en' | 'visibilidad' | 'destinatarios'
+export type CampoDeEvento = keyof DatosDeEvento | 'destinatarios'
 export type CampoDeTarea = 'titulo' | 'descripcion' | 'vence_en' | 'responsable_id'
 export type ErroresDeEvento = Partial<Record<CampoDeEvento, string>>
 export type ErroresDeTarea = Partial<Record<CampoDeTarea, string>>
@@ -65,6 +70,8 @@ export type DatosDeEvento = {
   inicia_en?: string
   termina_en?: string | null
   visibilidad?: Visibilidad
+  // El lead vinculado (la base exige verlo: `trg_lead_visible`, 42501 con hint `lead_id`).
+  lead_id?: string | null
 }
 export type DatosDeTarea = {
   titulo?: string
@@ -95,6 +102,7 @@ export function valoresInicialesDeEvento(fecha: string, hoy: string): ValoresDeE
     terminaEn: '',
     visibilidad: 'privado',
     destinatarios: [],
+    lead: null,
   }
 }
 
@@ -127,6 +135,7 @@ export function valoresDeEvento(original: OriginalDeEvento, zona: string): Valor
     terminaEn: original.terminaEn ? localDeInstante(original.terminaEn, { zona }) : '',
     visibilidad: original.visibilidad,
     destinatarios: original.destinatarios ?? [],
+    lead: original.lead,
   }
 }
 
@@ -218,6 +227,7 @@ export function datosDeEventoNuevo(
     inicia_en: inicio ?? valores.iniciaEn,
     ...(fin ? { termina_en: fin } : {}),
     visibilidad: valores.visibilidad,
+    ...(valores.lead ? { lead_id: valores.lead.id } : {}),
   }
 }
 
@@ -281,6 +291,7 @@ export function cambiosDeEvento(
   if (valores.visibilidad !== original.visibilidad) {
     datos.visibilidad = valores.visibilidad
   }
+  Object.assign(datos, cambioDelLead(original.lead, valores.lead))
   const destinatarios = destinatariosDeEvento(valores)
   const eranDestinatarios = destinatariosDeEvento(antes)
   return {

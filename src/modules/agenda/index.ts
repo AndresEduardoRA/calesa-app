@@ -4,6 +4,7 @@ export {
   leerAgenda,
   leerEvento,
   leerMisTareas,
+  leerPendientes,
   leerQuienesPuedenRecibir,
   leerRecordatorio,
   leerTarea,
@@ -15,6 +16,11 @@ export {
 } from './features/tareas/dar-tarea-vinculada'
 export type { ResultadoDeEscritura } from './entities/escritura'
 export { estaVencida, type TareaPendiente } from './entities/mis-tareas'
+export {
+  gruposDePendientes,
+  type GrupoDePendientes,
+  type PendientesDeAgenda,
+} from './entities/pendientes'
 export {
   CLASES_DE_AGENDA,
   claseDe,
@@ -42,6 +48,7 @@ export {
   type Vista,
 } from './entities/calendario'
 export { type DetalleDeRecordatorio } from './entities/recordatorio'
+export { extraDeEnlaces } from './features/calendario/enlace-de-dia'
 export {
   leerIdDeUrl,
   rutaDeVinculo,

@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
@@ -52,6 +52,39 @@ describe('orquestador.sh: la cola', () => {
     expect(orquestador('nueva', 'T07', 'Tema_Mal').estado).toBe(64)
     orquestador('nueva', 'T07', 'uno')
     expect(orquestador('nueva', 'T07', 'dos').estado).toBe(64)
+  })
+
+  it('sin lugar en la máquina no lanza y dice qué está lleno', () => {
+    orquestador('nueva', 'T07', 'uno')
+    // Con el tope en 100 % libre, cualquier disco cuenta como lleno; con 0 %, sólo uno al 100 %. El punto de montaje varía
+    // (en CI /tmp no es un tmpfs propio): se mira la frase, no la ruta.
+    writeFileSync(join(datos, 'config.local.env'), 'MIN_LIBRE_PCT=100\n')
+    expect(orquestador('plan').salida).toMatch(
+      /⛔ Máquina sin lugar.* con el \d+ % de los inodos usados/,
+    )
+    writeFileSync(join(datos, 'config.local.env'), 'MIN_LIBRE_PCT=0\n')
+    expect(orquestador('plan').salida).not.toContain('sin lugar')
+  })
+
+  it('una tarea que se retoma espera el área que ocupa otra; entre dos que se retoman pasa la de antes', () => {
+    const tarea = (id: string, estado: string) => {
+      mkdirSync(join(datos, 'cola'), { recursive: true })
+      writeFileSync(
+        join(datos, 'cola', `${id}-x.md`),
+        `---\nid: ${id}\ntitulo: x\nrama: feat/${id}\nconflicto: relacionados\n---\n`,
+      )
+      mkdirSync(join(datos, 'estado', id), { recursive: true })
+      writeFileSync(join(datos, 'estado', id, 'estado'), `${estado}\n`)
+    }
+    tarea('T33', 'corriendo')
+    tarea('T34', 'por_retomar')
+    expect(orquestador('plan').salida).toContain(
+      'T34  por_retomar, espera el área que ocupa T33 (relacionados)',
+    )
+    tarea('T33', 'por_retomar')
+    const plan = orquestador('plan').salida
+    expect(plan).toMatch(/^T33 {2}por_retomar$/m)
+    expect(plan).toContain('T34  por_retomar, espera el área que ocupa T33 (relacionados)')
   })
 
   it('una spec con el id dañado o repetido no se lanza y se nombra', () => {

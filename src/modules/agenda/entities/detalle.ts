@@ -3,7 +3,7 @@
 // (una consulta a `perfiles` por clave primaria) y entran por `nombres`.
 import { z } from 'zod'
 import type { Resultado } from '@/shared/lib/errores'
-import type { OriginalDeTarea, PersonaElegida } from './edicion'
+import type { LeadElegido, OriginalDeTarea, PersonaElegida } from './edicion'
 import type { Visibilidad } from './visibilidad'
 
 export type ClaveDeVinculo = 'lead' | 'vehiculo' | 'cotizacion'
@@ -26,6 +26,8 @@ export type DetalleDeEvento = {
   destinatarios: PersonaElegida[] | null
   actualizadoEn: string
   vinculos: VinculosDeAgenda
+  // El lead vinculado, con su nombre si quien mira lo ve (lo completa la página con la lectura de `leads`); nulo sin lead.
+  lead: LeadElegido | null
 }
 
 export type DetalleDeTarea = {
@@ -124,6 +126,7 @@ export function detalleDeEventoDesde(
         : null,
     actualizadoEn: fila.actualizado_en,
     vinculos: { lead: fila.lead_id, vehiculo: fila.vehiculo_id, cotizacion: fila.cotizacion_id },
+    lead: fila.lead_id ? { id: fila.lead_id, nombre: null } : null,
   }
 }
 

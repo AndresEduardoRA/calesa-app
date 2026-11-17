@@ -9,13 +9,15 @@ type Props = {
   zona: string
   ocupado: boolean
   alIr: (dia: string) => void
+  // El último día que se puede elegir (`YYYY-MM-DD`). Sin esto, hoy (una lista va hacia lo antiguo); `null`, sin tope (la agenda va también hacia adelante).
+  max?: string | null
 }
 
 // «Ir a una fecha»: el camino a lo antiguo de una lista con «Ver más», sin sumar páginas para siempre.
 // Entrega el día del calendario (`YYYY-MM-DD`, en la zona de la empresa), no un instante: el borde lo
 // arma quien lee, «ese día y lo anterior» = antes de `inicioDelDia(diaSiguiente(dia), { zona })`,
 // exclusivo. No va a la URL (es una posición).
-export function IrAUnaFecha({ zona, ocupado, alIr }: Props) {
+export function IrAUnaFecha({ zona, ocupado, alIr, max }: Props) {
   const id = useId()
   const [dia, setDia] = useState('')
   return (
@@ -36,7 +38,9 @@ export function IrAUnaFecha({ zona, ocupado, alIr }: Props) {
           id={id}
           type="date"
           value={dia}
-          max={diaEnZona(new Date().toISOString(), { zona })}
+          max={
+            max === undefined ? diaEnZona(new Date().toISOString(), { zona }) : (max ?? undefined)
+          }
           onChange={(evento) => {
             setDia(evento.target.value)
           }}

@@ -18,6 +18,7 @@ type Props = {
   hoy: string
   zona: string
   puedePublicar: boolean
+  puedeVincularLead: boolean
   alCrear: (id: string) => void
   alGuardar: () => void
   alCancelar: () => void
@@ -31,6 +32,7 @@ export function PanelDeFormularioDeEvento({
   hoy,
   zona,
   puedePublicar,
+  puedeVincularLead,
   alCrear,
   alGuardar,
   alCancelar,
@@ -67,7 +69,11 @@ export function PanelDeFormularioDeEvento({
         {formulario.conflicto ? (
           <AvisoDeConflicto mensaje={formulario.conflicto} alRecargar={formulario.recargar} />
         ) : null}
-        <CamposDeEvento formulario={formulario} puedePublicar={puedePublicar} />
+        <CamposDeEvento
+          formulario={formulario}
+          puedePublicar={puedePublicar}
+          puedeVincularLead={puedeVincularLead}
+        />
       </form>
     </Drawer>
   )

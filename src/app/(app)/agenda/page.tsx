@@ -1,109 +1,58 @@
 import type { Metadata } from 'next'
 import { connection } from 'next/server'
+import { Suspense } from 'react'
 import {
+  extraDeEnlaces,
+  gruposDePendientes,
   leerAgenda,
   leerClases,
-  leerEvento,
   leerFecha,
-  leerIdDeUrl,
-  leerRecordatorio,
-  leerTarea,
   leerVista,
-  puedeCompletarTarea,
   puedeDarTareaAOtro,
-  puedeEditarEvento,
-  puedeEditarTarea,
-  puedeReasignarTarea,
   rangoDe,
-  type DetalleDeEvento,
-  type DetalleDeTarea,
 } from '@/modules/agenda'
 import { CalendarioDeAgenda, PanelesDeAgenda } from '@/modules/agenda/pantallas/agenda'
+import { EsqueletoDePendientes } from '@/modules/agenda/pantallas/agenda-esqueletos'
 import { leerAjustes } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
 import { MarcasDeVistoDeLaPagina } from '@/modules/equipo/pantallas/marcas-de-visto'
-import { CORTE_DE_LA_TABLA } from '@/shared/lib/ancho'
-import { anchoDeEstaPeticion } from '@/shared/lib/ancho.server'
 import { datosO } from '@/shared/lib/errores'
 import { diaEnZona, ZONA_POR_DEFECTO } from '@/shared/lib/fechas'
-import { puede, type Permisos } from '@/shared/lib/permisos'
+import { puede } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
+import { NuevoDeLaAgenda } from './nuevo-de-la-agenda'
+import { leerPedidosDeLaUrl } from './pedidos'
+import { PendientesDeLaPagina } from './pendientes'
 
 export const metadata: Metadata = { title: 'Agenda' }
 
-type Detalles = { evento: DetalleDeEvento | null; tarea: DetalleDeTarea | null }
-
-// Lo que cada panel necesita saber de quien mira: qué botones se dibujan (la base lo vuelve a exigir).
-function eventoPedido(
-  id: string | null,
-  detalle: Detalles['evento'],
-  yo: string,
-  permisos: Permisos,
-) {
-  return id
-    ? {
-        id,
-        detalle,
-        puedeEditar:
-          detalle !== null && puedeEditarEvento({ ...detalle, eliminado: false }, yo, permisos),
-      }
-    : null
-}
-
-function tareaPedida(
-  id: string | null,
-  detalle: Detalles['tarea'],
-  yo: string,
-  permisos: Permisos,
-) {
-  return id
-    ? {
-        id,
-        detalle,
-        puedeEditar: detalle !== null && puedeEditarTarea(detalle, yo),
-        puedeCompletar: detalle !== null && puedeCompletarTarea(detalle, yo),
-        puedeReasignar: detalle !== null && puedeReasignarTarea(detalle, yo, permisos),
-      }
-    : null
-}
-
-// La agenda: mes, semana o día, en la zona de la empresa. Lo que se ve lo decide la base con la sesión de quien mira (`agenda_rango`, de invocador);
-// la vista, la fecha, las clases y «la de todos» viven en la URL. El celular abre en «día» y el escritorio en «mes».
+// La agenda como libreta: la hoja del día (la vista de por defecto, en todo ancho), semana o mes, en la zona de la empresa, con los pendientes de quien mira al
+// costado. Lo que se ve lo decide la base con la sesión de quien mira (`agenda_rango` y `agenda_pendientes`, de invocador); la vista, la fecha, las clases y «la de
+// todos» viven en la URL. Los pendientes llegan tras su propio `<Suspense>`: el día no los espera.
 export default async function PaginaDeAgenda({ searchParams }: PageProps<'/agenda'>) {
-  // La sesión, los ajustes y el ancho se leen al pedir la pantalla, no al prepararla.
+  // La sesión y los ajustes se leen al pedir la pantalla, no al prepararla.
   await connection()
-  const [sesion, ajustes, parametros, ancho] = await Promise.all([
+  const [sesion, ajustes, parametros] = await Promise.all([
     requerirSesion(),
     leerAjustes(),
     searchParams,
-    anchoDeEstaPeticion(),
   ])
   const zona = ajustes.ok ? ajustes.data.ajustes.zonaHoraria : ZONA_POR_DEFECTO
   const hoy = diaEnZona(new Date().toISOString(), { zona })
-  const vista = leerVista(
-    unParametro(parametros['vista']),
-    ancho < CORTE_DE_LA_TABLA ? 'dia' : 'mes',
-  )
+  const vista = leerVista(unParametro(parametros['vista']), 'dia')
   const fecha = leerFecha(unParametro(parametros['fecha']), hoy)
   const clases = leerClases(unParametro(parametros['ver']))
   // `?de=todos` sin `agenda.ver_todo` se ignora (la base lo rechazaría): ver la de todos es un filtro de lectura, no una acción.
   const puedeVerTodo = puede(sesion.permisos, 'agenda.ver_todo')
   const deTodos = puedeVerTodo && unParametro(parametros['de']) === 'todos'
-  // `?evento=` y `?tarea=` abren su panel: el detalle se lee por id en la misma ronda que el calendario, y sólo si la URL lo pide.
-  const yo = sesion.usuarioId
-  const eventoId = leerIdDeUrl(unParametro(parametros['evento']))
-  const tareaId = leerIdDeUrl(unParametro(parametros['tarea']))
-  const recordatorioId = leerIdDeUrl(unParametro(parametros['recordatorio']))
-  const [lectura, lecturaDeEvento, lecturaDeTarea, lecturaDeRecordatorio] = await Promise.all([
+  const [lectura, pedidos] = await Promise.all([
     leerAgenda({ ...rangoDe(vista, fecha, zona), deTodos }),
-    eventoId ? leerEvento(eventoId, yo) : null,
-    tareaId ? leerTarea(tareaId) : null,
-    recordatorioId ? leerRecordatorio(recordatorioId) : null,
+    leerPedidosDeLaUrl(parametros, sesion.usuarioId, sesion.permisos),
   ])
   const agenda = datosO(lectura)
-  const detalleDeEvento = lecturaDeEvento ? datosO(lecturaDeEvento) : null
-  const detalleDeTarea = lecturaDeTarea ? datosO(lecturaDeTarea) : null
-  const detalleDeRecordatorio = lecturaDeRecordatorio ? datosO(lecturaDeRecordatorio) : null
+  // Los pendientes son siempre de quien mira; «Qué ver» decide qué grupos (sin tareas ni recordatorios, no hay columna).
+  const grupos = gruposDePendientes(clases)
+  const ahora = new Date().toISOString()
   return (
     <>
       {/* Los chips de eventos y tareas marcan lo visto (una lectura por pantalla); abrir `?evento=` o `?tarea=` lo registra. */}
@@ -120,19 +69,34 @@ export default async function PaginaDeAgenda({ searchParams }: PageProps<'/agend
           fecha={fecha}
           hoy={hoy}
           zona={zona}
+          ahora={ahora}
           clases={clases}
           puedeVerTodo={puedeVerTodo}
           deTodos={deTodos}
+          nuevo={<NuevoDeLaAgenda />}
+          nuevoDelDiaVacio={<NuevoDeLaAgenda atajo={false} />}
+          pendientes={
+            grupos.length > 0 ? (
+              <Suspense fallback={<EsqueletoDePendientes />}>
+                <PendientesDeLaPagina
+                  grupos={grupos}
+                  hoy={hoy}
+                  zona={zona}
+                  base={{ vista, fecha, extra: extraDeEnlaces(clases, deTodos) }}
+                  deTodos={deTodos}
+                />
+              </Suspense>
+            ) : null
+          }
         />
       </MarcasDeVistoDeLaPagina>
       <PanelesDeAgenda
-        evento={eventoPedido(eventoId, detalleDeEvento, yo, sesion.permisos)}
-        tarea={tareaPedida(tareaId, detalleDeTarea, yo, sesion.permisos)}
-        recordatorio={
-          recordatorioId ? { id: recordatorioId, detalle: detalleDeRecordatorio } : null
-        }
-        ahora={new Date().toISOString()}
+        evento={pedidos.evento}
+        tarea={pedidos.tarea}
+        recordatorio={pedidos.recordatorio}
+        ahora={ahora}
         puedePublicar={puede(sesion.permisos, 'agenda.eventos.publicar')}
+        puedeVincularLead={puede(sesion.permisos, 'leads.ver')}
         puedeAsignar={puedeDarTareaAOtro(sesion.permisos)}
         zona={zona}
         hoy={hoy}

@@ -207,7 +207,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - Multiidioma. Offline real (modo sin conexión y sincronización en segundo plano). Editor de artes (Konva). Directorio de contactos/empresas.
 - API de WhatsApp/Meta. Multi-empresa por despliegue.
 - La web pública en sí (repo aparte con `sitio-marketing` sobre el esquema `web`).
-- «Visto» en «Tareas sin fecha» de la agenda y en los bloques de Inicio.
+- «Visto» en los pendientes de la agenda y en los bloques de Inicio.
 
 De esta versión, además: línea de tiempo dentro de las fichas (hay «Ver actividad» en el «⋯»), exportar la actividad; cambiar qué permisos
 existen o la matriz de Roles; cambiar embudos ya existentes (la plantilla sólo toca los que nacen después); exportar seguimientos,

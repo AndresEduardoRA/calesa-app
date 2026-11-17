@@ -4,7 +4,8 @@
 import { diaEnZona, diaSiguiente, inicioDelDia, sumarDias } from '@/shared/lib/fechas'
 import { CLASES_DE_AGENDA, type ClaveDeClase } from './agenda'
 
-export const VISTAS = ['mes', 'semana', 'dia'] as const
+// En el orden de las pestañas: el día primero (es la vista de por defecto, la hoja del día).
+export const VISTAS = ['dia', 'semana', 'mes'] as const
 export type Vista = (typeof VISTAS)[number]
 
 // La semana empieza el lunes (D1 del 7.07-1): cambiarlo es esta constante (0 = domingo, 1 = lunes).
@@ -191,4 +192,16 @@ export function leerClases(valor: string | null | undefined): ClaveDeClase[] {
     .split(',')
     .filter((clave): clave is ClaveDeClase => claves.some((conocida) => conocida === clave))
   return pedidas.length > 0 ? claves.filter((clave) => pedidas.includes(clave)) : claves
+}
+
+// Lo que «Vista y opciones» dice de «Qué ver»: «Todo» o las clases elegidas («Eventos, tareas»).
+export function resumenDeClases(clases: readonly ClaveDeClase[]): string {
+  if (clases.length === 0 || clases.length === CLASES_DE_AGENDA.length) {
+    return 'Todo'
+  }
+  const nombres = CLASES_DE_AGENDA.filter((clase) => clases.includes(clase.clave)).map(
+    (clase) => clase.plural,
+  )
+  const texto = nombres.join(', ')
+  return texto.charAt(0).toUpperCase() + texto.slice(1)
 }

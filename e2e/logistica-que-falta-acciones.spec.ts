@@ -126,10 +126,11 @@ test('E2E que falta · quien no puede ve «Pedirlo» y crea una tarea a quien pu
 
   await entrar(page, terreno.recibe.correo)
   await page.goto('/agenda?vista=dia')
-  const seccion = page.getByRole('button', { name: 'Tareas sin fecha', exact: true })
-  await seccion.click()
-  await expect(seccion).toHaveAttribute('aria-expanded', 'true')
-  await expect(page.getByRole('link', { name: titulo })).toBeVisible()
+  // La tarea pedida no tiene fecha: está en el grupo «Sin fecha» de los pendientes.
+  const sinFecha = page
+    .getByRole('region', { name: 'Pendientes' })
+    .getByRole('region', { name: 'Sin fecha' })
+  await expect(sinFecha.getByRole('link', { name: titulo })).toBeVisible()
 })
 
 test('E2E que falta · sin poder dar tareas dice a quién pedírselo', async ({ page }) => {

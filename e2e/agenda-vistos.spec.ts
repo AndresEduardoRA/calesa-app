@@ -74,8 +74,10 @@ test('E2E abrir un evento y luego una tarea los marca: sólo uno es el último v
   const tarea = new RegExp(`${rotulo(info.project.name)} llamar`)
   await entrar(page, t.personas.berta)
   await page.goto('/agenda?vista=dia')
-  const chipDelEvento = page.getByRole('main').getByRole('link', { name: evento })
-  const chipDeLaTarea = page.getByRole('main').getByRole('link', { name: tarea })
+  // La tarea vence «ahora»: sale también en «Pendientes» (sin marcas de visto); los chips son los de la hoja del día.
+  const hoja = page.getByRole('region', { name: 'Hoja del día' })
+  const chipDelEvento = hoja.getByRole('link', { name: evento })
+  const chipDeLaTarea = hoja.getByRole('link', { name: tarea })
   await expect(chipDelEvento).toBeVisible()
   await expect(chipDelEvento).toHaveAttribute('data-visto', 'nuevo')
   // En el chip la negrita no se distingue (el fondo es de la clase y su nombre ya va en negrita): «visto» lleva una tilde y lo nuevo no.
