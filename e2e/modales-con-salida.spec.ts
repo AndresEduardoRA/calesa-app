@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { CONTRASENA, entrar, limpiarAlta, prepararAlta } from './soporte/alta'
 import { PREFIJO_ROL_E2E, correoDePrueba, crearPersona, darRolDePrueba } from './soporte/base'
 import { irAlEmbudo } from './soporte/leads-oportunidades'
+import { elegirEnVistaYOpciones } from './soporte/vista-y-opciones'
 
 // Los modales con formulario que no eran `ModalDeFormulario` (nuevo rol, invitar, nuevo embudo) y el de las etiquetas:
 // con algo escrito, Esc o «Cancelar» preguntan en el mismo modal; sin nada, cierran; cada apertura empieza vacía;
@@ -195,7 +196,7 @@ test('nuevo embudo: con algo escrito pregunta; un nombre repetido se dice junto 
 }) => {
   await entrar(page, terreno.personas.berta)
   await irAlEmbudo(page)
-  const abrir = () => page.getByRole('button', { name: 'Nuevo embudo' }).click()
+  const abrir = () => elegirEnVistaYOpciones(page, 'Nuevo embudo…')
   const dialogo = page.getByRole('dialog', { name: 'Nuevo embudo' })
 
   await abrir()
@@ -222,7 +223,7 @@ test('nuevo embudo sin conexión: lo escrito queda, se dice, y se crea solo al v
   const nombre = `Sin red ${info.project.name}`
   await entrar(page, terreno.personas.berta)
   await irAlEmbudo(page)
-  await page.getByRole('button', { name: 'Nuevo embudo' }).click()
+  await elegirEnVistaYOpciones(page, 'Nuevo embudo…')
   const dialogo = page.getByRole('dialog', { name: 'Nuevo embudo' })
   await dialogo.getByLabel('Nombre').fill(nombre)
 

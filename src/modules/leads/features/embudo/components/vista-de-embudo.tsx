@@ -1,11 +1,10 @@
 'use client'
 
-import { PlusIcon, Settings2Icon } from 'lucide-react'
 import { useMemo } from 'react'
 import { ProveedorDeMarcasDeVisto } from '@/modules/equipo/client'
 import { Aviso } from '@/shared/ui/aviso'
-import { Button } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
+import { VistaYOpciones, type GrupoDeVistaYOpciones } from '@/shared/ui/vista-y-opciones'
 import type { Embudo } from '../../../entities/embudo'
 import { idsDeLeadsDelTablero, totalDelTablero, type Tablero } from '../../../entities/tablero'
 import { DialogoDeEtiquetas } from '../../etiquetas/components/dialogo-de-etiquetas'
@@ -14,6 +13,7 @@ import { AccionesDeFila } from '../../listado/components/acciones-de-fila'
 import type { ParaElMenuDelEmbudo } from '../lecturas'
 import { useTablero } from '../hooks/use-tablero'
 import { useVistaDeEmbudo } from '../hooks/use-vista-de-embudo'
+import { AccionesDelEmbudo } from './acciones-del-embudo'
 import { BusquedaDelEmbudo, ID_DE_LA_BUSQUEDA_DEL_EMBUDO } from './busqueda-del-embudo'
 import { ConmutadorDeVista } from './conmutador-de-vista'
 import { ProveedorDelMenuDelEmbudo, useMenuDelEmbudo } from './menu-de-lead-del-embudo'
@@ -25,6 +25,14 @@ import { TableroDeEmbudo } from './tablero-de-embudo'
 
 type Props = { embudos: Embudo[]; tablero: Tablero | null; paraElMenu: ParaElMenuDelEmbudo }
 
+// «Lista | Embudo» en «Vista y opciones», en el mismo lugar que en la lista.
+const GRUPO_DE_VISTA: GrupoDeVistaYOpciones = {
+  clave: 'vista',
+  titulo: 'Vista',
+  contenido: <ConmutadorDeVista actual="embudo" />,
+  resumen: 'Embudo',
+}
+
 // `/leads?vista=embudo`: el kanban de las oportunidades propias en el embudo elegido. La primera vez
 // prepara el embudo por defecto. Los filtros de la lista no se aplican aquí, y la pantalla lo dice.
 export function VistaDeEmbudo({ embudos, tablero, paraElMenu }: Props) {
@@ -32,7 +40,9 @@ export function VistaDeEmbudo({ embudos, tablero, paraElMenu }: Props) {
     return (
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
         <h1 className="sr-only">Embudo</h1>
-        <ConmutadorDeVista actual="embudo" />
+        <div className="flex">
+          <VistaYOpciones grupos={[GRUPO_DE_VISTA]} />
+        </div>
         <PrimerEmbudo />
       </div>
     )
@@ -48,7 +58,8 @@ type PropsDeLaBarra = {
   alAbrirNuevo: () => void
 }
 
-// Arriba del kanban: el conmutador «Lista | Embudo», el selector de embudo, la búsqueda y «Etapas» y «Nuevo embudo».
+// Arriba del kanban: el selector de embudo (elige qué se ve, como un filtro), la búsqueda (crece) y «Vista y opciones» con «Lista | Embudo»,
+// «Etapas…» y «Nuevo embudo…».
 function BarraDelEmbudo({
   embudos,
   actual,
@@ -58,19 +69,20 @@ function BarraDelEmbudo({
 }: PropsDeLaBarra) {
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <ConmutadorDeVista actual="embudo" />
       <SelectorDeEmbudo embudos={embudos} actual={actual} alElegir={alElegirEmbudo} />
       <BusquedaDelEmbudo />
-      <div className="ml-auto flex flex-wrap gap-2">
-        <Button variant="outline" className="min-h-11 md:min-h-8" onClick={alAbrirEtapas}>
-          <Settings2Icon aria-hidden className="size-4" />
-          Etapas
-        </Button>
-        <Button variant="outline" className="min-h-11 md:min-h-8" onClick={alAbrirNuevo}>
-          <PlusIcon aria-hidden className="size-4" />
-          Nuevo embudo
-        </Button>
-      </div>
+      <VistaYOpciones
+        grupos={[
+          GRUPO_DE_VISTA,
+          {
+            clave: 'embudo',
+            titulo: 'Embudo',
+            contenido: (
+              <AccionesDelEmbudo alAbrirEtapas={alAbrirEtapas} alAbrirNuevo={alAbrirNuevo} />
+            ),
+          },
+        ]}
+      />
     </div>
   )
 }

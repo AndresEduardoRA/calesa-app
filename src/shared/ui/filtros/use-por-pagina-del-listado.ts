@@ -4,6 +4,9 @@ import { useCallback, useState } from 'react'
 import { useReintentoAlVolver } from '../use-reintento-al-volver'
 import { usePorPagina } from '../por-pagina'
 
+// Se pregunta cada vez (una función, no `navigator.onLine` suelto): la red puede irse entre dos `await`.
+const hayRed = (): boolean => navigator.onLine
+
 export type PorPaginaDelListado = {
   // Lo que muestra el selector: lo que se eligió sin red, si hay algo esperando; si no, lo que dibuja la página.
   visto: number
@@ -19,7 +22,7 @@ export type PorPaginaDelListado = {
 // `aplicar`, que vuelve a la primera página y conserva filtros y búsqueda). En ese orden y no a la vez: la respuesta de la
 // acción que guarda trae la página de la URL de antes y, si llega después de la navegación, la pisa (la URL queda con el
 // tamaño nuevo y la lista con el viejo; es la carrera que cuenta la ficha de `shared`). Mientras tanto el selector muestra
-// lo elegido. Sin red no hace nada: lo elegido queda a la vista y sale solo al volver la conexión, una vez
+// lo elegido. Sin red no hace nada (tampoco si la red se fue mientras guardaba): lo elegido queda a la vista y sale solo al volver la conexión, una vez
 // (`useReintentoAlVolver`), como paginar. Si el guardado falla con la red presente, la página igual cambia y se ofrece
 // reintentar.
 export function usePorPaginaDelListado(
@@ -61,6 +64,13 @@ export function usePorPaginaDelListado(
       setEsperando(null)
       setAplicando(tamano)
       const guardado = await guardarEnLaCuenta(tamano)
+      // La red se fue mientras guardaba: navegar ahora fallaría (y Next recargaría la página, que sin red queda en blanco). Lo elegido
+      // queda esperando y sale solo al volver.
+      if (!hayRed()) {
+        setAplicando(null)
+        setEsperando(tamano)
+        return false
+      }
       aplicar(tamano)
       return guardado
     },

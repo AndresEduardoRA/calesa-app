@@ -3,6 +3,11 @@ import { desmontarSubasta, prepararSubasta, type EstadoDeApibara } from './sopor
 import { admin } from './soporte/base'
 import { aLaVista, entrar, esMovil, irAlOrigen } from './soporte/inventario'
 import { capturar } from './soporte/recorrido'
+import {
+  abrirVistaYOpciones,
+  botonDeVistaYOpciones,
+  cerrarVistaYOpciones,
+} from './soporte/vista-y-opciones'
 
 // La vista del inventario (B2): en un origen de subasta la columna «Precio» es «Puja actual» (con «final» si la subasta terminó o se
 // vendió, y «—» sin puja); en escritorio, «Tabla | Tarjetas» cambia la vista sin pedir otra página, la deja en la URL y la recuerda
@@ -72,10 +77,14 @@ test('la columna de la puja en la tabla, y el conmutador que recuerda las tarjet
   await expect(fila(T.sinPuja)).not.toContainText(/9[.,]000/)
   await capturar(page, info, 'tabla-con-la-puja')
 
-  const grupo = page.getByRole('group', { name: 'Cómo ver la lista' })
+  // «Tabla | Tarjetas» va en «Vista y opciones»; cambiar no cierra el panel y el botón dice la vista de ahora.
+  await expect(botonDeVistaYOpciones(page)).toContainText('Tabla')
+  const grupo = (await abrirVistaYOpciones(page)).getByRole('group', { name: 'Cómo ver la lista' })
   await expect(grupo.getByRole('button', { name: 'Tabla' })).toHaveAttribute('aria-pressed', 'true')
   await grupo.getByRole('button', { name: 'Tarjetas' }).click()
   await expect(page).toHaveURL(/[?&]vista=tarjetas/)
+  await expect(botonDeVistaYOpciones(page)).toContainText('Tarjetas')
+  await cerrarVistaYOpciones(page)
   await expect(aLaVista(page.getByRole('table'))).toHaveCount(0)
   const tarjeta = (titulo: string) =>
     aLaVista(page.getByRole('listitem').filter({ hasText: titulo }))
@@ -89,7 +98,9 @@ test('la columna de la puja en la tabla, y el conmutador que recuerda las tarjet
   await expect(tarjeta(T.viva)).toBeVisible()
   await expect(aLaVista(page.getByRole('table'))).toHaveCount(0)
 
-  await page
+  await (
+    await abrirVistaYOpciones(page)
+  )
     .getByRole('group', { name: 'Cómo ver la lista' })
     .getByRole('button', { name: 'Tabla' })
     .click()
@@ -107,6 +118,10 @@ test('en el celular, tarjetas con el rótulo de la puja y sin conmutador', async
     aLaVista(page.getByRole('listitem').filter({ hasText: titulo }))
   await expect(tarjeta(T.viva)).toContainText('Puja actual')
   await expect(tarjeta(T.vendida)).toContainText('Puja final')
-  await expect(aLaVista(page.getByRole('group', { name: 'Cómo ver la lista' }))).toHaveCount(0)
+  // En la hoja de «Vista y opciones» no está «Tabla | Tarjetas» (cerrada, la ausencia pasaría siempre).
+  const panel = await abrirVistaYOpciones(page)
+  await expect(panel.getByRole('region', { name: 'Vistas guardadas' })).toBeVisible()
+  await expect(page.getByRole('group', { name: 'Cómo ver la lista' })).toHaveCount(0)
+  await cerrarVistaYOpciones(page)
   await capturar(page, info, 'tarjetas-en-el-celular')
 })

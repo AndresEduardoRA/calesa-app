@@ -326,8 +326,8 @@ creado_en desc, id desc) where eliminado_en is null and situacion <> 'fase'`; re
 ## Ítems por página: qué lista lo admite y su máximo
 
 Elige 10, 25, 50 o 100 (`listas.por_pagina`, `?por=`); cada lista declara su máximo. Un máximo se gana midiendo: `db:medir:volumen` y
-`e2e/listas-por-pagina-volumen.spec.ts` (bytes, nodos, página profunda). En el celular el selector va arriba de la lista y se dibuja una sola
-vista (`UnaSolaVista`, según el `user-agent`).
+`e2e/listas-por-pagina-volumen.spec.ts` (bytes, nodos, página profunda). El selector va en «Vista y opciones» (popover o, en el celular, hoja
+inferior), que no se dibuja hasta abrirse: la carga sólo paga el botón. En el celular se dibuja una sola vista (`UnaSolaVista`, según el `user-agent`).
 
 - Listado de leads: 100; ≤ 3.610 nodos en escritorio y 3.070 en celular con filas sin seguimientos (`leads-escala.spec.ts` con `?por=100`: 3.435 y 2.920 medidos; 2.100 y 1.810 con 50:
   1.985 y 1.720 medidos). La fila no lleva un botón «+ Oportunidad» (5 nodos por fila de la tabla y 3 por tarjeta): «Nueva oportunidad…» es una línea del «⋯»; con
@@ -529,6 +529,10 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410; `/cotizaciones/papelera` 440 (en su spec). Al borde:
   `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 454,9 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %; el «Elegir…» de lo que falta sumó 2,7 KB) y `/cotizaciones/nuevo` en 450,1 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
+- «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`).
+  Medido con el cambio: `/leads` 529,4 de 530, `/vehiculos` 498,1 de 500, `/cotizaciones` 371,9 de 380, `/logistica` 367,2 y `/logistica/fase/[fase]` 369,8
+  de 390 (el botón viaja con `FilterShell` aunque esas listas no lo dibujen). `/leads` queda a 0,6 KB del tope: lo próximo que sume a su carga va con
+  `diferido()` o sube el tope con la regla del 5 %.
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`
   falla, con el camino, si un `index.ts` llega a un `'use client'`.
 - **Trampa:** con `loading.tsx` importando el barril de pantallas, sumar un Client Component a la página baja dos chunks casi iguales (el de
@@ -717,7 +721,8 @@ fallar.
   Ninguna pantalla se ensancha al 200 % (`sinScrollHorizontal()`), el texto no se corta (`sinTextoCortado()`, `exigirMarcadorQueCabe`) y los
   botones del pie del modal miden 44 px.
 - La barra del listado: las cajas siguen el orden de lectura; el buscador mide 44 × 44 px y desde 24 rem muestra «Buscar» entero
-  (`barra-de-filtros-200.spec.ts`, `barra-de-filtros-vehiculos-200.spec.ts`).
+  (`barra-de-filtros-200.spec.ts`, `barra-de-filtros-vehiculos-200.spec.ts`). El buscador ocupa el ancho libre de su fila (`min-w-0 flex-1 basis-56`:
+  con menos de 14 rem toma la fila entera; `barra-compacta.spec.ts`) y «Vista y opciones» crece en alto al 200 % en vez de ensanchar la página.
 - Matriz de Roles a 412 px al 200 %: 0 de 72 filas con el control fuera de la vista, sin ensanchar la página.
 - El celular corre en e2e sólo lo que tiene rama propia (tarjetas, hoja de filtros, pestañas del kanban, panel desde abajo, menú, pie del
   modal, foto, «Rol a la vista»): las pruebas marcadas se deciden con `E2E_HUELLA` + `scripts/comparar-anchos.mjs`. `E2E_ESTRES=1` repite

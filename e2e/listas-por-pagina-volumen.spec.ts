@@ -7,7 +7,7 @@ import {
   filasDelListado,
   fijarPreferencia,
   parametrosDe,
-  selectorDeTamano,
+  abrirSelectorDeTamano,
   vistasDelHtml,
 } from './soporte/listas-por-pagina'
 import { esMovil } from './soporte/inventario'
@@ -20,6 +20,7 @@ import { MAXIMO_DE_PAGINA_DE_LEADS } from '../src/modules/leads/entities/listado
 import { MAXIMO_DE_PAGINA_DE_VEHICULOS } from '../src/modules/vehiculos/entities/vehiculo'
 import { tamanosHasta } from '../src/shared/lib/paginacion'
 import { stackLocal } from '../scripts/lib/stack-local.mjs'
+import { botonDeVistaYOpciones } from './soporte/vista-y-opciones'
 
 // Los pedidos a la API de Supabase de ESTE worktree (la principal o un carril).
 const A_LA_BASE = new RegExp(`:${String(stackLocal().puertoApi)}/`)
@@ -128,7 +129,8 @@ for (const [quien, correo] of [
     expect(pedidos.acciones()).toBe(0)
     // Con el máximo se ven exactamente las filas del máximo (hay miles detrás).
     await expect(filasDelListado(page)).toHaveCount(maximo)
-    await expect(selectorDeTamano(page)).toHaveValue(String(maximo))
+    // «Vista y opciones» cerrado (cero nodos del panel) dice el tamaño.
+    await expect(botonDeVistaYOpciones(page)).toContainText(`${String(maximo)} por página`)
     const primera = await nodos(page)
     notas(
       info,
@@ -162,7 +164,7 @@ for (const [quien, correo] of [
     await page.goto('/leads')
     await esperarLista(page)
     await expect(filasDelListado(page)).toHaveCount(MAXIMO_DE_PAGINA_DE_LEADS)
-    const opciones = await selectorDeTamano(page).locator('option').allTextContents()
+    const opciones = await (await abrirSelectorDeTamano(page)).locator('option').allTextContents()
     expect(opciones).toEqual(tamanosHasta(MAXIMO_DE_PAGINA_DE_LEADS).map(String))
     await page.goto('/leads?por=100')
     await expect(filasDelListado(page).first()).toBeVisible({ timeout: 60_000 })
@@ -171,7 +173,7 @@ for (const [quien, correo] of [
     for (const tamano of tamanosHasta(MAXIMO_DE_PAGINA_DE_LEADS)) {
       await elegirTamano(page, tamano)
       await expect(filasDelListado(page)).toHaveCount(tamano, { timeout: 60_000 })
-      await expect(selectorDeTamano(page)).toHaveValue(String(tamano))
+      await expect(await abrirSelectorDeTamano(page)).toHaveValue(String(tamano))
       await sinScrollHorizontal(page)
       await capturar(
         page,
@@ -179,8 +181,8 @@ for (const [quien, correo] of [
         `leads-${correo.startsWith('duena') ? 'duena' : 'ana'}-por-${String(tamano)}`,
       )
     }
-    // El selector, a la vista (en el celular está al pie de la lista).
-    await selectorDeTamano(page).scrollIntoViewIfNeeded()
+    // El selector, a la vista (en «Vista y opciones»: popover en escritorio, hoja en el celular).
+    await (await abrirSelectorDeTamano(page)).scrollIntoViewIfNeeded()
     await capturar(page, info, `leads-${correo.startsWith('duena') ? 'duena' : 'ana'}-selector`)
     await fijarPreferencia(correo, null)
   })
@@ -239,7 +241,7 @@ test('inventario de vehículos de la dueña: con el máximo (100) cabe en bytes 
   // Sin costo por fila que crezca: el máximo pesa, a lo sumo, 2,5 veces lo que pesan 50 filas (son el doble de filas).
   const de50 = pesos[tamanosHasta(maximo).indexOf(50)] ?? 1
   expect(pesos.at(-1) ?? 0).toBeLessThan(de50 * 2.5)
-  await selectorDeTamano(page).scrollIntoViewIfNeeded()
+  await (await abrirSelectorDeTamano(page)).scrollIntoViewIfNeeded()
   await capturar(page, info, 'vehiculos-selector')
 })
 

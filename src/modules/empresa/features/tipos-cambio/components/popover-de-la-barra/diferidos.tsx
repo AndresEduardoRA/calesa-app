@@ -9,6 +9,12 @@ export const ContenidoDeTiposCambioDiferido = diferido(
   { aviso: 'aqui' },
 )
 
+// «Compartir» (las casillas, la vista previa y los botones) se pide al tocarlo: quien sólo mira los valores no lo paga.
+export const PanelDeCompartirDiferido = diferido(
+  () => import('./compartir/panel-de-compartir').then((m) => m.PanelDeCompartir),
+  { aviso: 'aqui' },
+)
+
 // Pide el código sin abrir nada, al llegar el puntero al botón (no al tomar el foco: un recorrido con Tab no suma pedidos). Un fallo acá
 // no se dice: nadie pidió nada todavía.
 export function adelantarElContenido() {

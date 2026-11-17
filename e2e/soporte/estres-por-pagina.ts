@@ -3,8 +3,16 @@
 // en cada corrida (20 veces por modo y por lista son minutos): sólo con `E2E_ESTRES=1`, una vez al cerrar una tarea que toque
 // `shared/ui/filtros` o la preferencia (`playwright.config.ts`, como el volumen).
 import { expect, type Page } from '@playwright/test'
-import { filasDelListado, parametrosDe, registrarRed, selectorDeTamano } from './listas-por-pagina'
+import {
+  abrirSelectorDeTamano,
+  esperarHidratado,
+  filasDelListado,
+  parametrosDe,
+  registrarRed,
+  selectorDeTamano,
+} from './listas-por-pagina'
 import { demorarAcciones } from './recorrido'
+import { abrirVistaYOpciones, cerrarVistaYOpciones } from './vista-y-opciones'
 
 export const CORRIDAS_DE_ESTRES = 20
 const LATENCIA_MS = 1_000
@@ -66,7 +74,10 @@ export async function repetirEleccionPendiente(page: Page, escenario: Escenario)
     const red = registrarRed(page)
     await escenario.abrirEnLaPrimera()
     await expect(filasDelListado(page)).toHaveCount(10)
-    await expect(selectorDeTamano(page)).toHaveAttribute('data-hidratado', 'true')
+    await esperarHidratado(page)
+    // «Vista y opciones» abierto y cerrado una vez: su código ya llegó y abrirlo con la navegación pendiente es inmediato.
+    await abrirVistaYOpciones(page)
+    await cerrarVistaYOpciones(page)
     for (let n = 0; n < 2; n++) {
       const respuesta = page.waitForResponse(lecturaDeCursor)
       await page.getByRole('link', { name: 'Siguiente' }).click()
@@ -77,7 +88,7 @@ export async function repetirEleccionPendiente(page: Page, escenario: Escenario)
         await respuesta
       }
     }
-    await selectorDeTamano(page).selectOption(String(tamano))
+    await (await abrirSelectorDeTamano(page)).selectOption(String(tamano))
     if (modo === 'latencia') {
       // El guardado sigue en vuelo (tarda 3 s): la navegación a `?por=` espera a que termine, no sale a la vez.
       expect(parametrosDe(page).has('por')).toBe(false)

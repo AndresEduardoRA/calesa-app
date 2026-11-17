@@ -1,12 +1,12 @@
 'use client'
 
-import { BookmarkIcon, Trash2Icon } from 'lucide-react'
+import { Trash2Icon } from 'lucide-react'
 import type { Route } from 'next'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Button, buttonVariants } from '@/shared/ui/button'
+import { Button } from '@/shared/ui/button'
 import { Campo } from '@/shared/ui/campo'
-import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@/shared/ui/popover'
+import { useVistaYOpciones } from '@/shared/ui/vista-y-opciones'
 import {
   LARGO_MAXIMO_DE_NOMBRE,
   esLaVistaActual,
@@ -43,7 +43,7 @@ function ListaDeVistas({ vistas, actuales, enCurso, alAplicar, alEliminar }: Pro
     )
   }
   return (
-    <ul className="grid max-h-64 gap-0.5 overflow-y-auto">
+    <ul className="grid max-h-48 gap-0.5 overflow-y-auto">
       {vistas.map((vista) => {
         const actual = esLaVistaActual(vista, actuales)
         return (
@@ -82,71 +82,64 @@ function ListaDeVistas({ vistas, actuales, enCurso, alAplicar, alEliminar }: Pro
   )
 }
 
-// Las vistas guardadas de un listado: aplicarlas (es navegar a su URL), guardar los filtros de
-// ahora con un nombre, y eliminarlas con «Deshacer». Va en el hueco `vistas` de `<FilterShell>`.
-export function MenuDeVistas({ pantalla, vistas, actuales, puedeGuardar }: Props) {
-  const [abierto, setAbierto] = useState(false)
+// Las vistas guardadas de un listado: aplicarlas (es navegar a su URL), guardar los filtros de ahora con un nombre, y eliminarlas con
+// «Deshacer». Es una sección de «Vista y opciones» (`<FilterShell opciones>`): aplicar o guardar cierra el panel.
+export function VistasGuardadas({ pantalla, vistas, actuales, puedeGuardar }: Props) {
   const [nombre, setNombre] = useState('')
   const ruta = usePathname()
   const router = useRouter()
   const estado = useVistas(pantalla)
+  const panel = useVistaYOpciones()
 
   async function guardar() {
     if (await estado.guardar(nombre, actuales)) {
       setNombre('')
-      setAbierto(false)
+      panel.cerrar()
     }
   }
 
   return (
-    <Popover open={abierto} onOpenChange={setAbierto}>
-      <PopoverTrigger className={buttonVariants({ variant: 'outline', className: 'h-11 md:h-9' })}>
-        <BookmarkIcon aria-hidden />
-        Vistas
-      </PopoverTrigger>
-      <PopoverContent align="start" className="w-80 max-w-[calc(100vw-2rem)] gap-3 p-3">
-        <PopoverTitle>Vistas guardadas</PopoverTitle>
-        <ListaDeVistas
-          vistas={vistas}
-          actuales={actuales}
-          enCurso={estado.enCurso}
-          alAplicar={(vista) => {
-            setAbierto(false)
-            router.push(urlDeVista(ruta, vista.params) as Route)
+    <div className="grid w-full gap-3">
+      <ListaDeVistas
+        vistas={vistas}
+        actuales={actuales}
+        enCurso={estado.enCurso}
+        alAplicar={(vista) => {
+          panel.cerrar()
+          router.push(urlDeVista(ruta, vista.params) as Route)
+        }}
+        alEliminar={(vista) => void estado.eliminar(vista)}
+      />
+      <form
+        noValidate
+        className="grid gap-2 border-t border-(--color-line) pt-3"
+        onSubmit={(evento) => {
+          evento.preventDefault()
+          void guardar()
+        }}
+      >
+        <Campo
+          nombre="nombreDeVista"
+          etiqueta="Guardar los filtros de ahora"
+          placeholder="Nombre de la vista"
+          autoComplete="off"
+          maxLength={LARGO_MAXIMO_DE_NOMBRE}
+          value={nombre}
+          onChange={(evento) => {
+            setNombre(evento.target.value)
           }}
-          alEliminar={(vista) => void estado.eliminar(vista)}
+          error={estado.errorDeNombre}
+          ayuda={
+            puedeGuardar
+              ? 'Con un nombre que ya existe, la reemplaza.'
+              : 'Pon algún filtro para poder guardarlo.'
+          }
+          disabled={!puedeGuardar}
         />
-        <form
-          noValidate
-          className="grid gap-2 border-t border-(--color-line) pt-3"
-          onSubmit={(evento) => {
-            evento.preventDefault()
-            void guardar()
-          }}
-        >
-          <Campo
-            nombre="nombreDeVista"
-            etiqueta="Guardar los filtros de ahora"
-            placeholder="Nombre de la vista"
-            autoComplete="off"
-            maxLength={LARGO_MAXIMO_DE_NOMBRE}
-            value={nombre}
-            onChange={(evento) => {
-              setNombre(evento.target.value)
-            }}
-            error={estado.errorDeNombre}
-            ayuda={
-              puedeGuardar
-                ? 'Con un nombre que ya existe, la reemplaza.'
-                : 'Pon algún filtro para poder guardarlo.'
-            }
-            disabled={!puedeGuardar}
-          />
-          <Button type="submit" disabled={!puedeGuardar || nombre.trim() === '' || estado.enCurso}>
-            {estado.enCurso ? 'Guardando…' : 'Guardar vista'}
-          </Button>
-        </form>
-      </PopoverContent>
-    </Popover>
+        <Button type="submit" disabled={!puedeGuardar || nombre.trim() === '' || estado.enCurso}>
+          {estado.enCurso ? 'Guardando…' : 'Guardar vista'}
+        </Button>
+      </form>
+    </div>
   )
 }

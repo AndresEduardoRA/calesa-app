@@ -3,7 +3,7 @@
 import { useRef, useState, useSyncExternalStore } from 'react'
 import { cn } from 'cn'
 import { Button } from '../button'
-import { usePorPaginaDelListado, type PorPaginaDelListado } from './use-por-pagina-del-listado'
+import type { PorPaginaDelListado } from './use-por-pagina-del-listado'
 
 const sinSuscripcion = () => () => undefined
 
@@ -12,35 +12,22 @@ const FLECHAS = new Set(['ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageD
 type Props = {
   opciones: readonly number[]
   estado: PorPaginaDelListado
+  // La etiqueta queda para el lector de pantalla (y `getByLabel`): dentro de «Vista y opciones» el título visible es el de la sección.
+  etiquetaOculta?: boolean
   className?: string
 }
 
 export type PorPaginaDeLaLista = { valor: number; opciones: readonly number[] }
 
-// El selector de un listado, con su estado: nada si el listado no lo ofrece. Va una vez en `FilterShell`: en la barra desde
-// `md` y arriba de la lista por debajo (cierre 1; antes iba dos veces y el CSS escondía una).
-export function SelectorDelListado(props: {
-  porPagina: PorPaginaDeLaLista | undefined
-  aplicar: (tamano: number) => void
-  className?: string
-}) {
-  const estado = usePorPaginaDelListado(props.porPagina?.valor ?? 0, props.aplicar)
-  if (!props.porPagina) {
-    return null
-  }
-  return (
-    <SelectorDePorPagina
-      opciones={props.porPagina.opciones}
-      estado={estado}
-      {...(props.className ? { className: props.className } : {})}
-    />
-  )
-}
-
 // «Ítems por página»: el mismo texto y el mismo control en todo listado. Es un `<select>` nativo (en el celular abre el
 // selector del sistema). Con el mouse o el dedo cambia al elegir; con las flechas del teclado, en cambio, recorre los
 // tamaños sin ir al servidor cada vez: se confirma con Enter o al salir del campo, y Esc lo deja como estaba.
-export function SelectorDePorPagina({ opciones, estado, className }: Props) {
+export function SelectorDePorPagina({
+  opciones,
+  estado,
+  etiquetaOculta = false,
+  className,
+}: Props) {
   const [tecleado, setTecleado] = useState<number | null>(null)
   const conFlecha = useRef(false)
   // Falso mientras la página llega del servidor, verdadero cuando React ya enganchó el control: un cambio anterior se
@@ -60,7 +47,7 @@ export function SelectorDePorPagina({ opciones, estado, className }: Props) {
   return (
     <div className={cn('grid justify-items-end gap-1', className)}>
       <label className="flex items-center gap-2 text-(length:--text-sm) text-(--color-ink-soft)">
-        <span className="whitespace-nowrap">Ítems por página</span>
+        <span className={etiquetaOculta ? 'sr-only' : 'whitespace-nowrap'}>Ítems por página</span>
         <select
           data-hidratado={hidratado}
           value={String(tecleado ?? estado.visto)}
@@ -71,7 +58,11 @@ export function SelectorDePorPagina({ opciones, estado, className }: Props) {
             } else if (evento.key === 'Enter' && tecleado !== null) {
               evento.preventDefault()
               confirmar()
-            } else if (evento.key === 'Escape') {
+            } else if (evento.key === 'Escape' && tecleado !== null) {
+              // El primer Esc deshace el tamaño a medio elegir con flechas y no cierra el panel que lo contiene («Vista y opciones»): no
+              // llega al popup ni a `document`, donde escucha Base UI. El segundo, sí.
+              evento.stopPropagation()
+              evento.nativeEvent.stopImmediatePropagation()
               setTecleado(null)
             }
           }}
@@ -101,6 +92,18 @@ export function SelectorDePorPagina({ opciones, estado, className }: Props) {
           ))}
         </select>
       </label>
+      <AvisosDePorPagina estado={estado} />
+    </div>
+  )
+}
+
+// Lo que dice «Ítems por página» cuando no pudo aplicar o guardar el tamaño: va con el selector y, con «Vista y opciones» cerrado, bajo la barra.
+export function AvisosDePorPagina({ estado }: { estado: PorPaginaDelListado }) {
+  if (!estado.esperandoRed && !estado.sinGuardar) {
+    return null
+  }
+  return (
+    <>
       {estado.esperandoRed ? (
         <p role="status" className="text-(length:--text-sm) text-(--color-ink-soft)">
           Sin conexión: se aplicará cuando vuelva la red.
@@ -109,7 +112,7 @@ export function SelectorDePorPagina({ opciones, estado, className }: Props) {
       {estado.sinGuardar ? (
         <p
           role="status"
-          className="flex flex-wrap items-center justify-end gap-2 text-(length:--text-sm) text-(--color-ink-soft)"
+          className="flex flex-wrap items-center gap-2 text-(length:--text-sm) text-(--color-ink-soft)"
         >
           No se pudo guardar tu preferencia: esta página igual muestra {estado.visto}.
           <Button variant="ghost" className="h-11 md:h-8" onClick={estado.reintentarGuardado}>
@@ -117,6 +120,6 @@ export function SelectorDePorPagina({ opciones, estado, className }: Props) {
           </Button>
         </p>
       ) : null}
-    </div>
+    </>
   )
 }

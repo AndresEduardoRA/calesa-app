@@ -19,6 +19,7 @@ import {
   type TerrenoDelListado,
 } from './soporte/leads-listado'
 import { vistasDe } from './soporte/vehiculos'
+import { abrirVistaYOpciones, botonDeVistaYOpciones } from './soporte/vista-y-opciones'
 
 // Los filtros del layout, las vistas guardadas, el drawer rápido y la paginación del listado de
 // leads. Quién ve qué, los privados y la búsqueda van en `leads-listado.spec.ts`.
@@ -71,10 +72,7 @@ test('recargar conserva el modo, los filtros y la búsqueda', async ({ page }) =
   await page.reload()
   await expect(page).toHaveURL(/alcance=todos/)
   await expect(page).toHaveURL(/a\.e2e_color=azul/)
-  await expect(page.getByRole('button', { name: 'Todos', exact: true })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
+  await expect(botonDeVistaYOpciones(page)).toContainText('Todos')
   await expect(fila(page, AJENO_CARLOS)).toBeVisible()
   await expect(fila(page, PROPIO_BERTA)).toHaveCount(0)
   await expect(
@@ -88,7 +86,7 @@ test('una vista guardada vuelve a poner sus filtros, y si el campo se apagó lo 
   await entrar(page, t.personas.duena)
   await irALeads(page, '?alcance=todos&a.e2e_color=azul')
   await expect(fila(page, AJENO_CARLOS)).toBeVisible()
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByLabel('Guardar los filtros de ahora').fill('Azules E2E')
   await page.getByRole('button', { name: 'Guardar vista' }).click()
   await expect(page.getByText('Vista «Azules E2E» guardada')).toBeVisible()
@@ -99,7 +97,7 @@ test('una vista guardada vuelve a poner sus filtros, y si el campo se apagó lo 
 
   // Aplicarla desde cero la deja como estaba.
   await irALeads(page)
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByRole('button', { name: 'Azules E2E', exact: true }).click()
   await expect(page).toHaveURL(/a\.e2e_color=azul/)
   await expect(fila(page, AJENO_CARLOS)).toBeVisible()
@@ -109,7 +107,7 @@ test('una vista guardada vuelve a poner sus filtros, y si el campo se apagó lo 
   await activarCampo('e2e_color', false)
   try {
     await irALeads(page)
-    await page.getByRole('button', { name: 'Vistas' }).click()
+    await abrirVistaYOpciones(page)
     await page.getByRole('button', { name: 'Azules E2E', exact: true }).click()
     await expect(
       page.getByText('Se quitó el filtro «Color E2E»: ese campo está desactivado.'),

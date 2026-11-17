@@ -84,6 +84,7 @@ export function TiposCambioVigentes({ tipos, puedeGestionar }: Props) {
         <ContenidoDeTiposCambioDiferido
           puedeGestionar={puedeGestionar}
           alRetener={alRetener}
+          idsEnLaBarra={tipos.map((tipo) => tipo.id)}
           alCerrar={() => {
             setAbierto(false)
           }}

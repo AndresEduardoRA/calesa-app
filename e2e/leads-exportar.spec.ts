@@ -25,6 +25,11 @@ import {
   prepararListado,
   type TerrenoDelListado,
 } from './soporte/leads-listado'
+import {
+  abrirVistaYOpciones,
+  cerrarVistaYOpciones,
+  elegirEnVistaYOpciones,
+} from './soporte/vista-y-opciones'
 
 // Exportar leads a CSV (parte 8) contra la app compilada y el Supabase local: qué entra en el archivo
 // (sólo la cartera, aunque se vea «todos» o se fuerce la URL), cómo se escribe (BOM, columnas del
@@ -92,26 +97,21 @@ test.afterAll(async () => {
   await limpiarListado(t)
 })
 
-// «Exportar» es un botón (sólo con ese permiso) o un renglón del menú «CSV» (con importar también).
-const botonExportar = (page: Page) =>
-  aLaVista(page.getByRole('button', { name: /^Exportar$|^CSV$/ }))
+// «Exportar…» va en «Vista y opciones» › «Más» (sólo con ese permiso).
 const dialogoDeExportar = (page: Page) => page.getByRole('dialog', { name: 'Exportar leads' })
 
-// Abre el diálogo de exportar. La pantalla recién cargada puede no haber terminado de hidratar: se
-// insiste hasta que el diálogo abre (el menú abierto se resuelve con su renglón, no con otro clic).
+// Lo que se ve de «Exportar…»: abre «Vista y opciones» y devuelve la opción (o nada, si no se ofrece). El panel queda abierto: quien
+// afirma su ausencia lo cierra con `cerrarVistaYOpciones`.
+async function opcionExportar(page: Page) {
+  const panel = await abrirVistaYOpciones(page)
+  await expect(panel.getByRole('region', { name: 'Vista', exact: true })).toBeVisible()
+  return panel.getByRole('button', { name: 'Exportar…', exact: true })
+}
+
+// Abre el diálogo de exportar: «Vista y opciones» › «Exportar…». El diálogo abre cuando el panel terminó de cerrarse.
 async function abrirExportar(page: Page): Promise<void> {
-  const dialogo = dialogoDeExportar(page)
-  const renglon = page.getByRole('menuitem', { name: 'Exportar…' })
-  await expect(async () => {
-    if (!(await dialogo.isVisible())) {
-      if (await renglon.isVisible()) {
-        await renglon.click()
-      } else {
-        await botonExportar(page).click()
-      }
-    }
-    await expect(dialogo).toBeVisible({ timeout: 1500 })
-  }).toPass()
+  await elegirEnVistaYOpciones(page, 'Exportar…')
+  await expect(dialogoDeExportar(page)).toBeVisible()
 }
 
 // Abre el diálogo, descarga y devuelve el archivo leído como texto (con su BOM, sin decodificar).
@@ -132,7 +132,8 @@ async function descargar(page: Page): Promise<string> {
 test('sin leads.exportar el botón no se dibuja y el pedido directo es 403', async ({ page }) => {
   await entrar(page, t.personas.berta)
   await irALeads(page)
-  await expect(botonExportar(page)).toHaveCount(0)
+  await expect(await opcionExportar(page)).toHaveCount(0)
+  await cerrarVistaYOpciones(page)
   const directo = await page.request.post('/leads/exportar', {
     data: { consulta: '', delimitador: ';' },
   })
@@ -143,7 +144,8 @@ test('sin leads.exportar el botón no se dibuja y el pedido directo es 403', asy
 test('ver «todos» sin el permiso tampoco exporta: el pedido directo es 403', async ({ page }) => {
   await entrar(page, t.personas.veTodos)
   await irALeads(page, '?alcance=todos')
-  await expect(botonExportar(page)).toHaveCount(0)
+  await expect(await opcionExportar(page)).toHaveCount(0)
+  await cerrarVistaYOpciones(page)
   const directo = await page.request.post('/leads/exportar', {
     data: { consulta: 'alcance=todos', delimitador: ';' },
   })
@@ -225,7 +227,8 @@ test('los filtros del listado viajan: se exporta lo que se ve', async ({ page })
 test('«ver como» un rol sin el permiso: el botón no se dibuja', async ({ page }) => {
   await entrar(page, t.personas.duena)
   await irALeads(page)
-  await expect(botonExportar(page)).toBeVisible()
+  await expect(await opcionExportar(page)).toBeVisible()
+  await cerrarVistaYOpciones(page)
   await page.getByRole('button', { name: 'Menú de Dalia Alta' }).click()
   await page
     .getByRole('menuitemradio', { name: new RegExp(`Alta berta`) })
@@ -233,7 +236,8 @@ test('«ver como» un rol sin el permiso: el botón no se dibuja', async ({ page
     .click()
   await expect(page.getByText('Viendo como')).toBeVisible()
   await irALeads(page)
-  await expect(botonExportar(page)).toHaveCount(0)
+  await expect(await opcionExportar(page)).toHaveCount(0)
+  await cerrarVistaYOpciones(page)
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)

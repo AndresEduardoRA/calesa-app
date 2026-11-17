@@ -14,6 +14,7 @@ import {
 } from './soporte/listado-de-cotizaciones-acciones'
 import { expect, test } from './soporte/prueba'
 import { literal, sql } from './soporte/sql'
+import { abrirVistaYOpciones } from './soporte/vista-y-opciones'
 
 // El buscador y las vistas guardadas del listado `/cotizaciones` (T15, `docs/UX.md` › «Cotizaciones»): se busca por número, cliente, vehículo (título, VIN y lote) y autor; quien no ve a un
 // lead o a un vehículo no encuentra por él; sin resultados ofrece «Limpiar búsqueda»; y una vista guardada se abre desde otra pantalla del listado. El terreno es
@@ -96,7 +97,7 @@ test('E2E guardar una vista con la búsqueda y abrirla desde otra pantalla del l
 }) => {
   await irA(page, terreno.t.duena, `${deLaPrueba()}&q=mascota&clase=preventa`)
   await expect(filas(page)).toHaveCount(3)
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByLabel('Guardar los filtros de ahora').fill('E2E Mascotas')
   await page.getByRole('button', { name: 'Guardar vista' }).click()
   await expect(page.getByText('Vista «E2E Mascotas» guardada')).toBeVisible()
@@ -112,7 +113,7 @@ test('E2E guardar una vista con la búsqueda y abrirla desde otra pantalla del l
   // Desde el listado sin nada puesto, aplicarla vuelve a poner la búsqueda y los filtros.
   await page.goto('/cotizaciones')
   await expect(filas(page).first()).toBeVisible()
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByRole('button', { name: 'E2E Mascotas', exact: true }).click()
   await expect(page).toHaveURL(/q=mascota/)
   await expect(page).toHaveURL(/clase=preventa/)

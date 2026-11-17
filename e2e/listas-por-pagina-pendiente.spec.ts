@@ -15,9 +15,10 @@ import {
   paginaSiguiente,
   parametrosDe,
   preferenciaDe,
-  selectorDeTamano,
+  abrirSelectorDeTamano,
 } from './soporte/listas-por-pagina'
 import { demorarAcciones } from './soporte/recorrido'
+import { abrirVistaYOpciones, cerrarVistaYOpciones } from './soporte/vista-y-opciones'
 
 // «Ítems por página» (5a-15) con una navegación pendiente, en el listado de leads: lo que pasa si la persona cambia el tamaño mientras la
 // página 3 todavía se está pidiendo. El feliz y el resto están en `listas-por-pagina.spec.ts`; el estrés (20 corridas seguidas con latencia
@@ -59,6 +60,9 @@ async function conLaPaginaTresPendiente(page: Page): Promise<void> {
   await expect(filasDelListado(page)).toHaveCount(10)
   await paginaSiguiente(page)
   await esperarHidratado(page)
+  // «Vista y opciones» ya abierto una vez: su código ya llegó y abrirlo durante la navegación pendiente es inmediato.
+  await abrirVistaYOpciones(page)
+  await cerrarVistaYOpciones(page)
   await page.route(/[?&]cursor=/, async (ruta) => {
     if (ruta.request().headers()['rsc'] !== undefined) {
       await new Promise((listo) => setTimeout(listo, 1_000))
@@ -74,11 +78,13 @@ test('con la página 3 pendiente, un tamaño que no es de la lista (un `<option>
   test.setTimeout(60_000)
   await conLaPaginaTresPendiente(page)
   const acciones = await demorarAcciones(page, 0)
-  await selectorDeTamano(page).evaluate((select: HTMLSelectElement) => {
+  await (
+    await abrirSelectorDeTamano(page)
+  ).evaluate((select: HTMLSelectElement) => {
     select.add(new Option('7', '7'))
   })
-  await selectorDeTamano(page).selectOption('7')
-  await expect(selectorDeTamano(page)).toHaveValue('10')
+  await (await abrirSelectorDeTamano(page)).selectOption('7')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('10')
   // La navegación que ya iba a la página 3 termina sola, con el tamaño de antes y sin `?por=`.
   await expect(page).toHaveURL(/cursor=/)
   await expect(filasDelListado(page)).toHaveCount(10)
@@ -90,12 +96,12 @@ test('con la página 3 pendiente, un tamaño que no es de la lista (un `<option>
 test('con la página 3 pendiente, dos cambios seguidos terminan en el último', async ({ page }) => {
   test.setTimeout(60_000)
   await conLaPaginaTresPendiente(page)
-  await selectorDeTamano(page).selectOption('25')
-  await selectorDeTamano(page).selectOption('50')
+  await (await abrirSelectorDeTamano(page)).selectOption('25')
+  await (await abrirSelectorDeTamano(page)).selectOption('50')
   await expect(filasDelListado(page)).toHaveCount(50, { timeout: 15_000 })
   await expect.poll(() => parametrosDe(page).get('por')).toBe('50')
   expect(parametrosDe(page).has('cursor')).toBe(false)
-  await expect(selectorDeTamano(page)).toHaveValue('50')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('50')
   await expect.poll(() => preferenciaDe(t.personas.berta)).toBe(50)
 })
 
@@ -104,13 +110,13 @@ test('con la página 3 pendiente, si se pierde la red a mitad del cambio no se p
 }) => {
   test.setTimeout(60_000)
   await conLaPaginaTresPendiente(page)
-  await selectorDeTamano(page).selectOption('25')
+  await (await abrirSelectorDeTamano(page)).selectOption('25')
   await page.context().setOffline(true)
-  await expect(selectorDeTamano(page)).toHaveValue('25')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
   await page.context().setOffline(false)
   await expect(filasDelListado(page)).toHaveCount(25, { timeout: 20_000 })
   await expect.poll(() => parametrosDe(page).get('por')).toBe('25')
   expect(parametrosDe(page).has('cursor')).toBe(false)
-  await expect(selectorDeTamano(page)).toHaveValue('25')
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('25')
   await expect.poll(() => preferenciaDe(t.personas.berta)).toBe(25)
 })

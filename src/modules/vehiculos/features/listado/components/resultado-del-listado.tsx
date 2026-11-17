@@ -7,7 +7,7 @@ import { CLAVE_DE_CURSOR } from '@/shared/lib/filtros'
 import { ubicacionDeLaPagina, type Pagina } from '@/shared/lib/paginacion'
 import { EstadoPaginaSinFilas, EstadoSinResultados, EstadoVacio } from '@/shared/ui/estados'
 import { useFiltrosDelListado } from '@/shared/ui/filtros'
-import { ConmutadorDeVista, UnaSolaVista } from '@/shared/ui/lista'
+import { UnaSolaVista } from '@/shared/ui/lista'
 import { CORTE_DE_LA_TABLA } from '@/shared/lib/ancho'
 import { useAlMenos } from '@/shared/ui/ancho-de-pantalla'
 import type { VistaDeLista } from '@/shared/lib/vista-de-lista'
@@ -39,9 +39,8 @@ type Props = DatosDelOrigen & {
   // Abre el resumen de un vehículo, y cuál está abierto (para marcarlo).
   alAbrir: (id: string) => void
   abierto: string | null
-  // Tabla o tarjetas en escritorio, y cambiarla (`<ConmutadorDeVista>`, arriba de la lista).
+  // Tabla o tarjetas en escritorio (se elige en «Vista y opciones»).
   vista: VistaDeLista
-  alCambiarVista: (vista: VistaDeLista) => void
 }
 
 const mayuscula = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice(1)
@@ -50,7 +49,7 @@ const mayuscula = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice
 // origen), vacío por filtro (con «Limpiar») o una página que se quedó sin filas. Una sola vista (`<UnaSolaVista>`, como el listado de
 // leads): la tabla desde `md` y las tarjetas por debajo, o las tarjetas en todo ancho si la persona las eligió.
 export function ResultadoDelListado(props: Props) {
-  const { pagina, accionDeVacio, alAbrir, abierto, vista, alCambiarVista, ...resto } = props
+  const { pagina, accionDeVacio, alAbrir, abierto, vista, ...resto } = props
   const { editables, eliminables, leadsVisibles, alcance, publicar, aprobadas, ...datos } = resto
   const filtros = useFiltrosDelListado()
   const ancha = useAlMenos(CORTE_DE_LA_TABLA)
@@ -81,10 +80,7 @@ export function ResultadoDelListado(props: Props) {
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <UbicacionDeLaPagina ubicacion={ubicacionDeLaPagina(pagina)} />
-        <ConmutadorDeVista vista={vista} alCambiar={alCambiarVista} />
-      </div>
+      <UbicacionDeLaPagina ubicacion={ubicacionDeLaPagina(pagina)} />
       <UnaSolaVista
         preferida={vista}
         tabla={() => (

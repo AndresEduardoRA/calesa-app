@@ -3,6 +3,7 @@
 import type { ConteoAcotado } from '@/shared/lib/conteo'
 import type { Resultado } from '@/shared/lib/errores'
 import type { AjustesDeCotizacion } from './ajustes-de-cotizacion'
+import type { LeyendaDeTiposCambio, ParaCompartir } from './compartir-tipos-cambio'
 import type { AjustesEmpresa, CambiosDeAjustes } from './ajustes-empresa'
 import type { ClaveIntegracion, Integracion } from './integraciones'
 import type { CambioDeValor, Moneda, TipoCambio } from './tipos-cambio'
@@ -99,3 +100,17 @@ export type LectorDeIntegraciones = () => Promise<Resultado<Integracion[]>>
 export type LectorDeVehiculosQueCambian = () => Promise<Resultado<ConteoAcotado>>
 // La vigencia con la versión de la fila; falla en vez de dar los de fábrica.
 export type LectorDeAjustesDeCotizacion = () => Promise<Resultado<AjustesDeCotizacion>>
+
+// La leyenda de los tipos de cambio compartidos, con la misma versión de la fila que el formulario de Empresa.
+export type RepositorioLeyendaDeTiposCambio = {
+  guardar: (pedido: {
+    leyenda: string | null
+    actualizadoEnEsperado: string
+  }) => Promise<Resultado<Editado>>
+}
+// Falla en vez de dar una leyenda vacía: se guardaría encima de la verdadera.
+export type LectorDeLeyendaDeTiposCambio = () => Promise<Resultado<LeyendaDeTiposCambio>>
+// Lo que se comparte, de los tipos elegidos (los activos entre ellos, en el orden pedido) y de la empresa, con la sesión de quien pide.
+export type LectorParaCompartir = (ids: readonly string[]) => Promise<Resultado<ParaCompartir>>
+// La imagen PNG de lo que se comparte.
+export type DibujanteDeImagen = (datos: ParaCompartir) => Promise<Resultado<Uint8Array>>

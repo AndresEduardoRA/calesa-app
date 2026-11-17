@@ -56,6 +56,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   a la vista en la barra superior; hasta 3 activos; sin ninguno, la barra muestra el por defecto.
 - **Último cambio de un tipo de cambio** — `tipos_cambio_vigentes()` / `UltimoCambio`: quién (el nombre, nunca el correo) y cuándo cambió el
   valor por última vez; sale del historial, así que renombrar o marcar no lo mueve.
+- **Leyenda de los tipos de cambio** — `ajustes_empresa.leyenda_tipos_cambio` / `LeyendaDeTiposCambio`: el texto (hasta 120 caracteres, una línea; vacía =
+  ninguna) que va al pie de lo que se comparte con un cliente; se escribe en Configuración › Empresa › Monedas con `empresa_guardar_leyenda_de_tipos_cambio()`.
+- **Compartir los tipos de cambio** — `ParaCompartir`, `armarTextoParaCompartir()`, rutas `/tipos-de-cambio/imagen` y `/tipos-de-cambio/texto`: la imagen
+  (PNG con logo, nombre, momento en la zona de la empresa, los tipos elegidos y la leyenda) y el texto para WhatsApp, armados en el servidor con lo mismo.
 - **Monto en moneda base** — `gastos.monto_base`, `pagos.monto_base` / `_monto_en_base()`: lo calcula la base con el tipo de cambio elegido
   (su valor queda en `tipo_cambio_aplicado`); quien carga nunca lo manda.
 - **Prorratear** — `gastos_prorratear()` / `gastos.lote_id`: repartir un gasto entre 1 y 200 vehículos en partes iguales; los centavos que
@@ -222,7 +226,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Enmascarado** — `enmascarar_telefono()` / `telefono_lead()`: teléfono fuera de tu cartera: 3 primeros y 2 últimos dígitos («591•••••01»).
 - **País del teléfono** — `paisDelNumero()` / `TABLA_DE_PAISES`: país del código de llamada, calculado en el navegador.
 - **Ítems por página** — `listas.por_pagina`, `tamanoDePagina()`, `?por=`: 10, 25, 50 o 100 por cuenta; cada lista tiene un máximo (leads 50,
-  vehículos 100).
+  vehículos 100). Se elige en «Vista y opciones».
 - **Número propio** — `leads.numero_propio` / `leads_numeros_propios`, `NumerosDeLead.numeroPropio`: consecutivo por creador (desde 1): «Tu
   n.º 12». Se busca con `12` o `#12`.
 - **Número global** — `leads.numero` / `leads_numeros_globales`, `leads.numero_global.ver`, `NumerosDeLead.numero`: consecutivo de la empresa
@@ -234,8 +238,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   «Adjuntos», «Revisiones» y «Comentarios».
 - **Patrón de lista** — `@/shared/ui/lista` (`<UnaSolaVista>`, `<FilaDeLista>`, `<MasAcciones>`…): tabla o tarjetas, nombre a la izquierda,
   «⋯» a la derecha.
-- **Vista de la lista** — `VistaDeLista` (`tabla` | `tarjetas`), `?vista=`, `<ConmutadorDeVista>`: cómo se ve una lista en escritorio; en el
-  inventario la recuerda `vehiculos.vista`. Por debajo de 768 px siempre tarjetas. No es una «Vista guardada».
+- **Vista de la lista** — `VistaDeLista` (`tabla` | `tarjetas`), `?vista=`, `<ConmutadorDeVista>` (en «Vista y opciones»): cómo se ve una lista en
+  escritorio; en el inventario la recuerda `vehiculos.vista`. Por debajo de 768 px siempre tarjetas. No es una «Vista guardada».
 - **Vuelta del foco** — `abrirConVuelta()`, `useVueltaDelFoco()` (`src/shared/ui/vuelta-del-foco.ts`): tras recargar con un panel por URL,
   «atrás» devuelve el foco a quien lo abrió (desde un menú, al botón del menú).
 - **Más acciones («⋯»)** — `<MasAcciones>` / `accionesDeLead()`, `accionesDeVehiculo()`: menú de fila, tarjeta, resumen o ficha.
@@ -631,7 +635,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Bloque de la bandeja** — `BLOQUES_BANDEJA` / `bloquesVisibles()`: lista de pendientes del Inicio, según los permisos.
 - **Bloque** — `<Bloque>`: sección plegable de un formulario o ficha.
 - **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`…); responde el panel de más arriba.
-- **Filtro** — `EsquemaDeFiltros`, `DefFiltro` / `<FilterShell>`: lo que acota un listado; cada uno declara los suyos y viven en la URL.
+- **Filtro** — `EsquemaDeFiltros`, `DefFiltro` / `<FilterShell>`: lo que acota un listado; cada uno declara los suyos y viven en la URL. Van en el botón
+  «Filtros»; lo que cambia cómo se ve la lista (vista, alcance, ítems por página), en «Vista y opciones».
+- **Vista y opciones** — `<VistaYOpciones>`, `GrupoDeVistaYOpciones` (`src/shared/ui/vista-y-opciones`): el botón de la barra de un listado que agrupa
+  vista, alcance, ítems por página, vistas guardadas, exportar y papelera; dice lo activo («Lista · Míos · 25 por página»). Popover desde 768 px,
+  hoja inferior por debajo, sin URL.
 - **Chip** — `chipsDe()` / `<ChipsDeFiltros>`: un filtro activo a la vista, que se quita solo.
 - **Cursor** — `lib/paginacion.ts` / `?cursor=`: dónde quedó la página de un listado (keyset `creado_en, id`).
 - **Tope de lo cargado** — `TOPE_DE_LO_CARGADO` / `enElTope()` (`lib/paginacion.ts`): máximo que carga una lista con «Ver más» (500).
@@ -640,7 +648,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Conflicto** — `PT409` / `<AvisoDeConflicto>`: otra persona guardó antes; quién y cuándo, con «Ver cómo quedó» y «Recargar».
 - **Borrador** — `useBorrador()`, `useBorradorDeEstado()`: lo escrito y no guardado de un formulario, en la pestaña; se repone al volver.
 - **Tablero** — `/tablero`: métricas y gráficas por rol con widgets.
-- **Vista guardada** — `vistas_guardadas` / `VistaGuardada`, `<MenuDeVistas>`: filtros de un listado con nombre, por persona; aplicarla es navegar. La
+- **Vista guardada** — `vistas_guardadas` / `VistaGuardada`, `<VistasGuardadas>` (una sección de «Vista y opciones»): filtros de un listado con nombre, por persona; aplicarla es navegar. La
   tienen leads, vehículos y cotizaciones (`RUTA_DE_PANTALLA`); con la búsqueda, guarda también `?q=`.
 - **Buscador del listado de cotizaciones** — `?q=` / `cotizaciones_buscar()`, `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`, `TOPE_DE_COINCIDENCIAS`: número, cliente,
   vehículo (título, VIN o lote) y autor; distinto del buscador global (`buscador_cotizaciones()`).

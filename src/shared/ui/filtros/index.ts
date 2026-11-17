@@ -2,3 +2,4 @@
 export { FilterShell } from './filter-shell'
 export { useFiltrosDelListado } from './contexto'
 export type { Filtros } from './use-filtros'
+export type { GrupoDeVistaYOpciones } from '../vista-y-opciones'
