@@ -326,9 +326,12 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   crear en `?panel=`.
 - **Flujos (config)** — `/configuracion/flujos` (`flujos.configurar` en algún origen, `repuestos.configurar` o
   `logistica.catalogos.gestionar`): una pestaña por flujo configurable (los orígenes con la clave, también los inactivos, y «Repuestos»),
-  `?origen=<id>` y `?ambito=repuestos`, `?seccion=fases|documentos|reglas` (la barra con dos o más pestañas; «Fases» abre primero) y
-  `?fase=<id>` (el inspector). Las fases se crean, ordenan, jubilan y reactivan desde la lista; en el inspector se editan y se agregan y
-  quitan salidas y requisitos. Ver «Flujos: configuración (estados propios)» y siguientes.
+  `?origen=<id>` y `?ambito=repuestos`. Las fases como **diagrama** (desde 768 px; `?vista=diagrama|lista`, «Ver como lista») o lista
+  (el celular), con la **barra del flujo** encima («Reglas del flujo», «Tipos de documento», la vista y «Nueva fase»). Tocar una fase
+  abre el **panel del flujo** al costado (`?fase=<id>`); las reglas y los tipos de documento se abren en el mismo panel
+  (`?seccion=reglas|documentos`; `?seccion=fases` es la pantalla). Las fases se crean desde la barra, se ordenan arrastrando o con «Mover
+  antes/después» (y «Subir/Bajar» en la lista), se jubilan y reactivan; en el panel se editan y se agregan y quitan salidas y requisitos.
+  Ver «Flujos: configuración (estados propios)» y siguientes.
 - **Logística (config)** — `/configuracion/logistica` (`logistica.catalogos.gestionar`): catálogos «Puertos» (nombre, país, código, orden y
   activo), «Navieras» (nombre y activa; sin «Eliminar»: se desactivan) y «Categorías de gasto» (nombre, propósito de la lista fija de la
   base, orden y activa; una con gastos no se elimina, se desactiva), en `?seccion=puertos|navieras|categorias-de-gasto` (sin barra con una
@@ -584,15 +587,32 @@ cabecera, con `leads.ver`, **en una línea**: ver abajo), la ficha del lead (tra
 ### Flujos: configuración (estados propios)
 
 - **Entrada:** con alguna de las tres claves, la tarjeta «Flujos» en el hub; sin ninguna, sin permiso. Con sólo
-  `logistica.catalogos.gestionar`, sólo la pestaña «Documentos»; sin ninguna pestaña, «Por ahora no hay nada que configurar aquí con tus
-  permisos.».
+  `logistica.catalogos.gestionar`, los tipos de documento en la página (sin diagrama ni panel); sin ninguna sección, «Por ahora no hay
+  nada que configurar aquí con tus permisos.».
 - **Selector:** una pestaña por flujo configurable, con el nombre del origen («(inactivo)») y «Repuestos» al final. `?ambito=repuestos`
   gana sobre `?origen=`; una URL inválida o ajena abre la primera, nunca un error. Elegir una borra `?fase=`. Vacíos: ningún flujo
   configurable; flujo que desapareció.
-- **Lista de fases** (patrón de `shared/ui/lista`): en el orden de la base, nombre con su color (texto y color, nunca sólo color) y las
-  marcas «Inicial», «Final» y «Jubilada»; la fila abre el inspector. Vacía, su frase; tope 200 con aviso.
-- **Inspector de fase** (`?fase=<id>`, `<Drawer>` por URL; sobrevive a recargar, «atrás» y Esc lo cierran): «Datos», «Salidas y quién
-  mueve» y «Requisitos para entrar». Los roles por nombre («otro rol» si no estaba entre los 100 leídos). Un id ajeno al flujo se ignora.
+- **Barra del flujo** (sobre las fases): «Fases» con «En el orden del flujo: toca una fase para editarla.», «Reglas del flujo» y «Tipos de
+  documento» (abren el panel, según los permisos), «Ver como lista» / «Ver como diagrama» (sólo desde 768 px), «Nueva fase» y, si no se
+  puede ordenar, el motivo en texto. Se parte en renglones; botones de 44 px en el celular.
+- **Diagrama** (`diferido()`, desde 768 px y por defecto): las fases como cajas en su orden, de izquierda a derecha (las jubiladas en su
+  lugar, apagadas y punteadas), con el borde de su color, el nombre, «Inicial», «Final», «Subasta» o «Jubilada», sus requisitos y quién la
+  mueve en corto y el ícono con sus avisos de «Revisar»; las salidas como flechas con su acción (rectas a la siguiente, ramas arriba,
+  vueltas atrás abajo, sin cruces; punteadas hacia una jubilada). Cada caja es un botón «Fase «X»» con todo eso en su descripción; tocarla
+  abre su panel y la centra en lo que el panel no tapa. Se arrastra de costado para ordenar (con el lugar donde cae marcado); la rueda
+  desplaza la página, el zoom va con «Acercar», «Alejar», «Ver todo el flujo», el pellizco o Ctrl + rueda. Es un apoyo visual: «Ver como
+  lista» es la versión para lector. Esqueleto del alto del lienzo mientras llega; si el código no llega, «Sin conexión…» con «Reintentar» y
+  la lista debajo. Muchas fases: el lienzo desplaza y hace zoom, la página no se ensancha.
+- **Lista de fases** (patrón de `shared/ui/lista`; la del celular y la de «Ver como lista»): en el orden de la base, nombre con su color
+  (texto y color, nunca sólo color), las marcas, la insignia de «Revisar» («1 aviso») y las salidas; la fila abre el panel. Vacía, su
+  frase; tope 200 con aviso.
+- **Panel del flujo** (`?fase=<id>` o `?seccion=reglas|documentos`, `<Drawer>` por URL; sobrevive a recargar, «atrás» y Esc lo cierran):
+  desde 1024 px va al costado y no es modal (el diagrama sigue a la vista y tocar otra fase cambia el panel sin cerrarlo); más angosto, el
+  drawer modal. De una fase: sus avisos de «Revisar», «Mover antes», «Mover después» y «Jubilar o eliminar», y **cuatro bloques a la
+  vista** (sin acordeones): «Datos», «Requisitos para entrar», «Salidas y quién mueve» y «Reglas que la afectan» (cada regla del flujo
+  que deja o no encender un interruptor de la fase, con «Cambiar las reglas del flujo»). Los roles por nombre («otro rol» si no estaba
+  entre los 100 leídos). Gana `?seccion=` sobre `?fase=`; un id ajeno al flujo o una sección que no se ve se ignoran. Abrir otra fase o
+  sección limpia lo que abría la anterior.
 - **Conflicto:** «Otra persona cambió este flujo · Recargar» arriba cuando una escritura choca (`PT409`); se va al llegar la versión nueva.
   En un modal, «Recargar» va dentro y lo escrito queda.
 - **Estados:** esqueleto (`loading.tsx` y el del `Suspense`), error con «Reintentar» (el de `(app)`), sin permiso. Una URL escrita a mano
@@ -600,7 +620,9 @@ cabecera, con `leads.ver`, **en una línea**: ver abajo), la ficha del lead (tra
 
 ### Flujos: revisar (estados propios)
 
-- **Lugar:** franja sobre el selector, sólo en «Fases» y con un flujo leído.
+- **Lugar:** franja sobre el selector, con un flujo leído. Lo mismo (una sola lectura) se marca sobre el diagrama: el ícono y la
+  descripción de cada caja («1 error y 2 avisos de Revisar»), la flecha de una salida a una jubilada, la insignia de la fila de la lista y,
+  arriba del panel de la fase, sus avisos con la palabra del nivel. Mientras se lee o si falla, una caja no dice «sin avisos».
 - **Cerrada (al entrar):** resumen con icono y color («Revisar: Todo en orden», «Revisar: 1 error y 3 avisos»; la información no cuenta;
   más de 200, «Más de 200 avisos»). Sin filas, el resumen es texto, no botón.
 - **Abierta:** cada aviso con icono y la **palabra** del nivel (nunca sólo color) y el texto de la base, error › aviso › información; uno
@@ -611,7 +633,8 @@ cabecera, con `leads.ver`, **en una línea**: ver abajo), la ficha del lead (tra
 
 ### Flujos: tipos de documento (estados propios)
 
-Configuración › Flujos › Documentos (`?seccion=documentos`). Hermana de «Tipos de seguimiento» (patrón de `shared/ui/lista`, orden con
+Configuración › Flujos › «Tipos de documento» de la barra del flujo, en su panel (`?seccion=documentos`; para quien sólo gestiona los
+catálogos de logística, en la página). Hermana de «Tipos de seguimiento» (patrón de `shared/ui/lista`, orden con
 teclado, «⋯», modal por URL), con **dos grupos**, **sólo lectura con motivo** y **una lista que se relee** (ninguna RPC la devuelve).
 
 - **Grupos:** «De toda la empresa» (`logistica.catalogos.gestionar`) y, bajo el selector, «Sólo de este flujo» (`flujos.configurar` o
@@ -630,21 +653,24 @@ teclado, «⋯», modal por URL), con **dos grupos**, **sólo lectura con motivo
 
 ### Flujos: fases (estados propios)
 
-Lo que la lista de fases y el inspector › Datos suman a «Flujos: configuración». Mismo patrón que «Tipos de documento».
+Lo que el diagrama, la lista de fases y el panel › Datos suman a «Flujos: configuración». Mismo patrón que «Tipos de documento».
 
 - **Nueva fase** (`?panel=nueva-fase`): nombre, color de una paleta cerrada (con su nombre en texto) y tipo (Intermedia, Inicial, Final);
   se crea al final del flujo. Nombre repetido, junto al campo. Con 200 fases, apagado con su motivo.
-- **Filas:** «Subir/Bajar X» (el foco sigue en el botón al llegar el orden nuevo) y el «⋯»: activa → Editar · Jubilar o eliminar;
-  jubilada → Editar · Reactivar (sin «Deshacer»).
+- **Ordenar:** arrastrar la caja en el diagrama (el orden nuevo se ve en el acto; si la base lo rechaza, vuelve atrás), «Mover antes» y
+  «Mover después» en el panel (con el teclado; el foco sigue en el botón al llegar el orden nuevo) y, en la lista, «Subir/Bajar X». Con
+  la lista cortada por el tope (más de 200 fases) todo se apaga con «Hay más de 200 fases: con la lista cortada no se puede ordenar.».
+- **Filas de la lista:** «Subir/Bajar X» y el «⋯»: activa → Editar · Jubilar o eliminar; jubilada → Editar · Reactivar (sin
+  «Deshacer»).
 - **Jubilar o eliminar** (`?panel=eliminar-fase&quitar=<id>`, `<Confirmar>`): al abrirse lee qué usa la fase. Sin unidades ni historial se
   elimina (no se deshace); con ellas se jubila (siguen en ella, deja de ser destino, se puede reactivar). Bloqueada (otras fases la
   esperan, única inicial activa): el motivo y «Confirmar» apagado. Si el uso cambió en el medio, decide la base y el aviso lo dice.
-- **Inspector › Datos** (`?fase=<id>`, `bloques.datos`): cinco bloques plegables: **Identidad** (abierto: nombre, descripción, color,
+- **Panel › Datos** (`?fase=<id>`, `bloques.datos`): cinco bloques a la vista: **Identidad** (nombre, descripción, color,
   icono), **En el flujo** (inicial, final, pide nota al entrar, es logística, «Es la subasta»: apagado con «Sólo en el flujo de un origen de
   subasta.» fuera de uno), **Alerta por demora** (días: vacío usa la de la empresa, 0
   la apaga; repetir cada 1 a 720 horas), **Transporte y aduana** (permite contenedor, permite aduana, llegada de repuestos) y **Web y
   portal** (se publica en la web, visible en el portal, nombre y descripción para el cliente). Manda sólo lo que cambió y queda abierto.
-  - Errores junto a su campo, con el bloque abierto y el foco en el primero (inicial y final a la vez; portal sin nombre para el cliente).
+  - Errores junto a su campo, con el foco en el primero (inicial y final a la vez; portal sin nombre para el cliente).
     Marcar «Es inicial» no desmarca a la otra: avisa.
   - Una regla del flujo apagada (Aduana, Logística, Vitrina web, Portal del cliente) deja su interruptor deshabilitado con el motivo; en
     repuestos, «No existe en el flujo de repuestos.». Uno ya encendido siempre se puede apagar.
@@ -652,7 +678,7 @@ Lo que la lista de fases y el inspector › Datos suman a «Flujos: configuraci�
 
 ### Flujos: requisitos para entrar (estados propios)
 
-Bloque del inspector (`?fase=<id>`): el resumen («Datos: 1 (bloquea)»), la lista y «Agregar requisito».
+Bloque del panel de la fase (`?fase=<id>`): el resumen («Datos: 1 (bloquea)»), la lista y «Agregar requisito».
 
 - **Fila:** descripción en una línea («Pagos confirmados: 50 % del precio», «Título · 1 a 3 archivos · PDF, JPG»; clave desconocida, «Dato:
   <clave>»), notas, interruptor «Bloqueante» (`aria-label` con la descripción), `<Badge>` «Bloqueante» o «Informativo», orden y «⋯» con
@@ -676,7 +702,8 @@ Bloque del inspector (`?fase=<id>`): el resumen («Datos: 1 (bloquea)»), la lis
 
 ### Flujos: salidas y quién mueve (estados propios)
 
-Bloque del inspector (`?fase=<id>`) y los chips de la fila. «Salida» es una transición que sale de la fase; «entrada», una que llega.
+Bloque del panel de la fase (`?fase=<id>`), las flechas del diagrama y los chips de la fila de la lista. «Salida» es una transición que
+sale de la fase; «entrada», una que llega. Una salida se agrega en el panel (no arrastrando de una caja a otra).
 
 - **Quién puede mover a esta fase:** «Hoy pueden mover: Dueño, Logística» o «Cualquiera con el permiso de mover», con la nota de que quien
   puede mover a cualquier fase siempre puede. Selector de roles (vacío = cualquiera con el permiso) y «Guardar quién mueve». Un rol fuera
@@ -692,17 +719,18 @@ Bloque del inspector (`?fase=<id>`) y los chips de la fila. «Salida» es una tr
 - **Quitar** (`?eliminar=salida&salida=<id>`, `<Confirmar>`): irreversible, no mueve a nadie.
 - **Chips:** «→ Embarcado · Embarcar» con el color del destino y texto; hasta 3 y «+N más»; no son enlaces.
 - **Estados:** sin salidas, tope de 500 con aviso, conflicto, sin permiso (`42501`), red caída (el reintento repite el id: «ya existe» se
-  toma por hecho). Cerrar el inspector con algo escrito pregunta.
+  toma por hecho). Cerrar el panel con algo escrito pregunta.
 
 ### Flujos: reglas y oferta de transporte (estados propios)
 
-Configuración › Flujos › Reglas (`?seccion=reglas`): las reglas del flujo y, con «Transporte» encendida, la oferta. Escribe quien configura
+Configuración › Flujos › «Reglas del flujo» de la barra del flujo, en su panel (`?seccion=reglas`): las reglas del flujo y, con «Transporte»
+encendida, la oferta. Escribe quien configura
 el flujo; la base vuelve a decidir.
 
 - **Reglas:** una fila por regla del ámbito (repuestos no tiene «Vitrina web», «Portal del cliente» ni «Aduana») con su interruptor
   (`role="switch"`, nombre = la regla), qué permite y qué enciende. Sigue a lo que lee el servidor: un apagado que no se hace no «salta»;
   con un envío en vuelo todos se apagan.
-- **Apagar con uso:** no escribe; bajo la regla dice qué fases o requisitos de espera la usan («más de 50») con un enlace a cada inspector.
+- **Apagar con uso:** no escribe; bajo la regla dice qué fases o requisitos de espera la usan («más de 50») con un enlace al panel de cada una.
 - **Sin uso:** apaga al momento con toast y «Deshacer» (también al encender), que usa la última versión conocida del flujo.
 - **Oferta de transporte:** casillas de puertos de origen, de destino y navieras (activos), «Guardar oferta» y «Ofrecer todos»; sin
   marcar ninguno, se ofrecen todos. Uno guardado y luego desactivado se ve «(inactivo)» para poder quitarlo. Tope 200 con aviso. Las

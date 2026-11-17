@@ -25,14 +25,25 @@ Toda la configuración se escribe por RPC con la versión del flujo. Abiertos (`
 ## Archivos clave
 
 - `entities/fase.ts` (`FaseResumen`, `fasesDesde()`), `infra/queries/fases.ts` (`getFasesDeOrigen()`), `areas/nucleo/composicion.ts`.
-- `features/configuracion/` (núcleo): `<PantallaDelFlujo>` (Server Component async, por `pantallas/configuracion.ts`), el selector, la lista de fases y el
-  inspector por fase.
+- `features/configuracion/` (núcleo): `<PantallaDelFlujo>` (Server Component async, por `pantallas/configuracion.ts`), el selector, la barra del flujo,
+  las fases como **diagrama** (`components/diagrama/`, `diferido()`) o lista (`?vista=diagrama|lista`, `useVistaDelFlujo`, `shallow` + `replace`; debajo de
+  768 px sólo la lista) y el **panel del flujo** (`panel-del-flujo.tsx`, `<Drawer alCostado>` desde 1024 px): una fase (`?fase=`, `ContenidoDeLaFase`, sus
+  bloques a la vista con `<BloquesALaVista>`) o una sección (`?seccion=reglas|documentos`, lo que dibuja el servidor por `secciones`); gana `?seccion=`
+  (`entities/panel-del-flujo.ts`). Abrir una fase o sección limpia `CLAVES_DEL_PANEL_DE_FASE`.
+- **Diagrama:** `entities/disposicion-del-diagrama.ts` (`disponerDiagrama`: una columna por fase en su orden, rectas a la siguiente, ramas arriba, vueltas
+  atrás abajo, carriles sin cruces, puertos repartidos; medidas desde `rem`) y `entities/vista-del-diagrama.ts` (dónde cae lo que se suelta, `vistaInicial`,
+  `centroParaVerLaFase`), puros y con test. **Sólo `components/diagrama/` importa `@xyflow/react`** y sólo `diferidos.tsx` llega ahí, por `import()`
+  (`scripts/guardas/xyflow-diferido.test.ts`); el esqueleto va fuera. Sin posiciones guardadas. Cada caja es un `<button>` «Fase «X»» (React Flow sin
+  teclado ni foco propios; sus textos en español); las salidas se agregan en el panel, no arrastrando.
 - `/configuracion/flujos` recibe de `src/app` los orígenes (`getOrigenes(true)`) y los roles (`leerRolesParaElegir()`): `flujos` no importa `origenes` ni
   `equipo`. `?fase=` lo lee `useFaseAbierta()` (un id ajeno al flujo se ignora). `useVersionDelFlujo()` (dentro de `<ProveedorDelFlujo>`) da la `version` y
   `avisarConflicto()`; no sale por `client.ts`.
-- **Huecos** (`HuecosDelFlujo`): `franjaDeRevisar`, `accionesDeLaLista`, `accionesDeFila`, `salidasDeFila` y `bloques.datos|salidas|requisitos` del inspector.
-  Son componentes de cliente opcionales que se registran en `src/app/(app)/configuracion/flujos/huecos.ts`. El inspector está en `drawers-con-salida.ts` con el
-  formulario de «Datos» (`formulario-de-datos-de-la-fase.tsx`, mecanismo `contexto`).
+- **Huecos** (`HuecosDelFlujo`): `proveedorDeRevisar` (llena `ContextoDeMarcasDelDiagrama`), `franjaDeRevisar`, `ordenDeFases` (llena
+  `ContextoDeOrdenDeFases`: arrastrar y «Mover antes/después»), `accionesDeLaLista` (en la barra), `accionesDeFila`, `salidasDeFila` y
+  `bloques.acciones|datos|salidas|requisitos|reglas` del panel. Son componentes de cliente opcionales que se registran en
+  `src/app/(app)/configuracion/flujos/huecos.ts`; los dos contextos son del núcleo (el núcleo no importa áreas) y sin proveedor no marcan nada ni ordenan
+  («No se puede ordenar desde aquí.»). El panel está en `drawers-con-salida.ts` con el formulario de «Datos» (`formulario-de-datos-de-la-fase.tsx`,
+  mecanismo `contexto`).
 
 ## Áreas
 
@@ -70,7 +81,8 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
 
 ## Documentos
 
-- `?seccion=documentos` de `/configuracion/flujos` (`pantallas/documentos.ts`: `<PantallaDeDocumentos>`, `<EsqueletoDeTipos>`): dos grupos de
+- `?seccion=documentos` de `/configuracion/flujos`, en el panel del flujo (`pantallas/documentos.ts`: `<PantallaDeDocumentos enElPanel>`, sin su selector;
+  en la página para quien sólo gestiona los catálogos de logística; `<EsqueletoDeTipos>`): dos grupos de
   `tipos_documento`, los de la empresa (`flujo_id` nulo; `logistica.catalogos.gestionar`) y los del flujo (`flujos.configurar` o `repuestos.configurar`; el
   origen lo decide la base). Quien no puede cambiar un grupo lo ve con «Nuevo tipo», «Editar» y el orden apagados y el motivo.
 - `entities/documentos/` valida espejo de la base (probado contra PGlite); escriben `tipo_documento_crear|guardar|mover|eliminar`.
@@ -87,10 +99,17 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
   intento de crear da «Esa fase ya existe.».
 - `entities/fases/reglas-de-fase.ts` es el espejo puro de `_fase_validar()` (`validarFase`, `motivoDelInterruptor`; lo prueba
   `reglas-de-fase-contra-la-base.test.ts` en PGlite). `cambiosParaGuardar` manda sólo lo que cambió. Colores: paleta cerrada.
-- **La lista:** `pantallas/fases.ts` da `<AccionesDeLaLista>` y `<AccionesDeFila>` (Editar, Jubilar o eliminar, Reactivar). URL `?panel=nueva-fase` y
+- **La lista:** `pantallas/fases.ts` da `<AccionesDeLaLista>` (en la barra del flujo) y `<AccionesDeFila>` (Subir/Bajar y Editar, Jubilar o eliminar,
+  Reactivar). URL `?panel=nueva-fase` y
   `?panel=eliminar-fase&quitar=<id>` (en `scripts/guardas/areas-b/confirmar-con-url.ts`). La confirmación lee `fase_impacto` al abrirse; una bloqueada se
   explica y no se confirma. `useListaDeFases` escribe una a la vez con la `version`; `PT409` → `avisarConflicto()`. El selector sólo ofrece flujos configurables.
-- **Inspector › Datos:** `<DatosDeLaFase>` (`bloques.datos`), cinco `<Bloque>`s con `<InterruptorConMotivo>` (la regla apagada lo deshabilita).
+- **Ordenar:** `<ProveedorDeOrden>` (`ordenDeFases`) da `fase_mover` al diagrama (arrastrar: el orden se ve en el acto y vuelve atrás si falla) y a
+  `<AccionesDelPanel>` (`bloques.acciones`: «Mover antes», «Mover después», «Jubilar o eliminar»). Con `truncado.fases` todo orden se apaga con
+  `MOTIVO_LISTA_CORTADA` (`motivoSinOrdenDeFases`), también «Subir/Bajar» de la lista.
+- **Reglas que la afectan:** `<ReglasDeLaFase>` (`bloques.reglas`, `entities/fases/reglas-de-la-fase.ts`): cada regla de `REGLA_DEL_INTERRUPTOR` (menos las que
+  no existen en repuestos) con su estado y si la fase la tiene marcada; «Cambiar las reglas del flujo» abre `?seccion=reglas` en el mismo panel.
+- **Panel › Datos:** `<DatosDeLaFase>` (`bloques.datos`), cinco `<Bloque>`s (a la vista dentro del panel) con `<InterruptorConMotivo>` (la regla apagada
+  lo deshabilita).
   `useFormularioDeDatos` manda a `fase_guardar` sólo `cambiosParaGuardar`, borrador `fase-<id>` en `sessionStorage`; se reinicia con `key` (`fase.id` + versión).
   «En el flujo» lleva «Es la subasta» (`fases.es_subasta`, la **fase de subasta**): sólo en el flujo de un origen de tipo subasta
   (`FlujoParaConfigurar.origenEsSubasta`, del tipo del origen embebido; fuera, apagado con `motivoDeEsSubasta`) y nunca con «Es final». Puede haber
@@ -117,16 +136,20 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
 
 ## Revisar
 
-- `pantallas/revisar.ts` da `<FranjaDeRevisar>` (`franjaDeRevisar`). Cerrada, el resumen («Todo en orden», «1 error y 3 avisos»; información no cuenta);
+- `pantallas/revisar.ts` da `<ProveedorDeRevisar>` (`proveedorDeRevisar`: **una sola lectura** para la franja, `useRevisarDelFlujo`, y para las marcas del
+  diagrama, la lista y el panel, `marcasDeRevision`: cada aviso en su fase; `salida_a_jubilada` también en las salidas de esa fase a jubiladas; sin fase, «del
+  flujo»; `rol_sin_personas` queda en su fase) y `<FranjaDeRevisar>` (`franjaDeRevisar`). Cerrada, el resumen («Todo en orden», «1 error y 3 avisos»; información no cuenta);
   abierta, la lista error › aviso › información. **Nace cerrada siempre** y cambiar de flujo la cierra (`key` por `flujo.id`).
 - `revisar_flujo` con tope 200 y `<AvisoDeTope>`; `leerAvisosDeRevisar({flujoId, ambito})` exige `flujos.configurar` o `repuestos.configurar`.
-- **Se relee por `flujo.version`:** `useAvisosDeRevisar` conserva lo último leído y descarta respuestas viejas. Va fuera de `<ProveedorDelFlujo>`.
+- **Se relee por `flujo.version`:** `useAvisosDeRevisar` (sólo en el proveedor) conserva lo último leído y descarta respuestas viejas. Va fuera de
+  `<ProveedorDelFlujo>`.
 - Un aviso abre su fase con un botón «Abrir la fase» (`useFaseAbierta().abrir()`), ni `<AbrirResumen>` ni `<Link>`: los specs vecinos buscan
   `[data-abre-resumen]` y enlaces por nombre sin acotar a una región. «Revisar» no frena nada.
 
 ## Reglas
 
-- `?seccion=reglas` (`pantallas/reglas.ts`: `<PantallaDeReglas>`, `<EsqueletoDeReglas>`): las reglas del ámbito con su interruptor y, con «Transporte»
+- `?seccion=reglas`, en el panel del flujo (`pantallas/reglas.ts`: `<PantallaDeReglas>`, sin selector ni título propio; `<EsqueletoDeReglas>`): las reglas
+  del ámbito con su interruptor y, con «Transporte»
   encendida, la oferta (puertos de origen, de destino y navieras activos). La ve quien configura (`flujos.configurar` o `repuestos.configurar`).
 - `entities/reglas/catalogo.ts`: las 10 claves con su texto, comparadas en un test con el check de la base y `_flujo_regla_admitida`.
 - **Apagar pregunta antes de escribir:** `cambiarRegla` llama `flujo_regla_impacto`; con uso responde `en_uso` y no escribe. «Deshacer» y las escrituras usan la
