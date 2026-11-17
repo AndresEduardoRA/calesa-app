@@ -21,6 +21,8 @@ type Props = {
   lead: FilaDeLead
   abierto: boolean
   alCerrar: () => void
+  // Un seguimiento o un recordatorio guardado: el listado relee su página.
+  alGuardar?: (() => void) | undefined
   // Los tipos activos, si ya se leyeron en otra apertura.
   tipos: readonly TipoDeSeguimiento[] | null
   alLeerTipos: (tipos: readonly TipoDeSeguimiento[]) => void
@@ -121,7 +123,14 @@ function SinFormulario({
   )
 }
 
-function AnotarDesdeLaFila({ lead, abierto, alCerrar, tipos, alLeerTipos }: Omit<Props, 'accion'>) {
+function AnotarDesdeLaFila({
+  lead,
+  abierto,
+  alCerrar,
+  alGuardar,
+  tipos,
+  alLeerTipos,
+}: Omit<Props, 'accion'>) {
   const { zonaHoraria } = useRegional()
   const lectura = useTipos(tipos, alLeerTipos)
   if (tipos === null || tipos.length === 0) {
@@ -147,6 +156,7 @@ function AnotarDesdeLaFila({ lead, abierto, alCerrar, tipos, alLeerTipos }: Omit
       alGuardar={() => {
         avisarExito(`Seguimiento anotado en «${lead.nombre}».`)
         alCerrar()
+        alGuardar?.()
       }}
       focoAlCerrar={() => menuDeLaFila(lead.id)}
       // Anotar no tiene versión: no hay conflicto que recargar.
@@ -157,15 +167,14 @@ function AnotarDesdeLaFila({ lead, abierto, alCerrar, tipos, alLeerTipos }: Omit
 }
 
 // Anotar un seguimiento, agendar un recordatorio (desde el «⋯» de una fila) o crear una oportunidad («+ Oportunidad»): los modales de la
-// ficha, sobre ese lead, sin abrir el drawer. Al guardar, un aviso de éxito (la fila no muestra nada
-// de seguimientos, recordatorios ni oportunidades: no hay nada que actualizar). El vehículo no se ofrece: el
-// listado no lee los vehículos del lead.
+// ficha, sobre ese lead, sin abrir el drawer. Al guardar un seguimiento o un recordatorio, un aviso de éxito y `alGuardar` (el listado relee su página
+// y la fila lo muestra); una oportunidad no se ve en la fila. El vehículo no se ofrece: el listado no lee los vehículos del lead.
 export function ModalDeAccionDeFila({ accion, ...props }: Props) {
   const { zonaHoraria } = useRegional()
   if (accion === 'anotar') {
     return <AnotarDesdeLaFila {...props} />
   }
-  const { lead, abierto, alCerrar } = props
+  const { lead, abierto, alCerrar, alGuardar } = props
   if (accion === 'oportunidad') {
     return (
       <ModalDeOportunidadRapida
@@ -192,6 +201,7 @@ export function ModalDeAccionDeFila({ accion, ...props }: Props) {
       alGuardar={() => {
         avisarExito(`Recordatorio agendado para «${lead.nombre}».`)
         alCerrar()
+        alGuardar?.()
       }}
       focoAlCerrar={() => menuDeLaFila(lead.id)}
     />

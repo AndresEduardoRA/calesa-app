@@ -13,14 +13,10 @@ import {
   prepararListado,
   type TerrenoDelListado,
 } from './soporte/leads-listado'
-import {
-  meterRecordatorio,
-  modalDeSeguimiento,
-  tipoDeSeguimiento,
-} from './soporte/leads-seguimientos'
+import { meterRecordatorio, tipoDeSeguimiento } from './soporte/leads-seguimientos'
 
 // El listado de leads dice cuándo fue el último seguimiento (con su tipo y su título si quien mira lo ve) y cuál es su próximo recordatorio: «hace 3 días»,
-// «en 2 días», «vencido hace 1 día». Un último seguimiento privado de otra persona sólo da la fecha; los vacíos ofrecen su atajo (sólo en la cartera).
+// «en 2 días», «vencido hace 1 día». Un último seguimiento privado de otra persona sólo da la fecha; los vacíos sólo informan: crear es del «⋯».
 test.describe.configure({ mode: 'serial' })
 
 const HORA = 3_600_000
@@ -124,21 +120,18 @@ test('E2E un recordatorio vencido se resalta y lo dice con texto', async ({ page
   await expect(recordatorio).toHaveAttribute('data-vencido', 'true')
 })
 
-test('E2E sin seguimientos ni recordatorio: «Sin seguimientos» con «Anotar seguimiento» y «—» con «Programar»', async ({
+test('E2E sin seguimientos ni recordatorio: «Sin seguimientos» y «—», sin botones para crear', async ({
   page,
 }, info) => {
   const lead = await leadDe(t.personas.berta, `Contacto Vacio ${info.project.name}`)
   const fila = await verLaFila(page, t.personas.berta, lead)
   await expect(fila.getByText('Sin seguimientos')).toBeVisible()
   await expect(fila.getByRole('img', { name: 'Sin recordatorio' })).toBeVisible()
-  await fila.getByRole('button', { name: 'Programar' }).click()
-  await expect(page.getByRole('dialog', { name: 'Agendar recordatorio' })).toBeVisible()
-  await page.keyboard.press('Escape')
-  await fila.getByRole('button', { name: 'Anotar seguimiento' }).click()
-  await expect(modalDeSeguimiento(page, 'Anotar')).toBeVisible()
+  await expect(fila.getByRole('button', { name: 'Programar' })).toHaveCount(0)
+  await expect(fila.getByRole('button', { name: 'Anotar seguimiento' })).toHaveCount(0)
 })
 
-test('E2E un último seguimiento privado de otra persona sólo da la fecha; el lead fuera de la cartera no ofrece atajos', async ({
+test('E2E un último seguimiento privado de otra persona sólo da la fecha; la celda nunca ofrece crear', async ({
   page,
 }, info) => {
   const lead = await leadDe(t.personas.berta, `Contacto Privado ${info.project.name}`)
@@ -164,7 +157,7 @@ test('E2E un último seguimiento privado de otra persona sólo da la fecha; el l
   await expect(seguimiento).not.toContainText('Llamada')
   await expect(page.getByText(privado)).toHaveCount(0)
   await expect(page.getByText(`Publico viejo ${info.project.name}`)).toHaveCount(0)
-  // Fuera de su cartera, y sin recordatorio propio: sin «Programar» ni «Anotar».
+  // Sin botones para crear en la celda (esa puerta es el «⋯»).
   await expect(fila.getByRole('button', { name: 'Programar' })).toHaveCount(0)
   await expect(fila.getByRole('button', { name: 'Anotar seguimiento' })).toHaveCount(0)
 

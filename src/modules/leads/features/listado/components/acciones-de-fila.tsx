@@ -16,13 +16,15 @@ type Props = {
   filas: readonly FilaDeLead[]
   // `leads.editar`: con el lead en la cartera, anotar y agendar.
   puedeAnotar: boolean
+  // Guardado un seguimiento o un recordatorio: el listado relee su página para que la fila lo muestre. Sin él (el embudo), la pantalla no cambia.
+  alGuardar?: () => void
 }
 
 // Lo que abre el «⋯» de una fila: el modal de anotar un seguimiento o de agendar un recordatorio sobre
-// ese lead, sin abrir el drawer ni la ficha. Se monta una vez en el listado y se pide al abrirse. La
+// ese lead, sin abrir el drawer ni la ficha; al guardar, la lista relee su página (`alGuardar`). Se monta una vez en el listado y se pide al abrirse. La
 // URL se revisa al abrir: una fila que no está en la página, ajena o inventada no abre y lo dice como
 // un lead que no existe. Ya abierto, el lead queda fijo: volver a leer la lista no lo cierra.
-export function AccionesDeFila({ filas, puedeAnotar }: Props) {
+export function AccionesDeFila({ filas, puedeAnotar, alGuardar }: Props) {
   const url = useAccionDeFila()
   const fila = url.accion && url.para !== null ? filaParaAccion(filas, url.para, puedeAnotar) : null
   const apertura = useApertura(url.accion !== null)
@@ -48,6 +50,7 @@ export function AccionesDeFila({ filas, puedeAnotar }: Props) {
       lead={lead}
       abierto={abierto}
       alCerrar={url.cerrar}
+      alGuardar={alGuardar}
       tipos={tipos}
       alLeerTipos={setTipos}
     />
