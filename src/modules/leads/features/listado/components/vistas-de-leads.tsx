@@ -1,6 +1,6 @@
 'use client'
 
-import { MenuDeVistas, type VistaGuardada } from '@/modules/equipo/client'
+import { VistasGuardadas, type VistaGuardada } from '@/modules/equipo/client'
 import { parametrosDeFiltros, type EsquemaDeFiltros } from '@/shared/lib/filtros'
 import { useFiltrosDelListado } from '@/shared/ui/filtros'
 import { CLAVE_DE_ALCANCE, VALOR_TODOS, type ModoDelListado } from '../../../entities/alcance'
@@ -16,7 +16,7 @@ type Props = {
 export function VistasDeLeads({ esquema, vistas, modo }: Props) {
   const filtros = useFiltrosDelListado()
   return (
-    <MenuDeVistas
+    <VistasGuardadas
       pantalla="leads"
       vistas={vistas}
       actuales={{
