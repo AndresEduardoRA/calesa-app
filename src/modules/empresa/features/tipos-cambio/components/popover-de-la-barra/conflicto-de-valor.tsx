@@ -18,7 +18,11 @@ type Props = {
 export function ConflictoDeValor({ conflicto, alRecargar }: Props) {
   const { zonaHoraria } = useRegional()
   const { de } = conflicto
-  const hace = (iso: string) => fechaRelativa(iso, { zona: zonaHoraria, numerico: true })
+  // «lo cambió a Bs 12,40 ahora» suena a que está pasando: lo de recién se dice «hace un momento».
+  const hace = (iso: string) => {
+    const cuando = fechaRelativa(iso, { zona: zonaHoraria, numerico: true })
+    return cuando === 'ahora' ? 'hace un momento' : cuando
+  }
   let mensaje: ReactNode = conflicto.mensaje
   if (de?.tipo === 'ya_no_esta') {
     mensaje = 'Ese tipo de cambio ya no está activo.'
