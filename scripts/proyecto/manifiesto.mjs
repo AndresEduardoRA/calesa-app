@@ -10,7 +10,6 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { parse } from 'yaml'
 
 export const RUTA_MANIFIESTO = '.proyecto/proyecto.yaml'
@@ -315,7 +314,9 @@ function principal(argv) {
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href)
+// La CLI, sólo si se corre este archivo. Por el nombre y no con `import.meta`: Playwright carga los .mjs que importa su config
+// (stack-local.mjs → éste) como CommonJS, y ahí `import.meta` es un error de sintaxis.
+if (/(^|[\\/])scripts[\\/]proyecto[\\/]manifiesto\.mjs$/.test(process.argv[1] ?? ''))
   principal(process.argv.slice(2))
 
 /**
