@@ -290,6 +290,7 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Reproduce una inestable frenando la CPU del navegador (CDP `Emulation.setCPUThrottlingRate`) o con latencia en `page.route` (`rsc`, `rpc`, actions): sin reproducirla, no la des por arreglada.
 - En un spec `serial` la primera caída deja las demás «did not run»: no las cuentes como verdes y corre por separado cada una.
 - Si un spec caído quedó en `/ingreso` (bajo carga o con el servidor recién levantado), es el inestable conocido del ingreso: repítelo solo antes de culpar al cambio.
+- Lo que depende de la hora (la marca de «ahora», un vencimiento) cambia el DOM según cuándo corre: un texto que la prueba busca exacto va en su propio elemento, y la prueba fija el reloj (`page.clock`) o no mira las filas que la hora puede tocar.
 
 ## Vitest
 
