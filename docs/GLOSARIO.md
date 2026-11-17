@@ -123,7 +123,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Relacionados** — `vehiculo_relacionados()`, `lead_relacionados()` (y `*_pagina()`), `<Relacionados>` / `?relacionados=<tipo>`: el bloque siempre
   visible arriba de cada detalle (ficha del vehículo, su resumen, la unidad de logística, ficha del lead y su resumen) con tres grupos por tipo:
   **Vinculado**, **Interesado** y **Cotizado**. Desde un vehículo se ven leads; desde un lead, vehículos. Cada grupo lleva su cantidad (con tope),
-  sus primeras filas, lo que quien mira no ve contado («1 que no puedes ver») y «Ver todos» por cursor. Lo que está en una papelera no cuenta.
+  sus primeras filas, lo que quien mira no ve contado («1 que no puedes ver») y «Ver todos» por cursor. Lo que está en una papelera no cuenta. Un
+  grupo sin nada no se dibuja. Se ve en una línea de chips en los resúmenes y en logística, y compacto en las fichas (`PresentacionDeRelacionados`).
 - **Vinculado** — tipo de relación (`TipoDeRelacion` `vinculado`): el lead dueño o comprador de un vehículo (el vínculo vigente), y desde un
   lead, sus vehículos vinculados. Su «Ver todos» en un vehículo incluye los vínculos anteriores.
 - **Cotizado (relación)** — tipo de relación `cotizado`: leads con una **cotización activa** de ese vehículo (y al revés), una fila por
@@ -353,7 +354,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Constante** — nodo `constante` + `params`: valor por defecto versionado que el ⚙ de la XCell cambia.
 - **Versión del flujo** — `flujos.actualizado_en` como texto ISO: la lee la pantalla de Flujos y la devuelve cada escritura para detectar
   cambio ajeno (`PT409`); `useVersionDelFlujo()` la entrega a las acciones.
-- **Inspector de fase** — panel `?fase=<id>` de Configuración › Flujos: «Datos», «Salidas y quién mueve» y «Requisitos para entrar» de una fase.
+- **Inspector de fase** — lo de una fase en el panel del flujo (`?fase=<id>`, `ContenidoDeLaFase`): sus avisos y acciones y cuatro bloques a la vista,
+  «Datos», «Requisitos para entrar», «Salidas y quién mueve» y «Reglas que la afectan».
+- **Panel del flujo** — `PanelDelFlujo`: el `<Drawer>` al costado de Configuración › Flujos (no modal desde 1024 px) con una fase (`?fase=<id>`) o lo
+  del flujo entero, «Reglas del flujo» o «Tipos de documento» (`?seccion=reglas|documentos`); gana `?seccion=`. No: «sidebar», «inspector» para
+  lo del flujo.
+- **Diagrama del flujo** — `DiagramaDelFlujo` (`disponerDiagrama()`): las fases como cajas en su orden y las salidas como flechas (ramas arriba,
+  vueltas atrás abajo); apoyo visual de Configuración › Flujos, la lista es la versión navegable. No: «grafo», «tablero».
 - **Versión de la fórmula** — `formulas.version`: número de una publicada o archivada, por origen (el borrador no tiene).
 - **Borrador de la fórmula** — `formulas.estado = 'borrador'`: a lo sumo uno por origen, sin número; lo publicado no cambia hasta publicarlo.
   «Descartar…» (`<Confirmar>`) no se deshace. No es la «Pregunta al descartar» ni el «Borrador» de un formulario (`useBorrador()`).

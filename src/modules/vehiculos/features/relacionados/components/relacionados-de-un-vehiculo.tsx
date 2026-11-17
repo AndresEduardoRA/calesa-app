@@ -15,6 +15,7 @@ import type {
   FilaRelacionada,
   GrupoDeRelacionados,
   LeadRelacionado,
+  PresentacionDeRelacionados,
   RelacionadosDelVehiculo,
 } from '../../../entities/relacionados'
 import { useAccionesDeRelacionados } from '../hooks/use-acciones-de-relacionados'
@@ -38,8 +39,8 @@ type Props = {
   avisos?: AvisosDelMenu
   // El resumen lee en el navegador: tras una acción lograda vuelve a leer.
   alCambiar?: () => void
-  // La unidad de logística lo pide en una línea de chips; el resto, el bloque.
-  presentacion?: 'bloque' | 'linea'
+  // La ficha, compacta; el resumen y logística, en una línea de chips.
+  presentacion: PresentacionDeRelacionados
 }
 
 const claveDeLaFila = (grupo: string, fila: FilaRelacionada<LeadRelacionado>) =>
@@ -106,7 +107,7 @@ export function RelacionadosDeUnVehiculo({
   ofrecerPapelera = false,
   avisos,
   alCambiar,
-  presentacion = 'bloque',
+  presentacion,
 }: Props) {
   const { ancla, contexto, delVehiculo } = armarContexto(datos, vehiculoId, lugar, para)
   const acciones = useAccionesDeRelacionados(

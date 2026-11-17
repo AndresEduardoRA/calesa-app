@@ -6,19 +6,21 @@ import { Popover, PopoverTrigger } from '@/shared/ui/popover'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import {
   accionesDelGrupo,
-  accionesDeTodoVacio,
   type AccionDeRelacionados,
   type ContextoDeAcciones,
 } from '../../../entities/acciones-de-relacionados'
+import { accionesFueraDeLosGrupos } from '../../../entities/acciones-fuera-de-los-grupos'
 import {
   NOMBRE_DEL_TIPO,
   TEXTO_DE_TODO_VACIO,
-  todoVacio,
+  gruposALaVista,
   type GrupoDeRelacionados,
   type GruposDeRelacionados,
 } from '../../../entities/relacionados'
-import { AccionSuelta, claveDeLaAccion } from './accion-suelta'
+import { AccionSuelta } from './accion-suelta'
+import { AccionesDeLaFila } from './acciones-de-la-fila'
 import { PopoverDelGrupoDiferido } from './diferidos'
+import type { VerTodosDeUnGrupo } from './ver-todos-del-grupo'
 
 type Props<Contraparte> = {
   grupos: GruposDeRelacionados<Contraparte>
@@ -26,9 +28,7 @@ type Props<Contraparte> = {
   enCurso: boolean
   alElegir: (accion: AccionDeRelacionados) => void
   filasDe: (grupo: GrupoDeRelacionados<Contraparte>) => ReactNode
-  verTodosDe: (
-    grupo: GrupoDeRelacionados<Contraparte>,
-  ) => { href: string } | { abrir: () => void } | null
+  verTodosDe: (grupo: GrupoDeRelacionados<Contraparte>) => VerTodosDeUnGrupo | null
 }
 
 const CHIP =
@@ -87,30 +87,35 @@ function ChipDelGrupo<Contraparte>({
   )
 }
 
-// «Relacionados» en una línea (la unidad de logística, donde el bloque de tres grupos no cabe sin desplazar): un chip por grupo con su cantidad, sin encabezado. Si no hay nada, la misma frase del
-// bloque con sus acciones.
+// «Relacionados» en una línea (los resúmenes y logística): un chip por grupo con algo, sin encabezado; un grupo vacío no tiene chip. Las acciones de los grupos que no se dibujan van a un «⋯»
+// pegado al último chip. Si no hay nada, la frase con una acción a la vista y el resto en el «⋯».
 export function RelacionadosEnLinea<Contraparte>(props: Props<Contraparte>) {
   const { grupos, contexto, enCurso, alElegir } = props
-  const lista = [grupos.vinculado, grupos.interesado, grupos.cotizado].filter(
-    (grupo): grupo is GrupoDeRelacionados<Contraparte> => grupo !== null,
-  )
+  const lista = gruposALaVista(grupos)
+  const fuera = accionesFueraDeLosGrupos(grupos, contexto)
   return (
     <section aria-label="Relacionados" className="flex min-w-0 flex-wrap items-center gap-2">
-      {todoVacio(grupos) ? (
+      {lista.length === 0 ? (
         <>
           <p className="text-(length:--text-sm) text-(--color-ink-soft)">{TEXTO_DE_TODO_VACIO}</p>
-          {accionesDeTodoVacio(contexto).map((accion) => (
-            <AccionSuelta
-              key={claveDeLaAccion(accion)}
-              accion={accion}
-              enCurso={enCurso}
-              alElegir={alElegir}
-            />
-          ))}
+          {fuera.principal ? (
+            <AccionSuelta accion={fuera.principal} enCurso={enCurso} alElegir={alElegir} />
+          ) : null}
         </>
       ) : (
         lista.map((grupo) => <ChipDelGrupo key={grupo.tipo} {...props} grupo={grupo} />)
       )}
+      {fuera.resto.length > 0 ? (
+        // Envuelto: el «⋯» trae `ml-auto` y, suelto en la línea, se iría al borde derecho.
+        <div className="flex">
+          <AccionesDeLaFila
+            nombre="«Relacionados»"
+            acciones={fuera.resto}
+            enCurso={enCurso}
+            alElegir={alElegir}
+          />
+        </div>
+      ) : null}
     </section>
   )
 }

@@ -46,6 +46,14 @@ export const REGLA_DEL_INTERRUPTOR = {
 } as const
 export type CampoConRegla = keyof typeof REGLA_DEL_INTERRUPTOR
 
+// El nombre del interruptor de cada campo con regla, como lo dicen los bloques de «Datos» y «Reglas que la afectan».
+export const ETIQUETA_DEL_CAMPO_CON_REGLA: Record<CampoConRegla, string> = {
+  publica_web: 'Se publica en la web',
+  visible_portal: 'Visible en el portal',
+  permite_aduana: 'Permite aduana',
+  es_logistica: 'Es logística',
+}
+
 // Cómo se llama cada regla ante quien configura.
 export const NOMBRE_DE_LA_REGLA: Record<(typeof REGLA_DEL_INTERRUPTOR)[CampoConRegla], string> = {
   vitrina_web: 'Vitrina web',
@@ -74,7 +82,7 @@ export function reglaEncendida(contexto: ContextoDeFase, regla: string): boolean
 }
 
 // En el flujo de repuestos esas tres reglas no existen (`_flujo_regla_admitida()`).
-const SIN_REGLA_EN_REPUESTOS: readonly CampoConRegla[] = [
+export const SIN_REGLA_EN_REPUESTOS: readonly CampoConRegla[] = [
   'publica_web',
   'visible_portal',
   'permite_aduana',

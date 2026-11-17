@@ -13,6 +13,7 @@ import {
 import type {
   FilaRelacionada,
   GrupoDeRelacionados,
+  PresentacionDeRelacionados,
   RelacionadosDelLead,
   VehiculoRelacionado,
 } from '../../../entities/relacionados'
@@ -28,11 +29,13 @@ type Props = {
   para: ParaRelacionados
   // El resumen lee en el navegador: tras una acción lograda vuelve a leer.
   alCambiar?: () => void
+  // La ficha, compacta; el resumen, en una línea de chips.
+  presentacion: PresentacionDeRelacionados
 }
 
 // El bloque «Relacionados» de un lead (sus vehículos): lo comparten la ficha del lead y su resumen del listado. Quitar interés y desvincular (con la cartera) se hacen en el lugar con «Deshacer»;
 // vincular o marcar un vehículo y desvincular sin la cartera llevan a la sección «Vehículos» de la ficha, que tiene su panel con su búsqueda y su nota.
-export function RelacionadosDeUnLead({ datos, lugar, para, alCambiar }: Props) {
+export function RelacionadosDeUnLead({ datos, lugar, para, alCambiar, presentacion }: Props) {
   const ancla: AnclaDeLead = { lado: 'lead', leadId: datos.leadId, puedoActuar: datos.puedoActuar }
   const contexto: ContextoDeAcciones = { lugar, ancla, para }
   const acciones = useAccionesDeRelacionados(
@@ -59,6 +62,7 @@ export function RelacionadosDeUnLead({ datos, lugar, para, alCambiar }: Props) {
   return (
     <>
       <Relacionados
+        presentacion={presentacion}
         grupos={datos.grupos}
         contexto={contexto}
         enCurso={acciones.enCurso}

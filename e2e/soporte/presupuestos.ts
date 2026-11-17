@@ -4,8 +4,8 @@
 // `/vehiculos` 505 KB. Medido en el cierre 5b, con el `index.ts` de cada módulo sin componentes (una pantalla paga lo que
 // reexporta lo que importa): `/leads` 498,6 KB, `/perfil` 413,0 KB, `/vehiculos` 467,7 KB (antes 565,4, 443,3 y 520,0).
 export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
-  // Con el «Nuevo» de la barra que abre también el de la agenda (T37: el grupo, el destino en la misma pantalla y sus constantes compartidas con
-  // `/agenda`, en un chunk aparte) pasó de 529,2 KB en 35 chunks a 531,2 en 36: regla del 5 %, lo medido más un 5 % a la decena.
+  // Con los bloques a la vista, el drawer al costado y el respaldo de `diferido()` de `shared` (T38), 530,6 KB: 560 (regla del 5 %).
+  // El «Nuevo» de la barra que abre también el de la agenda (T37) suma 2,0 KB (529,2 → 531,2 antes de T38), dentro del tope.
   '/leads': 560,
   '/perfil': 440,
   '/vehiculos': 500,

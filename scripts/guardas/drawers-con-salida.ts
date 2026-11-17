@@ -137,7 +137,7 @@ export const DRAWERS_DEL_NUCLEO: Record<string, RegistroDeDrawer> = {
     sinFormulario: 'la navegación del celular',
   },
   // --- flujos
-  'src/modules/flujos/features/configuracion/components/inspector-de-fase.tsx': {
+  'src/modules/flujos/features/configuracion/components/panel-del-flujo.tsx': {
     formulario: 'src/modules/flujos/features/fases/components/formulario-de-datos-de-la-fase.tsx',
     mecanismo: 'contexto',
   },

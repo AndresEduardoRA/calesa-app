@@ -2,6 +2,7 @@
 
 import { Bloque } from '@/shared/ui/bloque'
 import {
+  ETIQUETA_DEL_CAMPO_CON_REGLA,
   avisoDeOtraInicial,
   motivoDeEsSubasta,
   otraFaseInicial,
@@ -64,7 +65,7 @@ export function BloqueEnElFlujo({
       <InterruptorConMotivo
         {...comun}
         campo="es_logistica"
-        titulo="Es logística"
+        titulo={ETIQUETA_DEL_CAMPO_CON_REGLA.es_logistica}
         ayuda="La fase cuenta como parte del transporte."
         valor={valores.esLogistica}
         alCambiar={(esLogistica) => {

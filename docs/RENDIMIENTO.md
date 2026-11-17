@@ -203,7 +203,10 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   (sin él el plan genérico ordena todo lo del vehículo caliente: 20 mil bloques). Las imágenes, la miniatura de 480 px; el visor, la grande. Sin caché de cliente: la ficha y la unidad se releen al actuar (`revalidarVinculo()`), el resumen
   lee al abrir y tras cada acción. El resumen de un lead pasa de 2 a 3 pedidos al abrir (`leads_vista`, `lead_telefonos_leer()` y `lead_relacionados()`, en paralelo; el bloque va con `diferido()` y por su propia pantalla,
   `pantallas/relacionados-resumen-de-lead.ts`: con el barril entero `/leads` pasaba de 530). El del vehículo, de 1 a 2 (más las fotos de la portada al acercarse).
-  JS en frío medido con el cambio: `/leads` 527,7 KB de 530 (el hueco con `diferido()` y el contexto cuestan ≈ 3,4 KB) y `/vehiculos` 496,1 de 500 (el bloque viaja dentro del resumen ya diferido y sale la pestaña «Interesados»).
+  Dos presentaciones (en una línea y compacta), sin grupos vacíos: lo que no tiene nada no se dibuja y las filas de una línea existen sólo en su popover (diferido, montado al primer clic).
+  Con un vínculo y 4 interesados (`section[aria-label="Relacionados"]`, escritorio): la ficha del vehículo 8.078 B, 58 nodos y 213 px de alto (332 px en el celular); la ficha del lead con un
+  vínculo 3.350 B, 30 nodos y 143 px; el resumen del vehículo, en una línea, 1.689 B, 8 nodos y 32 px.
+  JS en frío: `/leads` 528,9 KB de 530 (el bloque va en el resumen diferido), `/vehiculos` 497,4 de 500 (dentro del resumen ya diferido) y `/logistica/vehiculo/[id]` 443,6. El documento de la ficha del lead aporta 23,6 KB sobre `/perfil` (el lead que mide no tiene relacionados).
   El documento de la ficha del lead lleva el bloque leído en el servidor: «Datos» y «Oportunidades» siguen dentro de su tope (43 y 66 KB).
 
 - Inventario: 50 por cursor (máx. 100, `MAXIMO_DE_PAGINA_DE_VEHICULOS`), `vehiculos_origen_listado_idx`; 20 ms página, 100 / 150 ms
@@ -528,14 +531,18 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 ## JS en frío (con gzip, lo que el documento nombra)
 
-- Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 560 (530 hasta que el «Nuevo» de la barra sumó el de la agenda: 529,2 → 531,2 KB, regla del 5 %), `/perfil` 440, `/vehiculos` 500, `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
+- Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 560, `/perfil` 440, `/vehiculos` 500, `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
   subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410; `/cotizaciones/papelera` 440 (en su spec). Al borde:
   `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 454,9 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %; el «Elegir…» de lo que falta sumó 2,7 KB) y `/cotizaciones/nuevo` en 450,1 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
+- `/configuracion/flujos`: 409,0 KB en frío (28 chunks; 404,5 antes del diagrama), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega
+  al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
+  (`scripts/guardas/xyflow-diferido.test.ts`). Una sola lectura del flujo como antes (los topes de `leerFlujoParaConfigurar`); hasta 200 cajas y 500
+  flechas, con `onlyRenderVisibleElements`.
 - «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`).
   Medido con el cambio: `/leads` 529,4 de 530, `/vehiculos` 498,1 de 500, `/cotizaciones` 371,9 de 380, `/logistica` 367,2 y `/logistica/fase/[fase]` 369,8
-  de 390 (el botón viaja con `FilterShell` aunque esas listas no lo dibujen). `/leads` queda a 0,6 KB del tope: lo próximo que sume a su carga va con
-  `diferido()` o sube el tope con la regla del 5 %.
+  de 390 (el botón viaja con `FilterShell` aunque esas listas no lo dibujen). Con lo que el diagrama del flujo sumó a `shared` (`<BloquesALaVista>`,
+  `<Drawer alCostado>`, el respaldo de `diferido()`), `/leads` midió 530,6: su tope pasó a 560 (regla del 5 %).
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`
   falla, con el camino, si un `index.ts` llega a un `'use client'`.
 - **Trampa:** con `loading.tsx` importando el barril de pantallas, sumar un Client Component a la página baja dos chunks casi iguales (el de

@@ -41,14 +41,17 @@ function SheetContent({
   children,
   side = 'right',
   showCloseButton = true,
+  conFondo = true,
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: 'top' | 'right' | 'bottom' | 'left'
   showCloseButton?: boolean
+  // Sin fondo, lo de atrás se ve y se toca: un panel al costado que no es modal (`<Drawer alCostado>`).
+  conFondo?: boolean
 }) {
   return (
     <SheetPortal>
-      <SheetOverlay />
+      {conFondo ? <SheetOverlay /> : null}
       <SheetPrimitive.Popup
         data-slot="sheet-content"
         data-side={side}

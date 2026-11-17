@@ -124,6 +124,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
 - **[—]** El bloque «Leads sin seguimiento» de Inicio cuesta lo que pesa la cartera de quien mira; no se midió con volumen.
 - **[4-73]** Presupuestos al borde: JS de `/cotizaciones/nuevo` 439,5 de 460 KB, la hoja 491 nodos de 500, la ficha del lead «Datos» 39,2 de 43 KB y «Oportunidades» 61,2 de 66 — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
+- **[T32]** La tarea de oro 2 entera de la asesora mide 65 teclas y KLM 59,2 s en escritorio sobre `be965565` (`docs/ESTADO.md` dice 58,1): cuatro paradas más del marco antes del contenido, de un cambio anterior — dentro de los 90 s; actualizar el número o quitar las paradas.
 - **[T27]** El tope de JS de `/logistica` es 390 KB en `e2e/soporte/presupuestos.ts` y 410 en `docs/RENDIMIENTO.md` › «JS en frío» — dejar uno solo (lo medido, 365,0, entra en los dos).
 - **[—]** Tope de 40 ítems por diseño: `subasta_usa` tiene 39 — para crecer, subir `_diseno_maximo_de_items()` y la constante midiendo la hoja, o partir la hoja.
 
@@ -193,7 +194,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `logistica_bandeja` de Inicio con el alcance «propios» recorre la fase entera (su rama por fila no parte de `_logistica_lo_propio`): pasarla a esa lectura y medirla con volumen.
 - **[—]** Con más de 10.001 vehículos propios en un origen, sólo el resumen de la cadena lo avisa («+»): los grupos de la bandeja del día y la lista de una fase de ese alcance no dicen que `_logistica_lo_propio` cortó (`_bandeja_dia_alcance` podría devolver un `cortado`).
 - **[—]** `/logistica/gastos` todavía abre el panel de la unidad en un drawer (`?vehiculo=`): llevarlo a `/logistica/vehiculo/[id]` como el resto de logística y borrar `drawer-de-la-unidad.tsx` y `clave-de-unidad.ts`.
-- **[—]** El inspector de fase no se miró al 200 % (los bloques anidados miden con `minmax(0, 1fr)`).
+- **[T38]** Con el texto al 200 % en el celular, el pie fijo de «Datos» («Cancelar», «Guardar») ocupa medio panel de la fase: lo de arriba se lee desplazando.
 - **[—]** Al 200 % la burbuja del chat puede tapar la última línea de una página.
 - **[—]** Las 200 compras por proyecto llevan `<AvisoDeTope>` sin camino a lo antiguo — filtro por fecha si aparece.
 - **[—]** En un campo privado de cartera, los avisos de rango y de opciones que sacas cuentan sólo los leads de tu cartera y no lo dicen (`resumenDeImpacto` de leads).

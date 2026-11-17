@@ -1,6 +1,7 @@
 'use client'
 
 import { Bloque } from '@/shared/ui/bloque'
+import { ETIQUETA_DEL_CAMPO_CON_REGLA } from '../../../entities/fases/reglas-de-fase'
 import { InterruptorConMotivo } from './interruptor-con-motivo'
 import type { PropsDeBloque } from './props-de-bloque'
 
@@ -29,7 +30,7 @@ export function BloqueTransporte({
       <InterruptorConMotivo
         deshabilitado={deshabilitado}
         campo="permite_aduana"
-        titulo="Permite aduana"
+        titulo={ETIQUETA_DEL_CAMPO_CON_REGLA.permite_aduana}
         ayuda="Se pueden registrar los datos de aduana en esta fase."
         valor={valores.permiteAduana}
         alCambiar={(permiteAduana) => {

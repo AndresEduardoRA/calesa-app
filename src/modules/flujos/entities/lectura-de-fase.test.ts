@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import type { FaseParaConfigurar, FlujoParaConfigurar, RequisitoParaConfigurar } from './flujo'
 import {
   marcasDeLaFase,
+  quienMueveEnCorto,
+  requisitosEnCorto,
   resumenDeRequisitos,
   rolesDeLaFase,
   salidasDeLaFase,
@@ -85,6 +87,13 @@ describe('marcasDeLaFase', () => {
     expect(marcasDeLaFase(fase(1, { esInicial: true }))).toEqual(['Inicial'])
     expect(marcasDeLaFase(fase(1, { esFinal: true, activa: false }))).toEqual(['Final', 'Jubilada'])
     expect(marcasDeLaFase(fase(1))).toEqual([])
+  })
+
+  it('la fase de subasta se marca «Subasta», antes de «Jubilada»', () => {
+    expect(marcasDeLaFase(fase(1, { esSubasta: true, activa: false }))).toEqual([
+      'Subasta',
+      'Jubilada',
+    ])
   })
 })
 
@@ -191,5 +200,30 @@ describe('resumenDeRequisitos', () => {
     expect(resumenDeRequisitos([requisito(1, guid(1), { bloqueante: false })], guid(1))).toEqual([
       'Documentos: 1',
     ])
+  })
+})
+
+describe('requisitosEnCorto', () => {
+  it('dice cuántos hay y cuántos bloquean, sólo de la fase', () => {
+    const lista = [
+      requisito(1, guid(1)),
+      requisito(2, guid(1), { bloqueante: false }),
+      requisito(3, guid(2)),
+    ]
+    expect(requisitosEnCorto(lista, guid(1))).toBe('2 requisitos · 1 bloquea')
+    expect(requisitosEnCorto(lista, guid(2))).toBe('1 requisito · 1 bloquea')
+    expect(requisitosEnCorto([requisito(4, guid(1), { bloqueante: false })], guid(1))).toBe(
+      '1 requisito',
+    )
+    expect(requisitosEnCorto(lista, guid(3))).toBe('Sin requisitos')
+  })
+})
+
+describe('quienMueveEnCorto', () => {
+  it('sin roles cualquiera con permiso; uno, dos o más con el resto contado', () => {
+    expect(quienMueveEnCorto([])).toBe('Mueve: cualquiera con permiso')
+    expect(quienMueveEnCorto(['Logística'])).toBe('Mueve: Logística')
+    expect(quienMueveEnCorto(['Logística', 'Compras'])).toBe('Mueven: Logística, Compras')
+    expect(quienMueveEnCorto(['A', 'B', 'C', 'D', 'E'])).toBe('Mueven: A, B y 3 más')
   })
 })

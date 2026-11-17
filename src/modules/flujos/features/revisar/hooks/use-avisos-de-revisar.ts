@@ -11,6 +11,8 @@ type Leido = { avisos: AvisoDeRevision[]; hayMas: boolean }
 type Respuesta = { pedido: string; error: ErrorApp | null }
 
 const NO_SE_LEYO = 'No pudimos revisar el flujo.'
+// Mientras no hay nada leído, siempre la misma lista vacía: lo que se calcula de ella no cambia en cada dibujo.
+const SIN_AVISOS: AvisoDeRevision[] = []
 
 // Los avisos de «Revisar» de un flujo: se leen al montar y otra vez cada vez que cambia la versión del flujo (cada guardado revalida la ruta y la pantalla
 // entrega el flujo con la versión nueva). Mientras relee **conserva lo último leído**, para que la franja no vuelva al esqueleto en cada guardado; una
@@ -50,7 +52,7 @@ export function useAvisosDeRevisar(flujo: FlujoParaConfigurar) {
         : error !== null
           ? ('fallo' as const)
           : ('leyendo' as const),
-    avisos: leido?.avisos ?? [],
+    avisos: leido?.avisos ?? SIN_AVISOS,
     hayMas: leido?.hayMas ?? false,
     error,
     releyendo: leido !== null && !vigente,
