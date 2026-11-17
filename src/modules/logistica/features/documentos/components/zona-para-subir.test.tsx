@@ -151,3 +151,42 @@ describe('ZonaParaSubir: commit diferido', () => {
     )
   })
 })
+
+describe('ZonaParaSubir: el tipo pedido por «Qué falta»', () => {
+  const otro: TipoDeDocumento = {
+    ...tipoBl,
+    id: '44444444-4444-4444-8444-444444444444',
+    nombre: 'Factura',
+  }
+
+  it('arranca con el tipo pedido y no pisa lo elegido con archivos ya puestos', async () => {
+    const props = {
+      destino: destinoDeLaUnidad(unidad),
+      titulo: 'Subir documentos',
+      tipos: [tipoBl, otro],
+      puedeSubir: true,
+    }
+    const { rerender } = render(<ZonaParaSubir {...props} tipoPedido={tipoBl.id} />)
+    const campo = screen.getByLabelText<HTMLSelectElement>('Tipo de documento')
+    expect(campo.value).toBe(tipoBl.id)
+    elegir(pdf('bl.pdf'))
+    expect(await screen.findByText('bl.pdf')).toBeTruthy()
+    rerender(<ZonaParaSubir {...props} tipoPedido={otro.id} />)
+    await waitFor(() => {
+      expect(screen.getByLabelText<HTMLSelectElement>('Tipo de documento').value).toBe(tipoBl.id)
+    })
+  })
+
+  it('un tipo que no se ofrece no se elige', () => {
+    render(
+      <ZonaParaSubir
+        destino={destinoDeLaUnidad(unidad)}
+        titulo="Subir documentos"
+        tipos={[tipoBl]}
+        puedeSubir
+        tipoPedido={otro.id}
+      />,
+    )
+    expect(screen.getByLabelText<HTMLSelectElement>('Tipo de documento').value).toBe('')
+  })
+})

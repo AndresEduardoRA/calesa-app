@@ -53,6 +53,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Tonos de las papeleras.** «Enviar a la papelera» es `outline` (reversible); «Purgar» es `destructive` en las tres papeleras, siempre después de «Restaurar».
 - **Visor de imágenes: uno solo, con su URL aparte (`?visor=`).** Así se abre sobre un drawer o un panel sin cerrarlos. En su lugar se ve la portada que ya trae la fila y el resto se pide recién al acercarse (puntero, foco o toque), una vez; la grande, sólo al abrir, la actual y sus vecinas. Donde el lugar mide menos de 160 px (la fila de la tabla, la tarjeta de hoy) no caben flechas de 44 px: la foto abre el visor directo. La barra de la hoja de cotizar sigue con la miniatura fija (su JS está en el tope).
 - **Avisos con acciones: la base dice la causa con una clave, la UI la traduce.** El rechazo lleva la causa en `hint` (`_vehiculo_bloqueo()` → `{causa, motivo}`) y cada módulo la convierte en acciones en `entities/` (`resolverAcciones()`): de 1 a 3, **la que destraba primero** («Quitar el vínculo» antes que «Ver el lead»). Sin permiso para la que resuelve, el aviso dice «pídeselo a quien administra los roles» (no hay una persona a quien pedirle en todos los casos); la que sólo informa se oculta. En un lote no hay acciones: se listan los motivos. Tras «Quitar el vínculo» (`?luego=papelera`) el aviso **ofrece** la papelera, no la envía solo.
+- **«Nuevo» de la barra: un modal con URL (`?panel=crear`), claves y no permisos.** Reemplaza al botón «Nuevo lead». El servidor calcula con `puede()` las claves de lo que se puede crear (`opcionesDeNuevo()`) y sólo ellas cruzan al navegador (el catálogo con títulos y destinos viaja diferido con el modal): el layout no lleva `permisos.ts` en el documento de cada pantalla. Cada opción reusa su puerta (drawer del lead, `?panel=` de otra pantalla), sin formularios nuevos; «Evento» y «Tarea» van siempre porque para uno mismo no piden permiso (publicar y asignar sólo amplían). Seguimiento y recordatorio llevan a la **ficha** del lead (sección «Seguimientos», `rutaDeAccionSobreUnLead()`), no al listado: el modal del listado (`?para=`) sólo abre filas de la página visible y un lead elegido en una búsqueda puede no estar en ella. `Shift+N` abre «Nuevo» (en `combinacionDe`, Mayús cuenta sólo con una letra suelta) y no hace nada con otro diálogo abierto; `N` sigue igual. El botón suma 1.551 B al primer HTML de toda pantalla (`/configuracion/cotizacion?seccion=tarjeta` con 500 miembros: 162.237 → 163.788 B): el tope de esa prueba sube a 171.900 B por la regla del 5 %.
 - **PWA.** `id: '/'` igual que `start_url` (cambiarlo reinstala la app a todos); sin aviso que invite a instalar; los atajos del manifest no se filtran por permiso (se pide sin sesión). Íconos, tarjeta y PDF salen del logo normal; el oscuro lo elige el CSS.
 
 ## Equipo
@@ -407,6 +408,20 @@ las trampas, en `docs/LECCIONES.md`.
 - **Las lecturas de la cadena son `security definer`.** Las policies de `transportes`/`documentos` preguntan por fila; la definer resuelve el alcance una vez por origen (el menor de `logistica.ver` y `vehiculos.ver`).
 - **Inexistente, en papelera o sin acceso: un solo texto y 42501 hint `acceso`.** El nombre de quien movió (PT409) sólo llega a quien pasó el acceso; sin acceso a la cadena, 42501, no cadena vacía.
 - **Mover.** `cambiar_fase` toma la unidad `for no key update`; la esperada nula vale sólo para unidad sin fase. El lote no mezcla fases y mueve «los N que pueden»; sin actualización optimista.
+- **Las acciones de «Qué falta» se resuelven en el servidor**, en la action que envuelve la lectura de `flujos` (`leerQueFalta`): los permisos y la regla no
+  viajan al navegador y no hay lectura nueva; el navegador sólo filtra lo que sabe el DOM (qué huecos hay, página o drawer, red). Descartado: resolver en el
+  navegador con `mis_permisos` (pagaría JS y permisos) y pasar capacidades por un contexto desde la página (la regla correría en el navegador).
+- **«Revisar» antes que «Subir»:** `evaluar_requisitos` cuenta en la misma consulta los subidos que contarían si se aprobaran (`por_revisar`); `cumplido`
+  sigue siendo de los aprobados. Sin eso, quien sube y aprueba vería «Subir» otra vez justo después de subir.
+- **«Pedirlo» es una tarea de agenda sin fecha ni descripción**, vinculada al vehículo, sin un tipo de aviso nuevo (`tarea_asignada` ya avisa). La lista
+  es de quien tiene la clave en el origen de la unidad **y la ve** (el espejo de `alertas_demora`), sin quien pide. Un ítem no ofrece «Pedirlo» (una tarea
+  no se vincula a un ítem). Lo que falta de un pago se pide a quien lo confirma (`logistica.pagos.confirmar`): lo que falta es que esté confirmado.
+- **«Pedirlo» acota en la base la clave por la que se busca** (`agenda_quienes_reciben` sólo acepta las de `CLAVES_QUE_SE_PIDEN`): si no, quien da tareas
+  podría averiguar quién tiene cualquier permiso en un origen. La tarea en sí es la de siempre (`tarea_crear`): la base exige que el responsable reciba
+  tareas, no que tenga la clave ni que vea el vehículo, igual que una tarea dada desde la agenda con su vínculo. El cliente sin vincular se pide a quien
+  edita vehículos (la clave del dato), aunque vincular pida también `leads.editar`.
+- **En un drawer, «ir a» lleva a la página de la unidad** («Abrir la unidad»), salvo en el ítem, cuyos destinos ya son su vehículo o su proyecto. La franja
+  «fuera de regla» no lleva acciones nuevas: no es una tarjeta de destino. Las faltas informativas también llevan acción. Las acciones sólo se apagan sin red.
 - **«Qué falta» sin realtime.** Se relee al volver el foco (≥ 5 s) y con `logistica:unidad-cambio`; destinos desde `fases_transiciones`, tope 12. Un fallo al leer el flujo apaga sólo los huecos con regla.
 - **Notas sin «Borrar».** Corregir sólo la propia, sin cambio de fase y sin versión (gana la última).
 - **El ítem de repuesto entra al motor como `UnidadAbierta`**, sin volver nulo `Unidad.origenId`: el camino del vehículo no cambia.
@@ -513,6 +528,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Las tres secciones son RPC** (el mínimo vive en el servidor). `buscador_leads` devuelve ids y se hidrata con `leads_vista_por_ids`; `buscador_cotizaciones` no devuelve `lead_id`, `vehiculo_id` ni `creado_por`.
 - **«Mis propias» con consultas estáticas**, no `execute … using` (planificada con el texto iba a Seq Scan); con > 1.000 coincidencias de título se toman 1.000 cualesquiera.
 - **Un texto que parece teléfono no busca leads**; `#n` busca leads y cotizaciones, no vehículos.
+- **Elegir un lead de la cartera pide los 20 candidatos que deja la base y se queda con los de la cartera** (`buscarLeadsDeLaCartera()`, `en_cartera` de `leads_vista_por_ids`; se muestran 5). Con 5 candidatos, quien ve «todos» no encontraría un lead propio tapado por ajenos; no hay RPC nueva. El registro de `paginas-en-la-base.ts` lo marca `pideMasQueElDefecto`.
 
 ## Tablero
 

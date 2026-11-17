@@ -1,6 +1,19 @@
 // API pública del módulo `agenda` para el servidor: lecturas, reglas y tipos. No exporta componentes: los de una pantalla salen por
 // `pantallas/agenda.ts` (sólo `src/app`) y los del navegador por `client.ts`. La ficha CLAUDE.md de esta carpeta dice qué entra y qué sale.
-export { leerAgenda, leerEvento, leerMisTareas, leerRecordatorio, leerTarea } from './composicion'
+export {
+  leerAgenda,
+  leerEvento,
+  leerMisTareas,
+  leerQuienesPuedenRecibir,
+  leerRecordatorio,
+  leerTarea,
+} from './composicion'
+export type { PedidoDeQuienesPueden, PersonasEncontradas } from './entities/personas'
+export {
+  darTareaVinculada,
+  type PedidoDeTareaVinculada,
+} from './features/tareas/dar-tarea-vinculada'
+export type { ResultadoDeEscritura } from './entities/escritura'
 export { estaVencida, type TareaPendiente } from './entities/mis-tareas'
 export {
   CLASES_DE_AGENDA,

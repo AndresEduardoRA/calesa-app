@@ -1,5 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
-import { entrar } from './soporte/alta'
+import { abrirNuevoLeadDeLaBarra, entrar } from './soporte/alta'
 import { irAFicha, ponerExtras } from './soporte/leads-ficha'
 import { abrirAgregarTelefono, nacional } from './soporte/leads-ficha-telefonos'
 import { irALeads, nombre } from './soporte/leads-listado'
@@ -74,10 +74,8 @@ test('con un modal abierto, el aviso está en el árbol de accesibilidad y se al
 
 async function abrirAlta(page: Page) {
   await irALeads(page)
-  await expect(async () => {
-    await page.getByRole('button', { name: 'Nuevo lead' }).click()
-    await expect(page.getByRole('dialog', { name: 'Nuevo lead' })).toBeVisible({ timeout: 1000 })
-  }).toPass()
+  await abrirNuevoLeadDeLaBarra(page)
+  await expect(page.getByRole('dialog', { name: 'Nuevo lead' })).toBeVisible()
   return page.getByRole('dialog', { name: 'Nuevo lead' })
 }
 

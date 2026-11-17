@@ -14,8 +14,8 @@ import { borrarPersonasDePrueba, borrarRolesDePrueba } from './soporte/base'
 test.describe.configure({ mode: 'serial' })
 
 // Lo medido en escritorio con 500 miembros (4.19-3b: 147.484 B del primer HTML y 4.754 nodos con «Filas» abierto; 4.22-7: 155.874 B con las pestañas Diseño y Tonos y lo
-// que trajo main), más un 5 %. Va a docs/RENDIMIENTO.md.
-const TOPE_DE_BYTES_DEL_HTML = 163_700
+// que trajo main), más un 5 %. Va a docs/RENDIMIENTO.md. 171.900: con el botón «Nuevo» de la barra el marco suma 1.551 B a toda pantalla (162.237 → 163.788), más un 5 %.
+const TOPE_DE_BYTES_DEL_HTML = 171_900
 const TOPE_DE_NODOS_CON_500 = 5_000
 
 let configuradora = ''

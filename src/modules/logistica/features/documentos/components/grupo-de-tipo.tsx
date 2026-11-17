@@ -2,6 +2,7 @@
 
 import { Badge } from '@/shared/ui/badge'
 import type { GrupoDeTipo } from '../../../entities/documentos/agrupar'
+import { ATRIBUTO_DE_TIPO_DE_DOCUMENTO } from '../../../entities/nucleo/paneles-de-la-unidad'
 import type { DocumentoDeLaUnidad } from '../../../entities/documentos/documento'
 import type { ContextoDeLaFila } from './contexto-de-la-fila'
 import { FilaDeDocumento } from './fila-de-documento'
@@ -19,7 +20,14 @@ export function GrupoDeTipoDeDocumento({ grupo, contexto, nombres, hoy }: Props)
   const { resumen, pedidoPor } = grupo
   const obligatorio = pedidoPor.some((r) => r.bloqueante)
   return (
-    <section className="grid gap-2" aria-label={grupo.nombre} data-tipo-de-documento={grupo.nombre}>
+    <section
+      className="grid gap-2 rounded-(--radius-sm) outline-none focus-visible:shadow-(--shadow-focus)"
+      aria-label={grupo.nombre}
+      data-tipo-de-documento={grupo.nombre}
+      {...{ [ATRIBUTO_DE_TIPO_DE_DOCUMENTO]: grupo.tipo?.id }}
+      // «Revisar» de «Qué falta» trae el grupo a la vista y le lleva el foco.
+      tabIndex={-1}
+    >
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <h4 className="min-w-0 font-medium break-words">{grupo.nombre}</h4>
         {obligatorio ? <Badge variant="secondary">Obligatorio</Badge> : null}
