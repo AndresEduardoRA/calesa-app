@@ -103,7 +103,7 @@ export function TablaDeLeads(props: Props) {
     numeroBuscado,
     ultimoContacto,
   } = props
-  const contextoDe = useContextoDeUltimoContacto(ultimoContacto, marcar)
+  const contexto = useContextoDeUltimoContacto(ultimoContacto)
   const columnas = camposDeTabla(campos)
   return (
     <TablaDeLista>
@@ -140,10 +140,10 @@ export function TablaDeLeads(props: Props) {
               <OrigenDeLaFila origen={origenDelCatalogo(origenes, lead.origenId)} />
             </TableCell>
             <TableCell className="max-w-56">
-              <UltimoSeguimientoDeFila lead={lead} contexto={contextoDe(lead)} />
+              <UltimoSeguimientoDeFila lead={lead} contexto={contexto} />
             </TableCell>
             <TableCell className="max-w-48">
-              <RecordatorioDeFila lead={lead} contexto={contextoDe(lead)} />
+              <RecordatorioDeFila lead={lead} contexto={contexto} />
             </TableCell>
             {columnas.map((campo) => (
               <TableCell key={campo.clave} className="max-w-48 truncate">
