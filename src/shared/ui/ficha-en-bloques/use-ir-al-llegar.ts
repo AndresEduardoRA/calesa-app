@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
 import { ATRIBUTO_DE_LA_FICHA } from './estilos'
 import { irAlBloque, tituloDe } from './ir-al-bloque'
 
@@ -17,7 +18,7 @@ export function useIrAlLlegar(ancla: string | null) {
     if (ancla === null) {
       return
     }
-    const conModal = new URLSearchParams(window.location.search).has('panel')
+    const conModal = new URLSearchParams(window.location.search).has(CLAVE_DE_PANEL)
     if (!irAlBloque(ancla, { enfocar: !conModal, suave: false })) {
       return
     }
