@@ -29,13 +29,18 @@ export function useAbrirEnLaFicha(navegar: (url: string) => void) {
   const seguimiento = usePanelDeSeguimiento({ atiendeLaUrl: false })
   const recordatorio = usePanelDeRecordatorio({ atiendeLaUrl: false })
   return {
+    // Se abre cuando el «⋯» ya devolvió el foco a su botón: el modal lo toma como a quien devolvérselo al cerrarse («atrás», Esc).
     anotar: () => {
-      seguimiento.abrirAnotar()
-      irAlBloque('seguimientos', { enfocar: false })
+      trasCerrarElMenu(() => {
+        seguimiento.abrirAnotar()
+        irAlBloque('seguimientos', { enfocar: false })
+      })
     },
     agendar: () => {
-      recordatorio.abrirAgendar()
-      irAlBloque('seguimientos', { enfocar: false })
+      trasCerrarElMenu(() => {
+        recordatorio.abrirAgendar()
+        irAlBloque('seguimientos', { enfocar: false })
+      })
     },
     irA: (ancla: string, url: string) => {
       if (document.getElementById(ancla) === null) {
