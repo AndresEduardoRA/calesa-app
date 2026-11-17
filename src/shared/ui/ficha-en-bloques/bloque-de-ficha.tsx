@@ -49,7 +49,8 @@ export function BloqueDeFicha({
     id: ancla,
     [ATRIBUTO_DE_BLOQUE]: lado,
     ref: alAcercarse ? observar : undefined,
-    className: `grid min-w-0 content-start gap-3 ${MARGEN_DEL_SALTO[lado]}`,
+    // Una columna `minmax(0, 1fr)`: lo de adentro no ensancha la ficha (texto al 200 %, un vacío centrado).
+    className: `grid min-w-0 grid-cols-[minmax(0,1fr)] content-start gap-3 ${MARGEN_DEL_SALTO[lado]}`,
   }
   if (!conTitulo) {
     return <div {...propias}>{cuerpo}</div>
