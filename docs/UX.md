@@ -1225,8 +1225,8 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
   cargar…» con «Reintentar» ahí (la hoja sigue); sin red, «Sin conexión. No se pudo abrir esto.» con «Reintentar».
 - **Siguiente:** en la columna «Paso» (en la tarjeta, al pie, a lo ancho y a 44 px). Nombre accesible «Comprar · Bomba». Sin fase: «Mover a
   «X»» con una sola fase inicial, «Elegir fase» con varias, nada sin inicial. Fase final (también «Perdido») o proyecto cerrado: sólo la
-  fase. Sin la clave de lo que toca (`repuestos.mover`, `repuestos.cotizar`, `repuestos.costos.editar`): «Sigue: «X»», sin botón. Un hito
-  informativo no cambia el botón. Tras registrar un pago, la página se vuelve a pedir y los botones del siguiente se apagan mientras dura.
+  fase. Sin la clave de lo que toca (`repuestos.mover`, `repuestos.cotizar`, `repuestos.costos.editar`): «Sigue: «X»», sin botón (un hito
+  bloqueante que falta y quien mira no puede hacer: «Sigue: «Precio al cliente»», nunca «Mover»). Un hito informativo no cambia el botón. Tras registrar un pago, la página se vuelve a pedir y los botones del siguiente se apagan mientras dura.
 - **Hoja:** tabla desde 768 px y tarjetas debajo; cada celda se guarda sola (Enter o al salir; la lista, al elegir). Cantidad y precio son
   `XCell`; la columna «Paso» (la fase) es de lectura. Un precio sin moneda lleva la primera activa. Enter en la fila nueva agrega el ítem y deja el foco en la
   siguiente. No filtra: hasta 200 ítems (con 200, sin fila nueva y con `<AvisoDeTope>`). Vacía: «Este proyecto todavía no tiene ítems.» y,

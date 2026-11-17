@@ -488,7 +488,7 @@ las trampas, en `docs/LECCIONES.md`.
   (un pago es del proyecto); sin la clave, los que llegaron a la fase que lo pide, sin decir nada del pago.
 - **El siguiente de un ítem sólo cambia de botón por un hito bloqueante** (`siguienteDelItem`): un informativo no frena mover. Destino = la salida hacia adelante más
   cercana (si no hay, la primera); cada botón pide la clave que la base exige para eso (`repuestos.mover`, `repuestos.cotizar`, `repuestos.costos.editar`) y sin ella
-  se dice «Sigue: «X»». Se calcula en el navegador sobre las filas vivas de la hoja: un precio tecleado cambia el botón y el progreso sin releer nada.
+  se dice «Sigue: «X»»; un hito bloqueante que falta y quien mira no puede hacer nunca da «Mover» (la base lo rechazaría siempre). Se calcula en el navegador sobre las filas vivas de la hoja: un precio tecleado cambia el botón y el progreso sin releer nada.
 - **Los paneles conservan `?pestana=`** (`cotizaciones|pagos|compras`) como «el panel abierto bajo los pasos»: los enlaces viejos abren lo mismo y los de un
   formulario de compra o de pagos sin `?pestana=` redirigen con su panel. La hoja no se desmonta nunca.
 - **El panel del ítem es una variante de logística** (`PanelDeLaUnidadALaVista`), no un cambio de la pieza común: el drawer de `/logistica/gastos?vehiculo=` sigue

@@ -21,7 +21,8 @@ type Props = {
 }
 
 // El botón del siguiente de un ítem (`docs/GLOSARIO.md` › «Siguiente (de un ítem)») junto a su fase, en la fila de la hoja: mover (abre el panel del ítem con el
-// destino ya elegido, donde «Qué falta» muestra lo que pide y la nota) o el formulario del hito que falta. Sin permiso, sólo «Sigue: «X»»; sin siguiente, nada.
+// destino ya elegido, donde «Qué falta» muestra lo que pide y la nota) o el formulario del hito que falta. Sin permiso para lo que toca (también un hito
+// bloqueante que falta y quien mira no puede hacer: mover lo rechazaría la base), sólo «Sigue: «X»»; sin siguiente, nada.
 // El nombre accesible lleva el ítem: «Comprar · Bomba».
 export function PasoDelItem({ indice, fila, contexto, apagado, alMover, alHito }: Props) {
   const siguiente = siguienteDelItem(indice, fila, contexto)

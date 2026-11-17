@@ -1,6 +1,11 @@
 import type { FilaDeItem } from '../nucleo/item'
 import type { IndiceDelFlujo } from './pasos'
-import { ORDEN_DE_LOS_HITOS, type FaseDeLosPasos, type HitoDelPaso } from './pasos-del-flujo'
+import {
+  ORDEN_DE_LOS_HITOS,
+  TITULO_DEL_HITO,
+  type FaseDeLosPasos,
+  type HitoDelPaso,
+} from './pasos-del-flujo'
 
 // El **siguiente** de un ítem (`docs/GLOSARIO.md` › «Siguiente (de un ítem)»): lo que toca hacer para que avance, con el botón que lo hace. Puro: lo calcula la hoja
 // sobre la fila viva. La base vuelve a exigir todo: cada botón sale sólo con la clave que la base pide para eso.
@@ -48,22 +53,45 @@ function destinoDe(
   return primera === undefined || fase === undefined ? null : { fase, accion: primera.accion }
 }
 
-/** El hito bloqueante que el destino pide y todavía falta, si quien mira puede hacerlo. Uno informativo no frena mover: no cambia el botón. */
+/**
+ * El hito bloqueante que el destino pide y se sabe que falta (el precio, si el ítem no lo tiene; el pago, si quien mira ve que no hay ninguno), y si quien mira
+ * puede hacerlo. Uno informativo no frena mover: no cambia el botón. Un pago que no se sabe (sin `repuestos.costos.ver`) no cuenta como faltante.
+ */
 function hitoQueFalta(
   indice: IndiceDelFlujo,
   faseId: string,
   fila: Fila,
   { pago, puede }: ContextoDelSiguiente,
-): HitoDelPaso | null {
+): { hito: HitoDelPaso; puede: boolean } | null {
   const bloqueantes = new Set(
     (indice.pedidos.get(faseId) ?? []).filter((p) => p.bloqueante).map((p) => p.hito),
   )
   for (const hito of ORDEN_DE_LOS_HITOS) {
     if (!bloqueantes.has(hito)) continue
-    if (hito === 'precio' && fila.precioCliente === null && puede.cotizar) return 'precio'
-    if (hito === 'pago' && pago === false && puede.registrarPago) return 'pago'
+    if (hito === 'precio' && fila.precioCliente === null) return { hito, puede: puede.cotizar }
+    if (hito === 'pago' && pago === false) return { hito, puede: puede.registrarPago }
   }
   return null
+}
+
+// Con el destino elegido: un hito bloqueante que falta frena mover (su formulario si quien mira puede hacerlo; si no, sólo se dice: mover lo rechazaría la base).
+function haciaElDestino(
+  destino: { fase: FaseDeLosPasos; accion: string | null },
+  falta: ReturnType<typeof hitoQueFalta>,
+  { puede }: ContextoDelSiguiente,
+): SiguienteDelItem {
+  if (falta !== null && !falta.puede) {
+    return { tipo: 'informar', texto: `Sigue: «${TITULO_DEL_HITO[falta.hito]}»` }
+  }
+  if (falta?.hito === 'precio') return { tipo: 'cotizacion', texto: TEXTO_DE_NUEVA_COTIZACION }
+  if (falta?.hito === 'pago') return { tipo: 'pago', texto: TEXTO_DE_REGISTRAR_PAGO }
+  if (!puede.mover) return { tipo: 'informar', texto: `Sigue: «${destino.fase.nombre}»` }
+  const accion = destino.accion?.trim()
+  return {
+    tipo: 'mover',
+    faseId: destino.fase.id,
+    texto: accion ? accion : `Mover a «${destino.fase.nombre}»`,
+  }
 }
 
 /** El siguiente del ítem. Sin permiso para lo que toca, sólo el texto «Sigue: «X»» (nunca un botón muerto). */
@@ -80,14 +108,5 @@ export function siguienteDelItem(
       ? { tipo: 'mover', faseId: null, texto: TEXTO_DE_ELEGIR_FASE }
       : NINGUNO
   }
-  const hito = hitoQueFalta(indice, destino.fase.id, fila, contexto)
-  if (hito === 'precio') return { tipo: 'cotizacion', texto: TEXTO_DE_NUEVA_COTIZACION }
-  if (hito === 'pago') return { tipo: 'pago', texto: TEXTO_DE_REGISTRAR_PAGO }
-  if (!contexto.puede.mover) return { tipo: 'informar', texto: `Sigue: «${destino.fase.nombre}»` }
-  const accion = destino.accion?.trim()
-  return {
-    tipo: 'mover',
-    faseId: destino.fase.id,
-    texto: accion ? accion : `Mover a «${destino.fase.nombre}»`,
-  }
+  return haciaElDestino(destino, hitoQueFalta(indice, destino.fase.id, fila, contexto), contexto)
 }

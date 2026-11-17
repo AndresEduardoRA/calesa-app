@@ -93,7 +93,10 @@ describe('el siguiente de un ítem cuando el destino pide un hito', () => {
       tipo: 'mover',
       texto: 'Comprar',
     })
-    expect(siguienteDelItem(conPrecio, item(1), sin('cotizar'))).toMatchObject({ tipo: 'mover' })
+    expect(siguienteDelItem(conPrecio, item(1), sin('cotizar'))).toEqual({
+      tipo: 'informar',
+      texto: 'Sigue: «Precio al cliente»',
+    })
   })
 
   it('un hito informativo no cambia el botón', () => {
@@ -118,8 +121,9 @@ describe('el siguiente de un ítem cuando el destino pide un hito', () => {
     expect(siguienteDelItem(conPago, item(2), { ...TODO, pago: null })).toMatchObject({
       tipo: 'mover',
     })
-    expect(siguienteDelItem(conPago, item(2), sin('registrarPago'))).toMatchObject({
-      tipo: 'mover',
+    expect(siguienteDelItem(conPago, item(2), sin('registrarPago'))).toEqual({
+      tipo: 'informar',
+      texto: 'Sigue: «Pago del cliente»',
     })
   })
 
