@@ -1,0 +1,31 @@
+# Copia del manifiesto del proyecto calesa (esquema proyecto/v1): el repo sólo lee ésta, nunca la carpeta de un hermano. Sale de
+# z_calesa/proyecto.yaml, que manda en lo del proyecto; si cambia, una tarea «sincronizar manifiesto» pone al día esta copia. La
+# lee scripts/proyecto/manifiesto.mjs. Reglas: _herramientas/kit/docs/semillas/proyecto.plantilla.yaml; se revisa con
+#   python3 _herramientas/kit/scripts/semilla/validar_semilla.py --manifiesto .proyecto/proyecto.yaml
+esquema: proyecto/v1
+proyecto: calesa
+nombre: Calesa
+semilla: semilla/
+
+repos:
+  - rol: app
+    nombre: calesa-app
+    github: AndresEduardoRA/calesa-app   # hoy calesa.app: se renombra (REORGANIZACION.md, paso 4)
+    etapa: mantenimiento
+    semilla: null                        # nació antes de las semillas; su historia está en la etiqueta fases-0-9
+    puertos:
+      heredado: {api: 54621, base: 54622, app: 3000}
+    provee: []
+    consume: []
+
+  - rol: web
+    nombre: calesa-web
+    github: AndresEduardoRA/calesa-web   # se rehace desde el kit nuevo; el repo viejo pasa a calesa-web-piloto
+    etapa: construccion
+    semilla: null
+    puertos:
+      bloque: 5
+    provee: []
+    consume: []
+
+contratos: []   # hoy app y web no comparten nada en ejecución: sólo la marca, que va en semilla/comun.md
