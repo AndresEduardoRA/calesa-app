@@ -572,7 +572,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   (`e2e/leads-ficha-dos-columnas.spec.ts`); lo que más pesa es el HTML de los ítems con sus acciones (≈ 31 KB el bloque de seguimientos, ≈ 30 KB
   las 10 oportunidades, 11 Relacionados, 6 el portal) y su payload RSC. Igual con la semilla y con 100 orígenes + 100 tipos (manda los campos
   activos y el origen y tipo del lead; el panel de edición los lee al abrirse, `leerCatalogosDeEdicion()`); `e2e/leads-ficha.spec.ts`. Al abrirla
-  desde «Abrir ficha», ≤ 33 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 30,7). «Cotizaciones» lee 21 desde el navegador al acercarse
+  desde «Abrir ficha», ≤ 39 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 30,7 en escritorio y 36,6 en el celular). «Cotizaciones» lee 21 desde el navegador al acercarse
   a la vista (200 px), no con la ficha.
   «Cotizar» de la cabecera suma, para quien tiene `cotizaciones.crear`, `getOrigenes()` (una por request) y ~90 B.
 - «Nuevo lead» es un solo drawer: 1 montaje y 1 entrada animada por apertura, 1 lectura de cada pedido (`e2e/leads-alta-un-drawer.spec.ts`).
