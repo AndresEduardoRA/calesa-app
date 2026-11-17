@@ -367,6 +367,19 @@ las trampas, en `docs/LECCIONES.md`.
 - **`flujos.activo` no se edita ni se quita**: nadie lo lee ni lo escribe.
 - **Un ítem «Perdido» no frena al vehículo**: la regla vive en `_repuesto_ante_espera`.
 - **Tipos de documento.** `proposito` no se edita; una combinación inválida de vencimiento se rechaza, no se limpia; apagar `visible_portal_permitido` no oculta lo ya marcado; un tipo de flujo activo no repite el nombre de un global activo.
+- **El flujo se configura sobre un diagrama con disposición calculada** (`disponerDiagrama`, `@xyflow/react` detrás de `diferido()`): una columna por
+  fase en su orden, ramas arriba, vueltas atrás abajo, sin posiciones guardadas. Descartado: guardar posiciones (migración y deriva al reordenar),
+  una disposición automática genérica (dagre o elk: otra dependencia y cruces igual) y un panel acoplado en la página (le quita ancho al diagrama).
+  La lista sigue siendo la versión navegable y la única del celular (`?vista=diagrama|lista`, con `shallow` y `replace`: el servidor no depende de
+  ella, como `?hueco=`). Versión de la librería: la última de la mayor anterior si la nueva tiene menos de 14 días (12.12.1, MIT); la atribución se
+  oculta (`proOptions.hideAttribution`): es un enlace externo en inglés y la licencia lo permite.
+- **El panel del flujo no es modal desde 1024 px** (`<Drawer alCostado>`): el diagrama sigue a la vista y tocar otra fase cambia el panel sin
+  cerrarlo; más angosto, el drawer modal. Sus bloques van a la vista (`<BloquesALaVista>`), no plegados: la persona pidió que editar no fuera «puros
+  acordeones». Con `?seccion=` y `?fase=` a la vez gana la sección. Las reglas y los tipos de documento se abren ahí; sin barra de pestañas.
+- **Arrastrar sí ordena las fases** (a diferencia de mover unidades): es configuración de quien la tiene, con «Mover antes/después» de teclado, y se
+  apaga con la lista cortada. **Crear una salida arrastrando, no:** sin teclado ni celular, suma interacción a un formulario que ya tiene destino,
+  acción y «pide nota».
+- **Un `rol_sin_personas` de una salida queda en su fase:** la base no dice de qué salida es y no se adivina por el texto.
 
 ## Logística
 
