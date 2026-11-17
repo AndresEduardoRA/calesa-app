@@ -38,6 +38,7 @@ EST="$DATOS/estado"
 WTS="$DATOS/worktrees"
 PROMPTS="$ORQ/prompts"
 SERVICIO="orquestador-${PROYECTO:?falta PROYECTO en config.env}"
+TMP_TAREAS="${TMP_TAREAS:-${XDG_CACHE_HOME:-$HOME/.cache}/orquestador/$PROYECTO}"
 mkdir -p "$COLA" "$EST" "$WTS"
 
 export PATH="${PATH_EXTRA:+$PATH_EXTRA:}$PATH"
@@ -340,6 +341,7 @@ integrada() {
   fi
   git -C "$REPO" worktree prune >/dev/null 2>&1
   git -C "$REPO" branch -D "$rama" >/dev/null 2>&1 || true
+  rm -rf "${TMP_TAREAS:?}/$id"
   est_set "$id" estado integrado
   est_set "$id" integrado_en "$(date '+%F %T')"
   avisar "$id integrada ✓" "PR #$pr en main: $(campo "$(spec_de "$id")" titulo)" default white_check_mark
@@ -362,6 +364,10 @@ correr() {
   RAMA=$(campo "$SPEC" rama)
   TITULO=$(campo "$SPEC" titulo)
   WT="$WTS/$ID"
+  # Su propia carpeta temporal (TMPDIR), vacía en cada corrida y fuera de /tmp: lo que las pruebas y las herramientas dejan sin borrar
+  # no se acumula en el tmpfs de la máquina, que tiene tope de archivos y frena a todos los proyectos cuando se llena.
+  export TMPDIR="$TMP_TAREAS/$ID"
+  rm -rf "$TMPDIR" && mkdir -p "$TMPDIR"
   PREVIO=$(est_get "$ID" previo)
   est_set "$ID" pid "$$"
   token_gh
