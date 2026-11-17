@@ -22,6 +22,10 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
     por `client.ts`: la usa `<FormularioDeAjustesDeCotizacion>`, de este módulo.
 - Pantallas: `pantallas/configuracion-empresa.ts` (`<FormularioEmpresa>`, `<MonedasYTiposCambio>`, `<Integraciones>`, `<IconosDeLaApp>`) y
   `pantallas/configuracion-cotizacion.ts` (`<FormularioDeAjustesDeCotizacion>`).
+- Compartir los tipos de cambio: `responderCompartirTiposCambio('texto' | 'imagen', ids)` (la usan las rutas `src/app/(app)/tipos-de-cambio/texto` e `imagen`,
+  tras `requerirSesion()`: `ids` = guid separados por coma, de 1 a 30, validados por `idsParaCompartir()`; 400, 404 o 500 en `text/plain`, sin caché) y
+  `leerLeyendaDeTiposCambio()` (con la versión de la fila; falla en vez de dar una vacía). La action `guardarLeyendaDeTiposCambio` la usa
+  `<LeyendaDeLosTiposCambio>` dentro de `<MonedasYTiposCambio>`.
 - `shell.ts`: `getAjustes()`, `getTiposCambioDeLaBarra()` (los de la barra: hasta 3, sólo `{id, nombre, monedaA, valor}`, de la misma lectura
   por request), `<TiposCambioVigentes>` (el botón de la barra; el popover lee `tipos_cambio_vigentes()` al abrirse).
 - `client.ts`: `guardarTipoCambio` y `EntradaDeGuardarTipoCambio`, para el ⚙ de un tipo de cambio de la hoja (`cotizaciones`); la action exige
@@ -51,7 +55,8 @@ RPC: `web.ajustes_acceso` (lo único que lee `anon`), `empresa_guardar_ajustes`,
 sin origen), `empresa_con_datos_cargados`, `moneda_crear`, `moneda_guardar`, `tipo_cambio_crear`, `tipo_cambio_guardar`, `integracion_guardar` (en
 `web_publica` valida `revalidar_url`: `https://` o `http://` de loopback, con `hint = 'revalidar_url'`, y guarda sólo esa clave),
 `integracion_guardar_secreto`, `integracion_secreto` (sólo `service_role`), `web_publica_vehiculos_que_cambian` (de 0 a 51;
-`empresa.ajustes.gestionar`). `tipos_cambio.en_la_barra` («En la barra») se escribe con `tipo_cambio_guardar(… p_en_la_barra)`: exige activo y
+`empresa.ajustes.gestionar`). `empresa_guardar_leyenda_de_tipos_cambio` (`empresa.tipos_cambio.gestionar`; `ajustes_empresa.leyenda_tipos_cambio`, 1 a 120 caracteres sin saltos de línea,
+vacía la quita; misma versión que `empresa_guardar_ajustes`). `tipos_cambio.en_la_barra` («En la barra») se escribe con `tipo_cambio_guardar(… p_en_la_barra)`: exige activo y
 menos de 3 activos marcados (22023, `hint = 'en_la_barra'`), tras el candado consultivo de la barra, tomado antes que la fila.
 `tipos_cambio_vigentes()` (definer, toda persona activa): los activos con su versión y el último cambio del valor (del historial) con el nombre de
 quien lo hizo, nunca el correo.
@@ -89,6 +94,14 @@ valor}`, la misma revalidación): sin el permiso o con el Modo Live no hay lápi
   esquivaría `<Monto>`. Con algo sin guardar, guardando o esperando la red, el popover no se cierra al tocar afuera ni con Esc.
 - `registro_abierto = false` lo aplica la base (trigger en `auth.users`); `registroDisponible()` lo repite: registro abierto **o** todavía no hay
   nadie (la primera cuenta nace siempre, y dueña).
+
+- **Compartir** (`features/compartir-tipos-cambio/responder.ts`, `infra/compartir/`, `infra/queries/compartir.ts`, `entities/compartir-tipos-cambio.ts`): el texto y
+  la imagen salen del servidor con la sesión de quien pide, de una lectura (`tipos_cambio_vigentes()` + la fila de `ajustes_empresa` por su clave primaria;
+  nunca los ajustes de fábrica: un cliente no recibe otro nombre o locale). Los ids no activos se omiten y ninguno activo es 404. La imagen es
+  `ImageResponse` (1080 px, alto según los tipos y la leyenda, Geist de `infra/compartir/fuentes/`, que `next.config.ts` lleva al desplegar con
+  `outputFileTracingIncludes`); el logo se baja en el servidor (≤ `PESO_MAXIMO_LOGO`, PNG, JPEG, GIF o SVG) y uno que falla deja sólo el nombre. El panel
+  (`components/popover-de-la-barra/compartir/`, diferido) pide texto e imagen por separado (una falla no tapa a la otra), guarda el resultado y los botones
+  son síncronos con el gesto; lo que el navegador no puede (`navegador.ts`) se apaga con su motivo (`motivos-de-las-acciones.ts`). Sin «Compartir» con el Modo Live.
 
 ## Ojo
 
