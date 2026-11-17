@@ -15,6 +15,7 @@ import {
   MUTADORES_DE_TARJETA,
   MUTADORES_VALIDOS,
 } from './mutadores-de-diseno-cobertura'
+import { MUTADORES_DEL_ASPECTO } from './mutadores-de-diseno-aspecto'
 import { MUTADORES_DE_FORMA_DE_DISENO } from './mutadores-de-diseno-forma'
 import { MUTADORES_DE_MODOS, MUTADORES_DE_SECCIONES } from './mutadores-de-diseno'
 import { clonar, type ContextoJson, type MutadorDeDiseno } from './mutadores-de-diseno-base'
@@ -31,6 +32,7 @@ export const MUTADORES_CRUZADOS_DE_DISENO: readonly MutadorDeDiseno[] = [
   ...MUTADORES_DE_TARJETA,
   ...MUTADORES_DE_COBERTURA,
   ...MUTADORES_VALIDOS,
+  ...MUTADORES_DEL_ASPECTO,
 ]
 export { MUTADORES_DE_FORMA_DE_DISENO }
 

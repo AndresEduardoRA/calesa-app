@@ -9420,6 +9420,7 @@ export type Database = {
       _tono_en_uso: { Args: { p_clave: string }; Returns: string }
       _tono_nombre: { Args: { p_texto: string }; Returns: string }
       _tonos_de_grupos: { Args: { p_def: Json }; Returns: Json }
+      _tonos_del_diseno: { Args: { p_diseno: Json }; Returns: Json }
       _tonos_lista: { Args: Record<PropertyKey, never>; Returns: Json }
       _tonos_tope: { Args: Record<PropertyKey, never>; Returns: number }
       _transicion_accion: { Args: { p_accion: string }; Returns: string }

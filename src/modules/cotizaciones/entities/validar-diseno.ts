@@ -40,7 +40,7 @@ export function validarDiseno(
     revisarTarjeta(ix, d) ??
     revisarAtajos(ix, e) ??
     revisarCobertura(ix, e) ??
-    revisarTonos(ix)
+    revisarTonos(ix, d)
   return rechazo ?? { ok: true, diseno: d }
 }
 

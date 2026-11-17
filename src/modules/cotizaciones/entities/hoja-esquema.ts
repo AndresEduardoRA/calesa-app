@@ -1,5 +1,17 @@
 import { z } from 'zod'
-import { ANCHOS, EFECTOS_DE_INTERRUPTOR, PRESENTACIONES, SECUNDARIOS } from './diseno'
+import {
+  ANCHOS,
+  DENSIDADES_DE_SECCION,
+  EFECTOS_DE_INTERRUPTOR,
+  ENFASIS,
+  esquemaColumnas,
+  esquemaFilas,
+  LETRAS,
+  PRESENTACIONES,
+  RELLENOS,
+  SECUNDARIOS,
+  SEPARACIONES,
+} from './diseno'
 import { esquemaCampo, esquemaId, FORMATOS } from './nodos'
 
 // Lo que la hoja de cotizar lee al abrir (paso 4.13, `cotizacion_hoja()`): el diseño publicado de un origen RECORTADO al nivel de
@@ -50,6 +62,20 @@ const esquemaSecundario = z
   })
   .refine(coherente, ERROR_DE_MOTIVO)
 
+// El aspecto de cada pieza (`_cotizacion_hoja()` lo copia del diseño sólo si lo trae): todo opcional.
+const aspectoDeItem = {
+  alto: esquemaFilas.optional(),
+  letra: z.enum(LETRAS).optional(),
+  enfasis: z.enum(ENFASIS).optional(),
+}
+const anchoDeItem = { ancho: esquemaColumnas.optional(), ...aspectoDeItem }
+const aspectoComun = {
+  relleno: z.enum(RELLENOS).optional(),
+  letra: z.enum(LETRAS).optional(),
+  enfasis: z.enum(ENFASIS).optional(),
+  tono: esquemaId.optional(),
+}
+
 const esquemaAyuda = z.union([
   z.object({ tabla: esquemaId }),
   z.object({ texto: z.string().min(1) }),
@@ -68,7 +94,8 @@ export const esquemaCelda = z
     etiqueta: z.string().min(1),
     tipo_nodo: z.enum(TIPOS_DE_NODO),
     formato: z.enum(FORMATOS),
-    ancho: z.enum(ANCHOS),
+    ancho: z.union([z.enum(ANCHOS), esquemaColumnas]),
+    ...aspectoDeItem,
     tono: esquemaId.optional(),
     ajustes: z.boolean(),
     ayuda: esquemaAyuda.optional(),
@@ -87,6 +114,7 @@ const esquemaAtajos = z.object({
   tipo: z.literal('atajos'),
   nodo: esquemaId,
   chips: z.array(esquemaChip),
+  ...anchoDeItem,
 })
 
 const esquemaVariante = z
@@ -98,6 +126,7 @@ const esquemaVariante = z
       .array(z.object({ clave: esquemaId, etiqueta: z.string(), titulo: z.string() }))
       .min(1),
     por_defecto: esquemaId.optional(),
+    ...anchoDeItem,
     ...edicion,
   })
   .refine(coherente, ERROR_DE_MOTIVO)
@@ -109,6 +138,7 @@ const esquemaInterruptor = z
     etiqueta: z.string().min(1),
     efecto: z.enum(EFECTOS_DE_INTERRUPTOR),
     solo_en: z.array(esquemaId).optional(),
+    ...anchoDeItem,
     ...edicion,
   })
   .refine(coherente, ERROR_DE_MOTIVO)
@@ -119,6 +149,7 @@ const esquemaSubtotal = z.object({
   etiqueta: z.string().min(1),
   formato: z.enum(FORMATOS),
   tono: esquemaId.optional(),
+  ...anchoDeItem,
 })
 
 export const esquemaItem = z.discriminatedUnion('tipo', [
@@ -133,6 +164,11 @@ const esquemaSeccion = z.object({
   id: esquemaId,
   titulo: z.string().min(1).optional(),
   presentacion: z.enum(PRESENTACIONES),
+  ancho: esquemaColumnas.optional(),
+  alto: esquemaFilas.optional(),
+  separacion: z.enum(SEPARACIONES).optional(),
+  densidad: z.enum(DENSIDADES_DE_SECCION).optional(),
+  ...aspectoComun,
   items: z.array(esquemaItem).min(1),
 })
 
@@ -157,6 +193,7 @@ export const esquemaDeDiseno = z.object({
     ver_total_bs: z.boolean(),
     // La moneda en que se escribe el total en Bs (`cabecera.moneda_bs`): nula sin `total_en` o sin su tipo de cambio activo.
     moneda_bs: z.string().length(3).nullable(),
+    ...aspectoComun,
   }),
   secciones: z.array(esquemaSeccion),
   tarjeta_total: esquemaDeNodoDeTarjeta.extend({ secundarios: z.array(esquemaDeNodoDeTarjeta) }),
