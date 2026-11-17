@@ -6,12 +6,15 @@ Abierto: **7-4** (`tarea_crear` y `agenda_quienes_reciben` con el canal global; 
 
 ## Entra y sale
 
-- Entra: alta desde la agenda, desde el chat (`/tarea`, `/evento`) y desde la ficha del lead (recordatorios); fechas de subasta de `vehiculos`.
-- `index.ts`: `leerAgenda({ desde, hasta, deTodos })`, `leerEvento`, `leerTarea`, `leerRecordatorio`, `leerMisTareas({ tope })` (para `tablero`) y,
+- Entra: alta desde la agenda (el «Nuevo» de la agenda lo compone `src/app/(app)/agenda/nuevo-de-la-agenda.tsx`: abre el modal del shell con
+  `?panel=nuevo-en-la-agenda`), desde el chat (`/tarea`, `/evento`) y desde la ficha del lead (recordatorios); fechas de subasta de `vehiculos`.
+- `index.ts`: `leerAgenda({ desde, hasta, deTodos })`, `leerPendientes({ hasta, grupos })` (los pendientes de quien mira; `gruposDePendientes(clases)`,
+  `extraDeEnlaces`), `leerEvento`, `leerTarea`, `leerRecordatorio`, `leerMisTareas({ tope })` (para `tablero`) y,
   para `logistica` («Pedirlo» de «Qué falta»), `leerQuienesPuedenRecibir({ texto?, permiso, vehiculoId })` (quienes tienen ese permiso en el origen de la
   unidad, la ven y reciben tareas; hasta 20) y `darTareaVinculada({ id, titulo, responsableId, vehiculoId })` (una tarea sin fecha para otra persona,
   vinculada al vehículo, por `tarea_crear`). El alta desde la agenda es la action `crearTarea` de `features/tareas` (no sale por las entradas). `client.ts`: `<ChipEvento>` (dibuja «visto» —tilde y texto para el lector— y «Último visto» de un evento o una tarea; las marcas las monta `src/app` con `equipo/pantallas/marcas-de-visto`) y, para el chat, el selector de personas, las reglas puras del formulario y la action `completarTarea`.
-- Depende de `leads` (action `completarRecordatorio`), `vehiculos`, `cotizaciones`. `chat` depende de `agenda`, no al revés: la conversación de una
+- Depende de `leads` (action `completarRecordatorio`), `buscador` (`<ElegirLead>` de `client.ts`, en el formulario del evento), `vehiculos` y `cotizaciones`. El nombre del lead
+  de un evento lo lee `src/app` con `leerLeadParaEnlazar` de `leads` (`src/app/(app)/agenda/pedidos.ts`). `chat` depende de `agenda`, no al revés: la conversación de una
   tarea llega por la RPC `mensaje_tarea_crear`. Lo consume `logistica` («Pedirlo» de «Qué falta»), por funciones de servidor de `index.ts`.
 
 ## Archivos clave
@@ -19,10 +22,14 @@ Abierto: **7-4** (`tarea_crear` y `agenda_quienes_reciben` con el canal global; 
 - `entities/visibilidad.ts` — espejo de la base sólo para habilitar o deshabilitar; quién puede recibir lo deciden la base y `agenda_quienes_reciben`.
 - `entities/agenda.ts` parsea `agenda_rango` con Zod; `entities/calendario.ts` arma `rangoDe(vista, fecha, zona)` semiabierto con los cortes de día de
   la zona de la empresa (nunca «+24 h»); semanas desde el lunes. Los días cruzan como `YYYY-MM-DD`, los instantes como ISO.
-- `entities/edicion.ts` — mismos límites y mensajes que las RPC; manda sólo las claves de `p_datos` que cambiaron.
+- `entities/edicion.ts` — mismos límites y mensajes que las RPC; manda sólo las claves de `p_datos` que cambiaron (con `lead_id`: `entities/lead-del-evento.ts`).
+- `entities/hoja-del-dia.ts` — `hojaDelDia(entradas, { dia, zona, ahora })`: la jornada fija (`JORNADA`, 08:00 a 20:00), «Antes», «Después» y la marca de ahora,
+  por la hora de la zona de la empresa. `features/calendario/components/hoja-del-dia.tsx` la dibuja (cliente: la marca avanza con `useAhora`).
+- `entities/pendientes.ts` — los grupos («Vencidas», «Recordatorios», «Sin fecha»), sus parsers y cursores; `features/pendientes/` dibuja la columna
+  (`<ColumnaDePendientes>`, «Completar» con «Deshacer», «Ver más» diferido). «Ver más» lee en el navegador por `composicion-pendientes.client.ts` (aparte
+  de `composicion.client.ts`: supabase-js viaja sólo con el código diferido).
 - `features/paneles/` — todo por URL (`?evento=`, `?tarea=`, `&editar=1`, `?eliminar=`, `?panel=nuevo-evento|nueva-tarea`, `?recordatorio=`),
-  diferido. `?de=todos` sólo con `agenda.ver_todo`: sin él se ignora y el interruptor no se dibuja. «Tareas sin fecha»: sección plegable bajo el
-  calendario, leída al abrirla.
+  diferido. `?de=todos` sólo con `agenda.ver_todo`: sin él se ignora y «Qué agenda ver» no existe. «Vista y opciones» lleva «Qué agenda ver» y «Qué ver».
 
 ## Tablas
 
@@ -32,7 +39,9 @@ también dos veces en una transacción.
 RPC: `evento_crear` y `tarea_crear` (id del navegador); `evento_guardar`, `evento_eliminar`, `tarea_guardar`, `tarea_completar`, `tarea_eliminar`,
 `reasignar_tarea` (con `p_actualizado_en_esperado`, PT409). Responden `{resultado, id, actualizado_en}`. Triggers: `tarea_notificar`, `tarea_validar`.
 Lecturas: `agenda_rango(p_desde, p_hasta, p_de_todos)` (invocador, ≤ 45 días, 200 por clase con `hay_mas`; `tareas_vence_idx` para
-`agenda.ver_todo`); `agenda_tareas_sin_fecha` (cursor `(creado_en, id)`, `_acotar_pagina(p_tamano, 20, 50)`, `tareas_sin_fecha_idx`; registro en
+`agenda.ver_todo`); `agenda_tareas_sin_fecha` (sólo pendientes, cada fila con `actualizado_en`; cursor `(creado_en, id)`, `_acotar_pagina(p_tamano, 20, 50)`,
+`tareas_sin_fecha_idx`) y `agenda_pendientes(p_grupo, p_hasta, p_tamano, p_despues_en, p_despues_id)` (invocador; «vencidas» por `tareas_pendientes_idx`,
+«recordatorios» antes de `p_hasta` por `recordatorios_usuario_idx`; las dos con el estado literal para el índice parcial; registro en
 `scripts/guardas/areas-b/paginas-en-la-base.ts`); `agenda_quienes_reciben(p_texto, p_conversacion, p_permiso, p_vehiculo)` (definer, pide `agenda.tareas.asignar`, tope 20 con `hay_mas`; con
 `p_permiso` y `p_vehiculo`, juntos y sin conversación, sólo quien tiene la clave en el origen de la unidad y la ve —`_quien_puede_en_la_unidad`, espejo de
 `alertas_demora`—, sin quien pide, que tiene que ver la unidad; ahí el texto es opcional).
@@ -54,7 +63,10 @@ Lecturas: `agenda_rango(p_desde, p_hasta, p_de_todos)` (invocador, ≤ 45 días,
 - «Mi agenda»: eventos que creé, públicos o donde soy destinatario; tareas de las que soy responsable (no las que di); mis recordatorios pendientes;
   las subastas que la RLS de vehículos me deja ver. Con `p_de_todos`: todos los eventos y las tareas con fecha. Los recordatorios ajenos no se leen
   nunca.
-- El selector lee de `perfiles` sólo `id` y `nombre`; los vínculos no se editan en el panel; una tarea sin vencimiento no sale en el calendario.
+- El selector lee de `perfiles` sólo `id` y `nombre`. De los vínculos, sólo el lead de un evento se edita (en su formulario, con `leads.ver`; la base lo
+  valida con `trg_lead_visible`); una tarea sin vencimiento no sale en el calendario: va en «Sin fecha» de los pendientes.
+- `/agenda` abre en la hoja del día en todo ancho (`leerVista(…, 'dia')`). Los pendientes son siempre de quien mira (también con «De todos») y los filtra
+  «Qué ver»; no marcan visto.
 
 ## Ojo
 

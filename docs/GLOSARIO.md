@@ -210,7 +210,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Buscador** — `buscador_leads()`, `buscador_vehiculos()`, `buscador_cotizaciones()` / `src/modules/buscador`: búsqueda por sección con el
   mínimo en la base y tope 5 por sección; la dibuja la paleta.
 - **Nuevo (barra superior)** — `<NuevoDeLaBarraSuperior>`, `opcionesDeNuevo()`, `ClaveDeNuevo` / `src/app/(app)/_shell/nuevo/`: el botón «Nuevo» (y `Shift+N`) que abre un modal con lo que quien mira puede crear
-  (lead, vehículo, cotización, proyecto de repuestos, seguimiento, recordatorio, evento, tarea); `?panel=crear`. No es «Nuevo lead» (la tecla `N` y el drawer, `<AltaDeLead>`).
+  (lead, vehículo, cotización, proyecto de repuestos, seguimiento, recordatorio, evento, tarea); `?panel=crear`. El mismo modal filtrado a lo que se agenda (evento, tarea,
+  recordatorio: `CLAVES_DE_LA_AGENDA`, `delGrupo()`) lo abre «Nuevo» de la agenda por `?panel=nuevo-en-la-agenda`; un destino con `conservaLaPantalla` sólo escribe su `?panel=`
+  si ya se está en esa ruta. No es «Nuevo lead» (la tecla `N` y el drawer, `<AltaDeLead>`).
 - **Paleta** — `<Paleta>`, `AccionDeLaPaleta` / `src/modules/buscador`: superposición `Ctrl/Cmd+K` que busca y ejecuta acciones; sin URL; sus
   acciones se ofrecen con `puede()`.
 - **Visto** — `vistos` / `visto_registrar()`, `vistos_de()`, `ProveedorDeMarcasDeVisto`, `MarcasDeVistoDeLaPagina`: un registro que la persona abrió (ficha,
@@ -605,7 +607,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Destinatario** — `eventos_destinatarios`: persona que ve un evento «seleccionados» (1 a 50); en pantalla «Destinatarios» y «¿Con quién?».
   Sólo lo ve quien creó el evento.
 - **Tarea** — `tareas` / `reasignar_tarea`: pendiente con responsable y vencimiento.
-- **Tareas sin fecha** — `agenda_tareas_sin_fecha()`: mis tareas sin vencimiento, en una sección plegable bajo el calendario de `/agenda`.
+- **Hoja del día** — `hojaDelDia()`, `JORNADA`, `<HojaDelDia>` (`agenda/entities/hoja-del-dia.ts`): la vista de por defecto de `/agenda`, el día como una hoja
+  de libreta: las horas de la jornada (08:00 a 20:00) siempre a la vista con lo que pasa en cada una, «Antes de las 08:00» y «Desde las 20:00» para lo de afuera, y
+  la hora actual marcada «Ahora» si el día es hoy; en la zona de la empresa. No: «vista de día», «agenda diaria».
+- **Pendientes (de la agenda)** — `agenda_pendientes()`, `agenda_tareas_sin_fecha()`, `PendienteDeAgenda`, `<ColumnaDePendientes>`: lo que está por hacer de
+  quien mira, al costado de la hoja del día (debajo en el celular): «Vencidas» (mis tareas pendientes vencidas), «Recordatorios» (los míos vencidos o de hoy) y
+  «Sin fecha» (mis tareas pendientes sin vencimiento), cada uno con «Completar» en un toque. Siempre de quien mira, también con «De todos». No: «to-do», «por hacer».
+- **Tareas sin fecha** — `agenda_tareas_sin_fecha()`: mis tareas pendientes sin vencimiento: el grupo «Sin fecha» de los pendientes de la agenda.
 - **Conversación / Mensaje** — `conversaciones`, `mensajes`: directa, grupo o canal global; mensajes de texto o fichas.
 - **Cita (de un mensaje)** — `mensajes.responde_a_id` / `CitaDeMensaje`: el mensaje al que responde otro; «Respondiendo a…» y, en la burbuja,
   autor y primeras palabras del original.

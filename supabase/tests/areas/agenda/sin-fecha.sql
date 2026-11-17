@@ -2,11 +2,11 @@
 -- No depende de otro archivo (`SOLO=areas/agenda/sin-fecha.sql`). Cada bloque abre su transacción y la revierte.
 --
 -- Qué asegura:
---   S1. Sólo mis tareas (responsable) vivas, sin fecha y no canceladas, la más nueva primero: no la que creé y le di a otra persona (la RLS me la deja
---       ver: prueba el filtro), ni una con fecha, eliminada o cancelada; la completada sí. Página de 2 con 3 → 2 y `hay_mas`; el cursor trae la
+--   S1. Sólo mis tareas (responsable) vivas, sin fecha y pendientes, la más nueva primero: no la que creé y le di a otra persona (la RLS me la deja
+--       ver: prueba el filtro), ni una con fecha, eliminada, cancelada o completada; cada fila con sus claves exactas (con `actualizado_en`). Página de 2 con 3 → 2 y `hay_mas`; el cursor trae la
 --       tercera; cursor a medias → 22023 hint `cursor`; bloqueado → 42501.
 --   S2. `p_tamano` lo acota `_acotar_pagina`: 999 da 50 como mucho.
---   S3. Catálogo: de invocador, `search_path` vacío, de authenticated y no de anon ni PUBLIC; `tareas_sin_fecha_idx` existe.
+--   S3. Catálogo: de invocador, `search_path` vacío, de authenticated y no de anon ni PUBLIC; `tareas_sin_fecha_idx` existe y es sólo de pendientes.
 
 -- Una persona activa con un rol propio y estas concesiones: 'clave' (alcance «todos») o 'clave:propios'.
 create or replace function pg_temp.sf_persona(p_concesiones text[] default '{}') returns uuid language plpgsql as $f$
@@ -63,16 +63,17 @@ create or replace function pg_temp.sf_ids(p_r jsonb) returns uuid[] language sql
   select coalesce(array_agg((e ->> 'id')::uuid order by n), '{}') from jsonb_array_elements(p_r -> 'tareas') with ordinality a(e, n)
 $f$;
 
--- @test agenda: sin fecha entrega sólo mis tareas vivas, sin fecha y no canceladas, la más nueva primero, por cursor (S1)
+-- @test agenda: sin fecha entrega sólo mis tareas vivas, sin fecha y pendientes, la más nueva primero, por cursor (S1)
 begin;
 do $$
 declare
   yo uuid := pg_temp.sf_persona(array['agenda.tareas.recibir']); otra uuid := pg_temp.sf_persona(array['agenda.tareas.recibir']);
-  t1 uuid; t2 uuid; t3 uuid; dada uuid; con_fecha uuid; borrada uuid; cancelada uuid; r jsonb;
+  t1 uuid; t2 uuid; t3 uuid; hecha uuid; dada uuid; con_fecha uuid; borrada uuid; cancelada uuid; r jsonb;
 begin
   t1 := pg_temp.sf_tarea(yo, yo, interval '1 minute');
   t2 := pg_temp.sf_tarea(yo, yo, interval '2 minutes');
-  t3 := pg_temp.sf_tarea(yo, yo, interval '3 minutes', 'completado');
+  hecha := pg_temp.sf_tarea(yo, yo, interval '150 seconds', 'completado');
+  t3 := pg_temp.sf_tarea(yo, yo, interval '3 minutes');
   dada := pg_temp.sf_tarea(yo, otra, interval '30 seconds');
   con_fecha := pg_temp.sf_tarea(yo, yo, interval '40 seconds');
   update public.tareas set vence_en = now() + interval '1 day' where id = con_fecha;
@@ -86,6 +87,10 @@ begin
   if pg_temp.sf_ids(r) is distinct from array[t1, t2, t3] or r -> 'hay_mas' is distinct from 'false'::jsonb then
     raise exception 'la página entera: %', r; end if;
   if (select array_agg(k order by k) from jsonb_object_keys(r) k) is distinct from array['hay_mas', 'tareas'] then raise exception 'las claves: %', r; end if;
+  if (select array_agg(k order by k) from jsonb_object_keys(r -> 'tareas' -> 0) k)
+     is distinct from array['actualizado_en', 'creado_en', 'estado', 'id', 'mia', 'titulo'] then raise exception 'las claves de la fila: %', r -> 'tareas' -> 0; end if;
+  if (r -> 'tareas' -> 0 ->> 'actualizado_en')::timestamptz is distinct from (select actualizado_en from public.tareas where id = t1) then
+    raise exception 'actualizado_en de la fila: %', r -> 'tareas' -> 0; end if;
   r := pg_temp.sf_pagina(yo, 2);
   if pg_temp.sf_ids(r) is distinct from array[t1, t2] or r -> 'hay_mas' is distinct from 'true'::jsonb then raise exception 'la página de 2: %', r; end if;
   r := pg_temp.sf_pagina(yo, 2, r -> 'tareas' -> 1 ->> 'creado_en', r -> 'tareas' -> 1 ->> 'id');
@@ -127,5 +132,7 @@ begin
   if (select count(*) from pg_proc p join pg_namespace s on s.oid = p.pronamespace where s.nspname = 'public' and p.proname = 'agenda_tareas_sin_fecha') <> 1 then
     raise exception 'agenda_tareas_sin_fecha tiene sobrecargas'; end if;
   if to_regclass('public.tareas_sin_fecha_idx') is null then raise exception 'falta tareas_sin_fecha_idx'; end if;
+  if pg_get_indexdef('public.tareas_sin_fecha_idx'::regclass) not like '%estado = ''pendiente''%' then
+    raise exception 'tareas_sin_fecha_idx debía ser sólo de pendientes: %', pg_get_indexdef('public.tareas_sin_fecha_idx'::regclass); end if;
 end $$;
 rollback;

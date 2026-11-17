@@ -15,13 +15,22 @@ export type EventoPedido = {
 type Props = {
   evento: EventoPedido | null
   puedePublicar: boolean
+  // Con `leads.ver`: el formulario ofrece «Lead (opcional)».
+  puedeVincularLead: boolean
   zona: string
   hoy: string
   fecha: string
 }
 
 // Lo que la URL pide de un evento: «Nuevo evento» (`?panel=nuevo-evento`), su detalle (`?evento=<id>`) o su formulario de edición (`&editar=1`).
-export function EventoDeLaUrl({ evento, puedePublicar, zona, hoy, fecha }: Props) {
+export function EventoDeLaUrl({
+  evento,
+  puedePublicar,
+  puedeVincularLead,
+  zona,
+  hoy,
+  fecha,
+}: Props) {
   const alta = usePanelesDeAlta().evento
   const detalle = usePanelDeDetalle()
   if (alta.abierto) {
@@ -32,6 +41,7 @@ export function EventoDeLaUrl({ evento, puedePublicar, zona, hoy, fecha }: Props
         hoy={hoy}
         zona={zona}
         puedePublicar={puedePublicar}
+        puedeVincularLead={puedeVincularLead}
         alCrear={detalle.abrirEvento}
         alGuardar={detalle.dejarDeEditar}
         alCancelar={alta.cerrar}
@@ -51,6 +61,7 @@ export function EventoDeLaUrl({ evento, puedePublicar, zona, hoy, fecha }: Props
         hoy={hoy}
         zona={zona}
         puedePublicar={puedePublicar}
+        puedeVincularLead={puedeVincularLead}
         alCrear={detalle.cerrar}
         alGuardar={detalle.dejarDeEditar}
         alCancelar={detalle.dejarDeEditar}

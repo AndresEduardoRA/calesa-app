@@ -4,12 +4,14 @@ import 'server-only'
 import type { LectorDeAgenda } from './entities/agenda'
 import type { LectorDeEvento, LectorDeTarea } from './entities/detalle'
 import type { LectorDeMisTareas } from './entities/mis-tareas'
+import type { LectorDePendientes } from './entities/pendientes'
 import type { LectorDeQuienesPueden } from './entities/personas'
 import type { LectorDeRecordatorio } from './entities/recordatorio'
 import { getAgenda } from './infra/queries/agenda'
 import { repositorioDeEventos } from './infra/eventos'
 import { getEvento, getTarea } from './infra/queries/detalle'
 import { getMisTareas } from './infra/queries/mis-tareas'
+import { getPendientes } from './infra/queries/pendientes'
 import { getRecordatorio } from './infra/queries/recordatorio'
 import { leerQuienesPuedenRecibir as leerQuienesPuedenDeLaBase } from './infra/personas'
 import { repositorioDeTareas } from './infra/tareas'
@@ -19,6 +21,8 @@ export const leerEvento: LectorDeEvento = getEvento
 export const leerTarea: LectorDeTarea = getTarea
 export const leerRecordatorio: LectorDeRecordatorio = getRecordatorio
 export const leerMisTareas: LectorDeMisTareas = getMisTareas
+// Los pendientes de quien mira, al costado de la hoja del día (la página de `/agenda`).
+export const leerPendientes: LectorDePendientes = getPendientes
 // A quién darle una tarea sobre una unidad, por un permiso en su origen (lo usa `logistica`).
 export const leerQuienesPuedenRecibir: LectorDeQuienesPueden = leerQuienesPuedenDeLaBase
 

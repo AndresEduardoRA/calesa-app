@@ -1,30 +1,44 @@
 'use client'
 
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { Button } from '@/shared/ui/button'
-import { Interruptor } from '@/shared/ui/interruptor'
 import { Tabs, TabsList, TabsTrigger } from '@/shared/ui/tabs'
+import { VistaYOpciones } from '@/shared/ui/vista-y-opciones'
 import type { ClaveDeClase } from '../../../entities/agenda'
 import { moverFecha, VISTAS, type Vista } from '../../../entities/calendario'
 import { useParametrosDeAgenda } from '../hooks/use-parametros-de-agenda'
-import { BotonesDeAlta } from './botones-de-alta'
-import { FiltroDeClases } from './filtro-de-clases'
+import { IrAUnaFechaDeLaAgenda } from './ir-a-una-fecha-de-la-agenda'
+import { opcionesDeLaAgenda } from './opciones-de-la-agenda'
 
-const NOMBRE_DE_VISTA: Record<Vista, string> = { mes: 'Mes', semana: 'Semana', dia: 'Día' }
+const NOMBRE_DE_VISTA: Record<Vista, string> = { dia: 'Día', semana: 'Semana', mes: 'Mes' }
 
 type Props = {
   // Lo resuelto en el servidor (con sus valores por defecto): la barra sólo escribe la URL.
   vista: Vista
   fecha: string
   titulo: string
+  zona: string
   clases: readonly ClaveDeClase[]
-  // Sólo con `agenda.ver_todo` existe el interruptor (D5): es un filtro de lectura, no una acción deshabilitable.
+  // Sólo con `agenda.ver_todo` existe «Qué agenda ver» (D5): es un filtro de lectura, no una acción deshabilitable.
   puedeVerTodo: boolean
   deTodos: boolean
+  // «Nuevo»: lo compone `src/app` (abre el modal del shell).
+  nuevo: ReactNode
 }
 
-// «‹ Hoy ›», el título del rango, Mes/Semana/Día, el filtro de clases y, con permiso, «Ver la de todos». Todo escribe en la URL.
-export function BarraDelCalendario({ vista, fecha, titulo, clases, puedeVerTodo, deTodos }: Props) {
+// A la vista, lo que se usa a cada rato: «‹ Hoy ›», la fecha, «Ir a una fecha», Día/Semana/Mes y «Nuevo». Lo demás (qué agenda y qué clases) va en «Vista y
+// opciones». Todo escribe en la URL.
+export function BarraDelCalendario({
+  vista,
+  fecha,
+  titulo,
+  zona,
+  clases,
+  puedeVerTodo,
+  deTodos,
+  nuevo,
+}: Props) {
   const [, poner] = useParametrosDeAgenda()
   return (
     <div className="grid gap-3">
@@ -57,6 +71,7 @@ export function BarraDelCalendario({ vista, fecha, titulo, clases, puedeVerTodo,
         <h1 className="min-w-0 text-(length:--text-xl) font-semibold break-words text-(--color-ink) first-letter:uppercase">
           {titulo}
         </h1>
+        <IrAUnaFechaDeLaAgenda zona={zona} />
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <Tabs value={vista} onValueChange={(elegida) => void poner({ vista: String(elegida) })}>
@@ -68,17 +83,9 @@ export function BarraDelCalendario({ vista, fecha, titulo, clases, puedeVerTodo,
             ))}
           </TabsList>
         </Tabs>
-        <FiltroDeClases clases={clases} />
+        <VistaYOpciones grupos={opcionesDeLaAgenda({ clases, puedeVerTodo, deTodos })} />
+        <div className="ml-auto">{nuevo}</div>
       </div>
-      <BotonesDeAlta />
-      {puedeVerTodo ? (
-        <Interruptor
-          titulo="Ver la de todos"
-          ayuda="Muestra los eventos y las tareas de todo el equipo, no sólo los tuyos."
-          valor={deTodos}
-          alCambiar={(valor) => void poner({ de: valor ? 'todos' : null })}
-        />
-      ) : null}
     </div>
   )
 }

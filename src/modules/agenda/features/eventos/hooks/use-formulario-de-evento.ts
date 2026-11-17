@@ -28,6 +28,7 @@ const CAMPOS: readonly CampoDeEvento[] = [
   'termina_en',
   'visibilidad',
   'destinatarios',
+  'lead_id',
 ]
 
 // Los motivos que la base dejó junto a su campo (el `hint` es la clave del formulario).
@@ -41,6 +42,9 @@ function erroresDesde(porCampo: Record<string, string>): ErroresDeEvento {
 function campoConError(campo: keyof ValoresDeEvento): CampoDeEvento {
   if (campo === 'iniciaEn') {
     return 'inicia_en'
+  }
+  if (campo === 'lead') {
+    return 'lead_id'
   }
   return campo === 'terminaEn' ? 'termina_en' : (campo as CampoDeEvento)
 }

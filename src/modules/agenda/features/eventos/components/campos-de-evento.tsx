@@ -7,15 +7,18 @@ import { leerPersonasParaEvento } from '../../../composicion.client'
 import { SelectorDePersonas } from '../../personas/components/selector-de-personas'
 import type { useFormularioDeEvento } from '../hooks/use-formulario-de-evento'
 import { BloquesDeEvento } from './bloques-de-evento'
+import { CampoDeLead } from './campo-de-lead'
 import { CampoDeVisibilidad } from './campo-de-visibilidad'
 
 type Props = {
   formulario: ReturnType<typeof useFormularioDeEvento>
   puedePublicar: boolean
+  // Con `leads.ver`: el campo «Lead (opcional)».
+  puedeVincularLead: boolean
 }
 
 // Los campos de un evento: lo principal a la vista (título, cuándo, quién lo ve) y, plegados salvo que traigan algo, el lugar y la descripción.
-export function CamposDeEvento({ formulario: f, puedePublicar }: Props) {
+export function CamposDeEvento({ formulario: f, puedePublicar, puedeVincularLead }: Props) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <Campo
@@ -48,6 +51,15 @@ export function CamposDeEvento({ formulario: f, puedePublicar }: Props) {
           f.cambiar('terminaEn', evento.target.value)
         }}
       />
+      {puedeVincularLead ? (
+        <CampoDeLead
+          valor={f.valores.lead ?? null}
+          error={f.errores.lead_id}
+          alCambiar={(lead) => {
+            f.cambiar('lead', lead)
+          }}
+        />
+      ) : null}
       <CampoDeVisibilidad
         valor={f.valores.visibilidad}
         puedePublicar={puedePublicar}

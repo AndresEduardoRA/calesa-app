@@ -4,20 +4,17 @@ import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { PlusIcon } from 'lucide-react'
 import { useState } from 'react'
-import { adelantarElAlta, useAbrirNuevoLead } from '@/modules/leads/shell.client'
+import { adelantarElAlta } from '@/modules/leads/shell.client'
 import { useAtajo } from '@/shared/ui/atajos'
 import { Button } from '@/shared/ui/button'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
-import { CATALOGO_DE_NUEVO, type ClaveDeNuevo } from './catalogo'
+import { CATALOGO_DE_NUEVO, delGrupo, type ClaveDeNuevo, type GrupoDeNuevo } from './catalogo'
 import { adelantarElModalDeNuevo, ModalDeNuevoDiferido } from './diferidos'
+import { PANEL_NUEVO_DE_LA_BARRA, PANEL_NUEVO_EN_LA_AGENDA } from './panel'
+import { useIrAlDestino } from './use-ir-al-destino'
 
-// El valor de `?panel=` que abre «Nuevo». Distinto de `nuevo` (el alta de un vehículo) y de `nuevo-lead`.
-export const PANEL_NUEVO_DE_LA_BARRA = 'crear'
-
-// Lo que corre después de cerrar el modal: Base UI le devuelve el foco a quien lo abrió al cerrar; el drawer que se abre después espera a que lo haya hecho
-// para que su foco no lo pise (igual que la paleta).
-const DESPUES_DE_CERRAR_MS = 0
+export { PANEL_NUEVO_DE_LA_BARRA } from './panel'
 
 // Otro diálogo ya abierto (un panel, la paleta, un formulario): la tecla no abre «Nuevo» encima, y no pisa lo escrito.
 // Un doble clic en el botón: el segundo clic cae sobre el fondo del modal que acaba de abrir y lo cerraría. En el primer instante el clic de afuera no cierra.
@@ -32,11 +29,20 @@ type Props = {
 
 // «Nuevo (barra superior)»: el botón de la barra de toda pantalla y la tecla `Shift+N` que abren el modal con lo que se puede crear (`docs/UX.md` › «Barra superior»).
 // El modal vive en la URL (`?panel=crear`: recargar lo reabre, «atrás» lo cierra) y se pide al abrirse. Con una sola opción el botón la abre directo, sin modal. `N` sigue
-// siendo lo propio de la pantalla (o «Nuevo lead»): lo registra `<AltaDeLead>`.
+// siendo lo propio de la pantalla (o «Nuevo lead»): lo registra `<AltaDeLead>`. El mismo modal, filtrado a lo que se agenda, lo abre «Nuevo» de la agenda
+// (`?panel=nuevo-en-la-agenda`): evento y tarea ahí sólo escriben su `?panel=` y conservan la vista y la fecha.
 export function NuevoDeLaBarraSuperior({ opciones }: Props) {
   const router = useRouter()
-  const abrirNuevoLead = useAbrirNuevoLead()
-  const panel = usePanelPorUrl(PANEL_NUEVO_DE_LA_BARRA)
+  const ir = useIrAlDestino()
+  const general = usePanelPorUrl(PANEL_NUEVO_DE_LA_BARRA)
+  const deLaAgenda = usePanelPorUrl(PANEL_NUEVO_EN_LA_AGENDA)
+  const panel = deLaAgenda.abierto ? deLaAgenda : general
+  // El grupo con que se abrió: se conserva mientras el modal se va, para que la lista no cambie en el cierre.
+  const [grupo, setGrupo] = useState<GrupoDeNuevo>(null)
+  const grupoAbierto: GrupoDeNuevo = deLaAgenda.abierto ? 'agenda' : null
+  if (panel.abierto && grupo !== grupoAbierto) {
+    setGrupo(grupoAbierto)
+  }
   // Elegido algo, el modal se va al instante aunque la pantalla de destino tarde en llegar.
   const [elegido, setElegido] = useState(false)
   if (!panel.abierto && elegido) {
@@ -45,15 +51,6 @@ export function NuevoDeLaBarraSuperior({ opciones }: Props) {
   const montado = useAbiertoAlgunaVez(panel.abierto)
   const [recienAbierto, setRecienAbierto] = useState(false)
   const unica = opciones.length === 1 ? CATALOGO_DE_NUEVO[opciones[0] as ClaveDeNuevo] : null
-
-  const ir = (clave: ClaveDeNuevo) => {
-    const destino = CATALOGO_DE_NUEVO[clave].destino
-    if (destino.tipo === 'ruta') {
-      router.push(destino.ruta as Route)
-    } else if (destino.tipo === 'drawer-de-lead') {
-      setTimeout(abrirNuevoLead, DESPUES_DE_CERRAR_MS)
-    }
-  }
 
   const abrir = () => {
     if (unica && unica.destino.tipo !== 'elegir-lead') {
@@ -65,7 +62,7 @@ export function NuevoDeLaBarraSuperior({ opciones }: Props) {
     setTimeout(() => {
       setRecienAbierto(false)
     }, GRACIA_DEL_DOBLE_CLIC_MS)
-    panel.abrir()
+    general.abrir()
   }
   useAtajo('abrirNuevo', () => {
     if (!panel.abierto && !hayUnDialogoAbierto()) {
@@ -93,7 +90,8 @@ export function NuevoDeLaBarraSuperior({ opciones }: Props) {
           abierto={panel.abierto && !elegido}
           alCerrar={panel.cerrar}
           recienAbierto={recienAbierto}
-          opciones={opciones}
+          opciones={delGrupo(opciones, grupo)}
+          grupo={grupo}
           alElegir={(clave) => {
             setElegido(true)
             ir(clave)

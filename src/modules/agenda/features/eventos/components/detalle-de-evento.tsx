@@ -47,6 +47,16 @@ export function VistaDeEvento({ evento, zona }: { evento: DetalleDeEvento; zona:
             <span className="whitespace-pre-wrap">{evento.descripcion}</span>
           </Dato>
         ) : null}
+        {evento.lead?.nombre ? (
+          <Dato titulo="Lead">
+            <Link
+              href={rutaDeVinculo('lead', evento.lead.id) as Route}
+              className="inline-flex min-h-11 items-center underline md:min-h-8"
+            >
+              {evento.lead.nombre}
+            </Link>
+          </Dato>
+        ) : null}
         {evento.creadoPorNombre ? <Dato titulo="Lo creó">{evento.creadoPorNombre}</Dato> : null}
         {evento.destinatarios ? (
           <Dato titulo="Destinatarios">
@@ -61,7 +71,9 @@ export function VistaDeEvento({ evento, zona }: { evento: DetalleDeEvento; zona:
       <ul className="grid gap-1">
         {VINCULOS.flatMap(({ clave, texto }) => {
           const id = evento.vinculos[clave]
-          return id
+          // El lead con nombre ya se enlaza arriba, en «Lead».
+          const yaEnlazado = clave === 'lead' && Boolean(evento.lead?.nombre)
+          return id && !yaEnlazado
             ? [
                 <li key={clave}>
                   <Link

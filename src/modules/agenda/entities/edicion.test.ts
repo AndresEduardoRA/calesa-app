@@ -34,6 +34,7 @@ const evento = (cambios: Partial<ValoresDeEvento> = {}): ValoresDeEvento => ({
   terminaEn: '',
   visibilidad: 'privado',
   destinatarios: [],
+  lead: null,
   ...cambios,
 })
 
@@ -168,7 +169,27 @@ const guardadoDeEvento: OriginalDeEvento = {
   terminaEn: null,
   visibilidad: 'privado',
   destinatarios: [],
+  lead: null,
 }
+
+const LEAD_A = { id: '0b8f3a2e-1c4d-4e5f-8a9b-1c2d3e4f5a6b', nombre: 'Ana Pérez' }
+const LEAD_B = { id: '1c9e4b3f-2d5e-4f60-9bac-2d3e4f5a6b7c', nombre: null }
+
+describe('el lead de un evento', () => {
+  it('al crear sólo va si se eligió; al guardar, sólo si cambió (nulo: quitarlo)', () => {
+    expect(datosDeEventoNuevo(evento({ lead: LEAD_A }), ZONA).lead_id).toBe(LEAD_A.id)
+    expect(datosDeEventoNuevo(evento(), ZONA)).not.toHaveProperty('lead_id')
+    const original: OriginalDeEvento = { ...guardadoDeEvento, lead: LEAD_A }
+    const base = valoresDeEvento(original, ZONA)
+    expect(cambiosDeEvento(original, { ...base, lead: LEAD_B }, ZONA).datos).toEqual({
+      lead_id: LEAD_B.id,
+    })
+    expect(cambiosDeEvento(original, { ...base, lead: null }, ZONA).datos).toEqual({
+      lead_id: null,
+    })
+    expect(cambiosDeEvento(original, base, ZONA).hayCambios).toBe(false)
+  })
+})
 
 describe('de lo guardado al formulario y de vuelta', () => {
   it('valoresDeEvento lleva los instantes a la hora de la empresa', () => {

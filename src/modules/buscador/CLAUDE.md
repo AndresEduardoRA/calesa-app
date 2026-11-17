@@ -6,7 +6,7 @@ Paleta global (Ctrl/Cmd+K) que busca leads, vehículos, cotizaciones y acciones 
 
 - Entra: texto (`MINIMO_DE_BUSQUEDA`: 3 letras o dígitos seguidos, o un número de lead o cotización), atajos de teclado.
 - Sale: `client.ts` (lecturas por sección, `leerUltimosAbiertos()`, `agruparResultados()`, `seccionesQueBuscan()`; `chat` lo usa para las menciones
-  `#`), `shell.client.ts` (`<Buscador>`, montado por `HuecoBuscador` en `src/app/(app)/_shell/huecos/buscador.tsx`, y `<ElegirLead>`, diferido: el segundo paso de «Nuevo» de la barra), `pantallas/visita.ts`
+  `#`), `shell.client.ts` (`<Buscador>`, montado por `HuecoBuscador` en `src/app/(app)/_shell/huecos/buscador.tsx`, y `<ElegirLead>`, diferido: el segundo paso de «Nuevo» de la barra; también sale por `client.ts` para «Lead (opcional)» del formulario de un evento de la agenda), `pantallas/visita.ts`
   (`<RegistrarVisita>`).
 - Depende de `leads`, `vehiculos`, `cotizaciones` sólo por la base; de módulos, sólo `interpretarBusqueda()` de `@/modules/leads/client`, que llama
   la feature (no `entities` ni `infra`). No importa `chat`.

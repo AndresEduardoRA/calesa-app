@@ -20,7 +20,8 @@ export type ClaveDeNuevo = (typeof CLAVES_DE_NUEVO)[number]
 export type DestinoDeNuevo =
   // El drawer `?panel=nuevo-lead` en la pantalla de ahora (no navega).
   | { tipo: 'drawer-de-lead' }
-  | { tipo: 'ruta'; ruta: string }
+  // `conservaLaPantalla`: si ya se está en esa ruta, sólo se escribe su `?panel=` y se conserva lo demás de la URL (la vista y la fecha de la agenda).
+  | { tipo: 'ruta'; ruta: string; conservaLaPantalla?: true }
   // Un segundo paso dentro del modal: elegir el lead de la cartera y, con él, ir a su ficha.
   | { tipo: 'elegir-lead'; accion: 'anotar-seguimiento' | 'agendar-recordatorio' }
 
@@ -80,13 +81,34 @@ export const CATALOGO_DE_NUEVO: Record<ClaveDeNuevo, OpcionDeNuevo> = {
   evento: {
     clave: 'evento',
     titulo: 'Evento',
-    descripcion: 'Poner un evento en la agenda.',
-    destino: { tipo: 'ruta', ruta: '/agenda?panel=nuevo-evento' },
+    descripcion: 'Una cita o una llamada con hora.',
+    destino: { tipo: 'ruta', ruta: '/agenda?panel=nuevo-evento', conservaLaPantalla: true },
   },
   tarea: {
     clave: 'tarea',
     titulo: 'Tarea',
-    descripcion: 'Crear una tarea con responsable.',
-    destino: { tipo: 'ruta', ruta: '/agenda?panel=nueva-tarea' },
+    descripcion: 'Un pendiente, con o sin fecha, para ti o para otra persona.',
+    destino: { tipo: 'ruta', ruta: '/agenda?panel=nueva-tarea', conservaLaPantalla: true },
   },
+}
+
+// Lo que se agenda: el grupo del «Nuevo» de la agenda (`?panel=nuevo-en-la-agenda`).
+export const CLAVES_DE_LA_AGENDA: readonly ClaveDeNuevo[] = ['evento', 'tarea', 'recordatorio']
+
+export type GrupoDeNuevo = 'agenda' | null
+
+// Las opciones de quien mira que caben en el grupo (todas, sin grupo). En la agenda, en el orden de lo que se agenda: el evento primero (donde abre el foco).
+export function delGrupo(opciones: readonly ClaveDeNuevo[], grupo: GrupoDeNuevo): ClaveDeNuevo[] {
+  return grupo === 'agenda'
+    ? CLAVES_DE_LA_AGENDA.filter((clave) => opciones.includes(clave))
+    : [...opciones]
+}
+
+// La ruta y el `?panel=` de un destino que conserva la pantalla, si ya se está en ella (nulo: hay que navegar).
+export function panelEnLaMismaPantalla(destino: DestinoDeNuevo, rutaActual: string): string | null {
+  if (destino.tipo !== 'ruta' || !destino.conservaLaPantalla) {
+    return null
+  }
+  const [ruta, consulta = ''] = destino.ruta.split('?')
+  return ruta === rutaActual ? new URLSearchParams(consulta).get('panel') : null
 }

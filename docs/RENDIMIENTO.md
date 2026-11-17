@@ -51,7 +51,13 @@ Sección «Seguimientos» de la ficha y pestaña del drawer.
   `vehiculos_cierre_subasta_idx` origen por origen. `eventos: leer` en línea: `tiene_permiso` como InitPlan y el destinatario por PK.
 - Límite sin assert: en un origen con «propios» la RLS descarta adentro los vehículos ajenos, acotado a las subastas vivas del origen en el
   rango (el mismo de `medir-panel-cierre-subasta.sql`).
-- «Sin fecha»: `agenda_tareas_sin_fecha()`, 20 por «Ver más» (máx. 50), `tareas_sin_fecha_idx`, cursor `(creado_en, id)`.
+- Pendientes: tres lecturas en paralelo en el servidor, tras su `<Suspense>` (la hoja no las espera), de 20 por grupo (`TAMANO_DE_VER_MAS`; la base,
+  `_acotar_pagina(…, 20, 50)`): «Vencidas» y «Recordatorios» por `agenda_pendientes()` (`tareas_pendientes_idx`, `recordatorios_usuario_idx`; cursor
+  `(vence_en, id)` y `(recordar_en, id)`) y «Sin fecha» por `agenda_tareas_sin_fecha()` (`tareas_sin_fecha_idx`, cursor `(creado_en, id)`). Los índices de
+  tareas son parciales en `estado = 'pendiente'` y las RPC lo dicen literal (en plpgsql: por PostgREST el plan genérico no usaría el índice). «Ver más»,
+  en el navegador y con `diferido()` hasta `TOPE_DE_LO_CARGADO`: supabase-js no viaja en frío. Sólo `hay_mas`, ningún total.
+- JS en frío de `/agenda` (sin tope propio): 383,3 KB en 26 chunks con el calendario de antes; 386,2 KB en 27 chunks con la libreta (la hoja, la columna de
+  pendientes con «Completar», la barra con «Ir a una fecha» y «Vista y opciones»; el formulario con el lead, «Ver más» y el modal «Nuevo» van diferidos). Los esqueletos salen por `pantallas/agenda-esqueletos.ts`: con el barril de la pantalla, el `loading.tsx` baja dos veces su código (≈ 25 KB más).
 - «¿A quién?»: `agenda_quienes_reciben()`, ≥ 3 letras o dígitos, tope 20, sobre `perfiles`.
 - Sin volumen ni `medir-*.sql`: `eventos` y `tareas` no son tablas que crecen.
 
@@ -525,7 +531,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 ## JS en frío (con gzip, lo que el documento nombra)
 
-- Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 560, `/perfil` 440, `/vehiculos` 500, `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
+- Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 560, `/perfil` 440, `/vehiculos` 530 (500 hasta que el «Nuevo» de la barra sumó el de la agenda: 500,3 KB, regla del 5 %), `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
   subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410; `/cotizaciones/papelera` 440 (en su spec). Al borde:
   `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 454,9 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %; el «Elegir…» de lo que falta sumó 2,7 KB) y `/cotizaciones/nuevo` en 450,1 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
