@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useState } from 'react'
+import { Fragment, useCallback, useRef, useState } from 'react'
 import { cn } from 'cn'
 import { Monto } from '@/shared/ui/monto'
 import { Popover, PopoverContent, PopoverTrigger } from '@/shared/ui/popover'
@@ -13,6 +13,10 @@ type Props = {
   // Quien los gestiona tiene a mano ir a configurarlos.
   puedeGestionar: boolean
 }
+
+// Mientras el editor del popover tiene algo sin guardar (o guarda, o espera la red), estos cierres no se hacen: lo tipeado no se pierde por
+// un toque de más. Esc en el campo cancela la edición; el botón de la barra sí cierra.
+const CIERRES_RETENIDOS: ReadonlySet<string> = new Set(['escape-key', 'outside-press', 'focus-out'])
 
 function TipoALaVista({ tipo, className }: { tipo: TipoEnLaBarra; className?: string }) {
   return (
@@ -33,13 +37,25 @@ function TipoALaVista({ tipo, className }: { tipo: TipoEnLaBarra; className?: st
 // copia del menú del celular no hay contenedor que medir: va compacta. El contenido (la lectura y la edición) se pide al abrir.
 export function TiposCambioVigentes({ tipos, puedeGestionar }: Props) {
   const [abierto, setAbierto] = useState(false)
+  const retener = useRef(false)
+  const alRetener = useCallback((si: boolean) => {
+    retener.current = si
+  }, [])
   const [principal, ...demas] = tipos
   if (!principal) {
     return null
   }
 
   return (
-    <Popover open={abierto} onOpenChange={setAbierto}>
+    <Popover
+      open={abierto}
+      onOpenChange={(abrir, detalle) => {
+        if (!abrir && retener.current && CIERRES_RETENIDOS.has(detalle.reason)) {
+          return
+        }
+        setAbierto(abrir)
+      }}
+    >
       <PopoverTrigger
         aria-label="Tipos de cambio"
         onPointerEnter={adelantarElContenido}
@@ -61,6 +77,7 @@ export function TiposCambioVigentes({ tipos, puedeGestionar }: Props) {
       <PopoverContent align="end" className="w-96 max-w-[calc(100vw-1rem)]">
         <ContenidoDeTiposCambioDiferido
           puedeGestionar={puedeGestionar}
+          alRetener={alRetener}
           alCerrar={() => {
             setAbierto(false)
           }}

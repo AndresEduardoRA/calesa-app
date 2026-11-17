@@ -83,6 +83,10 @@ quien lo hizo, nunca el correo.
   `tiposEnLaBarra()`: los activos marcados (un inactivo marcado no se ve) y, sin ninguno, el por defecto.
 - El último cambio de cada tipo de cambio (popover de la barra) sale del historial, no de `actualizado_*` (que se mueve al renombrar o marcar), y
   lo ve toda persona activa con el nombre, nunca el correo; el historial entero sigue siendo de quien gestiona.
+- En el popover de la barra quien tiene `empresa.tipos_cambio.gestionar` cambia el valor con `guardarTipoCambio` (`{id, actualizadoEnEsperado,
+valor}`, la misma revalidación): sin el permiso o con el Modo Live no hay lápiz (el campo mostraría la cifra) y un editor abierto se cierra.
+  El PT409 se dice con lo releído («<Nombre> lo cambió a <Monto> hace N minutos»), armado en el cliente: un monto escrito por la base
+  esquivaría `<Monto>`. Con algo sin guardar, guardando o esperando la red, el popover no se cierra al tocar afuera ni con Esc.
 - `registro_abierto = false` lo aplica la base (trigger en `auth.users`); `registroDisponible()` lo repite: registro abierto **o** todavía no hay
   nadie (la primera cuenta nace siempre, y dueña).
 
