@@ -40,7 +40,12 @@ y los codemods siguen bloqueados.
   `pnpm db:types`, `pnpm db:probar:rapido`, `pnpm db:lint`; con dinero, RLS o permisos de por medio, también `pnpm db:carreras`.
 - Los e2e de lo tocado, nombrados: los nuevos de esta tarea y los existentes del módulo (`pnpm test:e2e <specs> --project escritorio`;
   y `--project movil` si tocaste interfaz). No corras `test:e2e:completo` salvo que la spec lo pida (el cierre de la construcción corre el Nivel 3): si la tarea
-  dispara el Nivel 2, lo corre el CI.
+  dispara el Nivel 2, lo corre el CI. Todos los specs en **una** corrida en segundo plano y un solo aviso al terminar: cada aviso de un
+  proceso en segundo plano relee todo el contexto de la sesión.
+- Si tocaste lo que viaja en toda pantalla (`src/shared/`, `src/app/(app)/layout.tsx`, `src/app/(app)/_shell/`), corre también los specs
+  que miden presupuestos (`grep -l presupuestos e2e/*.spec.ts`): el Nivel 2 los deja al CI y un tope pasado por pocos bytes vuelve como
+  un arreglo entero.
+- Lo temporal (logs, capturas, guiones de prueba) va en `$TMPDIR`, que es de esta tarea; nunca en `/tmp`, que es de toda la máquina.
 - Nadie prueba a mano. Lo que sería «pruébalo tú» es un e2e. En las pantallas nuevas o rehechas, además, haz tú el recorrido
   (levanta la app del carril, entra con una cuenta creada como en los e2e, toma capturas en escritorio y celular y míralas) y di en el PR qué viste.
 - Datos y dinero (migración, RLS, permisos, `security definer`, fórmula, dinero): antes de publicar, una segunda lectura con el

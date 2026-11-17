@@ -804,8 +804,23 @@ cmd_estado() {
   echo "INT = retomas/arreglos. Trabadas: el motivo está en .orquestador/estado/<ID>/trabada.md"
 }
 
+# Las tareas de la cola que el cuerpo de una spec nombra («igual que T33», «usa lo de T33») sin tenerlas en `depende`: arrancaría sin
+# lo que necesita y chocaría al integrar (en una tanda costó un arreglo y casi una hora). `plan` lo avisa; no frena.
+nombra_sin_depender() { # spec → ids separados por espacio, o nada
+  local f=$1 propio deps t salida=""
+  propio=$(campo "$f" id)
+  deps=" $(campo "$f" depende) "
+  for t in $(cuerpo "$f" | grep -oE '\bT[0-9]+\b' | sort -uV); do
+    [ "$t" = "$propio" ] && continue
+    [[ "$deps" == *" $t "* ]] && continue
+    spec_de "$t" >/dev/null || continue
+    salida="$salida $t"
+  done
+  echo "${salida# }"
+}
+
 cmd_plan() {
-  local id s quien motivo libres sin_turno="" lleno
+  local id s quien motivo libres sin_turno="" lleno nombra
   leer_turnos
   libres=$(turnos_libres)
   echo "$PROYECTO · turnos de la máquina: $libres de $TURNOS libres · paralelo $PARALELO"
@@ -827,6 +842,8 @@ cmd_plan() {
         elif quien=$(llave_ocupada_por "$id"); then echo "$id  espera el área que ocupa $quien"
         elif [ -n "$sin_turno" ]; then echo "$id  $sin_turno"
         else echo "$id  LISTA para lanzar"; fi
+        nombra=$(nombra_sin_depender "$(spec_de "$id")")
+        [ -z "$nombra" ] || echo "    ⚠ nombra $nombra y no depende de ella: si usa lo que esa tarea hace, súmala a «depende»"
         ;;
       por_arreglar | por_retomar)
         if quien=$(llave_ocupada_por "$id" retomando); then echo "$id  $s, espera el área que ocupa $quien"; else echo "$id  $s"; fi
