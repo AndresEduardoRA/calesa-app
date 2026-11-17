@@ -177,6 +177,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 ## Pulido de interfaz
 
 - **[T33]** Tras agregar un teléfono extra en el panel de edición de la ficha, el foco va a «Nombre» (la ficha se vuelve a leer y el panel se rearma) y no a «Agregar teléfono».
+- **[T26]** `/leads?lead=<id>&extra=nuevo` pone `?panel=editar-lead` aunque quien mira no pueda editar: no se abre nada, pero la clave queda en la URL hasta cerrar el resumen (`use-drawer-de-lead.ts`; que el efecto la quite sin `leads.editar`).
 - **[T33]** Con «Ver todos los seguimientos» abierto, cerrar el modal de editar uno devuelve el foco al «Editar» del bloque de atrás (el primero con su `data-seguimiento-editar`), que está inerte bajo el drawer.
 
 - **[—]** Al volver de «Nuevo lead» a «Nuevo proyecto» se apilan dos avisos («Lead creado» y «Recuperamos lo que habías escrito y no guardaste.») — el
