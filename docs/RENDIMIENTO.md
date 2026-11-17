@@ -537,7 +537,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 ## JS en frío (con gzip, lo que el documento nombra)
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 560, `/perfil` 440, `/vehiculos` 530 (500 hasta que el «Nuevo» de la barra sumó el de la agenda: 500,3 KB, regla del 5 %), `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
-  subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410; `/cotizaciones/papelera` 440 (en su spec). Al borde:
+  subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410, `/leads/[id]` 590 (medido 548,5 con pestañas y 554,7 con las dos columnas, a la decena); `/cotizaciones/papelera` 440 (en su spec). Al borde:
   `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 454,9 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %; el «Elegir…» de lo que falta sumó 2,7 KB) y `/cotizaciones/nuevo` en 450,1 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`); lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/configuracion/flujos`: 409,0 KB en frío (28 chunks; 404,5 antes del diagrama), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega

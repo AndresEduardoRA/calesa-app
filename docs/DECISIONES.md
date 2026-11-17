@@ -248,7 +248,8 @@ las trampas, en `docs/LECCIONES.md`.
   recordatorio, que ya trae la fila: ninguna lectura más), las acciones y Relacionados en chips; anotar y agendar abren su modal dentro del resumen. Los
   campos del layout y «Creado» quedan para la ficha. `?pestana=` viejo redirige en el servidor a la ficha en su bloque.
 - **La ficha se mide entera.** Con todo a la vista `?seccion=` ya no cambia el documento: un solo presupuesto (`PRESUPUESTO_DE_LA_FICHA_EN_KB`) sobre
-  `/perfil` con 10 oportunidades, seguimientos y recordatorios, vínculos y portal, igual con 1.000 (lo que crece va por «Ver todos»).
+  `/perfil` con 10 oportunidades, seguimientos y recordatorios, vínculos y portal, igual con 1.000 (lo que crece va por «Ver todos»). El JS en frío de `/leads/[id]`, que no tenía tope, suma uno: 590 KB (548,5 → 554,7
+  medidos, más un 5 % a la decena); `/leads` baja de 531,6 a 530,2 con el resumen corto.
 
 - **Todo lead nuevo nace con su oportunidad base**, en la misma transacción (`_lead_crear` → `_lead_oportunidad_base`): etapa inicial del embudo por
   defecto de quien lo crea (que nace ahí si no existía), título = el nombre del lead. Un lead adoptado del limbo no es nuevo: no suma una. Deshacer
