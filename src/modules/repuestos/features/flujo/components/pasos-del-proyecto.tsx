@@ -47,8 +47,9 @@ function FilaDePasos(props: Props & { indice: IndiceDelFlujo }) {
           Agrega ítems para ver cuántos van en cada paso.
         </p>
       )}
+      {/* La `ol` es `relative`: la frase `sr-only` de cada paso es absoluta y, sin eso, escaparía de su recorte y ensancharía la página. */}
       <div className="relative min-w-0">
-        <ol ref={lista} className="flex min-w-0 items-stretch gap-1 overflow-x-auto pb-1">
+        <ol ref={lista} className="relative flex min-w-0 items-stretch gap-1 overflow-x-auto pb-1">
           {pasos.map((paso, i) => (
             <Fragment key={paso.tipo === 'fase' ? paso.fase.id : paso.hito}>
               {i > 0 ? (
