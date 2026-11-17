@@ -181,6 +181,8 @@ test('«Externo» con «Nuevo lead»: Esc vuelve con lo escrito; guardar el lead
   await abrirElFormulario(page)
   await formulario(page).getByLabel('Vehículo', { exact: true }).fill(etiqueta)
   const nuevoLead = formulario(page).getByRole('button', { name: 'Nuevo lead' })
+  await expect(nuevoLead).toBeVisible()
+  await capturar(page, info, 'formulario-con-nuevo-lead')
 
   // Esc cierra el alta y vuelve el formulario con lo escrito.
   await nuevoLead.click()
