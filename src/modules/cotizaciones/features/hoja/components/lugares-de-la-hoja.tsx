@@ -71,6 +71,7 @@ export function LugaresDibujados({
             seccion={lugar.seccion}
             contexto={contexto}
             acciones={acciones}
+            enLaRejilla
           />
         ) : (
           <AvanzadoDeLaHoja

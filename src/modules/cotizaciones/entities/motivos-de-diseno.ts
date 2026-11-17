@@ -37,12 +37,13 @@ export const REGLAS_DE_DISENO = [
 
 export type ReglaDeDiseno = (typeof REGLAS_DE_DISENO)[number]
 
-// Lo que cada mensaje puede nombrar.
+// Lo que cada mensaje puede nombrar. `pieza` dice de qué es el tono que falta (un grupo de la fórmula, la cabecera o una sección).
 export type DatosDeRechazoDeDiseno = {
   donde?: string
   ref?: string
   nivel?: string
   campo?: string
+  pieza?: 'grupo' | 'cabecera' | 'seccion'
 }
 
 export type RechazoDeDiseno = {
@@ -103,7 +104,10 @@ const MENSAJES: Record<ReglaDeDiseno, (d: DatosDeRechazoDeDiseno) => string> = {
   nodo_con_dos_niveles: (d) =>
     `Los atajos de ${q(d.donde)} y su celda tienen niveles distintos: tienen que ser los mismos.`,
   nodo_sin_seccion: (d) => `${q(d.donde)} no está en ninguna sección del diseño.`,
-  tono_inexistente: (d) => `El grupo ${q(d.donde)} usa un tono que no está en el catálogo.`,
+  tono_inexistente: (d) =>
+    d.pieza === 'cabecera'
+      ? 'La cabecera usa un tono que no está en el catálogo.'
+      : `${d.pieza === 'seccion' ? 'La sección' : 'El grupo'} ${q(d.donde)} usa un tono que no está en el catálogo.`,
 }
 
 export function rechazoDeDiseno(

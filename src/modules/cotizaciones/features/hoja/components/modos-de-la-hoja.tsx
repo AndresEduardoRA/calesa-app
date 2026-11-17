@@ -10,7 +10,7 @@ type Props = {
   deshabilitado?: boolean
 }
 
-// Los modos de tipo de cambio que declara el diseño: uno solo a la vez, con radios nativos como la variante (una parada de Tab, las flechas cambian de modo). El nombre sale de la
+// Los modos de tipo de cambio que declara el diseño (con el tono de la cabecera como los chips de la variante): uno solo a la vez, con radios nativos como la variante (una parada de Tab, las flechas cambian de modo). El nombre sale de la
 // base. Elegir uno pide un recálculo, como confirmar una celda.
 export function ModosDeLaHoja({ modos, elegido, alElegir, deshabilitado = false }: Props) {
   const nombre = useId()
@@ -23,7 +23,7 @@ export function ModosDeLaHoja({ modos, elegido, alElegir, deshabilitado = false 
         {modos.map((modo) => (
           <label
             key={modo.clave}
-            className="flex min-h-11 cursor-pointer items-center rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) px-3 text-(length:--text-sm) text-(--color-ink) has-checked:border-(--color-primario) has-checked:bg-(--color-primario-soft) has-checked:font-medium has-focus-visible:shadow-(--shadow-focus) md:min-h-9"
+            className="flex min-h-11 cursor-pointer items-center rounded-(--radius-md) border border-[color:var(--tono-borde,var(--color-line))] bg-[color:var(--tono-fondo,var(--color-surface))] px-3 text-(length:--text-sm) text-[color:var(--tono-tinta,var(--color-ink))] has-checked:border-(--color-primario) has-checked:bg-(--color-primario-soft) has-checked:font-medium has-checked:text-(--color-ink) has-focus-visible:shadow-(--shadow-focus) md:min-h-9"
           >
             <input
               type="radio"

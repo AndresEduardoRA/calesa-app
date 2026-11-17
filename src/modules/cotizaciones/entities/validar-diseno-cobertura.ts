@@ -1,5 +1,6 @@
 // §4 a §6 de `validarDiseno()`, cuando ya se vio todo el diseño: los atajos contra la celda de su nodo, lo que la hoja tiene que
-// dibujar sí o sí (todo input y constante, la variante, las banderas que condicionan algo) y los tonos de los grupos.
+// dibujar sí o sí (todo input y constante, la variante, las banderas que condicionan algo) y los tonos de los grupos y del diseño.
+import type { Diseno } from './diseno'
 import { buscar, esta, recorrer } from './medidor'
 import { fallo, type FalloDeDiseno } from './motivos-de-diseno'
 import type { Estado, Indice } from './validar-diseno-contexto'
@@ -35,10 +36,22 @@ export function revisarCobertura(ix: Indice, e: Estado): FalloDeDiseno | undefin
   return undefined
 }
 
-// §6. El tono de cada grupo de la fórmula está en el catálogo de la empresa.
-export function revisarTonos(ix: Indice): FalloDeDiseno | undefined {
+// §6. Los tonos están en el catálogo de la empresa: el de cada grupo de la fórmula, el de la cabecera (`donde` = `cabecera`) y el de cada
+// sección (`donde` = su id), en ese orden.
+export function revisarTonos(ix: Indice, d: Diseno): FalloDeDiseno | undefined {
   for (const g of recorrer(ix.def.grupos ?? [], ix.m)) {
-    if (!esta(ix.tonos, g.tono, ix.m)) return fallo('tono_inexistente', { donde: g.id })
+    if (!esta(ix.tonos, g.tono, ix.m)) {
+      return fallo('tono_inexistente', { donde: g.id, pieza: 'grupo' })
+    }
+  }
+  const { tono } = d.cabecera
+  if (tono !== undefined && !esta(ix.tonos, tono, ix.m)) {
+    return fallo('tono_inexistente', { donde: 'cabecera', pieza: 'cabecera' })
+  }
+  for (const s of recorrer(d.secciones, ix.m)) {
+    if (s.tono !== undefined && !esta(ix.tonos, s.tono, ix.m)) {
+      return fallo('tono_inexistente', { donde: s.id, pieza: 'seccion' })
+    }
   }
   return undefined
 }

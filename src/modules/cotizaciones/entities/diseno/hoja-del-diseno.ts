@@ -2,6 +2,12 @@
 // sin la parte de niveles, de `dato_del_vehiculo` ni de chips: la vista previa es la de quien lo ve todo (P4 a) y no lee tablas (P3 a). Puro y sin I/O; la hoja de verdad
 // la arma la base y nada de aquí la reemplaza. Un ítem que apunta a un nodo que ya no existe se omite (`validarDiseno()` ya lo avisa en el editor).
 import type { Tono } from '@/shared/ui/xcell'
+import {
+  aspectoDeCabecera,
+  aspectoDeItem,
+  aspectoDeItemConAncho,
+  aspectoDeSeccion,
+} from '../aspecto-de-la-hoja'
 import type { Diseno, ItemDeDiseno } from '../diseno'
 import type { Definicion } from '../formula'
 import type { DisenoDeHoja, ItemDeHoja, NodoDeTarjeta, SeccionDeHoja } from '../hoja'
@@ -38,6 +44,7 @@ function celdaDe(
     tipoDeNodo: n.tipo,
     formato: formatoDe(n),
     ancho: item.ancho,
+    ...aspectoDeItem(item),
     tono: tonoDe(n, tonosDeGrupo),
     ajustes: false,
     ayuda: item.ayuda ?? null,
@@ -73,7 +80,7 @@ function itemDe(
       return celdaDe(item, n, nodos, tonosDeGrupo)
     case 'atajos':
       // Sin tablas no hay chips: la hoja no dibuja unos atajos vacíos.
-      return { tipo: 'atajos', nodo: n.id, chips: [] }
+      return { tipo: 'atajos', nodo: n.id, chips: [], ...aspectoDeItemConAncho(item) }
     case 'variante':
       return n.tipo === 'opcion'
         ? {
@@ -87,6 +94,7 @@ function itemDe(
               titulo: o.titulo,
             })),
             porDefecto: n.por_defecto ?? null,
+            ...aspectoDeItemConAncho(item),
           }
         : null
     case 'interruptor':
@@ -97,6 +105,7 @@ function itemDe(
         etiqueta: n.etiqueta,
         efecto: item.efecto,
         soloEn: soloEnDe(n)?.slice() ?? null,
+        ...aspectoDeItemConAncho(item),
       }
     case 'subtotal':
       return {
@@ -105,6 +114,7 @@ function itemDe(
         etiqueta: n.etiqueta,
         formato: formatoDe(n),
         tono: tonoDe(n, tonosDeGrupo),
+        ...aspectoDeItemConAncho(item),
       }
     default: {
       const _: never = item
@@ -120,7 +130,8 @@ const nodoDeTarjeta = (id: string, nodos: ReadonlyMap<string, Nodo>): NodoDeTarj
 
 export type HojaDeLaVistaPrevia = DisenoDeHoja & { estado: 'lista' }
 
-// `tonos` es el catálogo de la empresa: la hoja de verdad manda sólo los que sus celdas usan, y una clave que el catálogo no tenga se descarta (la celda cae al neutro).
+// `tonos` es el catálogo de la empresa: la hoja de verdad manda sólo los que pinta (los de sus celdas y franjas, los de las secciones que dibuja y el de la
+// cabecera), y una clave que el catálogo no tenga se descarta (la pieza cae al neutro).
 export function hojaDeLaVistaPrevia(
   origen: { id: string; nombre: string },
   diseno: Diseno,
@@ -133,15 +144,25 @@ export function hojaDeLaVistaPrevia(
     const items = s.items.flatMap((i) => itemDe(i, nodos, tonosDeGrupo) ?? [])
     return items.length === 0
       ? []
-      : [{ id: s.id, titulo: s.titulo ?? null, presentacion: s.presentacion, items }]
+      : [
+          {
+            id: s.id,
+            titulo: s.titulo ?? null,
+            presentacion: s.presentacion,
+            ...aspectoDeSeccion(s),
+            items,
+          },
+        ]
   })
-  const usados = new Set(
-    secciones.flatMap((s) =>
-      s.items.flatMap((i) =>
+  const usados = new Set([
+    ...secciones.flatMap((s) => [
+      ...(s.tono === undefined ? [] : [s.tono]),
+      ...s.items.flatMap((i) =>
         (i.tipo === 'celda' || i.tipo === 'subtotal') && i.tono !== null ? [i.tono] : [],
       ),
-    ),
-  )
+    ]),
+    ...(diseno.cabecera.tono === undefined ? [] : [diseno.cabecera.tono]),
+  ])
   const total = nodoDeTarjeta(diseno.tarjeta_total.nodo, nodos)
   return {
     estado: 'lista',
@@ -151,6 +172,7 @@ export function hojaDeLaVistaPrevia(
       modos: diseno.cabecera.modos.map((m) => ({ clave: m.clave, nombre: m.nombre })),
       verTotalBs: diseno.cabecera.ver_total_bs,
       monedaBs: null,
+      ...aspectoDeCabecera(diseno.cabecera),
     },
     secciones,
     tarjetaTotal: {

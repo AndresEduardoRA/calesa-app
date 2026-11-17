@@ -13,7 +13,9 @@
 --   - `cotizacion_evaluar()` por origen con y sin la hoja abierta (4-28): la fórmula del seed ≤ 10 ms con las dos, y lo que suma verificar la firma (leer la clave de Vault y un HMAC) ≤ 3 ms;
 --   - `cotizacion_tabla()` de la tabla viva de 1.000 filas por origen, con y sin la hoja abierta (4.13-4c1), como la dueña (filas enteras) y como una asesora con «costos» (sólo las columnas
 --     que lee lo que ve): ≤ 25 ms, lo que suma la firma ≤ 3 ms y los bytes de cada una; la asesora sin «costos» no la recibe;
---   - las guardas: una copia que lee `cotizaciones` por una columna sin índice rompe el 0, y una que lee la tabla viva entera, sin `limit`, rompe el tope de bloques de `tablas_referencia_filas`.
+--   - las guardas: una copia que lee `cotizaciones` por una columna sin índice rompe el 0, y una que lee la tabla viva entera, sin `limit`, rompe el tope de bloques de `tablas_referencia_filas`;
+--   - **el aspecto no la hace crecer**: la hoja de las capturas con todo el aspecto (cabecera, cada sección y cada ítem) lee los mismos bloques de cada relación que la de siempre, tarda
+--     bajo el mismo tope y sus bytes de más se anotan (el aspecto viaja con el diseño ya leído).
 \set ON_ERROR_STOP 1
 \set carga `cat /proc/loadavg`
 vacuum public.cotizaciones;
@@ -74,6 +76,29 @@ begin
   if (select ids from _o where clave = 'chica') not between 200 and 300 or (select ids from _o where clave = 'grande') not between 2000 and 3000 then
     raise exception 'las sintéticas no son de unos 255 y 2.487 nodos: %', (select jsonb_agg(to_jsonb(x)) from _o x); end if;
   raise notice 'nota|Nodos de las sintéticas: % y %|', (select ids from _o where clave = 'chica'), (select ids from _o where clave = 'grande');
+end $$;
+-- Las capturas con todo el aspecto: un origen con la misma fórmula y su diseño con aspecto en la cabecera, en cada sección y en cada ítem (los tonos de la semilla).
+do $$
+declare f0 public.formulas; v_o uuid; v_id uuid; d jsonb; s jsonb; it jsonb; i int; k int;
+begin
+  select f.* into f0 from public.formulas f join _o on f.id = _o.formula where _o.clave = 'subasta_usa';
+  d := jsonb_set(f0.diseno, '{cabecera}', (f0.diseno -> 'cabecera') || '{"tono": "amarillo", "relleno": "grande", "letra": "grande", "enfasis": "fuerte"}');
+  for i in 0 .. jsonb_array_length(d -> 'secciones') - 1 loop
+    s := (d -> 'secciones' -> i) || jsonb_build_object('ancho', 4 + i % 9, 'alto', 1 + i % 4, 'relleno', 'chico', 'separacion', 'grande', 'densidad', 'compacta',
+                                                       'letra', 'chica', 'enfasis', 'fuerte', 'tono', (array['amarillo', 'naranja', 'verde'])[1 + i % 3]);
+    for k in 0 .. jsonb_array_length(s -> 'items') - 1 loop
+      it := (s -> 'items' -> k) || jsonb_build_object('ancho', 1 + (i + k) % 12, 'alto', 1 + k % 4, 'letra', 'grande', 'enfasis', 'fuerte');
+      s := jsonb_set(s, array['items', k::text], it);
+    end loop;
+    d := jsonb_set(d, array['secciones', i::text], s);
+  end loop;
+  perform public.validar_diseno(f0.definicion, d, array['costos'], '{}', array['amarillo', 'naranja', 'verde']);
+  insert into public.origenes (clave, nombre) values ('medir_hoja_aspecto', 'Medir hoja aspecto') returning id into v_o;
+  insert into public.formulas (origen_id, version, estado, definicion, params, diseno, visibilidad)
+  values (v_o, 1, 'publicada', f0.definicion, f0.params, d, f0.visibilidad) returning id into v_id;
+  insert into _o values ('aspecto', v_o, v_id, 0);
+  raise notice 'medicion|cotizacion_hoja, bytes del diseño de las capturas (sin el aspecto)|%', octet_length(f0.diseno::text);
+  raise notice 'medicion|cotizacion_hoja, bytes del diseño de las capturas (con todo el aspecto)|%', octet_length(d::text);
 end $$;
 analyze public.formulas;
 analyze public.tablas_referencia_filas;
@@ -142,6 +167,19 @@ end $$;
 
 create temp table _med (caso text primary key, ms numeric, buffers bigint, bytes int, cot bigint, rev bigint, filas bigint);
 grant all on _med to authenticated;
+
+-- Los bloques que UNA ejecución pide de cada relación que la hoja lee (con sus índices y su TOAST): el aspecto no puede sumar ninguno.
+create temp table _bloques (caso text, relacion text, bloques bigint, primary key (caso, relacion));
+grant all on _bloques to authenticated;
+create function pg_temp.caso_bloques(p_caso text, p_quien text, p_origen text) returns void language plpgsql as $$
+declare v_sql text := format('select public.cotizacion_hoja(%L)', (select origen from _o where clave = p_origen)); v_r text;
+begin
+  perform pg_temp.como(p_quien);
+  foreach v_r in array array['public.formulas', 'public.tonos', 'public.cotizaciones_niveles', 'public.tipos_cambio', 'public.tablas_referencia',
+                             'public.tablas_referencia_filas', 'public.origenes'] loop
+    insert into _bloques values (p_caso, v_r, pg_temp.bloques_que_lee(v_sql, v_r::regclass));
+  end loop;
+end $$;
 
 -- Un caso: la lectura como esa persona sobre ese origen.
 create function pg_temp.caso(p_caso text, p_quien text, p_origen text, p_malo text default null) returns void language plpgsql as $$
@@ -217,6 +255,9 @@ grant execute on all functions in schema pg_temp to authenticated;
 set local plan_cache_mode = force_generic_plan;
 set local role authenticated;
 select pg_temp.caso('duena, capturas', 'duena', 'subasta_usa');
+select pg_temp.caso('duena, capturas con aspecto', 'duena', 'aspecto');
+select pg_temp.caso_bloques('duena, capturas', 'duena', 'subasta_usa');
+select pg_temp.caso_bloques('duena, capturas con aspecto', 'duena', 'aspecto');
 select pg_temp.caso('asesora, capturas', 'asesora', 'subasta_usa');
 select pg_temp.caso('duena, planilla', 'duena', 'planilla_usa');
 select pg_temp.caso('duena, atajos de la tabla viva', 'duena', 'viva');
@@ -262,6 +303,17 @@ begin
   if m.bytes > c_bytes then v_fallas := v_fallas || format(E'\n  la hoja de las capturas pesa %s bytes (tope %s)', m.bytes, c_bytes); end if;
   if m.ms > c_ms then v_fallas := v_fallas || format(E'\n  la hoja de las capturas tarda %s ms (tope %s)', round(m.ms, 2), c_ms); end if;
   if (select bytes from _med where caso = 'asesora, capturas') >= m.bytes then v_fallas := v_fallas || E'\n  la hoja de la asesora no es más chica que la de la dueña'; end if;
+  -- El aspecto: los mismos bloques de cada relación, el mismo tope de tiempo, y sus bytes de más anotados.
+  for r in select a.relacion, a.bloques as sin, b.bloques as con from _bloques a join _bloques b on b.relacion = a.relacion and b.caso = 'duena, capturas con aspecto'
+            where a.caso = 'duena, capturas' order by a.relacion loop
+    raise notice 'medicion|cotizacion_hoja, bloques de % (sin el aspecto)|%', r.relacion, r.sin;
+    raise notice 'medicion|cotizacion_hoja, bloques de % (con todo el aspecto)|%', r.relacion, r.con;
+    if r.con <> r.sin then v_fallas := v_fallas || format(E'\n  con el aspecto la hoja lee %s bloques de %s, y sin él %s', r.con, r.relacion, r.sin); end if;
+  end loop;
+  if (select ms from _med where caso = 'duena, capturas con aspecto') > c_ms then
+    v_fallas := v_fallas || format(E'\n  la hoja de las capturas con aspecto tarda %s ms (tope %s)', round((select ms from _med where caso = 'duena, capturas con aspecto'), 2), c_ms);
+  end if;
+  raise notice 'medicion|cotizacion_hoja, bytes de más de la hoja de las capturas con todo el aspecto|%', (select bytes from _med where caso = 'duena, capturas con aspecto') - m.bytes;
   if (select ms from _med where caso = 'duena, planilla') > c_ms then v_fallas := v_fallas || E'\n  la hoja de la planilla tarda más que el tope'; end if;
   if (select filas from _med where caso = 'duena, atajos de la tabla viva') > c_filas then
     v_fallas := v_fallas || format(E'\n  los atajos de la tabla viva piden %s bloques de tablas_referencia_filas (tope %s)', (select filas from _med where caso = 'duena, atajos de la tabla viva'), c_filas);

@@ -1,24 +1,27 @@
 'use client'
 
 import {
-  ANCHOS,
   NIVEL_TODOS,
+  type AnchoDeCelda,
   type CeldaDeDiseno,
   type SeccionDeDiseno,
 } from '../../../entities/diseno'
 import { celdaAdmiteNivel, type NodosPorId } from '../../../entities/diseno/admite-nivel'
+import type { CambioDeAspectoDeItem } from '../../../entities/diseno/edicion-del-aspecto'
 import type { NivelDelDiseno } from '../../../entities/diseno/edicion-del-diseno'
 import type { AyudaDeCelda } from '../../../entities/diseno/edicion-de-items'
 import type { CambioDeNiveles } from '../../../entities/diseno/niveles'
-import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
+import { columnasDeLaCelda } from '../../../entities/rejilla-de-la-hoja'
+import type { FilaOrdenable } from '../hooks/use-fila-ordenable'
+import {
+  CamposDelAspectoDelItem,
+  errorDe,
+  SelectorDeColumnas,
+  type ErrorDelAspecto,
+} from './aspecto'
 import { CamposDeLaAyuda } from './campos-de-la-ayuda'
+import { TituloConAsa } from './orden'
 import { SelectorDeNivel } from './selector-de-nivel'
-
-const ANCHO: Record<(typeof ANCHOS)[number], string> = {
-  completo: 'Completo',
-  mitad: 'Mitad',
-  tercio: 'Un tercio',
-}
 
 export const SIN_NIVEL_EN_LA_CELDA = 'El total y lo que va aparte los ve todo el mundo.'
 
@@ -30,12 +33,17 @@ type Props = {
   niveles: readonly NivelDelDiseno[]
   tablas: readonly string[]
   ocupado: boolean
-  alPonerAncho: (ancho: (typeof ANCHOS)[number]) => void
+  // La fila en la lista que se ordena dentro de su sección, y el rechazo de forma de su aspecto (si es suyo).
+  fila: FilaOrdenable
+  error: ErrorDelAspecto
+  alPonerAncho: (ancho: AnchoDeCelda) => void
+  alPonerAspecto: (cambios: CambioDeAspectoDeItem) => void
   alPonerNiveles: (cambios: CambioDeNiveles) => void
   alPonerAyuda: (ayuda: AyudaDeCelda | null) => void
 }
 
-// Una celda de la sección: su etiqueta, el ancho, quién la ve y quién la edita, y su ayuda. La celda gana a su sección: el nivel que rige es el propio y, sin él, el de la sección.
+// Una celda de la sección: su asa, su etiqueta, el ancho (de 12 columnas a 1; un ancho guardado con nombre se muestra por su número), quién la ve y quién la
+// edita, su ayuda y su aspecto. La celda gana a su sección: el nivel que rige es el propio y, sin él, el de la sección.
 export function CeldaEditable({
   seccion,
   celda,
@@ -44,7 +52,10 @@ export function CeldaEditable({
   niveles,
   tablas,
   ocupado,
+  fila: { alMontar, estilo, asa },
+  error,
   alPonerAncho,
+  alPonerAspecto,
   alPonerNiveles,
   alPonerAyuda,
 }: Props) {
@@ -52,19 +63,23 @@ export function CeldaEditable({
   const admite = celdaAdmiteNivel(celda, nodos)
   return (
     <li
-      className="min-w-0 rounded-(--radius-md) border border-(--color-line) p-3"
+      ref={alMontar}
+      style={estilo}
+      className="min-w-0 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) p-3"
       data-celda={celda.nodo}
     >
-      <p className="mb-2 text-(length:--text-sm) font-medium text-(--color-ink)">{etiqueta}</p>
+      <TituloConAsa etiquetaDelAsa={`Mover «${etiqueta}»`} asa={asa}>
+        <p className="text-(length:--text-sm) font-medium text-(--color-ink)">{etiqueta}</p>
+      </TituloConAsa>
       <div className="grid min-w-0 gap-2 @md:grid-cols-3">
-        <CampoSeleccion
+        <SelectorDeColumnas
           nombre={`${base}-ancho`}
           etiqueta="Ancho"
-          opciones={ANCHOS.map((valor) => ({ valor, etiqueta: ANCHO[valor] }))}
-          value={celda.ancho}
-          disabled={ocupado}
-          onChange={(evento) => {
-            alPonerAncho(evento.target.value as (typeof ANCHOS)[number])
+          valor={columnasDeLaCelda(celda.ancho)}
+          ocupado={ocupado}
+          error={errorDe(error, 'ancho')}
+          alCambiar={(columnas) => {
+            if (columnas !== null) alPonerAncho(columnas)
           }}
         />
         <SelectorDeNivel
@@ -96,6 +111,13 @@ export function CeldaEditable({
         tablas={tablas}
         ocupado={ocupado}
         alPonerAyuda={alPonerAyuda}
+      />
+      <CamposDelAspectoDelItem
+        base={base}
+        item={celda}
+        ocupado={ocupado}
+        error={error}
+        alPoner={alPonerAspecto}
       />
     </li>
   )

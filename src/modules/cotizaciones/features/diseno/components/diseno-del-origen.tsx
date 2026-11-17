@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import type { Tono } from '@/shared/ui/xcell'
 import type { DisenoParaEditar, NivelDelDiseno } from '../../../entities/diseno/edicion-del-diseno'
+import type { TonoDelCatalogo } from './aspecto'
 import { EditorDelDiseno } from './editor-del-diseno'
 import { SelectorDeOrigen } from './selector-de-origen'
 
@@ -17,12 +18,14 @@ type Props = {
   niveles: readonly NivelDelDiseno[]
   // Los tonos del catálogo, en la forma de la celda; sin ellos la vista previa se dibuja sin colores.
   tonos: readonly Tono[]
+  // Sus claves y nombres para elegir el color; nulo si no se pudo leer.
+  catalogo: readonly TonoDelCatalogo[] | null
 }
 
 // La pestaña «Diseño» de Configuración › Cotización (4.22-2): el origen (con 2 o más, un selector que escribe `?origen=`) y su diseño. Sin versión o sin diseño, un
 // vacío. El editor no se vuelve a montar al guardar (su `key` no lleva la versión); sólo «Recargar» tras un conflicto lo monta de nuevo, en la misma transición que
 // trae la pestaña, sobre lo que haya entonces.
-export function DisenoDelOrigen({ origenes, origen, leida, niveles, tonos }: Props) {
+export function DisenoDelOrigen({ origenes, origen, leida, niveles, tonos, catalogo }: Props) {
   const router = useRouter()
   const [vuelta, setVuelta] = useState(0)
   const [recargando, recargarPagina] = useTransition()
@@ -38,8 +41,8 @@ export function DisenoDelOrigen({ origenes, origen, leida, niveles, tonos }: Pro
       <div className="grid gap-0.5">
         <h2 className="text-(length:--text-lg) font-semibold text-(--color-ink)">Diseño</h2>
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          Cómo se ve y se maneja la hoja de cada origen: sus secciones, sus celdas y quién ve y
-          edita cada una.
+          Cómo se ve y se maneja la hoja de cada origen: sus secciones y sus celdas, su orden, su
+          aspecto en la rejilla y quién ve y edita cada una.
         </p>
       </div>
       <SelectorDeOrigen origenes={origenes} origen={origen} />
@@ -59,6 +62,7 @@ export function DisenoDelOrigen({ origenes, origen, leida, niveles, tonos }: Pro
           disenoLeido={diseno}
           niveles={niveles}
           tonos={tonos}
+          catalogo={catalogo}
           recargando={recargando}
           alRecargar={recargar}
         />

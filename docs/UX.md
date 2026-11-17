@@ -1128,20 +1128,35 @@ Configuración › Cotización (`?seccion=ajustes`): la vigencia, una fila para 
 
 ### Cotización: diseño (estados propios)
 
-Configuración › Cotización (`?seccion=diseno&origen=<id>`): secciones, celdas, ítems, cabecera y tarjeta del total de la hoja, y su vista
-previa.
+Configuración › Cotización (`?seccion=diseno&origen=<id>`): secciones, celdas, ítems, cabecera y tarjeta del total de la hoja, su orden, su
+aspecto en la rejilla de 12 y su vista previa.
 
 - **Quién entra:** `cotizaciones.configurar` en algún origen (la pestaña va después de «Fórmula»); sin ninguno, su vacío. Selector
   «Origen» con 2 o más, como «Fórmula».
 - **Qué abre:** el borrador o, sin él, la publicada. Sin versión o sin diseño lo dice (aquí no se crea uno). Cargando,
   `EsqueletoFormulario`; una lectura que falla sube al «Reintentar» de la ruta.
 - **Secciones y celdas:** por sección, «Título» (≤ 80; vacío lo quita), «Dónde va» (Principal | Avanzado), «Quién la ve» y «Quién la
-  edita»; por celda, «Ancho» (Completo | Mitad | Un tercio), «Quién la ve» y «Quién la edita». Niveles: «Todos» y los vivos; uno retirado
+  edita»; por celda, «Ancho» («12 columnas (toda la fila)» … «6 columnas (la mitad)» … «4 columnas (un tercio)» … «1 columna»; un ancho
+  guardado con nombre se muestra por su número y, al elegir, se escribe el número), «Quién la ve» y «Quién la edita». Niveles: «Todos» y los vivos; uno retirado
   que el diseño usa se muestra «(retirado)». Elegir quién ve alinea quién edita. **Lo que no admite nivel** (el total y lo que va aparte,
   o una sección que los tiene): «Quién la ve» apagado con su motivo.
 - **Ítems que no son celda:** por celda, «Ayuda con una tabla» (las que nombra la fórmula) o «Ayuda con un texto» (≤ 300): una quita la
   otra. Atajos: «Columna de los chips» y «Cuántos chips (1 a 12)». Interruptor: «Habilita» (apagado, deshabilita lo que condiciona) o
   «Muestra» (apagado, no lo dibuja). Variante y subtotal se ven y no se editan.
+- **Ordenar:** cada sección y cada ítem tienen su asa («Mover la sección «Base»», «Mover «Precio»», 44 px): se arrastra (las secciones en su
+  lista, los ítems dentro de su sección: pasar uno a otra sección cambiaría quién lo ve) o, con el foco en el asa, Espacio la toma, las
+  flechas la mueven, Espacio la suelta y Esc cancela. Las instrucciones y cada paso se anuncian («Tomaste «Precio».», ««Precio» va en el
+  lugar 2 de 3.», «Soltaste…», «Se canceló: «Precio» volvió a su lugar.»). Mientras guarda, las asas esperan (`aria-disabled`).
+- **Aspecto** (un bloque «Aspecto» plegado en cada pieza; no se escribe el valor por defecto, se quita): por sección, «Ancho en la hoja»
+  («Automático (la mitad, si hay lugar)» y de 12 a 1 columna), «Alto» (Automático | 2, 3 o 4 filas), «Relleno» (Chico | Medio | Grande),
+  «Separación entre celdas» (Chica | Media | Grande), «Densidad» (Compacta | Cómoda), «Letra» (Chica | Normal | Grande), «Énfasis»
+  (Normal | Fuerte) y «Color» («Sin color» y los tonos del catálogo, con su muestra); por ítem, «Alto», «Letra» y «Énfasis» (y «Ancho» en
+  los que no son celda); en la cabecera, «Color», «Relleno», «Letra» y «Énfasis». **El alto de una pieza de 12 columnas** se apaga con «Con 12
+  columnas ocupa su fila: el alto no cambia nada.». Un tono que el catálogo ya no tiene se ve «<clave> (no está en el catálogo)» y el aviso
+  dice «La sección «base» usa un tono que no está en el catálogo.» (publicar lo rechaza); **sin catálogo** («Color» apagado con «No se pudo
+  leer el catálogo de tonos.») nada se marca y la vista previa va sin colores. Un valor fuera de su escala (sólo si llegara de la base) va
+  bajo su select (`aria-invalid`) y en el aviso. Un diseño viejo se abre con «Automático», «Medio», «Cómoda», «Normal» y su ancho con
+  nombre por su número.
 - **Cabecera de la hoja:** «Ofrecer «Ver total en moneda local»» (la hoja lo muestra apagado) y los modos de tipo de cambio: nombre, «Tipo
   de cambio de <bucket>» por bucket de la fórmula, «Total en» y «Quitar el modo» (sin confirmar: es borrador). «Sumar un modo» copia los
   tipos de cambio de la fórmula, con la clave derivada del nombre (no cambia al renombrar). Sin total en moneda local o sin tipos de cambio
@@ -1158,7 +1173,8 @@ previa.
   haya guardado) y escribe `?vista=412|1280|200` (otro valor, cerrada; recargar la conserva; cambiar el ancho no suma al historial). «Ancho
   de la vista previa»: 412 px, 1.280 px y 200 % (`aria-pressed`, 44 px). Es el mismo componente de la hoja dentro de un marco que se
   desplaza de costado (la página no se ensancha): a 412 el resumen va debajo, a 1.280 al costado, 200 % es el celular con el texto al
-  doble. Con cifras de prueba (datos en 0; si la fórmula aún no calcula, se dibuja sin cifras). Es la de quien lo ve todo y sólo se ve: sin
+  doble. Con cifras de prueba (datos en 0; si la fórmula aún no calcula, se dibuja sin cifras). Dibuja el orden y el aspecto en vivo con la
+  misma rejilla que la hoja. Es la de quien lo ve todo y sólo se ve: sin
   foco, sin acciones, sin tocar la URL de la hoja. Las secciones «Avanzado» no se dibujan y se dice cuántas. Diseño vacío: «No hay nada que
   dibujar.» Su código se pide al abrirla (`diferido()`); un tono que no llega deja la hoja sin colores.
 - **200 %:** la fila de campos de una celda va en columna bajo `@container` estrecho (el resto, `.claude/rules/ui.md`).
