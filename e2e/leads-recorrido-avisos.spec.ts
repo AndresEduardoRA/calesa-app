@@ -1,5 +1,5 @@
 import { expect, test } from './soporte/prueba'
-import { entrar } from './soporte/alta'
+import { abrirNuevoLeadDeLaBarra, entrar } from './soporte/alta'
 import { idDePersona } from './soporte/leads-alta'
 import { extrasDeLead, irAFicha, meterSeguimiento, ponerExtras } from './soporte/leads-ficha'
 import { abrirAgregarTelefono, nacional } from './soporte/leads-ficha-telefonos'
@@ -65,10 +65,8 @@ test('D · «Abrir ficha» del aviso de un lead nuevo con un modal sucio abierto
 }, info) => {
   await entrar(page, r.ana.email)
   await irALeads(page)
-  await expect(async () => {
-    await page.getByRole('button', { name: 'Nuevo lead' }).click()
-    await expect(page.getByRole('dialog', { name: 'Nuevo lead' })).toBeVisible({ timeout: 1000 })
-  }).toPass()
+  await abrirNuevoLeadDeLaBarra(page)
+  await expect(page.getByRole('dialog', { name: 'Nuevo lead' })).toBeVisible()
   const alta = page.getByRole('dialog', { name: 'Nuevo lead' })
   await alta.getByLabel('Teléfono principal').fill(nacional())
   await alta.getByLabel('Nombre').fill(nombre(`Nuevo del aviso ${info.project.name}`))

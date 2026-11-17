@@ -91,14 +91,12 @@ test('«Etapas» dobla su texto con la raíz al 200 %', async ({ page }) => {
   exigirElDoble(await tamanos(page, [etapas]), ['Etapas'])
 })
 
-test('«Nuevo lead» de la barra superior dobla su texto donde se dibuja con texto', async ({
-  page,
-}) => {
+test('«Nuevo» de la barra superior dobla su texto donde se dibuja con texto', async ({ page }) => {
   await entrar(page, t.personas.berta)
   await irALeads(page)
-  const nuevo = aLaVista(page.getByRole('button', { name: /^Nuevo lead/ })).first()
+  const nuevo = aLaVista(page.getByRole('button', { name: 'Nuevo', exact: true })).first()
   await expect(nuevo).toBeVisible()
-  // En el celular sólo se dibuja el icono (el texto sale con `sm:`, un media query que no sigue a la raíz): su etiqueta es la del lector.
+  // En el celular sólo se dibuja el icono (el texto sale con 24 rem de barra, un contenedor que no sigue a la raíz): su etiqueta es la del lector.
   const conTexto = await nuevo.evaluate(
     (el) =>
       el.textContent.trim().length > 0 &&
@@ -106,7 +104,7 @@ test('«Nuevo lead» de la barra superior dobla su texto donde se dibuja con tex
   )
   test.skip(
     !conTexto,
-    'En el celular «Nuevo lead» es sólo el icono: el texto está para el lector de pantalla.',
+    'En el celular «Nuevo» es sólo el icono: el texto está para el lector de pantalla.',
   )
-  exigirElDoble(await tamanos(page, [nuevo]), ['Nuevo lead'])
+  exigirElDoble(await tamanos(page, [nuevo]), ['Nuevo'])
 })

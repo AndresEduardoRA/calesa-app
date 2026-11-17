@@ -1,5 +1,5 @@
 import { expect, test, type Page, type TestInfo } from './soporte/prueba'
-import { entrar } from './soporte/alta'
+import { abrirNuevoLeadDeLaBarra, entrar } from './soporte/alta'
 import { irAFicha } from './soporte/leads-ficha'
 import { rpcComo } from './soporte/leads-cartera'
 import { idDePersona } from './soporte/leads-alta'
@@ -243,8 +243,8 @@ test('Ana · un aviso con el panel «Nuevo lead» a medio escribir pregunta en e
   await entrar(page, r.ana.email)
   await irALeads(page)
   await expect(async () => {
-    await page.getByRole('button', { name: 'Nuevo lead' }).click()
-    await expect(page.getByRole('dialog', { name: 'Nuevo lead' })).toBeVisible({ timeout: 1000 })
+    await abrirNuevoLeadDeLaBarra(page)
+    await expect(page.getByRole('dialog', { name: 'Nuevo lead' })).toBeVisible()
   }).toPass()
   const alta = page.getByRole('dialog', { name: 'Nuevo lead' })
   await alta.getByLabel('Teléfono principal').fill(nacional())
