@@ -2,6 +2,7 @@ import { execFileSync, spawnSync } from 'node:child_process'
 import {
   chmodSync,
   copyFileSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -53,13 +54,17 @@ function worktreeNuevo() {
   // Las dependencias de verdad (el manifiesto se lee con `yaml`); con la carpeta, preparar.sh no corre `pnpm install`.
   symlinkSync(resolve('node_modules'), join(wt, 'node_modules'))
   mkdirSync(join(raiz, 'bin'))
-  writeFileSync(join(raiz, 'bin', 'pnpm'), '#!/usr/bin/env bash\nexit 1\n')
+  // El `pnpm` falso anota con qué lo llamaron y falla: el stack nunca se levanta.
+  writeFileSync(
+    join(raiz, 'bin', 'pnpm'),
+    `#!/usr/bin/env bash\necho "$*" >> ${JSON.stringify(join(raiz, 'pnpm.log'))}\nexit 1\n`,
+  )
   chmodSync(join(raiz, 'bin', 'pnpm'), 0o755)
   return { raiz, wt }
 }
 
 describe('preparar.sh', () => {
-  it('en un worktree nuevo, sin letra, toma la primera libre y escribe .env.carril', () => {
+  it('en un worktree nuevo, sin letra, toma la primera libre; si después cae, baja el stack y la suelta', () => {
     const { raiz, wt } = worktreeNuevo()
     const r = spawnSync('bash', ['scripts/worktree/preparar.sh'], {
       cwd: wt,
@@ -71,6 +76,9 @@ describe('preparar.sh', () => {
       },
     })
     expect(r.stdout + r.stderr).toContain('✓ carril a')
-    expect(readFileSync(join(wt, '.env.carril'), 'utf8')).toMatch(/^SUPABASE_PROJECT_ID=.*-a$/m)
+    expect(r.status).not.toBe(0)
+    expect(r.stderr).toContain('suelto el carril a')
+    expect(readFileSync(join(raiz, 'pnpm.log'), 'utf8')).toContain('exec supabase stop --no-backup')
+    expect(existsSync(join(wt, '.env.carril'))).toBe(false)
   })
 })
