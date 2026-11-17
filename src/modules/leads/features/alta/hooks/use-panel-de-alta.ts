@@ -53,6 +53,24 @@ export function usePanelDeAlta() {
   }
 }
 
+// Abrir «Nuevo lead» desde la pantalla de otro módulo para elegir al creado (el «Nuevo lead» del formulario «Nuevo proyecto» de repuestos): escribe
+// `?panel=nuevo-lead&elegir=<clave>` reemplazando la entrada, como el «+» del panel del cliente de la hoja de cotizar, y adelanta el código del alta. La
+// pantalla deja antes su propia clave en la URL para volver a dibujarse al cerrar el alta. Una clave que `claveParaElegir()` no acepta no abre nada.
+export function useAbrirAltaParaElegir(clave: string): () => void {
+  const [, escribir] = useQueryStates(PARSERS)
+  return () => {
+    const paraElegir = claveParaElegir(clave)
+    if (paraElegir === null) {
+      return
+    }
+    adelantarElAlta()
+    void escribir(
+      { [CLAVE_DE_PANEL]: PANEL_NUEVO_LEAD, [CLAVE_DE_ELEGIR]: paraElegir },
+      { history: 'replace' },
+    )
+  }
+}
+
 // Abrir «Nuevo lead» desde fuera del panel (la paleta de la barra). No es `usePanelDeAlta()`: ese hook registra la vuelta del foco del panel y `<AltaDeLead>` ya lo usa;
 // montarlo otra vez en el hueco la registraría dos veces. Éste sólo lee la clave `panel` (para no volver a abrir lo abierto) y escribe la misma entrada.
 export function useAbrirNuevoLead(): () => void {
