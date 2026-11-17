@@ -13,8 +13,9 @@
 #    antes) → `PUT …/pulls/<n>/update-branch` y el CI vuelve a correr, con el orden de migraciones contra el main nuevo;
 #    rojo → dice qué job cayó y sale con 1 (se arregla, se commitea y se vuelve a correr). `--sin-esperar` sale tras el 3.
 # Sale con 64 si no hay qué publicar o falta algo; con 1 si el CI cayó; con 75 si se agotó la espera (el PR sigue su curso solo).
+# Se ubica por la carpeta del propio guion, no por la de quien lo corre: corrido desde `proyectos/` publica igual su repo.
 set -euo pipefail
-cd "$(git rev-parse --show-toplevel)"
+cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 falta() { echo "✗ $1" >&2; exit 64; }
 
 TITULO=""

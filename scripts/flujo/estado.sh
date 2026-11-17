@@ -4,8 +4,10 @@
 # sesión sabiendo si hay algo rojo que va antes que lo pedido. Sin red o sin `gh` dice sólo lo local y sale con 0: nunca frena.
 #
 #   bash scripts/flujo/estado.sh
+#
+# Se ubica por la carpeta del propio guion, no por la de quien lo corre: corrido desde `proyectos/` mira igual su repo.
 set -uo pipefail
-cd "$(git rev-parse --show-toplevel)" || exit 0
+cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel)" || exit 0
 
 RAMA=$(git symbolic-ref --quiet --short HEAD || echo '(HEAD suelto)')
 SUCIOS=$(git status --porcelain | wc -l | tr -d ' ')

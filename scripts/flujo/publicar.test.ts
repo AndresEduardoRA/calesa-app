@@ -16,8 +16,9 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest'
 
 // `publicar.sh` publica la rama como un PR con auto-merge (docs/FLUJO.md). Se prueba con un repo temporal, un `origin` de verdad
 // (bare) y `gh` y `pnpm` falsos que registran lo que se les pide: lo que niega (main, árbol sucio, sin commits, título inválido) y el
-// camino feliz (empuja sin forzar, abre el PR con el título, enciende el auto-merge y, ya integrado, vuelve a main).
-const GUION = resolve('scripts/flujo/publicar.sh')
+// camino feliz (empuja sin forzar, abre el PR con el título, enciende el auto-merge y, ya integrado, vuelve a main). El guion se
+// ubica por su propia carpeta: se copia al repo temporal y se corre desde ahí, como en un proyecto.
+const GUION_DEL_KIT = resolve('scripts/flujo/publicar.sh')
 const raices: string[] = []
 let raiz = ''
 let repo = ''
@@ -47,6 +48,7 @@ beforeEach(() => {
   writeFileSync(join(repo, 'a.txt'), 'a\n')
   mkdirSync(join(repo, 'scripts/flujo'), { recursive: true })
   writeFileSync(join(repo, 'scripts/flujo/limpiar-ramas.mjs'), 'console.log("limpiar")\n')
+  copyFileSync(GUION_DEL_KIT, join(repo, 'scripts/flujo/publicar.sh'))
   git('add', '.')
   git('commit', '-q', '-m', 'chore: inicio')
   git('push', '-q', '-u', 'origin', 'main')
@@ -72,9 +74,9 @@ afterAll(() => {
   for (const r of raices) rmSync(r, { recursive: true, force: true })
 })
 
-function publicar(...args: string[]) {
-  const r = spawnSync('bash', [GUION, ...args], {
-    cwd: repo,
+function publicarDesde(cwd: string, ...args: string[]) {
+  const r = spawnSync('bash', [join(repo, 'scripts/flujo/publicar.sh'), ...args], {
+    cwd,
     encoding: 'utf8',
     env: {
       NODE_ENV: 'test',
@@ -85,6 +87,7 @@ function publicar(...args: string[]) {
   })
   return { estado: r.status, stderr: r.stderr, stdout: r.stdout }
 }
+const publicar = (...args: string[]) => publicarDesde(repo, ...args)
 const llamadas = () =>
   existsSync(join(raiz, 'llamadas.txt')) ? readFileSync(join(raiz, 'llamadas.txt'), 'utf8') : ''
 
@@ -143,6 +146,16 @@ describe('publicar.sh › el camino feliz', () => {
   })
 })
 
+describe('publicar.sh › desde otra carpeta', () => {
+  it('corrido desde fuera del repo (proyectos/) publica el repo del guion', () => {
+    ramaConUnCommit()
+    const r = publicarDesde(raiz, '--sin-esperar')
+    expect(r.estado, r.stderr).toBe(0)
+    expect(git('ls-remote', '--heads', 'origin', 'feat/algo')).toContain('refs/heads/feat/algo')
+    expect(llamadas()).toContain('gh pr merge 7 --auto --squash')
+  })
+})
+
 describe('publicar.sh › en un worktree', () => {
   it('desde un worktree, ya integrado, queda suelto en origin/main (main es de la principal)', () => {
     const wt = join(raiz, 'wt')
@@ -163,7 +176,7 @@ describe('publicar.sh › en un worktree', () => {
       ],
       { cwd: wt },
     )
-    const r = spawnSync('bash', [GUION], {
+    const r = spawnSync('bash', [join(wt, 'scripts/flujo/publicar.sh')], {
       cwd: wt,
       encoding: 'utf8',
       env: {

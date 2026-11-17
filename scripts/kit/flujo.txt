@@ -66,6 +66,8 @@ scripts/kit/actualizar.mjs
 scripts/kit/actualizar.test.ts
 scripts/kit/juguete.ts
 scripts/lib/stack-local.mjs
+# Lo que importan los guiones y las pruebas del flujo (los .test.mjs de scripts/lib, scripts/proyecto y scripts/orquestador).
+scripts/lib/temporal.mjs
 scripts/lib/stack-local.test.mjs
 scripts/proyecto/manifiesto.mjs
 scripts/proyecto/manifiesto.test.mjs
