@@ -53,8 +53,8 @@ las trampas, en `docs/LECCIONES.md`.
 - **Tonos de las papeleras.** «Enviar a la papelera» es `outline` (reversible); «Purgar» es `destructive` en las tres papeleras, siempre después de «Restaurar».
 - **Visor de imágenes: uno solo, con su URL aparte (`?visor=`).** Así se abre sobre un drawer o un panel sin cerrarlos. En su lugar se ve la portada que ya trae la fila y el resto se pide recién al acercarse (puntero, foco o toque), una vez; la grande, sólo al abrir, la actual y sus vecinas. Donde el lugar mide menos de 160 px (la fila de la tabla, la tarjeta de hoy) no caben flechas de 44 px: la foto abre el visor directo. La barra de la hoja de cotizar sigue con la miniatura fija (su JS está en el tope).
 - **Avisos con acciones: la base dice la causa con una clave, la UI la traduce.** El rechazo lleva la causa en `hint` (`_vehiculo_bloqueo()` → `{causa, motivo}`) y cada módulo la convierte en acciones en `entities/` (`resolverAcciones()`): de 1 a 3, **la que destraba primero** («Quitar el vínculo» antes que «Ver el lead»). Sin permiso para la que resuelve, el aviso dice «pídeselo a quien administra los roles» (no hay una persona a quien pedirle en todos los casos); la que sólo informa se oculta. En un lote no hay acciones: se listan los motivos. Tras «Quitar el vínculo» (`?luego=papelera`) el aviso **ofrece** la papelera, no la envía solo.
-- **«Nuevo» de la barra: un modal con URL (`?panel=crear`), claves y no permisos.** Reemplaza al botón «Nuevo lead». El servidor calcula con `puede()` las claves de lo que se puede crear (`opcionesDeNuevo()`) y sólo ellas cruzan al navegador (el catálogo con títulos y destinos viaja diferido con el modal): el layout no lleva `permisos.ts` en el documento de cada pantalla. Cada opción reusa su puerta (drawer del lead, `?panel=` de otra pantalla), sin formularios nuevos; «Evento» y «Tarea» van siempre porque para uno mismo no piden permiso (publicar y asignar sólo amplían). Seguimiento y recordatorio llevan a la **ficha** del lead (sección «Seguimientos», `rutaDeAccionSobreUnLead()`), no al listado: el modal del listado (`?para=`) sólo abre filas de la página visible y un lead elegido en una búsqueda puede no estar en ella. `Shift+N` abre «Nuevo» (en `combinacionDe`, Mayús cuenta sólo con una letra suelta) y no hace nada con otro diálogo abierto; `N` sigue igual. El botón suma 1.551 B al primer HTML de toda pantalla (`/configuracion/cotizacion?seccion=tarjeta` con 500 miembros: 162.237 → 163.788 B): el tope de esa prueba sube a 171.900 B por la regla del 5 %.
-- **«Vista y opciones»: un popover desde 768 px y una hoja inferior por debajo, sin URL.** La barra de un listado deja a la vista el buscador (que crece), «Filtros» y «Nuevo»; la vista, el alcance, «Ítems por página», las vistas guardadas, exportar, importar y la papelera van en un botón que dice lo activo. Es un menú, no un panel: sin URL, cerrarlo no escribe nada y no pisa la navegación de la opción recién elegida (la carrera de `cerrarPanel` de la ficha de `shared`); por eso la hoja se arma con `sheet.tsx` y no con `<Drawer>`, que exige URL y registro. Se pierde que «atrás» la cierre en Android. El panel viaja con `diferido()` (la carga paga sólo el botón: `/leads` y `/cotizaciones` están al borde de su JS) y lo que abre otro panel («Exportar…», «Etapas…», «Nuevo embudo…») corre cuando el panel terminó de cerrarse (`cerrarYLuego`, `onOpenChangeComplete`), con el foco ya en el botón. Las vistas guardadas e «Ítems por página» entran al grupo: ningún atajo ni tarea de oro los usa y cuestan los mismos clics (el menú de vistas ya era un popover). En el embudo entran «Lista | Embudo», «Etapas…» y «Nuevo embudo…» (configuran la vista; a la vista quedan el selector de embudo y la búsqueda); en repuestos, «Proyectos | Cadena | Stock» como «Qué ver». No se tocan las listas con menos de tres botones de vista u opciones (logística, actividad, equipo, notificaciones, papeleras). En la agenda entran «Qué agenda ver» (Mi agenda | De todos) y «Qué ver» (las clases); «Día | Semana | Mes» quedan a la vista porque se usan a cada rato. Descartados: un modal (tapa la lista y no deja ver el cambio), un drawer lateral (pide URL y registro y en escritorio le quita ancho a la lista), un `DropdownMenu` (no admite un `select` ni el formulario de vistas con buena accesibilidad) y una barra que se desplaza (esconde piezas sin decirlo).
+- **«Nuevo» de la barra: un modal con URL (`?panel=crear`), claves y no permisos.** El servidor calcula con `puede()` las claves de lo que se puede crear (`opcionesDeNuevo()`) y sólo ellas cruzan al navegador (el catálogo con títulos y destinos viaja diferido con el modal): el layout no lleva `permisos.ts` en el documento de cada pantalla. Cada opción reusa su puerta (drawer del lead, `?panel=` de otra pantalla), sin formularios nuevos; «Evento» y «Tarea» van siempre porque para uno mismo no piden permiso (publicar y asignar sólo amplían). Seguimiento y recordatorio llevan a la **ficha** del lead (sección «Seguimientos», `rutaDeAccionSobreUnLead()`), no al listado: el modal del listado (`?para=`) sólo abre filas de la página visible y un lead elegido en una búsqueda puede no estar en ella. `Shift+N` abre «Nuevo» (en `combinacionDe`, Mayús cuenta sólo con una letra suelta) y no hace nada con otro diálogo abierto; `N` abre lo propio de la pantalla.
+- **«Vista y opciones»: un popover desde 768 px y una hoja inferior por debajo, sin URL.** La barra de un listado deja a la vista el buscador (que crece), «Filtros» y «Nuevo»; la vista, el alcance, «Ítems por página», las vistas guardadas, exportar, importar y la papelera van en un botón que dice lo activo. Es un menú, no un panel: sin URL, cerrarlo no escribe nada y no pisa la navegación de la opción recién elegida (la carrera de `cerrarPanel` de la ficha de `shared`); por eso la hoja se arma con `sheet.tsx` y no con `<Drawer>`, que exige URL y registro. Se pierde que «atrás» la cierre en Android. El panel viaja con `diferido()` (la carga paga sólo el botón: `/leads` y `/cotizaciones` están al borde de su JS) y lo que abre otro panel («Exportar…», «Etapas…», «Nuevo embudo…») corre cuando el panel terminó de cerrarse (`cerrarYLuego`, `onOpenChangeComplete`), con el foco ya en el botón. Las vistas guardadas e «Ítems por página» entran al grupo: ningún atajo ni tarea de oro los usa y cuestan los mismos clics; el menú de vistas (≈ 70 KB gz) llega tras hidratar, también diferido (`VistasDeCotizacionesDiferido`). En el embudo entran «Lista | Embudo», «Etapas…» y «Nuevo embudo…» (configuran la vista; a la vista quedan el selector de embudo y la búsqueda); en repuestos, «Proyectos | Cadena | Stock» como «Qué ver». No se tocan las listas con menos de tres botones de vista u opciones (logística, actividad, equipo, notificaciones, papeleras). En la agenda entran «Qué agenda ver» (Mi agenda | De todos) y «Qué ver» (las clases); «Día | Semana | Mes» quedan a la vista porque se usan a cada rato. Descartados: un modal (tapa la lista y no deja ver el cambio), un drawer lateral (pide URL y registro y en escritorio le quita ancho a la lista), un `DropdownMenu` (no admite un `select` ni el formulario de vistas con buena accesibilidad) y una barra que se desplaza (esconde piezas sin decirlo).
 - **Un hueco de Server Component dice si dibuja algo.** `HuecosDelListado.hayJunto(permisos)`: la página de `/cotizaciones` pasa `Junto` (la papelera) sólo si quien mira lo vería, porque un Server Component que devuelve `null` dejaría vacío el grupo «Más» de «Vista y opciones» y el panel no puede saberlo.
 - **PWA.** `id: '/'` igual que `start_url` (cambiarlo reinstala la app a todos); sin aviso que invite a instalar; los atajos del manifest no se filtran por permiso (se pide sin sesión). Íconos, tarjeta y PDF salen del logo normal; el oscuro lo elige el CSS.
 
@@ -65,6 +65,7 @@ las trampas, en `docs/LECCIONES.md`.
   20.000 filas por persona (el id no se valida contra su tabla), lectura de los ids de la página que se dibuja (una llamada) y purga cada hora
   por la retención de cada persona, en un orden que rota. Qué está
   visto lo pone `equipo` en un contexto de `@/shared/ui/lista`; la fila y la tarjeta lo leen con `idDeVisto`, sin pasar props por cada nivel.
+  Retención de 7 días por defecto y la marca «Último visto», a falta de que la persona lo confirme (`docs/PENDIENTES.md` › «Vistos»).
 - **Dónde se marca «visto».** Vehículos, leads (lista y kanban), cotizaciones, proyectos de repuestos, los chips de la agenda y las listas de logística. **No** las
   notificaciones (su «leída» ya es eso), ni aduana (su fila es una declaración, sin tipo en la lista cerrada, y sus vehículos son texto sin enlace), ni
   los bloques de Inicio, las papeleras y las listas de configuración. Embarques marca las unidades de un grupo (no la fila del grupo: su clave no es un uuid) y
@@ -80,7 +81,6 @@ las trampas, en `docs/LECCIONES.md`.
   negrita y la del título se confundía con ella.
 - **El último visto es el del módulo, de cualquiera de sus tipos** (`TIPOS_DEL_MODULO`): en la agenda, un evento o una tarea, nunca dos «Último visto». «Ver como» no
   registra a nombre del otro (`visto_registrar` escribe con `auth.uid()`).
-
 - **El guardián cuenta la unión de roles.** Debe quedar una persona operativa (activa, sin bloqueo, invitación aceptada) cuyos roles sumen los permisos de administración.
 - **Dominancia sobre la persona.** Bloquear, desbloquear, dar de baja y asignar/quitar roles exigen dominarla (`rol_dominado()`); el dueño (rol de clave `dueno`) domina a todos. Orden: `_dominancia_tomar()` → permiso → propia → perfil `for update` → dominancia (42501) → estado (PT409).
   `_dominancia_tomar()` es un candado de transacción común, el primero de toda RPC que comprueba la dominancia y de `nivel_crear` (suma
@@ -96,7 +96,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Invitación.** Un solo enlace vigente por persona; si el correo falla se muestra el enlace; «Copiar enlace» genera uno nuevo, invalida el anterior y exige dominar sus roles. Vence a las 24 h en la nube (1 h local).
 - **Registro cerrado al cerrar la transacción.** `auth_registro_permitido()` es constraint trigger diferido (Auth pone `app_metadata` después del insert); `registroDisponible()` lo repite en TS.
 - **Auth sin variables de la app.** `/auth/callback` acepta `code` (Google) y `token_hash` (correos); el botón de Google sale sólo si `/auth/v1/settings` dice que está encendido.
-- **Los formularios de auth van con `method="post"`.** Enviados antes de hidratar iban por GET, con la contraseña en la URL.
+- **Los formularios de auth van con `method="post"`.** Enviados antes de hidratar irían por GET, con la contraseña en la URL.
 - **`handle` en minúsculas, 3 a 30 de `a-z0-9._-`.** La base sólo pide unicidad; el formato lo da la app.
 
 ## Empresa
@@ -109,7 +109,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Monedas y tipos de cambio.** Moneda base + N tipos de cambio nombrados con historial; la fórmula declara buckets → clave de TC y la cotización congela los TC usados. El modo Live oculta cifras y símbolos en toda la app.
 - **La barra la elige la empresa.** «En la barra» es una columna de `tipos_cambio` escrita por `tipo_cambio_guardar(p_en_la_barra)` (un solo «Guardar» y una versión por fila, no una RPC gemela que daría PT409 contra el panel), con tope de 3 activos tras un candado consultivo tomado antes que la fila. Desactivar no desmarca y la barra filtra activos: reactivar uno marcado con 3 ya a la vista no se rechaza ni lo desmarca; la barra corta en 3 por el orden de `vigentes()` (el por defecto, `orden`, `nombre`) y el panel del que queda afuera lo dice. Sin ninguno, el por defecto. El último cambio de cada tipo (del historial, no de `actualizado_*`) lo ve toda persona activa por `tipos_cambio_vigentes()` (definer); el historial entero sigue siendo de quien gestiona. El conflicto del popover se arma en el cliente con lo releído, porque el monto va por `<Monto>`; el PT409 de la RPC no cambia. Con el Modo Live el popover no ofrece cambiar el valor.
 - **Compartir los tipos de cambio sale del servidor.** El texto y la imagen (`ImageResponse` de `next/og`, Geist en `infra/compartir/fuentes/`, sin `html-to-image` ni JS en el marco) los arman `/tipos-de-cambio/texto` e `/imagen` con la sesión de quien pide, de la misma lectura (`tipos_cambio_vigentes()` y la fila de `ajustes_empresa`): la zona, el locale, el logo y la leyenda son los de la empresa, no los del navegador, y las dos salidas dicen lo mismo. Las pide el panel diferido al elegir los tipos (con 250 ms de espera) y guarda el resultado: copiar, descargar y el menú del sistema son síncronos con el gesto (Safari no deja escribir el portapapeles tras un `await`). No hay permiso de «ver»: lo comparte toda persona activa, como ve el popover. Con el Modo Live no se ofrece (llevan cifras). El logo se baja en el servidor (hasta `PESO_MAXIMO_LOGO`, PNG, JPEG, GIF o SVG); uno que no se puede traer deja sólo el nombre. La leyenda comparte la versión de la fila de `ajustes_empresa` con el formulario de Empresa (como la vigencia): guardar una deja con `PT409` a la otra.
-- **Ajustes de cotización aparte.** La vigencia la cambia sólo `cotizaciones.configurar` concedida sin origen, por `empresa_guardar_ajustes_de_cotizacion` (dos permisos no se mezclan en una RPC; si el vehículo y el lead son obligatorios ya no es un ajuste de empresa: es por rol y origen, abajo); comparte versión con Empresa y revalida las dos pantallas.
+- **Ajustes de cotización aparte.** La vigencia la cambia sólo `cotizaciones.configurar` concedida sin origen, por `empresa_guardar_ajustes_de_cotizacion` (dos permisos no se mezclan en una RPC; el vehículo y el lead obligatorios no son ajuste de empresa sino por rol y origen: Cotizaciones › La hoja); comparte versión con Empresa y revalida las dos pantallas.
 
 ## Orígenes
 
@@ -117,7 +117,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **El tipo de un origen (subasta o manual) no cambia.** Lo impide un trigger; decide campos preconfigurados, regla `aduana` y `clave_apibara`. Uno equivocado y sin uso se elimina y se recrea.
 - **Desactivar antes que eliminar.** Un origen con uso se desactiva; se elimina sólo sin vehículos (papelera incluida), cotizaciones ni fórmula publicada, tipeando el nombre. Un campo con datos se desactiva: no cambia de tipo ni se elimina.
 - **Nombre, sustantivo y género son datos de la fila.** La concordancia sale de reglas puras (`pluralDe`, `contados`, `frasePorVacio`…); no hay columna de plural.
-- **Orden por botones y movimiento relativo.** «Subir/Bajar» con la RPC recibiendo «después de X» (nulo = primero), renumerando 10, 20, 30 bajo candado; sin arrastrar (sin dnd-kit).
+- **Orden por botones y movimiento relativo.** «Subir/Bajar» con la RPC recibiendo «después de X» (nulo = primero), renumerando 10, 20, 30 bajo candado; los campos no se arrastran.
 - **Sin `origenes.ver`.** Configuración › Orígenes la abre `origenes.gestionar`; `flujos.configurar` o `cotizaciones.configurar` la ven de sólo lectura. Sin enforcement no se crea permiso.
 - **«De fábrica», no «de sistema».** Un campo preconfigurado (`es_sistema`) se edita, apaga y renombra pero no se elimina ni cambia de tipo; «Sistema» nombra al rol dueño.
 - **Campo principal.** Marcar otro desmarca el anterior en la misma llamada; un campo `moneda` no puede ser principal. Acompaña al título en logística y lo reemplaza en fila, tarjeta y resumen; la página del vehículo, el PDF, la web, la hoja y la bandeja siguen con el título.
@@ -146,13 +146,12 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Refrescar la subasta» del aviso pide un toque** porque cada consulta a apibara gasta cuota; «Reintentar» sólo se ofrece si el fallo es del
   momento (`sePuedeReintentar`), nunca con la cuota agotada. Las acciones del aviso (refrescar, resolver, cotizar igual) son botones locales:
   el patrón `AccionDelAviso` no tiene «refrescar» ni «cerrar» y ampliar `src/shared` por esto disparaba el e2e completo.
-- **«Situación» reemplaza a «Fase» en el inventario.** Una fase es una situación (`fase`), y dos filtros que dicen casi lo mismo confunden: la clave de la URL pasa de
-  `fase` a `situacion` (la migración reescribe las vistas guardadas; una URL vieja con `?fase=` se ignora). Una fase filtra por `situacion = 'fase'` y su `fase_id`:
+- **El inventario filtra por «Situación» (`?situacion=`), no por fase.** Una fase es una situación (`fase`), y dos filtros que dicen casi lo mismo confunden;
+  un `?fase=` se ignora. Una fase filtra por `situacion = 'fase'` y su `fase_id`:
   «En subasta» y «Sin resolver» salen sólo por su opción, no al elegir la fase de subasta. El atajo «Sin resolver» cuenta con `tope + 1` por `vehiculos_situacion_idx`
   y lo dice «99+»; cambia sólo «Situación» y deja los demás filtros.
 - **`situacion_en` arma una igualdad por situación propia, no un `= any`.** Una sola igualdad con el valor plegado deja que `vehiculos_situacion_idx` conduzca el orden; el
   arreglo de una subconsulta no (el planificador no sabe que trae uno). Por eso `_vehiculos_inventario_condicion` recibe la condición entera (`p_filtro`).
-
 - **Se escriben sólo por RPC.** `vehiculo_crear(p_id…)` idempotente con id del navegador y `vehiculo_guardar` con versión; el alta entra a la fase inicial sólo si no hay nada que decidir (si no, «Sin fase»).
 - **El alta dice desde dónde (`p_contexto`) y la base exige el permiso de ese contexto.** `vehiculos.crear` (alta suelta) y
   `vehiculos.crear.desde_cotizar` son dos claves por origen; `vehiculo_crear(…, p_contexto)` pide la que corresponde y la deja en
@@ -188,9 +187,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **La puja no se hace pasar por el precio.** En un origen de subasta con el campo de `pricing.current_bid_usd`, la columna «Precio» muestra la
   puja como «Puja actual» (USD, «final» si la subasta terminó o se vendió) y, sin puja, «—»: nunca el precio en su lugar. Sin ese campo en el
   layout, sigue el precio. El campo se busca por su ruta de apibara, no por su clave (cada empresa la nombra).
-- **«Relacionados»: un mismo bloque arriba de cada detalle, leído con una `security definer` que copia el predicado de las policies.** Cuatro RPC (`vehiculo_relacionados()`, `lead_relacionados()` y sus `*_pagina()`) resuelven el alcance una vez: bajo RLS, cada fila de `vehiculos_interesados` paga dos `puede_*` y un recorrido con muchas ocultas no tiene tope. Una definer además **cuenta lo oculto sin devolver sus datos** («1 que no puedes ver»: ni id, ni nombre, ni nota, tampoco el uuid del lead de un vínculo oculto); su equivalencia con la RLS la ata `supabase/tests/areas/vehiculos/relacionados*.sql` (R1). Lo que está en una papelera no se relaciona ni se cuenta; un lead en limbo sí cuenta como oculto (sigue frenando vincular). «Cotizado» es una fila por contraparte, con su cotización activa visible más nueva (_activa_ = viva y `activa|reportada`); sin `cotizaciones.ver` el grupo no existe. Los cuatro llevan `set random_page_cost = 1.1`: con el plan genérico y el costo por defecto Postgres prefería un bitmap y ordenar todo lo de un vehículo caliente (medido: 20 mil bloques con 5.000 interesados contra 835 con el ajuste). En la ficha del lead la gestión de «Vehículos» va al pie del bloque Relacionados (los anteriores, «Vincular o marcar un vehículo» y la confirmación de desvincular); en los resúmenes y la unidad, lo que abre un panel o «Ver todos» lleva a la ficha con eso abierto, mientras «Quitar interés» y «Cotizar» se hacen en el lugar.
-- **«Relacionados» sin ruido: en una línea en los drawers y en logística, compacto en las fichas; un grupo vacío no se dibuja.** Las tres tarjetas con leyenda, textos de vacío y botones sueltos ocupaban mucho alto arriba de cada detalle. Quedan dos presentaciones, que cada lugar nombra (`presentacion` sin valor por defecto): la línea de chips (resúmenes, página de la unidad y drawer de gastos) y la compacta (fichas; T33 y T34 la ponen en sus dos columnas). En la compacta la leyenda es el `title` del título y la descripción del grupo para el lector, sin ícono de ayuda (tres íconos son ruido y un popover de ayuda suma JS); las acciones del grupo, en su «⋯». Las de un grupo que no se dibuja van al «⋯» «Relacionados» (`accionesFueraDeLosGrupos()`); con todo vacío se ve la frase y una sola acción (la primera, vincular) y el resto va al «⋯». El popover de un chip conserva la leyenda y los botones: es a pedido. Descartadas: una pestaña propia (suma navegación y pierde el vistazo), una sección plegada (esconde los conteos y suma un toque), una barra lateral (es el rediseño de T33/T34 y no existe en el celular), chips también en las fichas (ahí hay lugar: las filas a la vista ahorran un toque) y tres tarjetas con los vacíos colapsados (siguen repitiendo leyendas y botones).
-- **La ficha del vehículo, en dos columnas con todo a la vista (el criterio de la del lead, T33).** A la izquierda, pegajosa, lo que identifica al vehículo
+- **«Relacionados»: un mismo bloque arriba de cada detalle, leído con una `security definer` que copia el predicado de las policies.** Cuatro RPC (`vehiculo_relacionados()`, `lead_relacionados()` y sus `*_pagina()`) resuelven el alcance una vez: bajo RLS, cada fila de `vehiculos_interesados` paga dos `puede_*` y un recorrido con muchas ocultas no tiene tope. Una definer además **cuenta lo oculto sin devolver sus datos** («1 que no puedes ver»: ni id, ni nombre, ni nota, tampoco el uuid del lead de un vínculo oculto); su equivalencia con la RLS la ata `supabase/tests/areas/vehiculos/relacionados*.sql` (R1). Lo que está en una papelera no se relaciona ni se cuenta; un lead en limbo sí cuenta como oculto (sigue frenando vincular). «Cotizado» es una fila por contraparte, con su cotización activa visible más nueva (_activa_ = viva y `activa|reportada`); sin `cotizaciones.ver` el grupo no existe. Los cuatro llevan `set random_page_cost = 1.1`: con el costo por defecto el plan genérico prefería un bitmap y ordenar todo lo de un vehículo caliente. En los resúmenes y la unidad, lo que abre un panel o «Ver todos» lleva a la ficha con eso abierto, mientras «Quitar interés» y «Cotizar» se hacen en el lugar.
+- **«Relacionados» sin ruido: en una línea en los drawers y en logística, compacto en las fichas; un grupo vacío no se dibuja.** Dos presentaciones, que cada lugar nombra (`presentacion` sin valor por defecto): la línea de chips con un popover por grupo (resúmenes, página de la unidad de logística y drawer de gastos: ahí un bloque alto no cabe sin desplazar) y la compacta (las dos columnas de las fichas). Los chips y el popover son de `vehiculos`; `logistica` no los conoce. En la compacta la leyenda es el `title` del título y la descripción del grupo para el lector, sin ícono de ayuda (tres íconos son ruido y un popover de ayuda suma JS); las acciones del grupo, en su «⋯». Las de un grupo que no se dibuja van al «⋯» «Relacionados» (`accionesFueraDeLosGrupos()`); con todo vacío se ve la frase y una sola acción (la primera, vincular) y el resto va al «⋯». El popover de un chip conserva la leyenda y los botones: es a pedido. Descartadas: una pestaña propia (suma navegación y pierde el vistazo), una sección plegada (esconde los conteos y suma un toque), una barra lateral (no existe en el celular), chips también en las fichas (ahí hay lugar: las filas a la vista ahorran un toque) y tres tarjetas con los vacíos colapsados (siguen repitiendo leyendas y botones).
+- **La ficha del vehículo, en dos columnas con todo a la vista** (el marco y el criterio de la del lead). A la izquierda, pegajosa, lo que identifica al vehículo
   (el carrusel a todo el ancho de la tarjeta, título, número, origen, situación, vitrina y acciones; «Datos principales»; la subasta, sin entrada en el
   índice porque puede no tener nada que mostrar); a la derecha, el índice y los bloques por permiso en el orden de lo que más se mira: «Fase y qué falta»,
   «Relacionados», «Cotizaciones», «Documentos», «Ficha», «Repuestos», «Fotos». Nada se repite: el vinculado, los interesados y lo cotizado son los grupos
@@ -214,7 +213,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Teléfonos extra por función.** `leads_telefonos` sin grant, se lee por `lead_telefonos()`; el principal cambia con `cambiar_telefono_lead` y el anterior queda como «Anterior». El máximo es de la empresa (`ajustes_leads.telefonos_extra_maximo`, 0 a 20, 6 de fábrica, con versión propia) y lo aplica «agregar»: rotular y quitar no lo miran, y quien ya tiene más conserva los suyos.
 - **«Extras como el principal» se valida en `_lead_verificar`, con un candado por número, no con un índice.** Un índice único no abarca dos tablas y los duplicados que ya existen al encenderla deben quedar (rige para altas y ediciones desde ahí; «Choques» los lista). Orden de candados: la fila del lead y después el número, y sólo con la regla encendida. Apagada, un extra repetido sólo avisa y un `limbo` no se nombra. Restaurar de la papelera la mira sólo para el principal.
 - **Los choques muestran el número enmascarado aunque el lead no se vea** (los tres primeros y los dos últimos dígitos, como el principal fuera de la cartera); el nombre y el enlace sólo salen de un lead que quien configura ve.
-- **`leads.telefonos_extra.editar` es independiente de `leads.editar`** (cambiar el principal sigue con `leads.editar`); la migración se la dio a quien tenía `leads.editar`, con su alcance. El alta de un extra se hace sólo en el panel de edición (el resumen del listado los lee) y usa `?extra=nuevo`, porque `?panel=` ya lo ocupa el panel de edición.
+- **`leads.telefonos_extra.editar` es independiente de `leads.editar`** (cambiar el principal sigue con `leads.editar`).
 - **Tipos de lead con clase fija.** Clase «prospecto»/«cliente» inmutable; el sistema razona por la clase, nunca por nombre; siempre queda uno activo de cada clase.
 - **Alta rápida.** Un solo `<Drawer>` montado cerrado que cambia de cuerpo; el primer seguimiento es opcional; Ctrl/Cmd+Enter avanza, Ctrl/Cmd+S guarda. `N` abre lo propio de la pantalla y cae a «Nuevo lead».
 
@@ -238,14 +237,13 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### Listas, embudos y plantillas
 
-- **La ficha del lead en dos columnas, todo a la vista.** Pestañas más acordeones más secciones obligaban a navegar para ver lo mismo del mismo lead. A
-  la izquierda, pegajosa (`minmax(0, 24rem)`, se desplaza sola si no cabe), lo que identifica: cabecera, «Datos» sin plegar, «Teléfonos» de sólo lectura,
+- **La ficha del lead en dos columnas, todo a la vista.** A la izquierda, pegajosa (`minmax(0, 24rem)`, se desplaza sola si no cabe), lo que identifica: cabecera, «Datos» sin plegar, «Teléfonos» de sólo lectura,
   «Quién lo tiene» y «Acceso al portal»; a la derecha un índice pegajoso de anclas y los bloques en su orden. El corte lo decide el contenedor (56 rem, el
   de la unidad de logística): a 1280 px dos columnas, a 1024 y en el celular una, y con el texto al 200 % vuelve a una sin ensanchar. El marco vive en
   `shared` (`ficha-en-bloques`) para que la ficha del vehículo use el mismo. **El portal va en la izquierda**, bajo «Quién lo tiene»: desde «Saltar al
-  contenido» se llega a «Dar acceso» sin pasar por el índice ni navegar (la tarea de oro no empeora). **«Vehículos» y Relacionados se funden**: el bloque es
+  contenido» se llega a «Dar acceso» sin pasar por el índice ni navegar. **«Vehículos» y Relacionados se funden**: el bloque es
   el compacto de Relacionados (vinculados e interesados con sus acciones en el «⋯» de cada fila, «Ver todos» hasta 500) y al pie va sólo lo que no repite
-  (los anteriores, el panel para vincular o marcar y la confirmación); las listas de 100 se fueron. **Seguimientos y recordatorios** se resumen en 3 y 3
+  (los anteriores, el panel para vincular o marcar y la confirmación). **Seguimientos y recordatorios** se resumen en 3 y 3
   leídos en el servidor (los recordatorios pendientes más próximos: los vencidos primero) y «Ver todos» abre la lista completa en un drawer con su propia
   clave (`?todos=`), que convive con los modales de `?panel=`; con él abierto los modales del resumen no responden (un solo dueño). Lo que el servidor manda
   de nuevo se siembra sin volver a montar el resumen (el foco no se pierde tras guardar). **Cotizaciones** se pide al acercarse a la vista (200 px), sin
@@ -256,23 +254,21 @@ las trampas, en `docs/LECCIONES.md`.
 - **Los teléfonos de la ficha son de sólo lectura; se editan en el panel de edición.** Así no hay dos lugares para lo mismo y no se pierde ningún permiso:
   «Cambiar el principal» pasa al bloque de teléfonos del panel (sólo en la ficha; con algo escrito en el formulario se apaga: cambiar el número mueve la
   versión y dejaría la edición con la vieja) y quien sólo tiene `leads.telefonos_extra.editar` abre el mismo panel en «modo teléfonos». Un
-  `?panel=agregar-telefono` de antes lleva a la edición con «Agregar teléfono» abierto.
+  `?panel=agregar-telefono` o `?extra=nuevo` (clave propia: `?panel=` ya lo ocupa la edición) lleva a la edición con «Agregar teléfono» abierto.
 - **El resumen del listado es la versión corta de la ficha, sin pestañas.** Datos clave, lo último que pasó (el último seguimiento y el próximo
   recordatorio, que ya trae la fila: ninguna lectura más), las acciones y Relacionados en chips; anotar y agendar abren su modal dentro del resumen. Los
   campos del layout y «Creado» quedan para la ficha. `?pestana=` viejo redirige en el servidor a la ficha en su bloque.
-- **La ficha se mide entera.** Con todo a la vista `?seccion=` ya no cambia el documento: un solo presupuesto (`PRESUPUESTO_DE_LA_FICHA_EN_KB`) sobre
-  `/perfil` con 10 oportunidades, seguimientos y recordatorios, vínculos y portal, igual con 1.000 (lo que crece va por «Ver todos»). El JS en frío de `/leads/[id]`, que no tenía tope, suma uno: 590 KB (548,5 → 554,7
-  medidos, más un 5 % a la decena); `/leads` baja de 531,6 a 530,2 con el resumen corto.
-
+- **La ficha se mide entera.** `?seccion=` no cambia el documento: un solo presupuesto (`PRESUPUESTO_DE_LA_FICHA_EN_KB`) sobre
+  `/perfil` con 10 oportunidades, seguimientos y recordatorios, vínculos y portal, igual con 1.000 (lo que crece va por «Ver todos»), y el JS en frío
+  de `/leads/[id]` tiene su tope (`docs/RENDIMIENTO.md`).
 - **Todo lead nuevo nace con su oportunidad base**, en la misma transacción (`_lead_crear` → `_lead_oportunidad_base`): etapa inicial del embudo por
   defecto de quien lo crea (que nace ahí si no existía), título = el nombre del lead. Un lead adoptado del limbo no es nuevo: no suma una. Deshacer
   una importación no cuenta la base intacta (abierta, con alta y versión a la misma hora) como trabajo; otra oportunidad, o la base tocada, sí.
   Basta `leads.crear`: la base es parte del alta, no una oportunidad que alguien abre (`oportunidad_crear` sigue pidiendo `leads.editar`).
   Consecuencia: la etapa inicial de un embudo no se quita mientras tenga bases abiertas (`embudo_guardar` ya frena quitar una etapa con
   oportunidades); se mueven primero.
-
 - **«Nueva oportunidad…» se crea desde el «⋯», no desde un botón de la fila, y antes avisa de las que el lead ya tiene.** Todo lead nace con su
-  oportunidad base, así que crear otra «a ciegas» era fácil y la persona prefiere no crear sin saber: un toque más (el «⋯», «Nueva oportunidad…», «Crear igual»;
+  oportunidad base y la persona prefiere no crear otra sin saber: un toque más (el «⋯», «Nueva oportunidad…», «Crear igual»;
   el aviso sólo se salta si el lead no tiene ninguna que quien mira vea) es el precio. Es el modal corto de las acciones de fila (`?panel=oportunidad-rapida&para=`),
   no un popover: ya hay un patrón con URL, foco de vuelta y atajos; en la ficha y el resumen, donde el lead ya es el de la pantalla, es `?panel=oportunidad-rapida` sin
   `para`. Sin vehículo ni notas: el listado no lee los vehículos del lead y `leads` no importa `vehiculos`; se agregan con «Editar» en la ficha. Sin elegir embudo: el de
@@ -280,12 +276,10 @@ las trampas, en `docs/LECCIONES.md`.
   cada una y «Ver todas» si hay más; lee 6 al abrir el modal (una por apertura, por los índices de la ficha) y nunca cuenta. Si la lectura falla lo dice con
   «Reintentar» y deja «Crear igual»: no poder leer no impide crear. **«Ver oportunidades»** del «⋯» aparece con el lead en la cartera de quien mira (la única que ve
   oportunidades) y no pide `leads.editar`: la lista no sabe si hay alguna sin una lectura por fila, así que no la promete; sin ninguna, la ficha lo dice en su estado vacío.
-
 - **Anotar o agendar desde la lista: una sola puerta, el «⋯», y la fila se relee al guardar.** Las celdas «Último seguimiento» y «Recordatorio» vacías son texto
   («Sin seguimientos», «—»), no botones: la acción no vive en dos lugares. Al guardar, el listado hace `router.refresh()` (relee la página con la URL tal cual)
   en vez de inventar el dato en el cliente: la fila muestra lo que la vista dice, con la visibilidad de quien mira. El embudo no relee: su tarjeta no muestra
   seguimientos ni recordatorios y releer reiniciaría las columnas cargadas.
-
 - **El último contacto del listado va en la vista, no por fila ni en una columna mantenida.** `leads_vista` suma dos subconsultas escalares con `limit 1`
   por un índice que ya existía (`seguimientos_lead_fecha_idx` por igualdad con `ultimo_seguimiento_en` para el último seguimiento, y
   `recordatorios_lead_pendientes_idx` para su próximo recordatorio): se calculan sólo para las filas de la página y no crecen con los seguimientos de cada
@@ -309,13 +303,12 @@ las trampas, en `docs/LECCIONES.md`.
 ### Estructura y reglas de base
 
 - **Áreas y núcleo.** El módulo se parte en `areas/<área>/{index,client,composicion}.ts` más un núcleo que no importa áreas (guarda en `areas-de-cotizaciones.test.ts`); segundas pantallas en `pantallas/<área>-<pantalla>.ts`.
-- **Reglas de base.** Vencida = `creado_en` + `vigencia_dias` por día en la zona de la empresa (sin estado); desactualizada al publicar una fórmula nueva; lead obligatorio salvo con `cotizaciones.crear.sin_lead` del origen (y siempre en una final); número global por empresa.
+- **Reglas de base.** Vencida = `creado_en` + `vigencia_dias` por día en la zona de la empresa (sin estado); desactualizada al publicar una fórmula nueva; vehículo y lead obligatorios por rol y origen (abajo, «La hoja»); número global por empresa.
 - **Lo que no se ve no viaja.** `cotizaciones` con grant por columna; `cotizacion_leer/revisiones/tabla/evaluar` recortan por nivel sin ser oráculo; un detector sobre `pg_proc` exige registrar toda función que devuelva contenido.
 - **Niveles.** `cotizaciones.nivel.<clave>.ver|editar`, tope 10, sólo estrechan; recortan con `_nodos_visibles()`; ver restringido + editar abierto se rechaza. La fórmula sólo viaja a `cotizaciones.configurar`.
 - **Crear y guardar sólo por RPC.** `cotizacion_crear` (única alta) y `cotizacion_guardar` (calcula con SU versión, conserva lo oculto, intento + huella). `_cotizacion_puede_guardar()` decide antes y después del candado; quien no ve recibe 42501 antes de todo.
 - **Buscar cotizaciones: una función aparte, invocadora, con tope por fuente.** `cotizaciones_buscar()` no toca `cotizaciones_listado()`: cada fuente (número, cliente, vehículo, autor) es una ruta por su índice y el texto sobre `cotizaciones` no es condición de índice bajo la RLS (`ilike` no es seguro), así que nombra ids (clientes por `leads_candidatos()`, vehículos por origen, autores por `perfiles`) y de cada uno lee una página por su índice. Hasta 50 por fuente (`acotada` si se pasa). Quien no ve al lead o al vehículo no encuentra por él. El título de la cotización no se busca (no lo pidió la persona; ya lo hace el buscador global). Por autor, la cotización de otra persona sólo se busca donde se ve «todos»: con «propios» costaba un `en_cartera()` por cada una (98 ms con 7.000) para no encontrar nada que el listado de siempre no muestre por su cartera.
 - **El «⋯» del listado de cotizaciones se compone en `src/app`.** Un área no importa otra: la lista única (`accionesDeCotizacion()`) vive en `listado`; quién ve qué lo calcula el servidor con las reglas de cada área sobre lo que la página leyó (`menus-de-la-pagina.ts`; sin permisos al navegador) y las actions y los diálogos son los de la guardada. Las marcas y la versión de la página salen de tres lecturas por clave primaria; una fila sin ellas no tiene «⋯» (no se ofrece lo que depende de una versión que no se leyó). «Enviar a la papelera» se ofrece con el espejo de `_cotizacion_puede_guardar()` (editar por alcance, o es suya); la cartera del lead no se adivina: la dice la base.
-- **Las vistas de cotizaciones llegan tras hidratar.** `<MenuDeVistas>` pesa ≈ 70 KB gz y `/cotizaciones` estaba a 358 de 380: va con `diferido()` y un botón «Vistas» apagado en su lugar (`VistasDeCotizacionesDiferido`).
 - **Listado por rutas e invocador.** `cotizaciones_listado()` deja decidir a la RLS; «Mías» = `creado_por`; salen todas las versiones; `p_lead`/`p_vehiculo` filtran fuera del esquema de filtros. Máx. 100. Lead no visible = «—».
 
 ### La fórmula
@@ -334,7 +327,7 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### La hoja
 
-- **Vehículo y lead obligatorios: dos libertades por rol y origen.** `cotizaciones.crear.sin_vehiculo` y `cotizaciones.crear.sin_lead` (por origen, sin alcance; se suman, sin deny) reemplazan al ajuste global de la empresa: sin la clave en ese origen el vínculo es obligatorio. Una final pide siempre los dos y cotizar encima aplica las mismas claves a la anterior (una anterior sin lead se cotiza encima sólo con `sin_lead` de su origen). Las hace cumplir la base (`cotizacion_crear`, `cotizacion_encima`, `_cotizacion_cadena`); la hoja decide con `sesion.permisos` (con «Ver como», los del rol elegido, un subconjunto de los reales: nunca afloja). El rol dueño las tiene sin origen: sin ellas nadie podría concederlas (`concesion_dominada()`) ni editar un rol que las tenga (`rol_dominado()`), y el dueño es «todo el catálogo». La migración trasladó el ajuste global a la clave de vehículo de cada concesión de cotizar; el lead quedó obligatorio.
+- **Vehículo y lead obligatorios: dos libertades por rol y origen.** `cotizaciones.crear.sin_vehiculo` y `cotizaciones.crear.sin_lead` (por origen, sin alcance; se suman, sin deny): sin la clave en ese origen el vínculo es obligatorio. Una final pide siempre los dos y cotizar encima aplica las mismas claves a la anterior (una anterior sin lead se cotiza encima sólo con `sin_lead` de su origen). Las hace cumplir la base (`cotizacion_crear`, `cotizacion_encima`, `_cotizacion_cadena`); la hoja decide con `sesion.permisos` (con «Ver como», los del rol elegido, un subconjunto de los reales: nunca afloja). El rol dueño las tiene sin origen: sin ellas nadie podría concederlas (`concesion_dominada()`) ni editar un rol que las tenga (`rol_dominado()`), y el dueño es «todo el catálogo».
 - **La hoja abierta la firma la base.** `cotizacion_hoja()` devuelve `abierta` con HMAC (clave en Vault); crear, evaluar y la ayuda de tabla reciben `p_abierta` y calculan con esa versión. Firma también la huella de las tarifas de la apertura, no sus valores: `crear` la compara con las que reconstruye del historial, porque un `cambiado_en` anterior a la apertura puede confirmar después. Cotizar pide `crear` y `ver` del origen.
 - **Cotizar encima.** La N+1 nace al tocar (`cotizacion_encima`), siempre preventa, con lo guardado de la última de la cadena; índice parcial `cotizaciones_encima_unica`. Quien no ve la N+1 sólo sabe que existe.
 - **Revisiones con totales por clave.** El diff se compara después de recortar (`_cotizacion_diff_recortado()`); «Ir a una fecha» es `p_hasta` exclusivo en `cotizacion_revisiones()`, anclando y paginando por id.
@@ -350,14 +343,14 @@ las trampas, en `docs/LECCIONES.md`.
 - **La plantilla lee la fórmula con lo que mira `validarPlantilla()`** (`looseObject`, `lectura-sobre.ts`), no con `esquemaDefinicion`: no se rompe con cada cambio de la fórmula. Guardar valida la forma; lo que cruza con la fórmula lo rechaza publicar.
 - **Con qué nace el editor de plantilla:** el borrador; si no hay, copia de la publicada; si no, la omisión. Una versión ilegible no se edita a medias. El PT409 no dice quién (la tabla no lo guarda).
 - **Tarjeta declarativa, sin hex.** Tonos del catálogo y nodos por id: con hex nadie valida el contraste y un texto libre podría nombrar cualquier nodo. Sin subtotales por grupo: serían dinero calculado fuera de la base.
-- **La tarjeta lee la moneda de SU versión y la plantilla publicada de hoy.** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` quedan sin uso y se quitan juntas (4-45): no volver a darles uso.
+- **La tarjeta lee la moneda de SU versión y la plantilla publicada de hoy.** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso y se quitan juntas (`docs/PENDIENTES.md`): no volver a darles uso.
 - **PDF en servidor.** `@react-pdf/renderer` desde la plantilla versionada; la tarjeta en pantalla usa el mismo modelo de vista. Sin imágenes de cotización generadas en el cliente.
 - **El aspecto de la hoja es declarativo, cerrado y plano.** Claves opcionales junto a las de siempre (`ancho`, `alto`, `relleno`, `separacion`, `densidad`, `letra`, `enfasis`, `tono`), de escalas
   cerradas y validadas igual en TS y en SQL: nada de px, CSS ni hex. No se llaman `estilo`, `clase` ni `color` (el juego las rechaza). Sin la clave, lo de siempre, así un diseño viejo se ve igual;
   el editor quita la clave en vez de escribir el valor por defecto. La cabecera no lleva ancho ni alto (va sola en su fila) y la tarjeta del resumen no lleva aspecto (es fija).
-- **La regla de los 16 rem.** Una pieza de N columnas toma su ancho cuando le tocan 16 rem o más (lo que ya hacían `mitad` desde 32 rem y `tercio` desde 48); si no, la fila entera. Los cortes
-  van en rem, así al 200 % la rejilla colapsa sola, y bajo el primer corte no hay hueco de columna. Una sección sin ancho es «Automática» (la mitad desde 64 rem, como siempre). El alto son filas de
-  la rejilla desde el mismo corte. Todo en clases y variables sobre los nodos de siempre: la hoja está a 491 nodos de 500.
+- **La regla de los 16 rem.** Una pieza de N columnas toma su ancho cuando le tocan 16 rem o más (`mitad` desde 32 rem, `tercio` desde 48); si no, la fila entera. Los cortes
+  van en rem, así al 200 % la rejilla colapsa sola, y bajo el primer corte no hay hueco de columna. Una sección sin ancho es «Automática» (la mitad desde 64 rem). El alto son filas de
+  la rejilla desde el mismo corte. Todo en clases y variables sobre los nodos de siempre: la hoja está al borde de su tope de nodos.
 - **El tono de una sección no pinta su fondo.** Su borde, sus celdas sin grupo, sus franjas y sus chips toman el tono; el fondo, el título y los textos sueltos (leyendas, interruptor) quedan en
   los tokens: la base sólo valida el AA de la tinta sobre el fondo del tono, no del texto de la interfaz sobre él. El tono del grupo gana en su celda; un chip marcado vuelve al primario.
   Es el catálogo de tonos (sin lista nueva de tokens): ya es de la empresa y con contraste validado.
@@ -403,9 +396,7 @@ las trampas, en `docs/LECCIONES.md`.
 ## Flujos
 
 - **«Es la subasta» es un atributo de la fase** (`fases.es_subasta`), sólo en el flujo de un origen de tipo subasta (el tipo no cambia) y
-  nunca con «Es final»; ningún texto fijo nombra la fase. La migración marcó sólo la candidata única por flujo (inicial, activa, no de
-  logística y con «subasta» en el nombre); si no la hay, «Revisar» lo pide.
-
+  nunca con «Es final»; ningún texto fijo nombra la fase; un origen de subasta sin ella lo dice «Revisar».
 - **Un solo motor de flujos.** Uno por origen + uno de repuestos, con fases, transiciones y requisitos; tablas hijas con dos FK nullable (`vehiculo_id` | `repuesto_id`) + CHECK y una única RPC `cambiar_fase`. Un origen nuevo es una fila y su flujo nace por trigger.
 - **Versión por flujo, no por fila.** Toda RPC de configuración pasa por `_flujo_para_editar()`/`_flujo_tocar()`; dos personas en el mismo flujo chocan con PT409 (aceptable en pantalla de dueño). Renombrar un origen también la mueve: no se exceptúa.
 - **Inexistente = PT409 «Recarga», no 42501**, mirado antes del permiso cuando el id no revela nada; el permiso se mira antes del candado: quien no puede no espera ni hace esperar.
@@ -443,7 +434,6 @@ las trampas, en `docs/LECCIONES.md`.
 - **La unidad en su página va en zonas y el alto lo pone `src/app`.** Con 1440×900 y 1280×800 todo lo importante entra sin desplazar la página: «Qué falta» con mover arriba a la izquierda, las pestañas (Documentos, Transporte, Repuestos, Aduana, Dinero) debajo y notas e historial a la derecha, cada zona con su desplazamiento. La forma (zonas o bloques con la barra «Mover») se elige por el ancho de la **pantalla** (1024 px, `useAlMenos`: el servidor lo adivina por cookie y la hidratación no salta); las dos columnas con alto fijo, por el ancho del **contenedor** (`@container/unidad`, 56 rem): con el texto al 200 % los rem crecen y el arreglo vuelve solo a una columna con alto natural. El alto (`--alto-del-detalle`) lo define la página, no el módulo: el marco sabe cuánto ocupa (`<main>`, la sub-navegación, el `gap`); la cabecera va fuera del cambio de forma.
 - **La zona de cada hueco la dice un solo mapa del núcleo (`ZONA_DEL_HUECO`), junto a `ORDEN_DE_HUECOS`**, no la declaración de cada área: el orden ya es central y la zona es el mismo tipo de dato con la misma clave; así `repuestos` no conoce los nombres de las zonas de `logistica`, y el `Record` obliga a ponerle zona a toda clave nueva. «Dinero» junta gastos, pagos y margen porque caben cinco pestañas a 1280 px y es la palabra de la persona.
 - **`ORDEN_DE_HUECOS` va por lo que más se hace:** qué falta, documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen. Cambia también el orden de los bloques en el celular y en el drawer de gastos (a propósito). El panel del ítem tiene su orden propio (`ORDEN_DEL_ITEM`: qué falta, sus bloques, documentos, historial, notas, transporte), con las secciones a la vista.
-- **«Relacionados» en la unidad de logística es una línea de chips** con un popover por grupo, en su página y en el drawer de `/logistica/gastos?unidad=` (no un bloque alto, que no cabe sin desplazar): sigue «siempre arriba» y lo de cada grupo queda a un toque. Los chips y el popover son de `vehiculos` (`presentacion="linea"`); `logistica` no los conoce.
 - **La pestaña elegida va en `?hueco=`, con `shallow` y `replace`** (como el resumen de `vehiculos`, aunque `ui.md` pida `shallow: false`): el servidor no depende de la pestaña, así que un viaje por pestaña no aporta nada. Cada zona recuerda lo último que eligió porque las dos comparten la clave de la URL.
 - **Subir documentos va en un drawer sólo en las zonas de la página** (`?subir=documentos`, clave propia: `?panel=` cerraría el drawer del ítem de repuesto y una clave aparte convive con `?vehiculo=` e `?item=`): una pestaña con alto fijo no tiene lugar para la bandeja. En los bloques (celular, drawers, ficha del vehículo) la subida sigue en línea: no toca el ítem, la ficha ni sus specs. Un contexto del núcleo (`useEnZonas`) se lo dice al área, sin que el núcleo importe un área.
 - **Transporte sigue en línea dentro de su pestaña:** su borrador por campo y su `PT409` con «Recargar» viven en el formulario y la pestaña ya tiene su propio desplazamiento.
@@ -452,22 +442,21 @@ las trampas, en `docs/LECCIONES.md`.
   `cambiar_fase` en una transacción: nunca queda un «ganada» que sigue en la subasta. `cambiar_fase` no se toca.
 - **La cadena excluye las no ganadas con un índice parcial** (`vehiculos_cadena_idx … where situacion <> 'no_ganada'`): un filtro sin índice
   descartaría filas que crecen con la tabla. Cada consulta lleva el literal.
-
 - **La cadena es una gráfica y no un kanban.** Con cientos de miles de vehículos una columna con «Ver más» no da un número útil: cada fase dice cuántos vehículos tiene y cuántos están demorados o
   trabados; la lista de una fase (tabla por cursor) y el lote viven en su propia página. «Sin fase» la pone la base (primera, sólo con vehículos); el orden es el de la base. Un vehículo se abre
-  siempre en su página (`/logistica/vehiculo/[id]`), nunca en un drawer.
+  siempre en su página (`/logistica/vehiculo/[id]`), nunca en un drawer (salvo en `/logistica/gastos`: `docs/PENDIENTES.md`).
 - **El número de cada fase es un conteo con tope por índice, no una tabla resumen.** `limit 1.001` sobre `vehiculos_cadena_idx` (por fase, «1.000+»): el costo depende de las fases y no de la tabla
-  (se midió con la fase 3 de 15.000 a 120.000: los bloques del índice no crecen), el número siempre está fresco (la demora depende del reloj) y respeta el alcance de quien mira. Una tabla resumen
+  (medido: los bloques del índice no crecen con la fase), el número siempre está fresco (la demora depende del reloj) y respeta el alcance de quien mira. Una tabla resumen
   habría puesto una fila caliente en cada mover y en cada lote de 200 (bloqueos, riesgo de deadlock), quedaría desfasada en demorados y trabados, seguiría necesitando el conteo vivo para «propios»
   y daría totales exactos, contra la regla.
-- **Trabados de la gráfica: las primeras 50 demoradas de cada fase.** Acota `evaluar_requisitos` (la mayoría de las fases cuestan 0: sin requisito bloqueante en la fase siguiente no se evalúa nada) y
-  `hay_mas` lo dice (`3+`). Para que esto cueste lo que dice, `evaluar_requisitos` pregunta por `documentos_unidad_tipo_idx`: con `is not distinct from` recorría los documentos de todas las unidades.
+- **«Trabado» = demorada a la que le falta un bloqueante para su fase siguiente; se evalúan las primeras 50 demoradas visibles de cada fase.** Acota `evaluar_requisitos` (sin requisito bloqueante en la fase siguiente
+  no se evalúa nada) y `hay_mas` lo dice (`3+`); `evaluar_requisitos` pregunta por `documentos_unidad_tipo_idx`. Los jobs de alertas no toman candado: hacer esperar a quien mueve es peor.
 - **«Propios» no recorre la fase.** `_logistica_lo_propio` junta hasta 10.001 ids propios del origen (lo creado y lo de la cartera, por sus índices) y la columna, el resumen y los grupos parten de ahí:
   el pedido lo acota la cartera de la persona y no la tabla. Si se cortó, todo número lleva «+». Lo materializan (`with … as materialized`) antes de unirlo a los pares: unido a la vez, el planificador
   recorría `vehiculos` entera.
-- **Quién ve cada grupo de la bandeja** (decidido sin preguntar, lo conservador: el alcance de la bandeja de Inicio): lo visible (`_logistica_alcance`); «por aprobar», además `logistica.documentos.aprobar`;
+- **Quién ve cada grupo de la bandeja** (lo conservador, sin consultar a la persona: el alcance de la bandeja de Inicio): lo visible (`_logistica_alcance`); «por aprobar», además `logistica.documentos.aprobar`;
   «por vencer», además `logistica.documentos.subir` (como el job que avisa). La acción sale sólo con su permiso y, sin él, la fila conserva el enlace al detalle. Mostrar de más es reversible; esconder no.
-- **Ventanas de la bandeja** (decidido sin preguntar): «por vencer» = `vence_el` entre hoy y hoy + `aviso_dias` del tipo, aprobados, con modo `renovar` o `solicitar` (lo vencido ya bloquea y sale como trabado);
+- **Ventanas de la bandeja** (sin consultar a la persona): «por vencer» = `vence_el` entre hoy y hoy + `aviso_dias` del tipo, aprobados, con modo `renovar` o `solicitar` (lo vencido ya bloquea y sale como trabado);
   «llegadas esperadas» = ETA de hoy o anterior, sin arribo, con la fase no final; «salen hoy» = zarpe de hoy (no hay zarpe real: no se detecta uno atrasado). «Hoy» es el día de la empresa, como
   `documentos_vencimientos()`.
 - **«Revisar» no aprueba en la fila.** Aprobar un documento sin ver el archivo es aprobar a ciegas: «Revisar» (y «Renovar») llevan a la página del vehículo con «Documentos» abierto (`?hueco=documentos`),
@@ -499,7 +488,6 @@ las trampas, en `docs/LECCIONES.md`.
   lleva igual a la unidad (allí el hueco no estará).
 - **Notas sin «Borrar».** Corregir sólo la propia, sin cambio de fase y sin versión (gana la última).
 - **El ítem de repuesto entra al motor como `UnidadAbierta`**, sin volver nulo `Unidad.origenId`: el camino del vehículo no cambia.
-- **«Trabado» = demorada a la que le falta un bloqueante para su fase siguiente**; se evalúan las primeras 50 demoradas visibles. Los jobs de alertas no toman candado: hacer esperar a quien mueve es peor.
 
 ### Documentos
 
@@ -527,13 +515,13 @@ las trampas, en `docs/LECCIONES.md`.
 
 ## Repuestos
 
-- **Sin INSERT directo de proyectos**: quien tenía `repuestos.editar` creaba uno de un vehículo que no ve. La lista no trae lead ni teléfono (un proyecto que
+- **Sin INSERT directo de proyectos**: si no, quien tiene `repuestos.editar` crearía uno de un vehículo que no ve. La lista no trae lead ni teléfono (un proyecto que
   sólo tiene lead dice «—» en «Cliente»); busca por etiqueta, VIN y cliente. La cabecera lee el lead por id (`leerLeadParaEnlazar`), sólo con `leads.ver`.
 - **El cliente de un proyecto es un lead** (`lead_id`); los viejos conservan `cliente_nombre` y `cliente_telefono`. Nada se copia del lead al proyecto: el
   teléfono escrito quedaría fuera del enmascarado y el nombre a la vista de quien no ve el lead. Si hay lead y nombre escrito, manda el lead, y un lead que
   no se ve se dice «Cliente que no puedes ver» aunque haya nombre. La cabecera de un proyecto viejo muestra el nombre, nunca el teléfono.
 - **Con `leads.ver`, «Cliente (lead)» reemplaza el cliente y el teléfono escritos** en «Nuevo proyecto»: con un lead a mano, un teléfono escrito queda fuera del
-  enmascarado y dos campos «cliente» confunden. Sin ese permiso el formulario queda como antes. El cliente no se cambia en un proyecto ya creado (`PENDIENTES`).
+  enmascarado y dos campos «cliente» confunden. Sin ese permiso van el cliente y el teléfono escritos. El cliente no se cambia en un proyecto ya creado (`PENDIENTES`).
 - **«Nuevo lead» del formulario es el alta del shell**, no una propia (duplicaría la verificación del teléfono y el borrador): el formulario deja `?nuevo=proyecto`
   antes de abrirla, se esconde mientras está encima (el contenido de un drawer se desmonta y el borrador lo repone) y el creado vuelve en `?lead=`, que resuelve
   el servidor. Sin drawers apilados: dos raíces de Base UI sin anidar, con Esc, clic afuera y foco sin precedente.
@@ -580,7 +568,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **La agenda es una libreta: abre en la hoja del día en todo ancho.** La jornada fija de 08:00 a 20:00 (`JORNADA`; lo de afuera, «Antes» y «Después» sólo si trae algo) da la hoja con huecos que busca quien anota a mano; se descartaron la grilla por duración (frágil al 200 % y en el celular, muchos eventos no tienen fin, más JS) y la lista continua de los próximos días (pierde la hoja). Los pendientes van al costado; en el celular, debajo de la hoja (sin pestaña pegajosa: esconde uno de los dos y suma un control).
 - **Los pendientes son de quien mira, también con «De todos», y los filtra «Qué ver».** Sin tareas no hay «Vencidas» ni «Sin fecha»; sin recordatorios, no hay «Recordatorios»; sin ninguno, no hay columna. «Sin fecha» lista sólo pendientes: una hecha se reabre desde su panel.
 - **Los pendientes se leen en la base por grupo, en plpgsql, con el estado literal.** «Completar» en un toque exige la versión (PT409) y ninguna lectura la traía, y las vencidas no caben en `agenda_rango` (están fuera del día). `agenda_pendientes(p_grupo, …)` y `agenda_tareas_sin_fecha` dicen `estado = 'pendiente'` en el SQL para que el planificador pruebe el índice parcial (`tareas_pendientes_idx`, `tareas_sin_fecha_idx`); por PostgREST el estado llega como parámetro y el plan genérico no lo usa. La primera página se lee en el servidor tras su `<Suspense>`; «Ver más», en el navegador y diferido.
-- **«Nuevo» de la agenda es el modal de la barra, filtrado por la URL.** `?panel=nuevo-en-la-agenda` lo abre con Evento, Tarea y Recordatorio; el botón se compone en `src/app` porque el modal vive en el layout. Evento y tarea, ya en la agenda, sólo escriben su `?panel=` (una escritura por nuqs, `replace`): el alta nace en el día que se mira. Un «Nuevo» propio de la agenda duplicaba el catálogo y el paso de elegir lead. El grupo y el destino en la misma pantalla suman 2,0 KB al JS en frío de toda pantalla (`/leads` 529,2 → 531,2 KB, dentro de su tope de 560; `/vehiculos` llegó a 500,3 y su tope sube de 500 a 530 por la regla del 5 %).
+- **«Nuevo» de la agenda es el modal de la barra, filtrado por la URL.** `?panel=nuevo-en-la-agenda` lo abre con Evento, Tarea y Recordatorio; el botón se compone en `src/app` porque el modal vive en el layout. Evento y tarea, ya en la agenda, sólo escriben su `?panel=` (una escritura por nuqs, `replace`): el alta nace en el día que se mira. Un «Nuevo» propio de la agenda duplicaba el catálogo y el paso de elegir lead.
 - **Un evento se vincula a un lead en su formulario.** «Lead (opcional)» con `leads.ver`, elegido de la cartera (`ElegirLead` del buscador); `evento_crear`/`evento_guardar` ya aceptaban `lead_id` y `trg_lead_visible` exige verlo. El nombre lo lee la página de `leads` encadenado al evento; si no se ve, el panel dice «Ver el lead».
 
 ## Chat
@@ -610,7 +598,7 @@ las trampas, en `docs/LECCIONES.md`.
 
 ## Actividad
 
-- **Sólo las definer escriben y leen el detalle.** `registrar_actividad()` sin `execute` para `public`, `anon` ni `authenticated` (se podían inventar `antes`/`despues`); `actividad.detalle` sin `select` para la app (lleva teléfonos, el código del portal y montos).
+- **Sólo las definer escriben y leen el detalle.** `registrar_actividad()` sin `execute` para `public`, `anon` ni `authenticated` (si no, se podrían inventar `antes`/`despues`); `actividad.detalle` sin `select` para la app (lleva teléfonos, el código del portal y montos).
 
 ## Web y portal
 
@@ -642,14 +630,13 @@ las trampas, en `docs/LECCIONES.md`.
 
 ## Tablero
 
-- **Inicio sigue siendo la bandeja.** Los widgets personalizables viven sólo en `/tablero`; widgets en Inicio, exportar una gráfica y comparar períodos quedaron fuera.
-- **Bloques de Inicio en el servidor**, cada uno tras su `<Suspense>`; 5 por bloque leyendo 6; un error apaga sólo su bloque. «Recordatorios de hoy» incluye los vencidos; «Sin seguimiento» = mi cartera, creado hace > 24 h.
+- **Inicio es la bandeja.** Los widgets personalizables viven sólo en `/tablero`; widgets en Inicio, exportar una gráfica y comparar períodos quedaron fuera.
+- **Bloques de Inicio en el servidor**, cada uno tras su `<Suspense>`; 5 por bloque leyendo 6; cada uno lleva su límite de error (`<LimiteDeBloque>`): lo que falla al leer o al dibujar apaga sólo ese bloque. «Recordatorios de hoy» incluye los vencidos; «Sin seguimiento» = mi cartera, creado hace > 24 h.
 - **La conversión cuenta por la clase del tipo de lead** y por `cliente_desde`, que sólo pone el paso de prospecto a cliente (un alta como cliente no infla la tasa); `conversion_desde` cubre a los clientes de antes. La tasa puede pasar de 1.
 - **Ranking por dueño vigente**: sin dueño o en baja cuenta en el total y no en el ranking.
 - **El margen del mes cuenta cada vehículo en el mes de su último pago confirmado vivo.** Un mes pasado cambia si se confirma o anula un pago: no se presenta como cerrado.
 - **Gráficas en HTML y SVG propio.** Texto en HTML, el SVG sólo pinta barras (`preserveAspectRatio="none"`), tokens `--viz-*`; leyenda en texto y «Ver como tabla» en `<details>`.
-- **«Documentos por aprobar» pide sólo `logistica.documentos.aprobar`.** Con `repuestos.documentos.aprobar` el bloque salía vacío siempre (la lectura es la bandeja de logística, de vehículos); hasta que traiga los ítems, quien sólo aprueba los de repuestos no lo ve.
-- **Cada bloque de Inicio lleva su límite de error** (`<LimiteDeBloque>`): lo que se rompe al dibujar apaga sólo ese bloque, como ya hacía un error de lectura.
+- **«Documentos por aprobar» pide sólo `logistica.documentos.aprobar`.** La lectura es la bandeja de logística (de vehículos): con `repuestos.documentos.aprobar` saldría vacío; hasta que traiga los ítems, quien sólo aprueba los de repuestos no lo ve.
 - **Widgets por permiso, no por rol**, cada uno con su error. La preferencia guarda `orden` con las ocultas; una clave que ya no existe se ignora y un widget nuevo cae al final.
 
 ## Datos
@@ -669,7 +656,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Tareas de oro con KLM.** Se mide lo pulsado (tope de teclas de control), un reloj del robot generoso y KLM (0,28 s/tecla, 1,35 s/decisión) contra la meta.
 - **Una medición que siembra lo suyo vacía su tabla dentro de su transacción revertida**: convive con `db:sembrar-volumen`; si la base trae filas ajenas, se niega.
 - **`db:medir` y `db:medir:volumen` fuera del CI** (guarda `FUERA_DE_CI`): un runner de 2 vCPU los vuelve inestables. Entrar pide runner dedicado y 5 corridas con cada tiempo a ≤ 10 % de su mediana.
-- **`db:carreras` entra al job `base` tras 5 corridas verdes seguidas** por `workflow_dispatch`, sin reintentos (un rojo vuelve la cuenta a 0). Hasta entonces, sólo el job `carreras` con `carreras: true` (9-6).
+- **`db:carreras` entra al job `base` tras 5 corridas verdes seguidas** por `workflow_dispatch`, sin reintentos (un rojo vuelve la cuenta a 0). Hasta entonces, sólo el job `carreras` con `carreras: true`.
 - **`deno check` fuera del CI.** Las funciones Deno siguen fuera de lint y typecheck: meterlas pide una dependencia nueva.
 - **Volver atrás nunca deshace una migración en la nube**: se escribe una migración que la revierta, con el respaldo como último recurso (no guarda Storage). `restaurar.sh` y `resetear.sh` son sólo de la demo.
 - **La base remota del proyecto la cambia también la IA** (sesión, orquestador o bucle): push, semilla, reset y reparar el historial, con el ref mirado y respaldo antes de borrar datos. La persona prefiere avance sin esperarla; secretos, configuración, funciones y Vercel siguen siendo suyos, y b_ip (otra app, datos reales) no se toca (`docs/DESPLIEGUE.md` › «La base remota»).

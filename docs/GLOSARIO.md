@@ -121,7 +121,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Interesado** — `vehiculos_interesados` / `vehiculo_interesado_marcar()`, `vehiculo_interesado_quitar()`: lead interesado en un vehículo
   (N:M), nota ≤ 500. Es un tipo de **Relacionados**.
 - **Relacionados** — `vehiculo_relacionados()`, `lead_relacionados()` (y `*_pagina()`), `<Relacionados>` / `?relacionados=<tipo>`: el bloque siempre
-  visible arriba de cada detalle (ficha del vehículo, su resumen, la unidad de logística, ficha del lead y su resumen) con tres grupos por tipo:
+  visible de cada detalle (ficha del vehículo, su resumen, la unidad de logística, ficha del lead y su resumen) con tres grupos por tipo:
   **Vinculado**, **Interesado** y **Cotizado**. Desde un vehículo se ven leads; desde un lead, vehículos. Cada grupo lleva su cantidad (con tope),
   sus primeras filas, lo que quien mira no ve contado («1 que no puedes ver») y «Ver todos» por cursor. Lo que está en una papelera no cuenta. Un
   grupo sin nada no se dibuja. Se ve en una línea de chips en los resúmenes y en logística, y compacto en las fichas (`PresentacionDeRelacionados`).
@@ -228,8 +228,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Mías** (cotizaciones) — `p_mias` de `cotizaciones_listado()`, `PedidoDelListado.mias`: las que creó quien mira (`creado_por`). No es «Míos».
 - **Enmascarado** — `enmascarar_telefono()` / `telefono_lead()`: teléfono fuera de tu cartera: 3 primeros y 2 últimos dígitos («591•••••01»).
 - **País del teléfono** — `paisDelNumero()` / `TABLA_DE_PAISES`: país del código de llamada, calculado en el navegador.
-- **Ítems por página** — `listas.por_pagina`, `tamanoDePagina()`, `?por=`: 10, 25, 50 o 100 por cuenta; cada lista tiene un máximo (leads 50,
-  vehículos 100). Se elige en «Vista y opciones».
+- **Ítems por página** — `listas.por_pagina`, `tamanoDePagina()`, `?por=`: 10, 25, 50 o 100 por cuenta; cada lista tiene un máximo (100). Se
+  elige en «Vista y opciones».
 - **Número propio** — `leads.numero_propio` / `leads_numeros_propios`, `NumerosDeLead.numeroPropio`: consecutivo por creador (desde 1): «Tu
   n.º 12». Se busca con `12` o `#12`.
 - **Número global** — `leads.numero` / `leads_numeros_globales`, `leads.numero_global.ver`, `NumerosDeLead.numero`: consecutivo de la empresa
@@ -256,7 +256,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cabecera (`<CabeceraDeVehiculo>`), «Datos principales» y la subasta; a la derecha el índice y los bloques por permiso («Fase y qué falta», «Relacionados»,
   «Cotizaciones», «Documentos», «Ficha», «Repuestos», «Fotos»). `?seccion=<ancla>` lleva al bloque. No: «detalle del vehículo».
 - **Teléfono extra** — `leads_telefonos` / `lead_telefonos()`, `lead_telefono_guardar()`, `lead_telefono_quitar()`: número alterno con
-  etiqueta opcional; se edita en la ficha, el panel de edición y el resumen (`<TelefonosExtra>`).
+  etiqueta opcional; se edita en el panel de edición de la ficha; la ficha y el resumen lo muestran sólo para leer.
 - **Máximo de teléfonos extra** — `ajustes_leads.telefonos_extra_maximo` / `telefonos.maximo`: cuántos extras admite un lead (0 a 20; 6 de
   fábrica). Quien ya tiene más los conserva y no agrega hasta bajar del máximo.
 - **Extras como el principal** — `ajustes_leads.telefonos_extra_como_principal` / `telefonos.comoPrincipal`, «Los teléfonos extra cuentan como
@@ -311,7 +311,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   en la etapa inicial del embudo por defecto de quien lo crea y con el nombre del lead de título. Intacta, no cuenta como trabajo al deshacer.
 - **«Nueva oportunidad…»** — `?panel=oportunidad-rapida&para=<id>` / `<ModalDeOportunidadRapida>`: crear una oportunidad desde el «⋯» de un lead (fila, tarjeta, kanban, resumen y ficha). Primero
   avisa de las que el lead ya tiene (`<AvisoDeOportunidadesDelLead>`: «Crear igual» o «Cancelar»); después, el nombre del lead de título y el monto opcional, en la etapa
-  inicial del embudo por defecto. **«Ver oportunidades»**, la otra línea del «⋯»: la ficha en su sección «Oportunidades».
+  inicial del embudo por defecto. **«Ver oportunidades»**, la otra línea del «⋯»: la ficha en su bloque «Tus oportunidades».
 - **Embudo por defecto** — `embudos.es_default` / `embudo_por_defecto()`: el creado la primera vez («Ventas»); no se elimina, se renombra.
 - **Plantilla del embudo** — `ajustes_leads.embudo_etapas` / `embudo_plantilla_guardar()`: etapas con que nace el embudo por defecto de cada
   persona; nula = las seis de fábrica (`_embudo_etapas_de_fabrica()`). Sólo afecta a los que nacen después.
@@ -560,7 +560,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Revisar** — `revisar_flujo()`: avisos de coherencia del flujo (sin salida, inalcanzable, esperas cruzadas…), de nivel error, aviso o
   información (`AvisoDeRevision`); la franja sobre el flujo los resume.
 - **Cadena** — `/logistica`: la gráfica por fase de un origen (`logistica_cadena_resumen`: cuántos vehículos tiene cada fase y cuántos están demorados o trabados, con tope) y,
-  al hacer clic en una fase, la lista de esa fase (`/logistica/fase/[fase]`). Ya no es un kanban. No: «tablero», «columna».
+  al hacer clic en una fase, la lista de esa fase (`/logistica/fase/[fase]`). No: «tablero», «columna».
 - **Bandeja del día** — `/logistica` (`logistica_bandeja_grupo`): lo que le toca hoy a quien mira, por grupos y con la acción de cada fila a un toque. No: «bandeja de Inicio»
   (ésa es `logistica_bandeja`, tres listas cortas).
 - **Grupo (de la bandeja del día)** — uno de siete: Demorados, Trabados, Documentos por aprobar, Documentos por vencer, Llegadas esperadas, Salen hoy y Subastas sin resolver. Cada uno
@@ -675,7 +675,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Superficie pública** — esquema `web`: vistas y RPC que consume el repo de la web.
 - **Bandeja** — `/` / `<Bandeja>`: pantalla de inicio; lo que hay que hacer ahora.
 - **Bloque de la bandeja** — `BLOQUES_BANDEJA` / `bloquesVisibles()`: lista de pendientes del Inicio, según los permisos.
-- **Bloque** — `<Bloque>`: sección plegable de un formulario o ficha.
+- **Bloque** — `<Bloque>`: sección plegable de un formulario o un panel.
 - **Bloque (de una ficha)** — `<BloqueDeFicha>`, `#<ancla>` (`src/shared/ui/ficha-en-bloques`): una parte de una ficha en dos columnas, siempre a la
   vista (no se pliega), con su ancla, su título `h2` y su error propio. No es `<Bloque>`, el plegable.
 - **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra pegajosa arriba de la columna principal de una ficha en dos columnas, con un enlace de ancla
@@ -798,7 +798,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cambio de cada bucket). Con ella se escribe `totales.bs`.
 - **Unidad** — `Unidad` (`logistica/entities/nucleo/unidad.ts`): el vehículo o repuesto sobre el que se opera en logística (`tipo`);
   documentos, gastos, pagos, notas y transporte cuelgan por `vehiculo_id` o `repuesto_id`, uno y sólo uno (`refDeUnidad`).
-- **Panel de la unidad** — la cabecera y los huecos de cada área en el orden de `ORDEN_DE_HUECOS` (lo que más se hace primero). En su página `/logistica/vehiculo/<id>` (`<PaginaDeLaUnidad>`) se reparte en **zonas** en escritorio y en bloques con una barra «Mover» en el celular (con `?hueco=documentos` abre esa pestaña o ese bloque); en un drawer (`<PanelDeLaUnidad>`: el `?vehiculo=` de `/logistica/gastos` y el ítem de repuesto) son bloques plegables. Un vehículo se abre siempre en su página.
+- **Panel de la unidad** — la cabecera y los huecos de cada área en el orden de `ORDEN_DE_HUECOS` (lo que más se hace primero). En su página `/logistica/vehiculo/<id>` (`<PaginaDeLaUnidad>`) se reparte en **zonas** en escritorio y en bloques con una barra «Mover» en el celular (con `?hueco=documentos` abre esa pestaña o ese bloque); en un drawer, bloques plegables en el `?vehiculo=` de `/logistica/gastos` (`<PanelDeLaUnidad>`) y secciones a la vista en el ítem de repuesto (`<PanelDeLaUnidadALaVista>`). Un vehículo se abre siempre en su página.
 - **Zona (de la unidad)** — dónde se dibuja un hueco en la página de la unidad en escritorio (`ZONA_DEL_HUECO`, junto a `ORDEN_DE_HUECOS`): **principal** («Qué falta» con mover, siempre a la vista), **pestañas** (Documentos, Transporte, Repuestos, Aduana y **Dinero**, que junta gastos, pagos y margen) y **lateral** (Notas e Historial). No: «zona horaria» (la de quien mira).
 - **Despliegue en seco** — `pnpm despliegue:en-seco` / `scripts/despliegue/en-seco.sh`, `revisar-base.mjs`: ensayo local de un despliegue
   (base, pruebas, advisors, jobs, buckets, Vault, funciones, variables, build) sin tocar la nube; termina en «listo» o con lo que falta y las
