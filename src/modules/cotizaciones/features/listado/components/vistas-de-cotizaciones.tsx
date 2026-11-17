@@ -1,6 +1,6 @@
 'use client'
 
-import { MenuDeVistas, type VistaGuardada } from '@/modules/equipo/client'
+import { VistasGuardadas, type VistaGuardada } from '@/modules/equipo/client'
 import { parametrosDeFiltros, type EsquemaDeFiltros } from '@/shared/lib/filtros'
 import { useFiltrosDelListado } from '@/shared/ui/filtros'
 
@@ -14,7 +14,7 @@ type Props = {
 export function VistasDeCotizaciones({ esquema, vistas }: Props) {
   const filtros = useFiltrosDelListado()
   return (
-    <MenuDeVistas
+    <VistasGuardadas
       pantalla="cotizaciones"
       vistas={vistas}
       actuales={parametrosDeFiltros(esquema, filtros.valores)}

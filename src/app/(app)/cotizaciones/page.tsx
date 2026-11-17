@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { connection } from 'next/server'
-import { Suspense } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import {
   MAXIMO_DE_PAGINA_DE_COTIZACIONES,
   esquemaDelListado,
@@ -95,6 +95,15 @@ async function leerLaDelResumen(permisos: Permisos, id: string): Promise<Lectura
   }
 }
 
+// Lo que el área `papelera` suma al grupo «Más» de «Vista y opciones» (4.24), sólo si quien mira lo vería: así «Más» nunca queda vacío.
+function juntoDelListado(permisos: Permisos): ReactNode {
+  const { Junto, hayJunto } = HUECOS_DE_PAPELERA_EN_EL_LISTADO
+  if (Junto === undefined || hayJunto?.(permisos) === false) {
+    return undefined
+  }
+  return <Junto permisos={permisos} />
+}
+
 async function Listado({
   searchParams,
 }: {
@@ -144,8 +153,6 @@ async function Listado({
       ? undefined
       : { titulo: datosO(await leerVehiculo(pedido.vehiculoId))?.titulo ?? null }
   const origenDeNueva = origenParaNueva(sesion.permisos, visibles, pedido.origenId)
-  // Lo que el área `papelera` suma junto a «Nueva cotización» (4.24); hoy nada.
-  const { Junto } = HUECOS_DE_PAPELERA_EN_EL_LISTADO
 
   return (
     // El resumen de `?cotizacion=` y las filas de la página marcan lo visto en el módulo (una lectura por página).
@@ -174,7 +181,7 @@ async function Listado({
         rutaDeNueva={
           origenDeNueva === null ? null : rutaDeLaHoja({ origen: origenDeNueva, lead: null })
         }
-        junto={Junto === undefined ? undefined : <Junto permisos={sesion.permisos} />}
+        junto={juntoDelListado(sesion.permisos)}
       />
     </MarcasDeVistoDeLaPagina>
   )

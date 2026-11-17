@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import type { VistaGuardada } from '@/modules/equipo/client'
 import type { EsquemaDeFiltros } from '@/shared/lib/filtros'
 import type { Pagina } from '@/shared/lib/paginacion'
-import { FilterShell } from '@/shared/ui/filtros'
+import { FilterShell, type GrupoDeVistaYOpciones } from '@/shared/ui/filtros'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { textoDelAviso, textoDelVacio } from '../../../entities/listado/aviso-del-listado'
 import type { LecturaDelServidor } from '../../../entities/listado/resumen-del-listado'
@@ -37,7 +37,7 @@ type Props = {
   lead?: { nombre: string | null }
   // Lo que el servidor leyó de la cotización de `?cotizacion=` cuando no está en la página (null si no hay clave, no es un guid o está en la página).
   delServidor: LecturaDelServidor | null
-  // Lo que un área suma junto a «Nueva cotización» (4.15-6b, la papelera del 4.24): ya dibujado por la página y antes de «Nueva». Sin él, la barra queda como siempre.
+  // Lo que un área suma al grupo «Más» de «Vista y opciones» (4.15-6b, la papelera del 4.24): ya dibujado por la página, que lo pasa sólo si quien mira lo ve. Sin él, no hay «Más».
   junto?: ReactNode
   // Lo que las áreas llenan en el resumen (las pestañas) y lo que quien mira puede hacer con cada cotización de la página, por id (lo calcula el servidor).
   huecosDelResumen?: HuecosDelResumen
@@ -66,27 +66,21 @@ export function ListadoDeCotizaciones({
   // El resumen llega recién al abrirse (`diferido()`) y, una vez visto, queda montado para irse con su animación.
   const resumenMontado = useAbiertoAlgunaVez(resumen.texto !== null)
   const nueva = rutaDeNueva === null ? undefined : <NuevaCotizacion ruta={rutaDeNueva} />
-  // El vacío ofrece sólo «Nueva»: lo de `junto` es de la barra.
-  const acciones =
-    junto === undefined ? (
-      nueva
-    ) : (
-      <>
-        {junto}
-        {nueva}
-      </>
-    )
+  // «Vista y opciones»: las vistas guardadas (llegan al abrir el panel) y, si la página lo pasó, «Más» con la papelera. El vacío ofrece sólo «Nueva».
+  const opciones: GrupoDeVistaYOpciones[] = [
+    {
+      clave: 'vistas',
+      titulo: 'Vistas guardadas',
+      contenido: <VistasDeCotizacionesDiferido esquema={esquema} vistas={vistas} />,
+    },
+    ...(junto === undefined ? [] : [{ clave: 'mas', titulo: 'Más', contenido: junto }]),
+  ]
   const aviso = textoDelAviso({ lead, vehiculo })
   return (
     <div className="grid gap-4">
       {/* El título de la página para quien lee en voz alta: la barra de filtros ocupa la cabecera (como en `/leads`). */}
       <h1 className="sr-only">Cotizaciones</h1>
-      <FilterShell
-        esquema={esquema}
-        porPagina={porPagina}
-        acciones={acciones}
-        vistas={<VistasDeCotizacionesDiferido esquema={esquema} vistas={vistas} />}
-      >
+      <FilterShell esquema={esquema} porPagina={porPagina} acciones={nueva} opciones={opciones}>
         {aviso === null ? null : <AvisoDeLoFiltrado texto={aviso} />}
         <ResultadoDelListado
           pagina={pagina}
