@@ -101,7 +101,8 @@ test('completar es poner: dos veces no cambia nada; reabrir lo devuelve', async 
     recordarEn: new Date(Date.now() + 86400_000).toISOString(),
   })
   await entrar(page, t.personas.berta)
-  await irASeguimientos(page, lead.id)
+  // «Completados» vive en «Ver todos tus recordatorios»: el bloque de la ficha muestra sólo los pendientes más próximos.
+  await irASeguimientos(page, lead.id, '', { todos: 'recordatorios' })
   await recordatorio(page, 'Mandar la cotización')
     .getByRole('button', { name: 'Completar' })
     .click()

@@ -240,7 +240,7 @@ test('B · con el drawer abierto: otro lead, «atrás», y lo privado de la ases
   // drawer (no abre el otro con lo de éste).
   await page.goto(`/leads?lead=${r.uno.id}&pestana=seguimientos`)
   const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+  await expect(drawer.getByRole('region', { name: 'Seguimientos', exact: true })).toBeVisible()
   // El drawer entra deslizándose y mide menos mientras entra: se mide quieto.
   await quieto(drawer)
   const otro = aLaVista(page.getByText(r.dos.nombre, { exact: true })).first()
@@ -265,7 +265,7 @@ test('B · con el drawer abierto: otro lead, «atrás», y lo privado de la ases
   await entrar(page, r.t.personas.duena)
   await page.goto(`/leads?alcance=todos&lead=${r.uno.id}&pestana=seguimientos`)
   const suyo = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(suyo.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+  await expect(suyo.getByRole('region', { name: 'Seguimientos', exact: true })).toBeVisible()
   await expect(suyo.getByText('Primera llamada del recorrido')).toHaveCount(0)
   await expect(suyo.getByRole('tab', { name: 'Seguimientos', exact: true })).toHaveText(
     'Seguimientos',

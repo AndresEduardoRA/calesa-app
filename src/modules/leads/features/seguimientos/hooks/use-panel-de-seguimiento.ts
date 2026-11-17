@@ -19,10 +19,12 @@ const PARAMETROS = {
 // «Anotar seguimiento» (`?panel=anotar-seguimiento`) y «Editar» (`?panel=editar-seguimiento&
 // seguimiento=<id>`) en la URL: recargar los vuelve a abrir. Comparten la clave con los demás
 // paneles: nunca se apilan. Abrir suma al historial («atrás» lo cierra; tras recargar, devuelve el foco a quien lo abrió: `vuelta-del-foco.ts`).
-export function usePanelDeSeguimiento() {
+// `atiendeLaUrl` falso: otro dueño de estos modales responde a la URL (el resumen de la ficha con «Ver todos» abierto encima): éste no
+// abre nada ni vigila el foco.
+export function usePanelDeSeguimiento({ atiendeLaUrl = true }: { atiendeLaUrl?: boolean } = {}) {
   const [parametros, setParametros] = useQueryStates(PARAMETROS)
   // Con `?para=` el panel es del listado (el «⋯» de una fila), no de la ficha ni del drawer.
-  const panel = parametros[CLAVE_PARA] === null ? parametros[CLAVE_DE_PANEL] : null
+  const panel = atiendeLaUrl && parametros[CLAVE_PARA] === null ? parametros[CLAVE_DE_PANEL] : null
   const anotando = panel === PANEL_ANOTAR_SEGUIMIENTO
   const editando =
     panel === PANEL_EDITAR_SEGUIMIENTO ? (parametros[CLAVE_DE_SEGUIMIENTO] ?? '') : null

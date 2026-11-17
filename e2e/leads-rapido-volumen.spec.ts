@@ -90,7 +90,7 @@ test('«Seguimientos»: una página al abrir, «Ver más» hasta el tope, la red
   await irAlDrawer(page, '')
   expect(pedidos).toHaveLength(0)
   await abrirPestanaDeSeguimientos(page, drawerDe(page))
-  const linea = drawerDe(page).getByRole('region', { name: 'Seguimientos' })
+  const linea = drawerDe(page).getByRole('region', { name: 'Seguimientos', exact: true })
   await expect(itemsDe(linea)).toHaveCount(TAMANO_DE_VER_MAS)
   expect(pedidos).toHaveLength(1)
   const bytes = await bytesDe(pedidos[0])
@@ -159,7 +159,7 @@ test('«Ir a una fecha» siembra el cursor de ese día y «Volver» trae lo más
 }) => {
   await entrar(page, t.personas.berta)
   await irAlDrawer(page, '&pestana=seguimientos')
-  const linea = drawerDe(page).getByRole('region', { name: 'Seguimientos' })
+  const linea = drawerDe(page).getByRole('region', { name: 'Seguimientos', exact: true })
   await expect(itemsDe(linea)).toHaveCount(TAMANO_DE_VER_MAS)
   const dia = new Date(Date.now() - 200 * 86_400_000).toISOString().slice(0, 10)
   const pedidos = contarPedidos(page, 'lead_seguimientos')
@@ -190,7 +190,7 @@ test('«Recargar» tras un conflicto con 500 cargados: dos pedidos, lo escrito q
   test.setTimeout(180_000)
   await entrar(page, t.personas.berta)
   await irAlDrawer(page, '&pestana=seguimientos')
-  const linea = drawerDe(page).getByRole('region', { name: 'Seguimientos' })
+  const linea = drawerDe(page).getByRole('region', { name: 'Seguimientos', exact: true })
   await expect(itemsDe(linea)).toHaveCount(TAMANO_DE_VER_MAS)
   while ((await linea.getByRole('button', { name: 'Ver más' }).count()) > 0) {
     const cuantos = await itemsDe(linea).count()
@@ -255,7 +255,9 @@ test('«Recordatorios»: una página de pendientes, los completados sólo al abr
   await entrar(page, t.personas.berta)
   const pedidos = contarPedidos(page, 'lead_recordatorios')
   await irAlDrawer(page, '&pestana=seguimientos')
-  await expect(drawerDe(page).getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+  await expect(
+    drawerDe(page).getByRole('region', { name: 'Seguimientos', exact: true }),
+  ).toBeVisible()
   expect(pedidos).toHaveLength(0)
   await abrirPestanaDeRecordatorios(page, drawerDe(page))
   const bloque = drawerDe(page).getByRole('region', { name: 'Tus recordatorios' })
@@ -302,7 +304,7 @@ test('«Recordatorios»: una página de pendientes, los completados sólo al abr
 test('«Seguimientos»: «Ver más» con el pedido demorado 6 s', async ({ page }) => {
   await entrar(page, t.personas.berta)
   await irAlDrawer(page, '&pestana=seguimientos')
-  const linea = drawerDe(page).getByRole('region', { name: 'Seguimientos' })
+  const linea = drawerDe(page).getByRole('region', { name: 'Seguimientos', exact: true })
   await expect(itemsDe(linea)).toHaveCount(TAMANO_DE_VER_MAS)
   // Con la primera página ya leída: sólo el pedido de «Ver más» sale tarde.
   const demorados = await demorarPedido(

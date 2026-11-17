@@ -95,7 +95,7 @@ test('cada pestaña vive en la URL, se lee sólo al elegirla, no lleva número y
     drawerDe(page, lead.nombre).getByRole('tab', { name: 'Seguimientos', exact: true }),
   ).toHaveAttribute('aria-selected', 'true')
   await expect(
-    drawerDe(page, lead.nombre).getByRole('region', { name: 'Seguimientos' }),
+    drawerDe(page, lead.nombre).getByRole('region', { name: 'Seguimientos', exact: true }),
   ).toBeVisible()
 
   // Cambiar de pestaña no suma al historial: «atrás» cierra el drawer.
@@ -110,7 +110,7 @@ test('cada pestaña vive en la URL, se lee sólo al elegirla, no lleva número y
     drawerDe(page, lead.nombre).getByRole('tab', { name: 'Seguimientos', exact: true }),
   ).toBeFocused()
   await expect(
-    drawerDe(page, lead.nombre).getByRole('region', { name: 'Seguimientos' }),
+    drawerDe(page, lead.nombre).getByRole('region', { name: 'Seguimientos', exact: true }),
   ).toBeVisible()
   // Fin lleva a la última («Recordatorios») e Inicio vuelve a «Resumen».
   await page.keyboard.press('End')
@@ -140,7 +140,7 @@ test('anotar desde el drawer: el modal va adentro, Esc y «atrás» cierran sól
   await entrar(page, t.personas.berta)
   await irAlDrawer(page, `?lead=${lead.id}&pestana=seguimientos`, lead.nombre)
   const drawer = drawerDe(page, lead.nombre)
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+  await expect(drawer.getByRole('region', { name: 'Seguimientos', exact: true })).toBeVisible()
 
   await abrirAnotar(page)
   await page.keyboard.press('Escape')
@@ -152,7 +152,7 @@ test('anotar desde el drawer: el modal va adentro, Esc y «atrás» cierran sól
   await abrirAnotar(page)
   await page.goBack()
   await expect(modalDeSeguimiento(page, 'Anotar')).toHaveCount(0)
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+  await expect(drawer.getByRole('region', { name: 'Seguimientos', exact: true })).toBeVisible()
 
   const modal = await abrirAnotar(page)
   await modal.getByLabel('Resumen').fill('Anotado desde el drawer')
@@ -177,7 +177,7 @@ test('agendar en «Recordatorios» (arriba, sin pasar por los seguimientos), Esc
   await irAlDrawer(page, `?lead=${lead.id}&pestana=recordatorios`, lead.nombre)
   const drawer = drawerDe(page, lead.nombre)
   await expect(drawer.getByRole('region', { name: 'Tus recordatorios' })).toBeVisible()
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toHaveCount(0)
+  await expect(drawer.getByRole('region', { name: 'Seguimientos', exact: true })).toHaveCount(0)
 
   await abrirAgendar(page)
   await page.keyboard.press('Escape')
@@ -220,7 +220,7 @@ test('fuera de la cartera: ni «Anotar» ni «Agendar», y la URL no abre el mod
     lead.nombre,
   )
   const drawer = drawerDe(page, lead.nombre)
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+  await expect(drawer.getByRole('region', { name: 'Seguimientos', exact: true })).toBeVisible()
   await expect(drawer.getByRole('button', { name: 'Anotar seguimiento' })).toHaveCount(0)
   await expect(modalDeSeguimiento(page, 'Anotar')).toHaveCount(0)
   // En «Recordatorios», tampoco «Agendar», ni por la URL.

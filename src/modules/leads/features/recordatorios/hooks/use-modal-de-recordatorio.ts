@@ -18,6 +18,8 @@ type Args = {
   // Se está leyendo la lista, o el de la URL por su id (no estaba entre lo cargado): todavía no se
   // decide si «no está».
   buscando?: boolean
+  // Falso: otro dueño de los modales responde a la URL (`usePanelDeRecordatorio`).
+  atiendeLaUrl?: boolean
 }
 
 // Por qué no se puede editar el de la URL (nulo si se puede, o si no se está editando).
@@ -50,8 +52,13 @@ function claveDeRevision(apertura: number, editando: string | null, buscando: bo
 // Qué muestra el modal de recordatorios según la URL. Agendar sólo con `puedeAgendar`. Editar abre el
 // de `?recordatorio=<id>` entre los de quien mira (ajeno, eliminado o inventado «no está»); mientras
 // se busca, no abre ni dice nada.
-export function useModalDeRecordatorio({ lista, puedeAgendar, buscando = false }: Args) {
-  const panel = usePanelDeRecordatorio()
+export function useModalDeRecordatorio({
+  lista,
+  puedeAgendar,
+  buscando = false,
+  atiendeLaUrl,
+}: Args) {
+  const panel = usePanelDeRecordatorio({ atiendeLaUrl })
   const editando = panel.editando
   const objetivo = editando === null || buscando ? null : recordatorioParaEditar(lista, editando)
   const enLaUrl = panel.agendando || editando !== null

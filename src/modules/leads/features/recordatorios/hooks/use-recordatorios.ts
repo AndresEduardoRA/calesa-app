@@ -9,6 +9,7 @@ import {
   MENSAJE_DE_RECORDATORIO_NO_DISPONIBLE,
   type Recordatorio,
 } from '../../../entities/recordatorios'
+import type { PaginaDeRecordatorios } from '../../../entities/pagina-de-recordatorios'
 import type { ResultadoDeRecordatorio } from '../../../entities/repositorios'
 import { MENSAJE_DE_VALIDACION } from '../../ficha/resultado'
 import { completarRecordatorio } from '../actions/completar-recordatorio'
@@ -20,9 +21,9 @@ import { useListasDeRecordatorios } from './use-listas-de-recordatorios'
 // abrir la sección o la pestaña (`useListasDeRecordatorios`); lo que se crea, completa, edita o elimina
 // se pone en su lugar con la respuesta, y se vuelve a leer la página para que el aviso de vencidos de
 // la cabecera de la ficha quede al día.
-export function useRecordatorios(leadId: string) {
+export function useRecordatorios(leadId: string, inicial?: PaginaDeRecordatorios) {
   const router = useRouter()
-  const listas = useListasDeRecordatorios(leadId)
+  const listas = useListasDeRecordatorios(leadId, { inicial })
   const completar = useAction(completarRecordatorio)
   const eliminar = useAction(eliminarRecordatorio)
   const restaurar = useAction(restaurarRecordatorio)

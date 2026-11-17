@@ -118,7 +118,7 @@ test('E · sin red: lo escrito en el modal queda y sale una vez; «Ver más» di
   await page.goto(`/leads?lead=${r.dos.id}`)
   const drawer = page.getByRole('dialog', { name: r.dos.nombre })
   await abrirPestanaDeSeguimientos(page, drawer)
-  const linea = drawer.getByRole('region', { name: 'Seguimientos' })
+  const linea = drawer.getByRole('region', { name: 'Seguimientos', exact: true })
 
   // El código del modal se pide al abrirlo por primera vez: se abre una vez con red.
   await drawer.getByRole('button', { name: 'Anotar seguimiento' }).click()

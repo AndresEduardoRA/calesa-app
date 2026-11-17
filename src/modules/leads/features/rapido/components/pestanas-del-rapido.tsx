@@ -24,7 +24,7 @@ export function PestanasDelRapido({ leadId, pestana, alElegir, resumen }: Props)
       alElegir={alElegir}
     >
       {pestana === 'seguimientos' ? (
-        <SeguimientosDelRapidoDiferido key={leadId} leadId={leadId} />
+        <SeguimientosDelRapidoDiferido key={leadId} leadId={leadId} alCambiar={() => undefined} />
       ) : pestana === 'recordatorios' ? (
         <RecordatoriosDelRapidoDiferido key={leadId} leadId={leadId} />
       ) : (

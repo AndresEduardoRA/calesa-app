@@ -62,7 +62,7 @@ test('la ficha con sus seis secciones cabe en el celular, y su modal también (l
   await entrar(page, r.ana.email)
   const montada = {
     '': page.getByRole('navigation', { name: 'Secciones del lead' }),
-    '?seccion=seguimientos': page.getByRole('region', { name: 'Seguimientos' }),
+    '?seccion=seguimientos': page.getByRole('region', { name: 'Seguimientos', exact: true }),
     '?seccion=portal': seccionPortal(page),
   }
   for (const [seccion, contenido] of Object.entries(montada)) {

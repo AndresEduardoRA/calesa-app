@@ -153,8 +153,12 @@ test('el modal vive en la URL: recargar lo reabre y «atrás» lo cierra', async
   await abrirAgregarTelefono(page)
   await page.reload()
   await expect(modalDeExtra(page).getByLabel('Teléfono extra')).toBeVisible()
+  // «Atrás» cierra el modal y deja la edición abierta (se abrió antes); otro «atrás» la cierra.
   await page.goBack()
   await expect(modalDeExtra(page)).toHaveCount(0)
+  await expect(panelConTelefonos(page)).toBeVisible()
+  await page.goBack()
+  await expect(panelConTelefonos(page)).toHaveCount(0)
   await expect(tituloDeLaFicha(page, lead.nombre)).toBeVisible()
 })
 

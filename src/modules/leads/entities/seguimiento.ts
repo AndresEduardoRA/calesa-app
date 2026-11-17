@@ -2,6 +2,7 @@
 // `seguimiento_*`), cómo se lee y las reglas puras del redactor. Lo que cada quien ve lo decide la
 // base: privado = sólo su autor; «Visible para el cliente» = también quienes ven el lead.
 import { z } from 'zod'
+import type { Resultado } from '@/shared/lib/errores'
 import { cambioDeVehiculo, vehiculoDeNotaDesde, type VehiculoDeLaNota } from './vehiculo-de-nota'
 import { instanteDeLocal } from '@/shared/lib/fechas'
 import { TAMANO_DE_VER_MAS } from '@/shared/lib/paginacion'
@@ -342,3 +343,12 @@ export function cambiosDelSeguimiento(
   }
   return cambios
 }
+
+// Una página de los seguimientos que quien mira ve de un lead (la RLS decide), desde el cursor.
+// Un lead que no ve: una página vacía.
+export type LectorDeSeguimientos = (pedido: {
+  leadId: string
+  antes: { antesEn: string; antesId: string } | null
+  // Cuántos (sin esto, una página de la línea de tiempo): el resumen de la ficha pide los últimos `PRIMEROS_DE_SEGUIMIENTOS`.
+  tamano?: number
+}) => Promise<Resultado<PaginaDeSeguimientos>>

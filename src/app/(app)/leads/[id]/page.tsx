@@ -26,7 +26,7 @@ import {
   LeadNoDisponible,
   SeccionOportunidades,
   SeccionPortal,
-  SeccionSeguimientos,
+  BloqueDeSeguimientos,
 } from '@/modules/leads/pantallas/ficha'
 import { RegistrarVisita } from '@/modules/buscador/pantallas/visita'
 import { getOrigenes } from '@/modules/origenes'
@@ -76,8 +76,9 @@ function seccionesDe(
     seguimientos:
       seccion === 'seguimientos' ? (
         <Suspense fallback={<EsqueletoDeSeguimientos />}>
-          <SeccionSeguimientos
+          <BloqueDeSeguimientos
             leadId={datos.ficha.id}
+            leadNombre={datos.ficha.nombre}
             // Para elegir un vehículo en un seguimiento o un recordatorio (sólo con el permiso).
             {...(ve.vehiculos ? { vehiculos: opcionesDeVehiculoDelLead(datos.ficha.id) } : {})}
           />

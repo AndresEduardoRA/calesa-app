@@ -17,6 +17,8 @@ type Args = {
   seguimientos: Seguimientos
   // Hay tipos de seguimiento activos (sin ninguno no se anota).
   hayTipos: boolean
+  // Falso: otro dueño de los modales responde a la URL (`usePanelDeSeguimiento`).
+  atiendeLaUrl?: boolean
 }
 
 const ES_GUID = z.guid()
@@ -136,8 +138,8 @@ function useYaAbierta(base: string | null) {
 // `leads.editar` (sin eso, la URL escrita a mano no abre nada). Editar abre el de `?seguimiento=<id>`
 // entre los propios (ajeno, eliminado o inventado «no está», con el mismo aviso). Lo que deja de estar
 // con el modal abierto no lo cierra: el modal dice por qué ya no se guarda.
-export function useModalDeSeguimiento({ seguimientos, hayTipos }: Args) {
-  const panel = usePanelDeSeguimiento()
+export function useModalDeSeguimiento({ seguimientos, hayTipos, atiendeLaUrl = true }: Args) {
+  const panel = usePanelDeSeguimiento({ atiendeLaUrl })
   const { puedoAnotar } = seguimientos
   const { anotando, editando } = panel
   const { editable, noEsta } = objetivoDe(seguimientos, editando)

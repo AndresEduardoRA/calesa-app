@@ -53,6 +53,10 @@ export const DRAWERS_DEL_NUCLEO: Record<string, RegistroDeDrawer> = {
     sinFormulario:
       'el drawer rápido sólo muestra; sus formularios (anotar, agendar) son modales que preguntan por sí solos (ModalDeFormulario)',
   },
+  'src/modules/leads/features/seguimientos/components/drawer-de-todos.tsx': {
+    sinFormulario:
+      'muestra la línea de tiempo o los recordatorios; lo que se escribe va en sus modales, que guardan su borrador',
+  },
   // El panel de edición del resumen de un lead (9i) es `PanelDeEdicion`, ya registrado; éste sólo es el panel que dice que los catálogos o la
   // ficha llegan, no llegaron o ya no se ven, sin formulario (lo comparten la ficha y el resumen).
   'src/modules/leads/features/ficha/components/panel-sin-formulario.tsx': {

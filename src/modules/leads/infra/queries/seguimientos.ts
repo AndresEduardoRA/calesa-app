@@ -1,19 +1,21 @@
 import 'server-only'
 import { errorDePostgrest, fallo, ok } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/server'
-import type { LectorDeSeguimientos, LectorDeTiposDeSeguimiento } from '../../entities/repositorios'
+import type { LectorDeTiposDeSeguimiento } from '../../entities/repositorios'
 import {
+  type LectorDeSeguimientos,
   paginaDeSeguimientosDesde,
   TAMANO_DE_PAGINA_DE_SEGUIMIENTOS,
 } from '../../entities/seguimiento'
 
-// La primera página de la línea de tiempo, con la sesión de quien mira: la RLS deja los suyos y los
-// públicos de los demás. Nunca un conteo.
-export const getSeguimientos: LectorDeSeguimientos = async ({ leadId, antes }) => {
+// La primera página de la línea de tiempo (o los últimos `tamano`), con la sesión de quien mira: la RLS deja los suyos y los
+// públicos de los demás. `lead_seguimientos()` va por `seguimientos_lead_autor_idx` y `seguimientos_lead_publicos_idx` y pide uno de más.
+// Nunca un conteo.
+export const getSeguimientos: LectorDeSeguimientos = async ({ leadId, antes, tamano }) => {
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('lead_seguimientos', {
     p_lead: leadId,
-    p_tamano: TAMANO_DE_PAGINA_DE_SEGUIMIENTOS,
+    p_tamano: tamano ?? TAMANO_DE_PAGINA_DE_SEGUIMIENTOS,
     ...(antes ? { p_antes_en: antes.antesEn, p_antes_id: antes.antesId } : {}),
   })
   if (error) {

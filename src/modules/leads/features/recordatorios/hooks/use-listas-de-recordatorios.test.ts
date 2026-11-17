@@ -181,3 +181,28 @@ describe('useListasDeRecordatorios: Ver más y recargar', () => {
     expect(result.current.listas.pendientes.lista).toHaveLength(20)
   })
 })
+
+describe('useListasDeRecordatorios: con lo leído en el servidor (el resumen de la ficha)', () => {
+  const inicial = (desde: number, hasta: number) => {
+    const { data } = pagina(desde, hasta, true, { hayCompletados: false })
+    return data
+  }
+
+  it('no lee al montar: arranca con la página que trajo el servidor', () => {
+    const { result } = renderHook(() => useListasDeRecordatorios('l', { inicial: inicial(0, 3) }))
+    expect(result.current.estado).toBe('listo')
+    expect(result.current.listas.pendientes.lista).toHaveLength(3)
+    expect(result.current.listas.pendientes.hayMas).toBe(true)
+    expect(leerPagina).not.toHaveBeenCalled()
+  })
+
+  it('cuando el servidor manda otra página (se volvió a leer la ficha), la vuelve a sembrar sin leer', () => {
+    const { result, rerender } = renderHook(
+      ({ datos }) => useListasDeRecordatorios('l', { inicial: datos }),
+      { initialProps: { datos: inicial(0, 3) } },
+    )
+    rerender({ datos: inicial(5, 7) })
+    expect(result.current.listas.pendientes.lista.map((r) => r.titulo)).toEqual(['#5', '#6'])
+    expect(leerPagina).not.toHaveBeenCalled()
+  })
+})
