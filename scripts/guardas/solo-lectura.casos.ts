@@ -95,6 +95,8 @@ export const BLOQUEA = [
   'node -e "1"',
   'node scripts/mapa.mjs',
   'node scripts/mapa.sh',
+  'node scripts/orquestador/orquestador.sh',
+  'node scripts/huella.sh',
   'python3 -c "1"',
   'xargs rm',
   'env ls',

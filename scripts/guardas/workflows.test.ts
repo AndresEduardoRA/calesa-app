@@ -72,8 +72,12 @@ describe('los workflows del repo cumplen', () => {
       'cambios',
       'base',
       'carreras',
+      'contrato',
+      'contrato-uso',
       'e2e-build',
       'e2e',
+      'ejemplo',
+      'aviso-noche',
       'listo',
     ])
   })
@@ -81,9 +85,33 @@ describe('los workflows del repo cumplen', () => {
 
 // Cada mutación rompe una regla en el ci.yml real y la guarda tiene que caer con el motivo.
 // CI por niveles (docs/FLUJO.md): los e2e del PR según scripts/e2e-dirigidos.mjs y el completo cada noche. El título, las migraciones
-// del PR y `listo`, el único check que main exige: `workflows-flujo.test.ts`.
+// del PR y `listo`, el único check que main exige: `workflows-flujo.test.ts`. Del kit: los
+// jobs de proyecto que se saltan en la plantilla y el proyecto de ejemplo que corre en su lugar.
 describe('ci.yml por niveles', () => {
   const job = (nombre: string) => jobsDe(ci).find((j) => j.nombre === nombre)?.bloque ?? ''
+
+  it('los jobs de proyecto se saltan en la plantilla (.kit/plantilla) y en su lugar corre el proyecto de ejemplo', () => {
+    expect(job('cambios')).toContain('plantilla: ${{ steps.marca.outputs.plantilla }}')
+    for (const nombre of ['base', 'contrato', 'contrato-uso', 'e2e-build', 'e2e', 'aviso-noche']) {
+      expect(job(nombre), nombre).toContain("needs.cambios.outputs.plantilla != 'true'")
+    }
+    for (const nombre of ['nivel-1', 'pruebas']) {
+      expect(job(nombre), nombre).not.toContain('outputs.plantilla')
+    }
+    const ejemplo = job('ejemplo')
+    expect(ejemplo).toContain("if: needs.cambios.outputs.plantilla == 'true'")
+    expect(ejemplo).toContain('node scripts/kit/nuevo-proyecto.mjs turnero --raiz')
+    for (const rol of ['app', 'web']) expect(ejemplo, rol).toContain(`proyectos/z_turnero/${rol}`)
+    for (const paso of [
+      'pnpm install --frozen-lockfile',
+      'pnpm lint',
+      'pnpm typecheck',
+      'pnpm test',
+      'pnpm db:probar',
+    ]) {
+      expect(ejemplo, paso).toContain(paso)
+    }
+  })
 
   it('el PR elige sus e2e con scripts/e2e-dirigidos.mjs, y la matriz y los specs salen de esa elección', () => {
     expect(job('cambios')).toContain(
@@ -96,14 +124,16 @@ describe('ci.yml por niveles', () => {
     }
   })
 
-  it('`pnpm test` corre en 3 partes, cada una en su job', () => {
+  it('vitest corre en 3 partes, cada una en su job, y las pruebas de node --test en el Nivel 1', () => {
     const pruebas = job('pruebas')
     expect(pruebas).toMatch(/name: Nivel 1 · tests, parte \$\{\{ matrix\.parte \}\} de 3/)
     expect(pruebas).toMatch(/parte: \[1, 2, 3\]/)
-    expect(pruebas).toContain('pnpm test --shard=${{ matrix.parte }}/3')
+    // `pnpm test --shard` le pasaría la bandera también a `test:kit` (`pnpm test` = vitest y después test:kit).
+    expect(pruebas).toContain('pnpm exec vitest run --shard=${{ matrix.parte }}/3')
     expect(pruebas).toMatch(/fail-fast: false/)
-    // Una sola vez: el job de lint y tipos ya no la repite entera.
-    expect(job('nivel-1')).not.toMatch(/^\s*- run: pnpm test/m)
+    // Una sola vez: el job de lint y tipos no repite la suite entera, sólo test:kit.
+    expect(job('nivel-1')).not.toMatch(/^\s*- run: pnpm test\s*$/m)
+    expect(job('nivel-1')).toMatch(/^\s*- run: pnpm test:kit$/m)
   })
 
   it('cada noche corre el completo (schedule), sólo si hubo commits', () => {
@@ -215,36 +245,6 @@ describe('las mutaciones de CI-1b caen', () => {
       ')',
       /un workflow_dispatch necesita su propio grupo/,
     ],
-    [
-      'el job carreras sin su if',
-      /^ {4}if: github\.event_name == 'workflow_dispatch' && inputs\.carreras\n/m,
-      '',
-      /db:carreras no corre en CI/,
-    ],
-    [
-      'el job carreras sin workflow_dispatch en su if',
-      "if: github.event_name == 'workflow_dispatch' && inputs.carreras",
-      'if: inputs.carreras',
-      /db:carreras no corre en CI/,
-    ],
-    [
-      'el job carreras con otro if',
-      "if: github.event_name == 'workflow_dispatch' && inputs.carreras",
-      "if: github.event_name == 'workflow_dispatch' || inputs.carreras",
-      /db:carreras no corre en CI/,
-    ],
-    [
-      'el input carreras encendido por defecto',
-      /( {6}carreras:\n(?: {8}.*\n)*? {8}default: )false/,
-      '$1true',
-      /input «carreras»/,
-    ],
-    [
-      'carreras.mjs en el job carreras',
-      '- run: pnpm db:carreras',
-      '- run: node scripts/carreras.mjs',
-      /carreras\.mjs no corre en CI/,
-    ],
   ]
 
   it.each(casos)('%s', (_, antes, despues, motivo) => {
@@ -252,11 +252,12 @@ describe('las mutaciones de CI-1b caen', () => {
     expect(problemas.join('\n')).toMatch(motivo)
   })
 
-  it('la espera de funciones sin storage-gc', () => {
-    const texto = mutar(ci, /(funciones="[^"]*?) ?storage-gc/, '$1')
-    expect(problemasDeEsperaDeFunciones(texto, CI, FUNCIONES).join('\n')).toMatch(
+  it('la espera de funciones que no declara una de e2e/soporte/guardia.ts', () => {
+    const texto = mutar(ci, /funciones="[^"]*"/, 'funciones="push"')
+    expect(problemasDeEsperaDeFunciones(texto, CI, ['push', 'storage-gc']).join('\n')).toMatch(
       /no prueba storage-gc/,
     )
+    expect(problemasDeEsperaDeFunciones(texto, CI, ['push'])).toEqual([])
   })
 
   it('la espera de funciones que vuelve a mirar sólo apibara', () => {

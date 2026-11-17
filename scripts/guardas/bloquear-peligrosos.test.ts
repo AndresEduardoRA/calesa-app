@@ -11,7 +11,7 @@ import {
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { BLOQUEA, PASA } from './bloquear-peligrosos.casos'
+import { BLOQUEA, CON_DEPENDENCIAS, PASA } from './bloquear-peligrosos.casos'
 
 // `bloquear-peligrosos.sh` es el hook PreToolUse de Bash: lo irreversible, lo de afuera, las dependencias y saltarse el candado de
 // la base se rechazan siempre; una etiqueta nueva sí se empuja, y agregar con pnpm, sólo lo de la lista aprobada del repo.
@@ -45,17 +45,24 @@ function escribirLista(dir: string, texto: string) {
   if (texto) writeFileSync(join(dir, LISTA), texto)
 }
 
-function correr(command: string, opciones: { cwd?: string; hook?: string } = {}) {
+// `permite`: el ORQ_PERMITE del entorno del hook, el que el orquestador le da al proceso `claude` de una tarea; `hook`: otra copia
+// del hook.
+function correr(
+  command: string,
+  opciones: { cwd?: string; hook?: string; agente?: string; permite?: string } = {},
+) {
   const r = spawnSync('bash', [opciones.hook ?? HOOK], {
     input: JSON.stringify({
       tool_name: 'Bash',
       tool_input: { command },
       cwd: opciones.cwd ?? enMain,
+      ...(opciones.agente ? { agent_type: opciones.agente } : {}),
     }),
     encoding: 'utf8',
     env: {
       NODE_ENV: 'test',
       PATH: process.env['PATH'] ?? '',
+      ...(opciones.permite === undefined ? {} : { ORQ_PERMITE: opciones.permite }),
     },
   })
   return { estado: r.status, motivo: r.stderr }
@@ -107,7 +114,31 @@ describe('bloquear-peligrosos.sh', () => {
   })
 })
 
-// Una sesión empuja sólo la rama en la que está; main lo integra la persona al aprobar el PR.
+// La tarea de dependencias corre con ORQ_PERMITE=dependencias: `pnpm update` dentro de los rangos y `pnpm dedupe`, nada más.
+describe('con permite: dependencias (ORQ_PERMITE)', () => {
+  it.each(CON_DEPENDENCIAS.PASA)('deja pasar: %s', (comando) => {
+    expect(correr(comando, { permite: 'dependencias' }).estado).toBe(0)
+  })
+
+  it.each(CON_DEPENDENCIAS.BLOQUEA)('sigue bloqueando: %s', (comando) => {
+    const { estado, motivo } = correr(comando, { permite: 'dependencias' })
+    expect({ estado, motivo: motivo.trim().length > 0 }).toEqual({ estado: 2, motivo: true })
+  })
+
+  it('otro permiso, o uno vacío, no lo da; en una lista con comas, sí', () => {
+    expect(correr('pnpm update', { permite: 'otra' }).estado).toBe(2)
+    expect(correr('pnpm update', { permite: '' }).estado).toBe(2)
+    expect(correr('pnpm dedupe', { permite: 'otra' }).estado).toBe(2)
+    expect(correr('pnpm update', { permite: 'otra,dependencias' }).estado).toBe(0)
+  })
+
+  it('el permiso es el del entorno del hook: escrito en el comando no cuenta', () => {
+    expect(correr('ORQ_PERMITE=dependencias pnpm update').estado).toBe(2)
+    expect(correr('env ORQ_PERMITE=dependencias pnpm dedupe').estado).toBe(2)
+  })
+})
+
+// Una sesión empuja sólo la rama en la que está; main avanza al integrarse el PR (docs/FLUJO.md).
 describe('la rama del push', () => {
   it('un push sin rama sale de la rama del cwd: otra pasa, main no', () => {
     expect(correr('git push', { cwd: enOtra }).estado).toBe(0)
@@ -191,5 +222,27 @@ describe('la lista aprobada', () => {
     })
     expect(paquetes.length).toBeGreaterThan(0)
     expect(new Set(paquetes).size).toBe(paquetes.length)
+  })
+})
+
+// El revisor lee: su Bash pasa por `solo-lectura.sh` desde settings (los hooks de su frontmatter no corren con la carpeta sin confiar).
+describe('el Bash del revisor', () => {
+  it.each(['touch x', 'git commit -m x', 'echo hola > a.txt', 'rm -f a.txt', 'pnpm lint'])(
+    'no corre: %s',
+    (comando) => {
+      expect(correr(comando, { agente: 'revisor' }).estado).toBe(2)
+    },
+  )
+
+  it.each(['git diff', 'git log --oneline -3', 'grep -rn flujo docs/', 'cat package.json'])(
+    'sí lee: %s',
+    (comando) => {
+      expect(correr(comando, { agente: 'revisor' }).estado).toBe(0)
+    },
+  )
+
+  it('otro agente, o la sesión principal, no pasa por la sola lectura', () => {
+    expect(correr('touch x', { agente: 'general-purpose' }).estado).toBe(0)
+    expect(correr('touch x').estado).toBe(0)
   })
 })

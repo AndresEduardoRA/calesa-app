@@ -11,7 +11,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run && pnpm -s test:kit",
     "test:watch": "vitest",
     "test:e2e": "NEXT_DIST_DIR=.next-e2e next build && E2E_PROD=1 bash scripts/candado.sh test:e2e -- playwright test",
     "test:e2e:completo": "bash scripts/candado.sh test:e2e:completo -- node scripts/e2e-completo.mjs",
@@ -30,7 +30,12 @@
     "email:probar": "tsx scripts/email-probar.ts",
     "preinstall": "npx only-allow pnpm",
     "db:sembrar-volumen": "bash scripts/candado.sh db:sembrar-volumen -- node scripts/sembrar-volumen.mjs",
-    "db:medir:volumen": "bash scripts/candado.sh db:medir:volumen -- node scripts/medir-listado.mjs --volumen"
+    "db:medir:volumen": "bash scripts/candado.sh db:medir:volumen -- node scripts/medir-listado.mjs --volumen",
+    "test:kit": "node --test scripts/lib/*.test.mjs scripts/proyecto/*.test.mjs scripts/orquestador/*.test.mjs",
+    "contrato:generar": "bash scripts/candado.sh contrato:generar -- tsx scripts/contratos/contrato.ts generar",
+    "contrato:probar": "bash scripts/candado.sh contrato:probar -- tsx scripts/contratos/contrato.ts probar",
+    "contrato:tipos": "tsx scripts/contratos/contrato.ts tipos",
+    "contrato:usar": "tsx scripts/contratos/contrato.ts usar"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

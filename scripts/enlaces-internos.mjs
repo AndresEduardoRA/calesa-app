@@ -43,6 +43,12 @@ const EXTENSIONES = new Set([
   '.css',
 ])
 
+// Lo que el flujo del kit nombra y vive en otros repos, y los guiones del flujo que crean las secciones que citan (scripts/kit/flujo.txt).
+const DE_OTROS_REPOS = /^docs\/semillas?\//
+// Las plantillas de las tareas que entran solas (y el README que las cuenta) nombran la sección donde escriben: la crea la primera.
+const ESCRIBE_SECCIONES =
+  /^scripts\/(flujo\/cierre-[\w-]+\.mjs|orquestador\/plantillas\/[\w-]+\.md|orquestador\/README\.md)$/
+
 // Una ruta de doc citada: `docs/X.md`, `.claude/rules/x.md`, `CLAUDE.md` (raíz) o `src/…/CLAUDE.md`.
 const RUTA_DE_DOC =
   /((?:docs\/[\w./-]+|\.claude\/rules\/[\w-]+|src\/[\w/-]*CLAUDE|(?<![\w/.])CLAUDE)\.md)/g
@@ -124,12 +130,17 @@ export function problemasDeEnlaces(base = '.') {
     for (const { linea, ruta, secciones } of citasDe(texto)) {
       // Una ruta que lleva comodines o marcadores (`docs/<X>.md`, `docs/X.md` de un ejemplo) no es una cita.
       if (/[<>*]|\/x\.md$/i.test(ruta)) continue
+      // La semilla de un repo en construcción y las lecciones de las semillas viven en otros repos (el kit y los que se construyen
+      // con él): el flujo del kit las nombra, y este repo nació en mantenimiento, sin semilla.
+      if (DE_OTROS_REPOS.test(ruta)) continue
       const doc = leer(ruta)
       if (doc === null) {
         problemas.push({ archivo, linea, motivo: `${ruta} no existe` })
         continue
       }
       const titulos = titulosDe(doc)
+      // El cierre de la construcción escribe esas secciones al pasar un repo a mantenimiento: aquí no están ni tienen por qué.
+      if (ESCRIBE_SECCIONES.test(archivo)) continue
       for (const seccion of secciones) {
         if (!titulos.some((t) => t.includes(seccion))) {
           problemas.push({ archivo, linea, motivo: `«${seccion}» no es un título de ${ruta}` })

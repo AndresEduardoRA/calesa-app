@@ -13,8 +13,9 @@
 #    antes) → `PUT …/pulls/<n>/update-branch` y el CI vuelve a correr, con el orden de migraciones contra el main nuevo;
 #    rojo → dice qué job cayó y sale con 1 (se arregla, se commitea y se vuelve a correr). `--sin-esperar` sale tras el 3.
 # Sale con 64 si no hay qué publicar o falta algo; con 1 si el CI cayó; con 75 si se agotó la espera (el PR sigue su curso solo).
+# Se ubica por la carpeta del propio guion, no por la de quien lo corre: corrido desde `proyectos/` publica igual su repo.
 set -euo pipefail
-cd "$(git rev-parse --show-toplevel)"
+cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 falta() { echo "✗ $1" >&2; exit 64; }
 
 TITULO=""
@@ -43,8 +44,14 @@ printf '%s\n' "$TITULO" | pnpm exec commitlint >/dev/null 2>&1 ||
   falta "el título «$TITULO» no es un commit convencional (commitlint.config.mjs: tipo(scope): descripción en minúscula, ≤ 72)."
 [ -z "$CUERPO" ] || [ -f "$CUERPO" ] || falta "no existe el archivo del cuerpo: $CUERPO"
 
-# La cuenta de GitHub es la dueña del repo, aunque la activa de la máquina sea otra.
-DUENO=$(git remote get-url origin | sed -nE 's#.*github\.com[:/]([^/]+)/.*#\1#p')
+# La cuenta de GitHub es la dueña del repo, aunque la activa de la máquina sea otra: la del manifiesto (.proyecto/proyecto.yaml);
+# sin manifiesto, la del remoto. Un manifiesto inválido corta aquí y dice qué campo.
+DUENO=""
+if [ -f .proyecto/proyecto.yaml ] && ! DUENO=$(node scripts/proyecto/manifiesto.mjs cuenta . 2>&1); then
+  printf '%s\n' "$DUENO" >&2
+  exit 64
+fi
+[ -n "$DUENO" ] || DUENO=$(git remote get-url origin | sed -nE 's#.*github\.com[:/]([^/]+)/.*#\1#p')
 if [ -z "${GH_TOKEN:-}" ] && [ -n "$DUENO" ] && TOKEN=$(gh auth token --user "$DUENO" 2>/dev/null) && [ -n "$TOKEN" ]; then
   export GH_TOKEN="$TOKEN"
 fi

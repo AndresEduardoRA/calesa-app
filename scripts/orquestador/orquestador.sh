@@ -2,20 +2,28 @@
 # El orquestador de ESTE proyecto: corre solo, durante días, una cola de tareas (scripts/orquestador/README.md).
 # Cada proyecto lleva el suyo dentro de su repo y no sabe de los otros: su cola, su estado, su servicio y su lock son propios.
 #
-# Lee la cola (.orquestador/cola/T*.md), y por cada tarea lista (dependencias integradas, área libre, carril libre):
+# La cola vive en los issues del repo con la etiqueta `cola` (el issue 57 es la tarea T57); .orquestador/cola/T*.md es su copia de
+# trabajo, en espejo en cada vuelta (cola-github.sh). Entran solas la tarea mensual de dependencias, el aviso de la noche y un pedido en
+# texto libre (`pedido`), que una sesión en modo plan redacta como spec (pedidos.sh). Por cada tarea lista (dependencias integradas,
+# área libre, carril libre):
 #   1. crea su worktree desde origin/main (en .orquestador/worktrees/) y lo vuelve un carril (scripts/worktree/preparar.sh);
-#   2. si la spec lo pide, una sesión de `claude -p` en modo plan escribe el plan (Opus);
+#   2. si la spec lo pide, una sesión de `claude -p` en modo plan escribe el plan (el nivel capaz);
 #   3. una sesión nueva de `claude -p` implementa, verifica y publica el PR con auto-merge (`publicar.sh --sin-esperar`);
 #   4. suelta el carril y vigila el PR: integrado → borra el worktree y sigue la cola; CI rojo o choque → sesión de arreglo.
 # Cada sesión arranca desde cero (nada de contexto heredado). Si se corta (límite del plan, reinicio, tiempo), se retoma desde lo
-# commiteado en la rama. El estado vive en .orquestador/estado/<ID>/ como archivos de texto: sobrevive a reinicios.
+# commiteado en la rama. El estado vive en .orquestador/estado/<ID>/ como archivos de texto: sobrevive a reinicios. Lo que la spec
+# pide hacer al integrarse (`al_integrar: etiquetar <nombre>`) lo hace al integrar y, si GitHub falla, lo reintenta el espejo (al-integrar.sh).
+# Un PR integrado que toca flujo abre su tarea en el kit, y una vez por semana entra la de traer el flujo del kit (kit.sh).
 #
 #   bash scripts/orquestador/orquestador.sh                 el bucle (lo que corre el servicio)
-#   … verificar        comprueba herramientas, cuentas, Docker, la cola y el aviso de prueba
-#   … nueva <ID> <tema> crea .orquestador/cola/<ID>-<tema>.md desde la plantilla, para escribir la spec
+#   … verificar        comprueba herramientas, cuentas, Docker, la cola y el aviso de prueba; crea las etiquetas cola:*
+#   … nueva <tema>     crea la spec desde la plantilla, en borrador, y la publica como issue (ORQ_SOLO_LOCAL=1: nueva <ID> <tema>)
+#   … entrada          publica ya lo de .orquestador/entrada/ (specs nuevas como issues; respuesta-T<n>.md como comentario)
+#   … espejo           una vuelta del espejo entre la cola local y los issues, ahora
 #   … estado           la tabla de la cola
 #   … plan             qué lanzaría ahora y por qué espera cada una (no lanza nada)
 #   … ver <ID>         lo que va diciendo la sesión en curso de esa tarea (Ctrl+C para salir)
+#   … prompt <ID>      lo que recibiría ahora la sesión de esa tarea (no lanza nada)
 #   … reintentar <ID>  vuelve a poner en marcha una trabada (retoma desde su rama)
 #   … omitir <ID>      la da por hecha sin hacerla (sus dependientes pueden seguir)
 #   … parar <ID>       corta la sesión en curso de esa tarea (queda para retomar)
@@ -37,8 +45,6 @@ COLA="$DATOS/cola"
 EST="$DATOS/estado"
 WTS="$DATOS/worktrees"
 PROMPTS="$ORQ/prompts"
-SERVICIO="orquestador-${PROYECTO:?falta PROYECTO en config.env}"
-TMP_TAREAS="${TMP_TAREAS:-${XDG_CACHE_HOME:-$HOME/.cache}/orquestador/$PROYECTO}"
 mkdir -p "$COLA" "$EST" "$WTS"
 
 export PATH="${PATH_EXTRA:+$PATH_EXTRA:}$PATH"
@@ -48,15 +54,56 @@ if [ -s "$HOME/.nvm/nvm.sh" ]; then
   [ -f "$REPO/.nvmrc" ] && nvm use --silent "$(cat "$REPO/.nvmrc")" >/dev/null 2>&1
 fi
 
+# El repo propio, de su manifiesto (.proyecto/proyecto.yaml): PROYECTO si config.env o config.local.env no lo fijan, y la cuenta del
+# token. Sin manifiesto, ni lo uno ni lo otro: PROYECTO tiene que venir fijado y la cuenta es la del remoto, como antes.
+MANIFIESTO="$REPO/scripts/proyecto/manifiesto.mjs"
+# Un campo del repo propio, o nada: sin manifiesto, o con uno inválido (el motivo sale por stderr: no se traga).
+manifiesto() { if [ -f "$REPO/.proyecto/proyecto.yaml" ]; then node "$MANIFIESTO" "$1" "$REPO" || true; fi; }
+# El kit es el kit: su manifiesto es el del proyecto de ejemplo y daría el nombre de ese proyecto.
+[ -n "${PROYECTO:-}" ] || [ ! -f "$REPO/.kit/plantilla" ] || PROYECTO=kit
+[ -n "${PROYECTO:-}" ] || PROYECTO=$(manifiesto nombre)
+SERVICIO="orquestador-${PROYECTO:?falta PROYECTO: fíjalo en config.env o dalo en .proyecto/proyecto.yaml (node scripts/proyecto/manifiesto.mjs nombre)}"
+TMP_TAREAS="${TMP_TAREAS:-${XDG_CACHE_HOME:-$HOME/.cache}/orquestador/$PROYECTO}"
+
+# La cola en los issues: lo que habla con GitHub y el espejo.
+# shellcheck source=github.sh
+source "$ORQ/github.sh"
+# shellcheck source=cola-github.sh
+source "$ORQ/cola-github.sh"
+# shellcheck source=cola-entrada.sh
+source "$ORQ/cola-entrada.sh"
+# Un pedido en texto libre (un issue con `pedido`), redactado como spec por una sesión en modo plan.
+# shellcheck source=pedidos.sh
+source "$ORQ/pedidos.sh"
+# shellcheck source=pedidos-salida.sh
+source "$ORQ/pedidos-salida.sh"
+# Los niveles de modelo (rapido, normal, capaz) y qué alias es cada uno.
+# shellcheck source=niveles.sh
+source "$ORQ/niveles.sh"
+# Lo que comparten los orquestadores de la máquina: los turnos de sesión.
+# shellcheck source=maquina.sh
+source "$ORQ/maquina.sh"
+# Ponerse al día con origin/main sin que nadie lo pida.
+# shellcheck source=al-dia.sh
+source "$ORQ/al-dia.sh"
+# Lo que una tarea pide hacer al integrarse (`al_integrar: etiquetar <nombre>`).
+# shellcheck source=al-integrar.sh
+source "$ORQ/al-integrar.sh"
+# Las mejoras del flujo entre el kit y este proyecto: la tarea semanal y lo que sube al kit al integrar.
+# shellcheck source=kit.sh
+source "$ORQ/kit.sh"
+
 # ------------------------------------------------------------------------------------------------------------------ utilidades
 
 log() { printf '%s %s\n' "$(date '+%F %T')" "$*" >>"$EST/orquestador.log"; printf '%s %s\n' "$(date '+%T')" "$*" >&2; }
 
-avisar() { # titulo mensaje [prioridad: min|low|default|high|urgent] [etiquetas]
-  log "AVISO · $1 · $2"
+avisar() { # titulo mensaje [prioridad: min|low|default|high|urgent] [etiquetas] [enlace: el issue de la tarea]
+  local msj=$2 extra=()
+  if [ -n "${5:-}" ]; then msj="$msj · $5" && extra=(-H "Click: $5"); fi
+  log "AVISO · $1 · $msj"
   [ -n "${NTFY_TEMA:-}" ] || return 0
   # El título lleva el proyecto: varios orquestadores pueden avisar al mismo celular.
-  curl -fsS -m 15 -H "Title: [$PROYECTO] $1" -H "Priority: ${3:-default}" -H "Tags: ${4:-robot}" -d "$2" \
+  curl -fsS -m 15 -H "Title: [$PROYECTO] $1" -H "Priority: ${3:-default}" -H "Tags: ${4:-robot}" "${extra[@]}" -d "$msj" \
     "${NTFY_SERVIDOR:-https://ntfy.sh}/$NTFY_TEMA" >/dev/null 2>&1 || log "no se pudo mandar el aviso a ntfy"
 }
 
@@ -69,7 +116,7 @@ cuerpo() { awk 'BEGIN{s=0} s<2 && $0=="---" {s++; next} s>=2' "$1"; }
 
 # Los ids de la cola. Una spec cuyo `id` no es T<número> o no es el de su archivo no existe para el bucle: la nombra `cola_invalida`.
 id_valido() { [[ "$(campo "$1" id)" =~ ^T[0-9]+$ ]] && [[ "$(basename "$1")" == "$(campo "$1" id)"[-.]* ]]; }
-ids() { local f; for f in "$COLA"/T*.md; do [ -e "$f" ] && id_valido "$f" && campo "$f" id; done; }
+ids() { local f; for f in "$COLA"/T*.md; do [ -e "$f" ] && id_valido "$f" && campo "$f" id; done | sort -V; }
 cola_invalida() { # imprime lo que está mal en la cola; devuelve 1 si hay algo
   local f id ok=0 vistos=" "
   for f in "$COLA"/*.md; do
@@ -95,7 +142,11 @@ sumar() { est_set "$1" "$2" $(($(num "$1" "$2") + 1)); }
 
 vivo() { local p; p=$(est_get "$1" pid); [ -n "$p" ] && kill -0 "$p" 2>/dev/null; }
 
-dueno_del_repo() { git -C "$REPO" remote get-url origin | sed -nE 's#.*github\.com[:/]([^/]+)/.*#\1#p'; }
+dueno_del_repo() { # la cuenta del manifiesto; sin manifiesto, la del remoto
+  local d; d=$(manifiesto cuenta)
+  [ -n "$d" ] || d=$(git -C "$REPO" remote get-url origin | sed -nE 's#.*github\.com[:/]([^/]+)/.*#\1#p')
+  echo "$d"
+}
 token_gh() { # la cuenta dueña del repo, aunque la activa sea otra (igual que publicar.sh)
   [ -n "${GH_TOKEN:-}" ] && return 0
   local d t
@@ -104,24 +155,24 @@ token_gh() { # la cuenta dueña del repo, aunque la activa sea otra (igual que p
 }
 ghr() { (cd "$REPO" && gh "$@"); }
 
-pausado() {
+pausado() { # la pausa manual de este proyecto, o la de la máquina por el límite del plan (maquina.sh)
   [ -f "$EST/.pausa-manual" ] && return 0
-  local h
-  h=$(cat "$EST/.pausa-hasta" 2>/dev/null || echo 0)
-  [ "$(date +%s)" -lt "${h:-0}" ]
+  pausa_compartida_hasta >/dev/null
 }
 
 # ------------------------------------------------------------------------------------------------------------- cola y llaves
 
-borrador() { [ "$(campo "$1" borrador)" = si ]; } # la spec todavía se está escribiendo: no se lanza
+# La spec todavía se está escribiendo (`borrador: si`, que en el issue es cola:borrador) o su issue tiene el yaml roto: no se lanza.
+borrador() { [ "$(campo "$1" borrador)" = si ] || [ -f "$EST/$(campo "$1" id)/issue-roto" ]; }
+urgente() { [ "$(campo "$1" urgente)" = si ]; } # cola:urgente: va primero al lanzar
 
-deps_listas() { # todas sus dependencias integradas u omitidas (y la spec misma no es un borrador)
-  local d s
+deps_listas() { # la spec no es un borrador y sus dependencias están listas (dep_lista); las que faltan, en DEPS_FALTAN
+  local d
+  DEPS_FALTAN=""
   borrador "$1" && return 1
-  for d in $(campo "$1" depende); do
-    s=$(estado_de "$d")
-    case "$s" in integrado | omitida) ;; *) return 1 ;; esac
-  done
+  error_de_modelo "$1" >/dev/null && return 1
+  for d in $(campo "$1" depende); do dep_lista "$d" || DEPS_FALTAN="$DEPS_FALTAN $DEP_MOTIVO"; done
+  [ -z "$DEPS_FALTAN" ]
 }
 
 retiene_llaves() {
@@ -155,15 +206,33 @@ corriendo_ahora() { local n=0 id; for id in $(ids); do [ "$(estado_de "$id")" = 
 # ------------------------------------------------------------------------------------------------------------------- el bucle
 
 bucle() {
-  exec 8>"$EST/.orquestador.lock"
+  # Sin flock, el `flock -n` de abajo fallaría y diría que ya hay otro orquestador.
+  command -v flock >/dev/null || { echo "Falta flock: sudo apt install util-linux" >&2; exit 69; }
+  # Relanzado con `exec` (al_dia_y_relanzar), el fd 8 sigue abierto con el candado: los hijos en curso comparten esa descripción, y
+  # reabrirlo la soltaría y el `flock -n` chocaría con ellos.
+  if [ "${ORQ_RELANZADO:-0}" != 1 ] || ! { : >&8; } 2>/dev/null; then exec 8>"$EST/.orquestador.lock"; fi
   flock -n 8 || { echo "Ya hay un orquestador corriendo (.orquestador/estado/.orquestador.lock)." >&2; exit 75; }
+  local malos
+  if malos=$(niveles_invalidos); then
+    log "no arranco: los niveles de modelo de la configuración no valen: $(tr '\n' ' ' <<<"$malos")"
+    printf '%s\n' "$malos" >&2
+    exit 78
+  fi
+  while IFS= read -r malos; do [ -n "$malos" ] && log "$malos"; done < <(modelos_heredados)
+  pasar_pausa_vieja
   token_gh
-  log "orquestador arriba · paralelo $PARALELO · $(ids | wc -w) tareas en la cola"
+  leer_turnos
+  log "orquestador arriba · paralelo $PARALELO · turnos de la máquina $TURNOS · niveles rapido=$NIVEL_RAPIDO normal=$NIVEL_NORMAL capaz=$NIVEL_CAPAZ · $(ids | wc -w) tareas en la cola"
   while :; do
+    al_dia_y_relanzar
+    avisar_turnos
     revisar_procesos
     vigilar_prs
+    espejo
+    con_issues || { al_integrar_pendientes; avisos_kit_pendientes; } # sin espejo: lo que un corte dejó pendiente
     if ! pausado; then
       lanzar
+      lanzar_redaccion
       cola_terminada
     fi
     sleep "${INTERVALO:-60}"
@@ -203,12 +272,13 @@ sin_lugar() {
 }
 
 lanzar() {
-  local libres id s quien lleno
+  local libres id s quien orden turnos lleno
   libres=$((PARALELO - $(corriendo_ahora)))
   [ "$libres" -gt 0 ] || return 0
   if lleno=$(sin_lugar); then
     if [ ! -f "$EST/.sin-lugar" ]; then
       touch "$EST/.sin-lugar"
+      log "máquina sin lugar: no lanzo tareas ($lleno)"
       avisar "Máquina sin lugar" "No lanzo tareas: $lleno. Sigo solo cuando se libere; las que corren siguen." high floppy_disk
     fi
     return 0
@@ -217,9 +287,18 @@ lanzar() {
     rm -f "$EST/.sin-lugar"
     log "la máquina tiene lugar otra vez: sigo lanzando"
   fi
-  # Primero lo que ya tiene trabajo hecho (arreglar y retomar), después lo nuevo en el orden de la cola.
+  # El tope del proyecto y el de la máquina: no se lanza un hijo que no va a tener turno.
+  turnos=$(turnos_libres)
+  if [ "$turnos" = 0 ]; then
+    [ -f "$EST/.sin-turno" ] || { touch "$EST/.sin-turno" && log "sin turno en la máquina: espero a que se libere uno"; }
+    return 0
+  fi
+  rm -f "$EST/.sin-turno"
+  [ "$turnos" -lt "$libres" ] && libres=$turnos
+  # Primero lo que ya tiene trabajo hecho (arreglar y retomar), después lo nuevo: las urgentes y luego el orden de la cola.
+  orden="$(for id in $(ids); do urgente "$(spec_de "$id")" && echo "$id"; done) $(for id in $(ids); do urgente "$(spec_de "$id")" || echo "$id"; done)"
   for pasada in arreglos nuevas; do
-    for id in $(ids); do
+    for id in $orden; do
       [ "$libres" -gt 0 ] || return 0
       s=$(estado_de "$id")
       case "$pasada:$s" in
@@ -263,7 +342,7 @@ cola_terminada() {
   [ -f "$EST/.terminada-avisada" ] && return 0
   touch "$EST/.terminada-avisada"
   if [ -n "$trab" ]; then
-    avisar "Cola detenida" "$hechas integradas. Trabadas:$trab.${bloqueadas:+ Esperando a esas:$bloqueadas.} bash scripts/orquestador/orquestador.sh estado" high warning
+    avisar "Cola detenida" "$hechas integradas. Trabadas:$trab.${bloqueadas:+ Esperando:$bloqueadas.} bash scripts/orquestador/orquestador.sh estado" high warning
   else
     avisar "Cola terminada" "Las $hechas tareas están integradas en main." default tada
   fi
@@ -334,7 +413,7 @@ a_arreglar() {
   printf '%s\n' "$motivo" >"$EST/$id/motivo.md"
   est_set "$id" estado por_arreglar
   log "$id: a arreglar (intento $(num "$id" arreglos)): $(head -n 1 <<<"$motivo")"
-  avisar "$id: CI rojo" "Va el intento $(num "$id" arreglos) de arreglo. $(head -n 1 <<<"$motivo")" low wrench
+  avisar "$id: CI rojo" "Va el intento $(num "$id" arreglos) de arreglo. $(head -n 1 <<<"$motivo")" low wrench "$(enlace_issue "$id")"
 }
 
 integrada() {
@@ -342,24 +421,41 @@ integrada() {
   wt="$WTS/$id"
   rama=$(campo "$(spec_de "$id")" rama)
   if [ -d "$wt" ]; then
-    [ -f "$wt/.env.carril" ] && (cd "$wt" && bash scripts/worktree/quitar.sh >>"$EST/$id/preparar.log" 2>&1)
+    [ -f "$wt/.env.carril" ] && (cd "$wt" && bash scripts/worktree/quitar.sh >>"$EST/$id/preparar.log" 2>&1 9>&-)
     git -C "$REPO" worktree remove --force "$wt" >>"$EST/$id/correr.log" 2>&1 || log "$id: no se pudo borrar el worktree $wt (bórralo a mano)"
   fi
   git -C "$REPO" worktree prune >/dev/null 2>&1
   git -C "$REPO" branch -D "$rama" >/dev/null 2>&1 || true
   rm -rf "${TMP_TAREAS:?}/$id"
+  marcar_al_integrar "$id"
+  marcar_aviso_kit "$id"
   est_set "$id" estado integrado
   est_set "$id" integrado_en "$(date '+%F %T')"
-  avisar "$id integrada ✓" "PR #$pr en main: $(campo "$(spec_de "$id")" titulo)" default white_check_mark
+  avisar "$id integrada ✓" "PR #$pr en main: $(campo "$(spec_de "$id")" titulo)" default white_check_mark "$(enlace_issue "$id")"
+  if con_issues && [ -n "$(est_get "$id" issue)" ]; then
+    comentar "$id" "integrada en main con el PR #$pr ✓" >/dev/null
+    cerrar_issue_de "$id" || log "$id: no se pudo cerrar el issue: se reintenta en la vuelta siguiente"
+  fi
+  hacer_al_integrar "$id"
+  avisar_al_kit "$id"
 }
 
 trabar() {
   local id=$1 motivo=$2 wt
   wt="$WTS/$id"
-  [ -f "$wt/.env.carril" ] && (cd "$wt" && bash scripts/worktree/quitar.sh >>"$EST/$id/preparar.log" 2>&1)
+  [ -f "$wt/.env.carril" ] && (cd "$wt" && bash scripts/worktree/quitar.sh >>"$EST/$id/preparar.log" 2>&1 9>&-)
   est_set "$id" estado trabada
   printf '%s\n' "$motivo" >"$EST/$id/trabada.md"
-  avisar "$id trabada" "$motivo — revisa .orquestador/estado/$id/ y luego bash scripts/orquestador/orquestador.sh reintentar $id" high warning
+  if con_issues && [ -n "$(est_get "$id" issue)" ]; then
+    # La respuesta es el primer comentario posterior a éste que no es del orquestador (buscar_respuestas).
+    est_set "$id" trabada_en "$(ahora_utc)"
+    est_set "$id" trabada_comentario "$(comentar "$id" "me trabé: $motivo
+
+Responde en un comentario de este issue: tu respuesta se suma a «Decisiones ya tomadas» y la tarea se retoma desde su rama.")"
+    avisar "$id trabada" "$motivo — responde en un comentario del issue" high warning "$(enlace_issue "$id")"
+  else
+    avisar "$id trabada" "$motivo — revisa .orquestador/estado/$id/ y luego bash scripts/orquestador/orquestador.sh reintentar $id" high warning
+  fi
 }
 
 # ----------------------------------------------------------------------------------------------------- correr una tarea (hijo)
@@ -377,7 +473,22 @@ correr() {
   PREVIO=$(est_get "$ID" previo)
   est_set "$ID" pid "$$"
   token_gh
+  if ! modelos_de_la_tarea; then
+    trabar "$ID" "la spec tiene un error: $MOTIVO_MODELO. Cámbiala (en el issue, el bloque yaml) y responde para retomarla."
+    exit 0
+  fi
+  # El turno se toma antes de preparar nada (un carril de Docker que después no puede correr) y se sostiene hasta salir.
+  tomar_turno || { volver "sin turno en la máquina"; exit 0; }
+  # Otro orquestador pudo llegar al límite del plan entre que el bucle miró y ahora.
+  local hasta
+  if hasta=$(pausa_compartida_hasta); then volver "pausa compartida por el límite del plan hasta las $(date -d "@$hasta" '+%H:%M')"; exit 0; fi
+  log "$ID: turno $TURNO de $TURNOS de la máquina"
   log "$ID: empieza ($PREVIO) en $WT"
+  case "$PREVIO" in
+    por_arreglar) comentar "$ID" "arreglo el PR #$(est_get "$ID" pr): $(head -n 1 "$EST/$ID/motivo.md" 2>/dev/null)" >/dev/null ;;
+    por_retomar) comentar "$ID" "retomo la tarea: $(est_get "$ID" motivo_retomar)" >/dev/null ;;
+    *) comentar "$ID" "empiezo la tarea en la rama \`$RAMA\`." >/dev/null ;;
+  esac
 
   preparar_worktree || exit 0
   preparar_carril || exit 0
@@ -392,6 +503,13 @@ correr() {
       ;;
   esac
   despues_de_la_sesion
+}
+
+modelos_de_la_tarea() { # deja MODELO_PLAN y MODELO_SESION (niveles.sh), o MOTIVO_MODELO y devuelve 1
+  elegir_modelo "$SPEC" _plan "$NIVEL_PLANIFICAR" || return 1
+  MODELO_PLAN=$ELEGIDO
+  elegir_modelo "$SPEC" "" "$NIVEL_EJECUTAR" || return 1
+  MODELO_SESION=$ELEGIDO
 }
 
 volver() { # deja la tarea como estaba antes de lanzarla (sin gastar intentos)
@@ -436,7 +554,8 @@ preparar_worktree() {
 
 preparar_carril() {
   local salida rc
-  salida=$(cd "$WT" && bash scripts/worktree/preparar.sh 2>&1)
+  # `9>&-`: lo que preparar.sh deje corriendo no retiene el turno de la máquina.
+  salida=$(cd "$WT" && bash scripts/worktree/preparar.sh 2>&1 9>&-)
   rc=$?
   printf '%s\n%s\n' "--- $(date '+%F %T')" "$salida" >>"$EST/$ID/preparar.log"
   [ "$rc" = 0 ] && { est_del "$ID" fallos_carril; return 0; }
@@ -458,11 +577,18 @@ preparar_carril() {
   return 1
 }
 
-soltar_carril() { [ -f "$WT/.env.carril" ] && (cd "$WT" && bash scripts/worktree/quitar.sh >>"$EST/$ID/preparar.log" 2>&1); return 0; }
+soltar_carril() { [ -f "$WT/.env.carril" ] && (cd "$WT" && bash scripts/worktree/quitar.sh >>"$EST/$ID/preparar.log" 2>&1 9>&-); return 0; }
 
 reemplazar() { # plantilla → prompt (las llaves {{X}} se reemplazan)
   local t
   t=$(<"$1")
+  # Lo que la spec permite (`permite: dependencias`): un párrafo que levanta el «cambiar dependencias» de «No hagas». Va antes que
+  # la spec y el plan, que podrían nombrar la llave como texto.
+  local permite=""
+  if [[ " $(campo "$SPEC" permite | tr ',' ' ') " == *" dependencias "* ]]; then
+    permite=$(<"$PROMPTS/permite-dependencias.md")$'\n\n'
+  fi
+  t=${t//$'{{PERMITE}}\n'/$permite}
   t=${t//'{{ID}}'/$ID}
   t=${t//'{{TITULO}}'/$TITULO}
   t=${t//'{{RAMA}}'/$RAMA}
@@ -473,6 +599,12 @@ reemplazar() { # plantilla → prompt (las llaves {{X}} se reemplazan)
   t=${t//'{{PLAN}}'/$(if [ -s "$EST/$ID/plan.md" ]; then cat "$EST/$ID/plan.md"; else echo "(Esta tarea no lleva plan previo: planifica tú mismo antes de tocar código.)"; fi)}
   t=${t//'{{MOTIVO}}'/$(cat "$EST/$ID/motivo.md" 2>/dev/null)}
   t=${t//'{{SPEC}}'/$(cuerpo "$SPEC")}
+  # Con la cola en issues, el PR cierra el issue de la tarea (`Closes #<n>`); sólo local, no hay nada que cerrar.
+  local cierra=""
+  if con_issues && [ -n "$(est_get "$ID" issue)" ]; then
+    cierra=$(<"$PROMPTS/cierra-issue.md") && cierra="${cierra//'{{N}}'/$(est_get "$ID" issue)}"$'\n'
+  fi
+  t=${t//$'{{CIERRA_ISSUE}}\n'/$cierra}
   printf '%s\n' "$t"
 }
 
@@ -483,10 +615,13 @@ claude_en_el_worktree() { # nombre modelo effort modo prompt_archivo [args extra
   shift 5
   local salida="$EST/$ID/$nombre.jsonl" rc
   ln -sfn "$salida" "$EST/$ID/sesion-actual.jsonl"
-  log "$ID: sesión $nombre ($modelo · $effort · $modo)"
-  (cd "$WT" && timeout --kill-after=120 "${TIEMPO_MAX_SESION:-5h}" \
+  log "$ID: sesión $nombre ($modelo · $effort · $modo${PERMITE_SESION:+ · permite $PERMITE_SESION})"
+  # ORQ_PERMITE siempre explícito (vacío si la spec no permite nada): el hook de Bash lo lee del entorno del proceso `claude`, y el
+  # del servicio no se hereda.
+  (cd "$WT" && ORQ_PERMITE="${PERMITE_SESION:-}" timeout --kill-after=120 "${TIEMPO_MAX_SESION:-5h}" \
     claude -p --model "$modelo" --effort "$effort" --permission-mode "$modo" \
-    --output-format stream-json --verbose "$@" <"$prompt") >"$salida" 2>"$salida.err"
+    --output-format stream-json --verbose "$@" <"$prompt") >"$salida" 2>"$salida.err" 9>&-
+  # (`9>&-`: un proceso que la sesión deje vivo no retiene el turno de la máquina.)
   rc=$?
   RESULTADO_JSON=$(jq -c 'select(.type == "result")' "$salida" 2>/dev/null | tail -n 1)
   local rj=${RESULTADO_JSON:-'{}'} es_error
@@ -498,14 +633,11 @@ claude_en_el_worktree() { # nombre modelo effort modo prompt_archivo [args extra
     retomar_luego "La sesión anterior ($nombre) se pasó de ${TIEMPO_MAX_SESION} y se cortó."
     return 1
   fi
-  if { [ "$rc" != 0 ] || [ "$es_error" = true ] || [ -z "$RESULTADO_JSON" ]; } &&
-    grep -qiE 'usage limit|limit reached|hit your limit|limit will reset|resets at|out of (extra )?usage|rate[ _-]?limit' "$salida.err" <(tail -n 5 "$salida"); then
+  if { [ "$rc" != 0 ] || [ "$es_error" = true ] || [ -z "$RESULTADO_JSON" ]; } && es_limite_del_plan "$salida"; then
     soltar_carril
-    local hasta=$(($(date +%s) + ${PAUSA_POR_LIMITE_MIN:-30} * 60))
-    echo "$hasta" >"$EST/.pausa-hasta"
     est_set "$ID" motivo_retomar "La sesión anterior ($nombre) se cortó por el límite del plan de Claude."
     est_set "$ID" estado "$([ "$PREVIO" = por_arreglar ] && echo por_arreglar || echo por_retomar)"
-    avisar "Pausa: límite del plan" "$ID se cortó por el límite de Claude. Reintento a las $(date -d "@$hasta" '+%H:%M')." low hourglass
+    pausar_por_limite "$ID"
     return 1
   fi
   if [ "$rc" != 0 ] && [ -z "$RESULTADO_JSON" ]; then
@@ -514,6 +646,20 @@ claude_en_el_worktree() { # nombre modelo effort modo prompt_archivo [args extra
     return 1
   fi
   return 0
+}
+
+# La salida de una sesión (el stream-json y su .err) dice que llegó al límite del plan de Claude. La usan esta sesión y la redacción
+# de un pedido (pedidos.sh).
+es_limite_del_plan() { # salida
+  grep -qiE 'usage limit|limit reached|hit your limit|limit will reset|resets at|out of (extra )?usage|rate[ _-]?limit' "$1.err" <(tail -n 5 "$1")
+}
+
+# El límite es de la cuenta: la pausa es de todos los orquestadores de la máquina (si otro puso una más tardía, queda ésa).
+pausar_por_limite() { # quien (lo que se cortó, para el aviso)
+  local hasta=$(($(date +%s) + ${PAUSA_POR_LIMITE_MIN:-30} * 60))
+  fijar_pausa_compartida "$hasta" || log "no se pudo escribir la pausa compartida ($PAUSA_COMPARTIDA)"
+  hasta=$(pausa_compartida_hasta) || hasta=$(($(date +%s) + ${PAUSA_POR_LIMITE_MIN:-30} * 60))
+  avisar "Pausa: límite del plan" "$1 se cortó por el límite de Claude. Reintento a las $(date -d "@$hasta" '+%H:%M') (vale para todos los orquestadores de la máquina)." low hourglass
 }
 
 retomar_luego() {
@@ -528,9 +674,9 @@ retomar_luego() {
 }
 
 planificar() {
-  local p="$EST/$ID/prompt-plan.md" modelo effort
-  modelo=$(campo "$SPEC" modelo_plan); modelo=${modelo:-$MODELO_PLANIFICAR}
+  local p="$EST/$ID/prompt-plan.md" modelo=$MODELO_PLAN effort
   effort=$(campo "$SPEC" effort_plan); effort=${effort:-$EFFORT_PLANIFICAR}
+  PERMITE_SESION="" # el plan sólo lee: ningún permiso
   reemplazar "$PROMPTS/planificar.md" >"$p"
   claude_en_el_worktree plan "$modelo" "$effort" plan "$p" --disallowedTools ExitPlanMode || return 1
   if [ "${#RESULTADO_TEXTO}" -lt 800 ]; then
@@ -542,21 +688,35 @@ planificar() {
   log "$ID: plan escrito (${#RESULTADO_TEXTO} caracteres)"
 }
 
+contexto_retomar() { # retomar.md con el motivo y la respuesta de la persona a la trabada, si la hay
+  local t respuesta="(Esta retoma no viene de una respuesta de la persona.)"
+  [ -s "$EST/$ID/respuesta.md" ] && respuesta=$(<"$EST/$ID/respuesta.md")
+  t=$(<"$PROMPTS/retomar.md")
+  t=${t//'{{MOTIVO_RETOMAR}}'/$(est_get "$ID" motivo_retomar)}
+  printf '%s' "${t//'{{RESPUESTA}}'/$respuesta}"
+}
+
 sesion() { # tarea | retomar | arreglar
   local tipo=$1 p modelo effort n
   n=$(($(num "$ID" sesiones) + 1))
   est_set "$ID" sesiones "$n"
   p="$EST/$ID/prompt-$n-$tipo.md"
-  modelo=$(campo "$SPEC" modelo); modelo=${modelo:-$MODELO_EJECUTAR}
+  modelo=$MODELO_SESION
   effort=$(campo "$SPEC" effort); effort=${effort:-$EFFORT_EJECUTAR}
+  PERMITE_SESION=$(campo "$SPEC" permite)
   CONTEXTO=""
   case "$tipo" in
     retomar)
-      CONTEXTO=$(MOTIVO_R=$(est_get "$ID" motivo_retomar) && t=$(<"$PROMPTS/retomar.md") && printf '%s' "${t//'{{MOTIVO_RETOMAR}}'/$MOTIVO_R}")
+      CONTEXTO=$(contexto_retomar)
       reemplazar "$PROMPTS/tarea.md" >"$p"
+      # La respuesta de la persona va en esta retoma; en la siguiente, si la hay, ya está en la spec.
+      [ -s "$EST/$ID/respuesta.md" ] && mv "$EST/$ID/respuesta.md" "$EST/$ID/respuesta-usada-$n.md"
       ;;
     arreglar)
-      if [ "$(num "$ID" arreglos)" -ge 3 ]; then modelo=$MODELO_ARREGLAR_DIFICIL; effort=$EFFORT_ARREGLAR_DIFICIL; fi
+      if [ "$(num "$ID" arreglos)" -ge 3 ]; then
+        modelo=$(modelo_de_nivel "$NIVEL_ARREGLAR_DIFICIL") || modelo=$MODELO_SESION
+        effort=$EFFORT_ARREGLAR_DIFICIL
+      fi
       reemplazar "$PROMPTS/arreglar.md" >"$p"
       ;;
     *) reemplazar "$PROMPTS/tarea.md" >"$p" ;;
@@ -601,6 +761,10 @@ despues_de_la_sesion() {
     est_set "$ID" estado esperando_ci
     est_del "$ID" motivo_retomar
     log "$ID: publicado, PR #$pr esperando al CI"
+    if [ "$(est_get "$ID" pr_comentado)" != "$pr" ]; then
+      comentar "$ID" "abrí el PR #$pr (https://github.com/$REPO_GH/pull/$pr): se integra solo cuando el CI quede en verde." >/dev/null
+      est_set "$ID" pr_comentado "$pr"
+    fi
     return
   fi
   local por_que="La sesión anterior terminó sin dejar el PR publicado y al día."
@@ -632,35 +796,67 @@ cmd_estado() {
       "$(campo "$(spec_de "$id")" titulo | cut -c1-70)" "$extra"
   done
   echo
+  leer_turnos
+  echo "Turnos de la máquina: $(turnos_libres) de $TURNOS libres${TURNOS_AVISO:+ ($TURNOS_AVISO)}."
   if [ -f "$EST/.pausa-manual" ]; then echo "⏸  En pausa manual (bash scripts/orquestador/orquestador.sh reanudar)."; fi
-  if pausado && [ ! -f "$EST/.pausa-manual" ]; then echo "⏸  En pausa por el límite del plan hasta las $(date -d "@$(cat "$EST/.pausa-hasta")" '+%H:%M')."; fi
+  linea_de_pausa
   if lleno=$(sin_lugar); then echo "⛔ Máquina sin lugar, no lanza tareas: $lleno."; fi
   echo "INT = retomas/arreglos. Trabadas: el motivo está en .orquestador/estado/<ID>/trabada.md"
 }
 
 cmd_plan() {
-  local id s quien d faltan lleno
-  cola_invalida
+  local id s quien motivo libres sin_turno="" lleno
+  leer_turnos
+  libres=$(turnos_libres)
+  echo "$PROYECTO · turnos de la máquina: $libres de $TURNOS libres · paralelo $PARALELO"
+  [ -n "$TURNOS_AVISO" ] && echo "⚠ $TURNOS_AVISO"
+  linea_de_pausa
+  [ -f "$EST/.pausa-manual" ] && echo "⏸  en pausa manual: no lanza nuevas (bash scripts/orquestador/orquestador.sh reanudar)"
+  motivo=$(motivo_para_no_tocar_la_principal) && echo "· $motivo"
   if lleno=$(sin_lugar); then echo "⛔ Máquina sin lugar, no lanza tareas: $lleno."; fi
+  [ "$libres" = 0 ] && sin_turno="espera: sin turno en la máquina ($TURNOS de $TURNOS ocupados: $(turnos_ocupados_por))"
+  cola_invalida
   for id in $(ids); do
     s=$(estado_de "$id")
     case "$s" in
       pendiente)
-        faltan=""
-        for d in $(campo "$(spec_de "$id")" depende); do
-          case "$(estado_de "$d")" in integrado | omitida) ;; *) faltan="$faltan $d" ;; esac
-        done
-        if borrador "$(spec_de "$id")"; then echo "$id  borrador (quita «borrador: si» cuando la spec esté lista)"
-        elif [ -n "$faltan" ]; then echo "$id  espera dependencias:$faltan"
+        if borrador "$(spec_de "$id")"; then
+          echo "$id  borrador (quita «borrador: si» o la etiqueta cola:borrador del issue cuando la spec esté lista)"
+        elif motivo=$(error_de_modelo "$(spec_de "$id")"); then echo "$id  spec con error: $motivo"
+        elif ! FRESCO=1 deps_listas "$(spec_de "$id")"; then echo "$id  espera dependencias:$DEPS_FALTAN"
         elif quien=$(llave_ocupada_por "$id"); then echo "$id  espera el área que ocupa $quien"
+        elif [ -n "$sin_turno" ]; then echo "$id  $sin_turno"
         else echo "$id  LISTA para lanzar"; fi
         ;;
       por_arreglar | por_retomar)
         if quien=$(llave_ocupada_por "$id" retomando); then echo "$id  $s, espera el área que ocupa $quien"; else echo "$id  $s"; fi
         ;;
-      *) echo "$id  $s" ;;
+      *) echo "$id  $s$(linea_al_integrar "$id")$(linea_aviso_kit "$id")" ;;
     esac
   done
+  # Un issue que nunca se pudo leer no tiene archivo en la cola, pero tampoco se lanza: se nombra igual.
+  local f
+  for f in "$EST"/T*/issue-roto; do
+    [ -e "$f" ] || continue
+    id=$(basename "$(dirname "$f")")
+    spec_de "$id" >/dev/null || echo "$id  borrador (su issue no se lee: el motivo está en el comentario del orquestador)"
+  done
+  # Los pedidos en texto libre que se están redactando como spec (pedidos.sh).
+  for f in "$EST"/P*/estado; do
+    [ -e "$f" ] && linea_de_pedido "$(basename "$(dirname "$f")")"
+  done
+  return 0
+}
+
+cmd_prompt() { # lo que recibiría ahora la sesión de ejecutar de una tarea (no lanza nada)
+  ID=$1
+  SPEC=$(spec_de "$ID") || { echo "no existe $ID" >&2; exit 64; }
+  RAMA=$(campo "$SPEC" rama)
+  TITULO=$(campo "$SPEC" titulo)
+  WT="$WTS/$ID"
+  CONTEXTO=""
+  [ "$(estado_de "$ID")" = por_retomar ] && CONTEXTO=$(contexto_retomar)
+  reemplazar "$PROMPTS/tarea.md"
 }
 
 cmd_ver() {
@@ -674,8 +870,13 @@ cmd_ver() {
 }
 
 cmd_reintentar() {
+  spec_de "$1" >/dev/null || { echo "no existe $1" >&2; exit 64; }
+  reintentar_tarea "$1" "La persona pidió reintentar esta tarea después de que quedó trabada. Revisa qué quedó hecho y termínala."
+  echo "$1 → $(estado_de "$1")"
+}
+
+reintentar_tarea() { # ID motivo-para-retomar
   local id=$1
-  spec_de "$id" >/dev/null || { echo "no existe $id" >&2; exit 64; }
   est_set "$id" retomas 0
   est_set "$id" arreglos 0
   est_del "$id" fallos_carril
@@ -684,15 +885,14 @@ cmd_reintentar() {
   if [ -n "$(est_get "$id" pr)" ] && [ -s "$EST/$id/motivo.md" ]; then
     est_set "$id" estado por_arreglar
   elif [ -e "$WTS/$id/.git" ]; then
-    est_set "$id" motivo_retomar "La persona pidió reintentar esta tarea después de que quedó trabada. Revisa qué quedó hecho y termínala."
+    est_set "$id" motivo_retomar "$2"
     est_set "$id" estado por_retomar
   else
     est_set "$id" estado pendiente
   fi
-  echo "$id → $(estado_de "$id")"
 }
 
-cmd_parar() {
+cortar_sesion() { # corta la sesión en curso de una tarea y suelta su carril
   local id=$1 p
   p=$(est_get "$id" pid)
   # setsid le dio su propia sesión: se corta todo lo que cuelga de ella (timeout y claude incluidos).
@@ -700,6 +900,12 @@ cmd_parar() {
   sleep 3
   [ -n "$p" ] && pkill -KILL -s "$p" 2>/dev/null
   [ -f "$WTS/$id/.env.carril" ] && (cd "$WTS/$id" && bash scripts/worktree/quitar.sh)
+  return 0
+}
+
+cmd_parar() {
+  local id=$1
+  cortar_sesion "$id"
   est_set "$id" motivo_retomar "La persona cortó la sesión anterior a mano."
   est_set "$id" estado por_retomar
   echo "$id cortada; queda para retomar (bash scripts/orquestador/orquestador.sh pausar si no quieres que vuelva a arrancar)."
@@ -709,12 +915,12 @@ cmd_verificar() {
   local ok=1 c d id f lleno
   echo "== Herramientas"
   for c in git gh jq claude pnpm node docker flock timeout setsid curl; do
-    if command -v "$c" >/dev/null; then echo "✓ $c"; else echo "✗ falta $c"; ok=0; fi
+    if command -v "$c" >/dev/null; then echo "✓ $c"; else echo "✗ falta $c ($(paquete_de "$c"))"; ok=0; fi
   done
   claude --version 2>/dev/null | sed 's/^/  claude /'
   claude --help 2>/dev/null | grep -q -- '--effort' || { echo "✗ tu claude no tiene --effort: claude update"; ok=0; }
   echo "== Repo ($PROYECTO)"
-  [ -d "$REPO/.git" ] && echo "✓ $REPO" || { echo "✗ no hay repo en $REPO"; ok=0; }
+  if [ -d "$REPO/.git" ]; then echo "✓ $REPO"; else echo "✗ no hay repo en $REPO"; ok=0; fi
   git -C "$REPO" check-ignore -q "$DATOS/estado" 2>/dev/null || [ "${DATOS#"$REPO"/}" = "$DATOS" ] ||
     { echo "✗ $DATOS está dentro del repo y git no lo ignora (.gitignore)"; ok=0; }
   echo "✓ datos en $DATOS"
@@ -722,14 +928,26 @@ cmd_verificar() {
   echo "== GitHub"
   token_gh
   if ghr api user --jq .login >/dev/null 2>&1; then echo "✓ gh con la cuenta $(ghr api user --jq .login)"; else echo "✗ gh sin sesión para $(dueno_del_repo) (gh auth login)"; ok=0; fi
-  [ "$(ghr api 'repos/{owner}/{repo}' --jq .allow_auto_merge 2>/dev/null)" = true ] && echo "✓ auto-merge permitido en el repo" || { echo "✗ el repo no permite auto-merge"; ok=0; }
+  if [ "$(ghr api 'repos/{owner}/{repo}' --jq .allow_auto_merge 2>/dev/null)" = true ]; then echo "✓ auto-merge permitido en el repo"; else echo "✗ el repo no permite auto-merge"; ok=0; fi
+  echo "== Cola en los issues"
+  if [ "${ORQ_SOLO_LOCAL:-0}" = 1 ]; then
+    echo "· ORQ_SOLO_LOCAL=1: la cola es sólo local (.orquestador/cola/)"
+  elif [ -z "$REPO_GH" ]; then
+    echo "✗ el remoto origin no es de GitHub: la cola queda sólo local"; ok=0
+  elif asegurar_etiquetas; then
+    echo "✓ issues de $REPO_GH con las etiquetas $ETIQUETAS_COLA y las de lo que entra solo: $ETIQUETAS_ENTRADA"
+  else
+    echo "✗ no se pudieron crear las etiquetas de la cola en $REPO_GH: $(cat "$EST/.gh-ultimo-error" 2>/dev/null)"; ok=0
+  fi
   echo "== Docker"
-  docker info >/dev/null 2>&1 && echo "✓ docker responde" || { echo "✗ docker no responde"; ok=0; }
+  if docker info >/dev/null 2>&1; then echo "✓ docker responde"; else echo "✗ docker no responde"; ok=0; fi
   free -g 2>/dev/null | awk '/Mem:/ {print "  RAM: " $2 " GB en total, " $7 " GB disponibles (cada carril con Supabase y un e2e ronda 3-4 GB)"}'
   echo "== Lugar (/tmp, el repo y las carpetas temporales; tope: ${MIN_LIBRE_PCT:-5} % libre)"
   if lleno=$(sin_lugar); then echo "✗ $lleno"; ok=0; else echo "✓ hay lugar"; fi
+  verificar_maquina || ok=0
+  verificar_niveles || ok=0
   echo "== Claude (una llamada mínima)"
-  if echo 'Responde exactamente: ok' | claude -p --model sonnet --effort low --permission-mode "${MODO_EJECUTAR:-auto}" --output-format json 2>/dev/null | jq -e '.result | test("ok"; "i")' >/dev/null; then
+  if echo 'Responde exactamente: ok' | claude -p --model "$(modelo_de_nivel normal || echo sonnet)" --effort low --permission-mode "${MODO_EJECUTAR:-auto}" --output-format json 2>/dev/null | jq -e '.result | test("ok"; "i")' >/dev/null; then
     echo "✓ claude -p responde en modo ${MODO_EJECUTAR:-auto}"
   else
     echo "✗ claude -p no respondió en modo ${MODO_EJECUTAR:-auto} (¿sesión iniciada? ¿tu versión tiene ese modo? prueba MODO_EJECUTAR=acceptEdits)"; ok=0
@@ -738,8 +956,14 @@ cmd_verificar() {
   cola_invalida || ok=0
   for id in $(ids); do
     f=$(spec_de "$id")
-    [ -n "$(campo "$f" rama)" ] && [ -n "$(campo "$f" titulo)" ] || { echo "✗ $id sin rama o título"; ok=0; }
-    for d in $(campo "$f" depende); do spec_de "$d" >/dev/null || { echo "✗ $id depende de $d, que no existe"; ok=0; }; done
+    [[ -n "$(campo "$f" rama)" && -n "$(campo "$f" titulo)" ]] || { echo "✗ $id sin rama o título"; ok=0; }
+    for d in $(campo "$f" depende); do
+      case "$d" in
+        T[0-9]*) ;;
+        ?*:?*) [ -n "$(repo_de_nombre "${d%%:*}")" ] || { echo "✗ $id depende de $d: no sé qué repo es «${d%%:*}»"; ok=0; } ;;
+        *) echo "✗ $id depende de «$d»: va T<n> o <repo>:<rama>"; ok=0 ;;
+      esac
+    done
   done
   echo "✓ $(ids | wc -w) tareas leídas"
   echo "== Estado del repo (scripts/flujo/estado.sh: un PR abierto o un CI en rojo van antes que la cola)"
@@ -748,16 +972,17 @@ cmd_verificar() {
   avisar "Orquestador $PROYECTO" "Aviso de prueba: si lo ves en el celular, ntfy funciona." low test_tube
   echo "  (mira el celular)"
   echo
-  [ "$ok" = 1 ] && echo "Todo listo." || { echo "Hay cosas que arreglar arriba."; exit 1; }
+  if [ "$ok" = 1 ]; then echo "Todo listo."; else echo "Hay cosas que arreglar arriba."; exit 1; fi
 }
 
-cmd_nueva() { # ID tema
+cmd_nueva() { # tema (con la cola en issues) | ID tema (ORQ_SOLO_LOCAL=1)
+  con_issues && { nueva_en_issues "$@"; return; }
   local id=${1:-} tema=${2:-} f
-  [[ "$id" =~ ^T[0-9]+$ ]] && [ -n "$tema" ] || { echo "uso: nueva T23 tema-en-kebab" >&2; exit 64; }
+  [[ "$id" =~ ^T[0-9]+$ && -n "$tema" ]] || { echo "uso (cola sólo local): nueva T23 tema-en-kebab" >&2; exit 64; }
   spec_de "$id" >/dev/null && { echo "ya existe $(spec_de "$id")" >&2; exit 64; }
   f="$COLA/$id-$tema.md"
   [[ "$tema" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || { echo "el tema va en kebab (minúsculas, números y guiones): $tema" >&2; exit 64; }
-  sed -e "s/{{ID}}/$id/g" -e "s/{{TEMA}}/$tema/g" "$ORQ/plantilla-tarea.md" >"$f"
+  sed -e "1a id: $id" -e "s/{{TEMA}}/$tema/g" "$ORQ/plantilla-tarea.md" >"$f"
   # La plantilla tiene que haber dejado una spec que el bucle lea: si un formateador le tocó los marcadores, se dice aquí y no al lanzar.
   if ! id_valido "$f" || grep -q '{{' "$f"; then
     rm -f "$f"
@@ -765,6 +990,55 @@ cmd_nueva() { # ID tema
     exit 70
   fi
   echo "Escribe la spec en $f y quita la línea «borrador: si»: recién entonces el orquestador la toma."
+}
+
+nueva_en_issues() { # tema — la spec en borrador va a la entrada y se publica ya como issue (sin red, en la vuelta siguiente)
+  local tema=${1:-} f spec
+  [[ -n "$tema" && -z "${2:-}" ]] || { echo "uso: nueva tema-en-kebab (el id es el número del issue que se crea)" >&2; exit 64; }
+  [[ "$tema" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]] || { echo "el tema va en kebab (minúsculas, números y guiones): $tema" >&2; exit 64; }
+  mkdir -p "$DATOS/entrada"
+  f="$DATOS/entrada/$tema.md"
+  [ -e "$f" ] && { echo "ya existe $f" >&2; exit 64; }
+  sed -e "s/{{TEMA}}/$tema/g" "$ORQ/plantilla-tarea.md" >"$f"
+  if grep -q '{{' "$f" || ! node "$SPEC_ISSUE" a-issue "$f" >/dev/null 2>&1; then
+    rm -f "$f"
+    echo "✗ scripts/orquestador/plantilla-tarea.md está dañada: le quedaron marcadores {{…}} o no es una spec que se lea." >&2
+    exit 70
+  fi
+  token_gh
+  if asegurar_etiquetas && publicar_entrada "$f" && [ -n "$PUBLICADA" ]; then
+    spec=$(spec_de "$PUBLICADA")
+    echo "$PUBLICADA: issue $(enlace_issue "$PUBLICADA") (en borrador)."
+    echo "Escribe la spec en el issue o en $spec, y quita la etiqueta cola:borrador (o la línea «borrador: si»): recién entonces el orquestador la toma."
+  else
+    echo "GitHub no respondió: la spec quedó en $f y se publica en la vuelta siguiente (o con «entrada»)."
+  fi
+}
+
+cmd_entrada() {
+  local f
+  con_issues || { echo "La cola es sólo local (ORQ_SOLO_LOCAL=1 o sin remoto de GitHub): no hay entrada que publicar." >&2; exit 64; }
+  token_gh
+  if ! asegurar_etiquetas || ! procesar_entrada; then
+    echo "✗ GitHub no respondió ($(cat "$EST/.gh-ultimo-error" 2>/dev/null)): lo que falta sigue en .orquestador/entrada/ y se reintenta en la vuelta siguiente." >&2
+    exit 1
+  fi
+  for f in "$DATOS/entrada"/*.md; do
+    [ -e "$f" ] || continue
+    echo "· sigue en la entrada: $(basename "$f")"
+    [ -f "$f.error" ] && echo "  $(cat "$f.error")"
+  done
+  echo "Entrada publicada. La cola: bash scripts/orquestador/orquestador.sh estado"
+}
+
+cmd_omitir() {
+  est_set "$1" estado omitida
+  echo "$1 omitida"
+  if con_issues && [ -n "$(est_get "$1" issue)" ]; then
+    token_gh
+    comentar "$1" "la persona la dio por hecha sin hacerla: queda omitida (las que dependen de ella siguen)." >/dev/null
+    cerrar_issue_de "$1" || echo "(el issue se cierra en la vuelta siguiente: GitHub no respondió)"
+  fi
 }
 
 cmd_instalar() {
@@ -808,17 +1082,24 @@ cmd_desinstalar() {
 case "${1:-bucle}" in
   bucle) bucle ;;
   correr) correr "$2" ;;
+  redactar) redactar "$2" ;;
   estado) cmd_estado ;;
   plan) cmd_plan ;;
   ver) cmd_ver "$2" ;;
+  prompt) cmd_prompt "$2" ;;
   reintentar) cmd_reintentar "$2" ;;
-  omitir) est_set "$2" estado omitida && echo "$2 omitida" ;;
+  omitir) cmd_omitir "$2" ;;
   parar) cmd_parar "$2" ;;
   pausar) touch "$EST/.pausa-manual" && echo "En pausa: no lanza nuevas; las que corren terminan." ;;
-  reanudar) rm -f "$EST/.pausa-manual" "$EST/.pausa-hasta" && echo "Reanudado." ;;
+  reanudar)
+    rm -f "$EST/.pausa-manual" "$EST/.pausa-hasta" && quitar_pausa_compartida
+    echo "Reanudado (y sin la pausa compartida por el límite del plan, que es de todos los orquestadores de la máquina)."
+    ;;
   verificar) cmd_verificar ;;
-  nueva) cmd_nueva "${2:-}" "${3:-}" ;;
+  nueva) shift && cmd_nueva "$@" ;;
+  entrada) cmd_entrada ;;
+  espejo) token_gh && espejo && echo "Espejo hecho (lo que pasó: .orquestador/estado/orquestador.log)." ;;
   instalar) cmd_instalar ;;
   desinstalar) cmd_desinstalar ;;
-  *) sed -n '2,24p' "$0"; exit 64 ;;
+  *) sed -n '2,29p' "$0"; exit 64 ;;
 esac

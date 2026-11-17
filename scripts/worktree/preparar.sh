@@ -40,8 +40,9 @@ fi
 # 1) .env.carril
 node --input-type=module -e "
 import { writeFileSync } from 'node:fs'
-import { variablesDelCarril } from './scripts/lib/stack-local.mjs'
-const v = variablesDelCarril(process.argv[1])
+import { variablesDelCarril, DESFASES_DE_LOS_CARRILES, baseDelRepo, proyectoDelRepo } from './scripts/lib/stack-local.mjs'
+// El proyecto y sus puertos salen del manifiesto (.proyecto/proyecto.yaml): la pila de un carril es <nombre del repo>-<letra>.
+const v = variablesDelCarril(proyectoDelRepo(), process.argv[1], DESFASES_DE_LOS_CARRILES, baseDelRepo())
 const lineas = Object.entries(v).map(([k, x]) => k + '=' + String(x))
 writeFileSync('.env.carril', '# Carril ' + process.argv[1] + ': lo escribe scripts/worktree/preparar.sh. No se edita a mano.\n' + lineas.join('\n') + '\n')
 " "$CARRIL"
