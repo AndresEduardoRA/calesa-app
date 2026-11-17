@@ -209,8 +209,22 @@ function eliminarDeItem(fila: FilaDeItem, c: ContextoDeLaHoja) {
   ) : null
 }
 
+// La fase del ítem y, si el hueco lo pone, el botón de su siguiente debajo.
+function pasoDeItem(fila: FilaDeItem, c: ContextoDeLaHoja) {
+  const siguiente = c.pasoDeFila ? c.pasoDeFila(fila) : null
+  if (siguiente === null) return <FaseDelItemInsignia fase={fila.fase} />
+  return (
+    <div className="grid min-w-0 justify-items-start gap-1.5 max-md:justify-items-stretch">
+      <div>
+        <FaseDelItemInsignia fase={fila.fase} />
+      </div>
+      {siguiente}
+    </div>
+  )
+}
+
 // Los controles de una fila de la hoja (8.09-2, C8), los mismos en la tabla y en la tarjeta: cada uno con su nombre accesible («Descripción del ítem Faro»). Con `repuestos.editar` y el proyecto abierto
-// son editables; si no, texto plano, el precio por `<Monto>`. La fase es siempre de lectura (se mueve en 8.13).
+// son editables; si no, texto plano, el precio por `<Monto>`. La fase es de lectura: se mueve con el botón del siguiente (el hueco) o desde el panel del ítem.
 export function controlesDeItem(fila: FilaDeItem, c: ContextoDeLaHoja): ControlesDeItem {
   return {
     descripcion: textoDeItem(fila, c, 'descripcion'),
@@ -220,7 +234,7 @@ export function controlesDeItem(fila: FilaDeItem, c: ContextoDeLaHoja): Controle
     moneda: monedaDeItem(fila, c),
     tracking: textoDeItem(fila, c, 'tracking'),
     notas: textoDeItem(fila, c, 'notas'),
-    fase: <FaseDelItemInsignia fase={fila.fase} />,
+    fase: pasoDeItem(fila, c),
     imagenes: imagenesDeItem(fila, c),
     hueco: c.accionDeFila ? c.accionDeFila(fila) : null,
     eliminar: eliminarDeItem(fila, c),

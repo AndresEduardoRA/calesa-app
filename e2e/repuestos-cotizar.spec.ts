@@ -84,7 +84,7 @@ test('cotizar una línea importada y una local, guardar y aceptar deja el precio
     `select id from repuestos_proyectos where vehiculo_etiqueta = ${literal(etiqueta)}`,
   )
   await page.goto(`/repuestos/${proyecto}?pestana=cotizaciones`)
-  await page.getByRole('button', { name: 'Nueva cotización' }).click()
+  await page.getByRole('button', { name: 'Nueva cotización', exact: true }).click()
   await expect(page).toHaveURL(/\/cotizaciones\/[0-9a-f-]{36}$/)
   const id = new URL(page.url()).pathname.split('/').pop() ?? ''
   const titulo = page.getByRole('heading', { level: 1, name: /^Cotización #\d+$/ })

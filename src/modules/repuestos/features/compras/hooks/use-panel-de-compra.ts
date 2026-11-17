@@ -7,16 +7,17 @@ import { useUltimo } from '@/shared/ui/use-ultimo'
 import type { FilaDeCompra } from '../../../entities/compras/compra'
 import {
   CLAVE_DE_COMPRA,
+  CLAVE_DEL_ITEM_DE_COMPRA,
   COMPRA_NUEVA,
   compraDeLaUrl,
   MENSAJE_COMPRA_YA_NO_ESTA,
   PANEL_COMPRA,
 } from '../../../entities/compras/paneles'
 
-// El formulario de una compra en la URL (`?panel=compra&compra=<id|nueva>`, 8.11-3, C10): se puede recargar y «atrás» lo cierra; `?pestana=compras` se conserva.
+// El formulario de una compra en la URL (`?panel=compra&compra=<id|nueva>`, con `&item_de_compra=<id>` desde el panel del ítem; 8.11-3, C10): se puede recargar y «atrás» lo cierra; `?pestana=compras` se conserva.
 // Un id que no está entre las filas, o la URL escrita a mano sin poder escribir (`motivo`), no abre: se avisa una vez y la URL se limpia.
 export function usePanelDeCompra(filas: readonly FilaDeCompra[], motivo: string | null) {
-  const url = usePanelPorUrl(PANEL_COMPRA, [CLAVE_DE_COMPRA])
+  const url = usePanelPorUrl(PANEL_COMPRA, [CLAVE_DE_COMPRA, CLAVE_DEL_ITEM_DE_COMPRA])
   const valor = url.valor(CLAVE_DE_COMPRA)
   const apertura = useApertura(url.abierto)
   const editada = compraDeLaUrl(filas, valor)
@@ -34,6 +35,8 @@ export function usePanelDeCompra(filas: readonly FilaDeCompra[], motivo: string 
     abierto,
     apertura,
     original: abierto ? editada : ultima,
+    // `?item_de_compra=`: el ítem que «Registrar compra» trae ya elegido (sólo al registrar; lo filtra el formulario contra los ítems de la hoja).
+    itemInicial: valor === COMPRA_NUEVA ? url.valor(CLAVE_DEL_ITEM_DE_COMPRA) : null,
     abrirNueva: () => {
       url.abrir({ [CLAVE_DE_COMPRA]: COMPRA_NUEVA })
     },

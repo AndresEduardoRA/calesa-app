@@ -5,7 +5,7 @@ import { sql } from './soporte/sql'
 
 // La pestaña «Pagos» de `/repuestos/[id]` (8.13-5): la dueña registra el pago del cliente en el Drawer; la fila queda en la base con el proyecto y el monto en base; al
 // confirmarlo queda sellada (sin «Editar» ni «Eliminar»: sólo «Anular pago», con un motivo, que lo saca de la lista y lo deja anulado en la base); con el proyecto cerrado
-// «Registrar pago» se apaga con su motivo. Quien no tiene `repuestos.costos.ver` no ve la pestaña (`pestanas.test.ts`). La guarda de fase de anular la prueba la base.
+// «Registrar pago» se apaga con su motivo. Quien no tiene `repuestos.costos.ver` no ve el botón «Pagos» (`paneles.test.ts`). La guarda de fase de anular la prueba la base.
 // La etiqueta no empieza con «E2E»: la limpieza de `repuestos-proyecto.spec.ts` borra esas. Borrar el proyecto borra sus pagos en cascada.
 test.describe.configure({ mode: 'serial' })
 
@@ -46,7 +46,7 @@ test('E2E la pestaña «Pagos» registra, confirma y anula el pago del cliente; 
   await expect(page).toHaveURL(/\/repuestos\/[0-9a-f-]{36}$/)
   const proyecto = new URL(page.url()).pathname.split('/').pop() ?? ''
 
-  await page.getByRole('tab', { name: 'Pagos' }).click()
+  await page.getByRole('button', { name: 'Pagos', exact: true }).click()
   await expect(page).toHaveURL(/[?&]pestana=pagos/)
   await expect(page.getByText('Este proyecto no tiene pagos registrados.')).toBeVisible()
 

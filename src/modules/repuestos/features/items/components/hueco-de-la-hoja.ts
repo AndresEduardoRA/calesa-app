@@ -10,9 +10,14 @@ export type ApiDelHueco = {
   cambiarFila: (id: string, cambio: (fila: FilaDeItem) => FilaDeItem) => void
 }
 
-// El hueco de la hoja (8.10-2, D4): otra área pone algo en cada fila (junto a «Imágenes») y un panel, sin que `items` la importe. Lo llena `src/app` (un área no importa
-// otra): hoy, el stock del ítem (`src/app/(app)/repuestos/[id]/hoja-con-stock.tsx`).
+// El hueco de la hoja (8.10-2, D4): otra área pone algo en cada fila (junto a «Imágenes»), un panel, lo que va arriba de la hoja y lo que va junto a la fase de cada fila,
+// sin que `items` la importe. Lo llena `src/app` (un área no importa otra): el stock del ítem, los pasos del proyecto y el botón del siguiente
+// (`src/app/(app)/repuestos/[id]/hoja-del-proyecto.tsx`).
 export type HuecoDeLaHoja = {
   accionDeFila: (fila: FilaDeItem) => ReactNode
   panel: (api: ApiDelHueco) => ReactNode
+  // Antes de la hoja, con sus filas vivas (los pasos del proyecto y el panel del paso abierto).
+  arriba?: (api: ApiDelHueco) => ReactNode
+  // Junto a la fase de cada fila (el botón del siguiente).
+  pasoDeFila?: (fila: FilaDeItem) => ReactNode
 }

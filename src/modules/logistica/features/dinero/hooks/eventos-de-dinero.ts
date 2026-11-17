@@ -30,3 +30,7 @@ export function useAlCambiarElDinero(unidadId: string, alCambiar: () => void): v
     }
   }, [unidadId])
 }
+
+// Llama `alCambiar` cada vez que cambia el dinero de un proyecto de repuestos (registrar, corregir, eliminar, confirmar o anular uno de sus pagos): la página del proyecto
+// vuelve a pedirse al servidor para que sus pasos digan si ya hay pago.
+export const useAlCambiarElDineroDelProyecto = useAlCambiarElDinero

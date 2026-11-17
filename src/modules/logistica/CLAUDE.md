@@ -72,6 +72,13 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   (sin `componente` no dibuja nada; el `componente` del hueco nunca recibe un ítem); sin variante no se dibuja para un ítem (Aduana, Gastos, Pagos, Margen).
   `huecosVisibles({ tipo: 'repuesto', origenId: null })` filtra por `repuestos.ver` global; el filtro de tipo va antes de descartar repetidos. El transporte de un
   ítem lo dibuja el núcleo (`pantallas/unidad-item.ts`, `textoDelTransporteDelItem`; 8-13b).
+  **El panel de un ítem va con sus secciones a la vista** (`PanelDeLaUnidadALaVista`, por `pantallas/unidad-item.ts`; el de `/logistica/gastos?vehiculo=` sigue
+  plegable): «Qué falta» primero, los `bloques` que compone `src/app` (imágenes, stock y compras de `repuestos`) y el resto en `ORDEN_DEL_ITEM`
+  (`enElOrdenDelItem`). Cada sección es un `SeccionDelHuecoALaVista` (`h3` con `tabIndex={-1}`, `data-bloque-del-hueco`, montada con el panel) en su
+  `LimiteDelHueco`; el atajo de una falta la trae a la vista y enfoca su `h3`. `destinoInicial` (`?destino=` de `repuestos`) llega a «Qué falta» por el contexto
+  `ProveedorDelDestinoInicial` / `useDestinoInicialDelMover()` (`features/nucleo/destino-inicial.tsx`, nulo sin proveedor): `CuerpoDeQueFalta` lo abre con
+  `conAbiertoPorDefecto` sólo si está entre los destinos leídos y fuera de «La ganamos». Tras un `PT409`, el aviso de un ítem sólo ofrece «Recargar»
+  (la página de la unidad es de un vehículo).
 - **Hueco «Repuestos»:** en `ORDEN_DE_HUECOS` entre `transporte` y `aduana` (el orden va por lo que más se hace: que-falta, documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen); lo declara `repuestos` (`pantallas/flujo-esperas.ts`) y lo suma
   `src/app/(app)/logistica/huecos-de-la-unidad.tsx` (`repuestos.ver` y regla `esperas`; sin variante `repuesto`). `logistica` sólo conoce la clave.
 - **Área `mover`, «Qué falta» y mover** (`pantallas/mover-unidad.ts`, hueco `que-falta` abierto al inicio). `useParaMover` lee con la action `leerQueFalta`,
@@ -133,7 +140,8 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   `?panel=gasto&gasto=<id|nuevo>`, `?panel=eliminar-gasto&gasto=<id>`, `?panel=pago|confirmar-pago|eliminar-pago|anular-pago&pago=<id>` (una URL a mano no
   abre lo que el estado o el permiso no dejan). Toda escritura de dinero avisa al «Margen» por un evento del navegador (`eventos-de-dinero.ts`) y, con él, un cambio de la unidad (`avisarCambioDeLaUnidad`: «Qué falta» se relee). Confirmar y
   anular piden `logistica.pagos.confirmar` (global); el sello «Confirmado por <nombre> el <fecha>» lo pone la base; anular pide motivo; el lead va nulo.
-  **Pagos de un proyecto de repuestos:** `pantallas/dinero-proyecto.ts` (pestaña «Pagos» de `/repuestos/[id]`): el mismo `CuerpoDePagos` con
+  **Pagos de un proyecto de repuestos:** `pantallas/dinero-proyecto.ts` (panel «Pagos» de `/repuestos/[id]`; también `useAlCambiarElDineroDelProyecto`, con el
+  que la página se vuelve a pedir tras un pago, y `PARAMETROS_DE_REGISTRAR_PAGO`; `PANELES_DEL_PAGO` sale por `index.ts`): el mismo `CuerpoDePagos` con
   `AmbitoDePagoContext` en `proyecto`, registra `{ proyectoId }` por `pago_registrar_proyecto`, sin lead; permisos por props (`repuestos.costos.editar`,
   `logistica.pagos.confirmar`); anula como el vehículo, y `pago_anular` y `pago_eliminar` no dejan sin pago vivo a un proyecto con un ítem en una fase que pide
   `proyecto.pago_cliente`.

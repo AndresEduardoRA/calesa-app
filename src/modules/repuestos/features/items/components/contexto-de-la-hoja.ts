@@ -20,4 +20,6 @@ export type ContextoDeLaHoja = {
   alPedirImagenes: (itemId: string) => void
   // Lo que el hueco de la hoja pone en cada fila (8.10-2: el stock del ítem); sin hueco, nada.
   accionDeFila?: (fila: FilaDeItem) => ReactNode
+  // Lo que el hueco pone junto a la fase de cada fila (el botón del siguiente); sin hueco, nada.
+  pasoDeFila?: (fila: FilaDeItem) => ReactNode
 }

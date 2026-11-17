@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { FilaDeCompra } from './compra'
-import { cambiosDeCompra, validarCompra, type BorradorDeCompra } from './formulario'
+import {
+  borradorNuevoDeCompra,
+  cambiosDeCompra,
+  validarCompra,
+  type BorradorDeCompra,
+} from './formulario'
 
 const LOCALE = 'es-BO'
 const ITEM = '5e4d3c2b-1a09-4f8e-8d7c-6b5a49382716'
@@ -94,5 +99,20 @@ describe('los cambios de una compra que se edita', () => {
 
   it('quitar el ítem manda `item_id` nulo', () => {
     expect(cambiosDeCompra(fila, datos({ itemId: '' }))).toEqual({ item_id: null })
+  })
+})
+
+describe('el borrador de una compra nueva', () => {
+  it('nace vacío con la moneda base y el día de hoy; sin ítem, salvo que llegue uno ya elegido', () => {
+    expect(borradorNuevoDeCompra('BOB', '2026-11-17')).toEqual({
+      itemId: '',
+      proveedor: '',
+      moneda: 'BOB',
+      monto: '',
+      fecha: '2026-11-17',
+      notas: '',
+      comprobanteRuta: '',
+    })
+    expect(borradorNuevoDeCompra('BOB', '2026-11-17', ITEM).itemId).toBe(ITEM)
   })
 })

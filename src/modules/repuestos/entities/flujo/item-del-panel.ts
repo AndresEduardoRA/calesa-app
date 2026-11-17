@@ -9,16 +9,22 @@ export type ItemDelPanel = {
   // ISO: cuándo entró a su fase; nulo si no tiene.
   faseDesde: string | null
   fase: { nombre: string; color: string } | null
-  proyecto: { id: string; numero: number; vehiculoId: string | null }
+  // La cantidad pedida y lo que de ella está en el stock: el bloque «Stock» del panel.
+  cantidad: number
+  stockCantidad: number
+  // `cerrado`: el proyecto tiene `cerrado_en` (sus bloques quedan de lectura).
+  proyecto: { id: string; numero: number; vehiculoId: string | null; cerrado: boolean }
 }
 
 /** Las columnas que pide el panel, con la fase y el proyecto embebidos (una lectura, sin N+1). */
 export const COLUMNAS_DEL_ITEM_DEL_PANEL =
-  'id, descripcion, fase_id, fase_desde, fase:fases(id, nombre, color), proyecto:repuestos_proyectos(id, numero, vehiculo_id)'
+  'id, descripcion, cantidad, stock_cantidad, fase_id, fase_desde, fase:fases(id, nombre, color), proyecto:repuestos_proyectos(id, numero, vehiculo_id, cerrado_en)'
 
 const esquemaDeFila = z.object({
   id: z.guid(),
   descripcion: z.string(),
+  cantidad: z.number().int(),
+  stock_cantidad: z.number().int(),
   fase_id: z.guid().nullable(),
   fase_desde: z.string().nullable(),
   fase: z.object({ id: z.guid(), nombre: z.string(), color: z.string() }).nullable(),
@@ -28,6 +34,7 @@ const esquemaDeFila = z.object({
       id: z.guid(),
       numero: z.number().int().min(0),
       vehiculo_id: z.guid().nullable(),
+      cerrado_en: z.string().nullable(),
     })
     .nullable(),
 })
@@ -36,7 +43,8 @@ const esquemaDeFila = z.object({
 export function itemDelPanelDesde(fila: unknown): Resultado<ItemDelPanel | null> {
   const leida = esquemaDeFila.safeParse(fila)
   if (!leida.success) return fallo('inesperado', MENSAJE_INESPERADO)
-  const { id, descripcion, fase_id, fase_desde, fase, proyecto } = leida.data
+  const { id, descripcion, cantidad, stock_cantidad, fase_id, fase_desde, fase, proyecto } =
+    leida.data
   if (proyecto === null) return ok(null)
   return ok({
     id,
@@ -44,6 +52,13 @@ export function itemDelPanelDesde(fila: unknown): Resultado<ItemDelPanel | null>
     faseId: fase_id,
     faseDesde: fase_desde,
     fase: fase === null ? null : { nombre: fase.nombre, color: fase.color },
-    proyecto: { id: proyecto.id, numero: proyecto.numero, vehiculoId: proyecto.vehiculo_id },
+    cantidad,
+    stockCantidad: stock_cantidad,
+    proyecto: {
+      id: proyecto.id,
+      numero: proyecto.numero,
+      vehiculoId: proyecto.vehiculo_id,
+      cerrado: proyecto.cerrado_en !== null,
+    },
   })
 }

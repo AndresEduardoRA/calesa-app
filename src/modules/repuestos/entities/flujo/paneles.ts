@@ -13,3 +13,13 @@ export function itemAbiertoDe(parametros: Parametros): string | null {
   if (typeof valor !== 'string' || parametros[CLAVE_DE_PANEL] !== undefined) return null
   return z.guid().safeParse(valor).success ? valor : null
 }
+
+/** El destino ya elegido al abrir el panel del ítem desde el botón del siguiente (`?item=<id>&destino=<fase>`): «Qué falta» lo abre solo si está entre los leídos. */
+export const CLAVE_DE_DESTINO_DEL_PANEL = 'destino'
+
+/** El guid de `?destino=`, sólo junto a un ítem abierto (`itemAbiertoDe`); cualquier otra cosa no elige nada. */
+export function destinoDelPanelDe(parametros: Parametros): string | null {
+  if (itemAbiertoDe(parametros) === null) return null
+  const valor = parametros[CLAVE_DE_DESTINO_DEL_PANEL]
+  return typeof valor === 'string' && z.guid().safeParse(valor).success ? valor : null
+}

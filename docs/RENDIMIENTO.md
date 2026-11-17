@@ -479,7 +479,17 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `?lead=` de «Nuevo proyecto», igual, sólo con el formulario en la URL. El lead del vehículo, en el navegador al elegirlo: `vehiculo_vinculos`
   (≤ 51 filas por vehículo, una lectura por elección). El buscador de leads es el de siempre (`_acotar_pagina`). La lista no suma lecturas.
 - JS en frío: «Nuevo proyecto» (formulario, buscadores, lectura del vínculo y supabase-js) llega con `diferido()` desde `src/app` al abrirlo:
-  `/repuestos` pesa 376,3 KB y `/repuestos/[id]` 459,6 (build de e2e, `medirJsEnFrio`). Sin tope propio.
+  `/repuestos` pesa 376,3 KB (build de e2e, `medirJsEnFrio`). Sin tope propio.
+- Los pasos de `/repuestos/[id]`: tres lecturas de configuración en paralelo en cada carga (fases, salidas y requisitos de dato con una clave de hito del
+  flujo de repuestos; topes 30 / 360 / 60 más uno, por `fases_flujo_id_nombre_key`, `fases_transiciones_flujo_id_idx` y `fases_requisitos_fase_id_idx`)
+  y, sólo con `repuestos.costos.ver`, el pago vivo (`limit 1` por `pagos_proyecto_repuestos_id_idx`). Progreso y siguiente los calcula el navegador sobre
+  las filas de la hoja (≤ 200): O(fases² + ítems) por cambio de filas. Ningún número es un total («37+ de 200+»). Los paneles (Compras tope 200,
+  Cotizaciones 50, Pagos como siempre) se leen al elegirlos y su código llega con `diferido()`. **JS en frío de `/repuestos/[id]`** (con tres ítems, mismo
+  método): 459,5 KB en 28 chunks antes de los pasos, 386,6 KB en 26 después (salen la barra de pestañas y los clientes de los paneles; entran los pasos y la
+  regla). Sin tope propio.
+- El panel del ítem (`?item=`) monta sus secciones a la vista al abrirse: «Qué falta», imágenes (`limit 9`), documentos (50), historial y notas (20) y, con
+  `repuestos.costos.ver`, las compras del ítem (`TAMANO_DE_VER_MAS` + 1 por `repuestos_compras_item_id_idx`): siete lecturas acotadas al abrir, en vez de una
+  por bloque desplegado. `/repuestos` (la Cadena) no cambia en frío: el panel sigue con `diferido()`.
 - Imágenes de un ítem: `limit 9` por `repuestos_items_imagenes_item_id_idx`, sólo al abrir el panel; el trigger cuenta con `limit 8` bajo
   un candado por ítem. **Excepción a «nunca el original»:** sin miniatura y con `unoptimized`, cada imagen baja el WebP de ≤ 1600 px (≤ 8
   por panel abierto).

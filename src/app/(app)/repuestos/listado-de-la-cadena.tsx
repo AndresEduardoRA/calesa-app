@@ -2,6 +2,7 @@ import { puede } from '@/modules/equipo'
 import {
   CLAVE_DE_PROYECTO_DE_LA_CADENA,
   esquemaDeLaCadena,
+  destinoDelPanelDe,
   itemAbiertoDe,
   leerCadenaDeRepuestos,
   pedidoDeLaCadena,
@@ -33,7 +34,11 @@ export async function ListadoDeLaCadena({ parametros, permisos }: Props) {
         ahora={new Date().toISOString()}
         enlaceAFlujos={puede(permisos, 'repuestos.configurar')}
       />
-      <PanelDelItem itemId={itemAbiertoDe(parametros)} permisos={permisos} />
+      <PanelDelItem
+        itemId={itemAbiertoDe(parametros)}
+        destino={destinoDelPanelDe(parametros)}
+        permisos={permisos}
+      />
     </>
   )
 }
