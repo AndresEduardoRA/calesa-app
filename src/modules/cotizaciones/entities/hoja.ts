@@ -1,7 +1,17 @@
 import { type z } from 'zod'
 import type { Tono } from '@/shared/ui/xcell'
 import {
-  type ANCHOS,
+  aspectoDeCabecera,
+  aspectoDeItem,
+  aspectoDeItemConAncho,
+  aspectoDeSeccion,
+  type AspectoDeCabecera,
+  type AspectoDeItem,
+  type AspectoDeItemConAncho,
+  type AspectoDeSeccion,
+} from './aspecto-de-la-hoja'
+import {
+  type AnchoDeCelda,
   type EFECTOS_DE_INTERRUPTOR,
   type PRESENTACIONES,
   type SECUNDARIOS,
@@ -38,40 +48,48 @@ export type AyudaDeCelda = { tabla: string } | { texto: string }
 // La columna de la tabla de una celda y el dato del vehículo con que se busca (`tipo` ← `tipo_vehiculo`).
 export type DatoDelVehiculo = { tabla: string; columnas: { columna: string; campo: string }[] }
 
-export type CeldaDeHoja = EdicionDeHoja & {
-  tipo: 'celda'
-  nodo: string
-  etiqueta: string
-  tipoDeNodo: TipoDeNodoDeHoja
-  formato: Formato
-  ancho: (typeof ANCHOS)[number]
-  tono: string | null
-  // El ⚙: lo da el permiso del origen (constante) o el de los tipos de cambio; no depende de `editable`.
-  ajustes: boolean
-  ayuda: AyudaDeCelda | null
-  datoDelVehiculo: DatoDelVehiculo | null
-  soloEn: string[] | null
-  condicion: string | null
-  requeridoSi: string | null
-  secundario: SecundarioDeCelda | null
-}
+// Cada ítem y cada sección llevan su aspecto (`aspecto-de-la-hoja.ts`): sólo las claves que el diseño trae.
+export type CeldaDeHoja = EdicionDeHoja &
+  AspectoDeItem & {
+    tipo: 'celda'
+    nodo: string
+    etiqueta: string
+    tipoDeNodo: TipoDeNodoDeHoja
+    formato: Formato
+    ancho: AnchoDeCelda
+    tono: string | null
+    // El ⚙: lo da el permiso del origen (constante) o el de los tipos de cambio; no depende de `editable`.
+    ajustes: boolean
+    ayuda: AyudaDeCelda | null
+    datoDelVehiculo: DatoDelVehiculo | null
+    soloEn: string[] | null
+    condicion: string | null
+    requeridoSi: string | null
+    secundario: SecundarioDeCelda | null
+  }
 export type ChipDeAtajos = { etiqueta: string; valor: number | null }
-export type AtajosDeHoja = { tipo: 'atajos'; nodo: string; chips: ChipDeAtajos[] }
-export type VarianteDeHoja = EdicionDeHoja & {
-  tipo: 'variante'
+export type AtajosDeHoja = AspectoDeItemConAncho & {
+  tipo: 'atajos'
   nodo: string
-  etiqueta: string
-  opciones: { clave: string; etiqueta: string; titulo: string }[]
-  porDefecto: string | null
+  chips: ChipDeAtajos[]
 }
-export type InterruptorDeHoja = EdicionDeHoja & {
-  tipo: 'interruptor'
-  nodo: string
-  etiqueta: string
-  efecto: (typeof EFECTOS_DE_INTERRUPTOR)[number]
-  soloEn: string[] | null
-}
-export type SubtotalDeHoja = {
+export type VarianteDeHoja = EdicionDeHoja &
+  AspectoDeItemConAncho & {
+    tipo: 'variante'
+    nodo: string
+    etiqueta: string
+    opciones: { clave: string; etiqueta: string; titulo: string }[]
+    porDefecto: string | null
+  }
+export type InterruptorDeHoja = EdicionDeHoja &
+  AspectoDeItemConAncho & {
+    tipo: 'interruptor'
+    nodo: string
+    etiqueta: string
+    efecto: (typeof EFECTOS_DE_INTERRUPTOR)[number]
+    soloEn: string[] | null
+  }
+export type SubtotalDeHoja = AspectoDeItemConAncho & {
   tipo: 'subtotal'
   nodo: string
   etiqueta: string
@@ -81,7 +99,7 @@ export type SubtotalDeHoja = {
 export type ItemDeHoja =
   CeldaDeHoja | AtajosDeHoja | VarianteDeHoja | InterruptorDeHoja | SubtotalDeHoja
 
-export type SeccionDeHoja = {
+export type SeccionDeHoja = AspectoDeSeccion & {
   id: string
   titulo: string | null
   presentacion: (typeof PRESENTACIONES)[number]
@@ -94,7 +112,7 @@ export type DisenoDeHoja = {
   origen: { id: string; nombre: string }
   formula: { id: string; version: number }
   // Los modos de tipo de cambio se identifican por su clave: sus buckets no viajan (nombran tipos de cambio que un nivel puede esconder).
-  cabecera: {
+  cabecera: AspectoDeCabecera & {
     modos: { clave: string; nombre: string }[]
     verTotalBs: boolean
     monedaBs: string | null
@@ -134,6 +152,7 @@ function celdaDe(c: Crudo<typeof esquemaCelda>): CeldaDeHoja {
     tipoDeNodo: c.tipo_nodo,
     formato: c.formato,
     ancho: c.ancho,
+    ...aspectoDeItem(c),
     tono: c.tono ?? null,
     ajustes: c.ajustes,
     ayuda: c.ayuda ?? null,
@@ -159,7 +178,7 @@ function itemDe(i: Crudo<typeof esquemaItem>): ItemDeHoja {
     case 'celda':
       return celdaDe(i)
     case 'atajos':
-      return { tipo: 'atajos', nodo: i.nodo, chips: i.chips }
+      return { tipo: 'atajos', nodo: i.nodo, chips: i.chips, ...aspectoDeItemConAncho(i) }
     case 'variante':
       return {
         ...edicionDe(i),
@@ -168,6 +187,7 @@ function itemDe(i: Crudo<typeof esquemaItem>): ItemDeHoja {
         etiqueta: i.etiqueta,
         opciones: i.opciones,
         porDefecto: i.por_defecto ?? null,
+        ...aspectoDeItemConAncho(i),
       }
     case 'interruptor':
       return {
@@ -177,6 +197,7 @@ function itemDe(i: Crudo<typeof esquemaItem>): ItemDeHoja {
         etiqueta: i.etiqueta,
         efecto: i.efecto,
         soloEn: i.solo_en ?? null,
+        ...aspectoDeItemConAncho(i),
       }
     case 'subtotal':
       return {
@@ -185,6 +206,7 @@ function itemDe(i: Crudo<typeof esquemaItem>): ItemDeHoja {
         etiqueta: i.etiqueta,
         formato: i.formato,
         tono: i.tono ?? null,
+        ...aspectoDeItemConAncho(i),
       }
     default: {
       const _: never = i
@@ -202,11 +224,13 @@ export function disenoDe(h: Crudo<typeof esquemaDeDiseno>): DisenoDeHoja {
       modos: h.cabecera.modos,
       verTotalBs: h.cabecera.ver_total_bs,
       monedaBs: h.cabecera.moneda_bs,
+      ...aspectoDeCabecera(h.cabecera),
     },
     secciones: h.secciones.map((s) => ({
       id: s.id,
       titulo: s.titulo ?? null,
       presentacion: s.presentacion,
+      ...aspectoDeSeccion(s),
       items: s.items.map(itemDe),
     })),
     tarjetaTotal: h.tarjeta_total,

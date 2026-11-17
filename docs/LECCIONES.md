@@ -146,6 +146,8 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Una página de ejemplo o de muestra no usa `Date`: desajusta la hidratación.
 - Usa una tupla `AlMenosUna<T>` bajo `noUncheckedIndexedAccess`, y recuerda que `ReadonlyArray.map` pierde la tupla.
 - Reemplaza las variables de una plantilla en una sola pasada con función: un valor con `{clave}` o `$&` se expandiría en `String.replace`.
+- Desestructura lo que un hook devuelve para `ref=` (`const { alMontar, estilo } = useFila…`): con `ref={fila.algo}` el compilador de React
+  toma `fila` por un ref y marca cada lectura suya en el render («Cannot access refs during render»).
 
 ## Módulos y JS en frío
 
@@ -228,6 +230,8 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Comprueba que la guarda «no crece con N» cae al quitar el índice: la cota contra la profundidad sola pasa sin índice.
 - Asierta que cada ruta medida devuelve sus `n + 1` filas: con la sesión equivocada la policy vacía la ruta y el assert de bloques pasa sin medir nada.
 - Escribe un «fuera de estos valores» sobre un arreglo que no es constante como `col = any (<complemento>)`, nunca `col <> all (…)`: el planificador estima cada `<>` contra algo no constante como `1 - 1/ndistinct` y, con una columna casi de un solo valor, da selectividad ≈ 0 y deja de leer la ruta en orden por su índice (lee todo y ordena).
+- En plpgsql recorre un parámetro `jsonb` desde una variable (`v_secs := p_diseno -> 'secciones'`), nunca con `p_diseno -> … -> i` en el bucle: si
+  llega fuera de línea (TOAST), cada `->` sobre el parámetro lo vuelve a leer entero (13.080 buffers en vez de 1.860 con 2.000 ítems).
 
 ## e2e (Playwright)
 
@@ -255,6 +259,8 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Arrastra una caja de React Flow con la vista quieta (tras cargar, no tras un `fitView` animado: `hover` mide una caja que aún se mueve y el `mousedown` cae en el lienzo, que se desplaza) y con `page.mouse.move` a un punto fijo: un `hover` con `force` fuera de la caja desplaza contenedores.
 - Tras guardar en el panel de una fase, recarga antes de otra escritura del mismo flujo: si sale antes de que llegue la versión nueva, da `PT409`.
 - Compara y ordena fechas como timestamp (`Date.parse`), nunca como texto ISO: «…:23Z» queda por delante de «…:23.078Z», y un orden por texto borró a la dueña y tumbó 105 pruebas.
+- En una prueba `@sin-celular` no midas ni con una función propia del spec (la guarda la cuenta como ayudante que mide): afirma estilos con
+  `toHaveCSS` y arrastra con `hover` en pasos (dnd-kit toma la fila en el primer movimiento y la lleva en los siguientes).
 
 ### Sesiones y datos de prueba
 
@@ -313,6 +319,8 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - `db diff --linked` muestra triggers de `storage.buckets` que llaman a funciones de `storage`: son del Storage de la nube, más nuevo
   que la pila local, no de las migraciones. Fíltralos; un trigger propio llama a una función de `public` o `interno`.
 - No dejes que Prettier formatee una plantilla con marcadores `{{X}}`: en un frontmatter YAML los reescribe como `{ { X } }` y el reemplazo deja de encontrarlos. Va en `.prettierignore` y con una prueba que use la plantilla real (`scripts/orquestador/orquestador.test.ts`).
+- En un carril corre las herramientas con `TMPDIR` propio (fuera de `/tmp`): el `/tmp` de la máquina es un tmpfs que comparten todas las
+  sesiones y, sin inodos, nada puede crear archivos ahí (tampoco la terminal del agente).
 
 ## Por módulo
 

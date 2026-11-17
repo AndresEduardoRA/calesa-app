@@ -86,14 +86,19 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `scripts/pdf/texto-del-pdf.ts`.
 - **El diseño** (`/configuracion/cotizacion?seccion=diseno&origen=`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
   `cotizaciones_niveles` (no de `niveles_con_uso()`); edita secciones, celdas (ver y editar juntos con `ponerNiveles()`; `admiteNivel` apaga lo que la base
-  rechazaría con `nivel_no_admitido`), atajos, interruptor, ayuda, modos y la tarjeta del total (variante y subtotal no se editan), con el aviso «se deduce
-  restando» (sin bloquear). «Guardar el borrador» (`formula_guardar_borrador`, con la esperada de la publicada o la hora del borrador) manda `definicion` y
+  rechazaría con `nivel_no_admitido`), atajos, interruptor, ayuda, modos, la tarjeta del total (variante y subtotal no se editan) y **el aspecto** de cada
+  pieza (`components/aspecto/`, operaciones puras en `entities/diseno/edicion-del-aspecto.ts`: el valor por defecto quita la clave), con el aviso «se deduce
+  restando» (sin bloquear). **Ordena** secciones e ítems (estos dentro de su sección: `entities/diseno/orden-del-diseno.ts`) con dnd-kit y su sensor de
+  teclado (`components/orden/`, `hooks/use-fila-ordenable.ts`: los callbacks del asa van desestructurados, el compilador de React toma un `x.ref` por un ref);
+  dnd-kit sólo viaja en el `diferido()` de la pestaña. El color sale del catálogo de tonos (`catalogo` nulo si no se leyó: no se elige y `contextoDelEditor()`
+  cuenta los tonos que el diseño ya nombra); un rechazo de forma del aspecto va bajo su select (`campoDelRechazo()`). «Guardar el borrador» (`formula_guardar_borrador`, con la esperada de la publicada o la hora del borrador) manda `definicion` y
   `params` sin cambios. El área `diseno` replica la lectura y escritura de `formula` porque un área no importa otra.
 - **Los tonos** (`/configuracion/cotizacion?seccion=tonos`, `cotizaciones.configurar`; `?panel=nuevo-tono|editar-tono|eliminar-tono&tono=<id>`): son de
   la empresa y se guardan al instante (`tono_crear|guardar|eliminar` devuelven la lista entera). `entities/diseno/tonos.ts` espeja `_tono_nombre()` y
   `_tono_colores()` (los mismos textos, AA con la razón truncada a un decimal). Un tono en uso: 23503 con la fórmula que lo usa.
-- **La vista previa del diseño** (`?vista=412|1280|200`): `hojaDeLaVistaPrevia()` espeja `_cotizacion_hoja()` **sin niveles, tablas ni
-  `dato_del_vehiculo`**; `cifrasDelDiseno()` evalúa con datos en 0 y nunca lanza. Dibuja con las piezas del núcleo y **no con `LugaresDeLaHoja`** (lee
+- **La vista previa del diseño** (`?vista=412|1280|200`): `hojaDeLaVistaPrevia()` espeja `_cotizacion_hoja()` (con el aspecto y los tonos de las secciones
+  que dibuja y de la cabecera) **sin niveles, tablas ni `dato_del_vehiculo`**; usa la misma rejilla que la hoja (`CONTENEDOR_DE_SECCIONES`,
+  `REJILLA_DE_SECCIONES`, `enLaRejilla`); `cifrasDelDiseno()` evalúa con datos en 0 y nunca lanza. Dibuja con las piezas del núcleo y **no con `LugaresDeLaHoja`** (lee
   `?ayuda=` y `?panel=`, que chocarían con la pestaña); un hijo de ancho propio en px dentro de una caja con scroll (los cortes `@4xl/hoja` y `@5xl` miran al
   hijo); «200 %» es 206 px con `zoom: 2`. Va `inert`, en un `diferido()` aparte.
 - Depende de `leads`, `vehiculos`, `empresa` (tipos de cambio) y `equipo` (`<VistasGuardadas>`); los orígenes entran por props desde `src/app`.
@@ -149,7 +154,10 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - Base: `evaluar_formula()` (espejo exacto de `motor.ts`), `cotizacion_evaluar()`, `cotizacion_hoja()`, `cotizacion_crear()`, `cotizacion_guardar()`,
   `_nodos_visibles()`, `_publicar_formula()` / `_preparar_publicacion()`; semillas `supabase/semillas/cotizador-*.sql`. Detalle: `docs/COTIZADOR.md` ›
   «El diseño de la hoja», «Niveles de acceso», «Quién escribe una cotización y cómo», «Cómo se guarda», «La lectura que abre la hoja», «La hoja abierta».
-- Hoja en el cliente: `entities/{hoja,recalculo,entradas,binding,guardado,claves-de-la-hoja,borrador-de-hoja,…}.ts`, `infra/queries/`. `features/hoja/`
+- Hoja en el cliente: `entities/{hoja,recalculo,entradas,binding,guardado,claves-de-la-hoja,borrador-de-hoja,…}.ts`, `infra/queries/`. **La rejilla y el
+  aspecto:** `entities/rejilla-de-la-hoja.ts` (la regla de los 16 rem, `corteDe()`), `entities/aspecto-de-la-hoja.ts` (copia sólo las claves que vinieron) y
+  `features/hoja/components/clases-de-la-rejilla.ts` (tablas de clases escritas enteras; sin aspecto, la clase de siempre). `<SeccionDeHoja enLaRejilla>` pone
+  sus columnas sólo en la rejilla de las secciones (en el modal «Avanzado», un `grid` sin pistas, no); el tono de una sección va en `data-tono`. `features/hoja/`
   marca para los e2e `data-nodo`, `data-atajos`, `data-seccion`, `data-avanzado`, `data-cabecera`, `data-secciones`, `data-modo`, `data-total-bs`,
   `data-pie-de-panel`.
 - El resumen al pie se pliega (`useResumenPlegado`): «Ver el detalle» / «Ocultar el detalle» esconde el total en moneda local, los secundarios y el modo;

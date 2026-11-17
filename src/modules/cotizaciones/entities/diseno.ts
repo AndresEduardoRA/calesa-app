@@ -4,8 +4,26 @@
 // un objeto estricto, y la rechazan igual Zod y `validar_diseno()`. Lo que cruza el diseño con la fórmula vive en `validar-diseno*.ts`.
 import { z } from 'zod'
 import { esquemaId } from './nodos'
+import { COLUMNAS_DE_LA_REJILLA, MAXIMO_DE_FILAS } from './rejilla-de-la-hoja'
 
 export const ANCHOS = ['completo', 'mitad', 'tercio'] as const
+// El aspecto (docs/GLOSARIO.md › «Aspecto»): cómo se ve cada pieza en la rejilla de la hoja. Todo es opcional y su ausencia dibuja lo de siempre; los
+// valores salen de escalas cerradas (nada de px, CSS ni hex). Las claves no se llaman `estilo`, `clase`, `css`, `color` ni `html`: esas las rechaza el juego.
+// La rejilla de cada sección y la de las secciones tienen 12 columnas (`rejilla-de-la-hoja.ts`); `completo`, `mitad` y `tercio` de una celda son 12, 6 y 4.
+export { COLUMNAS_DE_LA_REJILLA, MAXIMO_DE_FILAS }
+export const RELLENOS = ['chico', 'medio', 'grande'] as const
+export const SEPARACIONES = ['chica', 'media', 'grande'] as const
+export const DENSIDADES_DE_SECCION = ['compacta', 'comoda'] as const
+export const LETRAS = ['chica', 'normal', 'grande'] as const
+export const ENFASIS = ['normal', 'fuerte'] as const
+// Lo que dibuja una pieza sin esa clave: el editor no la escribe, la quita.
+export const ASPECTO_POR_DEFECTO = {
+  relleno: 'medio',
+  separacion: 'media',
+  densidad: 'comoda',
+  letra: 'normal',
+  enfasis: 'normal',
+} as const
 export const PRESENTACIONES = ['principal', 'avanzado'] as const
 export const SECUNDARIOS = ['porcentaje', 'monto'] as const
 export const EFECTOS_DE_INTERRUPTOR = ['habilita', 'muestra'] as const
@@ -20,6 +38,19 @@ export const NIVEL_TODOS = 'todos'
 // Se cuenta en caracteres, como `char_length` de `validar_diseno()` (y como Zod 4: un emoji es uno).
 const texto = (max: number) => z.string().min(1).max(max)
 
+// Un entero como lo lee JS (`0.99999999999999999` es 1); la base copia esa lectura (D55–D58 y las marcas del aspecto).
+export const esquemaColumnas = z.int().min(1).max(COLUMNAS_DE_LA_REJILLA)
+export const esquemaFilas = z.int().min(1).max(MAXIMO_DE_FILAS)
+const columnas = esquemaColumnas
+const filas = esquemaFilas
+// El aspecto que lleva todo ítem, además del ancho (obligatorio en la celda, opcional en los demás).
+const aspectoDeItem = {
+  alto: filas.optional(),
+  letra: z.enum(LETRAS).optional(),
+  enfasis: z.enum(ENFASIS).optional(),
+}
+const anchoDeItem = { ancho: columnas.optional(), ...aspectoDeItem }
+
 // Un modo de tipo de cambio: la misma forma que `buckets` y `total_en` de la fórmula, con la clave y el nombre adentro.
 const esquemaModo = z.strictObject({
   clave: esquemaId,
@@ -27,7 +58,15 @@ const esquemaModo = z.strictObject({
   buckets: z.array(z.strictObject({ bucket: esquemaId, nodo: esquemaId })).min(1),
   total_en: esquemaId,
 })
-const esquemaCabecera = z.strictObject({ modos: z.array(esquemaModo), ver_total_bs: z.boolean() })
+// La cabecera (los modos de tipo de cambio) va sola en su fila, encima de la rejilla: no lleva ancho ni alto.
+const esquemaCabecera = z.strictObject({
+  modos: z.array(esquemaModo),
+  ver_total_bs: z.boolean(),
+  tono: esquemaId.optional(),
+  relleno: z.enum(RELLENOS).optional(),
+  letra: z.enum(LETRAS).optional(),
+  enfasis: z.enum(ENFASIS).optional(),
+})
 
 // Una ayuda es la tabla de referencia que se abre o un texto, no las dos.
 const esquemaAyuda = z.union([
@@ -38,25 +77,37 @@ const esquemaAyuda = z.union([
 const esquemaCelda = z.strictObject({
   tipo: z.literal('celda'),
   nodo: esquemaId,
-  ancho: z.enum(ANCHOS),
+  // Los anchos con nombre de los diseños guardados siguen valiendo: son 12, 6 y 4 columnas.
+  ancho: z.union([z.enum(ANCHOS), columnas]),
   secundario: z.enum(SECUNDARIOS).optional(),
   ayuda: esquemaAyuda.optional(),
   nivel_ver: esquemaId.optional(),
   nivel_editar: esquemaId.optional(),
+  ...aspectoDeItem,
 })
 const esquemaAtajos = z.strictObject({
   tipo: z.literal('atajos'),
   nodo: esquemaId,
   columna: esquemaId,
   filas: z.int().min(1).max(MAXIMO_DE_ATAJOS),
+  ...anchoDeItem,
 })
-const esquemaVariante = z.strictObject({ tipo: z.literal('variante'), nodo: esquemaId })
+const esquemaVariante = z.strictObject({
+  tipo: z.literal('variante'),
+  nodo: esquemaId,
+  ...anchoDeItem,
+})
 const esquemaInterruptor = z.strictObject({
   tipo: z.literal('interruptor'),
   nodo: esquemaId,
   efecto: z.enum(EFECTOS_DE_INTERRUPTOR),
+  ...anchoDeItem,
 })
-const esquemaSubtotal = z.strictObject({ tipo: z.literal('subtotal'), nodo: esquemaId })
+const esquemaSubtotal = z.strictObject({
+  tipo: z.literal('subtotal'),
+  nodo: esquemaId,
+  ...anchoDeItem,
+})
 
 const esquemaItem = z.discriminatedUnion('tipo', [
   esquemaCelda,
@@ -66,13 +117,21 @@ const esquemaItem = z.discriminatedUnion('tipo', [
   esquemaSubtotal,
 ])
 
-// El orden de las secciones es el del DOM, de lectura y del `Tab`.
+// El orden de las secciones es el del DOM, de lectura y del `Tab`. Sin `ancho`, la sección es «Automática» (toda la fila o, con lugar, la mitad).
 const esquemaSeccion = z.strictObject({
   id: esquemaId,
   titulo: texto(80).optional(),
   presentacion: z.enum(PRESENTACIONES),
   nivel_ver: esquemaId.optional(),
   nivel_editar: esquemaId.optional(),
+  ancho: columnas.optional(),
+  alto: filas.optional(),
+  relleno: z.enum(RELLENOS).optional(),
+  separacion: z.enum(SEPARACIONES).optional(),
+  densidad: z.enum(DENSIDADES_DE_SECCION).optional(),
+  letra: z.enum(LETRAS).optional(),
+  enfasis: z.enum(ENFASIS).optional(),
+  tono: esquemaId.optional(),
   items: z.array(esquemaItem).min(1),
 })
 
@@ -91,3 +150,10 @@ export type ModoDeTipoDeCambio = Diseno['cabecera']['modos'][number]
 export type SeccionDeDiseno = Diseno['secciones'][number]
 export type ItemDeDiseno = SeccionDeDiseno['items'][number]
 export type CeldaDeDiseno = Extract<ItemDeDiseno, { tipo: 'celda' }>
+export type CabeceraDeDiseno = Diseno['cabecera']
+export type AnchoDeCelda = CeldaDeDiseno['ancho']
+export type Relleno = (typeof RELLENOS)[number]
+export type Separacion = (typeof SEPARACIONES)[number]
+export type DensidadDeSeccion = (typeof DENSIDADES_DE_SECCION)[number]
+export type Letra = (typeof LETRAS)[number]
+export type Enfasis = (typeof ENFASIS)[number]

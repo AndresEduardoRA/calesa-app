@@ -75,3 +75,43 @@ describe('hojaDeLaVistaPrevia', () => {
     expect(hojaDeLaVistaPrevia(ORIGEN, d, conGrupo, []).tonos).toStrictEqual([])
   })
 })
+
+describe('hojaDeLaVistaPrevia: el aspecto', () => {
+  it('T1 · copia el aspecto sin escribir claves vacías y pinta los tonos de las secciones que dibuja y de la cabecera', () => {
+    const sinAspecto = hojaDeLaVistaPrevia(
+      ORIGEN,
+      disenoDe([seccion('s', [celda('a')])]),
+      conGrupo,
+      tonos,
+    )
+    expect(Object.keys(sinAspecto.secciones[0] ?? {}).sort()).toStrictEqual([
+      'id',
+      'items',
+      'presentacion',
+      'titulo',
+    ])
+    expect(Object.keys(sinAspecto.cabecera).sort()).toStrictEqual([
+      'modos',
+      'monedaBs',
+      'verTotalBs',
+    ])
+    const base = disenoDe([
+      seccion('s', [celda('c', { ancho: 8, alto: 2, letra: 'chica' })], {
+        tono: 'sobra',
+        densidad: 'compacta',
+      }),
+      seccion('vacia', [celda('nodo_que_ya_no_existe')], { tono: 'otro' }),
+    ])
+    const d = {
+      ...base,
+      cabecera: { ...base.cabecera, tono: 'costos', relleno: 'grande' as const },
+    }
+    const hoja = hojaDeLaVistaPrevia(ORIGEN, d, conGrupo, tonos)
+    expect(hoja.secciones.map((s) => s.id)).toStrictEqual(['s'])
+    expect(hoja.secciones[0]).toMatchObject({ tono: 'sobra', densidad: 'compacta' })
+    expect(hoja.secciones[0]?.items[0]).toMatchObject({ ancho: 8, alto: 2, letra: 'chica' })
+    expect(hoja.cabecera).toMatchObject({ tono: 'costos', relleno: 'grande' })
+    // La sección que no se dibuja no pinta su tono; los del catálogo que se usan, sí.
+    expect(hoja.tonos.map((t) => t.clave)).toStrictEqual(['costos', 'sobra'])
+  })
+})

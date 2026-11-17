@@ -3,6 +3,7 @@
 import { Interruptor } from '@/shared/ui/interruptor'
 import { ofreceVerTotalBs } from '../../../entities/cabecera-de-la-hoja'
 import type { HojaLista } from '../../../entities/hoja'
+import { claseDeLaCabecera } from './clases-de-la-rejilla'
 import { ModosDeLaHoja } from './modos-de-la-hoja'
 
 type Props = {
@@ -17,7 +18,8 @@ type Props = {
 
 // Lo que es de la hoja entera y va arriba de las secciones (`docs/UX.md` › «Cotizar»). Los modos de tipo de cambio sólo se dibujan si hay dos o más: con uno no hay qué elegir
 // (el resumen dice cuál es) y sin modos no hay nada. «Ver total Bs» sólo si el diseño lo ofrece y hay con qué moneda escribirlo (P6); nace apagado (P5) y ningún texto fijo
-// nombra una moneda: su código sale de la base. Si nada se dibuja, tampoco la caja.
+// nombra una moneda: su código sale de la base. Si nada se dibuja, tampoco la caja. Su aspecto (tono, relleno, letra y énfasis) va en clases sobre el mismo nodo:
+// con tono o relleno es una caja, y el tono pasa a los chips de los modos.
 export function CabeceraDeHoja({
   cabecera,
   modoElegido,
@@ -32,7 +34,7 @@ export function CabeceraDeHoja({
     return null
   }
   return (
-    <div data-cabecera="" className="grid min-w-0 gap-3">
+    <div data-cabecera="" data-tono={cabecera.tono} className={claseDeLaCabecera(cabecera)}>
       {conModos ? (
         <ModosDeLaHoja
           modos={cabecera.modos}

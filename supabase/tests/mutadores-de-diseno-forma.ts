@@ -13,6 +13,7 @@ import {
   type MutadorDeDiseno,
 } from './mutadores-de-diseno-base'
 import type { Azar } from './mutadores-de-formula'
+import { MUTADORES_DE_FORMA_DEL_ASPECTO } from './mutadores-de-diseno-aspecto-forma'
 
 type Objetivo = (e: Entrada, azar: Azar) => Objeto | undefined
 const lista = (x: Json | undefined): Json[] => (Array.isArray(x) ? x : [])
@@ -149,6 +150,11 @@ export const MUTADORES_DE_FORMA_DE_DISENO: readonly MutadorDeDiseno[] = [
   forma('D29', laTarjeta, poner('secundarios', 'x')),
   forma('D30', laTarjeta, poner('secundarios', [1])),
   forma('D31', (e) => raiz(e), poner('tema', 'oscuro')),
+  forma('D35', cabecera, poner('tono', 'Mala')),
+  forma('D36', cabecera, poner('relleno', 'enorme')),
+  forma('D37', cabecera, poner('letra', 'gigante')),
+  forma('D38', cabecera, poner('enfasis', 'cursiva')),
+  ...MUTADORES_DE_FORMA_DEL_ASPECTO,
   reemplazar(
     'D40',
     (e, azar) => {

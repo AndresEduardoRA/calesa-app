@@ -2,7 +2,14 @@
 // el pedido de guardar el borrador y si hay algo por guardar. Nada muta lo que recibe. El diseño que sale de aquí lo vuelve a revisar `validarDiseno()` en cada cambio
 // y la base al publicar; guardar un borrador no exige que valide (como la fórmula, 4.21-3b-1).
 import type { Resultado } from '@/shared/lib/errores'
-import { type Diseno, type SeccionDeDiseno, ANCHOS, PRESENTACIONES } from '../diseno'
+import {
+  type AnchoDeCelda,
+  type Diseno,
+  type SeccionDeDiseno,
+  ANCHOS,
+  COLUMNAS_DE_LA_REJILLA,
+  PRESENTACIONES,
+} from '../diseno'
 import type { Definicion } from '../formula'
 import type { ContextoDeDiseno } from '../validar-diseno'
 
@@ -96,13 +103,18 @@ export function ponerSeccion(
   })
 }
 
+// Un ancho con nombre de los diseños guardados o un número de columnas (1 a 12); otro valor no se escribe.
 export function ponerAncho(
   diseno: Diseno,
   seccionId: string,
   nodoId: string,
-  ancho: (typeof ANCHOS)[number],
+  ancho: AnchoDeCelda,
 ): Diseno {
-  if (!ANCHOS.includes(ancho)) return diseno
+  const vale =
+    typeof ancho === 'number'
+      ? Number.isInteger(ancho) && ancho >= 1 && ancho <= COLUMNAS_DE_LA_REJILLA
+      : ANCHOS.includes(ancho)
+  if (!vale) return diseno
   return conSeccion(diseno, seccionId, (s) => {
     let hecha = false
     return {
@@ -116,16 +128,32 @@ export function ponerAncho(
   })
 }
 
-// Lo que `validarDiseno()` necesita saber del mundo: los niveles (también los retirados) y los retirados. El catálogo de tonos es del 4.22-4: se pasan los de los
-// grupos de la propia definición, así `tono_inexistente` no se dispara aquí (la dice la base al publicar).
+// Lo que `validarDiseno()` necesita saber del mundo: los niveles (también los retirados), los retirados y los tonos: los del catálogo de la empresa más los de
+// los grupos de la propia definición (los de los grupos son de la fórmula: `tono_inexistente` de un grupo la dice la base al publicar). Si el catálogo no se
+// pudo leer (`null`), también los que el diseño ya nombra: sin catálogo no hay una falsa alarma.
 export function contextoDelEditor(
   definicion: Definicion,
   niveles: readonly NivelDelDiseno[],
+  catalogo: readonly string[] | null = null,
+  diseno?: Diseno,
 ): ContextoDeDiseno {
+  const delDiseno =
+    catalogo !== null || diseno === undefined
+      ? []
+      : [
+          ...(diseno.cabecera.tono === undefined ? [] : [diseno.cabecera.tono]),
+          ...diseno.secciones.flatMap((s) => (s.tono === undefined ? [] : [s.tono])),
+        ]
   return {
     niveles: niveles.map((n) => n.clave),
     retirados: niveles.filter((n) => n.retirado).map((n) => n.clave),
-    tonos: (definicion.grupos ?? []).map((g) => g.tono),
+    tonos: [
+      ...new Set([
+        ...(definicion.grupos ?? []).map((g) => g.tono),
+        ...(catalogo ?? []),
+        ...delDiseno,
+      ]),
+    ],
   }
 }
 

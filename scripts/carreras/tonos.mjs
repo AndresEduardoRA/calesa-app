@@ -82,6 +82,85 @@ export const borradores = async (db, origen) =>
     ).rows[0].n,
   )
 
+// Un tono propio que sólo nombra una sección del diseño (ningún grupo lo usa): el diseño de las capturas con ese tono en su primera sección.
+const TONO_DE_SECCION = 'carreras_seccion'
+const DISENO_CON_TONO = {
+  ...DISENO,
+  secciones: DISENO.secciones.map((s, i) => (i === 0 ? { ...s, tono: TONO_DE_SECCION } : s)),
+}
+const tonoDeSeccion = async (db) =>
+  (
+    await db.query(
+      `insert into public.tonos (clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+       values ($1, $2, '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
+       on conflict (clave) do update set nombre = excluded.nombre returning id, actualizado_en::text as v`,
+      [TONO_DE_SECCION, `${PREFIJO} sección`],
+    )
+  ).rows[0]
+const guardarYPublicar = (nota) => ({
+  persona: duena,
+  consulta: `with g as (select public.formula_guardar_borrador($1, $2::jsonb, $3::jsonb, $4::jsonb) as id)
+             select public.formula_publicar($1, '${nota}') as r from g`,
+})
+const argsDelDisenoConTono = (origen) => [
+  origen,
+  JSON.stringify(definicion),
+  JSON.stringify(CAPTURAS.params),
+  JSON.stringify(DISENO_CON_TONO),
+]
+
+// Lo mismo con un tono que nombra sólo el diseño (`_tonos_del_diseno()`): publicar lo toma `for key share` y `_tono_en_uso()` lo ve.
+async function carrerasDelTonoDeUnaSeccion({ orquesta, carrera, espero }) {
+  console.log('Eliminar un tono que sólo nombra una sección mientras se publica')
+  {
+    const t = await terreno(orquesta, 'eliminaseccion')
+    const tono = await tonoDeSeccion(orquesta)
+    const r = await carrera(orquesta, {
+      a: {
+        persona: duena,
+        sql: 'public.tono_eliminar($1, $2::timestamptz)',
+        args: [tono.id, tono.v],
+      },
+      b: { ...guardarYPublicar('Con el tono de la sección'), args: argsDelDisenoConTono(t.origen) },
+    })
+    const hay = await orquesta.query(`select 1 from public.tonos where clave = $1`, [
+      TONO_DE_SECCION,
+    ])
+    espero(
+      'elimina primero: publicar da tono_inexistente (22023) y no queda versión ni borrador',
+      r.a.ok &&
+        r.b.codigo === '22023' &&
+        hay.rowCount === 0 &&
+        (await publicadas(orquesta, t.origen)).length === 0 &&
+        (await borradores(orquesta, t.origen)) === 0,
+      { a: r.a, b: r.b },
+    )
+  }
+
+  console.log('Publicar una versión cuya sección nombra un tono mientras se lo elimina')
+  {
+    const t = await terreno(orquesta, 'publicaseccion')
+    const tono = await tonoDeSeccion(orquesta)
+    const r = await carrera(orquesta, {
+      a: { ...guardarYPublicar('Primero publica'), args: argsDelDisenoConTono(t.origen) },
+      b: {
+        persona: duena,
+        sql: 'public.tono_eliminar($1, $2::timestamptz)',
+        args: [tono.id, tono.v],
+      },
+    })
+    const hay = await orquesta.query(`select 1 from public.tonos where clave = $1`, [
+      TONO_DE_SECCION,
+    ])
+    const [pub] = await publicadas(orquesta, t.origen)
+    espero(
+      'publica primero: eliminar el tono falla diciendo que lo usa una fórmula (23503) y el tono sigue',
+      r.a.ok && r.b.codigo === '23503' && hay.rowCount === 1 && pub?.version === 1,
+      { a: r.a, b: r.b, pub },
+    )
+  }
+}
+
 export async function carrerasDeTonos({ orquesta, carrera, espero }) {
   console.log('Eliminar un tono mientras se publica una versión que lo nombra')
   {
@@ -197,4 +276,6 @@ export async function carrerasDeTonos({ orquesta, carrera, espero }) {
       { a: r.a, b: r.b, pub },
     )
   }
+
+  await carrerasDelTonoDeUnaSeccion({ orquesta, carrera, espero })
 }

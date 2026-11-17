@@ -90,6 +90,9 @@ candado de cada lado bloqueado, **una nota por texto distinto**. El error y un c
   `data-form-type="other"`. **Chrome ignora `autocomplete="off"` en un `password` y no tiene marca propia: el riesgo queda** y no se puede probar (el
   Chromium de Playwright no trae gestor); los tests afirman que las marcas están. Descartados: `autocomplete="one-time-code"` (el celular ofrecería los
   códigos de los SMS) y `type="text"` con sólo el CSS (el valor queda en el árbol de accesibilidad; `docs/DECISIONES.md`).
+- **Lo que pisa quien la contiene:** el relleno de la celda lee `--xcell-relleno` y la separación entre sus filas `--xcell-separacion`, con respaldo
+  igual a lo de siempre (8 y 6 px): la sección «compacta» de la hoja los pone a 4 y 2 px. La letra sigue `--text-sm` (la hoja la pisa con la «Letra»
+  de una pieza) y el peso se hereda (el «Énfasis» fuerte); la etiqueta queda en `font-medium`. El blanco táctil de 44 px no cambia.
 - **Tamaños:** la etiqueta se parte (`[overflow-wrap:anywhere]`), nunca se corta. La entrada ocupa la caja exacta del valor y mide 44 px en px. El anillo del
   modificado es **interior** (`ring-inset`) y el foco, un contorno **exterior**: se ven a la vez.
 - **Nodos por celda:** los fija `xcell-hoja.test.tsx` (normal 8, par 9; la ayuda o el ⚙ suman 3 cada uno; el peor, par modificado con un lado bloqueado,

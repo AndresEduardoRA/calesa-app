@@ -5,6 +5,7 @@ import { useUnEnvioALaVez } from '@/shared/ui/use-un-envio-a-la-vez'
 import type { Diseno } from '../../../entities/diseno'
 import { nodosPorId } from '../../../entities/diseno/admite-nivel'
 import { avisosDeDeduccion } from '../../../entities/diseno/aviso-de-deduccion'
+import { campoDelRechazo } from '../../../entities/diseno/campo-del-rechazo'
 import { deduccionesDelDiseno } from '../../../entities/diseno/deduccion'
 import {
   contextoDelEditor,
@@ -23,11 +24,13 @@ type Args = {
   // El diseño que se edita (el que la pantalla ya sabe que existe).
   disenoLeido: Diseno
   niveles: readonly NivelDelDiseno[]
+  // Las claves del catálogo de tonos; nulo si no se pudo leer (el color de una sección no se elige y nada se marca como fuera del catálogo).
+  catalogo: readonly string[] | null
 }
 
 // El estado de la pestaña «Diseño» (4.22-2): el diseño de trabajo, que cambia sólo por las operaciones puras de `edicion-del-diseno.ts` y `niveles.ts`; lo que
 // `validarDiseno()` rechaza tras cada cambio (queda aplicado y se dice, no apaga «Guardar»); el aviso «se deduce restando»; y el guardado.
-export function useEditorDelDiseno({ origenId, leida, disenoLeido, niveles }: Args) {
+export function useEditorDelDiseno({ origenId, leida, disenoLeido, niveles, catalogo }: Args) {
   const envio = useUnEnvioALaVez()
   const [trabajo, setTrabajo] = useState<Diseno>(disenoLeido)
   const { definicion } = leida
@@ -41,17 +44,28 @@ export function useEditorDelDiseno({ origenId, leida, disenoLeido, niveles }: Ar
     () => new Map(niveles.map((n) => [n.clave, n.nombre])),
     [niveles],
   )
-  const contexto = useMemo(() => contextoDelEditor(definicion, niveles), [definicion, niveles])
+  // Sin catálogo, los tonos que el diseño nombra cuentan como del catálogo: el contexto sigue al diseño de trabajo.
+  const disenoDelContexto = catalogo === null ? trabajo : undefined
+  const contexto = useMemo(
+    () => contextoDelEditor(definicion, niveles, catalogo, disenoDelContexto),
+    [definicion, niveles, catalogo, disenoDelContexto],
+  )
 
   // Una vez por cambio: la revisión de la base en espejo y el aviso.
   const rechazo = useMemo(() => {
     const r = validarDiseno(definicion, trabajo, contexto)
     if (r.ok) return null
-    const { mensaje, donde } = r.error
-    const titulo =
-      donde === undefined ? undefined : trabajo.secciones.find((s) => s.id === donde)?.titulo
-    const legible = donde === undefined ? null : (titulo ?? nombresDeNodos.get(donde) ?? donde)
-    return { mensaje, donde: legible }
+    const { mensaje, donde, campo } = r.error
+    const seccion = donde === undefined ? undefined : trabajo.secciones.find((s) => s.id === donde)
+    const legible =
+      donde === undefined
+        ? null
+        : (seccion?.titulo ??
+          (seccion === undefined && donde === 'cabecera' ? 'la cabecera' : undefined) ??
+          nombresDeNodos.get(donde) ??
+          donde)
+    // Un rechazo de forma del aspecto va también bajo su select.
+    return { mensaje, donde: legible, lugar: campoDelRechazo(campo, trabajo) }
   }, [definicion, trabajo, contexto, nombresDeNodos])
   const avisos = useMemo(
     () =>

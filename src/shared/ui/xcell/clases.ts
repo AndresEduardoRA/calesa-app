@@ -5,8 +5,10 @@ export const TINTA = 'text-[color:var(--tono-tinta,var(--color-ink))]'
 // 44 px EN PX con el dedo (no `size-11`, que es rem y crece con el texto), y compacto sólo con puntero fino desde 768 px.
 const BLANCO_TACTIL = 'min-h-[44px] md:pointer-fine:min-h-8'
 
+// El relleno y la separación de las filas los puede pisar quien la contiene (una sección «compacta» de la hoja) con `--xcell-relleno` y
+// `--xcell-separacion`; sin ellas, los de siempre (8 y 6 px). El blanco táctil no cambia.
 export const RAIZ =
-  'flex flex-wrap items-start gap-x-2 gap-y-1.5 rounded-md border p-2 text-sm border-[color:var(--tono-borde,var(--color-line-strong))] bg-[color:var(--tono-fondo,var(--color-surface))] data-[estado~=deshabilitado]:border-dashed ' +
+  'flex flex-wrap items-start gap-x-2 gap-y-[var(--xcell-separacion,calc(var(--spacing)*1.5))] rounded-md border p-[var(--xcell-relleno,calc(var(--spacing)*2))] text-sm border-[color:var(--tono-borde,var(--color-line-strong))] bg-[color:var(--tono-fondo,var(--color-surface))] data-[estado~=deshabilitado]:border-dashed ' +
   TINTA
 
 // La cabecera se parte en dos filas cuando la etiqueta no tiene 6 rem junto a las acciones (tres de 44 px al 200 %): las palabras no se quiebran por la mitad.

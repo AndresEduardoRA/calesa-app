@@ -4,7 +4,7 @@
 -- Todo corre en una transacción que se revierte: el origen, la persona, los tonos y los niveles de la medición no quedan.
 --
 -- Lo que mide, como `authenticated` (la dueña), con 7 corridas de EXPLAIN (ANALYZE, BUFFERS) y la mediana de las 5 últimas:
---   1. Las sondas `_tono_en_uso()` y `_nivel_uso()` con 200 y con 2.000 versiones archivadas: usan su GIN (plan genérico) y los bloques de
+--   1. Las sondas `_tono_en_uso()` (sus dos ramas: los grupos y el diseño) y `_nivel_uso()` con 200 y con 2.000 versiones archivadas: usan su GIN (plan genérico) y los bloques de
 --      `formulas` (heap, índices y TOAST, por pg_stat_get_xact_blocks_fetched) no crecen con las versiones; una copia que recorre la tabla sí. Va primero:
 --      con las versiones grandes de abajo, el TOAST de `formulas` taparía lo que se mide.
 --   2. `formula_guardar_borrador()` y `formula_publicar()` con 206 y 2.018 ítems: ms y buffers. Publicar es lineal (valida la fórmula y el diseño y
@@ -254,18 +254,22 @@ begin
   prepare sonda_tono(text) as with u as materialized (select distinct f.origen_id from public.formulas f
     where public._tonos_de_grupos(f.definicion) @> jsonb_build_array($1))
     select o.nombre from u join public.origenes o on o.id = u.origen_id order by o.nombre limit 1;
+  -- La segunda rama de `_tono_en_uso()`: los tonos que nombra el diseño (cabecera y secciones), por su propio GIN.
+  prepare sonda_tono_diseno(text) as with u as materialized (select distinct f.origen_id from public.formulas f
+    where public._tonos_del_diseno(f.diseno) @> jsonb_build_array($1))
+    select o.nombre from u join public.origenes o on o.id = u.origen_id order by o.nombre limit 1;
   -- El CTE `u` de `_nivel_uso()`, copiado literal: lo que decide el índice es esto (el resto trabaja sobre lo que él trae).
   prepare sonda_nivel(text) as with u as materialized (select f.id, f.origen_id, f.version from public.formulas f
     where public._niveles_del_diseno(f.diseno) @> jsonb_build_array($1))
     select u.id from u order by u.origen_id, u.version desc nulls first limit 1;
-  foreach v_q in array array['sonda_tono', 'sonda_nivel'] loop
+  foreach v_q in array array['sonda_tono', 'sonda_tono_diseno', 'sonda_nivel'] loop
     v_plan := '';
     for v_linea in execute 'explain execute ' || v_q || '(''libre_xx'')' loop v_plan := v_plan || v_linea || E'\n'; end loop;
-    v_idx := case v_q when 'sonda_tono' then 'formulas_tonos_idx' else 'formulas_niveles_idx' end;
+    v_idx := case v_q when 'sonda_tono' then 'formulas_tonos_idx' when 'sonda_tono_diseno' then 'formulas_tonos_del_diseno_idx' else 'formulas_niveles_idx' end;
     if position(v_idx in v_plan) = 0 or v_plan like '%Seq Scan on formulas%' then
       raise exception 'la sonda % no usa % o recorre la tabla: %', v_q, v_idx, v_plan; end if;
   end loop;
-  raise notice 'nota|Las dos sondas usan su GIN (formulas_tonos_idx y formulas_niveles_idx) con el plan genérico y 2.000 versiones archivadas|';
+  raise notice 'nota|Las tres sondas usan su GIN (formulas_tonos_idx, formulas_tonos_del_diseno_idx y formulas_niveles_idx) con el plan genérico y 2.000 versiones archivadas|';
 end $$;
 -- ---------------------------------------------------------------------------------------------------------------------------------
 -- 2. Guardar y publicar, como authenticated

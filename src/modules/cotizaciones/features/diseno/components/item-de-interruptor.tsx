@@ -1,7 +1,11 @@
 'use client'
 
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
-import { EFECTOS_DE_INTERRUPTOR } from '../../../entities/diseno'
+import { EFECTOS_DE_INTERRUPTOR, type ItemDeDiseno } from '../../../entities/diseno'
+import type { CambioDeAspectoDeItem } from '../../../entities/diseno/edicion-del-aspecto'
+import type { FilaOrdenable } from '../hooks/use-fila-ordenable'
+import { CamposDelAspectoDelItem, type ErrorDelAspecto } from './aspecto'
+import { TituloConAsa } from './orden'
 
 type Efecto = (typeof EFECTOS_DE_INTERRUPTOR)[number]
 
@@ -12,22 +16,38 @@ const EFECTO: Record<Efecto, { etiqueta: string; ayuda: string }> = {
 
 type Props = {
   seccionId: string
-  item: { nodo: string; efecto: Efecto }
+  item: Extract<ItemDeDiseno, { tipo: 'interruptor' }>
   etiqueta: string
   ocupado: boolean
+  fila: FilaOrdenable
+  error: ErrorDelAspecto
   alPonerEfecto: (efecto: Efecto) => void
+  alPonerAspecto: (cambios: CambioDeAspectoDeItem) => void
 }
 
 // Un interruptor de la hoja: una bandera de la fórmula que quien cotiza enciende o apaga. Aquí se elige qué hace apagada. Si el efecto no vale, lo dice el aviso del editor.
-export function ItemDeInterruptor({ seccionId, item, etiqueta, ocupado, alPonerEfecto }: Props) {
+export function ItemDeInterruptor({
+  seccionId,
+  item,
+  etiqueta,
+  ocupado,
+  fila: { alMontar, estilo, asa },
+  error,
+  alPonerEfecto,
+  alPonerAspecto,
+}: Props) {
   return (
     <li
-      className="@container min-w-0 rounded-(--radius-md) border border-(--color-line) p-3"
+      ref={alMontar}
+      style={estilo}
+      className="@container min-w-0 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) p-3"
       data-item={`interruptor:${item.nodo}`}
     >
-      <p className="mb-2 text-(length:--text-sm) font-medium text-(--color-ink)">
-        {`Interruptor ${etiqueta}.`}
-      </p>
+      <TituloConAsa etiquetaDelAsa={`Mover «${etiqueta}»`} asa={asa}>
+        <p className="text-(length:--text-sm) font-medium text-(--color-ink)">
+          {`Interruptor ${etiqueta}.`}
+        </p>
+      </TituloConAsa>
       <CampoSeleccion
         nombre={`${seccionId}__${item.nodo}-efecto`}
         etiqueta="Qué hace"
@@ -41,6 +61,13 @@ export function ItemDeInterruptor({ seccionId, item, etiqueta, ocupado, alPonerE
         onChange={(evento) => {
           alPonerEfecto(evento.target.value as Efecto)
         }}
+      />
+      <CamposDelAspectoDelItem
+        base={`${seccionId}__${item.nodo}`}
+        item={item}
+        ocupado={ocupado}
+        error={error}
+        alPoner={alPonerAspecto}
       />
     </li>
   )

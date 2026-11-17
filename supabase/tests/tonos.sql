@@ -199,7 +199,7 @@ begin
   -- Los ayudantes (los que no son RPC) no los ejecuta PUBLIC, anon ni authenticated.
   if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
               where n.nspname = 'public' and p.proname in ('_color_luminancia', '_color_contraste', '_tonos_tope', '_tono_nombre', '_tono_clave', '_tono_colores',
-                                                            '_tonos_de_grupos', '_tono_en_uso', '_tonos_lista', '_contraste_aa', 'tono_version')
+                                                            '_tonos_de_grupos', '_tonos_del_diseno', '_tono_en_uso', '_tonos_lista', '_contraste_aa', 'tono_version')
                 and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute'))) then
     raise exception 'un ayudante de los tonos se puede ejecutar: %', (select string_agg(p.proname, ',') from pg_proc p join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public' and p.proname in ('_color_luminancia', '_color_contraste', '_tono_en_uso') and has_function_privilege('authenticated', p.oid, 'execute'));

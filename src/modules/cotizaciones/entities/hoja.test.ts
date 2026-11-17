@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { ANCHOS, EFECTOS_DE_INTERRUPTOR, PRESENTACIONES, SECUNDARIOS } from './diseno'
 import { hojaDesde, type HojaLista } from './hoja'
 import { TIPOS_DE_NODO } from './hoja-esquema'
+import { crudaDeLaHoja } from './hoja-de-prueba.soporte'
 import { ABIERTA, COLORES, ID, lista } from './hoja.soporte'
 import { esquemaNodo, FORMATOS } from './nodos'
 
@@ -241,5 +242,49 @@ describe('hojaDesde: las listas del diseño', () => {
     expect(SECUNDARIOS.length).toBeGreaterThan(0)
     expect(EFECTOS_DE_INTERRUPTOR.length).toBeGreaterThan(0)
     expect(FORMATOS.length).toBeGreaterThan(0)
+  })
+})
+
+describe('hojaDesde: el aspecto (la rejilla de 12)', () => {
+  it('lee un ancho en columnas y el aspecto de cada pieza, y sin aspecto no escribe ninguna clave', () => {
+    const cruda = crudaDeLaHoja()
+    const [seccion] = cruda.secciones
+    if (!seccion) throw new Error('sin sección')
+    const items = seccion.items.map((i, k) =>
+      k === 0 ? { ...i, ancho: 8, alto: 2, letra: 'grande', enfasis: 'fuerte' } : i,
+    )
+    const leida = hojaDesde({
+      ...cruda,
+      cabecera: { ...cruda.cabecera, tono: 'verde', relleno: 'grande' },
+      secciones: [{ ...seccion, ancho: 6, densidad: 'compacta', tono: 'verde', items }],
+    })
+    if (leida?.estado !== 'lista') throw new Error('no se leyó')
+    const [s] = leida.secciones
+    expect(s).toMatchObject({ ancho: 6, densidad: 'compacta', tono: 'verde' })
+    expect(s?.items[0]).toMatchObject({ ancho: 8, alto: 2, letra: 'grande', enfasis: 'fuerte' })
+    expect(leida.cabecera).toMatchObject({ tono: 'verde', relleno: 'grande' })
+    // Lo demás, sin claves de aspecto.
+    const vieja = hojaDesde(crudaDeLaHoja())
+    if (vieja?.estado !== 'lista') throw new Error('no se leyó')
+    expect(Object.keys(vieja.cabecera).sort()).toEqual(['modos', 'monedaBs', 'verTotalBs'])
+    expect(Object.keys(vieja.secciones[0] ?? {}).sort()).toEqual([
+      'id',
+      'items',
+      'presentacion',
+      'titulo',
+    ])
+  })
+
+  it('un ancho fuera de la rejilla o un aspecto fuera de su escala no es lo que la base promete', () => {
+    const cruda = crudaDeLaHoja()
+    const [seccion] = cruda.secciones
+    if (!seccion) throw new Error('sin sección')
+    const con = (cambio: Record<string, unknown>) =>
+      hojaDesde({ ...cruda, secciones: [{ ...seccion, ...cambio }] })
+    expect(con({ ancho: 13 })).toBeNull()
+    expect(con({ relleno: 'enorme' })).toBeNull()
+    expect(
+      con({ items: seccion.items.map((i, k) => (k === 0 ? { ...i, ancho: '8' } : i)) }),
+    ).toBeNull()
   })
 })
