@@ -197,7 +197,10 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   (sin él el plan genérico ordena todo lo del vehículo caliente: 20 mil bloques). Las imágenes, la miniatura de 480 px; el visor, la grande. Sin caché de cliente: la ficha y la unidad se releen al actuar (`revalidarVinculo()`), el resumen
   lee al abrir y tras cada acción. El resumen de un lead pasa de 2 a 3 pedidos al abrir (`leads_vista`, `lead_telefonos_leer()` y `lead_relacionados()`, en paralelo; el bloque va con `diferido()` y por su propia pantalla,
   `pantallas/relacionados-resumen-de-lead.ts`: con el barril entero `/leads` pasaba de 530). El del vehículo, de 1 a 2 (más las fotos de la portada al acercarse).
-  JS en frío medido con el cambio: `/leads` 527,7 KB de 530 (el hueco con `diferido()` y el contexto cuestan ≈ 3,4 KB) y `/vehiculos` 496,1 de 500 (el bloque viaja dentro del resumen ya diferido y sale la pestaña «Interesados»).
+  Dos presentaciones (en una línea y compacta), sin grupos vacíos: lo que no tiene nada no se dibuja y las filas de una línea existen sólo en su popover (diferido, montado al primer clic).
+  Con un vínculo y 4 interesados (`section[aria-label="Relacionados"]`, escritorio): la ficha del vehículo 8.078 B, 58 nodos y 213 px de alto (332 px en el celular); la ficha del lead con un
+  vínculo 3.350 B, 30 nodos y 143 px; el resumen del vehículo, en una línea, 1.689 B, 8 nodos y 32 px.
+  JS en frío: `/leads` 528,9 KB de 530 (el bloque va en el resumen diferido), `/vehiculos` 497,4 de 500 (dentro del resumen ya diferido) y `/logistica/vehiculo/[id]` 443,6. El documento de la ficha del lead aporta 23,6 KB sobre `/perfil` (el lead que mide no tiene relacionados).
   El documento de la ficha del lead lleva el bloque leído en el servidor: «Datos» y «Oportunidades» siguen dentro de su tope (43 y 66 KB).
 
 - Inventario: 50 por cursor (máx. 100, `MAXIMO_DE_PAGINA_DE_VEHICULOS`), `vehiculos_origen_listado_idx`; 20 ms página, 100 / 150 ms
