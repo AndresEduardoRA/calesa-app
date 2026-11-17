@@ -18,6 +18,11 @@ import {
   verEtapa,
 } from './soporte/leads-oportunidades'
 import { rpcComo } from './soporte/leads-cartera'
+import {
+  abrirVistaYOpciones,
+  botonDeVistaYOpciones,
+  elegirEnVistaYOpciones,
+} from './soporte/vista-y-opciones'
 
 // La vista de embudo (`/leads?vista=embudo`): el kanban de las oportunidades propias. Se mueve con
 // «Mover a…» (sin arrastrar), una perdida pregunta el motivo, cada columna trae 50 y «Ver más», y en el
@@ -49,11 +54,14 @@ test('la primera vez prepara el embudo por defecto, con sus etapas, y dice que l
       'Aquí ves tus oportunidades. Los filtros de la lista no se aplican en esta vista; para llegar a una, búscala.',
     ),
   ).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Embudo' })).toHaveAttribute('aria-current', 'page')
+  // «Lista | Embudo» va en «Vista y opciones», y el botón dice la vista de ahora.
+  await expect(botonDeVistaYOpciones(page)).toContainText('Embudo')
+  const panel = await abrirVistaYOpciones(page)
+  await expect(panel.getByRole('link', { name: 'Embudo' })).toHaveAttribute('aria-current', 'page')
   // Desde la lista se llega con el mismo conmutador.
-  await page.getByRole('link', { name: 'Lista' }).click()
+  await panel.getByRole('link', { name: 'Lista' }).click()
   await expect(page.getByRole('heading', { name: 'Leads', level: 1 })).toBeAttached()
-  await page.getByRole('link', { name: 'Embudo' }).click()
+  await elegirEnVistaYOpciones(page, 'Embudo')
   await expect(page.getByRole('heading', { name: 'Embudo', level: 1 })).toBeAttached()
 })
 
@@ -161,7 +169,7 @@ test('las etapas: las reglas se dicen, se reordenan y una con oportunidades no s
   })
   await entrar(page, t.personas.berta)
   await irAlEmbudo(page)
-  await page.getByRole('button', { name: 'Etapas', exact: true }).click()
+  await elegirEnVistaYOpciones(page, 'Etapas…')
   const panel = page.getByRole('dialog', { name: /Etapas de/ })
   await expect(panel).toBeVisible()
 
@@ -172,7 +180,7 @@ test('las etapas: las reglas se dicen, se reordenan y una con oportunidades no s
   await page.keyboard.press('Escape')
 
   // Reordenar con las flechas y guardar.
-  await page.getByRole('button', { name: 'Etapas', exact: true }).click()
+  await elegirEnVistaYOpciones(page, 'Etapas…')
   await panel.getByRole('button', { name: 'Bajar Nuevo' }).click()
   await panel.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Embudo guardado.')).toBeVisible()
@@ -181,7 +189,7 @@ test('las etapas: las reglas se dicen, se reordenan y una con oportunidades no s
     .toEqual(['Contactado', 'Nuevo', 'Cotizado', 'Negociación', 'Ganado', 'Perdido'])
 
   // Quitar «Cotizado», que tiene una: la base lo rechaza nombrándola.
-  await page.getByRole('button', { name: 'Etapas', exact: true }).click()
+  await elegirEnVistaYOpciones(page, 'Etapas…')
   await panel.getByRole('button', { name: 'Quitar Cotizado' }).click()
   await panel.getByRole('button', { name: 'Guardar' }).click()
   // El embudo de Berta lo comparten los tests de este proyecto: cuántas tiene «Cotizado» depende de ellos.
@@ -196,7 +204,7 @@ test('un embudo nuevo se elige enseguida; nadie más ve los embudos ni las oport
 }, info) => {
   await entrar(page, t.personas.berta)
   await irAlEmbudo(page)
-  await page.getByRole('button', { name: 'Nuevo embudo' }).click()
+  await elegirEnVistaYOpciones(page, 'Nuevo embudo…')
   const dialogo = page.getByRole('dialog', { name: 'Nuevo embudo' })
   await dialogo.getByLabel('Nombre').fill('ventas')
   await dialogo.getByRole('button', { name: 'Crear embudo' }).click()

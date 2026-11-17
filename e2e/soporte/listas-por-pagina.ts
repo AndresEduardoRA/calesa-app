@@ -4,6 +4,11 @@ import { expect, type Locator, type Page, type Request } from '@playwright/test'
 import { admin } from './base'
 import { aLaVista } from './inventario'
 import { exigir, idDe } from './leads'
+import {
+  abrirVistaYOpciones,
+  esperarBotonHidratado,
+  panelDeVistaYOpciones,
+} from './vista-y-opciones'
 
 const CLAVE = 'listas.por_pagina'
 
@@ -30,9 +35,17 @@ export async function preferenciaDe(email: string): Promise<number | null> {
   return data?.valor ?? null
 }
 
-// El selector que se ve (la barra desde `md`, el pie de la lista por debajo: el otro está oculto).
+// El selector, dentro de «Vista y opciones» (popover desde `md`, hoja inferior por debajo): hay que abrir el panel antes
+// (`abrirSelectorDeTamano`).
 export const selectorDeTamano = (page: Page): Locator =>
-  aLaVista(page.getByLabel('Ítems por página'))
+  panelDeVistaYOpciones(page).getByRole('combobox', { name: /^Ítems por página/ })
+
+// Abre «Vista y opciones» (si no lo está) y devuelve el selector.
+export async function abrirSelectorDeTamano(page: Page): Promise<Locator> {
+  await abrirVistaYOpciones(page)
+  await expect(selectorDeTamano(page)).toBeVisible()
+  return selectorDeTamano(page)
+}
 
 export const filasDelListado = (page: Page): Locator =>
   aLaVista(page.locator('tbody tr, li article'))
@@ -40,21 +53,31 @@ export const filasDelListado = (page: Page): Locator =>
 export const parametrosDe = (page: Page): URLSearchParams => new URL(page.url()).searchParams
 
 // La lista llega pintada por el servidor antes de que React enganche sus controles: un cambio hecho en ese instante se
-// pierde (sin ningún pedido). El selector lleva `data-hidratado`, que React pone recién cuando lo enganchó.
+// pierde (sin ningún pedido). El botón «Vista y opciones» lleva `data-hidratado`, que React pone recién cuando lo enganchó.
 export async function esperarHidratado(page: Page, tope = 5_000): Promise<void> {
-  await expect(selectorDeTamano(page)).toHaveAttribute('data-hidratado', 'true', { timeout: tope })
+  await esperarBotonHidratado(page, tope)
 }
 
-// Elige un tamaño con el mouse o el dedo, ya hidratada la página.
+// «Vista y opciones» queda abierto tras elegir un tamaño: en el celular su hoja tapa la lista. Se cierra antes de tocar la página.
+export async function cerrarSiEstaAbierto(page: Page): Promise<void> {
+  if (await panelDeVistaYOpciones(page).isVisible()) {
+    await page.keyboard.press('Escape')
+    await expect(panelDeVistaYOpciones(page)).toBeHidden()
+  }
+}
+
+// Elige un tamaño con el mouse o el dedo, ya hidratada la página: abre «Vista y opciones» (si no lo está) y elige. El panel
+// queda abierto (cambiar el tamaño no lo cierra).
 export async function elegirTamano(page: Page, tamano: number): Promise<void> {
-  await esperarHidratado(page)
-  await selectorDeTamano(page).selectOption(String(tamano))
+  const selector = await abrirSelectorDeTamano(page)
+  await selector.selectOption(String(tamano))
 }
 
 // «Siguiente» y esperar a que la página nueva esté dibujada: la primera fila cambió (no basta `toHaveCount(10)`: la página de antes
 // también tiene 10) y la URL ya trae el cursor. Una prueba que elige el tamaño enseguida lo hace con la navegación pendiente: eso
 // lo cubre `por-pagina-pendiente.spec.ts`; las demás miden el cambio de tamaño, no la carrera (5a-15).
 export async function paginaSiguiente(page: Page): Promise<void> {
+  await cerrarSiEstaAbierto(page)
   const primera = filasDelListado(page).first()
   const antes = await primera.innerText()
   await page.getByRole('link', { name: 'Siguiente' }).click()

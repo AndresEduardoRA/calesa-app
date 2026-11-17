@@ -24,10 +24,10 @@ import {
   sinScrollHorizontal,
   textoGrandeAlCargar,
 } from './soporte/recorrido'
+import { abrirVistaYOpciones, botonDeVistaYOpciones } from './soporte/vista-y-opciones'
 
 // La barra del listado de leads (`<FilterShell>`) se lee en orden y desde la izquierda con el texto al 100 % y al 200 %, en escritorio y
-// en el celular (cierre 5b, defecto 4.1: al 200 % «Vistas» quedaba sola, «Lista | Embudo», «Importar» y «Papelera» se repartían a la
-// derecha cada uno en su fila y «Ítems por página» quedaba al final). El inventario de vehículos usa la misma barra: su spec está aparte
+// en el celular (cierre 5b, defecto 4.1: ningún botón queda solo en una fila si cabía en la anterior). El inventario de vehículos usa la misma barra: su spec está aparte
 // (`barra-de-filtros-vehiculos-200.spec.ts`), porque preparar el inventario borra las cuentas de prueba.
 test.describe.configure({ mode: 'serial' })
 
@@ -50,39 +50,17 @@ test.afterAll(async () => {
   await limpiarListado(t)
 })
 
-// Las piezas de la barra de leads para Berta, en el orden del DOM. «Ítems por página» está en la barra desde `md` (768 px); por debajo, arriba
-// de la lista.
+// Las piezas de la barra de leads para Berta, en el orden del DOM: el buscador (crece), «Filtros» y «Vista y opciones», que agrupa la vista,
+// el alcance, «Ítems por página», las vistas guardadas, importar y la papelera.
 function piezasDeLeads(page: Page): PiezaDeLaBarra[] {
-  const piezas: PiezaDeLaBarra[] = [
+  return [
     { nombre: 'Buscar', lugar: aLaVista(page.getByPlaceholder('Nombre o número')) },
     {
       nombre: 'Filtros',
       lugar: aLaVista(page.getByRole('button', { name: 'Filtros', exact: true })),
     },
-    {
-      nombre: 'Vistas',
-      lugar: aLaVista(page.getByRole('button', { name: 'Vistas', exact: true })),
-    },
-    {
-      nombre: 'Lista | Embudo',
-      lugar: aLaVista(page.getByRole('link', { name: 'Lista', exact: true }).locator('..')),
-    },
-    {
-      nombre: 'Importar',
-      lugar: aLaVista(page.getByRole('link', { name: 'Importar', exact: true })),
-    },
-    {
-      nombre: 'Papelera',
-      lugar: aLaVista(page.getByRole('link', { name: 'Papelera', exact: true })),
-    },
+    { nombre: 'Vista y opciones', lugar: botonDeVistaYOpciones(page) },
   ]
-  if (!esMovil(page)) {
-    piezas.push({
-      nombre: 'Ítems por página',
-      lugar: aLaVista(page.locator('label').filter({ hasText: 'Ítems por página' })),
-    })
-  }
-  return piezas
 }
 
 for (const zoom of ['100', '200'] as const) {
@@ -104,6 +82,10 @@ for (const zoom of ['100', '200'] as const) {
     const filas = new Set(cajas.map((c) => c.fila)).size
     info.annotations.push({ type: `filas de la barra al ${zoom} %`, description: String(filas) })
     await capturar(page, info, `barra-de-leads-${zoom}`)
+    // «Vista y opciones» abierto: el panel cabe en la pantalla y la página no se ensancha.
+    await abrirVistaYOpciones(page)
+    await sinScrollHorizontal(page)
+    await capturar(page, info, `vista-y-opciones-de-leads-${zoom}`)
   })
 }
 

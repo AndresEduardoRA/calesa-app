@@ -16,6 +16,7 @@ import { enKB, medirJsEnFrio } from './soporte/js-en-frio'
 import { rpcComo } from './soporte/leads-cartera'
 import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { literal, sql } from './soporte/sql'
+import { elegirEnVistaYOpciones, exigirQueNoOfrece } from './soporte/vista-y-opciones'
 
 // La papelera de cotizaciones (paso 4.24-2, `docs/UX.md` › «Cotizaciones»): `/cotizaciones/papelera`, por lote. Quién ve qué lote lo decide la base; la pantalla lee por cursor, trae un
 // lote entero con «Mostrar los N» y restaura (entero o una por una) diciendo el resultado. Purgar (4.24-2b) va en `cotizaciones-papelera-purgar.spec.ts`. El terreno lo arma `soporte/cotizaciones-papelera.ts`.
@@ -194,7 +195,7 @@ test('E7 sin las claves de enviar ni de vaciar no hay enlace ni papelera; la due
   await entrar(page, t.soloVer, { fresco: true })
   await page.goto(listado)
   await expect(page.locator('tbody tr, li article').filter({ visible: true }).first()).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Papelera' })).toHaveCount(0)
+  await exigirQueNoOfrece(page, 'Papelera', 'Vistas guardadas')
   await page.goto('/cotizaciones/papelera')
   await expect(
     page.getByText('No tienes permiso para enviar cotizaciones a la papelera ni para vaciarla.'),
@@ -203,7 +204,7 @@ test('E7 sin las claves de enviar ni de vaciar no hay enlace ni papelera; la due
   await page.context().clearCookies()
   await entrar(page, t.duena, { fresco: true })
   await page.goto(listado)
-  await page.getByRole('link', { name: 'Papelera' }).filter({ visible: true }).click()
+  await elegirEnVistaYOpciones(page, 'Papelera')
   await expect(page).toHaveURL(/\/cotizaciones\/papelera$/)
   await expect(page.getByRole('heading', { name: 'Papelera de cotizaciones' })).toBeVisible()
 })

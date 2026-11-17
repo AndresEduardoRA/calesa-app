@@ -4,6 +4,7 @@ import { entrar, limpiarAlta, prepararAlta } from './soporte/alta'
 import { esMovil } from './soporte/inventario'
 import { irAlEmbudo } from './soporte/leads-oportunidades'
 import { capturar } from './soporte/recorrido'
+import { elegirEnVistaYOpciones } from './soporte/vista-y-opciones'
 
 // Un modal en el celular con el texto al 200 % (cierre 5b, defecto 4.4): el cuerpo quedaba en una cuarta parte de la pantalla —el pie, con dos
 // botones apilados, ocupaba casi la mitad, y con la pregunta de descartar más— y la descripción, fija arriba, le quitaba lo que quedaba.
@@ -112,7 +113,7 @@ const MODALES = [
     persona: 'berta',
     abrir: async (page: Page) => {
       await irAlEmbudo(page)
-      await page.getByRole('button', { name: 'Nuevo embudo' }).click()
+      await elegirEnVistaYOpciones(page, 'Nuevo embudo…')
       return { dialogo: page.getByRole('dialog', { name: 'Nuevo embudo' }), campo: 'Nombre' }
     },
   },

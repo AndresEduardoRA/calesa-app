@@ -8,13 +8,13 @@ import {
 import {
   aLaVista,
   entrar,
-  esMovil,
   limpiarInventario,
   prepararInventario,
   type Terreno,
 } from './soporte/inventario'
 import { capturar, sinScrollHorizontal } from './soporte/recorrido'
 import { cargarVehiculos } from './soporte/vehiculos'
+import { abrirVistaYOpciones, botonDeVistaYOpciones } from './soporte/vista-y-opciones'
 
 // La barra del inventario de vehículos es la misma `<FilterShell>` que la de leads (`barra-de-filtros-200.spec.ts`): se lee en orden y desde
 // la izquierda con el texto al 100 % y al 200 %. Va aparte: preparar el inventario borra las cuentas de prueba.
@@ -53,26 +53,16 @@ for (const zoom of ['100', '200'] as const) {
         nombre: 'Filtros',
         lugar: aLaVista(barra.getByRole('button', { name: 'Filtros', exact: true })),
       },
-      {
-        nombre: 'Vistas',
-        lugar: aLaVista(barra.getByRole('button', { name: 'Vistas', exact: true })),
-      },
-      {
-        nombre: 'Papelera',
-        lugar: aLaVista(barra.getByRole('link', { name: 'Papelera', exact: true })),
-      },
+      { nombre: 'Vista y opciones', lugar: botonDeVistaYOpciones(page) },
       { nombre: 'Nuevo', lugar: aLaVista(barra.getByRole('button', { name: /^Nuev[oa] / })) },
     ]
-    if (!esMovil(page)) {
-      piezas.push({
-        nombre: 'Ítems por página',
-        lugar: aLaVista(barra.locator('label').filter({ hasText: 'Ítems por página' })),
-      })
-    }
     await exigirBarraOrdenada(page, barra, piezas)
     await exigirMarcadorQueCabe(barra.getByPlaceholder('Título, VIN o lote'))
     await sinScrollHorizontal(page)
     await capturar(page, info, `barra-de-vehiculos-${zoom}`)
+    await abrirVistaYOpciones(page)
+    await sinScrollHorizontal(page)
+    await capturar(page, info, `vista-y-opciones-de-vehiculos-${zoom}`)
   })
 }
 

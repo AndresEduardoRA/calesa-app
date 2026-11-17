@@ -62,6 +62,8 @@ export async function exigirBarraOrdenada(
   expect(borde, 'la barra está a la vista').not.toBeNull()
   const izquierda = borde?.x ?? 0
   const derecha = izquierda + (borde?.width ?? 0)
+  // El hueco entre piezas de una fila: una pieza cabía al final de la anterior sólo si entraba con él.
+  const hueco = await barra.evaluate((el) => Number.parseFloat(getComputedStyle(el).columnGap) || 0)
   const detalle = cajas
     .map(
       (c) =>
@@ -84,7 +86,7 @@ export async function exigirBarraOrdenada(
         `«${primera.nombre}» empieza su fila en el borde izquierdo de la barra: ${detalle}`,
       ).toBeLessThanOrEqual(2)
       expect(
-        finDeLaAnterior + primera.ancho,
+        finDeLaAnterior + hueco + primera.ancho,
         `«${primera.nombre}» no cabía al final de la fila anterior: ${detalle}`,
       ).toBeGreaterThan(derecha)
     }

@@ -15,6 +15,7 @@ import {
   type Terreno,
 } from './soporte/inventario'
 import { vistasDe } from './soporte/vehiculos'
+import { abrirVistaYOpciones } from './soporte/vista-y-opciones'
 
 // El inventario contra la app compilada y el Supabase local: el listado por origen, sus filtros,
 // las vistas guardadas y lo que ve cada quien. El alta y la edición van en `vehiculos-alta.spec.ts`.
@@ -156,7 +157,7 @@ test('una vista guardada vuelve a poner sus filtros', async ({ page }) => {
   await expect(vehiculo(page, 'Kia Sportage')).toBeVisible()
   await expect(vehiculo(page, 'Hyundai Tucson 100%')).toBeHidden()
 
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByLabel('Guardar los filtros de ahora').fill('Automáticos nuevos')
   await page.getByRole('button', { name: 'Guardar vista' }).click()
   await expect(page.getByText('Vista «Automáticos nuevos» guardada')).toBeVisible()
@@ -170,7 +171,7 @@ test('una vista guardada vuelve a poner sus filtros', async ({ page }) => {
   // Desde otra pestaña de origen, sin filtros: aplicarla vuelve a Corea con los suyos.
   await page.goto(`/vehiculos?origen=${taiwan.id}`)
   await expect(aLaVista(page.getByText('Ningún vehículo en Taiwán todavía'))).toBeVisible()
-  await page.getByRole('button', { name: 'Vistas' }).click()
+  await abrirVistaYOpciones(page)
   await page.getByRole('button', { name: 'Automáticos nuevos', exact: true }).click()
   await expect(page).toHaveURL(/a\.transmision=automatica/)
   await expect(page.getByRole('link', { name: COREA })).toHaveAttribute('aria-current', 'page')

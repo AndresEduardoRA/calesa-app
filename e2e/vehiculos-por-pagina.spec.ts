@@ -14,11 +14,12 @@ import {
   paginaSiguiente,
   parametrosDe,
   preferenciaDe,
-  selectorDeTamano,
+  abrirSelectorDeTamano,
   vistasDelHtml,
 } from './soporte/listas-por-pagina'
 import { tactil } from './soporte/recorrido'
 import { cargarVehiculos } from './soporte/vehiculos'
+import { botonDeVistaYOpciones } from './soporte/vista-y-opciones'
 
 // «Ítems por página» (9g) en el inventario de vehículos, con la dueña del inventario: cada valor, lo que se recuerda
 // (la misma preferencia que el listado de leads), un valor manipulado, la página 3 con búsqueda y qué pasa con las filas
@@ -30,7 +31,7 @@ const MARCA = 'PorPagVeh'
 const consulta = (extra = '') => `?q=${MARCA}${extra}`
 const irAlInventario = async (page: Parameters<typeof entrar>[0], extra = '') => {
   await page.goto(`/vehiculos${consulta(`&origen=${terreno.corea.id}${extra}`)}`)
-  await expect(selectorDeTamano(page)).toBeVisible()
+  await expect(botonDeVistaYOpciones(page)).toBeVisible()
 }
 
 test.beforeAll(async ({}, info) => {
@@ -56,8 +57,8 @@ test('cada tamaño trae esa cantidad de filas, vuelve a la primera y se recuerda
   await entrar(page, terreno.duena)
   await irAlInventario(page)
   await expect(filasDelListado(page)).toHaveCount(50)
-  await expect(selectorDeTamano(page)).toHaveValue('50')
-  await tactil(page, selectorDeTamano(page))
+  await expect(await abrirSelectorDeTamano(page)).toHaveValue('50')
+  await tactil(page, await abrirSelectorDeTamano(page))
   for (const tamano of [10, 25, 100]) {
     await elegirTamano(page, tamano)
     await expect(filasDelListado(page)).toHaveCount(tamano)

@@ -124,6 +124,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
 - **[—]** El bloque «Leads sin seguimiento» de Inicio cuesta lo que pesa la cartera de quien mira; no se midió con volumen.
 - **[4-73]** Presupuestos al borde: JS de `/cotizaciones/nuevo` 439,5 de 460 KB, la hoja 491 nodos de 500, la ficha del lead «Datos» 39,2 de 43 KB y «Oportunidades» 61,2 de 66 — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
+- **[T27]** El tope de JS de `/logistica` es 390 KB en `e2e/soporte/presupuestos.ts` y 410 en `docs/RENDIMIENTO.md` › «JS en frío» — dejar uno solo (lo medido, 365,0, entra en los dos).
 - **[—]** Tope de 40 ítems por diseño: `subasta_usa` tiene 39 — para crecer, subir `_diseno_maximo_de_items()` y la constante midiendo la hoja, o partir la hoja.
 
 ### Archivos y funciones sobre el tope

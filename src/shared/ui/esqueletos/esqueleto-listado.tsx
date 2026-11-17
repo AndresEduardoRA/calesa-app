@@ -27,9 +27,9 @@ export function EsqueletoListado({
         </div>
       ) : null}
       <div className="flex flex-wrap gap-2">
-        <Skeleton className="h-11 w-full max-w-sm md:h-9" />
+        <Skeleton className="h-11 min-w-0 flex-1 basis-56 md:h-9" />
         <Skeleton className="h-11 w-24 md:h-9" />
-        <Skeleton className="ml-auto h-11 w-32 md:h-9" />
+        <Skeleton className="h-11 w-40 md:h-9" />
       </div>
       <div className="grid items-start gap-4 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <div className="hidden gap-4 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) p-4 lg:grid">

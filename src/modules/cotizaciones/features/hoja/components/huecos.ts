@@ -78,7 +78,10 @@ export type HuecosDeLaGuardada = {
   Debajo?: ComponentType<PropsDeUnHuecoDeLaGuardada>
 }
 
-// El hueco del listado `/cotizaciones` (4.15-6b): `Junto` va antes de «Nueva cotización» en la barra de acciones (el enlace a la papelera, 4.24). Lo llena `papelera`.
+// El hueco del listado `/cotizaciones` (4.15-6b): `Junto` va en el grupo «Más» de «Vista y opciones» (el enlace a la papelera, 4.24). Lo llena `papelera`.
+// `hayJunto` dice si quien mira lo vería: la página pasa `Junto` sólo entonces, así «Más» nunca queda vacío (`Junto` es un Server Component y el
+// panel no puede saber si dibujó algo).
 export type HuecosDelListado = {
   Junto?: ComponentType<{ permisos: Permisos }>
+  hayJunto?: (permisos: Permisos) => boolean
 }

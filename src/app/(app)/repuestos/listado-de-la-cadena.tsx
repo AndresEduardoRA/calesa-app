@@ -10,15 +10,21 @@ import {
 import { CadenaDeRepuestos } from '@/modules/repuestos/pantallas/flujo-cadena'
 import { datosO } from '@/shared/lib/errores'
 import { leerFiltros } from '@/shared/lib/filtros'
+import type { GrupoDeVistaYOpciones } from '@/shared/ui/filtros'
 import type { Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { PanelDelItem } from './panel-del-item'
 
-type Props = { parametros: Record<string, string | string[] | undefined>; permisos: Permisos }
+type Props = {
+  parametros: Record<string, string | string[] | undefined>
+  permisos: Permisos
+  // «Qué ver» en «Vista y opciones» (lo arma la página).
+  opciones: readonly GrupoDeVistaYOpciones[]
+}
 
 // La vista «Cadena» de `/repuestos` (8.13-3): una lectura por fase con la sesión de quien mira (la página ya cortó sin `repuestos.ver`) y, con `?item=`, el panel del ítem. Una lectura que
 // falla sube al `error.tsx` de `(app)` con «Reintentar». El instante de la lectura va al cliente: los días en la fase se cuentan contra él.
-export async function ListadoDeLaCadena({ parametros, permisos }: Props) {
+export async function ListadoDeLaCadena({ parametros, permisos, opciones }: Props) {
   const esquema = esquemaDeLaCadena()
   const filtros = pedidoDeLaCadena(
     leerFiltros(esquema, parametros),
@@ -33,6 +39,7 @@ export async function ListadoDeLaCadena({ parametros, permisos }: Props) {
         esquema={esquema}
         ahora={new Date().toISOString()}
         enlaceAFlujos={puede(permisos, 'repuestos.configurar')}
+        opciones={opciones}
       />
       <PanelDelItem
         itemId={itemAbiertoDe(parametros)}
