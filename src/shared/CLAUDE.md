@@ -39,7 +39,7 @@ locale)`, el único lector de un número tipeado.
   `pnpm email:probar <destino>`). Ningún archivo se llama `resend.ts`: el lint prohíbe importar algo llamado `resend`.
 - `config/esquemas.ts`: el entorno en Zod (`entornoPublico()`, `entornoDelServidor()`, `pnpm env:check`; lectores en `scripts/lib/entornos/`).
   `config/app.ts`: nombre y colores.
-- `ui/diferido.tsx`: `diferido()`. `ui/modal.tsx`, `ui/drawer.tsx`, `ui/confirmar.tsx`: diálogos por URL; `ui/modal-de-formulario.tsx`,
+- `ui/diferido.tsx`: `diferido()` (con `aviso: 'aqui'`, `respaldo(props)` se dibuja bajo «Sin conexión» si el código no llega). `ui/modal.tsx`, `ui/drawer.tsx`, `ui/confirmar.tsx`: diálogos por URL; `ui/modal-de-formulario.tsx`,
   `ui/use-envio-de-modal.ts` (envío sin versión). `<Drawer alCostado>`: no modal y sin fondo (lo de atrás se sigue usando; tocar afuera no
   cierra, Esc y la ✕ sí), para el panel que acompaña a una pantalla ancha. `ui/bloque.tsx`: `<Bloque>` es un `<details>`;
   dentro de `<BloquesALaVista>` (`ui/bloques-a-la-vista.tsx`) es una `<section>` a la vista con su `h3` (`h4` anidado) y `onAbrir` una vez al montarse.
