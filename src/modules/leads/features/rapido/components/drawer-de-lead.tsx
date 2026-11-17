@@ -11,11 +11,7 @@ import { Drawer } from '@/shared/ui/drawer'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { useUltimo } from '@/shared/ui/use-ultimo'
 import type { FilaDeLead } from '../../../entities/listado'
-import {
-  vistaDelRapido,
-  type PestanaDelRapido,
-  type VistaDelRapido,
-} from '../../../entities/rapido'
+import { vistaDelRapido, type VistaDelRapido } from '../../../entities/rapido'
 import { tipoDelCatalogo } from '../../../entities/catalogos'
 import { BadgeDeTipo } from '../../listado/components/badge-de-tipo'
 import { InsigniasDeMarcas } from '../../marcas/components/insignias-de-marcas'
@@ -23,7 +19,6 @@ import type { DatosDeLaLista, ParaMarcar } from '../../listado/components/tipos'
 import { useNumerosEnTexto } from '@/shared/ui/numero-de-lead'
 import { useDrawerDeLead } from '../hooks/use-drawer-de-lead'
 import { useLeadRapido } from '../hooks/use-lead-rapido'
-import { NuevaOportunidadDelLead } from '../../oportunidades/components/nueva-oportunidad-del-lead'
 import { EdicionDelResumenDiferido } from './diferidos'
 import {
   CuerpoDelRapido,
@@ -32,8 +27,9 @@ import {
   type PropsDeDatos,
 } from './cuerpo-del-rapido'
 import { MenuDelResumen } from './menu-del-resumen'
+import { ModalesDelResumen } from './modales-del-resumen'
 import type { HuecosDelRapido } from '../huecos'
-import { PestanasDelRapido } from './pestanas-del-rapido'
+import type { DatosDeUltimoContacto } from '../../listado/components/ultimo-contacto'
 
 type Props = DatosDeLaLista & {
   // Las filas de la página: de ahí sale lo que se ve de inmediato, mientras llega la lectura.
@@ -51,6 +47,8 @@ type Props = DatosDeLaLista & {
   marcar: ParaMarcar
   // Lo que `src/app` llena en el resumen (el bloque «Relacionados»).
   huecosDelResumen?: HuecosDelRapido
+  // Los tipos de seguimiento y el instante de la página, para decir el último seguimiento y el recordatorio como en la fila.
+  ultimoContacto: DatosDeUltimoContacto
 }
 
 const ES_GUID = z.guid()
@@ -62,7 +60,7 @@ type PropsDeLaCabecera = Pick<PropsDeDatos, 'lead' | 'etiquetas' | 'tipos'> & {
   menu: ReactNode
 }
 
-// Lo de arriba, en las tres pestañas: el tipo, las marcas de quien mira, «Editar», «Abrir ficha» y el «⋯».
+// Lo de arriba: el tipo, las marcas de quien mira, «Editar», «Abrir ficha» y el «⋯».
 function CabeceraDelRapido({ lead, etiquetas, tipos, alEditar, menu }: PropsDeLaCabecera) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
@@ -94,8 +92,6 @@ type PropsDelContenido = {
   vista: VistaDelRapido
   // Hay un lead en la URL (el drawer no se está cerrando).
   abierto: boolean
-  pestana: PestanaDelRapido
-  alElegir: (pestana: PestanaDelRapido) => void
   // El último lead que se mostró: el drawer que se cierra no se vacía.
   ultimo: FilaDeLead | null
   reintentar: () => void
@@ -106,14 +102,13 @@ type PropsDelContenido = {
   // El «⋯» de un lead.
   menu: (lead: FilaDeLead) => ReactNode
   huecos: HuecosDelRapido | undefined
+  ultimoContacto: DatosDeUltimoContacto
 }
 
 // Lo que va adentro del drawer según cómo esté la lectura.
 function ContenidoDelRapido({
   vista,
   abierto,
-  pestana,
-  alElegir,
   ultimo,
   reintentar,
   datos,
@@ -121,6 +116,7 @@ function ContenidoDelRapido({
   alEditar,
   menu,
   huecos,
+  ultimoContacto,
 }: PropsDelContenido) {
   if (vista.tipo === 'no_disponible') {
     return (
@@ -140,7 +136,7 @@ function ContenidoDelRapido({
     )
   }
   // El último que se mostró sólo mientras se cierra: con otro lead en la URL, se espera el suyo (con
-  // las pestañas del anterior, anotar escribiría en otro lead).
+  // el «⋯» del anterior, anotar escribiría en otro lead).
   const lead = vista.tipo === 'lead' ? vista.lead : abierto ? null : ultimo
   if (lead === null) {
     return <EsqueletoDelRapido etiqueta="Cargando el lead" />
@@ -155,20 +151,13 @@ function ContenidoDelRapido({
         menu={menu(lead)}
       />
       {huecos?.Relacionados ? <huecos.Relacionados key={lead.id} leadId={lead.id} /> : null}
-      <PestanasDelRapido
-        leadId={lead.id}
-        pestana={pestana}
-        alElegir={alElegir}
-        resumen={
-          <CuerpoDelRapido
-            {...datos}
-            lead={lead}
-            completo={vista.tipo === 'lead' ? vista.completo : true}
-            fallo={vista.tipo === 'lead' && vista.fallo}
-            reintentar={reintentar}
-            telefonos={telefonos}
-          />
-        }
+      <CuerpoDelRapido
+        {...datos}
+        lead={lead}
+        fallo={vista.tipo === 'lead' && vista.fallo}
+        reintentar={reintentar}
+        telefonos={telefonos}
+        ultimoContacto={ultimoContacto}
       />
     </div>
   )
@@ -212,31 +201,8 @@ function EdicionDelDrawer(props: PropsDeLaEdicion) {
   )
 }
 
-// «Nueva oportunidad…» dentro del resumen (`?lead=<id>&panel=oportunidad-rapida`), también dentro del drawer por lo mismo que el panel de edición. Sólo con
-// `leads.editar` y el lead en la cartera (como el «⋯» que lo pide).
-function OportunidadDelDrawer(props: {
-  lead: FilaDeLead | null
-  puedeEditar: boolean
-  pedida: boolean
-  alCerrar: () => void
-}) {
-  const { lead, puedeEditar, pedida, alCerrar } = props
-  if (lead === null || !puedeEditar || !lead.enCartera) {
-    return null
-  }
-  return (
-    <NuevaOportunidadDelLead
-      leadId={lead.id}
-      nombre={lead.nombre}
-      abierto={pedida}
-      alCerrar={alCerrar}
-    />
-  )
-}
-
-// El drawer rápido de un lead (`?lead=`) sin salir de la lista: «Resumen» (los datos), «Seguimientos»
-// (`?pestana=seguimientos`: la línea de tiempo con anotar) y «Recordatorios» (`?pestana=recordatorios`:
-// «Tus recordatorios» con agendar); cada pestaña lee lo suyo al elegirse. Se dibuja enseguida
+// El drawer rápido de un lead (`?lead=`) sin salir de la lista, la versión corta de su ficha y sin pestañas: el tipo, las marcas, las
+// acciones, Relacionados en chips, el teléfono, el origen y lo último que pasó, con «Abrir ficha» para todo lo demás. Se dibuja enseguida
 // con lo que ya trajo la página y se completa con su lectura. Si el lead desaparece, o deja de ser
 // visible, mientras está abierto lo dice sin explicar por qué; con un modal abierto adentro no vuelve
 // a leer (lo dice el modal al guardar).
@@ -249,8 +215,7 @@ export function DrawerDeLead({
   marcar,
   ...datos
 }: Props) {
-  const drawer = useDrawerDeLead()
-  const { id, pestana, conModal, elegirPestana, cerrar, editar, editando } = drawer
+  const { id, conModal, cerrar, editar, editando } = useDrawerDeLead()
   const idValido = id !== null && ES_GUID.safeParse(id).success
   const { lectura, reintentar } = useLeadRapido(idValido ? id : null, conModal)
   // Se guardó el lead (o sus extras) desde el panel: el resumen lo vuelve a leer, también los teléfonos.
@@ -282,14 +247,13 @@ export function DrawerDeLead({
       <ContenidoDelRapido
         vista={vista}
         abierto={id !== null}
-        pestana={pestana}
-        alElegir={elegirPestana}
         ultimo={ultimo}
         reintentar={reintentar}
         datos={datos}
         telefonos={{ revision }}
         alEditar={puedeEditar ? editar : null}
         huecos={datos.huecosDelResumen}
+        ultimoContacto={datos.ultimoContacto}
         menu={(lead) => (
           <MenuDelResumen
             lead={lead}
@@ -311,12 +275,7 @@ export function DrawerDeLead({
         puedeConfigurar={puedeConfigurar}
         alGuardado={alGuardado}
       />
-      <OportunidadDelDrawer
-        lead={mostrado}
-        puedeEditar={puedeEditar}
-        pedida={drawer.nuevaOportunidad}
-        alCerrar={drawer.cerrarModal}
-      />
+      <ModalesDelResumen lead={mostrado} puedeEditar={puedeEditar} alGuardar={reintentar} />
     </Drawer>
   )
 }

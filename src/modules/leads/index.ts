@@ -82,6 +82,8 @@ export { puedeAbrirLaPapelera, puedeEnviarLead, puedePurgarLeads } from './entit
 export { puedeCambiarTelefonoDeLead, puedeEditarTelefonosExtra } from './entities/telefonos'
 export { leerChoquesDeTelefonos } from './composicion'
 export { CLAVE_DE_SECCION, seccionDeLead } from './entities/ficha'
+// `?lead=<id>&pestana=` de cuando el resumen tenía pestañas: a dónde redirige `/leads`.
+export { destinoDeLaPestanaVieja } from './entities/rapido'
 // El bloque «Seguimientos y recordatorios» (`pantallas/ficha`): lo lee el servidor con la sesión de quien mira y va detrás de
 // `<Suspense>` (su esqueleto es `<EsqueletoDeSeguimientos>`). Quién ve qué y quién anota lo decide
 // la base; un co-asesor ve sólo lo «Visible para el cliente» de los demás.

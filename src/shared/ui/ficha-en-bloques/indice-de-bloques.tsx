@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { PistaDeDesborde } from '../pista-de-desborde'
 import { useDesborde } from '../use-desborde'
 import { irAlBloque } from './ir-al-bloque'
@@ -30,6 +30,8 @@ function desplazamientoParaVer(barra: HTMLElement, enlace: HTMLElement): number 
   return null
 }
 
+const sinSuscripcion = () => () => undefined
+
 // El índice de una ficha en bloques: una barra pegajosa bajo la barra superior con un enlace de ancla por bloque (`#ancla`: sin JS,
 // igual saltan), que marca con `aria-current="location"` el bloque a la vista. Al pulsar uno se salta con `irAlBloque()` (el foco va al
 // título del bloque). En el celular se desplaza de costado, con su pista de desborde.
@@ -38,6 +40,13 @@ export function IndiceDeBloques({ bloques, etiqueta = 'Índice de la ficha' }: P
   const lista = useRef<HTMLUListElement>(null)
   const desborde = useDesborde(lista)
   const actual = useBloqueALaVista(nav)
+  // La ficha llega dibujada por el servidor antes de que React enganche sus controles: lo mira el e2e (`data-hidratado`); a quien la usa no
+  // le cambia nada.
+  const hidratado = useSyncExternalStore(
+    sinSuscripcion,
+    () => true,
+    () => false,
+  )
   useEffect(() => {
     const barra = lista.current
     const enlace = actual
@@ -55,6 +64,7 @@ export function IndiceDeBloques({ bloques, etiqueta = 'Índice de la ficha' }: P
     <nav
       ref={nav}
       aria-label={etiqueta}
+      data-hidratado={hidratado}
       className="sticky top-(--topbar) z-10 min-w-0 border-b border-(--color-line) bg-(--color-paper)"
     >
       <div className="relative min-w-0">

@@ -21,9 +21,8 @@ type Props = {
   alEnviado: () => void
 }
 
-// El «⋯» del resumen de un lead: la lista de siempre (`accionesDeLead()`). Agendar y anotar eligen su pestaña y abren su modal dentro
-// del resumen (`?pestana=recordatorios&panel=agendar-recordatorio`, `?pestana=seguimientos&panel=anotar-seguimiento`); «Nueva oportunidad…» abre
-// el suyo sobre «Resumen» (`?panel=oportunidad-rapida`) y «Ver oportunidades» va a la ficha.
+// El «⋯» del resumen de un lead: la lista de siempre (`accionesDeLead()`). Agendar, anotar y «Nueva oportunidad…» abren su modal dentro del
+// resumen (`?lead=<id>&panel=agendar-recordatorio|anotar-seguimiento|oportunidad-rapida`, sin `para`) y «Ver oportunidades» va a la ficha.
 export function MenuDelResumen({ lead, marcar, puedeEditar, alMarcar, alEnviado }: Props) {
   const drawer = useDrawerDeLead()
   const irALasOportunidades = useIrALasOportunidades()
@@ -31,13 +30,13 @@ export function MenuDelResumen({ lead, marcar, puedeEditar, alMarcar, alEnviado 
     puedeEditar && lead.enCartera
       ? {
           alAnotar: () => {
-            drawer.abrirModal('seguimientos', PANEL_ANOTAR_SEGUIMIENTO)
+            drawer.abrirModal(PANEL_ANOTAR_SEGUIMIENTO)
           },
           alAgendar: () => {
-            drawer.abrirModal('recordatorios', PANEL_AGENDAR_RECORDATORIO)
+            drawer.abrirModal(PANEL_AGENDAR_RECORDATORIO)
           },
           alNuevaOportunidad: () => {
-            drawer.abrirModal('resumen', PANEL_OPORTUNIDAD_RAPIDA)
+            drawer.abrirModal(PANEL_OPORTUNIDAD_RAPIDA)
           },
         }
       : undefined

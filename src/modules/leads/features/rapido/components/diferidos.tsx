@@ -1,26 +1,7 @@
 'use client'
 
 import { diferido } from '@/shared/ui/diferido'
-import { EsqueletoDeSeguimientos } from '../../seguimientos/components/esqueleto-de-seguimientos'
 import { Skeleton } from '@/shared/ui/skeleton'
-
-// Cada pestaña se pide recién al elegirla: el listado no carga la línea de tiempo, los recordatorios
-// ni sus modales para mostrar sus filas. Sin red, el aviso va en el lugar de la pestaña.
-export const SeguimientosDelRapidoDiferido = diferido(
-  () =>
-    import('../../seguimientos/components/todos-los-seguimientos').then(
-      (modulo) => modulo.TodosLosSeguimientos,
-    ),
-  { esqueleto: <EsqueletoDeSeguimientos forma="linea" />, aviso: 'aqui' },
-)
-
-export const RecordatoriosDelRapidoDiferido = diferido(
-  () =>
-    import('../../recordatorios/components/todos-los-recordatorios').then(
-      (modulo) => modulo.TodosLosRecordatorios,
-    ),
-  { esqueleto: <EsqueletoDeSeguimientos forma="linea" />, aviso: 'aqui' },
-)
 
 // Los teléfonos del resumen (el principal y los extras, sólo lectura): se piden al mostrar «Resumen», no al abrir el listado.
 export const TelefonosDelResumenDiferido = diferido(

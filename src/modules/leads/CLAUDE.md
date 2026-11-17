@@ -39,6 +39,10 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `leads.telefonos_extra.editar` sin `leads.editar`, «Editar teléfonos» abre el mismo panel en modo teléfonos («Teléfonos de <nombre>», sólo los teléfonos). Un
   `?panel=agregar-telefono` viejo se reemplaza por `?panel=editar-lead&extra=nuevo` (o se quita sin permiso: `reemplazoDelPanelViejo()`).
   Todo modal en `?panel=` (`PANEL_*`); los de una fila llevan `para=<id>` y con `?lead=` no responden.
+- El resumen del listado (`?lead=`, `features/rapido/`) es la versión corta de la ficha, sin pestañas: tipo, marcas, «Editar», «Abrir ficha», «⋯»,
+  Relacionados en chips, «Teléfono», «Origen del lead», «Último seguimiento» y «Recordatorio» (los de la fila: ninguna lectura más). Anotar y agendar del «⋯»
+  abren el modal de las filas dentro del drawer (`?lead=<id>&panel=anotar-seguimiento|agendar-recordatorio`, sin `para`; `ModalesDelResumen`). `/leads` redirige
+  un `?lead=<id>&pestana=seguimientos|recordatorios` de antes a la ficha en su bloque (`destinoDeLaPestanaVieja()`).
 - «Nueva oportunidad…» del «⋯» (`?panel=oportunidad-rapida&para=<id>` en la lista y el kanban; sin `para` en la ficha y el resumen, `NuevaOportunidadDelLead`;
   `features/oportunidades/components/modal-de-oportunidad-rapida.tsx`): sólo `leads.editar` y el lead en la cartera, como anotar y agendar. Primero el aviso de las que el lead
   ya tiene (`leerOportunidadesDelAviso`: `lead_oportunidades` con `LEIDAS_PARA_EL_AVISO` = 6, al abrir, sin cuenta; «Crear igual» sigue y si no lee, igual deja crear) y
@@ -58,7 +62,7 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
 - «Escribirle por chat» (`features/chat/`): en el aviso «Lo tiene <persona>» del teléfono principal, enlace a `/chat?con=<duenoId>` sólo si el layout
   dijo `chat.participar` (falso por omisión) y la base mandó `dueno_id`. La base decide si se puede (`chat_directa`).
 - **«Relacionados» en el lead** (`vehiculos` lo dibuja; `leads` no lo importa): `FichaDeLead` recibe el nodo `relacionados` (un bloque de la columna derecha, con `GestionDeVehiculosDelLead` al pie) y el resumen del listado,
-  `huecosDelResumen: HuecosDelRapido` (`features/rapido/huecos.ts`: `Relacionados({ leadId })`, entre la cabecera y las pestañas del drawer), que llena `src/app/(app)/leads/listado-con-relacionados.tsx` con `diferido()`.
+  `huecosDelResumen: HuecosDelRapido` (`features/rapido/huecos.ts`: `Relacionados({ leadId })`, entre la cabecera y los datos del drawer), que llena `src/app/(app)/leads/listado-con-relacionados.tsx` con `diferido()`.
   `pantallas/relacionados.ts` reexporta el selector de leads (`PanelParaVincularDiferido`, con `titulo?`) para «Vincular a un lead» y «Marcar un interesado» de un vehículo.
 - Sin código: `getLead()`, `buscarLeads()`, `<ChipLead>`, `telefonoDe(leadId)`.
 
