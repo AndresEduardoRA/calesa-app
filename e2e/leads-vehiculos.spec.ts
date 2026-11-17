@@ -9,6 +9,7 @@ import { formatearNumero } from '../src/shared/lib/formato'
 import { entrar } from './soporte/inventario'
 import { esperarDosCuadros } from './soporte/barra-de-filtros'
 import { marcarInteres, vincular } from './soporte/leads'
+import { abrirPanelDeCartera } from './soporte/leads-cartera'
 import { irAFicha, tituloDeLaFicha } from './soporte/leads-ficha'
 import { capturar } from './soporte/recorrido'
 import {
@@ -290,13 +291,11 @@ test('compartir un lead con vehículos vinculados avisa que el vínculo se los d
   await vincular(autoId, lead.id)
   await entrar(page, t.ada)
   await irAFicha(page, lead.id)
-  await page.getByRole('button', { name: 'Compartir', exact: true }).click()
+  const panel = await abrirPanelDeCartera(page, 'Compartir lead')
   await expect(
-    page
-      .getByRole('dialog', { name: 'Compartir lead' })
-      .getByText(
-        'Tiene un vehículo vinculado: quien lo reciba podrá verlo y, si su rol lo permite, editarlo.',
-      ),
+    panel.getByText(
+      'Tiene un vehículo vinculado: quien lo reciba podrá verlo y, si su rol lo permite, editarlo.',
+    ),
   ).toBeVisible()
 })
 

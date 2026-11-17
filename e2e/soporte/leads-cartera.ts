@@ -1,6 +1,6 @@
 // Lo que los e2e de la cartera de un lead (compartir, transferir, quitar acceso, salir) leen y
 // preparan en el Supabase LOCAL sin pasar por la pantalla.
-import type { Locator, Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { CONTRASENA } from './alta'
 import { PREFIJO_ROL_E2E, admin, correoDePrueba, crearPersona, darRolDePrueba } from './base'
 import { aLaVista } from './inventario'
@@ -59,6 +59,28 @@ export const filaDeCartera = (page: Page, nombre: string): Locator =>
 
 export const panelDeCartera = (page: Page, titulo: 'Compartir lead' | 'Transferir lead'): Locator =>
   page.getByRole('dialog', { name: titulo })
+
+const DISPARADORES = {
+  'Compartir lead': { boton: 'Compartir', panel: 'panel=compartir-lead' },
+  'Transferir lead': { boton: 'Transferir', panel: 'panel=transferir-lead' },
+} as const
+
+// Abre el panel con su botón de «Quién lo tiene». Antes de hidratar el clic se pierde: se insiste
+// hasta que la URL pide el panel y no se vuelve a tocar (cada clic de más suma una entrada al historial).
+export async function abrirPanelDeCartera(
+  page: Page,
+  titulo: 'Compartir lead' | 'Transferir lead',
+): Promise<Locator> {
+  const { boton, panel } = DISPARADORES[titulo]
+  const dialogo = panelDeCartera(page, titulo)
+  await expect(async () => {
+    if (!page.url().includes(panel)) {
+      await page.getByRole('button', { name: boton, exact: true }).click()
+    }
+    await expect(dialogo).toBeVisible({ timeout: 1000 })
+  }).toPass()
+  return dialogo
+}
 
 // Llama la RPC con la sesión de esa persona, como lo haría otra pestaña.
 export async function rpcComo(email: string, nombre: string, parametros: Record<string, unknown>) {
