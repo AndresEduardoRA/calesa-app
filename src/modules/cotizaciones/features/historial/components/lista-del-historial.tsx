@@ -35,7 +35,7 @@ type Props = {
 }
 
 // Las cotizaciones de un vehículo o un lead que quien mira ve, de la más nueva a la más vieja, con sus estados (esqueleto, error, vacío) y su pie («Ver más» o el tope).
-// La comparten el historial del panel de la hoja, la pestaña «Cotizaciones» de la ficha del vehículo y la sección de la ficha del lead; la lectura es de `usePaginasDelHistorial`.
+// La comparten el historial del panel de la hoja, el bloque «Cotizaciones» de la ficha del vehículo y la sección de la ficha del lead; la lectura es de `usePaginasDelHistorial`.
 export function ListaDelHistorial({ historial, de, etiqueta, esperarEsqueleto = true }: Props) {
   const { zonaHoraria } = useRegional()
   if (!historial.leido) {

@@ -61,7 +61,8 @@ function FaseYQueFalta({ vehiculoId, titulo }: { vehiculoId: string; titulo: str
   )
 }
 
-// Los bloques que leen y piden su código recién al acercarse (200 px antes de entrar a la vista).
+// Los bloques que montan su parte de cliente recién al acercarse (200 px antes de entrar a la vista): «Cotizaciones» y la lista de «Documentos»
+// leen desde el navegador recién ahí; lo que se lee en el servidor (la unidad, la galería) llega con el documento y sólo espera su código.
 function AlAcercarse({
   ancla,
   titulo,
@@ -124,7 +125,7 @@ function AlAcercarse({
 }
 
 // Lo de adentro de cada bloque. Lo que abre la URL (Relacionados con sus paneles y «Ver todos») nunca espera a acercarse; sólo «Cotizaciones»,
-// «Documentos» y «Fotos», que leen y piden su código recién ahí.
+// «Documentos» y «Fotos» (ver `AlAcercarse`).
 function Contenido({
   ancla,
   titulo,
