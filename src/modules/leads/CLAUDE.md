@@ -12,6 +12,9 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   - `leerNombresDeLeads(ids)`: nombres de una página de `/cotizaciones` por `leads_vista_por_ids()` (invocadora: el que no se ve no se distingue del
     que no existe), hasta 100 ids, una vez por página.
   - `leerClienteElegido(id)`: `ok(null)` sólo si no se ve; un error es un error.
+  - `leerLeadParaEnlazar(id)`: `{ id, nombre, numeros, enCartera }` de `leads_vista` por la clave primaria (`limit 1`), **nunca el teléfono**; `ok(null)`
+    si no existe, está en la papelera o en el limbo, o no se ve (no se distinguen). La usan la cabecera de `/repuestos/[id]` y el `?lead=` de «Nuevo
+    proyecto». Aparte de `leerClienteElegido` para no tocar la hoja de cotizar.
   - Bandeja de Inicio (`tablero`): `leerRecordatoriosDeHoy({ hasta, tope })` (mis pendientes, `recordatorios_vista`) y
     `leerLeadsSinSeguimiento({ creadosAntesDe, tope })` (mi cartera sin seguimiento y de más de 24 h, `leads_cartera_vista`); piden `tope + 1` y
     devuelven `{ filas, hayMas }` (`entities/bandeja.ts`: `finDeHoy()`, `creadoAntesDe()`, `rutaDeSeguimientos()`).
