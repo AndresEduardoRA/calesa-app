@@ -11,7 +11,7 @@ import { sembrarCotizaciones } from './soporte/cotizaciones-sembradas'
 import { borrarLeadsDePrueba, crearLead, marcarInteres, vincular } from './soporte/leads'
 import { PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB } from './soporte/presupuestos'
 import { borrarQueFalta, sembrarQueFalta, type TerrenoDeQueFalta } from './soporte/que-falta'
-import { caja, personaSinLogistica } from './soporte/ficha-del-vehiculo'
+import { cajaDe, personaSinLogistica } from './soporte/ficha-del-vehiculo'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 import { sembrarFotos } from './soporte/vehiculos-resumen'
@@ -244,7 +244,7 @@ test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en 
   const h1 = page.getByRole('heading', { name: titulo, level: 1 })
   if (info.project.name === 'escritorio') {
     // La lateral, a la izquierda del índice.
-    expect((await caja(h1)).derecha).toBeLessThanOrEqual((await caja(indice(page))).x)
+    expect((await cajaDe(h1)).derecha).toBeLessThanOrEqual((await cajaDe(indice(page))).x)
   } else {
     // Una columna, en orden.
     const enOrden = [
@@ -263,7 +263,7 @@ test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en 
     ]
     const ys: number[] = []
     for (const elemento of enOrden) {
-      ys.push((await caja(elemento)).y)
+      ys.push((await cajaDe(elemento)).y)
     }
     expect(ys).toEqual([...ys].sort((a, b) => a - b))
     await capturar(page, info, 'celular')
@@ -275,7 +275,7 @@ test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en 
     .poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth))
     .toBe(true)
   // Una sola columna: la cabecera arriba del índice.
-  expect((await caja(h1)).abajo).toBeLessThanOrEqual((await caja(indice(page))).y)
+  expect((await cajaDe(h1)).abajo).toBeLessThanOrEqual((await cajaDe(indice(page))).y)
   await capturar(page, info, 'texto-al-200')
 })
 

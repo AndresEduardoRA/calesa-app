@@ -25,7 +25,7 @@ export async function personaSinLogistica(proyecto: string, origenId: string): P
 }
 
 // La caja de un elemento (que tiene que estar dibujado).
-export async function caja(
+export async function cajaDe(
   elemento: Locator,
 ): Promise<{ x: number; y: number; derecha: number; abajo: number }> {
   const medida = await elemento.boundingBox()
