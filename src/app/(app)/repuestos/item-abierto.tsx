@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { puede } from '@/modules/equipo'
 import type { UnidadAbierta } from '@/modules/logistica'
-import { PanelDeLaUnidad } from '@/modules/logistica/pantallas/unidad'
+import { PanelDeLaUnidadALaVista } from '@/modules/logistica/pantallas/unidad-item'
 import { leerItemDelPanel } from '@/modules/repuestos'
 import { datosO } from '@/shared/lib/errores'
 import type { Permisos } from '@/shared/lib/permisos'
@@ -25,10 +25,12 @@ function ItemNoDisponible() {
   )
 }
 
-// El ítem con ese id y su panel, o el estado que toque (8.13-2). `repuestos` lee el ítem (fase, proyecto) bajo la RLS de quien mira y `logistica` dibuja el panel: `logistica` no importa
+// El ítem con ese id y su panel con las secciones a la vista («Qué falta» primero, con `?destino=` ya abierto), o el estado que toque (8.13-2). `repuestos` lee el ítem (fase, proyecto) bajo la RLS de quien mira y `logistica` dibuja el panel: `logistica` no importa
 // `repuestos`, así que la unidad se arma aquí. Sin origen (el flujo de repuestos no lo tiene): los huecos se filtran por `repuestos.ver`. No va atada a la página: la «Cadena» la monta igual.
 // Un error de lectura sube al `error.tsx` de `(app)`, que ofrece «Reintentar».
-export async function ItemAbierto({ id, permisos }: { id: string; permisos: Permisos }) {
+type Props = { id: string; destino?: string | null; permisos: Permisos }
+
+export async function ItemAbierto({ id, destino = null, permisos }: Props) {
   if (!puede(permisos, 'repuestos.ver')) {
     return <EstadoSinPermiso />
   }
@@ -52,12 +54,13 @@ export async function ItemAbierto({ id, permisos }: { id: string; permisos: Perm
     flujo: { ok: true, data: null },
   })
   return (
-    <PanelDeLaUnidad
+    <PanelDeLaUnidadALaVista
       unidad={unidad}
       origen={`Proyecto #${String(item.proyecto.numero)}`}
       fase={item.fase}
       huecos={huecos}
       aviso={aviso}
+      destinoInicial={destino}
     />
   )
 }

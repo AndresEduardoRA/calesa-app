@@ -10,7 +10,11 @@ export {
   type LecturaDeLosPasos,
   type PanelDelPaso,
 } from '../../entities/flujo/pasos-del-flujo'
-export { CLAVE_DE_ITEM_DEL_PANEL, itemAbiertoDe } from '../../entities/flujo/paneles'
+export {
+  CLAVE_DE_ITEM_DEL_PANEL,
+  destinoDelPanelDe,
+  itemAbiertoDe,
+} from '../../entities/flujo/paneles'
 export type { ItemDelPanel } from '../../entities/flujo/item-del-panel'
 export {
   TOPE_DE_ESPERAS,

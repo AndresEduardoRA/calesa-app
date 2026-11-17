@@ -4,7 +4,7 @@ import { connection } from 'next/server'
 import { Suspense, type ComponentProps, type ReactNode } from 'react'
 import { puede, requerirSesion } from '@/modules/equipo'
 import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
-import { itemAbiertoDe, leerCatalogosDeRepuestos } from '@/modules/repuestos'
+import { destinoDelPanelDe, itemAbiertoDe, leerCatalogosDeRepuestos } from '@/modules/repuestos'
 import {
   PROYECTO_YA_NO_ESTA,
   clienteDeLaCabecera,
@@ -99,6 +99,7 @@ async function Proyecto({
     permisos: sesion.permisos,
     cerrado: proyecto.cerradoEn !== null,
     itemId: itemAbiertoDe(parametros),
+    destino: destinoDelPanelDe(parametros),
   })
   return (
     <CabeceraDeProyecto
@@ -128,11 +129,12 @@ type DatosDeLaSeccion = {
   permisos: Permisos
   cerrado: boolean
   itemId: string | null
+  destino: string | null
 }
 
 // Lo que dibuja la pestaña abierta. Compras y cotizaciones se leen recién al abrirse (`escala.md` › «Carga del cliente»).
 function seccionAbierta(abierta: string, datos: DatosDeLaSeccion): ReactNode {
-  const { proyectoId, hoja, catalogos, monedas, permisos, cerrado, itemId } = datos
+  const { proyectoId, hoja, catalogos, monedas, permisos, cerrado, itemId, destino } = datos
   if (abierta === 'compras') {
     return (
       <Suspense fallback={<EsqueletoListado filas={4} columnas={4} />}>
@@ -182,7 +184,7 @@ function seccionAbierta(abierta: string, datos: DatosDeLaSeccion): ReactNode {
         puedeEditar={puede(permisos, 'repuestos.editar')}
         cerrado={cerrado}
       />
-      <PanelDelItem itemId={itemId} permisos={permisos} />
+      <PanelDelItem itemId={itemId} destino={destino} permisos={permisos} />
     </>
   )
 }
