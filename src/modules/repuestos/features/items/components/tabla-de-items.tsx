@@ -14,7 +14,7 @@ type Props = {
   filaNueva: ReactNode
 }
 
-// La hoja en escritorio (8.09-2, C8): una fila por ítem con sus columnas, editable celda a celda. Los números a la derecha; el precio, por `<Monto>` o `XCell`. La columna «Paso» lleva la fase y, si el hueco lo pone, el botón del siguiente. La fila nueva va al
+// La hoja en escritorio (8.09-2, C8): una fila por ítem con sus columnas, editable celda a celda. Los números a la derecha; el precio, por `<Monto>` o `XCell`. La columna «Paso» (la fase y, si el hueco lo pone, el botón del siguiente) va junto a la descripción: lo que sigue se ve sin desplazar la tabla. La fila nueva va al
 // final con la descripción: el resto de las columnas se llena después, con el teclado.
 export function TablaDeItems({ filas, contexto, filaNueva }: Props) {
   return (
@@ -22,6 +22,7 @@ export function TablaDeItems({ filas, contexto, filaNueva }: Props) {
       <TableHeader>
         <TableRow>
           <TableHead className="min-w-64">Descripción</TableHead>
+          <TableHead className="min-w-40">Paso</TableHead>
           <TableHead>Tipo de pieza</TableHead>
           <TableHead>Condición</TableHead>
           <TableHead>País</TableHead>
@@ -31,7 +32,6 @@ export function TablaDeItems({ filas, contexto, filaNueva }: Props) {
           <TableHead>Moneda</TableHead>
           <TableHead>Tracking</TableHead>
           <TableHead>Notas</TableHead>
-          <TableHead>Paso</TableHead>
           <TableHead>Acciones</TableHead>
         </TableRow>
       </TableHeader>
@@ -41,6 +41,7 @@ export function TablaDeItems({ filas, contexto, filaNueva }: Props) {
           return (
             <TableRow key={fila.id} data-fila-de-item={fila.id}>
               <TableCell className="min-w-64 align-top">{c.descripcion}</TableCell>
+              <TableCell className="min-w-40 align-top">{c.fase}</TableCell>
               <TableCell className="align-top">{c.tipoDePieza}</TableCell>
               <TableCell className="align-top">{c.condicion}</TableCell>
               <TableCell className="align-top">{c.pais}</TableCell>
@@ -52,7 +53,6 @@ export function TablaDeItems({ filas, contexto, filaNueva }: Props) {
               <TableCell className="align-top">{c.moneda}</TableCell>
               <TableCell className="min-w-36 align-top">{c.tracking}</TableCell>
               <TableCell className="min-w-48 align-top">{c.notas}</TableCell>
-              <TableCell className="align-top">{c.fase}</TableCell>
               <TableCell className="align-top">
                 <div className="flex flex-wrap gap-1">
                   {c.imagenes}
