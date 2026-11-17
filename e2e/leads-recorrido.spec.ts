@@ -222,9 +222,9 @@ test('B · con el drawer abierto: otro lead, «atrás», y lo privado de la ases
 
   // Con el drawer abierto, el otro lead de la lista queda detrás del velo: un clic ahí cierra el
   // drawer (no abre el otro con lo de éste).
-  await page.goto(`/leads?lead=${r.uno.id}&pestana=seguimientos`)
+  await page.goto(`/leads?lead=${r.uno.id}`)
   const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(drawer.getByRole('region', { name: 'Seguimientos', exact: true })).toBeVisible()
+  await expect(drawer.getByText('Último seguimiento', { exact: true })).toBeVisible()
   // El drawer entra deslizándose y mide menos mientras entra: se mide quieto.
   await quieto(drawer)
   const otro = aLaVista(page.getByText(r.dos.nombre, { exact: true })).first()
@@ -238,23 +238,23 @@ test('B · con el drawer abierto: otro lead, «atrás», y lo privado de la ases
       description: page.url(),
     })
   }
-  // El otro lead por la URL: el drawer cambia de lead y vuelve a «Resumen» si la pestaña no vino.
+  // El otro lead por la URL: el drawer cambia de lead (la versión corta, sin pestañas).
   await page.goto(`/leads?lead=${r.dos.id}`)
   await expect(page.getByRole('dialog', { name: r.dos.nombre })).toBeVisible()
-  await expect(
-    page.getByRole('dialog', { name: r.dos.nombre }).getByRole('tab', { name: 'Resumen' }),
-  ).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByRole('dialog', { name: r.dos.nombre }).getByRole('tablist')).toHaveCount(0)
 
-  // La dueña ve el lead de Ana en «todos», pero no su seguimiento privado: ni se lista ni se cuenta.
+  // La dueña ve el lead de Ana en «todos», pero no su seguimiento privado: ni en el resumen ni en la ficha (a la que lleva la pestaña de antes).
   await entrar(page, r.t.personas.duena)
-  await page.goto(`/leads?alcance=todos&lead=${r.uno.id}&pestana=seguimientos`)
+  await page.goto(`/leads?alcance=todos&lead=${r.uno.id}`)
   const suyo = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(suyo.getByRole('region', { name: 'Seguimientos', exact: true })).toBeVisible()
+  await expect(suyo.getByText('Último seguimiento', { exact: true })).toBeVisible()
   await expect(suyo.getByText('Primera llamada del recorrido')).toHaveCount(0)
-  await expect(suyo.getByRole('tab', { name: 'Seguimientos', exact: true })).toHaveText(
-    'Seguimientos',
-  )
-  await expect(suyo.getByRole('button', { name: 'Anotar seguimiento' })).toHaveCount(0)
   await volcarArbol(suyo, info, 'duena-drawer-ajeno')
   await capturar(page, info, 'duena-drawer-ajeno-seguimientos')
+  await page.goto(`/leads?alcance=todos&lead=${r.uno.id}&pestana=seguimientos`)
+  await expect(page).toHaveURL(new RegExp(`/leads/${r.uno.id}\\?seccion=seguimientos`))
+  const bloque = page.getByRole('region', { name: 'Seguimientos y recordatorios' })
+  await expect(bloque).toBeVisible()
+  await expect(bloque.getByText('Primera llamada del recorrido')).toHaveCount(0)
+  await expect(bloque.getByRole('button', { name: 'Anotar seguimiento' })).toHaveCount(0)
 })
