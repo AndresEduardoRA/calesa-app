@@ -1,5 +1,6 @@
 // El borrador del formulario «Nuevo proyecto» y su validación (8.09-1, C4 y C9). Puro. Un proyecto es **de un vehículo** (sólo se guarda el id: sus datos salen del vehículo) o
-// **externo** (etiqueta, VIN opcional, y el cliente como texto libre o un lead). La base vuelve a revisarlo todo (`repuesto_proyecto_crear`).
+// **externo** (etiqueta y VIN opcional). El cliente, en los dos, es un lead (con `leads.ver`) o, sin ese permiso y sólo en el externo, el nombre y el teléfono escritos a mano.
+// La base vuelve a revisarlo todo (`repuesto_proyecto_crear`; el lead, el trigger `lead_visible_al_escribir`).
 import type { DatosDeProyecto } from './repositorio'
 
 export type OrigenDelProyecto = 'vehiculo' | 'externo'
@@ -49,11 +50,31 @@ function conTope(errores: Record<string, string>, clave: string, texto: string, 
   }
 }
 
+export const ELIGE_EL_LEAD = 'Elige el lead de la lista.'
+
+// `conLead`: quien llena tiene `leads.ver` y el formulario le muestra «Cliente (lead)» en vez del cliente y el teléfono escritos. Lo que no se muestra no se manda.
+export type OpcionesDeValidacion = { conLead: boolean }
+
+// El lead elegido, si se muestra y hay uno; un valor que no es un id es un error del campo.
+function leadElegido(b: BorradorDeProyecto, conLead: boolean, errores: Record<string, string>) {
+  if (!conLead || b.leadId === '') {
+    return undefined
+  }
+  if (!GUID.test(b.leadId)) {
+    errores['leadId'] = ELIGE_EL_LEAD
+  }
+  return b.leadId
+}
+
 /** Valida el formulario con las reglas de la base. El error de cada campo va por su clave del borrador; un campo vacío no se manda. */
-export function validarProyecto(b: BorradorDeProyecto): ValidacionDeProyecto {
+export function validarProyecto(
+  b: BorradorDeProyecto,
+  { conLead }: OpcionesDeValidacion,
+): ValidacionDeProyecto {
   const errores: Record<string, string> = {}
   const notas = b.notas.trim()
   conTope(errores, 'notas', notas, LARGO_MAXIMO_DE_NOTAS)
+  const leadId = leadElegido(b, conLead, errores)
   if (b.origen === 'vehiculo') {
     if (!GUID.test(b.vehiculoId)) {
       errores['vehiculoId'] = 'Elige el vehículo.'
@@ -61,7 +82,10 @@ export function validarProyecto(b: BorradorDeProyecto): ValidacionDeProyecto {
     if (Object.keys(errores).length > 0) {
       return { ok: false, errores }
     }
-    return { ok: true, datos: { vehiculoId: b.vehiculoId, notas: opcional(notas) } }
+    return {
+      ok: true,
+      datos: { vehiculoId: b.vehiculoId, ...(leadId ? { leadId } : {}), notas: opcional(notas) },
+    }
   }
   const etiqueta = b.vehiculoEtiqueta.trim()
   const vin = b.vin.trim()
@@ -72,22 +96,22 @@ export function validarProyecto(b: BorradorDeProyecto): ValidacionDeProyecto {
   }
   conTope(errores, 'vehiculoEtiqueta', etiqueta, LARGO_MAXIMO_DE_ETIQUETA)
   conTope(errores, 'vin', vin, LARGO_MAXIMO_DE_VIN)
-  conTope(errores, 'clienteNombre', cliente, LARGO_MAXIMO_DE_CLIENTE)
-  conTope(errores, 'clienteTelefono', telefono, LARGO_MAXIMO_DE_TELEFONO)
-  if (b.leadId !== '' && !GUID.test(b.leadId)) {
-    errores['leadId'] = 'Elige el lead de la lista.'
+  if (!conLead) {
+    conTope(errores, 'clienteNombre', cliente, LARGO_MAXIMO_DE_CLIENTE)
+    conTope(errores, 'clienteTelefono', telefono, LARGO_MAXIMO_DE_TELEFONO)
   }
   if (Object.keys(errores).length > 0) {
     return { ok: false, errores }
   }
+  const delCliente = conLead
+    ? { leadId }
+    : { clienteNombre: opcional(cliente), clienteTelefono: opcional(telefono) }
   return {
     ok: true,
     datos: {
       vehiculoEtiqueta: etiqueta,
       vin: opcional(vin),
-      leadId: opcional(b.leadId),
-      clienteNombre: opcional(cliente),
-      clienteTelefono: opcional(telefono),
+      ...delCliente,
       notas: opcional(notas),
     },
   }

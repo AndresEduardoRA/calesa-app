@@ -421,6 +421,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `<item>/<sha-256>.webp` en el bucket `repuestos`); no se llama «foto» (las fotos son del vehículo).
 - **Hoja de ítems** — tabla (tarjetas en el celular) de `/repuestos/[id]` (`HojaDeItems`, `features/items/`): una fila por ítem, editable
   celda a celda con `repuestos.editar`; hasta 200 ítems.
+- **Cliente (de un proyecto)** — `repuestos_proyectos.lead_id` (en los proyectos viejos, `cliente_nombre`), `ClienteDeLaCabecera`: el lead a quien se
+  venden los repuestos de un proyecto; opcional (un proyecto para un vehículo propio no lo lleva). En «Nuevo proyecto» es «Cliente (lead)», y el de un
+  vehículo nace con el lead vinculado al vehículo. No: «comprador», «contacto».
 - **Hoja de una guardada** — `cotizacion_hoja_guardada()`: abre una guardada con SU versión, lo que quien mira puede guardar, la vigencia y la
   cadena (anterior y versión nueva).
 - **Desactualizada** — `cotizacion_crear(… p_abierta …)` (PT409 `desactualizada`): la fórmula o un tipo de cambio cambió tras abrir la hoja:

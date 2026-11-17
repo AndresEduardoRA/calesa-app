@@ -21,7 +21,7 @@ type Props = PropsDelBuscador & {
 // Un buscador que se elige con el teclado (combobox: flechas, Enter, Esc) y que pide al escribir, de a una búsqueda (`useBusquedaCancelable`). Con menos del mínimo no llama a la
 // base y lo dice. Elegido, muestra el nombre con «Cambiar». Lo compone `src/app`: `repuestos` no importa `buscador`.
 export function BuscadorConLista(props: Props) {
-  const { valor, alElegir, etiqueta, error, disabled = false, nombre } = props
+  const { valor, alElegir, etiqueta, error, disabled = false, nombre, elige } = props
   const idLista = useId()
   const b = useEstadoDelBuscador(props)
   const idDeLaOpcion = (i: number) => `${idLista}-${String(i)}`
@@ -32,6 +32,7 @@ export function BuscadorConLista(props: Props) {
         elegido={valor}
         error={error}
         disabled={disabled}
+        elige={elige}
         alCambiar={() => {
           alElegir(null)
           setTimeout(() => b.entrada.current?.focus(), 0)
@@ -52,6 +53,7 @@ export function BuscadorConLista(props: Props) {
         hayLista={b.hayLista}
         error={error}
         disabled={disabled}
+        elige={elige}
         alEscribir={b.escribir}
         alTeclear={(evento) => {
           teclaDelBuscador(evento, {

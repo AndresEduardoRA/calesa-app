@@ -2,16 +2,20 @@ import type { Route } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { RUTAS } from '@/shared/lib/rutas'
+import type { ClienteDeLaCabecera } from '../../../entities/proyectos/cliente-de-la-cabecera'
 import type { ProyectoDetallado } from '../../../entities/proyectos/detalle'
 import type { EstadoDelProyecto as Estado } from '../../../entities/proyectos/estado'
 import { BotonDeCierre } from './boton-de-cierre'
 import { BotonDeEliminarProyecto } from './boton-de-eliminar-proyecto'
+import { ClienteDelProyecto } from './cliente-del-proyecto'
 import { EstadoDelProyecto } from './estado-del-proyecto'
 
 type Props = {
   proyecto: ProyectoDetallado
   // El título del vehículo si es de un vehículo y se ve; nulo = «no puedes verlo» (como el listado).
   tituloDelVehiculo: string | null
+  // El cliente ya resuelto por la página (`clienteDeLaCabecera`): el lead, oculto, el nombre escrito o ninguno.
+  cliente: ClienteDeLaCabecera
   estado: Estado
   puedeEditar: boolean
   // La hoja no tiene ítems vivos: sólo así se ofrece eliminar el proyecto (8.09-4).
@@ -30,10 +34,11 @@ function Dato({ etiqueta, children }: { etiqueta: string; children: ReactNode })
 }
 
 // La cabecera de `/repuestos/[id]` (8.09-2, C5): el número, el vehículo (con enlace si se ve) o «Externo», el cliente, las notas, el estado derivado y, con `repuestos.editar`, cerrar o reabrir (y eliminar, si la hoja no tiene ítems).
-// En el celular se apila y el botón ocupa el ancho. No muestra el teléfono ni el lead del cliente (D50).
+// En el celular se apila y el botón ocupa el ancho.
 export function CabeceraDeProyecto({
   proyecto,
   tituloDelVehiculo,
+  cliente,
   estado,
   puedeEditar,
   sinItems = false,
@@ -74,7 +79,7 @@ export function CabeceraDeProyecto({
               )}
             </Dato>
             <Dato etiqueta="Cliente">
-              {proyecto.clienteNombre ?? <span className="text-(--color-ink-faint)">—</span>}
+              <ClienteDelProyecto cliente={cliente} />
             </Dato>
             {proyecto.notas ? <Dato etiqueta="Notas">{proyecto.notas}</Dato> : null}
           </dl>

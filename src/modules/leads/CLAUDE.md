@@ -12,10 +12,14 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   - `leerNombresDeLeads(ids)`: nombres de una página de `/cotizaciones` por `leads_vista_por_ids()` (invocadora: el que no se ve no se distingue del
     que no existe), hasta 100 ids, una vez por página.
   - `leerClienteElegido(id)`: `ok(null)` sólo si no se ve; un error es un error.
+  - `leerLeadParaEnlazar(id)`: `{ id, nombre, numeros, enCartera }` de `leads_vista` por la clave primaria (`limit 1`), **nunca el teléfono**; `ok(null)`
+    si no existe, está en la papelera o en el limbo, o no se ve (no se distinguen). La usan la cabecera de `/repuestos/[id]` y el `?lead=` de «Nuevo
+    proyecto». Aparte de `leerClienteElegido` para no tocar la hoja de cotizar.
   - Bandeja de Inicio (`tablero`): `leerRecordatoriosDeHoy({ hasta, tope })` (mis pendientes, `recordatorios_vista`) y
     `leerLeadsSinSeguimiento({ creadosAntesDe, tope })` (mi cartera sin seguimiento y de más de 24 h, `leads_cartera_vista`); piden `tope + 1` y
     devuelven `{ filas, hayMas }` (`entities/bandeja.ts`: `finDeHoy()`, `creadoAntesDe()`, `rutaDeSeguimientos()`).
-- Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `importar`, `papelera`, `configuracion`, `cotizar`, `turno`, `relacionados`; sólo `src/app`).
+- Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `importar`, `papelera`, `configuracion`, `cotizar`, `turno`, `relacionados`,
+  `proyecto-de-repuestos`; sólo `src/app`).
 - `client.ts`: reglas puras, tipos, `<AltaDeLead>`, `normalizarTelefono()`, `interpretarBusqueda()`, `MINIMO_DE_BUSQUEDA` (para `buscador`), la
   action `completarRecordatorio` (panel `?recordatorio=` de `/agenda`; la RPC exige que sea de quien actúa) y lo puro de la importación de `datos`
   (`prepararFilas`, `preparadorDeFilas` por tramos con el mismo resultado que una pasada, `emparejarColumnas`, `convertir*`, `fecha*`, `usePaises`…):
@@ -38,6 +42,9 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `panel` ni `elegir`): `usePanelDeAlta()` entrega `paraElegir` y `elegirElCreado(id)`, el aviso va sin «Abrir ficha» y el foco vuelve a la barra
   (`data-elige`); si el teléfono ya es de un lead que se ve, su aviso ofrece «Elegir» (`alElegir` = `elegirElCreado`). «Cotizar» de la ficha:
   `paraCotizar`, de `src/app`.
+- «Nuevo lead» del formulario «Nuevo proyecto» de repuestos: `pantallas/proyecto-de-repuestos` saca `useAbrirAltaParaElegir(clave)`, que escribe
+  `?panel=nuevo-lead&elegir=<clave>` con `replace` y adelanta el alta (una clave que `claveParaElegir()` no acepta no abre nada). La pantalla deja antes
+  su `?nuevo=proyecto` para volver a dibujarse; el creado vuelve en `?lead=<id>`. No suma JS: el alta ya viaja con el shell.
 - «Vincular a lead» de un turno de la web (`features/vincular-turno/`, `?panel=vincular-turno&turno=<id>`): elegir llama `alElegir(leadId)` y decide
   `src/app/(app)/_inicio/vincular-turno.tsx`; «+» abre el alta con `?elegir=vincular` y vuelve con `?vincular=<id>`.
 - «Escribirle por chat» (`features/chat/`): en el aviso «Lo tiene <persona>» del teléfono principal, enlace a `/chat?con=<duenoId>` sólo si el layout

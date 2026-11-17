@@ -1,33 +1,33 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import { Campo } from '@/shared/ui/campo'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
 import type { OrigenDelProyecto } from '../../../entities/proyectos/borrador'
-import type { EstadoDelFormulario } from '../hooks/use-formulario-de-proyecto'
+import type {
+  Elegido,
+  EstadoDelFormulario,
+} from '../../../entities/proyectos/cliente-del-formulario'
+import { CampoDelCliente, type EstadoDelCampoDelCliente } from './campo-del-cliente'
+import type { BuscadorDeProyecto } from './tipos-del-buscador'
 
-// Lo que recibe el buscador que arma `src/app`: `repuestos` no importa `buscador` (8.09-1, C10).
-export type PropsDeBuscadorDeProyecto = {
-  valor: { id: string; titulo: string } | null
-  alElegir: (elegido: { id: string; titulo: string } | null) => void
-  etiqueta: string
-  error?: string
-  disabled?: boolean
-}
-
-export type BuscadorDeProyecto = (props: PropsDeBuscadorDeProyecto) => ReactNode
+type Texto = 'vehiculoEtiqueta' | 'vin' | 'clienteNombre' | 'clienteTelefono'
 
 type Props = {
   valores: EstadoDelFormulario
   errores: Record<string, string>
   disabled: boolean
-  // «Lead» sólo con `leads.ver`: sin ella el bloque no se dibuja (D44).
+  // «Cliente (lead)» sólo con `leads.ver` (D44); sin ella, el cliente y el teléfono escritos a mano, sólo en el externo.
   puedeVerLeads: boolean
   avisoDelVehiculo: string | null
-  escribir: (cambios: Partial<EstadoDelFormulario>) => void
+  escribir: (campo: Texto | 'notas', texto: string) => void
+  elegirOrigen: (origen: OrigenDelProyecto) => void
+  elegirVehiculo: (vehiculo: Elegido | null) => void
+  elegirLead: (lead: Elegido | null) => void
   buscadorDeVehiculo: BuscadorDeProyecto
   buscadorDeLead: BuscadorDeProyecto
+  alNuevoLead: (() => void) | null
+  estadoDelCliente: EstadoDelCampoDelCliente
 }
 
 const ORIGENES: readonly { valor: OrigenDelProyecto; etiqueta: string }[] = [
@@ -69,59 +69,53 @@ function Origen({
   )
 }
 
-type Parte = Props
-
-function CamposDeUnVehiculo({ valores, errores, disabled, escribir, buscadorDeVehiculo }: Parte) {
-  return buscadorDeVehiculo({
-    valor:
-      valores.vehiculoId === '' ? null : { id: valores.vehiculoId, titulo: valores.vehiculoTitulo },
-    alElegir: (elegido) => {
-      escribir({ vehiculoId: elegido?.id ?? '', vehiculoTitulo: elegido?.titulo ?? '' })
-    },
-    etiqueta: 'Vehículo',
-    error: errores['vehiculoId'],
-    disabled,
-  })
+function Textos({
+  campos,
+  valores,
+  errores,
+  disabled,
+  escribir,
+}: Pick<Props, 'valores' | 'errores' | 'disabled' | 'escribir'> & {
+  campos: readonly { campo: Texto; etiqueta: string; tel?: true }[]
+}) {
+  return campos.map(({ campo, etiqueta, tel }) => (
+    <Campo
+      key={campo}
+      nombre={campo}
+      etiqueta={etiqueta}
+      type={tel ? 'tel' : undefined}
+      value={valores[campo]}
+      error={errores[campo]}
+      disabled={disabled}
+      onChange={(e) => {
+        escribir(campo, e.target.value)
+      }}
+    />
+  ))
 }
 
-type Texto = 'vehiculoEtiqueta' | 'vin' | 'clienteNombre' | 'clienteTelefono'
-const TEXTOS: readonly { campo: Texto; etiqueta: string; tel?: true }[] = [
+const DEL_VEHICULO_EXTERNO = [
   { campo: 'vehiculoEtiqueta', etiqueta: 'Vehículo' },
   { campo: 'vin', etiqueta: 'VIN (opcional)' },
+] as const
+const CLIENTE_ESCRITO = [
   { campo: 'clienteNombre', etiqueta: 'Cliente (opcional)' },
   { campo: 'clienteTelefono', etiqueta: 'Teléfono del cliente (opcional)', tel: true },
-]
+] as const
 
-function CamposExternos({ valores, errores, disabled, escribir, ...p }: Parte) {
+function Cliente(p: Props) {
   return (
-    <>
-      {TEXTOS.map(({ campo, etiqueta, tel }) => (
-        <Campo
-          key={campo}
-          nombre={campo}
-          etiqueta={etiqueta}
-          type={tel ? 'tel' : undefined}
-          value={valores[campo]}
-          error={errores[campo]}
-          disabled={disabled}
-          onChange={(e) => {
-            escribir({ [campo]: e.target.value })
-          }}
-        />
-      ))}
-      {p.puedeVerLeads
-        ? p.buscadorDeLead({
-            valor:
-              valores.leadId === '' ? null : { id: valores.leadId, titulo: valores.leadTitulo },
-            alElegir: (elegido) => {
-              escribir({ leadId: elegido?.id ?? '', leadTitulo: elegido?.titulo ?? '' })
-            },
-            etiqueta: 'Lead (opcional)',
-            error: errores['leadId'],
-            disabled,
-          })
-        : null}
-    </>
+    <CampoDelCliente
+      valor={
+        p.valores.leadId === '' ? null : { id: p.valores.leadId, titulo: p.valores.leadTitulo }
+      }
+      alElegir={p.elegirLead}
+      buscadorDeLead={p.buscadorDeLead}
+      error={p.errores['leadId']}
+      disabled={p.disabled}
+      alNuevoLead={p.alNuevoLead}
+      estado={p.estadoDelCliente}
+    />
   )
 }
 
@@ -154,29 +148,41 @@ function Notas({
   )
 }
 
-// Los campos de «Nuevo proyecto» (8.09-1, C9). De un vehículo: sólo el buscador (sus datos salen del vehículo). Externo: la etiqueta, el VIN, el cliente (texto libre) y, con `leads.ver`, el lead.
-// Las notas van en los dos.
+// Los campos de «Nuevo proyecto» (8.09-1, C9). De un vehículo: el buscador (sus datos salen del vehículo). Externo: la etiqueta y el VIN. El cliente, con `leads.ver`, es
+// «Cliente (lead)» en los dos (en «De un vehículo», el vinculado al vehículo por defecto); sin ella, el cliente y el teléfono escritos, sólo en el externo. Las notas van en los dos.
 export function CamposDeProyecto(p: Props) {
-  const { valores, errores, disabled, escribir } = p
+  const { valores, errores, disabled } = p
   return (
     <>
-      <Origen
-        valor={valores.origen}
-        disabled={disabled}
-        alElegir={(origen) => {
-          escribir({ origen })
-        }}
-      />
+      <Origen valor={valores.origen} disabled={disabled} alElegir={p.elegirOrigen} />
       {p.avisoDelVehiculo ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">{p.avisoDelVehiculo}</p>
       ) : null}
-      {valores.origen === 'vehiculo' ? <CamposDeUnVehiculo {...p} /> : <CamposExternos {...p} />}
+      {valores.origen === 'vehiculo' ? (
+        p.buscadorDeVehiculo({
+          valor:
+            valores.vehiculoId === ''
+              ? null
+              : { id: valores.vehiculoId, titulo: valores.vehiculoTitulo },
+          alElegir: p.elegirVehiculo,
+          etiqueta: 'Vehículo',
+          error: errores['vehiculoId'],
+          disabled,
+        })
+      ) : (
+        <Textos campos={DEL_VEHICULO_EXTERNO} {...p} />
+      )}
+      {p.puedeVerLeads ? (
+        <Cliente {...p} />
+      ) : valores.origen === 'externo' ? (
+        <Textos campos={CLIENTE_ESCRITO} {...p} />
+      ) : null}
       <Notas
         valor={valores.notas}
         error={errores['notas']}
         disabled={disabled}
         alEscribir={(notas) => {
-          escribir({ notas })
+          p.escribir('notas', notas)
         }}
       />
     </>

@@ -65,3 +65,15 @@ export const LEAD_QUE_NO_VES = 'Un lead que no está en tu cartera'
 export function nombreDeLead(vinculo: Pick<Vinculo, 'leadNombre'>): string {
   return vinculo.leadNombre ?? LEAD_QUE_NO_VES
 }
+
+// El lead vigente de un vehículo, para proponerlo como cliente donde se lo nombra (el formulario «Nuevo proyecto» de repuestos): sólo si quien mira lo ve
+// (el nombre llega). Uno que no se ve, en la papelera o en el limbo, no se propone, y eso no se distingue de un vehículo sin lead.
+export type LeadVinculado = { id: string; nombre: string; numeros: NumerosDeLead }
+
+export function leadVinculadoDe(vinculos: VinculosDelVehiculo): LeadVinculado | null {
+  const vigente = vinculos.vinculo
+  if (vigente === null || vigente.leadNombre === null) {
+    return null
+  }
+  return { id: vigente.leadId, nombre: vigente.leadNombre, numeros: vigente.leadNumeros }
+}

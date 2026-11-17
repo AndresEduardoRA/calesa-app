@@ -2,6 +2,11 @@
 export { leerProyectosDelListado } from '../../infra/proyectos/listar'
 export { leerProyecto } from '../../infra/proyectos/leer'
 export { PROYECTO_YA_NO_ESTA, type ProyectoDetallado } from '../../entities/proyectos/detalle'
+export {
+  clienteDeLaCabecera,
+  type ClienteDeLaCabecera,
+  type LeadDeLaCabecera,
+} from '../../entities/proyectos/cliente-de-la-cabecera'
 export { rutaDelProyecto } from '../../entities/proyectos/rutas'
 export {
   CLAVE_DE_BUSQUEDA_DE_PROYECTOS,
@@ -20,9 +25,11 @@ export {
 } from '../../entities/proyectos/listado'
 export { estadoDelProyecto, type EstadoDelProyecto } from '../../entities/proyectos/estado'
 export {
+  CLAVE_DE_LEAD_DEL_PROYECTO,
   CLAVE_DE_VEHICULO,
   MENSAJE_VEHICULO_QUE_NO_SE_VE,
   PANEL_NUEVO_PROYECTO,
+  nuevoProyectoEnLaUrl,
 } from '../../entities/proyectos/paneles'
 export {
   leerResumenDeVehiculo,
