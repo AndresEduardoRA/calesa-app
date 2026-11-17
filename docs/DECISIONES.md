@@ -70,6 +70,11 @@ las trampas, en `docs/LECCIONES.md`.
   encendido); el router ejecuta las actions de a una y una lectura por montaje haría esperar a las mutaciones reales. Las marcas se montan desde `src/app` por una
   entrada chica de `pantallas/` (no por el barril de `client.ts`, que trae el menú de vistas). Un registro por apertura: el resumen o panel por URL (`parametro`) o la
   página, nunca los dos.
+- **«Visto» se lee como un correo: lo no visto en negrita, lo visto en peso normal.** La marca tiene un tercer valor, `nuevo`, que `useVistos` sólo da con «Vistos»
+  encendido, la lectura de esa página ya llegada y el id dentro de lo que se leyó (tope de 200 por tipo): antes de leer, tras una lectura fallida o fuera del tope no
+  hay marca y el nombre queda en su peso de siempre (así nunca parpadea una negrita falsa ni se castiga a quien no usa «Vistos»). El peso es una clase sobre el
+  `[data-abre-resumen]` de la fila o tarjeta (`CLASES_DE_VISTO`, `pesoDelNombre()`), no un nodo. El chip de la agenda conserva la tilde: su etiqueta de clase ya va en
+  negrita y la del título se confundía con ella.
 - **El último visto es el del módulo, de cualquiera de sus tipos** (`TIPOS_DEL_MODULO`): en la agenda, un evento o una tarea, nunca dos «Último visto». «Ver como» no
   registra a nombre del otro (`visto_registrar` escribe con `auth.uid()`).
 

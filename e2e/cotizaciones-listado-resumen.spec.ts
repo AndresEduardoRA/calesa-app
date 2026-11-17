@@ -194,7 +194,7 @@ test('R6 abrir el resumen marca la fila como el último visto, y se recuerda al 
   borrarVistos()
   await irAlListado(page, t.duena)
   const primera = filas(page).first()
-  await expect(primera).not.toHaveAttribute('data-visto', /.+/)
+  await expect(primera).toHaveAttribute('data-visto', 'nuevo')
   await expect(primera.getByText('Último visto')).toHaveCount(0)
   await abrirConUnClic(page, primera)
   await expect(resumen(page)).toBeVisible()

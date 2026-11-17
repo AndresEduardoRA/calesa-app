@@ -2,7 +2,7 @@
 
 import type { Route } from 'next'
 import Link from 'next/link'
-import { SufijoDeVisto, useVistoDeLista } from '@/shared/ui/lista'
+import { pesoDelNombre, SufijoDeVisto, useVistoDeLista } from '@/shared/ui/lista'
 import { rutaDeLaUnidad } from '../../../entities/nucleo/enlaces'
 
 type Props = {
@@ -29,10 +29,7 @@ export function EnlaceALaUnidad({ id, nombre, hueco, className }: Props) {
         'inline-flex min-h-11 items-center rounded-(--radius-input) text-(length:--text-sm) font-medium break-words text-(--color-ink) underline-offset-2 outline-none hover:underline focus-visible:shadow-(--shadow-focus) md:min-h-0'
       }
     >
-      <span
-        data-abre-resumen=""
-        className={visto === 'visto' ? 'text-(--color-ink-soft)' : undefined}
-      >
+      <span data-abre-resumen="" className={pesoDelNombre(visto)}>
         {nombre}
       </span>
       <SufijoDeVisto id={id} />
