@@ -1,7 +1,7 @@
 import { connection } from 'next/server'
 import { integracionActiva } from '@/modules/empresa'
 import { fotosPorTraerDe, leerGaleria, leerSubasta } from '@/modules/vehiculos'
-import { SeccionDeFotos } from '@/modules/vehiculos/pantallas/ficha'
+import { SeccionDeFotosDiferida } from '@/modules/vehiculos/pantallas/ficha'
 import { datosO } from '@/shared/lib/errores'
 
 type Props = {
@@ -13,10 +13,10 @@ type Props = {
   puedeEditar: boolean
 }
 
-// La pestaña «Fotos»: las del vehículo, con lo que se puede hacer con ellas. Se leen recién al
-// abrir la pestaña. En un origen de subasta con apibara encendida, además, las que trajo la
-// respuesta guardada y todavía no están.
-export async function SeccionFotos({ vehiculoId, origenId, deSubasta, puedeEditar }: Props) {
+// El bloque «Fotos»: las del vehículo (≤ 24), con lo que se puede hacer con ellas. Se leen al acercarse el bloque y su código (subida,
+// bandeja y galería) llega con `diferido()`. En un origen de subasta con apibara encendida, además, las que trajo la respuesta guardada y
+// todavía no están.
+export async function BloqueFotos({ vehiculoId, origenId, deSubasta, puedeEditar }: Props) {
   await connection()
   const [galeria, subasta, activa] = await Promise.all([
     leerGaleria(vehiculoId),
@@ -25,7 +25,7 @@ export async function SeccionFotos({ vehiculoId, origenId, deSubasta, puedeEdita
   ])
   const fotas = activa && subasta ? fotosPorTraerDe(datosO(subasta)) : []
   return (
-    <SeccionDeFotos
+    <SeccionDeFotosDiferida
       vehiculoId={vehiculoId}
       galeria={datosO(galeria)}
       puedeEditar={puedeEditar}

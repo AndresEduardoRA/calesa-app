@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { alHueco, alProyecto, ir, subir, type AccionesDelRequisito } from './accion-de-requisito'
+import {
+  alHueco,
+  alProyecto,
+  ir,
+  registrarPago,
+  revisar,
+  subir,
+  type AccionesDelRequisito,
+} from './accion-de-requisito'
 import { ABRIR_LA_UNIDAD, accionesADibujar, type LugarDeLasAcciones } from './acciones-a-dibujar'
 import type { HuecoDeAccion } from './capacidades-de-que-falta'
 
@@ -99,5 +107,66 @@ describe('las acciones que se dibujan', () => {
     const r = resueltas({ principal: subir('BL', 't') })
     expect(accionesADibujar(r, lugar({ enLinea: false })).apagadas).toBe(true)
     expect(accionesADibujar(undefined, lugar()).principal).toBeNull()
+  })
+})
+
+describe('las acciones en la ficha del vehículo (todos los huecos existen; sólo «Documentos» a mano)', () => {
+  const enLaFicha = lugar({ aMano: (h: HuecoDeAccion) => h === 'documentos' }, [
+    'documentos',
+    'transporte',
+    'aduana',
+    'pagos',
+    'repuestos',
+  ])
+
+  it('«Subir» y «Revisar» se hacen en el lugar', () => {
+    const r = resueltas({ principal: subir('BL', 't1'), mas: [revisar('BL', 't1')] })
+    const dibujar = accionesADibujar(r, enLaFicha)
+    expect(dibujar.principal).toMatchObject({ tipo: 'subir' })
+    expect(dibujar.mas).toMatchObject([{ tipo: 'revisar' }])
+  })
+
+  it('transporte, aduana y pagos pasan a «Abrir la unidad» en su hueco', () => {
+    for (const [accion, hueco] of [
+      [alHueco('transporte', 'Contenedor', 'transporte.contenedor'), 'transporte'],
+      [alHueco('aduana', 'Canal'), 'aduana'],
+      [registrarPago('Flete'), 'pagos'],
+    ] as const) {
+      expect(accionesADibujar(resueltas({ principal: accion }), enLaFicha).principal).toEqual({
+        tipo: 'ir',
+        ruta: `/logistica/vehiculo/${VEHICULO}?hueco=${hueco}`,
+        etiqueta: ABRIR_LA_UNIDAD,
+        nombre: `${ABRIR_LA_UNIDAD}: ${accion.nombre}`,
+      })
+    }
+  })
+
+  it('«Pedirlo» y los enlaces de un dato se conservan', () => {
+    const pedir = {
+      tipo: 'pedir' as const,
+      clave: 'logistica.transporte.editar' as const,
+      titulo: 't',
+      etiqueta: 'Pedirlo',
+      nombre: 'Pedirlo: «Contenedor»',
+    }
+    const editar = ir('Completar', 'Completar «VIN»', `/vehiculos/${VEHICULO}?editar=x`)
+    const r = resueltas({ principal: editar, mas: [pedir], pedido: 'p' })
+    expect(accionesADibujar(r, { ...enLaFicha, enLaPagina: true })).toMatchObject({
+      principal: editar,
+      mas: [pedir],
+      pedido: 'p',
+    })
+  })
+
+  it('sin red, apagadas', () => {
+    const r = resueltas({ principal: alHueco('aduana', 'Canal') })
+    expect(accionesADibujar(r, { ...enLaFicha, enLinea: false }).apagadas).toBe(true)
+  })
+})
+
+it('sin `aMano`, un hueco que existe se queda en su lugar (la unidad)', () => {
+  const r = resueltas({ principal: alHueco('transporte', 'Contenedor') })
+  expect(accionesADibujar(r, lugar({}, ['transporte'])).principal).toMatchObject({
+    tipo: 'hueco',
   })
 })

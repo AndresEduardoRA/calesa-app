@@ -235,8 +235,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Número global** — `leads.numero` / `leads_numeros_globales`, `leads.numero_global.ver`, `NumerosDeLead.numero`: consecutivo de la empresa
   («N.º 1.234»); nulo sin el permiso.
 - **Resumen** — `?lead=`, `?vehiculo=`, `?cotizacion=` / `<DrawerDeLead>`, `<ResumenDeVehiculo>`, `<ResumenDeCotizacion>`: vistazo sin salir
-  de la lista («drawer rápido» en el código). El de un lead es la versión corta de su ficha: datos clave, lo último que pasó, las acciones, Relacionados en
-  chips y «Abrir ficha», sin pestañas.
+  de la lista («drawer rápido» en el código). El de un lead o un vehículo es la versión corta de su ficha, sin pestañas y con «Abrir ficha»:
+  el del lead, datos clave, lo último que pasó, las acciones y Relacionados en chips; el del vehículo, portada con carrusel, datos clave,
+  situación, acciones y Relacionados en chips (`claveDelVisorDelResumen()` para su carrusel).
 - **Línea de tiempo (de una cotización)** — pestaña «Todo» del resumen (`?pestana=`, `useLineaDeTiempo`, `lineaDeTiempo()`): adjuntos, revisiones y comentarios
   mezclados por fecha, lo más nuevo arriba; una página de cada fuente y sólo se dibuja hasta donde llegó la que menos retrocedió. Las otras pestañas del resumen:
   «Adjuntos», «Revisiones» y «Comentarios».
@@ -251,6 +252,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: en dos columnas (`<FichaEnDosColumnas>`): a la izquierda cabecera, «Datos»,
   «Teléfonos», «Quién lo tiene» y «Acceso al portal»; a la derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados,
   cotizaciones). Edición en `?panel=editar-lead`.
+- **Ficha del vehículo** — `/vehiculos/[id]` / `BLOQUES_DE_LA_FICHA`, `bloquesDeQuienMira()`, `<FichaEnDosColumnas>`: en dos columnas; a la izquierda la
+  cabecera (`<CabeceraDeVehiculo>`), «Datos principales» y la subasta; a la derecha el índice y los bloques por permiso («Fase y qué falta», «Relacionados»,
+  «Cotizaciones», «Documentos», «Ficha», «Repuestos», «Fotos»). `?seccion=<ancla>` lleva al bloque. No: «detalle del vehículo».
 - **Teléfono extra** — `leads_telefonos` / `lead_telefonos()`, `lead_telefono_guardar()`, `lead_telefono_quitar()`: número alterno con
   etiqueta opcional; se edita en la ficha, el panel de edición y el resumen (`<TelefonosExtra>`).
 - **Máximo de teléfonos extra** — `ajustes_leads.telefonos_extra_maximo` / `telefonos.maximo`: cuántos extras admite un lead (0 a 20; 6 de

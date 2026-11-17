@@ -36,7 +36,7 @@ export function esCausaDeBloqueo(valor: unknown): valor is CausaDeBloqueo {
 export const CLAVE_DE_LUEGO = 'luego'
 export const LUEGO_PAPELERA = 'papelera'
 
-// Quitar el vínculo siempre va a la ficha, pestaña «Ficha»: el panel de desvincular sólo existe ahí.
+// Quitar el vínculo siempre va a la ficha (`?panel=desvincular` lleva a su bloque «Relacionados»): el panel de desvincular sólo existe ahí.
 export function rutaParaDesvincular(vehiculoId: string): string {
   return `${RUTAS.vehiculos}/${vehiculoId}?${new URLSearchParams({ panel: PANEL_DESVINCULAR, [CLAVE_DE_LUEGO]: LUEGO_PAPELERA }).toString()}`
 }

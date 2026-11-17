@@ -1,6 +1,6 @@
 import { Skeleton } from '@/shared/ui/skeleton'
 
-// La forma de la pestaña «Fotos» mientras llegan: la zona para elegir y la grilla.
+// La forma del bloque «Fotos» mientras llegan: la zona para elegir y la grilla.
 export function EsqueletoDeFotos() {
   return (
     <div aria-busy className="grid gap-4">

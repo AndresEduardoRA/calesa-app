@@ -6,6 +6,7 @@ import { RUTAS } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { Dato } from '@/shared/ui/campos'
 import { camposDeTarjeta } from '../../../entities/campo'
+import { claveDelVisorDelResumen } from '../../../entities/resumen'
 import { vehiculoDelAviso, type AlcanceDeAvisos } from '../../../entities/avisos-de-vehiculo'
 import { papeleraDelVehiculo } from '../../../entities/papelera-permiso'
 import { rutaParaCotizar, type ParaCotizar } from '../../../entities/ruta-para-cotizar'
@@ -59,7 +60,11 @@ export function CabeceraDelResumen(props: Props) {
     <div className="@container grid min-w-0 gap-3">
       {/* Con el texto al 200 % la cabecera mide menos de 20 rem: la miniatura (rem) pasa arriba de los datos en vez de empujarlos fuera. */}
       <div className="flex items-start gap-4 @max-[20rem]:flex-col">
-        <FotosEnElLugar vehiculo={vehiculo} className="w-40" />
+        <FotosEnElLugar
+          vehiculo={vehiculo}
+          clave={claveDelVisorDelResumen(vehiculo.id)}
+          className="w-40"
+        />
         <div className="grid min-w-0 flex-1 gap-2">
           <dl className="grid gap-x-4 gap-y-1 sm:grid-cols-2">
             <Dato etiqueta="Número">

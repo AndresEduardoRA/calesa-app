@@ -264,7 +264,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   sin assert) y «Ver más» hasta 500, que ofrece «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`).
   `e2e/cotizar-historial-del-vehiculo.spec.ts`:
   ≤ 5.250 B la primera respuesta y ≤ 65 nodos. «Cotizado (n)» es la misma consulta con `select('id')`, en paralelo con la hoja.
-- Pestaña «Cotizaciones» de `/vehiculos/[id]`: la misma lectura, al abrir la pestaña (nunca con la ficha), código con `diferido()` en su
+- Bloque «Cotizaciones» de `/vehiculos/[id]`: la misma lectura, al acercarse el bloque (nunca con el documento), código con `diferido()` en su
   `diferidos.tsx`. `e2e/vehiculos-cotizaciones.spec.ts`: ≤ 5.250 B, ≤ 65 nodos con 20 y ≤ 1.576 con 500; la 25.ª respuesta pesa lo que la
   1.ª. Con «propios» hereda el límite del historial.
 - El dato del vehículo en el panel (sin spec propio): con un vehículo en la URL, la página lee además el layout del origen en el
@@ -536,10 +536,18 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 ## JS en frío (con gzip, lo que el documento nombra)
 
-- Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 560, `/perfil` 440, `/vehiculos` 530 (500 hasta que el «Nuevo» de la barra sumó el de la agenda: 500,3 KB, regla del 5 %), `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
+- Topes (`PRESUPUESTO_DE_JS_EN_KB`): `/leads` 560, `/perfil` 440, `/vehiculos` 530 (500 hasta que el «Nuevo» de la barra sumó el de la agenda: 500,3 KB, regla del 5 %), `/vehiculos/[id]` 530 (T34: 504,3 medido antes de las dos columnas, más un 5 %), `/cotizaciones` 380, `/cotizaciones/nuevo` 460 (con la
   subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 410, `/leads/[id]` 590 (medido 548,5 con pestañas y 554,7 con las dos columnas, a la decena); `/cotizaciones/papelera` 440 (en su spec). Al borde:
   `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con `diferido()`), `/cotizaciones/[id]` 458,6 de 460 (las acciones de los avisos lo pasaron de 452: regla del 5 %; el «Elegir…» de lo que falta sumó 2,7 KB; la rejilla y el aspecto de la hoja, sus tablas de clases) y `/cotizaciones/nuevo` en 453,6 (llegó a 459,0: abierto 4-73, `docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` sumaba 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
+- `/vehiculos/[id]` (la ficha del vehículo, T34): ≤ 530 KB. Medido 504,3 KB en 33 chunks con las pestañas y 496,8 en 32 con las dos columnas: «Qué
+  falta» de la ficha, la galería y subida de fotos, Documentos y Cotizaciones van con `diferido()`; `/vehiculos` 500,4 → 500,3 (el resumen, ya diferido,
+  adelgaza) y `/logistica/vehiculo/[id]` 445,8 → 446,1. El documento de la ficha aporta 52,4 KB sobre `/perfil` con una cotización y lo mismo con 60
+  documentos y 601 cotizaciones (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 56, `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Lecturas por pedido,
+  tras su `<Suspense>` y en paralelo: `vehiculo_relacionados` (≤ 9 filas), la subasta y sus ajustes, `leerUnidad` una vez (`cache()`, la comparten
+  «Fase y qué falta» y «Documentos»), la galería ≤ 24 (en el servidor aunque el bloque espere a acercarse para montar su código), el resumen de
+  repuestos (1 + 201), la limpieza y la resolución; desde el navegador, `leerQueFalta` al montarse, Cotizaciones (21, de a 20 hasta 500) y Documentos (51)
+  al acercarse. Sin caché de cliente: `router.refresh()` y `revalidarVinculo()` vuelven a dibujar todos los bloques.
 - `/configuracion/flujos`: 409,0 KB en frío (28 chunks; 404,5 antes del diagrama), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
   (`scripts/guardas/xyflow-diferido.test.ts`). Una sola lectura del flujo como antes (los topes de `leerFlujoParaConfigurar`); hasta 200 cajas y 500

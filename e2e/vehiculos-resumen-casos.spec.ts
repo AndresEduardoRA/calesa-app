@@ -121,10 +121,7 @@ test('un vehículo que desaparece con el resumen abierto lo dice, igual que uno 
   ).toBeVisible()
 })
 
-test('sin red al abrir el resumen lo dice con «Reintentar», y sin red al elegir una pestaña, también', async ({
-  page,
-  context,
-}) => {
+test('sin red al abrir el resumen lo dice con «Reintentar»', async ({ page, context }) => {
   await entrar(page, t.terreno.duena)
   await alInventario(page, t.terreno.corea.id)
   await expect(filaDe(page, TITULO)).toBeVisible()
@@ -140,11 +137,4 @@ test('sin red al abrir el resumen lo dice con «Reintentar», y sin red al elegi
   await expect(resumen).toBeVisible()
   // «Relacionados» ya llegó (si no, la red cortada lo dejaría en error con su propio «Reintentar»).
   await expect(resumen.getByText('Sin relacionados todavía.')).toBeVisible()
-  // Lo mismo con una pestaña cuyo código no se pidió.
-  await context.setOffline(true)
-  await resumen.getByRole('tab', { name: 'Fotos' }).click()
-  await expect(resumen.getByText('Sin conexión. No se pudo abrir esto.')).toBeVisible()
-  await context.setOffline(false)
-  await resumen.getByRole('button', { name: 'Reintentar' }).click()
-  await expect(resumen.getByText('Este vehículo no tiene fotos todavía.')).toBeVisible()
 })

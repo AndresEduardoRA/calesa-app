@@ -4,7 +4,6 @@ import type { ReactNode } from 'react'
 import { z } from 'zod'
 import { Button } from '@/shared/ui/button'
 import { Drawer } from '@/shared/ui/drawer'
-import { PestanasDelResumen } from '@/shared/ui/lista'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { useUltimo } from '@/shared/ui/use-ultimo'
 import {
@@ -18,14 +17,12 @@ import type { ParaRelacionados } from '../../../entities/acciones-de-relacionado
 import type { ParaCotizar } from '../../../entities/ruta-para-cotizar'
 import type { Vehiculo } from '../../../entities/vehiculo'
 import type { PermisoDeVitrina } from '../../../entities/vitrina'
-import { FichaDeVehiculo } from '../../ficha/components/ficha-de-vehiculo'
 import type { DatosDelOrigen } from '../../listado/components/tipos'
 import { useIdentidad } from '../../listado/hooks/use-identidad'
 import { useResumenDeVehiculo } from '../hooks/use-resumen-de-vehiculo'
 import { useVehiculoDelResumen } from '../hooks/use-vehiculo-del-resumen'
 import { CabeceraDelResumen } from './cabecera-del-resumen'
 import { RelacionadosDelResumenDiferido } from '../../relacionados/components/diferidos'
-import { FotosDelResumenDiferido } from './diferidos'
 
 type Props = DatosDelOrigen & {
   // Las filas de la página: de ahí sale lo que se ve de inmediato, mientras llega la lectura.
@@ -89,14 +86,12 @@ type PropsDelContenido = DatosDelOrigen & {
   resumen: ReturnType<typeof useResumenDeVehiculo>
 }
 
-// El vehículo con su cabecera y sus pestañas. Sólo se dibuja la elegida; «Resumen» es la ficha con los datos que ya trajo la página,
-// y las otras dos leen lo suyo al elegirse.
-function ConVehiculo(
-  props: PropsDelContenido & { vehiculo: Vehiculo; completo: boolean; fallo: boolean },
-) {
+// El vehículo: su cabecera (portada con carrusel, datos clave, situación y acciones con «Abrir ficha») y «Relacionados» en chips. La versión
+// corta de la ficha: lo demás (los grupos del layout, las fotos, los documentos) está en la ficha. Se dibuja con la fila de la página mientras
+// llega la lectura.
+function ConVehiculo(props: PropsDelContenido & { vehiculo: Vehiculo; fallo: boolean }) {
   const {
     vehiculo,
-    completo,
     fallo,
     reintentar,
     editables,
@@ -106,7 +101,6 @@ function ConVehiculo(
     para,
     ...datos
   } = props
-  const { origen, campos, categorias } = datos
   return (
     <div className="grid gap-4">
       <CabeceraDelResumen
@@ -120,40 +114,16 @@ function ConVehiculo(
       {para !== null ? (
         <RelacionadosDelResumenDiferido key={vehiculo.id} vehiculoId={vehiculo.id} para={para} />
       ) : null}
-      <PestanasDelResumen
-        etiqueta="Secciones del vehículo"
-        pestanas={resumen.pestanas}
-        activa={resumen.pestana}
-        alElegir={resumen.elegirPestana}
-      >
-        {resumen.pestana === 'fotos' ? (
-          <FotosDelResumenDiferido
-            key={vehiculo.id}
-            vehiculoId={vehiculo.id}
-            titulo={vehiculo.titulo}
-          />
-        ) : (
-          <div className="grid gap-4">
-            {completo ? null : <EsqueletoDelResumen etiqueta="Cargando los datos" />}
-            <FichaDeVehiculo
-              vehiculo={vehiculo}
-              origen={origen}
-              campos={campos}
-              categorias={categorias}
-            />
-            {fallo ? (
-              <div role="alert" className="flex flex-wrap items-center gap-2">
-                <p className="text-(length:--text-sm) text-(--color-ink)">
-                  No se pudieron actualizar los datos.
-                </p>
-                <Button type="button" variant="outline" size="sm" onClick={reintentar}>
-                  Reintentar
-                </Button>
-              </div>
-            ) : null}
-          </div>
-        )}
-      </PestanasDelResumen>
+      {fallo ? (
+        <div role="alert" className="flex flex-wrap items-center gap-2">
+          <p className="text-(length:--text-sm) text-(--color-ink)">
+            No se pudieron actualizar los datos.
+          </p>
+          <Button type="button" variant="outline" size="sm" onClick={reintentar}>
+            Reintentar
+          </Button>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -178,24 +148,20 @@ function ContenidoDelResumen(props: PropsDelContenido) {
       </div>
     )
   }
-  // El último que se mostró sólo mientras se cierra: con otro vehículo en la URL se espera el suyo (las pestañas del anterior leerían
-  // las fotos de otro).
+  // El último que se mostró sólo mientras se cierra: con otro vehículo en la URL se espera el suyo (los relacionados del anterior serían
+  // de otro).
   const vehiculo = vista.tipo === 'vehiculo' ? vista.vehiculo : abierto ? null : ultimo
   if (vehiculo === null) {
     return <EsqueletoDelResumen etiqueta="Cargando el vehículo" />
   }
   return (
-    <ConVehiculo
-      {...props}
-      vehiculo={vehiculo}
-      completo={vista.tipo === 'vehiculo' ? vista.completo : true}
-      fallo={vista.tipo === 'vehiculo' && vista.fallo}
-    />
+    <ConVehiculo {...props} vehiculo={vehiculo} fallo={vista.tipo === 'vehiculo' && vista.fallo} />
   )
 }
 
-// El resumen de un vehículo (`?vehiculo=`) sin salir del inventario: arriba su portada, lo que lo identifica y su estado, con «Editar» y
-// «Abrir ficha»; debajo, «Resumen» y «Fotos» (`?pestana=`), con el bloque «Relacionados» entre la cabecera y las pestañas. Se dibuja enseguida con la fila de la página y se completa con
+// El resumen de un vehículo (`?vehiculo=`) sin salir del inventario, la versión corta de su ficha: arriba su portada con carrusel, lo que lo
+// identifica y su estado, con «Editar», «Cotizar», «Abrir ficha» y el «⋯»; debajo, «Relacionados» en chips. Sin pestañas (un `?pestana=fotos` viejo abre el
+// visor del carrusel). Se dibuja enseguida con la fila de la página y se completa con
 // su lectura (un pedido). Si el vehículo desaparece, o deja de ser visible, mientras está abierto lo dice sin explicar por qué. «Editar»
 // abre el panel de edición encima y, al guardar o cancelar, se vuelve a este resumen con el dato al día (la página trae la fila nueva).
 export function ResumenDeVehiculo({ filas, editables, children, ...datos }: Props) {

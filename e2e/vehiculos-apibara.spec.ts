@@ -297,7 +297,8 @@ test('refrescar desde la ficha actualiza fecha, estado y puja, y conserva lo que
     ),
   )
   await page.goto(`/vehiculos/${id}`)
-  const bloque = page.getByRole('region', { name: 'Subasta' })
+  // El bloque de la columna izquierda (el primero): el grupo «Subasta» del layout también es una región, en «Ficha».
+  const bloque = page.getByRole('region', { name: 'Subasta' }).first()
   await expect(bloque.getByText('Abierta')).toBeVisible()
   await expect(bloque.getByText('Puja actual')).toBeVisible()
 

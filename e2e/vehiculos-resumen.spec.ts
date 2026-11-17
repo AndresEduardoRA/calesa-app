@@ -43,7 +43,7 @@ test('un clic en cualquier parte de la fila o la tarjeta abre el resumen, con lo
   await expect(filaDe(page, TITULO)).toHaveAttribute('data-state', 'selected')
   // Arriba: lo que lo identifica (el número, lo «en tarjeta» del layout), su estado y lo que se puede hacer.
   await expect(resumen.getByText('Corea · #')).toBeAttached()
-  // Lo «en tarjeta» está arriba y, con el resto de los datos, también en la pestaña.
+  // Lo «en tarjeta» está arriba; el resto de los datos está en la ficha.
   await expect(resumen.getByText('Puertas').first()).toBeVisible()
   await expect(resumen.getByText('Sin fase')).toBeVisible()
   await expect(resumen.getByRole('button', { name: 'Editar', exact: true })).toBeVisible()
@@ -51,12 +51,8 @@ test('un clic en cualquier parte de la fila o la tarjeta abre el resumen, con lo
     'href',
     `/vehiculos/${t.id}`,
   )
-  // «Resumen» es la pestaña de siempre y trae los datos como la ficha, sin pedir nada más.
-  await expect(resumen.getByRole('tab', { name: 'Resumen' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
-  await expect(resumen.getByText('Blanco').first()).toBeVisible()
+  // La versión corta de la ficha: sin pestañas.
+  await expect(resumen.getByRole('tablist')).toHaveCount(0)
   await capturar(page, info, 'resumen-de-vehiculo')
   // Recargar lo reabre; cerrar lo cierra.
   await page.reload()
@@ -90,7 +86,7 @@ test('«Editar» del «⋯» de la fila abre el panel de edición, no el resumen
   await panel.getByRole('button', { name: 'Cancelar' }).click()
 })
 
-test('«Relacionados» llega arriba de las pestañas y «Fotos» lee al elegirse, sin sumar al historial', async ({
+test('«Relacionados» llega en chips y un `?pestana=fotos` viejo abre el visor del carrusel del resumen', async ({
   page,
 }, info) => {
   await sembrarFotos(t.id, 3)
@@ -110,7 +106,7 @@ test('«Relacionados» llega arriba de las pestañas y «Fotos» lee al elegirse
     }
   })
   const resumen = await abrirConUnClic(page, TITULO)
-  // Los relacionados están en «Resumen», sin elegir nada: una lectura (`vehiculo_relacionados`). Las fotos no se leyeron: cada pestaña paga lo suyo al elegirse.
+  // Los relacionados están a la vista, sin elegir nada: una lectura (`vehiculo_relacionados`).
   // En una línea de chips: el grupo, con sus filas, en el popover del chip.
   const relacionados = resumen.getByRole('region', { name: 'Relacionados' })
   await expect(relacionados.getByRole('button', { name: /^Interesado · 1/ })).toBeVisible()
@@ -121,37 +117,19 @@ test('«Relacionados» llega arriba de las pestañas y «Fotos» lee al elegirse
   await expect(popover.getByText('Pidió el precio')).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(popover).toBeHidden()
-  // La portada de la cabecera ya pudo leer sus fotos al acercarse; «Fotos» suma una lectura más al elegirla.
-  const imagenesAlAbrir = pedidos.filter((url) =>
-    url.includes('/rest/v1/vehiculos_imagenes'),
-  ).length
   await capturar(page, info, 'resumen-relacionados')
-  await resumen.getByRole('tab', { name: 'Fotos' }).click()
-  await expect(page).toHaveURL(/pestana=fotos/)
-  await expect(resumen.getByRole('button', { name: 'Ver la foto 1 de 3 (portada)' })).toBeVisible()
-  await expect(resumen.getByRole('button', { name: /^Ver la foto \d de 3/ })).toHaveCount(3)
-  expect(pedidos.filter((url) => url.includes('/rest/v1/vehiculos_imagenes'))).toHaveLength(
-    imagenesAlAbrir + 1,
-  )
-  await capturar(page, info, 'resumen-fotos')
 
-  // Cambiar de pestaña no sumó al historial: «atrás» cierra el resumen.
-  await page.goBack()
-  await expect(resumenDe(page, TITULO)).toHaveCount(0)
-
-  // Una foto de «Fotos» abre el visor en esa, con la URL; ← → recorren, Esc cierra y el resumen sigue.
+  // Un enlace viejo con `?pestana=fotos` abre el visor del carrusel del resumen (su clave, aparte de la de la fila), sin sumar al historial.
   await alInventario(page, t.terreno.corea.id, `&vehiculo=${t.id}&pestana=fotos`)
-  await expect(resumen.getByRole('button', { name: 'Ver la foto 2 de 3' })).toBeVisible()
-  await resumen.getByRole('button', { name: 'Ver la foto 2 de 3' }).click()
   const visor = page.locator('[data-visor-de-imagenes]')
   await expect(visor).toBeVisible()
-  await expect(page).toHaveURL(/visor=[^&]+-fotos/)
-  await expect(visor.getByText('2 de 3')).toBeVisible()
-  await page.keyboard.press('ArrowRight')
-  await expect(visor.getByText('3 de 3')).toBeVisible()
-  await expect(page).toHaveURL(/foto=3/)
-  await page.keyboard.press('ArrowRight')
+  await expect(visor).toHaveCount(1)
+  await expect(page).toHaveURL(new RegExp(`visor=${t.id}-resumen`))
+  await expect(page).not.toHaveURL(/pestana=/)
   await expect(visor.getByText('1 de 3')).toBeVisible()
+  await page.keyboard.press('ArrowRight')
+  await expect(visor.getByText('2 de 3')).toBeVisible()
+  await expect(page).toHaveURL(/foto=2/)
   await capturar(page, info, 'visor-de-fotos')
   await page.keyboard.press('Escape')
   await expect(visor).toBeHidden()
@@ -159,18 +137,15 @@ test('«Relacionados» llega arriba de las pestañas y «Fotos» lee al elegirse
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
-test('quien no ve leads no tiene «Relacionados», y una pestaña que ya no existe abre «Resumen»', async ({
+test('quien no ve leads no tiene «Relacionados», y una pestaña vieja se quita de la URL', async ({
   page,
 }) => {
   await entrar(page, t.lectorSinLeads)
   await alInventario(page, t.terreno.corea.id, `&vehiculo=${t.id}&pestana=interesados`)
   const resumen = resumenDe(page, TITULO)
   await expect(resumen).toBeVisible()
-  await expect(resumen.getByRole('tab')).toHaveCount(2)
-  await expect(resumen.getByRole('tab', { name: 'Resumen' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
+  await expect(page).not.toHaveURL(/pestana=/)
+  await expect(resumen.getByRole('tablist')).toHaveCount(0)
   await expect(resumen.getByRole('region', { name: 'Relacionados' })).toHaveCount(0)
 })
 

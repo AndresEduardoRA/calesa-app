@@ -1,10 +1,10 @@
 'use client'
 
+import { useId } from 'react'
 import type { CampoDeLayout, Categoria, OrigenResumen } from '@/modules/origenes/client'
-import { Bloque } from '@/shared/ui/bloque'
-import { Dato, DatosPorGrupo, RejillaDeDatos, ValorMostrado } from '@/shared/ui/campos'
+import { Dato, DatosPorGrupo, ValorMostrado } from '@/shared/ui/campos'
 import { useRegional } from '@/shared/ui/regional'
-import { BLOQUES_COMUNES, camposComunes, valorComun } from '../../../entities/comunes'
+import { camposComunes, valorComun } from '../../../entities/comunes'
 import type { Vehiculo } from '../../../entities/vehiculo'
 
 type Props = {
@@ -14,27 +14,29 @@ type Props = {
   categorias: readonly Categoria[]
 }
 
-// La ficha de un vehículo: lo común en dos bloques y, después, un bloque por cada grupo del
-// layout de su origen, en su orden. Los nombres de los grupos y de los campos salen del layout.
+const REJILLA = 'grid grid-cols-[repeat(auto-fill,minmax(min(100%,10rem),1fr))] gap-x-4 gap-y-3'
+
+// El bloque «Ficha» de un vehículo, todo a la vista: «Precio» y, después, un grupo por cada grupo del layout de su origen, en su orden
+// (los nombres salen del layout). «Datos principales» va en la columna izquierda (`DatosPrincipalesDelVehiculo`).
 export function FichaDeVehiculo({ vehiculo, origen, campos, categorias }: Props) {
   const { locale } = useRegional()
-  const comunes = camposComunes(origen.tipo)
+  const id = useId()
+  const precio = camposComunes(origen.tipo).filter((campo) => campo.bloque === 'precio')
   return (
-    <div className="grid gap-4">
-      {BLOQUES_COMUNES.map((bloque) => (
-        <Bloque key={bloque.clave} titulo={bloque.titulo}>
-          <RejillaDeDatos>
-            {comunes
-              .filter((campo) => campo.bloque === bloque.clave && campo.clave !== 'titulo')
-              .map((campo) => (
-                <Dato key={campo.clave} etiqueta={campo.etiqueta}>
-                  <ValorMostrado valor={valorComun(campo, vehiculo, { categorias, locale })} />
-                </Dato>
-              ))}
-          </RejillaDeDatos>
-        </Bloque>
-      ))}
-      <DatosPorGrupo campos={campos} atributos={vehiculo.atributos} />
+    <div className="grid min-w-0 gap-5">
+      <section aria-labelledby={id} className="grid min-w-0 gap-2">
+        <h3 id={id} className="text-(length:--text-sm) font-semibold text-(--color-ink)">
+          Precio
+        </h3>
+        <dl className={REJILLA}>
+          {precio.map((campo) => (
+            <Dato key={campo.clave} etiqueta={campo.etiqueta}>
+              <ValorMostrado valor={valorComun(campo, vehiculo, { categorias, locale })} />
+            </Dato>
+          ))}
+        </dl>
+      </section>
+      <DatosPorGrupo campos={campos} atributos={vehiculo.atributos} plegable={false} />
     </div>
   )
 }

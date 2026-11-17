@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { rutaDeActividadDe } from '@/modules/actividad'
 import { puede, requerirSesion, type Permisos } from '@/modules/equipo'
 import { leerFasesDeOrigen } from '@/modules/flujos'
-import { getOrigenes, leerLayout } from '@/modules/origenes'
+import { getOrigenes, leerLayout, type OrigenResumen } from '@/modules/origenes'
 import {
   editablesDe,
   eliminablesDe,
@@ -13,26 +13,29 @@ import {
   origenesVisibles,
   permisoDeVitrina,
   vistaPreviaDe,
+  type Vehiculo,
 } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
+import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
 import { RUTAS, unParametro } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
+import { FichaEnDosColumnas, IndiceDeBloques } from '@/shared/ui/ficha-en-bloques'
 import { vehiculoEnEdicion } from '../edicion'
 import { AvisosBajoLaCabecera } from './avisos-bajo-la-cabecera'
 import { papeleraYAvisosDe } from './avisos-de-la-ficha'
-import { ContenidoDeLaPestana } from './contenido-de-la-pestana'
 import { RegistrarLaVisita } from './registrar-la-visita'
 import { Encabezado } from './encabezado'
 import { Paneles } from './paneles'
 import {
-  CLAVE_DE_PESTANA,
-  hayBarraDePestanas,
-  pestanaDeVehiculo,
-  pestanasDeQuienMira,
-} from './pestanas'
-import { PestanasDeVehiculo } from './pestanas-de-vehiculo'
-import { RelacionadosDeLaFicha } from '../../_relacionados/relacionados-del-vehiculo'
+  anclaDeLaUrl,
+  bloquesDeQuienMira,
+  CLAVE_DE_RELACIONADOS,
+  CLAVE_DE_SECCION,
+} from './bloques'
+import { BloquesDeLaFicha } from './bloques-de-la-ficha'
+import { LateralDeLaFicha } from './lateral-de-la-ficha'
+import { LlegarAlBloque } from './llegar-al-bloque'
 
 export const metadata: Metadata = { title: 'Vehículo' }
 
@@ -83,17 +86,13 @@ async function vehiculoYOrigen(id: string, permisos: Permisos) {
   return { encontrado, origen }
 }
 
-// La ficha de un vehículo: su cabecera y, debajo, la pestaña de `?seccion=` (ver `pestanas.ts`;
-// las que faltan se suman con su sección cuando existan).
-export default async function PaginaVehiculo({
-  params,
-  searchParams,
-}: PageProps<'/vehiculos/[id]'>) {
-  const [sesion, { id }, parametros] = await Promise.all([requerirSesion(), params, searchParams])
-  const { encontrado, origen } = await vehiculoYOrigen(id, sesion.permisos)
-  if (!encontrado || !origen) {
-    return <NoDisponible />
-  }
+// Lo que la ficha necesita además del vehículo: el layout, la fase, si se edita, la vitrina y lo que ofrecen la papelera y los avisos.
+async function lecturasDeLaFicha(
+  sesion: Awaited<ReturnType<typeof requerirSesion>>,
+  encontrado: Vehiculo,
+  origen: OrigenResumen,
+  parametros: Awaited<PageProps<'/vehiculos/[id]'>['searchParams']>,
+) {
   const [layout, fases, enEdicion, editables, previa, eliminables] = await Promise.all([
     leerLayout(origen.id, { conUso: false }),
     leerFasesDeOrigen(origen.id),
@@ -102,7 +101,6 @@ export default async function PaginaVehiculo({
     vistaPreviaDe(encontrado.id),
     eliminablesDe(sesion, [encontrado]),
   ])
-  const suLayout = datosO(layout)
   const editable = editables.has(encontrado.id)
   const fase = datosO(fases).find((una) => una.id === encontrado.faseId) ?? null
   const { papelera, avisos, ofrecerPapelera } = await papeleraYAvisosDe({
@@ -113,46 +111,105 @@ export default async function PaginaVehiculo({
     editable,
     eliminable: eliminables.has(encontrado.id),
   })
-  const publicar = permisoDeVitrina(sesion.permisos, origen)
-  const pestanas = pestanasDeQuienMira(sesion.permisos, origen.id)
-  const pestana = pestanaDeVehiculo(unParametro(parametros[CLAVE_DE_PESTANA]), pestanas)
+  return {
+    suLayout: datosO(layout),
+    editable,
+    fase,
+    papelera,
+    avisos,
+    ofrecerPapelera,
+    enEdicion: enEdicion?.id === encontrado.id ? enEdicion : null,
+    previa,
+    publicar: permisoDeVitrina(sesion.permisos, origen),
+  }
+}
+
+// El bloque al que lleva la URL al llegar (`?seccion=`, un panel o el drawer de «Relacionados»).
+function anclaDe(
+  parametros: Awaited<PageProps<'/vehiculos/[id]'>['searchParams']>,
+  visibles: ReturnType<typeof bloquesDeQuienMira>,
+) {
+  return anclaDeLaUrl(
+    {
+      seccion: unParametro(parametros[CLAVE_DE_SECCION]),
+      panel: unParametro(parametros[CLAVE_DE_PANEL]),
+      relacionados: unParametro(parametros[CLAVE_DE_RELACIONADOS]),
+    },
+    visibles,
+  )
+}
+
+// Lo único de un bloque que cruza al índice (un componente de cliente).
+const entradaDelIndice = ({ ancla, etiqueta }: { ancla: string; etiqueta: string }) => ({
+  ancla,
+  etiqueta,
+})
+
+// La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda, pegajosa, lo que lo identifica (cabecera, datos principales y
+// subasta); a la derecha, el índice y todos los bloques que quien mira ve, a la vista (`bloques.ts`). `?seccion=` (los enlaces de siempre) y los
+// paneles de «Relacionados» llevan a su bloque; `?editar=`, `?panel=vitrina`, `?panel=fechas-de-subasta` y `?visor=` abren lo suyo.
+export default async function PaginaVehiculo({
+  params,
+  searchParams,
+}: PageProps<'/vehiculos/[id]'>) {
+  const [sesion, { id }, parametros] = await Promise.all([requerirSesion(), params, searchParams])
+  const { encontrado, origen } = await vehiculoYOrigen(id, sesion.permisos)
+  if (!encontrado || !origen) {
+    return <NoDisponible />
+  }
+  const lectura = await lecturasDeLaFicha(sesion, encontrado, origen, parametros)
+  const { suLayout, editable, fase, avisos, previa, publicar } = lectura
+  const visibles = bloquesDeQuienMira(sesion.permisos, origen.id)
   return (
-    <div className="grid max-w-4xl gap-4">
+    <>
       <RegistrarLaVisita id={encontrado.id} />
-      <VolverAlOrigen origen={origen} />
-      <Encabezado
-        vehiculo={encontrado}
-        origen={origen}
-        fase={fase}
-        previa={previa}
-        publicar={publicar}
-        editable={editable}
-        verEnLogistica={puede(sesion.permisos, 'logistica.ver', origen.id)}
-        paraActividad={paraActividadDe(sesion.permisos, encontrado.id)}
-        papelera={papelera}
-        avisos={avisos}
-      />
-      <AvisosBajoLaCabecera
-        vehiculo={encontrado}
-        origen={origen}
-        fase={fase}
-        permisos={sesion.permisos}
-        editable={editable}
-      />
-      <RelacionadosDeLaFicha
-        vehiculoId={encontrado.id}
-        permisos={sesion.permisos}
-        ofrecerPapelera={ofrecerPapelera}
-        avisos={avisos}
-      />
-      {hayBarraDePestanas(pestanas) ? <PestanasDeVehiculo pestanas={pestanas} /> : null}
-      <ContenidoDeLaPestana
-        pestana={pestana}
-        vehiculo={encontrado}
-        origen={origen}
-        layout={suLayout}
-        editable={editable}
-      />
+      <FichaEnDosColumnas
+        antes={
+          <AvisosBajoLaCabecera
+            vehiculo={encontrado}
+            origen={origen}
+            fase={fase}
+            permisos={sesion.permisos}
+            editable={editable}
+            volver={<VolverAlOrigen origen={origen} />}
+          />
+        }
+        lateral={
+          <LateralDeLaFicha
+            encabezado={
+              <Encabezado
+                vehiculo={encontrado}
+                origen={origen}
+                fase={fase}
+                previa={previa}
+                publicar={publicar}
+                editable={editable}
+                paraActividad={paraActividadDe(sesion.permisos, encontrado.id)}
+                papelera={lectura.papelera}
+                avisos={avisos}
+              />
+            }
+            vehiculo={encontrado}
+            origen={origen}
+            layout={suLayout}
+            editable={editable}
+          />
+        }
+        etiquetaDelLateral={`Datos de ${encontrado.titulo}`}
+        indice={<IndiceDeBloques bloques={visibles.map(entradaDelIndice)} />}
+      >
+        <BloquesDeLaFicha
+          visibles={visibles}
+          vehiculo={encontrado}
+          origen={origen}
+          layout={suLayout}
+          editable={editable}
+          permisos={sesion.permisos}
+          ofrecerPapelera={lectura.ofrecerPapelera}
+          avisos={avisos}
+        />
+      </FichaEnDosColumnas>
+      <LlegarAlBloque ancla={anclaDe(parametros, visibles)} />
       <Paneles
         vehiculo={encontrado}
         origen={origen}
@@ -160,8 +217,8 @@ export default async function PaginaVehiculo({
         layout={suLayout}
         previa={previa}
         publicar={publicar}
-        enEdicion={enEdicion?.id === encontrado.id ? enEdicion : null}
+        enEdicion={lectura.enEdicion}
       />
-    </div>
+    </>
   )
 }

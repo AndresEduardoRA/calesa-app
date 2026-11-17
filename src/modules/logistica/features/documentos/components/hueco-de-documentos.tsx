@@ -89,7 +89,7 @@ function ListaDeGrupos({
   )
 }
 
-// El hueco «Documentos» del panel de la unidad y la pestaña «Documentos» de la ficha: un solo componente (D2). Lee y muestra (6.06-1), sube con una bandeja (6.06-2) y revisa cada fila
+// El hueco «Documentos» del panel de la unidad y el bloque «Documentos» de la ficha del vehículo: un solo componente (D2). Lee y muestra (6.06-1), sube con una bandeja (6.06-2) y revisa cada fila
 // (6.06-3). Se dibuja con `logistica.ver` del origen; la base decide lo demás.
 export function HuecoDeDocumentos({ unidad }: { unidad: Unidad }) {
   const { lectura, reintentar, releer } = useDocumentosDeLaUnidad(unidad)

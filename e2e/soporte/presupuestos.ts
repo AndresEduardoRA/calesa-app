@@ -22,6 +22,9 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   '/logistica/fase/[fase]': 390,
   // El detalle de un vehículo en logística (T20), con el vehículo medido de la subasta de la semilla: medido 438,9 KB en 28 chunks antes de las zonas y 442,3 KB en 27 después, más un 5 % hacia arriba a la decena.
   '/logistica/vehiculo/[id]': 470,
+  // La ficha de un vehículo (T34), con el vehículo medido de la subasta de la semilla: medido 504,3 KB en 33 chunks con las pestañas, más un 5 % hacia
+  // arriba a la decena. La ficha en dos columnas tiene que caber en lo mismo.
+  '/vehiculos/[id]': 530,
   // La ficha de un lead (T33), sin tope hasta las dos columnas: medido 548,5 KB en 36 chunks con pestañas y 554,7 KB en 36 con todo a la vista
   // (el marco de bloques, el índice y el resumen de seguimientos), con un lead recién creado; más un 5 % hacia arriba a la decena.
   '/leads/[id]': 590,
@@ -37,6 +40,11 @@ export const PRESUPUESTO_DE_LA_FICHA_EN_KB = 138
 // Lo que viaja (RSC) al abrir la ficha desde «Abrir ficha» del resumen del listado, en KB (`e2e/leads-ficha.spec.ts`): medido 30,7 en
 // escritorio y 36,6 en el celular con el lead de la semilla de ese spec (T33); sobre lo mayor más un 5 %, a la unidad. Antes, 40 escrito en el spec.
 export const PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB = 39
+
+// Lo que la ficha de un vehículo (T34, en dos columnas) aporta al documento sobre `/perfil`, en KB: con 60 documentos y 600 cotizaciones pesa lo
+// mismo que con una (los dos bloques se leen desde el navegador al acercarse; `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Medido 52,4 KB: lo medido más
+// un 5 %, hacia arriba a la unidad.
+export const PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB = 56
 
 // El documento de `/perfil` (los bytes del HTML con el payload RSC, sin comprimir), en KB, con 100 orígenes y 100 tipos de lead: lo que paga
 // toda pantalla del marco (`e2e/presupuesto-js.spec.ts`). Antes del cierre 5b-fix el shell mandaba el contexto del alta de lead (los

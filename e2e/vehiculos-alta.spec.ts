@@ -113,13 +113,17 @@ test('dar de alta un vehículo en Corea, con los valores por defecto y los atajo
   await expect(aLaVista(page.getByText('KNDEU2AA5N7123456'))).toBeVisible()
   await expect(aLaVista(page.getByText('Verde', { exact: true }))).toBeVisible()
   await expect(aLaVista(page.getByText('Automática', { exact: true }))).toBeVisible()
-  // Las pestañas que existen, y ninguna que lleve a lo que falta.
-  await expect(aLaVista(page.getByRole('tab'))).toHaveText([
-    'Ficha',
-    'Fotos',
-    'Documentos',
+  // Los bloques que existen, en el índice, y ninguno que lleve a lo que falta.
+  await expect(
+    page.getByRole('navigation', { name: 'Índice de la ficha' }).getByRole('link'),
+  ).toHaveText([
+    'Qué falta',
+    'Relacionados',
     'Cotizaciones',
+    'Documentos',
+    'Ficha',
     'Repuestos',
+    'Fotos',
   ])
 })
 
