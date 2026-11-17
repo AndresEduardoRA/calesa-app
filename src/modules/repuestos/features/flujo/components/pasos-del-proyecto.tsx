@@ -87,7 +87,7 @@ export function PasosDelProyecto(props: Props) {
       <h2 id="pasos-del-proyecto" className="text-(length:--text-base) font-semibold">
         Pasos del proyecto
       </h2>
-      {indice === null || estado === 'listo' ? null : (
+      {estado === 'listo' ? null : (
         <EstadoDeLosPasos
           estado={estado}
           puedeConfigurar={props.puedeConfigurar}
