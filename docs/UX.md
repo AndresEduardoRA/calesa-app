@@ -195,8 +195,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   acceso; sin rol, «Aún no tienes un rol, avisa al dueño».
 - **Leads** — `/leads` (`leads.ver`): tabla + resumen. «Míos» por defecto; con alcance «todos», `?alcance=`. Filtros del layout
   (`a.<campo>`), tipo, origen, `?q=`, `?cursor=`, vistas guardadas; resumen `?lead=` (`?pestana=seguimientos|recordatorios`); marcas
-  `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo»: `?vista=embudo&embudo=<id>` es el kanban de las
-  oportunidades propias (`?etapa=` en el celular; `?panel=etapas`, `?panel=nuevo-embudo`).
+  `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo» (en «Vista y opciones», con el alcance, las vistas guardadas, «Ítems
+  por página» y «Más»: exportar, importar y papelera): `?vista=embudo&embudo=<id>` es el kanban de las oportunidades propias (`?etapa=` en el celular;
+  a la vista, el selector de embudo y la búsqueda; en «Vista y opciones», «Lista | Embudo», «Etapas…» `?panel=etapas` y «Nuevo embudo…» `?panel=nuevo-embudo`).
 - **Lead** — `/leads/[id]` (`leads.ver` y acceso): «Datos» (`?panel=editar-lead`; «Cotizar» en la cabecera para quien cotiza),
   «Seguimientos» (`?seccion=seguimientos`; `?panel=anotar-seguimiento`, `editar-seguimiento&seguimiento=<id>`), «Vehículos»
   (`vehiculos.ver`; `?panel=agregar-vehiculo`; es donde se gestiona: lo que se ve de un vistazo es **Relacionados**, arriba de las secciones), «Oportunidades» (`?panel=nueva-oportunidad`, `editar-oportunidad&oportunidad=<id>`),
@@ -206,7 +207,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   alta `?panel=nuevo` (sin el alta suelta pero con la de cotizar: «Nuevo» apagado con «Cotizar un vehículo nuevo», que abre la hoja con el panel
   del vehículo en alta); edición `?editar=`; `?vitrina=si|no`, `?limpieza=si|no`; junto al estado de vitrina de cada fila, «Publicar» / «Sacar de la
   web» con un toque y «Deshacer» (con `vehiculos.vitrina` del origen; sin precio público, `?panel=vitrina-rapida&para=<id>` pide sólo el precio).
-  En escritorio, «Tabla | Tarjetas» (`?vista=`, recordada en `vehiculos.vista`; las tarjetas van en grilla, con el carrusel en la foto). En un
+  En escritorio, «Tabla | Tarjetas» en «Vista y opciones», con las vistas guardadas, «Ítems por página» y la papelera (`?vista=`, recordada en `vehiculos.vista`; las tarjetas van en grilla, con el carrusel en la foto). En un
   origen de subasta con el campo de la puja, «Precio» es «Puja actual» (USD, «final» si terminó o se vendió; sin puja, «—»). Con
   `cotizaciones.ver` en algún origen, la columna «Cotización aprobada» (en la tarjeta, «Cotización aprobada» y el monto): el primer resultado de la
   aprobada del vehículo con su moneda, enlazado a esa cotización (sin total, «Sin total»; sin aprobada o una que no se ve, «—»); sin la clave no se
@@ -229,13 +230,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
   ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
-  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **«Vistas»** guardadas como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
+  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
   de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
   si es inválida), «Marcar final…» (`cotizaciones.final.gestionar`, en una preventa; apagada sin vehículo o cliente), casilla «Favorita», «Reportar…»,
   moderar («Invalidar…», «Descartar los reportes…», «Reactivar…», con `cotizaciones.moderar`) y, al final y separada, «Enviar a la papelera» (sin preguntar,
   con «Deshacer»). Son las mismas actions de la guardada; «Marcar final…», «Reportar…» y moderar abren su diálogo en `?panel=…&para=<id>`; filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin
   chip y «Limpiar» no los borra; arriba, de quién o de qué son, con «Ver todas», y su vacío propio); «Vencida» en la fila y la insignia «Aprobada» (tabla, tarjeta y resumen); `nuevo` abre la
-  hoja. «Papelera» (para quien puede enviar a ella o vaciarla) lleva a `/cotizaciones/papelera`: lotes por cursor (5, las primeras 20 de
+  hoja. «Papelera» (en «Vista y opciones» › «Más», para quien puede enviar a ella o vaciarla) lleva a `/cotizaciones/papelera`: lotes por cursor (5, las primeras 20 de
   cada uno y «Mostrar los N»), «Restaurar» y «Purgar» una o el lote (`cotizaciones.papelera.purgar`,
   `?panel=purgar&lote=<id>[&cotizacion=<id>]`, nombra lo que borra; un lote de varios pide tipear «purgar N»; una final con comprobante
   queda y el aviso dice por qué); las que se fueron con su vehículo están en la papelera de vehículos.
@@ -269,7 +270,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     (mover a la próxima fase, con la acción de la transición: abre el panel del ítem con el destino ya elegido, `?item=<id>&destino=<fase>`;
     o «Nueva cotización» / «Registrar pago» si el destino pide ese hito como bloqueante y falta). Nunca arrastrar. Los enlaces viejos
     `?panel=compra&compra=…` y los de pagos sin `?pestana=` redirigen con su panel; `?panel=stock|imagenes&item=` e `?item=` siguen igual.
-  - Vistas «Stock» (`?vista=stock`) y «Cadena» (`?vista=cadena`: una columna por fase del flujo de repuestos, más «Sin fase» si tiene
+  - Vistas «Stock» (`?vista=stock`) y «Cadena» (`?vista=cadena`; las tres se eligen en «Vista y opciones» › «Qué ver»: una columna por fase del flujo de repuestos, más «Sin fase» si tiene
     ítems, de a 50, tarjeta con «Proyecto #N» y días en la fase; `?q=`, `?proyecto=` y, en el celular, `?fase=`).
   - El panel del ítem (`?item=<id>`, sobre el proyecto o la Cadena) es el panel de la unidad de logística **con sus secciones a la vista**,
     sin acordeones: «Qué falta» primero (con el destino de `?destino=` ya abierto), «Imágenes», «Stock», «Compras» (con
@@ -417,7 +418,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   de teclado» (la lista del catálogo; no se dispara mientras se escribe). En un alta de vehículo `Ctrl/Cmd+S` guarda y cierra; en «Nuevo
   lead» deja el drawer listo para el siguiente.
 - **Filtros:** panel lateral plegable si el listado mide 40 rem o más (si no, hoja inferior) + chips activos + «limpiar»; esquema
-  declarativo por listado; estado en URL (nuqs, `shallow:false`); vistas guardadas por usuario. Formularios en drawer/modal con bloques
+  declarativo por listado; estado en URL (nuqs, `shallow:false`); vistas guardadas por usuario (en «Vista y opciones»). Formularios en drawer/modal con bloques
   plegables; `returnTo` para volver.
 - **Patrón de lista** (`.claude/rules/ui.md`): toda lista de registros se dibuja igual. Desde 768 px, tabla con **nombre pegado a la
   izquierda** (entero hasta 16 rem; más largo, «…» y completo en `title`) y **«⋯» a la derecha**, que se desplaza de costado dentro de su
@@ -438,14 +439,27 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Confirmaciones con URL** (`?panel=mover-oportunidad&oportunidad=<id>&destino=<id>`, `salir-lead`, `purgar&lote=<id>`,
   `deshacer-importacion&importacion=<id>`, `desvincular`, `etapas&eliminar=embudo`, `eliminar-origen`): «atrás» las cierra, recargar las
   reabre, Esc devuelve el foco, no se cierran mientras actúan. Si lo que nombra ya no existe, avisa y limpia la URL.
-- **Barra de un listado (`<FilterShell>`):** búsqueda, «Filtros», «Vistas», acciones y «Ítems por página». Con contenedor de 48 rem o más
-  las acciones van a la derecha; si no, cada pieza envuelve a la izquierda. **El marcador de búsqueda es corto** («Nombre o número»,
-  «Título, VIN o lote», «Título o lead») para caber al 200 % en el celular.
+- **Barra de un listado (`<FilterShell>`):** búsqueda (crece y ocupa el ancho libre; con menos de 14 rem toma su propia fila), «Filtros»,
+  «Vista y opciones» y «Nuevo». Una barra plana: cada pieza envuelve a la izquierda, en el orden en que se lee.
+  - **«Vista y opciones»** (`<VistaYOpciones>`): un solo botón que agrupa lo que no se usa a cada rato —la vista («Lista | Embudo», «Tabla |
+    Tarjetas», «Qué ver» de repuestos), el alcance («Míos | Todos»), «Ítems por página», las vistas guardadas y «Más» (exportar, importar, la
+    papelera)—, cada grupo con su permiso de siempre; «Más» sin nada adentro no aparece y una lista sin nada que agrupar no tiene botón. Es un
+    popover desde 768 px y una hoja inferior por debajo, sin URL (un menú: «atrás» no lo cierra); cambiar el ancho con el panel abierto pasa
+    de uno a otro sin cerrarlo. El botón dice lo activo («Vista y opciones · Lista · Míos · 25 por página») y crece en alto al 200 %. Lo
+    elegido adentro sigue en la URL como antes (`?vista=`, `?alcance=`, `?por=`). Cambiar algo en el lugar (alcance, tabla o tarjetas, ítems
+    por página) no lo cierra; lo que lleva a otra lista o pantalla (la vista, una vista guardada, la papelera, importar) sí. Esc y la ✕ lo
+    cierran y el foco vuelve al botón; con un tamaño a medio elegir con flechas, el primer Esc lo deshace. El panel llega con `diferido()` al
+    abrirlo por primera vez (sin red esa vez: «Sin conexión. No se pudo abrir esto.» con «Reintentar»). Sin red con el panel abierto, una
+    línea dice «Sin conexión: lo que necesita la red se activa cuando vuelva.» y lo que navegaría queda apagado (`inert`); «Ítems por página»
+    y «Tabla | Tarjetas» siguen.
+  - **El marcador de búsqueda es corto** («Nombre o número»,
+    «Título, VIN o lote», «Título o lead») para caber al 200 % en el celular.
 - **Mínimo para buscar por nombre:** 3 letras o dígitos seguidos; un número (`5`, `#5`) busca por número desde un dígito. Mientras no
   alcanza, el campo lo deja escrito, dice «Escribe al menos 3 letras» y **no escribe `?q=`, no pide nada, no deja chip ni toca los
   tachados**; un `?q=ab` por URL igual (`e2e/leads-listado-busqueda-minima.spec.ts`).
 - **Ítems por página:** en cada lista con Anterior/Siguiente y filtros (leads, vehículos), selector «Ítems por página» (10, 25, 50, 100) en
-  la barra desde `md` y, por debajo, arriba de la lista (`<select>` de 44 px). Se guarda en la cuenta (`listas.por_pagina`, también en el
+  «Vista y opciones» (en la hoja, en el celular; `<select>` de 44 px). Sus avisos («Sin conexión: se aplicará cuando vuelva la red.», «No se
+  pudo guardar tu preferencia…» con «Reintentar») van en el panel y, con el panel cerrado, bajo la barra. Se guarda en la cuenta (`listas.por_pagina`, también en el
   perfil); `?por=` la fija para esa página; cada lista tiene un máximo (hoy 100). Cambiarlo vuelve a la primera página y conserva filtros y
   búsqueda. No lo llevan el kanban ni las papeleras (`docs/RENDIMIENTO.md`).
 - **Barra superior:** «Nuevo» (a la izquierda del tipo de cambio) abre un modal sin pantalla propia (`?panel=crear`: recargar lo reabre, «atrás» lo cierra) con lo que quien mira
@@ -1186,7 +1200,7 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
   filtro «Abiertos» aclara que los cerrados no se muestran); vacío por filtro con «Limpiar filtros»; cursor fuera de rango con «Volver al
   principio»; error de `(app)`; sin `repuestos.ver`, «No tienes permiso».
 - **Sin «Anterior»:** «Siguiente» y, con cursor, «Volver al principio». Más de 200 ítems se escribe «200+».
-- **Vista «Stock»:** enlaces «Proyectos» y «Stock» arriba (cambiar no conserva filtros ni página; «Nuevo proyecto» sólo en «Proyectos»).
+- **Vista «Stock»:** «Proyectos», «Cadena» y «Stock» en «Vista y opciones» › «Qué ver» (en «Stock», que no tiene barra, el botón va solo arriba a la izquierda; cambiar no conserva filtros ni página; «Nuevo proyecto» sólo en «Proyectos»).
   Columnas: ítem, proyecto (`#N` · vehículo, con «Cerrado»), en stock y desde; sin filtros, por cursor. Vacío: «No hay repuestos en
   stock.» con «Lo que sobra de un ítem se pasa a stock desde la hoja de su proyecto.». La fila abre el ítem en la hoja de su proyecto con
   su panel de stock. El «⋯» (sólo con `repuestos.editar`, también con el proyecto cerrado): «Reasignar a un proyecto» (destino abierto,
