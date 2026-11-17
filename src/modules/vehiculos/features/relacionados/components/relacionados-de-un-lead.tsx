@@ -29,7 +29,8 @@ type Props = {
   para: ParaRelacionados
   // El resumen lee en el navegador: tras una acción lograda vuelve a leer.
   alCambiar?: () => void
-  presentacion?: 'bloque' | PresentacionDeRelacionados
+  // La ficha, compacta; el resumen, en una línea de chips.
+  presentacion: PresentacionDeRelacionados
 }
 
 // El bloque «Relacionados» de un lead (sus vehículos): lo comparten la ficha del lead y su resumen del listado. Quitar interés y desvincular (con la cartera) se hacen en el lugar con «Deshacer»;
@@ -61,7 +62,7 @@ export function RelacionadosDeUnLead({ datos, lugar, para, alCambiar, presentaci
   return (
     <>
       <Relacionados
-        {...(presentacion ? { presentacion } : {})}
+        presentacion={presentacion}
         grupos={datos.grupos}
         contexto={contexto}
         enCurso={acciones.enCurso}

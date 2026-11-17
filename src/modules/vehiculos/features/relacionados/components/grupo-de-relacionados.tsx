@@ -7,7 +7,6 @@ import type { AccionDeRelacionados } from '../../../entities/acciones-de-relacio
 import {
   LEYENDAS,
   NOMBRE_DEL_TIPO,
-  VACIOS,
   textoDeOcultos,
   type GrupoDeRelacionados,
   type LadoDeRelacionados,
@@ -26,7 +25,8 @@ type Props = {
   children: React.ReactNode
 }
 
-// Un grupo de «Relacionados»: su título con la cantidad (con tope), su leyenda, las primeras filas, lo que no se ve contado, su vacío y sus acciones.
+// El grupo dentro del popover de un chip de «Relacionados en una línea»: su título con la cantidad (con tope), su leyenda, las primeras filas, lo que no se ve contado y sus acciones. Nunca
+// vacío: un grupo sin nada no tiene chip.
 export function UnGrupoDeRelacionados({
   lado,
   grupo,
@@ -37,7 +37,6 @@ export function UnGrupoDeRelacionados({
   children,
 }: Props) {
   const nombre = NOMBRE_DEL_TIPO[grupo.tipo]
-  const vacio = grupo.filas.length === 0 && grupo.ocultos === 0
   return (
     <section
       aria-label={nombre}
@@ -57,11 +56,6 @@ export function UnGrupoDeRelacionados({
       </header>
       {grupo.filas.length > 0 ? (
         <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">{children}</ul>
-      ) : null}
-      {vacio ? (
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          {VACIOS[lado][grupo.tipo]}
-        </p>
       ) : null}
       {grupo.ocultos > 0 ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">

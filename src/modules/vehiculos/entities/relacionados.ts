@@ -37,19 +37,6 @@ export const LEYENDAS: Record<LadoDeRelacionados, Record<TipoDeRelacion, string>
   },
 }
 
-export const VACIOS: Record<LadoDeRelacionados, Record<TipoDeRelacion, string>> = {
-  vehiculo: {
-    vinculado: 'Sin vínculo.',
-    interesado: 'Nadie marcó interés todavía.',
-    cotizado: 'Sin cotizaciones activas.',
-  },
-  lead: {
-    vinculado: 'Ningún vehículo vinculado.',
-    interesado: 'Sin vehículos de interés.',
-    cotizado: 'Sin cotizaciones activas.',
-  },
-}
-
 export const TEXTO_DE_TODO_VACIO = 'Sin relacionados todavía.'
 export const TEXTO_DE_ERROR = 'No pudimos cargar los relacionados.'
 export const TEXTO_DE_CORTADA = 'No pudimos revisar el resto: hay muchos que no puedes ver.'

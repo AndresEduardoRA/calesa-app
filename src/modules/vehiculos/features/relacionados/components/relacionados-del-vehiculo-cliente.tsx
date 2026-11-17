@@ -24,17 +24,13 @@ type Props = {
   numeroGlobal: boolean
   ofrecerPapelera: boolean
   avisos?: AvisosDelMenu
-  // La unidad de logística: «Relacionados» en una línea.
-  presentacion?: 'bloque' | PresentacionDeRelacionados
+  // La ficha, compacta; logística, en una línea.
+  presentacion: PresentacionDeRelacionados
 }
 
 // El bloque «Relacionados» de un vehículo con lo que leyó el servidor (la ficha y la unidad de logística): `src/app` lo envuelve en un Client Component que le pone sus huecos, porque un
 // componente no cruza de servidor a cliente como prop. Cada acción lograda revalida la pantalla (`revalidarVinculo()`).
-export function RelacionadosDelVehiculoCliente({
-  datos,
-  presentacion = 'bloque',
-  ...resto
-}: Props) {
+export function RelacionadosDelVehiculoCliente({ datos, presentacion, ...resto }: Props) {
   const router = useRouter()
   if (datos === null) {
     return (

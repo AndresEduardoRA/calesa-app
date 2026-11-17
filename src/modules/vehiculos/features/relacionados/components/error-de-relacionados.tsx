@@ -5,12 +5,12 @@ import { TEXTO_DE_ERROR, type PresentacionDeRelacionados } from '../../../entiti
 
 type Props = {
   alReintentar: () => void
-  // En una línea (la unidad de logística) no hay encabezado: la misma frase y su botón.
-  presentacion?: 'bloque' | PresentacionDeRelacionados
+  // En una línea no hay encabezado: la misma frase y su botón. Compacta, bajo el título «Relacionados».
+  presentacion: PresentacionDeRelacionados
 }
 
 // Un error de lectura deja el bloque en error con «Reintentar» y la pantalla sigue: es un bloque de arriba, no tumba la ficha.
-export function ErrorDeRelacionados({ alReintentar, presentacion = 'bloque' }: Props) {
+export function ErrorDeRelacionados({ alReintentar, presentacion }: Props) {
   return (
     <section aria-label="Relacionados" className="grid min-w-0 gap-2">
       {presentacion === 'linea' ? null : (

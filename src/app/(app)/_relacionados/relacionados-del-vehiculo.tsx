@@ -18,7 +18,7 @@ type Props = {
   ofrecerPapelera?: boolean
   avisos?: AvisosDelMenu
   // La ficha lo pide compacto; logística, en una línea de chips.
-  presentacion?: 'bloque' | PresentacionDeRelacionados
+  presentacion: PresentacionDeRelacionados
 }
 
 // «Relacionados» de un vehículo, leído en el servidor (la ficha y la unidad de logística), detrás de su `<Suspense>`. Un error de lectura no tumba la pantalla: el bloque dice «No pudimos cargar los
@@ -44,13 +44,13 @@ export async function RelacionadosDelVehiculoServidor({
       numeroGlobal={puede(permisos, 'leads.numero_global.ver')}
       ofrecerPapelera={ofrecerPapelera}
       {...(avisos ? { avisos } : {})}
-      {...(presentacion ? { presentacion } : {})}
+      presentacion={presentacion}
     />
   )
 }
 
 // En la ficha del vehículo: el bloque sólo con `leads.ver`, detrás de su `<Suspense>` con el esqueleto del mismo alto.
-export function RelacionadosDeLaFicha(props: Omit<Props, 'lugar'>) {
+export function RelacionadosDeLaFicha(props: Omit<Props, 'lugar' | 'presentacion'>) {
   return puede(props.permisos, 'leads.ver') ? (
     <Suspense fallback={<EsqueletoDeRelacionados presentacion="compacta" />}>
       <RelacionadosDelVehiculoServidor {...props} lugar="ficha" presentacion="compacta" />
