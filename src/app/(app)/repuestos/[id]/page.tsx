@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { connection } from 'next/server'
 import { Suspense, type ComponentProps, type ReactNode } from 'react'
+import { z } from 'zod'
 import { puede, requerirSesion } from '@/modules/equipo'
 import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import {
@@ -102,6 +103,10 @@ async function Proyecto({
   }
   // Sin la clave de un panel no se lee nada suyo: `?pestana=compras` sin `repuestos.costos.ver` deja sólo la hoja. Un enlace viejo (`?panel=compra…` o de pagos sin
   // `?pestana=`) va a la misma URL con su panel.
+  // Un id que no es guid no existe: se dice igual que uno ajeno, y nunca entra a una URL armada.
+  if (!z.guid().safeParse(id).success) {
+    return <NoDisponible />
+  }
   const disponibles = panelesDisponibles(sesion.permisos)
   const redireccion = redireccionDeEnlaceViejo(id, parametros, disponibles)
   if (redireccion !== null) redirigir(redireccion)
@@ -157,12 +162,7 @@ async function Proyecto({
                 }),
               }
         }
-        puede={{
-          mover: puede(permisos, 'repuestos.mover'),
-          cotizar: puede(permisos, 'repuestos.cotizar'),
-          registrarPago: puede(permisos, 'repuestos.costos.editar'),
-          configurar: puede(permisos, 'repuestos.configurar'),
-        }}
+        puede={puedeEnLaHoja(permisos)}
       />
       <PanelDelItem
         itemId={itemAbiertoDe(parametros)}
@@ -171,6 +171,16 @@ async function Proyecto({
       />
     </CabeceraDeProyecto>
   )
+}
+
+// Lo que la hoja necesita saber de quien mira, calculado aquí: ni las claves ni `puede()` viajan al navegador.
+function puedeEnLaHoja(permisos: Permisos) {
+  return {
+    mover: puede(permisos, 'repuestos.mover'),
+    cotizar: puede(permisos, 'repuestos.cotizar'),
+    registrarPago: puede(permisos, 'repuestos.costos.editar'),
+    configurar: puede(permisos, 'repuestos.configurar'),
+  }
 }
 
 type DatosDelPanel = {
