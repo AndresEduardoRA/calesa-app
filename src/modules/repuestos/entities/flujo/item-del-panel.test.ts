@@ -6,10 +6,12 @@ const G = (n: number) =>
 const fila = {
   id: G(1),
   descripcion: 'Faro izquierdo',
+  cantidad: 3,
+  stock_cantidad: 1,
   fase_id: G(2),
   fase_desde: '2026-11-01T10:00:00Z',
   fase: { id: G(2), nombre: 'En tránsito', color: '#0a0' },
-  proyecto: { id: G(3), numero: 7, vehiculo_id: G(4) },
+  proyecto: { id: G(3), numero: 7, vehiculo_id: G(4), cerrado_en: null },
 }
 
 describe('el ítem del panel', () => {
@@ -22,7 +24,9 @@ describe('el ítem del panel', () => {
         faseId: G(2),
         faseDesde: '2026-11-01T10:00:00Z',
         fase: { nombre: 'En tránsito', color: '#0a0' },
-        proyecto: { id: G(3), numero: 7, vehiculoId: G(4) },
+        cantidad: 3,
+        stockCantidad: 1,
+        proyecto: { id: G(3), numero: 7, vehiculoId: G(4), cerrado: false },
       },
     })
   })
@@ -37,6 +41,14 @@ describe('el ítem del panel', () => {
     expect(!malo.ok && malo.error.codigo).toBe('inesperado')
     const sinProyecto = itemDelPanelDesde({ ...fila, proyecto: 3 })
     expect(!sinProyecto.ok && sinProyecto.error.codigo).toBe('inesperado')
+  })
+
+  it('un proyecto con `cerrado_en` queda cerrado', () => {
+    const r = itemDelPanelDesde({
+      ...fila,
+      proyecto: { ...fila.proyecto, cerrado_en: '2026-11-02T10:00:00Z' },
+    })
+    expect(r.ok && r.data?.proyecto.cerrado).toBe(true)
   })
 
   it('un proyecto que la RLS no deja ver deja el ítem en nulo', () => {

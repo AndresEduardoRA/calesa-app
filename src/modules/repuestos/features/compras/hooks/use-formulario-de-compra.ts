@@ -18,6 +18,8 @@ type Args = {
   proyectoId: string
   // Nula = «Registrar compra».
   original: FilaDeCompra | null
+  // Al registrar, el ítem ya elegido; nulo, ninguno.
+  itemInicial?: string | null
   alCerrar: () => void
   // Cerrado, lo que esperaba la red no sale ni se escribe borrador.
   abierto: boolean
@@ -25,7 +27,13 @@ type Args = {
 
 // El estado del formulario de una compra (8.11-3, C11): el borrador (en `sessionStorage`, uno por proyecto y compra: son 7 campos) y el motivo junto a cada campo; el
 // envío es de `useEnvioDeCompra`. El equivalente en la moneda base nunca se calcula acá: lo pone la base al guardar.
-export function useFormularioDeCompra({ proyectoId, original, alCerrar, abierto }: Args) {
+export function useFormularioDeCompra({
+  proyectoId,
+  original,
+  itemInicial = null,
+  alCerrar,
+  abierto,
+}: Args) {
   const { locale, monedaBase, zonaHoraria } = useRegional()
   // Uno por apertura (el Drawer cambia la `key`): reintentar no duplica.
   const [intento] = useState(() => crypto.randomUUID())
@@ -35,6 +43,7 @@ export function useFormularioDeCompra({ proyectoId, original, alCerrar, abierto 
       : borradorNuevoDeCompra(
           monedaBase,
           diaEnZona(new Date().toISOString(), { zona: zonaHoraria }),
+          itemInicial ?? '',
         ),
   )
   const [valores, setValores] = useState<BorradorDeCompra>(inicial)

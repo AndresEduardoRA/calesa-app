@@ -17,6 +17,8 @@ type Props = {
   // Sin `repuestos.costos.editar` o con el proyecto cerrado, la fila no abre ni ofrece «⋯» (8.11-3, C13).
   alEditar?: ((compra: FilaDeCompra) => void) | null
   alEliminar?: ((compra: FilaDeCompra) => void) | null
+  // El nombre accesible de la lista: «Compras del proyecto» o, en el panel del ítem, «Compras del ítem».
+  etiqueta?: string
 }
 
 function accionesDe(
@@ -50,17 +52,31 @@ function accionesDe(
   return acciones
 }
 
+function TopeDeCompras() {
+  return (
+    <AvisoDeTope
+      texto={textoDelTope(TOPE_DE_COMPRAS, { sustantivo: 'compras', articulo: 'las' })}
+    />
+  )
+}
+
 // Las compras de un proyecto (8.11-2, C7), de la más reciente a la más vieja: proveedor, ítem, el monto en su moneda y, si no es la base, el
 // equivalente que guardó la base (`monto_base`: acá nunca se calcula), y la fecha. Sin suma: el resultado del proyecto es el margen, que da la base.
 // Una columna `minmax(0, 1fr)`: con el texto al 200 % nada ensancha la página. «Ver comprobante» pide la URL al tocarlo, nunca al leer la lista (8.11-3, C9).
-export function ListaDeCompras({ filas, hayMas, alEditar, alEliminar }: Props) {
+export function ListaDeCompras({
+  filas,
+  hayMas,
+  alEditar,
+  alEliminar,
+  etiqueta = 'Compras del proyecto',
+}: Props) {
   const { monedaBase, zonaHoraria } = useRegional()
   if (filas.length === 0) {
     return <EstadoVacio titulo="Todavía no hay compras en este proyecto." compacto />
   }
   return (
     <div className="grid gap-2">
-      <ul className="grid grid-cols-[minmax(0,1fr)] gap-2" aria-label="Compras del proyecto">
+      <ul className="grid grid-cols-[minmax(0,1fr)] gap-2" aria-label={etiqueta}>
         {filas.map((compra) => {
           const acciones = accionesDe(compra, { alEditar, alEliminar })
           const titulo = compra.proveedor ?? 'Sin proveedor'
@@ -120,11 +136,7 @@ export function ListaDeCompras({ filas, hayMas, alEditar, alEliminar }: Props) {
           )
         })}
       </ul>
-      {hayMas ? (
-        <AvisoDeTope
-          texto={textoDelTope(TOPE_DE_COMPRAS, { sustantivo: 'compras', articulo: 'las' })}
-        />
-      ) : null}
+      {hayMas ? <TopeDeCompras /> : null}
     </div>
   )
 }

@@ -18,6 +18,8 @@ type Props = {
   proyectoId: string
   // Nula = «Registrar compra».
   original: FilaDeCompra | null
+  // Al registrar, el ítem ya elegido (uno de `items`); nulo, ninguno.
+  itemInicial?: string | null
   // Cada apertura empieza de cero: un id de intento nuevo y los campos de lo guardado.
   apertura: number
   items: readonly ItemParaCompra[]
@@ -29,13 +31,14 @@ function Formulario({
   alCerrar,
   proyectoId,
   original,
+  itemInicial = null,
   items,
   monedas,
 }: Omit<Props, 'apertura'>) {
   const router = useRouter()
   const idFormulario = useId()
   const formulario = useRef<HTMLFormElement>(null)
-  const f = useFormularioDeCompra({ proyectoId, original, alCerrar, abierto })
+  const f = useFormularioDeCompra({ proyectoId, original, itemInicial, alCerrar, abierto })
   // Con algo escrito, la acción de un aviso que sale de la pantalla pregunta en el pie; descartar tira el borrador.
   useCambiosSinGuardar(f.hayCambios, f.descartarBorrador)
   const hayErrores = Object.keys(f.errores).length > 0

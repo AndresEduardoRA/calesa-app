@@ -4,4 +4,10 @@ export { leerMargenDelProyecto } from '../../infra/compras/margen'
 export { TOPE_DE_COMPRAS, type FilaDeCompra } from '../../entities/compras/compra'
 export type { MargenDelProyecto } from '../../entities/compras/margen'
 export { hayPagoDelCliente } from '../../infra/compras/pago-del-cliente'
-export { CLAVE_DE_COMPRA, PANEL_COMPRA } from '../../entities/compras/paneles'
+export {
+  CLAVE_DE_COMPRA,
+  CLAVE_DEL_ITEM_DE_COMPRA,
+  COMPRA_NUEVA,
+  PANEL_COMPRA,
+} from '../../entities/compras/paneles'
+export { motivoParaNoEscribirCompras } from '../../entities/compras/acciones'

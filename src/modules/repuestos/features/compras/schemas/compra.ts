@@ -35,3 +35,6 @@ const esquemaVersionDeCompra = z.object({
 
 export const esquemaEliminarCompra = esquemaVersionDeCompra
 export const esquemaRestaurarCompra = esquemaVersionDeCompra
+
+// Las compras de un ítem (el bloque del panel del ítem): sólo su id.
+export const esquemaLeerComprasDelItem = z.strictObject({ itemId: z.guid() })

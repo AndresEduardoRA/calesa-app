@@ -19,3 +19,4 @@ export {
   type VistaDeDinero,
 } from '../../entities/dinero/listas'
 export type { CategoriaDeGasto } from '../../entities/dinero/categoria'
+export { PANELES_DEL_PAGO } from '../../entities/dinero/paneles-de-pago'

@@ -8,6 +8,20 @@ export const PANEL_CONFIRMAR_PAGO = 'confirmar-pago'
 export const PANEL_ELIMINAR_PAGO = 'eliminar-pago'
 export const PANEL_ANULAR_PAGO = 'anular-pago'
 
+/** Todos los `?panel=` del hueco «Pagos»: una pantalla que lo muestra en una sección propia (los pagos de un proyecto) sabe con ellos que debe abrirla. */
+export const PANELES_DEL_PAGO = [
+  PANEL_PAGO,
+  PANEL_CONFIRMAR_PAGO,
+  PANEL_ELIMINAR_PAGO,
+  PANEL_ANULAR_PAGO,
+] as const
+
+/** Lo que se escribe en la URL para abrir «Registrar pago». */
+export const PARAMETROS_DE_REGISTRAR_PAGO = {
+  panel: PANEL_PAGO,
+  [CLAVE_DE_PAGO]: PAGO_NUEVO,
+} as const
+
 export const MENSAJE_PAGO_YA_NO_ESTA = 'Ese pago ya no está.'
 
 type PanelDePago =
