@@ -631,6 +631,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Bloque** — `<Bloque>`: sección plegable de un formulario o ficha.
 - **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`…); responde el panel de más arriba.
 - **Filtro** — `EsquemaDeFiltros`, `DefFiltro` / `<FilterShell>`: lo que acota un listado; cada uno declara los suyos y viven en la URL.
+- **Vista y opciones** — `<VistaYOpciones>`, `GrupoDeVistaYOpciones` (`src/shared/ui/vista-y-opciones`): el botón de la barra de un listado que agrupa
+  vista, alcance, ítems por página, vistas guardadas, exportar y papelera; dice lo activo («Lista · Míos · 25 por página»). Popover desde 768 px,
+  hoja inferior por debajo, sin URL.
 - **Chip** — `chipsDe()` / `<ChipsDeFiltros>`: un filtro activo a la vista, que se quita solo.
 - **Cursor** — `lib/paginacion.ts` / `?cursor=`: dónde quedó la página de un listado (keyset `creado_en, id`).
 - **Tope de lo cargado** — `TOPE_DE_LO_CARGADO` / `enElTope()` (`lib/paginacion.ts`): máximo que carga una lista con «Ver más» (500).
