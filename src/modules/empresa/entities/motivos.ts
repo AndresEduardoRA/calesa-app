@@ -1,5 +1,6 @@
 // Por qué algo de la empresa aparece deshabilitado. Lo que la persona espera poder hacer no se
 // esconde: se muestra apagado y se dice el motivo (docs/UX.md › Reglas transversales).
+import { TOPE_EN_LA_BARRA } from './tipos-cambio'
 
 export const MOTIVO_SIN_PERMISO_AJUSTES =
   'Puedes ver los ajustes de la empresa, pero no tienes permiso para cambiarlos.'
@@ -8,6 +9,11 @@ export const MOTIVO_SIN_PERMISO_TIPOS_CAMBIO =
   'Puedes ver las monedas y los tipos de cambio, pero no tienes permiso para cambiarlos.'
 
 export const MOTIVO_SIN_PERMISO_HISTORIAL = 'El historial lo ve quien gestiona los tipos de cambio.'
+
+export const MOTIVO_TOPE_EN_LA_BARRA = `Ya hay ${TOPE_EN_LA_BARRA} en la barra superior: quita uno para sumar este.`
+
+export const MOTIVO_INACTIVO_EN_LA_BARRA =
+  'Un tipo de cambio inactivo no se ve en la barra superior.'
 
 export const MOTIVO_MONEDA_BASE_CON_DATOS =
   'La moneda base no se cambia con datos cargados: los montos ya están guardados en ella.'

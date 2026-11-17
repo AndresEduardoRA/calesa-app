@@ -57,6 +57,7 @@ export function MonedasYTiposCambio(props: Props) {
       />
       <PanelTipoCambio
         tipo={tipos.find((tipo) => tipo.id === tc) ?? null}
+        tipos={tipos}
         historial={puedeGestionar ? (historial ?? []) : null}
         puedeGestionar={puedeGestionar}
         ediciones={ediciones}

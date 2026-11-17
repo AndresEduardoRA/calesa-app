@@ -32,7 +32,7 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
 - `entities/`: `ajustes.ts` (`AJUSTES_POR_DEFECTO`), `ajustes-empresa.ts` (`AjustesEmpresa` con versión; `telefonoCc` completa teléfonos de lead sin
   «+» ni «00»), `ajustes-de-cotizacion.ts` (`VIGENCIA_MINIMA_DIAS`/`VIGENCIA_MAXIMA_DIAS`, 1 a 365 como la base), `marca.ts`
   (`validarColorDeMarca()`: contraste AA con motivo y tono cercano; reglas del SVG), `regional.ts` (contra `Intl`), `tipos-cambio.ts`
-  (`CAMBIOS_A_LA_VISTA` = 30), `integraciones.ts` (`CLAVES_INTEGRACION`), `iconos.ts`, `uso-apibara.ts`, `motivos.ts`, `repositorios.ts`.
+  (`CAMBIOS_A_LA_VISTA` = 30; «En la barra»: `TOPE_EN_LA_BARRA` = 3, espejo de la RPC, `tiposEnLaBarra()` y `motivoParaNoMarcar()`), `integraciones.ts` (`CLAVES_INTEGRACION`), `iconos.ts`, `uso-apibara.ts`, `motivos.ts`, `repositorios.ts`.
 - `infra/queries/` (`server-only`); `infra/{empresa,tipos-cambio,integraciones}.ts` escriben por RPC; `infra/{logo,iconos}.client.ts` (Storage);
   `infra/apibara.client.ts` (`consultarUso()` por `invocarFuncion()`). `infra/revalidacion-prueba.ts`, **excepción del cliente admin**:
   `probarRevalidacion()` comprueba el permiso y valida la dirección guardada antes de crear el admin, que sólo llama
@@ -75,6 +75,9 @@ quien lo hizo, nunca el correo.
   se activa sin clave guardada (RPC). «Probar» de la web pública manda un cuerpo fijo a la dirección **guardada**, no sigue redirecciones y devuelve
   sólo el código; la app rechaza redes internas y, con la base en la nube, el loopback (`esDireccionDeRevalidacion()`).
 - Los tipos de cambio pasan por `<Monto>` (Modo Live también en la barra superior).
+- «En la barra» se elige en el panel de cada tipo de cambio, en el mismo «Guardar» que el valor (una versión por fila): sumarlo pide activo y
+  lugar (hasta 3 activos marcados; la base lo repite tras su candado), quitarlo siempre se puede y desactivar no lo quita. La barra muestra
+  `tiposEnLaBarra()`: los activos marcados (un inactivo marcado no se ve) y, sin ninguno, el por defecto.
 - `registro_abierto = false` lo aplica la base (trigger en `auth.users`); `registroDisponible()` lo repite: registro abierto **o** todavía no hay
   nadie (la primera cuenta nace siempre, y dueña).
 

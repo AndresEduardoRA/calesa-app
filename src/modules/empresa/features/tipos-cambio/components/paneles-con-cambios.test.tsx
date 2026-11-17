@@ -62,6 +62,7 @@ describe('PanelTipoCambio', () => {
     render(
       <PanelTipoCambio
         tipo={oficial}
+        tipos={[oficial]}
         historial={[]}
         puedeGestionar={puedeGestionar}
         ediciones={ediciones}

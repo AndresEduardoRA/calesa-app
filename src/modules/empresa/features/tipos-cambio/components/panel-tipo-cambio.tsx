@@ -20,10 +20,13 @@ import {
 } from '../../../entities/tipos-cambio'
 import type { EdicionesDeTiposCambio } from '../hooks/use-tipos-cambio'
 import { Historial } from './historial'
+import { InterruptorEnLaBarra } from './interruptor-en-la-barra'
 
 type Props = {
   // El tipo de cambio de `?tc=`, o null con el panel cerrado.
   tipo: TipoCambio | null
+  // Todos, también los inactivos: el tope de la barra y el por defecto a la vista.
+  tipos: readonly TipoCambio[]
   // Su historial, ya leído en el servidor; null si quien mira no puede verlo.
   historial: readonly CambioDeValor[] | null
   puedeGestionar: boolean
@@ -38,6 +41,7 @@ type PropsDelFormulario = Omit<Props, 'tipo' | 'historial' | 'alCerrar'> & {
 
 type PropsDeCampos = {
   tipo: TipoCambio
+  tipos: readonly TipoCambio[]
   puedeGestionar: boolean
   // Sin permiso, o guardando: los campos se apagan hasta que llega lo guardado.
   bloqueado: boolean
@@ -48,11 +52,14 @@ type PropsDeCampos = {
   alCambiarActivo: (activo: boolean) => void
   esDefault: boolean
   alCambiarDefault: (esDefault: boolean) => void
+  enLaBarra: boolean
+  alCambiarEnLaBarra: (enLaBarra: boolean) => void
 }
 
 function Campos(props: PropsDeCampos) {
-  const { tipo, puedeGestionar, bloqueado, errores, valorInvalido } = props
-  const { activo, alCambiarActivo, esDefault, alCambiarDefault } = props
+  const { tipo, tipos, puedeGestionar, bloqueado, errores, valorInvalido } = props
+  const { activo, alCambiarActivo, esDefault, alCambiarDefault, enLaBarra, alCambiarEnLaBarra } =
+    props
   const { locale } = useRegional()
   return (
     <>
@@ -97,14 +104,23 @@ function Campos(props: PropsDeCampos) {
         alCambiar={alCambiarActivo}
         deshabilitado={bloqueado || esDefault}
       />
+      <InterruptorEnLaBarra
+        tipo={tipo}
+        tipos={tipos}
+        activo={activo}
+        valor={enLaBarra}
+        alCambiar={alCambiarEnLaBarra}
+        bloqueado={bloqueado}
+      />
     </>
   )
 }
 
-function Formulario({ tipo, puedeGestionar, ediciones, idFormulario }: PropsDelFormulario) {
+function Formulario({ tipo, tipos, puedeGestionar, ediciones, idFormulario }: PropsDelFormulario) {
   const { formulario, hayCambios } = useHayCambiosEnFormulario(['nombre', 'valor'])
   const [activo, setActivo] = useState(tipo.activo)
   const [esDefault, setEsDefault] = useState(tipo.esDefault)
+  const [enLaBarra, setEnLaBarra] = useState(tipo.enLaBarra)
   const [valorInvalido, setValorInvalido] = useState<string | null>(null)
   const { locale } = useRegional()
   const errores = ediciones.errores.guardar
@@ -113,8 +129,19 @@ function Formulario({ tipo, puedeGestionar, ediciones, idFormulario }: PropsDelF
   const bloqueado = !puedeGestionar || ediciones.enCurso
   // Un aviso que sale de la pantalla («Abrir ficha») con algo escrito pregunta en el pie; sin permiso no hay nada que escribir.
   useCambiosSinGuardar(
-    puedeGestionar && (hayCambios || activo !== tipo.activo || esDefault !== tipo.esDefault),
+    puedeGestionar &&
+      (hayCambios ||
+        activo !== tipo.activo ||
+        esDefault !== tipo.esDefault ||
+        enLaBarra !== tipo.enLaBarra),
   )
+  // Un inactivo no se suma a la barra: apagar «Activo» suelta la marca que todavía no estaba guardada.
+  function cambiarActivo(nuevo: boolean) {
+    setActivo(nuevo)
+    if (!nuevo && !tipo.enLaBarra) {
+      setEnLaBarra(false)
+    }
+  }
 
   async function guardar(elemento: HTMLFormElement) {
     const { nombre, valor: tipeado } = valoresDe(elemento, ['nombre', 'valor'])
@@ -134,6 +161,7 @@ function Formulario({ tipo, puedeGestionar, ediciones, idFormulario }: PropsDelF
         valor: valor === tipo.valor ? undefined : valor,
         activo: activo === tipo.activo ? undefined : activo,
         esDefault: esDefault && !tipo.esDefault ? true : undefined,
+        enLaBarra: enLaBarra === tipo.enLaBarra ? undefined : enLaBarra,
       },
       nombre.trim() || tipo.nombre,
     )
@@ -157,14 +185,17 @@ function Formulario({ tipo, puedeGestionar, ediciones, idFormulario }: PropsDelF
         {puedeGestionar ? null : <Aviso>{MOTIVO_SIN_PERMISO_TIPOS_CAMBIO}</Aviso>}
         <Campos
           tipo={tipo}
+          tipos={tipos}
           puedeGestionar={puedeGestionar}
           bloqueado={bloqueado}
           errores={errores}
           valorInvalido={valorInvalido}
           activo={activo}
-          alCambiarActivo={setActivo}
+          alCambiarActivo={cambiarActivo}
           esDefault={esDefault}
           alCambiarDefault={setEsDefault}
+          enLaBarra={enLaBarra}
+          alCambiarEnLaBarra={setEnLaBarra}
         />
       </fieldset>
     </form>
@@ -172,7 +203,8 @@ function Formulario({ tipo, puedeGestionar, ediciones, idFormulario }: PropsDelF
 }
 
 // El panel de un tipo de cambio: cambiar su valor (lo de todos los días) y ver cómo fue cambiando.
-export function PanelTipoCambio({ tipo, historial, puedeGestionar, ediciones, alCerrar }: Props) {
+export function PanelTipoCambio(props: Props) {
+  const { tipo, tipos, historial, puedeGestionar, ediciones, alCerrar } = props
   const aLaVista = useUltimo(tipo)
   const idFormulario = useId()
 
@@ -201,6 +233,7 @@ export function PanelTipoCambio({ tipo, historial, puedeGestionar, ediciones, al
             // Otro tipo de cambio, u otra versión del mismo: el formulario arranca de lo guardado.
             key={`${aLaVista.id}-${aLaVista.actualizadoEn}`}
             tipo={aLaVista}
+            tipos={tipos}
             puedeGestionar={puedeGestionar}
             ediciones={ediciones}
             idFormulario={idFormulario}

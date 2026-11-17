@@ -42,6 +42,7 @@ export type RepositorioTiposCambio = {
     valor?: number
     activo?: boolean
     esDefault?: boolean
+    enLaBarra?: boolean
   }) => Promise<Resultado<Editado>>
   crearMoneda: (nueva: {
     codigo: string
