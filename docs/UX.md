@@ -157,7 +157,7 @@ Estados propios:
 ### Flujo 3 — Mover de fase
 
 1. `/logistica` abre la **bandeja del día** (lo que le toca hoy a quien mira, por grupos con su acción) y al lado la **cadena** como gráfica: una fase por punto con cuántos vehículos tiene y cuántos están demorados o trabados. Clic en una fase → su lista (tabla paginada, filtros en URL).
-2. Clic en un vehículo (de la bandeja, de la lista o de «dónde está») → su página `/logistica/vehiculo/<id>` con «Qué falta para pasar a …» abierto (documentos aprobados/faltantes, datos, esperas de repuestos, en vivo).
+2. Clic en un vehículo (de la bandeja, de la lista o de «dónde está») → su página `/logistica/vehiculo/<id>` con «Qué falta para pasar a …» abierto (documentos aprobados/faltantes, datos, esperas de repuestos, en vivo). Cada falta trae lo que la destraba: hacerlo ahí («Subir», «Revisar», «Completar», «Registrar»), ir a donde se hace o «Pedirlo» a quien puede.
 3. Subir documento desde el panel (arrastrar o cámara); se sube al confirmar, nunca antes; queda «subido» hasta que alguien con permiso lo
    aprueba.
 4. «Mover a <fase>» pide nota interna (obligatoria si la fase lo exige) → RPC con `fase_esperada`; conflicto: «Rosa Mamani la movió a
@@ -714,7 +714,20 @@ de un drawer (`/logistica/gastos?vehiculo=<id>`, el ítem de repuesto `?item=`),
   vehículo lleva «Ver en logística» (antes de «Editar», con `logistica.ver`) a `/logistica/vehiculo/<id>`.
 - **«Qué falta» y mover** (abierto al inicio, el primero): una tarjeta por destino (las salidas de la fase actual; sin fase, las iniciales)
   con cada requisito y su estado **dicho con texto** («Cumplido» / «Falta»), «Obligatorio» / «Informativo», su detalle («1 de 2
-  aprobados») y, en una falta obligatoria, el enlace al hueco que la resuelve. «Elegir» abre en el bloque la nota interna (obligatoria si
+  aprobados») y, en cada falta (obligatoria o informativa), **lo que la destraba**: un botón chico con el verbo («Subir», «Revisar», «Completar»,
+  «Registrar», «Ir a Documentos/Transporte/Aduana/Pagos/Repuestos/Cotizaciones», «Ir al vehículo», «Ir al proyecto», «Vincular», «Pedirlo»; el nombre accesible
+  lleva el objeto: «Subir «BL»») y, si hay más, hasta dos en el «⋯» del requisito («Más acciones de «BL»»). Mide lo que medía el enlace de antes (44 px en
+  el celular): la tarjeta no crece. «Subir» abre «Subir documentos» con el tipo elegido (drawer en escritorio, la bandeja del bloque en el celular); con uno
+  ya subido, «Revisar» lleva a Documentos con el grupo del tipo a la vista (no se aprueba sin mirar el archivo); «Completar» lleva el foco al campo del
+  transporte; «Registrar» abre «Registrar pago» vacío. Quien no puede: «Pedirlo» (con `agenda.tareas.asignar`) o «Pídeselo a quien administra los roles.»
+  (en la línea sin otra acción; como nota del «⋯» si hay una). Lo que nunca podrá no aparece. Regla apagada (quien tiene la clave del hueco y el hueco no
+  se dibuja): ninguna acción. **En un drawer** (gastos, ítem), lo que sacaría de la pantalla dice «Abrir la unidad». **Sin red**: todo apagado y
+  «Sin conexión: las acciones vuelven con la red.» en la línea viva. La franja «fuera de regla» sigue con su enlace. **«Pedírselo a alguien»**
+  (`?pedir=requisito&falta=<id>`, un modal): la descripción es el título de la tarea («Falta: BL aprobado para pasar a «Embarcado»»); cargando, tres
+  renglones; quién puede como radios (una sola persona, ya elegida; con más de 20, «Busca por nombre» desde 3 letras); nadie: «Nadie que pueda recibir
+  tareas tiene permiso para <verbo> en este origen.» y a quién pedírselo; error con «Reintentar»; sin permiso de dar tareas o sin acceso, lo dice.
+  «Pedírselo a <Nombre>» («Pidiendo…», el modal no se cierra); si esa persona ya no recibe, «Esa persona ya no puede recibir tareas. Elige otra.» y la
+  lista se relee; al lograrlo se cierra con «Se lo pediste a <Nombre>: tiene una tarea en su agenda.». Ya no falta al abrir: «Eso ya no falta.». «Elegir» abre en el bloque la nota interna (obligatoria si
   la fase o la salida la piden) y el botón con la acción de la salida; apagado, su motivo va escrito debajo («Falta: BL aprobado.», rol,
   nota, permiso del origen). `Ctrl/Cmd+Enter` envía. Al lograrlo la tarjeta cambia de columna y el foco vuelve al título del panel.
   **«La ganamos»** (`?ganada=si`, desde la ficha o desde la línea «La subasta terminó y nadie dijo si la ganamos.» · «La ganamos» de este

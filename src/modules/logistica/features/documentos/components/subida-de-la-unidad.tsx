@@ -3,9 +3,12 @@
 import { useId } from 'react'
 import { Button } from '@/shared/ui/button'
 import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
+import {
+  CLAVE_DE_SUBIR,
+  CLAVE_DEL_TIPO_A_SUBIR,
+} from '../../../entities/nucleo/paneles-de-la-unidad'
 import type { Unidad } from '../../../entities/nucleo/unidad'
 import { useEnZonas } from '../../nucleo/disposicion'
-import { CLAVE_DE_SUBIR } from '../../nucleo/hooks/use-pestana-de-la-zona'
 import type { DatoDeDocumentos } from '../hooks/use-documentos-de-la-unidad'
 import { usePuedeSubirALaUnidad } from '../hooks/use-puede-subir-a-la-unidad'
 import { DrawerParaSubirDiferido } from './diferidos'
@@ -23,7 +26,8 @@ export function SubidaDeLaUnidad({ unidad, dato }: { unidad: Unidad; dato: DatoD
 
 function SubidaEnUnDrawer({ unidad, dato }: { unidad: Unidad; dato: DatoDeDocumentos }) {
   const puedeSubir = usePuedeSubirALaUnidad(unidad)
-  const subir = usePanelPorUrl('documentos', [], { clave: CLAVE_DE_SUBIR })
+  // `&tipo_documento=` (lo pone «Subir» de «Qué falta») entra con el tipo elegido; cerrar limpia las dos claves.
+  const subir = usePanelPorUrl('documentos', [CLAVE_DEL_TIPO_A_SUBIR], { clave: CLAVE_DE_SUBIR })
   const idDelMotivo = useId()
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

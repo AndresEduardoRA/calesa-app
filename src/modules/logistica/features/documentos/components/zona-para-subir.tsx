@@ -20,6 +20,8 @@ type Props = {
   tipos: readonly TipoDeDocumento[]
   // `null` mientras se leen los permisos; `false` sin `logistica.documentos.subir` en el origen.
   puedeSubir: boolean | null
+  // El tipo con que arranca la bandeja vacía (`?tipo_documento=`); nunca pisa lo elegido con archivos ya puestos.
+  tipoPedido?: string | null
   // Dentro de un drawer que ya tiene el título, el `h4` sobra.
   conTitulo?: boolean
   // Se llama al terminar una subida con todo registrado y sin fallos: el drawer se cierra solo. Con fallos no se llama: queda abierto con «Reintentar los N que faltan».
@@ -51,10 +53,11 @@ export function ZonaParaSubir({
   titulo,
   tipos,
   puedeSubir,
+  tipoPedido = null,
   conTitulo = true,
   alTerminar,
 }: Props) {
-  const b = useBandeja(tipos)
+  const b = useBandeja(tipos, tipoPedido)
   const enLinea = useEnLinea()
   const s = useSubirLaBandeja({
     destino,

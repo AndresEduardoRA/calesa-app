@@ -522,6 +522,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Lista de la fase** — `/logistica/fase/[fase]`: los vehículos de una fase (o «Sin fase»), de a 50 por cursor, con filtros en la URL y la selección del lote (hasta 200).
 - **Llegada esperada** — un transporte de vehículo sin arribo cargado cuya ETA es de hoy o anterior y cuyo vehículo sigue en una fase que no es final; de la más reciente a la más vieja.
 - **Mover** — `cambiar_fase()` / `previsualizar_cambio_fase()`: cambiar de fase, con vista previa de qué falta.
+- **Acción del requisito** — `AccionesDelRequisito` / `resolverAccionesDeQueFalta()`, `leerQueFalta`: lo que destraba un requisito que falta en
+  «Qué falta» (una principal y hasta dos más en su «⋯»): hacerlo ahí mismo («Subir», «Revisar», «Completar», «Registrar»), ir a donde se hace o
+  «Pedirlo». La resuelve el servidor con los permisos de quien mira; el navegador sólo la filtra (`accionesADibujar()`).
+- **Pedirlo** — `pedirLoQueFalta` / `?pedir=requisito&falta=<id>`: darle una tarea de agenda, vinculada al vehículo y sin fecha, a quien tiene el
+  permiso que falta en el origen de la unidad y la ve (`agenda_quienes_reciben` con `p_permiso`). Sin `agenda.tareas.asignar`, o en un ítem:
+  «Pídeselo a quien administra los roles.».
 - **Alerta por demora** — `fases.demora_dias` / `alertas_demora()`: aviso cuando una unidad lleva más días de lo esperado en una fase. Job
   `alertas-demora` cada hora; se reabre pasado `fases.alerta_cada_horas` (nulo = 72 h) y mover la cierra.
 - **Trabado** — `logistica_bandeja().trabados`, el grupo «Trabados» y el número de la gráfica de la cadena: unidad demorada a la que le falta un requisito bloqueante de su fase siguiente (la

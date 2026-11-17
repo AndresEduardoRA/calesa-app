@@ -13,6 +13,13 @@ export const TOPE_DE_PERSONAS = 20
 
 export type PersonasEncontradas = { personas: PersonaElegida[]; hayMas: boolean }
 
+// Lo que pide otro módulo para saber a quién darle una tarea sobre una unidad: quienes tienen `permiso` en su origen y la ven. El texto es opcional.
+export type PedidoDeQuienesPueden = { texto?: string; permiso: string; vehiculoId: string }
+
+export type LectorDeQuienesPueden = (
+  pedido: PedidoDeQuienesPueden,
+) => Promise<Resultado<PersonasEncontradas>>
+
 // El texto que se busca, recortado; nulo si es demasiado corto para pedirlo.
 export function textoDeBusqueda(texto: string): string | null {
   const recortado = texto.trim()

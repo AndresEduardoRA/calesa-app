@@ -8910,6 +8910,10 @@ export type Database = {
       _push_endpoint_valido: { Args: { p_endpoint: string }; Returns: boolean }
       _push_host_permitido: { Args: { p_host: string }; Returns: boolean }
       _push_tope_por_persona: { Args: Record<PropertyKey, never>; Returns: number }
+      _quien_puede_en_la_unidad: {
+        Args: { p_clave: string; p_usuario: string; p_vehiculo: string }
+        Returns: boolean
+      }
       _recordatorio_conflicto: { Args: { p_cuando: string }; Returns: undefined }
       _recordatorio_cuando: { Args: { p_hint: string; p_valor: string }; Returns: string }
       _recordatorio_json: {
@@ -9692,7 +9696,10 @@ export type Database = {
         Returns: Json
       }
       actividad_purgar: { Args: Record<PropertyKey, never>; Returns: number }
-      agenda_quienes_reciben: { Args: { p_conversacion?: string; p_texto: string }; Returns: Json }
+      agenda_quienes_reciben: {
+        Args: { p_conversacion?: string; p_permiso?: string; p_texto: string; p_vehiculo?: string }
+        Returns: Json
+      }
       agenda_rango: {
         Args: { p_de_todos?: boolean; p_desde: string; p_hasta: string }
         Returns: Json

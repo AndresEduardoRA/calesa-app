@@ -402,6 +402,20 @@ las trampas, en `docs/LECCIONES.md`.
 - **Las lecturas de la cadena son `security definer`.** Las policies de `transportes`/`documentos` preguntan por fila; la definer resuelve el alcance una vez por origen (el menor de `logistica.ver` y `vehiculos.ver`).
 - **Inexistente, en papelera o sin acceso: un solo texto y 42501 hint `acceso`.** El nombre de quien movió (PT409) sólo llega a quien pasó el acceso; sin acceso a la cadena, 42501, no cadena vacía.
 - **Mover.** `cambiar_fase` toma la unidad `for no key update`; la esperada nula vale sólo para unidad sin fase. El lote no mezcla fases y mueve «los N que pueden»; sin actualización optimista.
+- **Las acciones de «Qué falta» se resuelven en el servidor**, en la action que envuelve la lectura de `flujos` (`leerQueFalta`): los permisos y la regla no
+  viajan al navegador y no hay lectura nueva; el navegador sólo filtra lo que sabe el DOM (qué huecos hay, página o drawer, red). Descartado: resolver en el
+  navegador con `mis_permisos` (pagaría JS y permisos) y pasar capacidades por un contexto desde la página (la regla correría en el navegador).
+- **«Revisar» antes que «Subir»:** `evaluar_requisitos` cuenta en la misma consulta los subidos que contarían si se aprobaran (`por_revisar`); `cumplido`
+  sigue siendo de los aprobados. Sin eso, quien sube y aprueba vería «Subir» otra vez justo después de subir.
+- **«Pedirlo» es una tarea de agenda sin fecha ni descripción**, vinculada al vehículo, sin un tipo de aviso nuevo (`tarea_asignada` ya avisa). La lista
+  es de quien tiene la clave en el origen de la unidad **y la ve** (el espejo de `alertas_demora`), sin quien pide. Un ítem no ofrece «Pedirlo» (una tarea
+  no se vincula a un ítem). Lo que falta de un pago se pide a quien lo confirma (`logistica.pagos.confirmar`): lo que falta es que esté confirmado.
+- **«Pedirlo» acota en la base la clave por la que se busca** (`agenda_quienes_reciben` sólo acepta las de `CLAVES_QUE_SE_PIDEN`): si no, quien da tareas
+  podría averiguar quién tiene cualquier permiso en un origen. La tarea en sí es la de siempre (`tarea_crear`): la base exige que el responsable reciba
+  tareas, no que tenga la clave ni que vea el vehículo, igual que una tarea dada desde la agenda con su vínculo. El cliente sin vincular se pide a quien
+  edita vehículos (la clave del dato), aunque vincular pida también `leads.editar`.
+- **En un drawer, «ir a» lleva a la página de la unidad** («Abrir la unidad»), salvo en el ítem, cuyos destinos ya son su vehículo o su proyecto. La franja
+  «fuera de regla» no lleva acciones nuevas: no es una tarjeta de destino. Las faltas informativas también llevan acción. Las acciones sólo se apagan sin red.
 - **«Qué falta» sin realtime.** Se relee al volver el foco (≥ 5 s) y con `logistica:unidad-cambio`; destinos desde `fases_transiciones`, tope 12. Un fallo al leer el flujo apaga sólo los huecos con regla.
 - **Notas sin «Borrar».** Corregir sólo la propia, sin cambio de fase y sin versión (gana la última).
 - **El ítem de repuesto entra al motor como `UnidadAbierta`**, sin volver nulo `Unidad.origenId`: el camino del vehículo no cambia.
