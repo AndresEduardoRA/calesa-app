@@ -9702,6 +9702,16 @@ export type Database = {
         Returns: Json
       }
       actividad_purgar: { Args: Record<PropertyKey, never>; Returns: number }
+      agenda_pendientes: {
+        Args: {
+          p_despues_en?: string
+          p_despues_id?: string
+          p_grupo: string
+          p_hasta?: string
+          p_tamano?: number
+        }
+        Returns: Json
+      }
       agenda_quienes_reciben: {
         Args: { p_conversacion?: string; p_permiso?: string; p_texto: string; p_vehiculo?: string }
         Returns: Json

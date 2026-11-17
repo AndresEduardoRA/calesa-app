@@ -1,13 +1,13 @@
-// «Tareas sin fecha» (7.07-3): lo que devuelve `agenda_tareas_sin_fecha` (mis tareas vivas sin vencimiento, pendientes y hechas, la más nueva primero)
-// y el cursor de «Ver más». Puro: la respuesta de la RPC es un `jsonb` sin tipo, así que se **parsea** (Zod en todo límite).
+// El grupo «Sin fecha» de los pendientes: lo que devuelve `agenda_tareas_sin_fecha` (mis tareas vivas, pendientes y sin vencimiento, la más nueva
+// primero) y el cursor de «Ver más». Puro: la respuesta de la RPC es un `jsonb` sin tipo, así que se **parsea** (Zod en todo límite).
 import { z } from 'zod'
 import type { Resultado } from '@/shared/lib/errores'
-import { ESTADO_DE_TAREA_HECHA } from './agenda'
 
 export type TareaSinFecha = {
   id: string
   titulo: string
-  hecha: boolean
+  // La versión: «Completar» la manda (PT409 si otro la cambió).
+  actualizadoEn: string
   // Tal como vino de la base (con su precisión): el cursor lo devuelve intacto.
   creadoEn: string
   mia: boolean
@@ -30,6 +30,7 @@ const esquema = z.object({
       titulo: z.string(),
       estado: z.string(),
       creado_en: z.iso.datetime({ offset: true }),
+      actualizado_en: z.iso.datetime({ offset: true }),
       mia: z.boolean(),
     }),
   ),
@@ -46,7 +47,7 @@ export function paginaDeSinFecha(datos: unknown): PaginaDeSinFecha | null {
     tareas: leido.data.tareas.map((t) => ({
       id: t.id,
       titulo: t.titulo,
-      hecha: t.estado === ESTADO_DE_TAREA_HECHA,
+      actualizadoEn: t.actualizado_en,
       creadoEn: t.creado_en,
       mia: t.mia,
     })),

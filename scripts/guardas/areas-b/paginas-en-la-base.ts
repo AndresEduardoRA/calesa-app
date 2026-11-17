@@ -1,4 +1,4 @@
-// Parte del registro de RPC con tamaño de página: «Tareas sin fecha» de la agenda (7.07-3), las secciones del buscador (7.12-2) los grupos de transporte (6.08-3) y el tablero de la cola web (8.04-2). La guarda
+// Parte del registro de RPC con tamaño de página: los pendientes de la agenda («Sin fecha», vencidas y recordatorios), las secciones del buscador (7.12-2) los grupos de transporte (6.08-3) y el tablero de la cola web (8.04-2). La guarda
 // (`paginas-en-la-base.ts`) suma esta parte a `RPC_PAGINADAS` con `import.meta.glob('./areas-*/paginas-en-la-base.ts')` (`registros-de-carriles.ts`).
 import { CANDIDATOS_PARA_ELEGIR, POR_SECCION } from '../../../src/modules/buscador/entities/ranking'
 import {
@@ -14,7 +14,15 @@ export const REGISTRO: readonly RpcPaginada[] = [
     rpc: 'agenda_tareas_sin_fecha',
     parametro: 'p_tamano',
     pideElCodigo: TAMANO_DE_VER_MAS,
-    lista: 'tareas sin fecha de la agenda, «Ver más»',
+    lista: 'grupo «Sin fecha» de los pendientes de la agenda, «Ver más»',
+  },
+  // De a `TAMANO_DE_VER_MAS` por grupo («vencidas» por `(vence_en, id)`, «recordatorios» por `(recordar_en, id)`), «Ver más» hasta
+  // `TOPE_DE_LO_CARGADO`; la base acota con `_acotar_pagina(…, 20, 50)`.
+  {
+    rpc: 'agenda_pendientes',
+    parametro: 'p_tamano',
+    pideElCodigo: TAMANO_DE_VER_MAS,
+    lista: 'pendientes de la agenda (vencidas y recordatorios), «Ver más»',
   },
   // `_acotar_pagina(p_tamano, 5, 20)` en las tres: el defecto es `POR_SECCION` y el máximo deja a 7.10 pedir más sin migración.
   {

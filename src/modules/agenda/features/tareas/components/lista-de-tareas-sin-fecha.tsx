@@ -47,14 +47,7 @@ export function ListaDeTareasSinFecha({ base }: Props) {
               href={enlaceDePanel(base, 'tarea', tarea.id) as Route}
               className="flex min-h-11 flex-wrap items-center gap-x-2 rounded-md px-2 py-1 hover:bg-(--color-paper-dim) md:min-h-9"
             >
-              <span
-                className={`min-w-0 break-words ${tarea.hecha ? 'text-(--color-ink-soft) line-through' : ''}`}
-              >
-                {tarea.titulo}
-              </span>
-              <span className="text-(length:--text-sm) text-(--color-ink-soft)">
-                {tarea.hecha ? '· Hecha' : '· Pendiente'}
-              </span>
+              <span className="min-w-0 break-words">{tarea.titulo}</span>
             </Link>
           </li>
         ))}
