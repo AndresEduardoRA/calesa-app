@@ -11,11 +11,8 @@ import {
   puedeDarTareaAOtro,
   rangoDe,
 } from '@/modules/agenda'
-import {
-  CalendarioDeAgenda,
-  EsqueletoDePendientes,
-  PanelesDeAgenda,
-} from '@/modules/agenda/pantallas/agenda'
+import { CalendarioDeAgenda, PanelesDeAgenda } from '@/modules/agenda/pantallas/agenda'
+import { EsqueletoDePendientes } from '@/modules/agenda/pantallas/agenda-esqueletos'
 import { leerAjustes } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
 import { MarcasDeVistoDeLaPagina } from '@/modules/equipo/pantallas/marcas-de-visto'
