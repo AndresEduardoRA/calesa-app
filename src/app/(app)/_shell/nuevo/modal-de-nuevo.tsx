@@ -5,7 +5,12 @@ import { ElegirLead } from '@/modules/buscador/shell.client'
 import { rutaDeAccionSobreUnLead } from '@/modules/leads/shell.client'
 import { Button } from '@/shared/ui/button'
 import { Modal } from '@/shared/ui/modal'
-import { CATALOGO_DE_NUEVO, type ClaveDeNuevo, type DestinoDeNuevo } from './catalogo'
+import {
+  CATALOGO_DE_NUEVO,
+  type ClaveDeNuevo,
+  type DestinoDeNuevo,
+  type GrupoDeNuevo,
+} from './catalogo'
 import { ListaDeOpciones } from './lista-de-opciones'
 
 type AccionSobreUnLead = Extract<DestinoDeNuevo, { tipo: 'elegir-lead' }>['accion']
@@ -13,7 +18,10 @@ type AccionSobreUnLead = Extract<DestinoDeNuevo, { tipo: 'elegir-lead' }>['accio
 export type PropsDelModalDeNuevo = {
   abierto: boolean
   alCerrar: () => void
+  // Ya filtradas por grupo (`delGrupo`).
   opciones: readonly ClaveDeNuevo[]
+  // `agenda`: lo abrió «Nuevo» de la agenda (sólo lo que se agenda).
+  grupo: GrupoDeNuevo
   // Elegir una opción que no necesita más datos: quien lo monta cierra, abre el drawer o navega.
   alElegir: (clave: ClaveDeNuevo) => void
   alAdelantar: (clave: ClaveDeNuevo) => void
@@ -41,6 +49,7 @@ export function ModalDeNuevo({
   abierto,
   alCerrar,
   opciones,
+  grupo,
   alElegir,
   alAdelantar,
   recienAbierto,
@@ -55,7 +64,10 @@ export function ModalDeNuevo({
       abierto={abierto}
       alCerrar={alCerrar}
       titulo={textos?.titulo ?? 'Nuevo'}
-      descripcion={textos?.descripcion ?? '¿Qué quieres crear?'}
+      descripcion={
+        textos?.descripcion ??
+        (grupo === 'agenda' ? '¿Qué quieres agendar?' : '¿Qué quieres crear?')
+      }
       focoInicial={paso ? undefined : primero}
       sinCierreAfuera={recienAbierto}
       alTerminarDeCerrar={() => {
