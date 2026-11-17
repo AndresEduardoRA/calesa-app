@@ -11,3 +11,13 @@ export const ProveedorDeZonas = ContextoDeZonas.Provider
 export function useEnZonas(): boolean {
   return use(ContextoDeZonas)
 }
+
+// ¿Los huecos están en la página de la unidad (en zonas o en bloques) o en un drawer (gastos, el ítem de repuestos)? «Qué falta» lo pregunta: en un drawer, lo
+// que sacaría de la pantalla lleva a la página de la unidad. Lo da `DisposicionDeLaPagina`; fuera de él vale `false`.
+const ContextoDeLaPagina = createContext(false)
+
+export const ProveedorDeLaPagina = ContextoDeLaPagina.Provider
+
+export function useEnLaPagina(): boolean {
+  return use(ContextoDeLaPagina)
+}

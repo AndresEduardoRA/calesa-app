@@ -59,7 +59,7 @@ function ajustar(a: AccionDeRequisito, lugar: LugarDeLasAcciones): AccionADibuja
       tipo: 'ir',
       ruta: rutaDeLaUnidad(lugar.unidad.id),
       etiqueta: ABRIR_LA_UNIDAD,
-      nombre: `${ABRIR_LA_UNIDAD} por «${a.nombre}»`,
+      nombre: `${ABRIR_LA_UNIDAD}: ${a.nombre}`,
     }
   }
   return a

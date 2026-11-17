@@ -1,9 +1,15 @@
 'use client'
 
-import type { ParaMover } from '@/modules/flujos/client'
 import { estadoDelModoGanada, vistaDelHueco } from '../../../entities/mover/ganada'
-import { HAY_MAS_DESTINOS, SIN_DESTINOS, SIN_FASE } from '../../../entities/mover/textos'
+import {
+  HAY_MAS_DESTINOS,
+  SIN_CONEXION_EN_QUE_FALTA,
+  SIN_DESTINOS,
+  SIN_FASE,
+} from '../../../entities/mover/textos'
 import type { UnidadAbierta } from '../../../entities/nucleo/unidad'
+import type { QueFalta } from '../actions/leer-que-falta'
+import { useAccionesDeQueFalta } from '../hooks/use-acciones-de-que-falta'
 import { conAbiertoPorDefecto, type BorradorDeMover } from '../hooks/use-borrador-de-mover'
 import type { ModoGanada } from '../hooks/use-modo-ganada'
 import { DestinoDeMover } from './destino-de-mover'
@@ -12,7 +18,7 @@ import { LineaDeGanada } from './linea-de-ganada'
 
 type Props = {
   unidad: UnidadAbierta
-  dato: ParaMover
+  dato: QueFalta
   actualizando: boolean
   releer: () => void
   borrador: BorradorDeMover
@@ -52,10 +58,15 @@ function armarLaLista({
 export function CuerpoDeQueFalta(props: Props) {
   const { unidad, dato, actualizando, releer, modoGanada } = props
   const { modo, vista, borrador, ofrecer } = armarLaLista(props)
+  const acciones = useAccionesDeQueFalta(unidad, dato.acciones)
   return (
     <div className="grid gap-3" data-hueco="que-falta" data-estado="listo">
-      <p aria-live="polite" className="min-h-4 text-(length:--text-sm) text-(--color-ink-faint)">
-        {actualizando ? 'Actualizando…' : ''}
+      <p
+        id={acciones.idSinConexion}
+        aria-live="polite"
+        className="min-h-4 text-(length:--text-sm) text-(--color-ink-faint)"
+      >
+        {acciones.enLinea ? (actualizando ? 'Actualizando…' : '') : SIN_CONEXION_EN_QUE_FALTA}
       </p>
       {dato.faseActualId === null ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">{SIN_FASE}</p>
@@ -75,6 +86,7 @@ export function CuerpoDeQueFalta(props: Props) {
               puedeMover={dato.puedeMover}
               borrador={borrador}
               releer={releer}
+              acciones={acciones}
             />
           ))}
         </ul>

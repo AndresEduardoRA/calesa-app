@@ -7,6 +7,7 @@ import {
 import { Aviso } from '@/shared/ui/aviso'
 import { Button } from '@/shared/ui/button'
 import type { UnidadAbierta } from '../../../entities/nucleo/unidad'
+import type { AccionesDeQueFalta } from '../hooks/use-acciones-de-que-falta'
 import type { BorradorDeMover } from '../hooks/use-borrador-de-mover'
 import { FormularioDeMover } from './formulario-de-mover'
 import { RequisitosDeUnDestino } from './requisitos-de-un-destino'
@@ -17,6 +18,7 @@ type Props = {
   puedeMover: boolean
   borrador: BorradorDeMover
   releer: () => void
+  acciones: AccionesDeQueFalta
 }
 
 // «Elegir»: con permiso abre el formulario del destino. Sin permiso, un vehículo no lo ve (como siempre); un ítem lo ve apagado y el motivo va debajo, nunca calla por qué (8.13-2).
@@ -44,7 +46,7 @@ function BotonDeElegir({
 
 // Un destino posible de la unidad: la fase a la que puede ir y lo que esa fase le pide, con lo que cumple y lo que falta. Si la vista previa de este destino no se pudo leer, lo dice aquí y no
 // tumba a los demás.
-export function DestinoDeMover({ unidad, destino, puedeMover, borrador, releer }: Props) {
+export function DestinoDeMover({ unidad, destino, puedeMover, borrador, releer, acciones }: Props) {
   const abierto = borrador.abierto === destino.faseId
   return (
     <li
@@ -75,7 +77,7 @@ export function DestinoDeMover({ unidad, destino, puedeMover, borrador, releer }
         </p>
       ) : null}
       {destino.vista ? (
-        <RequisitosDeUnDestino requisitos={destino.vista.requisitos} />
+        <RequisitosDeUnDestino requisitos={destino.vista.requisitos} acciones={acciones} />
       ) : (
         <Aviso tono="peligro">
           <p>{destino.errorDeLaVista}</p>

@@ -74,10 +74,18 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   ítem lo dibuja el núcleo (`pantallas/unidad-item.ts`, `textoDelTransporteDelItem`; 8-13b).
 - **Hueco «Repuestos»:** en `ORDEN_DE_HUECOS` entre `transporte` y `aduana` (el orden va por lo que más se hace: que-falta, documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen); lo declara `repuestos` (`pantallas/flujo-esperas.ts`) y lo suma
   `src/app/(app)/logistica/huecos-de-la-unidad.tsx` (`repuestos.ver` y regla `esperas`; sin variante `repuesto`). `logistica` sólo conoce la clave.
-- **Área `mover`, «Qué falta» y mover** (`pantallas/mover-unidad.ts`, hueco `que-falta` abierto al inicio). `useParaMover` lee con `leerParaMover` de `flujos`
-  y relee al volver el foco (5 s de mínimo), al cambiar la fase y con `logistica:unidad-cambio`; `useMoverLaUnidad` envía con `faseEsperada = unidad.faseId`
-  (éxito = `router.refresh()`). El atajo de un requisito abre el bloque de otro hueco (`logistica:abrir-hueco`, `features/nucleo/hooks/eventos-de-la-unidad.ts`);
-  un hueco que el panel no dibuja no ofrece atajo. Textos y estado del botón son de `flujos`. Un ítem manda `{ repuesto }` (`unidadAMover`).
+- **Área `mover`, «Qué falta» y mover** (`pantallas/mover-unidad.ts`, hueco `que-falta` abierto al inicio). `useParaMover` lee con la action `leerQueFalta`,
+  que envuelve `leerParaMoverDe` de `flujos` (la misma lectura) y suma, por requisito que falta, sus **acciones** (`docs/GLOSARIO.md` › «Acción del requisito»)
+  ya resueltas en el servidor (`entities/mover/`: `capacidadesDeQueFalta` con `puede()`, `resolverAccionesDeQueFalta`, `acciones-de-un-dato.ts`): ni los
+  permisos ni la regla viajan al navegador. Relee al volver el foco (5 s de mínimo), al cambiar la fase y con `logistica:unidad-cambio` (también lo avisa
+  el dinero). Cada falta lleva un botón chico con el verbo («Subir», «Revisar», «Completar», «Registrar», «Ir a …», «Pedirlo»; el nombre accesible lleva el
+  objeto) y hasta dos más en su «⋯» (`BotonesDelRequisito`); `accionesADibujar` filtra lo que sólo sabe el navegador: con la clave del hueco y sin el hueco
+  dibujado la regla está apagada (nada), lo que lleva a un hueco ausente se descarta, **en un drawer** lo que sacaría de la pantalla dice «Abrir la unidad»
+  (`useEnLaPagina()`, que da `DisposicionDeLaPagina`) y sin red todo se apaga con «Sin conexión…» en la línea viva. `useHacerAccionDelRequisito` las ejecuta:
+  «Subir» abre `?subir=documentos&tipo_documento=` (en zonas, en una sola escritura con `?hueco=`), «Revisar» y «Completar» abren el hueco y enfocan
+  `data-tipo-de-documento-id` o `data-clave-de-dato` (`enfocarAlAparecer`, hasta 5 s), «Registrar» abre `?panel=pago&pago=nuevo`. La franja «fuera de
+  regla» sigue con su atajo (`AtajoDeRequisito`). `useMoverLaUnidad` envía con `faseEsperada = unidad.faseId` (éxito = `router.refresh()`). Textos y estado
+  del botón de mover son de `flujos`. Un ítem manda `{ repuesto }` (`unidadAMover`).
 - **Área `mover`, «La ganamos»** (`?ganada=si`, `useModoGanada`; la clave `CLAVE_DE_GANADA` sale por `index.ts` para el enlace de la ficha del
   vehículo): «Qué falta» ofrece sólo los destinos que no son la subasta (`entities/mover/ganada.ts`), abre el primero y mover llama `ganarLaSubasta`;
   al lograrlo quita `?ganada` con `shallow: false`, sin `router.refresh()`. Fuera del modo, con la subasta sin resolver y permiso de mover, una línea
