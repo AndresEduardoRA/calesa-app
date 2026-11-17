@@ -114,7 +114,11 @@ export {
   leerVehiculosDelLead,
 } from './composicion'
 export type { ParaRelacionados } from './entities/acciones-de-relacionados'
-export type { RelacionadosDelLead, RelacionadosDelVehiculo } from './entities/relacionados'
+export type {
+  PresentacionDeRelacionados,
+  RelacionadosDelLead,
+  RelacionadosDelVehiculo,
+} from './entities/relacionados'
 export type { VehiculosDelLead } from './entities/vehiculos-del-lead'
 export { opcionesDeVehiculoDelLead, type OpcionDeVehiculo } from './features/vinculo/lecturas'
 

@@ -120,8 +120,9 @@ test('quien tiene al lead en su cartera ve el vínculo y edita el vehículo que 
 test('el interés de su lead se ve en el otro vehículo, que no puede editar', async ({ page }) => {
   await entrar(page, asesora)
   await abrirFicha(page, suelto, SUELTO)
-  await expect(vinculo(page).getByText(/^Sin vínculo/)).toBeVisible()
+  // Sin vínculo, el grupo no se dibuja.
   await expect(interesados(page).getByText(LEAD)).toBeVisible()
+  await expect(vinculo(page)).toHaveCount(0)
   await expect(interesados(page).getByText('Lo quiere en blanco')).toBeVisible()
   await expect(interesados(page).getByText(/lo marcó Ada Asesora/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Editar' })).toHaveCount(0)

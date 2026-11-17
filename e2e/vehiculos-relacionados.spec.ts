@@ -71,22 +71,30 @@ const bloque = (raiz: Page | Locator) => raiz.getByRole('region', { name: 'Relac
 const grupo = (raiz: Page | Locator, nombre: string) =>
   bloque(raiz).getByRole('region', { name: nombre, exact: true })
 
-// Lo mismo desde cualquier detalle de ese vehículo: cada lead en su tipo, con su leyenda.
-async function ven(raiz: Page | Locator) {
+// La ficha del vehículo (compacta): cada lead en su tipo, a la vista; la leyenda no se ve, es la descripción del grupo para el lector.
+async function venEnLaFicha(page: Page) {
+  await expect(bloque(page)).toBeVisible()
+  await expect(grupo(page, 'Vinculado').getByText(nombres.a)).toBeVisible()
+  await expect(grupo(page, 'Vinculado')).toHaveAccessibleDescription(
+    'El lead dueño o comprador de este vehículo.',
+  )
+  await expect(grupo(page, 'Interesado').getByText(nombres.b)).toBeVisible()
+  await expect(grupo(page, 'Interesado').getByText('Lo quiere en blanco')).toBeVisible()
+  await expect(grupo(page, 'Interesado')).toHaveAccessibleDescription(
+    'Leads que mostraron interés en este vehículo.',
+  )
+  await expect(grupo(page, 'Cotizado').getByText(nombres.c)).toBeVisible()
+  await expect(grupo(page, 'Cotizado')).toHaveAccessibleDescription(
+    'Leads con una cotización activa de este vehículo.',
+  )
+}
+
+// El resumen del inventario (todavía el bloque de tres grupos).
+async function venEnElBloque(raiz: Locator) {
   await expect(bloque(raiz)).toBeVisible()
   await expect(grupo(raiz, 'Vinculado').getByText(nombres.a)).toBeVisible()
-  await expect(
-    grupo(raiz, 'Vinculado').getByText('El lead dueño o comprador de este vehículo.'),
-  ).toBeVisible()
   await expect(grupo(raiz, 'Interesado').getByText(nombres.b)).toBeVisible()
-  await expect(grupo(raiz, 'Interesado').getByText('Lo quiere en blanco')).toBeVisible()
-  await expect(
-    grupo(raiz, 'Interesado').getByText('Leads que mostraron interés en este vehículo.'),
-  ).toBeVisible()
   await expect(grupo(raiz, 'Cotizado').getByText(nombres.c)).toBeVisible()
-  await expect(
-    grupo(raiz, 'Cotizado').getByText('Leads con una cotización activa de este vehículo.'),
-  ).toBeVisible()
 }
 
 // La unidad de logística los dice en una línea de chips («Vinculado · n»…): cada chip abre su grupo en un popover con las mismas filas y leyenda.
@@ -115,13 +123,13 @@ test('E2E la ficha del vehículo, su resumen y la unidad de logística muestran 
   await entrar(page, duena, { fresco: true })
   await page.goto(`/vehiculos/${vehiculos.principal}`)
   await expect(page.getByRole('heading', { name: titulos.principal, level: 1 })).toBeVisible()
-  await ven(page)
+  await venEnLaFicha(page)
   await capturar(page, info, 'ficha-del-vehiculo')
 
   await page.goto(`/vehiculos?origen=${origen.id}&vehiculo=${vehiculos.principal}`)
   const resumen = page.getByRole('dialog', { name: titulos.principal, exact: true })
   await expect(resumen).toBeVisible()
-  await ven(resumen)
+  await venEnElBloque(resumen)
   await capturar(page, info, 'resumen-del-vehiculo')
 
   await page.goto(`/logistica/vehiculo/${vehiculos.principal}`)
@@ -135,9 +143,9 @@ test('E2E la ficha de cada lead muestra el vehículo en su tipo, y vincular desd
   await entrar(page, duena, { fresco: true })
   await page.goto(`/leads/${leads.a}`)
   await expect(grupo(page, 'Vinculado').getByText(titulos.principal)).toBeVisible()
-  await expect(
-    grupo(page, 'Vinculado').getByText('Vehículos de los que este lead es dueño o comprador.'),
-  ).toBeVisible()
+  await expect(grupo(page, 'Vinculado')).toHaveAccessibleDescription(
+    'Vehículos de los que este lead es dueño o comprador.',
+  )
   await page.goto(`/leads/${leads.b}`)
   await expect(grupo(page, 'Interesado').getByText(titulos.principal)).toBeVisible()
   await page.goto(`/leads/${leads.c}`)
@@ -167,7 +175,10 @@ test('E2E marcar un interesado desde el vehículo con el selector aparece en la 
   await entrar(page, duena, { fresco: true })
   await page.goto(`/vehiculos/${vehiculos.otro}`)
   await expect(bloque(page).getByText('Sin relacionados todavía.')).toBeVisible()
-  await bloque(page).getByRole('button', { name: 'Marcar un interesado' }).click()
+  // Con todo vacío se ve una acción («Vincular a un lead»); marcar un interesado está en el «⋯» del bloque.
+  await expect(bloque(page).getByRole('button', { name: 'Vincular a un lead' })).toBeVisible()
+  await bloque(page).getByRole('button', { name: 'Más acciones de «Relacionados»' }).click()
+  await page.getByRole('menuitem', { name: 'Marcar un interesado' }).click()
   await expect(page).toHaveURL(/panel=marcar-interesado/)
   const selector = page.getByRole('dialog', { name: 'Marcar un interesado' })
   await expect(selector).toBeVisible()

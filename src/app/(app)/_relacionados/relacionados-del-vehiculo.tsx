@@ -1,7 +1,11 @@
 import { Suspense } from 'react'
 import { puede, type Permisos } from '@/modules/equipo'
 import { getOrigenes } from '@/modules/origenes'
-import { leerRelacionadosDelVehiculo, type AvisosDelMenu } from '@/modules/vehiculos'
+import {
+  leerRelacionadosDelVehiculo,
+  type AvisosDelMenu,
+  type PresentacionDeRelacionados,
+} from '@/modules/vehiculos'
 import { EsqueletoDeRelacionados } from '@/modules/vehiculos/pantallas/relacionados'
 import { paraRelacionadosDe } from './para-relacionados'
 import { RelacionadosDelVehiculoConHuecos } from './relacionados-del-vehiculo.client'
@@ -13,8 +17,8 @@ type Props = {
   // La ficha: la papelera que ofrece el aviso de desvinculado y lo que ofrece si la base rechaza el envío.
   ofrecerPapelera?: boolean
   avisos?: AvisosDelMenu
-  // La unidad de logística pide «Relacionados» en una línea de chips.
-  presentacion?: 'bloque' | 'linea'
+  // La ficha lo pide compacto; logística, en una línea de chips.
+  presentacion?: 'bloque' | PresentacionDeRelacionados
 }
 
 // «Relacionados» de un vehículo, leído en el servidor (la ficha y la unidad de logística), detrás de su `<Suspense>`. Un error de lectura no tumba la pantalla: el bloque dice «No pudimos cargar los
@@ -48,8 +52,8 @@ export async function RelacionadosDelVehiculoServidor({
 // En la ficha del vehículo: el bloque sólo con `leads.ver`, detrás de su `<Suspense>` con el esqueleto del mismo alto.
 export function RelacionadosDeLaFicha(props: Omit<Props, 'lugar'>) {
   return puede(props.permisos, 'leads.ver') ? (
-    <Suspense fallback={<EsqueletoDeRelacionados />}>
-      <RelacionadosDelVehiculoServidor {...props} lugar="ficha" />
+    <Suspense fallback={<EsqueletoDeRelacionados presentacion="compacta" />}>
+      <RelacionadosDelVehiculoServidor {...props} lugar="ficha" presentacion="compacta" />
     </Suspense>
   ) : null
 }
