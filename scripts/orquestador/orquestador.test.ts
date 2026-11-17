@@ -219,3 +219,19 @@ describe('orquestador.sh › este repo', () => {
     expect(orquestador('plan').salida).toMatch(/^calesa-app · /)
   })
 })
+
+describe('orquestador.sh: plan', () => {
+  it('«plan» avisa cuando una spec nombra otra tarea de la cola y no depende de ella', () => {
+    orquestador('nueva', 'T07', 'ficha-del-lead')
+    orquestador('nueva', 'T08', 'ficha-del-vehiculo')
+    const ruta = join(datos, 'cola', 'T08-ficha-del-vehiculo.md')
+    const sinBorrador = readFileSync(ruta, 'utf8').replace('borrador: si\n', '')
+    writeFileSync(ruta, `${sinBorrador}\nMismo criterio que T07; T99 no existe en la cola.\n`)
+    expect(orquestador('plan').salida).toContain('⚠ nombra T07 y no depende de ella')
+    writeFileSync(
+      ruta,
+      sinBorrador.replace('\ndepende:', '\ndepende: T07') + '\nMismo criterio que T07.\n',
+    )
+    expect(orquestador('plan').salida).not.toContain('⚠ nombra')
+  })
+})
