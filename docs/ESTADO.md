@@ -15,7 +15,8 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 - **Empresa y orígenes:** ajustes, monedas y tipos de cambio, integraciones (apibara, web pública), campos por origen con rango.
 - **Vehículos:** inventario por origen con rutas e índices por caso, ficha en dos columnas con todo a la vista (fase y qué falta, relacionados, cotizaciones, documentos, ficha, repuestos y fotos) y un resumen corto, vitrina, papelera, subastas por apibara con su zona horaria; una sola situación real (fase y subasta) con su filtro, tarjetas o tabla, alta suelta o desde cotizar, vitrina desde la lista; «relacionados» (vinculado, interesado y cotizado) arriba de cada detalle.
 - **Leads:** listado y kanban con cartera, teléfono único y enmascarado con teléfonos extra configurables, último seguimiento y recordatorio en la lista, campos configurables y privados, seguimientos, oportunidades (la base al nacer y una nueva desde la fila),
-  «relacionados» arriba de la ficha y del resumen, importar y exportar, limpieza automática, papelera.
+  la ficha en dos columnas con todo a la vista (índice de bloques, seguimientos y recordatorios resumidos con «Ver todos», relacionados con la
+  gestión de vehículos al pie) y el resumen del listado como su versión corta, importar y exportar, limpieza automática, papelera.
 - **Cotizaciones:** la fórmula como grafo versionado (motor en TS con su espejo SQL), el diseño de la hoja, niveles de acceso, la hoja de
   cotizar (vehículo y lead obligatorios por rol y origen, aviso con la subasta vencida), guardar con revisiones, la tarjeta y el PDF, la final, la aprobada (una por vehículo, con su primer resultado en la lista de vehículos), comprobantes, comentarios y papelera; el listado con buscador (número, cliente, vehículo y autor), vistas guardadas, columna de acciones y un resumen con pestañas (todo, adjuntos, revisiones y comentarios).
 - **Flujos y logística:** fases, transiciones, requisitos y reglas por RPC, configurados sobre el diagrama del flujo (cajas y flechas, ordenar
@@ -31,7 +32,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 - **Actividad, datos y tablero:** `/actividad` con el diff recortado por cartera y su purga, `/datos` (exportar e importar todo con
   `importar-csv`), `/tablero` con widgets por persona, Inicio con sus bloques, la PWA.
 - **Tareas de oro** (KLM, en `escritorio` y `movil`): registrar 18,3 s de 25; cotizar 58,1 s de 90; mover 1 en 13,9 s de 15 (desde la cadena: fase → vehículo → destino → nota) y el
-  contenedor de 8 en 14,6 de 60; «Contacté» en 1 toque y el portal en 8,5 s de 30.
+  contenedor de 8 en 14,6 de 60; «Contacté» en 1 toque y el portal en 8 s de 30.
 
 ## Verdes
 
@@ -45,8 +46,8 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 
 ## Al borde
 
-- Presupuestos: la hoja, 491 nodos de 500; JS de `/cotizaciones/nuevo` 450,1 de 460 KB y de `/cotizaciones/[id]` 454,9 de 460; ficha
-  del lead «Datos» 39,2 de 43 KB y «Oportunidades» 61,2 de 66. Con la regla del 5 % se sube el tope (`docs/RENDIMIENTO.md`).
+- Presupuestos: la hoja, 491 nodos de 500; JS de `/cotizaciones/nuevo` 450,1 de 460 KB y de `/cotizaciones/[id]` 454,9 de 460; la ficha
+  del lead entera 130,8 de 138 KB. Con la regla del 5 % se sube el tope (`docs/RENDIMIENTO.md`).
 - El e2e completo con los dos proyectos tarda ≈ 95 min de reloj (5a-4b): en CI va en 4 bloques.
 
 ## Siguiente

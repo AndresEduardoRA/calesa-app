@@ -10,7 +10,6 @@ import {
   dialogoDeOtorgar,
   limpiarPortal,
   otorgarComo,
-  pestanaPortal,
   prepararPortal,
   seccionPortal,
   type TerrenoDelPortal,
@@ -18,7 +17,7 @@ import {
 
 // Quién tiene la sección «Portal»: con el lead en la cartera y `leads.portal.gestionar`. Sin el permiso
 // (aunque tenga la cartera), sin la cartera (aunque vea «todos» y tenga el permiso) o la dueña con
-// «todos», ni la pestaña ni `?seccion=portal` escrito a mano: abre «Datos», como lo que no existe.
+// «todos», ni el bloque ni `?seccion=portal` escrito a mano: queda en el principio, como lo que no existe.
 test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDelPortal
@@ -49,37 +48,35 @@ async function leadCompartido(corto: string) {
 }
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
-test('un compartido con el permiso ve la pestaña y el estado', async ({ page }, info) => {
+test('un compartido con el permiso ve el bloque y el estado, sin hacer clic', async ({
+  page,
+}, info) => {
   const lead = await leadCompartido(`Portal Compartido ${info.project.name}`)
   await entrar(page, t.paco.email)
   await irAFicha(page, lead.id)
-  await pestanaPortal(page).click()
-  await expect(page).toHaveURL(/seccion=portal/)
   await expect(seccionPortal(page).getByText('Activo', { exact: true })).toBeVisible()
   await expect(seccionPortal(page).getByText(/, por Pía Portal/)).toBeVisible()
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
-test('sin el permiso, aunque tenga la cartera: ni la pestaña ni la sección por la URL', async ({
+test('sin el permiso, aunque tenga la cartera: ni el bloque, ni por la URL', async ({
   page,
 }, info) => {
   const lead = await leadCompartido(`Portal Sin Permiso ${info.project.name}`)
   await entrar(page, t.personas.berta)
   await irAFicha(page, lead.id, '?seccion=portal')
   await expect(page.getByText('Teléfonos', { exact: true }).first()).toBeVisible()
-  await expect(pestanaPortal(page)).toHaveCount(0)
   await expect(seccionPortal(page)).toHaveCount(0)
 })
 
 for (const quien of ['supervision', 'duena'] as const) {
-  test(`${quien === 'supervision' ? 'la supervisión con el permiso en «todos»' : 'la dueña'}, sin la cartera: ni la pestaña ni la sección`, async ({
+  test(`${quien === 'supervision' ? 'la supervisión con el permiso en «todos»' : 'la dueña'}, sin la cartera: ni el bloque ni su estado`, async ({
     page,
   }, info) => {
     const lead = await leadCompartido(`Portal Sin Cartera ${quien} ${info.project.name}`)
     await entrar(page, quien === 'supervision' ? t.supervision.email : t.personas.duena)
     await irAFicha(page, lead.id, '?seccion=portal')
     await expect(page.getByText('Teléfonos', { exact: true }).first()).toBeVisible()
-    await expect(pestanaPortal(page)).toHaveCount(0)
     await expect(seccionPortal(page)).toHaveCount(0)
     // Ni por la base: el estado (con el código) no se le entrega.
     const { error } = await rpcComo(
@@ -92,7 +89,7 @@ for (const quien of ['supervision', 'duena'] as const) {
 }
 
 // Tarea de oro 4 (`docs/UX.md`): otorgar el portal desde la ficha del lead en ≤ 30 s. Sólo con el teclado y sin un clic: de la ficha del lead
-// a la sección «Portal», «Dar acceso», «Generar clave y dar acceso» y el texto para WhatsApp copiado. Lo que no cambia de una máquina a
+// al bloque «Acceso al portal», «Dar acceso», «Generar clave y dar acceso» y el texto para WhatsApp copiado. Lo que no cambia de una máquina a
 // otra es lo pulsado; el reloj del robot es un tope generoso; la hora de una persona se estima con KLM (`Teclado.klm`).
 const CONTROLES_MAXIMOS = 16
 
@@ -112,18 +109,13 @@ test('tarea de oro 4: de la ficha al texto para WhatsApp copiado, sólo con el t
   const teclado = new Teclado(page)
   const inicio = performance.now()
 
-  // «Saltar al contenido» y de ahí a la pestaña «Portal».
+  // «Acceso al portal» está en la columna de la izquierda, bajo «Quién lo tiene»: desde «Saltar al contenido» se llega a «Dar acceso»
+  // sin pasar por el índice ni navegar. Antes del Tab, el bloque dibujado (tabular mientras llegaba dejaba el foco en el `body`, 6.10).
+  const darAcceso = seccionPortal(page).getByRole('button', { name: 'Dar acceso' })
+  await expect(darAcceso).toBeVisible()
   await teclado.pulsar('Tab')
   await expect(page.getByRole('link', { name: 'Saltar al contenido' })).toBeFocused()
   await teclado.pulsar('Enter')
-  await teclado.tabularHasta(pestanaPortal(page))
-  await teclado.pulsar('Enter')
-  await expect(page).toHaveURL(/seccion=portal/)
-  // Antes del Tab, la sección dibujada y el foco donde quedó: tabular mientras llegaba la sección dejaba el foco en el `body`
-  // y el recorrido volvía a pasar por toda la navegación, que suma un Tab por cada módulo que se habilita (6.10).
-  const darAcceso = seccionPortal(page).getByRole('button', { name: 'Dar acceso' })
-  await expect(darAcceso).toBeVisible()
-  await expect(pestanaPortal(page)).toBeFocused()
 
   // «Dar acceso» abre el diálogo con el foco en la clave; vacía, el Enter genera una.
   await teclado.tabularHasta(darAcceso)
@@ -132,6 +124,8 @@ test('tarea de oro 4: de la ficha al texto para WhatsApp copiado, sólo con el t
   await teclado.pulsar('Enter')
   const listo = page.getByRole('dialog', { name: `${lead.nombre} ya tiene acceso al portal` })
   await expect(listo).toBeVisible()
+  // El resultado lleva el foco a «Copiar código» (el campo se apagó mientras otorgaba y el foco quedaba suelto).
+  await expect(listo.getByRole('button', { name: 'Copiar código' })).toBeFocused()
 
   // El texto listo: «Copiar texto» con el teclado.
   await teclado.tabularHasta(listo.getByRole('button', { name: 'Copiar texto' }))

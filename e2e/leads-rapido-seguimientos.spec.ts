@@ -1,25 +1,20 @@
 import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
-import { irALeads } from './soporte/leads-listado'
+import { type irALeads } from './soporte/leads-listado'
 import { nuevoLead } from './soporte/leads-ficha'
+import { abrirMenuDelLead } from './soporte/leads-marcas'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import {
-  abrirAgendar,
-  abrirAnotar,
-  abrirPestanaDeRecordatorios,
-  abrirPestanaDeSeguimientos,
   modalDeRecordatorio,
   modalDeSeguimiento,
-  recordatorio,
   recordatoriosEnLaBase,
-  seguimiento,
   seguimientosEnLaBase,
 } from './soporte/leads-seguimientos'
 
-// Las pestañas «Seguimientos» y «Recordatorios» del drawer rápido (`?lead=<id>&pestana=`): cada una se
-// lee al elegirla, vive en la URL, anota o agenda con los modales de la ficha dibujados dentro del
-// drawer (Esc y «atrás» cierran sólo el modal), y sin la cartera no ofrece nada.
+// El resumen del listado (`?lead=<id>`) es la versión corta de la ficha, sin pestañas: lo último que pasó sale de la fila (ninguna lectura
+// de seguimientos ni de recordatorios), anotar y agendar abren su modal desde el «⋯» dentro del drawer (Esc y «atrás» cierran sólo el modal;
+// al guardar, el resumen y la fila lo muestran), sin la cartera no se ofrecen, y `?pestana=` de antes lleva a la ficha en su bloque.
 test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDelListado
@@ -46,246 +41,120 @@ async function irAlDrawer(page: Pagina, consulta: string, nombre: string) {
   await expect(drawerDe(page, nombre)).toBeVisible()
 }
 
-test('cada pestaña vive en la URL, se lee sólo al elegirla, no lleva número y sobrevive a recargar', async ({
+// El «⋯» del resumen (no el de la fila de atrás: con el drawer abierto, la lista sale del árbol de accesibilidad).
+async function desdeElMenu(page: Pagina, nombre: string, opcion: string) {
+  const menu = await abrirMenuDelLead(page, nombre)
+  await menu.getByRole('menuitem', { name: opcion }).click()
+}
+
+test('sin pestañas: lo último que pasó sale de la fila, sin leer seguimientos ni recordatorios', async ({
   page,
 }, info) => {
-  const lead = await leadDeBerta(`Rap Pestana ${info.project.name}`)
+  const lead = await leadDeBerta(`Rap Corto ${info.project.name}`)
   await entrar(page, t.personas.berta)
-  let lecturas = 0
-  let deRecordatorios = 0
+  const lecturas: string[] = []
   page.on('request', (pedido) => {
-    if (pedido.url().includes('/rpc/lead_seguimientos')) {
-      lecturas++
-    }
-    if (pedido.url().includes('/rpc/lead_recordatorios')) {
-      deRecordatorios++
+    const ruta = new URL(pedido.url()).pathname
+    if (ruta.endsWith('/rpc/lead_seguimientos') || ruta.endsWith('/rpc/lead_recordatorios')) {
+      lecturas.push(ruta)
     }
   })
-  await irALeads(page)
-  await expect(async () => {
-    await page.getByText(lead.nombre, { exact: true }).locator('visible=true').first().click()
-    await expect(drawerDe(page, lead.nombre)).toBeVisible({ timeout: 1000 })
-  }).toPass()
+  await irAlDrawer(page, `?lead=${lead.id}`, lead.nombre)
   const drawer = drawerDe(page, lead.nombre)
-  await expect(drawer.getByText('Origen del lead')).toBeVisible()
-  expect(lecturas).toBe(0)
-
-  await abrirPestanaDeSeguimientos(page, drawer)
-  expect(lecturas).toBeGreaterThan(0)
-  await expect(drawer.getByRole('tab', { name: 'Seguimientos', exact: true })).toHaveText(
-    'Seguimientos',
-  )
-  await expect(drawer.getByText('Todavía no hay seguimientos')).toBeVisible()
-  // Los recordatorios son de su pestaña: «Seguimientos» no los lee.
-  await expect(drawer.getByRole('region', { name: 'Tus recordatorios' })).toHaveCount(0)
-  expect(deRecordatorios).toBe(0)
-  await abrirPestanaDeRecordatorios(page, drawer)
-  await expect(drawer.getByText('Ningún recordatorio pendiente sobre este lead.')).toBeVisible()
-  expect(deRecordatorios).toBe(1)
-  await expect(drawer.getByRole('tab', { name: 'Recordatorios', exact: true })).toHaveText(
-    'Recordatorios',
-  )
-  // Sin completados no hay plegado.
-  await expect(drawer.getByText('Completados', { exact: true })).toHaveCount(0)
-  await abrirPestanaDeSeguimientos(page, drawer)
-
-  await page.reload()
-  await expect(drawerDe(page, lead.nombre)).toBeVisible()
-  await expect(
-    drawerDe(page, lead.nombre).getByRole('tab', { name: 'Seguimientos', exact: true }),
-  ).toHaveAttribute('aria-selected', 'true')
-  await expect(
-    drawerDe(page, lead.nombre).getByRole('region', { name: 'Seguimientos' }),
-  ).toBeVisible()
-
-  // Cambiar de pestaña no suma al historial: «atrás» cierra el drawer.
-  await irALeads(page)
-  await page.getByText(lead.nombre, { exact: true }).locator('visible=true').first().click()
-  // Con el teclado: la pestaña elegida es la parada de Tab y las flechas cambian de pestaña.
-  const resumen = drawerDe(page, lead.nombre).getByRole('tab', { name: 'Resumen' })
-  await resumen.focus()
-  await page.keyboard.press('ArrowRight')
-  await expect(page).toHaveURL(/pestana=seguimientos/)
-  await expect(
-    drawerDe(page, lead.nombre).getByRole('tab', { name: 'Seguimientos', exact: true }),
-  ).toBeFocused()
-  await expect(
-    drawerDe(page, lead.nombre).getByRole('region', { name: 'Seguimientos' }),
-  ).toBeVisible()
-  // Fin lleva a la última («Recordatorios») e Inicio vuelve a «Resumen».
-  await page.keyboard.press('End')
-  await expect(page).toHaveURL(/pestana=recordatorios/)
-  await expect(
-    drawerDe(page, lead.nombre).getByRole('tab', { name: 'Recordatorios', exact: true }),
-  ).toBeFocused()
-  await expect(
-    drawerDe(page, lead.nombre).getByRole('region', { name: 'Tus recordatorios' }),
-  ).toBeVisible()
-  await page.keyboard.press('ArrowRight')
-  await expect(drawerDe(page, lead.nombre).getByRole('tab', { name: 'Resumen' })).toBeFocused()
-  await page.keyboard.press('ArrowLeft')
-  await expect(page).toHaveURL(/pestana=recordatorios/)
-  await page.keyboard.press('Home')
-  await expect(page).not.toHaveURL(/pestana=/)
-  await expect(drawerDe(page, lead.nombre).getByText('Origen del lead')).toBeVisible()
-  await page.goBack()
-  await expect(page).not.toHaveURL(/lead=/)
-  await expect(drawerDe(page, lead.nombre)).toHaveCount(0)
+  await expect(drawer.getByRole('tablist')).toHaveCount(0)
+  await expect(drawer.getByText('Sin seguimientos', { exact: true })).toBeVisible()
+  await expect(drawer.getByRole('img', { name: 'Sin recordatorio' })).toBeVisible()
+  await expect(drawer.getByText('Teléfono', { exact: true })).toBeVisible()
+  await expect(drawer.getByText('Origen del lead', { exact: true })).toBeVisible()
+  // Ni los campos del layout ni el alta: son de la ficha.
+  await expect(drawer.getByText('Creado', { exact: true })).toHaveCount(0)
+  expect(lecturas).toEqual([])
 })
 
-test('anotar desde el drawer: el modal va adentro, Esc y «atrás» cierran sólo el modal', async ({
+test('anotar desde el «⋯» del resumen: el modal va adentro, Esc y «atrás» cierran sólo el modal, y al guardar se ve', async ({
   page,
 }, info) => {
   const lead = await leadDeBerta(`Rap Anotar ${info.project.name}`)
   await entrar(page, t.personas.berta)
-  await irAlDrawer(page, `?lead=${lead.id}&pestana=seguimientos`, lead.nombre)
+  await irAlDrawer(page, `?lead=${lead.id}`, lead.nombre)
   const drawer = drawerDe(page, lead.nombre)
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+  const modal = modalDeSeguimiento(page, 'Anotar')
 
-  await abrirAnotar(page)
+  await desdeElMenu(page, lead.nombre, 'Anotar seguimiento…')
+  await expect(modal.getByLabel('Resumen')).toBeFocused()
+  await expect(page).toHaveURL(new RegExp(`lead=${lead.id}.*panel=anotar-seguimiento`))
+  await expect(page).not.toHaveURL(/para=/)
   await page.keyboard.press('Escape')
-  await expect(modalDeSeguimiento(page, 'Anotar')).toHaveCount(0)
+  await expect(modal).toHaveCount(0)
   await expect(drawer).toBeVisible()
-  await expect(page).toHaveURL(/pestana=seguimientos/)
-  await expect(drawer.getByRole('button', { name: 'Anotar seguimiento' })).toBeFocused()
 
-  await abrirAnotar(page)
+  await desdeElMenu(page, lead.nombre, 'Anotar seguimiento…')
+  await expect(modal.getByLabel('Resumen')).toBeFocused()
   await page.goBack()
-  await expect(modalDeSeguimiento(page, 'Anotar')).toHaveCount(0)
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+  await expect(modal).toHaveCount(0)
+  await expect(drawer).toBeVisible()
 
-  const modal = await abrirAnotar(page)
-  await modal.getByLabel('Resumen').fill('Anotado desde el drawer')
-  await modal.getByRole('button', { name: 'Programar próximo contacto' }).click()
-  await modal.getByRole('button', { name: 'Mañana 09:00' }).click()
+  await desdeElMenu(page, lead.nombre, 'Anotar seguimiento…')
+  await modal.getByLabel('Resumen').fill('Anotado desde el resumen')
   await modal.getByRole('button', { name: 'Guardar' }).click()
-  await expect(seguimiento(page, 'Anotado desde el drawer')).toBeVisible()
+  await expect(modal).toBeHidden()
   await expect(drawer).toBeVisible()
   expect(await seguimientosEnLaBase(lead.id)).toHaveLength(1)
-  expect(await recordatoriosEnLaBase(lead.id)).toHaveLength(1)
-  // El próximo contacto está en su pestaña, que lo lee al abrirse.
-  await abrirPestanaDeRecordatorios(page, drawer)
-  await expect(recordatorio(page, 'Anotado desde el drawer')).toBeVisible()
+  // El resumen relee su lead y la fila su página: el último seguimiento se ve en los dos.
+  await expect(drawer.getByText(/Anotado desde el resumen/)).toBeVisible()
 })
 
-// @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
-test('agendar en «Recordatorios» (arriba, sin pasar por los seguimientos), Esc y «atrás», y eliminar con «Deshacer»', async ({
+test('agendar desde el «⋯» del resumen: el modal va adentro y al guardar el recordatorio se ve', async ({
   page,
 }, info) => {
   const lead = await leadDeBerta(`Rap Agendar ${info.project.name}`)
   await entrar(page, t.personas.berta)
-  await irAlDrawer(page, `?lead=${lead.id}&pestana=recordatorios`, lead.nombre)
+  await irAlDrawer(page, `?lead=${lead.id}`, lead.nombre)
   const drawer = drawerDe(page, lead.nombre)
-  await expect(drawer.getByRole('region', { name: 'Tus recordatorios' })).toBeVisible()
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toHaveCount(0)
-
-  await abrirAgendar(page)
-  await page.keyboard.press('Escape')
-  await expect(modalDeRecordatorio(page, 'Agendar')).toHaveCount(0)
-  await expect(drawer).toBeVisible()
-  await expect(page).toHaveURL(/pestana=recordatorios/)
-  await abrirAgendar(page)
-  await page.goBack()
-  await expect(modalDeRecordatorio(page, 'Agendar')).toHaveCount(0)
-  await expect(drawer.getByRole('region', { name: 'Tus recordatorios' })).toBeVisible()
-
-  const agenda = await abrirAgendar(page)
-  await agenda.getByLabel('De qué es').fill('Llamarlo desde el drawer')
-  await agenda.getByRole('button', { name: 'Mañana 09:00' }).click()
-  await agenda.getByRole('button', { name: 'Guardar' }).click()
-  await expect(recordatorio(page, 'Llamarlo desde el drawer')).toBeVisible()
-  await expect(drawer).toBeVisible()
-
-  await abrirPestanaDeSeguimientos(page, drawer)
-  const modal = await abrirAnotar(page)
-  await modal.getByLabel('Resumen').fill('Para eliminar en el drawer')
+  await desdeElMenu(page, lead.nombre, 'Agendar recordatorio…')
+  const modal = modalDeRecordatorio(page, 'Agendar')
+  await expect(modal.getByLabel('De qué es')).toBeFocused()
+  await modal.getByLabel('De qué es').fill('Llamarlo el lunes')
+  await modal.getByRole('button', { name: 'Mañana 09:00' }).click()
   await modal.getByRole('button', { name: 'Guardar' }).click()
-  await seguimiento(page, 'Para eliminar en el drawer')
-    .getByRole('button', { name: 'Eliminar' })
-    .click()
-  await expect(seguimiento(page, 'Para eliminar en el drawer')).toHaveCount(0)
-  await page.getByRole('button', { name: 'Deshacer' }).click()
-  await expect(seguimiento(page, 'Para eliminar en el drawer')).toBeVisible()
+  await expect(modal).toBeHidden()
+  await expect(drawer).toBeVisible()
+  expect(await recordatoriosEnLaBase(lead.id)).toHaveLength(1)
+  await expect(drawer.getByText('Llamarlo el lunes')).toBeVisible()
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
-test('fuera de la cartera: ni «Anotar» ni «Agendar», y la URL no abre el modal', async ({
+test('fuera de la cartera: el «⋯» no ofrece anotar ni agendar, y la URL no abre el modal', async ({
   page,
 }, info) => {
-  const lead = await leadDeBerta(`Rap Ajeno ${info.project.name}`)
+  const ajeno = await nuevoLead({
+    corto: `Rap Ajeno ${info.project.name}`,
+    telefono: completoCon(t, nacional()),
+    deQuien: t.personas.carlos,
+  })
   await entrar(page, t.personas.duena)
-  await irAlDrawer(
-    page,
-    `?alcance=todos&lead=${lead.id}&pestana=seguimientos&panel=anotar-seguimiento`,
-    lead.nombre,
-  )
-  const drawer = drawerDe(page, lead.nombre)
-  await expect(drawer.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
-  await expect(drawer.getByRole('button', { name: 'Anotar seguimiento' })).toHaveCount(0)
+  await irAlDrawer(page, `?lead=${ajeno.id}`, ajeno.nombre)
+  const menu = await abrirMenuDelLead(page, ajeno.nombre)
+  await expect(menu.getByRole('menuitem', { name: 'Anotar seguimiento…' })).toHaveCount(0)
+  await expect(menu.getByRole('menuitem', { name: 'Agendar recordatorio…' })).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await irAlDrawer(page, `?lead=${ajeno.id}&panel=anotar-seguimiento`, ajeno.nombre)
   await expect(modalDeSeguimiento(page, 'Anotar')).toHaveCount(0)
-  // En «Recordatorios», tampoco «Agendar», ni por la URL.
-  await irAlDrawer(
-    page,
-    `?alcance=todos&lead=${lead.id}&pestana=recordatorios&panel=agendar-recordatorio`,
-    lead.nombre,
-  )
-  const otra = drawerDe(page, lead.nombre)
-  await expect(otra.getByText('Ningún recordatorio pendiente sobre este lead.')).toBeVisible()
-  await expect(otra.getByRole('button', { name: 'Agendar recordatorio' })).toHaveCount(0)
-  await expect(modalDeRecordatorio(page, 'Agendar')).toHaveCount(0)
 })
 
-test('una pestaña escrita a mano que no existe abre «Resumen»; la que existe, ésa', async ({
+test('`?pestana=` de antes lleva a la ficha en su bloque, con el modal que traía', async ({
   page,
 }, info) => {
-  const lead = await leadDeBerta(`Rap A Mano ${info.project.name}`)
+  const lead = await leadDeBerta(`Rap Viejo ${info.project.name}`)
   await entrar(page, t.personas.berta)
-  await irAlDrawer(page, `?lead=${lead.id}&pestana=Recordatorios`, lead.nombre)
-  const drawer = drawerDe(page, lead.nombre)
-  await expect(drawer.getByRole('tab', { name: 'Resumen' })).toHaveAttribute(
-    'aria-selected',
-    'true',
+  await page.goto(`/leads?lead=${lead.id}&pestana=recordatorios&panel=agendar-recordatorio`)
+  await expect(page).toHaveURL(
+    new RegExp(`/leads/${lead.id}\\?seccion=seguimientos&panel=agendar-recordatorio`),
   )
-  await expect(drawer.getByText('Origen del lead')).toBeVisible()
-  await irAlDrawer(page, `?lead=${lead.id}&pestana=recordatorios`, lead.nombre)
+  await expect(modalDeRecordatorio(page, 'Agendar')).toBeVisible()
+  await page.goto(`/leads?lead=${lead.id}&pestana=seguimientos`)
+  await expect(page).toHaveURL(new RegExp(`/leads/${lead.id}\\?seccion=seguimientos$`))
   await expect(
-    drawerDe(page, lead.nombre).getByRole('tab', { name: 'Recordatorios', exact: true }),
-  ).toHaveAttribute('aria-selected', 'true')
-  await expect(
-    drawerDe(page, lead.nombre).getByRole('region', { name: 'Tus recordatorios' }),
-  ).toBeVisible()
-  if (info.project.name === 'movil') {
-    // Tres pestañas a 390 px, sin desplazamiento horizontal y con objetivos de 44 px.
-    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
-      await page.evaluate(() => window.innerWidth),
-    )
-    const caja = await drawerDe(page, lead.nombre)
-      .getByRole('tab', { name: 'Recordatorios', exact: true })
-      .boundingBox()
-    expect(caja?.height ?? 0).toBeGreaterThanOrEqual(43)
-  }
-})
-
-// 4-62: la ficha de `lead` se recupera también en la URL de la pestaña (`&pestana=`) y con el modal abierto (`&panel=`), no sólo donde se abrió el drawer.
-test('recargar con anotar abierto desde la pestaña: el segundo «atrás» devuelve el foco al nombre de la fila', async ({
-  page,
-}, info) => {
-  const lead = await leadDeBerta(`Rap Foco ${info.project.name}`)
-  await entrar(page, t.personas.berta)
-  await irALeads(page)
-  const nombreDeLaFila = page.getByRole('button', { name: `Abrir ${lead.nombre}` })
-  await nombreDeLaFila.focus()
-  await page.keyboard.press('Enter')
-  const drawer = drawerDe(page, lead.nombre)
-  await expect(drawer).toBeVisible()
-  await abrirPestanaDeSeguimientos(page, drawer)
-  const modal = await abrirAnotar(page)
-  await page.reload()
-  await expect(modal).toBeVisible()
-  await page.goBack()
-  await expect(modal).toHaveCount(0)
-  await expect(drawer).toBeVisible()
-  await page.goBack()
-  await expect(drawer).toHaveCount(0)
-  await expect(nombreDeLaFila).toBeFocused()
+    page.getByRole('heading', { name: 'Seguimientos y recordatorios', level: 2 }),
+  ).toBeFocused()
 })

@@ -167,15 +167,23 @@ export function filasDeLeadDesde(data: unknown, claves: readonly string[]): Fila
         creadoEn: f.creado_en,
         atributos,
         marcas: marcasDesde(f),
-        ultimoSeguimientoEn: f.ultimo_seguimiento_en ?? null,
-        ultimoSeguimiento: seguimientoDeFilaDesde(f.ultimo_seguimiento_visible),
-        proximoRecordatorio: recordatorioDeFilaDesde(f.proximo_recordatorio),
+        ...ultimoContactoDesde(f),
       },
     ]
   })
 }
 
-// Un lead completo, con todos los atributos que le llegan a quien mira (el drawer).
+// El último contacto de una fila de `leads_vista` (las columnas fijas), igual en el listado y en el drawer.
+function ultimoContactoDesde(f: z.infer<typeof esquemaFila>) {
+  return {
+    ultimoSeguimientoEn: f.ultimo_seguimiento_en ?? null,
+    ultimoSeguimiento: seguimientoDeFilaDesde(f.ultimo_seguimiento_visible),
+    proximoRecordatorio: recordatorioDeFilaDesde(f.proximo_recordatorio),
+  }
+}
+
+// Un lead completo, con todos los atributos que le llegan a quien mira (el drawer). Trae el último contacto: el resumen lo dibuja, y al
+// releer el lead (al guardar, al volver a la pestaña) reemplaza a la fila.
 const esquemaCompleto = esquemaFila.extend({
   atributos: z.record(z.string(), z.unknown()).nullable(),
 })
@@ -200,7 +208,6 @@ export function leadCompletoDesde(data: unknown): FilaDeLead | null {
     creadoEn: f.creado_en,
     atributos: f.atributos ?? {},
     marcas: marcasDesde(f),
-    // La ficha no los trae: son del listado.
-    ...SIN_ULTIMO_CONTACTO,
+    ...ultimoContactoDesde(f),
   }
 }

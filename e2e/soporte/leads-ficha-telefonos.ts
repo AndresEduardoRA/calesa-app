@@ -3,6 +3,7 @@
 import { expect, type Page } from '@playwright/test'
 import { entrar } from './alta'
 import {
+  cabeceraDeLaFicha,
   fijarCodigoDePais,
   irAFicha,
   nuevoLead,
@@ -34,13 +35,38 @@ export async function fichaDeBerta(
   return { ...lead, nac }
 }
 
-// «Agregar teléfono» es un modal con su URL (`?panel=agregar-telefono`).
+// «Agregar teléfono» es un modal con su URL dentro del panel de edición (`?panel=editar-lead&extra=nuevo`): la ficha muestra los teléfonos
+// sólo para leer.
 export const modalDeExtra = (page: Page) => page.getByRole('dialog', { name: 'Agregar teléfono' })
 
+// El panel que administra los teléfonos: la edición («Editar …») o, sin `leads.editar`, el modo teléfonos («Teléfonos de …»).
+export const panelConTelefonos = (page: Page) =>
+  page.getByRole('dialog', { name: /^(Editar|Teléfonos de) / })
+
 export const botonAgregarTelefono = (page: Page) =>
-  page.getByRole('button', { name: 'Agregar teléfono' })
+  panelConTelefonos(page).getByRole('button', { name: 'Agregar teléfono' })
+
+// Abre el panel con «Editar» de la cabecera o, sin él, con «Editar teléfonos» (la página hidrata antes de que el clic valga).
+export async function abrirPanelConTelefonos(page: Page) {
+  const panel = panelConTelefonos(page)
+  // Cada vuelta mira primero si el panel ya está (tras guardar se vuelve a dibujar) y el clic tiene su tope: con el panel encima, «Editar»
+  // queda tapado y un clic sin tope esperaría hasta vencer la prueba.
+  await expect(async () => {
+    if (await panel.isVisible()) {
+      return
+    }
+    // «Editar» de la cabecera (la del `h1`): los seguimientos y recordatorios también tienen el suyo.
+    const editar = cabeceraDeLaFicha(page).getByRole('button', { name: 'Editar', exact: true })
+    await (
+      (await editar.isVisible()) ? editar : page.getByRole('button', { name: 'Editar teléfonos' })
+    ).click({ timeout: 1000 })
+    await expect(panel).toBeVisible({ timeout: 1000 })
+  }).toPass()
+  return panel
+}
 
 export async function abrirAgregarTelefono(page: Page) {
+  await abrirPanelConTelefonos(page)
   await botonAgregarTelefono(page).click()
   await expect(modalDeExtra(page).getByLabel('Teléfono extra')).toBeFocused()
   return modalDeExtra(page)

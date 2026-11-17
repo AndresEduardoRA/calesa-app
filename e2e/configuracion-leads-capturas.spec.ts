@@ -95,7 +95,7 @@ test('el alta, el listado, la ficha y el rápido', async ({ page }, info) => {
   await expect(page.getByRole('heading', { name: r.uno.nombre, level: 1 })).toBeVisible()
   await capturar(page, info, 'ficha')
   await irAFicha(page, r.uno.id, '?seccion=seguimientos')
-  await expect(page.getByRole('region', { name: 'Seguimientos' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Seguimientos', exact: true })).toBeVisible()
   await capturar(page, info, 'ficha-seguimientos')
   // El kanban no nombra el origen ni el tipo de un lead: no dibuja iconos (se mira para decirlo).
   await page.goto('/leads?vista=embudo')

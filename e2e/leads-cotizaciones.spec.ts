@@ -86,7 +86,9 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-const barra = (page: Page): Locator => page.getByRole('navigation', { name: 'Secciones del lead' })
+const indice = (page: Page): Locator => page.getByRole('navigation', { name: 'Índice de la ficha' })
+const titulo = (page: Page): Locator =>
+  page.getByRole('heading', { name: 'Cotizaciones', exact: true, level: 2 })
 const lista = (page: Page): Locator => page.getByRole('list', { name: 'Cotizaciones del lead' })
 const filas = (page: Page): Locator => lista(page).getByRole('listitem')
 
@@ -101,25 +103,38 @@ function vigilarLecturas(page: Page): string[] {
   return lecturas
 }
 
-test('E1 la dueña: en «Datos» no se lee nada; «Cotizaciones» va entre «Oportunidades» y «Portal» y trae 20, y «Ver más» lleva a 22', async ({
+test('E1 la dueña: «Cotizaciones» es el último bloque del índice, no se lee hasta acercarse y trae 20, y «Ver más» lleva a 22', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/leads/${leads.veintidos}`)
-  const enlaces = barra(page).getByRole('link')
-  const nombres = await enlaces.allTextContents()
-  expect(nombres.indexOf('Cotizaciones')).toBe(nombres.indexOf('Oportunidades') + 1)
-  expect(nombres.indexOf('Portal')).toBe(nombres.indexOf('Cotizaciones') + 1)
   const lecturas = vigilarLecturas(page)
-  await expect(enlaces.filter({ hasText: 'Datos' })).toHaveAttribute('aria-current', 'page')
-  expect(lecturas).toEqual([])
+  await page.goto(`/leads/${leads.veintidos}`)
+  const enlaces = indice(page).getByRole('link')
+  await expect(enlaces).toHaveText([
+    'Seguimientos',
+    'Oportunidades',
+    'Relacionados',
+    'Cotizaciones',
+  ])
+  // Lejos de la vista no se lee (se pide a 200 px de entrar); si la ficha es corta y ya está cerca, se lee al llegar.
+  const lejos = await page
+    .locator('#cotizaciones')
+    .evaluate((bloque) => bloque.getBoundingClientRect().top > window.innerHeight + 200)
+  if (lejos) {
+    expect(lecturas).toEqual([])
+  }
 
-  const respuesta = page.waitForResponse(
-    (r) => new URL(r.url()).pathname === '/rest/v1/cotizaciones',
-  )
+  const respuesta = lejos
+    ? page.waitForResponse((r) => new URL(r.url()).pathname === '/rest/v1/cotizaciones')
+    : null
   await enlaces.filter({ hasText: 'Cotizaciones' }).click()
-  await expect(page).toHaveURL(/seccion=cotizaciones/)
-  const bytes = (await (await respuesta).body()).length
+  await expect(titulo(page)).toBeFocused()
+  await expect(enlaces.filter({ hasText: 'Cotizaciones' })).toHaveAttribute(
+    'aria-current',
+    'location',
+  )
+  await expect(filas(page)).toHaveCount(20)
+  const bytes = respuesta ? (await (await respuesta).body()).length : 0
   await expect(filas(page)).toHaveCount(20)
   expect(lecturas).toHaveLength(1)
   expect(lecturas[0]).toContain(`lead_id=eq.${leads.veintidos}`)
@@ -129,7 +144,9 @@ test('E1 la dueña: en «Datos» no se lee nada; «Cotizaciones» va entre «Opo
     description: `nodos con 20: ${String(nodos)}, bytes: ${String(bytes)}`,
   })
   expect(nodos).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_20)
-  expect(bytes).toBeLessThanOrEqual(TOPE_DE_BYTES)
+  if (respuesta) {
+    expect(bytes).toBeLessThanOrEqual(TOPE_DE_BYTES)
+  }
 
   const masNueva = sql(
     `select numero from public.cotizaciones where lead_id = ${literal(leads.veintidos)}::uuid order by creado_en desc, id desc limit 1`,
@@ -180,17 +197,15 @@ test('E2 con 520: «Ver más» llega a 500, dice el tope y «Ver todas en Cotiza
   await expect(page.getByText(`Cotizaciones de ${nombreDe(leads.quinientas)}.`)).toBeVisible()
 })
 
-test('E3 sin cotizaciones.ver no hay sección y ?seccion=cotizaciones abre «Datos»', async ({
+test('E3 sin cotizaciones.ver no hay bloque ni entrada en el índice, y ?seccion=cotizaciones queda al principio', async ({
   page,
 }) => {
   await entrar(page, sinClave, { fresco: true })
   const lecturas = vigilarLecturas(page)
   await page.goto(`/leads/${leads.compartido}?seccion=cotizaciones`)
-  await expect(barra(page).getByRole('link', { name: 'Cotizaciones' })).toHaveCount(0)
-  await expect(barra(page).getByRole('link', { name: 'Datos' })).toHaveAttribute(
-    'aria-current',
-    'page',
-  )
+  await expect(indice(page).getByRole('link', { name: 'Seguimientos' })).toBeVisible()
+  await expect(indice(page).getByRole('link', { name: 'Cotizaciones' })).toHaveCount(0)
+  await expect(page.locator('#cotizaciones')).toHaveCount(0)
   expect(lecturas).toEqual([])
 })
 
@@ -199,20 +214,21 @@ test('E3b con «propios» la sección está aunque el lead no sea de su cartera,
 }) => {
   await entrar(page, ana, { fresco: true })
   await page.goto(`/leads/${leads.compartido}`)
-  await barra(page).getByRole('link', { name: 'Cotizaciones' }).click()
+  await indice(page).getByRole('link', { name: 'Cotizaciones' }).click()
   await expect(filas(page)).toHaveCount(1)
   await expect(filas(page).first()).toContainText('Ana Propios')
   await expect(lista(page)).not.toContainText('Gala Guarda')
 })
 
-test('E4 un lead sin cotizaciones: recargar con la sección abierta dice que no hay', async ({
+test('E4 un lead sin cotizaciones: llegar con ?seccion=cotizaciones lleva al bloque y dice que no hay, también al recargar', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto(`/leads/${leads.ninguna}?seccion=cotizaciones`)
-  await expect(barra(page).getByRole('link', { name: 'Cotizaciones' })).toHaveAttribute(
+  await expect(titulo(page)).toBeFocused()
+  await expect(indice(page).getByRole('link', { name: 'Cotizaciones' })).toHaveAttribute(
     'aria-current',
-    'page',
+    'location',
   )
   await expect(page.getByText('Sin cotizaciones que puedas ver.')).toBeVisible()
   await page.reload()

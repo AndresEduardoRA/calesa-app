@@ -10,8 +10,8 @@ const VIGILAR_MS = 4000
 
 // Al llegar a la ficha con un bloque pedido (`?seccion=` de un enlace viejo, un aviso, la bandeja), o cuando el servidor cambia el
 // pedido, lleva la página a ese bloque (sin animación) y le da el foco a su título. Con un modal de la URL abierto (`?panel=`) sólo
-// desplaza: el foco es del modal. Si un bloque de arriba crece mientras llega lo suyo, vuelve a llevar **una** vez, salvo que la
-// persona ya se haya movido (rueda, toque o tecla): nunca le pelea el desplazamiento. Si el bloque todavía muestra su esqueleto (sin
+// desplaza: el foco es del modal. Si un bloque de arriba crece mientras llega lo suyo (pueden llegar varios, cada uno a su hora), lo vuelve a
+// llevar mientras se vigila, salvo que la persona ya se haya movido (rueda, toque, clic o tecla): nunca le pelea el desplazamiento. Si el bloque todavía muestra su esqueleto (sin
 // título), el foco va al título cuando llega, salvo que la persona ya haya hecho algo.
 export function useIrAlLlegar(ancla: string | null) {
   useEffect(() => {
@@ -28,7 +28,6 @@ export function useIrAlLlegar(ancla: string | null) {
       return
     }
     let tocado = false
-    let reLlevado = false
     const marcar = () => {
       tocado = true
     }
@@ -43,11 +42,7 @@ export function useIrAlLlegar(ancla: string | null) {
         sinTitulo = false
         titulo.focus({ preventScroll: true })
       }
-      if (reLlevado) {
-        return
-      }
       if (Math.abs(bloque.getBoundingClientRect().top - esperado) > 4) {
-        reLlevado = true
         bloque.scrollIntoView({ block: 'start' })
       }
     })
@@ -56,6 +51,7 @@ export function useIrAlLlegar(ancla: string | null) {
     const opciones = { passive: true } as const
     window.addEventListener('wheel', marcar, opciones)
     window.addEventListener('touchstart', marcar, opciones)
+    window.addEventListener('pointerdown', marcar, opciones)
     window.addEventListener('keydown', marcar)
     const fin = window.setTimeout(() => {
       observador.disconnect()
@@ -65,6 +61,7 @@ export function useIrAlLlegar(ancla: string | null) {
       observador.disconnect()
       window.removeEventListener('wheel', marcar)
       window.removeEventListener('touchstart', marcar)
+      window.removeEventListener('pointerdown', marcar)
       window.removeEventListener('keydown', marcar)
     }
   }, [ancla])

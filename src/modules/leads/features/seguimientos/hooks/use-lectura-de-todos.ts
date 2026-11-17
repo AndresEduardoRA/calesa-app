@@ -5,17 +5,16 @@ import { leerMasSeguimientos, leerTiposDeSeguimiento } from '../../../composicio
 import type { TipoDeSeguimiento } from '../../../entities/alta'
 import type { PaginaDeSeguimientos } from '../../../entities/seguimiento'
 
-export type DatosDelRapido = {
+export type DatosDeTodos = {
   pagina: PaginaDeSeguimientos
   tipos: TipoDeSeguimiento[]
 }
 
 type Lectura =
-  { leadId: string; estado: 'listo'; datos: DatosDelRapido } | { leadId: string; estado: 'error' }
+  { leadId: string; estado: 'listo'; datos: DatosDeTodos } | { leadId: string; estado: 'error' }
 
-// Lo mismo que lee la ficha para «Seguimientos» (la primera página, que dice si se puede anotar, y los
-// tipos activos: una lista fija de configuración, que no crece con el lead), pero desde el navegador y
-// sólo al elegir la pestaña: el listado no lo paga. Los recordatorios son de su pestaña.
+// Lo que lee «Ver todos los seguimientos» al abrirse, desde el navegador: la primera página (que dice si se puede anotar) y los tipos
+// activos (una lista fija de configuración, que no crece con el lead). La ficha no lo paga hasta entonces.
 async function leer(leadId: string): Promise<Lectura> {
   try {
     const [pagina, tipos] = await Promise.all([
@@ -31,7 +30,7 @@ async function leer(leadId: string): Promise<Lectura> {
   }
 }
 
-export function useSeguimientosDelRapido(leadId: string) {
+export function useLecturaDeTodos(leadId: string) {
   const [lectura, setLectura] = useState<Lectura | null>(null)
   const [intento, setIntento] = useState(0)
   useEffect(() => {

@@ -154,26 +154,63 @@ export async function notaDelInteres(
   return data === null ? undefined : data.nota
 }
 
+// `?seccion=vehiculos` lleva al bloque Relacionados de la ficha, donde quedó la gestión de «Vehículos» (al pie: los anteriores, el panel
+// para vincular o marcar uno y la confirmación de desvincular).
 export async function irAVehiculos(page: Page, leadId: string, consulta = ''): Promise<void> {
   await page.goto(`/leads/${leadId}?seccion=vehiculos${consulta}`)
-  await expect(seccionVehiculos(page)).toBeVisible()
+  await expect(relacionadosDelLead(page)).toBeVisible()
 }
 
-export const seccionVehiculos = (page: Page): Locator =>
-  aLaVista(page.getByRole('region', { name: 'Vehículos', exact: true }))
+// El bloque «Relacionados» compacto (los grupos) y el bloque entero de la ficha (con la gestión al pie).
+export const relacionadosDelLead = (page: Page): Locator =>
+  aLaVista(page.getByRole('region', { name: 'Relacionados', exact: true }))
+export const seccionVehiculos = (page: Page): Locator => aLaVista(page.locator('#relacionados'))
 export const vinculados = (page: Page): Locator =>
-  aLaVista(page.getByRole('list', { name: 'Vehículos vinculados' }))
+  relacionadosDelLead(page).getByRole('region', { name: 'Vinculado', exact: true })
 export const interesados = (page: Page): Locator =>
-  aLaVista(page.getByRole('list', { name: 'Vehículos de interés' }))
+  relacionadosDelLead(page).getByRole('region', { name: 'Interesado', exact: true })
 export const panelAgregar = (page: Page): Locator =>
   page.getByRole('dialog', { name: 'Agregar vehículo' })
 
-// Abre «Agregar vehículo», busca y elige uno.
-export async function elegirVehiculo(page: Page, titulo: string): Promise<Locator> {
-  await aLaVista(page.getByRole('button', { name: 'Agregar vehículo' }))
-    .first()
-    .click()
+// Una acción del «⋯» de la fila de un vehículo en un grupo de Relacionados («Desvincular», «Quitar interés»…).
+export async function accionDeLaFila(
+  grupo: Locator,
+  titulo: string,
+  accion: string,
+): Promise<void> {
+  await grupo.getByRole('button', { name: `Más acciones de ${titulo}` }).click()
+  await grupo.page().getByRole('menuitem', { name: accion, exact: true }).click()
+}
+
+// «Vincular o marcar un vehículo» de Relacionados: a la vista si no hay nada; si no, en el «⋯» de su grupo o del bloque.
+export async function abrirAgregarVehiculo(page: Page): Promise<Locator> {
   const panel = panelAgregar(page)
+  const nombre = 'Vincular o marcar un vehículo'
+  // El de la vez anterior termina de cerrarse antes de abrirlo de nuevo. Cada vuelta mira primero si el panel ya está, y los clics tienen su
+  // tope: en el celular un aviso puede tapar el «⋯» un momento, y un clic sin tope esperaría hasta vencer la prueba.
+  await expect(panel).toBeHidden()
+  await expect(async () => {
+    if (await panel.isVisible()) {
+      return
+    }
+    const suelta = relacionadosDelLead(page).getByRole('link', { name: nombre })
+    if (await suelta.isVisible()) {
+      await suelta.click({ timeout: 2000 })
+    } else {
+      await relacionadosDelLead(page)
+        .getByRole('button', { name: /^Más acciones de «(Relacionados|Vinculado|Interesado)»$/ })
+        .first()
+        .click({ timeout: 2000 })
+      await page.getByRole('menuitem', { name: nombre }).click({ timeout: 2000 })
+    }
+    await expect(panel).toBeVisible({ timeout: 2000 })
+  }).toPass()
+  return panel
+}
+
+// Abre «Vincular o marcar un vehículo», busca y elige uno.
+export async function elegirVehiculo(page: Page, titulo: string): Promise<Locator> {
+  const panel = await abrirAgregarVehiculo(page)
   await expect(panel).toBeVisible()
   await panel.getByLabel('Buscar por título, VIN, lote o número').fill(titulo)
   await panel.getByRole('radio', { name: new RegExp(titulo) }).check()

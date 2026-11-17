@@ -49,7 +49,10 @@ export function OportunidadesDelLead(props: Props) {
   const editando = panel.editando ? (lista.find((o) => o.id === panel.editando) ?? null) : null
   const nueva = puedoCrear ? <BotonNuevaOportunidad alAbrir={panel.abrirNueva} /> : null
   return (
-    <section aria-labelledby="titulo-oportunidades" className="grid gap-3">
+    <section
+      aria-labelledby="titulo-oportunidades"
+      className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 id="titulo-oportunidades" className="text-(length:--text-lg) font-medium">
           Tus oportunidades

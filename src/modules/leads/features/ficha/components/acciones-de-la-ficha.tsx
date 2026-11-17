@@ -3,20 +3,17 @@
 import type { Route } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
 import { RUTAS } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
-import { abrirConVuelta, alLlegarA } from '@/shared/ui/vuelta-del-foco'
-import { PANEL_ANOTAR_SEGUIMIENTO } from '../../../entities/edicion-de-seguimiento'
 import { CLAVE_DE_SECCION, type LeadDeFicha } from '../../../entities/ficha'
 import { motivoParaNoEnviar } from '../../../entities/papelera'
-import { PANEL_AGENDAR_RECORDATORIO } from '../../../entities/recordatorios'
 import type { Etiquetas } from '../../etiquetas/hooks/use-etiquetas'
 import { MenuDeLeadConMarcas } from '../../marcas/components/menu-de-lead'
 import type { Marcas } from '../../marcas/hooks/use-marcas'
 import { NuevaOportunidadDelLead } from '../../oportunidades/components/nueva-oportunidad-del-lead'
 import { usePanelDeOportunidadRapida } from '../../oportunidades/hooks/use-panel-de-oportunidad-rapida'
 import { rutaDeLasOportunidadesDe } from '../../../entities/oportunidad-rapida'
+import { useAbrirEnLaFicha } from '../hooks/use-abrir-en-la-ficha'
 import { BotonEditarLead } from './boton-editar-lead'
 
 type Props = {
@@ -44,21 +41,26 @@ function EnlaceACotizar({ ruta }: { ruta: string }) {
   )
 }
 
-// Enviar a la papelera desde la ficha: con un vehículo vinculado se apaga con su motivo y ofrece ir a «Vehículos»; enviado, lleva al listado.
-function papeleraDeLaFicha(ficha: LeadDeFicha, irA: (url: string) => void) {
+// Enviar a la papelera desde la ficha: con un vehículo vinculado se apaga con su motivo y ofrece ir a «Vehículos» (salta a Relacionados,
+// donde está su gestión); enviado, lleva al listado.
+function papeleraDeLaFicha(
+  ficha: LeadDeFicha,
+  irA: (url: string) => void,
+  saltarA: (ancla: string, url: string) => void,
+) {
   return {
     motivo: motivoParaNoEnviar(ficha.vehiculosVinculados),
     alEnviado: () => {
       irA(RUTAS.leads)
     },
     alIrAVehiculos: () => {
-      irA(`${RUTAS.leads}/${ficha.id}?${CLAVE_DE_SECCION}=vehiculos`)
+      saltarA('relacionados', `${RUTAS.leads}/${ficha.id}?${CLAVE_DE_SECCION}=vehiculos`)
     },
   }
 }
 
 // Lo que se puede hacer con el lead desde su cabecera: «Editar», «Cotizar» (sólo a quien cotiza) y el «⋯», con la lista de siempre (`accionesDeLead()`). Anotar y agendar
-// viven en «Seguimientos»: se va a esa sección con su modal abierto. «Nueva oportunidad…» abre su modal (con el aviso de las que ya tiene) donde
+// abren su modal (del bloque «Seguimientos y recordatorios») y llevan la página a ese bloque, sin navegar. «Nueva oportunidad…» abre su modal (con el aviso de las que ya tiene) donde
 // se está, y «Ver oportunidades» va a su sección. Enviar a la papelera se hace y ofrece «Deshacer»; después lleva al
 // listado, porque la ficha ya no existe para nadie. Con un vehículo vinculado que quien mira ve, se apaga con el motivo y ofrece ir a
 // «Vehículos»; si lo frena uno que no ve, lo dice la base al intentar.
@@ -78,14 +80,7 @@ export function AccionesDeLaFicha(props: Props) {
   const irA = (url: string) => {
     router.push(url as Route)
   }
-  // Con la marca de la vuelta del foco: tras recargar con el modal abierto, «atrás» devuelve el foco al «⋯» (4-61).
-  const irAlSeguimiento = (modal: string) => {
-    const url = `${RUTAS.leads}/${ficha.id}?${CLAVE_DE_SECCION}=seguimientos&${CLAVE_DE_PANEL}=${modal}`
-    abrirConVuelta(CLAVE_DE_PANEL, () => {
-      irA(url)
-      return alLlegarA(url)
-    })
-  }
+  const enLaFicha = useAbrirEnLaFicha(irA)
   return (
     <>
       {puedeEditar ? <BotonEditarLead /> : null}
@@ -101,12 +96,8 @@ export function AccionesDeLaFicha(props: Props) {
         acciones={
           puedeEditar
             ? {
-                alAnotar: () => {
-                  irAlSeguimiento(PANEL_ANOTAR_SEGUIMIENTO)
-                },
-                alAgendar: () => {
-                  irAlSeguimiento(PANEL_AGENDAR_RECORDATORIO)
-                },
+                alAnotar: enLaFicha.anotar,
+                alAgendar: enLaFicha.agendar,
                 alNuevaOportunidad: oportunidad.abrir,
               }
             : undefined
@@ -114,7 +105,7 @@ export function AccionesDeLaFicha(props: Props) {
         verOportunidades={
           ficha.enCartera
             ? () => {
-                irA(rutaDeLasOportunidadesDe(ficha.id))
+                enLaFicha.irA('oportunidades', rutaDeLasOportunidadesDe(ficha.id))
               }
             : undefined
         }
@@ -125,7 +116,7 @@ export function AccionesDeLaFicha(props: Props) {
               }
             : undefined
         }
-        papelera={papeleraDeLaFicha(ficha, irA)}
+        papelera={papeleraDeLaFicha(ficha, irA, enLaFicha.irA)}
       />
       {puedeEditar ? (
         <NuevaOportunidadDelLead

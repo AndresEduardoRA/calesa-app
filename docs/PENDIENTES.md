@@ -123,7 +123,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `vehiculos_papelera_listar()` y `leads_papelera_listar()` usan el mismo `exists` por lote: sin medir si con poco volumen leen el índice entero.
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
 - **[—]** El bloque «Leads sin seguimiento» de Inicio cuesta lo que pesa la cartera de quien mira; no se midió con volumen.
-- **[4-73]** Presupuestos al borde: JS de `/cotizaciones/nuevo` 439,5 de 460 KB, la hoja 491 nodos de 500, la ficha del lead «Datos» 39,2 de 43 KB y «Oportunidades» 61,2 de 66 — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
+- **[4-73]** Presupuestos al borde: JS de `/cotizaciones/nuevo` 439,5 de 460 KB, la hoja 491 nodos de 500, la ficha del lead entera 130,8 de 138 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
+- **[T33]** «Vincular o marcar un vehículo» de la ficha del lead (`?panel=agregar-vehiculo`, `shallow: false`) y cada cambio de un recordatorio (`router.refresh()`) releen todos los bloques de la ficha: con todo a la vista cuesta más que antes; se acota cuando moleste (que cada bloque relea lo suyo).
 - **[T32]** La tarea de oro 2 entera de la asesora mide 65 teclas y KLM 59,2 s en escritorio sobre `be965565` (`docs/ESTADO.md` dice 58,1): cuatro paradas más del marco antes del contenido, de un cambio anterior — dentro de los 90 s; actualizar el número o quitar las paradas.
 - **[T27]** El tope de JS de `/logistica` es 390 KB en `e2e/soporte/presupuestos.ts` y 410 en `docs/RENDIMIENTO.md` › «JS en frío» — dejar uno solo (lo medido, 365,0, entra en los dos).
 - **[—]** Tope de 40 ítems por diseño: `subasta_usa` tiene 39 — para crecer, subir `_diseno_maximo_de_items()` y la constante midiendo la hoja, o partir la hoja.
@@ -179,6 +180,9 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
   (sin tocar el de la lateral de escritorio).
 - **[T34]** «Abrir la unidad» de «Qué falta» en la ficha del vehículo lleva a un hueco aunque su regla del flujo esté apagada (allí no estará): pasar a la ficha
   qué huecos dibuja la unidad (un dato de `leerQueFalta`) en vez de suponerlos todos.
+- **[T33]** Tras agregar un teléfono extra en el panel de edición de la ficha, el foco va a «Nombre» (la ficha se vuelve a leer y el panel se rearma) y no a «Agregar teléfono».
+- **[T26]** `/leads?lead=<id>&extra=nuevo` pone `?panel=editar-lead` aunque quien mira no pueda editar: no se abre nada, pero la clave queda en la URL hasta cerrar el resumen (`use-drawer-de-lead.ts`; que el efecto la quite sin `leads.editar`).
+- **[T33]** Con «Ver todos los seguimientos» abierto, cerrar el modal de editar uno devuelve el foco al «Editar» del bloque de atrás (el primero con su `data-seguimiento-editar`), que está inerte bajo el drawer.
 - **[—]** Al volver de «Nuevo lead» a «Nuevo proyecto» se apilan dos avisos («Lead creado» y «Recuperamos lo que habías escrito y no guardaste.») — el
   arreglo va en el marco del alta (no avisar «Lead creado» cuando vuelve a un formulario con `?elegir=`) o en el borrador (no avisar al reponer tras el alta).
 - **[T20]** Con «Ver como» la franja del aviso (≈ 2,25 rem) hace desplazar la página de la unidad de logística en escritorio: el alto fijo (`--alto-del-detalle`) no la descuenta.
@@ -189,7 +193,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[R7]** R7 sólo es dura en `RUTAS_DE_LAS_FASES_5_A_9` (`e2e/soporte/accesibilidad-conocidos.ts`); fuera quedan 5 blancos (`/`, `/leads` ×2, `/leads/[id]` → `tel:`, `/configuracion/origenes/[id]`) — se cierra ampliándola a toda la app.
 - **[4-50]** El resumen fijo de la hoja no cabe entero al 200 % con la página arriba (empeoró con la barra del cliente).
 - **[4-47]** La ayuda de una tabla corta en 1.000 filas sin enlace al editor, y una tabla congelada sin copia viva sale con claves en vez de etiquetas — falta el enlace y congelar `columnas` (espera a la baja de tablas).
-- **[4-61 a 4-63]** El segundo «atrás» tras recargar desde una pestaña de la ficha deja el foco en `body` (comprobar si sigue; anotar y agendar ya van por `abrirConVuelta`).
 - **[—]** `LugarDelAjuste` no recuerda la última celda: el panel del ⚙ no se desliza y el foco se devuelve a mano; tras publicar o descartar el borrador de la fórmula, el foco cae al `body`.
 - **[—]** Panel de la unidad: «Qué falta» deja un hueco vacío arriba del primer destino y de «Desde esta fase no hay a dónde mover.».
 - **[—]** El resumen del contenedor pone «Mover el grupo» debajo de toda la lista: con 8 unidades hay que desplazar para llegar a «Marcar que llegó».

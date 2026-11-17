@@ -13,6 +13,8 @@ type Args = {
   // Todo lo que se tiene: pendientes, completados y sueltos.
   cargados: readonly Recordatorio[]
   buscar: (id: string) => Promise<'hecha' | 'fallo'>
+  // Falso: otro dueño de los modales responde a la URL; éste no busca nada.
+  atiendeLaUrl?: boolean
 }
 
 type Busqueda = { id: string; resultado: 'hecha' | 'fallo' }
@@ -36,8 +38,13 @@ function situacion(
 // plegado no se abrió, o se recargó): antes de decir que no está, se lee por su id (un pedido, cargue lo
 // que cargue). Mientras se lee la lista o se busca, el modal no decide; si la lectura falla (ya se
 // avisó), tampoco: la URL queda y el modal no se abre. Devuelve si todavía se está buscando.
-export function useBusquedaDeRecordatorio({ estado, cargados, buscar }: Args): boolean {
-  const { editando } = usePanelDeRecordatorio()
+export function useBusquedaDeRecordatorio({
+  estado,
+  cargados,
+  buscar,
+  atiendeLaUrl = true,
+}: Args): boolean {
+  const { editando } = usePanelDeRecordatorio({ atiendeLaUrl })
   const [busqueda, setBusqueda] = useState<Busqueda | null>(null)
   const { falta, buscando } = situacion(editando, { estado, cargados }, busqueda)
   const ref = useRef(buscar)

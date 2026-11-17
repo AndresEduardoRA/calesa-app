@@ -12,11 +12,14 @@ import {
 import { MENSAJE_DE_SEGUIMIENTO_NO_DISPONIBLE } from '../../../entities/seguimiento'
 import { usePanelDeSeguimiento } from './use-panel-de-seguimiento'
 import type { Seguimientos } from './use-seguimientos'
+import { focoDeQuienAbrio, recordarQuienAbre } from '@/shared/ui/foco-de-quien-abre'
 
 type Args = {
   seguimientos: Seguimientos
   // Hay tipos de seguimiento activos (sin ninguno no se anota).
   hayTipos: boolean
+  // Falso: otro dueño de los modales responde a la URL (`usePanelDeSeguimiento`).
+  atiendeLaUrl?: boolean
 }
 
 const ES_GUID = z.guid()
@@ -136,12 +139,14 @@ function useYaAbierta(base: string | null) {
 // `leads.editar` (sin eso, la URL escrita a mano no abre nada). Editar abre el de `?seguimiento=<id>`
 // entre los propios (ajeno, eliminado o inventado «no está», con el mismo aviso). Lo que deja de estar
 // con el modal abierto no lo cierra: el modal dice por qué ya no se guarda.
-export function useModalDeSeguimiento({ seguimientos, hayTipos }: Args) {
-  const panel = usePanelDeSeguimiento()
+export function useModalDeSeguimiento({ seguimientos, hayTipos, atiendeLaUrl = true }: Args) {
+  const panel = usePanelDeSeguimiento({ atiendeLaUrl })
   const { puedoAnotar } = seguimientos
   const { anotando, editando } = panel
   const { editable, noEsta } = objetivoDe(seguimientos, editando)
   const enLaUrl = modoDe(anotando, editando)
+  // Llegó abierto con la página (recarga o enlace) y nadie lo abrió después: al cerrarse, el foco lo devuelven Base UI y la vuelta del historial.
+  const llegoAbierto = useRef(enLaUrl !== null)
   const apertura = useApertura(enLaUrl !== null)
   const { yaAbierta, anotar } = useYaAbierta(claveDeRevision(apertura, enLaUrl, editando, true))
   const busqueda = useBusquedaDelEditado(seguimientos, editando, noEsta && !yaAbierta)
@@ -162,13 +167,26 @@ export function useModalDeSeguimiento({ seguimientos, hayTipos }: Args) {
     llave: `${String(apertura)}:${destino ?? ''}`,
     original,
     noDisponible: abierto && noEsta ? MENSAJE_DE_SEGUIMIENTO_NO_DISPONIBLE : null,
-    abrirAnotar: panel.abrirAnotar,
+    // Quien lo abre (este botón o el «⋯» de la cabecera de la ficha) se recuerda: al cerrarse, el foco vuelve ahí.
+    abrirAnotar: () => {
+      llegoAbierto.current = false
+      recordarQuienAbre()
+      panel.abrirAnotar()
+    },
     abrirEdicion: panel.abrirEdicion,
     cerrar: panel.cerrar,
-    // El «Editar» del que se estaba editando, si sigue en la lista.
-    focoAlCerrar: (): HTMLElement | null =>
-      original
-        ? document.querySelector<HTMLElement>(`[data-seguimiento-editar="${original.id}"]`)
-        : null,
+    // El «Editar» del que se estaba editando, si sigue en la lista; al crear, quien lo abrió si sigue en la página (en la ficha el bloque está
+    // siempre montado: sin esto, abierto desde la cabecera devolvería el foco al botón del bloque). `true`: el de Base UI (llegó abierto con la
+    // página; tras un «atrás» lo devuelve `vuelta-del-foco`). Nulo: el modal elige su botón.
+    focoAlCerrar: (): HTMLElement | boolean | null => {
+      if (original) {
+        return document.querySelector<HTMLElement>(`[data-seguimiento-editar="${original.id}"]`)
+      }
+      const quien = focoDeQuienAbrio()
+      if (typeof quien !== 'boolean') {
+        return quien
+      }
+      return llegoAbierto.current ? true : null
+    },
   }
 }

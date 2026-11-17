@@ -1,7 +1,11 @@
 import { expect, test, type Page } from './soporte/prueba'
 import { abrirNuevoLeadDeLaBarra, entrar } from './soporte/alta'
 import { irAFicha, ponerExtras } from './soporte/leads-ficha'
-import { abrirAgregarTelefono, nacional } from './soporte/leads-ficha-telefonos'
+import {
+  abrirAgregarTelefono,
+  abrirPanelConTelefonos,
+  nacional,
+} from './soporte/leads-ficha-telefonos'
 import { irALeads, nombre } from './soporte/leads-listado'
 import { limpiarRecorrido, prepararRecorrido, type TerrenoDelRecorrido } from './soporte/recorrido'
 
@@ -27,7 +31,8 @@ test('con un modal abierto, el aviso está en el árbol de accesibilidad y se al
   await ponerExtras(r.dos.id, [{ telefono: `${r.t.codigo}${nacional()}`, etiqueta: 'Casa' }])
   await entrar(page, r.ana.email)
   await irAFicha(page, r.dos.id)
-  await page.getByRole('button', { name: 'Quitar' }).click()
+  // Los extras se quitan en el panel de edición (la ficha los muestra sólo para leer).
+  await (await abrirPanelConTelefonos(page)).getByRole('button', { name: 'Quitar' }).click()
   await expect(
     page.locator('[data-sonner-toast]').filter({ hasText: 'Teléfono quitado.' }),
   ).toBeVisible()

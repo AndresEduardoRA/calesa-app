@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PANEL_ANOTAR_SEGUIMIENTO } from './edicion-de-seguimiento'
-import { CLAVE_DE_SECCION, SECCIONES_DE_LEAD } from './ficha'
+import { anclaDeLaSeccion } from './bloques-de-la-ficha'
+import { CLAVE_DE_SECCION } from './ficha'
 import { PANEL_AGENDAR_RECORDATORIO } from './recordatorios'
 import { rutaDeAccionSobreUnLead } from './ruta-de-accion-de-lead'
 
@@ -18,6 +19,6 @@ describe('rutaDeAccionSobreUnLead', () => {
     expect('anotar-seguimiento').toBe(PANEL_ANOTAR_SEGUIMIENTO)
     expect('agendar-recordatorio').toBe(PANEL_AGENDAR_RECORDATORIO)
     expect(CLAVE_DE_SECCION).toBe('seccion')
-    expect(SECCIONES_DE_LEAD.map((s) => s.clave)).toContain('seguimientos')
+    expect(anclaDeLaSeccion('seguimientos')).toBe('seguimientos')
   })
 })

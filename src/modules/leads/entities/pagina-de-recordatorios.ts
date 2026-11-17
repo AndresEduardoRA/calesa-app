@@ -2,6 +2,7 @@
 // los pendientes (los vencidos primero: `recordar_en` ascendente) y los completados (el último que se
 // completó arriba), que se leen sólo al abrir su plegado. Sin conteo: cuántos hay no se dice.
 import { z } from 'zod'
+import type { Resultado } from '@/shared/lib/errores'
 import { recordatoriosDesde, type Recordatorio } from './recordatorios'
 
 export type PaginaDeRecordatorios = {
@@ -118,3 +119,9 @@ export function ponerEnLasListas(
     hayCompletados: true,
   }
 }
+
+// Los pendientes más próximos de quien mira sobre un lead, leídos en el servidor (el resumen de la ficha): la primera página, de `tamano`.
+export type LectorDeRecordatoriosDelLead = (pedido: {
+  leadId: string
+  tamano: number
+}) => Promise<Resultado<PaginaDeRecordatorios>>

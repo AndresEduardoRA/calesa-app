@@ -13,6 +13,9 @@ vi.mock('../../oportunidades/hooks/use-panel-de-oportunidad-rapida', () => ({
 vi.mock('../../oportunidades/components/nueva-oportunidad-del-lead', () => ({
   NuevaOportunidadDelLead: () => null,
 }))
+vi.mock('../hooks/use-abrir-en-la-ficha', () => ({
+  useAbrirEnLaFicha: () => ({ anotar: vi.fn(), agendar: vi.fn(), irA: vi.fn() }),
+}))
 vi.mock('./boton-editar-lead', () => ({
   BotonEditarLead: () => <button type="button">Editar</button>,
 }))

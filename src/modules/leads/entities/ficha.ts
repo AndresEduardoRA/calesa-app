@@ -149,14 +149,11 @@ export function origenDeLaFicha(
 
 // --- Las secciones de la ficha (`?seccion=`) ----------------------------------------------------------
 
-// Una sección es `disponible` cuando existe su contenido. Las demás (historial) aparecen
-// con su parte: ninguna pestaña lleva a la nada. Cada sección que se suma agrega su clave a
-// `SeccionDeLead` y su caso en `<FichaDeLead>`. Ninguna lleva un número: el de «Seguimientos»
-// insinuaría los privados de otros.
+// Los enlaces de siempre nombran una sección (la ficha ya no tiene pestañas: cada una es un bloque a la vista, o el principio).
 export type SeccionDeLead =
   'datos' | 'seguimientos' | 'vehiculos' | 'oportunidades' | 'cotizaciones' | 'portal'
 
-// Lo que la persona ve y decide si una sección se dibuja: «Vehículos» sólo con `vehiculos.ver` en algún
+// Lo que la persona ve y decide si un bloque se dibuja: «Vehículos» sólo con `vehiculos.ver` en algún
 // origen (sin eso estaría siempre vacía); «Oportunidades» sólo con el lead en su cartera (sin ella no
 // tiene ni puede crear ninguna: las suyas se ocultan); «Cotizaciones» sólo con `cotizaciones.ver` en algún origen, sin mirar la cartera (la RLS recorta las filas y, si no
 // llega ninguna, dice que no hay); «Portal» con la cartera y
@@ -168,41 +165,26 @@ export type LoQueVe = {
   portal: boolean
 }
 
-export const SECCIONES_DE_LEAD: readonly {
-  clave: SeccionDeLead
-  titulo: string
-  disponible: boolean
-  // Qué tiene que ver la persona para que la sección aparezca.
-  pide?: keyof LoQueVe
-}[] = [
-  { clave: 'datos', titulo: 'Datos', disponible: true },
-  { clave: 'seguimientos', titulo: 'Seguimientos', disponible: true },
-  { clave: 'vehiculos', titulo: 'Vehículos', disponible: true, pide: 'vehiculos' },
-  { clave: 'oportunidades', titulo: 'Oportunidades', disponible: true, pide: 'oportunidades' },
-  { clave: 'cotizaciones', titulo: 'Cotizaciones', disponible: true, pide: 'cotizaciones' },
-  { clave: 'portal', titulo: 'Portal', disponible: true, pide: 'portal' },
+// Las secciones de los enlaces de siempre (`?seccion=`), y qué tiene que ver la persona para que exista cada una: cada una lleva a su
+// bloque de la ficha (`anclaDeLaSeccion()`).
+const SECCIONES: readonly { clave: SeccionDeLead; pide?: keyof LoQueVe }[] = [
+  { clave: 'datos' },
+  { clave: 'seguimientos' },
+  { clave: 'vehiculos', pide: 'vehiculos' },
+  { clave: 'oportunidades', pide: 'oportunidades' },
+  { clave: 'cotizaciones', pide: 'cotizaciones' },
+  { clave: 'portal', pide: 'portal' },
 ]
 
 export const CLAVE_DE_SECCION = 'seccion'
 
-const disponibles = (ve: LoQueVe) =>
-  SECCIONES_DE_LEAD.filter((seccion) => seccion.disponible && (!seccion.pide || ve[seccion.pide]))
-
-// Con una sola sección no hay nada entre qué elegir: la barra no se dibuja.
-export function hayBarraDeSecciones(ve: LoQueVe): boolean {
-  return disponibles(ve).length > 1
-}
-
-export function seccionesDisponibles(
-  ve: LoQueVe,
-): readonly { clave: SeccionDeLead; titulo: string }[] {
-  return disponibles(ve).map(({ clave, titulo }) => ({ clave, titulo }))
-}
-
 // Lo que viene en la URL lo puede escribir cualquiera: lo que no es una sección que existe (o que la
-// persona no ve) abre «Datos».
+// persona no ve) es «Datos» (el principio de la ficha).
 export function seccionDeLead(valor: string | undefined, ve: LoQueVe): SeccionDeLead {
-  return disponibles(ve).find((seccion) => seccion.clave === valor)?.clave ?? 'datos'
+  return (
+    SECCIONES.find((seccion) => seccion.clave === valor && (!seccion.pide || ve[seccion.pide]))
+      ?.clave ?? 'datos'
+  )
 }
 
 // Un número normalizado como se lee: «+591 70011002» si es el del país de la empresa (el lead guarda

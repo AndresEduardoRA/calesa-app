@@ -5,7 +5,7 @@ import { idDe } from './soporte/leads'
 import { bloqueDeCartera, panelDeCartera, rpcComo } from './soporte/leads-cartera'
 import { esMovil } from './soporte/inventario'
 import { cabeEnLaPantalla, completoCon, nacional } from './soporte/leads-ficha-telefonos'
-import { irAFicha, nuevoLead } from './soporte/leads-ficha'
+import { esperarFichaHidratada, irAFicha, nuevoLead } from './soporte/leads-ficha'
 import {
   CON_ESTA_CLAVE,
   GENERAR,
@@ -47,8 +47,10 @@ test.beforeEach(async ({ context }) => {
 const leadDePia = (corto: string) =>
   nuevoLead({ corto, telefono: completoCon(t, nacional()), deQuien: t.pia.email })
 
-const irAPortal = (page: Parameters<typeof irAFicha>[0], leadId: string) =>
-  irAFicha(page, leadId, '?seccion=portal')
+async function irAPortal(page: Parameters<typeof irAFicha>[0], leadId: string) {
+  await irAFicha(page, leadId, '?seccion=portal')
+  await esperarFichaHidratada(page)
+}
 
 const CODIGO = /^[A-Z]{2,4}-[2-9A-HJ-NP-Z]{5}$/
 

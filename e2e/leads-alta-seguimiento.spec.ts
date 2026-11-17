@@ -162,7 +162,7 @@ test('un seguimiento enriquecido con fecha pasada se guarda como documento y se 
 
   await page.goto(`/leads/${lead?.id ?? ''}?seccion=seguimientos`)
   const anotado = page
-    .getByRole('region', { name: 'Seguimientos' })
+    .getByRole('region', { name: 'Seguimientos', exact: true })
     .getByRole('article', { name: 'Hablamos por teléfono' })
   await expect(anotado.locator('strong')).toHaveText('Urgente')
   await expect(anotado.locator('ul li')).toHaveText(['RAV4 2019'])
