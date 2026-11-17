@@ -34,16 +34,16 @@ export const PANEL_CAMBIAR_TELEFONO = 'cambiar-telefono'
 export const PANEL_AGREGAR_TELEFONO = 'agregar-telefono'
 
 // Qué hacer con un `?panel=agregar-telefono` viejo en la ficha: el modal ahora vive en el panel de edición, así que se reemplaza por la
-// edición con «Agregar teléfono» abierto (`?panel=editar-lead&extra=nuevo`) si quien mira puede abrirla, o se quita si no. Nulo: no
+// edición con «Agregar teléfono» abierto (`?panel=editar-lead&extra=nuevo`) si quien mira puede agregar teléfonos, o se quita si no. Nulo: no
 // es el viejo, no se toca.
 export function reemplazoDelPanelViejo(
   panel: string | null,
-  puedeAbrirLaEdicion: boolean,
+  puedeAgregarTelefono: boolean,
 ): { panel: string; extra: string } | { panel: null; extra: null } | null {
   if (panel !== PANEL_AGREGAR_TELEFONO) {
     return null
   }
-  return puedeAbrirLaEdicion
+  return puedeAgregarTelefono
     ? { panel: PANEL_EDITAR_LEAD, extra: VALOR_DE_EXTRA_NUEVO }
     : { panel: null, extra: null }
 }

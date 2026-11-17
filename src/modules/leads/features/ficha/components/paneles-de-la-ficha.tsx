@@ -36,7 +36,8 @@ export function PanelesDeLaFicha({
 }: Props) {
   const panel = usePanelDeLead()
   const [todos] = useQueryState(CLAVE_DE_TODOS, parseAsString)
-  usePanelViejoDeTelefono(puedeEditar || puedeEditarExtras)
+  // «Agregar teléfono» pide los extras: quien sólo edita no lo tendría en el panel y el `?extra=nuevo` quedaría colgado en la URL.
+  usePanelViejoDeTelefono(puedeEditarExtras)
   return (
     <>
       <EdicionDeLaFicha
