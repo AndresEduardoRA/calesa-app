@@ -14,7 +14,9 @@ export function EsqueletoDeRelacionados({
         aria-label="Cargando los relacionados"
         className="grid min-w-0 gap-2"
       >
-        <Skeleton className="h-5 w-28" />
+        <div className="flex min-h-11 items-center md:min-h-8">
+          <Skeleton className="h-5 w-28" />
+        </div>
         <div className="grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))] gap-x-4 gap-y-3">
           {[0, 1, 2].map((n) => (
             <Skeleton key={n} className="h-20 w-full rounded-(--radius-md)" />

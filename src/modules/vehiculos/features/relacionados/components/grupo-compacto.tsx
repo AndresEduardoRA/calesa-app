@@ -45,7 +45,8 @@ export function GrupoCompacto({
       aria-describedby={idLeyenda}
       className="grid min-w-0 content-start gap-1.5"
     >
-      <div className="flex min-w-0 flex-wrap items-center gap-x-2">
+      {/* Del alto del «⋯» aunque no lo haya: los títulos de las columnas quedan a la misma altura. */}
+      <div className="flex min-h-11 min-w-0 flex-wrap items-center gap-x-2 md:min-h-8">
         <h3 title={leyenda} className="text-(length:--text-sm) font-medium text-(--color-ink)">
           {nombre}
           <span className="font-normal text-(--color-ink-soft) tabular-nums">

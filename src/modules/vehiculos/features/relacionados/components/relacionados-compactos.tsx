@@ -41,7 +41,7 @@ export function RelacionadosCompactos<Contraparte>({
   const fuera = accionesFueraDeLosGrupos(grupos, contexto)
   return (
     <section aria-label="Relacionados" className="grid min-w-0 gap-2">
-      <div className="flex min-w-0 items-center gap-1">
+      <div className="flex min-h-11 min-w-0 items-center gap-1 md:min-h-8">
         <h2 className="text-(length:--text-sm) font-medium text-(--color-ink)">Relacionados</h2>
         <AccionesDeLaFila
           nombre="«Relacionados»"
