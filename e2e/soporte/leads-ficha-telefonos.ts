@@ -3,6 +3,7 @@
 import { expect, type Page } from '@playwright/test'
 import { entrar } from './alta'
 import {
+  cabeceraDeLaFicha,
   fijarCodigoDePais,
   irAFicha,
   nuevoLead,
@@ -54,7 +55,8 @@ export async function abrirPanelConTelefonos(page: Page) {
     if (await panel.isVisible()) {
       return
     }
-    const editar = page.locator('main header').getByRole('button', { name: 'Editar', exact: true })
+    // «Editar» de la cabecera (la del `h1`): los seguimientos y recordatorios también tienen el suyo.
+    const editar = cabeceraDeLaFicha(page).getByRole('button', { name: 'Editar', exact: true })
     await (
       (await editar.isVisible()) ? editar : page.getByRole('button', { name: 'Editar teléfonos' })
     ).click({ timeout: 1000 })

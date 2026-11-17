@@ -13,7 +13,7 @@ import {
 } from './soporte/fase-8-recorrido'
 import { sesionDe } from './soporte/leads-alta'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
-import { irAFicha, nuevoLead } from './soporte/leads-ficha'
+import { esperarFichaHidratada, irAFicha, nuevoLead } from './soporte/leads-ficha'
 import { CON_ESTA_CLAVE, dialogoDeOtorgar, seccionPortal } from './soporte/leads-portal'
 import { cookieDelPortal, ipAlAzar, pedir } from './soporte/portal-api'
 import { REPUESTO_DE_LA_ESPERA } from './soporte/repuestos-espera'
@@ -152,6 +152,7 @@ test('E2E R6 el cliente entra al portal por api/portal con el código que dio la
   })
   await entrar(page, tr.pia.email, { fresco: true })
   await irAFicha(page, lead.id, '?seccion=portal')
+  await esperarFichaHidratada(page)
   await seccionPortal(page).getByRole('button', { name: 'Dar acceso' }).click()
   const clave = `Recorrido-${tr.proyecto}-8`
   await dialogoDeOtorgar(page).getByLabel('Clave temporal').fill(clave)

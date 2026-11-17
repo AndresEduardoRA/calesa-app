@@ -7,6 +7,7 @@ import { admin } from './base'
 import { aLaVista } from './inventario'
 import { exigir, idDe } from './leads'
 import { sesionDe } from './leads-alta'
+import { cabeceraDeLaFicha } from './leads-ficha'
 import { nombre } from './leads-listado'
 
 export type MarcasEnLaBase = { favorito: boolean; tachado: boolean; etiquetas: string[] }
@@ -101,7 +102,7 @@ export async function ponerMarcaDe(
 // El «⋯» de la cabecera de la ficha (9i): Favorito, Tachado, Etiquetas… y lo demás, en la lista de siempre. Vive en el `<header>` de la columna
 // de la izquierda (las filas de Relacionados y de las oportunidades llevan cada una su propio «Más acciones de …»).
 export const menuDeLaFicha = (page: Page): Locator =>
-  aLaVista(page.locator('main header').getByRole('button', { name: /^Más acciones de / }))
+  aLaVista(cabeceraDeLaFicha(page).getByRole('button', { name: /^Más acciones de / }))
 
 // Abre el menú de la ficha y lo espera (la página hidrata antes de que el clic valga); si ya está abierto, lo deja.
 export async function abrirMenuDeLaFicha(page: Page): Promise<Locator> {

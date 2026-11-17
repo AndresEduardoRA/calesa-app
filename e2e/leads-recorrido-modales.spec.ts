@@ -3,7 +3,13 @@ import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { otraPersona } from './soporte/inventario'
 import { idDePersona } from './soporte/leads-alta'
-import { abrirEdicion, extrasDeLead, irAFicha, tituloDeLaFicha } from './soporte/leads-ficha'
+import {
+  abrirEdicion,
+  esperarFichaHidratada,
+  extrasDeLead,
+  irAFicha,
+  tituloDeLaFicha,
+} from './soporte/leads-ficha'
 import { abrirAgregarTelefono, modalDeExtra, nacional } from './soporte/leads-ficha-telefonos'
 import { nombre } from './soporte/leads-listado'
 import { abrirMenuDelLead } from './soporte/leads-marcas'
@@ -170,6 +176,7 @@ test('C · portal desde la ficha: la clave corta se dice junto al campo y cerrar
 }, info) => {
   await entrar(page, r.ana.email)
   await irAFicha(page, r.uno.id, '?seccion=portal')
+  await esperarFichaHidratada(page)
   await seccionPortal(page).getByRole('button', { name: 'Dar acceso' }).click()
   const dialogo = dialogoDeOtorgar(page)
   await expect(dialogo).toBeVisible()

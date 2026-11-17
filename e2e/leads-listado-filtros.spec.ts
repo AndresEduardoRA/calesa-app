@@ -167,13 +167,14 @@ test('si le quitan el acceso con el drawer abierto, lo dice al volver', async ({
     nombre: 'Revocable',
     telefono,
     deQuien: t.personas.berta,
-    atributos: { e2e_color: 'verde' },
   })
   await entrar(page, t.personas.berta)
   await irALeads(page)
   await fila(page, 'Revocable').click()
   const drawer = page.getByRole('dialog', { name: nombre('Revocable') })
-  await expect(drawer.getByText('verde')).toBeVisible()
+  // El resumen es la versión corta de la ficha (sin los campos del layout): sus datos clave.
+  const datos = page.getByRole('dialog').getByText('Origen del lead', { exact: true })
+  await expect(drawer.getByText('Origen del lead', { exact: true })).toBeVisible()
 
   // Mientras tanto, el lead deja de ser suyo (se revoca su acceso y queda en el limbo).
   await mandarAlLimbo(id)
@@ -182,7 +183,7 @@ test('si le quitan el acceso con el drawer abierto, lo dice al volver', async ({
     window.dispatchEvent(new Event('focus'))
   })
   await expect(page.getByText('Este lead ya no está disponible')).toBeVisible()
-  await expect(drawer.getByText('verde')).toHaveCount(0)
+  await expect(datos).toHaveCount(0)
 })
 
 test('el lead que crea el alta aparece en la lista', async ({ page }) => {

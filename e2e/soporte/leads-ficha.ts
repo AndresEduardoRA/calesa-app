@@ -154,7 +154,11 @@ export const panelDeEdicion = (page: Page): Locator =>
 
 // «Editar» de la cabecera de la ficha (el `<header>` de la columna de la izquierda): seguimientos y recordatorios también tienen el suyo.
 export const botonEditar = (page: Page): Locator =>
-  aLaVista(page.locator('main header').getByRole('button', { name: 'Editar', exact: true }))
+  aLaVista(cabeceraDeLaFicha(page).getByRole('button', { name: 'Editar', exact: true }))
+
+// El `<header>` de la ficha: el del `h1` (los seguimientos llevan su propio `<header>`, con su «Editar»).
+export const cabeceraDeLaFicha = (page: Page): Locator =>
+  page.locator('main header').filter({ has: page.getByRole('heading', { level: 1 }) })
 
 // Abre el panel con el botón y espera a que esté (la página hidrata antes de que el clic valga).
 export async function abrirEdicion(page: Page): Promise<Locator> {
