@@ -462,7 +462,14 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   los vigentes con quién y cuándo cambió el valor por última vez (nunca el correo) y, para quien gestiona los tipos de cambio, el lápiz
   «Cambiar el valor de <nombre>»: Enter guarda, Esc cancela, el motivo junto al campo; con algo escrito el popover no se cierra al tocar
   afuera; sin red, lo escrito queda y se guarda al volver; un `PT409` dice «<Nombre> lo cambió a <monto> hace N minutos» con «Recargar».
-  Con el Modo Live, cifras ocultas y sin lápiz. Al pie, «Configurar los tipos de cambio» (quien gestiona). En el
+  Con el Modo Live, cifras ocultas y sin lápiz. Al pie, «Compartir» (toda persona; con el Modo Live no se ofrece, y con un valor a medio
+  editar espera: «Termina de cambiar el valor para compartir.») y «Configurar los tipos de cambio» (quien gestiona). **«Compartir»** cambia el
+  contenido del popover por su panel (`Volver a los tipos de cambio`): casillas de los activos (por defecto los de la barra; sólo para ese envío),
+  la imagen y el texto tal como saldrán (logo, nombre, momento en la zona de la empresa, un tipo por línea, leyenda) y los botones, que se apagan
+  con su motivo («Elige al menos un tipo de cambio.», «Este navegador no permite copiar imágenes.»). Celular con menú del sistema: «Compartir» (imagen
+  y texto; sin archivos, sólo el texto), «Copiar texto» y «Descargar»; escritorio: «Copiar texto», «Copiar imagen» y «Descargar» (PNG). Si la imagen
+  falla, «No se pudo armar la imagen.» con «Reintentar» y el texto sigue disponible; sin red, «No hay conexión.»; el panel se desplaza con los botones a
+  la vista. En el
   celular menú, Live y avatar miden 44 px y la barra cabe al 200 %; el tipo de cambio sólo se dibuja con 24 rem o más. El botón «Buscar»
   (44 px) abre la paleta (`Ctrl/Cmd+K`) y la campana trae los avisos; el widget del chat flota fuera de `/chat` y no va en la barra.
 - **Permisos en UI**: ocultar lo que nunca va a usar; deshabilitar con motivo lo que espera poder hacer (**dominancia**: lo que no puede dar
@@ -498,7 +505,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Tipos de cambio:** cada uno abre su panel con el valor listo y su historial. El por defecto no se desactiva; nada se borra. El
   interruptor «En la barra superior» va en el mismo «Guardar»: apagado con su motivo si el tipo está inactivo o ya hay 3 («quita uno para
   sumar este»); quitarlo siempre se puede; sin ninguno marcado, avisa que la barra muestra el por defecto. La lista dice el tope y lleva
-  el badge «En la barra» en los que se ven.
+  el badge «En la barra» en los que se ven. Debajo, «Leyenda al compartir»: la leyenda de lo que se comparte (un campo, «n de 120»
+  sin `maxLength`, «Guardar leyenda»; sin `empresa.tipos_cambio.gestionar`, apagado con su motivo; `PT409` con «Recargar»).
   **Integraciones:** apibara no se activa sin su clave, que nunca se muestra («Reemplazar»).
 
 ### Vehículos (estados propios)

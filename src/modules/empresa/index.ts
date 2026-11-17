@@ -24,6 +24,10 @@ export { leerAjustesDeCotizacion } from './composicion'
 export { puedeCambiarAjustesDeCotizacion } from './entities/ajustes-de-cotizacion'
 export type { AjustesDeCotizacion } from './entities/ajustes-de-cotizacion'
 
+// Compartir los tipos de cambio con un cliente: las rutas `/tipos-de-cambio/texto` y `/tipos-de-cambio/imagen` (sesión y ids de la URL) y la leyenda
+export { leerLeyendaDeTiposCambio, responderCompartirTiposCambio } from './composicion'
+export type { FormatoParaCompartir } from './features/compartir-tipos-cambio/responder'
+
 // Integraciones: el interruptor, lo no secreto y si están prendidas
 export { integracionActiva, leerIntegraciones, leerVehiculosQueCambian } from './composicion'
 export type { ClaveIntegracion } from './entities/integraciones'

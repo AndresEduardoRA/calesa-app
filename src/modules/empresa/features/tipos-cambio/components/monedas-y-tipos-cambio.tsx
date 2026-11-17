@@ -2,9 +2,11 @@
 
 import { parseAsString, useQueryStates } from 'nuqs'
 import { Aviso } from '@/shared/ui/aviso'
+import type { LeyendaDeTiposCambio } from '../../../entities/compartir-tipos-cambio'
 import { MOTIVO_SIN_PERMISO_TIPOS_CAMBIO } from '../../../entities/motivos'
 import type { CambioDeValor, Moneda, TipoCambio } from '../../../entities/tipos-cambio'
 import { useTiposCambio } from '../hooks/use-tipos-cambio'
+import { LeyendaDeLosTiposCambio } from './leyenda-de-los-tipos-cambio'
 import { ListaMonedas } from './lista-monedas'
 import { ListaTiposCambio } from './lista-tipos-cambio'
 import { PanelMoneda } from './panel-moneda'
@@ -20,6 +22,8 @@ type Props = {
   // abierto o si quien mira no puede verlo.
   historial: readonly CambioDeValor[] | null
   puedeGestionar: boolean
+  // La leyenda de lo que se comparte, con la versión de la fila.
+  leyenda: LeyendaDeTiposCambio
 }
 
 const PANEL_TIPO = 'nuevo-tipo-cambio'
@@ -28,7 +32,7 @@ const PANEL_MONEDA = 'nueva-moneda'
 // La pestaña «Monedas»: tipos de cambio con su valor vigente y su historial, y las monedas. Cada
 // panel tiene su URL (`?tc=`, `?moneda=`, `?panel=`).
 export function MonedasYTiposCambio(props: Props) {
-  const { tipos, monedas, monedaBase, historial, puedeGestionar } = props
+  const { tipos, monedas, monedaBase, historial, puedeGestionar, leyenda } = props
   const [{ tc, moneda, panel }, setParametros] = useQueryStates(
     { tc: parseAsString, moneda: parseAsString, panel: parseAsString },
     { shallow: false },
@@ -47,6 +51,11 @@ export function MonedasYTiposCambio(props: Props) {
         puedeGestionar={puedeGestionar}
         alAbrir={(id) => void setParametros({ tc: id, moneda: null, panel: null })}
         alCrear={() => void setParametros({ tc: null, moneda: null, panel: PANEL_TIPO })}
+      />
+      <LeyendaDeLosTiposCambio
+        key={leyenda.actualizadoEn}
+        leyenda={leyenda}
+        puedeGestionar={puedeGestionar}
       />
       <ListaMonedas
         monedas={monedas}

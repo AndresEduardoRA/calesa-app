@@ -56,6 +56,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   a la vista en la barra superior; hasta 3 activos; sin ninguno, la barra muestra el por defecto.
 - **Último cambio de un tipo de cambio** — `tipos_cambio_vigentes()` / `UltimoCambio`: quién (el nombre, nunca el correo) y cuándo cambió el
   valor por última vez; sale del historial, así que renombrar o marcar no lo mueve.
+- **Leyenda de los tipos de cambio** — `ajustes_empresa.leyenda_tipos_cambio` / `LeyendaDeTiposCambio`: el texto (hasta 120 caracteres, una línea; vacía =
+  ninguna) que va al pie de lo que se comparte con un cliente; se escribe en Configuración › Empresa › Monedas con `empresa_guardar_leyenda_de_tipos_cambio()`.
+- **Compartir los tipos de cambio** — `ParaCompartir`, `armarTextoParaCompartir()`, rutas `/tipos-de-cambio/imagen` y `/tipos-de-cambio/texto`: la imagen
+  (PNG con logo, nombre, momento en la zona de la empresa, los tipos elegidos y la leyenda) y el texto para WhatsApp, armados en el servidor con lo mismo.
 - **Monto en moneda base** — `gastos.monto_base`, `pagos.monto_base` / `_monto_en_base()`: lo calcula la base con el tipo de cambio elegido
   (su valor queda en `tipo_cambio_aplicado`); quien carga nunca lo manda.
 - **Prorratear** — `gastos_prorratear()` / `gastos.lote_id`: repartir un gasto entre 1 y 200 vehículos en partes iguales; los centavos que

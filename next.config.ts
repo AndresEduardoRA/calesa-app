@@ -22,6 +22,8 @@ const nextConfig: NextConfig = {
   // Las fuentes del PDF de una cotización (4.18-3a): react-pdf las lee del disco por su ruta, y el trazado de archivos no las ve en un import.
   outputFileTracingIncludes: {
     '/cotizaciones/[id]/pdf': ['./src/modules/cotizaciones/infra/tarjeta/pdf/fuentes/*'],
+    // La fuente de la imagen de los tipos de cambio para compartir: se lee del disco por su ruta.
+    '/tipos-de-cambio/imagen': ['./src/modules/empresa/infra/compartir/fuentes/*.ttf'],
   },
   // Tailwind 4 con Turbopack: sin esta regla nadie procesa `@import 'tailwindcss'` (no hay PostCSS).
   turbopack: {
