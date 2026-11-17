@@ -236,8 +236,8 @@ las trampas, en `docs/LECCIONES.md`.
   leídos en el servidor (los recordatorios pendientes más próximos: los vencidos primero) y «Ver todos» abre la lista completa en un drawer con su propia
   clave (`?todos=`), que convive con los modales de `?panel=`; con él abierto los modales del resumen no responden (un solo dueño). Lo que el servidor manda
   de nuevo se siembra sin volver a montar el resumen (el foco no se pierde tras guardar). **Cotizaciones** se pide al acercarse a la vista (200 px), sin
-  clic. `?seccion=` sigue valiendo: lleva al bloque y le da el foco a su título; si un bloque de arriba crece mientras llega, vuelve a llevar una vez salvo
-  que la persona ya se haya movido. Descartadas: pestañas con un resumen arriba (sigue la navegación), acordeones (esconden y suman toques), tres columnas
+  clic. `?seccion=` sigue valiendo: lleva al bloque y le da el foco a su título; si los bloques de arriba crecen mientras llegan, la vuelve a llevar (hasta 4 s)
+  salvo que la persona ya se haya movido. Descartadas: pestañas con un resumen arriba (sigue la navegación), acordeones (esconden y suman toques), tres columnas
   (no entran a 1280 px con la lateral de la app), el índice a la izquierda (compite con la columna de datos), el portal al final de la derecha (alarga la
   tarea de oro: había que pasar por el índice o bajar) y un bloque «Vehículos» aparte de Relacionados (dibujaba lo mismo dos veces).
 - **Los teléfonos de la ficha son de sólo lectura; se editan en el panel de edición.** Así no hay dos lugares para lo mismo y no se pierde ningún permiso:
