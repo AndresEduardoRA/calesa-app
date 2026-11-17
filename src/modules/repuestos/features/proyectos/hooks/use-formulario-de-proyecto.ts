@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, type Dispatch, type SetStateAction } from 'react'
+import { useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { cambiosDeEstado } from '@/shared/lib/borrador'
 import { useBorradorDeEstado } from '@/shared/ui/use-borrador-de-estado'
 import type { OrigenDelProyecto } from '../../../entities/proyectos/borrador'
@@ -112,18 +112,25 @@ export function useFormularioDeProyecto({
     },
   })
 
+  // Un segundo «Crear proyecto» mientras se espera el lead del vehículo no manda otro envío.
+  const enviando = useRef(false)
   async function enviar(): Promise<boolean> {
-    if (envio.enCurso) {
+    if (envio.enCurso || enviando.current) {
       return false
     }
-    // Si se está trayendo el lead del vehículo, se espera: no se crea sin el cliente que estaba por llegar.
-    const actuales = await cliente.esperar(valores)
-    const validado = validarProyecto(actuales, { conLead: puedeVerLeads })
-    if (!validado.ok) {
-      setErrores(validado.errores)
-      return false
+    enviando.current = true
+    try {
+      // Si se está trayendo el lead del vehículo, se espera: no se crea sin el cliente que estaba por llegar.
+      const actuales = await cliente.esperar(valores)
+      const validado = validarProyecto(actuales, { conLead: puedeVerLeads })
+      if (!validado.ok) {
+        setErrores(validado.errores)
+        return false
+      }
+      return await envio.mandar(validado.datos)
+    } finally {
+      enviando.current = false
     }
-    return envio.mandar(validado.datos)
   }
 
   return {

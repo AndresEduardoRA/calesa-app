@@ -31,6 +31,12 @@ function vehiculoAProponer(valores: EstadoDelFormulario, conLeer: boolean): stri
 export function useClienteDelVehiculo({ valores, setValores, leer }: Args) {
   const vehiculoId = vehiculoAProponer(valores, leer !== null)
   const [leido, setLeido] = useState<{ vehiculoId: string; ok: boolean } | null>(null)
+  // Otro vehículo a proponer (también el mismo tras pasar por «Externo») es otra lectura: lo leído antes no la da por terminada.
+  const [aProponer, setAProponer] = useState(vehiculoId)
+  if (aProponer !== vehiculoId) {
+    setAProponer(vehiculoId)
+    setLeido(null)
+  }
   const enCurso = useRef<Lectura | null>(null)
 
   useEffect(() => {
