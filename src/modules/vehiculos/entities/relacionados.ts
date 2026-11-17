@@ -166,8 +166,3 @@ export function gruposALaVista<Contraparte>(
     (grupo): grupo is GrupoDeRelacionados<Contraparte> => conAlgo(grupo),
   )
 }
-
-// Si todo está vacío (nada en ningún grupo, ni oculto): una sola línea con la frase y una acción.
-export function todoVacio(grupos: GruposDeRelacionados<unknown>): boolean {
-  return gruposALaVista(grupos).length === 0
-}

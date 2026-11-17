@@ -3,7 +3,6 @@ import {
   cursorDeLaFila,
   gruposALaVista,
   textoDeOcultos,
-  todoVacio,
   type GrupoDeRelacionados,
   type LeadRelacionado,
 } from './relacionados'
@@ -33,20 +32,6 @@ describe('textoDeOcultos', () => {
   })
 })
 
-describe('todoVacio', () => {
-  it('sólo con todos los grupos sin filas ni ocultos; un grupo ausente no cuenta', () => {
-    expect(todoVacio({ vinculado: grupo(0, 0), interesado: grupo(0, 0), cotizado: null })).toBe(
-      true,
-    )
-    expect(todoVacio({ vinculado: grupo(0, 0), interesado: grupo(0, 1), cotizado: null })).toBe(
-      false,
-    )
-    expect(
-      todoVacio({ vinculado: grupo(0, 0), interesado: grupo(0, 0), cotizado: grupo(1, 0) }),
-    ).toBe(false)
-  })
-})
-
 describe('gruposALaVista', () => {
   const de = (
     tipo: GrupoDeRelacionados<LeadRelacionado>['tipo'],
@@ -64,6 +49,15 @@ describe('gruposALaVista', () => {
         cotizado: null,
       }).map((uno) => uno.tipo),
     ).toEqual(['interesado'])
+  })
+  it('sin nada en ningún grupo (ni oculto) no queda ninguno: todo vacío', () => {
+    expect(
+      gruposALaVista({
+        vinculado: de('vinculado', 0, 0),
+        interesado: de('interesado', 0, 0),
+        cotizado: null,
+      }),
+    ).toEqual([])
   })
   it('conserva un grupo con sólo lo que no se ve', () => {
     expect(

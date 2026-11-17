@@ -20,6 +20,7 @@ import {
 import { AccionSuelta } from './accion-suelta'
 import { AccionesDeLaFila } from './acciones-de-la-fila'
 import { PopoverDelGrupoDiferido } from './diferidos'
+import type { VerTodosDeUnGrupo } from './ver-todos-del-grupo'
 
 type Props<Contraparte> = {
   grupos: GruposDeRelacionados<Contraparte>
@@ -27,9 +28,7 @@ type Props<Contraparte> = {
   enCurso: boolean
   alElegir: (accion: AccionDeRelacionados) => void
   filasDe: (grupo: GrupoDeRelacionados<Contraparte>) => ReactNode
-  verTodosDe: (
-    grupo: GrupoDeRelacionados<Contraparte>,
-  ) => { href: string } | { abrir: () => void } | null
+  verTodosDe: (grupo: GrupoDeRelacionados<Contraparte>) => VerTodosDeUnGrupo | null
 }
 
 const CHIP =
