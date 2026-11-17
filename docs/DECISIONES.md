@@ -225,6 +225,11 @@ las trampas, en `docs/LECCIONES.md`.
   las acciones de fila (`?panel=oportunidad-rapida&para=`), no un popover: ya hay un patrón con URL, foco de vuelta y atajos. Sin vehículo ni notas: el
   listado no lee los vehículos del lead y `leads` no importa `vehiculos`; se agregan con «Editar» en la ficha. Sin elegir embudo: el de por defecto.
 
+- **Anotar o agendar desde la lista: una sola puerta, el «⋯», y la fila se relee al guardar.** Las celdas «Último seguimiento» y «Recordatorio» vacías son texto
+  («Sin seguimientos», «—»), no botones: la acción no vive en dos lugares. Al guardar, el listado hace `router.refresh()` (relee la página con la URL tal cual)
+  en vez de inventar el dato en el cliente: la fila muestra lo que la vista dice, con la visibilidad de quien mira. El embudo no relee: su tarjeta no muestra
+  seguimientos ni recordatorios y releer reiniciaría las columnas cargadas.
+
 - **El último contacto del listado va en la vista, no por fila ni en una columna mantenida.** `leads_vista` suma dos subconsultas escalares con `limit 1`
   por un índice que ya existía (`seguimientos_lead_fecha_idx` por igualdad con `ultimo_seguimiento_en` para el último seguimiento, y
   `recordatorios_lead_pendientes_idx` para su próximo recordatorio): se calculan sólo para las filas de la página y no crecen con los seguimientos de cada
