@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import { codigoDictado, textoParaWhatsApp } from '../../../entities/portal-mensaje'
 import type { Otorgado } from '../hooks/use-otorgar-portal'
 import { BotonCopiar } from './boton-copiar'
@@ -15,8 +16,15 @@ type Props = {
 }
 
 // Lo que se le pasa al cliente, una sola vez: el código en grande y dictable, la clave y el texto listo
-// para WhatsApp. Al cerrar el diálogo se olvida.
+// para WhatsApp. Al cerrar el diálogo se olvida. Al aparecer, si el foco quedó suelto (el formulario se apagó mientras otorgaba), va a
+// «Copiar código»: con el teclado, lo siguiente está a un Tab.
 export function AccesoOtorgado({ otorgado, leadNombre, empresa, direccion, mensaje }: Props) {
+  const primero = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (document.activeElement === null || document.activeElement === document.body) {
+      primero.current?.focus()
+    }
+  }, [])
   const texto = textoParaWhatsApp({
     cliente: leadNombre,
     empresa,
@@ -41,7 +49,7 @@ export function AccesoOtorgado({ otorgado, leadNombre, empresa, direccion, mensa
         <p className="text-(length:--text-xs) text-(--color-ink-soft)">
           Se dice: {codigoDictado(otorgado.codigo)}
         </p>
-        <BotonCopiar texto={otorgado.codigo} etiqueta="Copiar código" />
+        <BotonCopiar ref={primero} texto={otorgado.codigo} etiqueta="Copiar código" />
       </div>
       <div className="grid justify-items-center gap-1 text-center">
         <span className="text-(length:--text-xs) text-(--color-ink-soft)">Clave temporal</span>
