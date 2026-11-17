@@ -145,6 +145,8 @@ export function useModalDeSeguimiento({ seguimientos, hayTipos, atiendeLaUrl = t
   const { anotando, editando } = panel
   const { editable, noEsta } = objetivoDe(seguimientos, editando)
   const enLaUrl = modoDe(anotando, editando)
+  // Llegó abierto con la página (recarga o enlace) y nadie lo abrió después: al cerrarse, el foco lo devuelven Base UI y la vuelta del historial.
+  const llegoAbierto = useRef(enLaUrl !== null)
   const apertura = useApertura(enLaUrl !== null)
   const { yaAbierta, anotar } = useYaAbierta(claveDeRevision(apertura, enLaUrl, editando, true))
   const busqueda = useBusquedaDelEditado(seguimientos, editando, noEsta && !yaAbierta)
@@ -167,19 +169,24 @@ export function useModalDeSeguimiento({ seguimientos, hayTipos, atiendeLaUrl = t
     noDisponible: abierto && noEsta ? MENSAJE_DE_SEGUIMIENTO_NO_DISPONIBLE : null,
     // Quien lo abre (este botón o el «⋯» de la cabecera de la ficha) se recuerda: al cerrarse, el foco vuelve ahí.
     abrirAnotar: () => {
+      llegoAbierto.current = false
       recordarQuienAbre()
       panel.abrirAnotar()
     },
     abrirEdicion: panel.abrirEdicion,
     cerrar: panel.cerrar,
     // El «Editar» del que se estaba editando, si sigue en la lista; al crear, quien lo abrió si sigue en la página (en la ficha el bloque está
-    // siempre montado: sin esto, abierto desde la cabecera devolvería el foco al botón del bloque). Nulo: el modal elige su botón.
-    focoAlCerrar: (): HTMLElement | null => {
+    // siempre montado: sin esto, abierto desde la cabecera devolvería el foco al botón del bloque). `true`: el de Base UI (llegó abierto con la
+    // página; tras un «atrás» lo devuelve `vuelta-del-foco`). Nulo: el modal elige su botón.
+    focoAlCerrar: (): HTMLElement | boolean | null => {
       if (original) {
         return document.querySelector<HTMLElement>(`[data-seguimiento-editar="${original.id}"]`)
       }
       const quien = focoDeQuienAbrio()
-      return typeof quien === 'boolean' ? null : quien
+      if (typeof quien !== 'boolean') {
+        return quien
+      }
+      return llegoAbierto.current ? true : null
     },
   }
 }

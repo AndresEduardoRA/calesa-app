@@ -1,5 +1,6 @@
 'use client'
 
+import { useRef } from 'react'
 import { useApertura } from '@/shared/ui/use-apertura'
 import { useRevisionAlAbrir } from '@/shared/ui/use-revision-al-abrir'
 import { useUltimo } from '@/shared/ui/use-ultimo'
@@ -63,6 +64,8 @@ export function useModalDeRecordatorio({
   const editando = panel.editando
   const objetivo = editando === null || buscando ? null : recordatorioParaEditar(lista, editando)
   const enLaUrl = panel.agendando || editando !== null
+  // Llegó abierto con la página (recarga o enlace) y nadie lo abrió después: al cerrarse, el foco lo devuelven Base UI y la vuelta del historial.
+  const llegoAbierto = useRef(enLaUrl)
   const apertura = useApertura(enLaUrl)
   const motivo = motivoDe(objetivo)
   const revision = claveDeRevision(apertura, editando, buscando)
@@ -86,19 +89,24 @@ export function useModalDeRecordatorio({
     noDisponible: editandoAbierto ? motivo : null,
     // Quien lo abre (este botón o el «⋯» de la cabecera de la ficha) se recuerda: al cerrarse, el foco vuelve ahí.
     abrirAgendar: () => {
+      llegoAbierto.current = false
       recordarQuienAbre()
       panel.abrirAgendar()
     },
     abrirEdicion: panel.abrirEdicion,
     cerrar: panel.cerrar,
     // El «Editar» del que se estaba editando, si sigue en la lista; al crear, quien lo abrió si sigue en la página (en la ficha el bloque está
-    // siempre montado: sin esto, abierto desde la cabecera devolvería el foco al botón del bloque). Nulo: el modal elige su botón.
-    focoAlCerrar: (): HTMLElement | null => {
+    // siempre montado: sin esto, abierto desde la cabecera devolvería el foco al botón del bloque). `true`: el de Base UI (llegó abierto con la
+    // página; tras un «atrás» lo devuelve `vuelta-del-foco`). Nulo: el modal elige su botón.
+    focoAlCerrar: (): HTMLElement | boolean | null => {
       if (original) {
         return document.querySelector<HTMLElement>(`[data-recordatorio-editar="${original.id}"]`)
       }
       const quien = focoDeQuienAbrio()
-      return typeof quien === 'boolean' ? null : quien
+      if (typeof quien !== 'boolean') {
+        return quien
+      }
+      return llegoAbierto.current ? true : null
     },
   }
 }
