@@ -160,6 +160,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `supabase/tests/medir-jobs.sql` corre la limpieza con `now() + 12 h`: entre las 12:00 y las 15:00 de La Paz no mide nada.
 - **[—]** `fase_mover` con `orden` repetido previo y ancla compartida deja la movida detrás de la otra fase — desempatar si molesta.
 - **[—]** `logistica/entities/dinero/reparto.test.ts` («para cualquier monto…», ~2700 casos) pasa de los 5 s de Vitest con la máquina cargada (`pnpm test` junto a `db:probar`) — menos casos o un `timeout` propio.
+- **[—]** `scripts/demo/sembrar.mjs` no siembra proyectos de repuestos, eventos ni tareas de la agenda, ni vehículos fuera de la primera fase del flujo: la demo muestra esas pantallas vacías.
 - **[—]** `bloquear-peligrosos.sh` lee el texto del comando: un agregar que no aparece en él (dentro de `bash guion.sh`, armado con `printf`/`base64`, un `.npmrc` o un `package.json` escritos con Write) no se mira — una guarda de CI que exija que toda dependencia nueva de `package.json` esté en `scripts/orquestador/dependencias-aprobadas.txt` y que el PR que suma a la lista lleve «Dependencias nuevas».
 - **[—]** `e2e/cotizaciones-listado.spec.ts` E6 y E8 fallan a veces en el CI y pasan en local: la tecla N abre `panel=nuevo-lead` en vez de la hoja, y «Ver todas» pierde `clase=preventa` — esperar la hidratación o el `href` ya filtrado antes de actuar.
 
@@ -208,6 +209,10 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T28]** A 412 px «+ Nuevo» de la barra tapa la palabra «Buscar» del buscador (cede su ancho con `min-w-0` sin cortar el texto), también con un solo tipo de cambio.
 - **[—]** En escritorio con el texto al 200 % la barra mide menos de 24 rem y el tipo de cambio no se dibuja; el menú que lo trae es sólo del celular (`md:hidden`): no queda a mano.
 - **[T29]** El `PT409` del panel de un tipo de cambio en Configuración dice el texto de la base, sin quién ni a cuánto: el popover de la barra ya lo arma con `conflictoDeValor()` y `tipos_cambio_vigentes()`.
+- **[T38]** El diagrama de un flujo de 7 fases abre a escala 0,6 en 1440 px y la última fase queda cortada a la derecha, con el texto de las cajas chico: encuadrarlo
+  al abrir (o un zoom mínimo mayor) y dejar el «+/−/ajustar» para el resto.
+- **[T34]** El bloque «Ficha» de la ficha del vehículo dibuja todos los grupos con sus campos aunque estén en «—»: en el celular la página pasa de 6.000 px;
+  plegar lo vacío o mostrar sólo lo que tiene valor.
 
 ## Fuera de alcance
 
