@@ -3,6 +3,7 @@
 import { CORTE_DEL_PANEL } from '@/shared/lib/ancho'
 import { useAlMenos } from '@/shared/ui/ancho-de-pantalla'
 import { enOrdenDelPanel, type ZonasDeLaUnidad } from '../../../entities/nucleo/zonas'
+import { ProveedorDeLaPagina } from '../disposicion'
 import type { SeccionDeLaUnidad } from './contenido-del-hueco'
 import { DisposicionEnZonas } from './disposicion-en-zonas'
 import { DisposicionPlegable } from './disposicion-plegable'
@@ -17,11 +18,16 @@ type Props = {
 // Cada hueco se dibuja una sola vez, en la forma elegida: nunca las dos. Cruzar los 1024 px remonta los huecos.
 export function DisposicionDeLaPagina({ zonas, puedeMover }: Props) {
   const enZonas = useAlMenos(CORTE_DEL_PANEL)
-  if (enZonas) return <DisposicionEnZonas zonas={zonas} />
   return (
-    <DisposicionPlegable
-      secciones={enOrdenDelPanel(zonas)}
-      conBarraDeMover={puedeMover && zonas.principal.length > 0}
-    />
+    <ProveedorDeLaPagina value>
+      {enZonas ? (
+        <DisposicionEnZonas zonas={zonas} />
+      ) : (
+        <DisposicionPlegable
+          secciones={enOrdenDelPanel(zonas)}
+          conBarraDeMover={puedeMover && zonas.principal.length > 0}
+        />
+      )}
+    </ProveedorDeLaPagina>
   )
 }

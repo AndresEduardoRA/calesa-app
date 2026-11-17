@@ -1,4 +1,14 @@
-import { entrar, dialogo, limpiarAlta, prepararAlta, type PersonasDelAlta } from './soporte/alta'
+import {
+  abrirNuevo,
+  abrirNuevoLeadDeLaBarra,
+  botonNuevoDeLaBarra,
+  dialogo,
+  entrar,
+  limpiarAlta,
+  modalDeNuevo,
+  prepararAlta,
+  type PersonasDelAlta,
+} from './soporte/alta'
 import {
   borrarOrigenesDePrueba,
   PREFIJO_DE_ORIGEN_E2E,
@@ -37,8 +47,6 @@ test.afterAll(async () => {
 })
 
 // El de la barra superior (el listado sin leads tiene el suyo, en su estado vacío).
-const botonNuevo = (page: Page) =>
-  page.locator('header').getByRole('button', { name: 'Nuevo lead' })
 const telefono = (page: Page) => dialogo(page).getByLabel('Teléfono principal')
 
 // Cuenta lo que el navegador le pide a la base para el alta.
@@ -71,7 +79,7 @@ async function abrirYEsperarLoQueLee(page: Page): Promise<void> {
       conRespuesta(
         page,
         esRpc('lead_alta_contexto'),
-        () => botonNuevo(page).click(),
+        () => abrirNuevoLeadDeLaBarra(page),
         'el contexto del alta',
       ),
     'los campos del alta',
@@ -81,7 +89,7 @@ async function abrirYEsperarLoQueLee(page: Page): Promise<void> {
 async function aLeads(page: Page) {
   await entrar(page, personas.duena)
   await page.goto('/leads')
-  await expect(botonNuevo(page)).toBeVisible()
+  await expect(botonNuevoDeLaBarra(page)).toBeVisible()
   await expect(page).toHaveURL(/\/leads/)
 }
 
@@ -92,7 +100,7 @@ test('el primer clic con la lectura lenta abre el drawer al instante, con esquel
   await demorar(page, 3000)
   const pedidos = contarPedidos(page)
   const inicio = Date.now()
-  await botonNuevo(page).click()
+  await abrirNuevoLeadDeLaBarra(page)
   await expect(dialogo(page)).toBeVisible({ timeout: 1500 })
   expect(Date.now() - inicio, 'el drawer no esperó a la lectura').toBeLessThan(2500)
   await expect(dialogo(page).getByLabel('Cargando el formulario')).toBeVisible()
@@ -107,7 +115,7 @@ test('con un 500 el drawer sigue abierto, lo dice con «Reintentar», y reintent
 }, info) => {
   await aLeads(page)
   await page.route(CONTEXTO, (ruta) => ruta.fulfill({ status: 500, body: '{"message":"x"}' }))
-  await botonNuevo(page).click()
+  await abrirNuevoLeadDeLaBarra(page)
   const panel = dialogo(page)
   await expect(panel.getByText('No se pudo cargar el formulario.')).toBeVisible()
   await expect(panel).toBeVisible()
@@ -124,7 +132,7 @@ test('con la red caída pasa lo mismo, y un fallo no se guarda: al volver la red
   await aLeads(page)
   await page.route(CONTEXTO, (ruta) => ruta.abort('failed'))
   await page.route(CAMPOS, (ruta) => ruta.abort('failed'))
-  await botonNuevo(page).click()
+  await abrirNuevoLeadDeLaBarra(page)
   const panel = dialogo(page)
   await expect(panel.getByText('No se pudo cargar el formulario.')).toBeVisible()
   await capturar(page, info, 'alta-error-sin-red')
@@ -132,7 +140,7 @@ test('con la red caída pasa lo mismo, y un fallo no se guarda: al volver la red
   await page.unroute(CAMPOS)
   await page.keyboard.press('Escape')
   await expect(panel).toBeHidden()
-  await botonNuevo(page).click()
+  await abrirNuevoLeadDeLaBarra(page)
   await expect(telefono(page)).toBeVisible()
 })
 
@@ -147,7 +155,7 @@ test('cerrar antes de que termine no deja nada colgado: ni drawer, ni aviso, ni 
   await aLeads(page)
   await demorar(page, 2500)
   const pedidos = contarPedidos(page)
-  await botonNuevo(page).click()
+  await abrirNuevoLeadDeLaBarra(page)
   await expect(dialogo(page).getByLabel('Cargando el formulario')).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(dialogo(page)).toBeHidden()
@@ -159,30 +167,36 @@ test('cerrar antes de que termine no deja nada colgado: ni drawer, ni aviso, ni 
   await expect(page.locator('[data-sonner-toast]')).toHaveCount(0)
   expect(errores).toEqual([])
   // Lo leído quedó: reabrir muestra el formulario sin pedir otra vez.
-  await botonNuevo(page).click()
+  await abrirNuevoLeadDeLaBarra(page)
   await expect(telefono(page)).toBeVisible()
   expect(pedidos).toEqual({ contexto: 1, campos: 1 })
 })
 
-test('un doble clic abre un solo drawer y lee una vez', async ({ page }) => {
+test('un doble clic en «Nuevo» deja el modal abierto y uno en «Lead» abre un solo drawer y lee una vez', async ({
+  page,
+}) => {
   await aLeads(page)
   await demorar(page, 1000)
   const pedidos = contarPedidos(page)
-  await botonNuevo(page).dblclick()
+  await botonNuevoDeLaBarra(page).dblclick()
+  await expect(modalDeNuevo(page)).toBeVisible()
+  await expect(modalDeNuevo(page)).toHaveCount(1)
+  await modalDeNuevo(page).getByRole('button', { name: /^Lead/ }).dblclick()
   await expect(dialogo(page)).toHaveCount(1)
   await expect(telefono(page)).toBeVisible({ timeout: 10_000 })
   expect(pedidos).toEqual({ contexto: 1, campos: 1 })
 })
 
-test('con el puntero sobre el botón o el foco en él la lectura se adelanta, sin abrir nada', async ({
+test('con «Lead» enfocado en «Nuevo» la lectura se adelanta, sin abrir el alta', async ({
   page,
 }) => {
   await aLeads(page)
   const pedidos = contarPedidos(page)
-  await botonNuevo(page).hover()
+  await abrirNuevo(page)
+  await expect(modalDeNuevo(page).getByRole('button', { name: /^Lead/ })).toBeFocused()
   await expect.poll(() => pedidos).toEqual({ contexto: 1, campos: 1 })
   await expect(dialogo(page)).toBeHidden()
-  await botonNuevo(page).click()
+  await modalDeNuevo(page).getByRole('button', { name: /^Lead/ }).click()
   await expect(telefono(page)).toBeVisible()
   expect(pedidos, 'el clic no vuelve a leer').toEqual({ contexto: 1, campos: 1 })
 })
@@ -204,9 +218,11 @@ test('un origen creado en Configuración aparece en el alta sin recargar la pág
   await entrar(page, personas.duena)
   await abrirOrigenes(page)
   const pedidos = contarPedidos(page)
-  // Se lee una vez (el puntero llega al botón) y queda guardado.
-  await botonNuevo(page).hover()
+  // Se lee una vez (el foco llega a «Lead» de «Nuevo») y queda guardado.
+  await abrirNuevo(page)
   await expect.poll(() => pedidos.contexto).toBe(1)
+  await page.keyboard.press('Escape')
+  await expect(modalDeNuevo(page)).toBeHidden()
   const nuevo = `${PREFIJO_DE_ORIGEN_E2E} contexto ${String(Date.now())}`
   await page.getByRole('button', { name: 'Nuevo origen' }).first().click()
   const modal = modalDeOrigen(page, 'Nuevo origen')
@@ -214,7 +230,7 @@ test('un origen creado en Configuración aparece en el alta sin recargar la pág
   await modal.getByRole('button', { name: 'Crear origen' }).click()
   await expect(modal).toBeHidden()
   await descartarAviso(page, 'Origen creado.')
-  await botonNuevo(page).click()
+  await abrirNuevoLeadDeLaBarra(page)
   await expect(telefono(page)).toBeVisible()
   await expect(
     dialogo(page).getByLabel('Origen del lead').locator('option', { hasText: nuevo }),

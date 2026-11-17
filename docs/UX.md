@@ -35,8 +35,8 @@ Cada meta la hace cumplir su e2e, en escritorio y celular.
 
 ### Flujo 1 — Registrar lead y seguimiento
 
-1. «Nuevo lead» en la barra superior, o `N` donde la pantalla no tiene un «nuevo» propio → drawer (no página), `?panel=nuevo-lead`. **Se
-   abre al instante** y lee orígenes, tipos y layout desde el navegador: esqueleto con la forma del formulario, listo, o error («No se pudo
+1. `N` donde la pantalla no tiene un «nuevo» propio, o «Nuevo» en la barra superior (o `Shift+N`) → «Lead» (el modal abre con él enfocado: Intro) → drawer (no
+   página), `?panel=nuevo-lead`. **Se abre al instante** y lee orígenes, tipos y layout desde el navegador: esqueleto con la forma del formulario, listo, o error («No se pudo
    cargar el formulario.» con «Reintentar»). **Un solo panel**: se desliza una vez y los estados cambian dentro
    (`e2e/leads-alta-un-drawer.spec.ts`). Foco en **Teléfono principal**.
 2. Al completar el teléfono (debounce 400 ms) se consulta `verificar_telefono`. Es mío: «Ya existe: Ana Quispe (Tu n.º 12), y es tuyo». Es
@@ -157,7 +157,7 @@ Estados propios:
 ### Flujo 3 — Mover de fase
 
 1. `/logistica` abre la **bandeja del día** (lo que le toca hoy a quien mira, por grupos con su acción) y al lado la **cadena** como gráfica: una fase por punto con cuántos vehículos tiene y cuántos están demorados o trabados. Clic en una fase → su lista (tabla paginada, filtros en URL).
-2. Clic en un vehículo (de la bandeja, de la lista o de «dónde está») → su página `/logistica/vehiculo/<id>` con «Qué falta para pasar a …» abierto (documentos aprobados/faltantes, datos, esperas de repuestos, en vivo).
+2. Clic en un vehículo (de la bandeja, de la lista o de «dónde está») → su página `/logistica/vehiculo/<id>` con «Qué falta para pasar a …» abierto (documentos aprobados/faltantes, datos, esperas de repuestos, en vivo). Cada falta trae lo que la destraba: hacerlo ahí («Subir», «Revisar», «Completar», «Registrar»), ir a donde se hace o «Pedirlo» a quien puede.
 3. Subir documento desde el panel (arrastrar o cámara); se sube al confirmar, nunca antes; queda «subido» hasta que alguien con permiso lo
    aprueba.
 4. «Mover a <fase>» pide nota interna (obligatoria si la fase lo exige) → RPC con `fase_esperada`; conflicto: «Rosa Mamani la movió a
@@ -404,8 +404,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Formatos:** `Intl` con locale y moneda de la empresa (`es-BO` por defecto); montos con cifras tabulares; fechas cruzan servidor↔cliente
   como ISO y se muestran en la zona de la empresa. **Modo Live** oculta cifras sensibles **y** símbolos de moneda. Voz: español neutro con
   tuteo. Densidad: compacta en escritorio (filas 36–40 px), cómoda en táctil (48 px), recordada por usuario.
-- **Atajos:** `Ctrl/Cmd+K` buscar/comandos · `N` nuevo, lo propio de la pantalla (vehículo en vehículos; si no hay, un lead; «Nuevo lead»
-  siempre tiene botón) · `Ctrl/Cmd+S` guardar · `Ctrl/Cmd+Enter` guardar y seguir · `Esc` cerrar panel o volver un paso · `?` abre «Atajos
+- **Atajos:** `Ctrl/Cmd+K` buscar/comandos · `N` nuevo, lo propio de la pantalla (vehículo en vehículos; si no hay, un lead) · `Shift+N` abre «Nuevo» (elegir qué crear;
+  no abre encima de otro diálogo ni mientras se escribe) · `Ctrl/Cmd+S` guardar · `Ctrl/Cmd+Enter` guardar y seguir · `Esc` cerrar panel o volver un paso · `?` abre «Atajos
   de teclado» (la lista del catálogo; no se dispara mientras se escribe). En un alta de vehículo `Ctrl/Cmd+S` guarda y cierra; en «Nuevo
   lead» deja el drawer listo para el siguiente.
 - **Filtros:** panel lateral plegable si el listado mide 40 rem o más (si no, hoja inferior) + chips activos + «limpiar»; esquema
@@ -440,7 +440,15 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   la barra desde `md` y, por debajo, arriba de la lista (`<select>` de 44 px). Se guarda en la cuenta (`listas.por_pagina`, también en el
   perfil); `?por=` la fija para esa página; cada lista tiene un máximo (hoy 100). Cambiarlo vuelve a la primera página y conserva filtros y
   búsqueda. No lo llevan el kanban ni las papeleras (`docs/RENDIMIENTO.md`).
-- **Barra superior:** tipo de cambio por defecto a la vista y, al abrirlo, los vigentes con su último cambio (Modo Live lo oculta). En el
+- **Barra superior:** «Nuevo» (a la izquierda del tipo de cambio) abre un modal sin pantalla propia (`?panel=crear`: recargar lo reabre, «atrás» lo cierra) con lo que quien mira
+  puede crear, en este orden y filtrado con `puede()` (lo que nunca podrá no aparece; «Ver como»: las del rol mirado): **Lead** (`leads.crear`) → el drawer `?panel=nuevo-lead` en la
+  pantalla de ahora; **Vehículo** (`vehiculos.crear`; sólo con el alta de cotizar, la hoja con el vehículo en alta) → `/vehiculos?panel=nuevo`; **Cotización** (`cotizaciones.crear`) →
+  `/cotizaciones/nuevo`; **Proyecto de repuestos** (`repuestos.editar`) → `/repuestos?panel=nuevo-proyecto`; **Seguimiento** y **Recordatorio** (`leads.editar`) → un segundo paso
+  del mismo modal: se busca un lead **de tu cartera** (3 letras o un número, nunca por teléfono; hasta 5, «Escribe más» si hay otros; «Atrás» vuelve) y se abre su ficha en «Seguimientos» con
+  el modal de anotar o agendar; **Evento** y **Tarea** (siempre: para uno mismo no piden permiso) → `/agenda?panel=nuevo-evento|nueva-tarea`. El modal abre con «Lead» enfocado (con
+  flechas y Tab se recorre; Intro elige); elegir cierra el modal y abre la puerta (un modal nunca abre otro). Con una sola opción el botón la abre directo. Sin nada que crear no hay
+  botón. En el celular mide 44 px, con sólo el icono si la barra mide menos de 24 rem. Estados del paso del lead: bajo el mínimo, la pista; «Buscando…»; sin resultados («Sólo se ofrecen los de
+  tu cartera»); error y sin conexión con «Reintentar». Lo recibe el layout como claves, no como permisos. La paleta conserva «Nuevo lead», «Nuevo vehículo» y «Nueva cotización». Tipo de cambio por defecto a la vista y, al abrirlo, los vigentes con su último cambio (Modo Live lo oculta). En el
   celular menú, Live y avatar miden 44 px y la barra cabe al 200 %; el tipo de cambio sólo se dibuja con 24 rem o más. El botón «Buscar»
   (44 px) abre la paleta (`Ctrl/Cmd+K`) y la campana trae los avisos; el widget del chat flota fuera de `/chat` y no va en la barra.
 - **Permisos en UI**: ocultar lo que nunca va a usar; deshabilitar con motivo lo que espera poder hacer (**dominancia**: lo que no puede dar
@@ -705,7 +713,20 @@ de un drawer (`/logistica/gastos?vehiculo=<id>`, el ítem de repuesto `?item=`),
   vehículo lleva «Ver en logística» (antes de «Editar», con `logistica.ver`) a `/logistica/vehiculo/<id>`.
 - **«Qué falta» y mover** (abierto al inicio, el primero): una tarjeta por destino (las salidas de la fase actual; sin fase, las iniciales)
   con cada requisito y su estado **dicho con texto** («Cumplido» / «Falta»), «Obligatorio» / «Informativo», su detalle («1 de 2
-  aprobados») y, en una falta obligatoria, el enlace al hueco que la resuelve. «Elegir» abre en el bloque la nota interna (obligatoria si
+  aprobados») y, en cada falta (obligatoria o informativa), **lo que la destraba**: un botón chico con el verbo («Subir», «Revisar», «Completar»,
+  «Registrar», «Ir a Documentos/Transporte/Aduana/Pagos/Repuestos/Cotizaciones», «Ir al vehículo», «Ir al proyecto», «Vincular», «Pedirlo»; el nombre accesible
+  lleva el objeto: «Subir «BL»») y, si hay más, hasta dos en el «⋯» del requisito («Más acciones de «BL»»). Mide lo que medía el enlace de antes (44 px en
+  el celular): la tarjeta no crece. «Subir» abre «Subir documentos» con el tipo elegido (drawer en escritorio, la bandeja del bloque en el celular); con uno
+  ya subido, «Revisar» lleva a Documentos con el grupo del tipo a la vista (no se aprueba sin mirar el archivo); «Completar» lleva el foco al campo del
+  transporte; «Registrar» abre «Registrar pago» vacío. Quien no puede: «Pedirlo» (con `agenda.tareas.asignar`) o «Pídeselo a quien administra los roles.»
+  (en la línea sin otra acción; como nota del «⋯» si hay una). Lo que nunca podrá no aparece. Regla apagada (quien tiene la clave del hueco y el hueco no
+  se dibuja): ninguna acción. **En un drawer** (gastos, ítem), lo que sacaría de la pantalla dice «Abrir la unidad». **Sin red**: todo apagado y
+  «Sin conexión: las acciones vuelven con la red.» en la línea viva. La franja «fuera de regla» sigue con su enlace. **«Pedírselo a alguien»**
+  (`?pedir=requisito&falta=<id>`, un modal): la descripción es el título de la tarea («Falta: BL aprobado para pasar a «Embarcado»»); cargando, tres
+  renglones; quién puede como radios (una sola persona, ya elegida; con más de 20, «Busca por nombre» desde 3 letras); nadie: «Nadie que pueda recibir
+  tareas tiene permiso para <verbo> en este origen.» y a quién pedírselo; error con «Reintentar»; sin permiso de dar tareas o sin acceso, lo dice.
+  «Pedírselo a <Nombre>» («Pidiendo…», el modal no se cierra); si esa persona ya no recibe, «Esa persona ya no puede recibir tareas. Elige otra.» y la
+  lista se relee; al lograrlo se cierra con «Se lo pediste a <Nombre>: tiene una tarea en su agenda.». Ya no falta al abrir: «Eso ya no falta.». «Elegir» abre en el bloque la nota interna (obligatoria si
   la fase o la salida la piden) y el botón con la acción de la salida; apagado, su motivo va escrito debajo («Falta: BL aprobado.», rol,
   nota, permiso del origen). `Ctrl/Cmd+Enter` envía. Al lograrlo la tarjeta cambia de columna y el foco vuelve al título del panel.
   **«La ganamos»** (`?ganada=si`, desde la ficha o desde la línea «La subasta terminó y nadie dijo si la ganamos.» · «La ganamos» de este

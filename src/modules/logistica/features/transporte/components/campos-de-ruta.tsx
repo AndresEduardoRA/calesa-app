@@ -4,6 +4,7 @@ import type { Route } from 'next'
 import Link from 'next/link'
 import { RUTAS } from '@/shared/lib/rutas'
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
+import { ATRIBUTO_DE_CLAVE_DE_DATO } from '../../../entities/nucleo/paneles-de-la-unidad'
 import type { OpcionDeTransporte } from '../../../entities/transporte/oferta'
 import {
   TEXTO_SIN_NAVIERAS,
@@ -65,7 +66,7 @@ export function CamposDeRuta({
 }: PropsDeRuta) {
   return (
     <>
-      <div className="grid gap-1.5">
+      <div className="grid gap-1.5" {...{ [ATRIBUTO_DE_CLAVE_DE_DATO]: 'transporte.naviera' }}>
         <CampoSeleccion
           nombre={`${prefijo}-naviera`}
           etiqueta="Naviera"

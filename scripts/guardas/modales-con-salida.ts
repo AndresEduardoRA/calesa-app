@@ -27,6 +27,12 @@ export const MODALES: Record<string, RegistroDeModal> = {
     sinFormulario:
       'sólo dibuja los estados de carga, error y sin tipos; los formularios de anotar y agendar son ModalDeFormulario',
   },
+  // --- shell
+  'src/app/(app)/_shell/nuevo/modal-de-nuevo.tsx': {
+    sinFormulario:
+      '«Nuevo» de la barra: lista lo que se puede crear y, para un seguimiento o un recordatorio, busca y elige un lead; el texto de búsqueda no se guarda y elegir actúa al instante',
+    tambien: ['src/modules/buscador/features/elegir-lead/components/elegir-lead.tsx'],
+  },
   // --- equipo
   'src/modules/equipo/features/equipo/components/invitar-persona.tsx': {
     sinFormulario:

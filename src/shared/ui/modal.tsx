@@ -40,6 +40,8 @@ type Props = {
   // Cuando terminó de irse (la animación de cierre): lo que no debe quedar en memoria (una clave) se
   // olvida acá y no al cerrar, así no cambia lo que se ve mientras se va.
   alTerminarDeCerrar?: () => void
+  // Sin cierre por el clic afuera (Esc y la ✕ siguen): para el primer instante de un modal que se abre con un clic, que un doble clic no cerraría.
+  sinCierreAfuera?: boolean
 }
 
 // El cuerpo que se desplaza, con su descripción: lo que queda escondido arriba o abajo lo dice un degradado (5a-24), sólo mientras hay algo.
@@ -84,12 +86,14 @@ export function Modal({
   focoInicial,
   focoAlCerrar,
   alTerminarDeCerrar,
+  sinCierreAfuera = false,
 }: Props) {
   // Esc lo atiende Base UI, que cierra sólo el diálogo de más arriba y detiene el evento: mientras
   // un diálogo está abierto, el atajo «cerrar» de la pila no lo ve (por eso el Modal no lo registra).
   return (
     <Dialog
       open={abierto}
+      disablePointerDismissal={sinCierreAfuera}
       onOpenChange={(sigueAbierto) => {
         if (sigueAbierto || bloqueado) {
           return

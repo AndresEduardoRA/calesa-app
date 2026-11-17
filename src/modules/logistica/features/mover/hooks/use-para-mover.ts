@@ -1,21 +1,21 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { leerParaMover, type ParaMover } from '@/modules/flujos/client'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
 import type { ErrorApp } from '@/shared/lib/errores'
 import { NO_SE_LEYO_QUE_FALTA } from '../../../entities/mover/textos'
 import type { UnidadAbierta } from '../../../entities/nucleo/unidad'
 import { useAlCambiarLaUnidad } from '../../nucleo/hooks/eventos-de-la-unidad'
+import { leerQueFalta, type QueFalta } from '../actions/leer-que-falta'
 import { unidadAMover } from './unidad-a-mover'
 
 export type LecturaParaMover =
-  { tipo: 'cargando' } | { tipo: 'error'; error: ErrorApp } | { tipo: 'listo'; dato: ParaMover }
+  { tipo: 'cargando' } | { tipo: 'error'; error: ErrorApp } | { tipo: 'listo'; dato: QueFalta }
 
 // Entre una lectura y la siguiente por volver el foco a la ventana pasan al menos 5 segundos: cambiar de pestaña no debe pegarle a la base cada vez.
 const MINIMO_ENTRE_LECTURAS_MS = 5000
 
-// Lo que el hueco «Qué falta» lee de una unidad (6.04): se lee al montarse, cuando cambia su fase (la pantalla se repintó), cuando otro hueco avisa que cambió algo y cuando vuelve el foco a la
+// Lo que el hueco «Qué falta» lee de una unidad (6.04), con la acción que destraba cada requisito (`leerQueFalta`): se lee al montarse, cuando cambia su fase (la pantalla se repintó), cuando otro hueco avisa que cambió algo y cuando vuelve el foco a la
 // ventana. Una relectura no vuelve al esqueleto: lo que había se sigue viendo y `actualizando` lo dice. «Reintentar» pasa por «cargando». Una respuesta que llega tarde se descarta.
 export function useParaMover(unidad: UnidadAbierta) {
   const [lectura, setLectura] = useState<LecturaParaMover>({ tipo: 'cargando' })
@@ -28,8 +28,8 @@ export function useParaMover(unidad: UnidadAbierta) {
     pedido.current += 1
     const mio = pedido.current
     ultimaLectura.current = Date.now()
-    const envio = await enviarAccion<ParaMover>(
-      leerParaMover(unidadAMover({ id, tipo, origenId })),
+    const envio = await enviarAccion<QueFalta>(
+      leerQueFalta(unidadAMover({ id, tipo, origenId })),
       NO_SE_LEYO_QUE_FALTA,
     )
     if (mio !== pedido.current) return

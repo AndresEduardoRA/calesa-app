@@ -1,8 +1,17 @@
-import { entrar, dialogo, limpiarAlta, prepararAlta, type PersonasDelAlta } from './soporte/alta'
+import {
+  abrirNuevoLeadDeLaBarra,
+  botonNuevoDeLaBarra,
+  dialogo,
+  entrar,
+  limpiarAlta,
+  modalDeNuevo,
+  prepararAlta,
+  type PersonasDelAlta,
+} from './soporte/alta'
 import { contarElDrawer, leerCuenta, type Cuenta } from './soporte/contar-drawer'
 import { esMovil } from './soporte/inventario'
 import { capturar } from './soporte/recorrido'
-import { expect, test, type Page, type Route, type TestInfo } from './soporte/prueba'
+import { expect, test, type Locator, type Page, type Route, type TestInfo } from './soporte/prueba'
 
 // 5b-6: «Nuevo lead» es UN solo drawer, aunque lo que lee tarde. Se abre al instante con su esqueleto y, cuando llega el formulario (o el error),
 // cambia de cuerpo: no se vuelve a montar ni a deslizar. Se cuenta, no se mira el DOM final: cada vez que entra al documento una hoja del
@@ -25,8 +34,6 @@ test.afterAll(async () => {
   await limpiarAlta(restaurar)
 })
 
-const botonNuevo = (page: Page) =>
-  page.locator('header').getByRole('button', { name: 'Nuevo lead' })
 const telefono = (page: Page) => dialogo(page).getByLabel('Teléfono principal')
 
 // Cada pedido a la base del alta tarda `ms` más en salir.
@@ -52,11 +59,11 @@ async function aLeads(page: Page) {
   await entrar(page, personas.duena)
   await contarElDrawer(page)
   await page.goto('/leads')
-  await expect(botonNuevo(page)).toBeVisible()
+  await expect(botonNuevoDeLaBarra(page)).toBeVisible()
 }
 
-// En el celular se toca (sin hover, sin foco previo); en escritorio, un clic.
-const abrir = (page: Page) => (esMovil(page) ? botonNuevo(page).tap() : botonNuevo(page).click())
+// «Nuevo» › «Lead»: el modal de la barra y su primera opción.
+const abrir = (page: Page) => abrirNuevoLeadDeLaBarra(page)
 
 // Deja la cuenta a la vista aunque la prueba falle (la medición contra el código de antes).
 async function anotar(page: Page, info: TestInfo, caso: string): Promise<Cuenta> {
@@ -131,6 +138,8 @@ test('cerrar y reabrir mientras lee: una hoja por apertura, y una sola lectura',
   const pedidos = contarPedidos(page)
   await abrir(page)
   await expect(dialogo(page).getByLabel('Cargando el formulario')).toBeVisible()
+  // Cerrar con la entrada ya en marcha: la primera hoja se vio animarse antes de irse.
+  await expect.poll(async () => (await leerCuenta(page)).animados).toBe(1)
   await page.keyboard.press('Escape')
   await expect(dialogo(page)).toBeHidden()
   await abrir(page)
@@ -141,21 +150,31 @@ test('cerrar y reabrir mientras lee: una hoja por apertura, y una sola lectura',
   expect(pedidos).toEqual({ contexto: 1, campos: 1 })
 })
 
+// Dos toques seguidos en el centro del botón.
+async function doblarToque(page: Page, boton: Locator) {
+  const caja = await boton.boundingBox()
+  if (!caja) throw new Error('El botón no tiene caja.')
+  const x = caja.x + caja.width / 2
+  const y = caja.y + caja.height / 2
+  await page.touchscreen.tap(x, y)
+  await page.touchscreen.tap(x, y)
+}
+
 test('un doble toque o un doble clic abre un solo drawer, lo anima una vez y lee una vez', async ({
   page,
 }, info) => {
   await aLeads(page)
   await demorar(page, 1000)
   const pedidos = contarPedidos(page)
+  // Un doble toque o clic en «Nuevo» deja el modal abierto (el segundo no lo cierra) y otro en «Lead» abre un solo drawer.
   if (esMovil(page)) {
-    const caja = await botonNuevo(page).boundingBox()
-    if (!caja) throw new Error('El botón «Nuevo lead» no tiene caja.')
-    const x = caja.x + caja.width / 2
-    const y = caja.y + caja.height / 2
-    await page.touchscreen.tap(x, y)
-    await page.touchscreen.tap(x, y)
+    await doblarToque(page, botonNuevoDeLaBarra(page))
+    await expect(modalDeNuevo(page)).toBeVisible()
+    await doblarToque(page, modalDeNuevo(page).getByRole('button', { name: /^Lead/ }))
   } else {
-    await botonNuevo(page).dblclick()
+    await botonNuevoDeLaBarra(page).dblclick()
+    await expect(modalDeNuevo(page)).toBeVisible()
+    await modalDeNuevo(page).getByRole('button', { name: /^Lead/ }).dblclick()
   }
   await expect(dialogo(page)).toHaveCount(1)
   await expect(telefono(page)).toBeVisible({ timeout: 10_000 })

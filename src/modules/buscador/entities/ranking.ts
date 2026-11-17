@@ -10,6 +10,11 @@ export { TIPOS_DEL_BUSCADOR, type TipoDelBuscador } from './resultados'
 // `scripts/guardas/areas-b/paginas-en-la-base.ts`). Es el tope de una sección, no una página de lista (D21).
 export const POR_SECCION = 5
 
+// «Elegir un lead de mi cartera» (el segundo paso de «Nuevo» en la barra): se piden los candidatos de `buscador_leads` hasta el máximo de la base (20) y se
+// quedan los de la cartera de quien mira; se muestran `ELEGIBLES_DE_LA_CARTERA` y se lee una más para saber si hay otras.
+export const CANDIDATOS_PARA_ELEGIR = 20
+export const ELEGIBLES_DE_LA_CARTERA = 5
+
 // «Últimos abiertos»: se leen 16 visitas y se muestran 8, para que una oculta o purgada no deje la lista corta (D15).
 export const ULTIMOS_LEIDOS = 16
 export const ULTIMOS_MOSTRADOS = 8

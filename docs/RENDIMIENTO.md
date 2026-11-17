@@ -402,7 +402,11 @@ vista (`UnaSolaVista`, según el `user-agent`).
 - Lo medido se arma en una transacción que se revierte: `session_replication_role = replica`, 195.000 vehículos con la fase 3 en 15.000 y después 105.000 más a ella (sumar y no mover: mover deja filas
   muertas en los índices y cambia lo que se mide).
 - JS en frío (`e2e/presupuesto-js.spec.ts`): `/logistica` ≤ 390 KB (medido 365,0 en 26 chunks; el kanban marcaba 401,0) y `/logistica/fase/[fase]` ≤ 390 KB (medido 367,0 en 27 chunks): sobre lo medido más un 5 %, a la decena.
-- JS en frío del detalle de un vehículo (`/logistica/vehiculo/[id]`): ≤ 470 KB (medido 438,9 en 28 chunks antes de las zonas y 442,3 en 27 después: las zonas, `PestanasDelResumen` y el carrusel de la portada cuestan ≈ 3,4 KB; el popover de relacionados y cada hueco van con `diferido()`), sobre lo medido más un 5 %, a la decena.
+- JS en frío del detalle de un vehículo (`/logistica/vehiculo/[id]`): ≤ 470 KB (medido 438,9 en 28 chunks antes de las zonas y 442,3 en 27 después: las zonas, `PestanasDelResumen` y el carrusel de la portada cuestan ≈ 3,4 KB; el popover de relacionados y cada hueco van con `diferido()`), sobre lo medido más un 5 %, a la decena. Con las acciones de «Qué falta», 442,5 (el proveedor de la página y los botones; el modal «Pedírselo a alguien» va con `diferido()`).
+- **Acciones de «Qué falta»** (`/logistica/vehiculo/[id]`): sin lectura nueva; viajan en la respuesta de la action de siempre (≈ 150 a 250 B por falta) y
+  `por_revisar` sale del mismo `count` por `documentos_unidad_tipo_idx`. Se dibuja un botón por falta y el «⋯» sólo con más. «Pedírselo a alguien» llega
+  con `diferido()` al primer uso y lee una vez al abrir (`agenda_quienes_reciben` con `p_permiso`: 20 + 1 sobre `perfiles`, la tabla del equipo); buscar,
+  desde 3 letras con 300 ms de espera.
 - **Página de la unidad** (`/logistica/vehiculo/[id]`): no hay lectura nueva salvo `leerVehiculo` (una fila por PK, tras su `Suspense`, para la portada; el resto de las fotos, al acercarse: máximo 24). En escritorio se piden al abrir **tres** huecos (Qué falta, Documentos, Notas: tres chunks diferidos y tres lecturas del navegador); en el celular, **uno**. Lo demás, al elegir su pestaña, y queda montado. Topes y cursores, los de siempre: notas e historial de a 20 (`TAMANO_DE_VER_MAS`) por cursor `(creado_en, id)` hasta 500 (`TOPE_DE_LO_CARGADO`, `notas_vehiculo_vivas_idx`, `historial_fases_vehiculo_idx`); documentos 50+1 (vivos); gastos y pagos 50+1. Cada pestaña dibuja dentro de su marco con desplazamiento: la página no crece. Sin migración ni consulta nueva: no hay medición de volumen propia.
 - Nodos del DOM, medidos en el recorrido (`page.evaluate`, sin spec nuevo): la portada entera con 5 grupos de 5 filas, 334; la gráfica de 5 fases, 53; la lista de una fase con 50 vehículos en escritorio, 1.039.
 - Sin volumen de interfaz propio: `e2e/logistica-cadena.spec.ts` prueba «Siguiente» con 51 y `e2e/logistica-bandeja-del-dia.spec.ts` los 21 demorados, no miden nodos de miles.
@@ -564,7 +568,7 @@ fallar.
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
-- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 163.700 B y ≤ 5.000 nodos con
+- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 171.900 B (163.788 con el botón «Nuevo» de la barra, que suma 1.551 B a toda pantalla, regla del 5 %) y ≤ 5.000 nodos con
   «Filas» abierto. La tarjeta, el editor, el modal de publicar y el diálogo de descartar van por `diferido()`; «Buscar fila» filtra en el
   navegador. `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
 - Editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrirlo lee una fila de `formulas` por `formulas_pkey`

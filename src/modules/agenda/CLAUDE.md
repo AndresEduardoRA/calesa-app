@@ -7,10 +7,12 @@ Abierto: **7-4** (`tarea_crear` y `agenda_quienes_reciben` con el canal global; 
 ## Entra y sale
 
 - Entra: alta desde la agenda, desde el chat (`/tarea`, `/evento`) y desde la ficha del lead (recordatorios); fechas de subasta de `vehiculos`.
-- `index.ts`: `leerAgenda({ desde, hasta, deTodos })`, `leerEvento`, `leerTarea`, `leerRecordatorio`, `leerMisTareas({ tope })` (para `tablero`),
-  `crearTarea()`. `client.ts`: `<ChipEvento>` (dibuja «visto» —tilde y texto para el lector— y «Último visto» de un evento o una tarea; las marcas las monta `src/app` con `equipo/pantallas/marcas-de-visto`) y, para el chat, el selector de personas, las reglas puras del formulario y la action `completarTarea`.
+- `index.ts`: `leerAgenda({ desde, hasta, deTodos })`, `leerEvento`, `leerTarea`, `leerRecordatorio`, `leerMisTareas({ tope })` (para `tablero`) y,
+  para `logistica` («Pedirlo» de «Qué falta»), `leerQuienesPuedenRecibir({ texto?, permiso, vehiculoId })` (quienes tienen ese permiso en el origen de la
+  unidad, la ven y reciben tareas; hasta 20) y `darTareaVinculada({ id, titulo, responsableId, vehiculoId })` (una tarea sin fecha para otra persona,
+  vinculada al vehículo, por `tarea_crear`). El alta desde la agenda es la action `crearTarea` de `features/tareas` (no sale por las entradas). `client.ts`: `<ChipEvento>` (dibuja «visto» —tilde y texto para el lector— y «Último visto» de un evento o una tarea; las marcas las monta `src/app` con `equipo/pantallas/marcas-de-visto`) y, para el chat, el selector de personas, las reglas puras del formulario y la action `completarTarea`.
 - Depende de `leads` (action `completarRecordatorio`), `vehiculos`, `cotizaciones`. `chat` depende de `agenda`, no al revés: la conversación de una
-  tarea llega por la RPC `mensaje_tarea_crear`.
+  tarea llega por la RPC `mensaje_tarea_crear`. Lo consume `logistica` («Pedirlo» de «Qué falta»), por funciones de servidor de `index.ts`.
 
 ## Archivos clave
 
@@ -31,7 +33,9 @@ RPC: `evento_crear` y `tarea_crear` (id del navegador); `evento_guardar`, `event
 `reasignar_tarea` (con `p_actualizado_en_esperado`, PT409). Responden `{resultado, id, actualizado_en}`. Triggers: `tarea_notificar`, `tarea_validar`.
 Lecturas: `agenda_rango(p_desde, p_hasta, p_de_todos)` (invocador, ≤ 45 días, 200 por clase con `hay_mas`; `tareas_vence_idx` para
 `agenda.ver_todo`); `agenda_tareas_sin_fecha` (cursor `(creado_en, id)`, `_acotar_pagina(p_tamano, 20, 50)`, `tareas_sin_fecha_idx`; registro en
-`scripts/guardas/areas-b/paginas-en-la-base.ts`); `agenda_quienes_reciben(p_texto, p_conversacion)` (definer, pide `agenda.tareas.asignar`, tope 20).
+`scripts/guardas/areas-b/paginas-en-la-base.ts`); `agenda_quienes_reciben(p_texto, p_conversacion, p_permiso, p_vehiculo)` (definer, pide `agenda.tareas.asignar`, tope 20 con `hay_mas`; con
+`p_permiso` y `p_vehiculo`, juntos y sin conversación, sólo quien tiene la clave en el origen de la unidad y la ve —`_quien_puede_en_la_unidad`, espejo de
+`alertas_demora`—, sin quien pide, que tiene que ver la unidad; ahí el texto es opcional).
 
 ## No se rompe
 

@@ -11,12 +11,14 @@ Toda la configuración se escribe por RPC con la versión del flujo. Abiertos (`
   `vehiculos` para mostrar y filtrar la fase. Del área `mover`: `leerFlujoDeOrigen(origenId)` → `FlujoDeOrigen | null` (`flujoId`, `reglasActivas` y por fase
   `notaObligatoria`, `permiteContenedor`, `permiteAduana`, `demoraDias`; error visible si una lista llega al tope) y `reglaActiva(flujo, regla)`. Por `client.ts`,
   sus tipos y `reglaActiva`.
-- **Mover**, por `client.ts`: las actions `leerParaMover`, `previsualizarCambio`, `previsualizarCambioLote`, `cambiarFase`, `cambiarFaseLote`,
+- **Mover**, por `client.ts`: las actions `previsualizarCambio`, `previsualizarCambioLote`, `cambiarFase`, `cambiarFaseLote`,
   `destinosDeLaFase` (las salidas de una fase, sin vista previa) y `ganarLaSubasta` («La ganamos»: `vehiculo_subasta_ganada`, que mueve con
   `cambiar_fase` hacia una fase que no es la subasta y anota la subasta ganada, todo o nada; sólo vehículos). Cada destino trae `esSubasta`. Exigen `flujos.mover` o `flujos.mover.cualquiera` en el origen y la base decide otra vez.
-  `leerParaMover`, `previsualizarCambio` y `cambiarFase` aceptan `vehiculo` **o** `repuesto` (`unidadDelPedido` → `unidad: { tipo, … }`; `origenId` sólo para
+  `leerParaMoverDe`, `previsualizarCambio` y `cambiarFase` aceptan `vehiculo` **o** `repuesto` (`unidadDelPedido` → `unidad: { tipo, … }`; `origenId` sólo para
   vehículo); un ítem se mueve con `repuestos.mover` global (`puedeMoverUnRepuesto`), nunca con `flujos.mover`. `destinosDeLaFase` y el lote son sólo de vehículo.
   Reglas puras: `estadoDelBoton`, `textoDelBoton`, `motivoLegible`, `etiquetaDeRequisito`, `detalleDeRequisito`, `anclaDeRequisito`. Lo consume `logistica`.
+  Por `index.ts`, `leerParaMoverDe(pedido, permisos)` (función de servidor) y `esquemaLeerParaMover`: lo que lee «Qué falta», que `logistica` envuelve en
+  su action `leerQueFalta` para sumar las acciones de cada requisito (con `etiquetaDeRequisito`, `faltaDeRequisito` y los tipos `ParaMover`, `RequisitoVista`).
 - El flujo de repuestos (`ambito = 'repuestos'`, sin origen) viene en la base, sin fases y con sus 7 reglas; las fases las siembra `seed.sql` o se crean en «Fases».
 - Depende de: `origenes`.
 
@@ -61,7 +63,7 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
   frase de cada rechazo, el estado del botón), `infra/mover/{mover,destinos}.ts` (destinos con `tope + 1`).
 - **El rechazo llega como campo:** `porCampo: { <hint>: mensaje }` con `conflicto`, `requisitos`, `rol`, `nota`, `transicion` o `acceso`. El `PT409` conserva
   el texto de la base, que nombra a quien movió.
-- `leerParaMover` junta `logistica_unidad`, los destinos (hasta 12) y una vista previa por destino en paralelo; la que falla dice su error sin tumbar a las
+- `leerParaMoverDe` junta `logistica_unidad`, los destinos (hasta 12) y una vista previa por destino en paralelo; la que falla dice su error sin tumbar a las
   demás. `cambiarFase` no revalida: la pantalla se repinta con `router.refresh()`.
 - Un ítem de repuesto se lee de `repuestos_items` bajo la RLS (`logistica_unidad` es sólo de vehículo): sin «fuera de regla» ni «quién la movió», con vista
   previa por destino (`previsualizar_cambio_fase(p_repuesto)`); sus destinos salen del flujo de repuestos. 8-13a.
@@ -147,7 +149,8 @@ RPC: `cambiar_fase`, `cambiar_fase_lote`, `previsualizar_cambio_fase`, `previsua
 - `cambiar_fase_lote(p_unidades jsonb, p_fase_destino, p_nota)`: 1–200 `{vehiculo, fase_esperada}` (mal formado o repetido → `22023` hint `p_unidades`, sin
   mover nada); mueve en orden de id, devuelve en el de entrada `{vehiculo_id, ok, codigo, motivo, historial_id}`; sólo atrapa PT409, 23514, 42501 y 22023.
   `previsualizar_cambio_fase_lote(p_vehiculos uuid[], p_fase)`, invocadora, ≤ 200. `evaluar_requisitos` y `unidad_llego_a_fase` no son de `authenticated` (las
-  llaman `definer` que ya miraron el acceso); el `detalle` de un requisito trae `tipo_documento_id` o `clave_dato`.
+  llaman `definer` que ya miraron el acceso); el `detalle` de un requisito trae `tipo_documento_id` o `clave_dato`; el de un documento, además, `aprobados`,
+  `min`, `max` y `por_revisar` (los subidos que contarían si se aprobaran: mismo tipo, formato y vigencia; «Qué falta» ofrece «Revisar» antes que «Subir»).
 - Quitar lo que pide la fase actual (un documento, la declaración, el transporte, un pago confirmado, un gasto de tributos) toma la unidad `for share` antes
   de mirar la fase: espera y hace esperar a `cambiar_fase`. Lo prueban las carreras de `supabase/tests/areas/{aduana,dinero}/`.
 - La cadena: `logistica_cadena_resumen(p_origen, p_tope)` (el número de cada fase: vehículos, demorados y trabados, conteo con tope por `vehiculos_cadena_idx`, nunca un total) y

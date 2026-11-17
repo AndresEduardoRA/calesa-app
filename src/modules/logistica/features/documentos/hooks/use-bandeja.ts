@@ -23,11 +23,27 @@ export type ValoresDeLaBandeja = {
 const VACIOS: ValoresDeLaBandeja = { tipoId: '', emitidoEl: '', venceEl: '', nota: '' }
 
 // La bandeja de «Subir documentos» (6.06-2): los archivos elegidos y lo que se dice de ellos, **sin subir nada**. El hash se calcula al elegir (para descartar lo repetido) y lo que el
-// tipo elegido no admite sale de la lista y vuelve si se elige otro tipo. Un archivo de más de 25 MB no se lee: ya se sabe que no entra.
-export function useBandeja(tipos: readonly TipoDeDocumento[]) {
+// tipo elegido no admite sale de la lista y vuelve si se elige otro tipo. Un archivo de más de 25 MB no se lee: ya se sabe que no entra. Un `tipoPedido` (de «Qué
+// falta») elige el tipo cuando cambia, si la bandeja está vacía y el tipo está entre los que se ofrecen: nunca pisa lo elegido con archivos ya puestos.
+export function useBandeja(tipos: readonly TipoDeDocumento[], tipoPedido: string | null = null) {
   const [entradas, setEntradas] = useState<EntradaDeLaBandeja[]>([])
   const [rechazados, setRechazados] = useState<Rechazado[]>([])
-  const [valores, setValores] = useState<ValoresDeLaBandeja>(VACIOS)
+  const [valores, setValores] = useState<ValoresDeLaBandeja>(() =>
+    tipoPedido && tipos.some((t) => t.id === tipoPedido)
+      ? { ...VACIOS, tipoId: tipoPedido }
+      : VACIOS,
+  )
+  const [pedidoVisto, setPedidoVisto] = useState(tipoPedido)
+  // Se ajusta durante el render (no en un efecto): el tipo pedido se ve desde el primer cuadro.
+  if (
+    tipoPedido !== pedidoVisto &&
+    (tipoPedido === null || tipos.some((t) => t.id === tipoPedido))
+  ) {
+    setPedidoVisto(tipoPedido)
+    if (tipoPedido !== null && entradas.length === 0) {
+      setValores((anteriores) => ({ ...anteriores, tipoId: tipoPedido }))
+    }
+  }
   const [leyendo, setLeyendo] = useState(false)
   const actuales = useRef({ entradas, valores })
   useEffect(() => {
