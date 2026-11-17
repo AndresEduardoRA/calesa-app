@@ -226,9 +226,15 @@ las trampas, en `docs/LECCIONES.md`.
   Consecuencia: la etapa inicial de un embudo no se quita mientras tenga bases abiertas (`embudo_guardar` ya frena quitar una etapa con
   oportunidades); se mueven primero.
 
-- **«+ Oportunidad» desde la lista es un botón de la fila, no una línea del «⋯»** (dos toques: botón y «Crear oportunidad»; desde el «⋯» serían tres). Es el modal corto de
-  las acciones de fila (`?panel=oportunidad-rapida&para=`), no un popover: ya hay un patrón con URL, foco de vuelta y atajos. Sin vehículo ni notas: el
-  listado no lee los vehículos del lead y `leads` no importa `vehiculos`; se agregan con «Editar» en la ficha. Sin elegir embudo: el de por defecto.
+- **«Nueva oportunidad…» se crea desde el «⋯», no desde un botón de la fila, y antes avisa de las que el lead ya tiene.** Todo lead nace con su
+  oportunidad base, así que crear otra «a ciegas» era fácil y la persona prefiere no crear sin saber: un toque más (el «⋯», «Nueva oportunidad…», «Crear igual»;
+  el aviso sólo se salta si el lead no tiene ninguna que quien mira vea) es el precio. Es el modal corto de las acciones de fila (`?panel=oportunidad-rapida&para=`),
+  no un popover: ya hay un patrón con URL, foco de vuelta y atajos; en la ficha y el resumen, donde el lead ya es el de la pantalla, es `?panel=oportunidad-rapida` sin
+  `para`. Sin vehículo ni notas: el listado no lee los vehículos del lead y `leads` no importa `vehiculos`; se agregan con «Editar» en la ficha. Sin elegir embudo: el de
+  por defecto. El aviso lista sólo las que quien mira ve (una oportunidad es de su dueña con el lead en su cartera: no se insinúan las ajenas), hasta 5, con «Ver»
+  cada una y «Ver todas» si hay más; lee 6 al abrir el modal (una por apertura, por los índices de la ficha) y nunca cuenta. Si la lectura falla lo dice con
+  «Reintentar» y deja «Crear igual»: no poder leer no impide crear. **«Ver oportunidades»** del «⋯» aparece con el lead en la cartera de quien mira (la única que ve
+  oportunidades) y no pide `leads.editar`: la lista no sabe si hay alguna sin una lectura por fila, así que no la promete; sin ninguna, la ficha lo dice en su estado vacío.
 
 - **Anotar o agendar desde la lista: una sola puerta, el «⋯», y la fila se relee al guardar.** Las celdas «Último seguimiento» y «Recordatorio» vacías son texto
   («Sin seguimientos», «—»), no botones: la acción no vive en dos lugares. Al guardar, el listado hace `router.refresh()` (relee la página con la URL tal cual)
