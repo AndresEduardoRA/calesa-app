@@ -44,8 +44,8 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 - Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `papelera`, `vehiculos-del-lead`, `cotizar`, `relacionados`, `unidad-de-logistica`: `FotosEnElLugar` para la cabecera de la unidad de logística;
   `proyecto-de-repuestos`: `leerLeadVinculado(vehiculoId)` para el lead por defecto de «Nuevo proyecto» de repuestos).
 - `leerLeadVinculado(vehiculoId)` (`features/vinculo/hooks/leer-lead-vinculado.ts`): el vínculo vigente por `vehiculo_vinculos` (invocadora, desde el
-  navegador) vuelto `LeadVinculado | null` con `leadVinculadoDe()`: nulo si no tiene o quien mira no lo ve, sin distinguirlos. Su código se pide con
-  `import()` de `composicion-vinculo.client.ts` (sólo esa lectura) y nunca lanza.
+  navegador) vuelto `LeadVinculado | null` con `leadVinculadoDe()`: nulo si no tiene o quien mira no lo ve, sin distinguirlos. Lee por
+  `composicion-vinculo.client.ts` (sólo esa lectura), lo importa sólo una composición diferida y nunca lanza.
 - `client.ts`: `<BadgeDeSituacion>` (la situación real; con `fase` delega en `<BadgeDeFase>`. Lo importa `logistica`: nada pesado puede colgar de ahí),
   `Situacion`, `SITUACIONES`, `esquemaDeSituacion`, `etiquetaDeSituacion`, `Vehiculo`; para la importación de `datos`, `validarVehiculo`, `camposComunes`, `camposActivos`,
   `claveDeAtributo` y sus tipos (cada fila se valida con el esquema del alta).
