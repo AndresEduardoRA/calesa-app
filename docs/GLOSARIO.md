@@ -200,6 +200,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   leads que coinciden con un nombre, sacados de un índice.
 - **Buscador** — `buscador_leads()`, `buscador_vehiculos()`, `buscador_cotizaciones()` / `src/modules/buscador`: búsqueda por sección con el
   mínimo en la base y tope 5 por sección; la dibuja la paleta.
+- **Nuevo (barra superior)** — `<NuevoDeLaBarraSuperior>`, `opcionesDeNuevo()`, `ClaveDeNuevo` / `src/app/(app)/_shell/nuevo/`: el botón «Nuevo» (y `Shift+N`) que abre un modal con lo que quien mira puede crear
+  (lead, vehículo, cotización, proyecto de repuestos, seguimiento, recordatorio, evento, tarea); `?panel=crear`. No es «Nuevo lead» (la tecla `N` y el drawer, `<AltaDeLead>`).
 - **Paleta** — `<Paleta>`, `AccionDeLaPaleta` / `src/modules/buscador`: superposición `Ctrl/Cmd+K` que busca y ejecuta acciones; sin URL; sus
   acciones se ofrecen con `puede()`.
 - **Visto** — `vistos` / `visto_registrar()`, `vistos_de()`, `ProveedorDeMarcasDeVisto`, `MarcasDeVistoDeLaPagina`: un registro que la persona abrió (ficha,
