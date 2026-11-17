@@ -87,7 +87,7 @@ test('la dueña abre el panel de un ítem, lo pasa a «Comprado» y escribe una 
   await expect(panel.getByRole('heading', { name: REPUESTO })).toBeVisible()
   const numero = sql(`select numero from repuestos_proyectos where id = '${proyecto}'`).trim()
   await expect(panel.getByText(`Proyecto #${numero}`)).toBeVisible()
-  await expect(panel.getByText('Por cotizar')).toBeVisible()
+  await expect(panel.getByText('Por cotizar', { exact: true })).toBeVisible()
   await expect(panel.getByRole('link', { name: 'Abrir proyecto' })).toBeVisible()
 
   // Las secciones van a la vista, sin acordeones: «Qué falta» primero.
