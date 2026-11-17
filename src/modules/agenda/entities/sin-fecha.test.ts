@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cursorDeSinFecha, paginaDeSinFecha } from './sin-fecha'
+import { paginaDeSinFecha } from './sin-fecha'
 
 const ID_A = '11111111-1111-4111-8111-111111111111'
 const ID_B = '22222222-2222-4222-8222-222222222222'
@@ -40,22 +40,5 @@ describe('paginaDeSinFecha', () => {
       '2026-11-11T14:00:00+00:00',
     )
     expect(paginaDeSinFecha({ tareas: [vieja], hay_mas: false })).toBeNull()
-  })
-})
-
-describe('cursorDeSinFecha', () => {
-  it('es el (creado_en, id) de la última; sin nada cargado no hay cursor', () => {
-    const pagina = paginaDeSinFecha({
-      tareas: [
-        fila(ID_A, 'pendiente', '2026-11-11T14:00:00+00:00'),
-        fila(ID_B, 'pendiente', '2026-11-10T14:00:00.5+00:00'),
-      ],
-      hay_mas: true,
-    })
-    expect(cursorDeSinFecha(pagina?.tareas ?? [])).toEqual({
-      antesEn: '2026-11-10T14:00:00.5+00:00',
-      antesId: ID_B,
-    })
-    expect(cursorDeSinFecha([])).toBeNull()
   })
 })

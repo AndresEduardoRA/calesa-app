@@ -129,18 +129,25 @@ describe('cuandoDelPendiente', () => {
   const ahora = '2026-11-17T16:00:00Z' // 12:00 en La Paz
 
   it('vencidas: «Vencida» con la fecha y la hora de la empresa', () => {
-    expect(cuandoDelPendiente('vencidas', '2026-11-15T22:00:00Z', { ahora, zona: ZONA })).toBe(
-      'Vencida · 15 nov 2026, 18:00',
-    )
+    expect(cuandoDelPendiente('vencidas', '2026-11-15T22:00:00Z', { ahora, zona: ZONA })).toEqual({
+      texto: 'Vencida · 15 nov 2026, 18:00',
+      vencido: true,
+    })
   })
 
   it('recordatorios: «Vencido» si ya pasó; «Hoy» con la hora si es más tarde', () => {
-    expect(cuandoDelPendiente('recordatorios', '2026-11-17T13:00:00Z', { ahora, zona: ZONA })).toBe(
-      'Vencido · 17 nov 2026, 09:00',
-    )
-    expect(cuandoDelPendiente('recordatorios', '2026-11-17T19:00:00Z', { ahora, zona: ZONA })).toBe(
-      'Hoy 15:00',
-    )
+    expect(
+      cuandoDelPendiente('recordatorios', '2026-11-17T13:00:00Z', { ahora, zona: ZONA }),
+    ).toEqual({
+      texto: 'Vencido · 17 nov 2026, 09:00',
+      vencido: true,
+    })
+    expect(
+      cuandoDelPendiente('recordatorios', '2026-11-17T19:00:00Z', { ahora, zona: ZONA }),
+    ).toEqual({
+      texto: 'Hoy 15:00',
+      vencido: false,
+    })
   })
 
   it('sin fecha no dice nada', () => {

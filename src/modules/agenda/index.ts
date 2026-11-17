@@ -48,6 +48,7 @@ export {
   type Vista,
 } from './entities/calendario'
 export { type DetalleDeRecordatorio } from './entities/recordatorio'
+export { extraDeEnlaces } from './features/calendario/enlace-de-dia'
 export {
   leerIdDeUrl,
   rutaDeVinculo,

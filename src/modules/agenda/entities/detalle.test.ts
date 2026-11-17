@@ -67,6 +67,17 @@ describe('detalleDeEventoDesde', () => {
     expect(detalle.destinatarios).toBeNull()
   })
 
+  it('el lead sale del vínculo, sin nombre (lo completa la página); sin lead, nulo', () => {
+    const leadId = '00000000-0000-4000-8000-0000000000a1'
+    expect(
+      detalleDeEventoDesde({ ...filaDeEvento, lead_id: leadId }, NOMBRES, [], YO).lead,
+    ).toEqual({
+      id: leadId,
+      nombre: null,
+    })
+    expect(detalleDeEventoDesde(filaDeEvento, NOMBRES, [], YO).lead).toBeNull()
+  })
+
   it('un destinatario sin nombre legible no tumba el panel', () => {
     const detalle = detalleDeEventoDesde(filaDeEvento, {}, [OTRA], YO)
     expect(detalle.destinatarios?.[0]?.nombre).toBeTruthy()

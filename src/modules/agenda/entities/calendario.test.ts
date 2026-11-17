@@ -10,6 +10,7 @@ import {
   moverFecha,
   numeroDelDia,
   rangoDe,
+  resumenDeClases,
   semanasDelMes,
   tituloDelRango,
   VISTAS,
@@ -126,6 +127,10 @@ describe('leerFecha, leerVista y leerClases', () => {
     expect(leerFecha('2028-02-29', '2026-01-01')).toBe('2028-02-29')
   })
 
+  it('las vistas van en el orden de las pestañas: día, semana, mes', () => {
+    expect(VISTAS).toEqual(['dia', 'semana', 'mes'])
+  })
+
   it('leerVista deja pasar sólo las vistas', () => {
     for (const vista of VISTAS) {
       expect(leerVista(vista, 'mes')).toBe(vista)
@@ -169,5 +174,14 @@ describe('los textos', () => {
   it('el encabezado y el número del día', () => {
     expect(encabezadoDelDia('2026-11-10')).toBe('martes 10 nov')
     expect(numeroDelDia('2026-11-05')).toBe('5')
+  })
+})
+
+describe('resumenDeClases', () => {
+  it('«Todo» con todas o ninguna; si no, las elegidas en el orden de las clases', () => {
+    expect(resumenDeClases(['evento', 'tarea', 'recordatorio', 'subasta'])).toBe('Todo')
+    expect(resumenDeClases([])).toBe('Todo')
+    expect(resumenDeClases(['tarea'])).toBe('Tareas')
+    expect(resumenDeClases(['tarea', 'evento'])).toBe('Eventos, tareas')
   })
 })

@@ -132,21 +132,22 @@ export function cursorDePendientes(filas: readonly PendienteDeAgenda[]): CursorD
   return ultima ? { en: ultima.orden, id: ultima.id } : null
 }
 
-// «Vencida · 15 nov 2026, 18:00», «Vencido · …» o «Hoy 15:00»: cuándo, en texto suave junto al título. «Sin fecha» no dice nada.
+// «Vencida · 15 nov 2026, 18:00», «Vencido · …» o «Hoy 15:00»: cuándo, en texto suave junto al título, y si ya pasó (se destaca, además del texto). «Sin fecha» no
+// dice nada.
 export function cuandoDelPendiente(
   grupo: GrupoDePendientes,
   instante: string | null,
   { ahora, zona }: { ahora: string; zona: string },
-): string | null {
+): { texto: string; vencido: boolean } | null {
   if (!instante) {
     return null
   }
   if (grupo === 'vencidas') {
-    return `Vencida · ${formatearFechaHora(instante, { zona })}`
+    return { texto: `Vencida · ${formatearFechaHora(instante, { zona })}`, vencido: true }
   }
   return Date.parse(instante) < Date.parse(ahora)
-    ? `Vencido · ${formatearFechaHora(instante, { zona })}`
-    : `Hoy ${formatearHora(instante, { zona })}`
+    ? { texto: `Vencido · ${formatearFechaHora(instante, { zona })}`, vencido: true }
+    : { texto: `Hoy ${formatearHora(instante, { zona })}`, vencido: false }
 }
 
 // Lo que dice «Mostrando…» al llegar al tope de lo cargado: «Sin fecha» va de la más nueva a la más vieja; los otros, al revés.

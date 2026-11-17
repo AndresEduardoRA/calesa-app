@@ -19,6 +19,8 @@ const datos = z.strictObject({
   inicia_en: iso.optional(),
   termina_en: iso.nullable().optional(),
   visibilidad: z.enum(Constants.public.Enums.visibilidad_evento).optional(),
+  // El lead vinculado (nulo: quitarlo). La base exige verlo.
+  lead_id: z.guid().nullable().optional(),
 })
 
 const destinatarios = z.array(z.guid()).max(TOPE_DE_DESTINATARIOS)

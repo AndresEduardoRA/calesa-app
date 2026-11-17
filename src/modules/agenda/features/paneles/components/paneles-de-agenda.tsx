@@ -11,6 +11,7 @@ type Props = {
   recordatorio: RecordatorioPedido | null
   // Lo que quien mira puede elegir en los formularios (la base lo vuelve a exigir).
   puedePublicar: boolean
+  puedeVincularLead: boolean
   puedeAsignar: boolean
   zona: string
   hoy: string
@@ -26,6 +27,7 @@ export function PanelesDeAgenda({
   tarea,
   recordatorio,
   puedePublicar,
+  puedeVincularLead,
   puedeAsignar,
   zona,
   hoy,
@@ -37,6 +39,7 @@ export function PanelesDeAgenda({
       <EventoDeLaUrl
         evento={evento}
         puedePublicar={puedePublicar}
+        puedeVincularLead={puedeVincularLead}
         zona={zona}
         hoy={hoy}
         fecha={fecha}

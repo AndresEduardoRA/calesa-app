@@ -9,6 +9,8 @@ export {
   type PedidoDeBusqueda,
 } from './infra/buscar.client'
 export { leerUltimosAbiertos } from './infra/visitados.client'
+// Elegir un lead de mi cartera (diferido): «Nuevo» del shell lo toma por `shell.client.ts`; el formulario de un evento de la agenda, por aquí.
+export { ElegirLeadDiferido as ElegirLead } from './features/elegir-lead/components/diferidos'
 export {
   agruparResultados,
   POR_SECCION,
