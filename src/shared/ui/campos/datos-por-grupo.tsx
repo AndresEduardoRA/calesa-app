@@ -42,32 +42,51 @@ type PropsDeGrupos<C extends Campo> = {
   // Qué mostrar cuando quien llama sabe algo que el valor no dice (un dato que quien mira no
   // recibe). Nulo = el valor de `atributos`.
   valorDe?: (campo: C) => ReactNode | null
+  // Cada grupo en un `<Bloque>` plegable (las fichas de siempre) o, con `false`, a la vista con su `h3` y una rejilla que entra en una
+  // columna de 24 rem (la ficha en dos columnas).
+  plegable?: boolean
 }
+
+// A la vista: dos columnas en una lateral de 24 rem, más en una ancha; en rem, así al 200 % caen columnas en vez de ensanchar.
+const REJILLA_A_LA_VISTA =
+  'grid grid-cols-[repeat(auto-fill,minmax(min(100%,10rem),1fr))] gap-x-4 gap-y-3'
 
 // Un bloque por cada grupo del layout, en su orden, con los campos activos y su valor. Los nombres
 // salen del layout; lo que no tiene grupo va en «Otros datos». Los desactivados no se muestran.
-export function DatosPorGrupo<C extends Campo>({ campos, atributos, valorDe }: PropsDeGrupos<C>) {
+export function DatosPorGrupo<C extends Campo>({
+  campos,
+  atributos,
+  valorDe,
+  plegable = true,
+}: PropsDeGrupos<C>) {
   const { locale, zonaHoraria } = useRegional()
   return (
     <>
-      {agruparCampos(campos).map((grupo) => (
-        <Bloque key={grupo.nombre ?? ''} titulo={grupo.nombre ?? 'Otros datos'}>
-          <RejillaDeDatos>
-            {grupo.campos.map((campo) => (
-              <Dato key={campo.clave} etiqueta={campo.etiqueta}>
-                {valorDe?.(campo) ?? (
-                  <ValorMostrado
-                    valor={valorMostrado(campo, atributos[campo.clave], {
-                      locale,
-                      zona: zonaHoraria,
-                    })}
-                  />
-                )}
-              </Dato>
-            ))}
-          </RejillaDeDatos>
-        </Bloque>
-      ))}
+      {agruparCampos(campos).map((grupo) => {
+        const titulo = grupo.nombre ?? 'Otros datos'
+        const datos = grupo.campos.map((campo) => (
+          <Dato key={campo.clave} etiqueta={campo.etiqueta}>
+            {valorDe?.(campo) ?? (
+              <ValorMostrado
+                valor={valorMostrado(campo, atributos[campo.clave], {
+                  locale,
+                  zona: zonaHoraria,
+                })}
+              />
+            )}
+          </Dato>
+        ))
+        return plegable ? (
+          <Bloque key={grupo.nombre ?? ''} titulo={titulo}>
+            <RejillaDeDatos>{datos}</RejillaDeDatos>
+          </Bloque>
+        ) : (
+          <section key={grupo.nombre ?? ''} aria-label={titulo} className="grid min-w-0 gap-2">
+            <h3 className="text-(length:--text-sm) font-semibold text-(--color-ink)">{titulo}</h3>
+            <dl className={REJILLA_A_LA_VISTA}>{datos}</dl>
+          </section>
+        )
+      })}
     </>
   )
 }

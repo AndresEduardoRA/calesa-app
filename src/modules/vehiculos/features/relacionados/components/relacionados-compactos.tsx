@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { TITULO_DE_BLOQUE } from '@/shared/ui/ficha-en-bloques/estilos'
 import {
   accionesDelGrupo,
   type AccionDeRelacionados,
@@ -42,7 +43,7 @@ export function RelacionadosCompactos<Contraparte>({
   return (
     <section aria-label="Relacionados" className="grid min-w-0 gap-2">
       <div className="flex min-h-11 min-w-0 items-center gap-1 md:min-h-8">
-        <h2 className="text-(length:--text-sm) font-medium text-(--color-ink)">Relacionados</h2>
+        <h2 className={TITULO_DE_BLOQUE}>Relacionados</h2>
         <AccionesDeLaFila
           nombre="«Relacionados»"
           acciones={fuera.resto}

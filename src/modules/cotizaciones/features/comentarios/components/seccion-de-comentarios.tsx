@@ -4,7 +4,7 @@ import { useId, useSyncExternalStore } from 'react'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { PANEL_BORRAR_COMENTARIO } from '../../../entities/comentarios/borrado'
 import { PANEL_QUITAR_ADJUNTO } from '../../../entities/comentarios/quitado'
-import { useALaVista } from '../hooks/use-a-la-vista'
+import { useALaVista } from '@/shared/ui/use-a-la-vista'
 import { ComentariosDiferidos } from './diferidos'
 
 function suscribir(alCambiar: () => void): () => void {
