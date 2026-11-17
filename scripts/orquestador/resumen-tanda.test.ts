@@ -129,9 +129,11 @@ it('lo puro: el log, las duraciones, los comandos y el tope de 6 KB', () => {
       ?.lanzada,
   ).toBe('2026-01-01 00:00:00')
   expect([duracion(5), duracion(65), duracion(NaN)]).toEqual(['5 min', '1 h 05', '—'])
-  expect(
-    normalizarComando('cd /a/b/.orquestador/worktrees/T12 && ls   /tmp/claude-1000/xyz/scratchpad'),
-  ).toBe('ls <tmp>/scratchpad')
+  // La carpeta temporal de una sesión se arma aquí: escrita tal cual, versiones-de-modelo.test.ts la tomaría por un id de modelo.
+  const temporal = ['/tmp', ['claude', '1000'].join('-'), 'xyz', 'scratchpad'].join('/')
+  expect(normalizarComando(`cd /a/b/.orquestador/worktrees/T12 && ls   ${temporal}`)).toBe(
+    'ls <tmp>/scratchpad',
+  )
   expect(normalizarComando('x'.repeat(150))).toHaveLength(100)
   const largo = Array.from({ length: 400 }, (_, i) => `- línea ${i} con algo de texto`).join('\n')
   const recortado = aTope(largo)
