@@ -32,7 +32,6 @@ const DENEGADAS = [
   'npx vercel*',
   'supabase secrets*',
   'npx supabase secrets*',
-  'pnpm up*',
   'npx next upgrade*',
   'pnpm next upgrade*',
   'pnpm exec next upgrade*',
@@ -43,9 +42,11 @@ describe('.claude/settings.json › permisos', () => {
     expect(ajustes.permissions.deny).toContain(`Bash(${regla})`)
   })
 
-  // Un deny vale en todo modo de permisos y gana al hook: de vuelta en la lista, las sesiones no podrían agregar ni lo aprobado.
-  it('agregar con pnpm no se deniega: lo decide el hook con la lista aprobada', () => {
+  // Un deny vale en todo modo de permisos y le gana al hook: con `pnpm add*` aquí, las sesiones no podrían agregar ni lo aprobado;
+  // con `pnpm up*`, la tarea de dependencias no podría actualizar con ORQ_PERMITE. Lo decide el hook.
+  it('no deniega agregar ni actualizar con pnpm: lo decide el hook (la lista aprobada y ORQ_PERMITE)', () => {
     expect(ajustes.permissions.deny.filter((r) => r.startsWith('Bash(pnpm add'))).toEqual([])
+    expect(ajustes.permissions.deny.filter((r) => r.startsWith('Bash(pnpm up'))).toEqual([])
   })
 
   it('sigue leyendo sin permiso los .env', () => {
@@ -90,12 +91,14 @@ describe('.claude/settings.json › hooks', () => {
 
 // Todo lo que usa la base local o el servidor de e2e pasa por `scripts/candado.sh` (una sesión a la vez, en cualquier worktree).
 // `db:probar` no: corre en PGlite, en memoria, sin base ni puerto compartidos (y lefthook corre `probar-schema` al
-// commitear SQL: bloquearlo frenaría los commits de otra sesión durante un e2e).
+// empujar SQL: bloquearlo frenaría los pushes de otra sesión durante un e2e).
 const scripts = (
   JSON.parse(readFileSync(join(RAIZ, 'package.json'), 'utf8')) as {
     scripts: Record<string, string>
   }
 ).scripts
+// Los del kit, los que suma este proyecto (`db:medir`, `db:carreras`, `db:sembrar-volumen`, `db:medir:volumen`) y `contrato:generar`
+// y `contrato:probar`, que leen la base local (como `db:types`).
 const CON_CANDADO = [
   'db:reset',
   'db:types',
@@ -107,6 +110,8 @@ const CON_CANDADO = [
   'db:medir:volumen',
   'test:e2e',
   'test:e2e:completo',
+  'contrato:generar',
+  'contrato:probar',
 ]
 
 describe('package.json › el candado de la base', () => {
@@ -117,6 +122,13 @@ describe('package.json › el candado de la base', () => {
   it.each(['db:probar'])('%s no lo toma: es PGlite en memoria', (nombre) => {
     expect(scripts[nombre]).not.toContain('candado.sh')
   })
+
+  it.each(['contrato:tipos', 'contrato:usar'])(
+    '%s no lo toma: lee archivos, no la base',
+    (nombre) => {
+      expect(scripts[nombre]).not.toContain('candado.sh')
+    },
+  )
 
   it('test:e2e construye fuera del candado y le deja a playwright los argumentos', () => {
     expect(scripts['test:e2e']).toMatch(/next build && .*candado\.sh test:e2e -- playwright test$/)

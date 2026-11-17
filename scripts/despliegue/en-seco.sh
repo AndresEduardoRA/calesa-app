@@ -102,6 +102,7 @@ paso_variables() {
   local c=$? leidos
   leidos=$(grep '^· ' "$a" | grep -vc 'no se pudo leer')
   if [ "$c" = 2 ] && [ "$leidos" = 0 ] && grep -q 'no se pudo leer' "$a"; then
+    # shellcheck disable=SC2016 # las comillas invertidas son texto para la persona
     PERSONA+=('correr `pnpm env:check` en modo produccion con las credenciales de Vercel y de Supabase (docs/ENTORNOS.md)')
     anotar 0 'variables de producción (sin credenciales: no leyó nada)' "$a" "$t0"
   else

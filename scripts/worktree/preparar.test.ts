@@ -6,6 +6,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -23,6 +24,8 @@ const COPIAR = [
   'scripts/worktree/preparar.sh',
   'scripts/lib/stack-local.mjs',
   'scripts/lib/carril.sh',
+  'scripts/proyecto/manifiesto.mjs',
+  '.proyecto/proyecto.yaml',
   'supabase/config.toml',
 ]
 
@@ -37,6 +40,8 @@ function worktreeNuevo() {
     })
   mkdirSync(repo)
   git('init', '-q', '-b', 'main')
+  // El manifiesto reconoce al repo propio por el nombre del remoto `origin`.
+  git('remote', 'add', 'origin', 'https://github.com/AndresEduardoRA/calesa-app.git')
   for (const f of COPIAR) {
     mkdirSync(dirname(join(repo, f)), { recursive: true })
     copyFileSync(resolve(f), join(repo, f))
@@ -45,7 +50,8 @@ function worktreeNuevo() {
   git('commit', '-q', '-m', 'chore: inicio')
   const wt = join(raiz, 'wt')
   git('worktree', 'add', '-q', '-b', 'feat/x', wt)
-  mkdirSync(join(wt, 'node_modules'))
+  // Las dependencias de verdad (el manifiesto se lee con `yaml`); con la carpeta, preparar.sh no corre `pnpm install`.
+  symlinkSync(resolve('node_modules'), join(wt, 'node_modules'))
   mkdirSync(join(raiz, 'bin'))
   writeFileSync(join(raiz, 'bin', 'pnpm'), '#!/usr/bin/env bash\nexit 1\n')
   chmodSync(join(raiz, 'bin', 'pnpm'), 0o755)

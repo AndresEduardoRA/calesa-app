@@ -1,10 +1,14 @@
 name: ci
 
-# Las reglas de este archivo las prueba scripts/guardas/workflows.test.ts. Por niveles (docs/FLUJO.md, .claude/rules/e2e.md): un PR
+# Las reglas de este archivo las prueban scripts/guardas/workflows.test.ts y workflows-flujo.test.ts. Los puertos son los heredados
+# de este repo (546xx, sin bloque: supabase/config.toml) y las funciones edge, las de e2e/soporte/guardia.ts. Por niveles (docs/FLUJO.md,
+# .claude/rules/e2e.md): un PR
 # corre el Nivel 1 y los e2e dirigidos a lo tocado (el completo de escritorio si toca un disparador del Nivel 2:
-# scripts/e2e-dirigidos.mjs); cada noche, el completo de escritorio sobre main si hubo commits; antes de desplegar, el completo con los
+# scripts/e2e-dirigidos.mjs); cada noche, el completo de escritorio sobre main si hubo commits (y el aviso de la noche abre el issue
+# `noche-roja`, que a la segunda noche seguida entra a la cola: scripts/flujo/noche.mjs); antes de desplegar, el completo con los
 # dos proyectos a mano (workflow_dispatch, `proyectos: ambos`). El job `listo` resume a todos: es el único check que main exige, y con
-# él en verde GitHub integra el PR solo (auto-merge).
+# él en verde GitHub integra el PR solo (auto-merge). En la plantilla del kit (.kit/plantilla, la salida «plantilla» de `cambios`) los
+# jobs de proyecto se saltan y corre en su lugar «kit · proyecto de ejemplo».
 on:
   push:
     branches: [main]
@@ -30,16 +34,16 @@ on:
 permissions:
   contents: read
 
-# Un push nuevo a la misma rama (o al mismo PR) cancela la corrida anterior. Un dispatch (un e2e de 70 a 96 min, unas carreras)
-# tiene su propio grupo, con run_id, y nunca se cancela: ni un push lo corta ni otro dispatch lo deja en espera. La corrida de cada
-# noche, igual: compartía grupo con los push a main y la integración siguiente la cancelaba (2026-11-08, a los 12 min); con un PR
-# integrado cada veinte minutos no habría terminado nunca, y de ella depende saber si una prueba cae dos noches seguidas.
+# Un push nuevo a la misma rama (o al mismo PR) cancela la corrida anterior. Un dispatch (un e2e largo, unas carreras) tiene su propio
+# grupo, con run_id, y nunca se cancela: ni un push lo corta ni otro dispatch lo deja en espera. La corrida de cada noche, igual: en el
+# grupo de los push a main, la integración siguiente la cancelaba (a los 12 min), y de ella depende saber si una prueba cae dos noches
+# seguidas.
 concurrency:
   group: ${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('ci-manual-{0}-{1}', github.ref, github.run_id) || format('ci-{0}', github.head_ref || github.ref) }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' && github.event_name != 'schedule' }}
 
 # Acciones de terceros admitidas, una por línea con su motivo (`# accion-de-terceros: <dueño/repo> — <motivo>`).
-# Hoy ninguna: sólo acciones de GitHub (`actions/*`), fijadas por SHA, y la local `./.github/acciones/preparar`.
+# Hoy ninguna: sólo acciones de GitHub (`actions/*`), fijadas por SHA, y las locales de `./.github/acciones/`.
 
 env:
   # El stack local de Supabase usa los puertos 546xx (supabase/config.toml).
@@ -56,7 +60,7 @@ env:
 jobs:
   # Siempre: algunas guardas de `pnpm test` leen docs/, así que un cambio sólo de documentación también lo corre.
   nivel-1:
-    name: Nivel 1 · lint, tipos y mapa
+    name: Nivel 1 · lint, tipos, test:kit y mapa
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -67,21 +71,35 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           TITULO: ${{ github.event.pull_request.title }}
-        run: printf '%s\n' "$TITULO" | pnpm exec commitlint
+        run: |
+          printf '%s\n' "$TITULO" | pnpm exec commitlint
       # Una migración nueva va después de la última de main: un reset aplica por el orden del nombre (.claude/rules/migraciones.md).
-      - name: las migraciones del PR van después de las de main
+      # Y una versión publicada de un contrato (o una copia fijada) no cambia nunca: contra el main recién bajado
+      # (.claude/rules/contratos.md).
+      - name: las migraciones del PR van después de las de main y sus contratos publicados no cambian
         if: github.event_name == 'pull_request'
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
           git fetch --no-tags --depth=1 origin "$BASE_REF"
           MIGRACIONES_BASE=FETCH_HEAD pnpm exec vitest run scripts/guardas/orden-de-migraciones.test.ts
+          CONTRATOS_BASE=FETCH_HEAD pnpm exec vitest run scripts/guardas/contratos-publicados.test.ts
       - run: pnpm lint
       - run: pnpm typecheck # corre `next typegen` antes de tsc
+      # Las pruebas de `node --test` (`pnpm test` las corre después de vitest; vitest va en «pruebas», en 3 partes).
+      - run: pnpm test:kit
+      # Todo guion de bash del repo con .shellcheckrc. shellcheck del apt del runner (sin acciones de terceros); la imagen suele traerlo.
+      - name: shellcheck
+        run: |
+          command -v shellcheck >/dev/null || { sudo apt-get update -q && sudo apt-get install -y -q shellcheck; }
+          shellcheck --version | sed -n 2p
+          shopt -s globstar
+          shellcheck scripts/**/*.sh .claude/hooks/*.sh
       - run: bash scripts/mapa.sh --check
 
-  # `pnpm test` en 3 partes (`vitest --shard`), cada una en su runner. En un solo job eran 14 de los 15 a 18 min del Nivel 1 (962
-  # archivos, 2026-11-12): el job más largo de un PR con e2e dirigidos.
+  # vitest en 3 partes (`--shard`), cada una en su runner: en un solo job eran 14 de los 15 a 18 min del Nivel 1 (962 archivos), el job
+  # más largo de un PR con e2e dirigidos. Va con `pnpm exec vitest run` y no con `pnpm test --shard`, que le pasaría la bandera también
+  # a `test:kit`.
   pruebas:
     name: Nivel 1 · tests, parte ${{ matrix.parte }} de 3
     runs-on: ubuntu-24.04
@@ -93,17 +111,21 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/acciones/preparar
-      - run: pnpm test --shard=${{ matrix.parte }}/3
+      - run: pnpm exec vitest run --shard=${{ matrix.parte }}/3
 
-  # Decide si corren los jobs pesados (scripts/ci-cambios.sh, probado en scripts/ci-cambios.test.ts) y qué e2e corre un PR: el completo
-  # en 4 bloques, los dirigidos en 1, o ninguno (scripts/e2e-dirigidos.mjs). Fuera de un PR, el completo.
+  # Decide si corren los jobs pesados y los de contratos (scripts/ci-cambios.sh, probado en scripts/ci-cambios.test.ts) y qué e2e corre
+  # un PR: el completo en 4 bloques, los dirigidos en 1 a 4, o ninguno (scripts/e2e-dirigidos.mjs). Fuera de un PR, el completo. Y si
+  # este repo es la plantilla del kit.
   cambios:
     name: Cambios · ¿base y e2e?
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
+      plantilla: ${{ steps.marca.outputs.plantilla }}
       pesado: ${{ steps.filtro.outputs.pesado }}
       e2e: ${{ steps.filtro.outputs.e2e }}
+      contrato: ${{ steps.filtro.outputs.contrato }}
+      contrato_uso: ${{ steps.filtro.outputs.contrato_uso }}
       e2e_modo: ${{ steps.e2e.outputs.e2e_modo }}
       e2e_specs: ${{ steps.e2e.outputs.e2e_specs }}
       e2e_bloques: ${{ steps.e2e.outputs.e2e_bloques }}
@@ -114,6 +136,9 @@ jobs:
         with:
           # El diff necesita `before` (push) y la base del PR: con un clon superficial no están y todo cae a «pesado».
           fetch-depth: 0
+      # ¿Es este repo la plantilla del kit? (.kit/plantilla no viaja a un proyecto generado). hashFiles no existe en el `if` de un job.
+      - id: marca
+        run: echo "plantilla=$([ -f .kit/plantilla ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
       - id: filtro
         env:
           EVENTO: ${{ github.event_name }}
@@ -134,7 +159,7 @@ jobs:
   base:
     name: Base · reset, tipos, probar, lint y advisors
     needs: cambios
-    if: needs.cambios.outputs.pesado == 'true'
+    if: needs.cambios.outputs.pesado == 'true' && needs.cambios.outputs.plantilla != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -177,12 +202,53 @@ jobs:
       - run: pnpm db:reset
       - run: pnpm db:carreras
 
-  # La app se compila una vez y los bloques bajan la misma (factura menos y corre en paralelo con el Nivel 1). Un PR sin e2e que correr (`e2e_modo: ninguno`) no compila.
-  # Con workflow_dispatch, `e2e: false` lo apaga (para correr sólo las carreras).
+  # El proveedor de contratos entre repos (.claude/rules/contratos.md): su base local cumple cada versión de `vigentes` y la de `provee`.
+  # Corre si el cambio toca supabase/, contratos/, scripts/contratos/ o el manifiesto, y levanta la pila sólo si el repo provee algo:
+  # lo decide el paso `rol`, porque `cambios` no instala dependencias. Nunca mira la base de otro repo.
+  contrato:
+    name: Contrato · la base cumple sus versiones
+    needs: cambios
+    if: needs.cambios.outputs.contrato == 'true' && needs.cambios.outputs.plantilla != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/acciones/preparar
+      - id: rol
+        run: pnpm exec tsx scripts/contratos/contrato.ts rol >> "$GITHUB_OUTPUT"
+      - if: steps.rol.outputs.provee == 'true'
+        uses: ./.github/acciones/pila
+        with:
+          sin: studio,imgproxy,edge-runtime,logflare,vector
+      - if: steps.rol.outputs.provee == 'true'
+        run: pnpm db:reset
+      - if: steps.rol.outputs.provee == 'true'
+        run: pnpm contrato:probar
+
+  # El consumidor: su `infra/` sólo llama lo que está en las copias fijadas (`.proyecto/contratos/`) y los tipos generados de esas copias
+  # están al día (como `db:types sin diff`; también atrapa uno sin rastrear). Sin base ni pila: sólo archivos.
+  contrato-uso:
+    name: Contrato · el consumidor usa sólo lo fijado
+    needs: cambios
+    if: needs.cambios.outputs.contrato_uso == 'true' && needs.cambios.outputs.plantilla != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/acciones/preparar
+      - run: pnpm contrato:usar
+      - name: tipos de los contratos sin diff
+        run: |
+          pnpm contrato:tipos
+          git status --porcelain -- src/shared/types/contratos/
+          test -z "$(git status --porcelain -- src/shared/types/contratos/)"
+
+  # La app se compila una vez y los bloques bajan la misma (factura menos y corre en paralelo con el Nivel 1). Un PR sin e2e que correr
+  # (`e2e_modo: ninguno`) no compila. Con workflow_dispatch, `e2e: false` lo apaga (para correr sólo las carreras).
   e2e-build:
     name: e2e · compilar la app
     needs: cambios
-    if: needs.cambios.outputs.e2e == 'true' && needs.cambios.outputs.e2e_modo != 'ninguno' && (github.event_name != 'workflow_dispatch' || inputs.e2e)
+    if: needs.cambios.outputs.e2e == 'true' && needs.cambios.outputs.e2e_modo != 'ninguno' && (github.event_name != 'workflow_dispatch' || inputs.e2e) && needs.cambios.outputs.plantilla != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -203,13 +269,14 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-  # Cada bloque tiene su runner y su pila de Supabase: una base por bloque. Sin reintentos (`retries: 0`): la causa de un
-  # fallo va a los artefactos y a e2e-fallos/. Las carreras (`db:carreras`) van en su job, a mano (docs/PENDIENTES.md, 9-6).
+  # Cada bloque tiene su runner y su pila de Supabase: una base por bloque. Un reintento en CI (`playwright.config.ts`): la prueba que
+  # pasa al reintentar queda anotada en el PR (e2e/soporte/reporter-de-inestables.ts); la causa de un fallo va a los artefactos y a
+  # e2e-fallos/. Las carreras (`db:carreras`) van en su job, a mano (docs/PENDIENTES.md, 9-6).
   e2e:
     name: e2e · bloque ${{ matrix.bloque }} de ${{ needs.cambios.outputs.e2e_de }}
-    # Sin esperar al Nivel 1 (≈ 5 min): compilar tarda 1,2 y cada PR perdía esos minutos con los runners libres.
+    # Sin esperar al Nivel 1: compilar tarda menos y cada PR perdía esos minutos con los runners libres.
     needs: [cambios, e2e-build]
-    if: needs.cambios.outputs.e2e == 'true' && needs.cambios.outputs.e2e_modo != 'ninguno' && (github.event_name != 'workflow_dispatch' || inputs.e2e)
+    if: needs.cambios.outputs.e2e == 'true' && needs.cambios.outputs.e2e_modo != 'ninguno' && (github.event_name != 'workflow_dispatch' || inputs.e2e) && needs.cambios.outputs.plantilla != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
@@ -232,9 +299,9 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
-      # `--with-deps` llama a apt, y si el espejo de Ubuntu no resuelve (exit 100) o se cuelga, caían los 4 bloques de todos los PR
-      # (2026-11-11). La imagen ubuntu-24.04 ya trae las bibliotecas; sin apt sólo faltan fuentes extra. Por eso: tope corto y, si
-      # falla, el navegador solo.
+      # `--with-deps` llama a apt, y si el espejo de Ubuntu no resuelve (exit 100) o se cuelga, caían todos los bloques de todos los PR.
+      # La imagen ubuntu-24.04 ya trae las bibliotecas; sin apt sólo faltan fuentes extra. Por eso: tope corto y, si falla, el navegador
+      # solo.
       - name: chromium y lo que pide del sistema
         run: |
           timeout --kill-after=10 240 pnpm exec playwright install --with-deps chromium \
@@ -265,11 +332,12 @@ jobs:
           path: ${{ runner.temp }}
       - run: tar -xzf "$RUNNER_TEMP/next-e2e.tgz"
       - run: pnpm db:reset
-      # Las cuatro que exige e2e/soporte/guardia.ts (FUNCIONES), con su regla: OPTIONS responde y no es 404 ni 5xx.
+      # Las de e2e/soporte/guardia.ts (FUNCIONES), con su regla: OPTIONS responde y no es 404 ni 5xx. Sin funciones, el paso no hace nada.
       - name: funciones edge (las pide e2e/global-setup.ts)
         run: |
-          nohup pnpm exec supabase functions serve > "$RUNNER_TEMP/funciones.log" 2>&1 &
           funciones="apibara storage-gc avatares-miniaturas importar-csv"
+          [ -n "$funciones" ] || exit 0
+          nohup pnpm exec supabase functions serve > "$RUNNER_TEMP/funciones.log" 2>&1 &
           for _ in $(seq 1 60); do
             faltan=""
             for f in $funciones; do
@@ -311,13 +379,105 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+  # Sólo en la plantilla del kit (la salida «plantilla» de `cambios`): genera con scripts/kit/nuevo-proyecto.mjs los dos repos (app y
+  # web) de la semilla de ejemplo v2 (scripts/semilla/ejemplo/) y le corre a cada uno lo que corre un proyecto. Así «verde» en el kit
+  # significa que lo que sale del kit funciona. El validador de semillas corre con PyYAML exigido (SEMILLA_EXIGE_PYYAML): sin él sus
+  # pruebas se saltarían. En un proyecto generado se salta (y para `listo` cuenta como verde).
+  ejemplo:
+    name: kit · proyecto de ejemplo
+    needs: cambios
+    if: needs.cambios.outputs.plantilla == 'true'
+    runs-on: ubuntu-24.04
+    # Dos repos generados, cada uno con su install, lint, tipos y pruebas: el doble que uno.
+    timeout-minutes: 45
+    env:
+      # El generador hace el primer commit de cada repo: en el runner git no tiene autor.
+      GIT_AUTHOR_NAME: ci
+      GIT_AUTHOR_EMAIL: ci@ejemplo.test
+      GIT_COMMITTER_NAME: ci
+      GIT_COMMITTER_EMAIL: ci@ejemplo.test
+      SEMILLA_EXIGE_PYYAML: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/acciones/preparar
+      - name: PyYAML para el validador de la semilla
+        run: python3 -c 'import yaml' 2>/dev/null || { sudo apt-get update -q && sudo apt-get install -y -q python3-yaml; }
+      - run: pnpm test:generador
+      - name: el validador de semillas sobre el ejemplo y sus variantes rotas
+        run: pnpm exec vitest run scripts/semilla
+      - name: generar los repos del ejemplo v2
+        run: |
+          mkdir -p "$RUNNER_TEMP/proyectos/z_turnero"
+          cp -r scripts/semilla/ejemplo/semilla "$RUNNER_TEMP/proyectos/z_turnero/semilla"
+          node scripts/kit/nuevo-proyecto.mjs turnero --raiz "$RUNNER_TEMP/proyectos"
+      - name: app instala y pasa lint, tipos, pruebas y db:probar
+        working-directory: ${{ runner.temp }}/proyectos/z_turnero/app
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm db:probar
+      - name: web instala y pasa lint, tipos, pruebas y db:probar
+        working-directory: ${{ runner.temp }}/proyectos/z_turnero/web
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm lint
+          pnpm typecheck
+          pnpm test
+          pnpm db:probar
+
+  # El aviso de la noche (scripts/flujo/noche.mjs): después del e2e completo de cada noche abre, comenta o cierra el issue `noche-roja`
+  # (a la segunda noche seguida en rojo lo vuelve una tarea urgente de la cola: .claude/rules/e2e.md). Es el único job con un permiso
+  # de escritura, `issues: write`, y sólo corre con `schedule` (la guarda de scripts/guardas/workflows.ts lo ata a este job y a este
+  # `if:`). Sus permisos reemplazan a los del workflow: `contents: read` para el checkout, `actions: read` para los jobs de la corrida.
+  # Sin pnpm install: noche.mjs sólo usa node y gh. En la plantilla del kit no hay e2e que avisar y se salta.
+  aviso-noche:
+    name: Noche · avisar el e2e en rojo
+    needs: [cambios, e2e-build, e2e]
+    if: always() && github.event_name == 'schedule' && needs.cambios.outputs.plantilla != 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      # Los artefactos de los bloques que cayeron (cada uno con su e2e-fallos/<fecha>/caidos.txt). Sin ninguno, noche.mjs nombra los
+      # jobs caídos.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
+        with:
+          pattern: e2e-bloque-*
+          path: ${{ runner.temp }}/fallos
+      - name: abrir, comentar o cerrar el issue noche-roja
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NECESIDADES: ${{ toJSON(needs) }}
+          FALLOS: ${{ runner.temp }}/fallos
+        run: node scripts/flujo/noche.mjs
+
   # El veredicto del CI en un solo check: verde si ningún job cayó ni se canceló (uno que no tocaba correr cuenta como verde). Es el
   # único que la protección de main exige: los demás cambian de nombre con la matriz o no corren en todo PR, y GitHub no puede esperar
   # a un check que nunca aparece. Con éste en verde el PR se integra solo (docs/FLUJO.md).
   listo:
     name: Listo · todo en verde
     if: always()
-    needs: [nivel-1, pruebas, cambios, base, e2e-build, e2e]
+    needs:
+      - nivel-1
+      - pruebas
+      - cambios
+      - base
+      - contrato
+      - contrato-uso
+      - e2e-build
+      - e2e
+      - ejemplo
+      - aviso-noche
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
