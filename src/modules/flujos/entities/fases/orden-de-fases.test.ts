@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  MOTIVO_LISTA_CORTADA,
   MOTIVO_YA_ES_LA_PRIMERA,
   MOTIVO_YA_ES_LA_ULTIMA,
   despuesDeAlMover,
   motivoSinMover,
+  motivoSinOrdenDeFases,
 } from './orden-de-fases'
 
 const FASES = ['a', 'b', 'c', 'd'].map((id) => ({ id }))
@@ -49,5 +51,18 @@ describe('motivoSinMover', () => {
     expect(motivoSinMover(FASES, 'd', 'bajar')).toBe(MOTIVO_YA_ES_LA_ULTIMA)
     expect(motivoSinMover(FASES, 'b', 'subir')).toBeNull()
     expect(motivoSinMover(FASES, 'b', 'bajar')).toBeNull()
+  })
+})
+
+describe('motivoSinOrdenDeFases', () => {
+  it('con la lista cortada por el tope no se ordena; entera, sí', () => {
+    const truncado = { fases: false, transiciones: true, requisitos: true, roles: true }
+    expect(motivoSinOrdenDeFases({ truncado })).toBeNull()
+    expect(motivoSinOrdenDeFases({ truncado: { ...truncado, fases: true } })).toBe(
+      MOTIVO_LISTA_CORTADA,
+    )
+    expect(MOTIVO_LISTA_CORTADA).toBe(
+      'Hay más de 200 fases: con la lista cortada no se puede ordenar.',
+    )
   })
 })

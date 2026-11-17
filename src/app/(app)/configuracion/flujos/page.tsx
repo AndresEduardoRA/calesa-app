@@ -5,15 +5,15 @@ import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso, EstadoVacio } from '@/shared/ui/estados'
 import { alMenosUna, type AlMenosUna } from '../empresa/pestanas'
 import { pestanaDe, pestanasVisibles, type PestanaDeFlujos } from './pestanas'
-import { PestanasDeFlujos } from './pestanas-de-flujos'
 import { SeccionAbierta } from './seccion-abierta'
 import { SECCION_DE_FLUJOS } from './seccion'
 
 export const metadata: Metadata = { title: 'Flujos' }
 
-// Configuración › Flujos (5.02). Entra quien tiene alguna de las claves de la sección (`seccion.ts`); «Fases» pide `flujos.configurar` (en algún origen) o
-// `repuestos.configurar`. Con sólo `logistica.catalogos.gestionar` se entra y se dice que no hay nada que configurar todavía. La base vuelve a exigir lo suyo en cada
-// escritura. Sin ninguna clave, «No tienes permiso» (y la sección no figura en Configuración).
+// Configuración › Flujos (5.02). Entra quien tiene alguna de las claves de la sección (`seccion.ts`); «Fases» (el diagrama del flujo, con «Reglas del flujo» y
+// «Tipos de documento» en su panel) pide `flujos.configurar` (en algún origen) o `repuestos.configurar`. Con sólo `logistica.catalogos.gestionar` se ven los
+// tipos de documento en la página. La base vuelve a exigir lo suyo en cada escritura. Sin ninguna clave, «No tienes permiso» (y la sección no figura en
+// Configuración).
 export default async function PaginaDeFlujos({ searchParams }: PageProps<'/configuracion/flujos'>) {
   const [sesion, parametros] = await Promise.all([requerirSesion(), searchParams])
   if (!SECCION_DE_FLUJOS.permisos.some((clave) => puede(sesion.permisos, clave))) {
@@ -21,8 +21,8 @@ export default async function PaginaDeFlujos({ searchParams }: PageProps<'/confi
   }
   const visibles = alMenosUna(pestanasVisibles(sesion.permisos))
   return (
-    <div className="grid max-w-3xl gap-4">
-      <div className="grid gap-1">
+    <div className="grid min-w-0 gap-4">
+      <div className="grid max-w-3xl gap-1">
         <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">Flujos</h1>
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">
           Las fases por las que avanza cada origen y el flujo de repuestos.
@@ -54,22 +54,16 @@ type PropsDeAbierta = {
   ambitoPedido: string | undefined
 }
 
-// Con una sola pestaña visible la barra no se dibuja (D7, D19).
+// Sin barra de secciones: las que no son «Fases» se abren en el panel del flujo (o, sin «Fases», en la página).
 function Abierta({ visibles, permisos, seccion, origenPedido, ambitoPedido }: PropsDeAbierta) {
-  const pestana = pestanaDe(seccion, visibles)
-  const [primera, ...resto] = visibles
-  const quitarPermisos = ({ clave, titulo }: PestanaDeFlujos) => ({ clave, titulo })
   return (
-    <>
-      {resto.length > 0 ? (
-        <PestanasDeFlujos pestanas={[quitarPermisos(primera), ...resto.map(quitarPermisos)]} />
-      ) : null}
-      <SeccionAbierta
-        pestana={pestana}
-        permisos={permisos}
-        origenPedido={origenPedido}
-        ambitoPedido={ambitoPedido}
-      />
-    </>
+    <SeccionAbierta
+      pestana={pestanaDe(seccion, visibles)}
+      visibles={visibles.map((v: PestanaDeFlujos) => v.clave)}
+      seccionPedida={seccion}
+      permisos={permisos}
+      origenPedido={origenPedido}
+      ambitoPedido={ambitoPedido}
+    />
   )
 }

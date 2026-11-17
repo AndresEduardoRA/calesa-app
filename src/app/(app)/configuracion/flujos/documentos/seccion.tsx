@@ -1,9 +1,10 @@
 import { Suspense } from 'react'
 import { EsqueletoDeTipos, PantallaDeDocumentos } from '@/modules/flujos/pantallas/documentos'
 import { getOrigenes } from '@/modules/origenes'
-import type { SeccionDeFlujos } from '../pestanas'
+import type { PanelDeFlujos, SeccionDeFlujos } from '../pestanas'
 
-// Lo que dibuja cada pestaña del área `documentos`, por su clave (5.09). Se lee detrás de `<Suspense>` y se reinicia al cambiar de flujo (`key`).
+// Los tipos de documento en la página (5.09), para quien no ve las fases (sólo gestiona los catálogos de logística). Se leen detrás de `<Suspense>` y se
+// reinician al cambiar de flujo (`key`).
 export const SECCIONES_DE_DOCUMENTOS: Record<string, SeccionDeFlujos> = {
   documentos: (pedido) => (
     <Suspense
@@ -18,4 +19,21 @@ export const SECCIONES_DE_DOCUMENTOS: Record<string, SeccionDeFlujos> = {
       />
     </Suspense>
   ),
+}
+
+// Los tipos de documento en el panel del flujo (`?seccion=documentos`), para quien configura: sin su selector.
+export const PANELES_DE_DOCUMENTOS: Record<string, PanelDeFlujos> = {
+  documentos: {
+    titulo: 'Tipos de documento',
+    contenido: (pedido) => (
+      <PantallaDeDocumentos
+        permisos={pedido.permisos}
+        origenes={getOrigenes(true)}
+        origenPedido={pedido.origenPedido}
+        ambitoPedido={pedido.ambitoPedido}
+        enElPanel
+      />
+    ),
+    esqueleto: () => <EsqueletoDeTipos />,
+  },
 }

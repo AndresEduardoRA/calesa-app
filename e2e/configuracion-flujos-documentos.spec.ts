@@ -189,8 +189,8 @@ test('quien sólo configura el flujo ve los tipos de toda la empresa deshabilita
   await expect(
     seccionDelGrupo(page, 'flujo').getByRole('button', { name: 'Nuevo tipo' }),
   ).toBeEnabled()
-  // Escribir la URL a mano no abre lo que no puede: no hay modal.
+  // Escribir la URL a mano no abre lo que no puede: no hay modal (los tipos están en el panel del flujo, que también es un diálogo).
   await page.goto('/configuracion/flujos?seccion=documentos&panel=nuevo-tipo&de=empresa')
   await expect(page.getByRole('heading', { name: 'De toda la empresa', level: 2 })).toBeVisible()
-  await expect(page.getByRole('dialog')).toBeHidden()
+  await expect(page.getByRole('dialog', { name: /^Nuevo tipo de documento/ })).toBeHidden()
 })

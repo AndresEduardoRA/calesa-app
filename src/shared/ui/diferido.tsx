@@ -30,12 +30,15 @@ import { Button } from './button'
 
 type Cargador<P> = () => Promise<ComponentType<P> | { default: ComponentType<P> }>
 
-type Opciones = {
+type Opciones<P> = {
   // Lo que se ve mientras llega el código (por defecto, nada).
   esqueleto?: ReactNode
   // Dónde se avisa si no llegó: `aqui`, en el lugar del componente; `pantalla`, en una barra fija abajo
   // (para los modales y paneles, que no tienen lugar propio hasta que abren).
   aviso?: 'aqui' | 'pantalla'
+  // Con `aviso: 'aqui'`, lo que se dibuja bajo el aviso si el código no llegó, con las mismas props: una versión que no lo necesita (la
+  // lista de fases bajo el diagrama del flujo). Así la pantalla sigue sirviendo sin red.
+  respaldo?: (props: P) => ReactNode
 }
 
 export const ESPERA_DEL_REINTENTO_MS = 400
@@ -60,6 +63,7 @@ async function cargarConReintento<P>(cargar: Cargador<P>): Promise<ComponentType
 type PropsDelLimite = {
   aviso: 'aqui' | 'pantalla'
   alReintentar: () => void
+  respaldo: ReactNode
   children: ReactNode
 }
 
@@ -88,10 +92,16 @@ class LimiteDeCarga extends Component<PropsDelLimite, { fallo: boolean }> {
         </span>
       </Aviso>
     )
-    return this.props.aviso === 'pantalla' ? (
-      <div className="fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-md">{aviso}</div>
-    ) : (
+    if (this.props.aviso === 'pantalla') {
+      return <div className="fixed inset-x-4 bottom-4 z-[60] mx-auto max-w-md">{aviso}</div>
+    }
+    return this.props.respaldo === null ? (
       aviso
+    ) : (
+      <div className="grid min-w-0 gap-3">
+        {aviso}
+        {this.props.respaldo}
+      </div>
     )
   }
 }
@@ -100,7 +110,7 @@ const SIN_SUSCRIPCION = () => () => {}
 
 export function diferido<P extends object>(
   cargar: Cargador<P>,
-  { esqueleto = null, aviso = 'pantalla' }: Opciones = {},
+  { esqueleto = null, aviso = 'pantalla', respaldo }: Opciones<P> = {},
 ): ComponentType<P> {
   let resuelto: ComponentType<P> | undefined
 
@@ -134,6 +144,7 @@ export function diferido<P extends object>(
       <LimiteDeCarga
         key={intento}
         aviso={aviso}
+        respaldo={aviso === 'aqui' && respaldo ? respaldo(props) : null}
         alReintentar={() => {
           setIntento((n) => n + 1)
         }}

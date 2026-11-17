@@ -1,8 +1,6 @@
 'use client'
 
 import { cn } from 'cn'
-import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
-import { EstadoVacio } from '@/shared/ui/estados'
 import {
   AbrirResumen,
   CeldaPegada,
@@ -13,22 +11,9 @@ import {
   UnaSolaVista,
 } from '@/shared/ui/lista'
 import { TableBody, TableHeader, TableRow } from '@/shared/ui/table'
-import {
-  TOPE_DE_FASES,
-  type FaseParaConfigurar,
-  type FlujoParaConfigurar,
-} from '../../../entities/flujo'
+import type { FaseParaConfigurar, FlujoParaConfigurar } from '../../../entities/flujo'
 import type { HuecosDelFlujo } from './huecos'
-import { MarcasDeLaFase, NombreConColor } from './marcas-de-la-fase'
-
-type Props = {
-  flujo: FlujoParaConfigurar
-  // Abre el inspector de una fase (`?fase=`).
-  alAbrir: (faseId: string) => void
-  // El nombre del flujo como lo dice la pestaña («Subasta USA»): nunca un texto fijo.
-  nombreDelFlujo: string
-  huecos: HuecosDelFlujo
-}
+import { InsigniaDeRevisar, MarcasDeLaFase, NombreConColor } from './marcas-de-la-fase'
 
 type PropsDeVista = {
   flujo: FlujoParaConfigurar
@@ -47,7 +32,7 @@ function Nombre({ fase }: { fase: FaseParaConfigurar }) {
   )
 }
 
-// Las marcas, los huecos de salidas y el «⋯» de la fila: lo que llena cada paso. Sin hueco, nada.
+// Las marcas, los avisos de «Revisar», los huecos de salidas y el «⋯» de la fila: lo que llena cada paso. Sin hueco, nada.
 function Extras({
   flujo,
   fase,
@@ -57,6 +42,7 @@ function Extras({
   return (
     <>
       <MarcasDeLaFase fase={fase} />
+      <InsigniaDeRevisar faseId={fase.id} />
       {Salidas ? <Salidas flujo={flujo} fase={fase} /> : null}
     </>
   )
@@ -124,35 +110,15 @@ function Tarjetas({ flujo, huecos, alAbrir }: PropsDeVista) {
   )
 }
 
-// Las fases del flujo, en el orden de la base, sólo para mirar (5.02): el nombre con su color, «Inicial», «Final» y «Jubilada». Un clic en la fila o Enter en
-// el nombre abre el inspector de la fase. Los huecos de abajo los llenan 5.04 (acciones) y 5.06 (salidas).
-export function ListaDeFases({ flujo, nombreDelFlujo, huecos, alAbrir }: Props) {
-  const AccionesDeLaLista = huecos.accionesDeLaLista
+// Las fases del flujo en el orden de la base, como lista (la versión navegable del diagrama, y la única en el celular): el nombre con su color, sus marcas,
+// los avisos de «Revisar» y las salidas. Un clic en la fila o Enter en el nombre abre el panel de la fase. Los huecos los llenan 5.04 (acciones) y 5.06 (salidas).
+export function ListaDeFases({ flujo, huecos, alAbrir }: PropsDeVista) {
   return (
-    <section aria-labelledby="titulo-de-fases" className="grid gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="grid gap-0.5">
-          <h2
-            id="titulo-de-fases"
-            className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-          >
-            Fases
-          </h2>
-          <p className="text-(length:--text-sm) text-(--color-ink-soft)">En el orden del flujo.</p>
-        </div>
-        {AccionesDeLaLista ? <AccionesDeLaLista flujo={flujo} /> : null}
-      </div>
-      {flujo.fases.length === 0 ? (
-        <EstadoVacio compacto titulo={`El flujo de ${nombreDelFlujo} todavía no tiene fases.`} />
-      ) : (
-        <UnaSolaVista
-          tabla={() => <Tabla flujo={flujo} huecos={huecos} alAbrir={alAbrir} />}
-          tarjetas={() => <Tarjetas flujo={flujo} huecos={huecos} alAbrir={alAbrir} />}
-        />
-      )}
-      {flujo.truncado.fases ? (
-        <AvisoDeTope texto={`Mostrando las primeras ${String(TOPE_DE_FASES)} fases.`} />
-      ) : null}
-    </section>
+    <div className="max-w-3xl min-w-0">
+      <UnaSolaVista
+        tabla={() => <Tabla flujo={flujo} huecos={huecos} alAbrir={alAbrir} />}
+        tarjetas={() => <Tarjetas flujo={flujo} huecos={huecos} alAbrir={alAbrir} />}
+      />
+    </div>
   )
 }

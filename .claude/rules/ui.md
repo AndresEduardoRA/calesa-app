@@ -21,7 +21,8 @@ Antes de construir una pantalla, lee su fila en `docs/UX.md` (patrón, roles, es
 - Envío deshabilitado mientras la acción está en curso (`useAction`); nunca doble envío. Un
   formulario que se reemplaza al llegar lo guardado (`key` con la versión) apaga sus campos mientras guarda.
 - Formularios en bloques `<Bloque titulo>` plegables; los secundarios nacen plegados. Su cuerpo es
-  una grilla `minmax(0, 1fr)`.
+  una grilla `minmax(0, 1fr)`. Salvo dentro de `<BloquesALaVista>` (el panel del flujo), donde van a la vista: una sección con su
+  `h3` (`h4` anidado).
 
 ## Destructivas, paneles y modales
 

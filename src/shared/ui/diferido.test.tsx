@@ -99,6 +99,30 @@ describe('diferido: cargar y fallar', () => {
   })
 })
 
+describe('diferido: respaldo', () => {
+  conRelojFalso()
+
+  it('si el código no llega, dibuja el respaldo con las mismas props bajo el aviso', async () => {
+    const cargar = vi.fn<() => Promise<typeof Hola>>().mockRejectedValue(new Error('sin red'))
+    const Perezoso = diferido(cargar, {
+      aviso: 'aqui',
+      respaldo: ({ nombre }) => <p>Lista de {nombre}</p>,
+    })
+    render(<Perezoso nombre="Ana" />)
+    await avanzar(0)
+    expect(screen.queryByText('Lista de Ana')).toBeNull()
+    await avanzar(ESPERA_DEL_REINTENTO_MS)
+    expect(screen.getByRole('alert').textContent).toContain(MENSAJE_SIN_CONEXION)
+    expect(screen.getByText('Lista de Ana')).toBeTruthy()
+
+    cargar.mockResolvedValue(Hola)
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+    await avanzar(0)
+    expect(screen.queryByText('Lista de Ana')).toBeNull()
+    expect(screen.getByText('Hola Ana')).toBeTruthy()
+  })
+})
+
 describe('diferido: estado y caché', () => {
   conRelojFalso()
 

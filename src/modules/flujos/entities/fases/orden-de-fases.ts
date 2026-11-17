@@ -2,8 +2,18 @@
 // el orden (la base renumera todas), así que aquí se mira la lista completa, tal como llega.
 export type DireccionDeFase = 'subir' | 'bajar'
 
+import { TOPE_DE_FASES } from '../flujo'
+
 export const MOTIVO_YA_ES_LA_PRIMERA = 'Ya es la primera fase.'
 export const MOTIVO_YA_ES_LA_ULTIMA = 'Ya es la última fase.'
+// `fase_mover` renumera todas: con la lista cortada por el tope no se sabe dónde caen las que no se leyeron
+// (`docs/DECISIONES.md` › «Reordenar renumera 0…n−1 y escribe sólo las filas que cambian.»).
+export const MOTIVO_LISTA_CORTADA = `Hay más de ${String(TOPE_DE_FASES)} fases: con la lista cortada no se puede ordenar.`
+
+// Por qué no se puede ordenar ninguna fase del flujo (arrastrar, «Mover antes/después», «Subir/Bajar»), o nulo si se puede.
+export function motivoSinOrdenDeFases(flujo: { truncado: { fases: boolean } }): string | null {
+  return flujo.truncado.fases ? MOTIVO_LISTA_CORTADA : null
+}
 
 // La fase tras la que va `id` al moverla, o `null` si ya está en el extremo (no hay movimiento). `{ despuesDe: null }` = quedar primera.
 export function despuesDeAlMover(

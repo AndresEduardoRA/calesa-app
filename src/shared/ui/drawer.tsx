@@ -32,7 +32,22 @@ type Props = {
   // A dónde va el foco al cerrar (el de Base UI). Sin esto: el elemento que tenía el foco antes de abrir, que un panel abierto por la
   // URL (con `shallow: false`) a veces ya no tiene: un panel que se apila sobre otro devuelve el foco a quien lo abrió.
   focoAlCerrar?: Popup['finalFocus']
+  // Al costado de la pantalla y no modal: sin fondo, lo de atrás se sigue usando (tocar otra cosa no lo cierra; Esc y la ✕ sí). Para un panel que
+  // acompaña a la pantalla en un escritorio ancho (el de una fase del flujo); en angosto va modal, como todos.
+  alCostado?: boolean
   children: ReactNode
+}
+
+// La hoja inferior no pasa del alto de la pantalla: lo de adentro se desplaza.
+function clasesDelPanel(lado: NonNullable<Props['lado']>, ancho: NonNullable<Props['ancho']>) {
+  return cn(
+    'gap-0',
+    lado === 'bottom'
+      ? 'max-h-[85dvh] rounded-t-(--radius-card)'
+      : ancho === 'amplio'
+        ? 'data-[side=left]:w-full data-[side=right]:w-full sm:max-w-xl data-[side=left]:sm:max-w-xl data-[side=right]:sm:max-w-xl'
+        : 'sm:max-w-md',
+  )
 }
 
 // Panel lateral: el segundo nivel de cualquier pantalla (crear, editar, ver una ficha sin salir
@@ -50,6 +65,7 @@ export function Drawer({
   ancho = 'normal',
   pie,
   focoAlCerrar,
+  alCostado = false,
   children,
 }: Props) {
   const [hayCambios, setHayCambios] = useState(false)
@@ -89,6 +105,8 @@ export function Drawer({
     <ContextoDeCambios value={registro}>
       <Sheet
         open={abierto}
+        modal={!alCostado}
+        disablePointerDismissal={alCostado}
         onOpenChange={(sigueAbierto) => {
           if (!sigueAbierto) {
             pedirCierre()
@@ -98,15 +116,8 @@ export function Drawer({
         <SheetContent
           side={lado}
           finalFocus={focoAlCerrar}
-          // La hoja inferior no pasa del alto de la pantalla: lo de adentro se desplaza.
-          className={cn(
-            'gap-0',
-            lado === 'bottom'
-              ? 'max-h-[85dvh] rounded-t-(--radius-card)'
-              : ancho === 'amplio'
-                ? 'data-[side=left]:w-full data-[side=right]:w-full sm:max-w-xl data-[side=left]:sm:max-w-xl data-[side=right]:sm:max-w-xl'
-                : 'sm:max-w-md',
-          )}
+          conFondo={!alCostado}
+          className={clasesDelPanel(lado, ancho)}
         >
           <SheetHeader className="border-b border-(--color-line)">
             <SheetTitle>{titulo}</SheetTitle>

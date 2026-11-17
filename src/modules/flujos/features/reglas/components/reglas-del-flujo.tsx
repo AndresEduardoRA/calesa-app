@@ -15,7 +15,7 @@ type Props = {
   escritura: EscrituraDeReglas
 }
 
-// Las reglas del flujo, una fila cada una, con su interruptor.
+// Las reglas del flujo, una fila cada una, con su interruptor. El título «Reglas del flujo» es el del panel donde se abren.
 export function ReglasDelFlujo({
   flujoId,
   claveDelFlujo,
@@ -26,13 +26,7 @@ export function ReglasDelFlujo({
 }: Props) {
   const { enUso, cambiar } = useReglasDelFlujo(flujoId, escritura)
   return (
-    <section aria-labelledby="titulo-de-reglas" className="grid gap-3">
-      <h2
-        id="titulo-de-reglas"
-        className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-      >
-        Reglas del flujo
-      </h2>
+    <section aria-label="Reglas del flujo" className="grid gap-3">
       <ul className="grid gap-2">
         {reglasParaMostrar(ambito, reglas).map((regla) => (
           <FilaDeRegla

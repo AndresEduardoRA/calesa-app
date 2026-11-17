@@ -117,7 +117,8 @@ test('la dueña agrega dos datos, sube uno y quita el otro', async ({ page }) =>
     'vehiculo.vin:false:',
     'pagos.umbral_pct:false:50',
   ])
-  await expect(inspector.getByText('Informativo')).toHaveCount(
+  // Exacto: arriba del panel, «Revisar» puede decir que sus requisitos «son informativos».
+  await expect(inspector.getByText('Informativo', { exact: true })).toHaveCount(
     antes.length === 0 ? 2 : 2 + antes.length,
   )
 

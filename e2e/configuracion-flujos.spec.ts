@@ -12,7 +12,7 @@ import { crearAsesoraDeLaSemilla } from './soporte/recorrido'
 import { sql } from './soporte/sql'
 
 // Configuración › Flujos (5.02, `docs/UX.md` › «Flujos: configuración (estados propios)»): la dueña llega desde el hub, ve las fases de un origen en el orden de la
-// base, cambia a «Repuestos», abre el inspector de una fase por la URL; un origen recién creado llega desde Orígenes y muestra el vacío; una asesora no ve la
+// base, cambia a «Repuestos», abre el panel de una fase por la URL; un origen recién creado llega desde Orígenes y muestra el vacío; una asesora no ve la
 // pantalla. Sólo lectura: no escribe nada. Cuenta lo que dice la base, no números fijos de la semilla.
 test.describe.configure({ mode: 'serial' })
 
@@ -75,21 +75,21 @@ test('la dueña ve las fases de un origen en orden, cambia a repuestos y abre un
   await page.goto('/configuracion')
   await page.getByRole('link', { name: /Flujos/ }).click()
   await expect(page.getByRole('heading', { name: 'Flujos', level: 1 })).toBeVisible()
-  // Con «Documentos» (5.09) hay barra de secciones: «Fases» abre primero; y la de flujos.
-  await expect(page.getByRole('tab', { name: 'Fases', exact: true })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
-  await expect(page.getByRole('tab', { name: 'Documentos', exact: true })).toBeVisible()
+  // Las fases abren primero, como diagrama; las reglas y los tipos de documento se abren desde la barra del flujo, en su panel (T38).
   await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Reglas del flujo', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Tipos de documento', exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Diagrama del flujo' })).toBeVisible()
 
   // Un origen escrito a mano en la URL: lo que no es suyo abre el primero y no es un error.
   await page.goto('/configuracion/flujos?origen=basura')
   await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeVisible()
 
-  // Abre el de la subasta: las fases como las ordena la base, con «Inicial» y «Final» donde corresponde.
+  // Abre el de la subasta: las fases como las ordena la base (en la lista), con «Inicial» y «Final» donde corresponde.
   await page.getByRole('tab', { name: subasta }).click()
   await expect(page).toHaveURL(/origen=/)
+  await page.getByRole('button', { name: 'Ver como lista' }).click()
+  await expect(page).toHaveURL(/vista=lista/)
   const nombres = page.locator('[data-abre-resumen]')
   await expect(nombres).toHaveText(fases.map((f) => f.nombre))
   for (const fase of fases) {
@@ -113,7 +113,7 @@ test('la dueña ve las fases de un origen en orden, cambia a repuestos y abre un
   const inspector = page.getByRole('dialog')
   await expect(inspector.getByRole('heading', { name: primera.nombre })).toBeVisible()
   for (const bloque of ['Datos', 'Salidas y quién mueve', 'Requisitos para entrar']) {
-    await expect(inspector.getByText(bloque, { exact: true })).toBeVisible()
+    await expect(inspector.getByRole('heading', { name: bloque, exact: true })).toBeVisible()
   }
   await page.reload()
   await expect(
@@ -127,7 +127,7 @@ test('la dueña ve las fases de un origen en orden, cambia a repuestos y abre un
 
   // Un id que no es de una fase del flujo no abre nada.
   await page.goto(
-    '/configuracion/flujos?ambito=repuestos&fase=00000000-0000-4000-8000-000000000000',
+    '/configuracion/flujos?ambito=repuestos&vista=lista&fase=00000000-0000-4000-8000-000000000000',
   )
   await expect(nombres).toHaveText(repuestos.map((f) => f.nombre))
   await expect(page.getByRole('dialog')).toBeHidden()

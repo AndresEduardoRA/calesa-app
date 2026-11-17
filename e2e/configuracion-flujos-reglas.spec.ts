@@ -56,13 +56,10 @@ test('la dueña apaga una regla sin uso con «Deshacer» y guarda la oferta de t
   const toast = (texto: string) => page.locator('[data-sonner-toast]').filter({ hasText: texto })
   expect(reglaEnLaBase(origenId, 'aduana')).toBe(true)
 
-  // La pestaña está y «Aduana» nace encendida.
+  // `?seccion=reglas` abre las reglas en el panel del flujo (T38) y «Aduana» nace encendida.
   await entrar(page, duena, { fresco: true })
   await page.goto(url)
-  await expect(page.getByRole('tab', { name: 'Reglas', exact: true })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
+  await expect(page.getByRole('dialog', { name: 'Reglas del flujo' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Reglas del flujo', level: 2 })).toBeVisible()
   await expect(aduana()).toBeChecked()
 

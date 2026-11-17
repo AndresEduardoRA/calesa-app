@@ -1,27 +1,43 @@
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import type { FaseParaConfigurar, FlujoParaConfigurar } from '../../../entities/flujo'
 import type { RolLeido } from '../../../entities/lectura-de-fase'
+import type { SeccionDelPanel } from '../../../entities/panel-del-flujo'
 
 type DelFlujo = { flujo: FlujoParaConfigurar }
+type DelFlujoConHijos = DelFlujo & { children: ReactNode }
 type DeUnaFase = { flujo: FlujoParaConfigurar; fase: FaseParaConfigurar }
-// Las salidas nombran roles: los lee `src/app` (`flujos` no importa `equipo`) y los entrega el inspector (5.06).
+// Las salidas nombran roles: los lee `src/app` (`flujos` no importa `equipo`) y los entrega el panel (5.06).
 type DeUnaFaseConRoles = DeUnaFase & { roles: readonly RolLeido[] }
 
 // Los huecos de la pantalla de flujos (5.02): cada área de `flujos` llena el suyo en su paso, sin editar la pantalla. Son componentes **de cliente**
 // opcionales (D14): lo que cruza de `src/app` a la pantalla sólo es serializable si lo es; vacío = nada dibujado. Los junta `src/app/(app)/configuracion/flujos/huecos.ts`.
 export type HuecosDelFlujo = {
+  // Envuelve la franja, el selector y el flujo: lee «Revisar» una vez y da las marcas de cada fase (`ContextoDeMarcasDelDiagrama`).
+  proveedorDeRevisar?: ComponentType<DelFlujoConHijos>
   // Sobre el selector, la franja de avisos de «Revisar» (5.12).
   franjaDeRevisar?: ComponentType<DelFlujo>
-  // A la derecha del título de la lista («Nueva fase», 5.04).
+  // Envuelve el flujo abierto: ordenar las fases arrastrando o con «Mover antes/después» (`ContextoDeOrdenDeFases`).
+  ordenDeFases?: ComponentType<DelFlujoConHijos>
+  // En la barra del flujo («Nueva fase» y sus modales, 5.04).
   accionesDeLaLista?: ComponentType<DelFlujo>
-  // El «⋯» de cada fila (5.04).
+  // El «⋯» de cada fila de la lista (5.04).
   accionesDeFila?: ComponentType<DeUnaFase>
   // Bajo el nombre de cada fila: las salidas como chips (5.06).
   salidasDeFila?: ComponentType<DeUnaFase>
-  // Dentro del inspector, bajo lo leído de cada bloque.
+  // Dentro del panel de una fase.
   bloques?: {
+    // Arriba de todo: «Mover antes», «Mover después» y «Jubilar o eliminar».
+    acciones?: ComponentType<DeUnaFase>
     datos?: ComponentType<DeUnaFase>
     salidas?: ComponentType<DeUnaFaseConRoles>
     requisitos?: ComponentType<DeUnaFase>
+    // «Reglas que la afectan».
+    reglas?: ComponentType<DeUnaFase>
   }
 }
+
+// Lo del flujo entero que se abre en el panel desde la barra (`?seccion=reglas|documentos`): su título y lo que dibuja el servidor (el esqueleto, si la URL
+// todavía no lo pide). Sólo las que esta persona ve.
+export type SeccionesDelPanel = Partial<
+  Record<SeccionDelPanel, { titulo: string; contenido: ReactNode }>
+>

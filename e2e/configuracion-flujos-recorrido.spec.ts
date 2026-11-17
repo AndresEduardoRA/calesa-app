@@ -52,7 +52,7 @@ let esperasDeRepuestosAntes: string | null = null
 const delOrigen = fasesDelOrigen(ORIGEN)
 const idDeFase = (nombre: string): string => faseDe(ORIGEN, nombre)
 const urlDeFase = (nombre: string) =>
-  `/configuracion/flujos?origen=${origenId}&fase=${idDeFase(nombre)}`
+  `/configuracion/flujos?origen=${origenId}&vista=lista&fase=${idDeFase(nombre)}`
 const comoDuena = (consulta: string): string => comoPersona(duena, consulta)
 
 test.beforeAll(async ({}, info) => {
@@ -100,6 +100,7 @@ test(`${P} la dueña crea un origen y arma 5 fases con sus salidas`, async ({ pa
   await crearFase(page, TRANSITO, 'Intermedia')
   await crearFase(page, LLEGADA, 'Intermedia')
   await crearFase(page, ENTREGA, 'Final')
+  await page.getByRole('button', { name: 'Ver como lista' }).click()
   await expect(nombresDeFases(page)).toHaveText([COMPRA, PUERTO, TRANSITO, LLEGADA, ENTREGA])
 
   // Las salidas; «Llegada» queda sin salida a propósito (la corrige «Revisar»).
@@ -218,7 +219,7 @@ test(`${P} un vehículo nuevo nace en la inicial, se mueve por SQL y jubilar su 
   expect(sql(`select fase_id from public.vehiculos where id = '${vehiculo}'`)).toBe(puerto)
 
   // Con historial y una unidad adentro, «Puerto» no se elimina: se jubila.
-  await page.goto(`/configuracion/flujos?origen=${origenId}`)
+  await page.goto(`/configuracion/flujos?origen=${origenId}&vista=lista`)
   await elegirDelMenu(page, PUERTO, 'Jubilar o eliminar')
   const dialogo = page.getByRole('dialog', { name: new RegExp(`Jubilar fase «${PUERTO}»`) })
   await expect(dialogo).toContainText(`Se jubila «${PUERTO}»`)

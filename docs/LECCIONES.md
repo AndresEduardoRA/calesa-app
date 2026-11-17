@@ -248,6 +248,8 @@ Si ya no aplica (cambió la herramienta o el código), se quita.
 - Mide cajas dentro de un diálogo sólo cuando termina la animación (`quieto()`): durante la escala 44 px miden 42 y `getBoundingClientRect` miente.
 - Centra el botón antes del clic: tras `scrollIntoViewIfNeeded` queda al borde inferior, debajo de la burbuja del chat.
 - Un `input type=date` conserva el foco en su subcampo y `blur()` no lo suelta: reintenta y descarta si sigue enfocado, o la medición de foco visible se compara consigo misma.
+- Arrastra una caja de React Flow con la vista quieta (tras cargar, no tras un `fitView` animado: `hover` mide una caja que aún se mueve y el `mousedown` cae en el lienzo, que se desplaza) y con `page.mouse.move` a un punto fijo: un `hover` con `force` fuera de la caja desplaza contenedores.
+- Tras guardar en el panel de una fase, recarga antes de otra escritura del mismo flujo: si sale antes de que llegue la versión nueva, da `PT409`.
 - Compara y ordena fechas como timestamp (`Date.parse`), nunca como texto ISO: «…:23Z» queda por delante de «…:23.078Z», y un orden por texto borró a la dueña y tumbó 105 pruebas.
 
 ### Sesiones y datos de prueba

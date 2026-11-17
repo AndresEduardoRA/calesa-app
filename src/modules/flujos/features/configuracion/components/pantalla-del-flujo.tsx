@@ -11,26 +11,28 @@ import {
   type OrigenDelSelector,
 } from '../../../entities/selector-de-flujos'
 import { FlujoAbierto } from './flujo-abierto'
-import type { HuecosDelFlujo } from './huecos'
+import type { HuecosDelFlujo, SeccionesDelPanel } from './huecos'
 import { SelectorDeFlujo } from './selector-de-flujo'
 
 type Props = {
   permisos: Permisos
   // Todos los orígenes del catálogo, también los inactivos: los compone la página (este módulo no depende de `origenes`).
   origenes: Promise<Resultado<readonly OrigenDelSelector[]>>
-  // Los roles para nombrarlos en el inspector (los compone la página: `flujos` no importa `equipo`).
+  // Los roles para nombrarlos en el panel (los compone la página: `flujos` no importa `equipo`).
   roles: Promise<Resultado<{ roles: readonly { id: string; nombre: string }[]; hayMas: boolean }>>
   // `?origen=` y `?ambito=`: una URL que no es de los suyos abre el primero.
   origenPedido: string | undefined
   ambitoPedido: string | undefined
   huecos: HuecosDelFlujo
-  // Lo que va sobre la lista de fases del flujo abierto (5.08: el aviso de «fuera de regla»). Una función de servidor, no un hueco de cliente: se llama con el
+  // Lo que va sobre las fases del flujo abierto (5.08: el aviso de «fuera de regla»). Una función de servidor, no un hueco de cliente: se llama con el
   // flujo ya leído y puede leer lo suyo; va detrás de su propio `<Suspense>` sin esqueleto (lo común es que no haya nada que mostrar).
   sobreLaLista?: (flujo: FlujoParaConfigurar) => ReactNode
+  // Las reglas y los tipos de documento, que se abren en el panel desde la barra del flujo (los dibuja la página).
+  secciones?: SeccionesDelPanel
 }
 
-// La pestaña «Fases» de Configuración › Flujos (5.02), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: los flujos que puede configurar,
-// el elegido entero y los roles para nombrarlos. La base vuelve a decidir cada escritura. Una lectura que falla sube al `error.tsx` de `(app)`, que ofrece «Reintentar».
+// Configuración › Flujos (5.02), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: los flujos que puede configurar, el elegido entero
+// y los roles para nombrarlos. La base vuelve a decidir cada escritura. Una lectura que falla sube al `error.tsx` de `(app)`, que ofrece «Reintentar».
 export async function PantallaDelFlujo({
   permisos,
   origenes,
@@ -39,6 +41,7 @@ export async function PantallaDelFlujo({
   ambitoPedido,
   huecos,
   sobreLaLista,
+  secciones,
 }: Props) {
   const [flujos, listaDeOrigenes, rolesLeidos] = await Promise.all([
     leerFlujosConfigurables(permisos),
@@ -57,8 +60,9 @@ export async function PantallaDelFlujo({
   }
   const flujo = datosO(await leerFlujoParaConfigurar(entrada.flujo.id))
   const Franja = huecos.franjaDeRevisar
-  return (
-    <div className="grid gap-4">
+  const Revisar = huecos.proveedorDeRevisar
+  const contenido = (
+    <div className="grid min-w-0 gap-4">
       {flujo && Franja ? <Franja flujo={flujo} /> : null}
       <SelectorDeFlujo
         entradas={entradas.map(({ clave, titulo }) => ({ clave, titulo }))}
@@ -71,10 +75,12 @@ export async function PantallaDelFlujo({
           nombreDelFlujo={entrada.titulo}
           roles={datosO(rolesLeidos).roles}
           huecos={huecos}
+          secciones={secciones ?? {}}
         />
       ) : (
         <EstadoVacio Icono={WorkflowIcon} titulo="Este flujo ya no existe." compacto />
       )}
     </div>
   )
+  return flujo && Revisar ? <Revisar flujo={flujo}>{contenido}</Revisar> : contenido
 }

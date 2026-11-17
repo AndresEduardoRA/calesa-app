@@ -4,6 +4,7 @@ import { Bloque } from '@/shared/ui/bloque'
 import { Campo } from '@/shared/ui/campo'
 import { ID_DE_CAMPO_DE_FASE } from '../../../entities/fases/bloques-de-fase'
 import {
+  ETIQUETA_DEL_CAMPO_CON_REGLA,
   LARGO_MAXIMO_DE_LA_DESCRIPCION_DE_FASE,
   LARGO_MAXIMO_DEL_ALIAS_DE_FASE,
 } from '../../../entities/fases/reglas-de-fase'
@@ -26,7 +27,7 @@ export function BloqueWebYPortal({
       <InterruptorConMotivo
         deshabilitado={deshabilitado}
         campo="publica_web"
-        titulo="Se publica en la web"
+        titulo={ETIQUETA_DEL_CAMPO_CON_REGLA.publica_web}
         ayuda="La fase aparece en la vitrina pública."
         valor={valores.publicaWeb}
         alCambiar={(publicaWeb) => {
@@ -38,7 +39,7 @@ export function BloqueWebYPortal({
       <InterruptorConMotivo
         deshabilitado={deshabilitado}
         campo="visible_portal"
-        titulo="Visible en el portal"
+        titulo={ETIQUETA_DEL_CAMPO_CON_REGLA.visible_portal}
         ayuda="El cliente ve la fase en su portal."
         valor={valores.visiblePortal}
         alCambiar={(visiblePortal) => {
