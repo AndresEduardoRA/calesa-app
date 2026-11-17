@@ -55,6 +55,10 @@ async function logoComoDatos(url: string | null): Promise<string | null> {
     if (!respuesta.ok || !TIPOS_DE_LOGO.has(tipo)) {
       return null
     }
+    // Si la respuesta declara un peso mayor al tope, ni se lee el cuerpo.
+    if (Number(respuesta.headers.get('content-length') ?? 0) > PESO_MAXIMO_LOGO) {
+      return null
+    }
     const bytes = Buffer.from(await respuesta.arrayBuffer())
     return bytes.byteLength > PESO_MAXIMO_LOGO
       ? null

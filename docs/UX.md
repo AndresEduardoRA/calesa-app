@@ -498,7 +498,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Tipos de cambio:** cada uno abre su panel con el valor listo y su historial. El por defecto no se desactiva; nada se borra. El
   interruptor «En la barra superior» va en el mismo «Guardar»: apagado con su motivo si el tipo está inactivo o ya hay 3 («quita uno para
   sumar este»); quitarlo siempre se puede; sin ninguno marcado, avisa que la barra muestra el por defecto. La lista dice el tope y lleva
-  el badge «En la barra» en los que se ven. Debajo, «Compartir los tipos de cambio»: la leyenda de lo que se comparte (un campo, «n de 120»
+  el badge «En la barra» en los que se ven. Debajo, «Leyenda al compartir»: la leyenda de lo que se comparte (un campo, «n de 120»
   sin `maxLength`, «Guardar leyenda»; sin `empresa.tipos_cambio.gestionar`, apagado con su motivo; `PT409` con «Recargar»).
   **Integraciones:** apibara no se activa sin su clave, que nunca se muestra («Reemplazar»).
 

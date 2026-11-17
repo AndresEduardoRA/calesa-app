@@ -34,7 +34,7 @@ export function LeyendaDeLosTiposCambio({ leyenda, puedeGestionar }: Props) {
   return (
     <section aria-labelledby="leyenda-titulo" className="grid gap-3">
       <h2 id="leyenda-titulo" className="text-(length:--text-lg) font-medium text-(--color-ink)">
-        Compartir los tipos de cambio
+        Leyenda al compartir
       </h2>
       <p className="text-(length:--text-sm) text-(--color-ink-soft)">
         Desde la barra superior se comparten con un cliente como imagen o como texto. La leyenda va
