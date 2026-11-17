@@ -19,6 +19,10 @@ export const MODALES: Record<string, RegistroDeModal> = {
     sinFormulario:
       'elige el separador del archivo y descarga: un selector, nada tipeado que se pierda al cerrar',
   },
+  'src/modules/leads/features/oportunidades/components/aviso-de-oportunidades.tsx': {
+    sinFormulario:
+      'sólo lista las oportunidades que el lead ya tiene antes de crear: «Crear igual» sigue al formulario (ModalDeFormulario) y «Cancelar» cierra; nada tipeado',
+  },
   'src/modules/leads/features/listado/components/modal-de-accion-de-fila.tsx': {
     sinFormulario:
       'sólo dibuja los estados de carga, error y sin tipos; los formularios de anotar y agendar son ModalDeFormulario',

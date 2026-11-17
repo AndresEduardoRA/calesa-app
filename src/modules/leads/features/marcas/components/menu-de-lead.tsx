@@ -23,9 +23,12 @@ type PropsComunes = {
   alGestionar: () => void
   // Quien mira puede enviar este lead a la papelera.
   puedeEnviar: boolean
-  // Con el lead en la cartera y `leads.editar`: agendar un recordatorio y anotar un seguimiento (abren su modal; qué modal y dónde lo dice
-  // cada superficie). Sin esto, no se ofrecen.
-  acciones?: { alAnotar: () => void; alAgendar: () => void } | undefined
+  // Con el lead en la cartera y `leads.editar`: agendar un recordatorio, anotar un seguimiento y crear una oportunidad (abren su modal; qué
+  // modal y dónde lo dice cada superficie). Sin esto, no se ofrecen.
+  acciones?:
+    { alAnotar: () => void; alAgendar: () => void; alNuevaOportunidad: () => void } | undefined
+  // «Ver oportunidades»: con el lead en la cartera de quien mira, lleva a la sección «Oportunidades» de la ficha. Sin esto, no se ofrece.
+  verOportunidades?: (() => void) | undefined
   // Lo que la papelera hace distinto donde el lead no se queda en pantalla: `alEnviado` (la ficha lleva al listado y el resumen se cierra),
   // y con un vehículo vinculado que quien mira ve, `motivo` la apaga y `alIrAVehiculos` ofrece ir a «Vehículos».
   papelera?: { alEnviado?: () => void; motivo?: string | null; alIrAVehiculos?: () => void }
@@ -45,7 +48,10 @@ type Lineas = {
   marcas: Marcas
   envio: ReturnType<typeof useEnvioAPapelera>
   abrirEtiquetas: () => void
-} & Pick<PropsComunes, 'leadId' | 'acciones' | 'papelera' | 'alMarcar' | 'carga' | 'verActividad'>
+} & Pick<
+  PropsComunes,
+  'leadId' | 'acciones' | 'papelera' | 'alMarcar' | 'carga' | 'verActividad' | 'verOportunidades'
+>
 
 const sinAccion = () => undefined
 
@@ -69,6 +75,23 @@ const LINEAS: Readonly<Record<ClaveDeAccionDeLead, Constructor>> = {
       etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.anotar,
       despuesDeCerrar: true,
       alElegir: p.acciones?.alAnotar ?? sinAccion,
+    },
+  ],
+  oportunidad: (p) => [
+    {
+      tipo: 'accion',
+      clave: 'oportunidad',
+      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.oportunidad,
+      despuesDeCerrar: true,
+      alElegir: p.acciones?.alNuevaOportunidad ?? sinAccion,
+    },
+  ],
+  oportunidades: (p) => [
+    {
+      tipo: 'accion',
+      clave: 'oportunidades',
+      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.oportunidades,
+      alElegir: p.verOportunidades ?? sinAccion,
     },
   ],
   etiquetas: (p) => [
@@ -155,6 +178,7 @@ function lineasDelMenu(p: Lineas, puedeEnviar: boolean): AccionDeMenu[] {
   }
   const bloques = accionesDeLead({
     actuar: p.acciones !== undefined,
+    verOportunidades: p.verOportunidades !== undefined,
     enviar: puedeEnviar,
     actividad: p.verActividad !== undefined,
   })
@@ -187,6 +211,7 @@ export function MenuDeLeadConMarcas(props: PropsConMarcas) {
       alMarcar: props.alMarcar,
       carga: props.carga,
       verActividad: props.verActividad,
+      verOportunidades: props.verOportunidades,
       abrirEtiquetas: () => {
         setSelector(true)
       },

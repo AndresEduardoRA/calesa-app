@@ -1081,11 +1081,13 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
 - **Tus marcas (privadas, «Solo las ves tú.»):** «Tachados» (ocultarlos por defecto · mostrarlos también · sólo los tachados),
   «Favoritos», «Etiquetas». No reordenan. Una línea dice cuántos coincidentes ocultan los tachados, con «Mostrarlos». **Mientras se busca
   no se ocultan.**
-- **«+ Oportunidad» de la fila** (al lado del «⋯»; en la tarjeta, sólo el «+»; cartera y `leads.editar`): modal `?panel=oportunidad-rapida&para=<id>` con «Título»
-  (el nombre del lead) y «Monto estimado» opcional; «Crear oportunidad» deja el aviso y la lista donde estaba. Un rechazo deja el modal abierto con lo escrito.
-- **«⋯» de la fila** (la misma lista, en este orden, en fila, kanban, resumen y ficha): «Agendar recordatorio…» y «Anotar seguimiento…»
-  (cartera y `leads.editar`, abren el modal de la ficha con `?panel=…&para=<id>`) · «Etiquetas…», «Favorito», «Tachado» (con «Deshacer») ·
-  «Enviar a la papelera» (`leads.eliminar`).
+- **«⋯» de la fila** (la misma lista, en este orden, en fila, tarjeta, kanban, resumen y ficha): «Agendar recordatorio…», «Anotar seguimiento…» y «Nueva oportunidad…»
+  (cartera y `leads.editar`, abren su modal con `?panel=…&para=<id>`; en el resumen y la ficha, sin `para`) y «Ver oportunidades» (lead en la cartera de quien mira: lleva a
+  `/leads/<id>?seccion=oportunidades`) · «Etiquetas…», «Favorito», «Tachado» (con «Deshacer») · «Enviar a la papelera» (`leads.eliminar`). **«Nueva oportunidad…»
+  abre primero un aviso** con las oportunidades del lead que quien mira ve (título, etapa y estado; hasta 5, «y N más» con «Ver todas», cada una con «Ver»; incluida la base con
+  que nace todo lead), «Crear igual» (sigue al formulario con «Título» —el nombre del lead— y «Monto estimado» opcional; «Crear oportunidad» deja el aviso y la lista donde estaba; un
+  rechazo deja el modal abierto con lo escrito) y «Cancelar». Se lee al abrir el modal, con esqueleto; si falla, lo dice con «Reintentar» y «Crear igual» sigue ahí.
+  Sin oportunidades, abre directo en el formulario.
 - **Vacíos:** sin leads, con «Nuevo lead» y «Ver todos» según permiso; por filtro, con «Limpiar filtros». Esqueleto; error.
 - **Resumen (`?lead=`):** tipo, marcas, «Editar» (cartera y `leads.editar`), «Abrir ficha», «⋯»; «Relacionados» (con `vehiculos.ver`, se lee al abrir) entre la cabecera y las pestañas; pestañas
   `?pestana=seguimientos|recordatorios` que se piden al elegirlas; nombre, número, tipo, teléfono tal como lo entrega la vista, origen y

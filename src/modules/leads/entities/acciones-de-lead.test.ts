@@ -10,19 +10,23 @@ const aplanar = (bloques: readonly (readonly string[])[]) => bloques.flat()
 
 describe('accionesDeLead', () => {
   it('con todo, el orden es el de siempre: agendar, anotar, etiquetas, favorito, tachado y la papelera al final', () => {
-    expect(aplanar(accionesDeLead({ actuar: true, enviar: true }))).toEqual([
-      'agendar',
-      'anotar',
-      'etiquetas',
-      'favorito',
-      'tachado',
-      'papelera',
-    ])
+    expect(aplanar(accionesDeLead({ actuar: true, verOportunidades: true, enviar: true }))).toEqual(
+      [
+        'agendar',
+        'anotar',
+        'oportunidad',
+        'oportunidades',
+        'etiquetas',
+        'favorito',
+        'tachado',
+        'papelera',
+      ],
+    )
   })
 
   it('va en tres bloques: seguimiento, marcas y lo destructivo, separado', () => {
-    expect(accionesDeLead({ actuar: true, enviar: true })).toEqual([
-      ['agendar', 'anotar'],
+    expect(accionesDeLead({ actuar: true, verOportunidades: true, enviar: true })).toEqual([
+      ['agendar', 'anotar', 'oportunidad', 'oportunidades'],
       ['etiquetas', 'favorito', 'tachado'],
       ['papelera'],
     ])
@@ -33,7 +37,7 @@ describe('accionesDeLead', () => {
       ['etiquetas', 'favorito', 'tachado'],
     ])
     expect(accionesDeLead({ actuar: true, enviar: false })).toEqual([
-      ['agendar', 'anotar'],
+      ['agendar', 'anotar', 'oportunidad'],
       ['etiquetas', 'favorito', 'tachado'],
     ])
     expect(accionesDeLead({ actuar: false, enviar: true })).toEqual([
@@ -63,11 +67,13 @@ describe('accionesDeLead', () => {
     expect(ETIQUETA_DE_ACCION_DE_LEAD.favorito).toBe('Favorito')
     expect(ETIQUETA_DE_ACCION_DE_LEAD.tachado).toBe('Tachado')
   })
+})
 
+describe('accionesDeLead: actividad y oportunidades', () => {
   it('T10 · «Ver actividad» sólo con actividad.ver, en su bloque, justo antes de la papelera', () => {
     expect(aplanar(accionesDeLead({ actuar: true, enviar: true }))).not.toContain('actividad')
     expect(accionesDeLead({ actuar: true, enviar: true, actividad: true })).toEqual([
-      ['agendar', 'anotar'],
+      ['agendar', 'anotar', 'oportunidad'],
       ['etiquetas', 'favorito', 'tachado'],
       ['actividad'],
       ['papelera'],
@@ -77,5 +83,21 @@ describe('accionesDeLead', () => {
       ['actividad'],
     ])
     expect(ETIQUETA_DE_ACCION_DE_LEAD.actividad).toBe('Ver actividad')
+  })
+
+  it('«Nueva oportunidad…» pide poder actuar; «Ver oportunidades» sólo pide tener el lead en la cartera', () => {
+    expect(
+      aplanar(accionesDeLead({ actuar: false, verOportunidades: true, enviar: false })),
+    ).toEqual(['oportunidades', 'etiquetas', 'favorito', 'tachado'])
+    expect(aplanar(accionesDeLead({ actuar: true, enviar: false }))).toEqual([
+      'agendar',
+      'anotar',
+      'oportunidad',
+      'etiquetas',
+      'favorito',
+      'tachado',
+    ])
+    expect(ETIQUETA_DE_ACCION_DE_LEAD.oportunidad).toBe('Nueva oportunidad…')
+    expect(ETIQUETA_DE_ACCION_DE_LEAD.oportunidades).toBe('Ver oportunidades')
   })
 })

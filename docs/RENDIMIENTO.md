@@ -326,7 +326,8 @@ Elige 10, 25, 50 o 100 (`listas.por_pagina`, `?por=`); cada lista declara su má
 `e2e/listas-por-pagina-volumen.spec.ts` (bytes, nodos, página profunda). En el celular el selector va arriba de la lista y se dibuja una sola
 vista (`UnaSolaVista`, según el `user-agent`).
 
-- Listado de leads: 100; ≤ 3.600 nodos en escritorio y 3.500 en celular con filas sin seguimientos (`leads-escala.spec.ts` con `?por=100`; 2.200 con 50); con
+- Listado de leads: 100; ≤ 3.610 nodos en escritorio y 3.070 en celular con filas sin seguimientos (`leads-escala.spec.ts` con `?por=100`: 3.435 y 2.920 medidos; 2.100 y 1.810 con 50:
+  1.985 y 1.720 medidos). La fila no lleva un botón «+ Oportunidad» (5 nodos por fila de la tabla y 3 por tarjeta): «Nueva oportunidad…» es una línea del «⋯»; con
   las 100 filas llenas de la siembra, ≤ 4.650 nodos y 55.500 B gz (`listas-por-pagina-volumen.spec.ts`). Las columnas «Último seguimiento» y «Recordatorio» pesan
   ~7 nodos y ~70 B comprimidos por fila llena (100 filas llenas: 4.035 nodos y 52,9 KB en escritorio; 4.419 nodos y 51,2 KB en celular). Es lo que el listado
   dice de cada lead; bajarlo pide un máximo de 50 por página.

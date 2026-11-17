@@ -102,3 +102,10 @@ export type LectorDeMasOportunidades = (pedido: {
 }) => Promise<
   Resultado<{ puedoCrear: boolean; hayMas: boolean; oportunidades: OportunidadDelLead[] }>
 >
+
+// El aviso de antes de crear: las primeras del lead (`LEIDAS_PARA_EL_AVISO`), leídas en el navegador al abrir el modal.
+export type LectorDelAvisoDeOportunidades = (
+  leadId: string,
+) => Promise<
+  Resultado<{ puedoCrear: boolean; hayMas: boolean; oportunidades: OportunidadDelLead[] }>
+>

@@ -3,6 +3,7 @@ import { expect, test } from './soporte/prueba'
 import { abrirConN, dialogo, entrar } from './soporte/alta'
 import { abrirOrigenes } from './soporte/origenes-de-lead'
 import { abrirTipos } from './soporte/tipos-de-lead'
+import { abrirTiposDeSeguimiento } from './soporte/tipos-de-seguimiento'
 import { irAFicha } from './soporte/leads-ficha'
 import { irALeads } from './soporte/leads-listado'
 import { sql } from './soporte/sql'
@@ -54,10 +55,8 @@ for (const zoom of ['100', '200'] as const) {
     if (zoom === '200') await alDoscientos(page)
     await capturar(page, info, `pestana-tipos-${zoom}`)
     if (await page.getByRole('tab', { name: 'Tipos de seguimiento' }).count()) {
-      await page.getByRole('tab', { name: 'Tipos de seguimiento' }).click()
-      await expect(
-        page.getByRole('heading', { name: 'Tipos de seguimiento', level: 2 }),
-      ).toBeVisible()
+      // Por la URL de la pestaña, no con un clic: un clic antes de hidratar se pierde y el encabezado nunca llega.
+      await abrirTiposDeSeguimiento(page)
       if (zoom === '200') await alDoscientos(page)
       await sinScrollHorizontal(page)
       await capturar(page, info, `pestana-seguimientos-${zoom}`)

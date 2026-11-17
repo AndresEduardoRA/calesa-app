@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { LARGO_MAXIMO_DE_TITULO } from './oportunidad'
+import type { OportunidadDelLead } from './oportunidad'
 import {
+  avisoDeOportunidades,
+  rutaDeLasOportunidadesDe,
   hayCambiosEnOportunidadRapida,
   pedidoDeOportunidadRapida,
   tituloSugeridoDeOportunidad,
@@ -52,5 +55,35 @@ describe('pedidoDeOportunidadRapida', () => {
     if (pedido.tipo === 'invalido') {
       expect(Object.keys(pedido.errores).sort()).toEqual(['monto_estimado', 'titulo'])
     }
+  })
+})
+
+const una = (n: number) => ({ id: `id-${String(n)}` }) as unknown as OportunidadDelLead
+const varias = (n: number) => Array.from({ length: n }, (_, i) => una(i))
+
+describe('avisoDeOportunidades', () => {
+  it('hasta cinco, se muestran todas y no hay resto', () => {
+    expect(avisoDeOportunidades(varias(1), false)).toMatchObject({ resto: null })
+    expect(avisoDeOportunidades(varias(5), false).mostradas).toHaveLength(5)
+    expect(avisoDeOportunidades(varias(5), false).resto).toBeNull()
+  })
+
+  it('con la sexta leída muestra cinco y dice «y 1 más»', () => {
+    const aviso = avisoDeOportunidades(varias(6), false)
+    expect(aviso.mostradas).toHaveLength(5)
+    expect(aviso.resto).toBe('y 1 más')
+  })
+
+  it('si la lectura dice que hay más, no inventa cuántas: «y más»', () => {
+    expect(avisoDeOportunidades(varias(6), true).resto).toBe('y más')
+  })
+})
+
+describe('rutaDeLasOportunidadesDe', () => {
+  it('lleva a la sección de la ficha, y con una oportunidad, a su panel', () => {
+    expect(rutaDeLasOportunidadesDe('L1')).toBe('/leads/L1?seccion=oportunidades')
+    expect(rutaDeLasOportunidadesDe('L1', 'O1')).toBe(
+      '/leads/L1?seccion=oportunidades&panel=editar-oportunidad&oportunidad=O1',
+    )
   })
 })

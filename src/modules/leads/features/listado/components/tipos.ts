@@ -33,7 +33,7 @@ export type ParaMarcar = {
   alAccion: ((accion: AccionDeFila, leadId: string) => void) | null
 }
 
-// Anotar y agendar en el «⋯» de una fila: sólo con el permiso y el lead en la cartera.
+// Anotar, agendar y «Nueva oportunidad…» en el «⋯» de una fila: sólo con el permiso y el lead en la cartera.
 export function accionesDelMenu(marcar: ParaMarcar, lead: FilaDeLead) {
   const { alAccion } = marcar
   if (alAccion === null || !lead.enCartera) {
@@ -46,7 +46,19 @@ export function accionesDelMenu(marcar: ParaMarcar, lead: FilaDeLead) {
     alAgendar: () => {
       alAccion('agendar', lead.id)
     },
+    alNuevaOportunidad: () => {
+      alAccion('oportunidad', lead.id)
+    },
   }
+}
+
+// «Ver oportunidades»: con el lead en la cartera de quien mira (la única que ve oportunidades), sin pedir `leads.editar`.
+export function verOportunidadesDelMenu(irA: (leadId: string) => void, lead: FilaDeLead) {
+  return lead.enCartera
+    ? () => {
+        irA(lead.id)
+      }
+    : undefined
 }
 
 // El origen de un lead tal como está en el catálogo (con su icono y si sigue activo); nulo si no tiene o ya no está.

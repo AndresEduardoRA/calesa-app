@@ -13,6 +13,7 @@ import {
   pestanaDelRapido,
   type PestanaDelRapido,
 } from '../../../entities/rapido'
+import { PANEL_OPORTUNIDAD_RAPIDA } from '../../../entities/oportunidad-rapida'
 import { CLAVE_DE_RECORDATORIO } from '../../../entities/recordatorios'
 import { CLAVE_DE_EXTRA_EN_PANEL, VALOR_DE_EXTRA_NUEVO } from '../../../entities/telefonos'
 
@@ -66,6 +67,11 @@ export function useDrawerDeLead() {
     pestana,
     // Un modal de la pestaña abierto: el drawer no vuelve a leer su lead.
     conModal,
+    // «Nueva oportunidad…» está encima del resumen (`?lead=<id>&panel=oportunidad-rapida`).
+    nuevaOportunidad: id !== null && parametros[CLAVE_DE_PANEL] === PANEL_OPORTUNIDAD_RAPIDA,
+    cerrarModal: () => {
+      void setParametros({ [CLAVE_DE_PANEL]: null })
+    },
     // El panel de edición está encima del resumen (`?panel=editar-lead`).
     editando,
     editar: () => {
