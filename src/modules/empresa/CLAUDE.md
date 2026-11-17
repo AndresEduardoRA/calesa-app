@@ -48,7 +48,10 @@ RPC: `web.ajustes_acceso` (lo único que lee `anon`), `empresa_guardar_ajustes`,
 sin origen), `empresa_con_datos_cargados`, `moneda_crear`, `moneda_guardar`, `tipo_cambio_crear`, `tipo_cambio_guardar`, `integracion_guardar` (en
 `web_publica` valida `revalidar_url`: `https://` o `http://` de loopback, con `hint = 'revalidar_url'`, y guarda sólo esa clave),
 `integracion_guardar_secreto`, `integracion_secreto` (sólo `service_role`), `web_publica_vehiculos_que_cambian` (de 0 a 51;
-`empresa.ajustes.gestionar`).
+`empresa.ajustes.gestionar`). `tipos_cambio.en_la_barra` («En la barra») se escribe con `tipo_cambio_guardar(… p_en_la_barra)`: exige activo y
+menos de 3 activos marcados (22023, `hint = 'en_la_barra'`), tras el candado consultivo de la barra, tomado antes que la fila.
+`tipos_cambio_vigentes()` (definer, toda persona activa): los activos con su versión y el último cambio del valor (del historial) con el nombre de
+quien lo hizo, nunca el correo.
 
 ## No se rompe
 

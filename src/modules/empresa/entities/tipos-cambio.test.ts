@@ -21,6 +21,7 @@ function tipo(datos: Partial<TipoCambio>): TipoCambio {
     valor: 6.96,
     esDefault: false,
     activo: true,
+    enLaBarra: false,
     actualizadoEn: '2026-10-12T14:00:00+00:00',
     ...datos,
   }
@@ -38,12 +39,13 @@ describe('tiposCambioDesde', () => {
         valor: 6.96,
         es_default: true,
         activo: true,
+        en_la_barra: true,
         orden: 0,
         actualizado_en: '2026-10-12T14:00:00+00:00',
         actualizado_por: null,
       },
     ])
-    expect(convertido).toEqual(tipo({ esDefault: true }))
+    expect(convertido).toEqual(tipo({ esDefault: true, enLaBarra: true }))
   })
 })
 

@@ -13,12 +13,13 @@ insert into public.monedas (codigo, nombre, simbolo, decimales, orden) values
   ('BOB', 'Boliviano', 'Bs', 2, 1)
 on conflict do nothing;
 -- Los de las capturas del cotizador actual (`docs/referencias/cotizador-actual.md`: «Of 11,68 · Par 12,20», el unificado en 12,2). La aduana se paga al
--- oficial, y nace con su valor para que un modo «Aduana» tenga de dónde leerlo. Sólo el oficial es el por defecto (uno por par de monedas).
-insert into public.tipos_cambio (clave, nombre, moneda_de, moneda_a, valor, es_default, orden) values
-  ('oficial', 'Oficial', 'USD', 'BOB', 11.68, true, 0),
-  ('paralelo', 'Paralelo', 'USD', 'BOB', 12.20, false, 1),
-  ('unificado', 'Unificado', 'USD', 'BOB', 12.20, false, 2),
-  ('aduana', 'Aduana', 'USD', 'BOB', 11.68, false, 3)
+-- oficial, y nace con su valor para que un modo «Aduana» tenga de dónde leerlo. Sólo el oficial es el por defecto (uno por par de monedas) y el que va
+-- en la barra superior, como deja la migración de «En la barra» en una base con datos.
+insert into public.tipos_cambio (clave, nombre, moneda_de, moneda_a, valor, es_default, orden, en_la_barra) values
+  ('oficial', 'Oficial', 'USD', 'BOB', 11.68, true, 0, true),
+  ('paralelo', 'Paralelo', 'USD', 'BOB', 12.20, false, 1, false),
+  ('unificado', 'Unificado', 'USD', 'BOB', 12.20, false, 2, false),
+  ('aduana', 'Aduana', 'USD', 'BOB', 11.68, false, 3, false)
 on conflict do nothing;
 insert into public.integraciones (clave, activa, config) values
   ('apibara', false, '{"plataformas": ["copart", "iaai"], "endpoint": "https://apibara.tech/api/v1/vehicle-auction"}'),

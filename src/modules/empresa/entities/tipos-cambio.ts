@@ -27,6 +27,8 @@ export type TipoCambio = {
   // El que se usa cuando no se elige otro entre esas dos monedas.
   esDefault: boolean
   activo: boolean
+  // «En la barra»: la empresa lo eligió para verlo en la barra superior (sólo se ve si está activo; hasta 3).
+  enLaBarra: boolean
   // ISO. La versión del tipo de cambio.
   actualizadoEn: string
 }
@@ -62,6 +64,7 @@ export function tiposCambioDesde(filas: readonly Tables<'tipos_cambio'>[]): Tipo
     valor: fila.valor,
     esDefault: fila.es_default,
     activo: fila.activo,
+    enLaBarra: fila.en_la_barra,
     actualizadoEn: fila.actualizado_en,
   }))
 }
