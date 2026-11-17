@@ -257,6 +257,36 @@ begin
 end $$;
 rollback;
 
+-- @test aspecto: unos atajos con `filas: 1.0` (válido: JS lo lee 1) se publican y la hoja los lee como número, sin romperse
+begin;
+do $$
+declare
+  q constant uuid := '00000000-0000-4000-8000-00000000a507';
+  o uuid := pg_temp.asp_origen('asp_filas');
+  s public.formulas := pg_temp.asp_semilla();
+  d jsonb := s.diseno; r jsonb; i int; k int;
+begin
+  perform pg_temp.asp_persona(q, o, array['cotizaciones.configurar', 'cotizaciones.ver', 'cotizaciones.crear', 'cotizaciones.nivel.costos.ver']);
+  for i in 0 .. jsonb_array_length(d -> 'secciones') - 1 loop
+    for k in 0 .. jsonb_array_length(d -> 'secciones' -> i -> 'items') - 1 loop
+      if d -> 'secciones' -> i -> 'items' -> k ->> 'tipo' = 'atajos' then
+        d := jsonb_set(d, array['secciones', i::text, 'items', k::text, 'filas'], '1.0'::jsonb);
+      end if;
+    end loop;
+  end loop;
+  if position('"filas": 1.0' in d::text) = 0 then raise exception 'el diseño no lleva filas 1.0: %', d; end if;
+  r := pg_temp.asp_corre(q, format('select public.formula_guardar_borrador(p_origen => %L, p_def => %L, p_params => %L, p_diseno => %L, p_actualizado_en_esperado => null)',
+                                   o, s.definicion, s.params, d));
+  r := pg_temp.asp_corre(q, format('select to_jsonb(public.formula_publicar(p_origen => %L, p_nota => %L))', o, 'Filas 1.0'));
+  if r ? 'error' then raise exception 'publicar: %', r; end if;
+  r := pg_temp.asp_corre(q, format('select public.cotizacion_hoja(%L)', o));
+  if r ? 'error' then raise exception 'la hoja con filas 1.0 no se lee: %', r; end if;
+  if (select jsonb_array_length(x -> 'chips') from jsonb_path_query(r, 'strict $.secciones[*].items[*] ? (@.tipo == "atajos")') x limit 1) <> 1 then
+    raise exception 'los atajos no traen un chip: %', jsonb_path_query_first(r, 'strict $.secciones[*].items[*] ? (@.tipo == "atajos")');
+  end if;
+end $$;
+rollback;
+
 -- @test aspecto: la hoja de la semilla (subasta_usa) no trae ninguna clave de aspecto: las mismas claves de siempre
 begin;
 do $$

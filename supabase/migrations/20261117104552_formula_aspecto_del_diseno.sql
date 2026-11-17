@@ -10,7 +10,8 @@
 -- `_tonos_del_diseno(diseno)` con su GIN, y publicar toma esos tonos `for key share`. `_cotizacion_hoja()` copia el aspecto que ya tiene en
 -- memoria (ninguna lectura nueva) y suma a `tonos` los de las secciones que dibuja y el de la cabecera.
 --
--- De paso, D58 rechaza unas `filas` negativas de unos atajos, como `z.int().min(1)` de TS (antes la base las dejaba pasar).
+-- De paso, D58 rechaza unas `filas` negativas de unos atajos, como `z.int().min(1)` de TS (antes la base las dejaba pasar), y la hoja lee esas
+-- `filas` como número (`1.0` y `0.99999999999999999` valen, como en JS: con `->> … ::int` el texto `1.0` rompía la lectura de la hoja).
 
 -- ---------------------------------------------------------------------------------------------------------------------------------
 -- La forma
@@ -592,7 +593,7 @@ begin
                || public._hoja_estado(vis.n, true, v_editables ? vis.nid, v_visib -> vis.nid ->> 'editar', v_niveles ->> (v_visib -> vis.nid ->> 'editar'), v_cfg, v_tc)
                || vis.asp
              when 'atajos' then jsonb_build_object('tipo', 'atajos', 'nodo', vis.nid,
-                 'chips', public._hoja_chips(p_origen, fo.params, vis.n, vis.item ->> 'columna', (vis.item ->> 'filas')::int))
+                 'chips', public._hoja_chips(p_origen, fo.params, vis.n, vis.item ->> 'columna', ((vis.item -> 'filas')::numeric)::int))
                || vis.asp
              when 'variante' then jsonb_strip_nulls(jsonb_build_object(
                  'tipo', 'variante', 'nodo', vis.nid, 'etiqueta', vis.n ->> 'etiqueta',
