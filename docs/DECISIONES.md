@@ -374,7 +374,7 @@ las trampas, en `docs/LECCIONES.md`.
 
 - **La unidad en su página va en zonas y el alto lo pone `src/app`.** Con 1440×900 y 1280×800 todo lo importante entra sin desplazar la página: «Qué falta» con mover arriba a la izquierda, las pestañas (Documentos, Transporte, Repuestos, Aduana, Dinero) debajo y notas e historial a la derecha, cada zona con su desplazamiento. La forma (zonas o bloques con la barra «Mover») se elige por el ancho de la **pantalla** (1024 px, `useAlMenos`: el servidor lo adivina por cookie y la hidratación no salta); las dos columnas con alto fijo, por el ancho del **contenedor** (`@container/unidad`, 56 rem): con el texto al 200 % los rem crecen y el arreglo vuelve solo a una columna con alto natural. El alto (`--alto-del-detalle`) lo define la página, no el módulo: el marco sabe cuánto ocupa (`<main>`, la sub-navegación, el `gap`); la cabecera va fuera del cambio de forma.
 - **La zona de cada hueco la dice un solo mapa del núcleo (`ZONA_DEL_HUECO`), junto a `ORDEN_DE_HUECOS`**, no la declaración de cada área: el orden ya es central y la zona es el mismo tipo de dato con la misma clave; así `repuestos` no conoce los nombres de las zonas de `logistica`, y el `Record` obliga a ponerle zona a toda clave nueva. «Dinero» junta gastos, pagos y margen porque caben cinco pestañas a 1280 px y es la palabra de la persona.
-- **`ORDEN_DE_HUECOS` va por lo que más se hace:** qué falta, documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen. Cambia también el orden de los bloques en el celular y en los dos drawers (a propósito).
+- **`ORDEN_DE_HUECOS` va por lo que más se hace:** qué falta, documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen. Cambia también el orden de los bloques en el celular y en el drawer de gastos (a propósito). El panel del ítem tiene su orden propio (`ORDEN_DEL_ITEM`: qué falta, sus bloques, documentos, historial, notas, transporte), con las secciones a la vista.
 - **«Relacionados» en la unidad de logística es una línea de chips** con un popover por grupo (no el bloque de 390 px, que no cabe sin desplazar): sigue «siempre arriba» y lo de cada grupo queda a un toque. Los chips y el popover son de `vehiculos` (`presentacion="linea"`); `logistica` no los conoce.
 - **La pestaña elegida va en `?hueco=`, con `shallow` y `replace`** (como el resumen de `vehiculos`, aunque `ui.md` pida `shallow: false`): el servidor no depende de la pestaña, así que un viaje por pestaña no aporta nada. Cada zona recuerda lo último que eligió porque las dos comparten la clave de la URL.
 - **Subir documentos va en un drawer sólo en las zonas de la página** (`?subir=documentos`, clave propia: `?panel=` cerraría el drawer del ítem de repuesto y una clave aparte convive con `?vehiculo=` e `?item=`): una pestaña con alto fijo no tiene lugar para la bandeja. En los bloques (celular, drawers, ficha del vehículo) la subida sigue en línea: no toca el ítem, la ficha ni sus specs. Un contexto del núcleo (`useEnZonas`) se lo dice al área, sin que el núcleo importe un área.
@@ -476,6 +476,26 @@ las trampas, en `docs/LECCIONES.md`.
 - **Un pago de proyecto se anula con el mismo `pago_anular`** y la clave de confirmar; como cualquier pago vivo cumple `proyecto.pago_cliente`, no se anula ni
   se elimina (`pago_eliminar`) el último mientras un ítem vivo (también en stock) esté en una fase que lo pide. Como confirmar, no mira si el proyecto está cerrado.
 - **La cotización de repuestos se numera con `identity`, con huecos** (no es comprobante). Aceptar copia el unitario a `precio_cliente`; anular no lo revierte.
+- **El proyecto se guía por pasos que salen del flujo de repuestos, no de nombres** (`entities/flujo/pasos.ts`): las fases activas en su orden y, justo antes de
+  la primera fase activa que lo pide (bloqueante o informativo), un hito por clave de requisito: `repuesto.precio` → «Precio al cliente», `proyecto.pago_cliente` →
+  «Pago del cliente». Antes, porque un requisito es lo que la fase pide para entrar. Sin la clave en ninguna fase, el hito no aparece: el progreso no inventa pasos.
+  Descartados: un kanban de ítems por fase (arrastrar está prohibido y duplica la Cadena), pestañas con una barra de progreso (no junta el dinero con su paso ni
+  dice qué sigue) y un asistente por ítem (lento con 20 ítems y rompe la hoja celda a celda).
+- **«Compra registrada» no es un paso**: la base no tiene una clave que la ubique. Un panel cuyo hito el flujo no ubica va en «Del proyecto», al final de los pasos
+  y sin progreso: Compras siempre, Cotizaciones y Pagos si ninguna fase pide su clave (la clave `repuesto.compra` es de la persona, `PENDIENTES`).
+- **El progreso de una fase cuenta los ítems que llegaron**: los que están en ella o en una fase a la que se llega desde ella por salidas hacia adelante (destino de
+  mayor `orden`). Así un ítem «Perdido» no cuenta en «Recibido» y una vuelta atrás no infla el número. El del pago, con `repuestos.costos.ver`, es todos o ninguno
+  (un pago es del proyecto); sin la clave, los que llegaron a la fase que lo pide, sin decir nada del pago.
+- **El siguiente de un ítem sólo cambia de botón por un hito bloqueante** (`siguienteDelItem`): un informativo no frena mover. Destino = la salida hacia adelante más
+  cercana (si no hay, la primera); cada botón pide la clave que la base exige para eso (`repuestos.mover`, `repuestos.cotizar`, `repuestos.costos.editar`) y sin ella
+  se dice «Sigue: «X»». Se calcula en el navegador sobre las filas vivas de la hoja: un precio tecleado cambia el botón y el progreso sin releer nada.
+- **Los paneles conservan `?pestana=`** (`cotizaciones|pagos|compras`) como «el panel abierto bajo los pasos»: los enlaces viejos abren lo mismo y los de un
+  formulario de compra o de pagos sin `?pestana=` redirigen con su panel. La hoja no se desmonta nunca.
+- **El panel del ítem es una variante de logística** (`PanelDeLaUnidadALaVista`), no un cambio de la pieza común: el drawer de `/logistica/gastos?vehiculo=` sigue
+  plegable. El destino ya elegido viaja en `?destino=` y llega a «Qué falta» por un contexto nulo por defecto; los bloques de `repuestos` (imágenes, stock, compras)
+  los compone `src/app`. El stock del bloque sólo enlaza a su panel de la hoja: el formulario cambia la fila sin releerla.
+- **Tras un pago, la página se vuelve a pedir por el evento del dinero** (`useAlCambiarElDineroDelProyecto`): las actions de pagos no revalidan (los lee el
+  navegador), y sin esto la fila seguiría diciendo «Registrar pago».
 
 ## Agenda
 
