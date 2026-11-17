@@ -119,7 +119,10 @@ describe('package.json › el candado de la base', () => {
   })
 
   it('test:e2e construye fuera del candado y le deja a playwright los argumentos', () => {
-    expect(scripts['test:e2e']).toMatch(/next build && .*candado\.sh test:e2e -- playwright test$/)
+    // El build va en scripts/compilar-e2e.sh (repite una vez si Next lo corta con su aviso de seguridad), antes del candado.
+    expect(scripts['test:e2e']).toMatch(
+      /^bash scripts\/compilar-e2e\.sh && .*candado\.sh test:e2e -- playwright test$/,
+    )
   })
 })
 
