@@ -1,6 +1,6 @@
 // Parte del registro de RPC con tamaño de página: «Tareas sin fecha» de la agenda (7.07-3), las secciones del buscador (7.12-2) los grupos de transporte (6.08-3) y el tablero de la cola web (8.04-2). La guarda
 // (`paginas-en-la-base.ts`) suma esta parte a `RPC_PAGINADAS` con `import.meta.glob('./areas-*/paginas-en-la-base.ts')` (`registros-de-carriles.ts`).
-import { POR_SECCION } from '../../../src/modules/buscador/entities/ranking'
+import { CANDIDATOS_PARA_ELEGIR, POR_SECCION } from '../../../src/modules/buscador/entities/ranking'
 import {
   TAMANO_DE_PAGINA_POR_DEFECTO,
   TAMANO_DE_VER_MAS,
@@ -22,6 +22,14 @@ export const REGISTRO: readonly RpcPaginada[] = [
     parametro: 'p_tamano',
     pideElCodigo: POR_SECCION,
     lista: 'buscador, sección leads',
+  },
+  // «Nuevo» de la barra, segundo paso: los candidatos hasta el máximo (20) y, de ellos, los de la cartera.
+  {
+    rpc: 'buscador_leads',
+    parametro: 'p_tamano',
+    pideElCodigo: CANDIDATOS_PARA_ELEGIR,
+    pideMasQueElDefecto: true,
+    lista: 'buscador, elegir un lead de la cartera (Nuevo › seguimiento o recordatorio)',
   },
   {
     rpc: 'buscador_vehiculos',

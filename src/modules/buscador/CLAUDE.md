@@ -6,7 +6,7 @@ Paleta global (Ctrl/Cmd+K) que busca leads, vehículos, cotizaciones y acciones 
 
 - Entra: texto (`MINIMO_DE_BUSQUEDA`: 3 letras o dígitos seguidos, o un número de lead o cotización), atajos de teclado.
 - Sale: `client.ts` (lecturas por sección, `leerUltimosAbiertos()`, `agruparResultados()`, `seccionesQueBuscan()`; `chat` lo usa para las menciones
-  `#`), `shell.client.ts` (`<Buscador>`, montado por `HuecoBuscador` en `src/app/(app)/_shell/huecos/buscador.tsx`), `pantallas/visita.ts`
+  `#`), `shell.client.ts` (`<Buscador>`, montado por `HuecoBuscador` en `src/app/(app)/_shell/huecos/buscador.tsx`, y `<ElegirLead>`, diferido: el segundo paso de «Nuevo» de la barra), `pantallas/visita.ts`
   (`<RegistrarVisita>`).
 - Depende de `leads`, `vehiculos`, `cotizaciones` sólo por la base; de módulos, sólo `interpretarBusqueda()` de `@/modules/leads/client`, que llama
   la feature (no `entities` ni `infra`). No importa `chat`.
@@ -18,6 +18,8 @@ Paleta global (Ctrl/Cmd+K) que busca leads, vehículos, cotizaciones y acciones 
 - `infra/buscar.client.ts` — una lectura por sección con `.abortSignal(signal)`: nunca lanza y con la señal cancelada no pide nada. Registradas en
   `scripts/guardas/areas-b/paginas-en-la-base.ts` (defecto 5, máximo 20). `infra/visitados.client.ts`: 16 visitas propias, cada entidad hidratada bajo
   su RLS; lo que no llega sale sin marcador.
+- `features/elegir-lead/` — «elegir un lead de mi cartera» (seguimiento o recordatorio desde «Nuevo»): `buscarLeadsDeLaCartera()` pide los candidatos de `buscador_leads` hasta el máximo de la base (20), los pasa por `leads_vista_por_ids` con `en_cartera`
+  y muestra 5 («Escribe más» si hay otros); mismo mínimo, misma espera y mismo cancelar que la paleta; un teléfono no se busca.
 - `<RegistrarVisita tipo id />` (Server Action sobre `visita_registrar`, sin DOM, una vez por (tipo, id), sin avisar si falla): lo montan las tres
   fichas **después** de sus salidas «no disponible». La paleta viaja con `diferido()`; los hooks no consultan hasta `abierta`; el layout le pasa las
   acciones ya filtradas por `puede()` (`src/app/(app)/_shell/acciones-de-la-paleta.ts`).

@@ -23,6 +23,9 @@ export type RpcPaginada = {
   parametro: string
   // Lo que el código le pide (un valor de `shared/lib/paginacion.ts`): el máximo de la base no puede ser menor.
   pideElCodigo: number
+  // Una lectura que pide a propósito más que el valor por defecto de la base (hasta su máximo), porque filtra después de leer: el defecto sigue siendo el de la otra
+  // lectura de la misma RPC (la del registro sin esta marca) y el máximo de la base no puede ser menor que `pideElCodigo`.
+  pideMasQueElDefecto?: true
   // Qué lista es, para el mensaje de un fallo.
   lista: string
 }

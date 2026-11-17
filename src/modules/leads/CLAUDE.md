@@ -20,7 +20,7 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   action `completarRecordatorio` (panel `?recordatorio=` de `/agenda`; la RPC exige que sea de quien actúa) y lo puro de la importación de `datos`
   (`prepararFilas`, `preparadorDeFilas` por tramos con el mismo resultado que una pasada, `emparejarColumnas`, `convertir*`, `fecha*`, `usePaises`…):
   la importación total no tiene otras reglas.
-- `shell.ts`: `<AltaDeLead>`, `<ProveedorDeEscribirPorChat>`; `shell.client.ts`: `useAbrirNuevoLead()` (paleta del buscador; no `usePanelDeAlta()`).
+- `shell.ts`: `<AltaDeLead>` (el drawer y la tecla `N`; el botón es «Nuevo» de la barra, `src/app/(app)/_shell/nuevo/`), `<ProveedorDeEscribirPorChat>`; `shell.client.ts`: `useAbrirNuevoLead()` (paleta y «Nuevo»; no `usePanelDeAlta()`) y `rutaDeAccionSobreUnLead()` (la ficha con su modal de seguimiento o recordatorio abierto, a donde «Nuevo» lleva tras elegir un lead).
 - Rutas: `/leads`, `/leads/[id]` (`leads.ver`; `?seccion=datos|seguimientos|vehiculos|oportunidades|cotizaciones|portal`; «Cotizaciones» con
   `cotizaciones.ver` en algún origen, sin mirar la cartera, la compone `src/app` con `cotizaciones/pantallas/lead`), `/leads/papelera`,
   `/leads/importar` (`leads.crear`), `POST /leads/exportar` (`leads.exportar`), `/configuracion/leads` («Campos» y las `lead_campo_*` piden
