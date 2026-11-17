@@ -203,10 +203,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Paleta** — `<Paleta>`, `AccionDeLaPaleta` / `src/modules/buscador`: superposición `Ctrl/Cmd+K` que busca y ejecuta acciones; sin URL; sus
   acciones se ofrecen con `puede()`.
 - **Visto** — `vistos` / `visto_registrar()`, `vistos_de()`, `ProveedorDeMarcasDeVisto`, `MarcasDeVistoDeLaPagina`: un registro que la persona abrió (ficha,
-  resumen o panel) en _ese_ módulo (su contexto: abrir un vehículo en Vehículos no lo marca en Logística); su fila se apaga como un enlace visitado. Por
+  resumen o panel) en _ese_ módulo (su contexto: abrir un vehículo en Vehículos no lo marca en Logística); su nombre va en peso normal; el de lo que aún no abrió (**no visto**, `MarcaDeVisto` `nuevo`) va en negrita, como un
+  correo sin leer; sin marca (con «Vistos» apagado o antes de leer) queda en su peso de siempre. Por
   persona; se recuerda 7, 30, 90 o 365 días (`/perfil` › «Vistos»).
 - **Último visto** — `vistos_de().ultimo` / `<SufijoDeVisto>`: el registro más reciente del módulo, de cualquiera de sus tipos (en la agenda, un evento o una
-  tarea: uno solo); borde de acento y «Último visto» junto al nombre.
+  tarea: uno solo); borde de acento y «Último visto» junto al nombre, en peso normal como lo visto.
 - **Últimos abiertos** — `visitados` / `visita_registrar()`, `visitados_usuario_visto_idx`: lo último que cada persona abrió (lead, vehículo o
   cotización), a lo sumo 50; se lee bajo la RLS de cada entidad.
 - **Míos / Todos** — `?alcance=todos` / `alcanceDelListado()`, `<SelectorDeAlcance>`: modos del listado de leads; «míos» (defecto) = `en_cartera`.

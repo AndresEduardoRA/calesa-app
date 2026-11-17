@@ -13,7 +13,6 @@ import {
 import { completoCon, fichaDeBerta, modalDeExtra, nacional } from './soporte/leads-ficha-telefonos'
 import {
   PROPIO_BERTA,
-  delLead,
   fila,
   irALeads,
   limpiarListado,
@@ -27,7 +26,7 @@ import {
 } from './soporte/leads-telefonos-extra'
 import { capturar } from './soporte/recorrido'
 
-// Los teléfonos extra desde el panel de edición de la ficha y desde el resumen del listado (`?extra=nuevo`: `?panel=` ya es el panel), con
+// Los teléfonos extra desde el panel de edición de la ficha y el resumen del listado (sólo lectura; `?extra=nuevo`: `?panel=` ya es el panel), con
 // el máximo y la regla de la empresa. Capturas: `E2E_CAPTURAS=e2e-capturas/t03`.
 test.describe.configure({ mode: 'serial' })
 
@@ -98,7 +97,7 @@ test('en el panel de edición agrega, quita y deshace un extra, y guardar el for
   expect(await extrasDeLead(lead.id)).toHaveLength(1)
 })
 
-test('desde el resumen agrega un extra, y con el panel encima no se monta un segundo modal', async ({
+test('el resumen sólo lee los teléfonos: «Editar» abre el panel y ahí se agrega un extra; el enlace viejo ?extra=nuevo abre el panel', async ({
   page,
 }, info) => {
   await entrar(page, t.personas.berta)
@@ -108,35 +107,41 @@ test('desde el resumen agrega un extra, y con el panel encima no se monta un seg
   await expect(resumen).toBeVisible()
   await expect(resumen.getByText('Principal', { exact: true })).toBeVisible()
   await capturar(page, info, 'resumen-con-telefonos-extra')
+  // Sin controles de edición de teléfonos en el resumen.
+  await expect(agregarEn(resumen)).toHaveCount(0)
+  await expect(resumen.getByRole('button', { name: 'Quitar' })).toHaveCount(0)
   const antes = await idDeLead(PROPIO_BERTA)
-  // El lead del terreno no guarda su código de país: el número va completo, con «+».
   const numero = `+${completoCon(t, nacional())}`
 
-  await agregarEn(resumen).click()
+  await resumen.getByRole('button', { name: 'Editar', exact: true }).click()
+  const panel = page.getByRole('dialog', { name: `Editar ${nombre(PROPIO_BERTA)}` })
+  await expect(panel).toBeVisible()
+  await agregarEn(panel).click()
   await expect(page).toHaveURL(/extra=nuevo/)
   const modal = modalDeExtra(page)
+  await expect(modal).toHaveCount(1)
   await modal.getByLabel('Teléfono extra').fill(numero)
   await modal.getByLabel('Etiqueta (opcional)').fill('Oficina')
   await page.keyboard.press('Enter')
   await expect(page.getByText('Teléfono agregado.')).toBeVisible()
   await expect(modal).toHaveCount(0)
-  await expect(resumen.getByText('Oficina', { exact: true })).toBeVisible()
   expect(await extrasDeLead(antes)).toMatchObject([{ etiqueta: 'Oficina' }])
+  await panel.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(panelDeEdicion(page)).toBeHidden()
+  await expect(resumen.getByText('Oficina', { exact: true })).toBeVisible()
+  await expect(agregarEn(resumen)).toHaveCount(0)
+  await expect(resumen.getByRole('button', { name: 'Quitar' })).toHaveCount(0)
 
-  // Con «Editar» abierto encima, «Agregar teléfono» del panel abre un solo modal.
-  await resumen.getByRole('button', { name: 'Editar', exact: true }).click()
-  const panel = page.getByRole('dialog', { name: `Editar ${nombre(PROPIO_BERTA)}` })
-  await expect(panel).toBeVisible()
-  await agregarEn(panel).click()
+  // El enlace de antes (`?lead=<id>&extra=nuevo`) abre el panel de edición con el modal del extra.
+  await page.goto(`/leads?lead=${antes}&extra=nuevo`)
+  await expect(page.getByRole('dialog', { name: `Editar ${nombre(PROPIO_BERTA)}` })).toBeVisible()
   await expect(modalDeExtra(page)).toHaveCount(1)
   await page.keyboard.press('Escape')
   await expect(modalDeExtra(page)).toHaveCount(0)
-  await panel.getByRole('button', { name: 'Cancelar' }).click()
-  await expect(panelDeEdicion(page)).toBeHidden()
-  await expect(delLead(page, PROPIO_BERTA)).toBeVisible()
 
   // Se deja como estaba.
-  await resumen.getByRole('button', { name: 'Quitar' }).click()
+  const panelDeNuevo = page.getByRole('dialog', { name: `Editar ${nombre(PROPIO_BERTA)}` })
+  await panelDeNuevo.getByRole('button', { name: 'Quitar' }).click()
   await expect(page.getByText('Teléfono quitado.')).toBeVisible()
   expect(await extrasDeLead(antes)).toEqual([])
 })

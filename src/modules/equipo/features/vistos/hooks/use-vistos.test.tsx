@@ -84,3 +84,53 @@ describe('useVistos', () => {
     })
   })
 })
+
+describe('useVistos: lo no visto', () => {
+  beforeEach(() => {
+    pedidos.leerVistosAlUsar.mockReset()
+    pedidos.registrarVistoAlUsar.mockReset()
+    pedidos.registrarVistoAlUsar.mockResolvedValue(undefined)
+  })
+
+  it('lo que la lectura cubre y no se abrió es «nuevo»; antes de leer o al fallar, sin marca', async () => {
+    let llegar: (lectura: LecturaDeVistos) => void = () => undefined
+    pedidos.leerVistosAlUsar.mockReturnValue(
+      new Promise<LecturaDeVistos>((resolver) => {
+        llegar = resolver
+      }),
+    )
+    const { result } = renderHook(() => useVistos('leads', [{ tipo: 'lead', ids: [A, B] }]), {
+      wrapper: conPreferencia(),
+    })
+    expect(result.current.marca(A)).toBeNull()
+    await act(async () => {
+      llegar({ vistos: new Set([A]), ultimo: null })
+      await Promise.resolve()
+    })
+    await waitFor(() => {
+      expect(result.current.marca(A)).toBe('visto')
+    })
+    expect(result.current.marca(B)).toBe('nuevo')
+    // Un id que no se pidió (pasó el tope) no se sabe: sin marca.
+    expect(result.current.marca('otro')).toBeNull()
+    act(() => {
+      result.current.abrir('lead', B)
+    })
+    expect(result.current.marca(B)).toBe('ultimo')
+    expect(result.current.marca(A)).toBe('visto')
+  })
+
+  it('otra página no hereda lo «nuevo» de la anterior hasta que llega su lectura', async () => {
+    pedidos.leerVistosAlUsar.mockResolvedValueOnce({ vistos: new Set(), ultimo: null })
+    const { result, rerender } = renderHook(
+      ({ ids }: { ids: string[] }) => useVistos('leads', [{ tipo: 'lead', ids }]),
+      { wrapper: conPreferencia(), initialProps: { ids: [A] } },
+    )
+    await waitFor(() => {
+      expect(result.current.marca(A)).toBe('nuevo')
+    })
+    pedidos.leerVistosAlUsar.mockReturnValueOnce(new Promise(() => undefined))
+    rerender({ ids: [B] })
+    expect(result.current.marca(B)).toBeNull()
+  })
+})

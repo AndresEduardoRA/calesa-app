@@ -44,9 +44,9 @@ export function ChipEvento({ entrada, zona }: Props) {
   const visto = useVistoDeLista(entrada.id)
   const contenido = (
     <>
-      {visto === null ? null : (
+      {visto === 'visto' || visto === 'ultimo' ? (
         <CheckIcon aria-hidden className="mr-1 inline size-3.5 align-text-bottom" />
-      )}
+      ) : null}
       <span className="font-semibold">{clase.nombre}</span>{' '}
       <HoraDelChip entrada={entrada} zona={zona} />{' '}
       <span className={entrada.hecha ? 'line-through' : undefined}>{entrada.titulo}</span>

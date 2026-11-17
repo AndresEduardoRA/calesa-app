@@ -189,7 +189,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   equipo; `/auth/nueva-contrasena` tras el enlace del correo.
 - **Inicio** — `/` (todos): bandeja por rol + widgets opcionales; bloques por permiso; cada contador lleva a la lista filtrada. «Turnos de
   la web sin confirmar» (`leads.crear` o `web.cola.gestionar`: mis turnos con código, fuente y «Vence en…», «Contacté» en un toque y
-  «Vincular a lead»), «Repuestos por mover» (`repuestos.mover`) y «Esperas que destraban vehículos» (`repuestos.ver`).
+  «Vincular a lead»), «Documentos por aprobar» (`logistica.documentos.aprobar`: sólo los de vehículos), «Repuestos por mover» (`repuestos.mover`) y
+  «Esperas que destraban vehículos» (`repuestos.ver`). Cada bloque, con su `<Suspense>` y su límite de error: si falla (al leer o al dibujar), sólo ése
+  dice el error con «Reintentar». Sin ningún bloque: «Tu rol todavía no tiene trabajo en la bandeja», con los bloques que existen y a quién pedir
+  acceso; sin rol, «Aún no tienes un rol, avisa al dueño».
 - **Leads** — `/leads` (`leads.ver`): tabla + resumen. «Míos» por defecto; con alcance «todos», `?alcance=`. Filtros del layout
   (`a.<campo>`), tipo, origen, `?q=`, `?cursor=`, vistas guardadas; resumen `?lead=` (`?pestana=seguimientos|recordatorios`); marcas
   `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo»: `?vista=embudo&embudo=<id>` es el kanban de las
@@ -390,9 +393,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Fotos:** toda foto de una entidad abre el visor (`?visor=`) con ← →, Esc, «3 de 12» y miniaturas; la cabecera de la ficha y la del resumen
   del vehículo llevan el carrusel en su lugar (flechas, puntos y gesto). Las galerías («Fotos» del resumen, imágenes de un ítem) abren el visor en la foto tocada.
 - **Vistos:** en las listas de vehículos, leads (lista y kanban), cotizaciones, proyectos de repuestos, los chips de la agenda y las de logística (bandeja del
-  día, fase, «dónde está», gastos y pagos, unidades de un grupo), lo que la persona abrió en ese módulo se apaga como un enlace visitado y lo último lleva
-  borde de acento y «Último visto». En el chip de la agenda, «visto» lleva una tilde (y el texto para el lector): el fondo es de la clase y apagarlo rompería el
-  contraste. Aduana y las notificaciones no marcan. `/perfil` › «Vistos»: marcar o no, recordar 7, 30, 90 días o 1 año, marcar o no el último.
+  día, fase, «dónde está», gastos y pagos, unidades de un grupo), como en un correo, el nombre de lo que no se abrió en ese módulo va en **negrita** y el de lo ya
+  abierto en peso normal; lo último lleva además borde de acento y «Último visto» (y también va en peso normal). «Visto» se dice con texto para el lector: nada
+  depende sólo del peso. Con «Vistos» apagado, o sin saber aún qué se abrió, ninguna lista pone negrita por esto. En el chip de la agenda, «visto» lleva una
+  tilde (y el texto para el lector) y lo nuevo no lleva nada: el fondo es de la clase y su etiqueta ya va en negrita, así que el peso no se distingue. Aduana y las notificaciones no marcan. `/perfil` › «Vistos»: marcar o no, recordar 7, 30, 90 días o 1 año, marcar o no el último.
 - **Avisos con acciones:** un aviso de error, advertencia o bloqueo que tiene salida la ofrece ahí mismo (de 1 a 3, la que destraba primero;
   sin permiso, a quién pedírselo) — `.claude/rules/ui.md` › «Avisos con acciones».
 - **Fechas de subasta:** en la zona de quien mira (`/perfil` › «Zona horaria»; sin elegir, la de la empresa), con la abreviatura («14:00
@@ -1097,7 +1101,7 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
 - **Teléfonos de la ficha:** los extras se editan con la cartera y `leads.telefonos_extra.editar`; el principal, con la cartera y
   `leads.editar`; si no, enmascarados y sin botones. «Cambiar el principal» (`?panel=cambiar-telefono`): el actual pasa a extra «Anterior»; el
   nuevo se verifica al tipear y uno existente, ajeno o el mismo deshabilitan el botón con su frase. Extras (`?panel=agregar-telefono` en la
-  ficha, `?extra=nuevo` dentro del panel de edición y del resumen del listado; hasta el máximo de la empresa, 6 de fábrica): número con país y
+  ficha, `?extra=nuevo` dentro del panel de edición, que también abre un `?lead=<id>&extra=nuevo`; el resumen del listado los muestra sólo para leer; hasta el máximo de la empresa, 6 de fábrica): número con país y
   etiqueta ≤ 40, «Quitar» con «Deshacer». El número se verifica al tipear: con «Los teléfonos extra cuentan como el principal» un número
   de otro lead bloquea (con «Ver ese lead» si lo ve); sin ella, avisa. Con el máximo alcanzado «Agregar» se apaga con su frase; con más del
   máximo, «quita K para agregar otro» y, con `leads.configurar`, «Cambiar el máximo».
