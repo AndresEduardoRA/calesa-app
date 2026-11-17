@@ -5840,6 +5840,7 @@ export type Database = {
           actualizado_en: string
           actualizado_por: string | null
           clave: string
+          en_la_barra: boolean
           es_default: boolean
           id: string
           moneda_a: string
@@ -5854,6 +5855,7 @@ export type Database = {
           actualizado_en?: string
           actualizado_por?: string | null
           clave: string
+          en_la_barra?: boolean
           es_default?: boolean
           id?: string
           moneda_a: string
@@ -5867,6 +5869,7 @@ export type Database = {
           actualizado_en?: string
           actualizado_por?: string | null
           clave?: string
+          en_la_barra?: boolean
           es_default?: boolean
           id?: string
           moneda_a?: string
@@ -11335,6 +11338,7 @@ export type Database = {
         Args: {
           p_activo?: boolean
           p_actualizado_en_esperado: string
+          p_en_la_barra?: boolean
           p_es_default?: boolean
           p_id: string
           p_nombre?: string
@@ -11389,6 +11393,20 @@ export type Database = {
       tipo_seguimiento_mover: {
         Args: { p_actualizado_en_esperado: string; p_despues_de?: string; p_id: string }
         Returns: Json
+      }
+      tipos_cambio_vigentes: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          actualizado_en: string
+          actualizado_por: string
+          id: string
+          moneda_a: string
+          moneda_de: string
+          nombre: string
+          valor: number
+          valor_cambiado_en: string
+          valor_cambiado_por: string
+        }[]
       }
       tipos_documento_con_uso: {
         Args: { p_flujo: string }

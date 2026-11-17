@@ -3,8 +3,12 @@ import {
   claveDeTipoCambio,
   decimalesDeValor,
   historialDesde,
+  motivoParaNoMarcar,
+  paraLaBarra,
   textoParaEditar,
   tiposCambioDesde,
+  tiposEnLaBarra,
+  TOPE_EN_LA_BARRA,
   VALOR_INVALIDO,
   valorTipeado,
   vigentes,
@@ -21,6 +25,7 @@ function tipo(datos: Partial<TipoCambio>): TipoCambio {
     valor: 6.96,
     esDefault: false,
     activo: true,
+    enLaBarra: false,
     actualizadoEn: '2026-10-12T14:00:00+00:00',
     ...datos,
   }
@@ -38,12 +43,13 @@ describe('tiposCambioDesde', () => {
         valor: 6.96,
         es_default: true,
         activo: true,
+        en_la_barra: true,
         orden: 0,
         actualizado_en: '2026-10-12T14:00:00+00:00',
         actualizado_por: null,
       },
     ])
-    expect(convertido).toEqual(tipo({ esDefault: true }))
+    expect(convertido).toEqual(tipo({ esDefault: true, enLaBarra: true }))
   })
 })
 
@@ -96,6 +102,92 @@ describe('vigentes', () => {
     const lista = [tipo({ id: '1' }), tipo({ id: '2', esDefault: true })]
     vigentes(lista)
     expect(lista.map((uno) => uno.id)).toEqual(['1', '2'])
+  })
+})
+
+describe('tiposEnLaBarra', () => {
+  const claves = (lista: TipoCambio[]) => tiposEnLaBarra(lista).map((uno) => uno.clave)
+
+  it('muestra los activos marcados, con el por defecto adelante y el resto en su orden', () => {
+    const lista = [
+      tipo({ id: '1', clave: 'banco' }),
+      tipo({ id: '2', clave: 'paralelo', enLaBarra: true }),
+      tipo({ id: '3', clave: 'oficial', esDefault: true, enLaBarra: true }),
+    ]
+    expect(claves(lista)).toEqual(['oficial', 'paralelo'])
+  })
+
+  it('sin ninguno marcado muestra el por defecto: la barra nunca queda vacía', () => {
+    const lista = [
+      tipo({ id: '1', clave: 'banco' }),
+      tipo({ id: '2', clave: 'oficial', esDefault: true }),
+    ]
+    expect(claves(lista)).toEqual(['oficial'])
+  })
+
+  it('un marcado inactivo no se ve, y si era el único vuelve el por defecto', () => {
+    const lista = [
+      tipo({ id: '1', clave: 'oficial', esDefault: true }),
+      tipo({ id: '2', clave: 'viejo', activo: false, enLaBarra: true }),
+    ]
+    expect(claves(lista)).toEqual(['oficial'])
+  })
+
+  it('con más marcados que el tope (al reactivar uno) corta en el tope', () => {
+    const lista = ['a', 'b', 'c', 'd'].map((clave) => tipo({ id: clave, clave, enLaBarra: true }))
+    expect(claves(lista)).toEqual(['a', 'b', 'c'].slice(0, TOPE_EN_LA_BARRA))
+  })
+
+  it('sin activos no hay nada que mostrar', () => {
+    expect(tiposEnLaBarra([tipo({ activo: false, enLaBarra: true })])).toEqual([])
+  })
+
+  it('no modifica la lista que recibe', () => {
+    const lista = [
+      tipo({ id: '1', enLaBarra: true }),
+      tipo({ id: '2', esDefault: true, enLaBarra: true }),
+    ]
+    tiposEnLaBarra(lista)
+    expect(lista.map((uno) => uno.id)).toEqual(['1', '2'])
+  })
+
+  it('a la barra viaja sólo lo que se dibuja', () => {
+    expect(paraLaBarra([tipo({ id: 'x', esDefault: true })])).toEqual([
+      { id: 'x', nombre: 'Oficial', monedaA: 'BOB', valor: 6.96 },
+    ])
+  })
+})
+
+describe('motivoParaNoMarcar', () => {
+  const marcados = ['a', 'b', 'c'].map((id) => tipo({ id, enLaBarra: true }))
+
+  it('un inactivo no se suma, según lo que dice el formulario', () => {
+    const libre = tipo({ id: 'x', activo: false })
+    expect(motivoParaNoMarcar({ tipo: libre, activo: false, tipos: [libre] })).toBe('inactivo')
+    expect(motivoParaNoMarcar({ tipo: libre, activo: true, tipos: [libre] })).toBeNull()
+  })
+
+  it('con el tope lleno de activos no se suma otro', () => {
+    const libre = tipo({ id: 'x' })
+    expect(motivoParaNoMarcar({ tipo: libre, activo: true, tipos: [...marcados, libre] })).toBe(
+      'tope',
+    )
+  })
+
+  it('uno ya marcado siempre se puede quitar', () => {
+    const [primero] = marcados
+    if (!primero) throw new Error('falta el primero')
+    expect(motivoParaNoMarcar({ tipo: primero, activo: false, tipos: marcados })).toBeNull()
+  })
+
+  it('un marcado inactivo no cuenta para el tope', () => {
+    const libre = tipo({ id: 'x' })
+    const conUnoInactivo = [
+      ...marcados.slice(0, 2),
+      tipo({ id: 'z', activo: false, enLaBarra: true }),
+      libre,
+    ]
+    expect(motivoParaNoMarcar({ tipo: libre, activo: true, tipos: conUnoInactivo })).toBeNull()
   })
 })
 

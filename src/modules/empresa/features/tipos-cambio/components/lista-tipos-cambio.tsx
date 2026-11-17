@@ -4,7 +4,7 @@ import { PlusIcon } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
-import type { TipoCambio } from '../../../entities/tipos-cambio'
+import { tiposEnLaBarra, TOPE_EN_LA_BARRA, type TipoCambio } from '../../../entities/tipos-cambio'
 import { ValorDeCambio } from './valor-de-cambio'
 
 type Props = {
@@ -14,8 +14,8 @@ type Props = {
   alCrear: () => void
 }
 
-// Los tipos de cambio, cada uno con su valor vigente. Tocar uno abre su panel: ahí se cambia el
-// valor y se ve su historial.
+// Los tipos de cambio, cada uno con su valor vigente y «En la barra» si se ve en la barra superior. Tocar uno abre su panel: ahí se
+// cambia el valor, se elige si va en la barra y se ve su historial.
 export function ListaTiposCambio({ tipos, puedeGestionar, alAbrir, alCrear }: Props) {
   const nuevo = puedeGestionar ? (
     <Button variant="outline" className="h-11 md:h-8" onClick={alCrear}>
@@ -23,6 +23,12 @@ export function ListaTiposCambio({ tipos, puedeGestionar, alAbrir, alCrear }: Pr
       Nuevo tipo de cambio
     </Button>
   ) : null
+  // Sólo los marcados que la barra muestra: un marcado inactivo no se ve, y el por defecto que se ve sin ninguno marcado no lleva la marca.
+  const enLaBarra = new Set(
+    tiposEnLaBarra(tipos)
+      .filter((tipo) => tipo.enLaBarra)
+      .map((tipo) => tipo.id),
+  )
 
   return (
     <section aria-labelledby="tipos-cambio-titulo" className="grid gap-3">
@@ -35,6 +41,12 @@ export function ListaTiposCambio({ tipos, puedeGestionar, alAbrir, alCrear }: Pr
         </h2>
         {tipos.length > 0 ? nuevo : null}
       </div>
+      {tipos.length > 0 ? (
+        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
+          En la barra superior se ven hasta {TOPE_EN_LA_BARRA}: los que tienen «En la barra». Sin
+          ninguno, se ve el por defecto.
+        </p>
+      ) : null}
       {tipos.length === 0 ? (
         <EstadoVacio
           compacto
@@ -58,6 +70,7 @@ export function ListaTiposCambio({ tipos, puedeGestionar, alAbrir, alCrear }: Pr
                     {tipo.nombre}
                   </span>
                   {tipo.esDefault ? <Badge variant="secondary">Por defecto</Badge> : null}
+                  {enLaBarra.has(tipo.id) ? <Badge variant="outline">En la barra</Badge> : null}
                   {tipo.activo ? null : <Badge variant="outline">Inactivo</Badge>}
                 </span>
                 {/* Si no cabe al lado del nombre baja a otra línea, a la derecha: antes apretaba el nombre hasta «O…» (5a-18). */}

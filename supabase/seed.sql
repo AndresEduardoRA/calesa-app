@@ -20,6 +20,9 @@ insert into public.tipos_cambio (clave, nombre, moneda_de, moneda_a, valor, es_d
   ('unificado', 'Unificado', 'USD', 'BOB', 12.20, false, 2),
   ('aduana', 'Aduana', 'USD', 'BOB', 11.68, false, 3)
 on conflict do nothing;
+-- El oficial va en la barra superior, como deja la migración de «En la barra» en una base con datos. Aparte del insert: `semilla-lectura.ts`
+-- (cotizaciones) lee esas tuplas con su forma.
+update public.tipos_cambio set en_la_barra = true where clave = 'oficial';
 insert into public.integraciones (clave, activa, config) values
   ('apibara', false, '{"plataformas": ["copart", "iaai"], "endpoint": "https://apibara.tech/api/v1/vehicle-auction"}'),
   ('push_web', false, '{}'),

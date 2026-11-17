@@ -1,11 +1,13 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { Aviso } from './aviso'
 import { Button, buttonVariants } from './button'
 
 type Props = {
-  // Lo dice la base: «Rosa Mamani cambió este vehículo hace 3 min.»
-  mensaje: string
+  // Lo dice la base: «Rosa Mamani cambió este vehículo hace 3 min.» O lo arma la pantalla, si lleva un monto: va por <Monto>, nunca escrito
+  // por la base (el Modo Live lo oculta).
+  mensaje: ReactNode
   // Dónde ver cómo quedó. Se abre en otra pestaña: lo escrito acá no se pierde.
   hrefVer?: string
   // Toma la versión nueva. Por defecto lo que la persona había escrito se descarta.

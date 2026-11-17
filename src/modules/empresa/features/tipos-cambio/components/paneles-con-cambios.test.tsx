@@ -42,6 +42,7 @@ const oficial: TipoCambio = {
   valor: 6.96,
   esDefault: false,
   activo: true,
+  enLaBarra: false,
   actualizadoEn: '2026-10-17T10:00:00.000Z',
 }
 
@@ -61,6 +62,7 @@ describe('PanelTipoCambio', () => {
     render(
       <PanelTipoCambio
         tipo={oficial}
+        tipos={[oficial]}
         historial={[]}
         puedeGestionar={puedeGestionar}
         ediciones={ediciones}

@@ -35,6 +35,8 @@ export const esquemaGuardarTipoCambio = z.object({
   valor: valor.optional(),
   activo: z.boolean().optional(),
   esDefault: z.literal(true).optional(),
+  // «En la barra superior»: marcar o quitar. La base exige que esté activo y el tope de 3.
+  enLaBarra: z.boolean().optional(),
 })
 
 export type EntradaDeGuardarTipoCambio = z.input<typeof esquemaGuardarTipoCambio>

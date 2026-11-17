@@ -525,8 +525,12 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - El marco (shell): en el JS de toda pantalla viajan el botón de la burbuja del chat, `usePathname`, el store del contador y
   `useAlDescansar`; el cliente de Supabase, la suscripción, el panel, la lista, el hilo y el redactor van con `diferido()`. La campana: su
   contador con Realtime y su popover van con `diferido()` (sin eso `/cotizaciones` subía ≈ 66 KB). Una `chat_no_leidos` al montar y otra por
-  ráfaga de señales (≥ 250 ms).
-- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 119 KB (113,3 con «Vistos») (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
+  ráfaga de señales (≥ 250 ms). Los tipos de cambio de la barra: en frío sólo el botón con los de la barra (≤ 3, `{id, nombre, monedaA, valor}`
+  como props: de la misma lectura por request); el contenido del popover (la lectura con supabase-js, el editor y la action) va con
+  `diferido()` y su código se adelanta al pasar el puntero. Al abrirlo, una `tipos_cambio_vigentes()` de ≤ 31 filas (un `limit 1` por tipo
+  sobre `tipos_cambio_historial_tipo_idx` y dos búsquedas por `perfiles_pkey`), sin caché; tras guardar se relee sin esqueleto. Es una
+  tabla de configuración: sin medición de volumen.
+- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 119 KB (medido: 115,2, 117.971 B) (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
   semilla y con 100 + 100 + 100 catálogos (± 1 KB): lo paga toda pantalla del marco. Las ≈ 30 acciones de la paleta viajan como props del
   hueco del buscador; el formulario de «Tu ficha en la web» se monta y se pide con `diferido()` al abrirla. El layout `(app)` no manda
   catálogos al alta: `<AltaDeLead>` no recibe nada y los lee del navegador (`infra/contexto-de-alta.client.ts`, memoria de 60 s en

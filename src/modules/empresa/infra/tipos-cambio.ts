@@ -31,6 +31,7 @@ const guardar: RepositorioTiposCambio['guardar'] = async (pedido) => {
     p_valor: pedido.valor,
     p_activo: pedido.activo,
     p_es_default: pedido.esDefault,
+    p_en_la_barra: pedido.enLaBarra,
   })
   if (error) {
     return { ok: false, error: errorDePostgrest(error) }

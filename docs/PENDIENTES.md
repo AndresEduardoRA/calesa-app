@@ -193,6 +193,9 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Al 200 % la burbuja del chat puede tapar la última línea de una página.
 - **[—]** Las 200 compras por proyecto llevan `<AvisoDeTope>` sin camino a lo antiguo — filtro por fecha si aparece.
 - **[—]** En un campo privado de cartera, los avisos de rango y de opciones que sacas cuentan sólo los leads de tu cartera y no lo dicen (`resumenDeImpacto` de leads).
+- **[T28]** A 412 px «+ Nuevo» de la barra tapa la palabra «Buscar» del buscador (cede su ancho con `min-w-0` sin cortar el texto), también con un solo tipo de cambio.
+- **[—]** En escritorio con el texto al 200 % la barra mide menos de 24 rem y el tipo de cambio no se dibuja; el menú que lo trae es sólo del celular (`md:hidden`): no queda a mano.
+- **[T29]** El `PT409` del panel de un tipo de cambio en Configuración dice el texto de la base, sin quién ni a cuánto: el popover de la barra ya lo arma con `conflictoDeValor()` y `tipos_cambio_vigentes()`.
 
 ## Fuera de alcance
 

@@ -173,12 +173,40 @@ export async function restaurarEmpresa(instantanea?: InstantaneaDeEmpresa): Prom
   }
 }
 
-// Los de supabase/seed.sql (los de las capturas del cotizador): el oficial es el único por defecto.
+// Los de supabase/seed.sql (los de las capturas del cotizador): el oficial es el único por defecto y el único en la barra superior.
 const TIPOS_DE_CAMBIO_DEL_SEED = [
-  { clave: 'paralelo', nombre: 'Paralelo', valor: 12.2, es_default: false, orden: 1 },
-  { clave: 'unificado', nombre: 'Unificado', valor: 12.2, es_default: false, orden: 2 },
-  { clave: 'aduana', nombre: 'Aduana', valor: 11.68, es_default: false, orden: 3 },
-  { clave: 'oficial', nombre: 'Oficial', valor: 11.68, es_default: true, orden: 0 },
+  {
+    clave: 'paralelo',
+    nombre: 'Paralelo',
+    valor: 12.2,
+    es_default: false,
+    orden: 1,
+    en_la_barra: false,
+  },
+  {
+    clave: 'unificado',
+    nombre: 'Unificado',
+    valor: 12.2,
+    es_default: false,
+    orden: 2,
+    en_la_barra: false,
+  },
+  {
+    clave: 'aduana',
+    nombre: 'Aduana',
+    valor: 11.68,
+    es_default: false,
+    orden: 3,
+    en_la_barra: false,
+  },
+  {
+    clave: 'oficial',
+    nombre: 'Oficial',
+    valor: 11.68,
+    es_default: true,
+    orden: 0,
+    en_la_barra: true,
+  },
 ] as const
 
 async function dejarTiposDeCambioComoElSeed(): Promise<void> {

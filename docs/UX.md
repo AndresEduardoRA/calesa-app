@@ -449,7 +449,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   el modal de anotar o agendar; **Evento** y **Tarea** (siempre: para uno mismo no piden permiso) → `/agenda?panel=nuevo-evento|nueva-tarea`. El modal abre con «Lead» enfocado (con
   flechas y Tab se recorre; Intro elige); elegir cierra el modal y abre la puerta (un modal nunca abre otro). Con una sola opción el botón la abre directo. Sin nada que crear no hay
   botón. En el celular mide 44 px, con sólo el icono si la barra mide menos de 24 rem. Estados del paso del lead: bajo el mínimo, la pista; «Buscando…»; sin resultados («Sólo se ofrecen los de
-  tu cartera»); error y sin conexión con «Reintentar». Lo recibe el layout como claves, no como permisos. La paleta conserva «Nuevo lead», «Nuevo vehículo» y «Nueva cotización». Tipo de cambio por defecto a la vista y, al abrirlo, los vigentes con su último cambio (Modo Live lo oculta). En el
+  tu cartera»); error y sin conexión con «Reintentar». Lo recibe el layout como claves, no como permisos. La paleta conserva «Nuevo lead», «Nuevo vehículo» y «Nueva cotización».
+  Tipos de cambio: a la vista los que la empresa eligió («En la barra», hasta 3; sin ninguno, el por defecto): el primero siempre y los
+  demás desde 56 rem de barra; por debajo, y en la copia del menú, el primero y «+N» en la esquina (no ensancha la barra). Al abrirlo, todos
+  los vigentes con quién y cuándo cambió el valor por última vez (nunca el correo) y, para quien gestiona los tipos de cambio, el lápiz
+  «Cambiar el valor de <nombre>»: Enter guarda, Esc cancela, el motivo junto al campo; con algo escrito el popover no se cierra al tocar
+  afuera; sin red, lo escrito queda y se guarda al volver; un `PT409` dice «<Nombre> lo cambió a <monto> hace N minutos» con «Recargar».
+  Con el Modo Live, cifras ocultas y sin lápiz. Al pie, «Configurar los tipos de cambio» (quien gestiona). En el
   celular menú, Live y avatar miden 44 px y la barra cabe al 200 %; el tipo de cambio sólo se dibuja con 24 rem o más. El botón «Buscar»
   (44 px) abre la paleta (`Ctrl/Cmd+K`) y la campana trae los avisos; el widget del chat flota fuera de `/chat` y no va en la barra.
 - **Permisos en UI**: ocultar lo que nunca va a usar; deshabilitar con motivo lo que espera poder hacer (**dominancia**: lo que no puede dar
@@ -482,7 +488,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   con el motivo arriba; sin ninguno, «sin permiso».
 - **Empresa:** un «Guardar». Color sin contraste, logo inválido y moneda base con datos: motivo junto al campo. Sin conexión, lo tipeado
   queda y se repone con «Descartar».
-- **Tipos de cambio:** cada uno abre su panel con el valor listo y su historial. El por defecto no se desactiva; nada se borra.
+- **Tipos de cambio:** cada uno abre su panel con el valor listo y su historial. El por defecto no se desactiva; nada se borra. El
+  interruptor «En la barra superior» va en el mismo «Guardar»: apagado con su motivo si el tipo está inactivo o ya hay 3 («quita uno para
+  sumar este»); quitarlo siempre se puede; sin ninguno marcado, avisa que la barra muestra el por defecto. La lista dice el tope y lleva
+  el badge «En la barra» en los que se ven.
   **Integraciones:** apibara no se activa sin su clave, que nunca se muestra («Reemplazar»).
 
 ### Vehículos (estados propios)
