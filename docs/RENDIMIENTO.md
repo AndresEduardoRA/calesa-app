@@ -326,7 +326,8 @@ Elige 10, 25, 50 o 100 (`listas.por_pagina`, `?por=`); cada lista declara su má
 `e2e/listas-por-pagina-volumen.spec.ts` (bytes, nodos, página profunda). En el celular el selector va arriba de la lista y se dibuja una sola
 vista (`UnaSolaVista`, según el `user-agent`).
 
-- Listado de leads: 100; ≤ 3.600 nodos en escritorio y 3.500 en celular con filas sin seguimientos (`leads-escala.spec.ts` con `?por=100`; 2.200 con 50); con
+- Listado de leads: 100; ≤ 3.610 nodos en escritorio y 3.070 en celular con filas sin seguimientos (`leads-escala.spec.ts` con `?por=100`: 3.435 y 2.920 medidos; 2.100 y 1.810 con 50:
+  1.985 y 1.720 medidos). La fila no lleva un botón «+ Oportunidad» (5 nodos por fila de la tabla y 3 por tarjeta): «Nueva oportunidad…» es una línea del «⋯»; con
   las 100 filas llenas de la siembra, ≤ 4.650 nodos y 55.500 B gz (`listas-por-pagina-volumen.spec.ts`). Las columnas «Último seguimiento» y «Recordatorio» pesan
   ~7 nodos y ~70 B comprimidos por fila llena (100 filas llenas: 4.035 nodos y 52,9 KB en escritorio; 4.419 nodos y 51,2 KB en celular). Es lo que el listado
   dice de cada lead; bajarlo pide un máximo de 50 por página.
@@ -401,7 +402,11 @@ vista (`UnaSolaVista`, según el `user-agent`).
 - Lo medido se arma en una transacción que se revierte: `session_replication_role = replica`, 195.000 vehículos con la fase 3 en 15.000 y después 105.000 más a ella (sumar y no mover: mover deja filas
   muertas en los índices y cambia lo que se mide).
 - JS en frío (`e2e/presupuesto-js.spec.ts`): `/logistica` ≤ 390 KB (medido 365,0 en 26 chunks; el kanban marcaba 401,0) y `/logistica/fase/[fase]` ≤ 390 KB (medido 367,0 en 27 chunks): sobre lo medido más un 5 %, a la decena.
-- JS en frío del detalle de un vehículo (`/logistica/vehiculo/[id]`): ≤ 470 KB (medido 438,9 en 28 chunks antes de las zonas y 442,3 en 27 después: las zonas, `PestanasDelResumen` y el carrusel de la portada cuestan ≈ 3,4 KB; el popover de relacionados y cada hueco van con `diferido()`), sobre lo medido más un 5 %, a la decena.
+- JS en frío del detalle de un vehículo (`/logistica/vehiculo/[id]`): ≤ 470 KB (medido 438,9 en 28 chunks antes de las zonas y 442,3 en 27 después: las zonas, `PestanasDelResumen` y el carrusel de la portada cuestan ≈ 3,4 KB; el popover de relacionados y cada hueco van con `diferido()`), sobre lo medido más un 5 %, a la decena. Con las acciones de «Qué falta», 442,5 (el proveedor de la página y los botones; el modal «Pedírselo a alguien» va con `diferido()`).
+- **Acciones de «Qué falta»** (`/logistica/vehiculo/[id]`): sin lectura nueva; viajan en la respuesta de la action de siempre (≈ 150 a 250 B por falta) y
+  `por_revisar` sale del mismo `count` por `documentos_unidad_tipo_idx`. Se dibuja un botón por falta y el «⋯» sólo con más. «Pedírselo a alguien» llega
+  con `diferido()` al primer uso y lee una vez al abrir (`agenda_quienes_reciben` con `p_permiso`: 20 + 1 sobre `perfiles`, la tabla del equipo); buscar,
+  desde 3 letras con 300 ms de espera.
 - **Página de la unidad** (`/logistica/vehiculo/[id]`): no hay lectura nueva salvo `leerVehiculo` (una fila por PK, tras su `Suspense`, para la portada; el resto de las fotos, al acercarse: máximo 24). En escritorio se piden al abrir **tres** huecos (Qué falta, Documentos, Notas: tres chunks diferidos y tres lecturas del navegador); en el celular, **uno**. Lo demás, al elegir su pestaña, y queda montado. Topes y cursores, los de siempre: notas e historial de a 20 (`TAMANO_DE_VER_MAS`) por cursor `(creado_en, id)` hasta 500 (`TOPE_DE_LO_CARGADO`, `notas_vehiculo_vivas_idx`, `historial_fases_vehiculo_idx`); documentos 50+1 (vivos); gastos y pagos 50+1. Cada pestaña dibuja dentro de su marco con desplazamiento: la página no crece. Sin migración ni consulta nueva: no hay medición de volumen propia.
 - Nodos del DOM, medidos en el recorrido (`page.evaluate`, sin spec nuevo): la portada entera con 5 grupos de 5 filas, 334; la gráfica de 5 fases, 53; la lista de una fase con 50 vehículos en escritorio, 1.039.
 - Sin volumen de interfaz propio: `e2e/logistica-cadena.spec.ts` prueba «Siguiente» con 51 y `e2e/logistica-bandeja-del-dia.spec.ts` los 21 demorados, no miden nodos de miles.
@@ -470,6 +475,11 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `TOPE_DE_LO_CARGADO`. Abierto 8-13c (`docs/PENDIENTES.md`): un índice `(fase_id, fase_desde, id)` si llega a
   miles. `/repuestos` no tiene presupuesto de JS.
 - Sin volumen ni `EXPLAIN` en `db:medir:volumen`: `repuestos_*` no están entre las tablas que crecen de `escala.md`.
+- El cliente de un proyecto: la cabecera de `/repuestos/[id]` lee un lead por su PK de `leads_vista` (`limit 1`) sólo con `lead_id` y `leads.ver`; el
+  `?lead=` de «Nuevo proyecto», igual, sólo con el formulario en la URL. El lead del vehículo, en el navegador al elegirlo: `vehiculo_vinculos`
+  (≤ 51 filas por vehículo, una lectura por elección). El buscador de leads es el de siempre (`_acotar_pagina`). La lista no suma lecturas.
+- JS en frío: «Nuevo proyecto» (formulario, buscadores, lectura del vínculo y supabase-js) llega con `diferido()` desde `src/app` al abrirlo:
+  `/repuestos` pesa 376,3 KB y `/repuestos/[id]` 459,6 (build de e2e, `medirJsEnFrio`). Sin tope propio.
 - Imágenes de un ítem: `limit 9` por `repuestos_items_imagenes_item_id_idx`, sólo al abrir el panel; el trigger cuenta con `limit 8` bajo
   un candado por ítem. **Excepción a «nunca el original»:** sin miniatura y con `unoptimized`, cada imagen baja el WebP de ≤ 1600 px (≤ 8
   por panel abierto).
@@ -567,7 +577,7 @@ fallar.
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
-- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 163.700 B y ≤ 5.000 nodos con
+- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 171.900 B (163.788 con el botón «Nuevo» de la barra, que suma 1.551 B a toda pantalla, regla del 5 %) y ≤ 5.000 nodos con
   «Filas» abierto. La tarjeta, el editor, el modal de publicar y el diálogo de descartar van por `diferido()`; «Buscar fila» filtra en el
   navegador. `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
 - Editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrirlo lee una fila de `formulas` por `formulas_pkey`

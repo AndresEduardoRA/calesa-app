@@ -29,7 +29,7 @@ export const esDeLasFases5a9 = (ruta: string) => RUTAS_DE_LAS_FASES_5_A_9.some((
 
 export const BLANCOS_CONOCIDOS: { descriptor: string; max: number; de: string }[] = [
   { descriptor: 'a href=#contenido', max: 1, de: 'el salto al contenido del marco (`_shell`)' },
-  { descriptor: 'button[data-slot=button][type=button]', max: 1, de: '«Nuevo lead» del marco' },
+  { descriptor: 'button[data-slot=button][type=button]', max: 1, de: '«Nuevo» del marco' },
   { descriptor: 'button[data-slot=tabs-trigger][type=button][role=tab]', max: 6, de: '`Tabs`' },
   { descriptor: 'span[data-slot=switch][role=switch]', max: 4, de: '`Switch`' },
   { descriptor: 'span[data-slot=checkbox][role=checkbox]', max: 2, de: '`Checkbox`' },

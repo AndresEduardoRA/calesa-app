@@ -35,8 +35,8 @@ Cada meta la hace cumplir su e2e, en escritorio y celular.
 
 ### Flujo 1 — Registrar lead y seguimiento
 
-1. «Nuevo lead» en la barra superior, o `N` donde la pantalla no tiene un «nuevo» propio → drawer (no página), `?panel=nuevo-lead`. **Se
-   abre al instante** y lee orígenes, tipos y layout desde el navegador: esqueleto con la forma del formulario, listo, o error («No se pudo
+1. `N` donde la pantalla no tiene un «nuevo» propio, o «Nuevo» en la barra superior (o `Shift+N`) → «Lead» (el modal abre con él enfocado: Intro) → drawer (no
+   página), `?panel=nuevo-lead`. **Se abre al instante** y lee orígenes, tipos y layout desde el navegador: esqueleto con la forma del formulario, listo, o error («No se pudo
    cargar el formulario.» con «Reintentar»). **Un solo panel**: se desliza una vez y los estados cambian dentro
    (`e2e/leads-alta-un-drawer.spec.ts`). Foco en **Teléfono principal**.
 2. Al completar el teléfono (debounce 400 ms) se consulta `verificar_telefono`. Es mío: «Ya existe: Ana Quispe (Tu n.º 12), y es tuyo». Es
@@ -157,7 +157,7 @@ Estados propios:
 ### Flujo 3 — Mover de fase
 
 1. `/logistica` abre la **bandeja del día** (lo que le toca hoy a quien mira, por grupos con su acción) y al lado la **cadena** como gráfica: una fase por punto con cuántos vehículos tiene y cuántos están demorados o trabados. Clic en una fase → su lista (tabla paginada, filtros en URL).
-2. Clic en un vehículo (de la bandeja, de la lista o de «dónde está») → su página `/logistica/vehiculo/<id>` con «Qué falta para pasar a …» abierto (documentos aprobados/faltantes, datos, esperas de repuestos, en vivo).
+2. Clic en un vehículo (de la bandeja, de la lista o de «dónde está») → su página `/logistica/vehiculo/<id>` con «Qué falta para pasar a …» abierto (documentos aprobados/faltantes, datos, esperas de repuestos, en vivo). Cada falta trae lo que la destraba: hacerlo ahí («Subir», «Revisar», «Completar», «Registrar»), ir a donde se hace o «Pedirlo» a quien puede.
 3. Subir documento desde el panel (arrastrar o cámara); se sube al confirmar, nunca antes; queda «subido» hasta que alguien con permiso lo
    aprueba.
 4. «Mover a <fase>» pide nota interna (obligatoria si la fase lo exige) → RPC con `fase_esperada`; conflicto: «Rosa Mamani la movió a
@@ -189,7 +189,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   equipo; `/auth/nueva-contrasena` tras el enlace del correo.
 - **Inicio** — `/` (todos): bandeja por rol + widgets opcionales; bloques por permiso; cada contador lleva a la lista filtrada. «Turnos de
   la web sin confirmar» (`leads.crear` o `web.cola.gestionar`: mis turnos con código, fuente y «Vence en…», «Contacté» en un toque y
-  «Vincular a lead»), «Repuestos por mover» (`repuestos.mover`) y «Esperas que destraban vehículos» (`repuestos.ver`).
+  «Vincular a lead»), «Documentos por aprobar» (`logistica.documentos.aprobar`: sólo los de vehículos), «Repuestos por mover» (`repuestos.mover`) y
+  «Esperas que destraban vehículos» (`repuestos.ver`). Cada bloque, con su `<Suspense>` y su límite de error: si falla (al leer o al dibujar), sólo ése
+  dice el error con «Reintentar». Sin ningún bloque: «Tu rol todavía no tiene trabajo en la bandeja», con los bloques que existen y a quién pedir
+  acceso; sin rol, «Aún no tienes un rol, avisa al dueño».
 - **Leads** — `/leads` (`leads.ver`): tabla + resumen. «Míos» por defecto; con alcance «todos», `?alcance=`. Filtros del layout
   (`a.<campo>`), tipo, origen, `?q=`, `?cursor=`, vistas guardadas; resumen `?lead=` (`?pestana=seguimientos|recordatorios`); marcas
   `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo»: `?vista=embudo&embudo=<id>` es el kanban de las
@@ -255,7 +258,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   «Para pasar a «X» espera que llegue a «Y».» y el enlace a su panel; sin espera, «Este vehículo no espera ningún repuesto.». Ver «Logística: estados propios».
 - **Repuestos** — `/repuestos` (`repuestos.ver`): proyectos por cursor `numero` (`?q=` de 3 letras o un número,
   `?estado=abiertos|cerrados|todos`, `?por=`, `?cursor=`) con número, vehículo o «Externo», cliente, estado derivado, ítems («200+») y
-  última actividad; «Nuevo proyecto» (`repuestos.editar`, `N`, `?panel=nuevo-proyecto`, `&vehiculo=<id>` lo abre vinculado).
+  última actividad; «Nuevo proyecto» (`repuestos.editar`, `N`, `?panel=nuevo-proyecto`, `&vehiculo=<id>` lo abre vinculado, `&lead=<id>` con el
+  cliente elegido; `?nuevo=proyecto` lo conserva en la URL debajo de «Nuevo lead»).
   - `/repuestos/[id]`: «Cerrar proyecto» o «Reabrir proyecto» (y «Eliminar proyecto» sin ítems: sin confirmación, con «Deshacer») y la hoja
     de ítems editable celda a celda. Pestañas «Compras» (`?pestana=compras`, `repuestos.costos.ver`; escribir con
     `repuestos.costos.editar` en `?panel=compra&compra=<id|nueva>`), «Cotizaciones» (`?pestana=cotizaciones`, `repuestos.cotizar`) y
@@ -390,9 +394,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Fotos:** toda foto de una entidad abre el visor (`?visor=`) con ← →, Esc, «3 de 12» y miniaturas; la cabecera de la ficha y la del resumen
   del vehículo llevan el carrusel en su lugar (flechas, puntos y gesto). Las galerías («Fotos» del resumen, imágenes de un ítem) abren el visor en la foto tocada.
 - **Vistos:** en las listas de vehículos, leads (lista y kanban), cotizaciones, proyectos de repuestos, los chips de la agenda y las de logística (bandeja del
-  día, fase, «dónde está», gastos y pagos, unidades de un grupo), lo que la persona abrió en ese módulo se apaga como un enlace visitado y lo último lleva
-  borde de acento y «Último visto». En el chip de la agenda, «visto» lleva una tilde (y el texto para el lector): el fondo es de la clase y apagarlo rompería el
-  contraste. Aduana y las notificaciones no marcan. `/perfil` › «Vistos»: marcar o no, recordar 7, 30, 90 días o 1 año, marcar o no el último.
+  día, fase, «dónde está», gastos y pagos, unidades de un grupo), como en un correo, el nombre de lo que no se abrió en ese módulo va en **negrita** y el de lo ya
+  abierto en peso normal; lo último lleva además borde de acento y «Último visto» (y también va en peso normal). «Visto» se dice con texto para el lector: nada
+  depende sólo del peso. Con «Vistos» apagado, o sin saber aún qué se abrió, ninguna lista pone negrita por esto. En el chip de la agenda, «visto» lleva una
+  tilde (y el texto para el lector) y lo nuevo no lleva nada: el fondo es de la clase y su etiqueta ya va en negrita, así que el peso no se distingue. Aduana y las notificaciones no marcan. `/perfil` › «Vistos»: marcar o no, recordar 7, 30, 90 días o 1 año, marcar o no el último.
 - **Avisos con acciones:** un aviso de error, advertencia o bloqueo que tiene salida la ofrece ahí mismo (de 1 a 3, la que destraba primero;
   sin permiso, a quién pedírselo) — `.claude/rules/ui.md` › «Avisos con acciones».
 - **Fechas de subasta:** en la zona de quien mira (`/perfil` › «Zona horaria»; sin elegir, la de la empresa), con la abreviatura («14:00
@@ -400,8 +405,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Formatos:** `Intl` con locale y moneda de la empresa (`es-BO` por defecto); montos con cifras tabulares; fechas cruzan servidor↔cliente
   como ISO y se muestran en la zona de la empresa. **Modo Live** oculta cifras sensibles **y** símbolos de moneda. Voz: español neutro con
   tuteo. Densidad: compacta en escritorio (filas 36–40 px), cómoda en táctil (48 px), recordada por usuario.
-- **Atajos:** `Ctrl/Cmd+K` buscar/comandos · `N` nuevo, lo propio de la pantalla (vehículo en vehículos; si no hay, un lead; «Nuevo lead»
-  siempre tiene botón) · `Ctrl/Cmd+S` guardar · `Ctrl/Cmd+Enter` guardar y seguir · `Esc` cerrar panel o volver un paso · `?` abre «Atajos
+- **Atajos:** `Ctrl/Cmd+K` buscar/comandos · `N` nuevo, lo propio de la pantalla (vehículo en vehículos; si no hay, un lead) · `Shift+N` abre «Nuevo» (elegir qué crear;
+  no abre encima de otro diálogo ni mientras se escribe) · `Ctrl/Cmd+S` guardar · `Ctrl/Cmd+Enter` guardar y seguir · `Esc` cerrar panel o volver un paso · `?` abre «Atajos
   de teclado» (la lista del catálogo; no se dispara mientras se escribe). En un alta de vehículo `Ctrl/Cmd+S` guarda y cierra; en «Nuevo
   lead» deja el drawer listo para el siguiente.
 - **Filtros:** panel lateral plegable si el listado mide 40 rem o más (si no, hoja inferior) + chips activos + «limpiar»; esquema
@@ -436,12 +441,21 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   la barra desde `md` y, por debajo, arriba de la lista (`<select>` de 44 px). Se guarda en la cuenta (`listas.por_pagina`, también en el
   perfil); `?por=` la fija para esa página; cada lista tiene un máximo (hoy 100). Cambiarlo vuelve a la primera página y conserva filtros y
   búsqueda. No lo llevan el kanban ni las papeleras (`docs/RENDIMIENTO.md`).
-- **Barra superior:** a la vista los tipos de cambio que la empresa eligió («En la barra», hasta 3; sin ninguno, el por defecto): el primero
-  siempre y los demás desde 56 rem de barra; por debajo, y en la copia del menú, el primero y «+N» en la esquina (no ensancha la barra). Al
-  abrirlo, todos los vigentes con quién y cuándo cambió el valor por última vez (nunca el correo) y, para quien gestiona los tipos de cambio,
-  el lápiz «Cambiar el valor de <nombre>»: Enter guarda, Esc cancela, el motivo junto al campo; con algo escrito el popover no se cierra al
-  tocar afuera; sin red, lo escrito queda y se guarda al volver; un `PT409` dice «<Nombre> lo cambió a <monto> hace N minutos» con
-  «Recargar». Con el Modo Live, cifras ocultas y sin lápiz. Al pie, «Configurar los tipos de cambio» (quien gestiona). En el
+- **Barra superior:** «Nuevo» (a la izquierda del tipo de cambio) abre un modal sin pantalla propia (`?panel=crear`: recargar lo reabre, «atrás» lo cierra) con lo que quien mira
+  puede crear, en este orden y filtrado con `puede()` (lo que nunca podrá no aparece; «Ver como»: las del rol mirado): **Lead** (`leads.crear`) → el drawer `?panel=nuevo-lead` en la
+  pantalla de ahora; **Vehículo** (`vehiculos.crear`; sólo con el alta de cotizar, la hoja con el vehículo en alta) → `/vehiculos?panel=nuevo`; **Cotización** (`cotizaciones.crear`) →
+  `/cotizaciones/nuevo`; **Proyecto de repuestos** (`repuestos.editar`) → `/repuestos?panel=nuevo-proyecto`; **Seguimiento** y **Recordatorio** (`leads.editar`) → un segundo paso
+  del mismo modal: se busca un lead **de tu cartera** (3 letras o un número, nunca por teléfono; hasta 5, «Escribe más» si hay otros; «Atrás» vuelve) y se abre su ficha en «Seguimientos» con
+  el modal de anotar o agendar; **Evento** y **Tarea** (siempre: para uno mismo no piden permiso) → `/agenda?panel=nuevo-evento|nueva-tarea`. El modal abre con «Lead» enfocado (con
+  flechas y Tab se recorre; Intro elige); elegir cierra el modal y abre la puerta (un modal nunca abre otro). Con una sola opción el botón la abre directo. Sin nada que crear no hay
+  botón. En el celular mide 44 px, con sólo el icono si la barra mide menos de 24 rem. Estados del paso del lead: bajo el mínimo, la pista; «Buscando…»; sin resultados («Sólo se ofrecen los de
+  tu cartera»); error y sin conexión con «Reintentar». Lo recibe el layout como claves, no como permisos. La paleta conserva «Nuevo lead», «Nuevo vehículo» y «Nueva cotización».
+  Tipos de cambio: a la vista los que la empresa eligió («En la barra», hasta 3; sin ninguno, el por defecto): el primero siempre y los
+  demás desde 56 rem de barra; por debajo, y en la copia del menú, el primero y «+N» en la esquina (no ensancha la barra). Al abrirlo, todos
+  los vigentes con quién y cuándo cambió el valor por última vez (nunca el correo) y, para quien gestiona los tipos de cambio, el lápiz
+  «Cambiar el valor de <nombre>»: Enter guarda, Esc cancela, el motivo junto al campo; con algo escrito el popover no se cierra al tocar
+  afuera; sin red, lo escrito queda y se guarda al volver; un `PT409` dice «<Nombre> lo cambió a <monto> hace N minutos» con «Recargar».
+  Con el Modo Live, cifras ocultas y sin lápiz. Al pie, «Configurar los tipos de cambio» (quien gestiona). En el
   celular menú, Live y avatar miden 44 px y la barra cabe al 200 %; el tipo de cambio sólo se dibuja con 24 rem o más. El botón «Buscar»
   (44 px) abre la paleta (`Ctrl/Cmd+K`) y la campana trae los avisos; el widget del chat flota fuera de `/chat` y no va en la barra.
 - **Permisos en UI**: ocultar lo que nunca va a usar; deshabilitar con motivo lo que espera poder hacer (**dominancia**: lo que no puede dar
@@ -709,7 +723,20 @@ de un drawer (`/logistica/gastos?vehiculo=<id>`, el ítem de repuesto `?item=`),
   vehículo lleva «Ver en logística» (antes de «Editar», con `logistica.ver`) a `/logistica/vehiculo/<id>`.
 - **«Qué falta» y mover** (abierto al inicio, el primero): una tarjeta por destino (las salidas de la fase actual; sin fase, las iniciales)
   con cada requisito y su estado **dicho con texto** («Cumplido» / «Falta»), «Obligatorio» / «Informativo», su detalle («1 de 2
-  aprobados») y, en una falta obligatoria, el enlace al hueco que la resuelve. «Elegir» abre en el bloque la nota interna (obligatoria si
+  aprobados») y, en cada falta (obligatoria o informativa), **lo que la destraba**: un botón chico con el verbo («Subir», «Revisar», «Completar»,
+  «Registrar», «Ir a Documentos/Transporte/Aduana/Pagos/Repuestos/Cotizaciones», «Ir al vehículo», «Ir al proyecto», «Vincular», «Pedirlo»; el nombre accesible
+  lleva el objeto: «Subir «BL»») y, si hay más, hasta dos en el «⋯» del requisito («Más acciones de «BL»»). Mide lo que medía el enlace de antes (44 px en
+  el celular): la tarjeta no crece. «Subir» abre «Subir documentos» con el tipo elegido (drawer en escritorio, la bandeja del bloque en el celular); con uno
+  ya subido, «Revisar» lleva a Documentos con el grupo del tipo a la vista (no se aprueba sin mirar el archivo); «Completar» lleva el foco al campo del
+  transporte; «Registrar» abre «Registrar pago» vacío. Quien no puede: «Pedirlo» (con `agenda.tareas.asignar`) o «Pídeselo a quien administra los roles.»
+  (en la línea sin otra acción; como nota del «⋯» si hay una). Lo que nunca podrá no aparece. Regla apagada (quien tiene la clave del hueco y el hueco no
+  se dibuja): ninguna acción. **En un drawer** (gastos, ítem), lo que sacaría de la pantalla dice «Abrir la unidad». **Sin red**: todo apagado y
+  «Sin conexión: las acciones vuelven con la red.» en la línea viva. La franja «fuera de regla» sigue con su enlace. **«Pedírselo a alguien»**
+  (`?pedir=requisito&falta=<id>`, un modal): la descripción es el título de la tarea («Falta: BL aprobado para pasar a «Embarcado»»); cargando, tres
+  renglones; quién puede como radios (una sola persona, ya elegida; con más de 20, «Busca por nombre» desde 3 letras); nadie: «Nadie que pueda recibir
+  tareas tiene permiso para <verbo> en este origen.» y a quién pedírselo; error con «Reintentar»; sin permiso de dar tareas o sin acceso, lo dice.
+  «Pedírselo a <Nombre>» («Pidiendo…», el modal no se cierra); si esa persona ya no recibe, «Esa persona ya no puede recibir tareas. Elige otra.» y la
+  lista se relee; al lograrlo se cierra con «Se lo pediste a <Nombre>: tiene una tarea en su agenda.». Ya no falta al abrir: «Eso ya no falta.». «Elegir» abre en el bloque la nota interna (obligatoria si
   la fase o la salida la piden) y el botón con la acción de la salida; apagado, su motivo va escrito debajo («Falta: BL aprobado.», rol,
   nota, permiso del origen). `Ctrl/Cmd+Enter` envía. Al lograrlo la tarjeta cambia de columna y el foco vuelve al título del panel.
   **«La ganamos»** (`?ganada=si`, desde la ficha o desde la línea «La subasta terminó y nadie dijo si la ganamos.» · «La ganamos» de este
@@ -1054,20 +1081,22 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
 - **Entrar:** `leads.ver`; sin él, sin permiso (a quién pedirlo) y sin consulta. «Propios», sólo la cartera; «todos», todo, con el teléfono
   enmascarado («+591 •••••01») y «Solo la cartera» en los datos privados de lo ajeno. Limbo y papelera no aparecen para nadie.
 - **Columnas:** nombre y su número («N.º 1.234» con `leads.numero_global.ver`; «Tu n.º 12» sin él), teléfono, tipo, origen, «Último
-  seguimiento» (su tipo con el icono del catálogo, su título y «hace 3 días»; si es privado de otra persona, sólo «hace 3 días»; un clic abre la
-  ficha en sus seguimientos), «Recordatorio» (el próximo pendiente de quien mira: «en 2 días»; vencido, resaltado y «vencido hace 1 día»; un clic lo
-  abre) y campos «en la tabla». Sin seguimientos: «Sin seguimientos» y «Anotar seguimiento»; sin recordatorio: «—» y «Programar» (ambos sólo con el
-  lead en la cartera y `leads.editar`). Lo relativo se refresca cada minuto. Tarjeta: nombre, número, tipo, teléfono, origen, esos dos datos y hasta dos más.
+  seguimiento» (dos líneas: arriba su tipo con el icono del catálogo y su título, debajo «hace 3 días»; si es privado de otra persona, sólo «hace 3 días»; un clic abre la
+  ficha en sus seguimientos), «Recordatorio» (el próximo pendiente de quien mira, en dos líneas: arriba de qué es, debajo «en 2 días»; vencido, resaltado y «vencido hace 1 día»; un clic lo
+  abre) y campos «en la tabla». Sin seguimientos: el texto «Sin seguimientos»; sin recordatorio: «—». Son texto, nunca botón: crear es del «⋯». Al guardar un
+  seguimiento o un recordatorio desde el «⋯», la lista relee su página y la fila lo muestra (sin recargar, con filtros, cursor y foco donde estaban). Lo relativo se refresca cada minuto. Tarjeta: nombre, número, tipo, teléfono, origen, esos dos datos y hasta dos más.
 - **Filtros y búsqueda:** por nombre o número (`#124`), nunca por teléfono; sobre un campo «solo la cartera», quien ve «todos» lee que
   sólo busca en sus leads. Una vista guardada con un campo o etiqueta que ya no existe se aplica sin ese filtro y avisa.
 - **Tus marcas (privadas, «Solo las ves tú.»):** «Tachados» (ocultarlos por defecto · mostrarlos también · sólo los tachados),
   «Favoritos», «Etiquetas». No reordenan. Una línea dice cuántos coincidentes ocultan los tachados, con «Mostrarlos». **Mientras se busca
   no se ocultan.**
-- **«+ Oportunidad» de la fila** (al lado del «⋯»; en la tarjeta, sólo el «+»; cartera y `leads.editar`): modal `?panel=oportunidad-rapida&para=<id>` con «Título»
-  (el nombre del lead) y «Monto estimado» opcional; «Crear oportunidad» deja el aviso y la lista donde estaba. Un rechazo deja el modal abierto con lo escrito.
-- **«⋯» de la fila** (la misma lista, en este orden, en fila, kanban, resumen y ficha): «Agendar recordatorio…» y «Anotar seguimiento…»
-  (cartera y `leads.editar`, abren el modal de la ficha con `?panel=…&para=<id>`) · «Etiquetas…», «Favorito», «Tachado» (con «Deshacer») ·
-  «Enviar a la papelera» (`leads.eliminar`).
+- **«⋯» de la fila** (la misma lista, en este orden, en fila, tarjeta, kanban, resumen y ficha): «Agendar recordatorio…», «Anotar seguimiento…» y «Nueva oportunidad…»
+  (cartera y `leads.editar`, abren su modal con `?panel=…&para=<id>`; en el resumen y la ficha, sin `para`) y «Ver oportunidades» (lead en la cartera de quien mira: lleva a
+  `/leads/<id>?seccion=oportunidades`) · «Etiquetas…», «Favorito», «Tachado» (con «Deshacer») · «Enviar a la papelera» (`leads.eliminar`). **«Nueva oportunidad…»
+  abre primero un aviso** con las oportunidades del lead que quien mira ve (título, etapa y estado; hasta 5, «y N más» con «Ver todas», cada una con «Ver»; incluida la base con
+  que nace todo lead), «Crear igual» (sigue al formulario con «Título» —el nombre del lead— y «Monto estimado» opcional; «Crear oportunidad» deja el aviso y la lista donde estaba; un
+  rechazo deja el modal abierto con lo escrito) y «Cancelar». Se lee al abrir el modal, con esqueleto; si falla, lo dice con «Reintentar» y «Crear igual» sigue ahí.
+  Sin oportunidades, abre directo en el formulario.
 - **Vacíos:** sin leads, con «Nuevo lead» y «Ver todos» según permiso; por filtro, con «Limpiar filtros». Esqueleto; error.
 - **Resumen (`?lead=`):** tipo, marcas, «Editar» (cartera y `leads.editar`), «Abrir ficha», «⋯»; «Relacionados» (con `vehiculos.ver`, se lee al abrir) entre la cabecera y las pestañas; pestañas
   `?pestana=seguimientos|recordatorios` que se piden al elegirlas; nombre, número, tipo, teléfono tal como lo entrega la vista, origen y
@@ -1105,7 +1134,7 @@ origen, y **se guarda al instante** (cada tono es una escritura propia; no entra
 - **Teléfonos de la ficha:** los extras se editan con la cartera y `leads.telefonos_extra.editar`; el principal, con la cartera y
   `leads.editar`; si no, enmascarados y sin botones. «Cambiar el principal» (`?panel=cambiar-telefono`): el actual pasa a extra «Anterior»; el
   nuevo se verifica al tipear y uno existente, ajeno o el mismo deshabilitan el botón con su frase. Extras (`?panel=agregar-telefono` en la
-  ficha, `?extra=nuevo` dentro del panel de edición y del resumen del listado; hasta el máximo de la empresa, 6 de fábrica): número con país y
+  ficha, `?extra=nuevo` dentro del panel de edición, que también abre un `?lead=<id>&extra=nuevo`; el resumen del listado los muestra sólo para leer; hasta el máximo de la empresa, 6 de fábrica): número con país y
   etiqueta ≤ 40, «Quitar» con «Deshacer». El número se verifica al tipear: con «Los teléfonos extra cuentan como el principal» un número
   de otro lead bloquea (con «Ver ese lead» si lo ve); sin ella, avisa. Con el máximo alcanzado «Agregar» se apaga con su frase; con más del
   máximo, «quita K para agregar otro» y, con `leads.configurar`, «Cambiar el máximo».
@@ -1155,8 +1184,21 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
   distinto del de origen, y cantidad), «Vender suelto» y «Devolver al proveedor» (cantidad y nota); cada uno un drawer con URL que, si el
   ítem ya no está en la página, avisa y limpia la URL. Tras el éxito se cierra, la página se relee y un aviso lo dice (reasignar, con «Ver
   proyecto»).
-- **Nuevo proyecto:** «De un vehículo» (buscador del inventario) o «Externo» (vehículo, VIN, cliente, teléfono y, con `leads.ver`, lead);
-  un `?vehiculo=` que no se ve abre como «Externo» con un aviso.
+- **Nuevo proyecto:** «De un vehículo» (buscador del inventario) o «Externo» (vehículo y VIN); un `?vehiculo=` que no se ve abre como
+  «Externo» con un aviso. El cliente:
+  - Con `leads.ver`, **«Cliente (lead)»** en los dos orígenes (opcional): el buscador de leads (≥ 3 letras o `#n`, nunca por teléfono, sólo lo
+    que quien mira ve) y, con el campo vacío y `leads.crear`, «Nuevo lead» (44 px y a lo ancho en el celular). En «De un vehículo» viene puesto
+    el lead vinculado al vehículo («Vinculado al vehículo»; mientras se lee, «Buscando el cliente del vehículo…» y «Crear proyecto» espera);
+    «Cambiar» lo vacía y cambiar o quitar el vehículo, o pasar a «Externo», sólo quita ese propuesto. Un vehículo sin lead, o con uno que no se
+    ve, deja el campo vacío sin texto. Si la lectura falla: «No pudimos traer el cliente del vehículo. Búscalo aquí.».
+  - «Nuevo lead» abre el alta del shell (`?nuevo=proyecto&panel=nuevo-lead&elegir=lead`, con `replace`): el formulario se esconde y, al
+    cerrar el alta (Esc, «Cancelar»), vuelve con lo escrito y el aviso del borrador; al guardar, «Trayendo el lead que creaste…» y el creado
+    elegido. Un `?lead=` que no se ve: «No encontramos ese lead o no tienes acceso.». «Atrás» desde el alta sale del formulario (lo escrito
+    queda en el borrador).
+  - Sin `leads.ver`, como siempre: en el externo, «Cliente (opcional)» y «Teléfono del cliente (opcional)» escritos; en «De un vehículo»,
+    sin cliente.
+  - Un lead que la base rechaza al crear (dejó de verse, papelera, limbo) se suelta y su motivo queda junto al buscador, con el foco ahí;
+    lo demás queda escrito.
 
 ### Repuestos: proyecto (estados propios)
 
@@ -1171,6 +1213,10 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 - **Conflicto:** «Otra persona cambió este ítem. Recarga para ver lo nuevo.» con «Recargar»; lo escrito no se guarda. **Eliminar:**
   `<Confirmar>` con URL que nombra el ítem; uno con historial, documentos, compras, gastos o stock dice por qué y no se elimina.
 - **Cerrar:** sin confirmación; toast con «Deshacer».
+- **Cliente** (en la cabecera): con lead y `leads.ver`, el nombre enlazado a `/leads/<id>`, sus números (`<NumeroDeLead conSecundario>`) y, si no
+  es de la cartera de quien mira, «Fuera de tu cartera»; un lead que no se ve (otra cartera sin alcance, papelera, limbo) o sin `leads.ver`, «Cliente
+  que no puedes ver», sin datos; un proyecto viejo, el nombre escrito a mano; sin cliente, «—». Nunca el teléfono. Si falla la lectura del lead, el
+  error de `(app)` con «Reintentar».
 - **Imágenes del ítem:** «Imágenes» en las acciones de cada fila, también sin `repuestos.editar`; abre `?panel=imagenes&item=<id>` (se
   recarga; «atrás» lo cierra y el foco vuelve al botón). Esqueleto, error con «Reintentar», vacío (con permiso, la zona de subir). Con
   imágenes: «3 de 8 imágenes» (exacto: el tope es duro), rejilla de 2 a 4 columnas que enlaza al original, «Quitar» de 44 px con

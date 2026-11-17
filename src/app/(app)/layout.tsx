@@ -12,6 +12,7 @@ import {
 import { AltaDeLead, ProveedorDeEscribirPorChat } from '@/modules/leads/shell'
 import { urlPublicaONull } from '@/shared/lib/almacen'
 import { anchoDeEstaPeticion } from '@/shared/lib/ancho.server'
+import type { Permisos } from '@/shared/lib/permisos'
 import { ProveedorDeAncho } from '@/shared/ui/ancho-de-pantalla'
 import { EstiloDeMarca } from '@/shared/ui/estilo-de-marca'
 import { SimbolosDeLista } from '@/shared/ui/lista/simbolos-de-lista'
@@ -26,7 +27,21 @@ import { HuecoBuscador } from './_shell/huecos/buscador'
 import { HuecoCampana } from './_shell/huecos/campana'
 import { HuecoChat } from './_shell/huecos/chat'
 import { entradasVisibles } from './_shell/navegacion'
+import { NuevoDeLaBarraSuperior } from './_shell/nuevo/nuevo-de-la-barra-superior'
+import { opcionesDeNuevo } from './_shell/nuevo/opciones'
 import { RUTAS_CON_PANTALLA } from './_shell/rutas-con-pantalla'
+
+// Sin `leads.crear` no se monta el drawer ni la `N`, ni hay una URL que lo abra. El drawer lee lo que necesita al abrirse: el documento de la pantalla no lleva los
+// catálogos del alta.
+function altaDeLead(permisos: Permisos): ReactNode {
+  return puede(permisos, 'leads.crear') ? <AltaDeLead /> : undefined
+}
+
+// «Nuevo»: sólo las claves de lo que quien mira puede crear (no `permisos.ts`: lo que el layout pasa viaja en todas las pantallas); sin nada que crear, no hay botón.
+function nuevoDeLaBarra(permisos: Permisos): ReactNode {
+  const opciones = opcionesDeNuevo(permisos)
+  return opciones.length > 0 ? <NuevoDeLaBarraSuperior opciones={opciones} /> : undefined
+}
 
 // Todo lo que depende de quién entró: la sesión, sus permisos y los ajustes de la empresa. Acá se
 // leen una vez y se reparten por props a un marco que no sabe de dónde salen.
@@ -82,9 +97,8 @@ async function Shell({ children }: { children: ReactNode }) {
                     />
                   ) : undefined
                 }
-                // Sin `leads.crear` no se monta nada: ni botón, ni atajo, ni una URL que lo abra. El drawer lee lo que necesita al abrirse:
-                // el documento de la pantalla no lleva los catálogos del alta.
-                nuevoLead={puede(sesion.permisos, 'leads.crear') ? <AltaDeLead /> : undefined}
+                altaDeLead={altaDeLead(sesion.permisos)}
+                nuevo={nuevoDeLaBarra(sesion.permisos)}
                 aviso={<BannerPerspectiva />}
                 buscador={<HuecoBuscador acciones={accionesDeLaPaleta(sesion.permisos)} />}
                 campana={

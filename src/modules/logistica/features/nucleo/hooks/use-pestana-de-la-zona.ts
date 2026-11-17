@@ -4,10 +4,11 @@ import { parseAsString, parseAsStringLiteral, useQueryState } from 'nuqs'
 import { useState } from 'react'
 import { ORDEN_DE_HUECOS } from '../../../entities/nucleo/hueco'
 import { CLAVE_DEL_HUECO_ABIERTO } from '../../../entities/nucleo/enlaces'
+import { CLAVE_DE_SUBIR } from '../../../entities/nucleo/paneles-de-la-unidad'
 import { pestanaDelHueco, pestanaInicial } from '../../../entities/nucleo/zonas'
 
-// La clave de la URL del drawer de subir documentos (`?subir=documentos`): aparte de `?panel=` (que cerraría el drawer del ítem de repuesto) para convivir con `?vehiculo=` e `?item=`. La zona de pestañas abre en Documentos con ella, para que su hueco esté montado; `SubidaDeLaUnidad` usa la misma clave.
-export const CLAVE_DE_SUBIR = 'subir'
+// La zona de pestañas abre en Documentos con `?subir=` para que su hueco esté montado; `SubidaDeLaUnidad` usa la misma clave.
+export { CLAVE_DE_SUBIR }
 
 type Pestana = { clave: string; huecos: readonly { clave: string }[] }
 

@@ -12,7 +12,7 @@ vi.mock('@/shared/lib/supabase/browser', () => ({
   }),
 }))
 
-import { leerMasOportunidades } from './oportunidades.client'
+import { leerMasOportunidades, leerOportunidadesDelAviso } from './oportunidades.client'
 
 const LEAD = '00000000-0000-4000-8000-0000000000aa'
 const ANTES = {
@@ -61,5 +61,31 @@ describe('leerMasOportunidades: «Ver más» desde el navegador', () => {
     respuesta = { data: { algo: 'raro' }, error: null }
     const leida = await leerMasOportunidades({ leadId: LEAD, antes: ANTES })
     expect(leida).toMatchObject({ ok: false, error: { codigo: 'inesperado' } })
+  })
+})
+
+describe('leerOportunidadesDelAviso: las primeras del lead al abrir «Nueva oportunidad…»', () => {
+  beforeEach(() => {
+    llamadas.length = 0
+    respuesta = { data: null, error: null }
+  })
+
+  it('pide seis, sin cursor', async () => {
+    respuesta = { data: { puedo_crear: true, hay_mas: false, oportunidades: [] }, error: null }
+    const leida = await leerOportunidadesDelAviso(LEAD)
+    expect(llamadas).toEqual([
+      { funcion: 'lead_oportunidades', args: { p_lead: LEAD, p_tamano: 6 } },
+    ])
+    expect(leida).toEqual({
+      ok: true,
+      data: { puedoCrear: true, hayMas: false, oportunidades: [] },
+    })
+  })
+
+  it('un error o una forma rota son un error, no «sin oportunidades»', async () => {
+    respuesta = { data: null, error: { message: 'x', code: '42501' } }
+    expect((await leerOportunidadesDelAviso(LEAD)).ok).toBe(false)
+    respuesta = { data: { algo: 'raro' }, error: null }
+    expect(await leerOportunidadesDelAviso(LEAD)).toMatchObject({ ok: false })
   })
 })

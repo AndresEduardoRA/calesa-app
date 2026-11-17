@@ -77,7 +77,9 @@ test('E2E abrir un evento y luego una tarea los marca: sólo uno es el último v
   const chipDelEvento = page.getByRole('main').getByRole('link', { name: evento })
   const chipDeLaTarea = page.getByRole('main').getByRole('link', { name: tarea })
   await expect(chipDelEvento).toBeVisible()
-  await expect(chipDelEvento).not.toHaveAttribute('data-visto', /.+/)
+  await expect(chipDelEvento).toHaveAttribute('data-visto', 'nuevo')
+  // En el chip la negrita no se distingue (el fondo es de la clase y su nombre ya va en negrita): «visto» lleva una tilde y lo nuevo no.
+  await expect(chipDelEvento.locator('svg')).toHaveCount(0)
 
   // El evento: su panel se abre por la URL, que es lo que lo registra; al cerrarlo, el chip es el último visto.
   await chipDelEvento.click()
@@ -99,6 +101,8 @@ test('E2E abrir un evento y luego una tarea los marca: sólo uno es el último v
   await expect(chipDeLaTarea).toHaveAttribute('data-visto', 'ultimo')
   await expect(chipDelEvento).toHaveAttribute('data-visto', 'visto')
   await expect(chipDelEvento.getByText('Último visto')).toHaveCount(0)
+  await expect(chipDelEvento.locator('svg')).toHaveCount(1)
+  await expect(chipDeLaTarea.locator('svg')).toHaveCount(1)
 
   // Al recargar la trae la base: el último de los dos tipos es la tarea.
   const berta = await idDePersona(t.personas.berta)

@@ -12,6 +12,8 @@ export type PropsDelBuscador = {
   etiqueta: string
   error?: string
   disabled?: boolean
+  // El `data-elige` del campo: adonde vuelve el foco al cerrar el alta de lead abierta desde él.
+  elige?: string
 }
 
 // Las opciones para un texto, con la señal para cancelar. Nunca lanza.

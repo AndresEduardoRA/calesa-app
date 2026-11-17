@@ -21,7 +21,7 @@ La tarea de oro 3 la prueba `e2e/logistica-tarea-de-oro.spec.ts`. Abiertos (`doc
 - Núcleo, para las áreas: `nombrarVehiculos` (el nombre «<principal> · <título>», `features/nucleo/identidad-de-vehiculos.ts`), `EnlaceALaUnidad`, `useIrALaUnidad` y
   `rutaDeLaUnidad(id, hueco?)` (`?hueco=documentos` abre esa pestaña —o ese bloque, en el celular— de la página de la unidad).
 - Lo consumen `tablero`, `vehiculos` (ficha) y `web` (portal: fases y documentos visibles).
-- Depende de: `vehiculos`, `origenes`, `empresa`, `flujos`, `cotizaciones`.
+- Depende de: `vehiculos`, `origenes`, `empresa`, `flujos`, `cotizaciones`, `agenda` («Pedirlo» de «Qué falta»: `leerQuienesPuedenRecibir` y `darTareaVinculada`, funciones de servidor que llaman sus actions; ningún componente de `agenda` entra al JS de la página).
 
 ## Áreas
 
@@ -74,10 +74,22 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   ítem lo dibuja el núcleo (`pantallas/unidad-item.ts`, `textoDelTransporteDelItem`; 8-13b).
 - **Hueco «Repuestos»:** en `ORDEN_DE_HUECOS` entre `transporte` y `aduana` (el orden va por lo que más se hace: que-falta, documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen); lo declara `repuestos` (`pantallas/flujo-esperas.ts`) y lo suma
   `src/app/(app)/logistica/huecos-de-la-unidad.tsx` (`repuestos.ver` y regla `esperas`; sin variante `repuesto`). `logistica` sólo conoce la clave.
-- **Área `mover`, «Qué falta» y mover** (`pantallas/mover-unidad.ts`, hueco `que-falta` abierto al inicio). `useParaMover` lee con `leerParaMover` de `flujos`
-  y relee al volver el foco (5 s de mínimo), al cambiar la fase y con `logistica:unidad-cambio`; `useMoverLaUnidad` envía con `faseEsperada = unidad.faseId`
-  (éxito = `router.refresh()`). El atajo de un requisito abre el bloque de otro hueco (`logistica:abrir-hueco`, `features/nucleo/hooks/eventos-de-la-unidad.ts`);
-  un hueco que el panel no dibuja no ofrece atajo. Textos y estado del botón son de `flujos`. Un ítem manda `{ repuesto }` (`unidadAMover`).
+- **Área `mover`, «Qué falta» y mover** (`pantallas/mover-unidad.ts`, hueco `que-falta` abierto al inicio). `useParaMover` lee con la action `leerQueFalta`,
+  que envuelve `leerParaMoverDe` de `flujos` (la misma lectura) y suma, por requisito que falta, sus **acciones** (`docs/GLOSARIO.md` › «Acción del requisito»)
+  ya resueltas en el servidor (`entities/mover/`: `capacidadesDeQueFalta` con `puede()`, `resolverAccionesDeQueFalta`, `acciones-de-un-dato.ts`): ni los
+  permisos ni la regla viajan al navegador. Relee al volver el foco (5 s de mínimo), al cambiar la fase y con `logistica:unidad-cambio` (también lo avisa
+  el dinero). Cada falta lleva un botón chico con el verbo («Subir», «Revisar», «Completar», «Registrar», «Ir a …», «Pedirlo»; el nombre accesible lleva el
+  objeto) y hasta dos más en su «⋯» (`BotonesDelRequisito`); `accionesADibujar` filtra lo que sólo sabe el navegador: con la clave del hueco y sin el hueco
+  dibujado la regla está apagada (nada), lo que lleva a un hueco ausente se descarta, **en un drawer** lo que sacaría de la pantalla dice «Abrir la unidad»
+  (`useEnLaPagina()`, que da `DisposicionDeLaPagina`) y sin red todo se apaga con «Sin conexión…» en la línea viva. `useHacerAccionDelRequisito` las ejecuta:
+  «Subir» abre `?subir=documentos&tipo_documento=` (en zonas, en una sola escritura con `?hueco=`), «Revisar» y «Completar» abren el hueco y enfocan
+  `data-tipo-de-documento-id` o `data-clave-de-dato` (`enfocarAlAparecer`, hasta 5 s), «Registrar» abre `?panel=pago&pago=nuevo`. La franja «fuera de
+  regla» sigue con su atajo (`AtajoDeRequisito`). **«Pedirlo»** (`?pedir=requisito&falta=<id>`, `usePedirloPorUrl`: se revisa al abrir contra la lectura,
+  «Eso ya no falta.») abre el modal «Pedírselo a alguien» con `diferido()` al primer uso (`diferidos-de-que-falta.tsx`, montado una vez por
+  `PedirloDeQueFalta`): `leerQuienesPueden` (hasta 20; con más, busca desde 3 letras con 300 ms) y `pedirLoQueFalta` (una tarea sin fecha vinculada al
+  vehículo, con el id del intento; 23514 → «Esa persona ya no puede recibir tareas. Elige otra.» y relee). Las dos piden `agenda.tareas.asignar`; un ítem
+  no ofrece «Pedirlo» (una tarea no se vincula a un ítem). `useMoverLaUnidad` envía con `faseEsperada = unidad.faseId` (éxito = `router.refresh()`). Textos y estado
+  del botón de mover son de `flujos`. Un ítem manda `{ repuesto }` (`unidadAMover`).
 - **Área `mover`, «La ganamos»** (`?ganada=si`, `useModoGanada`; la clave `CLAVE_DE_GANADA` sale por `index.ts` para el enlace de la ficha del
   vehículo): «Qué falta» ofrece sólo los destinos que no son la subasta (`entities/mover/ganada.ts`), abre el primero y mover llama `ganarLaSubasta`;
   al lograrlo quita `?ganada` con `shallow: false`, sin `router.refresh()`. Fuera del modo, con la subasta sin resolver y permiso de mover, una línea
@@ -99,7 +111,7 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   `revision.ts` (`quePuedeHacer`: cada acción oculta, habilitada o apagada con motivo). `pantallas/documentos-unidad.ts` declara «Documentos» (`logistica.ver`,
   sin regla) y lo reexporta como `DocumentosDeLaUnidad` para `/vehiculos/[id]`. El navegador lee con la sesión de quien mira (vivos con tope 50, URL firmada de
   60 s del bucket privado `documentos`).
-  **Subir:** en las zonas de la página, un botón «Subir documentos» abre `DrawerParaSubir` en `?subir=documentos` (clave propia: `?panel=` cerraría el drawer del ítem; `useEnZonas()` decide; sin `logistica.documentos.subir`, botón apagado con su motivo escrito; la zona de pestañas abre en Documentos con `?subir=` para que el hueco esté montado); se cierra solo al terminar sin fallos, con fallos queda abierto con «Reintentar los N que faltan». En bloques (celular, drawers, ficha del vehículo, ítem) la bandeja sigue en línea. La bandeja queda **sin subir** hasta enviar (`useBandeja`: formato del tipo, 25 MB, repetido por hash, hasta 20; aviso desde 10 MB); se sube por
+  **Subir:** en las zonas de la página, un botón «Subir documentos» abre `DrawerParaSubir` en `?subir=documentos` (clave propia: `?panel=` cerraría el drawer del ítem; `useEnZonas()` decide; sin `logistica.documentos.subir`, botón apagado con su motivo escrito; la zona de pestañas abre en Documentos con `?subir=` para que el hueco esté montado); se cierra solo al terminar sin fallos, con fallos queda abierto con «Reintentar los N que faltan». En bloques (celular, drawers, ficha del vehículo, ítem) la bandeja sigue en línea. Con `&tipo_documento=<id>` (lo pone «Subir» de «Qué falta») la bandeja vacía arranca con ese tipo (`useBandeja(tipos, tipoPedido)`: nunca pisa lo elegido con archivos puestos) y un envío sin fallos lo quita; cada grupo de un tipo lleva `data-tipo-de-documento-id` («Revisar» lo enfoca). Las claves compartidas entre áreas (`CLAVE_DE_SUBIR`, `CLAVE_DEL_TIPO_A_SUBIR`, las del formulario de un pago y los atributos `data-tipo-de-documento-id` y `data-clave-de-dato`) viven en el núcleo (`entities/nucleo/paneles-de-la-unidad.ts`). La bandeja queda **sin subir** hasta enviar (`useBandeja`: formato del tipo, 25 MB, repetido por hash, hasta 20; aviso desde 10 MB); se sube por
   hash (`<unidad>/<sha>.<ext>`) y recién entonces `registrarDocumentos` (`documento_registrar`, id del intento por archivo); cerrar con bandeja pregunta.
   **Revisar:** `revisarDocumento`, `editarDocumento`, `eliminarDocumento` → `documento_revisar|editar|eliminar` con la versión de la fila (`PT409` en la fila
   con `<AvisoDeConflicto>`, conserva lo escrito). Sin la clave nada se esconde: se apaga con el motivo. Editar y eliminar se ofrecen a quien tiene aprobar o
@@ -119,7 +131,7 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   moneda o el tipo), `pago.ts` (monto > 0), `acciones-del-pago.ts` (un confirmado nunca se edita ni se elimina). **`monto_base` lo devuelve la base**: ningún
   componente multiplica por una tasa. El hueco recibe sólo `{ unidad }` y decide «Registrar gasto» con `puede()` sobre `mis_permisos`; protege la base.
   `?panel=gasto&gasto=<id|nuevo>`, `?panel=eliminar-gasto&gasto=<id>`, `?panel=pago|confirmar-pago|eliminar-pago|anular-pago&pago=<id>` (una URL a mano no
-  abre lo que el estado o el permiso no dejan). Gastos, confirmar y anular avisan al «Margen» por un evento del navegador (`eventos-de-dinero.ts`). Confirmar y
+  abre lo que el estado o el permiso no dejan). Toda escritura de dinero avisa al «Margen» por un evento del navegador (`eventos-de-dinero.ts`) y, con él, un cambio de la unidad (`avisarCambioDeLaUnidad`: «Qué falta» se relee). Confirmar y
   anular piden `logistica.pagos.confirmar` (global); el sello «Confirmado por <nombre> el <fecha>» lo pone la base; anular pide motivo; el lead va nulo.
   **Pagos de un proyecto de repuestos:** `pantallas/dinero-proyecto.ts` (pestaña «Pagos» de `/repuestos/[id]`): el mismo `CuerpoDePagos` con
   `AmbitoDePagoContext` en `proyecto`, registra `{ proyectoId }` por `pago_registrar_proyecto`, sin lead; permisos por props (`repuestos.costos.editar`,

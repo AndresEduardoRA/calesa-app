@@ -12,7 +12,12 @@ import {
   type Resultado,
 } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/browser'
-import { ordenarComoLosIds, POR_SECCION } from '../entities/ranking'
+import {
+  CANDIDATOS_PARA_ELEGIR,
+  ELEGIBLES_DE_LA_CARTERA,
+  ordenarComoLosIds,
+  POR_SECCION,
+} from '../entities/ranking'
 import {
   COLUMNAS_DE_LEAD,
   ESQUEMAS_DEL_BUSCADOR,
@@ -45,30 +50,48 @@ function respuesta<T>(
   return filas === null ? fallo('inesperado', NO_SE_PUDO_BUSCAR) : ok(filas)
 }
 
-// Leads por nombre o `#n`: los ids de `buscador_leads` (nunca por teléfono ni por un campo) y después sus filas por `leads_vista_por_ids`, invocadora,
-// que recorta teléfono y privados. Dos pedidos; el segundo, sólo con algún id.
-export async function buscarLeads({
-  texto,
-  signal,
-}: PedidoDeBusqueda): Promise<Resultado<FilaDeLead[]>> {
+type LecturaDeLeads = { candidatos: number; tope: number; soloCartera: boolean }
+
+// Los ids de `buscador_leads` (nunca por teléfono ni por un campo) y después sus filas por `leads_vista_por_ids`, invocadora, que recorta teléfono y privados.
+// Dos pedidos; el segundo, sólo con algún id. `soloCartera` deja las que están en la cartera de quien mira (`en_cartera` de la vista).
+async function leerLeads(
+  { texto, signal }: PedidoDeBusqueda,
+  { candidatos, tope, soloCartera }: LecturaDeLeads,
+): Promise<Resultado<FilaDeLead[]>> {
   if (cancelada(signal)) {
     return ok([])
   }
   const supabase = createClient()
   const leidos = await supabase
-    .rpc('buscador_leads', { p_texto: texto, p_tamano: POR_SECCION })
+    .rpc('buscador_leads', { p_texto: texto, p_tamano: candidatos })
     .abortSignal(signal)
   const ids = respuesta(ESQUEMAS_DEL_BUSCADOR.ids, leidos.data, leidos.error)
   if (!ids.ok || ids.data.length === 0 || cancelada(signal)) {
     return ids.ok ? ok([]) : ids
   }
-  const { data, error } = await supabase
+  const consulta = supabase
     .rpc('leads_vista_por_ids', { p_leads: ids.data })
     .select(COLUMNAS_DE_LEAD)
-    .limit(POR_SECCION + 1)
+  const { data, error } = await (soloCartera ? consulta.eq('en_cartera', true) : consulta)
+    .limit(tope + 1)
     .abortSignal(signal)
   const filas = respuesta(ESQUEMAS_DEL_BUSCADOR.lead, data, error)
   return filas.ok ? ok(ordenarComoLosIds(ids.data, filas.data)) : filas
+}
+
+// Leads por nombre o `#n`.
+export function buscarLeads(pedido: PedidoDeBusqueda): Promise<Resultado<FilaDeLead[]>> {
+  return leerLeads(pedido, { candidatos: POR_SECCION, tope: POR_SECCION, soloCartera: false })
+}
+
+// Los leads de la cartera de quien mira que coinciden (hasta `ELEGIBLES_DE_LA_CARTERA` y una más): los que se pueden elegir para anotarles un seguimiento o
+// agendarles un recordatorio. Los candidatos se piden hasta el máximo de la base para que una cartera chica no quede tapada por leads ajenos.
+export function buscarLeadsDeLaCartera(pedido: PedidoDeBusqueda): Promise<Resultado<FilaDeLead[]>> {
+  return leerLeads(pedido, {
+    candidatos: CANDIDATOS_PARA_ELEGIR,
+    tope: ELEGIBLES_DE_LA_CARTERA,
+    soloCartera: true,
+  })
 }
 
 // Vehículos por título, VIN o lote, una ruta por origen visible (invocadora: la RLS decide).

@@ -204,13 +204,16 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   leads que coinciden con un nombre, sacados de un índice.
 - **Buscador** — `buscador_leads()`, `buscador_vehiculos()`, `buscador_cotizaciones()` / `src/modules/buscador`: búsqueda por sección con el
   mínimo en la base y tope 5 por sección; la dibuja la paleta.
+- **Nuevo (barra superior)** — `<NuevoDeLaBarraSuperior>`, `opcionesDeNuevo()`, `ClaveDeNuevo` / `src/app/(app)/_shell/nuevo/`: el botón «Nuevo» (y `Shift+N`) que abre un modal con lo que quien mira puede crear
+  (lead, vehículo, cotización, proyecto de repuestos, seguimiento, recordatorio, evento, tarea); `?panel=crear`. No es «Nuevo lead» (la tecla `N` y el drawer, `<AltaDeLead>`).
 - **Paleta** — `<Paleta>`, `AccionDeLaPaleta` / `src/modules/buscador`: superposición `Ctrl/Cmd+K` que busca y ejecuta acciones; sin URL; sus
   acciones se ofrecen con `puede()`.
 - **Visto** — `vistos` / `visto_registrar()`, `vistos_de()`, `ProveedorDeMarcasDeVisto`, `MarcasDeVistoDeLaPagina`: un registro que la persona abrió (ficha,
-  resumen o panel) en _ese_ módulo (su contexto: abrir un vehículo en Vehículos no lo marca en Logística); su fila se apaga como un enlace visitado. Por
+  resumen o panel) en _ese_ módulo (su contexto: abrir un vehículo en Vehículos no lo marca en Logística); su nombre va en peso normal; el de lo que aún no abrió (**no visto**, `MarcaDeVisto` `nuevo`) va en negrita, como un
+  correo sin leer; sin marca (con «Vistos» apagado o antes de leer) queda en su peso de siempre. Por
   persona; se recuerda 7, 30, 90 o 365 días (`/perfil` › «Vistos»).
 - **Último visto** — `vistos_de().ultimo` / `<SufijoDeVisto>`: el registro más reciente del módulo, de cualquiera de sus tipos (en la agenda, un evento o una
-  tarea: uno solo); borde de acento y «Último visto» junto al nombre.
+  tarea: uno solo); borde de acento y «Último visto» junto al nombre, en peso normal como lo visto.
 - **Últimos abiertos** — `visitados` / `visita_registrar()`, `visitados_usuario_visto_idx`: lo último que cada persona abrió (lead, vehículo o
   cotización), a lo sumo 50; se lee bajo la RLS de cada entidad.
 - **Míos / Todos** — `?alcance=todos` / `alcanceDelListado()`, `<SelectorDeAlcance>`: modos del listado de leads; «míos» (defecto) = `en_cartera`.
@@ -291,8 +294,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   etapas (inicial, ganada, perdida).
 - **Oportunidad base** — `_lead_oportunidad_base()`: la que nace con todo lead nuevo (alta rápida, importación, «Datos», turno de la web), abierta,
   en la etapa inicial del embudo por defecto de quien lo crea y con el nombre del lead de título. Intacta, no cuenta como trabajo al deshacer.
-- **«+ Oportunidad»** — `?panel=oportunidad-rapida&para=<id>` / `<ModalDeOportunidadRapida>`: crear una oportunidad desde la fila o la tarjeta del listado de leads, con
-  el nombre del lead de título y el monto opcional, en la etapa inicial del embudo por defecto.
+- **«Nueva oportunidad…»** — `?panel=oportunidad-rapida&para=<id>` / `<ModalDeOportunidadRapida>`: crear una oportunidad desde el «⋯» de un lead (fila, tarjeta, kanban, resumen y ficha). Primero
+  avisa de las que el lead ya tiene (`<AvisoDeOportunidadesDelLead>`: «Crear igual» o «Cancelar»); después, el nombre del lead de título y el monto opcional, en la etapa
+  inicial del embudo por defecto. **«Ver oportunidades»**, la otra línea del «⋯»: la ficha en su sección «Oportunidades».
 - **Embudo por defecto** — `embudos.es_default` / `embudo_por_defecto()`: el creado la primera vez («Ventas»); no se elimina, se renombra.
 - **Plantilla del embudo** — `ajustes_leads.embudo_etapas` / `embudo_plantilla_guardar()`: etapas con que nace el embudo por defecto de cada
   persona; nula = las seis de fábrica (`_embudo_etapas_de_fabrica()`). Sólo afecta a los que nacen después.
@@ -421,6 +425,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `<item>/<sha-256>.webp` en el bucket `repuestos`); no se llama «foto» (las fotos son del vehículo).
 - **Hoja de ítems** — tabla (tarjetas en el celular) de `/repuestos/[id]` (`HojaDeItems`, `features/items/`): una fila por ítem, editable
   celda a celda con `repuestos.editar`; hasta 200 ítems.
+- **Cliente (de un proyecto)** — `repuestos_proyectos.lead_id` (en los proyectos viejos, `cliente_nombre`), `ClienteDeLaCabecera`: el lead a quien se
+  venden los repuestos de un proyecto; opcional (un proyecto para un vehículo propio no lo lleva). En «Nuevo proyecto» es «Cliente (lead)», y el de un
+  vehículo nace con el lead vinculado al vehículo. No: «comprador», «contacto».
 - **Hoja de una guardada** — `cotizacion_hoja_guardada()`: abre una guardada con SU versión, lo que quien mira puede guardar, la vigencia y la
   cadena (anterior y versión nueva).
 - **Desactualizada** — `cotizacion_crear(… p_abierta …)` (PT409 `desactualizada`): la fórmula o un tipo de cambio cambió tras abrir la hoja:
@@ -520,6 +527,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Lista de la fase** — `/logistica/fase/[fase]`: los vehículos de una fase (o «Sin fase»), de a 50 por cursor, con filtros en la URL y la selección del lote (hasta 200).
 - **Llegada esperada** — un transporte de vehículo sin arribo cargado cuya ETA es de hoy o anterior y cuyo vehículo sigue en una fase que no es final; de la más reciente a la más vieja.
 - **Mover** — `cambiar_fase()` / `previsualizar_cambio_fase()`: cambiar de fase, con vista previa de qué falta.
+- **Acción del requisito** — `AccionesDelRequisito` / `resolverAccionesDeQueFalta()`, `leerQueFalta`: lo que destraba un requisito que falta en
+  «Qué falta» (una principal y hasta dos más en su «⋯»): hacerlo ahí mismo («Subir», «Revisar», «Completar», «Registrar»), ir a donde se hace o
+  «Pedirlo». La resuelve el servidor con los permisos de quien mira; el navegador sólo la filtra (`accionesADibujar()`).
+- **Pedirlo** — `pedirLoQueFalta` / `?pedir=requisito&falta=<id>`: darle una tarea de agenda, vinculada al vehículo y sin fecha, a quien tiene el
+  permiso que falta en el origen de la unidad y la ve (`agenda_quienes_reciben` con `p_permiso`). Sin `agenda.tareas.asignar`, o en un ítem:
+  «Pídeselo a quien administra los roles.».
 - **Alerta por demora** — `fases.demora_dias` / `alertas_demora()`: aviso cuando una unidad lleva más días de lo esperado en una fase. Job
   `alertas-demora` cada hora; se reabre pasado `fases.alerta_cada_horas` (nulo = 72 h) y mover la cierra.
 - **Trabado** — `logistica_bandeja().trabados`, el grupo «Trabados» y el número de la gráfica de la cadena: unidad demorada a la que le falta un requisito bloqueante de su fase siguiente (la

@@ -23,6 +23,7 @@ import type { DatosDeLaLista, ParaMarcar } from '../../listado/components/tipos'
 import { useNumerosEnTexto } from '@/shared/ui/numero-de-lead'
 import { useDrawerDeLead } from '../hooks/use-drawer-de-lead'
 import { useLeadRapido } from '../hooks/use-lead-rapido'
+import { NuevaOportunidadDelLead } from '../../oportunidades/components/nueva-oportunidad-del-lead'
 import { EdicionDelResumenDiferido } from './diferidos'
 import {
   CuerpoDelRapido,
@@ -42,7 +43,7 @@ type Props = DatosDeLaLista & {
   soloMios: boolean
   // Quien mira tiene `leads.editar`: con el lead en su cartera, el resumen ofrece «Editar».
   puedeEditar: boolean
-  // Quien mira tiene `leads.telefonos_extra.editar` (con el lead en su cartera, el resumen agrega, rotula y quita extras) y `leads.configurar` (el
+  // Quien mira tiene `leads.telefonos_extra.editar` (con el lead en su cartera, el panel de edición agrega, rotula y quita extras) y `leads.configurar` (el
   // enlace «Cambiar el máximo»).
   puedeEditarExtras: boolean
   puedeConfigurar: boolean
@@ -211,6 +212,28 @@ function EdicionDelDrawer(props: PropsDeLaEdicion) {
   )
 }
 
+// «Nueva oportunidad…» dentro del resumen (`?lead=<id>&panel=oportunidad-rapida`), también dentro del drawer por lo mismo que el panel de edición. Sólo con
+// `leads.editar` y el lead en la cartera (como el «⋯» que lo pide).
+function OportunidadDelDrawer(props: {
+  lead: FilaDeLead | null
+  puedeEditar: boolean
+  pedida: boolean
+  alCerrar: () => void
+}) {
+  const { lead, puedeEditar, pedida, alCerrar } = props
+  if (lead === null || !puedeEditar || !lead.enCartera) {
+    return null
+  }
+  return (
+    <NuevaOportunidadDelLead
+      leadId={lead.id}
+      nombre={lead.nombre}
+      abierto={pedida}
+      alCerrar={alCerrar}
+    />
+  )
+}
+
 // El drawer rápido de un lead (`?lead=`) sin salir de la lista: «Resumen» (los datos), «Seguimientos»
 // (`?pestana=seguimientos`: la línea de tiempo con anotar) y «Recordatorios» (`?pestana=recordatorios`:
 // «Tus recordatorios» con agendar); cada pestaña lee lo suyo al elegirse. Se dibuja enseguida
@@ -226,7 +249,8 @@ export function DrawerDeLead({
   marcar,
   ...datos
 }: Props) {
-  const { id, pestana, conModal, elegirPestana, cerrar, editar, editando } = useDrawerDeLead()
+  const drawer = useDrawerDeLead()
+  const { id, pestana, conModal, elegirPestana, cerrar, editar, editando } = drawer
   const idValido = id !== null && ES_GUID.safeParse(id).success
   const { lectura, reintentar } = useLeadRapido(idValido ? id : null, conModal)
   // Se guardó el lead (o sus extras) desde el panel: el resumen lo vuelve a leer, también los teléfonos.
@@ -263,7 +287,7 @@ export function DrawerDeLead({
         ultimo={ultimo}
         reintentar={reintentar}
         datos={datos}
-        telefonos={{ puedeEditarExtras, puedeConfigurar, revision, editando }}
+        telefonos={{ revision }}
         alEditar={puedeEditar ? editar : null}
         huecos={datos.huecosDelResumen}
         menu={(lead) => (
@@ -286,6 +310,12 @@ export function DrawerDeLead({
         puedeEditarExtras={puedeEditarExtras}
         puedeConfigurar={puedeConfigurar}
         alGuardado={alGuardado}
+      />
+      <OportunidadDelDrawer
+        lead={mostrado}
+        puedeEditar={puedeEditar}
+        pedida={drawer.nuevaOportunidad}
+        alCerrar={drawer.cerrarModal}
       />
     </Drawer>
   )

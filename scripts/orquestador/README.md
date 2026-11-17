@@ -13,16 +13,17 @@ Nunca toca el árbol de trabajo de la principal: crea sus worktrees en `.orquest
 
 ## Qué hay
 
-| Dónde                                    | Qué es                                                                               |
-| ---------------------------------------- | ------------------------------------------------------------------------------------ |
-| `scripts/orquestador/orquestador.sh`     | El bucle y los comandos (abajo)                                                      |
-| `scripts/orquestador/config.env`         | `PROYECTO`, paralelo, modelos y límites. Se versiona: sin secretos                   |
-| `scripts/orquestador/prompts/`           | Lo que recibe cada sesión: `tarea.md`, `planificar.md`, `arreglar.md`, `retomar.md`  |
-| `scripts/orquestador/plantilla-tarea.md` | La forma de una spec (la copia `nueva`)                                              |
-| `.orquestador/config.local.env`          | Lo de tu máquina, pisa a `config.env`: `NTFY_TEMA`, `PARALELO`, `PATH_EXTRA`         |
-| `.orquestador/cola/T*.md`                | Una tarea por archivo: frontmatter + la spec con tus decisiones                      |
-| `.orquestador/estado/`                   | Lo crea él: el estado de cada tarea, los logs, los prompts y lo que dijo cada sesión |
-| `.orquestador/worktrees/`                | Lo crea él: un worktree por tarea en curso                                           |
+| Dónde                                            | Qué es                                                                                                         |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `scripts/orquestador/orquestador.sh`             | El bucle y los comandos (abajo)                                                                                |
+| `scripts/orquestador/config.env`                 | `PROYECTO`, paralelo, modelos y límites. Se versiona: sin secretos                                             |
+| `scripts/orquestador/prompts/`                   | Lo que recibe cada sesión: `tarea.md`, `planificar.md`, `arreglar.md`, `retomar.md`                            |
+| `scripts/orquestador/plantilla-tarea.md`         | La forma de una spec (la copia `nueva`)                                                                        |
+| `scripts/orquestador/dependencias-aprobadas.txt` | Lo único que una sesión puede agregar con pnpm (lo vigila el hook); sumar uno va en el PR con su justificación |
+| `.orquestador/config.local.env`                  | Lo de tu máquina, pisa a `config.env`: `NTFY_TEMA`, `PARALELO`, `PATH_EXTRA`                                   |
+| `.orquestador/cola/T*.md`                        | Una tarea por archivo: frontmatter + la spec con tus decisiones                                                |
+| `.orquestador/estado/`                           | Lo crea él: el estado de cada tarea, los logs, los prompts y lo que dijo cada sesión                           |
+| `.orquestador/worktrees/`                        | Lo crea él: un worktree por tarea en curso                                                                     |
 
 ## Una tarea
 
@@ -68,6 +69,6 @@ Si el servicio no encuentra `claude`, `pnpm` o `node`, agrega sus rutas a `PATH_
   caído (desde el 3.er intento, con `MODELO_ARREGLAR_DIFICIL`). Rama atrasada → la pone al día (merge, nunca fuerza).
 - **Límite del plan** de Claude: pausa `PAUSA_POR_LIMITE_MIN` minutos y retoma, sin gastar intentos.
 - **Trabada**: tras `MAX_RETOMAS` sesiones sin publicar, `MAX_ARREGLOS` arreglos fallidos, o cuando la sesión dice que no puede (falta
-  una decisión tuya, una dependencia nueva, un fallo ajeno). Avisa con el motivo, suelta el carril, deja el worktree para que mires y
-  sigue con lo que no depende de ella.
+  una decisión tuya, una dependencia fuera de la lista que ni como último recurso se justifica, un fallo ajeno). Avisa con el motivo,
+  suelta el carril, deja el worktree para que mires y sigue con lo que no depende de ella.
 - Cada PR corre el CI completo: con varias a la vez, mira los minutos de Actions. Cada carril con Supabase y un e2e ronda 3–4 GB de RAM.

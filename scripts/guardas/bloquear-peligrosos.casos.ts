@@ -1,5 +1,8 @@
+import { BLOQUEA_DEPENDENCIAS, PASA_DEPENDENCIAS } from './bloquear-peligrosos-dependencias.casos'
+
 // Las tablas de `bloquear-peligrosos.test.ts`: cada comando con lo que el hook debe hacer. `ENOTRA` y `ENMAIN` se
-// reemplazan por las carpetas de los repos temporales de la prueba.
+// reemplazan por las carpetas de los repos temporales de la prueba. Lo de la lista aprobada, en
+// `bloquear-peligrosos-dependencias.casos.ts`.
 export const BLOQUEA = [
   // lo irreversible
   'git reset --hard HEAD~1',
@@ -72,6 +75,7 @@ export const BLOQUEA = [
   'npm add zod',
   'yarn add zod',
   'yarn install zod',
+  ...BLOQUEA_DEPENDENCIAS,
   // con redirecciones y pipes, el paquete sigue contando
   'pnpm install lodash 2>&1',
   'pnpm i -D foo | tail',
@@ -181,6 +185,9 @@ export const PASA = [
   'npm i < /dev/null',
   'pnpm install --filter web',
   'pnpm install --dir apps/web 2>&1',
+  'pnpm --filter web install',
+  'pnpm -C ENMAIN test',
+  ...PASA_DEPENDENCIAS,
   'npx playwright test --list 2>&1',
   'npx playwright test --list > lista.txt',
   'npx playwright test e2e/a.spec.ts --list | head',

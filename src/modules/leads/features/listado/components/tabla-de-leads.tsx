@@ -12,14 +12,20 @@ import { tipoDelCatalogo } from '../../../entities/catalogos'
 import type { OrigenConEstado } from '../../../entities/ficha'
 import { camposDeTabla } from '../../../entities/listado'
 import type { FilaDeLead } from '../../../entities/listado'
-import { BotonDeOportunidad } from './boton-de-oportunidad'
+import { useIrALasOportunidades } from '../../oportunidades/hooks/use-ir-a-las-oportunidades'
 import { MenuDeLead } from '../../marcas/components/menu-de-lead'
 import { BadgeDeTipo } from './badge-de-tipo'
 import { CeldaDeCampo } from './celda-de-campo'
 import { NombreDeFila } from './nombre-de-fila'
 import { telefonoDeLista } from './telefono-de-lista'
 import { OrigenDelLead } from './origen-del-lead'
-import { accionesDelMenu, type DatosDeLaLista, origenDelCatalogo, type ParaMarcar } from './tipos'
+import {
+  accionesDelMenu,
+  type DatosDeLaLista,
+  origenDelCatalogo,
+  type ParaMarcar,
+  verOportunidadesDelMenu,
+} from './tipos'
 import {
   RecordatorioDeFila,
   UltimoSeguimientoDeFila,
@@ -27,11 +33,11 @@ import {
   type DatosDeUltimoContacto,
 } from './ultimo-contacto'
 
-// «+ Oportunidad» y el «⋯» de la fila, juntos a la derecha.
+// El «⋯» de la fila, a la derecha: lo único que se hace desde la fila (crear una oportunidad también).
 function AccionesDeLaFila({ lead, marcar }: { lead: FilaDeLead; marcar: ParaMarcar }) {
+  const irALasOportunidades = useIrALasOportunidades()
   return (
     <div className="flex items-center justify-end gap-1">
-      <BotonDeOportunidad lead={lead} marcar={marcar} conTexto />
       <MenuDeLead
         leadId={lead.id}
         nombre={lead.nombre}
@@ -40,6 +46,7 @@ function AccionesDeLaFila({ lead, marcar }: { lead: FilaDeLead; marcar: ParaMarc
         alGestionar={marcar.alGestionar}
         puedeEnviar={marcar.eliminables.includes(lead.id)}
         acciones={accionesDelMenu(marcar, lead)}
+        verOportunidades={verOportunidadesDelMenu(irALasOportunidades, lead)}
       />
     </div>
   )
@@ -103,7 +110,7 @@ export function TablaDeLeads(props: Props) {
     numeroBuscado,
     ultimoContacto,
   } = props
-  const contextoDe = useContextoDeUltimoContacto(ultimoContacto, marcar)
+  const contexto = useContextoDeUltimoContacto(ultimoContacto)
   const columnas = camposDeTabla(campos)
   return (
     <TablaDeLista>
@@ -140,10 +147,10 @@ export function TablaDeLeads(props: Props) {
               <OrigenDeLaFila origen={origenDelCatalogo(origenes, lead.origenId)} />
             </TableCell>
             <TableCell className="max-w-56">
-              <UltimoSeguimientoDeFila lead={lead} contexto={contextoDe(lead)} />
+              <UltimoSeguimientoDeFila lead={lead} contexto={contexto} />
             </TableCell>
             <TableCell className="max-w-48">
-              <RecordatorioDeFila lead={lead} contexto={contextoDe(lead)} />
+              <RecordatorioDeFila lead={lead} contexto={contexto} />
             </TableCell>
             {columnas.map((campo) => (
               <TableCell key={campo.clave} className="max-w-48 truncate">

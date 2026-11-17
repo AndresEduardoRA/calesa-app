@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { Campo } from '@/shared/ui/campo'
 import { ModalDeFormulario } from '@/shared/ui/modal-de-formulario'
 import { useRegional } from '@/shared/ui/regional'
 import { LARGO_MAXIMO_DE_TITULO, type Oportunidad } from '../../../entities/oportunidad'
+import { useAvisoDeOportunidades } from '../hooks/use-aviso-de-oportunidades'
 import { useFormularioDeOportunidadRapida } from '../hooks/use-formulario-de-oportunidad-rapida'
+import { AvisoDeOportunidadesDelLead } from './aviso-de-oportunidades'
 
 type Props = {
   abierto: boolean
@@ -18,9 +21,10 @@ type Props = {
 
 const ID = 'oportunidad-rapida'
 
-// «+ Oportunidad» desde una fila del listado (`?panel=oportunidad-rapida&para=<id>`): sólo el título (el nombre del lead) y el monto; entra en la
-// etapa inicial del embudo por defecto de quien mira, que la base crea si todavía no lo tiene. El vehículo y las notas se agregan después con
-// «Editar» en la ficha. Quien lo monta le da una `key` por apertura: cada una empieza de nuevo.
+// «Nueva oportunidad…» del «⋯» de un lead (`?panel=oportunidad-rapida`): primero lo que el lead ya tiene (`<AvisoDeOportunidadesDelLead>`: «Crear igual»
+// o «Cancelar»; sin ninguna, abre directo en el formulario) y después sólo el título (el nombre del lead) y el monto; entra en la etapa inicial del
+// embudo por defecto de quien mira, que la base crea si todavía no lo tiene. El vehículo y las notas se agregan después con «Editar» en la ficha.
+// Quien lo monta le da una `key` por apertura: cada una empieza de nuevo y lee el aviso una vez.
 export function ModalDeOportunidadRapida({
   abierto,
   alCerrar,
@@ -31,6 +35,24 @@ export function ModalDeOportunidadRapida({
 }: Props) {
   const { monedaBase } = useRegional()
   const f = useFormularioDeOportunidadRapida({ leadId, nombreDelLead, abierto, alCrear })
+  const { lectura, reintentar } = useAvisoDeOportunidades(leadId, abierto)
+  const [sigue, setSigue] = useState(false)
+  if (!sigue && lectura.tipo !== 'sin_oportunidades') {
+    return (
+      <AvisoDeOportunidadesDelLead
+        abierto={abierto}
+        alCerrar={alCerrar}
+        leadId={leadId}
+        nombreDelLead={nombreDelLead}
+        lectura={lectura}
+        reintentar={reintentar}
+        alSeguir={() => {
+          setSigue(true)
+        }}
+        focoAlCerrar={focoAlCerrar}
+      />
+    )
+  }
   return (
     <ModalDeFormulario
       id={ID}

@@ -5,12 +5,23 @@ import { ETIQUETA_DE_FAVORITO, ETIQUETA_DE_TACHADO } from './marcas'
 import { ETIQUETA_DE_ENVIAR } from './papelera'
 
 export type ClaveDeAccionDeLead =
-  'agendar' | 'anotar' | 'etiquetas' | 'favorito' | 'tachado' | 'actividad' | 'papelera'
+  | 'agendar'
+  | 'anotar'
+  | 'oportunidad'
+  | 'oportunidades'
+  | 'etiquetas'
+  | 'favorito'
+  | 'tachado'
+  | 'actividad'
+  | 'papelera'
 
 // El texto de cada una. Las que abren algo encima (un modal, el selector de etiquetas) llevan «…»; «Favorito» y «Tachado» son casillas.
 export const ETIQUETA_DE_ACCION_DE_LEAD: Readonly<Record<ClaveDeAccionDeLead, string>> = {
   agendar: 'Agendar recordatorio…',
   anotar: 'Anotar seguimiento…',
+  oportunidad: 'Nueva oportunidad…',
+  // Lleva a otra página (la sección «Oportunidades» de la ficha): sin «…».
+  oportunidades: 'Ver oportunidades',
   etiquetas: 'Etiquetas…',
   favorito: ETIQUETA_DE_FAVORITO,
   tachado: ETIQUETA_DE_TACHADO,
@@ -19,18 +30,21 @@ export const ETIQUETA_DE_ACCION_DE_LEAD: Readonly<Record<ClaveDeAccionDeLead, st
   papelera: ETIQUETA_DE_ENVIAR,
 }
 
-// El orden, en bloques: lo que se hace seguido arriba (agendar y anotar), lo que se marca en medio (etiquetas, favorito y tachado), «Ver
+// El orden, en bloques: lo que se hace seguido arriba (agendar, anotar, crear una oportunidad y ir a las que ya tiene), lo que se marca en medio (etiquetas, favorito y tachado), «Ver
 // actividad» (sólo la ficha, con `actividad.ver`) y lo destructivo al final y separado (la papelera). Entre dos bloques con algo va un separador.
 export const BLOQUES_DEL_MENU_DE_LEAD: readonly (readonly ClaveDeAccionDeLead[])[] = [
-  ['agendar', 'anotar'],
+  ['agendar', 'anotar', 'oportunidad', 'oportunidades'],
   ['etiquetas', 'favorito', 'tachado'],
   ['actividad'],
   ['papelera'],
 ]
 
 export type PermisosDelMenuDeLead = {
-  // Con el lead en la cartera y `leads.editar`: agendar un recordatorio y anotar un seguimiento.
+  // Con el lead en la cartera y `leads.editar`: agendar un recordatorio, anotar un seguimiento y crear una oportunidad.
   actuar: boolean
+  // Con el lead en la cartera de quien mira (la única que ve oportunidades): ir a las que ya tiene. No pide `leads.editar`; si no tiene
+  // ninguna, la sección lo dice con su estado vacío.
+  verOportunidades?: boolean
   // Con `leads.eliminar` sobre este lead (`puedeEnviarLead()`).
   enviar: boolean
   // Con `actividad.ver` y en la ficha (la única superficie que pasa a dónde ir).
@@ -43,6 +57,8 @@ export function accionesDeLead(puede: PermisosDelMenuDeLead): ClaveDeAccionDeLea
   const visible: Readonly<Record<ClaveDeAccionDeLead, boolean>> = {
     agendar: puede.actuar,
     anotar: puede.actuar,
+    oportunidad: puede.actuar,
+    oportunidades: puede.verOportunidades === true,
     etiquetas: true,
     favorito: true,
     tachado: true,

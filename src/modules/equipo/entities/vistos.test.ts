@@ -4,6 +4,7 @@ import {
   consultasDeLaFirma,
   firmaDeConsultas,
   idDeLaUrl,
+  idsCubiertosDeLaFirma,
   lecturaDeVistosDesde,
   marcaDeVisto,
   MODULOS_DE_VISTOS,
@@ -35,6 +36,23 @@ describe('vistos', () => {
     expect(marcaDeVisto(B, lectura, { ...VISTOS_POR_DEFECTO, ultimo: false })).toBe('visto')
     expect(marcaDeVisto(A, lectura, { ...VISTOS_POR_DEFECTO, activado: false })).toBeNull()
     expect(marcaDeVisto('otro', SIN_VISTOS, VISTOS_POR_DEFECTO)).toBeNull()
+  })
+
+  it('«nuevo» sólo con «Vistos» encendido y el id cubierto por la lectura', () => {
+    const lectura = { vistos: new Set([A]), ultimo: B }
+    expect(marcaDeVisto('otro', lectura, VISTOS_POR_DEFECTO, true)).toBe('nuevo')
+    expect(marcaDeVisto('otro', lectura, VISTOS_POR_DEFECTO, false)).toBeNull()
+    expect(
+      marcaDeVisto('otro', lectura, { ...VISTOS_POR_DEFECTO, activado: false }, true),
+    ).toBeNull()
+    // Lo visto sigue visto con o sin lectura que lo cubra; con «último» apagado, el último es sólo visto.
+    expect(marcaDeVisto(A, lectura, VISTOS_POR_DEFECTO, true)).toBe('visto')
+    expect(marcaDeVisto(B, lectura, { ...VISTOS_POR_DEFECTO, ultimo: false }, true)).toBe('visto')
+  })
+
+  it('los ids cubiertos son los que la firma pide, con el tope por tipo', () => {
+    expect(idsCubiertosDeLaFirma('')).toEqual(new Set())
+    expect(idsCubiertosDeLaFirma(`lead:${A},${B}|tarea:${B}`)).toEqual(new Set([A, B]))
   })
 
   it('abrir uno lo vuelve el último y lee lo de la base', () => {

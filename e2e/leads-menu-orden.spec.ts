@@ -33,6 +33,8 @@ test.describe.configure({ mode: 'serial' })
 const COMPLETO = [
   'Agendar recordatorio…',
   'Anotar seguimiento…',
+  'Nueva oportunidad…',
+  'Ver oportunidades',
   'Etiquetas…',
   'Favorito',
   'Tachado',
@@ -112,7 +114,7 @@ test('con todo, el orden es el mismo en la fila, la tarjeta del kanban, el resum
   await irALeads(page)
   const deLaFila = await abrirMenuDelLead(page, nombre(corto))
   expect(await opciones(deLaFila)).toEqual(COMPLETO)
-  // Tres bloques: dos separadores (entre agendar/anotar y las marcas, y antes de la papelera).
+  // Tres bloques: dos separadores (entre lo que se hace con el lead y las marcas, y antes de la papelera).
   await expect(separadores(deLaFila)).toHaveCount(2)
   await capturar(page, info, 'menu-del-lead-fila')
   await cerrar(page, deLaFila)

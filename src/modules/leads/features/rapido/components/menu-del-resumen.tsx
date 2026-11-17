@@ -2,9 +2,11 @@
 
 import { PANEL_ANOTAR_SEGUIMIENTO } from '../../../entities/edicion-de-seguimiento'
 import type { FilaDeLead } from '../../../entities/listado'
+import { PANEL_OPORTUNIDAD_RAPIDA } from '../../../entities/oportunidad-rapida'
 import { PANEL_AGENDAR_RECORDATORIO } from '../../../entities/recordatorios'
 import { MenuDeLead } from '../../marcas/components/menu-de-lead'
 import type { ParaMarcar } from '../../listado/components/tipos'
+import { useIrALasOportunidades } from '../../oportunidades/hooks/use-ir-a-las-oportunidades'
 import { useDrawerDeLead } from '../hooks/use-drawer-de-lead'
 
 type Props = {
@@ -20,9 +22,11 @@ type Props = {
 }
 
 // El «⋯» del resumen de un lead: la lista de siempre (`accionesDeLead()`). Agendar y anotar eligen su pestaña y abren su modal dentro
-// del resumen (`?pestana=recordatorios&panel=agendar-recordatorio`, `?pestana=seguimientos&panel=anotar-seguimiento`).
+// del resumen (`?pestana=recordatorios&panel=agendar-recordatorio`, `?pestana=seguimientos&panel=anotar-seguimiento`); «Nueva oportunidad…» abre
+// el suyo sobre «Resumen» (`?panel=oportunidad-rapida`) y «Ver oportunidades» va a la ficha.
 export function MenuDelResumen({ lead, marcar, puedeEditar, alMarcar, alEnviado }: Props) {
   const drawer = useDrawerDeLead()
+  const irALasOportunidades = useIrALasOportunidades()
   const acciones =
     puedeEditar && lead.enCartera
       ? {
@@ -31,6 +35,9 @@ export function MenuDelResumen({ lead, marcar, puedeEditar, alMarcar, alEnviado 
           },
           alAgendar: () => {
             drawer.abrirModal('recordatorios', PANEL_AGENDAR_RECORDATORIO)
+          },
+          alNuevaOportunidad: () => {
+            drawer.abrirModal('resumen', PANEL_OPORTUNIDAD_RAPIDA)
           },
         }
       : undefined
@@ -43,6 +50,13 @@ export function MenuDelResumen({ lead, marcar, puedeEditar, alMarcar, alEnviado 
       alGestionar={marcar.alGestionar}
       puedeEnviar={marcar.eliminables.includes(lead.id)}
       acciones={acciones}
+      verOportunidades={
+        lead.enCartera
+          ? () => {
+              irALasOportunidades(lead.id)
+            }
+          : undefined
+      }
       papelera={{ alEnviado }}
       alMarcar={alMarcar}
       conBorde

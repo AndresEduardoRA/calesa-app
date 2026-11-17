@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LEAD_QUE_NO_VES, nombreDeLead, vinculosDesde } from './vinculo'
+import { LEAD_QUE_NO_VES, leadVinculadoDe, nombreDeLead, vinculosDesde } from './vinculo'
 
 const LEAD = '00000000-0000-4000-8000-000000000001'
 const OTRO = '00000000-0000-4000-8000-000000000002'
@@ -34,5 +34,21 @@ describe('nombreDeLead', () => {
   it('el nombre si quien mira ve al lead; si no, lo dice sin nombrarlo', () => {
     expect(nombreDeLead({ leadNombre: 'Ana Quispe' })).toBe('Ana Quispe')
     expect(nombreDeLead({ leadNombre: null })).toBe(LEAD_QUE_NO_VES)
+  })
+})
+
+describe('leadVinculadoDe', () => {
+  it('el lead vigente que quien mira ve, con sus números', () => {
+    expect(leadVinculadoDe(vinculosDesde([vinculo(LEAD, null)]))).toEqual({
+      id: LEAD,
+      nombre: 'Ana Quispe',
+      numeros: { numero: 12, numeroPropio: null, creadorDelPropio: null },
+    })
+  })
+
+  it('un vigente que no se ve no se propone, igual que un vehículo sin vínculo vigente', () => {
+    expect(leadVinculadoDe(vinculosDesde([vinculo(LEAD, null, null)]))).toBeNull()
+    expect(leadVinculadoDe(vinculosDesde([vinculo(LEAD, '2026-10-02T12:00:00+00:00')]))).toBeNull()
+    expect(leadVinculadoDe(vinculosDesde([]))).toBeNull()
   })
 })

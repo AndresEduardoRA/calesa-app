@@ -1,10 +1,8 @@
 import type { Route } from 'next'
 import Link from 'next/link'
 import { cn } from 'cn'
-import { Button } from '@/shared/ui/button'
 import { useAhora } from '@/shared/ui/use-ahora'
 import { useRegional } from '@/shared/ui/regional'
-import { accionesDelMenu, type ParaMarcar } from './tipos'
 import { IconoDelCatalogo } from '@/shared/ui/icono-del-catalogo/icono-del-catalogo'
 import type { FilaDeLead } from '../../../entities/listado'
 import {
@@ -28,32 +26,14 @@ export type ParaUltimoContacto = {
   tipos: readonly TipoDeSeguimientoEnCatalogo[]
   ahora: Date
   zona: string
-  // Con el lead en la cartera y `leads.editar`: el atajo de cada vacío. Nulo sin el permiso o fuera de la cartera.
-  alAnotar: (() => void) | null
-  alAgendar: (() => void) | null
-  // En la tarjeta del celular, en media columna: la hora debajo del título (en la tabla, a su lado).
-  apilado?: boolean
 }
 
 const ENLACE =
   'rounded-(--radius-sm) text-(--color-ink) underline-offset-2 hover:underline focus-visible:underline'
 
-// El atajo de un vacío: un botón de texto del alto táctil en el celular.
-function AtajoDeVacio({ texto, alPulsar }: { texto: string; alPulsar: () => void }) {
-  return (
-    <Button
-      type="button"
-      variant="link"
-      className="inline-flex h-auto min-h-11 w-fit px-0 text-(length:--text-xs) md:min-h-7"
-      onClick={alPulsar}
-    >
-      {texto}
-    </Button>
-  )
-}
-
-// El último seguimiento del lead: su tipo (con el icono del catálogo), su título y «hace 3 días»; un clic abre la ficha en sus seguimientos. Si el último es
-// privado de otra persona sólo se dice «hace X» (la fecha es pública); sin seguimientos, «Sin seguimientos» y el atajo para anotar el primero.
+// El último seguimiento del lead en dos líneas: arriba su tipo (con el icono del catálogo) y su título, debajo «hace 3 días». Un clic abre la ficha en sus
+// seguimientos. Si el último es privado de otra persona sólo se dice «hace X» (la fecha es pública). Sin seguimientos, el texto «Sin seguimientos»: crear uno
+// es del «⋯» (una sola puerta por acción).
 export function UltimoSeguimientoDeFila({
   lead,
   contexto,
@@ -63,29 +43,16 @@ export function UltimoSeguimientoDeFila({
 }) {
   const { ultimoSeguimientoEn: en, ultimoSeguimiento: detalle } = lead
   if (en === null) {
-    // Sin envoltorio: cada fila de 100 paga cada nodo (`docs/RENDIMIENTO.md`); el texto y el atajo quedan uno al lado del otro y bajan si no caben.
-    return (
-      <>
-        <span className="mr-2 text-(length:--text-xs) text-(--color-ink-soft)">
-          Sin seguimientos
-        </span>
-        {contexto.alAnotar ? (
-          <AtajoDeVacio texto="Anotar seguimiento" alPulsar={contexto.alAnotar} />
-        ) : null}
-      </>
-    )
+    return <span className="text-(length:--text-xs) text-(--color-ink-soft)">Sin seguimientos</span>
   }
   const cuando = textoDelUltimoSeguimiento(en, contexto)
   const tipo = detalle ? tipoDeSeguimientoDelCatalogo(contexto.tipos, detalle.tipoId) : null
-  // Una línea y pocos nodos (cada fila de 100 paga cada uno): icono, título (que se corta) y «hace X» (que no).
+  // Pocos nodos (cada fila de 100 paga cada uno): el enlace es la cuadrícula de dos columnas (icono y título arriba, la hora bajo el título) y
+  // el título se corta; la hora, no.
   return (
     <Link
       href={rutaDelSeguimientoDeFila(lead.id) as Route}
-      className={cn(
-        'min-w-0 items-center gap-x-1',
-        contexto.apilado ? 'grid grid-cols-[auto_minmax(0,1fr)]' : 'flex',
-        ENLACE,
-      )}
+      className={cn('grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-1', ENLACE)}
       data-ultimo-seguimiento=""
     >
       {detalle ? (
@@ -100,7 +67,7 @@ export function UltimoSeguimientoDeFila({
       <span
         className={cn(
           'text-(length:--text-xs) text-(--color-ink-soft)',
-          contexto.apilado ? (detalle ? 'col-start-2' : 'col-span-2') : 'shrink-0',
+          detalle ? 'col-start-2' : 'col-span-2',
         )}
       >
         {cuando}
@@ -109,8 +76,8 @@ export function UltimoSeguimientoDeFila({
   )
 }
 
-// El próximo recordatorio de quien mira sobre el lead: su título y «en 2 días»; vencido, resaltado y dicho con texto («vencido hace 1 día»). Un clic lo abre.
-// Sin recordatorio, un guion y el atajo para programar uno.
+// El próximo recordatorio de quien mira sobre el lead en dos líneas: arriba de qué es, debajo «en 2 días»; vencido, resaltado y dicho con texto («vencido hace
+// 1 día»). Un clic lo abre. Sin recordatorio, un guion: agendarlo es del «⋯».
 export function RecordatorioDeFila({
   lead,
   contexto,
@@ -121,21 +88,16 @@ export function RecordatorioDeFila({
   const recordatorio = lead.proximoRecordatorio
   if (recordatorio === null) {
     return (
-      <>
-        <span role="img" aria-label="Sin recordatorio" className="mr-2 text-(--color-ink-faint)">
-          —
-        </span>
-        {contexto.alAgendar ? (
-          <AtajoDeVacio texto="Programar" alPulsar={contexto.alAgendar} />
-        ) : null}
-      </>
+      <span role="img" aria-label="Sin recordatorio" className="text-(--color-ink-faint)">
+        —
+      </span>
     )
   }
   const { texto, vencido } = textoDelRecordatorio(recordatorio.recordarEn, contexto)
   return (
     <Link
       href={rutaDelRecordatorioDeFila(lead.id, lead.enCartera, recordatorio.id) as Route}
-      className={cn('min-w-0 items-center gap-x-1', contexto.apilado ? 'grid' : 'flex', ENLACE)}
+      className={cn('grid min-w-0 items-center', ENLACE)}
       data-recordatorio-de-fila=""
       data-vencido={vencido ? 'true' : undefined}
     >
@@ -143,7 +105,6 @@ export function RecordatorioDeFila({
       <span
         className={cn(
           'w-fit text-(length:--text-xs)',
-          !contexto.apilado && 'shrink-0',
           vencido
             ? 'rounded-(--radius-sm) bg-(--color-aviso-soft) px-1 font-medium text-(--color-aviso-ink)'
             : 'text-(--color-ink-soft)',
@@ -155,21 +116,11 @@ export function RecordatorioDeFila({
   )
 }
 
-// El contexto de cada fila: el reloj de la lista (uno solo, cada minuto), la zona de la empresa y los atajos de los vacíos de ESA fila
-// (sólo con el lead en la cartera y `leads.editar`, como el «⋯»).
-export function useContextoDeUltimoContacto(datos: DatosDeUltimoContacto, marcar: ParaMarcar) {
+// El contexto de la lista: el reloj (uno solo, cada minuto), los tipos de seguimiento y la zona de la empresa; el mismo para todas las filas.
+export function useContextoDeUltimoContacto(datos: DatosDeUltimoContacto): ParaUltimoContacto {
   const ahora = useAhora(datos.ahora)
   const { zonaHoraria: zona } = useRegional()
-  return (lead: FilaDeLead): ParaUltimoContacto => {
-    const acciones = accionesDelMenu(marcar, lead)
-    return {
-      tipos: datos.tipos,
-      ahora,
-      zona,
-      alAnotar: acciones?.alAnotar ?? null,
-      alAgendar: acciones?.alAgendar ?? null,
-    }
-  }
+  return { tipos: datos.tipos, ahora, zona }
 }
 
 // Los dos datos en la tarjeta del celular: dos columnas con su rótulo arriba (una sola con el texto al 200 %). `dt` y `dd` van sin envoltorio
@@ -187,11 +138,11 @@ export function UltimoContactoDeTarjeta({
         Último seguimiento
       </dt>
       <dd className="min-w-0">
-        <UltimoSeguimientoDeFila lead={lead} contexto={{ ...contexto, apilado: true }} />
+        <UltimoSeguimientoDeFila lead={lead} contexto={contexto} />
       </dd>
       <dt className="truncate text-(length:--text-xs) text-(--color-ink-soft)">Recordatorio</dt>
       <dd className="min-w-0">
-        <RecordatorioDeFila lead={lead} contexto={{ ...contexto, apilado: true }} />
+        <RecordatorioDeFila lead={lead} contexto={contexto} />
       </dd>
     </dl>
   )

@@ -14,6 +14,16 @@ describe('esquemaCrearProyecto', () => {
     expect(esquemaCrearProyecto.safeParse({ id: ID, vehiculoId: VEHICULO }).success).toBe(true)
   })
 
+  it('acepta un vehículo con su lead', () => {
+    expect(
+      esquemaCrearProyecto.safeParse({
+        id: ID,
+        vehiculoId: VEHICULO,
+        leadId: '00000000-0000-4000-8000-000000000003',
+      }).success,
+    ).toBe(true)
+  })
+
   it('acepta un externo con etiqueta', () => {
     expect(esquemaCrearProyecto.safeParse({ id: ID, vehiculoEtiqueta: 'Camión' }).success).toBe(
       true,

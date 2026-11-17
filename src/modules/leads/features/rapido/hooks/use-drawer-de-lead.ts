@@ -1,7 +1,7 @@
 'use client'
 
 import { parseAsString, useQueryStates } from 'nuqs'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
 import { recordarQuienAbre } from '@/shared/ui/foco-de-quien-abre'
 import { abrirConVuelta, useVueltaDelFoco } from '@/shared/ui/vuelta-del-foco'
@@ -13,7 +13,9 @@ import {
   pestanaDelRapido,
   type PestanaDelRapido,
 } from '../../../entities/rapido'
+import { PANEL_OPORTUNIDAD_RAPIDA } from '../../../entities/oportunidad-rapida'
 import { CLAVE_DE_RECORDATORIO } from '../../../entities/recordatorios'
+import { CLAVE_DE_EXTRA_EN_PANEL, VALOR_DE_EXTRA_NUEVO } from '../../../entities/telefonos'
 
 // Qué lead está abierto en el drawer rápido, en la URL (`?lead=`), y en qué pestaña (`?pestana=`):
 // sobrevive a recargar y se puede compartir. Abrir suma al historial («atrás» lo cierra) y empieza
@@ -27,6 +29,7 @@ const PARAMETROS = {
   [CLAVE_DE_PANEL]: parseAsString,
   [CLAVE_DE_SEGUIMIENTO]: parseAsString,
   [CLAVE_DE_RECORDATORIO]: parseAsString,
+  [CLAVE_DE_EXTRA_EN_PANEL]: parseAsString,
 }
 
 // Lo de la pestaña que se va con ella (un modal que quedó en la URL no salta al volver).
@@ -49,6 +52,14 @@ export function useDrawerDeLead() {
   if (esperaSinPanel && parametros[CLAVE_DE_PANEL] === null) {
     setEsperaSinPanel(false)
   }
+  // `?lead=<id>&extra=nuevo` (el enlace de cuando el resumen agregaba extras) abre el panel de edición, donde está «Agregar teléfono».
+  const extraPedido = parametros[CLAVE_DE_EXTRA_EN_PANEL] === VALOR_DE_EXTRA_NUEVO
+  const sinPanel = parametros[CLAVE_DE_PANEL] === null
+  useEffect(() => {
+    if (id !== null && extraPedido && sinPanel) {
+      void setParametros({ [CLAVE_DE_PANEL]: PANEL_EDITAR_LEAD }, { history: 'replace' })
+    }
+  }, [id, extraPedido, sinPanel, setParametros])
   useVueltaDelFoco(CLAVE_DE_LEAD, id !== null && !esperaSinPanel)
   useVueltaDelFoco(CLAVE_DE_PANEL, editando || conModal)
   return {
@@ -56,6 +67,11 @@ export function useDrawerDeLead() {
     pestana,
     // Un modal de la pestaña abierto: el drawer no vuelve a leer su lead.
     conModal,
+    // «Nueva oportunidad…» está encima del resumen (`?lead=<id>&panel=oportunidad-rapida`).
+    nuevaOportunidad: id !== null && parametros[CLAVE_DE_PANEL] === PANEL_OPORTUNIDAD_RAPIDA,
+    cerrarModal: () => {
+      void setParametros({ [CLAVE_DE_PANEL]: null })
+    },
     // El panel de edición está encima del resumen (`?panel=editar-lead`).
     editando,
     editar: () => {

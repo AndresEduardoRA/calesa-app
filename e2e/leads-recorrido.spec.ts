@@ -67,6 +67,8 @@ test('A · el «⋯» de la asesora: sus acciones, cada modal y su descarte, y n
   expect(await opcionesDelMenu(menu)).toEqual([
     'Agendar recordatorio…',
     'Anotar seguimiento…',
+    'Nueva oportunidad…',
+    'Ver oportunidades',
     'Etiquetas…',
     'Favorito',
     'Tachado',
