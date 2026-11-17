@@ -42,7 +42,7 @@ type Props = DatosDeLaLista & {
   soloMios: boolean
   // Quien mira tiene `leads.editar`: con el lead en su cartera, el resumen ofrece «Editar».
   puedeEditar: boolean
-  // Quien mira tiene `leads.telefonos_extra.editar` (con el lead en su cartera, el resumen agrega, rotula y quita extras) y `leads.configurar` (el
+  // Quien mira tiene `leads.telefonos_extra.editar` (con el lead en su cartera, el panel de edición agrega, rotula y quita extras) y `leads.configurar` (el
   // enlace «Cambiar el máximo»).
   puedeEditarExtras: boolean
   puedeConfigurar: boolean
@@ -263,7 +263,7 @@ export function DrawerDeLead({
         ultimo={ultimo}
         reintentar={reintentar}
         datos={datos}
-        telefonos={{ puedeEditarExtras, puedeConfigurar, revision, editando }}
+        telefonos={{ revision }}
         alEditar={puedeEditar ? editar : null}
         huecos={datos.huecosDelResumen}
         menu={(lead) => (

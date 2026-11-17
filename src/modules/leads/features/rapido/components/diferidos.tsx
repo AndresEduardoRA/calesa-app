@@ -16,7 +16,7 @@ export const RecordatoriosDelRapidoDiferido = diferido(
   { esqueleto: <EsqueletoDeSeguimientos />, aviso: 'aqui' },
 )
 
-// Los teléfonos del resumen (el principal y los extras, con agregar, rotular y quitar): se piden al mostrar «Resumen», no al abrir el listado.
+// Los teléfonos del resumen (el principal y los extras, sólo lectura): se piden al mostrar «Resumen», no al abrir el listado.
 export const TelefonosDelResumenDiferido = diferido(
   () => import('./telefonos-del-resumen').then((modulo) => modulo.TelefonosDelResumen),
   {

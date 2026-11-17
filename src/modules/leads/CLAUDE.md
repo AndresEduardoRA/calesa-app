@@ -25,7 +25,7 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `cotizaciones.ver` en algún origen, sin mirar la cartera, la compone `src/app` con `cotizaciones/pantallas/lead`), `/leads/papelera`,
   `/leads/importar` (`leads.crear`), `POST /leads/exportar` (`leads.exportar`), `/configuracion/leads` («Campos» y las `lead_campo_*` piden
   `leads.campos.gestionar`; orígenes, tipos de lead y de seguimiento y `?seccion=embudo|portal|telefonos` (`features/plantillas/`), `leads.configurar`).
-  El modal «Agregar teléfono» es `?panel=agregar-telefono` en la ficha y `?extra=nuevo` dentro del panel de edición y del resumen (`?panel=` ya es el panel).
+  El modal «Agregar teléfono» es `?panel=agregar-telefono` en la ficha y `?extra=nuevo` dentro del panel de edición (`?panel=` ya es el panel; el resumen sólo lee los teléfonos).
   Todo modal en `?panel=` (`PANEL_*`); los de una fila llevan `para=<id>` y con `?lead=` no responden.
 - «+ Oportunidad» de la fila y la tarjeta del listado (`features/listado/components/boton-de-oportunidad.tsx`, `?panel=oportunidad-rapida&para=<id>`,
   `features/oportunidades/components/modal-de-oportunidad-rapida.tsx`): sólo `leads.editar` y el lead en la cartera, como anotar y agendar. Título (el nombre
