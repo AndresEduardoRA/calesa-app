@@ -489,6 +489,22 @@ las trampas, en `docs/LECCIONES.md`.
   en la pestaña «Diseño», con `diferido()`) y su sensor de teclado sobre el asa, con anuncios en español.
 - **El PDF, la tarjeta y el resumen no siguen el aspecto.** Siguen con su plantilla (la cuadrícula): el aspecto es de la hoja en pantalla (la de cotizar y la de una guardada, que son el mismo componente).
 
+- **«Compartir la cotización»: el texto se arma en el navegador, con las cifras ya escritas por el servidor.** `GET /cotizaciones/<id>/compartir` manda
+  `DatosParaCompartir` una vez por apertura: los montos salen de la **geometría de la tarjeta de lo guardado** (`lineasDeLaTarjeta()`, sólo lo del nivel
+  «todos», K4) con el formato del PDF, nunca de `valores` sueltos; el vehículo, sólo si quien pide lo ve. `textoParaCompartir()` (puro) arma el texto en cada
+  formato y zona sin volver a pedir. Las fotos tienen su ruta (`…/compartir/fotos`), que se pide al elegir «Fotos». Sin migración ni clave propia: quien ve la
+  cotización la comparte, como el PDF.
+- **La imagen que se copia es la portada pasada a PNG en el navegador.** La portada se guarda en WebP y el portapapeles pide `image/png`: armar otro PNG en el
+  servidor costaría un `ImageResponse` por pedido. Se pide con la caché del navegador (su ETag da un 304) y el PNG queda listo **antes** del toque, porque
+  Safari pierde el gesto si se espera algo antes de escribir o compartir. Las fotos se comparten a tamaño completo (≤ 1.600 px) y se bajan al marcarlas; con
+  fotos, «Copiar imagen» pide una sola (el portapapeles lleva una imagen) y «Descargar imagen» baja cada marcada como está guardada.
+- **Los formatos del texto, como V1 sin la IA.** «Simple»: sin marcas ni líneas en blanco (el de entrada); «Facebook» y «TikTok»: sin marcas, un renglón en
+  blanco entre bloques (título · vehículo · conceptos · total); «WhatsApp»: además, el título y el total en `*…*` (un texto con `*` va sin marca). El título
+  del vehículo no se repite si es el de la cotización. El cierre de la subasta sólo se dice si todavía no pasó: «Se subasta…» de algo cerrado engaña. La zona,
+  la de la empresa (por su ciudad, «Hora de La Paz») o la del patio, sólo si se conoce.
+- **«Compartir cotización…» lleva «…» y va primero y solo en el «⋯»** (abre algo encima, como las demás que abren un diálogo). La pestaña va en
+  `?compartir=texto` y no en `?pestana=`, que es del resumen del listado. Un `?para=` que no es un guid ni se pide: el panel dice que no hay acceso.
+
 ### Tablas de referencia
 
 - **Qué orígenes afecta publicar una tabla.** Los que la usan en un nodo o en la copia de `params.tablas`, aunque estén inactivos; una compartida pide `configurar` en cada uno. Editar una tabla publica la N+1; las filas inactivas se borran.

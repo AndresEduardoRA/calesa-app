@@ -15,12 +15,14 @@ Infraestructura transversal sin reglas de negocio: clientes de Supabase, permiso
 - `lib/errores.ts`: `Resultado<T>`, `ok()`, `fallo()`, `conflicto()`, `errorDePostgrest()` (`PT409` → conflicto, `42501` → sin_permiso), `datosO()`.
 - `lib/permisos.ts`: `puede()`, `alcanceDe()`, `origenesCon()`, `CLAVES_PERMISO`; las claves de nivel (`esClaveDeNivel()`) las crea la empresa.
 - `lib/rutas.ts` (`decidirAcceso()`, `returnToSeguro()`), `lib/navegacion.ts` (`redirigir()`).
-- `lib/formato.ts`, `lib/fechas.ts`: todo número y fecha, en el locale y la zona de la empresa; `formatearFechaHoraConZona()` y
+- `lib/formato.ts`, `lib/fechas.ts`: todo número y fecha, en el locale y la zona de la empresa; `formatearFechaHoraConZona()`, `formatearDiaLargo()` («jueves 19 de noviembre»), `ciudadDeLaZona()` y
   `abreviaturaDeZona()` para la fecha que se lee en otra zona (la de una subasta, en `useRegional().zonaDeLaPersona`). `lib/numero-tipeado.ts`: `leerNumeroTipeado(texto,
 locale)`, el único lector de un número tipeado.
 - `lib/paginacion.ts`: tamaños (`TAMANOS_DE_PAGINA`, `tamanoDePagina()`, `TAMANO_DE_VER_MAS`, `TOPE_DE_LO_CARGADO`, `TAMANO_DE_COLUMNA`,
   `TOPE_DEL_EQUIPO`) y keyset (`leerCursor()`, `codificarCursor()`, `armarPagina()`; por otra columna `armarPaginaPor()` con un `OrdenDeCursor`,
   `POR_ALTA` por defecto). El cursor lleva `instante`. `lib/conteo.ts`: `conteoAcotado()`, `cantidadAcotada()`, `cortarAlTope()`, `textoDelTope()`.
+- `lib/compartir.ts`: lo que el navegador deja hacer al compartir, sin saber qué (`capacidadesDelNavegador()`, `copiarTexto()`, `copiarImagen()` en PNG,
+  `descargarArchivo()`, `compartirConElSistema(texto, archivos)`, `pngDesde()` y los motivos `MOTIVO_SIN_*`): «Compartir» de los tipos de cambio y de la cotización.
 - `lib/memoria-de-lectura.ts`: `memoriaDeLectura(leer, vidaMs)`, lectura del navegador compartida y de vida corta.
 - Formularios con `useAction`: `lib/enviar-accion.ts` (envío con `sinRed`), `lib/formularios.ts` (errores por campo), `lib/borrador.ts` +
   `ui/use-borrador.ts` (borrador en `sessionStorage`).

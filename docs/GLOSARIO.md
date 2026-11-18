@@ -451,7 +451,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   hecha; distinta de la vigente, quedó vieja). La **compartida** es la guardada, para quien ve todo lo que dibuja; los demás reciben una armada con lo suyo.
   No es la **Portada** de un vehículo.
 - **PDF de la cotización** — `GET /cotizaciones/<id>/pdf`, `pdfDeUnaGuardada()`: la tarjeta de lo guardado en A4; lo descarga quien la ve
-  («Descargar PDF», junto a «Copiar texto»). No es «Compartir» (eso es de leads).
+  («Descargar PDF», junto a «Copiar texto» y en «Compartir la cotización»). No es el **Compartir** de un lead.
+- **Compartir la cotización** — `PanelDeCompartir`, `DatosParaCompartir`, `textoParaCompartir()`, rutas `GET /cotizaciones/<id>/compartir` y
+  `…/compartir/fotos`, `?panel=compartir` (en el detalle) y `?panel=compartir&para=<id>` (fuera de él), pestaña en `?compartir=texto`: el panel «Compartir
+  cotización» para mandarle la cotización a un cliente. La pestaña **«Imagen»** ofrece **«Cotización»** (la portada de la cotización) o **«Fotos»** (las del
+  vehículo, para marcar); la pestaña **«Texto»**, un **formato** («Simple», «WhatsApp», «Facebook», «TikTok») y una **zona** («Hora de <la ciudad de la
+  empresa>» o «Hora del patio»). Botones: «Compartir» (el menú del sistema del celular), «Copiar imagen», «Descargar imagen», «Copiar texto» y «Descargar PDF».
+  Sólo lleva lo del nivel «todos» (lo que dibuja la tarjeta de la cotización). No es el **Compartir** de un lead ni **Compartir los tipos de cambio**.
 - **Revisión** — `cotizaciones_revisiones`: diff de cada edición.
 - **Reporte** — `cotizaciones_reportes` / `cotizacion_reportar()`, `cotizacion_reporte_retirar()`: marca de problema, uno por persona, con
   motivo; no cambia estado ni versión. «Reportada» = activa con reportes (el valor `reportada` del enum no se usa).

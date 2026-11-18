@@ -37,6 +37,7 @@ export function VistaPreviaDeLaHoja(props: Props) {
       >
         Vista previa
       </Button>
+      {area.compartir?.()}
       {montar ? area.dibujar({ ...props, abierta: panel.abierto, cerrar: panel.cerrar }) : null}
     </>
   )

@@ -301,7 +301,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, título de la cotización, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
   resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
-  de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
+  de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: primero y sola, «Compartir cotización…» (toda persona que ve la fila; con el Modo
+  Live no está; abre «Compartir la cotización» en `?panel=compartir&para=<id>`), «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
   si es inválida), «Marcar final…» (`cotizaciones.final.gestionar`, en una preventa; apagada sin vehículo o cliente), casilla «Favorita», «Reportar…»,
   moderar («Invalidar…», «Descartar los reportes…», «Reactivar…», con `cotizaciones.moderar`) y, al final y separada, «Enviar a la papelera» (sin preguntar,
   con «Deshacer»). Son las mismas actions de la guardada; «Marcar final…», «Reportar…» y moderar abren su diálogo en `?panel=…&para=<id>`; filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin
@@ -330,7 +331,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   bloque (`#de-este-vehiculo`) con el foco en su título. Bajo la hoja, «De este vehículo» (se lee al acercarse; aprobar ahí pone al día la cabecera
   sin refrescar la hoja; «Comparar» en su título abre «Comparar cotizaciones» con `returnTo` a esta página; ver «Cotizaciones del lead y del vehículo») y después
   «Comprobantes» (en una final o en una que ya tiene alguno): del más nuevo, «Vigente» o «Anulado» con quién, cuándo y motivo, hasta 20
-  con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Estados en Flujo 2.
+  con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Al pie del resumen, junto a «Vista previa»,
+  **«Compartir»** (toda persona que la ve; sin ícono; con el Modo Live no está): «Compartir la cotización» en `?panel=compartir` (estados en «Cotización: compartir»).
+  Estados en Flujo 2.
 - **Logística** — `/logistica` (`logistica.ver` en algún origen): la **bandeja del día** y la **cadena como gráfica**; en la URL: `?origen=` (orígenes con la logística encendida), `q` («dónde está»:
   nombre, VIN o lote; 3 letras o números) y `?panel=lote` (el lote de un contenedor o un booking). `/logistica/fase/[fase]` (la lista de una fase: `[fase]` es el id o `sin_fase`;
   `?origen=`, `q`, `demoradas`, `por_aprobar`, `contenedor`, `booking`, `naviera`, `cursor`), `/logistica/bandeja/[grupo]` (un grupo entero: `demorados`, `trabados`, `por-aprobar`, `por-vencer`,
@@ -1228,6 +1231,32 @@ descarta.
 - **Descartar** (`?panel=descartar-plantilla`): sólo con borrador, también con cambios sin guardar; se borra sin deshacer y el editor parte
   de la publicada. PT409 con «Recargar»; sin respuesta, «No sabemos si se descartó: recarga para verlo.» (no reintenta solo). Por URL sin
   borrador: «No hay borrador para descartar.»
+
+### Cotización: compartir (estados propios)
+
+«Compartir la cotización» (`PanelDeCompartir`, modal grande): `?panel=compartir` en el detalle y `?panel=compartir&para=<id>` en la lista (después, en las
+tarjetas, el resumen y la ficha del vehículo). Lo abre toda persona que ve la cotización, sin clave propia.
+
+- **Pestañas:** «Imagen» (la de entrada, sin escribir nada) y «Texto» (`?compartir=texto`; se borra al cerrar). Lo demás (la imagen, el formato, la zona y las
+  fotos marcadas) es de este envío: cada apertura empieza de cero.
+- **«Imagen»:** «Cotización | Fotos» (botones juntos; «Fotos» sólo si el vehículo tiene fotos y quien mira lo ve). «Cotización»: la portada en su marco 15:8;
+  mientras se arma, el recuadro de la portada con «Preparando la vista previa…»; si falla, «No se pudo armar la imagen.» con «Reintentar» (el texto y el PDF
+  siguen). «Fotos»: la grilla de miniaturas (480 px, a lo sumo 24, se parte sola), cada una una casilla con la marca en una esquina de 44 px; marcarla baja la
+  completa en segundo plano; una que no baja se desmarca con «No se pudo bajar la foto N.»; una miniatura que no carga deja el hueco con el auto. Si la lista no
+  llega: «No se pudieron leer las fotos.» con «Reintentar».
+- **«Texto»:** formato «Simple | WhatsApp | Facebook | TikTok» (por defecto «Simple») y, sólo con un patio conocido y subasta, «Hora de <ciudad de la
+  empresa> | Hora del patio»; el texto de sólo lectura («Armando el texto…» mientras llega; si falla, «No se pudo armar el texto.» con «Reintentar»).
+- **Pie:** «Creado por <autor>» (sin autor, no va) y los botones. Celular con el menú del sistema (que comparte archivos): «Compartir» (principal; la portada o
+  las fotos marcadas y el texto), «Copiar texto» y «Descargar PDF», en columna a lo ancho y a 44 px. Escritorio: «Copiar imagen» (una sola imagen: con fotos,
+  una marcada), «Descargar imagen» (la portada en PNG o cada foto marcada), «Copiar texto» y «Descargar PDF», en una fila que se parte. Lo apagado dice su
+  motivo debajo, sin repetirse («La imagen todavía no está lista.», «Preparando las fotos…», «Elige al menos una foto.», «Elige una sola foto para copiarla.»,
+  «Este navegador no permite copiar imágenes.», «Este navegador no permite copiar texto.», «No hay conexión.»). El PDF que falla, el texto de «Vista previa»
+  con «Reintentar». Avisos: «Texto copiado», «Imagen copiada»; con la portada fallida, «Compartir» manda el texto y avisa «Se compartió el texto. La imagen no se
+  pudo armar.».
+- **Sin acceso** (no existe, en la papelera, no se ve o el id no es de una cotización): «No tienes acceso a esta cotización.» con «Cerrar», sin pie de acciones.
+- **Modo Live:** ni el botón ni la línea del «⋯»; por URL, «Con el Modo Live no se comparte.» con «Cerrar» (también si se enciende con el panel abierto).
+- **Sin red:** arriba «No hay conexión.»; «Descargar PDF» y lo que todavía no se bajó, apagados con ese motivo; lo que ya está en memoria se copia o comparte.
+- **Texto al 200 %:** el cuerpo se desplaza con su pista y el pie queda a la vista.
 
 ### Cotización: tablas (estados propios)
 

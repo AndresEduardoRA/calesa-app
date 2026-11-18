@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import {
-  MOTIVO_NINGUN_TIPO_PARA_COMPARTIR,
-  MOTIVO_SIN_PORTAPAPELES_DE_IMAGENES,
-} from '../../../../../entities/compartir-tipos-cambio'
+import { MOTIVO_SIN_PORTAPAPELES_DE_IMAGENES } from '@/shared/lib/compartir'
+import { MOTIVO_NINGUN_TIPO_PARA_COMPARTIR } from '../../../../../entities/compartir-tipos-cambio'
 import { MOTIVO_SIN_IMAGEN, motivosDeLasAcciones } from './motivos-de-las-acciones'
 
-const todo = { portapapeles: true, portapapelesDeImagenes: true, compartirDelSistema: false }
+const todo = {
+  portapapeles: true,
+  portapapelesDeImagenes: true,
+  compartirDelSistema: false,
+  compartirArchivos: false,
+}
 const listo = { estado: 'listo', dato: null } as const
 
 describe('motivosDeLasAcciones', () => {

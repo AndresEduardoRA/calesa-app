@@ -27,8 +27,6 @@ export function leyendaDesde(
 }
 
 export const MOTIVO_NINGUN_TIPO_PARA_COMPARTIR = 'Elige al menos un tipo de cambio.'
-export const MOTIVO_SIN_PORTAPAPELES_DE_IMAGENES = 'Este navegador no permite copiar imágenes.'
-export const MOTIVO_SIN_PORTAPAPELES = 'Este navegador no permite copiar texto.'
 
 export type TipoParaCompartir = {
   id: string

@@ -6,7 +6,7 @@ import type { CodigoError } from '@/shared/lib/errores'
 import { useDescargaDelPdf } from '../hooks/use-descarga-del-pdf'
 
 // Lo que el modal dice si el PDF no baja: textos propios, nunca el cuerpo de la respuesta.
-function textoDelFallo(codigo: CodigoError): string {
+export function textoDelFallo(codigo: CodigoError): string {
   if (codigo === 'no_encontrado') {
     return 'Esta cotización ya no está disponible.'
   }
