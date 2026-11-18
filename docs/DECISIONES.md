@@ -191,9 +191,27 @@ las trampas, en `docs/LECCIONES.md`.
 - **Fotos.** Bucket público `vehiculos/<vehiculo_id>/<sha-256>`; dos tamaños hechos en el navegador (≤ 1600 y miniatura 480) sin optimizador; versión propia (`vehiculos_imagenes_version`), tope 24; duplicado por hash del original.
 - **Storage de vehículos se limpia por cola.** La app no borra objetos de `vehiculos`; la limpieza reclama con candado y recuento y borra con ≥ 24 h; el barrido de huérfanos va por cursor por bucket.
 - **Vitrina: una sola definición de lo público.** `interno.vitrina_vehiculos` calcula condiciones y `visible`; `web.vehiculos` y `vehiculo_vitrina_previa()` salen de ella. Publicar lleva versión y manda el estado entero; despublicar apaga el destacado.
-- **Vitrina desde la lista: lo que «falta» es el precio público.** La base no exige nada para publicar (sin precio, la web dice «Consultar»); desde
-  la fila, un toque publica lo que ya tiene precio o saca de la web, con «Deshacer»; sin precio, un panel chico (`?panel=vitrina-rapida&para=`)
-  pide sólo eso, con «Publicar sin precio». El «hasta», la nota, el destacado y la vista previa siguen en el panel de la ficha.
+- **Vitrina desde la lista: el panel completo de la ficha, sin salir de la lista.** «Publicar en la web…» del «⋯» y el «Publicar» de la fila abren el mismo
+  panel de la ficha (`?panel=vitrina&para=<id>`: interruptor, precio, rango, nota, destacado y la vista previa); no hay un panel chico que pida sólo el precio.
+  «Sacar de la web» sigue de un toque con «Deshacer» (sacar no pide nada). Un `?panel=vitrina-rapida&para=` viejo redirige en el servidor
+  (`destinoDeLaVitrinaRapida()`), con el resto de la consulta.
+- **Un solo «⋯» del vehículo, con «Cotizar vehículo» primero.** La fila, la tarjeta y la ficha dibujan la misma lista (`accionesDeVehiculo()`):
+  «Cotizar vehículo» sola y destacada; «Editar», «Editar imágenes», «Publicar en la web…» y «Actualizar los datos»; «Ver actividad»; la papelera al final.
+  Cuándo se ofrece cada una lo dice una función pura con test (`ofertasDelMenuDeVehiculo()`). Editar, imágenes y actualizar comparten la regla: con
+  `vehiculos.editar` en el origen y un vehículo que no edita («propios»), apagadas con el motivo; sin la clave en el origen, ocultas (un lector no ve un «⋯»
+  lleno de apagadas). «Actualizar los datos» sin enlace, lote ni VIN se ve apagada con el motivo, no oculta. En la lista, publicar sin el permiso no está
+  (en la ficha, apagado con el motivo). La ficha conserva además el botón «Editar» de su cabecera. «Cotizar vehículo» suma `returnTo` = la URL de ese
+  momento (la hoja ya lo lee: `volver-de-la-hoja.tsx`) y «Ver actividad» llega a cada fila como plantilla con `MARCADOR_DE_VEHICULO` (`vehiculos` no
+  conoce `actividad`). Descartados: «Cotizar» como botón fuera del «⋯» (repetía y sumaba nodos por fila).
+- **Los paneles del «⋯» en la lista se leen en el servidor al abrirse.** «Editar imágenes» y «Publicar en la web…» escriben `?panel=…&para=<id>` con
+  `shallow: false`, como `?editar=`: la página lee sólo el panel que la URL nombra (`src/app/(app)/vehiculos/paneles.ts`). Así las fotos que faltan de la
+  subasta salen del bruto sin que el bruto cruce al navegador, cada cambio de fotos redibuja la galería y la lista por `revalidatePath`, y un vehículo que no
+  está en la página también abre. El costo: abrir pide la página de la lista otra vez. Un hook por panel y por lista (`useMenuDeLaLista()`): ninguna fila
+  suma hooks ni nodos. Descartado: leer en el navegador (no trae las fotos de la subasta sin el bruto y la galería no se refresca sola).
+- **«Actualizar los datos» es «Refrescar» con confirmación y las fotos que faltan.** Mismo motor (`useRefrescoDeSubasta`, `fusionarRefresco()`); la action
+  devuelve además las fotos de esa respuesta que el vehículo no tiene (ya filtradas en el servidor) y las trae sin otra consulta. Pide confirmar en un
+  `<Modal>` propio con «Sí, actualizar» / «No, volver» (`<Confirmar>` fija «Cancelar» y cambiarlo tocaba `src/shared`). Se ofrece sólo en un origen de
+  subasta con apibara encendida.
 - **Papelera.** Una sola lista de bloqueo (`_vehiculo_motivo_de_bloqueo`) para enviar y purgar; envío por lote con versión por vehículo y resultado parcial; restaurar vuelve sin publicar. Purga manual y automática son la misma función.
 - **apibara: la llamada vive en la edge function y la hace el navegador.** La función guarda el bruto en `apibara_consultas` y el navegador manda una referencia (de quien llama, < 24 h). Ningún test llama a la API real.
 - **La zona de una subasta sale del estado del patio, en el navegador.** apibara no da la zona de la subasta, pero sí el estado de la ubicación
@@ -233,7 +251,7 @@ las trampas, en `docs/LECCIONES.md`.
   de «visto» y el color de la fila con el foco) y el resto de la fila le pasa el clic (`href` en `<FilaDeLista>`/`<TarjetaDeLista>`): Ctrl, Cmd o Shift + clic y
   el botón del medio abren otra pestaña, con texto elegido (copiar el VIN) no navega, y la casilla, el «⋯», «Publicar» y la foto siguen siendo suyos
   (`esClicPropio`). Sin prefetch: cien filas serían cien pedidos de una ruta dinámica, y la ficha tiene su `loading.tsx`. «Cotizar vehículo» pasó al «⋯» de la
-  fila (después de «Editar»; el orden final del «⋯» es de T336). Un `?vehiculo=<id>` viejo redirige en el servidor (`destinoDelEnlaceViejo()`, `redirect()`: no
+  fila (es su acción principal: ver «Un solo «⋯» del vehículo»). Un `?vehiculo=<id>` viejo redirige en el servidor (`destinoDelEnlaceViejo()`, `redirect()`: no
   suma al historial) a la ficha con el `?panel=` que la ficha abre, el visor de sus fotos (`<id>-resumen` y `?pestana=fotos` pasan a `?visor=<id>`) y
   `?editar=` del mismo vehículo; lo demás (origen, filtros, cursor) se quita, porque la ficha tiene «volver al origen». Descartados: un «stretched link» (un
   `::after` absoluto queda encerrado en la celda pegajosa, que es `sticky`, y en la tarjeta tapa la selección de texto y obliga a subir cada botón con
