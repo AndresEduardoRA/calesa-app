@@ -90,7 +90,8 @@ source "$ORQ/al-dia.sh"
 # Lo que una tarea pide hacer al integrarse (`al_integrar: etiquetar <nombre>`).
 # shellcheck source=al-integrar.sh
 source "$ORQ/al-integrar.sh"
-# Lo que se arregla sin abrir una sesión: el reintento de e2e ajenos al PR y el choque sólo de docs.
+# Lo que se arregla sin abrir una sesión: relanzar lo ajeno al PR (e2e de otro lado, la máquina del CI), el choque sólo de docs y
+# las migraciones que quedaron antes de una de main.
 # shellcheck source=sin-sesion.sh
 source "$ORQ/sin-sesion.sh"
 # Las mejoras del flujo entre el kit y este proyecto: la tarea semanal y lo que sube al kit al integrar.
@@ -239,6 +240,7 @@ bucle() {
     vigilar_prs
     espejo
     con_issues || { al_integrar_pendientes; avisos_kit_pendientes; } # sin espejo: lo que un corte dejó pendiente
+    probar_fin_de_pausa
     if ! pausado; then
       lanzar
       lanzar_redaccion
@@ -375,16 +377,18 @@ vigilar_prs() {
       CLOSED) trabar "$id" "El PR #$pr se cerró sin integrarse."; continue ;;
     esac
     if [ "$mergeable" = CONFLICTING ]; then
-      fusionar_docs "$id" "$pr" ||
-        a_arreglar "$id" "El PR #$pr choca con main (conflicto de merge). Lo integrado mientras tanto en main tocó lo mismo."
+      poner_al_dia_sin_sesion "$id" "$pr" ||
+        a_arreglar "$id" "El PR #$pr choca con main (conflicto de merge). Lo integrado mientras tanto en main tocó lo mismo." choque
     elif [ "$listo" = FAILURE ] || [ "$listo" = CANCELLED ]; then
-      reintentar_ci_una_vez "$id" "$pr" "$j" || a_arreglar "$id" "$(motivo_ci "$pr" "$j")"
+      migraciones_tras_main "$id" "$pr" || reintentar_ci_ajeno "$id" "$pr" "$j" || a_arreglar "$id" "$(motivo_ci "$pr" "$j")"
     elif [ "$merge_state" = BEHIND ]; then
-      # main exige la rama al día: GitHub la pone al día con un merge (nunca fuerza). Una vez cada 15 min como mucho.
+      # main exige la rama al día: GitHub la pone al día con un merge (nunca fuerza). Una vez cada 15 min como mucho. Si la rama
+      # trae migraciones y main integró una más nueva, el merge lo hace el orquestador y las renombra (si no, el CI cae por el orden).
       local ult
       ult=$(est_get "$id" puesta_al_dia)
       if [ "$(date +%s)" -gt $((${ult:-0} + 900)) ]; then
         est_set "$id" puesta_al_dia "$(date +%s)"
+        migraciones_tras_main "$id" "$pr" && continue
         # gh 2.46 no trae `pr update-branch`: va la API (merge, nunca fuerza; expected_head_sha evita pisar un push nuevo).
         local sha salida
         sha=$(jq -r .headRefOid <<<"$j")
@@ -398,32 +402,37 @@ vigilar_prs() {
   done
 }
 
-motivo_ci() { # pr json → texto con los jobs caídos y el final de su log
-  local pr=$1 j=$2 runs r
+motivo_ci() { # pr json → texto con los jobs caídos y el final del log de cada uno (no el del agregador «Listo», que no dice nada)
+  local pr=$1 j=$2 nombre job run ver n=0
   echo "El CI del PR #$pr cayó. Jobs en rojo:"
   jq -r '.statusCheckRollup[]? | select(.__typename == "CheckRun" and (.conclusion == "FAILURE" or .conclusion == "CANCELLED") and ((.name | startswith("Listo")) | not)) | "- \(.name) (\(.conclusion)): \(.detailsUrl)"' <<<"$j"
-  runs=$(jq -r '.statusCheckRollup[]? | select(.__typename == "CheckRun" and .conclusion == "FAILURE") | .detailsUrl' <<<"$j" |
-    sed -nE 's#.*/actions/runs/([0-9]+).*#\1#p' | sort -u | head -n 3)
-  for r in $runs; do
+  while IFS=$'\t' read -r nombre job run; do
+    [ -n "$run" ] || continue
+    n=$((n + 1))
+    [ "$n" -le 3 ] || break
     echo
-    echo "### Final del log de lo que falló (run $r; completo: gh run view $r --log-failed)"
+    if [ -n "$job" ]; then ver="--job $job"; else ver=$run; fi
+    echo "### Final del log de «$nombre» (completo: gh run view $ver --log-failed)"
     echo '```'
-    ghr run view "$r" --log-failed 2>/dev/null | tail -n 150 | cut -c1-400
+    log_del_job "$job" "$run" | tail -n 120 | cut -c1-400
     echo '```'
-  done
+  done < <(jobs_caidos "$j")
 }
 
+# id motivo [choque] — un choque con main lo causa lo que otra tarea integró: no gasta un intento de MAX_ARREGLOS (que es para lo
+# que la tarea rompió) sino de MAX_CHOQUES.
 a_arreglar() {
-  local id=$1 motivo=$2
-  sumar "$id" arreglos
-  if [ "$(num "$id" arreglos)" -gt "${MAX_ARREGLOS:-4}" ]; then
-    trabar "$id" "Se intentó arreglar el PR $(est_get "$id" pr) ${MAX_ARREGLOS} veces y sigue sin integrarse. Último motivo: $(head -n 3 <<<"$motivo" | tr '\n' ' ')"
+  local id=$1 motivo=$2 cuenta=arreglos tope=${MAX_ARREGLOS:-4}
+  if [ "${3:-}" = choque ]; then cuenta=choques tope=${MAX_CHOQUES:-8}; fi
+  sumar "$id" "$cuenta"
+  if [ "$(num "$id" "$cuenta")" -gt "$tope" ]; then
+    trabar "$id" "Se intentó arreglar el PR $(est_get "$id" pr) $tope veces ($cuenta) y sigue sin integrarse. Último motivo: $(head -n 3 <<<"$motivo" | tr '\n' ' ')"
     return
   fi
   printf '%s\n' "$motivo" >"$EST/$id/motivo.md"
   est_set "$id" estado por_arreglar
-  log "$id: a arreglar (intento $(num "$id" arreglos)): $(head -n 1 <<<"$motivo")"
-  avisar "$id: CI rojo" "Va el intento $(num "$id" arreglos) de arreglo. $(head -n 1 <<<"$motivo")" low wrench "$(enlace_issue "$id")"
+  log "$id: a arreglar ($cuenta: $(num "$id" "$cuenta")): $(head -n 1 <<<"$motivo")"
+  avisar "$id: CI rojo" "Va el arreglo $(num "$id" "$cuenta") ($cuenta). $(head -n 1 <<<"$motivo")" low wrench "$(enlace_issue "$id")"
 }
 
 integrada() {
@@ -661,8 +670,9 @@ claude_en_el_worktree() { # nombre modelo effort modo prompt_archivo [args extra
 
 # La salida de una sesión (el stream-json y su .err) dice que llegó al límite del plan de Claude. La usan esta sesión y la redacción
 # de un pedido (pedidos.sh).
+ES_LIMITE='usage limit|limit reached|hit your limit|limit will reset|resets at|out of (extra )?usage|rate[ _-]?limit'
 es_limite_del_plan() { # salida
-  grep -qiE 'usage limit|limit reached|hit your limit|limit will reset|resets at|out of (extra )?usage|rate[ _-]?limit' "$1.err" <(tail -n 5 "$1")
+  grep -qiE "$ES_LIMITE" "$1.err" <(tail -n 5 "$1")
 }
 
 # El límite es de la cuenta: la pausa es de todos los orquestadores de la máquina (si otro puso una más tardía, queda ésa).
@@ -671,6 +681,25 @@ pausar_por_limite() { # quien (lo que se cortó, para el aviso)
   fijar_pausa_compartida "$hasta" || log "no se pudo escribir la pausa compartida ($PAUSA_COMPARTIDA)"
   hasta=$(pausa_compartida_hasta) || hasta=$(($(date +%s) + ${PAUSA_POR_LIMITE_MIN:-30} * 60))
   avisar "Pausa: límite del plan" "$1 se cortó por el límite de Claude. Reintento a las $(date -d "@$hasta" '+%H:%M') (vale para todos los orquestadores de la máquina)." low hourglass
+}
+
+# Con la pausa compartida por el límite en curso, cada PROBAR_PAUSA_MIN minutos una pregunta mínima al modelo capaz (el de casi todas
+# las sesiones): si responde, el límite ya pasó o la cuenta cambió de plan, y la pausa se quita para todos sin esperar a que venza.
+probar_fin_de_pausa() {
+  local ult modelo salida
+  [ "${PROBAR_PAUSA_MIN:-5}" -gt 0 ] || return 0
+  pausa_compartida_hasta >/dev/null || return 0
+  ult=$(cat "$EST/.pausa-probada" 2>/dev/null)
+  [ "$(date +%s)" -ge $((${ult:-0} + ${PROBAR_PAUSA_MIN:-5} * 60)) ] || return 0
+  date +%s >"$EST/.pausa-probada"
+  modelo=$(modelo_de_nivel capaz) || return 0
+  # Fuera del repo: la prueba no carga los hooks ni el CLAUDE.md del proyecto.
+  mkdir -p "$TMP_TAREAS"
+  salida=$(cd "$TMP_TAREAS" && timeout 120 claude -p --model "$modelo" "Responde sólo: ok" 2>&1 </dev/null) || return 0
+  grep -qiE "$ES_LIMITE" <<<"$salida" && return 0
+  quitar_pausa_compartida
+  log "el modelo $modelo volvió a responder: quito la pausa por el límite del plan antes de que venza"
+  avisar "Fin de la pausa" "Claude volvió a responder: sigo lanzando sin esperar a que venza la pausa." low arrow_forward
 }
 
 retomar_luego() {
@@ -907,6 +936,7 @@ reintentar_tarea() { # ID motivo-para-retomar
   local id=$1
   est_set "$id" retomas 0
   est_set "$id" arreglos 0
+  est_del "$id" choques
   est_del "$id" fallos_carril
   est_del "$id" espera_carril_hasta
   rm -f "$EST/$id/trabada.md"
@@ -953,6 +983,14 @@ cmd_verificar() {
     { echo "✗ $DATOS está dentro del repo y git no lo ignora (.gitignore)"; ok=0; }
   echo "✓ datos en $DATOS"
   for f in $INCLUIR; do [ -f "$REPO/$f" ] && echo "✓ $f" || echo "· falta $f en la principal (preparar.sh puede quejarse)"; done
+  # Una sesión en un worktree pide el trust de la principal: sin él, `claude -p` ignora los permissions.allow del proyecto.
+  if jq -e --arg r "$(cd "$REPO" && pwd -P)" '.projects[$r].hasTrustDialogAccepted == true' "$HOME/.claude.json" >/dev/null 2>&1; then
+    echo "✓ la principal es de confianza para Claude Code (las sesiones leen los permissions.allow del proyecto)"
+  else
+    echo "✗ la principal no es de confianza para Claude Code: las sesiones ignoran los permissions.allow de .claude/settings.json." \
+      "Abre claude una vez en $REPO y acepta, o pon projects[\"$REPO\"].hasTrustDialogAccepted: true en ~/.claude.json"
+    ok=0
+  fi
   echo "== GitHub"
   token_gh
   if ghr api user --jq .login >/dev/null 2>&1; then echo "✓ gh con la cuenta $(ghr api user --jq .login)"; else echo "✗ gh sin sesión para $(dueno_del_repo) (gh auth login)"; ok=0; fi
