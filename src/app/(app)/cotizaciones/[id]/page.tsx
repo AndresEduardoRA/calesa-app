@@ -18,14 +18,16 @@ import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import { PANEL_DEL_VEHICULO } from '@/modules/vehiculos/pantallas/cotizar'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
-import { asesorDe, clienteDe, vehiculoDe, vehiculoDeLaTarjeta } from '../datos-de-la-tarjeta'
+import {
+  asesorDe,
+  clienteDe,
+  tituloDeLaTarjeta,
+  vehiculoDe,
+  vehiculoDeLaTarjeta,
+} from '../datos-de-la-tarjeta'
 import { idDeUrl, type Quien } from '../vehiculo-de-la-hoja'
 import { HUECOS_DE_LA_GUARDADA, dibujarHuecos } from './huecos-de-la-guardada'
-import {
-  barraDeLaCabecera,
-  ConElTituloDeLaGuardada,
-  tituloDeLaTarjeta,
-} from './titulo-de-la-guardada'
+import { barraDeLaCabecera, ConElTituloDeLaGuardada } from './titulo-de-la-guardada'
 import { leerLoDelVehiculo } from './vehiculo-de-la-guardada'
 
 export const metadata: Metadata = { title: 'Cotización' }
@@ -138,7 +140,7 @@ async function Cotizacion({
           cotizacionId={hoja.cotizacion.id}
           permisos={sesion.permisos}
           tarjeta={{
-            titulo: tituloDeLaTarjeta(hoja, vehiculo),
+            titulo: tituloDeLaTarjeta(hoja.cotizacion, vehiculo),
             cliente: cliente?.nombre ?? null,
             vehiculo: vehiculoDeLaTarjeta(vehiculo),
             asesor,

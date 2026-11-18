@@ -1,4 +1,8 @@
-import { leerAsesorDeLaCotizacion } from '@/modules/cotizaciones'
+import {
+  leerAsesorDeLaCotizacion,
+  tituloAparteDelNumero,
+  tituloDeLaCotizacion,
+} from '@/modules/cotizaciones'
 import { leerClienteElegido } from '@/modules/leads'
 import { leerVehiculo } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
@@ -21,6 +25,19 @@ export async function asesorDe(id: string) {
   const lectura = await leerAsesorDeLaCotizacion(id)
   return lectura.ok ? lectura.data : null
 }
+
+// El título de la tarjeta y del PDF de una guardada: el guardado (la tarjeta dibuja lo guardado), sin el de respaldo «Cotización n.º N», que ya escribe el número.
+export const tituloDeLaTarjeta = (
+  cotizacion: { titulo: string | null; numero: number },
+  vehiculo: { titulo: string } | null,
+) =>
+  tituloAparteDelNumero(
+    tituloDeLaCotizacion({
+      titulo: cotizacion.titulo,
+      vehiculo: vehiculo?.titulo ?? null,
+      numero: cotizacion.numero,
+    }),
+  )
 
 // El vehículo como lo nombra la tarjeta: su título, su lote y su VIN.
 export const vehiculoDeLaTarjeta = (
