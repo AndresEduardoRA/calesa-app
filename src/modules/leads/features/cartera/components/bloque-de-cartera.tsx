@@ -17,7 +17,7 @@ import {
 } from '../../../entities/cartera'
 import type { NumerosDeLead } from '@/shared/lib/numeros-de-lead'
 import { usePanelDeLead } from '../../ficha/hooks/use-panel-de-lead'
-import { useCartera } from '../hooks/use-cartera'
+import type { CarteraDelLead } from '../hooks/use-cartera'
 import { DialogoDeSalirDiferido, PanelDeCarteraDiferido } from './diferidos'
 
 type Props = {
@@ -29,8 +29,8 @@ type Props = {
     vehiculosVinculados: number
     vePortal: boolean
   }
-  // Como la leyó la página: quién lo tiene, con nombres y tipo de acceso (sin correo ni teléfono).
-  cartera: readonly PersonaDeCartera[]
+  // Quién lo tiene y sus movimientos (`useCartera`, que vive en la columna: la línea de la cabecera lee la misma).
+  cartera: CarteraDelLead
   // Lo que quien mira puede hacer: lo decide la página con sus permisos y la cartera.
   acciones: AccionesDeCartera
 }
@@ -128,9 +128,8 @@ function BotonesDeCartera({
 // «Quién lo tiene», en la columna de la izquierda de la ficha: nombres y tipo de acceso de todas las personas
 // que lo tienen, para quien ve el lead. Compartir, transferir (con confirmación), quitar acceso y
 // «Salir de este lead» se dibujan sólo para quien puede; la base lo vuelve a decidir.
-export function BloqueDeCartera({ lead, cartera: inicial, acciones }: Props) {
+export function BloqueDeCartera({ lead, cartera, acciones }: Props) {
   const panel = usePanelDeLead()
-  const cartera = useCartera(lead.id, inicial)
   const hayAcciones = acciones.compartir || acciones.transferir || acciones.salir
   const compartiendo = acciones.compartir && panel.compartir.abierto
   const transfiriendo = acciones.transferir && panel.transferir.abierto

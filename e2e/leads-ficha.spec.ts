@@ -18,7 +18,7 @@ import {
 } from './soporte/leads-listado'
 import {
   NO_DISPONIBLE,
-  botonEditar,
+  editarDelMenuDeLaFicha,
   idDeLead,
   irAFicha,
   ponerExtras,
@@ -201,7 +201,8 @@ test('sin leads.editar no hay botón y la URL de edición no abre nada', async (
   await entrar(page, t.personas.sinCrear)
   await irAFicha(page, id)
   await expect(tituloDeLaFicha(page, nombre(PROPIO_DALIA))).toBeVisible()
-  await expect(botonEditar(page)).toHaveCount(0)
+  // El «⋯» no ofrece editarlo.
+  await expect(await editarDelMenuDeLaFicha(page)).toHaveCount(0)
   await irAFicha(page, id, '?panel=editar-lead')
   await expect(tituloDeLaFicha(page, nombre(PROPIO_DALIA))).toBeVisible()
   await expect(page.getByRole('dialog')).toHaveCount(0)

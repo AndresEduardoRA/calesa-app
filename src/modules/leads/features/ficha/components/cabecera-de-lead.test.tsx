@@ -15,15 +15,27 @@ const ficha = {
 } as unknown as LeadDeFicha
 
 describe('CabeceraDeLead', () => {
-  it('dice quién es (nombre y número) y nada de lo que la columna dice más abajo', () => {
+  it('el nombre con el «⋯» en la misma fila, y quién lo tiene debajo', () => {
     const { container } = render(
-      <CabeceraDeLead ficha={ficha} acciones={<button type="button">Editar</button>} />,
+      <CabeceraDeLead
+        ficha={ficha}
+        menu={<button type="button">Más acciones de Ana Prieto</button>}
+        cartera="Dueño: Rosa Mamani · Compartido con Luis"
+      />,
     )
-    expect(screen.getByRole('heading', { level: 1, name: 'Ana Prieto' })).toBeTruthy()
+    const titulo = screen.getByRole('heading', { level: 1, name: 'Ana Prieto' })
+    const menu = screen.getByRole('button', { name: 'Más acciones de Ana Prieto' })
+    // La fila del nombre: el `h1` y la esquina del «⋯» son hermanos.
+    expect(menu.parentElement?.parentElement).toBe(titulo.parentElement)
+    expect(screen.getByText('Dueño: Rosa Mamani · Compartido con Luis')).toBeTruthy()
     expect(container.textContent).toContain('12')
-    // El teléfono va en «Teléfonos» y quién lo tiene, en su bloque: no se repiten en la misma columna.
+    // El teléfono va en «Datos»: no se repite en la cabecera.
     expect(container.textContent).not.toContain('70000004')
-    expect(container.textContent).not.toContain('Rosa Mamani')
-    expect(screen.getByRole('button', { name: 'Editar' })).toBeTruthy()
+  })
+
+  it('sin cartera a la vista ni menú, sólo el nombre y los números', () => {
+    const { container } = render(<CabeceraDeLead ficha={ficha} cartera={null} />)
+    expect(screen.queryByRole('button')).toBeNull()
+    expect(container.querySelector('p')).toBeNull()
   })
 })

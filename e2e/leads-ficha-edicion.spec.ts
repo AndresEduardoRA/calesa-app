@@ -17,7 +17,7 @@ import {
   NO_DISPONIBLE,
   abrirEdicion,
   alGuardarFicha,
-  botonEditar,
+  editarDelMenuDeLaFicha,
   cuerpoDeAccion,
   edicionesRegistradas,
   irAFicha,
@@ -311,7 +311,8 @@ test('la dueña con «todos» ve lo ajeno y no lo edita: sin botón, sin panel y
   await irAFicha(page, lead.id)
   await expect(tituloDeLaFicha(page, lead.nombre)).toBeVisible()
   // Editar es contenido: pide la cartera, y «todos» no basta. No hay botón y la URL no abre nada.
-  await expect(botonEditar(page)).toHaveCount(0)
+  // El «⋯» no ofrece editarlo.
+  await expect(await editarDelMenuDeLaFicha(page)).toHaveCount(0)
   await irAFicha(page, lead.id, '?panel=editar-lead')
   await expect(tituloDeLaFicha(page, lead.nombre)).toBeVisible()
   await expect(page.getByRole('dialog')).toHaveCount(0)

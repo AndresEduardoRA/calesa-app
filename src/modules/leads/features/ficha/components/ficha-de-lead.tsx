@@ -114,7 +114,7 @@ type PropsDelLateral = Pick<
   conEditarTelefonos: boolean
 }
 
-// La columna de la izquierda con las acciones de la cabecera («Editar», «Cotizar» y el «⋯») y las insignias de quien mira.
+// La columna de la izquierda con el «⋯» de la cabecera y las insignias de quien mira.
 function LateralConAcciones({ marcas, etiquetas, alGestionar, ...props }: PropsDelLateral) {
   const {
     ficha,
@@ -127,7 +127,7 @@ function LateralConAcciones({ marcas, etiquetas, alGestionar, ...props }: PropsD
   return (
     <LateralDeLaFicha
       {...props}
-      acciones={
+      menu={
         <AccionesDeLaFicha
           {...{ ficha, marcas, etiquetas, alGestionar, puedeEditar, puedeEditarExtras }}
           {...{ puedeEnviarAPapelera, paraCotizar, paraActividad }}

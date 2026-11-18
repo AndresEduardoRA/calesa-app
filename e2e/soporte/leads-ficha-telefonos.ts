@@ -3,7 +3,7 @@
 import { expect, type Page } from '@playwright/test'
 import { entrar } from './alta'
 import {
-  cabeceraDeLaFicha,
+  elegirEnElMenuDeLaFicha,
   fijarCodigoDePais,
   irAFicha,
   nuevoLead,
@@ -49,19 +49,9 @@ export const botonAgregarTelefono = (page: Page) =>
 // Abre el panel con «Editar» de la cabecera o, sin él, con «Editar teléfonos» (la página hidrata antes de que el clic valga).
 export async function abrirPanelConTelefonos(page: Page) {
   const panel = panelConTelefonos(page)
-  // Cada vuelta mira primero si el panel ya está (tras guardar se vuelve a dibujar) y el clic tiene su tope: con el panel encima, «Editar»
-  // queda tapado y un clic sin tope esperaría hasta vencer la prueba.
-  await expect(async () => {
-    if (await panel.isVisible()) {
-      return
-    }
-    // «Editar» de la cabecera (la del `h1`): los seguimientos y recordatorios también tienen el suyo.
-    const editar = cabeceraDeLaFicha(page).getByRole('button', { name: 'Editar', exact: true })
-    await (
-      (await editar.isVisible()) ? editar : page.getByRole('button', { name: 'Editar teléfonos' })
-    ).click({ timeout: 1000 })
-    await expect(panel).toBeVisible({ timeout: 1000 })
-  }).toPass()
+  // «Editar lead» del «⋯» de la cabecera; con sólo los teléfonos, «Editar teléfonos». Tras guardar el panel se vuelve a dibujar: si ya
+  // está, no se toca nada.
+  await elegirEnElMenuDeLaFicha(page, /^Editar (lead|teléfonos)$/, panel)
   return panel
 }
 
