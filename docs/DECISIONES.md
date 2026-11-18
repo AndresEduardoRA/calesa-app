@@ -221,12 +221,21 @@ las trampas, en `docs/LECCIONES.md`.
   de «Relacionados» (no hay bloque «Lead» ni «Vínculo e interesados» aparte) y «Cotizaciones» es el historial completo, justo debajo; la situación va
   sólo en la cabecera y «Ver en logística» se muda al título de «Fase y qué falta» (mover es de logística). Sin tope de ancho propio (con `max-w-4xl` nunca
   habría dos columnas). `?seccion=` es un ancla (sin permiso, se queda arriba) y los paneles de «Relacionados» llevan a ese bloque. Sólo «Cotizaciones»,
-  «Documentos» y «Fotos» esperan a acercarse: lo que abre la URL (Relacionados, la subasta, los paneles, el carrusel) se monta con la ficha. El resumen
-  del inventario es la versión corta (cabecera y chips de Relacionados, sin pestañas ni la ficha por layout); un `?pestana=fotos` viejo abre el visor del
-  carrusel del resumen, con su clave propia (`<id>-resumen`: la fila usa la del vehículo). Descartados: pestañas con un «Resumen» primero (siguen
-  escondiendo), acordeones (un clic por bloque), tres columnas (no entran con el texto al 200 %), índice vertical (le roba ancho a los bloques), «Subasta»
-  como bloque del índice, un bloque «Lead» aparte (repite Relacionados), fundir Cotizado con el historial (cambiaría el mismo bloque en el resumen y en
-  logística), «Qué falta» con mover en la ficha (duplica logística) y `?pestana=fotos` → la ficha (saca de la lista).
+  «Documentos» y «Fotos» esperan a acercarse: lo que abre la URL (Relacionados, la subasta, los paneles, el carrusel) se monta con la ficha. Descartados:
+  pestañas con un «Resumen» primero (siguen escondiendo), acordeones (un clic por bloque), tres columnas (no entran con el texto al 200 %), índice vertical
+  (le roba ancho a los bloques), «Subasta» como bloque del índice, un bloque «Lead» aparte (repite Relacionados), fundir Cotizado con el historial (cambiaría
+  el mismo bloque en la ficha y en logística) y «Qué falta» con mover en la ficha (duplica logística).
+- **La lista abre la ficha; no hay resumen.** Reemplaza a «el resumen del inventario es la versión corta de la ficha»: un toque en la fila o la tarjeta de
+  `/vehiculos` lleva a `/vehiculos/<id>`, como un enlace de verdad. El nombre es el `<a>` (`<EnlaceDeLaFila>` de `shared`, con `data-abre-resumen` para el peso
+  de «visto» y el color de la fila con el foco) y el resto de la fila le pasa el clic (`href` en `<FilaDeLista>`/`<TarjetaDeLista>`): Ctrl, Cmd o Shift + clic y
+  el botón del medio abren otra pestaña, con texto elegido (copiar el VIN) no navega, y la casilla, el «⋯», «Publicar» y la foto siguen siendo suyos
+  (`esClicPropio`). Sin prefetch: cien filas serían cien pedidos de una ruta dinámica, y la ficha tiene su `loading.tsx`. «Cotizar vehículo» pasó al «⋯» de la
+  fila (después de «Editar»; el orden final del «⋯» es de T336). Un `?vehiculo=<id>` viejo redirige en el servidor (`destinoDelEnlaceViejo()`, `redirect()`: no
+  suma al historial) a la ficha con el `?panel=` que la ficha abre, el visor de sus fotos (`<id>-resumen` y `?pestana=fotos` pasan a `?visor=<id>`) y
+  `?editar=` del mismo vehículo; lo demás (origen, filtros, cursor) se quita, porque la ficha tiene «volver al origen». Descartados: un «stretched link» (un
+  `::after` absoluto queda encerrado en la celda pegajosa, que es `sticky`, y en la tarjeta tapa la selección de texto y obliga a subir cada botón con
+  `z-index`), un `<a>` que envuelve el `<tr>` o `display: contents` (rompen la semántica de la tabla) y un botón «Abrir ficha» por fila (suma una parada de
+  Tab y nodos).
 
 ## Leads
 
@@ -280,7 +289,7 @@ las trampas, en `docs/LECCIONES.md`.
   «Cambiar el principal» pasa al bloque de teléfonos del panel (sólo en la ficha; con algo escrito en el formulario se apaga: cambiar el número mueve la
   versión y dejaría la edición con la vieja) y quien sólo tiene `leads.telefonos_extra.editar` abre el mismo panel en «modo teléfonos». Un
   `?panel=agregar-telefono` o `?extra=nuevo` (clave propia: `?panel=` ya lo ocupa la edición) lleva a la edición con «Agregar teléfono» abierto.
-- **El resumen del listado es la versión corta de la ficha, sin pestañas.** Datos clave, lo último que pasó (el último seguimiento y el próximo
+- **El resumen del listado de leads es la versión corta de la ficha, sin pestañas** (cotizaciones tiene el suyo; vehículos abre la ficha). Datos clave, lo último que pasó (el último seguimiento y el próximo
   recordatorio, que ya trae la fila: ninguna lectura más), las acciones y Relacionados en chips; anotar y agendar abren su modal dentro del resumen. Los
   campos del layout y «Creado» quedan para la ficha. `?pestana=` viejo redirige en el servidor a la ficha en su bloque.
 - **La ficha se mide entera.** `?seccion=` no cambia el documento: un solo presupuesto (`PRESUPUESTO_DE_LA_FICHA_EN_KB`) sobre

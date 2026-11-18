@@ -14,6 +14,8 @@ export {
 export { MAXIMO_DE_PAGINA_DE_VEHICULOS } from './entities/vehiculo'
 // De dónde se lee una página del inventario: quien ve «propios» por `vehiculos_inventario()`, el resto por la tabla (4.16-2b)
 export { fuenteDelInventario, type FuenteDelInventario } from './entities/fuente-del-inventario'
+// Un `/vehiculos?vehiculo=<id>` viejo (la lista ya no tiene resumen): a dónde redirige, en la ficha.
+export { destinoDelEnlaceViejo } from './entities/enlace-viejo-del-resumen'
 export type { Vehiculo } from './entities/vehiculo'
 export type {
   AprobadasDeLaPagina,

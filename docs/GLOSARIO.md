@@ -235,10 +235,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   n.º 12». Se busca con `12` o `#12`.
 - **Número global** — `leads.numero` / `leads_numeros_globales`, `leads.numero_global.ver`, `NumerosDeLead.numero`: consecutivo de la empresa
   («N.º 1.234»); nulo sin el permiso.
-- **Resumen** — `?lead=`, `?vehiculo=`, `?cotizacion=` / `<DrawerDeLead>`, `<ResumenDeVehiculo>`, `<ResumenDeCotizacion>`: vistazo sin salir
-  de la lista («drawer rápido» en el código). El de un lead o un vehículo es la versión corta de su ficha, sin pestañas y con «Abrir ficha»:
-  el del lead, datos clave, lo último que pasó, las acciones y Relacionados en chips; el del vehículo, portada con carrusel, datos clave,
-  situación, acciones y Relacionados en chips (`claveDelVisorDelResumen()` para su carrusel).
+- **Resumen** — `?lead=`, `?cotizacion=` / `<DrawerDeLead>`, `<ResumenDeCotizacion>`: vistazo sin salir de la lista («drawer rápido» en el
+  código). El de un lead es la versión corta de su ficha, sin pestañas y con «Abrir ficha»: datos clave, lo último que pasó, las acciones y
+  Relacionados en chips. La lista de vehículos no tiene resumen: abre la ficha (`<EnlaceDeLaFila>`).
+- **Enlace de la fila** — `<EnlaceDeLaFila>` (`src/shared/ui/lista/`), `href` de `<FilaDeLista>`/`<TarjetaDeLista>`: el nombre de una fila o una tarjeta
+  como enlace a la ficha, en una lista sin resumen; el resto del ítem navega igual (Ctrl o el botón del medio, otra pestaña).
 - **Línea de tiempo (de una cotización)** — pestaña «Todo» del resumen (`?pestana=`, `useLineaDeTiempo`, `lineaDeTiempo()`): adjuntos, revisiones y comentarios
   mezclados por fecha, lo más nuevo arriba; una página de cada fuente y sólo se dibuja hasta donde llegó la que menos retrocedió. Las otras pestañas del resumen:
   «Adjuntos», «Revisiones» y «Comentarios».

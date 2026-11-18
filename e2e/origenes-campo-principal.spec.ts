@@ -70,10 +70,10 @@ test('marcar «Lote interno» como principal lo vuelve el nombre del vehículo e
   const fila = page.getByRole('listitem').filter({ hasText: 'lote_interno' })
   await expect(fila.getByText('Principal', { exact: true })).toBeVisible()
 
-  // El listado: el lote nombra la fila (el botón que abre el resumen) y el título va en la línea de abajo.
+  // El listado: el lote nombra la fila (el enlace a la ficha) y el título va en la línea de abajo.
   await page.goto(`/vehiculos?origen=${origen.id}`)
   const enLaLista = page.locator('tbody tr, li article').filter({ hasText: LOTE })
-  await expect(enLaLista.getByRole('button', { name: `Abrir ${LOTE}`, exact: true })).toBeVisible()
+  await expect(enLaLista.getByRole('link', { name: LOTE, exact: true })).toBeVisible()
   await expect(enLaLista.getByText(new RegExp(`${titulo} · #`))).toBeVisible()
 
   // El panel de logística: «<lote> · <título>».

@@ -1,10 +1,11 @@
 # vehiculos
 
-Inventario de vehículos por origen con atributos dinámicos: listado con filtros en la URL y vistas guardadas, ficha según el layout del origen, alta y edición en un panel, fotos (hasta 24, con portada), el bloque «Relacionados» (vinculado, interesado y cotizado, siempre arriba de cada detalle: en una línea en los resúmenes y en logística, compacto en las fichas) y el vínculo a un lead (con «Desvincular»; y, al pie de Relacionados en la ficha del lead, lo que no repite: «Vínculos anteriores», el panel «Vincular o marcar un vehículo» y la confirmación de desvincular, `GestionDeVehiculosDelLead`), la vitrina (publicar en la web con precio público y vista previa de lo que verá el visitante) la papelera por lotes (enviar con «Deshacer», restaurar y purgar) y, en un origen de subasta con apibara encendida, el alta pegando un enlace de Copart o IAAI, un VIN o un lote (de a uno o varios), con sus fotos, y «Refrescar» la subasta desde la ficha; y la limpieza automática de lo importado de una subasta que nadie compró, con su aviso previo y «Conservar».
+Inventario de vehículos por origen con atributos dinámicos: listado con filtros en la URL y vistas guardadas, ficha según el layout del origen, alta y edición en un panel, fotos (hasta 24, con portada), el bloque «Relacionados» (vinculado, interesado y cotizado, siempre arriba de cada detalle: en una línea en el resumen de un lead y en logística, compacto en las fichas) y el vínculo a un lead (con «Desvincular»; y, al pie de Relacionados en la ficha del lead, lo que no repite: «Vínculos anteriores», el panel «Vincular o marcar un vehículo» y la confirmación de desvincular, `GestionDeVehiculosDelLead`), la vitrina (publicar en la web con precio público y vista previa de lo que verá el visitante) la papelera por lotes (enviar con «Deshacer», restaurar y purgar) y, en un origen de subasta con apibara encendida, el alta pegando un enlace de Copart o IAAI, un VIN o un lote (de a uno o varios), con sus fotos, y «Refrescar» la subasta desde la ficha; y la limpieza automática de lo importado de una subasta que nadie compró, con su aviso previo y «Conservar».
 
 ## Entra y sale
 
-- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`, `?vehiculo=<id>` abre el resumen, la versión corta de la ficha, sin pestañas: un `?pestana=fotos` viejo abre el visor del carrusel del resumen —`claveDelVisorDelResumen()`— y otro `?pestana=` se quita),
+- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`; cada fila y cada tarjeta es un enlace a la ficha, con `href` y `EnlaceDeLaFila` de `shared/ui/lista`; un `?vehiculo=<id>` viejo
+  redirige a la ficha con su panel, su visor y su edición: `destinoDelEnlaceViejo()`, de `index.ts`, que llama la página con `redirigir()`),
   `/vehiculos/papelera`, `/vehiculos/[id]` (la ficha en dos columnas: a la izquierda `CabeceraDeVehiculo` apilada, `DatosPrincipalesDelVehiculo` y la
   subasta; a la derecha el índice y los bloques por permiso, que compone `src/app` con `logistica`, `cotizaciones` y `repuestos`. `?seccion=<bloque>` lleva
   a su bloque si quien mira lo ve —si no, se queda arriba— y los paneles de «Relacionados» y `?relacionados=` llevan a «Relacionados»). Paneles: `?panel=nuevo`, `?editar=<id>`,
@@ -39,20 +40,20 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   `leerPapelera`, `leerSubasta`, `limpiezaDe`… (ver `docs/MAPA.md`), `MAXIMO_DE_PAGINA_DE_VEHICULOS` (100) y:
   - `camposComunes(tipo)` y sus tipos (`CampoComun`, `ClaveComun`, `TipoComun`), para exportar en `datos`.
   - `identidadDeVehiculo(vehiculo, principal, formato)` e `identidadEnUnaLinea()` (logística): con campo principal activo y un valor no vacío ni
-    monto, el valor nombra y el título acompaña; si no, el título. Fila, tarjeta y resumen: `useIdentidad(campos)`; ficha, PDF, web y hoja: el título.
+    monto, el valor nombra y el título acompaña; si no, el título. Fila y tarjeta: `useIdentidad(campos)`; ficha, PDF, web y hoja: el título.
   - `leerTitulosDeVehiculos(ids)`: títulos de una página de `/cotizaciones` por pk, con la RLS de quien mira y sin papelera; hasta 100 ids.
-- **«Relacionados»** (`features/relacionados/`, `pantallas/relacionados.ts`; glosario): arriba de la ficha del vehículo, su resumen, la unidad de logística (página y drawer de gastos), la ficha del lead y su resumen. Tres grupos:
+- **«Relacionados»** (`features/relacionados/`, `pantallas/relacionados.ts`; glosario): arriba de la ficha del vehículo, la unidad de logística (página y drawer de gastos), la ficha del lead y su resumen. Tres grupos:
   Vinculado, Interesado y Cotizado (éste sólo con `cotizaciones.ver`); un grupo sin nada no se dibuja (`gruposALaVista()`) y sus acciones van al «⋯» del bloque o de la línea
   (`entities/acciones-fuera-de-los-grupos.ts`: con todo vacío, una a la vista y el resto en el «⋯»). `presentacion` es obligatoria en cada capa (`PresentacionDeRelacionados`, de `index.ts`):
-  `'linea'` (un chip por grupo con su popover diferido) en los resúmenes y en logística; `'compacta'` (los grupos con sus filas, la leyenda como `title` y descripción para el lector,
+  `'linea'` (un chip por grupo con su popover diferido) en el resumen de un lead y en logística; `'compacta'` (los grupos con sus filas, la leyenda como `title` y descripción para el lector,
   las acciones en el «⋯») en las fichas. Lo leen cuatro RPC `security definer` con el predicado de las policies y el alcance resuelto una vez
   (`vehiculo_relacionados()`, `lead_relacionados()`, `*_pagina()` para «Ver todos» por cursor `(fecha, id)`); `set random_page_cost = 1.1` en las cuatro, o el plan genérico ordena todo lo de un vehículo caliente.
   **Lo que quien mira no ve llega contado (`ocultos`) y sin ningún dato** (ni id, ni nombre, ni nota); lo que está en una papelera no cuenta; el cursor es siempre una fila visible. Índices:
   `vehiculos_interesados_{vehiculo,lead}_reciente_idx`, `vehiculos_vinculos_lead_abierto_idx`, `cotizaciones_relacion_{vehiculo,lead,par}_idx` (parciales de la cotización activa: el literal `estado in ('activa','reportada')`).
   `entities/relacionados*.ts` (tipos, Zod de las RPC, `null` si la forma se rompe), `acciones-de-relacionados.ts` (qué acciones ofrece cada fila y cada grupo, de banderas de la base y de `ParaRelacionados`, que arma
   `src/app/(app)/_relacionados/para-relacionados.ts`: `cotizarEn`, claves de la hoja, `rutaDeCotizacion`, `editarLeads`). Dos lecturas: en el servidor (`index.ts`: `leerRelacionadosDelVehiculo|DelLead`, ficha y unidad) y en el navegador
-  (resúmenes y «Ver todos»: `infra/relacionados.client.ts`). El selector de leads (`HuecosDeRelacionados.ElegirLead`) lo une `src/app` con el panel de `leads`; un componente no cruza de servidor a cliente
-  como prop, por eso `relacionados-del-vehiculo.client.tsx`. `?panel=desvincular`, `?panel=vincular-lead`, `?panel=marcar-interesado` y `?relacionados=<tipo>` viven en la ficha del vehículo; en un resumen o en la unidad
+  (el resumen de un lead y «Ver todos»: `infra/relacionados.client.ts`). El selector de leads (`HuecosDeRelacionados.ElegirLead`) lo une `src/app` con el panel de `leads`; un componente no cruza de servidor a cliente
+  como prop, por eso `relacionados-del-vehiculo.client.tsx`. `?panel=desvincular`, `?panel=vincular-lead`, `?panel=marcar-interesado` y `?relacionados=<tipo>` viven en la ficha del vehículo; en el resumen de un lead o en la unidad
   «Desvincular», los selectores y «Ver todos» llevan a la ficha con eso abierto. «Quitar interés» y «Cotizar» funcionan en el lugar. `vehiculo_interesados()` ya no la llama la app (`docs/PENDIENTES.md`).
 - Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `papelera`, `vehiculos-del-lead` (`GestionDeVehiculosDelLead`: los anteriores, 3 a la vista y «Ver los N anteriores» hasta 50, `?panel=agregar-vehiculo` y `?panel=desvincular`; `leerVehiculosDelLead` es `cache()`: una lectura de `lead_vehiculos` por pedido), `cotizar`, `relacionados`, `unidad-de-logistica`: `FotosEnElLugar` para la cabecera de la unidad de logística;
   `proyecto-de-repuestos`: `leerLeadVinculado(vehiculoId)` para el lead por defecto de «Nuevo proyecto» de repuestos).
@@ -66,7 +67,8 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 - **Situación en la ficha** (`features/situacion/`, `pantallas/ficha.ts` › `<AvisoDeSituacion>`): «Sin resolver» con «La ganamos» (el `href` lo
   arma `src/app`: `vehiculos` no conoce `logistica`) y «No la ganamos» (`marcarNoGanada`, con «Deshacer» 10 s); «No ganada» con quién y cuándo
   (`resolucionDeSubasta`, de `index.ts`) y «Deshacer». `puedeResolverLaSubasta(permisos, origen)`: `flujos.mover` o `.cualquiera` y `logistica.ver`. `useNoGanada({ vehiculoId, origenId, alLograrlo })` sale por `client.ts`: `logistica` lo usa en la fila de «Subastas sin resolver» de su bandeja del día (con `router.refresh()` al lograrlo).
-- «Cotizar» del resumen: `paraCotizar` (`entities/ruta-para-cotizar.ts`, o `null` si no cotiza: `origenesParaCotizar()`); abre la hoja sin lead.
+- «Cotizar vehículo» del «⋯» de la fila y la tarjeta: `paraCotizar` (`entities/ruta-para-cotizar.ts`, o `null` si no cotiza: `origenesParaCotizar()`); abre la
+  hoja sin lead. La ficha no lo ofrece (`MenuDeVehiculoDeLaFicha` no pasa `cotizar`).
 - **«Cotización aprobada»** (columna de la tabla y línea de la tarjeta): `ListadoDeVehiculos` recibe `aprobadas` (`AprobadasDeLaPagina`, por id de vehículo:
   `{ ruta, monto, moneda }`, o `null` si quien mira no tiene `cotizaciones.ver` en algún origen: la columna no se dibuja) y lo arma `src/app/(app)/vehiculos/aprobadas.ts`
   con `leerAprobadasDeVehiculos()` de `cotizaciones` (este módulo no la importa). `entities/cotizacion-aprobada-de-la-fila.ts`; `celda-de-aprobada.tsx` dibuja
@@ -79,8 +81,8 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 - `entities/`: `filtros.ts` (`Condicion[]` neutras que `infra/` traduce), `comunes.ts` (único lugar con etiquetas fijas), `esquema.ts`
   (`validarVehiculo()`, igual para formulario y action), `acciones-de-vehiculo.ts` (lista única del «⋯»; «Ver actividad» sólo en la ficha, con
   `actividad.ver` y `rutaDeActividadDe`), `limpieza.ts` (sólo lee y dice), `papelera`, `vinculo`, `vitrina`, `foto`, `apibara`, `subasta*`,
-  `resumen`, `panel-para-cotizar.ts`. `infra/`: lecturas en `queries/`, escrituras por RPC, `*.client.ts` para el navegador.
-- `features/`: `alta`, `ficha`, `fotos`, `vitrina`, `papelera`, `vinculo`, `listado`, `acciones`, `resumen`, `subasta`, `limpieza`,
+  `enlace-viejo-del-resumen.ts`, `panel-para-cotizar.ts`. `infra/`: lecturas en `queries/`, escrituras por RPC, `*.client.ts` para el navegador.
+- `features/`: `alta`, `ficha`, `fotos`, `vitrina`, `papelera`, `vinculo`, `listado`, `acciones`, `subasta`, `limpieza`,
   `panel-para-cotizar`. `CLAVE_DE_EDICION` vive en `features/alta/claves.ts`, no en un `'use client'`.
 - El panel de alta y edición avisa y cierra cuando el envío terminó (`features/alta/hooks/use-tras-el-envio.ts`, copia de la de `leads`).
 - El listado dibuja una sola vista (tabla o tarjetas) elegida en servidor; los e2e buscan filas con `tbody tr, li article`. En escritorio,

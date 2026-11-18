@@ -91,11 +91,6 @@ export const DRAWERS_DEL_NUCLEO: Record<string, RegistroDeDrawer> = {
     formulario: 'src/modules/vehiculos/features/vinculo/components/panel-agregar-vehiculo.tsx',
     mecanismo: 'contexto',
   },
-  // El resumen de un vehículo sólo muestra: su edición es el panel de arriba (`panel-de-vehiculo.tsx`), que pregunta por su cuenta.
-  'src/modules/vehiculos/features/resumen/components/resumen-de-vehiculo.tsx': {
-    sinFormulario:
-      'el resumen sólo muestra; editar abre el panel de edición encima, que pregunta por su cuenta (useCierreConCambios)',
-  },
   // El panel del vehículo de la hoja de cotizar (4.14-2a) elige un vehículo; desde el 4.14-2c1 también lo da de alta en su propio cuerpo (`?alta=`): ese formulario es el del
   // inventario y pregunta por su cuenta (`useCierreConCambios`). Desde el 4.14-2c3 «Elegido» elige el tipo de vehículo con un toque, que guarda al momento: no deja nada sin guardar.
   'src/modules/vehiculos/features/panel-para-cotizar/components/panel-del-vehiculo.tsx': {

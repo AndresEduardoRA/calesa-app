@@ -16,7 +16,7 @@ import { nadaSeSaleDelPanel } from './soporte/panel'
 
 // El patrón de lista en el listado de leads (9i, `.claude/rules/ui.md`): un clic en cualquier parte de la fila o la tarjeta abre el resumen,
 // salvo el del «⋯» y el de un enlace de la fila; con el teclado se alcanza el nombre, Enter abre y el foco vuelve al cerrar; la fila abierta
-// se marca. Lo mismo vale para el inventario de vehículos (`vehiculos-resumen.spec.ts`).
+// se marca. El inventario de vehículos abre la ficha con el mismo patrón (`vehiculos-sin-resumen.spec.ts`).
 test.describe.configure({ mode: 'serial' })
 
 const CORTO = 'Patron fila'

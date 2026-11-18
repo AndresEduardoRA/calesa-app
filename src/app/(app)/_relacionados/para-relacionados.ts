@@ -25,11 +25,3 @@ export function paraRelacionadosDe(
     editarLeads: puede(permisos, 'leads.editar'),
   }
 }
-
-// Para el resumen del inventario: sin `leads.ver` el bloque no se dibuja (nulo).
-export function paraElResumenDe(
-  permisos: Permisos,
-  origenes: readonly { id: string; activo: boolean }[],
-): ParaRelacionados | null {
-  return puede(permisos, 'leads.ver') ? paraRelacionadosDe(permisos, origenes) : null
-}

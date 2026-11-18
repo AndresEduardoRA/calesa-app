@@ -74,6 +74,6 @@ test('el inventario: el panel va al costado sólo si cabe, y al 200 % la fila se
   await page.goto(`/vehiculos?origen=${terreno.corea.id}`)
   await exigirPanelAlCostadoSoloSiCabe(
     page,
-    aLaVista(page.getByRole('button', { name: /^Abrir Barra200 V1/ })),
+    aLaVista(page.getByRole('link', { name: /^Barra200 V1/ })),
   )
 })

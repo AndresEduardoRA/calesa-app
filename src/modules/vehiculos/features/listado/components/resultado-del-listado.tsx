@@ -39,9 +39,6 @@ type Props = DatosDelOrigen & {
   publicar: PermisoDeVitrina
   // Si cotiza en este origen: sin eso «Cotizar vehículo» no está en el «⋯».
   paraCotizar: ParaCotizar | null
-  // Abre el resumen de un vehículo, y cuál está abierto (para marcarlo).
-  alAbrir: (id: string) => void
-  abierto: string | null
   // Tabla o tarjetas en escritorio (se elige en «Vista y opciones»).
   vista: VistaDeLista
 }
@@ -52,7 +49,7 @@ const mayuscula = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice
 // origen), vacío por filtro (con «Limpiar») o una página que se quedó sin filas. Una sola vista (`<UnaSolaVista>`, como el listado de
 // leads): la tabla desde `md` y las tarjetas por debajo, o las tarjetas en todo ancho si la persona las eligió.
 export function ResultadoDelListado(props: Props) {
-  const { pagina, accionDeVacio, alAbrir, abierto, vista, ...resto } = props
+  const { pagina, accionDeVacio, vista, ...resto } = props
   const { editables: _e, eliminables, leadsVisibles: _l, alcance: _a, ...demas } = resto
   const { publicar, aprobadas, paraCotizar, ...datos } = demas
   const filtros = useFiltrosDelListado()
@@ -94,8 +91,6 @@ export function ResultadoDelListado(props: Props) {
             encabezado={mayuscula(origen.sustantivo)}
             menu={menu}
             seleccion={papelera.seleccion}
-            alAbrir={alAbrir}
-            abierto={abierto}
             aprobadas={aprobadas}
           />
         )}
@@ -106,8 +101,6 @@ export function ResultadoDelListado(props: Props) {
             vehiculos={pagina.filas}
             menu={menu}
             seleccion={papelera.seleccion}
-            alAbrir={alAbrir}
-            abierto={abierto}
             aprobadas={aprobadas}
           />
         )}

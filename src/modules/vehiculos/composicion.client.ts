@@ -4,12 +4,10 @@ export { prepararFoto, subirFoto, type FotoPreparada } from './infra/fotos.clien
 export { consultarFicha, descargarFoto } from './infra/apibara.client'
 export { buscarCandidatos } from './infra/vehiculos-para-lead.client'
 export { leerLoteDePapelera } from './infra/papelera.client'
-export { leerVehiculoDelResumen } from './infra/resumen.client'
 export { leerListaDelPanel } from './infra/panel-para-cotizar.client'
 export {
   leerPaginaDeLeadsDelVehiculo,
   leerPaginaDeVehiculosDelLead,
   leerRelacionadosDelLeadEnElNavegador,
-  leerRelacionadosDelVehiculoEnElNavegador,
   leerVinculosDelVehiculo,
 } from './infra/relacionados.client'
