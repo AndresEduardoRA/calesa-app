@@ -12,7 +12,7 @@ import { MOTIVO_SIN_PERMISO_DE_TONOS } from '../../../entities/diseno/tonos'
 import { comoResultado } from '../../niveles/actions/resultado'
 import { esquemaGuardarTono } from '../schemas/tonos'
 
-// Guarda el nombre o los colores de un tono (`tono_guardar`): sólo lo que cambió, con la versión que se tenía en pantalla (un PT409 si otra persona lo cambió).
+// Guarda el nombre o el hex de un color (`tono_guardar`): sólo lo que cambió, con la versión que se tenía en pantalla (un PT409 si otra persona lo cambió).
 export const guardarTono = actionClient
   .inputSchema(esquemaGuardarTono)
   .action(async ({ parsedInput, ctx }): Promise<ResultadoDeAccion<RespuestaDeTonos>> => {

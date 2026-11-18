@@ -11,13 +11,13 @@ type Props = {
   enCurso: boolean
   // Confirmado: elimina y dice si pudo (si no, el aviso ya salió).
   alEliminar: (tono: Tono) => Promise<boolean>
-  // A dónde vuelve el foco al cerrar: el botón de esa fila, que sigue ahí si no se eliminó.
+  // A dónde vuelve el foco al cerrar: el «⋯» de esa fila, que sigue ahí si no se eliminó.
   focoAlCerrar: () => HTMLElement | boolean
 }
 
-// «Eliminar» un tono (`?panel=eliminar-tono&tono=<id>`): lo irreversible pide confirmar nombrando el tono. La lista no sabe cuáles usa una fórmula: si alguna versión lo
-// nombra, la base lo rechaza diciendo cuál, el aviso sale con esa frase y el diálogo se cierra.
-export function EliminarTono({
+// «Eliminar» un color (`?panel=eliminar-tono&tono=<id>`, la URL conserva el nombre técnico): lo irreversible pide confirmar nombrando el color. La lista no sabe
+// cuáles usa una fórmula: si alguna versión lo nombra, la base lo rechaza diciendo cuál, el aviso sale con esa frase y el diálogo se cierra.
+export function EliminarColor({
   abierto,
   alCerrar,
   tono,
@@ -33,9 +33,9 @@ export function EliminarTono({
         if (tono) await alEliminar(tono)
         alCerrar()
       }}
-      titulo={tono ? `Eliminar el tono «${tono.nombre}»` : 'Eliminar el tono'}
+      titulo={tono ? `Eliminar el color «${tono.nombre}»` : 'Eliminar el color'}
       descripcion="Si una fórmula lo usa, no se elimina y te decimos cuál. No se puede deshacer."
-      etiquetaConfirmar="Eliminar tono"
+      etiquetaConfirmar="Eliminar color"
       enCurso={enCurso}
       focoAlCerrar={focoAlCerrar}
     />

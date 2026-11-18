@@ -84,7 +84,14 @@ test('E1: sin borrador ni publicada el editor parte de los grupos de la fórmula
   await entrar(page, configuradora, { fresco: true })
   await page.goto('/configuracion/cotizacion')
   const pestanas = page.getByRole('tab')
-  await expect(pestanas).toHaveText(['Fórmula', 'Tarjeta', 'Diseño', 'Tonos', 'Tablas', 'Ajustes'])
+  await expect(pestanas).toHaveText([
+    'Fórmula',
+    'Tarjeta',
+    'Diseño',
+    'Colores',
+    'Tablas',
+    'Ajustes',
+  ])
   await page.getByRole('tab', { name: 'Tarjeta' }).click()
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(
@@ -93,7 +100,7 @@ test('E1: sin borrador ni publicada el editor parte de los grupos de la fórmula
   // Sin borrador, «Guardar» está activo desde el principio.
   await expect(guardar(page)).toBeEnabled()
   await page.getByLabel('Etiqueta del total').fill('TOTAL EN DÓLARES')
-  await page.getByLabel('Tono de «Compra»').selectOption({ index: 1 })
+  await page.getByLabel('Color de «Compra»').selectOption({ index: 1 })
   await guardar(page).click()
   await expect(page.getByText('Se guardó el borrador.')).toBeVisible()
   await page.reload()

@@ -62,12 +62,12 @@ test('E1: la vista previa sigue a la plantilla sin guardar, con cifras de ejempl
   const primero = vista(page).locator('[data-grupo-de-la-tarjeta]').first()
   const antes = await primero.getAttribute('data-tono')
   const opciones = await page
-    .getByLabel('Tono de «Compra»')
+    .getByLabel('Color de «Compra»')
     .locator('option')
     .evaluateAll((o) => o.map((x) => (x as HTMLOptionElement).value).filter(Boolean))
   const otro = opciones.find((v) => v !== antes)
   if (!otro) throw new Error('El catálogo no trae otro tono.')
-  await page.getByLabel('Tono de «Compra»').selectOption(otro)
+  await page.getByLabel('Color de «Compra»').selectOption(otro)
   await expect(primero).toHaveAttribute('data-tono', otro)
 
   // Columnas y logo, en «Pie y columnas».

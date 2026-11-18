@@ -1,0 +1,5106 @@
+{
+ "semilla": 20261117,
+ "aa": 4.5,
+ "casos": [
+  {
+   "hex": "#000000",
+   "colores": {
+    "claro": {
+     "fondo": "#ebebeb",
+     "borde": "#000000",
+     "tinta": "#000000"
+    },
+    "oscuro": {
+     "fondo": "#000000",
+     "borde": "#000000",
+     "tinta": "#757575"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ffffff",
+   "colores": {
+    "claro": {
+     "fondo": "#ffffff",
+     "borde": "#ffffff",
+     "tinta": "#757575"
+    },
+    "oscuro": {
+     "fondo": "#383d49",
+     "borde": "#ffffff",
+     "tinta": "#ffffff"
+    }
+   },
+   "tintaDeLaTarjeta": "#757575",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ffff00",
+   "colores": {
+    "claro": {
+     "fondo": "#ffff00",
+     "borde": "#ffff00",
+     "tinta": "#757500"
+    },
+    "oscuro": {
+     "fondo": "#383d2a",
+     "borde": "#ffff00",
+     "tinta": "#ffff00"
+    }
+   },
+   "tintaDeLaTarjeta": "#757500",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ff0000",
+   "colores": {
+    "claro": {
+     "fondo": "#ffe6e6",
+     "borde": "#ff0000",
+     "tinta": "#d60000"
+    },
+    "oscuro": {
+     "fondo": "#7c141c",
+     "borde": "#ff0000",
+     "tinta": "#ff8585"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#00ff00",
+   "colores": {
+    "claro": {
+     "fondo": "#99ff99",
+     "borde": "#00ff00",
+     "tinta": "#007a00"
+    },
+    "oscuro": {
+     "fondo": "#184628",
+     "borde": "#00ff00",
+     "tinta": "#00ff00"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#0000ff",
+   "colores": {
+    "claro": {
+     "fondo": "#e6e6ff",
+     "borde": "#0000ff",
+     "tinta": "#0000ff"
+    },
+    "oscuro": {
+     "fondo": "#0608d1",
+     "borde": "#0000ff",
+     "tinta": "#a3a3ff"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#00ffff",
+   "colores": {
+    "claro": {
+     "fondo": "#47ffff",
+     "borde": "#00ffff",
+     "tinta": "#007070"
+    },
+    "oscuro": {
+     "fondo": "#19424d",
+     "borde": "#00ffff",
+     "tinta": "#00ffff"
+    }
+   },
+   "tintaDeLaTarjeta": "#007070",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ff00ff",
+   "colores": {
+    "claro": {
+     "fondo": "#ffe0ff",
+     "borde": "#ff00ff",
+     "tinta": "#b800b8"
+    },
+    "oscuro": {
+     "fondo": "#6a1776",
+     "borde": "#ff00ff",
+     "tinta": "#ff70ff"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#101010",
+   "colores": {
+    "claro": {
+     "fondo": "#ececec",
+     "borde": "#101010",
+     "tinta": "#101010"
+    },
+    "oscuro": {
+     "fondo": "#101010",
+     "borde": "#101010",
+     "tinta": "#7e7e7e"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#202020",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e9e9",
+     "borde": "#202020",
+     "tinta": "#202020"
+    },
+    "oscuro": {
+     "fondo": "#202020",
+     "borde": "#202020",
+     "tinta": "#878787"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#303030",
+   "colores": {
+    "claro": {
+     "fondo": "#eaeaea",
+     "borde": "#303030",
+     "tinta": "#303030"
+    },
+    "oscuro": {
+     "fondo": "#303030",
+     "borde": "#303030",
+     "tinta": "#989898"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#404040",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e8",
+     "borde": "#404040",
+     "tinta": "#404040"
+    },
+    "oscuro": {
+     "fondo": "#3f3f40",
+     "borde": "#404040",
+     "tinta": "#ababab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#505050",
+   "colores": {
+    "claro": {
+     "fondo": "#eaeaea",
+     "borde": "#505050",
+     "tinta": "#505050"
+    },
+    "oscuro": {
+     "fondo": "#3d3f44",
+     "borde": "#505050",
+     "tinta": "#ababab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#606060",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e9e9",
+     "borde": "#606060",
+     "tinta": "#606060"
+    },
+    "oscuro": {
+     "fondo": "#3c3f46",
+     "borde": "#606060",
+     "tinta": "#acacac"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#707070",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e8",
+     "borde": "#707070",
+     "tinta": "#676767"
+    },
+    "oscuro": {
+     "fondo": "#3b3f47",
+     "borde": "#707070",
+     "tinta": "#acacac"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#808080",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e8",
+     "borde": "#808080",
+     "tinta": "#666666"
+    },
+    "oscuro": {
+     "fondo": "#3b3f48",
+     "borde": "#808080",
+     "tinta": "#ababab"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#909090",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e9e9",
+     "borde": "#909090",
+     "tinta": "#686868"
+    },
+    "oscuro": {
+     "fondo": "#3b3f49",
+     "borde": "#909090",
+     "tinta": "#ababab"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#a0a0a0",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e8",
+     "borde": "#a0a0a0",
+     "tinta": "#666666"
+    },
+    "oscuro": {
+     "fondo": "#3a3f49",
+     "borde": "#a0a0a0",
+     "tinta": "#aaaaaa"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b0b0b0",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e9e9",
+     "borde": "#b0b0b0",
+     "tinta": "#666666"
+    },
+    "oscuro": {
+     "fondo": "#3a3f4a",
+     "borde": "#b0b0b0",
+     "tinta": "#b0b0b0"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c0c0c0",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e8",
+     "borde": "#c0c0c0",
+     "tinta": "#686868"
+    },
+    "oscuro": {
+     "fondo": "#3a3f4a",
+     "borde": "#c0c0c0",
+     "tinta": "#c0c0c0"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#d0d0d0",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e8",
+     "borde": "#d0d0d0",
+     "tinta": "#686868"
+    },
+    "oscuro": {
+     "fondo": "#3a3f4a",
+     "borde": "#d0d0d0",
+     "tinta": "#d0d0d0"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#e0e0e0",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e8",
+     "borde": "#e0e0e0",
+     "tinta": "#676767"
+    },
+    "oscuro": {
+     "fondo": "#383d49",
+     "borde": "#e0e0e0",
+     "tinta": "#e0e0e0"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f0f0f0",
+   "colores": {
+    "claro": {
+     "fondo": "#f0f0f0",
+     "borde": "#f0f0f0",
+     "tinta": "#6a6a6a"
+    },
+    "oscuro": {
+     "fondo": "#363c47",
+     "borde": "#f0f0f0",
+     "tinta": "#f0f0f0"
+    }
+   },
+   "tintaDeLaTarjeta": "#6a6a6a",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#767676",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e9e9",
+     "borde": "#767676",
+     "tinta": "#686868"
+    },
+    "oscuro": {
+     "fondo": "#3b3f48",
+     "borde": "#767676",
+     "tinta": "#aaaaaa"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#777777",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e9e9",
+     "borde": "#777777",
+     "tinta": "#696969"
+    },
+    "oscuro": {
+     "fondo": "#3a3e47",
+     "borde": "#777777",
+     "tinta": "#a8a8a8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#fff7d6",
+   "colores": {
+    "claro": {
+     "fondo": "#fff7d6",
+     "borde": "#fff7d6",
+     "tinta": "#706d5e"
+    },
+    "oscuro": {
+     "fondo": "#383c44",
+     "borde": "#fff7d6",
+     "tinta": "#fff7d6"
+    }
+   },
+   "tintaDeLaTarjeta": "#706d5e",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#e6f6ee",
+   "colores": {
+    "claro": {
+     "fondo": "#e6f6ee",
+     "borde": "#e6f6ee",
+     "tinta": "#656c69"
+    },
+    "oscuro": {
+     "fondo": "#353c47",
+     "borde": "#e6f6ee",
+     "tinta": "#e6f6ee"
+    }
+   },
+   "tintaDeLaTarjeta": "#656c69",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ffe9d6",
+   "colores": {
+    "claro": {
+     "fondo": "#ffe9d6",
+     "borde": "#ffe9d6",
+     "tinta": "#70675e"
+    },
+    "oscuro": {
+     "fondo": "#383b44",
+     "borde": "#ffe9d6",
+     "tinta": "#ffe9d6"
+    }
+   },
+   "tintaDeLaTarjeta": "#70675e",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#31869b",
+   "colores": {
+    "claro": {
+     "fondo": "#deecef",
+     "borde": "#31869b",
+     "tinta": "#297182"
+    },
+    "oscuro": {
+     "fondo": "#234352",
+     "borde": "#31869b",
+     "tinta": "#7fb4c1"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#7048e8",
+   "colores": {
+    "claro": {
+     "fondo": "#ebe5fc",
+     "borde": "#7048e8",
+     "tinta": "#7048e8"
+    },
+    "oscuro": {
+     "fondo": "#40337d",
+     "borde": "#7048e8",
+     "tinta": "#b5a0f3"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#fff2cc",
+   "colores": {
+    "claro": {
+     "fondo": "#fff2cc",
+     "borde": "#fff2cc",
+     "tinta": "#706a5a"
+    },
+    "oscuro": {
+     "fondo": "#383c43",
+     "borde": "#fff2cc",
+     "tinta": "#fff2cc"
+    }
+   },
+   "tintaDeLaTarjeta": "#706a5a",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1b2130",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e9ea",
+     "borde": "#1b2130",
+     "tinta": "#1b2130"
+    },
+    "oscuro": {
+     "fondo": "#1b2130",
+     "borde": "#1b2130",
+     "tinta": "#888c93"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1d2330",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e9ea",
+     "borde": "#1d2330",
+     "tinta": "#1d2330"
+    },
+    "oscuro": {
+     "fondo": "#1d2330",
+     "borde": "#1d2330",
+     "tinta": "#898d93"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#40374a",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e7e9",
+     "borde": "#40374a",
+     "tinta": "#40374a"
+    },
+    "oscuro": {
+     "fondo": "#40374a",
+     "borde": "#40374a",
+     "tinta": "#a7a3ac"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3d3b35",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e7e7",
+     "borde": "#3d3b35",
+     "tinta": "#3d3b35"
+    },
+    "oscuro": {
+     "fondo": "#3d3b35",
+     "borde": "#3d3b35",
+     "tinta": "#a6a5a2"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f2e4e4",
+   "colores": {
+    "claro": {
+     "fondo": "#f2e5e5",
+     "borde": "#f2e4e4",
+     "tinta": "#6a6464"
+    },
+    "oscuro": {
+     "fondo": "#3b3e49",
+     "borde": "#f2e4e4",
+     "tinta": "#f2e4e4"
+    }
+   },
+   "tintaDeLaTarjeta": "#6a6464",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3f3d46",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e9",
+     "borde": "#3f3d46",
+     "tinta": "#3f3d46"
+    },
+    "oscuro": {
+     "fondo": "#3f3d46",
+     "borde": "#3f3d46",
+     "tinta": "#abaaae"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#454232",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e8e6",
+     "borde": "#454232",
+     "tinta": "#454232"
+    },
+    "oscuro": {
+     "fondo": "#413f32",
+     "borde": "#454232",
+     "tinta": "#adaca5"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#32443a",
+   "colores": {
+    "claro": {
+     "fondo": "#e6e9e7",
+     "borde": "#32443a",
+     "tinta": "#32443a"
+    },
+    "oscuro": {
+     "fondo": "#32433a",
+     "borde": "#32443a",
+     "tinta": "#a5ada8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ebe6dc",
+   "colores": {
+    "claro": {
+     "fondo": "#ebe7dd",
+     "borde": "#ebe6dc",
+     "tinta": "#676561"
+    },
+    "oscuro": {
+     "fondo": "#3a3e48",
+     "borde": "#ebe6dc",
+     "tinta": "#ebe6dc"
+    }
+   },
+   "tintaDeLaTarjeta": "#676561",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#393932",
+   "colores": {
+    "claro": {
+     "fondo": "#ebebeb",
+     "borde": "#393932",
+     "tinta": "#393932"
+    },
+    "oscuro": {
+     "fondo": "#393932",
+     "borde": "#393932",
+     "tinta": "#a4a4a1"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3e3646",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e7e9",
+     "borde": "#3e3646",
+     "tinta": "#3e3646"
+    },
+    "oscuro": {
+     "fondo": "#3e3646",
+     "borde": "#3e3646",
+     "tinta": "#a6a3aa"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3e3a3d",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e7e8",
+     "borde": "#3e3a3d",
+     "tinta": "#3e3a3d"
+    },
+    "oscuro": {
+     "fondo": "#3e3a3d",
+     "borde": "#3e3a3d",
+     "tinta": "#a6a4a6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3d3842",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e7e8",
+     "borde": "#3d3842",
+     "tinta": "#3d3842"
+    },
+    "oscuro": {
+     "fondo": "#3d3842",
+     "borde": "#3d3842",
+     "tinta": "#a6a3a8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3d373c",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e7e8",
+     "borde": "#3d373c",
+     "tinta": "#3d373c"
+    },
+    "oscuro": {
+     "fondo": "#3d373c",
+     "borde": "#3d373c",
+     "tinta": "#a6a3a5"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#364632",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e9e6",
+     "borde": "#364632",
+     "tinta": "#364632"
+    },
+    "oscuro": {
+     "fondo": "#344332",
+     "borde": "#364632",
+     "tinta": "#a7aea5"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3d3f43",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e8",
+     "borde": "#3d3f43",
+     "tinta": "#3d3f43"
+    },
+    "oscuro": {
+     "fondo": "#3d3f43",
+     "borde": "#3d3f43",
+     "tinta": "#aaabac"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3a413a",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e8e7",
+     "borde": "#3a413a",
+     "tinta": "#3a413a"
+    },
+    "oscuro": {
+     "fondo": "#3a413a",
+     "borde": "#3a413a",
+     "tinta": "#a8aba8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3b3948",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e7e9",
+     "borde": "#3b3948",
+     "tinta": "#3b3948"
+    },
+    "oscuro": {
+     "fondo": "#3b3948",
+     "borde": "#3b3948",
+     "tinta": "#a5a4ab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3b3649",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e7e9",
+     "borde": "#3b3649",
+     "tinta": "#3b3649"
+    },
+    "oscuro": {
+     "fondo": "#3b3649",
+     "borde": "#3b3649",
+     "tinta": "#a5a3ab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#deece0",
+   "colores": {
+    "claro": {
+     "fondo": "#deece0",
+     "borde": "#deece0",
+     "tinta": "#626863"
+    },
+    "oscuro": {
+     "fondo": "#383f49",
+     "borde": "#deece0",
+     "tinta": "#deece0"
+    }
+   },
+   "tintaDeLaTarjeta": "#626863",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#363a42",
+   "colores": {
+    "claro": {
+     "fondo": "#ebebec",
+     "borde": "#363a42",
+     "tinta": "#363a42"
+    },
+    "oscuro": {
+     "fondo": "#363a42",
+     "borde": "#363a42",
+     "tinta": "#a3a4a8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#373e40",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e8e8",
+     "borde": "#373e40",
+     "tinta": "#373e40"
+    },
+    "oscuro": {
+     "fondo": "#373e40",
+     "borde": "#373e40",
+     "tinta": "#a7aaab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#344a3a",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e9e7",
+     "borde": "#344a3a",
+     "tinta": "#344a3a"
+    },
+    "oscuro": {
+     "fondo": "#304338",
+     "borde": "#344a3a",
+     "tinta": "#a2aca4"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#363e3f",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e8e8",
+     "borde": "#363e3f",
+     "tinta": "#363e3f"
+    },
+    "oscuro": {
+     "fondo": "#363e3f",
+     "borde": "#363e3f",
+     "tinta": "#a7aaab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#473a3a",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e7e7",
+     "borde": "#473a3a",
+     "tinta": "#473a3a"
+    },
+    "oscuro": {
+     "fondo": "#473a3a",
+     "borde": "#473a3a",
+     "tinta": "#aea8a8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3b3f3e",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e8e8",
+     "borde": "#3b3f3e",
+     "tinta": "#3b3f3e"
+    },
+    "oscuro": {
+     "fondo": "#3b3f3e",
+     "borde": "#3b3f3e",
+     "tinta": "#a9abaa"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#414337",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e7",
+     "borde": "#414337",
+     "tinta": "#414337"
+    },
+    "oscuro": {
+     "fondo": "#3e4036",
+     "borde": "#414337",
+     "tinta": "#abaca7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3e413a",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e7",
+     "borde": "#3e413a",
+     "tinta": "#3e413a"
+    },
+    "oscuro": {
+     "fondo": "#3d403a",
+     "borde": "#3e413a",
+     "tinta": "#aaaba8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#364843",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e9e8",
+     "borde": "#364843",
+     "tinta": "#364843"
+    },
+    "oscuro": {
+     "fondo": "#324240",
+     "borde": "#364843",
+     "tinta": "#a3aba9"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3f453e",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e9e8",
+     "borde": "#3f453e",
+     "tinta": "#3f453e"
+    },
+    "oscuro": {
+     "fondo": "#3a403c",
+     "borde": "#3f453e",
+     "tinta": "#abadaa"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#323f40",
+   "colores": {
+    "claro": {
+     "fondo": "#e6e8e8",
+     "borde": "#323f40",
+     "tinta": "#323f40"
+    },
+    "oscuro": {
+     "fondo": "#323f40",
+     "borde": "#323f40",
+     "tinta": "#a5abab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#e5e6f1",
+   "colores": {
+    "claro": {
+     "fondo": "#e6e7f1",
+     "borde": "#e5e6f1",
+     "tinta": "#65656a"
+    },
+    "oscuro": {
+     "fondo": "#393e4b",
+     "borde": "#e5e6f1",
+     "tinta": "#e5e6f1"
+    }
+   },
+   "tintaDeLaTarjeta": "#65656a",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#453d35",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e8e7",
+     "borde": "#453d35",
+     "tinta": "#453d35"
+    },
+    "oscuro": {
+     "fondo": "#453d35",
+     "borde": "#453d35",
+     "tinta": "#adaaa6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#423b35",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e7e7",
+     "borde": "#423b35",
+     "tinta": "#423b35"
+    },
+    "oscuro": {
+     "fondo": "#423b35",
+     "borde": "#423b35",
+     "tinta": "#aca9a6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#493c35",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e8e7",
+     "borde": "#493c35",
+     "tinta": "#493c35"
+    },
+    "oscuro": {
+     "fondo": "#493c35",
+     "borde": "#493c35",
+     "tinta": "#afa9a6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3f3a43",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e7e8",
+     "borde": "#3f3a43",
+     "tinta": "#3f3a43"
+    },
+    "oscuro": {
+     "fondo": "#3f3a43",
+     "borde": "#3f3a43",
+     "tinta": "#aba8ac"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#324441",
+   "colores": {
+    "claro": {
+     "fondo": "#e6e9e8",
+     "borde": "#324441",
+     "tinta": "#324441"
+    },
+    "oscuro": {
+     "fondo": "#314240",
+     "borde": "#324441",
+     "tinta": "#a5adab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#383b3f",
+   "colores": {
+    "claro": {
+     "fondo": "#ebebec",
+     "borde": "#383b3f",
+     "tinta": "#383b3f"
+    },
+    "oscuro": {
+     "fondo": "#383b3f",
+     "borde": "#383b3f",
+     "tinta": "#a3a5a7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#393948",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e7e9",
+     "borde": "#393948",
+     "tinta": "#393948"
+    },
+    "oscuro": {
+     "fondo": "#393948",
+     "borde": "#393948",
+     "tinta": "#a4a4ab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f1e4e5",
+   "colores": {
+    "claro": {
+     "fondo": "#f1e5e6",
+     "borde": "#f1e4e5",
+     "tinta": "#6a6465"
+    },
+    "oscuro": {
+     "fondo": "#3b3e49",
+     "borde": "#f1e4e5",
+     "tinta": "#f1e4e5"
+    }
+   },
+   "tintaDeLaTarjeta": "#6a6465",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#483c45",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e8e9",
+     "borde": "#483c45",
+     "tinta": "#483c45"
+    },
+    "oscuro": {
+     "fondo": "#463b44",
+     "borde": "#483c45",
+     "tinta": "#aea9ad"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#394145",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e8e9",
+     "borde": "#394145",
+     "tinta": "#394145"
+    },
+    "oscuro": {
+     "fondo": "#384045",
+     "borde": "#394145",
+     "tinta": "#a8abad"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#68ce2f",
+   "colores": {
+    "claro": {
+     "fondo": "#d5f1c5",
+     "borde": "#68ce2f",
+     "tinta": "#3a731a"
+    },
+    "oscuro": {
+     "fondo": "#2b4230",
+     "borde": "#68ce2f",
+     "tinta": "#68ce2f"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#53ae3a",
+   "colores": {
+    "claro": {
+     "fondo": "#d9edd4",
+     "borde": "#53ae3a",
+     "tinta": "#377326"
+    },
+    "oscuro": {
+     "fondo": "#2a4432",
+     "borde": "#53ae3a",
+     "tinta": "#6fbb5a"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#d70806",
+   "colores": {
+    "claro": {
+     "fondo": "#fbe6e6",
+     "borde": "#d70806",
+     "tinta": "#d30806"
+    },
+    "oscuro": {
+     "fondo": "#7a161b",
+     "borde": "#d70806",
+     "tinta": "#ed9291"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#0e6f20",
+   "colores": {
+    "claro": {
+     "fondo": "#ddebe0",
+     "borde": "#0e6f20",
+     "tinta": "#0e6f20"
+    },
+    "oscuro": {
+     "fondo": "#164728",
+     "borde": "#0e6f20",
+     "tinta": "#82b48b"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b43281",
+   "colores": {
+    "claro": {
+     "fondo": "#f6e6f0",
+     "borde": "#b43281",
+     "tinta": "#b43281"
+    },
+    "oscuro": {
+     "fondo": "#622a55",
+     "borde": "#b43281",
+     "tinta": "#da99c0"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#4e30cd",
+   "colores": {
+    "claro": {
+     "fondo": "#eae6f9",
+     "borde": "#4e30cd",
+     "tinta": "#4e30cd"
+    },
+    "oscuro": {
+     "fondo": "#3c2b94",
+     "borde": "#4e30cd",
+     "tinta": "#aea0e8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f833f1",
+   "colores": {
+    "claro": {
+     "fondo": "#fedefd",
+     "borde": "#f833f1",
+     "tinta": "#b325ae"
+    },
+    "oscuro": {
+     "fondo": "#5f286a",
+     "borde": "#f833f1",
+     "tinta": "#fa78f6"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#9495e3",
+   "colores": {
+    "claro": {
+     "fondo": "#e5e6f8",
+     "borde": "#9495e3",
+     "tinta": "#626296"
+    },
+    "oscuro": {
+     "fondo": "#373c57",
+     "borde": "#9495e3",
+     "tinta": "#a1a2e6"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#173985",
+   "colores": {
+    "claro": {
+     "fondo": "#e8ebf3",
+     "borde": "#173985",
+     "tinta": "#173985"
+    },
+    "oscuro": {
+     "fondo": "#173985",
+     "borde": "#173985",
+     "tinta": "#9eaccc"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#af48e0",
+   "colores": {
+    "claro": {
+     "fondo": "#f2e2fa",
+     "borde": "#af48e0",
+     "tinta": "#973ec1"
+    },
+    "oscuro": {
+     "fondo": "#4f306c",
+     "borde": "#af48e0",
+     "tinta": "#cf91ec"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#baba99",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8dc",
+     "borde": "#baba99",
+     "tinta": "#686856"
+    },
+    "oscuro": {
+     "fondo": "#393e43",
+     "borde": "#baba99",
+     "tinta": "#baba99"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c4c02b",
+   "colores": {
+    "claro": {
+     "fondo": "#ecebbb",
+     "borde": "#c4c02b",
+     "tinta": "#6a6817"
+    },
+    "oscuro": {
+     "fondo": "#3b3f2f",
+     "borde": "#c4c02b",
+     "tinta": "#c4c02b"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#59583f",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8e4",
+     "borde": "#59583f",
+     "tinta": "#59583f"
+    },
+    "oscuro": {
+     "fondo": "#3d4038",
+     "borde": "#59583f",
+     "tinta": "#acac9f"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#e9fda8",
+   "colores": {
+    "claro": {
+     "fondo": "#e9fda8",
+     "borde": "#e9fda8",
+     "tinta": "#6b744d"
+    },
+    "oscuro": {
+     "fondo": "#353d3e",
+     "borde": "#e9fda8",
+     "tinta": "#e9fda8"
+    }
+   },
+   "tintaDeLaTarjeta": "#6b744d",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#653eaa",
+   "colores": {
+    "claro": {
+     "fondo": "#ede8f5",
+     "borde": "#653eaa",
+     "tinta": "#653eaa"
+    },
+    "oscuro": {
+     "fondo": "#453274",
+     "borde": "#653eaa",
+     "tinta": "#b5a2d6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c5dfc8",
+   "colores": {
+    "claro": {
+     "fondo": "#dcecde",
+     "borde": "#c5dfc8",
+     "tinta": "#5f6b60"
+    },
+    "oscuro": {
+     "fondo": "#353d45",
+     "borde": "#c5dfc8",
+     "tinta": "#c5dfc8"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#fd6d2d",
+   "colores": {
+    "claro": {
+     "fondo": "#ffe2d5",
+     "borde": "#fd6d2d",
+     "tinta": "#ac4a1f"
+    },
+    "oscuro": {
+     "fondo": "#57362f",
+     "borde": "#fd6d2d",
+     "tinta": "#fd8a57"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#9e194a",
+   "colores": {
+    "claro": {
+     "fondo": "#f5e8ed",
+     "borde": "#9e194a",
+     "tinta": "#9e194a"
+    },
+    "oscuro": {
+     "fondo": "#721c41",
+     "borde": "#9e194a",
+     "tinta": "#d49aaf"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#5a8d1f",
+   "colores": {
+    "claro": {
+     "fondo": "#e5eddb",
+     "borde": "#5a8d1f",
+     "tinta": "#4a7419"
+    },
+    "oscuro": {
+     "fondo": "#2f432b",
+     "borde": "#5a8d1f",
+     "tinta": "#92b46b"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#7c8cca",
+   "colores": {
+    "claro": {
+     "fondo": "#e5e8f4",
+     "borde": "#7c8cca",
+     "tinta": "#596591"
+    },
+    "oscuro": {
+     "fondo": "#363e58",
+     "borde": "#7c8cca",
+     "tinta": "#9ba8d7"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#973dd5",
+   "colores": {
+    "claro": {
+     "fondo": "#f0e4f9",
+     "borde": "#973dd5",
+     "tinta": "#913bcc"
+    },
+    "oscuro": {
+     "fondo": "#502e75",
+     "borde": "#973dd5",
+     "tinta": "#c796e8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#8861cf",
+   "colores": {
+    "claro": {
+     "fondo": "#ece6f7",
+     "borde": "#8861cf",
+     "tinta": "#7855b6"
+    },
+    "oscuro": {
+     "fondo": "#413866",
+     "borde": "#8861cf",
+     "tinta": "#b8a0e2"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#434845",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e9e9",
+     "borde": "#434845",
+     "tinta": "#434845"
+    },
+    "oscuro": {
+     "fondo": "#3b4040",
+     "borde": "#434845",
+     "tinta": "#a9aba9"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1f1cdf",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e8fc",
+     "borde": "#1f1cdf",
+     "tinta": "#1f1cdf"
+    },
+    "oscuro": {
+     "fondo": "#1f1dc0",
+     "borde": "#1f1cdf",
+     "tinta": "#a5a4f2"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#35a6bc",
+   "colores": {
+    "claro": {
+     "fondo": "#d7edf2",
+     "borde": "#35a6bc",
+     "tinta": "#247180"
+    },
+    "oscuro": {
+     "fondo": "#234252",
+     "borde": "#35a6bc",
+     "tinta": "#59b6c8"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#70d098",
+   "colores": {
+    "claro": {
+     "fondo": "#ceefdc",
+     "borde": "#70d098",
+     "tinta": "#3c7052"
+    },
+    "oscuro": {
+     "fondo": "#2c4243",
+     "borde": "#70d098",
+     "tinta": "#70d098"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#99ebc8",
+   "colores": {
+    "claro": {
+     "fondo": "#c0f3dd",
+     "borde": "#99ebc8",
+     "tinta": "#466c5c"
+    },
+    "oscuro": {
+     "fondo": "#2e3f45",
+     "borde": "#99ebc8",
+     "tinta": "#99ebc8"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#5039ca",
+   "colores": {
+    "claro": {
+     "fondo": "#eae7f9",
+     "borde": "#5039ca",
+     "tinta": "#5039ca"
+    },
+    "oscuro": {
+     "fondo": "#3c308c",
+     "borde": "#5039ca",
+     "tinta": "#afa4e7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#268b3d",
+   "colores": {
+    "claro": {
+     "fondo": "#dcece0",
+     "borde": "#268b3d",
+     "tinta": "#217834"
+    },
+    "oscuro": {
+     "fondo": "#204634",
+     "borde": "#268b3d",
+     "tinta": "#7db98b"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#18a000",
+   "colores": {
+    "claro": {
+     "fondo": "#daf0d6",
+     "borde": "#18a000",
+     "tinta": "#127a00"
+    },
+    "oscuro": {
+     "fondo": "#1c4623",
+     "borde": "#18a000",
+     "tinta": "#5dbd4d"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#d1fa75",
+   "colores": {
+    "claro": {
+     "fondo": "#d1fa75",
+     "borde": "#d1fa75",
+     "tinta": "#5c6e33"
+    },
+    "oscuro": {
+     "fondo": "#36413a",
+     "borde": "#d1fa75",
+     "tinta": "#d1fa75"
+    }
+   },
+   "tintaDeLaTarjeta": "#5c6e33",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#331558",
+   "colores": {
+    "claro": {
+     "fondo": "#ebe8ee",
+     "borde": "#331558",
+     "tinta": "#331558"
+    },
+    "oscuro": {
+     "fondo": "#331558",
+     "borde": "#331558",
+     "tinta": "#998aac"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#82bc43",
+   "colores": {
+    "claro": {
+     "fondo": "#dfeece",
+     "borde": "#82bc43",
+     "tinta": "#4e7128"
+    },
+    "oscuro": {
+     "fondo": "#314234",
+     "borde": "#82bc43",
+     "tinta": "#82bc43"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3d8355",
+   "colores": {
+    "claro": {
+     "fondo": "#e0ebe4",
+     "borde": "#3d8355",
+     "tinta": "#36734b"
+    },
+    "oscuro": {
+     "fondo": "#28443d",
+     "borde": "#3d8355",
+     "tinta": "#8bb599"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#cb2bb3",
+   "colores": {
+    "claro": {
+     "fondo": "#f8e1f4",
+     "borde": "#cb2bb3",
+     "tinta": "#b3269e"
+    },
+    "oscuro": {
+     "fondo": "#632664",
+     "borde": "#cb2bb3",
+     "tinta": "#e38dd6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#548e72",
+   "colores": {
+    "claro": {
+     "fondo": "#e0ebe6",
+     "borde": "#548e72",
+     "tinta": "#43725b"
+    },
+    "oscuro": {
+     "fondo": "#2c4142",
+     "borde": "#548e72",
+     "tinta": "#8bb29f"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#4b81ea",
+   "colores": {
+    "claro": {
+     "fondo": "#dfe8fb",
+     "borde": "#4b81ea",
+     "tinta": "#3b65b7"
+    },
+    "oscuro": {
+     "fondo": "#2a3d64",
+     "borde": "#4b81ea",
+     "tinta": "#85a9f1"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#337d64",
+   "colores": {
+    "claro": {
+     "fondo": "#deeae6",
+     "borde": "#337d64",
+     "tinta": "#2f735c"
+    },
+    "oscuro": {
+     "fondo": "#254343",
+     "borde": "#337d64",
+     "tinta": "#89b4a5"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#65bdf4",
+   "colores": {
+    "claro": {
+     "fondo": "#d1ebfc",
+     "borde": "#65bdf4",
+     "tinta": "#396a89"
+    },
+    "oscuro": {
+     "fondo": "#2a3f53",
+     "borde": "#65bdf4",
+     "tinta": "#65bdf4"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#63f556",
+   "colores": {
+    "claro": {
+     "fondo": "#aefaa7",
+     "borde": "#63f556",
+     "tinta": "#307629"
+    },
+    "oscuro": {
+     "fondo": "#284536",
+     "borde": "#63f556",
+     "tinta": "#63f556"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#0a736a",
+   "colores": {
+    "claro": {
+     "fondo": "#ddebea",
+     "borde": "#0a736a",
+     "tinta": "#0a736a"
+    },
+    "oscuro": {
+     "fondo": "#154548",
+     "borde": "#0a736a",
+     "tinta": "#7bb3af"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ad131f",
+   "colores": {
+    "claro": {
+     "fondo": "#f7e7e9",
+     "borde": "#ad131f",
+     "tinta": "#ad131f"
+    },
+    "oscuro": {
+     "fondo": "#791925",
+     "borde": "#ad131f",
+     "tinta": "#db979c"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#4c7692",
+   "colores": {
+    "claro": {
+     "fondo": "#e2e9ee",
+     "borde": "#4c7692",
+     "tinta": "#466d86"
+    },
+    "oscuro": {
+     "fondo": "#2e4153",
+     "borde": "#4c7692",
+     "tinta": "#97b0c0"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1c41fe",
+   "colores": {
+    "claro": {
+     "fondo": "#e4e8ff",
+     "borde": "#1c41fe",
+     "tinta": "#1c41fe"
+    },
+    "oscuro": {
+     "fondo": "#1c339b",
+     "borde": "#1c41fe",
+     "tinta": "#97a8ff"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#37c9e1",
+   "colores": {
+    "claro": {
+     "fondo": "#c7f0f7",
+     "borde": "#37c9e1",
+     "tinta": "#1f717e"
+    },
+    "oscuro": {
+     "fondo": "#224150",
+     "borde": "#37c9e1",
+     "tinta": "#37c9e1"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b2d342",
+   "colores": {
+    "claro": {
+     "fondo": "#e2eeb7",
+     "borde": "#b2d342",
+     "tinta": "#5d6e22"
+    },
+    "oscuro": {
+     "fondo": "#353f33",
+     "borde": "#b2d342",
+     "tinta": "#b2d342"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#67e1d4",
+   "colores": {
+    "claro": {
+     "fondo": "#bcf2ec",
+     "borde": "#67e1d4",
+     "tinta": "#34716a"
+    },
+    "oscuro": {
+     "fondo": "#29414a",
+     "borde": "#67e1d4",
+     "tinta": "#67e1d4"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#e0c33d",
+   "colores": {
+    "claro": {
+     "fondo": "#f3e8b5",
+     "borde": "#e0c33d",
+     "tinta": "#746520"
+    },
+    "oscuro": {
+     "fondo": "#404032",
+     "borde": "#e0c33d",
+     "tinta": "#e0c33d"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#da5be9",
+   "colores": {
+    "claro": {
+     "fondo": "#f8e1fb",
+     "borde": "#da5be9",
+     "tinta": "#9d42a8"
+    },
+    "oscuro": {
+     "fondo": "#4e3260",
+     "borde": "#da5be9",
+     "tinta": "#e486ef"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#db74df",
+   "colores": {
+    "claro": {
+     "fondo": "#f8e3f9",
+     "borde": "#db74df",
+     "tinta": "#954f98"
+    },
+    "oscuro": {
+     "fondo": "#4b365a",
+     "borde": "#db74df",
+     "tinta": "#e18ae4"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#73c123",
+   "colores": {
+    "claro": {
+     "fondo": "#dbefc6",
+     "borde": "#73c123",
+     "tinta": "#457415"
+    },
+    "oscuro": {
+     "fondo": "#2e432d",
+     "borde": "#73c123",
+     "tinta": "#73c123"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c9dd32",
+   "colores": {
+    "claro": {
+     "fondo": "#e5ef9d",
+     "borde": "#c9dd32",
+     "tinta": "#606a18"
+    },
+    "oscuro": {
+     "fondo": "#394130",
+     "borde": "#c9dd32",
+     "tinta": "#c9dd32"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#33e007",
+   "colores": {
+    "claro": {
+     "fondo": "#c2f6b5",
+     "borde": "#33e007",
+     "tinta": "#1c7904"
+    },
+    "oscuro": {
+     "fondo": "#214529",
+     "borde": "#33e007",
+     "tinta": "#33e007"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#55fb41",
+   "colores": {
+    "claro": {
+     "fondo": "#a3fd98",
+     "borde": "#55fb41",
+     "tinta": "#27731e"
+    },
+    "oscuro": {
+     "fondo": "#254132",
+     "borde": "#55fb41",
+     "tinta": "#55fb41"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b0e599",
+   "colores": {
+    "claro": {
+     "fondo": "#d3f0c6",
+     "borde": "#b0e599",
+     "tinta": "#546e49"
+    },
+    "oscuro": {
+     "fondo": "#323e3f",
+     "borde": "#b0e599",
+     "tinta": "#b0e599"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#4b25ff",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e5ff",
+     "borde": "#4b25ff",
+     "tinta": "#4b25ff"
+    },
+    "oscuro": {
+     "fondo": "#3824a8",
+     "borde": "#4b25ff",
+     "tinta": "#b09fff"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#44464b",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e9e9",
+     "borde": "#44464b",
+     "tinta": "#44464b"
+    },
+    "oscuro": {
+     "fondo": "#3c3f46",
+     "borde": "#44464b",
+     "tinta": "#a9aaac"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#41b995",
+   "colores": {
+    "claro": {
+     "fondo": "#d1eee6",
+     "borde": "#41b995",
+     "tinta": "#28735c"
+    },
+    "oscuro": {
+     "fondo": "#254446",
+     "borde": "#41b995",
+     "tinta": "#4cbd9b"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c7cd77",
+   "colores": {
+    "claro": {
+     "fondo": "#e9ebc9",
+     "borde": "#c7cd77",
+     "tinta": "#676b3e"
+    },
+    "oscuro": {
+     "fondo": "#383e3b",
+     "borde": "#c7cd77",
+     "tinta": "#c7cd77"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#acf6f2",
+   "colores": {
+    "claro": {
+     "fondo": "#acf6f2",
+     "borde": "#acf6f2",
+     "tinta": "#4c6c6a"
+    },
+    "oscuro": {
+     "fondo": "#31414b",
+     "borde": "#acf6f2",
+     "tinta": "#acf6f2"
+    }
+   },
+   "tintaDeLaTarjeta": "#4c6c6a",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#a514d4",
+   "colores": {
+    "claro": {
+     "fondo": "#f4e3fa",
+     "borde": "#a514d4",
+     "tinta": "#a514d4"
+    },
+    "oscuro": {
+     "fondo": "#611c82",
+     "borde": "#a514d4",
+     "tinta": "#d693eb"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#740539",
+   "colores": {
+    "claro": {
+     "fondo": "#f1e6eb",
+     "borde": "#740539",
+     "tinta": "#740539"
+    },
+    "oscuro": {
+     "fondo": "#740539",
+     "borde": "#740539",
+     "tinta": "#c596ac"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#26bd2e",
+   "colores": {
+    "claro": {
+     "fondo": "#cff0d1",
+     "borde": "#26bd2e",
+     "tinta": "#18751d"
+    },
+    "oscuro": {
+     "fondo": "#1f4530",
+     "borde": "#26bd2e",
+     "tinta": "#33c13b"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#da8288",
+   "colores": {
+    "claro": {
+     "fondo": "#f7e4e5",
+     "borde": "#da8288",
+     "tinta": "#94585c"
+    },
+    "oscuro": {
+     "fondo": "#4a3a45",
+     "borde": "#da8288",
+     "tinta": "#e0969b"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#fb45fb",
+   "colores": {
+    "claro": {
+     "fondo": "#fedefe",
+     "borde": "#fb45fb",
+     "tinta": "#ab2fab"
+    },
+    "oscuro": {
+     "fondo": "#572c65",
+     "borde": "#fb45fb",
+     "tinta": "#fc72fc"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b0f7af",
+   "colores": {
+    "claro": {
+     "fondo": "#b6f8b5",
+     "borde": "#b0f7af",
+     "tinta": "#4d6d4d"
+    },
+    "oscuro": {
+     "fondo": "#324142",
+     "borde": "#b0f7af",
+     "tinta": "#b0f7af"
+    }
+   },
+   "tintaDeLaTarjeta": "#4d6d4d",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#914009",
+   "colores": {
+    "claro": {
+     "fondo": "#f2e8e1",
+     "borde": "#914009",
+     "tinta": "#914009"
+    },
+    "oscuro": {
+     "fondo": "#5e331a",
+     "borde": "#914009",
+     "tinta": "#caa389"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#78acf5",
+   "colores": {
+    "claro": {
+     "fondo": "#dce9fc",
+     "borde": "#78acf5",
+     "tinta": "#486793"
+    },
+    "oscuro": {
+     "fondo": "#2f3e57",
+     "borde": "#78acf5",
+     "tinta": "#78acf5"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#dd074e",
+   "colores": {
+    "claro": {
+     "fondo": "#fbe1ea",
+     "borde": "#dd074e",
+     "tinta": "#cb0648"
+    },
+    "oscuro": {
+     "fondo": "#79163e",
+     "borde": "#dd074e",
+     "tinta": "#ef8dae"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c9b890",
+   "colores": {
+    "claro": {
+     "fondo": "#ede7d9",
+     "borde": "#c9b890",
+     "tinta": "#716751"
+    },
+    "oscuro": {
+     "fondo": "#3c3e41",
+     "borde": "#c9b890",
+     "tinta": "#c9b890"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ae31a0",
+   "colores": {
+    "claro": {
+     "fondo": "#f4e2f2",
+     "borde": "#ae31a0",
+     "tinta": "#ae31a0"
+    },
+    "oscuro": {
+     "fondo": "#602964",
+     "borde": "#ae31a0",
+     "tinta": "#d798d0"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#166e2e",
+   "colores": {
+    "claro": {
+     "fondo": "#deebe2",
+     "borde": "#166e2e",
+     "tinta": "#166e2e"
+    },
+    "oscuro": {
+     "fondo": "#1a472f",
+     "borde": "#166e2e",
+     "tinta": "#86b492"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1b3db3",
+   "colores": {
+    "claro": {
+     "fondo": "#e4e8f6",
+     "borde": "#1b3db3",
+     "tinta": "#1b3db3"
+    },
+    "oscuro": {
+     "fondo": "#1c3691",
+     "borde": "#1b3db3",
+     "tinta": "#9baade"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#67eef5",
+   "colores": {
+    "claro": {
+     "fondo": "#a4f5f9",
+     "borde": "#67eef5",
+     "tinta": "#2f6d71"
+    },
+    "oscuro": {
+     "fondo": "#273f4c",
+     "borde": "#67eef5",
+     "tinta": "#67eef5"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b0c7a6",
+   "colores": {
+    "claro": {
+     "fondo": "#e1eadd",
+     "borde": "#b0c7a6",
+     "tinta": "#5f6b5a"
+    },
+    "oscuro": {
+     "fondo": "#353d43",
+     "borde": "#b0c7a6",
+     "tinta": "#b0c7a6"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#027d7e",
+   "colores": {
+    "claro": {
+     "fondo": "#dceded",
+     "borde": "#027d7e",
+     "tinta": "#027676"
+    },
+    "oscuro": {
+     "fondo": "#13454e",
+     "borde": "#027d7e",
+     "tinta": "#71b6b7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b2ce54",
+   "colores": {
+    "claro": {
+     "fondo": "#e3edc1",
+     "borde": "#b2ce54",
+     "tinta": "#606f2d"
+    },
+    "oscuro": {
+     "fondo": "#353e36",
+     "borde": "#b2ce54",
+     "tinta": "#b2ce54"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#457836",
+   "colores": {
+    "claro": {
+     "fondo": "#e5ece3",
+     "borde": "#457836",
+     "tinta": "#427334"
+    },
+    "oscuro": {
+     "fondo": "#2c4332",
+     "borde": "#457836",
+     "tinta": "#93b18a"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#774bb3",
+   "colores": {
+    "claro": {
+     "fondo": "#ece6f4",
+     "borde": "#774bb3",
+     "tinta": "#774bb3"
+    },
+    "oscuro": {
+     "fondo": "#46356c",
+     "borde": "#774bb3",
+     "tinta": "#b8a1d7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1d653d",
+   "colores": {
+    "claro": {
+     "fondo": "#e4ede8",
+     "borde": "#1d653d",
+     "tinta": "#1d653d"
+    },
+    "oscuro": {
+     "fondo": "#1d4537",
+     "borde": "#1d653d",
+     "tinta": "#8eb29e"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#dc0726",
+   "colores": {
+    "claro": {
+     "fondo": "#fbe1e5",
+     "borde": "#dc0726",
+     "tinta": "#cf0724"
+    },
+    "oscuro": {
+     "fondo": "#79162b",
+     "borde": "#dc0726",
+     "tinta": "#ef8d9b"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#298f01",
+   "colores": {
+    "claro": {
+     "fondo": "#ddedd6",
+     "borde": "#298f01",
+     "tinta": "#227801"
+    },
+    "oscuro": {
+     "fondo": "#214621",
+     "borde": "#298f01",
+     "tinta": "#7aba62"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#cb5427",
+   "colores": {
+    "claro": {
+     "fondo": "#f7e4dc",
+     "borde": "#cb5427",
+     "tinta": "#af4822"
+    },
+    "oscuro": {
+     "fondo": "#58342d",
+     "borde": "#cb5427",
+     "tinta": "#e0987d"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#956a2c",
+   "colores": {
+    "claro": {
+     "fondo": "#eee7dd",
+     "borde": "#956a2c",
+     "tinta": "#865f28"
+    },
+    "oscuro": {
+     "fondo": "#483d2f",
+     "borde": "#956a2c",
+     "tinta": "#bfa680"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f59c36",
+   "colores": {
+    "claro": {
+     "fondo": "#fce5cb",
+     "borde": "#f59c36",
+     "tinta": "#8e5a1f"
+    },
+    "oscuro": {
+     "fondo": "#483b31",
+     "borde": "#f59c36",
+     "tinta": "#f59c36"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f1e01a",
+   "colores": {
+    "claro": {
+     "fondo": "#f6eb68",
+     "borde": "#f1e01a",
+     "tinta": "#6f670c"
+    },
+    "oscuro": {
+     "fondo": "#3b3d2d",
+     "borde": "#f1e01a",
+     "tinta": "#f1e01a"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#86d63e",
+   "colores": {
+    "claro": {
+     "fondo": "#d6f1bd",
+     "borde": "#86d63e",
+     "tinta": "#487421"
+    },
+    "oscuro": {
+     "fondo": "#304333",
+     "borde": "#86d63e",
+     "tinta": "#86d63e"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#85d185",
+   "colores": {
+    "claro": {
+     "fondo": "#d6efd6",
+     "borde": "#85d185",
+     "tinta": "#487148"
+    },
+    "oscuro": {
+     "fondo": "#30423f",
+     "borde": "#85d185",
+     "tinta": "#85d185"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3f2107",
+   "colores": {
+    "claro": {
+     "fondo": "#ece9e6",
+     "borde": "#3f2107",
+     "tinta": "#3f2107"
+    },
+    "oscuro": {
+     "fondo": "#3f2107",
+     "borde": "#3f2107",
+     "tinta": "#9b8c7e"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#6f4847",
+   "colores": {
+    "claro": {
+     "fondo": "#eee9e9",
+     "borde": "#6f4847",
+     "tinta": "#6f4847"
+    },
+    "oscuro": {
+     "fondo": "#4e393e",
+     "borde": "#6f4847",
+     "tinta": "#baa7a7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c956f2",
+   "colores": {
+    "claro": {
+     "fondo": "#f5e1fd",
+     "borde": "#c956f2",
+     "tinta": "#9540b3"
+    },
+    "oscuro": {
+     "fondo": "#4d3166",
+     "borde": "#c956f2",
+     "tinta": "#d989f6"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#d069d3",
+   "colores": {
+    "claro": {
+     "fondo": "#f6e1f6",
+     "borde": "#d069d3",
+     "tinta": "#924a94"
+    },
+    "oscuro": {
+     "fondo": "#4c355a",
+     "borde": "#d069d3",
+     "tinta": "#db8dde"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b1f2a7",
+   "colores": {
+    "claro": {
+     "fondo": "#c1f5b9",
+     "borde": "#b1f2a7",
+     "tinta": "#516f4d"
+    },
+    "oscuro": {
+     "fondo": "#324041",
+     "borde": "#b1f2a7",
+     "tinta": "#b1f2a7"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ec3f44",
+   "colores": {
+    "claro": {
+     "fondo": "#fce4e5",
+     "borde": "#ec3f44",
+     "tinta": "#c23438"
+    },
+    "oscuro": {
+     "fondo": "#632d37",
+     "borde": "#ec3f44",
+     "tinta": "#f48c8f"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#9feb56",
+   "colores": {
+    "claro": {
+     "fondo": "#cbf4a4",
+     "borde": "#9feb56",
+     "tinta": "#4c7129"
+    },
+    "oscuro": {
+     "fondo": "#324336",
+     "borde": "#9feb56",
+     "tinta": "#9feb56"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#bd6f07",
+   "colores": {
+    "claro": {
+     "fondo": "#f4e8d7",
+     "borde": "#bd6f07",
+     "tinta": "#975906"
+    },
+    "oscuro": {
+     "fondo": "#503b23",
+     "borde": "#bd6f07",
+     "tinta": "#d5a360"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#64ee5b",
+   "colores": {
+    "claro": {
+     "fondo": "#b8f7b4",
+     "borde": "#64ee5b",
+     "tinta": "#30722c"
+    },
+    "oscuro": {
+     "fondo": "#284337",
+     "borde": "#64ee5b",
+     "tinta": "#64ee5b"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#a223b3",
+   "colores": {
+    "claro": {
+     "fondo": "#f4e5f6",
+     "borde": "#a223b3",
+     "tinta": "#a223b3"
+    },
+    "oscuro": {
+     "fondo": "#602372",
+     "borde": "#a223b3",
+     "tinta": "#d295db"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#9f1a5b",
+   "colores": {
+    "claro": {
+     "fondo": "#f3e4eb",
+     "borde": "#9f1a5b",
+     "tinta": "#9f1a5b"
+    },
+    "oscuro": {
+     "fondo": "#701d4c",
+     "borde": "#9f1a5b",
+     "tinta": "#d59ab7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1d2e74",
+   "colores": {
+    "claro": {
+     "fondo": "#e8eaf1",
+     "borde": "#1d2e74",
+     "tinta": "#1d2e74"
+    },
+    "oscuro": {
+     "fondo": "#1d2e74",
+     "borde": "#1d2e74",
+     "tinta": "#939bbc"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3776f1",
+   "colores": {
+    "claro": {
+     "fondo": "#dfe9fd",
+     "borde": "#3776f1",
+     "tinta": "#2e63ca"
+    },
+    "oscuro": {
+     "fondo": "#253e6e",
+     "borde": "#3776f1",
+     "tinta": "#83aaf6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#68df74",
+   "colores": {
+    "claro": {
+     "fondo": "#c6f3ca",
+     "borde": "#68df74",
+     "tinta": "#36743c"
+    },
+    "oscuro": {
+     "fondo": "#29413b",
+     "borde": "#68df74",
+     "tinta": "#68df74"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#768b59",
+   "colores": {
+    "claro": {
+     "fondo": "#e6eae1",
+     "borde": "#768b59",
+     "tinta": "#5c6c45"
+    },
+    "oscuro": {
+     "fondo": "#36403b",
+     "borde": "#768b59",
+     "tinta": "#9fae8b"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#0ff2a5",
+   "colores": {
+    "claro": {
+     "fondo": "#9afad9",
+     "borde": "#0ff2a5",
+     "tinta": "#07744f"
+    },
+    "oscuro": {
+     "fondo": "#1b4443",
+     "borde": "#0ff2a5",
+     "tinta": "#0ff2a5"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#cb9021",
+   "colores": {
+    "claro": {
+     "fondo": "#f4e7ce",
+     "borde": "#cb9021",
+     "tinta": "#865f16"
+    },
+    "oscuro": {
+     "fondo": "#473d2c",
+     "borde": "#cb9021",
+     "tinta": "#d3a245"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#6bb7ce",
+   "colores": {
+    "claro": {
+     "fondo": "#d6ebf1",
+     "borde": "#6bb7ce",
+     "tinta": "#406e7c"
+    },
+    "oscuro": {
+     "fondo": "#2d4150",
+     "borde": "#6bb7ce",
+     "tinta": "#6bb7ce"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#682cbf",
+   "colores": {
+    "claro": {
+     "fondo": "#ede6f7",
+     "borde": "#682cbf",
+     "tinta": "#682cbf"
+    },
+    "oscuro": {
+     "fondo": "#4c2989",
+     "borde": "#682cbf",
+     "tinta": "#ba9ee2"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#aa352e",
+   "colores": {
+    "claro": {
+     "fondo": "#f5e7e6",
+     "borde": "#aa352e",
+     "tinta": "#aa352e"
+    },
+    "oscuro": {
+     "fondo": "#662c2f",
+     "borde": "#aa352e",
+     "tinta": "#d59a97"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#fd3e8a",
+   "colores": {
+    "claro": {
+     "fondo": "#ffe0ec",
+     "borde": "#fd3e8a",
+     "tinta": "#bb2e66"
+    },
+    "oscuro": {
+     "fondo": "#602b4b",
+     "borde": "#fd3e8a",
+     "tinta": "#fe80b2"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c11f54",
+   "colores": {
+    "claro": {
+     "fondo": "#f8e4ea",
+     "borde": "#c11f54",
+     "tinta": "#c11f54"
+    },
+    "oscuro": {
+     "fondo": "#6f2142",
+     "borde": "#c11f54",
+     "tinta": "#e193ad"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3150b1",
+   "colores": {
+    "claro": {
+     "fondo": "#e6eaf6",
+     "borde": "#3150b1",
+     "tinta": "#3150b1"
+    },
+    "oscuro": {
+     "fondo": "#283b76",
+     "borde": "#3150b1",
+     "tinta": "#98a8d8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1f05e9",
+   "colores": {
+    "claro": {
+     "fondo": "#e9e6fd",
+     "borde": "#1f05e9",
+     "tinta": "#1f05e9"
+    },
+    "oscuro": {
+     "fondo": "#1f09cf",
+     "borde": "#1f05e9",
+     "tinta": "#aaa0f7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#5b3b3f",
+   "colores": {
+    "claro": {
+     "fondo": "#ebe7e8",
+     "borde": "#5b3b3f",
+     "tinta": "#5b3b3f"
+    },
+    "oscuro": {
+     "fondo": "#52383d",
+     "borde": "#5b3b3f",
+     "tinta": "#b7a9ab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#0feb7a",
+   "colores": {
+    "claro": {
+     "fondo": "#a9f8cf",
+     "borde": "#0feb7a",
+     "tinta": "#08763d"
+    },
+    "oscuro": {
+     "fondo": "#1b433c",
+     "borde": "#0feb7a",
+     "tinta": "#0feb7a"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#d3cb89",
+   "colores": {
+    "claro": {
+     "fondo": "#ede9cd",
+     "borde": "#d3cb89",
+     "tinta": "#6a6645"
+    },
+    "oscuro": {
+     "fondo": "#3a3e3e",
+     "borde": "#d3cb89",
+     "tinta": "#d3cb89"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#062d52",
+   "colores": {
+    "claro": {
+     "fondo": "#e6eaee",
+     "borde": "#062d52",
+     "tinta": "#062d52"
+    },
+    "oscuro": {
+     "fondo": "#062d52",
+     "borde": "#062d52",
+     "tinta": "#8396a9"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#56c5e3",
+   "colores": {
+    "claro": {
+     "fondo": "#cceef7",
+     "borde": "#56c5e3",
+     "tinta": "#306e7f"
+    },
+    "oscuro": {
+     "fondo": "#274050",
+     "borde": "#56c5e3",
+     "tinta": "#56c5e3"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#a85539",
+   "colores": {
+    "claro": {
+     "fondo": "#f3e7e3",
+     "borde": "#a85539",
+     "tinta": "#a15237"
+    },
+    "oscuro": {
+     "fondo": "#553734",
+     "borde": "#a85539",
+     "tinta": "#cea090"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3e2b7f",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e6f0",
+     "borde": "#3e2b7f",
+     "tinta": "#3e2b7f"
+    },
+    "oscuro": {
+     "fondo": "#3e2b7f",
+     "borde": "#3e2b7f",
+     "tinta": "#aaa2c7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#0e8fdc",
+   "colores": {
+    "claro": {
+     "fondo": "#d4ebf9",
+     "borde": "#0e8fdc",
+     "tinta": "#0b6da7"
+    },
+    "oscuro": {
+     "fondo": "#194160",
+     "borde": "#0e8fdc",
+     "tinta": "#5bb3e7"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3433ca",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e7f9",
+     "borde": "#3433ca",
+     "tinta": "#3433ca"
+    },
+    "oscuro": {
+     "fondo": "#2d2e9c",
+     "borde": "#3433ca",
+     "tinta": "#a6a5e8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#dd7f3b",
+   "colores": {
+    "claro": {
+     "fondo": "#f8e5d8",
+     "borde": "#dd7f3b",
+     "tinta": "#965628"
+    },
+    "oscuro": {
+     "fondo": "#4b3933",
+     "borde": "#dd7f3b",
+     "tinta": "#e3965e"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#de75f0",
+   "colores": {
+    "claro": {
+     "fondo": "#f8e1fc",
+     "borde": "#de75f0",
+     "tinta": "#934d9e"
+    },
+    "oscuro": {
+     "fondo": "#47355a",
+     "borde": "#de75f0",
+     "tinta": "#e183f2"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#34aa82",
+   "colores": {
+    "claro": {
+     "fondo": "#d6eee6",
+     "borde": "#34aa82",
+     "tinta": "#237458"
+    },
+    "oscuro": {
+     "fondo": "#234344",
+     "borde": "#34aa82",
+     "tinta": "#59b999"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#e561a2",
+   "colores": {
+    "claro": {
+     "fondo": "#fae3ee",
+     "borde": "#e561a2",
+     "tinta": "#a54675"
+    },
+    "oscuro": {
+     "fondo": "#553450",
+     "borde": "#e561a2",
+     "tinta": "#ec8dbc"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#558b72",
+   "colores": {
+    "claro": {
+     "fondo": "#e0eae6",
+     "borde": "#558b72",
+     "tinta": "#446f5b"
+    },
+    "oscuro": {
+     "fondo": "#2e4244",
+     "borde": "#558b72",
+     "tinta": "#8fb2a2"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#772e01",
+   "colores": {
+    "claro": {
+     "fondo": "#efe6e1",
+     "borde": "#772e01",
+     "tinta": "#772e01"
+    },
+    "oscuro": {
+     "fondo": "#6a2c08",
+     "borde": "#772e01",
+     "tinta": "#c3a38f"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1f58ea",
+   "colores": {
+    "claro": {
+     "fondo": "#e0e8fc",
+     "borde": "#1f58ea",
+     "tinta": "#1f58ea"
+    },
+    "oscuro": {
+     "fondo": "#1e3a82",
+     "borde": "#1f58ea",
+     "tinta": "#8ba8f4"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#5c4999",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e6f1",
+     "borde": "#5c4999",
+     "tinta": "#5c4999"
+    },
+    "oscuro": {
+     "fondo": "#40386b",
+     "borde": "#5c4999",
+     "tinta": "#b1a8ce"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ae6d0f",
+   "colores": {
+    "claro": {
+     "fondo": "#f2e8d9",
+     "borde": "#ae6d0f",
+     "tinta": "#925c0d"
+    },
+    "oscuro": {
+     "fondo": "#4e3c25",
+     "borde": "#ae6d0f",
+     "tinta": "#cda46a"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#e27293",
+   "colores": {
+    "claro": {
+     "fondo": "#f9e3e9",
+     "borde": "#e27293",
+     "tinta": "#9e5067"
+    },
+    "oscuro": {
+     "fondo": "#4c3648",
+     "borde": "#e27293",
+     "tinta": "#e88ea9"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#6b27da",
+   "colores": {
+    "claro": {
+     "fondo": "#ede5fb",
+     "borde": "#6b27da",
+     "tinta": "#6b27da"
+    },
+    "oscuro": {
+     "fondo": "#4a2593",
+     "borde": "#6b27da",
+     "tinta": "#bb9cee"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f8490f",
+   "colores": {
+    "claro": {
+     "fondo": "#fee2d9",
+     "borde": "#f8490f",
+     "tinta": "#bc370b"
+    },
+    "oscuro": {
+     "fondo": "#632f25",
+     "borde": "#f8490f",
+     "tinta": "#fb8b65"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c90230",
+   "colores": {
+    "claro": {
+     "fondo": "#fae6ea",
+     "borde": "#c90230",
+     "tinta": "#c90230"
+    },
+    "oscuro": {
+     "fondo": "#7d1130",
+     "borde": "#c90230",
+     "tinta": "#e895a8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#926cd5",
+   "colores": {
+    "claro": {
+     "fondo": "#ebe5f7",
+     "borde": "#926cd5",
+     "tinta": "#7556aa"
+    },
+    "oscuro": {
+     "fondo": "#403962",
+     "borde": "#926cd5",
+     "tinta": "#b79ee3"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#f0ebd8",
+   "colores": {
+    "claro": {
+     "fondo": "#f0ebd8",
+     "borde": "#f0ebd8",
+     "tinta": "#6a675f"
+    },
+    "oscuro": {
+     "fondo": "#3b3f48",
+     "borde": "#f0ebd8",
+     "tinta": "#f0ebd8"
+    }
+   },
+   "tintaDeLaTarjeta": "#6a675f",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#34ea27",
+   "colores": {
+    "claro": {
+     "fondo": "#baf8b6",
+     "borde": "#34ea27",
+     "tinta": "#1a7514"
+    },
+    "oscuro": {
+     "fondo": "#21432f",
+     "borde": "#34ea27",
+     "tinta": "#34ea27"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#6d1cd9",
+   "colores": {
+    "claro": {
+     "fondo": "#ede4fa",
+     "borde": "#6d1cd9",
+     "tinta": "#6d1cd9"
+    },
+    "oscuro": {
+     "fondo": "#4f1f99",
+     "borde": "#6d1cd9",
+     "tinta": "#bf9bee"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ed83dc",
+   "colores": {
+    "claro": {
+     "fondo": "#fbe1f7",
+     "borde": "#ed83dc",
+     "tinta": "#935188"
+    },
+    "oscuro": {
+     "fondo": "#4b3856",
+     "borde": "#ed83dc",
+     "tinta": "#ed85dd"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#4f5a32",
+   "colores": {
+    "claro": {
+     "fondo": "#e6e8e2",
+     "borde": "#4f5a32",
+     "tinta": "#4f5a32"
+    },
+    "oscuro": {
+     "fondo": "#394231",
+     "borde": "#4f5a32",
+     "tinta": "#a7ad99"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#9e32e9",
+   "colores": {
+    "claro": {
+     "fondo": "#f1e2fc",
+     "borde": "#9e32e9",
+     "tinta": "#952fdb"
+    },
+    "oscuro": {
+     "fondo": "#53297e",
+     "borde": "#9e32e9",
+     "tinta": "#cd94f4"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#2b8cf0",
+   "colores": {
+    "claro": {
+     "fondo": "#d9eafc",
+     "borde": "#2b8cf0",
+     "tinta": "#216ab6"
+    },
+    "oscuro": {
+     "fondo": "#214066",
+     "borde": "#2b8cf0",
+     "tinta": "#6baff5"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#e8e90b",
+   "colores": {
+    "claro": {
+     "fondo": "#eeef4a",
+     "borde": "#e8e90b",
+     "tinta": "#6b6b05"
+    },
+    "oscuro": {
+     "fondo": "#393f2b",
+     "borde": "#e8e90b",
+     "tinta": "#e8e90b"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#49d9ca",
+   "colores": {
+    "claro": {
+     "fondo": "#c1f2ed",
+     "borde": "#49d9ca",
+     "tinta": "#267169"
+    },
+    "oscuro": {
+     "fondo": "#244049",
+     "borde": "#49d9ca",
+     "tinta": "#49d9ca"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c1c6c5",
+   "colores": {
+    "claro": {
+     "fondo": "#e6e8e8",
+     "borde": "#c1c6c5",
+     "tinta": "#646766"
+    },
+    "oscuro": {
+     "fondo": "#373d48",
+     "borde": "#c1c6c5",
+     "tinta": "#c1c6c5"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b95c5d",
+   "colores": {
+    "claro": {
+     "fondo": "#f4e5e5",
+     "borde": "#b95c5d",
+     "tinta": "#9f4f50"
+    },
+    "oscuro": {
+     "fondo": "#52363f",
+     "borde": "#b95c5d",
+     "tinta": "#d49a9b"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#70933f",
+   "colores": {
+    "claro": {
+     "fondo": "#e5ecdc",
+     "borde": "#70933f",
+     "tinta": "#557030"
+    },
+    "oscuro": {
+     "fondo": "#344234",
+     "borde": "#70933f",
+     "tinta": "#9bb379"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c4d765",
+   "colores": {
+    "claro": {
+     "fondo": "#e4edb8",
+     "borde": "#c4d765",
+     "tinta": "#626c33"
+    },
+    "oscuro": {
+     "fondo": "#384038",
+     "borde": "#c4d765",
+     "tinta": "#c4d765"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#9e7983",
+   "colores": {
+    "claro": {
+     "fondo": "#eee7e9",
+     "borde": "#9e7983",
+     "tinta": "#7e6169"
+    },
+    "oscuro": {
+     "fondo": "#413b47",
+     "borde": "#9e7983",
+     "tinta": "#bba1a8"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#26b583",
+   "colores": {
+    "claro": {
+     "fondo": "#cfefe4",
+     "borde": "#26b583",
+     "tinta": "#187454"
+    },
+    "oscuro": {
+     "fondo": "#1f4342",
+     "borde": "#26b583",
+     "tinta": "#3cbc8f"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#889302",
+   "colores": {
+    "claro": {
+     "fondo": "#eaecd1",
+     "borde": "#889302",
+     "tinta": "#656d01"
+    },
+    "oscuro": {
+     "fondo": "#3b4223",
+     "borde": "#889302",
+     "tinta": "#a9b149"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#6c4156",
+   "colores": {
+    "claro": {
+     "fondo": "#ede8eb",
+     "borde": "#6c4156",
+     "tinta": "#6c4156"
+    },
+    "oscuro": {
+     "fondo": "#513749",
+     "borde": "#6c4156",
+     "tinta": "#bba8b1"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c3fd24",
+   "colores": {
+    "claro": {
+     "fondo": "#c3fd24",
+     "borde": "#c3fd24",
+     "tinta": "#566f10"
+    },
+    "oscuro": {
+     "fondo": "#34422e",
+     "borde": "#c3fd24",
+     "tinta": "#c3fd24"
+    }
+   },
+   "tintaDeLaTarjeta": "#566f10",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#9139c2",
+   "colores": {
+    "claro": {
+     "fondo": "#f0e3f6",
+     "borde": "#9139c2",
+     "tinta": "#9139c2"
+    },
+    "oscuro": {
+     "fondo": "#522d73",
+     "borde": "#9139c2",
+     "tinta": "#c698df"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#377d39",
+   "colores": {
+    "claro": {
+     "fondo": "#e3ede3",
+     "borde": "#377d39",
+     "tinta": "#347636"
+    },
+    "oscuro": {
+     "fondo": "#274533",
+     "borde": "#377d39",
+     "tinta": "#8bb48c"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#5006b7",
+   "colores": {
+    "claro": {
+     "fondo": "#eee6f8",
+     "borde": "#5006b7",
+     "tinta": "#5006b7"
+    },
+    "oscuro": {
+     "fondo": "#4e07b2",
+     "borde": "#5006b7",
+     "tinta": "#bda0e4"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#32da26",
+   "colores": {
+    "claro": {
+     "fondo": "#c6f5c2",
+     "borde": "#32da26",
+     "tinta": "#1b7615"
+    },
+    "oscuro": {
+     "fondo": "#21442e",
+     "borde": "#32da26",
+     "tinta": "#32da26"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#63b79a",
+   "colores": {
+    "claro": {
+     "fondo": "#daeee7",
+     "borde": "#63b79a",
+     "tinta": "#3d715f"
+    },
+    "oscuro": {
+     "fondo": "#2b4145",
+     "borde": "#63b79a",
+     "tinta": "#63b79a"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#984f15",
+   "colores": {
+    "claro": {
+     "fondo": "#f1e6de",
+     "borde": "#984f15",
+     "tinta": "#984f15"
+    },
+    "oscuro": {
+     "fondo": "#563724",
+     "borde": "#984f15",
+     "tinta": "#c9a385"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#06abab",
+   "colores": {
+    "claro": {
+     "fondo": "#cdeeee",
+     "borde": "#06abab",
+     "tinta": "#047474"
+    },
+    "oscuro": {
+     "fondo": "#17444e",
+     "borde": "#06abab",
+     "tinta": "#38bcbc"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#9ae221",
+   "colores": {
+    "claro": {
+     "fondo": "#d5f3a2",
+     "borde": "#9ae221",
+     "tinta": "#4d7111"
+    },
+    "oscuro": {
+     "fondo": "#31422e",
+     "borde": "#9ae221",
+     "tinta": "#9ae221"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1395b4",
+   "colores": {
+    "claro": {
+     "fondo": "#d5ecf2",
+     "borde": "#1395b4",
+     "tinta": "#0e7189"
+    },
+    "oscuro": {
+     "fondo": "#1a4355",
+     "borde": "#1395b4",
+     "tinta": "#5ab5cb"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b7e32f",
+   "colores": {
+    "claro": {
+     "fondo": "#dbf197",
+     "borde": "#b7e32f",
+     "tinta": "#586d17"
+    },
+    "oscuro": {
+     "fondo": "#364230",
+     "borde": "#b7e32f",
+     "tinta": "#b7e32f"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#0e633c",
+   "colores": {
+    "claro": {
+     "fondo": "#e2ece8",
+     "borde": "#0e633c",
+     "tinta": "#0e633c"
+    },
+    "oscuro": {
+     "fondo": "#154737",
+     "borde": "#0e633c",
+     "tinta": "#8bb4a1"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#97bcd2",
+   "colores": {
+    "claro": {
+     "fondo": "#deeaf1",
+     "borde": "#97bcd2",
+     "tinta": "#556976"
+    },
+    "oscuro": {
+     "fondo": "#333f4d",
+     "borde": "#97bcd2",
+     "tinta": "#97bcd2"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#0e44ec",
+   "colores": {
+    "claro": {
+     "fondo": "#e2e9fd",
+     "borde": "#0e44ec",
+     "tinta": "#0e44ec"
+    },
+    "oscuro": {
+     "fondo": "#153596",
+     "borde": "#0e44ec",
+     "tinta": "#90a9f6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#0b1a22",
+   "colores": {
+    "claro": {
+     "fondo": "#e7e8e9",
+     "borde": "#0b1a22",
+     "tinta": "#0b1a22"
+    },
+    "oscuro": {
+     "fondo": "#0b1a22",
+     "borde": "#0b1a22",
+     "tinta": "#7b8388"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#a534cc",
+   "colores": {
+    "claro": {
+     "fondo": "#f2e3f8",
+     "borde": "#a534cc",
+     "tinta": "#9e32c4"
+    },
+    "oscuro": {
+     "fondo": "#562a72",
+     "borde": "#a534cc",
+     "tinta": "#d095e4"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#004dec",
+   "colores": {
+    "claro": {
+     "fondo": "#e0eafd",
+     "borde": "#004dec",
+     "tinta": "#004dec"
+    },
+    "oscuro": {
+     "fondo": "#0f388e",
+     "borde": "#004dec",
+     "tinta": "#85aaf6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#459e0a",
+   "colores": {
+    "claro": {
+     "fondo": "#deeed3",
+     "borde": "#459e0a",
+     "tinta": "#347808"
+    },
+    "oscuro": {
+     "fondo": "#284525",
+     "borde": "#459e0a",
+     "tinta": "#79b94f"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#aa130f",
+   "colores": {
+    "claro": {
+     "fondo": "#f7e7e7",
+     "borde": "#aa130f",
+     "tinta": "#aa130f"
+    },
+    "oscuro": {
+     "fondo": "#7a181a",
+     "borde": "#aa130f",
+     "tinta": "#db9c9a"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#2c1457",
+   "colores": {
+    "claro": {
+     "fondo": "#eae8ee",
+     "borde": "#2c1457",
+     "tinta": "#2c1457"
+    },
+    "oscuro": {
+     "fondo": "#2c1457",
+     "borde": "#2c1457",
+     "tinta": "#9185a8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#6f094e",
+   "colores": {
+    "claro": {
+     "fondo": "#f1e6ed",
+     "borde": "#6f094e",
+     "tinta": "#6f094e"
+    },
+    "oscuro": {
+     "fondo": "#6f094e",
+     "borde": "#6f094e",
+     "tinta": "#c398b5"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#6a1ae3",
+   "colores": {
+    "claro": {
+     "fondo": "#ede4fc",
+     "borde": "#6a1ae3",
+     "tinta": "#6a1ae3"
+    },
+    "oscuro": {
+     "fondo": "#4d1d9f",
+     "borde": "#6a1ae3",
+     "tinta": "#bd9af3"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#a237d0",
+   "colores": {
+    "claro": {
+     "fondo": "#f2e3f8",
+     "borde": "#a237d0",
+     "tinta": "#9c35c8"
+    },
+    "oscuro": {
+     "fondo": "#552b73",
+     "borde": "#a237d0",
+     "tinta": "#cd93e6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#c60cca",
+   "colores": {
+    "claro": {
+     "fondo": "#f8e2f9",
+     "borde": "#c60cca",
+     "tinta": "#b60bba"
+    },
+    "oscuro": {
+     "fondo": "#671974",
+     "borde": "#c60cca",
+     "tinta": "#e48ae6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#927c7d",
+   "colores": {
+    "claro": {
+     "fondo": "#ebe7e8",
+     "borde": "#927c7d",
+     "tinta": "#756364"
+    },
+    "oscuro": {
+     "fondo": "#403e47",
+     "borde": "#927c7d",
+     "tinta": "#b7a9a9"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#f809fb",
+   "colores": {
+    "claro": {
+     "fondo": "#fee1ff",
+     "borde": "#f809fb",
+     "tinta": "#b807ba"
+    },
+    "oscuro": {
+     "fondo": "#671a75",
+     "borde": "#f809fb",
+     "tinta": "#fb75fd"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f9f6cd",
+   "colores": {
+    "claro": {
+     "fondo": "#f9f6cd",
+     "borde": "#f9f6cd",
+     "tinta": "#6e6c5a"
+    },
+    "oscuro": {
+     "fondo": "#373c43",
+     "borde": "#f9f6cd",
+     "tinta": "#f9f6cd"
+    }
+   },
+   "tintaDeLaTarjeta": "#6e6c5a",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#fecc49",
+   "colores": {
+    "claro": {
+     "fondo": "#ffe6a4",
+     "borde": "#fecc49",
+     "tinta": "#7a6223"
+    },
+    "oscuro": {
+     "fondo": "#413e34",
+     "borde": "#fecc49",
+     "tinta": "#fecc49"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ee967b",
+   "colores": {
+    "claro": {
+     "fondo": "#fbe4dd",
+     "borde": "#ee967b",
+     "tinta": "#8f5a4a"
+    },
+    "oscuro": {
+     "fondo": "#473a3f",
+     "borde": "#ee967b",
+     "tinta": "#ee967b"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#7a6fe3",
+   "colores": {
+    "claro": {
+     "fondo": "#eae8fb",
+     "borde": "#7a6fe3",
+     "tinta": "#645bba"
+    },
+    "oscuro": {
+     "fondo": "#393a66",
+     "borde": "#7a6fe3",
+     "tinta": "#a7a0ed"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#4767b8",
+   "colores": {
+    "claro": {
+     "fondo": "#e5eaf5",
+     "borde": "#4767b8",
+     "tinta": "#4665b4"
+    },
+    "oscuro": {
+     "fondo": "#2e3e66",
+     "borde": "#4767b8",
+     "tinta": "#98aad7"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#693e25",
+   "colores": {
+    "claro": {
+     "fondo": "#ede8e5",
+     "borde": "#693e25",
+     "tinta": "#693e25"
+    },
+    "oscuro": {
+     "fondo": "#553728",
+     "borde": "#693e25",
+     "tinta": "#baa69b"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#238355",
+   "colores": {
+    "claro": {
+     "fondo": "#dcebe4",
+     "borde": "#238355",
+     "tinta": "#20764d"
+    },
+    "oscuro": {
+     "fondo": "#1f443d",
+     "borde": "#238355",
+     "tinta": "#7bb599"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b422f1",
+   "colores": {
+    "claro": {
+     "fondo": "#f6e4fd",
+     "borde": "#b422f1",
+     "tinta": "#a61fde"
+    },
+    "oscuro": {
+     "fondo": "#59237d",
+     "borde": "#b422f1",
+     "tinta": "#d88cf8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f826a7",
+   "colores": {
+    "claro": {
+     "fondo": "#fee1f3",
+     "borde": "#f826a7",
+     "tinta": "#c11e82"
+    },
+    "oscuro": {
+     "fondo": "#672458",
+     "borde": "#f826a7",
+     "tinta": "#fb7dca"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#a5fdce",
+   "colores": {
+    "claro": {
+     "fondo": "#a5fdce",
+     "borde": "#a5fdce",
+     "tinta": "#496f5b"
+    },
+    "oscuro": {
+     "fondo": "#304246",
+     "borde": "#a5fdce",
+     "tinta": "#a5fdce"
+    }
+   },
+   "tintaDeLaTarjeta": "#496f5b",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#da2006",
+   "colores": {
+    "claro": {
+     "fondo": "#fbe4e1",
+     "borde": "#da2006",
+     "tinta": "#cd1e06"
+    },
+    "oscuro": {
+     "fondo": "#74221d",
+     "borde": "#da2006",
+     "tinta": "#ed9487"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#af2917",
+   "colores": {
+    "claro": {
+     "fondo": "#f5e5e3",
+     "borde": "#af2917",
+     "tinta": "#af2917"
+    },
+    "oscuro": {
+     "fondo": "#6f2622",
+     "borde": "#af2917",
+     "tinta": "#da9d94"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#a23f4d",
+   "colores": {
+    "claro": {
+     "fondo": "#f2e4e6",
+     "borde": "#a23f4d",
+     "tinta": "#a23f4d"
+    },
+    "oscuro": {
+     "fondo": "#5d303e",
+     "borde": "#a23f4d",
+     "tinta": "#cf9ba2"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3dcc27",
+   "colores": {
+    "claro": {
+     "fondo": "#cdf2c7",
+     "borde": "#3dcc27",
+     "tinta": "#237617"
+    },
+    "oscuro": {
+     "fondo": "#23452e",
+     "borde": "#3dcc27",
+     "tinta": "#3dcc27"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#e85190",
+   "colores": {
+    "claro": {
+     "fondo": "#fbe3ed",
+     "borde": "#e85190",
+     "tinta": "#b03e6d"
+    },
+    "oscuro": {
+     "fondo": "#5a314d",
+     "borde": "#e85190",
+     "tinta": "#f08cb6"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b2acda",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e6f4",
+     "borde": "#b2acda",
+     "tinta": "#67647e"
+    },
+    "oscuro": {
+     "fondo": "#3b3e52",
+     "borde": "#b2acda",
+     "tinta": "#b2acda"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#f0ee3f",
+   "colores": {
+    "claro": {
+     "fondo": "#f0ee3f",
+     "borde": "#f0ee3f",
+     "tinta": "#6a691c"
+    },
+    "oscuro": {
+     "fondo": "#3b3f32",
+     "borde": "#f0ee3f",
+     "tinta": "#f0ee3f"
+    }
+   },
+   "tintaDeLaTarjeta": "#6a691c",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#365fcc",
+   "colores": {
+    "claro": {
+     "fondo": "#e3e9f8",
+     "borde": "#365fcc",
+     "tinta": "#365fcc"
+    },
+    "oscuro": {
+     "fondo": "#283c72",
+     "borde": "#365fcc",
+     "tinta": "#92a9e3"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#5cd35e",
+   "colores": {
+    "claro": {
+     "fondo": "#cef2cf",
+     "borde": "#5cd35e",
+     "tinta": "#347635"
+    },
+    "oscuro": {
+     "fondo": "#284338",
+     "borde": "#5cd35e",
+     "tinta": "#5cd35e"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b7ddd2",
+   "colores": {
+    "claro": {
+     "fondo": "#d7ece6",
+     "borde": "#b7ddd2",
+     "tinta": "#586a65"
+    },
+    "oscuro": {
+     "fondo": "#333d47",
+     "borde": "#b7ddd2",
+     "tinta": "#b7ddd2"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1d7c9d",
+   "colores": {
+    "claro": {
+     "fondo": "#dbeaef",
+     "borde": "#1d7c9d",
+     "tinta": "#1a708d"
+    },
+    "oscuro": {
+     "fondo": "#1d4357",
+     "borde": "#1d7c9d",
+     "tinta": "#7cb3c6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#581f65",
+   "colores": {
+    "claro": {
+     "fondo": "#eee9f0",
+     "borde": "#581f65",
+     "tinta": "#581f65"
+    },
+    "oscuro": {
+     "fondo": "#581f65",
+     "borde": "#581f65",
+     "tinta": "#b69cbb"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#6e404e",
+   "colores": {
+    "claro": {
+     "fondo": "#eee8ea",
+     "borde": "#6e404e",
+     "tinta": "#6e404e"
+    },
+    "oscuro": {
+     "fondo": "#523644",
+     "borde": "#6e404e",
+     "tinta": "#b9a3aa"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#ee9517",
+   "colores": {
+    "claro": {
+     "fondo": "#fbe6c7",
+     "borde": "#ee9517",
+     "tinta": "#945c0e"
+    },
+    "oscuro": {
+     "fondo": "#4b3c2b",
+     "borde": "#ee9517",
+     "tinta": "#ee9517"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#fe837e",
+   "colores": {
+    "claro": {
+     "fondo": "#ffe1e0",
+     "borde": "#fe837e",
+     "tinta": "#9d514e"
+    },
+    "oscuro": {
+     "fondo": "#4f3841",
+     "borde": "#fe837e",
+     "tinta": "#fe8581"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#82be0a",
+   "colores": {
+    "claro": {
+     "fondo": "#dfeebf",
+     "borde": "#82be0a",
+     "tinta": "#4e7206"
+    },
+    "oscuro": {
+     "fondo": "#314228",
+     "borde": "#82be0a",
+     "tinta": "#82be0a"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#9d6506",
+   "colores": {
+    "claro": {
+     "fondo": "#f1e9dc",
+     "borde": "#9d6506",
+     "tinta": "#905d06"
+    },
+    "oscuro": {
+     "fondo": "#4e3c20",
+     "borde": "#9d6506",
+     "tinta": "#c6a66f"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#4cb388",
+   "colores": {
+    "claro": {
+     "fondo": "#d4ede2",
+     "borde": "#4cb388",
+     "tinta": "#317357"
+    },
+    "oscuro": {
+     "fondo": "#274343",
+     "borde": "#4cb388",
+     "tinta": "#5ebb94"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1a77e6",
+   "colores": {
+    "claro": {
+     "fondo": "#dae9fb",
+     "borde": "#1a77e6",
+     "tinta": "#1666c6"
+    },
+    "oscuro": {
+     "fondo": "#1c3e6a",
+     "borde": "#1a77e6",
+     "tinta": "#71abf0"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#84ba39",
+   "colores": {
+    "claro": {
+     "fondo": "#dfedcc",
+     "borde": "#84ba39",
+     "tinta": "#4f7022"
+    },
+    "oscuro": {
+     "fondo": "#324132",
+     "borde": "#84ba39",
+     "tinta": "#84ba39"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#5f3261",
+   "colores": {
+    "claro": {
+     "fondo": "#ece6ec",
+     "borde": "#5f3261",
+     "tinta": "#5f3261"
+    },
+    "oscuro": {
+     "fondo": "#57305b",
+     "borde": "#5f3261",
+     "tinta": "#b9a5b9"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#426cef",
+   "colores": {
+    "claro": {
+     "fondo": "#e1e7fc",
+     "borde": "#426cef",
+     "tinta": "#3a5fd2"
+    },
+    "oscuro": {
+     "fondo": "#2a3c71",
+     "borde": "#426cef",
+     "tinta": "#8ea7f5"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3d2b51",
+   "colores": {
+    "claro": {
+     "fondo": "#eceaee",
+     "borde": "#3d2b51",
+     "tinta": "#3d2b51"
+    },
+    "oscuro": {
+     "fondo": "#3d2b51",
+     "borde": "#3d2b51",
+     "tinta": "#a299ab"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#682405",
+   "colores": {
+    "claro": {
+     "fondo": "#f0e9e6",
+     "borde": "#682405",
+     "tinta": "#682405"
+    },
+    "oscuro": {
+     "fondo": "#682405",
+     "borde": "#682405",
+     "tinta": "#bd9f91"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#38bf29",
+   "colores": {
+    "claro": {
+     "fondo": "#d3f1d0",
+     "borde": "#38bf29",
+     "tinta": "#237619"
+    },
+    "oscuro": {
+     "fondo": "#23452e",
+     "borde": "#38bf29",
+     "tinta": "#40c232"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1b0545",
+   "colores": {
+    "claro": {
+     "fondo": "#edebf0",
+     "borde": "#1b0545",
+     "tinta": "#1b0545"
+    },
+    "oscuro": {
+     "fondo": "#1b0545",
+     "borde": "#1b0545",
+     "tinta": "#887d9e"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#90a2ee",
+   "colores": {
+    "claro": {
+     "fondo": "#e2e7fb",
+     "borde": "#90a2ee",
+     "tinta": "#596494"
+    },
+    "oscuro": {
+     "fondo": "#343c56",
+     "borde": "#90a2ee",
+     "tinta": "#92a4ee"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#164f61",
+   "colores": {
+    "claro": {
+     "fondo": "#e3eaec",
+     "borde": "#164f61",
+     "tinta": "#164f61"
+    },
+    "oscuro": {
+     "fondo": "#184455",
+     "borde": "#164f61",
+     "tinta": "#94aeb6"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1d4c54",
+   "colores": {
+    "claro": {
+     "fondo": "#e4eaea",
+     "borde": "#1d4c54",
+     "tinta": "#1d4c54"
+    },
+    "oscuro": {
+     "fondo": "#1d444d",
+     "borde": "#1d4c54",
+     "tinta": "#9cb0b4"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#94b9a3",
+   "colores": {
+    "claro": {
+     "fondo": "#dfeae3",
+     "borde": "#94b9a3",
+     "tinta": "#566b5f"
+    },
+    "oscuro": {
+     "fondo": "#354147",
+     "borde": "#94b9a3",
+     "tinta": "#94b9a3"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#3c8a2d",
+   "colores": {
+    "claro": {
+     "fondo": "#e0ecdd",
+     "borde": "#3c8a2d",
+     "tinta": "#347727"
+    },
+    "oscuro": {
+     "fondo": "#27442f",
+     "borde": "#3c8a2d",
+     "tinta": "#86b67d"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#b546ca",
+   "colores": {
+    "claro": {
+     "fondo": "#f5e5f8",
+     "borde": "#b546ca",
+     "tinta": "#9f3eb2"
+    },
+    "oscuro": {
+     "fondo": "#543067",
+     "borde": "#b546ca",
+     "tinta": "#d494e0"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": true
+  },
+  {
+   "hex": "#76358c",
+   "colores": {
+    "claro": {
+     "fondo": "#efe7f1",
+     "borde": "#76358c",
+     "tinta": "#76358c"
+    },
+    "oscuro": {
+     "fondo": "#542e69",
+     "borde": "#76358c",
+     "tinta": "#bd9ec8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#b9d4c4",
+   "colores": {
+    "claro": {
+     "fondo": "#dfebe4",
+     "borde": "#b9d4c4",
+     "tinta": "#5d6a62"
+    },
+    "oscuro": {
+     "fondo": "#363f48",
+     "borde": "#b9d4c4",
+     "tinta": "#b9d4c4"
+    }
+   },
+   "tintaDeLaTarjeta": "#1b2130",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#e91237",
+   "colores": {
+    "claro": {
+     "fondo": "#fce3e7",
+     "borde": "#e91237",
+     "tinta": "#cd1030"
+    },
+    "oscuro": {
+     "fondo": "#771c33",
+     "borde": "#e91237",
+     "tinta": "#f48d9f"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#55149e",
+   "colores": {
+    "claro": {
+     "fondo": "#eee8f5",
+     "borde": "#55149e",
+     "tinta": "#55149e"
+    },
+    "oscuro": {
+     "fondo": "#55149e",
+     "borde": "#55149e",
+     "tinta": "#bba1d8"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#272ebb",
+   "colores": {
+    "claro": {
+     "fondo": "#e9eaf8",
+     "borde": "#272ebb",
+     "tinta": "#272ebb"
+    },
+    "oscuro": {
+     "fondo": "#252ca5",
+     "borde": "#272ebb",
+     "tinta": "#a4a7e2"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#1419fb",
+   "colores": {
+    "claro": {
+     "fondo": "#e8e8ff",
+     "borde": "#1419fb",
+     "tinta": "#1419fb"
+    },
+    "oscuro": {
+     "fondo": "#171cc2",
+     "borde": "#1419fb",
+     "tinta": "#a1a3fd"
+    }
+   },
+   "tintaDeLaTarjeta": "#ffffff",
+   "avisoDeLaTarjeta": false
+  },
+  {
+   "hex": "#d4f869",
+   "colores": {
+    "claro": {
+     "fondo": "#d4f869",
+     "borde": "#d4f869",
+     "tinta": "#5d6d2e"
+    },
+    "oscuro": {
+     "fondo": "#374138",
+     "borde": "#d4f869",
+     "tinta": "#d4f869"
+    }
+   },
+   "tintaDeLaTarjeta": "#5d6d2e",
+   "avisoDeLaTarjeta": false
+  }
+ ]
+}

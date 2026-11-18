@@ -46,8 +46,8 @@ end $f$;
 
 -- Un tono del catálogo (los colores del amarillo de la semilla, que pasan el AA).
 create or replace function pg_temp.asp_tono(p_clave text) returns void language sql as $f$
-  insert into public.tonos (clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
-  values (p_clave, 'Aspecto ' || p_clave, '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
+  insert into public.tonos (clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+  values (p_clave, 'Aspecto ' || p_clave, '#fff7d6', '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
 $f$;
 
 -- Un origen nuevo con la fórmula publicada de `subasta_usa` como borrador de esa persona (guardado por la RPC): devuelve el origen.

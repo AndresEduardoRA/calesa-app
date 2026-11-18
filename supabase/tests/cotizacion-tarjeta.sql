@@ -45,7 +45,7 @@ end $f$;
 create or replace function pg_temp.ct_claves(p jsonb) returns text[] language sql as $f$ select array(select k from jsonb_object_keys(p) k order by k) $f$;
 create or replace function pg_temp.ct_nombre_tc(p_clave text) returns text language sql as $f$ select nombre from public.tipos_cambio where clave = p_clave and activo $f$;
 
--- @test tarjeta K1: la de subasta_usa trae sus grupos en el orden de la plantilla, las filas en el de la fórmula, el tono de la plantilla o el del grupo, la leyenda de la plantilla o la descripción, y los tonos como la hoja
+-- @test tarjeta K1: la de subasta_usa trae sus grupos en el orden de la plantilla, las filas en el de la fórmula, el tono de la plantilla o el del grupo, la leyenda de la plantilla o la descripción, y los colores con el hex del catálogo
 begin;
 do $$
 declare
@@ -94,8 +94,15 @@ begin
                                             from jsonb_array_elements((select n -> 'opciones' from public.formulas fo, jsonb_array_elements(fo.definicion -> 'nodos') n where fo.id = f and n ->> 'id' = 'variante')) x)) then
     raise exception 'la variante: %', r -> 'variante';
   end if;
-  if r -> 'tonos' <> (select jsonb_agg(jsonb_build_object('clave', t.clave, 'claro', jsonb_build_object('fondo', t.claro_fondo, 'borde', t.claro_borde, 'tinta', t.claro_tinta),
-                                                          'oscuro', jsonb_build_object('fondo', t.oscuro_fondo, 'borde', t.oscuro_borde, 'tinta', t.oscuro_tinta)) order by t.clave)
+  -- Cada color con su hex y lo que pinta la tarjeta (igual en los dos temas): de fondo el hex, el borde claro y, en los de fábrica (hex = su fondo claro), su
+  -- tinta clara de siempre. Claves exactas: ni claro ni oscuro viajan.
+  if (select array_agg(t ->> 'clave' order by t ->> 'clave') from jsonb_array_elements(r -> 'tonos') t) is distinct from array['amarillo', 'naranja']
+     or exists (select 1 from jsonb_array_elements(r -> 'tonos') t where pg_temp.ct_claves(t) is distinct from array['clave', 'hex', 'tarjeta']
+                                                                      or pg_temp.ct_claves(t -> 'tarjeta') is distinct from array['borde', 'fondo', 'tinta']) then
+    raise exception 'la forma de los tonos: %', r -> 'tonos';
+  end if;
+  if r -> 'tonos' <> (select jsonb_agg(jsonb_build_object('clave', t.clave, 'hex', t.hex,
+                                                          'tarjeta', jsonb_build_object('fondo', t.hex, 'borde', t.claro_borde, 'tinta', t.claro_tinta)) order by t.clave)
                         from public.tonos t where t.clave in ('amarillo', 'naranja')) then
     raise exception 'los tonos: %', r -> 'tonos';
   end if;
@@ -164,11 +171,18 @@ begin
   r := pg_temp.ct_tarjeta(duena, fn);
   if r ->> 'estado' is distinct from 'lista' or (r #>> '{grupos,0,filas,1,etiqueta}') is distinct from 'CENT-k3' then raise exception '(b) la N: %', r; end if;
   -- (c) un tono que sólo elige la plantilla, borrado del catálogo.
-  insert into public.tonos (clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
-  select 'ct_tono', 'CT tono', claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta from public.tonos where clave = 'verde';
+  insert into public.tonos (clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+  select 'ct_tono', 'CT tono', hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta from public.tonos where clave = 'verde';
   perform pg_temp.ct_publicar(o_sub, jsonb_set((select definicion from public.plantillas_tarjeta where origen_id = o_sub and version = 1), '{grupos,0,tono}', '"ct_tono"'));
   r := pg_temp.ct_tarjeta(duena, f1);
   if (r #>> '{grupos,0,tono}') is distinct from 'ct_tono' or not exists (select 1 from jsonb_array_elements(r -> 'tonos') t where t ->> 'clave' = 'ct_tono') then raise exception '(c) el tono elegido: %', r; end if;
+  -- Un hex saturado sobre el que la tinta clara no se lee (#1b2130 sobre #31869b da 3,8): la tarjeta pinta el hex con el blanco (4,1), nunca con la tinta clara.
+  update public.tonos set hex = '#31869b' where clave = 'ct_tono';
+  r := pg_temp.ct_tarjeta(duena, f1);
+  if (select t -> 'tarjeta' from jsonb_array_elements(r -> 'tonos') t where t ->> 'clave' = 'ct_tono')
+     is distinct from jsonb_build_object('fondo', '#31869b', 'borde', (select claro_borde from public.tonos where clave = 'ct_tono'), 'tinta', '#ffffff') then
+    raise exception '(c) el texto sobre un hex saturado: %', r -> 'tonos';
+  end if;
   delete from public.tonos where clave = 'ct_tono';
   r := pg_temp.ct_tarjeta(duena, f1);
   if r ->> 'estado' is distinct from 'lista' or (r #>> '{grupos,0,tono}') is distinct from 'verde'

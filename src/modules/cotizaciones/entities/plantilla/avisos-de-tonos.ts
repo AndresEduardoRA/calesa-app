@@ -8,6 +8,6 @@ export function avisosDeTonos(
 ): string[] {
   return tonosQueYaNoEstan(grupos, tonos).map(
     ({ grupo, tono }) =>
-      `El tono «${tono}» del grupo «${etiquetaDeGrupo(grupo)}» ya no está en el catálogo: la tarjeta usa el tono del grupo. Elige otro o «Del grupo».`,
+      `El color «${tono}» del grupo «${etiquetaDeGrupo(grupo)}» ya no está en el catálogo: la tarjeta usa el color del grupo. Elige otro o «Del grupo».`,
   )
 }

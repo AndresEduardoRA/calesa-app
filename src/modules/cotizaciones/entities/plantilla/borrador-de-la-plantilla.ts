@@ -54,7 +54,7 @@ export function alinearConLaFormula(
   const nuevos = deLaFormula.filter((id) => !vistos.has(id))
   for (const id of nuevos) {
     avisos.push(
-      `El grupo «${etiquetaDelGrupo(contexto, id)}» es nuevo en la fórmula: se sumó al final, sin tono.`,
+      `El grupo «${etiquetaDelGrupo(contexto, id)}» es nuevo en la fórmula: se sumó al final, sin color.`,
     )
   }
   const { lugar } = lugaresDe(contexto)

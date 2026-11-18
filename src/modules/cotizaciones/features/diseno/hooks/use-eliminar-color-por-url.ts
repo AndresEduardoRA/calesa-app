@@ -12,9 +12,9 @@ import {
 } from '../../../entities/diseno/panel-de-tonos'
 import type { Tono } from '../../../entities/diseno/tonos'
 
-// La confirmación de «Eliminar» un tono, en la URL (`?panel=eliminar-tono&tono=<id>`): se puede recargar y «atrás» la cierra. Se monta una vez en la lista, no una
-// por fila. Un tono que ya no está no abre (se dice y la URL se limpia, escrita a mano también); mientras se va, el diálogo conserva el último que vio.
-export function useEliminarTonoPorUrl(tonos: readonly Tono[]) {
+// La confirmación de «Eliminar» un color, en la URL (`?panel=eliminar-tono&tono=<id>`): se puede recargar y «atrás» la cierra. Se monta una vez en la lista, no una
+// por fila. Un color que ya no está no abre (se dice y la URL se limpia, escrita a mano también); mientras se va, el diálogo conserva el último que vio.
+export function useEliminarColorPorUrl(tonos: readonly Tono[]) {
   const url = usePanelPorUrl(PANEL_ELIMINAR_TONO, [CLAVE_DE_TONO])
   const id = url.valor(CLAVE_DE_TONO)
   const apertura = useApertura(url.abierto)

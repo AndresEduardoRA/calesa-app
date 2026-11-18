@@ -27,7 +27,7 @@ const MENSAJES: { readonly [R in ReglaDePlantilla]: (x: string) => string } = {
   grupo_inexistente: (x) => `El grupo «${x}» no es de la fórmula.`,
   grupo_repetido: (x) => `El grupo «${x}» está dos veces.`,
   grupo_faltante: (x) => `Falta el grupo «${x}»: la tarjeta lleva todos los grupos de la fórmula.`,
-  tono_inexistente: (x) => `El grupo «${x}» usa un tono que no está en el catálogo.`,
+  tono_inexistente: (x) => `El grupo «${x}» usa un color que no está en el catálogo.`,
   nodo_inexistente: (x) => `La plantilla nombra «${x}», que no es un nodo de la fórmula.`,
   nodo_sin_lugar: (x) =>
     `El nodo «${x}» no va en la tarjeta: no es de un grupo, el total ni lo aparte.`,

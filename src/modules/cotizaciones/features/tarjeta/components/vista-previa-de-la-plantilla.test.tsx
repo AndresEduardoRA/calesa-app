@@ -11,7 +11,7 @@ const lectura = (grupos: LecturaParaLaVistaPrevia['grupos']): LecturaParaLaVista
   total: { etiqueta: 'Total final', leyenda: null },
   grupos,
   aparte: [],
-  tonos: [{ clave: 'verde', claro: C, oscuro: C }],
+  tonos: [{ clave: 'verde', hex: C.fondo, tarjeta: C }],
 })
 const grupo = (filasDeMas: number) => ({
   id: 'compra',
@@ -38,6 +38,21 @@ describe('VistaPreviaDeLaPlantilla', () => {
   it('avisa del tope sólo si quedaron filas fuera', () => {
     render(<VistaPreviaDeLaPlantilla lectura={lectura([grupo(496)])} />)
     expect(screen.getByText('Se muestran las primeras 4 filas de cada grupo.')).toBeTruthy()
+  })
+
+  it('cada grupo lleva en línea los colores de la tarjeta de su color, iguales con el tema oscuro y sin <style> de tonos', () => {
+    document.documentElement.classList.add('dark')
+    try {
+      const { container } = render(<VistaPreviaDeLaPlantilla lectura={lectura([grupo(0)])} />)
+      const g = container.querySelector<HTMLElement>('[data-grupo-de-la-tarjeta="compra"]')
+      expect(g?.getAttribute('data-tono')).toBe('verde')
+      expect(g?.style.getPropertyValue('--tono-fondo')).toBe(C.fondo)
+      expect(g?.style.getPropertyValue('--tono-borde')).toBe(C.borde)
+      expect(g?.style.getPropertyValue('--tono-tinta')).toBe(C.tinta)
+      expect(container.querySelector('style')).toBeNull()
+    } finally {
+      document.documentElement.classList.remove('dark')
+    }
   })
 
   it('sin grupos, sólo el total', () => {
