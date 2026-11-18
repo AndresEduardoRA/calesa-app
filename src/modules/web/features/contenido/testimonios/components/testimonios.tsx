@@ -29,28 +29,25 @@ export type PropsDeTestimonios = {
 
 const PREFIJO = 'testimonio'
 
-function EncabezadoDeTestimonios({ alNuevo }: { alNuevo: () => void }) {
+// Su acción principal. El título y la frase los pone la página.
+function AccionesDeTestimonios({ alNuevo }: { alNuevo: () => void }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
-      <div className="grid gap-0.5">
-        <h2
-          id="titulo-de-testimonios"
-          className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-        >
-          Testimonios
-        </h2>
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          Lo que dicen tus clientes en la web pública. Un testimonio nuevo nace sin publicar y sin
-          consentimiento.
-        </p>
-      </div>
-      <Button className="h-11 md:h-8" onClick={alNuevo}>
+    <div className="flex justify-end">
+      <Button className="h-11 max-sm:w-full md:h-8" onClick={alNuevo}>
         <PlusIcon aria-hidden />
         Nuevo testimonio
       </Button>
     </div>
   )
 }
+
+const SIN_TESTIMONIOS = (
+  <EstadoVacio
+    compacto
+    titulo="Todavía no hay testimonios."
+    descripcion="Un testimonio nuevo nace sin publicar y sin consentimiento."
+  />
+)
 
 // El «⋯» de la fila devuelve el foco ahí al cerrar un diálogo.
 const focoEnElMas = (testimonio: Testimonio | null) => () =>
@@ -72,10 +69,10 @@ export function Testimonios({ testimonios, hayMas }: PropsDeTestimonios) {
   const escritura = useEscrituraDeTestimonios()
 
   return (
-    <section className="grid gap-3" aria-labelledby="titulo-de-testimonios">
-      <EncabezadoDeTestimonios alNuevo={apertura.abrirNueva} />
+    <section className="grid gap-3" aria-label="Testimonios">
+      <AccionesDeTestimonios alNuevo={apertura.abrirNueva} />
       {testimonios.length === 0 ? (
-        <EstadoVacio compacto titulo="Todavía no hay testimonios." />
+        SIN_TESTIMONIOS
       ) : (
         <ListaDeCatalogo
           filas={filasDeTestimonios(testimonios, {

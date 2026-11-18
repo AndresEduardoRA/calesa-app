@@ -19,6 +19,6 @@ export const crearTestimonio = actionClient
       return fallo('sin_permiso', SIN_PERMISO_PARA_TESTIMONIOS)
     }
     const hecho = await repositorioDeTestimonios.crear(parsedInput)
-    if (hecho.ok) revalidatePath(RUTAS.configuracionDeWeb)
+    if (hecho.ok) revalidatePath(RUTAS.testimoniosDelSitio)
     return hecho
   })

@@ -442,18 +442,23 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   (`/configuracion/repuestos/cotizador`): «Fórmula» con «Publicar cambios» (publica una versión nueva: no es una barra de «Guardar») y su
   historial, «Tramos de logística» y «Cajas» por moneda con sus modales en la URL (`?panel=tramo|caja`). Las dos con el enlace a su flujo en
   Flujos (config) arriba. Las URLs viejas `?seccion=catalogos|cotizador` redirigen a su sub-ruta con sus `?panel=`, `tramo`, `caja` y `moneda`.
-- **Sitio web (config)** — `/configuracion/web` (`web.ajustes.gestionar` o `web.contenido.gestionar`):
-  `?seccion=ajustes|legales|guias|faqs|testimonios` («Ajustes» y «Legales» con `web.ajustes.gestionar`; el resto con
-  `web.contenido.gestionar`; la barra sólo con dos o más). «Ajustes»: la fila única del sitio (nombre, lema, WhatsApp de respaldo, horario,
-  dirección, redes, SEO, moneda secundaria y orígenes visibles, avisando qué vehículos dejan de verse), con versión, sin red y conflicto.
-  «Guías» (con categorías) y «Legales»: lista y editor `/configuracion/web/guias/[id]` (documento con imágenes; publicar, programar o
-  despublicar con `web.guias.publicar`; «Borrador», «Programada», «Publicada»). «Preguntas frecuentes»: panel por URL, reordenar, eliminar
-  con confirmación. «Testimonios»: con su consentimiento (quién, cuándo, canal; ciudad, vehículo y foto por separado) y «Retirar».
-- **Cola web (config)** — `/configuracion/cola-web` (`web.cola.gestionar`): «Sin asignar» arriba (solicitudes sin asesor: código y fuente),
-  «En la rueda» (en el orden de la ruleta: disponible o no, abiertas de su cupo, prioridad, «Contacta el N %» o «Sin turnos aún», vencidas
-  y último turno, con «Quitar»), «Habilitada, pero su rol no recibe turnos de la web» (con «Se cambia en Roles.»), «Actualizar», «Agregar a
-  la rueda» (`?panel=agregar-a-la-rueda&q=`, busca en el equipo; avisa si el rol no recibe turnos) y la política de la cola (cola activa,
-  minutos para contactar, días de pegajoso, máximo de abiertas e intentos).
+- **Sitio web (config)** — `/configuracion/web` abre la primera sub-sección que la persona puede; cada una es una sub-ruta del menú de Configuración
+  («Web › Sitio web»), con su título y una frase. «Ajustes» (`/ajustes`) y «Legales» (`/legales`) con `web.ajustes.gestionar`; «Guías» (`/guias`),
+  «Preguntas frecuentes» (`/faqs`) y «Testimonios» (`/testimonios`) con `web.contenido.gestionar`. Lo que no puede abrir va apagado en el menú, con su
+  motivo, y su URL abre la primera que sí. `?seccion=ajustes|legales|guias|faqs|testimonios` redirige a su sub-ruta y conserva el resto de la URL
+  (`?panel=`, `?q=`). «Ajustes»: la fila única del sitio (nombre, lema, WhatsApp de respaldo, horario, dirección, redes, SEO, moneda secundaria y orígenes
+  visibles, avisando qué vehículos dejan de verse), con versión, sin red y conflicto; «Ajustes» y «Legales» se guardan con la barra fija de abajo
+  («Tienes cambios sin guardar» · «Descartar» · «Guardar»; salir con cambios pregunta). «Guías» (con categorías) y su editor
+  `/configuracion/web/guias/[id]` (documento con imágenes; publicar, programar o despublicar con `web.guias.publicar`; «Borrador», «Programada»,
+  «Publicada»; «← Guías» vuelve a la lista). «Preguntas frecuentes»: panel por URL, reordenar, eliminar con confirmación. «Testimonios»: con su
+  consentimiento (quién, cuándo, canal; ciudad, vehículo y foto por separado) y «Retirar». Las listas llevan su acción principal («Nueva …») sin repetir el
+  título de la página.
+- **Cola web (config)** — `/configuracion/cola-web` (`web.cola.gestionar`): una página con tres secciones, en este orden, cada una con título y frase.
+  «Sin asignar» (solicitudes sin asesor: código y fuente; «Ver más» de a 20), «En la rueda» (en el orden de la ruleta: disponible o no, abiertas de su
+  cupo, prioridad, «Contacta el N %» o «Sin turnos aún», vencidas y último turno, con «Quitar»; «Agregar a la rueda» —`?panel=agregar-a-la-rueda&q=`, busca
+  en el equipo y avisa si el rol no recibe turnos— junto a su título; y debajo, «Habilitada, pero su rol no recibe turnos de la web» con «Se cambia en
+  Roles.») y «Política de la cola» (cola activa, minutos para contactar, días de pegajoso, máximo de abiertas e intentos, con la barra fija de abajo).
+  «Actualizar» queda arriba de la página. En el celular, las tres secciones apiladas en su orden.
 - **Orígenes** — `/configuracion/origenes`, `/[id]` (`origenes.gestionar`; lectura con `flujos.configurar` o `cotizaciones.configurar`):
   `?panel=nuevo`; `/[id]?seccion=datos|campos|categorias`, `?campo=`, `?categoria=`; sin permiso, todo deshabilitado con motivo.
 - **Equipo** — `/configuracion/equipo` (`equipo.usuarios.*`): tabla desde 768 px, tarjetas debajo, panel lateral. `?q=&estado=` se

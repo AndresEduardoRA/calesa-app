@@ -107,7 +107,9 @@ describe('guardarAjustesDelSitio', () => {
     )
     expect(pedido?.cambios.redes).toEqual({ instagram: 'https://instagram.com/autosdelsur' })
     expect(respuesta.data).toEqual(h.respuesta)
-    expect(h.cache.revalidatePath).toHaveBeenCalledWith('/configuracion/web')
+    // Ajustes y Legales comparten la fila y su versión: las dos páginas se renuevan.
+    expect(h.cache.revalidatePath).toHaveBeenCalledWith('/configuracion/web/ajustes')
+    expect(h.cache.revalidatePath).toHaveBeenCalledWith('/configuracion/web/legales')
   })
 
   it('un error de la base con su campo vuelve igual y no revalida', async () => {
