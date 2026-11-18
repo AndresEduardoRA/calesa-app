@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import type { Permisos } from '@/shared/lib/permisos'
 import { NAVEGACION } from '../_shell/navegacion'
 import { SECCION_DE_COTIZACION } from './cotizacion/seccion'
-import { PERMISOS_DE_EMPRESA } from './empresa/pestanas'
+import { PERMISOS_DE_EMPRESA, SECCION_DE_EMPRESA } from './empresa/seccion'
 import { SECCION_DE_FLUJOS } from './flujos/seccion'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
 import {
@@ -13,6 +13,7 @@ import {
   conSubseccionesVisibles,
   gruposVisibles,
   paraElNavegador,
+  primeraSubseccionAbierta,
   seccionesVisibles,
   type SeccionDeConfiguracion,
 } from './secciones'
@@ -67,15 +68,8 @@ describe('secciones de configuración', () => {
     expect(existsSync(path.join(APP, SECCION_DE_WEB.ruta, 'page.tsx'))).toBe(true)
   })
 
-  it('Orígenes trae sus tres partes como sub-secciones plantilla', () => {
-    expect(porClave('origenes')?.subsecciones.map((sub) => sub.ruta)).toEqual([
-      '/configuracion/origenes/[id]/datos',
-      '/configuracion/origenes/[id]/campos',
-      '/configuracion/origenes/[id]/categorias',
-    ])
-  })
-
-  it('Empresa se abre con los permisos de todas sus pestañas', () => {
+  it('Empresa viene de su carpeta y se abre con la unión de los permisos de sus sub-secciones', () => {
+    expect(porClave('empresa')).toBe(SECCION_DE_EMPRESA)
     expect(porClave('empresa')?.permisos).toBe(PERMISOS_DE_EMPRESA)
   })
 
@@ -83,7 +77,9 @@ describe('secciones de configuración', () => {
     for (const seccion of SECCIONES as readonly SeccionDeConfiguracion[]) {
       expect(existsSync(path.join(APP, seccion.ruta, 'page.tsx')), seccion.ruta).toBe(true)
       for (const sub of seccion.subsecciones) {
-        expect(sub.ruta.startsWith(`${seccion.ruta}/`), sub.ruta).toBe(true)
+        expect(sub.ruta === seccion.ruta || sub.ruta.startsWith(`${seccion.ruta}/`), sub.ruta).toBe(
+          true,
+        )
         expect(existsSync(path.join(APP, sub.ruta, 'page.tsx')), sub.ruta).toBe(true)
       }
     }
@@ -109,6 +105,19 @@ describe('secciones de configuración', () => {
   })
 })
 
+describe('sub-secciones plantilla de configuración', () => {
+  it('Orígenes trae sus tres partes como sub-secciones plantilla', () => {
+    const origenes = SECCIONES.find(
+      (seccion: SeccionDeConfiguracion) => seccion.clave === 'origenes',
+    )
+    expect(origenes?.subsecciones.map((sub) => sub.ruta)).toEqual([
+      '/configuracion/origenes/[id]/datos',
+      '/configuracion/origenes/[id]/campos',
+      '/configuracion/origenes/[id]/categorias',
+    ])
+  })
+})
+
 describe('grupos visibles de configuración', () => {
   it('agrupa lo visible: sólo leads.configurar es «Ventas › Leads»; sin permisos, nada', () => {
     const leads: Permisos = [{ clave: 'leads.configurar', origenId: null, alcance: 'todos' }]
@@ -120,36 +129,84 @@ describe('grupos visibles de configuración', () => {
     ).toEqual([{ clave: 'ventas', secciones: ['leads'] }])
     expect(gruposVisibles([])).toEqual([])
   })
+})
 
-  it('una sub-sección sin permiso no figura, y al navegador no viajan iconos ni permisos', () => {
-    const conSub: SeccionDeConfiguracion = {
-      ...SECCION_DE_REPUESTOS,
-      subsecciones: [
-        {
-          clave: 'a',
-          titulo: 'A',
-          ruta: '/configuracion/repuestos/a',
-          permisos: ['repuestos.configurar'],
-        },
-        {
-          clave: 'b',
-          titulo: 'B',
-          ruta: '/configuracion/repuestos/b',
-          permisos: ['equipo.roles.gestionar'],
-        },
-      ],
-    }
-    const permisos: Permisos = [{ clave: 'repuestos.configurar', origenId: null, alcance: 'todos' }]
-    const visible = conSubseccionesVisibles(conSub, permisos)
-    expect(visible.subsecciones.map((s) => s.clave)).toEqual(['a'])
+describe('sub-secciones de configuración', () => {
+  // Una sección de prueba con una índice, una que pide otro permiso sin motivo y otra con motivo.
+  const conSub: SeccionDeConfiguracion = {
+    ...SECCION_DE_REPUESTOS,
+    subsecciones: [
+      {
+        clave: 'a',
+        titulo: 'A',
+        descripcion: 'La A.',
+        ruta: '/configuracion/repuestos',
+        permisos: ['repuestos.configurar'],
+      },
+      {
+        clave: 'b',
+        titulo: 'B',
+        descripcion: 'La B.',
+        ruta: '/configuracion/repuestos/b',
+        permisos: ['equipo.roles.gestionar'],
+      },
+      {
+        clave: 'c',
+        titulo: 'C',
+        descripcion: 'La C.',
+        ruta: '/configuracion/repuestos/c',
+        permisos: ['equipo.roles.gestionar'],
+        motivoSinPermiso: 'Pide el permiso «Roles».',
+      },
+    ],
+  }
+  const repuestos: Permisos = [{ clave: 'repuestos.configurar', origenId: null, alcance: 'todos' }]
+
+  it('una sub-sección sin permiso no figura; con motivo, figura apagada', () => {
+    const visible = conSubseccionesVisibles(conSub, repuestos)
+    expect(visible.subsecciones.map((s) => [s.clave, s.apagada ?? false])).toEqual([
+      ['a', false],
+      ['c', true],
+    ])
+    const todas = conSubseccionesVisibles(conSub, [
+      ...repuestos,
+      { clave: 'equipo.roles.gestionar', origenId: null, alcance: 'todos' },
+    ])
+    expect(todas.subsecciones.map((s) => [s.clave, s.apagada ?? false])).toEqual([
+      ['a', false],
+      ['b', false],
+      ['c', false],
+    ])
+  })
+
+  it('al navegador no viajan iconos, permisos ni frases, y el motivo sólo en la apagada', () => {
     const [grupo] = paraElNavegador([
-      { clave: 'operacion', titulo: 'Operación', secciones: [visible] },
+      {
+        clave: 'operacion',
+        titulo: 'Operación',
+        secciones: [conSubseccionesVisibles(conSub, repuestos)],
+      },
     ])
     expect(grupo?.secciones[0]).toEqual({
       clave: 'repuestos',
       titulo: 'Repuestos',
       ruta: '/configuracion/repuestos',
-      subsecciones: [{ clave: 'a', titulo: 'A', ruta: '/configuracion/repuestos/a' }],
+      subsecciones: [
+        { clave: 'a', titulo: 'A', ruta: '/configuracion/repuestos' },
+        {
+          clave: 'c',
+          titulo: 'C',
+          ruta: '/configuracion/repuestos/c',
+          motivo: 'Pide el permiso «Roles».',
+        },
+      ],
     })
+  })
+
+  it('la primera sub-sección abierta es la primera con permiso, o ninguna', () => {
+    const roles: Permisos = [{ clave: 'equipo.roles.gestionar', origenId: null, alcance: 'todos' }]
+    expect(primeraSubseccionAbierta(conSub, repuestos)).toBe('/configuracion/repuestos')
+    expect(primeraSubseccionAbierta(conSub, roles)).toBe('/configuracion/repuestos/b')
+    expect(primeraSubseccionAbierta(conSub, [])).toBeNull()
   })
 })

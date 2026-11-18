@@ -175,6 +175,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
+- **[T327]** En el celular, la burbuja del chat queda sobre la esquina derecha de arriba de la barra de cambios sin guardar (no tapa sus botones):
+  subirla mientras la barra está a la vista, como los avisos (`data-pie-de-panel`).
 - **[T34]** En el celular el carrusel de la ficha del vehículo, a todo el ancho y en 4:3, ocupa casi una pantalla antes del título: acotar su alto en una columna
   (sin tocar el de la lateral de escritorio).
 - **[T34]** «Abrir la unidad» de «Qué falta» en la ficha del vehículo lleva a un hueco aunque su regla del flujo esté apagada (allí no estará): pasar a la ficha

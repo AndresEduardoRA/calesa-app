@@ -1,5 +1,4 @@
 import {
-  Building2Icon,
   ContactRoundIcon,
   MapPinIcon,
   ShieldCheckIcon,
@@ -10,7 +9,7 @@ import { puede, type ClavePermiso, type Permisos } from '@/shared/lib/permisos'
 import { RUTAS } from '@/shared/lib/rutas'
 import { SECCION_DE_COLA_WEB } from './cola-web/seccion'
 import { SECCION_DE_COTIZACION } from './cotizacion/seccion'
-import { PERMISOS_DE_EMPRESA } from './empresa/pestanas'
+import { SECCION_DE_EMPRESA } from './empresa/seccion'
 import { SECCION_DE_FLUJOS } from './flujos/seccion'
 import { PERMISOS_DE_LEADS } from './leads/pestanas'
 import { SECCIONES_DE_LOGISTICA } from './logistica/seccion'
@@ -22,6 +21,7 @@ import { SECCIONES_DE_WEB } from './web/seccion'
 // El registro de Configuración: la única fuente del inicio, del menú de Configuración y del selector de sección del celular. Cada
 // sección se abre con cualquiera de sus permisos (ver o gestionar) y pertenece a un grupo; sus sub-secciones son las sub-rutas que
 // registra cada página (se suman aquí, con su `page.tsx`). secciones.test.ts falla si una ruta o sub-ruta no tiene su `page.tsx`.
+// La sub-sección índice vive en la ruta de su sección (la que abre la sección); las demás, debajo.
 
 // Los grupos de Configuración, en el orden en que se dibujan. No: «área» (es otra cosa en el glosario).
 export const GRUPOS = [
@@ -36,10 +36,21 @@ export type GrupoDeConfiguracion = (typeof GRUPOS)[number]['clave']
 export type SubseccionDeConfiguracion = {
   clave: string
   titulo: string
-  // Empieza con la ruta de su sección y una barra. Puede ser una plantilla con `[x]` (las partes de un origen): el menú la rellena con la
-  // ruta actual y, si no puede, no la dibuja (`_navegacion/marca.ts`).
+  // Una frase: qué se configura ahí. La dibuja la página con su título (`EncabezadoDeConfiguracion`); no viaja al navegador.
+  descripcion: string
+  // La de su sección (la índice) o la de su sección, una barra y algo más. Puede ser una plantilla con `[x]` (las partes de un origen):
+  // el menú la rellena con la ruta actual y, si no puede, no la dibuja (`_navegacion/marca.ts`).
   ruta: string
   permisos: readonly ClavePermiso[]
+  // Con motivo, quien no tiene sus permisos la ve apagada en el menú y en el selector, con el motivo; sin él, no la ve.
+  motivoSinPermiso?: string
+}
+
+// Una sub-sección como la ve la persona: abierta, o apagada (sin permiso y con motivo).
+export type SubseccionVisible = SubseccionDeConfiguracion & { apagada?: true }
+
+export type SeccionVisible = Omit<SeccionDeConfiguracion, 'subsecciones'> & {
+  subsecciones: readonly SubseccionVisible[]
 }
 
 export type SeccionDeConfiguracion = {
@@ -55,16 +66,7 @@ export type SeccionDeConfiguracion = {
 }
 
 export const SECCIONES = [
-  {
-    clave: 'empresa',
-    titulo: 'Empresa',
-    descripcion: 'La marca, los datos legales, la región, las monedas y las integraciones.',
-    ruta: RUTAS.empresa,
-    Icono: Building2Icon,
-    permisos: PERMISOS_DE_EMPRESA,
-    grupo: 'empresa-y-equipo',
-    subsecciones: [],
-  },
+  SECCION_DE_EMPRESA,
   {
     clave: 'equipo',
     titulo: 'Equipo',
@@ -118,19 +120,32 @@ function puedeAbrir(permisos: Permisos, claves: readonly ClavePermiso[]): boolea
   return claves.some((clave) => puede(permisos, clave))
 }
 
-// La sección con sólo las sub-secciones que la persona puede abrir.
+// La sección con las sub-secciones que la persona puede abrir y, apagadas, las que no puede pero declaran su motivo.
 export function conSubseccionesVisibles(
   seccion: SeccionDeConfiguracion,
   permisos: Permisos,
-): SeccionDeConfiguracion {
+): SeccionVisible {
   return {
     ...seccion,
-    subsecciones: seccion.subsecciones.filter((sub) => puedeAbrir(permisos, sub.permisos)),
+    subsecciones: seccion.subsecciones.flatMap((sub): SubseccionVisible[] => {
+      if (puedeAbrir(permisos, sub.permisos)) {
+        return [sub]
+      }
+      return sub.motivoSinPermiso === undefined ? [] : [{ ...sub, apagada: true }]
+    }),
   }
 }
 
+// La ruta de la primera sub-sección que la persona puede abrir: adonde va la URL de una que no puede. null si no hay ninguna.
+export function primeraSubseccionAbierta(
+  seccion: SeccionDeConfiguracion,
+  permisos: Permisos,
+): string | null {
+  return seccion.subsecciones.find((sub) => puedeAbrir(permisos, sub.permisos))?.ruta ?? null
+}
+
 // Las secciones que la persona puede abrir, cada una con sólo las sub-secciones que también puede abrir.
-export function seccionesVisibles(permisos: Permisos): SeccionDeConfiguracion[] {
+export function seccionesVisibles(permisos: Permisos): SeccionVisible[] {
   return SECCIONES.filter((seccion: SeccionDeConfiguracion) =>
     puedeAbrir(permisos, seccion.permisos),
   ).map((seccion: SeccionDeConfiguracion) => conSubseccionesVisibles(seccion, permisos))
@@ -139,7 +154,7 @@ export function seccionesVisibles(permisos: Permisos): SeccionDeConfiguracion[] 
 export type GrupoVisible = {
   clave: GrupoDeConfiguracion
   titulo: string
-  secciones: SeccionDeConfiguracion[]
+  secciones: SeccionVisible[]
 }
 
 // Las secciones que la persona puede abrir, por grupo y en el orden de `GRUPOS`; un grupo sin ninguna no figura.
@@ -161,7 +176,8 @@ export type GrupoDelNavegador = {
     clave: string
     titulo: string
     ruta: string
-    subsecciones: { clave: string; titulo: string; ruta: string }[]
+    // `motivo`, sólo en la apagada.
+    subsecciones: { clave: string; titulo: string; ruta: string; motivo?: string }[]
   }[]
 }
 
@@ -173,10 +189,13 @@ export function paraElNavegador(grupos: readonly GrupoVisible[]): GrupoDelNavega
       clave: seccion.clave,
       titulo: seccion.titulo,
       ruta: seccion.ruta,
-      subsecciones: seccion.subsecciones.map(({ clave, titulo, ruta }) => ({
-        clave,
-        titulo,
-        ruta,
+      subsecciones: seccion.subsecciones.map((sub) => ({
+        clave: sub.clave,
+        titulo: sub.titulo,
+        ruta: sub.ruta,
+        ...(sub.apagada && sub.motivoSinPermiso !== undefined
+          ? { motivo: sub.motivoSinPermiso }
+          : {}),
       })),
     })),
   }))

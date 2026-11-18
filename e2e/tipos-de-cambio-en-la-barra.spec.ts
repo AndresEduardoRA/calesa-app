@@ -106,7 +106,7 @@ test('la empresa marca oficial y paralelo y la barra muestra los dos', async ({
   isMobile,
 }, info) => {
   await entrar(page, duena)
-  await page.goto('/configuracion/empresa?seccion=monedas')
+  await page.goto('/configuracion/empresa/monedas')
   await expect(page.getByText(/En la barra superior se ven hasta 3/)).toBeVisible()
   // La semilla deja el oficial, como la migración en una base con datos: nada cambió al desplegar.
   await expect(page.getByRole('button', { name: /^Oficial/ })).toContainText('En la barra')

@@ -26,7 +26,7 @@ export const guardarApibara = actionClient
       config: endpoint && plataformas ? { endpoint, plataformas } : undefined,
     })
     if (guardada.ok) {
-      revalidatePath(RUTAS.empresa)
+      revalidatePath(RUTAS.integracionesDeEmpresa)
     }
     return guardada
   })

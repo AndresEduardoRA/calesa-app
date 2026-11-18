@@ -13,7 +13,7 @@ type Props = {
   tipoCambioAbierto: string | undefined
 }
 
-// La pestaña «Monedas». Los tipos de cambio los lee cualquiera; el historial y la edición, quien
+// Lo que dibuja Monedas y tipos de cambio. Los tipos de cambio los lee cualquiera; el historial y la edición, quien
 // tiene `empresa.tipos_cambio.gestionar` (sin él se ve todo deshabilitado, con el motivo).
 export async function SeccionMonedas({ puedeGestionar, tipoCambioAbierto }: Props) {
   const [monedasYTipos, paraEditar, leyenda] = await Promise.all([

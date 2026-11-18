@@ -13,6 +13,8 @@ vi.mock('../../../composicion.client', () => ({
   subirLogo: vi.fn(),
   descartarLogo: vi.fn(),
 }))
+// La barra pregunta al salir con el router de Next.
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }))
 vi.mock('../actions/guardar-ajustes', () => ({ guardarAjustes: vi.fn() }))
 vi.mock('@/shared/ui/toasts', () => ({
   avisar: vi.fn(),

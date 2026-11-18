@@ -17,7 +17,7 @@ import {
 import { ingresar } from './soporte/pasos'
 import { capturar } from './soporte/recorrido'
 
-// La leyenda de los tipos de cambio compartidos (Configuración › Empresa › Monedas, `?seccion=monedas`): se escribe con
+// La leyenda de los tipos de cambio compartidos (Configuración › Empresa › Monedas y tipos de cambio, `/configuracion/empresa/monedas`): se escribe con
 // `empresa.tipos_cambio.gestionar`, con su tope de 120 y su conflicto de versión; sin el permiso, el campo se ve apagado con su motivo. La empresa es una
 // fila única: se guarda cómo estaba y se deja así al terminar.
 test.describe.configure({ mode: 'serial' })
@@ -58,6 +58,10 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
+// El «Guardar» de la barra de cambios sin guardar: con un panel abierto hay otro.
+const guardar = (page: Page) =>
+  page.getByRole('region', { name: 'Cambios sin guardar' }).getByRole('button', { name: 'Guardar' })
+
 async function entrar(page: Page, correo: string) {
   await page.goto('/ingreso')
   await ingresar(page, correo, CLAVE)
@@ -66,7 +70,7 @@ async function entrar(page: Page, correo: string) {
 
 test('la empresa escribe la leyenda y el campo cuenta sus caracteres', async ({ page }, info) => {
   await entrar(page, duena)
-  await page.goto('/configuracion/empresa?seccion=monedas')
+  await page.goto('/configuracion/empresa/monedas')
   const campo = page.getByLabel('Leyenda', { exact: true })
   await expect(campo).toBeEnabled()
   await expect(page.getByText('0 de 120. Vacía, no se muestra.')).toBeVisible()
@@ -75,19 +79,22 @@ test('la empresa escribe la leyenda y el campo cuenta sus caracteres', async ({ 
   await campo.fill('x'.repeat(121))
   await expect(page.getByText('121 de 120.')).toBeVisible()
   await expect(page.getByText('La leyenda admite hasta 120 caracteres.')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Guardar leyenda' })).toBeDisabled()
+  // «Guardar» de la barra no la envía: el motivo sigue junto al campo.
+  await guardar(page).click()
+  await expect(page.getByText('La leyenda admite hasta 120 caracteres.')).toBeVisible()
   await capturar(page, info, 'leyenda-pasada')
 
   await campo.fill(LEYENDA)
-  await page.getByRole('button', { name: 'Guardar leyenda' }).click()
+  await guardar(page).click()
   await expect(page.getByText('Leyenda guardada')).toBeVisible()
   await expect(page.getByLabel('Leyenda', { exact: true })).toHaveValue(LEYENDA)
+  await expect(page.getByRole('region', { name: 'Cambios sin guardar' })).toHaveCount(0)
   await capturar(page, info, 'leyenda-guardada')
 })
 
 test('dos versiones de la fila dan el conflicto y lo escrito queda', async ({ page }) => {
   await entrar(page, duena)
-  await page.goto('/configuracion/empresa?seccion=monedas')
+  await page.goto('/configuracion/empresa/monedas')
   const campo = page.getByLabel('Leyenda', { exact: true })
   await expect(campo).toHaveValue(LEYENDA)
   // Otra persona guarda la fila mientras esta pantalla sigue abierta.
@@ -97,7 +104,7 @@ test('dos versiones de la fila dan el conflicto y lo escrito queda', async ({ pa
     .eq('id', 1)
   expect(error).toBeNull()
   await campo.fill('Mi leyenda tardía')
-  await page.getByRole('button', { name: 'Guardar leyenda' }).click()
+  await guardar(page).click()
   await expect(
     page.getByText('Otra persona cambió los ajustes de la empresa mientras los editabas.'),
   ).toBeVisible()
@@ -114,9 +121,9 @@ test('sin permiso para los tipos de cambio el campo de la leyenda está apagado 
   page,
 }) => {
   await entrar(page, ajustista)
-  await page.goto('/configuracion/empresa?seccion=monedas')
+  await page.goto('/configuracion/empresa/monedas')
   await expect(page.getByLabel('Leyenda', { exact: true })).toBeDisabled()
-  await expect(page.getByRole('button', { name: 'Guardar leyenda' })).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Cambios sin guardar' })).toHaveCount(0)
   await expect(
     page
       .getByText(

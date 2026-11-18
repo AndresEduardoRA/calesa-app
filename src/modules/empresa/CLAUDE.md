@@ -4,7 +4,9 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
 
 ## Entra y sale
 
-- Entra: Configuración › Empresa (`/configuracion/empresa`): ajustes y logo. Configuración › Cotización › Ajustes (`?seccion=ajustes`): la vigencia de
+- Entra: Configuración › Empresa, cuatro sub-rutas (`src/app/(app)/configuracion/empresa/`): «Datos de la empresa» (`/configuracion/empresa`:
+  `FormularioEmpresa` e `IconosDeLaApp`), «Monedas y tipos de cambio» (`/monedas`: `MonedasYTiposCambio`), «Integraciones» (`/integraciones`:
+  `Integraciones`), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Cotización › Ajustes (`?seccion=ajustes`): la vigencia de
   las cotizaciones (si el vehículo y el lead son obligatorios se decide por rol y origen, en «Roles y permisos»).
 - Sale (`index.ts`, **sin componentes**):
   - `getAjustes()`: lo mínimo de la empresa (nombre, logos, color, íconos, formato regional, zona, moneda base, registro abierto, primer registro), una
@@ -66,6 +68,8 @@ quien lo hizo, nunca el correo.
 - Toda edición manda `actualizado_en`; otra es `PT409`. La fila de ajustes la editan el formulario, los íconos y los ajustes de cotización con la
   misma versión (guardar en una deja con `PT409` a la otra), y la de apibara también tres partes: la versión llega por props y cada parte lleva de
   `key` lo que muestra (`huellaDelFormulario()`).
+- Datos de la empresa y la «Leyenda al compartir» guardan con la barra de cambios sin guardar (hermana del formulario, `order-last`); mientras guarda la
+  barra no mide (el `<fieldset>` apagado vacía `FormData`) y vuelve a medir al terminar.
 - Los íconos se dibujan desde el logo **guardado** y se suben al confirmar la vista previa; su dirección es el hash y cambia al regenerar.
 - El logo se sube al guardar: si la fila no se guarda, se descarta el subido; si se guarda, el anterior; siempre por `storage_refcount`. El logo oscuro
   viaja en el mismo guardado (`guardarConLogos()`): un subido que ya es uno de los guardados, o un anterior que pasa al otro espacio, no se descarta.
@@ -107,9 +111,11 @@ valor}`, la misma revalidación): sin el permiso o con el Modo Live no hay lápi
 
 - `ajustes_empresa` sólo la lee `authenticated`; acceso y manifest corren como `anon`, por eso `getAjustes()` va por `web.ajustes_acceso()` con
   columnas contadas. Una columna necesaria antes de ingresar se suma ahí, no con un grant a `anon`.
-- No hay permiso de «ver»: abre la pantalla quien tiene `empresa.ajustes.gestionar`, `empresa.tipos_cambio.gestionar` o el permiso de alguna pestaña
-  de un área (`PERMISOS_DE_EMPRESA`); lo que no puede editar, deshabilitado con el motivo. Una pestaña de un área (hoy «Comprobantes»,
-  `configuracion/empresa/comprobantes/`, con `empresa.ajustes.gestionar`) sólo pide claves de la entrada «Configuración» de `NAVEGACION`.
+- No hay permiso de «ver»: abre Empresa quien tiene `empresa.ajustes.gestionar` o `empresa.tipos_cambio.gestionar` (`PERMISOS_DE_EMPRESA`, la unión
+  de sus sub-secciones, en `configuracion/empresa/seccion.ts`); lo que no puede editar, deshabilitado con el motivo. Empresa no tiene pestañas:
+  cada parte es una sub-ruta. La del área de comprobantes (`configuracion/empresa/comprobantes/subseccion.ts`, con `empresa.ajustes.gestionar`) va
+  apagada con su motivo para quien no la abre y sólo pide claves de la entrada «Configuración» de `NAVEGACION`. Las URLs con `?seccion=`, `?tc=`,
+  `?moneda=` o `?panel=` en la raíz redirigen a su sub-ruta (`url-vieja.ts`); cada action revalida la sub-ruta dueña de su dato.
 - `<Marca>` y `<EstiloDeMarca>` viven en `src/shared/ui` y reciben todo por props. El color entra como `<style>` con `:root` y `.dark`.
 - El secreto va a Vault por `integracion_guardar_secreto()`; la app sólo lee `integraciones.secreto_guardado_en`; `integraciones.config` lleva lo no
   secreto. Variables de entorno sólo para infraestructura del despliegue (`docs/DECISIONES.md`).

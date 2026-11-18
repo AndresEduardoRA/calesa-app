@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef } from 'react'
+import { cn } from 'cn'
+import { useEffect, useRef } from 'react'
 import { Button } from './button'
 import { ConfirmarDescarte } from './confirmar-descarte'
 import { useSalidaConCambios } from './use-salida-con-cambios'
@@ -11,6 +12,27 @@ type Props = {
   formulario: string
   guardando?: boolean
   alDescartar: () => void
+  // Se suma a la de la barra. `order-last` la deja al final de la grilla de la página cuando su formulario no es lo último (sigue
+  // después de él en el DOM y en el orden del Tab).
+  className?: string
+}
+
+// Lo que queda entre el campo con el foco y la barra cuando hay que desplazar para que no lo tape.
+const AIRE_SOBRE_LA_BARRA = 8
+
+// La barra aparece con la primera tecla, pegada abajo: si el campo donde se escribe estaba en el borde de la pantalla, quedaría debajo
+// de ella y no se vería lo tipeado. Al aparecer, desplaza lo justo para dejarlo a la vista.
+function dejarAlaVistaElCampoConFoco(barra: HTMLElement): void {
+  const campo = document.activeElement
+  if (!(campo instanceof HTMLElement) || barra.contains(campo)) {
+    return
+  }
+  const deLaBarra = barra.getBoundingClientRect()
+  const delCampo = campo.getBoundingClientRect()
+  const tapado = delCampo.bottom + AIRE_SOBRE_LA_BARRA - deLaBarra.top
+  if (tapado > 0 && delCampo.top < deLaBarra.bottom) {
+    window.scrollBy({ top: tapado })
+  }
 }
 
 // La barra de un formulario de página (no de un `<Drawer>`, que tiene su pie): aparece al cambiar algo («Tienes cambios sin
@@ -22,9 +44,22 @@ export function BarraDeCambiosSinGuardar({
   formulario,
   guardando = false,
   alDescartar,
+  className,
 }: Props) {
   const barra = useRef<HTMLDivElement>(null)
   const { pendiente, seguir, descartar } = useSalidaConCambios(hayCambios, alDescartar, barra)
+  useEffect(() => {
+    const elemento = barra.current
+    if (!hayCambios || !elemento) {
+      return
+    }
+    const cuadro = requestAnimationFrame(() => {
+      dejarAlaVistaElCampoConFoco(elemento)
+    })
+    return () => {
+      cancelAnimationFrame(cuadro)
+    }
+  }, [hayCambios])
   if (!hayCambios) {
     return null
   }
@@ -34,7 +69,10 @@ export function BarraDeCambiosSinGuardar({
       role="region"
       aria-label="Cambios sin guardar"
       data-pie-de-panel
-      className="sticky bottom-0 z-10 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-(--shadow-md)"
+      className={cn(
+        'sticky bottom-0 z-10 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-(--shadow-md)',
+        className,
+      )}
     >
       {pendiente ? (
         <ConfirmarDescarte alSeguir={seguir} alDescartar={descartar} />

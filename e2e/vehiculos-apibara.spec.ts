@@ -189,7 +189,7 @@ test('con apibara apagada el alta sigue a mano', async ({ page }) => {
   await expect(panel.getByLabel('Enlaces, VIN o lotes')).toHaveCount(0)
   await expect(panel.getByRole('link', { name: 'Ir a Integraciones' })).toHaveAttribute(
     'href',
-    '/configuracion/empresa?seccion=integraciones',
+    '/configuracion/empresa/integraciones',
   )
 
   await panel.getByLabel('Título (obligatorio)').fill('Cargado a mano, sin apibara')

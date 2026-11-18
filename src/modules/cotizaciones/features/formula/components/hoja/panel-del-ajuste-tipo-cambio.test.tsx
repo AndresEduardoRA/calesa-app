@@ -120,7 +120,7 @@ describe('PanelDelAjuste de un tipo de cambio: lo que muestra mientras lee', () 
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ir a Monedas' })).toHaveAttribute(
       'href',
-      '/configuracion/empresa?seccion=monedas',
+      '/configuracion/empresa/monedas',
     )
     expect(screen.queryByLabelText('Valor nuevo')).not.toBeInTheDocument()
   })

@@ -53,7 +53,7 @@ export function PieDelPopover({
       )}
       {puedeGestionar ? (
         <Link
-          href={`${RUTAS.empresa}?seccion=monedas` as Route}
+          href={RUTAS.monedasDeEmpresa as Route}
           onClick={alCerrar}
           className="inline-flex min-h-11 items-center text-(length:--text-sm) font-medium text-(--color-primario-ink) underline-offset-4 outline-none hover:underline focus-visible:shadow-(--shadow-focus) md:min-h-0"
         >

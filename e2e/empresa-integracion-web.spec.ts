@@ -57,7 +57,7 @@ test('E2E escritorio · encender la web pública, guardar dirección y secreto, 
 }) => {
   const secreto = `e2e-revalidar-${randomBytes(8).toString('hex')}`
   await entrar(page, duena, { fresco: true })
-  await page.goto('/configuracion/empresa?seccion=integraciones')
+  await page.goto('/configuracion/empresa/integraciones')
   const web = page.locator('details', { has: page.getByText('Web pública', { exact: true }) })
   const activa = web.getByRole('switch', { name: 'Activa' })
 

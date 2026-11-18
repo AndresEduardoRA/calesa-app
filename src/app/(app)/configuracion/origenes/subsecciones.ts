@@ -9,11 +9,8 @@ export const CLAVES_DE_PARTE_DEL_ORIGEN = ['datos', 'campos', 'categorias'] as c
 
 export type ParteDelOrigen = (typeof CLAVES_DE_PARTE_DEL_ORIGEN)[number]
 
-export type SubseccionDeOrigen = SubseccionDeConfiguracion & {
-  clave: ParteDelOrigen
-  // Una frase: qué se configura ahí. La página la dice debajo del nombre del origen.
-  descripcion: string
-}
+// Su `descripcion` (una frase: qué se configura ahí) la dice la página debajo del nombre del origen.
+export type SubseccionDeOrigen = SubseccionDeConfiguracion & { clave: ParteDelOrigen }
 
 export const SUBSECCIONES_DE_ORIGEN = [
   {
