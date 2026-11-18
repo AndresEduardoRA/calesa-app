@@ -40,8 +40,8 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
 // crece va por «Ver todos» y «Ver más». Antes se medía por sección: «Datos» 43 y «Oportunidades» con 10, 66.
 export const PRESUPUESTO_DE_LA_FICHA_EN_KB = 138
 
-// Lo que viaja (RSC) al abrir la ficha desde «Abrir ficha» del resumen del listado, en KB (`e2e/leads-ficha.spec.ts`): medido 30,7 en
-// escritorio y 36,6 en el celular con el lead de la semilla de ese spec (T33); sobre lo mayor más un 5 %, a la unidad. Antes, 40 escrito en el spec.
+// Lo que viaja (RSC) al abrir la ficha desde el nombre de una fila del listado (sin prefetch: todo con el clic), en KB (`e2e/leads-ficha.spec.ts`):
+// medido 30,7 en escritorio y 36,6 en el celular con el lead de la semilla de ese spec; sobre lo mayor más un 5 %, a la unidad.
 export const PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB = 39
 
 // Lo que la ficha de un vehículo (T34, en dos columnas) aporta al documento sobre `/perfil`, en KB: con 60 documentos y 600 cotizaciones pesa lo

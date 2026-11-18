@@ -75,16 +75,13 @@ test('la cartera ve su ficha: teléfono completo, quién lo tiene y sus datos', 
   await expect(page.locator('main details')).toHaveCount(0)
 })
 
-test('desde el drawer del listado: «Abrir ficha» lleva a la ficha, ya con el nombre vigente', async ({
+test('desde el listado: el nombre de la fila lleva a la ficha, ya con el nombre vigente', async ({
   page,
 }) => {
   const id = await idDeLead(PROPIO_BERTA)
   await entrar(page, t.personas.berta)
   await irALeads(page)
-  await aLaVista(page.getByText(nombre(PROPIO_BERTA), { exact: true })).click()
-  const drawer = page.getByRole('dialog', { name: nombre(PROPIO_BERTA) })
-  await expect(drawer).toBeVisible()
-  await drawer.getByRole('link', { name: 'Abrir ficha' }).click()
+  await aLaVista(page.getByRole('link', { name: nombre(PROPIO_BERTA), exact: true })).click()
   await expect(page).toHaveURL(new RegExp(`/leads/${id}$`))
   await expect(tituloDeLaFicha(page, nombre(PROPIO_BERTA))).toBeVisible()
 })
@@ -243,11 +240,8 @@ test('abrir la ficha trae poco: lo que aporta sobre el resto de la pantalla y lo
     rsc += (await respuesta.body()).length
     await ruta.fulfill({ response: respuesta })
   })
-  await aLaVista(page.getByText(nombre(PROPIO_BERTA), { exact: true })).click()
-  await page
-    .getByRole('dialog', { name: nombre(PROPIO_BERTA) })
-    .getByRole('link', { name: 'Abrir ficha' })
-    .click()
+  // El enlace del nombre de la fila, sin prefetch: todo lo que viaja, viaja con el clic.
+  await aLaVista(page.getByRole('link', { name: nombre(PROPIO_BERTA), exact: true })).click()
   await expect(tituloDeLaFicha(page, nombre(PROPIO_BERTA))).toBeVisible()
   await expect.poll(() => rsc).toBeGreaterThan(0)
 

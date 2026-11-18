@@ -7,7 +7,6 @@ import { exigir } from './soporte/leads'
 import { irAFicha, nuevoLead } from './soporte/leads-ficha'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import {
-  fila,
   irALeads,
   limpiarListado,
   nombre,
@@ -170,22 +169,19 @@ test('con más de cinco, el aviso muestra cinco y dice «y 1 más» con «Ver to
   await capturar(page, info, 'aviso-con-mas-de-cinco')
 })
 
-test('desde el resumen: el aviso, «Crear igual» y «Ver oportunidades»', async ({ page }, info) => {
-  const lead = await leadConBase(`Aviso Resumen ${info.project.name}`)
+test('desde el «⋯» de la fila: el aviso, «Crear igual» y «Ver oportunidades»', async ({
+  page,
+}, info) => {
+  const lead = await leadConBase(`Aviso Fila ${info.project.name}`)
   await entrar(page, t.personas.berta)
   await irALeads(page, conElLead(lead.nombre))
-  await fila(page, lead.nombre.replace(/^E2E /, '')).click()
-  const resumen = page.getByRole('dialog', { name: lead.nombre })
-  await expect(resumen).toBeVisible()
-  await resumen.getByRole('button', { name: `Más acciones de ${lead.nombre}` }).click()
-  await elegir(page.getByRole('menu'), 'Nueva oportunidad…')
+  await elegir(await abrirMenuDelLead(page, lead.nombre), 'Nueva oportunidad…')
   await expect(page).toHaveURL(/panel=oportunidad-rapida/)
   await expect(modal(page).getByText('ya tiene oportunidades')).toBeVisible()
   await crearIgual(page, lead.nombre)
   expect(await deLaBase(lead.id)).toHaveLength(2)
 
-  await resumen.getByRole('button', { name: `Más acciones de ${lead.nombre}` }).click()
-  await elegir(page.getByRole('menu'), 'Ver oportunidades')
+  await elegir(await abrirMenuDelLead(page, lead.nombre), 'Ver oportunidades')
   await expect(page).toHaveURL(new RegExp(`/leads/${lead.id}\\?seccion=oportunidades`))
 })
 

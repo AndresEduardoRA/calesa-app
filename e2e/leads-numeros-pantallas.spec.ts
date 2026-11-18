@@ -8,7 +8,6 @@ import { exigir, vincular } from './soporte/leads'
 import { irAFicha } from './soporte/leads-ficha'
 import { rpcComo } from './soporte/leads-cartera'
 import { delLead, fila, irALeads } from './soporte/leads-listado'
-import { quieto } from './soporte/recorrido'
 import {
   embudoPorDefecto,
   irAlEmbudo,
@@ -31,7 +30,7 @@ import { formatearNumero } from '../src/shared/lib/formato'
 
 // El resto de las pantallas que dibujan el número de un lead (9f-2), con la dueña (con
 // `leads.numero_global.ver`) y con Ana, la asesora de la semilla (sin él): el kanban, la papelera, el
-// vehículo con su lead vinculado, la búsqueda «#n» y el archivo exportado. El listado, la ficha y el drawer
+// vehículo con su lead vinculado, la búsqueda «#n» y el archivo exportado. El listado y la ficha
 // están en `leads-numeros-recorrido.spec.ts`. Capturas: `E2E_CAPTURAS=e2e-capturas/9f-2b`.
 //
 // 9g: la dueña mira un lead que creó Ana en cada superficie y **nunca** lee «Tu n.º» (el 2 era de Ana): el propio
@@ -229,12 +228,6 @@ test('F · la dueña mira un lead de Ana: el propio lleva su nombre; con el nomb
   await irALeads(page, `${busqueda(nombreCorto())}&alcance=todos`)
   await expect(fila(page, nombreCorto())).toBeVisible()
   await sinTu(page)
-  await fila(page, nombreCorto()).click()
-  const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(
-    drawer.getByText(new RegExp(`N\\.º ${escrito(PROPIO)} · ${r.ana.nombre}`)),
-  ).toBeVisible()
-  await sinTu(drawer)
   await irAFicha(page, r.uno.id)
   await expect(
     page.getByText(new RegExp(`N\\.º ${escrito(PROPIO)} · ${r.ana.nombre}`)).first(),
@@ -251,15 +244,6 @@ test('F · la dueña mira un lead de Ana: el propio lleva su nombre; con el nomb
     ).toBeVisible()
     await sinTu(page)
     await capturar(page, info, 'duena-ficha-sin-nombre')
-    await irALeads(page, `${busqueda(nombreCorto())}&alcance=todos`)
-    await fila(page, nombreCorto()).click()
-    const delDrawer = page.getByRole('dialog', { name: r.uno.nombre })
-    await expect(
-      delDrawer.getByText(new RegExp(`N\\.º ${escrito(PROPIO)} · Otra persona`)),
-    ).toBeVisible()
-    await quieto(delDrawer)
-    await sinTu(page)
-    await capturar(page, info, 'duena-drawer-sin-nombre')
   } finally {
     const reponer = await admin()
       .from('perfiles')
