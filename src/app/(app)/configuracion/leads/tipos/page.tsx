@@ -7,8 +7,8 @@ import { SeccionTipos } from './seccion'
 
 export const metadata: Metadata = { title: TIPOS_DE_LEAD.titulo }
 
-// Configuración › Leads › Tipos de lead: los tipos de lead (`leads.configurar`). Cada panel tiene su URL (`?panel=`, `?tipo=`). Sin su permiso se ve apagada en el menú y esta URL abre
-// la primera sub-sección que se puede abrir (`abrir.ts`).
+// Configuración › Leads › Tipos de lead: los tipos de lead (`leads.configurar`). Cada panel tiene su URL (`?panel=`, `?tipo=`).
+// Sin su permiso, a la primera sub-sección abierta (`abrir.ts`).
 export default async function PaginaTiposDeLead() {
   const { sinPermiso } = await abrirSubseccionDeLeads('tipos')
   if (sinPermiso) {

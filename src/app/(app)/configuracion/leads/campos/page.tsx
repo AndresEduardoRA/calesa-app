@@ -8,8 +8,8 @@ import { SeccionCampos } from './seccion'
 // «Campos» a secas se repetiría con otras pantallas en la pestaña del navegador.
 export const metadata: Metadata = { title: 'Campos de los leads' }
 
-// Configuración › Leads › Campos: el layout de los campos de los leads (`leads.campos.gestionar`). Sin su permiso se ve apagada en el menú y esta URL abre
-// la primera sub-sección que se puede abrir (`abrir.ts`).
+// Configuración › Leads › Campos: el layout de los campos de los leads (`leads.campos.gestionar`).
+// Sin su permiso, a la primera sub-sección abierta (`abrir.ts`).
 export default async function PaginaCamposDeLeads() {
   const { sinPermiso } = await abrirSubseccionDeLeads('campos')
   if (sinPermiso) {

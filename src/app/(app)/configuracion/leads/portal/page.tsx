@@ -7,8 +7,8 @@ import { SeccionMensajeDelPortal } from './seccion'
 
 export const metadata: Metadata = { title: MENSAJE_DEL_PORTAL.titulo }
 
-// Configuración › Leads › Mensaje del portal: el texto que se le pasa al cliente con su acceso al portal (`leads.configurar`). Sin su permiso se ve apagada en el menú y esta URL abre
-// la primera sub-sección que se puede abrir (`abrir.ts`).
+// Configuración › Leads › Mensaje del portal: el texto que se le pasa al cliente con su acceso al portal (`leads.configurar`).
+// Sin su permiso, a la primera sub-sección abierta (`abrir.ts`).
 export default async function PaginaMensajeDelPortal() {
   const { sinPermiso } = await abrirSubseccionDeLeads('portal')
   if (sinPermiso) {

@@ -7,8 +7,8 @@ import { SeccionTelefonosExtra } from './seccion'
 
 export const metadata: Metadata = { title: TELEFONOS_EXTRA.titulo }
 
-// Configuración › Leads › Teléfonos extra: el máximo de teléfonos extra y si cuentan como el principal (`leads.configurar`). Sin su permiso se ve apagada en el menú y esta URL abre
-// la primera sub-sección que se puede abrir (`abrir.ts`).
+// Configuración › Leads › Teléfonos extra: el máximo de teléfonos extra y si cuentan como el principal (`leads.configurar`).
+// Sin su permiso, a la primera sub-sección abierta (`abrir.ts`).
 export default async function PaginaTelefonosExtra() {
   const { sinPermiso } = await abrirSubseccionDeLeads('telefonos')
   if (sinPermiso) {

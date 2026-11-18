@@ -7,8 +7,8 @@ import { SeccionOrigenes } from './seccion'
 
 export const metadata: Metadata = { title: ORIGENES_DE_LEADS.titulo }
 
-// Configuración › Leads › Orígenes del lead: los orígenes del lead (`leads.configurar`). Cada panel tiene su URL (`?panel=`, `?origen=`). Sin su permiso se ve apagada en el menú y esta URL abre
-// la primera sub-sección que se puede abrir (`abrir.ts`).
+// Configuración › Leads › Orígenes del lead: los orígenes del lead (`leads.configurar`). Cada panel tiene su URL (`?panel=`, `?origen=`).
+// Sin su permiso, a la primera sub-sección abierta (`abrir.ts`).
 export default async function PaginaOrigenesDeLeads() {
   const { sinPermiso } = await abrirSubseccionDeLeads('origenes')
   if (sinPermiso) {
