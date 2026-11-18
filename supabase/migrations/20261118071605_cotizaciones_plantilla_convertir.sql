@@ -222,7 +222,7 @@ begin
   v_et := p_plantilla -> 'total' ->> 'etiqueta';
   v_ley := coalesce(p_plantilla -> 'total' ->> 'leyenda', '');
   v_piezas := jsonb_build_array(
-    public._plantilla_pieza(v_desde, 'concepto', null, jsonb_build_object('tipo', 'texto', 'texto', v_et), jsonb_build_object('tamano', 16, 'negrita', true, 'bordes', v_fino), v_et, null),
+    public._plantilla_pieza(v_desde, 'concepto', null, jsonb_build_object('tipo', 'texto', 'texto', v_et), jsonb_build_object('tamano', 14, 'negrita', true, 'bordes', v_fino), v_et, null),
     public._plantilla_pieza('monto', null, null, case when v_total is null then '{"tipo": "vacio"}'::jsonb else jsonb_build_object('tipo', 'dato', 'nodo', v_total, 'mostrar', 'monto') end,
                             jsonb_build_object('tamano', 14, 'negrita', true, 'alinear', 'derecha', 'bordes', v_fino), null, 2));
   if 'leyenda' = any (v_ids) then

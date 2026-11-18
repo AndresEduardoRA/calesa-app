@@ -117,7 +117,8 @@ function total(c: Conversion): void {
       columna: desde,
       hasta: 'concepto',
       contenido: texto(etiqueta),
-      estilo: { tamano: 16, negrita: true, bordes: FINO },
+      // Del tamaño del monto: los dos en el mismo renglón (también al leer el PDF).
+      estilo: { tamano: 14, negrita: true, bordes: FINO },
       medida: etiqueta,
     },
     {
