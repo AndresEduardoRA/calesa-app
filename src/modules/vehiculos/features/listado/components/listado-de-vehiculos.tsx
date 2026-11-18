@@ -8,21 +8,17 @@ import type { ConteoAcotado } from '@/shared/lib/conteo'
 import type { Pagina } from '@/shared/lib/paginacion'
 import { Aviso } from '@/shared/ui/aviso'
 import { FilterShell } from '@/shared/ui/filtros'
-import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import type { VistaDeLista } from '@/shared/lib/vista-de-lista'
 import type { AlcanceDeAvisos } from '../../../entities/avisos-de-vehiculo'
 import type { AprobadasDeLaPagina } from '../../../entities/cotizacion-aprobada-de-la-fila'
 import { camposFiltrables } from '../../../entities/filtros'
 import type { PermisoDeAlta } from '../../../entities/permisos'
-import type { ParaRelacionados } from '../../../entities/acciones-de-relacionados'
 import type { ParaCotizar } from '../../../entities/ruta-para-cotizar'
 import type { Vehiculo } from '../../../entities/vehiculo'
 import type { PermisoDeVitrina } from '../../../entities/vitrina'
 import { BotonNuevoVehiculo, ID_DEL_MOTIVO_DE_ALTA } from '../../alta/components/botones'
 import type { DisponibilidadDeApibara } from '../../../entities/apibara'
 import { PanelDeVehiculo } from '../../alta/components/panel-de-vehiculo'
-import { ResumenDeVehiculoDiferido } from '../../resumen/components/diferidos'
-import { useResumenDeVehiculo } from '../../resumen/hooks/use-resumen-de-vehiculo'
 import { useVistaDelInventario } from '../hooks/use-vista-del-inventario'
 import { AtajoSinResolver } from './atajo-sin-resolver'
 import { PestanasDeOrigen } from './pestanas-de-origen'
@@ -62,9 +58,7 @@ type Props = DatosDelOrigen & {
   apibara: DisponibilidadDeApibara
   // Si puede publicar en la web lo de este origen.
   publicar: PermisoDeVitrina
-  // El bloque «Relacionados» del resumen y lo que sus acciones necesitan de `cotizaciones` y `leads` (lo arma `src/app`); nulo sin `leads.ver`: el resumen no lo dibuja.
-  para: ParaRelacionados | null
-  // «Cotizar» del resumen: la hoja de cotizar de este origen, o null si no cotiza en él (lo decide la página).
+  // «Cotizar vehículo» del «⋯» de la fila: la hoja de cotizar de este origen, o null si no cotiza en él (lo decide la página).
   paraCotizar: ParaCotizar | null
   // Tabla o tarjetas en escritorio, lo que eligió la última vez (`vehiculos.vista`); null = nunca eligió.
   vistaPreferida: VistaDeLista | null
@@ -107,14 +101,15 @@ function MotivoDeAlta({
   )
 }
 
-// La lista con las marcas de «visto» de su página (una lectura) y el abierto marcado al abrirse.
+// La lista con las marcas de «visto» de su página (una lectura). Ninguno queda abierto acá: abrir un vehículo es ir a su ficha, que registra
+// la visita (`RegistrarVisto`), y la lista relee las marcas al volver.
 function ResultadoConVistos(props: ComponentProps<typeof ResultadoDelListado>) {
   return (
     <ProveedorDeMarcasDeVisto
       modulo="vehiculos"
       tipo="vehiculo"
       ids={props.pagina.filas.map((fila) => fila.id)}
-      abierto={props.abierto}
+      abierto={null}
     >
       <ResultadoDelListado {...props} />
     </ProveedorDeMarcasDeVisto>
@@ -146,32 +141,17 @@ function rutaDeAltaEnLaHoja(para: ParaCotizar): string {
   return `${camino}?${parametros.toString()}`
 }
 
-// El inventario: una pestaña por origen y, adentro, los filtros de ese origen, su lista y el
+// El inventario: una pestaña por origen y, adentro, los filtros de ese origen, su lista (cada vehículo, un enlace a su ficha) y el
 // panel de alta y edición. Todo el estado (origen, filtros, página, panel) vive en la URL. `vistas` y `verPapelera` van a «Vista y opciones»
 // con `props`: acá sólo se apartan de lo que viaja al resto.
 export function ListadoDeVehiculos(props: Props) {
   const { origenes, esquema, vistas: _v, puedeConfigurarCampos, permisoDeAlta, ...demas } = props
-  const { verPapelera: _p, enEdicion, apibara, para, paraCotizar, porPagina, ...otros } = demas
+  const { verPapelera: _p, enEdicion, apibara, paraCotizar, porPagina, ...otros } = demas
   const { vistaPreferida, ...resto } = otros
   const vista = useVistaDelInventario(vistaPreferida)
   const opciones = useOpcionesDelListado({ ...props, origenId: props.origen.id, vista })
-  const { origen, campos, categorias, fases, vitrina, limpiezaHoy, pagina, editables } = resto
+  const { origen, campos, categorias } = resto
   const nuevo = <BotonNuevoVehiculo origen={origen} permiso={permisoDeAlta} />
-  const resumen = useResumenDeVehiculo()
-  // El resumen llega recién al abrirse (`diferido()`) y, una vez visto, queda montado para irse con su animación.
-  const resumenMontado = useAbiertoAlgunaVez(resumen.id !== null)
-  // El panel de edición va una vez por pantalla: con el resumen abierto se dibuja adentro (se apila encima: Esc, «Cancelar» y guardar
-  // cierran sólo el panel y el resumen queda debajo); sin él, solo.
-  const panel = (
-    <PanelDeVehiculo
-      origen={origen}
-      campos={campos}
-      categorias={categorias}
-      puedeCrear={permisoDeAlta.estado === 'habilitado'}
-      enEdicion={enEdicion}
-      apibara={apibara}
-    />
-  )
   return (
     <div className="grid gap-4">
       {/* El título de la página para quien lee en voz alta: la barra de filtros ocupa la cabecera (como en `/leads`). */}
@@ -197,32 +177,18 @@ export function ListadoDeVehiculos(props: Props) {
           {...resto}
           esquema={esquema}
           vista={vista.vista}
-          alAbrir={resumen.abrir}
-          abierto={resumen.id}
+          paraCotizar={paraCotizar}
           accionDeVacio={permisoDeAlta.estado === 'habilitado' ? nuevo : undefined}
         />
       </FilterShell>
-      {resumenMontado ? (
-        <ResumenDeVehiculoDiferido
-          origen={origen}
-          campos={campos}
-          fases={fases}
-          categorias={categorias}
-          vitrina={vitrina}
-          limpiezaHoy={limpiezaHoy}
-          filas={pagina.filas}
-          editables={new Set(editables)}
-          eliminables={new Set(resto.eliminables)}
-          leadsVisibles={new Set(resto.leadsVisibles)}
-          alcance={resto.alcance}
-          publicar={resto.publicar}
-          para={para}
-          paraCotizar={paraCotizar}
-        >
-          {panel}
-        </ResumenDeVehiculoDiferido>
-      ) : null}
-      {resumen.id === null ? panel : null}
+      <PanelDeVehiculo
+        origen={origen}
+        campos={campos}
+        categorias={categorias}
+        puedeCrear={permisoDeAlta.estado === 'habilitado'}
+        enEdicion={enEdicion}
+        apibara={apibara}
+      />
     </div>
   )
 }

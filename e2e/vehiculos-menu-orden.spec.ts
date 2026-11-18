@@ -7,30 +7,32 @@ import { vehiculoPorTitulo } from './soporte/vehiculos'
 import {
   OTRO,
   TITULO,
-  abrirConUnClic,
   alInventario,
-  limpiarResumen,
-  prepararResumen,
-  resumenDe,
-  type TerrenoDelResumen,
-} from './soporte/vehiculos-resumen'
+  enlaceDe,
+  limpiarLista,
+  prepararLista,
+  type TerrenoDeLaLista,
+} from './soporte/vehiculos-lista'
 
-// El «⋯» de un vehículo, el mismo en la fila, la tarjeta, el resumen y la ficha (9i): «Editar» y «Publicar en la web…» arriba y, separada,
-// «Enviar a la papelera». «Editar» es un botón en el resumen y en la ficha; lo que una persona no puede hacer no aparece (y la papelera,
-// si ya se sabe que no va, se ve apagada con el motivo). Capturas: `E2E_CAPTURAS=e2e-capturas/9i`.
+// El «⋯» de un vehículo, el mismo en la fila, la tarjeta y la ficha (9i): «Editar», «Cotizar vehículo» (sólo la fila y la tarjeta) y
+// «Publicar en la web…» arriba y, separada, «Enviar a la papelera». «Editar» es un botón en la ficha; lo que una persona no puede hacer no
+// aparece (y la papelera, si ya se sabe que no va, se ve apagada con el motivo). Capturas: `E2E_CAPTURAS=e2e-capturas/9i`.
 test.describe.configure({ mode: 'serial' })
 
-let t: TerrenoDelResumen
+let t: TerrenoDeLaLista
 
 test.beforeAll(async ({}, info) => {
-  t = await prepararResumen(`${info.project.name}_menu`, [
+  // Con las dos claves de cotizar, la fila ofrece «Cotizar vehículo» (T335) sea la dueña de prueba la primera del equipo o una invitada.
+  t = await prepararLista(`${info.project.name}_menu`, [
     'vehiculos.vitrina',
     'vehiculos.eliminar',
+    'cotizaciones.crear',
+    'cotizaciones.ver',
   ])
 })
 
 test.afterAll(async () => {
-  await limpiarResumen(t.id)
+  await limpiarLista(t.id)
 })
 
 async function opciones(menu: Locator): Promise<string[]> {
@@ -38,7 +40,7 @@ async function opciones(menu: Locator): Promise<string[]> {
   return textos.map((texto) => texto.trim())
 }
 
-// Abre el «⋯» que está a la vista (la fila, la tarjeta, el resumen o la ficha) y lo espera.
+// Abre el «⋯» que está a la vista (la fila, la tarjeta o la ficha) y lo espera.
 async function abrir(boton: Locator, page: Page): Promise<Locator> {
   const menu = page.getByRole('menu')
   await expect(async () => {
@@ -55,7 +57,7 @@ async function cerrar(page: Page, menu: Locator) {
   await expect(menu).toBeHidden()
 }
 
-test('con todo, el orden es el mismo en la fila, el resumen y la ficha, y la papelera va separada al final', async ({
+test('con todo, el orden es el mismo en la fila y la ficha, y la papelera va separada al final', async ({
   page,
 }, info) => {
   await entrar(page, t.terreno.duena)
@@ -63,23 +65,13 @@ test('con todo, el orden es el mismo en la fila, el resumen y la ficha, y la pap
   const deLaFila = await abrir(menuDeVehiculo(page, TITULO), page)
   expect(await opciones(deLaFila)).toEqual([
     'Editar',
+    'Cotizar vehículo',
     'Publicar en la web…',
     'Enviar a la papelera',
   ])
   await expect(deLaFila.getByRole('separator')).toHaveCount(1)
   await capturar(page, info, 'menu-del-vehiculo-fila')
   await cerrar(page, deLaFila)
-
-  // En el resumen «Editar» es el botón; el «⋯» lleva el resto, en el mismo orden.
-  const resumen = await abrirConUnClic(page, TITULO)
-  const delResumen = await abrir(
-    resumen.getByRole('button', { name: `Más acciones de ${TITULO}` }),
-    page,
-  )
-  expect(await opciones(delResumen)).toEqual(['Publicar en la web…', 'Enviar a la papelera'])
-  await expect(delResumen.getByRole('separator')).toHaveCount(1)
-  await capturar(page, info, 'menu-del-vehiculo-resumen')
-  await cerrar(page, delResumen)
 
   await page.goto(`/vehiculos/${t.id}`)
   await expect(page.getByRole('heading', { name: TITULO, level: 1 })).toBeVisible()
@@ -109,7 +101,7 @@ test('lo que no se puede no aparece: con sólo «editar» el «⋯» tiene «Edi
 test('sin nada que ofrecer no hay «⋯»', async ({ page }) => {
   await entrar(page, t.lectorSinLeads)
   await alInventario(page, t.terreno.corea.id)
-  await expect(page.getByRole('button', { name: `Abrir ${TITULO}` }).first()).toBeAttached()
+  await expect(enlaceDe(page, TITULO)).toBeAttached()
   await expect(menuDeVehiculo(page, TITULO)).toHaveCount(0)
 })
 
@@ -158,19 +150,5 @@ test('un vehículo vinculado a un lead tiene la papelera apagada, con el motivo'
   await expect(page).toHaveURL(new RegExp(`/vehiculos\\?origen=${t.terreno.corea.id}`))
   // Lo deja como estaba para la prueba siguiente.
   await enviado.getByRole('button', { name: 'Deshacer' }).click()
-  await expect(menuDeVehiculo(page, OTRO)).toBeVisible()
-})
-
-test('enviar a la papelera desde el resumen lo cierra y ofrece «Deshacer»', async ({ page }) => {
-  await entrar(page, t.terreno.duena)
-  await alInventario(page, t.terreno.corea.id)
-  const resumen = await abrirConUnClic(page, OTRO)
-  const menu = await abrir(resumen.getByRole('button', { name: `Más acciones de ${OTRO}` }), page)
-  await menu.getByRole('menuitem', { name: 'Enviar a la papelera' }).click()
-  const aviso = page.locator('[data-sonner-toast]').filter({ hasText: 'se envió a la papelera' })
-  await expect(aviso).toBeVisible()
-  await expect(page).not.toHaveURL(/vehiculo=/)
-  await expect(resumenDe(page, OTRO)).toHaveCount(0)
-  await aviso.getByRole('button', { name: 'Deshacer' }).click()
   await expect(menuDeVehiculo(page, OTRO)).toBeVisible()
 })

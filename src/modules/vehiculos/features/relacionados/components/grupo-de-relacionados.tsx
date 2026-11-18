@@ -19,7 +19,7 @@ type Props = {
   acciones: readonly AccionDeRelacionados[]
   alElegir: (accion: AccionDeRelacionados) => void
   enCurso: boolean
-  // «Ver todos»: un enlace a la ficha (desde un resumen) o un botón que abre el drawer; null = no hay más que ver.
+  // «Ver todos»: un botón que abre el drawer; null = no hay más que ver.
   verTodos: VerTodosDeUnGrupo | null
   // Las filas ya armadas (`<li>`).
   children: React.ReactNode

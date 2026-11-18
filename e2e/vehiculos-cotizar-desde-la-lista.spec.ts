@@ -11,11 +11,11 @@ import { darRolDeLaSemilla } from './soporte/rol-de-la-semilla'
 import { limpiarGuardado, prepararGuardado } from './soporte/cotizar-guardar'
 import { literal, sql } from './soporte/sql'
 
-// «Cotizar» en el resumen de un vehículo (paso 4.14-2b, `docs/UX.md` › «Cotizar»): con permiso para cotizar en el origen, un enlace a la hoja con ese origen y ese vehículo y sin
-// lead (guardar espera al cliente: 4.14-3); sin él, el resumen no lo ofrece.
+// «Cotizar vehículo» en el «⋯» de la fila del inventario (T335, `docs/UX.md` › «Vehículos»): con permiso para
+// cotizar en el origen, lleva a la hoja con ese origen y ese vehículo y sin lead (guardar espera al cliente: 4.14-3); sin él, el «⋯» no lo ofrece.
 test.describe.configure({ mode: 'serial' })
 
-const TITULO = 'Resumen para cotizar'
+const TITULO = 'Lista para cotizar'
 let origen = { id: '', nombre: '' }
 let lectora = ''
 let asesora = ''
@@ -59,24 +59,24 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-const resumen = (page: Page) => page.getByRole('dialog', { name: TITULO, exact: true })
+// La fila (escritorio) o la tarjeta (celular) del vehículo, buscada por su texto.
+const filaDe = (page: Page) =>
+  page.locator('tbody tr, li article').filter({ hasText: TITULO }).filter({ visible: true }).first()
 
-async function abrirElResumen(page: Page, correo: string): Promise<void> {
+async function alInventario(page: Page, correo: string): Promise<void> {
   await entrar(page, correo, { fresco: true })
-  await page.goto(`/vehiculos?origen=${origen.id}&vehiculo=${vehiculo}`)
-  await expect(resumen(page)).toBeVisible()
+  await page.goto(`/vehiculos?origen=${origen.id}`)
+  await expect(filaDe(page).getByRole('link', { name: TITULO, exact: true })).toBeVisible()
 }
 
-test('E2E «Cotizar» lleva a la hoja de ese origen con el vehículo en la barra, y «Guardar» dice por qué no', async ({
+test('E2E «Cotizar vehículo» del «⋯» lleva a la hoja de ese origen con el vehículo en la barra, y «Guardar» dice por qué no', async ({
   page,
 }) => {
-  await abrirElResumen(page, asesora)
-  const cotizar = resumen(page).getByRole('link', { name: 'Cotizar' })
-  await expect(cotizar).toHaveAttribute(
-    'href',
-    `/cotizaciones/nuevo?origen=${origen.id}&vehiculo=${vehiculo}`,
-  )
-  await cotizar.click()
+  await alInventario(page, asesora)
+  await filaDe(page)
+    .getByRole('button', { name: `Más acciones de ${TITULO}` })
+    .click()
+  await page.getByRole('menu').getByRole('menuitem', { name: 'Cotizar vehículo' }).click()
   await expect(page).toHaveURL(
     new RegExp(`/cotizaciones/nuevo\\?origen=${origen.id}&vehiculo=${vehiculo}`),
   )
@@ -85,10 +85,13 @@ test('E2E «Cotizar» lleva a la hoja de ese origen con el vehículo en la barra
   await expect(page.getByText('Para guardar, elige el cliente en «Cliente».')).toBeVisible()
 })
 
-test('E2E con «ver vehículos» y sin «crear cotizaciones», el resumen no ofrece «Cotizar»', async ({
+test('E2E con «ver vehículos» y sin «crear cotizaciones», el «⋯» no ofrece «Cotizar vehículo»', async ({
   page,
 }) => {
-  await abrirElResumen(page, lectora)
-  await expect(resumen(page).getByRole('link', { name: 'Abrir ficha' })).toBeVisible()
-  await expect(resumen(page).getByRole('link', { name: 'Cotizar' })).toHaveCount(0)
+  await alInventario(page, lectora)
+  // Sin nada que ofrecer, la fila no tiene «⋯».
+  await expect(filaDe(page).getByRole('button', { name: `Más acciones de ${TITULO}` })).toHaveCount(
+    0,
+  )
+  await expect(page.getByRole('menuitem', { name: 'Cotizar vehículo' })).toHaveCount(0)
 })

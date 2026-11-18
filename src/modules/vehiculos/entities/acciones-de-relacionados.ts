@@ -22,8 +22,8 @@ export type ParaRelacionados = {
   editarLeads: boolean
 }
 
-// Dónde se dibuja el bloque: la ficha (arriba), el resumen del listado (un drawer) o la unidad de logística. Lo que abre un panel y no cabe en un resumen lleva a la ficha.
-export type LugarDeRelacionados = 'ficha' | 'resumen' | 'logistica'
+// Dónde se dibuja el bloque: la ficha (arriba) o la unidad de logística. Lo que abre un panel y no cabe en la unidad lleva a la ficha.
+export type LugarDeRelacionados = 'ficha' | 'logistica'
 
 export type AnclaDeVehiculo = {
   lado: 'vehiculo'
@@ -97,13 +97,6 @@ export const rutaDeLaFichaDelVehiculo = (id: string, panel?: string): string =>
 export const rutaDeVehiculosDelLead = (id: string, consulta = ''): string =>
   `${RUTAS.leads}/${id}?seccion=vehiculos${consulta}`
 
-// «Ver todos» de un grupo desde un resumen: la ficha del vehículo o del lead con su drawer abierto (`?relacionados=<tipo>`).
-export function rutaDeVerTodos(ancla: ContextoDeAcciones['ancla'], tipo: TipoDeRelacion): string {
-  return ancla.lado === 'vehiculo'
-    ? `${RUTAS.vehiculos}/${ancla.vehiculoId}?relacionados=${tipo}`
-    : `${RUTAS.leads}/${ancla.leadId}?relacionados=${tipo}`
-}
-
 function cotizarEnlace(
   para: ParaRelacionados,
   datos: { origenId: string; vehiculoId: string; leadId: string | null },
@@ -143,7 +136,7 @@ const QUITAR_INTERES: AccionDeRelacionados = {
   etiqueta: ETIQUETAS.quitarInteres,
 }
 
-// «Desvincular» desde un vehículo: en la ficha, su confirmación (`?panel=desvincular`); en un resumen o en la unidad, lleva a la ficha, que es donde vive.
+// «Desvincular» desde un vehículo: en la ficha, su confirmación (`?panel=desvincular`); en la unidad, lleva a la ficha, que es donde vive.
 function desvincularDelVehiculo(
   lugar: LugarDeRelacionados,
   ancla: AnclaDeVehiculo,

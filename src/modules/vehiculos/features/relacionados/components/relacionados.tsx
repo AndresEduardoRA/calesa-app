@@ -23,7 +23,7 @@ type Props<Contraparte> = {
   filasDe: (grupo: GrupoDeRelacionados<Contraparte>) => ReactNode
   // «Ver todos» de un grupo: hay más que ver (el vínculo anterior de un vehículo, o más filas) y a dónde lleva; null = nada más.
   verTodosDe: (grupo: GrupoDeRelacionados<Contraparte>) => VerTodosDeUnGrupo | null
-  // `'linea'`: un chip por grupo con su popover (los resúmenes y logística). `'compacta'`: los grupos con sus filas (las fichas).
+  // `'linea'`: un chip por grupo con su popover (logística). `'compacta'`: los grupos con sus filas (las fichas).
   presentacion: PresentacionDeRelacionados
 }
 
