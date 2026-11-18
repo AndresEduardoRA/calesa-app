@@ -344,6 +344,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **De este vehículo** — `cotizaciones_de_este_vehiculo()`, `pantallas/aprobada-de-este-vehiculo.ts` (`DeEsteVehiculo`): el bloque de una cotización (su
   página y su resumen en `/cotizaciones`) con las otras del mismo vehículo, la aprobada primero y «Aprobar esta» en cada una; la que se mira va marcada
   **«Esta»**. No es el historial del vehículo (el panel de la hoja) ni el bloque «Cotizaciones» de la ficha del vehículo.
+- **Comparar cotizaciones** — `/cotizaciones/comparar?ids=`, `entities/aprobada/comparar.ts` (`compararCotizaciones()`), `pantallas/aprobada-comparar.ts`
+  (`TablaDeComparar`): 2 o 3 cotizaciones del mismo vehículo lado a lado, **lo guardado** de cada una (su versión, sus valores y su total, sin recálculo),
+  una columna por cotización y una fila por nodo alineada por su id, con «Aprobar esta» al pie. Lo **distinto** se mide **contra la primera** columna (↑, ↓
+  o ≠). Se llega por las casillas de «De este vehículo». No es la «Celda» de la hoja ni la «tarjeta de la cotización»: en la interfaz cada columna es «la
+  cotización #N» y sus filas son de nodos.
 - **Primer resultado** — `entities/primer-resultado.ts`, `cotizaciones_aprobadas.monto` y `moneda`: lo que la hoja dibuja primero en la tarjeta del total
   (`totales.usd`, en USD). La aprobada lo lleva congelado para que la lista de vehículos lo lea sin unir cotizaciones.
 - **Papelera de cotizaciones** — `cotizaciones_papelera_*`, `cotizaciones.papelera.purgar`, `/cotizaciones/papelera`: borrado reversible por

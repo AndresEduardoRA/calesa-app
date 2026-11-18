@@ -176,6 +176,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   y el Tab recorre la página antes de volver al diálogo (duplica las teclas de una tarea de oro).
 - Un `<a href="#ancla">` que salta dentro de la página desde un menú (`⋯`) espera a que el menú termine de cerrarse antes de enfocar el
   destino: al cerrarse, el menú le devuelve el foco a su botón y pisa el salto.
+- Un título del servidor al que salta un ancla (`#…` con el foco) no se le pasa a una isla diferida para que lo dibuje: al cambiar de árbol se vuelve a
+  montar y pierde el foco. Se queda en el servidor con una ranura vacía al lado y la isla pone lo suyo ahí con `createPortal`.
 - Chrome ignora `autocomplete="off"` en un `type="password"` y el Chromium de Playwright no lo reproduce: eso sólo se comprueba a mano, no lo des por probado.
 
 ## Realtime y notificaciones

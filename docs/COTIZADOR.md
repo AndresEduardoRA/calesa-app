@@ -381,8 +381,10 @@ candado de la aprobada del vehículo (aviso). Con todo tomado vuelve a mirar ver
 moverla. Aprobar la que ya lo es no cambia nada. Deja `cotizacion.aprobada` en la actividad y devuelve `{cotizacion, anterior}`; `anterior` sólo viaja
 si quien aprueba la ve, puede aprobarla (su origen) y sigue activa (es lo que necesita «Deshacer»).
 
-**Dónde se aprueba otra:** «Aprobar» de la cabecera de la guardada, «Aprobar» del «⋯» del listado y «Aprobar esta» del bloque **De este vehículo**
-(la guardada y el resumen del listado). El bloque lee `cotizaciones_de_este_vehiculo(vehículo, tamaño, cursor)` (invocadora: una página por
+**Dónde se aprueba otra:** «Aprobar» de la cabecera de la guardada, «Aprobar» del «⋯» del listado, «Aprobar esta» del bloque **De este vehículo**
+(la guardada y el resumen del listado) y «Aprobar esta» al pie de cada columna de **Comparar cotizaciones** (`/cotizaciones/comparar`: lo guardado de
+2 o 3 del mismo vehículo, cada una con `cotizacion_hoja_guardada()` y sin `cotizacion_evaluar`, alineado por nodo en TS con el diseño y los valores ya
+recortados; nada se lee de `formulas`). El bloque lee `cotizaciones_de_este_vehiculo(vehículo, tamaño, cursor)` (invocadora: una página por
 `cotizaciones_vehiculo_creado_idx` y, sin cursor, la aprobada por `cotizaciones_aprobadas_pkey` marcada `fijada`), que trae la versión de cada fila para
 aprobarla y el nombre de su modo de tipo de cambio por `_nombre_del_modo()` (`security definer`: el nombre que ya dan la hoja y la tarjeta a quien
 tiene `cotizaciones.ver` del origen, una vez por versión y modo).

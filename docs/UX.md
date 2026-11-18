@@ -252,7 +252,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     vino; tras aprobar o releer, las elegidas que ya no están se sueltan.
   - **Comparar cotizaciones** — `/cotizaciones/comparar?ids=a,b[,c]&returnTo=` (pide sesión; cada una, `cotizaciones.ver` de su origen: lo decide la base).
     2 o 3 del mismo vehículo, **lo guardado** de cada una (su versión de la fórmula, sus valores y su total, recortados al nivel de quien mira; sin
-    recálculo), en el orden de `ids` (la primera es la referencia). Arriba, «Comparar cotizaciones», el título del vehículo (si lo ve) y «Volver» (a
+    recálculo), en el orden de `ids` (la primera es la referencia; si no se pudo leer, la primera que se leyó). Arriba, «Comparar cotizaciones» y, debajo, el título del vehículo (si lo ve) y «Volver» (a
     `returnTo` si es interno; si no, `/cotizaciones`). Una tabla con la **columna de etiquetas fija** y una columna por cotización: cabecera con «N.º N ·
     título», autor · fecha · «Fórmula vN», insignias «Aprobada», «Final», «Vencida» y el total (`<Monto>`) con su modo; después una fila por sección del
     diseño y una por nodo que quien mira ve, alineadas por nodo (el rótulo, el de la primera que lo tiene; el porcentaje de un par, su fila; lo que la
@@ -264,9 +264,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     no se ve: «Sólo se comparan 2 o 3 cotizaciones del mismo vehículo que puedas ver.» con «Volver», sin decir cuál. Esqueleto propio (`loading.tsx` y
     `<Suspense>`); si falla la lectura de las marcas, el error de la pantalla con «Reintentar»; si falla una columna, «No pudimos cargar la cotización #N.»
     con «Reintentar» en su cabecera y las demás siguen. En el celular y al 200 %, la tabla se desplaza de costado dentro de su caja con la pista de
-    desborde (cada columna de 12 rem o más; la de etiquetas, a lo sumo el 40 %) y la página no desborda; el pie queda bajo su columna.
+    desborde (cada columna de 10 rem o más; la de etiquetas, a lo sumo el 35 %) y la página no desborda; el pie queda bajo su columna.
 - **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila, «Abrir cotización», «De este vehículo» —ver
-  «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado— y debajo las
+  «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado; sus casillas y «Comparar» abren «Comparar cotizaciones» y «Volver»
+  regresa a este resumen, sin los filtros— y debajo las
   **pestañas** `?pestana=`: «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
   para guardarla, «Adjuntar»—, «Adjuntos» —los archivos y, en una final o con alguno, sus comprobantes de sólo lectura—, «Revisiones» y «Comentarios»; cada una se lee al elegirla, por
   cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
@@ -293,7 +294,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   papelera» (quien puede guardarla o, en una preventa, quien tiene `cotizaciones.moderar`; vuelve al listado con «Deshacer»). Bajo la cabecera, si
   el vehículo tiene otras que quien mira ve, «Hay 2 cotizaciones más de este vehículo · Ver» («Hay 1 cotización más…», «Hay más de 100…»): «Ver» salta al
   bloque (`#de-este-vehiculo`) con el foco en su título. Bajo la hoja, «De este vehículo» (se lee al acercarse; aprobar ahí pone al día la cabecera
-  sin refrescar la hoja; ver «Cotizaciones del lead y del vehículo») y después
+  sin refrescar la hoja; «Comparar» en su título abre «Comparar cotizaciones» con `returnTo` a esta página; ver «Cotizaciones del lead y del vehículo») y después
   «Comprobantes» (en una final o en una que ya tiene alguno): del más nuevo, «Vigente» o «Anulado» con quién, cuándo y motivo, hasta 20
   con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Estados en Flujo 2.
 - **Logística** — `/logistica` (`logistica.ver` en algún origen): la **bandeja del día** y la **cadena como gráfica**; en la URL: `?origen=` (orígenes con la logística encendida), `q` («dónde está»:
