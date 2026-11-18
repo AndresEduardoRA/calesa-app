@@ -187,6 +187,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'mediana de 5 de 7 corridas',
   ],
   [
+    'supabase/tests/medir-actividad-listar.sql',
+    'La página de /actividad (actividad_listar()) con 300.000 filas de actividad, como la dueña y con el plan genérico: cada ruta (sin filtro, persona, tipo de registro, un registro con 1.000 cambios, acción e «Ir a una fecha») por su índice, sin Seq Scan ni Sort; la llamada entera contra la de antes de la frase (registro y primer cambio por PK de las filas ya elegidas), ≤ 60 ms',
+    'mediana de 5 de 7 corridas',
+  ],
+  [
     'supabase/tests/medir-lead-oportunidades.sql',
     'Las oportunidades de un lead por cursor con 1.000 en el lead (500 abiertas y 500 cerradas) y 20.000 de fondo, como authenticated y con el plan genérico: la página 1, una profunda de las abiertas, el paso de abiertas a cerradas y una profunda de las cerradas de Ana, por oportunidades_lead_abiertas_idx y oportunidades_lead_cerradas_idx (ms y bloques por relación de la llamada real; el plan de cada ruta)',
     'mediana de 5 de 7 corridas',

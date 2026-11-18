@@ -191,14 +191,16 @@ begin
     into v_salida
     from unnest(v_filas[1:v_n]) f
     left join public.perfiles p on p.id = f.actor_id
-   cross join lateral (select public._actividad_recortar(f.tabla, f.registro_id, f.antes, f.despues) as v) x
+   -- `offset 0`: el recorte y el registro se calculan una vez por fila; sin él, Postgres aplana la subconsulta y repite la función en cada lugar
+   -- que la nombra.
+   cross join lateral (select public._actividad_recortar(f.tabla, f.registro_id, f.antes, f.despues) as v offset 0) x
    cross join lateral (select coalesce((x.v ->> 'visible')::boolean, false) as visible) r
    cross join lateral (
      select case when r.visible and f.accion like '%.update'
                  then array(select k from jsonb_object_keys(x.v -> 'cambios') k order by k limit 6)
                  else '{}'::text[] end as claves
    ) c
-   cross join lateral (select case when r.visible then public._actividad_registro(f.tabla, f.registro_id) end as registro) g
+   cross join lateral (select case when r.visible then public._actividad_registro(f.tabla, f.registro_id) end as registro offset 0) g
    cross join lateral (
      select x.v -> 'cambios' -> c.claves[1] as cambio,
             -- La moneda con la regla de `actividad_diff`: fuera de leads y sólo si authenticated lee esa columna.
