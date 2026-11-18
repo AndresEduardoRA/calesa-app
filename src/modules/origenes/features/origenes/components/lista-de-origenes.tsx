@@ -64,7 +64,7 @@ export function ListaDeOrigenes({ origenes, puedeGestionar }: Props) {
           {origenes.map((origen) => (
             <li key={origen.id}>
               <Link
-                href={`${RUTAS.origenes}/${origen.id}` as Route}
+                href={`${RUTAS.origenes}/${origen.id}/datos` as Route}
                 className="flex min-h-14 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2 outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus)"
               >
                 <span className="flex min-w-0 flex-wrap items-center gap-2">
@@ -95,7 +95,7 @@ export function ListaDeOrigenes({ origenes, puedeGestionar }: Props) {
         alCrear={(id) => {
           // Sin `cerrar()` antes: el cambio de `?panel=` y la navegación se pisarían, y gana el
           // último en llegar. La pantalla del origen no trae el panel.
-          router.push(`${RUTAS.origenes}/${id}` as Route)
+          router.push(`${RUTAS.origenes}/${id}/datos` as Route)
         }}
       />
     </div>

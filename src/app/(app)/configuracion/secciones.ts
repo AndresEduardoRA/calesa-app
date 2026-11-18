@@ -15,6 +15,7 @@ import { SECCION_DE_FLUJOS } from './flujos/seccion'
 import { PERMISOS_DE_LEADS } from './leads/pestanas'
 import { SECCIONES_DE_LOGISTICA } from './logistica/seccion'
 import { PERMISOS_DE_ORIGENES } from './origenes/acceso'
+import { SUBSECCIONES_DE_ORIGEN } from './origenes/subsecciones'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
 import { SECCIONES_DE_WEB } from './web/seccion'
 
@@ -35,7 +36,8 @@ export type GrupoDeConfiguracion = (typeof GRUPOS)[number]['clave']
 export type SubseccionDeConfiguracion = {
   clave: string
   titulo: string
-  // Empieza con la ruta de su sección y una barra.
+  // Empieza con la ruta de su sección y una barra. Puede ser una plantilla con `[x]` (las partes de un origen): el menú la rellena con la
+  // ruta actual y, si no puede, no la dibuja (`_navegacion/marca.ts`).
   ruta: string
   permisos: readonly ClavePermiso[]
 }
@@ -86,12 +88,12 @@ export const SECCIONES = [
   {
     clave: 'origenes',
     titulo: 'Orígenes',
-    descripcion: 'De dónde vienen los vehículos: su layout de campos y sus categorías.',
+    descripcion: 'De dónde vienen los vehículos: sus datos, sus campos y sus categorías.',
     ruta: RUTAS.origenes,
     Icono: MapPinIcon,
     permisos: PERMISOS_DE_ORIGENES,
     grupo: 'ventas',
-    subsecciones: [],
+    subsecciones: SUBSECCIONES_DE_ORIGEN,
   },
   {
     clave: 'leads',

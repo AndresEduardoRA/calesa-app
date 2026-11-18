@@ -67,6 +67,14 @@ describe('secciones de configuración', () => {
     expect(existsSync(path.join(APP, SECCION_DE_WEB.ruta, 'page.tsx'))).toBe(true)
   })
 
+  it('Orígenes trae sus tres partes como sub-secciones plantilla', () => {
+    expect(porClave('origenes')?.subsecciones.map((sub) => sub.ruta)).toEqual([
+      '/configuracion/origenes/[id]/datos',
+      '/configuracion/origenes/[id]/campos',
+      '/configuracion/origenes/[id]/categorias',
+    ])
+  })
+
   it('Empresa se abre con los permisos de todas sus pestañas', () => {
     expect(porClave('empresa')?.permisos).toBe(PERMISOS_DE_EMPRESA)
   })

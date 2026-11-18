@@ -58,6 +58,15 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/logistica/bandeja/[grupo]': () => ({ url: '/logistica/bandeja/demorados' }),
   '/logistica/fase/[fase]': (t) => ({ url: `/logistica/fase/sin_fase?origen=${t.origen}` }),
   '/configuracion/origenes/[id]': (t) => ({ url: `/configuracion/origenes/${t.origen}` }),
+  '/configuracion/origenes/[id]/datos': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/datos`,
+  }),
+  '/configuracion/origenes/[id]/campos': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/campos`,
+  }),
+  '/configuracion/origenes/[id]/categorias': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/categorias`,
+  }),
   '/repuestos/[id]': (t) => ({ url: `/repuestos/${t.proyectoDeRepuestos}` }),
   '/cotizaciones/[id]': (t) => ({ url: `/cotizaciones/${t.cotizacion}` }),
   '/repuestos/[id]/cotizaciones/[cotizacion]': (t) => ({

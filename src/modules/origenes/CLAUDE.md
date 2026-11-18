@@ -4,7 +4,9 @@ Orígenes de vehículos configurables (subasta/apibara o manual), su layout de c
 
 ## Entra y sale
 
-- Entra: `/configuracion/origenes` y `/[id]?seccion=datos|campos|categorias`.
+- Entra: `/configuracion/origenes` (la lista) y cada parte de un origen en su sub-ruta, `/[id]/datos|campos|categorias`; `/[id]` sin parte y
+  los enlaces de antes (`?seccion=`, con `?campo=`, `?categoria=` y `?panel=`) redirigen (`[id]/url-vieja.ts`). Las pantallas van partidas
+  por sub-ruta: `pantallas/origen.ts` (el marco: `SiguientesPasos`), `origen-datos.ts`, `origen-campos.ts` y `origen-categorias.ts`.
 - `index.ts`: `getOrigenes(incluirInactivos?)`, `leerLayout(origenId, { conUso })` (también los campos desactivados: quien consume filtra `activo`),
   `leerCampoPrincipal(origenId)` (o `null`; para quien nombra un vehículo fuera del listado), `leerDatosNuevosDeApibara`, `leerOrigenes`, `pasosDe`.
 - `client.ts`: concordancia (`pluralDe()`, `articulo()`, `concordar()`, `frasePorVacio()`…), tipos y `useLayoutActivo(origenId)` (lo lee el panel del
