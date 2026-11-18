@@ -6,10 +6,13 @@ type Modo = { clave: string; nombre: string }
 // Los valores efectivos: el modo por defecto, si «Ver total» sale encendido y los modos visibles, en el orden del diseño.
 export type PorDefecto = { modo: string; verTotalBs: boolean; visibles: readonly string[] }
 
+// Un nombre que ya termina en punto («Subasta EE. UU.») no lleva otro al cerrar la oración.
+export const conPunto = (texto: string) => (texto.endsWith('.') ? texto : `${texto}.`)
+
 export const TITULO_DEL_PANEL_POR_DEFECTO = (origen: string) =>
   `Configuración por defecto de ${origen}`
 export const AVISO_DE_LA_CABECERA = (origen: string) =>
-  `Con esto arrancan las cotizaciones nuevas de ${origen}. El selector del encabezado sigue cambiando sólo la cotización abierta.`
+  `Con esto arrancan las cotizaciones nuevas de ${conPunto(origen)} El selector del encabezado sigue cambiando sólo la cotización abierta.`
 export const MODO_POR_DEFECTO_VISIBLE = 'El modo por defecto debe quedar visible.'
 export const MOTIVO_DE_SOLO_LECTURA = 'Sólo ves esta cotización: no cambia.'
 export const AYUDA_DE_APLICAR =

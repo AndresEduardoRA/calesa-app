@@ -5,6 +5,7 @@ import {
   AVISO_DE_LA_CABECERA,
   elegirModo,
   mismosValores,
+  conPunto,
   noAplicar,
   porDefectoDe,
   type PorDefecto,
@@ -95,9 +96,18 @@ describe('aplicarALaHoja', () => {
 
 describe('los textos', () => {
   it('nombran el origen y el modo actual', () => {
+    expect(AVISO_DE_LA_CABECERA('Oficina')).toBe(
+      'Con esto arrancan las cotizaciones nuevas de Oficina. El selector del encabezado sigue cambiando sólo la cotización abierta.',
+    )
+    // Un nombre que termina en punto no lleva otro.
     expect(AVISO_DE_LA_CABECERA('Subasta EE. UU.')).toBe(
-      'Con esto arrancan las cotizaciones nuevas de Subasta EE. UU.. El selector del encabezado sigue cambiando sólo la cotización abierta.',
+      'Con esto arrancan las cotizaciones nuevas de Subasta EE. UU. El selector del encabezado sigue cambiando sólo la cotización abierta.',
     )
     expect(noAplicar('Paralelo')).toBe('Si lo desmarcas, esta cotización se queda en Paralelo.')
+  })
+
+  it('conPunto no duplica el punto final', () => {
+    expect(conPunto('Oficina')).toBe('Oficina.')
+    expect(conPunto('Subasta EE. UU.')).toBe('Subasta EE. UU.')
   })
 })

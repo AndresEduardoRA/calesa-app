@@ -105,7 +105,7 @@ describe('useAjusteDeLaCabecera: lo que lee, manda y aplica', () => {
     expect(alElegirModo).not.toHaveBeenCalled()
     expect(alCambiarVerTotalBs).not.toHaveBeenCalled()
     expect(avisarExito).toHaveBeenCalledWith(
-      'Guardaste la configuración por defecto de Subasta EE. UU.. Esta cotización no cambia.',
+      'Guardaste la configuración por defecto de Subasta EE. UU. Esta cotización no cambia.',
     )
   })
 

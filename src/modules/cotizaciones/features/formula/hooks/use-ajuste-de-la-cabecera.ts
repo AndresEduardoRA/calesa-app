@@ -8,6 +8,7 @@ import { useUnEnvioALaVez } from '@/shared/ui/use-un-envio-a-la-vez'
 import { ofreceVerTotalBs } from '../../../entities/cabecera-de-la-hoja'
 import {
   aplicarALaHoja,
+  conPunto,
   mismosValores,
   MISMOS_VALORES_DE_LA_CABECERA,
   porDefectoDe,
@@ -51,7 +52,7 @@ function aplicarEnLaHoja(hoja: HojaDelAjuste, valor: PorDefecto) {
 const exito = (origen: string, aplicada: boolean) =>
   aplicada
     ? `Guardaste la configuración por defecto de ${origen} y la aplicaste a esta cotización.`
-    : `Guardaste la configuración por defecto de ${origen}. Esta cotización no cambia.`
+    : `Guardaste la configuración por defecto de ${conPunto(origen)} Esta cotización no cambia.`
 
 // Lo elegido: nace con lo leído la primera vez y ninguna lectura nueva lo pisa.
 function useElegido(leido: PorDefecto | null) {
