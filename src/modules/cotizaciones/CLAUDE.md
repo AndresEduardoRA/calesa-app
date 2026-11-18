@@ -210,8 +210,8 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 ## Tablas
 
 `formulas`, `tonos`, `cotizaciones_niveles`, `tablas_referencia`, `tablas_referencia_filas`, `plantillas_tarjeta`, `cotizaciones`, `cotizaciones_revisiones`,
-`cotizaciones_comentarios`, `cotizaciones_adjuntos`, `cotizaciones_reportes`, `cotizaciones_favoritos`, `cotizaciones_aprobadas`, `comprobantes`, `comprobantes_contadores`,
-`comprobantes_ajustes`.
+`cotizaciones_comentarios`, `cotizaciones_adjuntos`, `cotizaciones_reportes`, `cotizaciones_favoritos`, `cotizaciones_aprobadas`, `cotizaciones_portadas`, `comprobantes`,
+`comprobantes_contadores`, `comprobantes_ajustes`.
 
 RPC: `formula_guardar_borrador`, `formula_publicar`, `formula_descartar_borrador`, `formula_cambiar_constante` y `formula_revertir` (publican la N+1 desde
 la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las filas, sube la versión y publica la N+1 de cada fórmula que la usa),
@@ -221,7 +221,8 @@ la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las 
 `_cotizaciones_ids_por_titulo`), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
 nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
-`cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.
+`cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `cotizacion_portada|portada_poner` (la portada de la cotización: el estado para quien
+pide y anotar la subida), `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.
 
 ## No se rompe
 
@@ -304,6 +305,12 @@ nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con l
   borrar `for update`); la cotización antes que sus reportes. Borrar no deja respuestas eliminadas ni raíces eliminadas sin respuestas
   (`cotizaciones_comentarios_respuesta_viva_check`). Pruebas: `supabase/tests/areas/comentarios/`.
 
+- **La portada** (`cotizaciones_portadas`, una fila por cotización; `docs/COTIZADOR.md` › «La portada de la cotización»): **nadie la escribe directo**, sólo
+  `cotizacion_portada_poner()` (pide ver, poder guardar y ver todo lo que dibuja la compartida, antes de mirar la ruta y otra vez tras tomar la cotización
+  `for no key update`; la clave, la vigente tras el candado, o PT409). Su policy pregunta por fila con `puede_cotizacion`. La clave
+  (`_cotizacion_portada_clave()`) mira todo lo que el dibujo lee: algo nuevo que la tarjeta dibuje entra ahí, y un cambio en cómo se dibuja sube
+  `_portada_version_del_dibujo()` en una migración. Su ruta cuenta en `storage_refcount()` y en la rama `cotizaciones` del barrido; quien la reemplaza o la
+  purga, la encola. Pruebas: `supabase/tests/areas/tarjeta/portada.sql`.
 - **La aprobada** (`cotizaciones_aprobadas`, una fila por vehículo; `docs/COTIZADOR.md` › «La cotización aprobada»): **nadie la escribe directo**, sólo
   `cotizacion_aprobar()` y `_aprobada_reponer()`, que corre al confirmar (`trg_cotizaciones_aprobadas_al_confirmar`, diferido: en un bloque de prueba que se
   revierte hay que forzarlo con `set constraints … immediate`). Invariante: con alguna cotización activa y el vehículo vivo, exactamente una fila y apunta
