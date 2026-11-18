@@ -1,62 +1,106 @@
 import { z } from 'zod'
 import { esHex } from '@/shared/lib/color'
+import {
+  ALINEAR,
+  ALINEAR_VERTICAL,
+  BORDES,
+  MOSTRAR,
+  OCULTAR_SI,
+  TAMANOS_DE_LETRA,
+  type LecturaEnCuadricula,
+  type PlantillaEnCuadricula,
+  type TamanoDeLetra,
+} from '../cuadricula-de-la-tarjeta'
 
-// Lo que devuelve `cotizacion_tarjeta(p_formula)` (4.18-1) leído con Zod, en la forma que usa la pantalla. Todo lo que se busca por el id de un nodo, un bucket o un modo es un
-// `Map`: un id como «constructor» es legal y un objeto lo encontraría en su prototipo. `sin_plantilla`: el origen no tiene una plantilla publicada o no le sirve a esa versión;
-// la base no dice nada más. La lectura sólo trae lo del nivel «todos»: lo que un nivel restringido ve no está aquí (K4 de `supabase/tests/cotizacion-tarjeta.sql`).
+// Lo que devuelve `cotizacion_tarjeta(p_formula)` leído con Zod, en la forma que usa la geometría: la cuadrícula (la forma 2, ya convertida si era de la forma 1)
+// y sólo lo que nombra, del nivel «todos» (K4 de `supabase/tests/cotizacion-tarjeta.sql`). Todo lo que se busca por el id de un nodo, un grupo, un bucket, un
+// modo o un color es un `Map`: un id como «constructor» es legal y un objeto lo encontraría en su prototipo. `sin_plantilla`: el origen no tiene una plantilla
+// publicada o no le sirve a esa versión; la base no dice nada más. La cuadrícula ya la validó la base: aquí se leen sus tipos y sus listas cerradas.
 
-const esquemaDeUnaFila = z.object({
-  nodo: z.string().min(1),
-  etiqueta: z.string().min(1),
-  leyenda: z.string().nullable().optional(),
+const id = z.string().min(1)
+const entero = z.number().int().positive()
+const borde = z.enum(BORDES)
+const tamano = z.custom<TamanoDeLetra>(
+  (v) => typeof v === 'number' && (TAMANOS_DE_LETRA as readonly number[]).includes(v),
+)
+
+const esquemaDelContenido = z.union([
+  z.object({ tipo: z.literal('texto'), texto: z.string() }),
+  z.object({ tipo: z.literal('dato'), variable: id }),
+  z.object({ tipo: z.literal('dato'), nodo: id, mostrar: z.enum(MOSTRAR) }),
+  z.object({ tipo: z.literal('logo') }),
+  z.object({ tipo: z.literal('vacio') }),
+])
+
+const esquemaDelEstilo = z.object({
+  fondo: id.optional(),
+  texto: id.optional(),
+  negrita: z.boolean().optional(),
+  cursiva: z.boolean().optional(),
+  tamano: tamano.optional(),
+  alinear: z.enum(ALINEAR).optional(),
+  alinear_vertical: z.enum(ALINEAR_VERTICAL).optional(),
+  bordes: z
+    .object({
+      todos: borde.optional(),
+      arriba: borde.optional(),
+      derecha: borde.optional(),
+      abajo: borde.optional(),
+      izquierda: borde.optional(),
+    })
+    .optional(),
 })
 
-const esquemaDeUnGrupo = z.object({
-  id: z.string().min(1),
-  etiqueta: z.string().min(1),
-  plazo: z.string().nullable().optional(),
-  tono: z.string().nullable().optional(),
-  bucket: z.string().nullable().optional(),
-  filas: z.array(esquemaDeUnaFila),
+export const esquemaDeLaCuadricula = z.object({
+  forma: z.literal(2),
+  columnas: z.array(z.object({ id, ancho: entero })),
+  filas: z.array(
+    z.object({ id, alto: entero, ocultar_si: z.enum(OCULTAR_SI), nodo: id.optional() }),
+  ),
+  celdas: z.array(
+    z.object({
+      id,
+      fila: id,
+      columna: id,
+      abarca_columnas: entero.optional(),
+      abarca_filas: entero.optional(),
+      contenido: esquemaDelContenido,
+      estilo: esquemaDelEstilo.optional(),
+    }),
+  ),
 })
 
-const color = z.string().refine(esHex)
-const colores = z.object({ fondo: color, borde: color, tinta: color })
-// Un color del catálogo con lo que pinta la tarjeta (`_color_tinta_de_la_tarjeta()` ya eligió el texto que se lee): igual en los dos temas.
-const esquemaDeUnTono = z.object({ clave: z.string().min(1), hex: color, tarjeta: colores })
-
-const esquemaDeLasOpciones = z.object({
-  clave: z.string().min(1),
-  titulo: z.string(),
-})
-
-const nombresPorBucket = z.record(z.string(), z.string().nullable())
+const tipoDeCambio = z.object({ nombre: z.string().nullable(), nodo: z.string().nullable() })
+const porBucket = z.record(z.string(), tipoDeCambio)
 
 const esquemaListo = z.object({
   estado: z.literal('lista'),
-  logo: z.boolean().nullable().optional(),
-  nota: z.string().nullable().optional(),
-  columnas: z.object({
-    leyenda: z.boolean().optional(),
-    tipo_cambio: z.boolean().optional(),
-    plazo: z.boolean().optional(),
-  }),
-  total: z.object({
-    nodo: z.string().nullable(),
-    etiqueta: z.string().min(1),
-    leyenda: z.string().nullable().optional(),
-  }),
-  secundarios: z.array(z.object({ nodo: z.string().min(1), etiqueta: z.string().min(1) })),
-  grupos: z.array(esquemaDeUnGrupo),
-  tipos_de_cambio: z.object({
-    buckets: nombresPorBucket,
-    modos: z.record(z.string(), nombresPorBucket),
-  }),
+  definicion: esquemaDeLaCuadricula,
+  nodos: z.array(
+    z.object({
+      id,
+      etiqueta: z.string().nullable(),
+      descripcion: z.string().nullable(),
+      grupo: z.string().nullable(),
+      pct: z.string().nullable(),
+    }),
+  ),
+  grupos: z.array(
+    z.object({
+      id,
+      etiqueta: z.string().nullable(),
+      plazo: z.string().nullable(),
+      bucket: z.string().nullable(),
+    }),
+  ),
+  tipos_de_cambio: z.object({ buckets: porBucket, modos: z.record(z.string(), porBucket) }),
+  modos: z.array(z.object({ clave: z.string(), nombre: z.string().nullable() })),
   variante: z
-    .object({ nodo: z.string().min(1), opciones: z.array(esquemaDeLasOpciones) })
+    .object({ nodo: id, opciones: z.array(z.object({ clave: id, titulo: z.string() })) })
     .nullable()
     .optional(),
-  tonos: z.array(esquemaDeUnTono),
+  colores: z.array(z.object({ clave: id, hex: z.string().refine(esHex) })),
+  total: z.object({ nodo: z.string().nullable() }),
 })
 
 const esquemaDeLaLectura = z.discriminatedUnion('estado', [
@@ -64,79 +108,100 @@ const esquemaDeLaLectura = z.discriminatedUnion('estado', [
   z.object({ estado: z.literal('sin_plantilla') }),
 ])
 
-export type FilaLeida = { nodo: string; etiqueta: string; leyenda: string | null }
-
-export type ColoresDeLaTarjeta = { fondo: string; borde: string; tinta: string }
-export type ColorDeLaTarjeta = { clave: string; hex: string; tarjeta: ColoresDeLaTarjeta }
-
-export type GrupoLeido = {
-  id: string
+export type NodoDeLaTarjeta = {
   etiqueta: string
-  plazo: string | null
-  tono: string | null
-  bucket: string | null
-  filas: readonly FilaLeida[]
+  descripcion: string | null
+  grupo: string | null
+  pct: string | null
 }
+export type GrupoDeLaTarjeta = { etiqueta: string; plazo: string | null; bucket: string | null }
+export type TipoDeCambioDeLaTarjeta = { nombre: string | null; nodo: string | null }
 
 export type TarjetaLista = {
   estado: 'lista'
-  logo: boolean
-  nota: string | null
-  columnas: { leyenda: boolean; tipoDeCambio: boolean; plazo: boolean }
-  total: { nodo: string | null; etiqueta: string; leyenda: string | null }
-  secundarios: readonly { nodo: string; etiqueta: string }[]
-  grupos: readonly GrupoLeido[]
+  definicion: PlantillaEnCuadricula
+  nodos: ReadonlyMap<string, NodoDeLaTarjeta>
+  grupos: ReadonlyMap<string, GrupoDeLaTarjeta>
   tiposDeCambio: {
-    buckets: ReadonlyMap<string, string | null>
-    modos: ReadonlyMap<string, ReadonlyMap<string, string | null>>
+    buckets: ReadonlyMap<string, TipoDeCambioDeLaTarjeta>
+    modos: ReadonlyMap<string, ReadonlyMap<string, TipoDeCambioDeLaTarjeta>>
   }
+  // El nombre de cada modo de tipo de cambio, por su clave (sólo si la plantilla muestra `modo_tc`).
+  modos: ReadonlyMap<string, string>
   variante: { nodo: string; opciones: readonly { clave: string; titulo: string }[] } | null
-  // Los colores que usan los grupos, ya validados (`#rrggbb`): cada grupo se pinta con su `tarjeta`.
-  tonos: readonly ColorDeLaTarjeta[]
+  // El hex de cada color del catálogo que nombran los estilos; uno que no está se dibuja `auto`.
+  colores: ReadonlyMap<string, string>
+  total: { nodo: string | null }
 }
 
 export type LecturaDeLaTarjeta = TarjetaLista | { estado: 'sin_plantilla' }
 
-const aMapa = (registro: Record<string, string | null>) => new Map(Object.entries(registro))
-
-// La respuesta de la base ya en la forma que usa la pantalla, o nulo si no es lo que la base promete.
-export function tarjetaDesde(crudo: unknown): LecturaDeLaTarjeta | null {
-  const leida = esquemaDeLaLectura.safeParse(crudo)
-  if (!leida.success) {
-    return null
-  }
-  const t = leida.data
-  if (t.estado === 'sin_plantilla') {
-    return { estado: 'sin_plantilla' }
+// La lectura plana (la de la vista previa de Configuración y la que cruza props) en la forma que usa la geometría.
+export function lecturaDesdeLaPlana(l: LecturaEnCuadricula): TarjetaLista {
+  const modos = new Map<string, Map<string, TipoDeCambioDeLaTarjeta>>()
+  for (const m of l.tiposDeCambio.modos) {
+    const delModo = modos.get(m.modo) ?? new Map<string, TipoDeCambioDeLaTarjeta>()
+    delModo.set(m.bucket, { nombre: m.nombre, nodo: m.nodo })
+    modos.set(m.modo, delModo)
   }
   return {
     estado: 'lista',
-    logo: t.logo === true,
-    nota: t.nota ?? null,
-    columnas: {
-      leyenda: t.columnas.leyenda === true,
-      tipoDeCambio: t.columnas.tipo_cambio === true,
-      plazo: t.columnas.plazo === true,
-    },
-    total: { nodo: t.total.nodo, etiqueta: t.total.etiqueta, leyenda: t.total.leyenda ?? null },
-    secundarios: t.secundarios,
-    grupos: t.grupos.map((g) => ({
-      id: g.id,
-      etiqueta: g.etiqueta,
-      plazo: g.plazo ?? null,
-      tono: g.tono ?? null,
-      bucket: g.bucket ?? null,
-      filas: g.filas.map((f) => ({
-        nodo: f.nodo,
-        etiqueta: f.etiqueta,
-        leyenda: f.leyenda ?? null,
-      })),
-    })),
+    definicion: l.definicion,
+    nodos: new Map(
+      l.nodos.map((n) => [
+        n.id,
+        { etiqueta: n.etiqueta, descripcion: n.descripcion, grupo: n.grupo, pct: n.pct },
+      ]),
+    ),
+    grupos: new Map(
+      l.grupos.map((g) => [g.id, { etiqueta: g.etiqueta, plazo: g.plazo, bucket: g.bucket }]),
+    ),
     tiposDeCambio: {
-      buckets: aMapa(t.tipos_de_cambio.buckets),
-      modos: new Map(Object.entries(t.tipos_de_cambio.modos).map(([k, v]) => [k, aMapa(v)])),
+      buckets: new Map(
+        l.tiposDeCambio.buckets.map((b) => [b.bucket, { nombre: b.nombre, nodo: b.nodo }]),
+      ),
+      modos,
     },
+    modos: new Map(l.modos.map((m) => [m.clave, m.nombre])),
+    variante: l.variante,
+    colores: new Map(l.colores.map((c) => [c.clave, c.hex.toLowerCase()])),
+    total: l.total,
+  }
+}
+
+const tiposDeCambioDe = (registro: Record<string, TipoDeCambioDeLaTarjeta>) =>
+  new Map(Object.entries(registro))
+
+// La respuesta de la base ya en la forma que usa la geometría, o nulo si no es lo que la base promete.
+export function tarjetaDesde(crudo: unknown): LecturaDeLaTarjeta | null {
+  const leida = esquemaDeLaLectura.safeParse(crudo)
+  if (!leida.success) return null
+  const t = leida.data
+  if (t.estado === 'sin_plantilla') return { estado: 'sin_plantilla' }
+  return {
+    estado: 'lista',
+    definicion: t.definicion as PlantillaEnCuadricula,
+    nodos: new Map(
+      t.nodos.map((n) => [
+        n.id,
+        { etiqueta: n.etiqueta ?? '', descripcion: n.descripcion, grupo: n.grupo, pct: n.pct },
+      ]),
+    ),
+    grupos: new Map(
+      t.grupos.map((g) => [
+        g.id,
+        { etiqueta: g.etiqueta ?? g.id, plazo: g.plazo, bucket: g.bucket },
+      ]),
+    ),
+    tiposDeCambio: {
+      buckets: tiposDeCambioDe(t.tipos_de_cambio.buckets),
+      modos: new Map(
+        Object.entries(t.tipos_de_cambio.modos).map(([k, v]) => [k, tiposDeCambioDe(v)]),
+      ),
+    },
+    modos: new Map(t.modos.map((m) => [m.clave, m.nombre ?? m.clave])),
     variante: t.variante ?? null,
-    tonos: t.tonos,
+    colores: new Map(t.colores.map((c) => [c.clave, c.hex.toLowerCase()])),
+    total: t.total,
   }
 }

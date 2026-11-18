@@ -112,7 +112,11 @@ export async function comprobarLoGuardado(
     sinEspacios(await tarjetaGuardada(page).locator('[data-total-guardado]').textContent()),
   ).toContain(sinEspacios(total))
   const pdf = await leerLaDescarga(descarga)
+  // En la cuadrícula (T310) el monto sigue a su etiqueta en el renglón, y la leyenda del total, a su lado, puede sumarse al final.
   const lineaDelTotal = pdf.lineas.find((l) => l.startsWith('TOTAL DÓLARES')) ?? ''
-  expect(sinEspacios(lineaDelTotal)).toBe(`TOTALDÓLARES${sinEspacios(total)}`)
+  expect(
+    sinEspacios(lineaDelTotal).startsWith(`TOTALDÓLARES${sinEspacios(total)}`),
+    lineaDelTotal,
+  ).toBe(true)
   return id
 }

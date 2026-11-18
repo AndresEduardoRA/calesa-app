@@ -122,16 +122,19 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
 5. **Resumen fijo:** total (y en moneda local si se pidió con «Ver total en moneda local», apagado al nacer y sólo si la versión da su
    moneda), garantía si está a la vista, modo de tipo de cambio y toggle **Live**; al pie en el celular (alto máximo 40 % de la ventana) y
    al costado, pegado bajo la barra, desde 56 rem de la hoja (el 200 % lo pasa al pie). `Ctrl/Cmd+S` guarda (preventa); «Vista previa»
-   abre la tarjeta, con «Copiar texto» (apagado sin total o desactualizado) y, en una guardada, «Descargar PDF» (sin salir de la página;
-   un fallo con «Reintentar»). La tarjeta de lo guardado también ofrece «Descargar PDF».
+   abre la tarjeta de la cotización (la cuadrícula tipo Excel de la plantilla, escalada como una imagen al ancho del modal, que en escritorio es
+   grande (hasta 56 rem): nunca agranda ni desplaza la página de costado; en el celular, el modal a pantalla completa), con «Copiar texto» (apagado sin total o desactualizado) y, en una
+   guardada, «Descargar PDF» (sin salir de la página; un fallo con «Reintentar»). Los avisos de trabajo van fuera de la tarjeta (total
+   desactualizado, sin plantilla, lo de hoy no es lo guardado, cambios sin guardar, «Esta cotización venció el …»). La tarjeta de lo guardado
+   también ofrece «Descargar PDF».
 
 Estados propios:
 
 - **Fórmula del origen sin publicar:** pantalla bloqueada «Falta publicar la fórmula de <origen>», con enlace a configuración si hay
   permiso. **Link de subasta inválido o sin datos:** se sigue a mano.
 - **Desactualizada:** al guardar una nueva, la fórmula o un tipo de cambio cambió desde que se abrió; el resumen ofrece «Usar la versión
-  nueva» o «Guardar con la versión N». Editar una vieja usa SU versión. **Vencida:** pasó la vigencia de la empresa; se dice en listado,
-  tarjeta y PDF, y se recotiza encima.
+  nueva» o «Guardar con la versión N». Editar una vieja usa SU versión. **Vencida:** pasó la vigencia de la empresa; se dice en el listado
+  y en los avisos de la vista previa (la tarjeta y el PDF, que recibe el cliente, no lo llevan), y se recotiza encima.
 - **Guardar:** la hoja pasa a la tarjeta «Cotización n.º N guardada» con total y «Cotizar otra». Sin lead, apagado («Para guardar, elige el
   cliente en «Cliente».»); con el total nulo o recalculando, también. El borrador vuelve al recargar.
 - **El recálculo falla o no hay red:** conserva lo tipeado, «No se pudo recalcular» con «Reintentar», no deja guardar con un total viejo; si
@@ -1196,9 +1199,12 @@ descarta.
 - **Bloques:** «Grupos» (el color de cada uno; «Del grupo (<color>)» quita la clave; uno que ya no está sale «<clave> (ya no está)»),
   «Total» (etiqueta y leyenda), «Filas» (plegado; etiqueta y leyenda de cada nodo, «Buscar fila», hasta 500 con aviso) y «Pie y columnas»
   (plegado: nota, logo, leyenda, plazo, tipo de cambio). Cada campo dice «n de <tope>» (sin `maxLength`) y su motivo junto a él.
-- **Vista previa en vivo:** «Vista previa de la tarjeta» con «Cifras de ejemplo.» sigue a la plantilla de trabajo (guardada o no); desde
-  `xl` al costado y pegada arriba, si no debajo del editor. Corta cada grupo en 4 filas y lo dice. Esqueleto de alto fijo; sin conexión, el
-  aviso con «Reintentar» y el editor sigue; sin grupos, sólo el total. No es interactiva ni anuncia nada al tipear.
+- **Vista previa en vivo:** «Vista previa de la tarjeta» con «Cifras de ejemplo.» sigue a la plantilla de trabajo (guardada o no), convertida a
+  la cuadrícula como la dibuja la cotización (el título de la opción, la descripción de cada fila y el nombre del tipo de cambio incluidos) y
+  escalada a su columna; desde `xl` al costado y pegada arriba, si no debajo del editor. Corta cada grupo en 4 filas y lo dice. Debajo, «Ocultas con
+  esta referencia (N)» con «‹rótulo› — «X» no está en esta referencia» o «— «X» vale 0» (sin ocultas, nada). Esqueleto de alto fijo; sin conexión,
+  el aviso con «Reintentar» y el editor sigue; sin grupos, sólo el total. No es interactiva ni anuncia nada al tipear. Una versión guardada en
+  cuadrícula no se edita aquí: «Esta versión es una cuadrícula: todavía no se edita desde aquí.»
 - **Guardar:** activo de entrada sin borrador; con borrador, sólo si algo cambió; apagado con la forma rechazada, un envío en curso o un
   conflicto. Entra: «Se guardó el borrador.» y los campos se apagan hasta que llega lo guardado.
 - **Conflicto (PT409):** el mensaje de la base, «Ver cómo quedó» (otra pestaña, sin perder lo tipeado) y «Recargar» (descarta lo escrito);

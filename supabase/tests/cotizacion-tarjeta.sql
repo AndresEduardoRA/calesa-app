@@ -1,5 +1,5 @@
 -- `cotizacion_tarjeta(p_formula)` (paso 4.18-1): lo que dibuja la tarjeta (y el PDF) de una versión de la fórmula, con la plantilla publicada del origen validada
--- contra ESA versión, sólo con lo del nivel «todos». docs/COTIZADOR.md › «La lectura de la tarjeta». K4 es el bloque de lo oculto, por cada nivel, que
+-- contra ESA versión (la de la forma 1, convertida a la cuadrícula), sólo con lo del nivel «todos» que la plantilla nombra. docs/COTIZADOR.md › «La lectura de la tarjeta». K4 es el bloque de lo oculto, por cada nivel, que
 -- nombra el inventario de `cotizaciones-visibilidad.sql` (`cubierta_por`). Usa `pg_temp.pv_formula` y `pg_temp.pv_plantilla_g1` de `plantilla-validar.sql`, que corre antes.
 -- La dueña es `…0001` (la crea `humo.sql`). Cada bloque abre su transacción y la revierte. Compara claves y hojas, nunca texto suelto.
 
@@ -45,72 +45,105 @@ end $f$;
 create or replace function pg_temp.ct_claves(p jsonb) returns text[] language sql as $f$ select array(select k from jsonb_object_keys(p) k order by k) $f$;
 create or replace function pg_temp.ct_nombre_tc(p_clave text) returns text language sql as $f$ select nombre from public.tipos_cambio where clave = p_clave and activo $f$;
 
--- @test tarjeta K1: la de subasta_usa trae sus grupos en el orden de la plantilla, las filas en el de la fórmula, el tono de la plantilla o el del grupo, la leyenda de la plantilla o la descripción, y los colores con el hex del catálogo
+-- Una celda de la cuadrícula de la respuesta, por su id.
+create or replace function pg_temp.ct_celda(r jsonb, p_id text) returns jsonb language sql as $f$
+  select c from jsonb_array_elements(r -> 'definicion' -> 'celdas') c where c ->> 'id' = p_id
+$f$;
+-- Una cuadrícula de una columna: una fila `nunca` por celda (o con `p_fila` como la fila de la primera).
+create or replace function pg_temp.ct_cuadricula(p_celdas jsonb, p_fila jsonb default null) returns jsonb language sql as $f$
+  select jsonb_build_object('forma', 2, 'columnas', '[{"id": "a", "ancho": 300}]'::jsonb,
+    'filas', (select jsonb_agg(case when o = 1 and p_fila is not null then p_fila || jsonb_build_object('id', 'f1', 'alto', 24)
+                                    else jsonb_build_object('id', 'f' || o, 'alto', 24, 'ocultar_si', 'nunca') end order by o)
+                from jsonb_array_elements(p_celdas) with ordinality t (c, o)),
+    'celdas', (select jsonb_agg(jsonb_build_object('id', 'x' || o, 'fila', 'f' || o, 'columna', 'a', 'contenido', c) order by o)
+                 from jsonb_array_elements(p_celdas) with ordinality t (c, o)))
+$f$;
+-- Una fórmula publicada para K4 en la cuadrícula: g1 (bucket b1 → `tc`, del nivel «todos») con `pub` y el par `pp` (porcentaje de `pub` con su `pct` `centpct`),
+-- g2 (bucket b2 → `tccent`) con `pub2` y el centinela `cent`; `cent`, `centpct` y `tccent` en una sección de `p_nivel`.
+create or replace function pg_temp.ct_formula_k4(p_origen uuid, p_nivel text, p_tag text) returns uuid language plpgsql as $f$
+declare v_def jsonb; v_dis jsonb; v_id uuid;
+begin
+  v_def := jsonb_build_object(
+    'nodos', jsonb_build_array(
+      jsonb_build_object('id', 'tc', 'tipo', 'tipo_cambio', 'clave', 'oficial', 'etiqueta', 'TC', 'formato', 'raw'),
+      jsonb_build_object('id', 'tccent', 'tipo', 'tipo_cambio', 'clave', 'paralelo', 'etiqueta', 'TCCENT-' || p_tag, 'formato', 'raw'),
+      jsonb_build_object('id', 'pub', 'tipo', 'input', 'etiqueta', 'Pública', 'grupo', 'g1'),
+      jsonb_build_object('id', 'centpct', 'tipo', 'input', 'etiqueta', 'CENTPCT-' || p_tag, 'formato', 'pct'),
+      jsonb_build_object('id', 'pp', 'tipo', 'calculo', 'op', 'porcentaje_de', 'de', jsonb_build_array('pub'), 'pct', 'centpct', 'etiqueta', 'El par', 'grupo', 'g1'),
+      jsonb_build_object('id', 'pub2', 'tipo', 'input', 'etiqueta', 'Pública dos', 'grupo', 'g2'),
+      jsonb_build_object('id', 'cent', 'tipo', 'input', 'etiqueta', 'CENT-' || p_tag, 'descripcion', 'CDESC-' || p_tag, 'grupo', 'g2'),
+      jsonb_build_object('id', 'total', 'tipo', 'calculo', 'op', 'suma', 'de', jsonb_build_array('pub', 'pp', 'pub2', 'cent'), 'etiqueta', 'Total', 'salida', 'total')),
+    'buckets', jsonb_build_object('b1', 'tc', 'b2', 'tccent'), 'total_en', 'tc',
+    'grupos', jsonb_build_array(jsonb_build_object('id', 'g1', 'etiqueta', 'Uno', 'plazo', '3 días', 'tono', 'verde', 'bucket', 'b1'),
+                                jsonb_build_object('id', 'g2', 'etiqueta', 'Dos', 'plazo', '5 días', 'tono', 'verde', 'bucket', 'b2')));
+  v_dis := jsonb_build_object('cabecera', jsonb_build_object('ver_total_bs', true, 'modos', '[]'::jsonb),
+    'secciones', jsonb_build_array(
+      jsonb_build_object('id', 'abierta', 'titulo', 'Abierta', 'presentacion', 'principal', 'items', jsonb_build_array(
+        jsonb_build_object('tipo', 'celda', 'nodo', 'tc', 'ancho', 'mitad'), jsonb_build_object('tipo', 'celda', 'nodo', 'pub', 'ancho', 'mitad'),
+        jsonb_build_object('tipo', 'celda', 'nodo', 'pp', 'ancho', 'mitad'), jsonb_build_object('tipo', 'celda', 'nodo', 'pub2', 'ancho', 'mitad'))),
+      jsonb_build_object('id', 'del_nivel', 'titulo', 'Del nivel', 'presentacion', 'principal', 'nivel_ver', p_nivel, 'nivel_editar', p_nivel, 'items', jsonb_build_array(
+        jsonb_build_object('tipo', 'celda', 'nodo', 'tccent', 'ancho', 'mitad'), jsonb_build_object('tipo', 'celda', 'nodo', 'centpct', 'ancho', 'mitad'),
+        jsonb_build_object('tipo', 'celda', 'nodo', 'cent', 'ancho', 'mitad')))),
+    'tarjeta_total', jsonb_build_object('nodo', 'total', 'secundarios', '[]'::jsonb));
+  update public.formulas set estado = 'archivada' where origen_id = p_origen and estado = 'publicada';
+  insert into public.formulas (origen_id, version, estado, definicion, params, diseno, visibilidad, publicado_en)
+  values (p_origen, 1, 'publicada', v_def, '{}'::jsonb, v_dis, public._preparar_publicacion(v_def, '{}'::jsonb, v_dis, false), now()) returning id into v_id;
+  return v_id;
+end $f$;
+
+-- @test tarjeta K1: la de subasta_usa (forma 1 sembrada) devuelve su conversión a la cuadrícula y sólo lo que esa cuadrícula nombra: sus nodos, sus grupos, sus tipos de cambio, la variante, los colores con el hex del catálogo y el total
 begin;
 do $$
 declare
   duena constant uuid := '00000000-0000-0000-0000-000000000001'; o uuid := (select id from public.origenes where clave = 'subasta_usa');
-  f uuid; r jsonb; g jsonb; v_pla jsonb; v_of uuid;
+  f uuid; r jsonb; v_of uuid; v_pla jsonb; fo public.formulas;
 begin
-  select id into f from public.formulas where origen_id = o and version = 1;
+  select * into fo from public.formulas where origen_id = o and version = 1;
+  f := fo.id;
   v_pla := (select definicion from public.plantillas_tarjeta where origen_id = o and estado = 'publicada');
-  v_pla := jsonb_set(v_pla, '{grupos}', '[{"grupo": "compra", "tono": "naranja"}, {"grupo": "logistica"}, {"grupo": "aduana", "tono": "naranja"}]')
-           || '{"etiquetas": {"fees": "ETQ-FEES", "garantia": "GARANTÍA PARA LA PARTICIPACIÓN"}, "leyendas": {"fees": "LEY-FEES", "grua": ""}}';
-  perform pg_temp.ct_publicar(o, v_pla - 'nota');
   r := pg_temp.ct_tarjeta(duena, f);
   if r ->> 'estado' is distinct from 'lista' then raise exception 'la tarjeta no está lista: %', r; end if;
-  if pg_temp.ct_claves(r) is distinct from array['columnas', 'estado', 'grupos', 'logo', 'moneda_bs', 'nota', 'plantilla', 'secundarios', 'tipos_de_cambio', 'tonos', 'total', 'variante'] then
+  if pg_temp.ct_claves(r) is distinct from array['colores', 'definicion', 'estado', 'grupos', 'modos', 'moneda_bs', 'nodos', 'plantilla', 'tipos_de_cambio', 'total', 'variante'] then
     raise exception 'las claves: %', pg_temp.ct_claves(r);
   end if;
-  if r -> 'nota' <> 'null'::jsonb or r -> 'logo' <> 'true'::jsonb or r -> 'columnas' <> v_pla -> 'columnas'
-     or (r -> 'plantilla' ->> 'version')::int is distinct from (select version from public.plantillas_tarjeta where origen_id = o and estado = 'publicada') then
-    raise exception 'nota, logo, columnas o versión: %', r;
+  if r -> 'definicion' is distinct from public._plantilla_convertir(v_pla, fo.definicion, fo.diseno, fo.visibilidad, array(select t.clave from public.tonos t)) then
+    raise exception 'la definición no es la conversión de la plantilla sembrada';
   end if;
-  if (select array_agg(x ->> 'id' order by n) from jsonb_array_elements(r -> 'grupos') with ordinality t(x, n)) is distinct from array['compra', 'logistica', 'aduana']
-     or (select array_agg(x ->> 'tono' order by n) from jsonb_array_elements(r -> 'grupos') with ordinality t(x, n)) is distinct from array['naranja', 'amarillo', 'naranja'] then
-    raise exception 'los grupos o sus tonos: %', r -> 'grupos';
+  if (r -> 'plantilla' ->> 'version')::int is distinct from (select version from public.plantillas_tarjeta where origen_id = o and estado = 'publicada') then
+    raise exception 'la versión: %', r -> 'plantilla';
   end if;
-  g := r -> 'grupos' -> 0;
-  if pg_temp.ct_claves(g) is distinct from array['bucket', 'etiqueta', 'filas', 'id', 'plazo', 'tono'] or g ->> 'etiqueta' <> 'Compra' or g ->> 'plazo' <> '2 días' or g ->> 'bucket' <> 'exterior' then
-    raise exception 'el grupo compra: %', g;
+  -- Los nodos: los miembros, el total y lo aparte, cada uno con su etiqueta, su descripción, su grupo y el pct sólo de un porcentaje (no hay).
+  if (select array_agg(x ->> 'id' order by x ->> 'id') from jsonb_array_elements(r -> 'nodos') x)
+     is distinct from array['comision', 'cuenta_especial', 'documentacion', 'export', 'fees', 'garantia', 'grua', 'nacionalizacion', 'remate', 'total', 'transferencia',
+                            'transporte_bolivia', 'transporte_chile'] then
+    raise exception 'los nodos: %', r -> 'nodos';
   end if;
-  if (select array_agg(x ->> 'nodo' order by n) from jsonb_array_elements(g -> 'filas') with ordinality t(x, n)) is distinct from array['remate', 'fees', 'transferencia', 'cuenta_especial']
-     or (select array_agg(x ->> 'nodo' order by n) from jsonb_array_elements(r -> 'grupos' -> 1 -> 'filas') with ordinality t(x, n))
-        is distinct from array['grua', 'transporte_bolivia', 'transporte_chile', 'comision', 'documentacion', 'export']
-     or r -> 'grupos' -> 2 -> 'filas' <> '[{"nodo": "nacionalizacion", "etiqueta": "Nacionalización", "leyenda": "Póliza y gastos aduaneros"}]' then
-    raise exception 'las filas: %', r -> 'grupos';
+  if (select x from jsonb_array_elements(r -> 'nodos') x where x ->> 'id' = 'remate')
+     is distinct from '{"id": "remate", "etiqueta": "Remate (costo aprox.)", "descripcion": "Probabilidad de compra en subasta", "grupo": "compra", "pct": null}' then
+    raise exception 'el nodo remate: %', r -> 'nodos';
   end if;
-  if g -> 'filas' -> 0 <> '{"nodo": "remate", "etiqueta": "Remate (costo aprox.)", "leyenda": "Probabilidad de compra en subasta"}'
-     or g -> 'filas' -> 1 <> '{"nodo": "fees", "etiqueta": "ETQ-FEES", "leyenda": "LEY-FEES"}'
-     or g -> 'filas' -> 3 <> '{"nodo": "cuenta_especial", "etiqueta": "Cuenta especial USA", "leyenda": null}'
-     or r -> 'grupos' -> 1 -> 'filas' -> 0 <> '{"nodo": "grua", "etiqueta": "Grúa", "leyenda": null}' then
-    raise exception 'la etiqueta o la leyenda de una fila: %', r -> 'grupos';
-  end if;
-  if r -> 'total' <> jsonb_build_object('nodo', 'total', 'etiqueta', v_pla -> 'total' ->> 'etiqueta', 'leyenda', v_pla -> 'total' -> 'leyenda')
-     or r -> 'secundarios' <> '[{"nodo": "garantia", "etiqueta": "GARANTÍA PARA LA PARTICIPACIÓN"}]' then
-    raise exception 'el total o lo aparte: % %', r -> 'total', r -> 'secundarios';
+  if r -> 'grupos' is distinct from '[{"id": "aduana", "etiqueta": "Aduana", "plazo": "4 meses (Aprox.)", "bucket": "aduana"},
+                                      {"id": "compra", "etiqueta": "Compra", "plazo": "2 días", "bucket": "exterior"},
+                                      {"id": "logistica", "etiqueta": "Logística", "plazo": "7 días", "bucket": "exterior"}]' then
+    raise exception 'los grupos: %', r -> 'grupos';
   end if;
   if r -> 'variante' <> jsonb_build_object('nodo', 'variante', 'opciones', (select jsonb_agg(jsonb_build_object('clave', x ->> 'clave', 'titulo', x ->> 'titulo'))
-                                            from jsonb_array_elements((select n -> 'opciones' from public.formulas fo, jsonb_array_elements(fo.definicion -> 'nodos') n where fo.id = f and n ->> 'id' = 'variante')) x)) then
+                                            from jsonb_array_elements((select n -> 'opciones' from jsonb_array_elements(fo.definicion -> 'nodos') n where n ->> 'id' = 'variante')) x)) then
     raise exception 'la variante: %', r -> 'variante';
   end if;
-  -- Cada color con su hex y lo que pinta la tarjeta (igual en los dos temas): de fondo el hex, el borde claro y, en los de fábrica (hex = su fondo claro), su
-  -- tinta clara de siempre. Claves exactas: ni claro ni oscuro viajan.
-  if (select array_agg(t ->> 'clave' order by t ->> 'clave') from jsonb_array_elements(r -> 'tonos') t) is distinct from array['amarillo', 'naranja']
-     or exists (select 1 from jsonb_array_elements(r -> 'tonos') t where pg_temp.ct_claves(t) is distinct from array['clave', 'hex', 'tarjeta']
-                                                                      or pg_temp.ct_claves(t -> 'tarjeta') is distinct from array['borde', 'fondo', 'tinta']) then
-    raise exception 'la forma de los tonos: %', r -> 'tonos';
+  if r -> 'colores' <> (select jsonb_agg(jsonb_build_object('clave', t.clave, 'hex', t.hex) order by t.clave) from public.tonos t where t.clave in ('amarillo', 'naranja', 'verde')) then
+    raise exception 'los colores: %', r -> 'colores';
   end if;
-  if r -> 'tonos' <> (select jsonb_agg(jsonb_build_object('clave', t.clave, 'hex', t.hex,
-                                                          'tarjeta', jsonb_build_object('fondo', t.hex, 'borde', t.claro_borde, 'tinta', t.claro_tinta)) order by t.clave)
-                        from public.tonos t where t.clave in ('amarillo', 'naranja')) then
-    raise exception 'los tonos: %', r -> 'tonos';
+  if r -> 'total' <> '{"nodo": "total"}' or r -> 'modos' <> '[]' then raise exception 'el total o los modos: % %', r -> 'total', r -> 'modos'; end if;
+  if pg_temp.ct_celda(r, 'c_a_garantia_grupo') -> 'contenido' <> '{"tipo": "texto", "texto": "GARANTÍA PARA LA PARTICIPACIÓN"}' then
+    raise exception 'lo aparte con su etiqueta: %', pg_temp.ct_celda(r, 'c_a_garantia_grupo');
   end if;
-  -- Una fórmula sin grupos (oficina): sólo el total, sin tipos de cambio, variante ni tonos.
+  -- Una fórmula sin grupos (oficina): sólo el total, sin grupos, tipos de cambio, variante ni colores.
   select id into v_of from public.formulas where origen_id = (select id from public.origenes where clave = 'oficina') and version = 1;
   r := pg_temp.ct_tarjeta(duena, v_of);
   if r ->> 'estado' is distinct from 'lista' or r -> 'grupos' is distinct from '[]' or r -> 'tipos_de_cambio' is distinct from '{"buckets": {}, "modos": {}}'
-     or r -> 'variante' is distinct from 'null' or r -> 'tonos' is distinct from '[]' or r -> 'secundarios' is distinct from '[]' or r #>> '{total,nodo}' is distinct from 'total' then
+     or r -> 'variante' is distinct from 'null' or r -> 'colores' is distinct from '[]' or r #>> '{total,nodo}' is distinct from 'total'
+     or (select array_agg(x ->> 'id') from jsonb_array_elements(r -> 'nodos') x) is distinct from array['total'] then
     raise exception 'la de oficina: %', r;
   end if;
 end $$;
@@ -149,18 +182,23 @@ begin
 end $$;
 rollback;
 
--- @test tarjeta K3: sin_plantilla exacto con la forma vieja y con la N+1 que restringe un miembro (la N sigue lista); un tono borrado del catálogo cae al del grupo; otro error sube tal cual
+-- @test tarjeta K3: sin_plantilla exacto con la forma vieja, con la N+1 que restringe un miembro (la N sigue lista) y con una forma 1 que no se convierte; un color borrado: en la forma 1 cae al del grupo, en la cuadrícula no está en `colores` (se dibuja `auto`); otro error sube tal cual
 begin;
 do $$
 declare
   duena constant uuid := '00000000-0000-0000-0000-000000000001'; o_sub uuid := (select id from public.origenes where clave = 'subasta_usa'); o uuid;
-  f1 uuid; fn uuid; fn1 uuid; r jsonb;
+  f1 uuid; fn uuid; fn1 uuid; r jsonb; v_pla jsonb;
 begin
   select id into f1 from public.formulas where origen_id = o_sub and version = 1;
+  v_pla := (select definicion from public.plantillas_tarjeta where origen_id = o_sub and version = 1);
   -- (a) la forma vieja.
   perform pg_temp.ct_publicar(o_sub, '{"paleta": {"fondo": "#ffffff"}, "columnas": [], "grupos": [{"titulo": "Detalle", "filas": "secciones"}]}');
   r := pg_temp.ct_tarjeta(duena, f1);
   if r is distinct from '{"estado": "sin_plantilla"}' then raise exception '(a) la forma vieja: %', r; end if;
+  -- (a2) una forma 1 válida cuya conversión rompe una regla de la cuadrícula (un `{{` en una etiqueta: un texto no lleva variables).
+  perform pg_temp.ct_publicar(o_sub, jsonb_set(v_pla, '{etiquetas,garantia}', '"Garantía {{monto}}"'));
+  r := pg_temp.ct_tarjeta(duena, f1);
+  if r is distinct from '{"estado": "sin_plantilla"}' then raise exception '(a2) la que no se convierte: %', r; end if;
   -- (b) la plantilla vale para la N y no para la N+1, que pone un miembro en «costos».
   insert into public.origenes (clave, nombre) values ('ct_k3', 'CT K3') returning id into o;
   fn := pg_temp.pv_formula(o, 1, 'costos', 'k3', 'abierto');
@@ -169,25 +207,33 @@ begin
   r := pg_temp.ct_tarjeta(duena, fn1);
   if r is distinct from '{"estado": "sin_plantilla"}' then raise exception '(b) la N+1: %', r; end if;
   r := pg_temp.ct_tarjeta(duena, fn);
-  if r ->> 'estado' is distinct from 'lista' or (r #>> '{grupos,0,filas,1,etiqueta}') is distinct from 'CENT-k3' then raise exception '(b) la N: %', r; end if;
-  -- (c) un tono que sólo elige la plantilla, borrado del catálogo.
+  if r ->> 'estado' is distinct from 'lista' or (select x ->> 'etiqueta' from jsonb_array_elements(r -> 'nodos') x where x ->> 'id' = 'cent') is distinct from 'CENT-k3' then
+    raise exception '(b) la N: %', r;
+  end if;
+  -- (c) un color que sólo elige la plantilla de la forma 1, borrado del catálogo: cae al del grupo.
   insert into public.tonos (clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
-  select 'ct_tono', 'CT tono', hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta from public.tonos where clave = 'verde';
-  perform pg_temp.ct_publicar(o_sub, jsonb_set((select definicion from public.plantillas_tarjeta where origen_id = o_sub and version = 1), '{grupos,0,tono}', '"ct_tono"'));
+  select 'ct_tono', 'CT tono', '#31869b', claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta from public.tonos where clave = 'verde';
+  perform pg_temp.ct_publicar(o_sub, jsonb_set(v_pla, '{grupos,0,tono}', '"ct_tono"'));
   r := pg_temp.ct_tarjeta(duena, f1);
-  if (r #>> '{grupos,0,tono}') is distinct from 'ct_tono' or not exists (select 1 from jsonb_array_elements(r -> 'tonos') t where t ->> 'clave' = 'ct_tono') then raise exception '(c) el tono elegido: %', r; end if;
-  -- Un hex saturado sobre el que la tinta clara no se lee (#1b2130 sobre #31869b da 3,8): la tarjeta pinta el hex con el blanco (4,1), nunca con la tinta clara.
-  update public.tonos set hex = '#31869b' where clave = 'ct_tono';
-  r := pg_temp.ct_tarjeta(duena, f1);
-  if (select t -> 'tarjeta' from jsonb_array_elements(r -> 'tonos') t where t ->> 'clave' = 'ct_tono')
-     is distinct from jsonb_build_object('fondo', '#31869b', 'borde', (select claro_borde from public.tonos where clave = 'ct_tono'), 'tinta', '#ffffff') then
-    raise exception '(c) el texto sobre un hex saturado: %', r -> 'tonos';
+  if pg_temp.ct_celda(r, 'c_n_remate_monto') #>> '{estilo,fondo}' is distinct from 'ct_tono'
+     or (select x ->> 'hex' from jsonb_array_elements(r -> 'colores') x where x ->> 'clave' = 'ct_tono') is distinct from '#31869b' then
+    raise exception '(c) el color elegido: %', r -> 'colores';
   end if;
   delete from public.tonos where clave = 'ct_tono';
   r := pg_temp.ct_tarjeta(duena, f1);
-  if r ->> 'estado' is distinct from 'lista' or (r #>> '{grupos,0,tono}') is distinct from 'verde'
-     or (select array_agg(t ->> 'clave' order by t ->> 'clave') from jsonb_array_elements(r -> 'tonos') t) is distinct from array['amarillo', 'naranja', 'verde'] then
-    raise exception '(c) con el tono borrado: %', r;
+  if r ->> 'estado' is distinct from 'lista' or pg_temp.ct_celda(r, 'c_n_remate_monto') #>> '{estilo,fondo}' is distinct from 'verde'
+     or (select array_agg(x ->> 'clave' order by x ->> 'clave') from jsonb_array_elements(r -> 'colores') x) is distinct from array['amarillo', 'naranja', 'verde'] then
+    raise exception '(c) con el color borrado: %', r;
+  end if;
+  -- (c2) en la cuadrícula, un color borrado después de publicar sigue nombrado y no está en `colores`.
+  insert into public.tonos (clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+  select 'ct_tono2', 'CT tono 2', '#31869b', claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta from public.tonos where clave = 'verde';
+  perform pg_temp.ct_publicar(o_sub, jsonb_set(pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "remate", "mostrar": "monto"}]'), '{celdas,0,estilo}', '{"fondo": "ct_tono2"}'));
+  if pg_temp.ct_tarjeta(duena, f1) -> 'colores' is distinct from '[{"clave": "ct_tono2", "hex": "#31869b"}]' then raise exception '(c2) el color nombrado'; end if;
+  delete from public.tonos where clave = 'ct_tono2';
+  r := pg_temp.ct_tarjeta(duena, f1);
+  if r ->> 'estado' is distinct from 'lista' or r -> 'colores' is distinct from '[]' or pg_temp.ct_celda(r, 'x1') #>> '{estilo,fondo}' is distinct from 'ct_tono2' then
+    raise exception '(c2) con el color borrado: %', r;
   end if;
 end $$;
 rollback;
@@ -203,22 +249,33 @@ begin
 end $$;
 rollback;
 
--- @test tarjeta K4: por cada nivel (costos y uno creado con nivel_crear), un nodo del nivel (miembro de la N+1, nombrado por una plantilla metida directo o suelto) no sale ni por su id, ni por su etiqueta, ni por su descripción, ni por el texto de la plantilla
+-- @test tarjeta K4: por cada nivel (costos y uno creado con nivel_crear), un nodo del nivel no sale ni por su id, ni por su etiqueta, ni por su descripción, ni por el texto de la plantilla: en la forma 1 (miembro de la N+1, nombrado por una plantilla metida directo o suelto) y en la cuadrícula (un dato de etiqueta, de monto y de descripción, el nodo de una fila, el pct de un porcentaje y el tipo de cambio de un bucket)
 begin;
 do $$
 declare
   duena constant uuid := '00000000-0000-0000-0000-000000000001'; v_nuevo uuid := gen_random_uuid(); v_nivel text; v_i int := 0; v_tag text;
-  o_a uuid; o_b uuid; o_c uuid; f_i uuid; f_ii uuid; f_iii uuid; asesora uuid; v_quien uuid; r jsonb; v_caso text; v_esperado text;
+  o_a uuid; o_b uuid; o_c uuid; o_d uuid; f_i uuid; f_ii uuid; f_iii uuid; f_iv uuid; asesora uuid; v_quien uuid; r jsonb; v_caso text; v_esperado text; v_cuad jsonb;
+  v_cuadriculas jsonb;
 begin
   perform pg_temp.ct_como(duena);
   set local role authenticated;
   perform public.nivel_crear(v_nuevo, 'Gerencia CT');
   reset role;
+  -- Las cuadrículas que nombran al centinela (cada una da `sin_plantilla`) y una que no (lista, sin él).
+  v_cuadriculas := jsonb_build_object(
+    'etiqueta', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "cent", "mostrar": "etiqueta"}]'),
+    'monto', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "cent", "mostrar": "monto"}]'),
+    'descripcion', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "cent", "mostrar": "descripcion"}]'),
+    'fila', pg_temp.ct_cuadricula('[{"tipo": "texto", "texto": "Fila"}]', '{"ocultar_si": "no_aplica", "nodo": "cent"}'),
+    'pct', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "pp", "mostrar": "porcentaje"}]'),
+    'tipo_de_cambio', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "pub2", "mostrar": "tc_nombre"}]'),
+    'abierta', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "pub", "mostrar": "tc_valor"}, {"tipo": "dato", "nodo": "pp", "mostrar": "monto"}, {"tipo": "dato", "nodo": "pub2", "mostrar": "plazo"}]'));
   foreach v_nivel in array array['costos', (select clave from public.cotizaciones_niveles where nombre = 'Gerencia CT')] loop
     v_i := v_i + 1; v_tag := 'k4n' || v_i;
     insert into public.origenes (clave, nombre) values ('ct_k4a_' || v_i, 'CT K4 A ' || v_i) returning id into o_a;
     insert into public.origenes (clave, nombre) values ('ct_k4b_' || v_i, 'CT K4 B ' || v_i) returning id into o_b;
     insert into public.origenes (clave, nombre) values ('ct_k4c_' || v_i, 'CT K4 C ' || v_i) returning id into o_c;
+    insert into public.origenes (clave, nombre) values ('ct_k4d_' || v_i, 'CT K4 D ' || v_i) returning id into o_d;
     -- (i) la plantilla vale para la N (el centinela abierto) y la N+1 lo pone en el nivel.
     perform pg_temp.pv_formula(o_a, 1, v_nivel, v_tag || 'i', 'abierto');
     perform pg_temp.ct_publicar(o_a, pg_temp.pv_plantilla_g1());
@@ -230,16 +287,21 @@ begin
     -- (iii) suelto: del nivel, ni miembro ni nombrado.
     f_iii := pg_temp.pv_formula(o_c, 1, v_nivel, v_tag || 'iii', 'suelto');
     perform pg_temp.ct_publicar(o_c, pg_temp.pv_plantilla_g1());
+    -- (iv) la cuadrícula: cada forma de nombrar un nodo del nivel.
+    f_iv := pg_temp.ct_formula_k4(o_d, v_nivel, v_tag || 'iv');
     asesora := pg_temp.ct_persona(jsonb_build_array(jsonb_build_object('clave', 'cotizaciones.ver'), jsonb_build_object('clave', 'cotizaciones.nivel.' || v_nivel || '.ver'),
                                                     jsonb_build_object('clave', 'cotizaciones.nivel.' || v_nivel || '.editar')));
     foreach v_quien in array array[duena, asesora] loop
-      foreach v_caso in array array['i', 'ii', 'iii'] loop
-        r := pg_temp.ct_tarjeta(v_quien, case v_caso when 'i' then f_i when 'ii' then f_ii else f_iii end);
+      foreach v_caso in array array['i', 'ii', 'iii', 'etiqueta', 'monto', 'descripcion', 'fila', 'pct', 'tipo_de_cambio', 'abierta'] loop
+        if v_cuadriculas ? v_caso then perform pg_temp.ct_publicar(o_d, v_cuadriculas -> v_caso); end if;
+        r := pg_temp.ct_tarjeta(v_quien, case v_caso when 'i' then f_i when 'ii' then f_ii when 'iii' then f_iii else f_iv end);
         if r ? 'error' then raise exception 'nivel %, caso %: %', v_nivel, v_caso, r; end if;
-        if position('cent' in r::text) > 0 or position('CENT-' in r::text) > 0 or position('CDESC-' in r::text) > 0 or position('PLAETQ-' in r::text) > 0 or position('PLALEY-' in r::text) > 0 then
+        -- «centro» (una alineación) no es el centinela; cualquier otro `cent` sí (su id, `n_cent`, `tccent`, `centpct`).
+        if position('cent' in replace(r::text, 'centro', '')) > 0 or position('CENT-' in r::text) > 0 or position('CDESC-' in r::text) > 0 or position('PLAETQ-' in r::text) > 0
+           or position('PLALEY-' in r::text) > 0 or position('TCCENT-' in r::text) > 0 or position('CENTPCT-' in r::text) > 0 then
           raise exception 'nivel %, caso %: sale el nodo del nivel: %', v_nivel, v_caso, r;
         end if;
-        v_esperado := case when v_caso = 'iii' then 'lista' else 'sin_plantilla' end;
+        v_esperado := case when v_caso in ('iii', 'abierta') then 'lista' else 'sin_plantilla' end;
         if r ->> 'estado' is distinct from v_esperado then raise exception 'nivel %, caso %: el estado: %', v_nivel, v_caso, r; end if;
       end loop;
     end loop;
@@ -247,7 +309,7 @@ begin
 end $$;
 rollback;
 
--- @test tarjeta K5: los tipos de cambio por su nombre, por bucket y por modo (uno inactivo, nulo); sin la columna, vacíos; nunca el id ni la clave del nodo
+-- @test tarjeta K5: los tipos de cambio por su nombre y su nodo (del nivel «todos»: lo valida la plantilla), por bucket y por modo (uno inactivo, nombre nulo); sin la columna, vacíos
 begin;
 do $$
 declare
@@ -257,16 +319,20 @@ begin
   r := pg_temp.ct_tarjeta(duena, f);
   if r ->> 'estado' is distinct from 'lista' then raise exception 'no está lista: %', r; end if;
   if r -> 'tipos_de_cambio' is distinct from jsonb_build_object(
-       'buckets', jsonb_build_object('exterior', pg_temp.ct_nombre_tc('paralelo'), 'aduana', pg_temp.ct_nombre_tc('oficial')),
-       'modos', jsonb_build_object('paralelo', jsonb_build_object('exterior', pg_temp.ct_nombre_tc('paralelo'), 'aduana', pg_temp.ct_nombre_tc('oficial')),
-                                   'unificado', jsonb_build_object('exterior', pg_temp.ct_nombre_tc('unificado'), 'aduana', pg_temp.ct_nombre_tc('oficial')))) then
+       'buckets', jsonb_build_object('exterior', jsonb_build_object('nombre', pg_temp.ct_nombre_tc('paralelo'), 'nodo', 'tc_paralelo'),
+                                     'aduana', jsonb_build_object('nombre', pg_temp.ct_nombre_tc('oficial'), 'nodo', 'tc_oficial')),
+       'modos', jsonb_build_object(
+         'paralelo', jsonb_build_object('exterior', jsonb_build_object('nombre', pg_temp.ct_nombre_tc('paralelo'), 'nodo', 'tc_paralelo'),
+                                        'aduana', jsonb_build_object('nombre', pg_temp.ct_nombre_tc('oficial'), 'nodo', 'tc_oficial')),
+         'unificado', jsonb_build_object('exterior', jsonb_build_object('nombre', pg_temp.ct_nombre_tc('unificado'), 'nodo', 'tc_unificado'),
+                                         'aduana', jsonb_build_object('nombre', pg_temp.ct_nombre_tc('oficial'), 'nodo', 'tc_oficial')))) then
     raise exception 'los tipos de cambio: %', r -> 'tipos_de_cambio';
   end if;
-  if position('tc_' in (r -> 'tipos_de_cambio')::text) > 0 then raise exception 'sale el id de un nodo tipo_cambio: %', r -> 'tipos_de_cambio'; end if;
   update public.tipos_cambio set activo = false where clave = 'unificado';
   r := pg_temp.ct_tarjeta(duena, f);
   if r ->> 'estado' is distinct from 'lista' then raise exception 'con uno inactivo no está lista: %', r; end if;
-  if r #> '{tipos_de_cambio,modos,unificado,exterior}' is distinct from 'null'::jsonb or r #>> '{tipos_de_cambio,modos,unificado,aduana}' is distinct from pg_temp.ct_nombre_tc('oficial') then
+  if r #> '{tipos_de_cambio,modos,unificado,exterior,nombre}' is distinct from 'null'::jsonb
+     or r #>> '{tipos_de_cambio,modos,unificado,aduana,nombre}' is distinct from pg_temp.ct_nombre_tc('oficial') then
     raise exception 'uno inactivo: %', r -> 'tipos_de_cambio';
   end if;
   perform pg_temp.ct_publicar(o, jsonb_set((select definicion from public.plantillas_tarjeta where origen_id = o and estado = 'publicada'), '{columnas,tipo_cambio}', 'false'));
@@ -301,14 +367,46 @@ begin
 end $$;
 rollback;
 
--- @test tarjeta K7: cotizacion_tarjeta es de authenticated y service_role (no de anon ni PUBLIC), corre con los derechos de su dueña y search_path vacío; sus ayudantes, sólo de service_role
+-- @test tarjeta K7: cotizacion_tarjeta es de authenticated y service_role (no de anon ni PUBLIC), corre con los derechos de su dueña y search_path vacío; sus ayudantes de antes ya no existen
 do $$
-declare v_f text; v_quien text[]; v_esperado text[];
+declare v_quien text[];
 begin
-  foreach v_f in array array['public.cotizacion_tarjeta(uuid)', 'public._tarjeta_grupos(jsonb, jsonb, jsonb)', 'public._tarjeta_tipos_de_cambio(jsonb, jsonb, text[])'] loop
-    v_quien := array(select r from unnest(array['authenticated', 'service_role', 'anon', 'public']) r where has_function_privilege(r, v_f, 'execute'));
-    v_esperado := case when v_f like '%cotizacion_tarjeta%' then array['authenticated', 'service_role'] else array['service_role'] end;
-    if v_quien is distinct from v_esperado then raise exception 'privilegios de %: %', v_f, v_quien; end if;
-  end loop;
+  v_quien := array(select r from unnest(array['authenticated', 'service_role', 'anon', 'public']) r where has_function_privilege(r, 'public.cotizacion_tarjeta(uuid)', 'execute'));
+  if v_quien is distinct from array['authenticated', 'service_role'] then raise exception 'privilegios de cotizacion_tarjeta: %', v_quien; end if;
   if not (select prosecdef and proconfig = array['search_path=""'] from pg_proc where oid = 'public.cotizacion_tarjeta(uuid)'::regprocedure) then raise exception 'cotizacion_tarjeta no tiene los derechos de su dueña y search_path vacío'; end if;
+  if to_regprocedure('public._tarjeta_grupos(jsonb, jsonb, jsonb)') is not null or to_regprocedure('public._tarjeta_tipos_de_cambio(jsonb, jsonb, text[])') is not null then
+    raise exception 'quedan los ayudantes de la tarjeta de grupos';
+  end if;
 end $$;
+
+-- @test tarjeta K8: sólo viaja lo que la cuadrícula nombra: los nodos de sus celdas y filas (el pct sólo con `porcentaje`), los grupos de un `tc_*` o `plazo`, los modos con `modo_tc` y la variante con `titulo_opcion`
+begin;
+do $$
+declare
+  duena constant uuid := '00000000-0000-0000-0000-000000000001'; o uuid := (select id from public.origenes where clave = 'subasta_usa'); f uuid; r jsonb;
+begin
+  select id into f from public.formulas where origen_id = o and version = 1;
+  perform pg_temp.ct_publicar(o, pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "remate", "mostrar": "monto"}, {"tipo": "dato", "nodo": "fees", "mostrar": "etiqueta"}]',
+                                                        '{"ocultar_si": "no_aplica_o_cero", "nodo": "grua"}'));
+  r := pg_temp.ct_tarjeta(duena, f);
+  if r ->> 'estado' is distinct from 'lista' then raise exception 'no está lista: %', r; end if;
+  if (select array_agg(x ->> 'id' order by x ->> 'id') from jsonb_array_elements(r -> 'nodos') x) is distinct from array['fees', 'grua', 'remate']
+     or r -> 'grupos' <> '[]' or r -> 'tipos_de_cambio' <> '{"buckets": {}, "modos": {}}' or r -> 'modos' <> '[]' or r -> 'variante' <> 'null' or r -> 'colores' <> '[]' then
+    raise exception 'viaja de más: %', r;
+  end if;
+  -- El porcentaje de un par, el plazo, `modo_tc` y `titulo_opcion`.
+  perform pg_temp.ct_publicar(o, pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "fees", "mostrar": "porcentaje"}, {"tipo": "dato", "nodo": "grua", "mostrar": "plazo"},
+                                                          {"tipo": "dato", "variable": "modo_tc"}, {"tipo": "dato", "variable": "titulo_opcion"}]'));
+  r := pg_temp.ct_tarjeta(duena, f);
+  if (select x ->> 'pct' from jsonb_array_elements(r -> 'nodos') x where x ->> 'id' = 'fees') is distinct from 'fees_pct'
+     or (select array_agg(x ->> 'id' order by x ->> 'id') from jsonb_array_elements(r -> 'nodos') x) is distinct from array['fees', 'fees_pct', 'grua']
+     or (select array_agg(x ->> 'id') from jsonb_array_elements(r -> 'grupos') x) is distinct from array['logistica']
+     -- Un grupo que sólo nombra un `plazo` no lleva su bucket: ninguna celda `tc_*` validó su tipo de cambio.
+     or r #> '{grupos,0,bucket}' is distinct from 'null'::jsonb
+     or r -> 'tipos_de_cambio' <> '{"buckets": {}, "modos": {}}'
+     or r -> 'modos' <> '[{"clave": "paralelo", "nombre": "Paralelo"}, {"clave": "unificado", "nombre": "Unificado"}]'
+     or r #>> '{variante,nodo}' is distinct from 'variante' then
+    raise exception 'el porcentaje, el plazo, los modos o la variante: %', r;
+  end if;
+end $$;
+rollback;

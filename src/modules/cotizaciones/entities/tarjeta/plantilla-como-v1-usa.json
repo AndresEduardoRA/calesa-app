@@ -1,0 +1,611 @@
+{
+  "forma": 2,
+  "columnas": [
+    { "id": "concepto", "ancho": 270 },
+    { "id": "monto", "ancho": 130 },
+    { "id": "descripcion", "ancho": 290 },
+    { "id": "tipo_cambio", "ancho": 95 },
+    { "id": "tc", "ancho": 70 },
+    { "id": "plazo", "ancho": 125 }
+  ],
+  "filas": [
+    { "id": "meta", "alto": 34, "ocultar_si": "nunca" },
+    { "id": "titulo", "alto": 44, "ocultar_si": "nunca" },
+    { "id": "n_remate", "alto": 32, "ocultar_si": "no_aplica", "nodo": "remate" },
+    {
+      "id": "n_cuenta_especial",
+      "alto": 32,
+      "ocultar_si": "no_aplica_o_cero",
+      "nodo": "cuenta_especial"
+    },
+    { "id": "n_fees", "alto": 32, "ocultar_si": "no_aplica_o_cero", "nodo": "fees" },
+    {
+      "id": "n_transferencia",
+      "alto": 32,
+      "ocultar_si": "no_aplica_o_cero",
+      "nodo": "transferencia"
+    },
+    { "id": "n_grua", "alto": 32, "ocultar_si": "no_aplica_o_cero", "nodo": "grua" },
+    { "id": "n_export", "alto": 32, "ocultar_si": "no_aplica_o_cero", "nodo": "export" },
+    {
+      "id": "n_transporte_bolivia",
+      "alto": 32,
+      "ocultar_si": "no_aplica_o_cero",
+      "nodo": "transporte_bolivia"
+    },
+    {
+      "id": "n_transporte_chile",
+      "alto": 32,
+      "ocultar_si": "no_aplica_o_cero",
+      "nodo": "transporte_chile"
+    },
+    { "id": "n_comision", "alto": 32, "ocultar_si": "no_aplica_o_cero", "nodo": "comision" },
+    {
+      "id": "n_documentacion",
+      "alto": 32,
+      "ocultar_si": "no_aplica_o_cero",
+      "nodo": "documentacion"
+    },
+    {
+      "id": "n_nacionalizacion",
+      "alto": 32,
+      "ocultar_si": "no_aplica_o_cero",
+      "nodo": "nacionalizacion"
+    },
+    { "id": "total", "alto": 60, "ocultar_si": "nunca" },
+    { "id": "garantia", "alto": 32, "ocultar_si": "no_aplica", "nodo": "garantia" },
+    { "id": "nota", "alto": 40, "ocultar_si": "nunca" }
+  ],
+  "celdas": [
+    {
+      "id": "fecha",
+      "fila": "meta",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "variable": "fecha_larga" },
+      "estilo": { "negrita": true, "tamano": 14 }
+    },
+    {
+      "id": "categoria",
+      "fila": "meta",
+      "columna": "monto",
+      "abarca_columnas": 2,
+      "contenido": { "tipo": "dato", "variable": "titulo_opcion" },
+      "estilo": { "negrita": true, "alinear": "centro" }
+    },
+    {
+      "id": "asesor",
+      "fila": "meta",
+      "columna": "tipo_cambio",
+      "contenido": { "tipo": "texto", "texto": "Asesor:" },
+      "estilo": { "negrita": true, "tamano": 14, "alinear": "derecha" }
+    },
+    {
+      "id": "iniciales",
+      "fila": "meta",
+      "columna": "tc",
+      "abarca_columnas": 2,
+      "contenido": { "tipo": "dato", "variable": "asesor_iniciales" },
+      "estilo": { "negrita": true, "tamano": 18, "alinear": "centro" }
+    },
+    {
+      "id": "vehiculo",
+      "fila": "titulo",
+      "columna": "concepto",
+      "abarca_columnas": 3,
+      "contenido": { "tipo": "dato", "variable": "vehiculo_titulo" },
+      "estilo": {
+        "negrita": true,
+        "tamano": 22,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "cab_tc",
+      "fila": "titulo",
+      "columna": "tipo_cambio",
+      "abarca_columnas": 2,
+      "contenido": { "tipo": "texto", "texto": "Tipo $ Cambio" },
+      "estilo": {
+        "negrita": true,
+        "tamano": 11,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "cab_plazo",
+      "fila": "titulo",
+      "columna": "plazo",
+      "contenido": { "tipo": "texto", "texto": "Plazos Pagos" },
+      "estilo": {
+        "negrita": true,
+        "tamano": 11,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "remate_concepto",
+      "fila": "n_remate",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "verde", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "remate_monto",
+      "fila": "n_remate",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "verde",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "remate_descripcion",
+      "fila": "n_remate",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "compra_tc",
+      "fila": "n_remate",
+      "columna": "tipo_cambio",
+      "abarca_filas": 4,
+      "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "tc_nombre" },
+      "estilo": {
+        "fondo": "verde",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "compra_tc_valor",
+      "fila": "n_remate",
+      "columna": "tc",
+      "abarca_filas": 4,
+      "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "tc_valor" },
+      "estilo": { "fondo": "verde", "alinear": "centro", "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "compra_plazo",
+      "fila": "n_remate",
+      "columna": "plazo",
+      "abarca_filas": 4,
+      "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "plazo" },
+      "estilo": {
+        "fondo": "verde",
+        "negrita": true,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "cuenta_especial_concepto",
+      "fila": "n_cuenta_especial",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "cuenta_especial", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "verde", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "cuenta_especial_monto",
+      "fila": "n_cuenta_especial",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "cuenta_especial", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "verde",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "cuenta_especial_descripcion",
+      "fila": "n_cuenta_especial",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "cuenta_especial", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "fees_concepto",
+      "fila": "n_fees",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "fees", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "verde", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "fees_monto",
+      "fila": "n_fees",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "fees", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "verde",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "fees_descripcion",
+      "fila": "n_fees",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "fees", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "transferencia_concepto",
+      "fila": "n_transferencia",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "transferencia", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "verde", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "transferencia_monto",
+      "fila": "n_transferencia",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "transferencia", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "verde",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "transferencia_descripcion",
+      "fila": "n_transferencia",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "transferencia", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "grua_concepto",
+      "fila": "n_grua",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "grua", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "amarillo", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "grua_monto",
+      "fila": "n_grua",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "grua", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "grua_descripcion",
+      "fila": "n_grua",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "grua", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "logistica_tc",
+      "fila": "n_grua",
+      "columna": "tipo_cambio",
+      "abarca_filas": 6,
+      "contenido": { "tipo": "dato", "nodo": "grua", "mostrar": "tc_nombre" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "logistica_tc_valor",
+      "fila": "n_grua",
+      "columna": "tc",
+      "abarca_filas": 6,
+      "contenido": { "tipo": "dato", "nodo": "grua", "mostrar": "tc_valor" },
+      "estilo": { "fondo": "amarillo", "alinear": "centro", "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "logistica_plazo",
+      "fila": "n_grua",
+      "columna": "plazo",
+      "abarca_filas": 6,
+      "contenido": { "tipo": "dato", "nodo": "grua", "mostrar": "plazo" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "export_concepto",
+      "fila": "n_export",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "export", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "amarillo", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "export_monto",
+      "fila": "n_export",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "export", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "export_descripcion",
+      "fila": "n_export",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "export", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "transporte_bolivia_concepto",
+      "fila": "n_transporte_bolivia",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "transporte_bolivia", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "amarillo", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "transporte_bolivia_monto",
+      "fila": "n_transporte_bolivia",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "transporte_bolivia", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "transporte_bolivia_descripcion",
+      "fila": "n_transporte_bolivia",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "transporte_bolivia", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "transporte_chile_concepto",
+      "fila": "n_transporte_chile",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "transporte_chile", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "amarillo", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "transporte_chile_monto",
+      "fila": "n_transporte_chile",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "transporte_chile", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "transporte_chile_descripcion",
+      "fila": "n_transporte_chile",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "transporte_chile", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "comision_concepto",
+      "fila": "n_comision",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "comision", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "amarillo", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "comision_monto",
+      "fila": "n_comision",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "comision", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "comision_descripcion",
+      "fila": "n_comision",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "comision", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "documentacion_concepto",
+      "fila": "n_documentacion",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "documentacion", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "amarillo", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "documentacion_monto",
+      "fila": "n_documentacion",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "documentacion", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "documentacion_descripcion",
+      "fila": "n_documentacion",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "documentacion", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "nacionalizacion_concepto",
+      "fila": "n_nacionalizacion",
+      "columna": "concepto",
+      "contenido": { "tipo": "dato", "nodo": "nacionalizacion", "mostrar": "etiqueta" },
+      "estilo": { "fondo": "naranja", "tamano": 16, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "nacionalizacion_monto",
+      "fila": "n_nacionalizacion",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "nacionalizacion", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "naranja",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "derecha",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "nacionalizacion_descripcion",
+      "fila": "n_nacionalizacion",
+      "columna": "descripcion",
+      "contenido": { "tipo": "dato", "nodo": "nacionalizacion", "mostrar": "descripcion" },
+      "estilo": { "negrita": true, "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "aduana_tc",
+      "fila": "n_nacionalizacion",
+      "columna": "tipo_cambio",
+      "contenido": { "tipo": "dato", "nodo": "nacionalizacion", "mostrar": "tc_nombre" },
+      "estilo": {
+        "fondo": "naranja",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "aduana_tc_valor",
+      "fila": "n_nacionalizacion",
+      "columna": "tc",
+      "contenido": { "tipo": "dato", "nodo": "nacionalizacion", "mostrar": "tc_valor" },
+      "estilo": { "fondo": "naranja", "alinear": "centro", "bordes": { "todos": "fino" } }
+    },
+    {
+      "id": "aduana_plazo",
+      "fila": "n_nacionalizacion",
+      "columna": "plazo",
+      "contenido": { "tipo": "dato", "nodo": "nacionalizacion", "mostrar": "plazo" },
+      "estilo": {
+        "fondo": "naranja",
+        "negrita": true,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "total_etiqueta",
+      "fila": "total",
+      "columna": "concepto",
+      "contenido": { "tipo": "texto", "texto": "TOTAL DÓLARES:" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "tamano": 18,
+        "alinear": "centro",
+        "bordes": { "todos": "grueso" }
+      }
+    },
+    {
+      "id": "total_monto",
+      "fila": "total",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "total", "mostrar": "monto" },
+      "estilo": {
+        "fondo": "amarillo",
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "centro",
+        "bordes": { "todos": "grueso" }
+      }
+    },
+    {
+      "id": "total_nota",
+      "fila": "total",
+      "columna": "descripcion",
+      "abarca_filas": 2,
+      "contenido": { "tipo": "dato", "nodo": "total", "mostrar": "descripcion" },
+      "estilo": {
+        "negrita": true,
+        "tamano": 12,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "logo",
+      "fila": "total",
+      "columna": "tipo_cambio",
+      "abarca_columnas": 3,
+      "abarca_filas": 2,
+      "contenido": { "tipo": "logo" },
+      "estilo": { "alinear": "centro" }
+    },
+    {
+      "id": "garantia_etiqueta",
+      "fila": "garantia",
+      "columna": "concepto",
+      "contenido": { "tipo": "texto", "texto": "GARANTÍA PARA LA PARTICIPACIÓN" },
+      "estilo": {
+        "negrita": true,
+        "tamano": 11,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "garantia_monto",
+      "fila": "garantia",
+      "columna": "monto",
+      "contenido": { "tipo": "dato", "nodo": "garantia", "mostrar": "monto" },
+      "estilo": {
+        "negrita": true,
+        "tamano": 14,
+        "alinear": "centro",
+        "bordes": { "todos": "fino" }
+      }
+    },
+    {
+      "id": "nota",
+      "fila": "nota",
+      "columna": "concepto",
+      "abarca_columnas": 6,
+      "contenido": {
+        "tipo": "texto",
+        "texto": "Nota: Esta es una cotización referencial; los montos pueden variar con el tipo de cambio."
+      },
+      "estilo": { "cursiva": true, "tamano": 11, "bordes": { "todos": "fino" } }
+    }
+  ]
+}

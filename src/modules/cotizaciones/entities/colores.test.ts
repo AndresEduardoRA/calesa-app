@@ -8,6 +8,7 @@ import {
   contrasteDeLaTarjeta,
   derivarColores,
   razonEnTexto,
+  textoAutomatico,
   tintaDeLaTarjeta,
 } from './colores'
 
@@ -93,5 +94,14 @@ describe('contrasteDeLaTarjeta', () => {
     expect(razonEnTexto(3.249)).toBe('3,2')
     expect(razonEnTexto(4.5)).toBe('4,5')
     expect(razonEnTexto(21)).toBe('21,0')
+  })
+})
+
+describe('textoAutomatico', () => {
+  it('negro (#1b2130) sobre un fondo claro y blanco sobre uno oscuro: el de más contraste', () => {
+    expect(textoAutomatico('#ffffff')).toBe('#1b2130')
+    expect(textoAutomatico('#e6f6ee')).toBe('#1b2130')
+    expect(textoAutomatico('#31869b')).toBe('#ffffff')
+    expect(textoAutomatico('#1b2130')).toBe('#ffffff')
   })
 })
