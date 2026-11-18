@@ -360,7 +360,9 @@ creado_en desc, id desc) where eliminado_en is null and situacion <> 'fase'`; re
   `archivo_ruta is not null` va siempre); sondeo cada 5 s por PK con ≤ 21 ids, sólo con alguna en curso y la pestaña a la vista; el informe
   de rechazadas, ≤ 20 × 1.000 por PK y sólo al «Descargar». No es una tabla que crece.
 - `storage-gc`: 100 por ronda, 5 rondas; 2.000 huérfanos encolados por pasada; el barrido lleva un cursor por bucket (`cola_gc_barrido`):
-  10.000 objetos por pasada, 5 pasadas por corrida.
+  10.000 objetos por pasada, 5 pasadas por corrida. Barre `vehiculos` y `cotizaciones`, cada uno con su rama por `not exists` sobre las tablas que lo
+  referencian (`medir-jobs.sql`, 100.000 objetos en `cotizaciones` con adjuntos y portadas en uso: ≈ 0,2 s por ventana que encola 10.000 y ≈ 0,18 s la
+  misma ya encolada; topes 4 s y 1 s, los de `vehiculos`).
 - `leads-campos-privacidad` (lotes de 5.000, hasta 10 por corrida) y `equipo-bajas` (arriba).
 
 ## Ítems por página: qué lista lo admite y su máximo
@@ -578,9 +580,9 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
   `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). `/leads` mide 526,5 KB en 36 chunks y
-  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 374,7 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
-  `diferido()`), `/cotizaciones/[id]` 464,5 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
-  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 457,0 de 460 (el campo del título va con `diferido()` dentro del panel)
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 374,8 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 463,6 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,2 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 496,8 en 32 chunks: «Qué falta» de la ficha, la galería y subida de fotos, Documentos y
@@ -771,6 +773,12 @@ fallar.
   `cotizacion_tarjeta`, asesor y vehículo por PK y `leerAjustes()` (una RPC más que `getAjustes()`); el logo ≤ 1 MB con 2 s de espera. Topes:
   150 KB y 1,5 s (40.406 B y 150 ms medidos con la cuadrícula: una página A4). La tarjeta de lo guardado lo ofrece con un `<a download>` sin JS.
   La imagen de la tarjeta (`imagenDeUnaGuardada()`) sale al ancho de la tarjeta (≤ 1.600 px) y carga `next/og` sólo con `import()` en el servidor.
+- Portada de la cotización (`GET /cotizaciones/<id>/portada`, `e2e/cotizaciones-portada.spec.ts`): una llamada a `cotizacion_portada()` (la cotización
+  por PK y la clave: todo por PK o índice único, y los catálogos de colores y tipos de cambio, decenas de filas) y, con la ETag de hoy, 304 sin nada más; al
+  día, una bajada del bucket; si falta o quedó vieja, lo del PDF de una cotización más el WebP (`sharp`, sólo en el servidor) y, si quien pide puede
+  guardarla, una subida y una RPC antes de responder. Una lista de N portadas son N pedidos `loading="lazy"` independientes, nunca una lectura por fila
+  dentro de otra. `private, no-cache` con ETag: el navegador revalida con un 304. La de la réplica de V1 (`e2e/cotizaciones-portada.spec.ts`, al ancho de la
+  tarjeta) pesa ≈ 35 KB (35.414 B).
 - Tarea de oro 2 (`e2e/cotizar-tarea-de-oro*.spec.ts`; deterministas: una parada nueva en el camino las rompe): robot < 30 s y KLM ≤ 90 s.
   Teclas de control: el tramo de la hoja hasta el PDF ≤ 29; con el panel del vehículo ≤ 29; con un enlace de subasta, exactamente 33; con
   el cliente, ≤ 29 si existe y ≤ 30 si es nuevo. Cada lado editable de la hoja y de «Avanzado» se alcanza con Tab, en orden.

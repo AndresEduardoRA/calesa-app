@@ -890,8 +890,8 @@ pantalla); el logo, en `Buffer` y sólo si react-pdf lo dibuja fiel (`docs/PENDI
 ### La portada de la cotización
 
 La **portada de la cotización** es la imagen de la tarjeta de una cotización guardada: la de lo guardado (como el PDF), en WebP de hasta 1.600 px
-de ancho (calidad 80, con `sharp` en el servidor), guardada por hash en el bucket privado `cotizaciones` (`<cotización>/portada/<sha-256>.webp`: las
-policies del bucket valen sin cambios, leer pide `cotizaciones.ver` y subir, poder guardarla). Se anota en `cotizaciones_portadas` (una fila por
+de ancho (calidad 80, con `sharp` en el servidor), guardada por hash en el bucket privado `cotizaciones` (`<cotización>/portada/<sha-256>.webp`: subir pide
+poder guardarla, como un adjunto; leer, además de ver la cotización, ver lo que dibuja: `cotizacion_portada_visible()` en la policy «cotizaciones: leer»). Se anota en `cotizaciones_portadas` (una fila por
 cotización: `ruta`, `clave`, `generada_en`), no en `cotizaciones`: un `update` dejaría una revisión y movería la versión esperada de quien edita.
 
 - **La clave** dice de qué está hecha: `_cotizacion_portada_clave()` = `p<versión del dibujo>-md5` de todo lo que el dibujo lee: la cotización
@@ -910,10 +910,11 @@ ve_todo, puede_guardarla, contexto}`: `puede_guardarla` es `ve_todo` y `_cotizac
   cotización `for no key update`), la ruta en la carpeta `portada/` de la cotización y el objeto en storage, WebP de hasta 5 MB (22023 con `hint`), y la
   clave, la vigente tras el candado (si no, PT409 «La tarjeta cambió mientras se armaba la imagen.»: quien llama entrega su imagen sin guardarla).
   Reemplaza la fila y manda la ruta vieja a la cola de limpieza si nadie más la usa.
-- **Cuándo se arma.** Al guardar (crear, guardar y cotizar encima), después de responder: el núcleo avisa por el hueco de la vista previa
-  (`alGuardarLaCotizacion`) y el área `tarjeta` pide la action `prepararLaPortada`, que la arma y la guarda en `after()`; el guardado no la espera ni ve
-  sus fallos. Y al pedirla vieja o sin portada: la ruta la arma, la entrega y, si quien pide puede guardarla, la guarda en `after()`. Sin el primer
-  recálculo (la tarjeta saldría sólo con el total) se entrega pero no se guarda. Una plantilla nueva se ve sola, sin relleno masivo.
+- **Cuándo se arma.** Al guardar (crear, guardar y cotizar encima), después de la respuesta del guardado: el núcleo avisa por el hueco de la vista previa
+  (`alGuardarLaCotizacion`) y el área `tarjeta` pide la ruta (`pedirLaPortada()`, un `fetch` que nadie espera); el guardado no la espera ni ve sus fallos.
+  Y al pedirla vieja o sin portada. En los dos casos la ruta la arma y, si quien pide puede guardarla, la guarda **antes de responder** (nunca en `after()`:
+  la sesión podría renovarse con la respuesta ya enviada). Sin el primer recálculo (la tarjeta saldría sólo con el total) se entrega pero no se guarda. Una
+  plantilla nueva se ve sola, sin relleno masivo.
 - **La ruta** `GET /cotizaciones/<id>/portada` (`requerirSesion()`): lo que no existe, está en la papelera o no se ve, el mismo 404 en texto que el PDF.
   La compartida va con `ETag` = la clave y `Cache-Control: private, no-cache` (con `If-None-Match` igual, 304 sin bajar ni armar nada); al día, la baja
   del bucket con la sesión de quien pide. La propia va con `no-store` y sin `ETag`. Si armarla falla, 500: nunca una vieja.
