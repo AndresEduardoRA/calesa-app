@@ -8,9 +8,9 @@ import { useUnEnvioALaVez } from '@/shared/ui/use-un-envio-a-la-vez'
 import { firmaDeTonos } from '../../../entities/diseno/panel-de-tonos'
 import type { RespuestaDeTonos } from '../../../entities/diseno/respuesta-de-tonos'
 import type { CambiosDeUnTono, ListaDeTonos, Tono } from '../../../entities/diseno/tonos'
-import { usePedidosDeTonos } from './use-pedidos-de-tonos'
+import { usePedidosDeColores } from './use-pedidos-de-colores'
 
-export type EnvioDeTonos = Envio<RespuestaDeTonos>
+export type EnvioDeColores = Envio<RespuestaDeTonos>
 
 // Un conflicto, un permiso que se perdió o una regla que ya no se cumple (un color que una fórmula pasó a usar mientras se confirmaba eliminarlo): la página se relee.
 const REFRESCAN = new Set(['conflicto', 'sin_permiso', 'regla'])
@@ -30,13 +30,13 @@ function useListaSembrada(inicial: ListaDeTonos) {
 // Los colores de la pantalla. Cada escritura devuelve la lista entera con las versiones nuevas y esa reemplaza a la local: ningún pedido extra. Un envío a la vez
 // (con una marca propia, no `isPending`: un Enter repetido llega antes de que el estado cambie). Crear y guardar devuelven el envío entero: el modal dice el
 // motivo junto a su campo.
-export function useTonos(inicial: ListaDeTonos) {
+export function useColores(inicial: ListaDeTonos) {
   const router = useRouter()
   const [lista, poner] = useListaSembrada(inicial)
-  const pedir = usePedidosDeTonos()
+  const pedir = usePedidosDeColores()
   const unaVez = useUnEnvioALaVez()
 
-  const mandar = (pedido: () => Promise<EnvioDeTonos>) =>
+  const mandar = (pedido: () => Promise<EnvioDeColores>) =>
     unaVez.mandar(async () => {
       const envio = await pedido()
       if (envio.ok) poner(envio.data.lista)
@@ -65,4 +65,4 @@ export function useTonos(inicial: ListaDeTonos) {
   }
 }
 
-export type Tonos = ReturnType<typeof useTonos>
+export type Colores = ReturnType<typeof useColores>

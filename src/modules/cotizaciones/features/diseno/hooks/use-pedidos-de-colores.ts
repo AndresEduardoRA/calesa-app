@@ -12,7 +12,7 @@ const MENSAJE_DE_VALIDACION = 'Revisa los campos marcados.'
 
 // Las tres Server Actions de los colores, como funciones que devuelven el envío (el resultado, o `sinRed` si no llegó al servidor). Guardar y eliminar mandan la
 // versión que se tenía en pantalla.
-export function usePedidosDeTonos() {
+export function usePedidosDeColores() {
   const crear = useAction(crearTono)
   const guardar = useAction(guardarTono)
   const eliminar = useAction(eliminarTono)

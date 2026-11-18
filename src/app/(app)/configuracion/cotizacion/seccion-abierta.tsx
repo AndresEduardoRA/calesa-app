@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Suspense } from 'react'
 import { SeccionDelDiseno } from '@/modules/cotizaciones/pantallas/diseno'
-import { SeccionDeLosTonos } from '@/modules/cotizaciones/pantallas/diseno-tonos'
+import { SeccionDeLosColores } from '@/modules/cotizaciones/pantallas/diseno-colores'
 import { SeccionDeLaFormula } from '@/modules/cotizaciones/pantallas/formula'
 import { SeccionDeLaPlantilla } from '@/modules/cotizaciones/pantallas/plantilla'
 import { SeccionDeLasTablas } from '@/modules/cotizaciones/pantallas/tablas'
@@ -56,7 +56,7 @@ const SECCIONES: Record<Pestana, (pedido: Pedido) => ReactNode> = {
   ),
   tonos: () => (
     <Suspense fallback={<EsqueletoFormulario bloques={2} campos={2} />}>
-      <SeccionDeLosTonos />
+      <SeccionDeLosColores />
     </Suspense>
   ),
   tablas: ({ permisos, origenPedido, tablaPedida }) => (

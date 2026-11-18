@@ -10,12 +10,12 @@ import {
   validarTono,
   type Tono,
 } from '../../../entities/diseno/tonos'
-import { useRespuestaDeTono } from './use-respuesta-de-tono'
-import type { Tonos } from './use-tonos'
+import type { Colores } from './use-colores'
+import { useRespuestaDeColor } from './use-respuesta-de-color'
 
 type Args = {
-  tonos: Tonos
-  // Nulo = «Nuevo tono».
+  colores: Colores
+  // Nulo = «Nuevo color».
   original: Tono | null
   alCerrar: () => void
   // Cerrado (se descartó o se fue con «atrás»), lo que esperaba la red no sale.
@@ -28,13 +28,13 @@ const sinMotivo = (errores: Record<string, string>, ...claves: string[]) =>
 // El estado del modal de un color: el nombre y el hex tal cual se escriben, el motivo junto a cada campo y el envío. El id del intento nace al abrir y se conserva en
 // cada reintento. Al enviar, `validarTono()` pone el motivo junto al campo y nada sale; lo que la base rechaza vuelve igual. Un contraste bajo en la tarjeta no
 // frena nada (es un aviso). Un conflicto espera la versión nueva (la trae «Recargar») y **conserva lo escrito**; sin conexión, lo escrito queda y sale solo al volver.
-export function useFormularioDeTono({ tonos, original, alCerrar, abierto }: Args) {
+export function useFormularioDeColor({ colores, original, alCerrar, abierto }: Args) {
   const router = useRouter()
   const [intento] = useState(() => crypto.randomUUID())
   const [nombre, setNombre] = useState(original?.nombre ?? '')
   const [hex, setHex] = useState(original?.hex ?? HEX_DE_UN_COLOR_NUEVO)
   const [recargando, recargarPagina] = useTransition()
-  const respuesta = useRespuestaDeTono(original, alCerrar)
+  const respuesta = useRespuestaDeColor(original, alCerrar)
   const { setErrores } = respuesta
 
   async function enviar(): Promise<boolean> {
@@ -42,8 +42,8 @@ export function useFormularioDeTono({ tonos, original, alCerrar, abierto }: Args
     const validado = validarTono({
       nombre,
       hex,
-      tonos: tonos.lista.tonos,
-      tope: tonos.lista.tope,
+      tonos: colores.lista.tonos,
+      tope: colores.lista.tope,
       original,
     })
     if (!validado.ok) {
@@ -52,14 +52,14 @@ export function useFormularioDeTono({ tonos, original, alCerrar, abierto }: Args
     }
     respuesta.setAviso(null)
     if (!original)
-      return respuesta.aplicar(await tonos.crear(intento, validado.nombre, validado.hex))
+      return respuesta.aplicar(await colores.crear(intento, validado.nombre, validado.hex))
     const cambios = cambiosDeUnTono(original, validado)
     // Sin cambio no hay nada que guardar: se cierra.
     if (cambios.nombre === undefined && cambios.hex === undefined) {
       alCerrar()
       return true
     }
-    return respuesta.aplicar(await tonos.guardar(original, cambios))
+    return respuesta.aplicar(await colores.guardar(original, cambios))
   }
 
   const enLinea = useReintentoAlVolver(abierto ? respuesta.pendiente : null, () => enviar())
@@ -70,7 +70,7 @@ export function useFormularioDeTono({ tonos, original, alCerrar, abierto }: Args
     errores: respuesta.errores,
     aviso: respuesta.aviso,
     conflicto: respuesta.conflicto,
-    enCurso: tonos.enCurso,
+    enCurso: colores.enCurso,
     enLinea,
     esperandoConexion: respuesta.pendiente !== null,
     // Cerrar ahora perdería lo escrito: el modal pregunta antes.
