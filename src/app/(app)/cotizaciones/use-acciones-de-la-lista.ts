@@ -11,6 +11,7 @@ import {
 } from '@/modules/cotizaciones/pantallas/comentarios-listado'
 import { useAbrirMarcarFinalDeLaFila } from '@/modules/cotizaciones/pantallas/final-listado'
 import { enviarLaCotizacionALaPapelera } from '@/modules/cotizaciones/pantallas/papelera-listado'
+import { useAbrirCompartirDeLaFila } from '@/modules/cotizaciones/pantallas/tarjeta-compartir'
 import type { AccionesDeLaFila } from './menu-de-la-fila'
 
 type Fila = { id: string; numero: number }
@@ -38,12 +39,13 @@ function datosDeMarcasDe(
   return datos
 }
 
-// Lo que hace cada acción del «⋯» de una fila del listado, con las actions y los diálogos de cada área (las mismas de la guardada): aprobar y enviar a la papelera se hacen de una, con su
+// Lo que hace cada acción del «⋯» de una fila del listado, con las actions y los diálogos de cada área (las mismas de la guardada): compartir abre su panel; aprobar y enviar a la papelera se hacen de una, con su
 // «Deshacer»; la favorita cambia al tocar; marcar final, reportar y moderar abren su diálogo en la URL. Qué cotizaciones tienen algo en vuelo (aprobar o enviar) se apagan hasta que
 // la base responde.
 export function useAccionesDeLaLista(filas: readonly Fila[], menus: Menus) {
   const router = useRouter()
   const abrirFinal = useAbrirMarcarFinalDeLaFila()
+  const abrirCompartir = useAbrirCompartirDeLaFila()
   const marcas = useAbrirMarcasDeLaFila()
   const leidas = useMemo(
     () => new Map(Object.entries(menus).map(([id, menu]) => [id, menu.favorita])),
@@ -68,6 +70,9 @@ export function useAccionesDeLaLista(filas: readonly Fila[], menus: Menus) {
 
   function accionesDe(fila: Fila, menu: MenuDeUnaFila): AccionesDeLaFila {
     return {
+      compartir: () => {
+        abrirCompartir(fila.id)
+      },
       aprobar: () => {
         void conOcupada(fila.id, () =>
           aprobarLaCotizacion({

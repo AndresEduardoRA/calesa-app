@@ -30,6 +30,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Editor de la fórmula: sumar o quitar grupos y editar `buckets`, `total_en` y los modos — espera a que la plantilla de la tarjeta se edite junto con la fórmula.
 - **[—]** Editor del diseño: sumar y quitar secciones o ítems quedó sin dueño, y pasar un ítem de una sección a otra (hoy se ordena dentro de la suya).
 - **[—]** En la primera publicación de un origen (las dos esperadas nulas), el borrador puede nacer sobre una v1 que otra persona publicó entre medio — decidir si la esperada nula deja de valer.
+- **[T314]** «Compartir la cotización» sin el asistente de IA de V1 para reescribir el texto («hazlo más corto», «más profesional»…): decidir si vuelve y con qué proveedor.
+- **[T314]** «Compartir la cotización» sin el editor de imagen 9:16 de V1 (la historia de WhatsApp o Instagram con la foto y la cotización): hoy se comparte la portada o las fotos tal cual.
 - **[—]** Sin hacer: el filtro «Favoritas» y la insignia en el listado, quién reportó en la lista de reportes, el tiempo real en comentarios y el motivo de lo bloqueado en la fila de un lote de la papelera.
 
 ### Leads y web

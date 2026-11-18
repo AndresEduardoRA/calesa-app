@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
+  ciudadDeLaZona,
+  formatearDiaLargo,
   abreviaturaDeZona,
   formatearFechaHoraConZona,
   diaEnZona,
@@ -162,5 +164,19 @@ describe('la zona en la fecha de una subasta (horario de verano de EE. UU.)', ()
     expect(new Date(inexistente ?? '').getUTCHours()).toBeGreaterThanOrEqual(6)
     const repetida = instanteDeLocal('2026-11-01T01:30', NY)
     expect(['2026-11-01T05:30:00.000Z', '2026-11-01T06:30:00.000Z']).toContain(repetida)
+  })
+})
+
+describe('formatearDiaLargo y ciudadDeLaZona: el día de un texto para mandar', () => {
+  it('dice el día en la zona pedida, que puede ser otro que el de la empresa', () => {
+    const iso = '2026-11-20T03:00:00Z'
+    expect(formatearDiaLargo(iso, { zona: 'America/La_Paz' })).toBe('jueves 19 de noviembre')
+    expect(formatearDiaLargo(iso, { zona: 'Europe/Madrid' })).toBe('viernes 20 de noviembre')
+  })
+
+  it('la ciudad es el último tramo de la zona, sin guiones bajos', () => {
+    expect(ciudadDeLaZona('America/La_Paz')).toBe('La Paz')
+    expect(ciudadDeLaZona('America/Argentina/Buenos_Aires')).toBe('Buenos Aires')
+    expect(ciudadDeLaZona('UTC')).toBe('UTC')
   })
 })

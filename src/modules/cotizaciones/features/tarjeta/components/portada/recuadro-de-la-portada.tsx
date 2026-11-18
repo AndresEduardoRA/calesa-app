@@ -8,11 +8,18 @@ type Props = {
   // Falló la imagen (o no hay red): se dice y se ofrece pedirla de nuevo.
   fallo: boolean
   alReintentar: () => void
+  // Lo que dice si falla (por defecto, el de la portada de una lista).
+  textoDelFallo?: string
 }
 
 // Lo que ocupa el lugar de la portada mientras se arma o carga, o si falla: el total (con `<Monto>`, que respeta el Modo Live) y el estado. Va en el flujo del marco:
 // con el texto al 200 % lo hace crecer en vez de salirse.
-export function RecuadroDeLaPortada({ total, fallo, alReintentar }: Props) {
+export function RecuadroDeLaPortada({
+  total,
+  fallo,
+  alReintentar,
+  textoDelFallo = 'No se pudo cargar la vista previa.',
+}: Props) {
   return (
     <div className="relative z-10 grid content-center justify-items-center gap-2 bg-(--color-paper-dim) p-4 text-center [overflow-wrap:anywhere]">
       {total === null ? null : (
@@ -25,9 +32,7 @@ export function RecuadroDeLaPortada({ total, fallo, alReintentar }: Props) {
       )}
       {fallo ? (
         <>
-          <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-            No se pudo cargar la vista previa.
-          </p>
+          <p className="text-(length:--text-sm) text-(--color-ink-soft)">{textoDelFallo}</p>
           <Button type="button" variant="outline" className="h-11 md:h-8" onClick={alReintentar}>
             Reintentar
           </Button>

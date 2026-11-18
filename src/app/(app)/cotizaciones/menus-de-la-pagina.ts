@@ -30,7 +30,8 @@ export function ofertasDeLaFila(
   { permisos, usuarioId }: Quien,
 ): OfertasDelMenuDeCotizacion {
   const puedeGuardar = puedeGuardarDesdeElListado(fila, permisos, usuarioId)
-  const ofertas: Record<string, { motivo: string | null }> = {}
+  // Si la fila se ve, la cotización se ve: se comparte como se baja su PDF, sin clave propia (con el Modo Live, el menú no la dibuja).
+  const ofertas: Record<string, { motivo: string | null }> = { compartir: { motivo: null } }
   // Ya es la aprobada de su vehículo: no hay qué aprobar.
   if (puedeAprobar(fila, permisos) && !fila.aprobada) {
     ofertas['aprobar'] = { motivo: motivoParaNoAprobar(fila, marcas) }
