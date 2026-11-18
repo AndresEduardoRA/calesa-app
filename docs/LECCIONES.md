@@ -140,6 +140,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - No reexportes lecturas de otras superficies por un `composicion.client.ts` que importa una pantalla en frío: ella paga todo lo que reexporta (+20 KB). Cada lectura en su `composicion-<x>.client.ts`.
 - Dale a cada superficie su propio `diferidos.tsx`: un `diferido()` de nivel superior es efecto de módulo y no se descarta aunque la pantalla no lo reexporte.
 - Mide con `presupuesto-js` antes de importar `<Badge>` u otra utilidad de `shared` en la carga en frío de una pantalla pesada: `<Badge>` arrastra Base UI (+8,5 KB).
+- Saca un componente de un `pantallas/<área>.ts` ajeno a la ruta por su propio `pantallas/<área>-<pantalla>.ts`: importar de un barril con Client Components de otra pantalla puede arrastrarlos al JS en frío (el detalle de un proyecto cargaba el listado y «Nuevo proyecto», +5 %).
 - Haz que un `loading.tsx` importe sólo el esqueleto, nunca la pantalla ni el barril de `pantallas/`: baja su chunk dos veces en frío.
 - Manda al navegador las acciones ya calculadas por el servidor, no `permisos.ts` ni las reglas: importarlas suma JS en frío a la ruta.
 - Pasa al cliente sólo lo que dibuja (`contextoParaElNavegador()`): las props viajan en el primer HTML (≈ 100 B por nodo y por fila) y las del layout, en el de todas las pantallas (30 acciones de la paleta suman 7 KB a `/perfil`).
