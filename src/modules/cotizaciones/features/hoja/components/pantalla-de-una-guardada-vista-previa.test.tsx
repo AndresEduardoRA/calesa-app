@@ -41,7 +41,13 @@ function montar(usdDeHoy: number, valoresDeHoy: Record<string, number | string |
   }
   return render(
     <ContextoDeLaVistaPrevia value={area}>
-      <PantallaDeUnaGuardada hoja={hoja} inicial={inicial} personaId={PERSONA} />
+      <PantallaDeUnaGuardada
+        hoja={hoja}
+        inicial={inicial}
+        personaId={PERSONA}
+        vehiculoNuevo={null}
+        cambiaVehiculo={false}
+      />
     </ContextoDeLaVistaPrevia>,
     '?panel=vista-previa',
   )

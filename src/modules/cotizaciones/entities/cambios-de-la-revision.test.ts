@@ -109,3 +109,45 @@ describe('cambiosDeLaRevision › el título de la cotización (T307)', () => {
     ])
   })
 })
+
+describe('cambiosDeLaRevision › el cambio de vehículo con sus nombres (T315)', () => {
+  const diff = {
+    vehiculo_id: { de: 'a', a: 'b' },
+    valores: { de: { pub: 1, fob: 2, flete: 3 }, a: { pub: 4, fob: 5, flete: 6 } },
+  }
+
+  it('con los dos nombrados: «Cambió el vehículo: A → B», primero y en lugar de «Cambió el vehículo»', () => {
+    const r = cambiosDeLaRevision(diff, etiquetas, {
+      de: { titulo: 'Toyota Corolla' },
+      a: { titulo: 'Mazda 3' },
+    })
+    expect(r.vistos[0]).toBe('Cambió el vehículo: Toyota Corolla → Mazda 3')
+    expect(r.vistos).not.toContain('Cambió el vehículo')
+    expect(r.masN).toBe(1)
+  })
+
+  it('un lado que quien mira no ve: «un vehículo que no puedes ver»', () => {
+    const r = cambiosDeLaRevision(diff, etiquetas, { de: 'oculto', a: { titulo: 'Mazda 3' } })
+    expect(r.vistos[0]).toBe('Cambió el vehículo: un vehículo que no puedes ver → Mazda 3')
+  })
+
+  it('sin vehículo antes: «sin vehículo»', () => {
+    const r = cambiosDeLaRevision({ vehiculo_id: { de: null, a: 'b' } }, etiquetas, {
+      de: 'sin',
+      a: { titulo: 'Mazda 3' },
+    })
+    expect(r.vistos).toEqual(['Cambió el vehículo: sin vehículo → Mazda 3'])
+  })
+
+  it('sin la lectura de los nombres: «Cambió el vehículo», después de los nodos', () => {
+    const r = cambiosDeLaRevision(
+      { vehiculo_id: { de: 'a', a: 'b' }, valores: diff.valores },
+      etiquetas,
+    )
+    expect(r.vistos).toEqual(['Cambió «Flete»', 'Cambió «FOB»', 'Cambió «Precio publicado»'])
+    expect(r.masN).toBe(1)
+    expect(cambiosDeLaRevision({ vehiculo_id: { de: 'a', a: 'b' } }, etiquetas).vistos).toEqual([
+      'Cambió el vehículo',
+    ])
+  })
+})

@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { AltaDelPanel } from '../alta-del-panel'
@@ -165,5 +165,52 @@ describe('BarraDelVehiculo › el título de lo que se cotiza (T307)', () => {
     montar({ titulo: 'Para Juan Pérez', modo: 'solo_mostrar', textoSinVehiculo: null })
     expect(screen.queryByText('Sin vehículo')).toBeNull()
     expect(screen.queryByText('Selecciona un vehículo')).toBeNull()
+  })
+})
+
+describe('BarraDelVehiculo › cambiar el vehículo de una guardada (T315)', () => {
+  const elegido = { id: ID, numero: 12, titulo: 'Toyota Corolla', lote: '4455', portadaRuta: null }
+
+  it('«cambiar»: el panel de elegir (con buscador y listas) sin «Quitar»; «elegir» sí lo ofrece', () => {
+    montar({ elegido, modo: 'cambiar' }, '?origen=o&panel=vehiculo')
+    expect(panelMontado).toHaveBeenLastCalledWith(
+      expect.objectContaining({ soloElegido: false, sinQuitar: true }),
+    )
+    cleanup()
+    montar({ elegido }, '?origen=o&panel=vehiculo')
+    expect(panelMontado).toHaveBeenLastCalledWith(
+      expect.objectContaining({ soloElegido: false, sinQuitar: false }),
+    )
+  })
+
+  it('«ver_elegido» lleva al panel el motivo para no cambiarlo', () => {
+    montar(
+      {
+        elegido,
+        modo: 'ver_elegido',
+        motivoSinCambiar: 'Una cotización final no cambia de vehículo.',
+      },
+      '?origen=o&panel=vehiculo',
+    )
+    expect(panelMontado).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        soloElegido: true,
+        motivo: 'Una cotización final no cambia de vehículo.',
+      }),
+    )
+  })
+
+  it('el aviso del elegido va bajo la barra con «Elegir otro vehículo», que abre el panel', () => {
+    montar({ elegido, modo: 'cambiar', avisoDelElegido: 'No se puede usar ese vehículo.' })
+    expect(screen.getByRole('alert').textContent).toBe('No se puede usar ese vehículo.')
+    expect(panelMontado).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Elegir otro vehículo' }))
+    expect(panelMontado).toHaveBeenLastCalledWith(expect.objectContaining({ abierto: true }))
+  })
+
+  it('sin aviso, ni el texto ni el botón', () => {
+    montar({ elegido, modo: 'cambiar' })
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Elegir otro vehículo' })).toBeNull()
   })
 })

@@ -59,7 +59,7 @@ type Props = {
   deLoGuardado?: { calculo: CalculoDeLaTarjeta; difiere: boolean }
 }
 
-// Las salidas del aviso de guardado: las de la hoja nueva o, en una guardada, sólo «Escribir el título» (su botón abre el panel del vehículo).
+// Las salidas del aviso de guardado: las de la hoja nueva o, en una guardada, «Escribir el título» y, si puede cambiarlo, «Elegir otro vehículo» (abren el panel del vehículo).
 const eleccionesDelAviso = (
   elecciones: EleccionesDeLaHoja | undefined,
   edicion: EdicionDeLaHoja | undefined,
@@ -67,7 +67,7 @@ const eleccionesDelAviso = (
   elecciones ??
   (edicion?.panelDelTitulo === undefined
     ? undefined
-    : eleccionesDeUnaGuardada(edicion.panelDelTitulo))
+    : eleccionesDeUnaGuardada(edicion.panelDelTitulo, { cambiaVehiculo: edicion.cambiaVehiculo }))
 
 // Puede cotizar en el origen pero su rol no ve ningún dato de la hoja (`cotizaciones.ver`): no hay nada que dibujar ni un total que dar.
 function SinDatosQueVer() {

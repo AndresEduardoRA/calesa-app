@@ -18,6 +18,7 @@ const pedido = (mas: Partial<PedidoDeEdicion> = {}): PedidoDeEdicion => ({
   tituloManual: false,
   notas: null,
   vehiculoId: null,
+  cambiaElVehiculo: false,
   ...mas,
 })
 
@@ -51,6 +52,7 @@ describe('argumentosDeGuardar', () => {
         tituloManual: true,
         notas: 'Con flete',
         vehiculoId: VEHICULO,
+        cambiaElVehiculo: false,
         modoTc: 'paralelo',
         verTotalBs: true,
       }),

@@ -11,7 +11,7 @@ type Props = {
   elegido: VehiculoElegido
   // El historial del elegido, armado por la página (`vehiculos` no conoce `cotizaciones`): va debajo de su título.
   historial: ReactNode
-  // Sin él (una guardada: cambiar el vehículo no es de esta pantalla), el elegido se ve sin «Quitar».
+  // Sin él (una guardada: no se queda sin vehículo), el elegido se ve sin «Quitar».
   alQuitar?: (() => void) | undefined
   // Los datos del vehículo que se eligen entre las filas de una tabla de la hoja (4.14-2c3), con su lector; null = ninguno.
   paraElegir: ParaElegirConLector | null

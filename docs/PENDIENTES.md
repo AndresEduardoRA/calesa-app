@@ -25,7 +25,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Cotizaciones
 
-- **[4-71]** Cambiar el vehículo de una preventa guardada desde `/cotizaciones/[id]` — la base lo admite; falta la barra del vehículo en la guardada, o elegir sólo entre vehículos ya cargados.
+- **[—]** El dato del vehículo de una tabla (4.14-2c3) no se elige en el panel de una guardada: el lector de opciones lee `cotizacion_tabla` con la hoja abierta, que una guardada no tiene — falta uno por cotización (la celda dice «Falta un dato del vehículo.»).
 - **[4-72]** Quien ve una cotización pero no su vehículo no puede recalcularla («No se pudo recalcular») — que el recálculo de una guardada no dependa del vehículo, o que la pantalla diga por qué.
 - **[4-94]** «Cotizar» suelto (sin lead) en la cabecera de la ficha `/vehiculos/[id]` y en el «⋯» del inventario — hoy está en el resumen de `/vehiculos`, en la barra de la hoja y, con su lead, en cada fila de «Relacionados».
 - **[4-101]** El editor de la tarjeta no reordena, suma ni quita grupos a mano (manda la fórmula) — decidir viendo la vista previa.

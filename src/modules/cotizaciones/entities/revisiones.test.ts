@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { autorDeLaRevision, hastaDeUnDia, revisionesDesde } from './revisiones'
+import {
+  autorDeLaRevision,
+  conVehiculos,
+  hastaDeUnDia,
+  idsDeVehiculosDe,
+  revisionesDesde,
+} from './revisiones'
 
 const USUARIO = '00000000-0000-4000-8000-0000000000aa'
 const fila = (id: number, extra: Record<string, unknown> = {}) => ({
@@ -80,5 +86,46 @@ describe('hastaDeUnDia: el borde exclusivo de «ese día y lo anterior»', () =>
     expect(hastaDeUnDia('', 'America/La_Paz')).toBeNull()
     expect(hastaDeUnDia('2026-13-01', 'America/La_Paz')).toBeNull()
     expect(hastaDeUnDia('13/10/2026', 'America/La_Paz')).toBeNull()
+  })
+})
+
+describe('los vehículos de un cambio de vehículo, nombrados al leer (T315)', () => {
+  const A = '00000000-0000-4000-8000-00000000000A'
+  const B = '00000000-0000-4000-8000-0000000000bb'
+  const C = '00000000-0000-4000-8000-0000000000cc'
+  const pagina = () =>
+    revisionesDesde(
+      respuesta([
+        fila(9, { diff: { vehiculo_id: { de: A, a: B } } }),
+        fila(8, { diff: { vehiculo_id: { de: null, a: A } } }),
+        fila(7, { diff: { vehiculo_id: { de: C, a: 'no-es-un-id' } } }),
+        fila(6),
+      ]),
+    )!
+
+  it('al leer, ninguna revisión trae el cambio nombrado', () => {
+    expect(pagina().revisiones.map((r) => r.vehiculo)).toEqual([null, null, null, null])
+  })
+
+  it('los ids de los dos lados, sin repetir, en minúsculas y sólo los que son ids', () => {
+    expect(idsDeVehiculosDe(pagina().revisiones)).toEqual([A.toLowerCase(), B, C])
+    expect(idsDeVehiculosDe(revisionesDesde(respuesta([fila(1)]))!.revisiones)).toEqual([])
+  })
+
+  it('cada lado: su título si quien mira lo ve, «oculto» si no, y «sin» si no tenía', () => {
+    const titulos = new Map([
+      [A.toLowerCase(), 'Toyota Corolla'],
+      [B, 'Mazda 3'],
+    ])
+    const r = conVehiculos(pagina(), titulos).revisiones
+    expect(r[0]?.vehiculo).toEqual({ de: { titulo: 'Toyota Corolla' }, a: { titulo: 'Mazda 3' } })
+    expect(r[1]?.vehiculo).toEqual({ de: 'sin', a: { titulo: 'Toyota Corolla' } })
+    expect(r[2]?.vehiculo).toEqual({ de: 'oculto', a: 'oculto' })
+    expect(r[3]?.vehiculo).toBeNull()
+  })
+
+  it('sin la lectura de los nombres, ninguna revisión los trae', () => {
+    const p = pagina()
+    expect(conVehiculos(p, null)).toBe(p)
   })
 })

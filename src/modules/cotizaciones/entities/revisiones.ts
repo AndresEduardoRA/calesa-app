@@ -8,6 +8,12 @@ export type EtiquetasDeRevisiones = {
   grupos: ReadonlyMap<string, string>
 }
 
+// Cómo se nombra un lado de un cambio de vehículo (T315): sin vehículo, uno que quien mira no ve (no existe, está en la papelera o no es de su alcance) o su título.
+export type NombreDeVehiculo = 'sin' | 'oculto' | { titulo: string }
+
+// Los dos lados de `diff.vehiculo_id`, ya nombrados al leer: nunca se copia un título a la revisión.
+export type CambioDeVehiculo = { de: NombreDeVehiculo; a: NombreDeVehiculo }
+
 export type RevisionDeLaCotizacion = {
   // El id de la revisión (un `bigint` de la base): es también el cursor de la página siguiente.
   id: number
@@ -17,6 +23,8 @@ export type RevisionDeLaCotizacion = {
   autor: string | null
   // El diff por columna (`{ de, a }`), ya recortado por la base: su forma la lee `cambiosDeLaRevision()`.
   diff: Readonly<Record<string, unknown>>
+  // El cambio de vehículo con los dos nombrados (`conVehiculos()`); nulo si no cambió el vehículo o si no se pudieron leer los nombres (se dice sin ellos).
+  vehiculo: CambioDeVehiculo | null
 }
 
 export type PaginaDeRevisiones = {
@@ -58,12 +66,72 @@ export function revisionesDesde(crudo: unknown): PaginaDeRevisiones | null {
       creadoEn: fila.creado_en,
       autor: fila.autor?.nombre ?? null,
       diff: fila.diff,
+      vehiculo: null,
     })),
     siguiente: r.hay_mas ? r.siguiente : null,
     etiquetas: {
       nodos: new Map(Object.entries(r.etiquetas.nodos)),
       grupos: new Map(Object.entries(r.etiquetas.grupos)),
     },
+  }
+}
+
+const esId = z.guid()
+
+// Los dos lados de `diff.vehiculo_id` de una revisión: un id, o nulo si ese lado no tenía vehículo (o la forma no es la que se espera).
+function ladosDelVehiculo(
+  diff: RevisionDeLaCotizacion['diff'],
+): { de: unknown; a: unknown } | null {
+  const cambio = diff['vehiculo_id']
+  if (typeof cambio !== 'object' || cambio === null || Array.isArray(cambio)) {
+    return null
+  }
+  const lados = cambio as Record<string, unknown>
+  return { de: lados['de'] ?? null, a: lados['a'] ?? null }
+}
+
+// Los ids de vehículo que nombran los cambios de vehículo de una página, sin repetir y en minúsculas: a lo sumo dos por revisión (≤ 2 × `TAMANO_DE_VER_MAS`).
+export function idsDeVehiculosDe(revisiones: readonly RevisionDeLaCotizacion[]): string[] {
+  const ids = new Set<string>()
+  for (const revision of revisiones) {
+    const lados = ladosDelVehiculo(revision.diff)
+    for (const lado of lados === null ? [] : [lados.de, lados.a]) {
+      if (esId.safeParse(lado).success) {
+        ids.add((lado as string).toLowerCase())
+      }
+    }
+  }
+  return [...ids]
+}
+
+function nombreDe(lado: unknown, titulos: ReadonlyMap<string, string>): NombreDeVehiculo {
+  if (lado === null) {
+    return 'sin'
+  }
+  const titulo = typeof lado === 'string' ? titulos.get(lado.toLowerCase()) : undefined
+  return titulo === undefined ? 'oculto' : { titulo }
+}
+
+// La página con cada cambio de vehículo nombrado por los títulos que quien mira ve (por id, en minúsculas); un id que no está en `titulos` es «un vehículo que no puedes
+// ver». Con `titulos` nulo (la lectura de los nombres falló), sin nombres: la revisión dice «Cambió el vehículo».
+export function conVehiculos(
+  pagina: PaginaDeRevisiones,
+  titulos: ReadonlyMap<string, string> | null,
+): PaginaDeRevisiones {
+  if (titulos === null) {
+    return pagina
+  }
+  return {
+    ...pagina,
+    revisiones: pagina.revisiones.map((revision) => {
+      const lados = ladosDelVehiculo(revision.diff)
+      return lados === null
+        ? revision
+        : {
+            ...revision,
+            vehiculo: { de: nombreDe(lados.de, titulos), a: nombreDe(lados.a, titulos) },
+          }
+    }),
   }
 }
 
