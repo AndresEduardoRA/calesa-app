@@ -19,10 +19,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Decisiones de producto que esperan a la persona
 
-### Vistos
-
-- **[—]** Retención y nombre de «Vistos» — lo pedido eran 30 días y «Último que abriste»; el código usa 7 días por defecto (`VISTOS_POR_DEFECTO`) y «Último visto» (el término del glosario). Confirmar cuál queda.
-
 ### Cotizaciones
 
 - **[—]** El dato del vehículo de una tabla (4.14-2c3) no se elige en el panel de una guardada: el lector de opciones lee `cotizacion_tabla` con la hoja abierta, que una guardada no tiene — falta uno por cotización (la celda dice «Falta un dato del vehículo.»).

@@ -81,7 +81,7 @@ las trampas, en `docs/LECCIONES.md`.
   20.000 filas por persona (el id no se valida contra su tabla), lectura de los ids de la página que se dibuja (una llamada) y purga cada hora
   por la retención de cada persona, en un orden que rota. Qué está
   visto lo pone `equipo` en un contexto de `@/shared/ui/lista`; la fila y la tarjeta lo leen con `idDeVisto`, sin pasar props por cada nivel.
-  Retención de 7 días por defecto y la marca «Último visto», a falta de que la persona lo confirme (`docs/PENDIENTES.md` › «Vistos»).
+  Retención de 7 días por defecto y el nombre «Último visto», confirmados por la persona. La marca del último es borde de acento (`--color-primario-ink`, ≥ 3:1 en claro y oscuro) más un ojo de 14 px del sprite de `simbolos-de-lista.tsx` (un `<use>`), con `title` y texto `sr-only`: sin la insignia de texto, que ocupaba renglón.
 - **Dónde se marca «visto».** Vehículos, leads (lista y kanban), cotizaciones, proyectos de repuestos, los chips de la agenda y las listas de logística. **No** las
   notificaciones (su «leída» ya es eso), ni aduana (su fila es una declaración, sin tipo en la lista cerrada, y sus vehículos son texto sin enlace), ni
   los bloques de Inicio, las papeleras y las listas de configuración. Embarques marca las unidades de un grupo (no la fila del grupo: su clave no es un uuid) y
