@@ -86,7 +86,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Errores conocidos
 
-- **[—]** `esquemaCrearOportunidad` descarta `embudo_id` y `etapa_id` (el `z.object` de `datos` no los lista): «Nueva oportunidad» de la ficha con más de un embudo siempre crea en el de por defecto aunque se elija otro.
 - **[4-54]** Si se elige otro vehículo o cliente, o se crea un lead, mientras la hoja guarda, se guarda con el de antes sin tarjeta de éxito y puede quedar una cotización de más — la barra queda fuera de `[data-hoja]` y su `inert`; assert: o dice que se guardó o el panel no deja elegir.
 - **[—]** Guardada: enviarla a la papelera, invalidarla o reactivarla descarta lo tipeado sin aviso (la `key` con `actualizadoEn` remonta la hoja); un guardado pendiente sobrevive al envío y, tras «Deshacer», da PT409 contra uno mismo.
 - **[5a-39]** Equipo › «Dadas de baja» dice «Por ahora el equipo eres tú…» aunque haya personas en la lista: el aviso cuenta el equipo activo y no mira el filtro (`cabecera-equipo.tsx`).
@@ -177,6 +176,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
+- **[—]** El selector de embudo de la vista de embudo no se cierra al elegir otro (`DropdownMenuRadioItem` de Base UI no cierra al hacer clic): en el
+  celular el menú queda sobre las pestañas de etapas hasta tocar afuera (`selector-de-embudo.tsx`; `closeOnClick` en el ítem).
 - **[T327]** En el celular, la burbuja del chat queda sobre la esquina derecha de la barra de cambios sin guardar; con la barra a la altura de
   la burbuja (Configuración › Leads › «Mensaje del portal») roza la esquina de «Guardar»: subirla mientras la barra está a la vista, como los
   avisos (`data-pie-de-panel`).

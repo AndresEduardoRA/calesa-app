@@ -216,6 +216,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo» (en «Vista y opciones», con el alcance, las vistas guardadas, «Ítems
   por página» y «Más»: exportar, importar y papelera): `?vista=embudo&embudo=<id>` es el kanban de las oportunidades propias (`?etapa=` en el celular;
   a la vista, el selector de embudo y la búsqueda; en «Vista y opciones», «Lista | Embudo», «Etapas…» `?panel=etapas` y «Nuevo embudo…» `?panel=nuevo-embudo`).
+  `&lead=<id>` es el **embudo filtrado por lead**: sólo sus oportunidades en todas las etapas, con el chip «De <nombre>» (su «×») y «Ver todas» en el lugar
+  de la búsqueda, sin el aviso de qué se ve; cambiar de embudo lo conserva, quitarlo conserva el embudo y la etapa. Vacío: «<nombre> no tiene oportunidades
+  en «<embudo>».» con «Ver todas». Un `lead=` que no se ve, no existe o no es un id se ignora y se quita de la URL. Con `?vista=embudo` un `?lead=` ya no
+  redirige a la ficha, salvo con algo que sólo el resumen abría (`?pestana=`, sus modales, `?extra=`).
 - **Lead** — `/leads/[id]` (`leads.ver` y acceso): **dos columnas, todo a la vista, sin pestañas ni acordeones** (desde 56 rem de contenedor; por
   debajo, y con el texto al 200 %, una sola en el mismo orden). **Izquierda**, pegajosa (se desplaza sola si no cabe): la cabecera (nombre, números,
   marcas, «Editar» `?panel=editar-lead`, «Cotizar» para quien cotiza y el «⋯», el de la lista con «Cotizar lead» y «Editar lead»), «Datos» (tipo, origen, alta y los grupos del layout sin plegar),
@@ -1401,7 +1405,12 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
   abre primero un aviso** con las oportunidades del lead que quien mira ve (título, etapa y estado; hasta 5, «y N más» con «Ver todas», cada una con «Ver»; incluida la base con
   que nace todo lead), «Crear igual» (sigue al formulario con «Título» —el nombre del lead— y «Monto estimado» opcional; «Crear oportunidad» deja el aviso y la lista donde estaba; un
   rechazo deja el modal abierto con lo escrito) y «Cancelar». Se lee al abrir el modal, con esqueleto; si falla, lo dice con «Reintentar» y «Crear igual» sigue ahí.
-  Sin oportunidades, abre directo en el formulario.
+  Sin oportunidades, abre directo en el formulario. **Con una abierta en el embudo por defecto** (una abierta por lead y embudo), «Crear igual» va apagado,
+  descrito por su motivo debajo de la lista («Ya tiene una abierta en «Ventas».»), y «Abrir esa» es la principal (su panel en la ficha). Si otra pestaña la
+  creó en el medio, el formulario queda abierto con lo escrito y un aviso de peligro arriba con el mensaje de la base y «Abrir esa» enfocado. En el panel de
+  la ficha (`?panel=nueva-oportunidad`) los embudos con una abierta salen apagados («Ventas (por defecto) · Ya tiene una abierta») y arranca en el primero
+  libre; sin ninguno libre, «Crear oportunidad» apagado y «Ya tiene una oportunidad abierta en cada embudo.». Reabrir con «Mover a…» o restaurar con
+  «Deshacer» habiendo otra abierta: la tarjeta vuelve y el error trae «Abrir esa».
 - **Vacíos:** sin leads, con «Nuevo lead» y «Ver todos» según permiso; por filtro, con «Limpiar filtros». Esqueleto; error.
 - **Abrir:** la lista no tiene resumen. El nombre de la fila y de la tarjeta es un enlace a `/leads/<id>` (el lector lo anuncia con el nombre; Tab llega a él,
   una parada por ítem, y Enter abre); un clic en cualquier otra parte de la fila o la tarjeta navega igual. Ctrl, Cmd o Shift + clic y el botón del medio
@@ -1492,7 +1501,7 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 - **Vehículos y ficha:** «Vínculos anteriores» (hasta 50) y «Agregar vehículo» dicen su tope al pie con `<AvisoDeTope>`; vinculados e interesados son
   los grupos de Relacionados («100+», «Ver todos» hasta 500); el bloque de seguimientos muestra 3 y 3 y «Ver todos» lee de a 20 hasta 500;
   «Oportunidades» muestra las 10 más recientes (abiertas primero) con «Ver más» de a 20 desde el navegador, hasta 500 (en el tope,
-  «Buscarlas en tu embudo»).
+  «Verlas en tu embudo»: el embudo filtrado por el lead).
 - **Papeleras:** de a 5 lotes por página (`?cursor=`); un lote trae hasta 200 y muestra 20 con «Mostrar los 200». Sin «Ítems por página»:
   su unidad es el lote.
 - **Sin red:** abrir un modal, panel o pestaña nunca pedidos dice «Sin conexión. No se pudo abrir esto.» con «Reintentar»; paginar sin red

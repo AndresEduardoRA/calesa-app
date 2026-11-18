@@ -14,6 +14,7 @@ import {
   type ErroresDeOportunidad,
   type OportunidadDelLead,
 } from './oportunidad'
+import type { AbiertaEnEmbudo } from './oportunidad-unica'
 
 // `?panel=oportunidad-rapida&para=<id>`: lo atiende el listado y el kanban (con `para`). La ficha y el resumen lo abren sin `para` (el lead ya es el
 // suyo: `?panel=oportunidad-rapida` en la ficha, `?lead=<id>&panel=oportunidad-rapida` en el resumen).
@@ -75,6 +76,27 @@ export function avisoDeOportunidades(
     return { mostradas, resto: null }
   }
   return { mostradas, resto: hayMas ? 'y más' : `y ${String(sobran)} más` }
+}
+
+// El motivo de un embudo donde el lead ya tiene una abierta (una por lead y embudo): «Crear igual» apagado, el embudo apagado al crear.
+export function motivoDeAbierta(nombreDelEmbudo: string): string {
+  return `Ya tiene una abierta en «${nombreDelEmbudo}».`
+}
+
+export type CrearIgual =
+  { puede: true } | { puede: false; motivo: string; abierta: AbiertaEnEmbudo }
+
+// «Crear igual» del aviso crea en el embudo por defecto: si el lead ya tiene una abierta ahí, va apagado con su motivo y «Abrir esa» al lado.
+// Sin la lectura de dónde hay abiertas (falló), se puede: la base decide.
+export function crearIgual(abiertas: readonly AbiertaEnEmbudo[] | null): CrearIgual {
+  const enElPorDefecto = abiertas?.find((a) => a.esDefault)
+  return enElPorDefecto
+    ? {
+        puede: false,
+        motivo: motivoDeAbierta(enElPorDefecto.embudoNombre),
+        abierta: enElPorDefecto,
+      }
+    : { puede: true }
 }
 
 // La ficha del lead en su sección «Oportunidades» (`?seccion=oportunidades`), y con una abierta en su panel.

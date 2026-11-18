@@ -39,7 +39,7 @@ export function bloquesDeLaFicha(lead: Lead, ve: LoQueVe, permisos: Permisos) {
     ),
     oportunidades: ve.oportunidades ? (
       <Suspense fallback={<EsqueletoDeOportunidades />}>
-        <SeccionOportunidades leadId={lead.id} leadNombre={lead.nombre} {...vehiculos} />
+        <SeccionOportunidades leadId={lead.id} {...vehiculos} />
       </Suspense>
     ) : null,
     // Relacionados (de un vistazo, con las acciones de cada fila) y, al pie, lo que queda de «Vehículos» (los anteriores, el panel para

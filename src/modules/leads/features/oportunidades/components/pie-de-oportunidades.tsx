@@ -15,14 +15,14 @@ type Props = {
   // Una movida está en vuelo: el cursor sale de la última fila, y una fila a medio mover tiene el grupo equivocado.
   ocupada: boolean
   alVerMas: () => void
-  // Lo cargado y el nombre del lead: el camino a lo que el tope deja afuera sale del embudo de la última.
+  // Lo cargado: el camino a lo que el tope deja afuera es el embudo de la última, filtrado por el lead.
   lista: readonly OportunidadDelLead[]
-  leadNombre: string
+  leadId: string
 }
 
 // Debajo de la lista: «Ver más» hasta el tope y, en el tope, el aviso. Sin más por leer, nada.
 export function PieDeOportunidades(props: Props) {
-  const { hayMas, enElTope, cargando, ocupada, alVerMas, lista, leadNombre } = props
+  const { hayMas, enElTope, cargando, ocupada, alVerMas, lista, leadId } = props
   const embudoId = lista.at(-1)?.embudoId
   if (!hayMas) {
     return null
@@ -34,10 +34,10 @@ export function PieDeOportunidades(props: Props) {
         camino={
           embudoId ? (
             <Link
-              href={caminoAlEmbudo(embudoId, leadNombre) as Route}
+              href={caminoAlEmbudo(embudoId, leadId) as Route}
               className="inline-flex min-h-11 items-center text-(--color-primario) underline underline-offset-2 md:min-h-8"
             >
-              Buscarlas en tu embudo
+              Verlas en tu embudo
             </Link>
           ) : undefined
         }

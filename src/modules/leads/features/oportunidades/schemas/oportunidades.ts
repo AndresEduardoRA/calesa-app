@@ -22,6 +22,9 @@ export const esquemaCrearOportunidad = z.object({
     monto_estimado: monto,
     notas,
     vehiculo_id: vehiculo,
+    // Sin embudo, el de por defecto; sin etapa, la inicial del embudo. La base valida que sean de quien crea.
+    embudo_id: z.guid().optional(),
+    etapa_id: z.guid().optional(),
   }),
 })
 

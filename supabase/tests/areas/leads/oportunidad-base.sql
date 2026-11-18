@@ -112,8 +112,10 @@ begin
   if public._lead_motivo_para_deshacer(f1, q) is not null then raise exception 'OB6: la base intacta frenó: %', public._lead_motivo_para_deshacer(f1, q); end if;
   update public.oportunidades o set actualizado_en = o.actualizado_en + interval '1 second' where o.lead_id = f2;
   if public._lead_motivo_para_deshacer(f2, q) is distinct from 'oportunidades' then raise exception 'OB6: la base tocada no frenó'; end if;
+  -- La segunda, ganada: la base ya es la abierta de ese lead en el embudo por defecto (una por lead y embudo).
   set local role authenticated;
-  perform public.oportunidad_crear(gen_random_uuid(), f3, '{"titulo": "OB segunda"}');
+  perform public.oportunidad_crear(gen_random_uuid(), f3, jsonb_build_object('titulo', 'OB segunda', 'etapa_id',
+    (select s.id from public.embudos_etapas s join public.embudos e on e.id = s.embudo_id where e.usuario_id = q and e.es_default and s.es_ganada)));
   reset role;
   if public._lead_motivo_para_deshacer(f3, q) is distinct from 'oportunidades' then raise exception 'OB6: la segunda oportunidad no frenó'; end if;
   set local role authenticated;

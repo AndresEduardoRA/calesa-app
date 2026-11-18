@@ -38,6 +38,7 @@ function redirigirElEnlaceViejo(
   const destino = destinoDelEnlaceViejo(
     {
       lead: unParametro(parametros['lead']),
+      vista: unParametro(parametros[CLAVE_DE_VISTA]),
       pestana: unParametro(parametros['pestana']),
       panel: unParametro(parametros['panel']),
       extra: unParametro(parametros['extra']),

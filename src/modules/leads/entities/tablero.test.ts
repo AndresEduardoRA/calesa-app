@@ -149,6 +149,12 @@ describe('en el celular', () => {
   it('la firma cambia con lo que trae el servidor', () => {
     expect(firmaDelTablero(leido())).not.toBe(firmaDelTablero(conMovida(leido(), id(101), id(11))))
   })
+  it('filtrado por un lead: lo lleva, y la firma cambia con él', () => {
+    const delLead = tableroDesde(crudo, null, { id: id(500), nombre: 'Ana' })
+    expect(delLead?.lead).toEqual({ id: id(500), nombre: 'Ana' })
+    expect(leido().lead).toBeNull()
+    expect(delLead && firmaDelTablero(delLead)).not.toBe(firmaDelTablero(leido()))
+  })
 })
 
 describe('busquedaDelEmbudo (cierre 1)', () => {
