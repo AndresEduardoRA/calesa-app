@@ -47,6 +47,8 @@ const COLUMNAS: readonly [string, (a: unknown) => string | null][] = [
   // Pasar de automático a manual (o al revés) también es cambiar el título; con `titulo` en el mismo diff se dice una vez (abajo, sin repetir textos).
   ['titulo_manual', () => 'Cambió el título'],
   ['notas', () => 'Cambió las notas'],
+  // Los retoques de la tarjeta: la revisión guarda cuántos (`{celdas, filas_ocultas}` o nulo por lado), nunca los textos; volver a la plantilla también es retocar.
+  ['tarjeta_retoques', () => 'Retocó la tarjeta'],
   ['tipos_cambio', () => 'Cambió un tipo de cambio'],
   [
     'eliminado_en',

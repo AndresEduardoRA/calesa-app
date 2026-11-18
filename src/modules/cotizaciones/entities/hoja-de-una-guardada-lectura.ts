@@ -19,6 +19,14 @@ const esquemaDeLaCotizacion = z.object({
   titulo: z.string().nullable(),
   titulo_manual: z.boolean(),
   notas: z.string().nullable(),
+  // La base ya los validó al escribirlos; sin la columna (una base sin la migración), sin retoques.
+  tarjeta_retoques: z
+    .object({
+      celdas: z.record(z.string(), z.string()).optional(),
+      filas_ocultas: z.array(z.string()).optional(),
+    })
+    .nullable()
+    .optional(),
   creado_en: z.string().min(1),
   actualizado_en: z.string().min(1),
 })
@@ -65,6 +73,7 @@ export function hojaDeUnaGuardadaDesde(crudo: unknown): HojaDeUnaGuardada | null
       titulo: c.titulo,
       tituloManual: c.titulo_manual,
       notas: c.notas,
+      tarjetaRetoques: c.tarjeta_retoques ?? null,
       creadoEn: c.creado_en,
       actualizadoEn: c.actualizado_en,
     },

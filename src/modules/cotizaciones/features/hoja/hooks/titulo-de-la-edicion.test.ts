@@ -18,6 +18,7 @@ const cotizacion = (vehiculoId: string | null): CotizacionDeLaHoja => ({
   titulo: null,
   tituloManual: false,
   notas: null,
+  tarjetaRetoques: null,
   creadoEn: '2026-11-01T10:00:00Z',
   actualizadoEn: '2026-11-03T14:20:31.123456+00:00',
 })
