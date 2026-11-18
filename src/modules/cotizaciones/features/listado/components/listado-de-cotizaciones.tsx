@@ -14,7 +14,11 @@ import { ResumenDeCotizacionDiferido, VistasDeCotizacionesDiferido } from './dif
 import { NuevaCotizacion } from './nueva-cotizacion'
 import { ResultadoDelListado } from './resultado-del-listado'
 import type { FilaDeCotizacion, MenuDeFila, OrigenDelListado } from './tipos'
-import type { HuecosDelResumen, QuienDelResumen } from '../../hoja/components/huecos-del-resumen'
+import type {
+  AprobarEnDelResumen,
+  HuecosDelResumen,
+  QuienDelResumen,
+} from '../../hoja/components/huecos-del-resumen'
 
 type Props = {
   esquema: EsquemaDeFiltros
@@ -42,6 +46,9 @@ type Props = {
   // Lo que las áreas llenan en el resumen (las pestañas) y lo que quien mira puede hacer con cada cotización de la página, por id (lo calcula el servidor).
   huecosDelResumen?: HuecosDelResumen
   quienesDelResumen?: Readonly<Record<string, QuienDelResumen>>
+  // Para «De este vehículo» del resumen: dónde aprueba quien mira y qué hacer tras aprobar.
+  aprobarEn?: AprobarEnDelResumen
+  alCambiarLaAprobada?: () => void
 }
 
 // El listado de cotizaciones: búsqueda, filtros, vistas guardadas, «Nueva cotización» y la lista con su «⋯». Todo el estado (filtros, página) vive en la URL.
@@ -61,6 +68,8 @@ export function ListadoDeCotizaciones({
   junto,
   huecosDelResumen,
   quienesDelResumen,
+  aprobarEn,
+  alCambiarLaAprobada,
 }: Props) {
   const resumen = useResumenDeCotizacion()
   // El resumen llega recién al abrirse (`diferido()`) y, una vez visto, queda montado para irse con su animación.
@@ -104,6 +113,8 @@ export function ListadoDeCotizaciones({
           delServidor={delServidor}
           huecos={huecosDelResumen}
           quienes={quienesDelResumen}
+          aprobarEn={aprobarEn}
+          alCambiarLaAprobada={alCambiarLaAprobada}
         />
       ) : null}
     </div>

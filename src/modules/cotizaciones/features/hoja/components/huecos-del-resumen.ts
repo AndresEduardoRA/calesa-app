@@ -24,11 +24,27 @@ export type PropsDeLosComprobantesDelResumen = {
   clase: ClaseDelResumen
 }
 
+// Dónde aprueba quien mira (`origenesCon(permisos, 'cotizaciones.aprobar')`, del servidor): el núcleo lo nombra sin importar el área `aprobada`.
+export type AprobarEnDelResumen = 'todos' | readonly string[]
+
+// «De este vehículo» en el resumen: el vehículo de la cotización abierta (si quien mira lo ve), esa cotización («Esta»), dónde aprueba quien mira y qué hacer tras
+// aprobar (refrescar el listado). Con `conTitulo`, dibuja su propio título; las casillas de comparar quedan apagadas hasta T311.
+export type PropsDeEsteVehiculoEnElResumen = {
+  vehiculo: { id: string; titulo: string | null }
+  cotizacionActual?: string
+  aprobarEn: AprobarEnDelResumen
+  conCasillas?: false
+  alCambiar?: () => void
+  conTitulo?: boolean
+}
+
 export type HuecosDelResumen = {
   // «Todo», «Adjuntos», «Revisiones» y «Comentarios» bajo el detalle de la cotización (`pantallas/comentarios-resumen.ts`).
   Pestanas?: ComponentType<PropsDeLasPestanasDelResumen>
   // La lista de comprobantes de «Adjuntos» (`pantallas/comprobantes-resumen.ts`).
   Comprobantes?: ComponentType<PropsDeLosComprobantesDelResumen>
+  // «De este vehículo», entre los datos y las pestañas (`pantallas/aprobada-resumen.ts`).
+  DeEsteVehiculo?: ComponentType<PropsDeEsteVehiculoEnElResumen>
 }
 
 // Lo que sabe el servidor de cada cotización de la página (y de la que abrió la URL): quién puede adjuntar y quién modera.

@@ -35,14 +35,18 @@ const falla = (codigo: string, mensaje: string) => ({
 
 const pedido = () => {
   const cambios: boolean[] = []
+  // La que es la aprobada tras cada cambio (la pedida o, tras «Deshacer», la anterior).
+  const aprobadas: string[] = []
   return {
     cambios,
+    aprobadas,
     datos: {
       id: ID,
       numero: 7,
       actualizadoEn: VERSION,
-      alCambiar: (aprobada: boolean) => {
+      alCambiar: (aprobada: boolean, idAprobada: string) => {
         cambios.push(aprobada)
+        aprobadas.push(idAprobada)
       },
     },
   }
@@ -85,6 +89,7 @@ describe('aprobarLaCotizacion', () => {
     await vi.waitFor(() => {
       expect(p.cambios).toEqual([true, false])
     })
+    expect(p.aprobadas).toEqual([ID, ANTERIOR])
     expect(h.aprobar).toHaveBeenLastCalledWith({ id: ANTERIOR, actualizadoEn: VERSION_ANTERIOR })
     expect(h.toasts.avisarExito).toHaveBeenCalledWith('Volvió a ser la aprobada la n.º 3.')
   })

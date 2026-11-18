@@ -133,10 +133,14 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - **La hoja** (`HuecosDeLaHoja`, `pantallas/formula-hoja.ts`): `EnlaceSinPublicar` (el enlace de «Falta publicar la fórmula») y `Proveedor`, que enciende
   el ⚙ por `ContextoDelAjuste`: sin él ninguna celda lo dibuja ni se llama ningún hook del ajuste. La base dice qué celda lo lleva (`ajustes`);
   `<LugarDelAjuste>` se monta con las secciones principales y también **dentro del modal «Avanzado»**, como la ayuda.
-- **La guardada** (`HuecosDeLaGuardada`): `Acciones` (cabecera, tras «Revisiones»), `Insignias` (cabecera, tras la clase y la vigencia) y `Debajo` (bajo la
-  hoja, fuera del proveedor del ⚙). Los llenan `pantallas/{final,comprobantes,comentarios,papelera}-cotizacion.ts` (cada uno con un vacío en
-  `features/<área>/components/huecos-en-la-guardada.ts`) y `src/app/(app)/cotizaciones/[id]/huecos-de-la-guardada.tsx` los ordena: final, comprobantes,
-  comentarios y papelera (la destructiva al final). Cada componente recibe `{ cotizacion, puedeGuardar, permisos }`. Fichas: `areas/<área>/CLAUDE.md`.
+- **La guardada** (`HuecosDeLaGuardada`): `Acciones` (cabecera, tras «Revisiones»), `Insignias` (cabecera, tras la clase y la vigencia), `BajoLaCabecera`
+  (entre la cabecera y la hoja: la línea de «De este vehículo») y `Debajo` (bajo la hoja, fuera del proveedor del ⚙). Los llenan
+  `pantallas/{final,aprobada,comprobantes,comentarios,papelera}-cotizacion.ts` (cada uno con un vacío en `features/<área>/components/huecos-en-la-guardada.ts`)
+  y `src/app/(app)/cotizaciones/[id]/huecos-de-la-guardada.tsx` los ordena: final, aprobada, comprobantes, comentarios y papelera (la destructiva al final;
+  «De este vehículo» antes de «Comprobantes»). Cada componente recibe `{ cotizacion, puedeGuardar, permisos, vehiculo }` (`vehiculo`, el que la página leyó
+  si quien mira lo ve, o nulo). Fichas: `areas/<área>/CLAUDE.md`.
+- **El resumen del listado** (`HuecosDelResumen`): `Pestanas`, `Comprobantes` y `DeEsteVehiculo` (entre «Abrir cotización» y las pestañas, sólo con un
+  vehículo que quien mira ve; `aprobarEn` lo manda la página y `alCambiar` refresca el listado; `pantallas/aprobada-resumen.ts`).
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
 - **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`; la llena
@@ -179,7 +183,7 @@ la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las 
 `tono_crear|guardar|eliminar` (los colores), `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
 `validar_plantilla`, `evaluar_formula`, `cotizacion_evaluar`, `cotizacion_hoja`, `cotizacion_tabla`, `cotizacion_tarjeta`, `cotizacion_crear`,
 `cotizacion_guardar`, `cotizaciones_listado`, `cotizaciones_buscar` (la búsqueda del listado, invocadora), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
-nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizacion_moderar` (con la versión),
+nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
 `cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.
 

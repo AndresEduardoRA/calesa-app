@@ -9,7 +9,9 @@
 //    en la URL. Cada lista declara su máximo y se muestra el menor de lo pedido y ese máximo (`tamanoDePagina()`).
 // 2. Las listas que crecen con «Ver más» dentro de una ficha o un drawer (los seguimientos y los recordatorios de
 //    un lead): de a `TAMANO_DE_VER_MAS` y hasta `TOPE_DE_LO_CARGADO`. Más ítems por clic empeora el DOM sin acortar el
-//    camino a lo antiguo: se llega por otro lado («Ir a una fecha»), nunca sumando para siempre.
+//    camino a lo antiguo: se llega por otro lado («Ir a una fecha»), nunca sumando para siempre. «De este vehículo» (las
+//    otras cotizaciones del vehículo, en una guardada o su resumen) va de a `TAMANO_DE_ESTE_VEHICULO` hasta
+//    `TOPE_DE_ESTE_VEHICULO` y manda al listado filtrado.
 // 3. Las que tienen su propia unidad: una columna del kanban (`TAMANO_DE_COLUMNA`), las papeleras, que van de a
 //    `LOTES_POR_PAGINA` lotes (un lote ya trae hasta 200 filas), y la lista del equipo, que dibuja las primeras
 //    `TOPE_DEL_EQUIPO` por nombre y manda a buscar o filtrar por estado para llegar a las demás.
@@ -25,6 +27,8 @@ export const CLAVE_DE_PREFERENCIA_POR_PAGINA = 'listas.por_pagina'
 export const TAMANO_DE_VER_MAS = 20
 export const TOPE_DE_LO_CARGADO = 500
 export const TAMANO_DE_COLUMNA = 50
+export const TAMANO_DE_ESTE_VEHICULO = 10
+export const TOPE_DE_ESTE_VEHICULO = 100
 // La logística para cientos de miles de vehículos: la lista de una fase (una página de a 50, por cursor `(fase_desde, id)`) y la bandeja del día
 // (un grupo en la portada = sus primeras 5 filas con un conteo hasta 100; la página de un grupo, de a 20).
 export const TAMANO_DE_LA_FASE = 50

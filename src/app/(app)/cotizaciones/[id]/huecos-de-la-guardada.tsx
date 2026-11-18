@@ -7,10 +7,11 @@ import { HUECOS_DE_PAPELERA_EN_LA_GUARDADA } from '@/modules/cotizaciones/pantal
 
 // Lo que las áreas `final`, `aprobada`, `comprobantes`, `comentarios` y `papelera` llenan en `/cotizaciones/[id]` (4.15-6b). Los tipos salen de las constantes: `src/app` no importa `features/`.
 type Hueco = typeof HUECOS_DE_FINAL_EN_LA_GUARDADA
-type Lugar = 'Acciones' | 'Debajo' | 'Insignias'
+type Lugar = 'Acciones' | 'BajoLaCabecera' | 'Debajo' | 'Insignias'
 type Props = ComponentProps<NonNullable<Hueco[Lugar]>>
 
 // El orden de la cabecera: la insignia «Aprobada» va antes de «Inválida» o «Reportada» (las de `comentarios`). La acción destructiva, «Enviar a la papelera» (con «Deshacer», 4.24), va al final.
+// Bajo la hoja, «De este vehículo» (de `aprobada`) va antes de «Comprobantes»; bajo la cabecera, sólo su línea.
 export const HUECOS_DE_LA_GUARDADA: readonly Hueco[] = [
   HUECOS_DE_FINAL_EN_LA_GUARDADA,
   HUECOS_DE_APROBADA_EN_LA_GUARDADA,
