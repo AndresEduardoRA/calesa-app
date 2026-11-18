@@ -8,10 +8,8 @@ import { compartirCon } from './soporte/leads-vehiculos'
 import {
   capturar,
   csvDe,
-  dentroDeLaPantalla,
   limpiarRecorrido,
   prepararRecorrido,
-  quieto,
   sinScrollHorizontal,
   type TerrenoDelRecorrido,
 } from './soporte/recorrido'
@@ -95,24 +93,11 @@ test('A · la dueña, con el permiso: el global y, aparte, el propio de quien lo
   await irALeads(page, todos(busqueda(nombreCorto())))
   await expect(fila(page, nombreCorto())).toBeVisible()
   const lista = delLead(page, nombreCorto())
-  // En la lista, el que va primero (el global); el otro, en la ficha y el drawer.
+  // En la lista, el que va primero (el global); el otro, en la ficha.
   await expect(lista.getByText(`N.º ${escrito(GLOBAL)}`)).toBeVisible()
   await expect(lista.getByText(`N.º ${escrito(PROPIO)}`)).toHaveCount(0)
   await sinScrollHorizontal(page)
   await capturar(page, info, 'duena-listado')
-
-  // El drawer se abre con un clic en el nombre (con la URL directa, la lista de atrás queda inerte en el celular).
-  await fila(page, nombreCorto()).click()
-  const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(drawer).toBeVisible()
-  await expect(drawer.getByText(`N.º ${escrito(GLOBAL)}`)).toBeVisible()
-  await expect(
-    drawer.getByText(new RegExp(`N\\.º ${escrito(PROPIO)} · ${r.ana.nombre}`)),
-  ).toBeVisible()
-  await quieto(drawer)
-  await dentroDeLaPantalla(page, drawer)
-  await sinScrollHorizontal(page)
-  await capturar(page, info, 'duena-drawer')
 
   await irAFicha(page, r.uno.id)
   await expect(page.getByText(`N.º ${escrito(GLOBAL)}`).first()).toBeVisible()
@@ -154,14 +139,6 @@ test('B · Ana, sin el permiso: sólo «Tu n.º»; el global no llega ni al HTML
   await expect(page.getByText(escrito(GLOBAL))).toHaveCount(0)
   await sinScrollHorizontal(page)
   await capturar(page, info, 'asesora-listado')
-
-  await fila(page, nombreCorto()).click()
-  const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(drawer.getByText(`Tu n.º ${escrito(PROPIO)}`)).toBeVisible()
-  await quieto(drawer)
-  await dentroDeLaPantalla(page, drawer)
-  await sinScrollHorizontal(page)
-  await capturar(page, info, 'asesora-drawer')
 
   await irAFicha(page, r.uno.id)
   await expect(page.getByText(`Tu n.º ${escrito(PROPIO)}`).first()).toBeVisible()

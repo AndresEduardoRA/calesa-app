@@ -76,16 +76,10 @@ test('la ficha dibuja los dos en «Datos», y el tipo del seguimiento en la lín
   await capturar(page, info, 'iconos-ficha-seguimientos')
 })
 
-test('el resumen del drawer dibuja el icono del tipo y del origen, y `?pestana=seguimientos` lleva a la ficha con el del seguimiento', async ({
+test('`?lead=<id>&pestana=seguimientos` de antes lleva a la ficha con el icono del seguimiento', async ({
   page,
-}, info) => {
+}) => {
   await entrar(page, r.t.personas.duena)
-  await page.goto(`/leads?lead=${r.uno.id}`)
-  const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(drawer).toBeVisible()
-  await conUnIcono(drawer, 'persona')
-  await conUnIcono(drawer, 'compartir')
-  await capturar(page, info, 'iconos-rapido')
   await page.goto(`/leads?lead=${r.uno.id}&pestana=seguimientos`)
   await expect(page).toHaveURL(new RegExp(`/leads/${r.uno.id}\\?seccion=seguimientos`))
   await conUnIcono(page.getByRole('article', { name: 'Llamada de los iconos' }), 'telefono')

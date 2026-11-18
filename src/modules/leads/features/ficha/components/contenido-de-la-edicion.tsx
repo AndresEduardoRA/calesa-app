@@ -39,17 +39,6 @@ export type Datos = {
   zona: string
 }
 
-// Lo que cambia cuando el panel se abre desde el resumen de la lista y no desde la ficha: nada se vuelve a leer con `router.refresh()`
-// (la ficha no está debajo), así que el resumen dice qué hacer con cada cosa.
-export type EdicionEnElResumen = {
-  // Otra persona cambió el lead: traer su versión (el panel descarta lo escrito).
-  alRecargar: () => void
-  // Se guardó (o no había nada que guardar): el resumen vuelve a leer el lead.
-  alGuardado: () => void
-  // Quien edita ya no ve el lead: el resumen vuelve a leer y lo dice.
-  alPerderElLead: () => void
-}
-
 const idDe = (clave: string) => `lead-editar-${clave}`
 
 const texto = (valor: unknown) => (typeof valor === 'string' ? valor : '')
@@ -146,30 +135,17 @@ function GruposDeCampos({ ficha, campos, estado }: PropsDeGrupos) {
   )
 }
 
-// Lo que pasa cuando el panel termina: se guardó (o no había nada) o quien edita ya no ve el lead. Desde el resumen de la lista
-// no hay ficha debajo que volver a leer: el resumen dice qué hacer.
-function salidasDelPanel(
-  alCerrar: () => void,
-  enResumen: EdicionEnElResumen | undefined,
-  recargar: () => void,
-) {
+// Lo que pasa cuando el panel termina: se guardó (o no había nada) o quien edita ya no ve el lead.
+function salidasDelPanel(alCerrar: () => void, recargar: () => void) {
   return {
     alGuardar: (sinCambios: boolean) => {
       if (!sinCambios) {
         avisarExito('Cambios guardados')
       }
-      enResumen?.alGuardado()
       alCerrar()
     },
     // Sin acceso ya no hay nada que editar: el servidor vuelve a leer y muestra la pantalla de lo que no se ve.
-    alPerderElLead: () => {
-      if (enResumen) {
-        alCerrar()
-        enResumen.alPerderElLead()
-      } else {
-        recargar()
-      }
-    },
+    alPerderElLead: recargar,
   }
 }
 
@@ -187,7 +163,6 @@ function useFocoEnElPrimerError(
 
 type PropsDelContenido = Datos & {
   alCerrar: () => void
-  enResumen: EdicionEnElResumen | undefined
   puedeEditarExtras: boolean
   puedeConfigurar: boolean
   // «Cambiar el principal» (cartera y `leads.editar`, sólo en la ficha): pasa al panel del cambio. Nulo, no se ofrece.
@@ -203,7 +178,6 @@ export function ContenidoDeLaEdicion({
   tipos,
   zona,
   alCerrar,
-  enResumen,
   puedeEditarExtras,
   puedeConfigurar,
   alCambiarElPrincipal,
@@ -224,7 +198,7 @@ export function ContenidoDeLaEdicion({
     origenes,
     tipos,
     zona,
-    ...salidasDelPanel(alCerrar, enResumen, refrescarLaFicha),
+    ...salidasDelPanel(alCerrar, refrescarLaFicha),
   })
 
   // Con algo escrito, la acción de un aviso que sale de la pantalla («Abrir ficha») pregunta en el pie; descartar tira el borrador.
@@ -256,11 +230,7 @@ export function ContenidoDeLaEdicion({
           alRecargar={() => {
             // Trae la versión de la otra persona: lo escrito acá se descarta a propósito.
             estado.descartarBorrador()
-            if (enResumen) {
-              enResumen.alRecargar()
-            } else {
-              router.refresh()
-            }
+            router.refresh()
           }}
         />
         <DatosFijos ficha={ficha} origenes={origenes} tipos={tipos} estado={estado} />
@@ -271,7 +241,7 @@ export function ContenidoDeLaEdicion({
         lead={telefonosDeLaFicha(ficha)}
         puedeEditarExtras={puedeEditarExtras}
         puedeConfigurar={puedeConfigurar}
-        alCambiar={enResumen ? enResumen.alGuardado : refrescarLaFicha}
+        alCambiar={refrescarLaFicha}
         cambiarElPrincipal={
           alCambiarElPrincipal
             ? { hayCambios: estado.hayCambios, alCambiar: alCambiarElPrincipal }

@@ -33,8 +33,8 @@ export { leerTiposDeLeadConUso, leerTiposDeSeguimientoConUso } from './composici
 // versión; las dibujan `<PlantillaDelEmbudo>` y `<MensajeDelPortal>` (por `pantallas/configuracion`).
 export { leerAjustesDeLeads } from './composicion'
 
-// El listado de `/leads`: lo lee la página (`leerListadoDeLeads`) y lo dibuja `<ListadoDeLeads>` con
-// el drawer rápido (`?lead=`) adentro. El alcance («míos» y «todos») y lo que cada quien ve lo
+// El listado de `/leads`: lo lee la página (`leerListadoDeLeads`) y lo dibuja `<ListadoDeLeads>`, cuyas
+// filas llevan a la ficha. El alcance («míos» y «todos») y lo que cada quien ve lo
 // decide la base; la página sólo agrega las vistas guardadas, que son de `equipo`.
 export { leerListadoDeLeads, type DatosDelListado } from './features/listado/lecturas'
 // Importar desde un CSV (parte 8): el asistente de `/leads/importar` y lo que lee del layout.
@@ -82,8 +82,8 @@ export { puedeAbrirLaPapelera, puedeEnviarLead, puedePurgarLeads } from './entit
 export { puedeCambiarTelefonoDeLead, puedeEditarTelefonosExtra } from './entities/telefonos'
 export { leerChoquesDeTelefonos } from './composicion'
 export { CLAVE_DE_SECCION, seccionDeLead } from './entities/ficha'
-// `?lead=<id>&pestana=` de cuando el resumen tenía pestañas: a dónde redirige `/leads`.
-export { destinoDeLaPestanaVieja } from './entities/rapido'
+// `/leads?lead=<id>` de cuando la lista tenía resumen: a dónde redirige `/leads` (la ficha, con lo que pedía).
+export { destinoDelEnlaceViejo } from './entities/enlace-viejo-del-resumen'
 // El bloque «Seguimientos y recordatorios» (`pantallas/ficha`): lo lee el servidor con la sesión de quien mira y va detrás de
 // `<Suspense>` (su esqueleto es `<EsqueletoDeSeguimientos>`). Quién ve qué y quién anota lo decide
 // la base; un co-asesor ve sólo lo «Visible para el cliente» de los demás.

@@ -128,7 +128,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Interesado** — `vehiculos_interesados` / `vehiculo_interesado_marcar()`, `vehiculo_interesado_quitar()`: lead interesado en un vehículo
   (N:M), nota ≤ 500. Es un tipo de **Relacionados**.
 - **Relacionados** — `vehiculo_relacionados()`, `lead_relacionados()` (y `*_pagina()`), `<Relacionados>` / `?relacionados=<tipo>`: el bloque siempre
-  visible de cada detalle (ficha del vehículo, su resumen, la unidad de logística, ficha del lead y su resumen) con tres grupos por tipo:
+  visible de cada detalle (ficha del vehículo, su resumen, la unidad de logística y ficha del lead) con tres grupos por tipo:
   **Vinculado**, **Interesado** y **Cotizado**. Desde un vehículo se ven leads; desde un lead, vehículos. Cada grupo lleva su cantidad (con tope),
   sus primeras filas, lo que quien mira no ve contado («1 que no puedes ver») y «Ver todos» por cursor. Lo que está en una papelera no cuenta. Un
   grupo sin nada no se dibuja. Se ve en una línea de chips en los resúmenes y en logística, y compacto en las fichas (`PresentacionDeRelacionados`).
@@ -241,10 +241,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   n.º 12». Se busca con `12` o `#12`.
 - **Número global** — `leads.numero` / `leads_numeros_globales`, `leads.numero_global.ver`, `NumerosDeLead.numero`: consecutivo de la empresa
   («N.º 1.234»); nulo sin el permiso.
-- **Resumen** — `?lead=`, `?vehiculo=`, `?cotizacion=` / `<DrawerDeLead>`, `<ResumenDeVehiculo>`, `<ResumenDeCotizacion>`: vistazo sin salir
-  de la lista («drawer rápido» en el código). El de un lead o un vehículo es la versión corta de su ficha, sin pestañas y con «Abrir ficha»:
-  el del lead, datos clave, lo último que pasó, las acciones y Relacionados en chips; el del vehículo, portada con carrusel, datos clave,
-  situación, acciones y Relacionados en chips (`claveDelVisorDelResumen()` para su carrusel).
+- **Resumen** — `?vehiculo=`, `?cotizacion=` / `<ResumenDeVehiculo>`, `<ResumenDeCotizacion>`: vistazo sin salir de la lista. El de un vehículo
+  es la versión corta de su ficha, sin pestañas y con «Abrir ficha»: portada con carrusel, datos clave, situación, acciones y Relacionados en
+  chips (`claveDelVisorDelResumen()` para su carrusel). La lista de leads no tiene: abre la ficha (un `?lead=` viejo redirige a ella).
 - **Línea de tiempo (de una cotización)** — pestaña «Todo» del resumen (`?pestana=`, `useLineaDeTiempo`, `lineaDeTiempo()`): adjuntos, revisiones y comentarios
   mezclados por fecha, lo más nuevo arriba; una página de cada fuente y sólo se dibuja hasta donde llegó la que menos retrocedió. Las otras pestañas del resumen:
   «Adjuntos», «Revisiones» y «Comentarios».

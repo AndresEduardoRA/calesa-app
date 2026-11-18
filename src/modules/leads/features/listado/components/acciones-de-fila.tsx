@@ -21,7 +21,7 @@ type Props = {
 }
 
 // Lo que abre el «⋯» de una fila: el modal de anotar un seguimiento o de agendar un recordatorio sobre
-// ese lead, sin abrir el drawer ni la ficha; al guardar, la lista relee su página (`alGuardar`). Se monta una vez en el listado y se pide al abrirse. La
+// ese lead, sin abrir la ficha; al guardar, la lista relee su página (`alGuardar`). Se monta una vez en el listado y se pide al abrirse. La
 // URL se revisa al abrir: una fila que no está en la página, ajena o inventada no abre y lo dice como
 // un lead que no existe. Ya abierto, el lead queda fijo: volver a leer la lista no lo cierra.
 export function AccionesDeFila({ filas, puedeAnotar, alGuardar }: Props) {

@@ -4,8 +4,7 @@
 // `/vehiculos` 505 KB. Medido en el cierre 5b, con el `index.ts` de cada módulo sin componentes (una pantalla paga lo que
 // reexporta lo que importa): `/leads` 498,6 KB, `/perfil` 413,0 KB, `/vehiculos` 467,7 KB (antes 565,4, 443,3 y 520,0).
 export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
-  // Con los bloques a la vista, el drawer al costado y el respaldo de `diferido()` de `shared` (T38), 530,6 KB: 560 (regla del 5 %).
-  // El «Nuevo» de la barra que abre también el de la agenda (T37) suma 2,0 KB (529,2 → 531,2 antes de T38), dentro del tope.
+  // Sin el resumen del lead (la fila lleva a la ficha), 526,5 KB en 36 chunks (antes, con el drawer en frío, 530,3): el tope no se baja.
   '/leads': 560,
   '/perfil': 440,
   // El «Nuevo» de la barra que abre también el de la agenda (T37) lo llevó a 500,3 KB en 33 chunks: regla del 5 %, lo medido más un 5 % a la decena.
@@ -40,8 +39,8 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
 // crece va por «Ver todos» y «Ver más». Antes se medía por sección: «Datos» 43 y «Oportunidades» con 10, 66.
 export const PRESUPUESTO_DE_LA_FICHA_EN_KB = 138
 
-// Lo que viaja (RSC) al abrir la ficha desde «Abrir ficha» del resumen del listado, en KB (`e2e/leads-ficha.spec.ts`): medido 30,7 en
-// escritorio y 36,6 en el celular con el lead de la semilla de ese spec (T33); sobre lo mayor más un 5 %, a la unidad. Antes, 40 escrito en el spec.
+// Lo que viaja (RSC) al abrir la ficha desde el nombre de una fila del listado (sin prefetch: todo con el clic), en KB (`e2e/leads-ficha.spec.ts`):
+// medido 30,7 en escritorio y 29,7 en el celular con el lead de la semilla de ese spec; el tope sigue en 39.
 export const PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB = 39
 
 // Lo que la ficha de un vehículo (T34, en dos columnas) aporta al documento sobre `/perfil`, en KB: con 60 documentos y 600 cotizaciones pesa lo

@@ -53,7 +53,7 @@ const bloque = (raiz: Page | Locator) => raiz.getByRole('region', { name: 'Relac
 const grupo = (raiz: Page | Locator, nombre: string) =>
   bloque(raiz).getByRole('region', { name: nombre, exact: true })
 
-test('E2E el resumen del vehículo y el del lead muestran chips en una línea, sin grupos vacíos', async ({
+test('E2E el resumen del vehículo muestra chips en una línea, sin grupos vacíos', async ({
   page,
 }, info) => {
   await entrar(page, duena, { fresco: true })
@@ -84,13 +84,6 @@ test('E2E el resumen del vehículo y el del lead muestran chips en una línea, s
   await expect(page).toHaveURL(new RegExp(`/vehiculos/${vehiculo}\\?relacionados=interesado`))
   const todos = page.getByRole('dialog', { name: 'Interesado · todos' })
   await expect(todos.getByRole('listitem')).toHaveCount(4)
-
-  // El resumen del lead A: sólo su vínculo.
-  await page.goto(`/leads?lead=${leads.a}`)
-  const delLead = bloque(page.getByRole('dialog', { name: nombres.a }))
-  await expect(delLead.getByRole('button', { name: /^Vinculado · 1/ })).toBeVisible()
-  await expect(delLead.getByRole('button', { name: /^(Interesado|Cotizado)/ })).toHaveCount(0)
-  await capturar(page, info, 'resumen-lead-linea')
 
   // Con el texto al 200 % la línea envuelve: sólo para mirar.
   await page.goto(`/vehiculos?origen=${origen.id}&vehiculo=${vehiculo}`)

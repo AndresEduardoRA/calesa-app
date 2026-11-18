@@ -16,7 +16,7 @@ export function NombreDeFila({
 }: {
   lead: FilaDeLead
   etiquetas: readonly Etiqueta[]
-  // El nombre ya envuelto (un botón en la tabla, texto en la tarjeta).
+  // El nombre ya envuelto (el enlace a la ficha: `<EnlaceDeLaFila>`).
   nombre: (clases: string) => React.ReactNode
   // El número que se buscó, si se buscó uno: explica por qué coincide la fila cuando no es por el principal.
   numeroBuscado?: number | null

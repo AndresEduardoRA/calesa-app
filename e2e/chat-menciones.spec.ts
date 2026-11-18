@@ -61,7 +61,7 @@ test('E2E: la dueña ve el nombre, abre el drawer sin salir del chat y recargar 
   await expect(drawer).toBeVisible()
   await expect(drawer.getByRole('link', { name: 'Abrir en Leads' })).toHaveAttribute(
     'href',
-    `/leads?lead=${t.leadId}`,
+    `/leads/${t.leadId}`,
   )
 
   await page.reload()
