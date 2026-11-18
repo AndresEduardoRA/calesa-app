@@ -10,7 +10,7 @@ import { SECCIONES_DE_LOGISTICA } from './logistica/seccion'
 import { PERMISOS_DE_ORIGENES } from './origenes/acceso'
 import { SUBSECCIONES_DE_ORIGEN } from './origenes/subsecciones'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
-import { SECCIONES_DE_WEB } from './web/seccion'
+import { SECCION_DE_WEB } from './web/seccion'
 
 // El registro de Configuración: la única fuente del inicio, del menú de Configuración y del selector de sección del celular. Cada
 // sección se abre con cualquiera de sus permisos (ver o gestionar) y pertenece a un grupo; sus sub-secciones son las sub-rutas que
@@ -96,7 +96,7 @@ export const SECCIONES = [
   SECCION_DE_FLUJOS,
   ...SECCIONES_DE_LOGISTICA,
   SECCION_DE_REPUESTOS,
-  ...SECCIONES_DE_WEB,
+  SECCION_DE_WEB,
   SECCION_DE_COLA_WEB,
 ] as const satisfies readonly SeccionDeConfiguracion[]
 

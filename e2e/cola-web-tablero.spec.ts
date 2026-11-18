@@ -24,6 +24,10 @@ const VENDEDORA = 'Vera Cola'
 const EN_LA_RUEDA = 'En la rueda'
 const SIN_ROL = 'Habilitada, pero su rol no recibe turnos de la web'
 
+// Las filas de la rueda misma: el grupo «Habilitada, pero su rol…» es parte de la sección «En la rueda» y sus filas quedan fuera de esta lista.
+const filasDeLaRueda = (page: Page) =>
+  page.getByRole('region', { name: EN_LA_RUEDA }).locator(':scope > ol, :scope > ul')
+
 let duena = ''
 let vendedoraId = ''
 let rolId = ''
@@ -112,22 +116,58 @@ test('la habilitada cuyo rol no recibe turnos figura aparte, y la sin asignar ar
   const aparte = page.getByRole('region', { name: SIN_ROL })
   await expect(aparte.getByText(VENDEDORA)).toBeVisible()
   await expect(aparte.getByRole('link', { name: 'Se cambia en Roles.' })).toBeVisible()
-  await expect(page.getByRole('region', { name: EN_LA_RUEDA }).getByText(VENDEDORA)).toHaveCount(0)
+  await expect(filasDeLaRueda(page).getByText(VENDEDORA)).toHaveCount(0)
   const sinAsignar = page.getByRole('region', { name: /^Sin asignar/ })
   await expect(sinAsignar.getByText(codigo)).toBeVisible()
   await expect(sinAsignar.getByText('boton_general')).toBeVisible()
+})
+
+test('la página lleva «Sin asignar», «En la rueda» y «Política de la cola», en ese orden y con su frase', async ({
+  page,
+}) => {
+  permisoDeLaRueda(false)
+  habilitada(true)
+  await abrirElTablero(page)
+  await expect(page.getByRole('heading', { level: 2 })).toHaveText([
+    /^Sin asignar/,
+    'En la rueda',
+    'Política de la cola',
+  ])
+  await expect(
+    page.getByText('Las solicitudes de la web que todavía no tienen asesor.'),
+  ).toBeVisible()
+  await expect(page.getByText('Quién recibe los turnos, en el orden de la ruleta.')).toBeVisible()
+  await expect(
+    page.getByText('Cuánto hay para contactar, cuántas abiertas por asesor y cuántos intentos.'),
+  ).toBeVisible()
+  // El grupo aparte es parte de «En la rueda»; «Agregar a la rueda» va junto a su título.
+  const rueda = page.getByRole('region', { name: EN_LA_RUEDA })
+  await expect(rueda.getByRole('region', { name: SIN_ROL })).toBeVisible()
+  await expect(rueda.getByRole('button', { name: 'Agregar a la rueda' })).toBeVisible()
+})
+
+test('la política se guarda con la barra de cambios sin guardar', async ({ page }) => {
+  await abrirElTablero(page)
+  const minutos = page.getByLabel('Minutos para contactar')
+  const antes = await minutos.inputValue()
+  await expect(page.getByRole('region', { name: 'Cambios sin guardar' })).toHaveCount(0)
+  await minutos.fill(String(Number(antes) + 1))
+  const barra = page.getByRole('region', { name: 'Cambios sin guardar' })
+  await expect(barra).toBeVisible()
+  await barra.getByRole('button', { name: 'Descartar' }).click()
+  await expect(barra).toHaveCount(0)
+  await expect(minutos).toHaveValue(antes)
 })
 
 test('con el permiso en su rol, «Actualizar» la pasa a la rueda', async ({ page }) => {
   permisoDeLaRueda(false)
   habilitada(true)
   await abrirElTablero(page)
-  const rueda = page.getByRole('region', { name: EN_LA_RUEDA })
   await expect(page.getByRole('region', { name: SIN_ROL }).getByText(VENDEDORA)).toBeVisible()
 
   permisoDeLaRueda(true)
   await page.getByRole('button', { name: 'Actualizar' }).click()
-  await expect(rueda.getByText(VENDEDORA)).toBeVisible()
+  await expect(filasDeLaRueda(page).getByText(VENDEDORA)).toBeVisible()
   await expect(page.getByRole('region', { name: SIN_ROL }).getByText(VENDEDORA)).toHaveCount(0)
 })
 
@@ -150,5 +190,5 @@ test('habilitar desde «Agregar a la rueda» a quien su rol no recibe turnos lo 
   ).toBeVisible()
   await expect(panel).toBeHidden()
   await expect(page.getByRole('region', { name: SIN_ROL }).getByText(VENDEDORA)).toBeVisible()
-  await expect(page.getByRole('region', { name: EN_LA_RUEDA }).getByText(VENDEDORA)).toHaveCount(0)
+  await expect(filasDeLaRueda(page).getByText(VENDEDORA)).toHaveCount(0)
 })

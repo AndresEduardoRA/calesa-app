@@ -134,10 +134,10 @@ export function esFechaDeProgramar(iso: string, ahora: Date): boolean {
 }
 
 export function rutaDeGuia(id: string): string {
-  return `${RUTAS.configuracionDeWeb}/guias/${id}`
+  return `${RUTAS.guiasDelSitio}/${id}`
 }
 
-export const RUTA_DE_LA_LISTA_DE_GUIAS = `${RUTAS.configuracionDeWeb}?seccion=guias`
+export const RUTA_DE_LA_LISTA_DE_GUIAS = RUTAS.guiasDelSitio
 
 // Las rutas de las imágenes del primer nivel de un documento (la base no las admite más adentro), sin repetir: lo que ya no está tras guardar se
 // quita del bucket si ninguna fila lo usa (`quitarSiHuerfano`).

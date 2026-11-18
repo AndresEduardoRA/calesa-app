@@ -40,7 +40,8 @@ export const guardarLegales = actionClient
       actualizadoEnEsperado,
     })
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeWeb)
+      revalidatePath(RUTAS.legalesDelSitio)
+      revalidatePath(RUTAS.ajustesDelSitio)
     }
     return hecho
   })

@@ -5,11 +5,14 @@ import { ActualizarTablero } from '@/modules/web/pantallas/cola'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { EsqueletoListado } from '@/shared/ui/esqueletos'
+import { EncabezadoDeConfiguracion } from '../_navegacion/encabezado-de-configuracion'
+import { SECCION_DE_COLA_WEB } from './seccion'
 import { TableroDeLaCola } from './tablero-de-la-cola'
 
-export const metadata: Metadata = { title: 'Cola web' }
+export const metadata: Metadata = { title: SECCION_DE_COLA_WEB.titulo }
 
-// Configuración › Cola web (8.04-2): quién recibe los turnos de la web y las solicitudes que quedaron sin asesor. Entra quien tiene `web.cola.gestionar`;
+// Configuración › Cola web (8.04-2): una página con tres secciones en orden —«Sin asignar», «En la rueda» y «Política de la cola»—, cada una con su
+// título y su frase; «Actualizar» queda arriba. Entra quien tiene `web.cola.gestionar`;
 // sin la clave, «No tienes permiso». Las lecturas y las escrituras de la base vuelven a exigir la clave. `?panel=agregar-a-la-rueda&q=` abre «Agregar a la
 // rueda» y busca en el equipo (8.04-3).
 export default async function PaginaDeColaWeb({
@@ -22,12 +25,7 @@ export default async function PaginaDeColaWeb({
   return (
     <div className="grid max-w-3xl gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="grid min-w-0 gap-1">
-          <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">Cola web</h1>
-          <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-            Quién recibe los turnos de la web y las solicitudes que quedaron sin asesor.
-          </p>
-        </div>
+        <EncabezadoDeConfiguracion {...SECCION_DE_COLA_WEB} />
         <ActualizarTablero />
       </div>
       <Suspense fallback={<EsqueletoListado filas={6} columnas={3} />}>

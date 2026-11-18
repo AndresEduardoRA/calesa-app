@@ -18,7 +18,7 @@ export const eliminarGuia = actionClient
     }
     const eliminada = await escribirGuias.eliminar(parsedInput)
     if (eliminada.ok) {
-      revalidatePath(RUTAS.configuracionDeWeb)
+      revalidatePath(RUTAS.guiasDelSitio)
     }
     return eliminada
   })

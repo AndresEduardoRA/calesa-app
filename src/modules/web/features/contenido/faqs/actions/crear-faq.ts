@@ -19,6 +19,6 @@ export const crearFaq = actionClient
       return fallo('sin_permiso', SIN_PERMISO_PARA_CONTENIDO)
     }
     const hecho = await repositorioDeFaqs.crear(parsedInput)
-    if (hecho.ok) revalidatePath(RUTAS.configuracionDeWeb)
+    if (hecho.ok) revalidatePath(RUTAS.faqsDelSitio)
     return hecho
   })

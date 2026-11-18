@@ -26,7 +26,8 @@ export const guardarAjustesDelSitio = actionClient
       actualizadoEnEsperado,
     })
     if (guardado.ok) {
-      revalidatePath(RUTAS.configuracionDeWeb)
+      revalidatePath(RUTAS.ajustesDelSitio)
+      revalidatePath(RUTAS.legalesDelSitio)
     }
     return guardado
   })

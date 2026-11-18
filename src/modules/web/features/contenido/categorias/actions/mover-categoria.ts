@@ -18,7 +18,7 @@ export const moverCategoria = actionClient
     }
     const hecho = await escribirCategorias.mover(parsedInput)
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeWeb)
+      revalidatePath(RUTAS.guiasDelSitio)
     }
     return hecho
   })
