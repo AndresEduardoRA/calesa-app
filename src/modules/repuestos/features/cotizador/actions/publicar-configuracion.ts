@@ -27,6 +27,6 @@ export const publicarConfiguracion = actionClient
       vigenteEsperada: parsedInput.vigenteEsperada,
       creadoPor: ctx.usuarioId,
     })
-    if (hecho.ok) revalidatePath(RUTAS.configuracionDeRepuestos)
+    if (hecho.ok) revalidatePath(RUTAS.cotizadorDeRepuestos)
     return hecho
   })

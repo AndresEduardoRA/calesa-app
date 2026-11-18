@@ -20,6 +20,6 @@ export const guardarCaja = actionClient
       return fallo('sin_permiso', SIN_PERMISO_PARA_EL_COTIZADOR)
     }
     const hecho = await repositorioDeConfiguracion.guardarCaja(parsedInput)
-    if (hecho.ok) revalidatePath(RUTAS.configuracionDeRepuestos)
+    if (hecho.ok) revalidatePath(RUTAS.cotizadorDeRepuestos)
     return hecho
   })

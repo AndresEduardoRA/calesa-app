@@ -1,9 +1,26 @@
 import { WrenchIcon } from 'lucide-react'
 import { RUTAS } from '@/shared/lib/rutas'
-import type { SeccionDeConfiguracion } from '../secciones'
+import type { SeccionDeConfiguracion, SubseccionDeConfiguracion } from '../secciones'
 
-// La entrada de Configuración › Repuestos en el hub (8.08-3). Se abre con `repuestos.configurar`. El tipo se trae con `import type`: el ciclo con
-// `secciones.ts` es sólo de tipos y se borra al compilar.
+// La entrada de Configuración › Repuestos en el registro (8.08-3), con sus dos sub-rutas. Se abre con `repuestos.configurar`, y con ella las dos.
+// La sección no tiene índice: su ruta abre «Catálogos». El tipo se trae con `import type`: el ciclo con `secciones.ts` es sólo de tipos y se
+// borra al compilar.
+export const CATALOGOS_DE_REPUESTOS_EN_CONFIGURACION = {
+  clave: 'catalogos',
+  titulo: 'Catálogos',
+  descripcion: 'Tipo de pieza, condición, vía de transporte y país de origen.',
+  ruta: RUTAS.catalogosDeRepuestos,
+  permisos: ['repuestos.configurar'],
+} as const satisfies SubseccionDeConfiguracion
+
+export const COTIZADOR_DE_REPUESTOS_EN_CONFIGURACION = {
+  clave: 'cotizador',
+  titulo: 'Cotizador de repuestos',
+  descripcion: 'La fórmula del cotizador de repuestos, sus tramos de logística y sus cajas.',
+  ruta: RUTAS.cotizadorDeRepuestos,
+  permisos: ['repuestos.configurar'],
+} as const satisfies SubseccionDeConfiguracion
+
 export const SECCION_DE_REPUESTOS = {
   clave: 'repuestos',
   titulo: 'Repuestos',
@@ -12,5 +29,5 @@ export const SECCION_DE_REPUESTOS = {
   Icono: WrenchIcon,
   permisos: ['repuestos.configurar'],
   grupo: 'operacion',
-  subsecciones: [],
+  subsecciones: [CATALOGOS_DE_REPUESTOS_EN_CONFIGURACION, COTIZADOR_DE_REPUESTOS_EN_CONFIGURACION],
 } as const satisfies SeccionDeConfiguracion

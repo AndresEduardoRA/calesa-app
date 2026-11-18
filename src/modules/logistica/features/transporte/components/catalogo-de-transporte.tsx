@@ -17,8 +17,8 @@ const BOTON = 'h-11 md:h-8'
 type Props<T> = {
   // `puerto` o `naviera`: el prefijo de los ids de la lista y del título.
   clave: string
+  // El nombre de la región (lector de pantalla): la página ya dice el título y la frase.
   titulo: string
-  descripcion: string
   etiquetaDelBoton: string
   etiquetaDeCarga: string
   tituloDelError: string
@@ -44,12 +44,11 @@ function Cargando({ etiqueta }: { etiqueta: string }) {
   )
 }
 
-// La forma de un catálogo de transporte de Configuración › Logística (6.08-1): encabezado y botón, los cinco estados y la lista de catálogo. Es un catálogo de la empresa (decenas de filas): no se pagina;
+// La forma de un catálogo de transporte de Configuración › Logística (6.08-1): el botón de «Nuevo» (el título y la frase los dice la página), los cinco estados y la lista de catálogo. Es un catálogo de la empresa (decenas de filas): no se pagina;
 // con el tope se avisa. Quien lo usa pone el hook, las filas y el modal.
 export function CatalogoDeTransporte<T>({
   clave,
   titulo,
-  descripcion,
   etiquetaDelBoton,
   etiquetaDeCarga,
   tituloDelError,
@@ -64,16 +63,9 @@ export function CatalogoDeTransporte<T>({
   children,
 }: Props<T>) {
   const lista = lectura.tipo === 'listo' ? lectura.filas : null
-  const idDelTitulo = `titulo-de-${clave}`
   return (
-    <section className="grid gap-3" aria-labelledby={idDelTitulo}>
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <div className="grid gap-0.5">
-          <h2 id={idDelTitulo} className="text-(length:--text-lg) font-semibold text-(--color-ink)">
-            {titulo}
-          </h2>
-          <p className="text-(length:--text-sm) text-(--color-ink-soft)">{descripcion}</p>
-        </div>
+    <section className="grid gap-3" aria-label={titulo}>
+      <div className="flex justify-end">
         <Button className={BOTON} onClick={alNuevo}>
           <PlusIcon aria-hidden />
           {etiquetaDelBoton}

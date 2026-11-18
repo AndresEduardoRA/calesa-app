@@ -72,6 +72,11 @@ const PANTALLAS = [
   ['leads-tipos', () => '/configuracion/leads?seccion=tipos'],
   ['leads-seguimientos', () => '/configuracion/leads?seccion=seguimientos'],
   ['cotizacion-niveles', () => '/configuracion/cotizacion?seccion=niveles'],
+  ['logistica-puertos', () => '/configuracion/logistica/puertos'],
+  ['logistica-navieras', () => '/configuracion/logistica/navieras'],
+  ['logistica-categorias', () => '/configuracion/logistica/categorias-de-gasto'],
+  ['repuestos-catalogos', () => '/configuracion/repuestos/catalogos'],
+  ['repuestos-cotizador', () => '/configuracion/repuestos/cotizador'],
   ['equipo', () => '/configuracion/equipo'],
   ['roles', () => '/configuracion/roles'],
 ] as const
