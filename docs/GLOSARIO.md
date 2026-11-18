@@ -242,12 +242,15 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   mezclados por fecha, lo más nuevo arriba; una página de cada fuente y sólo se dibuja hasta donde llegó la que menos retrocedió. Las otras pestañas del resumen:
   «Adjuntos», «Revisiones» y «Comentarios».
 - **Patrón de lista** — `@/shared/ui/lista` (`<UnaSolaVista>`, `<FilaDeLista>`, `<MasAcciones>`…): tabla o tarjetas, nombre a la izquierda,
-  «⋯» a la derecha.
+  «⋯» arriba a la derecha en la tarjeta de la lista (`<EsquinaDeAcciones>`) y en la columna pegada a la derecha en la tabla.
 - **Vista de la lista** — `VistaDeLista` (`tabla` | `tarjetas`), `?vista=`, `<ConmutadorDeVista>` (en «Vista y opciones»): cómo se ve una lista en
   escritorio; en el inventario la recuerda `vehiculos.vista`. Por debajo de 768 px siempre tarjetas. No es una «Vista guardada».
 - **Vuelta del foco** — `abrirConVuelta()`, `useVueltaDelFoco()` (`src/shared/ui/vuelta-del-foco.ts`): tras recargar con un panel por URL,
   «atrás» devuelve el foco a quien lo abrió (desde un menú, al botón del menú).
 - **Más acciones («⋯»)** — `<MasAcciones>` / `accionesDeLead()`, `accionesDeVehiculo()`: menú de fila, tarjeta, resumen o ficha.
+- **Esquina de acciones** — `<EsquinaDeAcciones>` (`@/shared/ui/lista`): el lugar del «⋯» en una tarjeta de la lista (cada ítem de la vista
+  Tarjetas, también la del kanban): arriba a la derecha; con `sobreImagen`, flotando sobre la foto con fondo translúcido y borde, y la casilla en
+  la esquina izquierda como espejo. En la tabla el lugar es la columna pegada (`CeldaPegada lado="acciones"`).
 - **Filtro descartado** — `filtrosDescartados()` / `<AvisoDeFiltrosDescartados>`: filtro de la URL sobre un campo desactivado o eliminado.
 - **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: en dos columnas (`<FichaEnDosColumnas>`): a la izquierda cabecera, «Datos»,
   «Teléfonos», «Quién lo tiene» y «Acceso al portal»; a la derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados,

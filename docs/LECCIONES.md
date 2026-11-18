@@ -151,6 +151,9 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 
 - Con el texto al 200 % los media queries siguen en px: escribe una columna lateral como `minmax(0, 24rem)`, no rem fijos, y en una rejilla de 12 pistas que colapsa usa `gap-x-0 @lg:gap-x-3` (las pistas van a 0 y los 11 huecos fijos desbordan).
 - Nombra los contenedores (`@container/hoja`, `@4xl/hoja`): una consulta de contenedor la resuelve el contenedor más cercano al descendiente, no el que lleva la clase.
+- Un estilo que depende del desplazamiento (la sombra de una columna pegada) va con `container-type: scroll-state` y
+  `@container scroll-state(…)`, no con una animación ligada al desplazamiento (`animation-timeline`): cada celda sumaría una animación que
+  nunca termina, y `quieto()`, `recibeElClic()` y las capturas esperan a que terminen.
 - Lo que se desplaza de costado no debe ensanchar la página en el celular: `min-w-0` en la raíz de una barra de pestañas y `relative` en una lista `overflow-x-auto` con un `sr-only` adentro (es absoluto y escapa del recorte). Mídelo con `scrollWidth` del documento, no a ojo.
 - Si un panel lee su URL con `nuqs`, escríbela con `nuqs` (con `router.replace` el panel no se entera) y no lo cierres justo antes de un `router.push`/`replace`: nuqs escribe después y pisa el destino; navega y deja que el panel salga solo.
 - Respalda en `sessionStorage` lo que guardes en `history.state`: con `shallow: false` Next lo pisa a los ~60 ms y Chromium no conserva un `replaceState` en `pagehide`.
