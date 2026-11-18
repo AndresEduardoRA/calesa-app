@@ -1,5 +1,5 @@
 import { connection } from 'next/server'
-import { Suspense, type ReactNode } from 'react'
+import { cache, Suspense, type ReactNode } from 'react'
 import { requerirSesion } from '@/modules/equipo'
 import { RUTAS } from '@/shared/lib/rutas'
 import { CabeceraDeConfiguracion } from './_navegacion/cabecera-de-configuracion'
@@ -36,11 +36,12 @@ export default function LayoutDeConfiguracion({ children }: { children: ReactNod
   )
 }
 
-async function gruposDeQuienMira(): Promise<GrupoDelNavegador[]> {
+// Una vez por request: el menú y el selector reciben los mismos arreglos de sub-secciones y el payload manda cada uno una sola vez.
+const gruposDeQuienMira = cache(async (): Promise<GrupoDelNavegador[]> => {
   await connection()
   const { permisos } = await requerirSesion()
   return paraElNavegador(gruposVisibles(permisos))
-}
+})
 
 async function MenuLateral() {
   const grupos = await gruposDeQuienMira()
