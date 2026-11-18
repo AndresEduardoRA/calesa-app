@@ -78,14 +78,44 @@ function Hoja({ alGuardar }: { alGuardar: () => void }) {
   return null
 }
 
-function montar({
-  esSubasta = true,
-  alGuardar = vi.fn(),
-  conElegido = true,
-  historial = null as ReactNode,
-  url = '?origen=o&lead=l&panel=vehiculo&lista=ultima',
-  alta = null as AltaDelPanel | null,
-} = {}) {
+type Opciones = {
+  esSubasta: boolean
+  alGuardar: () => void
+  conElegido: boolean
+  historial: ReactNode
+  url: string
+  alta: AltaDelPanel | null
+  arriba: ReactNode
+  soloElegido: boolean
+  sinQuitar: boolean
+  motivo: string | null
+}
+
+function montar(pedidas: Partial<Opciones> = {}) {
+  const {
+    esSubasta,
+    alGuardar,
+    conElegido,
+    historial,
+    url,
+    alta,
+    arriba,
+    soloElegido,
+    sinQuitar,
+    motivo,
+  } = {
+    esSubasta: true,
+    alGuardar: vi.fn(),
+    conElegido: true,
+    historial: null,
+    url: '?origen=o&lead=l&panel=vehiculo&lista=ultima',
+    alta: null,
+    arriba: null,
+    soloElegido: false,
+    sinQuitar: false,
+    motivo: null,
+    ...pedidas,
+  }
   const cambios: UrlUpdateEvent[] = []
   render(
     <NuqsTestingAdapter searchParams={url} onUrlUpdate={(cambio) => cambios.push(cambio)} hasMemory>
@@ -104,6 +134,10 @@ function montar({
           alta={alta}
           claveDeLaUrl="vehiculo"
           historial={historial}
+          arriba={arriba}
+          soloElegido={soloElegido}
+          sinQuitar={sinQuitar}
+          motivo={motivo}
         />
       </ProveedorAtajos>
     </NuqsTestingAdapter>,
@@ -205,5 +239,52 @@ describe('PanelDelVehiculo: el buscador', () => {
     await waitFor(() =>
       expect(cambios.at(-1)?.queryString).toBe(`?origen=o&lead=l&vehiculo=${OTRO}`),
     )
+  })
+})
+
+describe('PanelDelVehiculo › lo de arriba y sólo el elegido (T307)', () => {
+  it('lo de arriba va antes del buscador', async () => {
+    montar({ arriba: <p>Campo de arriba</p> })
+    const arriba = await screen.findByText('Campo de arriba')
+    const buscador = screen.getByRole('searchbox')
+    expect(arriba.compareDocumentPosition(buscador) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('sólo el elegido: lo de arriba y el elegido sin «Quitar», sin buscador ni listas', async () => {
+    montar({ arriba: <p>Campo de arriba</p>, soloElegido: true })
+    expect(await screen.findByText('Campo de arriba')).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'Elegido' }).textContent).toContain('Corolla elegido')
+    expect(screen.queryByRole('button', { name: 'Quitar' })).toBeNull()
+    expect(screen.queryByRole('searchbox')).toBeNull()
+    expect(screen.queryByRole('tab')).toBeNull()
+    expect(screen.queryByText('Civic otro')).toBeNull()
+  })
+})
+
+describe('PanelDelVehiculo › cambiar el vehículo de una guardada (T315)', () => {
+  it('sin «Quitar»: el elegido sin el botón, con el buscador y las listas para elegir otro', async () => {
+    const { cambios } = montar({ sinQuitar: true })
+    expect(await screen.findByText('Civic otro')).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'Elegido' }).textContent).toContain('Corolla elegido')
+    expect(screen.queryByRole('button', { name: 'Quitar' })).toBeNull()
+    expect(screen.getByRole('searchbox')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: /Civic otro/ }))
+    await waitFor(() =>
+      expect(cambios.at(-1)?.queryString).toBe(`?origen=o&lead=l&vehiculo=${OTRO}`),
+    )
+  })
+
+  it('sólo el elegido con un motivo: el motivo va después de lo de arriba y antes del elegido', async () => {
+    montar({
+      arriba: <p>Campo de arriba</p>,
+      soloElegido: true,
+      motivo: 'Una cotización final no cambia de vehículo.',
+    })
+    const arriba = await screen.findByText('Campo de arriba')
+    const motivo = screen.getByText('Una cotización final no cambia de vehículo.')
+    const elegido = screen.getByRole('region', { name: 'Elegido' })
+    expect(arriba.compareDocumentPosition(motivo) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(motivo.compareDocumentPosition(elegido) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.queryByRole('searchbox')).toBeNull()
   })
 })

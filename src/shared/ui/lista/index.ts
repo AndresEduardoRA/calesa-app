@@ -9,6 +9,7 @@ export { MasAcciones } from './mas-acciones'
 export { PestanasDelResumen } from './pestanas-del-resumen'
 export { CabeceraPegada, CeldaPegada, TablaDeLista } from './tabla-de-lista'
 export { ID_DEL_ICONO_MAS, IconoDeLista } from './simbolos-de-lista'
+export { EsquinaDeAcciones } from './esquina-de-acciones'
 export { TarjetaDeLista } from './tarjeta-de-lista'
 export { UnaSolaVista } from './una-sola-vista'
 export {

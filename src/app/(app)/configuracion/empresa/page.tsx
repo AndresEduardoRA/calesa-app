@@ -1,54 +1,39 @@
 import type { Metadata } from 'next'
 import { puede, requerirSesion } from '@/modules/equipo'
+import { redirigir } from '@/shared/lib/navegacion'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
-import { SeccionDeComprobantes } from './comprobantes/seccion'
-import { alMenosUna, esPestanaDeUnArea, pestanaDe, pestanasVisibles } from './pestanas'
-import { PestanasEmpresa } from './pestanas-empresa'
+import { EncabezadoDeConfiguracion } from '../_navegacion/encabezado-de-configuracion'
+import { DATOS_DE_LA_EMPRESA, PERMISOS_DE_LA_EMPRESA } from './seccion'
 import { SeccionEmpresa } from './seccion-empresa'
-import { SeccionIntegraciones } from './seccion-integraciones'
-import { SeccionMonedas } from './seccion-monedas'
+import { destinoDeLaUrlVieja } from './url-vieja'
 
-export const metadata: Metadata = { title: 'Empresa' }
+export const metadata: Metadata = { title: DATOS_DE_LA_EMPRESA.titulo }
 
-// Configuración › Empresa. Entra quien ve alguna pestaña (`pestanas.ts`: hoy, quien tiene alguno de los dos
-// permisos de la empresa); cada pestaña se edita con el suyo y, sin él, se ve deshabilitada con el motivo.
-export default async function PaginaEmpresa({ searchParams }: PageProps<'/configuracion/empresa'>) {
-  const [sesion, parametros] = await Promise.all([requerirSesion(), searchParams])
-  const visibles = alMenosUna(pestanasVisibles(sesion.permisos))
-  if (!visibles) {
+// Configuración › Empresa › Datos de la empresa, la sub-sección índice. Entra quien tiene alguno de los dos permisos de la empresa;
+// sin `empresa.ajustes.gestionar` se ve deshabilitada, con el motivo. Las URLs de cuando Empresa tenía pestañas (`?seccion=`, `?tc=`,
+// `?moneda=`, `?panel=`) van primero a su sub-ruta (`url-vieja.ts`).
+export default async function PaginaDatosDeLaEmpresa({
+  searchParams,
+}: PageProps<'/configuracion/empresa'>) {
+  const parametros = await searchParams
+  const destino = destinoDeLaUrlVieja({
+    seccion: unParametro(parametros['seccion']),
+    tc: unParametro(parametros['tc']),
+    moneda: unParametro(parametros['moneda']),
+    panel: unParametro(parametros['panel']),
+  })
+  if (destino !== null) {
+    redirigir(destino)
+  }
+  const { permisos } = await requerirSesion()
+  if (!PERMISOS_DE_LA_EMPRESA.some((clave) => puede(permisos, clave))) {
     return <EstadoSinPermiso />
   }
-  const puedeAjustes = puede(sesion.permisos, 'empresa.ajustes.gestionar')
-  const puedeTiposCambio = puede(sesion.permisos, 'empresa.tipos_cambio.gestionar')
-  const pestana = pestanaDe(unParametro(parametros['seccion']), visibles)
-  // La barra no recibe los permisos: sólo cuáles pestañas dibujar.
-  const [primera, ...resto] = visibles
-  const quitarPermisos = ({ clave, titulo }: { clave: string; titulo: string }) => ({
-    clave,
-    titulo,
-  })
-  const paraLaBarra = [quitarPermisos(primera), ...resto.map(quitarPermisos)] as const
-
   return (
     <div className="grid max-w-3xl gap-4">
-      <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">Empresa</h1>
-      <PestanasEmpresa pestanas={paraLaBarra} />
-      {pestana === 'empresa' ? <SeccionEmpresa puedeEditar={puedeAjustes} /> : null}
-      {pestana === 'monedas' ? (
-        <SeccionMonedas
-          puedeGestionar={puedeTiposCambio}
-          tipoCambioAbierto={unParametro(parametros['tc'])}
-        />
-      ) : null}
-      {pestana === 'integraciones' ? <SeccionIntegraciones puedeEditar={puedeAjustes} /> : null}
-      {esPestanaDeUnArea(pestana) ? (
-        <SeccionDeComprobantes
-          pestana={pestana}
-          permisos={sesion.permisos}
-          parametros={parametros}
-        />
-      ) : null}
+      <EncabezadoDeConfiguracion {...DATOS_DE_LA_EMPRESA} />
+      <SeccionEmpresa puedeEditar={puede(permisos, 'empresa.ajustes.gestionar')} />
     </div>
   )
 }

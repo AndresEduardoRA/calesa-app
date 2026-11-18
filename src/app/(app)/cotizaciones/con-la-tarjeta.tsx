@@ -10,12 +10,13 @@ export type PropsDeLaTarjeta = {
   asesor: string | null
   // El nombre del cliente, sólo si quien mira lo ve.
   cliente?: string | null
-  // Una guardada: su título, su número, si venció y hasta cuándo vale, y el último guardado (la fecha del encabezado, P3 a). La hoja nueva: nulos.
-  titulo?: string | null
+  // Una guardada: su número, si venció y hasta cuándo vale, y el último guardado (la fecha del encabezado, P3 a). La hoja nueva: nulos.
   numero?: number | null
   vencida?: boolean
   venceEl?: string | null
   guardadaEl?: string | null
+  // El título de una guardada ya resuelto (el guardado: la tarjeta dibuja lo guardado). La hoja nueva no lo pasa: la tarjeta lee el que se está escribiendo.
+  titulo?: string | null
 }
 
 type Props = PropsDeLaTarjeta & {
@@ -30,11 +31,11 @@ export async function ConLaTarjeta({
   vehiculo,
   asesor,
   cliente = null,
-  titulo = null,
   numero = null,
   vencida = false,
   venceEl = null,
   guardadaEl = null,
+  titulo,
   cotizacionId,
   children,
 }: Props) {
@@ -42,7 +43,6 @@ export async function ConLaTarjeta({
   const url = urlPublicaONull('marca', ajustes.logoRuta)
   return (
     <ProveedorDeLaTarjeta
-      titulo={titulo}
       cliente={cliente}
       vehiculo={vehiculo}
       asesor={asesor}
@@ -52,6 +52,7 @@ export async function ConLaTarjeta({
       guardadaEl={guardadaEl}
       cotizacionId={cotizacionId}
       logo={url === null ? null : { nombre: ajustes.nombre, url }}
+      {...(titulo === undefined ? {} : { titulo })}
     >
       {children}
     </ProveedorDeLaTarjeta>

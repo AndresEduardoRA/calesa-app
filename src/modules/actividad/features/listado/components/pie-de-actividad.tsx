@@ -6,51 +6,51 @@ import { formatearNumero, LOCALE_POR_DEFECTO } from '@/shared/lib/formato'
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
 import { Button } from '@/shared/ui/button'
-import { IrAUnaFecha } from '@/shared/ui/ir-a-una-fecha'
 import type { ActividadCargada } from '../hooks/use-actividad'
 
 type Props = { actividad: ActividadCargada; zona: string }
 
-const CAMINO = 'Para ver anteriores, ve a una fecha.'
+const CAMINO = 'Para ver anteriores, usa «Ir a una fecha», arriba.'
 
-// Lo que sigue a la lista: el error del último pedido con «Reintentar», el aviso del tope o «Ver más», «Ir a una fecha» mientras haya más
-// hacia atrás o se mire desde una fecha, y «Volver a lo más reciente». Con un pedido en vuelo, todo lo que pide queda apagado sin cambiar su texto.
+// Lo que sigue a la lista: el error del último pedido con «Reintentar», el aviso del tope o «Ver más». Con un pedido en vuelo, todo lo que
+// pide queda apagado sin cambiar su texto.
 export function PieDeActividad({ actividad, zona }: Props) {
   const { desde, ocupado } = actividad
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      {actividad.error ? (
-        <div role="alert" className="flex flex-wrap items-center gap-2">
-          <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-            {textoDelError(actividad.fallido, zona)}
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            className="min-h-11 md:min-h-9"
-            disabled={ocupado}
-            onClick={actividad.reintentar}
-          >
-            Reintentar
-          </Button>
-        </div>
-      ) : actividad.enElTope ? (
-        <AvisoDeTope texto={textoDelAviso(desde, zona)} camino={CAMINO} />
-      ) : actividad.hayMasParaPedir ? (
+  if (actividad.error) {
+    return (
+      <div role="alert" className="flex flex-wrap items-center gap-2">
+        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
+          {textoDelError(actividad.fallido, zona)}
+        </p>
         <Button
           type="button"
           variant="outline"
           className="min-h-11 md:min-h-9"
           disabled={ocupado}
-          onClick={actividad.verMas}
+          onClick={actividad.reintentar}
         >
-          {actividad.cargandoMas ? 'Cargando…' : 'Ver más'}
+          Reintentar
         </Button>
-      ) : null}
-      {actividad.siguiente !== null || desde !== null ? (
-        <IrAUnaFecha zona={zona} ocupado={ocupado} alIr={actividad.irAUnaFecha} />
-      ) : null}
-      {desde !== null ? <VolverALoMasReciente actividad={actividad} /> : null}
+      </div>
+    )
+  }
+  if (actividad.enElTope) {
+    return <AvisoDeTope texto={textoDelAviso(desde, zona)} camino={CAMINO} />
+  }
+  if (!actividad.hayMasParaPedir) {
+    return null
+  }
+  return (
+    <div className="flex justify-center">
+      <Button
+        type="button"
+        variant="outline"
+        className="min-h-11 w-full sm:w-auto md:min-h-9"
+        disabled={ocupado}
+        onClick={actividad.verMas}
+      >
+        {actividad.cargandoMas ? 'Cargando…' : 'Ver más'}
+      </Button>
     </div>
   )
 }
@@ -78,10 +78,9 @@ function textoDelAviso(desde: string | null, zona: string): string {
 }
 
 function textoDelError(fallido: ActividadCargada['fallido'], zona: string): string {
+  const sinRed = typeof navigator !== 'undefined' && !navigator.onLine ? 'Sin conexión. ' : ''
   if (fallido?.clase === 'salto' && fallido.dia !== null) {
-    return `No se pudo cargar la actividad hasta el ${formatearFecha(fallido.dia, { zona })}.`
+    return `${sinRed}No se pudo cargar la actividad hasta el ${formatearFecha(fallido.dia, { zona })}.`
   }
-  return fallido?.clase === 'volver'
-    ? 'No se pudo cargar lo más reciente.'
-    : 'No se pudo cargar más.'
+  return `${sinRed}${fallido?.clase === 'volver' ? 'No se pudo cargar lo más reciente.' : 'No se pudo cargar más.'}`
 }

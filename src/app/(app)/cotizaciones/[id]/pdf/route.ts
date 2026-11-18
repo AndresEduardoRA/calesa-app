@@ -1,5 +1,11 @@
 import { z } from 'zod'
-import { contextoDeLaPagina, leerHojaDeUnaGuardada, pdfDeUnaGuardada } from '@/modules/cotizaciones'
+import {
+  contextoDeLaPagina,
+  leerHojaDeUnaGuardada,
+  pdfDeUnaGuardada,
+  tituloAparteDelNumero,
+  tituloDeLaCotizacion,
+} from '@/modules/cotizaciones'
 import { PESO_MAXIMO_LOGO, leerAjustes } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
 import { urlPublicaONull } from '@/shared/lib/almacen'
@@ -59,7 +65,14 @@ export async function GET(_peticion: Request, { params }: RouteContext<'/cotizac
     // El día del último guardado (P3 del 4.18-2) y el del vencimiento, en la zona de la empresa: lo mismo que la vista previa de esa guardada.
     contexto: contextoDeLaPagina(
       {
-        titulo: hoja.cotizacion.titulo,
+        // El título de la cotización (sin el de respaldo «Cotización n.º N», que ya escribe el número); los metadatos del PDF no lo llevan (puede nombrar el vehículo).
+        titulo: tituloAparteDelNumero(
+          tituloDeLaCotizacion({
+            titulo: hoja.cotizacion.titulo,
+            vehiculo: vehiculo?.titulo ?? null,
+            numero: hoja.cotizacion.numero,
+          }),
+        ),
         cliente: cliente?.nombre ?? null,
         vehiculo: vehiculoDeLaTarjeta(vehiculo),
         asesor,

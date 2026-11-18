@@ -25,7 +25,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Cotizaciones
 
-- **[4-71]** Cambiar el vehículo de una preventa guardada desde `/cotizaciones/[id]` — la base lo admite; falta la barra del vehículo en la guardada, o elegir sólo entre vehículos ya cargados.
+- **[—]** El dato del vehículo de una tabla (4.14-2c3) no se elige en el panel de una guardada: el lector de opciones lee `cotizacion_tabla` con la hoja abierta, que una guardada no tiene — falta uno por cotización (la celda dice «Falta un dato del vehículo.»).
 - **[4-72]** Quien ve una cotización pero no su vehículo no puede recalcularla («No se pudo recalcular») — que el recálculo de una guardada no dependa del vehículo, o que la pantalla diga por qué.
 - **[4-94]** «Cotizar» suelto (sin lead) en la cabecera de la ficha `/vehiculos/[id]` y en el «⋯» del inventario — hoy está en el resumen de `/vehiculos`, en la barra de la hoja y, con su lead, en cada fila de «Relacionados».
 - **[4-101]** El editor de la tarjeta no reordena, suma ni quita grupos a mano (manda la fórmula) — decidir viendo la vista previa.
@@ -178,6 +178,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
+- **[T327]** En el celular, la burbuja del chat queda sobre la esquina derecha de arriba de la barra de cambios sin guardar (no tapa sus botones):
+  subirla mientras la barra está a la vista, como los avisos (`data-pie-de-panel`).
 - **[T34]** En el celular el carrusel de la ficha del vehículo, a todo el ancho y en 4:3, ocupa casi una pantalla antes del título: acotar su alto en una columna
   (sin tocar el de la lateral de escritorio).
 - **[T34]** «Abrir la unidad» de «Qué falta» en la ficha del vehículo lleva a un hueco aunque su regla del flujo esté apagada (allí no estará): pasar a la ficha
@@ -223,7 +225,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - La web pública en sí (repo aparte con `sitio-marketing` sobre el esquema `web`).
 - «Visto» en los pendientes de la agenda y en los bloques de Inicio.
 
-De esta versión, además: línea de tiempo dentro de las fichas (hay «Ver actividad» en el «⋯»), exportar la actividad; cambiar qué permisos
+De esta versión, además: montar la «Actividad reciente» (`actividad/pantallas/actividad-reciente.ts`) en la ficha del vehículo (T339; hoy se ve sola en `/actividad/reciente`, que se quita al montarla), exportar la actividad; cambiar qué permisos
 existen o la matriz de Roles; cambiar embudos ya existentes (la plantilla sólo toca los que nacen después); exportar seguimientos,
 documentos, fotos o repuestos y formatos que no sean CSV; importar `seguimientos`, `repuestos_items` y cotizaciones, y deshacer una
 importación de vehículos; métricas por asesor para quien no tiene `tablero.metricas.ver`; editar la cola desde el tablero; estabilizar

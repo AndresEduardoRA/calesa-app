@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarRolesDePrueba,
@@ -75,6 +76,8 @@ const CAMBIOS_GUARDADOS = 'Cambios guardados.'
 async function guardarConDeTodo(page: Page): Promise<string> {
   const guardados = await vigilarGuardados(page)
   await page.goto(urlDeLaHoja(origen.id, lead))
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '100')
   await tipearEnLaHoja(page, 'con_ayuda', '7')
   await celdaDeLaHoja(page, 'activar').getByRole('switch', { name: 'Activar' }).click()

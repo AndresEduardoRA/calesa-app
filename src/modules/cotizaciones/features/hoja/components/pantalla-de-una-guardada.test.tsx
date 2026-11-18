@@ -36,7 +36,15 @@ function montar(cruda: Record<string, unknown> = {}, inicial: RecalculoInicial =
   if (!hoja) {
     throw new Error('La hoja de prueba no se leyó.')
   }
-  return render(<PantallaDeUnaGuardada hoja={hoja} inicial={inicial} personaId={PERSONA} />)
+  return render(
+    <PantallaDeUnaGuardada
+      hoja={hoja}
+      inicial={inicial}
+      personaId={PERSONA}
+      vehiculoNuevo={null}
+      cambiaVehiculo={false}
+    />,
+  )
 }
 const SOLO_LECTURA = 'Sólo lectura: no puedes guardar esta cotización.'
 const totalGuardado = () => document.querySelector('[data-total-cotizado]')
@@ -109,6 +117,7 @@ describe('PantallaDeUnaGuardada: la hoja calcula por su cotización (C1, C2)', (
     expect(pedido.de).toEqual({
       tipo: 'guardada',
       cotizacionId: crudaDeUnaGuardada().cotizacion.id,
+      vehiculoId: null,
     })
     expect(pedido.entradas.inputs).toEqual({ remate: 1200 })
   })

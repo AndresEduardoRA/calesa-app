@@ -19,8 +19,10 @@ const armado = (valor: number): ArmadoDeEdicion => ({
   modoTc: null,
   verTotalBs: false,
   titulo: null,
+  tituloManual: false,
   notas: null,
   vehiculoId: null,
+  cambiaElVehiculo: false,
 })
 const armarCon = (valor: number) => (listo: (a: ArmadoDeEdicion | null) => void) => {
   listo(armado(valor))

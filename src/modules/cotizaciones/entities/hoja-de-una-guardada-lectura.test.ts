@@ -21,6 +21,7 @@ describe('hojaDeUnaGuardadaDesde: lo que lee la página de una cotización guard
       modoTc: null,
       verTotalBs: false,
       titulo: null,
+      tituloManual: false,
       notas: null,
     })
     expect(h?.puedeGuardar).toBe(true)

@@ -155,6 +155,9 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 
 - Con el texto al 200 % los media queries siguen en px: escribe una columna lateral como `minmax(0, 24rem)`, no rem fijos, y en una rejilla de 12 pistas que colapsa usa `gap-x-0 @lg:gap-x-3` (las pistas van a 0 y los 11 huecos fijos desbordan).
 - Nombra los contenedores (`@container/hoja`, `@4xl/hoja`): una consulta de contenedor la resuelve el contenedor más cercano al descendiente, no el que lleva la clase.
+- Un estilo que depende del desplazamiento (la sombra de una columna pegada) va con `container-type: scroll-state` y
+  `@container scroll-state(…)`, no con una animación ligada al desplazamiento (`animation-timeline`): cada celda sumaría una animación que
+  nunca termina, y `quieto()`, `recibeElClic()` y las capturas esperan a que terminen.
 - Lo que se desplaza de costado no debe ensanchar la página en el celular: `min-w-0` en la raíz de una barra de pestañas y `relative` en una lista `overflow-x-auto` con un `sr-only` adentro (es absoluto y escapa del recorte). Mídelo con `scrollWidth` del documento, no a ojo.
 - Si un panel lee su URL con `nuqs`, escríbela con `nuqs` (con `router.replace` el panel no se entera) y no lo cierres justo antes de un `router.push`/`replace`: nuqs escribe después y pisa el destino; navega y deja que el panel salga solo.
 - Respalda en `sessionStorage` lo que guardes en `history.state`: con `shallow: false` Next lo pisa a los ~60 ms y Chromium no conserva un `replaceState` en `pagehide`.
@@ -182,6 +185,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   destino: al cerrarse, el menú le devuelve el foco a su botón y pisa el salto.
 - Un título del servidor al que salta un ancla (`#…` con el foco) no se le pasa a una isla diferida para que lo dibuje: al cambiar de árbol se vuelve a
   montar y pierde el foco. Se queda en el servidor con una ranura vacía al lado y la isla pone lo suyo ahí con `createPortal`.
+- Una barra pegada abajo que aparece con la primera tecla (`sticky bottom-0`) tapa el campo donde se escribe si estaba en el borde de la pantalla: al
+  aparecer, desplaza lo justo para dejarlo a la vista (`BarraDeCambiosSinGuardar`).
 - Chrome ignora `autocomplete="off"` en un `type="password"` y el Chromium de Playwright no lo reproduce: eso sólo se comprueba a mano, no lo des por probado.
 
 ## Realtime y notificaciones
@@ -218,6 +223,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 ### Localizar y esperar
 
 - Sobre listas de cientos de filas busca por texto, no `*ByRole`: calcular el nombre accesible de cada enlace agota el timeout con un CPU.
+- Una página con `h1` propio (las sub-rutas de Configuración) repite el nombre de sus bloques («Monedas y tipos de cambio» contiene «Tipos de cambio»): busca el `h2` con `exact: true` o `level`.
 - Usa `exact: true` en botones genéricos («Guardar») y cuando un nombre o texto contiene a otro («Ir a la versión» dentro de «Revertir a la versión N»): si no, coincide con el de otra barra.
 - Busca dentro de `main` o `#contenido`, nunca por `.fixed` ni una clase genérica: el marco repite textos («Sin conexión», la navegación) y sus barras fijas (campana, chat) coinciden.
 - El «Más acciones de …» de la cabecera de una ficha no es el único de la página: las filas de «Relacionados» llevan el suyo. Usa `menuDeLaFicha()`, que las excluye, no un `getByRole` suelto.

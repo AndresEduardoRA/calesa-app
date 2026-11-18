@@ -83,7 +83,7 @@ const CAMPOS_POR_TABLA: Readonly<Record<string, Readonly<Record<string, string>>
     subasta_resuelta_en: 'Subasta resuelta el',
     subasta_resuelta_por: 'Subasta resuelta por',
   },
-  cotizaciones: { total_base: 'Total en moneda base' },
+  cotizaciones: { total_base: 'Total en moneda base', titulo_manual: 'Título manual' },
   repuestos_items: { precio_cliente: 'Precio al cliente' },
 }
 
@@ -97,19 +97,57 @@ export function etiquetaDeEntidad(tabla: string): string {
   return ENTIDADES_DE_LA_ACTIVIDAD[tabla] ?? tabla
 }
 
-// Las de `registrar_actividad()` que no se leen bien humanizadas.
+// Las de `registrar_actividad()` que se ven en la actividad, dichas como lo que va antes del registro en la frase («Ana aprobó Cotización #34»,
+// «Ana resolvió la subasta de Toyota Hilux #12»).
 const VERBOS: Readonly<Record<string, string>> = {
-  'vehiculo.subasta_resuelta': 'Resolvió la subasta',
+  'vehiculo.subasta_resuelta': 'Resolvió la subasta de',
+  'vehiculo.vitrina': 'Cambió la vitrina de',
+  'comprobante.emitido': 'Emitió',
+  'comprobante.anulado': 'Anuló',
+  'cotizacion.aprobada': 'Aprobó',
+  'cotizacion.final': 'Marcó como final',
+  'cotizacion.moderada': 'Moderó',
+  'cotizacion.comentario_moderado': 'Moderó un comentario de',
+  'formula.publicada': 'Publicó',
+  'fase.eliminada': 'Eliminó',
+  'fase.jubilada': 'Jubiló',
+  'fase.roles_cambiados': 'Cambió los roles de',
+  'transicion.roles_cambiados': 'Cambió los roles de',
+  'lead.creado': 'Creó',
+  'lead.compartido': 'Compartió',
+  'lead.transferido': 'Transfirió',
+  'lead.adoptado_del_limbo': 'Adoptó',
+  'lead.acceso_revocado': 'Revocó el acceso al portal de',
+  'lead.seguimiento_creado': 'Registró un seguimiento de',
+  'lead.seguimiento_editado': 'Editó un seguimiento de',
+  'lead.seguimiento_eliminado': 'Eliminó un seguimiento de',
+  'lead.seguimiento_restaurado': 'Restauró un seguimiento de',
+  'lead.telefono_cambiado': 'Cambió el teléfono de',
+  'lead.telefono_extra_agregado': 'Agregó un teléfono a',
+  'lead.telefono_extra_quitado': 'Quitó un teléfono de',
+  'lead.telefono_extra_rotulado': 'Rotuló un teléfono de',
+  'oportunidad.transferida': 'Transfirió una oportunidad de',
+  'pago.confirmado': 'Confirmó',
+  'pago.anulado': 'Anuló',
+  'origenes_lead.movido': 'Reordenó',
+  'origenes_lead.por_defecto': 'Dejó por defecto',
+  'tipos_lead.movido': 'Reordenó',
+  'tipos_seguimiento.movido': 'Reordenó',
+  'rol.permiso_otorgado': 'Otorgó',
+  'rol.permiso_revocado': 'Revocó',
+  'usuario.rol_asignado': 'Asignó',
+  'usuario.rol_quitado': 'Quitó',
 }
 
-// La acción la escribe `auditar()` como `<tabla>.<insert|update|delete>`; las de `registrar_actividad()` traen su propia clave.
+// La acción la escribe `auditar()` como `<tabla>.<insert|update|delete>`; las de `registrar_actividad()` traen su propia clave. Lo que se dice
+// antes del registro: «Creó», «Cambió», «Borró», el de `VERBOS` o, de una acción sin verbo propio, «Hizo «…» en».
 export function verboDeLaAccion(accion: string): string {
   const propio = VERBOS[accion]
   if (propio) return propio
   if (accion.endsWith('.insert')) return 'Creó'
   if (accion.endsWith('.update')) return 'Cambió'
   if (accion.endsWith('.delete')) return 'Borró'
-  return humanizar(accion)
+  return `Hizo «${humanizar(accion)}» en`
 }
 
 // `atributos.<clave>` lleva la etiqueta del campo del layout (`leads_campos` / `origenes_campos`) si llega.

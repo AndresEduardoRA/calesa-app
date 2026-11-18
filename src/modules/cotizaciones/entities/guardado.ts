@@ -33,6 +33,11 @@ export type MotivoDeRechazo =
   | 'cotizacion_cambio'
   | 'falta_lead'
   | 'falta_vehiculo'
+  // El título de la cotización (T307): sin vehículo y sin título (otra pestaña lo vació), o más largo que el tope (sólo sin la pantalla).
+  | 'falta_titulo'
+  | 'titulo_largo'
+  // El vehículo elegido para cambiarlo (T315) ya no se puede usar: no existe, está en la papelera o quien guarda dejó de verlo.
+  | 'vehiculo_sin_acceso'
   | 'sin_acceso'
   | 'sesion'
   | 'transitorio'
@@ -79,6 +84,7 @@ const POR_DETALLE: Readonly<Record<string, MotivoDeRechazo>> = {
   entrada_invalida: 'recargar_hoja',
   origen_sin_formula: 'sin_formula',
   variante_sin_eleccion: 'variante_oculta',
+  titulo_largo: 'titulo_largo',
   ...Object.fromEntries([...DESCARTES].map((d) => [d, 'valor_descartado' as const])),
 }
 const DEL_TOTAL: Readonly<Record<string, MotivoDeRechazo>> = {
@@ -88,6 +94,7 @@ const DEL_TOTAL: Readonly<Record<string, MotivoDeRechazo>> = {
 const SIN_DETALLE: Readonly<Record<string, MotivoDeRechazo>> = {
   lead: 'falta_lead',
   vehiculo: 'falta_vehiculo',
+  titulo: 'falta_titulo',
   total: 'moneda_no_soportada',
 }
 
@@ -151,10 +158,20 @@ export function resultadoDeCrear(respuesta: {
 }
 
 // La salida que acompaña al texto: `d2` son las dos de la hoja desactualizada; `recargar` reabre la hoja (lo tipeado vuelve con el borrador); `reintentar`, otro guardado;
-// `ingresar`, la sesión; `elegir_lead` y `elegir_vehiculo`, el panel de lo que la regla del rol ahora pide. Nula: un botón que no arregla nada no se ofrece.
+// `ingresar`, la sesión; `elegir_lead` y `elegir_vehiculo`, el panel de lo que la regla del rol ahora pide (o, en una guardada, el de elegir otro vehículo); `elegir_titulo`,
+// el campo del título. Nula: un botón que no
+// arregla nada no se ofrece.
 export type SalidaDelAviso =
-  'd2' | 'recargar' | 'reintentar' | 'ingresar' | 'elegir_lead' | 'elegir_vehiculo' | null
-export type TextoDelAviso = { texto: string; salida: SalidaDelAviso }
+  | 'd2'
+  | 'recargar'
+  | 'reintentar'
+  | 'ingresar'
+  | 'elegir_lead'
+  | 'elegir_vehiculo'
+  | 'elegir_titulo'
+  | null
+// `campo`: el rechazo es de un campo que se dibuja fuera de la hoja (el título, en el panel del vehículo), que lo repite debajo.
+export type TextoDelAviso = { texto: string; salida: SalidaDelAviso; campo?: 'titulo' }
 
 const RECARGAR_HOJA = 'Esta hoja ya no se puede guardar: recárgala. Lo que escribiste vuelve.'
 const NO_SE_PUDO = 'No se pudo guardar. Vuelve a intentar en un momento.'
@@ -162,7 +179,11 @@ export const VALOR_DESCARTADO =
   'Hay un valor que esta hoja no acepta: restablece la celda con aviso.'
 export const FALTA_EL_LEAD = 'Para guardar, elige el cliente en «Cliente».'
 export const FALTA_EL_VEHICULO = 'Para guardar, elige el vehículo en «Vehículo».'
+export const FALTA_EL_TITULO = 'Escribe el título de la cotización.'
+export const TITULO_LARGO = 'El título tiene como máximo 120 caracteres.'
 const AL_RECARGAR = 'Al recargar se abre esa versión; lo que escribiste no vuelve.'
+export const VEHICULO_SIN_ACCESO =
+  'No se puede usar ese vehículo: ya no existe, está en la papelera o ya no tienes acceso.'
 
 // Exhaustivo: un motivo nuevo sin su texto no compila.
 const TEXTOS: Readonly<Record<MotivoDeRechazo, TextoDelAviso>> = {
@@ -212,6 +233,13 @@ const TEXTOS: Readonly<Record<MotivoDeRechazo, TextoDelAviso>> = {
   },
   falta_vehiculo: {
     texto: 'Tu rol ahora pide el vehículo para guardar en este origen.',
+    salida: 'elegir_vehiculo',
+  },
+  falta_titulo: { texto: FALTA_EL_TITULO, salida: 'elegir_titulo', campo: 'titulo' },
+  titulo_largo: { texto: TITULO_LARGO, salida: null, campo: 'titulo' },
+  // Con la hoja cambiando el vehículo, el 42501 sin detalle se lee como del vehículo nuevo (`resultadoDeGuardar`): elegir otro es la salida.
+  vehiculo_sin_acceso: {
+    texto: VEHICULO_SIN_ACCESO,
     salida: 'elegir_vehiculo',
   },
   // Los seis orígenes del 42501 sin detalle (sin permiso, la cuenta bloqueada, el lead, el vehículo, el id ajeno, la propia action) dicen lo mismo: no confirman qué existe.

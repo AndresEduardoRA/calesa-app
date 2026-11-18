@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
 import { guardarPorLaHoja } from './soporte/cotizar-guardada'
 import {
@@ -69,6 +70,8 @@ async function abrir(page: Page): Promise<void> {
   await entrar(page, duena, { fresco: true })
   await page.goto(url())
   await expect(page.locator('[data-hoja]')).toBeVisible()
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
 }
 
 async function abrirElPanel(page: Page) {
@@ -173,7 +176,7 @@ test('E4: en una guardada dice que la cotización conserva su tipo de cambio, si
   await expect(abierto.getByText(/se cambian en Configuración › Empresa › Monedas/)).toBeVisible()
   await expect(abierto.getByRole('link', { name: 'Ir a Monedas' })).toHaveAttribute(
     'href',
-    '/configuracion/empresa?seccion=monedas',
+    '/configuracion/empresa/monedas',
   )
   await expect(abierto.getByLabel('Valor nuevo')).toHaveCount(0)
 })

@@ -119,6 +119,20 @@ describe('TarjetaDeLista', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Más' }))
     expect(alAbrir).toHaveBeenCalledTimes(1)
   })
+
+  it('un clic en el relleno de la esquina del «⋯» no la abre, y sin acciones no hay esquina', () => {
+    const alAbrir = vi.fn()
+    const tarjeta = (acciones?: React.ReactNode) => (
+      <TarjetaDeLista alAbrir={alAbrir} acciones={acciones}>
+        Ana
+      </TarjetaDeLista>
+    )
+    const { container, rerender } = render(tarjeta(<button type="button">Más</button>))
+    fireEvent.click(screen.getByRole('button', { name: 'Más' }).parentElement ?? document.body)
+    expect(alAbrir).not.toHaveBeenCalled()
+    rerender(tarjeta())
+    expect(container.querySelector('[data-no-abre]')).toBeNull()
+  })
 })
 
 describe('UnaSolaVista', () => {

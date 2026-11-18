@@ -34,7 +34,11 @@ export function OfertaDeTransporte({
   puedeCargarCatalogos,
 }: Props) {
   const cargarEn = (seccion: 'puertos' | 'navieras') =>
-    puedeCargarCatalogos ? `${RUTAS.configuracionDeLogistica}?seccion=${seccion}` : null
+    puedeCargarCatalogos
+      ? seccion === 'puertos'
+        ? RUTAS.puertosDeLogistica
+        : RUTAS.navierasDeLogistica
+      : null
   const { borrador, hayCambio, marcar, ofrecerTodos, guardar } = useOfertaDeTransporte(
     flujoId,
     oferta,

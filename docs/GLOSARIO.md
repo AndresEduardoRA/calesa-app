@@ -243,12 +243,15 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   mezclados por fecha, lo más nuevo arriba; una página de cada fuente y sólo se dibuja hasta donde llegó la que menos retrocedió. Las otras pestañas del resumen:
   «Adjuntos», «Revisiones» y «Comentarios».
 - **Patrón de lista** — `@/shared/ui/lista` (`<UnaSolaVista>`, `<FilaDeLista>`, `<MasAcciones>`…): tabla o tarjetas, nombre a la izquierda,
-  «⋯» a la derecha.
+  «⋯» arriba a la derecha en la tarjeta de la lista (`<EsquinaDeAcciones>`) y en la columna pegada a la derecha en la tabla.
 - **Vista de la lista** — `VistaDeLista` (`tabla` | `tarjetas`), `?vista=`, `<ConmutadorDeVista>` (en «Vista y opciones»): cómo se ve una lista en
   escritorio; en el inventario la recuerda `vehiculos.vista`. Por debajo de 768 px siempre tarjetas. No es una «Vista guardada».
 - **Vuelta del foco** — `abrirConVuelta()`, `useVueltaDelFoco()` (`src/shared/ui/vuelta-del-foco.ts`): tras recargar con un panel por URL,
   «atrás» devuelve el foco a quien lo abrió (desde un menú, al botón del menú).
 - **Más acciones («⋯»)** — `<MasAcciones>` / `accionesDeLead()`, `accionesDeVehiculo()`: menú de fila, tarjeta, resumen o ficha.
+- **Esquina de acciones** — `<EsquinaDeAcciones>` (`@/shared/ui/lista`): el lugar del «⋯» en una tarjeta de la lista (cada ítem de la vista
+  Tarjetas, también la del kanban): arriba a la derecha; con `sobreImagen`, flotando sobre la foto con fondo translúcido y borde, y la casilla en
+  la esquina izquierda como espejo. En la tabla el lugar es la columna pegada (`CeldaPegada lado="acciones"`).
 - **Filtro descartado** — `filtrosDescartados()` / `<AvisoDeFiltrosDescartados>`: filtro de la URL sobre un campo desactivado o eliminado.
 - **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: en dos columnas (`<FichaEnDosColumnas>`): a la izquierda cabecera, «Datos»,
   «Teléfonos», «Quién lo tiene» y «Acceso al portal»; a la derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados,
@@ -488,6 +491,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   en ese origen el lead es obligatorio; una final lo pide siempre. También rige al cotizar encima de una anterior sin lead.
 - **Obligatorios al cotizar** — `ObligatoriosAlCotizar` (`cotizaciones`): `{ lead, vehiculo }`, lo que la hoja exige elegir según las dos claves de arriba
   para quien cotiza en ese origen; la página lo calcula con los permisos de la sesión (con «Ver como», los del rol elegido). La base decide con los reales.
+  Sin vehículo, además, el título de la cotización (`loQueFalta()` da `'titulo'` después del lead y del vehículo, para cualquier rol).
+- **Título de la cotización** — `cotizaciones.titulo` / `titulo_manual`, `tituloDeLaCotizacion()`, `<ProveedorDelTitulo>`, el campo «Título de la cotización» del
+  panel del vehículo: el nombre propio de una cotización, hasta 120 caracteres. **Automático** (`titulo_manual = false`): el título del vehículo, que la base rehace
+  en cada guardado; **manual**: el que alguien escribió (cambiar de vehículo lo respeta; vaciarlo lo vuelve automático). Sin vehículo es obligatorio. Lo que se
+  muestra si falta: el del vehículo y, sin vehículo, «Cotización n.º N». No es el título del vehículo (`vehiculos.titulo`) ni el de la variante de la tarjeta.
 - **Ajustes de cotización** — `AjustesDeCotizacion` (`empresa`): la vigencia, de `ajustes_empresa`; los cambia
   `empresa_guardar_ajustes_de_cotizacion()` con `cotizaciones.configurar` en todos los orígenes y la versión de la fila (Configuración ›
   Cotización › Ajustes).
@@ -688,6 +696,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   celular, enlace a `/chat`); docs y pruebas le dicen «la burbuja», que no es la **burbuja de un mensaje**.
 - **Push** — `suscripciones_push`: suscripción web push del navegador.
 - **Actividad** — `actividad` / `registrar_actividad()`: auditoría inmutable, 14 días.
+- **Actividad reciente** — `ActividadReciente` (`actividad/pantallas/actividad-reciente.ts`): los últimos 5 cambios de un registro como frases, cada uno
+  enlazado a su detalle en `/actividad`, con «Ver toda la actividad». No: «línea de tiempo», «historial» (ése es el de negocio, que no caduca).
 - **Turno web** — `solicitudes_contacto_web` / `web.solicitar_asesor`: cada «Contactar asesor» en la web pública.
 - **Rueda / Cola web** — `cola_web_asesores` / `estado_cola_web`: quién recibe turnos. Elegible = `habilitado` y permiso
   `web.cola.participar` (`puede_estar_en_la_rueda()`). Matriz: «Recibir turnos de la web».
@@ -728,7 +738,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tablero** — `/tablero`: métricas y gráficas por rol con widgets.
 - **Vista guardada** — `vistas_guardadas` / `VistaGuardada`, `<VistasGuardadas>` (una sección de «Vista y opciones»): filtros de un listado con nombre, por persona; aplicarla es navegar. La
   tienen leads, vehículos y cotizaciones (`RUTA_DE_PANTALLA`); con la búsqueda, guarda también `?q=`.
-- **Buscador del listado de cotizaciones** — `?q=` / `cotizaciones_buscar()`, `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`, `TOPE_DE_COINCIDENCIAS`: número, cliente,
+- **Buscador del listado de cotizaciones** — `?q=` / `cotizaciones_buscar()`, `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`, `TOPE_DE_COINCIDENCIAS`: número, título, cliente,
   vehículo (título, VIN o lote) y autor; distinto del buscador global (`buscador_cotizaciones()`).
 - **Menú de la fila (cotizaciones)** — `accionesDeCotizacion()`, `MenuDeUnaFila`, `<MenuDeLaFila>`: el «⋯» de una cotización del listado, con la lista única de
   acciones (`aprobar`, `final`, `favorita`, `reportar`, `invalidar`, `descartar`, `reactivar`, `papelera`) y lo que cada rol ve.
@@ -816,10 +826,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   izquierda de cada sección de Configuración; donde no cabe, el **selector de sección** (`SelectorDeSeccion`). No va en el inicio.
 - **Grupo de Configuración** — `GRUPOS`, `GrupoDeConfiguracion` (`configuracion/secciones.ts`): Empresa y equipo · Ventas · Operación · Web;
   junta las secciones en el inicio, el menú y el selector. No: «área».
-- **Sub-sección (de Configuración)** — `SubseccionDeConfiguracion`: una sub-ruta de una sección, registrada en `SECCIONES` con su título y sus
-  permisos; el menú la dibuja debajo de su sección.
-- **Pestaña de un área (de Configuración › Empresa)** — `PestanaDeEmpresa` que viene de la lista de un área (`PESTANAS_DE_COMPROBANTES`), con
-  sus permisos; Empresa la dibuja sin importar el área (`esPestanaDeUnArea`).
+- **Sub-sección (de Configuración)** — `SubseccionDeConfiguracion`: una sub-ruta de una sección, registrada en `SECCIONES` con su título, su
+  frase (`descripcion`, la que dibuja la página bajo su `h1` con `EncabezadoDeConfiguracion`) y sus permisos; el menú la dibuja debajo de su
+  sección. La **índice** vive en la ruta de su sección y se marca sólo en esa ruta. Con `motivoSinPermiso`, quien no tiene sus permisos la ve
+  apagada (no es enlace) con el motivo, en el menú y en el selector; sin él, no la ve.
 - **Hoja de contacto** — `scripts/hoja-de-contacto.mjs`, `<carpeta>/hojas/`: capturas de e2e montadas en una imagen.
 - **Captura quieta** — `capturar()` / `capturarEn()` (`e2e/soporte/`): captura tomada sin animación ni transición con fin en curso.
 - **Pregunta al descartar** — `useCierreConCambios()`, `<ConfirmarDescarte>`, `useCambiosSinGuardar()` (`preguntaAlCerrar`): «Tienes cambios

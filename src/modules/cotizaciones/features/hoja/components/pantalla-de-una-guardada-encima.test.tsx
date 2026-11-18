@@ -42,13 +42,22 @@ function montar(cruda: Record<string, unknown> = OTRA_VERSION) {
   if (!hoja) {
     throw new Error('La hoja de prueba no se leyó.')
   }
-  return render(<PantallaDeUnaGuardada hoja={hoja} inicial={INICIAL} personaId={PERSONA} />, {
-    wrapper: ({ children }: { children: ReactNode }) => (
-      <NuqsTestingAdapter>
-        <ProveedorAtajos>{children}</ProveedorAtajos>
-      </NuqsTestingAdapter>
-    ),
-  })
+  return render(
+    <PantallaDeUnaGuardada
+      hoja={hoja}
+      inicial={INICIAL}
+      personaId={PERSONA}
+      vehiculoNuevo={null}
+      cambiaVehiculo={false}
+    />,
+    {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <NuqsTestingAdapter>
+          <ProveedorAtajos>{children}</ProveedorAtajos>
+        </NuqsTestingAdapter>
+      ),
+    },
+  )
 }
 const aviso = () => document.querySelector('[data-aviso-de-version]')
 const boton = () => screen.getByRole('button', { name: 'Cotizar encima' })
@@ -101,8 +110,10 @@ describe('PantallaDeUnaGuardada: «Cotizar encima» (C8, C9)', () => {
         modoTc: null,
         verTotalBs: false,
         titulo: null,
+        tituloManual: false,
         notas: null,
         vehiculoId: null,
+        cambiaElVehiculo: false,
       }),
     )
     montar()

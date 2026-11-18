@@ -48,7 +48,16 @@ export type CotizadorEncima = (pedido: {
 
 // La hoja de una cotización guardada (`cotizacion_hoja_guardada()`, 4.15-2) con su primer cálculo, que hace el servidor con la hoja ya leída: por la cotización (SU versión y SUS
 // tipos de cambio) y con lo guardado como entradas. `sin_permiso` es una cotización que no existe, está en la papelera o no se ve (la base no distingue). Un cálculo que falla no
-// tumba la hoja: llega con su estado.
+// tumba la hoja: llega con su estado. Con `vehiculo` (el de `?vehiculo=`, T315), calcula con él si quien mira puede cambiarlo (`vehiculoParaCalcular()`): `vehiculoNuevo` es
+// el que usó; si la base lo rechaza (no se ve, está en la papelera, es de otro origen o la cotización pasó a final), calcula con el suyo y `vehiculoSoltado` lo dice.
 export type LectorDeUnaGuardada = (
   id: string,
-) => Promise<Resultado<{ hoja: HojaDeUnaGuardada; inicial: RecalculoInicial }>>
+  opciones?: { vehiculo: string | null },
+) => Promise<
+  Resultado<{
+    hoja: HojaDeUnaGuardada
+    inicial: RecalculoInicial
+    vehiculoNuevo: string | null
+    vehiculoSoltado: boolean
+  }>
+>

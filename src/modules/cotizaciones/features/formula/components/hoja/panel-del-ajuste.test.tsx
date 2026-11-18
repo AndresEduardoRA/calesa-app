@@ -227,7 +227,11 @@ describe('PanelDelAjuste: cerrar y el tipo de cambio', () => {
     const { hoja } = hojaDePrueba()
     const guardada = {
       ...hoja,
-      de: { tipo: 'guardada' as const, cotizacionId: '66666666-6666-4666-8666-666666666666' },
+      de: {
+        tipo: 'guardada' as const,
+        cotizacionId: '66666666-6666-4666-8666-666666666666',
+        vehiculoId: null,
+      },
     }
     render(
       <PanelDelAjuste
@@ -247,7 +251,7 @@ describe('PanelDelAjuste: cerrar y el tipo de cambio', () => {
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ir a Monedas' })).toHaveAttribute(
       'href',
-      '/configuracion/empresa?seccion=monedas',
+      '/configuracion/empresa/monedas',
     )
     expect(pedidos).toHaveLength(0)
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument()

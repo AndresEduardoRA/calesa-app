@@ -1,4 +1,5 @@
 import { expect, test } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
 import { vigilarRecalculos } from './soporte/cotizar'
 import {
@@ -45,6 +46,8 @@ test('Ctrl+S guarda la hoja: una fila con quien guardó, la versión vigente y e
   const guardados = await vigilarGuardados(page)
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origen.id}&lead=${lead}`)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '1200')
   await expect(totalDeLaHoja(page)).toContainText('1.205,00')
   await guardarConElAtajo(page)
@@ -69,11 +72,15 @@ test('una celda abierta se confirma al guardar; con «abc» y un clic en «Guard
   const guardados = await vigilarGuardados(page)
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origen.id}&lead=${lead}`)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await escribirEnLaHoja(page, 'pub', '700')
   await guardarConElAtajo(page)
   await expect(tarjetaGuardada(page)).toBeVisible()
   expect(guardados.pedidos[0]?.entradas.inputs).toEqual({ pub: 700 })
   await page.getByRole('button', { name: 'Cotizar otra' }).click()
+  // Guardada, el título vuelve a automático para la próxima (T307): sin vehículo se escribe otra vez.
+  await escribirElTitulo(page)
   const entrada = await escribirEnLaHoja(page, 'pub', 'abc')
   await page.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(entrada).toHaveAttribute('aria-invalid', 'true')
@@ -111,6 +118,8 @@ test('el borrador (4-29): lo tipeado vuelve al recargar, sin la hoja abierta ni 
   await entrar(page, duena, { fresco: true })
   const url = `/cotizaciones/nuevo?origen=${origen.id}&lead=${lead}`
   await page.goto(url)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   const vacio = sinEspacios(await totalDeLaHoja(page).textContent())
   await tipearEnLaHoja(page, 'pub', '1200')
   await expect.poll(() => recalculos.respuestas.length).toBe(1)

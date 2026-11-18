@@ -87,6 +87,7 @@ export function hoja(d: Datos): HojaDeUnaGuardada {
       modoTc: d.modoTc ?? null,
       verTotalBs: false,
       titulo: d.titulo ?? null,
+      tituloManual: false,
       notas: null,
       creadoEn: '2026-11-17T10:00:00.123456+00:00',
       actualizadoEn: '2026-11-17T10:00:00.123456+00:00',

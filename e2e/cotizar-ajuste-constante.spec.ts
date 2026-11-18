@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   PREFIJO_ROL_E2E,
@@ -91,6 +92,10 @@ async function abrir(page: Page, destino = url(), correo = duena): Promise<void>
   await entrar(page, correo, { fresco: true })
   await page.goto(destino)
   await expect(page.locator('[data-hoja]')).toBeVisible()
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  if (!destino.includes('vehiculo=')) {
+    await escribirElTitulo(page)
+  }
 }
 
 async function abrirElPanel(page: Page, etiqueta: string) {

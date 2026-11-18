@@ -111,3 +111,21 @@ export type {
   EleccionesDeLaHoja,
   ObligatoriosAlCotizar,
 } from '../../entities/obligatorios-al-cotizar'
+
+// El título de la cotización (T307): la única regla de cómo se nombra una cotización en toda superficie (`tituloDeLaCotizacion()`; la tarjeta y el PDF, sin el de
+// respaldo: `tituloAparteDelNumero()`) y su tope.
+export {
+  TOPE_DEL_TITULO,
+  tituloAparteDelNumero,
+  tituloDeLaCotizacion,
+} from '../../entities/titulo-de-la-cotizacion'
+export type { FuenteDelTitulo, TituloMostrado } from '../../entities/titulo-de-la-cotizacion'
+
+// Cambiar el vehículo de una guardada desde su detalle (T315): qué permite la barra (`cambioDeVehiculo()`, con `puede_guardar` de la base y la clase), con qué vehículo calcula la
+// hoja (`vehiculoParaCalcular()`) y el motivo de la final.
+export {
+  MOTIVO_DE_LA_FINAL,
+  cambioDeVehiculo,
+  vehiculoParaCalcular,
+} from '../../entities/vehiculo-de-la-guardada'
+export type { CambioPermitido } from '../../entities/vehiculo-de-la-guardada'

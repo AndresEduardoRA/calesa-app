@@ -796,6 +796,7 @@ export type Database = {
           reportes_count: number
           tipos_cambio: NonNullable<Json>
           titulo: string | null
+          titulo_manual: boolean
           total_base: number
           totales: NonNullable<Json>
           valores: NonNullable<Json>
@@ -828,6 +829,7 @@ export type Database = {
           reportes_count?: number
           tipos_cambio: NonNullable<Json>
           titulo?: string | null
+          titulo_manual?: boolean
           total_base: number
           totales: NonNullable<Json>
           valores: NonNullable<Json>
@@ -859,6 +861,7 @@ export type Database = {
           reportes_count?: number
           tipos_cambio?: NonNullable<Json>
           titulo?: string | null
+          titulo_manual?: boolean
           total_base?: number
           totales?: NonNullable<Json>
           valores?: NonNullable<Json>
@@ -7324,6 +7327,8 @@ export type Database = {
         Returns: Json
       }
       _actividad_recorte: { Args: { p_tabla: string }; Returns: string }
+      _actividad_registro: { Args: { p_registro: string; p_tabla: string }; Returns: Json }
+      _actividad_valor_corto: { Args: { p_valor: Json }; Returns: Json }
       _aduana_vehiculo_visible: {
         Args: {
           p_algun: string[]
@@ -7833,6 +7838,10 @@ export type Database = {
       _cotizacion_vehiculo: { Args: { p_vehiculo: string }; Returns: undefined }
       _cotizacion_ver_total_bs: { Args: { p_formula: string; p_ver: boolean }; Returns: undefined }
       _cotizaciones_aprobadas_rellenar: { Args: Record<PropertyKey, never>; Returns: number }
+      _cotizaciones_ids_por_titulo: {
+        Args: { p_origen?: string; p_texto: string }
+        Returns: string[]
+      }
       _cotizaciones_papelera_lote_json: {
         Args: {
           p_dias: number
@@ -10009,6 +10018,8 @@ export type Database = {
           p_lead: string
           p_modo_tc?: string
           p_origen: string
+          p_titulo?: string
+          p_titulo_manual?: boolean
           p_vehiculo?: string
           p_vehiculo_nuevo?: Json
           p_ver_total_bs?: boolean
@@ -10038,6 +10049,7 @@ export type Database = {
           p_modo_tc: string
           p_notas: string
           p_titulo: string
+          p_titulo_manual?: boolean
           p_vehiculo: string
           p_ver_total_bs: boolean
         }

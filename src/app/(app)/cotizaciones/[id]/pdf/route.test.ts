@@ -27,6 +27,15 @@ vi.mock('@/modules/cotizaciones', () => ({
   leerAsesorDeLaCotizacion: (id: string) => leerAsesor(id),
   pdfDeUnaGuardada: (entrada: unknown) => pdf(entrada),
   contextoDeLaPagina: (pagina: unknown, opciones: unknown) => ({ pagina, opciones }),
+  // La regla del título que se muestra, en corto (la prueba de verdad es la de `entities/`): el título, el vehículo o el número; junto al número, sin el número.
+  tituloDeLaCotizacion: (t: { titulo: string | null; vehiculo: string | null; numero: number }) =>
+    t.titulo !== null
+      ? { texto: t.titulo, fuente: 'titulo' }
+      : t.vehiculo !== null
+        ? { texto: t.vehiculo, fuente: 'vehiculo' }
+        : { texto: `Cotización n.º ${String(t.numero)}`, fuente: 'numero' },
+  tituloAparteDelNumero: (t: { texto: string; fuente: string } | null) =>
+    t === null || t.fuente === 'numero' ? null : t.texto,
 }))
 const leerVehiculo = vi.fn()
 vi.mock('@/modules/vehiculos', () => ({ leerVehiculo: (id: string) => leerVehiculo(id) }))
@@ -217,6 +226,30 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
         contexto: expect.objectContaining({
           pagina: expect.objectContaining({ vehiculo: null, asesor: null, logo: null }),
         }),
+      }),
+    )
+  })
+})
+
+describe('GET /cotizaciones/[id]/pdf: el título de la cotización', () => {
+  it('sin título propio, el del vehículo; sin vehículo tampoco, ninguno (el número ya está en su celda)', async () => {
+    leerHoja.mockResolvedValue({
+      ok: true,
+      data: { hoja: { ...hoja, cotizacion: { ...hoja.cotizacion, titulo: null } }, inicial },
+    })
+    await pedir()
+    expect(pdf).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        contexto: expect.objectContaining({
+          pagina: expect.objectContaining({ titulo: 'Toyota Hilux 2020' }),
+        }),
+      }),
+    )
+    leerVehiculo.mockResolvedValue(fallo('inesperado'))
+    await pedir()
+    expect(pdf).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        contexto: expect.objectContaining({ pagina: expect.objectContaining({ titulo: null }) }),
       }),
     )
   })

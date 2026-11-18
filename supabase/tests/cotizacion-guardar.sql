@@ -106,12 +106,12 @@ begin
   perform pg_temp.cg_persona(fg, v_base || array['cotizaciones.final.gestionar'], o);
   perform pg_temp.cg_persona(aj, v_base, o2);
   perform pg_temp.cg_persona(sl, array['cotizaciones.ver', 'cotizaciones.crear', 'cotizaciones.editar', 'vehiculos.ver'], o);
-  -- La cotización: el resultado del motor con esas entradas, tal cual lo guardaría crear (la fila la escribe postgres).
+  -- La cotización: el resultado del motor con esas entradas, tal cual lo guardaría crear (la fila la escribe postgres; el título, el automático de su vehículo).
   v_ent := '{"inputs": {"visible": 100, "fijo": 5, "oculto": 25, "bono_costos": 7, "aparte_costos": 3}, "banderas": {"b_costos": true}, "overrides": {}, "vehiculo": {}, "tablas": {}}'::jsonb
            || jsonb_build_object('tipos_cambio', jsonb_build_object('oficial', (select valor from public.tipos_cambio where clave = 'oficial')));
   v_res := public.evaluar_formula(v_def, '{}', v_ent, null);
-  insert into public.cotizaciones (id, origen_id, lead_id, vehiculo_id, creado_por, formula_id, valores, fuentes, tipos_cambio, totales, total_base)
-  values (c, o, l, v, a, f, v_res -> 'valores', v_res -> 'fuentes', v_ent -> 'tipos_cambio', v_res -> 'totales', (v_res #>> '{totales,usd}')::numeric);
+  insert into public.cotizaciones (id, origen_id, lead_id, vehiculo_id, creado_por, formula_id, valores, fuentes, tipos_cambio, totales, total_base, titulo, titulo_manual)
+  values (c, o, l, v, a, f, v_res -> 'valores', v_res -> 'fuentes', v_ent -> 'tipos_cambio', v_res -> 'totales', (v_res #>> '{totales,usd}')::numeric, 'CG vehículo', false);
   return jsonb_build_object('o', o, 'o2', o2, 'f', f, 'l', l, 'v', v, 'v2', v2, 'c', c, 'a', a, 'k', k, 'kv', kv, 'ke', ke, 'sc', sc, 'fg', fg, 'aj', aj, 'sl', sl);
 end $f$;
 
@@ -423,7 +423,7 @@ begin
   -- Faltan los ids.
   r := pg_temp.cg_corre(a, format('select public.cotizacion_guardar(null, null, null, ''{}'', null, null, null, null, false)'));
   if r ->> 'error' is distinct from '22023' then raise exception 'sin ids debía dar 22023: %', r; end if;
-  if pg_temp.cg_revs(c) is distinct from n_antes or exists (select 1 from public.cotizaciones where id = c and titulo is not null) then raise exception 'un rechazo dejó rastro'; end if;
+  if pg_temp.cg_revs(c) is distinct from n_antes or exists (select 1 from public.cotizaciones where id = c and titulo is distinct from 'CG vehículo') then raise exception 'un rechazo dejó rastro'; end if;
 
   -- Una final: la edita quien la gestiona; quien sólo edita preventas recibe el mismo error que lo inexistente.
   update public.cotizaciones set clase = 'final' where id = c;
@@ -590,14 +590,16 @@ declare
 begin
   -- Largos.
   r := pg_temp.cg_corre(a, pg_temp.cg_sql(c, gen_random_uuid(), pg_temp.cg_ver(c), e, null, repeat('t', 121), null, v));
-  if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'titulo' then raise exception 'un título de 121: %', r; end if;
+  if r ->> 'error' is distinct from '22023' or r ->> 'detail' is distinct from 'titulo_largo' or r ->> 'hint' is distinct from 'titulo' then raise exception 'un título de 121: %', r; end if;
   r := pg_temp.cg_corre(a, pg_temp.cg_sql(c, gen_random_uuid(), pg_temp.cg_ver(c), e, null, null, repeat('n', 2001), v));
   if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'notas' then raise exception 'unas notas de 2.001: %', r; end if;
   r := pg_temp.cg_corre(a, pg_temp.cg_sql(c, gen_random_uuid(), pg_temp.cg_ver(c), e, null, repeat('t', 120), repeat('n', 2000), v));
   if r ? 'error' then raise exception '120 y 2.000 caben: %', r; end if;
-  -- Vacíos son nulos.
+  -- Vacíos: las notas, nulas; el título, el automático (el de su vehículo, T307).
   r := pg_temp.cg_corre(a, pg_temp.cg_sql(c, gen_random_uuid(), pg_temp.cg_ver(c), e, null, '   ', '', v));
-  if r ? 'error' or exists (select 1 from public.cotizaciones where id = c and (titulo is not null or notas is not null)) then raise exception 'los vacíos debían quedar nulos: %', r; end if;
+  if r ? 'error' or exists (select 1 from public.cotizaciones where id = c and (titulo is distinct from 'CG vehículo' or titulo_manual or notas is not null)) then
+    raise exception 'en blanco, las notas debían quedar nulas y el título el del vehículo: %', r;
+  end if;
   -- El modo: la hoja de esta fórmula no ofrece ninguno.
   r := pg_temp.cg_corre(a, pg_temp.cg_sql(c, gen_random_uuid(), pg_temp.cg_ver(c), e, 'unificado', null, null, v));
   if r ->> 'error' is distinct from '22023' or r ->> 'detail' is distinct from 'modo_invalido' or r ->> 'hint' is distinct from 'modo_tc' then raise exception 'un modo que la hoja no ofrece: %', r; end if;
@@ -661,7 +663,7 @@ declare
   e constant text := '{"inputs": {"visible": 100}}'; original public.cotizaciones; despues public.cotizaciones; k text; v_estropicio text;
   estropicios constant text[] := array[
     'titulo', $q$titulo = 'estropeado'$q$, 'notas', $q$notas = 'estropeadas'$q$, 'modo_tc', $q$modo_tc = 'paralelo'$q$, 'total_base', $q$total_base = 1$q$,
-    'fuentes', $q$fuentes = jsonb_set(fuentes, '{ajuste}', '"override"')$q$, 'totales', $q$totales = '{}'::jsonb$q$, 'valores', $q$valores = jsonb_set(valores, '{visible}', '1')$q$, 'vehiculo_id', format('vehiculo_id = %L', v2), 'ver_total_bs', 'ver_total_bs = true'];
+    'fuentes', $q$fuentes = jsonb_set(fuentes, '{ajuste}', '"override"')$q$, 'totales', $q$totales = '{}'::jsonb$q$, 'valores', $q$valores = jsonb_set(valores, '{visible}', '1')$q$, 'vehiculo_id', format('vehiculo_id = %L', v2), 'ver_total_bs', 'ver_total_bs = true', 'titulo_manual', 'titulo_manual = true'];
   i int;
 begin
   select * into original from public.cotizaciones where id = c;

@@ -59,9 +59,10 @@ test.afterAll(async () => {
 
 const PANTALLAS = [
   ['hub', () => '/configuracion'],
-  ['empresa-empresa', () => '/configuracion/empresa?seccion=empresa'],
-  ['empresa-monedas', () => '/configuracion/empresa?seccion=monedas'],
-  ['empresa-integraciones', () => '/configuracion/empresa?seccion=integraciones'],
+  ['empresa-datos', () => '/configuracion/empresa'],
+  ['empresa-monedas', () => '/configuracion/empresa/monedas'],
+  ['empresa-integraciones', () => '/configuracion/empresa/integraciones'],
+  ['empresa-comprobantes', () => '/configuracion/empresa/comprobantes'],
   ['origenes', () => '/configuracion/origenes'],
   ['origen-datos', () => `/configuracion/origenes/${origen.id}?seccion=datos`],
   ['origen-campos', () => `/configuracion/origenes/${origen.id}?seccion=campos`],
@@ -71,6 +72,11 @@ const PANTALLAS = [
   ['leads-tipos', () => '/configuracion/leads?seccion=tipos'],
   ['leads-seguimientos', () => '/configuracion/leads?seccion=seguimientos'],
   ['cotizacion-niveles', () => '/configuracion/cotizacion?seccion=niveles'],
+  ['logistica-puertos', () => '/configuracion/logistica/puertos'],
+  ['logistica-navieras', () => '/configuracion/logistica/navieras'],
+  ['logistica-categorias', () => '/configuracion/logistica/categorias-de-gasto'],
+  ['repuestos-catalogos', () => '/configuracion/repuestos/catalogos'],
+  ['repuestos-cotizador', () => '/configuracion/repuestos/cotizador'],
   ['equipo', () => '/configuracion/equipo'],
   ['roles', () => '/configuracion/roles'],
 ] as const

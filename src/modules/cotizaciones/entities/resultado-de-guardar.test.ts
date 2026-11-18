@@ -47,6 +47,21 @@ describe('resultadoDeGuardar', () => {
     expect(aviso.salida).toBe('recargar')
   })
 
+  it('el título (T307): sin vehículo y sin título, «Escribe el título…» con su botón; más largo que el tope, su texto sin salida', () => {
+    expect(motivo({ code: '22023', details: null, hint: 'titulo', message: 'x' })).toBe(
+      'falta_titulo',
+    )
+    expect(motivo({ code: '22023', details: 'titulo_largo', hint: 'titulo', message: 'x' })).toBe(
+      'titulo_largo',
+    )
+    expect(textoDelRechazo('falta_titulo')).toEqual({
+      texto: 'Escribe el título de la cotización.',
+      salida: 'elegir_titulo',
+      campo: 'titulo',
+    })
+    expect(textoDelRechazo('titulo_largo').salida).toBeNull()
+  })
+
   it('los demás se leen como los de crear: nodo_no_editable, otro 42501, sin código', () => {
     expect(motivo({ code: '42501', details: 'nodo_no_editable', message: 'x' })).toBe(
       'recargar_hoja',
@@ -72,5 +87,43 @@ describe('resultadoDeGuardar', () => {
         cotizacion: { id: ID, numero: 41, totalUsd: 10, repetido },
       })
     }
+  })
+})
+
+describe('resultadoDeGuardar › con la hoja cambiando el vehículo (T315)', () => {
+  const cambiando = (e: ErrorDeCrear) =>
+    resultadoDeGuardar({ data: null, error: e }, { cambiaElVehiculo: true })
+
+  it('un 42501 sin details es del vehículo nuevo: su texto y «Elegir otro vehículo»', () => {
+    const r = cambiando({ code: '42501', message: 'No tienes acceso a este vehículo.' })
+    expect(r).toEqual({ tipo: 'rechazo', motivo: 'vehiculo_sin_acceso' })
+    expect(textoDelRechazo('vehiculo_sin_acceso')).toEqual({
+      texto:
+        'No se puede usar ese vehículo: ya no existe, está en la papelera o ya no tienes acceso.',
+      salida: 'elegir_vehiculo',
+    })
+  })
+
+  it('sin cambiar el vehículo, el mismo 42501 es el de siempre', () => {
+    expect(motivo({ code: '42501', message: 'No tienes acceso a este vehículo.' })).toBe(
+      'sin_acceso',
+    )
+  })
+
+  it('un 42501 con detalle sigue siendo lo suyo, y el 22023 hint vehiculo (pasó a final) es «cambió mientras la tenías abierta»', () => {
+    const r = cambiando({ code: '42501', message: 'x', details: 'nodo_no_editable' })
+    expect(r.tipo === 'rechazo' && r.motivo).toBe('recargar_hoja')
+    const final = cambiando({
+      code: '22023',
+      message: 'Una cotización final no cambia de vehículo.',
+      hint: 'vehiculo',
+    })
+    expect(final.tipo === 'rechazo' && final.motivo).toBe('cotizacion_cambio')
+  })
+
+  it('el conflicto de versión sigue siendo el conflicto', () => {
+    expect(cambiando({ code: 'PT409', message: DE_LA_BASE })).toMatchObject({
+      motivo: 'version_cambiada',
+    })
   })
 })

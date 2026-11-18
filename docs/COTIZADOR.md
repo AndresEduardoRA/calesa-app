@@ -368,8 +368,8 @@ exactamente quien ve esa cotización; sin escritura para `authenticated`.
 fila apunta a una activa del vehículo, se queda (se refrescan monto y copias si cambiaron); si no, pasa a **la más antigua activa** por `(creado_en, id)`;
 sin activas, o con el vehículo en la papelera o inexistente, no hay fila. De ahí: la primera nace aprobada, las siguientes (y las de «encima») no;
 invalidar o mandar a la papelera la aprobada la reasigna; **restaurar o reactivar no le quita la marca a quien la tiene**; una aprobación a mano no
-vuelve al restaurar un vehículo. Cambiar de vehículo sale del viejo (si era la aprobada, la releva la más antigua de ese) y llega al nuevo sin marca,
-salvo que no tuviera. Sin vehículo nunca es aprobada. Guardar la aprobada refresca su monto; guardar otra no lo toca. Marcar o crear una final no
+vuelve al restaurar un vehículo. Cambiar de vehículo (también desde el detalle de una preventa guardada, por `cotizacion_guardar`) sale del viejo (si era
+la aprobada, la releva la más antigua de ese) y llega al nuevo sin marca, salvo que no tuviera. Sin vehículo nunca es aprobada. Guardar la aprobada refresca su monto; guardar otra no lo toca. Marcar o crear una final no
 aprueba: si la aprobada se va con las preventas, la releva la más antigua activa que queda.
 
 **Quién la mantiene:** toda escritura de `cotizaciones` que pueda cambiarla (alta, vehículo, estado, papelera, `totales`, `lead_id`, `creado_por`,
@@ -461,7 +461,7 @@ tienen privilegio de escritura y no hay policies de crear ni editar. Escriben, c
 («La cotización aprobada»).
 
 **`cotizacion_crear(id, origen, lead, entradas, abierta, vehículo?, vehículo_nuevo?, modo_tc?, clase = 'preventa', con_la_abierta =
-false, ver_total_bs = false)`** calcula en la base sobre la fórmula publicada del origen y devuelve `{cotizacion, valores, fuentes,
+false, ver_total_bs = false, titulo = null, titulo_manual = false)`** calcula en la base sobre la fórmula publicada del origen y devuelve `{cotizacion, valores, fuentes,
 totales, tipos_cambio, repetido}`, recortado por `_cotizacion_respuesta()` (el recorte de `cotizacion_leer()`). En este orden:
 
 1. `cotizaciones.crear` y `cotizaciones.ver` **del origen de la cotización** antes de mirar nada; con una final, además
@@ -474,6 +474,10 @@ totales, tipos_cambio, repetido}`, recortado por `_cotizacion_respuesta()` (el r
 4. **El vehículo:** obligatorio (22023 `vehiculo`) salvo con `cotizaciones.crear.sin_vehiculo` de ese origen, y siempre en una final.
    `p_vehiculo_nuevo` llama a `vehiculo_crear()` en la misma transacción (la pantalla no lo usa: «Cargar a mano» crea el vehículo antes).
    Uno que quien llama no ve: 42501.
+   4b. **El título** (después del lead y del vehículo): manual si `p_titulo` trae texto (`btrim`) y `p_titulo_manual` lo pide —sin vehículo no hay
+   automático, así que el texto que llega es manual—; más de 120 puntos de código, 22023 `detail titulo_largo` `hint titulo`. Si no, el
+   **automático**: el título del vehículo, `nullif(btrim(left(btrim(titulo), 120)), '')`. Sin vehículo y sin título, 22023 `hint titulo`
+   («Escribe el título de la cotización.»).
 5. **La fórmula** publicada, `for share` (publicar espera a las altas en curso; si publicaron, se relee: tres vueltas y PT409).
 6. **El modo** (`p_modo_tc`): nulo o la `clave` de un modo de esa versión (`modo_invalido`). Y **«Ver total Bs»** (`p_ver_total_bs`):
    `_cotizacion_ver_total_bs()` rechaza (22023) un nulo (`ver_total_bs_falta`) y un verdadero que `diseno.cabecera.ver_total_bs` de la
@@ -492,12 +496,15 @@ Candados: intento, lead, vehículo, fórmula; una final, además el lead `for no
 
 ### Cómo se guarda
 
-**`cotizacion_guardar(id, intento, actualizado_en_esperado, entradas, modo_tc, titulo, notas, vehículo, ver_total_bs)`** es la única
+**`cotizacion_guardar(id, intento, actualizado_en_esperado, entradas, modo_tc, titulo, notas, vehículo, ver_total_bs, titulo_manual = null)`** es la única
 edición: calcula en la base con SU versión de la fórmula (nunca la publicada de hoy) y SUS tipos de cambio congelados, conserva lo que
 quien guarda no ve ni edita, y devuelve lo mismo que crear. Recibe el **estado entero de lo que la persona edita** (`modo_tc`, `titulo`,
 `notas`, `vehículo` y `ver_total_bs` sin valor por omisión: nulo es un valor, salvo en `ver_total_bs`, donde nulo es
-`ver_total_bs_falta`); lo que no manda en `entradas` queda sin tipear (↺). Se edita `modo_tc` (clave de un modo de SU versión, o nulo),
-`ver_total_bs` (verdadero sólo si el diseño de SU versión lo ofrece; también en una final), `titulo` (hasta 120), `notas` (hasta 2.000) y
+`ver_total_bs_falta`; el vehículo es el de la hoja: el guardado o el elegido en una preventa); lo que no manda en `entradas` queda sin tipear (↺). Se edita `modo_tc` (clave de un modo de SU versión, o nulo),
+`ver_total_bs` (verdadero sólo si el diseño de SU versión lo ofrece; también en una final), `titulo` y `titulo_manual` (manual si `titulo` trae
+texto y `titulo_manual` no es falso —nulo, el de las llamadas viejas, es «manual si trae texto»; sin vehículo el texto es manual—, hasta 120:
+`titulo_largo`; si no, el del vehículo que queda, rehecho en cada guardado; sin vehículo y sin título, 22023 `hint titulo`; `titulo_manual` entra
+en la huella del intento y en «nada cambió»), `notas` (hasta 2.000) y
 `vehiculo_id` (poner o **cambiar**, no se quita; **una final no lo cambia**). No se editan `tipos_cambio` (se congelan al crear), `clase`,
 `lead_id`, `plantilla_id` ni `moneda_mostrar`.
 
@@ -620,14 +627,25 @@ papelera no cuenta). Sin `p_abierta` (no sale de una hoja vista).
   se aceptan, la variante, un override que el motor descarta). Lo oculto que se pierde no se cuenta.
 
 **La pantalla, `/cotizaciones/[id]`.** La hoja calcula por su origen (la nueva) o por su cotización (`DeDondeCalcula`): la guardada manda
-`p_entradas`, `p_cotizacion` y `p_modo_tc`, nunca `p_origen` ni `p_abierta`. Abre con lo guardado como sus entradas
+`p_entradas`, `p_cotizacion` y `p_modo_tc` (y `p_vehiculo` sólo con otro vehículo elegido, abajo), nunca `p_origen` ni `p_abierta`. Abre con lo guardado como sus entradas
 (`entradasDeLoGuardado`, espejo de `_cotizacion_entradas_de`: lo tipeado y los overrides, sin el porcentaje de un par pisado) y con
 **una** llamada a `cotizacion_hoja_guardada` y otra a `cotizacion_evaluar(p_cotizacion)`. El recálculo usa las tablas **vivas** y los datos
 de hoy del vehículo: si no da lo guardado (valores o total, `difiereAlAbrir`), la pantalla lo avisa, muestra «Total guardado» con
 `<Monto>` y «Guardar» la deja con lo de hoy. «Guardar» llama a `cotizacion_guardar` con la versión que vio quien edita (`actualizadoEn`
-como el texto de la base, nunca por `Date`, que pierde los microsegundos), las entradas del recálculo al día y el título, las notas y el
-vehículo sin tocarlos; lo que la hoja no manda lo conserva la base. El PT409 dice quién y cuándo; «Recargar» vuelve a montar la hoja con
+como el texto de la base, nunca por `Date`, que pierde los microsegundos), las entradas del recálculo al día, el título, las notas sin tocar y el
+vehículo de la hoja; lo que la hoja no manda lo conserva la base. El PT409 dice quién y cuándo; «Recargar» vuelve a montar la hoja con
 la lectura nueva y lo tipeado no vuelve sobre la versión de la otra persona.
+
+**Cambiar el vehículo de una preventa guardada.** Quien la puede guardar (`puede_guardar`) elige otro vehículo en el panel de cotizar y lo elegido vive
+en `?vehiculo=`. El servidor hace el primer cálculo con él: `cotizacion_evaluar(p_cotizacion, p_vehiculo)` usa los datos del vehículo nuevo
+(`campo_vehiculo`, las tablas que casan por un dato del vehículo) con SU versión y SUS tipos de cambio, sin escribir; una final con otro vehículo es
+`llamada_invalida` (`hint p_vehiculo`) y uno que no se ve, en la papelera o de otro origen se rechaza: la página calcula con el suyo y dice «No se
+puede usar ese vehículo.». Elegir otro vuelve a montar la hoja (lo tipeado vuelve con el borrador); con otro vehículo no se dice «Lo de hoy no es lo
+guardado» (no es cierto: cambió el vehículo), sólo «Total guardado» si el total es otro. Cambiar el vehículo es un cambio que guardar: `cotizacion_guardar(…,
+p_vehiculo)` rehace el título automático con el nuevo (un manual se respeta), mueve `vehiculos.cotizado_en` y deja `diff.vehiculo_id = {de, a}`; la
+revisión se dice «Cambió el vehículo: A → B» con los títulos **resueltos al leer** (por clave primaria de `vehiculos`, con la RLS de quien mira; lo que no
+ve, o está en la papelera, es «un vehículo que no puedes ver»): nunca se copia un título a la revisión. Guardado, `?vehiculo=` sale de la URL sin ir al
+servidor; «Recargar» lo suelta siempre (lo elegido no vuelve sobre otra versión).
 
 ### Marcar final
 
@@ -662,8 +680,10 @@ otra vuelta: lo que crear toma son sus parámetros. La preventa no cambia.
 
 `formula_id` (recalcular o editar usa **esa** versión, nunca la vigente); `valores` (`{nodo_id: número | null}` de TODOS los nodos; el
 `opcion` guarda su clave; un nodo fuera de variante o apagado guarda 0); `fuentes` (`{nodo_id: default|sugerido|override|input}`);
-`tipos_cambio` (`{clave: valor}` congelados); `totales` (por moneda y por grupo). **Nada se lee directo** (sale por `cotizacion_leer()`,
-recortado por el nivel; `total_base`, `modo_tc` y `ver_total_bs` sí son legibles) **ni se escribe directo**: se crea con
+`tipos_cambio` (`{clave: valor}` congelados); `totales` (por moneda y por grupo); `titulo` (el **título de la cotización**, hasta 120) y
+`titulo_manual` (si lo escribió una persona; si no, es el del vehículo y la base lo rehace en cada guardado; las que ya tenían título antes de la
+columna quedaron manuales). **Nada se lee directo** (sale por `cotizacion_leer()`,
+recortado por el nivel; `total_base`, `modo_tc`, `ver_total_bs`, `titulo` y `titulo_manual` sí son legibles) **ni se escribe directo**: se crea con
 `cotizacion_crear()` y se edita con `cotizacion_guardar()`.
 
 ## Binding con la XCell

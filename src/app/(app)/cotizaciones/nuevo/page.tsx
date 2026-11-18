@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { connection } from 'next/server'
-import { Suspense } from 'react'
-import { z } from 'zod'
+import { Suspense, type ReactNode } from 'react'
 import {
   CLAVE_DE_LEAD,
   CLAVE_DE_ORIGEN,
@@ -14,6 +13,7 @@ import {
   FormulaSinPublicar,
   PantallaDeCotizar,
   PestanasDeOrigen,
+  ProveedorDelTitulo,
 } from '@/modules/cotizaciones/pantallas/cotizar'
 import { HUECOS_DE_FORMULA_EN_LA_HOJA } from '@/modules/cotizaciones/pantallas/formula-hoja'
 import { nombreVisible, requerirSesion } from '@/modules/equipo'
@@ -26,16 +26,15 @@ import { puede, type Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
+import { AvisoDeSubastaDeLaHoja } from '../aviso-de-subasta'
 import { vehiculoDeLaTarjeta } from '../datos-de-la-tarjeta'
-import { AvisoDeSubastaDeLaHoja } from './aviso-de-subasta'
+import { idDeUrl, type Quien, type VehiculoDeLaUrl } from '../vehiculo-de-la-hoja'
 import { BarraConHistorial } from './barra-con-historial'
 import {
   camposQueSeEligen,
   leerLoDeLaHoja,
   paraElegirDe,
   reglasDeLaHoja,
-  type Quien,
-  type VehiculoDeLaUrl,
 } from './lecturas-de-la-hoja'
 
 // Lo que el área `formula` llena en la hoja (`pantallas/formula-hoja.ts`): el enlace de «Falta publicar la fórmula».
@@ -55,13 +54,6 @@ export default function PaginaDeCotizar({ searchParams }: PageProps<'/cotizacion
       </Suspense>
     </div>
   )
-}
-
-const esId = z.guid()
-// Lo que la URL trae como id y no lo es se ignora.
-const idDeUrl = (valor: string | string[] | undefined): string | null => {
-  const leido = esId.safeParse(unParametro(valor))
-  return leido.success ? leido.data : null
 }
 
 async function Hoja({
@@ -107,6 +99,38 @@ function SinPublicar({
         ) : undefined
       }
     />
+  )
+}
+
+// El título del vehículo elegido para la banda de la tarjeta (4.18-2); sin vehículo, nulo.
+function tituloDelElegido(elegido: { vehiculo: { titulo: string } } | null) {
+  return elegido?.vehiculo.titulo ?? null
+}
+
+// El título de la cotización (T307) sobre las barras y la hoja, fuera de la `key` de la hoja: cambiar de vehículo o de cliente lo conserva. Va con `key` del origen (otra
+// pestaña de origen es otra cotización); su borrador, por el vehículo con que se abrió la hoja, y el automático es el título del elegido.
+function ConElTitulo({
+  sesion,
+  origen,
+  elegido,
+  children,
+}: {
+  sesion: { usuarioId: string }
+  origen: { id: string }
+  elegido: VehiculoDeLaUrl
+  children: ReactNode
+}) {
+  return (
+    <ProveedorDelTitulo
+      deLaPestana={{
+        personaId: sesion.usuarioId,
+        origenId: origen.id,
+        vehiculoAlAbrir: elegido?.vehiculo.id ?? null,
+      }}
+      vehiculo={tituloDelElegido(elegido)}
+    >
+      {children}
+    </ProveedorDelTitulo>
   )
 }
 
@@ -174,7 +198,8 @@ function BarrasDeLaHoja({
   )
 }
 
-// Lo que la tarjeta de la hoja nueva nombra: el vehículo elegido (con lote y VIN), quien cotiza y el cliente, si quien mira los ve.
+// Lo que la tarjeta de la hoja nueva nombra: el vehículo elegido (con lote y VIN), quien cotiza y el cliente, si quien mira los ve. El título no: la tarjeta lee el
+// que se está escribiendo.
 function tarjetaDeLaHojaNueva({
   elegido,
   cliente,
@@ -240,33 +265,35 @@ async function HojaDelOrigen({
   return (
     <>
       {pestanas}
-      <BarrasDeLaHoja
-        sesion={sesion}
-        origen={origen}
-        elegido={elegido}
-        cliente={cliente}
-        reglas={{ obligatorios, conteo, alta, paraElegir, abierta: apertura.hoja.abierta }}
-      />
-      <ConProveedorDeLaHoja
-        origenId={origen.id}
-        cotizacionId={null}
-        permisos={sesion.permisos}
-        tarjeta={tarjetaDeLaHojaNueva({ elegido, cliente, asesor })}
-      >
-        <PantallaDeCotizar
-          key={`${origen.id}:${leadUsado ?? '-'}:${vehiculoUsado ?? '-'}`}
-          hoja={apertura.hoja}
-          inicial={apertura.inicial}
-          vehiculoId={vehiculoUsado}
-          vehiculoSoltado={vehiculoSoltado}
-          leadId={leadUsado}
-          obligatorios={obligatorios}
-          elecciones={elecciones}
-          personaId={sesion.usuarioId}
-          // La celda sin valor por un dato que quien mira elige en el panel dice dónde se elige (4.14-2c3).
-          seEligen={camposQueSeEligen(paraElegir)}
+      <ConElTitulo key={origen.id} sesion={sesion} origen={origen} elegido={elegido}>
+        <BarrasDeLaHoja
+          sesion={sesion}
+          origen={origen}
+          elegido={elegido}
+          cliente={cliente}
+          reglas={{ obligatorios, conteo, alta, paraElegir, abierta: apertura.hoja.abierta }}
         />
-      </ConProveedorDeLaHoja>
+        <ConProveedorDeLaHoja
+          origenId={origen.id}
+          cotizacionId={null}
+          permisos={sesion.permisos}
+          tarjeta={tarjetaDeLaHojaNueva({ elegido, cliente, asesor })}
+        >
+          <PantallaDeCotizar
+            key={`${origen.id}:${leadUsado ?? '-'}:${vehiculoUsado ?? '-'}`}
+            hoja={apertura.hoja}
+            inicial={apertura.inicial}
+            vehiculoId={vehiculoUsado}
+            vehiculoSoltado={vehiculoSoltado}
+            leadId={leadUsado}
+            obligatorios={obligatorios}
+            elecciones={elecciones}
+            personaId={sesion.usuarioId}
+            // La celda sin valor por un dato que quien mira elige en el panel dice dónde se elige (4.14-2c3).
+            seEligen={camposQueSeEligen(paraElegir)}
+          />
+        </ConProveedorDeLaHoja>
+      </ConElTitulo>
     </>
   )
 }

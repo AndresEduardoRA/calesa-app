@@ -177,6 +177,29 @@
 }
 
 /*
+ * La columna del «⋯» de una tabla de la lista (`CeldaPegada`, `CabeceraPegada`): su línea de 1 px y, sólo cuando queda contenido
+ * detrás (se puede desplazar más hacia la derecha), una sombra hacia la izquierda. La consulta es al contenedor que se desplaza
+ * (`container-type: scroll-state`, en `TablaDeLista`): sin desplazamiento posible o al final, sin sombra. Un navegador sin
+ * `scroll-state` deja la línea. La sombra es un `::before` de todo el alto de la celda (no un `box-shadow`, que por celda se corta o
+ * se derrama en cada fila): sin nodos, y sólo existe dentro de la consulta. Va en un `@utility` para que ninguna otra clase la pise.
+ */
+@utility sombra-de-la-columna-pegada {
+  box-shadow: inset 1px 0 0 var(--color-line);
+
+  @container scroll-state(scrollable: inline-end) {
+    &::before {
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      right: 100%;
+      width: 0.75rem;
+      pointer-events: none;
+      background: var(--shadow-columna-pegada);
+    }
+  }
+}
+
+/*
  * Transiciones entre páginas (View Transitions, <TransicionPagina>): un fundido corto con los
  * tiempos de los tokens. Con `prefers-reduced-motion` no se anima nada.
  */

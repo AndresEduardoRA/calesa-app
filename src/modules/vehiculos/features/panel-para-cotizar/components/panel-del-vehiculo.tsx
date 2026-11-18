@@ -35,6 +35,15 @@ type Props = {
   focoAlCerrar?: RefObject<HTMLButtonElement | null>
   // El dato del elegido que se elige entre las filas de una tabla de la hoja (4.14-2c3); null = ninguno.
   paraElegir?: ParaElegirConLector | null
+  // Lo que va arriba, antes del buscador (el campo del título de la cotización, que llena `src/app`); null = nada.
+  arriba?: ReactNode
+  // Sólo lo de arriba y el elegido en sólo lectura, sin buscar, listas, «Quitar» ni dato: quien no ve los vehículos del origen o una final que se puede guardar. No lee
+  // ninguna lista.
+  soloElegido?: boolean
+  // Buscar y elegir como siempre, sin «Quitar»: una preventa guardada cambia de vehículo pero no se queda sin él.
+  sinQuitar?: boolean
+  // Con `soloElegido`, por qué no se elige otro (bajo lo de arriba); null = nada.
+  motivo?: string | null
 }
 
 // El panel del vehículo de la hoja de cotizar (`?panel=vehiculo`): el elegido arriba y, en pestañas, los vehículos del origen por
@@ -54,6 +63,10 @@ export function PanelDelVehiculo(props: Props) {
     historial,
     focoAlCerrar,
     paraElegir = null,
+    arriba = null,
+    soloElegido = false,
+    sinQuitar = false,
+    motivo = null,
   } = props
   const parsers = useMemo(
     () =>
@@ -87,7 +100,22 @@ export function PanelDelVehiculo(props: Props) {
   }
   return (
     <Drawer abierto={abierto} alCerrar={alCerrar} titulo="Vehículo" focoAlCerrar={focoAlCerrar}>
-      {abierto ? (
+      {!abierto ? null : soloElegido ? (
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
+          {arriba}
+          {motivo === null ? null : (
+            <p className="text-(length:--text-sm) text-(--color-ink-soft)">{motivo}</p>
+          )}
+          {elegido ? (
+            <ElegidoDelPanel
+              elegido={elegido}
+              historial={historial}
+              paraElegir={null}
+              alGuardado={() => undefined}
+            />
+          ) : null}
+        </div>
+      ) : (
         <ContenidoDelPanel
           origenId={origenId}
           esSubasta={esSubasta}
@@ -96,8 +124,10 @@ export function PanelDelVehiculo(props: Props) {
           historial={historial}
           paraElegir={paraElegir}
           alElegir={ir}
+          arriba={arriba}
+          sinQuitar={sinQuitar}
         />
-      ) : null}
+      )}
     </Drawer>
   )
 }
@@ -106,6 +136,29 @@ const PESTANAS = [
   { clave: 'ultima', titulo: 'Últ. cotización' },
   { clave: 'cierre', titulo: 'Cierre subasta' },
 ] as const
+
+// Lo que va sobre la lista: «Resultados» al buscar; en subasta, las dos pestañas; si no, «Últ. cotización».
+function TituloDeLaLista({
+  lista,
+  esSubasta,
+  pestana,
+  alElegir,
+}: {
+  lista: string
+  esSubasta: boolean
+  pestana: string
+  alElegir: (clave: string) => void
+}) {
+  if (lista === 'busqueda') {
+    return <h3 className="text-(length:--text-sm) font-medium text-(--color-ink)">Resultados</h3>
+  }
+  return esSubasta ? (
+    // Al 200 % en el celular no entran las dos: la barra se desplaza dentro de su ancho y dice por dónde sigue.
+    <PestanasConDesborde pestanas={PESTANAS} valor={pestana} alElegir={alElegir} />
+  ) : (
+    <h3 className="text-(length:--text-sm) font-medium text-(--color-ink)">Últ. cotización</h3>
+  )
+}
 
 // Se monta en cada apertura: el borde de «Cierre subasta» se toma al abrir y queda fijo mientras el panel está abierto.
 function ContenidoDelPanel(props: {
@@ -116,8 +169,11 @@ function ContenidoDelPanel(props: {
   historial: ReactNode
   paraElegir: ParaElegirConLector | null
   alElegir: (id: string | null) => void
+  arriba: ReactNode
+  sinQuitar: boolean
 }) {
-  const { origenId, esSubasta, elegido, alta, historial, paraElegir, alElegir } = props
+  const { origenId, esSubasta, elegido, alta, historial, paraElegir, alElegir, arriba, sinQuitar } =
+    props
   const [desde] = useState(() => desdeDelCierre(new Date()))
   const { lista, pestana, texto, leido, leida, cambiarLista, cambiarTexto, irA, reintentar } =
     useListaDelPanel({ origenId, esSubasta, desde })
@@ -137,6 +193,7 @@ function ContenidoDelPanel(props: {
   return (
     // Una sola columna que no crece con lo de adentro: al 200 % en el celular, las pestañas no ensanchan las tarjetas.
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-4">
+      {arriba}
       <BuscadorDelPanel
         textoDeUrl={texto}
         aviso={leido.aviso ?? vistaDeAlta.avisoDelEnlace}
@@ -150,9 +207,13 @@ function ContenidoDelPanel(props: {
         <ElegidoDelPanel
           elegido={elegido}
           historial={historial}
-          alQuitar={() => {
-            alElegir(null)
-          }}
+          alQuitar={
+            sinQuitar
+              ? undefined
+              : () => {
+                  alElegir(null)
+                }
+          }
           paraElegir={paraElegir}
           // Guardado el dato, lo mismo que elegir este vehículo: la hoja se vuelve a abrir con él.
           alGuardado={() => {
@@ -160,20 +221,14 @@ function ContenidoDelPanel(props: {
           }}
         />
       ) : null}
-      {lista === 'busqueda' ? (
-        <h3 className="text-(length:--text-sm) font-medium text-(--color-ink)">Resultados</h3>
-      ) : esSubasta ? (
-        // Al 200 % en el celular no entran las dos: la barra se desplaza dentro de su ancho y dice por dónde sigue.
-        <PestanasConDesborde
-          pestanas={PESTANAS}
-          valor={pestana}
-          alElegir={(clave) => {
-            cambiarLista(listaDelPanel(clave, true))
-          }}
-        />
-      ) : (
-        <h3 className="text-(length:--text-sm) font-medium text-(--color-ink)">Últ. cotización</h3>
-      )}
+      <TituloDeLaLista
+        lista={lista}
+        esSubasta={esSubasta}
+        pestana={pestana}
+        alElegir={(clave) => {
+          cambiarLista(listaDelPanel(clave, true))
+        }}
+      />
       <ListaDelPanel
         lista={lista}
         texto={leido.busqueda ?? ''}

@@ -73,4 +73,24 @@ describe('BuscadorDelPanel', () => {
     fireEvent.keyDown(campo, { key: 'Enter' })
     expect(alTraer).toHaveBeenCalledWith('https://www.copart.com/lot/58540656/x', true)
   })
+
+  it('no le quita el foco a otro campo del mismo diálogo que ya lo tiene (lo de arriba del panel)', () => {
+    render(
+      <div role="dialog">
+        <input aria-label="Título de la cotización" autoFocus />
+        <BuscadorDelPanel
+          textoDeUrl=""
+          aviso={null}
+          alCambiar={vi.fn()}
+          alCargarAMano={null}
+          conTraer={false}
+          etiquetaDeTraer={null}
+          alTraer={vi.fn()}
+        />
+      </div>,
+    )
+    expect(document.activeElement).toBe(
+      screen.getByRole('textbox', { name: 'Título de la cotización' }),
+    )
+  })
 })

@@ -23,9 +23,9 @@ export function ProveedorDeLaTarjeta({
   logo,
   cotizacionId,
 }: Props) {
+  // El título de una guardada llega de la página (el guardado); sin él, la hoja nueva lee el que se está escribiendo.
   const pagina = useMemo<DatosDeLaPagina>(
     () => ({
-      titulo,
       cliente,
       vehiculo,
       asesor,
@@ -35,6 +35,7 @@ export function ProveedorDeLaTarjeta({
       guardadaEl,
       logo,
       cotizacionId,
+      ...(titulo === undefined ? {} : { titulo }),
     }),
     [titulo, cliente, vehiculo, asesor, numero, vencida, venceEl, guardadaEl, logo, cotizacionId],
   )

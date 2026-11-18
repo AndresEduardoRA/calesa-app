@@ -13,10 +13,15 @@ import {
   type Geometria,
 } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
 import type { LecturaDeLaTarjeta } from '../../../entities/tarjeta/lectura-de-la-tarjeta'
+import { useTituloDeLaCotizacion } from '../../hoja/hooks/use-titulo-de-la-cotizacion'
 import { useLecturaDeLaTarjeta, type EstadoDeLaLectura } from './use-lectura-de-la-tarjeta'
 
-// Lo que la página sabe de la tarjeta y la hoja no.
-export type PaginaDelModelo = PaginaDeLaTarjeta & { vencida: boolean }
+// Lo que la página sabe de la tarjeta y la hoja no. `titulo`: el de una guardada ya resuelto (el guardado, porque la tarjeta dibuja lo guardado); sin la prop, la
+// hoja nueva, que lee el que se está escribiendo.
+export type PaginaDelModelo = Omit<PaginaDeLaTarjeta, 'titulo'> & {
+  titulo?: string | null
+  vencida: boolean
+}
 
 type Entrada = {
   formulaId: string
@@ -43,9 +48,11 @@ export function useModeloDeLaTarjeta({ formulaId, calculo, monedaBs, pagina }: E
   const { estado, reintentar } = useLecturaDeLaTarjeta(formulaId)
   const { zonaHoraria, locale } = useRegional()
   const hoy = useHoy()
+  const vivo = useTituloDeLaCotizacion()?.mostrado ?? null
+  const titulo = pagina.titulo === undefined ? vivo : pagina.titulo
   const contexto = useMemo(
-    () => contextoDeLaPagina(pagina, { zona: zonaHoraria, hoy }),
-    [pagina, zonaHoraria, hoy],
+    () => contextoDeLaPagina({ ...pagina, titulo }, { zona: zonaHoraria, hoy }),
+    [pagina, titulo, zonaHoraria, hoy],
   )
   const lectura = estado.tipo === 'lista' ? estado.lectura : null
   const geometria = useMemo(

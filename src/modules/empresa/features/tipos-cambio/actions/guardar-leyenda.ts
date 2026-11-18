@@ -23,7 +23,7 @@ export const guardarLeyendaDeTiposCambio = actionClient
     })
     if (guardado.ok) {
       // La versión de la fila la llevan también el formulario de Empresa y sus íconos.
-      revalidatePath(RUTAS.empresa)
+      revalidatePath(RUTAS.monedasDeEmpresa)
     }
     return guardado
   })

@@ -6,7 +6,7 @@ const VACIAS = entradasDelPedido(ENTRADAS_VACIAS)
 
 const NUEVA = (vehiculoId: string | null) =>
   ({ tipo: 'abierta', origenId: 'o', abierta: 'ab', vehiculoId }) as const
-const GUARDADA = { tipo: 'guardada', cotizacionId: 'c' } as const
+const GUARDADA = { tipo: 'guardada', cotizacionId: 'c', vehiculoId: null } as const
 
 describe('argumentosDeEvaluar', () => {
   it('la hoja nueva manda el origen, la hoja abierta y las entradas; el vehículo y el modo sólo si los hay (nunca nulos)', () => {
@@ -22,6 +22,16 @@ describe('argumentosDeEvaluar', () => {
       p_vehiculo: 'v',
       p_modo_tc: 'unificado',
     })
+  })
+
+  it('una guardada con otro vehículo elegido (T315) lo manda, y nunca el origen ni la hoja abierta', () => {
+    expect(
+      argumentosDeEvaluar({
+        de: { ...GUARDADA, vehiculoId: 'v2' },
+        entradas: VACIAS,
+        modoTc: null,
+      }),
+    ).toStrictEqual({ p_entradas: VACIAS, p_cotizacion: 'c', p_vehiculo: 'v2' })
   })
 
   it('una guardada manda exactamente sus entradas y su cotización, y el modo sólo si lo hay; nunca el origen, la hoja abierta ni el vehículo', () => {

@@ -18,7 +18,7 @@ type Props = {
 // si el nivel de quien mira lo deja ver, el total antes y después.
 export function ContenidoDeLaRevision({ revision, etiquetas }: Props) {
   const { zonaHoraria } = useRegional()
-  const cambios = cambiosDeLaRevision(revision.diff, etiquetas)
+  const cambios = cambiosDeLaRevision(revision.diff, etiquetas, revision.vehiculo)
   return (
     <>
       <p className="font-medium [overflow-wrap:anywhere] text-(--color-ink)">

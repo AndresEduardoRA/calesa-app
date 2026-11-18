@@ -1,5 +1,6 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect, test } from './soporte/prueba'
+import { TITULO_DE_PRUEBA } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
 import { CONTRASENA } from './soporte/alta'
 import {
@@ -127,9 +128,11 @@ test('E2E E1 en la hoja nueva «Copiar texto» deja la tarjeta como texto, con e
   expect(totalDeLaTarjeta).toMatch(/\d/)
   const texto = await copiarElTexto(page)
   const lineas = texto.split('\n')
-  expect(lineas[0]).toBe('COTIZACIÓN VEHÍCULOS A GASOLINA EEUU - BOL')
+  // Primero el título de la cotización (automático: el del vehículo, que no se repite más abajo) y después el de la variante (T307).
+  expect(lineas[0]).toBe(`${TITULO_DEL_VEHICULO} ${info.project.name}`)
+  expect(lineas[1]).toBe('COTIZACIÓN VEHÍCULOS A GASOLINA EEUU - BOL')
   expect(lineas).toContain(`Asesor: ${asesora.nombre}`)
-  expect(lineas).toContain(`${TITULO_DEL_VEHICULO} ${info.project.name}`)
+  expect(lineas.filter((l) => l === `${TITULO_DEL_VEHICULO} ${info.project.name}`)).toHaveLength(1)
   expect(lineas).toContain('Compra')
   const lineaDelTotal = lineas.find((l) => l.startsWith('TOTAL DÓLARES: ')) ?? ''
   expect(sinBlancos(lineaDelTotal)).toBe(`TOTALDÓLARES:${totalDeLaTarjeta}`)
@@ -179,8 +182,9 @@ test('E2E E4 en una guardada con cambios sin guardar, lo copiado y el PDF son lo
   const t = await abrirLaVistaPrevia(page)
   await expect(total(t)).toContainText('1.205,00')
   const texto = await copiarElTexto(page)
-  // El texto sale de la geometría (D19): la fecha y el número van en renglones del encabezado.
+  // El texto sale de la geometría (D19): la fecha con el título de la cotización (sin vehículo, el que escribió `guardarPorLaHoja`, T307) y el número en su renglón.
   expect(texto.split('\n')).toContain(`Cotización n.º ${numeroDeLaCotizacion(id)}`)
+  expect(texto.split('\n').some((l) => l.endsWith(` · ${TITULO_DE_PRUEBA}`))).toBe(true)
   expect(sinBlancos(texto)).toContain(`Total:${await totalDe(t)}`)
   expect(texto).not.toContain('305,00')
   const bajada = page.waitForEvent('download')

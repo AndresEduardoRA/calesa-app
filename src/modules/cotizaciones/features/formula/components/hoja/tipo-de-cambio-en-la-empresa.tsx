@@ -21,7 +21,7 @@ export function TipoDeCambioEnLaEmpresa({ texto = TEXTO_DE_MONEDAS, nota }: Prop
       <p className="text-(length:--text-base) text-(--color-ink)">{texto}</p>
       {nota ? <p className="text-(length:--text-sm) text-(--color-ink-soft)">{nota}</p> : null}
       <Link
-        href={`${RUTAS.empresa}?seccion=monedas` as Route}
+        href={RUTAS.monedasDeEmpresa as Route}
         className={buttonVariants({
           variant: 'outline',
           className: 'min-h-11 justify-self-start md:min-h-8',
