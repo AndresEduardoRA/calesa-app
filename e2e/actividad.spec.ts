@@ -8,7 +8,7 @@ import { abrirMenuDeLaFicha } from './soporte/leads-marcas'
 import { sql } from './soporte/sql'
 
 // La actividad (9.01) contra la app compilada y el Supabase local: la dueña cambia el nombre de un lead en su ficha, entra por «Ver actividad»
-// del «⋯» a la actividad de ese lead, ve el cambio bajo «Hoy», abre su diff y lee el antes y el después; una asesora sin `actividad.ver` no
+// del «⋯» a la actividad de ese lead, ve el cambio como frase bajo «Hoy», despliega su diff y lee el antes y el después; una asesora sin `actividad.ver` no
 // tiene «Actividad» en su menú. El recorte, la cartera y los números los prueba `supabase/tests/areas/actividad/`.
 test.describe.configure({ mode: 'serial' })
 
@@ -54,23 +54,23 @@ test('la dueña ve el cambio del nombre en la actividad del lead y abre su diff'
   const menu = await abrirMenuDeLaFicha(page)
   await menu.getByRole('menuitem', { name: 'Ver actividad' }).click()
   await expect(page).toHaveURL(new RegExp(`/actividad\\?entidad=leads&registro=${leadId}$`))
-  await expect(page.getByText('Mostrando la actividad de un solo registro de lead.')).toBeVisible()
-  await expect(page.locator('th', { hasText: /^Hoy$/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Quitar el filtro del registro' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Hoy', level: 2 })).toBeVisible()
 
-  // El alta la hizo el sistema (el lead se creó con el cliente de servicio); el cambio del nombre, la dueña.
-  const fila = page.getByRole('row').filter({ hasText: 'Dalia Alta' })
+  // El alta la hizo el sistema (el lead se creó con el cliente de servicio); el cambio del nombre, la dueña, y se lee como frase.
+  const fila = page.locator('li[id^="cambio-"]').filter({ hasText: 'Dalia Alta' })
   await expect(fila).toHaveCount(1)
-  await expect(fila).toContainText('Nombre')
-  await fila.getByRole('button', { name: /^Abrir Cambió/ }).click()
+  await expect(fila).toContainText(`Dalia Alta cambió Nombre de ${despues}: ${antes} → ${despues}`)
+  await fila.getByRole('button', { name: 'Ver detalle' }).click()
   await expect(page).toHaveURL(/[?&]cambio=\d+/)
-  const diff = page.getByRole('dialog', { name: 'Detalle del cambio' })
+  const diff = fila.getByRole('region', { name: 'Detalle del cambio' })
   await expect(diff).toBeVisible()
   await expect(diff.getByRole('term')).toHaveText(['Nombre'])
   const valores = diff.getByRole('definition')
   await expect(valores).toContainText(`Antes${antes}`)
   await expect(valores).toContainText(`Después${despues}`)
 
-  await page.keyboard.press('Escape')
+  await fila.getByRole('button', { name: 'Ocultar detalle' }).click()
   await expect(diff).toBeHidden()
 })
 

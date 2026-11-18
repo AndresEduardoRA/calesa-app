@@ -25,6 +25,22 @@ export function rutaDeActividadDe(tabla: string, registroId: string): string {
 
 export type PersonaDeLaActividad = { id: string; nombre: string }
 
+// Una opción de un filtro de una sola elección: el valor de la URL y lo que se lee.
+export type OpcionDeActividad = { valor: string; etiqueta: string }
+
+// Las opciones de «Tipo de registro»: las entidades por su etiqueta, en orden alfabético.
+export function opcionesDeEntidades(
+  entidades: Readonly<Record<string, string>>,
+): OpcionDeActividad[] {
+  return Object.entries(entidades)
+    .map(([valor, etiqueta]) => ({ valor, etiqueta }))
+    .sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, 'es'))
+}
+
+export function opcionesDePersonas(personas: readonly PersonaDeLaActividad[]): OpcionDeActividad[] {
+  return personas.map((p) => ({ valor: p.id, etiqueta: p.nombre }))
+}
+
 export type PedidoDeActividad = {
   actor: string | null
   tabla: string | null
@@ -50,22 +66,14 @@ export function esquemaDeFiltrosDeActividad({
         clave: CLAVE_DE_PERSONA,
         etiqueta: 'Persona',
         porDefecto: TODAS,
-        opciones: [
-          { valor: TODAS, etiqueta: 'Todas' },
-          ...personas.map((p) => ({ valor: p.id, etiqueta: p.nombre })),
-        ],
+        opciones: [{ valor: TODAS, etiqueta: 'Todas' }, ...opcionesDePersonas(personas)],
       },
       {
         tipo: 'eleccion',
         clave: CLAVE_DE_ENTIDAD,
-        etiqueta: 'Entidad',
+        etiqueta: 'Tipo de registro',
         porDefecto: TODAS,
-        opciones: [
-          { valor: TODAS, etiqueta: 'Todas' },
-          ...Object.entries(entidades)
-            .map(([valor, etiqueta]) => ({ valor, etiqueta }))
-            .sort((a, b) => a.etiqueta.localeCompare(b.etiqueta, 'es')),
-        ],
+        opciones: [{ valor: TODAS, etiqueta: 'Todos' }, ...opcionesDeEntidades(entidades)],
       },
     ],
   }

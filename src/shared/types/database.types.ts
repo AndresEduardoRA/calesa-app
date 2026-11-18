@@ -7324,6 +7324,8 @@ export type Database = {
         Returns: Json
       }
       _actividad_recorte: { Args: { p_tabla: string }; Returns: string }
+      _actividad_registro: { Args: { p_registro: string; p_tabla: string }; Returns: Json }
+      _actividad_valor_corto: { Args: { p_valor: Json }; Returns: Json }
       _aduana_vehiculo_visible: {
         Args: {
           p_algun: string[]

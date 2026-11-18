@@ -1,5 +1,6 @@
-// La actividad que devuelve la base (9.01-1): la página de `actividad_listar` (cabecera y hasta 5 campos que cambiaron, nunca un valor) y el
-// diff de `actividad_diff` (sólo las claves que cambiaron y que quien mira puede ver). La base ya recorta; acá sólo se lee con Zod.
+// La actividad que devuelve la base (9.01-1): la página de `actividad_listar` (cabecera, hasta 5 campos que cambiaron y, de una fila visible, su
+// registro y el primer campo con su antes y su después) y el diff de `actividad_diff` (sólo las claves que cambiaron y que quien mira puede ver).
+// La base ya recorta; acá sólo se lee con Zod.
 import { z } from 'zod'
 
 export type FilaDeActividad = {
@@ -15,6 +16,27 @@ export type FilaDeActividad = {
   visible: boolean
   campos: string[]
   masCampos: boolean
+  // De una fila visible: el nombre del registro (o, de lo que cuelga de una unidad, el de la unidad), nulo si ya no existe o no se ve.
+  registroTitulo: string | null
+  // A dónde lleva su enlace cuando no es el registro mismo (la unidad de un gasto, la cotización de un comprobante).
+  registroDestino: DestinoDelRegistro | null
+  // El primer campo que cambió, con su antes y su después ya recortados y cortos (un alta o una baja no lo traen).
+  primerCambio: PrimerCambio | null
+}
+
+export type DestinoDelRegistro = {
+  vehiculoId: string | null
+  proyectoId: string | null
+  itemId: string | null
+  cotizacionId: string | null
+}
+
+export type PrimerCambio = {
+  campo: string
+  antes: unknown
+  despues: unknown
+  monedaAntes: string | null
+  monedaDespues: string | null
 }
 
 export type PaginaDeActividad = {
@@ -64,7 +86,52 @@ const esquemaDeFila = z.object({
   visible: z.boolean(),
   campos: z.array(z.string()),
   mas_campos: z.boolean(),
+  registro_titulo: z.string().nullish(),
+  registro_destino: z
+    .object({
+      vehiculo_id: z.guid().nullish(),
+      proyecto_id: z.guid().nullish(),
+      item_id: z.guid().nullish(),
+      cotizacion_id: z.guid().nullish(),
+    })
+    .nullish(),
+  primer_cambio: z
+    .object({
+      campo: z.string(),
+      antes: z.unknown(),
+      despues: z.unknown(),
+      moneda_antes: z.string().nullish(),
+      moneda_despues: z.string().nullish(),
+    })
+    .nullish(),
 })
+
+type FilaCruda = z.infer<typeof esquemaDeFila>
+
+function destinoDesde(d: FilaCruda['registro_destino']): DestinoDelRegistro | null {
+  if (!d) {
+    return null
+  }
+  return {
+    vehiculoId: d.vehiculo_id ?? null,
+    proyectoId: d.proyecto_id ?? null,
+    itemId: d.item_id ?? null,
+    cotizacionId: d.cotizacion_id ?? null,
+  }
+}
+
+function primerCambioDesde(p: FilaCruda['primer_cambio']): PrimerCambio | null {
+  if (!p) {
+    return null
+  }
+  return {
+    campo: p.campo,
+    antes: p.antes,
+    despues: p.despues,
+    monedaAntes: p.moneda_antes ?? null,
+    monedaDespues: p.moneda_despues ?? null,
+  }
+}
 
 const esquemaDePagina = z.object({ hay_mas: z.boolean(), filas: z.array(esquemaDeFila) })
 
@@ -86,7 +153,7 @@ const esquemaDeDiff = z.union([
   z.object({ id: z.number(), visible: z.literal(false) }),
 ])
 
-// La página en la forma que usa la pantalla, o nulo si no es lo que promete. Una fila sin acceso sale sin campos aunque lleguen.
+// La página en la forma que usa la pantalla, o nulo si no es lo que promete. Una fila sin acceso sale sin campos ni frase aunque lleguen.
 export function paginaDesde(crudo: unknown): PaginaDeActividad | null {
   const leida = esquemaDePagina.safeParse(crudo)
   if (!leida.success) {
@@ -105,6 +172,9 @@ export function paginaDesde(crudo: unknown): PaginaDeActividad | null {
       visible: f.visible,
       campos: f.visible ? f.campos : [],
       masCampos: f.visible && f.mas_campos,
+      registroTitulo: f.visible ? (f.registro_titulo ?? null) : null,
+      registroDestino: f.visible ? destinoDesde(f.registro_destino) : null,
+      primerCambio: f.visible ? primerCambioDesde(f.primer_cambio) : null,
     })),
   }
 }
