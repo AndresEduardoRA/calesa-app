@@ -6,8 +6,8 @@ import { modeloDeLaTarjeta, type PaginaDeLaTarjeta } from './modelo-de-la-tarjet
 
 const tono = (clave: string) => ({
   clave,
-  claro: { fondo: '#e8f5e9', borde: '#a5d6a7', tinta: '#1b5e20' },
-  oscuro: { fondo: '#14301a', borde: '#2e7d32', tinta: '#c8e6c9' },
+  hex: '#e8f5e9',
+  tarjeta: { fondo: '#e8f5e9', borde: '#a5d6a7', tinta: '#1b5e20' },
 })
 
 function lectura(mas: Partial<TarjetaLista> = {}): TarjetaLista {

@@ -83,6 +83,7 @@ function Total({ modelo }: { modelo: ModeloDeTarjeta }) {
 // La tarjeta de una cotización: lo que el cliente ve. Dibuja un `ModeloDeTarjeta` y nada más (no lee, no calcula); todo monto pasa por `<Monto>` (Modo Live). `@container` para que
 // las celdas combinadas se acomoden por el ancho de la tarjeta y no por el de la ventana.
 export function TarjetaDeCotizacion({ modelo }: { modelo: ModeloDeTarjeta }) {
+  const colores = new Map(modelo.tonos.map((t) => [t.clave, t.tarjeta]))
   return (
     <article
       data-tarjeta-de-cotizacion=""
@@ -99,7 +100,11 @@ export function TarjetaDeCotizacion({ modelo }: { modelo: ModeloDeTarjeta }) {
         </p>
       )}
       {modelo.grupos.map((grupo) => (
-        <GrupoDeLaTarjeta key={grupo.id} grupo={grupo} />
+        <GrupoDeLaTarjeta
+          key={grupo.id}
+          grupo={grupo}
+          colores={grupo.tono === null ? null : (colores.get(grupo.tono) ?? null)}
+        />
       ))}
       <Total modelo={modelo} />
       {modelo.nota === null ? null : (

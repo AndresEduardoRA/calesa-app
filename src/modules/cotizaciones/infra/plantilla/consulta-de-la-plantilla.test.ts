@@ -65,7 +65,7 @@ describe('consultaDeLosTonos', () => {
       ['from', 'tonos'],
       [
         'select',
-        'clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta',
+        'clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta',
       ],
       ['order', 'nombre'],
       ['limit', 48],

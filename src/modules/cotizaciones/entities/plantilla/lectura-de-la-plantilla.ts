@@ -9,7 +9,8 @@ import type { ContextoDePlantilla } from './validar-plantilla'
 // El catálogo de colores (`tonos`) tiene un tope en la base (`_tonos_tope()`, 48): no deja crear el 49.º, así que se lee entero y no hay «Ver más» ni aviso de tope.
 export const TOPE_DE_TONOS = TOPE_DE_COLORES
 
-// Los colores (4.19-4) son los de `tonos` en claro y en oscuro, como texto: la vista previa los pasa a `<EstiloDeTonos>`, que descarta un tono con un color inválido.
+// Los colores (4.19-4) son los de `tonos`: el hex que pinta la tarjeta y las versiones de la hoja, como texto. La vista previa arma la tarjeta con el hex y la
+// tinta clara (`coloresDeLaTarjeta()`) y descarta un color sin hex.
 export type ColoresDelTonoDelCatalogo = {
   readonly fondo: string
   readonly borde: string
@@ -18,6 +19,7 @@ export type ColoresDelTonoDelCatalogo = {
 export type TonoDelCatalogo = {
   readonly clave: string
   readonly nombre: string
+  readonly hex?: string
   readonly claro?: ColoresDelTonoDelCatalogo
   readonly oscuro?: ColoresDelTonoDelCatalogo
 }

@@ -3,8 +3,8 @@ import { tarjetaDesde } from './lectura-de-la-tarjeta'
 
 const tono = (clave: string) => ({
   clave,
-  claro: { fondo: '#e8f5e9', borde: '#a5d6a7', tinta: '#1b5e20' },
-  oscuro: { fondo: '#14301a', borde: '#2e7d32', tinta: '#c8e6c9' },
+  hex: '#e8f5e9',
+  tarjeta: { fondo: '#e8f5e9', borde: '#a5d6a7', tinta: '#1b5e20' },
 })
 
 const lista = (mas: Record<string, unknown> = {}) => ({
@@ -67,13 +67,24 @@ describe('tarjetaDesde: lo que lee la vista previa de cotizacion_tarjeta()', () 
     expect(t?.estado === 'lista' && [t.variante, t.logo, t.nota]).toEqual([null, false, null])
   })
 
-  it('sin estado, un grupo sin filas o un tono sin #rrggbb dan nulo', () => {
+  it('sin estado, un grupo sin filas o un color sin #rrggbb (en el hex o en la tarjeta) dan nulo', () => {
     expect(tarjetaDesde({ ...lista(), estado: undefined })).toBeNull()
     expect(tarjetaDesde({ ...lista(), estado: 'otra' })).toBeNull()
     const sinFilas = lista().grupos.map(({ filas: _filas, ...resto }) => resto)
     expect(tarjetaDesde(lista({ grupos: sinFilas }))).toBeNull()
-    const malo = { ...tono('verde'), claro: { fondo: 'rojo', borde: '#a5d6a7', tinta: '#1b5e20' } }
+    const malo = {
+      ...tono('verde'),
+      tarjeta: { fondo: 'rojo', borde: '#a5d6a7', tinta: '#1b5e20' },
+    }
     expect(tarjetaDesde(lista({ tonos: [malo] }))).toBeNull()
+    expect(tarjetaDesde(lista({ tonos: [{ ...tono('verde'), hex: 'verde' }] }))).toBeNull()
+    // La forma de antes (claro y oscuro de la hoja) ya no es lo que la base promete.
+    const viejo = {
+      clave: 'verde',
+      claro: { fondo: '#e8f5e9', borde: '#a5d6a7', tinta: '#1b5e20' },
+      oscuro: { fondo: '#14301a', borde: '#2e7d32', tinta: '#c8e6c9' },
+    }
+    expect(tarjetaDesde(lista({ tonos: [viejo] }))).toBeNull()
   })
 
   it('lo que no es un objeto da nulo', () => {

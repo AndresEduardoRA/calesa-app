@@ -31,7 +31,7 @@ export function consultaDeLosTonos(cliente: Cliente) {
   return cliente
     .from('tonos')
     .select(
-      'clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta',
+      'clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta',
     )
     .order('nombre')
     .limit(TOPE_DE_TONOS)
