@@ -185,7 +185,7 @@ test('B · la fila lleva a la ficha, «atrás» vuelve a la lista, y lo privado 
   // El nombre es el enlace a la ficha; ahí está lo último que pasó.
   await aLaVista(page.getByRole('link', { name: r.uno.nombre, exact: true })).click()
   await expect(page).toHaveURL(new RegExp(`/leads/${r.uno.id}$`))
-  await expect(page.getByText('Primera llamada del recorrido')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Primera llamada del recorrido' })).toBeVisible()
   await capturar(page, info, 'ficha-desde-la-fila')
   await page.goBack()
   await expect(page).toHaveURL(/\/leads$/)

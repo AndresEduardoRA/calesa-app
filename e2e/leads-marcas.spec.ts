@@ -86,7 +86,7 @@ test('favorito y tachado desde el «⋯» de la ficha: siguen al recargar y no m
     .toBe(false)
 })
 
-test('el «⋯» de la fila marca sin abrir el drawer, y el drawer muestra las marcas (se cambian en su «⋯»)', async ({
+test('el «⋯» de la fila marca sin salir de la lista, y la ficha muestra las marcas (se cambian en su «⋯»)', async ({
   page,
 }, info) => {
   const corto = `Marca Fila ${info.project.name}`
@@ -112,7 +112,7 @@ test('el «⋯» de la fila marca sin abrir el drawer, y el drawer muestra las m
     .first()
     .click()
   await expect(page.getByRole('heading', { name: nombre(corto), level: 1 })).toBeVisible()
-  await expect(page.getByRole('main').getByText('Favorito', { exact: true })).toBeAttached()
+  await expect(page.getByRole('main').getByText('Favorito', { exact: true }).first()).toBeAttached()
   await expect(page.getByRole('main').getByRole('button', { name: 'Favorito' })).toHaveCount(0)
 })
 

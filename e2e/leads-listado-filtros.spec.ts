@@ -136,8 +136,7 @@ test('la fila lleva a la ficha, con el teléfono enmascarado y sin lo privado de
   await expect(page).toHaveURL(/\/leads\/[0-9a-f-]{36}$/)
   const principal = page.getByRole('main')
   await expect(page.getByRole('heading', { name: nombre(AJENO_CARLOS), level: 1 })).toBeVisible()
-  // Lo que le llega a quien mira: el teléfono enmascarado y nada privado.
-  await expect(principal.getByText('Cédula E2E')).toHaveCount(0)
+  // Lo que le llega a quien mira: el teléfono enmascarado y ningún valor privado (la etiqueta del campo sí se ve).
   await expect(principal).not.toContainText(CI_DE_CARLOS)
   await expect(principal).not.toContainText(t.telefonoDeCarlos)
   await expect(principal).toContainText('•')

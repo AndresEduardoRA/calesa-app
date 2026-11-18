@@ -124,10 +124,11 @@ test('la ficha sólo lee los teléfonos: «Editar» abre el panel y ahí se agre
   // El enlace de antes (`/leads?lead=<id>&extra=nuevo`) redirige a la ficha con el panel de edición y el modal del extra.
   await page.goto(`/leads?lead=${antes}&extra=nuevo`)
   await expect(page).toHaveURL(new RegExp(`/leads/${antes}\\?panel=editar-lead&extra=nuevo$`))
-  await expect(page.getByRole('dialog', { name: `Editar ${nombre(PROPIO_BERTA)}` })).toBeVisible()
-  await expect(modalDeExtra(page)).toHaveCount(1)
+  // El modal del extra va encima del panel (que mientras tanto queda fuera del árbol de accesibilidad): Esc lo cierra y queda el panel.
+  await expect(modalDeExtra(page)).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(modalDeExtra(page)).toHaveCount(0)
+  await expect(page.getByRole('dialog', { name: `Editar ${nombre(PROPIO_BERTA)}` })).toBeVisible()
 
   // Se deja como estaba.
   const panelDeNuevo = page.getByRole('dialog', { name: `Editar ${nombre(PROPIO_BERTA)}` })

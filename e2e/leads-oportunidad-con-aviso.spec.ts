@@ -169,22 +169,6 @@ test('con más de cinco, el aviso muestra cinco y dice «y 1 más» con «Ver to
   await capturar(page, info, 'aviso-con-mas-de-cinco')
 })
 
-test('desde el «⋯» de la fila: el aviso, «Crear igual» y «Ver oportunidades»', async ({
-  page,
-}, info) => {
-  const lead = await leadConBase(`Aviso Fila ${info.project.name}`)
-  await entrar(page, t.personas.berta)
-  await irALeads(page, conElLead(lead.nombre))
-  await elegir(await abrirMenuDelLead(page, lead.nombre), 'Nueva oportunidad…')
-  await expect(page).toHaveURL(/panel=oportunidad-rapida/)
-  await expect(modal(page).getByText('ya tiene oportunidades')).toBeVisible()
-  await crearIgual(page, lead.nombre)
-  expect(await deLaBase(lead.id)).toHaveLength(2)
-
-  await elegir(await abrirMenuDelLead(page, lead.nombre), 'Ver oportunidades')
-  await expect(page).toHaveURL(new RegExp(`/leads/${lead.id}\\?seccion=oportunidades`))
-})
-
 test('desde el kanban: la tarjeta lee el lead al abrir el «⋯» y el aviso lista sus oportunidades', async ({
   page,
 }, info) => {

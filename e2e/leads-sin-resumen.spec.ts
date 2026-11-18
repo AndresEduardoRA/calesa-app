@@ -171,8 +171,11 @@ test('E2E los enlaces viejos del resumen redirigen a la ficha con lo suyo, sin s
 
   await page.goto(`/leads?lead=${lead.id}&extra=nuevo`)
   await expect(page).toHaveURL(new RegExp(`${ficha()}\\?panel=editar-lead&extra=nuevo$`))
+  // El modal del extra va encima del panel de edición: Esc lo cierra y queda el panel.
+  await expect(modalDeExtra(page)).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(modalDeExtra(page)).toHaveCount(0)
   await expect(page.getByRole('dialog', { name: `Editar ${lead.nombre}` })).toBeVisible()
-  await expect(modalDeExtra(page)).toHaveCount(1)
 
   // Un panel que no era del resumen, los filtros y el cursor se quitan.
   await page.goto(`/leads?lead=${lead.id}&q=abc&cursor=xyz&panel=etiquetas`)
