@@ -241,7 +241,7 @@ end $$;
 
 -- La copia mala: la función de verdad, pero el intento se busca SIN la cotización (`where intento = …`): el índice único empieza por `cotizacion_id`, así que recorre las revisiones.
 do $$
-declare v_def text := pg_get_functiondef('public.cotizacion_guardar(uuid, uuid, timestamptz, jsonb, text, text, text, uuid, boolean)'::regprocedure);
+declare v_def text := pg_get_functiondef('public.cotizacion_guardar(uuid, uuid, timestamptz, jsonb, text, text, text, uuid, boolean, boolean)'::regprocedure);
 begin
   v_def := replace(v_def, 'FUNCTION public.cotizacion_guardar(', 'FUNCTION pg_temp.cotizacion_guardar_mala(');
   if position('x.cotizacion_id = p_id and x.intento = p_intento' in v_def) = 0 then raise exception 'la copia mala: no está la búsqueda del intento'; end if;

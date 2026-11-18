@@ -625,8 +625,8 @@ export async function carrerasDeGuardar({ orquesta, carrera, espero, conectar, e
   console.log('Los privilegios de lo nuevo, en la base real, y el orden en bytes de un nodo')
   {
     const llamables = [
-      'public.cotizacion_guardar(uuid,uuid,timestamptz,jsonb,text,text,text,uuid,boolean)',
-      'public.cotizacion_crear(uuid,uuid,uuid,jsonb,text,uuid,jsonb,text,clase_cotizacion,boolean,boolean)',
+      'public.cotizacion_guardar(uuid,uuid,timestamptz,jsonb,text,text,text,uuid,boolean,boolean)',
+      'public.cotizacion_crear(uuid,uuid,uuid,jsonb,text,uuid,jsonb,text,clase_cotizacion,boolean,boolean,text,boolean)',
       'public.cotizacion_hoja(uuid)',
       'public.cotizacion_evaluar(jsonb,uuid,uuid,uuid,jsonb,text,text)',
     ]

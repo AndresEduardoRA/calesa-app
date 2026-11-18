@@ -55,8 +55,8 @@ declare v_tok text; r jsonb;
 begin
   perform pg_temp.vc_como('00000000-0000-0000-0000-000000000001');
   v_tok := public._cotizacion_abierta_firmar((t ->> 'o')::uuid, (t ->> 'f')::uuid, now());
-  r := pg_temp.vc_corre('00000000-0000-0000-0000-000000000001', format('select public.cotizacion_crear(%L, %L, %L, %L::jsonb, %L, %L, %L::jsonb)',
-         gen_random_uuid(), t ->> 'o', t ->> 'l', '{"inputs": {"visible": 100}}', v_tok, p_v, p_nuevo));
+  r := pg_temp.vc_corre('00000000-0000-0000-0000-000000000001', format('select public.cotizacion_crear(%L, %L, %L, %L::jsonb, %L, %L, %L::jsonb, p_titulo => %L)',
+         gen_random_uuid(), t ->> 'o', t ->> 'l', '{"inputs": {"visible": 100}}', v_tok, p_v, p_nuevo, 'VC cotización'));
   if r ? 'error' then raise exception 'crear falló: %', r; end if;
   return r;
 end $f$;
