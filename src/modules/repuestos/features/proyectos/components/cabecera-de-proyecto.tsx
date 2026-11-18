@@ -1,7 +1,4 @@
-import type { Route } from 'next'
-import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { RUTAS } from '@/shared/lib/rutas'
 import type { ClienteDeLaCabecera } from '../../../entities/proyectos/cliente-de-la-cabecera'
 import type { ProyectoDetallado } from '../../../entities/proyectos/detalle'
 import type { EstadoDelProyecto as Estado } from '../../../entities/proyectos/estado'
@@ -9,11 +6,13 @@ import { BotonDeCierre } from './boton-de-cierre'
 import { BotonDeEliminarProyecto } from './boton-de-eliminar-proyecto'
 import { ClienteDelProyecto } from './cliente-del-proyecto'
 import { EstadoDelProyecto } from './estado-del-proyecto'
+import { ProyectoExterno } from './vehiculo-de-la-cabecera'
 
 type Props = {
   proyecto: ProyectoDetallado
-  // El título del vehículo si es de un vehículo y se ve; nulo = «no puedes verlo» (como el listado).
-  tituloDelVehiculo: string | null
+  // El vehículo de un proyecto con vehículo, ya compuesto por `src/app` (`repuestos` no importa `vehiculos`): el bloque de `vehiculos`, «Vehículo que no puedes ver»
+  // o su error con «Reintentar», en su propio `<Suspense>`. Un proyecto externo no lo usa: la cabecera dice sola «Proyecto externo · sin vehículo».
+  vehiculo?: ReactNode
   // El cliente ya resuelto por la página (`clienteDeLaCabecera`): el lead, oculto, el nombre escrito o ninguno.
   cliente: ClienteDeLaCabecera
   estado: Estado
@@ -33,18 +32,18 @@ function Dato({ etiqueta, children }: { etiqueta: string; children: ReactNode })
   )
 }
 
-// La cabecera de `/repuestos/[id]` (8.09-2, C5): el número, el vehículo (con enlace si se ve) o «Externo», el cliente, las notas, el estado derivado y, con `repuestos.editar`, cerrar o reabrir (y eliminar, si la hoja no tiene ítems).
-// En el celular se apila y el botón ocupa el ancho.
+// La cabecera de `/repuestos/[id]` (8.09-2, C5): el número y el estado derivado; debajo, el vehículo en un recuadro (lo primero que se busca: de qué vehículo es) o el
+// proyecto externo; luego el cliente y las notas; con `repuestos.editar`, cerrar o reabrir (y eliminar, si la hoja no tiene ítems). En el celular se apila y el botón
+// ocupa el ancho.
 export function CabeceraDeProyecto({
   proyecto,
-  tituloDelVehiculo,
+  vehiculo,
   cliente,
   estado,
   puedeEditar,
   sinItems = false,
   children,
 }: Props) {
-  const esDeVehiculo = proyecto.vehiculoId !== null
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -55,29 +54,17 @@ export function CabeceraDeProyecto({
             </h1>
             <EstadoDelProyecto estado={estado} />
           </div>
+          <section
+            aria-label="Vehículo"
+            className="max-w-xl min-w-0 rounded-(--radius-card) border border-(--color-line) p-3"
+          >
+            {proyecto.vehiculoId === null ? (
+              <ProyectoExterno etiqueta={proyecto.vehiculoEtiqueta} vin={proyecto.vin} />
+            ) : (
+              vehiculo
+            )}
+          </section>
           <dl className="grid gap-x-8 gap-y-2 text-(length:--text-sm) sm:grid-cols-2">
-            <Dato etiqueta="Vehículo">
-              {esDeVehiculo ? (
-                tituloDelVehiculo === null ? (
-                  'Vehículo que no puedes ver'
-                ) : (
-                  <Link
-                    href={`${RUTAS.vehiculos}/${proyecto.vehiculoId ?? ''}` as Route}
-                    className="inline-flex min-h-11 items-center underline underline-offset-2 md:min-h-0"
-                  >
-                    {tituloDelVehiculo}
-                  </Link>
-                )
-              ) : (
-                <>
-                  Externo
-                  {proyecto.vehiculoEtiqueta ? ` · ${proyecto.vehiculoEtiqueta}` : ''}
-                  {proyecto.vin ? (
-                    <span className="block text-(--color-ink-soft)">VIN {proyecto.vin}</span>
-                  ) : null}
-                </>
-              )}
-            </Dato>
             <Dato etiqueta="Cliente">
               <ClienteDelProyecto cliente={cliente} />
             </Dato>

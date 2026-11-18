@@ -5,6 +5,7 @@ export { BotonNuevoProyecto } from '../features/proyectos/components/boton-nuevo
 export { ListadoDeProyectos } from '../features/proyectos/components/listado-de-proyectos'
 export { useNuevoProyectoPorUrl } from '../features/proyectos/hooks/use-nuevo-proyecto-por-url'
 export { CabeceraDeProyecto } from '../features/proyectos/components/cabecera-de-proyecto'
+export { VehiculoQueNoSeVe } from '../features/proyectos/components/vehiculo-de-la-cabecera'
 export {
   buscarProyectoAbierto,
   interpretarBusquedaDeProyecto,
