@@ -10,17 +10,25 @@ import { gruposVisibles, paraElNavegador, type GrupoDelNavegador } from './secci
 // El marco de toda página de Configuración. Dentro de una sección: a la izquierda el menú de Configuración (desde 1024 px y con 44 rem
 // de contenedor: con el texto al 200 % el rem crece y el menú pasa al selector sin desbordar) y arriba «‹ Configuración» con el selector
 // de sección donde no se ve el menú. En el inicio, nada de eso: las tarjetas ya son el menú. Sin ninguna sección que abrir, tampoco:
-// la página dice «No tienes permiso». Las páginas no esperan a la sesión del menú: su `loading.tsx` se ve igual que siempre.
+// la página dice «No tienes permiso». Las páginas no esperan a la sesión del menú: su `loading.tsx` se ve igual que siempre. Mientras
+// el menú y la cabecera llegan, su lugar queda reservado (la página no salta al llegar).
+const CLASE_DEL_MENU = 'hidden w-52 shrink-0 lg:@min-[44rem]/configuracion:block'
+const CLASE_DE_LA_CABECERA = 'min-h-[44px] md:min-h-9'
+
 export default function LayoutDeConfiguracion({ children }: { children: ReactNode }) {
   return (
     <div className="@container/configuracion flex min-w-0 gap-6">
-      <Suspense fallback={null}>
-        <MenuLateral />
-      </Suspense>
-      <div className="grid min-w-0 flex-1 content-start gap-4">
-        <Suspense fallback={null}>
-          <Cabecera />
+      <EnUnaSeccion inicio={RUTAS.configuracion}>
+        <Suspense fallback={<div className={CLASE_DEL_MENU} />}>
+          <MenuLateral />
         </Suspense>
+      </EnUnaSeccion>
+      <div className="grid min-w-0 flex-1 content-start gap-4">
+        <EnUnaSeccion inicio={RUTAS.configuracion}>
+          <Suspense fallback={<div className={CLASE_DE_LA_CABECERA} />}>
+            <Cabecera />
+          </Suspense>
+        </EnUnaSeccion>
         {children}
       </div>
     </div>
@@ -39,11 +47,9 @@ async function MenuLateral() {
     return null
   }
   return (
-    <EnUnaSeccion inicio={RUTAS.configuracion}>
-      <div className="hidden w-52 shrink-0 lg:@min-[44rem]/configuracion:block">
-        <MenuDeConfiguracion grupos={grupos} />
-      </div>
-    </EnUnaSeccion>
+    <div className={CLASE_DEL_MENU}>
+      <MenuDeConfiguracion grupos={grupos} />
+    </div>
   )
 }
 
@@ -52,9 +58,5 @@ async function Cabecera() {
   if (grupos.length === 0) {
     return null
   }
-  return (
-    <EnUnaSeccion inicio={RUTAS.configuracion}>
-      <CabeceraDeConfiguracion grupos={grupos} />
-    </EnUnaSeccion>
-  )
+  return <CabeceraDeConfiguracion grupos={grupos} />
 }
