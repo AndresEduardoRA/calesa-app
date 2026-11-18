@@ -19,7 +19,7 @@ import { Skeleton } from '@/shared/ui/skeleton'
 import { PanelDelPaso } from './panel-del-paso'
 import { usePanelDelPaso } from './use-panel-del-paso'
 
-type Props = Omit<ComponentProps<typeof HojaDeItems>, 'hueco'> & {
+type Props = Omit<ComponentProps<typeof HojaDeItems>, 'hueco' | 'ordenDeLasFases'> & {
   lectura: LecturaDeLosPasos
   // Si hay un pago vivo; nulo sin `repuestos.costos.ver`.
   pago: boolean | null
@@ -75,7 +75,7 @@ function ArribaDeLaHoja({ indice, lectura, paso, titulos, contenido, ...props }:
 }
 
 // La hoja del proyecto con todo lo que otras áreas ponen en su hueco (un área no importa otra, y una función no cruza de un Server Component a uno de cliente): arriba,
-// los pasos del proyecto y el panel del paso abierto; en cada fila, el botón de su siguiente, «Stock» y «Abrir panel»; y el panel del stock. Cuando cambia el dinero del
+// los pasos del proyecto y el panel del paso abierto; el orden de las fases, para agrupar la hoja por paso; en cada fila, el botón de su siguiente, «Stock» y «Abrir panel»; y el panel del stock. Cuando cambia el dinero del
 // proyecto (un pago), vuelve a pedir la página para que los pasos y los botones digan si ya hay pago; mientras tanto, los botones del siguiente se apagan.
 export function HojaDelProyecto({
   lectura,
@@ -121,6 +121,7 @@ export function HojaDelProyecto({
   return (
     <HojaDeItems
       {...hoja}
+      ordenDeLasFases={indice?.lugar ?? null}
       hueco={{
         accionDeFila,
         panel: (api) => <PanelDeStock url={stock} api={api} />,
