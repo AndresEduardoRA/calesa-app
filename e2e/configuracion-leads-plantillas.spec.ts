@@ -49,7 +49,7 @@ test.afterAll(async () => {
 
 const irA = async (page: Page, seccion: 'portal' | 'embudo') => {
   await entrar(page, t.personas.duena)
-  await page.goto(`/configuracion/leads?seccion=${seccion}`)
+  await page.goto(`/configuracion/leads/${seccion}`)
 }
 
 // Un `fill` antes de hidratar escribe en el HTML del servidor y React no se entera: el botón sigue apagado y el clic no guarda. Se reescribe hasta que el formulario

@@ -5,6 +5,8 @@ import {
   correoDePrueba,
   crearDuenaDePrueba,
   crearPersona,
+  darRolDePrueba,
+  PREFIJO_ROL_E2E,
 } from './soporte/base'
 import { descartarAviso } from './soporte/inventario'
 import { borrarCamposDeLeadDePrueba, campoDeLead, camposDeLead, crearLead } from './soporte/leads'
@@ -24,6 +26,7 @@ const CLAVE_DEL_CAMPO = 'e2e_signo_zodiacal'
 
 let duena = ''
 let sinPermisos = ''
+let soloConfigurar = ''
 
 test.beforeAll(async ({}, info) => {
   await borrarCamposDeLeadDePrueba()
@@ -31,12 +34,27 @@ test.beforeAll(async ({}, info) => {
   await borrarRolesDePrueba()
   duena = correoDePrueba(`duena-leads-${info.project.name}`)
   sinPermisos = correoDePrueba(`sinpermisos-leads-${info.project.name}`)
+  soloConfigurar = correoDePrueba(`configurar-leads-${info.project.name}`)
   await crearDuenaDePrueba({ email: duena, contrasena: CLAVE, nombre: 'Dalia Prueba' })
   await crearPersona({
     email: sinPermisos,
     contrasena: CLAVE,
     nombre: 'Sin Permisos',
     invitada: true,
+  })
+  await crearPersona({
+    email: soloConfigurar,
+    contrasena: CLAVE,
+    nombre: 'Sin Campos',
+    invitada: true,
+  })
+  await darRolDePrueba({
+    email: soloConfigurar,
+    rol: {
+      nombre: `${PREFIJO_ROL_E2E}Configura leads ${info.project.name}`,
+      clave: `e2e_configura_leads_${info.project.name}`,
+    },
+    permisos: ['leads.configurar'],
   })
 })
 
@@ -63,8 +81,10 @@ test('los campos de fábrica están, uno es privado y ninguno se elimina', async
   await page.goto('/configuracion')
   // La tarjeta del hub, no el ítem «Leads» del menú (que lleva al listado).
   await page.locator('a[href="/configuracion/leads"]').click()
-  await expect(page.getByRole('heading', { name: 'Leads', level: 1 })).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Campos' })).toBeVisible()
+  // La sección no tiene índice: abre su primera sub-ruta.
+  await expect(page).toHaveURL('/configuracion/leads/campos')
+  await expect(page.getByRole('heading', { name: 'Campos', level: 1 })).toBeVisible()
+  await expect(page).toHaveTitle(/^Campos de los leads/)
 
   for (const etiqueta of ['Edad', 'Género', 'Ciudad', 'País', 'Dirección', 'Notas']) {
     await expect(page.getByRole('button', { name: `Editar ${etiqueta}` })).toBeVisible()
@@ -188,6 +208,35 @@ test('sin el permiso no se entra y la tarjeta no aparece', async ({ page }) => {
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
   await page.goto('/configuracion')
   await expect(page.locator('a[href="/configuracion/leads"]')).toHaveCount(0)
+})
+
+test('sin el permiso de los campos, «Campos» está apagada con su motivo y su URL abre la primera habilitada', async ({
+  page,
+}) => {
+  await entrar(page, soloConfigurar)
+  await page.goto('/configuracion/leads')
+  await expect(page).toHaveURL('/configuracion/leads/origenes')
+  const menu = page.getByRole('navigation', { name: 'Secciones de Configuración' })
+  await expect(menu.getByText('Campos', { exact: true })).toHaveAttribute('aria-disabled', 'true')
+  await expect(menu.getByRole('link', { name: 'Campos', exact: true })).toHaveCount(0)
+  await expect(
+    menu.getByText('Te falta el permiso «Gestionar los campos de los leads».'),
+  ).toBeVisible()
+
+  await page.goto('/configuracion/leads/campos')
+  await expect(page).toHaveURL('/configuracion/leads/origenes')
+  await expect(page.getByRole('heading', { name: 'Orígenes del lead', level: 1 })).toBeVisible()
+  // La URL vieja de una apagada también abre la primera habilitada, sin sus parámetros.
+  await page.goto('/configuracion/leads?seccion=campos&panel=nuevo-campo')
+  await expect(page).toHaveURL('/configuracion/leads/origenes')
+})
+
+test('la URL vieja con su panel llega a la sub-ruta con el panel abierto', async ({ page }) => {
+  await entrar(page, duena)
+  await page.goto('/configuracion/leads?seccion=tipos&panel=nuevo-tipo')
+  await expect(page).toHaveURL('/configuracion/leads/tipos?panel=nuevo-tipo')
+  await expect(page.getByRole('heading', { name: 'Tipos de lead', level: 1 })).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'Nuevo tipo' })).toBeVisible()
 })
 
 test('dos personas editando el mismo campo: la segunda ve el conflicto', async ({

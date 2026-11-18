@@ -287,7 +287,11 @@ test('la asesora sin leads.configurar no ve la pantalla ni puede escribir por la
   await entrar(page, asesora, { fresco: true })
   await page.goto('/configuracion/leads?seccion=seguimientos')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Tipos de seguimiento' })).toHaveCount(0)
+  await expect(
+    page
+      .getByRole('navigation', { name: 'Secciones de Configuración' })
+      .getByRole('link', { name: 'Tipos de seguimiento' }),
+  ).toHaveCount(0)
   await capturar(page, info, 'seguimientos-asesora-sin-permiso')
   const cliente = await sesionDe(asesora, CONTRASENA)
   const crear = await cliente.rpc('tipo_seguimiento_crear', {

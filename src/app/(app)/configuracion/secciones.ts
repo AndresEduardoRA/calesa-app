@@ -1,17 +1,11 @@
-import {
-  ContactRoundIcon,
-  MapPinIcon,
-  ShieldCheckIcon,
-  UsersRoundIcon,
-  type LucideIcon,
-} from 'lucide-react'
+import { MapPinIcon, ShieldCheckIcon, UsersRoundIcon, type LucideIcon } from 'lucide-react'
 import { puede, type ClavePermiso, type Permisos } from '@/shared/lib/permisos'
 import { RUTAS } from '@/shared/lib/rutas'
 import { SECCION_DE_COLA_WEB } from './cola-web/seccion'
 import { SECCION_DE_COTIZACION } from './cotizacion/seccion'
 import { SECCION_DE_EMPRESA } from './empresa/seccion'
 import { SECCION_DE_FLUJOS } from './flujos/seccion'
-import { PERMISOS_DE_LEADS } from './leads/pestanas'
+import { SECCION_DE_LEADS } from './leads/seccion'
 import { SECCIONES_DE_LOGISTICA } from './logistica/seccion'
 import { PERMISOS_DE_ORIGENES } from './origenes/acceso'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
@@ -95,17 +89,7 @@ export const SECCIONES = [
     grupo: 'ventas',
     subsecciones: [],
   },
-  {
-    clave: 'leads',
-    titulo: 'Leads',
-    descripcion:
-      'Los campos, los orígenes y tipos de lead, los seguimientos, el embudo y el portal.',
-    ruta: RUTAS.configuracionDeLeads,
-    Icono: ContactRoundIcon,
-    permisos: PERMISOS_DE_LEADS,
-    grupo: 'ventas',
-    subsecciones: [],
-  },
+  SECCION_DE_LEADS,
   SECCION_DE_COTIZACION,
   SECCION_DE_FLUJOS,
   ...SECCIONES_DE_LOGISTICA,

@@ -66,9 +66,11 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/web/guias/[id]': (t) => ({ url: `/configuracion/web/guias/${t.guia}` }),
 }
 
-// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino.
+// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace; Configuración › Leads no tiene sub-sección índice y abre la
+// primera que se puede abrir (la dueña tiene los dos permisos). Se barre lo que dibuja ese destino.
 export const REDIRECCIONES: Record<string, string> = {
   '/auth/nueva-contrasena': '/recuperar',
+  '/configuracion/leads': '/configuracion/leads/campos',
 }
 
 const claveDelOrigen = (proyecto: string) => `a11y_${proyecto}`

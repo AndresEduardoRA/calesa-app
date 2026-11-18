@@ -1,0 +1,24 @@
+import type { Metadata } from 'next'
+import { EstadoSinPermiso } from '@/shared/ui/estados'
+import { EncabezadoDeConfiguracion } from '../../_navegacion/encabezado-de-configuracion'
+import { abrirSubseccionDeLeads } from '../abrir'
+import { CAMPOS_DE_LEADS } from '../seccion'
+import { SeccionCampos } from './seccion'
+
+// «Campos» a secas se repetiría con otras pantallas en la pestaña del navegador.
+export const metadata: Metadata = { title: 'Campos de los leads' }
+
+// Configuración › Leads › Campos: el layout de los campos de los leads (`leads.campos.gestionar`). Sin su permiso se ve apagada en el menú y esta URL abre
+// la primera sub-sección que se puede abrir (`abrir.ts`).
+export default async function PaginaCamposDeLeads() {
+  const { sinPermiso } = await abrirSubseccionDeLeads('campos')
+  if (sinPermiso) {
+    return <EstadoSinPermiso />
+  }
+  return (
+    <div className="grid max-w-3xl gap-4">
+      <EncabezadoDeConfiguracion {...CAMPOS_DE_LEADS} />
+      <SeccionCampos />
+    </div>
+  )
+}

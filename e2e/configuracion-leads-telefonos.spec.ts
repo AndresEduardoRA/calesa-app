@@ -41,7 +41,7 @@ async function ajustesEnLaBase() {
 
 test('la dueña cambia el máximo y enciende la regla, y se guarda', async ({ page }) => {
   await entrar(page, t.personas.duena)
-  await page.goto('/configuracion/leads?seccion=telefonos')
+  await page.goto('/configuracion/leads/telefonos')
   const maximo = page.getByLabel('Máximo de teléfonos extra')
   const guardar = page.getByRole('button', { name: 'Guardar' })
   await expect(maximo).toHaveValue('6')
@@ -88,7 +88,7 @@ test('con un choque ya sembrado, la lista lo muestra enmascarado y con enlace al
   await fijarAjustesDeTelefonos(6, true)
 
   await entrar(page, t.personas.duena)
-  await page.goto('/configuracion/leads?seccion=telefonos')
+  await page.goto('/configuracion/leads/telefonos')
   await expect(page.getByText('Números repetidos')).toBeVisible()
   const fila = page.getByRole('listitem').filter({ hasText: repetido.nombre })
   await expect(fila).toBeVisible()
