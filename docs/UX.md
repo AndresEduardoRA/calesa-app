@@ -396,17 +396,18 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   frase y **lo que falta**, en la sección donde se resuelve: «Falta publicar la fórmula de {origen}» (Cotización), «Falta configurar el flujo de
   {origen}» (Flujos), «Falta activar apibara» una vez (Empresa); sólo de orígenes activos y lo que la persona puede hacer (no el paso de los
   permisos), con su enlace al paso; hasta 3 y «Y N más». Llega después de las tarjetas; si no se puede leer, la tarjeta queda con su frase.
-- **Leads (config)** — `/configuracion/leads` (`leads.campos.gestionar` o `leads.configurar`): lista agrupada + panel lateral.
-  `?seccion=campos` (`?campo=`), `origenes` (`?panel=nuevo-origen`/`editar-origen&origen=<id>`), `tipos`
-  (`?panel=nuevo-tipo`/`editar-tipo&tipo=<id>`/`eliminar-tipo&tipo=<id>`), `seguimientos`, `embudo` (la plantilla: editor de etapas en la
-  página, «Guardar» apagado sin cambios, «Restablecer» con `?panel=restablecer-embudo`), `portal` (el mensaje del portal: `<Textarea>` que
-  parte del texto de fábrica con sus variables, vista previa con un cliente, código y clave de ejemplo, rechazo junto al campo, «Guardar»
-  apagado sin cambios; en blanco remite a «Restablecer», `?panel=restablecer-portal`), `telefonos` («Teléfonos extra»: «Máximo de teléfonos
-  extra» de 0 a 20, el interruptor «Los teléfonos extra cuentan como el principal», «Guardar» apagado sin cambios; con la regla guardada y
-  encendida, «Choques»: números enmascarados con enlace a los leads que ves, «Ver más» / «Seguir buscando», «No hay números repetidos entre
-  leads.» si no hay). «Campos» pide `leads.campos.gestionar` y las otras
-  seis `leads.configurar`: la que no puedes abrir se ve apagada con su motivo bajo la barra, y su `?seccion=` abre la primera habilitada.
-  Sin ninguno de los dos no se entra.
+- **Leads (config)** — `/configuracion/leads` (`leads.campos.gestionar` o `leads.configurar`), siete sub-rutas en el menú de Configuración
+  (`configuracion/leads/seccion.ts`), sin sub-sección índice: la raíz abre la primera que la persona puede abrir. «Campos» (`/campos`,
+  `leads.campos.gestionar`; `?campo=`), «Orígenes del lead» (`/origenes`; `?panel=nuevo-origen`/`editar-origen&origen=<id>`), «Tipos de
+  lead» (`/tipos`; `?panel=nuevo-tipo`/`editar-tipo&tipo=<id>`/`eliminar-tipo&tipo=<id>`), «Tipos de seguimiento» (`/seguimientos`),
+  «Plantilla del embudo» (`/embudo`: editor de etapas en la página, «Restablecer» con `?panel=restablecer-embudo`), «Mensaje del portal»
+  (`/portal`: `<Textarea>` que parte del texto de fábrica con sus variables, vista previa con un cliente, código y clave de ejemplo, rechazo
+  junto al campo; en blanco remite a «Restablecer», `?panel=restablecer-portal`) y «Teléfonos extra» (`/telefonos`: «Máximo de teléfonos
+  extra» de 0 a 20, el interruptor «Los teléfonos extra cuentan como el principal»; con la regla guardada y encendida, «Números repetidos»:
+  enmascarados con enlace a los leads que ves, «Ver más» / «Seguir buscando», «No hay números repetidos entre leads.» si no hay); las seis
+  últimas con `leads.configurar`. La que no puedes abrir va apagada en el menú con «Te falta el permiso «…».» y su URL abre la primera
+  habilitada. Un `?seccion=` viejo va a su sub-ruta con todos los demás parámetros (`?panel=`, `?campo=`…), o a la primera sin ellos si
+  apunta a una apagada. Sin ninguno de los dos permisos, «No tienes permiso» y la sección no está en el menú ni en el inicio.
 - **Cotización (config)** — `/configuracion/cotizacion` (`equipo.roles.ver|gestionar` o `cotizaciones.configurar` en algún origen):
   `?seccion=niveles|formula|tarjeta|diseno|tonos|tablas|ajustes`, cada pestaña con sus permisos, Niveles primero y Ajustes al final.
   «Fórmula» con `?origen=` (los orígenes con la clave, también los inactivos), `?panel=publicar-formula`,
@@ -428,16 +429,19 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   (`?seccion=reglas|documentos`; `?seccion=fases` es la pantalla). Las fases se crean desde la barra, se ordenan arrastrando o con «Mover
   antes/después» (y «Subir/Bajar» en la lista), se jubilan y reactivan; en el panel se editan y se agregan y quitan salidas y requisitos.
   Ver «Flujos: configuración (estados propios)» y siguientes.
-- **Logística (config)** — `/configuracion/logistica` (`logistica.catalogos.gestionar`): catálogos «Puertos» (nombre, país, código, orden y
-  activo), «Navieras» (nombre y activa; sin «Eliminar»: se desactivan) y «Categorías de gasto» (nombre, propósito de la lista fija de la
-  base, orden y activa; una con gastos no se elimina, se desactiva), en `?seccion=puertos|navieras|categorias-de-gasto` (sin barra con una
-  sola; una URL ajena abre «Puertos»). La tarjeta del hub sólo existe cuando algún área llena un catálogo; si no, la URL entra y dice «Por
-  ahora no hay nada que configurar aquí.». Ver «Logística: estados propios».
-- **Repuestos (config)** — `/configuracion/repuestos` (`repuestos.configurar`): pestaña «Catálogos» con tipo de pieza, condición, vía de
-  transporte y país de origen (agregar, editar nombre, orden y activo, desactivar, eliminar sin uso; tope 200 por catálogo con
-  `<AvisoDeTope>`; `?panel=nuevo-valor&catalogo=`, `editar-valor&valor=`, `eliminar-valor&valor=`). Pestaña «Cotizador»
-  (`?seccion=cotizador`): «Fórmula» con «Publicar cambios» y su historial, «Tramos de logística» y «Cajas» por moneda con sus modales en la
-  URL (`?panel=tramo|caja`). Arriba, el enlace a su flujo en Flujos (config).
+- **Logística (config)** — `/configuracion/logistica` (`logistica.catalogos.gestionar`) no tiene página propia: abre el primer catálogo que la
+  persona puede abrir. Cada catálogo es una sub-ruta del menú «Operación › Logística», con su título y su frase: `/puertos` («Puertos»: nombre,
+  país, código, orden y activo), `/navieras` («Navieras»: nombre y activa; sin «Eliminar»: se desactivan) y `/categorias-de-gasto`
+  («Categorías de gasto»: nombre, propósito de la lista fija de la base, orden y activa; una con gastos no se elimina, se desactiva). Sin título
+  de bloque ni segunda frase: sólo «Nuevo …» arriba a la derecha y la lista. Las URLs viejas `?seccion=puertos|navieras|categorias-de-gasto`
+  redirigen a su sub-ruta con sus `?panel=` (una ajena, a la primera). La sección sólo existe cuando algún área llena un catálogo; si no, la URL
+  entra y dice «Por ahora no hay nada que configurar aquí.». Ver «Logística: estados propios».
+- **Repuestos (config)** — `/configuracion/repuestos` (`repuestos.configurar`) abre `/catalogos`. **Catálogos** (`/configuracion/repuestos/catalogos`):
+  tipo de pieza, condición, vía de transporte y país de origen (agregar, editar nombre, orden y activo, desactivar, eliminar sin uso; tope 200 por
+  catálogo con `<AvisoDeTope>`; `?panel=nuevo-valor&catalogo=`, `editar-valor&valor=`, `eliminar-valor&valor=`). **Cotizador de repuestos**
+  (`/configuracion/repuestos/cotizador`): «Fórmula» con «Publicar cambios» (publica una versión nueva: no es una barra de «Guardar») y su
+  historial, «Tramos de logística» y «Cajas» por moneda con sus modales en la URL (`?panel=tramo|caja`). Las dos con el enlace a su flujo en
+  Flujos (config) arriba. Las URLs viejas `?seccion=catalogos|cotizador` redirigen a su sub-ruta con sus `?panel=`, `tramo`, `caja` y `moneda`.
 - **Sitio web (config)** — `/configuracion/web` (`web.ajustes.gestionar` o `web.contenido.gestionar`):
   `?seccion=ajustes|legales|guias|faqs|testimonios` («Ajustes» y «Legales» con `web.ajustes.gestionar`; el resto con
   `web.contenido.gestionar`; la barra sólo con dos o más). «Ajustes»: la fila única del sitio (nombre, lema, WhatsApp de respaldo, horario,
@@ -724,12 +728,13 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
 
 ### Leads: configuración (estados propios)
 
-- **Campos** (`leads.configurar`; sin él, sin permiso y sin tarjeta en el hub): activos agrupados como en el formulario, con tipo, clave e
+- **Campos** (`leads.campos.gestionar`; sin él, apagada en el menú): activos agrupados como en el formulario, con tipo, clave e
   interruptores («En la tabla», «Filtrable», «Solo la cartera») que guardan solos; desactivados plegados con «Reactivar»; «De fábrica».
   Fijos: teléfono, nombre, tipo y que el lead tenga origen.
 - **Impacto, siempre con números y dentro del panel:** volver requerido (cuántos leads no podrán guardarse hasta completarlo); cambiar el
   tipo o eliminar con datos; sacar una opción en uso; dejar de ser «solo la cartera». Conflicto con «Recargar».
-- **Orígenes del lead, tipos de lead y tipos de seguimiento** (`?seccion=origenes|tipos|seguimientos`, patrón de `shared/ui/lista`): icono
+- **Orígenes del lead, tipos de lead y tipos de seguimiento** (`/origenes|tipos|seguimientos`, patrón de `shared/ui/lista`, sin título
+  propio: arriba de la lista sólo «Nuevo origen» / «Nuevo tipo»; en el vacío lo lleva el estado vacío): icono
   y nombre, «Subir»/«Bajar» (con teclado), estado y «⋯» (Editar · Activar/Desactivar con «Deshacer» · Eliminar); lo imposible, apagado con
   motivo. Modal por URL (nombre ≤ 40, sin repetidos). Eliminar, apagado si algo lo usa (la papelera cuenta). Tope 100.
 - **Origen por defecto:** a lo sumo uno, siempre activo; no se apaga ni elimina mientras lo sea. **Tipo de lead:** su clase
@@ -737,6 +742,10 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
   cualquiera se apaga.
 - **Dónde se nota:** el alta ofrece los activos (si el elegido se apaga mientras se escribe, el guardado falla y lo demás queda); la ficha
   conserva uno apagado como «(inactivo)»; el CSV acepta nombre o clave de un activo y nunca crea.
+- **Plantilla del embudo, mensaje del portal y teléfonos extra:** formularios con la barra de cambios sin guardar («Tienes cambios sin
+  guardar» · «Descartar» · «Guardar»), que aparece al cambiar algo; «Descartar» repone lo guardado; mientras guarda, apagada; salir con
+  cambios (menú, selector, «‹ Configuración», un enlace) pregunta. «Restablecer» sigue en su fila. En «Teléfonos extra» la barra va al final
+  de la página, debajo de «Números repetidos». `PT409` con «Recargar» arriba del formulario; la barra sigue.
 
 ### Flujos: configuración (estados propios)
 

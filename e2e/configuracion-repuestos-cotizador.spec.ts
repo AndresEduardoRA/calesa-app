@@ -4,7 +4,7 @@ import { CONTRASENA, entrar } from './soporte/alta'
 import { borrarPersonasDePrueba, correoDePrueba, crearDuenaDePrueba } from './soporte/base'
 import { sql } from './soporte/sql'
 
-// Configuración › Repuestos › «Cotizador» (8.12-2): quien tiene `repuestos.configurar` ve las dos pestañas, publica la fórmula (la vigente sale primera en el
+// Configuración › Repuestos › «Cotizador» (8.12-2): quien tiene `repuestos.configurar` abre la sub-ruta del cotizador, publica la fórmula (la vigente sale primera en el
 // historial y «Publicar cambios» se apaga hasta que algo cambie), agrega un tramo de logística en USD y uno que se cruza con él no se agrega: la base lo
 // dice en «Desde». Los tramos de la prueba van desde 900 000 para no cruzarse con los de otro spec (D27); la configuración publicada la borra
 // `borrarPersonasDePrueba()` (su `creado_por` es la dueña de prueba). Lo que escribe cada rol lo prueba `supabase/tests/areas/repuestos/cotizador-configuracion.sql`.
@@ -29,10 +29,10 @@ test.afterAll(async () => {
 
 test('publicar la fórmula y agregar un tramo; uno que se cruza no se agrega', async ({ page }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto('/configuracion/repuestos')
-  await expect(page.getByRole('tab')).toHaveCount(2)
-  await page.getByRole('tab', { name: 'Cotizador' }).click()
-  await expect(page).toHaveURL(/seccion=cotizador/)
+  await page.goto('/configuracion/repuestos/cotizador')
+  await expect(
+    page.getByRole('heading', { name: 'Cotizador de repuestos', level: 1 }),
+  ).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Fórmula', level: 2 })).toBeVisible()
 
   await page.getByLabel('Factor de importado').fill('1,4321')

@@ -18,8 +18,8 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   - Bandeja de Inicio (`tablero`): `leerRecordatoriosDeHoy({ hasta, tope })` (mis pendientes, `recordatorios_vista`) y
     `leerLeadsSinSeguimiento({ creadosAntesDe, tope })` (mi cartera sin seguimiento y de más de 24 h, `leads_cartera_vista`); piden `tope + 1` y
     devuelven `{ filas, hayMas }` (`entities/bandeja.ts`: `finDeHoy()`, `creadoAntesDe()`, `rutaDeSeguimientos()`).
-- Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `importar`, `papelera`, `configuracion`, `cotizar`, `turno`, `relacionados`,
-  `proyecto-de-repuestos`; sólo `src/app`).
+- Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `importar`, `papelera`, `configuracion` y `configuracion-esqueletos`, `cotizar`,
+  `turno`, `relacionados`, `proyecto-de-repuestos`; sólo `src/app`).
 - `client.ts`: reglas puras, tipos, `<AltaDeLead>`, `normalizarTelefono()`, `interpretarBusqueda()`, `MINIMO_DE_BUSQUEDA` (para `buscador`), la
   action `completarRecordatorio` (panel `?recordatorio=` de `/agenda`; la RPC exige que sea de quien actúa) y lo puro de la importación de `datos`
   (`prepararFilas`, `preparadorDeFilas` por tramos con el mismo resultado que una pasada, `emparejarColumnas`, `convertir*`, `fecha*`, `usePaises`…):
@@ -32,8 +32,10 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   (se pide al acercarse). `?seccion=datos|seguimientos|vehiculos|oportunidades|cotizaciones|portal` lleva al bloque (`anclaDeLaSeccion()`: «vehiculos» es
   Relacionados) y le da el foco al título; «Cotizaciones» con `cotizaciones.ver` en algún origen, sin mirar la cartera, la compone `src/app` con
   `cotizaciones/pantallas/lead`; la composición vive en `src/app/(app)/leads/[id]/bloques.tsx`), `/leads/papelera`,
-  `/leads/importar` (`leads.crear`), `POST /leads/exportar` (`leads.exportar`), `/configuracion/leads` («Campos» y las `lead_campo_*` piden
-  `leads.campos.gestionar`; orígenes, tipos de lead y de seguimiento y `?seccion=embudo|portal|telefonos` (`features/plantillas/`), `leads.configurar`).
+  `/leads/importar` (`leads.crear`), `POST /leads/exportar` (`leads.exportar`), `/configuracion/leads/*` (una sub-ruta por pantalla de
+  `pantallas/configuracion`: `campos` con `EditorDeCamposDeLead`, que con las `lead_campo_*` pide `leads.campos.gestionar`; `origenes`,
+  `tipos`, `seguimientos`, `embudo`, `portal` y `telefonos` (`features/plantillas/`, con la barra de cambios sin guardar) con
+  `leads.configurar`; sus `loading.tsx`, por `pantallas/configuracion-esqueletos`, sin los Client Components).
   Los teléfonos se administran en el panel de edición (la ficha y el resumen sólo los leen): «Cambiar el principal» (cartera y `leads.editar`, sólo en la ficha;
   apagado con cambios escritos) pasa a `?panel=cambiar-telefono` reemplazando la entrada; «Agregar teléfono» es `?extra=nuevo` dentro del panel. Con la cartera y
   `leads.telefonos_extra.editar` sin `leads.editar`, «Editar teléfonos» abre el mismo panel en modo teléfonos («Teléfonos de <nombre>», sólo los teléfonos). Un

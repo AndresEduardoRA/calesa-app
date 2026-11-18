@@ -87,12 +87,12 @@ const PANTALLAS: Pantalla[] = [
   },
   { titulo: 'la ficha de un origen › Campos', url: DE_UN_ORIGEN('campos') },
   { titulo: 'la ficha de un origen › Categorías', url: DE_UN_ORIGEN('categorias') },
-  { titulo: 'Leads › Campos', url: () => '/configuracion/leads?seccion=campos' },
-  { titulo: 'Leads › Orígenes del lead', url: () => '/configuracion/leads?seccion=origenes' },
-  { titulo: 'Leads › Tipos de lead', url: () => '/configuracion/leads?seccion=tipos' },
+  { titulo: 'Leads › Campos', url: () => '/configuracion/leads/campos' },
+  { titulo: 'Leads › Orígenes del lead', url: () => '/configuracion/leads/origenes' },
+  { titulo: 'Leads › Tipos de lead', url: () => '/configuracion/leads/tipos' },
   {
     titulo: 'Leads › Tipos de seguimiento',
-    url: () => '/configuracion/leads?seccion=seguimientos',
+    url: () => '/configuracion/leads/seguimientos',
   },
   {
     titulo: 'Cotización › Niveles de acceso',
@@ -248,32 +248,31 @@ test('al 200 %: en Monedas se leen enteros el nombre y el valor de cada tipo de 
   }
 })
 
-// c.1: la pestaña activa de Configuración › Leads está a la vista cualquiera sea la sección y cuando el texto crece: antes de cargar (lo
-// que tiene quien lo configuró así) y después de cargar (lo que pasa al ampliar con la página abierta).
+// c.1: cada parte de Configuración › Leads es una sub-ruta. Con el texto al 200 % el menú pasa al selector de sección, que dice cuál se
+// ve, y el título de la página queda a la vista: antes de cargar y al ampliar con la página abierta.
 const SECCIONES_DE_LEADS = ['campos', 'origenes', 'tipos', 'seguimientos'] as const
 
 for (const seccion of SECCIONES_DE_LEADS) {
-  test(`al 200 % antes de cargar: la pestaña activa «${seccion}» de Leads está a la vista`, async ({
+  test(`al 200 % antes de cargar: el selector dice «${seccion}» de Leads y su título está a la vista`, async ({
     page,
   }) => {
     await textoGrandeAlCargar(page)
     await entrar(page)
-    await page.goto(`/configuracion/leads?seccion=${seccion}`)
-    await expect(page.getByRole('tab', { selected: true })).toBeVisible()
-    // La pestaña abierta ya se ve con el HTML del servidor; la barra se desplaza hasta ella recién al hidratar (CI-3).
-    await aLaVistaAlAcomodarse(page.getByRole('tab', { selected: true }), `la pestaña «${seccion}»`)
+    await page.goto(`/configuracion/leads/${seccion}`)
+    await expect(page.getByLabel('Sección')).toHaveValue(`/configuracion/leads/${seccion}`)
+    await aLaVistaSinDesplazar(page.getByRole('heading', { level: 1 }), `el título de «${seccion}»`)
   })
 
-  test(`al ampliar el texto con la página abierta: la pestaña activa «${seccion}» de Leads sigue a la vista`, async ({
+  test(`al ampliar el texto con la página abierta: el título de «${seccion}» de Leads sigue a la vista`, async ({
     page,
   }) => {
     await entrar(page)
-    await page.goto(`/configuracion/leads?seccion=${seccion}`)
-    await expect(page.getByRole('tab', { selected: true })).toBeVisible()
+    await page.goto(`/configuracion/leads/${seccion}`)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await page.evaluate(() => {
       document.documentElement.style.fontSize = '200%'
     })
-    await aLaVistaAlAcomodarse(page.getByRole('tab', { selected: true }), `la pestaña «${seccion}»`)
+    await aLaVistaAlAcomodarse(page.getByRole('heading', { level: 1 }), `el título de «${seccion}»`)
   })
 }
 
@@ -285,7 +284,7 @@ for (const zoom of ['100', '200'] as const) {
   }) => {
     if (zoom === '200') await textoGrandeAlCargar(page)
     await entrar(page)
-    await page.goto('/configuracion/leads?seccion=seguimientos')
+    await page.goto('/configuracion/leads/seguimientos')
     await page.getByRole('button', { name: 'Nuevo tipo' }).click()
     const modal = page.getByRole('dialog', { name: 'Nuevo tipo de seguimiento' })
     await expect(modal).toBeVisible()

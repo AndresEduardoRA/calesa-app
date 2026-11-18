@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { CatalogoDeLogistica } from '@/modules/logistica'
 import type { ClavePermiso, Permisos } from '@/shared/lib/permisos'
-import { catalogoDe, catalogosVisibles } from './catalogos'
+import { catalogosVisibles } from './catalogos'
 
 const con = (clave: ClavePermiso, origenId: string | null = null): Permisos => [
   { clave, origenId, alcance: 'todos' },
@@ -12,18 +12,21 @@ const lista: readonly CatalogoDeLogistica[] = [
   {
     clave: 'puertos',
     titulo: 'Puertos',
+    descripcion: 'Los puertos.',
     permiso: 'logistica.catalogos.gestionar',
     componente: vacio,
   },
   {
     clave: 'gastos',
     titulo: 'Categorías de gasto',
+    descripcion: 'Los gastos.',
     permiso: 'logistica.gastos.editar',
     componente: vacio,
   },
   {
     clave: 'puertos',
     titulo: 'Repetido',
+    descripcion: 'Repetido.',
     permiso: 'logistica.catalogos.gestionar',
     componente: vacio,
   },
@@ -68,13 +71,5 @@ describe('catálogos de Configuración › Logística', () => {
     expect(catalogosVisibles(ambas, lista).find((c) => c.clave === 'puertos')?.titulo).toBe(
       'Puertos',
     )
-  })
-
-  it('un valor ajeno de la URL abre el primero visible', () => {
-    const [primero, segundo] = lista
-    if (!primero || !segundo) throw new Error('lista de prueba')
-    expect(catalogoDe('gastos', [primero, segundo]).clave).toBe('gastos')
-    expect(catalogoDe('basura', [primero, segundo]).clave).toBe('puertos')
-    expect(catalogoDe(undefined, [primero, segundo]).clave).toBe('puertos')
   })
 })

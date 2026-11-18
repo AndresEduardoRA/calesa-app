@@ -546,7 +546,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Bloque «Repuestos» de la ficha del vehículo: `proyectoDe` es `limit 1` por `repuestos_proyecto_por_vehiculo` y el recuento por fase lee
   ≤ 201 ítems; tras su `<Suspense>`; Server Components.
 - Catálogos de Configuración: 4 × `limit 201` por PostgREST (decenas de filas); tope 200 con `<AvisoDeTope>`.
-- Configuración del cotizador (`/configuracion/repuestos`, «Cotizador»): tres lecturas en paralelo bajo `repuestos.cotizar` o
+- Configuración del cotizador (`/configuracion/repuestos/cotizador`): tres lecturas en paralelo bajo `repuestos.cotizar` o
   `repuestos.configurar`: la configuración por su PK (`order by id desc`, la primera es la vigente) tope 20 + 1, los tramos por
   `repuestos_tramos_logistica_moneda_idx` y las cajas por `repuestos_cajas_moneda_monto_key`, tope 200 + 1 cada una, con `<AvisoDeTope>`.
   Los modales se piden al abrirse (`diferido()`).
@@ -668,8 +668,8 @@ fallar.
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
-- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 171.900 B y ≤ 5.000 nodos con
-  «Filas» abierto. La tarjeta, el editor, el modal de publicar y el diálogo de descartar van por `diferido()`; «Buscar fila» filtra en el
+- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 180.400 B y ≤ 5.000 nodos con
+  «Filas» abierto (medido 172.068 B: cada ruta nueva puede repartir el JS común en más chunks, y el HTML de toda pantalla nombra cada uno). La tarjeta, el editor, el modal de publicar y el diálogo de descartar van por `diferido()`; «Buscar fila» filtra en el
   navegador. `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
 - Editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrirlo lee una fila de `formulas` por `formulas_pkey`
   (`definicion`, `params`, `estado`, `diseno`, `nota`): con 600 filas ≤ 80.900 B; dibuja hasta 500 (`TOPE_DE_LO_CARGADO`) con

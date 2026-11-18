@@ -67,11 +67,16 @@ const PANTALLAS = [
   ['origen-datos', () => `/configuracion/origenes/${origen.id}?seccion=datos`],
   ['origen-campos', () => `/configuracion/origenes/${origen.id}?seccion=campos`],
   ['origen-categorias', () => `/configuracion/origenes/${origen.id}?seccion=categorias`],
-  ['leads-campos', () => '/configuracion/leads?seccion=campos'],
-  ['leads-origenes', () => '/configuracion/leads?seccion=origenes'],
-  ['leads-tipos', () => '/configuracion/leads?seccion=tipos'],
-  ['leads-seguimientos', () => '/configuracion/leads?seccion=seguimientos'],
+  ['leads-campos', () => '/configuracion/leads/campos'],
+  ['leads-origenes', () => '/configuracion/leads/origenes'],
+  ['leads-tipos', () => '/configuracion/leads/tipos'],
+  ['leads-seguimientos', () => '/configuracion/leads/seguimientos'],
   ['cotizacion-niveles', () => '/configuracion/cotizacion?seccion=niveles'],
+  ['logistica-puertos', () => '/configuracion/logistica/puertos'],
+  ['logistica-navieras', () => '/configuracion/logistica/navieras'],
+  ['logistica-categorias', () => '/configuracion/logistica/categorias-de-gasto'],
+  ['repuestos-catalogos', () => '/configuracion/repuestos/catalogos'],
+  ['repuestos-cotizador', () => '/configuracion/repuestos/cotizador'],
   ['equipo', () => '/configuracion/equipo'],
   ['roles', () => '/configuracion/roles'],
 ] as const
@@ -86,7 +91,7 @@ const AL_CIEN = new Set([
 ])
 
 async function selectorDeIconos(page: Page, info: Parameters<typeof capturar>[1], zoom: string) {
-  await page.goto('/configuracion/leads?seccion=seguimientos')
+  await page.goto('/configuracion/leads/seguimientos')
   await page.getByRole('button', { name: 'Nuevo tipo' }).first().click()
   const modal = page.getByRole('dialog', { name: 'Nuevo tipo de seguimiento' })
   await expect(modal).toBeVisible()

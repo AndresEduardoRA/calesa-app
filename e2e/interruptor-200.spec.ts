@@ -27,7 +27,7 @@ const PANTALLAS = [
   '/configuracion/roles',
   '/configuracion/empresa',
   '/configuracion/empresa/integraciones',
-  '/configuracion/leads?seccion=campos',
+  '/configuracion/leads/campos',
 ]
 
 async function entrar(page: Page) {

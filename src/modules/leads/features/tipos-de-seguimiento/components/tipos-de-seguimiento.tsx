@@ -25,21 +25,10 @@ type Props = {
 const BOTON = 'h-11 md:h-8'
 const PREFIJO = 'tipo-de-seguimiento'
 
+// Arriba de la lista, sólo su acción principal: el título y la frase los pone la página.
 function Encabezado({ alNuevo, alTope }: { alNuevo: () => void; alTope: boolean }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-      <div className="grid gap-0.5">
-        <h2
-          id="titulo-de-tipos-de-seguimiento"
-          className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-        >
-          Tipos de seguimiento
-        </h2>
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          Cómo se contactó a un lead: una llamada, una visita, un mensaje. El orden de acá es el del
-          alta y el de «Anotar seguimiento».
-        </p>
-      </div>
+    <div className="flex justify-end">
       <Button
         className={BOTON}
         disabled={alTope}
@@ -74,7 +63,7 @@ export function TiposDeSeguimiento({ lista: inicial }: Props) {
   })
 
   return (
-    <section className="grid gap-3" aria-labelledby="titulo-de-tipos-de-seguimiento">
+    <section className="grid gap-3" aria-label="Tipos de seguimiento">
       <Encabezado alTope={alTope} alNuevo={modal.abrirNuevo} />
       {alTope ? (
         <Aviso tono="aviso">

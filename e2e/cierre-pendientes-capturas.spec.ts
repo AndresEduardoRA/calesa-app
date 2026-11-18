@@ -65,7 +65,7 @@ test.afterAll(async () => {
 type Info = Parameters<typeof capturar>[1]
 
 async function selectorDeIconos(page: Page, info: Info, zoom: string) {
-  await page.goto('/configuracion/leads?seccion=seguimientos')
+  await page.goto('/configuracion/leads/seguimientos')
   await page.getByRole('button', { name: 'Nuevo tipo' }).first().click()
   const modal = page.getByRole('dialog', { name: 'Nuevo tipo de seguimiento' })
   await expect(modal).toBeVisible()

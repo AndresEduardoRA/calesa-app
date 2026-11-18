@@ -66,9 +66,19 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/web/guias/[id]': (t) => ({ url: `/configuracion/web/guias/${t.guia}` }),
 }
 
-// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino.
+// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino. Logística y Repuestos de
+// Configuración no dibujan nada sin sub-ruta: abren la primera (`/puertos`, `/catalogos`), que el barrido recorre con su propia entrada.
 export const REDIRECCIONES: Record<string, string> = {
   '/auth/nueva-contrasena': '/recuperar',
+  '/configuracion/logistica': '/configuracion/logistica/puertos',
+  '/configuracion/repuestos': '/configuracion/repuestos/catalogos',
+}
+
+// Las páginas estáticas que sólo redirigen en el navegador, tras el esqueleto: al cambiar la URL todavía se ve el esqueleto del destino,
+// no lo que dibuja. No se barren; su destino se barre como su propia ruta.
+export const SOLO_REDIRIGEN: Record<string, string> = {
+  '/configuracion/leads':
+    'sólo redirige a la primera sub-sección que se puede abrir (/configuracion/leads/campos), que se barre como su propia ruta',
 }
 
 const claveDelOrigen = (proyecto: string) => `a11y_${proyecto}`

@@ -39,7 +39,7 @@ const CONFIG: ConfigDelCatalogo<PuertoDeCatalogo> = {
 }
 
 // Configuración › Logística › Puertos (6.08-1): se crean, renombran, ordenan (con un número), activan y desactivan; no se eliminan. Escribir lo exige `logistica.catalogos.gestionar` (la RLS de la tabla);
-// la pestaña ya lo pide.
+// la página ya lo pide.
 export function PuertosDeTransporte() {
   const datos = useCatalogoDeTransporte(CONFIG)
   const puertos = datos.lectura.tipo === 'listo' ? datos.lectura.filas : null
@@ -49,7 +49,6 @@ export function PuertosDeTransporte() {
     <CatalogoDeTransporte
       clave="puerto"
       titulo="Puertos"
-      descripcion="Son los orígenes y destinos que se eligen al cargar el transporte de una unidad."
       etiquetaDelBoton="Nuevo puerto"
       etiquetaDeCarga="Cargando los puertos"
       tituloDelError="No se pudieron cargar los puertos"
