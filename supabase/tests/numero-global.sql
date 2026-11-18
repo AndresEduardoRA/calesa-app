@@ -294,7 +294,7 @@ declare
     'lead_relacionados', 'devuelve vehículos (T17): su número de vehículo, con el predicado de las policies de quien llama; del lead sólo mira puedo_actuar, nunca su número',
     'lead_relacionados_pagina', 'devuelve vehículos (T17): su número de vehículo y la fecha de su relación; nunca el número de un lead',
     'actividad_diff', 'devuelve el diff de un cambio recortado por _actividad_recortar() (9.01-1): de un lead, la lista cerrada que quita numero, numero_propio y telefono_principal (que lead_auditar ya no guarda); areas/actividad/actividad.sql T3',
-    'actividad_listar', 'devuelve la página de la actividad (9.01-1): la cabecera y los nombres de los campos que cambiaron según _actividad_recortar(), nunca un valor; areas/actividad/listar.sql T3');
+    'actividad_listar', 'devuelve la página de la actividad (9.01-1): la cabecera, los nombres de los campos que cambiaron y, de una fila visible, el nombre del lead y su primer cambio, sacados de _actividad_recortar() (que quita numero, numero_propio y telefono_principal): nunca un número ni un teléfono; areas/actividad/listar.sql T3');
   r record; v_fallas text := '';
 begin
   if to_regclass('pg_temp.matriz_cubiertas') is null then

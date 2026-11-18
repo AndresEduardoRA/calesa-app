@@ -1,13 +1,10 @@
-'use client'
-
 import { formatearFecha, formatearHora } from '@/shared/lib/fechas'
 import { Monto } from '@/shared/ui/monto'
-import { useRegional } from '@/shared/ui/regional'
 import type { ValorPresentado } from '../../../entities/diff'
 
-// Un lado de un cambio. Un monto va por `<Monto>`: con su moneda, con la base o, si no se conoce, sólo el número y «(moneda sin conocer)».
-export function ValorDelCambio({ valor }: { valor: ValorPresentado }) {
-  const { zonaHoraria } = useRegional()
+// Un lado de un cambio, en el detalle y en la frase. Un monto va por `<Monto>` (el Modo Live lo tapa): con su moneda, con la base o, si no se
+// conoce, sólo el número y «(moneda sin conocer)». Sin hooks: lo dibuja también la «Actividad reciente», que va en el servidor.
+export function ValorDelCambio({ valor, zona }: { valor: ValorPresentado; zona: string }) {
   switch (valor.tipo) {
     case 'vacio':
       return (
@@ -32,8 +29,7 @@ export function ValorDelCambio({ valor }: { valor: ValorPresentado }) {
     case 'fecha':
       return (
         <span className="tabular-nums">
-          {formatearFecha(valor.iso, { zona: zonaHoraria })}{' '}
-          {formatearHora(valor.iso, { zona: zonaHoraria })}
+          {formatearFecha(valor.iso, { zona })} {formatearHora(valor.iso, { zona })}
         </span>
       )
     case 'si_no':

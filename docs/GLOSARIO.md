@@ -675,6 +675,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   celular, enlace a `/chat`); docs y pruebas le dicen «la burbuja», que no es la **burbuja de un mensaje**.
 - **Push** — `suscripciones_push`: suscripción web push del navegador.
 - **Actividad** — `actividad` / `registrar_actividad()`: auditoría inmutable, 14 días.
+- **Actividad reciente** — `ActividadReciente` (`actividad/pantallas/actividad-reciente.ts`): los últimos 5 cambios de un registro como frases, cada uno
+  enlazado a su detalle en `/actividad`, con «Ver toda la actividad». No: «línea de tiempo», «historial» (ése es el de negocio, que no caduca).
 - **Turno web** — `solicitudes_contacto_web` / `web.solicitar_asesor`: cada «Contactar asesor» en la web pública.
 - **Rueda / Cola web** — `cola_web_asesores` / `estado_cola_web`: quién recibe turnos. Elegible = `habilitado` y permiso
   `web.cola.participar` (`puede_estar_en_la_rueda()`). Matriz: «Recibir turnos de la web».

@@ -6,9 +6,10 @@ import {
   ENTIDADES_DE_LA_ACTIVIDAD,
   claveDelPedido,
   esquemaDeFiltrosDeActividad,
-  etiquetaDeEntidad,
   leerPaginaDeActividad,
   leerPersonasDeLaActividad,
+  opcionesDeEntidades,
+  opcionesDePersonas,
   pedidoDeActividad,
 } from '@/modules/actividad'
 import { ListadoDeActividad } from '@/modules/actividad/pantallas/listado'
@@ -28,8 +29,8 @@ const SIN_PERMISO =
 // `docs/UX.md` › «Actividad»: si no se pueden leer los ajustes, la retención de fábrica.
 const DIAS_POR_DEFECTO = 14
 
-// Qué cambió, quién y cuándo en los últimos días (`docs/UX.md` › «Actividad»): una página por cursor con «Ver más», filtros de persona y
-// entidad en la URL y `?registro=` desde una ficha. Lo que se ve lo decide la base: las dos RPC piden `actividad.ver` y recortan cada fila.
+// Qué cambió, quién y cuándo en los últimos días (`docs/UX.md` › «Actividad»): cada cambio como frase, una página por cursor con «Ver más»,
+// filtros de persona y tipo de registro en la URL y `?registro=` desde una ficha. Lo que se ve lo decide la base: las dos RPC piden `actividad.ver` y recortan cada fila.
 export default function PaginaDeActividad({ searchParams }: PageProps<'/actividad'>) {
   return (
     <>
@@ -53,8 +54,9 @@ async function Actividad({
     return <EstadoSinPermiso descripcion={SIN_PERMISO} />
   }
   const [personas, ajustes] = await Promise.all([leerPersonasDeLaActividad(), leerAjustes()])
+  const lasPersonas = datosO(personas)
   const esquema = esquemaDeFiltrosDeActividad({
-    personas: datosO(personas),
+    personas: lasPersonas,
     entidades: ENTIDADES_DE_LA_ACTIVIDAD,
   })
   const pedido = pedidoDeActividad(
@@ -71,12 +73,10 @@ async function Actividad({
       key={claveDelPedido(pedido)}
       inicial={datosO(pagina)}
       pedido={pedido}
-      esquema={esquema}
+      personas={opcionesDePersonas(lasPersonas)}
+      entidades={opcionesDeEntidades(ENTIDADES_DE_LA_ACTIVIDAD)}
       hoy={diaEnZona(new Date().toISOString(), { zona })}
       diasDeActividad={ajustes.ok ? ajustes.data.ajustes.actividadDias : DIAS_POR_DEFECTO}
-      entidadDelRegistro={
-        pedido.tabla !== null && pedido.registro !== null ? etiquetaDeEntidad(pedido.tabla) : null
-      }
     />
   )
 }
