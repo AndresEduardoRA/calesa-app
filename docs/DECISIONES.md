@@ -283,9 +283,14 @@ las trampas, en `docs/LECCIONES.md`.
   «Cambiar el principal» pasa al bloque de teléfonos del panel (sólo en la ficha; con algo escrito en el formulario se apaga: cambiar el número mueve la
   versión y dejaría la edición con la vieja) y quien sólo tiene `leads.telefonos_extra.editar` abre el mismo panel en «modo teléfonos». Un
   `?panel=agregar-telefono` o `?extra=nuevo` (clave propia: `?panel=` ya lo ocupa la edición) lleva a la edición con «Agregar teléfono» abierto.
-- **El resumen del listado es la versión corta de la ficha, sin pestañas.** Datos clave, lo último que pasó (el último seguimiento y el próximo
-  recordatorio, que ya trae la fila: ninguna lectura más), las acciones y Relacionados en chips; anotar y agendar abren su modal dentro del resumen. Los
-  campos del layout y «Creado» quedan para la ficha. `?pestana=` viejo redirige en el servidor a la ficha en su bloque.
+- **La lista de leads lleva a la ficha; no hay resumen.** El nombre de la fila y de la tarjeta es un enlace real (`<EnlaceDeLaFila>`, `prefetch={false}`:
+  cien filas serían cien pedidos de una ruta dinámica) y el resto de la fila o la tarjeta navega igual (`href` en `<FilaDeLista>`/`<TarjetaDeLista>`); la
+  tarjeta del kanban toma los mismos manejadores (`manejadoresDelClic`) y lleva a `?seccion=oportunidades`. Lo que el resumen ofrecía ya está en el «⋯» de la
+  fila o en la ficha, a un toque. Un `?lead=` viejo redirige en el servidor (`destinoDelEnlaceViejo()`) a la ficha **sin leer el lead**: con los permisos de
+  la sesión (supuesta la cartera) se quitan los paneles que no podría abrir, y la cartera la decide la ficha, que no abre un panel de un lead ajeno (como con un
+  `?panel=` directo). Un `lead` que no es un id también redirige: la ficha dice lo mismo para todo. «Un arrastre no navega» se cumple como «elegir texto no
+  navega»: el kanban no se arrastra («Mover a…» es un menú). Descartados: un `<a>` que envuelve la fila (no puede envolver un `<tr>` y anidaría el «⋯» y
+  los enlaces de la fila), un «stretched link» (encerrado por la celda pegajosa) y conservar el resumen junto al enlace.
 - **La ficha se mide entera.** `?seccion=` no cambia el documento: un solo presupuesto (`PRESUPUESTO_DE_LA_FICHA_EN_KB`) sobre
   `/perfil` con 10 oportunidades, seguimientos y recordatorios, vínculos y portal, igual con 1.000 (lo que crece va por «Ver todos»), y el JS en frío
   de `/leads/[id]` tiene su tope (`docs/RENDIMIENTO.md`).
@@ -298,7 +303,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Nueva oportunidad…» se crea desde el «⋯», no desde un botón de la fila, y antes avisa de las que el lead ya tiene.** Todo lead nace con su
   oportunidad base y la persona prefiere no crear otra sin saber: un toque más (el «⋯», «Nueva oportunidad…», «Crear igual»;
   el aviso sólo se salta si el lead no tiene ninguna que quien mira vea) es el precio. Es el modal corto de las acciones de fila (`?panel=oportunidad-rapida&para=`),
-  no un popover: ya hay un patrón con URL, foco de vuelta y atajos; en la ficha y el resumen, donde el lead ya es el de la pantalla, es `?panel=oportunidad-rapida` sin
+  no un popover: ya hay un patrón con URL, foco de vuelta y atajos; en la ficha, donde el lead ya es el de la pantalla, es `?panel=oportunidad-rapida` sin
   `para`. Sin vehículo ni notas: el listado no lee los vehículos del lead y `leads` no importa `vehiculos`; se agregan con «Editar» en la ficha. Sin elegir embudo: el de
   por defecto. El aviso lista sólo las que quien mira ve (una oportunidad es de su dueña con el lead en su cartera: no se insinúan las ajenas), hasta 5, con «Ver»
   cada una y «Ver todas» si hay más; lee 6 al abrir el modal (una por apertura, por los índices de la ficha) y nunca cuenta. Si la lectura falla lo dice con

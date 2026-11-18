@@ -286,9 +286,9 @@ export function extrasDesde(crudo: unknown): CambioDeExtras {
   return guardadoDesde(lectura)
 }
 
-// --- Lo que lee el resumen -----------------------------------------------------------------------------
+// --- Los teléfonos que dibuja el panel ------------------------------------------------------------------
 
-// Los teléfonos de un lead sin traer la ficha entera (`lead_telefonos_leer()`): el resumen del listado.
+// Los teléfonos de un lead: lo que el panel de edición necesita de la ficha.
 export type LeadDeTelefonos = {
   id: string
   telefonoCc: string | null
@@ -299,7 +299,7 @@ export type LeadDeTelefonos = {
   telefonosMaximo: number
 }
 
-// Lo mismo que lee el resumen, con lo que ya trae la ficha.
+// Los teléfonos del lead (el principal, los extras y el máximo), con lo que ya trae la ficha.
 export function telefonosDeLaFicha(ficha: LeadDeFicha): LeadDeTelefonos {
   return {
     id: ficha.id,
@@ -308,31 +308,5 @@ export function telefonosDeLaFicha(ficha: LeadDeFicha): LeadDeTelefonos {
     enCartera: ficha.enCartera,
     telefonos: ficha.telefonos,
     telefonosMaximo: ficha.telefonosMaximo,
-  }
-}
-
-const esquemaDeLectura = z.object({
-  id: z.guid(),
-  telefono_cc: z.string().nullable(),
-  telefono: z.string().nullable(),
-  en_cartera: z.boolean(),
-  maximo: z.number().int().min(LIMITES_DEL_MAXIMO.minimo).max(LIMITES_DEL_MAXIMO.maximo),
-  telefonos: z.array(esquemaExtra),
-})
-
-// El `jsonb` de `lead_telefonos_leer()`; `null` si el lead no se ve o la respuesta no cumple la forma.
-export function telefonosDelLeadDesde(crudo: unknown): LeadDeTelefonos | null {
-  const leido = esquemaDeLectura.safeParse(crudo)
-  if (!leido.success) {
-    return null
-  }
-  const l = leido.data
-  return {
-    id: l.id,
-    telefonoCc: l.telefono_cc,
-    telefono: l.telefono ?? '',
-    enCartera: l.en_cartera,
-    telefonos: l.telefonos,
-    telefonosMaximo: l.maximo,
   }
 }

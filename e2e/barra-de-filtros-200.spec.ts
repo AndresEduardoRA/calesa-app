@@ -119,7 +119,7 @@ test('el listado de leads: el panel va al costado sólo si cabe, y al 200 % la f
   await irALeads(page, '?q=E2E Panel')
   await exigirPanelAlCostadoSoloSiCabe(
     page,
-    aLaVista(page.getByRole('button', { name: /^Abrir E2E Panel/ })),
+    aLaVista(page.getByRole('link', { name: /^E2E Panel/ })),
   )
 })
 

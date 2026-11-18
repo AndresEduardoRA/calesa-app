@@ -26,12 +26,7 @@ import type { ResultadoDeMarca } from './marcas'
 import type { CursorDeRecordatorios, PaginaDeRecordatorios } from './pagina-de-recordatorios'
 import type { Recordatorio } from './recordatorios'
 import type { CambiosDeSeguimiento, Seguimiento, Visibilidad } from './seguimiento'
-import type {
-  CambioDeExtras,
-  CambioDeTelefono,
-  ExtrasGuardados,
-  LeadDeTelefonos,
-} from './telefonos'
+import type { CambioDeExtras, CambioDeTelefono, ExtrasGuardados } from './telefonos'
 import type { Verificacion } from './verificacion'
 
 // Toda edición manda la versión que tenía en pantalla quien edita; la base responde `conflicto`
@@ -170,9 +165,6 @@ export type RepositorioDeTelefonos = {
     id: string
   }) => Promise<{ ok: true; data: ExtrasGuardados } | FalloDeTelefono>
 }
-
-// Los teléfonos de un lead leídos desde el navegador (el resumen del listado), con la sesión de quien mira: `null` si no lo ve.
-export type LectorDeTelefonosDelLead = (id: string) => Promise<Resultado<LeadDeTelefonos | null>>
 
 // --- Los seguimientos de la ficha ---------------------------------------------------------------------
 

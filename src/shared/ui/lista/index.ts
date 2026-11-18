@@ -1,8 +1,10 @@
 // El patrón de lista (9i, `.claude/rules/ui.md`): una vista elegida en el servidor, la tabla ancha con el nombre y el «⋯» pegados, un clic
-// en cualquier parte de la fila o la tarjeta abre su resumen, y el «⋯» se llama igual en todas partes. Toda lista de un módulo lo usa;
+// en cualquier parte de la fila o la tarjeta abre su resumen (o su ficha, en una lista sin resumen: `href` y `<EnlaceDeLaFila>`), y el «⋯» se
+// llama igual en todas partes. Toda lista de un módulo lo usa;
 // `scripts/guardas/listas-con-patron.ts` falla si una no lo hace.
 export { AbrirResumen } from './abrir-resumen'
 export { ConmutadorDeVista } from './conmutador-de-vista'
+export { EnlaceDeLaFila } from './enlace-de-la-fila'
 export type { AccionDeMenu } from './acciones'
 export { FilaDeLista } from './fila-de-lista'
 export { MasAcciones } from './mas-acciones'

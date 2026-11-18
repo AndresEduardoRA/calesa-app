@@ -78,7 +78,7 @@ for (const esquema of ['light', 'dark'] as const) {
     await sinScrollHorizontal(page)
     // El nombre se lee entero (se parte en líneas): no se corta con «…».
     const nombreEnLaTarjeta = page
-      .getByRole('button', { name: `Abrir ${NOMBRE_LARGO}`, exact: true })
+      .getByRole('link', { name: NOMBRE_LARGO, exact: true })
       .getByText(NOMBRE_LARGO)
     const corte = await nombreEnLaTarjeta.evaluate((el) => el.scrollWidth - el.clientWidth)
     expect(corte, 'el nombre de la tarjeta no se corta con «…»').toBeLessThanOrEqual(1)

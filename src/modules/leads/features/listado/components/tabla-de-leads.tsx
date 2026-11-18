@@ -1,9 +1,9 @@
 'use client'
 
 import {
-  AbrirResumen,
   CabeceraPegada,
   CeldaPegada,
+  EnlaceDeLaFila,
   FilaDeLista,
   TablaDeLista,
 } from '@/shared/ui/lista'
@@ -24,6 +24,7 @@ import {
   type DatosDeLaLista,
   origenDelCatalogo,
   type ParaMarcar,
+  rutaDeLaFicha,
   verOportunidadesDelMenu,
 } from './tipos'
 import {
@@ -54,9 +55,6 @@ function AccionesDeLaFila({ lead, marcar }: { lead: FilaDeLead; marcar: ParaMarc
 
 type Props = DatosDeLaLista & {
   leads: readonly FilaDeLead[]
-  alAbrir: (id: string) => void
-  // El lead abierto en el drawer, para marcarlo.
-  abierto: string | null
   marcar: ParaMarcar
   ultimoContacto: DatosDeUltimoContacto
 }
@@ -93,8 +91,8 @@ function EncabezadoDeLaTabla({ columnas }: { columnas: ReturnType<typeof camposD
 }
 
 // Los leads en escritorio, con el patrón de lista (`@/shared/ui/lista`): nombre (con las marcas de quien mira), teléfono, tipo y
-// origen, el último seguimiento y el próximo recordatorio (`ultimo-contacto.tsx`), una columna por cada campo «en la tabla» del layout y el «⋯». Un clic en cualquier parte de la fila abre el drawer
-// rápido (`?lead=`), salvo el del «⋯» y el de un enlace de la fila. La tabla es tan ancha como lo pidan sus columnas (el nombre nunca
+// origen, el último seguimiento y el próximo recordatorio (`ultimo-contacto.tsx`), una columna por cada campo «en la tabla» del layout y el «⋯». Un clic en cualquier parte de la fila lleva a la ficha
+// (el nombre es el enlace: `<EnlaceDeLaFila>`), salvo el del «⋯» y el de un enlace de la fila. La tabla es tan ancha como lo pidan sus columnas (el nombre nunca
 // se achica para que quepan) y se desplaza dentro de la tarjeta, con el nombre y el «⋯» a la vista.
 export function TablaDeLeads(props: Props) {
   const {
@@ -104,8 +102,6 @@ export function TablaDeLeads(props: Props) {
     tipos,
     codigoDePais,
     etiquetas,
-    alAbrir,
-    abierto,
     marcar,
     numeroBuscado,
     ultimoContacto,
@@ -117,23 +113,20 @@ export function TablaDeLeads(props: Props) {
       <EncabezadoDeLaTabla columnas={columnas} />
       <TableBody>
         {leads.map((lead) => (
-          <FilaDeLista
-            key={lead.id}
-            abierta={abierto === lead.id}
-            idDeVisto={lead.id}
-            alAbrir={() => {
-              alAbrir(lead.id)
-            }}
-          >
+          <FilaDeLista key={lead.id} idDeVisto={lead.id} href={rutaDeLaFicha(lead.id)}>
             <CeldaPegada lado="nombre">
               <NombreDeFila
                 lead={lead}
                 etiquetas={etiquetas}
                 numeroBuscado={numeroBuscado}
                 nombre={(clases) => (
-                  <AbrirResumen nombre={lead.nombre} className={`max-w-72 ${clases}`}>
+                  <EnlaceDeLaFila
+                    href={rutaDeLaFicha(lead.id)}
+                    nombre={lead.nombre}
+                    className={`max-w-72 ${clases}`}
+                  >
                     {lead.nombre}
-                  </AbrirResumen>
+                  </EnlaceDeLaFila>
                 )}
               />
             </CeldaPegada>

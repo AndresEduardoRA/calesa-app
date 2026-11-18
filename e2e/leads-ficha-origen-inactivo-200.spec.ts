@@ -1,7 +1,6 @@
 import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { irAFicha } from './soporte/leads-ficha'
-import { esperarHidratado } from './soporte/listas-por-pagina'
 import {
   PREFIJO_DE_ORIGEN_E2E,
   borrarOrigenesDePrueba,
@@ -19,8 +18,7 @@ import { sql } from './soporte/sql'
 
 // 5a-22: un lead cuyo origen está inactivo y tiene un nombre largo, con el texto al 200 %. La línea del origen de la cabecera de la ficha
 // medía 436 px en 412 (la página se desplazaba de costado) porque «(inactivo)» no cede y el nombre no se achicaba: ahora el nombre se corta con «…»
-// (y dice su texto entero con `title`) y «(inactivo)» queda siempre a la vista. Lo mismo en «Datos» de la ficha y en el resumen
-// (`?lead=`), que antes no decía que el origen está apagado. Una prueba por pantalla y sin `serial`: cuando una cae, las demás siguen.
+// (y dice su texto entero con `title`) y «(inactivo)» queda siempre a la vista. Lo mismo en «Datos» de la ficha. Una prueba por pantalla y sin `serial`: cuando una cae, las demás siguen.
 
 let r: TerrenoDelRecorrido
 let origen = ''
@@ -71,21 +69,5 @@ test('«Datos» de la ficha: «(inactivo)» queda a la vista junto al origen', a
   const dato = page.locator('dd').filter({ hasText: '(inactivo)' })
   await expect(dato).toBeVisible()
   await aLaVistaAlAcomodarse(dato.getByText('(inactivo)'), '«(inactivo)» de «Datos»')
-  await sinScrollHorizontal(page)
-})
-
-test('el resumen del lead: dice que el origen está inactivo y no ensancha la página', async ({
-  page,
-}) => {
-  await textoGrandeAlCargar(page)
-  await entrar(page, r.t.personas.duena)
-  await page.goto(`/leads?lead=${r.uno.id}`)
-  // El listado de atrás se hidrata antes que el resumen (un `diferido()`: con la CPU lenta tarda más que los 5 s de fábrica).
-  await esperarHidratado(page, 30_000)
-  const resumen = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(resumen).toBeVisible({ timeout: 15_000 })
-  const marca = resumen.getByText('(inactivo)')
-  await expect(marca).toBeVisible({ timeout: 15_000 })
-  await aLaVistaAlAcomodarse(marca, '«(inactivo)» del resumen')
   await sinScrollHorizontal(page)
 })
