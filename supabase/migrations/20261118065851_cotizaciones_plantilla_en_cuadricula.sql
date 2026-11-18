@@ -305,7 +305,8 @@ begin
      where c -> 'contenido' ->> 'tipo' = 'dato' and c -> 'contenido' ? 'nodo'
        and (coalesce(v_vis -> (d.n ->> 'id') ->> 'ver', '') <> 'todos'
          or (d.mostrar = 'porcentaje'
-             and coalesce(v_vis -> (case when d.n ->> 'tipo' = 'calculo' and d.n ->> 'op' = 'porcentaje_de' then d.n ->> 'pct' else d.n ->> 'id' end) ->> 'ver', '') <> 'todos'))
+             and coalesce(v_vis -> (case when d.n ->> 'tipo' = 'calculo' and d.n ->> 'op' = 'porcentaje_de' and d.n ->> 'pct' is not null then d.n ->> 'pct'
+                                         else d.n ->> 'id' end) ->> 'ver', '') <> 'todos'))
      order by o limit 1;
   end if;
   if v_k is not null then perform public._plantilla_cuadricula_rechazar('nodo_restringido', v_k); end if;

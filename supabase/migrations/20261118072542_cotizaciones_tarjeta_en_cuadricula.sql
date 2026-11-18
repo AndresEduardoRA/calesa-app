@@ -46,6 +46,7 @@ begin
                          from jsonb_array_elements(v_celdas) c where c -> 'contenido' ->> 'tipo' = 'dato' and c -> 'contenido' ? 'nodo'), '[]'::jsonb);
   v_pcts := coalesce((select jsonb_object_agg(d ->> 'nodo',
                                               case when v_nodos -> (d ->> 'nodo') ->> 'tipo' = 'calculo' and v_nodos -> (d ->> 'nodo') ->> 'op' = 'porcentaje_de'
+                                                        and v_nodos -> (d ->> 'nodo') ->> 'pct' is not null
                                                    then v_nodos -> (d ->> 'nodo') ->> 'pct' else d ->> 'nodo' end)
                         from jsonb_array_elements(v_datos) d where d ->> 'mostrar' = 'porcentaje'), '{}'::jsonb);
   v_ids := array(select distinct x from (select f ->> 'nodo' as x from jsonb_array_elements(v_filas) f where f ? 'nodo'
@@ -77,7 +78,8 @@ begin
       'modos', coalesce((select jsonb_object_agg(md ->> 'clave',
                                   coalesce((select jsonb_object_agg(mb ->> 'bucket', jsonb_build_object('nombre', v_tc ->> (mb ->> 'nodo'), 'nodo', mb ->> 'nodo'))
                                               from jsonb_array_elements(coalesce(md -> 'buckets', '[]'::jsonb)) mb where mb ->> 'bucket' = any (v_buckets)), '{}'::jsonb))
-                           from jsonb_array_elements(coalesce(fo.diseno -> 'cabecera' -> 'modos', '[]'::jsonb)) md where cardinality(v_buckets) > 0), '{}'::jsonb)),
+                           from jsonb_array_elements(coalesce(fo.diseno -> 'cabecera' -> 'modos', '[]'::jsonb)) md
+                          where exists (select 1 from jsonb_array_elements(coalesce(md -> 'buckets', '[]'::jsonb)) mb where mb ->> 'bucket' = any (v_buckets))), '{}'::jsonb)),
     'modos', case when 'modo_tc' = any (v_variables)
                   then coalesce((select jsonb_agg(jsonb_build_object('clave', md ->> 'clave', 'nombre', md ->> 'nombre') order by o)
                                    from jsonb_array_elements(coalesce(fo.diseno -> 'cabecera' -> 'modos', '[]'::jsonb)) with ordinality t (md, o)), '[]'::jsonb)
