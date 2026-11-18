@@ -36,6 +36,8 @@ export default async function PaginaCamposDelOrigen({
           tipoDeOrigen={origen.tipo}
           campos={campos}
           puedeGestionar={puedeGestionar}
+          datosClave={origen.datosClave}
+          versionDelOrigen={origen.actualizadoEn}
         />
       </div>
     </MarcoDelOrigen>

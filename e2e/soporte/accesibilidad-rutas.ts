@@ -57,7 +57,11 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/logistica/vehiculo/[id]': (t) => ({ url: `/logistica/vehiculo/${t.vehiculo}` }),
   '/logistica/bandeja/[grupo]': () => ({ url: '/logistica/bandeja/demorados' }),
   '/logistica/fase/[fase]': (t) => ({ url: `/logistica/fase/sin_fase?origen=${t.origen}` }),
-  '/configuracion/origenes/[id]': (t) => ({ url: `/configuracion/origenes/${t.origen}` }),
+  // Sin parte sólo redirige a «Datos» (en el navegador, tras el esqueleto): se barren sus tres partes.
+  '/configuracion/origenes/[id]': () => ({
+    pendiente: 'toda la página',
+    motivo: 'sólo redirige a /configuracion/origenes/<id>/datos, que se barre como su propia ruta',
+  }),
   '/configuracion/origenes/[id]/datos': (t) => ({
     url: `/configuracion/origenes/${t.origen}/datos`,
   }),
