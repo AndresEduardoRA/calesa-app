@@ -179,6 +179,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   destino: al cerrarse, el menú le devuelve el foco a su botón y pisa el salto.
 - Un título del servidor al que salta un ancla (`#…` con el foco) no se le pasa a una isla diferida para que lo dibuje: al cambiar de árbol se vuelve a
   montar y pierde el foco. Se queda en el servidor con una ranura vacía al lado y la isla pone lo suyo ahí con `createPortal`.
+- Una barra pegada abajo que aparece con la primera tecla (`sticky bottom-0`) tapa el campo donde se escribe si estaba en el borde de la pantalla: al
+  aparecer, desplaza lo justo para dejarlo a la vista (`BarraDeCambiosSinGuardar`).
 - Chrome ignora `autocomplete="off"` en un `type="password"` y el Chromium de Playwright no lo reproduce: eso sólo se comprueba a mano, no lo des por probado.
 
 ## Realtime y notificaciones
@@ -215,6 +217,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 ### Localizar y esperar
 
 - Sobre listas de cientos de filas busca por texto, no `*ByRole`: calcular el nombre accesible de cada enlace agota el timeout con un CPU.
+- Una página con `h1` propio (las sub-rutas de Configuración) repite el nombre de sus bloques («Monedas y tipos de cambio» contiene «Tipos de cambio»): busca el `h2` con `exact: true` o `level`.
 - Usa `exact: true` en botones genéricos («Guardar») y cuando un nombre o texto contiene a otro («Ir a la versión» dentro de «Revertir a la versión N»): si no, coincide con el de otra barra.
 - Busca dentro de `main` o `#contenido`, nunca por `.fixed` ni una clase genérica: el marco repite textos («Sin conexión», la navegación) y sus barras fijas (campana, chat) coinciden.
 - El «Más acciones de …» de la cabecera de una ficha no es el único de la página: las filas de «Relacionados» llevan el suyo. Usa `menuDeLaFicha()`, que las excluye, no un `getByRole` suelto.

@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from 'cn'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Button } from './button'
 import { ConfirmarDescarte } from './confirmar-descarte'
 import { useSalidaConCambios } from './use-salida-con-cambios'
@@ -17,6 +17,24 @@ type Props = {
   className?: string
 }
 
+// Lo que queda entre el campo con el foco y la barra cuando hay que desplazar para que no lo tape.
+const AIRE_SOBRE_LA_BARRA = 8
+
+// La barra aparece con la primera tecla, pegada abajo: si el campo donde se escribe estaba en el borde de la pantalla, quedaría debajo
+// de ella y no se vería lo tipeado. Al aparecer, desplaza lo justo para dejarlo a la vista.
+function dejarAlaVistaElCampoConFoco(barra: HTMLElement): void {
+  const campo = document.activeElement
+  if (!(campo instanceof HTMLElement) || barra.contains(campo)) {
+    return
+  }
+  const deLaBarra = barra.getBoundingClientRect()
+  const delCampo = campo.getBoundingClientRect()
+  const tapado = delCampo.bottom + AIRE_SOBRE_LA_BARRA - deLaBarra.top
+  if (tapado > 0 && delCampo.top < deLaBarra.bottom) {
+    window.scrollBy({ top: tapado })
+  }
+}
+
 // La barra de un formulario de página (no de un `<Drawer>`, que tiene su pie): aparece al cambiar algo («Tienes cambios sin
 // guardar» · «Descartar» · «Guardar») y salir de la pantalla con cambios pregunta (`useSalidaConCambios()`). Va al final de la página,
 // pegada abajo (`sticky`): ocupa su propio lugar, así nunca tapa el último campo, ni con el texto al 200 % ni en el celular. Con
@@ -30,6 +48,18 @@ export function BarraDeCambiosSinGuardar({
 }: Props) {
   const barra = useRef<HTMLDivElement>(null)
   const { pendiente, seguir, descartar } = useSalidaConCambios(hayCambios, alDescartar, barra)
+  useEffect(() => {
+    const elemento = barra.current
+    if (!hayCambios || !elemento) {
+      return
+    }
+    const cuadro = requestAnimationFrame(() => {
+      dejarAlaVistaElCampoConFoco(elemento)
+    })
+    return () => {
+      cancelAnimationFrame(cuadro)
+    }
+  }, [hayCambios])
   if (!hayCambios) {
     return null
   }
