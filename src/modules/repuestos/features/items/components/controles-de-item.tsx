@@ -17,6 +17,7 @@ import { CeldaDeSeleccion, type OpcionDeCelda } from './celda-de-seleccion'
 import { CeldaDeTexto } from './celda-de-texto'
 import type { ContextoDeLaHoja } from './contexto-de-la-hoja'
 import { FaseDelItemInsignia } from './fase-del-item'
+import { QueEsElItem } from './que-es-el-item'
 
 // Lo que se ofrece en una celda de catálogo: los activos y, aunque se haya desactivado, el valor que el ítem ya tiene (para no perder lo guardado).
 function opcionesDeCatalogo(
@@ -29,6 +30,8 @@ function opcionesDeCatalogo(
 }
 
 export type ControlesDeItem = {
+  // La primera columna: qué es el ítem (tipo de pieza · condición) y su descripción.
+  item: ReactNode
   descripcion: ReactNode
   tipoDePieza: ReactNode
   condicion: ReactNode
@@ -220,9 +223,12 @@ function siguienteDeItem(fila: FilaDeItem, c: ContextoDeLaHoja) {
 // Los controles de una fila de la hoja (8.09-2, C8), los mismos en la tabla y en la tarjeta: cada uno con su nombre accesible («Descripción del ítem Faro»). Con `repuestos.editar` y el proyecto abierto
 // son editables; si no, texto plano, el precio por `<Monto>`. La fase es de lectura (la dice el encabezado del grupo): se mueve con el botón del siguiente (el hueco) o desde el panel del ítem.
 export function controlesDeItem(fila: FilaDeItem, c: ContextoDeLaHoja): ControlesDeItem {
+  const descripcion = textoDeItem(fila, c, 'descripcion')
+  const catalogos = catalogosDeItem(fila, c)
   return {
-    descripcion: textoDeItem(fila, c, 'descripcion'),
-    ...catalogosDeItem(fila, c),
+    item: <QueEsElItem fila={fila} contexto={c} celdas={{ ...catalogos, descripcion }} />,
+    descripcion,
+    ...catalogos,
     cantidad: cantidadDeItem(fila, c),
     precio: precioDeItem(fila, c),
     moneda: monedaDeItem(fila, c),

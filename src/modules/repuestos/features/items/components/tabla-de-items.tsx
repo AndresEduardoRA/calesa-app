@@ -2,14 +2,18 @@
 
 import type { ReactNode } from 'react'
 import { TablaDeLista } from '@/shared/ui/lista'
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
+import { TableBody, TableCell, TableRow } from '@/shared/ui/table'
 import type { GrupoPorPaso } from '../../../entities/items/grupos-por-paso'
 import type { FilaDeItem } from '../../../entities/nucleo/item'
 import type { ContextoDeLaHoja } from './contexto-de-la-hoja'
+import {
+  CANTIDAD_DE_COLUMNAS,
+  EncabezadoDeLaHoja,
+  claseDe,
+  type ClaveDeColumna,
+} from './columnas-de-la-hoja'
 import { controlesDeItem } from './controles-de-item'
 import { AYUDA_DEL_GRUPO, EncabezadoDelGrupo } from './encabezado-del-grupo'
-
-const COLUMNAS = 12
 
 type Props = {
   grupos: readonly GrupoPorPaso[]
@@ -20,58 +24,45 @@ type Props = {
 
 function FilaDeLaTabla({ fila, contexto }: { fila: FilaDeItem; contexto: ContextoDeLaHoja }) {
   const c = controlesDeItem(fila, contexto)
+  const celda = (clave: ClaveDeColumna, contenido: ReactNode) => (
+    <TableCell className={`align-top ${claseDe(clave)}`}>{contenido}</TableCell>
+  )
   return (
     <TableRow data-fila-de-item={fila.id}>
-      <TableCell className="min-w-64 align-top">{c.descripcion}</TableCell>
-      <TableCell className="min-w-40 align-top">{c.siguiente}</TableCell>
-      <TableCell className="align-top">{c.tipoDePieza}</TableCell>
-      <TableCell className="align-top">{c.condicion}</TableCell>
-      <TableCell className="align-top">{c.pais}</TableCell>
-      <TableCell className="align-top">{c.via}</TableCell>
-      <TableCell className="min-w-28 text-right align-top tabular-nums">{c.cantidad}</TableCell>
-      <TableCell className="min-w-40 text-right align-top">{c.precio}</TableCell>
-      <TableCell className="align-top">{c.moneda}</TableCell>
-      <TableCell className="min-w-36 align-top">{c.tracking}</TableCell>
-      <TableCell className="min-w-48 align-top">{c.notas}</TableCell>
-      <TableCell className="align-top">
+      {celda('item', c.item)}
+      {celda('cantidad', <span className="tabular-nums">{c.cantidad}</span>)}
+      {celda('precio', c.precio)}
+      {celda('siguiente', c.siguiente)}
+      {celda('pais', c.pais)}
+      {celda('via', c.via)}
+      {celda('moneda', c.moneda)}
+      {celda('tracking', c.tracking)}
+      {celda('notas', c.notas)}
+      {celda(
+        'acciones',
         <div className="flex flex-wrap gap-1">
           {c.imagenes}
           {c.hueco}
           {c.eliminar}
-        </div>
-      </TableCell>
+        </div>,
+      )}
     </TableRow>
   )
 }
 
-// La hoja en escritorio (8.09-2, C8): un `<tbody>` por grupo por paso con su encabezado (`<th scope="rowgroup">`) y una fila por ítem, editable celda a celda. Los
-// números a la derecha; el precio, por `<Monto>` o `XCell`. La columna «Siguiente» (el botón del siguiente) va junto a la descripción: lo que sigue se ve sin desplazar
-// la tabla. La fila nueva va al final con la descripción: el resto de las columnas se llena después, con el teclado.
+// La hoja en escritorio (8.09-2, C8): un `<tbody>` por grupo por paso con su encabezado (`<th scope="rowgroup">`) y una fila por ítem, editable celda a celda. Primero
+// qué es el ítem, luego cantidad, precio y el siguiente: lo que se busca se ve sin desplazar la tabla; los demás datos después. Los números a la derecha; el precio,
+// por `<Monto>` o `XCell`. La fila nueva va al final con la descripción: el resto de las columnas se llena después, con el teclado.
 export function TablaDeItems({ grupos, contexto, filaNueva }: Props) {
   return (
     <TablaDeLista>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="min-w-64">Descripción</TableHead>
-          <TableHead className="min-w-40">Siguiente</TableHead>
-          <TableHead>Tipo de pieza</TableHead>
-          <TableHead>Condición</TableHead>
-          <TableHead>País</TableHead>
-          <TableHead>Vía</TableHead>
-          <TableHead className="text-right">Cant.</TableHead>
-          <TableHead className="text-right">Precio al cliente</TableHead>
-          <TableHead>Moneda</TableHead>
-          <TableHead>Tracking</TableHead>
-          <TableHead>Notas</TableHead>
-          <TableHead>Acciones</TableHead>
-        </TableRow>
-      </TableHeader>
+      <EncabezadoDeLaHoja />
       {grupos.map((grupo) => (
         <TableBody key={grupo.clave} data-grupo-de-paso={grupo.clave}>
           <TableRow className="hover:bg-transparent">
             <th
               scope="rowgroup"
-              colSpan={COLUMNAS}
+              colSpan={CANTIDAD_DE_COLUMNAS}
               title={AYUDA_DEL_GRUPO}
               className="bg-(--color-paper-dim) px-2 py-1.5 text-left text-(length:--text-sm) font-semibold"
             >
@@ -87,8 +78,8 @@ export function TablaDeItems({ grupos, contexto, filaNueva }: Props) {
       {filaNueva ? (
         <TableBody key="nueva">
           <TableRow data-fila-de-item="nueva">
-            <TableCell className="min-w-64 align-top">{filaNueva}</TableCell>
-            <TableCell colSpan={COLUMNAS - 1} />
+            <TableCell className={`align-top ${claseDe('item')}`}>{filaNueva}</TableCell>
+            <TableCell colSpan={CANTIDAD_DE_COLUMNAS - 1} />
           </TableRow>
         </TableBody>
       ) : null}

@@ -4,6 +4,7 @@ import { useId, type ReactNode } from 'react'
 import type { GrupoPorPaso } from '../../../entities/items/grupos-por-paso'
 import type { FilaDeItem } from '../../../entities/nucleo/item'
 import type { ContextoDeLaHoja } from './contexto-de-la-hoja'
+import { tituloDe } from './columnas-de-la-hoja'
 import { controlesDeItem } from './controles-de-item'
 import { AYUDA_DEL_GRUPO, EncabezadoDelGrupo } from './encabezado-del-grupo'
 
@@ -29,19 +30,19 @@ function TarjetaDeItem({ fila, contexto }: { fila: FilaDeItem; contexto: Context
       data-fila-de-item={fila.id}
       className="grid min-w-0 gap-3 rounded-(--radius-md) border border-(--color-border) p-3"
     >
-      <Campo etiqueta="Descripción">{c.descripcion}</Campo>
+      {c.item}
       <div className="@container grid min-w-0 grid-cols-1 gap-3 min-[24rem]:grid-cols-2">
-        <Campo etiqueta="Tipo de pieza">{c.tipoDePieza}</Campo>
-        <Campo etiqueta="Condición">{c.condicion}</Campo>
-        <Campo etiqueta="País">{c.pais}</Campo>
-        <Campo etiqueta="Vía">{c.via}</Campo>
-        <Campo etiqueta="Cantidad">{c.cantidad}</Campo>
-        <Campo etiqueta="Precio al cliente">{c.precio}</Campo>
-        <Campo etiqueta="Moneda">{c.moneda}</Campo>
-        <Campo etiqueta="Tracking">{c.tracking}</Campo>
+        <Campo etiqueta={tituloDe('cantidad')}>{c.cantidad}</Campo>
+        <Campo etiqueta={tituloDe('precio')}>{c.precio}</Campo>
+        <div className="min-w-0 min-[24rem]:col-span-2">
+          <Campo etiqueta={tituloDe('siguiente')}>{c.siguiente}</Campo>
+        </div>
+        <Campo etiqueta={tituloDe('pais')}>{c.pais}</Campo>
+        <Campo etiqueta={tituloDe('via')}>{c.via}</Campo>
+        <Campo etiqueta={tituloDe('moneda')}>{c.moneda}</Campo>
+        <Campo etiqueta={tituloDe('tracking')}>{c.tracking}</Campo>
       </div>
-      <Campo etiqueta="Notas">{c.notas}</Campo>
-      <Campo etiqueta="Siguiente">{c.siguiente}</Campo>
+      <Campo etiqueta={tituloDe('notas')}>{c.notas}</Campo>
       <div className="flex flex-wrap items-center justify-end gap-2">
         <div className="flex flex-wrap gap-1">
           {c.imagenes}
@@ -74,7 +75,7 @@ function GrupoDeTarjetas({ grupo, contexto }: { grupo: GrupoPorPaso; contexto: C
 }
 
 // La hoja en el celular (8.09-2, C8): una sección por grupo por paso (su `<h2>` con «Comprar · 3») y una tarjeta por ítem con los mismos controles de la fila de la
-// tabla, uno bajo otro; el siguiente (a lo ancho), «Imágenes» y «Eliminar» al pie. La fila nueva va al final, fuera de los grupos. Nada ensancha la página: `min-w-0`
+// tabla: arriba qué es el ítem; luego cantidad, precio y el siguiente (a lo ancho y a 44 px); los demás datos; «Imágenes» y «Eliminar» al pie. La fila nueva va al final, fuera de los grupos. Nada ensancha la página: `min-w-0`
 // en cada hijo.
 export function TarjetasDeItems({ grupos, contexto, filaNueva }: Props) {
   return (
