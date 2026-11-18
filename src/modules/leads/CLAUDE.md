@@ -44,10 +44,14 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
 - La lista lleva a la ficha, sin resumen: la fila, la tarjeta y la tarjeta del kanban (a `?seccion=oportunidades`) son enlaces (`EnlaceDeLaFila` en el nombre,
   `href` en `FilaDeLista`/`TarjetaDeLista`, `manejadoresDelClic` en el kanban, cuyo `<Link>` lleva `data-enlace-de-la-fila`). Un `/leads?lead=<id>` viejo
   redirige en el servidor (`destinoDelEnlaceViejo()`, `entities/enlace-viejo-del-resumen.ts`) a la ficha con su `pestana`, `panel` o `extra`, filtrado por los
-  permisos de la sesión y sin leer el lead.
+  permisos de la sesión y sin leer el lead. Con `?vista=embudo`, `?lead=` es el **embudo filtrado por lead** (`entities/embudo-del-lead.ts`,
+  `rutaDelEmbudoDelLead()`): gana al enlace viejo salvo que pida algo que sólo el resumen abría (`pestana`, sus paneles, `extra`, `seguimiento`, `recordatorio`).
+  `leerVistaDeEmbudo` lo valida con `leerLeadParaEnlazar` (el que no se ve vuelve `leadIgnorado` y la vista lo quita con `replace`); el chip
+  (`ChipDelLead`) ocupa el lugar de la búsqueda, que no aplica.
 - «Nueva oportunidad…» del «⋯» (`?panel=oportunidad-rapida&para=<id>` en la lista y el kanban; sin `para` en la ficha, `NuevaOportunidadDelLead`;
   `features/oportunidades/components/modal-de-oportunidad-rapida.tsx`): sólo `leads.editar` y el lead en la cartera, como anotar y agendar. Primero el aviso de las que el lead
-  ya tiene (`leerOportunidadesDelAviso`: `lead_oportunidades` con `LEIDAS_PARA_EL_AVISO` = 6, al abrir, sin cuenta; «Crear igual» sigue y si no lee, igual deja crear) y
+  ya tiene (`leerOportunidadesDelAviso`: `lead_oportunidades` con `LEIDAS_PARA_EL_AVISO` = 6, al abrir, sin cuenta; «Crear igual» sigue y si no lee, igual deja crear;
+  con una abierta en el embudo por defecto, `crearIgual()` lo apaga con su motivo y «Abrir esa» al lado: `entities/oportunidad-unica.ts`) y
   después título (el nombre del lead) y monto; la base pone el embudo por defecto de quien mira (lo crea si no lo tiene) y su etapa inicial. Sin vehículo ni notas: el
   listado no lee los vehículos del lead (`entities/oportunidad-rapida.ts`). «Ver oportunidades» (lead en la cartera, sin `leads.editar`): `rutaDeLasOportunidadesDe()`.
 - Hoja de cotizar: `<BarraDelCliente>` (con `obligatorio`: sin cliente elegido, una etiqueta «Obligatorio» propia, no `<Badge>`, que arrastra Base UI a la carga en frío; `pantallas/cotizar` también saca `PANEL_DEL_CLIENTE`, que la página pasa a la hoja para su «Elegir el cliente») y su panel (`features/panel-para-cotizar/`, `?panel=cliente&clase=&buscar=&cursor=`: «míos» por
@@ -105,7 +109,9 @@ la causa en `hint` (`errorConCausa()`), y `entities/avisos-de-lead.ts` la vuelve
 `telefonos_actualizado_en`). Lecturas: `ajustes_leads_leer()` (sin permiso), `lead_telefonos_leer()` (sin uso en la app; sus pruebas SQL siguen),
 `verificar_telefono_extra()` (al tipear un extra), `telefonos_extra_choques()` (`leads.configurar`: por cursor sobre `leads_telefonos_pkey`, hasta 10.000
 filas por llamada, enmascarada), `leads_vista`, `leads_cartera_vista`, `lead_ficha()`, `leads_candidatos()` + `leads_vista_por_ids()`, `lead_oportunidades()` (invocadora,
-por cursor, de a 20 y hasta 100, por `oportunidades_lead_abiertas_idx` y `oportunidades_lead_cerradas_idx`; «Ver más» hasta 500).
+por cursor, de a 20 y hasta 100, por `oportunidades_lead_abiertas_idx` y `oportunidades_lead_cerradas_idx`; «Ver más» hasta 500; en la primera página,
+`abiertas_por_embudo`), `embudo_tablero_del_lead()` y `embudo_etapa_pagina_del_lead()` (invocadoras, el embudo filtrado por lead, por
+`oportunidades_lead_etapa_idx`).
 
 ## No se rompe
 

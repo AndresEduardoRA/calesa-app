@@ -2,6 +2,7 @@
 // `repositorios.ts` por responsabilidad: es otra parte del módulo con sus propias RPC.
 import type { ErrorApp, Resultado } from '@/shared/lib/errores'
 import type { Embudo, Etapa } from './embudo'
+import type { LeadDelEmbudo } from './embudo-del-lead'
 import type { DatosDeOportunidad, Oportunidad, OportunidadDelLead } from './oportunidad'
 import type { AbiertaEnEmbudo } from './oportunidad-unica'
 import type { Tablero, Tarjeta } from './tablero'
@@ -48,6 +49,8 @@ export type LectorDeTablero = (pedido: {
   tope: number
   // Lo que se busca en el embudo (`busquedaDelEmbudo()`); null = todas.
   buscar: string | null
+  // Filtrado por un lead (`embudo_tablero_del_lead`, sin búsqueda); null = las de todos.
+  lead?: LeadDelEmbudo | null
 }) => Promise<Resultado<Tablero | null>>
 
 // «Ver más» de una columna, desde la última que se ve.
@@ -56,6 +59,8 @@ export type LectorDePaginaDeEtapa = (pedido: {
   antes: { antesEn: string; antesId: string }
   tope: number
   buscar: string | null
+  // El del embudo filtrado (`embudo_etapa_pagina_del_lead`); null = las de todos.
+  leadId?: string | null
 }) => Promise<Resultado<{ tarjetas: Tarjeta[]; hayMas: boolean }>>
 
 export type ResultadoDeOportunidad = {

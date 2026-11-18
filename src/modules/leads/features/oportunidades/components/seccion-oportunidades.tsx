@@ -10,8 +10,6 @@ import { OportunidadesDelLead } from './oportunidades-del-lead'
 
 type Props = {
   leadId: string
-  // El nombre del lead: el tope de lo cargado ofrece buscarlo en su embudo.
-  leadNombre: string
   // Los vehículos del lead que quien mira ve, para elegir uno (los lee la página: este módulo no lee
   // vehículos). Sin el permiso, ninguno.
   vehiculos?: Promise<VehiculosParaNotas>
@@ -19,7 +17,7 @@ type Props = {
 
 // La sección «Oportunidades», leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`:
 // sólo las suyas sobre este lead (la base decide). Un error de lectura sube al `error.tsx` de la ruta.
-export async function SeccionOportunidades({ leadId, leadNombre, vehiculos }: Props) {
+export async function SeccionOportunidades({ leadId, vehiculos }: Props) {
   await connection()
   const [leido, opciones] = await Promise.all([
     leerOportunidadesDeLead(leadId),
@@ -35,7 +33,6 @@ export async function SeccionOportunidades({ leadId, leadNombre, vehiculos }: Pr
         abiertasPorEmbudo={datos.abiertasPorEmbudo}
         puedoCrear={datos.puedoCrear}
         hayMas={datos.hayMas}
-        leadNombre={leadNombre}
       />
     </ProveedorDeVehiculos>
   )

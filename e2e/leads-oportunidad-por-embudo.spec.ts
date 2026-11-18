@@ -13,10 +13,18 @@ import {
   type TerrenoDelListado,
 } from './soporte/leads-listado'
 import { abrirMenuDelLead } from './soporte/leads-marcas'
-import { embudoPorDefecto, oportunidad } from './soporte/leads-oportunidades'
+import {
+  embudoPorDefecto,
+  etapa,
+  irAlEmbudo,
+  oportunidad,
+  tarjeta,
+  verEtapa,
+} from './soporte/leads-oportunidades'
 
 // Una oportunidad abierta por embudo: con una abierta en el embudo por defecto, «Crear igual» del aviso va apagado con su motivo y «Abrir esa»
-// lleva a la abierta; en el panel de la ficha ese embudo sale apagado y otro deja crear (el embudo elegido llega a la base).
+// lleva a la abierta; en el panel de la ficha ese embudo sale apagado y otro deja crear (el embudo elegido llega a la base). El embudo filtrado
+// por lead (`?lead=`): sólo las de ese lead con el chip «De <nombre>», «Ver todas» lo quita, cambiar de embudo lo conserva y uno inválido se quita.
 test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDelListado
@@ -109,4 +117,63 @@ test('el panel de la ficha apaga el embudo con una abierta y crea en el elegido'
           ?.embudo_id,
     )
     .toBe(posventa)
+})
+
+test('el embudo filtrado por lead: sólo las suyas con el chip, «Ver todas» lo quita y cambiar de embudo lo conserva', async ({
+  page,
+}, info) => {
+  const proyecto = info.project.name
+  const { lead } = await leadConAbierta(`Una Filtro ${proyecto}`)
+  const otro = await leadConAbierta(`Una Otro ${proyecto}`)
+  const ventas = await embudoPorDefecto(t.personas.berta)
+  const flotas = await otroEmbudo(`Flotas ${proyecto}`)
+  await oportunidad(t.personas.berta, lead.id, {
+    titulo: `Ganada del filtro ${proyecto}`,
+    etapa_id: etapa(ventas, 'Ganado'),
+  })
+  await oportunidad(t.personas.berta, lead.id, {
+    titulo: `En flotas ${proyecto}`,
+    embudo_id: flotas,
+  })
+  await entrar(page, t.personas.berta)
+  await irAlEmbudo(page, `&embudo=${ventas.id}&lead=${lead.id}`)
+
+  await expect(
+    page.getByRole('button', { name: `Quitar el filtro de ${lead.nombre}` }),
+  ).toBeVisible()
+  await expect(page.getByText('Aquí ves tus oportunidades.')).toHaveCount(0)
+  await verEtapa(page, 'Nuevo')
+  await expect(tarjeta(page, lead.nombre)).toBeVisible()
+  await expect(page.getByRole('article', { name: otro.lead.nombre })).toHaveCount(0)
+  await capturar(page, info, 'embudo-filtrado-por-lead')
+  await verEtapa(page, 'Ganado')
+  await expect(tarjeta(page, `Ganada del filtro ${proyecto}`)).toBeVisible()
+
+  // «Ver todas» quita el filtro: vuelven las de los demás leads.
+  await page.getByRole('button', { name: 'Ver todas' }).click()
+  await expect(page).not.toHaveURL(/[?&]lead=/)
+  await verEtapa(page, 'Nuevo')
+  await expect(tarjeta(page, otro.lead.nombre)).toBeVisible()
+
+  // Cambiar de embudo con el selector conserva el filtro.
+  await irAlEmbudo(page, `&embudo=${ventas.id}&lead=${lead.id}`)
+  await page.getByRole('button', { name: 'Embudo: Ventas' }).click()
+  await page.getByRole('menuitemradio', { name: `Flotas ${proyecto}` }).click()
+  await expect(page).toHaveURL(new RegExp(`embudo=${flotas}`))
+  await expect(page).toHaveURL(new RegExp(`lead=${lead.id}`))
+  await expect(
+    page.getByRole('button', { name: `Quitar el filtro de ${lead.nombre}` }),
+  ).toBeVisible()
+  await verEtapa(page, 'Nueva')
+  await expect(tarjeta(page, `En flotas ${proyecto}`)).toBeVisible()
+})
+
+test('un `lead=` que no existe o no es un id se ignora y se quita de la URL', async ({ page }) => {
+  await entrar(page, t.personas.berta)
+  for (const lead of [crypto.randomUUID(), 'no-es-un-id']) {
+    await irAlEmbudo(page, `&lead=${lead}`)
+    await expect(page).not.toHaveURL(/[?&]lead=/)
+    await expect(page.getByRole('button', { name: /^Quitar el filtro de / })).toHaveCount(0)
+    await expect(page.getByText('Aquí ves tus oportunidades.')).toBeVisible()
+  }
 })

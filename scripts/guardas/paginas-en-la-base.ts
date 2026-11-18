@@ -143,6 +143,25 @@ export const RPC_PAGINADAS_DEL_NUCLEO: readonly RpcPaginada[] = [
     pideElCodigo: TAMANO_DE_COLUMNA,
     lista: 'kanban, «Ver más»',
   },
+  // El embudo filtrado por lead (`?lead=`): sus propias lecturas, con los mismos topes que el kanban.
+  {
+    rpc: 'embudo_tablero_del_lead',
+    parametro: 'p_tope',
+    pideElCodigo: TAMANO_DE_COLUMNA,
+    lista: 'kanban de un lead, cada columna',
+  },
+  {
+    rpc: 'embudo_tablero_del_lead',
+    parametro: 'p_tope_total',
+    pideElCodigo: TOPE_DE_LO_CARGADO,
+    lista: 'kanban de un lead, total de una columna',
+  },
+  {
+    rpc: 'embudo_etapa_pagina_del_lead',
+    parametro: 'p_tope',
+    pideElCodigo: TAMANO_DE_COLUMNA,
+    lista: 'kanban de un lead, «Ver más»',
+  },
   // La logística para cientos de miles de vehículos (6.03): el número de cada fase es un conteo con tope (`limit tope + 1`, `TOPE_DEL_CONTEO`), no una página; la lista de una fase lee
   // `TAMANO_DE_LA_FASE` por cursor `(fase_desde, id)`. La base acota las dos con `_acotar_pagina`.
   {

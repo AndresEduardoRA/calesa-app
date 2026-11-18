@@ -10315,6 +10315,16 @@ export type Database = {
         }
         Returns: Json
       }
+      embudo_etapa_pagina_del_lead: {
+        Args: {
+          p_antes_en: string
+          p_antes_id: string
+          p_etapa: string
+          p_lead: string
+          p_tope?: number
+        }
+        Returns: Json
+      }
       embudo_etapas_guardar: {
         Args: { p_actualizado_en_esperado: string; p_embudo: string; p_etapas: Json }
         Returns: Json
@@ -10330,6 +10340,10 @@ export type Database = {
       embudo_por_defecto: { Args: Record<PropertyKey, never>; Returns: Json }
       embudo_tablero: {
         Args: { p_buscar?: string; p_embudo: string; p_tope?: number; p_tope_total?: number }
+        Returns: Json
+      }
+      embudo_tablero_del_lead: {
+        Args: { p_embudo: string; p_lead: string; p_tope?: number; p_tope_total?: number }
         Returns: Json
       }
       empresa_con_datos_cargados: { Args: Record<PropertyKey, never>; Returns: boolean }

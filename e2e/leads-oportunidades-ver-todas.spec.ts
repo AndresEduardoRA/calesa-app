@@ -116,12 +116,16 @@ test('con 25 (15 abiertas y 10 cerradas): «Ver más» las trae todas en el orde
   await expect.poll(async () => (await titulosVisibles(page))[0]).toBe(titulo)
   await expect(item.getByText('En «Contactado» desde')).toBeVisible()
 
-  // Eliminarla deja 24 y «Deshacer» vuelve a 25.
-  await item.getByRole('button', { name: `Más acciones de «${titulo}»` }).click()
+  // Eliminar una cerrada que llegó por «Ver más» deja 24 y «Deshacer» vuelve a 25. (Una abierta no se restauraría: las 15 son del mismo embudo y
+  // sólo se admite una abierta por lead y embudo.)
+  const cerrada = enLaBase[20] ?? ''
+  const suya = page.getByRole('article', { name: cerrada })
+  await suya.getByRole('button', { name: `Más acciones de «${cerrada}»` }).click()
   await page.getByRole('menuitem', { name: 'Eliminar' }).click()
   await expect(items(page)).toHaveCount(24)
   await page.getByRole('button', { name: 'Deshacer' }).click()
   await expect(items(page)).toHaveCount(25)
+  await expect(suya).toBeVisible()
   await expect.poll(async () => (await titulosVisibles(page))[0]).toBe(titulo)
 })
 
@@ -186,11 +190,11 @@ test('con 1.000 (600 abiertas y 400 cerradas): el documento pesa lo de 10, cada 
     ),
   ).toBeVisible()
 
-  // El camino a lo que el tope deja afuera: el kanban del embudo, buscando por el nombre del lead.
+  // El camino a lo que el tope deja afuera: el embudo filtrado por el lead.
   const embudo = await embudoPorDefecto(t.personas.berta)
-  const camino = page.getByRole('link', { name: 'Buscarlas en tu embudo' })
-  const buscar = new URLSearchParams({ vista: 'embudo', embudo: embudo.id, q: lead.nombre })
-  await expect(camino).toHaveAttribute('href', `/leads?${buscar.toString()}`)
+  const camino = page.getByRole('link', { name: 'Verlas en tu embudo' })
+  const filtro = new URLSearchParams({ vista: 'embudo', embudo: embudo.id, lead: lead.id })
+  await expect(camino).toHaveAttribute('href', `/leads?${filtro.toString()}`)
 
   // La página 25 no pesa más que la 1.ª (no crece con la profundidad) y los nodos crecen lineales y se detienen.
   const primera = respuestas[0] ?? 0
@@ -203,8 +207,11 @@ test('con 1.000 (600 abiertas y 400 cerradas): el documento pesa lo de 10, cada 
   console.warn(`[ficha] ${info.project.name}: ${resumen}`)
   info.annotations.push({ type: 'ficha con 1.000 oportunidades', description: resumen })
 
-  // El enlace abre el embudo con la búsqueda por el nombre del lead.
+  // El enlace abre el embudo filtrado por el lead.
   await camino.click()
-  await expect(page).toHaveURL(new RegExp(`vista=embudo&embudo=${embudo.id}&q=`))
+  await expect(page).toHaveURL(new RegExp(`vista=embudo&embudo=${embudo.id}&lead=${lead.id}`))
   await expect(page.getByRole('heading', { name: 'Embudo', level: 1 })).toBeAttached()
+  await expect(
+    page.getByRole('button', { name: `Quitar el filtro de ${lead.nombre}` }),
+  ).toBeVisible()
 })

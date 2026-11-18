@@ -13,6 +13,8 @@
 --   OE8. `_lead_oportunidad_base` con una abierta previa no falla ni suma otra; sin abierta (la base ganada), la crea.
 --   OE9. `_oportunidad_abierta_unica` es privada.
 --   OE10. `lead_oportunidades` trae `abiertas_por_embudo` sólo en la primera página, una por embudo con abierta.
+--   OE11. `embudo_tablero_del_lead`: sólo las de ese lead, en todas las etapas (también ganada y perdida); un lead sin ninguna, columnas vacías;
+--         un embudo ajeno, null. `embudo_etapa_pagina_del_lead` respeta el cursor y el lead.
 
 create or replace function pg_temp.oe_persona() returns uuid language plpgsql as $f$
 declare v_id uuid := gen_random_uuid(); v_rol uuid; c text;
@@ -246,5 +248,62 @@ begin
   r := pg_temp.oe_bien(pg_temp.oe_corre(q, format('select public.lead_oportunidades(%L, true, %L, %L, 1)', v_lead,
     (r -> 'oportunidades' -> 0 ->> 'ultima_actividad_en'), (r -> 'oportunidades' -> 0 ->> 'id'))), 'OE10 página 2');
   if r ? 'abiertas_por_embudo' then raise exception 'OE10: la página con cursor no debía traer abiertas_por_embudo'; end if;
+end $$;
+rollback;
+
+-- @test el embudo filtrado por lead: sólo las de ese lead en todas sus etapas; vacío, ajeno y «Ver más» (OE11)
+begin;
+do $$
+declare q uuid; otra uuid; v_lead uuid; v_otro_lead uuid; v_vacio uuid; v_emb uuid; v_base uuid; v_ganada uuid := gen_random_uuid();
+  v_perdida uuid := gen_random_uuid(); r jsonb; v_ids text[]; v_ini uuid; v_pag jsonb; i int;
+begin
+  perform pg_temp.oe_persona();
+  q := pg_temp.oe_persona();
+  otra := pg_temp.oe_persona();
+  v_lead := pg_temp.oe_lead(q, 'OE Once', '72841011');
+  v_otro_lead := pg_temp.oe_lead(q, 'OE Once Otro', '72841012');
+  v_vacio := pg_temp.oe_lead(q, 'OE Once Vacío', '72841013');
+  v_emb := public._embudo_defecto_de(q);
+  select o.id into v_base from public.oportunidades o where o.lead_id = v_lead;
+  delete from public.oportunidades o where o.lead_id = v_vacio;
+  perform pg_temp.oe_bien(pg_temp.oe_crear(q, v_ganada, v_lead, jsonb_build_object('titulo', 'OE ganada', 'etapa_id', pg_temp.oe_etapa(v_emb, 'ganada'))), 'OE11 ganada');
+  perform pg_temp.oe_bien(pg_temp.oe_crear(q, v_perdida, v_lead, jsonb_build_object('titulo', 'OE perdida', 'etapa_id', pg_temp.oe_etapa(v_emb, 'perdida'))), 'OE11 perdida');
+
+  r := pg_temp.oe_bien(pg_temp.oe_corre(q, format('select public.embudo_tablero_del_lead(%L, %L)', v_emb, v_lead)), 'OE11 tablero');
+  if (select string_agg(k, ',' order by k) from jsonb_object_keys(r) k) <> 'columnas,embudo' then raise exception 'OE11: claves: %', r; end if;
+  if (select string_agg(k, ',' order by k) from jsonb_object_keys(r -> 'columnas' -> 0) k) <> 'etapa,hay_mas,tarjetas,total,total_hay_mas' then
+    raise exception 'OE11: claves de una columna: %', r -> 'columnas' -> 0; end if;
+  select array_agg(t ->> 'id' order by t ->> 'id') into v_ids from jsonb_array_elements(r -> 'columnas') c, jsonb_array_elements(c -> 'tarjetas') t;
+  if v_ids is distinct from (select array_agg(x::text order by x::text) from unnest(array[v_base, v_ganada, v_perdida]) x) then
+    raise exception 'OE11: debían estar sólo las tres del lead (abierta, ganada y perdida): %', v_ids; end if;
+  if jsonb_array_length(r -> 'columnas') <> (select count(*) from public.embudos_etapas s where s.embudo_id = v_emb)
+     or (select sum((c ->> 'total')::int) from jsonb_array_elements(r -> 'columnas') c) <> 3 then
+    raise exception 'OE11: columnas o totales: %', r; end if;
+
+  r := pg_temp.oe_bien(pg_temp.oe_corre(q, format('select public.embudo_tablero_del_lead(%L, %L)', v_emb, v_vacio)), 'OE11 vacío');
+  if exists (select 1 from jsonb_array_elements(r -> 'columnas') c where jsonb_array_length(c -> 'tarjetas') > 0 or (c ->> 'total')::int <> 0) then
+    raise exception 'OE11: el lead sin oportunidades debía dar columnas vacías: %', r; end if;
+  r := pg_temp.oe_bien(pg_temp.oe_corre(otra, format('select public.embudo_tablero_del_lead(%L, %L)', v_emb, v_lead)), 'OE11 ajeno');
+  if r is not null and r <> 'null'::jsonb then raise exception 'OE11: un embudo ajeno debía dar null: %', r; end if;
+
+  -- «Ver más»: tres más en la inicial (duplicadas de antes, directo y sin triggers: la hora es la del pasado) y páginas de a uno.
+  v_ini := pg_temp.oe_etapa(v_emb, 'inicial');
+  set local session_replication_role = replica;
+  for i in 1 .. 3 loop
+    insert into public.oportunidades (lead_id, usuario_id, embudo_id, etapa_id, estado, titulo, moneda, ultima_actividad_en)
+    values (v_lead, q, v_emb, v_ini, 'abierta', 'OE vieja ' || i, (select moneda_base from public.ajustes_empresa where id = 1), now() - make_interval(days => i));
+  end loop;
+  set local session_replication_role = origin;
+  v_pag := pg_temp.oe_bien(pg_temp.oe_corre(q, format('select public.embudo_etapa_pagina_del_lead(%L, %L, null, null, 1)', v_ini, v_lead)), 'OE11 página 1');
+  if jsonb_array_length(v_pag -> 'tarjetas') <> 1 or not (v_pag ->> 'hay_mas')::boolean or v_pag -> 'tarjetas' -> 0 ->> 'id' <> v_base::text then
+    raise exception 'OE11: la primera página: %', v_pag; end if;
+  for i in 1 .. 3 loop
+    v_pag := pg_temp.oe_bien(pg_temp.oe_corre(q, format('select public.embudo_etapa_pagina_del_lead(%L, %L, %L, %L, 1)', v_ini, v_lead,
+      (select o.ultima_actividad_en from public.oportunidades o where o.id = (v_pag -> 'tarjetas' -> 0 ->> 'id')::uuid),
+      v_pag -> 'tarjetas' -> 0 ->> 'id')), 'OE11 página siguiente');
+    if jsonb_array_length(v_pag -> 'tarjetas') <> 1 or v_pag -> 'tarjetas' -> 0 -> 'lead' ->> 'id' <> v_lead::text
+       or v_pag -> 'tarjetas' -> 0 ->> 'titulo' <> 'OE vieja ' || i or (v_pag ->> 'hay_mas')::boolean <> (i < 3) then
+      raise exception 'OE11: la página % con cursor: %', i, v_pag; end if;
+  end loop;
 end $$;
 rollback;
