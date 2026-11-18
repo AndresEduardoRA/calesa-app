@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react'
 import { cn } from 'cn'
 import { esClicPropio } from '@/shared/lib/clic-de-fila'
 import { TableRow } from '../table'
-import { CLASES_DE_VISTO, useVistoDeLista } from './visto'
+import { CLASES_DE_VISTO, CLASES_DE_VISTO_DE_FILA, useVistoDeLista } from './visto'
 
 type Props = Omit<ComponentProps<'tr'>, 'onClick'> & {
   // Abre el resumen de la fila. Una lista sin resumen (la del equipo) no lo pasa: la fila no promete un clic que no hace nada.
@@ -24,7 +24,13 @@ export function FilaDeLista({ alAbrir, abierta = false, idDeVisto, className, ..
     <TableRow
       data-state={abierta ? 'selected' : undefined}
       data-visto={visto ?? undefined}
-      className={cn('group h-(--fila)', alAbrir && 'cursor-pointer', CLASES_DE_VISTO, className)}
+      className={cn(
+        'group h-(--fila)',
+        alAbrir && 'cursor-pointer',
+        CLASES_DE_VISTO,
+        CLASES_DE_VISTO_DE_FILA,
+        className,
+      )}
       onClick={
         alAbrir
           ? (evento) => {
