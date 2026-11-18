@@ -14,6 +14,7 @@ import {
   type Tablero,
   type Tarjeta,
 } from '../../../entities/tablero'
+import { accionesDelRechazo } from '../../../entities/oportunidad-unica'
 import { MENSAJE_DE_VALIDACION } from '../../ficha/resultado'
 import { moverOportunidad } from '../../oportunidades/actions/mover-oportunidad'
 
@@ -61,7 +62,7 @@ export function useTablero(inicial: Tablero) {
     setMoviendo(null)
     if (!envio.ok) {
       setTablero(antes)
-      avisarError(envio.error)
+      avisarError(envio.error, accionesDelRechazo(tarjeta.lead.id, envio))
       return false
     }
     const { oportunidad } = envio.data

@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
 import type { Embudo } from '../../../entities/embudo'
 import type { OportunidadDelLead } from '../../../entities/oportunidad'
+import type { AbiertaEnEmbudo } from '../../../entities/oportunidad-unica'
 import { RefrescarAlVolver } from '../../ficha/components/refrescar-al-volver'
 import { useOportunidades } from '../hooks/use-oportunidades'
 import { usePanelDeMovida } from '../hooks/use-panel-de-movida'
@@ -22,6 +23,8 @@ type Props = {
   leadId: string
   inicial: readonly OportunidadDelLead[]
   embudos: readonly Embudo[]
+  // Dónde ya tiene una abierta (de la primera lectura del servidor): al crear, esos embudos van apagados.
+  abiertasPorEmbudo: readonly AbiertaEnEmbudo[]
   // Cartera y `leads.editar` (lo dice la base).
   puedoCrear: boolean
   // Tiene más de las que trajo el servidor: «Ver más» las lee desde el navegador.
@@ -104,6 +107,7 @@ export function OportunidadesDelLead(props: Props) {
           leadId={leadId}
           oportunidad={editando}
           embudos={embudos}
+          abiertas={props.abiertasPorEmbudo}
           alGuardar={alGuardar}
           alCerrar={panel.cerrar}
         />

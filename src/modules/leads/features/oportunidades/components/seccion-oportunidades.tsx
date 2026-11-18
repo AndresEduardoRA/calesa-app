@@ -32,6 +32,7 @@ export async function SeccionOportunidades({ leadId, leadNombre, vehiculos }: Pr
         leadId={leadId}
         inicial={datos.oportunidades}
         embudos={datos.embudos}
+        abiertasPorEmbudo={datos.abiertasPorEmbudo}
         puedoCrear={datos.puedoCrear}
         hayMas={datos.hayMas}
         leadNombre={leadNombre}
