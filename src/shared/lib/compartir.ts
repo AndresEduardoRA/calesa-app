@@ -4,7 +4,6 @@
 
 export const MOTIVO_SIN_PORTAPAPELES = 'Este navegador no permite copiar texto.'
 export const MOTIVO_SIN_PORTAPAPELES_DE_IMAGENES = 'Este navegador no permite copiar imágenes.'
-export const MOTIVO_SIN_COMPARTIR_ARCHIVOS = 'Este navegador no permite compartir imágenes.'
 
 export type Capacidades = {
   portapapeles: boolean
