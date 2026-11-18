@@ -23,6 +23,8 @@ export const TAMANO_DE_PAGINA_POR_DEFECTO: TamanoDePagina = 50
 export const CLAVE_DE_PREFERENCIA_POR_PAGINA = 'listas.por_pagina'
 
 export const TAMANO_DE_VER_MAS = 20
+// «Actividad reciente» de un registro: sus últimos cambios (la base lee uno más para saber si hay otros).
+export const TAMANO_DE_ACTIVIDAD_RECIENTE = 5
 export const TOPE_DE_LO_CARGADO = 500
 export const TAMANO_DE_COLUMNA = 50
 // La logística para cientos de miles de vehículos: la lista de una fase (una página de a 50, por cursor `(fase_desde, id)`) y la bandeja del día
