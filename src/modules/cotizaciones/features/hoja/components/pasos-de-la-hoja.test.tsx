@@ -40,14 +40,17 @@ describe('PasosDeLaHoja', () => {
       'Cliente: elegido',
       'Vista previa',
     ])
-    expect(
-      screen.getByRole('button', { name: 'Vehículo: obligatorio que falta' }).dataset['punto'],
-    ).toBe('obligatorio-que-falta')
+    const vehiculo = screen.getByRole('button', {
+      name: 'Vehículo',
+      description: 'obligatorio que falta',
+    })
+    expect(vehiculo.tabIndex).toBe(-1)
+    expect(vehiculo.dataset['punto']).toBe('obligatorio-que-falta')
   })
 
   it('«Vehículo» abre su panel por la URL', async () => {
     const cambios = montar()
-    fireEvent.click(screen.getByRole('button', { name: /^Vehículo/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Vehículo' }))
     await waitFor(() => {
       expect(cambios.mock.calls.at(-1)?.[0].searchParams.get('panel')).toBe('vehiculo')
     })

@@ -27,14 +27,30 @@ export type PasosDeLaPagina = { vehiculo: EleccionDelPaso; cliente: EleccionDelP
 const BOTON =
   "flex min-h-[44px] min-w-0 items-center justify-center gap-2 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) px-3 text-(length:--text-sm) font-medium text-(--color-ink) transition hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) focus-visible:outline-none md:pointer-fine:min-h-8 data-[punto]:before:size-2 data-[punto]:before:shrink-0 data-[punto]:before:rounded-full data-[punto]:before:content-[''] data-[punto=elegido]:before:bg-(--color-positivo) data-[punto=obligatorio-que-falta]:before:bg-(--color-peligro) data-[punto=falta-un-dato]:before:bg-(--color-aviso)"
 
-// El nombre del botón dice el punto («Vehículo: elegido», el mismo `title`): empieza con lo que se ve, así quien dicta por voz lo nombra igual. El punto va en
-// `data-punto` con guiones (Tailwind lee un `_` de un valor arbitrario como un espacio).
+// El nombre del botón es lo que se ve («Vehículo»); el punto lo dice su descripción (un texto `hidden` adentro, que `aria-describedby` sí lee) y su `title`
+// («Vehículo: elegido»). Va en `data-punto` con guiones (Tailwind lee un `_` de un valor arbitrario como un espacio). **Fuera del orden de Tab** (`tabIndex -1`): la
+// tarea de oro «cotizar» no suma paradas, y con el teclado lo mismo se alcanza por las barras del vehículo y del cliente, «Vista previa» del resumen y las celdas.
 const marcas = (paso: PasoDeLaHoja) => ({
   'data-paso': paso.clave,
-  ...(paso.punto === null ? {} : { 'data-punto': paso.punto.replaceAll('_', '-') }),
-  'aria-label': paso.title,
+  ...(paso.punto === null
+    ? {}
+    : { 'data-punto': paso.punto.replaceAll('_', '-'), 'aria-describedby': `paso-${paso.clave}` }),
   title: paso.title,
+  tabIndex: -1,
 })
+
+function Contenido({ paso }: { paso: PasoDeLaHoja }) {
+  return (
+    <>
+      {paso.etiqueta}
+      {paso.textoDelPunto === null ? null : (
+        <span id={`paso-${paso.clave}`} hidden>
+          {paso.textoDelPunto}
+        </span>
+      )}
+    </>
+  )
+}
 
 // «Hoja»: cierra lo que la hoja tenga abierto (un panel, una ayuda, un ⚙) y, en el cuadro siguiente, pone el foco en la primera celda que se edita.
 function PasoDeLaHojaMisma({ paso }: { paso: PasoDeLaHoja }) {
@@ -66,7 +82,7 @@ function PasoDeLaHojaMisma({ paso }: { paso: PasoDeLaHoja }) {
         })
       }}
     >
-      {paso.etiqueta}
+      <Contenido paso={paso} />
     </button>
   )
 }
@@ -83,7 +99,7 @@ function PasoDeUnPanel({ paso, panel }: { paso: PasoDeLaHoja; panel: string }) {
         abrir()
       }}
     >
-      {paso.etiqueta}
+      <Contenido paso={paso} />
     </button>
   )
 }
