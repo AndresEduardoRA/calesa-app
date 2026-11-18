@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import type { Permisos } from '@/shared/lib/permisos'
 import { NAVEGACION } from '../_shell/navegacion'
 import { SECCION_DE_COTIZACION } from './cotizacion/seccion'
-import { PERMISOS_DE_EMPRESA } from './empresa/pestanas'
+import { PERMISOS_DE_EMPRESA, SECCION_DE_EMPRESA } from './empresa/seccion'
 import { SECCION_DE_FLUJOS } from './flujos/seccion'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
 import {
@@ -68,7 +68,8 @@ describe('secciones de configuración', () => {
     expect(existsSync(path.join(APP, SECCION_DE_WEB.ruta, 'page.tsx'))).toBe(true)
   })
 
-  it('Empresa se abre con los permisos de todas sus pestañas', () => {
+  it('Empresa viene de su carpeta y se abre con la unión de los permisos de sus sub-secciones', () => {
+    expect(porClave('empresa')).toBe(SECCION_DE_EMPRESA)
     expect(porClave('empresa')?.permisos).toBe(PERMISOS_DE_EMPRESA)
   })
 

@@ -25,8 +25,8 @@ test.afterAll(async () => {
 // Pantallas con interruptores de los dos tamaños: la matriz (normal), Empresa (normal, con su texto) y los campos de leads (`sm`).
 const PANTALLAS = [
   '/configuracion/roles',
-  '/configuracion/empresa?seccion=empresa',
-  '/configuracion/empresa?seccion=integraciones',
+  '/configuracion/empresa',
+  '/configuracion/empresa/integraciones',
   '/configuracion/leads?seccion=campos',
 ]
 
@@ -186,7 +186,7 @@ test('al 100 %: se dibuja igual, píxel a píxel, que con la pista y el pulgar e
 }) => {
   await entrar(page)
   for (const marcado of [true, false]) {
-    await page.goto('/configuracion/empresa?seccion=integraciones')
+    await page.goto('/configuracion/empresa/integraciones')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     const estado = marcado ? 'true' : 'false'
     const dePrueba = page.locator(`[data-slot=switch][data-size=default][aria-checked=${estado}]`)
@@ -246,8 +246,8 @@ const MARGEN_MINIMO = 16
 
 // Las pantallas con un `<Interruptor>` dentro de un `<Bloque>`; el segundo dato es el bloque que nace plegado y hay que abrir.
 const PANTALLAS_CON_TARJETA = [
-  ['/configuracion/empresa?seccion=empresa', 'Políticas'],
-  ['/configuracion/empresa?seccion=integraciones', null],
+  ['/configuracion/empresa', 'Políticas'],
+  ['/configuracion/empresa/integraciones', null],
 ] as const
 
 async function margenesConLaTarjeta(page: Page) {
@@ -291,7 +291,7 @@ test('al 200 %: una palabra larga en la ayuda se parte y el interruptor sigue de
 }) => {
   await textoGrandeAlCargar(page)
   await entrar(page)
-  await page.goto('/configuracion/empresa?seccion=integraciones')
+  await page.goto('/configuracion/empresa/integraciones')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   const raiz = page.locator('[data-slot=interruptor]').first()
   await raiz.evaluate((el) => {

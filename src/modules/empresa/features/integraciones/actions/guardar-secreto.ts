@@ -19,7 +19,7 @@ export const guardarSecreto = actionClient
     }
     const guardado = await repositorioIntegraciones.guardarSecreto(parsedInput)
     if (guardado.ok) {
-      revalidatePath(RUTAS.empresa)
+      revalidatePath(RUTAS.integracionesDeEmpresa)
     }
     return guardado
   })

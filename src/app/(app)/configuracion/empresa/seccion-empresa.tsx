@@ -9,7 +9,7 @@ import { FormularioEmpresa, IconosDeLaApp } from '@/modules/empresa/pantallas/co
 import { urlPublica, urlPublicaONull } from '@/shared/lib/almacen'
 import { datosO } from '@/shared/lib/errores'
 
-// La pestaña «Empresa». La lee cualquiera que llegue a la pantalla; quien no tiene
+// Lo que dibuja Datos de la empresa. La lee cualquiera que llegue a la pantalla; quien no tiene
 // `empresa.ajustes.gestionar` la ve deshabilitada, con el motivo.
 export async function SeccionEmpresa({ puedeEditar }: { puedeEditar: boolean }) {
   const [paraEditar, monedasYTipos] = await Promise.all([leerAjustes(), leerMonedasYTiposCambio()])

@@ -4,7 +4,7 @@ import { entornoPublico } from '@/shared/config/entorno'
 import { datosO } from '@/shared/lib/errores'
 import { EstadoVacio } from '@/shared/ui/estados'
 
-// La pestaña «Integraciones». Si están activas lo lee cualquiera; editarlas y cargar su clave,
+// Lo que dibuja Integraciones. Si están activas lo lee cualquiera; editarlas y cargar su clave,
 // quien tiene `empresa.ajustes.gestionar`. El conteo de la web pública lo pide sólo quien puede
 // editar (la RPC exige el permiso); si falla, la tarjeta da la ayuda general.
 export async function SeccionIntegraciones({ puedeEditar }: { puedeEditar: boolean }) {

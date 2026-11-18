@@ -93,7 +93,7 @@ test('la dueña cambia el nombre y la zona horaria y se ven en el shell', async 
   await page.getByRole('button', { name: `Menú de ${DUENA}` }).click()
   await page.getByRole('menuitem', { name: 'Configuración' }).click()
   await page.getByRole('link', { name: /Empresa/ }).click()
-  await expect(page.getByRole('heading', { name: 'Empresa', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Datos de la empresa', level: 1 })).toBeVisible()
 
   await page.getByLabel('Nombre de la empresa').fill(nombre)
   await page.getByLabel('Zona horaria').fill('Asia/Tokyo')
@@ -144,7 +144,7 @@ test('edita un tipo de cambio y aparece en la barra superior y en el historial',
   page,
 }) => {
   await entrar(page, duena)
-  await page.goto('/configuracion/empresa?seccion=monedas')
+  await page.goto('/configuracion/empresa/monedas')
   await expect(page.getByRole('heading', { name: 'Tipos de cambio' })).toBeVisible()
   const enLaBarra = page.getByRole('button', { name: 'Tipos de cambio' })
   await expect(enLaBarra).toContainText('11,68')
@@ -173,7 +173,7 @@ test('edita un tipo de cambio y aparece en la barra superior y en el historial',
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
-test('sin el permiso de ajustes, la pestaña Empresa sale deshabilitada con el motivo', async ({
+test('sin el permiso de ajustes, Datos de la empresa sale deshabilitada con el motivo', async ({
   page,
   browser,
 }) => {
@@ -190,8 +190,10 @@ test('sin el permiso de ajustes, la pestaña Empresa sale deshabilitada con el m
   await expect(suya.getByRole('button', { name: 'Subir logo', exact: true })).toBeDisabled()
   await expect(suya.getByRole('button', { name: 'Guardar', exact: true })).toBeHidden()
 
-  // Lo que sí gestiona, lo edita: los tipos de cambio.
-  await suya.getByRole('tab', { name: 'Monedas' }).click()
+  // Lo que sí gestiona, lo edita: los tipos de cambio, en su sub-ruta.
+  const menu = suya.getByRole('navigation', { name: 'Secciones de Configuración' })
+  await menu.getByRole('link', { name: 'Monedas y tipos de cambio' }).click()
+  await expect(suya).toHaveURL('/configuracion/empresa/monedas')
   await expect(suya.getByRole('button', { name: 'Nuevo tipo de cambio' })).toBeVisible()
   await suya.context().close()
 })
@@ -203,7 +205,7 @@ test('guarda la clave de apibara sin volver a mostrarla, y recién entonces la a
   test.skip(vault.hayClaveReal, 'hay una clave real de apibara: guardar otra la pisaría (9-8)')
   const secreto = `e2e-clave-${proyecto}-0123456789`
   await entrar(page, duena)
-  await page.goto('/configuracion/empresa?seccion=integraciones')
+  await page.goto('/configuracion/empresa/integraciones')
 
   // Sin clave guardada no se puede activar, y se dice por qué. La web pública tiene su propio
   // «Activa»: el de apibara es el de su tarjeta.

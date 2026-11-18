@@ -158,7 +158,7 @@ test('E2E escritorio · con los avisos de la empresa apagados el interruptor del
 test('E2E escritorio · Empresa › Integraciones enciende «Avisos push»', async ({ page }) => {
   dejarPushWeb(false)
   await entrar(page, duena, { fresco: true })
-  await page.goto('/configuracion/empresa?seccion=integraciones')
+  await page.goto('/configuracion/empresa/integraciones')
   const tarjeta = page.locator('details', { has: page.getByText('Avisos push', { exact: true }) })
   const activos = tarjeta.getByRole('switch', { name: 'Activos' })
   await expect(activos).toBeEnabled()
@@ -173,7 +173,7 @@ test('E2E escritorio · sin el permiso de ajustes «Avisos push» queda deshabil
   page,
 }) => {
   await entrar(page, sinPermisos, { fresco: true })
-  await page.goto('/configuracion/empresa?seccion=integraciones')
+  await page.goto('/configuracion/empresa/integraciones')
   const tarjeta = page.locator('details', { has: page.getByText('Avisos push', { exact: true }) })
   await expect(tarjeta.getByRole('switch', { name: 'Activos' })).toBeDisabled()
 })

@@ -32,7 +32,7 @@ export const DESTINOS_DE_PASO: Record<ClaveDePaso, Destino> = {
     motivo: 'Los reparte quien tiene el permiso «Gestionar roles».',
   },
   apibara: {
-    ruta: `${RUTAS.empresa}?seccion=integraciones`,
+    ruta: RUTAS.integracionesDeEmpresa,
     permiso: 'empresa.ajustes.gestionar',
     motivo: 'La activa quien tiene el permiso «Ajustes de la empresa».',
   },

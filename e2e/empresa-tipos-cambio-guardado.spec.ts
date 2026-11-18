@@ -38,7 +38,7 @@ test('mientras guarda no se puede teclear, y lo que se teclea al llegar lo guard
   await page.goto('/ingreso')
   await ingresar(page, duena, CLAVE)
   await expect(page).toHaveURL('/')
-  await page.goto('/configuracion/empresa?seccion=monedas')
+  await page.goto('/configuracion/empresa/monedas')
   await page.getByRole('button', { name: /^Oficial/ }).click()
   const panel = page.getByRole('dialog')
   const valor = panel.getByLabel(/^Valor/)
@@ -49,7 +49,7 @@ test('mientras guarda no se puede teclear, y lo que se teclea al llegar lo guard
     soltar = resolver
   })
   await page.route(
-    (url) => url.pathname === '/configuracion/empresa',
+    (url) => url.pathname === '/configuracion/empresa/monedas',
     async (ruta) => {
       if (ruta.request().method() === 'POST' && 'next-action' in ruta.request().headers()) {
         await retenida

@@ -1,5 +1,4 @@
 import {
-  Building2Icon,
   ContactRoundIcon,
   MapPinIcon,
   ShieldCheckIcon,
@@ -10,7 +9,7 @@ import { puede, type ClavePermiso, type Permisos } from '@/shared/lib/permisos'
 import { RUTAS } from '@/shared/lib/rutas'
 import { SECCION_DE_COLA_WEB } from './cola-web/seccion'
 import { SECCION_DE_COTIZACION } from './cotizacion/seccion'
-import { PERMISOS_DE_EMPRESA } from './empresa/pestanas'
+import { SECCION_DE_EMPRESA } from './empresa/seccion'
 import { SECCION_DE_FLUJOS } from './flujos/seccion'
 import { PERMISOS_DE_LEADS } from './leads/pestanas'
 import { SECCIONES_DE_LOGISTICA } from './logistica/seccion'
@@ -65,16 +64,7 @@ export type SeccionDeConfiguracion = {
 }
 
 export const SECCIONES = [
-  {
-    clave: 'empresa',
-    titulo: 'Empresa',
-    descripcion: 'La marca, los datos legales, la región, las monedas y las integraciones.',
-    ruta: RUTAS.empresa,
-    Icono: Building2Icon,
-    permisos: PERMISOS_DE_EMPRESA,
-    grupo: 'empresa-y-equipo',
-    subsecciones: [],
-  },
+  SECCION_DE_EMPRESA,
   {
     clave: 'equipo',
     titulo: 'Equipo',

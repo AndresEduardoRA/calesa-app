@@ -247,7 +247,7 @@ describe('PanelDelAjuste: cerrar y el tipo de cambio', () => {
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ir a Monedas' })).toHaveAttribute(
       'href',
-      '/configuracion/empresa?seccion=monedas',
+      '/configuracion/empresa/monedas',
     )
     expect(pedidos).toHaveLength(0)
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
