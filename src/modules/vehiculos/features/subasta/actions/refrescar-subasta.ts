@@ -20,6 +20,7 @@ import {
   fusionarRefresco,
   type DatosActuales,
 } from '../../../entities/subasta-refresco'
+import { fotosQueFaltan } from '../../../entities/subasta-fotos'
 import type { Vehiculo } from '../../../entities/vehiculo'
 import { esquemaRefrescarSubasta } from '../schemas/ficha'
 
@@ -122,5 +123,9 @@ export const refrescarSubasta = actionClient
       estado: escrito.data.estado,
       conservados: etiquetasDeConservados(refresco.conservados, { columnas, campos }),
       actualizados: Object.keys(refresco.columnas).length + Object.keys(refresco.atributos).length,
+      // Las fotos de esta respuesta que el vehículo todavía no tiene (ya filtradas: el bruto no cruza al navegador) y si no tiene ninguna (la primera
+      // queda de portada). «Actualizar los datos» las trae sin otra consulta; el «Refrescar» de la ficha no las usa.
+      fotasPorTraer: fotosQueFaltan(ficha.data, subasta.data?.fotosRegistradas ?? []),
+      sinFotos: vehiculo.portadaRuta === null,
     })
   })

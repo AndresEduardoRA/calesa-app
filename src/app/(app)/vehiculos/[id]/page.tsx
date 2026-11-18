@@ -3,12 +3,16 @@ import type { Metadata, Route } from 'next'
 import Link from 'next/link'
 import { z } from 'zod'
 import { rutaDeActividadDe } from '@/modules/actividad'
+import { integracionActiva } from '@/modules/empresa'
 import { puede, requerirSesion, type Permisos } from '@/modules/equipo'
 import { leerFasesDeOrigen } from '@/modules/flujos'
 import { getOrigenes, leerLayout, type OrigenResumen } from '@/modules/origenes'
 import {
+  PANEL_DE_IMAGENES,
+  datosDelPanelDeImagenes,
   editablesDe,
   eliminablesDe,
+  entradaDeRefresco,
   leerVehiculo,
   origenesVisibles,
   permisoDeVitrina,
@@ -22,6 +26,7 @@ import { buttonVariants } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { FichaEnDosColumnas, IndiceDeBloques } from '@/shared/ui/ficha-en-bloques'
 import { vehiculoEnEdicion } from '../edicion'
+import { paraCotizarDe } from '../para-cotizar'
 import { AvisosBajoLaCabecera } from './avisos-bajo-la-cabecera'
 import { papeleraYAvisosDe } from './avisos-de-la-ficha'
 import { RegistrarLaVisita } from './registrar-la-visita'
@@ -93,15 +98,26 @@ async function lecturasDeLaFicha(
   origen: OrigenResumen,
   parametros: Awaited<PageProps<'/vehiculos/[id]'>['searchParams']>,
 ) {
-  const [layout, fases, enEdicion, editables, previa, eliminables] = await Promise.all([
-    leerLayout(origen.id, { conUso: false }),
-    leerFasesDeOrigen(origen.id),
-    vehiculoEnEdicion(parametros, sesion, origen.id),
-    editablesDe(sesion, [encontrado]),
-    vistaPreviaDe(encontrado.id),
-    eliminablesDe(sesion, [encontrado]),
-  ])
+  const deSubasta = origen.tipo === 'subasta'
+  const [layout, fases, enEdicion, editables, previa, eliminables, apibaraActiva] =
+    await Promise.all([
+      leerLayout(origen.id, { conUso: false }),
+      leerFasesDeOrigen(origen.id),
+      vehiculoEnEdicion(parametros, sesion, origen.id),
+      editablesDe(sesion, [encontrado]),
+      vistaPreviaDe(encontrado.id),
+      eliminablesDe(sesion, [encontrado]),
+      // Sólo un origen de subasta consulta apibara («Actualizar los datos»); el resto ni pregunta.
+      deSubasta ? integracionActiva('apibara') : Promise.resolve(false),
+    ])
   const editable = editables.has(encontrado.id)
+  const conApibara = deSubasta && apibaraActiva
+  // «Editar imágenes» (`?panel=imagenes`): sus fotos se leen sólo cuando la URL lo pide.
+  const imagenes =
+    unParametro(parametros[CLAVE_DE_PANEL]) === PANEL_DE_IMAGENES
+      ? await datosDelPanelDeImagenes(sesion, encontrado.id, { conSubasta: conApibara })
+      : null
+  const consultable = entradaDeRefresco(encontrado) !== null
   const fase = datosO(fases).find((una) => una.id === encontrado.faseId) ?? null
   const { papelera, avisos, ofrecerPapelera } = await papeleraYAvisosDe({
     sesion,
@@ -121,6 +137,15 @@ async function lecturasDeLaFicha(
     enEdicion: enEdicion?.id === encontrado.id ? enEdicion : null,
     previa,
     publicar: permisoDeVitrina(sesion.permisos, origen),
+    paraCotizar: paraCotizarDe(sesion.permisos, origen),
+    editaEnElOrigen: puede(sesion.permisos, 'vehiculos.editar', origen.id),
+    subasta: conApibara ? { consultable } : null,
+    imagenes,
+    // El panel de «Actualizar los datos» sólo se abre si la acción se ofrece habilitada.
+    actualizar:
+      conApibara && consultable && editable
+        ? { puedeConfigurar: puede(sesion.permisos, 'empresa.ajustes.gestionar') }
+        : null,
   }
 }
 
@@ -187,6 +212,9 @@ export default async function PaginaVehiculo({
                 paraActividad={paraActividadDe(sesion.permisos, encontrado.id)}
                 papelera={lectura.papelera}
                 avisos={avisos}
+                paraCotizar={lectura.paraCotizar}
+                editaEnElOrigen={lectura.editaEnElOrigen}
+                subasta={lectura.subasta}
               />
             }
             vehiculo={encontrado}
@@ -218,6 +246,8 @@ export default async function PaginaVehiculo({
         previa={previa}
         publicar={publicar}
         enEdicion={lectura.enEdicion}
+        imagenes={lectura.imagenes}
+        actualizar={lectura.actualizar}
       />
     </>
   )

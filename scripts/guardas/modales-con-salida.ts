@@ -27,6 +27,11 @@ export const MODALES: Record<string, RegistroDeModal> = {
     sinFormulario:
       'sólo dibuja los estados de carga, error y sin tipos; los formularios de anotar y agendar son ModalDeFormulario',
   },
+  // --- vehiculos
+  'src/modules/vehiculos/features/subasta/components/actualizar-los-datos.tsx': {
+    sinFormulario:
+      'sólo confirma una consulta a apibara («Sí, actualizar» / «No, volver»); nada tipeado que se pierda al cerrar',
+  },
   // --- shell
   'src/app/(app)/_shell/nuevo/modal-de-nuevo.tsx': {
     sinFormulario:

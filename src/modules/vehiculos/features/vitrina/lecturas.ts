@@ -1,5 +1,6 @@
 import 'server-only'
-import { leerVistaPrevia, leerVitrinaDelOrigen } from '../../composicion'
+import { leerVehiculo, leerVistaPrevia, leerVitrinaDelOrigen } from '../../composicion'
+import type { DatosDelPanelDeVitrina } from '../../entities/paneles-de-la-lista'
 import {
   VITRINA_CERRADA,
   type VistaPreviaDeVitrina,
@@ -17,4 +18,18 @@ export async function vitrinaDelOrigen(origenId: string): Promise<VitrinaDelOrig
 export async function vistaPreviaDe(vehiculoId: string): Promise<VistaPreviaDeVitrina | null> {
   const leida = await leerVistaPrevia(vehiculoId)
   return leida.ok ? leida.data : null
+}
+
+// Lo que el panel de la vitrina del inventario muestra de un vehículo (`?panel=vitrina&para=<id>`): el vehículo y su vista previa, leídos en paralelo
+// sólo cuando la URL nombra el panel. Lo que no existe, no se ve o es de otro origen da `disponible: false`.
+export async function datosDelPanelDeVitrina(
+  id: string,
+  origenId?: string,
+): Promise<DatosDelPanelDeVitrina> {
+  const [leido, previa] = await Promise.all([leerVehiculo(id), vistaPreviaDe(id)])
+  const vehiculo = leido.ok ? leido.data : null
+  if (!vehiculo || (origenId !== undefined && vehiculo.origenId !== origenId)) {
+    return { id, disponible: false }
+  }
+  return { id, disponible: true, vehiculo, previa }
 }

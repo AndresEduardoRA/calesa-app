@@ -1,130 +1,96 @@
 'use client'
 
 import type { Route } from 'next'
-import { Trash2Icon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import type { AccionDelAviso, AccionesDeUnAviso } from '@/shared/lib/acciones-del-aviso'
-import { RUTAS } from '@/shared/lib/rutas'
-import { MasAcciones, type AccionDeMenu } from '@/shared/ui/lista'
-import {
-  ETIQUETA_DE_ACCION_DE_VEHICULO,
-  accionesDeVehiculo,
-  type OfertaDeAccion,
-} from '../../../entities/acciones-de-vehiculo'
+import { conVuelta } from '@/shared/lib/rutas'
+import { MasAcciones } from '@/shared/ui/lista'
+import { accionesDeVehiculo } from '../../../entities/acciones-de-vehiculo'
 import type { AvisosDelMenu } from '../../../entities/avisos-de-vehiculo'
+import {
+  soloLasOfertas,
+  type OfertasConMotivo,
+} from '../../../entities/ofertas-del-menu-de-vehiculo'
 import type { PermisoDePapelera } from '../../../entities/papelera-permiso'
-import type { PermisoDeVitrina } from '../../../entities/vitrina'
 import { usePanelDeVehiculo } from '../../alta/hooks/use-panel-de-vehiculo'
 import { useEnvioAPapelera } from '../../papelera/hooks/use-envio-a-papelera'
+import { lineasDelMenu } from './lineas-del-menu-de-vehiculo'
+
+const sinAccion = () => undefined
 
 type Props = {
-  vehiculo: { id: string; titulo: string; origenId: string; actualizadoEn: string }
-  // Se ofrece «Editar» en el menú: la fila y la tarjeta. En la ficha es un botón de la cabecera.
-  editar: boolean
-  // «Cotizar vehículo»: la ruta de la hoja con este vehículo y su origen (`rutaParaCotizar()`), sólo en la fila y la tarjeta y si quien mira
-  // cotiza en ese origen. Sin ella, no se ofrece.
-  cotizar?: string | null
-  // «Publicar en la web…»: nulo no se ofrece (la lista lo calla sin el permiso); apagado se ve con el motivo (la ficha, siempre).
-  publicar: PermisoDeVitrina | null
+  vehiculo: {
+    id: string
+    titulo: string
+    origenId: string
+    actualizadoEn: string
+    publicadoWeb: boolean
+  }
+  // Cuándo se ofrece cada acción (`ofertasDelMenuDeVehiculo()`, con lo que sabe la superficie).
+  ofertas: OfertasConMotivo
+  // La papelera de este vehículo: sus salidas cuando está apagada.
   papelera: PermisoDePapelera
-  // Qué hace «Publicar en la web…» donde el panel de la vitrina ya está (la ficha). Sin esto lleva a la ficha con el panel abierto.
+  // «Cotizar vehículo»: la hoja con este vehículo (`rutaParaCotizar()`); al elegirla se le suma `returnTo` = donde se estaba.
+  paraCotizar: string | null
+  // «Ver actividad»: `/actividad` de este vehículo.
+  paraActividad: string | null
+  // Lo que abre cada panel donde se dibuja el menú (el inventario con `para=<id>`, la ficha sin él).
+  alEditarImagenes?: () => void
   alPublicar?: () => void
+  alActualizar?: () => void
   // Se envió: el vehículo ya no está donde se miraba (la ficha vuelve al inventario).
   alEnviado?: () => void
   // En una cabecera (la ficha): con borde, como los botones de al lado.
   conBorde?: boolean
-  // «Ver actividad»: sólo la ficha, y sólo con `actividad.ver` (la ruta la arma la página). Sin esto, no se ofrece.
-  alVerActividad?: (() => void) | undefined
   // Sin esto, un envío rechazado dice el motivo y nada más. Con esto, ofrece lo que corresponde a su causa.
   avisos?: AvisosDelMenu
 }
 
-const oferta = (
-  permiso: { estado: 'oculto' | 'deshabilitado' | 'habilitado' } | null,
-): OfertaDeAccion =>
-  permiso === null || permiso.estado === 'oculto'
-    ? 'oculta'
-    : permiso.estado === 'deshabilitado'
-      ? 'apagada'
-      : 'habilitada'
-
-// «Publicar en la web…» lleva a la ficha con su panel abierto: el panel y la vista previa de lo que verá el visitante viven en la ficha.
-const aLaVitrina = (id: string) => `${RUTAS.vehiculos}/${id}?panel=vitrina`
-
-// El «⋯» de un vehículo: la lista de siempre (`accionesDeVehiculo()`), igual en la fila, la tarjeta y la ficha. «Enviar a la
-// papelera» se hace sin preguntar y ofrece «Deshacer»; lo que ya se sabe que la base va a rechazar (vinculado, fuera de su fase inicial)
-// se ve apagado con el motivo. Sin nada que ofrecer no se dibuja.
+// El «⋯» de un vehículo: la lista única (`accionesDeVehiculo()`), igual en la fila, la tarjeta y la ficha, con «Cotizar vehículo» como principal.
+// «Enviar a la papelera» se hace sin preguntar y ofrece «Deshacer»; lo que ya se sabe que la base va a rechazar se ve apagado con el motivo. Sin nada
+// que ofrecer no se dibuja.
 export function MenuDeVehiculo(props: Props) {
-  const { vehiculo, editar, publicar, papelera, alPublicar, alEnviado, conBorde, alVerActividad } =
-    props
+  const { vehiculo, ofertas, papelera, paraCotizar, paraActividad, alEnviado, conBorde } = props
   const router = useRouter()
   const panel = usePanelDeVehiculo()
   const envio = useEnvioAPapelera()
-  const cotizar = props.cotizar ?? null
-  const bloques = accionesDeVehiculo({
-    editar: editar ? 'habilitada' : 'oculta',
-    cotizar: cotizar === null ? 'oculta' : 'habilitada',
-    publicar: oferta(publicar),
-    papelera: oferta(papelera),
-    actividad: alVerActividad ? 'habilitada' : 'oculta',
-  })
+  const bloques = accionesDeVehiculo(soloLasOfertas(ofertas))
   if (bloques.length === 0) {
     return null
   }
-  const motivoDe = (permiso: { estado: string; motivo?: string } | null) =>
-    permiso?.estado === 'deshabilitado' ? (permiso.motivo ?? null) : null
-
-  const lineas: Record<string, () => AccionDeMenu[]> = {
-    editar: () =>
-      lineaDe('editar', () => {
-        panel.editar(vehiculo.id)
-      }),
-    cotizar: () =>
-      lineaDeCotizar(cotizar, (ruta) => {
-        router.push(ruta as Route)
-      }),
-    publicar: () => [
-      {
-        tipo: 'accion',
-        clave: 'publicar',
-        etiqueta: ETIQUETA_DE_ACCION_DE_VEHICULO.publicar,
-        despuesDeCerrar: true,
-        deshabilitada: publicar?.estado === 'deshabilitado',
-        alElegir:
-          alPublicar ??
-          (() => {
-            router.push(aLaVitrina(vehiculo.id) as Route)
-          }),
-      },
-      ...notaDe(motivoDe(publicar), 'motivo-publicar'),
-    ],
-    actividad: () => lineaDeActividad(alVerActividad),
-    papelera: () => [
-      {
-        tipo: 'accion',
-        clave: 'papelera',
-        etiqueta: ETIQUETA_DE_ACCION_DE_VEHICULO.papelera,
-        icono: <Trash2Icon aria-hidden />,
-        destructiva: true,
-        deshabilitada: envio.enCurso || papelera.estado === 'deshabilitado',
-        alElegir: () => {
-          void envio.enviar([vehiculo], props.avisos).then((entro) => {
-            if (entro) {
-              alEnviado?.()
-            }
-          })
-        },
-      },
-      ...notaDe(motivoDe(papelera), 'motivo-papelera'),
-      ...lineasDeSalida(papelera, (ruta) => {
-        router.push(ruta as Route)
-      }),
-    ],
+  const ir = (ruta: string) => {
+    router.push(ruta as Route)
   }
-  const acciones = bloques.flatMap((bloque, indice) => [
-    ...(indice > 0 ? [{ tipo: 'separador' as const, clave: `separador-${String(indice)}` }] : []),
-    ...bloque.flatMap((clave) => lineas[clave]?.() ?? []),
-  ])
+  const acciones = lineasDelMenu(bloques, {
+    ofertas,
+    publicado: vehiculo.publicadoWeb,
+    papelera,
+    enviando: envio.enCurso,
+    // La ruta de vuelta se calcula al elegir: la lista con su consulta de ese momento, o la ficha.
+    cotizar: () => {
+      if (paraCotizar !== null) {
+        ir(conVuelta(paraCotizar, `${window.location.pathname}${window.location.search}`))
+      }
+    },
+    editar: () => {
+      panel.editar(vehiculo.id)
+    },
+    imagenes: props.alEditarImagenes ?? sinAccion,
+    publicar: props.alPublicar ?? sinAccion,
+    actualizar: props.alActualizar ?? sinAccion,
+    verActividad: () => {
+      if (paraActividad !== null) {
+        ir(paraActividad)
+      }
+    },
+    enviarAPapelera: () => {
+      void envio.enviar([vehiculo], props.avisos).then((entro) => {
+        if (entro) {
+          alEnviado?.()
+        }
+      })
+    },
+    ir,
+  })
   return (
     <MasAcciones
       nombre={vehiculo.titulo}
@@ -133,69 +99,4 @@ export function MenuDeVehiculo(props: Props) {
       conBorde={conBorde}
     />
   )
-}
-
-// Una línea simple del «⋯», que se elige con el menú ya cerrado (abre un panel o navega).
-function lineaDe(clave: 'editar' | 'cotizar', alElegir: () => void): AccionDeMenu[] {
-  return [
-    {
-      tipo: 'accion',
-      clave,
-      etiqueta: ETIQUETA_DE_ACCION_DE_VEHICULO[clave],
-      despuesDeCerrar: true,
-      alElegir,
-    },
-  ]
-}
-
-// «Cotizar vehículo» lleva a la hoja con este vehículo (sólo se ofrece con su ruta).
-function lineaDeCotizar(ruta: string | null, ir: (ruta: string) => void): AccionDeMenu[] {
-  return ruta === null
-    ? []
-    : lineaDe('cotizar', () => {
-        ir(ruta)
-      })
-}
-
-// «Ver actividad» lleva a `/actividad` de este vehículo (sólo se ofrece con `alVerActividad`).
-function lineaDeActividad(alVerActividad: (() => void) | undefined): AccionDeMenu[] {
-  return [
-    {
-      tipo: 'accion',
-      clave: 'actividad',
-      etiqueta: ETIQUETA_DE_ACCION_DE_VEHICULO.actividad,
-      alElegir: alVerActividad ?? (() => undefined),
-    },
-  ]
-}
-
-function notaDe(motivo: string | null, clave: string): AccionDeMenu[] {
-  return motivo === null ? [] : [{ tipo: 'nota', clave, texto: motivo }]
-}
-
-// Del «⋯» sólo se ofrece lo que navega: ninguna acción de un bloqueo es otra cosa.
-const esNavegacion = (accion: AccionDelAviso): accion is Extract<AccionDelAviso, { tipo: 'ir' }> =>
-  accion.tipo === 'ir'
-
-// Bajo el motivo de la papelera apagada: lo que se puede hacer ahí mismo (una línea por acción, la principal primero) y, si falta el permiso para
-// lo que destraba, el pedido como otra nota.
-function lineasDeSalida(papelera: PermisoDePapelera, ir: (ruta: string) => void): AccionDeMenu[] {
-  if (papelera.estado !== 'deshabilitado') {
-    return []
-  }
-  const { acciones, pedido }: AccionesDeUnAviso = papelera.acciones
-  return [
-    ...acciones.filter(esNavegacion).map((accion, indice): AccionDeMenu => ({
-      tipo: 'accion',
-      clave: `salida-${String(indice)}`,
-      etiqueta: accion.etiqueta,
-      despuesDeCerrar: true,
-      alElegir: () => {
-        ir(accion.ruta)
-      },
-    })),
-    ...(pedido === null
-      ? []
-      : [{ tipo: 'nota' as const, clave: 'pedido-papelera', texto: pedido }]),
-  ]
 }

@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react'
 import { Aviso } from '@/shared/ui/aviso'
+import { useCambiosSinGuardar } from '@/shared/ui/cambios-del-panel'
 import { useEnLinea } from '@/shared/ui/use-en-linea'
 import { ZonaDeArchivos } from '@/shared/ui/zona-de-archivos'
 import { MAXIMO_DE_FOTOS, lugarPara, type Foto } from '../../../entities/foto'
@@ -22,6 +23,8 @@ export function SubidaDeFotos({ vehiculoId, fotos }: Props) {
   const lugar = lugarPara(fotos)
   const vistos = verBandeja(bandeja, existentes, lugar)
   const lleno = lugar === 0
+  // En el drawer «Editar imágenes», cerrar con fotos elegidas y sin subir pregunta: la bandeja no tiene borrador. Fuera de un drawer no hace nada.
+  useCambiosSinGuardar(vistos.length > 0, undefined, { preguntaAlCerrar: true })
   return (
     <div className="grid gap-3">
       <ZonaDeArchivos

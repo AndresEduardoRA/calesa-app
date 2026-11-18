@@ -8,6 +8,7 @@ import type { ErrorApp } from '@/shared/lib/errores'
 import { avisar, avisarError, avisarExito } from '@/shared/ui/toasts'
 import { consultarFicha } from '../../../composicion.client'
 import { pideRevisarIntegracion, sePuedeReintentar } from '../../../entities/apibara'
+import type { FotoDeSubasta } from '../../../entities/subasta-fotos'
 import { respuestaDe } from '../../fotos/envio'
 import { refrescarSubasta } from '../actions/refrescar-subasta'
 import { RUTA_DE_INTEGRACIONES } from '../ruta'
@@ -33,7 +34,14 @@ export function resumenDelRefresco(actualizados: number, conservados: readonly s
 
 // Cómo terminó un refresco: lo escrito, o el motivo con lo que se puede hacer (reintentar sólo sirve si el fallo es del momento).
 export type ResultadoDelRefresco =
-  | { ok: true; actualizados: number; conservados: string[] }
+  | {
+      ok: true
+      actualizados: number
+      conservados: string[]
+      // Las fotos de la respuesta que el vehículo no tiene y si no tiene ninguna: «Actualizar los datos» las trae (el resto lo ignora).
+      fotasPorTraer?: FotoDeSubasta[]
+      sinFotos?: boolean
+    }
   | {
       ok: false
       mensaje: string

@@ -24,6 +24,11 @@ import { AtajoSinResolver } from './atajo-sin-resolver'
 import { PestanasDeOrigen } from './pestanas-de-origen'
 import { PieDeFiltros } from './pie-de-filtros'
 import { ResultadoDelListado } from './resultado-del-listado'
+import type { SubastaDeLaLista } from './paneles-de-la-lista'
+import type {
+  DatosDelPanelDeImagenes,
+  DatosDelPanelDeVitrina,
+} from '../../../entities/paneles-de-la-lista'
 import type { DatosDelOrigen, FilaDeVehiculo } from './tipos'
 import { useOpcionesDelListado } from './opciones-del-listado'
 import { ProveedorDeMarcasDeVisto } from '@/modules/equipo/client'
@@ -46,6 +51,8 @@ type Props = DatosDelOrigen & {
   // Los vehículos de esta página que puede editar, y el que está editando (`?editar=`).
   editables: readonly string[]
   enEdicion: Vehiculo | null
+  // Si edita en este origen: lo que no puede editar se ve apagado en el «⋯», no oculto.
+  editaEnElOrigen: boolean
   // Los que puede enviar a la papelera (se eligen y se mandan juntos), y si puede abrirla.
   eliminables: readonly string[]
   // De los de esta página, cuáles tienen un lead que puede abrir, y lo que puede abrir desde un aviso («Ver el lead», «Ver en logística»…).
@@ -60,6 +67,13 @@ type Props = DatosDelOrigen & {
   publicar: PermisoDeVitrina
   // «Cotizar vehículo» del «⋯» de la fila: la hoja de cotizar de este origen, o null si no cotiza en él (lo decide la página).
   paraCotizar: ParaCotizar | null
+  // «Ver actividad» del «⋯»: la plantilla de `/actividad` con `MARCADOR_DE_VEHICULO`, o null sin `actividad.ver`.
+  paraActividad: string | null
+  // «Actualizar los datos»: en un origen de subasta con apibara encendida, lo de esta página que se puede consultar; null = no aplica.
+  subasta: SubastaDeLaLista | null
+  // Lo que el servidor leyó para el panel que nombra la URL (`?panel=imagenes|vitrina&para=<id>`); null si no lo nombra.
+  panelDeImagenes: DatosDelPanelDeImagenes | null
+  panelDeVitrina: DatosDelPanelDeVitrina | null
   // Tabla o tarjetas en escritorio, lo que eligió la última vez (`vehiculos.vista`); null = nunca eligió.
   vistaPreferida: VistaDeLista | null
   // Cuántas subastas esperan resolverse en este origen (hasta el tope), para el atajo «Sin resolver»; null = el origen no tiene subasta o no se pudo leer.

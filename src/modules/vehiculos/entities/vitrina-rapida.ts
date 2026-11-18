@@ -1,4 +1,5 @@
-// Publicar o sacar de la web desde la lista (B3): lo que se manda a `vehiculo_vitrina` a partir de lo que la fila ya tiene guardado. Sin I/O.
+// Sacar de la web desde la lista (y su «Deshacer»): lo que se manda a `vehiculo_vitrina` a partir de lo que la fila ya tiene guardado. Publicar desde la
+// lista abre el panel completo de la vitrina. Sin I/O.
 import type { Vehiculo } from './vehiculo'
 import type { DatosDeVitrina } from './vitrina'
 
@@ -14,24 +15,14 @@ export type DeLaFila = Pick<
   | 'destacadoWeb'
 >
 
-// Lo que la fila ya tiene guardado de la vitrina, con lo que cambia (publicar con un precio, o sacar). Un «hasta» menor que el precio nuevo se
-// suelta: la base lo rechazaría. Sacar apaga también el destacado, como el panel.
-export function datosDeLaFila(
-  vehiculo: DeLaFila,
-  publicado: boolean,
-  precio?: number | null,
-): DatosDeVitrina {
-  const nuevoPrecio = precio === undefined ? vehiculo.precioWeb : precio
-  const hasta =
-    nuevoPrecio !== null &&
-    vehiculo.precioWebHasta !== null &&
-    vehiculo.precioWebHasta >= nuevoPrecio
-      ? vehiculo.precioWebHasta
-      : null
+// Lo que la fila ya tiene guardado de la vitrina, con el interruptor como se pide (sacar, o volver a publicar al deshacer). Sacar apaga también el
+// destacado, como el panel; el precio, el «hasta» y la nota quedan para la próxima vez.
+export function datosDeLaFila(vehiculo: DeLaFila, publicado: boolean): DatosDeVitrina {
+  const precio = vehiculo.precioWeb
   return {
     publicado,
-    precio: nuevoPrecio,
-    precioHasta: nuevoPrecio === null ? null : hasta,
+    precio,
+    precioHasta: precio === null ? null : vehiculo.precioWebHasta,
     nota: vehiculo.precioWebNota,
     destacado: publicado ? vehiculo.destacadoWeb : false,
   }

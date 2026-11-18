@@ -76,9 +76,15 @@ export const DRAWERS_DEL_NUCLEO: Record<string, RegistroDeDrawer> = {
     formulario: 'src/modules/vehiculos/features/vitrina/components/formulario-de-vitrina.tsx',
     mecanismo: 'contexto',
   },
-  // El precio público que falta para publicar desde la lista (B3).
-  'src/modules/vehiculos/features/vitrina/components/panel-de-vitrina-rapida.tsx': {
-    formulario: 'src/modules/vehiculos/features/vitrina/components/panel-de-vitrina-rapida.tsx',
+  // El mismo formulario de la vitrina, abierto desde el inventario (`?panel=vitrina&para=<id>`, T336).
+  'src/modules/vehiculos/features/vitrina/components/panel-de-vitrina-de-la-lista.tsx': {
+    formulario: 'src/modules/vehiculos/features/vitrina/components/formulario-de-vitrina.tsx',
+    mecanismo: 'contexto',
+  },
+  // «Editar imágenes» del «⋯» (T336): la galería guarda cada cambio al instante; lo que se pierde al cerrar son las fotos elegidas y sin subir de la
+  // bandeja, que no tiene borrador (`preguntaAlCerrar`).
+  'src/modules/vehiculos/features/fotos/components/panel-de-imagenes.tsx': {
+    formulario: 'src/modules/vehiculos/features/fotos/components/subida-de-fotos.tsx',
     mecanismo: 'contexto',
   },
   // La nota de un interés que se tipea y no se manda no tiene borrador: el panel pide `preguntaAlCerrar` (cierre 4) y pregunta
