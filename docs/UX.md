@@ -246,7 +246,25 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     Aprobar es lo de la cabecera (aviso con «Deshacer» 10 s, PT409 con quién y cuándo y «Recargar», «Sin conexión: no se aprobó…») y el bloque relee su primera
     página. Sin otras que quien mira vea, sin vehículo o con uno que no ve, no se dibuja. Esqueleto de tres filas; error «No pudimos cargar las cotizaciones de
     este vehículo.» con «Reintentar» (sin tumbar la página ni el resumen); el de «Ver más», «No se pudieron cargar más.». Angosto o al 200 %, cada fila en una
-    columna y los botones a todo el ancho. Las casillas de comparar llegan con «Comparar».
+    columna y los botones a todo el ancho. Cada fila lleva a la izquierda su casilla de comparar (44 px; «Comparar la n.º N»), también «Esta» y la aprobada:
+    **«Comparar»** va en la fila del título del bloque, apagado hasta tener 2 con «Elige 2 o 3 para comparar.» a su lado; con 3 las demás casillas se
+    apagan y dice «Puedes comparar hasta 3.». Abre «Comparar cotizaciones» con las elegidas en el orden de la lista y `returnTo` a la página de donde se
+    vino; tras aprobar o releer, las elegidas que ya no están se sueltan.
+  - **Comparar cotizaciones** — `/cotizaciones/comparar?ids=a,b[,c]&returnTo=` (pide sesión; cada una, `cotizaciones.ver` de su origen: lo decide la base).
+    2 o 3 del mismo vehículo, **lo guardado** de cada una (su versión de la fórmula, sus valores y su total, recortados al nivel de quien mira; sin
+    recálculo), en el orden de `ids` (la primera es la referencia). Arriba, «Comparar cotizaciones», el título del vehículo (si lo ve) y «Volver» (a
+    `returnTo` si es interno; si no, `/cotizaciones`). Una tabla con la **columna de etiquetas fija** y una columna por cotización: cabecera con «N.º N ·
+    título», autor · fecha · «Fórmula vN», insignias «Aprobada», «Final», «Vencida» y el total (`<Monto>`) con su modo; después una fila por sección del
+    diseño y una por nodo que quien mira ve, alineadas por nodo (el rótulo, el de la primera que lo tiene; el porcentaje de un par, su fila; lo que la
+    tarjeta suma aparte, en «Totales»). Lo que una versión no tiene o quien mira no ve en ella: «—» («No está en esta versión» para el lector). **Lo distinto
+    de la primera**: fondo de acento y ↑, ↓ o ≠ con «Más que la primera», «Menos que la primera» o «Distinta de la primera» para el lector (sin cifras en
+    `aria-label` ni `title`). Al pie de cada columna, **«Aprobar esta»** (como en «De este vehículo»: apagado con su motivo, un envío a la vez, «Aprobando…»;
+    al entrar la insignia «Aprobada» pasa a esa columna sin recargar, con «Deshacer» 10 s; PT409 con quién y cuándo y «Recargar»; «Sin conexión: no se
+    aprobó…») o, en la aprobada, su insignia; y «Abrir». `ids` mal formados, 1 o más de 3, repetidos, sin vehículo, de vehículos distintos o alguno que
+    no se ve: «Sólo se comparan 2 o 3 cotizaciones del mismo vehículo que puedas ver.» con «Volver», sin decir cuál. Esqueleto propio (`loading.tsx` y
+    `<Suspense>`); si falla la lectura de las marcas, el error de la pantalla con «Reintentar»; si falla una columna, «No pudimos cargar la cotización #N.»
+    con «Reintentar» en su cabecera y las demás siguen. En el celular y al 200 %, la tabla se desplaza de costado dentro de su caja con la pista de
+    desborde (cada columna de 12 rem o más; la de etiquetas, a lo sumo el 40 %) y la página no desborda; el pie queda bajo su columna.
 - **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila, «Abrir cotización», «De este vehículo» —ver
   «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado— y debajo las
   **pestañas** `?pestana=`: «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
