@@ -17,6 +17,8 @@ export { fuenteDelInventario, type FuenteDelInventario } from './entities/fuente
 // Un `/vehiculos?vehiculo=<id>` viejo (la lista ya no tiene resumen): a dónde redirige, en la ficha.
 export { destinoDelEnlaceViejo } from './entities/enlace-viejo-del-resumen'
 export type { Vehiculo } from './entities/vehiculo'
+// La zona del patio de un vehículo de subasta (de sus atributos): la hora del patio en el texto para compartir una cotización
+export { zonaDelPatioDe } from './entities/zona-del-patio'
 export type {
   AprobadasDeLaPagina,
   CotizacionAprobadaDeLaFila,

@@ -9,6 +9,7 @@ import { HUECOS_DE_COMENTARIOS_EN_EL_RESUMEN } from '@/modules/cotizaciones/pant
 import { HUECOS_DE_COMPROBANTES_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/comprobantes-resumen'
 import { DialogoDeMarcarFinalDeLaFila } from '@/modules/cotizaciones/pantallas/final-listado'
 import { ListadoDeCotizaciones } from '@/modules/cotizaciones/pantallas/listado'
+import { DialogoDeCompartirDeLaFila } from '@/modules/cotizaciones/pantallas/tarjeta-compartir'
 import { HUECOS_DE_TARJETA_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/tarjeta-resumen'
 import { MenuDeLaFila } from './menu-de-la-fila'
 import { useAccionesDeLaLista } from './use-acciones-de-la-lista'
@@ -30,7 +31,7 @@ const HUECOS_DEL_RESUMEN = {
   ...HUECOS_DE_APROBADA_EN_EL_RESUMEN,
 }
 
-// El listado de cotizaciones con su columna de acciones: une el «⋯» de cada fila con lo que hace cada área (aprobar, marcar final, favorita, reportar, moderar y la papelera: las mismas
+// El listado de cotizaciones con su columna de acciones: une el «⋯» de cada fila con lo que hace cada área (compartir, aprobar, marcar final, favorita, reportar, moderar y la papelera: las mismas
 // actions y los mismos diálogos de la guardada) y monta los diálogos una vez. Es un Client Component porque el «⋯» necesita las filas y sus funciones; el servidor sólo manda datos.
 export function ListadoConAcciones({ menus, ...props }: Props) {
   const filas = props.pagina.filas
@@ -58,6 +59,7 @@ export function ListadoConAcciones({ menus, ...props }: Props) {
       }}
       dialogos={
         <>
+          <DialogoDeCompartirDeLaFila />
           <DialogoDeMarcarFinalDeLaFila
             de={(id) => {
               const fila = filas.find((una) => una.id === id)

@@ -2,18 +2,18 @@
 
 import { CopyIcon, DownloadIcon, ImageIcon, Share2Icon } from 'lucide-react'
 import { useState } from 'react'
-import { MENSAJE_INESPERADO } from '@/shared/lib/errores'
-import { Button } from '@/shared/ui/button'
-import { avisar, avisarError, avisarExito } from '@/shared/ui/toasts'
-import type { ImagenParaCompartir, Parte } from '../../../hooks/use-para-compartir'
-import { motivosDeLasAcciones } from './motivos-de-las-acciones'
 import {
   capacidadesDelNavegador,
   compartirConElSistema,
   copiarImagen,
   copiarTexto,
-  descargarImagen,
-} from './navegador'
+  descargarArchivo,
+} from '@/shared/lib/compartir'
+import { MENSAJE_INESPERADO } from '@/shared/lib/errores'
+import { Button } from '@/shared/ui/button'
+import { avisar, avisarError, avisarExito } from '@/shared/ui/toasts'
+import type { ImagenParaCompartir, Parte } from '../../../hooks/use-para-compartir'
+import { motivosDeLasAcciones } from './motivos-de-las-acciones'
 
 type Props = {
   imagen: Parte<ImagenParaCompartir>
@@ -24,7 +24,13 @@ type Props = {
 
 const ID_DE_MOTIVOS = 'compartir-motivos'
 
+const NOMBRE_DEL_ARCHIVO = 'tipos-de-cambio.png'
+
 const FALLO = { codigo: 'inesperado', mensaje: MENSAJE_INESPERADO } as const
+
+// La imagen como el archivo que va al menú del sistema (ninguno si todavía no llegó).
+const archivosDe = (imagen: ImagenParaCompartir | null): File[] =>
+  imagen === null ? [] : [new File([imagen.blob], NOMBRE_DEL_ARCHIVO, { type: 'image/png' })]
 
 function Accion(props: {
   motivo: string | null
@@ -69,8 +75,8 @@ export function AccionesDeCompartir({ imagen, texto, sinElegir }: Props) {
 
   async function compartir(textoAEnviar: string) {
     try {
-      const resultado = await compartirConElSistema(textoAEnviar, laImagen?.blob ?? null)
-      if (resultado !== null && laImagen !== null && !resultado.conImagen) {
+      const resultado = await compartirConElSistema(textoAEnviar, archivosDe(laImagen))
+      if (resultado !== null && laImagen !== null && !resultado.conArchivos) {
         avisar('Se compartió el texto. Este navegador no comparte imágenes: descárgala.')
       }
     } catch {
@@ -122,7 +128,7 @@ export function AccionesDeCompartir({ imagen, texto, sinElegir }: Props) {
           Icono={DownloadIcon}
           alHacer={() => {
             if (laImagen !== null) {
-              descargarImagen(laImagen.url)
+              descargarArchivo(laImagen.url, NOMBRE_DEL_ARCHIVO)
             }
           }}
         />

@@ -1,11 +1,13 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { MenuDeUnaFila } from '@/modules/cotizaciones/pantallas/listado'
+import { CLASE_LIVE } from '@/shared/ui/guion-live'
 import { MenuDeLaFila, type AccionesDeLaFila } from './menu-de-la-fila'
 
 afterEach(cleanup)
 
 const acciones = (): AccionesDeLaFila => ({
+  compartir: vi.fn(),
   aprobar: vi.fn(),
   marcarFinal: vi.fn(),
   favorita: vi.fn(),
@@ -19,6 +21,7 @@ const menu = (extra: Partial<MenuDeUnaFila> = {}): MenuDeUnaFila => ({
   favorita: false,
   miMotivo: null,
   ofertas: {
+    compartir: { motivo: null },
     aprobar: { motivo: null },
     final: { motivo: 'Para marcarla final, elige el vehículo y guarda.' },
     favorita: { motivo: null },
@@ -64,6 +67,8 @@ describe('MenuDeLaFila', () => {
   it('dibuja la lista única: por bloques, con un separador entre ellos y la papelera al final', async () => {
     await abrir()
     expect(lineas()).toEqual([
+      'Compartir cotización…',
+      '---',
       'Aprobar',
       'Marcar final…',
       '---',
@@ -74,6 +79,17 @@ describe('MenuDeLaFila', () => {
       '---',
       'Enviar a la papelera',
     ])
+  })
+
+  it('con el Modo Live no ofrece «Compartir cotización…»', async () => {
+    document.documentElement.classList.add(CLASE_LIVE)
+    try {
+      await abrir()
+      expect(lineas()).not.toContain('Compartir cotización…')
+      expect(lineas()[0]).toBe('Aprobar')
+    } finally {
+      document.documentElement.classList.remove(CLASE_LIVE)
+    }
   })
 
   it('lo apagado dice por qué, y no se puede elegir', async () => {

@@ -3,8 +3,13 @@ import 'server-only'
 import { fallo, ok, type Resultado } from '@/shared/lib/errores'
 import type { RecalculoInicial } from '../../entities/apertura'
 import { calculoDeLoGuardado } from '../../entities/calculo-de-la-tarjeta'
+import { nombreDelModo } from '../../entities/cabecera-de-la-hoja'
 import type { HojaDeUnaGuardada } from '../../entities/hoja-de-una-guardada'
 import { archivoDelPdf } from '../../entities/tarjeta/archivo-del-pdf'
+import {
+  lineasDeLaTarjeta,
+  type LineasDeLaTarjeta,
+} from '../../entities/tarjeta/compartir/lineas-de-la-tarjeta'
 import type { ContextoDeLaCotizacion } from '../../entities/tarjeta/contexto-de-la-cotizacion'
 import {
   geometriaDeLaTarjeta,
@@ -19,9 +24,13 @@ import {
   subirLaPortada,
 } from '../../infra/tarjeta/portada'
 import { getTarjeta } from '../../infra/tarjeta/tarjeta'
+import { getVehiculoDeLaCotizacion } from '../../infra/tarjeta/vehiculo-de-la-cotizacion'
 
 // A quien creó una cotización guardada, para «Asesor:» de su tarjeta (4.18-2, P2 a).
 export const leerAsesorDeLaCotizacion = getAsesorDeLaCotizacion
+
+// El vehículo de una cotización guardada (por clave primaria, sin la papelera), para las fotos de «Compartir la cotización».
+export const leerVehiculoDeLaCotizacion = getVehiculoDeLaCotizacion
 
 export type EntradaDelPdf = {
   // Lo que leyó `leerHojaDeUnaGuardada()` con la sesión de quien pide.
@@ -34,12 +43,12 @@ export type EntradaDelPdf = {
   topeDelLogo: number
 }
 
-// El PDF de una cotización guardada (4.18-3a): la tarjeta de **lo guardado** (`calculoDeLoGuardado()`, como «Vista previa» de esa guardada; nunca lo de hoy) con la lectura de
-// la tarjeta de SU versión como quien pide. react-pdf se carga sólo aquí, con `import()` (C9). `sin_permiso` si la tarjeta no se ve; lo demás que falle, `inesperado`.
+type EntradaDeLaGeometria = Pick<EntradaDelPdf, 'lectura' | 'contexto' | 'locale'>
+
 // La geometría de la tarjeta de **lo guardado** de una cotización (`calculoDeLoGuardado()`, como «Vista previa» de esa guardada; nunca lo de hoy), con la lectura
 // de la tarjeta de SU versión como quien pide. `sin_permiso` si la tarjeta no se ve.
 async function geometriaDeUnaGuardada(
-  entrada: EntradaDelPdf,
+  entrada: EntradaDeLaGeometria,
 ): Promise<Resultado<{ geometria: Geometria; hoja: HojaDeUnaGuardada }>> {
   const { hoja, inicial } = entrada.lectura
   const tarjeta = await getTarjeta(hoja.diseno.formula.id)
@@ -54,6 +63,22 @@ async function geometriaDeUnaGuardada(
     locale: entrada.locale,
   })
   return ok({ geometria, hoja })
+}
+
+// Las cifras de «Compartir la cotización»: los montos de la tarjeta de lo guardado como líneas de texto (sólo lo que la tarjeta dibuja: el nivel «todos», K4) y el
+// nombre del modo con que se guardó. Lo pide `GET /cotizaciones/[id]/compartir`; el texto lo arma el navegador. `sin_permiso` si la tarjeta no se ve.
+export async function paraCompartirDeUnaGuardada(
+  entrada: EntradaDeLaGeometria,
+): Promise<Resultado<LineasDeLaTarjeta & { modo: string | null }>> {
+  const armada = await geometriaDeUnaGuardada(entrada)
+  if (!armada.ok) {
+    return armada
+  }
+  const { geometria, hoja } = armada.data
+  return ok({
+    ...lineasDeLaTarjeta(geometria),
+    modo: nombreDelModo(hoja.diseno.cabecera, hoja.cotizacion.modoTc),
+  })
 }
 
 // El logo, sólo si la tarjeta lo dibuja.

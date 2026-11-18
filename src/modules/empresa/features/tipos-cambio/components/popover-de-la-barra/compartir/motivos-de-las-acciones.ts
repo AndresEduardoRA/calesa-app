@@ -1,10 +1,10 @@
 import {
-  MOTIVO_NINGUN_TIPO_PARA_COMPARTIR,
   MOTIVO_SIN_PORTAPAPELES,
   MOTIVO_SIN_PORTAPAPELES_DE_IMAGENES,
-} from '../../../../../entities/compartir-tipos-cambio'
+  type Capacidades,
+} from '@/shared/lib/compartir'
+import { MOTIVO_NINGUN_TIPO_PARA_COMPARTIR } from '../../../../../entities/compartir-tipos-cambio'
 import type { Parte } from '../../../hooks/use-para-compartir'
-import type { Capacidades } from './navegador'
 
 export const MOTIVO_SIN_IMAGEN = 'La imagen todavía no está lista.'
 export const MOTIVO_SIN_TEXTO = 'El texto todavía no está listo.'

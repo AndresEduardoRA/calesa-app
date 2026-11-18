@@ -105,3 +105,35 @@ describe('<ProveedorDeLaTarjeta>', () => {
     expect(pedirLaPortada).toHaveBeenCalledWith('00000000-0000-4000-8000-0000000000cc')
   })
 })
+
+describe('<ProveedorDeLaTarjeta> y «Compartir»', () => {
+  it('«Compartir» sólo en una guardada: en la hoja nueva el hueco no lo trae', () => {
+    const vistos: boolean[] = []
+    function Mirar() {
+      vistos.push(useContext(ContextoDeLaVistaPrevia)?.compartir !== undefined)
+      return null
+    }
+    const pagina = {
+      titulo: null,
+      cliente: null,
+      vehiculo: null,
+      asesor: null,
+      numero: null,
+      vencida: false,
+      venceEl: null,
+      guardadaEl: null,
+      logo: null,
+    }
+    render(
+      <ProveedorDeLaTarjeta {...pagina} cotizacionId={null}>
+        <Mirar />
+      </ProveedorDeLaTarjeta>,
+    )
+    render(
+      <ProveedorDeLaTarjeta {...pagina} cotizacionId="00000000-0000-4000-8000-0000000000bb">
+        <Mirar />
+      </ProveedorDeLaTarjeta>,
+    )
+    expect(vistos).toEqual([false, true])
+  })
+})

@@ -39,11 +39,11 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   (`HuecosDelResumen`, `features/hoja/components/huecos-del-resumen.ts`): `src/app` une `pantallas/comentarios-resumen.ts` (`Pestanas`, sólo la cáscara `diferido()`) y
   `pantallas/comprobantes-resumen.ts` (`Comprobantes`, bajo los adjuntos) en `listado-con-acciones.tsx`, y el servidor manda `quienesDelResumen()` (`puedeAdjuntar` y `puedeModerar` por
   id, de las reglas del «⋯» sobre la fila: ninguna pregunta a la base; una cotización sin entrada ahí no adjunta ni modera). Detalle: `areas/comentarios/CLAUDE.md` › «El resumen». «Nueva cotización»
-  (`origenParaNueva()`) y la tecla `N`. **El «⋯» de cada fila** (`accionesDeCotizacion()`: aprobar, marcar final, favorita, reportar, invalidar / descartar /
+  (`origenParaNueva()`) y la tecla `N`. **El «⋯» de cada fila** (`accionesDeCotizacion()`: primero y solo «Compartir cotización…», aprobar, marcar final, favorita, reportar, invalidar / descartar /
   reactivar y, al final, la papelera) se compone en `src/app/(app)/cotizaciones/`: `menus-de-la-pagina.ts` (servidor) lee las marcas y la versión de la
   página (`leerMarcasDeLaPagina()`, tres lecturas por clave primaria) y arma lo que cada fila ofrece con las reglas de cada área (`ofertasDeLaFila()`;
   `puedeGuardarDesdeElListado()` espeja `_cotizacion_puede_guardar()`); `listado-con-acciones.tsx` y `use-acciones-de-la-lista.ts` (navegador) llaman a las
-  actions de la guardada y montan una vez los diálogos de marcar final, reportar y moderar (`?panel=…&para=<id>`, `CLAVE_DE_LA_FILA`, `usePanelDeFila()`). Una
+  actions de la guardada y montan una vez los diálogos de compartir, marcar final, reportar y moderar (`?panel=…&para=<id>`, `CLAVE_DE_LA_FILA`, `usePanelDeFila()`). Una
   fila sin sus marcas no tiene «⋯». La lista del menú sale por `pantallas/listado.ts`, nunca por `client.ts` (ese barril trae el JS de la hoja).
 - **`/cotizaciones/[id]`** (`cotizaciones.ver`): la hoja de una guardada con SU versión (`cotizacion_hoja_guardada()` y `cotizacion_evaluar(p_cotizacion)`
   con lo guardado; `entradasDeLoGuardado()` espeja `_cotizacion_entradas_de`); sin `puede_guardar` de la base, sólo lectura. El recálculo usa tablas y
@@ -119,6 +119,15 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   comparte con la página): `cotizacion_tarjeta` como quien pide, sin memoria, y `infra/tarjeta/pdf/` (Geist TTF recta e itálica). Lo baja quien ve la cotización, sin
   clave propia (pie de «Vista previa» de una guardada; `<a download>` en la tarjeta de lo guardado de la hoja nueva). Las pruebas leen su texto con
   `scripts/pdf/texto-del-pdf.ts`.
+- **«Compartir la cotización»** (área `tarjeta`; glosario, `docs/UX.md` › «Cotización: compartir»): el panel `PanelDeCompartir` (`features/tarjeta/components/compartir/`, por
+  `diferido()`), en `?panel=compartir` en el detalle (`CompartirDeLaGuardada`, junto a «Vista previa» por el hueco `compartir` de la vista previa, sólo con
+  `cotizacionId`) y en `?panel=compartir&para=<id>` fuera de él (`DialogoDeCompartirDeLaFila` y `useAbrirCompartirDeLaFila()` por `pantallas/tarjeta-compartir.ts`:
+  el «⋯» del listado; también para las tarjetas, el resumen y la ficha del vehículo); la pestaña en `?compartir=texto` (`entities/tarjeta/compartir/url.ts`). Con
+  el Modo Live ni el botón ni la línea del «⋯»; por URL, el aviso. Lee `GET /cotizaciones/[id]/compartir` (`DatosParaCompartir`: `paraCompartirDeUnaGuardada()`
+  da los montos de la tarjeta de lo guardado con `lineasDeLaTarjeta()`; `src/app` suma el vehículo con `zonaDelPatioDe()` de `vehiculos` y la subasta) y, al
+  elegir «Fotos», `…/compartir/fotos` (`leerVehiculoDeLaCotizacion()` por `cotizaciones_pkey` y `leerGaleria()`); la portada, por su ruta con la caché del
+  navegador, pasada a PNG en el navegador. El texto lo arma `textoParaCompartir()` (puro); los motivos de los botones, `motivosDeCompartir()`. Desde el navegador,
+  por `areas/tarjeta/composicion-compartir.client.ts` (la importa sólo el panel). Lo genérico del navegador, `src/shared/lib/compartir.ts`.
 - **La portada de la cotización** (área `tarjeta`; `docs/COTIZADOR.md` › «La portada de la cotización»): `GET /cotizaciones/[id]/portada` (`rutaDeLaPortada(id)`,
   el mismo 404 que el PDF) lee `leerLaPortada()` (`cotizacion_portada`) y `queHacerConLaPortada()` decide: 304 con la ETag de hoy, bajar la guardada al día
   (`bajarLaPortada()`) o armarla (`armarLaPortada(id, contextoDe)`, en `features/tarjeta/` porque cruza con `empresa`: la hoja de lo guardado, los ajustes y el
@@ -188,8 +197,8 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   listado; `pantallas/aprobada-resumen.ts`). Cerrar el resumen borra también `?visor=&foto=` (el visor de la portada).
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
-- **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)` y
-  `alGuardarLaCotizacion(id)` (lo llaman `useNucleoDelGuardado` y `useCotizarEncima` con la cotización guardada: la portada); la llena
+- **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`,
+  `compartir()` (lo que va junto a «Vista previa» en una guardada: «Compartir») y `alGuardarLaCotizacion(id)` (lo llaman `useNucleoDelGuardado` y `useCotizarEncima` con la cotización guardada: la portada); la llena
   `<ProveedorDeLaTarjeta>` (`pantallas/tarjeta.ts`) con la cáscara del modal y lo que sabe la página (vehículo, asesor, número, logo). El modal lee
   `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `geometriaDeLaTarjeta()` (pura) con `<TarjetaDeCotizacion>`: un lienzo del ancho de
   la tarjeta con cada celda en posición absoluta (`<CeldaDeLaTarjeta>`, en orden de lectura, con `data-celda`, `data-fila`, `data-columna`, `data-nodo`,
