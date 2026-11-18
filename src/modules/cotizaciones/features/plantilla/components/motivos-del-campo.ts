@@ -6,7 +6,7 @@ export function motivoDeForma(donde: string, mensaje: string): string {
     return 'La leyenda lleva hasta 160 caracteres.'
   if (donde === 'total.etiqueta') return 'El total lleva de 1 a 40 caracteres.'
   if (donde === 'nota') return 'La nota lleva hasta 300 caracteres.'
-  if (/^grupos\[\d+\]\.tono$/.test(donde)) return 'Elige un tono del catálogo o «Del grupo».'
+  if (/^grupos\[\d+\]\.tono$/.test(donde)) return 'Elige un color del catálogo o «Del grupo».'
   return mensaje
 }
 

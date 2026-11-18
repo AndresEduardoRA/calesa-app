@@ -29,11 +29,11 @@ export type LecturaParaLaVistaPrevia = {
     readonly filasDeMas: number
   }[]
   readonly aparte: readonly { readonly nodo: string; readonly etiqueta: string }[]
-  // Sólo los tonos que usan los grupos (claro y oscuro, como texto: `<EstiloDeTonos>` descarta lo inválido).
+  // Sólo los colores que usan los grupos, con lo que pinta la tarjeta (`coloresDeLaTarjeta()`, el espejo de la regla de la base).
   readonly tonos: readonly {
     readonly clave: string
-    readonly claro: { readonly fondo: string; readonly borde: string; readonly tinta: string }
-    readonly oscuro: { readonly fondo: string; readonly borde: string; readonly tinta: string }
+    readonly hex: string
+    readonly tarjeta: { readonly fondo: string; readonly borde: string; readonly tinta: string }
   }[]
 }
 

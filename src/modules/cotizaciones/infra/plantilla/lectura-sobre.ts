@@ -46,6 +46,7 @@ const esquemaDeLosTonos = z.array(
   z.strictObject({
     clave: z.string(),
     nombre: z.string(),
+    hex: z.string(),
     claro_fondo: z.string(),
     claro_borde: z.string(),
     claro_tinta: z.string(),
@@ -116,11 +117,12 @@ function leerFormula(data: unknown): Resultado<FormulaParaLaPlantilla | null> {
 
 function leerTonos(data: unknown): Resultado<readonly TonoDelCatalogo[]> {
   const leidos = esquemaDeLosTonos.safeParse(filas(data))
-  if (!leidos.success) return fallo('inesperado', 'No pudimos leer los tonos.')
+  if (!leidos.success) return fallo('inesperado', 'No pudimos leer los colores.')
   return ok(
     leidos.data.map((t) => ({
       clave: t.clave,
       nombre: t.nombre,
+      hex: t.hex,
       claro: { fondo: t.claro_fondo, borde: t.claro_borde, tinta: t.claro_tinta },
       oscuro: { fondo: t.oscuro_fondo, borde: t.oscuro_borde, tinta: t.oscuro_tinta },
     })),

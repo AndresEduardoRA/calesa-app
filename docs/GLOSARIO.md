@@ -388,7 +388,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   N+1 de cada fórmula que la usa con la copia congelada.
 - **Tabla compartida** — tabla de referencia con `origen_id` nulo: la usan los orígenes sin una propia de esa clave; la propia la **tapa** (va
   `tapada` en la lista de ese origen). Publicarla pide `cotizaciones.configurar` en cada origen que la usa.
-- **Plantilla de tarjeta** — `plantillas_tarjeta`: cómo se ve la cotización (tarjeta y PDF), versionada aparte; declarativa (grupos con tono,
+- **Plantilla de tarjeta** — `plantillas_tarjeta`: cómo se ve la cotización (tarjeta y PDF), versionada aparte; declarativa (grupos con color,
   etiquetas y leyendas por nodo, total, nota, logo, columnas) y validada por `validar_plantilla()`.
 - **Lectura de la tarjeta** — `cotizacion_tarjeta()`: lo que dibujan la tarjeta y el PDF de una versión, con la plantilla publicada validada
   contra esa versión y sólo lo del nivel «todos». No es la **Tarjeta del total**.
@@ -416,7 +416,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tipo de cambio oficial / paralelo** — `tipos_cambio.clave` (`oficial`, `paralelo`): TCO y TCP; cada fila o grupo elige el suyo.
 - **Modo de tipo de cambio** — `diseno.cabecera.modos[]` / `cotizaciones.modo_tc`: nombre (Aduana, Paralelo, Unificado…) y qué tipo de cambio
   llena cada bucket. La hoja abre con el marcado (`Entradas.modoTc`); con uno solo no se elige y el resumen lo nombra.
-- **Grupo (de la hoja)** — `definicion.grupos[]` / `nodo.grupo`: filas con bucket, plazo de pago y tono, con subtotal en USD y Bs. No es un nodo.
+- **Grupo (de la hoja)** — `definicion.grupos[]` / `nodo.grupo`: filas con bucket, plazo de pago y color, con subtotal en USD y Bs. No es un nodo.
 - **Plazo de pago** — atributo del grupo: cuándo se paga, como texto («2 días», «4 meses (Aprox.)»).
 - **Total en dólares** — `definicion.total_en`; en el motor `totales.usd` (y `totales.suma_usd`): total en Bs ÷ tipo de cambio de `total_en`.
 - **Faltante** — `Resultado.faltantes`, `CODIGOS_DE_FALTANTE` (`entities/motor-contexto.ts`): por qué un valor quedó sin número.
@@ -498,7 +498,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   (secciones, celdas, atajos, variantes, interruptores, modos, tarjeta) y el aspecto de cada pieza en la rejilla de la hoja.
 - **Aspecto** — claves planas y opcionales del diseño de la hoja / `entities/aspecto-de-la-hoja.ts`, `features/hoja/components/clases-de-la-rejilla.ts`:
   cómo se ve una pieza, de escalas cerradas (nunca px, CSS ni hex). Ítem: ancho, alto, letra y énfasis; sección: ancho, alto, relleno,
-  separación, densidad, letra, énfasis y tono; cabecera: tono, relleno, letra y énfasis. Sin la clave, lo de siempre; el editor quita la clave
+  separación, densidad, letra, énfasis y color (clave `tono`); cabecera: color, relleno, letra y énfasis. Sin la clave, lo de siempre; el editor quita la clave
   en vez de escribir el valor por defecto. El PDF, la tarjeta y el resumen no lo siguen.
 - **Rejilla de la hoja** — `entities/rejilla-de-la-hoja.ts` (`corteDe()`, `columnasDeLaCelda()`): las 12 columnas de cada sección (sus ítems) y
   las 12 de las secciones. Una pieza de N columnas toma su ancho cuando le tocan 16 rem o más; si no, la fila entera. Una sección sin ancho es
@@ -526,9 +526,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   de variante, apagado, no sobrescribible).
 - **Interruptor (de la hoja)** — ítem `interruptor` del diseño sobre un nodo `bandera`: «habilita» una fila o «muestra» algo (la garantía).
 - **Atajos** — ítem `atajos` del diseño: chips que eligen una fila de una tabla de referencia y dejan su valor como sugerido.
-- **Tono** — `tonos` / `tono_*()`, `definicion.grupos[].tono`, `tono` de una sección o de la cabecera del diseño (`_tonos_del_diseno()`): color de
-  un grupo, una sección o la cabecera; por clave, nunca hex; contraste AA (4,5:1) de la tinta sobre el fondo en cada tema. El de un grupo gana
-  en su celda; el de una sección pinta su borde y sus celdas, franjas y chips, no su fondo ni sus textos sueltos.
+- **Color (del catálogo)** — `tonos` (nombre técnico heredado) / `tono_*()`, `definicion.grupos[].tono`, `tono` de una sección o de la cabecera
+  del diseño (`_tonos_del_diseno()`): color de la empresa por nombre y #hex (`tonos.hex`), que un grupo, una sección o la cabecera nombran por su
+  clave, nunca por hex. La hoja usa sus versiones clara y oscura (fondo, borde y tinta) derivadas del hex con AA garantizado (`_color_derivar`,
+  `derivarColores()`); la tarjeta de la cotización, el hex tal cual con el texto que se lea (`_color_tinta_de_la_tarjeta`). El de un grupo gana
+  en su celda; el de una sección pinta su borde y sus celdas, franjas y chips, no su fondo ni sus textos sueltos. En la interfaz nunca «tono».
 - **Planilla EE. UU.** — `origenes.clave = 'planilla_usa'`: origen de ejemplo del Excel (subasta; cuatro cotizaciones en una fórmula con variante).
 - **Tipo de cambio unificado y aduana** — `tipos_cambio` (claves `unificado`, `aduana`): el unificado convierte lo pagado afuera.
 - **Transporte (tabla por ruta)** — `transporte_usa_bolivia`, `transporte_usa_chile` (`tablas_referencia`): tarifa por tipo de vehículo.
@@ -536,7 +538,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   publicadas por el camino normal.
 - **Avanzado** — `presentacion: 'avanzado'` de una sección: celdas que se editan en un modal aparte (los componentes del CIF y de la póliza).
 - **Sección (de la hoja)** — `diseno.secciones[]`: bloque de ítems con título, presentación (`principal` o `avanzado`), nivel opcional y su
-  aspecto (ancho y alto en la rejilla de las secciones, relleno, separación, densidad, letra, énfasis y tono). Su orden es el de la hoja.
+  aspecto (ancho y alto en la rejilla de las secciones, relleno, separación, densidad, letra, énfasis y color). Su orden es el de la hoja.
 - **Celda (de la hoja)** — ítem `celda` del diseño: la `XCell` de un nodo: ancho (de 1 a 12 columnas; `completo`, `mitad` y `tercio` de los
   diseños guardados son 12, 6 y 4), alto, letra, énfasis, ayuda y niveles. Se ordena dentro de su sección.
 - **Ayuda (de una celda)** — `ayuda` de una `celda`: texto o tabla de referencia que abre «Ayuda de X» en un panel de sólo lectura
@@ -545,7 +547,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   sobrescribe.
 - **Subtotal (de la hoja)** — ítem `subtotal` del diseño: un nodo de cálculo dibujado como franja (el «CIF» de «avanzado»).
 - **Tarjeta del total** — `diseno.tarjeta_total`: resumen fijo (al pie en celular): nodo total y secundarios; no se ubica en el diseño.
-- **Contexto del diseño** — `ContextoDeDiseno` / argumentos de `validar_diseno()`: niveles existentes y retirados y claves de tono; «todos»
+- **Contexto del diseño** — `ContextoDeDiseno` / argumentos de `validar_diseno()`: niveles existentes y retirados y claves de los colores; «todos»
   siempre existe.
 - **Visibilidad (de un nodo)** — `formulas.visibilidad` / `_compilar_visibilidad()`: `{nodo: {ver, editar}}` por nivel, compilado al publicar.
 - **Flujo** — `flujos`: la configuración de fases de un origen (o del de repuestos).

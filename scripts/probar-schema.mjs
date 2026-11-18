@@ -196,6 +196,10 @@ const DATOS_DE_PRUEBA = {
   'plantilla-validar.sql': {
     _juego_de_plantilla: 'src/modules/cotizaciones/entities/plantilla/casos-de-plantilla.json',
   },
+  // El juego espejo de los colores del catálogo: lo genera TS con `derivarColores()` (`supabase/tests/casos-de-colores.ts`).
+  'areas/diseno/colores.sql': {
+    _casos_de_colores: path.join(base, 'tests', 'casos-de-colores.json'),
+  },
   // Una migración de datos que una prueba vuelve a ejecutar va aquí como `{ ruta: migracionPorContenido('<texto>'), texto: true }`.
 }
 

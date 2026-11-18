@@ -6076,6 +6076,7 @@ export type Database = {
           claro_tinta: string
           clave: string
           creado_en: string
+          hex: string
           id: string
           nombre: string
           oscuro_borde: string
@@ -6090,6 +6091,7 @@ export type Database = {
           claro_tinta: string
           clave: string
           creado_en?: string
+          hex: string
           id?: string
           nombre: string
           oscuro_borde: string
@@ -6103,6 +6105,7 @@ export type Database = {
           claro_tinta?: string
           clave?: string
           creado_en?: string
+          hex?: string
           id?: string
           nombre?: string
           oscuro_borde?: string
@@ -7681,7 +7684,16 @@ export type Database = {
       }
       _chat_puede_conversar: { Args: { p_usuario: string }; Returns: boolean }
       _color_contraste: { Args: { p_a: string; p_b: string }; Returns: number }
+      _color_derivar: { Args: { p_hex: string }; Returns: Json }
       _color_luminancia: { Args: { p_hex: string }; Returns: number }
+      _color_mezclar: {
+        Args: { p_desde: string; p_hacia: string; p_peso: number }
+        Returns: string
+      }
+      _color_tinta_de_la_tarjeta: {
+        Args: { p_hex: string; p_tinta_clara: string }
+        Returns: string
+      }
       _comentario_item: {
         Args: {
           p_actualizado_en: string
@@ -9426,6 +9438,7 @@ export type Database = {
       _tono_clave: { Args: { p_nombre: string }; Returns: string }
       _tono_colores: { Args: { p_colores: Json }; Returns: Json }
       _tono_en_uso: { Args: { p_clave: string }; Returns: string }
+      _tono_hex: { Args: { p_texto: string }; Returns: string }
       _tono_nombre: { Args: { p_texto: string }; Returns: string }
       _tonos_de_grupos: { Args: { p_def: Json }; Returns: Json }
       _tonos_del_diseno: { Args: { p_diseno: Json }; Returns: Json }
@@ -11468,7 +11481,7 @@ export type Database = {
       }
       tipos_lead_con_uso: { Args: Record<PropertyKey, never>; Returns: Json }
       tipos_seguimiento_con_uso: { Args: Record<PropertyKey, never>; Returns: Json }
-      tono_crear: { Args: { p_colores: Json; p_id: string; p_nombre: string }; Returns: Json }
+      tono_crear: { Args: { p_hex: string; p_id: string; p_nombre: string }; Returns: Json }
       tono_eliminar: { Args: { p_actualizado_en_esperado: string; p_id: string }; Returns: Json }
       tono_guardar: {
         Args: { p_actualizado_en_esperado: string; p_cambios: Json; p_id: string }

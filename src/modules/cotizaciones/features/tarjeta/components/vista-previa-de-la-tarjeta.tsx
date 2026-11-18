@@ -4,7 +4,6 @@ import { useEffect, useId, useState } from 'react'
 import { EstadoError, EstadoSinPermiso } from '@/shared/ui/estados'
 import { Modal } from '@/shared/ui/modal'
 import { Skeleton } from '@/shared/ui/skeleton'
-import { EstiloDeTonos } from '@/shared/ui/xcell'
 import { LiveDelResumen } from '../../hoja/components/live-del-resumen'
 import type { PropsDeLaVistaPrevia } from '../../hoja/components/huecos'
 import { avisoDelTotal, type AvisoDelTotal } from '../../../entities/tarjeta/aviso-del-total'
@@ -115,7 +114,6 @@ function Cuerpo({
   }
   return (
     <div className="grid min-w-0 gap-3">
-      <EstiloDeTonos tonos={modelo.tonos} />
       <Avisos
         lectura={lectura}
         aviso={aviso}

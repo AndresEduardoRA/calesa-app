@@ -23,7 +23,7 @@ const SIN_DATO = '—'
 const enUsd = (valor: number | null, locale: string) =>
   valor === null ? SIN_DATO : formatearMonto(valor, { moneda: 'USD', locale })
 
-type Tono = ModeloDeTarjeta['tonos'][number]['claro']
+type Tono = ModeloDeTarjeta['tonos'][number]['tarjeta']
 
 function Encabezado({ modelo, logo }: Pick<PropsDelDocumento, 'modelo' | 'logo'>) {
   const e = modelo.encabezado
@@ -66,7 +66,7 @@ function Celdas({ grupo }: { grupo: GrupoDeTarjeta }) {
   )
 }
 
-// Un grupo con el tono `claro` de la lectura; no se parte entre páginas.
+// Un grupo con los colores de la tarjeta de su color (el hex de fondo y el texto que se lee); no se parte entre páginas.
 function Grupo({
   grupo,
   tono,
@@ -125,7 +125,7 @@ function Total({ modelo, locale }: { modelo: ModeloDeTarjeta; locale: string }) 
 // calcula). Los metadatos no nombran al cliente, al asesor ni al vehículo: el PDF se reenvía y no se ven al abrirlo.
 export function DocumentoDeLaTarjeta({ modelo, locale, logo, empresa }: PropsDelDocumento) {
   const numero = modelo.encabezado.numero
-  const tonos = new Map(modelo.tonos.map((t) => [t.clave, t.claro]))
+  const tonos = new Map(modelo.tonos.map((t) => [t.clave, t.tarjeta]))
   return (
     <Document
       title={numero === null ? 'Cotización' : `Cotización n.º ${String(numero)}`}

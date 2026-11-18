@@ -7,8 +7,9 @@ import type { ContextoDePlantilla } from './validar-plantilla'
 
 const C = { fondo: '#aaaaaa', borde: '#bbbbbb', tinta: '#111111' }
 const tonos: TonoDelCatalogo[] = [
-  { clave: 'verde', nombre: 'Verde', claro: C, oscuro: C },
-  { clave: 'azul', nombre: 'Azul', claro: C, oscuro: C },
+  { clave: 'verde', nombre: 'Verde', hex: '#aaaaaa', claro: C, oscuro: C },
+  // La tinta clara de siempre (#1b2130) da 3,8:1 sobre #31869b: la tarjeta usa el blanco.
+  { clave: 'azul', nombre: 'Azul', hex: '#31869b', claro: { ...C, tinta: '#1b2130' }, oscuro: C },
 ]
 const contexto: ContextoDePlantilla = {
   definicion: {
@@ -71,6 +72,23 @@ describe('lecturaParaLaVistaPrevia', () => {
     const fantasma = leer({ ...base, grupos: [{ grupo: 'compra', tono: 'rojo' }] })
     expect(fantasma.grupos[0]!.tono).toBe('verde')
     expect(l.tonos.map((t) => t.clave)).toEqual(['azul'])
+  })
+
+  it('cada color pinta la tarjeta con su hex tal cual y el texto que se lee (la tinta clara no llega a AA sobre #31869b: blanco)', () => {
+    expect(leer(base).tonos).toEqual([
+      {
+        clave: 'azul',
+        hex: '#31869b',
+        tarjeta: { fondo: '#31869b', borde: '#bbbbbb', tinta: '#ffffff' },
+      },
+    ])
+    const sinHex = lecturaParaLaVistaPrevia({
+      plantilla: base,
+      filas: filasDelEditor(base, contexto),
+      contexto,
+      tonos: tonos.map(({ hex: _hex, ...resto }) => resto),
+    })
+    expect(sinHex.tonos).toEqual([])
   })
 
   it('total en blanco = «Total»; nota en blanco = ninguna; la leyenda del total sólo con la columna', () => {

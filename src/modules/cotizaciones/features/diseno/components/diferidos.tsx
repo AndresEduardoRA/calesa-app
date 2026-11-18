@@ -8,20 +8,20 @@ export const DisenoDelOrigenDiferido = diferido(
   { aviso: 'aqui' },
 )
 
-// La pestaña «Tonos» (4.22-4): el catálogo y su modal se piden al abrirla; Configuración › Cotización no los carga para mostrar sus otras pestañas.
-export const TonosDelCatalogoDiferido = diferido(
-  () => import('./tonos-del-catalogo').then((modulo) => modulo.TonosDelCatalogo),
+// La pestaña «Colores»: el catálogo se pide al abrirla; Configuración › Cotización no lo carga para mostrar sus otras pestañas.
+export const ColoresDelCatalogoDiferido = diferido(
+  () => import('./colores-del-catalogo').then((modulo) => modulo.ColoresDelCatalogo),
   { aviso: 'aqui' },
 )
 
-// «Nuevo tono» y «Editar tono» se piden recién al abrirse (`useAbiertoAlgunaVez()`): la lista no carga el formulario para mostrarse.
-export const ModalDeTonoDiferido = diferido(() =>
-  import('./modal-de-tono').then((modulo) => modulo.ModalDeTono),
+// «Nuevo color» y «Editar color» (con la derivación de sus muestras) se piden recién al abrirse (`useAbiertoAlgunaVez()`): la lista no los carga para mostrarse.
+export const ModalDeColorDiferido = diferido(() =>
+  import('./modal-de-color').then((modulo) => modulo.ModalDeColor),
 )
 
-// La confirmación de eliminar un tono se pide al abrirse (`useAbiertoAlgunaVez()`).
-export const EliminarTonoDiferido = diferido(() =>
-  import('./eliminar-tono').then((modulo) => modulo.EliminarTono),
+// La confirmación de eliminar un color se pide al abrirse (`useAbiertoAlgunaVez()`).
+export const EliminarColorDiferido = diferido(() =>
+  import('./eliminar-color').then((modulo) => modulo.EliminarColor),
 )
 
 // La vista previa de la hoja (4.22-5) trae la hoja de cotizar entera; abrir la pestaña «Diseño» no la carga, sólo «Vista previa».

@@ -33,7 +33,7 @@ type Props = {
 const ORDEN: CampoDelGrupo[] = ['etiqueta', 'plazo', 'tono', 'bucket', 'miembros']
 
 function opcionesDeTono(tonos: EstadoDeLosTonos, actual: string) {
-  if (tonos.tipo === 'leyendo') return [{ valor: actual, etiqueta: 'Cargando los tonos…' }]
+  if (tonos.tipo === 'leyendo') return [{ valor: actual, etiqueta: 'Cargando los colores…' }]
   if (tonos.tipo === 'error') return [{ valor: actual, etiqueta: actual }]
   const opciones = tonos.tonos.map((t) => ({ valor: t.clave, etiqueta: t.nombre }))
   // Un tono que ya no está en el catálogo se ve por su clave y no deja aplicar hasta elegir otro.
@@ -57,7 +57,7 @@ function EstadoDeLosTonosDelFormulario({
   }
   return (
     <div className="flex flex-wrap items-center gap-2 text-(length:--text-sm) text-(--color-peligro-ink)">
-      <p role="alert">No se pudieron leer los tonos de la empresa.</p>
+      <p role="alert">No se pudieron leer los colores de la empresa.</p>
       <Button
         type="button"
         variant="outline"
@@ -119,12 +119,12 @@ function SelectoresDelGrupo(p: {
     <>
       <CampoSeleccion
         nombre={`${p.uid}-tono`}
-        etiqueta="Tono"
+        etiqueta="Color"
         opciones={opcionesDeTono(p.tonos, p.tono)}
         value={p.tono}
         disabled={p.tonos.tipo !== 'listo'}
         error={p.deError('tono')}
-        ayuda="La tarjeta usa el tono que elija su plantilla, si elige uno."
+        ayuda="La tarjeta usa el color que elija su plantilla, si elige uno."
         onChange={(evento) => {
           p.alCambiarTono(evento.target.value)
         }}

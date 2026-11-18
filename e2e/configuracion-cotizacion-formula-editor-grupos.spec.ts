@@ -55,7 +55,7 @@ test('E1: plazo y tono de un grupo; pasar «Con ayuda» a `gx` cambia «Total en
   const [otroTono, nombreDelOtro] = sql(
     `select clave || '|' || nombre from public.tonos where clave <> 'verde' order by nombre limit 1`,
   ).split('|')
-  if (!otroTono || !nombreDelOtro) throw new Error('el catálogo de tonos está vacío')
+  if (!otroTono || !nombreDelOtro) throw new Error('el catálogo de colores está vacío')
 
   await entrar(page, duena, { fresco: true })
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origen.id}`)
@@ -63,15 +63,15 @@ test('E1: plazo y tono de un grupo; pasar «Con ayuda» a `gx` cambia «Total en
   await expect(grupos(page)).toBeVisible()
   await expect(previa(page)).toContainText(enBs(5 * tipoDeCambio('oficial')))
 
-  // (1) El plazo y el tono de «Pública».
+  // (1) El plazo y el color de «Pública».
   const publica = grupo(page, 'gpub')
   await expect(publica).toContainText('Plazo: 1 día')
   await publica.getByRole('button', { name: 'Editar el grupo Pública' }).click()
   await publica.getByLabel('Plazo de pago').fill('3 días')
-  await publica.getByLabel('Tono').selectOption(otroTono)
+  await publica.getByLabel('Color', { exact: true }).selectOption(otroTono)
   await publica.getByRole('button', { name: 'Aplicar', exact: true }).click()
   await expect(publica).toContainText('Plazo: 3 días')
-  await expect(publica).toContainText(`Tono: ${nombreDelOtro}`)
+  await expect(publica).toContainText(`Color: ${nombreDelOtro}`)
 
   // (2) «Con ayuda» pasa a `gx`, de otro bucket: el total en Bs pasa a 5 × el tipo de cambio `paralelo`.
   const x = grupo(page, 'gx')
