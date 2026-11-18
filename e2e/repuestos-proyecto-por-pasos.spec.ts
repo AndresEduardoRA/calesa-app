@@ -201,7 +201,13 @@ test('una salida con nota obligatoria: el ítem queda «Perdido», sin botón, y
   await expect(page.getByText(`${C} pasó a «Perdido».`)).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(panel).toBeHidden()
-  await expect(fila(page, C)).toContainText('Perdido')
+  // La fila no repite la fase: queda bajo el encabezado del grupo de «Perdido».
+  await expect(
+    page
+      .locator(`[data-grupo-de-paso="${fases['Perdido'] ?? ''}"]`)
+      .filter({ visible: true })
+      .locator(`[data-fila-de-item="${ids[C] ?? ''}"]`),
+  ).toBeVisible()
   await expect(fila(page, C).locator('[data-siguiente-item]')).toHaveCount(0)
   await expect(paso(page, fases['Perdido'] ?? '')).toContainText('1 de 3')
   await expect(paso(page, fases['Recibido'] ?? '')).toContainText('0 de 3')
