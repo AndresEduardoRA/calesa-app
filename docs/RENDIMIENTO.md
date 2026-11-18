@@ -561,6 +561,10 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
   (`scripts/guardas/xyflow-diferido.test.ts`). Una sola lectura del flujo (los topes de `leerFlujoParaConfigurar`); hasta 200 cajas y 500
   flechas, con `onlyRenderVisibleElements`.
+- Configuración (`/configuracion/*`), sin tope propio: el layout suma a cada página el menú de Configuración y la cabecera (Server Components) y
+  tres piezas de cliente chicas (la marca del enlace, la vuelta y el `<select>` del selector de sección, ≈ 2 KB); no importa `secciones.ts`, `permisos.ts` ni
+  ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
+  `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta.
 - «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`); el
   botón viaja con `FilterShell` aunque la lista no lo dibuje.
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`

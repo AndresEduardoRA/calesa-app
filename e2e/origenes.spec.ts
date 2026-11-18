@@ -120,14 +120,15 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
   await panel.getByRole('button', { name: 'Crear origen' }).click()
   await expect(page.getByText(`Origen «${MANUAL}» creado`)).toBeVisible()
 
-  // Cae en la pantalla del origen, con lo que le falta. El flujo lleva a su pantalla; la fórmula no
-  // tiene pantalla todavía: se dice, sin enlace.
+  // Cae en la pantalla del origen, con lo que le falta. Cada paso lleva a su pantalla: la fórmula, a
+  // Cotización › Fórmula con este origen.
   await expect(page.getByRole('heading', { name: MANUAL, level: 1 })).toBeVisible()
   const pasos = page.getByRole('region', { name: `Siguientes pasos para ${MANUAL}` })
   await expect(pasos.getByText('Configura el flujo')).toBeVisible()
   await expect(pasos.getByText('Publica la fórmula')).toBeVisible()
-  await expect(pasos.getByText('Se configura en una próxima etapa')).toHaveCount(1)
-  await expect(pasos.getByRole('link', { name: 'Abrir' })).toHaveCount(2)
+  const formula = pasos.getByRole('listitem').filter({ hasText: 'Publica la fórmula' })
+  await expect(pasos.getByRole('link', { name: 'Abrir' })).toHaveCount(3)
+  await expect(formula.getByRole('link')).toHaveAttribute('href', /seccion=formula&origen=/)
 
   const corea = await origenDeLaBase('corea')
   expect(corea).toMatchObject({ nombre: MANUAL, tipo: 'manual', sustantivo: 'unidad', genero: 'f' })
