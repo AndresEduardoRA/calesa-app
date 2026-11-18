@@ -7,6 +7,7 @@ import {
   NO_DISPONIBLE,
   abrirCambioDeTelefono,
   abrirEdicion,
+  abrirVerMas,
   botonCambiar,
   constanciasDe,
   extrasDeLead,
@@ -61,9 +62,9 @@ test('cambia a un número libre: el anterior queda «Anterior» y la versión se
   expect(await extrasDeLead(lead.id)).toMatchObject([
     { telefono: completoCon(t, lead.nac), etiqueta: 'Anterior' },
   ])
-  // La ficha ya muestra el nuevo principal y el anterior con su etiqueta.
-  await expect(page.getByText('Anterior', { exact: true })).toBeVisible()
+  // La ficha ya muestra el nuevo principal y, en «Ver más», el anterior con su etiqueta.
   await expect(page.getByText(new RegExp(`${nuevo}$`)).first()).toBeVisible()
+  await expect((await abrirVerMas(page)).getByText('Anterior', { exact: true })).toBeVisible()
   expect(await constanciasDe(lead.id, 'lead.telefono_cambiado')).toBe(1)
 })
 
