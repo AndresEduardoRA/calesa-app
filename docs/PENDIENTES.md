@@ -157,6 +157,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `logistica/entities/dinero/reparto.test.ts` («para cualquier monto…», ~2700 casos) pasa de los 5 s de Vitest con la máquina cargada (`pnpm test` junto a `db:probar`) — menos casos o un `timeout` propio.
 - **[—]** `scripts/demo/sembrar.mjs` no siembra proyectos de repuestos, eventos ni tareas de la agenda, ni vehículos fuera de la primera fase del flujo: la demo muestra esas pantallas vacías.
 - **[—]** `bloquear-peligrosos.sh` lee el texto del comando: un agregar que no aparece en él (dentro de `bash guion.sh`, armado con `printf`/`base64`, un `.npmrc` o un `package.json` escritos con Write) no se mira — una guarda de CI que exija que toda dependencia nueva de `package.json` esté en `scripts/orquestador/dependencias-aprobadas.txt` y que el PR que suma a la lista lleve «Dependencias nuevas».
+- **[—]** `e2e/leads-oportunidades.spec.ts` «crear desde el panel» cae también en `main`: el lead del spec nace sin oportunidad (el bloque dice «Todavía no tienes oportunidades…») y «Nueva oportunidad» del vacío no abre `?panel=nueva-oportunidad`; serial, deja sin correr las otras 4 del archivo.
 - **[—]** `e2e/cotizaciones-listado.spec.ts` E6 y E8 fallan a veces en el CI y pasan en local: la tecla N abre `panel=nuevo-lead` en vez de la hoja, y «Ver todas» pierde `clase=preventa` — esperar la hidratación o el `href` ya filtrado antes de actuar.
 
 ### Límites aceptados
