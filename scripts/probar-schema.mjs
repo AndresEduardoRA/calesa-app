@@ -205,6 +205,10 @@ const DATOS_DE_PRUEBA = {
   'areas/diseno/colores.sql': {
     _casos_de_colores: path.join(base, 'tests', 'casos-de-colores.json'),
   },
+  // El juego espejo de los datos clave de un origen: lo escribe la persona y lo corre también Vitest (`entities/datos-clave.test.ts`).
+  'areas/origenes/datos-clave.sql': {
+    _casos_de_datos_clave: 'src/modules/origenes/entities/casos-de-datos-clave.json',
+  },
   // Una migración de datos que una prueba vuelve a ejecutar va aquí como `{ ruta: migracionPorContenido('<texto>'), texto: true }`.
 }
 

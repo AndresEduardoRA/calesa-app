@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { origenesConUsoDesde } from './origen'
-import { pasosDe } from './pasos'
+import { faltasDeLaTarjeta, pasosDe } from './pasos'
 
 const FILA = {
   id: '00000000-0000-0000-0000-00000000000a',
@@ -12,6 +12,7 @@ const FILA = {
   color: '#027a48',
   activo: true,
   apibara_plataformas: [],
+  datos_clave: [],
   actualizado_en: '2026-10-12T20:00:00+00:00',
 }
 
@@ -75,5 +76,27 @@ describe('pasosDe', () => {
   it('nombra al origen en el detalle, sin texto fijo', () => {
     const [flujo] = pasosDe(origen({ nombre: 'Japón' }), { apibaraActiva: false })
     expect(flujo?.detalle).toContain('Japón')
+  })
+})
+
+describe('faltasDeLaTarjeta', () => {
+  it('dice en corto lo que falta, sin los permisos', () => {
+    expect(faltasDeLaTarjeta(origen({ tipo: 'subasta' }), { apibaraActiva: false })).toEqual([
+      'Sin fases',
+      'Falta publicar la fórmula',
+      'Falta activar apibara',
+    ])
+  })
+
+  it('sin nada pendiente, o con sólo los permisos, no dice nada', () => {
+    expect(
+      faltasDeLaTarjeta(origen({}, { fases: 3, formula_publicada: true }), {
+        apibaraActiva: false,
+      }),
+    ).toEqual([])
+  })
+
+  it('un origen inactivo no muestra faltas', () => {
+    expect(faltasDeLaTarjeta(origen({ activo: false }), { apibaraActiva: false })).toEqual([])
   })
 })
