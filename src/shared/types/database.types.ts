@@ -7112,19 +7112,19 @@ export type Database = {
       estado_cola_web: {
         Row: {
           abiertas: number | null
-          asignadas_total: number | null
-          contactadas_total: number | null
+          asignadas_total: number
+          contactadas_total: number
           cupo: number | null
-          disponible: boolean | null
-          habilitado: boolean | null
+          disponible: boolean
+          habilitado: boolean
           handle: string | null
-          nombre: string | null
-          orden: number | null
-          prioridad: number | null
+          nombre: string
+          orden: number
+          prioridad: number
           tasa_contacto_pct: number | null
           ultima_asignacion_en: string | null
-          usuario_id: string | null
-          vencidas_total: number | null
+          usuario_id: string
+          vencidas_total: number
         }
         ComputedFields: never
         Relationships: [
@@ -7139,12 +7139,12 @@ export type Database = {
       }
       etiquetas_vista: {
         Row: {
-          actualizado_en: string | null
-          color: string | null
-          creado_en: string | null
-          id: string | null
+          actualizado_en: string
+          color: string
+          creado_en: string
+          id: string
           leads: number | null
-          nombre: string | null
+          nombre: string
         }
         ComputedFields: never
         Insert: {
@@ -7167,18 +7167,18 @@ export type Database = {
       }
       leads_cartera_vista: {
         Row: {
-          actualizado_en: string | null
+          actualizado_en: string
           atributos: Json | null
-          atributos_publicos: Json | null
-          creado_en: string | null
+          atributos_publicos: NonNullable<Json>
+          creado_en: string
           creado_por: string | null
           dueno_id: string | null
           en_cartera: boolean | null
           es_favorito: boolean | null
           esta_tachado: boolean | null
           etiquetas: string[] | null
-          id: string | null
-          nombre: string | null
+          id: string
+          nombre: string
           numero: number | null
           numero_propio: number | null
           numero_propio_creador: string | null
@@ -7186,11 +7186,11 @@ export type Database = {
           numero_visible: number | null
           origen_lead_id: string | null
           proximo_recordatorio: Json | null
-          reciente_en: string | null
+          reciente_en: string
           telefono_cc: string | null
           telefono_principal: string | null
           telefono_visible: boolean | null
-          tipo_lead_id: string | null
+          tipo_lead_id: string
           ultimo_seguimiento_en: string | null
           ultimo_seguimiento_visible: Json | null
         }
@@ -7242,18 +7242,18 @@ export type Database = {
       }
       leads_vista: {
         Row: {
-          actualizado_en: string | null
+          actualizado_en: string
           atributos: Json | null
-          atributos_publicos: Json | null
-          creado_en: string | null
+          atributos_publicos: NonNullable<Json>
+          creado_en: string
           creado_por: string | null
           dueno_id: string | null
           en_cartera: boolean | null
           es_favorito: boolean | null
           esta_tachado: boolean | null
           etiquetas: string[] | null
-          id: string | null
-          nombre: string | null
+          id: string
+          nombre: string
           numero: number | null
           numero_propio: number | null
           numero_propio_creador: string | null
@@ -7265,7 +7265,7 @@ export type Database = {
           telefono_cc: string | null
           telefono_principal: string | null
           telefono_visible: boolean | null
-          tipo_lead_id: string | null
+          tipo_lead_id: string
           ultimo_seguimiento_en: string | null
           ultimo_seguimiento_visible: Json | null
         }
@@ -7296,17 +7296,17 @@ export type Database = {
       }
       recordatorios_vista: {
         Row: {
-          actualizado_en: string | null
+          actualizado_en: string
           completado_en: string | null
-          creado_en: string | null
-          id: string | null
+          creado_en: string
+          id: string
           lead_id: string | null
           lead_nombre: string | null
           lead_numero: number | null
           lead_numero_propio: number | null
           notificado_en: string | null
-          recordar_en: string | null
-          titulo: string | null
+          recordar_en: string
+          titulo: string
           vehiculo_id: string | null
           vehiculo_numero: number | null
           vehiculo_oculto: boolean | null
@@ -10744,18 +10744,18 @@ export type Database = {
       leads_vista_por_ids: {
         Args: { p_leads: string[] }
         Returns: {
-          actualizado_en: string | null
+          actualizado_en: string
           atributos: Json | null
-          atributos_publicos: Json | null
-          creado_en: string | null
+          atributos_publicos: NonNullable<Json>
+          creado_en: string
           creado_por: string | null
           dueno_id: string | null
           en_cartera: boolean | null
           es_favorito: boolean | null
           esta_tachado: boolean | null
           etiquetas: string[] | null
-          id: string | null
-          nombre: string | null
+          id: string
+          nombre: string
           numero: number | null
           numero_propio: number | null
           numero_propio_creador: string | null
@@ -10767,7 +10767,7 @@ export type Database = {
           telefono_cc: string | null
           telefono_principal: string | null
           telefono_visible: boolean | null
-          tipo_lead_id: string | null
+          tipo_lead_id: string
           ultimo_seguimiento_en: string | null
           ultimo_seguimiento_visible: Json | null
         }[]
@@ -11919,19 +11919,19 @@ export type Database = {
           ciudad: string | null
           direccion: string | null
           horario: string | null
-          legales: Json | null
+          legales: NonNullable<Json>
           lema: string | null
-          locale: string | null
+          locale: string
           logo_ruta: string | null
-          moneda_base: string | null
-          mostrar_moneda_secundaria: boolean | null
+          moneda_base: string
+          mostrar_moneda_secundaria: boolean
           nit: string | null
-          nombre: string | null
+          nombre: string
           nombre_sitio: string | null
-          pais: string | null
+          pais: string
           razon_social: string | null
-          redes: Json | null
-          seo: Json | null
+          redes: NonNullable<Json>
+          seo: NonNullable<Json>
           whatsapp: string | null
           whatsapp_respaldo: string | null
         }
@@ -11943,11 +11943,11 @@ export type Database = {
           avatar: string | null
           bio: string | null
           cargo: string | null
-          desde: string | null
-          especialidades: string[] | null
+          desde: string
+          especialidades: string[]
           handle: string | null
-          id: string | null
-          nombre: string | null
+          id: string
+          nombre: string
           orden: number | null
           whatsapp: string | null
         }
@@ -11957,9 +11957,9 @@ export type Database = {
       faqs: {
         Row: {
           categoria: string | null
-          orden: number | null
-          pregunta: string | null
-          respuesta: string | null
+          orden: number
+          pregunta: string
+          respuesta: string
         }
         ComputedFields: never
         Insert: {
@@ -11983,16 +11983,16 @@ export type Database = {
           autor_handle: string | null
           categoria: string | null
           categoria_etiqueta: string | null
-          cuerpo_html: string | null
+          cuerpo_html: string
           minutos_lectura: number | null
-          orden: number | null
+          orden: number
           portada: string | null
           publicada_en: string | null
           resumen: string | null
           seo_descripcion: string | null
           seo_titulo: string | null
-          slug: string | null
-          titulo: string | null
+          slug: string
+          titulo: string
         }
         ComputedFields: never
         Relationships: []
@@ -12000,10 +12000,10 @@ export type Database = {
       testimonios: {
         Row: {
           ciudad: string | null
-          cliente: string | null
+          cliente: string
           foto: string | null
-          orden: number | null
-          texto: string | null
+          orden: number
+          texto: string
           vehiculo: string | null
         }
         ComputedFields: never
@@ -12027,23 +12027,23 @@ export type Database = {
       }
       vehiculos: {
         Row: {
-          actualizado_en: string | null
+          actualizado_en: string
           anio: number | null
           atributos: Json | null
           categoria: string | null
-          destacado: boolean | null
-          id: string | null
+          destacado: boolean
+          id: string
           imagen: string | null
           marca: string | null
           miniatura: string | null
           modelo: string | null
-          numero: number | null
-          origen: string | null
-          origen_nombre: string | null
+          numero: number
+          origen: string
+          origen_nombre: string
           precio: number | null
           precio_hasta: number | null
           precio_nota: string | null
-          titulo: string | null
+          titulo: string
         }
         ComputedFields: never
         Relationships: []
