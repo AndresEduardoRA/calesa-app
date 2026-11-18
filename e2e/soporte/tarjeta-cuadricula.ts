@@ -12,7 +12,7 @@ const RAIZ = 'tjcuad_'
 export const subasta = () => sql("select id from public.origenes where clave = 'subasta_usa'")
 
 // La fórmula v1 de la subasta (definición, constantes, diseño y visibilidad) y sus tablas de referencia, copiadas en el origen.
-function copiarLaFormulaDeLaSubasta(origenId: string): void {
+export function copiarLaFormulaDeLaSubasta(origenId: string): void {
   const o = literal(origenId)
   const s = literal(subasta())
   sql(`

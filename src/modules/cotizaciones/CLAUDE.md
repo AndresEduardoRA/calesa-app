@@ -231,8 +231,8 @@ la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las 
 `_cotizaciones_ids_por_titulo`), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
 nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
-`cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `cotizacion_portada|portada_poner` (la portada de la cotización: el estado para quien
-pide y anotar la subida), `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.
+`cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `cotizacion_portada|portada_poner|portada_visible` (la portada de la cotización: el estado para
+quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.
 
 ## No se rompe
 
@@ -317,7 +317,9 @@ pide y anotar la subida), `comprobante_emitir|anular`, `comprobantes_serie_cambi
 
 - **La portada** (`cotizaciones_portadas`, una fila por cotización; `docs/COTIZADOR.md` › «La portada de la cotización»): **nadie la escribe directo**, sólo
   `cotizacion_portada_poner()` (pide ver, poder guardar y ver todo lo que dibuja la compartida, antes de mirar la ruta y otra vez tras tomar la cotización
-  `for no key update`; la clave, la vigente tras el candado, o PT409). Su policy pregunta por fila con `puede_cotizacion`. La clave
+  `for no key update`; la clave, la vigente tras el candado, o PT409). Su policy pregunta por fila con `puede_cotizacion`; el objeto de `portada/` del bucket
+  lo lee sólo quien ve todo lo que dibuja (`cotizacion_portada_visible()` en la policy «cotizaciones: leer» de storage). La imagen no depende del nivel de quien
+  la arma: la tarjeta sólo nombra nodos del nivel «todos» (K4) y los totales viajan para todos. La clave
   (`_cotizacion_portada_clave()`) mira todo lo que el dibujo lee: algo nuevo que la tarjeta dibuje entra ahí, y un cambio en cómo se dibuja sube
   `_portada_version_del_dibujo()` en una migración. Su ruta cuenta en `storage_refcount()` y en la rama `cotizaciones` del barrido; quien la reemplaza o la
   purga, la encola. Pruebas: `supabase/tests/areas/tarjeta/portada.sql`.

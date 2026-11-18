@@ -160,6 +160,17 @@ describe('geometriaDeLaTarjeta: los colores y la de por omisión', () => {
     })
   })
 
+  it('no depende de lo que la hoja de quien mira trae de más: la portada compartida es la misma para todo nivel', () => {
+    // Quien tiene un nivel mayor recibe valores y estados de nodos que la tarjeta no nombra (sólo nombra los del nivel «todos», K4 de
+    // `cotizacion-tarjeta.sql`): la geometría no los lee.
+    const base = calculoDePrueba()
+    const deUnNivelMayor = calculoDePrueba({
+      valores: new Map([...base.valores, ['costo_oculto', 777], ['margen', 0.3]]),
+      estados: new Map([...(base.estados ?? []), ['costo_oculto', 'activo'], ['margen', 'activo']]),
+    })
+    expect(geometria(deUnNivelMayor)).toEqual(geometria(base))
+  })
+
   it('sin plantilla o sin estados: la de por omisión, con el total', () => {
     for (const g of [
       geometria(calculoDePrueba(), { estado: 'sin_plantilla' }),

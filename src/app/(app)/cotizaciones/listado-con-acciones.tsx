@@ -9,6 +9,7 @@ import { HUECOS_DE_COMENTARIOS_EN_EL_RESUMEN } from '@/modules/cotizaciones/pant
 import { HUECOS_DE_COMPROBANTES_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/comprobantes-resumen'
 import { DialogoDeMarcarFinalDeLaFila } from '@/modules/cotizaciones/pantallas/final-listado'
 import { ListadoDeCotizaciones } from '@/modules/cotizaciones/pantallas/listado'
+import { HUECOS_DE_TARJETA_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/tarjeta-resumen'
 import { MenuDeLaFila } from './menu-de-la-fila'
 import { useAccionesDeLaLista } from './use-acciones-de-la-lista'
 
@@ -20,9 +21,10 @@ type Props = Omit<
   menus: Readonly<Record<string, MenuDeUnaFila>>
 }
 
-// Lo que las áreas `comentarios`, `comprobantes` y `aprobada` llenan en el resumen: las pestañas, en «Adjuntos» los comprobantes y «De este vehículo». Sólo cáscaras con
+// Lo que las áreas `tarjeta`, `comentarios`, `comprobantes` y `aprobada` llenan en el resumen: la portada, las pestañas, en «Adjuntos» los comprobantes y «De este vehículo». Sólo cáscaras con
 // `diferido()`: el listado no paga su código.
 const HUECOS_DEL_RESUMEN = {
+  ...HUECOS_DE_TARJETA_EN_EL_RESUMEN,
   ...HUECOS_DE_COMENTARIOS_EN_EL_RESUMEN,
   ...HUECOS_DE_COMPROBANTES_EN_EL_RESUMEN,
   ...HUECOS_DE_APROBADA_EN_EL_RESUMEN,

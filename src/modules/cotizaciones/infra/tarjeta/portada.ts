@@ -48,6 +48,8 @@ export async function subirLaPortada(
     upsert: false,
   })
   if (error && !/exists|duplicate/i.test(error.message)) {
+    // Lo que dijo storage queda en el log del servidor (la RLS que no deja, la cotización que se fue mientras se armaba).
+    console.error('[portada] Storage no aceptó la subida.', error.message)
     return fallo('inesperado', 'No se pudo subir la vista previa.')
   }
   return ok(ruta)
