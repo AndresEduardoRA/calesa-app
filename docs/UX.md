@@ -317,10 +317,18 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   - **Notificaciones:** push en este navegador, un interruptor por tipo del catálogo (sólo apagan el push, no la campana) y «Tus
     navegadores» con «Quitar». Con el interruptor a la vista y deshabilitado, dice por qué: el rol no recibe push, la empresa no lo activó
     (y dónde), falta la clave pública, el navegador no lo admite o lo bloqueó; mientras revisa, «Revisando este navegador…».
-- **Actividad** — `/actividad` (`actividad.ver`): tabla agrupada por día en la zona de la empresa con «Ver más» e «Ir a una fecha»; filtros
-  `?persona=`, `?entidad=` (y `?registro=` desde «Ver actividad» del «⋯» de la ficha de lead y de vehículo); el diff en un drawer
-  `?cambio=<id>` (sólo lo que cambió, con la etiqueta del campo y cada monto con la moneda de su lado; sin moneda conocida, el número y
-  «(moneda sin conocer)»); «No tienes acceso a este cambio.»; retención de `actividad_dias` (14 si no se puede leer).
+- **Actividad** — `/actividad` (`actividad.ver`): cada cambio como una frase con su icono por tipo de registro, agrupada por día en la zona de
+  la empresa: «Ana cambió Precio de [Toyota Hilux #12]: 10.000 → 12.000» (con varios campos, «Precio y 2 más», sin valores; un alta o una baja,
+  sin antes → después; el registro enlaza a su página si existe y se ve; montos con `<Monto>`). Una fila que quien mira no ve dice sólo
+  «Ana cambió un lead que no puedes ver». Una sola presentación en todo ancho; en el celular la frase se parte en renglones. «Ver detalle»
+  despliega en la misma fila todo el diff (`?cambio=<id>`: sólo lo que cambió, con la etiqueta del campo y cada monto con la moneda de su lado;
+  sin moneda conocida, el número y «(moneda sin conocer)»); un `?cambio=` fuera de lo cargado sale arriba como «El cambio que abriste»;
+  inválido o sin acceso, «No tienes acceso a este cambio.»; un error al desplegar queda en la fila con «Reintentar». Filtros como chips arriba:
+  persona y tipo de registro (`?persona=`, `?entidad=`), el registro (`?registro=`, desde «Ver actividad» del «⋯» de la ficha de lead y de
+  vehículo) y la fecha de «Ir a una fecha», cada uno con su «×», y «Limpiar filtros». «Ver más» con tope; retención de `actividad_dias` (14 si
+  no se puede leer). **Actividad reciente** (`ActividadReciente`, para una ficha; sola en `/actividad/reciente?entidad=&registro=`): los
+  últimos 5 cambios del registro como frases, cada uno a su detalle en `/actividad`, y «Ver toda la actividad»; esqueleto, «Sin cambios en
+  los últimos N días.» y error con «Reintentar»; sin `actividad.ver` no se dibuja.
 - **Configuración** — `/configuracion/*` (permiso de cada sección): hub + bloques: empresa, equipo, roles, orígenes, leads, cotización,
   flujos, web, cola web, integraciones.
 - **Leads (config)** — `/configuracion/leads` (`leads.campos.gestionar` o `leads.configurar`): lista agrupada + panel lateral.
