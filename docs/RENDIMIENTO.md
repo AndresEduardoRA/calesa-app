@@ -56,9 +56,9 @@ Bloque «Seguimientos y recordatorios» de la ficha y su «Ver todos» (`?todos=
   la base, uno más) por la ruta del registro.
 - Índices por ruta: `actividad_pkey` (sin filtro e «Ir a una fecha», que ancla por `actividad_fecha_idx`), `actividad_actor_id_idx`,
   `actividad_tabla_id_idx`, `actividad_registro_id_idx`, `actividad_accion_id_idx`. El registro y el primer cambio de cada fila se leen por la PK de
-  las 20 ya elegidas (`_actividad_registro`), nunca filtran ni ordenan; el recorte, una vez por fila (`offset 0`).
+  las 20 ya elegidas (`_actividad_registro`), nunca filtran ni ordenan; el recorte y el registro, una vez por fila (CTE `materialized`).
 - Con 300.000 filas, cada ruta ≤ 60 ms por su índice, sin `Seq Scan` ni `Sort`, y a lo sumo `máx(2 × t; t + 15 ms)` de la función de antes de la frase
-  (medido: 10–16 ms contra 25–38 ms). El detalle de una fila se lee al desplegarla (`actividad_diff`, por la PK) y su código va con `diferido()`.
+  (medido: 9–12 ms contra 20–29 ms). El detalle de una fila se lee al desplegarla (`actividad_diff`, por la PK) y su código va con `diferido()`.
 - Mide: `medir-actividad-listar.sql` (`db:medir:volumen`).
 
 ## Agenda

@@ -186,33 +186,39 @@ begin
   end if;
 
   -- Sobre las filas ya elegidas (a lo sumo v_n): el recorte de cada una y, si se ve, su registro por PK (`_actividad_registro`) y el primer
-  -- campo que cambió, sacado de ese recorte. Un campo de `atributos` sale como el objeto con su primera clave que cambió.
+  -- campo que cambió, sacado de ese recorte. Un campo de `atributos` sale como el objeto con su primera clave que cambió. Las dos CTE son
+  -- `materialized`: el recorte y el registro se calculan una vez por fila; si no, Postgres repite la función en cada lugar que la nombra.
+  with x as materialized (
+    select f.id, f.accion, f.tabla, f.registro_id, f.actor_id, f.creado_en,
+           nullif(f.antes ->> 'moneda', '') as moneda_antes, nullif(f.despues ->> 'moneda', '') as moneda_despues,
+           public._actividad_recortar(f.tabla, f.registro_id, f.antes, f.despues) as v
+      from unnest(v_filas[1:v_n]) f
+  ), g as materialized (
+    select x.*, coalesce((x.v ->> 'visible')::boolean, false) as visible,
+           case when coalesce((x.v ->> 'visible')::boolean, false) then public._actividad_registro(x.tabla, x.registro_id) end as registro
+      from x
+  )
   select coalesce(jsonb_agg(jsonb_build_object(
            'id', f.id, 'accion', f.accion, 'tabla', f.tabla, 'registro_id', f.registro_id, 'actor_id', f.actor_id,
            'actor_nombre', nullif(btrim(p.nombre), ''), 'creado_en', f.creado_en,
-           'visible', r.visible,
+           'visible', f.visible,
            'campos', to_jsonb(coalesce(c.claves[1:5], '{}'::text[])),
            'mas_campos', coalesce(cardinality(c.claves), 0) > 5
-         ) || case when r.visible then jsonb_build_object(
-           'registro_titulo', g.registro ->> 'titulo',
-           'registro_destino', g.registro -> 'destino',
+         ) || case when f.visible then jsonb_build_object(
+           'registro_titulo', f.registro ->> 'titulo',
+           'registro_destino', f.registro -> 'destino',
            'primer_cambio', pc.primer
          ) else '{}'::jsonb end order by f.id desc), '[]'::jsonb)
     into v_salida
-    from unnest(v_filas[1:v_n]) f
+    from g f
     left join public.perfiles p on p.id = f.actor_id
-   -- `offset 0`: el recorte y el registro se calculan una vez por fila; sin él, Postgres aplana la subconsulta y repite la función en cada lugar
-   -- que la nombra.
-   cross join lateral (select public._actividad_recortar(f.tabla, f.registro_id, f.antes, f.despues) as v offset 0) x
-   cross join lateral (select coalesce((x.v ->> 'visible')::boolean, false) as visible) r
    cross join lateral (
-     select case when r.visible and f.accion like '%.update'
-                 then array(select k from jsonb_object_keys(x.v -> 'cambios') k order by k limit 6)
+     select case when f.visible and f.accion like '%.update'
+                 then array(select k from jsonb_object_keys(f.v -> 'cambios') k order by k limit 6)
                  else '{}'::text[] end as claves
    ) c
-   cross join lateral (select case when r.visible then public._actividad_registro(f.tabla, f.registro_id) end as registro offset 0) g
    cross join lateral (
-     select x.v -> 'cambios' -> c.claves[1] as cambio,
+     select f.v -> 'cambios' -> c.claves[1] as cambio,
             -- La moneda con la regla de `actividad_diff`: fuera de leads y sólo si authenticated lee esa columna.
             c.claves[1] is not null and f.tabla <> 'leads' and exists (
               select 1 from pg_catalog.pg_attribute m
@@ -236,8 +242,8 @@ begin
                        else jsonb_build_object(ia.interna, public._actividad_valor_corto(cc.cambio -> 'antes' -> ia.interna)) end,
          'despues', case when ia.interna is null then public._actividad_valor_corto(cc.cambio -> 'despues')
                          else jsonb_build_object(ia.interna, public._actividad_valor_corto(cc.cambio -> 'despues' -> ia.interna)) end,
-         'moneda_antes', case when cc.con_moneda then nullif(f.antes ->> 'moneda', '') end,
-         'moneda_despues', case when cc.con_moneda then nullif(f.despues ->> 'moneda', '') end)
+         'moneda_antes', case when cc.con_moneda then f.moneda_antes end,
+         'moneda_despues', case when cc.con_moneda then f.moneda_despues end)
      end as primer
    ) pc;
 
