@@ -2,7 +2,9 @@ import 'server-only'
 import { errorDePostgrest, fallo as falloDe } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/server'
 import { oportunidadDesde } from '../entities/oportunidad'
+import { CAUSA_OPORTUNIDAD_ABIERTA } from '../entities/oportunidad-unica'
 import type {
+  FalloDeOportunidad,
   RepositorioDeOportunidades,
   ResultadoDeOportunidad,
 } from '../entities/repositorios-de-oportunidades'
@@ -21,9 +23,28 @@ const CAMPO_DEL_HINT: Record<string, string> = {
   motivo_perdida: 'motivo',
 }
 
-function fallo(error: { code?: string | null; message: string; hint?: string | null }) {
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+// «Una abierta por lead y embudo» (`_oportunidad_abierta_unica`): 22023 con `hint` `embudo_id` y el id de la abierta en `detail`. Viaja como
+// `causa` y `abierta`, para que la interfaz ofrezca «Abrir esa».
+function fallo(error: {
+  code?: string | null
+  message: string
+  hint?: string | null
+  details?: string | null
+}): FalloDeOportunidad {
   const campo = error.hint ? CAMPO_DEL_HINT[error.hint] : undefined
-  return { ok: false as const, error: errorDePostgrest(error), ...(campo ? { campo } : {}) }
+  const base = errorDePostgrest(error)
+  const abierta =
+    error.code === '22023' && error.hint === 'embudo_id' && GUID.test(error.details ?? '')
+      ? (error.details ?? undefined)
+      : undefined
+  return {
+    ok: false as const,
+    error: abierta ? { ...base, causa: CAUSA_OPORTUNIDAD_ABIERTA } : base,
+    ...(campo ? { campo } : {}),
+    ...(abierta ? { abierta } : {}),
+  }
 }
 
 const RESULTADOS = [

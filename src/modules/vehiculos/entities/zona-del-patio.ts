@@ -82,3 +82,8 @@ export function zonaDelPatio(estado: unknown): string | null {
 
 // La clave del campo que trae el estado del patio en un origen de subasta (el catálogo de apibara: `location.state`).
 export const CLAVE_DEL_ESTADO_DEL_PATIO = 'ubicacion_estado'
+
+// La zona del patio de un vehículo, por el estado que trae en sus atributos: lo que piden quienes no conocen los atributos (el texto para compartir una
+// cotización, que compone `src/app`). Nula sin estado conocido.
+export const zonaDelPatioDe = (vehiculo: { atributos: Readonly<Record<string, unknown>> }) =>
+  zonaDelPatio(vehiculo.atributos[CLAVE_DEL_ESTADO_DEL_PATIO])

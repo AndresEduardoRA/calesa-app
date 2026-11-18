@@ -1,6 +1,8 @@
 // Las carreras de las oportunidades y los embudos (parte 7a). Orden de los candados: lead → embudo →
-// oportunidad. Quitar el acceso bloquea el lead; guardar las etapas bloquea el embudo; mover toma los
-// tres. Cada carrera parte de su propio lead y de una oportunidad recién creada por su dueña.
+// oportunidad → (lead, embudo). Quitar el acceso bloquea el lead; guardar las etapas bloquea el embudo; mover
+// toma los tres; crear, reabrir y restaurar toman además el candado de transacción por (lead, embudo) de
+// `_oportunidad_abierta_unica` (una abierta y viva por lead y embudo). Cada carrera parte de su propio lead y de
+// una oportunidad abierta de su dueña: la base del alta si es de quien dio el alta, o una recién creada.
 import { PERSONAS, PREFIJO, comoPersona, leadDeLaDuena } from './terreno.mjs'
 
 const { duena, compartido, supervision, destino } = PERSONAS
@@ -21,12 +23,34 @@ async function embudoDe(db, persona) {
 }
 
 async function oportunidad(db, persona, lead) {
+  // Quien dio el alta ya tiene la base, abierta en su embudo por defecto: es la única abierta que admite ahí.
+  const { rows } = await db.query(
+    `select id, etapa_id from public.oportunidades
+      where lead_id = $1 and usuario_id = $2 and estado = 'abierta' and eliminado_en is null`,
+    [lead, persona],
+  )
+  if (rows[0]) return rows[0]
   const r = await como(db, persona, `public.oportunidad_crear(gen_random_uuid(), $1, $2)`, [
     lead,
     { titulo: `${PREFIJO} oportunidad` },
   ])
   return r.oportunidad
 }
+
+const abiertasVivas = async (db, lead, persona) =>
+  (
+    await db.query(
+      `select count(*)::int as n from public.oportunidades
+        where lead_id = $1 and usuario_id = $2 and estado = 'abierta' and eliminado_en is null`,
+      [lead, persona],
+    )
+  ).rows[0].n
+
+const rechazoDeLaGuarda = (b, abierta) =>
+  b.codigo === '22023' &&
+  b.hint === 'embudo_id' &&
+  b.detail === abierta &&
+  b.mensaje.startsWith('Este lead ya tiene una oportunidad abierta en «')
 
 const versionDelEmbudo = async (db, id) =>
   (await db.query('select actualizado_en::text as v from public.embudos where id = $1', [id]))
@@ -35,6 +59,57 @@ const versionDelEmbudo = async (db, id) =>
 const sin = (etapas, nombre) => JSON.stringify(etapas.filter((e) => e.nombre !== nombre))
 
 export async function carrerasDeOportunidades({ orquesta, carrera, espero }) {
+  console.log('Dos pestañas crean a la vez para el mismo lead y embudo')
+  {
+    // El compartido no tiene la base: su embudo por defecto empieza libre para este lead.
+    const lead = await leadDeLaDuena(orquesta, 'oportunidad una por embudo 1', {
+      compartidoCon: compartido,
+    })
+    await embudoDe(orquesta, compartido)
+    const crear = {
+      persona: compartido,
+      sql: 'public.oportunidad_crear(gen_random_uuid(), $1, $2)',
+    }
+    const r = await carrera(orquesta, {
+      a: { ...crear, args: [lead, { titulo: `${PREFIJO} pestaña A` }] },
+      b: { ...crear, args: [lead, { titulo: `${PREFIJO} pestaña B` }] },
+    })
+    espero(
+      'la primera crea y la segunda recibe el rechazo con la abierta (22023, hint embudo_id), no un error genérico; queda una abierta',
+      rechazoDeLaGuarda(r.b, r.a.valor.oportunidad.id) &&
+        (await abiertasVivas(orquesta, lead, compartido)) === 1,
+      { b: r.b },
+    )
+  }
+  {
+    // Reabrir contra crear: la base ganada vuelve a una etapa abierta mientras otra pestaña crea.
+    const lead = await leadDeLaDuena(orquesta, 'oportunidad una por embudo 2')
+    const embudo = await embudoDe(orquesta, duena)
+    const base = await oportunidad(orquesta, duena, lead)
+    await como(orquesta, duena, 'public.oportunidad_mover($1, $2, $3)', [
+      base.id,
+      base.etapa_id,
+      embudo.etapa('Ganado'),
+    ])
+    const r = await carrera(orquesta, {
+      a: {
+        persona: duena,
+        sql: 'public.oportunidad_mover($1, $2, $3)',
+        args: [base.id, embudo.etapa('Ganado'), embudo.etapa('Contactado')],
+      },
+      b: {
+        persona: duena,
+        sql: 'public.oportunidad_crear(gen_random_uuid(), $1, $2)',
+        args: [lead, { titulo: `${PREFIJO} mientras reabre` }],
+      },
+    })
+    espero(
+      'reabre primero: crear recibe el rechazo con la reabierta y queda una abierta',
+      rechazoDeLaGuarda(r.b, base.id) && (await abiertasVivas(orquesta, lead, duena)) === 1,
+      { b: r.b },
+    )
+  }
+
   console.log('Quitar el acceso mientras el compartido mueve su oportunidad')
   {
     const lead = await leadDeLaDuena(orquesta, 'oportunidad revocar 1', {

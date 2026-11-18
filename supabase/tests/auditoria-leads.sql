@@ -143,6 +143,9 @@ declare
     ('_logistica_lo_propio(uuid)', 'L'),   -- lee vehiculos.lead_id sólo para el alcance «propios» de la cadena: devuelve ids de vehículos
     ('_tarjeta_json(oportunidades,jsonb,jsonb)', 'L'),
     ('lead_oportunidades(uuid,boolean,timestamp with time zone,uuid,integer)', 'L'),
+    -- El embudo filtrado por lead: de invocador, la RLS da sólo las propias sobre ese lead (si está vivo en la cartera); un embudo ajeno, null.
+    ('embudo_tablero_del_lead(uuid,uuid,integer,integer)', 'L'),
+    ('embudo_etapa_pagina_del_lead(uuid,uuid,timestamp with time zone,uuid,integer)', 'L'),
     ('etiqueta_guardar(uuid,timestamp with time zone,text,text)', 'M'),
     ('lead_campo_crear(text,text,tipo_campo,jsonb,boolean,text,boolean,boolean,boolean,jsonb,text,numeric,numeric)', 'X'),
     ('lead_campo_guardar(uuid,timestamp with time zone,jsonb)', 'X'),

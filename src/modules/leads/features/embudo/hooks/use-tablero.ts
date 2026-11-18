@@ -14,8 +14,12 @@ import {
   type Tablero,
   type Tarjeta,
 } from '../../../entities/tablero'
+import { accionesDelRechazo } from '../../../entities/oportunidad-unica'
 import { MENSAJE_DE_VALIDACION } from '../../ficha/resultado'
 import { moverOportunidad } from '../../oportunidades/actions/mover-oportunidad'
+
+// De qué tablero es una página de «Ver más»: el embudo, la búsqueda y el lead con que se pidió.
+const deQueTablero = (t: Tablero) => `${t.embudo.id}|${t.busqueda ?? ''}|${t.lead?.id ?? ''}`
 
 // El kanban en la pantalla. Se siembra con lo que trajo el servidor y lo vuelve a sembrar cuando
 // cambia (otro embudo, `router.refresh()`). «Mover a…» se ve enseguida en la otra columna y, si la
@@ -61,7 +65,7 @@ export function useTablero(inicial: Tablero) {
     setMoviendo(null)
     if (!envio.ok) {
       setTablero(antes)
-      avisarError(envio.error)
+      avisarError(envio.error, accionesDelRechazo(tarjeta.lead.id, envio))
       return false
     }
     const { oportunidad } = envio.data
@@ -84,23 +88,21 @@ export function useTablero(inicial: Tablero) {
       return
     }
     setCargando(etapaId)
-    const { busqueda } = tablero
-    const embudoId = tablero.embudo.id
+    const de = deQueTablero(tablero)
     const pagina = await leerPaginaDeEtapa({
       etapaId,
       antes,
       tope: TAMANO_DE_COLUMNA,
-      buscar: busqueda,
+      buscar: tablero.busqueda,
+      leadId: tablero.lead?.id ?? null,
     })
     setCargando(null)
     if (!pagina.ok) {
       avisarError(pagina.error)
       return
     }
-    // Si mientras tanto cambió la búsqueda o el embudo, esta página es de otro tablero: se descarta.
-    setTablero((t) =>
-      t.busqueda === busqueda && t.embudo.id === embudoId ? conPagina(t, etapaId, pagina.data) : t,
-    )
+    // Si mientras tanto cambió la búsqueda, el lead o el embudo, esta página es de otro tablero: se descarta.
+    setTablero((t) => (deQueTablero(t) === de ? conPagina(t, etapaId, pagina.data) : t))
   }
 
   return { tablero, moverA, verMas, moviendo, cargando, anuncio }

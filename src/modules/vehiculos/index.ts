@@ -33,6 +33,8 @@ export type {
 // Con qué se vuelve a preguntar a apibara por un vehículo (enlace, lote o VIN); null = no se puede («Actualizar los datos» apagada).
 export { entradaDeRefresco } from './entities/subasta'
 export type { Vehiculo } from './entities/vehiculo'
+// La zona del patio de un vehículo de subasta (de sus atributos): la hora del patio en el texto para compartir una cotización
+export { zonaDelPatioDe } from './entities/zona-del-patio'
 export type {
   AprobadasDeLaPagina,
   CotizacionAprobadaDeLaFila,

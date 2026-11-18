@@ -295,6 +295,12 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   5.219) y ≤ 240 nodos (medido 165: ≈ 15 por fila, porque cada una lleva n.º, título, insignias, `<Monto>`, modo, autor, fecha y dos acciones; el tope de 65
   del historial era para filas de 3 nodos). Código: la isla al acercarse y la cáscara `diferido()` en su `diferidos.tsx`; el bloque, al acercarse (guardada) o
   al abrir el resumen. `/cotizaciones/[id]` 458,9 de 460 KB; `/cotizaciones` 373,6 de 380 (sólo la cáscara del hueco; el resumen ya era diferido).
+- **«Compartir la cotización»** (`e2e/cotizaciones-compartir.spec.ts`): por apertura, un `GET /cotizaciones/<id>/compartir` (la hoja guardada, `cotizacion_tarjeta`,
+  el vehículo y la subasta por clave primaria, el autor y los ajustes: lo mismo que un PDF, sin dibujarlo) y la portada con la caché del navegador (un 304 con su
+  ETag); al elegir «Fotos», `…/compartir/fotos` (el vehículo por `cotizaciones_pkey` y `vehiculos_imagenes` por `vehiculo_id`, ≤ 24) con miniaturas de 480 px
+  `lazy`, y la completa (≤ 1.600 px) sólo de lo marcado. Cambiar de pestaña, formato o zona no pide nada. Código: el panel entero por `diferido()`; en frío sólo el
+  botón del detalle y la línea del «⋯» (que no se dibuja hasta abrir el menú): `/cotizaciones` pasó de 374,8 a 375,4 KB, `/cotizaciones/[id]` midió 464,0 y
+  `/cotizaciones/nuevo` 456,7 (la hoja nueva no dibuja el botón).
 - El dato del vehículo en el panel (sin spec propio): con un vehículo en la URL, la página lee además el layout del origen en el
   `Promise.all` y, tras `leerVehiculo`, `editablesDe` (sin consulta con «todos» o lo que creó); el documento suma `paraElegir` (≈ 150 B) y
   `seEligen`. Con un elegido y un dato, una `cotizacion_tabla` por tabla distinta, en paralelo, recordada 5 min por hoja abierta y tabla
@@ -391,11 +397,16 @@ inferior), que no se dibuja hasta abrirse: la carga sólo paga el botón. En el 
 - Tablero: 6 columnas × 50, «500+» por columna, `oportunidades_tablero_idx`; la policy de `oportunidades` pregunta por fila
   `_lead_vivo_en_mi_cartera(lead_id)`. Presupuestos: tablero 800 ms, «Ver más» 500 ms, buscar 700 / 200 ms; primera página de una columna,
   «Ver más» y total acotado ≤ 25 ms (la guarda asserta `oportunidades_tablero_idx`, sin recorrer `oportunidades`, ≤ 200 descartes).
+- Embudo filtrado por lead (`?lead=`): `embudo_tablero_del_lead` y `embudo_etapa_pagina_del_lead`, los mismos topes (50 por columna, «500+»), cada
+  columna por `oportunidades_lead_etapa_idx` (lead, persona, etapa, actividad). `supabase/tests/medir-lead-oportunidades.sql` asserta el índice, sin
+  `Sort` ni `Seq Scan` y ≤ 1 descarte, con 1.000 en una columna sobre 20.000 de fondo; el tablero y su «Ver más» ≤ 50 ms (medido: 12 y 4,3 ms).
+- La guarda de «una abierta por lead y embudo» es un `select … limit 1` por `oportunidades_lead_abiertas_idx` tras un candado por (lead, embudo);
+  `abiertas_por_embudo` (sólo en la primera página de `lead_oportunidades`) es una sonda `limit 1` por embudo, 10 como mucho, por el mismo índice.
 - Nodos con una columna en el tope (500 tarjetas): ≤ 10.250 en escritorio y 6.000 en el celular (`leads-escala.spec.ts`); el «⋯» de cada
   tarjeta cuesta exactamente 3 nodos (`<use>` a un símbolo de `src/shared/ui/lista/simbolos-de-lista.tsx`; `e2e/mas-acciones-icono.spec.ts`).
   El servidor dibuja una sola distribución según el ancho de la petición.
 - Oportunidades de la ficha: 10 en el servidor y «Ver más» de a `TAMANO_DE_VER_MAS` desde el navegador hasta `TOPE_DE_LO_CARGADO`, con
-  aviso y «Buscarlas en tu embudo». Documento de la ficha ≤ 66 KB sobre `/perfil` con la sección abierta, igual con 10 o con 1.000; cada
+  aviso y «Verlas en tu embudo» (el embudo filtrado por el lead). Documento de la ficha ≤ 66 KB sobre `/perfil` con la sección abierta, igual con 10 o con 1.000; cada
   «Ver más» pesa lo mismo a cualquier profundidad; nodos lineales hasta 500 (`e2e/leads-oportunidades-ver-todas.spec.ts`).
 
 ## Vistos
@@ -579,9 +590,9 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
   `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). `/leads` mide 526,5 KB en 36 chunks y
-  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 374,8 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
-  `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 463,6 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
-  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,2 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action)
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,4 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 464,0 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,7 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/vehiculos` (el inventario): ≤ 530 KB, medido 502,1 en 34 chunks. El «⋯» de la fila sigue siendo un botón (su contenido se arma al abrirse) y sus

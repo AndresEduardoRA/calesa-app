@@ -16,6 +16,7 @@ import {
 import { abrirMenuDeLaFicha, abrirMenuDelLead } from './soporte/leads-marcas'
 import {
   embudoPorDefecto,
+  etapa,
   irAlEmbudo,
   oportunidad,
   tarjeta,
@@ -24,6 +25,8 @@ import {
 
 // «Nueva oportunidad…» sale del «⋯» del lead y antes avisa de las oportunidades que ya tiene (la base incluida): «Crear igual» sigue al formulario y
 // «Cancelar» cierra; «Ver oportunidades» lleva a la ficha en su sección. Fila, kanban, resumen y ficha; sin oportunidades abre directo en el formulario.
+// Con la base abierta en el embudo por defecto, «Crear igual» va apagado (una abierta por lead y embudo: `leads-oportunidad-por-embudo.spec.ts`);
+// donde se crea igual, la base está ganada.
 test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDelListado
@@ -48,15 +51,18 @@ async function deLaBase(leadId: string) {
   return data ?? []
 }
 
-// Un lead de Berta con su oportunidad base (el título es el nombre, como la que nace con todo lead).
-async function leadConBase(corto: string) {
+// Un lead de Berta con su oportunidad base (el título es el nombre, como la que nace con todo lead); `ganada`, ya cerrada en «Ganado».
+async function leadConBase(corto: string, { ganada = false } = {}) {
   const lead = await nuevoLead({
     corto,
     telefono: completoCon(t, nacional()),
     deQuien: t.personas.berta,
   })
-  await embudoPorDefecto(t.personas.berta)
-  await oportunidad(t.personas.berta, lead.id, { titulo: lead.nombre })
+  const embudo = await embudoPorDefecto(t.personas.berta)
+  await oportunidad(t.personas.berta, lead.id, {
+    titulo: lead.nombre,
+    ...(ganada ? { etapa_id: etapa(embudo, 'Ganado') } : {}),
+  })
   return lead
 }
 
@@ -83,7 +89,7 @@ async function crearIgual(page: Page, nombreDelLead: string, info?: TestInfo) {
 test('desde el «⋯» de la fila: el aviso lista la base, «Cancelar» no crea y «Crear igual» crea', async ({
   page,
 }, info) => {
-  const lead = await leadConBase(`Aviso Fila ${info.project.name}`)
+  const lead = await leadConBase(`Aviso Fila ${info.project.name}`, { ganada: true })
   await entrar(page, t.personas.berta)
   await irALeads(page, conElLead(lead.nombre))
   // Ya no hay un botón «+ Oportunidad» al costado: la puerta es el «⋯».
@@ -97,7 +103,7 @@ test('desde el «⋯» de la fila: el aviso lista la base, «Cancelar» no crea 
   await expect(dialogo.getByText('ya tiene oportunidades')).toBeVisible()
   const item = dialogo.getByRole('listitem').filter({ hasText: lead.nombre })
   await expect(item).toHaveCount(1)
-  await expect(item.getByText('Abierta')).toBeVisible()
+  await expect(item.getByText('Ganada')).toBeVisible()
   await expect(item.getByRole('link', { name: /^Ver/ })).toBeVisible()
   await capturar(page, info, 'aviso-con-la-base')
   await dialogo.getByRole('button', { name: 'Cancelar' }).click()
@@ -153,9 +159,12 @@ test('con más de cinco, el aviso muestra cinco y dice «y 1 más» con «Ver to
   page,
 }, info) => {
   const lead = await leadConBase(`Aviso Seis ${info.project.name}`)
+  const embudo = await embudoPorDefecto(t.personas.berta)
+  // Ganadas: la base es la única abierta que admite el embudo por defecto.
   for (let n = 2; n <= 6; n++) {
     await oportunidad(t.personas.berta, lead.id, {
       titulo: `Otra ${String(n)} ${info.project.name}`,
+      etapa_id: etapa(embudo, 'Ganado'),
     })
   }
   await entrar(page, t.personas.berta)
@@ -169,7 +178,7 @@ test('con más de cinco, el aviso muestra cinco y dice «y 1 más» con «Ver to
   await capturar(page, info, 'aviso-con-mas-de-cinco')
 })
 
-test('desde el kanban: la tarjeta lee el lead al abrir el «⋯» y el aviso lista sus oportunidades', async ({
+test('desde el kanban: la tarjeta lee el lead al abrir el «⋯» y el aviso lista sus oportunidades, con «Crear igual» apagado', async ({
   page,
 }, info) => {
   const lead = await leadConBase(`Aviso Kanban ${info.project.name}`)
@@ -185,12 +194,14 @@ test('desde el kanban: la tarjeta lee el lead al abrir el «⋯» y el aviso lis
   await elegir(menu, 'Nueva oportunidad…')
   await expect(page).toHaveURL(new RegExp(`para=${lead.id}`))
   await expect(modal(page).getByText('ya tiene oportunidades')).toBeVisible()
-  await crearIgual(page, lead.nombre)
-  expect(await deLaBase(lead.id)).toHaveLength(2)
+  // La base está abierta en el embudo por defecto: no se crea otra ahí.
+  await expect(modal(page).getByRole('button', { name: 'Crear igual' })).toBeDisabled()
+  await expect(modal(page).getByRole('link', { name: 'Abrir esa' })).toBeVisible()
+  expect(await deLaBase(lead.id)).toHaveLength(1)
 })
 
 test('desde la ficha: «Nueva oportunidad…» abre el aviso donde está', async ({ page }, info) => {
-  const lead = await leadConBase(`Aviso Ficha ${info.project.name}`)
+  const lead = await leadConBase(`Aviso Ficha ${info.project.name}`, { ganada: true })
   await entrar(page, t.personas.berta)
   await irAFicha(page, lead.id)
   const menu = await abrirMenuDeLaFicha(page)

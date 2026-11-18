@@ -87,6 +87,8 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   `{ ruta, monto, moneda }`, o `null` si quien mira no tiene `cotizaciones.ver` en algún origen: la columna no se dibuja) y lo arma `src/app/(app)/vehiculos/aprobadas.ts`
   con `leerAprobadasDeVehiculos()` de `cotizaciones` (este módulo no la importa). `entities/cotizacion-aprobada-de-la-fila.ts`; `celda-de-aprobada.tsx` dibuja
   `<Monto valor moneda>` enlazado (`data-no-abre`), «Sin total» sin monto y «—» sin aprobada. El monto cruza como texto.
+- `zonaDelPatioDe(vehiculo)` (`entities/zona-del-patio.ts`, por `index.ts`): la zona del patio por `atributos.ubicacion_estado`, o nula. La usa `src/app` al
+  componer los datos para compartir una cotización (`/cotizaciones/[id]/compartir`), sin que `cotizaciones` lea atributos.
 - Depende de `origenes`, `flujos`, `equipo`; no importa `cotizaciones` ni `leads`. `leads` no importa `vehiculos`: vínculo, interesados y «Relacionados» viven acá aunque se
   vean en la ficha del lead (los une `src/app`).
 

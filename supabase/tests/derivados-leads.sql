@@ -448,8 +448,10 @@ begin
   -- El de la papelera, con una oportunidad de b.
   perform pg_temp.como_d(b, format('select public.crear_lead(%L, %L::jsonb, null, null)', v_pap, jsonb_build_object(
     'nombre', 'RPC papelera', 'telefono_principal', '78930001', 'origen_lead_id', v_web)));
-  perform pg_temp.como_d(b, format($q$select public.oportunidad_crear(gen_random_uuid(), %L, '{"titulo": "RPC oportunidad"}')$q$, v_pap));
   v_emb := (select id from public.embudos where usuario_id = b and es_default);
+  -- Ganada: la base del alta ya es la abierta de ese lead en el embudo (una por lead y embudo); las dos están en el kanban.
+  perform pg_temp.como_d(b, format('select public.oportunidad_crear(gen_random_uuid(), %L, %L)', v_pap, jsonb_build_object('titulo', 'RPC oportunidad',
+    'etapa_id', (select s.id from public.embudos_etapas s where s.embudo_id = v_emb and s.es_ganada))));
   v_total_antes := (select sum((c ->> 'total')::int) from jsonb_array_elements(pg_temp.como_d(b, format('select public.embudo_tablero(%L, 50, 500)', v_emb)) -> 'columnas') c);
   perform pg_temp.como_d(b, format('select public.leads_papelera_enviar(%L, array[%L]::uuid[])', gen_random_uuid(), v_pap));
   -- Tachado por b.

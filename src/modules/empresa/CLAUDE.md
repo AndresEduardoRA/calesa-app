@@ -105,7 +105,7 @@ valor}`, la misma revalidación): sin el permiso o con el Modo Live no hay lápi
   `ImageResponse` (1080 px, alto según los tipos y la leyenda, Geist de `infra/compartir/fuentes/`, que `next.config.ts` lleva al desplegar con
   `outputFileTracingIncludes`); el logo se baja en el servidor (≤ `PESO_MAXIMO_LOGO`, PNG, JPEG, GIF o SVG) y uno que falla deja sólo el nombre. El panel
   (`components/popover-de-la-barra/compartir/`, diferido) pide texto e imagen por separado (una falla no tapa a la otra), guarda el resultado y los botones
-  son síncronos con el gesto; lo que el navegador no puede (`navegador.ts`) se apaga con su motivo (`motivos-de-las-acciones.ts`). Sin «Compartir» con el Modo Live.
+  son síncronos con el gesto; lo que el navegador no puede (`src/shared/lib/compartir.ts`, genérico) se apaga con su motivo (`motivos-de-las-acciones.ts`). Sin «Compartir» con el Modo Live.
 
 ## Ojo
 
