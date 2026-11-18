@@ -22,8 +22,9 @@ export type PedidoDeAprobar = {
   id: string
   numero: number
   actualizadoEn: string
-  // La cotización pasó a ser la aprobada (`true`) o dejó de serlo por «Deshacer» (`false`).
-  alCambiar: (aprobada: boolean) => void
+  // La cotización pasó a ser la aprobada (`true`) o dejó de serlo por «Deshacer» (`false`); `idAprobada` es la que lo es ahora (la pedida o, tras
+  // «Deshacer», la anterior).
+  alCambiar: (aprobada: boolean, idAprobada: string) => void
 }
 
 // Lo que se dice: el texto de la base si lo escribió para la persona; si no llegó al servidor, que no se aprobó; si llegó y no sabemos cómo terminó, que recargue.
@@ -53,11 +54,11 @@ async function enviar(id: string, actualizadoEn: string) {
   return null
 }
 
-async function deshacer(anterior: CotizacionAprobable, alCambiar: (aprobada: boolean) => void) {
+async function deshacer(anterior: CotizacionAprobable, alCambiar: PedidoDeAprobar['alCambiar']) {
   if ((await enviar(anterior.id, anterior.actualizadoEn)) === null) {
     return
   }
-  alCambiar(false)
+  alCambiar(false, anterior.id)
   avisarExito(`Volvió a ser la aprobada la n.º ${String(anterior.numero)}.`)
 }
 
@@ -67,7 +68,7 @@ export async function aprobarLaCotizacion(pedido: PedidoDeAprobar): Promise<void
   if (resultado === null) {
     return
   }
-  pedido.alCambiar(true)
+  pedido.alCambiar(true, pedido.id)
   const dicho = `La n.º ${String(pedido.numero)} es la aprobada del vehículo.`
   const { anterior } = resultado
   if (anterior === null) {

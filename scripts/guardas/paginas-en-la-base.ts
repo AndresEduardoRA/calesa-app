@@ -7,6 +7,7 @@ import {
   LOTES_POR_PAGINA,
   PRIMEROS_DEL_LOTE,
   TAMANO_DE_COLUMNA,
+  TAMANO_DE_ESTE_VEHICULO,
   TAMANO_DE_LA_FASE,
   TAMANO_DE_VER_MAS,
   TOPE_DE_LO_CARGADO,
@@ -169,6 +170,13 @@ export const RPC_PAGINADAS_DEL_NUCLEO: readonly RpcPaginada[] = [
     parametro: 'p_tamano',
     pideElCodigo: MAXIMO_DE_PAGINA_DE_COTIZACIONES,
     lista: 'listado de cotizaciones',
+  },
+  // «De este vehículo» (las otras cotizaciones del vehículo en una guardada o su resumen): de a 10, y la base acota a 100 (lo que se dibuja como mucho).
+  {
+    rpc: 'cotizaciones_de_este_vehiculo',
+    parametro: 'p_tamano',
+    pideElCodigo: TAMANO_DE_ESTE_VEHICULO,
+    lista: 'De este vehículo',
   },
   // La búsqueda del listado `/cotizaciones` (T15): el mismo tamaño y el mismo máximo que el listado, con su cursor.
   {
