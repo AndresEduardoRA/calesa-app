@@ -110,8 +110,6 @@ function SinPublicar({
   )
 }
 
-// El título del vehículo elegido para la banda de la tarjeta (4.18-2); sin vehículo, nulo.
-
 // La barra del cliente de la hoja: lo que puede hacer quien mira con los leads, y si su rol no deja guardar sin cliente en este origen.
 function BarraDelClienteDeLaHoja({
   cliente,
