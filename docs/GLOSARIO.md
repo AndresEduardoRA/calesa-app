@@ -321,7 +321,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cuántos, con «Mostrarlos».
 - **Gestionar etiquetas** — `?panel=etiquetas` / `<DialogoDeEtiquetas>`: crear, renombrar, recolorear y eliminar las propias.
 - **Embudo / Etapa / Oportunidad** — `embudos`, `embudos_etapas`, `oportunidades` / `embudo_*`, `oportunidad_*`: embudo personal de 3 a 12
-  etapas (inicial, ganada, perdida).
+  etapas (inicial, ganada, perdida). Un lead tiene como mucho **una oportunidad abierta por embudo** (`_oportunidad_abierta_unica`): crear, reabrir
+  o restaurar otra abierta ahí se rechaza con «Abrir esa».
 - **Oportunidad base** — `_lead_oportunidad_base()`: la que nace con todo lead nuevo (alta rápida, importación, «Datos», turno de la web), abierta,
   en la etapa inicial del embudo por defecto de quien lo crea y con el nombre del lead de título. Intacta, no cuenta como trabajo al deshacer.
 - **«Nueva oportunidad…»** — `?panel=oportunidad-rapida&para=<id>` / `<ModalDeOportunidadRapida>`: crear una oportunidad desde el «⋯» de un lead (fila, tarjeta, kanban, resumen y ficha). Primero
@@ -333,6 +334,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Mover a…** — `oportunidad_mover()` / `<MenuMoverA>`: cambiar de etapa desde un menú; ganada o perdida cierra, abierta reabre.
 - **Motivo de pérdida** — `oportunidades.motivo_perdida`: opcional, hasta 200, al mover a perdida; se limpia al reabrir.
 - **Vista de embudo** — `/leads?vista=embudo` / `<VistaDeEmbudo>`: kanban de tus oportunidades en un embudo; los filtros de la lista no aplican.
+- **Embudo filtrado por lead** — `/leads?vista=embudo&embudo=<id>&lead=<id>` / `embudo_tablero_del_lead()`, `<ChipDelLead>`: las oportunidades de
+  quien mira sobre un lead en un embudo, en todas sus etapas, con el chip «De <nombre>» y «Ver todas» (quita el filtro). Es la vista de todas las
+  de un lead; cambiar de embudo lo conserva y un `lead=` que no se ve se quita.
 - **Portal del cliente** — `accesos_portal` / `web.portal_*` / `?seccion=portal`: lo que el cliente ve en la web con código y clave: sus
   vehículos, lo «Visible para el cliente» y novedades.
 - **Mensaje del portal** — `ajustes_leads.portal_mensaje` / `portal_mensaje_guardar()`: texto para WhatsApp al dar acceso, con `{cliente}`,
