@@ -57,17 +57,17 @@ async function abrirConUnClic(page: Page, fila: Locator): Promise<void> {
   }
 }
 
-test('R1 un clic en la fila o la tarjeta abre el resumen sin pedirle nada a la página (sólo lee «Todo»), y «Abrir cotización» lleva a la página', async ({
+test('R1 un clic en la fila o la tarjeta abre el resumen sin pedirle nada a la página (sólo lee «Todo» y «De este vehículo»), y «Abrir cotización» lleva a la página', async ({
   page,
 }) => {
   await irAlListado(page, t.duena, '&por=10')
   const pedidos: string[] = []
-  // Lo que costaría abrir: un pedido a la página del listado (un `router.refresh()`) o a la base que no sea la lectura de «Todo» (comentarios, revisiones y adjuntos). Los `<Link>`
-  // prefetchan sus rutas (el menú, «Abrir cotización»): eso no es abrir.
+  // Lo que costaría abrir: un pedido a la página del listado (un `router.refresh()`) o a la base que no sea la lectura de «Todo» (comentarios, revisiones y adjuntos) o la
+  // de «De este vehículo» (si la cotización tiene vehículo). Los `<Link>` prefetchan sus rutas (el menú, «Abrir cotización»): eso no es abrir.
   page.on('request', (pedido) => {
     const esDeLaPagina = new URL(pedido.url()).pathname === '/cotizaciones'
     const esDeTodo =
-      /\/rest\/v1\/(rpc\/cotizacion_comentarios|rpc\/cotizacion_revisiones|cotizaciones_adjuntos)/.test(
+      /\/rest\/v1\/(rpc\/cotizacion_comentarios|rpc\/cotizacion_revisiones|cotizaciones_adjuntos|rpc\/cotizaciones_de_este_vehiculo)/.test(
         pedido.url(),
       )
     if (
