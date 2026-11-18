@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef } from 'react'
 import { PistaDeDesborde } from './pista-de-desborde'
 import { Tabs, TabsList, TabsTrigger } from './tabs'
+import { traerLaAbiertaALaVista } from './traer-la-abierta-a-la-vista'
 import { useDesborde } from './use-desborde'
 
 type Props = {
@@ -12,22 +13,6 @@ type Props = {
   // La abierta (vive en la URL de quien usa la barra) y qué hace elegir otra.
   valor: string
   alElegir: (clave: string) => void
-}
-
-// Deja a la vista la pestaña abierta moviendo sólo la barra. `scrollIntoView` movía también la página: con la barra fuera de la vista (se
-// giró el celular, o se amplió el texto con la página desplazada) la subía de golpe.
-function traerLaAbiertaALaVista(barra: HTMLElement) {
-  const abierta = barra.querySelector('[aria-selected=true]')
-  if (!abierta) {
-    return
-  }
-  const pestana = abierta.getBoundingClientRect()
-  const caja = barra.getBoundingClientRect()
-  if (pestana.left < caja.left) {
-    barra.scrollLeft -= caja.left - pestana.left
-  } else if (pestana.right > caja.right) {
-    barra.scrollLeft += pestana.right - caja.right
-  }
 }
 
 // La barra de pestañas de una pantalla de Configuración. En el celular, y con el texto al 200 %, no entran todas: la barra se desplaza dentro

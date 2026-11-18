@@ -19,16 +19,19 @@ import { useEnvioAPapelera } from '../../papelera/hooks/use-envio-a-papelera'
 
 type Props = {
   vehiculo: { id: string; titulo: string; origenId: string; actualizadoEn: string }
-  // Se ofrece «Editar» en el menú: la fila y la tarjeta. En el resumen y en la ficha es un botón de la cabecera.
+  // Se ofrece «Editar» en el menú: la fila y la tarjeta. En la ficha es un botón de la cabecera.
   editar: boolean
-  // «Publicar en la web…»: nulo no se ofrece (la lista y el resumen lo callan sin el permiso); apagado se ve con el motivo (la ficha, siempre).
+  // «Cotizar vehículo»: la ruta de la hoja con este vehículo y su origen (`rutaParaCotizar()`), sólo en la fila y la tarjeta y si quien mira
+  // cotiza en ese origen. Sin ella, no se ofrece.
+  cotizar?: string | null
+  // «Publicar en la web…»: nulo no se ofrece (la lista lo calla sin el permiso); apagado se ve con el motivo (la ficha, siempre).
   publicar: PermisoDeVitrina | null
   papelera: PermisoDePapelera
   // Qué hace «Publicar en la web…» donde el panel de la vitrina ya está (la ficha). Sin esto lleva a la ficha con el panel abierto.
   alPublicar?: () => void
-  // Se envió: el vehículo ya no está donde se miraba (la ficha vuelve al inventario y el resumen se cierra).
+  // Se envió: el vehículo ya no está donde se miraba (la ficha vuelve al inventario).
   alEnviado?: () => void
-  // En una cabecera (el resumen, la ficha): con borde, como los botones de al lado.
+  // En una cabecera (la ficha): con borde, como los botones de al lado.
   conBorde?: boolean
   // «Ver actividad»: sólo la ficha, y sólo con `actividad.ver` (la ruta la arma la página). Sin esto, no se ofrece.
   alVerActividad?: (() => void) | undefined
@@ -48,7 +51,7 @@ const oferta = (
 // «Publicar en la web…» lleva a la ficha con su panel abierto: el panel y la vista previa de lo que verá el visitante viven en la ficha.
 const aLaVitrina = (id: string) => `${RUTAS.vehiculos}/${id}?panel=vitrina`
 
-// El «⋯» de un vehículo: la lista de siempre (`accionesDeVehiculo()`), igual en la fila, la tarjeta, el resumen y la ficha. «Enviar a la
+// El «⋯» de un vehículo: la lista de siempre (`accionesDeVehiculo()`), igual en la fila, la tarjeta y la ficha. «Enviar a la
 // papelera» se hace sin preguntar y ofrece «Deshacer»; lo que ya se sabe que la base va a rechazar (vinculado, fuera de su fase inicial)
 // se ve apagado con el motivo. Sin nada que ofrecer no se dibuja.
 export function MenuDeVehiculo(props: Props) {
@@ -57,8 +60,10 @@ export function MenuDeVehiculo(props: Props) {
   const router = useRouter()
   const panel = usePanelDeVehiculo()
   const envio = useEnvioAPapelera()
+  const cotizar = props.cotizar ?? null
   const bloques = accionesDeVehiculo({
     editar: editar ? 'habilitada' : 'oculta',
+    cotizar: cotizar === null ? 'oculta' : 'habilitada',
     publicar: oferta(publicar),
     papelera: oferta(papelera),
     actividad: alVerActividad ? 'habilitada' : 'oculta',
@@ -70,17 +75,14 @@ export function MenuDeVehiculo(props: Props) {
     permiso?.estado === 'deshabilitado' ? (permiso.motivo ?? null) : null
 
   const lineas: Record<string, () => AccionDeMenu[]> = {
-    editar: () => [
-      {
-        tipo: 'accion',
-        clave: 'editar',
-        etiqueta: ETIQUETA_DE_ACCION_DE_VEHICULO.editar,
-        despuesDeCerrar: true,
-        alElegir: () => {
-          panel.editar(vehiculo.id)
-        },
-      },
-    ],
+    editar: () =>
+      lineaDe('editar', () => {
+        panel.editar(vehiculo.id)
+      }),
+    cotizar: () =>
+      lineaDeCotizar(cotizar, (ruta) => {
+        router.push(ruta as Route)
+      }),
     publicar: () => [
       {
         tipo: 'accion',
@@ -131,6 +133,28 @@ export function MenuDeVehiculo(props: Props) {
       conBorde={conBorde}
     />
   )
+}
+
+// Una línea simple del «⋯», que se elige con el menú ya cerrado (abre un panel o navega).
+function lineaDe(clave: 'editar' | 'cotizar', alElegir: () => void): AccionDeMenu[] {
+  return [
+    {
+      tipo: 'accion',
+      clave,
+      etiqueta: ETIQUETA_DE_ACCION_DE_VEHICULO[clave],
+      despuesDeCerrar: true,
+      alElegir,
+    },
+  ]
+}
+
+// «Cotizar vehículo» lleva a la hoja con este vehículo (sólo se ofrece con su ruta).
+function lineaDeCotizar(ruta: string | null, ir: (ruta: string) => void): AccionDeMenu[] {
+  return ruta === null
+    ? []
+    : lineaDe('cotizar', () => {
+        ir(ruta)
+      })
 }
 
 // «Ver actividad» lleva a `/actividad` de este vehículo (sólo se ofrece con `alVerActividad`).

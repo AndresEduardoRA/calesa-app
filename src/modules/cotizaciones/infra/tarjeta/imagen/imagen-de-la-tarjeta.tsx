@@ -15,7 +15,8 @@ import type { LogoDelPdf } from '../pdf/logo-del-pdf'
 
 // La tarjeta de una cotización como imagen PNG (`ImageResponse` de `next/og`, en el servidor: no suma JS a ninguna pantalla), al ancho de la tarjeta en px: la
 // misma geometría que la vista previa y el PDF, pintada con posiciones absolutas (satori no tiene `grid` y todo `div` con más de un hijo lleva `display: flex`).
-// Geist de la tarjeta; el logo, el que ya bajó y filtró `logoDelPdf()`, como `data:`. La usa la portada de la cotización.
+// Geist de la tarjeta; el logo, el que ya bajó y filtró `logoDelPdf()`, como `data:`. La usa la portada de la cotización: si cambias cómo se dibuja, sube
+// `_portada_version_del_dibujo()` en una migración (si no, las portadas ya guardadas no se rehacen).
 
 type Fuente = { name: string; data: Buffer; weight: 400 | 600; style: 'normal' | 'italic' }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { parseAsString, useQueryStates } from 'nuqs'
+import { CLAVE_DEL_VISOR } from '@/shared/ui/visor-de-imagenes/use-carrusel'
 import { abrirConVuelta, useVueltaDelFoco } from '@/shared/ui/vuelta-del-foco'
 import {
   CLAVE_DE_RESUMEN_DE_COTIZACION,
@@ -8,9 +9,13 @@ import {
 } from '../../../entities/listado/resumen-del-listado'
 import { CLAVE_DE_PESTANA_DEL_RESUMEN } from '../../../entities/pestanas-del-resumen'
 
+const CLAVE_DE_LA_FOTO = 'foto'
+
 const PARAMETROS = {
   [CLAVE_DE_RESUMEN_DE_COTIZACION]: parseAsString,
   [CLAVE_DE_PESTANA_DEL_RESUMEN]: parseAsString,
+  [CLAVE_DEL_VISOR]: parseAsString,
+  [CLAVE_DE_LA_FOTO]: parseAsString,
 }
 
 // Qué cotización está abierta en el resumen, en la URL (`?cotizacion=`): sobrevive a recargar y se puede compartir. Abrir suma al historial («atrás» lo cierra), empieza en la
@@ -38,10 +43,13 @@ export function useResumenDeCotizacion() {
         id === idDelResumen(cotizacionId),
       )
     },
+    // Cerrar se lleva también el visor de la portada (`?visor=&foto=`): si no, reabrir la misma cotización lo volvería a abrir.
     cerrar: () => {
       void setParametros({
         [CLAVE_DE_RESUMEN_DE_COTIZACION]: null,
         [CLAVE_DE_PESTANA_DEL_RESUMEN]: null,
+        [CLAVE_DEL_VISOR]: null,
+        [CLAVE_DE_LA_FOTO]: null,
       })
     },
   }

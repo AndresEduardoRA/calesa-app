@@ -140,7 +140,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** «Ver comprobante» duplicado en repuestos y logística (`ver-comprobante.ts` y `useComprobante.ver`); `XCell` no tiene `emptyLabel`.
 - **[—]** Las guardas de áreas (`areas-de-cotizaciones`, `-flujos`, `-logistica`, `areas-b/areas-de-web`, `areas-c/areas-de-repuestos`) son cinco copias de la misma lógica, y los registros de `<Confirmar>`, `<Drawer>` y RPC paginadas están partidos en `areas-b/`, `areas-c/`, `*-formula.ts` y `*-papelera.ts` — unificar en una guarda parametrizada y un registro por módulo.
 - **[T340]** `lead_telefonos_leer()` no tiene uso en la app (la leía el resumen de la lista de leads) — quitarla en una migración con sus pruebas SQL.
-- **[T340]** `LugarDeRelacionados` conserva `'resumen'` y `lugar === 'resumen'` en `relacionados-de-un-lead.tsx` sólo para el resumen del inventario — quitarlo cuando ese resumen se vaya.
 - **[—]** Repuestos sube imágenes con `subirPorHash` desde el hook — debería ir a `infra/items/imagenes.client.ts`.
 - **[—]** Huérfanos de Storage: `storage_gc_encolar_huerfanos` sólo barre `vehiculos`; quedan los de `repuestos` y `cotizaciones` (subidas cuyo registro falló), imágenes de guías y fotos de testimonios web subidas y nunca guardadas.
 - **[—]** El CSV de una importación que el job deja `fallida` tras 24 h sin avance no se borra (ni el objeto de un borrado fallido en el navegador), y un error que se repite reintenta cada 2 min esas 24 h.
@@ -149,7 +148,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[4-95]** El `creado_en` de una revisión es el `now()` de su transacción: «Ir a una fecha» puede dejar del lado equivocado una revisión de esa ventana — `clock_timestamp()` o saltar por `(creado_en, id)`, si alguna vez se ve.
 - **[4-74]** `schemas/edicion.ts` acota `notas` con `.max(2000)`, que cuenta unidades UTF-16 mientras la base cuenta caracteres (un emoji cerca del tope da distinto); `cotizar-guardada-guardar.spec.ts` usa `waitForTimeout(600)`.
 - **[T310]** La muestra de la tarjeta del modal de colores (`como-se-ve-el-color.tsx`) sigue con la tinta de `_color_tinta_de_la_tarjeta()`, y la tarjeta de la cotización ya usa `auto` (#1b2130 o blanco) — alinearla y retirar `_color_tinta_de_la_tarjeta()` si queda sin uso.
-- **[T310]** La imagen de la tarjeta (`imagenDeUnaGuardada()`) no tiene ruta: quien la sirva (la portada, T313) suma `infra/tarjeta/pdf/fuentes/*` a `outputFileTracingIncludes` de su ruta.
 - **[4-98]** El PDF sale sin logo si el logo es WebP o un SVG con estilos, `use`, `mask`, `filter` o `<image>` (`logo-del-pdf.ts`) — convertirlo a PNG al subirlo.
 - **[7-3]** El `aplicado_en` de `chat.participar` y `chat.moderar` en el catálogo dice «policy …» y no nombra las RPC que los exigen — dato de catálogo en una migración nueva.
 - **[5a-42]** `medir-bajas.sql` falla sin regresión cuando el disco tarda en `fsync` (topes de tiempo) — juzgar el trabajo (40 lotes, ≤ 16 M buffers) y los tiempos sólo con la ventana sana (`pg_stat_checkpointer`, `/proc/pressure/io`).

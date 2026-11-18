@@ -102,12 +102,8 @@ test('dar de alta un vehículo en Corea, con los valores por defecto y los atajo
   await expect(panel).toBeHidden()
   await expect(vehiculo(page, 'Kia Seltos 2022')).toBeVisible()
 
-  // Su resumen (un clic en la fila) y, con «Abrir ficha», su ficha: los datos por los grupos del layout y la fase de sólo lectura.
-  await aLaVista(page.getByRole('button', { name: 'Abrir Kia Seltos 2022' })).click()
-  await page
-    .getByRole('dialog', { name: 'Kia Seltos 2022', exact: true })
-    .getByRole('link', { name: 'Abrir ficha' })
-    .click()
+  // Su nombre lleva a su ficha: los datos por los grupos del layout y la fase de sólo lectura.
+  await aLaVista(page.getByRole('link', { name: 'Kia Seltos 2022', exact: true })).click()
   await expect(page.getByRole('heading', { name: 'Kia Seltos 2022', level: 1 })).toBeVisible()
   await expect(aLaVista(page.getByText('Sin fase'))).toBeVisible()
   await expect(aLaVista(page.getByText('KNDEU2AA5N7123456'))).toBeVisible()

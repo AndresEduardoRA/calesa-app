@@ -39,7 +39,16 @@ export type PropsDeEsteVehiculoEnElResumen = {
   conTitulo?: boolean
 }
 
+// La portada de la cotización arriba del resumen: la cotización, su número (para el texto alternativo) y su total (el del recuadro mientras carga o si falla).
+export type PropsDeLaPortadaEnElResumen = {
+  cotizacionId: string
+  numero: number
+  total: { valor: number; moneda?: string | null } | null
+}
+
 export type HuecosDelResumen = {
+  // La portada de la cotización, primero (`pantallas/tarjeta-resumen.ts`).
+  Portada?: ComponentType<PropsDeLaPortadaEnElResumen>
   // «Todo», «Adjuntos», «Revisiones» y «Comentarios» bajo el detalle de la cotización (`pantallas/comentarios-resumen.ts`).
   Pestanas?: ComponentType<PropsDeLasPestanasDelResumen>
   // La lista de comprobantes de «Adjuntos» (`pantallas/comprobantes-resumen.ts`).

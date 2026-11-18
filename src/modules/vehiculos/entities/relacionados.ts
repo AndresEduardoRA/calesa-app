@@ -150,7 +150,7 @@ export function cursorDeLaFila(
   return { en: detalle.tipo === 'vinculado' ? (detalle.desde ?? '') : detalle.creadoEn, id }
 }
 
-// Cómo se dibuja el bloque: `'linea'`, un chip por grupo con su popover (los resúmenes y logística); `'compacta'`, los grupos con sus filas, sin leyendas a la vista ni botones
+// Cómo se dibuja el bloque: `'linea'`, un chip por grupo con su popover (logística); `'compacta'`, los grupos con sus filas, sin leyendas a la vista ni botones
 // sueltos (las fichas). La elige cada lugar: no hay una por defecto.
 export type PresentacionDeRelacionados = 'linea' | 'compacta'
 

@@ -32,7 +32,7 @@ import { esperarHidratado } from './soporte/listas-por-pagina'
 import { capturar, recibeElClic } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 import { cargarVehiculos, vehiculoPorTitulo } from './soporte/vehiculos'
-import { sembrarFotos } from './soporte/vehiculos-resumen'
+import { sembrarFotos } from './soporte/vehiculos-lista'
 
 // Dónde va el «⋯» de cada ítem de una lista (`docs/UX.md` › «Reglas transversales», `<EsquinaDeAcciones>`): en la tarjeta, arriba a la
 // derecha y a la vista sin pasar el mouse, de 44 px; en la tarjeta grande del inventario, sobre la foto, espejo de la casilla; en la

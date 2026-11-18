@@ -4,7 +4,6 @@ import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { useUltimo } from '@/shared/ui/use-ultimo'
 import {
   accionesDeLaFila,
-  rutaDeVerTodos,
   type AnclaDeVehiculo,
   type ContextoDeAcciones,
   type LugarDeRelacionados,
@@ -37,9 +36,7 @@ type Props = {
   // La ficha: lo que ofrece el aviso de desvinculado (la papelera) y su alcance.
   ofrecerPapelera?: boolean
   avisos?: AvisosDelMenu
-  // El resumen lee en el navegador: tras una acción lograda vuelve a leer.
-  alCambiar?: () => void
-  // La ficha, compacta; el resumen y logística, en una línea de chips.
+  // La ficha, compacta; logística, en una línea de chips.
   presentacion: PresentacionDeRelacionados
 }
 
@@ -69,34 +66,28 @@ function armarContexto(
   return { ancla, contexto, delVehiculo }
 }
 
-// «Ver todos» de un grupo: sólo si hay más que ver; desde un resumen lleva a la ficha, en los demás abre el drawer.
+// «Ver todos» de un grupo: sólo si hay más que ver; abre el drawer en el lugar.
 function verTodosDelGrupo({
   datos,
   grupo,
-  lugar,
-  ancla,
   abrir,
 }: {
   datos: RelacionadosDelVehiculo
   grupo: GrupoDeRelacionados<LeadRelacionado>
-  lugar: LugarDeRelacionados
-  ancla: AnclaDeVehiculo
   abrir: (tipo: GrupoDeRelacionados<LeadRelacionado>['tipo']) => void
 }) {
   if (!(grupo.tipo === 'vinculado' ? datos.conAnteriores : grupo.hayMas)) {
     return null
   }
-  return lugar === 'resumen'
-    ? { href: rutaDeVerTodos(ancla, grupo.tipo) }
-    : {
-        abrir: () => {
-          abrir(grupo.tipo)
-        },
-      }
+  return {
+    abrir: () => {
+      abrir(grupo.tipo)
+    },
+  }
 }
 
-// El bloque «Relacionados» de un vehículo (sus leads): lo comparten la ficha, la unidad de logística y el resumen del inventario. Cada acción hace lo suyo en el lugar o lleva a la ficha con el
-// panel abierto (los selectores y la confirmación de desvincular viven en la URL de la ficha; en un resumen o en la unidad no caben).
+// El bloque «Relacionados» de un vehículo (sus leads): lo comparten la ficha y la unidad de logística. Cada acción hace lo suyo en el lugar o lleva a la ficha con el
+// panel abierto (los selectores y la confirmación de desvincular viven en la URL de la ficha; en la unidad no caben).
 export function RelacionadosDeUnVehiculo({
   datos,
   vehiculoId,
@@ -106,19 +97,17 @@ export function RelacionadosDeUnVehiculo({
   numeroGlobal = false,
   ofrecerPapelera = false,
   avisos,
-  alCambiar,
   presentacion,
 }: Props) {
-  const { ancla, contexto, delVehiculo } = armarContexto(datos, vehiculoId, lugar, para)
+  const { contexto, delVehiculo } = armarContexto(datos, vehiculoId, lugar, para)
   const acciones = useAccionesDeRelacionados(
     { lado: 'vehiculo', vehiculo: delVehiculo },
-    { ...(alCambiar ? { alCambiar } : {}), alAbrir: (accion) => paneles.abrir(accion) },
+    { alAbrir: (accion) => paneles.abrir(accion) },
   )
   const paneles = usePanelesDeLaFicha({ vincularA: acciones.vincularA, marcarA: acciones.marcarA })
   const verTodos = usePanelDeRelacionados()
   const ultimoTipo = useUltimo(verTodos.tipo)
-  // En un resumen «Ver todos» lleva a la ficha: el drawer es de la ficha y de la unidad.
-  const montarVerTodos = useAbiertoAlgunaVez(verTodos.tipo !== null && lugar !== 'resumen')
+  const montarVerTodos = useAbiertoAlgunaVez(verTodos.tipo !== null)
   const filaDe = (fila: FilaRelacionada<LeadRelacionado>, clave: string) => (
     <FilaDeLead
       key={clave}
@@ -143,9 +132,7 @@ export function RelacionadosDeUnVehiculo({
         filasDe={(grupo: GrupoDeRelacionados<LeadRelacionado>) =>
           grupo.filas.map((fila) => filaDe(fila, claveDeLaFila(grupo.tipo, fila)))
         }
-        verTodosDe={(grupo) =>
-          verTodosDelGrupo({ datos, grupo, lugar, ancla, abrir: verTodos.abrir })
-        }
+        verTodosDe={(grupo) => verTodosDelGrupo({ datos, grupo, abrir: verTodos.abrir })}
       />
       {lugar === 'ficha' ? (
         <PanelesDeLaFicha

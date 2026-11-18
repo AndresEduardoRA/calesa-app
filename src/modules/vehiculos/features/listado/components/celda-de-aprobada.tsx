@@ -11,7 +11,7 @@ import {
 
 const VACIO = <span className="text-(--color-ink-faint)">—</span>
 
-// El primer resultado de la aprobada con su moneda congelada, enlazado a la cotización (`data-no-abre`: el clic no abre el resumen del vehículo). Sin total, lo dice.
+// El primer resultado de la aprobada con su moneda congelada, enlazado a la cotización (`data-no-abre`: el clic no abre la ficha del vehículo). Sin total, lo dice.
 function Enlace({ aprobada }: { aprobada: CotizacionAprobadaDeLaFila }) {
   const monto = montoDeLaAprobada(aprobada)
   return (

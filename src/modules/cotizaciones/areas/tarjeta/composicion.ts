@@ -12,6 +12,12 @@ import {
 } from '../../entities/tarjeta/geometria-de-la-tarjeta'
 import { getAsesorDeLaCotizacion } from '../../infra/tarjeta/asesor-de-la-cotizacion'
 import { logoDelPdf } from '../../infra/tarjeta/pdf/logo-del-pdf'
+import {
+  bajarLaPortada as bajar,
+  getEstadoDeLaPortada,
+  ponerLaPortada,
+  subirLaPortada,
+} from '../../infra/tarjeta/portada'
 import { getTarjeta } from '../../infra/tarjeta/tarjeta'
 
 // A quien creó una cotización guardada, para «Asesor:» de su tarjeta (4.18-2, P2 a).
@@ -105,4 +111,47 @@ export async function imagenDeUnaGuardada(
     console.error('[imagen] No se pudo dibujar la tarjeta.', error)
     return fallo('inesperado', 'No se pudo armar la imagen de la tarjeta.')
   }
+}
+
+// La portada de la cotización (`docs/COTIZADOR.md` › «La portada de la cotización»): el estado para quien pide y la guardada, con su sesión.
+export const leerLaPortada = getEstadoDeLaPortada
+export const bajarLaPortada = bajar
+
+// La portada: la imagen de lo guardado (`imagenDeUnaGuardada()`) en WebP de hasta 1.600 px. `sharp` se carga sólo aquí, con `import()`, y nunca llega al navegador.
+export async function imagenDeLaPortada(
+  entrada: EntradaDelPdf,
+): Promise<Resultado<Uint8Array<ArrayBuffer>>> {
+  const png = await imagenDeUnaGuardada(entrada)
+  if (!png.ok) {
+    return png
+  }
+  try {
+    const { webpDeLaTarjeta } = await import('../../infra/tarjeta/imagen/webp-de-la-tarjeta')
+    return ok(await webpDeLaTarjeta(png.data.bytes))
+  } catch (error) {
+    console.error('[portada] No se pudo pasar la tarjeta a WebP.', error)
+    return fallo('inesperado', 'No se pudo armar la vista previa.')
+  }
+}
+
+// Guarda la portada armada con la clave que se leyó **antes** de leer la hoja: sube el objeto y lo anota. Si la clave cambió mientras se armaba (PT409), no se
+// guarda y no es un error (`guardada: false`): quien la pidió ya tiene la suya.
+export async function guardarLaPortada({
+  id,
+  bytes,
+  clave,
+}: {
+  id: string
+  bytes: Uint8Array<ArrayBuffer>
+  clave: string
+}): Promise<Resultado<{ guardada: boolean }>> {
+  const subida = await subirLaPortada(id, bytes)
+  if (!subida.ok) {
+    return subida
+  }
+  const puesta = await ponerLaPortada(id, subida.data, clave)
+  if (!puesta.ok) {
+    return puesta.error.codigo === 'conflicto' ? ok({ guardada: false }) : puesta
+  }
+  return ok({ guardada: true })
 }

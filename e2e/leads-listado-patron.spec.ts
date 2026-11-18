@@ -15,7 +15,8 @@ import { menuDeFila } from './soporte/leads-marcas'
 
 // El patrón de lista en el listado de leads (9i, `.claude/rules/ui.md`): un clic en cualquier parte de la fila o la tarjeta lleva a la ficha
 // (T340: no hay resumen), salvo el del «⋯» y el de un enlace de la fila; con el teclado se alcanza el nombre (un enlace) y Enter abre la
-// ficha. Lo demás del enlace (Ctrl, el kanban, los enlaces viejos), en `leads-sin-resumen.spec.ts`.
+// ficha. Lo demás del enlace (Ctrl, el kanban, los enlaces viejos), en `leads-sin-resumen.spec.ts`; el inventario, en
+// `vehiculos-sin-resumen.spec.ts`.
 test.describe.configure({ mode: 'serial' })
 
 const CORTO = 'Patron fila'

@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, type ReactNode } from 'react'
+import { pedirLaPortada } from '../../../areas/tarjeta/composicion-portada.client'
 import { ContextoDeLaVistaPrevia } from '../../hoja/components/hueco-de-la-vista-previa'
 import type { PropsDeLaVistaPrevia } from '../../hoja/components/huecos'
 import { VistaPreviaDiferida } from './diferidos'
@@ -10,6 +11,7 @@ type Props = DatosDeLaPagina & { children: ReactNode }
 
 // Enciende «Vista previa» en la hoja (4.18-2): llena el hueco `ContextoDeLaVistaPrevia` con una función que dibuja el modal con lo que la página sabe (título, cliente,
 // vehículo con lote y VIN, asesor, número, vencimiento, logo y, en una guardada, su id para el PDF). Sólo importa la cáscara diferida: la tarjeta, su modelo y su lectura no viajan con la hoja. Sin este proveedor la hoja no dibuja el botón.
+// Con una cotización guardada (crear, guardar, cotizar encima) pide su portada (`pedirLaPortada`: la ruta la arma y la guarda), sin esperarla.
 export function ProveedorDeLaTarjeta({
   children,
   titulo,
@@ -43,6 +45,6 @@ export function ProveedorDeLaTarjeta({
     (props: PropsDeLaVistaPrevia) => <VistaPreviaDiferida {...props} pagina={pagina} />,
     [pagina],
   )
-  const valor = useMemo(() => ({ dibujar }), [dibujar])
+  const valor = useMemo(() => ({ dibujar, alGuardarLaCotizacion: pedirLaPortada }), [dibujar])
   return <ContextoDeLaVistaPrevia value={valor}>{children}</ContextoDeLaVistaPrevia>
 }

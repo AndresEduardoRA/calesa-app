@@ -37,3 +37,6 @@ export const rutaDeLaCotizacion = (id: string): string => `/cotizaciones/${id}`
 
 // El PDF de una cotización guardada (4.18-3a): bajo su página, lo arma el route handler con lo guardado. El único lugar que escribe esa ruta (la usa «Descargar PDF», 4.18-3b).
 export const rutaDelPdf = (id: string): string => `${rutaDeLaCotizacion(id)}/pdf`
+
+// La portada de una cotización guardada (la imagen de su tarjeta, `docs/COTIZADOR.md` › «La portada de la cotización»): bajo su página, la sirve su route handler. El único lugar que escribe esa ruta.
+export const rutaDeLaPortada = (id: string): string => `${rutaDeLaCotizacion(id)}/portada`

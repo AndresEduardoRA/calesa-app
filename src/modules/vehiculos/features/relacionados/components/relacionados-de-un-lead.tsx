@@ -4,7 +4,6 @@ import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { useUltimo } from '@/shared/ui/use-ultimo'
 import {
   accionesDeLaFila,
-  rutaDeVerTodos,
   type AnclaDeLead,
   type ContextoDeAcciones,
   type LugarDeRelacionados,
@@ -27,24 +26,19 @@ type Props = {
   datos: RelacionadosDelLead
   lugar: LugarDeRelacionados
   para: ParaRelacionados
-  // El resumen lee en el navegador: tras una acción lograda vuelve a leer.
-  alCambiar?: () => void
-  // La ficha, compacta; el resumen, en una línea de chips.
+  // La ficha, compacta.
   presentacion: PresentacionDeRelacionados
 }
 
-// El bloque «Relacionados» de un lead (sus vehículos): lo comparten la ficha del lead y su resumen del listado. Quitar interés y desvincular (con la cartera) se hacen en el lugar con «Deshacer»;
+// El bloque «Relacionados» de un lead (sus vehículos): se dibuja en la ficha del lead. Quitar interés y desvincular (con la cartera) se hacen en el lugar con «Deshacer»;
 // vincular o marcar un vehículo y desvincular sin la cartera llevan a la sección «Vehículos» de la ficha, que tiene su panel con su búsqueda y su nota.
-export function RelacionadosDeUnLead({ datos, lugar, para, alCambiar, presentacion }: Props) {
+export function RelacionadosDeUnLead({ datos, lugar, para, presentacion }: Props) {
   const ancla: AnclaDeLead = { lado: 'lead', leadId: datos.leadId, puedoActuar: datos.puedoActuar }
   const contexto: ContextoDeAcciones = { lugar, ancla, para }
-  const acciones = useAccionesDeRelacionados(
-    { lado: 'lead', leadId: datos.leadId },
-    alCambiar ? { alCambiar } : {},
-  )
+  const acciones = useAccionesDeRelacionados({ lado: 'lead', leadId: datos.leadId })
   const verTodos = usePanelDeRelacionados()
   const ultimoTipo = useUltimo(verTodos.tipo)
-  const montarVerTodos = useAbiertoAlgunaVez(verTodos.tipo !== null && lugar !== 'resumen')
+  const montarVerTodos = useAbiertoAlgunaVez(verTodos.tipo !== null)
   const filaDe = (fila: FilaRelacionada<VehiculoRelacionado>, clave: string) => (
     <FilaDeVehiculo
       key={clave}
@@ -76,13 +70,11 @@ export function RelacionadosDeUnLead({ datos, lugar, para, alCambiar, presentaci
           if (!grupo.hayMas) {
             return null
           }
-          return lugar === 'resumen'
-            ? { href: rutaDeVerTodos(ancla, grupo.tipo) }
-            : {
-                abrir: () => {
-                  verTodos.abrir(grupo.tipo)
-                },
-              }
+          return {
+            abrir: () => {
+              verTodos.abrir(grupo.tipo)
+            },
+          }
         }}
       />
       {montarVerTodos && ultimoTipo !== null ? (

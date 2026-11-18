@@ -143,7 +143,10 @@ Un módulo tiene **dos entradas** y nada más se importa desde afuera:
 - **Trabajo en segundo plano**: `supabase/functions/` (`storage-gc`, `push`, `apibara`,
   `importar-csv`, `avatares-miniaturas`) + `pg_cron` (recordatorios, expirar turnos, alertas de demora, purgas).
 - **Realtime**: canales de Supabase para chat y notificaciones; la fila es señal, se rehidrata por fetch.
-- **Modo Live**: `useLive()` + `<Monto>`; clase en `<html>`; todo monto pasa por ahí.
+- **Archivos**: un objeto se nombra por el hash de su contenido (subir dos veces es la misma ruta), cuenta en `storage_refcount()` y se borra por la
+  cola (`cola_gc_storage`, `storage-gc`), nunca con un `delete`. Lo que arma el servidor sigue la misma regla: la portada de la cotización (WebP con
+  `sharp`, ≤ 1.600 px) va en el bucket privado `cotizaciones`, `<cotización>/portada/<sha-256>.webp`.
+- **Modo Live**: `useLive()` + `<Monto>`; clase en `<html>`; todo monto pasa por ahí, y una imagen con cifras (la portada) se ve borrosa por el mismo CSS.
 - **Campos configurables**: el motor es de `shared` (`lib/campos` puro, `ui/campos` el editor) y de la base
   (`_campo_*`, `_campos_*`, `_atributos_*`). `origenes` (el layout de un vehículo) y `leads` ponen lo suyo:
   qué campos hay, claves reservadas, permiso y banderas. Un campo con datos se desactiva, no se borra; lo
