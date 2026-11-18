@@ -220,7 +220,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - La web pública en sí (repo aparte con `sitio-marketing` sobre el esquema `web`).
 - «Visto» en los pendientes de la agenda y en los bloques de Inicio.
 
-De esta versión, además: línea de tiempo dentro de las fichas (hay «Ver actividad» en el «⋯»), exportar la actividad; cambiar qué permisos
+De esta versión, además: montar la «Actividad reciente» (`actividad/pantallas/actividad-reciente.ts`) en la ficha del vehículo (T339; hoy se ve sola en `/actividad/reciente`, que se quita al montarla), exportar la actividad; cambiar qué permisos
 existen o la matriz de Roles; cambiar embudos ya existentes (la plantilla sólo toca los que nacen después); exportar seguimientos,
 documentos, fotos o repuestos y formatos que no sean CSV; importar `seguimientos`, `repuestos_items` y cotizaciones, y deshacer una
 importación de vehículos; métricas por asesor para quien no tiene `tablero.metricas.ver`; editar la cola desde el tablero; estabilizar

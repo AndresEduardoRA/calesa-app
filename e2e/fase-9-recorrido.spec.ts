@@ -266,24 +266,22 @@ test('E2E R6 la dueña encuentra en /actividad el cambio del lead con su diff', 
   const menu = await abrirMenuDeLaFicha(page)
   await menu.getByRole('menuitem', { name: 'Ver actividad' }).click()
   await expect(page).toHaveURL(new RegExp(`/actividad\\?entidad=leads&registro=${lead().id}$`))
-  await expect(page.getByText('Mostrando la actividad de un solo registro de lead.')).toBeVisible()
-  await expect(page.locator('th', { hasText: /^Hoy$/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Quitar el filtro del registro' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Hoy', level: 2 })).toBeVisible()
 
   // El alta también la hizo la asesora, y marcar final dejó su propia fila («Tipo de lead», el lead pasó a cliente): la del nombre es la
-  // que lleva ese campo.
+  // frase que lo nombra.
   const fila = page
-    .getByRole('row')
-    .filter({ has: page.getByRole('button', { name: /^Abrir Cambió/ }) })
-    .filter({ hasText: 'Nombre' })
+    .locator('li[id^="cambio-"]')
+    .filter({ hasText: `${tr.asesora.nombre} cambió Nombre de` })
   await expect(fila).toHaveCount(1)
-  await expect(fila).toContainText(tr.asesora.nombre)
-  await fila.getByRole('button', { name: /^Abrir Cambió/ }).click()
-  const diff = page.getByRole('dialog', { name: 'Detalle del cambio' })
+  await fila.getByRole('button', { name: 'Ver detalle' }).click()
+  const diff = fila.getByRole('region', { name: 'Detalle del cambio' })
   await expect(diff).toBeVisible()
   await expect(diff.getByRole('term')).toHaveText(['Nombre'])
   await expect(diff.getByRole('definition')).toContainText(`Antes${lead().nombre}`)
   await expect(diff.getByRole('definition')).toContainText(`Después${despues}`)
-  await page.keyboard.press('Escape')
+  await fila.getByRole('button', { name: 'Ocultar detalle' }).click()
   await expect(diff).toBeHidden()
   elLead = { ...lead(), nombre: despues }
 })
@@ -296,18 +294,18 @@ test('E2E R6b la asesora no ve el detalle del cambio de un lead ajeno', async ({
 
   await cambiarDeCuenta(page, tr.asesora.email)
   await page.goto(`/actividad?entidad=leads&registro=${tr.leadDeLaDuena}`)
-  await expect(page.getByText('Mostrando la actividad de un solo registro de lead.')).toBeVisible()
-  // El recorte no esconde que hubo un cambio: esconde el qué. Ni los campos ni el diff.
-  const ajena = page.getByRole('row').filter({ hasText: tr.nombreDeLaDuena })
+  await expect(page.getByRole('button', { name: 'Quitar el filtro del registro' })).toBeVisible()
+  // El recorte no esconde que hubo un cambio: esconde el qué. Ni el campo, ni el registro, ni el detalle.
+  const ajena = page.locator('li[id^="cambio-"]').filter({ hasText: tr.nombreDeLaDuena })
   await expect(ajena).toHaveCount(1)
-  await expect(ajena).toContainText('Sin acceso al detalle')
-  await expect(ajena.getByRole('button', { name: /^Abrir Cambió/ })).toHaveCount(0)
+  await expect(ajena).toContainText('cambió un lead que no puedes ver')
+  await expect(ajena.getByRole('button', { name: 'Ver detalle' })).toHaveCount(0)
 
-  // El control: de lo suyo sí ve los campos y puede abrir el diff.
+  // El control: de lo suyo sí ve el campo y puede desplegar el diff.
   await page.goto(`/actividad?entidad=leads&registro=${lead().id}`)
-  const propia = page.getByRole('row').filter({ hasText: 'Nombre' })
+  const propia = page.locator('li[id^="cambio-"]').filter({ hasText: 'cambió Nombre de' })
   await expect(propia).toHaveCount(1)
-  await expect(propia.getByRole('button', { name: /^Abrir Cambió/ })).toHaveCount(1)
+  await expect(propia.getByRole('button', { name: 'Ver detalle' })).toHaveCount(1)
 })
 
 test('E2E R7 la dueña exporta los leads y vuelve a importar el del recorrido', async ({ page }) => {
