@@ -120,3 +120,12 @@ export {
   tituloDeLaCotizacion,
 } from '../../entities/titulo-de-la-cotizacion'
 export type { FuenteDelTitulo, TituloMostrado } from '../../entities/titulo-de-la-cotizacion'
+
+// Cambiar el vehículo de una guardada desde su detalle (T315): qué permite la barra (`cambioDeVehiculo()`, con `puede_guardar` de la base y la clase), con qué vehículo calcula la
+// hoja (`vehiculoParaCalcular()`) y el motivo de la final.
+export {
+  MOTIVO_DE_LA_FINAL,
+  cambioDeVehiculo,
+  vehiculoParaCalcular,
+} from '../../entities/vehiculo-de-la-guardada'
+export type { CambioPermitido } from '../../entities/vehiculo-de-la-guardada'

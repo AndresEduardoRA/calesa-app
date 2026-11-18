@@ -17,10 +17,11 @@ export type TituloDeLaEdicion = {
 }
 
 // Lo que el título pone en el guardado de una guardada (T307): si cambió, si falta y lo que va en el pedido. Sin el proveedor (una prueba de la hoja), el título
-// guardado viaja sin tocar y no se pide.
+// guardado viaja sin tocar y no se pide. Falta según el vehículo **de la hoja** (el guardado o el elegido para cambiarlo, T315), no el guardado.
 export function tituloDeLaEdicion(
   titulo: TituloDeLaCotizacion | null,
   cotizacion: CotizacionDeLaHoja | null,
+  vehiculoId: string | null = cotizacion?.vehiculoId ?? null,
 ): TituloDeLaEdicion {
   if (titulo === null) {
     return {
@@ -34,7 +35,7 @@ export function tituloDeLaEdicion(
   }
   return {
     cambio: tituloCambio(titulo.estado, titulo.inicial),
-    falta: cotizacion?.vehiculoId === null && titulo.mostrado === null ? 'titulo' : null,
+    falta: cotizacion !== null && vehiculoId === null && titulo.mostrado === null ? 'titulo' : null,
     paraGuardar: tituloParaGuardar(titulo.estado),
   }
 }

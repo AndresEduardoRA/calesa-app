@@ -227,7 +227,11 @@ describe('PanelDelAjuste: cerrar y el tipo de cambio', () => {
     const { hoja } = hojaDePrueba()
     const guardada = {
       ...hoja,
-      de: { tipo: 'guardada' as const, cotizacionId: '66666666-6666-4666-8666-666666666666' },
+      de: {
+        tipo: 'guardada' as const,
+        cotizacionId: '66666666-6666-4666-8666-666666666666',
+        vehiculoId: null,
+      },
     }
     render(
       <PanelDelAjuste

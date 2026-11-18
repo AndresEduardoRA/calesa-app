@@ -36,6 +36,8 @@ export type MotivoDeRechazo =
   // El título de la cotización (T307): sin vehículo y sin título (otra pestaña lo vació), o más largo que el tope (sólo sin la pantalla).
   | 'falta_titulo'
   | 'titulo_largo'
+  // El vehículo elegido para cambiarlo (T315) ya no se puede usar: no existe, está en la papelera o quien guarda dejó de verlo.
+  | 'vehiculo_sin_acceso'
   | 'sin_acceso'
   | 'sesion'
   | 'transitorio'
@@ -156,7 +158,8 @@ export function resultadoDeCrear(respuesta: {
 }
 
 // La salida que acompaña al texto: `d2` son las dos de la hoja desactualizada; `recargar` reabre la hoja (lo tipeado vuelve con el borrador); `reintentar`, otro guardado;
-// `ingresar`, la sesión; `elegir_lead` y `elegir_vehiculo`, el panel de lo que la regla del rol ahora pide; `elegir_titulo`, el campo del título. Nula: un botón que no
+// `ingresar`, la sesión; `elegir_lead` y `elegir_vehiculo`, el panel de lo que la regla del rol ahora pide (o, en una guardada, el de elegir otro vehículo); `elegir_titulo`,
+// el campo del título. Nula: un botón que no
 // arregla nada no se ofrece.
 export type SalidaDelAviso =
   | 'd2'
@@ -179,6 +182,8 @@ export const FALTA_EL_VEHICULO = 'Para guardar, elige el vehículo en «Vehícul
 export const FALTA_EL_TITULO = 'Escribe el título de la cotización.'
 export const TITULO_LARGO = 'El título tiene como máximo 120 caracteres.'
 const AL_RECARGAR = 'Al recargar se abre esa versión; lo que escribiste no vuelve.'
+export const VEHICULO_SIN_ACCESO =
+  'No se puede usar ese vehículo: ya no existe, está en la papelera o ya no tienes acceso.'
 
 // Exhaustivo: un motivo nuevo sin su texto no compila.
 const TEXTOS: Readonly<Record<MotivoDeRechazo, TextoDelAviso>> = {
@@ -232,6 +237,11 @@ const TEXTOS: Readonly<Record<MotivoDeRechazo, TextoDelAviso>> = {
   },
   falta_titulo: { texto: FALTA_EL_TITULO, salida: 'elegir_titulo', campo: 'titulo' },
   titulo_largo: { texto: TITULO_LARGO, salida: null, campo: 'titulo' },
+  // Con la hoja cambiando el vehículo, el 42501 sin detalle se lee como del vehículo nuevo (`resultadoDeGuardar`): elegir otro es la salida.
+  vehiculo_sin_acceso: {
+    texto: VEHICULO_SIN_ACCESO,
+    salida: 'elegir_vehiculo',
+  },
   // Los seis orígenes del 42501 sin detalle (sin permiso, la cuenta bloqueada, el lead, el vehículo, el id ajeno, la propia action) dicen lo mismo: no confirman qué existe.
   sin_acceso: {
     texto:

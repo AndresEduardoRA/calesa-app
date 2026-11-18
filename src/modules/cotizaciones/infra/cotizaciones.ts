@@ -20,10 +20,13 @@ export const crearCotizacion: CreadorDeCotizacion = async (pedido) => {
 }
 
 // Guardar los cambios de una cotización guardada: UNA llamada a `cotizacion_guardar()` con la sesión de quien edita. La base comprueba quién puede guardar, la versión, el intento
-// y calcula con SU versión de la fórmula; lo que trae `code` es un rechazo, lo que no, una respuesta perdida (`resultadoDeGuardar()`).
+// y calcula con SU versión de la fórmula; lo que trae `code` es un rechazo, lo que no, una respuesta perdida (`resultadoDeGuardar()`). `cambiaElVehiculo` no viaja a la base: dice
+// cómo leer un 42501 sin detalle (T315).
 export const guardarCotizacion: GuardadorDeCotizacion = async (pedido) => {
   const supabase = await createClient()
-  return resultadoDeGuardar(await supabase.rpc('cotizacion_guardar', argumentosDeGuardar(pedido)))
+  return resultadoDeGuardar(await supabase.rpc('cotizacion_guardar', argumentosDeGuardar(pedido)), {
+    cambiaElVehiculo: pedido.cambiaElVehiculo,
+  })
 }
 
 // Cotizar encima: UNA llamada a `cotizacion_encima()` con la sesión de quien cotiza. La base comprueba quién puede, el lead, el vehículo y la fórmula publicada, y lleva lo guardado

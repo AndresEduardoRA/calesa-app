@@ -14,4 +14,5 @@ export const esquemaDeEdicion = z.object({
   tituloManual: z.boolean(),
   notas: z.string().max(2000).nullable(),
   vehiculoId: z.guid().nullable(),
+  cambiaElVehiculo: z.boolean(),
 })
