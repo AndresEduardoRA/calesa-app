@@ -101,9 +101,7 @@ export async function clientesDeCotizaciones(
   if (error) {
     return { ok: false, error: errorDePostgrest(error) }
   }
-  return ok(
-    new Map(data.flatMap((lead) => (lead.id === null ? [] : [[lead.id, lead.nombre ?? '']]))),
-  )
+  return ok(new Map(data.map((lead) => [lead.id, lead.nombre])))
 }
 
 // El título de cada vehículo por id, de a `IDS_POR_CONSULTA_DE_NOMBRES` (un GET por trozo, por `vehiculos_pkey`), sin papelera y bajo

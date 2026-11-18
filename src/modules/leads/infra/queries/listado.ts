@@ -222,11 +222,12 @@ export const contarLeadsHasta: ContadorDeLeads = async (condiciones, tope) => {
       return { ok: false, error: errorDePostgrest(error) }
     }
     leidos += data.length
-    const ultimo = data.at(-1)
-    if (data.length < pedir || !ultimo?.creado_en || !ultimo.id) {
+    const ultimo: { id: string; creado_en: string } | undefined = data.at(-1)
+    if (data.length < pedir || !ultimo) {
       break
     }
-    cursor = { instante: ultimo.creado_en, id: ultimo.id, sentido: 'siguiente' }
+    const siguiente: Cursor = { instante: ultimo.creado_en, id: ultimo.id, sentido: 'siguiente' }
+    cursor = siguiente
   }
   return ok(conteoAcotado(leidos, tope))
 }
