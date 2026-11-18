@@ -23,32 +23,23 @@ type Props = {
 
 const BOTON = 'h-11 md:h-8'
 
-// El botón de «Nuevo origen» va arriba cuando hay lista; en el vacío lo lleva el estado vacío (uno solo).
+// Arriba de la lista, sólo su acción principal: el título y la frase los pone la página. El botón de «Nuevo origen» va arriba cuando hay
+// lista; en el vacío lo lleva el estado vacío (uno solo).
 function Encabezado({ alNuevo, alTope }: { alNuevo: (() => void) | null; alTope: boolean }) {
+  if (!alNuevo) {
+    return null
+  }
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-      <div className="grid gap-0.5">
-        <h2
-          id="titulo-de-origenes"
-          className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-        >
-          Orígenes del lead
-        </h2>
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          De dónde llegó cada lead. El orden de acá es el del alta y el del filtro del listado.
-        </p>
-      </div>
-      {alNuevo ? (
-        <Button
-          className={BOTON}
-          disabled={alTope}
-          aria-describedby={alTope ? 'origenes-tope' : undefined}
-          onClick={alNuevo}
-        >
-          <PlusIcon aria-hidden />
-          Nuevo origen
-        </Button>
-      ) : null}
+    <div className="flex justify-end">
+      <Button
+        className={BOTON}
+        disabled={alTope}
+        aria-describedby={alTope ? 'origenes-tope' : undefined}
+        onClick={alNuevo}
+      >
+        <PlusIcon aria-hidden />
+        Nuevo origen
+      </Button>
     </div>
   )
 }
@@ -69,7 +60,7 @@ export function OrigenesDeLead({ origenes: inicial }: Props) {
   useFocoTrasMover(PREFIJO_DE_ORIGENES, lista.movimiento)
 
   return (
-    <section className="grid gap-3" aria-labelledby="titulo-de-origenes">
+    <section className="grid gap-3" aria-label="Orígenes del lead">
       <Encabezado alTope={alTope} alNuevo={origenes.length > 0 ? modal.abrirNuevo : null} />
       {alTope ? (
         <Aviso tono="aviso">

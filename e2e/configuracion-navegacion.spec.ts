@@ -102,10 +102,17 @@ test('E2E desde cada sección del menú se vuelve al inicio de Configuración', 
 
 test('E2E el menú marca la sección actual y salta a otra', async ({ page }) => {
   await entrar(page, duena, { fresco: true })
+  // Leads no tiene sub-sección índice: su ruta abre la primera sub-ruta. La sección queda marcada como la rama y la sub-sección, como la
+  // página.
   await page.goto('/configuracion/leads')
+  await expect(page).toHaveURL('/configuracion/leads/campos')
   const leads = menu(page).getByRole('link', { name: 'Leads', exact: true })
   const flujos = menu(page).getByRole('link', { name: 'Flujos', exact: true })
-  await expect(leads).toHaveAttribute('aria-current', 'page')
+  await expect(leads).toHaveAttribute('aria-current', 'true')
+  await expect(menu(page).getByRole('link', { name: 'Campos', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
   await expect(flujos).not.toHaveAttribute('aria-current')
   await flujos.click()
   await expect(page).toHaveURL(/\/configuracion\/flujos/)
@@ -117,9 +124,20 @@ test('E2E con sólo configurar los leads se ve sólo «Ventas › Leads»', asyn
   await page.context().clearCookies()
   await entrar(page, soloLeads, { fresco: true })
   await page.goto('/configuracion/leads')
-  await expect(menu(page).getByRole('list')).toHaveCount(1)
+  await expect(page).toHaveURL('/configuracion/leads/origenes')
+  // Un solo grupo: las demás listas del menú son las sub-secciones de Leads, sin nombre.
+  await expect(menu(page).getByRole('list', { name: /./ })).toHaveCount(1)
   await expect(menu(page).getByRole('list', { name: 'Ventas' })).toBeVisible()
-  await expect(menu(page).getByRole('link')).toHaveText(['Leads'])
+  // «Campos» pide otro permiso: va apagada, sin enlace.
+  await expect(menu(page).getByRole('link')).toHaveText([
+    'Leads',
+    'Orígenes del lead',
+    'Tipos de lead',
+    'Tipos de seguimiento',
+    'Plantilla del embudo',
+    'Mensaje del portal',
+    'Teléfonos extra',
+  ])
 
   await volver(page).click()
   await expect(tituloDelInicio(page)).toBeVisible()

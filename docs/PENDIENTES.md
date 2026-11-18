@@ -19,10 +19,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Decisiones de producto que esperan a la persona
 
-### Vistos
-
-- **[—]** Retención y nombre de «Vistos» — lo pedido eran 30 días y «Último que abriste»; el código usa 7 días por defecto (`VISTOS_POR_DEFECTO`) y «Último visto» (el término del glosario). Confirmar cuál queda.
-
 ### Cotizaciones
 
 - **[—]** El dato del vehículo de una tabla (4.14-2c3) no se elige en el panel de una guardada: el lector de opciones lee `cotizacion_tabla` con la hoja abierta, que una guardada no tiene — falta uno por cotización (la celda dice «Falta un dato del vehículo.»).
@@ -123,7 +119,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `vehiculos_papelera_listar()` y `leads_papelera_listar()` usan el mismo `exists` por lote: sin medir si con poco volumen leen el índice entero.
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
 - **[—]** El bloque «Leads sin seguimiento» de Inicio cuesta lo que pesa la cartera de quien mira; no se midió con volumen.
-- **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 492 nodos de 500, JS de `/cotizaciones/nuevo` 456,4 de 460 y de `/cotizaciones/[id]` 463,7 de 470 KB, la ficha del lead entera 130,8 de 138 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
+- **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 492 nodos de 500, JS de `/cotizaciones/nuevo` 457,0 de 460 y de `/cotizaciones/[id]` 464,5 de 470 KB, la ficha del lead entera 130,8 de 138 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
 - **[T33]** «Vincular o marcar un vehículo» de la ficha del lead (`?panel=agregar-vehiculo`, `shallow: false`) y cada cambio de un recordatorio (`router.refresh()`) releen todos los bloques de la ficha: con todo a la vista cuesta más que antes; se acota cuando moleste (que cada bloque relea lo suyo).
 - **[—]** Tope de 40 ítems por diseño: `subasta_usa` tiene 39 — para crecer, subir `_diseno_maximo_de_items()` y la constante midiendo la hoja, o partir la hoja.
 
@@ -178,8 +174,11 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
-- **[T327]** En el celular, la burbuja del chat queda sobre la esquina derecha de arriba de la barra de cambios sin guardar (no tapa sus botones):
-  subirla mientras la barra está a la vista, como los avisos (`data-pie-de-panel`).
+- **[T327]** En el celular, la burbuja del chat queda sobre la esquina derecha de la barra de cambios sin guardar; con la barra a la altura de
+  la burbuja (Configuración › Leads › «Mensaje del portal») roza la esquina de «Guardar»: subirla mientras la barra está a la vista, como los
+  avisos (`data-pie-de-panel`).
+- **[T329]** En el menú de Configuración (8 rem) el motivo de una sub-sección apagada larga ocupa cinco renglones («Te falta el permiso
+  «Gestionar los campos de los leads».»): acortarlo o mostrarlo al enfocar.
 - **[T34]** En el celular el carrusel de la ficha del vehículo, a todo el ancho y en 4:3, ocupa casi una pantalla antes del título: acotar su alto en una columna
   (sin tocar el de la lateral de escritorio).
 - **[T34]** «Abrir la unidad» de «Qué falta» en la ficha del vehículo lleva a un hueco aunque su regla del flujo esté apagada (allí no estará): pasar a la ficha

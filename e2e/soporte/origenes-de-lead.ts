@@ -80,8 +80,8 @@ export async function borrarOrigenesDePrueba(): Promise<void> {
 // --- La pantalla --------------------------------------------------------------------------------------
 
 export async function abrirOrigenes(page: Page): Promise<void> {
-  await page.goto('/configuracion/leads?seccion=origenes')
-  await expect(page.getByRole('heading', { name: 'Orígenes del lead', level: 2 })).toBeVisible()
+  await page.goto('/configuracion/leads/origenes')
+  await expect(page.getByRole('heading', { name: 'Orígenes del lead', level: 1 })).toBeVisible()
 }
 
 // Lo de la lista (la fila, el «⋯», los nombres) es común a las tres pestañas: `soporte/lista-de-catalogo.ts`.

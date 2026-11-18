@@ -1,4 +1,3 @@
-import type { Route } from 'next'
 import Link from 'next/link'
 import { RUTAS } from '@/shared/lib/rutas'
 
@@ -21,7 +20,7 @@ export function PieDeFiltros({ filtrables, puedeConfigurar }: Props) {
       </p>
       {puedeConfigurar ? (
         <Link
-          href={`${RUTAS.configuracionDeLeads}?seccion=campos` as Route}
+          href={RUTAS.camposDeLeads}
           className="w-fit text-(--color-primario-ink) underline-offset-2 hover:underline"
         >
           Configurar los campos

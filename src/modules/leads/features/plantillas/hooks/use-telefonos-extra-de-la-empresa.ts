@@ -10,7 +10,7 @@ import { MENSAJE_DE_VALIDACION } from '../../ficha/resultado'
 import { guardarTelefonosExtra } from '../actions/guardar-telefonos-extra'
 
 // Los teléfonos extra en Configuración: el máximo (de 0 a 20, escrito como texto: la regla se dice junto al campo antes de enviar) y si
-// cuentan como el principal. Lo que la base rechaza vuelve con su motivo; un conflicto ofrece «Recargar». «Guardar» se apaga sin cambios.
+// cuentan como el principal. Lo que la base rechaza vuelve con su motivo; un conflicto ofrece «Recargar». Sin cambios, la barra no aparece.
 export function useTelefonosExtraDeLaEmpresa(telefonos: AjustesDeLeads['telefonos']) {
   const router = useRouter()
   const [maximo, setMaximo] = useState(String(telefonos.maximo))
@@ -57,6 +57,12 @@ export function useTelefonosExtraDeLaEmpresa(telefonos: AjustesDeLeads['telefono
     cambiarRegla: setComoPrincipal,
     hayCambios:
       maximo.trim() !== String(telefonos.maximo) || comoPrincipal !== telefonos.comoPrincipal,
+    // «Descartar» de la barra: vuelven el máximo y la regla guardados y se borra el motivo. El conflicto queda.
+    descartar: () => {
+      setMaximo(String(telefonos.maximo))
+      setComoPrincipal(telefonos.comoPrincipal)
+      setMotivo(null)
+    },
     motivo,
     conflicto,
     enCurso: guardar.isPending,

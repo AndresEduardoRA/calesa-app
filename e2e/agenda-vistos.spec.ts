@@ -91,7 +91,7 @@ test('E2E abrir un evento y luego una tarea los marca: sólo uno es el último v
   await page.keyboard.press('Escape')
   await expect(detalle).toBeHidden()
   await expect(chipDelEvento).toHaveAttribute('data-visto', 'ultimo')
-  await expect(chipDelEvento.getByText('Último visto')).toBeVisible()
+  await expect(chipDelEvento.getByTitle('Último visto', { exact: true })).toBeVisible()
 
   // La tarea: ahora ella es la última (un solo último en toda la agenda) y el evento queda visto.
   await chipDeLaTarea.click()
@@ -102,9 +102,10 @@ test('E2E abrir un evento y luego una tarea los marca: sólo uno es el último v
   await expect(detalleDeTarea).toBeHidden()
   await expect(chipDeLaTarea).toHaveAttribute('data-visto', 'ultimo')
   await expect(chipDelEvento).toHaveAttribute('data-visto', 'visto')
-  await expect(chipDelEvento.getByText('Último visto')).toHaveCount(0)
+  await expect(chipDelEvento.getByTitle('Último visto', { exact: true })).toHaveCount(0)
   await expect(chipDelEvento.locator('svg')).toHaveCount(1)
-  await expect(chipDeLaTarea.locator('svg')).toHaveCount(1)
+  // El último lleva la tilde de «visto» y el ojo de «Último visto».
+  await expect(chipDeLaTarea.locator('svg')).toHaveCount(2)
 
   // Al recargar la trae la base: el último de los dos tipos es la tarea.
   const berta = await idDePersona(t.personas.berta)

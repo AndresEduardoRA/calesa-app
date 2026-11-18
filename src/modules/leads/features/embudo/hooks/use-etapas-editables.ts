@@ -5,7 +5,8 @@ import { conFinal, conInicial, etapaNueva, moverEtapa, type Etapa } from '../../
 import type { ColorDeEtiqueta } from '../../../entities/etiqueta'
 
 // Las etapas mientras se editan en el panel: cada cambio es una regla pura de `entities/embudo` y
-// borra el motivo que se estaba mostrando (`alCambiar`).
+// borra el motivo que se estaba mostrando (`alCambiar`). `reiniciar()` vuelve a `inicial`, con sus mismos ids: las filas y el foco no
+// saltan.
 export function useEtapasEditables(inicial: readonly Etapa[], alCambiar: () => void) {
   const [etapas, setEtapas] = useState<Etapa[]>([...inicial])
   function editar(cambio: (lista: Etapa[]) => Etapa[]) {
@@ -37,6 +38,9 @@ export function useEtapasEditables(inicial: readonly Etapa[], alCambiar: () => v
     },
     agregar: () => {
       editar((l) => [...l, etapaNueva(l)])
+    },
+    reiniciar: () => {
+      editar(() => [...inicial])
     },
   }
 }
