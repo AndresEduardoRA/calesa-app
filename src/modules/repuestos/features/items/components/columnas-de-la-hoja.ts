@@ -1,5 +1,3 @@
-import { TableHead, TableHeader, TableRow } from '@/shared/ui/table'
-
 // Las columnas de la hoja de ítems, en su orden: primero qué es el ítem, luego cantidad, precio y el siguiente; los demás datos después. Cada título lleva su ayuda en
 // un `title` (subrayado punteado para que se note): un «?» con `Popover` arrastraría Base UI a la carga en frío por diez encabezados. Texto de interfaz, no regla:
 // ninguna ayuda nombra un valor de catálogo.
@@ -67,26 +65,3 @@ export const tituloDe = (clave: ClaveDeColumna): string =>
 /** La clase de la columna: la misma en su `<th>` y en sus celdas. */
 export const claseDe = (clave: ClaveDeColumna): string =>
   COLUMNAS_DE_LA_HOJA.find((c) => c.clave === clave)?.clase ?? ''
-
-export function EncabezadoDeLaHoja() {
-  return (
-    <TableHeader>
-      <TableRow>
-        {COLUMNAS_DE_LA_HOJA.map((columna) => (
-          <TableHead key={columna.clave} className={columna.clase}>
-            {columna.ayuda === null ? (
-              columna.titulo
-            ) : (
-              <span
-                title={columna.ayuda}
-                className="cursor-help underline decoration-dotted underline-offset-4"
-              >
-                {columna.titulo}
-              </span>
-            )}
-          </TableHead>
-        ))}
-      </TableRow>
-    </TableHeader>
-  )
-}

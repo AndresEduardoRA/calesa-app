@@ -2,13 +2,13 @@
 
 import type { ReactNode } from 'react'
 import { TablaDeLista } from '@/shared/ui/lista'
-import { TableBody, TableCell, TableRow } from '@/shared/ui/table'
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import type { GrupoPorPaso } from '../../../entities/items/grupos-por-paso'
 import type { FilaDeItem } from '../../../entities/nucleo/item'
 import type { ContextoDeLaHoja } from './contexto-de-la-hoja'
 import {
   CANTIDAD_DE_COLUMNAS,
-  EncabezadoDeLaHoja,
+  COLUMNAS_DE_LA_HOJA,
   claseDe,
   type ClaveDeColumna,
 } from './columnas-de-la-hoja'
@@ -20,6 +20,30 @@ type Props = {
   contexto: ContextoDeLaHoja
   // La fila de «Nuevo ítem», al final (sólo con `repuestos.editar`, proyecto abierto y menos de 200).
   filaNueva: ReactNode
+}
+
+// Los títulos de las columnas, cada uno con su ayuda en un `title` (subrayado punteado).
+export function EncabezadoDeLaHoja() {
+  return (
+    <TableHeader>
+      <TableRow>
+        {COLUMNAS_DE_LA_HOJA.map((columna) => (
+          <TableHead key={columna.clave} className={columna.clase}>
+            {columna.ayuda === null ? (
+              columna.titulo
+            ) : (
+              <span
+                title={columna.ayuda}
+                className="cursor-help underline decoration-dotted underline-offset-4"
+              >
+                {columna.titulo}
+              </span>
+            )}
+          </TableHead>
+        ))}
+      </TableRow>
+    </TableHeader>
+  )
 }
 
 function FilaDeLaTabla({ fila, contexto }: { fila: FilaDeItem; contexto: ContextoDeLaHoja }) {

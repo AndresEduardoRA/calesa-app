@@ -36,7 +36,7 @@ Abiertos que lo tocan: **8-13a** a **8-13c** y la revisión de seguridad del sto
   por paso en el navegador con `agruparPorPaso` (`entities/items/grupos-por-paso.ts`: el orden del flujo, una fase fuera de él tras las conocidas, «Sin fase» al
   final, «N+» con la hoja topada; sin orden, todo en «Sin fase»): un `<tbody data-grupo-de-paso>` por grupo en la tabla, una `<section>` en las tarjetas, y la fila
   nueva al final, fuera de los grupos. La primera columna dice qué es el ítem (`queEsElItem`, `entities/items/que-es.ts`: «Tipo · Condición»; `<QueEsElItem>`)
-  y las columnas, sus títulos y su ayuda (`title`) salen de `COLUMNAS_DE_LA_HOJA` (`columnas-de-la-hoja.tsx`). `pantallas/items-del-panel.ts`: `ImagenesDelItemDiferido` (`ContenidoDeImagenes`, el mismo del panel de imágenes), el
+  y las columnas, sus títulos y su ayuda (`title`) salen de `COLUMNAS_DE_LA_HOJA` (`columnas-de-la-hoja.ts`). `pantallas/items-del-panel.ts`: `ImagenesDelItemDiferido` (`ContenidoDeImagenes`, el mismo del panel de imágenes), el
   bloque «Imágenes» del panel del ítem.
 - **`stock`** — la hoja expone un hueco (`HuecoDeLaHoja`: `accionDeFila(fila)`, `panel(api)` con `cambiarFila`) que llena `hoja-del-proyecto.tsx` con
   `pantallas/stock.ts` (`BotonDeStock`, `PanelDeStock`, `useStockPorUrl`; `?panel=stock&item=`). Vista `/repuestos?vista=stock`: `leerStock`,
