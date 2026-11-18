@@ -11,6 +11,7 @@ import type {
   DatosDelPanelDeVitrina,
 } from '../../../entities/paneles-de-la-lista'
 import type { PermisoDeVitrina } from '../../../entities/vitrina'
+import { useLoUltimoAbierto } from '../../acciones/hooks/use-lo-ultimo-abierto'
 import type { usePanelConVehiculo } from '../../acciones/hooks/use-panel-con-vehiculo'
 import {
   ActualizarLosDatosDiferido,
@@ -74,11 +75,12 @@ function ActualizarDeLaLista({
   )
   const abierto = actualizar.abierto && !rechazada && motivo === null
   const montar = useAbiertoAlgunaVez(abierto)
+  const vehiculo = useLoUltimoAbierto(abierto ? (fila ?? null) : null, abierto)
   return montar && subasta ? (
     <ActualizarLosDatosDiferido
       abierto={abierto}
       alCerrar={actualizar.cerrar}
-      vehiculo={abierto && fila ? fila : null}
+      vehiculo={vehiculo}
       puedeConfigurar={subasta.puedeConfigurar}
     />
   ) : null

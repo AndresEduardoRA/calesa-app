@@ -20,16 +20,17 @@ export async function vistaPreviaDe(vehiculoId: string): Promise<VistaPreviaDeVi
   return leida.ok ? leida.data : null
 }
 
-// Lo que el panel de la vitrina del inventario muestra de un vehículo (`?panel=vitrina&para=<id>`): el vehículo y su vista previa, leídos en paralelo
-// sólo cuando la URL nombra el panel. Lo que no existe, no se ve o es de otro origen da `disponible: false`.
+// Lo que el panel de la vitrina del inventario muestra de un vehículo (`?panel=vitrina&para=<id>`): el vehículo y, si se abre, su vista previa; sólo
+// cuando la URL nombra el panel. Lo que no existe, no se ve o es de otro origen da `disponible: false`.
 export async function datosDelPanelDeVitrina(
   id: string,
   origenId?: string,
 ): Promise<DatosDelPanelDeVitrina> {
-  const [leido, previa] = await Promise.all([leerVehiculo(id), vistaPreviaDe(id)])
+  const leido = await leerVehiculo(id)
   const vehiculo = leido.ok ? leido.data : null
   if (!vehiculo || (origenId !== undefined && vehiculo.origenId !== origenId)) {
     return { id, disponible: false }
   }
-  return { id, disponible: true, vehiculo, previa }
+  // La vista previa sólo de uno que se abre: un id ajeno no paga la RPC.
+  return { id, disponible: true, vehiculo, previa: await vistaPreviaDe(id) }
 }

@@ -3,6 +3,7 @@
 import { Drawer } from '@/shared/ui/drawer'
 import { EstadoVacio } from '@/shared/ui/estados'
 import type { DatosDelPanelDeImagenes } from '../../../entities/paneles-de-la-lista'
+import { useLoUltimoAbierto } from '../../acciones/hooks/use-lo-ultimo-abierto'
 import { EsqueletoDeFotos } from './esqueleto-de-fotos'
 import { SeccionDeFotos } from './seccion-de-fotos'
 
@@ -18,7 +19,10 @@ type Props = {
 // El drawer «Editar imágenes» del «⋯» del vehículo (`?panel=imagenes&para=<id>` en el inventario, `?panel=imagenes` en la ficha): lo mismo que el
 // bloque «Fotos» de la ficha (subir, ordenar, portada, quitar con «Deshacer» y traer las que faltan de la subasta). Cada cambio vuelve a dibujar la
 // pantalla (las actions revalidan): al cerrar, la lista o la ficha ya tienen la portada nueva.
-export function PanelDeImagenes({ abierto, alCerrar, esperado, datos }: Props) {
+export function PanelDeImagenes(props: Props) {
+  const { abierto, alCerrar } = props
+  const esperado = useLoUltimoAbierto(props.esperado, abierto)
+  const datos = useLoUltimoAbierto(props.datos, abierto)
   const listo = datos !== null && datos.id === esperado
   return (
     <Drawer

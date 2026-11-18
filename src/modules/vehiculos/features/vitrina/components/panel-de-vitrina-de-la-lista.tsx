@@ -7,6 +7,7 @@ import { Skeleton } from '@/shared/ui/skeleton'
 import type { CampoDeVehiculo } from '../../../entities/campo'
 import type { DatosDelPanelDeVitrina } from '../../../entities/paneles-de-la-lista'
 import type { PermisoDeVitrina } from '../../../entities/vitrina'
+import { useLoUltimoAbierto } from '../../acciones/hooks/use-lo-ultimo-abierto'
 import { FormularioDeVitrina } from './formulario-de-vitrina'
 
 type Props = {
@@ -36,7 +37,9 @@ function EsqueletoDeVitrina() {
 // El panel completo de «Publicar en la web» (el de la ficha: interruptor, precio público, rango, nota, destacado y «Así lo verá el visitante»), abierto
 // desde el inventario sin salir de la lista (`?panel=vitrina&para=<id>`). Sin el permiso no se abre, aunque la URL lo pida.
 export function PanelDeVitrinaDeLaLista(props: Props) {
-  const { abierto, alCerrar, esperado, datos, permiso, origen, fases, campos } = props
+  const { abierto, alCerrar, permiso, origen, fases, campos } = props
+  const esperado = useLoUltimoAbierto(props.esperado, abierto)
+  const datos = useLoUltimoAbierto(props.datos, abierto)
   const listo = datos !== null && datos.id === esperado
   return (
     <Drawer
