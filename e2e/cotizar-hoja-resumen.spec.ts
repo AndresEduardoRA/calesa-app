@@ -47,7 +47,7 @@ const ir = async (page: Page, origen: string) => {
 }
 const cabecera = (page: Page) => page.locator('[data-cabecera]')
 const modo = (page: Page, nombre: string) => cabecera(page).getByRole('radio', { name: nombre })
-const resumen = (page: Page) => page.getByLabel('Resumen')
+const resumen = (page: Page) => page.getByLabel('Resumen', { exact: true })
 const botonDelDetalle = (page: Page) => resumen(page).getByRole('button', { name: /el detalle$/ })
 const verTotalBs = (page: Page) => page.getByRole('switch', { name: 'Ver total en moneda local' })
 const lineaEnBs = (page: Page) => page.locator('[data-total-bs]')

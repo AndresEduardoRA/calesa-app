@@ -180,36 +180,40 @@ test('E2E C5: los pasos abren sus paneles, «Hoja» lleva a la primera celda y e
   page,
 }, info) => {
   const pasos = page.getByRole('navigation', { name: 'Pasos de la hoja' })
+  const paso = (clave: string) => pasos.locator(`[data-paso="${clave}"]`)
   await abrir(page, ana)
   await expect(pasos.getByRole('button')).toHaveText([
-    'Hoja',
+    /^Hoja/,
     /^Vehículo/,
     /^Cliente/,
-    'Vista previa',
+    /^Vista previa/,
   ])
-  const vehiculo = pasos.getByRole('button', { name: 'Vehículo: obligatorio que falta' })
-  await expect(vehiculo).toHaveAttribute('title', 'Vehículo: obligatorio que falta')
-  await expect(vehiculo).toHaveAttribute('data-punto', 'obligatorio-que-falta')
-  await expect(pasos.getByRole('button', { name: 'Cliente: elegido' })).toBeVisible()
+  // El nombre es lo que se ve: no choca con el de la barra del vehículo («Vehículo: …»).
+  await expect(paso('vehiculo')).toHaveAccessibleName('Vehículo')
+  // El punto: su color, su texto para el lector (la descripción) y su `title`.
+  await expect(paso('vehiculo')).toHaveAttribute('data-punto', 'obligatorio-que-falta')
+  await expect(paso('vehiculo')).toHaveAccessibleDescription('obligatorio que falta')
+  await expect(paso('vehiculo')).toHaveAttribute('title', 'Vehículo: obligatorio que falta')
+  await expect(paso('cliente')).toHaveAttribute('title', 'Cliente: elegido')
   await capturar(page, info, 'pasos')
-  await vehiculo.click()
-  await expect(page).toHaveURL(/[?&]panel=vehiculo/)
-  await page.keyboard.press('Escape')
-  await expect(page).not.toHaveURL(/[?&]panel=vehiculo/)
-  await pasos.getByRole('button', { name: 'Cliente: elegido' }).click()
-  await expect(page).toHaveURL(/[?&]panel=cliente/)
-  await page.keyboard.press('Escape')
-  await expect(page).not.toHaveURL(/[?&]panel=cliente/)
-  await pasos.getByRole('button', { name: 'Vista previa' }).click()
-  await expect(page).toHaveURL(/[?&]panel=vista-previa/)
-  await page.keyboard.press('Escape')
-  await expect(page).not.toHaveURL(/[?&]panel=vista-previa/)
-  await pasos.getByRole('button', { name: 'Hoja' }).click()
+  // Cada uno abre su panel por la URL; «atrás» lo cierra.
+  for (const [clave, panel] of [
+    ['vehiculo', 'vehiculo'],
+    ['cliente', 'cliente'],
+    ['vista_previa', 'vista-previa'],
+  ] as const) {
+    await paso(clave).click()
+    await expect(page).toHaveURL(new RegExp(`[?&]panel=${panel}`))
+    await page.goBack()
+    await expect(page).not.toHaveURL(new RegExp(`[?&]panel=${panel}`))
+  }
+  await paso('hoja').click()
   await expect(
     page.locator('[data-hoja] [data-parada="0"]:not([aria-disabled="true"])').first(),
   ).toBeFocused()
   // Con un vehículo elegido, el punto dice «elegido».
   const id = crearVehiculoDePrueba(origen.id, `Vehículo T312 ${proyecto}`)
   await page.goto(urlDeLaHoja(origen.id, lead, id))
-  await expect(pasos.getByRole('button', { name: 'Vehículo: elegido' })).toBeVisible()
+  await expect(paso('vehiculo')).toHaveAttribute('title', 'Vehículo: elegido')
+  await expect(paso('vehiculo')).toHaveAccessibleDescription('elegido')
 })

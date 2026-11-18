@@ -187,7 +187,9 @@ export async function aLaVistaAlAcomodarse(lugar: Locator, que: string): Promise
 }
 
 // Ningún texto de `lugar` queda cortado: cada elemento visible con texto propio cabe en su caja (`scrollWidth <= clientWidth`), un «B…» por
-// un `truncate` que no tenía lugar lo delata, y nada se sale por la derecha de la pantalla. Nombra a los elementos que no caben.
+// un `truncate` que no tenía lugar lo delata, y nada se sale por la derecha de la pantalla. Nombra a los elementos que no caben. La excepción es un rótulo
+// que se corta con «…» a propósito y lleva el texto entero en `title` (el de la celda de la hoja, `docs/DECISIONES.md` › «La hoja»): ése puede no caber,
+// pero tampoco se sale de la pantalla.
 export async function sinTextoCortado(lugar: Locator): Promise<void> {
   const cortados = await lugar.evaluate((raiz) => {
     const visible = document.documentElement.clientWidth
@@ -203,7 +205,8 @@ export async function sinTextoCortado(lugar: Locator): Promise<void> {
       // Lo escondido y lo `sr-only` (1 px) no se ve: no cuentan.
       if (caja.width <= 1 || caja.height <= 1 || getComputedStyle(e).visibility === 'hidden')
         return []
-      const sinLugar = e.clientWidth > 0 && e.scrollWidth > e.clientWidth + 1
+      const conTitulo = e.getAttribute('title') === e.textContent.trim()
+      const sinLugar = !conTitulo && e.clientWidth > 0 && e.scrollWidth > e.clientWidth + 1
       const fuera = caja.right > visible + 1
       return sinLugar || fuera ? [descripcion(e)] : []
     })
