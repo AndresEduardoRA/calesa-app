@@ -34,6 +34,11 @@ export function politicaDesde(fila: FilaDePolitica): PoliticaDeLaCola {
   }
 }
 
+// El título y la frase de la sección «Política de la cola» (la dibujan el formulario y su esqueleto).
+export const TITULO_DE_LA_POLITICA = 'Política de la cola'
+export const DESCRIPCION_DE_LA_POLITICA =
+  'Cuánto hay para contactar, cuántas abiertas por asesor y cuántos intentos.'
+
 // Los rangos de cada clave, espejo de `_web_ajustes_validar` (la base decide; esto sólo pone el error junto al campo antes de enviar).
 export const LIMITES_DE_LA_POLITICA = {
   ttlContactoMinutos: { min: 5, max: 1440 },

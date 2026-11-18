@@ -18,7 +18,7 @@ export const activarCategoria = actionClient
     }
     const hecho = await escribirCategorias.activar(parsedInput)
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeWeb)
+      revalidatePath(RUTAS.guiasDelSitio)
     }
     return hecho
   })

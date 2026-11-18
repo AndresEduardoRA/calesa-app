@@ -24,21 +24,11 @@ const PREFIJO = 'faq'
 const SIN_ORDEN_POR_EL_TOPE =
   'Hay más preguntas de las que se muestran; ordénalas desde las primeras.'
 
-function EncabezadoDeFaqs({ alNueva }: { alNueva: () => void }) {
+// Su acción principal. El título y la frase los pone la página.
+function AccionesDeFaqs({ alNueva }: { alNueva: () => void }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
-      <div className="grid gap-0.5">
-        <h2
-          id="titulo-de-faqs"
-          className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-        >
-          Preguntas frecuentes
-        </h2>
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          Lo que responde la web pública. Una pregunta nueva nace sin publicar.
-        </p>
-      </div>
-      <Button className="h-11 md:h-8" onClick={alNueva}>
+    <div className="flex justify-end">
+      <Button className="h-11 max-sm:w-full md:h-8" onClick={alNueva}>
         <PlusIcon aria-hidden />
         Nueva pregunta
       </Button>
@@ -57,10 +47,14 @@ export function PreguntasFrecuentes({ faqs, hayMas }: PropsDePreguntasFrecuentes
   const aEliminar = eliminacion.faq
 
   return (
-    <section className="grid gap-3" aria-labelledby="titulo-de-faqs">
-      <EncabezadoDeFaqs alNueva={apertura.abrirNueva} />
+    <section className="grid gap-3" aria-label="Preguntas frecuentes">
+      <AccionesDeFaqs alNueva={apertura.abrirNueva} />
       {faqs.length === 0 ? (
-        <EstadoVacio compacto titulo="Todavía no hay preguntas frecuentes." />
+        <EstadoVacio
+          compacto
+          titulo="Todavía no hay preguntas frecuentes."
+          descripcion="Una pregunta nueva nace sin publicar."
+        />
       ) : (
         <ListaDeCatalogo
           filas={filasDeFaqs(

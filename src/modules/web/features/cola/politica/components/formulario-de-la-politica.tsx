@@ -2,10 +2,16 @@
 
 import { useRef, useState } from 'react'
 import { AvisoDeConflicto } from '@/shared/ui/aviso-de-conflicto'
-import { Button } from '@/shared/ui/button'
+import { BarraDeCambiosSinGuardar } from '@/shared/ui/barra-de-cambios-sin-guardar'
 import { Campo } from '@/shared/ui/campo'
 import { Interruptor } from '@/shared/ui/interruptor'
-import { LIMITES_DE_LA_POLITICA, type PoliticaDeLaCola } from '../../../../entities/cola/politica'
+import {
+  DESCRIPCION_DE_LA_POLITICA,
+  LIMITES_DE_LA_POLITICA,
+  TITULO_DE_LA_POLITICA,
+  type PoliticaDeLaCola,
+} from '../../../../entities/cola/politica'
+import { SeccionDeLaCola } from '../../tablero/components/seccion-de-la-cola'
 import { useGuardarPolitica } from '../hooks/use-guardar-politica'
 
 export type PropsDelFormularioDeLaPolitica = { politica: PoliticaDeLaCola }
@@ -48,8 +54,11 @@ function numeroDe(texto: string): number {
   return texto.trim() === '' ? Number.NaN : Number(texto)
 }
 
+const ID_DEL_FORMULARIO = 'formulario-politica-de-la-cola'
+
 // La política de la cola (8.04-3): si reparte turnos, cuánto tiene cada asesor para contactar, el pegajoso, el cupo por defecto y los intentos. Cinco
-// campos: sin borrador. Quien lo monta le da la versión como `key`: guardar o recargar lo vuelve a montar con lo nuevo.
+// campos: sin borrador, con la barra de cambios sin guardar. Quien lo monta le da la versión como `key`: guardar o recargar lo vuelve a montar con lo
+// nuevo. La sección y su barra son hermanas (`order-last`): la barra queda al final de la página, pegada abajo, y no al final de la sección.
 export function FormularioDeLaPolitica({ politica }: PropsDelFormularioDeLaPolitica) {
   const formulario = useRef<HTMLFormElement>(null)
   const [colaActiva, setColaActiva] = useState(politica.colaActiva)
@@ -60,53 +69,67 @@ export function FormularioDeLaPolitica({ politica }: PropsDelFormularioDeLaPolit
     colaActiva !== politica.colaActiva ||
     CAMPOS.some(({ clave }) => textos[clave] !== original[clave])
   return (
-    <form
-      ref={formulario}
-      className="grid gap-4"
-      noValidate
-      onSubmit={(evento) => {
-        evento.preventDefault()
-        void g.guardar(
-          {
-            colaActiva,
-            ttlContactoMinutos: numeroDe(textos.ttlContactoMinutos),
-            diasPegajoso: numeroDe(textos.diasPegajoso),
-            maxAbiertasDefault: numeroDe(textos.maxAbiertasDefault),
-            maxIntentos: numeroDe(textos.maxIntentos),
-          },
-          formulario.current,
-        )
-      }}
-    >
-      {g.conflicto ? <AvisoDeConflicto mensaje={g.conflicto} alRecargar={g.recargar} /> : null}
-      <Interruptor
-        titulo="La cola reparte turnos"
-        ayuda="Apagada, la rueda no reparte turnos nuevos."
-        valor={colaActiva}
-        alCambiar={setColaActiva}
-      />
-      {CAMPOS.map(({ clave, etiqueta, ayuda }) => (
-        <Campo
-          key={clave}
-          nombre={clave}
-          etiqueta={etiqueta}
-          type="number"
-          inputMode="numeric"
-          min={LIMITES_DE_LA_POLITICA[clave].min}
-          max={LIMITES_DE_LA_POLITICA[clave].max}
-          ayuda={`${ayuda} De ${LIMITES_DE_LA_POLITICA[clave].min} a ${LIMITES_DE_LA_POLITICA[clave].max}.`}
-          value={textos[clave]}
-          error={g.errores[clave]}
-          onChange={(evento) => {
-            setTextos({ ...textos, [clave]: evento.target.value })
+    <>
+      <SeccionDeLaCola
+        id="politica-titulo"
+        titulo={TITULO_DE_LA_POLITICA}
+        descripcion={DESCRIPCION_DE_LA_POLITICA}
+      >
+        <form
+          ref={formulario}
+          id={ID_DEL_FORMULARIO}
+          className="grid gap-4"
+          noValidate
+          onSubmit={(evento) => {
+            evento.preventDefault()
+            void g.guardar(
+              {
+                colaActiva,
+                ttlContactoMinutos: numeroDe(textos.ttlContactoMinutos),
+                diasPegajoso: numeroDe(textos.diasPegajoso),
+                maxAbiertasDefault: numeroDe(textos.maxAbiertasDefault),
+                maxIntentos: numeroDe(textos.maxIntentos),
+              },
+              formulario.current,
+            )
           }}
-        />
-      ))}
-      <div>
-        <Button type="submit" className="h-11 md:h-9" disabled={!hayCambios || g.enCurso}>
-          {g.enCurso ? 'Guardando…' : 'Guardar política'}
-        </Button>
-      </div>
-    </form>
+        >
+          {g.conflicto ? <AvisoDeConflicto mensaje={g.conflicto} alRecargar={g.recargar} /> : null}
+          <Interruptor
+            titulo="La cola reparte turnos"
+            ayuda="Apagada, la rueda no reparte turnos nuevos."
+            valor={colaActiva}
+            alCambiar={setColaActiva}
+          />
+          {CAMPOS.map(({ clave, etiqueta, ayuda }) => (
+            <Campo
+              key={clave}
+              nombre={clave}
+              etiqueta={etiqueta}
+              type="number"
+              inputMode="numeric"
+              min={LIMITES_DE_LA_POLITICA[clave].min}
+              max={LIMITES_DE_LA_POLITICA[clave].max}
+              ayuda={`${ayuda} De ${LIMITES_DE_LA_POLITICA[clave].min} a ${LIMITES_DE_LA_POLITICA[clave].max}.`}
+              value={textos[clave]}
+              error={g.errores[clave]}
+              onChange={(evento) => {
+                setTextos({ ...textos, [clave]: evento.target.value })
+              }}
+            />
+          ))}
+        </form>
+      </SeccionDeLaCola>
+      <BarraDeCambiosSinGuardar
+        className="order-last"
+        formulario={ID_DEL_FORMULARIO}
+        hayCambios={hayCambios}
+        guardando={g.enCurso}
+        alDescartar={() => {
+          setColaActiva(politica.colaActiva)
+          setTextos(textosDe(politica))
+        }}
+      />
+    </>
   )
 }

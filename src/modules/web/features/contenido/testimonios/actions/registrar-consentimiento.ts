@@ -18,6 +18,6 @@ export const registrarConsentimiento = actionClient
       return fallo('sin_permiso', SIN_PERMISO_PARA_TESTIMONIOS)
     }
     const hecho = await repositorioDeConsentimiento.consentir(parsedInput)
-    if (hecho.ok) revalidatePath(RUTAS.configuracionDeWeb)
+    if (hecho.ok) revalidatePath(RUTAS.testimoniosDelSitio)
     return hecho
   })

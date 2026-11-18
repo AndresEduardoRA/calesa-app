@@ -65,10 +65,13 @@ async function abrirLaPestana(page: Page) {
     .getByRole('main')
     .getByRole('link', { name: /^Sitio web/ })
     .click()
-  await expect(page).toHaveURL(/\/configuracion\/web$/)
-  await page.getByRole('tab', { name: 'Testimonios' }).click()
-  await expect(page).toHaveURL(/seccion=testimonios/)
-  await expect(page.getByRole('heading', { name: 'Testimonios', level: 2 })).toBeVisible()
+  await expect(page).toHaveURL(/\/configuracion\/web\/ajustes$/)
+  await page
+    .getByRole('navigation', { name: 'Secciones de Configuración' })
+    .getByRole('link', { name: 'Testimonios', exact: true })
+    .click()
+  await expect(page).toHaveURL(/\/configuracion\/web\/testimonios$/)
+  await expect(page.getByRole('heading', { name: 'Testimonios', level: 1 })).toBeVisible()
 }
 
 test('crear con foto, consentir, publicar, retirar y eliminar: la web pública sigue al consentimiento', async ({

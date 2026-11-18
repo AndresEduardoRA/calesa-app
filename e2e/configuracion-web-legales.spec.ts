@@ -70,8 +70,12 @@ test('la dueña guarda los términos y un visitante los lee; la privacidad sin t
     .getByRole('main')
     .getByRole('link', { name: /^Sitio web/ })
     .click()
-  await page.getByRole('tab', { name: 'Legales' }).click()
-  await expect(page.getByRole('heading', { name: 'Legales', level: 2 })).toBeVisible()
+  await page
+    .getByRole('navigation', { name: 'Secciones de Configuración' })
+    .getByRole('link', { name: 'Legales', exact: true })
+    .click()
+  await expect(page).toHaveURL(/\/configuracion\/web\/legales$/)
+  await expect(page.getByRole('heading', { name: 'Legales', level: 1 })).toBeVisible()
 
   await expect(page.locator('#terminos-titulo')).toHaveValue('Términos y condiciones')
   await expect(page.locator('#privacidad-titulo')).toHaveValue('Política de privacidad')

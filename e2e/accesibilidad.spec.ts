@@ -87,8 +87,8 @@ async function visitar(page: Page, ruta: Ruta, url: string): Promise<void> {
   await expect
     .poll(() => new URL(page.url()).pathname, { message: `${ruta.plantilla} terminó en otra ruta` })
     .toBe(esperado)
-  // Una redirección que llega con la página ya servida cambia la URL antes de dibujar el destino: se espera su título para barrerlo y no su `loading`.
-  if (ruta.plantilla in REDIRECCIONES) await page.locator('h1').first().waitFor()
+  // Una ruta que sólo redirige llega a su destino con el esqueleto: se mide cuando éste ya dibujó su título.
+  if (REDIRECCIONES[ruta.plantilla]) await page.locator('h1:visible').first().waitFor()
   const { hallazgos, titulo } = await barrer(page)
   registros.push({
     ruta: ruta.plantilla,

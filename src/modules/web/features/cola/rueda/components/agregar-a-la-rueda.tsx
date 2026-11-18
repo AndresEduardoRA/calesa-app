@@ -25,8 +25,12 @@ export function AgregarALaRueda({ puedeVerEquipo, ...resto }: Props) {
   const montar = useAbiertoAlgunaVez(panel.abierto)
   const apertura = useApertura(panel.abierto)
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-      <Button className="h-11 md:h-8" disabled={!puedeVerEquipo} onClick={panel.abrir}>
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 max-sm:w-full">
+      <Button
+        className="h-11 max-sm:w-full md:h-8"
+        disabled={!puedeVerEquipo}
+        onClick={panel.abrir}
+      >
         <PlusIcon aria-hidden />
         Agregar a la rueda
       </Button>
