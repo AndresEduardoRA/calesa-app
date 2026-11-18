@@ -264,9 +264,15 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   Tarjetas, también la del kanban): arriba a la derecha; con `sobreImagen`, flotando sobre la foto con fondo translúcido y borde, y la casilla en
   la esquina izquierda como espejo. En la tabla el lugar es la columna pegada (`CeldaPegada lado="acciones"`).
 - **Filtro descartado** — `filtrosDescartados()` / `<AvisoDeFiltrosDescartados>`: filtro de la URL sobre un campo desactivado o eliminado.
-- **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: en dos columnas (`<FichaEnDosColumnas>`): a la izquierda cabecera, «Datos»,
-  «Teléfonos», «Quién lo tiene» y «Acceso al portal»; a la derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados,
-  cotizaciones). Edición en `?panel=editar-lead`.
+- **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: en dos columnas (`<FichaEnDosColumnas>`): a la izquierda la cabecera (el nombre
+  con el «⋯» arriba a la derecha y quién lo tiene debajo), «Datos» (los datos clave del lead y «Ver más»), «Quién lo tiene» y «Acceso al portal»; a la
+  derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados, cotizaciones). Edición en `?panel=editar-lead`.
+- **Datos clave del lead** — `entities/datos-clave-del-lead.ts` (`campoDelPais()`, `campoDeNotas()`, `datoDelCampo()`, `paisDeLosDatos()`),
+  `<DatosClaveDelLead>`: lo que «Datos» de la ficha del lead muestra a la vista: tipo, origen, país y teléfono principal, y «Notas» a lo ancho. «País» y
+  «Notas» son campos del layout de leads encontrados por su etiqueta o clave (sin tildes ni mayúsculas; «Notas» sólo si es texto largo); sin «País» o
+  vacío, el país del teléfono principal. No son los «Datos clave» del vehículo: éstos son fijos y no se eligen.
+- **Ver más (ficha del lead)** — `?ver=datos` (`CLAVE_DE_VER`, `VER_DATOS`), `<ModalDeDatosDelLead>`: el modal de sólo lectura con todos los datos del
+  lead (el alta, los grupos del layout y los teléfonos con sus extras), con «Editar» para quien puede. Su propia clave en la URL: no pisa `?panel=`.
 - **Ficha del vehículo** — `/vehiculos/[id]` / `BLOQUES_DE_LA_FICHA`, `bloquesDeQuienMira()`, `<FichaEnDosColumnas>`: en dos columnas; a la izquierda la
   cabecera (`<CabeceraDeVehiculo>`), «Datos principales» y la subasta; a la derecha el índice y los bloques por permiso («Fase y qué falta», «Relacionados»,
   «Cotizaciones», «Documentos», «Ficha», «Repuestos», «Fotos»). `?seccion=<ancla>` lleva al bloque. No: «detalle del vehículo».

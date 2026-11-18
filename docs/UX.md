@@ -217,9 +217,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   por página» y «Más»: exportar, importar y papelera): `?vista=embudo&embudo=<id>` es el kanban de las oportunidades propias (`?etapa=` en el celular;
   a la vista, el selector de embudo y la búsqueda; en «Vista y opciones», «Lista | Embudo», «Etapas…» `?panel=etapas` y «Nuevo embudo…» `?panel=nuevo-embudo`).
 - **Lead** — `/leads/[id]` (`leads.ver` y acceso): **dos columnas, todo a la vista, sin pestañas ni acordeones** (desde 56 rem de contenedor; por
-  debajo, y con el texto al 200 %, una sola en el mismo orden). **Izquierda**, pegajosa (se desplaza sola si no cabe): la cabecera (nombre, números,
-  marcas, «Editar» `?panel=editar-lead`, «Cotizar» para quien cotiza y el «⋯», el de la lista con «Cotizar lead» y «Editar lead»), «Datos» (tipo, origen, alta y los grupos del layout sin plegar),
-  «Teléfonos» (sólo lectura), «Quién lo tiene» y «Acceso al portal» (la cartera y `leads.portal.gestionar`). **Derecha**: el índice pegajoso («Índice de la
+  debajo, y con el texto al 200 %, una sola en el mismo orden). **Izquierda**, pegajosa (se desplaza sola si no cabe): la cabecera (el nombre con el «⋯»
+  arriba a la derecha, el de la lista con «Cotizar lead» y «Editar lead» —no hay botones sueltos—; debajo, quién lo tiene en una línea; números y marcas),
+  «Datos» (los datos clave del lead y «Ver más», `?ver=datos`), «Quién lo tiene» («Compartir» y «Transferir» a todo el ancho) y «Acceso al portal» (la
+  cartera y `leads.portal.gestionar`). **Derecha**: el índice pegajoso («Índice de la
   ficha», enlaces de ancla con `aria-current="location"`; en el celular se desplaza de costado) y los bloques en su orden, cada uno por su permiso:
   «Seguimientos y recordatorios» (`?panel=anotar-seguimiento`, `editar-seguimiento&seguimiento=<id>`, `agendar-recordatorio`, `editar-recordatorio&recordatorio=<id>`;
   «Ver todos» en `?todos=seguimientos|recordatorios`), «Tus oportunidades» (con la cartera; `?panel=nueva-oportunidad`, `editar-oportunidad&oportunidad=<id>`),
@@ -1383,16 +1384,27 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
 
 - **Entrar:** `leads.ver`. Inexistente, en la papelera, en limbo o ajeno **se ven igual** («No encontramos este lead o no tienes acceso.»
   con «Ir a Leads»): ni nombre ni número en la página.
-- **Cabecera** (arriba de la columna izquierda): nombre, números, marcas de quien mira y las acciones; tipo y origen («(inactivo)») van en «Datos», el
-  teléfono en «Teléfonos» y quién lo tiene en su bloque (nada se dice dos veces en la columna). «Favorito», «Tachado» y «Etiquetas…» en el «⋯»; tope 20 etiquetas por lead; `?panel=etiquetas` las gestiona
+- **Cabecera** (arriba de la columna izquierda): el nombre con el «⋯» arriba a la derecha (el lugar del «⋯» de una tarjeta sin imagen: 44 px, siempre a
+  la vista; el nombre largo se parte en líneas sin pasar por debajo); debajo, quién lo tiene en una línea («Dueño: Ana · Compartido con Luis y 1 más»; sólo
+  nombres, «(tú)» para quien mira, «y 99+ más» como tope; sin compartidos, «Dueño: Ana»; sin dueño a la vista, «Compartido con …»); los números y las
+  marcas de quien mira. «Cotizar lead», «Editar lead» (o «Editar teléfonos»), «Favorito», «Tachado» y «Etiquetas…» en el «⋯»; tope 20 etiquetas por lead; `?panel=etiquetas` las gestiona
   (renombrar, color, eliminar con confirmación si está en uso).
-- **Datos:** tipo, origen y alta, y los grupos del layout a la vista (un `h3` por grupo, sin plegar); «Teléfonos» aparte (principal y extras con etiqueta
-  y país, sólo lectura). **Editar** sólo con
+- **Datos:** los datos clave del lead en dos columnas (una en el celular y al 200 %): «Tipo», «Origen del lead» («(inactivo)»), «País» (el campo «País» del
+  layout; vacío o sin él, el del teléfono principal; un número enmascarado no da país: «—») y «Teléfono principal» (sin el país al lado; fuera de la
+  cartera, enmascarado con «Completo solo para su cartera.»), y «Notas» a lo ancho (el campo de texto largo «Notas»: hasta 4 líneas con «…»; sin el
+  campo no se dibuja; vacío, «Sin notas»). Debajo, «Ver más» a lo ancho abre un modal por la URL (`?ver=datos`, con su propia clave: no pisa `?panel=`):
+  «Datos de <nombre>», de sólo lectura y desplazable, con el alta, los grupos del layout sin plegar (un `h3` por grupo) y «Teléfonos» (principal y extras con
+  etiqueta y país); Esc y «Cerrar» devuelven el foco a «Ver más»; con permiso, «Editar» (o «Editar teléfonos») lo reemplaza por el panel de edición
+  (`?panel=editar-lead`, sin `ver`). Sin red, «Sin conexión. No se pudo abrir esto.» con «Reintentar». **Editar** sólo con
   `leads.editar` y el lead **en la cartera** (con «todos» se ve y no se edita); `Ctrl/Cmd+S` guarda y cierra. Conflicto: quién y cuándo,
   «Ver cómo quedó» y «Recargar»; un seguimiento nuevo, compartir o transferir no dan conflicto.
 - **Quién lo tiene:** nombres y tipo de acceso («Dueño», «Compartido»); nunca correo ni teléfono. «Compartir» y «Transferir»
-  (`?panel=compartir-lead`/`transferir-lead`) sólo para el dueño o, con el permiso en «todos», para quien lo ve; nunca se ofrecen a quien
-  mira. «Quitar acceso» con «Deshacer»; «Salir de este lead» confirma. Al dueño se le transfiere, no se le quita.
+  (`?panel=compartir-lead`/`transferir-lead`; entre los dos todo el ancho: mitad y mitad, uno solo a lo ancho y, si no caben lado a lado —el celular angosto, el texto al 200 %—, apilados) sólo para el dueño o, con el permiso en «todos», para quien lo ve; nunca se ofrecen a quien
+  mira. «Quitar acceso» con «Deshacer»; «Salir de este lead» confirma (en su fila, a lo ancho). Al dueño se le transfiere, no se le quita.
+- **Acceso al portal:** el título con su «⋯» y una línea de estado: «Sin acceso» (también revocado, con quién lo revocó debajo), «Tiene acceso desde
+  <fecha>» (debajo el código, quién lo dio, el último ingreso y si sigue con la clave temporal) o «Bloqueado: no puede entrar hasta las HH:MM.». Un botón
+  principal a todo el ancho: «Dar acceso», «Compartir acceso» (copia el código: «Código copiado»; la clave no se conoce) o «Desbloquear». «Cambiar la
+  clave» (el diálogo de volver a otorgar) y «Quitar el acceso» van en el «⋯», que sigue al botón en el orden del teclado.
 - **Enviar a la papelera:** último ítem del «⋯» (`leads.eliminar`); sin preguntar, con «Deshacer» 10 s. Con un vehículo vinculado visible,
   apagado con motivo y «Ir a «Vehículos»» (salta a Relacionados); si lo frena uno que no se ve, la base rechaza nombrando al lead, no al vehículo.
 - **Relacionados** (con `vehiculos.ver`; `?seccion=vehiculos` lleva acá): el bloque compacto (ver «Relacionados (estados propios)»): vinculados, interesados
@@ -1415,7 +1427,7 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
 - **Importar:** vista previa en grilla alineada (contenedor ≥ 42 rem; si no, nombre sobre motivo). «País» vacío se completa con el del
   teléfono. **Deshacer importación** (24 h): el diálogo cuenta cuántos leads van a la papelera y el resultado cuántos se movieron y cuántos
   quedaron, nunca nombres ni teléfonos.
-- **Teléfonos de la ficha:** la ficha y el resumen los muestran **sólo para leer**; se editan en el panel de edición. Los extras, con la cartera y
+- **Teléfonos de la ficha:** la ficha los muestra **sólo para leer** (el principal en los datos clave; todos, con los extras, en «Ver más»); se editan en el panel de edición. Los extras, con la cartera y
   `leads.telefonos_extra.editar` (sin `leads.editar`, «Editar teléfonos» abre el mismo panel en modo teléfonos: «Teléfonos de <nombre>», sólo los teléfonos,
   «Los demás datos los edita quien tiene el permiso.» y «Cerrar»); el principal, con la cartera y `leads.editar`; si no, enmascarados y sin botones.
   «Cambiar el principal» (en el panel de la ficha; apagado con «Guarda o descarta los cambios para cambiarlo.» si hay algo escrito) pasa a

@@ -25,8 +25,10 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   (`prepararFilas`, `preparadorDeFilas` por tramos con el mismo resultado que una pasada, `emparejarColumnas`, `convertir*`, `fecha*`, `usePaises`…):
   la importación total no tiene otras reglas.
 - `shell.ts`: `<AltaDeLead>` (el drawer y la tecla `N`; el botón es «Nuevo» de la barra, `src/app/(app)/_shell/nuevo/`), `<ProveedorDeEscribirPorChat>`; `shell.client.ts`: `useAbrirNuevoLead()` (paleta y «Nuevo»; no `usePanelDeAlta()`) y `rutaDeAccionSobreUnLead()` (la ficha con su modal de seguimiento o recordatorio abierto, a donde «Nuevo» lleva tras elegir un lead).
-- Rutas: `/leads`, `/leads/[id]` (`leads.ver`; la ficha en dos columnas, `FichaEnDosColumnas` de `shared`: a la izquierda, pegajosa, cabecera, «Datos»,
-  «Teléfonos» de sólo lectura, «Quién lo tiene» y «Acceso al portal»; a la derecha el índice y los bloques de `entities/bloques-de-la-ficha.ts`, todos a la
+- Rutas: `/leads`, `/leads/[id]` (`leads.ver`; la ficha en dos columnas, `FichaEnDosColumnas` de `shared`: a la izquierda, pegajosa, la cabecera (el «⋯» a
+  la derecha del nombre y `textoDeLaCartera()` debajo; `useCartera` vive en `lateral-de-la-ficha.tsx` y alimenta la línea y «Quién lo tiene»), «Datos» (los
+  datos clave del lead, `entities/datos-clave-del-lead.ts`, y «Ver más» en `?ver=datos`: `modal-de-datos-del-lead.tsx`, diferido, con los grupos y los
+  teléfonos de sólo lectura), «Quién lo tiene» y «Acceso al portal» (`accionesDelPortal()`: un botón principal y el resto en su «⋯»); a la derecha el índice y los bloques de `entities/bloques-de-la-ficha.ts`, todos a la
   vista y cada uno por su permiso y tras su `<Suspense>`: «Seguimientos y recordatorios» (los últimos 3 y los 3 pendientes más próximos; «Ver todos» es un
   drawer en `?todos=seguimientos|recordatorios`, con su propia clave), «Tus oportunidades», Relacionados con la gestión de «Vehículos» al pie y «Cotizaciones»
   (se pide al acercarse). `?seccion=datos|seguimientos|vehiculos|oportunidades|cotizaciones|portal` lleva al bloque (`anclaDeLaSeccion()`: «vehiculos» es
@@ -36,7 +38,7 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `pantallas/configuracion`: `campos` con `EditorDeCamposDeLead`, que con las `lead_campo_*` pide `leads.campos.gestionar`; `origenes`,
   `tipos`, `seguimientos`, `embudo`, `portal` y `telefonos` (`features/plantillas/`, con la barra de cambios sin guardar) con
   `leads.configurar`; sus `loading.tsx`, por `pantallas/configuracion-esqueletos`, sin los Client Components).
-  Los teléfonos se administran en el panel de edición (la ficha sólo los lee): «Cambiar el principal» (cartera y `leads.editar`, sólo en la ficha;
+  Los teléfonos se administran en el panel de edición (la ficha sólo los lee, en los datos clave y en «Ver más»): «Cambiar el principal» (cartera y `leads.editar`, sólo en la ficha;
   apagado con cambios escritos) pasa a `?panel=cambiar-telefono` reemplazando la entrada; «Agregar teléfono» es `?extra=nuevo` dentro del panel. Con la cartera y
   `leads.telefonos_extra.editar` sin `leads.editar`, «Editar teléfonos» abre el mismo panel en modo teléfonos («Teléfonos de <nombre>», sólo los teléfonos). Un
   `?panel=agregar-telefono` viejo se reemplaza por `?panel=editar-lead&extra=nuevo` (o se quita sin permiso: `reemplazoDelPanelViejo()`).
@@ -54,7 +56,7 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `reciente_en` o búsqueda por nombre o `#n`; elegir escribe `?lead=` con `history: 'replace', shallow: false`; lecturas del navegador en
   `infra/panel-para-cotizar.client.ts`). Su «+» abre el alta con `?panel=nuevo-lead&elegir=<clave>` (`claveParaElegir()`: 1 a 20 minúsculas, ni
   `panel` ni `elegir`): `usePanelDeAlta()` entrega `paraElegir` y `elegirElCreado(id)`, el aviso va sin «Abrir ficha» y el foco vuelve a la barra
-  (`data-elige`); si el teléfono ya es de un lead que se ve, su aviso ofrece «Elegir» (`alElegir` = `elegirElCreado`). «Cotizar» de la ficha:
+  (`data-elige`); si el teléfono ya es de un lead que se ve, su aviso ofrece «Elegir» (`alElegir` = `elegirElCreado`). «Cotizar lead» del «⋯» de la ficha:
   `paraCotizar`, de `src/app`.
 - «Nuevo lead» del formulario «Nuevo proyecto» de repuestos: `pantallas/proyecto-de-repuestos` saca `useAbrirAltaParaElegir(clave)`, que escribe
   `?panel=nuevo-lead&elegir=<clave>` con `replace` y adelanta el alta (una clave que `claveParaElegir()` no acepta no abre nada). La pantalla deja antes
