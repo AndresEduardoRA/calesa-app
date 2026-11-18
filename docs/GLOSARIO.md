@@ -464,6 +464,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   primero); va con «Ver total» por defecto (`ver_total_bs_por_defecto`). Lo cambian el ⚙ de la cabecera y el diseño de Configuración.
 - **Modos visibles** — `diseno.cabecera.modos_visibles` / `modosDelEncabezado()`: los modos que se dibujan en el encabezado de la hoja (sin la
   lista, todos). El modo por defecto siempre está entre ellos, y el que una cotización tiene elegido se dibuja aunque no lo esté.
+- **Pasos de la hoja** — `pasosDeLaHoja()` / `<PasosDeLaHoja>`: la fila «Hoja · Vehículo · Cliente · Vista previa» de arriba de la hoja (como
+  en V1). Cada paso abre su panel de hoy y lleva un punto (elegido, obligatorio que falta, falta un dato) con su texto; no reemplaza las barras.
 - **Grupo (de la hoja)** — `definicion.grupos[]` / `nodo.grupo`: filas con bucket, plazo de pago y color, con subtotal en USD y Bs. No es un nodo.
 - **Plazo de pago** — atributo del grupo: cuándo se paga, como texto («2 días», «4 meses (Aprox.)»).
 - **Total en dólares** — `definicion.total_en`; en el motor `totales.usd` (y `totales.suma_usd`): total en Bs ÷ tipo de cambio de `total_en`.

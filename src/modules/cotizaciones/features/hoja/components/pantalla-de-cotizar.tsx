@@ -14,6 +14,7 @@ import { useSoltarLoAbierto } from '../hooks/urls-de-la-hoja'
 import { useTituloDeLaCotizacion } from '../hooks/use-titulo-de-la-cotizacion'
 import { CotizacionGuardada } from './cotizacion-guardada'
 import { HojaDeCotizar } from './hoja-de-cotizar'
+import type { PasosDeLaPagina } from './pasos-de-la-hoja'
 
 type PropsDeLaHoja = {
   hoja: HojaLista
@@ -23,6 +24,8 @@ type PropsDeLaHoja = {
   // Lo que el rol pide elegir en este origen y cómo se elige: la página los calcula con los permisos de la sesión (booleanos y textos; `permisos.ts` no viaja).
   obligatorios: ObligatoriosAlCotizar
   elecciones: EleccionesDeLaHoja
+  // Los pasos de la hoja: los paneles del vehículo y del cliente que la página sabe abrir (nulo el que no va).
+  pasos?: PasosDeLaPagina
 }
 
 type Props = PropsDeLaHoja & {

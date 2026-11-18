@@ -16,6 +16,7 @@ import {
 import { requerirSesion } from '@/modules/equipo'
 import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import { PANEL_DEL_VEHICULO } from '@/modules/vehiculos/pantallas/cotizar'
+import type { Permisos } from '@/shared/lib/permisos'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
 import {
@@ -31,6 +32,24 @@ import { barraDeLaCabecera, ConElTituloDeLaGuardada } from './titulo-de-la-guard
 import { leerLoDelVehiculo } from './vehiculo-de-la-guardada'
 
 export const metadata: Metadata = { title: 'Cotización' }
+
+// Los pasos de una guardada: «Vehículo» sólo si la barra abre su panel (no en `solo_mostrar`); una guardada no tiene panel del cliente.
+function pasosDeLaGuardada(
+  cambio: 'elige' | 'final' | 'no',
+  {
+    hoja,
+    vehiculoNuevo,
+  }: { hoja: { cotizacion: { vehiculoId: string | null } }; vehiculoNuevo: string | null },
+) {
+  const vehiculoId = vehiculoNuevo ?? hoja.cotizacion.vehiculoId
+  return {
+    vehiculo:
+      cambio === 'no'
+        ? null
+        : { panel: PANEL_DEL_VEHICULO, elegido: vehiculoId !== null, obligatorio: false },
+    cliente: null,
+  }
+}
 
 // Una cotización guardada (`docs/UX.md` › «Cotizar»): su hoja con lo que se guardó, en sólo lectura para quien no la puede guardar (`cotizaciones.ver`; P8, P13). Se llega desde el
 // historial del vehículo y desde la tarjeta de lo guardado. `?vehiculo=` es el vehículo elegido en el panel para cambiar el de una preventa (T315): la hoja calcula con él.
@@ -83,6 +102,20 @@ async function leerAlrededor(
   }
 }
 
+// Lo que reciben los huecos de las áreas (acciones de la cabecera, la línea de bajo la cabecera y lo de bajo la hoja); el vehículo, sólo si quien mira lo ve.
+function propsDeLosHuecos(
+  hoja: Pick<HojaDeUnaGuardada, 'cotizacion' | 'puedeGuardar'>,
+  permisos: Permisos,
+  vehiculo: { id: string; titulo: string } | null,
+) {
+  return {
+    cotizacion: hoja.cotizacion,
+    puedeGuardar: hoja.puedeGuardar,
+    permisos,
+    vehiculo: vehiculo === null ? null : { id: vehiculo.id, titulo: vehiculo.titulo },
+  }
+}
+
 async function Cotizacion({
   params,
   searchParams,
@@ -106,13 +139,7 @@ async function Cotizacion({
     id,
     lectura.data,
   )
-  // Lo que reciben los huecos de las áreas (acciones de la cabecera, la línea de bajo la cabecera y lo de bajo la hoja); el vehículo, sólo si quien mira lo ve.
-  const props = {
-    cotizacion: hoja.cotizacion,
-    puedeGuardar: hoja.puedeGuardar,
-    permisos: sesion.permisos,
-    vehiculo: vehiculo === null ? null : { id: vehiculo.id, titulo: vehiculo.titulo },
-  }
+  const props = propsDeLosHuecos(hoja, sesion.permisos, vehiculo)
   return (
     <>
       <RegistrarVisita tipo="cotizacion" id={hoja.cotizacion.id} />
@@ -158,6 +185,7 @@ async function Cotizacion({
             panelDelTitulo={PANEL_DEL_VEHICULO}
             vehiculoNuevo={vehiculoNuevo}
             cambiaVehiculo={delVehiculo.cambio === 'elige'}
+            pasos={pasosDeLaGuardada(delVehiculo.cambio, lectura.data)}
           />
         </ConProveedorDeLaHoja>
       </ConElTituloDeLaGuardada>
