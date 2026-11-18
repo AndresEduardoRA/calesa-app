@@ -22,6 +22,8 @@ const pedido = (intento: string, valor: number): PedidoDeGuardado => ({
   modoTc: null,
   verTotalBs: false,
   conLaAbierta: false,
+  titulo: null,
+  tituloManual: false,
 })
 
 const ok = (resultado: ResultadoDeCrear): EnvioDeGuardado => ({ ok: true, data: resultado })
@@ -99,6 +101,7 @@ describe('el pendiente de una edición (4.15-3, C9)', () => {
     modoTc: 'paralelo',
     verTotalBs: true,
     titulo: 'T',
+    tituloManual: false,
     notas: null,
     vehiculoId: null,
   })

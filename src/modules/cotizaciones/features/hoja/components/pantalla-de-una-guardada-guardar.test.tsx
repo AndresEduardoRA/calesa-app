@@ -78,6 +78,7 @@ const pendiente = (intento: string): PedidoDeEdicion => ({
   modoTc: null,
   verTotalBs: false,
   titulo: null,
+  tituloManual: false,
   notas: null,
   vehiculoId: null,
 })
@@ -144,6 +145,7 @@ describe('guardar', () => {
       cotizacion: {
         ...crudaDeUnaGuardada().cotizacion,
         titulo: 'Una camioneta',
+        tituloManual: false,
         notas: 'Con flete',
       },
     })
@@ -161,6 +163,7 @@ describe('guardar', () => {
       actualizadoEn: ACTUALIZADO_EN,
       entradas: { inputs: { remate: 1200 } },
       titulo: 'Una camioneta',
+      tituloManual: false,
       notas: 'Con flete',
       vehiculoId: null,
       verTotalBs: false,

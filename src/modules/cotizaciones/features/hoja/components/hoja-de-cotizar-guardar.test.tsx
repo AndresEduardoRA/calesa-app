@@ -24,6 +24,7 @@ const PIDE_EL_CLIENTE: ObligatoriosAlCotizar = { lead: true, vehiculo: false }
 const ELECCIONES: EleccionesDeLaHoja = {
   lead: { panel: 'cliente' },
   vehiculo: { panel: 'vehiculo' },
+  titulo: { panel: 'vehiculo' },
 }
 const AL_DIA: RecalculoInicial = {
   respuesta: respuestaDePrueba({ usd: 2350, valores: { remate: 0 } }),

@@ -43,6 +43,7 @@ const cotizacion = (clase: 'preventa' | 'final'): CotizacionDeLaHoja => ({
   modoTc: null,
   verTotalBs: false,
   titulo: 'Hilux',
+  tituloManual: false,
   notas: null,
   creadoEn: '2026-11-01T10:00:00+00:00',
   actualizadoEn: VERSION,

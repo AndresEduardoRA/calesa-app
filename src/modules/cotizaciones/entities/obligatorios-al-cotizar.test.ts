@@ -25,4 +25,20 @@ describe('loQueFalta', () => {
     ).toBeNull()
     expect(loQueFalta(SIN_OBLIGATORIOS, { leadId: null, vehiculoId: null })).toBeNull()
   })
+
+  it('sin vehículo, el título falta (para cualquier rol), después del lead y del vehículo; con vehículo o con título, no', () => {
+    expect(loQueFalta(SIN_OBLIGATORIOS, { leadId: null, vehiculoId: null, titulo: null })).toBe(
+      'titulo',
+    )
+    expect(loQueFalta(LOS_DOS, { leadId: null, vehiculoId: null, titulo: null })).toBe('lead')
+    expect(loQueFalta(LOS_DOS, { leadId: LEAD, vehiculoId: null, titulo: null })).toBe('vehiculo')
+    expect(
+      loQueFalta(SIN_OBLIGATORIOS, { leadId: null, vehiculoId: null, titulo: 'Para Ana' }),
+    ).toBeNull()
+    expect(
+      loQueFalta(SIN_OBLIGATORIOS, { leadId: null, vehiculoId: VEHICULO, titulo: null }),
+    ).toBeNull()
+    // Sin el proveedor del título (`undefined`), la hoja no lo pide.
+    expect(loQueFalta(SIN_OBLIGATORIOS, { leadId: null, vehiculoId: null })).toBeNull()
+  })
 })

@@ -43,6 +43,9 @@ const esquemaDelPendiente = z.object({
   modoTc: z.string().nullable().default(null),
   verTotalBs: z.boolean().default(false),
   conLaAbierta: z.boolean(),
+  // El título (T307): uno de antes no lo traía y se reenvía como salió (automático).
+  titulo: z.string().nullable().default(null),
+  tituloManual: z.boolean().default(false),
 })
 
 export const serializarPendiente = (pedido: PedidoDeGuardado): string => JSON.stringify(pedido)
@@ -60,7 +63,7 @@ export function leerPendiente(texto: string | null): PedidoDeGuardado | null {
   }
 }
 
-// El pendiente de una edición (4.15-3, C9): la misma idea para `cotizacion_guardar`, con la versión que vio quien editó (el texto de la base) y los nueve datos. Un pedido de la hoja
+// El pendiente de una edición (4.15-3, C9): la misma idea para `cotizacion_guardar`, con la versión que vio quien editó (el texto de la base) y los diez datos. Un pedido de la hoja
 // nueva no se lee como una edición, ni al revés.
 const esquemaDelPendienteDeEdicion = z.object({
   intento: z.string().min(1),
@@ -70,6 +73,8 @@ const esquemaDelPendienteDeEdicion = z.object({
   modoTc: z.string().nullable(),
   verTotalBs: z.boolean(),
   titulo: z.string().nullable(),
+  // Uno de antes del título manual (T307) no lo traía: la base leía el título como manual si traía texto.
+  tituloManual: z.boolean().optional(),
   notas: z.string().nullable(),
   vehiculoId: z.string().nullable(),
 })
@@ -83,7 +88,11 @@ export function leerPendienteDeEdicion(texto: string | null): PedidoDeEdicion | 
   }
   try {
     const leido = esquemaDelPendienteDeEdicion.safeParse(JSON.parse(texto))
-    return leido.success ? leido.data : null
+    if (!leido.success) {
+      return null
+    }
+    const { tituloManual, ...resto } = leido.data
+    return { ...resto, tituloManual: tituloManual ?? resto.titulo !== null }
   } catch {
     return null
   }

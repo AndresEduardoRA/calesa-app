@@ -10,6 +10,7 @@ import {
   tipearEnLaHoja,
   vigilarGuardados,
 } from './cotizar-guardar'
+import { escribirElTitulo } from './cotizar-titulo'
 import { literal, sql } from './sql'
 
 const json = (valor: unknown) => `$e2e$${JSON.stringify(valor)}$e2e$::jsonb`
@@ -31,13 +32,17 @@ export function crearVehiculoDePrueba(origenId: string, titulo: string, anio?: n
   )
 }
 
-// Guarda una cotización por la hoja nueva (tipea `pub` y Ctrl/Cmd+S) y devuelve su id: el intento es el id de la cotización. La persona ya entró.
+// Guarda una cotización por la hoja nueva (tipea `pub` y Ctrl/Cmd+S) y devuelve su id: el intento es el id de la cotización. La persona ya entró. Sin vehículo escribe
+// antes el título (es obligatorio): `titulo` o el de prueba.
 export async function guardarPorLaHoja(
   page: Page,
-  datos: { origenId: string; lead: string; pub: string; vehiculoId?: string },
+  datos: { origenId: string; lead: string; pub: string; vehiculoId?: string; titulo?: string },
 ): Promise<string> {
   const guardados = await vigilarGuardados(page)
   await page.goto(urlDeLaHoja(datos.origenId, datos.lead, datos.vehiculoId))
+  if (datos.vehiculoId === undefined || datos.titulo !== undefined) {
+    await escribirElTitulo(page, datos.titulo)
+  }
   await tipearEnLaHoja(page, 'pub', datos.pub)
   await guardarConElAtajo(page)
   await expect(tarjetaGuardada(page)).toBeVisible()

@@ -11,6 +11,8 @@ const PEDIDO: PedidoDeGuardado = {
   modoTc: null,
   verTotalBs: false,
   conLaAbierta: false,
+  titulo: null,
+  tituloManual: false,
 }
 
 describe('argumentosDeCrear', () => {
@@ -24,6 +26,7 @@ describe('argumentosDeCrear', () => {
       p_ver_total_bs: false,
       p_clase: 'preventa',
       p_con_la_abierta: false,
+      p_titulo_manual: false,
     })
   })
 
@@ -41,5 +44,14 @@ describe('argumentosDeCrear', () => {
   it('manda p_ver_total_bs siempre, con lo que quien cotiza dejó', () => {
     expect(argumentosDeCrear({ ...PEDIDO, verTotalBs: true }).p_ver_total_bs).toBe(true)
     expect(argumentosDeCrear(PEDIDO).p_ver_total_bs).toBe(false)
+  })
+
+  it('el título: el texto y manual, o sólo «automático» sin texto', () => {
+    const manual = argumentosDeCrear({ ...PEDIDO, titulo: 'Para Ana', tituloManual: true })
+    expect(manual.p_titulo).toBe('Para Ana')
+    expect(manual.p_titulo_manual).toBe(true)
+    const automatico = argumentosDeCrear(PEDIDO)
+    expect('p_titulo' in automatico).toBe(false)
+    expect(automatico.p_titulo_manual).toBe(false)
   })
 })
