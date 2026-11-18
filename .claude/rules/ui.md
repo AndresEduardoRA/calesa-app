@@ -54,8 +54,10 @@ Antes de construir una pantalla, lee su fila en `docs/UX.md` (patrón, roles, es
 - Toda lista de registros usa el patrón de `@/shared/ui/lista` (modelos: listado de leads e inventario
   de vehículos): una sola vista elegida en el servidor (`<UnaSolaVista>`: tabla desde 768 px, tarjetas
   debajo), nombre a la izquierda, `<MasAcciones>` a la derecha, tabla con `w-max min-w-full`.
-- El clic en la fila abre su resumen (`?lead=`, `?vehiculo=`) salvo casilla, «⋯», enlace o botón propio
+- El clic en la fila abre su resumen (`?lead=`) salvo casilla, «⋯», enlace o botón propio
   (`esClicPropio` de `src/shared/lib/clic-de-fila.ts`; `data-no-abre`). Con teclado, `<AbrirResumen nombre>`.
+  En una lista con ficha y sin resumen (vehículos) abre su ficha: `href` en la fila o la tarjeta y `<EnlaceDeLaFila>`
+  en el nombre (Ctrl o el botón del medio abren otra pestaña; con texto elegido no navega).
   Lo vigila `scripts/guardas/listas-con-patron.ts`.
 - El «⋯» de una tarjeta de la lista va en `<EsquinaDeAcciones>` (`TarjetaDeLista acciones` ya la usa; sobre una foto, `sobreImagen`, y la
   casilla con `lado="izquierda"`), nunca suelto en el contenido ni en el pie; en la tabla, en `CeldaPegada lado="acciones"`.
