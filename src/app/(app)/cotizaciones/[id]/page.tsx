@@ -89,6 +89,11 @@ async function leerAlrededor(
     asesorDe(id),
     leerLoDelVehiculo(sesion, hoja, { vehiculoNuevo, vehiculoSoltado }),
   ])
+  if (vehiculoNuevo !== null && delVehiculo.nuevo === null) {
+    // La hoja calculó con el elegido pero su lectura no llegó (un fallo, o se fue a la papelera entre las dos): la barra y el título nombrarían el de antes con el total
+    // del nuevo. Sube al `error.tsx`: «Reintentar» vuelve a leer y, si ya no se puede usar, la base lo suelta.
+    throw new Error('No pudimos leer el vehículo elegido.')
+  }
   return {
     cliente,
     vehiculo,

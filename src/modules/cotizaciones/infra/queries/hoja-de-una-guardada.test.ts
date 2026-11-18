@@ -197,6 +197,17 @@ describe('getHojaDeUnaGuardada › con un vehículo para cambiarlo (T315)', () =
     expect(r.ok && r.data.inicial.respuesta?.totales.usd).toBe(1800)
   })
 
+  it('si sin el vehículo también falla, no era el vehículo: la hoja abre con el primer fallo y el vehículo pedido', async () => {
+    responder(
+      { data: conVehiculo(), error: null },
+      { data: null, error: { code: '42501', message: 'No tienes acceso a esta cotización.' } },
+    )
+    const r = await getHojaDeUnaGuardada(ID_DE_LA_COTIZACION, { vehiculo: NUEVO })
+    expect(evaluaciones()).toHaveLength(2)
+    expect(r.ok && r.data).toMatchObject({ vehiculoNuevo: NUEVO, vehiculoSoltado: false })
+    expect(r.ok && r.data.inicial.respuesta).toBeNull()
+  })
+
   it('otro error del cálculo con el vehículo no se reintenta: la hoja abre con el fallo', async () => {
     responder(
       { data: conVehiculo(), error: null },

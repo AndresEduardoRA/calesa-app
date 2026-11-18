@@ -13,7 +13,7 @@ import { createClient } from '@/shared/lib/supabase/server'
 // Lo que abre una cotización guardada: UNA llamada a `cotizacion_hoja_guardada()` (la fila y el snapshot recortados, el diseño de SU versión, quién la guarda) y, con la hoja leída,
 // UNA a `cotizacion_evaluar(p_cotizacion)` con lo guardado como entradas: el primer cálculo llega con la página, como en la hoja nueva. Dos pedidos en serie (el segundo necesita
 // las entradas que salen del primero); nada de lista ni de cursor. `docs/RENDIMIENTO.md` › «Cotizador (fórmula, diseño, cotizaciones)». Con un vehículo para cambiarlo (T315) la
-// evaluación lleva `p_vehiculo`; una tercera llamada sólo si la base lo rechaza (42501 o una regla), sin él, como `recalcularAlAbrir`.
+// evaluación lleva `p_vehiculo`; una tercera llamada sólo si la base lo rechaza (42501 o una regla), sin él, como `recalcularAlAbrir`: si sin él sale, se soltó.
 const esquemaId = z.guid()
 
 export const getHojaDeUnaGuardada: LectorDeUnaGuardada = async (id, opciones) => {
@@ -60,11 +60,19 @@ export const getHojaDeUnaGuardada: LectorDeUnaGuardada = async (id, opciones) =>
       vehiculoSoltado: false,
     })
   }
+  // Sin el vehículo también falla: no era el vehículo (como `recalcularAlAbrir`), la hoja abre con el primer fallo y «Reintentar» vuelve a pedir con él.
   const conElSuyo = await evaluar(null)
-  return ok({
-    hoja,
-    inicial: inicialDe(hoja.diseno, conElSuyo),
-    vehiculoNuevo: null,
-    vehiculoSoltado: true,
-  })
+  return conElSuyo.ok
+    ? ok({
+        hoja,
+        inicial: inicialDe(hoja.diseno, conElSuyo),
+        vehiculoNuevo: null,
+        vehiculoSoltado: true,
+      })
+    : ok({
+        hoja,
+        inicial: inicialDe(hoja.diseno, recalculo),
+        vehiculoNuevo: candidato,
+        vehiculoSoltado: false,
+      })
 }
