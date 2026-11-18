@@ -56,11 +56,18 @@ function estiloDe(c: CeldaDibujada, k: number) {
   } as const
 }
 
-const estiloDelTexto = (c: CeldaDibujada) =>
+// El interlineado: 1,4 como el HTML, salvo que sus renglones no entren en el alto de la celda (sin los 4 px de cada lado). react-pdf no dibuja el renglón que no
+// entra (el HTML lo recorta un poco): en una fila justa (16 px de letra en 30 px) el concepto y el monto desaparecerían del PDF.
+function interlineado(c: CeldaDibujada, k: number, renglones: number): number {
+  const alto = c.alto - 2 * RELLENO_DE_LA_CELDA * k
+  return Math.max(0.5, Math.min(1.4, (alto - 0.1) / (renglones * c.estilo.tamano)))
+}
+
+const estiloDelTexto = (c: CeldaDibujada, k: number, renglones: number) =>
   ({
     color: c.estilo.texto,
     fontSize: c.estilo.tamano,
-    lineHeight: 1.4,
+    lineHeight: interlineado(c, k, renglones),
     fontWeight: c.estilo.negrita ? 600 : 400,
     fontStyle: c.estilo.cursiva ? 'italic' : 'normal',
     textAlign: ALINEAR[c.estilo.alinear],
@@ -71,12 +78,14 @@ function Celda({ celda, k, logo }: { celda: CeldaDibujada; k: number; logo: Logo
   return (
     <View style={estiloDe(celda, k)}>
       {c.tipo === 'texto' && c.lineas.length > 0 ? (
-        <Text style={estiloDelTexto(celda)}>{c.lineas.join('\n')}</Text>
+        <Text style={estiloDelTexto(celda, k, c.lineas.length)}>{c.lineas.join('\n')}</Text>
       ) : null}
       {c.tipo === 'monto' ? (
         <>
-          <Text style={estiloDelTexto(celda)}>{c.texto}</Text>
-          {c.segunda === null ? null : <Text style={estiloDelTexto(celda)}>{c.segunda.texto}</Text>}
+          <Text style={estiloDelTexto(celda, k, c.segunda === null ? 1 : 2)}>{c.texto}</Text>
+          {c.segunda === null ? null : (
+            <Text style={estiloDelTexto(celda, k, 2)}>{c.segunda.texto}</Text>
+          )}
         </>
       ) : null}
       {c.tipo === 'logo' && logo !== null ? (

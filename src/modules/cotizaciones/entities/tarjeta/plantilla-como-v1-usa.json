@@ -9,51 +9,51 @@
     { "id": "plazo", "ancho": 125 }
   ],
   "filas": [
-    { "id": "meta", "alto": 32, "ocultar_si": "nunca" },
+    { "id": "meta", "alto": 34, "ocultar_si": "nunca" },
     { "id": "titulo", "alto": 44, "ocultar_si": "nunca" },
-    { "id": "n_remate", "alto": 30, "ocultar_si": "no_aplica", "nodo": "remate" },
+    { "id": "n_remate", "alto": 32, "ocultar_si": "no_aplica", "nodo": "remate" },
     {
       "id": "n_cuenta_especial",
-      "alto": 30,
+      "alto": 32,
       "ocultar_si": "no_aplica_o_cero",
       "nodo": "cuenta_especial"
     },
-    { "id": "n_fees", "alto": 30, "ocultar_si": "no_aplica_o_cero", "nodo": "fees" },
+    { "id": "n_fees", "alto": 32, "ocultar_si": "no_aplica_o_cero", "nodo": "fees" },
     {
       "id": "n_transferencia",
-      "alto": 30,
+      "alto": 32,
       "ocultar_si": "no_aplica_o_cero",
       "nodo": "transferencia"
     },
-    { "id": "n_grua", "alto": 30, "ocultar_si": "no_aplica_o_cero", "nodo": "grua" },
-    { "id": "n_export", "alto": 30, "ocultar_si": "no_aplica_o_cero", "nodo": "export" },
+    { "id": "n_grua", "alto": 32, "ocultar_si": "no_aplica_o_cero", "nodo": "grua" },
+    { "id": "n_export", "alto": 32, "ocultar_si": "no_aplica_o_cero", "nodo": "export" },
     {
       "id": "n_transporte_bolivia",
-      "alto": 30,
+      "alto": 32,
       "ocultar_si": "no_aplica_o_cero",
       "nodo": "transporte_bolivia"
     },
     {
       "id": "n_transporte_chile",
-      "alto": 30,
+      "alto": 32,
       "ocultar_si": "no_aplica_o_cero",
       "nodo": "transporte_chile"
     },
-    { "id": "n_comision", "alto": 30, "ocultar_si": "no_aplica_o_cero", "nodo": "comision" },
+    { "id": "n_comision", "alto": 32, "ocultar_si": "no_aplica_o_cero", "nodo": "comision" },
     {
       "id": "n_documentacion",
-      "alto": 30,
+      "alto": 32,
       "ocultar_si": "no_aplica_o_cero",
       "nodo": "documentacion"
     },
     {
       "id": "n_nacionalizacion",
-      "alto": 30,
+      "alto": 32,
       "ocultar_si": "no_aplica_o_cero",
       "nodo": "nacionalizacion"
     },
-    { "id": "total", "alto": 52, "ocultar_si": "nunca" },
-    { "id": "garantia", "alto": 30, "ocultar_si": "no_aplica", "nodo": "garantia" },
+    { "id": "total", "alto": 60, "ocultar_si": "nunca" },
+    { "id": "garantia", "alto": 32, "ocultar_si": "no_aplica", "nodo": "garantia" },
     { "id": "nota", "alto": 40, "ocultar_si": "nunca" }
   ],
   "celdas": [
@@ -558,7 +558,7 @@
       "contenido": { "tipo": "dato", "nodo": "total", "mostrar": "descripcion" },
       "estilo": {
         "negrita": true,
-        "tamano": 14,
+        "tamano": 12,
         "alinear": "centro",
         "bordes": { "todos": "fino" }
       }
