@@ -30,6 +30,7 @@ import { AvisoDeSubastaDeLaHoja } from '../aviso-de-subasta'
 import { vehiculoDeLaTarjeta } from '../datos-de-la-tarjeta'
 import { idDeUrl, type Quien, type VehiculoDeLaUrl } from '../vehiculo-de-la-hoja'
 import { BarraConHistorial } from './barra-con-historial'
+import { TituloDeLaHoja, volverDe } from './volver-de-la-hoja'
 import {
   camposQueSeEligen,
   leerLoDeLaHoja,
@@ -44,11 +45,11 @@ export const metadata: Metadata = { title: 'Cotizar' }
 
 // La hoja de cotizar (`docs/UX.md` › «Cotizar»): una pestaña por origen donde la persona cotiza y, de cada uno, la hoja que dibuja su fórmula publicada. `?origen=`
 // elige el origen; `?lead=` y `?vehiculo=` llegan de la ficha del lead o del vehículo, o el vehículo se elige en la barra de arriba de la hoja (su panel, `?panel=vehiculo`,
-// 4.14-2a): se validan y se llevan. Sin entrada en la navegación todavía: se llega por URL. Guarda con el lead de la URL (4.13-3b); sin él, «Guardar» dice por qué no.
+// 4.14-2a): se validan y se llevan. `?returnTo=` (el «Cotizar lead» del «⋯» de un lead) suma «Volver» junto al título. Sin entrada en la navegación todavía: se llega por URL. Guarda con el lead de la URL (4.13-3b); sin él, «Guardar» dice por qué no.
 export default function PaginaDeCotizar({ searchParams }: PageProps<'/cotizaciones/nuevo'>) {
   return (
     <div className="grid min-w-0 gap-4">
-      <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">Cotizar</h1>
+      <TituloDeLaHoja parametros={searchParams} />
       <Suspense fallback={<EsqueletoDeHoja />}>
         <Hoja parametros={searchParams} />
       </Suspense>
@@ -249,7 +250,8 @@ async function HojaDelOrigen({
   }
   // Un lead que no se ve se suelta, como el vehículo: ni la hoja ni las pestañas de origen lo llevan.
   const leadUsado = cliente?.id ?? null
-  const pestanas = <PestanasDeOrigen origenes={origenes} actual={origen.id} leadId={leadUsado} />
+  const dePestanas = { origenes, actual: origen.id, leadId: leadUsado, volverA: volverDe(url) }
+  const pestanas = <PestanasDeOrigen {...dePestanas} />
   if (apertura.tipo === 'sin_publicar') {
     return (
       <>

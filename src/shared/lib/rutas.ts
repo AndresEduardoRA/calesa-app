@@ -99,6 +99,21 @@ export function returnToSeguro(valor: string | null | undefined): string | null 
   return esRutaPublica(ruta) ? null : valor
 }
 
+// La clave de la URL con la página a la que vuelve una pantalla a la que se llegó de otra (la hoja de cotizar desde el «⋯» de un lead,
+// «Comparar cotizaciones»). Se lee siempre con `returnToSeguro()`.
+export const CLAVE_DE_VUELTA = 'returnTo'
+
+// La ruta con `returnTo` = `volverA` (reemplaza uno que ya tuviera); sin `volverA`, igual.
+export function conVuelta(ruta: string, volverA: string | null): string {
+  if (volverA === null) {
+    return ruta
+  }
+  const [camino = ruta, consulta = ''] = ruta.split('?', 2)
+  const parametros = new URLSearchParams(consulta)
+  parametros.set(CLAVE_DE_VUELTA, volverA)
+  return `${camino}?${parametros.toString()}`
+}
+
 // A dónde va alguien después de ingresar.
 export function destinoTrasIngresar(returnTo: string | null | undefined): string {
   return returnToSeguro(returnTo) ?? RUTAS.inicio

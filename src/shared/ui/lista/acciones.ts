@@ -14,6 +14,9 @@ export type AccionDeMenu =
       despuesDeCerrar?: boolean
       deshabilitada?: boolean
       destructiva?: boolean
+      // La acción principal del menú («Cotizar lead», «Cotizar vehículo»): en negrita (el icono lo pone quien la arma). Va primera y sola en su bloque (lo
+      // decide la lista del módulo); una por menú.
+      principal?: boolean
     }
   | {
       tipo: 'casilla'

@@ -3,6 +3,7 @@
 import type { Route } from 'next'
 import Link from 'next/link'
 import { useRef } from 'react'
+import { conVuelta } from '@/shared/lib/rutas'
 import { PistaDeDesborde } from '@/shared/ui/pista-de-desborde'
 import { useDesborde } from '@/shared/ui/use-desborde'
 import { rutaDeLaHoja } from '../../../entities/ruta-de-la-hoja'
@@ -11,11 +12,13 @@ type Props = {
   origenes: readonly { id: string; nombre: string; color: string }[]
   actual: string
   leadId: string | null
+  // La pantalla a la que vuelve la hoja (`returnTo`, ya validado): cambiar de origen la conserva, y «Volver» sigue ahí.
+  volverA?: string | null
 }
 
 // Una pestaña por origen donde la persona cotiza. Los nombres y colores salen de la fila del origen. Son enlaces: cambiar de origen vuelve a leer la hoja de ese
-// origen (cada una tiene su fórmula). Se desplaza de costado con la pista de que sigue.
-export function PestanasDeOrigen({ origenes, actual, leadId }: Props) {
+// origen (cada una tiene su fórmula) y conservan el lead y `returnTo`. Se desplaza de costado con la pista de que sigue.
+export function PestanasDeOrigen({ origenes, actual, leadId, volverA = null }: Props) {
   const lista = useRef<HTMLUListElement>(null)
   const desborde = useDesborde(lista)
   return (
@@ -24,7 +27,7 @@ export function PestanasDeOrigen({ origenes, actual, leadId }: Props) {
         {origenes.map((origen) => (
           <li key={origen.id}>
             <Link
-              href={rutaDeLaHoja({ origen: origen.id, lead: leadId }) as Route}
+              href={conVuelta(rutaDeLaHoja({ origen: origen.id, lead: leadId }), volverA) as Route}
               prefetch={false}
               aria-current={origen.id === actual ? 'page' : undefined}
               className="flex min-h-11 items-center gap-2 border-b-2 border-transparent px-3 text-(length:--text-sm) text-(--color-ink-soft) outline-none hover:text-(--color-ink) focus-visible:shadow-(--shadow-focus) aria-[current=page]:border-(--color-primario) aria-[current=page]:font-medium aria-[current=page]:text-(--color-ink) md:min-h-9"

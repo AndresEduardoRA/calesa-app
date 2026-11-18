@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
 import { z } from 'zod'
-import { rutaDeActividadDe } from '@/modules/actividad'
-import { origenesParaCotizar, rutaDeLaHoja } from '@/modules/cotizaciones'
 import { puede, requerirSesion } from '@/modules/equipo'
 import {
   accionesDeCartera,
@@ -17,12 +15,12 @@ import {
 } from '@/modules/leads'
 import { FichaDeLead, LeadNoDisponible } from '@/modules/leads/pantallas/ficha'
 import { RegistrarVisita } from '@/modules/buscador/pantallas/visita'
-import { getOrigenes } from '@/modules/origenes'
 import { datosO } from '@/shared/lib/errores'
 import type { Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { RegistrarVisto } from '@/modules/equipo/client'
+import { paraActividadDe, paraCotizarDe } from '../rutas-del-menu'
 import { bloquesDeLaFicha } from './bloques'
 
 export const metadata: Metadata = { title: 'Lead' }
@@ -36,16 +34,6 @@ const loQueVe = (permisos: Permisos, enCartera: boolean) => ({
   cotizaciones: puede(permisos, 'cotizaciones.ver'),
   portal: puedeGestionarPortal(permisos, enCartera),
 })
-
-// «Cotizar» de la cabecera: la hoja de cotizar con este lead elegido, en el primer origen donde quien mira cotiza (las pestañas de la hoja cambian de origen y
-// conservan el lead). Sin `cotizaciones.crear` en ningún origen no lee nada; si la lectura de los orígenes falla, el botón no está y la ficha sigue. La base vuelve a exigirlo.
-async function paraCotizarDe(permisos: Permisos, leadId: string): Promise<string | null> {
-  if (!puede(permisos, 'cotizaciones.crear')) {
-    return null
-  }
-  const [primero] = origenesParaCotizar(permisos, datosO(await getOrigenes()))
-  return primero ? rutaDeLaHoja({ origen: primero.id, lead: leadId }) : null
-}
 
 // La ficha de un lead, en dos columnas con todos sus bloques a la vista (`bloques.tsx`). Lo que no existe, lo que está en la papelera o sin
 // dueño y lo que la persona no ve se muestran igual: decir «no tienes permiso» confirmaría que existe. Qué recibe de él (el teléfono
@@ -87,9 +75,7 @@ export default async function PaginaLead({ params, searchParams }: PageProps<'/l
         seccion={seccionDeLead(unParametro(parametros[CLAVE_DE_SECCION]), ve)}
         ve={ve}
         paraCotizar={paraCotizar}
-        paraActividad={
-          puede(sesion.permisos, 'actividad.ver') ? rutaDeActividadDe('leads', ficha.id) : null
-        }
+        paraActividad={paraActividadDe(sesion.permisos, ficha.id)}
         etiquetas={datos.etiquetas}
         cartera={datos.cartera}
         accionesDeCartera={accionesDeCartera(sesion.permisos, datos.cartera)}

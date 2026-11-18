@@ -84,6 +84,8 @@ export { leerChoquesDeTelefonos } from './composicion'
 export { CLAVE_DE_SECCION, seccionDeLead } from './entities/ficha'
 // `/leads?lead=<id>` de cuando la lista tenía resumen: a dónde redirige `/leads` (la ficha, con lo que pedía).
 export { destinoDelEnlaceViejo } from './entities/enlace-viejo-del-resumen'
+// «Cotizar lead» y «Ver actividad» del «⋯» de la lista y del kanban: `src/app` arma sus rutas una vez por página con el marcador.
+export { MARCADOR_DE_LEAD, type RutasDelMenuDeLead } from './entities/ruta-por-lead'
 // El bloque «Seguimientos y recordatorios» (`pantallas/ficha`): lo lee el servidor con la sesión de quien mira y va detrás de
 // `<Suspense>` (su esqueleto es `<EsqueletoDeSeguimientos>`). Quién ve qué y quién anota lo decide
 // la base; un co-asesor ve sólo lo «Visible para el cliente» de los demás.
