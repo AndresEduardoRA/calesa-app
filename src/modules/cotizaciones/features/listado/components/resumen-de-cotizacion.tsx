@@ -18,7 +18,11 @@ import {
   type LecturaDelServidor,
   type VistaDelResumen,
 } from '../../../entities/listado/resumen-del-listado'
-import type { HuecosDelResumen, QuienDelResumen } from '../../hoja/components/huecos-del-resumen'
+import type {
+  AprobarEnDelResumen,
+  HuecosDelResumen,
+  QuienDelResumen,
+} from '../../hoja/components/huecos-del-resumen'
 import { usePedidoAlServidor } from '../hooks/use-pedido-al-servidor'
 import { useResumenDeCotizacion } from '../hooks/use-resumen-de-cotizacion'
 import { nombreDelOrigen, SIN_NOMBRE, type FilaDeCotizacion, type OrigenDelListado } from './tipos'
@@ -33,6 +37,15 @@ type Props = {
   // Lo que las áreas llenan bajo el detalle (las pestañas) y lo que quien mira puede hacer con cada cotización (por id). Sin ellos, el resumen es sólo lo que trae la fila.
   huecos?: HuecosDelResumen
   quienes?: Readonly<Record<string, QuienDelResumen>>
+  // Dónde aprueba quien mira (para «De este vehículo»; sin él, «Aprobar esta» apagado con su motivo) y qué hacer tras aprobar desde el resumen.
+  aprobarEn?: AprobarEnDelResumen
+  alCambiarLaAprobada?: () => void
+}
+
+// Lo que el resumen le pasa a «De este vehículo».
+type DeEsteVehiculoEnElDetalle = {
+  aprobarEn: AprobarEnDelResumen
+  alCambiarLaAprobada: (() => void) | undefined
 }
 
 function EsqueletoDelResumen() {
@@ -61,13 +74,15 @@ function DetalleDeLaCotizacion({
   abierto,
   huecos,
   quien,
+  deEsteVehiculo,
 }: {
   cotizacion: FilaDeCotizacion
   abierto: boolean
   huecos: HuecosDelResumen
   quien: QuienDelResumen
+  deEsteVehiculo: DeEsteVehiculoEnElDetalle
 }) {
-  const { Pestanas, Comprobantes } = huecos
+  const { Pestanas, Comprobantes, DeEsteVehiculo } = huecos
   const { zonaHoraria } = useRegional()
   return (
     <div className="grid gap-4">
@@ -97,6 +112,19 @@ function DetalleDeLaCotizacion({
       >
         Abrir cotización
       </Link>
+      {DeEsteVehiculo !== undefined &&
+      abierto &&
+      cotizacion.vehiculoId !== null &&
+      cotizacion.vehiculo !== null ? (
+        <DeEsteVehiculo
+          key={cotizacion.id}
+          vehiculo={{ id: cotizacion.vehiculoId, titulo: cotizacion.vehiculo }}
+          cotizacionActual={cotizacion.id}
+          aprobarEn={deEsteVehiculo.aprobarEn}
+          alCambiar={deEsteVehiculo.alCambiarLaAprobada}
+          conTitulo
+        />
+      ) : null}
       {Pestanas === undefined ? null : (
         <Pestanas
           cotizacion={{ id: cotizacion.id, numero: cotizacion.numero, clase: cotizacion.clase }}
@@ -112,6 +140,8 @@ function DetalleDeLaCotizacion({
 
 // Quien mira sin lo que el servidor calculó (una cotización que no estaba en la página ni la leyó): nada de adjuntar ni de moderar, que es lo conservador.
 const SIN_PERMISOS: QuienDelResumen = { puedeAdjuntar: false, puedeModerar: false }
+// Sin saber dónde aprueba quien mira, en ningún origen: «Aprobar esta» apagado con su motivo (la base vuelve a decidir al aprobar).
+const SIN_DONDE_APROBAR: AprobarEnDelResumen = []
 
 function ContenidoDelResumen({
   vista,
@@ -119,12 +149,14 @@ function ContenidoDelResumen({
   reintentar,
   huecos,
   quienes,
+  deEsteVehiculo,
 }: {
   vista: VistaDelResumen
   ultimo: FilaDeCotizacion | null
   reintentar: () => void
   huecos: HuecosDelResumen
   quienes: Readonly<Record<string, QuienDelResumen>>
+  deEsteVehiculo: DeEsteVehiculoEnElDetalle
 }) {
   if (vista.tipo === 'no_disponible') {
     return (
@@ -156,14 +188,23 @@ function ContenidoDelResumen({
       abierto={vista.tipo === 'cotizacion'}
       huecos={huecos}
       quien={quienes[cotizacion.id] ?? SIN_PERMISOS}
+      deEsteVehiculo={deEsteVehiculo}
     />
   )
 }
 
-// El resumen de una cotización (`?cotizacion=`) sin salir del listado: lo que ya trae su fila, con «Abrir cotización» a su página y, debajo, las pestañas «Todo», «Adjuntos»,
-// «Revisiones» y «Comentarios» que llenan las áreas (`huecos`). Sin «⋯»: las acciones de la cotización son de la fila. Si la cotización no está en la página, la leyó el servidor (`delServidor`); si tampoco, se le pide una vez (`router.refresh()`) y, si no llega, dice «error» con «Reintentar».
+// El resumen de una cotización (`?cotizacion=`) sin salir del listado: lo que ya trae su fila, con «Abrir cotización» a su página, «De este vehículo» y, debajo, las pestañas
+// «Todo», «Adjuntos», «Revisiones» y «Comentarios» que llenan las áreas (`huecos`). Sin «⋯»: las acciones de la cotización son de la fila. Si la cotización no está en la página, la leyó el servidor (`delServidor`); si tampoco, se le pide una vez (`router.refresh()`) y, si no llega, dice «error» con «Reintentar».
 // Una que no existe o que quien mira no ve dice lo mismo, sin explicar por qué.
-export function ResumenDeCotizacion({ filas, origenes, delServidor, huecos, quienes }: Props) {
+export function ResumenDeCotizacion({
+  filas,
+  origenes,
+  delServidor,
+  huecos,
+  quienes,
+  aprobarEn,
+  alCambiarLaAprobada,
+}: Props) {
   const resumen = useResumenDeCotizacion()
   const base = vistaDelResumen({ texto: resumen.texto, filas, delServidor, yaPedido: false })
   const pedido = usePedidoAlServidor(resumen.id, base.tipo === 'cargando')
@@ -202,6 +243,7 @@ export function ResumenDeCotizacion({ filas, origenes, delServidor, huecos, quie
         reintentar={pedido.pedir}
         huecos={huecos ?? {}}
         quienes={quienes ?? {}}
+        deEsteVehiculo={{ aprobarEn: aprobarEn ?? SIN_DONDE_APROBAR, alCambiarLaAprobada }}
       />
     </Drawer>
   )

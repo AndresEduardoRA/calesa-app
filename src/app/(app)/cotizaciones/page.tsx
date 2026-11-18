@@ -29,7 +29,7 @@ import { leerTitulosDeVehiculos, leerVehiculo } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
 import { CLAVE_DE_CURSOR, CLAVE_DE_POR_PAGINA, leerFiltros } from '@/shared/lib/filtros'
 import { leerCursor, leerPorPagina, tamanoDePagina, tamanosHasta } from '@/shared/lib/paginacion'
-import { puede, type Permisos } from '@/shared/lib/permisos'
+import { origenesCon, puede, type Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { EsqueletoListado } from '@/shared/ui/esqueletos'
@@ -173,6 +173,7 @@ async function Listado({
         vistas={datosO(vistas)}
         menus={menus}
         quienesDelResumen={quienes}
+        aprobarEn={origenesCon(sesion.permisos, 'cotizaciones.aprobar')}
         delServidor={delServidor}
         porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_COTIZACIONES) }}
         origenes={visibles.map((origen) => ({ id: origen.id, nombre: origen.nombre }))}
