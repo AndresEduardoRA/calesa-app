@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { TOPE_DE_COLORES } from '../colores'
 import { formaDePlantilla, type Plantilla } from './forma-de-plantilla'
 import type { DefinicionParaPlantilla, DisenoParaPlantilla } from './nodos-de-plantilla'
-import type { ContextoDePlantilla } from './validar-plantilla'
+import { esDeLaCuadricula, type ContextoDePlantilla } from './validar-plantilla'
 
 // El catálogo de colores (`tonos`) tiene un tope en la base (`_tonos_tope()`, 48): no deja crear el 49.º, así que se lee entero y no hay «Ver más» ni aviso de tope.
 export const TOPE_DE_TONOS = TOPE_DE_COLORES
@@ -100,15 +100,25 @@ export type PlantillaDelOrigen = {
   readonly tonos: readonly TonoDelCatalogo[]
 }
 
+// El editor de hoy escribe la forma 1: una cuadrícula guardada (la forma 2) llega como «la que perdió la forma», con este motivo (D14 de T310). Publicar desde
+// aquí la reemplaza hasta que llegue el editor de la cuadrícula (`docs/PENDIENTES.md`).
+export const MOTIVO_DE_LA_CUADRICULA =
+  'Esta versión es una cuadrícula: todavía no se edita desde aquí.'
+
 // Nunca lanza: lo guardado que no pasa la forma es `plantilla: null` con el mensaje del rechazo.
 export function versionDePlantilla(fila: FilaDeVersionDePlantilla): VersionDePlantilla {
-  const forma = formaDePlantilla(fila.definicion)
-  return {
+  const comun = {
     id: fila.id,
     version: fila.version,
     nota: fila.nota,
     actualizadoEn: fila.actualizadoEn,
     publicadoEn: fila.publicadoEn,
+  }
+  if (esDeLaCuadricula(fila.definicion))
+    return { ...comun, plantilla: null, motivo: MOTIVO_DE_LA_CUADRICULA }
+  const forma = formaDePlantilla(fila.definicion)
+  return {
+    ...comun,
     plantilla: forma.ok ? forma.plantilla : null,
     motivo: forma.ok ? null : forma.error.mensaje,
   }

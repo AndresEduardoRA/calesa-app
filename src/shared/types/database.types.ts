@@ -8864,6 +8864,29 @@ export type Database = {
         Args: { p_esperada: string; p_origen: string }
         Returns: undefined
       }
+      _plantilla_cuadricula_forma: {
+        Args: { p_con_tope: boolean; p_plantilla: Json }
+        Returns: undefined
+      }
+      _plantilla_cuadricula_nodos: {
+        Args: {
+          p_def: Json
+          p_diseno: Json
+          p_plantilla: Json
+          p_tonos: string[]
+          p_visibilidad: Json
+        }
+        Returns: undefined
+      }
+      _plantilla_cuadricula_rechazar: {
+        Args: { p_donde: string; p_regla: string }
+        Returns: undefined
+      }
+      _plantilla_entero_entre: {
+        Args: { p: Json; p_maximo: number; p_minimo: number }
+        Returns: boolean
+      }
+      _plantilla_es_id: { Args: { p: Json }; Returns: boolean }
       _plantilla_forma: { Args: { p_plantilla: Json }; Returns: undefined }
       _plantilla_nodos: {
         Args: { p_def: Json; p_diseno: Json; p_plantilla: Json; p_visibilidad: Json }

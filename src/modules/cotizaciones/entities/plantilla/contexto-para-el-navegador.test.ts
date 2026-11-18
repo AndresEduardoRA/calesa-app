@@ -7,6 +7,7 @@ import {
   RUTA_DEL_JUEGO,
   type CasoDePlantilla,
 } from './juego-de-plantilla.soporte'
+import { esDeLaCuadricula } from './validar-plantilla'
 import { validarPlantilla, type ContextoDePlantilla } from './validar-plantilla'
 
 const ruta = RUTA_DEL_JUEGO
@@ -67,7 +68,8 @@ describe('contextoParaElNavegador', () => {
     expect(validarPlantilla(p, r).ok).toBe(validarPlantilla(p, contexto).ok)
   })
 
-  it.each(juego.casos)(
+  // Sólo la forma 1: el editor de hoy no escribe la cuadrícula (la forma 2 la valida la base al guardar y al publicar).
+  it.each(juego.casos.filter((c) => !esDeLaCuadricula(c.plantilla)))(
     'el juego, «$nombre»: mismo ok y mismo donde que con el contexto entero',
     (c) => {
       const entero = contextoDe(c)
