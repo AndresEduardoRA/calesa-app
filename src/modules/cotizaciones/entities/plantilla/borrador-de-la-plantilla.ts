@@ -1,6 +1,6 @@
 // Con qué nace el editor de la plantilla y cómo se alinea con la fórmula (4.19-3b). Reglas puras, sin I/O. Lo que la plantilla guardada dice y la fórmula de hoy ya no
 // (un grupo que se quitó, una etiqueta de un nodo que ya no tiene lugar) se corrige aquí y se avisa; lo alineado no se guarda solo: es un cambio de quien edita.
-import { btrim } from './json-de-la-base'
+import { btrim } from '../json-de-la-base'
 import type { Plantilla } from './forma-de-plantilla'
 import type { VersionDePlantilla } from './lectura-de-la-plantilla'
 import { lugaresDe } from './nodos-de-plantilla'

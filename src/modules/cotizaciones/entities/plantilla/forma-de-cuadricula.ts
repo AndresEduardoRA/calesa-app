@@ -11,7 +11,7 @@ import {
 } from '../cuadricula-de-la-tarjeta'
 import { revisarCeldas } from './celdas-de-cuadricula'
 import type { RechazoDePlantilla } from './motivos-de-plantilla'
-import { bytesComoJsonb, compararComoC, comoJson, esObjetoJsonb } from './json-de-la-base'
+import { bytesComoJsonb, compararComoC, comoJson, esObjetoJsonb } from '../json-de-la-base'
 import {
   campo,
   conClaveDeMas,

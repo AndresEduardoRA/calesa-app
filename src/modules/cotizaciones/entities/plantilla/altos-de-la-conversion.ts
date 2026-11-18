@@ -1,7 +1,7 @@
 // El alto de una fila de la conversión (D11 de T310), estimado con aritmética entera para que la base (`_plantilla_alto_de_texto()`) dé lo mismo: sólo enteros
 // ≥ 0, división truncada y `⌈a/b⌉ = ⌊(a + b − 1)/b⌋`. Un carácter mide 0,6 de la letra; un renglón, 1,4 más 0,9 px; la celda, 8 px de relleno.
 import { ALTO_DE_FILA } from '../cuadricula-de-la-tarjeta'
-import { caracteres } from './json-de-la-base'
+import { caracteres } from '../json-de-la-base'
 
 const division = (a: number, b: number) => Math.floor(a / b)
 

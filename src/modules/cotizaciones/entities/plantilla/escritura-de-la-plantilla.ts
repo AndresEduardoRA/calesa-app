@@ -4,9 +4,9 @@
 import { z } from 'zod'
 import type { ResultadoDeAccion } from '@/shared/lib/enviar-accion'
 import { errorDePostgrest } from '@/shared/lib/errores'
-import { caracteres } from './json-de-la-base'
+import { caracteres } from '../json-de-la-base'
 import { REGLAS_DE_PLANTILLA } from './motivos-de-plantilla'
-import { revisarTextoParaLaBase } from './texto-de-la-base'
+import { revisarTextoParaLaBase } from '../texto-de-la-base'
 
 // `esperada` es el `actualizado_en` del borrador que se leyó, tal cual lo dio la base (con sus microsegundos): nula sólo para crear el primero. Publicar y descartar la
 // piden siempre (con una nula la base no compara y no daría PT409).
