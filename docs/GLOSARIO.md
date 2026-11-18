@@ -786,6 +786,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Captura quieta** — `capturar()` / `capturarEn()` (`e2e/soporte/`): captura tomada sin animación ni transición con fin en curso.
 - **Pregunta al descartar** — `useCierreConCambios()`, `<ConfirmarDescarte>`, `useCambiosSinGuardar()` (`preguntaAlCerrar`): «Tienes cambios
   sin guardar.» con «Seguir editando» / «Descartar».
+- **Barra de cambios sin guardar** — `<BarraDeCambiosSinGuardar>`, `useSalidaConCambios()` (`src/shared/ui/`): la barra pegada abajo de un
+  formulario de página («Tienes cambios sin guardar» · «Descartar» · «Guardar») que aparece al cambiar algo; salir de la pantalla con cambios
+  pregunta (enlaces, avisos, selector de sección, recargar y cerrar; no el «atrás» del navegador). No: el pie de un `<Drawer>` (`<PieDelPanel>`).
 - **Recorte (de una cotización)** — `_cotizacion_recorte()`, `_cotizacion_contexto()` / `cotizacion_leer()`, `cotizacion_evaluar()`,
   `cotizacion_revisiones()`, `cotizacion_tabla()`: lo que viaja según el nivel de quien lee.
 - **Inventario de lo oculto** — `pg_temp.cv_registro()` en `supabase/tests/cotizaciones-visibilidad.sql`: funciones que pueden devolver
