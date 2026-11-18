@@ -67,7 +67,11 @@ export function hojaDePrueba(tipo: 'abierta' | 'guardada' = 'abierta') {
             abierta: 'firma',
             vehiculoId: null,
           }
-        : { tipo: 'guardada', cotizacionId: '66666666-6666-4666-8666-666666666666' },
+        : {
+            tipo: 'guardada',
+            cotizacionId: '66666666-6666-4666-8666-666666666666',
+            vehiculoId: null,
+          },
     formula: { id: FORMULA, version: 3 },
     alConfirmar,
     alRecargar: vi.fn(),

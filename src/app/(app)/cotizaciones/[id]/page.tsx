@@ -3,7 +3,12 @@ import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { z } from 'zod'
 import { RegistrarVisita } from '@/modules/buscador/pantallas/visita'
-import { leerAsesorDeLaCotizacion, leerHojaDeUnaGuardada } from '@/modules/cotizaciones'
+import {
+  CLAVE_DE_VEHICULO,
+  leerAsesorDeLaCotizacion,
+  leerHojaDeUnaGuardada,
+  type HojaDeUnaGuardada,
+} from '@/modules/cotizaciones'
 import {
   CabeceraDeLaGuardada,
   EsqueletoDeHoja,
@@ -18,22 +23,27 @@ import { datosO } from '@/shared/lib/errores'
 import { puede, type Permisos } from '@/shared/lib/permisos'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
+import { idDeUrl, type Quien } from '../vehiculo-de-la-hoja'
 import { HUECOS_DE_LA_GUARDADA, dibujarHuecos } from './huecos-de-la-guardada'
 import {
   barraDeLaCabecera,
   ConElTituloDeLaGuardada,
   tituloDeLaTarjeta,
 } from './titulo-de-la-guardada'
+import { leerLoDelVehiculo } from './vehiculo-de-la-guardada'
 
 export const metadata: Metadata = { title: 'Cotización' }
 
 // Una cotización guardada (`docs/UX.md` › «Cotizar»): su hoja con lo que se guardó, en sólo lectura para quien no la puede guardar (`cotizaciones.ver`; P8, P13). Se llega desde el
-// historial del vehículo y desde la tarjeta de lo guardado.
-export default function PaginaDeUnaCotizacion({ params }: PageProps<'/cotizaciones/[id]'>) {
+// historial del vehículo y desde la tarjeta de lo guardado. `?vehiculo=` es el vehículo elegido en el panel para cambiar el de una preventa (T315): la hoja calcula con él.
+export default function PaginaDeUnaCotizacion({
+  params,
+  searchParams,
+}: PageProps<'/cotizaciones/[id]'>) {
   return (
     <div className="grid min-w-0 gap-4">
       <Suspense fallback={<EsqueletoDeHoja />}>
-        <Cotizacion params={params} />
+        <Cotizacion params={params} searchParams={searchParams} />
       </Suspense>
     </div>
   )
@@ -64,13 +74,45 @@ async function asesorDe(id: string) {
   return lectura.ok ? lectura.data : null
 }
 
-async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>['params'] }) {
+// Lo que la página lee con la hoja ya leída: el cliente y el vehículo sólo se nombran si quien mira los ve (los ids salen de la lectura, así que van después de ella), el asesor
+// y, a la vez, lo del vehículo para cambiarlo (T315). `deLaHoja` es el vehículo de la barra, del título y del cálculo: el elegido para cambiarlo o el guardado; la tarjeta,
+// el PDF, los huecos y la cabecera siguen con lo guardado (`vehiculo`).
+async function leerAlrededor(
+  sesion: Quien,
+  id: string,
+  lectura: { hoja: HojaDeUnaGuardada; vehiculoNuevo: string | null; vehiculoSoltado: boolean },
+) {
+  const { hoja, vehiculoNuevo, vehiculoSoltado } = lectura
+  const [cliente, vehiculo, asesor, delVehiculo] = await Promise.all([
+    clienteDe(sesion.permisos, hoja.cotizacion.leadId),
+    vehiculoDe(hoja.cotizacion.vehiculoId),
+    asesorDe(id),
+    leerLoDelVehiculo(sesion, hoja, { vehiculoNuevo, vehiculoSoltado }),
+  ])
+  if (vehiculoNuevo !== null && delVehiculo.nuevo === null) {
+    // La hoja calculó con el elegido pero su lectura no llegó (un fallo, o se fue a la papelera entre las dos): la barra y el título nombrarían el de antes con el total
+    // del nuevo. Sube al `error.tsx`: «Reintentar» vuelve a leer y, si ya no se puede usar, la base lo suelta.
+    throw new Error('No pudimos leer el vehículo elegido.')
+  }
+  return {
+    cliente,
+    vehiculo,
+    asesor,
+    delVehiculo,
+    deLaHoja: delVehiculo.nuevo?.vehiculo ?? vehiculo,
+  }
+}
+
+async function Cotizacion({
+  params,
+  searchParams,
+}: Pick<PageProps<'/cotizaciones/[id]'>, 'params' | 'searchParams'>) {
   await connection()
-  const [sesion, { id }] = await Promise.all([requerirSesion(), params])
+  const [sesion, { id }, url] = await Promise.all([requerirSesion(), params, searchParams])
   if (!z.guid().safeParse(id).success) {
     return <NoDisponible />
   }
-  const lectura = await leerHojaDeUnaGuardada(id)
+  const lectura = await leerHojaDeUnaGuardada(id, { vehiculo: idDeUrl(url[CLAVE_DE_VEHICULO]) })
   if (!lectura.ok) {
     if (lectura.error.codigo === 'sin_permiso') {
       return <NoDisponible />
@@ -78,14 +120,12 @@ async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>[
     // Sube al `error.tsx` de la pantalla, que ofrece «Reintentar».
     throw new Error(lectura.error.mensaje)
   }
-  const { hoja, inicial } = lectura.data
-  const { leadId, vehiculoId } = hoja.cotizacion
-  // El cliente y el vehículo sólo se nombran si quien mira los ve (los ids salen de la lectura, así que van después de ella).
-  const [cliente, vehiculo, asesor] = await Promise.all([
-    clienteDe(sesion.permisos, leadId),
-    vehiculoDe(vehiculoId),
-    asesorDe(id),
-  ])
+  const { hoja, inicial, vehiculoNuevo } = lectura.data
+  const { cliente, vehiculo, asesor, delVehiculo, deLaHoja } = await leerAlrededor(
+    sesion,
+    id,
+    lectura.data,
+  )
   // Lo que reciben los huecos de las áreas (acciones de la cabecera, la línea de bajo la cabecera y lo de bajo la hoja); el vehículo, sólo si quien mira lo ve.
   const props = {
     cotizacion: hoja.cotizacion,
@@ -97,7 +137,7 @@ async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>[
     <>
       <RegistrarVisita tipo="cotizacion" id={hoja.cotizacion.id} />
       <RegistrarVisto modulo="cotizaciones" tipo="cotizacion" id={hoja.cotizacion.id} />
-      <ConElTituloDeLaGuardada hoja={hoja} personaId={sesion.usuarioId} vehiculo={vehiculo}>
+      <ConElTituloDeLaGuardada hoja={hoja} personaId={sesion.usuarioId} vehiculo={deLaHoja}>
         <CabeceraDeLaGuardada
           id={hoja.cotizacion.id}
           numero={hoja.cotizacion.numero}
@@ -110,7 +150,7 @@ async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>[
           origen={hoja.diseno.origen.nombre}
           cliente={cliente?.nombre ?? null}
           vehiculo={vehiculo?.titulo ?? null}
-          barra={barraDeLaCabecera(hoja, vehiculo, sesion.permisos)}
+          barra={barraDeLaCabecera(hoja, deLaHoja, delVehiculo, sesion.permisos)}
           acciones={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Acciones', props)}
           insignias={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Insignias', props)}
         />
@@ -134,6 +174,8 @@ async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>[
             inicial={inicial}
             personaId={sesion.usuarioId}
             panelDelTitulo={PANEL_DEL_VEHICULO}
+            vehiculoNuevo={vehiculoNuevo}
+            cambiaVehiculo={delVehiculo.cambio === 'elige'}
           />
         </ConProveedorDeLaHoja>
       </ConElTituloDeLaGuardada>

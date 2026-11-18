@@ -2,6 +2,7 @@
 
 import { useRef, type ReactNode } from 'react'
 import { CLAVE_DE_CURSOR } from '@/shared/lib/filtros'
+import { Button } from '@/shared/ui/button'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
 import type { ParaElegirConLector } from '../../../entities/dato-para-elegir'
@@ -11,9 +12,10 @@ import { CLAVE_DE_ALTA, CLAVE_DE_BUSQUEDA, CLAVE_DE_LISTA, PANEL_DEL_VEHICULO } 
 import { ContenidoDeLaBarra, SIN_VER } from './contenido-de-la-barra'
 import { PanelDelVehiculoDiferido } from './diferidos'
 
-// Qué deja hacer la barra: `elegir` (la hoja nueva: buscar, elegir, quitar), `ver_elegido` (el panel abre con lo de arriba y el elegido en sólo lectura: una guardada
-// que se puede guardar) o `solo_mostrar` (la barra no es un botón y no hay panel: quien sólo ve una guardada).
-export type ModoDeLaBarra = 'elegir' | 'ver_elegido' | 'solo_mostrar'
+// Qué deja hacer la barra: `elegir` (la hoja nueva: buscar, elegir, quitar), `cambiar` (lo mismo sin «Quitar»: una preventa guardada, que no se queda sin vehículo),
+// `ver_elegido` (el panel abre con lo de arriba y el elegido en sólo lectura: una final que se puede guardar) o `solo_mostrar` (la barra no es un botón y no hay panel:
+// quien sólo ve una guardada).
+export type ModoDeLaBarra = 'elegir' | 'cambiar' | 'ver_elegido' | 'solo_mostrar'
 
 type Props = {
   origenId: string
@@ -44,6 +46,10 @@ type Props = {
   modo?: ModoDeLaBarra
   // Lo que dice sin vehículo elegido: «Selecciona un vehículo» al elegir; en una guardada, «Sin vehículo», o nada si tiene uno que quien mira no ve.
   textoSinVehiculo?: string | null
+  // Por qué el panel de `ver_elegido` no deja elegir otro (lo escribe `src/app`: «Una cotización final no cambia de vehículo.»); va bajo lo de arriba. null = nada.
+  motivoSinCambiar?: string | null
+  // Un aviso sobre el vehículo pedido, bajo la barra, con «Elegir otro vehículo» que abre el panel (lo escribe `src/app`: «No se puede usar ese vehículo.»). null = nada.
+  avisoDelElegido?: string | null
 }
 
 const CLASE_DE_LA_BARRA =
@@ -55,14 +61,38 @@ function opcionesDe(props: Props) {
     paraElegir: props.paraElegir ?? null,
     modo: props.modo ?? 'elegir',
     arriba: props.arribaDelPanel ?? null,
+    motivo: props.motivoSinCambiar ?? null,
+    aviso: props.avisoDelElegido ?? null,
   }
+}
+
+// El aviso de bajo la barra y su salida: abrir el panel para elegir otro. En el celular el botón va a lo ancho, a 44 px.
+function AvisoDelElegido({ texto, alElegir }: { texto: string; alElegir: () => void }) {
+  return (
+    <div className="mt-2 grid min-w-0 gap-2 md:flex md:items-center md:gap-3">
+      <p
+        role="alert"
+        className="min-w-0 text-(length:--text-sm) font-medium text-(--color-peligro-ink)"
+      >
+        {texto}
+      </p>
+      <Button
+        type="button"
+        variant="outline"
+        className="h-11 w-full md:h-9 md:w-auto"
+        onClick={alElegir}
+      >
+        Elegir otro vehículo
+      </Button>
+    </div>
+  )
 }
 
 // La barra del vehículo sobre la hoja de cotizar: una sola parada de Tab que abre el panel del vehículo (`?panel=vehiculo`). Va fuera de
 // la hoja (`[data-hoja]`) y del componente que se vuelve a montar al cambiar de vehículo: elegir otro no la desmonta y el foco vuelve a ella.
 export function BarraDelVehiculo(props: Props) {
   const { origenId, esSubasta, elegido, alta, puedeVer, claveDeLaUrl, cotizado, historial } = props
-  const { paraElegir, modo, arriba } = opcionesDe(props)
+  const { paraElegir, modo, arriba, motivo, aviso } = opcionesDe(props)
   const panel = usePanelPorUrl(PANEL_DEL_VEHICULO, [
     CLAVE_DE_LISTA,
     CLAVE_DE_BUSQUEDA,
@@ -106,6 +136,7 @@ export function BarraDelVehiculo(props: Props) {
       >
         {contenido}
       </button>
+      {aviso === null ? null : <AvisoDelElegido texto={aviso} alElegir={panel.abrir} />}
       {montado ? (
         <PanelDelVehiculoDiferido
           abierto={panel.abierto}
@@ -119,8 +150,10 @@ export function BarraDelVehiculo(props: Props) {
           paraElegir={paraElegir}
           focoAlCerrar={boton}
           arriba={arriba}
-          // Sin ver los vehículos, o en una guardada: sólo lo de arriba y el elegido, sin buscar ni elegir.
+          // Sin ver los vehículos, o en una final: sólo lo de arriba y el elegido, sin buscar ni elegir.
           soloElegido={!puedeVer || modo === 'ver_elegido'}
+          sinQuitar={modo === 'cambiar'}
+          motivo={motivo}
         />
       ) : null}
     </div>

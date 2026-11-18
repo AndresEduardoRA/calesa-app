@@ -10,22 +10,12 @@ import {
 } from '@/modules/cotizaciones'
 import { leerClienteElegido, type ClienteElegido } from '@/modules/leads'
 import { PANEL_DEL_CLIENTE } from '@/modules/leads/pantallas/cotizar'
-import { integracionActiva } from '@/modules/empresa'
 import { leerLayout, type OrigenResumen } from '@/modules/origenes'
-import {
-  datosParaElegirDe,
-  editablesDe,
-  leerVehiculo,
-  permisoDeAlta,
-  type Vehiculo,
-} from '@/modules/vehiculos'
-import {
-  PANEL_DEL_VEHICULO,
-  type AltaDelPanel,
-  type ParaElegir,
-} from '@/modules/vehiculos/pantallas/cotizar'
+import { datosParaElegirDe, type Vehiculo } from '@/modules/vehiculos'
+import { PANEL_DEL_VEHICULO, type ParaElegir } from '@/modules/vehiculos/pantallas/cotizar'
 import { datosO } from '@/shared/lib/errores'
 import { puede, type Permisos } from '@/shared/lib/permisos'
+import { altaDelPanelDe, elegidoDeLaUrl, type Quien } from '../vehiculo-de-la-hoja'
 
 // Las lecturas de la hoja de cotizar (servidor): lo que la página junta en paralelo antes de dibujar. Un archivo aparte de `page.tsx` (una responsabilidad: la composición).
 
@@ -47,24 +37,6 @@ export async function abrirLaHoja(origenId: string, vehiculoId: string | null) {
     vehiculoSoltado: alAbrir?.vehiculoSoltado ?? false,
   }
 }
-
-export type Quien = { permisos: Permisos; usuarioId: string }
-
-// El vehículo de la URL, con si quien mira lo puede editar (en serie: `editablesDe` necesita el vehículo leído; casi siempre sin ir a la base); null si no vino, no existe o
-// no se ve.
-export async function elegidoDeLaUrl(quien: Quien, id: string | null) {
-  if (id === null) {
-    return null
-  }
-  const leido = await leerVehiculo(id)
-  if (!leido.ok || !leido.data) {
-    return null
-  }
-  const editables = await editablesDe(quien, [leido.data])
-  return { vehiculo: leido.data, editable: editables.has(leido.data.id) }
-}
-
-export type VehiculoDeLaUrl = Awaited<ReturnType<typeof elegidoDeLaUrl>>
 
 // El lead de la URL para la barra del cliente (4.14-3b), con la sesión de quien mira: null si no vino, si quien mira no ve los leads o si la lectura no lo encontró (no
 // existe, está en la papelera o no se ve: la hoja y las pestañas de origen lo sueltan, y guardar pide elegir otro). Un error de la lectura sube al `error.tsx`: no es «no se ve».
@@ -97,25 +69,6 @@ export function paraElegirDe(
 // Los campos que quien mira elige en el panel: la celda sin valor por uno de ellos dice dónde se elige.
 export const camposQueSeEligen = (paraElegir: ParaElegir | null): string[] =>
   paraElegir?.editable ? paraElegir.datos.map((dato) => dato.campo) : []
-
-// Lo que el panel del vehículo necesita para dar de alta desde él: sólo si quien mira ve los vehículos del origen y puede crearlos en él (el origen de la hoja está
-// siempre activo). Se lee a la vez que la hoja. El layout del origen no viaja: el alta lo lee desde el navegador al abrirse (P2 del 4.14-2c).
-export async function altaDelPanelDe(
-  permisos: Permisos,
-  origen: OrigenResumen,
-): Promise<AltaDelPanel | null> {
-  if (
-    !puede(permisos, 'vehiculos.ver', origen.id) ||
-    permisoDeAlta(permisos, origen, 'cotizar').estado !== 'habilitado'
-  ) {
-    return null
-  }
-  const activa = origen.tipo === 'subasta' ? await integracionActiva('apibara') : false
-  return {
-    origen,
-    apibara: { activa, puedeConfigurar: puede(permisos, 'empresa.ajustes.gestionar') },
-  }
-}
 
 // Lo que la página junta en paralelo antes de dibujar. El vehículo de la barra y su «Cotizado (n)» se leen a la vez que la hoja; si la hoja lo suelta, la barra queda sin él. Con un
 // vehículo, el layout del origen (qué datos del vehículo se eligen en el panel) también va en paralelo.

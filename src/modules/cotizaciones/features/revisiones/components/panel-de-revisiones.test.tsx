@@ -23,6 +23,7 @@ const revision = (id: number, diff: Record<string, unknown> = {}) => ({
   creadoEn: '2026-11-04T10:00:00+00:00',
   autor: 'Ana Pérez',
   diff,
+  vehiculo: null,
 })
 const pagina = (
   revisiones: ReturnType<typeof revision>[],

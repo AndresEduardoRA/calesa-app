@@ -62,7 +62,7 @@ const CON_UN_REMATE = (indice: IndiceDeHoja): Entradas => ({
   ...entradasIniciales(indice),
   inputs: new Map([['remate', 800]]),
 })
-const DE_UNA_GUARDADA = { tipo: 'guardada', cotizacionId: 'c' } as const
+const DE_UNA_GUARDADA = { tipo: 'guardada', cotizacionId: 'c', vehiculoId: null } as const
 
 describe('useHoja: de dónde calcula y con qué abre', () => {
   it('abre con las entradas iniciales y el «Ver total Bs» que recibe (la nueva abre con las vacías y apagado)', () => {
@@ -107,7 +107,7 @@ describe('useHoja: de dónde calcula y con qué abre', () => {
     const pedidos = vi.mocked(recalcular).mock.calls.map(([p]) => p as PedidoDeRecalculo)
     expect(pedidos.map((p) => p.de)).toEqual([
       { tipo: 'abierta', origenId: hoja.origen.id, abierta: hoja.abierta, vehiculoId: 'v' },
-      { tipo: 'guardada', cotizacionId: 'c' },
+      { tipo: 'guardada', cotizacionId: 'c', vehiculoId: null },
     ])
   })
 })
