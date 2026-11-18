@@ -157,7 +157,7 @@ export type LectorDeConsultaDeApibara = (
 // Las fotos de un vehículo y su versión. Lo que ve cada quien lo decide la RLS.
 export type LectorDeGaleria = (vehiculoId: string) => Promise<Resultado<Galeria>>
 
-// Sólo las fotos, en su orden: lo que lee el resumen de un vehículo (no las edita, no necesita la versión).
+// Sólo las fotos, en su orden: lo que lee el carrusel de un vehículo donde se nombra (`FotosEnElLugar`: no las edita, no necesita la versión).
 export type LectorDeFotos = (vehiculoId: string) => Promise<Resultado<Foto[]>>
 
 // Qué pasó con cada foto que se pidió agregar, por su hash: las que ya estaban vuelven en

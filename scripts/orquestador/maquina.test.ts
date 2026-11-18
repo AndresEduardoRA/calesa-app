@@ -1,5 +1,5 @@
-import { existsSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { afterEach, expect, it } from 'vitest'
 import {
   esperar,
@@ -107,15 +107,34 @@ it(
     expect(orq(b, {}, 'plan').salida).toContain(
       '⏸  pausa compartida por el límite del plan hasta las',
     )
-    lanzarGuion(b, {})
+    // Con el límite todavía en pie, la prueba del fin de la pausa (fuera del repo) también lo topa: la pausa queda.
+    lanzarGuion(b, { CLAUDE_FALSO_MODO: 'limite' })
     expect(await esperar(() => logDe(b).includes('orquestador arriba'))).toBe(true)
     await new Promise((r) => setTimeout(r, 3000))
     expect(estado(b, 'T1')).toBe('')
-    expect(sesiones(m)).toHaveLength(1)
+    expect(sesiones(m).filter((s) => s.pwd.includes('/.orquestador/worktrees/'))).toHaveLength(1)
+    expect(existsSync(archivo)).toBe(true)
 
     writeFileSync(archivo, `${Math.floor(Date.now() / 1000) - 60}\n`)
     expect(orq(b, {}, 'plan').salida).not.toContain('pausa compartida')
     expect(existsSync(archivo)).toBe(false)
+  },
+  TIEMPO,
+)
+
+it(
+  'con la pausa por el límite en curso, si el modelo vuelve a responder la quita sin esperar a que venza y sigue lanzando',
+  async () => {
+    m = maquina()
+    const b = repo(m, 'dos')
+    tarea(b, 'T1')
+    const archivo = join(m.home, '.local/state/orquestador/pausa-hasta')
+    mkdirSync(dirname(archivo), { recursive: true })
+    writeFileSync(archivo, `${String(Math.floor(Date.now() / 1000) + 3600)}\n`)
+    lanzarGuion(b, {})
+    expect(await esperar(() => logDe(b).includes('volvió a responder'))).toBe(true)
+    expect(existsSync(archivo)).toBe(false)
+    expect(await esperar(() => estado(b, 'T1') !== '')).toBe(true)
   },
   TIEMPO,
 )

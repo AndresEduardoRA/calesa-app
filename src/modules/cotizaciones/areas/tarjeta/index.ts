@@ -6,16 +6,31 @@
 // `pdfDeUnaGuardada({ lectura, contexto, locale, empresa, topeDelLogo })` (4.18-3a): los bytes y el nombre del PDF de una guardada, de lo guardado; lo pide
 // `GET /cotizaciones/[id]/pdf`, que arma el contexto con `contextoDeLaPagina()` (puro).
 //
-// `imagenDeUnaGuardada(entrada)`: la misma tarjeta como PNG (`{ bytes, ancho, alto }`), para la portada de la cotización. Sin ruta todavía: quien la sirva suma
-// las fuentes de `infra/tarjeta/pdf/fuentes/` a `outputFileTracingIncludes` de su ruta.
+// `imagenDeUnaGuardada(entrada)`: la misma tarjeta como PNG (`{ bytes, ancho, alto }`), la base de la portada.
+//
+// La portada de la cotización (`docs/COTIZADOR.md` › «La portada de la cotización»), para `GET /cotizaciones/[id]/portada`: `leerLaPortada(id)` (el estado para quien
+// pide), `queHacerConLaPortada(estado, pedido)` (304, bajar la guardada o armarla), `bajarLaPortada(ruta)`, `armarLaPortada(id, contextoDe)` (el WebP de lo guardado
+// con el contexto que le den; `guardable` sin el primer recálculo es falso) y `guardarLaPortada({ id, bytes, clave })`. El componente sale por
+// `pantallas/tarjeta-portada.ts`.
 export {
+  bajarLaPortada,
+  guardarLaPortada,
   imagenDeUnaGuardada,
   leerAsesorDeLaCotizacion,
+  leerLaPortada,
   pdfDeUnaGuardada,
   type EntradaDelPdf,
 } from './composicion'
+export { armarLaPortada, type PortadaArmada } from '../../features/tarjeta/armar-la-portada'
 export {
   contextoDeLaPagina,
   type ContextoDeLaCotizacion,
   type PaginaDeLaTarjeta,
 } from '../../entities/tarjeta/contexto-de-la-cotizacion'
+export {
+  etiquetaDeLaPortada,
+  queHacerConLaPortada,
+  type ContextoCompartido,
+  type EstadoDeLaPortada,
+  type QueHacerConLaPortada,
+} from '../../entities/tarjeta/portada'

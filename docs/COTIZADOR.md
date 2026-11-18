@@ -885,4 +885,41 @@ de cambio **no es la suma de las filas** sino Bs ÷ tc(`total_en`), con Bs = Σ 
 con las filas impresas y la tolerancia del redondeo. Los montos van con `formatearMonto()` y siempre con cifras (el Modo Live es de la
 pantalla); el logo, en `Buffer` y sólo si react-pdf lo dibuja fiel (`docs/PENDIENTES.md`, 4-98). Lo dibuja
 `src/modules/cotizaciones/infra/tarjeta/pdf/` con `@react-pdf/renderer` y Geist en TTF (recta e itálica). La misma tarjeta como PNG:
-`imagenDeUnaGuardada()` (`infra/tarjeta/imagen/`, `ImageResponse`), para la portada de la cotización; sin ruta propia todavía.
+`imagenDeUnaGuardada()` (`infra/tarjeta/imagen/`, `ImageResponse`), la base de la portada de la cotización.
+
+### La portada de la cotización
+
+La **portada de la cotización** es la imagen de la tarjeta de una cotización guardada: la de lo guardado (como el PDF), en WebP de hasta 1.600 px
+de ancho (calidad 80, con `sharp` en el servidor), guardada por hash en el bucket privado `cotizaciones` (`<cotización>/portada/<sha-256>.webp`: subir pide
+poder guardarla, como un adjunto; leer, además de ver la cotización, ver lo que dibuja: `cotizacion_portada_visible()` en la policy «cotizaciones: leer»). Se anota en `cotizaciones_portadas` (una fila por
+cotización: `ruta`, `clave`, `generada_en`), no en `cotizaciones`: un `update` dejaría una revisión y movería la versión esperada de quien edita.
+
+- **La clave** dice de qué está hecha: `_cotizacion_portada_clave()` = `p<versión del dibujo>-md5` de todo lo que el dibujo lee: la cotización
+  (`actualizado_en`, la versión, el origen), la plantilla publicada del origen (o ninguna), esa versión de la fórmula, los colores (clave y hex), los
+  tipos de cambio (nombre, activo y moneda; nunca el valor del día), el cliente y el vehículo vivos (nombre; título, lote y VIN: no su `actualizado_en`,
+  que una fase o una foto mueven), quien la creó (nombre y correo) y los ajustes de la empresa. Todo por clave primaria o índice único, y dos catálogos
+  de decenas de filas. Un cambio en cómo se dibuja sube `_portada_version_del_dibujo()` en una migración. Clave guardada distinta de la vigente: la
+  portada quedó vieja.
+- **La compartida y la propia.** La portada guardada es una sola para todos y lleva el cliente y el vehículo. La recibe quien **ve todo lo que dibuja**
+  (`ve_todo`: el cliente vivo con `leads.ver`, el vehículo vivo con `vehiculos.ver`) sin «Ver como»; los demás reciben una armada en el momento con lo
+  suyo (como el PDF), sin guardarla.
+- **`cotizacion_portada(id)`** (pide ver; 42501 igual para lo que no existe, está en la papelera o no se ve) da `{ruta, clave, clave_vigente,
+ve_todo, puede_guardarla, contexto}`: `puede_guardarla` es `ve_todo` y `_cotizacion_puede_guardar()`, y `contexto` (el cliente, el vehículo y quien la
+  creó: lo que mira la clave), sólo con `ve_todo`.
+- **`cotizacion_portada_poner(id, ruta, clave)`** anota la subida: pide poder guardarla y `ve_todo` (antes de mirar la ruta y otra vez tras tomar la
+  cotización `for no key update`), la ruta en la carpeta `portada/` de la cotización y el objeto en storage, WebP de hasta 5 MB (22023 con `hint`), y la
+  clave, la vigente tras el candado (si no, PT409 «La tarjeta cambió mientras se armaba la imagen.»: quien llama entrega su imagen sin guardarla).
+  Reemplaza la fila y manda la ruta vieja a la cola de limpieza si nadie más la usa.
+- **Cuándo se arma.** Al guardar (crear, guardar y cotizar encima), después de la respuesta del guardado: el núcleo avisa por el hueco de la vista previa
+  (`alGuardarLaCotizacion`) y el área `tarjeta` pide la ruta (`pedirLaPortada()`, un `fetch` que nadie espera); el guardado no la espera ni ve sus fallos.
+  Y al pedirla vieja o sin portada. En los dos casos la ruta la arma y, si quien pide puede guardarla, la guarda **antes de responder** (nunca en `after()`:
+  la sesión podría renovarse con la respuesta ya enviada). Sin el primer recálculo (la tarjeta saldría sólo con el total) se entrega pero no se guarda. Una
+  plantilla nueva se ve sola, sin relleno masivo.
+- **La ruta** `GET /cotizaciones/<id>/portada` (`requerirSesion()`): lo que no existe, está en la papelera o no se ve, el mismo 404 en texto que el PDF.
+  La compartida va con `ETag` = la clave y `Cache-Control: private, no-cache` (con `If-None-Match` igual, 304 sin bajar ni armar nada); al día, la baja
+  del bucket con la sesión de quien pide. La propia va con `no-store` y sin `ETag`. Si armarla falla, 500: nunca una vieja.
+- **Se va** con la cotización: la cascada borra la fila al purgar (las dos purgas encolan su ruta) y el barrido de huérfanos del bucket `cotizaciones`
+  (`storage_gc_reclamar()`, rama propia por `not exists` sobre adjuntos y portadas) se lleva lo que quedó sin fila.
+- **En pantalla**, `<PortadaDeLaCotizacion>` (`pantallas/tarjeta-portada.ts`; en el resumen del listado, por el hueco `Portada`): la imagen con
+  `object-contain` y `loading="lazy"` en un marco de la proporción que le dan (15:8 por omisión); mientras carga o si falla, un recuadro del mismo
+  tamaño con el total y «Reintentar»; el clic la abre en el visor de fotos; en Modo Live, borrosa con «Oculto en Modo Live» y sin visor.

@@ -8,6 +8,7 @@
 --   papelera-purgar (cotizaciones)  100.000 cotizaciones vencidas en 500 lotes de 200, con una revisión y un adjunto cada una (4.24-1b)
 --   limpieza-automatica             100.000 vehículos importados de una subasta terminada, sin comprador
 --   storage-gc                      100.000 objetos en el bucket `vehiculos` sin fila, y 100.000 en la cola
+--   storage-gc (cotizaciones)       100.000 objetos en el bucket `cotizaciones` sin fila, y 50 adjuntos y 50 portadas en uso
 --   situacion-al-cerrar             2.000 vehículos en subasta (1.000 con el cierre vencido) entre los 100.000 de la limpieza
 -- Cada job tiene su presupuesto de tiempo por corrida (el último argumento): si lo pasa, la medición falla.
 -- Un job con tope por corrida deja lo que no entra para la siguiente: papelera-purgar purga a lo sumo 50 lotes
@@ -208,6 +209,38 @@ begin
   if (select count(*) from public.cola_gc_storage g join jobs_cots j on g.ruta = j.id || '/1.pdf' where g.bucket = 'cotizaciones' and j.k > 450) <> 10000 then raise exception 'la cola no son las rutas propias de las purgadas'; end if;
   raise notice 'plan|job: papelera-purgar con cotizaciones|purgadas 10.000 de los lotes k = 451…500, la cola con sus 10.000 rutas propias';
 end $$;
+
+-- storage-gc del bucket `cotizaciones`: 100.000 objetos sin fila (subidas que no llegaron a anotarse) y, de cada una de las 50 vivas, su adjunto y su
+-- portada en uso, que van primero por nombre. El barrido va por la rama genérica (`storage_refcount()` por objeto, por `cotizaciones_adjuntos_ruta_idx` y
+-- `cotizaciones_portadas_ruta_key`) en ventanas de 10.000, con los topes de `vehiculos`: una pasada que encola 10.000 al principio y otra cerca del final,
+-- y la misma ventana ya encolada, que sólo examina.
+set local session_replication_role = replica;
+insert into storage.objects (bucket_id, name, owner, created_at, updated_at, metadata)
+select 'cotizaciones', 'job-' || (g / 24) || '/' || g || '.webp', null, now() - interval '10 days', now() - interval '10 days', '{}'::jsonb
+  from generate_series(1, 100000) g;
+insert into public.cotizaciones_portadas (cotizacion_id, ruta, clave)
+select v.id, v.id || '/portada/' || lpad(to_hex(v.i), 64, '0') || '.webp', 'p1-jobs' from jobs_vivas v;
+insert into storage.objects (bucket_id, name, owner, created_at, updated_at, metadata)
+select 'cotizaciones', r, null, now() - interval '10 days', now() - interval '10 days', '{}'::jsonb
+  from (select v.id || '/a.pdf' as r from jobs_vivas v union all select p.ruta from public.cotizaciones_portadas p join jobs_vivas v on v.id = p.cotizacion_id) x;
+set local session_replication_role = origin;
+analyze public.cotizaciones_portadas;
+analyze storage.objects;
+delete from public.cola_gc_barrido where bucket = 'cotizaciones';
+select pg_temp.cronometro('job: storage-gc (cotizaciones), una pasada al principio del bucket que encola 9.900', $q$select public.storage_gc_encolar_huerfanos('cotizaciones', interval '1 day')::text$q$, 4000);
+do $$
+begin
+  if (select count(*) from public.cola_gc_storage where bucket = 'cotizaciones' and ruta like 'job-%') <> 9900 then
+    raise exception 'la primera ventana de cotizaciones no encoló sus 9.900 huérfanos: %', (select count(*) from public.cola_gc_storage where bucket = 'cotizaciones' and ruta like 'job-%'); end if;
+  if exists (select 1 from public.cola_gc_storage g join jobs_vivas v on g.ruta like v.id || '/%' where g.bucket = 'cotizaciones') then
+    raise exception 'el barrido encoló un adjunto o una portada en uso'; end if;
+end $$;
+delete from public.cola_gc_barrido where bucket = 'cotizaciones';
+select pg_temp.cronometro('job: storage-gc (cotizaciones), la misma ventana ya encolada (10.000 examinados)', $q$select public.storage_gc_encolar_huerfanos('cotizaciones', interval '1 day')::text$q$, 1000);
+update public.cola_gc_barrido
+   set ultimo_nombre = (select o.name from storage.objects o where o.bucket_id = 'cotizaciones' order by o.name desc limit 1 offset 15000)
+ where bucket = 'cotizaciones';
+select pg_temp.cronometro('job: storage-gc (cotizaciones), una pasada cerca del final que encola 10.000', $q$select public.storage_gc_encolar_huerfanos('cotizaciones', interval '1 day')::text$q$, 4000);
 
 -- situacion-al-cerrar: 2.000 vehículos en_subasta en un origen de subasta (1.000 con el cierre vencido) entre los 100.000 de arriba. La selección va por
 -- vehiculos_situacion_idx con (origen_id, situacion) fijos, sin recorrer vehiculos; una corrida recalcula su tope de 500.

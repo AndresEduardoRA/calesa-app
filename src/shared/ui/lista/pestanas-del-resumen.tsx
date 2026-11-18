@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
 import { PistaDeDesborde } from '../pista-de-desborde'
+import { traerLaAbiertaALaVista } from '../traer-la-abierta-a-la-vista'
 import { useDesborde } from '../use-desborde'
 
 type Pestana<C extends string> = { clave: C; titulo: string }
@@ -51,10 +52,11 @@ export function PestanasDelResumen<C extends string>({
   const id = useId()
   const lista = useRef<HTMLDivElement>(null)
   const desborde = useDesborde(lista)
+  // Sólo la barra se mueve: el cuerpo del panel que la contiene se queda donde está.
   useEffect(() => {
-    lista.current
-      ?.querySelector('[aria-selected=true]')
-      ?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+    if (lista.current) {
+      traerLaAbiertaALaVista(lista.current)
+    }
   }, [activa])
   const alPulsar = (evento: KeyboardEvent) => {
     const destino = destinoDe(pestanas, activa, evento.key)

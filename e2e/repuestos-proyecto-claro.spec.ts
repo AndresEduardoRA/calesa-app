@@ -5,7 +5,7 @@ import { borrarPersonasDePrueba, correoDePrueba, crearDuenaDePrueba } from './so
 import { borrarFotosDe } from './soporte/fotos'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
-import { sembrarFotos } from './soporte/vehiculos-resumen'
+import { sembrarFotos } from './soporte/vehiculos-lista'
 
 // El detalle claro de un proyecto de repuestos (`docs/UX.md` › `/repuestos/[id]`): la cabecera dice de qué vehículo es (miniatura de la portada, título enlazado a su
 // ficha, VIN y lote, origen y situación) o «Proyecto externo · sin vehículo»; los ítems salen agrupados por paso, en el orden del flujo, con su conteo y «Sin fase» al

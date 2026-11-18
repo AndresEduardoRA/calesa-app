@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { SufijoDeVisto, AbrirResumen, EsquinaDeAcciones, TarjetaDeLista } from '@/shared/ui/lista'
+import { SufijoDeVisto, EnlaceDeLaFila, EsquinaDeAcciones, TarjetaDeLista } from '@/shared/ui/lista'
 import { cn } from 'cn'
 import { camposDeTarjeta, type CampoDeVehiculo } from '../../../entities/campo'
 import type { CotizacionAprobadaDeLaFila } from '../../../entities/cotizacion-aprobada-de-la-fila'
@@ -19,10 +19,8 @@ type Props = {
   // El layout del origen del vehículo: de ahí salen los datos «en tarjeta».
   campos: readonly CampoDeVehiculo[]
   fase: { nombre: string; color: string } | null
-  // Abre el vehículo (un clic en cualquier parte de la tarjeta, o Enter sobre su nombre).
-  alAbrir: () => void
-  // Su resumen está abierto: la tarjeta se marca.
-  abierta?: boolean
+  // Su ficha (`/vehiculos/<id>`): un clic en cualquier parte de la tarjeta la abre, o Enter sobre su nombre, que es el enlace.
+  ficha: string
   // Lo que se puede hacer con él (editar): arriba a la derecha de la tarjeta, o sobre la foto si es grande.
   acciones?: ReactNode
   // Lo que va al lado de la fase (si está en la vitrina).
@@ -58,7 +56,7 @@ function FotoGrande({
 
 // Un vehículo en una tarjeta de la lista (`@/shared/ui/lista`): lo que se ve en el celular en vez de la fila de la tabla.
 export function TarjetaVehiculo(props: Props) {
-  const { vehiculo, campos, fase, alAbrir, abierta, acciones, insignias, seleccion, precio } = props
+  const { vehiculo, campos, fase, ficha, acciones, insignias, seleccion, precio } = props
   const aprobada = props.aprobada ?? null
   const grande = props.grande ?? false
   const identidad = useIdentidad(campos)(vehiculo)
@@ -67,12 +65,7 @@ export function TarjetaVehiculo(props: Props) {
     return valor !== undefined && valor !== null && valor !== ''
   })
   return (
-    <TarjetaDeLista
-      alAbrir={alAbrir}
-      abierta={abierta ?? false}
-      idDeVisto={vehiculo.id}
-      acciones={grande ? undefined : acciones}
-    >
+    <TarjetaDeLista href={ficha} idDeVisto={vehiculo.id} acciones={grande ? undefined : acciones}>
       {/* Con el texto al 200 % la tarjeta mide menos de 16 rem: la miniatura (rem) y el título no caben en una fila y se apilan. */}
       {/* Grande, la foto va arriba a todo el ancho (con flechas: ahí caben), la casilla sobre su esquina izquierda y el «⋯» sobre la */}
       {/* derecha: la foto no se achica por una columna. Sin foto (o si no carga) quedan en el mismo lugar sobre el recuadro 4:3. */}
@@ -87,7 +80,9 @@ export function TarjetaVehiculo(props: Props) {
         )}
         <div className={cn('grid min-w-0 flex-1 gap-1 @max-[16rem]:flex-none', grande && 'w-full')}>
           <h3 className="text-(length:--text-base) font-medium [overflow-wrap:anywhere] text-(--color-ink)">
-            <AbrirResumen nombre={identidad.nombre}>{identidad.nombre}</AbrirResumen>
+            <EnlaceDeLaFila href={ficha} nombre={identidad.nombre}>
+              {identidad.nombre}
+            </EnlaceDeLaFila>
           </h3>
           <p className="text-(length:--text-xs) text-(--color-ink-soft) tabular-nums">
             {identidad.titulo === null ? '' : `${identidad.titulo} · `}#{vehiculo.numero}

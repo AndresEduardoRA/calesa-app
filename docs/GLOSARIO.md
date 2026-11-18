@@ -131,7 +131,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   visible de cada detalle (ficha del vehículo, su resumen, la unidad de logística y ficha del lead) con tres grupos por tipo:
   **Vinculado**, **Interesado** y **Cotizado**. Desde un vehículo se ven leads; desde un lead, vehículos. Cada grupo lleva su cantidad (con tope),
   sus primeras filas, lo que quien mira no ve contado («1 que no puedes ver») y «Ver todos» por cursor. Lo que está en una papelera no cuenta. Un
-  grupo sin nada no se dibuja. Se ve en una línea de chips en los resúmenes y en logística, y compacto en las fichas (`PresentacionDeRelacionados`).
+  grupo sin nada no se dibuja. Se ve en una línea de chips en logística, y compacto en las fichas (`PresentacionDeRelacionados`).
 - **Vinculado** — tipo de relación (`TipoDeRelacion` `vinculado`): el lead dueño o comprador de un vehículo (el vínculo vigente), y desde un
   lead, sus vehículos vinculados. Su «Ver todos» en un vehículo incluye los vínculos anteriores.
 - **Cotizado (relación)** — tipo de relación `cotizado`: leads con una **cotización activa** de ese vehículo (y al revés), una fila por
@@ -241,9 +241,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   n.º 12». Se busca con `12` o `#12`.
 - **Número global** — `leads.numero` / `leads_numeros_globales`, `leads.numero_global.ver`, `NumerosDeLead.numero`: consecutivo de la empresa
   («N.º 1.234»); nulo sin el permiso.
-- **Resumen** — `?vehiculo=`, `?cotizacion=` / `<ResumenDeVehiculo>`, `<ResumenDeCotizacion>`: vistazo sin salir de la lista. El de un vehículo
-  es la versión corta de su ficha, sin pestañas y con «Abrir ficha»: portada con carrusel, datos clave, situación, acciones y Relacionados en
-  chips (`claveDelVisorDelResumen()` para su carrusel). La lista de leads no tiene: abre la ficha (un `?lead=` viejo redirige a ella).
+- **Resumen** — `?cotizacion=` / `<ResumenDeCotizacion>`: vistazo de una cotización sin salir de la lista. Las listas de vehículos y de leads no
+  tienen: abren la ficha (`<EnlaceDeLaFila>`; un `?vehiculo=` o un `?lead=` viejo redirige a ella).
+- **Enlace de la fila** — `<EnlaceDeLaFila>` (`src/shared/ui/lista/`), `href` de `<FilaDeLista>`/`<TarjetaDeLista>`: el nombre de una fila o una tarjeta
+  como enlace a la ficha, en una lista sin resumen; el resto del ítem navega igual (Ctrl o el botón del medio, otra pestaña).
 - **Línea de tiempo (de una cotización)** — pestaña «Todo» del resumen (`?pestana=`, `useLineaDeTiempo`, `lineaDeTiempo()`): adjuntos, revisiones y comentarios
   mezclados por fecha, lo más nuevo arriba; una página de cada fuente y sólo se dibuja hasta donde llegó la que menos retrocedió. Las otras pestañas del resumen:
   «Adjuntos», «Revisiones» y «Comentarios».
@@ -441,7 +442,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   y la tarjeta muestra sólo el total (fecha, número, asesor, vehículo, logo; sin filas, que podrían ser de un nivel restringido).
 - **Vista previa** — `?panel=vista-previa`, `<VistaPreviaDeLaHoja>`: modal con la tarjeta de la cotización (`<TarjetaDeCotizacion>`,
   `geometriaDeLaTarjeta()`) como la vería el cliente, escalada como una imagen; en una guardada, lo guardado.
-- **Portada de la cotización** — la imagen de la tarjeta de una cotización guardada (`imagenDeUnaGuardada()`). No es la **Portada** de un vehículo.
+- **Portada de la cotización** — `cotizaciones_portadas`, `<PortadaDeLaCotizacion>`, `GET /cotizaciones/<id>/portada`: la imagen de la tarjeta de lo
+  guardado de una cotización, en WebP por hash en el bucket `cotizaciones`, con la **clave de la portada** (`_cotizacion_portada_clave()`: de qué está
+  hecha; distinta de la vigente, quedó vieja). La **compartida** es la guardada, para quien ve todo lo que dibuja; los demás reciben una armada con lo suyo.
+  No es la **Portada** de un vehículo.
 - **PDF de la cotización** — `GET /cotizaciones/<id>/pdf`, `pdfDeUnaGuardada()`: la tarjeta de lo guardado en A4; lo descarga quien la ve
   («Descargar PDF», junto a «Copiar texto»). No es «Compartir» (eso es de leads).
 - **Revisión** — `cotizaciones_revisiones`: diff de cada edición.
