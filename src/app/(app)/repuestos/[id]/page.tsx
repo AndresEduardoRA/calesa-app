@@ -21,7 +21,7 @@ import {
   type PanelDelPaso,
   type ProyectoDetallado,
 } from '@/modules/repuestos'
-import { CabeceraDeProyecto } from '@/modules/repuestos/pantallas/proyectos'
+import { CabeceraDeProyecto } from '@/modules/repuestos/pantallas/proyectos-detalle'
 import { PagosDelProyectoDiferido } from '@/modules/logistica/pantallas/dinero-proyecto'
 import { leerMonedasYTiposCambio } from '@/modules/empresa'
 import { leerLeadParaEnlazar } from '@/modules/leads'

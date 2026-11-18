@@ -1,6 +1,6 @@
 import { leerFasesDeOrigen } from '@/modules/flujos'
 import { getOrigenes } from '@/modules/origenes'
-import { VehiculoQueNoSeVe } from '@/modules/repuestos/pantallas/proyectos'
+import { VehiculoQueNoSeVe } from '@/modules/repuestos/pantallas/proyectos-detalle'
 import type { Vehiculo } from '@/modules/vehiculos'
 import { VehiculoEnLaCabecera } from '@/modules/vehiculos/pantallas/proyecto-de-repuestos-cabecera'
 import type { Resultado } from '@/shared/lib/errores'
