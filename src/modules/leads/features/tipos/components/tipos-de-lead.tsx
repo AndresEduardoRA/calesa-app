@@ -20,21 +20,10 @@ type Props = {
 const BOTON = 'h-11 md:h-8'
 const PREFIJO = 'tipo'
 
+// Arriba de la lista, sólo su acción principal: el título y la frase los pone la página.
 function Encabezado({ alNuevo, alTope }: { alNuevo: () => void; alTope: boolean }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-      <div className="grid gap-0.5">
-        <h2
-          id="titulo-de-tipos"
-          className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-        >
-          Tipos de lead
-        </h2>
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          Cada tipo es de una clase, prospecto o cliente, que se elige al crearlo y no cambia. El
-          orden de acá es el del alta y el del filtro del listado.
-        </p>
-      </div>
+    <div className="flex justify-end">
       <Button
         className={BOTON}
         disabled={alTope}
@@ -64,7 +53,7 @@ export function TiposDeLead({ lista: inicial }: Props) {
   useFocoTrasMover(PREFIJO, tipos.movimiento)
 
   return (
-    <section className="grid gap-3" aria-labelledby="titulo-de-tipos">
+    <section className="grid gap-3" aria-label="Tipos de lead">
       <Encabezado alTope={alTope} alNuevo={modal.abrirNuevo} />
       {alTope ? (
         <Aviso tono="aviso">

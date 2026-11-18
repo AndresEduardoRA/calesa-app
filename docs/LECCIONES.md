@@ -176,6 +176,11 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Pon el motivo de un botón o pestaña apagada en texto visible (`aria-describedby`), no sólo en `title`: un `TabsTrigger` deshabilitado no recibe foco y el lector no lo lee.
 - Al cambiar un token de color corre `design/tokens.test.ts` (contraste AA) y actualiza su espejo del PDF (`estilos-del-documento.ts`) y `e2e/xcell-geometria.spec.ts`.
 - Dale a toda página nueva su `loading.tsx`, un `h1` (`sr-only` si no se ve) fuera del `Suspense` y un `<title>` único: lo exigen `estados-de-ruta.test.ts` y `accesibilidad.spec.ts`.
+- Una página que sólo redirige (tras su `loading.tsx`, la redirección es del navegador) se anota en `SOLO_REDIRIGEN` de
+  `e2e/soporte/accesibilidad-rutas.ts`, o como `pendiente` en `DINAMICAS` si su ruta lleva un `[param]`: al cambiar la URL todavía se ve el
+  esqueleto del destino y el barrido cuenta «0 h1» o cae con «Execution context was destroyed».
+- Un control que sale de un `<Bloque>` plegado queda a la vista del barrido de accesibilidad: un `Switch` (un `span` con rol) no toma el nombre
+  del `htmlFor` de su etiqueta; dale `aria-labelledby`.
 - Cuando un envío apaga el campo que tenía el foco y el diálogo pasa a mostrar el resultado, lleva el foco al resultado: si no, queda en `body`
   y el Tab recorre la página antes de volver al diálogo (duplica las teclas de una tarea de oro).
 - Un `<a href="#ancla">` que salta dentro de la página desde un menú (`⋯`) espera a que el menú termine de cerrarse antes de enfocar el
@@ -242,8 +247,6 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Compara y ordena fechas como timestamp (`Date.parse`), nunca como texto ISO: «…:23Z» queda por delante de «…:23.078Z» y un orden por texto puede borrar a la dueña.
 - En una prueba `@sin-celular` no midas ni con una función propia del spec (la guarda la cuenta como ayudante que mide): afirma estilos con
   `toHaveCSS` y arrastra con `hover` en pasos (dnd-kit toma la fila en el primer movimiento y la lleva en los siguientes).
-
-- Declara como `pendiente` en `DINAMICAS` (`e2e/soporte/accesibilidad-rutas.ts`) una página que sólo redirige: tras el esqueleto redirige en el navegador y el barrido cae con «Execution context was destroyed».
 
 ### Sesiones y datos de prueba
 

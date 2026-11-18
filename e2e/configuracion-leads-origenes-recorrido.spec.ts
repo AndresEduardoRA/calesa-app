@@ -144,7 +144,7 @@ test('A · con 0 orígenes: la pantalla lo dice, y el alta de la dueña y de la 
 
   // La asesora: ni la pantalla ni el permiso; su alta funciona igual.
   await cambiarA(page, asesora)
-  await page.goto('/configuracion/leads?seccion=origenes')
+  await page.goto('/configuracion/leads/origenes')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
   await capturar(page, info, 'asesora-sin-permiso')
   await abrirConN(page)

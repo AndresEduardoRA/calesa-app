@@ -4,16 +4,17 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 
-// Cada pestaña nombra su sección (`aria-labelledby`): sin eso, «Abrir el menú» de la barra del celular entra en la cuenta de los nombres.
+// Cada sub-ruta nombra la sección de su lista (`aria-label`): sin eso, «Abrir el menú» de la barra del celular entra en la cuenta de los
+// nombres.
 export type Pestana = 'origenes' | 'tipos' | 'seguimientos'
-const TITULO_DE: Record<Pestana, string> = {
-  origenes: 'titulo-de-origenes',
-  tipos: 'titulo-de-tipos',
-  seguimientos: 'titulo-de-tipos-de-seguimiento',
+const NOMBRE_DE: Record<Pestana, string> = {
+  origenes: 'Orígenes del lead',
+  tipos: 'Tipos de lead',
+  seguimientos: 'Tipos de seguimiento',
 }
 
 const seccion = (page: Page, pestana: Pestana): Locator =>
-  page.locator(`section[aria-labelledby="${TITULO_DE[pestana]}"]`)
+  page.locator(`section[aria-label="${NOMBRE_DE[pestana]}"]`)
 
 // El botón con el nombre de la fila: abre su edición con un clic (o Enter).
 export const nombreDeLaFila = (page: Page, nombre: string): Locator =>
