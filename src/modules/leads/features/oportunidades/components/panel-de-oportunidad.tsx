@@ -1,7 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { Aviso } from '@/shared/ui/aviso'
 import { AvisoDeConflicto } from '@/shared/ui/aviso-de-conflicto'
 import { CambiosSinGuardar } from '@/shared/ui/cambios-sin-guardar'
@@ -38,18 +37,12 @@ export function PanelDeOportunidad({
   alGuardar,
   alCerrar,
 }: Props) {
-  const router = useRouter()
-  const paraCrear = embudosParaCrear(embudos, abiertas)
+  // Con lo que había al abrir: lo que se crea después no cambia las opciones de un panel que ya se cierra.
+  const [paraCrear] = useState(() => embudosParaCrear(embudos, abiertas))
   const formulario = useFormularioDeOportunidad({
     leadId,
     oportunidad,
-    alGuardar: (guardada) => {
-      alGuardar(guardada)
-      // Una nueva ocupa su embudo: la sección vuelve a leer dónde hay abiertas.
-      if (!oportunidad) {
-        router.refresh()
-      }
-    },
+    alGuardar,
     alTerminar: alCerrar,
     embudoInicial: paraCrear.inicial ?? '',
   })

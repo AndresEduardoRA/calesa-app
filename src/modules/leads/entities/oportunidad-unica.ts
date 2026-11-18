@@ -5,6 +5,7 @@
 import { z } from 'zod'
 import { resolverAcciones, type AccionesDeUnAviso } from '@/shared/lib/acciones-del-aviso'
 import type { Embudo } from './embudo'
+import type { OportunidadDelLead } from './oportunidad'
 import { rutaDeLasOportunidadesDe } from './oportunidad-rapida'
 
 // La causa del rechazo de la guarda (`ErrorApp.causa`): 22023 con `hint` `embudo_id` y el id de la abierta en `detail`.
@@ -55,6 +56,37 @@ export function abiertaEnElPorDefecto(
   abiertas: readonly AbiertaEnEmbudo[],
 ): AbiertaEnEmbudo | null {
   return abiertas.find((a) => a.esDefault) ?? null
+}
+
+// Dónde hay una abierta según lo que la sección de la ficha tiene cargado (lo que se crea, se mueve, se elimina o se restaura ya está ahí): las
+// abiertas van primero, así que si lo cargado llega a una cerrada o no hay más, están todas y mandan; si no (más abiertas que las cargadas, sólo
+// con duplicadas de antes), se suman a las de la primera lectura del servidor (`abiertas_por_embudo`). Una por embudo: la más reciente.
+export function abiertasDeLoCargado(
+  delServidor: readonly AbiertaEnEmbudo[],
+  cargadas: readonly OportunidadDelLead[],
+  hayMas: boolean,
+  embudos: readonly Embudo[],
+): AbiertaEnEmbudo[] {
+  const estanTodas = !hayMas || cargadas.some((o) => o.estado !== 'abierta')
+  const porEmbudo = new Map<string, AbiertaEnEmbudo>()
+  for (const o of cargadas) {
+    if (o.estado === 'abierta' && !o.eliminada && !porEmbudo.has(o.embudoId)) {
+      porEmbudo.set(o.embudoId, {
+        embudoId: o.embudoId,
+        embudoNombre: o.embudo.nombre,
+        esDefault: embudos.find((e) => e.id === o.embudoId)?.esDefault ?? false,
+        oportunidadId: o.id,
+      })
+    }
+  }
+  if (!estanTodas) {
+    for (const a of delServidor) {
+      if (!porEmbudo.has(a.embudoId)) {
+        porEmbudo.set(a.embudoId, a)
+      }
+    }
+  }
+  return [...porEmbudo.values()]
 }
 
 export type OpcionDeEmbudo = { valor: string; etiqueta: string; deshabilitada: boolean }

@@ -3,6 +3,7 @@ import type { Embudo } from './embudo'
 import {
   abiertaDelRechazo,
   abiertaEnElPorDefecto,
+  abiertasDeLoCargado,
   abiertasPorEmbudoDesde,
   accionesDeLaAbierta,
   accionesDelRechazo,
@@ -133,5 +134,38 @@ describe('accionesDelRechazo', () => {
       accionesDelRechazo(LEAD, { ok: false, abierta: ABIERTA }).acciones?.acciones[0]?.etiqueta,
     ).toBe('Abrir esa')
     expect(accionesDelRechazo(LEAD, { ok: false })).toEqual({})
+  })
+})
+
+describe('abiertasDeLoCargado', () => {
+  const op = (id: string, embudoId: string, estado: 'abierta' | 'ganada', nombre = 'Ventas') =>
+    ({
+      id,
+      embudoId,
+      estado,
+      eliminada: false,
+      embudo: { id: embudoId, nombre },
+    }) as unknown as Parameters<typeof abiertasDeLoCargado>[1][number]
+  const otra = '66666666-6666-4666-8666-666666666666'
+  it('con todas cargadas, lo cargado manda: una creada ocupa su embudo y una cerrada lo libera', () => {
+    expect(abiertasDeLoCargado([], [op(ABIERTA, VENTAS, 'abierta')], false, EMBUDOS)).toEqual([
+      abierta(VENTAS, 'Ventas', true),
+    ])
+    expect(
+      abiertasDeLoCargado(
+        [abierta(VENTAS, 'Ventas', true)],
+        [op(ABIERTA, VENTAS, 'ganada')],
+        false,
+        EMBUDOS,
+      ),
+    ).toEqual([])
+  })
+  it('con más abiertas que las cargadas, suma las del servidor', () => {
+    const delServidor = [abierta(POSVENTA, 'Posventa')]
+    expect(
+      abiertasDeLoCargado(delServidor, [op(otra, VENTAS, 'abierta')], true, EMBUDOS).map(
+        (a) => a.embudoId,
+      ),
+    ).toEqual([VENTAS, POSVENTA])
   })
 })
