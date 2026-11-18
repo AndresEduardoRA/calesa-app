@@ -2,8 +2,7 @@
 
 import { useId } from 'react'
 import { AvisoDeConflicto } from '@/shared/ui/aviso-de-conflicto'
-import { Bloque } from '@/shared/ui/bloque'
-import { Button } from '@/shared/ui/button'
+import { BarraDeCambiosSinGuardar } from '@/shared/ui/barra-de-cambios-sin-guardar'
 import { Campo } from '@/shared/ui/campo'
 import { Label } from '@/shared/ui/label'
 import { Switch } from '@/shared/ui/switch'
@@ -12,27 +11,33 @@ import { useTelefonosExtraDeLaEmpresa } from '../hooks/use-telefonos-extra-de-la
 
 type Props = { telefonos: AjustesDeLeads['telefonos'] }
 
-// Configuración › Leads › «Teléfonos extra» (`?seccion=telefonos`): cuántos teléfonos extra admite un lead y si cuentan como el principal.
+// Configuración › Leads › «Teléfonos extra» (`/configuracion/leads/telefonos`): cuántos teléfonos extra admite un lead y si cuentan como
+// el principal. Sin título propio: el de la página ya lo dice. Al cambiar algo aparece la barra de cambios sin guardar como hermana con
+// `order-last`: la grilla de la página la deja debajo de «Números repetidos», pegada abajo respecto de toda ella (`docs/DECISIONES.md`).
 // Quien lo monta le da la versión como `key`: lo guardado, acá o por otra persona, vuelve a montarlo desde la base.
 export function TelefonosExtraDeLaEmpresa({ telefonos }: Props) {
   const formulario = useTelefonosExtraDeLaEmpresa(telefonos)
   const idRegla = useId()
   const idAyuda = `${idRegla}-ayuda`
+  // El `Switch` es un `span` con rol: el `htmlFor` de la etiqueta no le da nombre.
+  const idEtiqueta = `${idRegla}-etiqueta`
+  const idDelFormulario = useId()
   return (
-    <form
-      aria-label="Teléfonos extra"
-      className="grid gap-4"
-      noValidate
-      onSubmit={(evento) => {
-        evento.preventDefault()
-        void formulario.enviar()
-      }}
-    >
-      {formulario.conflicto ? (
-        <AvisoDeConflicto mensaje={formulario.conflicto} alRecargar={formulario.recargar} />
-      ) : null}
-      <Bloque titulo="Teléfonos extra">
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
+    <>
+      <form
+        id={idDelFormulario}
+        aria-label="Teléfonos extra"
+        className="grid gap-4"
+        noValidate
+        onSubmit={(evento) => {
+          evento.preventDefault()
+          void formulario.enviar()
+        }}
+      >
+        {formulario.conflicto ? (
+          <AvisoDeConflicto mensaje={formulario.conflicto} alRecargar={formulario.recargar} />
+        ) : null}
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-4 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) p-4">
           <Campo
             nombre="telefonos-extra-maximo"
             etiqueta="Máximo de teléfonos extra"
@@ -52,10 +57,13 @@ export function TelefonosExtraDeLaEmpresa({ telefonos }: Props) {
                 id={idRegla}
                 checked={formulario.comoPrincipal}
                 disabled={formulario.enCurso}
+                aria-labelledby={idEtiqueta}
                 aria-describedby={idAyuda}
                 onCheckedChange={formulario.cambiarRegla}
               />
-              <Label htmlFor={idRegla}>Los teléfonos extra cuentan como el principal</Label>
+              <Label id={idEtiqueta} htmlFor={idRegla}>
+                Los teléfonos extra cuentan como el principal
+              </Label>
             </div>
             <p id={idAyuda} className="text-(length:--text-sm) text-(--color-ink-faint)">
               Un teléfono extra no podrá repetirse en otro lead y registrar ese número encontrará a
@@ -63,16 +71,14 @@ export function TelefonosExtraDeLaEmpresa({ telefonos }: Props) {
             </p>
           </div>
         </div>
-      </Bloque>
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="submit"
-          className="min-h-11 md:min-h-9"
-          disabled={!formulario.hayCambios || formulario.enCurso}
-        >
-          {formulario.enCurso ? 'Guardando…' : 'Guardar'}
-        </Button>
-      </div>
-    </form>
+      </form>
+      <BarraDeCambiosSinGuardar
+        className="order-last"
+        hayCambios={formulario.hayCambios}
+        formulario={idDelFormulario}
+        guardando={formulario.enCurso}
+        alDescartar={formulario.descartar}
+      />
+    </>
   )
 }

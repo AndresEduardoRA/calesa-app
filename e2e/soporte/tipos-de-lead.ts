@@ -92,8 +92,8 @@ export async function borrarTiposDePrueba(): Promise<void> {
 // --- La pantalla --------------------------------------------------------------------------------------
 
 export async function abrirTipos(page: Page): Promise<void> {
-  await page.goto('/configuracion/leads?seccion=tipos')
-  await expect(page.getByRole('heading', { name: 'Tipos de lead', level: 2 })).toBeVisible()
+  await page.goto('/configuracion/leads/tipos')
+  await expect(page.getByRole('heading', { name: 'Tipos de lead', level: 1 })).toBeVisible()
 }
 
 // Lo de la lista (la fila, el «⋯», los nombres) es común a las tres pestañas: `soporte/lista-de-catalogo.ts`. Activar y desactivar ya no son un

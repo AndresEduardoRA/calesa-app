@@ -9,6 +9,7 @@ import {
   limpiarTerreno,
   REDIRECCIONES,
   rutasDeLaApp,
+  SOLO_REDIRIGEN,
   sembrarTerreno,
   type Ruta,
   type Terreno,
@@ -102,6 +103,11 @@ async function visitar(page: Page, ruta: Ruta, url: string): Promise<void> {
 }
 
 function destino(ruta: Ruta): string | null {
+  const redirige = SOLO_REDIRIGEN[ruta.plantilla]
+  if (redirige !== undefined) {
+    pendientes.push({ ruta: ruta.plantilla, parte: 'toda la página', motivo: redirige })
+    return null
+  }
   if (!esDinamica(ruta.plantilla)) return ruta.plantilla
   const resultado = DINAMICAS[ruta.plantilla]?.(terreno as Terreno)
   if (!resultado) throw new Error(`${ruta.plantilla} no tiene entrada en DINAMICAS`)
@@ -117,6 +123,9 @@ test('E2E A0 toda página de src/app tiene ruta, resolver o pendiente', () => {
     RUTAS.filter((r) => esDinamica(r.plantilla) && !DINAMICAS[r.plantilla]).map((r) => r.plantilla),
   ).toEqual([])
   expect(Object.keys(DINAMICAS).filter((p) => !RUTAS.some((r) => r.plantilla === p))).toEqual([])
+  expect(Object.keys(SOLO_REDIRIGEN).filter((p) => !RUTAS.some((r) => r.plantilla === p))).toEqual(
+    [],
+  )
 })
 
 const NOMBRES = ['acceso', ...GRUPOS.slice(1).map((g) => g.nombre), 'el resto']

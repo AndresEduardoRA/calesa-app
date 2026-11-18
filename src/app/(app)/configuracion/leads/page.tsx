@@ -1,61 +1,23 @@
 import type { Metadata } from 'next'
 import { requerirSesion } from '@/modules/equipo'
-import { unParametro } from '@/shared/lib/rutas'
+import { redirigir } from '@/shared/lib/navegacion'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
-import { alMenosUna } from '../empresa/pestanas'
-import { pestanaDe, pestanasPara } from './pestanas'
-import { PestanasDeLeads } from './pestanas-de-leads'
-import { SeccionCampos } from './seccion-campos'
-import { SeccionEmbudo } from './seccion-embudo'
-import { SeccionMensajeDelPortal } from './seccion-mensaje-del-portal'
-import { SeccionOrigenes } from './seccion-origenes'
-import { SeccionTelefonosExtra } from './seccion-telefonos-extra'
-import { SeccionTipos } from './seccion-tipos'
-import { SeccionTiposDeSeguimiento } from './seccion-tipos-de-seguimiento'
+import { conSubseccionesVisibles } from '../secciones'
+import { SECCION_DE_LEADS } from './seccion'
+import { comoBusqueda, destinoDeLeads } from './url-vieja'
 
 export const metadata: Metadata = { title: 'Configurar leads' }
 
-const DESCRIPCION_DE = {
-  campos:
-    'Los datos que lleva cada lead, además del nombre, el teléfono, el tipo y el origen. Son los mismos para todos los tipos de lead.',
-  origenes: 'De dónde llegan los leads. Es lo que se elige en el alta y lo que filtra el listado.',
-  tipos:
-    'Qué es cada lead para la empresa: prospecto, cliente y los tipos que agregues. Es lo que se elige en el alta y lo que filtra el listado.',
-  seguimientos:
-    'Cómo se contactó a un lead: llamada, visita, mensaje y los tipos que agregues. Es lo que se elige al anotar un seguimiento.',
-  embudo: 'Las etapas con que nace el embudo de cada persona. Los que ya existen no cambian.',
-  portal: 'El texto para WhatsApp que se le pasa al cliente al darle acceso al portal.',
-  telefonos: 'Cuántos teléfonos extra admite un lead y si cuentan como el principal.',
-} as const
-
-// Configuración › Leads. Se entra con `leads.campos.gestionar` o con `leads.configurar` (9-3): ningún otro permiso necesita leer esta
-// configuración (el layout y los orígenes los leen las pantallas de leads por su cuenta). Las pestañas viven en `?seccion=`: los campos
-// (`leads.campos.gestionar`), los orígenes del lead, los tipos de lead, los tipos de seguimiento
-// las plantillas del embudo y del mensaje del portal y los teléfonos extra (`leads.configurar`). La que no puedes abrir
-// se ve apagada con su motivo y nunca se dibuja: la URL que la pide abre la primera habilitada.
+// Configuración › Leads no tiene sub-sección índice: esta ruta abre la primera sub-ruta que la persona puede abrir, y las URLs de cuando
+// había pestañas (`?seccion=`, con sus paneles) van a la suya (`url-vieja.ts`). Sin ninguno de los dos permisos, «sin permiso».
 export default async function PaginaDeLeads({ searchParams }: PageProps<'/configuracion/leads'>) {
-  const [sesion, parametros] = await Promise.all([requerirSesion(), searchParams])
-  const pestanas = pestanasPara(sesion.permisos)
-  const habilitadas = alMenosUna(pestanas.filter((p) => !p.motivo))
-  // Sin ninguna habilitada es que no tiene ninguno de `PERMISOS_DE_LEADS`.
-  if (!habilitadas) {
+  const [{ permisos }, parametros] = await Promise.all([requerirSesion(), searchParams])
+  const abiertas = conSubseccionesVisibles(SECCION_DE_LEADS, permisos)
+    .subsecciones.filter((sub) => !sub.apagada)
+    .map((sub) => sub.ruta)
+  const destino = destinoDeLeads(comoBusqueda(parametros), abiertas)
+  if (destino === null) {
     return <EstadoSinPermiso />
   }
-  const pestana = pestanaDe(unParametro(parametros['seccion']), habilitadas)
-  return (
-    <div className="grid max-w-3xl gap-4">
-      <div className="grid gap-1">
-        <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">Leads</h1>
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">{DESCRIPCION_DE[pestana]}</p>
-      </div>
-      <PestanasDeLeads pestanas={pestanas} porDefecto={habilitadas[0].clave} />
-      {pestana === 'campos' ? <SeccionCampos /> : null}
-      {pestana === 'origenes' ? <SeccionOrigenes /> : null}
-      {pestana === 'tipos' ? <SeccionTipos /> : null}
-      {pestana === 'seguimientos' ? <SeccionTiposDeSeguimiento /> : null}
-      {pestana === 'embudo' ? <SeccionEmbudo /> : null}
-      {pestana === 'portal' ? <SeccionMensajeDelPortal /> : null}
-      {pestana === 'telefonos' ? <SeccionTelefonosExtra /> : null}
-    </div>
-  )
+  redirigir(destino)
 }

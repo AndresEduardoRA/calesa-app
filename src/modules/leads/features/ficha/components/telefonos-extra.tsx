@@ -1,7 +1,6 @@
 'use client'
 
 import { PlusIcon } from 'lucide-react'
-import type { Route } from 'next'
 import Link from 'next/link'
 import { useRef } from 'react'
 import { RUTAS } from '@/shared/lib/rutas'
@@ -80,7 +79,7 @@ export function TelefonosExtra({
                   <>
                     {' '}
                     <Link
-                      href={`${RUTAS.configuracionDeLeads}?seccion=telefonos` as Route}
+                      href={RUTAS.telefonosExtraDeLeads}
                       className="font-medium underline underline-offset-2"
                     >
                       Cambiar el máximo

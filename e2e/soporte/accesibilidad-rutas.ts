@@ -76,6 +76,13 @@ export const REDIRECCIONES: Record<string, string> = {
   '/configuracion/web': '/configuracion/web/ajustes',
 }
 
+// Las páginas estáticas que sólo redirigen en el navegador, tras el esqueleto: al cambiar la URL todavía se ve el esqueleto del destino,
+// no lo que dibuja. No se barren; su destino se barre como su propia ruta.
+export const SOLO_REDIRIGEN: Record<string, string> = {
+  '/configuracion/leads':
+    'sólo redirige a la primera sub-sección que se puede abrir (/configuracion/leads/campos), que se barre como su propia ruta',
+}
+
 const claveDelOrigen = (proyecto: string) => `a11y_${proyecto}`
 const tituloDeLaCotizada = (proyecto: string) => `A11y cotizada ${proyecto}`
 const slugDeLaGuia = (proyecto: string) => `e2e-guia-a11y-${proyecto}`

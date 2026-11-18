@@ -212,7 +212,7 @@ test('con el máximo en 2 y un lead de 3, el aviso dice cuántos quitar y la due
   ).toBeVisible()
   await expect(page.getByRole('link', { name: 'Cambiar el máximo' })).toHaveAttribute(
     'href',
-    /seccion=telefonos/,
+    /\/configuracion\/leads\/telefonos$/,
   )
   // Los suyos quedan, y quitar sigue valiendo.
   expect(await extrasDeLead(propio.id)).toHaveLength(3)
