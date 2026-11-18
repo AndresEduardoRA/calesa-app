@@ -8692,6 +8692,10 @@ export type Database = {
         }[]
       }
       _nombre_del_modo: { Args: { p_clave: string; p_formula: string }; Returns: string }
+      _oportunidad_abierta_unica: {
+        Args: { p_embudo: string; p_excepto?: string; p_lead: string; p_usuario: string }
+        Returns: undefined
+      }
       _oportunidad_conflicto: { Args: { p_cuando: string }; Returns: undefined }
       _oportunidad_constancia: {
         Args: {

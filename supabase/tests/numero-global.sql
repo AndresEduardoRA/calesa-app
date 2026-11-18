@@ -29,7 +29,10 @@ end $$;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000050', false);
 set role authenticated;
 select public.embudo_por_defecto();
-select public.oportunidad_crear(gen_random_uuid(), current_setting('matriz.lp')::uuid, '{"titulo": "NG oportunidad de 0050"}');
+-- Ganada: 0050 ya tiene una abierta sobre LP en su embudo por defecto (la de la matriz) y sólo se admite una abierta por lead y embudo.
+select public.oportunidad_crear(gen_random_uuid(), current_setting('matriz.lp')::uuid, jsonb_build_object('titulo', 'NG oportunidad de 0050',
+  'etapa_id', (select s.id from public.embudos_etapas s join public.embudos e on e.id = s.embudo_id
+                where e.usuario_id = (select auth.uid()) and e.es_default and s.es_ganada)));
 reset role;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
 set role authenticated;

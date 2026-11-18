@@ -130,6 +130,10 @@ por cursor, de a 20 y hasta 100, por `oportunidades_lead_abiertas_idx` y `oportu
   principal, verificar y restaurar) con un candado por número, siempre después del de la fila del lead y sólo con la regla encendida; los duplicados
   de antes quedan. Los extras piden `leads.telefonos_extra.editar` + cartera (clase 1); el principal, `leads.editar`.
 - **Marcas:** de quien mira, `poner(valor)` y nunca alternar, sin versión, sin tocar `leads`. Embudos personales; oportunidades clase 1.
+- **Una abierta y viva por lead y embudo:** la guarda `_oportunidad_abierta_unica` (22023, `hint` `embudo_id`, el id de la abierta en `detail`) en
+  `oportunidad_crear`, `oportunidad_mover` (al reabrir) y `oportunidad_restaurar` (una abierta). Candados: lead → embudo → oportunidad → (lead,
+  embudo). La base del alta no falla (si ya hay una abierta, no crea otra); transferir y guardar etapas no pasan por la guarda; `oportunidad_guardar`
+  no cambia de embudo. Las duplicadas de antes quedan. `lead_oportunidades` trae en su primera página `abiertas_por_embudo`.
 - **Un origen o tipo de lead con leads se desactiva, no se elimina.** Siempre queda un tipo activo de cada clase; la clase no cambia. **Se razona
   por la clase, nunca por nombre o clave**. Un campo con datos no cambia de tipo ni se elimina.
 - **Seguimientos:** privado = sólo su autor; el detalle es un documento validado contra la lista blanca, nunca HTML ni `innerHTML`.
