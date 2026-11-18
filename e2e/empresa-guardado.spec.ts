@@ -165,11 +165,8 @@ test('la barra aparece al cambiar algo, salir pregunta, y «Descartar» o «Guar
   await nombre.fill(`${guardado} Barra`)
   await expect(barra(page)).toContainText('Tienes cambios sin guardar')
 
-  // Salir por el menú pregunta en la barra; «Seguir editando» se queda con lo tipeado.
-  await page
-    .getByRole('navigation', { name: 'Secciones de Configuración' })
-    .getByRole('link', { name: 'Equipo', exact: true })
-    .click()
+  // Salir por «‹ Configuración» pregunta en la barra; «Seguir editando» se queda con lo tipeado.
+  await page.getByRole('main').getByRole('link', { name: 'Configuración', exact: true }).click()
   await expect(barra(page)).toContainText('Tienes cambios sin guardar.')
   await barra(page).getByRole('button', { name: 'Seguir editando' }).click()
   await expect(page).toHaveURL('/configuracion/empresa')

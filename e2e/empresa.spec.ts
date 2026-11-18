@@ -145,7 +145,7 @@ test('edita un tipo de cambio y aparece en la barra superior y en el historial',
 }) => {
   await entrar(page, duena)
   await page.goto('/configuracion/empresa/monedas')
-  await expect(page.getByRole('heading', { name: 'Tipos de cambio' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Tipos de cambio', exact: true })).toBeVisible()
   const enLaBarra = page.getByRole('button', { name: 'Tipos de cambio' })
   await expect(enLaBarra).toContainText('11,68')
 
@@ -277,7 +277,7 @@ test('sin conexión, el formulario avisa y conserva lo tipeado', async ({ page, 
   await expect(page.getByText('Recuperamos lo que habías escrito')).toBeVisible()
   await expect(page.getByLabel('NIT')).toHaveValue('1020304050')
   await expect(page.getByLabel('Razón social')).toHaveValue('Andina SRL')
-  await page.getByRole('button', { name: 'Descartar' }).click()
+  await page.locator('[data-sonner-toast]').getByRole('button', { name: 'Descartar' }).click()
   await expect(page.getByLabel('NIT')).toHaveValue('')
 })
 

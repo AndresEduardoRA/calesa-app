@@ -220,7 +220,7 @@ test('al 200 %: en Monedas se leen enteros el nombre y el valor de cada tipo de 
   await textoGrandeAlCargar(page)
   await entrar(page)
   await page.goto('/configuracion/empresa/monedas')
-  await expect(page.getByRole('heading', { name: 'Tipos de cambio' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Tipos de cambio', exact: true })).toBeVisible()
   const filas = page.getByRole('list').filter({ has: page.getByText(/^1 [A-Z]{3} = $/) })
   await sinTextoCortado(filas)
   await sinTextoCortado(page.getByRole('list').filter({ hasText: 'Dólar estadounidense' }))
