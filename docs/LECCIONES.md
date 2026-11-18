@@ -240,6 +240,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - En una prueba `@sin-celular` no midas ni con una función propia del spec (la guarda la cuenta como ayudante que mide): afirma estilos con
   `toHaveCSS` y arrastra con `hover` en pasos (dnd-kit toma la fila en el primer movimiento y la lleva en los siguientes).
 
+- Declara como `pendiente` en `DINAMICAS` (`e2e/soporte/accesibilidad-rutas.ts`) una página que sólo redirige: tras el esqueleto redirige en el navegador y el barrido cae con «Execution context was destroyed».
+
 ### Sesiones y datos de prueba
 
 - Para cambiar de cuenta, `context.clearCookies()` antes de `entrar` (`{ fresco: true }` no descarta la sesión), y mejor parte la prueba que cambia de usuario a mitad: arrastra el estado de la sesión anterior.
