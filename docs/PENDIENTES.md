@@ -101,6 +101,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Rendimiento y escala
 
+- **[—]** El listado de cotizaciones de la dueña con 100 filas mide 50.003 B comprimidos con la siembra de volumen, sobre su tope de 49.500 (`e2e/listas-por-pagina-volumen.spec.ts`), ya en `main` (`a5dd0fe9`) — medir qué lo subió (la portada de la lista, #369, es candidata) y recortar o subir el tope con la regla del 5 %.
 - **[T17]** Retirar `vehiculo_interesados()`: la app ya no la llama (el bloque «Relacionados» lee `vehiculo_relacionados()`); `humo.sql` y `numero-global.sql` la siguen probando — migración que la quite y sus sondas.
 - **[T322]** El inicio de Configuración lee lo que falta con `origenes_resumen()`, que cuenta vehículos y cotizaciones que no usa — una lectura de los pasos sin contar si con volumen pesa.
 - **[4-79]** `origenes_resumen()` cuenta con `count(*)` exacto vehículos y cotizaciones por origen, contra la regla de escala — `limit n + 1` por origen con `conteoCorto()`, o quitar el número.
