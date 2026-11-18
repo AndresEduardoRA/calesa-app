@@ -15,7 +15,9 @@ test.describe.configure({ mode: 'serial' })
 
 // Lo medido en escritorio con 500 miembros (4.19-3b: 147.484 B del primer HTML y 4.754 nodos con «Filas» abierto; 4.22-7: 155.874 B con las pestañas Diseño y Tonos y lo
 // que trajo main), más un 5 %. Va a docs/RENDIMIENTO.md. 171.900: con el botón «Nuevo» de la barra el marco suma 1.551 B a toda pantalla (162.237 → 163.788), más un 5 %.
-const TOPE_DE_BYTES_DEL_HTML = 171_900
+// 180.400 (regla del 5 %): las siete sub-rutas de Configuración › Leads reparten el JS común en dos chunks más y toda pantalla los nombra
+// en el HTML (170.966 → 172.068 B, el mismo JS); la pestaña no dibuja nada nuevo.
+const TOPE_DE_BYTES_DEL_HTML = 180_400
 const TOPE_DE_NODOS_CON_500 = 5_000
 
 let configuradora = ''
