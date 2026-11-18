@@ -8,7 +8,7 @@ import { panelAgregar } from './soporte/leads-vehiculos'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
-// «Relacionados» (T17, `docs/UX.md` › «Relacionados»): el mismo bloque arriba de cada detalle. Desde la ficha del vehículo, su resumen del inventario y la unidad de logística se ven
+// «Relacionados» (T17, `docs/UX.md` › «Relacionados»): el mismo bloque arriba de cada detalle. Desde la ficha del vehículo y la unidad de logística se ven
 // el mismo Vinculado (A), Interesado (B) y Cotizado (C) con sus leyendas; la ficha del lead muestra el vehículo en cada tipo; y vincular o marcar desde un lado aparece en el otro.
 test.describe.configure({ mode: 'serial' })
 
@@ -89,7 +89,7 @@ async function venEnLaFicha(page: Page) {
   )
 }
 
-// El resumen del inventario y la unidad de logística los dicen en una línea de chips («Vinculado · n»…): cada chip abre su grupo en un popover con las mismas filas y leyenda.
+// La unidad de logística los dice en una línea de chips («Vinculado · n»…): cada chip abre su grupo en un popover con las mismas filas y leyenda.
 async function venEnLinea(page: Page, raiz: Page | Locator) {
   const linea = bloque(raiz)
   await expect(linea).toBeVisible()
@@ -109,7 +109,7 @@ async function venEnLinea(page: Page, raiz: Page | Locator) {
   }
 }
 
-test('E2E la ficha del vehículo, su resumen y la unidad de logística muestran los mismos relacionados', async ({
+test('E2E la ficha del vehículo y la unidad de logística muestran los mismos relacionados', async ({
   page,
 }, info) => {
   await entrar(page, duena, { fresco: true })
@@ -117,14 +117,6 @@ test('E2E la ficha del vehículo, su resumen y la unidad de logística muestran 
   await expect(page.getByRole('heading', { name: titulos.principal, level: 1 })).toBeVisible()
   await venEnLaFicha(page)
   await capturar(page, info, 'ficha-del-vehiculo')
-
-  await page.goto(`/vehiculos?origen=${origen.id}&vehiculo=${vehiculos.principal}`)
-  const resumen = page.getByRole('dialog', { name: titulos.principal, exact: true })
-  await expect(resumen).toBeVisible()
-  await venEnLinea(page, resumen)
-  // El popover se cerró con Esc y el resumen (un drawer) sigue abierto.
-  await expect(resumen).toBeVisible()
-  await capturar(page, info, 'resumen-del-vehiculo')
 
   await page.goto(`/logistica/vehiculo/${vehiculos.principal}`)
   await venEnLinea(page, page)

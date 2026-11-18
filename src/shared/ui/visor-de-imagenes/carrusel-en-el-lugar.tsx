@@ -66,7 +66,7 @@ function textoDelBoton(titulo: string, indice: number, total: number): string {
 
 // Las fotos de una entidad en su lugar (tarjeta, fila, cabecera): la portada que ya trae la fila y, recién cuando alguien se acerca (puntero,
 // foco o toque), el resto, una sola vez (`useImagenes`). Con varias, flechas, puntos y gesto; el clic abre el visor grande en esa foto. Va con
-// `data-no-abre`: tocar la foto no abre el resumen de la fila.
+// `data-no-abre`: tocar la foto no abre la fila (ni su resumen ni su ficha).
 export function CarruselEnElLugar({ modo = 'carrusel', vacio, className, ...pedido }: Props) {
   const c = useCarrusel(pedido)
   const inicio = useRef<number | null>(null)

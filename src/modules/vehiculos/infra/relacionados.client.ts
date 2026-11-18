@@ -1,36 +1,17 @@
-// Lo que leen los relacionados en el navegador, con la sesión de quien mira (el resumen de un vehículo, «Ver todos» y el historial del vínculo): las RPC son
+// Lo que leen los relacionados en el navegador, con la sesión de quien mira («Ver todos» y el historial del vínculo): las RPC son
 // `security definer` con el predicado de las policies, así que lo que quien mira no ve llega contado y sin datos aunque la llamada salga del navegador.
 import { errorDePostgrest, fallo, ok } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/browser'
-import { PRIMEROS_DE_RELACIONADOS, TAMANO_DE_RELACIONADOS } from '../entities/relacionados'
-import {
-  paginaDeLeadsDesde,
-  paginaDeVehiculosDesde,
-  relacionadosDelVehiculoDesde,
-} from '../entities/relacionados-lectura'
+import { TAMANO_DE_RELACIONADOS } from '../entities/relacionados'
+import { paginaDeLeadsDesde, paginaDeVehiculosDesde } from '../entities/relacionados-lectura'
 import type {
   LectorDePaginaDeLeads,
   LectorDePaginaDeVehiculos,
-  LectorDeRelacionadosDelVehiculo,
   LectorDeVinculos,
 } from '../entities/repositorios'
 import { vinculosDesde } from '../entities/vinculo'
 
 const NO_SE_LEYO = 'No pudimos leer los relacionados.'
-
-export const leerRelacionadosDelVehiculoEnElNavegador: LectorDeRelacionadosDelVehiculo = async (
-  vehiculoId,
-) => {
-  const { data, error } = await createClient().rpc('vehiculo_relacionados', {
-    p_vehiculo: vehiculoId,
-    p_primeros: PRIMEROS_DE_RELACIONADOS,
-  })
-  if (error) {
-    return { ok: false, error: errorDePostgrest(error) }
-  }
-  const leidos = relacionadosDelVehiculoDesde(vehiculoId, data)
-  return leidos ? ok(leidos) : fallo('inesperado', NO_SE_LEYO)
-}
 
 // «Ver todos»: de a `TAMANO_DE_RELACIONADOS` (la base trae uno de más: la página que sigue), tras el cursor de la última fila que se dibujó.
 export const leerPaginaDeLeadsDelVehiculo: LectorDePaginaDeLeads = async ({

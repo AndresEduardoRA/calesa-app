@@ -1,14 +1,15 @@
 'use client'
 
 import {
-  AbrirResumen,
   CabeceraPegada,
   CeldaPegada,
+  EnlaceDeLaFila,
   FilaDeLista,
   TablaDeLista,
   SufijoDeVisto,
 } from '@/shared/ui/lista'
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
+import { rutaDeLaFichaDelVehiculo } from '../../../entities/acciones-de-relacionados'
 import { camposDeTarjeta, type CampoDeVehiculo } from '../../../entities/campo'
 import {
   aprobadaDeLaFila,
@@ -50,9 +51,6 @@ type Props = DatosDelOrigen & {
   menu: ParaElMenuDeLaLista
   // Las filas que se pueden elegir (para enviarlas juntas a la papelera) y las elegidas.
   seleccion: SeleccionDelListado
-  alAbrir: (id: string) => void
-  // El vehículo abierto en el resumen, para marcarlo.
-  abierto: string | null
   // Su cotización aprobada por vehículo; nulo = quien mira no ve cotizaciones: la columna no se dibuja.
   aprobadas: AprobadasDeLaPagina | null
 }
@@ -64,15 +62,7 @@ const HUECO_DE_CASILLA = <span aria-hidden className="size-[44px] shrink-0 md:si
 
 type PropsDeFila = Pick<
   Props,
-  | 'origen'
-  | 'fases'
-  | 'vitrina'
-  | 'limpiezaHoy'
-  | 'menu'
-  | 'seleccion'
-  | 'alAbrir'
-  | 'abierto'
-  | 'aprobadas'
+  'origen' | 'fases' | 'vitrina' | 'limpiezaHoy' | 'menu' | 'seleccion' | 'aprobadas'
 > & {
   vehiculo: FilaDeVehiculo
   // Lo que lo nombra: su campo principal (con el título debajo) o su título.
@@ -107,8 +97,8 @@ function CasillaDeLaFila({
   )
 }
 
-// La fila de un vehículo. La casilla va delante del nombre y «Editar» pegado a la derecha; esa columna sólo existe si alguna fila de
-// la página la usa.
+// La fila de un vehículo: un enlace a su ficha (el nombre es el `<a>`; el resto de la fila navega igual). La casilla va delante del nombre y
+// el «⋯» pegado a la derecha; esa columna sólo existe si alguna fila de la página la usa.
 function FilaDeTabla({
   vehiculo,
   identidad,
@@ -120,31 +110,25 @@ function FilaDeTabla({
   limpiezaHoy,
   menu,
   seleccion,
-  alAbrir,
-  abierto,
   aprobadas,
   conMenu,
 }: PropsDeFila) {
   const fase = faseDe(fases, vehiculo.faseId)
+  const ficha = rutaDeLaFichaDelVehiculo(vehiculo.id)
   return (
-    <FilaDeLista
-      abierta={abierto === vehiculo.id}
-      idDeVisto={vehiculo.id}
-      alAbrir={() => {
-        alAbrir(vehiculo.id)
-      }}
-    >
+    <FilaDeLista href={ficha} idDeVisto={vehiculo.id}>
       <CeldaPegada lado="nombre">
         <div className="flex items-center gap-3">
           <CasillaDeLaFila seleccion={seleccion} id={vehiculo.id} nombre={identidad.nombre} />
           <FotosEnElLugar vehiculo={vehiculo} modo="abrir" className="w-14" />
           <div className="grid min-w-0">
-            <AbrirResumen
+            <EnlaceDeLaFila
+              href={ficha}
               nombre={identidad.nombre}
               className="max-w-72 truncate font-medium text-(--color-ink)"
             >
               {identidad.nombre}
-            </AbrirResumen>
+            </EnlaceDeLaFila>
             <span className="text-(length:--text-xs) text-(--color-ink-soft) tabular-nums">
               {identidad.titulo === null ? '' : `${identidad.titulo} · `}#{vehiculo.numero}
               <SufijoDeVisto id={vehiculo.id} />
@@ -187,8 +171,8 @@ function FilaDeTabla({
 }
 
 // El inventario de un origen en escritorio, con el patrón de lista (`@/shared/ui/lista`): lo común adelante y, después, una columna
-// por cada campo «en tarjeta» del layout. Un clic en cualquier parte de la fila abre el vehículo, salvo el de la casilla y el de
-// «Editar». La tabla es tan ancha como lo pidan sus columnas y se desplaza dentro de su tarjeta, con el nombre a la vista.
+// por cada campo «en tarjeta» del layout. Un clic en cualquier parte de la fila abre la ficha del vehículo, salvo el de la casilla, la
+// miniatura, «Publicar» y el «⋯». La tabla es tan ancha como lo pidan sus columnas y se desplaza dentro de su tarjeta, con el nombre a la vista.
 export function TablaDeVehiculos({ vehiculos, campos, encabezado, ...resto }: Props) {
   const { menu, seleccion, vehiculos: filas } = { ...resto, vehiculos }
   const conMenu = hayMenuEnLaPagina(filas, menu)

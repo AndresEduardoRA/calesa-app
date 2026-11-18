@@ -11,7 +11,7 @@ import { telefonoAlAzar } from './leads-alta'
 import { PREFIJO_CLAVE_E2E, crearOrigenDePrueba } from './origenes'
 import { literal, sql } from './sql'
 import { borrarVehiculosDe } from './vehiculos'
-import { sembrarFotos } from './vehiculos-resumen'
+import { sembrarFotos } from './vehiculos-lista'
 import { borrarFasesDe, crearFaseInterna, crearFaseQuePublica } from './vitrina'
 
 // Claves de atributo fuera del layout de Corea: la base no les mira el tipo (`_atributos_validar` sólo revisa las del layout), así que

@@ -212,17 +212,16 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 
 ### Vehículos, orígenes, equipo y empresa
 
-- **Relacionados** (`vehiculo_relacionados()`, `lead_relacionados()` y sus `*_pagina()`; `medir-relacionados.sql`): una lectura `security definer` por bloque (la ficha y la unidad, en el servidor; el resumen del inventario y «Ver todos», en el
+- **Relacionados** (`vehiculo_relacionados()`, `lead_relacionados()` y sus `*_pagina()`; `medir-relacionados.sql`): una lectura `security definer` por bloque (la ficha y la unidad, en el servidor; «Ver todos», en el
   navegador). Tope: 3 filas por grupo (≤ 9 por bloque) y una ventana de 101 relaciones por grupo (la cabecera dice «100+»); «Ver todos» de a 20 por cursor `(fecha, id)` hasta 500, con un recorrido de hasta 2.000 filas por llamada
   (`cortada` si hay demasiadas ocultas seguidas). Índices: `vehiculos_interesados_vehiculo_reciente_idx`, `…_lead_reciente_idx`, `vehiculos_vinculos_lead_abierto_idx`, `cotizaciones_relacion_vehiculo_idx`, `…_lead_idx` y `…_par_idx`
   (parciales de la cotización activa). Con un vehículo de 5.000 interesados y 2.000 cotizaciones: resumen ≈ 4 ms (3 ms la dueña) y 835 bloques, los mismos que con 300 (no crece con N); los relacionados de un lead de 1.000 vinculados,
   1.000 interesados y 2.000 cotizaciones ≈ 9 a 13 ms; una página «Ver todos» ≈ 5 a 15 ms (Ana, que ve 3 de 5.000, recorre las 2.000 filas del tope: ≈ 10 ms). Tope de la medición: 20 ms por llamada. Las cuatro llevan `set random_page_cost = 1.1`
-  (sin él el plan genérico ordena todo lo del vehículo caliente: 20 mil bloques). Las imágenes, la miniatura de 480 px; el visor, la grande. Sin caché de cliente: la ficha y la unidad se releen al actuar (`revalidarVinculo()`), el resumen
-  lee al abrir y tras cada acción. El del vehículo hace 2 pedidos al abrir (más las fotos de la portada al acercarse).
+  (sin él el plan genérico ordena todo lo del vehículo caliente: 20 mil bloques). Las imágenes, la miniatura de 480 px; el visor, la grande. Sin caché de cliente: la ficha y la unidad se releen al actuar (`revalidarVinculo()`).
   Dos presentaciones (en una línea y compacta), sin grupos vacíos: lo que no tiene nada no se dibuja y las filas de una línea existen sólo en su popover (diferido, montado al primer clic).
   Con un vínculo y 4 interesados (`section[aria-label="Relacionados"]`, escritorio): la ficha del vehículo 8.078 B, 58 nodos y 213 px de alto (332 px en el celular); la ficha del lead con un
-  vínculo 3.350 B, 30 nodos y 143 px; el resumen del vehículo, en una línea, 1.689 B, 8 nodos y 32 px.
-  En frío, el bloque va dentro del resumen diferido de `/vehiculos`; en las fichas lo lee el servidor y entra en el documento de la ficha (sus topes, en «JS en frío»).
+  vínculo 3.350 B, 30 nodos y 143 px.
+  En las fichas lo lee el servidor y entra en el documento de la ficha (sus topes, en «JS en frío»).
 
 - Inventario: 50 por cursor (máx. 100, `MAXIMO_DE_PAGINA_DE_VEHICULOS`), `vehiculos_origen_listado_idx`; 20 ms página, 100 / 150 ms
   búsqueda y limpieza.

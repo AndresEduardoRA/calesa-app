@@ -8,6 +8,7 @@ import {
   MAXIMO_DE_PAGINA_DE_VEHICULOS,
   buscarVehiculos,
   condicionesDe,
+  destinoDelEnlaceViejo,
   editablesDe,
   eliminablesDe,
   alcanceDeAvisos,
@@ -29,19 +30,35 @@ import { datosO } from '@/shared/lib/errores'
 import { CLAVE_DE_CURSOR, CLAVE_DE_POR_PAGINA, leerFiltros } from '@/shared/lib/filtros'
 import type { Permisos } from '@/shared/lib/permisos'
 import { leerCursor, leerPorPagina, tamanoDePagina, tamanosHasta } from '@/shared/lib/paginacion'
+import { redirigir } from '@/shared/lib/navegacion'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
-import { paraElResumenDe } from '../_relacionados/para-relacionados'
 import { aprobadasDeLaPagina } from './aprobadas'
 import { vehiculoEnEdicion } from './edicion'
 
 export const metadata: Metadata = { title: 'Vehículos' }
 
-// «Cotizar» del resumen: la hoja de cotizar de este origen si la persona tiene las dos claves y el origen está activo; si no, el botón no está (la base vuelve a exigirlas).
+// «Cotizar vehículo» del «⋯» de la fila: la hoja de cotizar de este origen si la persona tiene las dos claves y el origen está activo; si no, la línea no está (la base vuelve a exigirlas).
 function paraCotizarDe(permisos: Permisos, origen: OrigenResumen) {
   return origenesParaCotizar(permisos, [origen]).length === 1
     ? { ruta: rutaDeLaHoja({ origen: origen.id, lead: null }), claveDelVehiculo: CLAVE_DE_VEHICULO }
     : null
+}
+
+// Un enlace viejo al resumen (`?vehiculo=<id>`, con su `panel`, `visor`, `foto`, `pestana` y `editar`): la lista ya no tiene resumen, así que va a la
+// ficha con lo que pedía. `redirect()` es 307 en la carga y `replace` en una navegación de la app: no suma al historial. Fuera de todo `try`.
+function redirigirElEnlaceViejo(parametros: Awaited<PageProps<'/vehiculos'>['searchParams']>) {
+  const destino = destinoDelEnlaceViejo({
+    vehiculo: unParametro(parametros['vehiculo']),
+    panel: unParametro(parametros['panel']),
+    visor: unParametro(parametros['visor']),
+    foto: unParametro(parametros['foto']),
+    pestana: unParametro(parametros['pestana']),
+    editar: unParametro(parametros['editar']),
+  })
+  if (destino) {
+    redirigir(destino)
+  }
 }
 
 // Una vista de un origen que la persona ya no ve no se ofrece.
@@ -84,6 +101,7 @@ function tamanoDeLaPagina(
 // filtros y la página vienen en la URL, y lo que no corresponde se ignora.
 export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehiculos'>) {
   const [sesion, parametros] = await Promise.all([requerirSesion(), searchParams])
+  redirigirElEnlaceViejo(parametros)
   const visibles = origenesVisibles(sesion.permisos, datosO(await getOrigenes(true)))
   const origen = origenElegido(visibles, unParametro(parametros['origen']))
   if (!origen) {
@@ -155,7 +173,6 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
       alcance={alcanceDeAvisos(sesion.permisos, origen.id)}
       verPapelera={puedeAbrirLaPapelera(sesion.permisos)}
       aprobadas={aprobadas}
-      para={paraElResumenDe(sesion.permisos, visibles)}
       publicar={permisoDeVitrina(sesion.permisos, origen)}
       paraCotizar={paraCotizarDe(sesion.permisos, origen)}
       vistaPreferida={sesion.preferencias.vistaDeVehiculos}

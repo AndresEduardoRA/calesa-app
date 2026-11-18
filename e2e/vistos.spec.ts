@@ -1,35 +1,58 @@
 import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/inventario'
 import { sql, literal } from './soporte/sql'
+import { vehiculoPorTitulo } from './soporte/vehiculos'
 import { esperarMarca } from './soporte/vistos'
 import {
   OTRO,
   TITULO,
-  abrirConUnClic,
+  abrirLaFicha,
   alInventario,
-  limpiarResumen,
-  prepararResumen,
-  resumenDe,
-  type TerrenoDelResumen,
-} from './soporte/vehiculos-resumen'
+  limpiarLista,
+  prepararLista,
+  type TerrenoDeLaLista,
+} from './soporte/vehiculos-lista'
 
-// «Visto» y «último visto» por persona y módulo: abrir el resumen de un vehículo lo marca en la lista de Vehículos, se
-// recuerda al volver, y «Vistos» apagado en `/perfil` no marca nada.
+// «Visto» y «último visto» por persona y módulo: abrir la ficha de un vehículo desde la lista lo marca en la lista de Vehículos al
+// volver, se recuerda al recargar, y «Vistos» apagado en `/perfil` no marca nada.
 test.describe.configure({ mode: 'serial' })
 
-let t: TerrenoDelResumen
+let t: TerrenoDeLaLista
+let otro = ''
 
 test.beforeAll(async ({}, info) => {
-  t = await prepararResumen(`${info.project.name}_vistos`)
+  t = await prepararLista(`${info.project.name}_vistos`)
+  otro = (await vehiculoPorTitulo(OTRO))?.id ?? ''
 })
 
 test.afterAll(async () => {
-  sql(`delete from public.vistos where referencia_id = ${literal(t.id)}::uuid`)
-  await limpiarResumen(t.id)
+  sql(
+    `delete from public.vistos where referencia_id in (${literal(t.id)}::uuid, ${literal(otro)}::uuid)`,
+  )
+  await limpiarLista(t.id)
 })
 
 const filaDe = (page: Parameters<typeof alInventario>[0], titulo: string) =>
   page.locator('tbody tr, li article').filter({ hasText: titulo })
+
+// La ficha registra la visita después de dibujarse (`RegistrarVisto`): se espera la fila en la base antes de volver, o la lista podría
+// releer las marcas antes de la escritura.
+async function esperarElRegistro(id: string) {
+  await expect
+    .poll(() =>
+      sql(
+        `select count(*) from public.vistos where referencia_id = ${literal(id)}::uuid and modulo = 'vehiculos'`,
+      ),
+    )
+    .toBe('1')
+}
+
+async function abrirYVolver(page: Parameters<typeof alInventario>[0], titulo: string, id: string) {
+  await abrirLaFicha(page, titulo, id)
+  await esperarElRegistro(id)
+  await page.goBack()
+  await expect(page).toHaveURL(/\/vehiculos\?origen=/)
+}
 
 test('E2E abrir un vehículo lo marca como el último visto, y se recuerda al volver', async ({
   page,
@@ -37,9 +60,7 @@ test('E2E abrir un vehículo lo marca como el último visto, y se recuerda al vo
   await entrar(page, t.lector)
   await alInventario(page, t.terreno.corea.id)
   await expect(filaDe(page, TITULO).getByTitle('Último visto', { exact: true })).toHaveCount(0)
-  await abrirConUnClic(page, TITULO)
-  await page.keyboard.press('Escape')
-  await expect(resumenDe(page, TITULO)).toHaveCount(0)
+  await abrirYVolver(page, TITULO, t.id)
   await expect(filaDe(page, TITULO).first()).toHaveAttribute('data-visto', 'ultimo')
   await expect(filaDe(page, TITULO).getByTitle('Último visto', { exact: true })).toBeVisible()
   // Sin texto a la vista: el lector lo oye (`sr-only`) y el icono cabe dentro de la fila, sin ensancharla.
@@ -70,24 +91,24 @@ test('E2E como un correo: lo no visto en negrita, lo visto en peso normal, y abr
   page,
 }) => {
   sql(
-    `delete from public.vistos where modulo = 'vehiculos' and referencia_id = ${literal(t.id)}::uuid`,
+    `delete from public.vistos where modulo = 'vehiculos' and referencia_id in (${literal(t.id)}::uuid, ${literal(otro)}::uuid)`,
   )
   await entrar(page, t.lector)
   await alInventario(page, t.terreno.corea.id)
   await esperarMarca(filaDe(page, TITULO).first(), 'nuevo')
   await esperarMarca(filaDe(page, OTRO).first(), 'nuevo')
 
-  await abrirConUnClic(page, TITULO)
-  await page.keyboard.press('Escape')
+  await abrirYVolver(page, TITULO, t.id)
   await esperarMarca(filaDe(page, TITULO).first(), 'ultimo')
   await esperarMarca(filaDe(page, OTRO).first(), 'nuevo')
 
   // Abrir otro: él es el último y el primero sigue visto (peso normal), ya sin «Último visto».
-  await abrirConUnClic(page, OTRO)
-  await page.keyboard.press('Escape')
+  await abrirYVolver(page, OTRO, otro)
   await esperarMarca(filaDe(page, OTRO).first(), 'ultimo')
   await esperarMarca(filaDe(page, TITULO).first(), 'visto')
-  sql(`delete from public.vistos where referencia_id = ${literal(t.id)}::uuid`)
+  sql(
+    `delete from public.vistos where referencia_id in (${literal(t.id)}::uuid, ${literal(otro)}::uuid)`,
+  )
 })
 
 test('E2E con «Vistos» apagado en el perfil la lista no marca nada', async ({ page }) => {

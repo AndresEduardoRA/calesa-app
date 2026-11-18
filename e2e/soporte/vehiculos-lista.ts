@@ -1,5 +1,5 @@
-// Lo que comparten los e2e del resumen de un vehículo (`?vehiculo=`, 9i): el terreno (dos personas que sólo leen, una con `leads.ver` y otra
-// sin), cómo se encuentra la fila o la tarjeta de un vehículo, el resumen y un clic que no es del nombre ni de una acción.
+// Lo que comparten los e2e de la lista de vehículos (cada vehículo, un enlace a su ficha): el terreno (dos personas que sólo leen, una con
+// `leads.ver` y otra sin), cómo se encuentra la fila o la tarjeta de un vehículo y un clic que no es del nombre ni de una acción.
 import { createHash } from 'node:crypto'
 import { expect, type Locator, type Page } from './prueba'
 import { PREFIJO_ROL_E2E, admin, correoDePrueba, crearPersona, darRolDePrueba } from './base'
@@ -11,9 +11,8 @@ import { vehiculoPorTitulo } from './vehiculos'
 export const TITULO = 'Kia Sportage'
 export const OTRO = 'Hyundai Tucson 100%'
 export const NO_EXISTE = '00000000-0000-4000-8000-000000000000'
-export const NO_DISPONIBLE = 'Este vehículo ya no está disponible: no existe o ya no tienes acceso.'
 
-export type TerrenoDelResumen = {
+export type TerrenoDeLaLista = {
   terreno: Terreno
   // Ve los vehículos de Corea y sus propios leads, pero no edita nada.
   lector: string
@@ -24,10 +23,10 @@ export type TerrenoDelResumen = {
 }
 
 // `ademas`: los permisos que la dueña de prueba suma (vitrina, papelera) para ver todo el «⋯».
-export async function prepararResumen(
+export async function prepararLista(
   proyecto: string,
   ademas: Parameters<typeof prepararInventario>[1] = [],
-): Promise<TerrenoDelResumen> {
+): Promise<TerrenoDeLaLista> {
   const terreno = await prepararInventario(proyecto, ademas)
   const lector = correoDePrueba(`lector-resumen-${proyecto}`)
   await crearPersona({ email: lector, contrasena: CLAVE, nombre: 'Lola Lectora', invitada: true })
@@ -58,7 +57,7 @@ export async function prepararResumen(
   return { terreno, lector, lectorSinLeads, id }
 }
 
-export async function limpiarResumen(vehiculoId: string): Promise<void> {
+export async function limpiarLista(vehiculoId: string): Promise<void> {
   await borrarFotosDe([vehiculoId])
   await borrarLeadsDePrueba()
   await limpiarInventario()
@@ -71,15 +70,16 @@ export const alInventario = (page: Page, origenId: string, extra = '') =>
 export const filaDe = (page: Page, titulo: string): Locator =>
   aLaVista(page.locator('tbody tr, li article').filter({ hasText: titulo })).first()
 
-export const resumenDe = (page: Page, titulo: string): Locator =>
-  page.getByRole('dialog', { name: titulo, exact: true })
+// El nombre de la fila o la tarjeta: el enlace a la ficha (`<EnlaceDeLaFila>`), buscado dentro de la fila (ByRole sobre toda la página es lento
+// con cientos de enlaces).
+export const enlaceDe = (page: Page, titulo: string): Locator =>
+  filaDe(page, titulo).getByRole('link', { name: titulo, exact: true })
 
-// Un clic en lo que no es ni el nombre ni una acción: la esquina de arriba de la fila o la tarjeta.
-export async function abrirConUnClic(page: Page, titulo: string): Promise<Locator> {
+// Un clic en lo que no es ni el nombre ni una acción (la esquina de arriba de la fila o la tarjeta) y la ficha que abre.
+export async function abrirLaFicha(page: Page, titulo: string, id: string): Promise<void> {
   await filaDe(page, titulo).click({ position: { x: 6, y: 6 } })
-  const resumen = resumenDe(page, titulo)
-  await expect(resumen).toBeVisible()
-  return resumen
+  await expect(page).toHaveURL(new RegExp(`/vehiculos/${id}$`))
+  await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeVisible()
 }
 
 // Fotos de prueba: se suben a Storage (la fila sólo nace apuntando a objetos que existen, con el nombre `<vehículo>/<sha-256>.jpg`) y se
