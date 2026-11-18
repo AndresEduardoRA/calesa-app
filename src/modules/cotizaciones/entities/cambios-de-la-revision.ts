@@ -1,7 +1,7 @@
 // Qué dejó una revisión, dicho en una línea (4.15-3b): los nodos que cambiaron (sus etiquetas), las columnas que se nombran y, si el nivel de quien mira lo deja ver, el total.
 // Puro: el diff ya llega recortado por la base, así que lo que un nivel esconde no está acá y no se puede delatar. Ningún texto de la base se dibuja, salvo las etiquetas
 // del diseño que quien mira ya ve.
-import type { RevisionDeLaCotizacion } from './revisiones'
+import type { CambioDeVehiculo, NombreDeVehiculo, RevisionDeLaCotizacion } from './revisiones'
 
 // Cuántos cambios se ven por revisión; el resto va como «y N más».
 export const CAMBIOS_A_LA_VISTA = 3
@@ -61,9 +61,23 @@ function totalDe(diff: Readonly<Record<string, unknown>>): CambiosDeLaRevision['
   return typeof de === 'number' && typeof a === 'number' ? { de, a } : null
 }
 
+const textoDelLado = (nombre: NombreDeVehiculo) =>
+  nombre === 'sin'
+    ? 'sin vehículo'
+    : nombre === 'oculto'
+      ? 'un vehículo que no puedes ver'
+      : nombre.titulo
+
+// El cambio de vehículo con sus nombres (T315): «Cambió el vehículo: A → B».
+export const textoDelCambioDeVehiculo = (cambio: CambioDeVehiculo) =>
+  `Cambió el vehículo: ${textoDelLado(cambio.de)} → ${textoDelLado(cambio.a)}`
+
+// `vehiculo`: el cambio de vehículo ya nombrado al leer (`conVehiculos()`). Con él, va **primero**: con otro vehículo cambian muchos nodos, y al final quedaría en «y N más».
+// Sin él (no se pudieron leer los nombres), «Cambió el vehículo» en su lugar de siempre.
 export function cambiosDeLaRevision(
   diff: RevisionDeLaCotizacion['diff'],
   etiquetas: ReadonlyMap<string, string>,
+  vehiculo: CambioDeVehiculo | null = null,
 ): CambiosDeLaRevision {
   const nodos = [...new Set([...nodosDe(diff, 'valores'), ...nodosDe(diff, 'fuentes')])]
     .map((id) => etiquetas.get(id) ?? id)
@@ -72,11 +86,14 @@ export function cambiosDeLaRevision(
   const columnas = [
     ...new Set(
       COLUMNAS.flatMap(([columna, texto]) =>
-        columna in diff ? [texto(lado(diff, columna))] : [],
+        columna in diff && !(columna === 'vehiculo_id' && vehiculo !== null)
+          ? [texto(lado(diff, columna))]
+          : [],
       ).filter((texto) => texto !== null),
     ),
   ]
-  const todos = [...nodos, ...columnas]
+  const primero = vehiculo === null ? [] : [textoDelCambioDeVehiculo(vehiculo)]
+  const todos = [...primero, ...nodos, ...columnas]
   const total = totalDe(diff)
   return {
     vistos: todos.slice(0, CAMBIOS_A_LA_VISTA),
