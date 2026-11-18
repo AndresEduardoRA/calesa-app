@@ -122,8 +122,8 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
 5. **Resumen fijo:** total (y en moneda local si se pidió con «Ver total en moneda local», apagado al nacer y sólo si la versión da su
    moneda), garantía si está a la vista, modo de tipo de cambio y toggle **Live**; al pie en el celular (alto máximo 40 % de la ventana) y
    al costado, pegado bajo la barra, desde 56 rem de la hoja (el 200 % lo pasa al pie). `Ctrl/Cmd+S` guarda (preventa); «Vista previa»
-   abre la tarjeta de la cotización (la cuadrícula tipo Excel de la plantilla, escalada como una imagen al ancho del modal: nunca agranda ni
-   desplaza la página de costado; en el celular, el modal a pantalla completa), con «Copiar texto» (apagado sin total o desactualizado) y, en una
+   abre la tarjeta de la cotización (la cuadrícula tipo Excel de la plantilla, escalada como una imagen al ancho del modal, que en escritorio es
+   grande (hasta 56 rem): nunca agranda ni desplaza la página de costado; en el celular, el modal a pantalla completa), con «Copiar texto» (apagado sin total o desactualizado) y, en una
    guardada, «Descargar PDF» (sin salir de la página; un fallo con «Reintentar»). Los avisos de trabajo van fuera de la tarjeta (total
    desactualizado, sin plantilla, lo de hoy no es lo guardado, cambios sin guardar, «Esta cotización venció el …»). La tarjeta de lo guardado
    también ofrece «Descargar PDF».

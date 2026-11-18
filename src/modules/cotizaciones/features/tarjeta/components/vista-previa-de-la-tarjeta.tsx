@@ -147,7 +147,8 @@ export default function VistaPreviaDeLaTarjeta(props: Props) {
       abierto={props.abierta}
       alCerrar={props.cerrar}
       titulo="Vista previa"
-      ancho="amplio"
+      // La tarjeta se escala al ancho del modal: en escritorio, uno grande la deja cerca de su tamaño.
+      ancho="grande"
       pie={
         <>
           <LiveDelResumen />
