@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { AccionesDelAviso } from '@/shared/ui/acciones-del-aviso'
+import { Aviso } from '@/shared/ui/aviso'
 import { Campo } from '@/shared/ui/campo'
 import { ModalDeFormulario } from '@/shared/ui/modal-de-formulario'
 import { useRegional } from '@/shared/ui/regional'
@@ -64,6 +66,14 @@ export function ModalDeOportunidadRapida({
       formulario={f}
       guardar={{ etiqueta: 'Crear oportunidad', enCurso: 'Creando…' }}
     >
+      {f.rechazo ? (
+        <Aviso tono="peligro">
+          <div className="grid gap-2">
+            <p>{f.rechazo.mensaje}</p>
+            <AccionesDelAviso resueltas={f.rechazo.acciones} enfocar />
+          </div>
+        </Aviso>
+      ) : null}
       <Campo
         nombre="titulo"
         etiqueta="Título"

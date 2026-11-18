@@ -6,6 +6,7 @@ import { alcanceDe, puede, type Permisos } from '@/shared/lib/permisos'
 import type { ClaseDeCotizacion } from './listado'
 
 export type ClaveDeAccionDeCotizacion =
+  | 'compartir'
   | 'aprobar'
   | 'final'
   | 'favorita'
@@ -18,6 +19,7 @@ export type ClaveDeAccionDeCotizacion =
 // El texto de cada una. Las que abren algo encima (un diálogo) llevan «…»; «Favorita» es una casilla. «Reportar…» pasa a decir que ya se reportó (el modal trae el motivo escrito).
 export const ETIQUETA_DE_ACCION_DE_COTIZACION: Readonly<Record<ClaveDeAccionDeCotizacion, string>> =
   {
+    compartir: 'Compartir cotización…',
     aprobar: 'Aprobar',
     final: 'Marcar final…',
     favorita: 'Favorita',
@@ -30,9 +32,10 @@ export const ETIQUETA_DE_ACCION_DE_COTIZACION: Readonly<Record<ClaveDeAccionDeCo
 
 export const ETIQUETA_DE_REPORTAR_SI_YA_REPORTO = 'Reportaste esta cotización…'
 
-// El orden, en bloques: lo que se hace seguido arriba (aprobar y marcar final), lo que se marca en medio (favorita y reportar), moderar (invalidar, descartar los reportes o
+// El orden, en bloques: compartir primero y solo (lo que más se hace con una cotización: mandársela al cliente), lo que se hace seguido (aprobar y marcar final), lo que se marca en medio (favorita y reportar), moderar (invalidar, descartar los reportes o
 // reactivar: la base ofrece una u otras) y lo destructivo al final y separado (la papelera). Entre dos bloques con algo va un separador.
 export const BLOQUES_DEL_MENU_DE_COTIZACION: readonly (readonly ClaveDeAccionDeCotizacion[])[] = [
+  ['compartir'],
   ['aprobar', 'final'],
   ['favorita', 'reportar'],
   ['invalidar', 'descartar', 'reactivar'],

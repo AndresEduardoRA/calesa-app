@@ -3,6 +3,7 @@
 import { useRegional } from '@/shared/ui/regional'
 import { useAction } from 'next-safe-action/hooks'
 import { useState } from 'react'
+import type { AccionesDeUnAviso } from '@/shared/lib/acciones-del-aviso'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
 import type { ErrorApp } from '@/shared/lib/errores'
 import { avisarError, avisarExito } from '@/shared/ui/toasts'
@@ -14,6 +15,7 @@ import {
   type Oportunidad,
   type ValoresDeOportunidad,
 } from '../../../entities/oportunidad'
+import { accionesDelRechazo } from '../../../entities/oportunidad-unica'
 import { MENSAJE_DE_VALIDACION } from '../../ficha/resultado'
 import { crearOportunidad } from '../actions/crear-oportunidad'
 import { guardarOportunidad } from '../actions/guardar-oportunidad'
@@ -29,6 +31,18 @@ function erroresDesde(porCampo: Record<string, string>): ErroresDelFormulario {
   )
 }
 
+// Al crear, otro embudo que el inicial o algo escrito; al editar, lo que cambió.
+function hayCambiosEn(
+  oportunidad: Oportunidad | null,
+  valores: ValoresDeOportunidad,
+  locale: string,
+  otroEmbudo: boolean,
+): boolean {
+  return oportunidad === null
+    ? otroEmbudo || JSON.stringify(valores) !== JSON.stringify(valoresDeOportunidad(null, locale))
+    : Object.keys(cambiosDeOportunidad(oportunidad, valores, locale)).length > 0
+}
+
 type Opciones = {
   leadId: string
   // Al editar, la que se edita; al crear, null.
@@ -36,18 +50,22 @@ type Opciones = {
   // Con lo que guardó la base (la crea o la edita): la sección la pone en su lugar.
   alGuardar: (oportunidad: Oportunidad) => void
   alTerminar: () => void
+  // Al crear, el embudo con el que arranca (`embudosParaCrear().inicial`; `''` es el de por defecto).
+  embudoInicial?: string
 }
 
 // El formulario de una oportunidad: crear (con el id del intento, que vive mientras el panel está
 // abierto, así un reintento no crea dos) o editar (sólo lo que cambió, con la versión). Lo tipeado no se
-// pierde: un rechazo deja los valores y dice el motivo junto a su campo; un conflicto ofrece «Recargar».
+// pierde: un rechazo deja los valores y dice el motivo junto a su campo; un conflicto ofrece «Recargar». Un rechazo de «una abierta por
+// lead y embudo» (otra pestaña la creó en el medio) suma «Abrir esa» (`abierta`) junto al error del embudo.
 export function useFormularioDeOportunidad(opciones: Opciones) {
-  const { leadId, oportunidad, alGuardar, alTerminar } = opciones
+  const { leadId, oportunidad, alGuardar, alTerminar, embudoInicial = '' } = opciones
   const [intento] = useState(() => crypto.randomUUID())
   const { locale } = useRegional()
   const [valores, setValores] = useState(() => valoresDeOportunidad(oportunidad, locale))
-  const [embudo, setEmbudo] = useState('')
+  const [embudo, setEmbudo] = useState(embudoInicial)
   const [errores, setErrores] = useState<ErroresDelFormulario>({})
+  const [abierta, setAbierta] = useState<AccionesDeUnAviso | null>(null)
   const [conflicto, setConflicto] = useState<string | null>(null)
   const crear = useAction(crearOportunidad)
   const guardar = useAction(guardarOportunidad)
@@ -89,6 +107,7 @@ export function useFormularioDeOportunidad(opciones: Opciones) {
           MENSAJE_DE_VALIDACION,
         )
     if (!envio.ok) {
+      setAbierta(accionesDelRechazo(leadId, envio).acciones ?? null)
       rechazo(envio.error, 'porCampo' in envio ? envio.porCampo : undefined)
       return
     }
@@ -105,17 +124,16 @@ export function useFormularioDeOportunidad(opciones: Opciones) {
       setErrores((e) => ({ ...e, [conError]: undefined }))
     },
     embudo,
-    setEmbudo,
+    setEmbudo: (valor: string) => {
+      setEmbudo(valor)
+      setErrores((e) => ({ ...e, embudo: undefined }))
+      setAbierta(null)
+    },
+    abierta,
     // Al editar sin cambios no hay nada que mandar.
-    sinCambios:
-      oportunidad !== null &&
-      Object.keys(cambiosDeOportunidad(oportunidad, valores, locale)).length === 0,
+    sinCambios: oportunidad !== null && !hayCambiosEn(oportunidad, valores, locale, false),
     // Algo escrito que todavía no se guardó (un aviso que sale de la pantalla pregunta antes de irse).
-    hayCambios:
-      oportunidad === null
-        ? embudo !== '' ||
-          JSON.stringify(valores) !== JSON.stringify(valoresDeOportunidad(null, locale))
-        : Object.keys(cambiosDeOportunidad(oportunidad, valores, locale)).length > 0,
+    hayCambios: hayCambiosEn(oportunidad, valores, locale, embudo !== embudoInicial),
     errores,
     conflicto,
     enCurso: crear.isPending || guardar.isPending,

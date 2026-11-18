@@ -31,6 +31,11 @@ describe('accionesDeCotizacion', () => {
     )
   })
 
+  it('compartir va primero y solo', () => {
+    expect(BLOQUES_DEL_MENU_DE_COTIZACION[0]).toEqual(['compartir'])
+    expect(ETIQUETA_DE_ACCION_DE_COTIZACION.compartir).toBe('Compartir cotización…')
+  })
+
   it('lo destructivo va al final y solo', () => {
     expect(BLOQUES_DEL_MENU_DE_COTIZACION.at(-1)).toEqual(['papelera'])
   })

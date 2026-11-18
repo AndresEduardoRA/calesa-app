@@ -33,9 +33,13 @@ const ofrece = (permisos: Permisos, f = fila, m = marcas) =>
   Object.keys(ofertasDeLaFila(f, m, { permisos, usuarioId: YO })).toSorted()
 
 describe('ofertasDeLaFila', () => {
-  it('quien sólo ve: favorita y reportar, nada más', () => {
-    expect(ofrece([concesion('cotizaciones.ver', ORIGEN)])).toEqual(['favorita', 'reportar'])
-    expect(ofrece([])).toEqual(['favorita', 'reportar'])
+  it('quien sólo ve: compartir, favorita y reportar, nada más', () => {
+    expect(ofrece([concesion('cotizaciones.ver', ORIGEN)])).toEqual([
+      'compartir',
+      'favorita',
+      'reportar',
+    ])
+    expect(ofrece([])).toEqual(['compartir', 'favorita', 'reportar'])
   })
 
   it('lo que cada clave suma, en el origen de la cotización y no en otro', () => {

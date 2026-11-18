@@ -252,7 +252,8 @@ declare
   a constant uuid := '00000000-0000-0000-0000-0000000008e1'; v_la uuid := (select id from public.leads where nombre = 'LoPag LA');
   r jsonb := pg_temp.lop_pagina(a, v_la, null, 20); e jsonb;
 begin
-  if pg_temp.lop_claves(r) <> 'hay_mas,oportunidades,puedo_crear' then raise exception 'T6: claves de la respuesta: %', pg_temp.lop_claves(r); end if;
+  -- La primera página suma `abiertas_por_embudo` (dónde ya hay una abierta: la usan el aviso y el panel de crear).
+  if pg_temp.lop_claves(r) <> 'abiertas_por_embudo,hay_mas,oportunidades,puedo_crear' then raise exception 'T6: claves de la respuesta: %', pg_temp.lop_claves(r); end if;
   for e in select x from jsonb_array_elements(r -> 'oportunidades') x loop
     if pg_temp.lop_claves(e) <> 'actualizado_en,creado_en,eliminado,embudo,embudo_id,estado,etapa,etapa_id,id,lead_id,moneda,monto_estimado,motivo_perdida,notas,titulo,ultima_actividad_en,vehiculo,vehiculo_oculto' then
       raise exception 'T6: claves de una oportunidad: %', pg_temp.lop_claves(e); end if;

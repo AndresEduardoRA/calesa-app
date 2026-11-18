@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { conteoConCambio, type ConteoAcotado } from '@/shared/lib/conteo'
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import { esquemaEtapa, etapaDesde, type EtapaGuardada } from './embudo'
+import type { LeadDelEmbudo } from './embudo-del-lead'
 import { ESTADOS_DE_OPORTUNIDAD, type EstadoDeOportunidad } from './oportunidad'
 
 // Cuántas trae cada pedido («Ver más» suma otras tantas: `TAMANO_DE_COLUMNA`, de `shared/lib/paginacion`) y hasta
@@ -60,6 +61,8 @@ export type Tablero = {
   columnas: Columna[]
   // La búsqueda con la que se leyó (null = todas); «Ver más» la conserva.
   busqueda: string | null
+  // El lead por el que se filtró (`?lead=`, `entities/embudo-del-lead.ts`); null = las de todos.
+  lead: LeadDelEmbudo | null
 }
 
 const numero = z.union([z.number(), z.string()]).transform((v) => Number(v))
@@ -122,8 +125,12 @@ const esquemaTablero = z.object({
   ),
 })
 
-// Lo que entrega `embudo_tablero()`. Nulo (un embudo que no es de quien mira) o roto: `null`.
-export function tableroDesde(crudo: unknown, busqueda: string | null = null): Tablero | null {
+// Lo que entrega `embudo_tablero()` (o `embudo_tablero_del_lead()`, con el lead por el que se filtró). Nulo (un embudo que no es de quien mira) o roto: `null`.
+export function tableroDesde(
+  crudo: unknown,
+  busqueda: string | null = null,
+  lead: LeadDelEmbudo | null = null,
+): Tablero | null {
   const leido = esquemaTablero.safeParse(crudo)
   if (!leido.success) {
     return null
@@ -143,6 +150,7 @@ export function tableroDesde(crudo: unknown, busqueda: string | null = null): Ta
       tarjetas: tarjetasDesde(c.tarjetas),
     })),
     busqueda,
+    lead,
   }
 }
 
@@ -261,6 +269,7 @@ export function firmaDelTablero(tablero: Tablero): string {
     tablero.embudo.id,
     tablero.embudo.actualizadoEn,
     tablero.busqueda ?? '',
+    tablero.lead?.id ?? '',
     ...tablero.columnas.map(
       (c) =>
         `${c.etapa.id}:${String(c.total.n)}${c.total.hayMas ? '+' : ''}:${c.tarjetas.map((t) => t.actualizadoEn).join(',')}`,

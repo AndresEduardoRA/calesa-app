@@ -37,6 +37,7 @@ test('E2E la dueña marca favorita, reporta, invalida y reactiva desde el «⋯�
   let menu = await menuDe(page, n)
   expect(await lineasDelMenu(menu)).toEqual(
     expect.arrayContaining([
+      'Compartir cotización…',
       'Aprobar',
       'Marcar final…',
       'Reportar…',
@@ -163,13 +164,17 @@ test('E2E la dueña marca la final desde el «⋯»: pide confirmar y deja lo mi
   await expect(despues.getByRole('menuitem', { name: 'Marcar final…' })).toHaveCount(0)
 })
 
-test('E2E cada rol ve en el «⋯» sólo lo suyo: quien sólo ve, favorita y reportar; quien modera, invalidar', async ({
+test('E2E cada rol ve en el «⋯» sólo lo suyo: quien sólo ve, compartir, favorita y reportar; quien modera, invalidar', async ({
   page,
 }) => {
-  // Quien sólo ve cotizaciones: favorita y reportar; nada de aprobar, marcar final, moderar ni papelera.
+  // Quien sólo ve cotizaciones: compartir, favorita y reportar; nada de aprobar, marcar final, moderar ni papelera.
   await entrar(page, terreno.t.soloVer, { fresco: true })
   let menu = await menuDe(page, terreno.numeroDeAna)
-  expect((await lineasDelMenu(menu)).toSorted()).toEqual(['Favorita', 'Reportar…'])
+  expect((await lineasDelMenu(menu)).toSorted()).toEqual([
+    'Compartir cotización…',
+    'Favorita',
+    'Reportar…',
+  ])
   await cerrarElMenu(page)
 
   // Ana ve y edita lo suyo: puede mandar su cotización a la papelera, pero no aprobar, marcar final ni moderar.
@@ -177,6 +182,7 @@ test('E2E cada rol ve en el «⋯» sólo lo suyo: quien sólo ve, favorita y re
   await entrar(page, terreno.t.ana, { fresco: true })
   menu = await menuDe(page, terreno.numeroDeAna)
   expect((await lineasDelMenu(menu)).toSorted()).toEqual([
+    'Compartir cotización…',
     'Enviar a la papelera',
     'Favorita',
     'Reportar…',
@@ -188,6 +194,7 @@ test('E2E cada rol ve en el «⋯» sólo lo suyo: quien sólo ve, favorita y re
   await entrar(page, terreno.moderadora, { fresco: true })
   menu = await menuDe(page, terreno.numeroDeAna)
   expect((await lineasDelMenu(menu)).toSorted()).toEqual([
+    'Compartir cotización…',
     'Enviar a la papelera',
     'Favorita',
     'Invalidar…',
@@ -196,5 +203,9 @@ test('E2E cada rol ve en el «⋯» sólo lo suyo: quien sólo ve, favorita y re
   await cerrarElMenu(page)
   // En una final, moderar pide gestionar finales: no ofrece moderarla.
   menu = await menuDe(page, terreno.numeros[0])
-  expect((await lineasDelMenu(menu)).toSorted()).toEqual(['Favorita', 'Reportar…'])
+  expect((await lineasDelMenu(menu)).toSorted()).toEqual([
+    'Compartir cotización…',
+    'Favorita',
+    'Reportar…',
+  ])
 })

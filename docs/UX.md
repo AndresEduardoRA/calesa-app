@@ -216,6 +216,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo» (en «Vista y opciones», con el alcance, las vistas guardadas, «Ítems
   por página» y «Más»: exportar, importar y papelera): `?vista=embudo&embudo=<id>` es el kanban de las oportunidades propias (`?etapa=` en el celular;
   a la vista, el selector de embudo y la búsqueda; en «Vista y opciones», «Lista | Embudo», «Etapas…» `?panel=etapas` y «Nuevo embudo…» `?panel=nuevo-embudo`).
+  `&lead=<id>` es el **embudo filtrado por lead**: sólo sus oportunidades en todas las etapas, con el chip «De <nombre>» (su «×») y «Ver todas» en el lugar
+  de la búsqueda, sin el aviso de qué se ve; cambiar de embudo lo conserva, quitarlo conserva el embudo y la etapa. Vacío: «<nombre> no tiene oportunidades
+  en «<embudo>».» con «Ver todas». Un `lead=` que no se ve, no existe o no es un id se ignora y se quita de la URL. Con `?vista=embudo` un `?lead=` ya no
+  redirige a la ficha, salvo con algo que sólo el resumen abría (`?pestana=`, sus modales, `?extra=`).
 - **Lead** — `/leads/[id]` (`leads.ver` y acceso): **dos columnas, todo a la vista, sin pestañas ni acordeones** (desde 56 rem de contenedor; por
   debajo, y con el texto al 200 %, una sola en el mismo orden). **Izquierda**, pegajosa (se desplaza sola si no cabe): la cabecera (nombre, números,
   marcas, «Editar» `?panel=editar-lead`, «Cotizar» para quien cotiza y el «⋯», el de la lista con «Cotizar lead» y «Editar lead»), «Datos» (tipo, origen, alta y los grupos del layout sin plegar),
@@ -299,7 +303,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, título de la cotización, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
   resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
-  de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
+  de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: primero y sola, «Compartir cotización…» (toda persona que ve la fila; con el Modo
+  Live no está; abre «Compartir la cotización» en `?panel=compartir&para=<id>`), «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
   si es inválida), «Marcar final…» (`cotizaciones.final.gestionar`, en una preventa; apagada sin vehículo o cliente), casilla «Favorita», «Reportar…»,
   moderar («Invalidar…», «Descartar los reportes…», «Reactivar…», con `cotizaciones.moderar`) y, al final y separada, «Enviar a la papelera» (sin preguntar,
   con «Deshacer»). Son las mismas actions de la guardada; «Marcar final…», «Reportar…» y moderar abren su diálogo en `?panel=…&para=<id>`; filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin
@@ -328,7 +333,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   bloque (`#de-este-vehiculo`) con el foco en su título. Bajo la hoja, «De este vehículo» (se lee al acercarse; aprobar ahí pone al día la cabecera
   sin refrescar la hoja; «Comparar» en su título abre «Comparar cotizaciones» con `returnTo` a esta página; ver «Cotizaciones del lead y del vehículo») y después
   «Comprobantes» (en una final o en una que ya tiene alguno): del más nuevo, «Vigente» o «Anulado» con quién, cuándo y motivo, hasta 20
-  con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Estados en Flujo 2.
+  con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Al pie del resumen, junto a «Vista previa»,
+  **«Compartir»** (toda persona que la ve; sin ícono; con el Modo Live no está): «Compartir la cotización» en `?panel=compartir` (estados en «Cotización: compartir»).
+  Estados en Flujo 2.
 - **Logística** — `/logistica` (`logistica.ver` en algún origen): la **bandeja del día** y la **cadena como gráfica**; en la URL: `?origen=` (orígenes con la logística encendida), `q` («dónde está»:
   nombre, VIN o lote; 3 letras o números) y `?panel=lote` (el lote de un contenedor o un booking). `/logistica/fase/[fase]` (la lista de una fase: `[fase]` es el id o `sin_fase`;
   `?origen=`, `q`, `demoradas`, `por_aprobar`, `contenedor`, `booking`, `naviera`, `cursor`), `/logistica/bandeja/[grupo]` (un grupo entero: `demorados`, `trabados`, `por-aprobar`, `por-vencer`,
@@ -1240,6 +1247,32 @@ descarta.
   de la publicada. PT409 con «Recargar»; sin respuesta, «No sabemos si se descartó: recarga para verlo.» (no reintenta solo). Por URL sin
   borrador: «No hay borrador para descartar.»
 
+### Cotización: compartir (estados propios)
+
+«Compartir la cotización» (`PanelDeCompartir`, modal grande): `?panel=compartir` en el detalle y `?panel=compartir&para=<id>` en la lista (después, en las
+tarjetas, el resumen y la ficha del vehículo). Lo abre toda persona que ve la cotización, sin clave propia.
+
+- **Pestañas:** «Imagen» (la de entrada, sin escribir nada) y «Texto» (`?compartir=texto`; se borra al cerrar). Lo demás (la imagen, el formato, la zona y las
+  fotos marcadas) es de este envío: cada apertura empieza de cero.
+- **«Imagen»:** «Cotización | Fotos» (botones juntos; «Fotos» sólo si el vehículo tiene fotos y quien mira lo ve). «Cotización»: la portada en su marco 15:8;
+  mientras se arma, el recuadro de la portada con «Preparando la vista previa…»; si falla, «No se pudo armar la imagen.» con «Reintentar» (el texto y el PDF
+  siguen). «Fotos»: la grilla de miniaturas (480 px, a lo sumo 24, se parte sola), cada una una casilla con la marca en una esquina de 44 px; marcarla baja la
+  completa en segundo plano; una que no baja se desmarca con «No se pudo bajar la foto N.»; una miniatura que no carga deja el hueco con el auto. Si la lista no
+  llega: «No se pudieron leer las fotos.» con «Reintentar».
+- **«Texto»:** formato «Simple | WhatsApp | Facebook | TikTok» (por defecto «Simple») y, sólo con un patio conocido y subasta, «Hora de <ciudad de la
+  empresa> | Hora del patio»; el texto de sólo lectura («Armando el texto…» mientras llega; si falla, «No se pudo armar el texto.» con «Reintentar»).
+- **Pie:** «Creado por <autor>» (sin autor, no va) y los botones. Celular con el menú del sistema (que comparte archivos): «Compartir» (principal; la portada o
+  las fotos marcadas y el texto), «Copiar texto» y «Descargar PDF», en columna a lo ancho y a 44 px. Escritorio: «Copiar imagen» (una sola imagen: con fotos,
+  una marcada), «Descargar imagen» (la portada en PNG o cada foto marcada), «Copiar texto» y «Descargar PDF», en una fila que se parte. Lo apagado dice su
+  motivo debajo, sin repetirse («La imagen todavía no está lista.», «Preparando las fotos…», «Elige al menos una foto.», «Elige una sola foto para copiarla.»,
+  «Este navegador no permite copiar imágenes.», «Este navegador no permite copiar texto.», «No hay conexión.»). El PDF que falla, el texto de «Vista previa»
+  con «Reintentar». Avisos: «Texto copiado», «Imagen copiada»; con la portada fallida, «Compartir» manda el texto y avisa «Se compartió el texto. La imagen no se
+  pudo armar.».
+- **Sin acceso** (no existe, en la papelera, no se ve o el id no es de una cotización): «No tienes acceso a esta cotización.» con «Cerrar», sin pie de acciones.
+- **Modo Live:** ni el botón ni la línea del «⋯»; por URL, «Con el Modo Live no se comparte.» con «Cerrar» (también si se enciende con el panel abierto).
+- **Sin red:** arriba «No hay conexión.»; «Descargar PDF» y lo que todavía no se bajó, apagados con ese motivo; lo que ya está en memoria se copia o comparte.
+- **Texto al 200 %:** el cuerpo se desplaza con su pista y el pie queda a la vista.
+
 ### Cotización: tablas (estados propios)
 
 Configuración › Cotización (`?seccion=tablas&origen=<id>`): editar y publicar las filas de las tablas de referencia
@@ -1388,7 +1421,12 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
   abre primero un aviso** con las oportunidades del lead que quien mira ve (título, etapa y estado; hasta 5, «y N más» con «Ver todas», cada una con «Ver»; incluida la base con
   que nace todo lead), «Crear igual» (sigue al formulario con «Título» —el nombre del lead— y «Monto estimado» opcional; «Crear oportunidad» deja el aviso y la lista donde estaba; un
   rechazo deja el modal abierto con lo escrito) y «Cancelar». Se lee al abrir el modal, con esqueleto; si falla, lo dice con «Reintentar» y «Crear igual» sigue ahí.
-  Sin oportunidades, abre directo en el formulario.
+  Sin oportunidades, abre directo en el formulario. **Con una abierta en el embudo por defecto** (una abierta por lead y embudo), «Crear igual» va apagado,
+  descrito por su motivo debajo de la lista («Ya tiene una abierta en «Ventas».»), y «Abrir esa» es la principal (su panel en la ficha). Si otra pestaña la
+  creó en el medio, el formulario queda abierto con lo escrito y un aviso de peligro arriba con el mensaje de la base y «Abrir esa» enfocado. En el panel de
+  la ficha (`?panel=nueva-oportunidad`) los embudos con una abierta salen apagados («Ventas (por defecto) · Ya tiene una abierta») y arranca en el primero
+  libre; sin ninguno libre, «Crear oportunidad» apagado y «Ya tiene una oportunidad abierta en cada embudo.». Reabrir con «Mover a…» o restaurar con
+  «Deshacer» habiendo otra abierta: la tarjeta vuelve y el error trae «Abrir esa».
 - **Vacíos:** sin leads, con «Nuevo lead» y «Ver todos» según permiso; por filtro, con «Limpiar filtros». Esqueleto; error.
 - **Abrir:** la lista no tiene resumen. El nombre de la fila y de la tarjeta es un enlace a `/leads/<id>` (el lector lo anuncia con el nombre; Tab llega a él,
   una parada por ítem, y Enter abre); un clic en cualquier otra parte de la fila o la tarjeta navega igual. Ctrl, Cmd o Shift + clic y el botón del medio
@@ -1479,7 +1517,7 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 - **Vehículos y ficha:** «Vínculos anteriores» (hasta 50) y «Agregar vehículo» dicen su tope al pie con `<AvisoDeTope>`; vinculados e interesados son
   los grupos de Relacionados («100+», «Ver todos» hasta 500); el bloque de seguimientos muestra 3 y 3 y «Ver todos» lee de a 20 hasta 500;
   «Oportunidades» muestra las 10 más recientes (abiertas primero) con «Ver más» de a 20 desde el navegador, hasta 500 (en el tope,
-  «Buscarlas en tu embudo»).
+  «Verlas en tu embudo»: el embudo filtrado por el lead).
 - **Papeleras:** de a 5 lotes por página (`?cursor=`); un lote trae hasta 200 y muestra 20 con «Mostrar los 200». Sin «Ítems por página»:
   su unidad es el lote.
 - **Sin red:** abrir un modal, panel o pestaña nunca pedidos dice «Sin conexión. No se pudo abrir esto.» con «Reintentar»; paginar sin red

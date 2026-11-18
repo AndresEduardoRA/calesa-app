@@ -10,7 +10,7 @@ import type { LecturaDeLaTarjeta } from './lectura-de-la-tarjeta'
 
 const QUE_ABREN = new Set(['cabecera', 'total', 'nota'])
 
-const textoDe = (c: CeldaDibujada): string =>
+export const textoDe = (c: CeldaDibujada): string =>
   c.contenido.tipo === 'texto'
     ? c.contenido.lineas
         .map((l) => l.trim())

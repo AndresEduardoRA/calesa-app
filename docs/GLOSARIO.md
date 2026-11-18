@@ -323,7 +323,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cuántos, con «Mostrarlos».
 - **Gestionar etiquetas** — `?panel=etiquetas` / `<DialogoDeEtiquetas>`: crear, renombrar, recolorear y eliminar las propias.
 - **Embudo / Etapa / Oportunidad** — `embudos`, `embudos_etapas`, `oportunidades` / `embudo_*`, `oportunidad_*`: embudo personal de 3 a 12
-  etapas (inicial, ganada, perdida).
+  etapas (inicial, ganada, perdida). Un lead tiene como mucho **una oportunidad abierta por embudo** (`_oportunidad_abierta_unica`): crear, reabrir
+  o restaurar otra abierta ahí se rechaza con «Abrir esa».
 - **Oportunidad base** — `_lead_oportunidad_base()`: la que nace con todo lead nuevo (alta rápida, importación, «Datos», turno de la web), abierta,
   en la etapa inicial del embudo por defecto de quien lo crea y con el nombre del lead de título. Intacta, no cuenta como trabajo al deshacer.
 - **«Nueva oportunidad…»** — `?panel=oportunidad-rapida&para=<id>` / `<ModalDeOportunidadRapida>`: crear una oportunidad desde el «⋯» de un lead (fila, tarjeta, kanban, resumen y ficha). Primero
@@ -335,6 +336,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Mover a…** — `oportunidad_mover()` / `<MenuMoverA>`: cambiar de etapa desde un menú; ganada o perdida cierra, abierta reabre.
 - **Motivo de pérdida** — `oportunidades.motivo_perdida`: opcional, hasta 200, al mover a perdida; se limpia al reabrir.
 - **Vista de embudo** — `/leads?vista=embudo` / `<VistaDeEmbudo>`: kanban de tus oportunidades en un embudo; los filtros de la lista no aplican.
+- **Embudo filtrado por lead** — `/leads?vista=embudo&embudo=<id>&lead=<id>` / `embudo_tablero_del_lead()`, `<ChipDelLead>`: las oportunidades de
+  quien mira sobre un lead en un embudo, en todas sus etapas, con el chip «De <nombre>» y «Ver todas» (quita el filtro). Es la vista de todas las
+  de un lead; cambiar de embudo lo conserva y un `lead=` que no se ve se quita.
 - **Portal del cliente** — `accesos_portal` / `web.portal_*` / `?seccion=portal`: lo que el cliente ve en la web con código y clave: sus
   vehículos, lo «Visible para el cliente» y novedades.
 - **Mensaje del portal** — `ajustes_leads.portal_mensaje` / `portal_mensaje_guardar()`: texto para WhatsApp al dar acceso, con `{cliente}`,
@@ -442,7 +446,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   hecha; distinta de la vigente, quedó vieja). La **compartida** es la guardada, para quien ve todo lo que dibuja; los demás reciben una armada con lo suyo.
   No es la **Portada** de un vehículo.
 - **PDF de la cotización** — `GET /cotizaciones/<id>/pdf`, `pdfDeUnaGuardada()`: la tarjeta de lo guardado en A4; lo descarga quien la ve
-  («Descargar PDF», junto a «Copiar texto»). No es «Compartir» (eso es de leads).
+  («Descargar PDF», junto a «Copiar texto» y en «Compartir la cotización»). No es el **Compartir** de un lead.
+- **Compartir la cotización** — `PanelDeCompartir`, `DatosParaCompartir`, `textoParaCompartir()`, rutas `GET /cotizaciones/<id>/compartir` y
+  `…/compartir/fotos`, `?panel=compartir` (en el detalle) y `?panel=compartir&para=<id>` (fuera de él), pestaña en `?compartir=texto`: el panel «Compartir
+  cotización» para mandarle la cotización a un cliente. La pestaña **«Imagen»** ofrece **«Cotización»** (la portada de la cotización) o **«Fotos»** (las del
+  vehículo, para marcar); la pestaña **«Texto»**, un **formato** («Simple», «WhatsApp», «Facebook», «TikTok») y una **zona** («Hora de <la ciudad de la
+  empresa>» o «Hora del patio»). Botones: «Compartir» (el menú del sistema del celular), «Copiar imagen», «Descargar imagen», «Copiar texto» y «Descargar PDF».
+  Sólo lleva lo del nivel «todos» (lo que dibuja la tarjeta de la cotización). No es el **Compartir** de un lead ni **Compartir los tipos de cambio**.
 - **Revisión** — `cotizaciones_revisiones`: diff de cada edición.
 - **Reporte** — `cotizaciones_reportes` / `cotizacion_reportar()`, `cotizacion_reporte_retirar()`: marca de problema, uno por persona, con
   motivo; no cambia estado ni versión. «Reportada» = activa con reportes (el valor `reportada` del enum no se usa).

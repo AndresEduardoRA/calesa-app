@@ -102,6 +102,9 @@ select set_config('matriz.la', (select id::text from public.leads where nombre =
 select set_config('matriz.ll', (select id::text from public.leads where nombre = 'Matriz LL'), false);
 select set_config('matriz.lt', (select id::text from public.leads where nombre = 'Matriz LT'), false);
 select set_config('request.jwt.claim.sub', '', false);
+-- La oportunidad base del alta de LP y de LA se quita: la matriz prueba quién crea, mueve y restaura una oportunidad en el embudo por
+-- defecto, no «una abierta por lead y embudo» (eso es `areas/leads/oportunidad-por-embudo.sql`), y con la base en pie se rechazaría.
+delete from public.oportunidades where lead_id in (select id from public.leads where nombre in ('Matriz LP', 'Matriz LA'));
 
 -- La celda: corre una sentencia como una persona y devuelve cómo terminó. Todo lo que hizo se deshace. Además
 -- mira lo que devolvió: sin `leads.numero_global.ver`, ningún número global (9182xxxxx) en ninguna respuesta, ni en
@@ -1208,10 +1211,10 @@ do $$ declare
   u57 constant text := '00000000-0000-0000-0000-000000000057'; u50 constant text := '00000000-0000-0000-0000-000000000050';
   r jsonb; v_emb uuid; v_otro uuid; v_et jsonb; v_ver timestamptz; i int; v_id uuid := gen_random_uuid();
 begin
-  -- El de por defecto ya nació con la oportunidad base del primer lead de u57 (C3), con seis etapas genéricas; pedirlo da el mismo. Que nazca
-  -- la primera vez lo prueba `areas/leads/oportunidad-base.sql`.
+  -- El de por defecto, con seis etapas genéricas, nace la primera vez que se pide (o con la primera oportunidad); pedirlo otra vez da el mismo.
+  -- Que nazca con la oportunidad base lo prueba `areas/leads/oportunidad-base.sql`.
   r := pg_temp.bien(pg_temp.como(u57, 'select public.embudo_por_defecto()'));
-  if not (r ->> 'ok')::boolean or r -> 'valor' ->> 'resultado' <> 'existente' or jsonb_array_length(r -> 'valor' -> 'embudo' -> 'etapas') <> 6 then
+  if not (r ->> 'ok')::boolean or r -> 'valor' ->> 'resultado' not in ('creado', 'existente') or jsonb_array_length(r -> 'valor' -> 'embudo' -> 'etapas') <> 6 then
     raise exception 'el embudo por defecto: %', r; end if;
   v_emb := (r -> 'valor' -> 'embudo' ->> 'id')::uuid;
   r := pg_temp.bien(pg_temp.como(u57, 'select public.embudo_por_defecto()'));
@@ -1310,6 +1313,9 @@ begin
   select id into v_cont from public.embudos_etapas where embudo_id = v_emb and nombre = 'Contactado';
   select id into v_gan from public.embudos_etapas where embudo_id = v_emb and es_ganada;
   select id into v_per from public.embudos_etapas where embudo_id = v_emb and es_perdida;
+  -- La base del alta, ganada: así queda en el kanban y en la ficha, y deja el embudo por defecto libre para la que se crea acá (una abierta
+  -- por lead y embudo; eso lo prueba `areas/leads/oportunidad-por-embudo.sql`).
+  r := pg_temp.bien(pg_temp.como(u50, format('select public.oportunidad_mover(o.id, o.etapa_id, %L) from public.oportunidades o where o.lead_id = %L', v_gan, v_lead)));
   v_lead_ver := (select actualizado_en from public.leads where id = v_lead);
 
   -- Validaciones, cada una con su campo.
@@ -1451,9 +1457,9 @@ begin
   r := pg_temp.bien(pg_temp.como(u52, format('select public.lead_oportunidades(%L)', v_lead)));
   if (r -> 'valor' ->> 'puedo_crear')::boolean or jsonb_array_length(r -> 'valor' -> 'oportunidades') <> 0 then
     raise exception 'lead_oportunidades de la supervisión: %', r; end if;
-  -- El tablero: el total por etapa cuenta lo que se ve: la creada acá y las bases de sus dos leads («Matriz LO» y «Matriz LP»).
+  -- El tablero: el total por etapa cuenta lo que se ve: la creada acá y la base de «Matriz LO», ganada (la de «Matriz LP» se quitó arriba).
   r := pg_temp.bien(pg_temp.como(u50, format('select public.embudo_tablero(%L, 50)', v_emb)));
-  if (select sum((c ->> 'total')::int) from jsonb_array_elements(r -> 'valor' -> 'columnas') c) <> 3 then
+  if (select sum((c ->> 'total')::int) from jsonb_array_elements(r -> 'valor' -> 'columnas') c) <> 2 then
     raise exception 'el tablero: %', r; end if;
   r := pg_temp.bien(pg_temp.como(u53, format('select public.embudo_tablero(%L, 50)', v_emb)));
   if r -> 'valor' is not null and r -> 'valor' <> 'null'::jsonb then raise exception 'el tablero de un embudo ajeno: %', r; end if;
@@ -1468,6 +1474,9 @@ do $$ declare
   sin uuid := (select id from public.vehiculos where titulo = 'Matriz V sin permiso');
   r jsonb; v_id uuid := gen_random_uuid();
 begin
+  -- La base del alta de LV, ganada: deja el embudo por defecto libre para la que se crea acá (una abierta por lead y embudo).
+  r := pg_temp.bien(pg_temp.como(u60, format('select public.oportunidad_mover(o.id, o.etapa_id, s.id) from public.oportunidades o '
+    'join public.embudos_etapas s on s.embudo_id = o.embudo_id and s.es_ganada where o.lead_id = %L', lv)));
   r := pg_temp.como(u60, format('select public.oportunidad_crear(%L, %L, %L)', gen_random_uuid(), lv, jsonb_build_object('titulo', 'x', 'vehiculo_id', sin)));
   perform pg_temp.espero(r, '42501', 'Ese vehículo no existe o no tienes acceso.', 'un vehículo que no ve');
   r := pg_temp.bien(pg_temp.como(u60, format('select public.oportunidad_crear(%L, %L, %L)', v_id, lv, jsonb_build_object('titulo', 'Con vehículo', 'vehiculo_id', p60))));
@@ -1502,16 +1511,22 @@ begin
     pg_temp.etapas_de(v_raro) || '[{"nombre": "Ganado", "color": "azul"}]'::jsonb)));
   -- Abierta en «Cotizado» (el destino la tiene), abierta en «Nueva» de otro embudo (el destino no: va a
   -- su inicial), abierta en «Ganado» abierta (en el destino es ganada: va a su inicial), una ganada y una
-  -- abierta eliminada (se quedan), y la del compartido (no se toca).
-  r := pg_temp.bien(pg_temp.como(u50, format('select public.oportunidad_crear(%L, %L, %L)', v_abierta, v_lead,
-    jsonb_build_object('titulo', 'Abierta', 'monto_estimado', 100, 'etapa_id', (select id from public.embudos_etapas where embudo_id = v_emb and nombre = 'Cotizado')))));
+  -- abierta eliminada (se quedan), y la del compartido (no se toca). Con la base del alta ya abierta en el embudo por defecto, la de
+  -- «Cotizado», la «Trampa» (junto a «Otra» en el raro) y la «Borrada» son duplicadas de antes de «una abierta por lead y embudo»:
+  -- entran directo, como las que la regla dejó (transferir las junta igual).
+  insert into public.oportunidades (id, lead_id, usuario_id, embudo_id, etapa_id, titulo, monto_estimado, moneda)
+  values (v_abierta, v_lead, u50::uuid, v_emb, (select id from public.embudos_etapas where embudo_id = v_emb and nombre = 'Cotizado'), 'Abierta', 100,
+          (select moneda_base from public.ajustes_empresa where id = 1));
   r := pg_temp.bien(pg_temp.como(u50, format('select public.oportunidad_crear(%L, %L, %L)', v_otra, v_lead,
     jsonb_build_object('titulo', 'Otra', 'embudo_id', v_raro))));
-  r := pg_temp.bien(pg_temp.como(u50, format('select public.oportunidad_crear(%L, %L, %L)', v_trampa, v_lead,
-    jsonb_build_object('titulo', 'Trampa', 'embudo_id', v_raro, 'etapa_id', (select id from public.embudos_etapas where embudo_id = v_raro and nombre = 'Ganado')))));
+  insert into public.oportunidades (id, lead_id, usuario_id, embudo_id, etapa_id, titulo, moneda)
+  values (v_trampa, v_lead, u50::uuid, v_raro, (select id from public.embudos_etapas where embudo_id = v_raro and nombre = 'Ganado'), 'Trampa',
+          (select moneda_base from public.ajustes_empresa where id = 1));
   r := pg_temp.bien(pg_temp.como(u50, format('select public.oportunidad_crear(%L, %L, %L)', v_ganada, v_lead,
     jsonb_build_object('titulo', 'Ganada', 'etapa_id', (select id from public.embudos_etapas where embudo_id = v_emb and es_ganada)))));
-  r := pg_temp.bien(pg_temp.como(u50, format('select public.oportunidad_crear(%L, %L, %L)', v_borrada, v_lead, '{"titulo": "Borrada"}')));
+  insert into public.oportunidades (id, lead_id, usuario_id, embudo_id, etapa_id, titulo, moneda)
+  values (v_borrada, v_lead, u50::uuid, v_emb, (select id from public.embudos_etapas where embudo_id = v_emb and es_inicial), 'Borrada',
+          (select moneda_base from public.ajustes_empresa where id = 1));
   r := pg_temp.bien(pg_temp.como(u50, format('select public.oportunidad_eliminar(%L, (select actualizado_en from public.oportunidades where id = %L))', v_borrada, v_borrada)));
   r := pg_temp.bien(pg_temp.como(u51, format('select public.oportunidad_crear(%L, %L, %L)', v_compartido, v_lead, '{"titulo": "Del compartido"}')));
   v_lead_ver := (select actualizado_en from public.leads where id = v_lead);
@@ -1847,7 +1862,9 @@ begin
   r := pg_temp.bien(pg_temp.como(u50, format('select public.lead_transferir(%L, %L, %L)', l[3], u53, u50)));          -- fila 4
   r := pg_temp.bien(pg_temp.como(u50, format('select public.lead_compartir(%L, %L)', l[4], u51)));                     -- fila 5
   r := pg_temp.bien(pg_temp.como(u50, format('select public.leads_papelera_enviar(%L, %L)', gen_random_uuid(), array[l[5]])));  -- fila 6
-  r := pg_temp.bien(pg_temp.como(u50, format('select public.oportunidad_crear(%L, %L, %L)', gen_random_uuid(), l[6], '{"titulo": "Mezcla"}')));  -- fila 7
+  -- Fila 7: una segunda oportunidad, ganada (la base ya es la abierta del lead en el embudo por defecto: una por lead y embudo).
+  r := pg_temp.bien(pg_temp.como(u50, format('select public.oportunidad_crear(%L, %L, %L)', gen_random_uuid(), l[6], jsonb_build_object('titulo', 'Mezcla',
+    'etapa_id', (select s.id from public.embudos_etapas s join public.embudos e on e.id = s.embudo_id where e.usuario_id = u50::uuid and e.es_default and s.es_ganada)))));
   r := pg_temp.bien(pg_temp.como(u50, format('select public.otorgar_portal(%L, %L, null)', l[7], 'clave-de-mezcla-1')));  -- fila 8
   -- Fila 9: marcas propias y de la supervisión. No cuentan.
   r := pg_temp.bien(pg_temp.como(u50, format('select public.lead_favorito_poner(%L, true)', l[8])));

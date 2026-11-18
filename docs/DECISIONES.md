@@ -344,6 +344,20 @@ las trampas, en `docs/LECCIONES.md`.
   cada una y «Ver todas» si hay más; lee 6 al abrir el modal (una por apertura, por los índices de la ficha) y nunca cuenta. Si la lectura falla lo dice con
   «Reintentar» y deja «Crear igual»: no poder leer no impide crear. **«Ver oportunidades»** del «⋯» aparece con el lead en la cartera de quien mira (la única que ve
   oportunidades) y no pide `leads.editar`: la lista no sabe si hay alguna sin una lectura por fila, así que no la promete; sin ninguna, la ficha lo dice en su estado vacío.
+- **Una oportunidad abierta por lead y embudo** (decidido por la persona el 2026-11-17). Los embudos son personales, así que la regla es por lead y
+  embudo de quien mira: una sola guarda, `_oportunidad_abierta_unica` (candado de transacción por lead y embudo, 22023 con `hint` `embudo_id` y el id
+  de la abierta en `detail`), en `oportunidad_crear`, `oportunidad_mover` al reabrir y `oportunidad_restaurar` de una abierta. **No es un índice único
+  parcial**: las duplicadas que ya existen lo harían caer al migrar en la nube; quedan, se ven y se editan, y sólo reabrir una cerrada con otra
+  abierta se rechaza. `oportunidad_guardar` no la necesita porque no cambia de embudo (rechaza `embudo_id`). **La base del alta no falla nunca**: si ya
+  hay una abierta en ese embudo, no crea otra y sigue (el alta, la importación y el turno de la web no caen por esto). **Transferir un lead y guardar
+  las etapas de un embudo no pasan por la guarda**: son de cartera y de configuración, en masa, no un acto de crear; pueden juntar dos abiertas, que
+  valen como las de antes. La interfaz lo dice antes de enviar con `abiertas_por_embudo` de la primera página de `lead_oportunidades` (una sonda por
+  embudo): «Crear igual» del aviso apagado con su motivo y «Abrir esa» al lado; en el panel de la ficha, los embudos ocupados apagados.
+- **El embudo filtrado por lead son lecturas aparte** (`embudo_tablero_del_lead`, `embudo_etapa_pagina_del_lead`, por
+  `oportunidades_lead_etapa_idx`): `embudo_tablero` no cambia de plan (el «mover» de las tareas de oro) y con lead y sin lead son dos consultas. Con
+  lead **la búsqueda (`?q=`) no aplica** y el chip ocupa su lugar: las de un lead en un embudo son pocas. `lead=` se valida en el servidor como
+  cualquier enlace a un lead (`leerLeadParaEnlazar`); el que no se ve se quita de la URL sin otra lectura. `?vista=embudo&lead=` ya no es un enlace
+  viejo del resumen, salvo que pida algo que sólo el resumen abría (una pestaña vieja, sus modales, «Agregar teléfono»).
 - **Anotar o agendar desde la lista: una sola puerta, el «⋯», y la fila se relee al guardar.** Las celdas «Último seguimiento» y «Recordatorio» vacías son texto
   («Sin seguimientos», «—»), no botones: la acción no vive en dos lugares. Al guardar, el listado hace `router.refresh()` (relee la página con la URL tal cual)
   en vez de inventar el dato en el cliente: la fila muestra lo que la vista dice, con la visibilidad de quien mira. El embudo no relee: su tarjeta no muestra
@@ -486,6 +500,22 @@ las trampas, en `docs/LECCIONES.md`.
 - **Las celdas se ordenan dentro de su sección.** Pasar un ítem a otra sección cambiaría quién lo ve (hereda el nivel de la sección); para eso sigue el JSON del diseño. Se ordena con dnd-kit (sólo
   en la pestaña «Diseño», con `diferido()`) y su sensor de teclado sobre el asa, con anuncios en español.
 - **El PDF, la tarjeta y el resumen no siguen el aspecto.** Siguen con su plantilla (la cuadrícula): el aspecto es de la hoja en pantalla (la de cotizar y la de una guardada, que son el mismo componente).
+
+- **«Compartir la cotización»: el texto se arma en el navegador, con las cifras ya escritas por el servidor.** `GET /cotizaciones/<id>/compartir` manda
+  `DatosParaCompartir` una vez por apertura: los montos salen de la **geometría de la tarjeta de lo guardado** (`lineasDeLaTarjeta()`, sólo lo del nivel
+  «todos», K4) con el formato del PDF, nunca de `valores` sueltos; el vehículo, sólo si quien pide lo ve. `textoParaCompartir()` (puro) arma el texto en cada
+  formato y zona sin volver a pedir. Las fotos tienen su ruta (`…/compartir/fotos`), que se pide al elegir «Fotos». Sin migración ni clave propia: quien ve la
+  cotización la comparte, como el PDF.
+- **La imagen que se copia es la portada pasada a PNG en el navegador.** La portada se guarda en WebP y el portapapeles pide `image/png`: armar otro PNG en el
+  servidor costaría un `ImageResponse` por pedido. Se pide con la caché del navegador (su ETag da un 304) y el PNG queda listo **antes** del toque, porque
+  Safari pierde el gesto si se espera algo antes de escribir o compartir. Las fotos se comparten a tamaño completo (≤ 1.600 px) y se bajan al marcarlas; con
+  fotos, «Copiar imagen» pide una sola (el portapapeles lleva una imagen) y «Descargar imagen» baja cada marcada como está guardada.
+- **Los formatos del texto, como V1 sin la IA.** «Simple»: sin marcas ni líneas en blanco (el de entrada); «Facebook» y «TikTok»: sin marcas, un renglón en
+  blanco entre bloques (título · vehículo · conceptos · total); «WhatsApp»: además, el título y el total en `*…*` (un texto con `*` va sin marca). El título
+  del vehículo no se repite si es el de la cotización. El cierre de la subasta sólo se dice si todavía no pasó: «Se subasta…» de algo cerrado engaña. La zona,
+  la de la empresa (por su ciudad, «Hora de La Paz») o la del patio, sólo si se conoce.
+- **«Compartir cotización…» lleva «…» y va primero y solo en el «⋯»** (abre algo encima, como las demás que abren un diálogo). La pestaña va en
+  `?compartir=texto` y no en `?pestana=`, que es del resumen del listado. Un `?para=` que no es un guid ni se pide: el panel dice que no hay acceso.
 
 ### Tablas de referencia
 
