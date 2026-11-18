@@ -498,7 +498,12 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   izquierda** (entero hasta 16 rem; más largo, «…» y completo en `title`) y **«⋯» a la derecha**, que se desplaza de costado dentro de su
   tarjeta, nunca la página; por debajo, tarjetas. **Un clic en cualquier parte de la fila o tarjeta abre su resumen**, salvo casilla, «⋯»,
   enlace o botón. Teclado: una parada de Tab por fila (el nombre, «Abrir Ana Rojas»); al cerrar el resumen el foco vuelve a él. El «⋯»
-  («Más acciones de …») mide 44 px en el celular; lo que no se puede hacer no aparece, y un ítem visible pero imposible dice por qué.
+  («Más acciones de …») está siempre a la vista (nunca sólo al pasar el mouse) y siempre en el mismo lugar: en la tarjeta de la lista,
+  arriba a la derecha (`<EsquinaDeAcciones>`), de 44 px también en escritorio; si la tarjeta lleva una foto arriba (la grande del inventario),
+  sobre la foto, con fondo de superficie translúcido y borde, espejo de la casilla de la izquierda, y en el mismo lugar sobre el recuadro vacío
+  si no hay foto o no carga; en la tarjeta del kanban, igual, arriba a la derecha. En la tabla, en la columna pegada a la derecha, que lleva una
+  sombra sólo mientras queda contenido detrás (falta desplazar hacia la derecha). Un ítem sin «⋯» no deja hueco. Lo que no se puede hacer no
+  aparece, y un ítem visible pero imposible dice por qué.
 - **Texto al 200 % (reflujo, WCAG 1.4.10):** ninguna lista ensancha la página; «⋯» y casilla miden 44 px; una tarjeta de menos de 16 rem
   apila sus piezas; los botones chicos crecen con el texto. Los avisos (22,25 rem) crecen con el texto sin pasar de la pantalla menos 1 rem
   por lado y suben sobre el pie de un panel abierto.

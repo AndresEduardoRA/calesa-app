@@ -41,6 +41,16 @@ las trampas, en `docs/LECCIONES.md`.
 - **Paginación por cursor sin «página N».** Arriba se dice «Los más recientes» o «Creados hasta el …» con «Volver al principio».
 - **La navegación se declara entera.** `navegacion.ts` lista todas las pantallas; un test falla si `disponible` no coincide con la existencia de `page.tsx`.
 - **El «⋯» con sprite SVG.** `<svg><use/></svg>` con `<SimbolosDeLista>` montado una vez en el layout: 3 nodos por botón.
+- **El «⋯» siempre visible arriba a la derecha, espejo de la casilla; en la tabla, sombra por consulta `scroll-state`.** Vale para toda lista:
+  en la tarjeta, `<EsquinaDeAcciones>` (sobre la foto si la hay, con fondo translúcido y borde; la casilla va en la esquina izquierda con el
+  mismo tratamiento y 44 px también en escritorio); el «⋯» de toda tarjeta mide 44 px (`--tamano-del-mas`), el de la fila de la tabla 32 desde
+  `md`. La columna pegada de la tabla lleva sombra sólo mientras se puede desplazar más hacia la derecha: el contenedor de la tabla es
+  `container-type: scroll-state` y la celda se consulta con `@container scroll-state(scrollable: inline-end)`, que dibuja un `::before` con degradado a
+  todo el alto de la celda; sin JS, sin estado por fila y sin nodos. Un navegador sin `scroll-state` deja la línea de 1 px. Descartados: un `box-shadow` por celda (con extensión negativa casi no se ve, y sin ella se corta o se
+  derrama en cada fila), una animación ligada al desplazamiento (deja una animación
+  por fila que nunca termina, y las esperas de los e2e y las capturas esperan a que terminen), un observador por tabla (suma JS en frío), la
+  sombra siempre (ruido cuando no hay nada detrás), aparecer al pasar el mouse (se pierde en pantallas táctiles) y la columna al costado de la
+  foto (la achica).
 - **Formularios que aparecen al pulsar algo son `ModalDeFormulario`.** Un envío a la vez, conflicto hasta la versión nueva, revisión al abrir; la guarda `modales-con-salida.ts` registra todo `<Modal>` que no lo es.
 - **Vuelta del foco tras recargar y «atrás».** `abrirConVuelta()` deja la ficha en `history.state` (respaldo en `sessionStorage`) y `useVueltaDelFoco` la recuerda; desde un menú vuelve al «⋯». La guarda `paneles-con-vuelta` lo exige en todo `history: 'push'`.
 - **Reintento sólo al volver la conexión.** `useReintentoAlVolver` reenvía en la transición sin red → con red; con red presente se ofrece «Reintentar»: no se martilla un servidor caído.
