@@ -575,8 +575,8 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
   `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). Al borde: `/cotizaciones` 374,7 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
-  `diferido()`), `/cotizaciones/[id]` 463,6 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
-  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,3 de 460 (el campo del título va con `diferido()` dentro del panel)
+  `diferido()`), `/cotizaciones/[id]` 463,7 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,4 de 460 (el campo del título va con `diferido()` dentro del panel)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 496,8 en 32 chunks: «Qué falta» de la ficha, la galería y subida de fotos, Documentos y
@@ -746,7 +746,7 @@ fallar.
   cambiarlo la hoja no relee. Bloque, hooks y action de `empresa` van con el panel por `diferido()`.
 - Vista previa de la tarjeta (`e2e/cotizar-vista-previa.spec.ts`): ninguna lectura al abrir la hoja; suma un elemento al pie del resumen;
   el modal va en un portal, fuera de `[data-hoja]`, con `diferido()`. Al abrirlo, una `cotizacion_tarjeta()` por versión de la fórmula,
-  recordada 5 min (`memoriaDeLectura`): ≤ 18.700 B como la dueña y ≤ 130 nodos la tarjeta (17.808 B y 123 nodos medidos con la plantilla de
+  recordada 5 min (`memoriaDeLectura`): ≤ 18.700 B como la dueña y ≤ 130 nodos la tarjeta (17.929 B y 125 nodos medidos con la plantilla de
   `subasta_usa` convertida a la cuadrícula, más un 5 %: la respuesta lleva la cuadrícula entera). Lo acota la forma (≤ 16 × 120 casillas, ≤ 1.000
   celdas, 24 KiB); la geometría es O(celdas + filas + columnas) y sólo viaja en el chunk del modal. «Copiar
   texto» no lee nada y «Descargar PDF» es un pedido por clic; los dos van fuera de `[data-tarjeta-de-cotizacion]`, en el chunk del modal.
@@ -759,7 +759,7 @@ fallar.
   con `diferido()`.
 - PDF de la tarjeta (`e2e/cotizar-pdf.spec.ts`): una cotización por PK — `cotizacion_hoja_guardada`, `cotizacion_evaluar(p_cotizacion)`,
   `cotizacion_tarjeta`, asesor y vehículo por PK y `leerAjustes()` (una RPC más que `getAjustes()`); el logo ≤ 1 MB con 2 s de espera. Topes:
-  150 KB y 1,5 s (40.129 B y 206 ms medidos con la cuadrícula: una página A4). La tarjeta de lo guardado lo ofrece con un `<a download>` sin JS.
+  150 KB y 1,5 s (40.406 B y 150 ms medidos con la cuadrícula: una página A4). La tarjeta de lo guardado lo ofrece con un `<a download>` sin JS.
   La imagen de la tarjeta (`imagenDeUnaGuardada()`) sale al ancho de la tarjeta (≤ 1.600 px) y carga `next/og` sólo con `import()` en el servidor.
 - Tarea de oro 2 (`e2e/cotizar-tarea-de-oro*.spec.ts`; deterministas: una parada nueva en el camino las rompe): robot < 30 s y KLM ≤ 90 s.
   Teclas de control: el tramo de la hoja hasta el PDF ≤ 29; con el panel del vehículo ≤ 29; con un enlace de subasta, exactamente 33; con
