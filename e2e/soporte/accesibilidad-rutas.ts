@@ -66,11 +66,16 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/web/guias/[id]': (t) => ({ url: `/configuracion/web/guias/${t.guia}` }),
 }
 
-// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace; Configuración › Leads no tiene sub-sección índice y abre la
-// primera que se puede abrir (la dueña tiene los dos permisos). Se barre lo que dibuja ese destino.
+// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino.
 export const REDIRECCIONES: Record<string, string> = {
   '/auth/nueva-contrasena': '/recuperar',
-  '/configuracion/leads': '/configuracion/leads/campos',
+}
+
+// Las páginas estáticas que sólo redirigen en el navegador, tras el esqueleto: al cambiar la URL todavía se ve el esqueleto del destino,
+// no lo que dibuja. No se barren; su destino se barre como su propia ruta.
+export const SOLO_REDIRIGEN: Record<string, string> = {
+  '/configuracion/leads':
+    'sólo redirige a la primera sub-sección que se puede abrir (/configuracion/leads/campos), que se barre como su propia ruta',
 }
 
 const claveDelOrigen = (proyecto: string) => `a11y_${proyecto}`
