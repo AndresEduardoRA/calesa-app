@@ -5,6 +5,7 @@
 // comprueba que cada id que se usa existe acá y `e2e/mas-acciones-icono.spec.ts` que se ve igual que el icono de trazos.
 export const ID_DEL_ICONO_MAS_ACCIONES = 'icono-mas-acciones'
 export const ID_DEL_ICONO_MAS = 'icono-mas'
+export const ID_DEL_ICONO_OJO = 'icono-ojo'
 
 // Los atributos de trazo van en el `<svg>` que usa el icono (se heredan): así el icono sigue el `currentColor` de su botón.
 export const TRAZO_DE_LOS_ICONOS = {
@@ -29,6 +30,10 @@ export function SimbolosDeLista() {
           <circle cx="12" cy="12" r="1" />
           <circle cx="19" cy="12" r="1" />
           <circle cx="5" cy="12" r="1" />
+        </g>
+        <g id={ID_DEL_ICONO_OJO}>
+          <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+          <circle cx="12" cy="12" r="3" />
         </g>
         <g id={ID_DEL_ICONO_MAS}>
           <path d="M5 12h14" />
