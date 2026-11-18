@@ -94,6 +94,11 @@
   --shadow-sm: 0 1px 2px rgba(16, 20, 32, 0.06);
   --shadow-md: 0 4px 12px rgba(16, 20, 32, 0.08);
   --shadow-lg: 0 12px 32px rgba(16, 20, 32, 0.12);
+  --shadow-columna-pegada: linear-gradient(
+    to left,
+    rgba(16, 20, 32, 0.12),
+    transparent
+  ); /* la columna del «⋯» con contenido detrás */
   --shadow-focus: 0 0 0 2px var(--color-primario-ink); /* -ink: ≥ 3:1 sobre la superficie con cualquier marca */
 
   /* --- Movimiento ------------------------------------------------------- */
@@ -160,6 +165,7 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-columna-pegada: linear-gradient(to left, rgba(0, 0, 0, 0.45), transparent);
 }
 
 @media (prefers-reduced-motion: reduce) {
