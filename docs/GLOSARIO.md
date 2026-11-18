@@ -805,10 +805,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   izquierda de cada sección de Configuración; donde no cabe, el **selector de sección** (`SelectorDeSeccion`). No va en el inicio.
 - **Grupo de Configuración** — `GRUPOS`, `GrupoDeConfiguracion` (`configuracion/secciones.ts`): Empresa y equipo · Ventas · Operación · Web;
   junta las secciones en el inicio, el menú y el selector. No: «área».
-- **Sub-sección (de Configuración)** — `SubseccionDeConfiguracion`: una sub-ruta de una sección, registrada en `SECCIONES` con su título y sus
-  permisos; el menú la dibuja debajo de su sección.
-- **Pestaña de un área (de Configuración › Empresa)** — `PestanaDeEmpresa` que viene de la lista de un área (`PESTANAS_DE_COMPROBANTES`), con
-  sus permisos; Empresa la dibuja sin importar el área (`esPestanaDeUnArea`).
+- **Sub-sección (de Configuración)** — `SubseccionDeConfiguracion`: una sub-ruta de una sección, registrada en `SECCIONES` con su título, su
+  frase (`descripcion`, la que dibuja la página bajo su `h1` con `EncabezadoDeConfiguracion`) y sus permisos; el menú la dibuja debajo de su
+  sección. La **índice** vive en la ruta de su sección y se marca sólo en esa ruta. Con `motivoSinPermiso`, quien no tiene sus permisos la ve
+  apagada (no es enlace) con el motivo, en el menú y en el selector; sin él, no la ve.
 - **Hoja de contacto** — `scripts/hoja-de-contacto.mjs`, `<carpeta>/hojas/`: capturas de e2e montadas en una imagen.
 - **Captura quieta** — `capturar()` / `capturarEn()` (`e2e/soporte/`): captura tomada sin animación ni transición con fin en curso.
 - **Pregunta al descartar** — `useCierreConCambios()`, `<ConfirmarDescarte>`, `useCambiosSinGuardar()` (`preguntaAlCerrar`): «Tienes cambios

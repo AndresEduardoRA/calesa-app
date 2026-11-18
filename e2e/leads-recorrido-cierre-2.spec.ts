@@ -263,7 +263,7 @@ test('Dalia · el panel de un tipo de cambio guardando, y el aviso con la tipogr
   page,
 }, info) => {
   await entrar(page, r.t.personas.duena)
-  await page.goto('/configuracion/empresa?seccion=monedas')
+  await page.goto('/configuracion/empresa/monedas')
   await page.getByRole('button', { name: /^Oficial/ }).click()
   const panel = page.getByRole('dialog')
   await expect(panel.getByRole('heading', { name: 'Oficial' })).toBeVisible()
@@ -275,7 +275,7 @@ test('Dalia · el panel de un tipo de cambio guardando, y el aviso con la tipogr
     soltar = resolver
   })
   await page.route(
-    (url) => url.pathname === '/configuracion/empresa',
+    (url) => url.pathname === '/configuracion/empresa/monedas',
     async (ruta) => {
       if (ruta.request().method() === 'POST' && 'next-action' in ruta.request().headers()) {
         await retenida

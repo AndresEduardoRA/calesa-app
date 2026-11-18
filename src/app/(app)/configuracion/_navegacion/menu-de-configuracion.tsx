@@ -1,8 +1,10 @@
 import type { GrupoDelNavegador } from '../secciones'
 import { EnlaceDelMenu } from './enlace-del-menu'
+import { RenglonApagado } from './renglon-apagado'
 
 // El menú de Configuración: las secciones que la persona puede abrir, por grupo, y debajo de la sección actual sus sub-secciones (se
-// esconden por CSS mientras su sección no está marcada: sin JS). Los títulos de grupo no son encabezados: la página pone su `h1` después.
+// esconden por CSS mientras su sección no está marcada: sin JS). La sub-sección índice se marca sólo en su ruta; la que no se puede abrir
+// va apagada con su motivo. Los títulos de grupo no son encabezados: la página pone su `h1` después.
 export function MenuDeConfiguracion({ grupos }: { grupos: readonly GrupoDelNavegador[] }) {
   return (
     <nav aria-label="Secciones de Configuración" className="grid content-start gap-4">
@@ -31,7 +33,19 @@ export function MenuDeConfiguracion({ grupos }: { grupos: readonly GrupoDelNaveg
                     <ul className="grid gap-0.5 pl-3">
                       {seccion.subsecciones.map((sub) => (
                         <li key={sub.clave}>
-                          <EnlaceDelMenu ruta={sub.ruta} titulo={sub.titulo} />
+                          {sub.motivo === undefined ? (
+                            <EnlaceDelMenu
+                              ruta={sub.ruta}
+                              exacta={sub.ruta === seccion.ruta}
+                              titulo={sub.titulo}
+                            />
+                          ) : (
+                            <RenglonApagado
+                              clave={`${seccion.clave}-${sub.clave}`}
+                              titulo={sub.titulo}
+                              motivo={sub.motivo}
+                            />
+                          )}
                         </li>
                       ))}
                     </ul>

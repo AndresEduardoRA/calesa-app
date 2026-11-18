@@ -111,4 +111,46 @@ describe('BarraDeCambiosSinGuardar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Descartar' }))
     expect(salir).toHaveBeenCalledOnce()
   })
+
+  it('suma la clase que recibe a la suya', () => {
+    render(
+      <BarraDeCambiosSinGuardar
+        hayCambios
+        formulario="f"
+        alDescartar={vi.fn()}
+        className="order-last"
+      />,
+    )
+    const barra = screen.getByRole('region', { name: 'Cambios sin guardar' })
+    expect(barra.className).toContain('order-last')
+    expect(barra.className).toContain('sticky')
+  })
+})
+
+describe('BarraDeCambiosSinGuardar y el campo con el foco', () => {
+  it('al aparecer, desplaza lo justo para que no tape el campo donde se escribe', async () => {
+    const desplazar = vi.spyOn(window, 'scrollBy').mockImplementation(() => {})
+    const caja = (top: number, bottom: number) => ({ top, bottom }) as DOMRect
+    const { rerender } = render(
+      <>
+        <input aria-label="Campo" />
+        <BarraDeCambiosSinGuardar hayCambios={false} formulario="f" alDescartar={vi.fn()} />
+      </>,
+    )
+    const campo = screen.getByLabelText('Campo')
+    campo.focus()
+    vi.spyOn(campo, 'getBoundingClientRect').mockReturnValue(caja(660, 700))
+    vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockReturnValue(caja(650, 750))
+    rerender(
+      <>
+        <input aria-label="Campo" />
+        <BarraDeCambiosSinGuardar hayCambios formulario="f" alDescartar={vi.fn()} />
+      </>,
+    )
+    await act(async () => {
+      await new Promise((resolver) => requestAnimationFrame(resolver))
+    })
+    expect(desplazar).toHaveBeenCalledWith({ top: 58 })
+    vi.restoreAllMocks()
+  })
 })

@@ -176,7 +176,7 @@ describe('cambiarSerie', () => {
       ok: true,
       data: { serie: 'PU-2', siguiente: 1, actualizadoEn: '2026-11-08T15:00:00+00:00' },
     })
-    expect(h.cache.revalidatePath).toHaveBeenCalledWith('/configuracion/empresa')
+    expect(h.cache.revalidatePath).toHaveBeenCalledWith('/configuracion/empresa/comprobantes')
   })
 
   it('una serie con espacios adentro o de más de 12 no llega a la base', async () => {

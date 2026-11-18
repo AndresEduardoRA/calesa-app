@@ -69,7 +69,7 @@ describe('faltasPorSeccion', () => {
       {
         clave: 'apibara',
         texto: 'Falta activar apibara',
-        ruta: '/configuracion/empresa?seccion=integraciones',
+        ruta: '/configuracion/empresa/integraciones',
       },
     ])
   })

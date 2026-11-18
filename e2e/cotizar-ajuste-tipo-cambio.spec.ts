@@ -176,7 +176,7 @@ test('E4: en una guardada dice que la cotización conserva su tipo de cambio, si
   await expect(abierto.getByText(/se cambian en Configuración › Empresa › Monedas/)).toBeVisible()
   await expect(abierto.getByRole('link', { name: 'Ir a Monedas' })).toHaveAttribute(
     'href',
-    '/configuracion/empresa?seccion=monedas',
+    '/configuracion/empresa/monedas',
   )
   await expect(abierto.getByLabel('Valor nuevo')).toHaveCount(0)
 })

@@ -39,11 +39,11 @@ empresa: {razon_social, nit}, valores, totales, tipos_cambio, etiquetas}`. El re
 - `features/comprobantes/`: las actions (`emitir`, `anular`, `cambiar-serie`, con la clave antes de llamar a la base); en la guardada, «Emitir comprobante»
   (hueco `Acciones`, `<Confirmar>` diferido en `?panel=emitir-comprobante`, registrado en `scripts/guardas/areas-c/confirmar-con-url.ts`) y la sección
   «Comprobantes» (hueco `Debajo`, «Anular» con un `ModalDeFormulario` diferido en `?panel=anular-comprobante`); en Empresa, `SerieDeComprobantes`
-  (`pantallas/comprobantes-empresa.ts`), que dibuja `src/app/(app)/configuracion/empresa/comprobantes/seccion.tsx`.
+  (`pantallas/comprobantes-empresa.ts`), que dibuja la sub-ruta `/configuracion/empresa/comprobantes` (`src/app/(app)/configuracion/empresa/comprobantes/page.tsx`), con la barra de cambios sin guardar.
 - **En el resumen de `/cotizaciones`** (`pantallas/comprobantes-resumen.ts`, hueco `Comprobantes` bajo «Adjuntos»): `<ComprobantesDelResumen>` lee por el navegador
   (`infra/comprobantes/leer.client.ts`, `limit 21`) al abrir la pestaña y dibuja, de sólo lectura, lo mismo que la guardada con su regla `seVenLosComprobantes()`. El `select` y la
   forma de la fila son de `entities/comprobantes/lectura.ts`, comunes con la lectura del servidor.
-- La pestaña «Comprobantes» de Empresa pide `empresa.ajustes.gestionar`: nadie nuevo entra a Empresa.
+- La sub-ruta «Comprobantes» de Empresa pide `empresa.ajustes.gestionar`: nadie nuevo entra a Empresa; sin él va apagada en el menú con su motivo y su URL abre Datos.
 - Los textos de error de las tres RPC se muestran tal cual (la excepción está en la ficha del módulo).
 
 ## Pruebas
@@ -53,7 +53,7 @@ empresa: {razon_social, nit}, valores, totales, tipos_cambio, etiquetas}`. El re
 - Carreras: `carreras.mjs` (la numeración) y `carreras-papelera.mjs` (contra la papelera y contra marcar), con `carreras-comun.mjs`; las corre
   `pnpm db:carreras`; solas, `bash scripts/candado.sh db:carreras -- node supabase/tests/areas/comprobantes/correr-carreras.mjs`.
 - App: `entities/comprobantes/acceso.test.ts`, `features/comprobantes/actions/comprobantes.test.ts` (sin la clave no se llama a la base),
-  `src/app/(app)/configuracion/empresa/comprobantes/pestanas.test.ts` (quién ve la pestaña) y los e2e `cotizaciones-comprobantes.spec.ts` y
+  `src/app/(app)/configuracion/empresa/comprobantes/subseccion.test.ts` (quién la abre) y los e2e `cotizaciones-comprobantes.spec.ts` y
   `empresa-comprobantes.spec.ts`, que usan series propias (`e2e/soporte/cotizaciones-comprobantes.ts`) y devuelven la vigente.
 
 ## Lo que falta

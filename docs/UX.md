@@ -381,7 +381,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `aria-current="page"` y debajo sus sub-secciones; arriba «‹ Configuración» (al inicio) y, donde no se ve el menú, el **selector de sección**
   (`<select>` nativo con su «Sección», por grupo, a 44 px en el celular; elegir navega y, con cambios sin guardar, pregunta). En el inicio no
   van ni el menú, ni el selector, ni la vuelta. Un grupo sin secciones que abrir no se dibuja; sin ninguna, «No tienes permiso» y sin menú.
-  Equipo, Roles, Flujos y Empresa sólo se envuelven. **El inicio:** una tarjeta por grupo (`h2`) con, por sección, su título (el enlace), una
+  Cada sub-sección es una sub-ruta con su `h1` y una frase (`EncabezadoDeConfiguracion`); la **índice** vive en la ruta de su sección y se
+  marca sólo ahí (el selector no repite la sección). La que la persona no puede abrir y declara su motivo va **apagada** con el motivo debajo
+  en el menú (no es enlace) y como `<option disabled>` con el motivo en el selector; su URL abre la primera sub-sección que sí puede.
+  Equipo, Roles y Flujos sólo se envuelven. **El inicio:** una tarjeta por grupo (`h2`) con, por sección, su título (el enlace), una
   frase y **lo que falta**, en la sección donde se resuelve: «Falta publicar la fórmula de {origen}» (Cotización), «Falta configurar el flujo de
   {origen}» (Flujos), «Falta activar apibara» una vez (Empresa); sólo de orígenes activos y lo que la persona puede hacer (no el paso de los
   permisos), con su enlace al paso; hasta 3 y «Y N más». Llega después de las tarjetas; si no se puede leer, la tarjeta queda con su frase.
@@ -403,9 +406,12 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `?origen=`. «Colores» (`tonos`) con `?panel=nuevo-tono`, `editar-tono&tono=<id>` y `eliminar-tono&tono=<id>`. «Tarjeta» con `?origen=`,
   `?panel=publicar-tarjeta` y `?panel=descartar-plantilla`. «Tablas» con `?origen=`, `?tabla=<id>` (el editor) y `?panel=publicar-tabla`.
   Estados en las secciones «Cotización: …».
-- **Empresa** — `/configuracion/empresa` (`empresa.*`): bloques + `?seccion=empresa|monedas|integraciones|comprobantes` («Comprobantes»,
-  con `empresa.ajustes.gestionar`: la serie vigente, el próximo comprobante y el campo para cambiarla, con versión); `?tc=`, `?moneda=`,
-  crear en `?panel=`.
+- **Empresa** — `/configuracion/empresa` (`empresa.*`), cuatro sub-rutas en el menú de Configuración (`configuracion/empresa/seccion.ts`):
+  «Datos de la empresa» (la índice, `/configuracion/empresa`: el formulario y los íconos), «Monedas y tipos de cambio» (`/monedas`: tipos de
+  cambio, «Leyenda al compartir» y monedas; `?tc=`, `?moneda=`, crear en `?panel=`), «Integraciones» (`/integraciones`) y «Comprobantes»
+  (`/comprobantes`, con `empresa.ajustes.gestionar`: la serie vigente, el próximo comprobante y el campo para cambiarla, con versión; sin el
+  permiso, apagada con «Pide el permiso «Ajustes de la empresa».» y su URL abre Datos). Las URLs viejas redirigen en el servidor
+  (`url-vieja.ts`): `?seccion=` a su sub-ruta, y `?tc=`, `?moneda=` y los `?panel=` de crear (con o sin `?seccion=`) a Monedas con ellos.
 - **Flujos (config)** — `/configuracion/flujos` (`flujos.configurar` en algún origen, `repuestos.configurar` o
   `logistica.catalogos.gestionar`): una pestaña por flujo configurable (los orígenes con la clave, también los inactivos, y «Repuestos»),
   `?origen=<id>` y `?ambito=repuestos`. Las fases como **diagrama** (desde 768 px; `?vista=diagrama|lista`, «Ver como lista») o lista
@@ -623,15 +629,17 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 
 ### Empresa (estados propios)
 
-- **Entrar:** `empresa.ajustes.gestionar` o `empresa.tipos_cambio.gestionar`; cada pestaña se edita con su permiso, sin él deshabilitada
-  con el motivo arriba; sin ninguno, «sin permiso».
-- **Empresa:** un «Guardar». Color sin contraste, logo inválido y moneda base con datos: motivo junto al campo. Sin conexión, lo tipeado
-  queda y se repone con «Descartar».
+- **Entrar:** `empresa.ajustes.gestionar` o `empresa.tipos_cambio.gestionar`; cada sub-sección se edita con su permiso, sin él
+  deshabilitada con el motivo arriba; sin ninguno, «sin permiso». Cada sub-ruta tiene su esqueleto.
+- **Datos de la empresa:** se guarda con la **barra de cambios sin guardar** (al cambiar un texto, el color, un logo o un interruptor;
+  «Descartar» repone lo guardado; mientras guarda, formulario y botones apagados y la barra no se va). Color sin contraste, logo inválido y
+  moneda base con datos: motivo junto al campo. Sin conexión, lo tipeado queda (el borrador) y se repone con el «Descartar» de su aviso.
 - **Tipos de cambio:** cada uno abre su panel con el valor listo y su historial. El por defecto no se desactiva; nada se borra. El
   interruptor «En la barra superior» va en el mismo «Guardar»: apagado con su motivo si el tipo está inactivo o ya hay 3 («quita uno para
   sumar este»); quitarlo siempre se puede; sin ninguno marcado, avisa que la barra muestra el por defecto. La lista dice el tope y lleva
   el badge «En la barra» en los que se ven. Debajo, «Leyenda al compartir»: la leyenda de lo que se comparte (un campo, «n de 120»
-  sin `maxLength`, «Guardar leyenda»; sin `empresa.tipos_cambio.gestionar`, apagado con su motivo; `PT409` con «Recargar»).
+  sin `maxLength`, con la barra de cambios sin guardar al final de la página; sin `empresa.tipos_cambio.gestionar`, apagado con su motivo y sin
+  barra; `PT409` con «Recargar»). **Comprobantes:** la serie se guarda con la barra.
   **Integraciones:** apibara no se activa sin su clave, que nunca se muestra («Reemplazar»).
 
 ### Vehículos (estados propios)
@@ -1498,7 +1506,7 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 - Los roles de una persona se cambian con un interruptor por rol (permisos = unión de sus roles); la matriz guarda cada celda sola.
 - Los campos de los leads y los nombres de orígenes, fases, tipos de documento y categorías salen de la base: ningún texto fijo los nombra.
   «Solo la cartera» se recorta en la base, no en la pantalla.
-- Empresa es una pantalla con pestañas: quien tiene uno de sus dos permisos ve la otra parte deshabilitada con motivo. El tipo de cambio se
+- Empresa son cuatro sub-rutas: quien tiene uno de sus dos permisos ve la parte del otro deshabilitada con motivo. El tipo de cambio se
   cambia en un panel con su historial a la vista.
 - La situación de un vehículo (su fase, o «En subasta», «Sin resolver» o «No ganada») se ve en el inventario, la ficha y logística; la fase
   se cambia en logística y la subasta se resuelve desde la ficha. Un vehículo nace en la fase inicial cuando hay una sola; si no,
