@@ -21,5 +21,5 @@ export async function leerTonosDelCatalogo(): Promise<Resultado<TonoDelCatalogo[
     return { ok: false, error: errorDePostgrest(error) }
   }
   const tonos = esquemaDeLosTonos.safeParse(data)
-  return tonos.success ? ok(tonos.data) : fallo('inesperado', 'No pudimos leer los tonos.')
+  return tonos.success ? ok(tonos.data) : fallo('inesperado', 'No pudimos leer los colores.')
 }

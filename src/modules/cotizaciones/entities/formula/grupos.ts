@@ -87,7 +87,7 @@ function erroresDeLosCampos(
   if (cambios.plazo.trim().length > MAXIMO_DE_PLAZO)
     errores.push({ campo: 'plazo', mensaje: 'El plazo pasa de 40 caracteres.' })
   if (!tonos.has(cambios.tono))
-    errores.push({ campo: 'tono', mensaje: 'Elige un tono de la lista.' })
+    errores.push({ campo: 'tono', mensaje: 'Elige un color de la lista.' })
   if (!Object.hasOwn(formula.definicion.buckets ?? {}, cambios.bucket))
     errores.push({ campo: 'bucket', mensaje: 'Elige un tipo de cambio de la lista.' })
   const pueden = new Set(filasQuePuedenSumar(formula).map((n) => n.id))

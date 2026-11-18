@@ -117,7 +117,7 @@ function leerFormula(data: unknown): Resultado<FormulaParaLaPlantilla | null> {
 
 function leerTonos(data: unknown): Resultado<readonly TonoDelCatalogo[]> {
   const leidos = esquemaDeLosTonos.safeParse(filas(data))
-  if (!leidos.success) return fallo('inesperado', 'No pudimos leer los tonos.')
+  if (!leidos.success) return fallo('inesperado', 'No pudimos leer los colores.')
   return ok(
     leidos.data.map((t) => ({
       clave: t.clave,

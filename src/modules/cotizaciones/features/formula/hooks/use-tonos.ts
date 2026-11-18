@@ -22,7 +22,7 @@ export function useTonos() {
     ultimo.current += 1
     const pedido = ultimo.current
     leerTonosDelCatalogo()
-      .catch((): Resultado<TonoDelCatalogo[]> => fallo('inesperado', 'Sin tonos.'))
+      .catch((): Resultado<TonoDelCatalogo[]> => fallo('inesperado', 'Sin colores.'))
       .then((r) => {
         if (pedido !== ultimo.current) return
         setEstado(

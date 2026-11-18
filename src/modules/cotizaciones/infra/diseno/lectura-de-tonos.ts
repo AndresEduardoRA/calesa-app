@@ -20,6 +20,6 @@ export async function leerTonosSobre(
     .limit(TOPE_DE_TONOS)
   if (error) return { ok: false, error: errorDePostgrest(error) }
   const leidos = z.array(esquemaDeLaFilaDeTonos).safeParse(data)
-  if (!leidos.success) return fallo('inesperado', 'No pudimos leer los tonos.')
+  if (!leidos.success) return fallo('inesperado', 'No pudimos leer los colores.')
   return ok({ tope: TOPE_DE_TONOS, tonos: leidos.data.map(tonoDesdeLaFila) })
 }

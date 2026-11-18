@@ -70,12 +70,12 @@ describe('leerTonosSobre', () => {
     })
   })
 
-  it('T2 · una fila con un color mal escrito es «No pudimos leer los tonos.»', async () => {
+  it('T2 · una fila con un color mal escrito es «No pudimos leer los colores.»', async () => {
     const { cliente } = clienteFalso({ data: [fila({ claro_tinta: 'azul' })], error: null })
     const r = await leerTonosSobre(cliente)
     expect(!r.ok && r.error).toEqual({
       codigo: 'inesperado',
-      mensaje: 'No pudimos leer los tonos.',
+      mensaje: 'No pudimos leer los colores.',
     })
   })
 
