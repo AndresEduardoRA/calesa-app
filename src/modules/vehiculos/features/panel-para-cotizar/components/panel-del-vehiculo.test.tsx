@@ -85,6 +85,8 @@ function montar({
   historial = null as ReactNode,
   url = '?origen=o&lead=l&panel=vehiculo&lista=ultima',
   alta = null as AltaDelPanel | null,
+  arriba = null as ReactNode,
+  soloElegido = false,
 } = {}) {
   const cambios: UrlUpdateEvent[] = []
   render(
@@ -104,6 +106,8 @@ function montar({
           alta={alta}
           claveDeLaUrl="vehiculo"
           historial={historial}
+          arriba={arriba}
+          soloElegido={soloElegido}
         />
       </ProveedorAtajos>
     </NuqsTestingAdapter>,
@@ -205,5 +209,24 @@ describe('PanelDelVehiculo: el buscador', () => {
     await waitFor(() =>
       expect(cambios.at(-1)?.queryString).toBe(`?origen=o&lead=l&vehiculo=${OTRO}`),
     )
+  })
+})
+
+describe('PanelDelVehiculo › lo de arriba y sólo el elegido (T307)', () => {
+  it('lo de arriba va antes del buscador', async () => {
+    montar({ arriba: <p>Campo de arriba</p> })
+    const arriba = await screen.findByText('Campo de arriba')
+    const buscador = screen.getByRole('searchbox')
+    expect(arriba.compareDocumentPosition(buscador) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('sólo el elegido: lo de arriba y el elegido sin «Quitar», sin buscador ni listas', async () => {
+    montar({ arriba: <p>Campo de arriba</p>, soloElegido: true })
+    expect(await screen.findByText('Campo de arriba')).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'Elegido' }).textContent).toContain('Corolla elegido')
+    expect(screen.queryByRole('button', { name: 'Quitar' })).toBeNull()
+    expect(screen.queryByRole('searchbox')).toBeNull()
+    expect(screen.queryByRole('tab')).toBeNull()
+    expect(screen.queryByText('Civic otro')).toBeNull()
   })
 })

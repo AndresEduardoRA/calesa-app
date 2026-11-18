@@ -11,10 +11,12 @@
 --   - cliente común:   «Quispe» (≈ 6.250 leads: nombra los 50 más nuevos y dice `acotada`);
 --   - vehículo raro:   el lote de un vehículo, por `vehiculos_origen_listado_idx` y `cotizaciones_vehiculo_creado_idx`;
 --   - vehículo común:  «Toyota» (2.000 vehículos: nombra los 50 más nuevos y dice `acotada`);
---   - autor:           el nombre de un asesor con 7.000 cotizaciones, por `cotizaciones_creador_idx` (con «propios», sólo las propias: sin un `en_cartera()` por cada ajena).
+--   - autor:           el nombre de un asesor con 7.000 cotizaciones, por `cotizaciones_creador_idx` (con «propios», sólo las propias: sin un `en_cartera()` por cada ajena);
+--   - título raro:     «cotización 4242» (11 títulos), por `cotizaciones_titulo_trgm` en `_cotizaciones_ids_por_titulo()` (definer, plan genérico) y la página por la PK;
+--   - título común:    «Volumen cotización» (las 50.000: ≤ 1.000 candidatas por el trigrama, nombra las 50 más nuevas y dice `acotada`).
 --
 -- Asserta (abajo, con su motivo): ningún recorrido entero de `cotizaciones`; cada caso lee el índice que declara; un presupuesto de tiempo por caso; y lo que no depende de cuántas
--- cotizaciones hay (número, cliente raro y vehículo raro) no crece con N: a lo sumo 1,2 × los bloques de 50.000 + 20 y `greatest(1,5 × t, t + 3 ms)`. Lo común y el autor crecen con lo
+-- cotizaciones hay (número, cliente raro, vehículo raro y título raro) no crece con N: a lo sumo 1,2 × los bloques de 50.000 + 20 y `greatest(1,5 × t, t + 3 ms)`. Lo común y el autor crecen con lo
 -- que coincide, no con N: van como nota.
 \set ON_ERROR_STOP 1
 \set carga `cat /proc/loadavg`
@@ -48,7 +50,9 @@ select x.caso, q.quien, x.texto from (values
   ('cliente común', 'Quispe'),
   ('vehículo raro', (select v.lote from public.cotizaciones c join public.vehiculos v on v.id = c.vehiculo_id where c.titulo = 'Volumen cotización 4602')),
   ('vehículo común', 'Toyota'),
-  ('autor', (select nombre from public.perfiles where id = '00000000-0000-0000-0000-0000000000b1'))) x (caso, texto)
+  ('autor', (select nombre from public.perfiles where id = '00000000-0000-0000-0000-0000000000b1')),
+  ('título raro', 'cotización 4242'),
+  ('título común', 'Volumen cotización')) x (caso, texto)
  cross join (values ('duena'), ('ana')) q (quien);
 do $$ begin
   if exists (select 1 from _casos where texto is null) then
@@ -134,6 +138,9 @@ set local role authenticated;
 select pg_temp.fase('50.000');
 reset role;
 select pg_temp.rellenar(1, 200000);
+-- La lista pendiente del GIN del título (fastupdate) se recorre entera en cada búsqueda y crece con lo insertado desde el último vacuum, que en la nube pasa solo (como en
+-- `medir-buscador.sql`): aquí, dentro de la transacción, se vacía a mano.
+select gin_clean_pending_list('public.cotizaciones_titulo_trgm') \g /dev/null
 analyze public.cotizaciones;
 set local role authenticated;
 select pg_temp.fase('250.000');
@@ -146,10 +153,12 @@ do $$
 declare
   r record; v_g record; v_fallas text := ''; v_tope numeric;
   -- Presupuestos: el número, 1 a 3 lecturas por PK; lo raro, la ventana de leads_candidatos (cliente) o el recorrido de un origen (vehículo: la RLS no deja usar su trigrama) y
-  -- 50 ids por índice; lo común nombra 50 y lee su página de cada uno; Ana, una en_cartera() por fila que lee.
-  v_tope_ms constant jsonb := '{"número": 20, "cliente raro": 80, "cliente común": 400, "vehículo raro": 150, "vehículo común": 400, "autor": 60}';
+  -- 50 ids por índice; lo común nombra 50 y lee su página de cada uno; Ana, una en_cartera() por fila que lee. El título suma su trigrama (≤ 1.000 candidatas) al piso de
+  -- las otras fuentes de texto, que corren igual.
+  v_tope_ms constant jsonb := '{"número": 20, "cliente raro": 80, "cliente común": 400, "vehículo raro": 150, "vehículo común": 400, "autor": 60, "título raro": 80, "título común": 150}';
   v_indice constant jsonb := '{"número": "cotizaciones_numero_key", "cliente raro": "cotizaciones_lead_creado_idx", "cliente común": "cotizaciones_lead_creado_idx",
-                              "vehículo raro": "cotizaciones_vehiculo_creado_idx", "vehículo común": "cotizaciones_vehiculo_creado_idx", "autor": "cotizaciones_creador_idx"}';
+                              "vehículo raro": "cotizaciones_vehiculo_creado_idx", "vehículo común": "cotizaciones_vehiculo_creado_idx", "autor": "cotizaciones_creador_idx",
+                              "título raro": "cotizaciones_titulo_trgm", "título común": "cotizaciones_titulo_trgm"}';
 begin
   for r in select * from _med order by fase, caso, quien loop
     raise notice 'medicion|Búsqueda de cotizaciones, % · % · % (ms)|%', r.fase, r.caso, r.quien, round(r.ms, 2);
@@ -170,14 +179,14 @@ begin
     if r.caso = 'autor' and r.quien = 'ana' and coalesce((r.llamadas ->> 'en_cartera')::int, 0) > 200 then
       v_fallas := v_fallas || format(E'\n  %s · autor · ana llama a en_cartera %s veces (a lo sumo 200)', r.fase, r.llamadas ->> 'en_cartera');
     end if;
-    if r.caso in ('cliente común', 'vehículo común') and r.quien = 'duena' and not r.acotada then
+    if r.caso in ('cliente común', 'vehículo común', 'título común') and r.quien = 'duena' and not r.acotada then
       v_fallas := v_fallas || format(E'\n  %s · %s · duena: debía pasarse del tope de coincidencias (acotada) y no lo dijo', r.fase, r.caso);
     end if;
   end loop;
   -- No crece con N: lo que no depende de cuántas cotizaciones hay.
   for v_g in select a.caso, a.quien, a.ms as ms_chico, b.ms as ms_grande, a.total as bl_chico, b.total as bl_grande
                from _med a join _med b on b.caso = a.caso and b.quien = a.quien and a.fase = '50.000' and b.fase = '250.000'
-              where a.caso in ('número', 'cliente raro', 'vehículo raro') loop
+              where a.caso in ('número', 'cliente raro', 'vehículo raro', 'título raro') loop
     if v_g.bl_grande > 1.2 * v_g.bl_chico + 20 then
       v_fallas := v_fallas || format(E'\n  %s · %s crece con N: %s bloques con 50.000 y %s con 250.000', v_g.caso, v_g.quien, v_g.bl_chico, v_g.bl_grande);
     end if;

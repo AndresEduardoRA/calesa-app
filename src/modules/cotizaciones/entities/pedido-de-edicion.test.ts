@@ -15,13 +15,14 @@ const pedido = (mas: Partial<PedidoDeEdicion> = {}): PedidoDeEdicion => ({
   modoTc: null,
   verTotalBs: false,
   titulo: null,
+  tituloManual: false,
   notas: null,
   vehiculoId: null,
   ...mas,
 })
 
 describe('argumentosDeGuardar', () => {
-  it('manda las nueve claves de cotizacion_guardar, siempre, también con nulos', () => {
+  it('manda las diez claves de cotizacion_guardar, siempre, también con nulos', () => {
     expect(argumentosDeGuardar(pedido())).toEqual({
       p_id: COTIZACION,
       p_intento: INTENTO,
@@ -32,6 +33,7 @@ describe('argumentosDeGuardar', () => {
       p_notas: null,
       p_vehiculo: null,
       p_ver_total_bs: false,
+      p_titulo_manual: false,
     })
   })
 
@@ -42,10 +44,11 @@ describe('argumentosDeGuardar', () => {
     )
   })
 
-  it('título, notas y vehículo son los de la cotización, sin tocarlos; el modo y «Ver total Bs», los de la hoja', () => {
+  it('notas y vehículo son los de la cotización, sin tocarlos; el título, si es manual, el modo y «Ver total Bs», los de la hoja', () => {
     const a = argumentosDeGuardar(
       pedido({
         titulo: 'Una camioneta',
+        tituloManual: true,
         notas: 'Con flete',
         vehiculoId: VEHICULO,
         modoTc: 'paralelo',
@@ -54,6 +57,7 @@ describe('argumentosDeGuardar', () => {
     )
     expect(a).toMatchObject({
       p_titulo: 'Una camioneta',
+      p_titulo_manual: true,
       p_notas: 'Con flete',
       p_vehiculo: VEHICULO,
       p_modo_tc: 'paralelo',

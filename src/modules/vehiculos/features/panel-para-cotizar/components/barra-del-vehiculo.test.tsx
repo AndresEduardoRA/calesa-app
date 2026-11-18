@@ -113,3 +113,57 @@ describe('BarraDelVehiculo', () => {
     expect(panelMontado).toHaveBeenLastCalledWith(expect.objectContaining({ alta: null }))
   })
 })
+
+describe('BarraDelVehiculo › el título de lo que se cotiza (T307)', () => {
+  const elegido = { id: ID, numero: 12, titulo: 'Toyota Corolla', lote: '4455', portadaRuta: null }
+
+  it('con vehículo, el título grande (entero en `title`) y debajo el vehículo y su referencia', () => {
+    montar({ elegido, titulo: 'Para Juan Pérez' })
+    const boton = screen.getByRole('button', { name: /Para Juan Pérez/ })
+    expect(boton.textContent).toContain('Toyota Corolla · #12 · Lote 4455')
+    expect(screen.getByTitle('Para Juan Pérez')).toBeTruthy()
+  })
+
+  it('automático (el título es el del vehículo): debajo sólo la referencia, sin repetirlo', () => {
+    montar({ elegido, titulo: 'Toyota Corolla' })
+    const boton = screen.getByRole('button', { name: /Toyota Corolla/ })
+    expect(boton.textContent).toContain('#12 · Lote 4455')
+    expect(boton.textContent).not.toContain('Toyota Corolla · #12')
+  })
+
+  it('sin vehículo, el título solo y «Selecciona un vehículo» debajo, con «Obligatorio» si lo es', () => {
+    montar({ titulo: 'Para Juan Pérez', obligatorio: true })
+    const boton = screen.getByRole('button', { name: /Para Juan Pérez/ })
+    expect(boton.textContent).toContain('Selecciona un vehículo')
+    expect(screen.getByText('Obligatorio')).toBeTruthy()
+  })
+
+  it('sin ver los vehículos pero con algo arriba del panel: la barra abre igual, con el título y por qué no hay vehículos', () => {
+    montar(
+      { puedeVer: false, titulo: 'Para Juan Pérez', arribaDelPanel: <p>campo</p> },
+      '?origen=o&panel=vehiculo',
+    )
+    const boton = screen.getByRole('button', { name: /Para Juan Pérez/ })
+    expect(boton.textContent).toContain('No puedes ver los vehículos de este origen.')
+    expect(panelMontado).toHaveBeenLastCalledWith(expect.objectContaining({ soloElegido: true }))
+  })
+
+  it('«solo_mostrar»: no es un botón y no hay panel; «ver_elegido»: el panel sólo con lo de arriba y el elegido', () => {
+    montar({ elegido, titulo: 'Para Juan Pérez', modo: 'solo_mostrar' }, '?origen=o&panel=vehiculo')
+    expect(screen.queryByRole('button')).toBeNull()
+    expect(screen.getByText('Para Juan Pérez')).toBeTruthy()
+    expect(panelMontado).not.toHaveBeenCalled()
+    cleanup()
+    montar({ elegido, titulo: 'Para Juan Pérez', modo: 'ver_elegido' }, '?origen=o&panel=vehiculo')
+    expect(panelMontado).toHaveBeenLastCalledWith(expect.objectContaining({ soloElegido: true }))
+  })
+
+  it('una guardada sin vehículo dice «Sin vehículo»; con uno que no se ve, nada debajo del título', () => {
+    montar({ titulo: 'Para Juan Pérez', modo: 'solo_mostrar', textoSinVehiculo: 'Sin vehículo' })
+    expect(screen.getByText('Sin vehículo')).toBeTruthy()
+    cleanup()
+    montar({ titulo: 'Para Juan Pérez', modo: 'solo_mostrar', textoSinVehiculo: null })
+    expect(screen.queryByText('Sin vehículo')).toBeNull()
+    expect(screen.queryByText('Selecciona un vehículo')).toBeNull()
+  })
+})

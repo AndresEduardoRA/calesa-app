@@ -47,6 +47,21 @@ describe('resultadoDeGuardar', () => {
     expect(aviso.salida).toBe('recargar')
   })
 
+  it('el título (T307): sin vehículo y sin título, «Escribe el título…» con su botón; más largo que el tope, su texto sin salida', () => {
+    expect(motivo({ code: '22023', details: null, hint: 'titulo', message: 'x' })).toBe(
+      'falta_titulo',
+    )
+    expect(motivo({ code: '22023', details: 'titulo_largo', hint: 'titulo', message: 'x' })).toBe(
+      'titulo_largo',
+    )
+    expect(textoDelRechazo('falta_titulo')).toEqual({
+      texto: 'Escribe el título de la cotización.',
+      salida: 'elegir_titulo',
+      campo: 'titulo',
+    })
+    expect(textoDelRechazo('titulo_largo').salida).toBeNull()
+  })
+
   it('los demás se leen como los de crear: nodo_no_editable, otro 42501, sin código', () => {
     expect(motivo({ code: '42501', details: 'nodo_no_editable', message: 'x' })).toBe(
       'recargar_hoja',

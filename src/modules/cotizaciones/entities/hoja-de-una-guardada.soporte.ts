@@ -22,6 +22,7 @@ export const crudaDeUnaGuardada = (mas: Record<string, unknown> = {}) => {
       clase: 'preventa',
       estado: 'cotizada',
       titulo: null,
+      titulo_manual: false,
       formula_id: ID,
       total_base: 2350,
       modo_tc: null,

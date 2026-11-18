@@ -103,16 +103,16 @@ begin
   return jsonb_build_object('o', o, 'f', f, 'l', l, 'v', v, 'a', a, 'k', k, 'kv', kv, 'ke', ke, 'sl', sl, 'sv', sv, 'sc', sc, 'fg', fg);
 end $f$;
 
--- Una llamada a cotizacion_crear con esos argumentos (el id del intento, el modo y «Ver total Bs» —`p_ver`, en texto para poder mandar nulo—, opcionales). La hoja abierta va como marcador y `cc_corre` la firma para quien llama: por omisión «se abrió»
+-- Una llamada a cotizacion_crear con esos argumentos (el id del intento, el modo, «Ver total Bs» —`p_ver`, en texto para poder mandar nulo— y el título, opcionales; sin vehículo el título es obligatorio). La hoja abierta va como marcador y `cc_corre` la firma para quien llama: por omisión «se abrió»
 -- ahora sobre la versión publicada del origen (D2): ni la fórmula ni los tipos de cambio cambiaron desde entonces. `p_raw` pone en su lugar un texto cualquiera (una firma rota, basura).
 create or replace function pg_temp.cc_sql(p_id uuid, p_o uuid, p_l uuid, p_entradas text, p_v uuid default null, p_nuevo text default null, p_modo text default null, p_clase text default 'preventa',
                                          p_abierta uuid default null, p_abierta_en timestamptz default null, p_con_la_abierta boolean default false, p_raw text default 'marcador',
-                                         p_ver text default 'false')
+                                         p_ver text default 'false', p_titulo text default null)
 returns text language sql as $f$
-  select format('select public.cotizacion_crear(%L, %L, %L, %L::jsonb, %L, %L, %L::jsonb, %L, %L::public.clase_cotizacion, %L, %L::boolean)', p_id, p_o, p_l, p_entradas,
+  select format('select public.cotizacion_crear(%L, %L, %L, %L::jsonb, %L, %L, %L::jsonb, %L, %L::public.clase_cotizacion, %L, %L::boolean, %L)', p_id, p_o, p_l, p_entradas,
                 case when p_raw = 'marcador' then '@@abierta|' || p_o || '|' || coalesce(p_abierta, (select f.id from public.formulas f where f.origen_id = p_o and f.estado = 'publicada')) || '|'
                                                   || round(extract(epoch from coalesce(p_abierta_en, now())) * 1000000)::bigint || '@@' else p_raw end,
-                p_v, p_nuevo, p_modo, p_clase, p_con_la_abierta, p_ver)
+                p_v, p_nuevo, p_modo, p_clase, p_con_la_abierta, p_ver, p_titulo)
 $f$;
 
 -- Pone en el diseño de esa versión lo que ofrece la cabecera: «Ver total Bs» (`ofrece` en texto: 'true', 'false' o nulo para sacar la clave).
@@ -262,7 +262,7 @@ begin
   if r ->> 'error' is distinct from '22023' or r ->> 'hint' is distinct from 'vehiculo' then raise exception 'un vehículo y otro a mano a la vez debía dar 22023: %', r; end if;
   -- Con la clave: una preventa se guarda sin vehículo; una final sigue exigiéndolo.
   insert into public.roles_permisos (rol_id, permiso_clave, alcance) select ur.rol_id, 'cotizaciones.crear.sin_vehiculo', 'todos' from public.usuarios_roles ur where ur.usuario_id in (a, fg);
-  r := pg_temp.cc_corre(a, pg_temp.cc_sql(gen_random_uuid(), o, l, '{}', null));
+  r := pg_temp.cc_corre(a, pg_temp.cc_sql(gen_random_uuid(), o, l, '{}', null, p_titulo => 'CC sin vehículo'));
   if r ? 'error' then raise exception 'con la clave, una preventa sin vehículo debía guardarse: %', r; end if;
   select * into c from public.cotizaciones where id = (r -> 'cotizacion' ->> 'id')::uuid;
   if c.vehiculo_id is not null then raise exception 'la cotización sin vehículo trae uno'; end if;
@@ -418,7 +418,7 @@ begin
   -- Un origen sin fórmula publicada.
   insert into public.origenes (clave, nombre) values ('cc_sinf_' || substr(gen_random_uuid()::text, 1, 6), 'CC sin fórmula') returning id into o2;
   insert into public.roles_permisos (rol_id, permiso_clave, alcance) select ur.rol_id, 'cotizaciones.crear.sin_vehiculo', 'todos' from public.usuarios_roles ur where ur.usuario_id = a;
-  r := pg_temp.cc_corre(a, pg_temp.cc_sql(gen_random_uuid(), o2, l, '{}', null, p_abierta => gen_random_uuid()));  -- (una hoja no se abre sin fórmula: el id es uno cualquiera)
+  r := pg_temp.cc_corre(a, pg_temp.cc_sql(gen_random_uuid(), o2, l, '{}', null, p_abierta => gen_random_uuid(), p_titulo => 'CC sin fórmula'));  -- (una hoja no se abre sin fórmula: el id es uno cualquiera)
   if r ->> 'error' is distinct from '22023' or r ->> 'detail' is distinct from 'origen_sin_formula' then raise exception 'un origen sin fórmula debía dar origen_sin_formula: %', r; end if;
 end $$;
 rollback;

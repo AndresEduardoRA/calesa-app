@@ -14,14 +14,23 @@ import {
 } from '../../../entities/obligatorios-al-cotizar'
 import type { RespuestaDeRecalculo } from '../../../entities/recalculo'
 import { motivoParaNoGuardar } from '../../../entities/se-puede-guardar'
+import { tituloParaGuardar } from '../../../entities/titulo-de-la-cotizacion'
 import type { BotonDeGuardar } from '../components/resumen-de-hoja'
 import { useAlGuardar } from './use-al-guardar'
 import type { Armar, Guardado } from './use-nucleo-del-guardado'
 import type { useHoja } from './use-hoja'
+import { useTituloDeLaCotizacion, type TituloDeLaCotizacion } from './use-titulo-de-la-cotizacion'
 
 // Un override que la persona mandó y el recálculo descartó: la base lo rechaza al guardar (P9).
 const descartoLoTipeado = (respuesta: RespuestaDeRecalculo | null, entradas: Entradas) =>
   respuesta?.descartados.some((d) => entradas.overrides.has(d.id)) ?? false
+
+// El título en la hoja nueva (T307), del proveedor que `src/app` pone sobre la hoja: el que se ve (para lo que falta) y lo que va en el pedido. Sin él (una prueba), ni se
+// pide ni se manda.
+const delTitulo = (titulo: TituloDeLaCotizacion | null) =>
+  titulo === null
+    ? { elegido: {}, paraGuardar: { titulo: null, tituloManual: false } }
+    : { elegido: { titulo: titulo.mostrado }, paraGuardar: tituloParaGuardar(titulo.estado) }
 
 // Lo que la hoja pone para guardar: el motivo para no hacerlo (con un pendiente no hay: se reenvía tal cual, 4-21), cómo arma el pedido con el total al día (P8: las
 // entradas que ese recálculo calculó, la misma hoja abierta, y las guardas otra vez con su respuesta) y qué hace «Guardar»: confirmar la celda abierta y pedir.
@@ -48,8 +57,13 @@ export function useGuardarLaHoja({
   guardado: Guardado | null
   raiz: RefObject<HTMLDivElement | null>
 }) {
-  // Sin ellos (una guardada, o una hoja que no los trae) la hoja no pide nada.
-  const falta = loQueFalta(obligatorios ?? SIN_OBLIGATORIOS, { leadId, vehiculoId })
+  const titulo = delTitulo(useTituloDeLaCotizacion())
+  // Sin ellos (una guardada, o una hoja que no los trae) la hoja no pide nada; sin vehículo, el título sí.
+  const falta = loQueFalta(obligatorios ?? SIN_OBLIGATORIOS, {
+    leadId,
+    vehiculoId,
+    ...titulo.elegido,
+  })
   // Un pendiente se reenvía tal cual: las guardas de la hoja no le aplican (4-21).
   const motivo = guardado?.hayPendiente
     ? null
@@ -81,6 +95,7 @@ export function useGuardarLaHoja({
               entradas: entradasDelPedido(r.entradas),
               modoTc: r.entradas.modoTc,
               verTotalBs: ofreceVerTotalBs(hoja.cabecera) && h.verTotalBs,
+              ...titulo.paraGuardar,
             }
           : null,
       )

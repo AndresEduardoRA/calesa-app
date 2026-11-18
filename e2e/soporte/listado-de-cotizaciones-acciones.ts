@@ -72,7 +72,7 @@ export async function limpiarListadoDeAcciones(): Promise<void> {
 export const filas = (page: Page): Locator =>
   page.locator('tbody tr, li article').filter({ visible: true })
 export const buscador = (page: Page): Locator =>
-  page.getByRole('searchbox', { name: 'Buscar por número, cliente, vehículo o autor' })
+  page.getByRole('searchbox', { name: 'Buscar por número, título, cliente, vehículo o autor' })
 export const deLaPrueba = (): string => `/cotizaciones?origen=${origenDeLaPrueba}`
 
 export async function irA(page: Page, correo: string, ruta: string): Promise<void> {

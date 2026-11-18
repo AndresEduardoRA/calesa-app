@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
 import {
   guardarConElAtajo,
@@ -164,6 +165,8 @@ test('E2E elegir cierra el panel y guarda con ese lead; «Quitar» lo saca; «at
 }) => {
   const guardados = await vigilarGuardados(page)
   await abrirLaHoja(page)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await barra(page).click()
   await filas(page)
     .filter({ hasText: nombreDe(5) })

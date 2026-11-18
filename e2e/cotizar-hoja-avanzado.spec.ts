@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   PREFIJO_ROL_E2E,
@@ -191,6 +192,8 @@ test('Ctrl+S con una celda abierta en el modal guarda ese número; guardada, la 
 }) => {
   const guardados = await vigilarGuardados(page)
   await abrir(page, `/cotizaciones/nuevo?origen=${origen.id}&lead=${lead}`)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await boton(page).click()
   await expect(dialogo(page)).toBeVisible()
   await escribirEnLaHoja(page, 'x_celda', '450')

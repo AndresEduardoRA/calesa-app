@@ -1,4 +1,5 @@
 import { expect, test } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
 import {
   cotizacionGuardada,
@@ -36,6 +37,8 @@ test('con la respuesta perdida, el próximo guardado manda el pedido viejo y se 
   const guardados = await vigilarGuardados(page)
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origen.id}&lead=${lead}`)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '100')
   await expect(totalDeLaHoja(page)).toContainText('105,00')
   guardados.perderLaProxima()
@@ -65,6 +68,8 @@ test('tras recargar, el pendiente sigue en la pestaña y se reenvía con el mism
   const guardados = await vigilarGuardados(page)
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origen.id}&lead=${lead}`)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '40')
   await expect(totalDeLaHoja(page)).toContainText('45,00')
   guardados.perderLaProxima()
