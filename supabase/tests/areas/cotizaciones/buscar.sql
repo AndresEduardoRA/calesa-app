@@ -280,6 +280,12 @@ begin
   -- «Propios»: la propia sí, la ajena no (tampoco por el ayudante).
   if pg_temp.cb_ids(propia, 'zafiro') is distinct from array[c2] then raise exception 'B6: «propios» por título: %', pg_temp.cb_ids(propia, 'zafiro'); end if;
   if pg_temp.cb_titulos(propia, 'zafiro') is distinct from array[c2] then raise exception 'B6: el ayudante nombra lo que «propios» no ve: %', pg_temp.cb_titulos(propia, 'zafiro'); end if;
+  -- Un origen que «propios» no ve no se puede pedir: el origen sólo estrecha.
+  if cardinality(pg_temp.cb_titulos(propia, 'zafiro', (u ->> 'o')::uuid)) <> 0 then raise exception 'B6: el ayudante nombró de un origen que no se ve'; end if;
+  -- «Propios» con el lead de la ajena en su cartera: ésa sí (la policy, `en_cartera()`).
+  insert into public.leads_asesores (lead_id, usuario_id, tipo_acceso, lead_creado_en, lead_reciente_en) values ((t ->> 'l')::uuid, propia, 'compartido', now(), now());
+  if pg_temp.cb_ids(propia, 'zafiro') is distinct from array[c2, c1] then raise exception 'B6: «propios» no encontró la de su cartera: %', pg_temp.cb_ids(propia, 'zafiro'); end if;
+  if pg_temp.cb_titulos(propia, 'zafiro') is distinct from array[c2, c1] then raise exception 'B6: el ayudante no nombró la de su cartera: %', pg_temp.cb_titulos(propia, 'zafiro'); end if;
   -- Sin cotizaciones.ver, nada (por la búsqueda y por el ayudante directo).
   if cardinality(pg_temp.cb_ids(sin_cot, 'zafiro')) <> 0 or cardinality(pg_temp.cb_titulos(sin_cot, 'zafiro')) <> 0 then raise exception 'B6: sin cotizaciones.ver encontró por título'; end if;
   -- El mínimo del texto y los comodines: dos letras y «%%%» no buscan (el ayudante recibe el texto, no un patrón).
