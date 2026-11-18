@@ -1,5 +1,5 @@
 // El texto de «Compartir la cotización», listo para pegar, armado en el navegador con lo que mandó el servidor (`DatosParaCompartir`): cambiar de formato o de zona
-// no vuelve a pedir nada. En el orden de V1: el título de la cotización; del vehículo, su título (si el de la cotización no es el mismo), el lote, el año, el
+// no vuelve a pedir nada. En el orden de V1: el título de la cotización; del vehículo, su título (si el de la cotización no es ese mismo), el lote, el año, el
 // kilometraje, el VIN, el enlace y el cierre de la subasta en la zona elegida (sólo si todavía no pasó); los conceptos de la tarjeta con su monto; y el total con su
 // modo. Lo que falta no deja una línea. Los formatos:
 // - «Simple»: sin marcas y sin líneas en blanco;
@@ -58,7 +58,8 @@ function bloqueDelVehiculo(datos: DatosParaCompartir, opciones: Opciones): strin
   const v = datos.vehiculo
   if (v === null) return []
   return [
-    datos.titulo.fuente === 'vehiculo' ? null : v.titulo,
+    // El título automático ya es el del vehículo (la base lo guarda en la columna): no se repite.
+    datos.titulo.fuente === 'vehiculo' || datos.titulo.texto === v.titulo ? null : v.titulo,
     v.lote === null ? null : `Lote: ${v.lote}`,
     v.anio === null ? null : `Año: ${String(v.anio)}`,
     v.kilometraje === null

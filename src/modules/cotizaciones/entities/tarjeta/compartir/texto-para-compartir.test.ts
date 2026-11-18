@@ -99,6 +99,12 @@ describe('textoParaCompartir: lo que falta no deja línea', () => {
       titulo: { texto: 'Toyota Hilux 2022', fuente: 'vehiculo' as const },
     }
     expect(texto(delVehiculo).match(/Toyota Hilux 2022/g)).toHaveLength(1)
+    // El automático guardado en la columna llega como propio: tampoco se repite.
+    const automatico = {
+      ...datos,
+      titulo: { texto: 'Toyota Hilux 2022', fuente: 'titulo' as const },
+    }
+    expect(texto(automatico).match(/Toyota Hilux 2022/g)).toHaveLength(1)
   })
 
   it('un título con `*` va sin marca en WhatsApp', () => {
