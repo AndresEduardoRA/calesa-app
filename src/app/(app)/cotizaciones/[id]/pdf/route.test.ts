@@ -21,13 +21,17 @@ vi.mock('@/shared/lib/navegacion', () => ({
 const leerHoja = vi.fn()
 const leerAsesor = vi.fn()
 const pdf = vi.fn()
+// `contextoDeLaPagina()` devuelve lo que recibe: lo que se prueba es qué le pasa la ruta (el formato lo prueba su entidad).
 vi.mock('@/modules/cotizaciones', () => ({
   leerHojaDeUnaGuardada: (id: string) => leerHoja(id),
   leerAsesorDeLaCotizacion: (id: string) => leerAsesor(id),
   pdfDeUnaGuardada: (entrada: unknown) => pdf(entrada),
+  contextoDeLaPagina: (pagina: unknown, opciones: unknown) => ({ pagina, opciones }),
 }))
 const leerVehiculo = vi.fn()
 vi.mock('@/modules/vehiculos', () => ({ leerVehiculo: (id: string) => leerVehiculo(id) }))
+const leerCliente = vi.fn()
+vi.mock('@/modules/leads', () => ({ leerClienteElegido: (id: string) => leerCliente(id) }))
 const leerAjustes = vi.fn()
 vi.mock('@/modules/empresa', () => ({
   leerAjustes: () => leerAjustes(),
@@ -42,6 +46,7 @@ import { GET } from './route'
 
 const ID = '0b7a2f0e-1c2d-4e5f-8a9b-0c1d2e3f4a5b'
 const VEHICULO = '00000000-0000-4000-8000-0000000000aa'
+const LEAD = '00000000-0000-4000-8000-0000000000cc'
 // El último guardado, a las 22:30 del 6 de noviembre en La Paz (el 7 en UTC).
 const GUARDADA_EL = '2026-11-07T02:30:00.123456+00:00'
 const NO_DISPONIBLE = 'Esta cotización ya no está disponible: no existe o ya no tienes acceso.'
@@ -49,8 +54,16 @@ const NO_SE_PUDO = 'No se pudo armar el PDF. Vuelve a intentarlo.'
 
 const activa = { usuarioId: ID, estado: 'activa', permisos: [] }
 const hoja = {
-  cotizacion: { id: ID, numero: 12, actualizadoEn: GUARDADA_EL, vehiculoId: VEHICULO },
+  cotizacion: {
+    id: ID,
+    numero: 12,
+    titulo: 'Hilux para Juan',
+    actualizadoEn: GUARDADA_EL,
+    vehiculoId: VEHICULO,
+    leadId: LEAD,
+  },
   vencida: true,
+  venceEl: '2026-11-20',
 }
 const inicial = { respuesta: null, estado: { tipo: 'al_dia' } }
 const ajustes = {
@@ -71,7 +84,11 @@ beforeEach(() => {
   sesion.mockResolvedValue(activa)
   leerHoja.mockResolvedValue({ ok: true, data: { hoja, inicial } })
   leerAsesor.mockResolvedValue({ ok: true, data: 'Ana Pérez' })
-  leerVehiculo.mockResolvedValue({ ok: true, data: { titulo: 'Toyota Hilux 2020' } })
+  leerVehiculo.mockResolvedValue({
+    ok: true,
+    data: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
+  })
+  leerCliente.mockResolvedValue({ ok: true, data: { id: LEAD, nombre: 'Juan Pérez' } })
   leerAjustes.mockResolvedValue({ ok: true, data: { ajustes, conDatosCargados: true } })
   pdf.mockResolvedValue({ ok: true, data: { bytes: BYTES, archivo: 'cotizacion-12.pdf' } })
 })
@@ -142,25 +159,48 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
     expect(new Uint8Array(await r.arrayBuffer())).toEqual(BYTES)
   })
 
-  it('arma la página: el día del último guardado en la zona de la empresa (no hoy), si venció, el vehículo, el asesor, el logo y el locale', async () => {
+  it('arma el contexto: el título, el vehículo con lote y VIN, el asesor, el vencimiento, el logo y las fechas en la zona de la empresa (el último guardado, no hoy)', async () => {
     await pedir()
     expect(leerHoja).toHaveBeenCalledWith(ID)
     expect(leerAsesor).toHaveBeenCalledWith(ID)
     expect(leerVehiculo).toHaveBeenCalledWith(VEHICULO)
     expect(pdf).toHaveBeenCalledWith({
       lectura: { hoja, inicial },
-      pagina: {
-        fecha: '6 nov 2026',
-        vehiculo: 'Toyota Hilux 2020',
-        asesor: 'Ana Pérez',
-        numero: 12,
-        vencida: true,
-        logo: { nombre: 'Importadora Prueba', url: 'https://almacen.test/marca/logos/abc.png' },
+      contexto: {
+        pagina: {
+          titulo: 'Hilux para Juan',
+          // Sin `leads.ver`, el cliente no se lee ni se nombra.
+          cliente: null,
+          vehiculo: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
+          asesor: 'Ana Pérez',
+          numero: 12,
+          venceEl: '2026-11-20',
+          guardadaEl: GUARDADA_EL,
+          logo: { nombre: 'Importadora Prueba', url: 'https://almacen.test/marca/logos/abc.png' },
+        },
+        opciones: { zona: 'America/La_Paz', hoy: GUARDADA_EL },
       },
       locale: 'en-US',
       empresa: 'Importadora Prueba',
       topeDelLogo: 1048576,
     })
+    expect(leerCliente).not.toHaveBeenCalled()
+  })
+
+  it('el cliente se nombra sólo con `leads.ver`', async () => {
+    sesion.mockResolvedValue({
+      ...activa,
+      permisos: [{ clave: 'leads.ver', origenId: null, alcance: 'todos' }],
+    })
+    await pedir()
+    expect(leerCliente).toHaveBeenCalledWith(LEAD)
+    expect(pdf).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contexto: expect.objectContaining({
+          pagina: expect.objectContaining({ cliente: 'Juan Pérez' }),
+        }),
+      }),
+    )
   })
 
   it('si falla la lectura del vehículo o del asesor, el PDF sale sin ese dato', async () => {
@@ -174,7 +214,9 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
     expect(r.status).toBe(200)
     expect(pdf).toHaveBeenCalledWith(
       expect.objectContaining({
-        pagina: expect.objectContaining({ vehiculo: null, asesor: null, logo: null }),
+        contexto: expect.objectContaining({
+          pagina: expect.objectContaining({ vehiculo: null, asesor: null, logo: null }),
+        }),
       }),
     )
   })

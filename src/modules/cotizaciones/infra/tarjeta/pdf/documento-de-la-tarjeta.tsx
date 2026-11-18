@@ -1,129 +1,100 @@
 import 'server-only'
 // `Image` de react-pdf no es un `<img>` del DOM: no lleva `alt` (el PDF no tiene árbol de accesibilidad con él); el nombre propio evita confundirlo con el de next/image.
 import { Document, Image as ImagenDelPdf, Page, Text, View } from '@react-pdf/renderer'
-import { formatearMonto } from '@/shared/lib/formato'
-import type {
-  GrupoDeTarjeta,
-  ModeloDeTarjeta,
-} from '../../../entities/tarjeta/modelo-de-la-tarjeta'
-import { estilos } from './estilos-del-documento'
+import { COLOR_TINTA } from '@/shared/config/app'
+import { escalarGeometria } from '../../../entities/tarjeta/escalar-geometria'
+import { RELLENO_DE_LA_CELDA } from '../../../entities/tarjeta/estilo-de-la-celda'
+import type { CeldaDibujada, Geometria } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
+import { estilos, MARGEN_DEL_PDF, PAGINA_A4 } from './estilos-del-documento'
 import type { LogoDelPdf } from './logo-del-pdf'
 
 export type PropsDelDocumento = {
-  modelo: ModeloDeTarjeta
-  // El de la empresa: los montos van con él (P8: `formatearMonto`, el formato de `<Monto>`, y siempre con cifras).
-  locale: string
+  geometria: Geometria
+  // El número de la guardada: el título del PDF.
+  numero: number | null
   logo: LogoDelPdf | null
   // El nombre de la empresa: el autor del PDF.
   empresa: string
 }
 
-const SIN_DATO = '—'
+// 1 px de la tarjeta = 0,75 pt.
+const PT_POR_PX = 0.75
+const JUSTIFICAR = { arriba: 'flex-start', centro: 'center', abajo: 'flex-end' } as const
+const ALINEAR = { izquierda: 'left', centro: 'center', derecha: 'right' } as const
 
-const enUsd = (valor: number | null, locale: string) =>
-  valor === null ? SIN_DATO : formatearMonto(valor, { moneda: 'USD', locale })
+// El factor que hace entrar la tarjeta entera en el ancho y el alto útiles de A4 (D15 de T310): nunca agranda, y una fila nunca se corta.
+export function escalaDelPdf(g: Geometria): number {
+  const ancho = (PAGINA_A4.ancho - 2 * MARGEN_DEL_PDF) / (g.ancho * PT_POR_PX)
+  const alto = (PAGINA_A4.alto - 2 * MARGEN_DEL_PDF) / (g.alto * PT_POR_PX)
+  return Math.min(1, ancho, alto)
+}
 
-type Tono = ModeloDeTarjeta['tonos'][number]['tarjeta']
+function estiloDe(c: CeldaDibujada, k: number) {
+  const e = c.estilo
+  // El borde va adentro de los 4 px de la celda (`RELLENO_DE_LA_CELDA`): si no, el último renglón no entra y react-pdf lo corta con «…».
+  const relleno = (px: number) => Math.max(0, RELLENO_DE_LA_CELDA - px) * k
+  return {
+    position: 'absolute',
+    left: c.x,
+    top: c.y,
+    width: c.ancho,
+    height: c.alto,
+    paddingTop: relleno(e.bordes.arriba),
+    paddingRight: relleno(e.bordes.derecha),
+    paddingBottom: relleno(e.bordes.abajo),
+    paddingLeft: relleno(e.bordes.izquierda),
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: JUSTIFICAR[e.alinearVertical],
+    backgroundColor: e.fondo,
+    borderColor: COLOR_TINTA,
+    borderTopWidth: e.bordes.arriba * k,
+    borderRightWidth: e.bordes.derecha * k,
+    borderBottomWidth: e.bordes.abajo * k,
+    borderLeftWidth: e.bordes.izquierda * k,
+    overflow: 'hidden',
+  } as const
+}
 
-function Encabezado({ modelo, logo }: Pick<PropsDelDocumento, 'modelo' | 'logo'>) {
-  const e = modelo.encabezado
-  const numero = e.numero === null ? '' : ` · Cotización n.º ${String(e.numero)}`
+const estiloDelTexto = (c: CeldaDibujada) =>
+  ({
+    color: c.estilo.texto,
+    fontSize: c.estilo.tamano,
+    lineHeight: 1.4,
+    fontWeight: c.estilo.negrita ? 600 : 400,
+    fontStyle: c.estilo.cursiva ? 'italic' : 'normal',
+    textAlign: ALINEAR[c.estilo.alinear],
+  }) as const
+
+function Celda({ celda, k, logo }: { celda: CeldaDibujada; k: number; logo: LogoDelPdf | null }) {
+  const c = celda.contenido
   return (
-    <View style={estilos.encabezado}>
-      <View style={estilos.encabezadoTexto}>
-        {e.titulo === null ? null : <Text style={estilos.titulo}>{e.titulo}</Text>}
-        <View style={estilos.enLinea}>
-          <Text style={estilos.suave}>{`${e.fecha}${numero}`}</Text>
-          {e.vencida ? <Text style={estilos.vencida}>Vencida</Text> : null}
-        </View>
-        {e.asesor === null ? null : <Text style={estilos.suave}>{`Asesor: ${e.asesor}`}</Text>}
-      </View>
-      {logo === null ? null : <ImagenDelPdf src={logo.datos} style={estilos.logo} />}
+    <View style={estiloDe(celda, k)}>
+      {c.tipo === 'texto' && c.lineas.length > 0 ? (
+        <Text style={estiloDelTexto(celda)}>{c.lineas.join('\n')}</Text>
+      ) : null}
+      {c.tipo === 'monto' ? (
+        <>
+          <Text style={estiloDelTexto(celda)}>{c.texto}</Text>
+          {c.segunda === null ? null : <Text style={estiloDelTexto(celda)}>{c.segunda.texto}</Text>}
+        </>
+      ) : null}
+      {c.tipo === 'logo' && logo !== null ? (
+        <ImagenDelPdf
+          src={logo.datos}
+          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+        />
+      ) : null}
     </View>
   )
 }
 
-// El tipo de cambio y el plazo, una vez por grupo y en su línea bajo el título (la etiqueta y el valor del mismo tamaño).
-function Celdas({ grupo }: { grupo: GrupoDeTarjeta }) {
-  const celdas = [
-    grupo.tipoDeCambio === null ? null : (['Tipo de cambio', grupo.tipoDeCambio.valor] as const),
-    grupo.plazo === null ? null : (['Plazo', grupo.plazo.valor] as const),
-  ].filter((c) => c !== null)
-  if (celdas.length === 0) {
-    return null
-  }
-  return (
-    <View style={estilos.celdas}>
-      {celdas.map(([etiqueta, valor]) => (
-        <View key={etiqueta} style={estilos.enLinea}>
-          <Text style={estilos.etiquetaDeCelda}>{etiqueta}</Text>
-          <Text style={estilos.valorDeCelda}>{valor ?? SIN_DATO}</Text>
-        </View>
-      ))}
-    </View>
-  )
-}
-
-// Un grupo con los colores de la tarjeta de su color (el hex de fondo y el texto que se lee); no se parte entre páginas.
-function Grupo({
-  grupo,
-  tono,
-  locale,
-}: {
-  grupo: GrupoDeTarjeta
-  tono: Tono | null
-  locale: string
-}) {
-  const color =
-    tono === null ? {} : { backgroundColor: tono.fondo, borderColor: tono.borde, color: tono.tinta }
-  return (
-    <View style={[estilos.grupo, color]} wrap={false}>
-      <Text style={estilos.tituloDelGrupo}>{grupo.etiqueta}</Text>
-      <Celdas grupo={grupo} />
-      {grupo.filas.map((fila) => (
-        <View key={fila.nodo} style={estilos.fila}>
-          <View style={estilos.etiquetaDeFila}>
-            <Text>{fila.etiqueta}</Text>
-            {fila.leyenda === null ? null : <Text style={estilos.leyenda}>{fila.leyenda}</Text>}
-          </View>
-          <Text style={estilos.monto}>{enUsd(fila.usd, locale)}</Text>
-        </View>
-      ))}
-    </View>
-  )
-}
-
-function Total({ modelo, locale }: { modelo: ModeloDeTarjeta; locale: string }) {
-  const { total, aparte } = modelo
-  return (
-    <View style={estilos.total} wrap={false}>
-      <View style={estilos.filaDelTotal}>
-        <Text>{total.etiqueta}</Text>
-        <Text>{enUsd(total.usd, locale)}</Text>
-      </View>
-      {total.leyenda === null ? null : <Text style={estilos.leyenda}>{total.leyenda}</Text>}
-      {total.bs === null ? null : (
-        <Text>{formatearMonto(total.bs.valor, { moneda: total.bs.moneda, locale })}</Text>
-      )}
-      {aparte.length === 0 ? null : (
-        <View style={estilos.aparte}>
-          {aparte.map((a) => (
-            <View key={a.nodo} style={estilos.fila}>
-              <Text>{a.etiqueta}</Text>
-              <Text>{enUsd(a.usd, locale)}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-    </View>
-  )
-}
-
-// La tarjeta de una cotización en A4 (4.18-3a, C6): lo mismo que `<TarjetaDeCotizacion>` y en el mismo orden, del mismo modelo. Dibuja el modelo y nada más (no lee, no
-// calcula). Los metadatos no nombran al cliente, al asesor ni al vehículo: el PDF se reenvía y no se ven al abrirlo.
-export function DocumentoDeLaTarjeta({ modelo, locale, logo, empresa }: PropsDelDocumento) {
-  const numero = modelo.encabezado.numero
-  const tonos = new Map(modelo.tonos.map((t) => [t.clave, t.tarjeta]))
+// La tarjeta de una cotización en una página A4 (D15 de T310): la misma geometría que la vista previa, escalada entera al menor factor que la hace entrar.
+// Dibuja la geometría y nada más (no lee, no calcula). Los montos con cifras (`formatearMonto()`, ya en la geometría) aunque Live esté encendido. Los metadatos
+// no nombran al cliente, al asesor ni al vehículo: el PDF se reenvía y no se ven al abrirlo.
+export function DocumentoDeLaTarjeta({ geometria, numero, logo, empresa }: PropsDelDocumento) {
+  const k = escalaDelPdf(geometria)
+  const g = escalarGeometria(geometria, PT_POR_PX * k)
   return (
     <Document
       title={numero === null ? 'Cotización' : `Cotización n.º ${String(numero)}`}
@@ -131,18 +102,11 @@ export function DocumentoDeLaTarjeta({ modelo, locale, logo, empresa }: PropsDel
       creator={empresa}
     >
       <Page size="A4" style={estilos.pagina}>
-        <Encabezado modelo={modelo} logo={logo} />
-        {modelo.vehiculo === null ? null : <Text style={estilos.vehiculo}>{modelo.vehiculo}</Text>}
-        {modelo.grupos.map((grupo) => (
-          <Grupo
-            key={grupo.id}
-            grupo={grupo}
-            tono={grupo.tono === null ? null : (tonos.get(grupo.tono) ?? null)}
-            locale={locale}
-          />
-        ))}
-        <Total modelo={modelo} locale={locale} />
-        {modelo.nota === null ? null : <Text style={estilos.nota}>{modelo.nota}</Text>}
+        <View style={{ position: 'relative', width: g.ancho, height: g.alto }} wrap={false}>
+          {g.celdas.map((c) => (
+            <Celda key={c.id} celda={c} k={PT_POR_PX * k} logo={logo} />
+          ))}
+        </View>
       </Page>
     </Document>
   )

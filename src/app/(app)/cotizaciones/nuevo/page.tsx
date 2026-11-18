@@ -26,6 +26,7 @@ import { puede, type Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
+import { vehiculoDeLaTarjeta } from '../datos-de-la-tarjeta'
 import { AvisoDeSubastaDeLaHoja } from './aviso-de-subasta'
 import { BarraConHistorial } from './barra-con-historial'
 import {
@@ -110,9 +111,6 @@ function SinPublicar({
 }
 
 // El título del vehículo elegido para la banda de la tarjeta (4.18-2); sin vehículo, nulo.
-function tituloDelElegido(elegido: { vehiculo: { titulo: string } } | null) {
-  return elegido?.vehiculo.titulo ?? null
-}
 
 // La barra del cliente de la hoja: lo que puede hacer quien mira con los leads, y si su rol no deja guardar sin cliente en este origen.
 function BarraDelClienteDeLaHoja({
@@ -178,6 +176,23 @@ function BarrasDeLaHoja({
   )
 }
 
+// Lo que la tarjeta de la hoja nueva nombra: el vehículo elegido (con lote y VIN), quien cotiza y el cliente, si quien mira los ve.
+function tarjetaDeLaHojaNueva({
+  elegido,
+  cliente,
+  asesor,
+}: {
+  elegido: { vehiculo: { titulo: string; lote: string | null; vin: string | null } } | null
+  cliente: { nombre: string } | null
+  asesor: string
+}) {
+  return {
+    vehiculo: vehiculoDeLaTarjeta(elegido === null ? null : elegido.vehiculo),
+    asesor,
+    cliente: cliente === null ? null : cliente.nombre,
+  }
+}
+
 // La hoja del origen elegido, con sus dos barras (vehículo y cliente) y las pestañas de origen.
 async function HojaDelOrigen({
   sesion,
@@ -238,7 +253,7 @@ async function HojaDelOrigen({
         origenId={origen.id}
         cotizacionId={null}
         permisos={sesion.permisos}
-        tarjeta={{ vehiculo: tituloDelElegido(elegido), asesor }}
+        tarjeta={tarjetaDeLaHojaNueva({ elegido, cliente, asesor })}
       >
         <PantallaDeCotizar
           key={`${origen.id}:${leadUsado ?? '-'}:${vehiculoUsado ?? '-'}`}

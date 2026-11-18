@@ -25,10 +25,13 @@ const lista = (): Resultado<LecturaDeLaTarjeta> => {
   return { ok: true, data: lectura }
 }
 const pagina: DatosDeLaPagina = {
-  vehiculo: 'Toyota Hilux 2020',
+  titulo: null,
+  cliente: null,
+  vehiculo: { titulo: 'Toyota Hilux 2020', lote: null, vin: null },
   asesor: 'Ana Pérez',
   numero: null,
   vencida: false,
+  venceEl: null,
   guardadaEl: null,
   logo: null,
   cotizacionId: null,
@@ -69,7 +72,8 @@ describe('<VistaPreviaDeLaTarjeta>: el modal «Vista previa»', () => {
       expect(screen.getByText('TOTAL DÓLARES')).toBeTruthy()
     })
     expect(screen.getByRole('button', { name: 'Modo Live: ocultar los montos' })).toBeTruthy()
-    expect(screen.getByText('Asesor: Ana Pérez')).toBeTruthy()
+    expect(screen.getByRole('group', { name: 'Tarjeta de la cotización' })).toBeTruthy()
+    expect(screen.getByText('Ana Pérez')).toBeTruthy()
   })
 
   it('un fallo dice «No se pudo leer la tarjeta.» con «Reintentar», que vuelve a leer', async () => {
@@ -143,6 +147,17 @@ describe('<VistaPreviaDeLaTarjeta>: avisos y fecha', () => {
     ).toBeTruthy()
     const tarjeta = document.querySelector('[data-tarjeta-de-cotizacion]')
     expect(tarjeta?.textContent).not.toContain('Lo de hoy no es lo guardado')
+  })
+
+  it('«Vencida» no va en la tarjeta: el modal dice «Esta cotización venció el …» (D7)', async () => {
+    dibujar({ pagina: { ...pagina, vencida: true, venceEl: '2026-10-20' } })
+    pedidos[0]?.resolver(lista())
+    await waitFor(() => {
+      expect(screen.getByText('Esta cotización venció el 20 oct 2026.')).toBeTruthy()
+    })
+    const tarjeta = document.querySelector('[data-tarjeta-de-cotizacion]')
+    expect(tarjeta?.textContent).not.toContain('venció')
+    expect(tarjeta?.textContent).not.toContain('Vencida')
   })
 
   it('la fecha de una guardada es la de su último guardado, no la de hoy', async () => {

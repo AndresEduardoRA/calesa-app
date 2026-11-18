@@ -4,13 +4,17 @@ import { getAjustes } from '@/modules/empresa'
 import { urlPublicaONull } from '@/shared/lib/almacen'
 
 export type PropsDeLaTarjeta = {
-  // El título del vehículo si quien mira lo ve; sin vehículo la tarjeta no lleva banda.
-  vehiculo: string | null
+  // El vehículo (título, lote y VIN) si quien mira lo ve.
+  vehiculo: { titulo: string; lote: string | null; vin: string | null } | null
   // «Asesor:» de la tarjeta: quien cotiza en la hoja nueva y quien creó la cotización en una guardada (P2 a); nulo, no va.
   asesor: string | null
-  // Una guardada: su número, si venció y el último guardado (la fecha del encabezado, P3 a). La hoja nueva: nulos.
+  // El nombre del cliente, sólo si quien mira lo ve.
+  cliente?: string | null
+  // Una guardada: su título, su número, si venció y hasta cuándo vale, y el último guardado (la fecha del encabezado, P3 a). La hoja nueva: nulos.
+  titulo?: string | null
   numero?: number | null
   vencida?: boolean
+  venceEl?: string | null
   guardadaEl?: string | null
 }
 
@@ -25,8 +29,11 @@ type Props = PropsDeLaTarjeta & {
 export async function ConLaTarjeta({
   vehiculo,
   asesor,
+  cliente = null,
+  titulo = null,
   numero = null,
   vencida = false,
+  venceEl = null,
   guardadaEl = null,
   cotizacionId,
   children,
@@ -35,10 +42,13 @@ export async function ConLaTarjeta({
   const url = urlPublicaONull('marca', ajustes.logoRuta)
   return (
     <ProveedorDeLaTarjeta
+      titulo={titulo}
+      cliente={cliente}
       vehiculo={vehiculo}
       asesor={asesor}
       numero={numero}
       vencida={vencida}
+      venceEl={venceEl}
       guardadaEl={guardadaEl}
       cotizacionId={cotizacionId}
       logo={url === null ? null : { nombre: ajustes.nombre, url }}

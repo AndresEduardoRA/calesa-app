@@ -5,10 +5,11 @@ import type { RecalculoInicial } from '../../entities/apertura'
 import { calculoDeLoGuardado } from '../../entities/calculo-de-la-tarjeta'
 import type { HojaDeUnaGuardada } from '../../entities/hoja-de-una-guardada'
 import { archivoDelPdf } from '../../entities/tarjeta/archivo-del-pdf'
+import type { ContextoDeLaCotizacion } from '../../entities/tarjeta/contexto-de-la-cotizacion'
 import {
-  modeloDeLaTarjeta,
-  type PaginaDeLaTarjeta,
-} from '../../entities/tarjeta/modelo-de-la-tarjeta'
+  geometriaDeLaTarjeta,
+  type Geometria,
+} from '../../entities/tarjeta/geometria-de-la-tarjeta'
 import { getAsesorDeLaCotizacion } from '../../infra/tarjeta/asesor-de-la-cotizacion'
 import { logoDelPdf } from '../../infra/tarjeta/pdf/logo-del-pdf'
 import { getTarjeta } from '../../infra/tarjeta/tarjeta'
@@ -19,8 +20,9 @@ export const leerAsesorDeLaCotizacion = getAsesorDeLaCotizacion
 export type EntradaDelPdf = {
   // Lo que leyó `leerHojaDeUnaGuardada()` con la sesión de quien pide.
   lectura: { hoja: HojaDeUnaGuardada; inicial: RecalculoInicial }
-  // Lo de la página, ya armado por la ruta: la fecha del último guardado en la zona de la empresa, el vehículo, el asesor, el número, si venció y el logo.
-  pagina: PaginaDeLaTarjeta
+  // Lo de la cotización, ya armado por la ruta (`contextoDeLaPagina()`): la fecha del último guardado en la zona de la empresa, el número, el título, el asesor,
+  // el cliente si quien pide lo ve, el vehículo con lote y VIN, el vencimiento y el logo.
+  contexto: ContextoDeLaCotizacion
   locale: string
   empresa: string
   topeDelLogo: number
@@ -28,26 +30,48 @@ export type EntradaDelPdf = {
 
 // El PDF de una cotización guardada (4.18-3a): la tarjeta de **lo guardado** (`calculoDeLoGuardado()`, como «Vista previa» de esa guardada; nunca lo de hoy) con la lectura de
 // la tarjeta de SU versión como quien pide. react-pdf se carga sólo aquí, con `import()` (C9). `sin_permiso` si la tarjeta no se ve; lo demás que falle, `inesperado`.
-export async function pdfDeUnaGuardada(
+// La geometría de la tarjeta de **lo guardado** de una cotización (`calculoDeLoGuardado()`, como «Vista previa» de esa guardada; nunca lo de hoy), con la lectura
+// de la tarjeta de SU versión como quien pide. `sin_permiso` si la tarjeta no se ve.
+async function geometriaDeUnaGuardada(
   entrada: EntradaDelPdf,
-): Promise<Resultado<{ bytes: Uint8Array<ArrayBuffer>; archivo: string }>> {
+): Promise<Resultado<{ geometria: Geometria; hoja: HojaDeUnaGuardada }>> {
   const { hoja, inicial } = entrada.lectura
   const tarjeta = await getTarjeta(hoja.diseno.formula.id)
   if (!tarjeta.ok) {
     return { ok: false, error: tarjeta.error }
   }
-  const modelo = modeloDeLaTarjeta({
+  const geometria = geometriaDeLaTarjeta({
     lectura: tarjeta.data,
     calculo: calculoDeLoGuardado(hoja, inicial.respuesta),
+    contexto: entrada.contexto,
     monedaBs: hoja.diseno.cabecera.monedaBs,
-    pagina: entrada.pagina,
+    locale: entrada.locale,
   })
-  const logo = await logoDelPdf({ logo: modelo.logo, tope: entrada.topeDelLogo })
+  return ok({ geometria, hoja })
+}
+
+// El logo, sólo si la tarjeta lo dibuja.
+const conLogo = (geometria: Geometria) => geometria.celdas.some((c) => c.contenido.tipo === 'logo')
+
+// El PDF de una cotización guardada (4.18-3a): la geometría de lo guardado en A4. react-pdf se carga sólo aquí, con `import()` (C9). `sin_permiso` si la
+// tarjeta no se ve; lo demás que falle, `inesperado`.
+export async function pdfDeUnaGuardada(
+  entrada: EntradaDelPdf,
+): Promise<Resultado<{ bytes: Uint8Array<ArrayBuffer>; archivo: string }>> {
+  const armada = await geometriaDeUnaGuardada(entrada)
+  if (!armada.ok) {
+    return armada
+  }
+  const { geometria, hoja } = armada.data
+  const logo = await logoDelPdf({
+    logo: conLogo(geometria) ? entrada.contexto.logo : null,
+    tope: entrada.topeDelLogo,
+  })
   try {
     const { pdfDeLaTarjeta } = await import('../../infra/tarjeta/pdf/pdf-de-la-tarjeta')
     const bytes = await pdfDeLaTarjeta({
-      modelo,
-      locale: entrada.locale,
+      geometria,
+      numero: hoja.cotizacion.numero,
       logo,
       empresa: entrada.empresa,
     })

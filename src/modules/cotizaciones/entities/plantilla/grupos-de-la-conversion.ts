@@ -58,51 +58,57 @@ function delMiembro(c: Conversion, m: NodoParaPlantilla, fondo: string | null): 
   ]
 }
 
+// Lo que va una vez por grupo, en la fila de su primer miembro: el título (que abarca las filas del grupo), el tipo de cambio y el plazo. El plazo se conoce
+// (es del grupo): cuenta para el alto, como un texto (un grupo de un miembro no lo corta).
+function delGrupo(
+  c: Conversion,
+  {
+    g,
+    m,
+    fondo,
+    filas,
+  }: { g: GrupoDePlantilla; m: NodoParaPlantilla; fondo: string | null; filas: number },
+) {
+  const deLaFormula = (c.contexto.definicion.grupos ?? []).find((x) => x.id === g.grupo)
+  const etiqueta = deLaFormula?.etiqueta
+  const titulo = etiqueta != null && etiqueta !== '' ? etiqueta : g.grupo
+  const plazo = typeof deLaFormula?.plazo === 'string' ? deLaFormula.plazo : undefined
+  const lateral = conFondo(fondo, { alinear: 'centro', bordes: FINO })
+  const titular: Pieza = {
+    columna: 'grupo',
+    filas,
+    contenido: texto(titulo),
+    estilo: conFondo(fondo, { negrita: true, alinear_vertical: 'arriba', bordes: FINO }),
+    medida: titulo,
+  }
+  const tipoDeCambio: Pieza[] = c.a.tiene('tipo_cambio')
+    ? [{ columna: 'tipo_cambio', filas, contenido: dato(m.id, 'tc_nombre'), estilo: lateral }]
+    : []
+  const delPlazo: Pieza[] = c.a.tiene('plazo')
+    ? [
+        {
+          columna: 'plazo',
+          filas,
+          contenido: dato(m.id, 'plazo'),
+          estilo: lateral,
+          ...(plazo === undefined ? {} : { medida: plazo }),
+        },
+      ]
+    : []
+  return { titular, laterales: [...tipoDeCambio, ...delPlazo] }
+}
+
 // Un grupo con miembros: una fila por miembro, en el orden de la fórmula, con el color del grupo. El título, el tipo de cambio y el plazo van una vez, en la
 // primera, abarcando las filas del grupo (D5: se acortan solas si se ocultan miembros).
 export function grupo(c: Conversion, g: GrupoDePlantilla): void {
-  const { a } = c
   const fondo = fondoDe(c, g)
   const suyos = miembrosDe(c.nodos, g.grupo)
-  const etiqueta = (c.contexto.definicion.grupos ?? []).find((x) => x.id === g.grupo)?.etiqueta
-  const titulo = etiqueta != null && etiqueta !== '' ? etiqueta : g.grupo
-  const lateral = conFondo(fondo, { alinear: 'centro', bordes: FINO })
   for (const [i, m] of suyos.entries()) {
-    const primera = i === 0
-    const piezas: Pieza[] = [
-      ...(primera
-        ? [
-            {
-              columna: 'grupo',
-              filas: suyos.length,
-              contenido: texto(titulo),
-              estilo: conFondo(fondo, { negrita: true, alinear_vertical: 'arriba', bordes: FINO }),
-              medida: titulo,
-            } as const,
-          ]
-        : []),
-      ...delMiembro(c, m, fondo),
-      ...(primera && a.tiene('tipo_cambio')
-        ? [
-            {
-              columna: 'tipo_cambio',
-              filas: suyos.length,
-              contenido: dato(m.id, 'tc_nombre'),
-              estilo: lateral,
-            } as const,
-          ]
-        : []),
-      ...(primera && a.tiene('plazo')
-        ? [
-            {
-              columna: 'plazo',
-              filas: suyos.length,
-              contenido: dato(m.id, 'plazo'),
-              estilo: lateral,
-            } as const,
-          ]
-        : []),
-    ]
-    a.fila(idDeLaFila('n', m.id), piezas, m.id)
+    const primera = i === 0 ? delGrupo(c, { g, m, fondo, filas: suyos.length }) : null
+    const piezas: Pieza[] =
+      primera === null
+        ? delMiembro(c, m, fondo)
+        : [primera.titular, ...delMiembro(c, m, fondo), ...primera.laterales]
+    c.a.fila(idDeLaFila('n', m.id), piezas, m.id)
   }
 }

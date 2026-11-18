@@ -1,25 +1,22 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { formatearFecha } from '@/shared/lib/fechas'
 import { useRegional } from '@/shared/ui/regional'
 import type { CalculoDeLaTarjeta } from '../../../entities/calculo-de-la-tarjeta'
-import type { LecturaDeLaTarjeta } from '../../../entities/tarjeta/lectura-de-la-tarjeta'
 import {
-  modeloDeLaTarjeta,
-  type ModeloDeTarjeta,
-} from '../../../entities/tarjeta/modelo-de-la-tarjeta'
+  contextoDeLaPagina,
+  type ContextoDeLaCotizacion,
+  type PaginaDeLaTarjeta,
+} from '../../../entities/tarjeta/contexto-de-la-cotizacion'
+import {
+  geometriaDeLaTarjeta,
+  type Geometria,
+} from '../../../entities/tarjeta/geometria-de-la-tarjeta'
+import type { LecturaDeLaTarjeta } from '../../../entities/tarjeta/lectura-de-la-tarjeta'
 import { useLecturaDeLaTarjeta, type EstadoDeLaLectura } from './use-lectura-de-la-tarjeta'
 
-// Lo que la página sabe de la tarjeta y la hoja no. `guardadaEl`: el día del último guardado de una guardada (P3 a); nulo en la hoja nueva, que dice hoy.
-export type PaginaDelModelo = {
-  vehiculo: string | null
-  asesor: string | null
-  numero: number | null
-  vencida: boolean
-  guardadaEl: string | null
-  logo: { nombre: string; url: string } | null
-}
+// Lo que la página sabe de la tarjeta y la hoja no.
+export type PaginaDelModelo = PaginaDeLaTarjeta & { vencida: boolean }
 
 type Entrada = {
   formulaId: string
@@ -34,36 +31,29 @@ function useHoy(): string {
   return hoy
 }
 
-// La lectura de la tarjeta y su modelo (4.18-3b): lo comparten el cuerpo del modal, que lo dibuja, y su pie, que lo copia. Sin lectura, el modelo es nulo.
+// La lectura de la tarjeta, el contexto de la cotización y su geometría: lo comparten el cuerpo del modal, que la dibuja, y su pie, que la copia. Sin lectura,
+// la geometría es nula.
 export function useModeloDeLaTarjeta({ formulaId, calculo, monedaBs, pagina }: Entrada): {
   estado: EstadoDeLaLectura
   reintentar: () => void
   lectura: LecturaDeLaTarjeta | null
-  modelo: ModeloDeTarjeta | null
+  contexto: ContextoDeLaCotizacion
+  geometria: Geometria | null
 } {
   const { estado, reintentar } = useLecturaDeLaTarjeta(formulaId)
-  const { zonaHoraria } = useRegional()
+  const { zonaHoraria, locale } = useRegional()
   const hoy = useHoy()
-  const fecha = formatearFecha(pagina.guardadaEl ?? hoy, { zona: zonaHoraria })
+  const contexto = useMemo(
+    () => contextoDeLaPagina(pagina, { zona: zonaHoraria, hoy }),
+    [pagina, zonaHoraria, hoy],
+  )
   const lectura = estado.tipo === 'lista' ? estado.lectura : null
-  const modelo = useMemo(
+  const geometria = useMemo(
     () =>
       lectura === null
         ? null
-        : modeloDeLaTarjeta({
-            lectura,
-            calculo,
-            monedaBs,
-            pagina: {
-              fecha,
-              vehiculo: pagina.vehiculo,
-              asesor: pagina.asesor,
-              numero: pagina.numero,
-              vencida: pagina.vencida,
-              logo: pagina.logo,
-            },
-          }),
-    [lectura, fecha, pagina, calculo, monedaBs],
+        : geometriaDeLaTarjeta({ lectura, calculo, contexto, monedaBs, locale }),
+    [lectura, calculo, contexto, monedaBs, locale],
   )
-  return { estado, reintentar, lectura, modelo }
+  return { estado, reintentar, lectura, contexto, geometria }
 }

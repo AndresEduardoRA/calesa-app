@@ -54,6 +54,10 @@ export const esquemaDefinicionParaPlantilla = z.looseObject({
       grupo: z.string().nullish(),
       salida: z.string().nullish(),
       etiqueta: z.string().nullish(),
+      // Lo que mira la conversión a la cuadrícula para la vista previa: la descripción y la variante con sus títulos.
+      descripcion: z.string().nullish(),
+      tipo: z.string().nullish(),
+      opciones: z.array(z.looseObject({ clave: z.string(), titulo: z.string() })).nullish(),
     }),
   ),
   buckets: z.record(z.string(), z.string()).optional(),
@@ -74,6 +78,8 @@ export const esquemaDisenoParaPlantilla = z.looseObject({
     .looseObject({
       modos: z.array(
         z.looseObject({
+          clave: z.string().nullish(),
+          nombre: z.string().nullish(),
           buckets: z.array(z.looseObject({ bucket: z.string(), nodo: z.string() })),
         }),
       ),

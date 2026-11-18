@@ -806,7 +806,7 @@
           },
           {
             "id": "n_nacionalizacion",
-            "alto": 40,
+            "alto": 42,
             "ocultar_si": "no_aplica",
             "nodo": "nacionalizacion"
           },
@@ -1682,7 +1682,7 @@
           },
           {
             "id": "n_nacionalizacion",
-            "alto": 40,
+            "alto": 42,
             "ocultar_si": "no_aplica",
             "nodo": "nacionalizacion"
           },
@@ -2511,7 +2511,7 @@
           },
           {
             "id": "n_nacionalizacion",
-            "alto": 40,
+            "alto": 42,
             "ocultar_si": "no_aplica",
             "nodo": "nacionalizacion"
           },

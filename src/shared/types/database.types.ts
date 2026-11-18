@@ -9380,7 +9380,6 @@ export type Database = {
           zona: string
         }[]
       }
-      _tarjeta_grupos: { Args: { p_def: Json; p_plantilla: Json; p_tonos: Json }; Returns: Json }
       _tarjeta_json: {
         Args: {
           o: Omit<
@@ -9390,10 +9389,6 @@ export type Database = {
           p_lead: Json
           p_vehiculo: Json
         }
-        Returns: Json
-      }
-      _tarjeta_tipos_de_cambio: {
-        Args: { p_buckets: string[]; p_def: Json; p_diseno: Json }
         Returns: Json
       }
       _telefono_o_nulo: { Args: { p_cc: string; p_tel: string }; Returns: string }

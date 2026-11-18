@@ -3,7 +3,7 @@ import { connection } from 'next/server'
 import { Suspense } from 'react'
 import { z } from 'zod'
 import { RegistrarVisita } from '@/modules/buscador/pantallas/visita'
-import { leerAsesorDeLaCotizacion, leerHojaDeUnaGuardada } from '@/modules/cotizaciones'
+import { leerHojaDeUnaGuardada } from '@/modules/cotizaciones'
 import {
   CabeceraDeLaGuardada,
   EsqueletoDeHoja,
@@ -11,12 +11,9 @@ import {
 } from '@/modules/cotizaciones/pantallas/cotizacion'
 import { requerirSesion } from '@/modules/equipo'
 import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
-import { leerClienteElegido } from '@/modules/leads'
-import { leerVehiculo } from '@/modules/vehiculos'
-import { datosO } from '@/shared/lib/errores'
-import { puede, type Permisos } from '@/shared/lib/permisos'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
+import { asesorDe, clienteDe, vehiculoDe, vehiculoDeLaTarjeta } from '../datos-de-la-tarjeta'
 import { HUECOS_DE_LA_GUARDADA, dibujarHuecos } from './huecos-de-la-guardada'
 
 export const metadata: Metadata = { title: 'Cotización' }
@@ -38,24 +35,6 @@ function NoDisponible() {
   return (
     <EstadoVacio titulo="Esta cotización ya no está disponible: no existe o ya no tienes acceso." />
   )
-}
-
-// El cliente de la cotización, sólo con `leads.ver` (el que no se ve no se nombra); un error de la lectura sube al `error.tsx`.
-async function clienteDe(permisos: Permisos, leadId: string | null) {
-  return leadId === null || !puede(permisos, 'leads.ver')
-    ? null
-    : datosO(await leerClienteElegido(leadId))
-}
-
-// El vehículo de la cotización, si quien mira lo ve (la lectura es nula si no existe o no se ve).
-async function vehiculoDe(vehiculoId: string | null) {
-  return vehiculoId === null ? null : datosO(await leerVehiculo(vehiculoId))
-}
-
-// A quien creó la cotización, para «Asesor:» de su tarjeta (P2 a): un error de esa lectura deja el asesor sin nombrar y no rompe la página.
-async function asesorDe(id: string) {
-  const lectura = await leerAsesorDeLaCotizacion(id)
-  return lectura.ok ? lectura.data : null
 }
 
 async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>['params'] }) {
@@ -112,10 +91,13 @@ async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>[
         cotizacionId={hoja.cotizacion.id}
         permisos={sesion.permisos}
         tarjeta={{
-          vehiculo: vehiculo?.titulo ?? null,
+          titulo: hoja.cotizacion.titulo,
+          cliente: cliente?.nombre ?? null,
+          vehiculo: vehiculoDeLaTarjeta(vehiculo),
           asesor,
           numero: hoja.cotizacion.numero,
           vencida: hoja.vencida,
+          venceEl: hoja.venceEl,
           guardadaEl: hoja.cotizacion.actualizadoEn,
         }}
       >

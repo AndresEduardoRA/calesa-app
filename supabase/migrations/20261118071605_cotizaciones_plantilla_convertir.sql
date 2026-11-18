@@ -205,8 +205,10 @@ begin
           case when v_fondo is null then '{}'::jsonb else jsonb_build_object('fondo', v_fondo) end || jsonb_build_object('alinear', 'centro', 'bordes', v_fino), null, null);
       end if;
       if i = 0 and 'plazo' = any (v_ids) then
+        -- El plazo se conoce (es del grupo): cuenta para el alto, como un texto.
         v_piezas := v_piezas || public._plantilla_pieza('plazo', null, v_k, jsonb_build_object('tipo', 'dato', 'nodo', v_m ->> 'id', 'mostrar', 'plazo'),
-          case when v_fondo is null then '{}'::jsonb else jsonb_build_object('fondo', v_fondo) end || jsonb_build_object('alinear', 'centro', 'bordes', v_fino), null, null);
+          case when v_fondo is null then '{}'::jsonb else jsonb_build_object('fondo', v_fondo) end || jsonb_build_object('alinear', 'centro', 'bordes', v_fino),
+          case when jsonb_typeof(v_dg -> 'plazo') = 'string' then v_dg ->> 'plazo' end, null);
       end if;
       v_a := public._plantilla_conversion_fila(v_a, v_cols, public._plantilla_id_derivado('n_' || (v_m ->> 'id')), v_piezas, v_m ->> 'id');
     end loop;
