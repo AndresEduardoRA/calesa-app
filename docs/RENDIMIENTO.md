@@ -460,12 +460,19 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   común va por un `Seq Scan` con `limit 1000`: se queda así. Guarda: sin `cotizaciones_titulo_trgm`, lo raro recorre la tabla.
 - Búsqueda del listado de cotizaciones (`cotizaciones_buscar()`, invocadora; `medir-cotizaciones-buscar.sql`, 50.000 y 250.000; `?q=`): el número por
   `cotizaciones_numero_key` (≈ 1,5 ms, 4 bloques); cada fuente nombra ≤ 50 ids —clientes por la ventana de `leads_candidatos()` y `leads_vista_por_ids()`, vehículos
-  por origen por `vehiculos_origen_listado_idx` (la RLS no deja usar su trigrama), autores por `perfiles` (decenas de filas)— y de cada uno una página por
-  `cotizaciones_lead_creado_idx`, `cotizaciones_vehiculo_creado_idx` o `cotizaciones_creador_idx`, fundidas y sin repetir. Presupuestos: número 20 ms, cliente raro
-  80, cliente común 400, vehículo raro 150, vehículo común 400, autor 60 (el doble para Ana); medido ≈ 35 ms los de texto (el piso es `leads_candidatos()` y el
+  por origen por `vehiculos_origen_listado_idx` (la RLS no deja usar su trigrama), autores por `perfiles` (decenas de filas), títulos de la cotización por
+  `_cotizaciones_ids_por_titulo()` (definer, plan genérico: ≤ 1.000 candidatas por `cotizaciones_titulo_trgm` de los orígenes que se ven, más ≤ 51 propias por
+  `cotizaciones_creador_idx` donde sólo se ve «propios», la policy sobre ellas y las 51 más nuevas)— y de cada uno una página por
+  `cotizaciones_lead_creado_idx`, `cotizaciones_vehiculo_creado_idx` o `cotizaciones_creador_idx` (el título, por la PK), fundidas y sin repetir. Presupuestos: número
+  20 ms, cliente raro 80, cliente común 400, vehículo raro 150, vehículo común 400, autor 60, título raro 80 y título común 150 (el doble para Ana; el título
+  suma ≈ 5 ms a la llamada entera, cuyo piso de texto ya es ≈ 36–45 ms: no se compara con los 20 ms de `buscador_cotizaciones()`, que es sólo esa fuente);
+  medido el título raro 40,6 ms (dueña, 304 bloques) y 42,8 (Ana) con 50.000, 39,6 y 41,5 con 250.000; el común 60,6 / 83,6 con 50.000 y 59,8 / 81,4 con
+  250.000, con `acotada` (Ana paga ≈ 100 `en_cartera()`); medido ≈ 37–45 ms los de texto (el piso es `leads_candidatos()` y el
   recorrido de los vehículos de cada origen) y ≈ 13 ms los comunes de vehículo. Ningún recorrido entero de `cotizaciones`; número, cliente raro y vehículo raro no
   crecen con N (≤ 1,2 × los bloques y 1,5 × el tiempo de 50.000). **Límites declarados:** un texto de vehículo que no coincide con nada recorre los vehículos vivos de cada
-  origen visible (como `buscador_vehiculos()`); con «propios», por autor sólo se buscan las propias (nada de un `en_cartera()` por cada cotización de otra persona).
+  origen visible (como `buscador_vehiculos()`); con «propios», por autor sólo se buscan las propias (nada de un `en_cartera()` por cada cotización de otra persona);
+  con un título común el GIN crece con las coincidencias (≤ 1.000 por su profundidad) y, con más de 1.000, las 50 son las más nuevas de esas candidatas, no de
+  todas (`acotada` lo avisa); los filtros del listado (clase, «mías», cursor) se aplican sobre esas 50, no antes.
 - Últimos abiertos (`leerUltimosAbiertos()`): ≤ 16 visitas propias por `visitados_usuario_visto_idx` y hasta tres lecturas en paralelo por
   PK (≤ 16 ids cada una, bajo la RLS de cada tabla); se muestran 8.
 - Una búsqueda: hasta 4 pedidos en paralelo, cada uno ≤ 6 filas; espera de 250 ms entre teclas.

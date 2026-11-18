@@ -19,6 +19,13 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
     usa `crearVehiculo`. Enter trae un enlace, y un VIN o lote sólo si su búsqueda volvió vacía (cada consulta a apibara gasta cuota); recargar con
     `?alta=subasta` no vuelve a consultar.
   - La barra recibe armados `cotizado` (texto sin `<Badge>`, que arrastra Base UI a la carga en frío) y `historial` (un `ReactNode` de `cotizaciones`).
+  - **El título de lo que se cotiza** (T307; `vehiculos` no conoce `cotizaciones`): `titulo` (ya resuelto; la barra lo dibuja grande, en dos líneas y entero en
+    `title`, con el vehículo debajo —su título si no es el mismo, y su referencia—; sin vehículo, el título solo) y `arribaDelPanel` (un `ReactNode` que el panel pone
+    antes del buscador: el campo del título, que llena `src/app`). El nombre accesible de la barra empieza siempre por «Vehículo: ». `modo`: `elegir` (por omisión),
+    `ver_elegido` (el panel sólo con lo de arriba y el elegido en sólo lectura, sin buscador, listas, «Quitar» ni dato: `soloElegido`, no lee ninguna lista) y
+    `solo_mostrar` (no es botón ni hay panel); `textoSinVehiculo` cambia «Selecciona un vehículo» («Sin vehículo», o nada si tiene uno que no se ve). Sin
+    `vehiculos.ver` y con algo arriba, la barra muestra el título y «No puedes ver los vehículos de este origen.» y abre el panel sólo con eso. El buscador
+    del panel toma el foco al montarse salvo que otro campo del mismo diálogo ya lo tenga.
   - En «Elegido», el dato que casa con una tabla de la hoja se elige entre sus filas (`dato-del-elegido.tsx`, `datosParaElegirDe()`; a lo sumo 50,
     con «Buscar en las opciones»): un toque guarda con `guardarDatoDelVehiculo` (sólo ese atributo, con versión, por `vehiculo_guardar`); quien no
     edita lo ve sin elegir.

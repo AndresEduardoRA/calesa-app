@@ -67,7 +67,13 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
    es un origen) y los **modos** de tipo de cambio del diseño (Aduana, Paralelo, Unificado…; se eligen con dos o más, la hoja abre con el
    primero marcado; con uno solo no se elige y el resumen lo nombra). `Ctrl/Cmd+K → «Nueva cotización»` abre la hoja.
 2. **Pasos:** **la hoja** (preventa o final), **vehículo**, **cliente**, **vista previa**; no hay paso «Oficina».
-   - **Vehículo:** un solo campo busca por nombre, VIN o lote (desde 3 letras o números) y trae un enlace, un VIN o un lote de la subasta
+   - **Vehículo:** arriba del panel, el campo **«Título de la cotización»** (hasta 120 caracteres; el contador «N/120» aparece desde 100):
+     automático, muestra el título del vehículo elegido con la ayuda «Automático: toma el título del vehículo.»; escribir lo vuelve manual
+     (cambiar de vehículo lo respeta) y vaciarlo lo devuelve a automático (con el foco puesto queda vacío, con el del vehículo de ejemplo). La
+     barra del vehículo muestra el título grande y debajo el vehículo (su título si no es el mismo, y su referencia); sin vehículo, el título
+     solo con «Selecciona un vehículo». Con vehículo el foco sigue yendo al buscador. Sin `vehiculos.ver` del origen, la barra muestra el título
+     y «No puedes ver los vehículos de este origen.» y el panel abre sólo con el campo. Debajo del campo, un solo campo busca por nombre, VIN o
+     lote (desde 3 letras o números) y trae un enlace, un VIN o un lote de la subasta
      (`apibara` llena ficha y fotos); «+» carga a mano. **Ambas abren el alta del inventario dentro del panel y «Crear y elegir» crea el
      vehículo y lo elige**, sin guardar la cotización; pestañas «Últ. cotización» y «Cierre subasta»; el elegido muestra su historial
      (plegado, se lee al desplegarlo, «Ver más»); la barra dice «Cotizado (n)». En «Elegido», el tipo de vehículo se elige entre las filas
@@ -94,6 +100,9 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
      o `?panel=vehiculo`; sin `leads.ver` o sin `vehiculos.ver` del origen, en su lugar «Para elegir el …, pídeselo a quien administra los
      roles.») y la insignia «Obligatorio» en su barra. Cambiar de origen recalcula la regla; «Ver como» aplica la del rol mirado. Si la regla cambió
      con la hoja abierta, el rechazo dice «Tu rol ahora pide el cliente (o el vehículo) para guardar en este origen.» con el mismo «Elegir…».
+   - **Sin vehículo, el título es obligatorio** (para cualquier rol, después del cliente y del vehículo): «Guardar» apagado con «Escribe el
+     título de la cotización.» y «Escribir el título», que abre `?panel=vehiculo` con el foco en el campo. Si la base lo rechaza igual (otra
+     pestaña lo vació), el aviso dice lo mismo con el mismo botón y el campo lo repite debajo. Sólo espacios es vacío.
 3. **La hoja:** secciones en el orden declarado; cada monto en una **XCell** (`Tab` avanza, tipear abre edición, `Esc` cancela) con el tono
    de su grupo, ayuda y ⚙ si el permiso lo da. Lo **sugerido** lleva un punto; sobrescrito queda **modificado** (anillo y ↺). Atajos (chips
    de año), **variante** (Moto, Auto Gasolina…), **interruptores** (habilitar fila, mostrar garantía). **Una celda que quien mira no puede
@@ -247,12 +256,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     página. Sin otras que quien mira vea, sin vehículo o con uno que no ve, no se dibuja. Esqueleto de tres filas; error «No pudimos cargar las cotizaciones de
     este vehículo.» con «Reintentar» (sin tumbar la página ni el resumen); el de «Ver más», «No se pudieron cargar más.». Angosto o al 200 %, cada fila en una
     columna y los botones a todo el ancho. Las casillas de comparar llegan con «Comparar».
-- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila, «Abrir cotización», «De este vehículo» —ver
+- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (la fila, la tarjeta y el resumen nombran la cotización por su
+  **título** —el suyo o, sin él, el de su vehículo— bajo «N.º n», en dos líneas como mucho y entero en `title`; la tarjeta no repite «Vehículo:» si el título es su nombre) (lo de la fila, «Abrir cotización», «De este vehículo» —ver
   «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado— y debajo las
   **pestañas** `?pestana=`: «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
   para guardarla, «Adjuntar»—, «Adjuntos» —los archivos y, en una final o con alguno, sus comprobantes de sólo lectura—, «Revisiones» y «Comentarios»; cada una se lee al elegirla, por
   cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
-  ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
+  ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, título de la cotización, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
   resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
   de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
@@ -267,7 +277,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Cotizar** — `/cotizaciones/nuevo` (`cotizaciones.crear`): formulario hoja (XCell); `?origen=&lead=&vehiculo=&returnTo=` (se validan y
   se llevan; el vehículo va al recálculo); sin entrada en la navegación. Ver Flujo 2.
 - **Cotización guardada** — `/cotizaciones/[id]` (`cotizaciones.ver`; edita quien la puede guardar, `puede_guardar` de la base): la hoja de
-  SU versión; quien sólo ve, en sólo lectura. Cabecera: la insignia «Aprobada» (todos los que la ven) o «Aprobar» (con `cotizaciones.aprobar` del
+  SU versión; quien sólo ve, en sólo lectura. Cabecera: el h1 «Cotización n.º N» y, bajo el origen y el cliente, **la barra del vehículo** con el título grande y
+  el vehículo debajo (o «Sin vehículo»); quien la puede guardar la abre en el panel del vehículo con sólo el campo «Título de la cotización» y el vehículo
+  en sólo lectura (cambiarlo no es de esta pantalla) y guardar deja «Cambió el título» en «Revisiones»; quien sólo ve, la barra sin botón. La insignia «Aprobada» (todos los que la ven) o «Aprobar» (con `cotizaciones.aprobar` del
   origen: sin confirmar; apagado con su motivo sin vehículo o si es inválida; al entrar pasa a la insignia y el aviso ofrece «Deshacer» 10 s;
   PT409 con quién y cuándo y «Recargar»), «Revisiones», la cadena, «Cotizar encima» si no está al día, «Marcar final» (en una
   preventa, con `cotizaciones.final.gestionar` del origen; `?panel=marcar-final`), «Emitir comprobante» (en una final activa sin
