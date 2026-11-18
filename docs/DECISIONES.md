@@ -206,7 +206,8 @@ las trampas, en `docs/LECCIONES.md`.
 - **Los paneles del «⋯» en la lista se leen en el servidor al abrirse.** «Editar imágenes» y «Publicar en la web…» escriben `?panel=…&para=<id>` con
   `shallow: false`, como `?editar=`: la página lee sólo el panel que la URL nombra (`src/app/(app)/vehiculos/paneles.ts`). Así las fotos que faltan de la
   subasta salen del bruto sin que el bruto cruce al navegador, cada cambio de fotos redibuja la galería y la lista por `revalidatePath`, y un vehículo que no
-  está en la página también abre. El costo: abrir pide la página de la lista otra vez. Un hook por panel y por lista (`useMenuDeLaLista()`): ninguna fila
+  está en la página también abre. El costo: abrir pide la página de la lista otra vez, y el documento del inventario con 100 filas sube de 62.732 a
+  63.040 B comprimidos con los mismos nodos (su tope pasa a 66.000 B, regla del 5 %). Un hook por panel y por lista (`useMenuDeLaLista()`): ninguna fila
   suma hooks ni nodos. Descartado: leer en el navegador (no trae las fotos de la subasta sin el bruto y la galería no se refresca sola).
 - **«Actualizar los datos» es «Refrescar» con confirmación y las fotos que faltan.** Mismo motor (`useRefrescoDeSubasta`, `fusionarRefresco()`); la action
   devuelve además las fotos de esa respuesta que el vehículo no tiene (ya filtradas en el servidor) y las trae sin otra consulta. Pide confirmar en un
