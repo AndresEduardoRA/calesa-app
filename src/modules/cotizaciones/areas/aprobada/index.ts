@@ -5,3 +5,9 @@
 export { leerAprobadasDeCotizaciones, leerAprobadasDeVehiculos } from './composicion'
 export { motivoParaNoAprobar, puedeAprobar } from '../../entities/aprobada/acceso'
 export type { CotizacionAprobadaDelVehiculo } from '../../entities/aprobada/tipos'
+
+// «Comparar cotizaciones» (`/cotizaciones/comparar`): la lectura, si se comparan y el modelo plano que dibuja la página (`pantallas/aprobada-comparar.ts`).
+export { leerParaComparar } from './composicion'
+export { compararCotizaciones, veredictoDeComparar } from '../../entities/aprobada/comparar'
+export type { ModeloDeComparar } from '../../entities/aprobada/comparar'
+export type { AprobarEn } from '../../entities/aprobada/de-este-vehiculo'
