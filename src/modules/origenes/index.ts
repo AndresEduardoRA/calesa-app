@@ -37,6 +37,7 @@ export type { OrigenConUso } from './entities/origen'
 
 // Qué le falta a un origen para funcionar
 export {
+  faltasDeLaTarjeta,
   pasosDe,
   type ClaveDePaso,
   type PasoConDestino,
