@@ -36,8 +36,9 @@ function EnlacesDeLaAyuda({ celda }: { celda: CeldaDeHoja }) {
         Consulta estas fuentes
       </h3>
       <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
-        {enlaces.map((enlace) => (
-          <li key={enlace.url} className="min-w-0">
+        {enlaces.map((enlace, i) => (
+          // Dos enlaces pueden ir a la misma URL: la posición los distingue.
+          <li key={`${String(i)}:${enlace.url}`} className="min-w-0">
             <a
               href={enlace.url}
               target="_blank"
