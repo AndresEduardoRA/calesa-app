@@ -131,7 +131,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   visible de cada detalle (ficha del vehículo, su resumen, la unidad de logística y ficha del lead) con tres grupos por tipo:
   **Vinculado**, **Interesado** y **Cotizado**. Desde un vehículo se ven leads; desde un lead, vehículos. Cada grupo lleva su cantidad (con tope),
   sus primeras filas, lo que quien mira no ve contado («1 que no puedes ver») y «Ver todos» por cursor. Lo que está en una papelera no cuenta. Un
-  grupo sin nada no se dibuja. Se ve en una línea de chips en los resúmenes y en logística, y compacto en las fichas (`PresentacionDeRelacionados`).
+  grupo sin nada no se dibuja. Se ve en una línea de chips en logística, y compacto en las fichas (`PresentacionDeRelacionados`).
 - **Vinculado** — tipo de relación (`TipoDeRelacion` `vinculado`): el lead dueño o comprador de un vehículo (el vínculo vigente), y desde un
   lead, sus vehículos vinculados. Su «Ver todos» en un vehículo incluye los vínculos anteriores.
 - **Cotizado (relación)** — tipo de relación `cotizado`: leads con una **cotización activa** de ese vehículo (y al revés), una fila por
