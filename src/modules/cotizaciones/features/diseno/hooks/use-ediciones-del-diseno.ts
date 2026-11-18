@@ -2,8 +2,10 @@
 
 import { useMemo } from 'react'
 import type { Diseno } from '../../../entities/diseno'
+import type { PorDefecto } from '../../../entities/cabecera-por-defecto'
 import {
   ponerModo,
+  ponerPorDefecto,
   ponerVerTotalBs,
   quitarModo,
   sumarModo,
@@ -50,6 +52,9 @@ function edicionesDelDiseno(
     },
     ponerVerTotalBs: (valor: boolean) => {
       aplicar((d) => ponerVerTotalBs(d, valor))
+    },
+    ponerPorDefecto: (pd: PorDefecto) => {
+      aplicar((d) => ponerPorDefecto(d, pd))
     },
     sumarModo: (nombre: string) => {
       aplicar((d) => sumarModo(definicion, d, nombre))
