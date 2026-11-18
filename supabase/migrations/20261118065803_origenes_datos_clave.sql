@@ -83,8 +83,11 @@ declare
   v_comunes constant text[] := public._origen_datos_clave_comunes('subasta');
   v_del_tipo constant text[] := public._origen_datos_clave_comunes(p_tipo);
 begin
-  if jsonb_typeof(p_datos) is distinct from 'array'
-     or exists (select 1 from jsonb_array_elements(p_datos) e where not public._origen_dato_clave_bien_formado(e)) then
+  -- Dos `if`: un `or` no corta en SQL y `jsonb_array_elements` cae con un escalar.
+  if jsonb_typeof(p_datos) is distinct from 'array' then
+    return jsonb_build_object('codigo', 'forma', 'mensaje', 'Los datos clave no tienen la forma esperada.');
+  end if;
+  if exists (select 1 from jsonb_array_elements(p_datos) e where not public._origen_dato_clave_bien_formado(e)) then
     return jsonb_build_object('codigo', 'forma', 'mensaje', 'Los datos clave no tienen la forma esperada.');
   end if;
   if jsonb_array_length(p_datos) > 4 then
@@ -140,6 +143,8 @@ grant execute on function public._origen_datos_clave_sin_campo(jsonb, text) to s
 
 -- Un origen nace con los datos clave de su tipo si no trae los suyos. En un trigger y no en `origen_crear()`: el seed, los e2e y las
 -- pruebas insertan directo, y el trigger AFTER que preconfigura los campos no puede tocar `new`. El tipo no cambia: nunca quedan inválidos.
+-- No es `security definer`: llama a `_origen_datos_clave_de_fabrica()` con los privilegios de quien inserta, y hoy sólo insertan las RPC
+-- `security definer` y `service_role`. Si algún día un rol de la app inserta directo, necesita EXECUTE sobre ese ayudante.
 create function public.origen_datos_clave_de_fabrica()
 returns trigger
 language plpgsql
