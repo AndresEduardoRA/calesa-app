@@ -311,6 +311,12 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   `typecheck` (`**/*.ts`) y `mapa.sh --check` lo recorren y el hook del commit cae por código ajeno. Si pasa, aparta el enlace del worktree (no su destino). (kit)
 - En un carril corre las herramientas con `TMPDIR` propio (fuera de `/tmp`): el `/tmp` de la máquina es un tmpfs que comparten todas las
   sesiones y, sin inodos, nada puede crear archivos ahí (tampoco la terminal del agente).
+- Lee el motivo de un CI rojo en el log del job caído (`gh run view --job <id> --log-failed`), no en el de la corrida: su final es el
+  del agregador «Listo», que no dice qué cayó. (kit)
+- Un rojo que la rama no causó (un choque por lo que otra tarea integró, la máquina del CI, una migración que quedó antes de una ya
+  integrada) no gasta un intento de arreglo: lo mecánico va sin sesión (`scripts/orquestador/sin-sesion.sh`) y el choque cuenta aparte. (kit)
+- `claude -p` en un worktree pide el trust de la principal en `~/.claude.json` (`projects[<principal>].hasTrustDialogAccepted`): sin él
+  ignora los `permissions.allow` del proyecto. `orquestador.sh verificar` lo revisa. (kit)
 
 ## Por módulo
 
