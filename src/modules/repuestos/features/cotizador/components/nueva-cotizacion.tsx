@@ -20,7 +20,7 @@ type Props = {
 }
 
 const ID_DEL_MOTIVO = 'cotizaciones-motivo-apagado'
-const CONFIGURACION_DEL_COTIZADOR = `${RUTAS.configuracionDeRepuestos}?seccion=cotizador`
+const CONFIGURACION_DEL_COTIZADOR = RUTAS.cotizadorDeRepuestos
 
 // Lo que apaga el botón antes de preguntarle a la base (que decide igual, D33).
 function motivoParaNoCrear(cerrado: boolean, monedas: readonly MonedaParaCotizar[]) {
