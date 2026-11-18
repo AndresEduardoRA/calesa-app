@@ -218,15 +218,14 @@ describe('DeEsteVehiculo, las casillas de comparar', () => {
         aprobarEn="todos"
         conCasillas
         volverA={`/cotizaciones/${idDe(2)}`}
-        titulo={<h2>De este vehículo</h2>}
+        conTitulo
       />,
     )
   const casilla = (n: number) =>
     screen.getByRole('checkbox', { name: `Comparar la n.º ${String(n)}` })
 
-  it('el título del servidor desde el primer render; «Comparar» apagado hasta tener 2', async () => {
+  it('«Comparar» en la fila del título, apagado hasta tener 2', async () => {
     montarConCasillas()
-    expect(screen.getByRole('heading', { name: 'De este vehículo' })).toBeTruthy()
     await responder(
       1,
       leida([fila(4), fila(3), fila(2), fila(1, { aprobada: true })], fila(1, { aprobada: true })),
@@ -238,6 +237,27 @@ describe('DeEsteVehiculo, las casillas de comparar', () => {
     ).toBe('Elige 2 o 3 para comparar.')
     fireEvent.click(casilla(3))
     expect(screen.getByRole('button', { name: 'Comparar' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'De este vehículo' })).toBeTruthy()
+  })
+
+  it('con una ranura del servidor, «Comparar» va ahí (un portal)', async () => {
+    const ranura = document.createElement('div')
+    ranura.id = 'ranura-de-prueba'
+    document.body.append(ranura)
+    render(
+      <DeEsteVehiculo
+        vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }}
+        cotizacionActual={idDe(2)}
+        aprobarEn="todos"
+        conCasillas
+        ranuraDeComparar="ranura-de-prueba"
+      />,
+    )
+    await responder(1, leida([fila(3), fila(2)]))
+    await waitFor(() => {
+      expect(within(ranura).getByRole('button', { name: 'Comparar' })).toBeTruthy()
+    })
+    ranura.remove()
   })
 
   it('con 2, un enlace en el orden de la lista con `returnTo`; con 3, las demás apagadas y el tope dicho', async () => {

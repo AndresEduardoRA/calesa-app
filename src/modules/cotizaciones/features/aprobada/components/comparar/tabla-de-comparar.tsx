@@ -22,10 +22,10 @@ type Props = {
   aprobarEn: AprobarEn
 }
 
-// La columna de las etiquetas queda fija al desplazar de costado; su ancho, en rem y a lo sumo el 40 % de la tabla.
+// La columna de las etiquetas queda fija al desplazar de costado; su ancho, en rem y a lo sumo el 35 % de la tabla (en el celular asoma la segunda columna).
 const ETIQUETA =
-  'sticky left-0 z-10 min-w-32 max-w-[40cqw] bg-(--color-surface) px-3 py-2 text-left align-top font-normal [overflow-wrap:anywhere]'
-const COLUMNA = 'min-w-48 max-w-72 px-3 py-3 align-top'
+  'sticky left-0 z-10 min-w-32 max-w-[35cqw] bg-(--color-surface) px-3 py-2 text-left align-top font-normal [overflow-wrap:anywhere]'
+const COLUMNA = 'min-w-40 max-w-72 px-3 py-3 align-top'
 
 // «Comparar cotizaciones»: una columna por cotización con su cabecera, una fila por sección y por nodo (alineadas por el servidor, `compararCotizaciones`) y, al pie,
 // «Aprobar esta» y «Abrir». La tabla se desplaza de costado dentro de su caja (la página no desborda) con la pista de desborde. Aprobar mueve la insignia sin recargar:
@@ -42,9 +42,9 @@ export function TablaDeComparar({ modelo, aprobarEn }: Props) {
         ref={caja}
         role="region"
         aria-labelledby={titulo}
-        // La caja se desplaza: con teclado se llega a ella.
+        // La caja se desplaza: con teclado se llega a ella. `relative`: los `sr-only` de las celdas (absolutos) se ubican en ella y no ensanchan la página.
         tabIndex={0}
-        className="overflow-x-auto rounded-(--radius-md) focus-visible:shadow-(--shadow-focus) focus-visible:outline-none"
+        className="relative overflow-x-auto rounded-(--radius-md) focus-visible:shadow-(--shadow-focus) focus-visible:outline-none"
       >
         <table
           data-tabla-de-comparar=""

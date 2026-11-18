@@ -26,6 +26,9 @@ export const metadata: Metadata = { title: 'Comparar cotizaciones' }
 export default function PaginaComparar({ searchParams }: PageProps<'/cotizaciones/comparar'>) {
   return (
     <div className="grid min-w-0 gap-4">
+      <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">
+        Comparar cotizaciones
+      </h1>
       <Suspense fallback={<EsqueletoDeComparar />}>
         <Comparar searchParams={searchParams} />
       </Suspense>
@@ -57,24 +60,25 @@ async function Comparar({
   // El vehículo sólo se nombra si quien mira lo ve (nulo si no).
   const vehiculo = datosO(await leerVehiculo(veredicto.vehiculoId))
   const modelo = compararCotizaciones(lectura.data, veredicto.vehiculoId, vehiculo?.titulo ?? null)
-  // Releer (un `router.refresh()` de «Reintentar») con otra versión de alguna reinicia la tabla con lo de la base.
-  const clave = modelo.columnas
-    .map((c) => (c.tipo === 'cotizacion' ? `${c.id}:${c.actualizadoEn}` : `${c.id}:error`))
-    .join('|')
+  // Releer (un `router.refresh()` de «Reintentar») con otra versión de alguna u otra aprobada (aprobar no mueve la versión) reinicia la tabla con lo de la base.
+  const clave = [
+    ...modelo.columnas.map((c) =>
+      c.tipo === 'cotizacion' ? `${c.id}:${c.actualizadoEn}` : `${c.id}:error`,
+    ),
+    `aprobada:${modelo.aprobadaId ?? ''}`,
+  ].join('|')
   return (
     <>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="grid min-w-0 gap-1">
-          <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">
-            Comparar cotizaciones
-          </h1>
-          {vehiculo === null ? null : (
-            <p className="[overflow-wrap:anywhere] text-(--color-ink-soft)">{vehiculo.titulo}</p>
-          )}
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {/* El vehículo sólo se nombra si quien mira lo ve. */}
+        {vehiculo === null ? null : (
+          <p className="min-w-0 [overflow-wrap:anywhere] text-(--color-ink-soft)">
+            {vehiculo.titulo}
+          </p>
+        )}
         <Link
           href={volverA as Route}
-          className={buttonVariants({ variant: 'ghost', className: 'min-h-11 md:min-h-9' })}
+          className={buttonVariants({ variant: 'ghost', className: 'ms-auto min-h-11 md:min-h-9' })}
         >
           <ArrowLeftIcon aria-hidden />
           Volver

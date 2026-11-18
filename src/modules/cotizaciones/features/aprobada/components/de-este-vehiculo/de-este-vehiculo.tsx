@@ -3,6 +3,7 @@
 import type { Route } from 'next'
 import Link from 'next/link'
 import { useEffect, useEffectEvent, useId, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { textoDelTope } from '@/shared/lib/conteo'
 import { TOPE_DE_ESTE_VEHICULO } from '@/shared/lib/paginacion'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
@@ -37,8 +38,9 @@ export type PropsDeEsteVehiculo = {
   // Las casillas de comparar y «Comparar» en la fila del título, que lleva a «Comparar cotizaciones» con `returnTo` = `volverA`.
   conCasillas?: boolean
   volverA?: string
-  // El título que ya dibujó el servidor (el h2 de la guardada, al que salta el «Ver» de la línea): va en la fila del título, junto a «Comparar».
-  titulo?: ReactNode
+  // El id del lugar junto al título del servidor (el h2 de la guardada, al que salta el «Ver» de la línea) donde va «Comparar»: la isla lo pone ahí con un portal y
+  // el título nunca se vuelve a montar. Sin él, «Comparar» va en la fila del título propio.
+  ranuraDeComparar?: string
   // Tras aprobar o deshacer desde el bloque (el resumen refresca el listado).
   alCambiar?: () => void
   // Dibuja su propio título: el resumen no tiene el del servidor.
@@ -56,7 +58,7 @@ export function DeEsteVehiculo({
   conTitulo = false,
   conCasillas = false,
   volverA,
-  titulo,
+  ranuraDeComparar,
 }: PropsDeEsteVehiculo) {
   const lista = useDeEsteVehiculo(vehiculo.id)
   const fuente = useId()
@@ -64,38 +66,39 @@ export function DeEsteVehiculo({
   const idDelAviso = useId()
   // Las marcadas; las que se ven elegidas son las que siguen en la lista (tras aprobar o releer se sueltan las que ya no están).
   const [marcadas, setMarcadas] = useState<readonly string[]>([])
+  const ranura = useRanura(ranuraDeComparar)
   const elegidas = elegidasEnLaLista(marcadas, lista.aLaVista)
   const leerAlMontar = useEffectEvent(lista.leerLaPrimera)
   useEffect(() => {
     leerAlMontar()
   }, [])
-  // El «Ver» de la línea salta al título del servidor (que esta isla dibuja desde su primer render); el resumen dibuja el suyo y no escucha.
+  // El «Ver» de la línea salta al título del servidor; el resumen dibuja el suyo y no escucha.
   useFocoAlLlegar(ID_DE_ESTE_VEHICULO, !conTitulo)
-  useAlCambiarLaAprobada(vehiculo.id, fuente, () => {
-    lista.releer()
-  })
+  useAlCambiarLaAprobada(vehiculo.id, fuente, lista.releer)
   const { enCurso, aprobar } = useAprobarEsta(vehiculo.id, fuente, () => {
     lista.releer()
     alCambiar?.()
   })
 
   if (!lista.leido) {
-    return <SinLeer titulo={titulo} lista={lista} />
+    return <SinLeer lista={lista} />
   }
   if (!hayOtras(lista.aLaVista, cotizacionActual)) {
-    return titulo ?? null
+    return null
   }
+  const comparar = conCasillas ? (
+    <BotonComparar elegidas={elegidas} volverA={volverA} idDelAviso={idDelAviso} />
+  ) : null
   return (
     <section
       aria-labelledby={conTitulo ? idDelTitulo : undefined}
       aria-label={conTitulo ? undefined : 'De este vehículo'}
       className="@container/de-este grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2"
     >
-      <FilaDelTitulo titulo={titulo} conTitulo={conTitulo} idDelTitulo={idDelTitulo}>
-        {conCasillas ? (
-          <BotonComparar elegidas={elegidas} volverA={volverA} idDelAviso={idDelAviso} />
-        ) : null}
+      <FilaDelTitulo conTitulo={conTitulo} idDelTitulo={idDelTitulo}>
+        {comparar !== null && ranura === null ? comparar : null}
       </FilaDelTitulo>
+      {comparar !== null && ranura !== null ? createPortal(comparar, ranura) : null}
       <ul
         aria-label="Cotizaciones de este vehículo"
         className="grid grid-cols-[minmax(0,1fr)] gap-2"
@@ -131,41 +134,41 @@ export function DeEsteVehiculo({
   )
 }
 
-// La fila del título: el del servidor, o el propio (el resumen), y «Comparar» a la derecha. Sin ninguno de los dos, nada.
+// El lugar del servidor donde va «Comparar», leído una vez al montarse: la isla sólo se dibuja en el navegador (`diferido()`) y la ranura ya está en el documento.
+function useRanura(id: string | undefined): HTMLElement | null {
+  const [ranura] = useState(() => (id === undefined ? null : document.getElementById(id)))
+  return ranura
+}
+
+// La fila del título propio (el resumen) con «Comparar» a la derecha. Sin ninguno de los dos, nada.
 function FilaDelTitulo({
-  titulo,
   conTitulo,
   idDelTitulo,
   children,
 }: {
-  titulo: ReactNode
   conTitulo: boolean
   idDelTitulo: string
   children: ReactNode
 }) {
-  const encabezado =
-    titulo ??
-    (conTitulo ? (
-      <h3 id={idDelTitulo} className="font-semibold text-(--color-ink)">
-        De este vehículo
-      </h3>
-    ) : null)
-  if (encabezado === null && children === null) {
+  if (!conTitulo && children === null) {
     return null
   }
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      {encabezado}
+      {conTitulo ? (
+        <h3 id={idDelTitulo} className="font-semibold text-(--color-ink)">
+          De este vehículo
+        </h3>
+      ) : null}
       {children}
     </div>
   )
 }
 
-// Antes de la primera página: el título del servidor (si lo trae) y el esqueleto, o el error con «Reintentar».
-function SinLeer({ titulo, lista }: { titulo: ReactNode; lista: DeEsteVehiculoLeido }) {
+// Antes de la primera página: el esqueleto, o el error con «Reintentar».
+function SinLeer({ lista }: { lista: DeEsteVehiculoLeido }) {
   return (
     <>
-      {titulo}
       {lista.error ? (
         <div role="alert">
           <EstadoError
