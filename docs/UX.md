@@ -350,10 +350,18 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   - **Notificaciones:** push en este navegador, un interruptor por tipo del catálogo (sólo apagan el push, no la campana) y «Tus
     navegadores» con «Quitar». Con el interruptor a la vista y deshabilitado, dice por qué: el rol no recibe push, la empresa no lo activó
     (y dónde), falta la clave pública, el navegador no lo admite o lo bloqueó; mientras revisa, «Revisando este navegador…».
-- **Actividad** — `/actividad` (`actividad.ver`): tabla agrupada por día en la zona de la empresa con «Ver más» e «Ir a una fecha»; filtros
-  `?persona=`, `?entidad=` (y `?registro=` desde «Ver actividad» del «⋯» de la ficha de lead y de vehículo); el diff en un drawer
-  `?cambio=<id>` (sólo lo que cambió, con la etiqueta del campo y cada monto con la moneda de su lado; sin moneda conocida, el número y
-  «(moneda sin conocer)»); «No tienes acceso a este cambio.»; retención de `actividad_dias` (14 si no se puede leer).
+- **Actividad** — `/actividad` (`actividad.ver`): cada cambio como una frase con su icono por tipo de registro, agrupada por día en la zona de
+  la empresa: «Ana cambió Precio de [Toyota Hilux #12]: 10.000 → 12.000» (con varios campos, «Precio y 2 más», sin valores; un alta o una baja,
+  sin antes → después; el registro enlaza a su página si existe y se ve; montos con `<Monto>`). Una fila que quien mira no ve dice sólo
+  «Ana cambió un lead que no puedes ver». Una sola presentación en todo ancho; en el celular la frase se parte en renglones. «Ver detalle»
+  despliega en la misma fila todo el diff (`?cambio=<id>`: sólo lo que cambió, con la etiqueta del campo y cada monto con la moneda de su lado;
+  sin moneda conocida, el número y «(moneda sin conocer)»); un `?cambio=` fuera de lo cargado sale arriba como «El cambio que abriste»;
+  inválido o sin acceso, «No tienes acceso a este cambio.»; un error al desplegar queda en la fila con «Reintentar». Filtros como chips arriba:
+  persona y tipo de registro (`?persona=`, `?entidad=`), el registro (`?registro=`, desde «Ver actividad» del «⋯» de la ficha de lead y de
+  vehículo) y la fecha de «Ir a una fecha», cada uno con su «×», y «Limpiar filtros». «Ver más» con tope; retención de `actividad_dias` (14 si
+  no se puede leer). **Actividad reciente** (`ActividadReciente`, para una ficha; sola en `/actividad/reciente?entidad=&registro=`): los
+  últimos 5 cambios del registro como frases, cada uno a su detalle en `/actividad`, y «Ver toda la actividad»; esqueleto, «Sin cambios en
+  los últimos N días.» y error con «Reintentar»; sin `actividad.ver` no se dibuja.
 - **Configuración** — `/configuracion/*` (permiso de cada sección): inicio + secciones, del registro `secciones.ts` (grupos «Empresa y equipo»
   · «Ventas» · «Operación» · «Web»). Dentro de una sección (layout de `/configuracion`): a la izquierda el **menú de Configuración** desde 1024 px
   y con 44 rem de contenedor (con el texto al 200 % pasa al selector), con las secciones que la persona puede abrir por grupo, la actual con
@@ -496,7 +504,12 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   izquierda** (entero hasta 16 rem; más largo, «…» y completo en `title`) y **«⋯» a la derecha**, que se desplaza de costado dentro de su
   tarjeta, nunca la página; por debajo, tarjetas. **Un clic en cualquier parte de la fila o tarjeta abre su resumen**, salvo casilla, «⋯»,
   enlace o botón. Teclado: una parada de Tab por fila (el nombre, «Abrir Ana Rojas»); al cerrar el resumen el foco vuelve a él. El «⋯»
-  («Más acciones de …») mide 44 px en el celular; lo que no se puede hacer no aparece, y un ítem visible pero imposible dice por qué.
+  («Más acciones de …») está siempre a la vista (nunca sólo al pasar el mouse) y siempre en el mismo lugar: en la tarjeta de la lista,
+  arriba a la derecha (`<EsquinaDeAcciones>`), de 44 px también en escritorio; si la tarjeta lleva una foto arriba (la grande del inventario),
+  sobre la foto, con fondo de superficie translúcido y borde, espejo de la casilla de la izquierda, y en el mismo lugar sobre el recuadro vacío
+  si no hay foto o no carga; en la tarjeta del kanban, igual, arriba a la derecha. En la tabla, en la columna pegada a la derecha, que lleva una
+  sombra sólo mientras queda contenido detrás (falta desplazar hacia la derecha). Un ítem sin «⋯» no deja hueco. Lo que no se puede hacer no
+  aparece, y un ítem visible pero imposible dice por qué.
 - **Texto al 200 % (reflujo, WCAG 1.4.10):** ninguna lista ensancha la página; «⋯» y casilla miden 44 px; una tarjeta de menos de 16 rem
   apila sus piezas; los botones chicos crecen con el texto. Los avisos (22,25 rem) crecen con el texto sin pasar de la pantalla menos 1 rem
   por lado y suben sobre el pie de un panel abierto.

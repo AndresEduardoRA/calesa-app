@@ -47,6 +47,20 @@ Bloque «Seguimientos y recordatorios» de la ficha y su «Ver todos» (`?todos=
 - Aviso de vencidos de la ficha: `lead_ficha()` cuenta hasta 21 por `recordatorios_lead_pendientes_idx` («más de 20»).
 - Mide: `db:medir` (sin filas descartadas en ningún plan); `e2e/leads-rapido-volumen.spec.ts`.
 
+## Actividad
+
+`/actividad` y la «Actividad reciente» de un registro.
+
+- Página por cursor sobre `id`, 20 por «Ver más» (`TAMANO_DE_VER_MAS`, la base acota con `_acotar_pagina(p_tamano, 20, 100)`), hasta 500
+  (`TOPE_DE_LO_CARGADO`, `<AvisoDeTope>`); más allá, «Ir a una fecha». Ningún total. La «Actividad reciente» lee 5 (`TAMANO_DE_ACTIVIDAD_RECIENTE`;
+  la base, uno más) por la ruta del registro.
+- Índices por ruta: `actividad_pkey` (sin filtro e «Ir a una fecha», que ancla por `actividad_fecha_idx`), `actividad_actor_id_idx`,
+  `actividad_tabla_id_idx`, `actividad_registro_id_idx`, `actividad_accion_id_idx`. El registro y el primer cambio de cada fila se leen por la PK de
+  las 20 ya elegidas (`_actividad_registro`), nunca filtran ni ordenan; el recorte y el registro, una vez por fila (CTE `materialized`).
+- Con 300.000 filas, cada ruta ≤ 60 ms por su índice, sin `Seq Scan` ni `Sort`, y a lo sumo `máx(2 × t; t + 15 ms)` de la función de antes de la frase
+  (medido: 9–12 ms contra 20–29 ms). El detalle de una fila se lee al desplegarla (`actividad_diff`, por la PK) y su código va con `diferido()`.
+- Mide: `medir-actividad-listar.sql` (`db:medir:volumen`).
+
 ## Agenda
 
 - Calendario: `agenda_rango()`, un pedido por rango de ≤ 45 días; tope 200 por clase (`limit 201`, `hay_mas` y `tope`). Índices:

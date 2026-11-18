@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { SufijoDeVisto, AbrirResumen, TarjetaDeLista } from '@/shared/ui/lista'
+import { SufijoDeVisto, AbrirResumen, EsquinaDeAcciones, TarjetaDeLista } from '@/shared/ui/lista'
 import { cn } from 'cn'
 import { camposDeTarjeta, type CampoDeVehiculo } from '../../../entities/campo'
 import type { CotizacionAprobadaDeLaFila } from '../../../entities/cotizacion-aprobada-de-la-fila'
@@ -23,11 +23,11 @@ type Props = {
   alAbrir: () => void
   // Su resumen está abierto: la tarjeta se marca.
   abierta?: boolean
-  // Lo que se puede hacer con él (editar), en la esquina.
+  // Lo que se puede hacer con él (editar): arriba a la derecha de la tarjeta, o sobre la foto si es grande.
   acciones?: ReactNode
   // Lo que va al lado de la fase (si está en la vitrina).
   insignias?: ReactNode
-  // La casilla para elegirlo, delante de la foto.
+  // La casilla para elegirlo: delante de la miniatura, o sobre la foto (arriba a la izquierda, espejo del «⋯») si es grande.
   seleccion?: ReactNode
   // El precio, o la puja con su rótulo en un origen de subasta (`precioDeLaFila`).
   precio: PrecioDeLaFila | null
@@ -35,6 +35,25 @@ type Props = {
   aprobada?: CotizacionAprobadaDeLaFila | null
   // En escritorio, con las tarjetas elegidas: la foto arriba, a todo el ancho y con su carrusel.
   grande?: boolean
+}
+
+// La foto de la tarjeta grande, a todo el ancho, con la casilla sobre su esquina izquierda y el «⋯» sobre la derecha (espejos).
+function FotoGrande({
+  vehiculo,
+  seleccion,
+  acciones,
+}: Pick<Props, 'vehiculo' | 'seleccion' | 'acciones'>) {
+  return (
+    <div className="relative w-full">
+      <FotosEnElLugar vehiculo={vehiculo} modo="carrusel" className="w-full" />
+      {seleccion ? (
+        <EsquinaDeAcciones sobreImagen lado="izquierda">
+          {seleccion}
+        </EsquinaDeAcciones>
+      ) : null}
+      {acciones ? <EsquinaDeAcciones sobreImagen>{acciones}</EsquinaDeAcciones> : null}
+    </div>
+  )
 }
 
 // Un vehículo en una tarjeta de la lista (`@/shared/ui/lista`): lo que se ve en el celular en vez de la fila de la tabla.
@@ -52,20 +71,14 @@ export function TarjetaVehiculo(props: Props) {
       alAbrir={alAbrir}
       abierta={abierta ?? false}
       idDeVisto={vehiculo.id}
-      acciones={acciones}
+      acciones={grande ? undefined : acciones}
     >
       {/* Con el texto al 200 % la tarjeta mide menos de 16 rem: la miniatura (rem) y el título no caben en una fila y se apilan. */}
-      {/* Grande, la foto va arriba a todo el ancho (con flechas: ahí caben) y la casilla, sobre su esquina. */}
+      {/* Grande, la foto va arriba a todo el ancho (con flechas: ahí caben), la casilla sobre su esquina izquierda y el «⋯» sobre la */}
+      {/* derecha: la foto no se achica por una columna. Sin foto (o si no carga) quedan en el mismo lugar sobre el recuadro 4:3. */}
       <div className={cn('flex items-start gap-3 @max-[16rem]:flex-col', grande && 'flex-col')}>
         {grande ? (
-          <div className="relative w-full">
-            <FotosEnElLugar vehiculo={vehiculo} modo="carrusel" className="w-full" />
-            {seleccion ? (
-              <div className="absolute top-1 left-1 rounded-(--radius-sm) bg-(--color-surface)">
-                {seleccion}
-              </div>
-            ) : null}
-          </div>
+          <FotoGrande vehiculo={vehiculo} seleccion={seleccion} acciones={acciones} />
         ) : (
           <>
             {seleccion}

@@ -41,6 +41,16 @@ las trampas, en `docs/LECCIONES.md`.
 - **Paginación por cursor sin «página N».** Arriba se dice «Los más recientes» o «Creados hasta el …» con «Volver al principio».
 - **La navegación se declara entera.** `navegacion.ts` lista todas las pantallas; un test falla si `disponible` no coincide con la existencia de `page.tsx`.
 - **El «⋯» con sprite SVG.** `<svg><use/></svg>` con `<SimbolosDeLista>` montado una vez en el layout: 3 nodos por botón.
+- **El «⋯» siempre visible arriba a la derecha, espejo de la casilla; en la tabla, sombra por consulta `scroll-state`.** Vale para toda lista:
+  en la tarjeta, `<EsquinaDeAcciones>` (sobre la foto si la hay, con fondo translúcido y borde; la casilla va en la esquina izquierda con el
+  mismo tratamiento y 44 px también en escritorio); el «⋯» de toda tarjeta mide 44 px (`--tamano-del-mas`), el de la fila de la tabla 32 desde
+  `md`. La columna pegada de la tabla lleva sombra sólo mientras se puede desplazar más hacia la derecha: el contenedor de la tabla es
+  `container-type: scroll-state` y la celda se consulta con `@container scroll-state(scrollable: inline-end)`, que dibuja un `::before` con degradado a
+  todo el alto de la celda; sin JS, sin estado por fila y sin nodos. Un navegador sin `scroll-state` deja la línea de 1 px. Descartados: un `box-shadow` por celda (con extensión negativa casi no se ve, y sin ella se corta o se
+  derrama en cada fila), una animación ligada al desplazamiento (deja una animación
+  por fila que nunca termina, y las esperas de los e2e y las capturas esperan a que terminen), un observador por tabla (suma JS en frío), la
+  sombra siempre (ruido cuando no hay nada detrás), aparecer al pasar el mouse (se pierde en pantallas táctiles) y la columna al costado de la
+  foto (la achica).
 - **Formularios que aparecen al pulsar algo son `ModalDeFormulario`.** Un envío a la vez, conflicto hasta la versión nueva, revisión al abrir; la guarda `modales-con-salida.ts` registra todo `<Modal>` que no lo es.
 - **Vuelta del foco tras recargar y «atrás».** `abrirConVuelta()` deja la ficha en `history.state` (respaldo en `sessionStorage`) y `useVueltaDelFoco` la recuerda; desde un menú vuelve al «⋯». La guarda `paneles-con-vuelta` lo exige en todo `history: 'push'`.
 - **Reintento sólo al volver la conexión.** `useReintentoAlVolver` reenvía en la transición sin red → con red; con red presente se ofrece «Reintentar»: no se martilla un servidor caído.
@@ -638,6 +648,9 @@ las trampas, en `docs/LECCIONES.md`.
 ## Actividad
 
 - **Sólo las definer escriben y leen el detalle.** `registrar_actividad()` sin `execute` para `public`, `anon` ni `authenticated` (si no, se podrían inventar `antes`/`despues`); `actividad.detalle` sin `select` para la app (lleva teléfonos, el código del portal y montos).
+- **Cada cambio se lee como frase con su antes → después, y los valores salen de la base ya recortados.** «Ana cambió Precio de Toyota Hilux #12: 10.000 → 12.000». `actividad_listar` trae de cada fila visible `registro_titulo` y `registro_destino` (por la PK de la fila ya elegida, con la visibilidad de `_actividad_puede_ver_fila` sobre la fila vigente; la unidad de la que cuelga un gasto, documento, transporte, pago o compra sólo se nombra con `vehiculos.ver` de ese vehículo o `repuestos.ver`: ver el gasto no es ver el vehículo) y `primer_cambio` (el primer campo, sacado del mismo recorte de `_actividad_recortar` que ya hacía: sin teléfonos ni lo restringido de una cotización, cada texto a 80 caracteres y con la moneda de la foto de cada lado). Se descartó leer `actividad_diff` por fila (N+1 por página) y leer `actividad.detalle` (lleva lo que la app no ve). Con varios campos la frase dice el primero y «y N más», sin valores; el detalle completo se despliega en la misma fila. El campo va con su etiqueta, sin artículo («cambió Precio de»): un artículo por campo no se puede decir bien para los campos del layout. Las acciones de `registrar_actividad()` que se ven llevan su predicado en `VERBOS` («Aprobó», «Resolvió la subasta de»); una sin verbo, «Hizo «…» en».
+- **El detalle de un cambio se despliega en su fila, no en un drawer.** `?cambio=<id>` despliega esa fila y la trae a la vista; uno a la vez, con `replace` (desplegar no es ir a otra pantalla: «atrás» sale de la actividad). Si no está en lo cargado (es más viejo o quien mira no lo ve) sale arriba como «El cambio que abriste», leído con `actividad_diff`, y la lista sigue debajo. Sin drawer, la frase y el detalle se leen juntos y la lista no queda tapada.
+- **Los filtros de la actividad son chips arriba, a todo el ancho.** Persona y tipo de registro como chips con un `<select>` nativo (la lista del sistema en el celular, sin código de más), el registro de «Ver actividad» y la fecha de «Ir a una fecha» como chips con su «×», y «Limpiar filtros». Se descartó `<FilterShell>`: su panel al costado le quita 15 rem a la frase para dos filtros de una opción.
 
 ## Web y portal
 
