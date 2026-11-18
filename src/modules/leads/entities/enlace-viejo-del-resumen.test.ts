@@ -20,6 +20,12 @@ describe('destinoDelEnlaceViejo', () => {
   it('un `lead` que no es un id redirige igual, codificado: la ficha dice que no está', () => {
     expect(destinoDelEnlaceViejo({ lead: 'abc' }, TODO)).toBe('/leads/abc')
     expect(destinoDelEnlaceViejo({ lead: 'a/b?c' }, TODO)).toBe('/leads/a%2Fb%3Fc')
+    expect(destinoDelEnlaceViejo({ lead: '...' }, TODO)).toBe('/leads/...')
+  })
+
+  it('`.` y `..` no salen de `/leads`: van a la lista limpia', () => {
+    expect(destinoDelEnlaceViejo({ lead: '.' }, TODO)).toBe('/leads')
+    expect(destinoDelEnlaceViejo({ lead: '..', panel: 'editar-lead' }, TODO)).toBe('/leads')
   })
 
   it('`pestana=seguimientos|recordatorios` lleva al bloque de seguimientos', () => {

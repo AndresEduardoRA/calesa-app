@@ -40,6 +40,9 @@ const PANELES_DE_EDICION: ReadonlySet<string> = new Set([
 ])
 
 const ES_GUID = z.guid()
+// `.` y `..` son segmentos de punto: `encodeURIComponent` no los cambia (tampoco `%2E`, que la URL lee igual) y el navegador los resolvería
+// fuera de la ficha (`/leads/..` → `/`).
+const ES_SEGMENTO_DE_PUNTOS = /^\.{1,2}$/
 
 export type EnlaceViejo = {
   lead: string | undefined
@@ -98,12 +101,15 @@ function consultaDelPanel({ panel, extra }: EnlaceViejo, puede: LoQuePuedeAbrir)
  * A dónde lleva un enlace viejo: la ficha del lead con lo que pedía y la sesión puede abrir. Una pestaña vieja va al bloque de seguimientos con
  * su modal; sin pestaña, el `?panel=` del resumen (anotar, agendar, oportunidad, editar) y `?extra=nuevo` (la edición con «Agregar teléfono»).
  * Lo demás (filtros, cursor, `para`, otro panel) se quita. Sin `?lead=`, null: no es un enlace viejo. Un valor que no es un id redirige igual,
- * codificado: la ficha dice que no está disponible.
+ * codificado: la ficha dice que no está disponible. `.` y `..` llevan a la lista: no son un segmento de la ficha.
  */
 export function destinoDelEnlaceViejo(enlace: EnlaceViejo, puede: LoQuePuedeAbrir): string | null {
   const { lead, pestana } = enlace
   if (lead === undefined || lead === '') {
     return null
+  }
+  if (ES_SEGMENTO_DE_PUNTOS.test(lead)) {
+    return RUTAS.leads
   }
   const consulta =
     pestana !== undefined && PESTANAS_VIEJAS.has(pestana)

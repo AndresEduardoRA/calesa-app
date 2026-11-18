@@ -1367,7 +1367,7 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
   puede abrir: `?pestana=seguimientos|recordatorios` → `?seccion=seguimientos` (con el modal que traía y su id); sin pestaña, `?panel=anotar-seguimiento`,
   `agendar-recordatorio` u `oportunidad-rapida` (con `leads.editar`) y `editar-lead` (con `leads.editar` o los teléfonos extra); `?extra=nuevo` o
   `?panel=agregar-telefono` → `?panel=editar-lead&extra=nuevo`. Otro panel, `para`, filtros y cursor se quitan. Si el lead no es de la cartera, la ficha no
-  abre el panel; uno inexistente, en la papelera, en limbo, ajeno o que no es un id llega a «No encontramos este lead o no tienes acceso.».
+  abre el panel; uno inexistente, en la papelera, en limbo, ajeno o que no es un id llega a «No encontramos este lead o no tienes acceso.» (`.` y `..`, a la lista).
 
 ### Leads: ficha (estados propios)
 
