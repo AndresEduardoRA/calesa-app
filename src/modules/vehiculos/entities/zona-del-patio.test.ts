@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { zonaDelPatio } from './zona-del-patio'
+import { zonaDelPatio, zonaDelPatioDe } from './zona-del-patio'
 
 describe('zonaDelPatio', () => {
   it('reconoce el estado en las formas en que llega', () => {
@@ -22,5 +22,14 @@ describe('zonaDelPatio', () => {
       const zona = zonaDelPatio(estado) ?? ''
       expect(() => new Intl.DateTimeFormat('es', { timeZone: zona })).not.toThrow()
     }
+  })
+})
+
+describe('zonaDelPatioDe', () => {
+  it('lee el estado del patio de los atributos del vehículo', () => {
+    expect(zonaDelPatioDe({ atributos: { ubicacion_estado: 'TX - HOUSTON' } })).toBe(
+      'America/Chicago',
+    )
+    expect(zonaDelPatioDe({ atributos: {} })).toBeNull()
   })
 })
