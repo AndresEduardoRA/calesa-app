@@ -77,6 +77,9 @@ insert into sondas (nombre, plantilla, control) values
   ('leads_papelera_lote', $q$select public.leads_papelera_lote((public.leads_papelera_listar(null, null, false, 2) -> 0 ->> 'id')::uuid)$q$, true),
   ('embudo_tablero', $q$select public.embudo_tablero((select id from public.embudos where es_default and usuario_id = (select auth.uid())), 50, 500)$q$, false),
   ('embudo_etapa_pagina', $q$select public.embudo_etapa_pagina((select o.etapa_id from public.oportunidades o where o.usuario_id = (select auth.uid()) limit 1), null, null, 50)$q$, false),
+  -- El embudo filtrado por lead (sus tarjetas llevan el lead con sus números, como las del kanban).
+  ('embudo_tablero_del_lead', $q$select public.embudo_tablero_del_lead((select id from public.embudos where es_default and usuario_id = (select auth.uid())), '{lp}', 50, 500)$q$, false),
+  ('embudo_etapa_pagina_del_lead', $q$select public.embudo_etapa_pagina_del_lead((select o.etapa_id from public.oportunidades o where o.usuario_id = (select auth.uid()) and o.lead_id = '{lp}' limit 1), '{lp}', null, null, 50)$q$, false),
   ('lead_oportunidades', $q$select public.lead_oportunidades('{lp}')$q$, false),
   ('lead_seguimientos', $q$select public.lead_seguimientos('{lp}', null, null, 20)$q$, false),
   ('lead_recordatorios', $q$select public.lead_recordatorios('{lp}', false, null, null, 20)$q$, false),
