@@ -12,7 +12,8 @@ Abiertos que lo tocan: **8-13a** a **8-13c** y la revisión de seguridad del sto
   lo compone `src/app/(app)/repuestos/` (render prop, hueco o props).
 - **`proyectos`** — `index.ts`: `proyectoDe(vehiculoId)`, `leerResumenDeVehiculo(vehiculoId)`, `esquemaDelListado`, `pedidoDelListado`,
   `leerCursorDeProyectos`, `leerProyectosDelListado` (cursor = `numero`, sin «Anterior»), `estadoDelProyecto`. `pantallas/proyectos.ts`:
-  `<ListadoDeProyectos>`, `<BotonNuevoProyecto>`, `useNuevoProyectoPorUrl`, `<CabeceraDeProyecto>`, `buscarProyectoAbierto`.
+  `<ListadoDeProyectos>`, `<BotonNuevoProyecto>`, `useNuevoProyectoPorUrl`, `buscarProyectoAbierto`. `pantallas/proyectos-detalle.ts` (`/repuestos/[id]`):
+  `<CabeceraDeProyecto>`, `<VehiculoQueNoSeVe>`.
   `pantallas/proyectos-nuevo.ts` (sólo la composición diferida de `src/app`, `nuevo-proyecto-abierto.tsx`): `<DrawerDeNuevoProyecto>` y sus tipos
   (`BuscadorDeProyecto`, `LectorDelLeadDelVehiculo`, `LeadDeLaUrl`). **El cliente en «Nuevo proyecto»** (glosario: «Cliente (de un proyecto)»): con
   `leads.ver`, «Cliente (lead)» en los dos orígenes (`<CampoDelCliente>`; las reglas, puras, en `entities/proyectos/cliente-del-formulario.ts`: el
@@ -24,12 +25,18 @@ Abiertos que lo tocan: **8-13a** a **8-13c** y la revisión de seguridad del sto
   `src/app`: los buscadores, `leerLeadDelVehiculo` (de `vehiculos/pantallas/proyecto-de-repuestos`) y `alNuevoLead` (de
   `leads/pantallas/proyecto-de-repuestos`, con `leads.ver` y `leads.crear`). La cabecera recibe el **cliente** ya resuelto (`clienteDeLaCabecera({ leadId, clienteNombre, lead })` de `index.ts`: `lead`,
   `oculto`, `libre` o `ninguno`; manda el lead, nunca el teléfono) y lo dibuja `<ClienteDelProyecto>`; el lead lo lee `src/app` con `leerLeadParaEnlazar`
-  de `leads` sólo con `lead_id` y `leads.ver` (`ProyectoDetallado.leadId`). `pantallas/proyectos-vehiculo.ts`: `<ResumenRepuestos>`, la pestaña «Repuestos» de `/vehiculos/[id]` (`repuestos.ver` global;
+  de `leads` sólo con `lead_id` y `leads.ver` (`ProyectoDetallado.leadId`). El **vehículo** llega en el hueco `vehiculo` (ReactNode) que llena `src/app`
+  (`vehiculo-del-proyecto.tsx`: `<VehiculoEnLaCabecera>` de `vehiculos`, `<VehiculoQueNoSeVe>` de `pantallas/proyectos-detalle.ts` o su error con «Reintentar», en su propio
+  `<Suspense>`); un proyecto externo (`vehiculo_id` nulo) lo dibuja la cabecera sola con `<ProyectoExterno>` («Proyecto externo · sin vehículo»). `pantallas/proyectos-vehiculo.ts`: `<ResumenRepuestos>`, la pestaña «Repuestos» de `/vehiculos/[id]` (`repuestos.ver` global;
   ítems por fase, ≤ 201 leídos). El módulo no importa `buscador`: los buscadores de vehículo y lead los compone `src/app`.
 - **`items`** — `pantallas/items.ts`: `<HojaDeItems>` (`/repuestos/[id]`) con el panel `?panel=imagenes&item=`; `index.ts`: `leerProyecto`,
   `leerItemsDelProyecto`, `leerItem`, `cuentasDeLaHoja`, `FilaDeItem`. El hueco de la hoja (`HuecoDeLaHoja`) tiene cuatro ranuras: `accionDeFila(fila)`,
-  `panel(api)`, `arriba(api)` (antes de la hoja, con sus filas vivas: los pasos y el panel del paso) y `pasoDeFila(fila)` (junto a la fase, en la columna
-  «Paso»: el botón del siguiente). `pantallas/items-del-panel.ts`: `ImagenesDelItemDiferido` (`ContenidoDeImagenes`, el mismo del panel de imágenes), el
+  `panel(api)`, `arriba(api)` (antes de la hoja, con sus filas vivas: los pasos y el panel del paso) y `pasoDeFila(fila)` (en la columna «Siguiente»: el
+  botón del siguiente; si no pone nada, la fila muestra la fase). La hoja recibe `ordenDeLasFases` (de `IndiceDelFlujo.lugar`, lo pasa `src/app`) y agrupa sus filas
+  por paso en el navegador con `agruparPorPaso` (`entities/items/grupos-por-paso.ts`: el orden del flujo, una fase fuera de él tras las conocidas, «Sin fase» al
+  final, «N+» con la hoja topada; sin orden, todo en «Sin fase»): un `<tbody data-grupo-de-paso>` por grupo en la tabla, una `<section>` en las tarjetas, y la fila
+  nueva al final, fuera de los grupos. La primera columna dice qué es el ítem (`queEsElItem`, `entities/items/que-es.ts`: «Tipo · Condición»; `<QueEsElItem>`)
+  y las columnas, sus títulos y su ayuda (`title`) salen de `COLUMNAS_DE_LA_HOJA` (`columnas-de-la-hoja.ts`). `pantallas/items-del-panel.ts`: `ImagenesDelItemDiferido` (`ContenidoDeImagenes`, el mismo del panel de imágenes), el
   bloque «Imágenes» del panel del ítem.
 - **`stock`** — la hoja expone un hueco (`HuecoDeLaHoja`: `accionDeFila(fila)`, `panel(api)` con `cambiarFila`) que llena `hoja-del-proyecto.tsx` con
   `pantallas/stock.ts` (`BotonDeStock`, `PanelDeStock`, `useStockPorUrl`; `?panel=stock&item=`). Vista `/repuestos?vista=stock`: `leerStock`,

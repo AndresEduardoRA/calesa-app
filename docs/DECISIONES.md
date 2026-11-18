@@ -622,6 +622,18 @@ las trampas, en `docs/LECCIONES.md`.
 - **El panel del ítem es una variante de logística** (`PanelDeLaUnidadALaVista`), no un cambio de la pieza común: el drawer de `/logistica/gastos?vehiculo=` sigue
   plegable. El destino ya elegido viaja en `?destino=` y llega a «Qué falta» por un contexto nulo por defecto; los bloques de `repuestos` (imágenes, stock, compras)
   los compone `src/app`. El stock del bloque sólo enlaza a su panel de la hoja: el formulario cambia la fila sin releerla.
+- **La hoja de ítems se agrupa por paso en el navegador sobre lo leído** (`agruparPorPaso`, ≤ 200 filas, sin otra lectura) y la fila no repite la fase: la dice
+  el encabezado de su grupo, y la columna «Siguiente» sólo lleva el botón (sin flujo legible, la fase de cada ítem, para no perderla). Una fase que no está en el
+  orden del flujo va tras las conocidas, por nombre. Descartados: una tabla por paso (las columnas se desalinean y los encabezados se repiten) y pestañas por paso
+  (esconden ítems). La primera columna dice qué es el ítem («Tipo · Condición» y la descripción); cantidad, precio y el siguiente van antes que los demás datos.
+- **La ayuda de cada columna de la hoja va en un `title`** con subrayado punteado: un «?» con `Popover` arrastra Base UI a la carga en frío por diez encabezados
+  y el `popover` nativo no se posiciona junto al encabezado en Safari sin anchor positioning. No llega al tacto en una tablet de 768 px o más: el título visible
+  ya dice qué es.
+- **El vehículo de la cabecera de un proyecto se lee en su propio `<Suspense>`** (la lectura empieza en la página, en paralelo con la hoja): su error se dice en
+  el recuadro con «Reintentar» y la hoja sigue. La situación necesita el nombre y el color de la fase del vehículo, que `Vehiculo` no trae: sale de
+  `leerFasesDeOrigen` (configuración cacheada por pedido, la misma de la ficha), y si esa lectura falla o la fase no está entre las leídas, no se dibuja la
+  insignia (decir «Sin fase» mentiría). Descartados: la miniatura dentro del `dl` (se pierde en la grilla) y la portada grande con el carrusel (JS de cliente y
+  ruido).
 - **Tras un pago, la página se vuelve a pedir por el evento del dinero** (`useAlCambiarElDineroDelProyecto`): las actions de pagos no revalidan (los lee el
   navegador), y sin esto la fila seguiría diciendo «Registrar pago».
 
