@@ -12,18 +12,19 @@ import { gruposVisibles, paraElNavegador, type GrupoDelNavegador } from './secci
 // de sección donde no se ve el menú. En el inicio, nada de eso: las tarjetas ya son el menú. Sin ninguna sección que abrir, tampoco:
 // la página dice «No tienes permiso». Las páginas no esperan a la sesión del menú: su `loading.tsx` se ve igual que siempre. Mientras
 // el menú y la cabecera llegan, su lugar queda reservado (la página no salta al llegar).
-const CLASE_DEL_MENU = 'hidden w-52 shrink-0 lg:@min-[44rem]/configuracion:block'
+// 8 rem: a 1280 px deja a Equipo el ancho para un correo de 38 letras entero (`equipo-200`); un título largo se parte en dos líneas.
+const CLASE_DEL_MENU = 'hidden w-32 shrink-0 lg:@min-[44rem]/configuracion:block'
 const CLASE_DE_LA_CABECERA = 'min-h-[44px] md:min-h-9'
 
 export default function LayoutDeConfiguracion({ children }: { children: ReactNode }) {
   return (
-    <div className="@container/configuracion flex min-w-0 gap-6">
+    <div className="@container/configuracion flex min-w-0 gap-4">
       <EnUnaSeccion inicio={RUTAS.configuracion}>
         <Suspense fallback={<div className={CLASE_DEL_MENU} />}>
           <MenuLateral />
         </Suspense>
       </EnUnaSeccion>
-      <div className="grid min-w-0 flex-1 content-start gap-4">
+      <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)] content-start gap-4">
         <EnUnaSeccion inicio={RUTAS.configuracion}>
           <Suspense fallback={<div className={CLASE_DE_LA_CABECERA} />}>
             <Cabecera />

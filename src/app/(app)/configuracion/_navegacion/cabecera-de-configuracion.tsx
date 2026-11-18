@@ -16,7 +16,7 @@ export function CabeceraDeConfiguracion({ grupos }: { grupos: readonly GrupoDelN
         <ChevronLeftIcon aria-hidden className="size-4 shrink-0" />
         Configuración
       </Link>
-      <div className="min-w-0 lg:@min-[44rem]/configuracion:hidden">
+      <div className="max-w-full min-w-0 lg:@min-[44rem]/configuracion:hidden">
         <SelectorDeSeccion grupos={grupos} />
       </div>
     </div>

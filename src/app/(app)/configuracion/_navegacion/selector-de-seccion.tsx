@@ -37,7 +37,7 @@ export function SelectorDeSeccion({ grupos }: { grupos: readonly GrupoDelNavegad
             router.push(ruta as Route)
           })
         }}
-        className="h-[44px] min-w-0 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) px-2 text-(length:--text-sm) text-(--color-ink) outline-none focus-visible:shadow-(--shadow-focus) md:h-9"
+        className="h-[44px] max-w-full min-w-0 flex-1 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) px-2 text-(length:--text-sm) text-(--color-ink) outline-none focus-visible:shadow-(--shadow-focus) md:h-9"
       >
         {valor === '' ? <option value="">Elige una sección</option> : null}
         {grupos.map((grupo) => (
