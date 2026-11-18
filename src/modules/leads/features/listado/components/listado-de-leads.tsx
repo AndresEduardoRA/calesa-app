@@ -23,8 +23,6 @@ import { DialogoDeEtiquetas } from '../../etiquetas/components/dialogo-de-etique
 import { useEtiquetas } from '../../etiquetas/hooks/use-etiquetas'
 import { usePanelDeEtiquetas } from '../../etiquetas/hooks/use-panel-de-etiquetas'
 import { RefrescarAlVolver } from '../../ficha/components/refrescar-al-volver'
-import { DrawerDeLead } from '../../rapido/components/drawer-de-lead'
-import { useDrawerDeLead } from '../../rapido/hooks/use-drawer-de-lead'
 import { useAccionDeFila } from '../hooks/use-accion-de-fila'
 import { AccionesDeFila } from './acciones-de-fila'
 import { AvisoDeFiltrosDescartados } from './aviso-de-filtros-descartados'
@@ -36,7 +34,6 @@ import { opcionesDelListado } from './opciones-del-listado'
 import type { DatosDeLaLista } from './tipos'
 import type { DatosDeUltimoContacto } from './ultimo-contacto'
 import { ProveedorDeMarcasDeVisto } from '@/modules/equipo/client'
-import type { HuecosDelRapido } from '../../rapido/huecos'
 
 type Props = DatosDeLaLista & {
   esquema: EsquemaDeFiltros
@@ -57,10 +54,6 @@ type Props = DatosDeLaLista & {
   // Los tipos de seguimiento y el instante de la página: dicen el último seguimiento y el recordatorio de cada fila.
   tiposDeSeguimiento: DatosDeUltimoContacto['tipos']
   ahora: string
-  puedeEditarExtras: boolean
-  puedeConfigurar: boolean
-  // Lo que `src/app` llena en el resumen del drawer (el bloque «Relacionados»: `leads` no importa `vehiculos`).
-  huecosDelResumen?: HuecosDelRapido
 }
 
 // Lo que va arriba de la lista: lo que la URL traía y ya no vale, y la aclaración de un filtro
@@ -116,22 +109,22 @@ function AccionesDeFilaConRelectura(props: { filas: readonly FilaDeLead[]; puede
   )
 }
 
-// La lista con las marcas de «visto» de su página (una lectura) y el abierto marcado al abrirse.
+// La lista con las marcas de «visto» de su página (una lectura). Ninguno se abre acá: lo registra la ficha (`RegistrarVisto`).
 function ResultadoConVistos(props: ComponentProps<typeof ResultadoDelListado>) {
   return (
     <ProveedorDeMarcasDeVisto
       modulo="leads"
       tipo="lead"
       ids={props.pagina.filas.map((fila) => fila.id)}
-      abierto={props.abierto}
+      abierto={null}
     >
       <ResultadoDelListado {...props} />
     </ProveedorDeMarcasDeVisto>
   )
 }
 
-// Los leads: filtros del layout en la URL, vistas guardadas, la lista (tabla o tarjetas) y el
-// drawer rápido. Todo el estado (filtros, alcance, página, lead abierto) vive en la URL.
+// Los leads: filtros del layout en la URL, vistas guardadas y la lista (tabla o tarjetas), cuyas filas llevan a la ficha. Todo el estado
+// (filtros, alcance, página) vive en la URL.
 export function ListadoDeLeads(props: Props) {
   const {
     esquema,
@@ -154,7 +147,6 @@ export function ListadoDeLeads(props: Props) {
     ahora,
     ...delServidor
   } = props
-  const drawer = useDrawerDeLead()
   const accionDeFila = useAccionDeFila()
   const [panel] = useQueryState(CLAVE_DE_PANEL, parseAsString)
   const etiquetas = useEtiquetas(delServidor.etiquetas)
@@ -167,8 +159,6 @@ export function ListadoDeLeads(props: Props) {
   const datos = { ...delServidor, etiquetas: etiquetas.lista }
   const alAccion = puedeAnotar ? accionDeFila.abrir : null
   const marcar = { etiquetas, alGestionar: gestionar.abrir, eliminables, alAccion }
-  // `puedeEditarExtras` y `puedeConfigurar` viajan con `datos` hasta el drawer.
-  const delDrawer = { filas: pagina.filas, soloMios: !puedeVerTodos, puedeEditar: puedeAnotar }
   const ultimoContacto = { tipos: tiposDeSeguimiento, ahora }
   return (
     <div className="grid gap-4">
@@ -194,8 +184,6 @@ export function ListadoDeLeads(props: Props) {
             modo={modo}
             puedeVerTodos={puedeVerTodos}
             puedeCrear={puedeCrear}
-            alAbrir={drawer.abrir}
-            abierto={drawer.id}
             marcar={marcar}
             ocultos={ocultos}
             recorrido={recorrido}
@@ -203,7 +191,6 @@ export function ListadoDeLeads(props: Props) {
           />
         </div>
       </FilterShell>
-      <DrawerDeLead {...datos} {...delDrawer} marcar={marcar} ultimoContacto={ultimoContacto} />
       <DialogoDeEtiquetas etiquetas={etiquetas} />
       {exportarMontado ? (
         <DialogoDeExportarDiferido abierto={exportar.abierto} alCerrar={exportar.cerrar} />

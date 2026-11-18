@@ -14,7 +14,7 @@ import type { Etiquetas } from '../../etiquetas/hooks/use-etiquetas'
 import { useEnvioAPapelera } from '../../papelera/hooks/use-envio-a-papelera'
 import { useMarcas, type Marcas } from '../hooks/use-marcas'
 
-// Lo que cambia de una superficie a otra del «⋯» de un lead (la fila, la tarjeta del kanban, el resumen y la ficha): la lista y su orden
+// Lo que cambia de una superficie a otra del «⋯» de un lead (la fila, la tarjeta del kanban y la ficha): la lista y su orden
 // son los mismos (`entities/acciones-de-lead.ts`); lo que cambia es qué pasa al elegir cada cosa.
 type PropsComunes = {
   leadId: string
@@ -29,14 +29,14 @@ type PropsComunes = {
     { alAnotar: () => void; alAgendar: () => void; alNuevaOportunidad: () => void } | undefined
   // «Ver oportunidades»: con el lead en la cartera de quien mira, lleva a la sección «Oportunidades» de la ficha. Sin esto, no se ofrece.
   verOportunidades?: (() => void) | undefined
-  // Lo que la papelera hace distinto donde el lead no se queda en pantalla: `alEnviado` (la ficha lleva al listado y el resumen se cierra),
+  // Lo que la papelera hace distinto donde el lead no se queda en pantalla: `alEnviado` (la ficha lleva al listado),
   // y con un vehículo vinculado que quien mira ve, `motivo` la apaga y `alIrAVehiculos` ofrece ir a «Vehículos».
   papelera?: { alEnviado?: () => void; motivo?: string | null; alIrAVehiculos?: () => void }
-  // Después de cambiar una marca: el resumen vuelve a leer el lead.
+  // Después de cambiar una marca: quien dibuja el menú puede volver a leer el lead.
   alMarcar?: () => void
   // «Ver actividad»: sólo la ficha, y sólo con `actividad.ver` (la ruta la arma la página). Sin esto, no se ofrece.
   verActividad?: (() => void) | undefined
-  // En una cabecera (el resumen, la ficha): con borde, como los botones de al lado.
+  // En una cabecera (la de la ficha): con borde, como los botones de al lado.
   conBorde?: boolean
   // El kanban no trae las marcas ni la cartera del lead: se leen al abrir el menú (`alAbrir`) y mientras tanto, o si no llegan, el menú
   // lo dice (`carga`).
@@ -236,7 +236,7 @@ export function MenuDeLeadConMarcas(props: PropsConMarcas) {
 
 type PropsDeLaFila = PropsComunes & { marcas: MarcasDeLead }
 
-// El «⋯» de un lead de una lista, de una tarjeta o de un resumen: lleva sus propias marcas (las de la fila).
+// El «⋯» de un lead de una lista o de una tarjeta: lleva sus propias marcas (las de la fila).
 export function MenuDeLead({ marcas: inicial, ...resto }: PropsDeLaFila) {
   const marcas = useMarcas(resto.leadId, inicial)
   return <MenuDeLeadConMarcas {...resto} marcas={marcas} />

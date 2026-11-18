@@ -1,4 +1,4 @@
-// Lectura del drawer rápido, en el navegador: un lead por su id, con la sesión de quien mira. La
+// Un lead por su id, en el navegador, con la sesión de quien mira: lo lee el «⋯» de la tarjeta del kanban. La
 // RLS de `leads` y `leads_vista` deciden qué llega (el teléfono enmascarado, los privados ajenos
 // recortados); acá no se decide nada. Va por el navegador para poder releerlo al volver a la
 // pestaña sin pedirle otra página entera al servidor.

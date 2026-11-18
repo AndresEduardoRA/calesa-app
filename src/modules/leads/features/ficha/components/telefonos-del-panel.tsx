@@ -11,14 +11,14 @@ type Props = {
   lead: LeadDeTelefonos
   puedeEditarExtras: boolean
   puedeConfigurar: boolean
-  // El resumen del listado, con el panel abierto encima, no responde a `?extra=nuevo`: lo atiende éste.
+  // Después de agregar, rotular o quitar uno (sin esto, la ficha se relee).
   alCambiar?: () => void
   // «Cambiar el principal» (cartera y `leads.editar`, en la ficha): apagado mientras el formulario tiene cambios. Nulo, no se ofrece.
   cambiarElPrincipal: { hayCambios: boolean; alCambiar: () => void } | null
 }
 
 // Los teléfonos dentro del panel de edición: el principal (con «Cambiar el principal») y los extras, con el mismo componente y las mismas
-// reglas en la ficha y en el resumen. Va **fuera** del `<form>` del panel (rotular una fila es un `<form>`, y un formulario no se anida en
+// reglas que el bloque de la ficha. Va **fuera** del `<form>` del panel (rotular una fila es un `<form>`, y un formulario no se anida en
 // otro) y se guarda al momento, sin esperar a «Guardar».
 export function TelefonosDelPanel({
   lead,

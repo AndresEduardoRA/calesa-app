@@ -15,7 +15,7 @@ import {
   type TerrenoDelRecorrido,
 } from './soporte/recorrido'
 
-// Las capturas de «Configuración de leads»: las pestañas de Configuración › Leads, el alta, el listado, la ficha y el drawer rápido, al 100 % y
+// Las capturas de «Configuración de leads»: las pestañas de Configuración › Leads, el alta, el listado y la ficha, al 100 % y
 // al 200 %, para mirar antes y después (`E2E_CAPTURAS=e2e-capturas/config-de-leads/{antes,despues}`). Lo que se puede afirmar sin mirar vive
 // en los specs de cada pantalla; este recorre y deja las imágenes.
 test.describe.configure({ mode: 'serial' })
@@ -86,9 +86,6 @@ test('el alta, el listado, la ficha y el rápido', async ({ page }, info) => {
   await capturar(page, info, 'alta-con-el-origen-por-defecto')
   await page.keyboard.press('Escape')
   await expect(dialogo(page)).toBeHidden()
-  await page.goto(`/leads?lead=${r.uno.id}`)
-  await expect(page.getByRole('dialog', { name: r.uno.nombre })).toBeVisible()
-  await capturar(page, info, 'rapido')
   await irAFicha(page, r.uno.id)
   await expect(page.getByRole('heading', { name: r.uno.nombre, level: 1 })).toBeVisible()
   await capturar(page, info, 'ficha')

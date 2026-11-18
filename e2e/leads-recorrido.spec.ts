@@ -15,7 +15,6 @@ import {
   enfocado,
   limpiarRecorrido,
   prepararRecorrido,
-  quieto,
   recibeElClic,
   sinScrollHorizontal,
   tactil,
@@ -178,79 +177,22 @@ test('A · el «⋯» de la dueña: sobre lo suyo anota; sobre lo ajeno (en «to
   await capturar(page, info, 'duena-para-ajeno')
 })
 
-test('B · el drawer es la versión corta de la ficha: sin pestañas, lo último que pasó y Esc lo cierra', async ({
-  page,
-}, info) => {
-  await entrar(page, r.ana.email)
-  await page.goto(`/leads?lead=${r.uno.id}`)
-  const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(drawer).toBeVisible()
-  await expect(drawer.getByRole('tablist')).toHaveCount(0)
-  await volcarArbol(drawer, info, 'drawer-resumen')
-  await expect(drawer.getByText('Primera llamada del recorrido')).toBeVisible()
-  for (const boton of [
-    drawer.getByRole('button', { name: 'Editar' }),
-    drawer.getByRole('link', { name: 'Abrir ficha' }),
-  ]) {
-    await tactil(page, boton)
-    await recibeElClic(boton)
-  }
-  await capturar(page, info, 'drawer-corto')
-
-  // Esc cierra el drawer.
-  await page.keyboard.press('Escape')
-  await expect(drawer).toBeHidden()
-  await expect(page).not.toHaveURL(/lead=/)
-  await capturar(page, info, 'drawer-cerrado')
-})
-
-test('B · con el drawer abierto: otro lead, «atrás», y lo privado de la asesora no lo ve la dueña', async ({
+test('B · la fila lleva a la ficha, «atrás» vuelve a la lista, y lo privado de la asesora no lo ve la dueña', async ({
   page,
 }, info) => {
   await entrar(page, r.ana.email)
   await irALeads(page)
-  // Abrir el drawer desde la fila suma una entrada al historial: «atrás» lo cierra.
-  await expect(async () => {
-    await aLaVista(page.getByText(r.uno.nombre, { exact: true }))
-      .first()
-      .click()
-    await expect(page.getByRole('dialog', { name: r.uno.nombre })).toBeVisible({ timeout: 1000 })
-  }).toPass()
+  // El nombre es el enlace a la ficha; ahí está lo último que pasó.
+  await aLaVista(page.getByRole('link', { name: r.uno.nombre, exact: true })).click()
+  await expect(page).toHaveURL(new RegExp(`/leads/${r.uno.id}$`))
+  await expect(page.getByRole('heading', { name: 'Primera llamada del recorrido' })).toBeVisible()
+  await capturar(page, info, 'ficha-desde-la-fila')
   await page.goBack()
-  await expect(page.getByRole('dialog', { name: r.uno.nombre })).toBeHidden()
-  await expect(page).not.toHaveURL(/lead=/)
+  await expect(page).toHaveURL(/\/leads$/)
+  await expect(aLaVista(page.getByRole('link', { name: r.dos.nombre, exact: true }))).toBeVisible()
 
-  // Con el drawer abierto, el otro lead de la lista queda detrás del velo: un clic ahí cierra el
-  // drawer (no abre el otro con lo de éste).
-  await page.goto(`/leads?lead=${r.uno.id}`)
-  const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(drawer.getByText('Último seguimiento', { exact: true })).toBeVisible()
-  // El drawer entra deslizándose y mide menos mientras entra: se mide quieto.
-  await quieto(drawer)
-  const otro = aLaVista(page.getByText(r.dos.nombre, { exact: true })).first()
-  const caja = await otro.boundingBox()
-  const delDrawer = await drawer.boundingBox()
-  if (caja && delDrawer && caja.x + caja.width / 2 < delDrawer.x) {
-    await page.mouse.click(caja.x + caja.width / 2, caja.y + caja.height / 2)
-    await capturar(page, info, 'drawer-clic-en-otro')
-    info.annotations.push({
-      type: 'clic en otro lead con el drawer abierto',
-      description: page.url(),
-    })
-  }
-  // El otro lead por la URL: el drawer cambia de lead (la versión corta, sin pestañas).
-  await page.goto(`/leads?lead=${r.dos.id}`)
-  await expect(page.getByRole('dialog', { name: r.dos.nombre })).toBeVisible()
-  await expect(page.getByRole('dialog', { name: r.dos.nombre }).getByRole('tablist')).toHaveCount(0)
-
-  // La dueña ve el lead de Ana en «todos», pero no su seguimiento privado: ni en el resumen ni en la ficha (a la que lleva la pestaña de antes).
+  // La dueña ve el lead de Ana en «todos», pero no su seguimiento privado en la ficha (a la que lleva la pestaña de antes).
   await entrar(page, r.t.personas.duena)
-  await page.goto(`/leads?alcance=todos&lead=${r.uno.id}`)
-  const suyo = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(suyo.getByText('Último seguimiento', { exact: true })).toBeVisible()
-  await expect(suyo.getByText('Primera llamada del recorrido')).toHaveCount(0)
-  await volcarArbol(suyo, info, 'duena-drawer-ajeno')
-  await capturar(page, info, 'duena-drawer-ajeno-seguimientos')
   await page.goto(`/leads?alcance=todos&lead=${r.uno.id}&pestana=seguimientos`)
   await expect(page).toHaveURL(new RegExp(`/leads/${r.uno.id}\\?seccion=seguimientos`))
   const bloque = page.getByRole('region', { name: 'Seguimientos y recordatorios' })

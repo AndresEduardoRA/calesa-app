@@ -140,6 +140,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Copias que deberían subir al núcleo o a `shared`: el esquema de la nota de publicar, `FILAS_POR_PEDIDO`, `MARCAS_DE_GESTORES`, `valorTipeado`, `diasParaLaPurga`/`textoDePurga`, las lecturas de tonos, `normalizar` de la XCell y la subida por hash a bucket privado.
 - **[—]** «Ver comprobante» duplicado en repuestos y logística (`ver-comprobante.ts` y `useComprobante.ver`); `XCell` no tiene `emptyLabel`.
 - **[—]** Las guardas de áreas (`areas-de-cotizaciones`, `-flujos`, `-logistica`, `areas-b/areas-de-web`, `areas-c/areas-de-repuestos`) son cinco copias de la misma lógica, y los registros de `<Confirmar>`, `<Drawer>` y RPC paginadas están partidos en `areas-b/`, `areas-c/`, `*-formula.ts` y `*-papelera.ts` — unificar en una guarda parametrizada y un registro por módulo.
+- **[T340]** `lead_telefonos_leer()` no tiene uso en la app (la leía el resumen de la lista de leads) — quitarla en una migración con sus pruebas SQL.
+- **[T340]** `LugarDeRelacionados` conserva `'resumen'` y `lugar === 'resumen'` en `relacionados-de-un-lead.tsx` sólo para el resumen del inventario — quitarlo cuando ese resumen se vaya.
 - **[—]** Repuestos sube imágenes con `subirPorHash` desde el hook — debería ir a `infra/items/imagenes.client.ts`.
 - **[—]** Huérfanos de Storage: `storage_gc_encolar_huerfanos` sólo barre `vehiculos`; quedan los de `repuestos` y `cotizaciones` (subidas cuyo registro falló), imágenes de guías y fotos de testimonios web subidas y nunca guardadas.
 - **[—]** El CSV de una importación que el job deja `fallida` tras 24 h sin avance no se borra (ni el objeto de un borrado fallido en el navegador), y un error que se repite reintenta cada 2 min esas 24 h.
@@ -158,6 +160,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `logistica/entities/dinero/reparto.test.ts` («para cualquier monto…», ~2700 casos) pasa de los 5 s de Vitest con la máquina cargada (`pnpm test` junto a `db:probar`) — menos casos o un `timeout` propio.
 - **[—]** `scripts/demo/sembrar.mjs` no siembra proyectos de repuestos, eventos ni tareas de la agenda, ni vehículos fuera de la primera fase del flujo: la demo muestra esas pantallas vacías.
 - **[—]** `bloquear-peligrosos.sh` lee el texto del comando: un agregar que no aparece en él (dentro de `bash guion.sh`, armado con `printf`/`base64`, un `.npmrc` o un `package.json` escritos con Write) no se mira — una guarda de CI que exija que toda dependencia nueva de `package.json` esté en `scripts/orquestador/dependencias-aprobadas.txt` y que el PR que suma a la lista lleve «Dependencias nuevas».
+- **[—]** `e2e/leads-oportunidades.spec.ts` «crear desde el panel» cae también en `main`: el lead del spec nace sin oportunidad (el bloque dice «Todavía no tienes oportunidades…») y «Nueva oportunidad» del vacío no abre `?panel=nueva-oportunidad`; serial, deja sin correr las otras 4 del archivo.
 - **[—]** `e2e/cotizaciones-listado.spec.ts` E6 y E8 fallan a veces en el CI y pasan en local: la tecla N abre `panel=nuevo-lead` en vez de la hoja, y «Ver todas» pierde `clase=preventa` — esperar la hidratación o el `href` ya filtrado antes de actuar.
 
 ### Límites aceptados
@@ -184,7 +187,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T34]** «Abrir la unidad» de «Qué falta» en la ficha del vehículo lleva a un hueco aunque su regla del flujo esté apagada (allí no estará): pasar a la ficha
   qué huecos dibuja la unidad (un dato de `leerQueFalta`) en vez de suponerlos todos.
 - **[T33]** Tras agregar un teléfono extra en el panel de edición de la ficha, el foco va a «Nombre» (la ficha se vuelve a leer y el panel se rearma) y no a «Agregar teléfono».
-- **[T26]** `/leads?lead=<id>&extra=nuevo` pone `?panel=editar-lead` aunque quien mira no pueda editar: no se abre nada, pero la clave queda en la URL hasta cerrar el resumen (`use-drawer-de-lead.ts`; que el efecto la quite sin `leads.editar`).
 - **[T33]** Con «Ver todos los seguimientos» abierto, cerrar el modal de editar uno devuelve el foco al «Editar» del bloque de atrás (el primero con su `data-seguimiento-editar`), que está inerte bajo el drawer.
 - **[—]** Al volver de «Nuevo lead» a «Nuevo proyecto» se apilan dos avisos («Lead creado» y «Recuperamos lo que habías escrito y no guardaste.») — el
   arreglo va en el marco del alta (no avisar «Lead creado» cuando vuelve a un formulario con `?elegir=`) o en el borrador (no avisar al reponer tras el alta).

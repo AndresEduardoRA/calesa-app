@@ -165,7 +165,7 @@ function AnotarDesdeLaFila({
 }
 
 // Anotar un seguimiento, agendar un recordatorio o crear una oportunidad (desde el «⋯» de una fila): los modales de la
-// ficha, sobre ese lead, sin abrir el drawer. Al guardar un seguimiento o un recordatorio, un aviso de éxito y `alGuardar` (el listado relee su página
+// ficha, sobre ese lead, sin abrir la ficha. Al guardar un seguimiento o un recordatorio, un aviso de éxito y `alGuardar` (el listado relee su página
 // y la fila lo muestra); una oportunidad no se ve en la fila. El vehículo no se ofrece: el listado no lee los vehículos del lead.
 export function ModalDeAccionDeFila({ accion, ...props }: Props) {
   const { zonaHoraria } = useRegional()

@@ -41,7 +41,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   - `identidadDeVehiculo(vehiculo, principal, formato)` e `identidadEnUnaLinea()` (logística): con campo principal activo y un valor no vacío ni
     monto, el valor nombra y el título acompaña; si no, el título. Fila, tarjeta y resumen: `useIdentidad(campos)`; ficha, PDF, web y hoja: el título.
   - `leerTitulosDeVehiculos(ids)`: títulos de una página de `/cotizaciones` por pk, con la RLS de quien mira y sin papelera; hasta 100 ids.
-- **«Relacionados»** (`features/relacionados/`, `pantallas/relacionados.ts`; glosario): arriba de la ficha del vehículo, su resumen, la unidad de logística (página y drawer de gastos), la ficha del lead y su resumen. Tres grupos:
+- **«Relacionados»** (`features/relacionados/`, `pantallas/relacionados.ts`; glosario): arriba de la ficha del vehículo, su resumen, la unidad de logística (página y drawer de gastos) y la ficha del lead. Tres grupos:
   Vinculado, Interesado y Cotizado (éste sólo con `cotizaciones.ver`); un grupo sin nada no se dibuja (`gruposALaVista()`) y sus acciones van al «⋯» del bloque o de la línea
   (`entities/acciones-fuera-de-los-grupos.ts`: con todo vacío, una a la vista y el resto en el «⋯»). `presentacion` es obligatoria en cada capa (`PresentacionDeRelacionados`, de `index.ts`):
   `'linea'` (un chip por grupo con su popover diferido) en los resúmenes y en logística; `'compacta'` (los grupos con sus filas, la leyenda como `title` y descripción para el lector,

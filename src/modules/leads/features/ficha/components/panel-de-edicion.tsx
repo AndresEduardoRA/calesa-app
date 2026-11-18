@@ -11,14 +11,8 @@ import { useUltimo } from '@/shared/ui/use-ultimo'
 import type { LeadDeFicha } from '../../../entities/ficha'
 import { telefonosDeLaFicha } from '../../../entities/telefonos'
 import { usePanelDeLead } from '../hooks/use-panel-de-lead'
-import {
-  ContenidoDeLaEdicion,
-  type Datos,
-  type EdicionEnElResumen,
-} from './contenido-de-la-edicion'
+import { ContenidoDeLaEdicion, type Datos } from './contenido-de-la-edicion'
 import { TelefonosDelPanel } from './telefonos-del-panel'
-
-export type { EdicionEnElResumen } from './contenido-de-la-edicion'
 
 type Props = Datos & {
   // Cartera y `leads.editar`: todo el formulario.
@@ -30,7 +24,6 @@ type Props = Datos & {
   puedeConfigurar: boolean
   // Cartera y `leads.editar`, en la ficha: «Cambiar el principal» en el bloque de teléfonos.
   puedeCambiarTelefono?: boolean
-  enResumen?: EdicionEnElResumen
 }
 
 // El «modo teléfonos»: quien sólo administra los extras (sin `leads.editar`) ve los teléfonos y nada más; lo demás no se le ofrece.
@@ -38,12 +31,10 @@ function SoloTelefonos({
   ficha,
   puedeConfigurar,
   alCerrar,
-  alCambiar,
 }: {
   ficha: LeadDeFicha
   puedeConfigurar: boolean
   alCerrar: () => void
-  alCambiar?: () => void
 }) {
   const router = useRouter()
   return (
@@ -55,7 +46,7 @@ function SoloTelefonos({
         lead={telefonosDeLaFicha(ficha)}
         puedeEditarExtras
         puedeConfigurar={puedeConfigurar}
-        alCambiar={alCambiar ?? router.refresh}
+        alCambiar={router.refresh}
         cambiarElPrincipal={null}
       />
       <div className="flex justify-end border-t border-(--color-line) pt-3">
@@ -84,7 +75,6 @@ type PropsDelCuerpo = Omit<Props, 'puedeEditar' | 'puedeCambiarTelefono'> & {
 function CuerpoDelPanel({
   soloTelefonos,
   alCerrar,
-  enResumen,
   puedeEditarExtras,
   puedeConfigurar,
   alCambiarElPrincipal,
@@ -92,14 +82,7 @@ function CuerpoDelPanel({
 }: PropsDelCuerpo) {
   const { ficha } = datos
   if (soloTelefonos) {
-    return (
-      <SoloTelefonos
-        ficha={ficha}
-        puedeConfigurar={puedeConfigurar}
-        alCerrar={alCerrar}
-        alCambiar={enResumen?.alGuardado}
-      />
-    )
+    return <SoloTelefonos ficha={ficha} puedeConfigurar={puedeConfigurar} alCerrar={alCerrar} />
   }
   return (
     <ContenidoDeLaEdicion
@@ -107,7 +90,6 @@ function CuerpoDelPanel({
       key={`${ficha.id}-${ficha.actualizadoEn}`}
       {...datos}
       alCerrar={alCerrar}
-      enResumen={enResumen}
       puedeEditarExtras={puedeEditarExtras}
       puedeConfigurar={puedeConfigurar}
       alCambiarElPrincipal={alCambiarElPrincipal}
@@ -150,7 +132,7 @@ export function PanelDeEdicion({ puedeEditar, puedeCambiarTelefono, ...resto }: 
   const soloTelefonos = !puedeEditar && resto.puedeEditarExtras
   const abierto = (puedeEditar || resto.puedeEditarExtras) && panel.abierto
   const { ficha, descripcion } = useFichaALaVista(abierto, resto.ficha)
-  const paso = usePasoAlTelefono(panel, Boolean(puedeCambiarTelefono) && !resto.enResumen)
+  const paso = usePasoAlTelefono(panel, Boolean(puedeCambiarTelefono))
   return (
     <Drawer
       abierto={abierto}

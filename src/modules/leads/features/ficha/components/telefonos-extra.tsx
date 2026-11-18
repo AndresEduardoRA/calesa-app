@@ -16,7 +16,7 @@ type Props = {
   lead: LeadDeTelefonos
   // Cartera y `leads.telefonos_extra.editar`: agregar, rotular y quitar. Sin esto sólo se leen.
   puedeAdministrar: boolean
-  // El modal «Agregar teléfono» y su URL: `useAgregarExtraEnPanel()` (`?extra=nuevo`) en el panel de edición, de la ficha o del resumen.
+  // El modal «Agregar teléfono» y su URL: `useAgregarExtraEnPanel()` (`?extra=nuevo`) en el panel de edición de la ficha.
   apertura: { abierto: boolean; abrir: () => void; cerrar: () => void }
   // `leads.configurar`: con el máximo pasado o alcanzado, el enlace a donde se cambia.
   puedeConfigurar: boolean

@@ -20,14 +20,20 @@ type Props = {
   alCerrar: () => void
 }
 
-// A dónde lleva «Abrir en…»: la pantalla de cada módulo, donde se aplican sus permisos (aquí no se decide nada).
+// A dónde lleva «Abrir en…»: la pantalla de cada módulo, donde se aplican sus permisos (aquí no se decide nada). Un lead, a su ficha.
 const SALIDA: Record<
   'lead' | 'vehiculo' | 'cotizacion',
-  { ruta: string; clave: string; texto: string }
+  { ruta: (id: string) => string; texto: string }
 > = {
-  lead: { ruta: RUTAS.leads, clave: 'lead', texto: 'Abrir en Leads' },
-  vehiculo: { ruta: RUTAS.vehiculos, clave: 'vehiculo', texto: 'Abrir en Vehículos' },
-  cotizacion: { ruta: '/cotizaciones', clave: 'cotizacion', texto: 'Abrir en Cotizaciones' },
+  lead: { ruta: (id) => `${RUTAS.leads}/${encodeURIComponent(id)}`, texto: 'Abrir en Leads' },
+  vehiculo: {
+    ruta: (id) => `${RUTAS.vehiculos}?vehiculo=${encodeURIComponent(id)}`,
+    texto: 'Abrir en Vehículos',
+  },
+  cotizacion: {
+    ruta: (id) => `/cotizaciones?cotizacion=${encodeURIComponent(id)}`,
+    texto: 'Abrir en Cotizaciones',
+  },
 }
 
 function tituloDe(datos: DatosDeReferencia): string {
@@ -146,7 +152,7 @@ function vistaDe(
   return {
     titulo: tituloDe(estado.datos),
     cuerpo: <DatosDeLaMencion datos={estado.datos} />,
-    salida: salida ? `${salida.ruta}?${salida.clave}=${encodeURIComponent(estado.id)}` : null,
+    salida: salida ? salida.ruta(estado.id) : null,
     textoSalida: salida?.texto ?? '',
   }
 }

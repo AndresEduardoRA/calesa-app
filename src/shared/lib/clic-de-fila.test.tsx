@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { esClicPropio } from './clic-de-fila'
+import { abreEnOtraPestana, esClicDelEnlace, esClicPropio, hayTextoElegidoEn } from './clic-de-fila'
 
 function fila(html: string) {
   const raiz = document.createElement('div')
@@ -62,5 +62,57 @@ describe('esClicPropio', () => {
   it('un destino que no es un elemento no se trata como propio', () => {
     const raiz = fila(html)
     expect(esClicPropio({ target: null, currentTarget: raiz.querySelector('#fila')! })).toBe(false)
+  })
+})
+
+describe('esClicDelEnlace', () => {
+  it('sólo lo que cae en el enlace de la fila (o adentro) es suyo', () => {
+    const raiz = fila(`
+      <div id="fila">
+        <a id="enlace" href="/vehiculos/1" data-abre-resumen data-enlace-de-la-fila><b id="dentro">Kia</b></a>
+        <span id="texto">2022</span>
+      </div>`)
+    const f = raiz.querySelector('#fila')!
+    expect(esClicDelEnlace({ target: raiz.querySelector('#enlace'), currentTarget: f })).toBe(true)
+    expect(esClicDelEnlace({ target: raiz.querySelector('#dentro'), currentTarget: f })).toBe(true)
+    expect(esClicDelEnlace({ target: raiz.querySelector('#texto'), currentTarget: f })).toBe(false)
+    expect(esClicDelEnlace({ target: null, currentTarget: f })).toBe(false)
+  })
+})
+
+describe('abreEnOtraPestana', () => {
+  const clic = { button: 0, ctrlKey: false, metaKey: false, shiftKey: false }
+
+  it('un clic simple se queda en la pestaña', () => {
+    expect(abreEnOtraPestana(clic)).toBe(false)
+  })
+
+  it('Ctrl, Cmd o Shift con el botón principal, o el botón del medio, abren otra', () => {
+    expect(abreEnOtraPestana({ ...clic, ctrlKey: true })).toBe(true)
+    expect(abreEnOtraPestana({ ...clic, metaKey: true })).toBe(true)
+    expect(abreEnOtraPestana({ ...clic, shiftKey: true })).toBe(true)
+    expect(abreEnOtraPestana({ ...clic, button: 1 })).toBe(true)
+  })
+
+  it('el botón derecho no abre nada', () => {
+    expect(abreEnOtraPestana({ ...clic, button: 2 })).toBe(false)
+    expect(abreEnOtraPestana({ ...clic, button: 2, ctrlKey: true })).toBe(false)
+  })
+})
+
+describe('hayTextoElegidoEn', () => {
+  it('sólo cuenta un texto elegido dentro de la fila', () => {
+    const raiz = fila(
+      '<div id="fila"><span id="vin">KNDPB3AC1N7000001</span></div><p id="afuera">otro</p>',
+    )
+    const f = raiz.querySelector('#fila')!
+    const seleccion = window.getSelection()!
+    expect(hayTextoElegidoEn(f, seleccion)).toBe(false)
+    seleccion.selectAllChildren(raiz.querySelector('#vin')!)
+    expect(hayTextoElegidoEn(f, seleccion)).toBe(true)
+    seleccion.selectAllChildren(raiz.querySelector('#afuera')!)
+    expect(hayTextoElegidoEn(f, seleccion)).toBe(false)
+    seleccion.removeAllRanges()
+    expect(hayTextoElegidoEn(f, null)).toBe(false)
   })
 })

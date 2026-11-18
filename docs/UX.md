@@ -210,8 +210,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   «Esperas que destraban vehículos» (`repuestos.ver`). Cada bloque, con su `<Suspense>` y su límite de error: si falla (al leer o al dibujar), sólo ése
   dice el error con «Reintentar». Sin ningún bloque: «Tu rol todavía no tiene trabajo en la bandeja», con los bloques que existen y a quién pedir
   acceso; sin rol, «Aún no tienes un rol, avisa al dueño».
-- **Leads** — `/leads` (`leads.ver`): tabla + resumen. «Míos» por defecto; con alcance «todos», `?alcance=`. Filtros del layout
-  (`a.<campo>`), tipo, origen, `?q=`, `?cursor=`, vistas guardadas; resumen `?lead=` (un `?pestana=` viejo lleva a la ficha); marcas
+- **Leads** — `/leads` (`leads.ver`): tabla + enlace a la ficha. «Míos» por defecto; con alcance «todos», `?alcance=`. Filtros del layout
+  (`a.<campo>`), tipo, origen, `?q=`, `?cursor=`, vistas guardadas; la fila y la tarjeta llevan a `/leads/<id>` (un `?lead=` viejo redirige a la ficha con
+  lo que pedía: ver «Leads: listado (estados propios)»); marcas
   `?tachados=`, `?favoritos=`, `?etiqueta=`; `?panel=etiquetas`. «Lista | Embudo» (en «Vista y opciones», con el alcance, las vistas guardadas, «Ítems
   por página» y «Más»: exportar, importar y papelera): `?vista=embudo&embudo=<id>` es el kanban de las oportunidades propias (`?etapa=` en el celular;
   a la vista, el selector de embudo y la búsqueda; en «Vista y opciones», «Lista | Embudo», «Etapas…» `?panel=etapas` y «Nuevo embudo…» `?panel=nuevo-embudo`).
@@ -734,7 +735,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 
 ### Relacionados (estados propios)
 
-Arriba de cada detalle, en dos presentaciones que elige cada lugar (`presentacion`, obligatoria): **en una línea** en los resúmenes (`/vehiculos?vehiculo=`, `/leads?lead=`) y en logística
+Arriba de cada detalle, en dos presentaciones que elige cada lugar (`presentacion`, obligatoria): **en una línea** en el resumen del inventario (`/vehiculos?vehiculo=`) y en logística
 (la página de la unidad y el drawer de `/logistica/gastos?vehiculo=`), y **compacta** en las fichas (`/vehiculos/[id]`, un bloque de la columna derecha, con `leads.ver`; `/leads/[id]`, un bloque
 de la columna derecha con la gestión de «Vehículos» al pie, con `vehiculos.ver`). Tres grupos: **Vinculado**, **Interesado** y **Cotizado** (éste sólo con `cotizaciones.ver`). **Un grupo sin nada (ni lo que no se ve) no
 se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «Relacionados»» del bloque o de la línea.
@@ -1355,19 +1356,24 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
 - **Tus marcas (privadas, «Solo las ves tú.»):** «Tachados» (ocultarlos por defecto · mostrarlos también · sólo los tachados),
   «Favoritos», «Etiquetas». No reordenan. Una línea dice cuántos coincidentes ocultan los tachados, con «Mostrarlos». **Mientras se busca
   no se ocultan.**
-- **«⋯» de la fila** (la misma lista, en este orden, en fila, tarjeta, kanban, resumen y ficha): «Agendar recordatorio…», «Anotar seguimiento…» y «Nueva oportunidad…»
-  (cartera y `leads.editar`, abren su modal con `?panel=…&para=<id>`; en el resumen y la ficha, sin `para`) y «Ver oportunidades» (lead en la cartera de quien mira: lleva a
+- **«⋯» de la fila** (la misma lista, en este orden, en fila, tarjeta, kanban y ficha): «Agendar recordatorio…», «Anotar seguimiento…» y «Nueva oportunidad…»
+  (cartera y `leads.editar`, abren su modal con `?panel=…&para=<id>`; en la ficha, sin `para`) y «Ver oportunidades» (lead en la cartera de quien mira: lleva a
   `/leads/<id>?seccion=oportunidades`) · «Etiquetas…», «Favorito», «Tachado» (con «Deshacer») · «Enviar a la papelera» (`leads.eliminar`). **«Nueva oportunidad…»
   abre primero un aviso** con las oportunidades del lead que quien mira ve (título, etapa y estado; hasta 5, «y N más» con «Ver todas», cada una con «Ver»; incluida la base con
   que nace todo lead), «Crear igual» (sigue al formulario con «Título» —el nombre del lead— y «Monto estimado» opcional; «Crear oportunidad» deja el aviso y la lista donde estaba; un
   rechazo deja el modal abierto con lo escrito) y «Cancelar». Se lee al abrir el modal, con esqueleto; si falla, lo dice con «Reintentar» y «Crear igual» sigue ahí.
   Sin oportunidades, abre directo en el formulario.
 - **Vacíos:** sin leads, con «Nuevo lead» y «Ver todos» según permiso; por filtro, con «Limpiar filtros». Esqueleto; error.
-- **Resumen (`?lead=`), la versión corta de la ficha, sin pestañas:** título con nombre y número; tipo, marcas, «Editar» (cartera y `leads.editar`),
-  «Abrir ficha», «⋯»; «Relacionados» en una línea (con `vehiculos.ver`, se lee al abrir); «Teléfono» (tal como lo entrega la vista), «Origen del lead»,
-  «Último seguimiento» y «Recordatorio» (los de la fila: «Sin seguimientos», «—»). «Anotar seguimiento…» y «Agendar recordatorio…» del «⋯» abren su modal
-  dentro del resumen (`?lead=<id>&panel=…`, sin `para`); al guardar, el resumen relee su lead y la lista su página. Un `?lead=<id>&pestana=seguimientos|recordatorios`
-  viejo lleva a la ficha en su bloque. Uno que deja de verse: «Este lead ya no está disponible: no existe o ya no tienes acceso.».
+- **Abrir:** la lista no tiene resumen. El nombre de la fila y de la tarjeta es un enlace a `/leads/<id>` (el lector lo anuncia con el nombre; Tab llega a él,
+  una parada por ítem, y Enter abre); un clic en cualquier otra parte de la fila o la tarjeta navega igual. Ctrl, Cmd o Shift + clic y el botón del medio
+  abren otra pestaña; con texto elegido no navega. Lo propio de la fila hace lo suyo: el «⋯», «Último seguimiento», «Recordatorio» y el enlace de un campo.
+  La tarjeta del kanban lleva a `/leads/<id>?seccion=oportunidades`; «Mover a…» y el «⋯» no navegan. Al volver de la ficha, la página se relee con sus
+  filtros y su cursor.
+- **Enlace viejo (`/leads?lead=<id>`):** redirige en el servidor, sin sumar al historial y sin leer el lead, a `/leads/<id>` con lo que pedía y la sesión
+  puede abrir: `?pestana=seguimientos|recordatorios` → `?seccion=seguimientos` (con el modal que traía y su id); sin pestaña, `?panel=anotar-seguimiento`,
+  `agendar-recordatorio` u `oportunidad-rapida` (con `leads.editar`) y `editar-lead` (con `leads.editar` o los teléfonos extra); `?extra=nuevo` o
+  `?panel=agregar-telefono` → `?panel=editar-lead&extra=nuevo`. Otro panel, `para`, filtros y cursor se quitan. Si el lead no es de la cartera, la ficha no
+  abre el panel; uno inexistente, en la papelera, en limbo, ajeno o que no es un id llega a «No encontramos este lead o no tienes acceso.» (`.` y `..`, a la lista).
 
 ### Leads: ficha (estados propios)
 
@@ -1410,7 +1416,7 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
   «Los demás datos los edita quien tiene el permiso.» y «Cerrar»); el principal, con la cartera y `leads.editar`; si no, enmascarados y sin botones.
   «Cambiar el principal» (en el panel de la ficha; apagado con «Guarda o descarta los cambios para cambiarlo.» si hay algo escrito) pasa a
   `?panel=cambiar-telefono`: el actual pasa a extra «Anterior»; el nuevo se verifica al tipear y uno existente, ajeno o el mismo deshabilitan el botón
-  con su frase. Extras (`?extra=nuevo` dentro del panel de edición, que también abre un `?lead=<id>&extra=nuevo`; un `?panel=agregar-telefono` viejo de la
+  con su frase. Extras (`?extra=nuevo` dentro del panel de edición; un `/leads?lead=<id>&extra=nuevo` viejo redirige a él; un `?panel=agregar-telefono` viejo de la
   ficha lleva a `?panel=editar-lead&extra=nuevo`, o se quita sin permiso; hasta el máximo de la empresa, 6 de fábrica): número con país y
   etiqueta ≤ 40, «Quitar» con «Deshacer». El número se verifica al tipear: con «Los teléfonos extra cuentan como el principal» un número
   de otro lead bloquea (con «Ver ese lead» si lo ve); sin ella, avisa. Con el máximo alcanzado «Agregar» se apaga con su frase; con más del

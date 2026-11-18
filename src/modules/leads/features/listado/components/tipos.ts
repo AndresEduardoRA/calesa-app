@@ -6,13 +6,14 @@ import type { CampoDeLead } from '../../../entities/campo'
 import type { Etiqueta } from '../../../entities/etiqueta'
 import type { FilaDeLead } from '../../../entities/listado'
 import type { Etiquetas } from '../../etiquetas/hooks/use-etiquetas'
+import { RUTAS } from '@/shared/lib/rutas'
 
 // Lo que toda pieza del listado necesita para nombrar una fila.
 export type DatosDeLaLista = {
-  // Todo el layout: la tabla usa los de la tabla; el drawer, los activos.
+  // Todo el layout: la tabla usa los de la tabla.
   campos: readonly CampoDeLead[]
   origenes: readonly OrigenConEstado[]
-  // Los tipos de lead, también los apagados: nombran la columna «Tipo» y el resumen.
+  // Los tipos de lead, también los apagados: nombran la columna «Tipo».
   tipos: readonly TipoDeLeadEnCatalogo[]
   // El código de país de la empresa, para mostrar un teléfono («+591 70011002»).
   codigoDePais: string | null
@@ -74,4 +75,9 @@ export function nombreDelOrigen(
   id: string | null,
 ): string | null {
   return origenes.find((origen) => origen.id === id)?.nombre ?? null
+}
+
+// A dónde lleva la fila o la tarjeta (su enlace y un clic en cualquier parte): la ficha del lead.
+export function rutaDeLaFicha(leadId: string): string {
+  return `${RUTAS.leads}/${leadId}`
 }

@@ -36,16 +36,16 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `pantallas/configuracion`: `campos` con `EditorDeCamposDeLead`, que con las `lead_campo_*` pide `leads.campos.gestionar`; `origenes`,
   `tipos`, `seguimientos`, `embudo`, `portal` y `telefonos` (`features/plantillas/`, con la barra de cambios sin guardar) con
   `leads.configurar`; sus `loading.tsx`, por `pantallas/configuracion-esqueletos`, sin los Client Components).
-  Los teléfonos se administran en el panel de edición (la ficha y el resumen sólo los leen): «Cambiar el principal» (cartera y `leads.editar`, sólo en la ficha;
+  Los teléfonos se administran en el panel de edición (la ficha sólo los lee): «Cambiar el principal» (cartera y `leads.editar`, sólo en la ficha;
   apagado con cambios escritos) pasa a `?panel=cambiar-telefono` reemplazando la entrada; «Agregar teléfono» es `?extra=nuevo` dentro del panel. Con la cartera y
   `leads.telefonos_extra.editar` sin `leads.editar`, «Editar teléfonos» abre el mismo panel en modo teléfonos («Teléfonos de <nombre>», sólo los teléfonos). Un
   `?panel=agregar-telefono` viejo se reemplaza por `?panel=editar-lead&extra=nuevo` (o se quita sin permiso: `reemplazoDelPanelViejo()`).
-  Todo modal en `?panel=` (`PANEL_*`); los de una fila llevan `para=<id>` y con `?lead=` no responden.
-- El resumen del listado (`?lead=`, `features/rapido/`) es la versión corta de la ficha, sin pestañas: tipo, marcas, «Editar», «Abrir ficha», «⋯»,
-  Relacionados en chips, «Teléfono», «Origen del lead», «Último seguimiento» y «Recordatorio» (los de la fila: ninguna lectura más). Anotar y agendar del «⋯»
-  abren el modal de las filas dentro del drawer (`?lead=<id>&panel=anotar-seguimiento|agendar-recordatorio`, sin `para`; `ModalesDelResumen`). `/leads` redirige
-  un `?lead=<id>&pestana=seguimientos|recordatorios` de antes a la ficha en su bloque (`destinoDeLaPestanaVieja()`).
-- «Nueva oportunidad…» del «⋯» (`?panel=oportunidad-rapida&para=<id>` en la lista y el kanban; sin `para` en la ficha y el resumen, `NuevaOportunidadDelLead`;
+  Todo modal en `?panel=` (`PANEL_*`); los de una fila llevan `para=<id>`.
+- La lista lleva a la ficha, sin resumen: la fila, la tarjeta y la tarjeta del kanban (a `?seccion=oportunidades`) son enlaces (`EnlaceDeLaFila` en el nombre,
+  `href` en `FilaDeLista`/`TarjetaDeLista`, `manejadoresDelClic` en el kanban, cuyo `<Link>` lleva `data-enlace-de-la-fila`). Un `/leads?lead=<id>` viejo
+  redirige en el servidor (`destinoDelEnlaceViejo()`, `entities/enlace-viejo-del-resumen.ts`) a la ficha con su `pestana`, `panel` o `extra`, filtrado por los
+  permisos de la sesión y sin leer el lead.
+- «Nueva oportunidad…» del «⋯» (`?panel=oportunidad-rapida&para=<id>` en la lista y el kanban; sin `para` en la ficha, `NuevaOportunidadDelLead`;
   `features/oportunidades/components/modal-de-oportunidad-rapida.tsx`): sólo `leads.editar` y el lead en la cartera, como anotar y agendar. Primero el aviso de las que el lead
   ya tiene (`leerOportunidadesDelAviso`: `lead_oportunidades` con `LEIDAS_PARA_EL_AVISO` = 6, al abrir, sin cuenta; «Crear igual» sigue y si no lee, igual deja crear) y
   después título (el nombre del lead) y monto; la base pone el embudo por defecto de quien mira (lo crea si no lo tiene) y su etapa inicial. Sin vehículo ni notas: el
@@ -63,8 +63,7 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `src/app/(app)/_inicio/vincular-turno.tsx`; «+» abre el alta con `?elegir=vincular` y vuelve con `?vincular=<id>`.
 - «Escribirle por chat» (`features/chat/`): en el aviso «Lo tiene <persona>» del teléfono principal, enlace a `/chat?con=<duenoId>` sólo si el layout
   dijo `chat.participar` (falso por omisión) y la base mandó `dueno_id`. La base decide si se puede (`chat_directa`).
-- **«Relacionados» en el lead** (`vehiculos` lo dibuja; `leads` no lo importa): `FichaDeLead` recibe el nodo `relacionados` (un bloque de la columna derecha, con `GestionDeVehiculosDelLead` al pie) y el resumen del listado,
-  `huecosDelResumen: HuecosDelRapido` (`features/rapido/huecos.ts`: `Relacionados({ leadId })`, entre la cabecera y los datos del drawer), que llena `src/app/(app)/leads/listado-con-relacionados.tsx` con `diferido()`.
+- **«Relacionados» en el lead** (`vehiculos` lo dibuja; `leads` no lo importa): `FichaDeLead` recibe el nodo `relacionados` (un bloque de la columna derecha, con `GestionDeVehiculosDelLead` al pie).
   `pantallas/relacionados.ts` reexporta el selector de leads (`PanelParaVincularDiferido`, con `titulo?`) para «Vincular a un lead» y «Marcar un interesado» de un vehículo.
 - Sin código: `getLead()`, `buscarLeads()`, `<ChipLead>`, `telefonoDe(leadId)`.
 
@@ -99,7 +98,7 @@ la causa en `hint` (`errorConCausa()`), y `entities/avisos-de-lead.ts` la vuelve
 `seguimiento_*`, `recordatorio_*`, `embudo_*`, `oportunidad_*`, `origen_lead_*`, `tipo_lead_*`, `tipo_seguimiento_*`, `lead_campo_*`,
 `leads_papelera_*`, `leads_importar_lote`, `otorgar_portal`, `ajustes_leads` (`embudo_plantilla_guardar`, `portal_mensaje_guardar`,
 `telefonos_extra_ajustes_guardar`: `leads.configurar`, PT409 con versiones independientes `embudo_actualizado_en`, `portal_actualizado_en` y
-`telefonos_actualizado_en`). Lecturas: `ajustes_leads_leer()` (sin permiso), `lead_telefonos_leer()` (el resumen: principal, extras y máximo),
+`telefonos_actualizado_en`). Lecturas: `ajustes_leads_leer()` (sin permiso), `lead_telefonos_leer()` (sin uso en la app; sus pruebas SQL siguen),
 `verificar_telefono_extra()` (al tipear un extra), `telefonos_extra_choques()` (`leads.configurar`: por cursor sobre `leads_telefonos_pkey`, hasta 10.000
 filas por llamada, enmascarada), `leads_vista`, `leads_cartera_vista`, `lead_ficha()`, `leads_candidatos()` + `leads_vista_por_ids()`, `lead_oportunidades()` (invocadora,
 por cursor, de a 20 y hasta 100, por `oportunidades_lead_abiertas_idx` y `oportunidades_lead_cerradas_idx`; «Ver más» hasta 500).

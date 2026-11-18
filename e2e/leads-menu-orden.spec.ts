@@ -1,13 +1,11 @@
 import type { Locator, Page } from '@playwright/test'
 import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/alta'
-import { aLaVista } from './soporte/inventario'
 import { borrarLeadsDePrueba } from './soporte/leads'
 import { nuevoLead } from './soporte/leads-ficha'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import { irAFicha } from './soporte/leads-ficha'
 import {
-  fila,
   irALeads,
   limpiarListado,
   nombre,
@@ -25,7 +23,7 @@ import {
 import { borrarLotesDePrueba } from './soporte/papelera'
 import { capturar } from './soporte/recorrido'
 
-// El «⋯» del lead, el mismo en la fila del listado, la tarjeta del kanban, el resumen y la ficha (9i): una sola lista en este orden —agendar,
+// El «⋯» del lead, el mismo en la fila del listado, la tarjeta del kanban y la ficha (9i): una sola lista en este orden —agendar,
 // anotar, etiquetas, favorito, tachado y, separada, la papelera—, y lo que una persona no puede hacer no aparece. Cada acción hace lo suyo
 // en cada superficie. Capturas: `E2E_CAPTURAS=e2e-capturas/9i`.
 test.describe.configure({ mode: 'serial' })
@@ -70,22 +68,6 @@ async function cerrar(page: Page, menu: Locator) {
   await expect(menu).toBeHidden()
 }
 
-const resumenDe = (page: Page, corto: string) => page.getByRole('dialog', { name: nombre(corto) })
-
-// El «⋯» dentro del resumen del lead.
-async function menuDelResumen(page: Page, corto: string): Promise<Locator> {
-  const menu = page.getByRole('menu')
-  await expect(async () => {
-    if (!(await menu.isVisible())) {
-      await resumenDe(page, corto)
-        .getByRole('button', { name: `Más acciones de ${nombre(corto)}` })
-        .click()
-    }
-    await expect(menu).toBeVisible({ timeout: 1000 })
-  }).toPass()
-  return menu
-}
-
 // El «⋯» de la tarjeta del kanban: lee el lead al abrirse, así que se espera la lista entera.
 async function menuDeLaTarjeta(page: Page, titulo: string, corto: string): Promise<Locator> {
   const menu = page.getByRole('menu')
@@ -100,7 +82,7 @@ async function menuDeLaTarjeta(page: Page, titulo: string, corto: string): Promi
   return menu
 }
 
-test('con todo, el orden es el mismo en la fila, la tarjeta del kanban, el resumen y la ficha', async ({
+test('con todo, el orden es el mismo en la fila, la tarjeta del kanban y la ficha', async ({
   page,
 }, info) => {
   const corto = `Orden ${info.project.name}`
@@ -118,15 +100,6 @@ test('con todo, el orden es el mismo en la fila, la tarjeta del kanban, el resum
   await expect(separadores(deLaFila)).toHaveCount(2)
   await capturar(page, info, 'menu-del-lead-fila')
   await cerrar(page, deLaFila)
-
-  // El resumen.
-  await fila(page, corto).click()
-  await expect(resumenDe(page, corto)).toBeVisible()
-  const delResumen = await menuDelResumen(page, corto)
-  expect(await opciones(delResumen)).toEqual(COMPLETO)
-  await expect(separadores(delResumen)).toHaveCount(2)
-  await capturar(page, info, 'menu-del-lead-resumen')
-  await cerrar(page, delResumen)
 
   // La ficha.
   await irAFicha(page, lead.id)
@@ -147,7 +120,7 @@ test('con todo, el orden es el mismo en la fila, la tarjeta del kanban, el resum
   await cerrar(page, delKanban)
 })
 
-test('quien ve el lead sin tenerlo en su cartera ni poder enviarlo sólo ve las marcas, en las cuatro superficies', async ({
+test('quien ve el lead sin tenerlo en su cartera ni poder enviarlo sólo ve las marcas, en la fila y en la ficha', async ({
   page,
 }, info) => {
   const corto = `Ajeno orden ${info.project.name}`
@@ -160,18 +133,13 @@ test('quien ve el lead sin tenerlo en su cartera ni poder enviarlo sólo ve las 
   await expect(separadores(deLaFila)).toHaveCount(0)
   await cerrar(page, deLaFila)
 
-  await fila(page, corto).click()
-  const delResumen = await menuDelResumen(page, corto)
-  expect(await opciones(delResumen)).toEqual(SOLO_MARCAS)
-  await cerrar(page, delResumen)
-
   await irAFicha(page, lead.id)
   const deLaFicha = await abrirMenuDeLaFicha(page)
   expect(await opciones(deLaFicha)).toEqual(SOLO_MARCAS)
   await cerrar(page, deLaFicha)
 })
 
-test('anotar y agendar abren su modal donde se pidieron: el resumen, la ficha y el kanban', async ({
+test('anotar y agendar abren su modal donde se pidieron: la ficha y el kanban', async ({
   page,
 }, info) => {
   const corto = `Acciones ${info.project.name}`
@@ -180,30 +148,20 @@ test('anotar y agendar abren su modal donde se pidieron: el resumen, la ficha y 
   await oportunidad(t.personas.berta, lead.id, { titulo })
   await entrar(page, t.personas.berta)
 
-  // El resumen (sin pestañas) abre el modal dentro, sobre su lead.
-  await irALeads(page)
-  await fila(page, corto).click()
-  let menu = await menuDelResumen(page, corto)
+  // La ficha abre el modal (el bloque «Seguimientos y recordatorios» ya está a la vista, sin navegar), sin `para`.
+  await irAFicha(page, lead.id)
+  let menu = await abrirMenuDeLaFicha(page)
   await menu.getByRole('menuitem', { name: 'Anotar seguimiento…' }).click()
-  await expect(page).toHaveURL(new RegExp(`lead=${lead.id}`))
   await expect(page).toHaveURL(/panel=anotar-seguimiento/)
-  await expect(page).not.toHaveURL(/pestana=|para=/)
+  await expect(page).not.toHaveURL(/para=/)
   await expect(page.getByRole('dialog', { name: 'Anotar seguimiento' })).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog', { name: 'Anotar seguimiento' })).toBeHidden()
-  await expect(resumenDe(page, corto)).toBeVisible()
-  menu = await menuDelResumen(page, corto)
+  menu = await abrirMenuDeLaFicha(page)
   await menu.getByRole('menuitem', { name: 'Agendar recordatorio…' }).click()
   await expect(page).toHaveURL(/panel=agendar-recordatorio/)
   await expect(page.getByRole('dialog', { name: 'Agendar recordatorio' })).toBeVisible()
   await page.keyboard.press('Escape')
-
-  // La ficha abre el modal (el bloque «Seguimientos y recordatorios» ya está a la vista, sin navegar).
-  await irAFicha(page, lead.id)
-  menu = await abrirMenuDeLaFicha(page)
-  await menu.getByRole('menuitem', { name: 'Anotar seguimiento…' }).click()
-  await expect(page).toHaveURL(/panel=anotar-seguimiento/)
-  await expect(page.getByRole('dialog', { name: 'Anotar seguimiento' })).toBeVisible()
 
   // La tarjeta del kanban abre el modal de la fila, sobre ese lead.
   await irAlEmbudo(page)
@@ -245,25 +203,21 @@ test('anotar desde el «⋯» de la ficha: «atrás» devuelve el foco al «⋯�
   await expect(menuDeLaFicha(page)).toBeFocused()
 })
 
-test('favorito desde el resumen se ve en el resumen, y enviar a la papelera lo cierra', async ({
+test('favorito desde el «⋯» de la fila queda marcado, y enviar a la papelera lo avisa sin salir de la lista', async ({
   page,
 }, info) => {
-  const corto = `Marcas resumen ${info.project.name}`
+  const corto = `Marcas fila ${info.project.name}`
   await leadDeBerta(corto)
   await entrar(page, t.personas.berta)
   await irALeads(page)
-  await fila(page, corto).click()
-  const resumen = resumenDe(page, corto)
-  let menu = await menuDelResumen(page, corto)
+  let menu = await abrirMenuDelLead(page, nombre(corto))
   await menu.getByRole('menuitemcheckbox', { name: 'Favorito' }).click()
   await cerrar(page, menu)
-  // El resumen vuelve a leer el lead y muestra la marca nueva.
-  await expect(aLaVista(resumen.getByText('Favorito', { exact: true }))).toBeAttached()
+  menu = await abrirMenuDelLead(page, nombre(corto))
+  await expect(menu.getByRole('menuitemcheckbox', { name: 'Favorito' })).toBeChecked()
 
-  menu = await menuDelResumen(page, corto)
   await menu.getByRole('menuitem', { name: 'Enviar a la papelera' }).click()
-  await expect(page).not.toHaveURL(/lead=/)
-  await expect(resumen).toHaveCount(0)
+  await expect(page).toHaveURL(/\/leads$/)
   await expect(
     page
       .locator('[data-sonner-toast]')
@@ -316,16 +270,6 @@ test('la dueña sobre un lead ajeno: marca y envía, pero no anota ni agenda (no
   await expect(separadores(deLaFila)).toHaveCount(1)
   await capturar(page, info, 'menu-del-lead-duena-fila')
   await cerrar(page, deLaFila)
-  await fila(page, corto).click()
-  const delResumen = await menuDelResumen(page, corto)
-  expect(await opciones(delResumen)).toEqual([
-    'Etiquetas…',
-    'Favorito',
-    'Tachado',
-    'Enviar a la papelera',
-  ])
-  await capturar(page, info, 'menu-del-lead-duena-resumen')
-  await cerrar(page, delResumen)
   await irAFicha(page, lead.id)
   const deLaFicha = await abrirMenuDeLaFicha(page)
   // La dueña tiene `actividad.ver`: sólo la ficha le ofrece «Ver actividad», antes de la papelera.
