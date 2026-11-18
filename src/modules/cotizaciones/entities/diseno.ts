@@ -77,6 +77,9 @@ const esquemaCabecera = z.strictObject({
 export const MAXIMO_DE_ENLACES = 5
 export const MAXIMO_DEL_TITULO_DEL_ENLACE = 60
 export const MAXIMO_DE_LA_URL_DEL_ENLACE = 2000
+// La URL de un enlace: `https://` y ASCII imprimible sin espacios. `[!-~]` (de `!` a `~`) y sin la bandera `u`: la misma clase en JS y en
+// Postgres (`\S` difiere con Unicode). La usan `revisarEnlaces()` y el esquema de la hoja: un `href` nunca recibe algo que no sea `https://`.
+export const URL_DE_ENLACE = /^https:\/\/[!-~]+$/
 // Un enlace de la ayuda: que la URL sea `https://` no es la forma sino la regla `ayuda_enlace_no_https` (`validar-diseno-enlaces.ts`).
 export const esquemaEnlace = z.strictObject({
   titulo: texto(MAXIMO_DEL_TITULO_DEL_ENLACE),

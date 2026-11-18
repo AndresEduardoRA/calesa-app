@@ -1,8 +1,12 @@
-import { act, cleanup, fireEvent, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ok } from '@/shared/lib/errores'
 import type { RecalculoInicial } from '../../../entities/apertura'
-import { hojaDePrueba, respuestaDePrueba } from '../../../entities/hoja-de-prueba.soporte'
+import {
+  hojaDePrueba,
+  respuestaDePrueba,
+  type CabeceraCruda,
+} from '../../../entities/hoja-de-prueba.soporte'
 import type { PedidoDeRecalculo } from '../../../entities/pedido-de-recalculo'
 import type { Armar, Guardado, PedidoArmado } from '../hooks/use-guardado'
 import { HojaDeCotizar } from './hoja-de-cotizar'
@@ -39,11 +43,16 @@ function guardadoDePrueba() {
   return { guardado, armados }
 }
 
-const montar = (modos: { clave: string; nombre: string }[]) => {
+const TRES = [...DOS, { clave: 'oficial', nombre: 'Oficial' }]
+
+const montar = (
+  modos: { clave: string; nombre: string }[],
+  cabecera: Partial<CabeceraCruda> = {},
+) => {
   const g = guardadoDePrueba()
   render(
     <HojaDeCotizar
-      hoja={hojaDePrueba({ modos })}
+      hoja={hojaDePrueba({ modos, ...cabecera })}
       inicial={AL_DIA}
       vehiculoId={null}
       vehiculoSoltado={false}
@@ -111,5 +120,28 @@ describe('HojaDeCotizar › los modos de tipo de cambio', () => {
     expect(document.querySelector('[data-cabecera]')).toBeNull()
     guardar()
     expect(ninguno.armados[0]?.modoTc).toBeNull()
+  })
+
+  it('abre con el modo por defecto del diseño y lo guarda sin tocar nada', () => {
+    const { armados } = montar(DOS, { modo_por_defecto: 'unificado' })
+    expect(radio('Unificado').checked).toBe(true)
+    expect(radio('Paralelo').checked).toBe(false)
+    guardar()
+    expect(armados[0]?.modoTc).toBe('unificado')
+  })
+
+  it('el encabezado dibuja sólo los modos visibles', () => {
+    montar(TRES, { modos_visibles: ['paralelo', 'oficial'] })
+    const grupo = screen.getByRole('group', { name: 'Modo de tipo de cambio' })
+    expect(
+      within(grupo)
+        .getAllByRole('radio')
+        .map((r) => r.getAttribute('value')),
+    ).toEqual(['paralelo', 'oficial'])
+  })
+
+  it('con un solo modo visible no hay radios', () => {
+    montar(TRES, { modos_visibles: ['unificado'], modo_por_defecto: 'unificado' })
+    expect(screen.queryByRole('group', { name: 'Modo de tipo de cambio' })).toBeNull()
   })
 })

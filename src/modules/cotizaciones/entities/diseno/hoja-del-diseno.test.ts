@@ -91,9 +91,13 @@ describe('hojaDeLaVistaPrevia: el aspecto', () => {
       'titulo',
     ])
     expect(Object.keys(sinAspecto.cabecera).sort()).toStrictEqual([
+      'ajustes',
+      'modoPorDefecto',
       'modos',
+      'modosVisibles',
       'monedaBs',
       'verTotalBs',
+      'verTotalBsPorDefecto',
     ])
     const base = disenoDe([
       seccion('s', [celda('c', { ancho: 8, alto: 2, letra: 'chica' })], {

@@ -121,4 +121,19 @@ describe('HojaDeCotizar › «Ver total Bs»', () => {
     })
     expect(screen.queryByRole('switch', { name: 'Ver total en moneda local' })).toBeNull()
   })
+
+  it('con «Ver total» por defecto en el diseño, nace encendido; sin moneda, no', () => {
+    const armados = montar({ ...OFRECE, ver_total_bs_por_defecto: true })
+    expect(interruptor().getAttribute('aria-checked')).toBe('true')
+    guardar()
+    expect(armados[0]?.verTotalBs).toBe(true)
+    cleanup()
+    const sinMoneda = montar({
+      ver_total_bs: true,
+      moneda_bs: null,
+      ver_total_bs_por_defecto: true,
+    })
+    guardar()
+    expect(sinMoneda[0]?.verTotalBs).toBe(false)
+  })
 })

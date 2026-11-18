@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
   modoInicial,
+  modosDelEncabezado,
   nombreDelModo,
   ofreceVerTotalBs,
   totalBsDelResumen,
+  verTotalBsAlAbrir,
 } from './cabecera-de-la-hoja'
 import { respuestaDePrueba } from './hoja-de-prueba.soporte'
+import { juegoDisenos, sembrada, SEMILLAS, type Clave } from './semilla-lectura'
 
 const modo = (clave: string) => ({ clave, nombre: clave.toUpperCase() })
 
@@ -17,6 +20,97 @@ describe('modoInicial', () => {
   it('con uno solo, ese; sin modos, nulo', () => {
     expect(modoInicial({ modos: [modo('m1')] })).toBe('m1')
     expect(modoInicial({ modos: [] })).toBeNull()
+  })
+
+  it('con el modo por defecto del diseño, ése; si no es de la hoja, el primero', () => {
+    const modos = [modo('paralelo'), modo('unificado')]
+    expect(modoInicial({ modos, modoPorDefecto: 'unificado' })).toBe('unificado')
+    expect(modoInicial({ modos, modoPorDefecto: 'otro' })).toBe('paralelo')
+    expect(modoInicial({ modos, modoPorDefecto: null })).toBe('paralelo')
+    expect(modoInicial({ modos: [], modoPorDefecto: 'unificado' })).toBeNull()
+  })
+})
+
+describe('modosDelEncabezado', () => {
+  const modos = [modo('a'), modo('b'), modo('c')]
+  const claves = (ms: { clave: string }[]) => ms.map((m) => m.clave)
+
+  it('sin modos visibles, todos', () => {
+    expect(claves(modosDelEncabezado({ modos, modosVisibles: null }, 'a'))).toEqual(['a', 'b', 'c'])
+  })
+
+  it('con modos visibles, ésos en el orden del diseño', () => {
+    expect(claves(modosDelEncabezado({ modos, modosVisibles: ['c', 'a'] }, 'a'))).toEqual([
+      'a',
+      'c',
+    ])
+  })
+
+  it('el elegido se dibuja aunque no sea visible', () => {
+    expect(claves(modosDelEncabezado({ modos, modosVisibles: ['a'] }, 'b'))).toEqual(['a', 'b'])
+    expect(claves(modosDelEncabezado({ modos, modosVisibles: ['a'] }, null))).toEqual(['a'])
+  })
+})
+
+describe('verTotalBsAlAbrir', () => {
+  it.each([
+    [true, 'BOB', true, true],
+    [true, 'BOB', false, false],
+    [true, null, true, false],
+    [false, 'BOB', true, false],
+  ])(
+    'ofrece %s, moneda %s, por defecto %s: %s',
+    (verTotalBs, monedaBs, verTotalBsPorDefecto, esperado) => {
+      expect(verTotalBsAlAbrir({ verTotalBs, monedaBs, verTotalBsPorDefecto })).toBe(esperado)
+    },
+  )
+})
+
+// Un diseño sin las claves por defecto se ve igual que antes: abre con el primer modo, «Ver total» apagado y todos los modos en el encabezado.
+describe('un diseño viejo se ve igual', () => {
+  type CabeceraCruda = {
+    modos?: { clave: string }[]
+    ver_total_bs?: boolean
+    modo_por_defecto?: string
+    ver_total_bs_por_defecto?: boolean
+    modos_visibles?: string[]
+  }
+  const viejos: [string, CabeceraCruda][] = [
+    ...(Object.keys(SEMILLAS) as Clave[]).map((clave): [string, CabeceraCruda] => [
+      clave,
+      sembrada(clave).diseno.cabecera,
+    ]),
+    ...juegoDisenos.casos
+      .filter((c) => c.valida)
+      .map((c): [string, CabeceraCruda] => [
+        c.nombre,
+        (c.diseno as { cabecera: CabeceraCruda }).cabecera,
+      ])
+      .filter(
+        ([, cab]) =>
+          cab.modo_por_defecto === undefined &&
+          cab.ver_total_bs_por_defecto === undefined &&
+          cab.modos_visibles === undefined,
+      ),
+  ]
+
+  it.each(viejos)('%s', (_, cab) => {
+    const modos = cab.modos ?? []
+    const cabecera = {
+      modos,
+      modoPorDefecto: null,
+      modosVisibles: null,
+      verTotalBs: cab.ver_total_bs ?? false,
+      monedaBs: 'BOB',
+      verTotalBsPorDefecto: false,
+    }
+    expect(modoInicial(cabecera)).toBe(modos[0]?.clave ?? null)
+    expect(modosDelEncabezado(cabecera, modoInicial(cabecera))).toEqual(modos)
+    expect(verTotalBsAlAbrir(cabecera)).toBe(false)
+  })
+
+  it('hay diseños viejos que mirar', () => {
+    expect(viejos.length).toBeGreaterThan(10)
   })
 })
 

@@ -559,7 +559,13 @@ de 24 h y, si esa versión ya no es la publicada, dejó de serlo hace menos de 2
 lo que la hoja necesita para dibujarse. No lee `cotizaciones` ni el snapshot. **Orden:** el permiso **antes de mirar nada** (`cotizaciones.crear`
 y `cotizaciones.ver` del origen); sin versión publicada, `{estado: 'sin_publicar', origen, puede_configurar}`; con ella, `{estado: 'lista',
 formula: {id, version}, abierta_en, abierta, cabecera, secciones, tarjeta_total, tonos}`. La `cabecera` es `{modos,
-ver_total_bs, moneda_bs}`.
+ver_total_bs, moneda_bs, ajustes}` más su aspecto y, sólo si el diseño las trae, `modo_por_defecto`, `ver_total_bs_por_defecto` y
+`modos_visibles` (las copia tal cual: la hoja calcula lo efectivo).
+
+- **`cabecera.ajustes` (el ⚙ de la cabecera):** `cotizaciones.configurar` del origen **y** al menos un modo. La base decide quién lo ve,
+  como el `ajustes` de cada celda; la hoja no mira permisos. Una cotización nueva abre con el modo por defecto (`modoInicial()`: el modo por
+  defecto o el primero) y con «Ver total» por defecto si la hoja lo ofrece (`verTotalBsAlAbrir()`); una guardada, con lo suyo. El
+  encabezado dibuja los modos visibles más el elegido (`modosDelEncabezado()`).
 
 - **`cabecera.moneda_bs`:** la `moneda_a` del tipo de cambio **activo** que nombra el `total_en` de esa versión (una fila por
   `tipos_cambio_clave_key`); JSON `null`, con la clave presente, si la versión no tiene `total_en` o ese tipo de cambio no existe o está
@@ -578,8 +584,9 @@ ver_total_bs, moneda_bs}`.
   (congelada sin viva activa) y `filas` también (tabla vacía: el motor da `tabla_sin_filas` y la pantalla lo dice).
 - **Una celda** lleva `nodo`, `etiqueta`, `tipo_nodo`, `formato`, `ancho`, `tono`, `editable`, `motivo`, `ajustes`, `ayuda`,
   `dato_del_vehiculo`, `solo_en` y `condicion`/`requerido_si` **sólo si su bandera se ve**. **`editable`:** `editar` de `_nodos_visibles()`
-  **y** que el nodo acepte un valor. **`motivo`** (lo que no se edita): `se_calcula`, `del_vehiculo`, `nivel` (con el **nombre** del nivel
-  que falta) o `no_se_edita`. **`ajustes` (⚙):** una constante con `cotizaciones.configurar` del origen, o un tipo de cambio con
+  **y** que el nodo acepte un valor. **`ayuda`:** la tabla (si existe y se lee) o `{texto, enlaces?}`; los enlaces viajan con su celda y la
+  hoja vuelve a exigir `URL_DE_ENLACE` antes de dibujar un `href`. **`motivo`** (lo que no se edita): `se_calcula`, `del_vehiculo`, `nivel`
+  (con el **nombre** del nivel que falta) o `no_se_edita`. **`ajustes` (⚙):** una constante con `cotizaciones.configurar` del origen, o un tipo de cambio con
   `empresa.tipos_cambio.gestionar`.
 - **El modo por clave:** la hoja recibe los modos sin sus `buckets`; `cotizacion_evaluar(…, p_modo_tc)` acepta la clave de un modo de esa
   versión (`_cotizacion_modo()`; ajena: `modo_invalido`). `p_modo` (objeto) sigue para el editor.
