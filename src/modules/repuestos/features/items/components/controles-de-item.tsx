@@ -17,6 +17,7 @@ import { CeldaDeSeleccion, type OpcionDeCelda } from './celda-de-seleccion'
 import { CeldaDeTexto } from './celda-de-texto'
 import type { ContextoDeLaHoja } from './contexto-de-la-hoja'
 import { FaseDelItemInsignia } from './fase-del-item'
+import { QueEsElItem } from './que-es-el-item'
 
 // Lo que se ofrece en una celda de catálogo: los activos y, aunque se haya desactivado, el valor que el ítem ya tiene (para no perder lo guardado).
 function opcionesDeCatalogo(
@@ -29,6 +30,8 @@ function opcionesDeCatalogo(
 }
 
 export type ControlesDeItem = {
+  // La primera columna: qué es el ítem (tipo de pieza · condición) y su descripción.
+  item: ReactNode
   descripcion: ReactNode
   tipoDePieza: ReactNode
   condicion: ReactNode
@@ -39,7 +42,8 @@ export type ControlesDeItem = {
   moneda: ReactNode
   tracking: ReactNode
   notas: ReactNode
-  fase: ReactNode
+  // El botón del siguiente (lo pone el hueco); sin hueco o sin flujo legible, la fase del ítem.
+  siguiente: ReactNode
   imagenes: ReactNode
   // Lo del hueco de la hoja (8.10-2); nulo sin hueco.
   hueco: ReactNode
@@ -209,32 +213,28 @@ function eliminarDeItem(fila: FilaDeItem, c: ContextoDeLaHoja) {
   ) : null
 }
 
-// La fase del ítem y, si el hueco lo pone, el botón de su siguiente debajo.
-function pasoDeItem(fila: FilaDeItem, c: ContextoDeLaHoja) {
+// Lo que sigue para el ítem: el botón del siguiente que pone el hueco (el encabezado de su grupo ya dice la fase: la fila no la repite). Sin hueco, o sin flujo legible
+// (el hueco no pone nada y todo cae en «Sin fase»), la fase del ítem: así no se pierde.
+function siguienteDeItem(fila: FilaDeItem, c: ContextoDeLaHoja) {
   const siguiente = c.pasoDeFila ? c.pasoDeFila(fila) : null
-  if (siguiente === null) return <FaseDelItemInsignia fase={fila.fase} />
-  return (
-    <div className="grid min-w-0 justify-items-start gap-1.5 max-md:justify-items-stretch">
-      <div>
-        <FaseDelItemInsignia fase={fila.fase} />
-      </div>
-      {siguiente}
-    </div>
-  )
+  return siguiente ?? <FaseDelItemInsignia fase={fila.fase} />
 }
 
 // Los controles de una fila de la hoja (8.09-2, C8), los mismos en la tabla y en la tarjeta: cada uno con su nombre accesible («Descripción del ítem Faro»). Con `repuestos.editar` y el proyecto abierto
-// son editables; si no, texto plano, el precio por `<Monto>`. La fase es de lectura: se mueve con el botón del siguiente (el hueco) o desde el panel del ítem.
+// son editables; si no, texto plano, el precio por `<Monto>`. La fase es de lectura (la dice el encabezado del grupo): se mueve con el botón del siguiente (el hueco) o desde el panel del ítem.
 export function controlesDeItem(fila: FilaDeItem, c: ContextoDeLaHoja): ControlesDeItem {
+  const descripcion = textoDeItem(fila, c, 'descripcion')
+  const catalogos = catalogosDeItem(fila, c)
   return {
-    descripcion: textoDeItem(fila, c, 'descripcion'),
-    ...catalogosDeItem(fila, c),
+    item: <QueEsElItem fila={fila} contexto={c} celdas={{ ...catalogos, descripcion }} />,
+    descripcion,
+    ...catalogos,
     cantidad: cantidadDeItem(fila, c),
     precio: precioDeItem(fila, c),
     moneda: monedaDeItem(fila, c),
     tracking: textoDeItem(fila, c, 'tracking'),
     notas: textoDeItem(fila, c, 'notas'),
-    fase: pasoDeItem(fila, c),
+    siguiente: siguienteDeItem(fila, c),
     imagenes: imagenesDeItem(fila, c),
     hueco: c.accionDeFila ? c.accionDeFila(fila) : null,
     eliminar: eliminarDeItem(fila, c),
