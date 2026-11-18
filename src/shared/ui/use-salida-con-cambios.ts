@@ -15,6 +15,8 @@ type Salida = () => void
 // - la pantalla queda anotada (`anotarCambiosSinGuardar()`): la acción de un aviso o el selector de sección (`salirSinPerder()`)
 //   también preguntan.
 // El «atrás» del navegador no se frena: el App Router no ofrece cómo, y parchear el historial rompe la vuelta del foco.
+// Un enlace a la misma ruta con otra búsqueda (`?seccion=` de una pestaña) también pregunta: cambia lo que se dibuja y el formulario se va.
+// Al descartar, el enlace frenado se sigue con `router.push(destino)`: un `replace` o `scroll={false}` del `<Link>` no se conservan.
 // `propia`: lo que está dentro (la barra) no cuenta como salir.
 export function useSalidaConCambios(
   hayCambios: boolean,
@@ -37,6 +39,8 @@ export function useSalidaConCambios(
     }
     const alDescargar = (evento: BeforeUnloadEvent) => {
       evento.preventDefault()
+      // Safari y algunos WebView sólo preguntan si además lleva un valor.
+      evento.returnValue = ''
     }
     const alTocar = (evento: MouseEvent) => {
       if (!(evento.target instanceof Element)) {
