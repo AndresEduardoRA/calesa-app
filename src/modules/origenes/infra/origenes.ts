@@ -58,4 +58,18 @@ const eliminar: RepositorioOrigenes['eliminar'] = async ({ id, actualizadoEnEspe
   return ok(null)
 }
 
-export const origenesSupabase: RepositorioOrigenes = { crear, guardar, eliminar }
+// Los datos clave van enteros: la base valida la lista, la versión del origen y que cada campo siga activo (`PT409`).
+const guardarDatosClave: RepositorioOrigenes['guardarDatosClave'] = async (pedido) => {
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('origen_datos_clave_guardar', {
+    p_origen: pedido.origenId,
+    p_datos: [...pedido.datos],
+    p_actualizado_en_esperado: pedido.actualizadoEnEsperado,
+  })
+  if (error) {
+    return { ok: false, error: errorDePostgrest(error) }
+  }
+  return ok({ actualizadoEn: data })
+}
+
+export const origenesSupabase: RepositorioOrigenes = { crear, guardar, eliminar, guardarDatosClave }

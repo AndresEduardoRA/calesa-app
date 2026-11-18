@@ -1,6 +1,7 @@
 // Lo que los e2e de Configuración › Orígenes miran y limpian en la base del Supabase LOCAL. Los
 // orígenes se crean por la pantalla; acá sólo se comprueba lo que quedó y se borra al terminar.
 import { admin } from './base'
+import { expect, type Page } from './prueba'
 
 // Todo origen de prueba que crea un e2e a mano (sin pasar por la pantalla) lleva esta clave: es lo
 // único, junto con las claves que los tests piden, que la limpieza borra.
@@ -145,5 +146,28 @@ export async function flujoDelOrigen(
     nombre: flujo.nombre,
     fases: count ?? 0,
     reglas: (reglas ?? []).map((fila) => fila.regla).sort(),
+  }
+}
+
+// --- La pantalla --------------------------------------------------------------------------------------
+
+// Cada parte de un origen es su sub-ruta: se salta entre ellas por el menú de Configuración.
+export async function irAParte(page: Page, parte: string) {
+  const menu = page.getByRole('navigation', { name: 'Secciones de Configuración' })
+  await menu.getByRole('link', { name: parte, exact: true }).click()
+  await expect(menu.getByRole('link', { name: parte, exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
+}
+
+// Abre un origen desde la lista (su tarjeta lleva a «Datos») y, si se pide, otra de sus partes.
+export async function irADetalle(page: Page, nombre: string, seccion?: string) {
+  await page.goto('/configuracion/origenes')
+  await page.getByRole('link', { name: new RegExp(nombre) }).click()
+  await expect(page).toHaveURL(/\/datos$/)
+  await expect(page.getByRole('heading', { name: nombre, level: 1 })).toBeVisible()
+  if (seccion) {
+    await irAParte(page, seccion)
   }
 }

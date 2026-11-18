@@ -105,6 +105,19 @@ describe('secciones de configuración', () => {
   })
 })
 
+describe('sub-secciones plantilla de configuración', () => {
+  it('Orígenes trae sus tres partes como sub-secciones plantilla', () => {
+    const origenes = SECCIONES.find(
+      (seccion: SeccionDeConfiguracion) => seccion.clave === 'origenes',
+    )
+    expect(origenes?.subsecciones.map((sub) => sub.ruta)).toEqual([
+      '/configuracion/origenes/[id]/datos',
+      '/configuracion/origenes/[id]/campos',
+      '/configuracion/origenes/[id]/categorias',
+    ])
+  })
+})
+
 describe('grupos visibles de configuración', () => {
   it('agrupa lo visible: sólo leads.configurar es «Ventas › Leads»; sin permisos, nada', () => {
     const leads: Permisos = [{ clave: 'leads.configurar', origenId: null, alcance: 'todos' }]

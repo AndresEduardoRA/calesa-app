@@ -22,7 +22,7 @@ export function PieDeFiltros({ origen, filtrables, puedeConfigurar }: Props) {
       </p>
       {puedeConfigurar ? (
         <Link
-          href={`${RUTAS.origenes}/${origen.id}?seccion=campos` as Route}
+          href={`${RUTAS.origenes}/${origen.id}/campos` as Route}
           className="w-fit text-(--color-primario-ink) underline-offset-2 hover:underline"
         >
           Configurar los campos

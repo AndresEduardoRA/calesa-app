@@ -1,6 +1,7 @@
 // Un origen de vehículos. El nombre, el sustantivo y el género salen de la fila: ningún texto fijo
 // de la interfaz nombra un origen (docs/UX.md).
 import { z } from 'zod'
+import { datosClaveDesde, type DatoClave } from './datos-clave'
 
 export const TIPOS_DE_ORIGEN = ['subasta', 'manual'] as const
 export type TipoDeOrigen = (typeof TIPOS_DE_ORIGEN)[number]
@@ -51,6 +52,8 @@ export type Origen = OrigenResumen & {
   // Estable: lo nombran las fórmulas y las fichas. Sale del nombre al crear y no cambia.
   clave: string
   apibaraPlataformas: string[]
+  // Los hasta 4 datos que la ficha de sus vehículos muestra primero, en orden (vacía = los de fábrica de su tipo).
+  datosClave: DatoClave[]
   // La versión de la fila: toda edición la manda.
   actualizadoEn: string
 }
@@ -78,6 +81,7 @@ const esquemaOrigen = z.object({
   color: z.string(),
   activo: z.boolean(),
   apibara_plataformas: z.array(z.string()),
+  datos_clave: z.unknown(),
   actualizado_en: z.string(),
 })
 
@@ -135,6 +139,7 @@ export function origenesConUsoDesde(filas: unknown, usos: unknown): OrigenConUso
       color: fila.color,
       activo: fila.activo,
       apibaraPlataformas: fila.apibara_plataformas,
+      datosClave: datosClaveDesde(fila.datos_clave),
       actualizadoEn: fila.actualizado_en,
       uso: porOrigen.get(fila.id) ?? USO_VACIO,
     }))
@@ -164,7 +169,7 @@ export function motivoParaNoEliminar(origen: OrigenConUso): string | null {
 }
 
 // Lo que el formulario de datos muestra: cuando cambia, el formulario arranca de lo guardado. La
-// versión no entra (otra parte de la fila, como activar o desactivar, la mueve sin tocar esto).
+// versión no entra (otra parte de la fila, como activar o desactivar o marcar un dato clave, la mueve sin tocar esto).
 export function huellaDelOrigen(origen: Origen): string {
   return JSON.stringify([
     origen.nombre,

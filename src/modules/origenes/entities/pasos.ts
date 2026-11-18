@@ -54,3 +54,23 @@ export function pasosDe(
   }
   return pasos
 }
+
+const FALTA_EN_LA_TARJETA: Record<Exclude<ClaveDePaso, 'permisos'>, string> = {
+  flujo: 'Sin fases',
+  formula: 'Falta publicar la fórmula',
+  apibara: 'Falta activar apibara',
+}
+
+// Lo que la tarjeta de un origen dice que le falta, en corto y en el orden de los pasos. «Revisa los permisos» no va (es un aviso blando,
+// como en el inicio de Configuración) y un origen inactivo no muestra faltas: no recibe vehículos ni cotizaciones nuevos.
+export function faltasDeLaTarjeta(
+  origen: OrigenConUso,
+  contexto: { apibaraActiva: boolean },
+): string[] {
+  if (!origen.activo) {
+    return []
+  }
+  return pasosDe(origen, contexto).flatMap((paso) =>
+    paso.pendiente && paso.clave !== 'permisos' ? [FALTA_EN_LA_TARJETA[paso.clave]] : [],
+  )
+}

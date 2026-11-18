@@ -53,6 +53,7 @@ const FILA = {
   color: '#027a48',
   activo: true,
   apibara_plataformas: [],
+  datos_clave: [],
   actualizado_en: '2026-10-12T20:00:00+00:00',
 }
 
@@ -82,6 +83,21 @@ describe('origenesConUsoDesde', () => {
       formulaPublicada: true,
       concesiones: 4,
     })
+  })
+
+  it('lee los datos clave en orden y descarta lo que no es un dato clave conocido', () => {
+    const [origen] = origenesConUsoDesde(
+      [
+        {
+          ...FILA,
+          datos_clave: [{ campo: 'color' }, { comun: 'titulo' }, { comun: 'anio' }, 'x'],
+        },
+      ],
+      [],
+    )
+    expect(origen?.datosClave).toEqual([{ campo: 'color' }, { comun: 'anio' }])
+    const [roto] = origenesConUsoDesde([{ ...FILA, datos_clave: { comun: 'anio' } }], [])
+    expect(roto?.datosClave).toEqual([])
   })
 
   it('sin fila de uso, todo en cero y la fórmula sin publicar', () => {
@@ -128,6 +144,12 @@ describe('huellaDelOrigen', () => {
       [{ ...FILA, actualizado_en: '2026-10-13T00:00:00+00:00', activo: false }],
       [],
     )
+    expect(base && otro && huellaDelOrigen(base) === huellaDelOrigen(otro)).toBe(true)
+  })
+
+  it('no depende de los datos clave: marcar una estrella no reinicia el formulario de datos', () => {
+    const [base] = origenesConUsoDesde([FILA], [])
+    const [otro] = origenesConUsoDesde([{ ...FILA, datos_clave: [{ comun: 'vin' }] }], [])
     expect(base && otro && huellaDelOrigen(base) === huellaDelOrigen(otro)).toBe(true)
   })
 
