@@ -644,7 +644,8 @@ fallar.
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
-- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 171.900 B y ≤ 5.000 nodos con
+- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 180.400 B (172.257 medidos con la
+  descripción de 4 miembros por grupo y la variante de la vista previa en cuadrícula: regla del 5 % sobre 171.900) y ≤ 5.000 nodos con
   «Filas» abierto. La tarjeta, el editor, el modal de publicar y el diálogo de descartar van por `diferido()`; «Buscar fila» filtra en el
   navegador. `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
 - Editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrirlo lee una fila de `formulas` por `formulas_pkey`
@@ -721,7 +722,9 @@ fallar.
   cambiarlo la hoja no relee. Bloque, hooks y action de `empresa` van con el panel por `diferido()`.
 - Vista previa de la tarjeta (`e2e/cotizar-vista-previa.spec.ts`): ninguna lectura al abrir la hoja; suma un elemento al pie del resumen;
   el modal va en un portal, fuera de `[data-hoja]`, con `diferido()`. Al abrirlo, una `cotizacion_tarjeta()` por versión de la fórmula,
-  recordada 5 min (`memoriaDeLectura`): ≤ 3.098 B como la dueña y ≤ 111 nodos la tarjeta. Lo acota la plantilla (≤ 20 grupos). «Copiar
+  recordada 5 min (`memoriaDeLectura`): ≤ 18.700 B como la dueña y ≤ 130 nodos la tarjeta (17.808 B y 123 nodos medidos con la plantilla de
+  `subasta_usa` convertida a la cuadrícula, más un 5 %: la respuesta lleva la cuadrícula entera). Lo acota la forma (≤ 16 × 120 casillas, ≤ 1.000
+  celdas, 24 KiB); la geometría es O(celdas + filas + columnas) y sólo viaja en el chunk del modal. «Copiar
   texto» no lee nada y «Descargar PDF» es un pedido por clic; los dos van fuera de `[data-tarjeta-de-cotizacion]`, en el chunk del modal.
 - La página de una guardada lee en serie `cotizacion_hoja_guardada`, `cotizacion_evaluar(p_cotizacion)` y, con la hoja, el cliente y el
   vehículo por su nombre. Guardar: una `cotizacion_guardar`. Tras `<Suspense>` y con `cache()`, tres lecturas por PK en paralelo: la fila
@@ -732,7 +735,8 @@ fallar.
   con `diferido()`.
 - PDF de la tarjeta (`e2e/cotizar-pdf.spec.ts`): una cotización por PK — `cotizacion_hoja_guardada`, `cotizacion_evaluar(p_cotizacion)`,
   `cotizacion_tarjeta`, asesor y vehículo por PK y `leerAjustes()` (una RPC más que `getAjustes()`); el logo ≤ 1 MB con 2 s de espera. Topes:
-  150 KB y 1,5 s. La tarjeta de lo guardado lo ofrece con un `<a download>` sin JS.
+  150 KB y 1,5 s (40.129 B y 206 ms medidos con la cuadrícula: una página A4). La tarjeta de lo guardado lo ofrece con un `<a download>` sin JS.
+  La imagen de la tarjeta (`imagenDeUnaGuardada()`) sale al ancho de la tarjeta (≤ 1.600 px) y carga `next/og` sólo con `import()` en el servidor.
 - Tarea de oro 2 (`e2e/cotizar-tarea-de-oro*.spec.ts`; deterministas: una parada nueva en el camino las rompe): robot < 30 s y KLM ≤ 90 s.
   Teclas de control: el tramo de la hoja hasta el PDF ≤ 29; con el panel del vehículo ≤ 29; con un enlace de subasta, exactamente 33; con
   el cliente, ≤ 29 si existe y ≤ 30 si es nuevo. Cada lado editable de la hoja y de «Avanzado» se alcanza con Tab, en orden.

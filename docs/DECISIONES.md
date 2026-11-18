@@ -346,18 +346,47 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Se deduce restando» es sólo un aviso** sobre sumas directas; la autoridad es la visibilidad que compila la base al publicar.
 - **La plantilla lee la fórmula con lo que mira `validarPlantilla()`** (`looseObject`, `lectura-sobre.ts`), no con `esquemaDefinicion`: no se rompe con cada cambio de la fórmula. Guardar valida la forma; lo que cruza con la fórmula lo rechaza publicar.
 - **Con qué nace el editor de plantilla:** el borrador; si no hay, copia de la publicada; si no, la omisión. Una versión ilegible no se edita a medias. El PT409 no dice quién (la tabla no lo guarda).
-- **Tarjeta declarativa con el hex del catálogo.** Colores del catálogo por clave y nodos por id, nunca un hex en la plantilla: un texto libre podría nombrar cualquier nodo. La hoja usa lo derivado
-  con AA y la tarjeta el hex tal cual, igual en los dos temas (es la imagen que recibe el cliente). Sin subtotales por grupo: serían dinero calculado fuera de la base.
+- **La tarjeta de la cotización es una cuadrícula declarativa.** La forma 2 de la plantilla (columnas, filas y celdas libres, como en V1) se valida
+  espejo en TS y SQL con listas cerradas (variables, `mostrar`, `ocultar_si`, 8 tamaños de letra) y nodos por id; los colores son una clave del
+  catálogo o `auto`, nunca un hex suelto (un texto libre podría nombrar cualquier nodo; un hex, saltarse el catálogo). Un texto no mezcla texto y
+  variables: nada de `{{…}}`. Tope de **24 KiB** del texto del `jsonb`: la plantilla más grande de V1 (USA) mide 12.154 bytes (11.036 en JSON
+  compacto; China 9.573, Compra dealer 9.745, Oficina 7.110), el doble a KiB enteros; la réplica de V1 USA en forma 2
+  (`entities/tarjeta/plantilla-como-v1-usa.json`: 6 columnas, 16 filas, 56 celdas) mide 14.755. La forma 1 conserva su tope de 32 KB. Las claves de
+  `estilo` y las combinaciones son opcionales con su valor por omisión (ahorran bytes) y `bordes` es un objeto por lado (un lado gana sobre `todos`).
+  Los mensajes de la forma 2 nombran la celda o la fila, nunca el nodo: no exponen un id restringido. Sin subtotales por grupo: serían dinero calculado
+  fuera de la base.
+- **La forma 1 se convierte al leerla y no se migra.** `cotizacion_tarjeta` convierte la publicada (`_plantilla_convertir()`, espejo
+  `convertirPlantilla()`) con la misma apariencia y la vuelve a validar como cuadrícula; el editor de hoy sigue escribiendo la forma 1. Los ids de la
+  conversión son deterministas (el de la fila sale del nodo, `n_<nodo>`; el de la celda, de su fila y su columna; uno de más de 41 caracteres se acorta
+  con un FNV-1a de 32 bits espejado) porque los retoques por cotización y el editor de la cuadrícula se apoyan en ellos. El título de un grupo, su
+  tipo de cambio y su plazo son celdas que abarcan las filas de sus miembros (no una fila de encabezado: `ocultar_si` mira un solo nodo y el encabezado
+  no se ocultaría con sus miembros; la combinada se acorta sola). El color: el de la plantilla si sigue en el catálogo, si no el del grupo. Los altos se
+  estiman con aritmética entera (igual en TS y SQL). Una forma 1 cuya conversión rompe una regla de la cuadrícula es `sin_plantilla`; lo convertido no
+  se mide contra los 24 KiB (lo acotan la forma 1 y la fórmula).
+- **Un solo modelo de dibujo para HTML, PDF e imagen.** `geometriaDeLaTarjeta()` da, por celda visible, su rectángulo en px, su contenido resuelto y
+  su estilo, y los tres la pintan con posiciones absolutas: es lo único que entienden igual el HTML, react-pdf y satori (`next/og` no tiene `grid`; una
+  `<table>` como la de V1 no la dibujan react-pdf ni satori). El HTML escala con `min(1, ancho del contenedor / ancho)` como una imagen (la página nunca
+  se desplaza de costado, también al 200 %: el texto entero sigue en «Copiar texto») y el PDF con `min(1, ancho útil / ancho, alto útil / alto)` en una
+  sola página A4 (1 px = 0,75 pt); ninguno agranda. El total de la tarjeta es el de los totales y, con «Ver total Bs», lleva la moneda local en un segundo
+  renglón (no hay variable ni `ocultar_si` que exprese «Ver total Bs»). «Vencida» sale de la tarjeta: es un aviso de trabajo y va en los del modal.
+  «Copiar texto» sale de la misma geometría.
+- **`porcentaje` de un par.** Se admite de cualquier `porcentaje_de` (sobrescribible o no) y de su `pct`, y muestra el valor del `pct`: el «Comisión
+  giro 4 %» de V1 es un `porcentaje_de` que no se sobrescribe. Los dos nodos tienen que ser del nivel «todos».
 - **Colores de hoja derivados del hex.** Un color es un nombre y un #hex; sus versiones de la hoja (fondo, borde y tinta, en claro y en oscuro) las deriva la base al crear o al cambiar el hex
   (`_color_derivar`) y las guarda en `claro_*` y `oscuro_*`, así la hoja no calcula nada. Cada fondo es la primera mezcla del hex, de a 1/50, hacia blanco con luminancia ≥ 0,8 (claro) o hacia la
   superficie oscura de `design/tokens.css` con luminancia ≤ 0,05 (oscuro); cada tinta, la primera mezcla hacia negro (claro) o blanco (oscuro) con AA sobre su fondo; el borde es el hex. En el paso
   50 la mezcla es el destino: el AA está garantizado. El espejo TS (`entities/colores.ts`) da el mismo `#rrggbb` (el redondeo es el de `Math.round`, nunca `round(float8)`) y lo prueba un juego de
   casos en Vitest y en `db:probar`. Guardar el mismo hex no vuelve a derivar (un color migrado conserva su hoja). Tope 48 por empresa.
-- **El texto de la tarjeta.** Sobre el hex va la tinta clara del color si cumple AA ahí; si no, la que más contraste dé entre la tinta oscura de la interfaz (#1b2130, «negro») y el blanco. Si
-  ninguno de los dos llega a 4,5:1, el editor avisa sin bloquear: el color lo elige la empresa. Con negro puro el aviso no saldría nunca. La regla la calcula la base en `cotizacion_tarjeta`
-  (la hoja no carga su espejo) y la vista previa de la plantilla, con el espejo TS.
+- **El texto de la tarjeta.** `texto: auto` es la tinta oscura de la interfaz (#1b2130, «negro») o el blanco, el de más contraste sobre el hex del
+  fondo (o sobre el blanco si el fondo es `auto`): `textoAutomatico()`, en el núcleo. Los bordes de las celdas son de ese «negro». `fondo: auto` es
+  blanco: la banda gris del vehículo deja de existir (no hay hex fuera del catálogo). `auto` nunca es una clave del catálogo (`_tono_clave()` la salta).
 - **La tarjeta lee la moneda de SU versión y la plantilla publicada de hoy.** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso y se quitan juntas (`docs/PENDIENTES.md`): no volver a darles uso.
-- **PDF en servidor.** `@react-pdf/renderer` desde la plantilla versionada; la tarjeta en pantalla usa el mismo modelo de vista. Sin imágenes de cotización generadas en el cliente.
+- **PDF e imagen en servidor.** `@react-pdf/renderer` y `ImageResponse` de `next/og`, cargados con `import()` desde la composición del área: nunca llegan
+  al navegador. Sin imágenes de cotización generadas en el cliente. Las fuentes son Geist del release `vercel/geist-font` v1.9.2 (zip sha256
+  `15f066d58dcb99fb10014a49913009fdaf41e464cfb8851a44b44e593c95d3d8`, OFL 1.1): `Geist-Regular.ttf` `2c460a7a71063e53491f343d44b382267bc0cf496e31db64865f962af3152e68`,
+  `Geist-SemiBold.ttf` `01923aa148e5202ae70a2e11b2ab4dc41b80bcc374aedccc913d47bb2f591c06`, `Geist-Italic.ttf`
+  `14b65c2dce6eb81a68bee916fed0e63f6d8526400b364cabf166f58e49c71b14` y `Geist-SemiBoldItalic.ttf`
+  `5434c3634179082d63c80a4748df2d4ef2632d69c445cf47f2ef2ac101a582b3`.
 - **El aspecto de la hoja es declarativo, cerrado y plano.** Claves opcionales junto a las de siempre (`ancho`, `alto`, `relleno`, `separacion`, `densidad`, `letra`, `enfasis`, `tono`), de escalas
   cerradas y validadas igual en TS y en SQL: nada de px, CSS ni hex. No se llaman `estilo`, `clase` ni `color` (el juego las rechaza). Sin la clave, lo de siempre, así un diseño viejo se ve igual;
   el editor quita la clave en vez de escribir el valor por defecto. La cabecera no lleva ancho ni alto (va sola en su fila) y la tarjeta del resumen no lleva aspecto (es fija).
@@ -369,7 +398,7 @@ las trampas, en `docs/LECCIONES.md`.
   Es el catálogo de colores (sin lista nueva de tokens): ya es de la empresa y con contraste garantizado.
 - **Las celdas se ordenan dentro de su sección.** Pasar un ítem a otra sección cambiaría quién lo ve (hereda el nivel de la sección); para eso sigue el JSON del diseño. Se ordena con dnd-kit (sólo
   en la pestaña «Diseño», con `diferido()`) y su sensor de teclado sobre el asa, con anuncios en español.
-- **El PDF, la tarjeta y el resumen no siguen el aspecto.** Siguen con su plantilla: el aspecto es de la hoja en pantalla (la de cotizar y la de una guardada, que son el mismo componente).
+- **El PDF, la tarjeta y el resumen no siguen el aspecto.** Siguen con su plantilla (la cuadrícula): el aspecto es de la hoja en pantalla (la de cotizar y la de una guardada, que son el mismo componente).
 
 ### Tablas de referencia
 

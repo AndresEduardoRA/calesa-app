@@ -718,26 +718,72 @@ cotización con comprobante no va a la papelera ni la baja marcar otra final. Er
 
 ## Plantilla de tarjeta (PDF)
 
-Filas por grupo con el color del grupo (o el que la plantilla elija del catálogo), título de la opción de la variante y la garantía
-condicionada a su interruptor; sólo nodos del nivel «todos». PDF en servidor con `@react-pdf/renderer`.
+La tarjeta de la cotización (la vista previa tipo Excel, el PDF y la imagen) se describe como una **cuadrícula libre**, como en V1, y **un solo
+modelo** la dibuja (`geometriaDeLaTarjeta()`). Sólo nodos del nivel «todos». PDF en servidor con `@react-pdf/renderer`; imagen con `next/og`.
 
-**La forma, declarativa como el diseño:** `plantillas_tarjeta.definicion` = `{grupos: [{grupo, tono?}], etiquetas?, leyendas?,
-total: {etiqueta, leyenda?}, nota?, logo, columnas: {leyenda, tipo_cambio, plazo}}`, estricta y de hasta 32 KB: hasta 20 grupos (cada
-`grupo` y `tono` con la forma de un id), etiquetas (1 a 60 caracteres) y leyendas (0 a 160; vacía = sin leyenda) por id de nodo, hasta 200
-de cada una; la etiqueta del total de 1 a 40, su leyenda hasta 160 y la nota hasta 300. Los textos se cuentan en caracteres. Sin hex, CSS
-ni plantillas de texto `{{…}}`.
+**Dos formas de `plantillas_tarjeta.definicion`.** Con la clave `forma` en la raíz es la **forma 2** (la cuadrícula); sin ella, la **forma 1** (la de
+grupos), que se convierte a la cuadrícula al leerla y no se migra. El editor de hoy escribe la forma 1; una forma 2 guardada llega a él sin plantilla y
+con «Esta versión es una cuadrícula: todavía no se edita desde aquí.» (`docs/PENDIENTES.md`).
 
-**`validar_plantilla(plantilla, def, diseno, visibilidad, tonos)`:** STABLE, invocadora, `search_path` vacío, sin leer tablas; 22023 con
-la regla en DETAIL y el `donde` en HINT; el primer rechazo manda, en este orden: `forma` (la clave o el índice), `grupo_inexistente`,
-`grupo_repetido`, `grupo_faltante` (la tarjeta lleva **todos** los grupos de la fórmula: lo que se ve suma el total), `tono_inexistente`
-(sólo con `tonos`), `nodo_inexistente` y `nodo_sin_lugar` (una clave de `etiquetas`/`leyendas` es un miembro de un grupo, el total o lo
-aparte de `tarjeta_total`), `nodo_restringido` (un miembro, el total o lo aparte sin `ver: todos` en la visibilidad compilada; **no figurar
-cuenta como restringido**) y, con `columnas.tipo_cambio`, `tipo_de_cambio_restringido` (el tipo de cambio del bucket de un grupo, por
-omisión o en un modo). Con `def` nulo, sólo la forma. Juego común: `entities/plantilla/casos-de-plantilla.json` (lo corren
-`plantilla-validar.sql` y `validarPlantilla()`; los casos «borde: …» cazan las trampas del espejo y `octetos` fija el texto de `jsonb` que
-cuenta el tope de 32 KB). `plantilla_guardar_borrador` valida la forma; `plantilla_publicar`, contra la fórmula **publicada** del origen y
-los tonos del catálogo, antes de archivar nada (sin fórmula publicada, `formula_sin_publicar@origen`). La tabla la lee sólo quien tiene
-`cotizaciones.configurar` del origen.
+**La forma 2**, estricta (`entities/cuadricula-de-la-tarjeta.ts`): `{forma: 2, columnas: [{id, ancho}], filas: [{id, alto, ocultar_si, nodo?}],
+celdas: [{id, fila, columna, abarca_columnas?, abarca_filas?, contenido, estilo?}]}`. Columnas de 24 a 640 px (hasta 16, **ancho total ≤ 1.600**);
+filas de 16 a 240 px (hasta 120) con `ocultar_si` `nunca` | `no_aplica` | `no_aplica_o_cero`, referido al `nodo` de la fila (obligatorio salvo con
+`nunca`, y ausente con `nunca`); hasta 1.000 celdas, con combinaciones de 1 a 16 columnas y 1 a 120 filas; ids con la forma de un id y únicos; una
+posición sin celda es una celda vacía sin estilo. **Contenido:** `{tipo: 'texto', texto}` (0 a 300 caracteres, sin `{{`: un texto no mezcla texto y
+variables), `{tipo: 'dato', variable}` (`fecha_larga`, `numero`, `titulo`, `titulo_opcion`, `asesor_nombre`, `asesor_iniciales`, `cliente_nombre`,
+`vehiculo_titulo`, `vehiculo_lote`, `vehiculo_vin`, `vence_el`, `modo_tc`), `{tipo: 'dato', nodo, mostrar}` (`monto`, `etiqueta`, `descripcion`,
+`porcentaje` —de un nodo de un par: el `porcentaje_de` o su `pct`—, `tc_nombre`, `tc_valor` y `plazo` —del grupo del nodo—), `{tipo: 'logo'}` o
+`{tipo: 'vacio'}`. **Estilo** (todo opcional): `fondo` y `texto` (una clave del catálogo de colores o `auto`, por omisión), `negrita`, `cursiva`,
+`tamano` (10, 11, 12, 14, 16, 18, 22 o 28 px; 12 por omisión), `alinear` (izquierda por omisión), `alinear_vertical` (centro por omisión) y `bordes`
+(`{todos?, arriba?, derecha?, abajo?, izquierda?}`, cada lado `ninguno` | `fino` | `grueso`; un lado gana sobre `todos`). Nunca un hex: `fondo: auto`
+es blanco y `texto: auto`, #1b2130 o blanco, el de más contraste sobre el fondo; un color borrado del catálogo se dibuja `auto`. **Tope: 24 KiB
+(24.576 bytes) del texto del `jsonb`**, contados como el de la forma 1.
+
+**La forma 1:** `{grupos: [{grupo, tono?}], etiquetas?, leyendas?, total: {etiqueta, leyenda?}, nota?, logo, columnas: {leyenda, tipo_cambio,
+plazo}}`, estricta y de hasta 32 KB: hasta 20 grupos (cada `grupo` y `tono` con la forma de un id), etiquetas (1 a 60 caracteres) y leyendas (0 a 160;
+vacía = sin leyenda) por id de nodo, hasta 200 de cada una; la etiqueta del total de 1 a 40, su leyenda hasta 160 y la nota hasta 300. Los textos se
+cuentan en caracteres. Sin hex ni CSS.
+
+**`validar_plantilla(plantilla, def, diseno, visibilidad, tonos)`:** STABLE, invocadora, `search_path` vacío, sin leer tablas; 22023 con la regla en
+DETAIL y el `donde` en HINT; el primer rechazo manda. Con `def` nulo, sólo la forma (y en la forma 2, las reglas de la grilla).
+
+- **Forma 2**, en este orden: `forma` (el objeto y sus 24 KiB, `definicion`; la clave de más en orden C; `forma` = 2; cada columna, fila y celda con
+  su ruta: `columnas[1].ancho`, `celdas[3].estilo.tamano`), `demasiadas_columnas` (`columnas`), `demasiadas_filas` (`filas`), `demasiadas_celdas`
+  (`celdas`), `columna_repetida`, `fila_repetida`, `celda_repetida` (la segunda aparición: `columnas.<id>`…), `ancho_total` (`columnas`),
+  `celda_fuera_de_la_grilla`, `celdas_se_pisan` (la primera que ocupa una casilla ya ocupada), `variable_inexistente` (`celdas.<id>`); con la versión,
+  `tono_inexistente` (sólo con `tonos`), `nodo_de_fila_inexistente` (`filas.<id>`), `nodo_inexistente`, `mostrar_no_admitido`, `nodo_restringido`
+  (los nodos de las filas en orden y después los de las celdas; de un `porcentaje`, también su `pct`; **no figurar cuenta como restringido**) y
+  `tipo_de_cambio_restringido` (por cada celda `tc_*`, el nodo del bucket de su grupo por omisión y en cada modo). El `donde` nombra la fila o la
+  celda y el mensaje también, **nunca el nodo**. `grupo_*` y `nodo_sin_lugar` no aplican.
+- **Forma 1**, en este orden: `forma` (la clave o el índice), `grupo_inexistente`, `grupo_repetido`, `grupo_faltante` (la tarjeta lleva **todos** los
+  grupos de la fórmula: lo que se ve suma el total), `tono_inexistente` (sólo con `tonos`), `nodo_inexistente` y `nodo_sin_lugar` (una clave de
+  `etiquetas`/`leyendas` es un miembro de un grupo, el total o lo aparte de `tarjeta_total`), `nodo_restringido` (un miembro, el total o lo aparte sin
+  `ver: todos`) y, con `columnas.tipo_cambio`, `tipo_de_cambio_restringido`.
+- Juego común: `entities/plantilla/casos-de-plantilla.json` (lo corren `plantilla-validar.sql` y `validarPlantilla()`; los casos «borde: …» cazan las
+  trampas del espejo y `octetos` fija el texto de `jsonb` que cuenta los topes). `demasiadas_celdas` no tiene caso: 1.001 celdas pasan de 24 KiB y sólo
+  se alcanza sin el tope (T2b). Un número no canónico (`24.0`, sólo por un RPC a mano) es entero para los dos, pero sus bytes difieren: manda la base.
+  `plantilla_guardar_borrador` valida la forma; `plantilla_publicar`, contra la fórmula **publicada** del origen y los colores del catálogo, antes de
+  archivar nada (sin fórmula publicada, `formula_sin_publicar@origen`). La tabla la lee sólo quien tiene `cotizaciones.configurar` del origen.
+
+**La conversión de la forma 1** (`convertirPlantilla()`, espejo `_plantilla_convertir()` con el juego `casos-de-conversion.json`, que genera TS y
+corre `plantilla-convertir.sql`): pura y determinista, con la misma apariencia de hoy. Columnas (sólo las que van): `grupo` (100 px, si algún grupo
+tiene miembros), `concepto` (190), `monto` (130), `leyenda` (170) y `tipo_cambio` y `plazo` (90, con la columna del grupo). Filas: el logo arriba con 2
+columnas; `titulo` (el título de la opción, si la variante es del nivel «todos»), `fecha`, `numero` («Cotización n.º» y el número) y `asesor`
+(«Asesor:» y el nombre), con el logo al costado (`c_logo`) desde 3 columnas; `vehiculo`; `cabecera` («Tipo de cambio» y «Plazo», una vez); una fila
+`n_<nodo>` por miembro de cada grupo (en el orden de la plantilla y de la fórmula, con `ocultar_si: no_aplica` y el color del grupo: el de la plantilla
+si sigue en el catálogo, si no el del grupo), con el título del grupo, el tipo de cambio y el plazo abarcando las filas del grupo; `total` (en dos
+renglones: la moneda local va debajo) con su leyenda en su columna o en `total_leyenda`; `a_<nodo>` por lo aparte (`no_aplica`); `nota`. **Ids
+deterministas**: el texto si cabe en 41 caracteres; si no, sus primeros 32, `_` y el FNV-1a de 32 bits del texto (`ids-de-la-conversion.ts`); celdas
+`c_<fila>_<columna>`. **Altos** con aritmética entera (`altos-de-la-conversion.ts`). Una forma 1 cuya conversión rompe una regla de la cuadrícula (más
+de 120 filas o 1.000 celdas, un `{{` en una etiqueta o nota) se trata como `sin_plantilla`; lo convertido no se mide contra los 24 KiB.
+
+**El modelo de dibujo** (`entities/tarjeta/geometria-de-la-tarjeta.ts`): de la cuadrícula, la lectura, el cálculo (valores, estados y totales por id) y
+el contexto de la cotización (las variables, ya formateadas: `contextoDeLaPagina()`), el ancho y el alto en px y, por celda visible y en orden de
+lectura, su rectángulo, su contenido resuelto y su estilo; más las filas ocultas con su motivo. Una fila se oculta si su nodo no aplica (o vale 0) y
+las celdas que la cruzan se acortan; un dato de un nodo que no aplica, en una fila que se dibuja, va vacío; un monto nulo, «—». El monto del total sale
+de los totales y, con «Ver total Bs», lleva la segunda línea en moneda local. Sin plantilla o sin estados, la tarjeta por omisión (`por-omision.ts`).
+Lo pintan tres dibujos con posiciones absolutas (satori no tiene `grid`): el HTML (escalado como una imagen, `min(1, ancho del contenedor / ancho)`),
+el PDF y la imagen (`pngDeLaTarjeta()`, al ancho de la tarjeta). «Copiar texto» sale de la misma geometría (`textoDeLaTarjeta()`).
 
 ### Versiones de la plantilla
 
@@ -783,32 +829,32 @@ pierde los microsegundos) y pasan en serie por un candado por origen (`pg_adviso
 - **Guardar, publicar y descartar** (`?panel=publicar-tarjeta` con nota obligatoria, `?panel=descartar-plantilla` con `<Confirmar>`) mandan
   la `esperada` como texto; el PT409 se dice tal cual. «Publicar…» sólo sin cambios sin guardar. Los modales van **fuera de la `key`** del
   editor (`PestanaDeLaTarjeta`): «Recargar» no pierde la nota.
-- **Vista previa en vivo** (`lecturaParaLaVistaPrevia()`): lo que la base tomaría (grupos en el orden de la plantilla, filas en el de la
-  fórmula, etiqueta escrita o la del nodo, leyenda sólo la escrita, tono si sigue en el catálogo, 4 filas por grupo) con **cifras de
-  ejemplo** que se dicen: la fila n-ésima vale `(n mod 8 + 1) × 250` USD y el total es la suma de las dibujadas.
+- **Vista previa en vivo** (`lecturaParaLaVistaPrevia()`): la plantilla de trabajo convertida a la cuadrícula como la convertiría la base
+  (`convertirPlantilla()` con el contexto reducido, 4 filas por grupo) y dibujada con la misma geometría, con **cifras de ejemplo** que se dicen: la
+  fila n-ésima con nodo vale `(n mod 8 + 1) × 250` USD, cada `pct` 5 %, cada tipo de cambio 6,96 y el total es la suma de los miembros. Debajo,
+  «Ocultas con esta referencia (N)» con el motivo de cada una (sin ocultas, nada).
 
 ### La lectura de la tarjeta
 
 **`cotizacion_tarjeta(p_formula)`**, `security definer`, da lo que dibuja la tarjeta de **una versión** de la fórmula. Pide
 `cotizaciones.ver` (cualquier alcance) del origen de la versión; una versión que no existe y un borrador dan el mismo 42501 que no tener el
-permiso, también a la dueña. La plantilla es la **publicada hoy** del origen, validada otra vez contra **esa** versión (con `tonos` nulo):
-si no le sirve, `{estado: 'sin_plantilla'}` sin regla ni `donde` (la tarjeta «por omisión»: sólo el total, sin filas ni lo aparte). Con
-ella, `{estado: 'lista', plantilla: {version}, logo, nota, columnas, total: {nodo, etiqueta, leyenda}, secundarios: [{nodo, etiqueta}],
-grupos: [{id, etiqueta, plazo, tono, bucket, filas: [{nodo, etiqueta, leyenda}]}], tipos_de_cambio: {buckets: {bucket: nombre}, modos:
-{clave: {bucket: nombre}}}, variante: {nodo, opciones: [{clave, titulo}]}, tonos, moneda_bs}`.
-
-Las filas van en el orden de la fórmula; la etiqueta, la de la plantilla o la del nodo; la leyenda, la de la plantilla o la
-`descripcion`. El color de un grupo es el que elige la plantilla si sigue en el catálogo; si no, el del grupo (`tono_eliminar` no mira las
-plantillas). Los tipos de cambio van por su `nombre` de `tipos_cambio` (nulo si no hay uno activo), nunca por el id ni la clave del nodo;
-sin la columna, vacíos. `tonos` es `[{clave, hex, tarjeta: {fondo, borde, tinta}}]`: de fondo el hex, el borde claro y el texto que se
-lee (`_color_tinta_de_la_tarjeta(hex, claro_tinta)`: la tinta clara si cumple AA sobre el hex; si no, #1b2130 o blanco, el de más contraste),
-igual en los dos temas; y `moneda_bs`, su regla. **Ningún id, etiqueta ni texto de un
-nodo sin `ver: todos` sale, para nadie** (lo prueba `cotizacion-tarjeta.sql` por cada nivel; el inventario de
+permiso, también a la dueña. La plantilla es la **publicada hoy** del origen, validada otra vez contra **esa** versión (sin el catálogo); la de la forma
+1 se convierte (con el catálogo de hoy: un color borrado cae al del grupo) y lo convertido se valida sin el tope. Si no le sirve, `{estado:
+'sin_plantilla'}` sin regla ni `donde` (la tarjeta «por omisión»). Con ella, `{estado: 'lista', plantilla: {version}, definicion: <forma 2>, nodos:
+[{id, etiqueta, descripcion, grupo, pct}], grupos: [{id, etiqueta, plazo, bucket}], tipos_de_cambio: {buckets: {b: {nombre, nodo}}, modos: {clave:
+{b: {nombre, nodo}}}}, modos: [{clave, nombre}], variante: {nodo, opciones: [{clave, titulo}]} | null, colores: [{clave, hex}], total: {nodo},
+moneda_bs}`, **sólo lo que la cuadrícula nombra**: los nodos de las filas y de las celdas (y el `pct` de un `porcentaje`, sólo entonces), los grupos de
+un `tc_*` o un `plazo`, el tipo de cambio de esos buckets por su `nombre` de `tipos_cambio` (nulo si no hay uno activo) y su nodo (del nivel «todos»:
+lo exige la plantilla; su valor sale del snapshot), los modos si se muestra `modo_tc`, la variante si se muestra `titulo_opcion` y es del nivel
+«todos», y los colores del catálogo que nombran los estilos. **Ningún id, etiqueta ni texto de un nodo sin `ver: todos` sale, para nadie** (K4 de
+`cotizacion-tarjeta.sql`, por cada nivel, en la forma 1 convertida y en cada forma de nombrar un nodo en la cuadrícula; el inventario de
 `cotizaciones-visibilidad.sql` la registra).
 
 ### El PDF
 
-`GET /cotizaciones/<id>/pdf` da la tarjeta de una cotización **guardada** en A4: el mismo `modeloDeLaTarjeta()` que «Vista previa», con
+`GET /cotizaciones/<id>/pdf` da la tarjeta de una cotización **guardada** en una página A4: la misma `geometriaDeLaTarjeta()` que «Vista previa»,
+escalada entera al menor factor que la hace entrar (`min(1, ancho útil / ancho, alto útil / alto)`, con 1 px = 0,75 pt y 36 pt de margen: una fila
+nunca se corta), con
 `calculoDeLoGuardado()` (valores y totales del snapshot, los estados del primer recálculo), así el PDF dice lo mismo que la tarjeta de esa
 guardada y nunca lo de hoy. Lee `cotizacion_hoja_guardada`, `cotizacion_evaluar(p_cotizacion)` y `cotizacion_tarjeta(p_formula)` con la
 sesión de quien pide: lo descarga quien ve la cotización, sin clave propia, y lo que un nivel esconde no está (sólo lo del nivel «todos»).
@@ -816,4 +862,5 @@ Lo que no existe, está en la papelera o no se ve es el mismo 404 en texto que l
 de cambio **no es la suma de las filas** sino Bs ÷ tc(`total_en`), con Bs = Σ grupo × tc(su bucket); `e2e/cotizar-pdf.spec.ts` lo cuenta
 con las filas impresas y la tolerancia del redondeo. Los montos van con `formatearMonto()` y siempre con cifras (el Modo Live es de la
 pantalla); el logo, en `Buffer` y sólo si react-pdf lo dibuja fiel (`docs/PENDIENTES.md`, 4-98). Lo dibuja
-`src/modules/cotizaciones/infra/tarjeta/pdf/` con `@react-pdf/renderer` y Geist en TTF.
+`src/modules/cotizaciones/infra/tarjeta/pdf/` con `@react-pdf/renderer` y Geist en TTF (recta e itálica). La misma tarjeta como PNG:
+`imagenDeUnaGuardada()` (`infra/tarjeta/imagen/`, `ImageResponse`), para la portada de la cotización; sin ruta propia todavía.
