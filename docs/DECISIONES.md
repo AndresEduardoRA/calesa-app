@@ -342,7 +342,16 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Se deduce restando» es sólo un aviso** sobre sumas directas; la autoridad es la visibilidad que compila la base al publicar.
 - **La plantilla lee la fórmula con lo que mira `validarPlantilla()`** (`looseObject`, `lectura-sobre.ts`), no con `esquemaDefinicion`: no se rompe con cada cambio de la fórmula. Guardar valida la forma; lo que cruza con la fórmula lo rechaza publicar.
 - **Con qué nace el editor de plantilla:** el borrador; si no hay, copia de la publicada; si no, la omisión. Una versión ilegible no se edita a medias. El PT409 no dice quién (la tabla no lo guarda).
-- **Tarjeta declarativa, sin hex.** Tonos del catálogo y nodos por id: con hex nadie valida el contraste y un texto libre podría nombrar cualquier nodo. Sin subtotales por grupo: serían dinero calculado fuera de la base.
+- **Tarjeta declarativa con el hex del catálogo.** Colores del catálogo por clave y nodos por id, nunca un hex en la plantilla: un texto libre podría nombrar cualquier nodo. La hoja usa lo derivado
+  con AA y la tarjeta el hex tal cual, igual en los dos temas (es la imagen que recibe el cliente). Sin subtotales por grupo: serían dinero calculado fuera de la base.
+- **Colores de hoja derivados del hex.** Un color es un nombre y un #hex; sus versiones de la hoja (fondo, borde y tinta, en claro y en oscuro) las deriva la base al crear o al cambiar el hex
+  (`_color_derivar`) y las guarda en `claro_*` y `oscuro_*`, así la hoja no calcula nada. Cada fondo es la primera mezcla del hex, de a 1/50, hacia blanco con luminancia ≥ 0,8 (claro) o hacia la
+  superficie oscura de `design/tokens.css` con luminancia ≤ 0,05 (oscuro); cada tinta, la primera mezcla hacia negro (claro) o blanco (oscuro) con AA sobre su fondo; el borde es el hex. En el paso
+  50 la mezcla es el destino: el AA está garantizado. El espejo TS (`entities/colores.ts`) da el mismo `#rrggbb` (el redondeo es el de `Math.round`, nunca `round(float8)`) y lo prueba un juego de
+  casos en Vitest y en `db:probar`. Guardar el mismo hex no vuelve a derivar (un color migrado conserva su hoja). Tope 48 por empresa.
+- **El texto de la tarjeta.** Sobre el hex va la tinta clara del color si cumple AA ahí; si no, la que más contraste dé entre la tinta oscura de la interfaz (#1b2130, «negro») y el blanco. Si
+  ninguno de los dos llega a 4,5:1, el editor avisa sin bloquear: el color lo elige la empresa. Con negro puro el aviso no saldría nunca. La regla la calcula la base en `cotizacion_tarjeta`
+  (la hoja no carga su espejo) y la vista previa de la plantilla, con el espejo TS.
 - **La tarjeta lee la moneda de SU versión y la plantilla publicada de hoy.** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso y se quitan juntas (`docs/PENDIENTES.md`): no volver a darles uso.
 - **PDF en servidor.** `@react-pdf/renderer` desde la plantilla versionada; la tarjeta en pantalla usa el mismo modelo de vista. Sin imágenes de cotización generadas en el cliente.
 - **El aspecto de la hoja es declarativo, cerrado y plano.** Claves opcionales junto a las de siempre (`ancho`, `alto`, `relleno`, `separacion`, `densidad`, `letra`, `enfasis`, `tono`), de escalas
@@ -351,9 +360,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **La regla de los 16 rem.** Una pieza de N columnas toma su ancho cuando le tocan 16 rem o más (`mitad` desde 32 rem, `tercio` desde 48); si no, la fila entera. Los cortes
   van en rem, así al 200 % la rejilla colapsa sola, y bajo el primer corte no hay hueco de columna. Una sección sin ancho es «Automática» (la mitad desde 64 rem). El alto son filas de
   la rejilla desde el mismo corte. Todo en clases y variables sobre los nodos de siempre: la hoja está al borde de su tope de nodos.
-- **El tono de una sección no pinta su fondo.** Su borde, sus celdas sin grupo, sus franjas y sus chips toman el tono; el fondo, el título y los textos sueltos (leyendas, interruptor) quedan en
-  los tokens: la base sólo valida el AA de la tinta sobre el fondo del tono, no del texto de la interfaz sobre él. El tono del grupo gana en su celda; un chip marcado vuelve al primario.
-  Es el catálogo de tonos (sin lista nueva de tokens): ya es de la empresa y con contraste validado.
+- **El color de una sección no pinta su fondo.** Su borde, sus celdas sin grupo, sus franjas y sus chips toman el color; el fondo, el título y los textos sueltos (leyendas, interruptor) quedan en
+  los tokens: la base sólo garantiza el AA de la tinta sobre el fondo derivado, no del texto de la interfaz sobre él. El color del grupo gana en su celda; un chip marcado vuelve al primario.
+  Es el catálogo de colores (sin lista nueva de tokens): ya es de la empresa y con contraste garantizado.
 - **Las celdas se ordenan dentro de su sección.** Pasar un ítem a otra sección cambiaría quién lo ve (hereda el nivel de la sección); para eso sigue el JSON del diseño. Se ordena con dnd-kit (sólo
   en la pestaña «Diseño», con `diferido()`) y su sensor de teclado sobre el asa, con anuncios en español.
 - **El PDF, la tarjeta y el resumen no siguen el aspecto.** Siguen con su plantilla: el aspecto es de la hoja en pantalla (la de cotizar y la de una guardada, que son el mismo componente).

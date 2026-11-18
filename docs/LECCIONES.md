@@ -93,6 +93,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Crea antes una dueña de prueba: con la base recién reseteada no hay cuentas, la primera es dueña y una invitada sin aceptar no puede ser la única que gestiona (`rbac_guardian`).
 - Revisa los detectores textuales al escribir un mensaje de error: palabras como `antes`/`despues` hacen caer la guarda de `cotizaciones-visibilidad.sql`.
 - Prueba un espejo TS de una regla SQL contra la función vigente en PGlite con los mismos casos, `hint` y texto, copiando sus detalles: `char_length` cuenta puntos de código (no `.length`), `collate "C"` no es `localeCompare` ni `<`, `btrim` sólo quita U+0020 y `jsonb::text` lleva `", "`.
+- Espeja el `Math.round` de TS en SQL con `floor(v) + (v - floor(v) >= 0.5)`, nunca `round(float8)` (redondea al par): un color derivado cambiaría en un canal y el juego espejo no daría igual.
 
 ## PostgREST, tipos y capa de datos
 
@@ -287,6 +288,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - `db diff --linked` muestra triggers de `storage.buckets` que llaman a funciones de `storage`: son del Storage de la nube, más nuevo
   que la pila local, no de las migraciones. Fíltralos; un trigger propio llama a una función de `public` o `interno`.
 - No dejes que Prettier formatee una plantilla con marcadores `{{X}}`: en un frontmatter YAML los reescribe como `{ { X } }` y el reemplazo deja de encontrarlos. Va en `.prettierignore` y con una prueba que use la plantilla real (`scripts/orquestador/orquestador.test.ts`).
+- Lo que el orquestador comparte por enlace en cada worktree (`COMPARTIDAS` de `scripts/orquestador/config.env`) no lleva `.ts` ni enlaces rotos:
+  `typecheck` (`**/*.ts`) y `mapa.sh --check` lo recorren y el hook del commit cae por código ajeno. Si pasa, aparta el enlace del worktree (no su destino). (kit)
 - En un carril corre las herramientas con `TMPDIR` propio (fuera de `/tmp`): el `/tmp` de la máquina es un tmpfs que comparten todas las
   sesiones y, sin inodos, nada puede crear archivos ahí (tampoco la terminal del agente).
 
