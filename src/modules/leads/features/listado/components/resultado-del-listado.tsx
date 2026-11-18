@@ -29,8 +29,6 @@ type Props = DatosDeLaLista & {
   modo: ModoDelListado
   puedeVerTodos: boolean
   puedeCrear: boolean
-  alAbrir: (id: string) => void
-  abierto: string | null
   marcar: ParaMarcar
   ultimoContacto: DatosDeUltimoContacto
   // Los que cumplen los filtros y quedaron afuera por tachados (hasta el tope del aviso).
@@ -105,8 +103,6 @@ export function ResultadoDelListado(props: Props) {
     modo,
     puedeVerTodos,
     puedeCrear,
-    alAbrir,
-    abierto,
     marcar,
     ocultos,
     recorrido,
@@ -144,8 +140,6 @@ export function ResultadoDelListado(props: Props) {
           <TablaDeLeads
             {...datos}
             leads={pagina.filas}
-            alAbrir={alAbrir}
-            abierto={abierto}
             marcar={marcar}
             ultimoContacto={ultimoContacto}
           />
@@ -154,8 +148,6 @@ export function ResultadoDelListado(props: Props) {
           <TarjetasDeLeads
             {...datos}
             leads={pagina.filas}
-            alAbrir={alAbrir}
-            abierto={abierto}
             marcar={marcar}
             ultimoContacto={ultimoContacto}
           />

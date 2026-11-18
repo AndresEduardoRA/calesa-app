@@ -1,6 +1,6 @@
 'use client'
 
-import { AbrirResumen, TarjetaDeLista } from '@/shared/ui/lista'
+import { EnlaceDeLaFila, TarjetaDeLista } from '@/shared/ui/lista'
 import { tipoDelCatalogo } from '../../../entities/catalogos'
 import { camposDeLaTarjeta, type FilaDeLead } from '../../../entities/listado'
 import { useIrALasOportunidades } from '../../oportunidades/hooks/use-ir-a-las-oportunidades'
@@ -15,6 +15,7 @@ import {
   type DatosDeLaLista,
   origenDelCatalogo,
   type ParaMarcar,
+  rutaDeLaFicha,
   verOportunidadesDelMenu,
 } from './tipos'
 import {
@@ -25,9 +26,6 @@ import {
 
 type Props = DatosDeLaLista & {
   leads: readonly FilaDeLead[]
-  alAbrir: (id: string) => void
-  // El lead abierto en el drawer, para marcarlo.
-  abierto: string | null
   marcar: ParaMarcar
   ultimoContacto: DatosDeUltimoContacto
 }
@@ -60,8 +58,8 @@ function DatosDeLaTarjeta({
 }
 
 // Los leads en el celular, con el patrón de lista (`@/shared/ui/lista`): una tarjeta por lead con lo mismo que la fila de la tabla y
-// hasta dos datos «en la tabla» que ese lead tenga. Un clic en cualquier parte de la tarjeta abre el drawer, salvo el del «⋯» y el
-// de un enlace; el nombre es el botón que alcanza el teclado. La columna de la lista y cada tarjeta miden lo que la pantalla
+// hasta dos datos «en la tabla» que ese lead tenga. Un clic en cualquier parte de la tarjeta lleva a la ficha, salvo el del «⋯» y el
+// de un enlace; el nombre es el enlace que alcanza el teclado. La columna de la lista y cada tarjeta miden lo que la pantalla
 // (`minmax(0, 1fr)` y `min-w-0`): sin eso la columna `auto` toma el ancho mínimo de la tarjeta y, con el texto al 200 %, un nombre que
 // no se parte ensancha la página y deja el «⋯» fuera de la vista; el «⋯» no se achica (`shrink-0`).
 export function TarjetasDeLeads(props: Props) {
@@ -72,8 +70,6 @@ export function TarjetasDeLeads(props: Props) {
     tipos,
     codigoDePais,
     etiquetas,
-    alAbrir,
-    abierto,
     marcar,
     numeroBuscado,
     ultimoContacto,
@@ -88,11 +84,8 @@ export function TarjetasDeLeads(props: Props) {
         return (
           <TarjetaDeLista
             key={lead.id}
-            abierta={abierto === lead.id}
             idDeVisto={lead.id}
-            alAbrir={() => {
-              alAbrir(lead.id)
-            }}
+            href={rutaDeLaFicha(lead.id)}
             acciones={
               <>
                 <MenuDeLead
@@ -115,12 +108,13 @@ export function TarjetasDeLeads(props: Props) {
                 etiquetas={etiquetas}
                 numeroBuscado={numeroBuscado}
                 nombre={(clases) => (
-                  <AbrirResumen
+                  <EnlaceDeLaFila
+                    href={rutaDeLaFicha(lead.id)}
                     nombre={lead.nombre}
                     className={`text-(length:--text-base) ${clases} @max-[16rem]:[overflow-wrap:anywhere] @max-[16rem]:whitespace-normal`}
                   >
                     {lead.nombre}
-                  </AbrirResumen>
+                  </EnlaceDeLaFila>
                 )}
               />
               <BadgeDeTipo tipo={tipoDelCatalogo(tipos, lead.tipoLeadId)} enLista />
