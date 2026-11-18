@@ -62,7 +62,7 @@ function Cabecera(p: GrupoDelEditorProps) {
       <span className="text-(--color-ink-soft)">
         {grupo.plazo === undefined ? 'Sin plazo' : `Plazo: ${grupo.plazo}`}
       </span>
-      <span className="text-(--color-ink-soft)">Tono: {nombreDelTono(p.tonos, grupo.tono)}</span>
+      <span className="text-(--color-ink-soft)">Color: {nombreDelTono(p.tonos, grupo.tono)}</span>
       <span className="text-(--color-ink-soft)">
         Tipo de cambio: {grupo.bucket}
         {cambio ? ` · ${cambio.etiqueta}` : ''}

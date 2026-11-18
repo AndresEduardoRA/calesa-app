@@ -17,9 +17,9 @@ describe('destinos de los siguientes pasos', () => {
     }
   })
 
-  it('el flujo lleva a su pantalla; la fórmula todavía no tiene pantalla: se dice sin enlace', () => {
+  it('el flujo lleva a su pantalla y la fórmula a Cotización › Fórmula', () => {
     expect(DESTINOS_DE_PASO.flujo.ruta).toBe('/configuracion/flujos')
-    expect(DESTINOS_DE_PASO.formula.ruta).toBeNull()
+    expect(DESTINOS_DE_PASO.formula.ruta).toBe('/configuracion/cotizacion?seccion=formula')
   })
 })
 
@@ -39,8 +39,7 @@ describe('conDestino', () => {
     const [permisos, flujo, formula] = conDestino(pasos, [], ORIGEN)
     expect(permisos?.motivoDeshabilitado).toContain('Gestionar roles')
     expect(flujo?.motivoDeshabilitado).toContain('Configurar el flujo')
-    // Sin pantalla no hay nada que habilitar ni deshabilitar.
-    expect(formula?.motivoDeshabilitado).toBeNull()
+    expect(formula?.motivoDeshabilitado).toContain('Configurar el cotizador')
   })
 
   it('con el permiso, el enlace queda habilitado', () => {
@@ -63,5 +62,17 @@ describe('conDestino', () => {
       'Configurar el flujo',
     )
     expect(conDestino(pasos, configura(ORIGEN), ORIGEN)[1]?.motivoDeshabilitado).toBeNull()
+  })
+
+  it('la fórmula lleva a Cotización › Fórmula con su origen, y se mira el permiso en él', () => {
+    const cotiza = (origenId: string | null): Permisos => [
+      { clave: 'cotizaciones.configurar', origenId, alcance: 'todos' },
+    ]
+    const formula = conDestino(pasos, cotiza(ORIGEN), ORIGEN)[2]
+    expect(formula?.ruta).toBe(`/configuracion/cotizacion?seccion=formula&origen=${ORIGEN}`)
+    expect(formula?.motivoDeshabilitado).toBeNull()
+    expect(conDestino(pasos, cotiza(OTRO), ORIGEN)[2]?.motivoDeshabilitado).toContain(
+      'Configurar el cotizador',
+    )
   })
 })

@@ -9,11 +9,12 @@ import { permisosDeLasLlenas } from './pestanas'
 export const SECCION_DE_WEB = {
   clave: 'web',
   titulo: 'Sitio web',
-  descripcion:
-    'Lo que muestra la web pública: los ajustes del sitio, los legales, las guías, las preguntas frecuentes y los testimonios.',
+  descripcion: 'Los ajustes, los legales, las guías, las preguntas frecuentes y los testimonios.',
   ruta: RUTAS.configuracionDeWeb,
   Icono: GlobeIcon,
   permisos: permisosDeLasLlenas(),
+  grupo: 'web',
+  subsecciones: [],
 } satisfies SeccionDeConfiguracion
 
 export const SECCIONES_DE_WEB: readonly SeccionDeConfiguracion[] =

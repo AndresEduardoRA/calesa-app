@@ -82,7 +82,7 @@ describe('EditorDeLaPlantilla', () => {
       true,
     )
     expect(screen.getByLabelText('Etiqueta del total')).toBeTruthy()
-    expect(screen.getByLabelText('Tono de «Compra»')).toBeTruthy()
+    expect(screen.getByLabelText('Color de «Compra»')).toBeTruthy()
   })
 
   it('el contador cuenta emojis como uno y ningún campo lleva maxLength', () => {
@@ -105,10 +105,10 @@ describe('EditorDeLaPlantilla', () => {
         {...ACCIONES}
       />,
     )
-    expect((screen.getByLabelText('Tono de «Compra»') as HTMLSelectElement).value).toBe('rojo')
+    expect((screen.getByLabelText('Color de «Compra»') as HTMLSelectElement).value).toBe('rojo')
     expect(screen.getByText('rojo (ya no está)')).toBeTruthy()
     expect(
-      screen.getByText(/El tono «rojo» del grupo «Compra» ya no está en el catálogo/),
+      screen.getByText(/El color «rojo» del grupo «Compra» ya no está en el catálogo/),
     ).toBeTruthy()
   })
 

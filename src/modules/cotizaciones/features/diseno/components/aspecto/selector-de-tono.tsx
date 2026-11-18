@@ -2,7 +2,7 @@
 
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
 import type { Tono } from '@/shared/ui/xcell'
-import { MuestraDeTono } from '../muestra-de-tono'
+import { MuestraDeColor } from '../muestra-de-color'
 import { AUTOMATICO, SIN_CATALOGO } from './etiquetas-del-aspecto'
 
 export type TonoDelCatalogo = { clave: string; nombre: string }
@@ -59,7 +59,7 @@ export function SelectorDeTono({
           alCambiar(v === AUTOMATICO ? null : v)
         }}
       />
-      {muestra === undefined ? null : <MuestraDeTono tema="claro" colores={muestra.claro} />}
+      {muestra === undefined ? null : <MuestraDeColor tema="claro" colores={muestra.claro} />}
     </div>
   )
 }

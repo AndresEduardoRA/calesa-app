@@ -1,5 +1,7 @@
+import type { CSSProperties } from 'react'
 import { cn } from 'cn'
 import { Monto } from '@/shared/ui/monto'
+import type { ColoresDeLaTarjeta } from '../../../entities/tarjeta/lectura-de-la-tarjeta'
 import type { GrupoDeTarjeta } from '../../../entities/tarjeta/modelo-de-la-tarjeta'
 
 const SIN_DATO = '—'
@@ -35,12 +37,25 @@ function CeldaCombinada({
   )
 }
 
-// Un grupo de la tarjeta: su título y su tono (`data-tono`, el que escribe `<EstiloDeTonos>`), las filas en el orden de la lectura y, a un lado, el tipo de cambio y el plazo.
-export function GrupoDeLaTarjeta({ grupo }: { grupo: GrupoDeTarjeta }) {
+// Las variables que leen las clases del grupo (`--tono-*`), en línea: son datos del catálogo ya validados (`#rrggbb`) y le ganan a `[data-tono]` y a
+// `.dark [data-tono]` del `<EstiloDeTonos>` de la hoja si los dos conviven en la página. La tarjeta se ve igual en los dos temas.
+const variables = (c: ColoresDeLaTarjeta) =>
+  ({ '--tono-fondo': c.fondo, '--tono-borde': c.borde, '--tono-tinta': c.tinta }) as CSSProperties
+
+// Un grupo de la tarjeta: su título y los colores de su color del catálogo (el hex de fondo y el texto que se lee; `data-tono` queda como gancho de las pruebas),
+// las filas en el orden de la lectura y, a un lado, el tipo de cambio y el plazo.
+export function GrupoDeLaTarjeta({
+  grupo,
+  colores,
+}: {
+  grupo: GrupoDeTarjeta
+  colores: ColoresDeLaTarjeta | null
+}) {
   return (
     <section
       data-grupo-de-la-tarjeta={grupo.id}
       {...(grupo.tono === null ? {} : { 'data-tono': grupo.tono })}
+      {...(colores === null ? {} : { style: variables(colores) })}
       aria-label={grupo.etiqueta}
       className="grid min-w-0 gap-2 rounded-(--radius-card) border border-(--tono-borde,var(--color-line-strong)) bg-(--tono-fondo,var(--color-surface)) p-3 text-(--tono-tinta,var(--color-ink))"
     >

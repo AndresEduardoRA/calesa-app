@@ -13,6 +13,8 @@ export const SECCION_DE_LOGISTICA = {
   ruta: RUTAS.configuracionDeLogistica,
   Icono: TruckIcon,
   permisos: ['logistica.catalogos.gestionar'],
+  grupo: 'operacion',
+  subsecciones: [],
 } as const satisfies SeccionDeConfiguracion
 
 export const SECCIONES_DE_LOGISTICA: readonly SeccionDeConfiguracion[] =

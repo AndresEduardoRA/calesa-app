@@ -26,12 +26,12 @@ export function consultaDeLaFormulaPublicada(cliente: Cliente, origenId: string)
     .limit(1)
 }
 
-// El catálogo entero: la base no deja crear un 25.º (`_tonos_tope()`).
+// El catálogo entero: la base no deja crear un 49.º (`_tonos_tope()`).
 export function consultaDeLosTonos(cliente: Cliente) {
   return cliente
     .from('tonos')
     .select(
-      'clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta',
+      'clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta',
     )
     .order('nombre')
     .limit(TOPE_DE_TONOS)

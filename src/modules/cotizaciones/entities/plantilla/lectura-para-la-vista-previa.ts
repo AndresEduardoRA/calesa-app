@@ -5,6 +5,7 @@ import {
   FILAS_POR_GRUPO_EN_LA_VISTA_PREVIA,
   type LecturaParaLaVistaPrevia,
 } from '../vista-previa-de-la-plantilla'
+import { coloresDeLaTarjeta } from '../colores'
 import type { FilasDelEditor } from './filas-del-editor'
 import { btrim } from './json-de-la-base'
 import type { Plantilla } from './forma-de-plantilla'
@@ -73,8 +74,14 @@ export function lecturaParaLaVistaPrevia(entrada: {
       etiqueta: escrito(plantilla.etiquetas, a.id) ?? a.etiqueta,
     })),
     tonos: tonos.flatMap((t) =>
-      usados.has(t.clave) && t.claro !== undefined && t.oscuro !== undefined
-        ? [{ clave: t.clave, claro: t.claro, oscuro: t.oscuro }]
+      usados.has(t.clave) && t.hex !== undefined && t.claro !== undefined
+        ? [
+            {
+              clave: t.clave,
+              hex: t.hex,
+              tarjeta: coloresDeLaTarjeta({ hex: t.hex, claro: t.claro }),
+            },
+          ]
         : [],
     ),
   }

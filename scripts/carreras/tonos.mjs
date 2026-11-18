@@ -35,8 +35,8 @@ export async function terreno(db, etiqueta, { publicada = false, borrador = fals
     const {
       rows: [fila],
     } = await db.query(
-      `insert into public.tonos (clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
-       values ($1, $2, '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
+      `insert into public.tonos (clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+       values ($1, $2, '#fff7d6', '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
        on conflict (clave) do update set nombre = excluded.nombre returning id, actualizado_en::text as v`,
       [`carreras_${t}`, `${PREFIJO} ${t}`],
     )
@@ -91,8 +91,8 @@ const DISENO_CON_TONO = {
 const tonoDeSeccion = async (db) =>
   (
     await db.query(
-      `insert into public.tonos (clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
-       values ($1, $2, '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
+      `insert into public.tonos (clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+       values ($1, $2, '#fff7d6', '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
        on conflict (clave) do update set nombre = excluded.nombre returning id, actualizado_en::text as v`,
       [TONO_DE_SECCION, `${PREFIJO} sección`],
     )
