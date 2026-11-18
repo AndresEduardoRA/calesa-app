@@ -56,7 +56,9 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   como prop, por eso `relacionados-del-vehiculo.client.tsx`. `?panel=desvincular`, `?panel=vincular-lead`, `?panel=marcar-interesado` y `?relacionados=<tipo>` viven en la ficha del vehículo; en el resumen de un lead o en la unidad
   «Desvincular», los selectores y «Ver todos» llevan a la ficha con eso abierto. «Quitar interés» y «Cotizar» funcionan en el lugar. `vehiculo_interesados()` ya no la llama la app (`docs/PENDIENTES.md`).
 - Pantallas por `pantallas/<pantalla>.ts` (`listado`, `ficha`, `papelera`, `vehiculos-del-lead` (`GestionDeVehiculosDelLead`: los anteriores, 3 a la vista y «Ver los N anteriores» hasta 50, `?panel=agregar-vehiculo` y `?panel=desvincular`; `leerVehiculosDelLead` es `cache()`: una lectura de `lead_vehiculos` por pedido), `cotizar`, `relacionados`, `unidad-de-logistica`: `FotosEnElLugar` para la cabecera de la unidad de logística;
-  `proyecto-de-repuestos`: `leerLeadVinculado(vehiculoId)` para el lead por defecto de «Nuevo proyecto» de repuestos).
+  `proyecto-de-repuestos`: `leerLeadVinculado(vehiculoId)` para el lead por defecto de «Nuevo proyecto» de repuestos; `proyecto-de-repuestos-cabecera`:
+  `<VehiculoEnLaCabecera>`, el vehículo en la cabecera de `/repuestos/[id]`, de servidor: miniatura, título enlazado, `vinOLote()` de `entities/vin-o-lote.ts`, origen y
+  situación, que recibe ya leídos).
 - `leerLeadVinculado(vehiculoId)` (`features/vinculo/hooks/leer-lead-vinculado.ts`): el vínculo vigente por `vehiculo_vinculos` (invocadora, desde el
   navegador) vuelto `LeadVinculado | null` con `leadVinculadoDe()`: nulo si no tiene o quien mira no lo ve, sin distinguirlos. Lee por
   `composicion-vinculo.client.ts` (sólo esa lectura), lo importa sólo una composición diferida y nunca lanza.

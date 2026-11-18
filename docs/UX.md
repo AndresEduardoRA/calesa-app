@@ -329,13 +329,16 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `?estado=abiertos|cerrados|todos`, `?por=`, `?cursor=`) con número, vehículo o «Externo», cliente, estado derivado, ítems («200+») y
   última actividad; «Nuevo proyecto» (`repuestos.editar`, `N`, `?panel=nuevo-proyecto`, `&vehiculo=<id>` lo abre vinculado, `&lead=<id>` con el
   cliente elegido; `?nuevo=proyecto` lo conserva en la URL debajo de «Nuevo lead»).
-  - `/repuestos/[id]`: «Cerrar proyecto» o «Reabrir proyecto» (y «Eliminar proyecto» sin ítems: sin confirmación, con «Deshacer»); arriba,
+  - `/repuestos/[id]`: la cabecera dice **de qué vehículo es**, en un recuadro bajo el título: la miniatura de su portada, el título enlazado a su ficha, el
+    VIN o el lote (con los dos, «VIN X · Lote N»), el origen y la situación; sin vehículo, «Proyecto externo · sin vehículo» con la etiqueta y el VIN escritos;
+    debajo, el cliente y las notas. «Cerrar proyecto» o «Reabrir proyecto» (y «Eliminar proyecto» sin ítems: sin confirmación, con «Deshacer»); arriba,
     los **pasos del proyecto** (las fases activas del flujo de repuestos en su orden y, justo antes de la primera fase que lo pide, los hitos
     «Precio al cliente» y «Pago del cliente», cada uno con su progreso en texto); al final, «Del proyecto» con los paneles que el flujo no
     ubica en un paso (Compras siempre). Un hito o «Del proyecto» abren su panel **bajo los pasos** (`?pestana=cotizaciones|pagos|compras`,
     `aria-pressed`; Cotizaciones pide `repuestos.cotizar`, Pagos y Compras `repuestos.costos.ver`; sin la clave el valor no abre ni lee nada)
-    y la hoja de ítems queda **siempre a la vista**, editable celda a celda. Cada fila dice su paso (la fase) y **el botón de su siguiente**
-    (mover a la próxima fase, con la acción de la transición: abre el panel del ítem con el destino ya elegido, `?item=<id>&destino=<fase>`;
+    y la hoja de ítems queda **siempre a la vista**, editable celda a celda y **agrupada por paso**: un encabezado por fase con ítems, en el orden de los
+    pasos, con su nombre y cuántos tiene («Comprar · 3»), y «Sin fase» al final. Cada fila dice **qué es** («Bomba de agua · Usado» y debajo la descripción),
+    luego cantidad, precio y **el botón de su siguiente** (mover a la próxima fase, con la acción de la transición: abre el panel del ítem con el destino ya elegido, `?item=<id>&destino=<fase>`;
     o «Nueva cotización» / «Registrar pago» si el destino pide ese hito como bloqueante y falta). Nunca arrastrar. Los enlaces viejos
     `?panel=compra&compra=…` y los de pagos sin `?pestana=` redirigen con su panel; `?panel=stock|imagenes&item=` e `?item=` siguen igual.
   - Vistas «Stock» (`?vista=stock`) y «Cadena» (`?vista=cadena`; las tres se eligen en «Vista y opciones» › «Qué ver»: una columna por fase del flujo de repuestos, más «Sin fase» si tiene
@@ -455,6 +458,36 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   y último turno, con «Quitar»), «Habilitada, pero su rol no recibe turnos de la web» (con «Se cambia en Roles.»), «Actualizar», «Agregar a
   la rueda» (`?panel=agregar-a-la-rueda&q=`, busca en el equipo; avisa si el rol no recibe turnos) y la política de la cola (cola activa,
   minutos para contactar, días de pegajoso, máximo de abiertas e intentos).
+- **Orígenes** — `/configuracion/origenes` (`origenes.gestionar`; lectura con `flujos.configurar` o `cotizaciones.configurar`): la frase
+  «De dónde vienen los vehículos: sus datos, sus campos y sus categorías.», «Nuevo origen» (`?panel=nuevo`) y los orígenes como tarjetas
+  (dos columnas desde 40 rem de contenedor; una al 200 % y en el celular): punto de color, nombre, «Subasta|Manual», «Activo|Inactivo», lo
+  que falta en corto («Sin fases», «Falta publicar la fórmula», «Falta activar apibara»; nada en un inactivo) o «Nada pendiente», y vehículos
+  y cotizaciones; la tarjeta entera abre sus datos. Cada parte de un origen es su sub-ruta, en el menú de Configuración bajo «Orígenes»
+  (en el celular, «Orígenes › Campos» en el selector), con «← Orígenes», el nombre como `h1`, la frase de la parte y los siguientes pasos:
+  `/[id]/datos` (el formulario con la barra fija de cambios sin guardar y, debajo, activar, desactivar o eliminar, `?panel=eliminar-origen`);
+  `/[id]/campos` («Datos clave (n de 4)» en orden con «Subir», «Bajar» y «Quitar», «Datos comunes» con su estrella, y el layout de campos
+  con la estrella en cada campo activo y `?campo=`: cada estrella o botón guarda al instante, de a uno; con 4, las demás estrellas se apagan
+  con «Ya hay 4 datos clave: quita uno para sumar este.»; vacíos, «Sin datos clave: la ficha mostrará los de fábrica de su tipo.»);
+  `/[id]/categorias` (`?categoria=`). `/[id]` y `/[id]?seccion=…` redirigen a su parte conservando `?campo=`, `?categoria=` y `?panel=`.
+  Sin permiso de gestión todo se ve deshabilitado con su motivo (las estrellas: «Para elegir los datos clave hace falta gestionar los
+  orígenes.»).
+- **Sitio web (config)** — `/configuracion/web` abre la primera sub-sección que la persona puede; cada una es una sub-ruta del menú de Configuración
+  («Web › Sitio web»), con su título y una frase. «Ajustes» (`/ajustes`) y «Legales» (`/legales`) con `web.ajustes.gestionar`; «Guías» (`/guias`),
+  «Preguntas frecuentes» (`/faqs`) y «Testimonios» (`/testimonios`) con `web.contenido.gestionar`. Lo que no puede abrir va apagado en el menú, con su
+  motivo, y su URL abre la primera que sí. `?seccion=ajustes|legales|guias|faqs|testimonios` redirige a su sub-ruta y conserva el resto de la URL
+  (`?panel=`, `?q=`). «Ajustes»: la fila única del sitio (nombre, lema, WhatsApp de respaldo, horario, dirección, redes, SEO, moneda secundaria y orígenes
+  visibles, avisando qué vehículos dejan de verse), con versión, sin red y conflicto; «Ajustes» y «Legales» se guardan con la barra fija de abajo
+  («Tienes cambios sin guardar» · «Descartar» · «Guardar»; salir con cambios pregunta). «Guías» (con categorías) y su editor
+  `/configuracion/web/guias/[id]` (documento con imágenes; publicar, programar o despublicar con `web.guias.publicar`; «Borrador», «Programada»,
+  «Publicada»; «← Guías» vuelve a la lista). «Preguntas frecuentes»: panel por URL, reordenar, eliminar con confirmación. «Testimonios»: con su
+  consentimiento (quién, cuándo, canal; ciudad, vehículo y foto por separado) y «Retirar». Las listas llevan su acción principal («Nueva …») sin repetir el
+  título de la página.
+- **Cola web (config)** — `/configuracion/cola-web` (`web.cola.gestionar`): una página con tres secciones, en este orden, cada una con título y frase.
+  «Sin asignar» (solicitudes sin asesor: código y fuente; «Ver más» de a 20), «En la rueda» (en el orden de la ruleta: disponible o no, abiertas de su
+  cupo, prioridad, «Contacta el N %» o «Sin turnos aún», vencidas y último turno, con «Quitar»; «Agregar a la rueda» —`?panel=agregar-a-la-rueda&q=`, busca
+  en el equipo y avisa si el rol no recibe turnos— junto a su título; y debajo, «Habilitada, pero su rol no recibe turnos de la web» con «Se cambia en
+  Roles.») y «Política de la cola» (cola activa, minutos para contactar, días de pegajoso, máximo de abiertas e intentos, con la barra fija de abajo).
+  «Actualizar» queda arriba de la página. En el celular, las tres secciones apiladas en su orden.
 - **Orígenes** — `/configuracion/origenes`, `/[id]` (`origenes.gestionar`; lectura con `flujos.configurar` o `cotizaciones.configurar`):
   `?panel=nuevo`; `/[id]?seccion=datos|campos|categorias`, `?campo=`, `?categoria=`; sin permiso, todo deshabilitado con motivo.
 - **Equipo** — `/configuracion/equipo` (`equipo.usuarios.*`): tabla desde 768 px, tarjetas debajo, panel lateral. `?q=&estado=` se
@@ -1448,7 +1481,7 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 
 ### Repuestos: proyecto (estados propios)
 
-- **Estados:** cabecera y lista esqueleto (6 filas, 6 columnas); sin `repuestos.ver`, «No tienes permiso»; error de `(app)`. No existe,
+- **Estados:** cabecera esqueleto (el título y el recuadro del vehículo) y lista esqueleto (6 filas, 6 columnas); sin `repuestos.ver`, «No tienes permiso»; error de `(app)`. No existe,
   eliminado o sin acceso se dicen igual: «Este proyecto ya no está disponible: no existe o ya no tienes acceso.» con «Volver a Repuestos».
 - **Pasos:** esqueleto de una fila (`h-16`) con la cabecera. Sin ítems, los pasos sólo con su nombre y «Agrega ítems para ver cuántos van en
   cada paso.». Progreso de una fase = los ítems que llegaron (están en ella o en una a la que se llega desde ella hacia adelante): «3 de 5»,
@@ -1460,19 +1493,30 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
   permitidos, la hoja sigue y no hay botones del siguiente. La fila se desplaza de costado con su pista; «Del proyecto» se parte.
 - **Panel del paso:** título (`h2`) y «Cerrar»; lo abierto por el botón de un ítem recibe el foco. Si su lectura falla, «No se pudieron
   cargar…» con «Reintentar» ahí (la hoja sigue); sin red, «Sin conexión. No se pudo abrir esto.» con «Reintentar».
-- **Siguiente:** en la columna «Paso» (en la tarjeta, al pie, a lo ancho y a 44 px). Nombre accesible «Comprar · Bomba». Sin fase: «Mover a
-  «X»» con una sola fase inicial, «Elegir fase» con varias, nada sin inicial. Fase final (también «Perdido») o proyecto cerrado: sólo la
-  fase. Sin la clave de lo que toca (`repuestos.mover`, `repuestos.cotizar`, `repuestos.costos.editar`): «Sigue: «X»», sin botón (un hito
+- **Siguiente:** en la columna «Siguiente» (en la tarjeta, tras cantidad y precio, a lo ancho y a 44 px). Nombre accesible «Comprar · Bomba». Sin fase: «Mover a
+  «X»» con una sola fase inicial, «Elegir fase» con varias, nada sin inicial. Fase final (también «Perdido») o proyecto cerrado: nada (la
+  fase la dice el encabezado del grupo). Sin la clave de lo que toca (`repuestos.mover`, `repuestos.cotizar`, `repuestos.costos.editar`): «Sigue: «X»», sin botón (un hito
   bloqueante que falta y quien mira no puede hacer: «Sigue: «Precio al cliente»», nunca «Mover»). Un hito informativo no cambia el botón. Tras registrar un pago, la página se vuelve a pedir y los botones del siguiente se apagan mientras dura.
-- **Hoja:** tabla desde 768 px y tarjetas debajo; cada celda se guarda sola (Enter o al salir; la lista, al elegir). Cantidad y precio son
-  `XCell`; la columna «Paso» (la fase) es de lectura. Un precio sin moneda lleva la primera activa. Enter en la fila nueva agrega el ítem y deja el foco en la
-  siguiente. No filtra: hasta 200 ítems (con 200, sin fila nueva y con `<AvisoDeTope>`). Vacía: «Este proyecto todavía no tiene ítems.» y,
-  con `repuestos.editar`, la fila nueva.
+- **Hoja:** tabla desde 768 px y tarjetas debajo; cada celda se guarda sola (Enter o al salir; la lista, al elegir). Columnas: «Ítem» (tipo de pieza y
+  condición en una fila que se parte y la descripción debajo; de lectura, «Tipo · Condición» y la descripción), «Cantidad», «Precio al cliente», «Siguiente»,
+  «País de origen», «Vía de transporte», «Moneda», «Tracking», «Notas» y «Acciones»; cada título lleva su ayuda en un `title` (subrayado punteado). Cantidad y
+  precio son `XCell`. La fase es de lectura y la dice el **encabezado de su grupo** (punto con su color y «Comprar · 3»; un paso sin ítems no tiene grupo;
+  «Sin fase» al final; en la tarjeta, un `h2` por grupo): la fila no la repite. Mover un ítem lo pasa a su grupo nuevo. Un precio sin moneda lleva la primera
+  activa. Enter en la fila nueva agrega el ítem y deja el foco en la siguiente; la fila nueva va al final, fuera de los grupos (un ítem recién creado sin fase
+  cae en «Sin fase»). No filtra: hasta 200 ítems (con 200, cada encabezado con «N+», sin fila nueva y con `<AvisoDeTope>`). Flujo sin fases o ilegible: un
+  solo grupo «Sin fase · N» con todos y, en «Siguiente», la fase de cada ítem. Vacía: «Este proyecto todavía no tiene ítems.» y, con `repuestos.editar`, la
+  fila nueva, sin grupos.
 - **Sólo lectura:** sin `repuestos.editar` o con el proyecto cerrado («El proyecto está cerrado: reábrelo para editar los ítems.»), texto
   plano, sin fila nueva ni «Eliminar».
 - **Conflicto:** «Otra persona cambió este ítem. Recarga para ver lo nuevo.» con «Recargar»; lo escrito no se guarda. **Eliminar:**
   `<Confirmar>` con URL que nombra el ítem; uno con historial, documentos, compras, gastos o stock dice por qué y no se elimina.
 - **Cerrar:** sin confirmación; toast con «Deshacer».
+- **Vehículo** (en la cabecera, en un recuadro bajo el título; llega en su propio `<Suspense>`, con su esqueleto de miniatura y dos líneas): la miniatura de
+  la portada (480 px; sin fotos, el marcador), el título enlazado a `/vehiculos/<id>`, «VIN X · Lote N» (o el que tenga; sin ninguno, no se dibuja esa línea),
+  el origen y la situación. Un vehículo que quien mira no ve o que está en la papelera: «Vehículo que no puedes ver», sin miniatura ni datos. Si falla su
+  lectura, «No pudimos cargar el vehículo.» con «Reintentar» en el recuadro, y los pasos y la hoja siguen; sin la fase del vehículo, sin la situación; sin los
+  orígenes, sin el origen. Proyecto externo: «Proyecto externo · sin vehículo» y, si los tiene, la etiqueta y «VIN …». Con el texto al 200 % la miniatura pasa
+  arriba.
 - **Cliente** (en la cabecera): con lead y `leads.ver`, el nombre enlazado a `/leads/<id>`, sus números (`<NumeroDeLead conSecundario>`) y, si no
   es de la cartera de quien mira, «Fuera de tu cartera»; un lead que no se ve (otra cartera sin alcance, papelera, limbo) o sin `leads.ver`, «Cliente
   que no puedes ver», sin datos; un proyecto viejo, el nombre escrito a mano; sin cliente, «—». Nunca el teléfono. Si falla la lectura del lead, el

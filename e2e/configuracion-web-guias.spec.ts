@@ -101,8 +101,12 @@ test('la dueña escribe una guía con título, lista y enlace, la guarda, la pub
     .getByRole('main')
     .getByRole('link', { name: /^Sitio web/ })
     .click()
-  await page.getByRole('tab', { name: 'Guías' }).click()
-  await expect(page.getByRole('heading', { name: 'Guías', level: 2 })).toBeVisible()
+  await page
+    .getByRole('navigation', { name: 'Secciones de Configuración' })
+    .getByRole('link', { name: 'Guías', exact: true })
+    .click()
+  await expect(page).toHaveURL(/\/configuracion\/web\/guias$/)
+  await expect(page.getByRole('heading', { name: 'Guías', level: 1 })).toBeVisible()
 
   await page.getByRole('button', { name: 'Nueva guía' }).click()
   await page.getByLabel('Título', { exact: true }).fill(TITULO)
@@ -168,6 +172,7 @@ test('la dueña arma categorías: agrega, sube, desactiva y no elimina una con g
 }) => {
   await entrar(page, duena)
   await page.goto('/configuracion/web?seccion=guias')
+  await expect(page).toHaveURL(/\/configuracion\/web\/guias$/)
   await page.getByRole('button', { name: 'Categorías', exact: true }).click()
   const panel = page.getByRole('dialog', { name: 'Categorías de las guías' })
   await expect(panel).toBeVisible()

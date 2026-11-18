@@ -119,17 +119,11 @@ for (const zoom of ['100', '200'] as const) {
     await aLaVistaAlAcomodarse(activaDeApibara, 'el interruptor «Activa» de apibara')
     await capturar(page, info, `integraciones-activa-${zoom}`)
 
-    // Las pestañas del origen, una por una, con su barra a la vista (queda bajo el título largo).
-    for (const [pestana, clave] of [
-      ['Datos', 'datos'],
-      ['Campos', 'campos'],
-      ['Categorías', 'categorias'],
-    ] as const) {
-      await page.goto(`/configuracion/origenes/${origen.id}?seccion=${clave}`)
-      const barra = page.getByRole('tab', { name: pestana })
-      await expect(barra).toBeVisible()
-      await barra.scrollIntoViewIfNeeded()
-      await aLaVistaAlAcomodarse(page.getByRole('tab', { selected: true }), `la pestaña ${pestana}`)
+    // Las partes del origen, una por una, cada una en su sub-ruta, con el título largo a la vista.
+    for (const clave of ['datos', 'campos', 'categorias'] as const) {
+      await page.goto(`/configuracion/origenes/${origen.id}/${clave}`)
+      const titulo = page.getByRole('heading', { level: 1, name: origen.nombre })
+      await aLaVistaAlAcomodarse(titulo, `el origen en ${clave}`)
       await capturar(page, info, `origen-${clave}-${zoom}`)
     }
 

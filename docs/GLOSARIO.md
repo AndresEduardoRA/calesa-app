@@ -88,6 +88,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Campo desactivado** — `origenes_campos.activo = false`: sale del formulario y filtros; sus datos siguen en `vehiculos.atributos`.
 - **Campo principal** — `origenes_campos.principal`: identifica al vehículo en la lista, el resumen y logística; uno por origen como mucho,
   activo y no de monto; sin él, el título.
+- **Datos clave** — `origenes.datos_clave` / `DatoClave`, `leerDatosClave()`, `origen_datos_clave_guardar()`: los hasta 4 datos, en orden,
+  que la ficha de un vehículo muestra primero. Los elige cada origen en «Campos» (la estrella, «Datos clave (n de 4)»); cada uno es un dato
+  común o un campo activo del origen. Vacíos = los de fábrica de su tipo (subasta: plataforma, enlace de la subasta, kilometraje y año;
+  manual: año, kilometraje, VIN y categoría).
 - **Rango (de un campo)** — `minimo`/`maximo` de `leads_campos` y `origenes_campos`, `_valor_fuera_de_rango()`: límites de un `numero` o
   `moneda` (nulo = sin límite); se rechaza el valor que cambia y queda fuera, no el que ya estaba. `*_campo_impacto().fuera_de_rango` los cuenta.
 - **Valor por defecto de un campo** — `valor_defecto` / `valorDefectoPara()`, `valorDefectoVigente()`: lo que el alta trae puesto; sólo precarga.
@@ -101,6 +105,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Vehículo** — `vehiculos`: el dato central; recorre el flujo de su origen.
 - **Atributos** — `vehiculos.atributos`, `leads.atributos`: campos del layout que no son columna. En un lead se leen por `leads_vista`, recortados.
 - **Dato común** — `camposComunes()` / columnas de `vehiculos`: lo que tiene todo vehículo y es columna (título, marca, año, VIN, precio…).
+  Como dato clave valen marca, modelo, año, VIN, categoría, kilometraje, placado y, en subasta, lote, plataforma y enlace de la subasta
+  (`DATOS_COMUNES` de `origenes`, por el nombre de su columna: `anio`, `categoria_id`, `url_origen`).
 - **Sin fase** — `vehiculos.fase_id` nulo / `<BadgeDeFase>` (dentro de `<BadgeDeSituacion>`): aún no entró al flujo de su origen; lo ubica quien mueve.
 - **Inventario** — `/vehiculos` / `<ListadoDeVehiculos>`: listado de vehículos, una pestaña por origen; con «propios» se lee por
   `vehiculos_inventario()` (por rutas, filtros en SQL), con «todos» por PostgREST (`fuenteDelInventario()`).
@@ -621,7 +627,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Margen del proyecto** — `repuestos_proyecto_margen()`: por moneda, Σ precios de los ítems − Σ compras; nulo si falta un precio.
 - **Nota** — `notas`: bloc de notas de una unidad; la del cambio de fase apunta a su historial.
 - **Proyecto de repuestos** — `repuestos_proyectos`: un proyecto por vehículo (o externo).
+- **Proyecto externo** — `repuestos_proyectos.vehiculo_id is null`: el proyecto sin vehículo del inventario, con la etiqueta y el VIN escritos a mano
+  (`vehiculo_etiqueta`, `vin`). En el listado se escribe «Externo · …» y en la cabecera de `/repuestos/[id]` «Proyecto externo · sin vehículo» (`ProyectoExterno`).
 - **Ítem de repuesto** — `repuestos_items`: el repuesto que recorre el flujo de repuestos.
+- **Grupo por paso** — `GrupoPorPaso` (`agruparPorPaso`, `entities/items/grupos-por-paso.ts`): los ítems de una misma fase bajo su encabezado («Comprar · 3»)
+  en la hoja de `/repuestos/[id]`, en el orden de los pasos y «Sin fase» al final. No es «Grupo (de la hoja)» del cotizador ni «Grupo (de transporte)».
 - **Paso (de un proyecto)** — `PasoDelProyecto` (`entities/flujo/pasos.ts`): cada parada del camino de la venta sobre la hoja de `/repuestos/[id]`:
   una fase activa del flujo de repuestos (su nombre, en su orden) o un hito, con su progreso en texto («3 de 5», «37+ de 200+»). No: «etapa»
   (es del embudo).

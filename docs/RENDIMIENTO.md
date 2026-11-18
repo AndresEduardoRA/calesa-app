@@ -535,8 +535,13 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   flujo de repuestos; topes 30 / 360 / 60 más uno, por `fases_flujo_id_nombre_key`, `fases_transiciones_flujo_id_idx` y `fases_requisitos_fase_id_idx`)
   y, sólo con `repuestos.costos.ver`, el pago vivo (`limit 1` por `pagos_proyecto_repuestos_id_idx`). Progreso y siguiente los calcula el navegador sobre
   las filas de la hoja (≤ 200): O(fases² + ítems) por cambio de filas. Ningún número es un total («37+ de 200+»). Los paneles (Compras tope 200,
-  Cotizaciones 50, Pagos como siempre) se leen al elegirlos y su código llega con `diferido()`. **JS en frío de `/repuestos/[id]`** (con tres ítems, mismo
-  método): 386,6 KB en 26 chunks. Sin tope propio.
+  Cotizaciones 50, Pagos como siempre) se leen al elegirlos y su código llega con `diferido()`. Los grupos por paso de la hoja los arma el navegador sobre las
+  mismas filas (O(n), ≤ 200 filas y ≤ 31 encabezados; los conteos con la hoja topada, «N+»). **JS en frío de `/repuestos/[id]`** (con tres ítems y un vehículo,
+  mismo método): 386,0 KB en 29 chunks. La cabecera sale de `pantallas/proyectos-detalle.ts`, no del barril del listado (que arrastra el listado y «Nuevo
+  proyecto»). Sin tope propio.
+- El vehículo de la cabecera de `/repuestos/[id]`: el vehículo por su PK (empieza en la página, en paralelo con la hoja) y, dentro de su `<Suspense>` y sólo
+  con vehículo, `leerFasesDeOrigen` (≤ ~30 fases, `cache()` por pedido) y `getOrigenes(true)` (decenas, `cache()`); la hoja no espera ninguna. Su miniatura es
+  la de 480 px (`ruta_miniatura`, `unoptimized`, `loading="lazy"`), nunca el original; los tres bloques del vehículo son de servidor.
 - El panel del ítem (`?item=`) monta sus secciones a la vista al abrirse: «Qué falta», imágenes (`limit 9`), documentos (50), historial y notas (20) y, con
   `repuestos.costos.ver`, las compras del ítem (`TAMANO_DE_VER_MAS` + 1 por `repuestos_compras_item_id_idx`): siete lecturas acotadas al abrir.
   En `/repuestos` (la Cadena) el panel va con `diferido()`.
@@ -593,7 +598,12 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Configuración (`/configuracion/*`), sin tope propio: el layout suma a cada página el menú de Configuración y la cabecera (Server Components) y
   tres piezas de cliente chicas (la marca del enlace, la vuelta y el `<select>` del selector de sección, ≈ 2 KB); no importa `secciones.ts`, `permisos.ts` ni
   ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
-  `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta.
+  `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta. Las sub-secciones plantilla (las
+  partes de un origen) suman al menú una pieza de cliente chica que las resuelve con la ruta (`subsecciones-del-menu.tsx`).
+- Configuración › Orígenes: la lista de tarjetas, 215,7 KB gz en frío (29,4 propios de la página). Cada parte de un origen es su ruta y
+  carga sólo lo suyo (`pantallas/origen-datos|campos|categorias.ts`) sobre una base común de 83 KB gz: `/[id]/datos` 284,7 KB (15,5
+  propios), `/[id]/campos` 282,1 (12,8, con los datos clave) y `/[id]/categorias` 280,1 (10,8). Sin `diferido()` nuevo: el bloque de datos
+  clave se ve apenas carga «Campos». Medido con los manifiestos del build de e2e (`.next-e2e`).
 - «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`); el
   botón viaja con `FilterShell` aunque la lista no lo dibuje.
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`
@@ -669,7 +679,8 @@ fallar.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
 - Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 180.400 B y ≤ 5.000 nodos con
-  «Filas» abierto (medido 172.068 B: cada ruta nueva puede repartir el JS común en más chunks, y el HTML de toda pantalla nombra cada uno). La tarjeta, el editor, el modal de publicar y el diálogo de descartar van por `diferido()`; «Buscar fila» filtra en el
+  «Filas» abierto (medido 172.068 B: cada ruta nueva puede repartir el JS común en más chunks, y el HTML de toda pantalla nombra cada uno; las
+  partes de un origen en el menú de Configuración suman ~530 B a toda página de Configuración). La tarjeta, el editor, el modal de publicar y el diálogo de descartar van por `diferido()`; «Buscar fila» filtra en el
   navegador. `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
 - Editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrirlo lee una fila de `formulas` por `formulas_pkey`
   (`definicion`, `params`, `estado`, `diseno`, `nota`): con 600 filas ≤ 80.900 B; dibuja hasta 500 (`TOPE_DE_LO_CARGADO`) con

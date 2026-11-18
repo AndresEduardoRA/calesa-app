@@ -3906,6 +3906,7 @@ export type Database = {
           clave: string
           color: string
           creado_en: string
+          datos_clave: NonNullable<Json>
           genero: Database['public']['Enums']['genero_gramatical']
           icono: string | null
           id: string
@@ -3922,6 +3923,7 @@ export type Database = {
           clave: string
           color?: string
           creado_en?: string
+          datos_clave?: NonNullable<Json>
           genero?: Database['public']['Enums']['genero_gramatical']
           icono?: string | null
           id?: string
@@ -3937,6 +3939,7 @@ export type Database = {
           clave?: string
           color?: string
           creado_en?: string
+          datos_clave?: NonNullable<Json>
           genero?: Database['public']['Enums']['genero_gramatical']
           icono?: string | null
           id?: string
@@ -8746,6 +8749,25 @@ export type Database = {
       }
       _origen_campos_renumerar: { Args: { p_origen: string }; Returns: undefined }
       _origen_clave_reservada: { Args: { p_clave: string }; Returns: boolean }
+      _origen_dato_clave_bien_formado: { Args: { p: Json }; Returns: boolean }
+      _origen_datos_clave_comunes: {
+        Args: { p_tipo: Database['public']['Enums']['tipo_origen'] }
+        Returns: string[]
+      }
+      _origen_datos_clave_de_fabrica: {
+        Args: { p_tipo: Database['public']['Enums']['tipo_origen'] }
+        Returns: Json
+      }
+      _origen_datos_clave_error: {
+        Args: {
+          p_campos_activos: string[]
+          p_datos: Json
+          p_tipo: Database['public']['Enums']['tipo_origen']
+        }
+        Returns: Json
+      }
+      _origen_datos_clave_forma: { Args: { p: Json }; Returns: boolean }
+      _origen_datos_clave_sin_campo: { Args: { p: Json; p_clave: string }; Returns: Json }
       _origen_lead_clave: { Args: { p_nombre: string }; Returns: string }
       _origen_lead_nombre: { Args: { p_texto: string }; Returns: string }
       _origen_nombre_valido: {
@@ -10897,6 +10919,10 @@ export type Database = {
           p_tipo: Database['public']['Enums']['tipo_origen']
         }
         Returns: Json
+      }
+      origen_datos_clave_guardar: {
+        Args: { p_actualizado_en_esperado: string; p_datos: Json; p_origen: string }
+        Returns: string
       }
       origen_eliminar: {
         Args: { p_actualizado_en_esperado: string; p_origen: string }

@@ -8,8 +8,9 @@ import { SECCION_DE_FLUJOS } from './flujos/seccion'
 import { SECCION_DE_LEADS } from './leads/seccion'
 import { SECCIONES_DE_LOGISTICA } from './logistica/seccion'
 import { PERMISOS_DE_ORIGENES } from './origenes/acceso'
+import { SUBSECCIONES_DE_ORIGEN } from './origenes/subsecciones'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
-import { SECCIONES_DE_WEB } from './web/seccion'
+import { SECCION_DE_WEB } from './web/seccion'
 
 // El registro de Configuración: la única fuente del inicio, del menú de Configuración y del selector de sección del celular. Cada
 // sección se abre con cualquiera de sus permisos (ver o gestionar) y pertenece a un grupo; sus sub-secciones son las sub-rutas que
@@ -31,7 +32,8 @@ export type SubseccionDeConfiguracion = {
   titulo: string
   // Una frase: qué se configura ahí. La dibuja la página con su título (`EncabezadoDeConfiguracion`); no viaja al navegador.
   descripcion: string
-  // La de su sección (la índice) o la de su sección, una barra y algo más.
+  // La de su sección (la índice) o la de su sección, una barra y algo más. Puede ser una plantilla con `[x]` (las partes de un origen):
+  // el menú la rellena con la ruta actual y, si no puede, no la dibuja (`_navegacion/marca.ts`).
   ruta: string
   permisos: readonly ClavePermiso[]
   // Con motivo, quien no tiene sus permisos la ve apagada en el menú y en el selector, con el motivo; sin él, no la ve.
@@ -82,19 +84,19 @@ export const SECCIONES = [
   {
     clave: 'origenes',
     titulo: 'Orígenes',
-    descripcion: 'De dónde vienen los vehículos: su layout de campos y sus categorías.',
+    descripcion: 'De dónde vienen los vehículos: sus datos, sus campos y sus categorías.',
     ruta: RUTAS.origenes,
     Icono: MapPinIcon,
     permisos: PERMISOS_DE_ORIGENES,
     grupo: 'ventas',
-    subsecciones: [],
+    subsecciones: SUBSECCIONES_DE_ORIGEN,
   },
   SECCION_DE_LEADS,
   SECCION_DE_COTIZACION,
   SECCION_DE_FLUJOS,
   ...SECCIONES_DE_LOGISTICA,
   SECCION_DE_REPUESTOS,
-  ...SECCIONES_DE_WEB,
+  SECCION_DE_WEB,
   SECCION_DE_COLA_WEB,
 ] as const satisfies readonly SeccionDeConfiguracion[]
 

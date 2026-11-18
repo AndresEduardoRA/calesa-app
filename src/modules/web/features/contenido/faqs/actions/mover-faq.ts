@@ -19,6 +19,6 @@ export const moverFaq = actionClient
     }
     const hecho = await repositorioDeFaqs.mover(parsedInput)
     // Aun con un rechazo a medias, algo pudo haberse escrito: la lista se vuelve a leer.
-    revalidatePath(RUTAS.configuracionDeWeb)
+    revalidatePath(RUTAS.faqsDelSitio)
     return hecho
   })

@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { UnaSolaVista } from '@/shared/ui/lista'
 import { SimbolosDeXCell } from '@/shared/ui/xcell'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
@@ -9,6 +9,7 @@ import {
   type CatalogosDeLaHoja,
   type MonedaDeLaHoja,
 } from '../../../entities/items/hoja'
+import { agruparPorPaso, type GrupoPorPaso } from '../../../entities/items/grupos-por-paso'
 import type { FilaDeItem } from '../../../entities/nucleo/item'
 import { useEliminarItemPorUrl } from '../hooks/use-eliminar-item-por-url'
 import { useImagenesPorUrl } from '../hooks/use-imagenes-por-url'
@@ -36,8 +37,23 @@ export type PropsDeLaHoja = {
   // `puede(permisos, 'repuestos.editar')`, calculado en el servidor.
   puedeEditar: boolean
   cerrado: boolean
+  // El lugar de cada fase en el orden del flujo (la hoja agrupa por paso con él); nulo = flujo sin fases o ilegible: todo en «Sin fase». Lo pasa `src/app` (de
+  // `IndiceDelFlujo.lugar`): `items` no importa `flujo`.
+  ordenDeLasFases: ReadonlyMap<string, number> | null
   // Lo que otra área pone en cada fila y su panel (8.10-2); lo llena `src/app`.
   hueco?: HuecoDeLaHoja
+}
+
+// Las filas vivas agrupadas por paso: se recalcula sólo si cambian las filas, el orden o el tope (O(n) sobre ≤ 200).
+function useGruposPorPaso(
+  filas: readonly FilaDeItem[],
+  ordenDeLasFases: ReadonlyMap<string, number> | null,
+  hayMas: boolean,
+) {
+  return useMemo(
+    () => agruparPorPaso(filas, ordenDeLasFases, hayMas),
+    [filas, ordenDeLasFases, hayMas],
+  )
 }
 
 const primeraMoneda = (monedas: readonly MonedaDeLaHoja[]) => monedas[0]?.codigo ?? null
@@ -45,24 +61,25 @@ const cabeOtro = (editable: boolean, filas: readonly FilaDeItem[], hayMas: boole
   editable && !hojaLlena(filas, hayMas)
 
 function Vistas({
-  filas,
+  grupos,
   contexto,
   filaNueva,
 }: {
-  filas: readonly FilaDeItem[]
+  grupos: readonly GrupoPorPaso[]
   contexto: ContextoDeLaHoja
   filaNueva: ReactNode
 }) {
   return (
     <UnaSolaVista
-      tabla={() => <TablaDeItems filas={filas} contexto={contexto} filaNueva={filaNueva} />}
-      tarjetas={() => <TarjetasDeItems filas={filas} contexto={contexto} filaNueva={filaNueva} />}
+      tabla={() => <TablaDeItems grupos={grupos} contexto={contexto} filaNueva={filaNueva} />}
+      tarjetas={() => <TarjetasDeItems grupos={grupos} contexto={contexto} filaNueva={filaNueva} />}
     />
   )
 }
 
 // La hoja de ítems de un proyecto (8.09-2, C8 a C13; imágenes: 8.09-3): la tabla desde 768 px y, debajo, una tarjeta por ítem, en una sola vista, editable celda a celda con `repuestos.editar` y el proyecto abierto; sin
-// eso, de lectura. Vacío de primera vez, aviso del proyecto cerrado, tope de 200 (D54: con 200 no se dibuja la fila nueva) y el conflicto con «Recargar». No filtra ni pagina: hasta 200 filas.
+// eso, de lectura. Vacío de primera vez, aviso del proyecto cerrado, tope de 200 (D54: con 200 no se dibuja la fila nueva) y el conflicto con «Recargar». No filtra ni pagina: hasta 200 filas,
+// agrupadas por paso en el navegador (`agruparPorPaso`: el orden del flujo, «Sin fase» al final, «N+» con la hoja topada).
 export function HojaDeItems(props: PropsDeLaHoja) {
   const editable = props.puedeEditar && !props.cerrado
   const monedaPorDefecto = primeraMoneda(props.monedas)
@@ -77,6 +94,7 @@ export function HojaDeItems(props: PropsDeLaHoja) {
   const imagenes = useImagenesPorUrl(hoja.filas)
   const montarImagenes = useAbiertoAlgunaVez(imagenes.abierto)
   const deImagenes = imagenes.item
+  const grupos = useGruposPorPaso(hoja.filas, props.ordenDeLasFases, props.hayMas)
 
   const contexto: ContextoDeLaHoja = {
     editable,
@@ -114,7 +132,7 @@ export function HojaDeItems(props: PropsDeLaHoja) {
         ) : null}
         {hayFilas ? null : <HojaVacia />}
         {hayFilas || filaNueva !== null ? (
-          <Vistas filas={hoja.filas} contexto={contexto} filaNueva={filaNueva} />
+          <Vistas grupos={grupos} contexto={contexto} filaNueva={filaNueva} />
         ) : null}
         {props.hayMas ? <AvisoDeTopeDeLaHoja /> : null}
         {montarEliminar ? (

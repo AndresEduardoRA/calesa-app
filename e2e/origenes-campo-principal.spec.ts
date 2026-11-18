@@ -60,7 +60,7 @@ test('marcar «Lote interno» como principal lo vuelve el nombre del vehículo e
   await entrar(page, duena, { fresco: true })
 
   // El panel del campo: el interruptor «Principal», con su ayuda, y la insignia en la fila del layout.
-  await page.goto(`/configuracion/origenes/${origen.id}?seccion=campos`)
+  await page.goto(`/configuracion/origenes/${origen.id}/campos`)
   await page.getByRole('button', { name: `Editar ${ETIQUETA}` }).click()
   const panel = page.getByRole('dialog')
   await expect(panel.getByText(/Identifica al vehículo en la lista/)).toBeVisible()

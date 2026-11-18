@@ -21,7 +21,7 @@ import {
   type PanelDelPaso,
   type ProyectoDetallado,
 } from '@/modules/repuestos'
-import { CabeceraDeProyecto } from '@/modules/repuestos/pantallas/proyectos'
+import { CabeceraDeProyecto } from '@/modules/repuestos/pantallas/proyectos-detalle'
 import { PagosDelProyectoDiferido } from '@/modules/logistica/pantallas/dinero-proyecto'
 import { leerMonedasYTiposCambio } from '@/modules/empresa'
 import { leerLeadParaEnlazar } from '@/modules/leads'
@@ -44,10 +44,11 @@ import {
 } from './paneles'
 import { SeccionDeCompras } from './seccion-compras'
 import { SeccionDeCotizaciones } from './seccion-cotizaciones'
+import { EsqueletoDelVehiculo, VehiculoDelProyecto } from './vehiculo-del-proyecto'
 
 export const metadata: Metadata = { title: 'Proyecto de repuestos' }
 
-// Un proyecto de repuestos (`docs/UX.md` › «Repuestos»): su cabecera, los pasos del proyecto (las fases del flujo de repuestos y sus hitos, con su progreso), el panel del
+// Un proyecto de repuestos (`docs/UX.md` › «Repuestos»): su cabecera (con el vehículo, que llega en su propio `<Suspense>`), los pasos del proyecto (las fases del flujo de repuestos y sus hitos, con su progreso), el panel del
 // paso abierto (`?pestana=cotizaciones|pagos|compras`, cada uno con su permiso) y la hoja de ítems, siempre a la vista, con el botón del siguiente en cada fila. Lo que
 // no existe, está eliminado o quien mira no ve se dicen igual (D49), con un enlace al listado.
 export default function PaginaDeUnProyecto({ params, searchParams }: PageProps<'/repuestos/[id]'>) {
@@ -71,17 +72,14 @@ function NoDisponible() {
   )
 }
 
-// Las lecturas de la página tras el proyecto. Las que fallan suben al `error.tsx` (con «Reintentar»); el vehículo o el lead que quien mira no ve quedan en nulo. El lead
-// del cliente se lee sólo si lo hay y con `leads.ver`. El flujo de los pasos no lanza (dice que no se pudo leer) y el pago vivo se lee sólo con `repuestos.costos.ver`:
+// Las lecturas de la página tras el proyecto. Las que fallan suben al `error.tsx` (con «Reintentar»); el lead que quien mira no ve queda en nulo. El lead
+// del cliente se lee sólo si lo hay y con `leads.ver`. El vehículo no va aquí: lo espera su `<Suspense>` en la cabecera (su error se dice ahí y la hoja sigue). El flujo de los pasos no lanza (dice que no se pudo leer) y el pago vivo se lee sólo con `repuestos.costos.ver`:
 // si falla, queda en nulo (los pasos no dicen nada del pago).
 async function leerLoDelProyecto(proyecto: ProyectoDetallado, permisos: Permisos) {
   return Promise.all([
     leerItemsDelProyecto(proyecto.id).then(datosO),
     leerCatalogosDeRepuestos().then(datosO),
     leerMonedasYTiposCambio().then(datosO),
-    proyecto.vehiculoId === null
-      ? Promise.resolve(null)
-      : leerVehiculo(proyecto.vehiculoId).then(datosO),
     proyecto.leadId !== null && puede(permisos, 'leads.ver')
       ? leerLeadParaEnlazar(proyecto.leadId).then(datosO)
       : Promise.resolve(null),
@@ -114,7 +112,8 @@ async function Proyecto({
   if (proyecto === null) {
     return <NoDisponible />
   }
-  const [hoja, catalogos, monedas, vehiculo, lead, lectura, pago] = await leerLoDelProyecto(
+  const vehiculo = vehiculoDeLaCabecera(proyecto.vehiculoId)
+  const [hoja, catalogos, monedas, lead, lectura, pago] = await leerLoDelProyecto(
     proyecto,
     sesion.permisos,
   )
@@ -125,7 +124,7 @@ async function Proyecto({
   return (
     <CabeceraDeProyecto
       proyecto={proyecto}
-      tituloDelVehiculo={vehiculo?.titulo ?? null}
+      vehiculo={vehiculo}
       cliente={clienteDeLaCabecera({
         leadId: proyecto.leadId,
         clienteNombre: proyecto.clienteNombre,
@@ -170,6 +169,16 @@ async function Proyecto({
         permisos={permisos}
       />
     </CabeceraDeProyecto>
+  )
+}
+
+// El vehículo de la cabecera: su lectura empieza aquí, antes de esperar lo demás (va en paralelo), y la espera su `<Suspense>`. Un proyecto externo no lo lee.
+function vehiculoDeLaCabecera(vehiculoId: string | null): ReactNode {
+  if (vehiculoId === null) return null
+  return (
+    <Suspense fallback={<EsqueletoDelVehiculo />}>
+      <VehiculoDelProyecto leido={leerVehiculo(vehiculoId)} />
+    </Suspense>
   )
 }
 

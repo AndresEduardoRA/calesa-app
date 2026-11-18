@@ -14,6 +14,8 @@ import {
   campoDelOrigen,
   flujoDelOrigen,
   origenDeLaBase,
+  irAParte,
+  irADetalle,
   origenPorClave,
 } from './soporte/origenes'
 import { apagarApibara } from './soporte/apibara'
@@ -88,15 +90,6 @@ async function entrar(page: Page, correo: string) {
 async function otraPersona(browser: Browser, page: Page): Promise<Page> {
   const contexto = await browser.newContext({ baseURL: new URL(page.url()).origin })
   return contexto.newPage()
-}
-
-async function irADetalle(page: Page, nombre: string, seccion?: string) {
-  await page.goto('/configuracion/origenes')
-  await page.getByRole('link', { name: new RegExp(nombre) }).click()
-  await expect(page.getByRole('heading', { name: nombre, level: 1 })).toBeVisible()
-  if (seccion) {
-    await page.getByRole('tab', { name: seccion }).click()
-  }
 }
 
 test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus campos', async ({
@@ -265,7 +258,7 @@ test('sin el permiso, la sección sale deshabilitada y dice por qué', async ({ 
 
   await page.getByRole('link', { name: new RegExp(MANUAL) }).click()
   await expect(page.getByRole('heading', { name: MANUAL, level: 1 })).toBeVisible()
-  await page.getByRole('tab', { name: 'Campos' }).click()
+  await irAParte(page, 'Campos')
   // Next conserva la pestaña anterior oculta: sólo cuenta lo que se ve.
   await expect(page.getByText(MOTIVO_SIN_PERMISO).filter({ visible: true })).toBeVisible()
   await expect(page.getByRole('switch', { name: 'Motor: filtrable' })).toBeDisabled()

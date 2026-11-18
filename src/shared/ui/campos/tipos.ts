@@ -119,4 +119,6 @@ export type ConfiguracionDeCampos<Campo extends CampoBase, Cambios extends objec
   hueco?: (contexto: ContextoDelHueco) => ReactNode
   // Lo que la fila dice además de «Requerido» y «De fábrica» (un cambio que todavía se está aplicando).
   insignias?: (campo: Campo) => readonly string[]
+  // Un control propio del módulo en la fila, antes de «Editar» (la estrella de los datos clave de un origen). Sin él, la fila no cambia.
+  accionDeFila?: (campo: Campo) => ReactNode
 }

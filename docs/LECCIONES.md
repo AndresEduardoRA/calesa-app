@@ -140,6 +140,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - No reexportes lecturas de otras superficies por un `composicion.client.ts` que importa una pantalla en frío: ella paga todo lo que reexporta (+20 KB). Cada lectura en su `composicion-<x>.client.ts`.
 - Dale a cada superficie su propio `diferidos.tsx`: un `diferido()` de nivel superior es efecto de módulo y no se descarta aunque la pantalla no lo reexporte.
 - Mide con `presupuesto-js` antes de importar `<Badge>` u otra utilidad de `shared` en la carga en frío de una pantalla pesada: `<Badge>` arrastra Base UI (+8,5 KB).
+- Saca un componente de un `pantallas/<área>.ts` ajeno a la ruta por su propio `pantallas/<área>-<pantalla>.ts`: importar de un barril con Client Components de otra pantalla puede arrastrarlos al JS en frío (el detalle de un proyecto cargaba el listado y «Nuevo proyecto», +5 %).
 - Haz que un `loading.tsx` importe sólo el esqueleto, nunca la pantalla ni el barril de `pantallas/`: baja su chunk dos veces en frío.
 - Manda al navegador las acciones ya calculadas por el servidor, no `permisos.ts` ni las reglas: importarlas suma JS en frío a la ruta.
 - Pasa al cliente sólo lo que dibuja (`contextoParaElNavegador()`): las props viajan en el primer HTML (≈ 100 B por nodo y por fila) y las del layout, en el de todas las pantallas (30 acciones de la paleta suman 7 KB a `/perfil`).
@@ -177,7 +178,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Al cambiar un token de color corre `design/tokens.test.ts` (contraste AA) y actualiza su espejo del PDF (`estilos-del-documento.ts`) y `e2e/xcell-geometria.spec.ts`.
 - Dale a toda página nueva su `loading.tsx`, un `h1` (`sr-only` si no se ve) fuera del `Suspense` y un `<title>` único: lo exigen `estados-de-ruta.test.ts` y `accesibilidad.spec.ts`.
 - Una página que sólo redirige (tras su `loading.tsx`, la redirección es del navegador) se anota en `SOLO_REDIRIGEN` de
-  `e2e/soporte/accesibilidad-rutas.ts`: al cambiar la URL todavía se ve el esqueleto del destino y el barrido cuenta «0 h1».
+  `e2e/soporte/accesibilidad-rutas.ts`, o como `pendiente` en `DINAMICAS` si su ruta lleva un `[param]`: al cambiar la URL todavía se ve el
+  esqueleto del destino y el barrido cuenta «0 h1» o cae con «Execution context was destroyed».
 - Un control que sale de un `<Bloque>` plegado queda a la vista del barrido de accesibilidad: un `Switch` (un `span` con rol) no toma el nombre
   del `htmlFor` de su etiqueta; dale `aria-labelledby`.
 - Cuando un envío apaga el campo que tenía el foco y el diálogo pasa a mostrar el resultado, lleva el foco al resultado: si no, queda en `body`

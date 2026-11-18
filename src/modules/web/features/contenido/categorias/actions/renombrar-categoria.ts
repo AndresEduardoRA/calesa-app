@@ -18,7 +18,7 @@ export const renombrarCategoria = actionClient
     }
     const hecho = await escribirCategorias.renombrar(parsedInput)
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeWeb)
+      revalidatePath(RUTAS.guiasDelSitio)
     }
     return hecho
   })

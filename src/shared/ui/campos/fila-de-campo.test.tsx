@@ -96,6 +96,16 @@ describe('FilaDeCampo', () => {
     expect(screen.getByText('Requerido')).toBeTruthy()
   })
 
+  it('dibuja la acción de la fila antes de «Editar»; sin ella, nada', () => {
+    fila({ accion: <button type="button">Marcar «Color» como dato clave</button> })
+    const accion = screen.getByRole('button', { name: 'Marcar «Color» como dato clave' })
+    const editar = screen.getByRole('button', { name: 'Editar Color' })
+    expect(accion.compareDocumentPosition(editar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    cleanup()
+    fila()
+    expect(screen.queryByRole('button', { name: /dato clave/ })).toBeNull()
+  })
+
   it('lo que el módulo dice de un campo sale como insignia de texto', () => {
     fila({ insignias: ['Pasando a privado'] })
     expect(screen.getByText('Pasando a privado')).toBeTruthy()
