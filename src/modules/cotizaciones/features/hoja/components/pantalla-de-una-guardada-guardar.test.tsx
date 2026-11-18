@@ -46,13 +46,22 @@ function montar(cruda: Record<string, unknown> = {}, inicial: RecalculoInicial =
   if (!hoja) {
     throw new Error('La hoja de prueba no se leyó.')
   }
-  return render(<PantallaDeUnaGuardada hoja={hoja} inicial={inicial} personaId={PERSONA} />, {
-    wrapper: ({ children }: { children: ReactNode }) => (
-      <NuqsTestingAdapter>
-        <ProveedorAtajos>{children}</ProveedorAtajos>
-      </NuqsTestingAdapter>
-    ),
-  })
+  return render(
+    <PantallaDeUnaGuardada
+      hoja={hoja}
+      inicial={inicial}
+      personaId={PERSONA}
+      vehiculoNuevo={null}
+      cambiaVehiculo={false}
+    />,
+    {
+      wrapper: ({ children }: { children: ReactNode }) => (
+        <NuqsTestingAdapter>
+          <ProveedorAtajos>{children}</ProveedorAtajos>
+        </NuqsTestingAdapter>
+      ),
+    },
+  )
 }
 const guardar = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Guardar' })
 
@@ -81,6 +90,7 @@ const pendiente = (intento: string): PedidoDeEdicion => ({
   tituloManual: false,
   notas: null,
   vehiculoId: null,
+  cambiaElVehiculo: false,
 })
 const CLAVE_DEL_PENDIENTE = `cotizar-guardada-pendiente:${PERSONA}:${ID_DE_LA_COTIZACION}`
 
@@ -166,6 +176,7 @@ describe('guardar', () => {
       tituloManual: false,
       notas: 'Con flete',
       vehiculoId: null,
+      cambiaElVehiculo: false,
       verTotalBs: false,
     })
     expect(pedido.intento).toMatch(/^[0-9a-f-]{36}$/)
@@ -266,7 +277,15 @@ describe('«Recargar» tras un conflicto', () => {
     if (!otra) {
       throw new Error('La hoja de prueba no se leyó.')
     }
-    rerender(<PantallaDeUnaGuardada hoja={otra} inicial={alDia(2350)} personaId={PERSONA} />)
+    rerender(
+      <PantallaDeUnaGuardada
+        hoja={otra}
+        inicial={alDia(2350)}
+        personaId={PERSONA}
+        vehiculoNuevo={null}
+        cambiaVehiculo={false}
+      />,
+    )
     await waitFor(() => {
       expect(screen.queryByText(/Olga Otra cambió esta cotización/)).toBeNull()
     })

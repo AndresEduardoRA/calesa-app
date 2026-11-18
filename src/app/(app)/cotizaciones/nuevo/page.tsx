@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { connection } from 'next/server'
 import { Suspense, type ReactNode } from 'react'
-import { z } from 'zod'
 import {
   CLAVE_DE_LEAD,
   CLAVE_DE_ORIGEN,
@@ -27,15 +26,14 @@ import { puede, type Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
-import { AvisoDeSubastaDeLaHoja } from './aviso-de-subasta'
+import { AvisoDeSubastaDeLaHoja } from '../aviso-de-subasta'
+import { idDeUrl, type Quien, type VehiculoDeLaUrl } from '../vehiculo-de-la-hoja'
 import { BarraConHistorial } from './barra-con-historial'
 import {
   camposQueSeEligen,
   leerLoDeLaHoja,
   paraElegirDe,
   reglasDeLaHoja,
-  type Quien,
-  type VehiculoDeLaUrl,
 } from './lecturas-de-la-hoja'
 
 // Lo que el área `formula` llena en la hoja (`pantallas/formula-hoja.ts`): el enlace de «Falta publicar la fórmula».
@@ -55,13 +53,6 @@ export default function PaginaDeCotizar({ searchParams }: PageProps<'/cotizacion
       </Suspense>
     </div>
   )
-}
-
-const esId = z.guid()
-// Lo que la URL trae como id y no lo es se ignora.
-const idDeUrl = (valor: string | string[] | undefined): string | null => {
-  const leido = esId.safeParse(unParametro(valor))
-  return leido.success ? leido.data : null
 }
 
 async function Hoja({

@@ -89,3 +89,41 @@ describe('resultadoDeGuardar', () => {
     }
   })
 })
+
+describe('resultadoDeGuardar › con la hoja cambiando el vehículo (T315)', () => {
+  const cambiando = (e: ErrorDeCrear) =>
+    resultadoDeGuardar({ data: null, error: e }, { cambiaElVehiculo: true })
+
+  it('un 42501 sin details es del vehículo nuevo: su texto y «Elegir otro vehículo»', () => {
+    const r = cambiando({ code: '42501', message: 'No tienes acceso a este vehículo.' })
+    expect(r).toEqual({ tipo: 'rechazo', motivo: 'vehiculo_sin_acceso' })
+    expect(textoDelRechazo('vehiculo_sin_acceso')).toEqual({
+      texto:
+        'No se puede usar ese vehículo: ya no existe, está en la papelera o ya no tienes acceso.',
+      salida: 'elegir_vehiculo',
+    })
+  })
+
+  it('sin cambiar el vehículo, el mismo 42501 es el de siempre', () => {
+    expect(motivo({ code: '42501', message: 'No tienes acceso a este vehículo.' })).toBe(
+      'sin_acceso',
+    )
+  })
+
+  it('un 42501 con detalle sigue siendo lo suyo, y el 22023 hint vehiculo (pasó a final) es «cambió mientras la tenías abierta»', () => {
+    const r = cambiando({ code: '42501', message: 'x', details: 'nodo_no_editable' })
+    expect(r.tipo === 'rechazo' && r.motivo).toBe('recargar_hoja')
+    const final = cambiando({
+      code: '22023',
+      message: 'Una cotización final no cambia de vehículo.',
+      hint: 'vehiculo',
+    })
+    expect(final.tipo === 'rechazo' && final.motivo).toBe('cotizacion_cambio')
+  })
+
+  it('el conflicto de versión sigue siendo el conflicto', () => {
+    expect(cambiando({ code: 'PT409', message: DE_LA_BASE })).toMatchObject({
+      motivo: 'version_cambiada',
+    })
+  })
+})

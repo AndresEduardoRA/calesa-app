@@ -146,7 +146,10 @@ Estados propios:
   - **Sólo lectura** (puede verla y no guardarla): sin «Guardar», modos y «Ver total Bs» apagados, con su aviso.
   - **Lo de hoy no es lo guardado** (cambió una tabla de referencia o un dato del vehículo): se recalcula con lo de hoy, el aviso lo dice,
     «Total guardado» muestra el de antes con `<Monto>` (también si el recálculo falla o no ve el vehículo) y «Guardar» la deja con lo de
-    hoy.
+    hoy. Con otro vehículo elegido el aviso no se dice (sólo «Total guardado» si el total es otro).
+  - **Otro vehículo** (preventa): «Recargar» suelta lo elegido (nunca vuelve sobre otra versión); un vehículo que se perdió entre elegir y guardar
+    dice «No se puede usar ese vehículo: ya no existe, está en la papelera o ya no tienes acceso.» con «Elegir otro vehículo»; si pasó a final,
+    «Esta cotización cambió mientras la tenías abierta: recárgala.». Sin red, lo elegido queda en la URL y el guardado sale al volver.
   - **Revisiones** (`?panel=revisiones`, sólo lectura; recargar lo abre, «atrás» lo cierra): por revisión, autor y fecha relativa, qué
     cambió (tres cosas y «y N más»; «Sin cambios que puedas ver.» si sólo cambió lo que el nivel esconde) y «Total: <antes> → <después>»;
     de a 20 hasta 500, con «Ir a una fecha» (no va a la URL) y «Volver a las más recientes». Esqueleto a los 300 ms, vacío, error.
@@ -298,8 +301,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   se llevan; el vehículo va al recálculo); sin entrada en la navegación. Ver Flujo 2.
 - **Cotización guardada** — `/cotizaciones/[id]` (`cotizaciones.ver`; edita quien la puede guardar, `puede_guardar` de la base): la hoja de
   SU versión; quien sólo ve, en sólo lectura. Cabecera: el h1 «Cotización n.º N» y, bajo el origen y el cliente, **la barra del vehículo** con el título grande y
-  el vehículo debajo (o «Sin vehículo»); quien la puede guardar la abre en el panel del vehículo con sólo el campo «Título de la cotización» y el vehículo
-  en sólo lectura (cambiarlo no es de esta pantalla) y guardar deja «Cambió el título» en «Revisiones»; quien sólo ve, la barra sin botón. La insignia «Aprobada» (todos los que la ven) o «Aprobar» (con `cotizaciones.aprobar` del
+  el vehículo debajo (o «Sin vehículo»); quien la puede guardar la abre en el panel del vehículo con el campo «Título de la cotización» arriba y guardar
+  deja «Cambió el título» en «Revisiones». **En una preventa** el panel es el de cotizar (buscar, pegar un enlace/VIN/lote, «+», «Últ. cotización» y
+  «Cierre subasta»; sin «Quitar», también en una sin vehículo): elegir otro (`?vehiculo=`) recalcula la hoja sin guardar, el título automático pasa al del
+  nuevo (un manual se respeta), «Guardar» se enciende y guardar deja «Cambió el vehículo: A → B» (uno que quien mira no ve, «un vehículo que no puedes ver»);
+  el dato del vehículo de una tabla no se elige ahí. **En una final**, el vehículo en sólo lectura con «Una cotización final no cambia de vehículo.».
+  Un `?vehiculo=` que no se puede usar deja la hoja con el guardado y dice bajo la barra «No se puede usar ese vehículo.» con «Elegir otro vehículo»;
+  la subasta cerrada del nuevo, su aviso de siempre bajo la barra. Quien sólo ve, la barra sin botón. La insignia «Aprobada» (todos los que la ven) o «Aprobar» (con `cotizaciones.aprobar` del
   origen: sin confirmar; apagado con su motivo sin vehículo o si es inválida; al entrar pasa a la insignia y el aviso ofrece «Deshacer» 10 s;
   PT409 con quién y cuándo y «Recargar»), «Revisiones», la cadena, «Cotizar encima» si no está al día, «Marcar final» (en una
   preventa, con `cotizaciones.final.gestionar` del origen; `?panel=marcar-final`), «Emitir comprobante» (en una final activa sin

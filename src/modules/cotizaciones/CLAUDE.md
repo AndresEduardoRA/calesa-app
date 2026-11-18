@@ -49,11 +49,20 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   con lo guardado; `entradasDeLoGuardado()` espeja `_cotizacion_entradas_de`); sin `puede_guardar` de la base, sólo lectura. El recálculo usa tablas y
   vehículo de hoy: si difiere (`difiereAlAbrir()`) se dice y se muestra «Total guardado». «Guardar» (`cotizacion_guardar`, siempre
   `ok(ResultadoDeCrear)`, `revalidatePath` sólo si entró) manda la versión vista (`actualizadoEn`), las entradas al día, el título y si es manual (del
-  proveedor) y notas y vehículo sin tocar; apagado sin cambios (cambiar el título es un cambio), salvo con un pendiente (4-21) o si lo de hoy no es lo
+  proveedor), las notas sin tocar y el vehículo de la hoja; apagado sin cambios (cambiar el título o el vehículo es un cambio), salvo con un pendiente (4-21) o si lo de hoy no es lo
   guardado. Sin vehículo y sin título pide el título como la nueva (`panelDelTitulo`, que pasa `src/app`). La cabecera (`CabeceraDeLaGuardada`, hueco `barra`)
   dibuja la barra del vehículo de `vehiculos` que arma `src/app/(app)/cotizaciones/[id]/` (`barra-de-la-guardada.tsx`, diferida): el título grande y el
-  vehículo en sólo lectura; con `puede_guardar` abre el panel sólo con el campo del título. Pendiente y borrador van por persona y cotización, el
+  vehículo debajo; con `puede_guardar` abre el panel con el campo del título arriba. Pendiente y borrador van por persona y cotización, el
   borrador además con la versión (`claves-de-la-hoja.ts`).
+- **Cambiar el vehículo de una preventa guardada** (T315): `cambioDeVehiculo({ clase, puedeGuardar })` (`entities/vehiculo-de-la-guardada.ts`, del núcleo) da
+  `elige` (la barra en modo `cambiar`: el panel de cotizar sin «Quitar», con alta; el dato del vehículo de una tabla no se elige ahí), `final` (`ver_elegido` con
+  `MOTIVO_DE_LA_FINAL`) o `no` (`solo_mostrar`). Lo elegido vive en `?vehiculo=` (`CLAVE_DE_VEHICULO`, lo escribe el panel con `shallow: false`): `leerHojaDeUnaGuardada(id,
+{ vehiculo })` calcula con él si `vehiculoParaCalcular()` lo deja (preventa, `puede_guardar`, otro que el guardado) y devuelve `vehiculoNuevo`; si la base lo rechaza,
+  calcula con el suyo y `vehiculoSoltado` (la barra dice «No se puede usar ese vehículo.» con «Elegir otro vehículo»). `PantallaDeUnaGuardada` recibe `vehiculoNuevo`
+  (congelado con la hoja) y `cambiaVehiculo`; la `key` de la hoja suma el vehículo (el borrador repone lo tipeado), el aviso de C11 no se dice con otro vehículo
+  (el «Total guardado», sí), guardar manda `cambiaElVehiculo` (no va a la RPC: con él, un 42501 sin detalle es `vehiculo_sin_acceso`, que ofrece «Elegir otro
+  vehículo») y, guardado, suelta `?vehiculo=` con `nuqs` sin ir al servidor; «Recargar» lo suelta yendo (`useSoltarElVehiculo()`). Tarjeta, PDF, huecos y cabecera
+  siguen con lo guardado; la barra, el título y la hoja, con el nuevo.
 - **`/cotizaciones/comparar?ids=a,b[,c]&returnTo=`** (pide sesión; `cotizaciones.ver` de cada una lo decide la base): «Comparar cotizaciones», del área
   `aprobada` (`areas/aprobada/CLAUDE.md` › «Comparar cotizaciones»; `pantallas/aprobada-comparar.ts` y `aprobada-esqueleto-de-comparar.ts`). Lo guardado sin
   recálculo. El enlace (`rutaDeComparar`) y la lectura de `ids` (`idsParaComparar`: 2 o 3 guids distintos, en minúsculas, en el orden de la URL) son del
@@ -70,7 +79,9 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   se elige (`seEligen`; `campo_sin_valor`, `fila_sin_coincidencia`) dice «Elige el dato del vehículo en «Vehículo»…».
 - **«Revisiones»** (`?panel=revisiones`): lee `cotizacion_revisiones` desde el navegador por `composicion-revisiones.client.ts`, con «Ver más» por
   cursor (el id de la última); lo leído es de una versión (`actualizadoEn`). La RPC recorta cada diff al nivel de quien mira; `cambiosDeLaRevision()` da el
-  total sólo si llegan los dos números. «Ir a una fecha»: `p_hasta` es el inicio del día siguiente en la zona de la empresa (exclusivo); el salto
+  total sólo si llegan los dos números. Un cambio de vehículo se nombra al leer (T315): `idsDeVehiculosDe()` junta los ids de la página y una lectura de `vehiculos`
+  por pk (≤ 2 × `TAMANO_DE_VER_MAS`, RLS de quien mira, sin papelera) los vuelve `conVehiculos()` («Cambió el vehículo: A → B», primero; lo que no vuelve es «un
+  vehículo que no puedes ver», un lado nulo «sin vehículo»); si esa lectura falla, «Cambió el vehículo». Ningún título se copia a la revisión. «Ir a una fecha»: `p_hasta` es el inicio del día siguiente en la zona de la empresa (exclusivo); el salto
   reemplaza lo leído, «Ver más» sigue sin `p_hasta` y la ventana no va a la URL (`useTurno`). La base supone que el id crece con `creado_en`
   (`docs/PENDIENTES.md`, 4-95).
 - **La cadena** (`cadena` de `cotizacion_hoja_guardada`): «Versión V de la n.º N» con enlace a la anterior si se ve, «Hay una versión nueva: n.º M
@@ -250,7 +261,7 @@ nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con l
   `comprobante_emitir|anular` y `comprobantes_serie_cambiar` (escritos para la persona). El porcentaje de un par va a `inputs` u `overrides` según
   `secundario.tipoDeNodo` (4-31); todo error con SQLSTATE suelta el pendiente; la `key` de la hoja lleva la abierta.
 - La hoja calcula **por su origen o por su cotización, nunca por las dos** (`DeDondeCalcula`: la base rechaza `p_abierta` con `p_cotizacion`); una
-  guardada no manda `p_origen`, `p_abierta` ni `p_vehiculo`. `actualizadoEn` (y toda versión esperada) es el texto de la base con sus microsegundos:
+  guardada no manda `p_origen` ni `p_abierta`; `p_vehiculo`, sólo el elegido en una preventa para cambiarlo (T315). `actualizadoEn` (y toda versión esperada) es el texto de la base con sus microsegundos:
   **nunca pasa por `Date`**.
 - «Recargar» en una guardada remonta la hoja (la `key` suma una lectura pedida): sin remonte `useRecalculo` ignora el primer cálculo nuevo y lo rechazado
   se reenvía. `difiereAlAbrir` compara `valores` y `totales.usd` de lo guardado con el primer recálculo.

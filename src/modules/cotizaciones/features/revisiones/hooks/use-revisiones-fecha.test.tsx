@@ -27,6 +27,7 @@ const revision = (id: number) => ({
   creadoEn: '2026-11-04T10:00:00+00:00',
   autor: null,
   diff: {},
+  vehiculo: null,
 })
 const pagina = (desde: number, cuantas: number, siguiente: number | null): Respuesta => ({
   ok: true,

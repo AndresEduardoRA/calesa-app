@@ -4,8 +4,11 @@ import { resultadoDeCrear, type ErrorDeCrear, type ResultadoDeCrear } from './gu
 // tres casos propios, que se leen **antes**:
 // - PT409 sin `details`: el conflicto de versión. Su mensaje (`_conflicto_de_edicion`) sólo nombra a una persona y cuándo, y es lo único de la base que se muestra.
 // - 22023 `intento_reusado`: el mismo guardado con otros datos.
-// - 22023 con `hint` `vehiculo` y sin `details`: el vehículo se compara antes que la versión (`cotizacion_guardar`); como la hoja no lo cambia, la cotización cambió de vehículo o
-//   pasó a final. `resultadoDeCrear` lo leería como «Este origen pide un vehículo para guardar.», que engaña aquí.
+// - 22023 con `hint` `vehiculo` y sin `details`: el vehículo se compara antes que la versión (`cotizacion_guardar`). La hoja nunca lo quita: sin cambiarlo, la cotización
+//   cambió de vehículo o pasó a final; cambiándolo (T315), pasó a final mientras se elegía. `resultadoDeCrear` lo leería como «Este origen pide un vehículo para guardar.»,
+//   que engaña aquí.
+// Y uno que depende de la hoja: con `cambiaElVehiculo`, un 42501 sin `details` es del vehículo nuevo (`vehiculo_sin_acceso`: no existe, está en la papelera o dejó de verse).
+// La base no distingue sus 42501 y su mensaje nunca se lee; si fuera de la cotización (raro: la base la mira antes), elegir otro vuelve a fallar y la persona recarga.
 // Un D2 (la fórmula o un tipo de cambio) no puede llegar de guardar: si llega, es «otro».
 const LARGO_MAXIMO_DEL_MENSAJE = 300
 const ESTE_CAMBIO = 'Esta cotización cambió.'
@@ -27,14 +30,20 @@ function rechazoPropio(error: ErrorDeCrear): ResultadoDeCrear | null {
   return null
 }
 
-export function resultadoDeGuardar(respuesta: {
-  data: unknown
-  error: ErrorDeCrear | null
-}): ResultadoDeCrear {
+export function resultadoDeGuardar(
+  respuesta: {
+    data: unknown
+    error: ErrorDeCrear | null
+  },
+  { cambiaElVehiculo }: { cambiaElVehiculo: boolean } = { cambiaElVehiculo: false },
+): ResultadoDeCrear {
   const { error } = respuesta
   const propio = error?.code ? rechazoPropio(error) : null
   if (propio !== null) {
     return propio
+  }
+  if (cambiaElVehiculo && error?.code === '42501' && !error.details) {
+    return { tipo: 'rechazo', motivo: 'vehiculo_sin_acceso' }
   }
   const resultado = resultadoDeCrear(respuesta)
   const esUnD2 =

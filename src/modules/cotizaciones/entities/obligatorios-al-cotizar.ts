@@ -25,8 +25,8 @@ export function loQueFalta(
   return null
 }
 
-// Cómo se elige lo que falta: con el botón que abre su panel de la URL, o, sin permiso para verlo, el pedido a quien administra los roles.
-export type EleccionDeLoQueFalta = { panel: string } | { pedido: string }
+// Cómo se elige lo que falta: con el botón que abre su panel de la URL (con su texto, si no es el de siempre), o, sin permiso para verlo, el pedido a quien administra los roles.
+export type EleccionDeLoQueFalta = { panel: string; texto?: string } | { pedido: string }
 
 export type EleccionesDeLaHoja = Record<LoQueFalta, EleccionDeLoQueFalta>
 
@@ -40,8 +40,13 @@ export const SIN_ELECCIONES: EleccionesDeLaHoja = {
   titulo: { pedido: '' },
 }
 
-// Una guardada sólo puede pedir el título (sin vehículo): su panel es el del vehículo (el nombre lo pasa `src/app`). El rechazo de la base ofrece el mismo botón.
-export const eleccionesDeUnaGuardada = (panelDelTitulo: string): EleccionesDeLaHoja => ({
+// Una guardada sólo puede pedir el título (sin vehículo): su panel es el del vehículo (el nombre lo pasa `src/app`). El rechazo de la base ofrece el mismo botón. Si quien mira
+// puede cambiar el vehículo (T315), el rechazo de uno que ya no se puede usar ofrece «Elegir otro vehículo», en el mismo panel.
+export const eleccionesDeUnaGuardada = (
+  panel: string,
+  { cambiaVehiculo }: { cambiaVehiculo: boolean } = { cambiaVehiculo: false },
+): EleccionesDeLaHoja => ({
   ...SIN_ELECCIONES,
-  titulo: { panel: panelDelTitulo },
+  titulo: { panel },
+  ...(cambiaVehiculo ? { vehiculo: { panel, texto: 'Elegir otro vehículo' } } : {}),
 })
