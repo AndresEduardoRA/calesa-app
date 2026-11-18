@@ -4,6 +4,7 @@ import {
   type GrupoDeCampos,
   type Sentido,
 } from '@/shared/lib/campos'
+import type { ReactNode } from 'react'
 import { FilaDeCampo } from './fila-de-campo'
 import type { BanderaDeCampo } from './tipos'
 
@@ -13,6 +14,7 @@ type Props<Campo extends CampoBase> = {
   campos: readonly Campo[]
   banderas: readonly BanderaDeCampo[]
   insignias?: ((campo: Campo) => readonly string[]) | undefined
+  accionDeFila?: ((campo: Campo) => ReactNode) | undefined
   puedeGestionar: boolean
   ocupado: boolean
   alAbrir: (id: string) => void
@@ -22,7 +24,7 @@ type Props<Campo extends CampoBase> = {
 
 // Los campos activos, un bloque por grupo, en el orden del layout.
 export function GruposDeCampos<Campo extends CampoBase>(props: Props<Campo>) {
-  const { grupos, campos, banderas, insignias, puedeGestionar, ocupado } = props
+  const { grupos, campos, banderas, insignias, accionDeFila, puedeGestionar, ocupado } = props
   const { alAbrir, alMover, alCambiarBandera } = props
   return (
     <>
@@ -38,6 +40,7 @@ export function GruposDeCampos<Campo extends CampoBase>(props: Props<Campo>) {
                 campo={campo}
                 banderas={banderas}
                 insignias={insignias?.(campo) ?? []}
+                accion={accionDeFila?.(campo)}
                 puedeGestionar={puedeGestionar}
                 ocupado={ocupado}
                 puedeSubir={destinoDeMovimiento(campos, campo.id, 'subir') !== null}
