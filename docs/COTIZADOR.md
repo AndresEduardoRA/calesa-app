@@ -347,6 +347,12 @@ la pide.
 - **El ⚙** (`formula_cambiar_constante(origen, nodo, valor, publicada_esperada?)`, `cotizaciones.configurar`): publica la N+1 desde la
   publicada (definición y diseño, `params` con el valor nuevo; un nivel retirado no lo frena), **sin crear ni tocar el borrador**.
   Esperada nula = la publicada que lee al entrar; el mismo valor da 22023 (hint `valor`).
+- **El ⚙ de la cabecera** (`formula_cambiar_cabecera(origen, modo_por_defecto, ver_total_bs_por_defecto, modos_visibles, publicada_esperada?)`,
+  `cotizaciones.configurar`): publica la N+1 desde la publicada con las tres claves por defecto de la cabecera escritas siempre juntas (definición
+  y `params` iguales), **sin crear ni tocar el borrador**. Mismo contrato que el ⚙ de una constante: el permiso primero, la esperada (PT409 con
+  quién y cuándo), `_publicar_version()` (candado, validación entera del diseño, `formula.publicada` con `despues.cabecera`). 22023 con hint
+  `cabecera` si la publicada no tiene modos o ya tiene esos valores (los efectivos: lo que falta vale el primer modo, falso y todos). La hoja
+  lo dibuja sólo con `cabecera.ajustes`; «Aplicar también a esta cotización» cambia la hoja abierta como si la persona eligiera.
 - **Revertir** (`formula_revertir(origen, versión, nota, publicada_esperada)`, sin defaults, `cotizaciones.configurar`): publica la N+1
   como copia de una **archivada** (definición, params y **diseño**), sin tocar el borrador. Rechaza la publicada, un borrador, otro origen o
   inexistente (mismo texto) y la esperada nula (22023); un nivel retirado en ese diseño da 22023 `nivel_retirado`. `actividad` registra
@@ -365,8 +371,8 @@ la pide.
 - **Dónde se ven:** pestaña «Fórmula» de Configuración › Cotización: publicada, borrador (atrasado si su versión de origen ya no es la
   publicada) y versiones por cursor, sin lo oculto (`docs/UX.md` › «Cotización: fórmula (estados propios)»); ahí se publica con nota, se
   descarta (`<Confirmar>`) y se revierte.
-- **Carreras** (`scripts/carreras/tonos.mjs`, `formula-mixtas.mjs`): dos publicar, dos ⚙, el ⚙ contra publicar el borrador y revertir contra
-  el ⚙, en los dos órdenes y con o sin esperadas: la segunda da PT409 y nada se pisa.
+- **Carreras** (`scripts/carreras/tonos.mjs`, `formula-mixtas.mjs`): dos publicar, dos ⚙, el ⚙ contra publicar el borrador, revertir contra
+  el ⚙ y el ⚙ de la cabecera contra el de una constante y contra publicar, en los dos órdenes: la segunda da PT409 y nada se pisa.
 
 ### La cotización aprobada
 
