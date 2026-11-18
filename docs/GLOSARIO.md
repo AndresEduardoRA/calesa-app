@@ -627,7 +627,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Margen del proyecto** — `repuestos_proyecto_margen()`: por moneda, Σ precios de los ítems − Σ compras; nulo si falta un precio.
 - **Nota** — `notas`: bloc de notas de una unidad; la del cambio de fase apunta a su historial.
 - **Proyecto de repuestos** — `repuestos_proyectos`: un proyecto por vehículo (o externo).
+- **Proyecto externo** — `repuestos_proyectos.vehiculo_id is null`: el proyecto sin vehículo del inventario, con la etiqueta y el VIN escritos a mano
+  (`vehiculo_etiqueta`, `vin`). En el listado se escribe «Externo · …» y en la cabecera de `/repuestos/[id]` «Proyecto externo · sin vehículo» (`ProyectoExterno`).
 - **Ítem de repuesto** — `repuestos_items`: el repuesto que recorre el flujo de repuestos.
+- **Grupo por paso** — `GrupoPorPaso` (`agruparPorPaso`, `entities/items/grupos-por-paso.ts`): los ítems de una misma fase bajo su encabezado («Comprar · 3»)
+  en la hoja de `/repuestos/[id]`, en el orden de los pasos y «Sin fase» al final. No es «Grupo (de la hoja)» del cotizador ni «Grupo (de transporte)».
 - **Paso (de un proyecto)** — `PasoDelProyecto` (`entities/flujo/pasos.ts`): cada parada del camino de la venta sobre la hoja de `/repuestos/[id]`:
   una fase activa del flujo de repuestos (su nombre, en su orden) o un hito, con su progreso en texto («3 de 5», «37+ de 200+»). No: «etapa»
   (es del embudo).
