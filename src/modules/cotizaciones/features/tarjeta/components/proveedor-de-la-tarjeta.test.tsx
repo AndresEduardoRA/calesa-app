@@ -6,6 +6,8 @@ import { ContextoDeLaVistaPrevia } from '../../hoja/components/hueco-de-la-vista
 import { calculoDePrueba } from '../../../entities/tarjeta/tarjeta.soporte'
 import type { LecturaDeLaTarjeta } from '../../../entities/tarjeta/lectura-de-la-tarjeta'
 
+const pedirLaPortada = vi.hoisted(() => vi.fn())
+vi.mock('../../../areas/tarjeta/composicion-portada.client', () => ({ pedirLaPortada }))
 vi.mock('../../../areas/tarjeta/composicion.client', () => ({
   leerTarjeta: () =>
     Promise.resolve<Resultado<LecturaDeLaTarjeta>>({
@@ -77,4 +79,29 @@ describe('<ProveedorDeLaTarjeta>', () => {
     expect(screen.getByRole('button', { name: 'Descargar PDF' })).toBeTruthy()
     // La espera de arriba es de 10 s: la prueba necesita más que los 5 s de siempre (cayó a los 5,4 s con la suite en paralelo).
   }, 15_000)
+
+  it('con una cotización guardada pide su portada, sin esperarla', () => {
+    function Guardar() {
+      const hueco = useContext(ContextoDeLaVistaPrevia)
+      hueco?.alGuardarLaCotizacion?.('00000000-0000-4000-8000-0000000000cc')
+      return null
+    }
+    render(
+      <ProveedorDeLaTarjeta
+        titulo={null}
+        cliente={null}
+        vehiculo={null}
+        asesor={null}
+        numero={null}
+        vencida={false}
+        venceEl={null}
+        guardadaEl={null}
+        logo={null}
+        cotizacionId={null}
+      >
+        <Guardar />
+      </ProveedorDeLaTarjeta>,
+    )
+    expect(pedirLaPortada).toHaveBeenCalledWith('00000000-0000-4000-8000-0000000000cc')
+  })
 })
