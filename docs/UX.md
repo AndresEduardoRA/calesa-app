@@ -327,7 +327,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `aria-current="page"` y debajo sus sub-secciones; arriba «‹ Configuración» (al inicio) y, donde no se ve el menú, el **selector de sección**
   (`<select>` nativo con su «Sección», por grupo, a 44 px en el celular; elegir navega y, con cambios sin guardar, pregunta). En el inicio no
   van ni el menú, ni el selector, ni la vuelta. Un grupo sin secciones que abrir no se dibuja; sin ninguna, «No tienes permiso» y sin menú.
-  Equipo, Roles, Flujos y Empresa sólo se envuelven.
+  Equipo, Roles, Flujos y Empresa sólo se envuelven. **El inicio:** una tarjeta por grupo (`h2`) con, por sección, su título (el enlace), una
+  frase y **lo que falta**, en la sección donde se resuelve: «Falta publicar la fórmula de {origen}» (Cotización), «Falta configurar el flujo de
+  {origen}» (Flujos), «Falta activar apibara» una vez (Empresa); sólo de orígenes activos y lo que la persona puede hacer (no el paso de los
+  permisos), con su enlace al paso; hasta 3 y «Y N más». Llega después de las tarjetas; si no se puede leer, la tarjeta queda con su frase.
 - **Leads (config)** — `/configuracion/leads` (`leads.campos.gestionar` o `leads.configurar`): lista agrupada + panel lateral.
   `?seccion=campos` (`?campo=`), `origenes` (`?panel=nuevo-origen`/`editar-origen&origen=<id>`), `tipos`
   (`?panel=nuevo-tipo`/`editar-tipo&tipo=<id>`/`eliminar-tipo&tipo=<id>`), `seguimientos`, `embudo` (la plantilla: editor de etapas en la
@@ -433,6 +436,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   abierto en peso normal; lo último lleva además borde de acento y «Último visto» (y también va en peso normal). «Visto» se dice con texto para el lector: nada
   depende sólo del peso. Con «Vistos» apagado, o sin saber aún qué se abrió, ninguna lista pone negrita por esto. En el chip de la agenda, «visto» lleva una
   tilde (y el texto para el lector) y lo nuevo no lleva nada: el fondo es de la clase y su etiqueta ya va en negrita, así que el peso no se distingue. Aduana y las notificaciones no marcan. `/perfil` › «Vistos»: marcar o no, recordar 7, 30, 90 días o 1 año, marcar o no el último.
+- **Barra de cambios sin guardar:** un formulario de página (no de un panel) muestra abajo, pegada (`sticky`, sin tapar el último campo),
+  «Tienes cambios sin guardar» · «Descartar» · «Guardar» al cambiar algo; salir con cambios (un enlace, un aviso, el selector de sección,
+  recargar o cerrar) pregunta «Tienes cambios sin guardar.» · «Descartar» · «Seguir editando». El «atrás» del navegador no pregunta.
 - **Avisos con acciones:** un aviso de error, advertencia o bloqueo que tiene salida la ofrece ahí mismo (de 1 a 3, la que destraba primero;
   sin permiso, a quién pedírselo) — `.claude/rules/ui.md` › «Avisos con acciones».
 - **Fechas de subasta:** en la zona de quien mira (`/perfil` › «Zona horaria»; sin elegir, la de la empresa), con la abreviatura («14:00

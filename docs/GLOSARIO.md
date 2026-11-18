@@ -95,7 +95,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Origen sin uso** — `motivoParaNoEliminar()` / `origen_eliminar()`: sin vehículos (papelera incluida), cotizaciones ni fórmula publicada.
 - **Uso de un origen** — `origenes_resumen()` / `UsoDeOrigen`: vehículos, cotizaciones, campos, categorías, fases, ¿fórmula publicada? y
   concesiones.
-- **Siguientes pasos** — `pasosDe()` / `<SiguientesPasos>`: lo que falta a un origen para funcionar (fases, fórmula, permisos, apibara).
+- **Siguientes pasos** — `pasosDe()` / `<SiguientesPasos>`: lo que falta a un origen para funcionar (fases, fórmula, permisos, apibara). Lo
+  accionable se ve también en el inicio de Configuración como **lo que falta** (`faltasPorSeccion()`, `<QueFaltaDeLaSeccion>`).
 - **Fórmula pendiente** — origen sin fila `publicada` en `formulas`: un origen nuevo no se cotiza hasta publicar la primera.
 - **Vehículo** — `vehiculos`: el dato central; recorre el flujo de su origen.
 - **Atributos** — `vehiculos.atributos`, `leads.atributos`: campos del layout que no son columna. En un lead se leen por `leads_vista`, recortados.
