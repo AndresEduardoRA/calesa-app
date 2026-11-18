@@ -27,36 +27,38 @@ export function FilaDeActividad({ fila, zona, abierta, alternar }: Props) {
         abierta && 'bg-(--color-surface-2)',
       )}
     >
-      <div className="flex min-w-0 flex-wrap items-start gap-x-3 gap-y-1">
+      <div className="flex min-w-0 items-start gap-3">
         <IconoDeEntidad icono={frase.icono} />
-        <div className="grid min-w-0 flex-1 basis-48 gap-0.5">
+        <div className="grid min-w-0 flex-1 gap-0.5">
           <FraseDeActividad frase={frase} zona={zona} />
-          <time
-            dateTime={fila.creadoEn}
-            className="text-(length:--text-xs) text-(--color-ink-soft) tabular-nums"
-          >
-            {formatearHora(fila.creadoEn, { zona })}
-          </time>
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3">
+            <time
+              dateTime={fila.creadoEn}
+              className="text-(length:--text-xs) text-(--color-ink-soft) tabular-nums"
+            >
+              {formatearHora(fila.creadoEn, { zona })}
+            </time>
+            {fila.visible ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-expanded={abierta}
+                aria-controls={abierta ? idDelDetalle : undefined}
+                className="-mr-2 min-h-11 shrink-0 md:min-h-8"
+                onClick={() => {
+                  alternar(fila.id)
+                }}
+              >
+                {abierta ? 'Ocultar detalle' : 'Ver detalle'}
+                <ChevronDownIcon
+                  aria-hidden
+                  className={cn('transition-transform', abierta && 'rotate-180')}
+                />
+              </Button>
+            ) : null}
+          </div>
         </div>
-        {fila.visible ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            aria-expanded={abierta}
-            aria-controls={abierta ? idDelDetalle : undefined}
-            className="ml-auto min-h-11 shrink-0 md:min-h-8"
-            onClick={() => {
-              alternar(fila.id)
-            }}
-          >
-            {abierta ? 'Ocultar detalle' : 'Ver detalle'}
-            <ChevronDownIcon
-              aria-hidden
-              className={cn('transition-transform', abierta && 'rotate-180')}
-            />
-          </Button>
-        ) : null}
       </div>
       {abierta && fila.visible ? (
         <div

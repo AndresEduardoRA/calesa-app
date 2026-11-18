@@ -33,8 +33,11 @@ export function ChipDeEleccion({ etiqueta, todas, opciones, valor, alElegir }: P
       )}
     >
       <label htmlFor={id} className="shrink-0 pl-3 text-(--color-ink-soft)">
-        {etiqueta}:
+        {etiqueta}
       </label>
+      <span aria-hidden className="text-(--color-ink-soft)">
+        :
+      </span>
       <span className="relative flex min-w-0 items-center">
         <select
           id={id}

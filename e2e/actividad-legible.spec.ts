@@ -134,7 +134,9 @@ test('E2E los chips de persona y de tipo de registro filtran y se quitan', async
     `Registro: ${vehiculo.titulo} #${vehiculo.numero}`,
   )
 
-  await page.getByLabel('Persona').selectOption({ label: 'Carlos Alta Prueba' })
+  await page
+    .getByRole('combobox', { name: 'Persona', exact: true })
+    .selectOption({ label: 'Carlos Alta Prueba' })
   await expect(page).toHaveURL(new RegExp(`[?&]persona=${carlos}`))
   await expect(fila(page, precio)).toHaveCount(0)
   await expect(filas(page)).toHaveCount(20)
@@ -146,7 +148,9 @@ test('E2E los chips de persona y de tipo de registro filtran y se quitan', async
 
   await page.getByRole('button', { name: 'Quitar el filtro del registro' }).click()
   await expect(page).not.toHaveURL(/[?&]registro=/)
-  await page.getByLabel('Tipo de registro').selectOption({ label: 'Lead' })
+  await page
+    .getByRole('combobox', { name: 'Tipo de registro', exact: true })
+    .selectOption({ label: 'Lead' })
   await expect(page).toHaveURL(/[?&]entidad=leads/)
   await expect(fila(page, precio)).toHaveCount(0)
   await page.getByRole('button', { name: 'Quitar el filtro Tipo de registro: Lead' }).click()
