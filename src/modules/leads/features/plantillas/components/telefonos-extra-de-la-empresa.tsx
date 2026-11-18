@@ -19,6 +19,8 @@ export function TelefonosExtraDeLaEmpresa({ telefonos }: Props) {
   const formulario = useTelefonosExtraDeLaEmpresa(telefonos)
   const idRegla = useId()
   const idAyuda = `${idRegla}-ayuda`
+  // El `Switch` es un `span` con rol: el `htmlFor` de la etiqueta no le da nombre.
+  const idEtiqueta = `${idRegla}-etiqueta`
   const idDelFormulario = useId()
   return (
     <>
@@ -55,10 +57,13 @@ export function TelefonosExtraDeLaEmpresa({ telefonos }: Props) {
                 id={idRegla}
                 checked={formulario.comoPrincipal}
                 disabled={formulario.enCurso}
+                aria-labelledby={idEtiqueta}
                 aria-describedby={idAyuda}
                 onCheckedChange={formulario.cambiarRegla}
               />
-              <Label htmlFor={idRegla}>Los teléfonos extra cuentan como el principal</Label>
+              <Label id={idEtiqueta} htmlFor={idRegla}>
+                Los teléfonos extra cuentan como el principal
+              </Label>
             </div>
             <p id={idAyuda} className="text-(length:--text-sm) text-(--color-ink-faint)">
               Un teléfono extra no podrá repetirse en otro lead y registrar ese número encontrará a
