@@ -1,5 +1,6 @@
--- La página de la actividad (paso 9.01-1): `actividad_listar()` pide `actividad.ver`, recorta cada fila como `actividad_diff()` (sin un solo valor:
--- la cabecera, si se ve y los nombres de hasta 5 campos), va por cursor sobre `id` con su tope y ancla «Ir a una fecha» sin perder filas.
+-- La página de la actividad (paso 9.01-1): `actividad_listar()` pide `actividad.ver`, recorta cada fila como `actividad_diff()` (la cabecera, si se
+-- ve, los nombres de hasta 5 campos y, de una visible, su registro y el primer campo con su antes y después ya recortados; de una no visible, ni
+-- un valor), va por cursor sobre `id` con su tope y ancla «Ir a una fecha» sin perder filas.
 -- Corre en PGlite (`SOLO=areas/actividad/listar.sql pnpm db:probar`); no depende de `actividad.sql`: repite sus ayudantes.
 
 -- @test actividad: los ayudantes de la página
@@ -98,12 +99,18 @@ begin
   v_resp := pg_temp.act_como(d, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'leads', v_lb));
   v_fila := (select x from jsonb_array_elements(v_resp -> 'filas') x where (x ->> 'id')::bigint = v_cambio);
   if v_fila is null or (v_fila ->> 'visible')::boolean or v_fila -> 'campos' <> '[]'::jsonb then raise exception 'T2: la página de D: %', v_fila; end if;
-  -- T3: ninguna página trae un valor: ni el nombre, ni el campo, ni un número o teléfono.
+  -- T3: la página de D (no ve el lead) no trae un solo valor ni las columnas de la frase.
   if v_resp::text ~ '(ACT lista|secreto|79199|\m9182[0-9]{5}\M)' then raise exception 'T3: la página trajo un valor: %', v_resp; end if;
+  if v_fila ?| array['registro_titulo', 'registro_destino', 'primer_cambio'] then raise exception 'T3: una fila no visible trajo la frase: %', v_fila; end if;
+  -- A ve el lead: su nombre y el primer cambio (el nombre), nunca el campo de sólo cartera, un número ni el teléfono.
   v_resp := pg_temp.act_como(a, format('select public.actividad_listar(p_tabla => %L)', 'leads'));
-  if v_resp::text ~ '(ACT lista|secreto|79199|\m9182[0-9]{5}\M)' then raise exception 'T3: la página de A trajo un valor: %', v_resp; end if;
+  if v_resp::text ~ '(secreto|79199|\m9182[0-9]{5}\M)' then raise exception 'T3: la página de A trajo un valor oculto: %', v_resp; end if;
+  v_fila := (select x from jsonb_array_elements(v_resp -> 'filas') x where (x ->> 'id')::bigint = v_cambio);
+  if v_fila ->> 'registro_titulo' is distinct from 'ACT lista'
+     or v_fila -> 'primer_cambio' <> jsonb_build_object('campo', 'nombre', 'antes', 'ACT lista', 'despues', 'ACT lista 2', 'moneda_antes', null, 'moneda_despues', null) then
+    raise exception 'T3: la frase de A: %', v_fila; end if;
   if exists (select 1 from jsonb_path_query(v_resp, 'strict $.filas[*].keyvalue().key') k where k #>> '{}' in ('antes', 'despues', 'detalle', 'cambios')) then
-    raise exception 'T3: la página trajo antes, después, detalle o cambios'; end if;
+    raise exception 'T3: la página trajo antes, después, detalle o cambios fuera del primer cambio'; end if;
 
   -- T5: el alta del vehículo, visible para F y no para A.
   v_resp := pg_temp.act_como(a, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'vehiculos', v));
@@ -165,5 +172,63 @@ begin
   if v_ids[1:2] <> array[v2, v1] or v_ayer = any (v_ids) then raise exception 'T8: «Ir a una fecha» dio %, esperaba % y % sin %', v_ids, v2, v1, v_ayer; end if;
   v_resp := pg_temp.act_como(a, format('select public.actividad_listar(p_actor => %L, p_hasta => %L)', b, now() - interval '400 days'));
   if v_resp <> '{"hay_mas": false, "filas": []}'::jsonb then raise exception 'T8: una fecha sin nada antes dio %', v_resp; end if;
+end $$;
+rollback;
+
+-- @test actividad: la frase de una fila visible: el título y el destino por su PK, el primer cambio recortado y corto con la moneda de cada lado;
+-- un alta sin primer cambio, un registro borrado sin título y nada para quien no ve la fila (T9)
+begin;
+select pg_temp.act_preparar();
+do $$
+declare a uuid := '00000000-0000-4000-8000-00000009901a'; e uuid := '00000000-0000-4000-8000-00000009901e'; f uuid := '00000000-0000-4000-8000-00000009901f';
+        v uuid := pg_temp.act_vehiculo(); v_numero bigint; v_gasto uuid := gen_random_uuid(); v_borrado uuid := gen_random_uuid();
+        v_precio bigint; v_largo bigint; v_g bigint; v_alta bigint; v_b bigint; v_resp jsonb; v_fila jsonb;
+begin
+  select numero into v_numero from public.vehiculos where id = v;
+  insert into public.actividad (accion, actor_id, tabla, registro_id, antes, despues) values ('vehiculos.update', f, 'vehiculos', v::text,
+    jsonb_build_object('precio', 10000, 'titulo', 'act v1'), jsonb_build_object('precio', 12000, 'titulo', 'act v1')) returning id into v_precio;
+  insert into public.actividad (accion, actor_id, tabla, registro_id, antes, despues) values ('vehiculos.update', f, 'vehiculos', v::text,
+    jsonb_build_object('titulo', repeat('x', 200)), jsonb_build_object('titulo', 'corta')) returning id into v_largo;
+  select id into v_alta from public.actividad where tabla = 'vehiculos' and registro_id = v::text and accion = 'vehiculos.insert';
+  -- Un gasto de la unidad (la foto alcanza: la fila vigente no existe, así que sin título) y otro vehículo que ya no está.
+  insert into public.actividad (accion, actor_id, tabla, registro_id, antes, despues) values ('gastos.update', f, 'gastos', v_gasto::text,
+    jsonb_build_object('vehiculo_id', v, 'monto', 100, 'moneda', 'USD'), jsonb_build_object('vehiculo_id', v, 'monto', 150, 'moneda', 'BOB')) returning id into v_g;
+  insert into public.actividad (accion, actor_id, tabla, registro_id, antes, despues) values ('vehiculos.update', f, 'vehiculos', v_borrado::text,
+    jsonb_build_object('precio', 1), jsonb_build_object('precio', 2)) returning id into v_b;
+
+  v_resp := pg_temp.act_como(f, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'vehiculos', v));
+  v_fila := (select x from jsonb_array_elements(v_resp -> 'filas') x where (x ->> 'id')::bigint = v_precio);
+  if v_fila ->> 'registro_titulo' is distinct from 'act v1 #' || v_numero or v_fila -> 'registro_destino' <> 'null'::jsonb
+     or v_fila -> 'campos' <> '["precio"]'::jsonb
+     or v_fila -> 'primer_cambio' <> jsonb_build_object('campo', 'precio', 'antes', 10000, 'despues', 12000, 'moneda_antes', null, 'moneda_despues', null) then
+    raise exception 'T9: el cambio de precio: %', v_fila; end if;
+  v_fila := (select x from jsonb_array_elements(v_resp -> 'filas') x where (x ->> 'id')::bigint = v_largo);
+  if v_fila #>> '{primer_cambio,antes}' is distinct from repeat('x', 80) then raise exception 'T9: un texto largo no se cortó a 80: %', v_fila; end if;
+  v_fila := (select x from jsonb_array_elements(v_resp -> 'filas') x where (x ->> 'id')::bigint = v_alta);
+  if v_fila -> 'primer_cambio' <> 'null'::jsonb or v_fila ->> 'registro_titulo' is distinct from 'act v1 #' || v_numero then
+    raise exception 'T9: el alta: %', v_fila; end if;
+
+  -- El gasto: con la moneda de cada lado y sin título (la fila vigente no existe); el vehículo borrado, sin título.
+  v_resp := pg_temp.act_como(f, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'gastos', v_gasto));
+  v_fila := v_resp -> 'filas' -> 0;
+  if (v_fila ->> 'id')::bigint <> v_g or not (v_fila ->> 'visible')::boolean or v_fila -> 'registro_titulo' <> 'null'::jsonb
+     or v_fila #>> '{primer_cambio,moneda_antes}' is distinct from 'USD' or v_fila #>> '{primer_cambio,moneda_despues}' is distinct from 'BOB' then
+    raise exception 'T9: el gasto: %', v_fila; end if;
+  v_resp := pg_temp.act_como(f, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'vehiculos', v_borrado));
+  if v_resp #> '{filas,0,registro_titulo}' <> 'null'::jsonb then raise exception 'T9: un vehículo que no existe trajo título: %', v_resp; end if;
+
+  -- Un gasto vivo de la unidad: el título es el del vehículo y el destino, su id.
+  insert into public.gastos (vehiculo_id, categoria_id, moneda, monto, monto_base) select v, id, 'USD', 100, 100 from public.categorias_gasto limit 1 returning id into v_gasto;
+  v_resp := pg_temp.act_como(f, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'gastos', v_gasto));
+  if v_resp #>> '{filas,0,registro_titulo}' is distinct from 'act v1 #' || v_numero or v_resp #>> '{filas,0,registro_destino,vehiculo_id}' is distinct from v::text then
+    raise exception 'T9: el gasto vivo: %', v_resp; end if;
+  -- E (logistica.ver sin logistica.gastos.ver) no ve el gasto: ni título, ni destino, ni primer cambio.
+  v_resp := pg_temp.act_como(e, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'gastos', v_gasto));
+  if jsonb_array_length(v_resp -> 'filas') = 0 or exists (select 1 from jsonb_array_elements(v_resp -> 'filas') x
+       where (x ->> 'visible')::boolean or x ?| array['registro_titulo', 'registro_destino', 'primer_cambio']) then
+    raise exception 'T9: E vio la frase del gasto: %', v_resp; end if;
+  -- A (sin vehiculos.ver) no ve el vehículo: nada de la frase.
+  v_resp := pg_temp.act_como(a, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'vehiculos', v));
+  if v_resp::text ~ '(act v1|10000|12000)' then raise exception 'T9: A vio la frase del vehículo: %', v_resp; end if;
 end $$;
 rollback;
