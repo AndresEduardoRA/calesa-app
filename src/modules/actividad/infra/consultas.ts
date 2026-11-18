@@ -3,7 +3,11 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { cortarAlTope } from '@/shared/lib/conteo'
 import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errores'
-import { TAMANO_DE_VER_MAS, TOPE_DEL_EQUIPO } from '@/shared/lib/paginacion'
+import {
+  TAMANO_DE_ACTIVIDAD_RECIENTE,
+  TAMANO_DE_VER_MAS,
+  TOPE_DEL_EQUIPO,
+} from '@/shared/lib/paginacion'
 import type { Database } from '@/shared/types/database.types'
 import {
   diffDesde,
@@ -30,6 +34,25 @@ export async function leerPagina(
     ...(pedido.tabla === null ? {} : { p_tabla: pedido.tabla }),
     ...(pedido.tabla === null || pedido.registro === null ? {} : { p_registro: pedido.registro }),
     ...(pedido.hasta === null ? {} : { p_hasta: pedido.hasta }),
+  })
+  if (error) {
+    return { ok: false, error: errorDePostgrest(error) }
+  }
+  const pagina = paginaDesde(data)
+  return pagina === null ? fallo('inesperado', 'No se pudo cargar la actividad.') : ok(pagina)
+}
+
+// Los últimos cambios de un registro («Actividad reciente»): la primera página de su ruta (`actividad_registro_id_idx`), de a
+// `TAMANO_DE_ACTIVIDAD_RECIENTE`; la base lee uno más para `hay_mas`.
+export async function leerReciente(
+  cliente: Cliente,
+  tabla: string,
+  registro: string,
+): Promise<Resultado<PaginaDeActividad>> {
+  const { data, error } = await cliente.rpc('actividad_listar', {
+    p_tamano: TAMANO_DE_ACTIVIDAD_RECIENTE,
+    p_tabla: tabla,
+    p_registro: registro,
   })
   if (error) {
     return { ok: false, error: errorDePostgrest(error) }

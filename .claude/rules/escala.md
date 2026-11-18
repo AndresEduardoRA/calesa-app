@@ -94,6 +94,7 @@ tope, índice y presupuesto está en `docs/RENDIMIENTO.md`.
 - Las listas del panel del vehículo con volumen → `supabase/tests/medir-panel-ultima-cotizacion.sql`, `medir-panel-cierre-subasta.sql`, `medir-historial-del-vehiculo.sql` (`pnpm db:medir:volumen`)
 - «De este vehículo» (`cotizaciones_de_este_vehiculo()`: la primera con la aprobada fijada y la profunda por su índice, los bloques que no crecen con N, una llamada a `_nombre_del_modo()` por versión y modo) con volumen → `supabase/tests/medir-cotizaciones-de-este-vehiculo.sql` (`MEDIR_SOLO=medir-cotizaciones-de-este-vehiculo pnpm db:medir:volumen`)
 - Las oportunidades de un lead por cursor con volumen → `supabase/tests/medir-lead-oportunidades.sql` (`pnpm db:medir:volumen`)
+- La página de `/actividad` (`actividad_listar()`: cada ruta por su índice, sin `Sort` ni `Seq Scan`, la llamada contra la de antes de la frase) con 300.000 filas → `supabase/tests/medir-actividad-listar.sql` (`MEDIR_SOLO=medir-actividad-listar pnpm db:medir:volumen`)
 - El salto a una fecha de las revisiones de una cotización (`cotizacion_revisiones(…, p_hasta)`: el ancla por su índice, la profundidad y el contraste con N) con volumen → `supabase/tests/medir-cotizacion-revisiones-fecha.sql` (`pnpm db:medir:volumen`)
 - `cotizacion_crear()` con volumen → `supabase/tests/medir-cotizacion-crear.sql` (`pnpm db:medir`)
 - `cotizacion_guardar()` con volumen → `supabase/tests/medir-cotizacion-guardar.sql` (`pnpm db:medir`)

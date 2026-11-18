@@ -73,7 +73,8 @@ function Linea({ accion, alElegir }: { accion: AccionDeMenu; alElegir: (clave: s
 }
 
 // El «⋯» de una fila, una tarjeta, un resumen o una ficha (3 nodos: el botón, su `<svg>` y el `<use>` del símbolo que monta el layout,
-// `simbolos-de-lista.tsx`; sin envoltorio: el botón se pega a la derecha con `ml-auto`): un botón de 44 px en el celular (32 desde `md`) y sus líneas en el
+// `simbolos-de-lista.tsx`; sin envoltorio: el botón se pega a la derecha con `ml-auto`): un botón de 44 px en el celular y en una tarjeta de la lista (la
+// `<EsquinaDeAcciones>` define `--tamano-del-mas`), 32 en una fila desde `md`, y sus líneas en el
 // orden que dice el módulo. Nada de lo que pasa adentro abre la fila de la lista (los clics no suben: `esClicPropio` ve el botón, y
 // el menú se dibuja en un portal). Lo que abre algo encima (`despuesDeCerrar`) espera a que el menú termine de cerrarse: si no, el
 // foco que vuelve al botón lo cierra.
@@ -123,7 +124,7 @@ export function MasAcciones({
           ref={botonRef}
           aria-label={`Más acciones de ${nombre}`}
           data-mas-acciones={id}
-          className={`flex size-[44px] items-center justify-center rounded-(--radius-md) outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) ${conBorde ? 'border border-(--color-line) md:size-9' : 'ml-auto md:size-8'}`}
+          className={`flex size-[44px] items-center justify-center rounded-(--radius-md) outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) ${conBorde ? 'border border-(--color-line) md:size-9' : 'ml-auto md:size-[var(--tamano-del-mas,2rem)]'}`}
         >
           <IconoDeLista id={ID_DEL_ICONO_MAS_ACCIONES} />
         </DropdownMenuTrigger>

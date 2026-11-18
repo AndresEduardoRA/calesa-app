@@ -7,7 +7,10 @@ import { Table, TableCell, TableHead } from '../table'
 // La tabla ancha de una lista: tan ancha como lo pidan sus columnas (el nombre nunca se achica para que quepan las demás), se
 // desplaza de costado dentro de su tarjeta —nunca la página— y deja a la vista el nombre, pegado a la izquierda, y el «⋯», pegado a la
 // derecha: una acción por fila nunca queda fuera de la vista. Las celdas pegadas son opacas, para que lo que pasa por debajo no se
-// transparente, y toman el color de la fila al pasar el puntero, al estar abierta en el resumen o al tener el foco su botón.
+// transparente, y toman el color de la fila al pasar el puntero, al estar abierta en el resumen o al tener el foco su botón. La columna
+// del «⋯» lleva sombra sólo cuando queda contenido detrás (falta desplazar hacia la derecha): el que se desplaza es un contenedor
+// `scroll-state` y la celda lo consulta por CSS (`sombra-de-la-columna-pegada`, `globals.css`: un `::before` con degradado), sin JS ni estado por fila. La consulta
+// mira al contenedor `scroll-state` más cercano: otro envoltorio que se desplace no le cambia nada.
 // `className` es para lo que la lista necesita de su caja (el equipo la hace `@container` para repartir el ancho que sobra, 5a-17).
 export function TablaDeLista({ children, className }: { children: ReactNode; className?: string }) {
   return (
@@ -17,7 +20,9 @@ export function TablaDeLista({ children, className }: { children: ReactNode; cla
         className,
       )}
     >
-      <Table className="w-max min-w-full">{children}</Table>
+      <Table className="w-max min-w-full" contenedor="[container-type:scroll-state]">
+        {children}
+      </Table>
     </div>
   )
 }
@@ -27,7 +32,7 @@ type Lado = 'nombre' | 'acciones'
 const PEGADA: Record<Lado, string> = {
   nombre:
     'sticky left-0 z-10 min-w-64 bg-(--color-surface) shadow-[inset_-1px_0_0_var(--color-line)]',
-  acciones: 'sticky right-0 z-10 bg-(--color-surface) shadow-[inset_1px_0_0_var(--color-line)]',
+  acciones: 'sticky right-0 z-10 bg-(--color-surface) sombra-de-la-columna-pegada',
 }
 
 const COLOR_DE_LA_FILA =
