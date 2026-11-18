@@ -6,7 +6,7 @@ import { borrarLeadsDePrueba, crearLead, marcarInteres, vincular } from './sopor
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
-// «Relacionados» sin ruido (`docs/UX.md` › «Relacionados (estados propios)»): en los resúmenes, una línea de chips sin grupos vacíos; en las fichas, el bloque compacto sin leyendas a la
+// «Relacionados» sin ruido (`docs/UX.md` › «Relacionados (estados propios)»): en la unidad de logística, una línea de chips sin grupos vacíos; en las fichas, el bloque compacto sin leyendas a la
 // vista, sin grupos vacíos y con las acciones en el «⋯». El vehículo V: A lo tiene vinculado, a B, C, D y E les interesa (4: hay «Ver todos») y no tiene cotizaciones; la dueña ve cotizaciones,
 // así que Cotizado existe y está vacío.
 test.describe.configure({ mode: 'serial' })
@@ -53,34 +53,45 @@ const bloque = (raiz: Page | Locator) => raiz.getByRole('region', { name: 'Relac
 const grupo = (raiz: Page | Locator, nombre: string) =>
   bloque(raiz).getByRole('region', { name: nombre, exact: true })
 
-test('E2E el resumen del lead muestra chips en una línea, sin grupos vacíos', async ({
+test('E2E la unidad de logística muestra chips en una línea, sin grupos vacíos', async ({
   page,
 }, info) => {
   await entrar(page, duena, { fresco: true })
-  // El resumen del lead A: sólo su vínculo. (El inventario no tiene resumen: abre la ficha, que dibuja el bloque compacto, abajo.)
-  await page.goto(`/leads?lead=${leads.a}`)
-  const resumen = page.getByRole('dialog', { name: nombres.a })
-  const linea = bloque(resumen)
-  const vinculado = linea.getByRole('button', { name: /^Vinculado · 1/ })
-  await expect(vinculado).toBeVisible()
-  await expect(linea.getByRole('button', { name: /^(Interesado|Cotizado)/ })).toHaveCount(0)
+  // Las listas de vehículos y de leads no tienen resumen (abren la ficha): la línea de chips queda en logística.
+  await page.goto(`/logistica/vehiculo/${vehiculo}`)
+  const linea = bloque(page)
+  const interesado = linea.getByRole('button', { name: /^Interesado · 4/ })
+  await expect(linea.getByRole('button', { name: /^Vinculado · 1/ })).toBeVisible()
+  await expect(interesado).toBeVisible()
+  await expect(linea.getByRole('button', { name: /^Cotizado/ })).toHaveCount(0)
   await expect(linea.getByRole('heading')).toHaveCount(0)
-  await capturar(page, info, 'resumen-lead-linea')
+  await expect(page.getByText(LEYENDA_INTERESADO)).toHaveCount(0)
+  await capturar(page, info, 'unidad-linea')
 
-  // El chip abre su grupo en un popover dentro del drawer: Esc cierra sólo el popover.
-  await vinculado.click()
-  const popover = page.getByRole('dialog', { name: 'Relacionados: Vinculado' })
-  await expect(popover.getByText(titulo)).toBeVisible()
+  // El chip abre su grupo en un popover: Esc cierra sólo el popover.
+  await interesado.click()
+  const popover = page.getByRole('dialog', { name: 'Relacionados: Interesado' })
+  await expect(popover.getByRole('listitem')).toHaveCount(3)
+  await expect(popover.getByText(LEYENDA_INTERESADO)).toBeVisible()
   await capturar(page, info, 'popover-del-grupo')
   await page.keyboard.press('Escape')
   await expect(popover).toBeHidden()
-  await expect(resumen).toBeVisible()
+  await expect(interesado).toBeVisible()
+
+  // «Ver todos» lleva a la ficha con su drawer abierto.
+  await interesado.click()
+  await popover.getByRole('link', { name: 'Ver todos' }).click()
+  await expect(page).toHaveURL(new RegExp(`/vehiculos/${vehiculo}\\?relacionados=interesado`))
+  const todos = page.getByRole('dialog', { name: 'Interesado · todos' })
+  await expect(todos.getByRole('listitem')).toHaveCount(4)
 
   // Con el texto al 200 % la línea envuelve: sólo para mirar.
+  await page.goto(`/logistica/vehiculo/${vehiculo}`)
+  await expect(interesado).toBeVisible()
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '200%'
   })
-  await capturar(page, info, 'resumen-lead-linea-200')
+  await capturar(page, info, 'unidad-linea-200')
 })
 
 test('E2E la ficha dibuja el bloque compacto sin leyendas a la vista, sin grupos vacíos y con las acciones en el «⋯»', async ({

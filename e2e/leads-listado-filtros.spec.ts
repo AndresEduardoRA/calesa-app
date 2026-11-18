@@ -2,7 +2,8 @@ import { expect, test } from './soporte/prueba'
 import { Teclado, abrirConN, dialogo, entrar } from './soporte/alta'
 import { cerrarPanelDeFiltros, panelDeFiltros } from './soporte/inventario'
 import { crearLead } from './soporte/leads'
-import { mandarAlLimbo, telefonoAlAzar } from './soporte/leads-alta'
+import { telefonoAlAzar } from './soporte/leads-alta'
+import { NO_DISPONIBLE } from './soporte/leads-ficha'
 import {
   AJENO_CARLOS,
   CI_DE_CARLOS,
@@ -126,64 +127,23 @@ test('una vista guardada vuelve a poner sus filtros, y si el campo se apagó lo 
   await expect(page.getByText('Se quitó un filtro de un campo que ya no existe.')).toBeVisible()
 })
 
-test('el drawer rápido: se abre en la URL, es la versión corta de la ficha (sin pestañas) y sobrevive a recargar', async ({
+test('la fila lleva a la ficha, con el teléfono enmascarado y sin lo privado de un ajeno', async ({
   page,
 }) => {
   await entrar(page, t.personas.duena)
   await irALeads(page, '?alcance=todos')
   await fila(page, AJENO_CARLOS).click()
-  const drawer = page.getByRole('dialog', { name: nombre(AJENO_CARLOS) })
-  await expect(drawer).toBeVisible()
-  await expect(page).toHaveURL(/lead=/)
-  // Lo que le llega a quien mira: el teléfono enmascarado y nada privado. Los campos del layout son de la ficha.
-  await expect(drawer.getByText('Color E2E')).toHaveCount(0)
-  await expect(drawer.getByText('Cédula E2E')).toHaveCount(0)
-  await expect(drawer).not.toContainText(CI_DE_CARLOS)
-  await expect(drawer).not.toContainText(t.telefonoDeCarlos)
-  await expect(drawer).toContainText('•')
-  // Sin pestañas. Los datos no se editan acá (es ajeno): «Abrir ficha» lleva a la ficha de ese lead.
-  await expect(drawer.getByRole('tablist')).toHaveCount(0)
-  const abrir = drawer.getByRole('link', { name: 'Abrir ficha' })
-  await expect(abrir).toHaveAttribute('href', /\/leads\/[0-9a-f-]{36}$/)
+  await expect(page).toHaveURL(/\/leads\/[0-9a-f-]{36}$/)
+  const principal = page.getByRole('main')
+  await expect(page.getByRole('heading', { name: nombre(AJENO_CARLOS), level: 1 })).toBeVisible()
+  // Lo que le llega a quien mira: el teléfono enmascarado y ningún valor privado (la etiqueta del campo sí se ve).
+  await expect(principal).not.toContainText(CI_DE_CARLOS)
+  await expect(principal).not.toContainText(t.telefonoDeCarlos)
+  await expect(principal).toContainText('•')
 
-  await page.reload()
-  await expect(page.getByRole('dialog', { name: nombre(AJENO_CARLOS) })).toBeVisible()
-  await page.getByRole('dialog').getByRole('button', { name: 'Cerrar' }).click()
-  await expect(page).not.toHaveURL(/lead=/)
-  await expect(page.getByRole('dialog', { name: nombre(AJENO_CARLOS) })).toHaveCount(0)
-
-  // Un id que no es de nadie dice lo mismo que uno que ya no se ve.
+  // Un enlace viejo con un id que no es de nadie llega a la ficha, que dice lo mismo que con uno que ya no se ve.
   await page.goto('/leads?lead=00000000-0000-4000-8000-000000000000')
-  await expect(
-    page
-      .getByRole('dialog', { name: 'Lead no disponible' })
-      .getByText('Este lead ya no está disponible: no existe o ya no tienes acceso.'),
-  ).toBeVisible()
-})
-
-test('si le quitan el acceso con el drawer abierto, lo dice al volver', async ({ page }) => {
-  const telefono = telefonoNuevo()
-  const id = await crearLead({
-    nombre: 'Revocable',
-    telefono,
-    deQuien: t.personas.berta,
-  })
-  await entrar(page, t.personas.berta)
-  await irALeads(page)
-  await fila(page, 'Revocable').click()
-  const drawer = page.getByRole('dialog', { name: nombre('Revocable') })
-  // El resumen es la versión corta de la ficha (sin los campos del layout): sus datos clave.
-  const datos = page.getByRole('dialog').getByText('Origen del lead', { exact: true })
-  await expect(drawer.getByText('Origen del lead', { exact: true })).toBeVisible()
-
-  // Mientras tanto, el lead deja de ser suyo (se revoca su acceso y queda en el limbo).
-  await mandarAlLimbo(id)
-  await page.evaluate(() => {
-    document.dispatchEvent(new Event('visibilitychange'))
-    window.dispatchEvent(new Event('focus'))
-  })
-  await expect(page.getByText('Este lead ya no está disponible')).toBeVisible()
-  await expect(datos).toHaveCount(0)
+  await expect(page.getByText(NO_DISPONIBLE)).toBeVisible()
 })
 
 test('el lead que crea el alta aparece en la lista', async ({ page }) => {

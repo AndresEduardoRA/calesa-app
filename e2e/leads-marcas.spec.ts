@@ -86,7 +86,7 @@ test('favorito y tachado desde el «⋯» de la ficha: siguen al recargar y no m
     .toBe(false)
 })
 
-test('el «⋯» de la fila marca sin abrir el drawer, y el drawer muestra las marcas (se cambian en su «⋯»)', async ({
+test('el «⋯» de la fila marca sin salir de la lista, y la ficha muestra las marcas (se cambian en su «⋯»)', async ({
   page,
 }, info) => {
   const corto = `Marca Fila ${info.project.name}`
@@ -107,14 +107,13 @@ test('el «⋯» de la fila marca sin abrir el drawer, y el drawer muestra las m
     .toBe(true)
   await expect(delLead(page, corto).getByText('Favorito', { exact: true })).toBeAttached()
 
-  // El drawer: lo dice (las insignias son de lectura; se cambian en su «⋯»).
-  await aLaVista(page.getByRole('button', { name: `Abrir ${nombre(corto)}` }))
+  // La ficha: lo dice (las insignias son de lectura; se cambian en su «⋯»).
+  await aLaVista(page.getByRole('link', { name: nombre(corto), exact: true }))
     .first()
     .click()
-  const drawer = page.getByRole('dialog', { name: nombre(corto) })
-  await expect(drawer).toBeVisible()
-  await expect(drawer.getByText('Favorito', { exact: true })).toBeAttached()
-  await expect(drawer.getByRole('button', { name: 'Favorito' })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: nombre(corto), level: 1 })).toBeVisible()
+  await expect(page.getByRole('main').getByText('Favorito', { exact: true }).first()).toBeAttached()
+  await expect(page.getByRole('main').getByRole('button', { name: 'Favorito' })).toHaveCount(0)
 })
 
 test('tachar desde el «⋯» ofrece «Deshacer», y una marca puesta en otra pestaña aparece al volver', async ({

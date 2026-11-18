@@ -197,14 +197,13 @@ test('C · portal desde la ficha: la clave corta se dice junto al campo y cerrar
   await expect(dialogo).toHaveCount(0)
 })
 
-test('C · desde el drawer: anotar y agendar abren sobre el drawer y Esc cierra sólo el modal', async ({
+test('C · desde el «⋯» de la ficha: anotar y agendar abren su modal y Esc cierra sólo el modal', async ({
   page,
 }, info) => {
   await entrar(page, r.ana.email)
-  await page.goto(`/leads?lead=${r.uno.id}`)
-  const drawer = page.getByRole('dialog', { name: r.uno.nombre })
-  await expect(drawer).toBeVisible()
-  // Desde el «⋯» del resumen (no tiene pestañas): el modal va dentro del drawer.
+  await page.goto(`/leads/${r.uno.id}`)
+  const titulo = page.getByRole('heading', { name: r.uno.nombre, level: 1 })
+  await expect(titulo).toBeVisible()
   await (
     await abrirMenuDelLead(page, r.uno.nombre)
   )
@@ -213,10 +212,10 @@ test('C · desde el drawer: anotar y agendar abren sobre el drawer y Esc cierra 
   const anotar = modalDeSeguimiento(page, 'Anotar')
   await expect(anotar.getByLabel('Resumen')).toBeFocused()
   await pieUsable(page, anotar, 'Guardar')
-  await capturar(page, info, 'drawer-anotar')
+  await capturar(page, info, 'ficha-anotar')
   await page.keyboard.press('Escape')
   await expect(anotar).toHaveCount(0)
-  await expect(drawer).toBeVisible()
+  await expect(titulo).toBeVisible()
 
   await (
     await abrirMenuDelLead(page, r.uno.nombre)
@@ -225,10 +224,11 @@ test('C · desde el drawer: anotar y agendar abren sobre el drawer y Esc cierra 
     .click()
   const agendar = modalDeRecordatorio(page, 'Agendar')
   await expect(agendar.getByLabel('De qué es')).toBeFocused()
-  await capturar(page, info, 'drawer-agendar')
+  await capturar(page, info, 'ficha-agendar')
   await page.keyboard.press('Escape')
   await expect(agendar).toHaveCount(0)
-  await expect(drawer).toBeVisible()
+  await expect(titulo).toBeVisible()
+  await expect(page).toHaveURL(new RegExp(`/leads/${r.uno.id}$`))
 })
 
 test('C · conflicto: la dueña guarda el lead mientras la asesora lo edita; la asesora en dos ventanas', async ({

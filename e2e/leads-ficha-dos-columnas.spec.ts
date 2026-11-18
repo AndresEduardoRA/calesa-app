@@ -288,24 +288,10 @@ test('el documento de la ficha entera pesa lo mismo con 10 que con 1.000 seguimi
   expect(deMil).toBeLessThanOrEqual(deDiez + 2 * 1024)
 })
 
-test('el resumen del listado es la versión corta de la ficha, y `?pestana=` de antes lleva a la ficha', async ({
+test('`?lead=<id>&pestana=` de cuando la lista tenía resumen lleva a la ficha en su bloque', async ({
   page,
 }) => {
   await entrar(page, t.personas.duena)
-  // Directo al resumen: en el celular el drawer es modal y deja la lista de atrás fuera del árbol de accesibilidad.
-  await page.goto(`/leads?lead=${completo.id}`)
-  const drawer = page.getByRole('dialog', { name: completo.nombre })
-  await expect(drawer).toBeVisible()
-  await expect(drawer.getByRole('tablist')).toHaveCount(0)
-  for (const dato of ['Teléfono', 'Origen del lead', 'Último seguimiento', 'Recordatorio']) {
-    await expect(drawer.getByText(dato, { exact: true })).toBeVisible()
-  }
-  await expect(drawer.getByRole('link', { name: 'Abrir ficha' })).toBeVisible()
-  await expect(drawer.getByRole('button', { name: 'Editar' })).toBeVisible()
-  await expect(
-    drawer.getByRole('button', { name: `Más acciones de ${completo.nombre}` }),
-  ).toBeVisible()
-  await expect(drawer.getByRole('region', { name: 'Relacionados' })).toBeVisible()
   await page.goto(`/leads?lead=${completo.id}&pestana=seguimientos`)
   await expect(page).toHaveURL(new RegExp(`/leads/${completo.id}\\?seccion=seguimientos`))
   await expect(titulo(page, 'Seguimientos y recordatorios')).toBeFocused()

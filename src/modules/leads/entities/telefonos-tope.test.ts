@@ -6,12 +6,10 @@ import {
   motivoDeTope,
   puedeEditarTelefonosExtra,
   telefonosDeLaFicha,
-  telefonosDelLeadDesde,
   topeDeExtras,
 } from './telefonos'
 
 const ID = '4a1f5b0e-6f0a-4f6e-9a55-1b6e2a1f0c11'
-const OTRO = '9b2c7d1e-1f3a-4b6c-8d4e-2a5f6b7c8d90'
 const PRINCIPAL = '59170011002'
 
 describe('topeDeExtras', () => {
@@ -68,34 +66,8 @@ describe('puedeEditarTelefonosExtra', () => {
   })
 })
 
-describe('telefonosDelLeadDesde', () => {
-  const crudo = {
-    id: ID,
-    telefono_cc: '+591',
-    telefono: PRINCIPAL,
-    en_cartera: true,
-    maximo: 6,
-    telefonos: [{ id: OTRO, telefono: '59171234567', etiqueta: 'Casa' }],
-  }
-
-  it('lee el principal, los extras y el máximo de la empresa', () => {
-    expect(telefonosDelLeadDesde(crudo)).toEqual({
-      id: ID,
-      telefonoCc: '+591',
-      telefono: PRINCIPAL,
-      enCartera: true,
-      telefonosMaximo: 6,
-      telefonos: [{ id: OTRO, telefono: '59171234567', etiqueta: 'Casa' }],
-    })
-  })
-
-  it('un lead que no se ve (nulo) o una forma que no calza es nulo', () => {
-    expect(telefonosDelLeadDesde(null)).toBeNull()
-    expect(telefonosDelLeadDesde({ ...crudo, maximo: 21 })).toBeNull()
-    expect(telefonosDelLeadDesde({ ...crudo, telefonos: 'x' })).toBeNull()
-  })
-
-  it('la ficha lo trae igual: telefonosDeLaFicha', () => {
+describe('telefonosDeLaFicha', () => {
+  it('saca de la ficha el principal, los extras y el máximo', () => {
     const ficha = {
       id: ID,
       telefonoCc: '+591',

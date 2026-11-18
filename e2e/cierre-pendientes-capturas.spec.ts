@@ -20,8 +20,8 @@ import {
 } from './soporte/recorrido'
 import { sql } from './soporte/sql'
 
-// Las capturas de la sesión «cierre de pendientes del 200 %» (`E2E_CAPTURAS=e2e-capturas/cierre-pendientes/{antes,despues}`): 5a-22 (la ficha y
-// el resumen con un origen inactivo de nombre largo), 5a-23 (el chip de una búsqueda de 22 letras), 5a-24 (el selector de iconos arriba y abajo,
+// Las capturas de la sesión «cierre de pendientes del 200 %» (`E2E_CAPTURAS=e2e-capturas/cierre-pendientes/{antes,despues}`): 5a-22 (la ficha
+// con un origen inactivo de nombre largo), 5a-23 (el chip de una búsqueda de 22 letras), 5a-24 (el selector de iconos arriba y abajo,
 // y el mismo modal al 100 %, donde cabe), el ancho de «Persona» en el equipo, el interruptor «Activa» de Integraciones y las tres pestañas del
 // origen con su barra a la vista. Al 100 % y al 200 %. Sin asserts: lo que se afirma vive en `leads-ficha-origen-inactivo-200`,
 // `barra-de-filtros-200`, `modal-desborde-200` y `equipo-200`; este recorre y deja las imágenes, y corre igual contra el código de antes.
@@ -95,13 +95,10 @@ for (const zoom of ['100', '200'] as const) {
     await expect(page.getByText(CORREO_DE_38, { exact: true }).first()).toBeVisible()
     await capturar(page, info, `equipo-${zoom}`)
 
-    // 5a-22: la ficha y el resumen con el origen inactivo de nombre largo.
+    // 5a-22: la ficha con el origen inactivo de nombre largo.
     await irAFicha(page, r.uno.id)
     await expect(page.getByText('(inactivo)').first()).toBeVisible()
     await capturar(page, info, `ficha-con-origen-inactivo-${zoom}`)
-    await page.goto(`/leads?lead=${r.uno.id}`)
-    await expect(page.getByRole('dialog', { name: r.uno.nombre })).toBeVisible()
-    await capturar(page, info, `resumen-con-origen-inactivo-${zoom}`)
 
     // 5a-23: el chip de una búsqueda de 22 letras.
     await irALeads(page, buscar('E2E Menu mas acciones'))

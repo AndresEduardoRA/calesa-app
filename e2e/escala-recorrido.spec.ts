@@ -204,7 +204,7 @@ test('las papeleras, vehículos e importación de la dueña', async ({ page }, i
   await capturar(page, info, 'importar')
 })
 
-test('«Quién lo tiene» de un lead compartido y agendar desde el drawer', async ({ page }, info) => {
+test('«Quién lo tiene» de un lead compartido y agendar desde la ficha', async ({ page }, info) => {
   test.setTimeout(120_000)
   await entrarComo(page, DUENA)
   const compartido = sql(
@@ -213,15 +213,15 @@ test('«Quién lo tiene» de un lead compartido y agendar desde el drawer', asyn
   await page.goto(`/leads/${compartido}`)
   await expect(page.getByText('Quién lo tiene')).toBeVisible()
   await capturar(page, info, 'quien-lo-tiene')
-  await page.goto(`/leads?lead=${compartido}&pestana=recordatorios`)
-  const drawer = page.getByRole('dialog').first()
-  await expect(drawer).toBeVisible()
-  await quieto(drawer)
+  await page.goto(`/leads/${compartido}?seccion=seguimientos`)
+  await expect(
+    page.getByRole('heading', { name: 'Seguimientos y recordatorios', level: 2 }),
+  ).toBeFocused()
   await page.getByRole('button', { name: 'Agendar recordatorio' }).first().click()
   const modal = page.getByRole('dialog', { name: /recordatorio/i }).last()
   await expect(modal).toBeVisible()
   await quieto(modal)
-  await capturar(page, info, 'agendar-desde-el-drawer')
+  await capturar(page, info, 'agendar-desde-la-ficha')
 })
 
 test('paginar el listado sin red', async ({ page }, info) => {

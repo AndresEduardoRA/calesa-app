@@ -12,11 +12,11 @@ import {
   type TerrenoDelListado,
 } from './soporte/leads-listado'
 import { menuDeFila } from './soporte/leads-marcas'
-import { nadaSeSaleDelPanel } from './soporte/panel'
 
-// El patrón de lista en el listado de leads (9i, `.claude/rules/ui.md`): un clic en cualquier parte de la fila o la tarjeta abre el resumen,
-// salvo el del «⋯» y el de un enlace de la fila; con el teclado se alcanza el nombre, Enter abre y el foco vuelve al cerrar; la fila abierta
-// se marca. El inventario de vehículos abre la ficha con el mismo patrón (`vehiculos-sin-resumen.spec.ts`).
+// El patrón de lista en el listado de leads (9i, `.claude/rules/ui.md`): un clic en cualquier parte de la fila o la tarjeta lleva a la ficha
+// (T340: no hay resumen), salvo el del «⋯» y el de un enlace de la fila; con el teclado se alcanza el nombre (un enlace) y Enter abre la
+// ficha. Lo demás del enlace (Ctrl, el kanban, los enlaces viejos), en `leads-sin-resumen.spec.ts`; el inventario, en
+// `vehiculos-sin-resumen.spec.ts`.
 test.describe.configure({ mode: 'serial' })
 
 const CORTO = 'Patron fila'
@@ -38,35 +38,38 @@ test.afterAll(async () => {
   await limpiarListado(t)
 })
 
-const resumen = (page: Parameters<typeof irALeads>[0]) =>
-  page.getByRole('dialog', { name: nombre(CORTO) })
+const enlaceDelNombre = (page: Parameters<typeof irALeads>[0]) =>
+  aLaVista(page.getByRole('link', { name: nombre(CORTO), exact: true }))
 
-test('un clic en cualquier parte de la fila o la tarjeta abre el resumen, y la fila abierta se marca', async ({
-  page,
-}) => {
+async function enLaFicha(page: Parameters<typeof irALeads>[0]) {
+  await expect(page).toHaveURL(/\/leads\/[0-9a-f-]{36}$/)
+  await expect(page.getByRole('heading', { name: nombre(CORTO), level: 1 })).toBeVisible()
+}
+
+test('un clic en cualquier parte de la fila o la tarjeta lleva a la ficha', async ({ page }) => {
   await entrar(page, t.personas.berta)
   await irALeads(page)
   // La esquina de la fila o la tarjeta: ni el nombre ni una acción.
   await delLead(page, CORTO)
     .first()
     .click({ position: { x: 6, y: 6 } })
-  await expect(resumen(page)).toBeVisible()
-  await expect(page).toHaveURL(/lead=/)
-  await expect(delLead(page, CORTO).first()).toHaveAttribute('data-state', 'selected')
+  await enLaFicha(page)
 })
 
-test('en la tabla, una celda cualquiera (el teléfono, el tipo) también abre', async ({ page }) => {
+test('en la tabla, una celda cualquiera (el teléfono, el tipo) también lleva a la ficha', async ({
+  page,
+}) => {
   test.skip(esMovil(page), 'Las celdas son de la tabla; la tarjeta no las tiene.')
   await entrar(page, t.personas.berta)
   await irALeads(page)
   await delLead(page, CORTO).first().getByRole('cell').nth(2).click()
-  await expect(resumen(page)).toBeVisible()
+  await enLaFicha(page)
 })
 
-test('el «⋯» y el enlace de la fila no abren el resumen', async ({ page }) => {
+test('el «⋯» y el enlace de la fila no llevan a la ficha', async ({ page }) => {
   await entrar(page, t.personas.berta)
   await irALeads(page)
-  // El enlace se abre en otra pestaña y la fila no se abre.
+  // El enlace se abre en otra pestaña y la fila no navega.
   const enlace = aLaVista(delLead(page, CORTO).getByRole('link', { name: 'Abrir enlace' }))
   // En la tabla el enlace está en una columna que se desplaza: se lleva a la vista, sin la columna pegada encima.
   await enlace.evaluate((a) => {
@@ -77,37 +80,30 @@ test('el «⋯» y el enlace de la fila no abren el resumen', async ({ page }) =
   })
   const [otra] = await Promise.all([page.context().waitForEvent('page'), enlace.click()])
   await otra.close()
-  await expect(page).not.toHaveURL(/lead=/)
-  await expect(resumen(page)).toHaveCount(0)
-  // El «⋯» abre su menú y no el resumen.
+  await expect(page).toHaveURL(/\/leads$/)
+  // El «⋯» abre su menú y no navega.
   await menuDeFila(page, CORTO).click()
   await expect(page.getByRole('menu')).toBeVisible()
-  await expect(page).not.toHaveURL(/lead=/)
+  await expect(page).toHaveURL(/\/leads$/)
   await page.keyboard.press('Escape')
   await expect(page.getByRole('menu')).toBeHidden()
 })
 
-test('con el teclado se alcanza el nombre, Enter abre el resumen y al cerrarlo el foco vuelve', async ({
-  page,
-}) => {
+test('con el teclado se alcanza el nombre y Enter abre la ficha', async ({ page }) => {
   await entrar(page, t.personas.berta)
   await irALeads(page)
-  const boton = aLaVista(page.getByRole('button', { name: `Abrir ${nombre(CORTO)}`, exact: true }))
-  await boton.focus()
+  await enlaceDelNombre(page).focus()
   await page.keyboard.press('Enter')
-  await expect(resumen(page)).toBeVisible()
-  await page.keyboard.press('Escape')
-  await expect(resumen(page)).toHaveCount(0)
-  await expect(boton).toBeFocused()
+  await enLaFicha(page)
 })
 
-test('con el texto al 200 % el resumen no se corta por la derecha', async ({ page }) => {
+test('con el texto al 200 % el nombre sigue a la vista y lleva a la ficha', async ({ page }) => {
   await entrar(page, t.personas.berta)
   await irALeads(page)
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '200%'
   })
-  await aLaVista(page.getByRole('button', { name: `Abrir ${nombre(CORTO)}`, exact: true })).click()
-  await expect(resumen(page)).toBeVisible()
-  await nadaSeSaleDelPanel(resumen(page))
+  await expect(enlaceDelNombre(page)).toBeVisible()
+  await enlaceDelNombre(page).click()
+  await enLaFicha(page)
 })

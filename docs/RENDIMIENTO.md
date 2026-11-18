@@ -138,8 +138,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 - Listado: 100 por cursor (`MAXIMO_DE_PAGINA_DE_LEADS`), `leads_listado_idx`; 30 ms página 1, 150 ms página profunda (100 por cursor). La
   policy se estima con `_lead_visible_para()` sobre `leads.cartera`.
 - Teléfonos extra: ≤ 20 por lead (el `check` de `telefonos_extra_maximo`), una sola respuesta con la lista entera, `leads_telefonos_unico (lead_id, telefono)`.
-  El resumen del listado lee `lead_telefonos_leer()` en paralelo con `leads_vista` (el bloque va con `diferido()`);
-  el panel de edición, un pedido (`lead_ficha()` ya trae los extras y el máximo). Con «Los teléfonos extra cuentan como el principal» encendida,
+  El panel de edición, un pedido (`lead_ficha()` ya trae los extras y el máximo). Con «Los teléfonos extra cuentan como el principal» encendida,
   `_lead_verificar()` suma una búsqueda por `leads_telefonos_telefono_idx` sólo si el número no es principal de nadie.
 - Choques de teléfonos (Configuración › Leads › «Teléfonos extra»): `telefonos_extra_choques()` por cursor sobre `leads_telefonos_pkey`, de a 20 (hasta 50),
   con tope de recorrido de 10.000 filas por llamada («Seguir buscando») y `limit n + 1`, sin total; cada fila busca su choque por `leads_telefono_unico`
@@ -213,18 +212,16 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 
 ### Vehículos, orígenes, equipo y empresa
 
-- **Relacionados** (`vehiculo_relacionados()`, `lead_relacionados()` y sus `*_pagina()`; `medir-relacionados.sql`): una lectura `security definer` por bloque (la ficha y la unidad, en el servidor; los resúmenes y «Ver todos», en el
+- **Relacionados** (`vehiculo_relacionados()`, `lead_relacionados()` y sus `*_pagina()`; `medir-relacionados.sql`): una lectura `security definer` por bloque (la ficha y la unidad, en el servidor; «Ver todos», en el
   navegador). Tope: 3 filas por grupo (≤ 9 por bloque) y una ventana de 101 relaciones por grupo (la cabecera dice «100+»); «Ver todos» de a 20 por cursor `(fecha, id)` hasta 500, con un recorrido de hasta 2.000 filas por llamada
   (`cortada` si hay demasiadas ocultas seguidas). Índices: `vehiculos_interesados_vehiculo_reciente_idx`, `…_lead_reciente_idx`, `vehiculos_vinculos_lead_abierto_idx`, `cotizaciones_relacion_vehiculo_idx`, `…_lead_idx` y `…_par_idx`
-  (parciales de la cotización activa). Con un vehículo de 5.000 interesados y 2.000 cotizaciones: resumen ≈ 4 ms (3 ms la dueña) y 835 bloques, los mismos que con 300 (no crece con N); el resumen de un lead de 1.000 vinculados,
+  (parciales de la cotización activa). Con un vehículo de 5.000 interesados y 2.000 cotizaciones: resumen ≈ 4 ms (3 ms la dueña) y 835 bloques, los mismos que con 300 (no crece con N); los relacionados de un lead de 1.000 vinculados,
   1.000 interesados y 2.000 cotizaciones ≈ 9 a 13 ms; una página «Ver todos» ≈ 5 a 15 ms (Ana, que ve 3 de 5.000, recorre las 2.000 filas del tope: ≈ 10 ms). Tope de la medición: 20 ms por llamada. Las cuatro llevan `set random_page_cost = 1.1`
-  (sin él el plan genérico ordena todo lo del vehículo caliente: 20 mil bloques). Las imágenes, la miniatura de 480 px; el visor, la grande. Sin caché de cliente: la ficha y la unidad se releen al actuar (`revalidarVinculo()`), el resumen
-  lee al abrir y tras cada acción. El resumen de un lead hace 3 pedidos al abrir (`leads_vista`, `lead_telefonos_leer()` y `lead_relacionados()`, en paralelo; el bloque va con `diferido()` y por su propia pantalla,
-  `pantallas/relacionados-resumen-de-lead.ts`: con el barril entero `/leads` pasa su tope).
+  (sin él el plan genérico ordena todo lo del vehículo caliente: 20 mil bloques). Las imágenes, la miniatura de 480 px; el visor, la grande. Sin caché de cliente: la ficha y la unidad se releen al actuar (`revalidarVinculo()`).
   Dos presentaciones (en una línea y compacta), sin grupos vacíos: lo que no tiene nada no se dibuja y las filas de una línea existen sólo en su popover (diferido, montado al primer clic).
   Con un vínculo y 4 interesados (`section[aria-label="Relacionados"]`, escritorio): la ficha del vehículo 8.078 B, 58 nodos y 213 px de alto (332 px en el celular); la ficha del lead con un
   vínculo 3.350 B, 30 nodos y 143 px.
-  En frío, el bloque va dentro del resumen diferido de `/leads`; en las fichas lo lee el servidor y entra en el documento de la ficha (sus topes, en «JS en frío»).
+  En las fichas lo lee el servidor y entra en el documento de la ficha (sus topes, en «JS en frío»).
 
 - Inventario: 50 por cursor (máx. 100, `MAXIMO_DE_PAGINA_DE_VEHICULOS`), `vehiculos_origen_listado_idx`; 20 ms página, 100 / 150 ms
   búsqueda y limpieza.
@@ -579,7 +576,8 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
-  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). Al borde: `/cotizaciones` 374,7 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). `/leads` mide 526,5 KB en 36 chunks y
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 374,7 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
   `diferido()`), `/cotizaciones/[id]` 463,6 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
   `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,3 de 460 (el campo del título va con `diferido()` dentro del panel)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
@@ -630,7 +628,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   (`e2e/leads-ficha-dos-columnas.spec.ts`); lo que más pesa es el HTML de los ítems con sus acciones (≈ 31 KB el bloque de seguimientos, ≈ 30 KB
   las 10 oportunidades, 11 Relacionados, 6 el portal) y su payload RSC. Igual con la semilla y con 100 orígenes + 100 tipos (manda los campos
   activos y el origen y tipo del lead; el panel de edición los lee al abrirse, `leerCatalogosDeEdicion()`); `e2e/leads-ficha.spec.ts`. Al abrirla
-  desde «Abrir ficha», ≤ 39 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 30,7 en escritorio y 36,6 en el celular). «Cotizaciones» lee 21 desde el navegador al acercarse
+  desde la fila del listado (sin prefetch: todo viaja con el clic), ≤ 39 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 30,7 en escritorio y 29,7 en el celular). «Cotizaciones» lee 21 desde el navegador al acercarse
   a la vista (200 px), no con la ficha.
   «Cotizar» de la cabecera suma, para quien tiene `cotizaciones.crear`, `getOrigenes()` (una por request) y ~90 B.
 - «Nuevo lead» es un solo drawer: 1 montaje y 1 entrada animada por apertura, 1 lectura de cada pedido (`e2e/leads-alta-un-drawer.spec.ts`).

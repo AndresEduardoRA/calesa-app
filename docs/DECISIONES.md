@@ -292,9 +292,14 @@ las trampas, en `docs/LECCIONES.md`.
   «Cambiar el principal» pasa al bloque de teléfonos del panel (sólo en la ficha; con algo escrito en el formulario se apaga: cambiar el número mueve la
   versión y dejaría la edición con la vieja) y quien sólo tiene `leads.telefonos_extra.editar` abre el mismo panel en «modo teléfonos». Un
   `?panel=agregar-telefono` o `?extra=nuevo` (clave propia: `?panel=` ya lo ocupa la edición) lleva a la edición con «Agregar teléfono» abierto.
-- **El resumen del listado de leads es la versión corta de la ficha, sin pestañas** (cotizaciones tiene el suyo; vehículos abre la ficha). Datos clave, lo último que pasó (el último seguimiento y el próximo
-  recordatorio, que ya trae la fila: ninguna lectura más), las acciones y Relacionados en chips; anotar y agendar abren su modal dentro del resumen. Los
-  campos del layout y «Creado» quedan para la ficha. `?pestana=` viejo redirige en el servidor a la ficha en su bloque.
+- **La lista de leads lleva a la ficha; no hay resumen.** El nombre de la fila y de la tarjeta es un enlace real (`<EnlaceDeLaFila>`, `prefetch={false}`:
+  cien filas serían cien pedidos de una ruta dinámica) y el resto de la fila o la tarjeta navega igual (`href` en `<FilaDeLista>`/`<TarjetaDeLista>`); la
+  tarjeta del kanban toma los mismos manejadores (`manejadoresDelClic`) y lleva a `?seccion=oportunidades`. Lo que el resumen ofrecía ya está en el «⋯» de la
+  fila o en la ficha, a un toque. Un `?lead=` viejo redirige en el servidor (`destinoDelEnlaceViejo()`) a la ficha **sin leer el lead**: con los permisos de
+  la sesión (supuesta la cartera) se quitan los paneles que no podría abrir, y la cartera la decide la ficha, que no abre un panel de un lead ajeno (como con un
+  `?panel=` directo). Un `lead` que no es un id también redirige: la ficha dice lo mismo para todo. «Un arrastre no navega» se cumple como «elegir texto no
+  navega»: el kanban no se arrastra («Mover a…» es un menú). Descartados: un `<a>` que envuelve la fila (no puede envolver un `<tr>` y anidaría el «⋯» y
+  los enlaces de la fila), un «stretched link» (encerrado por la celda pegajosa) y conservar el resumen junto al enlace.
 - **La ficha se mide entera.** `?seccion=` no cambia el documento: un solo presupuesto (`PRESUPUESTO_DE_LA_FICHA_EN_KB`) sobre
   `/perfil` con 10 oportunidades, seguimientos y recordatorios, vínculos y portal, igual con 1.000 (lo que crece va por «Ver todos»), y el JS en frío
   de `/leads/[id]` tiene su tope (`docs/RENDIMIENTO.md`).
@@ -307,7 +312,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Nueva oportunidad…» se crea desde el «⋯», no desde un botón de la fila, y antes avisa de las que el lead ya tiene.** Todo lead nace con su
   oportunidad base y la persona prefiere no crear otra sin saber: un toque más (el «⋯», «Nueva oportunidad…», «Crear igual»;
   el aviso sólo se salta si el lead no tiene ninguna que quien mira vea) es el precio. Es el modal corto de las acciones de fila (`?panel=oportunidad-rapida&para=`),
-  no un popover: ya hay un patrón con URL, foco de vuelta y atajos; en la ficha y el resumen, donde el lead ya es el de la pantalla, es `?panel=oportunidad-rapida` sin
+  no un popover: ya hay un patrón con URL, foco de vuelta y atajos; en la ficha, donde el lead ya es el de la pantalla, es `?panel=oportunidad-rapida` sin
   `para`. Sin vehículo ni notas: el listado no lee los vehículos del lead y `leads` no importa `vehiculos`; se agregan con «Editar» en la ficha. Sin elegir embudo: el de
   por defecto. El aviso lista sólo las que quien mira ve (una oportunidad es de su dueña con el lead en su cartera: no se insinúan las ajenas), hasta 5, con «Ver»
   cada una y «Ver todas» si hay más; lee 6 al abrir el modal (una por apertura, por los índices de la ficha) y nunca cuenta. Si la lectura falla lo dice con
@@ -510,7 +515,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **La unidad en su página va en zonas y el alto lo pone `src/app`.** Con 1440×900 y 1280×800 todo lo importante entra sin desplazar la página: «Qué falta» con mover arriba a la izquierda, las pestañas (Documentos, Transporte, Repuestos, Aduana, Dinero) debajo y notas e historial a la derecha, cada zona con su desplazamiento. La forma (zonas o bloques con la barra «Mover») se elige por el ancho de la **pantalla** (1024 px, `useAlMenos`: el servidor lo adivina por cookie y la hidratación no salta); las dos columnas con alto fijo, por el ancho del **contenedor** (`@container/unidad`, 56 rem): con el texto al 200 % los rem crecen y el arreglo vuelve solo a una columna con alto natural. El alto (`--alto-del-detalle`) lo define la página, no el módulo: el marco sabe cuánto ocupa (`<main>`, la sub-navegación, el `gap`); la cabecera va fuera del cambio de forma.
 - **La zona de cada hueco la dice un solo mapa del núcleo (`ZONA_DEL_HUECO`), junto a `ORDEN_DE_HUECOS`**, no la declaración de cada área: el orden ya es central y la zona es el mismo tipo de dato con la misma clave; así `repuestos` no conoce los nombres de las zonas de `logistica`, y el `Record` obliga a ponerle zona a toda clave nueva. «Dinero» junta gastos, pagos y margen porque caben cinco pestañas a 1280 px y es la palabra de la persona.
 - **`ORDEN_DE_HUECOS` va por lo que más se hace:** qué falta, documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen. Cambia también el orden de los bloques en el celular y en el drawer de gastos (a propósito). El panel del ítem tiene su orden propio (`ORDEN_DEL_ITEM`: qué falta, sus bloques, documentos, historial, notas, transporte), con las secciones a la vista.
-- **La pestaña elegida va en `?hueco=`, con `shallow` y `replace`** (como el resumen de `vehiculos`, aunque `ui.md` pida `shallow: false`): el servidor no depende de la pestaña, así que un viaje por pestaña no aporta nada. Cada zona recuerda lo último que eligió porque las dos comparten la clave de la URL.
+- **La pestaña elegida va en `?hueco=`, con `shallow` y `replace`** (aunque `ui.md` pida `shallow: false`): el servidor no depende de la pestaña, así que un viaje por pestaña no aporta nada. Cada zona recuerda lo último que eligió porque las dos comparten la clave de la URL.
 - **Subir documentos va en un drawer sólo en las zonas de la página** (`?subir=documentos`, clave propia: `?panel=` cerraría el drawer del ítem de repuesto y una clave aparte convive con `?vehiculo=` e `?item=`): una pestaña con alto fijo no tiene lugar para la bandeja. En los bloques (celular, drawers, ficha del vehículo) la subida sigue en línea: no toca el ítem, la ficha ni sus specs. Un contexto del núcleo (`useEnZonas`) se lo dice al área, sin que el núcleo importe un área.
 - **Transporte sigue en línea dentro de su pestaña:** su borrador por campo y su `PT409` con «Recargar» viven en el formulario y la pestaña ya tiene su propio desplazamiento.
 - **Cada hueco va en un límite de error** (`LimiteDelHueco`) y su `diferido()` avisa y muestra el esqueleto en su zona: un hueco roto o sin código no tumba la página ni deja un blanco.

@@ -1,5 +1,5 @@
-// El «⋯» de un lead, dicho una sola vez: qué acciones tiene, en qué orden y quién las ve. La fila del listado, la tarjeta del kanban, el
-// resumen y la ficha dibujan esta lista (`features/marcas/components/menu-de-lead.tsx`); ninguna escribe la suya. Lo que una persona no
+// El «⋯» de un lead, dicho una sola vez: qué acciones tiene, en qué orden y quién las ve. La fila del listado, la tarjeta del kanban y la
+// ficha dibujan esta lista (`features/marcas/components/menu-de-lead.tsx`); ninguna escribe la suya. Lo que una persona no
 // puede hacer no aparece, y los permisos son los de siempre: esta lista no decide nada nuevo.
 import { ETIQUETA_DE_FAVORITO, ETIQUETA_DE_TACHADO } from './marcas'
 import { ETIQUETA_DE_ENVIAR } from './papelera'

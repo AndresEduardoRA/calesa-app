@@ -6,32 +6,48 @@ import { leerVistas, puede, requerirSesion } from '@/modules/equipo'
 import {
   CLAVE_DE_VISTA,
   VISTA_EMBUDO,
-  destinoDeLaPestanaVieja,
+  destinoDelEnlaceViejo,
   leerListadoDeLeads,
   leerVistaDeEmbudo,
+  puedeEditarLead,
+  puedeEditarTelefonosExtra,
 } from '@/modules/leads'
-import { EsqueletoDeTablero, VistaDeEmbudo } from '@/modules/leads/pantallas/listado'
+import {
+  EsqueletoDeTablero,
+  ListadoDeLeads,
+  VistaDeEmbudo,
+} from '@/modules/leads/pantallas/listado'
 import { datosO } from '@/shared/lib/errores'
 import { ZONA_POR_DEFECTO } from '@/shared/lib/fechas'
 import type { ParametrosDeUrl } from '@/shared/lib/filtros'
+import type { Permisos } from '@/shared/lib/permisos'
 import { redirigir } from '@/shared/lib/navegacion'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
-import { getOrigenes } from '@/modules/origenes'
-import { paraRelacionadosDe } from '../_relacionados/para-relacionados'
-import { ListadoConRelacionados } from './listado-con-relacionados'
 
 export const metadata: Metadata = { title: 'Leads' }
 
-// El resumen tenía pestañas (`?lead=<id>&pestana=seguimientos|recordatorios`): un enlace de entonces lleva a la ficha en ese bloque.
-function redirigirLaPestanaVieja(parametros: Awaited<PageProps<'/leads'>['searchParams']>) {
-  const destino = destinoDeLaPestanaVieja({
-    lead: unParametro(parametros['lead']),
-    pestana: unParametro(parametros['pestana']),
-    panel: unParametro(parametros['panel']),
-    seguimiento: unParametro(parametros['seguimiento']),
-    recordatorio: unParametro(parametros['recordatorio']),
-  })
+// Un enlace viejo al resumen (`?lead=<id>`, con su `pestana`, `panel` o `extra`): la lista ya no tiene resumen, así que va a la ficha con lo
+// que pedía y la sesión puede abrir (sin leer el lead: la cartera la decide la ficha). `redirect()` es 307 en la carga y `replace` en una
+// navegación de la app: no suma al historial. Fuera de todo `try`.
+function redirigirElEnlaceViejo(
+  parametros: Awaited<PageProps<'/leads'>['searchParams']>,
+  permisos: Permisos,
+) {
+  const destino = destinoDelEnlaceViejo(
+    {
+      lead: unParametro(parametros['lead']),
+      pestana: unParametro(parametros['pestana']),
+      panel: unParametro(parametros['panel']),
+      extra: unParametro(parametros['extra']),
+      seguimiento: unParametro(parametros['seguimiento']),
+      recordatorio: unParametro(parametros['recordatorio']),
+    },
+    {
+      editar: puedeEditarLead(permisos, true),
+      telefonos: puedeEditarTelefonosExtra(permisos, true),
+    },
+  )
   if (destino) {
     redirigir(destino)
   }
@@ -39,8 +55,8 @@ function redirigirLaPestanaVieja(parametros: Awaited<PageProps<'/leads'>['search
 
 // Los leads que la persona puede ver. Quién ve qué lo decide la base (`leads_vista` y la RLS de
 // `leads`): «propios» sólo lo de su cartera; «todos», todo, con el teléfono enmascarado y sin los
-// datos «solo la cartera» de los ajenos. El modo, los filtros, la página y el lead abierto vienen
-// en la URL, y lo que no corresponde se ignora.
+// datos «solo la cartera» de los ajenos. El modo, los filtros y la página vienen en la URL, y lo
+// que no corresponde se ignora. Cada fila lleva a la ficha del lead.
 export default async function PaginaLeads({ searchParams }: PageProps<'/leads'>) {
   const [sesion, parametros] = await Promise.all([requerirSesion(), searchParams])
   if (!puede(sesion.permisos, 'leads.ver')) {
@@ -48,7 +64,7 @@ export default async function PaginaLeads({ searchParams }: PageProps<'/leads'>)
       <EstadoSinPermiso descripcion="No tienes permiso para ver leads. Pídeselo a quien administra los roles." />
     )
   }
-  redirigirLaPestanaVieja(parametros)
+  redirigirElEnlaceViejo(parametros, sesion.permisos)
   // La vista de embudo: el kanban de las oportunidades propias. Los filtros de la lista no aplican.
   if (unParametro(parametros[CLAVE_DE_VISTA] ?? undefined) === VISTA_EMBUDO) {
     return (
@@ -60,12 +76,7 @@ export default async function PaginaLeads({ searchParams }: PageProps<'/leads'>)
       </Suspense>
     )
   }
-  const [ajustesLeidos, vistas, origenes] = await Promise.all([
-    leerAjustes(),
-    leerVistas('leads'),
-    // Para dónde se puede cotizar desde el bloque «Relacionados» del resumen: sólo quien ve vehículos.
-    puede(sesion.permisos, 'vehiculos.ver') ? getOrigenes(true) : null,
-  ])
+  const [ajustesLeidos, vistas] = await Promise.all([leerAjustes(), leerVistas('leads')])
   // Si no se pueden leer, el listado se dibuja igual: zona por defecto y el teléfono con «+».
   const ajustes = ajustesLeidos.ok ? ajustesLeidos.data.ajustes : null
   const listado = datosO(
@@ -78,13 +89,8 @@ export default async function PaginaLeads({ searchParams }: PageProps<'/leads'>)
     }),
   )
   return (
-    <ListadoConRelacionados
+    <ListadoDeLeads
       {...listado}
-      para={
-        origenes === null
-          ? null
-          : paraRelacionadosDe(sesion.permisos, origenes.ok ? origenes.data : [])
-      }
       vistas={datosO(vistas)}
       puedeCrear={puede(sesion.permisos, 'leads.crear')}
       puedeExportar={puede(sesion.permisos, 'leads.exportar')}

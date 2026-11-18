@@ -8,6 +8,5 @@ export { leerListaDelPanel } from './infra/panel-para-cotizar.client'
 export {
   leerPaginaDeLeadsDelVehiculo,
   leerPaginaDeVehiculosDelLead,
-  leerRelacionadosDelLeadEnElNavegador,
   leerVinculosDelVehiculo,
 } from './infra/relacionados.client'
