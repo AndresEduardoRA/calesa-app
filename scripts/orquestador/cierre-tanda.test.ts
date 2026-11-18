@@ -1,4 +1,12 @@
-import { existsSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { join } from 'node:path'
 import { expect, it } from 'vitest'
 import { cuerpo, escenario, TIEMPO } from './prueba/escenario'
@@ -153,6 +161,36 @@ it(
 )
 
 it(
+  'main en verde con más de una migración › encola antes el aplastado y el cierre depende de él, una vez por cierre',
+  () => {
+    const t = enMantenimiento()
+    mkdirSync(join(t.repo, 'supabase/migrations'), { recursive: true })
+    for (const m of [
+      '20260101000000_base.sql',
+      '20260102000000_algo.sql',
+      '20260103000000_otro.sql',
+    ])
+      writeFileSync(join(t.repo, 'supabase/migrations', m), 'select 1;\n')
+    integradas(t, TRES)
+    terminar(t, 'success')
+    t.orq('espejo')
+    const [aplastar, cierre, ...otros] = nuevos(t).sort((a, b) => a.number - b.number)
+    expect(otros).toEqual([])
+    expect(aplastar!.title).toBe(`aplastar las migraciones en una base nueva (${FECHA})`)
+    expect(aplastar!.labels).toEqual(['cola'])
+    expect(aplastar!.body).toContain('\ncierre: aplastar\n')
+    expect(aplastar!.body).toContain('las 3 migraciones de hoy')
+    expect(cierre!.labels).toEqual(['cola', 'cierre'])
+    expect(cierre!.body).toContain(`\ndepende: T${aplastar!.number}\n`)
+    expect(cierre!.body).toContain(`(tarea: T${aplastar!.number})`)
+    expect(t.est('.', '.cierre-aplastar')).toBe(`T${aplastar!.number}`)
+    t.orq('espejo')
+    expect(nuevos(t)).toHaveLength(2)
+  },
+  TIEMPO,
+)
+
+it(
   'main en verde › publica el cierre con la etiqueta cierre, las tareas y el resumen, una sola vez',
   () => {
     const t = enMantenimiento()
@@ -179,6 +217,9 @@ it(
     expect(cierre!.body).toContain('- T13 · PR #43 · tarea de feat/trece')
     expect(cierre!.body).toContain('### Totales')
     expect(cierre!.body).not.toContain('{{')
+    // Sin migraciones que aplastar no hay tarea antes ni `depende`.
+    expect(cierre!.body).not.toMatch(/\ndepende:/)
+    expect(cierre!.body).toContain('ninguna: main ya tiene una sola migración')
     expect(t.est('.', '.cierre-publicado')).toBe(`T${cierre!.number}`)
     expect(t.log()).toContain('AVISO · Tanda cerrándose · 3 tareas, cierre en la cola')
     t.orq('espejo')
@@ -268,3 +309,9 @@ it(
   },
   TIEMPO,
 )
+
+it('las plantillas conservan sus marcadores {{X}} (Prettier los volvía { { X } } y no se reemplazaban)', () => {
+  const dir = join(process.cwd(), 'scripts/orquestador/plantillas')
+  for (const f of readdirSync(dir).filter((n) => n.endsWith('.md')))
+    expect(readFileSync(join(dir, f), 'utf8'), f).not.toMatch(/\{ \{/)
+})

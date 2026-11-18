@@ -19,3 +19,4 @@ supabase/tests/corpus-de-contraste.json
 # plantillas con marcadores {{X}}: Prettier los reescribe en el frontmatter como { { X } } y `nueva` deja de reemplazarlos
 scripts/orquestador/plantilla-tarea.md
 scripts/orquestador/prompts
+scripts/orquestador/plantillas
