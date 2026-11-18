@@ -577,7 +577,8 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
-  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). Al borde: `/cotizaciones` 374,7 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). `/leads` mide 526,5 KB en 36 chunks y
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 374,7 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
   `diferido()`), `/cotizaciones/[id]` 463,6 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
   `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,3 de 460 (el campo del título va con `diferido()` dentro del panel)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
@@ -628,7 +629,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   (`e2e/leads-ficha-dos-columnas.spec.ts`); lo que más pesa es el HTML de los ítems con sus acciones (≈ 31 KB el bloque de seguimientos, ≈ 30 KB
   las 10 oportunidades, 11 Relacionados, 6 el portal) y su payload RSC. Igual con la semilla y con 100 orígenes + 100 tipos (manda los campos
   activos y el origen y tipo del lead; el panel de edición los lee al abrirse, `leerCatalogosDeEdicion()`); `e2e/leads-ficha.spec.ts`. Al abrirla
-  desde la fila del listado (sin prefetch: todo viaja con el clic), ≤ 39 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 30,7 en escritorio y 36,6 en el celular). «Cotizaciones» lee 21 desde el navegador al acercarse
+  desde la fila del listado (sin prefetch: todo viaja con el clic), ≤ 39 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 30,7 en escritorio y 29,7 en el celular). «Cotizaciones» lee 21 desde el navegador al acercarse
   a la vista (200 px), no con la ficha.
   «Cotizar» de la cabecera suma, para quien tiene `cotizaciones.crear`, `getOrigenes()` (una por request) y ~90 B.
 - «Nuevo lead» es un solo drawer: 1 montaje y 1 entrada animada por apertura, 1 lectura de cada pedido (`e2e/leads-alta-un-drawer.spec.ts`).
