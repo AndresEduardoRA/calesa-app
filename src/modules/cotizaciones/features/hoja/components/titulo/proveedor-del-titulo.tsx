@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState, type ReactNode } from 'react'
-import { useBorradorDeEstado } from '@/shared/ui/use-borrador-de-estado'
 import { claveDelTitulo, claveDelTituloDeUnaGuardada } from '../../../../entities/claves-de-la-hoja'
 import {
   alEscribirElTitulo,
@@ -10,6 +9,7 @@ import {
   tituloMostrado,
   type EstadoDelTitulo,
 } from '../../../../entities/titulo-de-la-cotizacion'
+import { useBorradorDelTitulo } from '../../hooks/use-borrador-del-titulo'
 import {
   ContextoDelTitulo,
   type TituloDeLaCotizacion,
@@ -70,13 +70,11 @@ export function ProveedorDelTitulo({
     setEstado(otro.inicial)
     setRechazo(null)
   }
-  const { limpiar } = useBorradorDeEstado({
+  const { limpiar } = useBorradorDelTitulo({
     clave,
-    valores: estado,
-    guardado: inicial,
-    alReponer: (cambios) => {
-      setEstado((antes) => ({ ...antes, ...cambios }))
-    },
+    estado,
+    inicial,
+    alReponer: setEstado,
     activo: puede,
   })
   const valor = useMemo<TituloDeLaCotizacion>(
