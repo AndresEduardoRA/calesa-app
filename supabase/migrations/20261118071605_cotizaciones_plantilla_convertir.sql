@@ -87,7 +87,7 @@ comment on function public._plantilla_conversion_fila(jsonb, jsonb, text, jsonb,
 revoke all on function public._plantilla_conversion_fila(jsonb, jsonb, text, jsonb, text) from public, anon, authenticated;
 grant execute on function public._plantilla_conversion_fila(jsonb, jsonb, text, jsonb, text) to service_role;
 
--- La conversión. Columnas (sólo las que van): grupo (100, si algún grupo tiene miembros), concepto (190), monto (110), leyenda (170), tipo de cambio y plazo
+-- La conversión. Columnas (sólo las que van): grupo (100, si algún grupo tiene miembros), concepto (190), monto (130), leyenda (170), tipo de cambio y plazo
 -- (90, con la columna del grupo). Filas: el logo arriba con 2 columnas; el título de la opción (si la variante es del nivel «todos»), la fecha, el número y el
 -- asesor, con el logo al costado desde 3 columnas; el vehículo; los rótulos de tipo de cambio y plazo; una fila por miembro de cada grupo (el título del grupo,
 -- el tipo de cambio y el plazo abarcan las filas del grupo) con su color; el total en dos renglones con su leyenda; lo aparte; la nota.
@@ -105,7 +105,7 @@ begin
   v_con_grupo := exists (select 1 from jsonb_array_elements(p_plantilla -> 'grupos') g
                           where exists (select 1 from jsonb_array_elements(v_nodos) n where n ->> 'grupo' = g ->> 'grupo'));
   v_cols := (select jsonb_agg(jsonb_build_object('id', c.id, 'ancho', c.ancho) order by c.o)
-               from (values (1, 'grupo', 100, v_con_grupo), (2, 'concepto', 190, true), (3, 'monto', 110, true),
+               from (values (1, 'grupo', 100, v_con_grupo), (2, 'concepto', 190, true), (3, 'monto', 130, true),
                             (4, 'leyenda', 170, (p_plantilla -> 'columnas' ->> 'leyenda')::boolean),
                             (5, 'tipo_cambio', 90, (p_plantilla -> 'columnas' ->> 'tipo_cambio')::boolean and v_con_grupo),
                             (6, 'plazo', 90, (p_plantilla -> 'columnas' ->> 'plazo')::boolean and v_con_grupo)) c (o, id, ancho, va)
@@ -222,7 +222,7 @@ begin
   v_piezas := jsonb_build_array(
     public._plantilla_pieza(v_desde, 'concepto', null, jsonb_build_object('tipo', 'texto', 'texto', v_et), jsonb_build_object('tamano', 16, 'negrita', true, 'bordes', v_fino), v_et, null),
     public._plantilla_pieza('monto', null, null, case when v_total is null then '{"tipo": "vacio"}'::jsonb else jsonb_build_object('tipo', 'dato', 'nodo', v_total, 'mostrar', 'monto') end,
-                            jsonb_build_object('tamano', 16, 'negrita', true, 'alinear', 'derecha', 'bordes', v_fino), null, 2));
+                            jsonb_build_object('tamano', 14, 'negrita', true, 'alinear', 'derecha', 'bordes', v_fino), null, 2));
   if 'leyenda' = any (v_ids) then
     v_piezas := v_piezas
       || case when btrim(v_ley) <> ''

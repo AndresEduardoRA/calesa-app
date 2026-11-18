@@ -116,7 +116,7 @@ function total(c: Conversion): void {
     {
       columna: 'monto',
       contenido: nodo === undefined ? { tipo: 'vacio' } : dato(nodo.id, 'monto'),
-      estilo: { tamano: 16, negrita: true, alinear: 'derecha', bordes: FINO },
+      estilo: { tamano: 14, negrita: true, alinear: 'derecha', bordes: FINO },
       renglones: 2,
     },
     ...enSuColumna,

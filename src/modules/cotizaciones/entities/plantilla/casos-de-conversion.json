@@ -728,7 +728,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -1448,7 +1448,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -1609,7 +1609,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -2310,7 +2310,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -2433,7 +2433,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -3144,7 +3144,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -3259,7 +3259,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -3326,7 +3326,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -3838,7 +3838,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -3940,7 +3940,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "tipo_cambio",
@@ -4003,7 +4003,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -4452,7 +4452,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -4552,7 +4552,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -4615,7 +4615,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -5058,7 +5058,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -5159,7 +5159,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -5222,7 +5222,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -5665,7 +5665,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -5766,7 +5766,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           }
         ],
         "filas": [
@@ -5816,7 +5816,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -6111,7 +6111,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -6205,7 +6205,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -6272,7 +6272,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -6780,7 +6780,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -6882,7 +6882,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -6949,7 +6949,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -7455,7 +7455,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -7560,7 +7560,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -7627,7 +7627,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -8144,7 +8144,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -8259,7 +8259,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           }
         ],
         "filas": [
@@ -8309,7 +8309,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -8604,7 +8604,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -8694,7 +8694,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -8767,7 +8767,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           },
           {
@@ -9321,7 +9321,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -9408,7 +9408,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           }
         ],
         "filas": [
@@ -9439,7 +9439,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           }
         ],
@@ -9539,7 +9539,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {
@@ -9581,7 +9581,7 @@
           },
           {
             "id": "monto",
-            "ancho": 110
+            "ancho": 130
           },
           {
             "id": "leyenda",
@@ -9611,7 +9611,7 @@
           },
           {
             "id": "total",
-            "alto": 54,
+            "alto": 48,
             "ocultar_si": "nunca"
           }
         ],
@@ -9704,7 +9704,7 @@
               "mostrar": "monto"
             },
             "estilo": {
-              "tamano": 16,
+              "tamano": 14,
               "negrita": true,
               "alinear": "derecha",
               "bordes": {

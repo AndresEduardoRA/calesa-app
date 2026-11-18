@@ -72,11 +72,12 @@ export const MAXIMO_DE_CARACTERES_DE_UN_TEXTO = 300
 // El texto del `jsonb` (`octet_length(definicion::text)`): el doble de la plantilla de V1 más grande, a KiB enteros (docs/DECISIONES.md).
 export const TOPE_EN_BYTES_DE_LA_CUADRICULA = 24576
 
-// Las columnas que pone la conversión de la forma 1, en su orden, con su ancho en px (650 como máximo: entra en A4 a escala 1).
+// Las columnas que pone la conversión de la forma 1, en su orden, con su ancho en px (690 como máximo: entra en A4 a escala 1, 517,5 de 523 pt útiles).
+// El monto, 130: un total de seis cifras a 14 px no se parte en dos renglones.
 export const COLUMNAS_DE_LA_CONVERSION = [
   { id: 'grupo', ancho: 100 },
   { id: 'concepto', ancho: 190 },
-  { id: 'monto', ancho: 110 },
+  { id: 'monto', ancho: 130 },
   { id: 'leyenda', ancho: 170 },
   { id: 'tipo_cambio', ancho: 90 },
   { id: 'plazo', ancho: 90 },
