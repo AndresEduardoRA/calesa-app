@@ -102,13 +102,13 @@ describe('accionesDeLaFila desde el vehículo', () => {
       'Cotizar',
     ])
   })
-  it('el vinculado se desvincula en la ficha con su confirmación, y en un resumen lleva a la ficha', () => {
+  it('el vinculado se desvincula en la ficha con su confirmación, y en la unidad lleva a la ficha', () => {
     expect(accionesDeLaFila(filaDeLead(VINCULO), contexto(ANCLA_V)).at(-1)).toMatchObject({
       tipo: 'desvincular',
       modo: 'confirmar',
     })
     expect(
-      accionesDeLaFila(filaDeLead(VINCULO), contexto(ANCLA_V, { lugar: 'resumen' })).at(-1),
+      accionesDeLaFila(filaDeLead(VINCULO), contexto(ANCLA_V, { lugar: 'logistica' })).at(-1),
     ).toMatchObject({
       tipo: 'enlace',
       href: `/vehiculos/${VEHICULO}?panel=desvincular`,
@@ -172,7 +172,7 @@ describe('accionesDelGrupo', () => {
       { tipo: 'desvincular', etiqueta: 'Desvincular', modo: 'confirmar' },
     ])
     expect(
-      accionesDelGrupo({ ...vacio, ocultos: 1 }, contexto(ANCLA_V, { lugar: 'resumen' }))[0],
+      accionesDelGrupo({ ...vacio, ocultos: 1 }, contexto(ANCLA_V, { lugar: 'logistica' }))[0],
     ).toMatchObject({
       tipo: 'enlace',
       href: `/vehiculos/${VEHICULO}?panel=desvincular`,
@@ -201,12 +201,10 @@ describe('accionesDelGrupo', () => {
       tipo: 'elegir-lead',
       clave: 'marcar-interesado',
     })
-    for (const lugar of ['resumen', 'logistica'] as const) {
-      expect(accionesDelGrupo(grupo, contexto(ANCLA_V, { lugar }))[0]).toMatchObject({
-        tipo: 'enlace',
-        href: `/vehiculos/${VEHICULO}?panel=marcar-interesado`,
-      })
-    }
+    expect(accionesDelGrupo(grupo, contexto(ANCLA_V, { lugar: 'logistica' }))[0]).toMatchObject({
+      tipo: 'enlace',
+      href: `/vehiculos/${VEHICULO}?panel=marcar-interesado`,
+    })
   })
   it('un cotizado vacío ofrece cotizar el vehículo sin lead', () => {
     expect(

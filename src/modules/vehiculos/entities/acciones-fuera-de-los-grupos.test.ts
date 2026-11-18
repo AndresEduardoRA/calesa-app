@@ -62,8 +62,8 @@ describe('accionesFueraDeLosGrupos desde un vehículo', () => {
     expect(etiquetas(fuera.resto)).toEqual(['Marcar un interesado'])
   })
 
-  it('en un resumen o en logística, las mismas como enlaces a la ficha con su panel', () => {
-    for (const lugar of ['resumen', 'logistica'] as const) {
+  it('en logística, las mismas como enlaces a la ficha con su panel', () => {
+    for (const lugar of ['logistica'] as const) {
       const fuera = accionesFueraDeLosGrupos(vacios(), contexto(ANCLA_V, { lugar }))
       expect(fuera.principal).toMatchObject({
         tipo: 'enlace',

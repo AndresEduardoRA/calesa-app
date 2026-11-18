@@ -755,9 +755,9 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
   vehículo, su confirmación `?panel=desvincular`; desde un lead, con la cartera en el lugar con «Deshacer», sin ella lleva a `?seccion=vehiculos&panel=desvincular&vinculado=<id>`), «Vincular a un lead» (sin
   vínculo) y «Marcar un interesado» (los dos abren el selector de leads de la ficha: `?panel=vincular-lead`, `?panel=marcar-interesado`; en un resumen o en la unidad llevan a la ficha con el panel
   abierto), «Vincular o marcar un vehículo» (desde un lead: lleva a `?seccion=vehiculos&panel=agregar-vehiculo`) y «Ver todos» (`?relacionados=vinculado|interesado|cotizado`: un `<Drawer>` de a 20 por cursor con
-  «Ver más» hasta 500, `AvisoDeTope`; desde un resumen lleva a la ficha con el drawer abierto; el de Vinculado en un vehículo trae el vínculo vigente y los anteriores; el enlace abre su drawer
+  «Ver más» hasta 500, `AvisoDeTope`; se abre en el lugar, la ficha o la unidad; el de Vinculado en un vehículo trae el vínculo vigente y los anteriores; el enlace abre su drawer
   aunque el grupo no se dibuje).
-- **Estados:** cargando, `EsqueletoDeRelacionados` del alto de lo que viene (tres chips en una línea; el `h2` y tres celdas en la compacta) o, al releer un resumen, lo anterior con `aria-busy`;
+- **Estados:** cargando, `EsqueletoDeRelacionados` del alto de lo que viene (tres chips en una línea; el `h2` y tres celdas en la compacta);
   error «No pudimos cargar los relacionados.» con «Reintentar» (sin encabezado en una línea, bajo el `h2` en la compacta; la pantalla sigue); vacío total «Sin relacionados todavía.» con **una**
   acción a la vista (la primera: vincular) y el resto en el «⋯»; lo que quien mira no ve, «1 que no puedes ver» / «3 que no puedes ver», sin datos (el grupo se dibuja; un vínculo oculto no
   ofrece vincular, y «Desvincular» queda en su grupo); sin `leads.ver` (o `vehiculos.ver` desde un lead) no hay bloque; sin `cotizaciones.ver` no hay grupo Cotizado;

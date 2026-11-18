@@ -19,7 +19,7 @@ export type AnclaDeAcciones =
 type Fila = FilaRelacionada<LeadRelacionado | VehiculoRelacionado> | null
 
 // Lo que hace cada acción del «⋯» que se resuelve en el lugar: quitar interés y desvincular (con «Deshacer»), y, desde un vehículo, vincular y marcar a un lead elegido. Todo por
-// las mismas RPC de siempre (`useVinculo`); `alCambiar` corre tras lo logrado (el resumen, que lee en el navegador, vuelve a leer). Lo que abre un panel (la confirmación de
+// las mismas RPC de siempre (`useVinculo`); `alCambiar` corre tras lo logrado. Lo que abre un panel (la confirmación de
 // desvincular, los selectores de leads) lo resuelve `usePanelesDeLaFicha` y llega por `alAbrir`.
 export function useAccionesDeRelacionados(
   ancla: AnclaDeAcciones,

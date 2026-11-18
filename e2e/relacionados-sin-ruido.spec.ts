@@ -78,10 +78,12 @@ test('E2E la unidad de logística muestra chips en una línea, sin grupos vacío
   await expect(popover).toBeHidden()
   await expect(interesado).toBeVisible()
 
-  // «Ver todos» lleva a la ficha con su drawer abierto.
+  // «Ver todos» abre el drawer en la unidad, sin salir de ella (`?relacionados=`).
   await interesado.click()
-  await popover.getByRole('link', { name: 'Ver todos' }).click()
-  await expect(page).toHaveURL(new RegExp(`/vehiculos/${vehiculo}\\?relacionados=interesado`))
+  await popover.getByRole('button', { name: 'Ver todos' }).click()
+  await expect(page).toHaveURL(
+    new RegExp(`/logistica/vehiculo/${vehiculo}\\?relacionados=interesado`),
+  )
   const todos = page.getByRole('dialog', { name: 'Interesado · todos' })
   await expect(todos.getByRole('listitem')).toHaveCount(4)
 
