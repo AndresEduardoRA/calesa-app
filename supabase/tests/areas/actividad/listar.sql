@@ -222,6 +222,15 @@ begin
   v_resp := pg_temp.act_como(f, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'gastos', v_gasto));
   if v_resp #>> '{filas,0,registro_titulo}' is distinct from 'act v1 #' || v_numero or v_resp #>> '{filas,0,registro_destino,vehiculo_id}' is distinct from v::text then
     raise exception 'T9: el gasto vivo: %', v_resp; end if;
+  -- E con logistica.gastos.ver y sin vehiculos.ver ve el gasto y su cambio, pero no el vehículo del que cuelga: sin título ni destino.
+  insert into public.roles_permisos (rol_id, permiso_clave, origen_id, alcance)
+  select ur.rol_id, 'logistica.gastos.ver', null, 'todos' from public.usuarios_roles ur where ur.usuario_id = e;
+  v_resp := pg_temp.act_como(e, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'gastos', v_gasto));
+  if not (v_resp #>> '{filas,0,visible}')::boolean or v_resp #> '{filas,0,registro_titulo}' <> 'null'::jsonb
+     or v_resp #> '{filas,0,registro_destino}' <> 'null'::jsonb or v_resp::text ~ 'act v1' then
+    raise exception 'T9: E sin vehiculos.ver vio el vehículo del gasto: %', v_resp; end if;
+  delete from public.roles_permisos rp using public.usuarios_roles ur
+   where ur.usuario_id = e and rp.rol_id = ur.rol_id and rp.permiso_clave = 'logistica.gastos.ver';
   -- E (logistica.ver sin logistica.gastos.ver) no ve el gasto: ni título, ni destino, ni primer cambio.
   v_resp := pg_temp.act_como(e, format('select public.actividad_listar(p_tabla => %L, p_registro => %L)', 'gastos', v_gasto));
   if jsonb_array_length(v_resp -> 'filas') = 0 or exists (select 1 from jsonb_array_elements(v_resp -> 'filas') x

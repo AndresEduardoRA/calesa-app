@@ -24,9 +24,11 @@ comment on function public._actividad_valor_corto(jsonb) is
   'Un lado del primer cambio de una fila de actividad_listar: texto, objeto o lista como texto de hasta 80 caracteres; número, sí/no y nulo, tal cual.';
 
 
--- El nombre de un registro de la actividad y a dónde lleva su enlace, leídos por su PK. Sólo para una fila que `_actividad_recortar` ya dio
--- por visible: lo que depende de la fila (no de su id) se vuelve a mirar sobre la fila vigente con `_actividad_puede_ver_fila`, porque la
--- foto pudo ser de otra unidad. Nulo si ya no existe o no se ve.
+-- El nombre de un registro de la actividad y a dónde lleva su enlace, leídos por su PK. **Sólo para una fila que `_actividad_recortar` ya dio
+-- por visible** (la llama únicamente `actividad_listar`, bajo `r.visible`; `authenticated` no la ejecuta): de un lead, un vehículo, una cotización,
+-- una declaración o un ítem no vuelve a preguntar. Lo que depende de la fila (no de su id) se vuelve a mirar sobre la fila vigente con
+-- `_actividad_puede_ver_fila`, porque la foto pudo ser de otra unidad, y la unidad de la que cuelga sólo se nombra si quien mira la lee
+-- (`vehiculos.ver` del vehículo, `repuestos.ver`): ver un gasto por `logistica.gastos.ver` no es ver el vehículo. Nulo si no existe o no se ve.
 -- `titulo`: el del registro (lead, vehículo, cotización, comprobante, declaración, ítem de repuestos) o, en lo que cuelga de una unidad
 -- (documento, gasto, transporte, pago, compra), el de esa unidad. `destino`: la cotización de un comprobante, el vehículo o el proyecto
 -- (y el ítem) de lo que cuelga de una unidad; sin destino, el enlace va al registro mismo.
@@ -66,6 +68,9 @@ begin
       return (select jsonb_build_object('titulo', i.descripcion, 'destino', jsonb_build_object('proyecto_id', i.proyecto_id, 'item_id', i.id))
                 from public.repuestos_items i where i.id = v_id);
     when 'repuestos_compras' then
+      if not public.tiene_permiso('repuestos.ver') then
+        return null;
+      end if;
       return (select jsonb_build_object('titulo', 'Proyecto #' || p.numero, 'destino', jsonb_build_object('proyecto_id', p.id))
                 from public.repuestos_compras c join public.repuestos_proyectos p on p.id = c.proyecto_id where c.id = v_id);
     when 'pagos' then
@@ -88,10 +93,15 @@ begin
       -- Una fórmula o una tabla de configuración: la app la nombra por su entidad y la lleva a su página de Configuración.
       return null;
   end case;
-  -- Lo que cuelga de una unidad: el vehículo, el ítem de repuestos (con su proyecto) o el proyecto.
+  -- Lo que cuelga de una unidad: el vehículo, el ítem de repuestos (con su proyecto) o el proyecto, si quien mira lo lee.
   if v_vehiculo is not null then
+    if not public.puede_vehiculo(v_vehiculo, 'vehiculos.ver') then
+      return null;
+    end if;
     return (select jsonb_build_object('titulo', v.titulo || ' #' || v.numero, 'destino', jsonb_build_object('vehiculo_id', v.id))
               from public.vehiculos v where v.id = v_vehiculo);
+  elsif not public.tiene_permiso('repuestos.ver') then
+    return null;
   elsif v_item is not null then
     return (select jsonb_build_object('titulo', i.descripcion, 'destino', jsonb_build_object('proyecto_id', i.proyecto_id, 'item_id', i.id))
               from public.repuestos_items i where i.id = v_item);

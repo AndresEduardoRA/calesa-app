@@ -29,7 +29,7 @@ Auditoría inmutable de 14 días: qué cambió, quién, cuándo y el diff, con p
 `actividad`. RPC/cron:
 
 - `actividad_listar`: cursor sobre `id`, una ruta por filtro (`p_actor`, `p_tabla` + `p_registro`, `p_accion`) con su índice, `p_hasta`; los nombres de
-  hasta 5 campos y, de una fila visible, `registro_titulo` y `registro_destino` (`_actividad_registro`, por PK) y `primer_cambio` (del recorte de
+  hasta 5 campos y, de una fila visible, `registro_titulo` y `registro_destino` (`_actividad_registro`, por PK; la unidad de la que cuelga una fila, sólo con `vehiculos.ver` o `repuestos.ver`) y `primer_cambio` (del recorte de
   `_actividad_recortar`, cada texto a 80 con `_actividad_valor_corto`, con `moneda_antes`/`moneda_despues`). Una fila no visible no trae nada de eso
   (`areas/actividad/listar.sql` T3 y T9; `medir-actividad-listar.sql`).
 - `actividad_diff(id)`: `{visible, cambios: {campo: {antes, despues}}}`; con `visible: true` suma `moneda_antes`, `moneda_despues` (de la foto, fuera de
