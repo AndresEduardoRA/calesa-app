@@ -5,7 +5,7 @@
 # antes del PR, el que todavía tiene docs/semilla/.
 titulo: cerrar la construcción de {{REPO}} (semilla v{{VERSION}})
 rama: chore/cerrar-construccion
-depende: { { DEPENDE } }
+depende: {{DEPENDE}}
 conflicto: docs
 planificar: si
 nivel: capaz

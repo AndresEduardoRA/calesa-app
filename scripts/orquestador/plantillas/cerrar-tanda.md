@@ -6,7 +6,7 @@
 # integrarse, la tanda siguiente cuenta desde ahí y se podan los transcriptos de ésta.
 titulo: cerrar la tanda del {{FECHA}}
 rama: chore/cerrar-tanda-{{RAMA_FECHA}}
-depende: { { DEPENDE } }
+depende: {{DEPENDE}}
 conflicto: flujo docs
 nivel: capaz
 effort: high

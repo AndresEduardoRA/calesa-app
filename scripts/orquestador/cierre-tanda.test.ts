@@ -1,4 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs'
 import { join } from 'node:path'
 import { expect, it } from 'vitest'
 import { cuerpo, escenario, TIEMPO } from './prueba/escenario'
@@ -301,3 +309,9 @@ it(
   },
   TIEMPO,
 )
+
+it('las plantillas conservan sus marcadores {{X}} (Prettier los volvía { { X } } y no se reemplazaban)', () => {
+  const dir = join(process.cwd(), 'scripts/orquestador/plantillas')
+  for (const f of readdirSync(dir).filter((n) => n.endsWith('.md')))
+    expect(readFileSync(join(dir, f), 'utf8'), f).not.toMatch(/\{ \{/)
+})
