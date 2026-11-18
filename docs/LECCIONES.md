@@ -234,6 +234,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Busca dentro de `main` o `#contenido`, nunca por `.fixed` ni una clase genérica: el marco repite textos («Sin conexión», la navegación) y sus barras fijas (campana, chat) coinciden.
 - El «Más acciones de …» de la cabecera de una ficha no es el único de la página: las filas de «Relacionados» llevan el suyo. Usa `menuDeLaFicha()`, que las excluye, no un `getByRole` suelto.
 - Filtra lo visible en un localizador de filas (`tr, li`): Next conserva la pantalla anterior escondida en el DOM y aparecen dos filas.
+- Una hora de Postgres no trae siempre 6 decimales (quita los ceros finales): no compares su largo; compara la ida y vuelta.
 - En el celular una fila de tabla es una tarjeta: un localizador por fila funciona en escritorio y cae en `movil`.
 - Con un modal o `<Drawer>` abierto lo de atrás sale del árbol de accesibilidad: ciérralo antes de afirmar sobre la página (un `toHaveCount(0)` sería un falso verde).
 - Antes de un atajo de teclado o un Tab espera el estado final (`toHaveValue`, resultados, hidratación, la sección y el foco en su lugar): antes de hidratar la `N` la toma el «Nuevo lead» del marco, y un Tab mientras llega contenido manda el foco al `body`.

@@ -56,7 +56,8 @@ test('E1: crear con la esperada nula, leer la misma hora con sus microsegundos y
   if (!creado.ok) throw new Error(creado.error.mensaje)
   const leido = await leer()
   expect(leido.borrador?.actualizadoEn).toBe(creado.data)
-  expect(creado.data).toMatch(/\.\d{6}/)
+  // Postgres quita los ceros finales de la fracción: de 1 a 6 decimales; la ida y vuelta de arriba prueba que no se trunca
+  expect(creado.data).toMatch(/\.\d{1,6}(?:[+-]|Z)/)
   expect(leido.borrador?.plantilla?.nota).toBe('Nota uno')
 
   const guardado = await repositorio().guardar({
