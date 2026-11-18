@@ -64,6 +64,8 @@ declare
     ('puede_vehiculo(uuid,text)', 'L'),
     -- El buscador (7.12-1): busca por número o título, repite la policy «cotizaciones: leer» (mira el lead sólo por en_cartera) y no devuelve lead_id.
     ('buscador_cotizaciones(text,integer)', 'L'),
+    -- La fuente «título» de la búsqueda del listado (T307): como el buscador, repite la policy «cotizaciones: leer» (mira el lead sólo por en_cartera) y devuelve sólo ids.
+    ('_cotizaciones_ids_por_titulo(text,uuid)', 'L'),
     ('puede_cotizacion(uuid,text)', 'L'),
     ('lead_favorito_poner(uuid,boolean)', 'M'),
     ('lead_tachado_poner(uuid,boolean)', 'M'),
@@ -190,12 +192,12 @@ declare
     -- Crear una cotización (4.10-2): el lead es obligatorio y se pide visible (`leads.ver`, la regla de la policy de insert que se fue), no de la cartera: una cotización cuelga de un lead que quien
     -- cotiza ve (D3). Lo bloquea `for key share` entre dos comprobaciones, igual para el que no existe y el que no ve (`cotizacion-crear.sql` y `cotizaciones-visibilidad.sql`).
     -- Una final (4.25-1b), como marcar: el lead en la cartera con `leads.editar` antes de tomarlo y con todo tomado, y lo toma `for no key update` (`areas/final/crear.sql`).
-    ('cotizacion_crear(uuid,uuid,uuid,jsonb,text,uuid,jsonb,text,clase_cotizacion,boolean,boolean)', 'X'),
+    ('cotizacion_crear(uuid,uuid,uuid,jsonb,text,uuid,jsonb,text,clase_cotizacion,boolean,boolean,text,boolean)', 'X'),
     -- Cotizar encima (4.15-2): el lead es el de la anterior y se pide visible como en cotizacion_crear (comprobar, for key share, volver a comprobar), después de ver la anterior.
     ('cotizacion_encima(uuid,uuid)', 'X'),
     -- Guardar una cotización (4.10-3): no recibe un lead; la cotización que edita ya cuelga de uno que su dueña vio, y editarla no cambia quién la ve. El permiso es el de la cotización
     -- (`puede_cotizacion`) y no toma el lead: lo prueban `cotizacion-guardar.sql` y `cotizaciones-visibilidad.sql`.
-    ('cotizacion_guardar(uuid,uuid,timestamp with time zone,jsonb,text,text,text,uuid,boolean)', 'X'),
+    ('cotizacion_guardar(uuid,uuid,timestamp with time zone,jsonb,text,text,text,uuid,boolean,boolean)', 'X'),
     -- Las tareas de la agenda (7.06-1), como los eventos: el lead vinculado se pide visible (`lead_visible_al_escribir`); reasignar cambió de firma
     -- (con versión). Responden sólo {resultado, id, actualizado_en} (`areas/agenda/tareas.sql`).
     ('tarea_crear(uuid,jsonb,uuid)', 'X'),

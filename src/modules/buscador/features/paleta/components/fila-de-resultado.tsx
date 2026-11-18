@@ -28,6 +28,8 @@ function textosDe(abierto: Abierto): { titulo: string; detalle: string | null } 
       }
     }
     case 'cotizacion': {
+      // La regla de `tituloDeLaCotizacion()` de `cotizaciones` sin el vehículo (`buscador_cotizaciones()` no lo devuelve): el título o «Cotización n.º N». Escrita acá y
+      // no importada: la paleta no carga el barril de cliente de `cotizaciones` (este módulo sólo lo conoce por la base).
       const { titulo, numero } = abierto.fila
       const propio = `Cotización n.º ${String(numero)}`
       return titulo !== null && titulo.trim() !== ''

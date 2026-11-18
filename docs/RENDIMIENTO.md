@@ -479,12 +479,19 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   común va por un `Seq Scan` con `limit 1000`: se queda así. Guarda: sin `cotizaciones_titulo_trgm`, lo raro recorre la tabla.
 - Búsqueda del listado de cotizaciones (`cotizaciones_buscar()`, invocadora; `medir-cotizaciones-buscar.sql`, 50.000 y 250.000; `?q=`): el número por
   `cotizaciones_numero_key` (≈ 1,5 ms, 4 bloques); cada fuente nombra ≤ 50 ids —clientes por la ventana de `leads_candidatos()` y `leads_vista_por_ids()`, vehículos
-  por origen por `vehiculos_origen_listado_idx` (la RLS no deja usar su trigrama), autores por `perfiles` (decenas de filas)— y de cada uno una página por
-  `cotizaciones_lead_creado_idx`, `cotizaciones_vehiculo_creado_idx` o `cotizaciones_creador_idx`, fundidas y sin repetir. Presupuestos: número 20 ms, cliente raro
-  80, cliente común 400, vehículo raro 150, vehículo común 400, autor 60 (el doble para Ana); medido ≈ 35 ms los de texto (el piso es `leads_candidatos()` y el
+  por origen por `vehiculos_origen_listado_idx` (la RLS no deja usar su trigrama), autores por `perfiles` (decenas de filas), títulos de la cotización por
+  `_cotizaciones_ids_por_titulo()` (definer, plan genérico: ≤ 1.000 candidatas por `cotizaciones_titulo_trgm` de los orígenes que se ven, más ≤ 51 propias por
+  `cotizaciones_creador_idx` donde sólo se ve «propios», la policy sobre ellas y las 51 más nuevas)— y de cada uno una página por
+  `cotizaciones_lead_creado_idx`, `cotizaciones_vehiculo_creado_idx` o `cotizaciones_creador_idx` (el título, por la PK), fundidas y sin repetir. Presupuestos: número
+  20 ms, cliente raro 80, cliente común 400, vehículo raro 150, vehículo común 400, autor 60, título raro 80 y título común 150 (el doble para Ana; el título
+  suma ≈ 5 ms a la llamada entera, cuyo piso de texto ya es ≈ 36–45 ms: no se compara con los 20 ms de `buscador_cotizaciones()`, que es sólo esa fuente);
+  medido el título raro 40,6 ms (dueña, 304 bloques) y 42,8 (Ana) con 50.000, 39,6 y 41,5 con 250.000; el común 60,6 / 83,6 con 50.000 y 59,8 / 81,4 con
+  250.000, con `acotada` (Ana paga ≈ 100 `en_cartera()`); medido ≈ 37–45 ms los de texto (el piso es `leads_candidatos()` y el
   recorrido de los vehículos de cada origen) y ≈ 13 ms los comunes de vehículo. Ningún recorrido entero de `cotizaciones`; número, cliente raro y vehículo raro no
   crecen con N (≤ 1,2 × los bloques y 1,5 × el tiempo de 50.000). **Límites declarados:** un texto de vehículo que no coincide con nada recorre los vehículos vivos de cada
-  origen visible (como `buscador_vehiculos()`); con «propios», por autor sólo se buscan las propias (nada de un `en_cartera()` por cada cotización de otra persona).
+  origen visible (como `buscador_vehiculos()`); con «propios», por autor sólo se buscan las propias (nada de un `en_cartera()` por cada cotización de otra persona);
+  con un título común el GIN crece con las coincidencias (≤ 1.000 por su profundidad) y, con más de 1.000, las 50 son las más nuevas de esas candidatas, no de
+  todas (`acotada` lo avisa); los filtros del listado (clase, «mías», cursor) se aplican sobre esas 50, no antes.
 - Últimos abiertos (`leerUltimosAbiertos()`): ≤ 16 visitas propias por `visitados_usuario_visto_idx` y hasta tres lecturas en paralelo por
   PK (≤ 16 ids cada una, bajo la RLS de cada tabla); se muestran 8.
 - Una búsqueda: hasta 4 pedidos en paralelo, cada uno ≤ 6 filas; espera de 250 ms entre teclas.
@@ -564,9 +571,10 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 ## JS en frío (con gzip, lo que el documento nombra)
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
-  `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
-  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). Al borde: `/cotizaciones` 373,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
-  `diferido()`), `/cotizaciones/[id]` 458,9 de 460 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases) y `/cotizaciones/nuevo` 453,6 de 460
+  `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
+  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). Al borde: `/cotizaciones` 374,7 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `diferido()`), `/cotizaciones/[id]` 463,7 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`) y `/cotizaciones/nuevo` 456,5 de 460 (el campo del título va con `diferido()` dentro del panel)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 496,8 en 32 chunks: «Qué falta» de la ficha, la galería y subida de fotos, Documentos y

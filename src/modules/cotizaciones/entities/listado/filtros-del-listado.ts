@@ -44,8 +44,8 @@ export function esquemaDelListado(origenes: readonly OrigenParaFiltrar[]): Esque
   return {
     busqueda: {
       clave: CLAVE_DE_BUSQUEDA,
-      etiqueta: 'Buscar por número, cliente, vehículo o autor',
-      marcador: 'Número, cliente, vehículo o autor',
+      etiqueta: 'Buscar por número, título, cliente, vehículo o autor',
+      marcador: 'Número, título, cliente, vehículo o autor',
       minimo: MINIMO_DE_BUSQUEDA_DE_COTIZACIONES,
     },
     filtros: [

@@ -166,6 +166,6 @@ describe('el título de una fila', () => {
       'Corolla de Juan',
     )
     expect(tituloDeLaFila({ titulo: '  ', numero: 7 }, 'Toyota Corolla')).toBe('Toyota Corolla')
-    expect(tituloDeLaFila({ titulo: null, numero: 7 }, null)).toBe('Cotización #7')
+    expect(tituloDeLaFila({ titulo: null, numero: 7 }, null)).toBe('Cotización n.º 7')
   })
 })

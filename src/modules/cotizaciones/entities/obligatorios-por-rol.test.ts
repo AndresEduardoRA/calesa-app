@@ -48,13 +48,19 @@ describe('eleccionesDeLaHoja', () => {
   it('con leads.ver y vehiculos.ver del origen, el botón abre el panel de cada uno', () => {
     expect(
       eleccionesDeLaHoja(permisos(['leads.ver', null], ['vehiculos.ver', null]), A, PANELES),
-    ).toStrictEqual({ lead: { panel: 'cliente' }, vehiculo: { panel: 'vehiculo' } })
+    ).toStrictEqual({
+      lead: { panel: 'cliente' },
+      vehiculo: { panel: 'vehiculo' },
+      titulo: { panel: 'vehiculo' },
+    })
   })
 
   it('sin leads.ver, o sin vehiculos.ver de ese origen, el pedido a quien administra los roles', () => {
     expect(eleccionesDeLaHoja(permisos(['vehiculos.ver', B]), A, PANELES)).toStrictEqual({
       lead: { pedido: 'Para elegir el cliente, pídeselo a quien administra los roles.' },
       vehiculo: { pedido: 'Para elegir el vehículo, pídeselo a quien administra los roles.' },
+      // El título se escribe igual: el panel del vehículo abre sólo con su campo.
+      titulo: { panel: 'vehiculo' },
     })
   })
 })

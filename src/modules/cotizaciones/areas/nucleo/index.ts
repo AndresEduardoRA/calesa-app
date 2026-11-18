@@ -111,3 +111,12 @@ export type {
   EleccionesDeLaHoja,
   ObligatoriosAlCotizar,
 } from '../../entities/obligatorios-al-cotizar'
+
+// El título de la cotización (T307): la única regla de cómo se nombra una cotización en toda superficie (`tituloDeLaCotizacion()`; la tarjeta y el PDF, sin el de
+// respaldo: `tituloAparteDelNumero()`) y su tope.
+export {
+  TOPE_DEL_TITULO,
+  tituloAparteDelNumero,
+  tituloDeLaCotizacion,
+} from '../../entities/titulo-de-la-cotizacion'
+export type { FuenteDelTitulo, TituloMostrado } from '../../entities/titulo-de-la-cotizacion'

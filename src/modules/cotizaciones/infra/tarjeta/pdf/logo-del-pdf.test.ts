@@ -140,6 +140,7 @@ describe('logoDelPdf: lo que pesa, tarda o falla no va, y no lanza', () => {
       vehiculo: null,
       asesor: null,
       numero: 1,
+      titulo: null,
       vencida: false,
       logo: LOGO,
     }

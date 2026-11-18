@@ -46,6 +46,9 @@ RPC (de `authenticated`, ninguna de `anon`; `_acotar_pagina(p_tamano, 5, 20)`, d
 - Nunca devuelve algo que la RLS esconde ni busca por teléfono o por un campo de un lead (fuga del enmascarado u oráculo de un privado).
 - `buscador_cotizaciones` copia fila por fila la policy «cotizaciones: leer»: quien la cambie cambia la RPC; `buscador.sql` compara las dos.
 - Con menos que el mínimo, nada: lo decide la base.
+- Una cotización se nombra por su título o «Cotización n.º N» (la regla de `tituloDeLaCotizacion()` de `cotizaciones` sin el vehículo, escrita en
+  `fila-de-resultado.tsx`: `buscador_cotizaciones()` no devuelve el vehículo, por decisión, y la paleta no carga el barril de `cotizaciones`). **Límite:** una vieja
+  sin título y con vehículo se nombra por su número; desde que el título es automático, toda cotización guardada lo lleva.
 - Las acciones («nuevo lead», «cotizar») aparecen sólo si `puede()` lo permite.
 
 ## Ojo

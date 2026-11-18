@@ -10,6 +10,7 @@ import {
   tipearEnLaHoja,
   vigilarGuardados,
 } from './cotizar-guardar'
+import { escribirElTitulo } from './cotizar-titulo'
 import { literal, sql } from './sql'
 
 const json = (valor: unknown) => `$e2e$${JSON.stringify(valor)}$e2e$::jsonb`
@@ -31,13 +32,17 @@ export function crearVehiculoDePrueba(origenId: string, titulo: string, anio?: n
   )
 }
 
-// Guarda una cotización por la hoja nueva (tipea `pub` y Ctrl/Cmd+S) y devuelve su id: el intento es el id de la cotización. La persona ya entró.
+// Guarda una cotización por la hoja nueva (tipea `pub` y Ctrl/Cmd+S) y devuelve su id: el intento es el id de la cotización. La persona ya entró. Sin vehículo escribe
+// antes el título (es obligatorio): `titulo` o el de prueba.
 export async function guardarPorLaHoja(
   page: Page,
-  datos: { origenId: string; lead: string; pub: string; vehiculoId?: string },
+  datos: { origenId: string; lead: string; pub: string; vehiculoId?: string; titulo?: string },
 ): Promise<string> {
   const guardados = await vigilarGuardados(page)
   await page.goto(urlDeLaHoja(datos.origenId, datos.lead, datos.vehiculoId))
+  if (datos.vehiculoId === undefined || datos.titulo !== undefined) {
+    await escribirElTitulo(page, datos.titulo)
+  }
   await tipearEnLaHoja(page, 'pub', datos.pub)
   await guardarConElAtajo(page)
   await expect(tarjetaGuardada(page)).toBeVisible()
@@ -200,16 +205,20 @@ export async function guardarComo(
   const vehiculo = sql(
     `select coalesce(vehiculo_id::text, '') from public.cotizaciones where id = ${id}::uuid`,
   )
+  // El título como está (sin vehículo es obligatorio, T307).
+  const titulo = sql(`select coalesce(titulo, '') from public.cotizaciones where id = ${id}::uuid`)
+  const manual = sql(`select titulo_manual::text from public.cotizaciones where id = ${id}::uuid`)
   const { error } = await cliente.rpc('cotizacion_guardar', {
     p_id: datos.cotizacionId,
     p_intento: crypto.randomUUID(),
     p_actualizado_en_esperado: version,
     p_entradas: { inputs: { pub: datos.pub }, banderas: {}, overrides: {} },
     p_modo_tc: null,
-    p_titulo: null,
+    p_titulo: titulo === '' ? null : titulo,
     p_notas: null,
     p_vehiculo: vehiculo === '' ? null : vehiculo,
     p_ver_total_bs: false,
+    p_titulo_manual: manual === 'true',
   })
   if (error) {
     throw new Error(`${persona.email} no pudo guardar: ${error.message}`)

@@ -26,7 +26,8 @@ const IGUAL = (texto: string) => texto
 
 // El campo de arriba del panel del vehículo: lo escrito busca en el título, el VIN y el lote de los vehículos del origen y, si es un enlace de
 // subasta, un VIN o un lote, se puede traer de ella. Lo escrito vive también en la URL, así que el campo lleva `useTextoDeUrl()`: sin él, la vuelta
-// de la URL le quita el foco a media palabra. Al montarse toma el foco: el panel abre ahí, y al volver del alta también.
+// de la URL le quita el foco a media palabra. Al montarse toma el foco: el panel abre ahí, y al volver del alta también; salvo que otro campo del mismo
+// diálogo ya lo tenga (lo de arriba del panel que pidió el foco: no se lo quita).
 export function BuscadorDelPanel(props: Props) {
   const { textoDeUrl, aviso, alCambiar, alCargarAMano, conTraer, etiquetaDeTraer, alTraer } = props
   const id = useId()
@@ -34,6 +35,15 @@ export function BuscadorDelPanel(props: Props) {
   const campo = useRef<HTMLInputElement>(null)
   const [texto, setTexto] = useTextoDeUrl(textoDeUrl, IGUAL)
   useEffect(() => {
+    const activo = document.activeElement
+    const dialogo = campo.current?.closest('[role="dialog"]')
+    if (
+      activo instanceof HTMLInputElement &&
+      activo !== campo.current &&
+      dialogo?.contains(activo)
+    ) {
+      return
+    }
     campo.current?.focus()
   }, [])
   return (

@@ -19,11 +19,13 @@ function encabezado(modelo: ModeloDeTarjeta): string[] {
   ]
     .filter((t) => t !== null)
     .join(' · ')
+  // El título de la cotización primero; la línea del vehículo no lo repite.
   return [
+    e.tituloDeLaCotizacion,
     e.titulo,
     fecha,
     e.asesor === null ? null : `Asesor: ${e.asesor}`,
-    modelo.vehiculo,
+    modelo.vehiculo === e.tituloDeLaCotizacion ? null : modelo.vehiculo,
   ].filter((t) => t !== null)
 }
 

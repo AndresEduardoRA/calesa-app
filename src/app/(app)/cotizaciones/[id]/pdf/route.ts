@@ -3,6 +3,8 @@ import {
   leerAsesorDeLaCotizacion,
   leerHojaDeUnaGuardada,
   pdfDeUnaGuardada,
+  tituloAparteDelNumero,
+  tituloDeLaCotizacion,
 } from '@/modules/cotizaciones'
 import { PESO_MAXIMO_LOGO, leerAjustes } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
@@ -74,6 +76,14 @@ export async function GET(_peticion: Request, { params }: RouteContext<'/cotizac
       vehiculo,
       asesor,
       numero: hoja.cotizacion.numero,
+      // El título de la cotización junto al número (sin repetirlo si es el de respaldo); los metadatos del PDF no lo llevan (puede nombrar el vehículo).
+      titulo: tituloAparteDelNumero(
+        tituloDeLaCotizacion({
+          titulo: hoja.cotizacion.titulo,
+          vehiculo,
+          numero: hoja.cotizacion.numero,
+        }),
+      ),
       vencida: hoja.vencida,
       logo: url === null ? null : { nombre, url },
     },

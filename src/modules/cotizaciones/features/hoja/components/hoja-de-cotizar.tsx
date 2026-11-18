@@ -9,9 +9,10 @@ import type { CalculoDeLaTarjeta } from '../../../entities/calculo-de-la-tarjeta
 import { seccionSeDibuja, type ContextoDeHoja } from '../../../entities/binding'
 import { nombreDelModo } from '../../../entities/cabecera-de-la-hoja'
 import type { HojaLista } from '../../../entities/hoja'
-import type {
-  EleccionesDeLaHoja,
-  ObligatoriosAlCotizar,
+import {
+  eleccionesDeUnaGuardada,
+  type EleccionesDeLaHoja,
+  type ObligatoriosAlCotizar,
 } from '../../../entities/obligatorios-al-cotizar'
 import { useBotonesDeGuardar } from '../hooks/use-botones-de-guardar'
 import type { EdicionDeLaHoja } from '../hooks/use-guardar-la-guardada'
@@ -57,6 +58,16 @@ type Props = {
   // tarjeta). Sin él, la tarjeta dibuja lo que la hoja calcula ahora (la hoja nueva).
   deLoGuardado?: { calculo: CalculoDeLaTarjeta; difiere: boolean }
 }
+
+// Las salidas del aviso de guardado: las de la hoja nueva o, en una guardada, sólo «Escribir el título» (su botón abre el panel del vehículo).
+const eleccionesDelAviso = (
+  elecciones: EleccionesDeLaHoja | undefined,
+  edicion: EdicionDeLaHoja | undefined,
+): EleccionesDeLaHoja | undefined =>
+  elecciones ??
+  (edicion?.panelDelTitulo === undefined
+    ? undefined
+    : eleccionesDeUnaGuardada(edicion.panelDelTitulo))
 
 // Puede cotizar en el origen pero su rol no ve ningún dato de la hoja (`cotizaciones.ver`): no hay nada que dibujar ni un total que dar.
 function SinDatosQueVer() {
@@ -275,7 +286,7 @@ export function HojaDeCotizar({
           h={h}
           contexto={contexto}
           vehiculoSoltado={vehiculoSoltado}
-          elecciones={elecciones}
+          elecciones={eleccionesDelAviso(elecciones, edicion)}
           guardado={vista}
           confirmacion={edicion ? 'Cambios guardados.' : null}
           boton={boton}

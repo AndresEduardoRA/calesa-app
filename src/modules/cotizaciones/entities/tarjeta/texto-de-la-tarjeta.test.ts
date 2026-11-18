@@ -23,6 +23,7 @@ function modelo(mas: Partial<ModeloDeTarjeta> = {}): ModeloDeTarjeta {
     porOmision: false,
     encabezado: {
       titulo: 'Gasolina',
+      tituloDeLaCotizacion: null,
       fecha: '6 nov 2026',
       asesor: 'Ana Rojas',
       numero: 12,
@@ -70,6 +71,7 @@ describe('textoDeLaTarjeta › el encabezado y los grupos', () => {
       modelo({
         encabezado: {
           titulo: null,
+          tituloDeLaCotizacion: null,
           fecha: '6 nov 2026',
           asesor: null,
           numero: null,
@@ -158,7 +160,14 @@ describe('textoDeLaTarjeta › el total y la forma', () => {
     const texto = textoDeLaTarjeta(
       modelo({
         porOmision: true,
-        encabezado: { titulo: null, fecha: '6 nov 2026', asesor: null, numero: 3, vencida: false },
+        encabezado: {
+          titulo: null,
+          tituloDeLaCotizacion: null,
+          fecha: '6 nov 2026',
+          asesor: null,
+          numero: 3,
+          vencida: false,
+        },
         vehiculo: null,
         grupos: [],
         total: { etiqueta: 'Total', leyenda: null, usd: 100, bs: null },
@@ -208,5 +217,34 @@ describe('textoDeLaTarjeta › los montos', () => {
     const i = l.indexOf('Logística')
     expect(l[i - 1]).toBe('')
     expect(l[i + 1]).toBe(`Flete: ${usd(1200)}`)
+  })
+})
+
+describe('textoDeLaTarjeta › el título de la cotización (T307)', () => {
+  it('el título de la cotización va en la primera línea, y la del vehículo no lo repite', () => {
+    const base = modelo().encabezado
+    const conTitulo = textoDeLaTarjeta(
+      modelo({ encabezado: { ...base, tituloDeLaCotizacion: 'Para Juan Pérez' } }),
+      { locale: 'es-BO' },
+    )
+    expect(lineas(conTitulo).slice(0, 5)).toEqual([
+      'Para Juan Pérez',
+      'Gasolina',
+      '6 nov 2026 · Cotización n.º 12',
+      'Asesor: Ana Rojas',
+      'Toyota Corolla 2020',
+    ])
+    // Automático: el título es el del vehículo, que no se escribe dos veces.
+    const automatico = textoDeLaTarjeta(
+      modelo({ encabezado: { ...base, tituloDeLaCotizacion: 'Toyota Corolla 2020' } }),
+      { locale: 'es-BO' },
+    )
+    expect(lineas(automatico).slice(0, 5)).toEqual([
+      'Toyota Corolla 2020',
+      'Gasolina',
+      '6 nov 2026 · Cotización n.º 12',
+      'Asesor: Ana Rojas',
+      '',
+    ])
   })
 })

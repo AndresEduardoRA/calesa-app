@@ -12,6 +12,8 @@ export type PropsDeLaTarjeta = {
   numero?: number | null
   vencida?: boolean
   guardadaEl?: string | null
+  // El título de una guardada ya resuelto (el guardado: la tarjeta dibuja lo guardado). La hoja nueva no lo pasa: la tarjeta lee el que se está escribiendo.
+  titulo?: string | null
 }
 
 type Props = PropsDeLaTarjeta & {
@@ -28,6 +30,7 @@ export async function ConLaTarjeta({
   numero = null,
   vencida = false,
   guardadaEl = null,
+  titulo,
   cotizacionId,
   children,
 }: Props) {
@@ -42,6 +45,7 @@ export async function ConLaTarjeta({
       guardadaEl={guardadaEl}
       cotizacionId={cotizacionId}
       logo={url === null ? null : { nombre: ajustes.nombre, url }}
+      {...(titulo === undefined ? {} : { titulo })}
     >
       {children}
     </ProveedorDeLaTarjeta>

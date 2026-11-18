@@ -19,10 +19,21 @@ export function ProveedorDeLaTarjeta({
   guardadaEl,
   logo,
   cotizacionId,
+  titulo,
 }: Props) {
+  // El título de una guardada llega de la página (el guardado); sin él, la hoja nueva lee el que se está escribiendo.
   const pagina = useMemo<DatosDeLaPagina>(
-    () => ({ vehiculo, asesor, numero, vencida, guardadaEl, logo, cotizacionId }),
-    [vehiculo, asesor, numero, vencida, guardadaEl, logo, cotizacionId],
+    () => ({
+      vehiculo,
+      asesor,
+      numero,
+      vencida,
+      guardadaEl,
+      logo,
+      cotizacionId,
+      ...(titulo === undefined ? {} : { titulo }),
+    }),
+    [vehiculo, asesor, numero, vencida, guardadaEl, logo, cotizacionId, titulo],
   )
   const dibujar = useCallback(
     (props: PropsDeLaVistaPrevia) => <VistaPreviaDiferida {...props} pagina={pagina} />,
