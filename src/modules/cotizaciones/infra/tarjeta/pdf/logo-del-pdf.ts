@@ -1,5 +1,5 @@
 import 'server-only'
-import type { ModeloDeTarjeta } from '../../../entities/tarjeta/modelo-de-la-tarjeta'
+import type { ContextoDeLaCotizacion } from '../../../entities/tarjeta/contexto-de-la-cotizacion'
 
 // El logo del PDF (4.18-3a, C14, P2). Se baja aquí, en el servidor, con tope de bytes y de tiempo, y llega a react-pdf como `Buffer`, nunca como URL (react-pdf la bajaría sin
 // espera ni tope y la guardaría en su caché de proceso). Va según sus primeros bytes: PNG y JPEG siempre; un SVG sólo si react-pdf (`@react-pdf/svg` 1.1.1) lo dibuja fiel, sin
@@ -8,8 +8,8 @@ import type { ModeloDeTarjeta } from '../../../entities/tarjeta/modelo-de-la-tar
 export type LogoDelPdf = { datos: Buffer; tipo: 'png' | 'jpg' | 'svg' }
 
 type Entrada = {
-  // El logo que pide el modelo: nulo si la plantilla no lo lleva o la empresa no tiene uno (entonces no se baja nada).
-  logo: ModeloDeTarjeta['logo']
+  // El logo de la empresa: nulo si la tarjeta no lo dibuja o la empresa no tiene uno (entonces no se baja nada).
+  logo: ContextoDeLaCotizacion['logo']
   tope: number
   esperaMs?: number
   // Para las pruebas: una señal propia en vez de la espera.

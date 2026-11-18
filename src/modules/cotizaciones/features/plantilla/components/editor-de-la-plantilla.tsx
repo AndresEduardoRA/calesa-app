@@ -138,7 +138,6 @@ export function EditorDeLaPlantilla({
         <VistaPreviaDelEditor
           VistaPrevia={VistaPrevia}
           plantilla={plantilla}
-          filas={filas}
           contexto={contexto}
           tonos={tonos}
         />

@@ -1,70 +1,83 @@
-import { formatearMonto } from '@/shared/lib/formato'
-import type { GrupoDeTarjeta, ModeloDeTarjeta } from './modelo-de-la-tarjeta'
+// La tarjeta de una cotización como texto (D19 de T310): lo que copia «Copiar texto» para pegarlo en un chat, sacado de la misma geometría que dibujan el HTML,
+// el PDF y la imagen. Por cada fila visible, de arriba abajo, las celdas que empiezan en ella, en orden de columna y sin las vacías:
+// - con un monto: la celda de antes es el concepto («<concepto>: <monto>»); las anteriores a ella (el título de un grupo), cada una en su línea antes; después
+//   cada celda posterior en su línea y por último la segunda línea del monto (el total en moneda local);
+// - sin monto: los textos unidos con « · », salvo un rótulo literal seguido de un dato, que va con « » («Asesor: Ana»).
+// Abren un bloque (una línea en blanco antes) las filas `cabecera`, `total` y `nota`, y la primera de cada grupo. Los montos siempre con cifras, aunque Live esté
+// encendido: es lo que recibe el cliente.
+import type { CeldaDibujada, Geometria } from './geometria-de-la-tarjeta'
+import type { LecturaDeLaTarjeta } from './lectura-de-la-tarjeta'
 
-// La tarjeta de una cotización como texto (4.18-3b, C1): lo que copia «Copiar texto» para pegarlo en un chat. Dice lo mismo que el PDF y en su orden
-// (`infra/tarjeta/pdf/documento-de-la-tarjeta.tsx`), del mismo modelo: el encabezado, cada grupo, el total y la nota, una cosa por línea y los bloques separados por una
-// línea en blanco. Los montos son los de `formatearMonto()` (el texto de `<Monto>` y del PDF), siempre con cifras aunque Live esté encendido (P7 del 4.18-3), y «—» sin valor.
+const QUE_ABREN = new Set(['cabecera', 'total', 'nota'])
 
-const SIN_DATO = '—'
+const textoDe = (c: CeldaDibujada): string =>
+  c.contenido.tipo === 'texto'
+    ? c.contenido.lineas
+        .map((l) => l.trim())
+        .filter((l) => l !== '')
+        .join(' ')
+    : ''
 
-const enUsd = (valor: number | null, locale: string) =>
-  valor === null ? SIN_DATO : formatearMonto(valor, { moneda: 'USD', locale })
+const conTexto = (c: CeldaDibujada) =>
+  c.contenido.tipo === 'monto' || (c.contenido.tipo === 'texto' && textoDe(c) !== '')
 
-function encabezado(modelo: ModeloDeTarjeta): string[] {
-  const e = modelo.encabezado
-  const fecha = [
-    e.fecha,
-    e.numero === null ? null : `Cotización n.º ${String(e.numero)}`,
-    e.vencida ? 'Vencida' : null,
-  ]
-    .filter((t) => t !== null)
-    .join(' · ')
-  // El título de la cotización primero; la línea del vehículo no lo repite.
-  return [
-    e.tituloDeLaCotizacion,
-    e.titulo,
-    fecha,
-    e.asesor === null ? null : `Asesor: ${e.asesor}`,
-    modelo.vehiculo === e.tituloDeLaCotizacion ? null : modelo.vehiculo,
-  ].filter((t) => t !== null)
+const esLiteral = (c: CeldaDibujada) => c.marca.nodo === undefined && c.marca.variable === undefined
+
+function sinMonto(celdas: readonly CeldaDibujada[]): string {
+  return celdas.reduce((linea, c, i) => {
+    if (i === 0) return textoDe(c)
+    const anterior = celdas[i - 1]
+    const junto = anterior !== undefined && esLiteral(anterior) && !esLiteral(c)
+    return `${linea}${junto ? ' ' : ' · '}${textoDe(c)}`
+  }, '')
 }
 
-function grupo(g: GrupoDeTarjeta, locale: string): string[] {
-  const columnas = [
-    g.tipoDeCambio === null ? null : `Tipo de cambio: ${g.tipoDeCambio.valor ?? SIN_DATO}`,
-    g.plazo === null ? null : `Plazo: ${g.plazo.valor ?? SIN_DATO}`,
-  ].filter((t) => t !== null)
+function conMonto(celdas: readonly CeldaDibujada[], i: number): string[] {
+  const monto = celdas[i]
+  if (monto?.contenido.tipo !== 'monto') return []
+  const concepto = i > 0 ? celdas[i - 1] : undefined
   return [
-    g.etiqueta,
-    ...(columnas.length === 0 ? [] : [columnas.join(' · ')]),
-    ...g.filas.flatMap((f) => [
-      `${f.etiqueta}: ${enUsd(f.usd, locale)}`,
-      ...(f.leyenda === null ? [] : [f.leyenda]),
-    ]),
-  ]
-}
-
-function total(modelo: ModeloDeTarjeta, locale: string): string[] {
-  const t = modelo.total
-  return [
-    `${t.etiqueta}: ${enUsd(t.usd, locale)}`,
-    ...(t.leyenda === null ? [] : [t.leyenda]),
-    ...(t.bs === null ? [] : [formatearMonto(t.bs.valor, { moneda: t.bs.moneda, locale })]),
-    ...modelo.aparte.map((a) => `${a.etiqueta}: ${enUsd(a.usd, locale)}`),
+    ...celdas.slice(0, Math.max(0, i - 1)).map(textoDe),
+    concepto === undefined
+      ? monto.contenido.texto
+      : `${textoDe(concepto)}: ${monto.contenido.texto}`,
+    ...celdas
+      .slice(i + 1)
+      .map((c) => (c.contenido.tipo === 'monto' ? c.contenido.texto : textoDe(c))),
+    ...(monto.contenido.segunda === null ? [] : [monto.contenido.segunda.texto]),
   ]
 }
 
-// Sin espacios a los lados; los de adentro quedan (el monto separa la moneda con un espacio duro).
-const limpia = (linea: string) => linea.trim()
+// El grupo del nodo de una fila (la primera de un grupo abre un bloque).
+function grupoDeLaFila(lectura: LecturaDeLaTarjeta, fila: string): string | null {
+  if (lectura.estado !== 'lista') return null
+  const nodo = lectura.definicion.filas.find((f) => f.id === fila)?.nodo
+  return nodo === undefined ? null : (lectura.nodos.get(nodo)?.grupo ?? null)
+}
 
-export function textoDeLaTarjeta(modelo: ModeloDeTarjeta, { locale }: { locale: string }): string {
-  const bloques = [
-    encabezado(modelo),
-    ...modelo.grupos.map((g) => grupo(g, locale)),
-    total(modelo, locale),
-    modelo.nota === null ? [] : modelo.nota.split('\n'),
-  ]
-    .map((lineas) => lineas.map(limpia).filter((l) => l !== ''))
-    .filter((lineas) => lineas.length > 0)
-  return bloques.map((lineas) => lineas.join('\n')).join('\n\n')
+export function textoDeLaTarjeta(geometria: Geometria, lectura: LecturaDeLaTarjeta): string {
+  const porFila = new Map<string, CeldaDibujada[]>()
+  for (const c of geometria.celdas) {
+    if (conTexto(c)) porFila.set(c.fila, [...(porFila.get(c.fila) ?? []), c])
+  }
+  // Las filas que empiezan alguna celda, de arriba abajo (la geometría ya va en orden de lectura).
+  const filas = [...new Set(geometria.celdas.map((c) => c.fila))]
+  const bloques: string[][] = []
+  let grupoAnterior: string | null = null
+  for (const fila of filas) {
+    const celdas = porFila.get(fila) ?? []
+    const grupo = grupoDeLaFila(lectura, fila)
+    const abre = QUE_ABREN.has(fila) || (grupo !== null && grupo !== grupoAnterior)
+    grupoAnterior = grupo
+    if (celdas.length === 0) continue
+    const i = celdas.findIndex((c) => c.contenido.tipo === 'monto')
+    const lineas = (i === -1 ? [sinMonto(celdas)] : conMonto(celdas, i)).filter((l) => l !== '')
+    const ultimo = bloques[bloques.length - 1]
+    if (abre || ultimo === undefined) bloques.push(lineas)
+    else ultimo.push(...lineas)
+  }
+  return bloques
+    .filter((b) => b.length > 0)
+    .map((b) => b.join('\n'))
+    .join('\n\n')
 }

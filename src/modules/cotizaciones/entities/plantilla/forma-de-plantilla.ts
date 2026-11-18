@@ -7,6 +7,7 @@ import {
   btrim,
   bytesComoJsonb,
   caracteres,
+  comoJson,
   compararComoC,
   ES_ID,
   esObjetoJsonb,
@@ -58,16 +59,6 @@ const campo = (o: Objeto, k: string): unknown => (Object.hasOwn(o, k) ? o[k] : u
 const esId = (v: unknown) => typeof v === 'string' && ES_ID.test(v)
 const textoEntre = (v: unknown, minimo: number, maximo: number) =>
   typeof v === 'string' && caracteres(btrim(v)) >= minimo && caracteres(v) <= maximo
-
-// `JSON.stringify` lanza con un ciclo o un `BigInt` y da `undefined` con `undefined` o una función: los dos son lo que la base recibe como nulo.
-function normalizar(entrada: unknown): unknown {
-  try {
-    const texto = JSON.stringify(entrada) as string | undefined
-    return texto === undefined ? undefined : JSON.parse(texto)
-  } catch {
-    return undefined
-  }
-}
 
 function revisarGrupos(grupos: unknown): RechazoDePlantilla | null {
   if (!Array.isArray(grupos) || grupos.length > MAXIMO_DE_GRUPOS) return forma('grupos')
@@ -129,7 +120,7 @@ function revisar(v: unknown): RechazoDePlantilla | null {
 }
 
 export function formaDePlantilla(entrada: unknown): ResultadoDeForma {
-  const v = normalizar(entrada)
+  const v = comoJson(entrada)
   const error = revisar(v)
   // Lo que pasó `revisar()` tiene la forma de `Plantilla` (lo prueban F1–F15 y el juego).
   return error === null ? { ok: true, plantilla: v as Plantilla } : { ok: false, error }

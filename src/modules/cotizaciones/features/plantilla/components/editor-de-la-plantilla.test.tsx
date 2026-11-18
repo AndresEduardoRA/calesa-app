@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ContextoDePlantilla } from '../../../entities/plantilla/validar-plantilla'
 import type { PropsDelEditor } from '../../../entities/plantilla/props-del-editor'
 import { EditorDeLaPlantilla } from './editor-de-la-plantilla'
+import type { PropsDeLaVistaPreviaDeLaPlantilla } from '../../../entities/vista-previa-de-la-plantilla'
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
 const guardarBorrador = vi.fn()
@@ -184,9 +185,15 @@ describe('EditorDeLaPlantilla: publicar y descartar', () => {
 })
 
 describe('EditorDeLaPlantilla: la vista previa (4.19-4)', () => {
-  const Falsa = ({ lectura }: { lectura: { total: { etiqueta: string } } }) => (
-    <p data-vista-falsa="">{lectura.total.etiqueta}</p>
-  )
+  // La etiqueta del total: la celda de texto de la fila `total` de la cuadrícula convertida.
+  const Falsa = ({ lectura }: PropsDeLaVistaPreviaDeLaPlantilla) => {
+    const celda = lectura.lectura.definicion.celdas.find(
+      (c) => c.fila === 'total' && c.contenido.tipo === 'texto',
+    )
+    return (
+      <p data-vista-falsa="">{celda?.contenido.tipo === 'texto' ? celda.contenido.texto : ''}</p>
+    )
+  }
 
   it('recibe la lectura y cambia al tipear, sin guardar', () => {
     render(<EditorDeLaPlantilla {...props()} {...ACCIONES} VistaPrevia={Falsa} />)

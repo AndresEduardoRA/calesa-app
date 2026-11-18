@@ -153,15 +153,18 @@ test('E2E el título se ve en la lista, el resumen, la cabecera, el PDF y «Copi
   await expect(barraDelVehiculo(page)).toContainText('Sin vehículo')
   await capturar(page, info, 'cabecera-de-la-guardada')
 
+  // La tarjeta en cuadrícula (T310) lleva el título al lado de la fecha y el número en su renglón: el PDF y «Copiar texto» salen de ella.
   const { lineas } = await leerElPdf(page, guardada)
-  expect(lineas.some((l) => l.includes(`Cotización n.º ${numero} · ${titulo}`))).toBe(true)
+  expect(lineas.some((l) => l.endsWith(titulo))).toBe(true)
+  expect(lineas.some((l) => l.includes(`Cotización n.º ${numero}`))).toBe(true)
 
   await abrirLaVistaPrevia(page)
   await page.evaluate(() => navigator.clipboard.writeText(''))
   await dialogo(page).getByRole('button', { name: 'Copiar texto' }).click()
   await expect(dialogo(page).getByRole('button', { name: 'Copiado' })).toBeVisible()
   const copiado = await page.evaluate(() => navigator.clipboard.readText())
-  expect(copiado.split('\n')[0]).toBe(titulo)
+  // La primera línea es la de la fecha con el título (la tarjeta por omisión no lleva título de la opción).
+  expect(copiado.split('\n')[0]?.endsWith(` · ${titulo}`)).toBe(true)
 })
 
 test('E2E cambiar el título en la guardada y guardar deja «Cambió el título» en «Revisiones»', async ({

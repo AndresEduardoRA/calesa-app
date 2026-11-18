@@ -31,7 +31,8 @@ const lectura = (extra: Partial<PlantillaDelOrigen> = {}): PlantillaDelOrigen =>
           id: 'fees',
           grupo: 'compra',
           etiqueta: 'Fees',
-          descripcion: 'secreto',
+          // El cuerpo del nodo no viaja (la descripción de los primeros miembros sí: es la leyenda de la vista previa).
+          texto: 'secreto',
           op: 'suma',
         } as never,
       ],

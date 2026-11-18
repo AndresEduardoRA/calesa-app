@@ -5,7 +5,7 @@ import { aLaVista, otraPersona } from './soporte/inventario'
 import { idDe } from './soporte/leads'
 import { rpcComo } from './soporte/leads-cartera'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
-import { irAFicha, nuevoLead } from './soporte/leads-ficha'
+import { esperarFichaHidratada, irAFicha, nuevoLead } from './soporte/leads-ficha'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
 import { embudoPorDefecto, enLaBase, etapa, oportunidad } from './soporte/leads-oportunidades'
 import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
@@ -28,8 +28,12 @@ test.afterAll(async () => {
 const leadDeBerta = (corto: string) =>
   nuevoLead({ corto, telefono: completoCon(t, nacional()), deQuien: t.personas.berta })
 
-const irAOportunidades = (page: Parameters<typeof irAFicha>[0], leadId: string) =>
-  irAFicha(page, leadId, '?seccion=oportunidades')
+// La ficha llega dibujada antes de que React enganche sus botones: un clic en ese instante se pierde (con la CPU lenta, «Nueva
+// oportunidad» no abría nada). Se espera la hidratación antes de tocar.
+async function irAOportunidades(page: Parameters<typeof irAFicha>[0], leadId: string) {
+  await irAFicha(page, leadId, '?seccion=oportunidades')
+  await esperarFichaHidratada(page)
+}
 
 const item = (page: Parameters<typeof irAFicha>[0], titulo: string) =>
   aLaVista(page.getByRole('article', { name: titulo }))

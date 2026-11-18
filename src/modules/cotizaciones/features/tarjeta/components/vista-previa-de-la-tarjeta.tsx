@@ -7,8 +7,9 @@ import { Skeleton } from '@/shared/ui/skeleton'
 import { LiveDelResumen } from '../../hoja/components/live-del-resumen'
 import type { PropsDeLaVistaPrevia } from '../../hoja/components/huecos'
 import { avisoDelTotal, type AvisoDelTotal } from '../../../entities/tarjeta/aviso-del-total'
+import type { ContextoDeLaCotizacion } from '../../../entities/tarjeta/contexto-de-la-cotizacion'
+import type { Geometria } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
 import type { LecturaDeLaTarjeta } from '../../../entities/tarjeta/lectura-de-la-tarjeta'
-import type { ModeloDeTarjeta } from '../../../entities/tarjeta/modelo-de-la-tarjeta'
 import type { EstadoDeLaLectura } from '../hooks/use-lectura-de-la-tarjeta'
 import { useModeloDeLaTarjeta, type PaginaDelModelo } from '../hooks/use-modelo-de-la-tarjeta'
 import { CopiarTextoDeLaTarjeta } from './copiar-texto-de-la-tarjeta'
@@ -43,20 +44,24 @@ function EsqueletoDeLaTarjeta() {
   )
 }
 
-// Lo que el modal dice fuera de la tarjeta: la tarjeta es lo que ve el cliente y no lleva avisos de trabajo.
+// Lo que el modal dice fuera de la tarjeta: la tarjeta es lo que ve el cliente y no lleva avisos de trabajo (tampoco «Vencida», D7 de T310).
 function Avisos({
   lectura,
   aviso,
   idDelDesactualizado,
   avisos,
+  vencida,
 }: {
   lectura: LecturaDeLaTarjeta
   aviso: AvisoDelTotal
   idDelDesactualizado: string
   avisos: Props['avisos']
+  // El día en que venció, ya formateado; nulo si no venció.
+  vencida: string | null
 }) {
   const textos = [
     aviso === 'desactualizado' ? 'Total desactualizado.' : null,
+    vencida === null ? null : `Esta cotización venció el ${vencida}.`,
     lectura.estado === 'sin_plantilla'
       ? 'Este origen no tiene una plantilla de tarjeta para esta versión de la fórmula: la tarjeta va sólo con el total.'
       : null,
@@ -84,20 +89,24 @@ type DelCuerpo = {
   estado: EstadoDeLaLectura
   reintentar: () => void
   lectura: LecturaDeLaTarjeta | null
-  modelo: ModeloDeTarjeta | null
+  geometria: Geometria | null
+  contexto: ContextoDeLaCotizacion
   aviso: AvisoDelTotal
   idDelDesactualizado: string
   avisos: Props['avisos']
+  vencida: boolean
 }
 
 function Cuerpo({
   estado,
   reintentar,
   lectura,
-  modelo,
+  geometria,
+  contexto,
   aviso,
   idDelDesactualizado,
   avisos,
+  vencida,
 }: DelCuerpo) {
   if (estado.tipo === 'cargando') {
     return <EsqueletoDeLaTarjeta />
@@ -105,7 +114,7 @@ function Cuerpo({
   if (estado.tipo === 'sin_permiso') {
     return <EstadoSinPermiso titulo="No puedes ver la tarjeta de esta cotización." />
   }
-  if (estado.tipo === 'error' || lectura === null || modelo === null) {
+  if (estado.tipo === 'error' || lectura === null || geometria === null) {
     return (
       <div role="alert">
         <EstadoError titulo="No se pudo leer la tarjeta." alReintentar={reintentar} />
@@ -119,17 +128,18 @@ function Cuerpo({
         aviso={aviso}
         idDelDesactualizado={idDelDesactualizado}
         avisos={avisos}
+        vencida={vencida ? (contexto.venceEl ?? '') : null}
       />
-      <TarjetaDeCotizacion modelo={modelo} />
+      <TarjetaDeCotizacion geometria={geometria} logo={contexto.logo} />
     </div>
   )
 }
 
 // La vista previa de la tarjeta (4.18-2): un modal con su URL (`?panel=vista-previa`) que dibuja la tarjeta tal como la vería el cliente. Se monta la primera vez que se abre
 // (`useAbiertoAlgunaVez`, con `diferido()`): la hoja no carga la tarjeta, su modelo ni su lectura para dibujarse.
-// La lectura y el modelo se arman aquí: el cuerpo dibuja la tarjeta y el pie la copia (4.18-3b).
+// La lectura y la geometría se arman aquí: el cuerpo dibuja la tarjeta y el pie la copia (4.18-3b).
 export default function VistaPreviaDeLaTarjeta(props: Props) {
-  const { estado, reintentar, lectura, modelo } = useModeloDeLaTarjeta(props)
+  const { estado, reintentar, lectura, contexto, geometria } = useModeloDeLaTarjeta(props)
   const idDelDesactualizado = useId()
   const aviso = avisoDelTotal(props.estado, props.calculo.totales.usd)
   return (
@@ -137,12 +147,14 @@ export default function VistaPreviaDeLaTarjeta(props: Props) {
       abierto={props.abierta}
       alCerrar={props.cerrar}
       titulo="Vista previa"
-      ancho="amplio"
+      // La tarjeta se escala al ancho del modal: en escritorio, uno grande la deja cerca de su tamaño.
+      ancho="grande"
       pie={
         <>
           <LiveDelResumen />
           <CopiarTextoDeLaTarjeta
-            modelo={modelo}
+            geometria={geometria}
+            lectura={lectura}
             aviso={aviso}
             idDelDesactualizado={idDelDesactualizado}
           />
@@ -159,10 +171,12 @@ export default function VistaPreviaDeLaTarjeta(props: Props) {
         estado={estado}
         reintentar={reintentar}
         lectura={lectura}
-        modelo={modelo}
+        geometria={geometria}
+        contexto={contexto}
         aviso={aviso}
         idDelDesactualizado={idDelDesactualizado}
         avisos={props.avisos}
+        vencida={props.pagina.vencida}
       />
     </Modal>
   )

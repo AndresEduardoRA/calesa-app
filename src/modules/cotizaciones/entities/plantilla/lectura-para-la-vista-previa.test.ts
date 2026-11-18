@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import type { CeldaDeLaTarjeta } from '../cuadricula-de-la-tarjeta'
+import { convertirPlantilla } from './convertir-plantilla'
 import type { Plantilla } from './forma-de-plantilla'
-import { filasDelEditor } from './filas-del-editor'
 import { lecturaParaLaVistaPrevia } from './lectura-para-la-vista-previa'
 import type { TonoDelCatalogo } from './lectura-de-la-plantilla'
 import type { ContextoDePlantilla } from './validar-plantilla'
@@ -8,16 +9,23 @@ import type { ContextoDePlantilla } from './validar-plantilla'
 const C = { fondo: '#aaaaaa', borde: '#bbbbbb', tinta: '#111111' }
 const tonos: TonoDelCatalogo[] = [
   { clave: 'verde', nombre: 'Verde', hex: '#aaaaaa', claro: C, oscuro: C },
-  // La tinta clara de siempre (#1b2130) da 3,8:1 sobre #31869b: la tarjeta usa el blanco.
-  { clave: 'azul', nombre: 'Azul', hex: '#31869b', claro: { ...C, tinta: '#1b2130' }, oscuro: C },
+  { clave: 'azul', nombre: 'Azul', hex: '#31869b', claro: C, oscuro: C },
 ]
 const contexto: ContextoDePlantilla = {
   definicion: {
     nodos: [
-      { id: 'fees', etiqueta: 'Fees', grupo: 'compra' },
+      {
+        id: 'variante',
+        tipo: 'opcion',
+        etiqueta: 'Variante',
+        opciones: [{ clave: 'moto', titulo: 'MOTO' }],
+      },
+      { id: 'fees', etiqueta: 'Fees', grupo: 'compra', descripcion: 'Comisión' },
       { id: 'grua', etiqueta: 'Grúa', grupo: 'logistica' },
       { id: 'remate', etiqueta: 'Remate', grupo: 'compra' },
       { id: 'tc', etiqueta: 'Oficial' },
+      { id: 'tc_u', etiqueta: 'Unificado' },
+      { id: 'cif', etiqueta: 'CIF' },
       { id: 'total', etiqueta: 'TOTAL', salida: 'total' },
       { id: 'garantia', etiqueta: 'Garantía', salida: 'aparte' },
     ],
@@ -27,8 +35,15 @@ const contexto: ContextoDePlantilla = {
       { id: 'logistica', etiqueta: 'Logística', tono: 'fantasma', plazo: 7 },
     ],
   },
-  diseno: { tarjeta_total: { secundarios: ['garantia'] } },
-  visibilidad: null,
+  diseno: {
+    cabecera: {
+      modos: [
+        { clave: 'unificado', nombre: 'Unificado', buckets: [{ bucket: 'b1', nodo: 'tc_u' }] },
+      ],
+    },
+    tarjeta_total: { secundarios: ['garantia'] },
+  },
+  visibilidad: { variante: { ver: 'todos' } },
   tonos: ['verde', 'azul'],
 }
 const base: Plantilla = {
@@ -38,101 +53,82 @@ const base: Plantilla = {
   columnas: { leyenda: true, plazo: true, tipo_cambio: true },
 }
 const leer = (p: Plantilla, c: ContextoDePlantilla = contexto) =>
-  lecturaParaLaVistaPrevia({ plantilla: p, filas: filasDelEditor(p, c), contexto: c, tonos })
+  lecturaParaLaVistaPrevia({ plantilla: p, contexto: c, tonos })
+const ids = (xs: readonly { id: string }[]) => xs.map((x) => x.id).sort()
+const celda = (celdas: readonly CeldaDeLaTarjeta[], id: string) => celdas.find((c) => c.id === id)
 
 describe('lecturaParaLaVistaPrevia', () => {
-  it('grupos en el orden de la plantilla, filas en el de la fórmula; plazo y tipo de cambio del bucket', () => {
+  it('la definición es la conversión de la plantilla con el catálogo; sin grupos de más, filasDeMas es 0', () => {
     const l = leer(base)
-    expect(l.grupos.map((g) => g.id)).toEqual(['logistica', 'compra'])
-    expect(l.grupos[1]!.filas.map((f) => f.nodo)).toEqual(['fees', 'remate'])
-    expect(l.grupos[1]).toMatchObject({ plazo: '2 días', tipoDeCambio: 'Oficial', filasDeMas: 0 })
-    expect(l.grupos[0]).toMatchObject({ plazo: null, tipoDeCambio: null })
-    expect(l.aparte).toEqual([{ nodo: 'garantia', etiqueta: 'Garantía' }])
+    expect(l.lectura.definicion).toEqual(convertirPlantilla(base, contexto, ['verde', 'azul']))
+    expect(l.filasDeMas).toBe(0)
   })
 
-  it('la etiqueta escrita gana, en blanco cae a la del nodo; la leyenda es sólo la escrita y sólo con la columna', () => {
-    const p: Plantilla = {
-      ...base,
-      etiquetas: { fees: 'Honorarios', remate: '   ' },
-      leyendas: { fees: 'Incluye todo', remate: '' },
-    }
-    const filas = leer(p).grupos[1]!.filas
-    expect(filas).toEqual([
-      { nodo: 'fees', etiqueta: 'Honorarios', leyenda: 'Incluye todo' },
-      { nodo: 'remate', etiqueta: 'Remate', leyenda: null },
+  it('sólo lo nombrado: los nodos de las filas y celdas, los grupos de un tc o plazo, el tc de sus buckets y los colores que usan los estilos', () => {
+    const { lectura } = leer(base)
+    expect(ids(lectura.nodos)).toEqual(['fees', 'garantia', 'grua', 'remate', 'total'])
+    expect(lectura.nodos.find((n) => n.id === 'fees')).toEqual({
+      id: 'fees',
+      etiqueta: 'Fees',
+      descripcion: 'Comisión',
+      grupo: 'compra',
+      pct: null,
+    })
+    expect(lectura.grupos).toEqual([
+      { id: 'compra', etiqueta: 'Compra', plazo: '2 días', bucket: 'b1' },
+      // Un plazo que no es texto, nulo.
+      { id: 'logistica', etiqueta: 'Logística', plazo: null, bucket: null },
     ])
-    const sin = leer({ ...p, columnas: { ...p.columnas, leyenda: false } })
-    expect(sin.grupos[1]!.filas.every((f) => f.leyenda === null)).toBe(true)
+    // El nombre del tipo de cambio de ejemplo es la etiqueta de su nodo, por omisión y en cada modo.
+    expect(lectura.tiposDeCambio).toEqual({
+      buckets: [{ bucket: 'b1', nombre: 'Oficial', nodo: 'tc' }],
+      modos: [{ modo: 'unificado', bucket: 'b1', nombre: 'Unificado', nodo: 'tc_u' }],
+    })
+    // «compra» con el azul elegido; «logistica» con un color que no está en el catálogo: sin fondo.
+    expect(lectura.colores).toEqual([{ clave: 'azul', hex: '#31869b' }])
+    expect(lectura.total).toEqual({ nodo: 'total' })
+    expect(lectura.modos).toEqual([])
   })
 
-  it('el tono elegido si está en el catálogo; si no el del grupo; si no ninguno', () => {
-    const l = leer(base)
-    // «logistica»: sin elegido, el del grupo es «fantasma» (no está en el catálogo): ninguno.
-    expect(l.grupos.map((g) => g.tono)).toEqual([null, 'azul'])
-    const fantasma = leer({ ...base, grupos: [{ grupo: 'compra', tono: 'rojo' }] })
-    expect(fantasma.grupos[0]!.tono).toBe('verde')
-    expect(l.tonos.map((t) => t.clave)).toEqual(['azul'])
+  it('la variante con sus títulos, sólo si es del nivel «todos» (y la cuadrícula la nombra)', () => {
+    expect(leer(base).lectura.variante).toEqual({
+      nodo: 'variante',
+      opciones: [{ clave: 'moto', titulo: 'MOTO' }],
+    })
+    const restringida = leer(base, { ...contexto, visibilidad: { variante: { ver: 'costos' } } })
+    expect(restringida.lectura.variante).toBeNull()
   })
 
-  it('cada color pinta la tarjeta con su hex tal cual y el texto que se lee (la tinta clara no llega a AA sobre #31869b: blanco)', () => {
-    expect(leer(base).tonos).toEqual([
-      {
-        clave: 'azul',
-        hex: '#31869b',
-        tarjeta: { fondo: '#31869b', borde: '#bbbbbb', tinta: '#ffffff' },
-      },
-    ])
+  it('un color sin hex no viaja', () => {
     const sinHex = lecturaParaLaVistaPrevia({
       plantilla: base,
-      filas: filasDelEditor(base, contexto),
       contexto,
       tonos: tonos.map(({ hex: _hex, ...resto }) => resto),
     })
-    expect(sinHex.tonos).toEqual([])
-  })
-
-  it('total en blanco = «Total»; nota en blanco = ninguna; la leyenda del total sólo con la columna', () => {
-    const l = leer({ ...base, total: { etiqueta: ' ', leyenda: 'Todo incluido' }, nota: '  ' })
-    expect(l.total).toEqual({ etiqueta: 'Total', leyenda: 'Todo incluido' })
-    expect(l.nota).toBeNull()
-    expect(leer({ ...base, nota: 'Válida 5 días' }).nota).toBe('Válida 5 días')
-    expect(
-      leer({
-        ...base,
-        total: { etiqueta: 'T', leyenda: 'x' },
-        columnas: { leyenda: false, plazo: false, tipo_cambio: false },
-      }).total.leyenda,
-    ).toBeNull()
+    expect(sinHex.lectura.colores).toEqual([])
   })
 })
 
 describe('lecturaParaLaVistaPrevia: el tope y los ids raros', () => {
-  it('un grupo de 500 miembros da 4 filas y 496 de más, sin leerlos todos', () => {
-    const miembros = Array.from({ length: 500 }, (_, i) => ({ id: `n${i}`, etiqueta: `N${i}` }))
-    let lecturas = 0
-    const espiado = new Proxy(miembros, {
-      get(o, k, r) {
-        if (typeof k === 'string' && /^\d+$/.test(k)) lecturas += 1
-        return Reflect.get(o, k, r)
+  it('un grupo de 500 miembros se convierte con 4 filas y dice 496 de más', () => {
+    const miembros = Array.from({ length: 500 }, (_, i) => ({
+      id: `n${i}`,
+      etiqueta: `N${i}`,
+      grupo: 'compra',
+    }))
+    const c: ContextoDePlantilla = {
+      ...contexto,
+      definicion: {
+        ...contexto.definicion,
+        nodos: [...miembros, { id: 'total', etiqueta: 'TOTAL', salida: 'total' }],
       },
-    })
-    const filas = {
-      grupos: [
-        {
-          id: 'compra',
-          etiqueta: 'Compra',
-          tono: undefined,
-          tonoDelGrupo: undefined,
-          miembros: espiado,
-        },
-      ],
-      total: null,
-      aparte: [],
     }
-    const l = lecturaParaLaVistaPrevia({ plantilla: base, filas, contexto, tonos })
-    expect(l.grupos[0]!.filas).toHaveLength(4)
-    expect(l.grupos[0]!.filasDeMas).toBe(496)
-    expect(lecturas).toBeLessThanOrEqual(4)
+    const l = leer({ ...base, grupos: [{ grupo: 'compra' }, { grupo: 'logistica' }] }, c)
+    const filas = l.lectura.definicion.filas.filter(
+      (f) => f.nodo !== undefined && f.nodo.startsWith('n'),
+    )
+    expect(filas.map((f) => f.nodo)).toEqual(['n0', 'n1', 'n2', 'n3'])
+    expect(l.filasDeMas).toBe(496)
   })
 
   it('los ids `constructor` y `__proto__` no rompen', () => {
@@ -142,6 +138,7 @@ describe('lecturaParaLaVistaPrevia: el tope y los ids raros', () => {
         nodos: [
           { id: 'constructor', etiqueta: 'C', grupo: 'g' },
           { id: '__proto__', etiqueta: 'P', grupo: 'g' },
+          { id: 'total', etiqueta: 'TOTAL', salida: 'total' },
         ],
         grupos: [{ id: 'g', etiqueta: 'G', bucket: 'constructor' }],
         buckets: {},
@@ -152,8 +149,13 @@ describe('lecturaParaLaVistaPrevia: el tope y los ids raros', () => {
       grupos: [{ grupo: 'g' }],
       etiquetas: JSON.parse('{"__proto__":"Uno"}'),
     }
-    const g = leer(p, c).grupos[0]!
-    expect(g.filas.map((f) => f.etiqueta)).toEqual(['C', 'Uno'])
-    expect(g.tipoDeCambio).toBeNull()
+    const { lectura } = leer(p, c)
+    expect(celda(lectura.definicion.celdas, 'c_n___proto___concepto')?.contenido).toEqual({
+      tipo: 'texto',
+      texto: 'Uno',
+    })
+    expect(lectura.tiposDeCambio.buckets).toEqual([
+      { bucket: 'constructor', nombre: null, nodo: null },
+    ])
   })
 })

@@ -128,8 +128,11 @@ begin
   if cardinality(v_malos) > 0 then raise exception '% de % casos no dan lo esperado: %', cardinality(v_malos), v_n, array_to_string(v_malos, ' | '); end if;
   -- El juego tiene un caso válido y uno por cada regla.
   v_reglas := array(select distinct x -> 'motivo' ->> 'regla' from jsonb_array_elements(j -> 'casos') x where x ? 'motivo' order by 1);
-  if v_reglas is distinct from array['forma', 'grupo_faltante', 'grupo_inexistente', 'grupo_repetido', 'nodo_inexistente', 'nodo_restringido', 'nodo_sin_lugar',
-                                     'tipo_de_cambio_restringido', 'tono_inexistente'] then
+  -- Las de la forma 1 y las de la forma 2 menos `demasiadas_celdas` (1.001 celdas pasan de los 24 KiB: se prueba sin el tope, en T2b).
+  if v_reglas is distinct from array['ancho_total', 'celda_fuera_de_la_grilla', 'celda_repetida', 'celdas_se_pisan', 'columna_repetida', 'demasiadas_columnas',
+                                     'demasiadas_filas', 'fila_repetida', 'forma', 'grupo_faltante', 'grupo_inexistente', 'grupo_repetido', 'mostrar_no_admitido',
+                                     'nodo_de_fila_inexistente', 'nodo_inexistente', 'nodo_restringido', 'nodo_sin_lugar', 'tipo_de_cambio_restringido',
+                                     'tono_inexistente', 'variable_inexistente'] then
     raise exception 'el juego no cubre todas las reglas: %', v_reglas;
   end if;
   -- `octetos`: los bytes del texto jsonb de cada valor (lo que mide el tope de 32 KB), los mismos que cuenta bytesComoJsonb() de TS (4.19-2).
@@ -177,6 +180,48 @@ begin
   -- Más de 32 KB (en bytes): 200 leyendas de 160 caracteres.
   v_r := pg_temp.pv_veredicto(jsonb_set(v_pla, '{leyendas}', (select jsonb_object_agg('n' || (i + 80), repeat('x', 160)) from generate_series(1, 200) i)), v_def, v_dis, v_vis, array['verde']);
   if v_r <> 'forma@definicion' then raise exception 'más de 32 KB: %', v_r; end if;
+end $$;
+rollback;
+
+-- @test plantilla T2b: la cuadrícula al tope: 24 KiB del texto del jsonb pasan y un byte más es `forma@definicion`; sin el tope (lo convertido), 1.001 celdas son `demasiadas_celdas`
+begin;
+do $$
+declare v_pla jsonb; v_libre int; v_r text;
+begin
+  -- 100 filas de una columna con un texto cada una: los caracteres ASCII suman un byte cada uno, de a 300 por texto.
+  create temp table pv_grilla (n int, p jsonb) on commit drop;
+  v_pla := jsonb_build_object('forma', 2, 'columnas', '[{"id": "c0", "ancho": 24}]'::jsonb,
+    'filas', (select jsonb_agg(jsonb_build_object('id', 'f' || i, 'alto', 16, 'ocultar_si', 'nunca') order by i) from generate_series(0, 99) i),
+    'celdas', (select jsonb_agg(jsonb_build_object('id', 'x' || i, 'fila', 'f' || i, 'columna', 'c0', 'contenido', jsonb_build_object('tipo', 'texto', 'texto', '')) order by i)
+                 from generate_series(0, 99) i));
+  v_libre := 24576 - octet_length(v_pla::text);
+  v_pla := jsonb_set(v_pla, '{celdas}', (select jsonb_agg(jsonb_build_object('id', 'x' || i, 'fila', 'f' || i, 'columna', 'c0',
+                                                          'contenido', jsonb_build_object('tipo', 'texto', 'texto', repeat('x', greatest(0, least(300, v_libre - i * 300)))))
+                                                          order by i) from generate_series(0, 99) i));
+  if octet_length(v_pla::text) <> 24576 then raise exception 'no quedó justo en el tope: %', octet_length(v_pla::text); end if;
+  v_r := pg_temp.pv_veredicto(v_pla, null, null, null, null);
+  if v_r <> 'válida' then raise exception 'justo en el tope: %', v_r; end if;
+  v_r := pg_temp.pv_veredicto(jsonb_set(v_pla, '{celdas,99,contenido,texto}', '"x"'), null, null, null, null);
+  if v_r <> 'forma@definicion' then raise exception 'un byte más: %', v_r; end if;
+  -- 11 × 91 = 1.001 celdas vacías: con el tope, `forma@definicion`; sin él, `demasiadas_celdas` (y 10 × 100 pasan).
+  insert into pv_grilla select n, jsonb_build_object('forma', 2,
+      'columnas', (select jsonb_agg(jsonb_build_object('id', 'c' || i, 'ancho', 24) order by i) from generate_series(0, case when n = 1 then 10 else 9 end) i),
+      'filas', (select jsonb_agg(jsonb_build_object('id', 'f' || i, 'alto', 16, 'ocultar_si', 'nunca') order by i) from generate_series(0, case when n = 1 then 90 else 99 end) i),
+      'celdas', (select jsonb_agg(jsonb_build_object('id', 'x' || f || '_' || c, 'fila', 'f' || f, 'columna', 'c' || c, 'contenido', '{"tipo": "vacio"}'::jsonb) order by f, c)
+                   from generate_series(0, case when n = 1 then 90 else 99 end) f, generate_series(0, case when n = 1 then 10 else 9 end) c))
+    from generate_series(1, 2) n;
+  v_pla := (select p from pv_grilla where n = 1);
+  if jsonb_array_length(v_pla -> 'celdas') <> 1001 then raise exception 'la grilla no tiene 1.001 celdas'; end if;
+  v_r := pg_temp.pv_veredicto(v_pla, null, null, null, null);
+  if v_r <> 'forma@definicion' then raise exception '1.001 celdas con el tope: %', v_r; end if;
+  begin
+    perform public._plantilla_cuadricula_forma(v_pla, false);
+    raise exception '1.001 celdas sin el tope pasan';
+  exception when sqlstate '22023' then
+    get stacked diagnostics v_r = pg_exception_detail;
+    if v_r <> 'demasiadas_celdas' then raise exception '1.001 celdas sin el tope: %', v_r; end if;
+  end;
+  perform public._plantilla_cuadricula_forma((select p from pv_grilla where n = 2), false);
 end $$;
 rollback;
 
@@ -255,5 +300,128 @@ begin
     end if;
     if (select prosecdef from pg_proc where oid = v_f::regprocedure) then raise exception '% corre con los derechos de su dueña', v_f; end if;
   end loop;
+end $$;
+rollback;
+
+-- @test plantilla T6: una cuadrícula se guarda y se publica por el camino de siempre; guardar mira sólo su forma y publicar la cruza con la versión (su regla y su `donde`)
+begin;
+do $$
+declare
+  duena constant uuid := '00000000-0000-0000-0000-000000000001'; o uuid; r jsonb; v_pla jsonb; v_mala jsonb;
+begin
+  insert into public.origenes (clave, nombre) values ('pv_t6', 'PV T6') returning id into o;
+  perform pg_temp.pv_formula(o, 1, 'costos', 't6', 'abierto');
+  insert into public.plantillas_tarjeta (origen_id, version, estado, definicion, publicado_en) values (o, 1, 'publicada', pg_temp.pv_plantilla_g1(), now());
+  v_pla := '{"forma": 2, "columnas": [{"id": "concepto", "ancho": 190}, {"id": "monto", "ancho": 110}],
+             "filas": [{"id": "pub", "alto": 24, "ocultar_si": "no_aplica", "nodo": "pub"}, {"id": "total", "alto": 32, "ocultar_si": "nunca"}],
+             "celdas": [{"id": "c_pub", "fila": "pub", "columna": "concepto", "contenido": {"tipo": "dato", "nodo": "pub", "mostrar": "etiqueta"}, "estilo": {"fondo": "verde"}},
+                        {"id": "m_pub", "fila": "pub", "columna": "monto", "contenido": {"tipo": "dato", "nodo": "pub", "mostrar": "monto"}},
+                        {"id": "c_total", "fila": "total", "columna": "concepto", "contenido": {"tipo": "texto", "texto": "Total"}},
+                        {"id": "m_total", "fila": "total", "columna": "monto", "contenido": {"tipo": "dato", "nodo": "total", "mostrar": "monto"}}]}';
+  -- Una forma rota no se guarda: la regla y la ruta.
+  r := pg_temp.pv_corre(duena, format('select public.plantilla_guardar_borrador(%L, null::timestamptz, %L)', o, jsonb_set(v_pla, '{columnas,0,ancho}', '700')));
+  if r ->> 'error' is distinct from '22023' or r ->> 'detail' is distinct from 'forma' or r ->> 'hint' is distinct from 'columnas[0].ancho' then raise exception 'guarda una columna de 700 px: %', r; end if;
+  -- Un nodo que no existe se guarda (sólo la forma) y no se publica: `nodo_inexistente@celdas.m_pub`, y la v1 sigue publicada.
+  v_mala := jsonb_set(v_pla, '{celdas,1,contenido,nodo}', '"zz"');
+  r := pg_temp.pv_corre(duena, format('select public.plantilla_guardar_borrador(%L, null::timestamptz, %L)', o, v_mala));
+  if r ? 'error' then raise exception 'no guarda una forma buena: %', r; end if;
+  r := pg_temp.pv_corre(duena, format('select public.plantilla_publicar(%L, %L::timestamptz, %L)', o, (select actualizado_en from public.plantillas_tarjeta where origen_id = o and estado = 'borrador'), 'v2'));
+  if r ->> 'error' is distinct from '22023' or r ->> 'detail' is distinct from 'nodo_inexistente' or r ->> 'hint' is distinct from 'celdas.m_pub'
+     or r ->> 'mensaje' is distinct from 'La celda «m_pub» nombra un nodo que no es de la fórmula.' then
+    raise exception 'publica un nodo que no existe: %', r;
+  end if;
+  if (select version from public.plantillas_tarjeta where origen_id = o and estado = 'publicada') <> 1 then raise exception 'un rechazo movió la publicada'; end if;
+  -- La buena se publica como la v2.
+  r := pg_temp.pv_corre(duena, format('select public.plantilla_guardar_borrador(%L, %L::timestamptz, %L)', o,
+                                       (select actualizado_en from public.plantillas_tarjeta where origen_id = o and estado = 'borrador'), v_pla));
+  if r ? 'error' then raise exception 'no guarda la buena: %', r; end if;
+  r := pg_temp.pv_corre(duena, format('select public.plantilla_publicar(%L, %L::timestamptz, %L)', o, (select actualizado_en from public.plantillas_tarjeta where origen_id = o and estado = 'borrador'), 'v2'));
+  if r ? 'error' then raise exception 'no publica la cuadrícula: %', r; end if;
+  if (select definicion from public.plantillas_tarjeta where origen_id = o and estado = 'publicada' and version = 2) is distinct from v_pla then
+    raise exception 'la publicada no es la cuadrícula';
+  end if;
+end $$;
+rollback;
+
+-- @test plantilla T7: la réplica de la tarjeta de V1 USA en cuadrícula (entities/tarjeta/plantilla-como-v1-usa.json) valida contra la v1 de subasta_usa con el catálogo, y cabe en 24 KiB
+begin;
+do $$
+declare v_pla jsonb; v_r text;
+begin
+  select doc into v_pla from pg_temp._plantilla_como_v1_usa;
+  if v_pla is null then raise exception 'no se cargó plantilla-como-v1-usa.json'; end if;
+  if octet_length(v_pla::text) > 24576 then raise exception 'la réplica de V1 USA pasa de 24 KiB: %', octet_length(v_pla::text); end if;
+  select pg_temp.pv_veredicto(v_pla, f.definicion, f.diseno, f.visibilidad, array(select t.clave from public.tonos t)) into v_r
+    from public.origenes o join public.formulas f on f.origen_id = o.id and f.version = 1 where o.clave = 'subasta_usa';
+  if v_r is distinct from 'válida' then raise exception 'la réplica de V1 USA no valida: %', v_r; end if;
+end $$;
+rollback;
+
+-- @test plantilla T8: un número no canónico (`24.0`, sólo por un RPC a mano) es entero para la forma, pero su texto en el jsonb tiene un byte más que el de TS (límite del espejo: manda la base)
+begin;
+do $$
+declare v_r text;
+begin
+  if octet_length('{"ancho": 24.0}'::jsonb::text) <> 15 or octet_length('{"ancho": 24}'::jsonb::text) <> 13 then
+    raise exception 'el texto de 24.0 cambió: %', '{"ancho": 24.0}'::jsonb::text;
+  end if;
+  v_r := pg_temp.pv_veredicto('{"forma": 2.0, "columnas": [{"id": "a", "ancho": 24.0}], "filas": [{"id": "f", "alto": 16.0, "ocultar_si": "nunca"}],
+                                "celdas": [{"id": "x", "fila": "f", "columna": "a", "abarca_filas": 1.0, "contenido": {"tipo": "vacio"}, "estilo": {"tamano": 12.0}}]}', null, null, null, null);
+  if v_r <> 'válida' then raise exception 'los enteros con .0: %', v_r; end if;
+  v_r := pg_temp.pv_veredicto('{"forma": 2, "columnas": [{"id": "a", "ancho": 24.5}], "filas": [{"id": "f", "alto": 16, "ocultar_si": "nunca"}], "celdas": []}', null, null, null, null);
+  if v_r <> 'forma@columnas[0].ancho' then raise exception '24,5 px: %', v_r; end if;
+end $$;
+rollback;
+
+-- @test plantilla T9: `auto` no es una clave del catálogo (el color automático de la cuadrícula) y las funciones de la cuadrícula son de authenticated y service_role
+begin;
+do $$
+declare v_f text;
+begin
+  if exists (select 1 from public.tonos where clave = 'auto') then raise exception 'el catálogo tiene la clave auto'; end if;
+  if public._tono_clave('Auto') = 'auto' or public._tono_clave('AUTO') = 'auto' then raise exception '_tono_clave da auto: %', public._tono_clave('Auto'); end if;
+  foreach v_f in array array['public._plantilla_cuadricula_forma(jsonb, boolean)', 'public._plantilla_cuadricula_nodos(jsonb, jsonb, jsonb, jsonb, text[])',
+                             'public._plantilla_cuadricula_rechazar(text, text)', 'public._plantilla_es_id(jsonb)', 'public._plantilla_entero_entre(jsonb, integer, integer)'] loop
+    if not has_function_privilege('authenticated', v_f, 'execute') or not has_function_privilege('service_role', v_f, 'execute')
+       or has_function_privilege('anon', v_f, 'execute') or has_function_privilege('public', v_f, 'execute') then
+      raise exception 'privilegios de %', v_f;
+    end if;
+    if (select prosecdef from pg_proc where oid = v_f::regprocedure) then raise exception '% corre con los derechos de su dueña', v_f; end if;
+  end loop;
+end $$;
+rollback;
+
+-- @test plantilla T10: los mensajes de la cuadrícula son los de motivos-de-plantilla.ts (el mismo juego que motivos-de-plantilla.test.ts): nombran la celda, la fila o la columna, nunca el nodo
+begin;
+do $$
+declare v_caso text[]; v_m text; v_malos text[] := '{}';
+begin
+  foreach v_caso slice 1 in array array[
+    array['forma', 'celdas[3].estilo', 'La plantilla no tiene la forma esperada.'],
+    array['demasiadas_columnas', 'columnas', 'La tarjeta lleva hasta 16 columnas.'],
+    array['demasiadas_filas', 'filas', 'La tarjeta lleva hasta 120 filas.'],
+    array['demasiadas_celdas', 'celdas', 'La tarjeta lleva hasta 1.000 celdas.'],
+    array['columna_repetida', 'columnas.a', 'La columna «a» está dos veces.'],
+    array['fila_repetida', 'filas.f', 'La fila «f» está dos veces.'],
+    array['celda_repetida', 'celdas.x', 'La celda «x» está dos veces.'],
+    array['ancho_total', 'columnas', 'Las columnas suman más de 1.600 px de ancho.'],
+    array['celda_fuera_de_la_grilla', 'celdas.x', 'La celda «x» se sale de la cuadrícula.'],
+    array['celdas_se_pisan', 'celdas.y', 'La celda «y» pisa otra celda.'],
+    array['variable_inexistente', 'celdas.fecha', 'La celda «fecha» muestra un dato que no existe.'],
+    array['tono_inexistente', 'celdas.x', 'La celda «x» usa un color que no está en el catálogo.'],
+    array['nodo_de_fila_inexistente', 'filas.fees', 'La fila «fees» depende de un nodo que no es de la fórmula.'],
+    array['nodo_inexistente', 'celdas.x', 'La celda «x» nombra un nodo que no es de la fórmula.'],
+    array['mostrar_no_admitido', 'celdas.x', 'La celda «x» muestra algo que su nodo no tiene.'],
+    array['nodo_restringido', 'filas.fees', 'La tarjeta no puede mostrar lo que nombra la fila «fees»: no es del nivel «todos».'],
+    array['tipo_de_cambio_restringido', 'celdas.tc', 'La tarjeta no puede nombrar el tipo de cambio de la celda «tc»: no es del nivel «todos».']] loop
+    begin
+      perform public._plantilla_cuadricula_rechazar(v_caso[1], v_caso[2]);
+      v_malos := v_malos || (v_caso[1] || ': no rechaza');
+    exception when sqlstate '22023' then
+      get stacked diagnostics v_m = message_text;
+      if v_m is distinct from v_caso[3] then v_malos := v_malos || format('%s: «%s»', v_caso[1], v_m); end if;
+    end;
+  end loop;
+  if cardinality(v_malos) > 0 then raise exception 'mensajes distintos de TS: %', array_to_string(v_malos, ' | '); end if;
 end $$;
 rollback;

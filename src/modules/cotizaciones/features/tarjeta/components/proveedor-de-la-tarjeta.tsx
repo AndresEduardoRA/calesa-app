@@ -8,32 +8,36 @@ import type { DatosDeLaPagina } from './vista-previa-de-la-tarjeta'
 
 type Props = DatosDeLaPagina & { children: ReactNode }
 
-// Enciende «Vista previa» en la hoja (4.18-2): llena el hueco `ContextoDeLaVistaPrevia` con una función que dibuja el modal con lo que la página sabe (vehículo, asesor, número,
-// logo y, en una guardada, su id para el PDF). Sólo importa la cáscara diferida: la tarjeta, su modelo y su lectura no viajan con la hoja. Sin este proveedor la hoja no dibuja el botón.
+// Enciende «Vista previa» en la hoja (4.18-2): llena el hueco `ContextoDeLaVistaPrevia` con una función que dibuja el modal con lo que la página sabe (título, cliente,
+// vehículo con lote y VIN, asesor, número, vencimiento, logo y, en una guardada, su id para el PDF). Sólo importa la cáscara diferida: la tarjeta, su modelo y su lectura no viajan con la hoja. Sin este proveedor la hoja no dibuja el botón.
 export function ProveedorDeLaTarjeta({
   children,
+  titulo,
+  cliente,
   vehiculo,
   asesor,
   numero,
   vencida,
+  venceEl,
   guardadaEl,
   logo,
   cotizacionId,
-  titulo,
 }: Props) {
   // El título de una guardada llega de la página (el guardado); sin él, la hoja nueva lee el que se está escribiendo.
   const pagina = useMemo<DatosDeLaPagina>(
     () => ({
+      cliente,
       vehiculo,
       asesor,
       numero,
       vencida,
+      venceEl,
       guardadaEl,
       logo,
       cotizacionId,
       ...(titulo === undefined ? {} : { titulo }),
     }),
-    [vehiculo, asesor, numero, vencida, guardadaEl, logo, cotizacionId, titulo],
+    [titulo, cliente, vehiculo, asesor, numero, vencida, venceEl, guardadaEl, logo, cotizacionId],
   )
   const dibujar = useCallback(
     (props: PropsDeLaVistaPrevia) => <VistaPreviaDiferida {...props} pagina={pagina} />,

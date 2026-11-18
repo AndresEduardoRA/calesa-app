@@ -1,11 +1,5 @@
 import type { ReactNode } from 'react'
-import {
-  CLAVE_DE_VEHICULO,
-  MOTIVO_DE_LA_FINAL,
-  tituloAparteDelNumero,
-  tituloDeLaCotizacion,
-  type CambioPermitido,
-} from '@/modules/cotizaciones'
+import { CLAVE_DE_VEHICULO, MOTIVO_DE_LA_FINAL, type CambioPermitido } from '@/modules/cotizaciones'
 import { ProveedorDelTitulo } from '@/modules/cotizaciones/pantallas/cotizacion'
 import { elegidoDesde, type Vehiculo } from '@/modules/vehiculos'
 import type { ModoDeLaBarra } from '@/modules/vehiculos/pantallas/cotizar'
@@ -102,13 +96,3 @@ export function barraDeLaCabecera(
     </div>
   )
 }
-
-// El título de la tarjeta y del PDF de una guardada: el guardado (la tarjeta dibuja lo guardado), sin el de respaldo «Cotización n.º N», que ya va junto al número.
-export const tituloDeLaTarjeta = (hoja: Guardada, vehiculo: Vehiculo | null) =>
-  tituloAparteDelNumero(
-    tituloDeLaCotizacion({
-      titulo: hoja.cotizacion.titulo,
-      vehiculo: vehiculo?.titulo ?? null,
-      numero: hoja.cotizacion.numero,
-    }),
-  )

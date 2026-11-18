@@ -8891,14 +8891,68 @@ export type Database = {
         Returns: undefined
       }
       _personas_dominadas: { Args: { p_ids: string[] }; Returns: string[] }
+      _plantilla_alto_de_texto: {
+        Args: { p_ancho: number; p_renglones: number; p_tamano: number; p_texto: string }
+        Returns: number
+      }
       _plantilla_borrador_ausente: {
         Args: { p_esperada: string; p_origen: string }
         Returns: undefined
       }
+      _plantilla_conversion_fila: {
+        Args: { p_armado: Json; p_cols: Json; p_id: string; p_nodo: string; p_piezas: Json }
+        Returns: Json
+      }
+      _plantilla_convertir: {
+        Args: {
+          p_def: Json
+          p_diseno: Json
+          p_plantilla: Json
+          p_tonos: string[]
+          p_visibilidad: Json
+        }
+        Returns: Json
+      }
+      _plantilla_cuadricula_forma: {
+        Args: { p_con_tope: boolean; p_plantilla: Json }
+        Returns: undefined
+      }
+      _plantilla_cuadricula_nodos: {
+        Args: {
+          p_def: Json
+          p_diseno: Json
+          p_plantilla: Json
+          p_tonos: string[]
+          p_visibilidad: Json
+        }
+        Returns: undefined
+      }
+      _plantilla_cuadricula_rechazar: {
+        Args: { p_donde: string; p_regla: string }
+        Returns: undefined
+      }
+      _plantilla_entero_entre: {
+        Args: { p: Json; p_maximo: number; p_minimo: number }
+        Returns: boolean
+      }
+      _plantilla_es_id: { Args: { p: Json }; Returns: boolean }
       _plantilla_forma: { Args: { p_plantilla: Json }; Returns: undefined }
+      _plantilla_id_derivado: { Args: { p_texto: string }; Returns: string }
       _plantilla_nodos: {
         Args: { p_def: Json; p_diseno: Json; p_plantilla: Json; p_visibilidad: Json }
         Returns: undefined
+      }
+      _plantilla_pieza: {
+        Args: {
+          p_columna: string
+          p_contenido: Json
+          p_estilo: Json
+          p_filas: number
+          p_hasta: string
+          p_medida: string
+          p_renglones: number
+        }
+        Returns: Json
       }
       _portal_clave_validar: { Args: { p_clave: string }; Returns: undefined }
       _portal_codigo_normal: { Args: { p_codigo: string }; Returns: string }
@@ -9357,7 +9411,6 @@ export type Database = {
           zona: string
         }[]
       }
-      _tarjeta_grupos: { Args: { p_def: Json; p_plantilla: Json; p_tonos: Json }; Returns: Json }
       _tarjeta_json: {
         Args: {
           o: Omit<
@@ -9367,10 +9420,6 @@ export type Database = {
           p_lead: Json
           p_vehiculo: Json
         }
-        Returns: Json
-      }
-      _tarjeta_tipos_de_cambio: {
-        Args: { p_buckets: string[]; p_def: Json; p_diseno: Json }
         Returns: Json
       }
       _telefono_o_nulo: { Args: { p_cc: string; p_tel: string }; Returns: string }

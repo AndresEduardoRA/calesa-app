@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
   contextoDeValidacion,
+  MOTIVO_DE_LA_CUADRICULA,
   TOPE_DE_TONOS,
   versionDePlantilla,
   type FormulaParaLaPlantilla,
@@ -50,6 +51,15 @@ describe('versionDePlantilla', () => {
     for (const c of rotos) {
       expect(versionDePlantilla({ ...base, definicion: c.plantilla }).plantilla).toBeNull()
     }
+  })
+
+  it('una cuadrícula (la forma 2) llega sin plantilla y con su motivo: el editor de hoy no la edita', () => {
+    const v = versionDePlantilla({
+      ...base,
+      definicion: { forma: 2, columnas: [{ id: 'a', ancho: 100 }], filas: [], celdas: [] },
+    })
+    expect(v.plantilla).toBeNull()
+    expect(v.motivo).toBe(MOTIVO_DE_LA_CUADRICULA)
   })
 })
 

@@ -408,14 +408,34 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   N+1 de cada fórmula que la usa con la copia congelada.
 - **Tabla compartida** — tabla de referencia con `origen_id` nulo: la usan los orígenes sin una propia de esa clave; la propia la **tapa** (va
   `tapada` en la lista de ese origen). Publicarla pide `cotizaciones.configurar` en cada origen que la usa.
-- **Plantilla de tarjeta** — `plantillas_tarjeta`: cómo se ve la cotización (tarjeta y PDF), versionada aparte; declarativa (grupos con color,
-  etiquetas y leyendas por nodo, total, nota, logo, columnas) y validada por `validar_plantilla()`.
-- **Lectura de la tarjeta** — `cotizacion_tarjeta()`: lo que dibujan la tarjeta y el PDF de una versión, con la plantilla publicada validada
-  contra esa versión y sólo lo del nivel «todos». No es la **Tarjeta del total**.
-- **Tarjeta por omisión** — `{estado: 'sin_plantilla'}` de `cotizacion_tarjeta()`: la plantilla no le sirve a esa versión y la tarjeta muestra
-  sólo el total (encabezado, vehículo, logo; sin filas ni lo aparte, que podría ser de un nivel restringido).
-- **Vista previa** — `?panel=vista-previa`, `<VistaPreviaDeLaHoja>`: modal con la tarjeta (`<TarjetaDeCotizacion>`, `modeloDeLaTarjeta()`)
-  como la vería el cliente; en una guardada, lo guardado.
+- **Tarjeta de la cotización** — `<TarjetaDeCotizacion>`, `geometriaDeLaTarjeta()`: la vista previa tipo Excel de una cotización, lo que ve el
+  cliente: la misma en la vista previa, el PDF, la imagen y «Copiar texto». No es la **tarjeta de la lista** (cada ítem de la vista Tarjetas de un
+  listado) ni la **Tarjeta del total** de la hoja.
+- **Plantilla de tarjeta** — `plantillas_tarjeta`: cómo se ve la tarjeta de la cotización, versionada aparte y validada por `validar_plantilla()`.
+  Dos formas: la **forma 1** (grupos con color, etiquetas y leyendas por nodo, total, nota, logo, columnas), que se convierte a la cuadrícula al
+  leerla (`convertirPlantilla()`, `_plantilla_convertir()`) y no se migra; y la **forma 2** o **cuadrícula** (`"forma": 2`: columnas, filas y
+  celdas libres, como en V1), `PlantillaEnCuadricula` en `entities/cuadricula-de-la-tarjeta.ts`.
+- **Celda de la tarjeta** — `CeldaDeLaTarjeta`, `definicion.celdas[]` de la forma 2: un rectángulo de la cuadrícula con su posición (`fila`,
+  `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo o vacío) y su estilo. No es la **Celda (de la
+  hoja)**.
+- **Fila de la tarjeta** — `FilaDeLaTarjeta`, `definicion.filas[]` de la forma 2: una fila con su alto y su «Ocultar si…». No es la **Fila (de la
+  fórmula)**.
+- **Ocultar si…** — `ocultar_si` de una fila de la tarjeta (`nunca`, `no_aplica`, `no_aplica_o_cero`): la fila no se dibuja si su nodo no aplica
+  en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0; las celdas combinadas que la cruzan se acortan. La vista previa
+  de Configuración dice cuáles: «Ocultas con esta referencia (N)».
+- **Dato de la tarjeta** — `{tipo: 'dato', …}` de una celda: una variable de la cotización (`VARIABLES_DE_LA_TARJETA`: `fecha_larga`, `numero`,
+  `asesor_nombre`…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
+  `plazo`). Un texto no mezcla texto y variables.
+- **Geometría de la tarjeta** — `Geometria`, `geometriaDeLaTarjeta()`: el único modelo de dibujo de la tarjeta de la cotización: el ancho, el alto
+  y, por celda visible, su rectángulo en px, su contenido ya resuelto y su estilo, más las filas ocultas. Lo pintan con posiciones absolutas el HTML,
+  el PDF (`DocumentoDeLaTarjeta`) y la imagen (`pngDeLaTarjeta()`).
+- **Lectura de la tarjeta** — `cotizacion_tarjeta()`: lo que dibujan la tarjeta y el PDF de una versión: la cuadrícula (convertida si la plantilla
+  publicada es de la forma 1) validada contra esa versión y sólo lo del nivel «todos» que nombra. No es la **Tarjeta del total**.
+- **Tarjeta por omisión** — `{estado: 'sin_plantilla'}` de `cotizacion_tarjeta()` o un recálculo sin estados: la plantilla no le sirve a esa versión
+  y la tarjeta muestra sólo el total (fecha, número, asesor, vehículo, logo; sin filas, que podrían ser de un nivel restringido).
+- **Vista previa** — `?panel=vista-previa`, `<VistaPreviaDeLaHoja>`: modal con la tarjeta de la cotización (`<TarjetaDeCotizacion>`,
+  `geometriaDeLaTarjeta()`) como la vería el cliente, escalada como una imagen; en una guardada, lo guardado.
+- **Portada de la cotización** — la imagen de la tarjeta de una cotización guardada (`imagenDeUnaGuardada()`). No es la **Portada** de un vehículo.
 - **PDF de la cotización** — `GET /cotizaciones/<id>/pdf`, `pdfDeUnaGuardada()`: la tarjeta de lo guardado en A4; lo descarga quien la ve
   («Descargar PDF», junto a «Copiar texto»). No es «Compartir» (eso es de leads).
 - **Revisión** — `cotizaciones_revisiones`: diff de cada edición.
@@ -486,7 +506,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Título de la cotización** — `cotizaciones.titulo` / `titulo_manual`, `tituloDeLaCotizacion()`, `<ProveedorDelTitulo>`, el campo «Título de la cotización» del
   panel del vehículo: el nombre propio de una cotización, hasta 120 caracteres. **Automático** (`titulo_manual = false`): el título del vehículo, que la base rehace
   en cada guardado; **manual**: el que alguien escribió (cambiar de vehículo lo respeta; vaciarlo lo vuelve automático). Sin vehículo es obligatorio. Lo que se
-  muestra si falta: el del vehículo y, sin vehículo, «Cotización n.º N». No es el título del vehículo (`vehiculos.titulo`) ni el de la variante de la tarjeta.
+  muestra si falta: el del vehículo y, sin vehículo, «Cotización n.º N». En la tarjeta de la cotización es la variable `titulo` (sin el de respaldo). No es el
+  título del vehículo (`vehiculos.titulo`) ni el de la opción de la variante (`titulo_opcion`).
 - **Ajustes de cotización** — `AjustesDeCotizacion` (`empresa`): la vigencia, de `ajustes_empresa`; los cambia
   `empresa_guardar_ajustes_de_cotizacion()` con `cotizaciones.configurar` en todos los orígenes y la versión de la fila (Configuración ›
   Cotización › Ajustes).
@@ -549,7 +570,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Color (del catálogo)** — `tonos` (nombre técnico heredado) / `tono_*()`, `definicion.grupos[].tono`, `tono` de una sección o de la cabecera
   del diseño (`_tonos_del_diseno()`): color de la empresa por nombre y #hex (`tonos.hex`), que un grupo, una sección o la cabecera nombran por su
   clave, nunca por hex. La hoja usa sus versiones clara y oscura (fondo, borde y tinta) derivadas del hex con AA garantizado (`_color_derivar`,
-  `derivarColores()`); la tarjeta de la cotización, el hex tal cual con el texto que se lea (`_color_tinta_de_la_tarjeta`). El de un grupo gana
+  `derivarColores()`); la tarjeta de la cotización, el hex tal cual por la clave que nombra una celda o `auto` (blanco, con el texto de más
+  contraste). El de un grupo gana
   en su celda; el de una sección pinta su borde y sus celdas, franjas y chips, no su fondo ni sus textos sueltos. En la interfaz nunca «tono».
 - **Planilla EE. UU.** — `origenes.clave = 'planilla_usa'`: origen de ejemplo del Excel (subasta; cuatro cotizaciones en una fórmula con variante).
 - **Tipo de cambio unificado y aduana** — `tipos_cambio` (claves `unificado`, `aduana`): el unificado convierte lo pagado afuera.

@@ -23,13 +23,14 @@ import { getOrigenes, type OrigenResumen } from '@/modules/origenes'
 import { elegidoDesde } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
 import { puede, type Permisos } from '@/shared/lib/permisos'
-import { CLAVE_DE_VUELTA, returnToSeguro, unParametro } from '@/shared/lib/rutas'
+import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
 import { AvisoDeSubastaDeLaHoja } from '../aviso-de-subasta'
+import { vehiculoDeLaTarjeta } from '../datos-de-la-tarjeta'
 import { idDeUrl, type Quien, type VehiculoDeLaUrl } from '../vehiculo-de-la-hoja'
 import { BarraConHistorial } from './barra-con-historial'
-import { VolverDeLaHoja } from './volver-de-la-hoja'
+import { TituloDeLaHoja, volverDe } from './volver-de-la-hoja'
 import {
   camposQueSeEligen,
   leerLoDeLaHoja,
@@ -48,12 +49,7 @@ export const metadata: Metadata = { title: 'Cotizar' }
 export default function PaginaDeCotizar({ searchParams }: PageProps<'/cotizaciones/nuevo'>) {
   return (
     <div className="grid min-w-0 gap-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">Cotizar</h1>
-        <Suspense fallback={null}>
-          <VolverDeLaHoja parametros={searchParams} />
-        </Suspense>
-      </div>
+      <TituloDeLaHoja parametros={searchParams} />
       <Suspense fallback={<EsqueletoDeHoja />}>
         <Hoja parametros={searchParams} />
       </Suspense>
@@ -203,9 +199,23 @@ function BarrasDeLaHoja({
   )
 }
 
-// La pantalla a la que vuelve la hoja (`?returnTo=`, sólo una ruta interna): las pestañas de origen la conservan.
-const volverDe = (url: Record<string, string | string[] | undefined>) =>
-  returnToSeguro(unParametro(url[CLAVE_DE_VUELTA]))
+// Lo que la tarjeta de la hoja nueva nombra: el vehículo elegido (con lote y VIN), quien cotiza y el cliente, si quien mira los ve. El título no: la tarjeta lee el
+// que se está escribiendo.
+function tarjetaDeLaHojaNueva({
+  elegido,
+  cliente,
+  asesor,
+}: {
+  elegido: { vehiculo: { titulo: string; lote: string | null; vin: string | null } } | null
+  cliente: { nombre: string } | null
+  asesor: string
+}) {
+  return {
+    vehiculo: vehiculoDeLaTarjeta(elegido === null ? null : elegido.vehiculo),
+    asesor,
+    cliente: cliente === null ? null : cliente.nombre,
+  }
+}
 
 // La hoja del origen elegido, con sus dos barras (vehículo y cliente) y las pestañas de origen.
 async function HojaDelOrigen({
@@ -269,7 +279,7 @@ async function HojaDelOrigen({
           origenId={origen.id}
           cotizacionId={null}
           permisos={sesion.permisos}
-          tarjeta={{ vehiculo: tituloDelElegido(elegido), asesor }}
+          tarjeta={tarjetaDeLaHojaNueva({ elegido, cliente, asesor })}
         >
           <PantallaDeCotizar
             key={`${origen.id}:${leadUsado ?? '-'}:${vehiculoUsado ?? '-'}`}
