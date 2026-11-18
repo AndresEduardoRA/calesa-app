@@ -505,7 +505,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   del vehículo llevan el carrusel en su lugar (flechas, puntos y gesto). Las galerías («Fotos» del resumen, imágenes de un ítem) abren el visor en la foto tocada.
 - **Vistos:** en las listas de vehículos, leads (lista y kanban), cotizaciones, proyectos de repuestos, los chips de la agenda y las de logística (bandeja del
   día, fase, «dónde está», gastos y pagos, unidades de un grupo), como en un correo, el nombre de lo que no se abrió en ese módulo va en **negrita** y el de lo ya
-  abierto en peso normal; lo último lleva además borde de acento y «Último visto» (y también va en peso normal). «Visto» se dice con texto para el lector: nada
+  abierto en peso normal; lo último lleva además borde de acento y un ojo chico junto al nombre (tooltip y texto para el lector «Último visto», sin texto a la vista; y también va en peso normal). «Visto» se dice con texto para el lector: nada
   depende sólo del peso. Con «Vistos» apagado, o sin saber aún qué se abrió, ninguna lista pone negrita por esto. En el chip de la agenda, «visto» lleva una
   tilde (y el texto para el lector) y lo nuevo no lleva nada: el fondo es de la clase y su etiqueta ya va en negrita, así que el peso no se distingue. Aduana y las notificaciones no marcan. `/perfil` › «Vistos»: marcar o no, recordar 7, 30, 90 días o 1 año, marcar o no el último.
 - **Barra de cambios sin guardar:** un formulario de página (no de un panel) muestra abajo, pegada (`sticky`, sin tapar el último campo),
