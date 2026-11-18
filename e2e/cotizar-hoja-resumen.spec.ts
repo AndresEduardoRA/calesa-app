@@ -1,4 +1,5 @@
 import { expect, test, type Page, type TestInfo } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
 import { vigilarRecalculos } from './soporte/cotizar'
 import {
@@ -41,6 +42,8 @@ const ir = async (page: Page, origen: string) => {
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origen}&lead=${lead}`)
   await expect(page.locator('[data-hoja]')).toBeVisible()
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
 }
 const cabecera = (page: Page) => page.locator('[data-cabecera]')
 const modo = (page: Page, nombre: string) => cabecera(page).getByRole('radio', { name: nombre })
@@ -80,6 +83,8 @@ test('guardar manda el primer modo sin tocar nada y el elegido tras elegir, y la
   expect(guardados.pedidos[0]?.modoTc).toBe('m1')
   expect(cotizacionGuardada(guardados.pedidos[0]?.intento ?? '').modoTc).toBe('m1')
   await page.getByRole('button', { name: 'Cotizar otra' }).click()
+  // Guardada, el título vuelve a automático para la próxima (T307): sin vehículo se escribe otra vez.
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '1200')
   await elegirModo(page, 'Modo dos')
   await expect(totalDeLaHoja(page)).toContainText('1.205,00')
@@ -118,6 +123,8 @@ test('guardar con «Ver total Bs» encendido lo deja en la cotización, y apagad
   expect(guardados.pedidos[0]?.verTotalBs).toBe(false)
   expect(cotizacionGuardada(guardados.pedidos[0]?.intento ?? '').verTotalBs).toBe(false)
   await page.getByRole('button', { name: 'Cotizar otra' }).click()
+  // Guardada, el título vuelve a automático para la próxima (T307): sin vehículo se escribe otra vez.
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '1200')
   await verTotalBs(page).click()
   await guardarConElAtajo(page)

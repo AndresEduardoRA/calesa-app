@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   PREFIJO_ROL_E2E,
@@ -140,6 +141,8 @@ test('E2E la dueña (tiene las dos claves) guarda sin cliente ni vehículo, y en
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origenA.id}`)
   await expect(page.getByText('Obligatorio', { exact: true })).toHaveCount(0)
+  // Sin vehículo, el título es obligatorio para cualquier rol (T307).
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '10')
   await expect(guardar(page)).toBeEnabled()
   await guardarConElAtajo(page)
@@ -163,6 +166,8 @@ test('E2E un rol con las dos claves sólo en el origen A guarda sin nada en A; e
   const guardados = await vigilarGuardados(page)
   await entrar(page, persona, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origenA.id}`)
+  // Sin vehículo, el título es obligatorio para cualquier rol (T307).
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '10')
   await expect(guardar(page)).toBeEnabled()
   await guardarConElAtajo(page)

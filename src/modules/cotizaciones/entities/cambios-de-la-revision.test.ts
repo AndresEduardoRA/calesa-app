@@ -99,3 +99,13 @@ describe('cambiosDeLaRevision: qué cambió en una revisión', () => {
     ).toBe(true)
   })
 })
+
+describe('cambiosDeLaRevision › el título de la cotización (T307)', () => {
+  it('pasar de automático a manual, solo o junto al texto, se dice una vez', () => {
+    const texto = (diff: Record<string, unknown>) => cambiosDeLaRevision(diff, new Map()).vistos
+    expect(texto({ titulo_manual: { de: false, a: true } })).toEqual(['Cambió el título'])
+    expect(texto({ titulo: { de: 'a', a: 'b' }, titulo_manual: { de: true, a: false } })).toEqual([
+      'Cambió el título',
+    ])
+  })
+})

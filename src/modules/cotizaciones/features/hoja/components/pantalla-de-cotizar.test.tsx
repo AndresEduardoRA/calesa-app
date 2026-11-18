@@ -111,6 +111,8 @@ describe('PantallaDeCotizar › lo guardado', () => {
       modoTc: null,
       verTotalBs: false,
       conLaAbierta: false,
+      titulo: null,
+      tituloManual: false,
     }
     window.sessionStorage.setItem(
       claveDelPendiente({

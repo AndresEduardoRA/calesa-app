@@ -101,6 +101,7 @@ describe('PantallaDeUnaGuardada: «Cotizar encima» (C8, C9)', () => {
         modoTc: null,
         verTotalBs: false,
         titulo: null,
+        tituloManual: false,
         notas: null,
         vehiculoId: null,
       }),

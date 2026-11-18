@@ -44,6 +44,8 @@ const COLUMNAS: readonly [string, (a: unknown) => string | null][] = [
   ['vehiculo_id', () => 'Cambió el vehículo'],
   ['lead_id', () => 'Cambió el cliente'],
   ['titulo', () => 'Cambió el título'],
+  // Pasar de automático a manual (o al revés) también es cambiar el título; con `titulo` en el mismo diff se dice una vez (abajo, sin repetir textos).
+  ['titulo_manual', () => 'Cambió el título'],
   ['notas', () => 'Cambió las notas'],
   ['tipos_cambio', () => 'Cambió un tipo de cambio'],
   [
@@ -67,9 +69,13 @@ export function cambiosDeLaRevision(
     .map((id) => etiquetas.get(id) ?? id)
     .sort((x, y) => x.localeCompare(y, 'es'))
     .map((etiqueta) => `Cambió «${etiqueta}»`)
-  const columnas = COLUMNAS.flatMap(([columna, texto]) =>
-    columna in diff ? [texto(lado(diff, columna))] : [],
-  ).filter((texto) => texto !== null)
+  const columnas = [
+    ...new Set(
+      COLUMNAS.flatMap(([columna, texto]) =>
+        columna in diff ? [texto(lado(diff, columna))] : [],
+      ).filter((texto) => texto !== null),
+    ),
+  ]
   const todos = [...nodos, ...columnas]
   const total = totalDe(diff)
   return {

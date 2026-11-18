@@ -44,6 +44,25 @@ export type DeUnaGuardada = { personaId: string; cotizacionId: string }
 export const claveDelPendienteDeUnaGuardada = ({ personaId, cotizacionId }: DeUnaGuardada) =>
   `cotizar-guardada-pendiente:${personaId}:${cotizacionId}`
 
+// El borrador del título de la cotización (T307), como el de la hoja: en la nueva por persona, origen y el vehículo con que se abrió (otra hoja con otro vehículo no
+// hereda un título manual; elegir otro vehículo en ésta no lo cambia); en una guardada por persona, cotización y versión (tras un PT409 no vuelve sobre la ajena).
+export const claveDelTitulo = ({
+  personaId,
+  origenId,
+  vehiculoAlAbrir,
+}: {
+  personaId: string
+  origenId: string
+  vehiculoAlAbrir: string | null
+}): string => `cotizar-titulo:${personaId}:${origenId}:${vehiculoAlAbrir ?? '-'}`
+
+export const claveDelTituloDeUnaGuardada = ({
+  personaId,
+  cotizacionId,
+  actualizadoEn,
+}: DeUnaGuardada & { actualizadoEn: string }): string =>
+  `cotizar-guardada-titulo:${personaId}:${cotizacionId}:${actualizadoEn}`
+
 export const claveDelBorradorDeUnaGuardada = ({
   personaId,
   cotizacionId,

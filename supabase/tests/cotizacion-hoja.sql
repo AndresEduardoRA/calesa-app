@@ -441,7 +441,7 @@ begin
   values ('CH lead', '7215' || lpad(nextval('pg_temp.ch_telefono')::text, 4, '0'), duena, (select id from public.origenes_lead where clave = 'web'), '{}') returning id into l;
   h := pg_temp.ch_corre(duena, format('select public.cotizacion_hoja(%L)', o));
   if h ? 'vehiculo_obligatorio' then raise exception 'la hoja no debe traer el ajuste del vehículo: %', h ->> 'vehiculo_obligatorio'; end if;
-  r := pg_temp.ch_corre(duena, format('select public.cotizacion_crear(gen_random_uuid(), %L, %L, ''{"inputs": {"pub": 10}}''::jsonb, %L)', o, l, h ->> 'abierta'));
+  r := pg_temp.ch_corre(duena, format('select public.cotizacion_crear(gen_random_uuid(), %L, %L, ''{"inputs": {"pub": 10}}''::jsonb, %L, p_titulo => ''CH sin vehículo'')', o, l, h ->> 'abierta'));
   if r ? 'error' or r -> 'cotizacion' ->> 'id' is null then raise exception 'crear con lo que entregó la lectura falla: %', r; end if;
   -- Una versión nueva: la hoja que se abrió antes ya no es la vigente.
   v_pub := (select f.id from public.formulas f where f.origen_id = o and f.estado = 'publicada');
@@ -450,7 +450,7 @@ begin
   perform public.formula_cambiar_constante(o, 'con_ayuda', 6);
   reset role;
   if (select f.id from public.formulas f where f.origen_id = o and f.estado = 'publicada') = v_pub then raise exception 'no se publicó la N+1'; end if;
-  r := pg_temp.ch_corre(duena, format('select public.cotizacion_crear(gen_random_uuid(), %L, %L, ''{"inputs": {"pub": 10}}''::jsonb, %L)', o, l, h ->> 'abierta'));
+  r := pg_temp.ch_corre(duena, format('select public.cotizacion_crear(gen_random_uuid(), %L, %L, ''{"inputs": {"pub": 10}}''::jsonb, %L, p_titulo => ''CH sin vehículo'')', o, l, h ->> 'abierta'));
   if r ->> 'error' is distinct from 'PT409' or r ->> 'detail' is distinct from 'desactualizada' or r ->> 'hint' is distinct from 'formula' then raise exception 'la hoja vieja debía dar desactualizada: %', r; end if;
   -- 4-28: el recálculo con la hoja abierta calcula con SU versión (la constante vieja), no con la que se publicó después; sin ella, con la publicada.
   r := pg_temp.ch_corre(duena, format('select public.cotizacion_evaluar(''{"inputs": {"pub": 10}}''::jsonb, null, %L, null, null, null, %L)', o, h ->> 'abierta'));
@@ -460,7 +460,7 @@ begin
   -- Y la lectura de ahora trae la versión nueva.
   h := pg_temp.ch_corre(duena, format('select public.cotizacion_hoja(%L)', o));
   if (h -> 'formula' ->> 'id')::uuid = v_pub then raise exception 'la lectura trae la versión vieja'; end if;
-  r := pg_temp.ch_corre(duena, format('select public.cotizacion_crear(gen_random_uuid(), %L, %L, ''{"inputs": {"pub": 10}}''::jsonb, %L)', o, l, h ->> 'abierta'));
+  r := pg_temp.ch_corre(duena, format('select public.cotizacion_crear(gen_random_uuid(), %L, %L, ''{"inputs": {"pub": 10}}''::jsonb, %L, p_titulo => ''CH sin vehículo'')', o, l, h ->> 'abierta'));
   if r ? 'error' then raise exception 'crear con la versión nueva falla: %', r; end if;
 end $$;
 rollback;

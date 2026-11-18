@@ -20,6 +20,8 @@ const armado = (valor: number): PedidoArmado => ({
   entradas: { inputs: { pub: valor }, banderas: {}, overrides: {} },
   modoTc: null,
   verTotalBs: false,
+  titulo: null,
+  tituloManual: false,
 })
 const armarCon =
   (valor: number): Armar =>

@@ -28,12 +28,14 @@ type Tono = ModeloDeTarjeta['tonos'][number]['tarjeta']
 function Encabezado({ modelo, logo }: Pick<PropsDelDocumento, 'modelo' | 'logo'>) {
   const e = modelo.encabezado
   const numero = e.numero === null ? '' : ` · Cotización n.º ${String(e.numero)}`
+  // El título de la cotización, junto al número (T307).
+  const titulo = e.tituloDeLaCotizacion === null ? '' : ` · ${e.tituloDeLaCotizacion}`
   return (
     <View style={estilos.encabezado}>
       <View style={estilos.encabezadoTexto}>
         {e.titulo === null ? null : <Text style={estilos.titulo}>{e.titulo}</Text>}
         <View style={estilos.enLinea}>
-          <Text style={estilos.suave}>{`${e.fecha}${numero}`}</Text>
+          <Text style={estilos.suave}>{`${e.fecha}${numero}${titulo}`}</Text>
           {e.vencida ? <Text style={estilos.vencida}>Vencida</Text> : null}
         </View>
         {e.asesor === null ? null : <Text style={estilos.suave}>{`Asesor: ${e.asesor}`}</Text>}

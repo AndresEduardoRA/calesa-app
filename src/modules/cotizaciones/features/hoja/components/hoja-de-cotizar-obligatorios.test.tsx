@@ -26,6 +26,7 @@ const LEAD = '33333333-3333-4333-8333-333333333333'
 const ELECCIONES: EleccionesDeLaHoja = {
   lead: { panel: 'cliente' },
   vehiculo: { panel: 'vehiculo' },
+  titulo: { panel: 'vehiculo' },
 }
 
 const AL_DIA: RecalculoInicial = {

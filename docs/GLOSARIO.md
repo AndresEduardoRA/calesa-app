@@ -477,6 +477,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   en ese origen el lead es obligatorio; una final lo pide siempre. También rige al cotizar encima de una anterior sin lead.
 - **Obligatorios al cotizar** — `ObligatoriosAlCotizar` (`cotizaciones`): `{ lead, vehiculo }`, lo que la hoja exige elegir según las dos claves de arriba
   para quien cotiza en ese origen; la página lo calcula con los permisos de la sesión (con «Ver como», los del rol elegido). La base decide con los reales.
+  Sin vehículo, además, el título de la cotización (`loQueFalta()` da `'titulo'` después del lead y del vehículo, para cualquier rol).
+- **Título de la cotización** — `cotizaciones.titulo` / `titulo_manual`, `tituloDeLaCotizacion()`, `<ProveedorDelTitulo>`, el campo «Título de la cotización» del
+  panel del vehículo: el nombre propio de una cotización, hasta 120 caracteres. **Automático** (`titulo_manual = false`): el título del vehículo, que la base rehace
+  en cada guardado; **manual**: el que alguien escribió (cambiar de vehículo lo respeta; vaciarlo lo vuelve automático). Sin vehículo es obligatorio. Lo que se
+  muestra si falta: el del vehículo y, sin vehículo, «Cotización n.º N». No es el título del vehículo (`vehiculos.titulo`) ni el de la variante de la tarjeta.
 - **Ajustes de cotización** — `AjustesDeCotizacion` (`empresa`): la vigencia, de `ajustes_empresa`; los cambia
   `empresa_guardar_ajustes_de_cotizacion()` con `cotizaciones.configurar` en todos los orígenes y la versión de la fila (Configuración ›
   Cotización › Ajustes).
@@ -718,7 +723,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tablero** — `/tablero`: métricas y gráficas por rol con widgets.
 - **Vista guardada** — `vistas_guardadas` / `VistaGuardada`, `<VistasGuardadas>` (una sección de «Vista y opciones»): filtros de un listado con nombre, por persona; aplicarla es navegar. La
   tienen leads, vehículos y cotizaciones (`RUTA_DE_PANTALLA`); con la búsqueda, guarda también `?q=`.
-- **Buscador del listado de cotizaciones** — `?q=` / `cotizaciones_buscar()`, `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`, `TOPE_DE_COINCIDENCIAS`: número, cliente,
+- **Buscador del listado de cotizaciones** — `?q=` / `cotizaciones_buscar()`, `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`, `TOPE_DE_COINCIDENCIAS`: número, título, cliente,
   vehículo (título, VIN o lote) y autor; distinto del buscador global (`buscador_cotizaciones()`).
 - **Menú de la fila (cotizaciones)** — `accionesDeCotizacion()`, `MenuDeUnaFila`, `<MenuDeLaFila>`: el «⋯» de una cotización del listado, con la lista única de
   acciones (`aprobar`, `final`, `favorita`, `reportar`, `invalidar`, `descartar`, `reactivar`, `papelera`) y lo que cada rol ve.
