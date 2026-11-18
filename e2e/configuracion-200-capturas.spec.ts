@@ -59,9 +59,10 @@ test.afterAll(async () => {
 
 const PANTALLAS = [
   ['hub', () => '/configuracion'],
-  ['empresa-empresa', () => '/configuracion/empresa?seccion=empresa'],
-  ['empresa-monedas', () => '/configuracion/empresa?seccion=monedas'],
-  ['empresa-integraciones', () => '/configuracion/empresa?seccion=integraciones'],
+  ['empresa-datos', () => '/configuracion/empresa'],
+  ['empresa-monedas', () => '/configuracion/empresa/monedas'],
+  ['empresa-integraciones', () => '/configuracion/empresa/integraciones'],
+  ['empresa-comprobantes', () => '/configuracion/empresa/comprobantes'],
   ['origenes', () => '/configuracion/origenes'],
   ['origen-datos', () => `/configuracion/origenes/${origen.id}?seccion=datos`],
   ['origen-campos', () => `/configuracion/origenes/${origen.id}?seccion=campos`],

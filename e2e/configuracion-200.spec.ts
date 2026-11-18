@@ -61,10 +61,10 @@ const DE_UN_ORIGEN = (seccion: string) => () =>
 
 const PANTALLAS: Pantalla[] = [
   { titulo: 'el centro de Configuración', url: () => '/configuracion' },
-  { titulo: 'Empresa › Empresa', url: () => '/configuracion/empresa?seccion=empresa' },
+  { titulo: 'Empresa › Datos de la empresa', url: () => '/configuracion/empresa' },
   {
-    titulo: 'Empresa › Monedas',
-    url: () => '/configuracion/empresa?seccion=monedas',
+    titulo: 'Empresa › Monedas y tipos de cambio',
+    url: () => '/configuracion/empresa/monedas',
     controles: (page) => [
       [
         page
@@ -75,7 +75,8 @@ const PANTALLAS: Pantalla[] = [
       ],
     ],
   },
-  { titulo: 'Empresa › Integraciones', url: () => '/configuracion/empresa?seccion=integraciones' },
+  { titulo: 'Empresa › Integraciones', url: () => '/configuracion/empresa/integraciones' },
+  { titulo: 'Empresa › Comprobantes', url: () => '/configuracion/empresa/comprobantes' },
   { titulo: 'Orígenes', url: () => '/configuracion/origenes' },
   {
     titulo: 'la ficha de un origen › Datos',
@@ -190,7 +191,7 @@ test('al 200 %: nada del formulario de apibara pasa del relleno de su tarjeta', 
 }) => {
   await textoGrandeAlCargar(page)
   await entrar(page)
-  await page.goto('/configuracion/empresa?seccion=integraciones')
+  await page.goto('/configuracion/empresa/integraciones')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   const formulario = page.locator('form', { hasText: 'Dirección del servicio' })
   await expect(formulario).toBeVisible()
@@ -218,8 +219,8 @@ test('al 200 %: en Monedas se leen enteros el nombre y el valor de cada tipo de 
 }) => {
   await textoGrandeAlCargar(page)
   await entrar(page)
-  await page.goto('/configuracion/empresa?seccion=monedas')
-  await expect(page.getByRole('heading', { name: 'Tipos de cambio' })).toBeVisible()
+  await page.goto('/configuracion/empresa/monedas')
+  await expect(page.getByRole('heading', { name: 'Tipos de cambio', exact: true })).toBeVisible()
   const filas = page.getByRole('list').filter({ has: page.getByText(/^1 [A-Z]{3} = $/) })
   await sinTextoCortado(filas)
   await sinTextoCortado(page.getByRole('list').filter({ hasText: 'Dólar estadounidense' }))

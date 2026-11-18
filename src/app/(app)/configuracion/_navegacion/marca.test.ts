@@ -29,4 +29,20 @@ describe('marcaDelEnlace', () => {
     expect(marcaDelEnlace('/configuracion/web-cola', '/configuracion/web')).toBeUndefined()
     expect(marcaDelEnlace('/configuracion', '/configuracion/empresa')).toBeUndefined()
   })
+
+  it('la sub-sección índice se marca sólo en su ruta exacta; la sección queda como rama', () => {
+    const subrutas = ['/configuracion/empresa', '/configuracion/empresa/monedas']
+    expect(marcaDelEnlace('/configuracion/empresa', '/configuracion/empresa', [], true)).toBe(
+      'page',
+    )
+    expect(
+      marcaDelEnlace('/configuracion/empresa/monedas', '/configuracion/empresa', [], true),
+    ).toBeUndefined()
+    expect(marcaDelEnlace('/configuracion/empresa', '/configuracion/empresa', subrutas)).toBe(
+      'true',
+    )
+    expect(
+      marcaDelEnlace('/configuracion/empresa/monedas', '/configuracion/empresa', subrutas),
+    ).toBe('true')
+  })
 })

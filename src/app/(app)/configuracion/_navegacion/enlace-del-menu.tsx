@@ -10,17 +10,20 @@ import { marcaDelEnlace } from './marca'
 export function EnlaceDelMenu({
   ruta,
   subrutas,
+  exacta,
   titulo,
 }: {
   ruta: string
   subrutas?: readonly string[]
+  // La sub-sección índice: se marca sólo en su ruta exacta (`marcaDelEnlace`).
+  exacta?: boolean
   titulo: string
 }) {
   return (
     <Link
       // Las rutas del menú existen: lo garantiza secciones.test.ts contra el disco.
       href={ruta as Route}
-      aria-current={marcaDelEnlace(usePathname(), ruta, subrutas)}
+      aria-current={marcaDelEnlace(usePathname(), ruta, subrutas, exacta)}
       className="flex min-h-9 items-center rounded-(--radius-md) px-2.5 py-1.5 text-(length:--text-sm) text-(--color-ink-soft) outline-none hover:bg-(--color-surface-3) hover:text-(--color-ink) focus-visible:shadow-(--shadow-focus) aria-[current=page]:bg-(--color-primario-soft) aria-[current=page]:font-medium aria-[current=page]:text-(--color-primario-ink) aria-[current=true]:font-medium aria-[current=true]:text-(--color-ink)"
     >
       {titulo}

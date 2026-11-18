@@ -26,7 +26,7 @@ export const guardarWebPublica = actionClient
       config: revalidarUrl === undefined ? undefined : { revalidar_url: revalidarUrl },
     })
     if (guardada.ok) {
-      revalidatePath(RUTAS.empresa)
+      revalidatePath(RUTAS.integracionesDeEmpresa)
     }
     return guardada
   })

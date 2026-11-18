@@ -17,7 +17,7 @@ export const crearMoneda = actionClient
     }
     const creada = await repositorioTiposCambio.crearMoneda(parsedInput)
     if (creada.ok) {
-      revalidatePath(RUTAS.empresa)
+      revalidatePath(RUTAS.monedasDeEmpresa)
     }
     return creada
   })

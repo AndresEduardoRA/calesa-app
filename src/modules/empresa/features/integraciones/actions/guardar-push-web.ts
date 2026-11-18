@@ -23,7 +23,7 @@ export const guardarPushWeb = actionClient
       activa: parsedInput.activa,
     })
     if (guardada.ok) {
-      revalidatePath(RUTAS.empresa)
+      revalidatePath(RUTAS.integracionesDeEmpresa)
     }
     return guardada
   })
