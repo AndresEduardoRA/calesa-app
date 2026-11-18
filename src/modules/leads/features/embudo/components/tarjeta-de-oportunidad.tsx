@@ -10,6 +10,7 @@ import {
   SufijoDeVisto,
   useVistoDeLista,
 } from '@/shared/ui/lista'
+import { manejadoresDelClic } from '@/shared/ui/lista/ir-desde-la-fila'
 import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
 import type { EtapaGuardada } from '../../../entities/embudo'
@@ -31,7 +32,9 @@ type Props = {
 
 // Una oportunidad en el kanban: título, de qué lead (lleva a su sección en la ficha, y es lo que marca «visto»: la ficha del lead se registra en el módulo leads), monto, vehículo,
 // desde cuándo está en la etapa y «Mover a…». Ganada o perdida lo dice con texto. El «⋯» del lead va arriba a la derecha, en su esquina
-// (una segunda columna de la grilla, sólo en la fila del título), como en toda tarjeta de la lista.
+// (una segunda columna de la grilla, sólo en la fila del título), como en toda tarjeta de la lista. Un clic en cualquier parte de la tarjeta
+// lleva a las oportunidades del lead en su ficha, como el enlace del lead (`manejadoresDelClic`, con `data-enlace-de-la-fila` en el enlace:
+// sin él, el clic recargaría la página); «Mover a…», el «⋯» y sus menús no navegan (`esClicPropio`), ni el clic que termina de elegir texto.
 export function TarjetaDeOportunidad({ tarjeta, etapas, enCurso, alMover, alPedirMotivo }: Props) {
   const { zonaHoraria } = useRegional()
   const visto = useVistoDeLista(tarjeta.lead.id)
@@ -40,7 +43,8 @@ export function TarjetaDeOportunidad({ tarjeta, etapas, enCurso, alMover, alPedi
     <article
       aria-label={tarjeta.titulo}
       data-visto={visto ?? undefined}
-      className={`grid grid-cols-[minmax(0,1fr)_auto] gap-2 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) p-3 ${CLASES_DE_VISTO}`}
+      className={`grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] gap-2 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) p-3 ${CLASES_DE_VISTO}`}
+      {...manejadoresDelClic({ href })}
     >
       <div className="col-start-1 row-start-1 flex items-start justify-between gap-2">
         <h3 className="text-(length:--text-sm) font-medium break-words text-(--color-ink)">
@@ -53,6 +57,7 @@ export function TarjetaDeOportunidad({ tarjeta, etapas, enCurso, alMover, alPedi
       </EsquinaDeAcciones>
       <Link
         href={href}
+        data-enlace-de-la-fila=""
         className="col-span-2 flex w-fit max-w-full items-baseline gap-1 text-(length:--text-sm) text-(--color-ink-soft) underline-offset-2 hover:underline"
       >
         {/* Un nombre sin espacios no se parte: se corta con «…» y el número queda a la vista. */}
