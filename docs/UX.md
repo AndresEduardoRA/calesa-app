@@ -94,7 +94,7 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
      o `?panel=vehiculo`; sin `leads.ver` o sin `vehiculos.ver` del origen, en su lugar «Para elegir el …, pídeselo a quien administra los
      roles.») y la insignia «Obligatorio» en su barra. Cambiar de origen recalcula la regla; «Ver como» aplica la del rol mirado. Si la regla cambió
      con la hoja abierta, el rechazo dice «Tu rol ahora pide el cliente (o el vehículo) para guardar en este origen.» con el mismo «Elegir…».
-3. **La hoja:** secciones en el orden declarado; cada monto en una **XCell** (`Tab` avanza, tipear abre edición, `Esc` cancela) con el tono
+3. **La hoja:** secciones en el orden declarado; cada monto en una **XCell** (`Tab` avanza, tipear abre edición, `Esc` cancela) con el color
    de su grupo, ayuda y ⚙ si el permiso lo da. Lo **sugerido** lleva un punto; sobrescrito queda **modificado** (anillo y ↺). Atajos (chips
    de año), **variante** (Moto, Auto Gasolina…), **interruptores** (habilitar fila, mostrar garantía). **Una celda que quien mira no puede
    ver no se dibuja ni llega**; una que no puede editar va con candado y su motivo. **Recalcula en la base** 150 ms después de la última
@@ -246,9 +246,28 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     Aprobar es lo de la cabecera (aviso con «Deshacer» 10 s, PT409 con quién y cuándo y «Recargar», «Sin conexión: no se aprobó…») y el bloque relee su primera
     página. Sin otras que quien mira vea, sin vehículo o con uno que no ve, no se dibuja. Esqueleto de tres filas; error «No pudimos cargar las cotizaciones de
     este vehículo.» con «Reintentar» (sin tumbar la página ni el resumen); el de «Ver más», «No se pudieron cargar más.». Angosto o al 200 %, cada fila en una
-    columna y los botones a todo el ancho. Las casillas de comparar llegan con «Comparar».
+    columna y los botones a todo el ancho. Cada fila lleva a la izquierda su casilla de comparar (44 px; «Comparar la n.º N»), también «Esta» y la aprobada:
+    **«Comparar»** va en la fila del título del bloque, apagado hasta tener 2 con «Elige 2 o 3 para comparar.» a su lado; con 3 las demás casillas se
+    apagan y dice «Puedes comparar hasta 3.». Abre «Comparar cotizaciones» con las elegidas en el orden de la lista y `returnTo` a la página de donde se
+    vino; tras aprobar o releer, las elegidas que ya no están se sueltan.
+  - **Comparar cotizaciones** — `/cotizaciones/comparar?ids=a,b[,c]&returnTo=` (pide sesión; cada una, `cotizaciones.ver` de su origen: lo decide la base).
+    2 o 3 del mismo vehículo, **lo guardado** de cada una (su versión de la fórmula, sus valores y su total, recortados al nivel de quien mira; sin
+    recálculo), en el orden de `ids` (la primera es la referencia; si no se pudo leer, la primera que se leyó). Arriba, «Comparar cotizaciones» y, debajo, el título del vehículo (si lo ve) y «Volver» (a
+    `returnTo` si es interno; si no, `/cotizaciones`). Una tabla con la **columna de etiquetas fija** y una columna por cotización: cabecera con «N.º N ·
+    título», autor · fecha · «Fórmula vN», insignias «Aprobada», «Final», «Vencida» y el total (`<Monto>`) con su modo; después una fila por sección del
+    diseño y una por nodo que quien mira ve, alineadas por nodo (el rótulo, el de la primera que lo tiene; el porcentaje de un par, su fila; lo que la
+    tarjeta suma aparte, en «Totales»). Lo que una versión no tiene o quien mira no ve en ella: «—» («No está en esta versión» para el lector). **Lo distinto
+    de la primera**: fondo de acento y ↑, ↓ o ≠ con «Más que la primera», «Menos que la primera» o «Distinta de la primera» para el lector (sin cifras en
+    `aria-label` ni `title`). Al pie de cada columna, **«Aprobar esta»** (como en «De este vehículo»: apagado con su motivo, un envío a la vez, «Aprobando…»;
+    al entrar la insignia «Aprobada» pasa a esa columna sin recargar, con «Deshacer» 10 s; PT409 con quién y cuándo y «Recargar»; «Sin conexión: no se
+    aprobó…») o, en la aprobada, su insignia; y «Abrir». `ids` mal formados, 1 o más de 3, repetidos, sin vehículo, de vehículos distintos o alguno que
+    no se ve: «Sólo se comparan 2 o 3 cotizaciones del mismo vehículo que puedas ver.» con «Volver», sin decir cuál. Esqueleto propio (`loading.tsx` y
+    `<Suspense>`); si falla la lectura de las marcas, el error de la pantalla con «Reintentar»; si falla una columna, «No pudimos cargar la cotización #N.»
+    con «Reintentar» en su cabecera y las demás siguen. En el celular y al 200 %, la tabla se desplaza de costado dentro de su caja con la pista de
+    desborde (cada columna de 10 rem o más; la de etiquetas, a lo sumo el 35 %) y la página no desborda; el pie queda bajo su columna.
 - **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila, «Abrir cotización», «De este vehículo» —ver
-  «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado— y debajo las
+  «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado; sus casillas y «Comparar» abren «Comparar cotizaciones» y «Volver»
+  regresa a este resumen, sin los filtros— y debajo las
   **pestañas** `?pestana=`: «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
   para guardarla, «Adjuntar»—, «Adjuntos» —los archivos y, en una final o con alguno, sus comprobantes de sólo lectura—, «Revisiones» y «Comentarios»; cada una se lee al elegirla, por
   cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
@@ -275,7 +294,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   papelera» (quien puede guardarla o, en una preventa, quien tiene `cotizaciones.moderar`; vuelve al listado con «Deshacer»). Bajo la cabecera, si
   el vehículo tiene otras que quien mira ve, «Hay 2 cotizaciones más de este vehículo · Ver» («Hay 1 cotización más…», «Hay más de 100…»): «Ver» salta al
   bloque (`#de-este-vehiculo`) con el foco en su título. Bajo la hoja, «De este vehículo» (se lee al acercarse; aprobar ahí pone al día la cabecera
-  sin refrescar la hoja; ver «Cotizaciones del lead y del vehículo») y después
+  sin refrescar la hoja; «Comparar» en su título abre «Comparar cotizaciones» con `returnTo` a esta página; ver «Cotizaciones del lead y del vehículo») y después
   «Comprobantes» (en una final o en una que ya tiene alguno): del más nuevo, «Vigente» o «Anulado» con quién, cuándo y motivo, hasta 20
   con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Estados en Flujo 2.
 - **Logística** — `/logistica` (`logistica.ver` en algún origen): la **bandeja del día** y la **cadena como gráfica**; en la URL: `?origen=` (orígenes con la logística encendida), `q` («dónde está»:
@@ -343,8 +362,16 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   no se puede leer). **Actividad reciente** (`ActividadReciente`, para una ficha; sola en `/actividad/reciente?entidad=&registro=`): los
   últimos 5 cambios del registro como frases, cada uno a su detalle en `/actividad`, y «Ver toda la actividad»; esqueleto, «Sin cambios en
   los últimos N días.» y error con «Reintentar»; sin `actividad.ver` no se dibuja.
-- **Configuración** — `/configuracion/*` (permiso de cada sección): hub + bloques: empresa, equipo, roles, orígenes, leads, cotización,
-  flujos, web, cola web, integraciones.
+- **Configuración** — `/configuracion/*` (permiso de cada sección): inicio + secciones, del registro `secciones.ts` (grupos «Empresa y equipo»
+  · «Ventas» · «Operación» · «Web»). Dentro de una sección (layout de `/configuracion`): a la izquierda el **menú de Configuración** desde 1024 px
+  y con 44 rem de contenedor (con el texto al 200 % pasa al selector), con las secciones que la persona puede abrir por grupo, la actual con
+  `aria-current="page"` y debajo sus sub-secciones; arriba «‹ Configuración» (al inicio) y, donde no se ve el menú, el **selector de sección**
+  (`<select>` nativo con su «Sección», por grupo, a 44 px en el celular; elegir navega y, con cambios sin guardar, pregunta). En el inicio no
+  van ni el menú, ni el selector, ni la vuelta. Un grupo sin secciones que abrir no se dibuja; sin ninguna, «No tienes permiso» y sin menú.
+  Equipo, Roles, Flujos y Empresa sólo se envuelven. **El inicio:** una tarjeta por grupo (`h2`) con, por sección, su título (el enlace), una
+  frase y **lo que falta**, en la sección donde se resuelve: «Falta publicar la fórmula de {origen}» (Cotización), «Falta configurar el flujo de
+  {origen}» (Flujos), «Falta activar apibara» una vez (Empresa); sólo de orígenes activos y lo que la persona puede hacer (no el paso de los
+  permisos), con su enlace al paso; hasta 3 y «Y N más». Llega después de las tarjetas; si no se puede leer, la tarjeta queda con su frase.
 - **Leads (config)** — `/configuracion/leads` (`leads.campos.gestionar` o `leads.configurar`): lista agrupada + panel lateral.
   `?seccion=campos` (`?campo=`), `origenes` (`?panel=nuevo-origen`/`editar-origen&origen=<id>`), `tipos`
   (`?panel=nuevo-tipo`/`editar-tipo&tipo=<id>`/`eliminar-tipo&tipo=<id>`), `seguimientos`, `embudo` (la plantilla: editor de etapas en la
@@ -360,7 +387,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `?seccion=niveles|formula|tarjeta|diseno|tonos|tablas|ajustes`, cada pestaña con sus permisos, Niveles primero y Ajustes al final.
   «Fórmula» con `?origen=` (los orígenes con la clave, también los inactivos), `?panel=publicar-formula`,
   `?panel=revertir-formula&version=<id>`, `?panel=descartar-borrador` y `?panel=editar-formula` (el editor en texto). «Diseño» con
-  `?origen=`. «Tonos» con `?panel=nuevo-tono`, `editar-tono&tono=<id>` y `eliminar-tono&tono=<id>`. «Tarjeta» con `?origen=`,
+  `?origen=`. «Colores» (`tonos`) con `?panel=nuevo-tono`, `editar-tono&tono=<id>` y `eliminar-tono&tono=<id>`. «Tarjeta» con `?origen=`,
   `?panel=publicar-tarjeta` y `?panel=descartar-plantilla`. «Tablas» con `?origen=`, `?tabla=<id>` (el editor) y `?panel=publicar-tabla`.
   Estados en las secciones «Cotización: …».
 - **Empresa** — `/configuracion/empresa` (`empresa.*`): bloques + `?seccion=empresa|monedas|integraciones|comprobantes` («Comprobantes»,
@@ -450,6 +477,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   abierto en peso normal; lo último lleva además borde de acento y «Último visto» (y también va en peso normal). «Visto» se dice con texto para el lector: nada
   depende sólo del peso. Con «Vistos» apagado, o sin saber aún qué se abrió, ninguna lista pone negrita por esto. En el chip de la agenda, «visto» lleva una
   tilde (y el texto para el lector) y lo nuevo no lleva nada: el fondo es de la clase y su etiqueta ya va en negrita, así que el peso no se distingue. Aduana y las notificaciones no marcan. `/perfil` › «Vistos»: marcar o no, recordar 7, 30, 90 días o 1 año, marcar o no el último.
+- **Barra de cambios sin guardar:** un formulario de página (no de un panel) muestra abajo, pegada (`sticky`, sin tapar el último campo),
+  «Tienes cambios sin guardar» · «Descartar» · «Guardar» al cambiar algo; salir con cambios (un enlace, un aviso, el selector de sección,
+  recargar o cerrar) pregunta «Tienes cambios sin guardar.» · «Descartar» · «Seguir editando». El «atrás» del navegador no pregunta.
 - **Avisos con acciones:** un aviso de error, advertencia o bloqueo que tiene salida la ofrece ahí mismo (de 1 a 3, la que destraba primero;
   sin permiso, a quién pedírselo) — `.claude/rules/ui.md` › «Avisos con acciones».
 - **Fechas de subasta:** en la zona de quien mira (`/perfil` › «Zona horaria»; sin elegir, la de la empresa), con la abreviatura («14:00
@@ -1066,9 +1096,9 @@ Configuración › Cotización (`?seccion=formula&origen=<id>`): ver, publicar, 
   «Recargar» (lo aplicado y no guardado se pierde); regla de la base, sin permiso, sin respuesta y otro error, cada uno con su mensaje. Lo
   que el diseño no muestra (una constante sin celda) se avisa: «Para publicar, el diseño de la hoja tiene que mostrar: «…». Puedes guardar
   igual.»; sin diseño, todavía no se puede publicar.
-- **Grupos:** con grupos, una tarjeta por grupo en el orden de la fórmula (hasta `TOPE_DE_LO_CARGADO`): etiqueta, id, plazo, tono, tipo de
+- **Grupos:** con grupos, una tarjeta por grupo en el orden de la fórmula (hasta `TOPE_DE_LO_CARGADO`): etiqueta, id, plazo, color, tipo de
   cambio (bucket), filas y «Editar». Sin grupos no se dibuja; no se suman ni quitan grupos (la plantilla de la tarjeta los nombra). El
-  formulario: etiqueta, plazo de pago (opcional), tono (del catálogo, leído al montarse; «Aplicar» espera a que llegue), tipo de cambio (el
+  formulario: etiqueta, plazo de pago (opcional), color (del catálogo, leído al montarse; «Aplicar» espera a que llegue), tipo de cambio (el
   bucket; con modos, cada modo elige el de cada bucket) y «Filas del grupo» con «Quitar» (sin grupo, una fila no entra en el total) y
   «Sumar una fila». Aplicar recalcula la vista previa y cuenta como cambio; un rechazo (`grupo_vacio`…) va a su tarjeta. Cada fila con
   grupo dice «Grupo: <etiqueta>».
@@ -1083,10 +1113,10 @@ descarta.
   la fórmula de <Origen>: la tarjeta se arma con sus grupos.» con «Ir a «Fórmula»».
 - **Arriba:** «Tarjeta de <Origen>» y de dónde nace (el borrador guardado, la versión publicada o los grupos de la fórmula) y, si hay
   publicada, su versión, fecha y nota.
-- **Avisos** (en este orden): lo corregido al abrir (un grupo que la fórmula ya no tiene se quita, uno nuevo se suma al final sin tono, la
-  etiqueta de un nodo sin lugar se quita; **no se guarda solo**), un tono que ya no está en el catálogo, «Con esto no se podría publicar:
+- **Avisos** (en este orden): lo corregido al abrir (un grupo que la fórmula ya no tiene se quita, uno nuevo se suma al final sin color, la
+  etiqueta de un nodo sin lugar se quita; **no se guarda solo**), un color que ya no está en el catálogo, «Con esto no se podría publicar:
   <motivo>» (no apaga «Guardar») y lo que pasó al guardar.
-- **Bloques:** «Grupos» (el tono de cada uno; «Del grupo (<tono>)» quita la clave; uno que ya no está sale «<clave> (ya no está)»),
+- **Bloques:** «Grupos» (el color de cada uno; «Del grupo (<color>)» quita la clave; uno que ya no está sale «<clave> (ya no está)»),
   «Total» (etiqueta y leyenda), «Filas» (plegado; etiqueta y leyenda de cada nodo, «Buscar fila», hasta 500 con aviso) y «Pie y columnas»
   (plegado: nota, logo, leyenda, plazo, tipo de cambio). Cada campo dice «n de <tope>» (sin `maxLength`) y su motivo junto a él.
 - **Vista previa en vivo:** «Vista previa de la tarjeta» con «Cifras de ejemplo.» sigue a la plantilla de trabajo (guardada o no); desde
@@ -1172,11 +1202,11 @@ aspecto en la rejilla de 12 y su vista previa.
 - **Aspecto** (un bloque «Aspecto» plegado en cada pieza; no se escribe el valor por defecto, se quita): por sección, «Ancho en la hoja»
   («Automático (la mitad, si hay lugar)» y de 12 a 1 columna), «Alto» (Automático | 2, 3 o 4 filas), «Relleno» (Chico | Medio | Grande),
   «Separación entre celdas» (Chica | Media | Grande), «Densidad» (Compacta | Cómoda), «Letra» (Chica | Normal | Grande), «Énfasis»
-  (Normal | Fuerte) y «Color» («Sin color» y los tonos del catálogo, con su muestra); por ítem, «Alto», «Letra» y «Énfasis» (y «Ancho» en
+  (Normal | Fuerte) y «Color» («Sin color» y los colores del catálogo, con su muestra); por ítem, «Alto», «Letra» y «Énfasis» (y «Ancho» en
   los que no son celda); en la cabecera, «Color», «Relleno», «Letra» y «Énfasis». **El alto de una pieza de 12 columnas** se apaga con «Con 12
-  columnas ocupa su fila: el alto no cambia nada.». Un tono que el catálogo ya no tiene se ve «<clave> (no está en el catálogo)» y el aviso
-  dice «La sección «base» usa un tono que no está en el catálogo.» (publicar lo rechaza); **sin catálogo** («Color» apagado con «No se pudo
-  leer el catálogo de tonos.») nada se marca y la vista previa va sin colores. Un valor fuera de su escala (sólo si llegara de la base) va
+  columnas ocupa su fila: el alto no cambia nada.». Un color que el catálogo ya no tiene se ve «<clave> (no está en el catálogo)» y el aviso
+  dice «La sección «base» usa un color que no está en el catálogo.» (publicar lo rechaza); **sin catálogo** («Color» apagado con «No se pudo
+  leer el catálogo de colores.») nada se marca y la vista previa va sin colores. Un valor fuera de su escala (sólo si llegara de la base) va
   bajo su select (`aria-invalid`) y en el aviso. Un diseño viejo se abre con «Automático», «Medio», «Cómoda», «Normal» y su ancho con
   nombre por su número.
 - **Cabecera de la hoja:** «Ofrecer «Ver total en moneda local»» (la hoja lo muestra apagado) y los modos de tipo de cambio: nombre, «Tipo
@@ -1198,29 +1228,36 @@ aspecto en la rejilla de 12 y su vista previa.
   doble. Con cifras de prueba (datos en 0; si la fórmula aún no calcula, se dibuja sin cifras). Dibuja el orden y el aspecto en vivo con la
   misma rejilla que la hoja. Es la de quien lo ve todo y sólo se ve: sin
   foco, sin acciones, sin tocar la URL de la hoja. Las secciones «Avanzado» no se dibujan y se dice cuántas. Diseño vacío: «No hay nada que
-  dibujar.» Su código se pide al abrirla (`diferido()`); un tono que no llega deja la hoja sin colores.
+  dibujar.» Su código se pide al abrirla (`diferido()`); un color que no llega deja la hoja sin colores.
 - **200 %:** la fila de campos de una celda va en columna bajo `@container` estrecho (el resto, `.claude/rules/ui.md`).
 
-### Cotización: tonos (estados propios)
+### Cotización: colores (estados propios)
 
-Configuración › Cotización (`?seccion=tonos`): el catálogo de colores de los grupos de una fórmula. Es de **toda la empresa**, no de un
-origen, y **se guarda al instante** (cada tono es una escritura propia; no entra en el borrador del diseño).
+Configuración › Cotización › «Colores» (`?seccion=tonos`: la clave y las URL conservan el nombre técnico): el catálogo de colores de la
+empresa, que nombran los grupos de una fórmula y las secciones y la cabecera del diseño. Es de **toda la empresa**, no de un origen, y **se
+guarda al instante** (cada color es una escritura propia; no entra en el borrador del diseño).
 
 - **Quién entra:** `cotizaciones.configurar` en algún origen (la pestaña va después de «Diseño»). Leer, cualquiera con sesión; la base
-  pide la clave en cada escritura.
-- **Lista:** por nombre, hasta 24 (tope de la base). Fila: nombre, clave en texto suave (no cambia nunca: la nombran los grupos), dos
-  muestras «Aa» («Claro» y «Oscuro», con los colores de ese tema sea cual sea el de quien mira) y «Editar» y «Eliminar» con el nombre en el
-  `aria-label`. No se muestra cuántos hay.
-- **Nuevo y editar** (modal): «Nombre» (≤ 40, único) y, por tema claro y oscuro, «Fondo», «Borde» y «Tinta» (selector de color y campo
-  `#rrggbb` con el mismo valor). Debajo, la muestra y el contraste de la tinta sobre el fondo **en vivo** (cumple AA o, en rojo, cuánto da
-  y cuánto hace falta; truncado a un decimal, como la base). **«Guardar» no se apaga por el AA:** al enviar, el motivo queda junto al campo
-  y nada sale; lo que la base rechaza (nombre repetido, conflicto) vuelve junto a su campo o como aviso. Sin cambios, «Guardar» cierra sin
-  escribir; cerrar con algo escrito pregunta; un conflicto conserva lo escrito con «Recargar».
-- **Eliminar** (`<Confirmar>`): la lista no sabe cuáles están en uso; si alguna versión de una fórmula lo nombra, la base responde cuál, sale
-  como aviso y el diálogo se cierra. No se deshace.
-- **Vacío** con «Nuevo tono»; **con 24**, «Nuevo tono» apagado con su motivo. `EsqueletoFormulario`; una lectura que falla sube al
-  «Reintentar» de la ruta. Sin conexión lo escrito queda y sale al volver.
-- **200 %:** cada fila apila nombre, muestras y botones; el modal es `ModalDeFormulario`.
+  pide la clave en cada escritura (42501).
+- **Arriba:** el título «Colores» y su acción principal, «Nuevo color» (botón primario). Sin subtítulo.
+- **Lista:** por nombre, hasta 48 (tope de la base). Fila: nombre, clave en texto suave (no cambia nunca: la nombran los grupos), el hex como
+  lo pinta la tarjeta (de fondo, con su texto y el hex en mono) y las dos muestras de la hoja «Aa» («Claro» y «Oscuro», con los colores de
+  ese tema sea cual sea el de quien mira); «Editar» a la vista y un «⋯» («Más acciones de «nombre»») con «Eliminar». No se muestra cuántos hay.
+- **Nuevo y editar** (modal «Nuevo color» o «Editar color»; al editar, «La clave «x» no cambia: la nombran los grupos.»): «Nombre» (≤ 40,
+  único) y «Color» (selector y campo `#rrggbb` con el mismo valor; nace en `#31869b`). Debajo, **en vivo**: «En la hoja», las muestras
+  «Claro» y «Oscuro» con lo que derivará la base (contraste AA garantizado, no se avisa), y «En la tarjeta», el hex con el texto que se lee
+  («Así se ve») y «Con texto negro: n:1» y «Con texto blanco: n:1» (truncado a un decimal). Si ninguno llega a 4,5:1, un aviso suave «Con
+  este color el texto de la tarjeta se lee con dificultad.» que **no** frena el guardado. Con el hex a medio escribir no se dibuja ninguna
+  muestra. Un hex mal escrito: «Escríbelo como #rrggbb, por ejemplo #31869b.» junto a «Color» (la pantalla y la base) y nada sale; el nombre
+  vacío, largo o repetido, junto a «Nombre». Sin cambios, «Guardar» cierra sin escribir; cerrar con algo escrito pregunta; un conflicto
+  conserva lo escrito con «Otra persona cambió este color mientras lo editabas.» y «Recargar»; si otra persona lo eliminó, «Ese color ya no
+  existe. Recarga para ver cómo quedó.»
+- **Eliminar** (desde el «⋯», `<Confirmar>` «Eliminar el color «x»»): la lista no sabe cuáles están en uso; si alguna versión de una fórmula
+  lo nombra, la base responde cuál (23503), sale como aviso y el diálogo se cierra. No se deshace.
+- **Vacío** «Todavía no hay colores. Crea el primero.» con «Nuevo color»; **con 48**, «Nuevo color» apagado con su motivo («Ya hay 48
+  colores, que es el máximo. Elimina uno que ningún grupo use.»). `EsqueletoFormulario`; una lectura que falla sube al «Reintentar» de la
+  ruta. Sin conexión lo escrito queda y sale al volver.
+- **200 %:** cada fila apila nombre, muestras y acciones; el modal es `ModalDeFormulario`.
 
 ### Leads: listado (estados propios)
 

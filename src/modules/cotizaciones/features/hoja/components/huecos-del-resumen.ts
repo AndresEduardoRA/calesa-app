@@ -28,12 +28,13 @@ export type PropsDeLosComprobantesDelResumen = {
 export type AprobarEnDelResumen = 'todos' | readonly string[]
 
 // «De este vehículo» en el resumen: el vehículo de la cotización abierta (si quien mira lo ve), esa cotización («Esta»), dónde aprueba quien mira y qué hacer tras
-// aprobar (refrescar el listado). Con `conTitulo`, dibuja su propio título; las casillas de comparar quedan apagadas hasta T311.
+// aprobar (refrescar el listado). Con `conTitulo`, dibuja su propio título; con `conCasillas`, las casillas y «Comparar», que vuelve a `volverA`.
 export type PropsDeEsteVehiculoEnElResumen = {
   vehiculo: { id: string; titulo: string | null }
   cotizacionActual?: string
   aprobarEn: AprobarEnDelResumen
-  conCasillas?: false
+  conCasillas?: boolean
+  volverA?: string
   alCambiar?: () => void
   conTitulo?: boolean
 }

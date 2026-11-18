@@ -86,6 +86,6 @@ describe('contextoDeValidacion', () => {
 
 describe('TOPE_DE_TONOS', () => {
   it('es el de la base', () => {
-    expect(TOPE_DE_TONOS).toBe(24)
+    expect(TOPE_DE_TONOS).toBe(48)
   })
 })

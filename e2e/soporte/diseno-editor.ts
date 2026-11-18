@@ -214,8 +214,8 @@ export function publicarLaVersionConAspecto(origenId: string, tono: string): voi
 // Un tono propio del recorrido (los colores del amarillo de la semilla, que pasan el AA). Se borra después que las fórmulas que lo nombran.
 export function crearTonoDePrueba(clave: string): void {
   sql(`
-    insert into public.tonos (clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
-    values (${literal(clave)}, ${literal(`E2E ${clave}`)}, '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
+    insert into public.tonos (clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+    values (${literal(clave)}, ${literal(`E2E ${clave}`)}, '#fff7d6', '#fff7d6', '#e9d27a', '#1b2130', '#3e3f3c', '#797251', '#f2f4f8')
     on conflict (clave) do nothing`)
 }
 export function borrarTonoDePrueba(clave: string): void {

@@ -9,8 +9,10 @@ export const SECCION_DE_COTIZACION = {
   clave: 'cotizacion',
   titulo: 'Cotización',
   descripcion:
-    'La fórmula, el diseño y las tablas de referencia de cada origen, la vigencia y los niveles de acceso de la hoja.',
+    'La fórmula, el diseño y las tablas de cada origen, la vigencia y los niveles de acceso.',
   ruta: RUTAS.configuracionDeCotizacion,
   Icono: CalculatorIcon,
   permisos: ['equipo.roles.ver', 'equipo.roles.gestionar', 'cotizaciones.configurar'],
+  grupo: 'ventas',
+  subsecciones: [],
 } as const satisfies SeccionDeConfiguracion

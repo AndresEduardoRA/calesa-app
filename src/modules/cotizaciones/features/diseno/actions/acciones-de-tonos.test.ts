@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Resultado } from '@/shared/lib/errores'
-import { MOTIVO_SIN_PERMISO_DE_TONOS, coloresDeUnTonoNuevo } from '../../../entities/diseno/tonos'
+import { MOTIVO_SIN_PERMISO_DE_TONOS } from '../../../entities/diseno/tonos'
 
 const ID = '11111111-1111-4111-8111-111111111111'
 const PERSONA = '55555555-5555-4555-8555-555555555555'
@@ -45,12 +45,11 @@ const { crearTono } = await import('./crear-tono')
 const { guardarTono } = await import('./guardar-tono')
 const { eliminarTono } = await import('./eliminar-tono')
 
-const colores = coloresDeUnTonoNuevo()
-const lista = { id: ID, actualizadoEn: HORA, repetido: false, lista: { tope: 24, tonos: [] } }
+const lista = { id: ID, actualizadoEn: HORA, repetido: false, lista: { tope: 48, tonos: [] } }
 const configura = [{ clave: 'cotizaciones.configurar', origen_id: null, alcance: 'todos' as const }]
 
 const pedidos = {
-  crear: () => crearTono({ id: ID, nombre: 'Dorado', colores }),
+  crear: () => crearTono({ id: ID, nombre: 'Dorado', hex: '#31869b' }),
   guardar: () => guardarTono({ id: ID, actualizadoEnEsperado: HORA, cambios: { nombre: 'Oro' } }),
   eliminar: () => eliminarTono({ id: ID, actualizadoEnEsperado: HORA }),
 }
@@ -62,7 +61,7 @@ beforeEach(() => {
   h.revalidatePath.mockClear()
 })
 
-describe('las actions del catálogo de tonos', () => {
+describe('las actions del catálogo de colores', () => {
   it('T4 · sin cotizaciones.configurar ninguna llama al repositorio ni revalida', async () => {
     h.permisos = [{ clave: 'cotizaciones.ver', origen_id: null, alcance: 'todos' }]
     for (const pedir of Object.values(pedidos)) {
@@ -95,20 +94,20 @@ describe('las actions del catálogo de tonos', () => {
   it('T4 · el motivo de un campo viaja junto a él', async () => {
     h.respuesta = {
       ok: false,
-      error: { codigo: 'validacion', mensaje: 'En el tema claro la tinta…' },
-      campo: 'claro',
+      error: { codigo: 'validacion', mensaje: 'Escríbelo como #rrggbb, por ejemplo #31869b.' },
+      campo: 'hex',
     }
     const respuesta = await pedidos.crear()
     expect(respuesta.data).toEqual({
       ok: false,
-      error: { codigo: 'validacion', mensaje: 'En el tema claro la tinta…' },
-      porCampo: { claro: 'En el tema claro la tinta…' },
+      error: { codigo: 'validacion', mensaje: 'Escríbelo como #rrggbb, por ejemplo #31869b.' },
+      porCampo: { hex: 'Escríbelo como #rrggbb, por ejemplo #31869b.' },
     })
   })
 
   it('T4 · un id que no es guid y unos cambios con una clave de más se rechazan en Zod', async () => {
     const malos = [
-      () => crearTono({ id: 'x', nombre: 'Dorado', colores }),
+      () => crearTono({ id: 'x', nombre: 'Dorado', hex: '#31869b' }),
       () => guardarTono({ id: 'x', actualizadoEnEsperado: HORA, cambios: {} }),
       () =>
         guardarTono({
@@ -118,7 +117,14 @@ describe('las actions del catálogo de tonos', () => {
         }),
       () => guardarTono({ id: ID, actualizadoEnEsperado: '', cambios: { nombre: 'Oro' } }),
       () => eliminarTono({ id: 'x', actualizadoEnEsperado: HORA }),
-      () => crearTono({ id: ID, nombre: 'Dorado', colores: { claro: colores.claro } as never }),
+      () => crearTono({ id: ID, nombre: 'Dorado', hex: '#31869b'.repeat(4) }),
+      // Los seis colores de antes ya no entran: la hoja la deriva la base.
+      () =>
+        guardarTono({
+          id: ID,
+          actualizadoEnEsperado: HORA,
+          cambios: { colores: {} } as unknown as { nombre: string },
+        }),
     ]
     for (const malo of malos) {
       const respuesta = await malo()

@@ -12,4 +12,6 @@ export const SECCION_DE_FLUJOS = {
   ruta: RUTAS.configuracionDeFlujos,
   Icono: WorkflowIcon,
   permisos: ['flujos.configurar', 'repuestos.configurar', 'logistica.catalogos.gestionar'],
+  grupo: 'operacion',
+  subsecciones: [],
 } as const satisfies SeccionDeConfiguracion

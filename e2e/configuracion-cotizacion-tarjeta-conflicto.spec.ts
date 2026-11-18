@@ -96,10 +96,10 @@ test('E5: un tono fuera del catálogo y un grupo que ya no está se avisan; «De
   await abrirTarjeta(page)
   await expect(page.getByText('El grupo «viejo» ya no está en la fórmula: se quitó.')).toBeVisible()
   await expect(
-    page.getByText(/El tono «fantasma» del grupo «Compra» ya no está en el catálogo/),
+    page.getByText(/El color «fantasma» del grupo «Compra» ya no está en el catálogo/),
   ).toBeVisible()
-  await page.getByLabel('Tono de «Compra»').selectOption('')
-  await expect(page.getByText(/El tono «fantasma»/)).toHaveCount(0)
+  await page.getByLabel('Color de «Compra»').selectOption('')
+  await expect(page.getByText(/El color «fantasma»/)).toHaveCount(0)
   await guardar(page).click()
   await expect(page.getByText('Se guardó el borrador.')).toBeVisible()
   await page.reload()

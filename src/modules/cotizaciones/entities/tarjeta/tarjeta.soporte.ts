@@ -3,8 +3,8 @@
 
 const tono = (clave: string, fondo: string) => ({
   clave,
-  claro: { fondo, borde: '#999999', tinta: '#111111' },
-  oscuro: { fondo: '#222222', borde: '#666666', tinta: '#eeeeee' },
+  hex: fondo,
+  tarjeta: { fondo, borde: '#999999', tinta: '#111111' },
 })
 
 export const crudaDeLaTarjeta = (mas: Record<string, unknown> = {}) => ({

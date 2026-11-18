@@ -106,8 +106,8 @@ const MENSAJES: Record<ReglaDeDiseno, (d: DatosDeRechazoDeDiseno) => string> = {
   nodo_sin_seccion: (d) => `${q(d.donde)} no está en ninguna sección del diseño.`,
   tono_inexistente: (d) =>
     d.pieza === 'cabecera'
-      ? 'La cabecera usa un tono que no está en el catálogo.'
-      : `${d.pieza === 'seccion' ? 'La sección' : 'El grupo'} ${q(d.donde)} usa un tono que no está en el catálogo.`,
+      ? 'La cabecera usa un color que no está en el catálogo.'
+      : `${d.pieza === 'seccion' ? 'La sección' : 'El grupo'} ${q(d.donde)} usa un color que no está en el catálogo.`,
 }
 
 export function rechazoDeDiseno(

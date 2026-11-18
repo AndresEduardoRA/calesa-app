@@ -6,7 +6,7 @@ const etiqueta = (g: string) => (g === 'compra' ? 'Compra' : g)
 describe('avisosDeTonos', () => {
   it('un tono ausente da su aviso con el grupo y el tono', () => {
     expect(avisosDeTonos([{ grupo: 'compra', tono: 'rojo' }], ['verde'], etiqueta)).toEqual([
-      'El tono «rojo» del grupo «Compra» ya no está en el catálogo: la tarjeta usa el tono del grupo. Elige otro o «Del grupo».',
+      'El color «rojo» del grupo «Compra» ya no está en el catálogo: la tarjeta usa el color del grupo. Elige otro o «Del grupo».',
     ])
   })
   it('sin tono elegido o con uno que está, nada', () => {

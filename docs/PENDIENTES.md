@@ -106,6 +106,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 ### Rendimiento y escala
 
 - **[T17]** Retirar `vehiculo_interesados()`: la app ya no la llama (el bloque «Relacionados» lee `vehiculo_relacionados()`); `humo.sql` y `numero-global.sql` la siguen probando — migración que la quite y sus sondas.
+- **[T322]** El inicio de Configuración lee lo que falta con `origenes_resumen()`, que cuenta vehículos y cotizaciones que no usa — una lectura de los pasos sin contar si con volumen pesa.
 - **[4-79]** `origenes_resumen()` cuenta con `count(*)` exacto vehículos y cotizaciones por origen, contra la regla de escala — `limit n + 1` por origen con `conteoCorto()`, o quitar el número.
 - **[4-67]** El conteo de exportar (`contarLeadsHasta`) de una cartera recién sembrada de 5.001 elige `Seq Scan on leads` tras `analyze` (≈ 3 s) — cierre: páginas sin seq scan, que no crecen y bajo 50 ms en `db:medir:volumen`.
 - **[4-77]** Cada lectura con la policy de `cotizaciones` paga ≈ 160–240 buffers fijos (`mis_permisos()`), sin reproducir — causa sin medir; arreglarlo toca una `security definer` de todas las policies.
@@ -139,7 +140,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 - **[4-45]** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso real (`moneda_mostrar` sólo viaja por `cotizaciones_listado()`) — migración que la recree sin ellas, con su medición y `db:types`.
 - **[—]** `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` siguen en `esquemaDelServidor` (`src/shared/config/esquemas.ts`) y en `.env.example`, pero sólo los lee la función `push` — dejarlos sólo en `esquemaDeLasFunciones`.
-- **[—]** Copias que deberían subir al núcleo o a `shared`: el esquema de la nota de publicar, `TOPE_DE_TONOS`, `FILAS_POR_PEDIDO`, `MARCAS_DE_GESTORES`, `valorTipeado`, `diasParaLaPurga`/`textoDePurga`, las lecturas de tonos, `normalizar` de la XCell y la subida por hash a bucket privado.
+- **[—]** Copias que deberían subir al núcleo o a `shared`: el esquema de la nota de publicar, `FILAS_POR_PEDIDO`, `MARCAS_DE_GESTORES`, `valorTipeado`, `diasParaLaPurga`/`textoDePurga`, las lecturas de tonos, `normalizar` de la XCell y la subida por hash a bucket privado.
 - **[—]** «Ver comprobante» duplicado en repuestos y logística (`ver-comprobante.ts` y `useComprobante.ver`); `XCell` no tiene `emptyLabel`.
 - **[—]** Las guardas de áreas (`areas-de-cotizaciones`, `-flujos`, `-logistica`, `areas-b/areas-de-web`, `areas-c/areas-de-repuestos`) son cinco copias de la misma lógica, y los registros de `<Confirmar>`, `<Drawer>` y RPC paginadas están partidos en `areas-b/`, `areas-c/`, `*-formula.ts` y `*-papelera.ts` — unificar en una guarda parametrizada y un registro por módulo.
 - **[—]** Repuestos sube imágenes con `subirPorHash` desde el hook — debería ir a `infra/items/imagenes.client.ts`.

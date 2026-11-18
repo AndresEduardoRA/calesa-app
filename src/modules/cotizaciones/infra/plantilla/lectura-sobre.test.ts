@@ -67,6 +67,7 @@ const filaFormula = {
 const filaDeTono = (clave: string, nombre: string, c: string) => ({
   clave,
   nombre,
+  hex: `#${c}1`.padEnd(7, '0'),
   claro_fondo: `#${c}1`.padEnd(7, '0'),
   claro_borde: `#${c}2`.padEnd(7, '0'),
   claro_tinta: `#${c}3`.padEnd(7, '0'),
@@ -75,17 +76,19 @@ const filaDeTono = (clave: string, nombre: string, c: string) => ({
   oscuro_tinta: `#${c}6`.padEnd(7, '0'),
 })
 const FILAS_DE_TONOS = [filaDeTono('verde', 'Verde', 'a'), filaDeTono('azul', 'Azul', 'b')]
-// Los seis colores de la base llegan al editor como `claro` y `oscuro` (4.19-4).
+// El hex y los seis colores de la hoja llegan al editor como `hex`, `claro` y `oscuro` (4.19-4).
 const TONOS = [
   {
     clave: 'verde',
     nombre: 'Verde',
+    hex: '#a10000',
     claro: { fondo: '#a10000', borde: '#a20000', tinta: '#a30000' },
     oscuro: { fondo: '#a40000', borde: '#a50000', tinta: '#a60000' },
   },
   {
     clave: 'azul',
     nombre: 'Azul',
+    hex: '#b10000',
     claro: { fondo: '#b10000', borde: '#b20000', tinta: '#b30000' },
     oscuro: { fondo: '#b40000', borde: '#b50000', tinta: '#b60000' },
   },

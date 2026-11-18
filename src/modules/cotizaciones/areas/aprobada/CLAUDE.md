@@ -34,7 +34,20 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
   dónde aprueba quien mira (`aprobarEn`, de `origenesCon`) y `motivoParaNoAprobarEsta()` da el motivo (el permiso del origen y después inválida, como la base).
   Aprobar usa `aprobarLaCotizacion()` (su `alCambiar` recibe además el id que quedó aprobado); tras entrar o deshacer el bloque relee su primera página y
   avisa a las otras islas del vehículo (`hooks/aprobada-del-vehiculo.ts`: `avisarAprobada()`, `useAlCambiarLaAprobada()`), así «Aprobar» de la cabecera se
-  pone al día sin refrescar la hoja. `pantallas/aprobada-de-este-vehiculo.ts` presta la isla a otra pantalla (la ficha del vehículo).
+  pone al día sin refrescar la hoja. `pantallas/aprobada-de-este-vehiculo.ts` presta la isla a otra pantalla (la ficha del vehículo). **Las casillas**
+  (`conCasillas` con `volverA`): una por fila (`casilla-de-comparar.tsx`) y «Comparar» en la fila del título (`boton-comparar.tsx`), con la lógica pura en
+  `entities/aprobada/eleccion-para-comparar.ts` (hasta 3, en el orden de la lista, se sueltan las que ya no están). En la guardada el h2 lo dibuja el servidor con una ranura vacía al lado
+  (`ID_DE_LA_RANURA_DE_COMPARAR`) y la isla pone «Comparar» ahí con un portal (`ranuraDeComparar`): el título nunca se vuelve a montar (el foco del «Ver»
+  sigue en él) y las casillas y el botón viajan sólo en el chunk diferido.
+
+- **Comparar cotizaciones** (`/cotizaciones/comparar`, `pantallas/aprobada-comparar.ts`): `leerParaComparar(ids)` (`infra/aprobada/para-comparar.ts`) lee en
+  paralelo una `cotizacion_hoja_guardada` por id (sin `cotizacion_evaluar`) y las marcas de las ≤ 3 (`COLUMNAS_PARA_COMPARAR`: vehículo, origen, estado,
+  autor, aprobada); una columna que falla lleva su error y las demás siguen, y si fallan las marcas falla la página. `veredictoDeComparar()` dice si se
+  comparan (ningún 42501, la marca de cada una, un solo vehículo) y `compararCotizaciones()` (`entities/aprobada/comparar.ts` y `comparar-alineacion.ts`)
+  arma en el servidor el modelo plano: las cabeceras y las filas alineadas por nodo (sección del diseño, celda y su porcentaje, subtotal, variante por su
+  etiqueta, interruptor «Sí»/«No», lo aparte en «Totales»; «falta» si la versión no lo trae o no viene su valor) con la diferencia contra la primera
+  columna leída. `TablaDeComparar` (columna de etiquetas fija, desplazamiento lateral con la pista) guarda la aprobada en su estado: `useAprobarEsta` (su
+  `alCambiar` recibe el id que quedó aprobado) la mueve sin recargar; «Reintentar» de una columna es `router.refresh()`.
 
 - **El listado** (`pantallas/aprobada-listado.ts`): «Aprobar» del «⋯» de cada fila llama a `aprobarLaCotizacion()` con la versión de la página; el listado no tiene lo
   tipeado de una hoja, así que `alCambiar` refresca la página (la anterior aprobada del vehículo deja de serlo). No se ofrece en la que ya es la aprobada.
