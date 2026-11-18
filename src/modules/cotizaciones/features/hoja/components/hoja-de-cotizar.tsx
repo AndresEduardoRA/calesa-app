@@ -202,6 +202,8 @@ function ColumnaDeLaHoja({
         verTotalBs={h.verTotalBs}
         alCambiarVerTotalBs={h.alCambiarVerTotalBs}
         deshabilitado={soloLectura}
+        origen={hoja.origen.nombre}
+        formula={hoja.formula}
       />
       <SeccionesDeLaHoja
         secciones={secciones}

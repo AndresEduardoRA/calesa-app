@@ -10501,6 +10501,16 @@ export type Database = {
         Returns: string
       }
       flujo_regla_impacto: { Args: { p_flujo: string; p_regla: string }; Returns: Json }
+      formula_cambiar_cabecera: {
+        Args: {
+          p_modo_por_defecto: string
+          p_modos_visibles: string[]
+          p_origen: string
+          p_publicada_esperada?: string
+          p_ver_total_bs_por_defecto: boolean
+        }
+        Returns: string
+      }
       formula_cambiar_constante: {
         Args: { p_nodo: string; p_origen: string; p_publicada_esperada?: string; p_valor: number }
         Returns: string

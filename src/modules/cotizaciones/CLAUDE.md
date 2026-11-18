@@ -69,8 +69,9 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   núcleo (`entities/ruta-de-comparar.ts`): los usan «De este vehículo» y la lista agrupada.
 - La hoja guarda en la URL lo que abre (se borra al guardar): `?panel=avanzado`, `?panel=vista-previa` (la tarjeta; sólo con `<ProveedorDeLaTarjeta>`,
   también para quien sólo ve; en una guardada dibuja lo guardado), `?ayuda=texto|tabla&nodo=<id>` (sólo lectura; la URL no abre lo que la hoja no dibuja)
-  y, con el proveedor del área, `?ajuste=celda&nodo=<id>` (el ⚙, también dentro de «Avanzado»).
-- `index.ts`: `recalcularAlAbrir()` va DESPUÉS de leer la hoja (4-28), con `modoInicial()` (el primer modo del diseño); `contarCotizacionesDelVehiculo()`
+  y, con el proveedor del área, `?ajuste=celda&nodo=<id>` (el ⚙, también dentro de «Avanzado») y `?ajuste=cabecera` (el ⚙ de la cabecera: «Configuración por
+  defecto de <Origen>», junto a los modos; sólo con `cabecera.ajustes` de la base y el hueco `AjusteDeLaCabecera` lleno).
+- `index.ts`: `recalcularAlAbrir()` va DESPUÉS de leer la hoja (4-28), con `modoInicial()` (el modo por defecto del diseño o, sin él, el primero); `contarCotizacionesDelVehiculo()`
   («Cotizado (n)») es acotado y con la RLS de quien mira; `rutaDeLaHoja()` la usan «Cotizar» de `/vehiculos` y de `/leads/[id]`;
   `datosDelVehiculoDeLaHoja(hoja)` dice qué campo del vehículo casa con qué tabla (qué se elige lo decide `vehiculos`). Lo consumen `logistica`, `chat`,
   `buscador`, `web` (precio público), `tablero`.
@@ -167,7 +168,8 @@ Lo que un área llena en una pantalla del núcleo es un **hueco** (tipos sin có
 por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componentes: no se dibuja nada.
 
 - **La hoja** (`HuecosDeLaHoja`, `pantallas/formula-hoja.ts`): `EnlaceSinPublicar` (el enlace de «Falta publicar la fórmula») y `Proveedor`, que enciende
-  el ⚙ por `ContextoDelAjuste`: sin él ninguna celda lo dibuja ni se llama ningún hook del ajuste. La base dice qué celda lo lleva (`ajustes`);
+  el ⚙ por `ContextoDelAjuste` (`{ Ajuste, AjusteDeLaCabecera }`: el de cada celda y el de la cabecera): sin él ninguna celda lo dibuja ni se llama ningún hook del
+  ajuste. Los campos «Por defecto» de la cabecera son del núcleo (`features/hoja/components/por-defecto/`): los usan el ⚙ de la cabecera y el editor del diseño. La base dice qué celda lo lleva (`ajustes`);
   `<LugarDelAjuste>` se monta con las secciones principales y también **dentro del modal «Avanzado»**, como la ayuda.
 - **La guardada** (`HuecosDeLaGuardada`): `Acciones` (cabecera, tras «Revisiones»), `Insignias` (cabecera, tras la clase y la vigencia), `BajoLaCabecera`
   (entre la cabecera y la hoja: la línea de «De este vehículo») y `Debajo` (bajo la hoja, fuera del proveedor del ⚙). Los llenan
@@ -223,8 +225,8 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 `cotizaciones_comentarios`, `cotizaciones_adjuntos`, `cotizaciones_reportes`, `cotizaciones_favoritos`, `cotizaciones_aprobadas`, `cotizaciones_portadas`, `comprobantes`,
 `comprobantes_contadores`, `comprobantes_ajustes`.
 
-RPC: `formula_guardar_borrador`, `formula_publicar`, `formula_descartar_borrador`, `formula_cambiar_constante` y `formula_revertir` (publican la N+1 desde
-la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las filas, sube la versión y publica la N+1 de cada fórmula que la usa),
+RPC: `formula_guardar_borrador`, `formula_publicar`, `formula_descartar_borrador`, `formula_cambiar_constante`, `formula_cambiar_cabecera` (el ⚙ de la
+cabecera: modo por defecto, «Ver total» por defecto y modos visibles) y `formula_revertir` (publican la N+1 desde la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las filas, sube la versión y publica la N+1 de cada fórmula que la usa),
 `tono_crear|guardar|eliminar` (los colores), `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
 `validar_plantilla`, `evaluar_formula`, `cotizacion_evaluar`, `cotizacion_hoja`, `cotizacion_tabla`, `cotizacion_tarjeta`, `cotizacion_crear`,
 `cotizacion_guardar` (`p_titulo_manual` al final), `cotizaciones_listado`, `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
