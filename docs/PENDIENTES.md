@@ -198,6 +198,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[4-50]** El resumen fijo de la hoja no cabe entero al 200 % con la página arriba (empeoró con la barra del cliente).
 - **[T312]** En una celda angosta de la hoja (media sección con el resumen al costado, 1280 px) el % y el ⚙ de un par bajan a la fila de abajo, a la
   derecha del monto; V1 los dejaba en la misma fila. Medir si con la caja del valor más angosta (hoy `min-w-[6rem]`) entran sin encimarse.
+- **[—]** La barra del vehículo de la hoja desborda la página al 200 % en el celular cuando dice «Obligatorio»: la insignia es `shrink-0` junto a «Selecciona
+  un vehículo» (`vehiculos/…/contenido-de-la-barra.tsx`) — que la insignia baje de línea (`flex-wrap`) y afirmarlo con `sinScrollHorizontal()` en `cotizar-panel-del-vehiculo`.
 - **[4-47]** La ayuda de una tabla corta en 1.000 filas sin enlace al editor, y una tabla congelada sin copia viva sale con claves en vez de etiquetas — falta el enlace y congelar `columnas` (espera a la baja de tablas).
 - **[—]** `LugarDelAjuste` no recuerda la última celda: el panel del ⚙ no se desliza y el foco se devuelve a mano; tras publicar o descartar el borrador de la fórmula, el foco cae al `body`.
 - **[—]** Panel de la unidad: «Qué falta» deja un hueco vacío arriba del primer destino y de «Desde esta fase no hay a dónde mover.».
