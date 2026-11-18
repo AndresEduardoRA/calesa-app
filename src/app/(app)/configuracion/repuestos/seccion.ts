@@ -11,4 +11,6 @@ export const SECCION_DE_REPUESTOS = {
   ruta: RUTAS.configuracionDeRepuestos,
   Icono: WrenchIcon,
   permisos: ['repuestos.configurar'],
+  grupo: 'operacion',
+  subsecciones: [],
 } as const satisfies SeccionDeConfiguracion

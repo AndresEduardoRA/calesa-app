@@ -95,7 +95,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Origen sin uso** — `motivoParaNoEliminar()` / `origen_eliminar()`: sin vehículos (papelera incluida), cotizaciones ni fórmula publicada.
 - **Uso de un origen** — `origenes_resumen()` / `UsoDeOrigen`: vehículos, cotizaciones, campos, categorías, fases, ¿fórmula publicada? y
   concesiones.
-- **Siguientes pasos** — `pasosDe()` / `<SiguientesPasos>`: lo que falta a un origen para funcionar (fases, fórmula, permisos, apibara).
+- **Siguientes pasos** — `pasosDe()` / `<SiguientesPasos>`: lo que falta a un origen para funcionar (fases, fórmula, permisos, apibara). Lo
+  accionable se ve también en el inicio de Configuración como **lo que falta** (`faltasPorSeccion()`, `<QueFaltaDeLaSeccion>`).
 - **Fórmula pendiente** — origen sin fila `publicada` en `formulas`: un origen nuevo no se cotiza hasta publicar la primera.
 - **Vehículo** — `vehiculos`: el dato central; recorre el flujo de su origen.
 - **Atributos** — `vehiculos.atributos`, `leads.atributos`: campos del layout que no son columna. En un lead se leen por `leads_vista`, recortados.
@@ -790,12 +791,21 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Hueco (de una pantalla del núcleo)** — `HuecosDeLaHoja`, `HuecosDeLaGuardada`, `HuecosDelListado` (`features/hoja/components/huecos.ts`):
   lo que un área llena en una pantalla del núcleo sin que el núcleo la importe; la página de `src/app` lo une por
   `pantallas/<área>-<pantalla>.ts`; vacío es un objeto sin componentes y no dibuja nada.
+- **Menú de Configuración** — `MenuDeConfiguracion`, `gruposVisibles()`, `paraElNavegador()` (`configuracion/_navegacion/`): el menú agrupado a la
+  izquierda de cada sección de Configuración; donde no cabe, el **selector de sección** (`SelectorDeSeccion`). No va en el inicio.
+- **Grupo de Configuración** — `GRUPOS`, `GrupoDeConfiguracion` (`configuracion/secciones.ts`): Empresa y equipo · Ventas · Operación · Web;
+  junta las secciones en el inicio, el menú y el selector. No: «área».
+- **Sub-sección (de Configuración)** — `SubseccionDeConfiguracion`: una sub-ruta de una sección, registrada en `SECCIONES` con su título y sus
+  permisos; el menú la dibuja debajo de su sección.
 - **Pestaña de un área (de Configuración › Empresa)** — `PestanaDeEmpresa` que viene de la lista de un área (`PESTANAS_DE_COMPROBANTES`), con
   sus permisos; Empresa la dibuja sin importar el área (`esPestanaDeUnArea`).
 - **Hoja de contacto** — `scripts/hoja-de-contacto.mjs`, `<carpeta>/hojas/`: capturas de e2e montadas en una imagen.
 - **Captura quieta** — `capturar()` / `capturarEn()` (`e2e/soporte/`): captura tomada sin animación ni transición con fin en curso.
 - **Pregunta al descartar** — `useCierreConCambios()`, `<ConfirmarDescarte>`, `useCambiosSinGuardar()` (`preguntaAlCerrar`): «Tienes cambios
   sin guardar.» con «Seguir editando» / «Descartar».
+- **Barra de cambios sin guardar** — `<BarraDeCambiosSinGuardar>`, `useSalidaConCambios()` (`src/shared/ui/`): la barra pegada abajo de un
+  formulario de página («Tienes cambios sin guardar» · «Descartar» · «Guardar») que aparece al cambiar algo; salir de la pantalla con cambios
+  pregunta (enlaces, avisos, selector de sección, recargar y cerrar; no el «atrás» del navegador). No: el pie de un `<Drawer>` (`<PieDelPanel>`).
 - **Recorte (de una cotización)** — `_cotizacion_recorte()`, `_cotizacion_contexto()` / `cotizacion_leer()`, `cotizacion_evaluar()`,
   `cotizacion_revisiones()`, `cotizacion_tabla()`: lo que viaja según el nivel de quien lee.
 - **Inventario de lo oculto** — `pg_temp.cv_registro()` en `supabase/tests/cotizaciones-visibilidad.sql`: funciones que pueden devolver

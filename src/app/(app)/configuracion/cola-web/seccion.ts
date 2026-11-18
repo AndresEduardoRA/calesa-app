@@ -12,4 +12,6 @@ export const SECCION_DE_COLA_WEB = {
   ruta: RUTAS.configuracionDeColaWeb,
   Icono: HeadsetIcon,
   permisos: ['web.cola.gestionar'],
+  grupo: 'web',
+  subsecciones: [],
 } as const satisfies SeccionDeConfiguracion
