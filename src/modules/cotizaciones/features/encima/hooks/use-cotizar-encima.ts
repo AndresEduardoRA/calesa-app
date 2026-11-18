@@ -3,11 +3,12 @@
 import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useAction } from 'next-safe-action/hooks'
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
 import { avisarExito } from '@/shared/ui/toasts'
 import { avisoDeCreada, type ResultadoDeEncima } from '../../../entities/resultado-de-encima'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
+import { ContextoDeLaVistaPrevia } from '../../hoja/components/hueco-de-la-vista-previa'
 import { cotizarEncima } from '../actions/cotizar-encima'
 
 const MENSAJE_DE_VALIDACION = 'No se pudo cotizar encima.'
@@ -15,9 +16,10 @@ const PERDIDA: ResultadoDeEncima = { tipo: 'perdida' }
 
 // «Cotizar encima» de una guardada: un envío a la vez, con un intento (el id de la nueva) que **sólo se conserva tras una pérdida**: reintentar devuelve la misma y no crea otra. Cualquier
 // otra respuesta (también un rechazo) lo olvida, y el próximo toque lleva uno nuevo. Con la nueva creada avisa —lo descartado también, porque la página cambia— y navega a ella; el
-// botón queda ocupado hasta que la navegación lo desmonte.
+// botón queda ocupado hasta que la navegación lo desmonte. Con la nueva creada avisa también al área de la vista previa (`alGuardarLaCotizacion`: su portada), si la hay.
 export function useCotizarEncima({ anterior }: { anterior: string }) {
   const router = useRouter()
+  const vistaPrevia = useContext(ContextoDeLaVistaPrevia)
   const ejecutar = useAction(cotizarEncima)
   const [enviando, setEnviando] = useState(false)
   const [resultado, setResultado] = useState<ResultadoDeEncima | null>(null)
@@ -42,6 +44,7 @@ export function useCotizarEncima({ anterior }: { anterior: string }) {
       intento.current = null
     }
     if (obtenido.tipo === 'creada') {
+      vistaPrevia?.alGuardarLaCotizacion?.(obtenido.id)
       avisarExito(avisoDeCreada(obtenido))
       router.push(rutaDeLaCotizacion(obtenido.id) as Route)
       return

@@ -1162,6 +1162,36 @@ export type Database = {
         }
         Relationships: []
       }
+      cotizaciones_portadas: {
+        Row: {
+          clave: string
+          cotizacion_id: string
+          generada_en: string
+          ruta: string
+        }
+        ComputedFields: never
+        Insert: {
+          clave: string
+          cotizacion_id: string
+          generada_en?: string
+          ruta: string
+        }
+        Update: {
+          clave?: string
+          cotizacion_id?: string
+          generada_en?: string
+          ruta?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'cotizaciones_portadas_cotizacion_id_fkey'
+            columns: ['cotizacion_id']
+            isOneToOne: true
+            referencedRelation: 'cotizaciones'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       cotizaciones_reportes: {
         Row: {
           cotizacion_id: string
@@ -7810,6 +7840,11 @@ export type Database = {
         Returns: Json
       }
       _cotizacion_modo: { Args: { p_formula: string; p_modo_tc: string }; Returns: Json }
+      _cotizacion_portada_clave: { Args: { p_cot: string }; Returns: string }
+      _cotizacion_portada_ve_todo: {
+        Args: { p_lead: string; p_vehiculo: string }
+        Returns: boolean
+      }
       _cotizacion_primer_resultado: { Args: { p_totales: Json }; Returns: Record<string, unknown> }
       _cotizacion_puede_guardar: {
         Args: {
@@ -8954,6 +8989,7 @@ export type Database = {
         }
         Returns: Json
       }
+      _portada_version_del_dibujo: { Args: Record<PropertyKey, never>; Returns: number }
       _portal_clave_validar: { Args: { p_clave: string }; Returns: undefined }
       _portal_codigo_normal: { Args: { p_codigo: string }; Returns: string }
       _portal_hash_falso: { Args: Record<PropertyKey, never>; Returns: string }
@@ -10089,6 +10125,12 @@ export type Database = {
         }
         Returns: Json
       }
+      cotizacion_portada: { Args: { p_cotizacion: string }; Returns: Json }
+      cotizacion_portada_poner: {
+        Args: { p_clave: string; p_cotizacion: string; p_ruta: string }
+        Returns: undefined
+      }
+      cotizacion_portada_visible: { Args: { p_cot: string }; Returns: boolean }
       cotizacion_puede_adjuntar: { Args: { p_cot: string }; Returns: boolean }
       cotizacion_reportar: { Args: { p_cotizacion: string; p_motivo: string }; Returns: Json }
       cotizacion_reporte_retirar: { Args: { p_cotizacion: string }; Returns: Json }

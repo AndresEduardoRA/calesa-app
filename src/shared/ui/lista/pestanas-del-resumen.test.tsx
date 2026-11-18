@@ -27,7 +27,7 @@ function dibujar(alto?: 'contenido' | 'lleno') {
 }
 
 describe('PestanasDelResumen › alto', () => {
-  // La lista se desplaza con pista (`useDesborde`) y deja a la vista la elegida: jsdom no trae ni lo uno ni lo otro.
+  // La lista se desplaza con pista (`useDesborde`): jsdom no trae `ResizeObserver`.
   beforeEach(() => {
     vi.stubGlobal(
       'ResizeObserver',
@@ -36,7 +36,13 @@ describe('PestanasDelResumen › alto', () => {
         disconnect() {}
       },
     )
-    Element.prototype.scrollIntoView = () => {}
+  })
+
+  it('deja a la vista la elegida moviendo sólo la lista, nunca lo que la contiene (`scrollIntoView` movía el cuerpo del panel)', () => {
+    const mover = vi.fn()
+    Element.prototype.scrollIntoView = mover
+    dibujar()
+    expect(mover).not.toHaveBeenCalled()
   })
 
   it('sin la prop, la raíz y el panel tienen el alto de su contenido', () => {

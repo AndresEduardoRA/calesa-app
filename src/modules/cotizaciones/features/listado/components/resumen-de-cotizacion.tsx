@@ -84,10 +84,18 @@ function DetalleDeLaCotizacion({
   quien: QuienDelResumen
   deEsteVehiculo: DeEsteVehiculoEnElDetalle
 }) {
-  const { Pestanas, Comprobantes, DeEsteVehiculo } = huecos
+  const { Portada, Pestanas, Comprobantes, DeEsteVehiculo } = huecos
   const { zonaHoraria } = useRegional()
   return (
     <div className="grid gap-4">
+      {Portada === undefined ? null : (
+        <Portada
+          key={cotizacion.id}
+          cotizacionId={cotizacion.id}
+          numero={cotizacion.numero}
+          total={{ valor: cotizacion.totalBase }}
+        />
+      )}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <Badge variant="secondary">{ETIQUETA_DE_CLASE[cotizacion.clase]}</Badge>
         {cotizacion.aprobada ? <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge> : null}

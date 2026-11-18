@@ -436,7 +436,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   y la tarjeta muestra sólo el total (fecha, número, asesor, vehículo, logo; sin filas, que podrían ser de un nivel restringido).
 - **Vista previa** — `?panel=vista-previa`, `<VistaPreviaDeLaHoja>`: modal con la tarjeta de la cotización (`<TarjetaDeCotizacion>`,
   `geometriaDeLaTarjeta()`) como la vería el cliente, escalada como una imagen; en una guardada, lo guardado.
-- **Portada de la cotización** — la imagen de la tarjeta de una cotización guardada (`imagenDeUnaGuardada()`). No es la **Portada** de un vehículo.
+- **Portada de la cotización** — `cotizaciones_portadas`, `<PortadaDeLaCotizacion>`, `GET /cotizaciones/<id>/portada`: la imagen de la tarjeta de lo
+  guardado de una cotización, en WebP por hash en el bucket `cotizaciones`, con la **clave de la portada** (`_cotizacion_portada_clave()`: de qué está
+  hecha; distinta de la vigente, quedó vieja). La **compartida** es la guardada, para quien ve todo lo que dibuja; los demás reciben una armada con lo suyo.
+  No es la **Portada** de un vehículo.
 - **PDF de la cotización** — `GET /cotizaciones/<id>/pdf`, `pdfDeUnaGuardada()`: la tarjeta de lo guardado en A4; lo descarga quien la ve
   («Descargar PDF», junto a «Copiar texto»). No es «Compartir» (eso es de leads).
 - **Revisión** — `cotizaciones_revisiones`: diff de cada edición.

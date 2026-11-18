@@ -438,6 +438,23 @@ las trampas, en `docs/LECCIONES.md`.
   `Geist-SemiBold.ttf` `01923aa148e5202ae70a2e11b2ab4dc41b80bcc374aedccc913d47bb2f591c06`, `Geist-Italic.ttf`
   `14b65c2dce6eb81a68bee916fed0e63f6d8526400b364cabf166f58e49c71b14` y `Geist-SemiBoldItalic.ttf`
   `5434c3634179082d63c80a4748df2d4ef2632d69c445cf47f2ef2ac101a582b3`.
+- **La portada de la cotización se arma en el servidor y se guarda una sola vez por clave.** WebP con `sharp` (calidad 80, ≤ 1.600 px): `ImageResponse` sólo
+  da PNG y `sharp` ya venía con Next. La clave mira **lo que se dibuja** (el título, lote y VIN del vehículo; el nombre del cliente y del asesor; clave y hex de
+  los colores; nombre, activo y moneda de los tipos de cambio), no su `actualizado_en` ni el valor del día: una fase, una foto o el tipo de cambio de hoy
+  rehacían todas las portadas sin que cambiara nada de lo que se ve. Un cambio en cómo se dibuja sube `_portada_version_del_dibujo()`.
+- **La portada guardada es una sola para todos, y la guarda quien ve todo lo que dibuja.** Lleva el cliente y el vehículo: sólo se sirve o se guarda para quien
+  los ve (`ve_todo`) y mira con sus permisos (sin «Ver como»); los demás reciben una armada con lo suyo, como el PDF, sin ETag ni guardar. Guardarla pide
+  además poder guardar la cotización (subir al bucket ya lo pedía), y bajarla del bucket, ver lo que dibuja (la policy «cotizaciones: leer» pide
+  `cotizacion_portada_visible()` en `portada/`: con sólo `cotizaciones.ver` se listaría y bajaría). El contexto de la compartida sale de la base
+  (`cotizacion_portada`), así clave y contenido no se separan. No depende del nivel de quien la arma: la tarjeta sólo nombra nodos del nivel «todos» y los
+  totales viajan para todos. Sin el primer recálculo (la tarjeta sólo con el total) se entrega pero no se guarda.
+- **La portada se pide al guardar con un `fetch` a su ruta, no con una Server Action en `after()`.** Las actions de guardar son del núcleo y no importan
+  el área: el núcleo avisa por el hueco de la vista previa (`alGuardarLaCotizacion`) y la tarjeta pide la ruta sin esperarla. No es una action porque el
+  router las corre de a una (una de 1–2 s demoraría el próximo guardado), ni trabaja en `after()`: leer con la sesión después de responder puede rotar el
+  refresh token y cerrar la sesión. Por lo mismo la ruta guarda la portada **antes** de responder (cuesta una subida y una RPC, sólo cuando falta o quedó vieja).
+- **El barrido del bucket `cotizaciones` tiene su rama, como `vehiculos`.** `not exists` sobre adjuntos y portadas, por el índice de `ruta` de cada una: la
+  rama genérica llama a `storage_refcount()` por objeto y una ventana de 10.000 costaba ≈ 0,9 s (≈ 0,2 s así). Una tabla nueva con rutas de ese bucket va en
+  las dos; si falta en la rama, `storage_gc_reclamar()` igual la descarta al ver el refcount.
 - **El aspecto de la hoja es declarativo, cerrado y plano.** Claves opcionales junto a las de siempre (`ancho`, `alto`, `relleno`, `separacion`, `densidad`, `letra`, `enfasis`, `tono`), de escalas
   cerradas y validadas igual en TS y en SQL: nada de px, CSS ni hex. No se llaman `estilo`, `clase` ni `color` (el juego las rechaza). Sin la clave, lo de siempre, así un diseño viejo se ve igual;
   el editor quita la clave en vez de escribir el valor por defecto. La cabecera no lleva ancho ni alto (va sola en su fila) y la tarjeta del resumen no lleva aspecto (es fija).
