@@ -19,6 +19,6 @@ export const guardarValor = actionClient
       return fallo('sin_permiso', SIN_PERMISO_PARA_LOS_CATALOGOS)
     }
     const hecho = await repositorioDeValores.guardar(parsedInput)
-    if (hecho.ok) revalidatePath(RUTAS.configuracionDeRepuestos)
+    if (hecho.ok) revalidatePath(RUTAS.catalogosDeRepuestos)
     return hecho
   })
