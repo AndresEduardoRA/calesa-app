@@ -1,10 +1,12 @@
 'use client'
 
+import { useEffect } from 'react'
 import { RUTAS } from '@/shared/lib/rutas'
 import { Button } from '@/shared/ui/button'
 import type { EleccionesDeLaHoja } from '../../../entities/obligatorios-al-cotizar'
-import type { SalidaDelAviso } from '../../../entities/guardado'
+import type { SalidaDelAviso, TextoDelAviso } from '../../../entities/guardado'
 import type { EstadoDelGuardado, VistaDelGuardado } from '../hooks/use-nucleo-del-guardado'
+import { useTituloDeLaCotizacion } from '../hooks/use-titulo-de-la-cotizacion'
 import { ElegirLoQueFalta } from './elegir-lo-que-falta'
 
 type Props = {
@@ -59,11 +61,35 @@ function SalidaDeElegir({
   salida: SalidaDelAviso
   elecciones: EleccionesDeLaHoja | undefined
 }) {
-  if (!elecciones || (salida !== 'elegir_lead' && salida !== 'elegir_vehiculo')) {
+  const que = QUE_ELIGE[salida ?? 'nada']
+  if (!elecciones || que === undefined) {
     return null
   }
-  const que = salida === 'elegir_lead' ? 'lead' : 'vehiculo'
   return <ElegirLoQueFalta que={que} eleccion={elecciones[que]} />
+}
+
+const QUE_ELIGE: Partial<
+  Record<NonNullable<SalidaDelAviso> | 'nada', 'lead' | 'vehiculo' | 'titulo'>
+> = {
+  elegir_lead: 'lead',
+  elegir_vehiculo: 'vehiculo',
+  elegir_titulo: 'titulo',
+}
+
+// Un rechazo de la base sobre el título (`campo: 'titulo'`) se repite debajo del campo del panel del vehículo, mientras el aviso esté.
+function RechazoAlCampoDelTitulo({ aviso }: { aviso: TextoDelAviso | null }) {
+  const ponerRechazo = useTituloDeLaCotizacion()?.ponerRechazo
+  const texto = aviso?.campo === 'titulo' ? aviso.texto : null
+  useEffect(() => {
+    if (ponerRechazo === undefined || texto === null) {
+      return
+    }
+    ponerRechazo(texto)
+    return () => {
+      ponerRechazo(null)
+    }
+  }, [ponerRechazo, texto])
+  return null
 }
 
 function Confirmacion({
@@ -111,6 +137,7 @@ function AvisoDeGuardado({
   return (
     <>
       <Confirmacion confirmacion={confirmacion} estado={estado} />
+      <RechazoAlCampoDelTitulo aviso={aviso} />
       {aviso === null ? null : (
         <div data-aviso-de-guardado="" className="flex flex-wrap items-center gap-2">
           <p className="text-(length:--text-sm) font-medium text-(--color-peligro-ink)">

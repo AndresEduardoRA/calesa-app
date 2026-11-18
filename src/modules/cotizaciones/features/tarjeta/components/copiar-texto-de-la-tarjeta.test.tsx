@@ -15,7 +15,14 @@ import { CopiarTextoDeLaTarjeta } from './copiar-texto-de-la-tarjeta'
 
 const modelo: ModeloDeTarjeta = {
   porOmision: false,
-  encabezado: { titulo: null, fecha: '6 nov 2026', asesor: 'Ana', numero: 4, vencida: false },
+  encabezado: {
+    titulo: null,
+    tituloDeLaCotizacion: null,
+    fecha: '6 nov 2026',
+    asesor: 'Ana',
+    numero: 4,
+    vencida: false,
+  },
   logo: null,
   vehiculo: null,
   grupos: [],

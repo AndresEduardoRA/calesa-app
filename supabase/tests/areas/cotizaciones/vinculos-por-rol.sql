@@ -88,14 +88,15 @@ begin
   return jsonb_build_object('o', o, 'o2', o2, 'f', f, 'f2', f2, 'l', l, 'v', v, 'duena', duena);
 end $f$;
 
--- `cotizacion_crear` como esa persona, en el origen `o` u `o2` del terreno, con la hoja abierta que firmaría `cotizacion_hoja()` para ella. Devuelve la respuesta o el error.
+-- `cotizacion_crear` como esa persona, en el origen `o` u `o2` del terreno, con la hoja abierta que firmaría `cotizacion_hoja()` para ella (y un título: sin vehículo es obligatorio,
+-- lo prueba `titulo.sql`). Devuelve la respuesta o el error.
 create or replace function pg_temp.vr_crear(p_quien uuid, t jsonb, p_origen text, p_lead uuid, p_vehiculo uuid, p_clase text default 'preventa') returns jsonb language plpgsql as $f$
 declare v_o uuid := (t ->> p_origen)::uuid; v_f uuid := (t ->> case when p_origen = 'o' then 'f' else 'f2' end)::uuid; v_abierta text;
 begin
   perform set_config('request.jwt.claim.sub', p_quien::text, true);
   v_abierta := public._cotizacion_abierta_firmar(v_o, v_f, now());
-  return pg_temp.vr_corre(p_quien, format('select public.cotizacion_crear(gen_random_uuid(), %L, %L, ''{"inputs": {"visible": 10}}''::jsonb, %L, %L, null, null, %L)',
-                                          v_o, p_lead, v_abierta, p_vehiculo, p_clase));
+  return pg_temp.vr_corre(p_quien, format('select public.cotizacion_crear(gen_random_uuid(), %L, %L, ''{"inputs": {"visible": 10}}''::jsonb, %L, %L, null, null, %L, p_titulo => %L)',
+                                          v_o, p_lead, v_abierta, p_vehiculo, p_clase, 'VR cotización'));
 end $f$;
 
 -- «ok» o «<sqlstate>:<hint>».

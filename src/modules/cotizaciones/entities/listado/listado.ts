@@ -21,7 +21,7 @@ export type PedidoDelListado = {
   vehiculoId?: string
   // Las de un lead: el camino a lo antiguo de la sección «Cotizaciones» de su ficha, tras sus 500 (4.17-4b).
   leadId?: string
-  // Lo que se busca (número, cliente, vehículo o autor), ya con el mínimo cumplido: sin él, el listado de siempre.
+  // Lo que se busca (número, título, cliente, vehículo o autor), ya con el mínimo cumplido: sin él, el listado de siempre.
   texto?: string
   cursor: Cursor | null
   tamano: number

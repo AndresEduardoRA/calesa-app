@@ -461,7 +461,7 @@ tienen privilegio de escritura y no hay policies de crear ni editar. Escriben, c
 («La cotización aprobada»).
 
 **`cotizacion_crear(id, origen, lead, entradas, abierta, vehículo?, vehículo_nuevo?, modo_tc?, clase = 'preventa', con_la_abierta =
-false, ver_total_bs = false)`** calcula en la base sobre la fórmula publicada del origen y devuelve `{cotizacion, valores, fuentes,
+false, ver_total_bs = false, titulo = null, titulo_manual = false)`** calcula en la base sobre la fórmula publicada del origen y devuelve `{cotizacion, valores, fuentes,
 totales, tipos_cambio, repetido}`, recortado por `_cotizacion_respuesta()` (el recorte de `cotizacion_leer()`). En este orden:
 
 1. `cotizaciones.crear` y `cotizaciones.ver` **del origen de la cotización** antes de mirar nada; con una final, además
@@ -474,6 +474,10 @@ totales, tipos_cambio, repetido}`, recortado por `_cotizacion_respuesta()` (el r
 4. **El vehículo:** obligatorio (22023 `vehiculo`) salvo con `cotizaciones.crear.sin_vehiculo` de ese origen, y siempre en una final.
    `p_vehiculo_nuevo` llama a `vehiculo_crear()` en la misma transacción (la pantalla no lo usa: «Cargar a mano» crea el vehículo antes).
    Uno que quien llama no ve: 42501.
+   4b. **El título** (después del lead y del vehículo): manual si `p_titulo` trae texto (`btrim`) y `p_titulo_manual` lo pide —sin vehículo no hay
+   automático, así que el texto que llega es manual—; más de 120 puntos de código, 22023 `detail titulo_largo` `hint titulo`. Si no, el
+   **automático**: el título del vehículo, `nullif(btrim(left(btrim(titulo), 120)), '')`. Sin vehículo y sin título, 22023 `hint titulo`
+   («Escribe el título de la cotización.»).
 5. **La fórmula** publicada, `for share` (publicar espera a las altas en curso; si publicaron, se relee: tres vueltas y PT409).
 6. **El modo** (`p_modo_tc`): nulo o la `clave` de un modo de esa versión (`modo_invalido`). Y **«Ver total Bs»** (`p_ver_total_bs`):
    `_cotizacion_ver_total_bs()` rechaza (22023) un nulo (`ver_total_bs_falta`) y un verdadero que `diseno.cabecera.ver_total_bs` de la
@@ -492,12 +496,15 @@ Candados: intento, lead, vehículo, fórmula; una final, además el lead `for no
 
 ### Cómo se guarda
 
-**`cotizacion_guardar(id, intento, actualizado_en_esperado, entradas, modo_tc, titulo, notas, vehículo, ver_total_bs)`** es la única
+**`cotizacion_guardar(id, intento, actualizado_en_esperado, entradas, modo_tc, titulo, notas, vehículo, ver_total_bs, titulo_manual = null)`** es la única
 edición: calcula en la base con SU versión de la fórmula (nunca la publicada de hoy) y SUS tipos de cambio congelados, conserva lo que
 quien guarda no ve ni edita, y devuelve lo mismo que crear. Recibe el **estado entero de lo que la persona edita** (`modo_tc`, `titulo`,
 `notas`, `vehículo` y `ver_total_bs` sin valor por omisión: nulo es un valor, salvo en `ver_total_bs`, donde nulo es
 `ver_total_bs_falta`); lo que no manda en `entradas` queda sin tipear (↺). Se edita `modo_tc` (clave de un modo de SU versión, o nulo),
-`ver_total_bs` (verdadero sólo si el diseño de SU versión lo ofrece; también en una final), `titulo` (hasta 120), `notas` (hasta 2.000) y
+`ver_total_bs` (verdadero sólo si el diseño de SU versión lo ofrece; también en una final), `titulo` y `titulo_manual` (manual si `titulo` trae
+texto y `titulo_manual` no es falso —nulo, el de las llamadas viejas, es «manual si trae texto»; sin vehículo el texto es manual—, hasta 120:
+`titulo_largo`; si no, el del vehículo que queda, rehecho en cada guardado; sin vehículo y sin título, 22023 `hint titulo`; `titulo_manual` entra
+en la huella del intento y en «nada cambió»), `notas` (hasta 2.000) y
 `vehiculo_id` (poner o **cambiar**, no se quita; **una final no lo cambia**). No se editan `tipos_cambio` (se congelan al crear), `clase`,
 `lead_id`, `plantilla_id` ni `moneda_mostrar`.
 
@@ -662,8 +669,10 @@ otra vuelta: lo que crear toma son sus parámetros. La preventa no cambia.
 
 `formula_id` (recalcular o editar usa **esa** versión, nunca la vigente); `valores` (`{nodo_id: número | null}` de TODOS los nodos; el
 `opcion` guarda su clave; un nodo fuera de variante o apagado guarda 0); `fuentes` (`{nodo_id: default|sugerido|override|input}`);
-`tipos_cambio` (`{clave: valor}` congelados); `totales` (por moneda y por grupo). **Nada se lee directo** (sale por `cotizacion_leer()`,
-recortado por el nivel; `total_base`, `modo_tc` y `ver_total_bs` sí son legibles) **ni se escribe directo**: se crea con
+`tipos_cambio` (`{clave: valor}` congelados); `totales` (por moneda y por grupo); `titulo` (el **título de la cotización**, hasta 120) y
+`titulo_manual` (si lo escribió una persona; si no, es el del vehículo y la base lo rehace en cada guardado; las que ya tenían título antes de la
+columna quedaron manuales). **Nada se lee directo** (sale por `cotizacion_leer()`,
+recortado por el nivel; `total_base`, `modo_tc`, `ver_total_bs`, `titulo` y `titulo_manual` sí son legibles) **ni se escribe directo**: se crea con
 `cotizacion_crear()` y se edita con `cotizacion_guardar()`.
 
 ## Binding con la XCell

@@ -13,11 +13,17 @@ import { requerirSesion } from '@/modules/equipo'
 import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import { leerClienteElegido } from '@/modules/leads'
 import { leerVehiculo } from '@/modules/vehiculos'
+import { PANEL_DEL_VEHICULO } from '@/modules/vehiculos/pantallas/cotizar'
 import { datosO } from '@/shared/lib/errores'
 import { puede, type Permisos } from '@/shared/lib/permisos'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
 import { HUECOS_DE_LA_GUARDADA, dibujarHuecos } from './huecos-de-la-guardada'
+import {
+  barraDeLaCabecera,
+  ConElTituloDeLaGuardada,
+  tituloDeLaTarjeta,
+} from './titulo-de-la-guardada'
 
 export const metadata: Metadata = { title: 'Cotización' }
 
@@ -91,41 +97,46 @@ async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>[
     <>
       <RegistrarVisita tipo="cotizacion" id={hoja.cotizacion.id} />
       <RegistrarVisto modulo="cotizaciones" tipo="cotizacion" id={hoja.cotizacion.id} />
-      <CabeceraDeLaGuardada
-        id={hoja.cotizacion.id}
-        numero={hoja.cotizacion.numero}
-        clase={hoja.cotizacion.clase}
-        actualizadoEn={hoja.cotizacion.actualizadoEn}
-        version={hoja.cotizacion.version}
-        cadena={hoja.cadena}
-        venceEl={hoja.venceEl}
-        vencida={hoja.vencida}
-        origen={hoja.diseno.origen.nombre}
-        cliente={cliente?.nombre ?? null}
-        vehiculo={vehiculo?.titulo ?? null}
-        acciones={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Acciones', props)}
-        insignias={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Insignias', props)}
-      />
-      {dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'BajoLaCabecera', props)}
-      <ConProveedorDeLaHoja
-        origenId={hoja.cotizacion.origenId}
-        cotizacionId={hoja.cotizacion.id}
-        permisos={sesion.permisos}
-        tarjeta={{
-          vehiculo: vehiculo?.titulo ?? null,
-          asesor,
-          numero: hoja.cotizacion.numero,
-          vencida: hoja.vencida,
-          guardadaEl: hoja.cotizacion.actualizadoEn,
-        }}
-      >
-        <PantallaDeUnaGuardada
-          key={hoja.cotizacion.id}
-          hoja={hoja}
-          inicial={inicial}
-          personaId={sesion.usuarioId}
+      <ConElTituloDeLaGuardada hoja={hoja} personaId={sesion.usuarioId} vehiculo={vehiculo}>
+        <CabeceraDeLaGuardada
+          id={hoja.cotizacion.id}
+          numero={hoja.cotizacion.numero}
+          clase={hoja.cotizacion.clase}
+          actualizadoEn={hoja.cotizacion.actualizadoEn}
+          version={hoja.cotizacion.version}
+          cadena={hoja.cadena}
+          venceEl={hoja.venceEl}
+          vencida={hoja.vencida}
+          origen={hoja.diseno.origen.nombre}
+          cliente={cliente?.nombre ?? null}
+          vehiculo={vehiculo?.titulo ?? null}
+          barra={barraDeLaCabecera(hoja, vehiculo, sesion.permisos)}
+          acciones={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Acciones', props)}
+          insignias={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Insignias', props)}
         />
-      </ConProveedorDeLaHoja>
+        {dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'BajoLaCabecera', props)}
+        <ConProveedorDeLaHoja
+          origenId={hoja.cotizacion.origenId}
+          cotizacionId={hoja.cotizacion.id}
+          permisos={sesion.permisos}
+          tarjeta={{
+            vehiculo: vehiculo?.titulo ?? null,
+            asesor,
+            numero: hoja.cotizacion.numero,
+            vencida: hoja.vencida,
+            guardadaEl: hoja.cotizacion.actualizadoEn,
+            titulo: tituloDeLaTarjeta(hoja, vehiculo),
+          }}
+        >
+          <PantallaDeUnaGuardada
+            key={hoja.cotizacion.id}
+            hoja={hoja}
+            inicial={inicial}
+            personaId={sesion.usuarioId}
+            panelDelTitulo={PANEL_DEL_VEHICULO}
+          />
+        </ConProveedorDeLaHoja>
+      </ConElTituloDeLaGuardada>
       {dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Debajo', props)}
     </>
   )

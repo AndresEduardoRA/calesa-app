@@ -11,7 +11,8 @@ type Props = {
   elegido: VehiculoElegido
   // El historial del elegido, armado por la página (`vehiculos` no conoce `cotizaciones`): va debajo de su título.
   historial: ReactNode
-  alQuitar: () => void
+  // Sin él (una guardada: cambiar el vehículo no es de esta pantalla), el elegido se ve sin «Quitar».
+  alQuitar?: (() => void) | undefined
   // Los datos del vehículo que se eligen entre las filas de una tabla de la hoja (4.14-2c3), con su lector; null = ninguno.
   paraElegir: ParaElegirConLector | null
   // Guardado un dato: el panel cierra como al elegir el vehículo.
@@ -31,9 +32,11 @@ export function ElegidoDelPanel({ elegido, historial, alQuitar, paraElegir, alGu
           <span className="text-(length:--text-xs) text-(--color-ink-soft)">Elegido</span>
           <span className="truncate font-medium text-(--color-ink)">{elegido.titulo}</span>
         </span>
-        <Button type="button" variant="outline" className="h-11 md:h-9" onClick={alQuitar}>
-          Quitar
-        </Button>
+        {alQuitar ? (
+          <Button type="button" variant="outline" className="h-11 md:h-9" onClick={alQuitar}>
+            Quitar
+          </Button>
+        ) : null}
       </div>
       {paraElegir?.datos.map((dato) => (
         <DatoDelElegido

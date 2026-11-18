@@ -19,6 +19,7 @@ const armado = (valor: number): ArmadoDeEdicion => ({
   modoTc: null,
   verTotalBs: false,
   titulo: null,
+  tituloManual: false,
   notas: null,
   vehiculoId: null,
 })

@@ -25,6 +25,15 @@ vi.mock('@/modules/cotizaciones', () => ({
   leerHojaDeUnaGuardada: (id: string) => leerHoja(id),
   leerAsesorDeLaCotizacion: (id: string) => leerAsesor(id),
   pdfDeUnaGuardada: (entrada: unknown) => pdf(entrada),
+  // La regla del título que se muestra, en corto (la prueba de verdad es la de `entities/`): el título, el vehículo o el número; junto al número, sin el número.
+  tituloDeLaCotizacion: (t: { titulo: string | null; vehiculo: string | null; numero: number }) =>
+    t.titulo !== null
+      ? { texto: t.titulo, fuente: 'titulo' }
+      : t.vehiculo !== null
+        ? { texto: t.vehiculo, fuente: 'vehiculo' }
+        : { texto: `Cotización n.º ${String(t.numero)}`, fuente: 'numero' },
+  tituloAparteDelNumero: (t: { texto: string; fuente: string } | null) =>
+    t === null || t.fuente === 'numero' ? null : t.texto,
 }))
 const leerVehiculo = vi.fn()
 vi.mock('@/modules/vehiculos', () => ({ leerVehiculo: (id: string) => leerVehiculo(id) }))
@@ -49,7 +58,13 @@ const NO_SE_PUDO = 'No se pudo armar el PDF. Vuelve a intentarlo.'
 
 const activa = { usuarioId: ID, estado: 'activa', permisos: [] }
 const hoja = {
-  cotizacion: { id: ID, numero: 12, actualizadoEn: GUARDADA_EL, vehiculoId: VEHICULO },
+  cotizacion: {
+    id: ID,
+    numero: 12,
+    actualizadoEn: GUARDADA_EL,
+    vehiculoId: VEHICULO,
+    titulo: null,
+  },
   vencida: true,
 }
 const inicial = { respuesta: null, estado: { tipo: 'al_dia' } }
@@ -154,6 +169,8 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
         vehiculo: 'Toyota Hilux 2020',
         asesor: 'Ana Pérez',
         numero: 12,
+        // Sin título propio, el del vehículo, junto al número.
+        titulo: 'Toyota Hilux 2020',
         vencida: true,
         logo: { nombre: 'Importadora Prueba', url: 'https://almacen.test/marca/logos/abc.png' },
       },
@@ -174,7 +191,7 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
     expect(r.status).toBe(200)
     expect(pdf).toHaveBeenCalledWith(
       expect.objectContaining({
-        pagina: expect.objectContaining({ vehiculo: null, asesor: null, logo: null }),
+        pagina: expect.objectContaining({ vehiculo: null, asesor: null, logo: null, titulo: null }),
       }),
     )
   })

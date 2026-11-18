@@ -86,6 +86,7 @@ const pagina: PaginaDeLaTarjeta = {
   vehiculo: 'Toyota Hilux 2020',
   asesor: 'Ana Pérez',
   numero: null,
+  titulo: null,
   vencida: false,
   logo: { nombre: 'Importadora', url: 'https://x.test/logo.webp' },
 }
@@ -227,7 +228,15 @@ describe('modeloDeLaTarjeta: sin plantilla, sin estados y lo que no se nombra', 
       fecha: '6 nov 2026',
       asesor: 'Ana Pérez',
       numero: 41,
+      tituloDeLaCotizacion: null,
       vencida: true,
     })
+  })
+
+  it('el título de la cotización es un dato aparte del de la variante', () => {
+    const m = modelo(lectura(), calculo(), 'BOB', { ...pagina, titulo: 'Para Juan' })
+    expect(m.encabezado.tituloDeLaCotizacion).toBe('Para Juan')
+    expect(m.encabezado.titulo).toBe('Gasolina')
+    expect(modelo().encabezado.tituloDeLaCotizacion).toBeNull()
   })
 })

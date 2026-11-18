@@ -5,6 +5,8 @@ import {
   claveDelBorradorDeUnaGuardada,
   claveDelPendiente,
   claveDelPendienteDeUnaGuardada,
+  claveDelTitulo,
+  claveDelTituloDeUnaGuardada,
 } from './claves-de-la-hoja'
 
 describe('claveDeLaHoja', () => {
@@ -79,7 +81,18 @@ describe('las claves de una cotización guardada (C9)', () => {
       claveDelBorradorDeUnaGuardada(base),
       claveDelPendiente(nueva),
       claveDelBorrador(nueva),
+      claveDelTitulo({ personaId: 'p', origenId: 'c', vehiculoAlAbrir: null }),
+      claveDelTituloDeUnaGuardada(base),
     ]
-    expect(new Set(claves).size).toBe(4)
+    expect(new Set(claves).size).toBe(6)
+  })
+
+  it('el título va por el vehículo con que se abrió la hoja nueva y por la versión de una guardada', () => {
+    const k = claveDelTitulo({ personaId: 'p', origenId: 'c', vehiculoAlAbrir: null })
+    expect(claveDelTitulo({ personaId: 'p', origenId: 'c', vehiculoAlAbrir: 'v' })).not.toBe(k)
+    expect(claveDelTitulo({ personaId: 'p', origenId: 'o2', vehiculoAlAbrir: null })).not.toBe(k)
+    expect(claveDelTituloDeUnaGuardada({ ...base, actualizadoEn: 'v2' })).not.toBe(
+      claveDelTituloDeUnaGuardada(base),
+    )
   })
 })

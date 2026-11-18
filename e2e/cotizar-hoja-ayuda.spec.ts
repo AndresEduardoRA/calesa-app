@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   PREFIJO_ROL_E2E,
@@ -160,6 +161,8 @@ test('Ctrl+S con la ayuda abierta guarda; guardada, la URL queda sin la ayuda y 
 }) => {
   const guardados = await vigilarGuardados(page)
   await abrir(page)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await botonDeAyuda(page, 'Pública').click()
   await expect(panel(page, 'Pública')).toBeVisible()
   await guardarConElAtajo(page)

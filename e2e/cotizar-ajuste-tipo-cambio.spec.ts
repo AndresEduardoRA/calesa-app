@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
 import { guardarPorLaHoja } from './soporte/cotizar-guardada'
 import {
@@ -69,6 +70,8 @@ async function abrir(page: Page): Promise<void> {
   await entrar(page, duena, { fresco: true })
   await page.goto(url())
   await expect(page.locator('[data-hoja]')).toBeVisible()
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
 }
 
 async function abrirElPanel(page: Page) {

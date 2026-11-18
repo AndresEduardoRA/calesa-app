@@ -27,6 +27,9 @@ describe('motivoParaNoGuardar', () => {
     expect(motivoParaNoGuardar({ ...LIBRE, falta: 'vehiculo' })).toBe(
       'Para guardar, elige el vehículo en «Vehículo».',
     )
+    expect(motivoParaNoGuardar({ ...LIBRE, falta: 'titulo' })).toBe(
+      'Escribe el título de la cotización.',
+    )
   })
 
   it('con el total nulo dice el motivo del resumen, y un valor descartado el suyo (P9)', () => {
