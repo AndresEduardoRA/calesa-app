@@ -176,6 +176,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
+- **[—]** El selector de embudo de la vista de embudo no se cierra al elegir otro (`DropdownMenuRadioItem` de Base UI no cierra al hacer clic): en el
+  celular el menú queda sobre las pestañas de etapas hasta tocar afuera (`selector-de-embudo.tsx`; `closeOnClick` en el ítem).
 - **[T327]** En el celular, la burbuja del chat queda sobre la esquina derecha de la barra de cambios sin guardar; con la barra a la altura de
   la burbuja (Configuración › Leads › «Mensaje del portal») roza la esquina de «Guardar»: subirla mientras la barra está a la vista, como los
   avisos (`data-pie-de-panel`).
