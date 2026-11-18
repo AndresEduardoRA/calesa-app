@@ -63,16 +63,20 @@ test('A · el «⋯» de la asesora: sus acciones, cada modal y su descarte, y n
   await tactil(page, boton)
   const menu = await abrirMenuDelLead(page, r.uno.nombre)
   expect(await opcionesDelMenu(menu)).toEqual([
+    'Cotizar lead',
     'Agendar recordatorio…',
     'Anotar seguimiento…',
     'Nueva oportunidad…',
     'Ver oportunidades',
+    'Editar lead',
     'Etiquetas…',
     'Favorito',
     'Tachado',
     'Enviar a la papelera',
   ])
+  // Con «Cotizar lead» y «Editar lead» el menú no entra entero en el celular: los últimos se alcanzan desplazándolo, como con el dedo.
   for (const item of await menu.locator('[role=menuitem], [role=menuitemcheckbox]').all()) {
+    await item.scrollIntoViewIfNeeded()
     await recibeElClic(item)
     await tactil(page, item)
   }
@@ -163,7 +167,10 @@ test('A · el «⋯» de la dueña: sobre lo suyo anota; sobre lo ajeno (en «to
   await irALeads(page, `?alcance=todos&${conElLead(r.uno.nombre).slice(1)}`)
   await sinScrollHorizontal(page)
   const menu = await abrirMenuDelLead(page, r.uno.nombre)
+  // Cotiza y ve la actividad aunque el lead no sea de su cartera; editar y anotar, no.
   expect(await opcionesDelMenu(menu)).toEqual([
+    'Cotizar lead',
+    'Ver actividad',
     'Etiquetas…',
     'Favorito',
     'Tachado',
