@@ -1,12 +1,15 @@
-// El «⋯» de un vehículo, dicho una sola vez: qué acciones tiene, en qué orden y cuáles se ven. La fila del inventario, la tarjeta, el resumen y
-// la ficha dibujan esta lista (`features/acciones/components/menu-de-vehiculo.tsx`); ninguna escribe la suya. Es la de los leads
+// El «⋯» de un vehículo, dicho una sola vez: qué acciones tiene, en qué orden y cuáles se ven. La fila del inventario, la tarjeta y la ficha
+// dibujan esta lista (`features/acciones/components/menu-de-vehiculo.tsx`); ninguna escribe la suya. Es la de los leads
 // (`leads/entities/acciones-de-lead.ts`) con lo que ya existe de un vehículo: lo que se hace seguido arriba, lo destructivo al final y separado.
 // Lo que una persona no puede hacer no aparece (los permisos no cambian: salen de `editablesDe()`, `permisoDeVitrina()` y `permisoDePapelera()`).
 
-export type ClaveDeAccionDeVehiculo = 'editar' | 'publicar' | 'actividad' | 'papelera'
+export type ClaveDeAccionDeVehiculo = 'editar' | 'cotizar' | 'publicar' | 'actividad' | 'papelera'
 
 export const ETIQUETA_DE_ACCION_DE_VEHICULO: Readonly<Record<ClaveDeAccionDeVehiculo, string>> = {
   editar: 'Editar',
+  // Lleva a la hoja de cotizar con este vehículo y su origen (`rutaParaCotizar()`): sólo en el «⋯» de la fila y la tarjeta, si quien mira cotiza
+  // en ese origen.
+  cotizar: 'Cotizar vehículo',
   // Abre el panel de la vitrina, con su vista previa: lleva «…».
   publicar: 'Publicar en la web…',
   // Lleva a otra página (`/actividad` de este vehículo): sin «…».
@@ -14,10 +17,10 @@ export const ETIQUETA_DE_ACCION_DE_VEHICULO: Readonly<Record<ClaveDeAccionDeVehi
   papelera: 'Enviar a la papelera',
 }
 
-// El orden, en bloques: lo que se hace seguido arriba (editar y publicar), «Ver actividad» (sólo la ficha, con `actividad.ver`) y lo
+// El orden, en bloques: lo que se hace seguido arriba (editar, cotizar y publicar), «Ver actividad» (sólo la ficha, con `actividad.ver`) y lo
 // destructivo al final y separado (la papelera).
 export const BLOQUES_DEL_MENU_DE_VEHICULO: readonly (readonly ClaveDeAccionDeVehiculo[])[] = [
-  ['editar', 'publicar'],
+  ['editar', 'cotizar', 'publicar'],
   ['actividad'],
   ['papelera'],
 ]

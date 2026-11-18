@@ -2,6 +2,7 @@
 import type { FaseResumen } from '@/modules/flujos/client'
 import type { CampoDeLayout, Categoria, OrigenResumen } from '@/modules/origenes/client'
 import type { AlcanceDeAvisos } from '../../../entities/avisos-de-vehiculo'
+import type { ParaCotizar } from '../../../entities/ruta-para-cotizar'
 import type { Vehiculo } from '../../../entities/vehiculo'
 import {
   estadoDeVitrina,
@@ -27,7 +28,7 @@ export type DatosDelOrigen = {
 export type FilaDeVehiculo = Vehiculo
 
 // Lo que decide qué ofrece el «⋯» de cada fila, resuelto por la página: quién edita (los de esta página), a quién se puede enviar a la
-// papelera y si se puede publicar en este origen.
+// papelera, si se puede publicar y si se puede cotizar en este origen.
 export type ParaElMenuDeLaLista = {
   editables: ReadonlySet<string>
   eliminables: ReadonlySet<string>
@@ -35,6 +36,8 @@ export type ParaElMenuDeLaLista = {
   // Los de esta página cuyo lead quien mira puede abrir («Ver el lead» en el aviso de un vehículo vinculado) y lo que puede abrir desde un aviso.
   leadsVisibles: ReadonlySet<string>
   alcance: AlcanceDeAvisos
+  // «Cotizar vehículo»: la hoja de cotizar de este origen, o null si quien mira no cotiza en él (`origenesParaCotizar()`, lo decide la página).
+  cotizar: ParaCotizar | null
 }
 
 // Lo que recibe el listado como listas, hecho conjuntos para preguntar por fila.
@@ -44,6 +47,7 @@ export function paraElMenuDe(datos: {
   leadsVisibles: readonly string[]
   alcance: AlcanceDeAvisos
   publicar: PermisoDeVitrina
+  cotizar: ParaCotizar | null
 }): ParaElMenuDeLaLista {
   return {
     editables: new Set(datos.editables),
@@ -51,6 +55,7 @@ export function paraElMenuDe(datos: {
     leadsVisibles: new Set(datos.leadsVisibles),
     alcance: datos.alcance,
     publicar: datos.publicar,
+    cotizar: datos.cotizar,
   }
 }
 
@@ -58,6 +63,7 @@ export function paraElMenuDe(datos: {
 export function hayMenuEnLaPagina(filas: readonly Vehiculo[], para: ParaElMenuDeLaLista): boolean {
   return (
     para.publicar.estado === 'habilitado' ||
+    (para.cotizar !== null && filas.length > 0) ||
     filas.some((fila) => para.editables.has(fila.id) || para.eliminables.has(fila.id))
   )
 }

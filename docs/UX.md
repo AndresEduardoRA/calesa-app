@@ -63,7 +63,7 @@ Estados propios: teléfono en verificación (spinner, resto editable); sin permi
 La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de la hoja»): la semilla trae un diseño igual al cotizador actual
 (`docs/referencias/cotizador-actual.md`) y otro al Excel (`docs/referencias/excel-de-cotizacion.md`).
 
-1. **Entrada:** desde la ficha del lead, el resumen de un vehículo o el listado. Arriba, pestañas de orígenes (nombres de la base; «Oficina»
+1. **Entrada:** desde la ficha del lead, el «⋯» de un vehículo en el inventario («Cotizar vehículo») o el listado. Arriba, pestañas de orígenes (nombres de la base; «Oficina»
    es un origen) y los **modos** de tipo de cambio del diseño (Aduana, Paralelo, Unificado…; se eligen con dos o más, la hoja abre con el
    primero marcado; con uno solo no se elige y el resumen lo nombra). `Ctrl/Cmd+K → «Nueva cotización»` abre la hoja.
 2. **Pasos:** **la hoja** (preventa o final), **vehículo**, **cliente**, **vista previa**; no hay paso «Oficina».
@@ -226,8 +226,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   «Relacionados» (`vehiculos.ver`; con la gestión de «Vehículos» al pie: `?panel=agregar-vehiculo`, `?panel=desvincular`) y «Cotizaciones» (con
   `cotizaciones.ver` en algún origen; ver «Cotizaciones del lead y del vehículo»). `?seccion=seguimientos|vehiculos|oportunidades|cotizaciones|portal` lleva a su
   bloque (`vehiculos` a Relacionados) y le da el foco al título; con un `?panel=` también abre lo suyo. Un bloque sin permiso no se dibuja ni está en el índice.
-- **Vehículos** — `/vehiculos` (`vehiculos.*`): tabla + panel de filtros + resumen. Pestaña por origen (`?origen=`); filtros en URL (`q`,
-  `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; resumen `?vehiculo=<id>` (la versión corta de la ficha, sin pestañas; un `?pestana=fotos` viejo abre el visor);
+- **Vehículos** — `/vehiculos` (`vehiculos.*`): tabla + panel de filtros. Pestaña por origen (`?origen=`); filtros en URL (`q`,
+  `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; la fila y la tarjeta son enlaces a la ficha `/vehiculos/<id>` (Ctrl o el
+  botón del medio abren otra pestaña; la casilla, el «⋯», «Publicar» y la foto no navegan); un `?vehiculo=<id>` viejo redirige a la ficha (ver «Enlace viejo»);
   alta `?panel=nuevo` (sin el alta suelta pero con la de cotizar: «Nuevo» apagado con «Cotizar un vehículo nuevo», que abre la hoja con el panel
   del vehículo en alta); edición `?editar=`; `?vitrina=si|no`, `?limpieza=si|no`; junto al estado de vitrina de cada fila, «Publicar» / «Sacar de la
   web» con un toque y «Deshacer» (con `vehiculos.vitrina` del origen; sin precio público, `?panel=vitrina-rapida&para=<id>` pide sólo el precio).
@@ -538,8 +539,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   que dibuja después; no vale el heredado (`scripts/guardas/estados-de-ruta.test.ts`).
 - **Destructivas:** papelera (vehículos, cotizaciones, leads) = hacer + toast con deshacer 10 s; purga y baja de usuario = diálogo que nombra
   el objeto; masivas irreversibles = confirmación tipeada.
-- **Fotos:** toda foto de una entidad abre el visor (`?visor=`) con ← →, Esc, «3 de 12» y miniaturas; la cabecera de la ficha y la del resumen
-  del vehículo llevan el carrusel en su lugar (flechas, puntos y gesto). Las galerías («Fotos» del resumen, imágenes de un ítem) abren el visor en la foto tocada.
+- **Fotos:** toda foto de una entidad abre el visor (`?visor=`) con ← →, Esc, «3 de 12» y miniaturas; la cabecera de la ficha del vehículo
+  lleva el carrusel en su lugar (flechas, puntos y gesto). Las galerías («Fotos» de la ficha, imágenes de un ítem) abren el visor en la foto tocada.
 - **Vistos:** en las listas de vehículos, leads (lista y kanban), cotizaciones, proyectos de repuestos, los chips de la agenda y las de logística (bandeja del
   día, fase, «dónde está», gastos y pagos, unidades de un grupo), como en un correo, el nombre de lo que no se abrió en ese módulo va en **negrita** y el de lo ya
   abierto en peso normal; lo último lleva además borde de acento y un ojo chico junto al nombre (tooltip y texto para el lector «Último visto», sin texto a la vista; y también va en peso normal). «Visto» se dice con texto para el lector: nada
@@ -706,6 +707,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Fotos:** elegir (selector, soltar o cámara) las deja en una bandeja sin subir que dice lo que no entra y por qué (no es foto, > 25 MB,
   repetida, pasa de 24). «Subir N fotos» con avance; un fallo se dice entero con «Reintentar las N que faltan». Reordenar con botones o
   `Alt+←/→`; eliminar con «Deshacer».
+- **«⋯» de la fila y la tarjeta:** «Editar», «Cotizar vehículo» (la hoja de cotizar con el vehículo y su origen, sin lead; sólo si quien mira cotiza en ese
+  origen), «Publicar en la web…» y, separada, «Enviar a la papelera»; lo que no puede, no aparece.
 - **Vitrina:** «Publicar en la web…» en el «⋯» (en la ficha, sin permiso, apagado con motivo). Panel `?panel=vitrina`: interruptor, precio
   público (vacío = «Consultar»), rango, nota, destacado y «Así lo verá el visitante». Si la fase no publica o la web está apagada,
   «Publicado, no visible».
@@ -715,7 +718,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   pide tipear «purgar N»; si otra persona ya actuó, no se purga nada.
 - **Limpieza automática** (importados de subasta, con el interruptor encendido): dentro de 3 días, banner en la ficha con «Conservar»;
   conservado, «Quitar». Listado: filtro «Se limpiará pronto» e insignia con fecha.
-- **Situación** (`<BadgeDeSituacion>`, en la tabla, la tarjeta, la ficha, el resumen y el panel de logística): la fase con su color, o
+- **Situación** (`<BadgeDeSituacion>`, en la tabla, la tarjeta, la ficha y el panel de logística): la fase con su color, o
   «En subasta», «Sin resolver» o «No ganada» con su texto cuando la subasta manda. Las no ganadas no salen en el inventario por defecto.
   **Aviso de la ficha** (bajo la cabecera, sólo «Sin resolver» y «No ganada»): «La subasta terminó y sigue en «<fase>». ¿La ganamos?»
   (o «…y todavía no tiene fase.») con «La ganamos» (enlace al mover de logística en su modo) y «No la ganamos» (hecho con «Deshacer» 10 s);
@@ -723,11 +726,11 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   en «<origen>»: pídeselo a quien administra los roles.». Conflicto: el texto de la base con el nombre, «No se cambió nada.» y «Recargar».
   Error: «No pudimos guardar el resultado. Intenta de nuevo.»; sin red, el aviso de siempre. No ganada: «No ganada · la marcó <nombre> el
   <fecha>. Ya no cuenta en logística ni en Inicio.» (sin el nombre si no se pudo leer) con «Deshacer». En subasta o en su fase, sin aviso.
-- **Resumen (`?vehiculo=<id>`):** la versión corta de la ficha, sin pestañas: portada con carrusel, identificación, situación (su fase o «Sin fase»),
-  «Editar» (abre el panel encima y vuelve al resumen al día), «Cotizar», «Abrir ficha» y «⋯»; «Relacionados» en una línea de chips (con `leads.ver`), que se
-  lee al abrir. Un `?pestana=fotos` viejo abre el visor del carrusel del resumen (`?visor=<id>-resumen`) y otro `?pestana=` se quita, sin sumar al
-  historial. Relectura fallida: «No se pudieron actualizar los datos.» con «Reintentar». Inexistente, en la papelera o de otro origen: «Este vehículo ya no
-  está disponible: no existe o ya no tienes acceso.».
+- **Enlace viejo (`/vehiculos?vehiculo=<id>`):** la lista no tiene resumen; el enlace redirige en el servidor, sin sumar al historial, a `/vehiculos/<id>`
+  conservando el `?panel=` que la ficha abre (`vitrina`, `fechas-de-subasta`, `desvincular`, `vincular-lead`, `marcar-interesado`; otro se quita), el visor
+  (`?visor=<id>-resumen` pasa a `?visor=<id>`, con su `?foto=`; `?pestana=fotos` abre el visor en la primera foto; otra pestaña se quita) y `?editar=<id>`
+  del mismo vehículo. Origen, filtros y cursor se quitan. Un `?vehiculo=` inexistente, en la papelera, de otro origen, que no se ve o que no es un id llega a
+  la ficha: «No existe o no tienes acceso» con «Ir al inventario».
 - **Ficha (`/vehiculos/[id]`):** sin `logistica.ver`, ni «Qué falta», ni «Documentos», ni «Ver en logística»; sin `cotizaciones.ver`, ni «Cotizaciones» ni el
   grupo Cotizado; sin `leads.ver`, sin «Relacionados»; el índice siempre tiene «Ficha» y «Fotos». Origen sin flujo legible: el error de «Qué falta» con
   «Reintentar» y el resto sigue. Sin fase: «Sin fase» en la cabecera y «Todavía no tiene fase.» en «Qué falta». Subasta sin resolver: el aviso de arriba
@@ -735,7 +738,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 
 ### Relacionados (estados propios)
 
-Arriba de cada detalle, en dos presentaciones que elige cada lugar (`presentacion`, obligatoria): **en una línea** en el resumen del inventario (`/vehiculos?vehiculo=`) y en logística
+Arriba de cada detalle, en dos presentaciones que elige cada lugar (`presentacion`, obligatoria): **en una línea** en logística
 (la página de la unidad y el drawer de `/logistica/gastos?vehiculo=`), y **compacta** en las fichas (`/vehiculos/[id]`, un bloque de la columna derecha, con `leads.ver`; `/leads/[id]`, un bloque
 de la columna derecha con la gestión de «Vehículos» al pie, con `vehiculos.ver`). Tres grupos: **Vinculado**, **Interesado** y **Cotizado** (éste sólo con `cotizaciones.ver`). **Un grupo sin nada (ni lo que no se ve) no
 se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «Relacionados»» del bloque o de la línea.
@@ -755,9 +758,9 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
   vehículo, su confirmación `?panel=desvincular`; desde un lead, con la cartera en el lugar con «Deshacer», sin ella lleva a `?seccion=vehiculos&panel=desvincular&vinculado=<id>`), «Vincular a un lead» (sin
   vínculo) y «Marcar un interesado» (los dos abren el selector de leads de la ficha: `?panel=vincular-lead`, `?panel=marcar-interesado`; en un resumen o en la unidad llevan a la ficha con el panel
   abierto), «Vincular o marcar un vehículo» (desde un lead: lleva a `?seccion=vehiculos&panel=agregar-vehiculo`) y «Ver todos» (`?relacionados=vinculado|interesado|cotizado`: un `<Drawer>` de a 20 por cursor con
-  «Ver más» hasta 500, `AvisoDeTope`; desde un resumen lleva a la ficha con el drawer abierto; el de Vinculado en un vehículo trae el vínculo vigente y los anteriores; el enlace abre su drawer
+  «Ver más» hasta 500, `AvisoDeTope`; se abre en el lugar, la ficha o la unidad; el de Vinculado en un vehículo trae el vínculo vigente y los anteriores; el enlace abre su drawer
   aunque el grupo no se dibuje).
-- **Estados:** cargando, `EsqueletoDeRelacionados` del alto de lo que viene (tres chips en una línea; el `h2` y tres celdas en la compacta) o, al releer un resumen, lo anterior con `aria-busy`;
+- **Estados:** cargando, `EsqueletoDeRelacionados` del alto de lo que viene (tres chips en una línea; el `h2` y tres celdas en la compacta);
   error «No pudimos cargar los relacionados.» con «Reintentar» (sin encabezado en una línea, bajo el `h2` en la compacta; la pantalla sigue); vacío total «Sin relacionados todavía.» con **una**
   acción a la vista (la primera: vincular) y el resto en el «⋯»; lo que quien mira no ve, «1 que no puedes ver» / «3 que no puedes ver», sin datos (el grupo se dibuja; un vínculo oculto no
   ofrece vincular, y «Desvincular» queda en su grupo); sin `leads.ver` (o `vehiculos.ver` desde un lead) no hay bloque; sin `cotizaciones.ver` no hay grupo Cotizado;

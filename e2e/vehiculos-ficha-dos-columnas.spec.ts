@@ -14,7 +14,7 @@ import { borrarQueFalta, sembrarQueFalta, type TerrenoDeQueFalta } from './sopor
 import { cajaDe, personaSinLogistica } from './soporte/ficha-del-vehiculo'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
-import { sembrarFotos } from './soporte/vehiculos-resumen'
+import { sembrarFotos } from './soporte/vehiculos-lista'
 
 // La ficha del vehículo en dos columnas (`docs/UX.md` › Vehículo), sobre el vehículo `uno` del terreno de «Qué falta» (A → B pide el BL y el contenedor) con
 // un vinculado, dos interesados, una cotización y dos fotos. Qué bloque ve quién: `bloques.test.ts`; las acciones: `acciones-a-dibujar.test.ts`.
@@ -277,22 +277,6 @@ test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en 
   // Una sola columna: la cabecera arriba del índice.
   expect((await cajaDe(h1)).abajo).toBeLessThanOrEqual((await cajaDe(indice(page))).y)
   await capturar(page, info, 'texto-al-200')
-})
-
-test('E2E ficha en dos columnas · el resumen del inventario es la versión corta, con «Abrir ficha»', async ({
-  page,
-}, info) => {
-  await entrar(page, duena)
-  await page.goto(`/vehiculos?origen=${terreno.origen.id}&vehiculo=${id}`)
-  const resumen = page.getByRole('dialog', { name: titulo, exact: true })
-  await expect(resumen).toBeVisible()
-  await expect(resumen.getByRole('tablist')).toHaveCount(0)
-  await expect(resumen.getByRole('link', { name: 'Abrir ficha' })).toHaveAttribute(
-    'href',
-    `/vehiculos/${id}`,
-  )
-  await expect(resumen.getByRole('region', { name: 'Relacionados' })).toBeVisible()
-  await capturar(page, info, 'resumen')
 })
 
 test('E2E ficha en dos columnas · el documento no crece con los documentos ni las cotizaciones', async ({

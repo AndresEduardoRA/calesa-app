@@ -18,7 +18,7 @@ type Props = {
   // Lo que leyó el servidor; null = no se pudo leer (el bloque dice el error con «Reintentar» y la ficha sigue).
   datos: RelacionadosDelVehiculo | null
   vehiculoId: string
-  lugar: Exclude<LugarDeRelacionados, 'resumen'>
+  lugar: LugarDeRelacionados
   para: ParaRelacionados
   huecos?: HuecosDeRelacionados
   numeroGlobal: boolean
