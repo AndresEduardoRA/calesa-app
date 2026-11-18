@@ -4,7 +4,7 @@ import { TAMANO_DE_VER_MAS, TOPE_DE_LO_CARGADO } from '../src/shared/lib/paginac
 import { entrar } from './soporte/alta'
 import { idDe } from './soporte/leads'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
-import { irAFicha, nuevoLead, tituloDeLaFicha } from './soporte/leads-ficha'
+import { esperarFichaHidratada, irAFicha, nuevoLead, tituloDeLaFicha } from './soporte/leads-ficha'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
 import {
   embudoPorDefecto,
@@ -148,6 +148,8 @@ test('con 1.000 (600 abiertas y 400 cerradas): el documento pesa lo de 10, cada 
 
   await page.goto(`/leads/${lead.id}?seccion=oportunidades`)
   await expect(items(page)).toHaveCount(10)
+  // Cada paso cuenta un pedido por clic: el primero, antes de hidratar, se perdería (el bucle no insiste como `verMasHasta`).
+  await esperarFichaHidratada(page)
   const seccion = page.locator('section[aria-labelledby="titulo-oportunidades"]')
   const nodos = () => seccion.evaluate((s) => s.querySelectorAll('*').length)
   const nodosCon10 = await nodos()
