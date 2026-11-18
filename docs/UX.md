@@ -415,8 +415,19 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   y último turno, con «Quitar»), «Habilitada, pero su rol no recibe turnos de la web» (con «Se cambia en Roles.»), «Actualizar», «Agregar a
   la rueda» (`?panel=agregar-a-la-rueda&q=`, busca en el equipo; avisa si el rol no recibe turnos) y la política de la cola (cola activa,
   minutos para contactar, días de pegajoso, máximo de abiertas e intentos).
-- **Orígenes** — `/configuracion/origenes`, `/[id]` (`origenes.gestionar`; lectura con `flujos.configurar` o `cotizaciones.configurar`):
-  `?panel=nuevo`; `/[id]?seccion=datos|campos|categorias`, `?campo=`, `?categoria=`; sin permiso, todo deshabilitado con motivo.
+- **Orígenes** — `/configuracion/origenes` (`origenes.gestionar`; lectura con `flujos.configurar` o `cotizaciones.configurar`): la frase
+  «De dónde vienen los vehículos: sus datos, sus campos y sus categorías.», «Nuevo origen» (`?panel=nuevo`) y los orígenes como tarjetas
+  (dos columnas desde 40 rem de contenedor; una al 200 % y en el celular): punto de color, nombre, «Subasta|Manual», «Activo|Inactivo», lo
+  que falta en corto («Sin fases», «Falta publicar la fórmula», «Falta activar apibara»; nada en un inactivo) o «Nada pendiente», y vehículos
+  y cotizaciones; la tarjeta entera abre sus datos. Cada parte de un origen es su sub-ruta, en el menú de Configuración bajo «Orígenes»
+  (en el celular, «Orígenes › Campos» en el selector), con «← Orígenes», el nombre como `h1`, la frase de la parte y los siguientes pasos:
+  `/[id]/datos` (el formulario con la barra fija de cambios sin guardar y, debajo, activar, desactivar o eliminar, `?panel=eliminar-origen`);
+  `/[id]/campos` («Datos clave (n de 4)» en orden con «Subir», «Bajar» y «Quitar», «Datos comunes» con su estrella, y el layout de campos
+  con la estrella en cada campo activo y `?campo=`: cada estrella o botón guarda al instante, de a uno; con 4, las demás estrellas se apagan
+  con «Ya hay 4 datos clave: quita uno para sumar este.»; vacíos, «Sin datos clave: la ficha mostrará los de fábrica de su tipo.»);
+  `/[id]/categorias` (`?categoria=`). `/[id]` y `/[id]?seccion=…` redirigen a su parte conservando `?campo=`, `?categoria=` y `?panel=`.
+  Sin permiso de gestión todo se ve deshabilitado con su motivo (las estrellas: «Para elegir los datos clave hace falta gestionar los
+  orígenes.»).
 - **Equipo** — `/configuracion/equipo` (`equipo.usuarios.*`): tabla desde 768 px, tarjetas debajo, panel lateral. `?q=&estado=` se
   resuelven en el servidor («jose» encuentra «José»); dibuja las 100 primeras por nombre y lo dice al pie; la persona se gestiona desde su
   «⋯», sin resumen. `?panel=invitar`; `?persona=`; `?baja=`.

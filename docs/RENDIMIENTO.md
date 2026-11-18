@@ -569,7 +569,12 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Configuración (`/configuracion/*`), sin tope propio: el layout suma a cada página el menú de Configuración y la cabecera (Server Components) y
   tres piezas de cliente chicas (la marca del enlace, la vuelta y el `<select>` del selector de sección, ≈ 2 KB); no importa `secciones.ts`, `permisos.ts` ni
   ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
-  `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta.
+  `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta. Las sub-secciones plantilla (las
+  partes de un origen) suman al menú una pieza de cliente chica que las resuelve con la ruta (`subsecciones-del-menu.tsx`).
+- Configuración › Orígenes: la lista de tarjetas, 215,7 KB gz en frío (29,4 propios de la página). Cada parte de un origen es su ruta y
+  carga sólo lo suyo (`pantallas/origen-datos|campos|categorias.ts`) sobre una base común de 83 KB gz: `/[id]/datos` 284,7 KB (15,5
+  propios), `/[id]/campos` 282,1 (12,8, con los datos clave) y `/[id]/categorias` 280,1 (10,8). Sin `diferido()` nuevo: el bloque de datos
+  clave se ve apenas carga «Campos». Medido con los manifiestos del build de e2e (`.next-e2e`).
 - «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`); el
   botón viaja con `FilterShell` aunque la lista no lo dibuje.
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`
