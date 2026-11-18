@@ -58,7 +58,8 @@ function Linea({ accion, alElegir }: { accion: AccionDeMenu; alElegir: (clave: s
     case 'accion':
       return (
         <DropdownMenuItem
-          className={RENGLON}
+          className={accion.principal ? `${RENGLON} font-semibold` : RENGLON}
+          data-principal={accion.principal ? '' : undefined}
           variant={accion.destructiva ? 'destructive' : 'default'}
           disabled={accion.deshabilitada ?? false}
           onClick={() => {
