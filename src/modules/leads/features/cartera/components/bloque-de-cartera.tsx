@@ -1,6 +1,6 @@
 'use client'
 
-import { LogOutIcon, SendIcon, UserMinusIcon, UserPlusIcon } from 'lucide-react'
+import { UserMinusIcon } from 'lucide-react'
 import { formatearFecha } from '@/shared/lib/fechas'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
@@ -9,7 +9,6 @@ import { useRegional } from '@/shared/ui/regional'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import {
   ETIQUETA_DE_ACCESO,
-  ETIQUETA_DE_SALIR,
   TITULO_DE_CARTERA,
   sePuedeQuitarA,
   type AccionesDeCartera,
@@ -18,6 +17,7 @@ import {
 import type { NumerosDeLead } from '@/shared/lib/numeros-de-lead'
 import { usePanelDeLead } from '../../ficha/hooks/use-panel-de-lead'
 import type { CarteraDelLead } from '../hooks/use-cartera'
+import { BotonesDeCartera } from './botones-de-cartera'
 import { DialogoDeSalirDiferido, PanelDeCarteraDiferido } from './diferidos'
 
 type Props = {
@@ -78,50 +78,6 @@ function FilaDePersona({
         </Button>
       ) : null}
     </li>
-  )
-}
-
-function BotonesDeCartera({
-  acciones,
-  enCurso,
-  alSalir,
-}: {
-  acciones: AccionesDeCartera
-  enCurso: boolean
-  alSalir: () => void
-}) {
-  const panel = usePanelDeLead()
-  return (
-    <div className="flex flex-wrap gap-2">
-      {acciones.compartir ? (
-        <Button
-          variant="outline"
-          className="h-11 md:h-9"
-          onClick={panel.compartir.abrir}
-          disabled={enCurso}
-        >
-          <UserPlusIcon aria-hidden />
-          Compartir
-        </Button>
-      ) : null}
-      {acciones.transferir ? (
-        <Button
-          variant="outline"
-          className="h-11 md:h-9"
-          onClick={panel.transferir.abrir}
-          disabled={enCurso}
-        >
-          <SendIcon aria-hidden />
-          Transferir
-        </Button>
-      ) : null}
-      {acciones.salir ? (
-        <Button variant="ghost" className="h-11 md:h-9" onClick={alSalir} disabled={enCurso}>
-          <LogOutIcon aria-hidden />
-          {ETIQUETA_DE_SALIR}
-        </Button>
-      ) : null}
-    </div>
   )
 }
 
