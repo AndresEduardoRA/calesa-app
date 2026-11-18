@@ -42,6 +42,10 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `ok(ResultadoDeCrear)`, `revalidatePath` sólo si entró) manda la versión vista (`actualizadoEn`), las entradas al día y título, notas y vehículo sin
   tocar; apagado sin cambios, salvo con un pendiente (4-21) o si lo de hoy no es lo guardado. Pendiente y borrador van por persona y cotización, el
   borrador además con la versión (`claves-de-la-hoja.ts`).
+- **`/cotizaciones/comparar?ids=a,b[,c]&returnTo=`** (pide sesión; `cotizaciones.ver` de cada una lo decide la base): «Comparar cotizaciones», del área
+  `aprobada` (`areas/aprobada/CLAUDE.md` › «Comparar cotizaciones»; `pantallas/aprobada-comparar.ts` y `aprobada-esqueleto-de-comparar.ts`). Lo guardado sin
+  recálculo. El enlace (`rutaDeComparar`) y la lectura de `ids` (`idsParaComparar`: 2 o 3 guids distintos, en minúsculas, en el orden de la URL) son del
+  núcleo (`entities/ruta-de-comparar.ts`): los usan «De este vehículo» y la lista agrupada.
 - La hoja guarda en la URL lo que abre (se borra al guardar): `?panel=avanzado`, `?panel=vista-previa` (la tarjeta; sólo con `<ProveedorDeLaTarjeta>`,
   también para quien sólo ve; en una guardada dibuja lo guardado), `?ayuda=texto|tabla&nodo=<id>` (sólo lectura; la URL no abre lo que la hoja no dibuja)
   y, con el proveedor del área, `?ajuste=celda&nodo=<id>` (el ⚙, también dentro de «Avanzado»).

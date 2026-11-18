@@ -265,6 +265,11 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 - Bloque «Cotizaciones» de `/vehiculos/[id]`: la misma lectura, al acercarse el bloque (nunca con el documento), código con `diferido()` en su
   `diferidos.tsx`. `e2e/vehiculos-cotizaciones.spec.ts`: ≤ 5.250 B, ≤ 65 nodos con 20 y ≤ 1.576 con 500; la 25.ª respuesta pesa lo que la
   1.ª. Con «propios» hereda el límite del historial.
+- **Comparar cotizaciones** (`/cotizaciones/comparar`): a lo sumo 3 `cotizacion_hoja_guardada()` (por `cotizaciones_pkey`) y una lectura de las marcas por
+  PostgREST de ≤ 3 filas (`cotizaciones_pkey` con la aprobada por `cotizaciones_aprobadas_cotizacion_id_key`, `.limit(ids.length)`), todo en paralelo tras
+  `<Suspense>`; sin `cotizacion_evaluar`. Ninguna lista que crezca: sin cursor, sin conteo, sin medición propia. Lo dibujado: ≤ 3 columnas × los nodos
+  visibles de cada versión (el diseño tiene tope de 40 ítems por sección), más los porcentajes de los pares y lo aparte. El modelo se arma en el servidor y
+  viaja plano. JS en frío: `'/cotizaciones/comparar'` en `e2e/soporte/presupuestos.ts` (sin la hoja: la tabla, `<Monto>` y la action de aprobar): medido 358,7 KB, tope 380. Las casillas y «Comparar» de «De este vehículo» van en su chunk diferido: `/cotizaciones/[id]` midió 459,5 KB (tope 460).
 - **«De este vehículo»** (el bloque de la guardada y del resumen de `/cotizaciones`): `cotizaciones_de_este_vehiculo()` desde el navegador, de a
   `TAMANO_DE_ESTE_VEHICULO` (10) + 1 por cursor `(creado_en, id)` sobre `cotizaciones_vehiculo_creado_idx` y, sin cursor, la aprobada por
   `cotizaciones_aprobadas_pkey`; «Ver más» hasta `TOPE_DE_ESTE_VEHICULO` (100), dibujado con `cortarAlTope()`. Origen, autor y si es la aprobada salen de las

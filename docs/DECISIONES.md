@@ -404,6 +404,16 @@ las trampas, en `docs/LECCIONES.md`.
 - **El nombre del modo por `_nombre_del_modo()`.** `formulas` sólo la lee quien configura; el nombre del modo ya lo dan la hoja y la tarjeta a quien tiene
   `cotizaciones.ver` del origen, así que un `security definer` con el mismo chequeo (el de `cotizacion_tarjeta`) no expone nada nuevo. Se llama una vez por
   versión y modo de la página (cada llamada pregunta el permiso: por fila eran ≈ 90 buffers cada una).
+- **Comparar cotizaciones vive en el área `aprobada`.** Necesita «Aprobar esta» (del área) y la lectura de la guardada (del núcleo); un área nueva o una
+  carpeta del núcleo no podrían importar `aprobada`. El enlace y la lectura de `ids` (`entities/ruta-de-comparar.ts`) van al núcleo porque los escriben dos
+  áreas (`aprobada` y `listado`).
+- **Comparar compara lo guardado y alinea en TS.** Una `cotizacion_hoja_guardada()` por columna, sin `cotizacion_evaluar` (lo que se aprueba es lo
+  guardado); la alineación por nodo sale del diseño y de los valores ya recortados, nunca de `formulas`. Un «grupo» es una **sección del diseño**: la
+  etiqueta de un grupo de la fórmula no viaja a quien no configura, así que los subtotales de `totales.grupos` no se dibujan; un subtotal se ve si su ítem
+  vino en el diseño y su valor en los valores. Los chips de una tabla no suman fila (su nodo ya tiene la celda).
+- **Las columnas de comparar, en el orden de la lista de «De este vehículo».** La aprobada primero y después de la más nueva, no en el orden en que se
+  marcaron: así la aprobada, si está elegida, es la referencia de lo distinto. El `returnTo` desde el resumen del listado es `/cotizaciones?cotizacion=<id>`,
+  sin los filtros (leerlos pediría `useSearchParams()` fuera de un `<Suspense>`).
 - **El bloque es del área `aprobada`.** Usa «Aprobar» y la insignia del área; una pantalla sin prefijo sería núcleo, que no importa áreas. Sale por
   `pantallas/aprobada-de-este-vehiculo.ts` para la ficha del vehículo y por `pantallas/aprobada-resumen.ts` para el resumen.
 - **La aprobada al día entre islas, sin refrescar.** Aprobar desde el bloque no puede refrescar la guardada (perdería lo tipeado): `avisarAprobada()` y

@@ -1,10 +1,16 @@
 // El resumen `?cotizacion=` del listado `/cotizaciones` (4.16-4b): qué cotización está abierta, de dónde sale lo que se dibuja y cómo se pide al servidor la que no está
 // en la página. Puro: sin I/O.
 import { z } from 'zod'
+import { RUTAS } from '@/shared/lib/rutas'
 import type { CotizacionDelListado } from './filas-del-listado'
 
 // La clave de la URL del resumen: la leen la página (que lee la cotización fuera de la página) y el hook que la abre.
 export const CLAVE_DE_RESUMEN_DE_COTIZACION = 'cotizacion'
+
+// El resumen de una cotización en el listado, sin los filtros: a donde vuelve «Comparar cotizaciones» abierto desde él (leer los filtros pediría `useSearchParams()`
+// fuera de un `<Suspense>`).
+export const rutaDelResumen = (id: string): string =>
+  `${RUTAS.cotizaciones}?${CLAVE_DE_RESUMEN_DE_COTIZACION}=${id}`
 
 // El tamaño de la búsqueda de UNA cotización por su id (`cotizaciones_listado()` con el cursor justo después de ella): no es un tamaño de página.
 export const UNA = 1

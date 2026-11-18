@@ -22,6 +22,10 @@ let restaurar = async () => {}
 // una sembrada en esa misma subasta (4.15-3), que el spec crea y quita.
 const TITULO_DEL_VEHICULO_MEDIDO = 'E2E JS de una cotización guardada'
 let cotizacionMedida = ''
+// «Comparar cotizaciones» (T311) se mide con dos cotizaciones de OTRO vehículo de la subasta: con dos en el vehículo medido, `/cotizaciones/[id]` dibujaría «De este
+// vehículo» y movería su medición.
+const TITULO_DEL_VEHICULO_COMPARADO = 'E2E JS de comparar cotizaciones'
+let cotizacionesComparadas: string[] = []
 // La ficha de un lead de la dueña de la prueba (`/leads/[id]`), con todos sus bloques: lo crea el spec.
 let leadMedido = ''
 const destinoDe = (ruta: string): string => {
@@ -47,28 +51,38 @@ const destinoDe = (ruta: string): string => {
   if (ruta === '/leads/[id]') {
     return `/leads/${leadMedido}`
   }
+  if (ruta === '/cotizaciones/comparar') {
+    return `/cotizaciones/comparar?ids=${cotizacionesComparadas.join(',')}`
+  }
   return ruta === '/cotizaciones/[id]' ? `/cotizaciones/${cotizacionMedida}` : ruta
 }
 
-// Una cotización de la subasta de la semilla sobre un vehículo suyo, creada por la dueña de la prueba.
-function sembrarLaCotizacionMedida(creadoPor: string): void {
+// `cuantas` cotizaciones de la subasta de la semilla sobre un vehículo suyo con ese título, creadas por la dueña de la prueba; sus ids, de la más nueva a la más vieja.
+function sembrarEnUnVehiculo(titulo: string, creadoPor: string, cuantas: number): string[] {
   const origen = sql("select id from public.origenes where clave = 'subasta_usa'")
   sql(
-    `insert into public.vehiculos (origen_id, titulo) values (${literal(origen)}::uuid, ${literal(TITULO_DEL_VEHICULO_MEDIDO)})`,
+    `insert into public.vehiculos (origen_id, titulo) values (${literal(origen)}::uuid, ${literal(titulo)})`,
   )
-  const vehiculo = sql(
-    `select id from public.vehiculos where titulo = ${literal(TITULO_DEL_VEHICULO_MEDIDO)}`,
+  const vehiculo = sql(`select id from public.vehiculos where titulo = ${literal(titulo)}`)
+  sembrarCotizaciones({ origenId: origen, vehiculoId: vehiculo, creadoPor, cuantas })
+  return sql(
+    `select id from public.cotizaciones where vehiculo_id = ${literal(vehiculo)}::uuid order by creado_en desc, id`,
   )
-  sembrarCotizaciones({ origenId: origen, vehiculoId: vehiculo, creadoPor, cuantas: 1 })
-  cotizacionMedida = sql(
-    `select id from public.cotizaciones where vehiculo_id = ${literal(vehiculo)}::uuid`,
-  )
+    .split('\n')
+    .filter((id) => id !== '')
+}
+
+function sembrarLaCotizacionMedida(creadoPor: string): void {
+  cotizacionMedida = sembrarEnUnVehiculo(TITULO_DEL_VEHICULO_MEDIDO, creadoPor, 1)[0] ?? ''
+  cotizacionesComparadas = sembrarEnUnVehiculo(TITULO_DEL_VEHICULO_COMPARADO, creadoPor, 2)
 }
 
 function quitarLaCotizacionMedida(): void {
-  sql(`
-    delete from public.cotizaciones where vehiculo_id in (select id from public.vehiculos where titulo = ${literal(TITULO_DEL_VEHICULO_MEDIDO)});
-    delete from public.vehiculos where titulo = ${literal(TITULO_DEL_VEHICULO_MEDIDO)}`)
+  for (const titulo of [TITULO_DEL_VEHICULO_MEDIDO, TITULO_DEL_VEHICULO_COMPARADO]) {
+    sql(`
+      delete from public.cotizaciones where vehiculo_id in (select id from public.vehiculos where titulo = ${literal(titulo)});
+      delete from public.vehiculos where titulo = ${literal(titulo)}`)
+  }
 }
 
 test.beforeAll(async ({}, info) => {

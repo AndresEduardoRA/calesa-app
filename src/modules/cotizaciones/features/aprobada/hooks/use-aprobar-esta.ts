@@ -5,9 +5,14 @@ import type { FilaDeEsteVehiculo } from '../../../entities/aprobada/de-este-vehi
 import { aprobarLaCotizacion } from './aprobar-la-cotizacion'
 import { avisarAprobada } from './aprobada-del-vehiculo'
 
-// «Aprobar esta» de una fila de «De este vehículo»: un envío a la vez (`enCurso`, la fila que va) y, al entrar o al deshacer, el aviso a las otras islas del
-// vehículo y `alCambiar` (el bloque relee su primera página; el resumen refresca el listado).
-export function useAprobarEsta(vehiculoId: string, fuente: string, alCambiar: () => void) {
+// «Aprobar esta» de una fila de «De este vehículo» o de una columna de «Comparar cotizaciones»: un envío a la vez (`enCurso`, la que va) y, al entrar o al deshacer,
+// el aviso a las otras islas del vehículo y `alCambiar` con la que quedó aprobada (el bloque relee su primera página; el resumen refresca el listado; comparar mueve
+// la insignia).
+export function useAprobarEsta(
+  vehiculoId: string,
+  fuente: string,
+  alCambiar: (idAprobada: string) => void,
+) {
   const [enCurso, setEnCurso] = useState<string | null>(null)
   const aprobar = (fila: Pick<FilaDeEsteVehiculo, 'id' | 'numero' | 'actualizadoEn'>) => {
     setEnCurso(fila.id)
@@ -17,7 +22,7 @@ export function useAprobarEsta(vehiculoId: string, fuente: string, alCambiar: ()
       actualizadoEn: fila.actualizadoEn,
       alCambiar: (_aprobada, idAprobada) => {
         avisarAprobada({ vehiculoId, aprobadaId: idAprobada, fuente })
-        alCambiar()
+        alCambiar(idAprobada)
       },
     }).finally(() => {
       setEnCurso(null)
