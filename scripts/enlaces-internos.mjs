@@ -27,6 +27,8 @@ const IGNORADOS = new Set([
   '.temp',
   '.branches',
   'test-salidas',
+  // La copia de referencia del cotizador anterior (docs/referencias, ignorada por git): docs y código de otra app.
+  'cotizador-actual',
 ])
 const EXTENSIONES = new Set([
   '.md',

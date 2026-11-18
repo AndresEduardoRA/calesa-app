@@ -394,5 +394,7 @@ export default defineConfig([
     '.claude/worktrees/**',
     // Los worktrees del orquestador (scripts/orquestador), por lo mismo.
     '.orquestador/**',
+    // La copia de referencia del cotizador anterior (ignorada por git): código de otra app, nunca de este árbol.
+    'docs/referencias/**',
   ]),
 ])
