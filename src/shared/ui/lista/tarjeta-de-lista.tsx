@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { cn } from 'cn'
 import { esClicPropio } from '@/shared/lib/clic-de-fila'
+import { EsquinaDeAcciones } from './esquina-de-acciones'
 import { CLASES_DE_VISTO, useVistoDeLista } from './visto'
 
 type Props = {
@@ -11,7 +12,8 @@ type Props = {
   abierta?: boolean
   // El id del registro, para su marca de «visto».
   idDeVisto?: string
-  // El «⋯» y, si la lista las tiene, la casilla: objetivos propios de la tarjeta, fuera de la zona que abre.
+  // El «⋯» y, si la lista las tiene, la casilla: objetivos propios de la tarjeta, fuera de la zona que abre. Van en su esquina de
+  // arriba a la derecha (`<EsquinaDeAcciones>`); una tarjeta con foto arriba no los pasa acá: los pone sobre la foto.
   acciones?: ReactNode
   children: ReactNode
 }
@@ -44,7 +46,7 @@ export function TarjetaDeLista({ alAbrir, abierta = false, idDeVisto, acciones, 
         }
       >
         <div className="grid min-h-11 min-w-0 flex-1 gap-2 p-3">{children}</div>
-        {acciones ? <div className="flex shrink-0 items-start p-1">{acciones}</div> : null}
+        {acciones ? <EsquinaDeAcciones>{acciones}</EsquinaDeAcciones> : null}
       </article>
     </li>
   )

@@ -57,6 +57,8 @@ Antes de construir una pantalla, lee su fila en `docs/UX.md` (patrón, roles, es
 - El clic en la fila abre su resumen (`?lead=`, `?vehiculo=`) salvo casilla, «⋯», enlace o botón propio
   (`esClicPropio` de `src/shared/lib/clic-de-fila.ts`; `data-no-abre`). Con teclado, `<AbrirResumen nombre>`.
   Lo vigila `scripts/guardas/listas-con-patron.ts`.
+- El «⋯» de una tarjeta de la lista va en `<EsquinaDeAcciones>` (`TarjetaDeLista acciones` ya la usa; sobre una foto, `sobreImagen`, y la
+  casilla con `lado="izquierda"`), nunca suelto en el contenido ni en el pie; en la tabla, en `CeldaPegada lado="acciones"`.
 - Una lista de tarjetas no ensancha la página con el texto al 200 %: `<ul>` con
   `grid-cols-[minmax(0,1fr)]`, `<li>` con `min-w-0`, `flex-wrap` en barras que se parten. Se comprueba
   con `sinScrollHorizontal()` y `aLaVistaSinDesplazar()` de `e2e/soporte/recorrido.ts`.
