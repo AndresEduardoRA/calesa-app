@@ -312,10 +312,14 @@ la pide.
 - **`visibilidad`** = `{nodo: {ver, editar}}` con **claves de nivel**, no permisos (`_compilar_visibilidad()`): cada ítem da su nodo con
   su nivel efectivo (y el `pct` de una celda con `secundario`); el total y lo `aparte` tienen `ver: todos`; lo que no se dibuja entra
   como `{ver: todos, editar: null}`. Lo que no figura no viaja, salvo a quien configura.
-- **Tonos** (`tonos`: clave, nombre, fondo/borde/tinta en claro y oscuro): sólo por `tono_crear|guardar|eliminar`
-  (`cotizaciones.configurar`); hasta **24**. **El AA se valida en la base** (tinta sobre fondo ≥ 4,5:1); el texto sobre un tono va en
-  su **tinta**. Un tono o un nivel que alguna versión nombra no se elimina (23503): `_tono_en_uso()` busca la clave en los grupos
-  (`formulas_tonos_idx`) y en la cabecera y las secciones del diseño (`formulas_tonos_del_diseno_idx`, GIN sobre `_tonos_del_diseno(diseno)`).
+- **Colores** (nombre técnico heredado: la tabla `tonos` y las RPC `tono_*`; clave, nombre, `hex` y fondo/borde/tinta en claro y oscuro):
+  sólo por `tono_crear(p_id, p_nombre, p_hex)`, `tono_guardar(…, {nombre?, hex?})` y `tono_eliminar` (`cotizaciones.configurar`; las tres
+  devuelven la lista entera); hasta **48**. **La hoja se deriva del hex en la base** (`_color_derivar`, espejo de `derivarColores()` en
+  `entities/colores.ts`, probado con `supabase/tests/casos-de-colores.json`) con AA garantizado (tinta sobre fondo ≥ 4,5:1) y se guarda en
+  `claro_*` y `oscuro_*`; guardar el mismo hex no vuelve a derivar. El texto sobre un color en la hoja va en su **tinta**; en la tarjeta, el
+  de `_color_tinta_de_la_tarjeta()`. Un color o un nivel que alguna versión nombra no se elimina (23503): `_tono_en_uso()` busca la clave en
+  los grupos (`formulas_tonos_idx`) y en la cabecera y las secciones del diseño (`formulas_tonos_del_diseno_idx`, GIN sobre
+  `_tonos_del_diseno(diseno)`).
 - **La fórmula sólo la lee quien la configura** (`cotizaciones.configurar` del origen), y `formula_auditar()` no copia `definicion`,
   `params`, `diseno` ni `visibilidad` a `actividad`. Semilla: `subasta_usa`, `planilla_usa`, `oficina` (`supabase/semillas/`).
 
@@ -381,8 +385,10 @@ candado de la aprobada del vehículo (aviso). Con todo tomado vuelve a mirar ver
 moverla. Aprobar la que ya lo es no cambia nada. Deja `cotizacion.aprobada` en la actividad y devuelve `{cotizacion, anterior}`; `anterior` sólo viaja
 si quien aprueba la ve, puede aprobarla (su origen) y sigue activa (es lo que necesita «Deshacer»).
 
-**Dónde se aprueba otra:** «Aprobar» de la cabecera de la guardada, «Aprobar» del «⋯» del listado y «Aprobar esta» del bloque **De este vehículo**
-(la guardada y el resumen del listado). El bloque lee `cotizaciones_de_este_vehiculo(vehículo, tamaño, cursor)` (invocadora: una página por
+**Dónde se aprueba otra:** «Aprobar» de la cabecera de la guardada, «Aprobar» del «⋯» del listado, «Aprobar esta» del bloque **De este vehículo**
+(la guardada y el resumen del listado) y «Aprobar esta» al pie de cada columna de **Comparar cotizaciones** (`/cotizaciones/comparar`: lo guardado de
+2 o 3 del mismo vehículo, cada una con `cotizacion_hoja_guardada()` y sin `cotizacion_evaluar`, alineado por nodo en TS con el diseño y los valores ya
+recortados; nada se lee de `formulas`). El bloque lee `cotizaciones_de_este_vehiculo(vehículo, tamaño, cursor)` (invocadora: una página por
 `cotizaciones_vehiculo_creado_idx` y, sin cursor, la aprobada por `cotizaciones_aprobadas_pkey` marcada `fijada`), que trae la versión de cada fila para
 aprobarla y el nombre de su modo de tipo de cambio por `_nombre_del_modo()` (`security definer`: el nombre que ya dan la hoja y la tarjeta a quien
 tiene `cotizaciones.ver` del origen, una vez por versión y modo).
@@ -712,7 +718,7 @@ cotización con comprobante no va a la papelera ni la baja marcar otra final. Er
 
 ## Plantilla de tarjeta (PDF)
 
-Filas por grupo con el tono del grupo (o el que la plantilla elija del catálogo), título de la opción de la variante y la garantía
+Filas por grupo con el color del grupo (o el que la plantilla elija del catálogo), título de la opción de la variante y la garantía
 condicionada a su interruptor; sólo nodos del nivel «todos». PDF en servidor con `@react-pdf/renderer`.
 
 **La forma, declarativa como el diseño:** `plantillas_tarjeta.definicion` = `{grupos: [{grupo, tono?}], etiquetas?, leyendas?,
@@ -763,7 +769,7 @@ pierde los microsegundos) y pasan en serie por un candado por origen (`pg_adviso
 - **Texto que la base no lee** (`\u0000`, surrogate suelto: 22P02, 22P05): la action lo ataja antes (`revisarTextoParaLaBase()`, tope de 8
   niveles) y lo dice junto al campo.
 - **La lectura** (`leerPlantillaDelOrigen()`, con la sesión de quien mira): borrador y publicada (la que perdió la forma llega con
-  `motivo` y sin plantilla), la fórmula publicada con lo que mira el validador y los tonos (tope 24); sin fórmula publicada no hay contexto.
+  `motivo` y sin plantilla), la fórmula publicada con lo que mira el validador y los colores (tope 48); sin fórmula publicada no hay contexto.
 
 ### El editor de la plantilla
 
@@ -792,9 +798,11 @@ grupos: [{id, etiqueta, plazo, tono, bucket, filas: [{nodo, etiqueta, leyenda}]}
 {clave: {bucket: nombre}}}, variante: {nodo, opciones: [{clave, titulo}]}, tonos, moneda_bs}`.
 
 Las filas van en el orden de la fórmula; la etiqueta, la de la plantilla o la del nodo; la leyenda, la de la plantilla o la
-`descripcion`. El tono de un grupo es el que elige la plantilla si sigue en el catálogo; si no, el del grupo (`tono_eliminar` no mira las
+`descripcion`. El color de un grupo es el que elige la plantilla si sigue en el catálogo; si no, el del grupo (`tono_eliminar` no mira las
 plantillas). Los tipos de cambio van por su `nombre` de `tipos_cambio` (nulo si no hay uno activo), nunca por el id ni la clave del nodo;
-sin la columna, vacíos. `tonos` tiene la forma de la hoja (claro y oscuro) y `moneda_bs`, su regla. **Ningún id, etiqueta ni texto de un
+sin la columna, vacíos. `tonos` es `[{clave, hex, tarjeta: {fondo, borde, tinta}}]`: de fondo el hex, el borde claro y el texto que se
+lee (`_color_tinta_de_la_tarjeta(hex, claro_tinta)`: la tinta clara si cumple AA sobre el hex; si no, #1b2130 o blanco, el de más contraste),
+igual en los dos temas; y `moneda_bs`, su regla. **Ningún id, etiqueta ni texto de un
 nodo sin `ver: todos` sale, para nadie** (lo prueba `cotizacion-tarjeta.sql` por cada nivel; el inventario de
 `cotizaciones-visibilidad.sql` la registra).
 

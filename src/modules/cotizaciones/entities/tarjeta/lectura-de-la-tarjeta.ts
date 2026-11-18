@@ -22,7 +22,8 @@ const esquemaDeUnGrupo = z.object({
 
 const color = z.string().refine(esHex)
 const colores = z.object({ fondo: color, borde: color, tinta: color })
-const esquemaDeUnTono = z.object({ clave: z.string().min(1), claro: colores, oscuro: colores })
+// Un color del catálogo con lo que pinta la tarjeta (`_color_tinta_de_la_tarjeta()` ya eligió el texto que se lee): igual en los dos temas.
+const esquemaDeUnTono = z.object({ clave: z.string().min(1), hex: color, tarjeta: colores })
 
 const esquemaDeLasOpciones = z.object({
   clave: z.string().min(1),
@@ -65,6 +66,9 @@ const esquemaDeLaLectura = z.discriminatedUnion('estado', [
 
 export type FilaLeida = { nodo: string; etiqueta: string; leyenda: string | null }
 
+export type ColoresDeLaTarjeta = { fondo: string; borde: string; tinta: string }
+export type ColorDeLaTarjeta = { clave: string; hex: string; tarjeta: ColoresDeLaTarjeta }
+
 export type GrupoLeido = {
   id: string
   etiqueta: string
@@ -87,8 +91,8 @@ export type TarjetaLista = {
     modos: ReadonlyMap<string, ReadonlyMap<string, string | null>>
   }
   variante: { nodo: string; opciones: readonly { clave: string; titulo: string }[] } | null
-  // Los tonos que usan los grupos, ya validados (`#rrggbb`): `<EstiloDeTonos>` los escribe.
-  tonos: readonly z.infer<typeof esquemaDeUnTono>[]
+  // Los colores que usan los grupos, ya validados (`#rrggbb`): cada grupo se pinta con su `tarjeta`.
+  tonos: readonly ColorDeLaTarjeta[]
 }
 
 export type LecturaDeLaTarjeta = TarjetaLista | { estado: 'sin_plantilla' }

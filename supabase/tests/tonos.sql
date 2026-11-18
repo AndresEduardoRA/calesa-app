@@ -1,5 +1,6 @@
--- El catálogo de tonos de la empresa (paso 4.08 prompt 2): la semilla, el contraste AA contra `color.ts`, crear,
--- guardar y eliminar por RPC, y que un tono que una versión de una fórmula nombra no se elimine. Corre después de `humo.sql`: la dueña es
+-- El catálogo de colores de la empresa (nombre técnico heredado: `tonos`): la semilla, el contraste AA contra `color.ts`, crear y guardar por hex
+-- (la hoja se deriva en la base: `_color_derivar`, probado contra TS en `areas/diseno/colores.sql`), eliminar por RPC, y que un color que una versión de
+-- una fórmula nombra no se elimine. Corre después de `humo.sql`: la dueña es
 -- `…0001`; `…00b1` es una persona sin `cotizaciones.configurar`.
 -- `scripts/probar-schema.mjs` carga antes `supabase/tests/corpus-de-contraste.json` en `_corpus_de_contraste` (lo genera TS con `contraste()`).
 -- Cada bloque deja la base como la encontró.
@@ -14,13 +15,7 @@ exception when others then
   end if;
 end $$;
 
-create or replace function pg_temp.colores(p_fondo text default '#fff7d6', p_tinta text default '#1b2130', p_ofondo text default '#3e3f3c', p_otinta text default '#f2f4f8')
-returns jsonb language sql as $$
-  select jsonb_build_object('claro', jsonb_build_object('fondo', p_fondo, 'borde', '#e9d27a', 'tinta', p_tinta),
-                            'oscuro', jsonb_build_object('fondo', p_ofondo, 'borde', '#797251', 'tinta', p_otinta))
-$$;
-
--- @test tonos: la semilla es la del corpus (calculada con los tokens) y pasa AA en claro y en oscuro
+-- @test tonos: la semilla es la del corpus (calculada con los tokens), su hex es su fondo claro y pasa AA en claro y en oscuro
 do $$
 declare t jsonb; r record;
 begin
@@ -32,11 +27,12 @@ begin
         t -> 'oscuro' ->> 'fondo', t -> 'oscuro' ->> 'borde', t -> 'oscuro' ->> 'tinta') then
       raise exception 'el tono «%» no es el del corpus: %', r.clave, to_jsonb(r);
     end if;
+    if r.hex is distinct from t -> 'claro' ->> 'fondo' then raise exception 'el hex de «%» no es su fondo claro: %', r.clave, r.hex; end if;
     if public._color_contraste(r.claro_tinta, r.claro_fondo) < 4.5 or public._color_contraste(r.oscuro_tinta, r.oscuro_fondo) < 4.5 then
       raise exception 'el tono «%» no pasa AA', r.clave; end if;
   end loop;
   if (select count(*) from public.tonos where clave in ('amarillo', 'verde', 'naranja')) <> 3 then raise exception 'faltan tonos de fábrica'; end if;
-  if public._tonos_tope() <> 24 then raise exception 'el tope: %', public._tonos_tope(); end if;
+  if public._tonos_tope() <> 48 then raise exception 'el tope: %', public._tonos_tope(); end if;
 end $$;
 
 -- @test tonos: _color_contraste da lo mismo que contraste() de color.ts en los 360 pares del corpus, y decide igual el umbral
@@ -57,92 +53,115 @@ begin
   if abs(public._color_contraste('#000000', '#ffffff') - 21) > 1e-9 or public._color_contraste('#3b5bdb', '#3b5bdb') <> 1 then raise exception 'los extremos'; end if;
 end $$;
 
--- @test tonos: la dueña crea, el reintento no duplica, la clave sale del nombre (con tildes), el nombre no se repite y los colores se validan
+-- @test tonos: la dueña crea por hex, el reintento no duplica, la clave sale del nombre (con tildes), el nombre no se repite, el hex se valida y la hoja es la derivada
 do $$
-declare r jsonb; v_id uuid := gen_random_uuid(); v_otro uuid := gen_random_uuid();
+declare r jsonb; v_id uuid := gen_random_uuid(); v_otro uuid := gen_random_uuid(); v_h text; t public.tonos;
+  v_teal jsonb := public._color_derivar('#31869b');   -- el ayudante no es de authenticated: se calcula antes de tomar su rol
 begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
   set local role authenticated;
-  r := public.tono_crear(v_id, '   Logística   y  más ', pg_temp.colores());
-  if (select clave || '|' || nombre from public.tonos where id = v_id) <> 'logistica_y_mas|Logística y más' then
-    raise exception 'la clave o el nombre: %', (select clave || '|' || nombre from public.tonos where id = v_id); end if;
+  r := public.tono_crear(v_id, '   Logística   y  más ', '#31869b');
+  if (select clave || '|' || nombre || '|' || hex from public.tonos where id = v_id) <> 'logistica_y_mas|Logística y más|#31869b' then
+    raise exception 'la clave, el nombre o el hex: %', (select clave || '|' || nombre || '|' || hex from public.tonos where id = v_id); end if;
   if (r ->> 'repetido')::boolean then raise exception 'la primera vez no es un reintento'; end if;
-  r := public.tono_crear(v_id, 'Logística y más', pg_temp.colores());
+  -- La hoja guardada es la derivada del hex, en las seis columnas.
+  select * into t from public.tonos where id = v_id;
+  if jsonb_build_object('claro', jsonb_build_object('fondo', t.claro_fondo, 'borde', t.claro_borde, 'tinta', t.claro_tinta),
+                        'oscuro', jsonb_build_object('fondo', t.oscuro_fondo, 'borde', t.oscuro_borde, 'tinta', t.oscuro_tinta)) <> v_teal then
+    raise exception 'la hoja no es la derivada: %', to_jsonb(t); end if;
+  r := public.tono_crear(v_id, 'Logística y más', '#000000');
   if not (r ->> 'repetido')::boolean or (select count(*) from public.tonos where id = v_id) <> 1 then raise exception 'el reintento duplicó'; end if;
-  if (r -> 'lista' ->> 'tope')::int <> 24 or not exists (select 1 from jsonb_array_elements(r -> 'lista' -> 'tonos') x where x ->> 'id' = v_id::text) then
-    raise exception 'la lista de vuelta: %', r; end if;
+  if (r -> 'lista' ->> 'tope')::int <> 48 then raise exception 'la lista de vuelta: %', r; end if;
+  if (select x ->> 'hex' from jsonb_array_elements(r -> 'lista' -> 'tonos') x where x ->> 'id' = v_id::text) is distinct from '#31869b' then
+    raise exception 'la lista de vuelta no trae el hex: %', r; end if;
 
-  perform pg_temp.falla(format($f$select public.tono_crear(%L, '  LOGÍSTICA Y MÁS ', pg_temp.colores())$f$, v_otro), '23505', 'Ya hay un tono');
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), '', pg_temp.colores())$f$, '22023', 'Escribe el nombre');
-  perform pg_temp.falla(format($f$select public.tono_crear(gen_random_uuid(), %L, pg_temp.colores())$f$, repeat('x', 41)), '22023', 'hasta 40 caracteres');
-  perform pg_temp.falla($f$select public.tono_crear(null, 'Otro', pg_temp.colores())$f$, '22023', 'identificador');
-  -- Hex mal escrito: tres cifras, sin almohadilla, con un nombre de color; una clave que no es del objeto.
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', pg_temp.colores('#fff'))$f$, '22023', 'claro');
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', pg_temp.colores('red'))$f$, '22023', 'claro');
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', jsonb_set(pg_temp.colores(), '{claro,sombra}', '"#000000"'))$f$, '22023', 'sombra');
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', '{"claro": {}}')$f$, '22023', 'colores');
-  -- El borde también es un #rrggbb (en los dos temas); un color de más o de menos.
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', jsonb_set(pg_temp.colores(), '{claro,borde}', '"azul"'))$f$, '22023', 'claro.borde');
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', jsonb_set(pg_temp.colores(), '{oscuro,borde}', '"#12"'))$f$, '22023', 'oscuro.borde');
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', jsonb_set(pg_temp.colores(), '{oscuro}', '{"fondo": "#3e3f3c", "tinta": "#f2f4f8"}'))$f$, '22023', 'oscuro.borde');
-  -- Sin AA, en claro y en oscuro: dice cuánto da y cuánto hace falta, con la razón truncada.
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', pg_temp.colores('#fff7d6', '#c0c0c0'))$f$, '22023', 'hace falta 4,5:1');
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', pg_temp.colores('#fff7d6', '#1b2130', '#3e3f3c', '#5a5a5a'))$f$, '22023', 'hace falta 4,5:1');
+  perform pg_temp.falla(format($f$select public.tono_crear(%L, '  LOGÍSTICA Y MÁS ', '#31869b')$f$, v_otro), '23505', 'Ya hay un color «LOGÍSTICA Y MÁS»');
+  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), '', '#31869b')$f$, '22023', 'Escribe el nombre del color.');
+  perform pg_temp.falla(format($f$select public.tono_crear(gen_random_uuid(), %L, '#31869b')$f$, repeat('x', 41)), '22023', 'El nombre del color admite hasta 40 caracteres.');
+  perform pg_temp.falla($f$select public.tono_crear(null, 'Otro', '#31869b')$f$, '22023', 'identificador');
+  -- Hex mal escrito: tres cifras, un nombre de color, una letra que no es hexadecimal, nulo.
+  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', '#fff')$f$, '22023', 'Escríbelo como #rrggbb, por ejemplo #31869b.');
+  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', 'rojo')$f$, '22023', 'Escríbelo como #rrggbb');
+  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', '#12345g')$f$, '22023', 'Escríbelo como #rrggbb');
+  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Otro', null)$f$, '22023', 'Escríbelo como #rrggbb');
   begin
-    perform public.tono_crear(gen_random_uuid(), 'Otro', pg_temp.colores('#fff7d6', '#c0c0c0'));
+    perform public.tono_crear(gen_random_uuid(), 'Otro', '#fff');
   exception when others then
-    declare h text; begin get stacked diagnostics h = pg_exception_hint;
-      if h <> 'claro' then raise exception 'el hint del AA en claro: %', h; end if; end;
+    get stacked diagnostics v_h = pg_exception_hint;
   end;
+  if v_h is distinct from 'hex' then raise exception 'el hint del hex: %', v_h; end if;
   begin
-    perform public.tono_crear(gen_random_uuid(), 'Otro', pg_temp.colores('#fff7d6', '#1b2130', '#3e3f3c', '#5a5a5a'));
+    perform public.tono_crear(gen_random_uuid(), 'Logística y más', '#31869b');
   exception when others then
-    declare h text; begin get stacked diagnostics h = pg_exception_hint;
-      if h <> 'oscuro' then raise exception 'el hint del AA en oscuro: %', h; end if; end;
+    get stacked diagnostics v_h = pg_exception_hint;
   end;
-  -- Mayúsculas: se normalizan.
-  perform public.tono_crear(v_otro, 'Mayúsculas', pg_temp.colores('#FFF7D6', '#1B2130'));
-  if (select claro_fondo || claro_tinta from public.tonos where id = v_otro) <> '#fff7d6#1b2130' then raise exception 'no normalizó las mayúsculas'; end if;
+  if v_h is distinct from 'nombre' then raise exception 'el hint del nombre repetido: %', v_h; end if;
+  -- Mayúsculas y espacios: se normalizan.
+  perform public.tono_crear(v_otro, 'Mayúsculas', '  #FFF7D6 ');
+  if (select hex || claro_fondo from public.tonos where id = v_otro) <> '#fff7d6#fff7d6' then raise exception 'no normalizó el hex'; end if;
   reset role;
   delete from public.tonos where id in (v_id, v_otro);
 end $$;
 
--- @test tonos: el tope de 24 (se llena con los de prueba y se revierte)
+-- @test tonos: el tope de 48 (se llena con los de prueba y se revierte)
 do $$
 declare v_n int; i int;
 begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
   set local role authenticated;
   select count(*) into v_n from public.tonos;
-  for i in 1 .. 24 - v_n loop
-    perform public.tono_crear(gen_random_uuid(), 'Relleno ' || i, pg_temp.colores());
+  for i in 1 .. 48 - v_n loop
+    perform public.tono_crear(gen_random_uuid(), 'Relleno ' || i, '#31869b');
   end loop;
-  if (select count(*) from public.tonos) <> 24 then raise exception 'no llegó a 24'; end if;
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Uno de más', pg_temp.colores())$f$, '22023', 'que es el máximo');
+  if (select count(*) from public.tonos) <> 48 then raise exception 'no llegó a 48'; end if;
+  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Uno de más', '#31869b')$f$, '22023', 'Ya hay 48 colores, que es el máximo. Elimina uno que ningún grupo use.');
   reset role;
   delete from public.tonos where nombre like 'Relleno %';
 end $$;
 
--- @test tonos: guardar renombra y recolorea sin cambiar la clave, pide versión y el contraste; una versión vieja es PT409
+-- @test tonos: guardar renombra sin cambiar la clave; un hex distinto deriva de nuevo la hoja y mueve la versión; el mismo hex no deriva; colores y clave se rechazan; una versión vieja es PT409
 do $$
-declare r jsonb; v_id uuid := gen_random_uuid(); v_ver timestamptz;
+declare r jsonb; v_id uuid := gen_random_uuid(); v_ver timestamptz; v_h text; t public.tonos;
+  v_teal jsonb := public._color_derivar('#31869b'); v_violeta jsonb := public._color_derivar('#7048e8');   -- antes de tomar el rol de authenticated
 begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
   set local role authenticated;
-  r := public.tono_crear(v_id, 'Marrón', pg_temp.colores());
+  r := public.tono_crear(v_id, 'Marrón', '#31869b');
   v_ver := (r ->> 'actualizado_en')::timestamptz;
   perform pg_temp.falla(format($f$select public.tono_guardar(%L, null, '{"nombre": "X"}')$f$, v_id), 'P0001', 'Falta la versión');
+  -- El nombre conserva el hex y la hoja.
   r := public.tono_guardar(v_id, v_ver, '{"nombre": "Café"}');
-  if (select clave || '|' || nombre from public.tonos where id = v_id) <> 'marron|Café' then raise exception 'la clave cambió o no se renombró'; end if;
+  select * into t from public.tonos where id = v_id;
+  if t.clave || '|' || t.nombre || '|' || t.hex <> 'marron|Café|#31869b' then raise exception 'la clave cambió, no se renombró o cambió el hex: %', to_jsonb(t); end if;
+  if t.claro_fondo <> v_teal -> 'claro' ->> 'fondo' then raise exception 'renombrar tocó la hoja'; end if;
   if (r ->> 'actualizado_en')::timestamptz = v_ver then raise exception 'no movió la versión'; end if;
-  perform pg_temp.falla(format($f$select public.tono_guardar(%L, %L, '{"nombre": "Otra vez"}')$f$, v_id, v_ver), 'PT409', 'Otra persona');
+  perform pg_temp.falla(format($f$select public.tono_guardar(%L, %L, '{"nombre": "Otra vez"}')$f$, v_id, v_ver), 'PT409', 'Otra persona cambió este color mientras lo editabas.');
+  -- Un hex distinto deriva de nuevo las seis columnas y mueve la versión.
   v_ver := (r ->> 'actualizado_en')::timestamptz;
-  r := public.tono_guardar(v_id, v_ver, jsonb_build_object('colores', pg_temp.colores('#e6f6ee')));
-  if (select claro_fondo from public.tonos where id = v_id) <> '#e6f6ee' then raise exception 'no recoloreó'; end if;
+  r := public.tono_guardar(v_id, v_ver, '{"hex": "#7048E8"}');
+  select * into t from public.tonos where id = v_id;
+  if t.hex <> '#7048e8' or jsonb_build_object('claro', jsonb_build_object('fondo', t.claro_fondo, 'borde', t.claro_borde, 'tinta', t.claro_tinta),
+                        'oscuro', jsonb_build_object('fondo', t.oscuro_fondo, 'borde', t.oscuro_borde, 'tinta', t.oscuro_tinta)) <> v_violeta then
+    raise exception 'el hex nuevo no derivó la hoja: %', to_jsonb(t); end if;
+  if (r ->> 'actualizado_en')::timestamptz = v_ver then raise exception 'cambiar el hex no movió la versión'; end if;
   v_ver := (r ->> 'actualizado_en')::timestamptz;
-  perform pg_temp.falla(format($f$select public.tono_guardar(%L, %L, %L)$f$, v_id, v_ver, jsonb_build_object('colores', pg_temp.colores('#fff7d6', '#c0c0c0'))), '22023', 'hace falta 4,5:1');
+  perform pg_temp.falla(format($f$select public.tono_guardar(%L, %L, '{"hex": "#fff"}')$f$, v_id, v_ver), '22023', 'Escríbelo como #rrggbb, por ejemplo #31869b.');
+  perform pg_temp.falla(format($f$select public.tono_guardar(%L, %L, '{"hex": 12}')$f$, v_id, v_ver), '22023', 'Escríbelo como #rrggbb');
   perform pg_temp.falla(format($f$select public.tono_guardar(%L, %L, '{"clave": "otra"}')$f$, v_id, v_ver), '22023', 'no se cambia');
-  perform pg_temp.falla(format($f$select public.tono_guardar(%L, %L, '{"nombre": "verde"}')$f$, v_id, v_ver), '23505', 'Ya hay un tono');
+  perform pg_temp.falla(format($f$select public.tono_guardar(%L, %L, '{"colores": {}}')$f$, v_id, v_ver), '22023', 'El dato «colores» de un color no se cambia.');
+  begin
+    perform public.tono_guardar(v_id, v_ver, '{"colores": {}}');
+  exception when others then
+    get stacked diagnostics v_h = pg_exception_hint;
+  end;
+  if v_h is distinct from 'colores' then raise exception 'el hint de colores: %', v_h; end if;
+  perform pg_temp.falla(format($f$select public.tono_guardar(%L, %L, '{"nombre": "verde"}')$f$, v_id, v_ver), '23505', 'Ya hay un color «verde».');
+  -- El mismo hex no vuelve a derivar: unos colores de hoja que no son los derivados (como los de un color migrado) se conservan.
+  reset role;
+  update public.tonos set claro_borde = '#e9d27a' where id = v_id returning actualizado_en into v_ver;
+  set local role authenticated;
+  r := public.tono_guardar(v_id, v_ver, '{"hex": "#7048e8", "nombre": "Café oscuro"}');
+  if (select claro_borde from public.tonos where id = v_id) <> '#e9d27a' then raise exception 'el mismo hex volvió a derivar'; end if;
   reset role;
   delete from public.tonos where id = v_id;
 end $$;
@@ -153,7 +172,7 @@ declare v_o uuid := (select id from public.origenes where clave = 'subasta_usa')
 begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
   set local role authenticated;
-  v_ver := (public.tono_crear(v_id, 'Prueba de uso', pg_temp.colores()) ->> 'actualizado_en')::timestamptz;
+  v_ver := (public.tono_crear(v_id, 'Prueba de uso', '#31869b') ->> 'actualizado_en')::timestamptz;
   reset role;
   if public._tono_en_uso('prueba_de_uso') is not null then raise exception 'libre figura en uso'; end if;
   -- Una versión archivada, otra borrador: cada una por su lado.
@@ -161,7 +180,7 @@ begin
   values (v_o, 9001, 'archivada', '{"nodos": [], "grupos": [{"id": "g", "etiqueta": "G", "tono": "prueba_de_uso", "bucket": "b"}]}', '{}', '{}', '{}');
   if public._tono_en_uso('prueba_de_uso') is null then raise exception 'la archivada no cuenta'; end if;
   set local role authenticated;
-  perform pg_temp.falla(format($f$select public.tono_eliminar(%L, %L)$f$, v_id, v_ver), '23503', 'Subasta EE. UU.');
+  perform pg_temp.falla(format($f$select public.tono_eliminar(%L, %L)$f$, v_id, v_ver), '23503', '«Prueba de uso» lo usa la fórmula de «Subasta EE. UU.» (alguna de sus versiones): no se elimina. Cambia su nombre o su color.');
   reset role;
   delete from public.formulas where version = 9001 and origen_id = v_o;
   insert into public.formulas (origen_id, estado, definicion, params)
@@ -179,7 +198,7 @@ begin
   reset role;
   if exists (select 1 from public.tonos where id = v_id) then raise exception 'no se eliminó'; end if;
   if exists (select 1 from jsonb_array_elements(r -> 'lista' -> 'tonos') x where x ->> 'id' = v_id::text) then raise exception 'la lista de vuelta lo trae'; end if;
-  perform pg_temp.falla(format($f$select public.tono_eliminar(%L, now() - interval '1 day')$f$, v_id), 'PT409', 'ya no existe');
+  perform pg_temp.falla(format($f$select public.tono_eliminar(%L, now() - interval '1 day')$f$, v_id), 'PT409', 'Ese color ya no existe.');
 end $$;
 
 -- @test tonos: sin cotizaciones.configurar no se crea, guarda ni elimina; nadie escribe directo; todos leen; los ayudantes no son de nadie
@@ -189,20 +208,22 @@ begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000b1', true);
   set local role authenticated;
   if (select count(*) from public.tonos) < 3 then raise exception 'la asesora no lee los tonos'; end if;
-  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Mío', pg_temp.colores())$f$, '42501', 'cotizaciones.configurar');
+  perform pg_temp.falla($f$select public.tono_crear(gen_random_uuid(), 'Mío', '#31869b')$f$, '42501', 'cotizaciones.configurar');
   perform pg_temp.falla(format($f$select public.tono_guardar(%L, now() - interval '1 day', '{"nombre": "X"}')$f$, v_id), '42501', 'cotizaciones.configurar');
   perform pg_temp.falla(format($f$select public.tono_eliminar(%L, now() - interval '1 day')$f$, v_id), '42501', 'cotizaciones.configurar');
-  perform pg_temp.falla($f$insert into public.tonos (clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
-    values ('x', 'X', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000')$f$, '42501', 'tonos');
+  perform pg_temp.falla($f$insert into public.tonos (clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+    values ('x', 'X', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000', '#000000')$f$, '42501', 'tonos');
+  perform pg_temp.falla(format($f$update public.tonos set hex = '#000000' where id = %L$f$, v_id), '42501', 'tonos');
   perform pg_temp.falla(format($f$update public.tonos set nombre = 'X' where id = %L$f$, v_id), '42501', 'tonos');
   reset role;
   -- Los ayudantes (los que no son RPC) no los ejecuta PUBLIC, anon ni authenticated.
   if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
               where n.nspname = 'public' and p.proname in ('_color_luminancia', '_color_contraste', '_tonos_tope', '_tono_nombre', '_tono_clave', '_tono_colores',
-                                                            '_tonos_de_grupos', '_tonos_del_diseno', '_tono_en_uso', '_tonos_lista', '_contraste_aa', 'tono_version')
+                                                            '_tonos_de_grupos', '_tonos_del_diseno', '_tono_en_uso', '_tonos_lista', '_contraste_aa', 'tono_version',
+                                                            '_color_mezclar', '_color_derivar', '_color_tinta_de_la_tarjeta', '_tono_hex')
                 and (has_function_privilege('anon', p.oid, 'execute') or has_function_privilege('authenticated', p.oid, 'execute'))) then
     raise exception 'un ayudante de los tonos se puede ejecutar: %', (select string_agg(p.proname, ',') from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-      where n.nspname = 'public' and p.proname in ('_color_luminancia', '_color_contraste', '_tono_en_uso') and has_function_privilege('authenticated', p.oid, 'execute'));
+      where n.nspname = 'public' and p.proname in ('_color_luminancia', '_color_contraste', '_tono_en_uso', '_color_mezclar', '_color_derivar', '_color_tinta_de_la_tarjeta', '_tono_hex') and has_function_privilege('authenticated', p.oid, 'execute'));
   end if;
 end $$;
 
@@ -244,11 +265,11 @@ declare r jsonb; v_id uuid := gen_random_uuid(); v_ver timestamptz;
 begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
   set local role authenticated;
-  v_ver := (public.tono_crear(v_id, 'Quieto', pg_temp.colores()) ->> 'actualizado_en')::timestamptz;
+  v_ver := (public.tono_crear(v_id, 'Quieto', '#31869b') ->> 'actualizado_en')::timestamptz;
   r := public.tono_guardar(v_id, v_ver, '{"nombre": "Quieto"}');
   if (r ->> 'actualizado_en')::timestamptz <> v_ver then raise exception 'guardar lo mismo movió la versión'; end if;
-  r := public.tono_guardar(v_id, v_ver, jsonb_build_object('colores', pg_temp.colores()));
-  if (r ->> 'actualizado_en')::timestamptz <> v_ver then raise exception 'guardar los mismos colores movió la versión'; end if;
+  r := public.tono_guardar(v_id, v_ver, '{"hex": "#31869B"}');
+  if (r ->> 'actualizado_en')::timestamptz <> v_ver then raise exception 'guardar el mismo hex movió la versión'; end if;
   reset role;
   delete from public.tonos where id = v_id;
 end $$;

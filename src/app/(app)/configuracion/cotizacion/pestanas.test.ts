@@ -24,7 +24,7 @@ describe('pestanasVisibles', () => {
     ])
   })
 
-  it('quien configura un origen, la fórmula, la tarjeta, el diseño, los tonos, las tablas y los ajustes (que lee sin cambiar), en ese orden', () => {
+  it('quien configura un origen, la fórmula, la tarjeta, el diseño, los colores (clave tonos), las tablas y los ajustes (que lee sin cambiar), en ese orden', () => {
     expect(claves(pestanasVisibles(permisos({ 'cotizaciones.configurar': [O1] })))).toEqual([
       'formula',
       'tarjeta',

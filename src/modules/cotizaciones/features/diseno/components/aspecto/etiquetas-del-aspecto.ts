@@ -15,7 +15,7 @@ type Opcion = { valor: string; etiqueta: string }
 export const AUTOMATICO = ''
 
 export const ALTO_SIN_EFECTO = 'Con 12 columnas ocupa su fila: el alto no cambia nada.'
-export const SIN_CATALOGO = 'No se pudo leer el catálogo de tonos.'
+export const SIN_CATALOGO = 'No se pudo leer el catálogo de colores.'
 
 export function etiquetaDeColumnas(n: number): string {
   if (n === COLUMNAS_DE_LA_REJILLA) return `${String(n)} columnas (toda la fila)`

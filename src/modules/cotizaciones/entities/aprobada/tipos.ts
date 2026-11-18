@@ -19,3 +19,15 @@ export type CotizacionAprobadaDelVehiculo = {
 
 // Lo que la guardada necesita saber de su cotización: si es la aprobada y en qué estado está.
 export type MarcaDeLaGuardada = { aprobada: boolean; estado: 'activa' | 'reportada' | 'invalida' }
+
+// Lo que «Comparar cotizaciones» lee de cada cotización comparada además de su hoja: de qué vehículo es, su estado, quién la creó y si es la aprobada. El autor ya es el texto
+// que se muestra (`autorVisible`).
+export type MarcaParaComparar = {
+  id: string
+  numero: number
+  vehiculoId: string | null
+  origenId: string
+  estado: MarcaDeLaGuardada['estado']
+  autor: string
+  aprobada: boolean
+}

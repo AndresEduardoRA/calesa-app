@@ -1,5 +1,5 @@
 // Las pestañas de Configuración › Cotización. Cuál está abierta vive en la URL (`?seccion=`). Cada una lleva sus permisos: «Niveles de acceso» los de la matriz de
-// Roles (cada nivel es un permiso), «Fórmula», «Tarjeta», «Diseño» y «Tonos» `cotizaciones.configurar` (4.20-2a, 4.19-3b, 4.22-2, 4.22-4), «Tablas» (las tablas de referencia, 4.23-3) la
+// Roles (cada nivel es un permiso), «Fórmula», «Tarjeta», «Diseño» y «Colores» (clave técnica `tonos`) `cotizaciones.configurar` (4.20-2a, 4.19-3b, 4.22-2), «Tablas» (las tablas de referencia, 4.23-3) la
 // misma clave, en cualquier origen, y «Ajustes» (la vigencia) la misma clave en cualquier origen: la ve quien configura algún origen y la cambia quien la tiene
 // en todos (`puedeCambiarAjustesDeCotizacion`). Niveles va primero y Ajustes al final: quien entra por el hub cae en la de siempre; «Tarjeta» va después de «Fórmula» (se arma con sus grupos).
 import { puede, type ClavePermiso, type Permisos } from '@/shared/lib/permisos'
@@ -20,7 +20,7 @@ export const PESTANAS = [
   { clave: 'formula', titulo: 'Fórmula', permisos: ['cotizaciones.configurar'] },
   { clave: 'tarjeta', titulo: 'Tarjeta', permisos: ['cotizaciones.configurar'] },
   { clave: 'diseno', titulo: 'Diseño', permisos: ['cotizaciones.configurar'] },
-  { clave: 'tonos', titulo: 'Tonos', permisos: ['cotizaciones.configurar'] },
+  { clave: 'tonos', titulo: 'Colores', permisos: ['cotizaciones.configurar'] },
   { clave: 'tablas', titulo: 'Tablas', permisos: ['cotizaciones.configurar'] },
   { clave: 'ajustes', titulo: 'Ajustes', permisos: ['cotizaciones.configurar'] },
 ] as const satisfies readonly PestanaDeCotizacion[]

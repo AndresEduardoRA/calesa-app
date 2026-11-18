@@ -42,6 +42,10 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `ok(ResultadoDeCrear)`, `revalidatePath` sólo si entró) manda la versión vista (`actualizadoEn`), las entradas al día y título, notas y vehículo sin
   tocar; apagado sin cambios, salvo con un pendiente (4-21) o si lo de hoy no es lo guardado. Pendiente y borrador van por persona y cotización, el
   borrador además con la versión (`claves-de-la-hoja.ts`).
+- **`/cotizaciones/comparar?ids=a,b[,c]&returnTo=`** (pide sesión; `cotizaciones.ver` de cada una lo decide la base): «Comparar cotizaciones», del área
+  `aprobada` (`areas/aprobada/CLAUDE.md` › «Comparar cotizaciones»; `pantallas/aprobada-comparar.ts` y `aprobada-esqueleto-de-comparar.ts`). Lo guardado sin
+  recálculo. El enlace (`rutaDeComparar`) y la lectura de `ids` (`idsParaComparar`: 2 o 3 guids distintos, en minúsculas, en el orden de la URL) son del
+  núcleo (`entities/ruta-de-comparar.ts`): los usan «De este vehículo» y la lista agrupada.
 - La hoja guarda en la URL lo que abre (se borra al guardar): `?panel=avanzado`, `?panel=vista-previa` (la tarjeta; sólo con `<ProveedorDeLaTarjeta>`,
   también para quien sólo ve; en una guardada dibuja lo guardado), `?ayuda=texto|tabla&nodo=<id>` (sólo lectura; la URL no abre lo que la hoja no dibuja)
   y, con el proveedor del área, `?ajuste=celda&nodo=<id>` (el ⚙, también dentro de «Avanzado»).
@@ -90,13 +94,17 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   pieza (`components/aspecto/`, operaciones puras en `entities/diseno/edicion-del-aspecto.ts`: el valor por defecto quita la clave), con el aviso «se deduce
   restando» (sin bloquear). **Ordena** secciones e ítems (estos dentro de su sección: `entities/diseno/orden-del-diseno.ts`) con dnd-kit y su sensor de
   teclado (`components/orden/`, `hooks/use-fila-ordenable.ts`: los callbacks del asa van desestructurados, el compilador de React toma un `x.ref` por un ref);
-  dnd-kit sólo viaja en el `diferido()` de la pestaña. El color sale del catálogo de tonos (`catalogo` nulo si no se leyó: no se elige y `contextoDelEditor()`
-  cuenta los tonos que el diseño ya nombra); un rechazo de forma del aspecto va bajo su select (`campoDelRechazo()`). «Guardar el borrador» (`formula_guardar_borrador`, con la esperada de la publicada o la hora del borrador) manda `definicion` y
+  dnd-kit sólo viaja en el `diferido()` de la pestaña. El color sale del catálogo de colores (`catalogo` nulo si no se leyó: no se elige y `contextoDelEditor()`
+  cuenta los colores que el diseño ya nombra); un rechazo de forma del aspecto va bajo su select (`campoDelRechazo()`). «Guardar el borrador» (`formula_guardar_borrador`, con la esperada de la publicada o la hora del borrador) manda `definicion` y
   `params` sin cambios. El área `diseno` replica la lectura y escritura de `formula` porque un área no importa otra.
-- **Los tonos** (`/configuracion/cotizacion?seccion=tonos`, `cotizaciones.configurar`; `?panel=nuevo-tono|editar-tono|eliminar-tono&tono=<id>`): son de
-  la empresa y se guardan al instante (`tono_crear|guardar|eliminar` devuelven la lista entera). `entities/diseno/tonos.ts` espeja `_tono_nombre()` y
-  `_tono_colores()` (los mismos textos, AA con la razón truncada a un decimal). Un tono en uso: 23503 con la fórmula que lo usa.
-- **La vista previa del diseño** (`?vista=412|1280|200`): `hojaDeLaVistaPrevia()` espeja `_cotizacion_hoja()` (con el aspecto y los tonos de las secciones
+- **Los colores** (la pestaña «Colores»: `/configuracion/cotizacion?seccion=tonos`, `cotizaciones.configurar`; `?panel=nuevo-tono|editar-tono|eliminar-tono&tono=<id>`,
+  URL con el nombre técnico): son de la empresa, un nombre y un #hex, y se guardan al instante (`tono_crear(p_id, p_nombre, p_hex)`, `tono_guardar` con
+  `{nombre?, hex?}` y `tono_eliminar` devuelven la lista entera). `entities/diseno/tonos.ts` espeja `_tono_nombre()` y `_tono_hex()` (los mismos textos);
+  `entities/colores.ts` (núcleo: lo usan diseño, plantilla y tarjeta) espeja `_color_derivar()` (la hoja derivada con AA) y `_color_tinta_de_la_tarjeta()`,
+  con el juego `supabase/tests/casos-de-colores.json`. El modal muestra en vivo la hoja y la tarjeta (`como-se-ve-el-color.tsx`) y avisa sin bloquear si el
+  texto de la tarjeta no se lee. Un color en uso: 23503 con la fórmula que lo usa. Componentes y hooks se llaman «color»; tabla, RPC, actions, schemas e
+  infra conservan «tono».
+- **La vista previa del diseño** (`?vista=412|1280|200`): `hojaDeLaVistaPrevia()` espeja `_cotizacion_hoja()` (con el aspecto y los colores de las secciones
   que dibuja y de la cabecera) **sin niveles, tablas ni `dato_del_vehiculo`**; usa la misma rejilla que la hoja (`CONTENEDOR_DE_SECCIONES`,
   `REJILLA_DE_SECCIONES`, `enLaRejilla`); `cifrasDelDiseno()` evalúa con datos en 0 y nunca lanza. Dibuja con las piezas del núcleo y **no con `LugaresDeLaHoja`** (lee
   `?ayuda=` y `?panel=`, que chocarían con la pestaña); un hijo de ancho propio en px dentro de una caja con scroll (los cortes `@4xl/hoja` y `@5xl` miran al
@@ -161,7 +169,7 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - Hoja en el cliente: `entities/{hoja,recalculo,entradas,binding,guardado,claves-de-la-hoja,borrador-de-hoja,…}.ts`, `infra/queries/`. **La rejilla y el
   aspecto:** `entities/rejilla-de-la-hoja.ts` (la regla de los 16 rem, `corteDe()`), `entities/aspecto-de-la-hoja.ts` (copia sólo las claves que vinieron) y
   `features/hoja/components/clases-de-la-rejilla.ts` (tablas de clases escritas enteras; sin aspecto, la clase de siempre). `<SeccionDeHoja enLaRejilla>` pone
-  sus columnas sólo en la rejilla de las secciones (en el modal «Avanzado», un `grid` sin pistas, no); el tono de una sección va en `data-tono`. `features/hoja/`
+  sus columnas sólo en la rejilla de las secciones (en el modal «Avanzado», un `grid` sin pistas, no); el color de una sección va en `data-tono`. `features/hoja/`
   marca para los e2e `data-nodo`, `data-atajos`, `data-seccion`, `data-avanzado`, `data-cabecera`, `data-secciones`, `data-modo`, `data-total-bs`,
   `data-pie-de-panel`.
 - El resumen al pie se pliega (`useResumenPlegado`): «Ver el detalle» / «Ocultar el detalle» esconde el total en moneda local, los secundarios y el modo;
@@ -176,7 +184,7 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 
 RPC: `formula_guardar_borrador`, `formula_publicar`, `formula_descartar_borrador`, `formula_cambiar_constante` y `formula_revertir` (publican la N+1 desde
 la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las filas, sube la versión y publica la N+1 de cada fórmula que la usa),
-`tono_crear|guardar|eliminar`, `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
+`tono_crear|guardar|eliminar` (los colores), `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
 `validar_plantilla`, `evaluar_formula`, `cotizacion_evaluar`, `cotizacion_hoja`, `cotizacion_tabla`, `cotizacion_tarjeta`, `cotizacion_crear`,
 `cotizacion_guardar`, `cotizaciones_listado`, `cotizaciones_buscar` (la búsqueda del listado, invocadora), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
 nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizacion_moderar` (con la versión),
@@ -204,8 +212,8 @@ nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con l
   `areas/final/CLAUDE.md`). Al entrar a logística la final se congela; si sale, vuelve a preventa.
 - Sin motor de expresiones al cotizar: sólo las operaciones cerradas de `calculo`. La fórmula como texto se compila a nodos **al configurar**; lo que no
   compila se rechaza. Un nodo nuevo = tipo discriminado (`nodos.ts`) + caso en `referenciasDe()` + caso en `validar_formula()` y en el juego.
-- **Toda copia de una versión lleva el diseño** (el ⚙, revertir y la N+1 de una tabla; publicar lo exige). Un tono o nivel que una versión nombra no se
-  elimina (`_tono_en_uso()`, `_nivel_uso()`; un nivel se retira). Tonos y niveles salen de un solo punto (tabla `tonos`, `_niveles_de_cotizacion()`): nada
+- **Toda copia de una versión lleva el diseño** (el ⚙, revertir y la N+1 de una tabla; publicar lo exige). Un color o nivel que una versión nombra no se
+  elimina (`_tono_en_uso()`, `_nivel_uso()`; un nivel se retira). Colores y niveles salen de un solo punto (tabla `tonos`, `_niveles_de_cotizacion()`): nada
   escribe «costos» a mano ni razona por el nombre o la clave de un nivel. `formulas` y `plantillas_tarjeta` sólo las lee quien tiene
   `cotizaciones.configurar` del origen (los demás leen la plantilla por `cotizacion_tarjeta`).
 - **La hoja calcula en la base** (`cotizacion_evaluar()` sobre `evaluar_formula()`) para todos; la fórmula (`definicion`, `params`, texto) viaja sólo a
