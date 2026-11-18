@@ -1,94 +1,70 @@
 import { describe, expect, it } from 'vitest'
-import { tarjetaDesde } from './lectura-de-la-tarjeta'
+import { lecturaDesdeLaPlana, tarjetaDesde } from './lectura-de-la-tarjeta'
+import { crudaDeLaTarjeta } from './tarjeta.soporte'
 
-const tono = (clave: string) => ({
-  clave,
-  hex: '#e8f5e9',
-  tarjeta: { fondo: '#e8f5e9', borde: '#a5d6a7', tinta: '#1b5e20' },
-})
-
-const lista = (mas: Record<string, unknown> = {}) => ({
-  estado: 'lista',
-  plantilla: { version: 1 },
-  logo: true,
-  nota: 'Precios sujetos a cambio.',
-  columnas: { leyenda: true, tipo_cambio: true, plazo: true },
-  total: { nodo: 'total', etiqueta: 'TOTAL DÓLARES', leyenda: null },
-  secundarios: [{ nodo: 'garantia', etiqueta: 'GARANTÍA' }],
-  grupos: [
-    {
-      id: 'compra',
+describe('tarjetaDesde', () => {
+  it('lee la cuadrícula y lo que nombra, con `Map` por id (un id como constructor no cae en el prototipo)', () => {
+    const t = tarjetaDesde(crudaDeLaTarjeta())
+    if (t === null || t.estado !== 'lista') throw new Error('no se lee')
+    expect(t.definicion.columnas).toHaveLength(4)
+    expect(t.nodos.get('flete')).toEqual({
+      etiqueta: 'Flete',
+      descripcion: 'Flete marítimo',
+      grupo: 'logistica',
+      pct: 'flete_pct',
+    })
+    expect(t.nodos.get('constructor')).toBeUndefined()
+    expect(t.grupos.get('compra')).toEqual({
       etiqueta: 'Compra',
       plazo: '48 horas',
-      tono: 'verde',
       bucket: 'compra',
-      filas: [{ nodo: 'remate', etiqueta: 'Remate', leyenda: null }],
-    },
-  ],
-  tipos_de_cambio: {
-    buckets: { compra: 'Dólar oficial' },
-    modos: { oficial: { compra: 'Dólar oficial' }, constructor: { compra: null } },
-  },
-  variante: { nodo: 'variante', opciones: [{ clave: 'gasolina', titulo: 'Gasolina' }] },
-  tonos: [tono('verde')],
-  moneda_bs: 'BOB',
-  ...mas,
+    })
+    expect(t.tiposDeCambio.modos.get('bcb')?.get('compra')).toEqual({
+      nombre: 'Dólar BCB',
+      nodo: 'tc_bcb',
+    })
+    expect(t.colores.get('verde')).toBe('#31869b')
+    expect(t.total).toEqual({ nodo: 'total' })
+  })
+
+  it('sin_plantilla tal cual; lo que no es lo que la base promete, nulo', () => {
+    expect(tarjetaDesde({ estado: 'sin_plantilla' })).toEqual({ estado: 'sin_plantilla' })
+    expect(tarjetaDesde(null)).toBeNull()
+    expect(
+      tarjetaDesde(crudaDeLaTarjeta({ colores: [{ clave: 'verde', hex: 'verde' }] })),
+    ).toBeNull()
+    expect(tarjetaDesde(crudaDeLaTarjeta({ definicion: { forma: 1 } }))).toBeNull()
+    const definicion = crudaDeLaTarjeta().definicion
+    const conTamanoRaro = {
+      ...definicion,
+      celdas: [{ ...definicion.celdas[0], estilo: { tamano: 13 } }],
+    }
+    expect(tarjetaDesde(crudaDeLaTarjeta({ definicion: conTamanoRaro }))).toBeNull()
+  })
 })
 
-describe('tarjetaDesde: lo que lee la vista previa de cotizacion_tarjeta()', () => {
-  it('lee una plantilla lista', () => {
-    const t = tarjetaDesde(lista())
-    expect(t).toMatchObject({
-      estado: 'lista',
-      logo: true,
-      nota: 'Precios sujetos a cambio.',
-      columnas: { leyenda: true, tipoDeCambio: true, plazo: true },
-      total: { nodo: 'total', etiqueta: 'TOTAL DÓLARES', leyenda: null },
+describe('lecturaDesdeLaPlana', () => {
+  it('arma los mismos `Map` desde la lectura plana de la vista previa', () => {
+    const t = lecturaDesdeLaPlana({
+      definicion: {
+        forma: 2,
+        columnas: [{ id: 'a', ancho: 100 }],
+        filas: [{ id: 'f', alto: 24, ocultar_si: 'nunca' }],
+        celdas: [],
+      },
+      nodos: [{ id: 'remate', etiqueta: 'Remate', descripcion: null, grupo: 'compra', pct: null }],
+      grupos: [{ id: 'compra', etiqueta: 'Compra', plazo: null, bucket: 'exterior' }],
+      tiposDeCambio: {
+        buckets: [{ bucket: 'exterior', nombre: 'TC paralelo', nodo: 'tc_p' }],
+        modos: [{ modo: 'unificado', bucket: 'exterior', nombre: 'Dólar unificado', nodo: 'tc_u' }],
+      },
+      modos: [{ clave: 'unificado', nombre: 'Unificado' }],
+      variante: null,
+      colores: [{ clave: 'verde', hex: '#E6F6EE' }],
+      total: { nodo: 'total' },
     })
-    expect(t?.estado === 'lista' && t.grupos[0]?.filas[0]?.nodo).toBe('remate')
-  })
-
-  it('lee sin_plantilla sin nada más', () => {
-    expect(tarjetaDesde({ estado: 'sin_plantilla' })).toEqual({ estado: 'sin_plantilla' })
-  })
-
-  it('los mapas son Map: una clave «constructor» es un modo más', () => {
-    const t = tarjetaDesde(lista())
-    if (t?.estado !== 'lista') {
-      throw new Error('debía ser lista')
-    }
-    expect(t.tiposDeCambio.buckets).toBeInstanceOf(Map)
-    expect(t.tiposDeCambio.modos.get('constructor')?.get('compra')).toBeNull()
-    expect(t.tiposDeCambio.modos.get('oficial')?.get('compra')).toBe('Dólar oficial')
-  })
-
-  it('sin variante, nulo; sin logo ni nota, falso y nulo', () => {
-    const t = tarjetaDesde(lista({ variante: null, logo: null, nota: null }))
-    expect(t?.estado === 'lista' && [t.variante, t.logo, t.nota]).toEqual([null, false, null])
-  })
-
-  it('sin estado, un grupo sin filas o un color sin #rrggbb (en el hex o en la tarjeta) dan nulo', () => {
-    expect(tarjetaDesde({ ...lista(), estado: undefined })).toBeNull()
-    expect(tarjetaDesde({ ...lista(), estado: 'otra' })).toBeNull()
-    const sinFilas = lista().grupos.map(({ filas: _filas, ...resto }) => resto)
-    expect(tarjetaDesde(lista({ grupos: sinFilas }))).toBeNull()
-    const malo = {
-      ...tono('verde'),
-      tarjeta: { fondo: 'rojo', borde: '#a5d6a7', tinta: '#1b5e20' },
-    }
-    expect(tarjetaDesde(lista({ tonos: [malo] }))).toBeNull()
-    expect(tarjetaDesde(lista({ tonos: [{ ...tono('verde'), hex: 'verde' }] }))).toBeNull()
-    // La forma de antes (claro y oscuro de la hoja) ya no es lo que la base promete.
-    const viejo = {
-      clave: 'verde',
-      claro: { fondo: '#e8f5e9', borde: '#a5d6a7', tinta: '#1b5e20' },
-      oscuro: { fondo: '#14301a', borde: '#2e7d32', tinta: '#c8e6c9' },
-    }
-    expect(tarjetaDesde(lista({ tonos: [viejo] }))).toBeNull()
-  })
-
-  it('lo que no es un objeto da nulo', () => {
-    expect(tarjetaDesde(null)).toBeNull()
-    expect(tarjetaDesde('lista')).toBeNull()
+    expect(t.tiposDeCambio.modos.get('unificado')?.get('exterior')?.nodo).toBe('tc_u')
+    expect(t.colores.get('verde')).toBe('#e6f6ee')
+    expect(t.modos.get('unificado')).toBe('Unificado')
   })
 })

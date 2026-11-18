@@ -148,8 +148,12 @@ test('tarea de oro 2: de la hoja abierta a la cotización guardada, sólo con el
     `select numero from public.cotizaciones where id = ${literal(cotizacion)}::uuid`,
   )
   expect(pdf.nombre).toBe(`cotizacion-${numero}.pdf`)
+  // En la cuadrícula (T310) el monto sigue a su etiqueta en el renglón, y la leyenda del total, a su lado, puede sumarse al final.
   const lineaDelTotal = pdf.lineas.find((l) => l.startsWith('TOTAL DÓLARES')) ?? ''
-  expect(sinEspacios(lineaDelTotal)).toBe(`TOTALDÓLARES${sinEspacios(esperado)}`)
+  expect(
+    sinEspacios(lineaDelTotal).startsWith(`TOTALDÓLARES${sinEspacios(esperado)}`),
+    lineaDelTotal,
+  ).toBe(true)
 
   const controles = teclado.pulsaciones
   // Una decisión más que sin el PDF: bajarlo.

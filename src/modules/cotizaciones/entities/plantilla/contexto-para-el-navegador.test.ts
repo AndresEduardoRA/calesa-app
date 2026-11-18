@@ -7,6 +7,7 @@ import {
   RUTA_DEL_JUEGO,
   type CasoDePlantilla,
 } from './juego-de-plantilla.soporte'
+import { esDeLaCuadricula } from './validar-plantilla'
 import { validarPlantilla, type ContextoDePlantilla } from './validar-plantilla'
 
 const ruta = RUTA_DEL_JUEGO
@@ -29,7 +30,7 @@ const mini = (): ContextoDePlantilla =>
 describe('contextoParaElNavegador', () => {
   it('no lleva el cuerpo de un nodo ni los nodos sin lugar', () => {
     const texto = JSON.stringify(contextoParaElNavegador(contextoDe(juego.casos[0]!)))
-    for (const cuerpo of ['descripcion', '"op"', '"de"', 'Probabilidad de compra', '"tipo"']) {
+    for (const cuerpo of ['"op"', '"de"', '"pct"', '"tipo"', '"formato"', '"sobrescribible"']) {
       expect(texto).not.toContain(cuerpo)
     }
     const nodos = contextoParaElNavegador(mini()).definicion.nodos ?? []
@@ -67,7 +68,8 @@ describe('contextoParaElNavegador', () => {
     expect(validarPlantilla(p, r).ok).toBe(validarPlantilla(p, contexto).ok)
   })
 
-  it.each(juego.casos)(
+  // Sólo la forma 1: el editor de hoy no escribe la cuadrícula (la forma 2 la valida la base al guardar y al publicar).
+  it.each(juego.casos.filter((c) => !esDeLaCuadricula(c.plantilla)))(
     'el juego, «$nombre»: mismo ok y mismo donde que con el contexto entero',
     (c) => {
       const entero = contextoDe(c)
@@ -112,5 +114,74 @@ describe('contextoParaElNavegador: el plazo', () => {
     } as unknown as ContextoDePlantilla
     const grupos = contextoParaElNavegador(contexto).definicion.grupos ?? []
     expect(grupos.map((g) => g.plazo)).toEqual(['2 días', null, null])
+  })
+})
+
+describe('contextoParaElNavegador: lo que pide la vista previa', () => {
+  it('la descripción sólo de los primeros 4 miembros de cada grupo y de lo aparte (la leyenda de la vista previa)', () => {
+    const miembros = Array.from({ length: 6 }, (_, i) => ({
+      id: `n${String(i)}`,
+      etiqueta: `N${String(i)}`,
+      grupo: 'g',
+      descripcion: `D${String(i)}`,
+    }))
+    const contexto: ContextoDePlantilla = {
+      definicion: {
+        nodos: [
+          ...miembros,
+          { id: 'suelto', etiqueta: 'S', descripcion: 'DS' },
+          { id: 'garantia', etiqueta: 'G', salida: 'aparte', descripcion: 'DG' },
+          { id: 'total', etiqueta: 'T', salida: 'total', descripcion: 'DT' },
+        ],
+        grupos: [{ id: 'g', etiqueta: 'G', bucket: 'b' }],
+        buckets: {},
+      },
+      diseno: { tarjeta_total: { secundarios: ['garantia'] } },
+      visibilidad: {},
+      tonos: [],
+    }
+    const nodos = contextoParaElNavegador(contexto).definicion.nodos ?? []
+    const conDescripcion = nodos.filter((n) => n.descripcion != null).map((n) => n.id)
+    expect(conDescripcion).toEqual(['n0', 'n1', 'n2', 'n3', 'garantia'])
+  })
+
+  it('la variante del nivel «todos» viaja con sus opciones (clave y título); restringida, no', () => {
+    const contexto: ContextoDePlantilla = {
+      definicion: {
+        nodos: [
+          {
+            id: 'variante',
+            tipo: 'opcion',
+            etiqueta: 'Variante',
+            opciones: [{ clave: 'moto', titulo: 'MOTO' }],
+          },
+          { id: 'total', etiqueta: 'T', salida: 'total' },
+        ],
+        grupos: [],
+        buckets: {},
+      },
+      diseno: {
+        cabecera: {
+          modos: [{ clave: 'unificado', nombre: 'Unificado', buckets: [] }],
+        },
+      },
+      visibilidad: { variante: { ver: 'todos' } },
+      tonos: [],
+    }
+    const r = contextoParaElNavegador(contexto)
+    expect(r.definicion.nodos?.find((n) => n.id === 'variante')).toMatchObject({
+      tipo: 'opcion',
+      opciones: [{ clave: 'moto', titulo: 'MOTO' }],
+    })
+    expect(r.visibilidad).toMatchObject({ variante: { ver: 'todos' } })
+    expect(r.diseno?.cabecera?.modos?.[0]).toMatchObject({
+      clave: 'unificado',
+      nombre: 'Unificado',
+    })
+    const restringida = contextoParaElNavegador({
+      ...contexto,
+      visibilidad: { variante: { ver: 'costos' } },
+    })
+    expect(restringida.definicion.nodos?.map((n) => n.id)).toEqual(['total'])
   })
 })

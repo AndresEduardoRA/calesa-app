@@ -58,6 +58,14 @@ export function tintaDeLaTarjeta(hex: string, tintaClara: string): string {
   return contraste(COLOR_TINTA, hex) >= contraste(BLANCO, hex) ? COLOR_TINTA : BLANCO
 }
 
+// El texto `auto` de una celda de la tarjeta (la forma 2): la tinta oscura de la interfaz («negro», #1b2130) o el blanco, el de más contraste sobre el hex del
+// fondo (o sobre el blanco si el fondo es `auto`). Lo usan los tres dibujos de la tarjeta: el HTML, el PDF y la imagen.
+export function textoAutomatico(hexDelFondo: string): string {
+  return contraste(COLOR_TINTA, hexDelFondo) >= contraste(BLANCO, hexDelFondo)
+    ? COLOR_TINTA
+    : BLANCO
+}
+
 // Fondo, borde y tinta de un grupo en la tarjeta (la vista previa y el PDF), iguales en los dos temas: la tarjeta es la imagen que recibe el cliente.
 export function coloresDeLaTarjeta(color: {
   hex: string

@@ -1,16 +1,16 @@
 import { z } from 'zod'
-import {
-  leerAsesorDeLaCotizacion,
-  leerHojaDeUnaGuardada,
-  pdfDeUnaGuardada,
-  tituloAparteDelNumero,
-  tituloDeLaCotizacion,
-} from '@/modules/cotizaciones'
+import { contextoDeLaPagina, leerHojaDeUnaGuardada, pdfDeUnaGuardada } from '@/modules/cotizaciones'
 import { PESO_MAXIMO_LOGO, leerAjustes } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
-import { leerVehiculo } from '@/modules/vehiculos'
 import { urlPublicaONull } from '@/shared/lib/almacen'
-import { formatearFecha } from '@/shared/lib/fechas'
+import {
+  asesorDe,
+  clienteDe,
+  oNulo,
+  tituloDeLaTarjeta,
+  vehiculoDe,
+  vehiculoDeLaTarjeta,
+} from '../../datos-de-la-tarjeta'
 
 // El PDF de una cotización guardada (4.18-3a, `docs/COTIZADOR.md` › «Plantilla de tarjeta (PDF)»): la tarjeta de **lo guardado** en A4, armada en el servidor con la sesión de
 // quien lo pide (la RLS de la hoja guardada y de `cotizacion_tarjeta()` deciden; nunca la secret key). Lo ve quien ve la cotización (P4), sin clave propia.
@@ -29,23 +29,9 @@ const texto = (cuerpo: string, status: number) =>
     headers: { 'Content-Type': 'text/plain; charset=utf-8', ...SIN_GUARDAR },
   })
 
-// El título del vehículo si quien pide lo ve; si falla la lectura, el PDF sale sin él (como la página sin banda).
-async function vehiculoDe(vehiculoId: string | null): Promise<string | null> {
-  if (vehiculoId === null) {
-    return null
-  }
-  const lectura = await leerVehiculo(vehiculoId)
-  return lectura.ok ? (lectura.data?.titulo ?? null) : null
-}
-
-async function asesorDe(id: string): Promise<string | null> {
-  const lectura = await leerAsesorDeLaCotizacion(id)
-  return lectura.ok ? lectura.data : null
-}
-
 export async function GET(_peticion: Request, { params }: RouteContext<'/cotizaciones/[id]/pdf'>) {
   // La segunda barrera tras el proxy: sin sesión, al ingreso; con la cuenta dada de baja, a cerrar la sesión. Antes de leer nada.
-  await requerirSesion()
+  const sesion = await requerirSesion()
   const { id } = await params
   if (!z.guid().safeParse(id).success) {
     return texto(NO_DISPONIBLE, 404)
@@ -58,8 +44,9 @@ export async function GET(_peticion: Request, { params }: RouteContext<'/cotizac
   }
   const { hoja } = lectura.data
   // Los ajustes por `leerAjustes()`, que falla: un PDF que va al cliente no sale con el locale o la zona de fábrica.
-  const [vehiculo, asesor, ajustes] = await Promise.all([
-    vehiculoDe(hoja.cotizacion.vehiculoId),
+  const [cliente, vehiculo, asesor, ajustes] = await Promise.all([
+    oNulo(clienteDe(sesion.permisos, hoja.cotizacion.leadId)),
+    oNulo(vehiculoDe(hoja.cotizacion.vehiculoId)),
     asesorDe(id),
     leerAjustes(),
   ])
@@ -70,23 +57,21 @@ export async function GET(_peticion: Request, { params }: RouteContext<'/cotizac
   const url = urlPublicaONull('marca', logoRuta)
   const pdf = await pdfDeUnaGuardada({
     lectura: lectura.data,
-    pagina: {
-      // El día del último guardado (P3 del 4.18-2), en la zona de la empresa.
-      fecha: formatearFecha(hoja.cotizacion.actualizadoEn, { zona: zonaHoraria }),
-      vehiculo,
-      asesor,
-      numero: hoja.cotizacion.numero,
-      // El título de la cotización junto al número (sin repetirlo si es el de respaldo); los metadatos del PDF no lo llevan (puede nombrar el vehículo).
-      titulo: tituloAparteDelNumero(
-        tituloDeLaCotizacion({
-          titulo: hoja.cotizacion.titulo,
-          vehiculo,
-          numero: hoja.cotizacion.numero,
-        }),
-      ),
-      vencida: hoja.vencida,
-      logo: url === null ? null : { nombre, url },
-    },
+    // El día del último guardado (P3 del 4.18-2) y el del vencimiento, en la zona de la empresa: lo mismo que la vista previa de esa guardada.
+    contexto: contextoDeLaPagina(
+      {
+        // El de la página (sin el de respaldo «Cotización n.º N»); los metadatos del PDF no lo llevan (puede nombrar el vehículo).
+        titulo: tituloDeLaTarjeta(hoja.cotizacion, vehiculo),
+        cliente: cliente?.nombre ?? null,
+        vehiculo: vehiculoDeLaTarjeta(vehiculo),
+        asesor,
+        numero: hoja.cotizacion.numero,
+        venceEl: hoja.venceEl,
+        guardadaEl: hoja.cotizacion.actualizadoEn,
+        logo: url === null ? null : { nombre, url },
+      },
+      { zona: zonaHoraria, hoy: hoja.cotizacion.actualizadoEn },
+    ),
     locale,
     empresa: nombre,
     topeDelLogo: PESO_MAXIMO_LOGO,

@@ -13,6 +13,12 @@ export type NodoParaPlantilla = {
   readonly salida?: string | null
   // Lo que el editor dibuja (4.19-3b): la etiqueta del nodo y la del grupo, y el tono del grupo. `validarPlantilla()` no las mira.
   readonly etiqueta?: string | null
+  // Lo que mira la forma 2 (la cuadrícula) y su conversión: la descripción, el par porcentaje-monto (`op` y `pct`) y la variante (`tipo` y `opciones`).
+  readonly descripcion?: string | null
+  readonly tipo?: string | null
+  readonly op?: string | null
+  readonly pct?: string | null
+  readonly opciones?: readonly { readonly clave: string; readonly titulo: string }[] | null
 }
 export type DefinicionParaPlantilla = {
   readonly nodos?: readonly NodoParaPlantilla[]
@@ -29,6 +35,8 @@ export type DefinicionParaPlantilla = {
 export type DisenoParaPlantilla = {
   readonly cabecera?: {
     readonly modos?: readonly {
+      readonly clave?: string | null
+      readonly nombre?: string | null
       readonly buckets?: readonly { readonly bucket: string; readonly nodo: string }[]
     }[]
   }
@@ -49,8 +57,8 @@ type Candidato = {
   readonly bucket: string
 }
 
-// Del nivel «todos»: la entrada es un objeto cuyo `ver` es el texto `todos`.
-function esDeTodos(visibilidad: VisibilidadParaPlantilla, id: string): boolean {
+// Del nivel «todos»: la entrada es un objeto cuyo `ver` es el texto `todos`. La usa también la forma 2 (`nodos-de-cuadricula.ts`).
+export function esDeTodos(visibilidad: VisibilidadParaPlantilla, id: string): boolean {
   const entrada = Object.hasOwn(visibilidad, id) ? visibilidad[id] : undefined
   return esObjetoJsonb(entrada) && Object.hasOwn(entrada, 'ver') && entrada['ver'] === 'todos'
 }

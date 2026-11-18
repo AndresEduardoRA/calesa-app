@@ -52,15 +52,17 @@ test('E1: la vista previa sigue a la plantilla sin guardar, con cifras de ejempl
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(vista(page)).toBeVisible()
   await expect(vista(page).getByText('Cifras de ejemplo.')).toBeVisible()
-  await expect(vista(page).locator('[data-fila-de-la-tarjeta]').first()).toBeVisible()
-  await expect(vista(page).locator('[data-total-de-la-tarjeta]')).toContainText('Total')
+  // La plantilla convertida a la cuadrícula: una fila por miembro y el total.
+  await expect(vista(page).locator('[data-fila^="n_"]').first()).toBeVisible()
+  await expect(vista(page).locator('[data-fila="total"]').first()).toHaveText('Total')
 
   // Tipear: la tarjeta lo dice sin guardar.
   await page.getByLabel('Etiqueta del total').fill('TOTAL EN DÓLARES')
-  await expect(vista(page).locator('[data-total-de-la-tarjeta]')).toContainText('TOTAL EN DÓLARES')
-  // Un tono distinto del que trae «Compra» (el de su grupo en la fórmula).
-  const primero = vista(page).locator('[data-grupo-de-la-tarjeta]').first()
-  const antes = await primero.getAttribute('data-tono')
+  await expect(vista(page).locator('[data-fila="total"]').first()).toHaveText('TOTAL EN DÓLARES')
+  // Un color distinto del que trae «Compra» (el de su grupo en la fórmula): el del título del grupo.
+  const primero = vista(page).locator('[data-fila^="n_"][data-columna="grupo"]').first()
+  await expect(primero).toHaveText('Compra')
+  const antes = await primero.getAttribute('data-color')
   const opciones = await page
     .getByLabel('Color de «Compra»')
     .locator('option')
@@ -68,12 +70,12 @@ test('E1: la vista previa sigue a la plantilla sin guardar, con cifras de ejempl
   const otro = opciones.find((v) => v !== antes)
   if (!otro) throw new Error('El catálogo no trae otro tono.')
   await page.getByLabel('Color de «Compra»').selectOption(otro)
-  await expect(primero).toHaveAttribute('data-tono', otro)
+  await expect(primero).toHaveAttribute('data-color', otro)
 
   // Columnas y logo, en «Pie y columnas».
   await page.getByText('Pie y columnas', { exact: true }).first().click()
   await page.getByRole('switch', { name: 'Plazo' }).click()
-  await expect(vista(page).locator('[data-plazo]').first()).toContainText('2 días')
+  await expect(vista(page).locator('[data-mostrar="plazo"]').first()).toContainText('2 días')
   await expect(
     vista(page)
       .locator('[data-tarjeta-de-cotizacion] svg, [data-tarjeta-de-cotizacion] img')

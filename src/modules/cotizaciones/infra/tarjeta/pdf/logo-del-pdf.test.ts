@@ -1,8 +1,12 @@
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { geometriaDeLaTarjeta } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
 import { tarjetaDesde } from '../../../entities/tarjeta/lectura-de-la-tarjeta'
-import { modeloDeLaTarjeta } from '../../../entities/tarjeta/modelo-de-la-tarjeta'
-import { calculoDePrueba, crudaDeLaTarjeta } from '../../../entities/tarjeta/tarjeta.soporte'
+import {
+  calculoDePrueba,
+  CONTEXTO_DE_PRUEBA,
+  crudaDeLaTarjeta,
+} from '../../../entities/tarjeta/tarjeta.soporte'
 
 vi.mock('server-only', () => ({}))
 
@@ -133,31 +137,32 @@ describe('logoDelPdf: lo que pesa, tarda o falla no va, y no lanza', () => {
     expect(JSON.stringify(avisos.mock.calls)).not.toContain(URL_DEL_LOGO)
   })
 
-  it('sin logo que pedir no baja nada: una plantilla sin logo no lo pide; sin plantilla, sí', async () => {
+  it('sin logo que pedir no baja nada: una tarjeta sin celda de logo no lo pide; la de por omisión, sí', async () => {
     con(PNG)
-    const pagina = {
-      fecha: '',
-      vehiculo: null,
-      asesor: null,
-      numero: 1,
-      titulo: null,
-      vencida: false,
-      logo: LOGO,
-    }
-    const modeloCon = (cruda: unknown) => {
+    // Quien pide (`pdfDeUnaGuardada()`) pasa el logo sólo si la geometría tiene una celda de logo.
+    const pedido = (cruda: unknown) => {
       const lectura = tarjetaDesde(cruda)
       if (lectura === null) {
         throw new Error('La tarjeta de prueba no cumple su esquema.')
       }
-      return modeloDeLaTarjeta({ lectura, calculo: calculoDePrueba(), monedaBs: null, pagina })
+      const g = geometriaDeLaTarjeta({
+        lectura,
+        calculo: calculoDePrueba(),
+        contexto: { ...CONTEXTO_DE_PRUEBA, logo: LOGO },
+        monedaBs: null,
+        locale: 'es-BO',
+      })
+      return g.celdas.some((c) => c.contenido.tipo === 'logo') ? LOGO : null
     }
+    const definicion = crudaDeLaTarjeta().definicion
+    const sinLogo = { ...definicion, celdas: definicion.celdas.filter((c) => c.id !== 'c_logo') }
     expect(
-      await logoDelPdf({ logo: modeloCon(crudaDeLaTarjeta({ logo: false })).logo, tope: TOPE }),
+      await logoDelPdf({ logo: pedido(crudaDeLaTarjeta({ definicion: sinLogo })), tope: TOPE }),
     ).toBeNull()
     expect(await logoDelPdf({ logo: null, tope: TOPE })).toBeNull()
     expect(llamadas).toEqual([])
     expect(
-      (await logoDelPdf({ logo: modeloCon({ estado: 'sin_plantilla' }).logo, tope: TOPE }))?.tipo,
+      (await logoDelPdf({ logo: pedido({ estado: 'sin_plantilla' }), tope: TOPE }))?.tipo,
     ).toBe('png')
     expect(llamadas).toEqual([URL_DEL_LOGO])
   })

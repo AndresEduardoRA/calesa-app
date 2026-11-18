@@ -21,6 +21,10 @@ export const ES_ID = /^[a-z][a-z0-9_]{0,40}$/
 
 export const caracteres = (s: string): number => [...s].length
 
+// Un número entero como lo ve la base (`jsonb_typeof(v) = 'number' and v::numeric = trunc(v::numeric)`). `24.0` llega a JS como 24 y la base también lo da
+// por entero: dan lo mismo.
+export const esEntero = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v)
+
 export const btrim = (s: string): string => s.replace(/^ +| +$/g, '')
 
 export function compararComoC(a: string, b: string): number {
@@ -39,7 +43,8 @@ export const clavesEnOrdenC = (o: Readonly<Record<string, unknown>> | undefined)
 
 // El texto que da `jsonb::text`: `", "` entre elementos y entre pares, `": "` entre clave y valor, `{}` y `[]` sin espacio, y los textos escapados como en
 // JSON (`JSON.stringify` escapa lo mismo que Postgres: `\"`, `\\`, `\b\f\n\r\t` y el resto de `< 0x20` como `\u00xx`; U+2028 y U+007F van tal cual). El
-// orden de las claves no cambia la cuenta. Un número va como lo escribe JS (la base guarda su texto: `1.50`); en una plantilla un número siempre es `forma`.
+// orden de las claves no cambia la cuenta. Un número va como lo escribe JS; la base guarda su texto (`24.0`, `1.50`): con un número no canónico, que sólo
+// llega por un RPC a mano, los bytes de los dos difieren y manda la base (T8 de `supabase/tests/plantilla-validar.sql`).
 // Recibe un valor ya normalizado como JSON (`JSON.parse`): sin `undefined`, funciones ni ciclos.
 function textoJsonb(v: unknown): string {
   if (Array.isArray(v)) return v.length === 0 ? '[]' : `[${v.map(textoJsonb).join(', ')}]`
@@ -53,3 +58,14 @@ function textoJsonb(v: unknown): string {
 const codificador = new TextEncoder()
 
 export const bytesComoJsonb = (v: unknown): number => codificador.encode(textoJsonb(v)).length
+
+// Lo que viaja a la base: la entrada pasada por JSON (una propiedad `undefined` es una clave ausente). `JSON.stringify` lanza con un ciclo o un `BigInt` y da
+// `undefined` con `undefined` o una función: los dos son lo que la base recibe como nulo.
+export function comoJson(entrada: unknown): unknown {
+  try {
+    const texto = JSON.stringify(entrada) as string | undefined
+    return texto === undefined ? undefined : JSON.parse(texto)
+  } catch {
+    return undefined
+  }
+}
