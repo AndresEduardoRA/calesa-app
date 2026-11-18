@@ -42,7 +42,7 @@ describe('PasosDeLaHoja', () => {
     ])
     expect(
       screen.getByRole('button', { name: 'Vehículo: obligatorio que falta' }).dataset['punto'],
-    ).toBe('obligatorio_que_falta')
+    ).toBe('obligatorio-que-falta')
   })
 
   it('«Vehículo» abre su panel por la URL', async () => {

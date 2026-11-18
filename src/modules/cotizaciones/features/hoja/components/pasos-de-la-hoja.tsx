@@ -25,20 +25,14 @@ export type PasosDeLaPagina = { vehiculo: EleccionDelPaso; cliente: EleccionDelP
 
 // El botón: 44 px en el celular (32 con puntero fino desde `md`), todo su lugar en la rejilla; el punto es un `::before` del color de su estado, con su texto aparte.
 const BOTON =
-  "flex min-h-[44px] min-w-0 items-center justify-center gap-2 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) px-3 text-(length:--text-sm) font-medium text-(--color-ink) transition hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) focus-visible:outline-none md:pointer-fine:min-h-8 data-[punto]:before:size-2 data-[punto]:before:shrink-0 data-[punto]:before:rounded-full data-[punto]:before:content-[''] data-[punto=elegido]:before:bg-(--color-positivo) data-[punto=obligatorio_que_falta]:before:bg-(--color-peligro) data-[punto=falta_un_dato]:before:bg-(--color-aviso)"
+  "flex min-h-[44px] min-w-0 items-center justify-center gap-2 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) px-3 text-(length:--text-sm) font-medium text-(--color-ink) transition hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) focus-visible:outline-none md:pointer-fine:min-h-8 data-[punto]:before:size-2 data-[punto]:before:shrink-0 data-[punto]:before:rounded-full data-[punto]:before:content-[''] data-[punto=elegido]:before:bg-(--color-positivo) data-[punto=obligatorio-que-falta]:before:bg-(--color-peligro) data-[punto=falta-un-dato]:before:bg-(--color-aviso)"
 
-function Contenido({ paso }: { paso: PasoDeLaHoja }) {
-  return (
-    <>
-      {paso.etiqueta}
-      {paso.textoDelPunto === null ? null : <span className="sr-only">: {paso.textoDelPunto}</span>}
-    </>
-  )
-}
-
+// El nombre del botón dice el punto («Vehículo: elegido», el mismo `title`): empieza con lo que se ve, así quien dicta por voz lo nombra igual. El punto va en
+// `data-punto` con guiones (Tailwind lee un `_` de un valor arbitrario como un espacio).
 const marcas = (paso: PasoDeLaHoja) => ({
   'data-paso': paso.clave,
-  ...(paso.punto === null ? {} : { 'data-punto': paso.punto }),
+  ...(paso.punto === null ? {} : { 'data-punto': paso.punto.replaceAll('_', '-') }),
+  'aria-label': paso.title,
   title: paso.title,
 })
 
@@ -72,7 +66,7 @@ function PasoDeLaHojaMisma({ paso }: { paso: PasoDeLaHoja }) {
         })
       }}
     >
-      <Contenido paso={paso} />
+      {paso.etiqueta}
     </button>
   )
 }
@@ -89,7 +83,7 @@ function PasoDeUnPanel({ paso, panel }: { paso: PasoDeLaHoja; panel: string }) {
         abrir()
       }}
     >
-      <Contenido paso={paso} />
+      {paso.etiqueta}
     </button>
   )
 }
