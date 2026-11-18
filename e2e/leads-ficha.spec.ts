@@ -18,6 +18,7 @@ import {
 } from './soporte/leads-listado'
 import {
   NO_DISPONIBLE,
+  abrirVerMas,
   editarDelMenuDeLaFicha,
   idDeLead,
   irAFicha,
@@ -63,16 +64,18 @@ test('la cartera ve su ficha: teléfono completo, quién lo tiene y sus datos', 
   await expect(
     page.getByRole('region', { name: 'Quién lo tiene', exact: true }).getByText('(tú)'),
   ).toBeVisible()
-  // Un dato propio con valor y los fijos en «Datos», a la vista (sin plegar).
-  await expect(aLaVista(page.getByText('rojo', { exact: true }))).toBeVisible()
+  // Los datos clave en «Datos», a la vista; el teléfono completo, como enlace de llamada, y nada que diga que está enmascarado.
   await expect(page.getByRole('region', { name: 'Datos', exact: true })).toBeVisible()
-  // El teléfono completo, como enlace de llamada, y nada que diga que está enmascarado.
   const llamada = page.locator('a[href^="tel:"]').first()
   await expect(llamada).toBeVisible()
   await expect(page.getByText('Completo solo para su cartera.')).toHaveCount(0)
   // Sin pestañas ni acordeones.
   await expect(page.getByRole('tablist')).toHaveCount(0)
   await expect(page.locator('main details')).toHaveCount(0)
+  // Un dato propio con valor, en «Ver más» (sin plegar).
+  const modal = await abrirVerMas(page)
+  await expect(modal.getByText('rojo', { exact: true })).toBeVisible()
+  await expect(modal.locator('details')).toHaveCount(0)
 })
 
 test('desde el listado: el nombre de la fila lleva a la ficha, ya con el nombre vigente', async ({
@@ -134,20 +137,24 @@ test('la dueña con «todos» ve la ficha ajena con los teléfonos enmascarados 
   await irAFicha(page, id)
   await expect(tituloDeLaFicha(page, nombre(AJENO_CARLOS))).toBeVisible()
   const cuerpo = page.locator('main')
-  // El principal y los extras, enmascarados; nada del número completo en la página.
+  // El principal, enmascarado y con su aviso; nada del número completo en la página.
   await expect(cuerpo.getByText('Completo solo para su cartera.')).toBeVisible()
   await expect(cuerpo.locator('a[href^="tel:"]')).toHaveCount(0)
-  await expect(cuerpo.getByText('Trabajo')).toBeVisible()
+  // Los extras, la cédula y lo demás, en «Ver más»: sin «Editar».
+  const modal = await abrirVerMas(page)
+  await expect(modal.getByText('Trabajo')).toBeVisible()
+  await expect(modal.locator('a[href^="tel:"]')).toHaveCount(0)
+  await expect(modal.getByRole('button', { name: /^Editar/ })).toHaveCount(0)
   const html = await page.content()
   expect(html).not.toContain(t.telefonoDeCarlos)
   expect(html).not.toContain(nacionalDe(t.telefonoDeCarlos))
   // La cédula es «solo la cartera»: se dice, y el valor no está en la página.
-  await expect(aLaVista(cuerpo.locator('dt:has-text("Cédula E2E") + dd'))).toHaveText(
-    'Solo la cartera',
-  )
+  await expect(modal.locator('dt:has-text("Cédula E2E") + dd')).toHaveText('Solo la cartera')
   expect(html).not.toContain(CI_DE_CARLOS)
   // Lo que sí ve quien ve el lead.
-  await expect(aLaVista(cuerpo.getByText('azul', { exact: true }))).toBeVisible()
+  await expect(modal.getByText('azul', { exact: true })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(modal).toBeHidden()
   await expect(
     cuerpo
       .getByRole('region', { name: 'Quién lo tiene', exact: true })

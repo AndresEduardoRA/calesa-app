@@ -23,6 +23,11 @@ export const MODALES: Record<string, RegistroDeModal> = {
     sinFormulario:
       'sólo lista las oportunidades que el lead ya tiene antes de crear: «Crear igual» sigue al formulario (ModalDeFormulario) y «Cancelar» cierra; nada tipeado',
   },
+  'src/modules/leads/features/ficha/components/modal-de-datos-del-lead.tsx': {
+    sinFormulario:
+      '«Ver más» de la ficha: los datos del lead de sólo lectura; «Editar» abre el panel de edición (con su propio aviso de cambios)',
+    tambien: ['src/modules/leads/features/ficha/components/telefonos-de-la-ficha.tsx'],
+  },
   'src/modules/leads/features/listado/components/modal-de-accion-de-fila.tsx': {
     sinFormulario:
       'sólo dibuja los estados de carga, error y sin tipos; los formularios de anotar y agendar son ModalDeFormulario',

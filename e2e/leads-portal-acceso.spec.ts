@@ -65,7 +65,7 @@ test('sin el permiso, aunque tenga la cartera: ni el bloque, ni por la URL', asy
   const lead = await leadCompartido(`Portal Sin Permiso ${info.project.name}`)
   await entrar(page, t.personas.berta)
   await irAFicha(page, lead.id, '?seccion=portal')
-  await expect(page.getByText('Teléfonos', { exact: true }).first()).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Datos', level: 2 })).toBeVisible()
   await expect(seccionPortal(page)).toHaveCount(0)
 })
 
@@ -76,7 +76,7 @@ for (const quien of ['supervision', 'duena'] as const) {
     const lead = await leadCompartido(`Portal Sin Cartera ${quien} ${info.project.name}`)
     await entrar(page, quien === 'supervision' ? t.supervision.email : t.personas.duena)
     await irAFicha(page, lead.id, '?seccion=portal')
-    await expect(page.getByText('Teléfonos', { exact: true }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Datos', level: 2 })).toBeVisible()
     await expect(seccionPortal(page)).toHaveCount(0)
     // Ni por la base: el estado (con el código) no se le entrega.
     const { error } = await rpcComo(

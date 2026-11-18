@@ -9,13 +9,13 @@ import {
 } from '../../../entities/cartera'
 import type { TipoDeLeadEnCatalogo } from '../../../entities/catalogos'
 import type { CampoDeLead } from '../../../entities/campo'
+import { edicionDelMenu } from '../../../entities/acciones-de-lead'
 import { ANCLA_DEL_PORTAL } from '../../../entities/bloques-de-la-ficha'
 import type { LeadDeFicha } from '../../../entities/ficha'
 import { BloqueDeCartera } from '../../cartera/components/bloque-de-cartera'
 import { useCartera } from '../../cartera/hooks/use-cartera'
 import { CabeceraDeLead } from './cabecera-de-lead'
-import { DatosDeLaFicha } from './datos-de-la-ficha'
-import { TelefonosDeLaFicha } from './telefonos-de-la-ficha'
+import { DatosClaveDelLead } from './datos-clave-del-lead'
 
 type Props = {
   ficha: LeadDeFicha
@@ -25,8 +25,9 @@ type Props = {
   // El «⋯» del lead y las marcas de quien mira: los arma la ficha.
   menu: ReactNode
   marcas: ReactNode
-  // Cartera y `leads.telefonos_extra.editar` sin `leads.editar`: «Editar teléfonos».
-  conEditarTelefonos: boolean
+  // Con la cartera: `leads.editar` («Editar» en «Ver más») y `leads.telefonos_extra.editar` (sin el otro, «Editar teléfonos»).
+  puedeEditar: boolean
+  puedeEditarExtras: boolean
   // Como la leyó la página; la que se mueve vive acá (`useCartera`): la línea de la cabecera y «Quién lo tiene» leen la misma.
   cartera: readonly PersonaDeCartera[]
   accionesDeCartera: AccionesDeCartera
@@ -34,8 +35,9 @@ type Props = {
   portal: ReactNode
 }
 
-// La columna de la izquierda de la ficha, una tarjeta en orden: quién es (nombre con su «⋯», quién lo tiene, números y marcas), «Datos», «Teléfonos»,
-// «Quién lo tiene» y, para quien lo gestiona, «Acceso al portal» (a la vista en escritorio; en el celular, antes que los bloques).
+// La columna de la izquierda de la ficha, una tarjeta en orden: quién es (nombre con su «⋯», quién lo tiene, números y marcas), los datos
+// clave con «Ver más», «Quién lo tiene» y, para quien lo gestiona, «Acceso al portal» (a la vista en escritorio; en el celular, antes que
+// los bloques).
 export function LateralDeLaFicha({
   ficha,
   campos,
@@ -43,7 +45,8 @@ export function LateralDeLaFicha({
   tipo,
   menu,
   marcas,
-  conEditarTelefonos,
+  puedeEditar,
+  puedeEditarExtras,
   cartera: carteraInicial,
   accionesDeCartera,
   portal,
@@ -57,8 +60,10 @@ export function LateralDeLaFicha({
         cartera={textoDeLaCartera(cartera.cartera)}
         marcas={marcas}
       />
-      <DatosDeLaFicha ficha={ficha} campos={campos} origen={origen} tipo={tipo} />
-      <TelefonosDeLaFicha ficha={ficha} conEditarTelefonos={conEditarTelefonos} />
+      <DatosClaveDelLead
+        {...{ ficha, campos, origen, tipo }}
+        edicion={edicionDelMenu({ editar: puedeEditar, telefonos: puedeEditarExtras })}
+      />
       <BloqueDeCartera
         lead={{
           id: ficha.id,

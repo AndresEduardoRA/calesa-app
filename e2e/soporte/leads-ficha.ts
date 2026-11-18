@@ -195,6 +195,24 @@ export async function editarDelMenuDeLaFicha(page: Page): Promise<Locator> {
   return menu.getByRole('menuitem', { name: /^Editar (lead|teléfonos)$/ })
 }
 
+// «Ver más» de los datos del lead (`?ver=datos`): abre el modal con todo y lo devuelve (un clic antes de hidratar se pierde).
+export const modalDeDatos = (page: Page): Locator =>
+  page.getByRole('dialog', { name: /^Datos de / })
+
+export async function abrirVerMas(page: Page): Promise<Locator> {
+  const modal = modalDeDatos(page)
+  await expect(async () => {
+    if (await modal.isVisible()) {
+      return
+    }
+    await aLaVista(page.getByRole('button', { name: 'Ver más', exact: true })).click({
+      timeout: 1000,
+    })
+    await expect(modal).toBeVisible({ timeout: 1000 })
+  }).toPass()
+  return modal
+}
+
 // Abre el panel de edición con «Editar lead» del «⋯» y espera a que esté.
 export async function abrirEdicion(page: Page): Promise<Locator> {
   const panel = panelDeEdicion(page)

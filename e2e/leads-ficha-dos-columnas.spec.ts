@@ -144,7 +144,7 @@ test('todo a la vista sin un clic: la izquierda, el índice y los cuatro bloques
   await entrar(page, t.personas.duena)
   await irAFicha(page, completo.id)
   await expect(tituloDeLaFicha(page, completo.nombre)).toBeVisible()
-  for (const nombre of ['Datos', 'Teléfonos', 'Quién lo tiene', 'Acceso al portal']) {
+  for (const nombre of ['Datos', 'Quién lo tiene', 'Acceso al portal']) {
     await expect(titulo(page, nombre)).toBeAttached()
   }
   await expect(indice(page).getByRole('link')).toHaveText(BLOQUES.map(([etiqueta]) => etiqueta))
