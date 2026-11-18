@@ -285,6 +285,13 @@ begin
     raise exception 'OE11: el lead sin oportunidades debía dar columnas vacías: %', r; end if;
   r := pg_temp.oe_bien(pg_temp.oe_corre(otra, format('select public.embudo_tablero_del_lead(%L, %L)', v_emb, v_lead)), 'OE11 ajeno');
   if r is not null and r <> 'null'::jsonb then raise exception 'OE11: un embudo ajeno debía dar null: %', r; end if;
+  -- Otra persona, con su propio embudo, pide el lead de q: columnas vacías (la RLS da sólo lo propio con el lead en la cartera); su «Ver más», nada.
+  perform pg_temp.oe_bien(pg_temp.oe_corre(otra, 'select public.embudo_por_defecto()'), 'OE11 embudo de otra');
+  r := pg_temp.oe_bien(pg_temp.oe_corre(otra, format('select public.embudo_tablero_del_lead(%L, %L)', public._embudo_defecto_de(otra), v_lead)), 'OE11 de otra');
+  if r is null or exists (select 1 from jsonb_array_elements(r -> 'columnas') c where jsonb_array_length(c -> 'tarjetas') > 0 or (c ->> 'total')::int <> 0) then
+    raise exception 'OE11: otra persona vio oportunidades del lead de q: %', r; end if;
+  r := pg_temp.oe_bien(pg_temp.oe_corre(otra, format('select public.embudo_etapa_pagina_del_lead(%L, %L, null, null)', pg_temp.oe_etapa(v_emb, 'inicial'), v_lead)), 'OE11 Ver más de otra');
+  if jsonb_array_length(r -> 'tarjetas') <> 0 or (r ->> 'hay_mas')::boolean then raise exception 'OE11: otra persona leyó la columna de q: %', r; end if;
 
   -- «Ver más»: tres más en la inicial (duplicadas de antes, directo y sin triggers: la hora es la del pasado) y páginas de a uno.
   v_ini := pg_temp.oe_etapa(v_emb, 'inicial');

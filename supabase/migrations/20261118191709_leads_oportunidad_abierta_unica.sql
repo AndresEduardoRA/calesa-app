@@ -15,7 +15,9 @@
 -- Toma un candado de transacción por (lead, embudo) y, en otra sentencia (otra foto en READ COMMITTED), busca otra abierta y viva del lead en
 -- ese embudo de esa persona que no sea `p_excepto`. Si la hay: 22023 con el campo en `hint` (`embudo_id`) y el id de la abierta en `detail`,
 -- para que la interfaz ofrezca «Abrir esa». Orden de candados de quien la llama: lead (`for update`) → embudo (`for share`) → la oportunidad
--- (al mover o restaurar) → este candado; como quien llega aquí ya tiene el lead, nadie espera en orden inverso.
+-- (al mover o restaurar) → este candado; como quien llega aquí ya tiene el lead, nadie espera en orden inverso. Hoy el `for update` del lead
+-- ya serializa a dos pedidos del mismo lead; este candado es la defensa de la regla por sí misma (para una llamadora que no tomara el lead) y lo
+-- fija `scripts/guardas/candado-de-oportunidad-abierta.test.ts`.
 -- La sostiene oportunidades_lead_abiertas_idx: igualdad en (lead_id, usuario_id); embudo_id e id filtran sobre las pocas abiertas del lead.
 create or replace function public._oportunidad_abierta_unica(p_lead uuid, p_embudo uuid, p_usuario uuid, p_excepto uuid default null)
     returns void

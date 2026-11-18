@@ -17,6 +17,8 @@
 --   - Assert 5, el embudo filtrado por lead (`embudo_tablero_del_lead`, `embudo_etapa_pagina_del_lead`): la columna de L con sus 1.000 de Ana, su conteo con
 --     tope y «Ver más» con y sin cursor, de a `:tam_columna` (TAMANO_DE_COLUMNA) y hasta `:tope_cargado` (TOPE_DE_LO_CARGADO): `Index Scan` por
 --     `oportunidades_lead_etapa_idx`, sin `Sort`, sin `Seq Scan` de `oportunidades` y con `Rows Removed by Filter` ≤ 1; la llamada real, ≤ 50 ms.
+--   - Assert 6, la guarda de «una abierta por embudo» en un embudo de Ana sin abiertas de L (recorre las 500 abiertas de L), ≤ 15 ms. Ana tiene dos
+--     embudos: la página 1 (Asserts 2 y 3) paga también la sonda de `abiertas_por_embudo` del que no tiene ninguna.
 -- La guarda: con los dos parciales quitados el Assert 1 o el 2 cae («guarda: cae»); si no cayera, «la guarda no muerde».
 \set ON_ERROR_STOP 1
 \set carga `cat /proc/loadavg`
@@ -231,6 +233,13 @@ begin
 end $$;
 grant execute on function pg_temp.fallas(text) to authenticated;
 
+-- Un segundo embudo de Ana, sin oportunidades de L: en la página 1, la sonda de `abiertas_por_embudo` para él recorre las 500 abiertas de L
+-- (duplicadas de antes de «una abierta por embudo», el peor caso) y la guarda, igual (Assert 6).
+select pg_temp.como('ana') \g /dev/null
+set local role authenticated;
+select public.embudo_crear(gen_random_uuid(), 'Medir otro embudo') \g /dev/null
+reset role;
+
 -- ---------------------------------------------------------------------------------------------------------------------------------
 -- Medir y asertar
 -- ---------------------------------------------------------------------------------------------------------------------------------
@@ -309,6 +318,18 @@ select set_config('medir.del_lead', pg_temp.planes_del_lead(), true) \g /dev/nul
 reset role;
 do $$ begin
   if current_setting('medir.del_lead') <> '' then raise exception 'El embudo filtrado por lead rompe su presupuesto:%', current_setting('medir.del_lead'); end if;
+end $$;
+
+-- Assert 6: la guarda de «una abierta por embudo» en el peor caso: el segundo embudo de Ana no tiene abiertas de L, así que recorre las 500 de L
+-- por oportunidades_lead_abiertas_idx antes de no encontrar ninguna; ≤ 15 ms.
+do $$
+declare v_ms numeric;
+begin
+  v_ms := (pg_temp.medir(format('select public._oportunidad_abierta_unica(%L, %L, %L, null)', (select id from _l where clave = 'L'),
+    (select e.id from public.embudos e where e.usuario_id = (select id from _p where clave = 'ana') and e.nombre = 'Medir otro embudo'),
+    (select id from _p where clave = 'ana'))) ->> 'ms')::numeric;
+  raise notice 'medicion|Guarda de una abierta por embudo · peor caso, 500 abiertas del lead en otro embudo (ms)|%', round(v_ms, 2);
+  if v_ms > 15 then raise exception 'La guarda de una abierta por embudo: % ms, el tope es 15', round(v_ms, 1); end if;
 end $$;
 
 -- La guarda: sin los dos parciales, el Assert 1 o el 2 tienen que caer.

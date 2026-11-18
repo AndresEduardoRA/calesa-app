@@ -159,6 +159,9 @@ test('el embudo filtrado por lead: sólo las suyas con el chip, «Ver todas» lo
   await irAlEmbudo(page, `&embudo=${ventas.id}&lead=${lead.id}`)
   await page.getByRole('button', { name: 'Embudo: Ventas' }).click()
   await page.getByRole('menuitemradio', { name: `Flotas ${proyecto}` }).click()
+  // El menú del selector no se cierra solo al elegir (docs/PENDIENTES.md): en el celular taparía las pestañas.
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('menu')).toBeHidden()
   await expect(page).toHaveURL(new RegExp(`embudo=${flotas}`))
   await expect(page).toHaveURL(new RegExp(`lead=${lead.id}`))
   await expect(
