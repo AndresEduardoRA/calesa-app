@@ -205,16 +205,20 @@ export async function guardarComo(
   const vehiculo = sql(
     `select coalesce(vehiculo_id::text, '') from public.cotizaciones where id = ${id}::uuid`,
   )
+  // El título como está (sin vehículo es obligatorio, T307).
+  const titulo = sql(`select coalesce(titulo, '') from public.cotizaciones where id = ${id}::uuid`)
+  const manual = sql(`select titulo_manual::text from public.cotizaciones where id = ${id}::uuid`)
   const { error } = await cliente.rpc('cotizacion_guardar', {
     p_id: datos.cotizacionId,
     p_intento: crypto.randomUUID(),
     p_actualizado_en_esperado: version,
     p_entradas: { inputs: { pub: datos.pub }, banderas: {}, overrides: {} },
     p_modo_tc: null,
-    p_titulo: null,
+    p_titulo: titulo === '' ? null : titulo,
     p_notas: null,
     p_vehiculo: vehiculo === '' ? null : vehiculo,
     p_ver_total_bs: false,
+    p_titulo_manual: manual === 'true',
   })
   if (error) {
     throw new Error(`${persona.email} no pudo guardar: ${error.message}`)

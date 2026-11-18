@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { dialogo, entrar } from './soporte/alta'
 import {
   guardarConElAtajo,
@@ -83,6 +84,8 @@ test('E2E guardar el lead elige al creado, conserva lo tipeado, deja el foco en 
 }, info) => {
   const guardados = await vigilarGuardados(page)
   await abrirLaHoja(page)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '100')
   await expect(totalDeLaHoja(page)).toContainText('105,00')
   const alta = await abrirNuevoLeadDesdeElPanel(page)
@@ -138,6 +141,8 @@ test('E2E Ctrl+S con «Nuevo lead» abierto sobre la hoja crea el lead y no mand
 }, info) => {
   const guardados = await vigilarGuardados(page)
   await abrirLaHoja(page)
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
   await tipearEnLaHoja(page, 'pub', '100')
   const alta = await abrirNuevoLeadDesdeElPanel(page)
   const nombre = `E2E Atajo ${info.project.name}`

@@ -1,4 +1,5 @@
 import { expect, test } from './soporte/prueba'
+import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
 import { vigilarRecalculos } from './soporte/cotizar'
 import { publicarLaVersionSiguiente } from './soporte/cotizar-formula'
@@ -47,6 +48,8 @@ async function abrir(page: Parameters<typeof entrar>[0]) {
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/nuevo?origen=${origen.id}&lead=${lead}`)
   await expect(totalDeLaHoja(page)).toBeVisible()
+  // Sin vehículo, el título es obligatorio para guardar (T307).
+  await escribirElTitulo(page)
 }
 
 test('D2 por fórmula: «Guardar con la versión N» guarda con la versión de la hoja', async ({
