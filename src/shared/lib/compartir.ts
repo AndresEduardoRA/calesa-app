@@ -55,8 +55,9 @@ export async function copiarTexto(texto: string): Promise<void> {
   await navigator.clipboard.writeText(texto)
 }
 
-// El portapapeles lleva una imagen PNG (lo único que aceptan todos): quien llama la tiene lista **antes** del toque (Safari pierde el gesto si se espera algo).
-export async function copiarImagen(imagen: Blob): Promise<void> {
+// El portapapeles lleva una imagen PNG (lo único que aceptan todos). Quien llama la tiene lista **antes** del toque o pasa la promesa que la arma: Safari pierde el gesto
+// si se espera algo antes de escribir, y `ClipboardItem` acepta la promesa.
+export async function copiarImagen(imagen: Blob | Promise<Blob>): Promise<void> {
   await navigator.clipboard.write([new ClipboardItem({ 'image/png': imagen })])
 }
 

@@ -51,6 +51,15 @@ export const MODALES: Record<string, RegistroDeModal> = {
     sinFormulario:
       'sólo dibuja la tarjeta de la cotización (lectura, carga, error y el botón Live): no hay nada tipeado que se pierda al cerrar',
   },
+  'src/modules/cotizaciones/features/tarjeta/components/compartir/panel-de-compartir.tsx': {
+    sinFormulario:
+      '«Compartir cotización»: la imagen y el texto de sólo lectura, con botones que eligen (imagen, formato, zona, fotos) y copian, descargan o comparten al instante; nada tipeado',
+    tambien: [
+      'src/modules/cotizaciones/features/tarjeta/components/compartir/texto-para-compartir.tsx',
+      'src/modules/cotizaciones/features/tarjeta/components/compartir/imagen-para-compartir.tsx',
+      'src/modules/cotizaciones/features/tarjeta/components/compartir/acciones-para-compartir.tsx',
+    ],
+  },
   'src/modules/cotizaciones/features/hoja/components/modal-de-avanzado.tsx': {
     sinFormulario:
       'dibuja celdas tipeables de la hoja, que confirman en la hoja y su borrador; cerrar o «atrás» las desmonta sin confirmar: un número abierto se confirma al perder el foco, lo demás se descarta, y Esc con una celda abierta cancela sólo la celda',
