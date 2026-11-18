@@ -16,6 +16,7 @@ const pagina: PaginaDeLaTarjeta = {
   vehiculo: 'Toyota Hilux 2020',
   asesor: 'Ana Pérez',
   numero: 41,
+  titulo: null,
   vencida: true,
   logo: { nombre: 'Importadora', url: 'https://x.test/logo.webp' },
 }
@@ -112,6 +113,7 @@ describe('<TarjetaDeCotizacion>: encabezado y por omisión', () => {
         modelo={modelo({}, calculoDePrueba(), {
           ...pagina,
           numero: null,
+          titulo: null,
           vencida: false,
           asesor: null,
           vehiculo: null,

@@ -11,6 +11,7 @@ import { useRegional } from '@/shared/ui/regional'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { useUltimo } from '@/shared/ui/use-ultimo'
 import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
+import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
 import {
   MENSAJE_DE_COTIZACION_NO_DISPONIBLE,
@@ -91,11 +92,7 @@ function DetalleDeLaCotizacion({
         {cotizacion.aprobada ? <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge> : null}
         <Vigencia venceEl={cotizacion.venceEl} vencida={cotizacion.vencida} />
       </div>
-      {cotizacion.titulo ? (
-        <p className="text-(length:--text-sm) [overflow-wrap:anywhere] text-(--color-ink)">
-          {cotizacion.titulo}
-        </p>
-      ) : null}
+      <TituloDelResumen cotizacion={cotizacion} />
       <p className="text-(length:--text-lg) font-medium tabular-nums">
         <Monto valor={cotizacion.totalBase} />
       </p>
@@ -190,6 +187,19 @@ function ContenidoDelResumen({
       quien={quienes[cotizacion.id] ?? SIN_PERMISOS}
       deEsteVehiculo={deEsteVehiculo}
     />
+  )
+}
+
+// El título de la cotización (`tituloDeLaCotizacion()`): el suyo o el del vehículo; el de respaldo es el número, que ya dice el título del panel.
+function TituloDelResumen({ cotizacion }: { cotizacion: FilaDeCotizacion }) {
+  const titulo = tituloDeLaCotizacion(cotizacion)
+  return titulo === null || titulo.fuente === 'numero' ? null : (
+    <p
+      data-titulo-de-la-cotizacion=""
+      className="text-(length:--text-sm) [overflow-wrap:anywhere] text-(--color-ink)"
+    >
+      {titulo.texto}
+    </p>
   )
 }
 

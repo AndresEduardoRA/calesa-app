@@ -20,6 +20,7 @@ const PAGINA: PaginaDeLaTarjeta = {
   vehiculo: 'Toyota Hilux 2020',
   asesor: 'Ana Pérez',
   numero: 12,
+  titulo: null,
   vencida: false,
   logo: null,
 }
@@ -131,6 +132,13 @@ describe('pdfDeLaTarjeta: lo que cambia según el modelo', () => {
     })
     expect(lineas).toContain(`TOTAL DÓLARES ${usd(1500)}`)
     expect(lineas).not.toContain(`TOTAL DÓLARES ${usd(1355)}`)
+  })
+
+  it('el título de la cotización va junto al número, y sin título la línea no cambia', async () => {
+    const { lineas } = await leer({ pagina: { titulo: 'Para Juan Pérez' } })
+    expect(lineas.some((l) => l.includes('Cotización n.º 12 · Para Juan Pérez'))).toBe(true)
+    const sin = await leer({})
+    expect(sin.lineas.some((l) => l.includes('Cotización n.º 12 ·'))).toBe(false)
   })
 
   it('vencida lo dice en el encabezado', async () => {

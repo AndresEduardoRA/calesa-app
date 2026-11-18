@@ -14,6 +14,7 @@ import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
+import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
 import {
   nombreDelOrigen,
   SIN_NOMBRE,
@@ -35,8 +36,10 @@ type Props = {
 
 const VACIO = <span className="text-(--color-ink-faint)">{SIN_NOMBRE}</span>
 
-// «N.º n» (el botón de la fila, la parada de Tab) y, debajo, su título, pegados a la izquierda.
+// «N.º n» (el botón de la fila, la parada de Tab) y, debajo, su título (`tituloDeLaCotizacion()`: el suyo o el del vehículo; el de respaldo es el número, que ya está), pegados
+// a la izquierda, en dos líneas como mucho y entero en `title`.
 function CeldaDelNumero({ cotizacion }: { cotizacion: FilaDeCotizacion }) {
+  const titulo = tituloDeLaCotizacion(cotizacion)
   return (
     <CeldaPegada lado="nombre">
       <div className="grid min-w-0">
@@ -50,11 +53,15 @@ function CeldaDelNumero({ cotizacion }: { cotizacion: FilaDeCotizacion }) {
           {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
           <SufijoDeVisto id={cotizacion.id} />
         </span>
-        {cotizacion.titulo ? (
-          <span className="max-w-60 truncate text-(length:--text-xs) text-(--color-ink-soft)">
-            {cotizacion.titulo}
+        {titulo === null || titulo.fuente === 'numero' ? null : (
+          <span
+            data-titulo-de-la-cotizacion=""
+            title={titulo.texto}
+            className="line-clamp-2 max-w-60 text-(length:--text-xs) break-words text-(--color-ink-soft)"
+          >
+            {titulo.texto}
           </span>
-        ) : null}
+        )}
       </div>
     </CeldaPegada>
   )
