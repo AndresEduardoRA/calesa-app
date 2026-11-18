@@ -23,16 +23,19 @@ import {
 import { borrarLotesDePrueba } from './soporte/papelera'
 import { capturar } from './soporte/recorrido'
 
-// El «⋯» del lead, el mismo en la fila del listado, la tarjeta del kanban y la ficha (9i): una sola lista en este orden —agendar,
-// anotar, etiquetas, favorito, tachado y, separada, la papelera—, y lo que una persona no puede hacer no aparece. Cada acción hace lo suyo
-// en cada superficie. Capturas: `E2E_CAPTURAS=e2e-capturas/9i`.
+// El «⋯» del lead, el mismo en la fila del listado (la tarjeta de la lista en el celular), la tarjeta del kanban y la ficha (9i, T341): una
+// sola lista en este orden —«Cotizar lead» destacado y solo arriba; agendar, anotar, nueva oportunidad y ver oportunidades; «Editar lead»
+// (o «Editar teléfonos») en su bloque; «Ver actividad»; etiquetas, favorito y tachado y, separada, la papelera—, y lo que una persona no puede
+// hacer no aparece. Cada acción hace lo suyo en cada superficie. Capturas: `E2E_CAPTURAS=e2e-capturas/9i`.
 test.describe.configure({ mode: 'serial' })
 
+// Berta (asesora del terreno): edita su cartera y envía lo suyo; no cotiza ni ve la actividad.
 const COMPLETO = [
   'Agendar recordatorio…',
   'Anotar seguimiento…',
   'Nueva oportunidad…',
   'Ver oportunidades',
+  'Editar lead',
   'Etiquetas…',
   'Favorito',
   'Tachado',
@@ -96,8 +99,8 @@ test('con todo, el orden es el mismo en la fila, la tarjeta del kanban y la fich
   await irALeads(page)
   const deLaFila = await abrirMenuDelLead(page, nombre(corto))
   expect(await opciones(deLaFila)).toEqual(COMPLETO)
-  // Tres bloques: dos separadores (entre lo que se hace con el lead y las marcas, y antes de la papelera).
-  await expect(separadores(deLaFila)).toHaveCount(2)
+  // Cuatro bloques: lo que se hace con el lead, «Editar lead», las marcas y la papelera (tres separadores).
+  await expect(separadores(deLaFila)).toHaveCount(3)
   await capturar(page, info, 'menu-del-lead-fila')
   await cerrar(page, deLaFila)
 
@@ -105,7 +108,7 @@ test('con todo, el orden es el mismo en la fila, la tarjeta del kanban y la fich
   await irAFicha(page, lead.id)
   const deLaFicha = await abrirMenuDeLaFicha(page)
   expect(await opciones(deLaFicha)).toEqual(COMPLETO)
-  await expect(separadores(deLaFicha)).toHaveCount(2)
+  await expect(separadores(deLaFicha)).toHaveCount(3)
   await capturar(page, info, 'menu-del-lead-ficha')
   await cerrar(page, deLaFicha)
 
@@ -115,7 +118,7 @@ test('con todo, el orden es el mismo en la fila, la tarjeta del kanban y la fich
   await expect(tarjeta(page, titulo)).toBeVisible()
   const delKanban = await menuDeLaTarjeta(page, titulo, corto)
   await expect.poll(() => opciones(delKanban)).toEqual(COMPLETO)
-  await expect(separadores(delKanban)).toHaveCount(2)
+  await expect(separadores(delKanban)).toHaveCount(3)
   await capturar(page, info, 'menu-del-lead-kanban')
   await cerrar(page, delKanban)
 })
@@ -260,25 +263,24 @@ test('la dueña sobre un lead ajeno: marca y envía, pero no anota ni agenda (no
   const lead = await leadDeBerta(corto)
   await entrar(page, t.personas.duena)
   await irALeads(page, '?alcance=todos')
-  const deLaFila = await abrirMenuDelLead(page, nombre(corto))
-  expect(await opciones(deLaFila)).toEqual([
+  // Cotiza y tiene `actividad.ver`: «Cotizar lead» y «Ver actividad» en la fila y en la ficha; sin la cartera, ni editar ni seguimiento.
+  const AJENO = [
+    'Cotizar lead',
+    'Ver actividad',
     'Etiquetas…',
     'Favorito',
     'Tachado',
     'Enviar a la papelera',
-  ])
-  await expect(separadores(deLaFila)).toHaveCount(1)
+  ]
+  const deLaFila = await abrirMenuDelLead(page, nombre(corto))
+  expect(await opciones(deLaFila)).toEqual(AJENO)
+  await expect(separadores(deLaFila)).toHaveCount(3)
   await capturar(page, info, 'menu-del-lead-duena-fila')
-  await cerrar(page, deLaFila)
+  // «Ver actividad» lleva a la actividad de este lead.
+  await deLaFila.getByRole('menuitem', { name: 'Ver actividad' }).click()
+  await expect(page).toHaveURL(new RegExp(`/actividad\\?.*registro=${lead.id}`))
   await irAFicha(page, lead.id)
   const deLaFicha = await abrirMenuDeLaFicha(page)
-  // La dueña tiene `actividad.ver`: sólo la ficha le ofrece «Ver actividad», antes de la papelera.
-  expect(await opciones(deLaFicha)).toEqual([
-    'Etiquetas…',
-    'Favorito',
-    'Tachado',
-    'Ver actividad',
-    'Enviar a la papelera',
-  ])
+  expect(await opciones(deLaFicha)).toEqual(AJENO)
   await cerrar(page, deLaFicha)
 })

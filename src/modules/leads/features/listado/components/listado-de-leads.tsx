@@ -17,12 +17,15 @@ import type { FiltroDescartado } from '../../../entities/filtros-descartados'
 import { SECCION_MARCAS } from '../../../entities/filtros-de-marcas'
 import type { FilaDeLead } from '../../../entities/listado'
 import type { RecorridoAcotado } from '../../../entities/candidatos'
+import type { RutasDelMenuDeLead } from '../../../entities/ruta-por-lead'
 import { DialogoDeExportarDiferido } from '../../exportar/components/diferidos'
 import { usePanelDeExportar } from '../../exportar/hooks/use-panel-de-exportar'
 import { DialogoDeEtiquetas } from '../../etiquetas/components/dialogo-de-etiquetas'
 import { useEtiquetas } from '../../etiquetas/hooks/use-etiquetas'
 import { usePanelDeEtiquetas } from '../../etiquetas/hooks/use-panel-de-etiquetas'
+import { EdicionDesdeLaLista } from '../../ficha/components/edicion-desde-la-lista'
 import { RefrescarAlVolver } from '../../ficha/components/refrescar-al-volver'
+import { useEdicionDesdeLaLista } from '../../ficha/hooks/use-edicion-desde-la-lista'
 import { useAccionDeFila } from '../hooks/use-accion-de-fila'
 import { AccionesDeFila } from './acciones-de-fila'
 import { AvisoDeFiltrosDescartados } from './aviso-de-filtros-descartados'
@@ -31,7 +34,7 @@ import { AvisoDeTachadosOcultos } from './aviso-de-tachados-ocultos'
 import { PieDeFiltros } from './pie-de-filtros'
 import { ResultadoDelListado } from './resultado-del-listado'
 import { opcionesDelListado } from './opciones-del-listado'
-import type { DatosDeLaLista } from './tipos'
+import type { DatosDeLaLista, ParaMarcar } from './tipos'
 import type { DatosDeUltimoContacto } from './ultimo-contacto'
 import { ProveedorDeMarcasDeVisto } from '@/modules/equipo/client'
 
@@ -51,6 +54,10 @@ type Props = DatosDeLaLista & {
   eliminables: readonly string[]
   puedeAbrirPapelera: boolean
   puedeAnotar: boolean
+  puedeEditarTelefonos: boolean
+  puedeConfigurarLeads: boolean
+  // «Cotizar lead» y «Ver actividad» del «⋯»: sus rutas con `MARCADOR_DE_LEAD`, armadas una vez por página en `src/app`; nulas sin permiso.
+  rutas: RutasDelMenuDeLead
   // Los tipos de seguimiento y el instante de la página: dicen el último seguimiento y el recordatorio de cada fila.
   tiposDeSeguimiento: DatosDeUltimoContacto['tipos']
   ahora: string
@@ -109,6 +116,47 @@ function AccionesDeFilaConRelectura(props: { filas: readonly FilaDeLead[]; puede
   )
 }
 
+// El «⋯» de las filas, armado una vez para la página: lo que cada una necesita (`ParaMarcar`: anotar, agendar y la oportunidad con
+// `leads.editar`; las rutas de «Cotizar lead» y «Ver actividad»; editar el lead) y la URL del panel de edición (`?panel=editar-lead&para=`).
+function useMenuDeLasFilas(
+  p: Pick<Props, 'eliminables' | 'puedeAnotar' | 'puedeEditarTelefonos' | 'rutas'>,
+  etiquetas: ParaMarcar['etiquetas'],
+  alGestionar: () => void,
+) {
+  const accionDeFila = useAccionDeFila()
+  const edicion = useEdicionDesdeLaLista()
+  const marcar: ParaMarcar = {
+    etiquetas,
+    alGestionar,
+    eliminables: p.eliminables,
+    alAccion: p.puedeAnotar ? accionDeFila.abrir : null,
+    ...p.rutas,
+    edicion: { editar: p.puedeAnotar, telefonos: p.puedeEditarTelefonos, abrir: edicion.abrir },
+  }
+  return { marcar, edicion }
+}
+
+// Lo que abren los «⋯» de las filas, montado una vez: anotar, agendar o crear una oportunidad, y editar el lead.
+function PanelesDeLasFilas(
+  p: Pick<Props, 'pagina' | 'puedeAnotar' | 'puedeEditarTelefonos' | 'puedeConfigurarLeads'> & {
+    edicion: ReturnType<typeof useEdicionDesdeLaLista>
+  },
+) {
+  return (
+    <>
+      <AccionesDeFilaConRelectura filas={p.pagina.filas} puedeAnotar={p.puedeAnotar} />
+      <EdicionDesdeLaLista
+        edicion={p.edicion}
+        permisos={{
+          editar: p.puedeAnotar,
+          telefonos: p.puedeEditarTelefonos,
+          configurar: p.puedeConfigurarLeads,
+        }}
+      />
+    </>
+  )
+}
+
 // La lista con las marcas de «visto» de su página (una lectura). Ninguno se abre acá: lo registra la ficha (`RegistrarVisto`).
 function ResultadoConVistos(props: ComponentProps<typeof ResultadoDelListado>) {
   return (
@@ -140,14 +188,16 @@ export function ListadoDeLeads(props: Props) {
     descartados,
     ocultos,
     recorrido,
-    eliminables,
+    eliminables: _eliminables,
     puedeAbrirPapelera: _puedeAbrirPapelera,
-    puedeAnotar,
+    puedeAnotar: _puedeAnotar,
+    puedeEditarTelefonos: _puedeEditarTelefonos,
+    puedeConfigurarLeads: _puedeConfigurarLeads,
+    rutas: _rutas,
     tiposDeSeguimiento,
     ahora,
     ...delServidor
   } = props
-  const accionDeFila = useAccionDeFila()
   const [panel] = useQueryState(CLAVE_DE_PANEL, parseAsString)
   const etiquetas = useEtiquetas(delServidor.etiquetas)
   const gestionar = usePanelDeEtiquetas()
@@ -157,8 +207,7 @@ export function ListadoDeLeads(props: Props) {
   const exportarMontado = useAbiertoAlgunaVez(exportar.abierto) && puedeExportar
   // La lista local: una etiqueta recién creada nombra la fila antes de que vuelva el servidor.
   const datos = { ...delServidor, etiquetas: etiquetas.lista }
-  const alAccion = puedeAnotar ? accionDeFila.abrir : null
-  const marcar = { etiquetas, alGestionar: gestionar.abrir, eliminables, alAccion }
+  const { marcar, edicion } = useMenuDeLasFilas(props, etiquetas, gestionar.abrir)
   const ultimoContacto = { tipos: tiposDeSeguimiento, ahora }
   return (
     <div className="grid gap-4">
@@ -195,7 +244,7 @@ export function ListadoDeLeads(props: Props) {
       {exportarMontado ? (
         <DialogoDeExportarDiferido abierto={exportar.abierto} alCerrar={exportar.cerrar} />
       ) : null}
-      <AccionesDeFilaConRelectura filas={pagina.filas} puedeAnotar={puedeAnotar} />
+      <PanelesDeLasFilas {...props} edicion={edicion} />
       {/* Lo de otra pestaña aparece al volver; con un panel abierto, no (relee la página). */}
       <RefrescarAlVolver activo={panel === null} />
     </div>

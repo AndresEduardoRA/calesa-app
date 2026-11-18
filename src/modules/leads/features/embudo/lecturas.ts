@@ -3,11 +3,12 @@ import { ok, type Resultado } from '@/shared/lib/errores'
 import type { ParametrosDeUrl } from '@/shared/lib/filtros'
 import { TAMANO_DE_COLUMNA } from '@/shared/lib/paginacion'
 import { unParametro } from '@/shared/lib/rutas'
-import { alcanceDe, type Permisos } from '@/shared/lib/permisos'
+import { alcanceDe, puede, type Permisos } from '@/shared/lib/permisos'
 import { leerEmbudos, leerEtiquetas, leerTablero } from '../../composicion'
 import type { Embudo } from '../../entities/embudo'
 import type { Etiqueta } from '../../entities/etiqueta'
 import { puedeEditarLead } from '../../entities/edicion'
+import { puedeEditarTelefonosExtra } from '../../entities/telefonos'
 import {
   CLAVE_DE_BUSQUEDA_DEL_EMBUDO,
   CLAVE_DE_EMBUDO,
@@ -19,7 +20,11 @@ import {
 // (agendar y anotar, con el lead en su cartera), hasta dónde puede enviar a la papelera y quién es (con «propios», sólo lo suyo).
 export type ParaElMenuDelEmbudo = {
   etiquetas: Etiqueta[]
+  // Como si el lead estuviera en la cartera (cada tarjeta lo combina con la del lead leído al abrir su «⋯»): `leads.editar`,
+  // `leads.telefonos_extra.editar` y `leads.configurar`.
   editar: boolean
+  telefonos: boolean
+  configurar: boolean
   eliminar: 'todos' | 'propios' | null
   usuarioId: string
 }
@@ -48,6 +53,8 @@ export async function leerVistaDeEmbudo(
   const paraElMenu: ParaElMenuDelEmbudo = {
     etiquetas: etiquetas.data,
     editar: puedeEditarLead(quien.permisos, true),
+    telefonos: puedeEditarTelefonosExtra(quien.permisos, true),
+    configurar: puede(quien.permisos, 'leads.configurar'),
     eliminar: alcanceDe(quien.permisos, 'leads.eliminar'),
     usuarioId: quien.usuarioId,
   }

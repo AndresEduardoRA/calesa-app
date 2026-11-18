@@ -16,6 +16,9 @@ vi.mock('../../oportunidades/components/nueva-oportunidad-del-lead', () => ({
 vi.mock('../hooks/use-abrir-en-la-ficha', () => ({
   useAbrirEnLaFicha: () => ({ anotar: vi.fn(), agendar: vi.fn(), irA: vi.fn() }),
 }))
+vi.mock('../hooks/use-panel-de-lead', () => ({
+  usePanelDeLead: () => ({ abrir: vi.fn() }),
+}))
 vi.mock('./boton-editar-lead', () => ({
   BotonEditarLead: () => <button type="button">Editar</button>,
 }))
@@ -33,6 +36,7 @@ function montar(paraCotizar: string | null, puedeEditar = true) {
       etiquetas={{} as never}
       alGestionar={vi.fn()}
       puedeEditar={puedeEditar}
+      puedeEditarExtras={false}
       puedeEnviarAPapelera={false}
       paraCotizar={paraCotizar}
       paraActividad={null}
