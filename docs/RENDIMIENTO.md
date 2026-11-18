@@ -265,6 +265,18 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 - Bloque «Cotizaciones» de `/vehiculos/[id]`: la misma lectura, al acercarse el bloque (nunca con el documento), código con `diferido()` en su
   `diferidos.tsx`. `e2e/vehiculos-cotizaciones.spec.ts`: ≤ 5.250 B, ≤ 65 nodos con 20 y ≤ 1.576 con 500; la 25.ª respuesta pesa lo que la
   1.ª. Con «propios» hereda el límite del historial.
+- **«De este vehículo»** (el bloque de la guardada y del resumen de `/cotizaciones`): `cotizaciones_de_este_vehiculo()` desde el navegador, de a
+  `TAMANO_DE_ESTE_VEHICULO` (10) + 1 por cursor `(creado_en, id)` sobre `cotizaciones_vehiculo_creado_idx` y, sin cursor, la aprobada por
+  `cotizaciones_aprobadas_pkey`; «Ver más» hasta `TOPE_DE_ESTE_VEHICULO` (100), dibujado con `cortarAlTope()`. Origen, autor y si es la aprobada salen de las
+  ≤ 102 filas leídas (claves primarias); el nombre del modo, una llamada a `_nombre_del_modo()` por versión y modo. `medir-cotizaciones-de-este-vehiculo.sql`
+  (un vehículo con 5.000 entre 50.000 y 250.000): la dueña ≤ 10 ms y ≤ 150 bloques de `cotizaciones` (medido 2,4 / 2,5 ms y 9 / 10 bloques la primera, 1,1 / 1,6
+  ms y 6 la profunda; ≈ 440 buffers en total por el costo fijo de la RLS), sin recorrer la tabla y sin crecer con N; Ana («propios», 5 de 5.000) ≤ 100 ms como en
+  el listado (medido 40, recorre las del vehículo). La línea de la guardada y la decisión de dibujar son una lectura del servidor por PostgREST con `limit 101`
+  (`conteoAcotado`, `cache()`), la forma de «Cotizado (n)»: sin medición propia. En pantalla (`e2e/cotizaciones-de-este-vehiculo.spec.ts`, 10 filas y la
+  aprobada): la primera respuesta ≤ 5.250 B (columnas cortas, `total`, `moneda`, `editada_en`, como el alias `a` del historial; con los nombres largos medía
+  5.219) y ≤ 240 nodos (medido 165: ≈ 15 por fila, porque cada una lleva n.º, título, insignias, `<Monto>`, modo, autor, fecha y dos acciones; el tope de 65
+  del historial era para filas de 3 nodos). Código: la isla al acercarse y la cáscara `diferido()` en su `diferidos.tsx`; el bloque, al acercarse (guardada) o
+  al abrir el resumen. `/cotizaciones/[id]` 458,9 de 460 KB; `/cotizaciones` 373,6 de 380 (sólo la cáscara del hueco; el resumen ya era diferido).
 - El dato del vehículo en el panel (sin spec propio): con un vehículo en la URL, la página lee además el layout del origen en el
   `Promise.all` y, tras `leerVehiculo`, `editablesDe` (sin consulta con «todos» o lo que creó); el documento suma `paraElegir` (≈ 150 B) y
   `seEligen`. Con un elegido y un dato, una `cotizacion_tabla` por tabla distinta, en paralelo, recordada 5 min por hoja abierta y tabla
@@ -534,8 +546,8 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 460, `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
-  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). Al borde: `/cotizaciones` 368,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
-  `diferido()`), `/cotizaciones/[id]` 458,6 de 460 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases) y `/cotizaciones/nuevo` 453,6 de 460
+  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). Al borde: `/cotizaciones` 373,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `diferido()`), `/cotizaciones/[id]` 458,9 de 460 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases) y `/cotizaciones/nuevo` 453,6 de 460
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 496,8 en 32 chunks: «Qué falta» de la ficha, la galería y subida de fotos, Documentos y
@@ -674,7 +686,7 @@ fallar.
   `_cotizaciones_aprobadas_rellenar()` (inserta sin triggers). `/cotizaciones/[id]`: 453,7 de 460 KB (+1,5 por la isla, sin Base UI nuevo).
   La pantalla (`e2e/cotizaciones-listado.spec.ts`, `e2e/listas-por-pagina-volumen.spec.ts`): una vista, 8 columnas, el máximo sin pedidos
   del navegador ni acciones: ≤ 39.500 B y ≤ 2.200 nodos; diez «Siguiente» no los suben. El resumen `?cotizacion=`: abrir desde la fila no
-  le pide nada a la página ni a la lista; lo único que lee es la pestaña «Todo» (sus tres lecturas, abajo); fuera de la página cuesta un pedido por `cotizaciones_pkey` y un `cotizaciones_listado()` de tamaño 1, más sus tres nombres.
+  le pide nada a la página ni a la lista; lee la pestaña «Todo» (sus tres lecturas, abajo) y, con vehículo, «De este vehículo»; fuera de la página cuesta un pedido por `cotizaciones_pkey` y un `cotizaciones_listado()` de tamaño 1, más sus tres nombres.
   `router.refresh()` sólo si la URL trae una que nadie trajo (una vez por id) y en cada «Reintentar». Los nombres de la página (cliente,
   vehículo, autor) son tres lecturas por PK de ≤ 100 ids en paralelo (`leads_vista_por_ids`, `vehiculos_pkey`, `perfiles_pkey`): límite sin
   assert.

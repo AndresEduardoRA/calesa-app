@@ -59,6 +59,9 @@ const VARIABLES_DE_PAGINA = {
   lotes: constante('src/shared/lib/paginacion.ts', 'LOTES_POR_PAGINA'),
   tope_equipo: constante('src/shared/lib/paginacion.ts', 'TOPE_DEL_EQUIPO'),
   ver_mas: constante('src/shared/lib/paginacion.ts', 'TAMANO_DE_VER_MAS'),
+  // «De este vehículo» (`medir-cotizaciones-de-este-vehiculo.sql`): su página y su tope.
+  tam_este_vehiculo: constante('src/shared/lib/paginacion.ts', 'TAMANO_DE_ESTE_VEHICULO'),
+  tope_este_vehiculo: constante('src/shared/lib/paginacion.ts', 'TOPE_DE_ESTE_VEHICULO'),
   // El conteo de los tachados ocultos y el de la exportación por la ventana de candidatos (4.03, 5a-34): sus topes y cuántos candidatos espera cada ventana (cuántas ventanas alcanzan).
   tope_ocultos: constante('src/modules/leads/entities/filtros-de-marcas.ts', 'TOPE_DE_OCULTOS'),
   tope_exportacion: constante('src/modules/leads/entities/exportacion.ts', 'TOPE_DE_EXPORTACION'),

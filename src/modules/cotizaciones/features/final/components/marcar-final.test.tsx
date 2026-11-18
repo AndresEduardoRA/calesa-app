@@ -73,6 +73,7 @@ function dibujar(
       <Acciones
         cotizacion={opciones.cotizacion ?? cotizacion()}
         puedeGuardar={opciones.puedeGuardar ?? true}
+        vehiculo={null}
         permisos={opciones.permisos ?? gestiona()}
       />
     </NuqsTestingAdapter>,

@@ -65,6 +65,7 @@ function dibujar(opciones: {
   delServidor?: LecturaDelServidor | null
   huecos?: HuecosDelResumen
   quienes?: Record<string, QuienDelResumen>
+  aprobarEn?: 'todos' | readonly string[]
 }) {
   return render(
     <NuqsTestingAdapter searchParams={opciones.busqueda} hasMemory>
@@ -74,6 +75,7 @@ function dibujar(opciones: {
         delServidor={opciones.delServidor ?? null}
         huecos={opciones.huecos}
         quienes={opciones.quienes}
+        aprobarEn={opciones.aprobarEn}
       />
     </NuqsTestingAdapter>,
   )
@@ -186,5 +188,50 @@ describe('ResumenDeCotizacion con pestañas', () => {
   it('sin hueco no hay pestañas', () => {
     dibujar({ busqueda: `?cotizacion=${ID}`, filas: [cotizacion()] })
     expect(screen.queryByTestId('pestanas')).toBeNull()
+  })
+})
+
+describe('ResumenDeCotizacion con «De este vehículo»', () => {
+  const VEHICULO = '00000000-0000-4000-8000-0000000000cc'
+  const DeEsteVehiculo: NonNullable<HuecosDelResumen['DeEsteVehiculo']> = (props) => (
+    <p data-testid="de-este-vehiculo">
+      {props.vehiculo.id}:{props.vehiculo.titulo}:{props.cotizacionActual}:
+      {JSON.stringify(props.aprobarEn)}
+    </p>
+  )
+  const Pestanas: NonNullable<HuecosDelResumen['Pestanas']> = () => <p data-testid="pestanas" />
+
+  it('va entre «Abrir cotización» y las pestañas, con el vehículo, «Esta» y dónde aprueba quien mira', () => {
+    dibujar({
+      busqueda: `?cotizacion=${ID}`,
+      filas: [cotizacion({ vehiculoId: VEHICULO, vehiculo: 'Toyota Hilux' })],
+      huecos: { Pestanas, DeEsteVehiculo },
+      aprobarEn: [ORIGEN],
+    })
+    const bloque = screen.getByTestId('de-este-vehiculo')
+    expect(bloque.textContent).toBe(`${VEHICULO}:Toyota Hilux:${ID}:["${ORIGEN}"]`)
+    const abrir = screen.getByRole('link', { name: 'Abrir cotización' })
+    const pestanas = screen.getByTestId('pestanas')
+    expect(abrir.compareDocumentPosition(bloque) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(bloque.compareDocumentPosition(pestanas) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('sin vehículo, o con uno que quien mira no ve (sin nombre), no hay bloque; sin saber dónde aprueba, en ninguno', () => {
+    dibujar({ busqueda: `?cotizacion=${ID}`, filas: [cotizacion()], huecos: { DeEsteVehiculo } })
+    expect(screen.queryByTestId('de-este-vehiculo')).toBeNull()
+    cleanup()
+    dibujar({
+      busqueda: `?cotizacion=${ID}`,
+      filas: [cotizacion({ vehiculoId: VEHICULO, vehiculo: null })],
+      huecos: { DeEsteVehiculo },
+    })
+    expect(screen.queryByTestId('de-este-vehiculo')).toBeNull()
+    cleanup()
+    dibujar({
+      busqueda: `?cotizacion=${ID}`,
+      filas: [cotizacion({ vehiculoId: VEHICULO, vehiculo: 'Hilux' })],
+      huecos: { DeEsteVehiculo },
+    })
+    expect(screen.getByTestId('de-este-vehiculo').textContent).toContain(':[]')
   })
 })

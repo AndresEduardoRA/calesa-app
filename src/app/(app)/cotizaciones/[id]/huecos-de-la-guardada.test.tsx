@@ -18,6 +18,7 @@ const props = {
   cotizacion: { id: 'c1' },
   puedeGuardar: true,
   permisos: [],
+  vehiculo: null,
 } as unknown as Props
 
 const A: ComponentType<Props> = () => null
@@ -68,5 +69,18 @@ describe('huecos de una guardada', () => {
 
   it('un lugar que ningún hueco trae da `undefined`, aunque otro lugar sí', () => {
     expect(dibujarHuecos([{ Acciones: A }], 'Debajo', props)).toBeUndefined()
+  })
+
+  it('«De este vehículo» va bajo la hoja antes de «Comprobantes», y bajo la cabecera sólo lo trae aprobada', () => {
+    const debajo = dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Debajo', props)
+    const tipos = (Array.isArray(debajo) ? debajo : []).map((e: { type: unknown }) => e.type)
+    const deAprobada = HUECOS_DE_APROBADA_EN_LA_GUARDADA.Debajo
+    const deComprobantes = HUECOS_DE_COMPROBANTES_EN_LA_GUARDADA.Debajo
+    expect(deAprobada).toBeDefined()
+    expect(tipos.indexOf(deAprobada)).toBeLessThan(tipos.indexOf(deComprobantes))
+    const bajo = dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'BajoLaCabecera', props)
+    expect((Array.isArray(bajo) ? bajo : []).map((e: { type: unknown }) => e.type)).toEqual([
+      HUECOS_DE_APROBADA_EN_LA_GUARDADA.BajoLaCabecera,
+    ])
   })
 })

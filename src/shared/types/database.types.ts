@@ -8667,6 +8667,7 @@ export type Database = {
           nodo: string
         }[]
       }
+      _nombre_del_modo: { Args: { p_clave: string; p_formula: string }; Returns: string }
       _oportunidad_conflicto: { Args: { p_cuando: string }; Returns: undefined }
       _oportunidad_constancia: {
         Args: {
@@ -10032,6 +10033,27 @@ export type Database = {
           total_base: number
           vehiculo_id: string
           vence_el: string
+          vencida: boolean
+        }[]
+      }
+      cotizaciones_de_este_vehiculo: {
+        Args: { p_cursor_en?: string; p_cursor_id?: string; p_tamano: number; p_vehiculo: string }
+        Returns: {
+          aprobada: boolean
+          autor: string
+          clase: Database['public']['Enums']['clase_cotizacion']
+          creado_en: string
+          editada_en: string
+          estado: Database['public']['Enums']['estado_cotizacion']
+          fijada: boolean
+          id: string
+          modo: string
+          moneda: string
+          numero: number
+          origen: string
+          origen_id: string
+          titulo: string
+          total: number
           vencida: boolean
         }[]
       }
