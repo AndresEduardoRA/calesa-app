@@ -13,15 +13,19 @@ import { paraElegirElTitulo, tituloDeLaEdicion } from './titulo-de-la-edicion'
 import type { GuardadoDeUnaGuardada } from './use-guardado-de-una-guardada'
 import type { ArmarDe } from './use-nucleo-del-guardado'
 import type { useHoja } from './use-hoja'
-import { useTituloDeLaCotizacion } from './use-titulo-de-la-cotizacion'
+import { useTituloDeLaCotizacion, type TituloDeLaCotizacion } from './use-titulo-de-la-cotizacion'
 
 export const SIN_CAMBIOS = 'Sin cambios que guardar.'
 
-// Lo que la hoja necesita de la cotización guardada que edita: su guardado (en el marco), la fila de la versión con que se abrió y si lo de hoy no es lo guardado (C11).
+// Lo que la hoja necesita de la cotización guardada que edita: su guardado (en el marco), la fila de la versión con que se abrió, si lo de hoy no es lo guardado (C11) y el
+// vehículo de la hoja (el guardado, o el elegido en una preventa para cambiarlo: T315), con si quien mira puede cambiarlo.
 export type EdicionDeLaHoja = {
   guardado: GuardadoDeUnaGuardada
   cotizacion: CotizacionDeLaHoja
   diferido: boolean
+  vehiculoId: string | null
+  // Quien mira puede elegir otro vehículo (una preventa que guarda): el rechazo de uno que ya no se usa ofrece «Elegir otro vehículo».
+  cambiaVehiculo: boolean
   // El panel donde se escribe el título (`?panel=vehiculo`; el nombre lo pasa `src/app`): «Escribir el título» lo abre. Sin él, sólo se dice qué falta.
   panelDelTitulo?: string | undefined
 }
@@ -35,13 +39,29 @@ const descartoLoTipeado = (
   overrides: ReadonlyMap<string, number>,
 ) => respuesta?.descartados.some((d) => overrides.has(d.id)) ?? false
 
-// Lo tipeado, «Ver total Bs» y el título son lo que se abrió.
-const sinCambiosEn = (h: ReturnType<typeof useHoja>, tituloCambio: boolean) =>
-  entradasIguales(h.entradas, h.iniciales) && h.verTotalBs === h.verTotalBsInicial && !tituloCambio
+// Lo tipeado, «Ver total Bs», el título y el vehículo son lo que se abrió.
+const sinCambiosEn = (
+  h: ReturnType<typeof useHoja>,
+  tituloCambio: boolean,
+  vehiculoCambio: boolean,
+) =>
+  entradasIguales(h.entradas, h.iniciales) &&
+  h.verTotalBs === h.verTotalBsInicial &&
+  !tituloCambio &&
+  !vehiculoCambio
+
+// El título de la guardada que edita, con el vehículo de la hoja; sin edición, nada que pedir.
+const tituloDe = (titulo: TituloDeLaCotizacion | null, edicion: EdicionDeLaHoja | null) =>
+  tituloDeLaEdicion(titulo, edicion?.cotizacion ?? null, edicion?.vehiculoId ?? null)
+
+// La hoja calcula con otro vehículo que el guardado (T315): es un cambio que guardar.
+const cambiaElVehiculo = (edicion: EdicionDeLaHoja | null) =>
+  edicion !== null && edicion.vehiculoId !== edicion.cotizacion.vehiculoId
 
 // Lo que la hoja de una cotización guardada pone para guardar (4.15-3, C8): el motivo para no hacerlo y cómo arma el pedido con el total al día (las entradas que ese recálculo
-// calculó, P8). Guardar no pide cliente ni vehículo: la cotización ya los tiene y no se tocan; sin vehículo pide el título (T307), que se escribe en el panel del vehículo.
-// **Sin cambios no hay nada que guardar** (cambiar el título es un cambio), salvo dos casos en que «Guardar» está encendido: hay un pendiente (se reenvía tal cual, 4-21) o
+// calculó, P8). Guardar no pide cliente ni vehículo: el cliente no se toca y el vehículo es el de la hoja (el guardado o el elegido, T315); sin vehículo pide el título (T307),
+// que se escribe en el panel del vehículo. **Sin cambios no hay nada que guardar** (cambiar el título o el vehículo es un cambio), salvo dos casos en que «Guardar» está
+// encendido: hay un pendiente (se reenvía tal cual, 4-21) o
 // lo de hoy no es lo guardado (`diferido`, C11: guardar lo deja con lo de hoy).
 export function useGuardarLaGuardada({
   h,
@@ -56,9 +76,10 @@ export function useGuardarLaGuardada({
   raiz: RefObject<HTMLDivElement | null>
 }) {
   const guardado = edicion?.guardado ?? null
-  const titulo = tituloDeLaEdicion(useTituloDeLaCotizacion(), edicion?.cotizacion ?? null)
+  const titulo = tituloDe(useTituloDeLaCotizacion(), edicion)
   const total = totalDelResumen(contexto)
-  const sinCambios = sinCambiosEn(h, titulo.cambio)
+  const cambiaVehiculo = cambiaElVehiculo(edicion)
+  const sinCambios = sinCambiosEn(h, titulo.cambio, cambiaVehiculo)
   const generico = motivoParaNoGuardar({
     estado: h.estado,
     falta: titulo.falta,
@@ -90,7 +111,8 @@ export function useGuardarLaGuardada({
               verTotalBs: h.verTotalBs,
               ...titulo.paraGuardar,
               notas: edicion.cotizacion.notas,
-              vehiculoId: edicion.cotizacion.vehiculoId,
+              vehiculoId: edicion.vehiculoId,
+              cambiaElVehiculo: cambiaVehiculo,
             }
           : null,
       )

@@ -171,8 +171,9 @@ test('E2E cambiar el título en la guardada y guardar deja «Cambió el título�
   await page.goto(`/cotizaciones/${guardada}`)
   await barraDelVehiculo(page).click()
   await expect(campoDelTitulo(page)).toHaveValue(titulo)
-  // En una guardada el vehículo no se elige: ni buscador ni listas.
-  await expect(panelDelVehiculo(page).getByRole('searchbox')).toHaveCount(0)
+  // En una preventa guardada el vehículo se elige como al cotizar (T315): el buscador está, sin «Quitar».
+  await expect(panelDelVehiculo(page).getByRole('searchbox')).toBeVisible()
+  await expect(panelDelVehiculo(page).getByRole('button', { name: 'Quitar' })).toHaveCount(0)
   await capturar(page, info, 'panel-de-la-guardada')
   await escribirYCerrar(page, `${titulo} (revisado)`)
   await page.getByRole('button', { name: 'Guardar', exact: true }).click()

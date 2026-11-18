@@ -45,7 +45,10 @@ describe('argumentosDeTabla', () => {
 
   it('una guardada manda la tabla y su cotización, y nunca el origen ni la hoja abierta', () => {
     expect(
-      argumentosDeTabla({ tabla: 't', de: { tipo: 'guardada', cotizacionId: 'c' } }),
+      argumentosDeTabla({
+        tabla: 't',
+        de: { tipo: 'guardada', cotizacionId: 'c', vehiculoId: null },
+      }),
     ).toStrictEqual({ p_tabla: 't', p_cotizacion: 'c' })
   })
 })

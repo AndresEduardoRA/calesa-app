@@ -28,6 +28,7 @@ const revision = (id: number, creadoEn: string): RevisionDeLaCotizacion => ({
   creadoEn,
   autor: null,
   diff: {},
+  vehiculo: null,
 })
 const comentario = (id: string, creadoEn: string): ComentarioRaiz => ({
   id,

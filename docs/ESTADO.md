@@ -4,7 +4,7 @@
 > un verde que dejó de serlo). Qué existe en el código lo dice `docs/MAPA.md`; lo que falta, `docs/PENDIENTES.md`; cómo se trabaja,
 > `docs/FLUJO.md`. Las versiones anteriores: `git log -p docs/ESTADO.md`.
 
-**Última actualización:** 2026-11-17
+**Última actualización:** 2026-11-18
 **Estado:** **terminado (fases 0 a 9) y listo para desplegar.** Desplegar es de la persona (`docs/DESPLIEGUE.md`). Desde aquí el proyecto
 recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en verde.
 
@@ -18,7 +18,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
   la ficha en dos columnas con todo a la vista (índice de bloques, seguimientos y recordatorios resumidos con «Ver todos», relacionados con la
   gestión de vehículos al pie) y el resumen del listado como su versión corta, importar y exportar, limpieza automática, papelera.
 - **Cotizaciones:** la fórmula como grafo versionado (motor en TS con su espejo SQL), el diseño de la hoja (rejilla de 12, orden arrastrando, espacios, letra y color), niveles de acceso, la hoja de
-  cotizar (vehículo y lead obligatorios por rol y origen, aviso con la subasta vencida), el título de la cotización (automático con el del vehículo o manual, obligatorio sin vehículo), guardar con revisiones, la tarjeta y el PDF, la final, la aprobada (una por vehículo, con su primer resultado en la lista de vehículos; «De este vehículo» y comparar 2 o 3 lado a lado antes de aprobar), comprobantes, comentarios y papelera; el listado con buscador (número, título, cliente, vehículo y autor), vistas guardadas, columna de acciones y un resumen con pestañas (todo, adjuntos, revisiones y comentarios).
+  cotizar (vehículo y lead obligatorios por rol y origen, aviso con la subasta vencida), el título de la cotización (automático con el del vehículo o manual, obligatorio sin vehículo), guardar con revisiones (y cambiar el vehículo de una preventa guardada desde su detalle), la tarjeta y el PDF, la final, la aprobada (una por vehículo, con su primer resultado en la lista de vehículos; «De este vehículo» y comparar 2 o 3 lado a lado antes de aprobar), comprobantes, comentarios y papelera; el listado con buscador (número, título, cliente, vehículo y autor), vistas guardadas, columna de acciones y un resumen con pestañas (todo, adjuntos, revisiones y comentarios).
 - **Flujos y logística:** fases, transiciones, requisitos y reglas por RPC, configurados sobre el diagrama del flujo (cajas y flechas, ordenar
   arrastrando, avisos de «Revisar» encima) con el panel de cada fase al costado; `/logistica` (la bandeja del día con siete grupos, la cadena como gráfica por fase, la lista de cada fase,
   «qué falta» con la acción que destraba cada requisito (hacerlo, ir a donde se hace o pedírselo a quien puede con una tarea), mover y el lote, documentos, embarques, aduana, gastos, pagos y margen), medida con 300.000 vehículos.
@@ -49,7 +49,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 
 ## Al borde
 
-- Presupuestos: la hoja, 492 nodos de 500; JS de `/cotizaciones/nuevo` 456,5 de 460 KB y de `/cotizaciones/[id]` 463,7 de 470; la ficha
+- Presupuestos: la hoja, 492 nodos de 500; JS de `/cotizaciones/nuevo` 456,3 de 460 KB y de `/cotizaciones/[id]` 463,6 de 470; la ficha
   del lead entera 130,8 de 138 KB. Con la regla del 5 % se sube el tope (`docs/RENDIMIENTO.md`).
 - El e2e completo con los dos proyectos tarda ≈ 95 min de reloj (5a-4b): en CI va en 4 bloques.
 
