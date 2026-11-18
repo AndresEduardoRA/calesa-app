@@ -23,7 +23,7 @@ import { getOrigenes, type OrigenResumen } from '@/modules/origenes'
 import { elegidoDesde } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
 import { puede, type Permisos } from '@/shared/lib/permisos'
-import { unParametro } from '@/shared/lib/rutas'
+import { CLAVE_DE_VUELTA, returnToSeguro, unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
 import { AvisoDeSubastaDeLaHoja } from '../aviso-de-subasta'
@@ -203,6 +203,10 @@ function BarrasDeLaHoja({
   )
 }
 
+// La pantalla a la que vuelve la hoja (`?returnTo=`, sólo una ruta interna): las pestañas de origen la conservan.
+const volverDe = (url: Record<string, string | string[] | undefined>) =>
+  returnToSeguro(unParametro(url[CLAVE_DE_VUELTA]))
+
 // La hoja del origen elegido, con sus dos barras (vehículo y cliente) y las pestañas de origen.
 async function HojaDelOrigen({
   sesion,
@@ -236,7 +240,8 @@ async function HojaDelOrigen({
   }
   // Un lead que no se ve se suelta, como el vehículo: ni la hoja ni las pestañas de origen lo llevan.
   const leadUsado = cliente?.id ?? null
-  const pestanas = <PestanasDeOrigen origenes={origenes} actual={origen.id} leadId={leadUsado} />
+  const dePestanas = { origenes, actual: origen.id, leadId: leadUsado, volverA: volverDe(url) }
+  const pestanas = <PestanasDeOrigen {...dePestanas} />
   if (apertura.tipo === 'sin_publicar') {
     return (
       <>
