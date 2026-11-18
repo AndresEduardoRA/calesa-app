@@ -6,10 +6,12 @@
 // Lo de una tarea con `al_integrar` (al-integrar.test.ts) y del guion del cierre (scripts/flujo/cierre.mjs): un PR de `prs` puede
 // traer `sha` (su squash), `padre`, `titulo` y `cuerpo`; las etiquetas viven en `refs` (`{ ref, sha }`), y con `refsFalla` crearlas
 // falla con ese texto. Un PR puede traer `archivos` (los de `pulls/<n>/files`). Un repo nombrado explícitamente que está en `git` (el
-// kit, otro proyecto) lo atiende gh-falso-git.mjs.
+// kit, otro proyecto) lo atiende gh-falso-git.mjs. Lo del cierre de la tanda (cierre-tanda.test.ts) vive en `ci`: `main` (el sha de
+// `commits/main`), `corridas` (las de `run list` y `run view`; `workflow run` suma una en cola sobre `main`) y `artefactos` (por corrida,
+// `{ ruta: texto }`, lo que baja `run download`; sin ellos, falla como una corrida sin artefactos).
 import { spawnSync } from 'node:child_process'
-import { appendFileSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
 import { atenderGit } from './gh-falso-git.mjs'
 
 const dir = process.env['GH_FALSO'] ?? ''
@@ -155,6 +157,8 @@ if (args[0] === 'api') {
       merge_commit_sha: p.sha ?? null,
       state: p.estado === 'OPEN' ? 'open' : 'closed',
     })
+  } else if (resto === 'commits/main' && metodo === 'GET') {
+    imprimir({ sha: e.ci?.main ?? '' })
   } else if ((m = /^commits\/([0-9a-f]+)$/.exec(resto)) && metodo === 'GET') {
     const p =
       prDe(e.repo, (x) => x.sha === m?.[1]) ?? salir(1, `HTTP 404: Not Found (commits/${m[1]})`)
@@ -223,4 +227,35 @@ if (args[0] === 'api') {
   const p = (e.prs[e.repo] ?? []).find((/** @type {any} */ x) => String(x.number) === args[2])
   if (!p) salir(1, `no pull requests found (${args[2]})`)
   imprimir({ state: p.estado })
+} else if (args[0] === 'workflow' && args[1] === 'run') {
+  const ci = (e.ci ??= { main: '', corridas: [] })
+  const id = 9000 + ci.corridas.length
+  ci.corridas.push({
+    databaseId: id,
+    headSha: ci.main,
+    status: 'queued',
+    conclusion: '',
+    event: 'workflow_dispatch',
+    createdAt: ahora(),
+    args: args.slice(2),
+  })
+  guardar()
+} else if (args[0] === 'run' && args[1] === 'list') {
+  imprimir(
+    (e.ci?.corridas ?? []).filter(
+      (/** @type {any} */ c) => !valor('--event') || c.event === valor('--event'),
+    ),
+  )
+} else if (args[0] === 'run' && args[1] === 'view' && args.includes('--json')) {
+  const c = (e.ci?.corridas ?? []).find((/** @type {any} */ x) => String(x.databaseId) === args[2])
+  if (!c) salir(1, `could not find any workflow run with ID ${args[2]}`)
+  imprimir(c)
+} else if (args[0] === 'run' && args[1] === 'download') {
+  const archivos = e.ci?.artefactos?.[args[2] ?? '']
+  if (!archivos) salir(1, 'no valid artifacts found to download')
+  for (const [ruta, texto] of Object.entries(archivos)) {
+    const f = join(valor('--dir') ?? '.', ruta)
+    mkdirSync(dirname(f), { recursive: true })
+    writeFileSync(f, String(texto))
+  }
 } else salir(2, `gh falso: no conozco «gh ${args.join(' ')}»`)

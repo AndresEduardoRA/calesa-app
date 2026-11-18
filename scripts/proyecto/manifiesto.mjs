@@ -276,10 +276,11 @@ export function repoDeEsteWorktree(raiz = process.cwd()) {
 
 // ---------- la CLI, para los guiones de bash ----------
 //
-//   node scripts/proyecto/manifiesto.mjs proyecto|nombre|cuenta|bloque [<raíz del repo>]
+//   node scripts/proyecto/manifiesto.mjs proyecto|nombre|cuenta|bloque|etapa [<raíz del repo>]
 //   node scripts/proyecto/manifiesto.mjs github <nombre de un repo del proyecto> [<raíz del repo>]
 //
-// Imprime el campo (`proyecto`: el slug; `nombre`: el del repo propio, <proyecto>-<rol>; `cuenta`; `bloque`), o nada (y sale con 0) si el repo no tiene manifiesto: el guion cae a lo de antes. Un manifiesto
+// Imprime el campo (`proyecto`: el slug; `nombre`: el del repo propio, <proyecto>-<rol>; `cuenta`; `bloque`; `etapa`: construccion o
+// mantenimiento, la del repo propio), o nada (y sale con 0) si el repo no tiene manifiesto: el guion cae a lo de antes. Un manifiesto
 // inválido sale con 1 y el motivo.
 // `github` imprime el `cuenta/repo` de ese repo del manifiesto, o nada si no está (las dependencias `<repo>:<rama>` del orquestador).
 function principal(argv) {
@@ -287,11 +288,11 @@ function principal(argv) {
   const nombre = campo === 'github' ? resto.shift() : undefined
   const dir = resto[0]
   if (
-    !['proyecto', 'nombre', 'cuenta', 'bloque', 'github'].includes(campo ?? '') ||
+    !['proyecto', 'nombre', 'cuenta', 'bloque', 'etapa', 'github'].includes(campo ?? '') ||
     (campo === 'github' && !nombre)
   ) {
     console.error(
-      'uso: node scripts/proyecto/manifiesto.mjs proyecto|nombre|cuenta|bloque [<raíz del repo>] | github <nombre> [<raíz del repo>]',
+      'uso: node scripts/proyecto/manifiesto.mjs proyecto|nombre|cuenta|bloque|etapa [<raíz del repo>] | github <nombre> [<raíz del repo>]',
     )
     process.exit(64)
   }
@@ -304,6 +305,7 @@ function principal(argv) {
     } else if (campo === 'proyecto') console.log(propio.manifiesto.proyecto)
     else if (campo === 'nombre') console.log(propio.repo.nombre)
     else if (campo === 'cuenta') console.log(cuentaDelRepo(propio.repo))
+    else if (campo === 'etapa') console.log(propio.repo.etapa)
     else {
       const p = puertosDelRepo(propio.repo)
       if ('bloque' in p) console.log(p.bloque)

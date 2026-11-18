@@ -53,7 +53,8 @@ microdecisiones sola (`.claude/rules/ui.md`).
 - Un e2e que pasa al reintentar en CI no pone el PR en rojo; queda anotado en el PR (`e2e/soporte/reporter-de-inestables.ts`). Sólo
   se arregla si cae dos noches seguidas en el completo: el job `aviso-noche` lleva la cuenta en el issue `noche-roja` y a la segunda
   noche lo vuelve una tarea de la cola (`scripts/flujo/noche.mjs`). Es el único job con un permiso de escritura (`issues: write`).
-- Disparar un workflow a mano (`gh workflow run`, el Nivel 3, las carreras) es de la persona.
+- Disparar un workflow a mano (`gh workflow run`, el Nivel 3, las carreras) es de la persona. La única excepción es del orquestador: el
+  e2e de escritorio sobre `main` antes de cerrar una tanda.
 
 ## En paralelo
 
@@ -68,7 +69,9 @@ una tarea por issue con la etiqueta `cola` (en espejo con `.orquestador/cola/`),
 PR, que cierra su issue. Una tarea nombra un nivel de modelo (`rapido`, `normal` o `capaz`), nunca un modelo. Desde el celular se
 cargan tareas, se responde a una trabada comentando y se escribe un pedido en texto libre (un issue con la etiqueta `pedido`), que una
 sesión redacta como spec con tus respuestas. Una vez al mes entra sola la actualización de dependencias, y el e2e que cae dos noches
-seguidas entra como tarea urgente. Es de este repo: el de otro proyecto corre a la vez sin cruzarse (comparten la RAM y, por máquina,
+seguidas entra como tarea urgente. Al vaciarse la cola de una tanda, el orquestador verifica `main` con el e2e de escritorio y encola
+el cierre de la tanda: docs aplastados, lo que sobra fuera y la retro, que abre las mejoras del flujo (`scripts/orquestador/README.md`
+› «El cierre de la tanda»). Es de este repo: el de otro proyecto corre a la vez sin cruzarse (comparten la RAM y, por máquina,
 los turnos de sesión y la pausa por el límite del plan).
 
 Si dos PR tocan lo mismo, el segundo choca: `git merge origin/main` en su rama (nunca rebase con push forzado), se resuelve, se
