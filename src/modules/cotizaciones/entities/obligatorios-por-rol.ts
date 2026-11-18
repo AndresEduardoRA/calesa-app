@@ -13,7 +13,7 @@ export function obligatoriosAlCotizar(permisos: Permisos, origenId: string): Obl
 }
 
 // Cómo se elige cada cosa: el panel que abre el botón (los nombres los pasa `src/app`: `cotizaciones` no importa `leads` ni `vehiculos`) si quien mira ve los leads, o los
-// vehículos de ese origen; si no, a quién pedirlo.
+// vehículos de ese origen; si no, a quién pedirlo. El título se escribe siempre en el panel del vehículo: sin `vehiculos.ver`, ese panel abre sólo con su campo.
 export function eleccionesDeLaHoja(
   permisos: Permisos,
   origenId: string,
@@ -26,5 +26,6 @@ export function eleccionesDeLaHoja(
     vehiculo: puede(permisos, 'vehiculos.ver', origenId)
       ? { panel: paneles.vehiculo }
       : { pedido: pedidoDe('elegir el vehículo') },
+    titulo: { panel: paneles.vehiculo },
   }
 }

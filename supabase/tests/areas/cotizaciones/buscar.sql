@@ -1,4 +1,4 @@
--- `cotizaciones_buscar()`: la búsqueda del listado `/cotizaciones` (por número, cliente, vehículo y autor). No depende de otro archivo (`SOLO=areas/cotizaciones/buscar.sql`). El costo con volumen, `medir-cotizaciones-buscar.sql`.
+-- `cotizaciones_buscar()`: la búsqueda del listado `/cotizaciones` (por número, cliente, vehículo, autor y título de la cotización). No depende de otro archivo (`SOLO=areas/cotizaciones/buscar.sql`). El costo con volumen, `medir-cotizaciones-buscar.sql`.
 --
 -- Qué asegura:
 --   B1. La forma: invocadora, estable, search_path vacío; la ejecuta authenticated y no anon ni PUBLIC.
@@ -6,6 +6,8 @@
 --   B3. Quién ve qué: quien no ve a un lead o a un vehículo no encuentra por él; «propios» no encuentra lo ajeno.
 --   B4. Una cotización que coincide por dos fuentes sale una sola vez; el cursor hacia adelante y hacia atrás no repite ni saltea.
 --   B5. Los filtros del listado (origen, clase, mías) y el tope de coincidencias (`acotada`).
+--   B6. La fuente «título» (`_cotizaciones_ids_por_titulo`): encuentra, «propios» no encuentra lo ajeno, sin `cotizaciones.ver` nada (tampoco llamando al ayudante),
+--       el mínimo y los comodines no buscan, la papelera no aparece, más de 50 da `acotada` y el origen estrecha.
 
 create temp sequence cb_telefono;
 
@@ -238,5 +240,72 @@ begin
   if (select count(*) from pg_temp.cb_busca(duena, 'tope masivo', 100)) <> 50 then raise exception 'B5: nombró % clientes (debían ser 50)', (select count(*) from pg_temp.cb_busca(duena, 'tope masivo', 100)); end if;
   -- Sin pasarse, no dice acotada.
   if exists (select 1 from pg_temp.cb_busca(duena, 'hijklm', 100) x where x.acotada) then raise exception 'B5: dijo acotada sin pasarse'; end if;
+end $$;
+rollback;
+
+-- El ayudante de la fuente «título», llamado directo como esa persona.
+create or replace function pg_temp.cb_titulos(p_quien uuid, p_texto text, p_origen uuid default null) returns uuid[] language plpgsql as $f$
+declare v uuid[];
+begin
+  perform set_config('request.jwt.claim.sub', p_quien::text, true), set_config('request.jwt.claim.role', 'authenticated', true),
+          set_config('request.jwt.claims', json_build_object('sub', p_quien, 'role', 'authenticated')::text, true);
+  set local role authenticated;
+  v := public._cotizaciones_ids_por_titulo(p_texto, p_origen);
+  reset role;
+  return v;
+exception when others then
+  reset role;
+  raise;
+end $f$;
+
+-- @test cotizaciones_buscar: B6 la fuente «título»: encuentra, respeta la visibilidad y la papelera, tiene tope y el origen estrecha; el ayudante no nombra lo que no se ve
+begin;
+do $$
+declare duena uuid := pg_temp.cb_duena();
+  t jsonb := pg_temp.cb_terreno('ghtyrd', duena); u jsonb := pg_temp.cb_terreno('mnbvcd', duena); o uuid := (t ->> 'o')::uuid;
+  propia uuid := pg_temp.cb_persona('Propia Seis', jsonb_build_array(jsonb_build_object('clave', 'cotizaciones.ver', 'origen', o, 'alcance', 'propios')));
+  sin_cot uuid := pg_temp.cb_persona('Sin Cotizaciones', jsonb_build_array(jsonb_build_object('clave', 'leads.ver'), jsonb_build_object('clave', 'vehiculos.ver')));
+  c1 uuid; c2 uuid; c3 uuid; i int; v_acotada boolean;
+begin
+  c1 := pg_temp.cb_cot(t, duena, now() - interval '3 minutes');
+  c2 := pg_temp.cb_cot(t, propia, now() - interval '2 minutes');
+  c3 := pg_temp.cb_cot(u, duena, now() - interval '1 minute');
+  update public.cotizaciones set titulo = case id when c1 then 'Pedido zafiro norte' when c2 then 'Pedido zafiro sur' else 'Pedido ZAFIRO este' end where id in (c1, c2, c3);
+  -- Encuentra por parte del título, sin distinguir mayúsculas, de la más nueva a la más vieja.
+  if pg_temp.cb_ids(duena, 'zafiro') is distinct from array[c3, c2, c1] then raise exception 'B6: el título no da las tres: %', pg_temp.cb_ids(duena, 'zafiro'); end if;
+  if pg_temp.cb_ids(duena, 'zafiro sur') is distinct from array[c2] then raise exception 'B6: el título más largo: %', pg_temp.cb_ids(duena, 'zafiro sur'); end if;
+  -- El origen estrecha.
+  if pg_temp.cb_ids(duena, 'zafiro', o) is distinct from array[c2, c1] then raise exception 'B6: el origen: %', pg_temp.cb_ids(duena, 'zafiro', o); end if;
+  if pg_temp.cb_titulos(duena, 'zafiro', o) is distinct from array[c2, c1] then raise exception 'B6: el origen en el ayudante: %', pg_temp.cb_titulos(duena, 'zafiro', o); end if;
+  -- «Propios»: la propia sí, la ajena no (tampoco por el ayudante).
+  if pg_temp.cb_ids(propia, 'zafiro') is distinct from array[c2] then raise exception 'B6: «propios» por título: %', pg_temp.cb_ids(propia, 'zafiro'); end if;
+  if pg_temp.cb_titulos(propia, 'zafiro') is distinct from array[c2] then raise exception 'B6: el ayudante nombra lo que «propios» no ve: %', pg_temp.cb_titulos(propia, 'zafiro'); end if;
+  -- Un origen que «propios» no ve no se puede pedir: el origen sólo estrecha.
+  if cardinality(pg_temp.cb_titulos(propia, 'zafiro', (u ->> 'o')::uuid)) <> 0 then raise exception 'B6: el ayudante nombró de un origen que no se ve'; end if;
+  -- «Propios» con el lead de la ajena en su cartera: ésa sí (la policy, `en_cartera()`).
+  insert into public.leads_asesores (lead_id, usuario_id, tipo_acceso, lead_creado_en, lead_reciente_en) values ((t ->> 'l')::uuid, propia, 'compartido', now(), now());
+  if pg_temp.cb_ids(propia, 'zafiro') is distinct from array[c2, c1] then raise exception 'B6: «propios» no encontró la de su cartera: %', pg_temp.cb_ids(propia, 'zafiro'); end if;
+  if pg_temp.cb_titulos(propia, 'zafiro') is distinct from array[c2, c1] then raise exception 'B6: el ayudante no nombró la de su cartera: %', pg_temp.cb_titulos(propia, 'zafiro'); end if;
+  -- Sin cotizaciones.ver, nada (por la búsqueda y por el ayudante directo).
+  if cardinality(pg_temp.cb_ids(sin_cot, 'zafiro')) <> 0 or cardinality(pg_temp.cb_titulos(sin_cot, 'zafiro')) <> 0 then raise exception 'B6: sin cotizaciones.ver encontró por título'; end if;
+  -- El mínimo del texto y los comodines: dos letras y «%%%» no buscan (el ayudante recibe el texto, no un patrón).
+  if cardinality(pg_temp.cb_titulos(duena, 'za')) <> 0 or cardinality(pg_temp.cb_titulos(duena, '%%%')) <> 0 or cardinality(pg_temp.cb_titulos(duena, null)) <> 0 then
+    raise exception 'B6: el ayudante buscó con menos del mínimo o con un comodín';
+  end if;
+  if cardinality(pg_temp.cb_titulos(duena, '%')) <> 0 then raise exception 'B6: «%%» fue comodín'; end if;
+  -- La papelera no aparece.
+  update public.cotizaciones set eliminado_en = now() where id = c1;
+  if pg_temp.cb_ids(duena, 'zafiro') is distinct from array[c3, c2] then raise exception 'B6: apareció una de la papelera: %', pg_temp.cb_ids(duena, 'zafiro'); end if;
+  if c1 = any (pg_temp.cb_titulos(duena, 'zafiro')) then raise exception 'B6: el ayudante nombra una de la papelera'; end if;
+  -- El tope: con 60 títulos que coinciden, nombra 50 y dice acotada; el ayudante, 51.
+  for i in 1 .. 60 loop
+    perform pg_temp.cb_cot(t, duena, now() - interval '1 hour' - i * interval '1 second');
+  end loop;
+  update public.cotizaciones set titulo = 'Masivo rubí ' || id where origen_id = o and titulo is null and creado_en < now() - interval '30 minutes';
+  select bool_or(x.acotada) into v_acotada from pg_temp.cb_busca(duena, 'masivo rubí', 100) x;
+  if v_acotada is not true then raise exception 'B6: 60 títulos que coinciden y no dijo acotada'; end if;
+  if (select count(*) from pg_temp.cb_busca(duena, 'masivo rubí', 100)) <> 50 then raise exception 'B6: nombró % por título (debían ser 50)', (select count(*) from pg_temp.cb_busca(duena, 'masivo rubí', 100)); end if;
+  if cardinality(pg_temp.cb_titulos(duena, 'masivo rubí')) <> 51 then raise exception 'B6: el ayudante devolvió % (debían ser 51)', cardinality(pg_temp.cb_titulos(duena, 'masivo rubí')); end if;
+  if exists (select 1 from pg_temp.cb_busca(duena, 'zafiro', 100) x where x.acotada) then raise exception 'B6: dijo acotada sin pasarse'; end if;
 end $$;
 rollback;

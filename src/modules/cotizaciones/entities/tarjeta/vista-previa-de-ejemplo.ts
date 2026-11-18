@@ -11,6 +11,7 @@ export const PAGINA_DE_EJEMPLO: PaginaDeLaTarjeta & { logo: { nombre: string; ur
   asesor: 'Nombre del asesor',
   vehiculo: 'Vehículo de la cotización',
   numero: null,
+  titulo: 'Título de la cotización',
   vencida: false,
   // Sin url: la marca dibuja su glifo neutro y el interruptor «Logo» se nota.
   logo: { nombre: 'Tu empresa', url: '' },

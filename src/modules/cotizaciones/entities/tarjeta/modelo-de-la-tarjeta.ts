@@ -13,6 +13,9 @@ export type PaginaDeLaTarjeta = {
   asesor: string | null
   // El número de una guardada; nulo en la hoja nueva.
   numero: number | null
+  // El título de la cotización ya resuelto (`tituloDeLaCotizacion()`, sin el de respaldo «Cotización n.º N»: `tituloAparteDelNumero()`); nulo sin título. No es el
+  // título de la variante (`encabezado.titulo`).
+  titulo: string | null
   vencida: boolean
   // El logo de la empresa, si tiene uno.
   logo: { nombre: string; url: string } | null
@@ -49,6 +52,8 @@ export type ModeloDeTarjeta = {
   encabezado: {
     // El título de la opción elegida de la variante; nulo si no hay variante o clave.
     titulo: string | null
+    // El título de la cotización (T307): un dato que la plantilla puede mostrar (la de hoy no lo dibuja); el PDF lo pone junto al número y «Copiar texto», primero.
+    tituloDeLaCotizacion: string | null
     fecha: string
     asesor: string | null
     numero: number | null
@@ -96,6 +101,7 @@ function encabezado(
 ): ModeloDeTarjeta['encabezado'] {
   return {
     titulo: lectura.estado === 'lista' ? tituloDeLaVariante(lectura, calculo) : null,
+    tituloDeLaCotizacion: pagina.titulo,
     fecha: pagina.fecha,
     asesor: pagina.asesor,
     numero: pagina.numero,

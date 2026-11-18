@@ -7,3 +7,16 @@ export {
   type LectorDeOpciones,
 } from '../../features/hoja/hooks/use-lector-de-opciones'
 export type { OpcionesDelDato, TablaDelDato } from '../../entities/dato-del-vehiculo'
+
+// El título de la cotización (T307): cómo se nombra una cotización y el título que se edita (`<ProveedorDelTitulo>` lo pone `src/app`, por `pantallas/`): la barra
+// del vehículo lo muestra con el hook.
+export {
+  TOPE_DEL_TITULO,
+  tituloAparteDelNumero,
+  tituloDeLaCotizacion,
+} from '../../entities/titulo-de-la-cotizacion'
+export type { FuenteDelTitulo, TituloMostrado } from '../../entities/titulo-de-la-cotizacion'
+export {
+  useTituloDeLaCotizacion,
+  type TituloDeLaCotizacion,
+} from '../../features/hoja/hooks/use-titulo-de-la-cotizacion'

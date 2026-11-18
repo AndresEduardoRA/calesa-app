@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { campoDelTitulo } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
 import {
   guardarConElAtajo,
@@ -209,6 +210,8 @@ test('E2E con el panel abierto, Ctrl+S no guarda la hoja de detrás', async ({ p
   await expect(totalDeLaHoja(page)).toContainText('105,00')
   await barra(page).click()
   await expect(tarjetas(page)).toHaveCount(20)
+  // Sin vehículo, el título es obligatorio para guardar (T307): se escribe arriba del mismo panel.
+  await campoDelTitulo(page).fill('Con el panel abierto')
   await guardarConElAtajo(page)
   await expect(panel(page)).toBeVisible()
   await page.keyboard.press('Escape')

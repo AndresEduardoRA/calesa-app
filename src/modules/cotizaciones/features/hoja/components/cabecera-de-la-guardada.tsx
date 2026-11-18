@@ -27,13 +27,15 @@ type Props = {
   // Lo que quien mira ve del cliente y del vehículo: el que no se ve no se nombra.
   cliente: string | null
   vehiculo: string | null
+  // La barra del vehículo con el título de la cotización (T307), ya armada por la página (`vehiculos` y `cotizaciones` no se conocen): reemplaza «Vehículo: X».
+  barra?: ReactNode
   // Lo que un área suma en la fila del título, después de «Revisiones» (4.15-6b): sus botones, ya dibujados por la página.
   acciones?: ReactNode
   // Lo que un área suma después de la clase y de la vigencia (4.27-4): sus insignias, ya dibujadas por la página.
   insignias?: ReactNode
 }
 
-// La cabecera de una cotización guardada: «Cotización n.º N», su clase, hasta cuándo vale (o «Vencida») y de qué origen, cliente y vehículo es. El número es un identificador:
+// La cabecera de una cotización guardada: «Cotización n.º N», su clase, hasta cuándo vale (o «Vencida»), de qué origen y cliente es y, en la barra, su título y su vehículo. El número es un identificador:
 // va sin separador de miles. La fecha se muestra en la zona de la empresa.
 export function CabeceraDeLaGuardada({
   id,
@@ -47,6 +49,7 @@ export function CabeceraDeLaGuardada({
   origen,
   cliente,
   vehiculo,
+  barra,
   acciones,
   insignias,
 }: Props) {
@@ -75,8 +78,9 @@ export function CabeceraDeLaGuardada({
       <p className="flex flex-wrap gap-x-4 gap-y-1 text-(length:--text-sm) [overflow-wrap:anywhere] text-(--color-ink-soft)">
         <span>{origen}</span>
         {cliente === null ? null : <span>Cliente: {cliente}</span>}
-        {vehiculo === null ? null : <span>Vehículo: {vehiculo}</span>}
+        {vehiculo === null || barra !== undefined ? null : <span>Vehículo: {vehiculo}</span>}
       </p>
+      {barra}
     </header>
   )
 }

@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { conteoEnFrase, cortarAlTope, type ConteoAcotado } from '@/shared/lib/conteo'
 import { TOPE_DE_ESTE_VEHICULO } from '@/shared/lib/paginacion'
+import { tituloDeLaCotizacion } from '../titulo-de-la-cotizacion'
 import { ES_INVALIDA } from './acceso'
 
 export const ETIQUETA_DE_ESTA = 'Esta'
@@ -145,10 +146,13 @@ export function textoDeLaLinea(conteo: ConteoAcotado): string | null {
   return `Hay ${conteoEnFrase(conteo)} ${sustantivo} más de este vehículo`
 }
 
-// El título de una fila: el suyo, si no el del vehículo, si no el número.
+// El título de una fila: el suyo, si no el del vehículo, si no «Cotización n.º N» (`tituloDeLaCotizacion()`, la regla de toda superficie).
 export function tituloDeLaFila(
   fila: Pick<FilaDeEsteVehiculo, 'titulo' | 'numero'>,
   tituloDelVehiculo: string | null,
 ): string {
-  return fila.titulo?.trim() || tituloDelVehiculo?.trim() || `Cotización #${String(fila.numero)}`
+  return (
+    tituloDeLaCotizacion({ titulo: fila.titulo, vehiculo: tituloDelVehiculo, numero: fila.numero })
+      ?.texto ?? `Cotización n.º ${String(fila.numero)}`
+  )
 }

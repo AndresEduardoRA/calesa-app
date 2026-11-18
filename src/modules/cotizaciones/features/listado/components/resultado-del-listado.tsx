@@ -45,7 +45,7 @@ function SinResultados() {
         filtros.buscar('')
       }}
       etiquetaDeLimpiar="Limpiar búsqueda"
-      descripcion={`Ninguna cotización coincide con «${texto}». Busca por número, cliente, vehículo o autor.`}
+      descripcion={`Ninguna cotización coincide con «${texto}». Busca por número, título, cliente, vehículo o autor.`}
     />
   )
 }

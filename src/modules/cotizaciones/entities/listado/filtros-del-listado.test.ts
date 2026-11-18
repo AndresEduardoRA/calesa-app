@@ -31,7 +31,7 @@ describe('esquemaDelListado', () => {
     expect(claves([origenes[0]!])).toEqual([CLAVE_DE_CLASE, CLAVE_DE_CUALES])
   })
 
-  it('tiene búsqueda por número, cliente, vehículo o autor, con el mínimo del buscador', () => {
+  it('tiene búsqueda por número, título, cliente, vehículo o autor, con el mínimo del buscador', () => {
     expect(esquemaDelListado(origenes).busqueda).toMatchObject({
       clave: 'q',
       minimo: MINIMO_DE_BUSQUEDA_DE_COTIZACIONES,

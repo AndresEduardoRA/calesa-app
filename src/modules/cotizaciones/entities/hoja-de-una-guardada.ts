@@ -16,7 +16,9 @@ export type CotizacionDeLaHoja = {
   // El modo de tipo de cambio con que se guardó; nulo, el que traía la fórmula.
   modoTc: string | null
   verTotalBs: boolean
+  // El título de la cotización y si es manual (T307): automático, la base lo rehace con el vehículo en cada guardado.
   titulo: string | null
+  tituloManual: boolean
   notas: string | null
   creadoEn: string
   // **El texto de la base, tal cual** (con sus microsegundos): es la versión que `cotizacion_guardar` compara. Nunca pasa por `Date`; sólo se muestra formateado.

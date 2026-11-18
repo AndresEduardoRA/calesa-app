@@ -9,11 +9,14 @@ import {
   modeloDeLaTarjeta,
   type ModeloDeTarjeta,
 } from '../../../entities/tarjeta/modelo-de-la-tarjeta'
+import { useTituloDeLaCotizacion } from '../../hoja/hooks/use-titulo-de-la-cotizacion'
 import { useLecturaDeLaTarjeta, type EstadoDeLaLectura } from './use-lectura-de-la-tarjeta'
 
 // Lo que la página sabe de la tarjeta y la hoja no. `guardadaEl`: el día del último guardado de una guardada (P3 a); nulo en la hoja nueva, que dice hoy.
 export type PaginaDelModelo = {
   vehiculo: string | null
+  // El título de la cotización ya resuelto (una guardada: el guardado, porque la tarjeta dibuja lo guardado). Sin la prop, la hoja nueva: el que se está escribiendo.
+  titulo?: string | null
   asesor: string | null
   numero: number | null
   vencida: boolean
@@ -46,6 +49,8 @@ export function useModeloDeLaTarjeta({ formulaId, calculo, monedaBs, pagina }: E
   const hoy = useHoy()
   const fecha = formatearFecha(pagina.guardadaEl ?? hoy, { zona: zonaHoraria })
   const lectura = estado.tipo === 'lista' ? estado.lectura : null
+  const vivo = useTituloDeLaCotizacion()?.mostrado ?? null
+  const titulo = pagina.titulo === undefined ? vivo : pagina.titulo
   const modelo = useMemo(
     () =>
       lectura === null
@@ -59,11 +64,12 @@ export function useModeloDeLaTarjeta({ formulaId, calculo, monedaBs, pagina }: E
               vehiculo: pagina.vehiculo,
               asesor: pagina.asesor,
               numero: pagina.numero,
+              titulo,
               vencida: pagina.vencida,
               logo: pagina.logo,
             },
           }),
-    [lectura, fecha, pagina, calculo, monedaBs],
+    [lectura, fecha, pagina, calculo, monedaBs, titulo],
   )
   return { estado, reintentar, lectura, modelo }
 }

@@ -11,6 +11,7 @@ import type {
 } from '../../../entities/obligatorios-al-cotizar'
 import { useGuardado } from '../hooks/use-guardado'
 import { useSoltarLoAbierto } from '../hooks/urls-de-la-hoja'
+import { useTituloDeLaCotizacion } from '../hooks/use-titulo-de-la-cotizacion'
 import { CotizacionGuardada } from './cotizacion-guardada'
 import { HojaDeCotizar } from './hoja-de-cotizar'
 
@@ -53,12 +54,15 @@ export function PantallaDeCotizar({ leadId, personaId, seEligen, ...props }: Pro
     guardarBorradorDeEstado(window.sessionStorage, borrador, {})
   }
   const soltarLoAbierto = useSoltarLoAbierto()
-  // Guardada, lo que la hoja tenía abierto (el modal «Avanzado», una ayuda) se va de la URL: «Cotizar otra» la vuelve a montar sin reabrirlo.
+  const titulo = useTituloDeLaCotizacion()
+  // Guardada, lo que la hoja tenía abierto (el modal «Avanzado», una ayuda) se va de la URL: «Cotizar otra» la vuelve a montar sin reabrirlo. El título vuelve a automático
+  // para la próxima (su borrador se va).
   const guardado = useGuardado({
     hoja: deLaPestana,
     alGuardar: () => {
       borrarElBorrador()
       soltarLoAbierto()
+      titulo?.alGuardar()
     },
   })
   const otraVuelta = () => {

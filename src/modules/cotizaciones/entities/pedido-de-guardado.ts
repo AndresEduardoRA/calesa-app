@@ -15,6 +15,9 @@ export type PedidoDeGuardado = {
   // «Ver total Bs»: lo que quien cotiza dejó encendido, y sólo si la hoja lo ofrecía (la base lo rechaza si no).
   verTotalBs: boolean
   conLaAbierta: boolean
+  // El título de la cotización (T307): el texto sólo si es manual (`tituloParaGuardar()`); automático, la base pone el del vehículo. Sin vehículo, la base lo exige.
+  titulo: string | null
+  tituloManual: boolean
 }
 
 export function argumentosDeCrear(p: PedidoDeGuardado) {
@@ -30,5 +33,7 @@ export function argumentosDeCrear(p: PedidoDeGuardado) {
     p_ver_total_bs: p.verTotalBs,
     p_clase: 'preventa' as const,
     p_con_la_abierta: p.conLaAbierta,
+    ...(p.titulo === null ? {} : { p_titulo: p.titulo }),
+    p_titulo_manual: p.tituloManual,
   }
 }
