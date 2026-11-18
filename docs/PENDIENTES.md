@@ -25,7 +25,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[4-72]** Quien ve una cotización pero no su vehículo no puede recalcularla («No se pudo recalcular») — que el recálculo de una guardada no dependa del vehículo, o que la pantalla diga por qué.
 - **[4-94]** «Cotizar» suelto (sin lead) en la cabecera de la ficha `/vehiculos/[id]` y en el «⋯» del inventario — hoy está en el resumen de `/vehiculos`, en la barra de la hoja y, con su lead, en cada fila de «Relacionados».
 - **[4-101]** El editor de la tarjeta no reordena, suma ni quita grupos a mano (manda la fórmula) — decidir viendo la vista previa.
-- **[4-103]** La vista previa de la tarjeta no muestra la `descripcion` del nodo, el nombre del tipo de cambio ni el título de la variante — llevarlos cuesta ≈ 20 KB sobre el tope del primer HTML.
+- **[T310]** Una plantilla de la forma 1 que ya no se convierte (un `{{` en una etiqueta, leyenda o nota, que la forma 1 admite como texto, o una fórmula con más de 120 filas convertidas) pasa a `sin_plantilla` sin aviso: la tarjeta va por omisión — que el editor o publicar la fórmula lo digan.
+- **[T310]** El editor de la tarjeta de hoy escribe la forma 1: publicar desde él reemplaza una cuadrícula (forma 2) publicada — hasta que llegue el editor de la cuadrícula (T325).
 - **[—]** Editor de la fórmula: sumar o quitar grupos y editar `buckets`, `total_en` y los modos — espera a que la plantilla de la tarjeta se edite junto con la fórmula.
 - **[—]** Editor del diseño: sumar y quitar secciones o ítems quedó sin dueño, y pasar un ítem de una sección a otra (hoy se ordena dentro de la suya).
 - **[—]** En la primera publicación de un origen (las dos esperadas nulas), el borrador puede nacer sobre una v1 que otra persona publicó entre medio — decidir si la esperada nula deja de valer.
@@ -118,7 +119,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `vehiculos_papelera_listar()` y `leads_papelera_listar()` usan el mismo `exists` por lote: sin medir si con poco volumen leen el índice entero.
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
 - **[—]** El bloque «Leads sin seguimiento» de Inicio cuesta lo que pesa la cartera de quien mira; no se midió con volumen.
-- **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 492 nodos de 500, JS de `/cotizaciones/nuevo` 453,6 y de `/cotizaciones/[id]` 458,6 de 460 KB, la ficha del lead entera 130,8 de 138 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
+- **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 492 nodos de 500, JS de `/cotizaciones/nuevo` 457,0 de 460 y de `/cotizaciones/[id]` 464,5 de 470 KB, la ficha del lead entera 130,8 de 138 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
 - **[T33]** «Vincular o marcar un vehículo» de la ficha del lead (`?panel=agregar-vehiculo`, `shallow: false`) y cada cambio de un recordatorio (`router.refresh()`) releen todos los bloques de la ficha: con todo a la vista cuesta más que antes; se acota cuando moleste (que cada bloque relea lo suyo).
 - **[—]** Tope de 40 ítems por diseño: `subasta_usa` tiene 39 — para crecer, subir `_diseno_maximo_de_items()` y la constante midiendo la hoja, o partir la hoja.
 
@@ -147,6 +148,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Las ramas `p_repuesto` de las RPC de logística sólo se prueban con filas sembradas por SQL (ninguna pantalla las usa); el e2e de compras no sube un comprobante.
 - **[4-95]** El `creado_en` de una revisión es el `now()` de su transacción: «Ir a una fecha» puede dejar del lado equivocado una revisión de esa ventana — `clock_timestamp()` o saltar por `(creado_en, id)`, si alguna vez se ve.
 - **[4-74]** `schemas/edicion.ts` acota `notas` con `.max(2000)`, que cuenta unidades UTF-16 mientras la base cuenta caracteres (un emoji cerca del tope da distinto); `cotizar-guardada-guardar.spec.ts` usa `waitForTimeout(600)`.
+- **[T310]** La muestra de la tarjeta del modal de colores (`como-se-ve-el-color.tsx`) sigue con la tinta de `_color_tinta_de_la_tarjeta()`, y la tarjeta de la cotización ya usa `auto` (#1b2130 o blanco) — alinearla y retirar `_color_tinta_de_la_tarjeta()` si queda sin uso.
+- **[T310]** La imagen de la tarjeta (`imagenDeUnaGuardada()`) no tiene ruta: quien la sirva (la portada, T313) suma `infra/tarjeta/pdf/fuentes/*` a `outputFileTracingIncludes` de su ruta.
 - **[4-98]** El PDF sale sin logo si el logo es WebP o un SVG con estilos, `use`, `mask`, `filter` o `<image>` (`logo-del-pdf.ts`) — convertirlo a PNG al subirlo.
 - **[7-3]** El `aplicado_en` de `chat.participar` y `chat.moderar` en el catálogo dice «policy …» y no nombra las RPC que los exigen — dato de catálogo en una migración nueva.
 - **[5a-42]** `medir-bajas.sql` falla sin regresión cuando el disco tarda en `fsync` (topes de tiempo) — juzgar el trabajo (40 lotes, ≤ 16 M buffers) y los tiempos sólo con la ventana sana (`pg_stat_checkpointer`, `/proc/pressure/io`).

@@ -94,6 +94,9 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Revisa los detectores textuales al escribir un mensaje de error: palabras como `antes`/`despues` hacen caer la guarda de `cotizaciones-visibilidad.sql`.
 - Prueba un espejo TS de una regla SQL contra la función vigente en PGlite con los mismos casos, `hint` y texto, copiando sus detalles: `char_length` cuenta puntos de código (no `.length`), `collate "C"` no es `localeCompare` ni `<`, `btrim` sólo quita U+0020 y `jsonb::text` lleva `", "`.
 - Espeja el `Math.round` de TS en SQL con `floor(v) + (v - floor(v) >= 0.5)`, nunca `round(float8)` (redondea al par): un color derivado cambiaría en un canal y el juego espejo no daría igual.
+- Acorta un id derivado que tiene que entrar en la forma de un id con un hash espejado (FNV-1a de 32 bits sobre ASCII: `Math.imul`/`>>> 0` en TS, `bigint` y `% 4294967296` en plpgsql), nunca con `md5`: TS no lo tiene en síncrono.
+- El espejo TS no ve el texto de un número `jsonb`: `24.0` llega a JS como 24 y la base guarda `24.0` (un byte más); en un tope en bytes manda la base.
+- Un centinela de una prueba de fugas que se busca en el texto de la respuesta no puede ser parte de una palabra que la respuesta lleva por sí sola («cent» está en «centro» y en «Porcentaje»): quita esas palabras antes de buscarlo, o elige otro.
 
 ## PostgREST, tipos y capa de datos
 
@@ -314,6 +317,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 
 - Para «difiere de lo guardado» compara valores y totales, no sólo el total: una celda puede cambiar sin moverlo.
 - react-pdf no dibuja WebP ni SVG con `<style>`, clases, `use`, `mask`, `filter` o `<image>`: una imagen para el PDF llega en PNG o JPG.
+- Un dibujo que comparten el HTML, react-pdf y `next/og` va por posiciones absolutas desde una geometría pura: satori no tiene `grid` (ni `<table>`, que tampoco dibuja react-pdf) y todo `div` con más de un hijo lleva `display: flex`.
+- Una fuente de react-pdf que lee del disco y no se importa no la ve el trazado de archivos: cada ruta que la usa la suma a `outputFileTracingIncludes` de `next.config.ts`.
 
 ### vehiculos
 

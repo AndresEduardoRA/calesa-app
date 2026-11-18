@@ -8,21 +8,34 @@ export const zona = () => sql('select zona_horaria from public.ajustes_empresa')
 export const hoja = (page: Page) => page.locator('[data-hoja]')
 export const resumen = (page: Page) => page.locator('[data-resumen]')
 export const dialogo = (page: Page) => page.getByRole('dialog', { name: 'Vista previa' })
-export const tarjeta = (page: Page) => dialogo(page).locator('[data-tarjeta-de-cotizacion]')
+export const tarjeta = (page: Page) =>
+  dialogo(page).getByRole('group', { name: 'Tarjeta de la cotización' })
 export const total = (t: Locator) => t.locator('[data-total-usd]')
+// Lo que muestra una variable de la cotización en la tarjeta (`fecha_larga`, `asesor_nombre`…).
+export const variable = (t: Locator, clave: string) => t.locator(`[data-variable="${clave}"]`)
+// El título de cada grupo y su color, en el orden dibujado: la celda de la columna del grupo en la primera fila de cada uno.
 export const grupos = (t: Locator) =>
   t
-    .locator('[data-grupo-de-la-tarjeta]')
-    .evaluateAll((es) =>
-      es.map((e) => [e.getAttribute('data-grupo-de-la-tarjeta'), e.getAttribute('data-tono')]),
-    )
-// La etiqueta de cada fila y de cada «aparte» (sin su leyenda), en el orden dibujado.
+    .locator('[data-fila^="n_"][data-columna="grupo"]')
+    .evaluateAll((es) => es.map((e) => [e.textContent.trim(), e.getAttribute('data-color')]))
+// El concepto de cada fila de un grupo y la etiqueta de cada «aparte», en el orden dibujado (sin la leyenda ni el monto).
 export const etiquetasDeLasFilas = (t: Locator) =>
   t
-    .locator('[data-fila-de-la-tarjeta], [data-aparte-de-la-tarjeta]')
-    .evaluateAll((es) =>
-      es.map((e) => e.querySelector(':scope > span')?.childNodes[0]?.textContent ?? ''),
+    .locator(
+      '[data-fila^="n_"][data-columna="concepto"], [data-fila^="a_"]:not([data-columna="monto"])',
     )
+    .evaluateAll((es) => es.map((e) => e.textContent.trim()))
+
+// Cuánto se aparta una celda combinada de cubrir desde la primera hasta la última de unas celdas (en px, arriba y abajo).
+export async function desvioDeLaCombinada(celda: Locator, desde: Locator, hasta: Locator) {
+  const [c, d, h] = await Promise.all([
+    celda.boundingBox(),
+    desde.boundingBox(),
+    hasta.boundingBox(),
+  ])
+  if (!c || !d || !h) throw new Error('Falta una caja de la tarjeta.')
+  return { arriba: Math.abs(c.y - d.y), abajo: Math.abs(c.y + c.height - h.y - h.height) }
+}
 
 export const textoDe = async (l: Locator) => ((await l.textContent()) ?? '').replace(/\s/g, '')
 

@@ -27,6 +27,7 @@ import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
 import { AvisoDeSubastaDeLaHoja } from '../aviso-de-subasta'
+import { vehiculoDeLaTarjeta } from '../datos-de-la-tarjeta'
 import { idDeUrl, type Quien, type VehiculoDeLaUrl } from '../vehiculo-de-la-hoja'
 import { BarraConHistorial } from './barra-con-historial'
 import {
@@ -197,6 +198,24 @@ function BarrasDeLaHoja({
   )
 }
 
+// Lo que la tarjeta de la hoja nueva nombra: el vehículo elegido (con lote y VIN), quien cotiza y el cliente, si quien mira los ve. El título no: la tarjeta lee el
+// que se está escribiendo.
+function tarjetaDeLaHojaNueva({
+  elegido,
+  cliente,
+  asesor,
+}: {
+  elegido: { vehiculo: { titulo: string; lote: string | null; vin: string | null } } | null
+  cliente: { nombre: string } | null
+  asesor: string
+}) {
+  return {
+    vehiculo: vehiculoDeLaTarjeta(elegido === null ? null : elegido.vehiculo),
+    asesor,
+    cliente: cliente === null ? null : cliente.nombre,
+  }
+}
+
 // La hoja del origen elegido, con sus dos barras (vehículo y cliente) y las pestañas de origen.
 async function HojaDelOrigen({
   sesion,
@@ -258,7 +277,7 @@ async function HojaDelOrigen({
           origenId={origen.id}
           cotizacionId={null}
           permisos={sesion.permisos}
-          tarjeta={{ vehiculo: tituloDelElegido(elegido), asesor }}
+          tarjeta={tarjetaDeLaHojaNueva({ elegido, cliente, asesor })}
         >
           <PantallaDeCotizar
             key={`${origen.id}:${leadUsado ?? '-'}:${vehiculoUsado ?? '-'}`}

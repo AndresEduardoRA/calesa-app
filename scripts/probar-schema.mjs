@@ -195,6 +195,11 @@ const DATOS_DE_PRUEBA = {
   },
   'plantilla-validar.sql': {
     _juego_de_plantilla: 'src/modules/cotizaciones/entities/plantilla/casos-de-plantilla.json',
+    _plantilla_como_v1_usa: 'src/modules/cotizaciones/entities/tarjeta/plantilla-como-v1-usa.json',
+  },
+  // El juego espejo de la conversión de la plantilla de la tarjeta a la cuadrícula: lo genera TS con `convertirPlantilla()`.
+  'areas/tarjeta/plantilla-convertir.sql': {
+    _juego_de_conversion: 'src/modules/cotizaciones/entities/plantilla/casos-de-conversion.json',
   },
   // El juego espejo de los colores del catálogo: lo genera TS con `derivarColores()` (`supabase/tests/casos-de-colores.ts`).
   'areas/diseno/colores.sql': {

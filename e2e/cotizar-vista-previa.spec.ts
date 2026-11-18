@@ -27,6 +27,7 @@ import {
   alDia,
   anotar,
   cerrarLaVistaPrevia,
+  desvioDeLaCombinada,
   dialogo,
   etiquetasDeLasFilas,
   grupos,
@@ -36,6 +37,7 @@ import {
   textoDe,
   total,
   urlDeLaSubasta,
+  variable,
   zona,
 } from './soporte/cotizar-vista-previa'
 import { literal, sql } from './soporte/sql'
@@ -46,9 +48,10 @@ import { formatearFecha } from '../src/shared/lib/fechas'
 // cliente. La dibuja `cotizacion_tarjeta()` (la plantilla publicada del origen, 4.18-1) con los números de la hoja (la nueva) o con los guardados (una guardada, P5 a). Cierra 4-55.
 test.describe.configure({ mode: 'serial' })
 
-// Los topes de la tarjeta de `subasta_usa` con todo encendido (garantía y total en Bs), medidos con la dueña en la primera corrida verde (105 nodos y 2.950 bytes) y fijados en lo medido más un 5 % (C11).
-const TOPE_DE_NODOS_DE_LA_TARJETA = 111
-const TOPE_DE_BYTES_DE_LA_RESPUESTA = 3098
+// Los topes de la tarjeta de `subasta_usa` con todo encendido (garantía y total en Bs), con la plantilla sembrada convertida a la cuadrícula: medidos con la dueña
+// (123 nodos y 17.808 bytes de `cotizacion_tarjeta`) y fijados en lo medido más un 5 % (C11). La respuesta lleva la cuadrícula entera: es un modal en un portal.
+const TOPE_DE_NODOS_DE_LA_TARJETA = 130
+const TOPE_DE_BYTES_DE_LA_RESPUESTA = 18_700
 
 let origen = { id: '', nombre: '' }
 let origenVivo = { id: '', nombre: '' }
@@ -97,7 +100,7 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-test('E2E la vista previa abre con su URL y dibuja el encabezado, la banda, los grupos con su tono y el total de la hoja', async ({
+test('E2E la vista previa abre con su URL y dibuja el encabezado, el vehículo, los grupos con su color y el total de la hoja', async ({
   page,
 }, info) => {
   const proyecto = info.project.name
@@ -107,22 +110,22 @@ test('E2E la vista previa abre con su URL y dibuja el encabezado, la banda, los 
   const t = await abrirLaVistaPrevia(page)
   expect(new URL(page.url()).searchParams.get('panel')).toBe('vista-previa')
   const hoy = formatearFecha(new Date().toISOString(), { zona: zona() })
-  await expect(t.locator('[data-fecha-de-la-tarjeta]')).toHaveText(hoy)
-  await expect(t.locator('[data-titulo-de-la-tarjeta]')).toHaveText(
+  await expect(variable(t, 'fecha_larga')).toHaveText(hoy)
+  await expect(variable(t, 'titulo_opcion')).toHaveText(
     'COTIZACIÓN VEHÍCULOS A GASOLINA EEUU - BOL',
   )
-  await expect(t.locator('[data-asesor-de-la-tarjeta]')).toHaveText(`Asesor: ${asesora.nombre}`)
+  // «Asesor:» y el nombre van en dos celdas (un texto no mezcla texto y variables).
+  await expect(t.getByText('Asesor:', { exact: true })).toBeVisible()
+  await expect(variable(t, 'asesor_nombre')).toHaveText(asesora.nombre)
   // 4-55: la tarjeta titula con el vehículo y el encabezado con la variante.
-  await expect(t.locator('[data-vehiculo-de-la-tarjeta]')).toHaveText(
-    `${TITULO_DEL_VEHICULO} ${proyecto}`,
-  )
+  await expect(variable(t, 'vehiculo_titulo')).toHaveText(`${TITULO_DEL_VEHICULO} ${proyecto}`)
   expect(await grupos(t)).toEqual([
-    ['compra', 'verde'],
-    ['logistica', 'amarillo'],
-    ['aduana', 'naranja'],
+    ['Compra', 'verde'],
+    ['Logística', 'amarillo'],
+    ['Aduana', 'naranja'],
   ])
   expect(await textoDe(total(t))).toBe(totalDelResumen)
-  await expect(t.locator('[data-nota-de-la-tarjeta]')).toContainText('cotización referencial')
+  await expect(t).toContainText('cotización referencial')
   await cerrarLaVistaPrevia(page)
   expect(new URL(page.url()).searchParams.get('panel')).toBeNull()
   // Recargar con la URL la abre.
@@ -138,30 +141,29 @@ test('E2E el tipo de cambio y el plazo van una vez por grupo y, con otro modo, d
   const nombreDe = (clave: string) =>
     sql(`select nombre from public.tipos_cambio where clave = ${literal(clave)}`)
   let t = await abrirLaVistaPrevia(page)
-  await expect(t.locator('[data-tipo-de-cambio]')).toHaveCount(3)
-  await expect(t.locator('[data-plazo]')).toHaveCount(3)
-  const celdaDeTc = (grupo: string) =>
-    t.locator(`[data-grupo-de-la-tarjeta=${grupo}] [data-tipo-de-cambio]`)
-  await expect(t.locator('[data-grupo-de-la-tarjeta=compra] [data-plazo]')).toContainText('2 días')
-  await expect(celdaDeTc('compra')).toContainText(nombreDe('paralelo'))
-  await expect(celdaDeTc('aduana')).toContainText(nombreDe('oficial'))
-  // La celda combinada ocupa el alto de las filas del grupo cuando el contenedor es ancho (desde 36 rem); si no, queda bajo el título.
-  const rem = await page.evaluate(() =>
-    parseFloat(getComputedStyle(document.documentElement).fontSize),
+  await expect(t.locator('[data-mostrar="tc_nombre"]')).toHaveCount(3)
+  await expect(t.locator('[data-mostrar="plazo"]')).toHaveCount(3)
+  // El tipo de cambio y el plazo de un grupo van en la primera fila de sus miembros: la de remate (compra) y la de nacionalización (aduana).
+  const celdaDeTc = (primerMiembro: string) =>
+    t.locator(`[data-mostrar="tc_nombre"][data-nodo="${primerMiembro}"]`)
+  await expect(t.locator('[data-mostrar="plazo"][data-nodo="remate"]')).toContainText('2 días')
+  await expect(celdaDeTc('remate')).toContainText(nombreDe('paralelo'))
+  await expect(celdaDeTc('nacionalizacion')).toContainText(nombreDe('oficial'))
+  // La celda combinada ocupa el alto de las filas de su grupo (remate a transferencia; la cuenta especial no aplica y su fila no se dibuja).
+  const desvio = await desvioDeLaCombinada(
+    celdaDeTc('remate'),
+    t.locator('[data-columna="concepto"][data-nodo="remate"]'),
+    t.locator('[data-columna="concepto"][data-nodo="transferencia"]'),
   )
-  const ancho = (await t.boundingBox())?.width ?? 0
-  if (ancho >= 36 * rem) {
-    const filas = await t.locator('[data-grupo-de-la-tarjeta=compra] ul').boundingBox()
-    const celda = await celdaDeTc('compra').boundingBox()
-    expect(celda?.height ?? 0).toBeGreaterThanOrEqual((filas?.height ?? 1) - 1)
-    expect(Math.abs((celda?.y ?? 0) - (filas?.y ?? 0))).toBeLessThanOrEqual(1)
-  }
+  expect(desvio.arriba).toBeLessThanOrEqual(1)
+  expect(desvio.abajo).toBeLessThanOrEqual(1)
+  await expect(t.locator('[data-fila="n_cuenta_especial"]')).toHaveCount(0)
   await cerrarLaVistaPrevia(page)
   await page.locator('[data-cabecera]').getByText('Unificado', { exact: true }).click()
   await alDia(page)
   t = await abrirLaVistaPrevia(page)
-  await expect(celdaDeTc('compra')).toContainText(nombreDe('unificado'))
-  await expect(celdaDeTc('aduana')).toContainText(nombreDe('oficial'))
+  await expect(celdaDeTc('remate')).toContainText(nombreDe('unificado'))
+  await expect(celdaDeTc('nacionalizacion')).toContainText(nombreDe('oficial'))
 })
 
 test('E2E «Mostrar garantía» y «Ver total en moneda local» suman lo suyo a la tarjeta, y apagados no sale', async ({
@@ -202,7 +204,7 @@ test('E2E el Modo Live del pie del modal tapa los montos de la tarjeta', async (
   await expect(live).toHaveAttribute('aria-pressed', 'true')
   await expect(page.locator('html')).toHaveClass(/live/)
   await expect(total(t).locator('[data-monto-valor]')).toBeHidden()
-  await expect(t.locator('[data-fila-de-la-tarjeta] [data-monto-valor]').first()).toBeHidden()
+  await expect(t.locator('[data-fila^="n_"] [data-monto-valor]').first()).toBeHidden()
   await live.click()
   await expect(page.locator('html')).not.toHaveClass(/live/)
   await expect(total(t).locator('[data-monto-valor]')).toBeVisible()
@@ -242,8 +244,8 @@ test('E2E un origen sin plantilla dibuja la tarjeta por omisión: el total, y lo
   await alDia(page)
   const t = await abrirLaVistaPrevia(page)
   await expect(t).toHaveAttribute('data-por-omision', '')
-  await expect(t.locator('[data-grupo-de-la-tarjeta]')).toHaveCount(0)
-  await expect(t.locator('[data-total-de-la-tarjeta]')).toContainText('Total')
+  await expect(t.locator('[data-fila^="n_"]')).toHaveCount(0)
+  await expect(t.locator('[data-fila="total"]').first()).toHaveText('Total')
   await expect(total(t)).toContainText('1.205,00')
   await expect(dialogo(page)).toContainText(
     'Este origen no tiene una plantilla de tarjeta para esta versión de la fórmula: la tarjeta va sólo con el total.',
@@ -251,7 +253,7 @@ test('E2E un origen sin plantilla dibuja la tarjeta por omisión: el total, y lo
   await expect(t).not.toContainText('Este origen no tiene una plantilla')
 })
 
-test('E2E la tarjeta de una guardada nombra a quien la creó, su número y la fecha de su último guardado; vencida lo dice y lo sin guardar no entra', async ({
+test('E2E la tarjeta de una guardada nombra a quien la creó, su número y la fecha de su último guardado; vencida lo dice el modal y lo sin guardar no entra', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
@@ -268,19 +270,20 @@ test('E2E la tarjeta de una guardada nombra a quien la creó, su número y la fe
   await page.goto(`/cotizaciones/${id}`)
   await expect(hoja(page)).toBeVisible()
   let t = await abrirLaVistaPrevia(page)
-  await expect(t).toContainText(`Cotización n.º ${numeroDeLaCotizacion(id)}`)
-  await expect(t.locator('[data-asesor-de-la-tarjeta]')).toHaveText(`Asesor: ${asesora.nombre}`)
-  await expect(t.locator('[data-fecha-de-la-tarjeta]')).toHaveText(
-    formatearFecha(guardadaEl, { zona: zona() }),
-  )
-  await expect(t.getByText('Vencida', { exact: true })).toHaveCount(0)
+  await expect(t.getByText('Cotización n.º', { exact: true })).toBeVisible()
+  await expect(variable(t, 'numero')).toHaveText(String(numeroDeLaCotizacion(id)))
+  await expect(variable(t, 'asesor_nombre')).toHaveText(asesora.nombre)
+  await expect(variable(t, 'fecha_larga')).toHaveText(formatearFecha(guardadaEl, { zona: zona() }))
+  await expect(dialogo(page)).not.toContainText('venció')
   const guardado = await textoDe(total(t))
   await cerrarLaVistaPrevia(page)
-  // Vencida (envejecida por SQL): lo dice dentro del modal.
+  // Vencida (envejecida por SQL): lo dice el modal, fuera de la tarjeta (la tarjeta es lo que recibe el cliente).
   envejecerLaCotizacion(id, 400)
   await page.goto(`/cotizaciones/${id}`)
   t = await abrirLaVistaPrevia(page)
-  await expect(t.getByText('Vencida', { exact: true })).toBeVisible()
+  await expect(dialogo(page)).toContainText(/Esta cotización venció el \d{1,2} \S+ \d{4}\./)
+  await expect(t).not.toContainText('venció')
+  await expect(t).not.toContainText('Vencida')
   await cerrarLaVistaPrevia(page)
   // Un cambio sin guardar no mueve el total de la tarjeta y se dice fuera de ella.
   await tipearEnLaHoja(page, 'pub', '300')

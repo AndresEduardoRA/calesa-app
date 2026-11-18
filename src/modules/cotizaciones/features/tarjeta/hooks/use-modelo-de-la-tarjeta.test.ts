@@ -16,10 +16,13 @@ vi.mock('../../../areas/tarjeta/composicion.client', () => ({
 import { useModeloDeLaTarjeta, type PaginaDelModelo } from './use-modelo-de-la-tarjeta'
 
 const pagina: PaginaDelModelo = {
-  vehiculo: 'Toyota Hilux 2020',
+  titulo: null,
+  cliente: null,
+  vehiculo: { titulo: 'Toyota Hilux 2020', lote: null, vin: null },
   asesor: 'Ana Pérez',
   numero: 7,
   vencida: true,
+  venceEl: '2026-10-20',
   guardadaEl: '2026-10-11T14:00:00.000000+00:00',
   logo: null,
 }
@@ -31,35 +34,35 @@ const entrada = {
 }
 
 describe('useModeloDeLaTarjeta', () => {
-  it('con la lectura arma el modelo con lo que la página sabe y la fecha del guardado', async () => {
+  it('con la lectura arma el contexto con lo que la página sabe (las fechas en la zona) y la geometría', async () => {
     const lectura = tarjetaDesde(crudaDeLaTarjeta())
     if (lectura === null) {
       throw new Error('no se lee')
     }
     respuesta = { ok: true, data: lectura }
     const { result } = renderHook(() => useModeloDeLaTarjeta(entrada))
-    expect(result.current.modelo).toBeNull()
+    expect(result.current.geometria).toBeNull()
     await waitFor(() => {
-      expect(result.current.modelo).not.toBeNull()
+      expect(result.current.geometria).not.toBeNull()
     })
     expect(result.current.lectura).toBe(lectura)
-    expect(result.current.modelo?.encabezado).toMatchObject({
+    expect(result.current.contexto).toMatchObject({
       asesor: 'Ana Pérez',
-      numero: 7,
-      vencida: true,
+      numero: '7',
       fecha: '11 oct 2026',
+      venceEl: '20 oct 2026',
     })
-    expect(result.current.modelo?.vehiculo).toBe('Toyota Hilux 2020')
-    expect(result.current.modelo?.total.usd).toBe(1355)
+    const total = result.current.geometria?.celdas.find((c) => c.marca.total === true)
+    expect(total?.contenido).toMatchObject({ tipo: 'monto', valor: 1355 })
   })
 
-  it('sin lectura el modelo es nulo y el estado dice el error', async () => {
+  it('sin lectura la geometría es nula y el estado dice el error', async () => {
     respuesta = { ok: false, error: { codigo: 'inesperado', mensaje: 'x' } }
     const { result } = renderHook(() => useModeloDeLaTarjeta(entrada))
     await waitFor(() => {
       expect(result.current.estado.tipo).toBe('error')
     })
-    expect(result.current.modelo).toBeNull()
+    expect(result.current.geometria).toBeNull()
     expect(result.current.lectura).toBeNull()
   })
 })

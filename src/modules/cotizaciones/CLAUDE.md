@@ -108,7 +108,8 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `tabla_referencia_publicar()`): el PT409 y el 22023 con `hint` llegan tal cual (`porCampo` con el camino de la celda).
 - **El PDF** (área `tarjeta`): `GET /cotizaciones/[id]/pdf` (`requerirSesion()`; 404 en texto igual al de la página para lo que no existe, está en la
   papelera o no se ve; `rutaDelPdf(id)`) arma la página (fecha del último guardado en la zona de `leerAjustes()`, que falla en vez de dar lo de fábrica) y
-  pide `pdfDeUnaGuardada()`: `cotizacion_tarjeta` como quien pide, sin memoria, y `infra/tarjeta/pdf/` (Geist TTF). Lo baja quien ve la cotización, sin
+  pide `pdfDeUnaGuardada()` con el contexto de `contextoDeLaPagina()` (el cliente sólo con `leads.ver`: `src/app/(app)/cotizaciones/datos-de-la-tarjeta.ts`, que
+  comparte con la página): `cotizacion_tarjeta` como quien pide, sin memoria, y `infra/tarjeta/pdf/` (Geist TTF recta e itálica). Lo baja quien ve la cotización, sin
   clave propia (pie de «Vista previa» de una guardada; `<a download>` en la tarjeta de lo guardado de la hoja nueva). Las pruebas leen su texto con
   `scripts/pdf/texto-del-pdf.ts`.
 - **El diseño** (`/configuracion/cotizacion?seccion=diseno&origen=`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
@@ -172,9 +173,12 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
 - **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`; la llena
   `<ProveedorDeLaTarjeta>` (`pantallas/tarjeta.ts`) con la cáscara del modal y lo que sabe la página (vehículo, asesor, número, logo). El modal lee
-  `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `modeloDeLaTarjeta()` (puro). El pie: Live y «Copiar texto»
-  (`textoDeLaTarjeta()`, apagado sin tarjeta, con «Total desactualizado.» o sin total) y, en una guardada, «Descargar PDF» (`pedirElPdf()`: `fetch` sin
-  seguir la redirección ni caché; un 404, la sesión que no vale u otro fallo se dicen en el pie con «Reintentar»).
+  `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `geometriaDeLaTarjeta()` (pura) con `<TarjetaDeCotizacion>`: un lienzo del ancho de
+  la tarjeta con cada celda en posición absoluta (`<CeldaDeLaTarjeta>`, en orden de lectura, con `data-celda`, `data-fila`, `data-columna`, `data-nodo`,
+  `data-mostrar`, `data-variable`, `data-color` y `data-total-usd`), escalado como una imagen (`useEscalaDeLaTarjeta()`, nunca agranda); la página manda título,
+  cliente, vehículo con lote y VIN, asesor, número, vencimiento y logo (`PaginaDeLaTarjeta`). «Vencida» va en los avisos del modal, no en la tarjeta. El pie:
+  Live y «Copiar texto» (`textoDeLaTarjeta()`, de la misma geometría, apagado sin tarjeta, con «Total desactualizado.» o sin total) y, en una guardada,
+  «Descargar PDF» (`pedirElPdf()`: `fetch` sin seguir la redirección ni caché; un 404, la sesión que no vale u otro fallo se dicen en el pie con «Reintentar»).
 
 ## Archivos clave
 
@@ -184,7 +188,11 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - Validación: `entities/validar*.ts` espeja `validar_formula()` (`docs/COTIZADOR.md` › «Las reglas») y `validar-diseno*.ts` a `validar_diseno()` (con el
   tope de 40 ítems, `demasiados_items`, primero tras la forma); juegos `casos-de-{formula,diseno}.json` (regla nueva = su caso).
 - La plantilla: `validar_plantilla()` (`docs/COTIZADOR.md` › «Plantilla de tarjeta (PDF)»), espejo `entities/plantilla/validar-plantilla.ts` (code points,
-  `btrim`, orden C, tope en bytes del texto jsonb, sin prototipo) con su juego `casos-de-plantilla.json`. **Lo que va a un `jsonb` o `text` pasa por
+  `btrim`, orden C, tope en bytes del texto jsonb, sin prototipo) con su juego `casos-de-plantilla.json`; dos formas: la de grupos (`forma-de-plantilla.ts`,
+  `nodos-de-plantilla.ts`) y la cuadrícula (`forma-de-cuadricula.ts`, `celdas-de-cuadricula.ts`, `reglas-de-la-grilla.ts`, `nodos-de-cuadricula.ts`; tipos y
+  topes en el núcleo, `entities/cuadricula-de-la-tarjeta.ts`). La conversión de la forma 1 (`convertir-plantilla.ts`, `armado-de-la-conversion.ts`,
+  `grupos-de-la-conversion.ts`, `ids-de-la-conversion.ts`, `altos-de-la-conversion.ts`), espejo `_plantilla_convertir()`, con su juego `casos-de-conversion.json`
+  (lo genera `casos-de-conversion.test.ts` con `ACTUALIZAR_CASOS=1`; Prettier no lo toca). **Lo que va a un `jsonb` o `text` pasa por
   `revisarTextoParaLaBase()`** (un `\u0000`, un surrogate suelto o más de 8 niveles no los lee la base).
 - Base: `evaluar_formula()` (espejo exacto de `motor.ts`), `cotizacion_evaluar()`, `cotizacion_hoja()`, `cotizacion_crear()`, `cotizacion_guardar()`,
   `_nodos_visibles()`, `_publicar_formula()` / `_preparar_publicacion()`; semillas `supabase/semillas/cotizador-*.sql`. Detalle: `docs/COTIZADOR.md` ›
@@ -268,21 +276,26 @@ nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con l
 - **La hoja de una guardada** (`cotizacion_hoja_guardada`) edita sólo con `_cotizacion_puede_guardar()` (no con `_nodos_visibles()`, que da editar con
   `crear`). **Cotizar encima** (`cotizacion_encima`) crea la N+1 en el acto, una viva por anterior (`cotizaciones_encima_unica`), y se lleva lo oculto (se
   guarda, no se devuelve); es la excepción a «un alta nueva recibe `p_abierta`».
-- **La tarjeta** (`cotizacion_tarjeta(p_formula)`) dibuja la plantilla publicada del origen **validada otra vez contra la versión de esa cotización**: si no
-  le sirve, `sin_plantilla` sin motivo. De la fórmula sólo sale lo del nivel «todos» (grupos enteros, el total, lo aparte, la variante); los tipos de
-  cambio, sólo por su nombre; ningún id ni texto de un nodo de un nivel, para nadie (K4 de `cotizacion-tarjeta.sql`). El modelo toma valores, estados y
-  totales por id de nodo (`CalculoDeLaTarjeta`), nunca de la hoja de quien mira. En una guardada dibuja **lo guardado** (`calculoDeLoGuardado()`: el
+- **La tarjeta** (`cotizacion_tarjeta(p_formula)`) dibuja la plantilla publicada del origen como cuadrícula (la de la forma 1, convertida) **validada otra vez
+  contra la versión de esa cotización**: si no le sirve, `sin_plantilla` sin motivo. Sólo sale lo que la cuadrícula nombra y del nivel «todos» (nodos, grupos,
+  tipos de cambio por su nombre y su nodo, variante, colores); ningún id ni texto de un nodo de un nivel, para nadie (K4 de `cotizacion-tarjeta.sql`, en las dos
+  formas). La geometría toma valores, estados y totales por id de nodo (`CalculoDeLaTarjeta`), nunca de la hoja de quien mira. En una guardada dibuja **lo guardado** (`calculoDeLoGuardado()`: el
   snapshot, con los estados del primer recálculo) y lo que difiere se dice fuera.
 - **El editor de la plantilla** (`/configuracion/cotizacion?seccion=tarjeta`): al navegador llega sólo el contexto reducido y nada se importa del área
   `formula`. Los modales de publicar y descartar (`?panel=publicar-tarjeta|descartar-plantilla`) **viven fuera de la `key` del editor**
   (`origen:esperada`) para que «Recargar» tras un PT409 no pierda la nota. Su vista previa es un hueco: el tipo sin código
-  `entities/vista-previa-de-la-plantilla.ts` (lectura plana, sin `Map`), que `plantilla` arma y `tarjeta` dibuja (`pantallas/tarjeta-plantilla.ts`).
-- **El PDF** dibuja lo mismo que la tarjeta de esa guardada: lo guardado y sólo lo que la lectura nombra, más el título de la cotización junto al número
-  (`PaginaDeLaTarjeta.titulo`, nunca de `cotizacion_tarjeta`; el modelo lo da como `encabezado.tituloDeLaCotizacion`, aparte del título de la variante). Los montos van con `formatearMonto()` y siempre con
+  `entities/vista-previa-de-la-plantilla.ts` (la cuadrícula convertida con lo que nombra, `LecturaEnCuadricula`, plana y sin `Map`), que `plantilla` arma
+  (`lecturaParaLaVistaPrevia()`: 4 miembros por grupo, cifras y textos de ejemplo) y `tarjeta` dibuja con «Ocultas con esta referencia (N)»
+  (`pantallas/tarjeta-plantilla.ts`). Una cuadrícula guardada no se edita aquí (`MOTIVO_DE_LA_CUADRICULA`).
+- **El PDF** dibuja la misma geometría que la tarjeta de esa guardada, en una página A4 escalada entera (`escalaDelPdf()`): lo guardado y sólo lo que la lectura nombra.
+  El título de la cotización es la variable `titulo` (`PaginaDeLaTarjeta.titulo`, `tituloAparteDelNumero()`; nunca de `cotizacion_tarjeta`): en la hoja nueva, el que se
+  está escribiendo (`useTituloDeLaCotizacion()`). Los montos van con `formatearMonto()` y siempre con
   cifras aunque Live esté encendido: es lo que se entrega al cliente (la excepción a `<Monto>`, `docs/DECISIONES.md`). react-pdf se carga sólo al pedir un
   PDF (`import()` en `areas/tarjeta/composicion.ts`) y nunca llega al navegador. El logo lo baja `logo-del-pdf.ts` con tope (`PESO_MAXIMO_LOGO`) y 2 s y
   llega como `Buffer`, nunca URL; un SVG con lo que react-pdf se salta o con `<image>`, y un WebP, dejan el PDF sin logo (`docs/PENDIENTES.md`, 4-98). Los
-  metadatos no nombran al cliente, al asesor ni al vehículo. «Copiar texto» sale del mismo modelo.
+  metadatos no nombran al cliente, al asesor ni al vehículo. «Copiar texto» sale de la misma geometría. **La imagen** (`imagenDeUnaGuardada()`,
+  `infra/tarjeta/imagen/`, `ImageResponse` con `import()`): la misma geometría como PNG al ancho de la tarjeta, para la portada de la cotización; sin ruta
+  propia (quien la sirva suma las fuentes de `infra/tarjeta/pdf/fuentes/` a su `outputFileTracingIncludes`).
 - **Las tablas de referencia se escriben sólo con `tabla_referencia_publicar()`** (sin insert, update ni delete para `authenticated`). Candados: la tabla
   (`for update`) y después `formulas:<origen>` en orden de origen, como el ⚙ y revertir. Pruebas: `supabase/tests/areas/tablas/`,
   `scripts/carreras/tablas*.mjs`.

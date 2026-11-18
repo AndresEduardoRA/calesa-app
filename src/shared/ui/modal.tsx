@@ -28,8 +28,9 @@ type Props = {
   descripcion?: string
   pie?: ReactNode
   children?: ReactNode
-  // «amplio» para lo que no entra en 384 px (un texto para copiar, una fila de atajos).
-  ancho?: 'normal' | 'amplio'
+  // «amplio» para lo que no entra en 384 px (un texto para copiar, una fila de atajos); «grande» para un dibujo que se escala a su ancho como una
+  // imagen (la tarjeta de la cotización): hasta 56 rem desde `sm`, y en el celular a lo ancho como todos.
+  ancho?: 'normal' | 'amplio' | 'grande'
   // Mientras guarda: no se cierra con Esc, la ✕ ni el clic afuera (el pedido en vuelo podría volver
   // con el modal cerrado).
   bloqueado?: boolean
@@ -113,6 +114,7 @@ export function Modal({
         className={cn(
           'flex max-h-[calc(100dvh-2rem)] flex-col gap-0 p-0 max-sm:top-4 max-sm:translate-y-0',
           ancho === 'amplio' && 'sm:max-w-lg',
+          ancho === 'grande' && 'sm:max-w-4xl',
         )}
       >
         <DialogHeader className={cn('shrink-0 p-4 pr-12', descripcion || children ? 'pb-2' : '')}>

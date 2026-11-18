@@ -28,6 +28,7 @@ import {
   pedirElPdf,
   rutaDelPdfDe,
   snapshotDe,
+  totalImpreso,
   usd,
 } from './soporte/cotizar-pdf'
 import {
@@ -156,7 +157,9 @@ test('E2E en «Paralelo» el total del PDF es Bs ÷ el tipo de cambio del total,
   expect(pdf.ms).toBeLessThanOrEqual(TOPE_DE_MS_DEL_PDF)
   filasSonLoGuardado(pdf.lineas, s)
   expect(s.totales.usd).not.toBeNull()
-  expect(pdf.lineas).toContain(`${s.etiquetaDelTotal} ${usd(s, s.totales.usd ?? 0)}`)
+  // En la cuadrícula la etiqueta del total y su monto pueden ir en renglones distintos (la leyenda a su lado los centra aparte).
+  expect(totalImpreso(pdf.lineas, s)).toBe(usd(s, s.totales.usd ?? 0))
+  expect(pdf.lineas.some((l) => l.includes(s.etiquetaDelTotal))).toBe(true)
   const cuenta = cuentaDelPdf(pdf.lineas, s)
   expect(Math.abs(cuenta.porLaCuenta - cuenta.total)).toBeLessThanOrEqual(cuenta.tolerancia)
   // Aduana va a otro tipo de cambio: la suma de las filas se aparta del total más que el redondeo.
@@ -207,7 +210,7 @@ test('E2E si lo de hoy no es lo guardado, el PDF lleva lo guardado', async ({ pa
   await expect(page.locator('[data-total]')).toContainText('405,00')
   const s = snapshotDe(id)
   const { lineas } = await leerElPdf(page, id)
-  expect(lineas).toContain(`Total ${usd(s, 205)}`)
+  expect(totalImpreso(lineas, s)).toBe(usd(s, 205))
   expect(lineas.some((l) => l.includes(usd(s, 405)))).toBe(false)
 })
 
@@ -250,7 +253,7 @@ test('E2E quien no ve la cotización, una de la papelera, una que no existe y un
   await comoNoDisponible('no-es-un-id')
 })
 
-test('E2E un origen sin plantilla da el PDF por omisión, sólo con «Total»; vencida lo dice', async ({
+test('E2E un origen sin plantilla da el PDF por omisión, sólo con «Total»; vencida no lo dice (es un aviso de trabajo, no del cliente)', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
@@ -267,7 +270,8 @@ test('E2E un origen sin plantilla da el PDF por omisión, sólo con «Total»; v
   }
   envejecerLaCotizacion(id, 400)
   ;({ lineas } = await leerElPdf(page, id))
-  expect(lineas.some((l) => l.includes('Vencida'))).toBe(true)
+  expect(totalImpreso(lineas, s)).toBe(usd(s, 1205))
+  expect(lineas.some((l) => /vencid|venció/i.test(l))).toBe(false)
 })
 
 test('E2E el logo: un PNG va como imagen, un SVG simple como vector, y un SVG con estilos o un WebP no van; las líneas no cambian', async ({

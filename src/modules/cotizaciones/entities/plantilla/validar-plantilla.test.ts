@@ -35,9 +35,12 @@ describe('casos-de-plantilla.json', () => {
     else expect(visto).toEqual(rechazoDePlantilla(c.motivo.regla, c.motivo.donde))
   })
 
-  it('cubre las 9 reglas, sin nombres repetidos, y sólo un caso válido de mini empieza por «mínima» (las carreras lo eligen)', () => {
+  // `demasiadas_celdas` no tiene caso: 1.001 celdas pasan de los 24 KiB y la forma las rechaza antes. Se prueba sin el tope, abajo.
+  it('cubre las reglas, sin nombres repetidos, y sólo un caso válido de mini empieza por «mínima» (las carreras lo eligen)', () => {
     const reglas = new Set(juego.casos.flatMap((c) => ('motivo' in c ? [c.motivo.regla] : [])))
-    expect([...reglas].sort()).toEqual([...REGLAS_DE_PLANTILLA].sort())
+    expect([...reglas].sort()).toEqual(
+      REGLAS_DE_PLANTILLA.filter((r) => r !== 'demasiadas_celdas').sort(),
+    )
     const nombres = juego.casos.map((c) => c.nombre)
     expect(new Set(nombres).size).toBe(nombres.length)
     const minimas = juego.casos.filter(
