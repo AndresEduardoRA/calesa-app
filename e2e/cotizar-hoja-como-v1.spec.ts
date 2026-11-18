@@ -10,7 +10,7 @@ import {
 import { crearVehiculoDePrueba, urlDeLaHoja } from './soporte/cotizar-guardada'
 import { limpiarGuardado, prepararGuardado } from './soporte/cotizar-guardar'
 import { crearSubastaCopiada } from './soporte/cotizar-subasta-copiada'
-import { capturar } from './soporte/recorrido'
+import { capturar, sinScrollHorizontal, textoGrandeAlCargar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
 // La hoja de cotizar con la forma de V1 (T312, `docs/UX.md` › «Flujo 2 — Cotizar»): el ⚙ de la cabecera («Configuración por defecto de <Origen>», que publica la N+1
@@ -216,4 +216,34 @@ test('E2E C5: los pasos abren sus paneles, «Hoja» lleva a la primera celda y e
   await page.goto(urlDeLaHoja(origen.id, lead, id))
   await expect(paso('vehiculo')).toHaveAttribute('title', 'Vehículo: elegido')
   await expect(paso('vehiculo')).toHaveAccessibleDescription('elegido')
+})
+
+test('E2E C6: en el celular los pasos miden 44 px y se reparten el ancho; al 200 % pasan a dos filas sin desbordar', async ({
+  page,
+  isMobile,
+}, info) => {
+  test.skip(!isMobile, 'Los 44 px y las dos filas son del celular.')
+  const botones = page.getByRole('navigation', { name: 'Pasos de la hoja' }).getByRole('button')
+  const cajas = async () =>
+    botones.evaluateAll((bs) =>
+      bs.map((b) => {
+        const r = b.getBoundingClientRect()
+        return { alto: r.height, ancho: r.width, arriba: Math.round(r.top) }
+      }),
+    )
+  await abrir(page, ana)
+  await expect(botones).toHaveCount(4)
+  const enUna = await cajas()
+  for (const caja of enUna) expect(caja.alto).toBeGreaterThanOrEqual(44)
+  // Partes iguales: el más ancho y el más angosto no difieren en más de un píxel.
+  const anchos = enUna.map((c) => c.ancho)
+  expect(Math.max(...anchos) - Math.min(...anchos)).toBeLessThanOrEqual(1)
+  await textoGrandeAlCargar(page)
+  await page.reload()
+  await expect(page.locator('[data-hoja]')).toBeVisible()
+  const alDoble = await cajas()
+  expect(new Set(alDoble.map((c) => c.arriba)).size).toBeGreaterThanOrEqual(2)
+  for (const caja of alDoble) expect(caja.alto).toBeGreaterThanOrEqual(44)
+  await sinScrollHorizontal(page)
+  await capturar(page, info, 'pasos-200')
 })
