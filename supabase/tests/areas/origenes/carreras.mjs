@@ -105,3 +105,83 @@ export async function carrerasDelPrincipal({ orquesta, carrera, espero }) {
     )
   }
 }
+
+// Las carreras de los datos clave de un origen. K3: A guarda una lista con el campo «a» sin confirmar y B lo desactiva; B espera el candado
+// del origen y, cuando A confirma, desactiva «a» y lo saca de la lista: los dos ok y ningún campo inactivo queda como dato clave. K4: A
+// desactiva «a» sin confirmar y B guarda una lista con «a»; B espera el candado del origen y, cuando A confirma, ve el campo inactivo y sale
+// PT409 con su motivo. Gana el orden de candados origen → campo; nunca 40P01. Mismo terreno que las del principal.
+const CAMPO_INACTIVO =
+  'Uno de los campos elegidos ya no está activo en este origen. Recarga para ver los de ahora.'
+
+const versionDelOrigen = async (db, origen) =>
+  (await db.query(`select actualizado_en::text as v from public.origenes where id = $1`, [origen]))
+    .rows[0].v
+
+const datosClave = async (db, origen) =>
+  (await db.query(`select datos_clave as d from public.origenes where id = $1`, [origen])).rows[0].d
+
+const guardarDatosClave = (origen, datos, version) => ({
+  persona: duena,
+  sql: `public.origen_datos_clave_guardar($1, $2::jsonb, $3)::text`,
+  args: [origen, JSON.stringify(datos), version],
+})
+
+const desactivar = (campo, version) => ({
+  persona: duena,
+  sql: `public.origen_campo_guardar($1, $2, '{"activo": false}'::jsonb)::text`,
+  args: [campo, version],
+})
+
+export async function carrerasDeDatosClave({ orquesta, carrera, espero }) {
+  const origen = (
+    await orquesta.query(`select id from public.origenes where clave = 'carreras_campos'`)
+  ).rows[0].id
+  const a = (
+    await orquesta.query(
+      `select id from public.origenes_campos where origen_id = $1 and clave = 'carreras_a'`,
+      [origen],
+    )
+  ).rows[0].id
+  const conA = [{ comun: 'anio' }, { campo: 'carreras_a' }]
+
+  console.log('Una persona guarda los datos clave con un campo y otra lo desactiva a la vez')
+  {
+    await orquesta.query(
+      `update public.origenes set datos_clave = '[{"comun": "anio"}]' where id = $1`,
+      [origen],
+    )
+    await orquesta.query(
+      `update public.origenes_campos set activo = true, principal = false where id = $1`,
+      [a],
+    )
+    const r = await carrera(orquesta, {
+      a: guardarDatosClave(origen, conA, await versionDelOrigen(orquesta, origen)),
+      b: desactivar(a, await versionDe(orquesta, a)),
+    })
+    const quedan = await datosClave(orquesta, origen)
+    espero(
+      'K3: B esperó el candado del origen, desactiva «a» y lo saca de la lista; los dos ok; sin 40P01',
+      r.a.ok && r.b.ok && JSON.stringify(quedan) === JSON.stringify([{ comun: 'anio' }]),
+      { r, quedan },
+    )
+  }
+
+  console.log('Una persona desactiva un campo y otra lo guarda como dato clave a la vez')
+  {
+    await orquesta.query(`update public.origenes set datos_clave = '[]' where id = $1`, [origen])
+    await orquesta.query(`update public.origenes_campos set activo = true where id = $1`, [a])
+    const r = await carrera(orquesta, {
+      a: desactivar(a, await versionDe(orquesta, a)),
+      b: guardarDatosClave(origen, conA, await versionDelOrigen(orquesta, origen)),
+    })
+    const quedan = await datosClave(orquesta, origen)
+    espero(
+      'K4: B espera el candado del origen y, al confirmar A, recibe PT409 con el motivo del campo inactivo; la lista queda vacía',
+      r.a.ok &&
+        r.b.codigo === 'PT409' &&
+        r.b.mensaje === CAMPO_INACTIVO &&
+        JSON.stringify(quedan) === '[]',
+      { r, quedan },
+    )
+  }
+}
