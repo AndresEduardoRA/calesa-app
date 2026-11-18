@@ -8,8 +8,10 @@ import { esquemaDiseno, MAXIMO_DE_ITEMS_DEL_DISENO, type Diseno } from './diseno
 import type { Definicion } from './formula'
 import { recorrer, type Medidor } from './medidor'
 import { fallo, type FalloDeDiseno } from './motivos-de-diseno'
-import { estadoVacio, indexar, type ContextoDeDiseno } from './validar-diseno-contexto'
+import { estadoVacio, indexar, type ContextoDeDiseno, type Indice } from './validar-diseno-contexto'
+import { revisarCabecera } from './validar-diseno-cabecera'
 import { revisarAtajos, revisarCobertura, revisarTonos } from './validar-diseno-cobertura'
+import { revisarEnlaces } from './validar-diseno-enlaces'
 import { revisarModos } from './validar-diseno-modos'
 import { revisarSecciones, revisarTarjeta } from './validar-diseno-secciones'
 
@@ -32,16 +34,23 @@ export function validarDiseno(
   const d = leido.data
   const grande = revisarTamano(d, maximoDeItems, m)
   if (grande) return grande
-  const ix = indexar(definicion, contexto, m)
+  return primerRechazo(indexar(definicion, contexto, m), d) ?? { ok: true, diseno: d }
+}
+
+// Las pasadas que cruzan el diseño con la fórmula, en el orden de `validar_diseno()`: §1 los modos, §1b lo que la cabecera trae por defecto,
+// §2–5 las secciones, la tarjeta, los atajos y la cobertura, §6 los tonos y §7 los enlaces de la ayuda.
+function primerRechazo(ix: Indice, d: Diseno): FalloDeDiseno | undefined {
   const e = estadoVacio()
-  const rechazo =
+  return (
     revisarModos(ix, d) ??
+    revisarCabecera(ix, d) ??
     revisarSecciones(ix, d, e) ??
     revisarTarjeta(ix, d) ??
     revisarAtajos(ix, e) ??
     revisarCobertura(ix, e) ??
-    revisarTonos(ix, d)
-  return rechazo ?? { ok: true, diseno: d }
+    revisarTonos(ix, d) ??
+    revisarEnlaces(ix, d)
+  )
 }
 
 // El tamaño va tras la forma y antes que todo lo demás (es sólo contar): `donde` es la sección en la que la suma pasa del tope.

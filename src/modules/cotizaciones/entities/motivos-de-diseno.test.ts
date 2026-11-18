@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { REGLAS_DE_DISENO, rechazoDeDiseno, fallo } from './motivos-de-diseno'
 
 describe('motivos-de-diseno', () => {
-  it('son 30 reglas, sin repetir, con la forma primero', () => {
-    expect(REGLAS_DE_DISENO).toHaveLength(30)
-    expect(new Set(REGLAS_DE_DISENO).size).toBe(30)
+  it('son 36 reglas, sin repetir, con la forma primero', () => {
+    expect(REGLAS_DE_DISENO).toHaveLength(36)
+    expect(new Set(REGLAS_DE_DISENO).size).toBe(36)
     expect(REGLAS_DE_DISENO[0]).toBe('forma')
   })
 
@@ -23,6 +23,18 @@ describe('motivos-de-diseno', () => {
       const { mensaje } = rechazoDeDiseno(regla, { donde: 'a', ref: 'b', nivel: 'c', campo: 'd' })
       expect(mensaje, regla).not.toMatch(/\b(elegí|escribí|mirá|recargá|tenés|usá)\b/i)
     }
+  })
+
+  it('los de la cabecera nombran el modo y los de los enlaces, la celda', () => {
+    const datos = { donde: 'cabecera', ref: 'paralelo' }
+    expect(rechazoDeDiseno('modo_por_defecto_inexistente', datos).mensaje).toBe(
+      'El modo por defecto «paralelo» no es un modo de la cabecera.',
+    )
+    expect(rechazoDeDiseno('modo_visible_repetido', datos).mensaje).toContain('«paralelo»')
+    expect(rechazoDeDiseno('modo_por_defecto_oculto', datos).mensaje).toContain('«paralelo»')
+    expect(rechazoDeDiseno('ayuda_enlace_no_https', { donde: 'remate' }).mensaje).toBe(
+      'Un enlace de la ayuda de «remate» tiene que empezar con https:// y no llevar espacios.',
+    )
   })
 
   it('fallo devuelve un rechazo con ok en falso', () => {

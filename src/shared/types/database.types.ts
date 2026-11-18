@@ -7942,6 +7942,8 @@ export type Database = {
         Returns: boolean
       }
       _diseno_auxiliares: { Args: { p_def: Json }; Returns: Json }
+      _diseno_cabecera: { Args: { p_cab: Json }; Returns: undefined }
+      _diseno_enlaces: { Args: { p_secs: Json }; Returns: undefined }
       _diseno_forma: { Args: { p_diseno: Json }; Returns: undefined }
       _diseno_forma_item: { Args: { p_i: Json }; Returns: boolean }
       _diseno_maximo_de_items: { Args: Record<PropertyKey, never>; Returns: number }

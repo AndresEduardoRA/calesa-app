@@ -58,7 +58,9 @@ const esquemaModo = z.strictObject({
   buckets: z.array(z.strictObject({ bucket: esquemaId, nodo: esquemaId })).min(1),
   total_en: esquemaId,
 })
-// La cabecera (los modos de tipo de cambio) va sola en su fila, encima de la rejilla: no lleva ancho ni alto.
+// La cabecera (los modos de tipo de cambio) va sola en su fila, encima de la rejilla: no lleva ancho ni alto. Lo que trae por defecto
+// (docs/GLOSARIO.md › «Modo por defecto», «Modos visibles») es opcional: sin eso, el primer modo, «Ver total» apagado y todos los modos a la vista.
+// Cómo se cruza con los modos lo dice `validar-diseno-cabecera.ts`.
 const esquemaCabecera = z.strictObject({
   modos: z.array(esquemaModo),
   ver_total_bs: z.boolean(),
@@ -66,12 +68,28 @@ const esquemaCabecera = z.strictObject({
   relleno: z.enum(RELLENOS).optional(),
   letra: z.enum(LETRAS).optional(),
   enfasis: z.enum(ENFASIS).optional(),
+  modo_por_defecto: esquemaId.optional(),
+  ver_total_bs_por_defecto: z.boolean().optional(),
+  modos_visibles: z.array(esquemaId).optional(),
 })
 
-// Una ayuda es la tabla de referencia que se abre o un texto, no las dos.
+// Cuántos enlaces lleva la ayuda de texto de una celda, y el largo de un título y de una URL (en caracteres, como `char_length`).
+export const MAXIMO_DE_ENLACES = 5
+export const MAXIMO_DEL_TITULO_DEL_ENLACE = 60
+export const MAXIMO_DE_LA_URL_DEL_ENLACE = 2000
+// Un enlace de la ayuda: que la URL sea `https://` no es la forma sino la regla `ayuda_enlace_no_https` (`validar-diseno-enlaces.ts`).
+export const esquemaEnlace = z.strictObject({
+  titulo: texto(MAXIMO_DEL_TITULO_DEL_ENLACE),
+  url: z.string().min(1).max(MAXIMO_DE_LA_URL_DEL_ENLACE),
+})
+
+// Una ayuda es la tabla de referencia que se abre o un texto (con hasta 5 enlaces), no las dos.
 const esquemaAyuda = z.union([
   z.strictObject({ tabla: esquemaId }),
-  z.strictObject({ texto: texto(300) }),
+  z.strictObject({
+    texto: texto(300),
+    enlaces: z.array(esquemaEnlace).min(1).max(MAXIMO_DE_ENLACES).optional(),
+  }),
 ])
 
 const esquemaCelda = z.strictObject({
@@ -151,6 +169,8 @@ export type SeccionDeDiseno = Diseno['secciones'][number]
 export type ItemDeDiseno = SeccionDeDiseno['items'][number]
 export type CeldaDeDiseno = Extract<ItemDeDiseno, { tipo: 'celda' }>
 export type CabeceraDeDiseno = Diseno['cabecera']
+export type AyudaDeDiseno = NonNullable<CeldaDeDiseno['ayuda']>
+export type EnlaceDeAyuda = z.infer<typeof esquemaEnlace>
 export type AnchoDeCelda = CeldaDeDiseno['ancho']
 export type Relleno = (typeof RELLENOS)[number]
 export type Separacion = (typeof SEPARACIONES)[number]
