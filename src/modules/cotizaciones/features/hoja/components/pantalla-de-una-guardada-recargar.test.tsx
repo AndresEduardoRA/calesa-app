@@ -45,7 +45,13 @@ const envoltura = ({ children }: { children: ReactNode }) => (
   </NuqsTestingAdapter>
 )
 const pantalla = (inicial: RecalculoInicial) => (
-  <PantallaDeUnaGuardada hoja={lectura()} inicial={inicial} personaId={PERSONA} />
+  <PantallaDeUnaGuardada
+    hoja={lectura()}
+    inicial={inicial}
+    personaId={PERSONA}
+    vehiculoNuevo={null}
+    cambiaVehiculo={false}
+  />
 )
 const guardar = () => screen.getByRole<HTMLButtonElement>('button', { name: 'Guardar' })
 

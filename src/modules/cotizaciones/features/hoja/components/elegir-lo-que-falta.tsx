@@ -11,7 +11,15 @@ const TEXTO_DEL_BOTON: Readonly<Record<LoQueFalta, string>> = {
   titulo: 'Escribir el título',
 }
 
-function BotonDeElegir({ panel, que }: { panel: string; que: LoQueFalta }) {
+function BotonDeElegir({
+  panel,
+  que,
+  texto,
+}: {
+  panel: string
+  que: LoQueFalta
+  texto: string | undefined
+}) {
   const abrir = usePanelPorUrl(panel).abrir
   // El título se escribe en el panel del vehículo: el campo toma el foco al abrirse (no por la URL: el buscador del panel no se lo quita).
   const pedirFoco = useTituloDeLaCotizacion()?.pedirFoco
@@ -30,7 +38,7 @@ function BotonDeElegir({ panel, que }: { panel: string; que: LoQueFalta }) {
         abrir()
       }}
     >
-      {TEXTO_DEL_BOTON[que]}
+      {texto ?? TEXTO_DEL_BOTON[que]}
     </Button>
   )
 }
@@ -47,5 +55,5 @@ export function ElegirLoQueFalta({
   if ('pedido' in eleccion) {
     return <p className="text-(length:--text-sm) text-(--color-ink-soft)">{eleccion.pedido}</p>
   }
-  return <BotonDeElegir panel={eleccion.panel} que={que} />
+  return <BotonDeElegir panel={eleccion.panel} que={que} texto={eleccion.texto} />
 }

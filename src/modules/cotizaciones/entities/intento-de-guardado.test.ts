@@ -104,11 +104,19 @@ describe('el pendiente de una edición (4.15-3, C9)', () => {
     tituloManual: false,
     notas: null,
     vehiculoId: null,
+    cambiaElVehiculo: false,
   })
 
   it('va y vuelve igual, con la versión en texto (con sus microsegundos)', () => {
     const p = edicion('a')
     expect(leerPendienteDeEdicion(serializarPendienteDeEdicion(p))).toEqual(p)
+  })
+
+  it('uno de antes del cambio de vehículo (T315), sin `cambiaElVehiculo`, se lee como que no lo cambia', () => {
+    const { cambiaElVehiculo: _sinLeer, ...viejo } = edicion('a')
+    expect(leerPendienteDeEdicion(JSON.stringify(viejo))).toEqual(edicion('a'))
+    const cambiando = { ...edicion('b'), vehiculoId: 'v', cambiaElVehiculo: true }
+    expect(leerPendienteDeEdicion(serializarPendienteDeEdicion(cambiando))).toEqual(cambiando)
   })
 
   it('el pedido de una nueva no se lee como una edición, ni al revés', () => {

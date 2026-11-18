@@ -110,3 +110,25 @@ describe('el estado del título', () => {
     expect(tituloCambio(TITULO_AUTOMATICO, TITULO_AUTOMATICO)).toBe(false)
   })
 })
+
+describe('el título de una guardada que cambia de vehículo (T315)', () => {
+  it('automático: pasa al título del vehículo nuevo y no es un cambio del título (el cambio es el vehículo)', () => {
+    const guardado = estadoDelTituloGuardado('Toyota Corolla', false)
+    expect(tituloMostrado(guardado, 'Mazda 3')).toBe('Mazda 3')
+    expect(tituloCambio(guardado, guardado)).toBe(false)
+    expect(tituloParaGuardar(guardado)).toEqual({ titulo: null, tituloManual: false })
+  })
+
+  it('manual: se respeta con el vehículo nuevo y viaja tal cual', () => {
+    const guardado = estadoDelTituloGuardado('Para Ana', true)
+    expect(tituloMostrado(guardado, 'Mazda 3')).toBe('Para Ana')
+    expect(tituloParaGuardar(guardado)).toEqual({ titulo: 'Para Ana', tituloManual: true })
+  })
+
+  it('un manual vaciado vuelve al título del vehículo nuevo, y eso sí cambia el título', () => {
+    const guardado = estadoDelTituloGuardado('Para Ana', true)
+    const vaciado = alEscribirElTitulo('')
+    expect(tituloMostrado(vaciado, 'Mazda 3')).toBe('Mazda 3')
+    expect(tituloCambio(vaciado, guardado)).toBe(true)
+  })
+})

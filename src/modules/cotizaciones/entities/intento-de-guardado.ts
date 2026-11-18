@@ -77,6 +77,8 @@ const esquemaDelPendienteDeEdicion = z.object({
   tituloManual: z.boolean().optional(),
   notas: z.string().nullable(),
   vehiculoId: z.string().nullable(),
+  // Uno de antes del cambio de vehículo (T315) no lo traía: entonces la hoja no cambiaba el vehículo.
+  cambiaElVehiculo: z.boolean().optional(),
 })
 
 export const serializarPendienteDeEdicion = (pedido: PedidoDeEdicion): string =>
@@ -91,8 +93,12 @@ export function leerPendienteDeEdicion(texto: string | null): PedidoDeEdicion | 
     if (!leido.success) {
       return null
     }
-    const { tituloManual, ...resto } = leido.data
-    return { ...resto, tituloManual: tituloManual ?? resto.titulo !== null }
+    const { tituloManual, cambiaElVehiculo, ...resto } = leido.data
+    return {
+      ...resto,
+      tituloManual: tituloManual ?? resto.titulo !== null,
+      cambiaElVehiculo: cambiaElVehiculo ?? false,
+    }
   } catch {
     return null
   }
