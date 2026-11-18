@@ -232,13 +232,15 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 
 `formulas`, `tonos`, `cotizaciones_niveles`, `tablas_referencia`, `tablas_referencia_filas`, `plantillas_tarjeta`, `cotizaciones`, `cotizaciones_revisiones`,
 `cotizaciones_comentarios`, `cotizaciones_adjuntos`, `cotizaciones_reportes`, `cotizaciones_favoritos`, `cotizaciones_aprobadas`, `cotizaciones_portadas`, `comprobantes`,
-`comprobantes_contadores`, `comprobantes_ajustes`.
+`comprobantes_contadores`, `comprobantes_ajustes`. `cotizaciones.tarjeta_retoques` (jsonb nulo, con `grant select` de columna: viaja en `cotizacion` por
+`_cotizacion_respuesta()`) guarda los retoques de la tarjeta de cada cotización.
 
 RPC: `formula_guardar_borrador`, `formula_publicar`, `formula_descartar_borrador`, `formula_cambiar_constante` y `formula_revertir` (publican la N+1 desde
 la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las filas, sube la versión y publica la N+1 de cada fórmula que la usa),
 `tono_crear|guardar|eliminar` (los colores), `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
 `validar_plantilla`, `evaluar_formula`, `cotizacion_evaluar`, `cotizacion_hoja`, `cotizacion_tabla`, `cotizacion_tarjeta`, `cotizacion_crear`,
-`cotizacion_guardar` (`p_titulo_manual` al final), `cotizaciones_listado`, `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
+`cotizacion_guardar` (`p_titulo_manual` al final), `cotizacion_retocar_tarjeta` (los retoques de la tarjeta, con la versión; valida con `validar_retoques`
+contra la plantilla publicada de hoy), `cotizaciones_listado`, `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
 `_cotizaciones_ids_por_titulo`), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
 nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
@@ -275,7 +277,7 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   con qué campo, sin las entradas del `match` que nombran un nodo; `_hoja_datos_del_vehiculo()`); lo que un nivel esconde no viaja por ninguna lectura
   (`docs/COTIZADOR.md` › «Niveles de acceso»).
 - **Nadie escribe `cotizaciones` ni `cotizaciones_revisiones` directo** (sin grants ni policies de escritura): una escritura nueva es una RPC
-  `security definer`, nunca un grant. `authenticated` no lee `valores|fuentes|totales|tipos_cambio` ni el `diff`; lo oculto sale por
+  `security definer`, nunca un grant (`cotizacion_crear`, `cotizacion_guardar`, `cotizacion_encima`, `cotizacion_retocar_tarjeta`…). `authenticated` no lee `valores|fuentes|totales|tipos_cambio` ni el `diff`; lo oculto sale por
   `cotizacion_leer|evaluar|revisiones|tabla`, recortado con `_cotizacion_recorte()` y `_nodos_visibles(formula_id)` de SU versión.
 - **Inventario de lo oculto:** una función nueva que pueda devolver esas columnas, `formulas.*` o las tablas de referencia, o un guardado/lectura nuevos del
   diseño, se registra en el inventario de `supabase/tests/cotizaciones-visibilidad.sql` y entra a la matriz por nivel de `cotizacion-hoja.sql`.
