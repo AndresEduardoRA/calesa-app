@@ -92,6 +92,7 @@ tope, índice y presupuesto está en `docs/RENDIMIENTO.md`.
 - Lectura de vehículos con volumen → `supabase/tests/medir-vehiculos-lectura.sql` (`pnpm db:medir:volumen`)
 - El inventario por rutas (`vehiculos_inventario()`: rutas, forma, contra hoy) → `supabase/tests/medir-vehiculos-inventario.sql`, `-forma.sql`, `-guarda.sql`, `-situacion.sql` (`pnpm db:medir:volumen`); su equivalencia con PostgREST → `e2e/vehiculos-inventario-postgrest.spec.ts` (`pnpm test:e2e`)
 - Las listas del panel del vehículo con volumen → `supabase/tests/medir-panel-ultima-cotizacion.sql`, `medir-panel-cierre-subasta.sql`, `medir-historial-del-vehiculo.sql` (`pnpm db:medir:volumen`)
+- «De este vehículo» (`cotizaciones_de_este_vehiculo()`: la primera con la aprobada fijada y la profunda por su índice, los bloques que no crecen con N, una llamada a `_nombre_del_modo()` por versión y modo) con volumen → `supabase/tests/medir-cotizaciones-de-este-vehiculo.sql` (`MEDIR_SOLO=medir-cotizaciones-de-este-vehiculo pnpm db:medir:volumen`)
 - Las oportunidades de un lead por cursor con volumen → `supabase/tests/medir-lead-oportunidades.sql` (`pnpm db:medir:volumen`)
 - El salto a una fecha de las revisiones de una cotización (`cotizacion_revisiones(…, p_hasta)`: el ancla por su índice, la profundidad y el contraste con N) con volumen → `supabase/tests/medir-cotizacion-revisiones-fecha.sql` (`pnpm db:medir:volumen`)
 - `cotizacion_crear()` con volumen → `supabase/tests/medir-cotizacion-crear.sql` (`pnpm db:medir`)
