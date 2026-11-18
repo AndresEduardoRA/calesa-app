@@ -1,6 +1,6 @@
 // La tarjeta «por omisión»: la de un origen sin plantilla que le sirva a la versión, o la de una cotización cuyo recálculo falló (sin estados con qué ocultar
-// filas). Una cuadrícula armada a mano con la misma salida que la conversión: la fecha, el número, el asesor y el logo al costado, el vehículo y «Total» con el
-// total en dólares (y en moneda local debajo, si se pidió). No nombra ningún nodo de la fórmula: el total sale de los totales (`total.nodo` es el suyo).
+// filas). Una cuadrícula armada a mano con la misma salida que la conversión: la fecha con el título de la cotización, el número, el asesor y el logo al costado,
+// el vehículo y «Total» con el total en dólares (y en moneda local debajo, si se pidió). No nombra ningún nodo de la fórmula: el total sale de los totales (`total.nodo` es el suyo).
 import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
 import type { TarjetaLista } from './lectura-de-la-tarjeta'
 
@@ -10,8 +10,8 @@ const FINO = { todos: 'fino' } as const
 const PLANTILLA_POR_OMISION: PlantillaEnCuadricula = {
   forma: 2,
   columnas: [
-    { id: 'concepto', ancho: 300 },
-    { id: 'monto', ancho: 160 },
+    { id: 'concepto', ancho: 120 },
+    { id: 'monto', ancho: 340 },
     { id: 'logo', ancho: 140 },
   ],
   filas: [
@@ -26,8 +26,13 @@ const PLANTILLA_POR_OMISION: PlantillaEnCuadricula = {
       id: 'c_fecha_concepto',
       fila: 'fecha',
       columna: 'concepto',
-      abarca_columnas: 2,
       contenido: { tipo: 'dato', variable: 'fecha_larga' },
+    },
+    {
+      id: 'c_fecha_monto',
+      fila: 'fecha',
+      columna: 'monto',
+      contenido: { tipo: 'dato', variable: 'titulo' },
     },
     { id: 'c_logo', fila: 'fecha', columna: 'logo', abarca_filas: 3, contenido: { tipo: 'logo' } },
     {

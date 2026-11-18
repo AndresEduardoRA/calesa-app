@@ -88,8 +88,8 @@ revoke all on function public._plantilla_conversion_fila(jsonb, jsonb, text, jso
 grant execute on function public._plantilla_conversion_fila(jsonb, jsonb, text, jsonb, text) to service_role;
 
 -- La conversión. Columnas (sólo las que van): grupo (100, si algún grupo tiene miembros), concepto (190), monto (130), leyenda (170), tipo de cambio y plazo
--- (90, con la columna del grupo). Filas: el logo arriba con 2 columnas; el título de la opción (si la variante es del nivel «todos»), la fecha, el número y el
--- asesor, con el logo al costado desde 3 columnas; el vehículo; los rótulos de tipo de cambio y plazo; una fila por miembro de cada grupo (el título del grupo,
+-- (90, con la columna del grupo). Filas: el logo arriba con 2 columnas; el título de la opción (si la variante es del nivel «todos»), la fecha con el título de la
+-- cotización a su lado, el número y el asesor, con el logo al costado desde 3 columnas; el vehículo; los rótulos de tipo de cambio y plazo; una fila por miembro de cada grupo (el título del grupo,
 -- el tipo de cambio y el plazo abarcan las filas del grupo) con su color; el total en dos renglones con su leyenda; lo aparte; la nota.
 create or replace function public._plantilla_convertir(p_plantilla jsonb, p_def jsonb, p_diseno jsonb, p_visibilidad jsonb, p_tonos text[]) returns jsonb
 language plpgsql stable set search_path = '' as $$
@@ -129,7 +129,9 @@ begin
                        public._plantilla_pieza(v_primera, v_fin, null, '{"tipo": "dato", "variable": "titulo_opcion"}', '{"tamano": 18, "negrita": true}', null, null))))
                 else '[]'::jsonb end
         || jsonb_build_array(
-             jsonb_build_array('fecha', jsonb_build_array(public._plantilla_pieza(v_primera, v_fin, null, '{"tipo": "dato", "variable": "fecha_larga"}', null, null, null))),
+             jsonb_build_array('fecha', jsonb_build_array(
+               public._plantilla_pieza(v_primera, null, null, '{"tipo": "dato", "variable": "fecha_larga"}', null, null, null),
+               public._plantilla_pieza(v_segunda, v_fin, null, '{"tipo": "dato", "variable": "titulo"}', null, null, null))),
              jsonb_build_array('numero', jsonb_build_array(
                public._plantilla_pieza(v_primera, null, null, '{"tipo": "texto", "texto": "Cotización n.º"}', null, 'Cotización n.º', null),
                public._plantilla_pieza(v_segunda, v_fin, null, '{"tipo": "dato", "variable": "numero"}', null, null, null))),

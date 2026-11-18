@@ -495,7 +495,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Título de la cotización** — `cotizaciones.titulo` / `titulo_manual`, `tituloDeLaCotizacion()`, `<ProveedorDelTitulo>`, el campo «Título de la cotización» del
   panel del vehículo: el nombre propio de una cotización, hasta 120 caracteres. **Automático** (`titulo_manual = false`): el título del vehículo, que la base rehace
   en cada guardado; **manual**: el que alguien escribió (cambiar de vehículo lo respeta; vaciarlo lo vuelve automático). Sin vehículo es obligatorio. Lo que se
-  muestra si falta: el del vehículo y, sin vehículo, «Cotización n.º N». No es el título del vehículo (`vehiculos.titulo`) ni el de la variante de la tarjeta.
+  muestra si falta: el del vehículo y, sin vehículo, «Cotización n.º N». En la tarjeta de la cotización es la variable `titulo` (sin el de respaldo). No es el
+  título del vehículo (`vehiculos.titulo`) ni el de la opción de la variante (`titulo_opcion`).
 - **Ajustes de cotización** — `AjustesDeCotizacion` (`empresa`): la vigencia, de `ajustes_empresa`; los cambia
   `empresa_guardar_ajustes_de_cotizacion()` con `cotizaciones.configurar` en todos los orígenes y la versión de la fila (Configuración ›
   Cotización › Ajustes).

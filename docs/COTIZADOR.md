@@ -750,7 +750,8 @@ celdas: [{id, fila, columna, abarca_columnas?, abarca_filas?, contenido, estilo?
 filas de 16 a 240 px (hasta 120) con `ocultar_si` `nunca` | `no_aplica` | `no_aplica_o_cero`, referido al `nodo` de la fila (obligatorio salvo con
 `nunca`, y ausente con `nunca`); hasta 1.000 celdas, con combinaciones de 1 a 16 columnas y 1 a 120 filas; ids con la forma de un id y únicos; una
 posición sin celda es una celda vacía sin estilo. **Contenido:** `{tipo: 'texto', texto}` (0 a 300 caracteres, sin `{{`: un texto no mezcla texto y
-variables), `{tipo: 'dato', variable}` (`fecha_larga`, `numero`, `titulo`, `titulo_opcion`, `asesor_nombre`, `asesor_iniciales`, `cliente_nombre`,
+variables), `{tipo: 'dato', variable}` (`fecha_larga`, `numero`, `titulo` —el título de la cotización sin el de respaldo «Cotización n.º N»,
+`tituloAparteDelNumero()`; en la hoja nueva, el que se está escribiendo—, `titulo_opcion`, `asesor_nombre`, `asesor_iniciales`, `cliente_nombre`,
 `vehiculo_titulo`, `vehiculo_lote`, `vehiculo_vin`, `vence_el`, `modo_tc`), `{tipo: 'dato', nodo, mostrar}` (`monto`, `etiqueta`, `descripcion`,
 `porcentaje` —de un nodo de un par: el `porcentaje_de` o su `pct`—, `tc_nombre`, `tc_valor` y `plazo` —del grupo del nodo—), `{tipo: 'logo'}` o
 `{tipo: 'vacio'}`. **Estilo** (todo opcional): `fondo` y `texto` (una clave del catálogo de colores o `auto`, por omisión), `negrita`, `cursiva`,
@@ -788,7 +789,8 @@ DETAIL y el `donde` en HINT; el primer rechazo manda. Con `def` nulo, sólo la f
 **La conversión de la forma 1** (`convertirPlantilla()`, espejo `_plantilla_convertir()` con el juego `casos-de-conversion.json`, que genera TS y
 corre `plantilla-convertir.sql`): pura y determinista, con la misma apariencia de hoy. Columnas (sólo las que van): `grupo` (100 px, si algún grupo
 tiene miembros), `concepto` (190), `monto` (130), `leyenda` (170) y `tipo_cambio` y `plazo` (90, con la columna del grupo). Filas: el logo arriba con 2
-columnas; `titulo` (el título de la opción, si la variante es del nivel «todos»), `fecha`, `numero` («Cotización n.º» y el número) y `asesor`
+columnas; `titulo` (el título de la opción, si la variante es del nivel «todos»), `fecha` (la fecha y, a su lado, el título de la cotización: se corta
+a un renglón, entero en «Copiar texto»), `numero` («Cotización n.º» y el número) y `asesor`
 («Asesor:» y el nombre), con el logo al costado (`c_logo`) desde 3 columnas; `vehiculo`; `cabecera` («Tipo de cambio» y «Plazo», una vez); una fila
 `n_<nodo>` por miembro de cada grupo (en el orden de la plantilla y de la fórmula, con `ocultar_si: no_aplica` y el color del grupo: el de la plantilla
 si sigue en el catálogo, si no el del grupo), con el título del grupo, el tipo de cambio y el plazo abarcando las filas del grupo; `total` (en dos

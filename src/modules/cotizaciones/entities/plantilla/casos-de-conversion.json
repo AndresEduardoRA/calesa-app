@@ -855,10 +855,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 5,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 4,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -1708,10 +1717,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 5,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 4,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -2551,10 +2569,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 6,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 5,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -3341,10 +3368,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 5,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 4,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -4023,10 +4059,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 4,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 3,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -4630,10 +4675,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 4,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 3,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -5237,10 +5291,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 4,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 3,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -5831,10 +5894,18 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 2,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -6287,10 +6358,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 5,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 4,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -6964,10 +7044,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 5,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 4,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -7647,10 +7736,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 5,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 4,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -8324,10 +8422,18 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 2,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -8782,10 +8888,19 @@
             "id": "c_fecha_grupo",
             "fila": "fecha",
             "columna": "grupo",
-            "abarca_columnas": 6,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_concepto",
+            "fila": "fecha",
+            "columna": "concepto",
+            "abarca_columnas": 5,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -9457,10 +9572,18 @@
             "id": "c_fecha_concepto",
             "fila": "fecha",
             "columna": "concepto",
-            "abarca_columnas": 2,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_monto",
+            "fila": "fecha",
+            "columna": "monto",
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {
@@ -9620,10 +9743,19 @@
             "id": "c_fecha_concepto",
             "fila": "fecha",
             "columna": "concepto",
-            "abarca_columnas": 3,
             "contenido": {
               "tipo": "dato",
               "variable": "fecha_larga"
+            }
+          },
+          {
+            "id": "c_fecha_monto",
+            "fila": "fecha",
+            "columna": "monto",
+            "abarca_columnas": 2,
+            "contenido": {
+              "tipo": "dato",
+              "variable": "titulo"
             }
           },
           {

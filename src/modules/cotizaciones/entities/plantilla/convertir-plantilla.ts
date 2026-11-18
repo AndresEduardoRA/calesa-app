@@ -22,8 +22,8 @@ import { idDeLaFila } from './ids-de-la-conversion'
 import { btrim } from './json-de-la-base'
 import { esDeTodos, type ContextoDeNodos } from './nodos-de-plantilla'
 
-// La fila del logo arriba (con 2 columnas), el título de la opción (si la variante es del nivel «todos»), la fecha, el número y el asesor; con 3 columnas o
-// más, el logo va al costado y abarca esas filas.
+// La fila del logo arriba (con 2 columnas), el título de la opción (si la variante es del nivel «todos»), la fecha con el título de la cotización, el número y
+// el asesor; con 3 columnas o más, el logo va al costado y abarca esas filas.
 function encabezado(c: Conversion): void {
   const { a, primera, segunda, ultima, finDelEncabezado: fin } = c
   if (c.plantilla.logo && !c.logoAlCostado)
@@ -43,7 +43,14 @@ function encabezado(c: Conversion): void {
   ]
   const filas: [string, Pieza[]][] = [
     ...(conTitulo ? [titulo] : []),
-    ['fecha', [{ columna: primera, hasta: fin, contenido: variable('fecha_larga') }]],
+    // El título de la cotización al lado de la fecha (como iba en el PDF): cabe siempre, porque el encabezado tiene al menos 2 columnas.
+    [
+      'fecha',
+      [
+        { columna: primera, contenido: variable('fecha_larga') },
+        { columna: segunda, hasta: fin, contenido: variable('titulo') },
+      ],
+    ],
     [
       'numero',
       [
