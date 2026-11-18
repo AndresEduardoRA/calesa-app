@@ -81,3 +81,28 @@ export async function pdfDeUnaGuardada(
     return fallo('inesperado', 'No se pudo armar el PDF.')
   }
 }
+
+// La tarjeta de lo guardado como imagen PNG (`ImageResponse`, al ancho de la tarjeta en px): la misma geometría que el PDF. `next/og` se carga sólo aquí, con
+// `import()`, y nunca llega al navegador. La usa la portada de la cotización; esta área no le da ruta. `sin_permiso` si la tarjeta no se ve; lo demás,
+// `inesperado`.
+export async function imagenDeUnaGuardada(
+  entrada: EntradaDelPdf,
+): Promise<Resultado<{ bytes: Uint8Array<ArrayBuffer>; ancho: number; alto: number }>> {
+  const armada = await geometriaDeUnaGuardada(entrada)
+  if (!armada.ok) {
+    return armada
+  }
+  const { geometria } = armada.data
+  const logo = await logoDelPdf({
+    logo: conLogo(geometria) ? entrada.contexto.logo : null,
+    tope: entrada.topeDelLogo,
+  })
+  try {
+    const { pngDeLaTarjeta } = await import('../../infra/tarjeta/imagen/imagen-de-la-tarjeta')
+    const bytes = await pngDeLaTarjeta({ geometria, logo })
+    return ok({ bytes, ancho: Math.ceil(geometria.ancho), alto: Math.ceil(geometria.alto) })
+  } catch (error) {
+    console.error('[imagen] No se pudo dibujar la tarjeta.', error)
+    return fallo('inesperado', 'No se pudo armar la imagen de la tarjeta.')
+  }
+}

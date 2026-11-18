@@ -5,7 +5,15 @@
 //
 // `pdfDeUnaGuardada({ lectura, contexto, locale, empresa, topeDelLogo })` (4.18-3a): los bytes y el nombre del PDF de una guardada, de lo guardado; lo pide
 // `GET /cotizaciones/[id]/pdf`, que arma el contexto con `contextoDeLaPagina()` (puro).
-export { leerAsesorDeLaCotizacion, pdfDeUnaGuardada, type EntradaDelPdf } from './composicion'
+//
+// `imagenDeUnaGuardada(entrada)`: la misma tarjeta como PNG (`{ bytes, ancho, alto }`), para la portada de la cotización. Sin ruta todavía: quien la sirva suma
+// las fuentes de `infra/tarjeta/pdf/fuentes/` a `outputFileTracingIncludes` de su ruta.
+export {
+  imagenDeUnaGuardada,
+  leerAsesorDeLaCotizacion,
+  pdfDeUnaGuardada,
+  type EntradaDelPdf,
+} from './composicion'
 export {
   contextoDeLaPagina,
   type ContextoDeLaCotizacion,
