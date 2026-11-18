@@ -17,8 +17,7 @@ import {
   seccionesVisibles,
   type SeccionDeConfiguracion,
 } from './secciones'
-import { PESTANAS } from './web/pestanas'
-import { SECCION_DE_WEB, SECCIONES_DE_WEB } from './web/seccion'
+import { SECCION_DE_WEB } from './web/seccion'
 
 const APP = path.join(process.cwd(), 'src/app/(app)')
 
@@ -37,7 +36,7 @@ describe('secciones de configuración', () => {
       'flujos',
       'logistica',
       'repuestos',
-      ...(SECCIONES_DE_WEB.length > 0 ? ['web'] : []),
+      'web',
       'cola-web',
     ])
     expect(porClave('cotizacion')).toBe(SECCION_DE_COTIZACION)
@@ -62,10 +61,9 @@ describe('secciones de configuración', () => {
     expect(porClave('cola-web')?.grupo).toBe('web')
   })
 
-  it('Sitio web figura sólo si alguna pestaña está llena, y su ruta existe igual', () => {
-    expect(SECCIONES_DE_WEB.length > 0).toBe(PESTANAS.some((pestana) => pestana.llena))
-    expect(SECCIONES.some((seccion) => seccion.clave === 'web')).toBe(SECCIONES_DE_WEB.length > 0)
-    expect(existsSync(path.join(APP, SECCION_DE_WEB.ruta, 'page.tsx'))).toBe(true)
+  it('Sitio web viene de su carpeta, con sus sub-rutas y ninguna en la ruta de la sección', () => {
+    expect(porClave('web')).toBe(SECCION_DE_WEB)
+    expect(SECCION_DE_WEB.subsecciones.some((sub) => sub.ruta === SECCION_DE_WEB.ruta)).toBe(false)
   })
 
   it('Empresa viene de su carpeta y se abre con la unión de los permisos de sus sub-secciones', () => {

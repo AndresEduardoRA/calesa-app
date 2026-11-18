@@ -84,7 +84,10 @@ describe('guardarLegales: permisos antes de escribir', () => {
     }
     expect(pedido.actualizadoEnEsperado).toBe(VERSION)
     expect(Object.keys(pedido.cambios)).toEqual(['terminos'])
-    expect(h.cache.revalidatePath).toHaveBeenCalledTimes(1)
+    // Legales y Ajustes comparten la fila y su versión: las dos páginas se renuevan.
+    expect(h.cache.revalidatePath).toHaveBeenCalledWith('/configuracion/web/legales')
+    expect(h.cache.revalidatePath).toHaveBeenCalledWith('/configuracion/web/ajustes')
+    expect(h.cache.revalidatePath).toHaveBeenCalledTimes(2)
   })
 })
 

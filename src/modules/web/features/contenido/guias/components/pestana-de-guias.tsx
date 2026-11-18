@@ -19,7 +19,7 @@ export type PropsDeLaPestanaDeGuias = {
   categorias: ListaDeCategorias
 }
 
-// Configuración › Sitio web › Guías: la lista con su búsqueda por título y «Nueva guía». Escribir se hace en la página de cada guía.
+// Configuración › Sitio web › Guías: la lista con su búsqueda por título, «Categorías» y «Nueva guía» (el título y la frase los pone la página). Escribir se hace en la página de cada guía.
 export function PestanaDeGuias({
   filas,
   hayMas,
@@ -28,18 +28,10 @@ export function PestanaDeGuias({
   categorias,
 }: PropsDeLaPestanaDeGuias) {
   return (
-    <section aria-labelledby="titulo-de-guias" className="grid gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2
-          id="titulo-de-guias"
-          className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-        >
-          Guías
-        </h2>
-        <div className="flex flex-wrap items-center gap-2">
-          <DrawerDeCategorias lista={categorias} />
-          <DrawerNuevaGuia />
-        </div>
+    <section aria-label="Guías" className="grid gap-4">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <DrawerDeCategorias lista={categorias} />
+        <DrawerNuevaGuia />
       </div>
       <BuscadorDeGuias />
       {filas.length === 0 ? (

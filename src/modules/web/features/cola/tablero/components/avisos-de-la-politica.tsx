@@ -26,7 +26,7 @@ export function AvisosDeLaPolitica({ politica, puedeEditarElSitio }: Props) {
           Falta el WhatsApp de respaldo: quien no reciba un asesor no tendrá a quién escribir.{' '}
           {puedeEditarElSitio ? (
             <Link
-              href={RUTAS.configuracionDeWeb as Route}
+              href={RUTAS.ajustesDelSitio as Route}
               className="inline-flex min-h-11 items-center underline md:min-h-0"
             >
               Cargarlo en Sitio web
