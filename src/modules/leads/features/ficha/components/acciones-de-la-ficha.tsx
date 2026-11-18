@@ -3,7 +3,7 @@
 import type { Route } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { RUTAS } from '@/shared/lib/rutas'
+import { RUTAS, conVuelta } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { CLAVE_DE_SECCION, type LeadDeFicha } from '../../../entities/ficha'
 import { motivoParaNoEnviar } from '../../../entities/papelera'
@@ -92,7 +92,10 @@ export function AccionesDeLaFicha(props: Props) {
   return (
     <>
       {puedeEditar ? <BotonEditarLead /> : null}
-      {paraCotizar ? <EnlaceACotizar ruta={paraCotizar} /> : null}
+      {paraCotizar ? (
+        // Vuelve a la ficha, como «Cotizar lead» del «⋯».
+        <EnlaceACotizar ruta={conVuelta(paraCotizar, `${RUTAS.leads}/${ficha.id}`)} />
+      ) : null}
       <MenuDeLeadConMarcas
         leadId={ficha.id}
         nombre={ficha.nombre}
