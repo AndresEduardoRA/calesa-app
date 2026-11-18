@@ -391,11 +391,16 @@ inferior), que no se dibuja hasta abrirse: la carga sólo paga el botón. En el 
 - Tablero: 6 columnas × 50, «500+» por columna, `oportunidades_tablero_idx`; la policy de `oportunidades` pregunta por fila
   `_lead_vivo_en_mi_cartera(lead_id)`. Presupuestos: tablero 800 ms, «Ver más» 500 ms, buscar 700 / 200 ms; primera página de una columna,
   «Ver más» y total acotado ≤ 25 ms (la guarda asserta `oportunidades_tablero_idx`, sin recorrer `oportunidades`, ≤ 200 descartes).
+- Embudo filtrado por lead (`?lead=`): `embudo_tablero_del_lead` y `embudo_etapa_pagina_del_lead`, los mismos topes (50 por columna, «500+»), cada
+  columna por `oportunidades_lead_etapa_idx` (lead, persona, etapa, actividad). `supabase/tests/medir-lead-oportunidades.sql` asserta el índice, sin
+  `Sort` ni `Seq Scan` y ≤ 1 descarte, con 1.000 en una columna sobre 20.000 de fondo; el tablero y su «Ver más» ≤ 50 ms (medido: 12 y 4,3 ms).
+- La guarda de «una abierta por lead y embudo» es un `select … limit 1` por `oportunidades_lead_abiertas_idx` tras un candado por (lead, embudo);
+  `abiertas_por_embudo` (sólo en la primera página de `lead_oportunidades`) es una sonda `limit 1` por embudo, 10 como mucho, por el mismo índice.
 - Nodos con una columna en el tope (500 tarjetas): ≤ 10.250 en escritorio y 6.000 en el celular (`leads-escala.spec.ts`); el «⋯» de cada
   tarjeta cuesta exactamente 3 nodos (`<use>` a un símbolo de `src/shared/ui/lista/simbolos-de-lista.tsx`; `e2e/mas-acciones-icono.spec.ts`).
   El servidor dibuja una sola distribución según el ancho de la petición.
 - Oportunidades de la ficha: 10 en el servidor y «Ver más» de a `TAMANO_DE_VER_MAS` desde el navegador hasta `TOPE_DE_LO_CARGADO`, con
-  aviso y «Buscarlas en tu embudo». Documento de la ficha ≤ 66 KB sobre `/perfil` con la sección abierta, igual con 10 o con 1.000; cada
+  aviso y «Verlas en tu embudo» (el embudo filtrado por el lead). Documento de la ficha ≤ 66 KB sobre `/perfil` con la sección abierta, igual con 10 o con 1.000; cada
   «Ver más» pesa lo mismo a cualquier profundidad; nodos lineales hasta 500 (`e2e/leads-oportunidades-ver-todas.spec.ts`).
 
 ## Vistos

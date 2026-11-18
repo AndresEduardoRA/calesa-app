@@ -14,6 +14,11 @@
 --   - Assert 2, sobre la llamada real y por relación (`pg_stat_get_xact_blocks_fetched`, el promedio de las 5 calientes): en cada página sólo los parciales que esa ruta debe leer tienen bloques, y
 --     `oportunidades_lead_id_idx`, `oportunidades_tablero_idx` y los demás índices tienen cero; lo leído de `oportunidades` y de sus índices en la última página es a lo sumo 1,2 × lo de la página 1 + 20;
 --   - Assert 3, ≤ 15 ms por llamada; Assert 4, los bytes de la página 1 con 1.000 en el lead ≤ 1,05 × los de la página 1 con 21.
+--   - Assert 5, el embudo filtrado por lead (`embudo_tablero_del_lead`, `embudo_etapa_pagina_del_lead`): la columna de L con sus 1.000 de Ana, su conteo con
+--     tope y «Ver más» con y sin cursor, de a `:tam_columna` (TAMANO_DE_COLUMNA) y hasta `:tope_cargado` (TOPE_DE_LO_CARGADO): `Index Scan` por
+--     `oportunidades_lead_etapa_idx`, sin `Sort`, sin `Seq Scan` de `oportunidades` y con `Rows Removed by Filter` ≤ 1; la llamada real, ≤ 50 ms.
+--   - Assert 6, la guarda de «una abierta por embudo» en un embudo de Ana sin abiertas de L (recorre las 500 abiertas de L), ≤ 15 ms. Ana tiene dos
+--     embudos: la página 1 (Asserts 2 y 3) paga también la sonda de `abiertas_por_embudo` del que no tiene ninguna.
 -- La guarda: con los dos parciales quitados el Assert 1 o el 2 cae («guarda: cae»); si no cayera, «la guarda no muerde».
 \set ON_ERROR_STOP 1
 \set carga `cat /proc/loadavg`
@@ -23,7 +28,8 @@
 \endif
 vacuum public.oportunidades;
 begin;
-select set_config('medir.carga', :'carga', true), set_config('medir.n', :ver_mas::text, true), set_config('medir.fondo', :fondo_leads::text, true) \g /dev/null
+select set_config('medir.carga', :'carga', true), set_config('medir.n', :ver_mas::text, true), set_config('medir.fondo', :fondo_leads::text, true),
+       set_config('medir.columna', :tam_columna::text, true), set_config('medir.tope', :tope_cargado::text, true) \g /dev/null
 
 do $$ begin
   if not exists (select 1 from public.perfiles where id = '00000000-0000-0000-0000-0000000000d1') or not exists (select 1 from public.perfiles where id = '00000000-0000-0000-0000-0000000000a1') then
@@ -227,6 +233,13 @@ begin
 end $$;
 grant execute on function pg_temp.fallas(text) to authenticated;
 
+-- Un segundo embudo de Ana, sin oportunidades de L: en la página 1, la sonda de `abiertas_por_embudo` para él recorre las 500 abiertas de L
+-- (duplicadas de antes de «una abierta por embudo», el peor caso) y la guarda, igual (Assert 6).
+select pg_temp.como('ana') \g /dev/null
+set local role authenticated;
+select public.embudo_crear(gen_random_uuid(), 'Medir otro embudo') \g /dev/null
+reset role;
+
 -- ---------------------------------------------------------------------------------------------------------------------------------
 -- Medir y asertar
 -- ---------------------------------------------------------------------------------------------------------------------------------
@@ -246,6 +259,77 @@ begin
     raise notice 'nota|Plan de la ruta %: % (descartadas %)|', r.ruta, r.indices, r.descartadas;
   end loop;
   if v_fallas <> '' then raise exception 'Las oportunidades de un lead rompen su presupuesto:%', v_fallas; end if;
+end $$;
+
+-- Assert 5: el embudo filtrado por lead. Cada consulta con el mismo texto que la función (sin el JSON de la tarjeta), como sentencia preparada y con la RLS
+-- de Ana: la columna inicial de su embudo por defecto tiene las 1.000 de L.
+create function pg_temp.planes_del_lead() returns text language plpgsql as $$
+declare
+  v_l uuid := (select id from _l where clave = 'L'); v_col int := current_setting('medir.columna')::int; v_tope int := current_setting('medir.tope')::int;
+  v_emb uuid; v_etapa uuid; v_c record; v_plan jsonb; v_texto text; v_ruta text; v_f text := ''; v_ms numeric; v_r jsonb; i int;
+begin
+  perform pg_temp.como('ana');
+  select e.id, s.id into v_emb, v_etapa from public.embudos e join public.embudos_etapas s on s.embudo_id = e.id and s.es_inicial
+   where e.usuario_id = (select id from _p where clave = 'ana') and e.es_default;
+  -- El cursor de la segunda página: la última de la primera.
+  select p.en, p.id into v_c from (select o.ultima_actividad_en as en, o.id from public.oportunidades o where o.lead_id = v_l and o.etapa_id = v_etapa
+                                    order by o.ultima_actividad_en desc, o.id desc limit v_col) p order by p.en, p.id limit 1;
+  deallocate all;
+  prepare t_col(uuid, uuid, int) as select o from public.oportunidades o join public.leads l on l.id = o.lead_id left join public.vehiculos v on v.id = o.vehiculo_id
+    where o.lead_id = $1 and o.etapa_id = $2 order by o.ultima_actividad_en desc, o.id desc limit $3;
+  prepare t_cnt(uuid, uuid, int) as select count(*)::int from (select 1 from public.oportunidades o2 where o2.lead_id = $1 and o2.etapa_id = $2 limit $3) q;
+  prepare t_pag(uuid, uuid, timestamptz, uuid, int) as select o from public.oportunidades o join public.leads l on l.id = o.lead_id left join public.vehiculos v on v.id = o.vehiculo_id
+    where o.lead_id = $1 and o.etapa_id = $2 and (o.ultima_actividad_en, o.id) < ($3, $4) order by o.ultima_actividad_en desc, o.id desc limit $5;
+  foreach v_ruta in array array['t_col', 't_cnt', 't_pag'] loop
+    for i in 1 .. 3 loop
+      v_texto := case v_ruta when 't_col' then format('execute t_col(%L, %L, %s)', v_l, v_etapa, v_col + 1)
+                             when 't_cnt' then format('execute t_cnt(%L, %L, %s)', v_l, v_etapa, v_tope + 1)
+                             else format('execute t_pag(%L, %L, %L, %L, %s)', v_l, v_etapa, v_c.en, v_c.id, v_col + 1) end;
+      execute 'explain (analyze, format json) ' || v_texto into v_plan;
+    end loop;
+    if v_plan::text !~ '"Index Name": "oportunidades_lead_etapa_idx"' then
+      v_f := v_f || format(E'\n  %s no camina oportunidades_lead_etapa_idx: %s', v_ruta,
+        coalesce((select jsonb_agg(distinct m[1]) from regexp_matches(v_plan::text, '"Index Name": "([^"]+)"', 'g') m), '[]'::jsonb)); end if;
+    if v_plan::text ~ '"Node Type": "(Incremental )?Sort"' then v_f := v_f || format(E'\n  %s ordena (Sort)', v_ruta); end if;
+    if v_plan::text ~ '"Node Type": "Seq Scan"[^{}]*?"Relation Name": "oportunidades"' then v_f := v_f || format(E'\n  %s recorre oportunidades entera', v_ruta); end if;
+    if coalesce((select sum(m[1]::numeric) from regexp_matches(v_plan::text, '"Rows Removed by Filter": (\d+)', 'g') m), 0) > 1 then
+      v_f := v_f || format(E'\n  %s descarta filas', v_ruta); end if;
+    raise notice 'nota|Embudo de un lead · plan de %: % (descartadas %)|', v_ruta,
+      coalesce((select jsonb_agg(distinct m[1]) from regexp_matches(v_plan::text, '"Index Name": "([^"]+)"', 'g') m), '[]'::jsonb),
+      coalesce((select sum(m[1]::numeric) from regexp_matches(v_plan::text, '"Rows Removed by Filter": (\d+)', 'g') m), 0);
+  end loop;
+  -- La llamada real: la columna llena (50 y «500+») y su «Ver más».
+  v_r := pg_temp.una(format('select public.embudo_tablero_del_lead(%L, %L, %s, %s)', v_emb, v_l, v_col, v_tope));
+  if not exists (select 1 from jsonb_array_elements(v_r -> 'columnas') c
+                  where c -> 'etapa' ->> 'id' = v_etapa::text and jsonb_array_length(c -> 'tarjetas') = v_col and (c ->> 'total')::int = v_tope
+                    and (c ->> 'total_hay_mas')::boolean and (c ->> 'hay_mas')::boolean) then
+    v_f := v_f || E'\n  la columna inicial de L no trae sus tarjetas, su tope y «500+»'; end if;
+  v_ms := (pg_temp.medir(format('select public.embudo_tablero_del_lead(%L, %L, %s, %s)', v_emb, v_l, v_col, v_tope)) ->> 'ms')::numeric;
+  raise notice 'medicion|Embudo de un lead · tablero con 1.000 en una columna (ms)|%', round(v_ms, 2);
+  if v_ms > 50 then v_f := v_f || format(E'\n  el tablero de un lead: %s ms, el tope es 50', round(v_ms, 1)); end if;
+  v_ms := (pg_temp.medir(format('select public.embudo_etapa_pagina_del_lead(%L, %L, %L, %L, %s)', v_etapa, v_l, v_c.en, v_c.id, v_col)) ->> 'ms')::numeric;
+  raise notice 'medicion|Embudo de un lead · «Ver más» de una columna (ms)|%', round(v_ms, 2);
+  if v_ms > 50 then v_f := v_f || format(E'\n  «Ver más» de un lead: %s ms, el tope es 50', round(v_ms, 1)); end if;
+  return v_f;
+end $$;
+grant execute on function pg_temp.planes_del_lead() to authenticated;
+set local role authenticated;
+select set_config('medir.del_lead', pg_temp.planes_del_lead(), true) \g /dev/null
+reset role;
+do $$ begin
+  if current_setting('medir.del_lead') <> '' then raise exception 'El embudo filtrado por lead rompe su presupuesto:%', current_setting('medir.del_lead'); end if;
+end $$;
+
+-- Assert 6: la guarda de «una abierta por embudo» en el peor caso: el segundo embudo de Ana no tiene abiertas de L, así que recorre las 500 de L
+-- por oportunidades_lead_abiertas_idx antes de no encontrar ninguna; ≤ 15 ms.
+do $$
+declare v_ms numeric;
+begin
+  v_ms := (pg_temp.medir(format('select public._oportunidad_abierta_unica(%L, %L, %L, null)', (select id from _l where clave = 'L'),
+    (select e.id from public.embudos e where e.usuario_id = (select id from _p where clave = 'ana') and e.nombre = 'Medir otro embudo'),
+    (select id from _p where clave = 'ana'))) ->> 'ms')::numeric;
+  raise notice 'medicion|Guarda de una abierta por embudo · peor caso, 500 abiertas del lead en otro embudo (ms)|%', round(v_ms, 2);
+  if v_ms > 15 then raise exception 'La guarda de una abierta por embudo: % ms, el tope es 15', round(v_ms, 1); end if;
 end $$;
 
 -- La guarda: sin los dos parciales, el Assert 1 o el 2 tienen que caer.

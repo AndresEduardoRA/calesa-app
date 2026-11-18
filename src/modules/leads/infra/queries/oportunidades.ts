@@ -5,6 +5,7 @@ import {
   OPORTUNIDADES_VISIBLES_DEL_LEAD,
   oportunidadesDelLeadDesde,
 } from '../../entities/oportunidad'
+import { abiertasPorEmbudoDesde } from '../../entities/oportunidad-unica'
 import type { LectorDeOportunidadesDelLead } from '../../entities/repositorios-de-oportunidades'
 
 // Las de quien mira sobre un lead: una RPC de invocador (la RLS da sólo las propias, y sólo mientras
@@ -20,5 +21,8 @@ export const getOportunidadesDelLead: LectorDeOportunidadesDelLead = async (lead
     return { ok: false, error: errorDePostgrest(error) }
   }
   const leidas = oportunidadesDelLeadDesde(data)
-  return leidas ? ok(leidas) : fallo('inesperado', 'No pudimos leer las oportunidades.')
+  // La primera página trae también dónde ya hay una abierta (`abiertas_por_embudo`): el panel de crear apaga esos embudos.
+  return leidas
+    ? ok({ ...leidas, abiertasPorEmbudo: abiertasPorEmbudoDesde(data) })
+    : fallo('inesperado', 'No pudimos leer las oportunidades.')
 }
