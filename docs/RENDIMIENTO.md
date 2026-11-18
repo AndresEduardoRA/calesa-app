@@ -546,7 +546,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Bloque «Repuestos» de la ficha del vehículo: `proyectoDe` es `limit 1` por `repuestos_proyecto_por_vehiculo` y el recuento por fase lee
   ≤ 201 ítems; tras su `<Suspense>`; Server Components.
 - Catálogos de Configuración: 4 × `limit 201` por PostgREST (decenas de filas); tope 200 con `<AvisoDeTope>`.
-- Configuración del cotizador (`/configuracion/repuestos`, «Cotizador»): tres lecturas en paralelo bajo `repuestos.cotizar` o
+- Configuración del cotizador (`/configuracion/repuestos/cotizador`): tres lecturas en paralelo bajo `repuestos.cotizar` o
   `repuestos.configurar`: la configuración por su PK (`order by id desc`, la primera es la vigente) tope 20 + 1, los tramos por
   `repuestos_tramos_logistica_moneda_idx` y las cajas por `repuestos_cajas_moneda_monto_key`, tope 200 + 1 cada una, con `<AvisoDeTope>`.
   Los modales se piden al abrirse (`diferido()`).
