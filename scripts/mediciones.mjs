@@ -182,6 +182,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'mediana de 5 de 7 corridas',
   ],
   [
+    'supabase/tests/medir-cotizaciones-de-este-vehiculo.sql',
+    '«De este vehículo» (cotizaciones_de_este_vehiculo) de un vehículo con 5.000 cotizaciones entre 50.000 y 250.000, como authenticated y con el plan genérico: la primera página con la aprobada fijada y una profunda por cursor, de la dueña (por cotizaciones_vehiculo_creado_idx y cotizaciones_aprobadas_pkey, ms y buffers del EXPLAIN) y de Ana; las llamadas a _nombre_del_modo por página',
+    'mediana de 5 de 7 corridas',
+  ],
+  [
     'supabase/tests/medir-cotizaciones-aprobadas.sql',
     'La cotización aprobada con 50.000 cotizaciones, como authenticated y con el plan genérico: la lectura de 100 ids por vehículo (clave primaria) y por cotización (único) de la dueña y de Ana, sin recorrer la tabla (ms y buffers del EXPLAIN); y la reposición al confirmar sobre un vehículo con 100 y otro con 1.000 cotizaciones (los bloques de cotizaciones no crecen)',
     'mediana de 5 de 7 corridas',

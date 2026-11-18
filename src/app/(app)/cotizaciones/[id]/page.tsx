@@ -80,11 +80,12 @@ async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>[
     vehiculoDe(vehiculoId),
     asesorDe(id),
   ])
-  // Lo que reciben los huecos de las áreas (acciones de la cabecera y lo de bajo la hoja).
+  // Lo que reciben los huecos de las áreas (acciones de la cabecera, la línea de bajo la cabecera y lo de bajo la hoja); el vehículo, sólo si quien mira lo ve.
   const props = {
     cotizacion: hoja.cotizacion,
     puedeGuardar: hoja.puedeGuardar,
     permisos: sesion.permisos,
+    vehiculo: vehiculo === null ? null : { id: vehiculo.id, titulo: vehiculo.titulo },
   }
   return (
     <>
@@ -105,6 +106,7 @@ async function Cotizacion({ params }: { params: PageProps<'/cotizaciones/[id]'>[
         acciones={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Acciones', props)}
         insignias={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Insignias', props)}
       />
+      {dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'BajoLaCabecera', props)}
       <ConProveedorDeLaHoja
         origenId={hoja.cotizacion.origenId}
         cotizacionId={hoja.cotizacion.id}

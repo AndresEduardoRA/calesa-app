@@ -27,9 +27,9 @@ const IGNORADOS = new Set([
   '.temp',
   '.branches',
   'test-salidas',
-  // La copia de referencia del cotizador anterior (docs/referencias, ignorada por git): docs y código de otra app.
-  'cotizador-actual',
 ])
+// La copia de V1 que el orquestador enlaza en cada worktree: ignorada por git, es referencia y no doc de este árbol.
+const RUTAS_IGNORADAS = new Set([path.join('docs', 'referencias', 'cotizador-actual')])
 const EXTENSIONES = new Set([
   '.md',
   '.ts',
@@ -105,6 +105,7 @@ function archivosDe(raiz, base) {
   for (const nombre of readdirSync(ruta)) {
     if (IGNORADOS.has(nombre)) continue
     const relativa = path.join(raiz, nombre)
+    if (RUTAS_IGNORADAS.has(relativa)) continue
     const completa = path.join(base, relativa)
     if (statSync(completa).isDirectory()) salida.push(...archivosDe(relativa, base))
     else if (EXTENSIONES.has(path.extname(nombre))) salida.push(relativa)

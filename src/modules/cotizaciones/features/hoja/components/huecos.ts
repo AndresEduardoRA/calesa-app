@@ -62,19 +62,22 @@ export type HuecosDeLaHoja = {
   EnlaceSinPublicar?: ComponentType<{ origenId: string }>
 }
 
-// Lo que recibe un componente que un área llena en la guardada (`/cotizaciones/[id]`): la cotización, si quien mira la puede guardar (lo dice la base) y sus permisos, para
-// que el área decida qué dibuja. Cruza al navegador como props: sólo datos planos.
+// Lo que recibe un componente que un área llena en la guardada (`/cotizaciones/[id]`): la cotización, si quien mira la puede guardar (lo dice la base), sus permisos y
+// el vehículo si quien mira lo ve (nulo si no tiene o no lo ve: la página ya lo leyó), para que el área decida qué dibuja. Cruza al navegador como props: sólo datos planos.
 export type PropsDeUnHuecoDeLaGuardada = {
   cotizacion: CotizacionDeLaHoja
   puedeGuardar: boolean
   permisos: Permisos
+  vehiculo: { id: string; titulo: string } | null
 }
 
 // Los huecos de una cotización guardada (4.15-6b): `Acciones` va en la cabecera, después de «Revisiones»; `Debajo`, bajo la hoja; `Insignias` (4.27-4), en la cabecera
-// después de la clase y de la vigencia. Los llenan `final`, `comprobantes`, `comentarios` y `papelera`; la página de `src/app` los ordena (`[id]/huecos-de-la-guardada.tsx`).
+// después de la clase y de la vigencia; `BajoLaCabecera`, entre la cabecera y la hoja (la línea de «De este vehículo»). Los llenan `final`, `aprobada`, `comprobantes`,
+// `comentarios` y `papelera`; la página de `src/app` los ordena (`[id]/huecos-de-la-guardada.tsx`).
 export type HuecosDeLaGuardada = {
   Acciones?: ComponentType<PropsDeUnHuecoDeLaGuardada>
   Insignias?: ComponentType<PropsDeUnHuecoDeLaGuardada>
+  BajoLaCabecera?: ComponentType<PropsDeUnHuecoDeLaGuardada>
   Debajo?: ComponentType<PropsDeUnHuecoDeLaGuardada>
 }
 

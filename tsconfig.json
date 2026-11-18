@@ -48,6 +48,6 @@
     "supabase/functions",
     ".claude/worktrees",
     ".orquestador",
-    "docs/referencias"
+    "docs/referencias/cotizador-actual"
   ]
 }

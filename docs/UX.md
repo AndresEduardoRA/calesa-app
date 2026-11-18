@@ -237,7 +237,18 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   - **Cotizaciones del lead y del vehículo** (pestaña o bloque): las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
     Cotizaciones» (`/cotizaciones?lead=` o `?vehiculo=`); se lee al abrirla (en las fichas del lead y del vehículo es un bloque y se lee al acercarse); esqueleto, error con «Reintentar», «Sin cotizaciones que
     puedas ver.». Cada fila lleva la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura).
-- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila, «Abrir cotización» y debajo las
+  - **De este vehículo** (bloque de la guardada y del resumen de `/cotizaciones`): las cotizaciones del mismo vehículo que quien mira ve, **la aprobada
+    primero** (insignia «Aprobada» y borde de acento) y después de la más nueva; de a 10 con «Ver más» y, en 100, «Mostrando las 100 más recientes.» con
+    «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`). Cada fila: «N.º N · título» (el suyo, si no el del vehículo, si no «Cotización #N»), insignias
+    «Aprobada», «Final», «Vencida» y «Esta» (la que se mira), el total (`<Monto>`) con el nombre del modo de tipo de cambio, autor y fecha; **«Aprobar esta»**
+    a la vista en todas menos la aprobada (con `cotizaciones.aprobar` del origen de esa cotización; apagado con su motivo: «Para aprobar hace falta permiso en
+    «<origen>»: pídeselo a quien administra los roles.» o «Una cotización inválida no se aprueba.»; la vencida se aprueba) y «Abrir» en todas menos «Esta».
+    Aprobar es lo de la cabecera (aviso con «Deshacer» 10 s, PT409 con quién y cuándo y «Recargar», «Sin conexión: no se aprobó…») y el bloque relee su primera
+    página. Sin otras que quien mira vea, sin vehículo o con uno que no ve, no se dibuja. Esqueleto de tres filas; error «No pudimos cargar las cotizaciones de
+    este vehículo.» con «Reintentar» (sin tumbar la página ni el resumen); el de «Ver más», «No se pudieron cargar más.». Angosto o al 200 %, cada fila en una
+    columna y los botones a todo el ancho. Las casillas de comparar llegan con «Comparar».
+- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (lo de la fila, «Abrir cotización», «De este vehículo» —ver
+  «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado— y debajo las
   **pestañas** `?pestana=`: «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
   para guardarla, «Adjuntar»—, «Adjuntos» —los archivos y, en una final o con alguno, sus comprobantes de sólo lectura—, «Revisiones» y «Comentarios»; cada una se lee al elegirla, por
   cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
@@ -261,7 +272,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   PT409 con quién y cuándo y «Recargar»), «Revisiones», la cadena, «Cotizar encima» si no está al día, «Marcar final» (en una
   preventa, con `cotizaciones.final.gestionar` del origen; `?panel=marcar-final`), «Emitir comprobante» (en una final activa sin
   comprobante vigente, con `cotizaciones.comprobantes.emitir`; `?panel=emitir-comprobante`, el aviso nombra el número «S-N») y «Enviar a la
-  papelera» (quien puede guardarla o, en una preventa, quien tiene `cotizaciones.moderar`; vuelve al listado con «Deshacer»). Bajo la hoja,
+  papelera» (quien puede guardarla o, en una preventa, quien tiene `cotizaciones.moderar`; vuelve al listado con «Deshacer»). Bajo la cabecera, si
+  el vehículo tiene otras que quien mira ve, «Hay 2 cotizaciones más de este vehículo · Ver» («Hay 1 cotización más…», «Hay más de 100…»): «Ver» salta al
+  bloque (`#de-este-vehiculo`) con el foco en su título. Bajo la hoja, «De este vehículo» (se lee al acercarse; aprobar ahí pone al día la cabecera
+  sin refrescar la hoja; ver «Cotizaciones del lead y del vehículo») y después
   «Comprobantes» (en una final o en una que ya tiene alguno): del más nuevo, «Vigente» o «Anulado» con quién, cuándo y motivo, hasta 20
   con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Estados en Flujo 2.
 - **Logística** — `/logistica` (`logistica.ver` en algún origen): la **bandeja del día** y la **cadena como gráfica**; en la URL: `?origen=` (orígenes con la logística encendida), `q` («dónde está»:
