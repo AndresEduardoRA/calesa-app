@@ -53,6 +53,16 @@ export function formatearFechaHora(
   return formatear(iso, 'd MMM yyyy, HH:mm', zona)
 }
 
+// «jueves 19 de noviembre»: el día con su nombre y el mes entero, sin año (un texto que se le manda a alguien, como «Se subasta el …»).
+export function formatearDiaLargo(iso: string, { zona = ZONA_POR_DEFECTO }: Opciones = {}): string {
+  return formatear(iso, "EEEE d 'de' MMMM", zona)
+}
+
+// La ciudad de una zona IANA, para nombrarla en un texto: «America/La_Paz» → «La Paz», «America/Argentina/Buenos_Aires» → «Buenos Aires».
+export function ciudadDeLaZona(zona: string): string {
+  return (zona.split('/').at(-1) ?? zona).replaceAll('_', ' ')
+}
+
 // «14:30»
 export function formatearHora(iso: string, { zona = ZONA_POR_DEFECTO }: Opciones = {}): string {
   return formatear(iso, 'HH:mm', zona)
