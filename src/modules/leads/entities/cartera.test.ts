@@ -9,7 +9,10 @@ import {
   filtrarCandidatos,
   respuestaDeCarteraDesde,
   sePuedeQuitarA,
+  resumenDeLaCartera,
+  textoDeLaCartera,
   textoDeTransferencia,
+  TOPE_DE_COMPARTIDOS_NOMBRADOS,
   type PersonaDeCartera,
 } from './cartera'
 
@@ -217,5 +220,53 @@ describe('avisoDeVehiculos', () => {
     expect(avisoDeVehiculos(3)).toBe(
       'Tiene 3 vehículos vinculados: quien lo reciba podrá verlos y, si su rol lo permite, editarlos.',
     )
+  })
+})
+
+describe('textoDeLaCartera', () => {
+  const ana = persona({ usuarioId: A, nombre: 'Ana', tipoAcceso: 'dueno' })
+  const luis = persona({ usuarioId: B, nombre: 'Luis' })
+  const pia = persona({ usuarioId: C, nombre: 'Pía' })
+
+  it('vacía no dice nada', () => {
+    expect(resumenDeLaCartera([])).toBeNull()
+    expect(textoDeLaCartera([])).toBeNull()
+  })
+
+  it('sólo el dueño', () => {
+    expect(textoDeLaCartera([ana])).toBe('Dueño: Ana')
+  })
+
+  it('el dueño y uno', () => {
+    expect(textoDeLaCartera([luis, ana])).toBe('Dueño: Ana · Compartido con Luis')
+  })
+
+  it('el dueño y dos: nombra al primero y cuenta al resto', () => {
+    expect(textoDeLaCartera([ana, luis, pia])).toBe('Dueño: Ana · Compartido con Luis y 1 más')
+  })
+
+  it('con muchos, «99+»', () => {
+    const muchos = Array.from({ length: 101 }, (_, i) =>
+      persona({
+        usuarioId: `${String(i).padStart(8, '0')}-1111-4111-8111-111111111111`,
+        nombre: `P${String(i)}`,
+      }),
+    )
+    expect(resumenDeLaCartera([ana, ...muchos])?.masCompartidos).toEqual({
+      n: TOPE_DE_COMPARTIDOS_NOMBRADOS,
+      hayMas: true,
+    })
+    expect(textoDeLaCartera([ana, ...muchos])).toBe('Dueño: Ana · Compartido con P0 y 99+ más')
+  })
+
+  it('quien mira se ve con «(tú)»', () => {
+    expect(textoDeLaCartera([{ ...ana, esYo: true }])).toBe('Dueño: Ana (tú)')
+    expect(textoDeLaCartera([ana, { ...luis, esYo: true }])).toBe(
+      'Dueño: Ana · Compartido con Luis (tú)',
+    )
+  })
+
+  it('sin dueño a la vista, sólo los compartidos', () => {
+    expect(textoDeLaCartera([luis, pia])).toBe('Compartido con Luis y 1 más')
   })
 })
