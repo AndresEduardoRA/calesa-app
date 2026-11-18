@@ -780,6 +780,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Hueco (de una pantalla del núcleo)** — `HuecosDeLaHoja`, `HuecosDeLaGuardada`, `HuecosDelListado` (`features/hoja/components/huecos.ts`):
   lo que un área llena en una pantalla del núcleo sin que el núcleo la importe; la página de `src/app` lo une por
   `pantallas/<área>-<pantalla>.ts`; vacío es un objeto sin componentes y no dibuja nada.
+- **Grupo de Configuración** — `GRUPOS`, `GrupoDeConfiguracion` (`configuracion/secciones.ts`): Empresa y equipo · Ventas · Operación · Web;
+  junta las secciones en el inicio, el menú y el selector. No: «área».
+- **Sub-sección (de Configuración)** — `SubseccionDeConfiguracion`: una sub-ruta de una sección, registrada en `SECCIONES` con su título y sus
+  permisos; el menú la dibuja debajo de su sección.
 - **Pestaña de un área (de Configuración › Empresa)** — `PestanaDeEmpresa` que viene de la lista de un área (`PESTANAS_DE_COMPROBANTES`), con
   sus permisos; Empresa la dibuja sin importar el área (`esPestanaDeUnArea`).
 - **Hoja de contacto** — `scripts/hoja-de-contacto.mjs`, `<carpeta>/hojas/`: capturas de e2e montadas en una imagen.
