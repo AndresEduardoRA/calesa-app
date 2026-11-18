@@ -321,8 +321,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `?persona=`, `?entidad=` (y `?registro=` desde «Ver actividad» del «⋯» de la ficha de lead y de vehículo); el diff en un drawer
   `?cambio=<id>` (sólo lo que cambió, con la etiqueta del campo y cada monto con la moneda de su lado; sin moneda conocida, el número y
   «(moneda sin conocer)»); «No tienes acceso a este cambio.»; retención de `actividad_dias` (14 si no se puede leer).
-- **Configuración** — `/configuracion/*` (permiso de cada sección): hub + bloques: empresa, equipo, roles, orígenes, leads, cotización,
-  flujos, web, cola web, integraciones.
+- **Configuración** — `/configuracion/*` (permiso de cada sección): inicio + secciones, del registro `secciones.ts` (grupos «Empresa y equipo»
+  · «Ventas» · «Operación» · «Web»). Dentro de una sección (layout de `/configuracion`): a la izquierda el **menú de Configuración** desde 1024 px
+  y con 44 rem de contenedor (con el texto al 200 % pasa al selector), con las secciones que la persona puede abrir por grupo, la actual con
+  `aria-current="page"` y debajo sus sub-secciones; arriba «‹ Configuración» (al inicio) y, donde no se ve el menú, el **selector de sección**
+  (`<select>` nativo con su «Sección», por grupo, a 44 px en el celular; elegir navega y, con cambios sin guardar, pregunta). En el inicio no
+  van ni el menú, ni el selector, ni la vuelta. Un grupo sin secciones que abrir no se dibuja; sin ninguna, «No tienes permiso» y sin menú.
+  Equipo, Roles, Flujos y Empresa sólo se envuelven.
 - **Leads (config)** — `/configuracion/leads` (`leads.campos.gestionar` o `leads.configurar`): lista agrupada + panel lateral.
   `?seccion=campos` (`?campo=`), `origenes` (`?panel=nuevo-origen`/`editar-origen&origen=<id>`), `tipos`
   (`?panel=nuevo-tipo`/`editar-tipo&tipo=<id>`/`eliminar-tipo&tipo=<id>`), `seguimientos`, `embudo` (la plantilla: editor de etapas en la

@@ -780,6 +780,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Hueco (de una pantalla del núcleo)** — `HuecosDeLaHoja`, `HuecosDeLaGuardada`, `HuecosDelListado` (`features/hoja/components/huecos.ts`):
   lo que un área llena en una pantalla del núcleo sin que el núcleo la importe; la página de `src/app` lo une por
   `pantallas/<área>-<pantalla>.ts`; vacío es un objeto sin componentes y no dibuja nada.
+- **Menú de Configuración** — `MenuDeConfiguracion`, `gruposVisibles()`, `paraElNavegador()` (`configuracion/_navegacion/`): el menú agrupado a la
+  izquierda de cada sección de Configuración; donde no cabe, el **selector de sección** (`SelectorDeSeccion`). No va en el inicio.
 - **Grupo de Configuración** — `GRUPOS`, `GrupoDeConfiguracion` (`configuracion/secciones.ts`): Empresa y equipo · Ventas · Operación · Web;
   junta las secciones en el inicio, el menú y el selector. No: «área».
 - **Sub-sección (de Configuración)** — `SubseccionDeConfiguracion`: una sub-ruta de una sección, registrada en `SECCIONES` con su título y sus
