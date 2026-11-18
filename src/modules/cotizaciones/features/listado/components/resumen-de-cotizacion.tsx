@@ -15,6 +15,7 @@ import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
 import {
   MENSAJE_DE_COTIZACION_NO_DISPONIBLE,
+  rutaDelResumen,
   vistaDelResumen,
   type LecturaDelServidor,
   type VistaDelResumen,
@@ -120,6 +121,8 @@ function DetalleDeLaCotizacion({
           aprobarEn={deEsteVehiculo.aprobarEn}
           alCambiar={deEsteVehiculo.alCambiarLaAprobada}
           conTitulo
+          conCasillas
+          volverA={rutaDelResumen(cotizacion.id)}
         />
       ) : null}
       {Pestanas === undefined ? null : (

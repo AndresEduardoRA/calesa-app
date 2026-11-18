@@ -3,6 +3,7 @@ import {
   aprobadasDelVehiculoDesde,
   idsAprobadosDesde,
   marcaDeLaGuardadaDesde,
+  marcasParaCompararDesde,
   resultadoDeAprobar,
 } from './lectura'
 
@@ -89,5 +90,54 @@ describe('marcaDeLaGuardadaDesde', () => {
   it('sin fila o con un estado desconocido: nulo', () => {
     expect(marcaDeLaGuardadaDesde([])).toBeNull()
     expect(marcaDeLaGuardadaDesde([{ estado: 'rara', cotizaciones_aprobadas: null }])).toBeNull()
+  })
+})
+
+describe('marcasParaCompararDesde', () => {
+  const fila = {
+    id: A,
+    numero: 4,
+    vehiculo_id: V,
+    origen_id: B,
+    estado: 'activa',
+    perfiles: { nombre: ' Gala ', email: 'gala@x.com' },
+    cotizaciones_aprobadas: { cotizacion_id: A },
+  }
+
+  it('el autor como se muestra y la marca de la aprobada', () => {
+    expect(marcasParaCompararDesde([fila])).toEqual([
+      {
+        id: A,
+        numero: 4,
+        vehiculoId: V,
+        origenId: B,
+        estado: 'activa',
+        autor: 'Gala',
+        aprobada: true,
+      },
+    ])
+  })
+
+  it('sin perfil ni marca ni vehículo', () => {
+    expect(
+      marcasParaCompararDesde([
+        { ...fila, vehiculo_id: null, perfiles: null, cotizaciones_aprobadas: null },
+      ]),
+    ).toEqual([
+      {
+        id: A,
+        numero: 4,
+        vehiculoId: null,
+        origenId: B,
+        estado: 'activa',
+        autor: 'Sin nombre',
+        aprobada: false,
+      },
+    ])
+  })
+
+  it('lo que no cumple es nulo', () => {
+    expect(marcasParaCompararDesde([{ ...fila, estado: 'otra' }])).toBeNull()
+    expect(marcasParaCompararDesde(null)).toBeNull()
   })
 })

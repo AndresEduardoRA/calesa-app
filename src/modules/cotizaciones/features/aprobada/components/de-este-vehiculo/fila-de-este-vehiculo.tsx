@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from 'cn'
+import type { ReactNode } from 'react'
 import { fechaRelativa } from '@/shared/lib/fechas'
 import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
@@ -20,11 +21,13 @@ type Props = {
   aprobando: boolean
   ocupado: boolean
   alAprobar: () => void
+  // La casilla de comparar, a la izquierda (con `conCasillas`); sin ella, nada.
+  casilla: ReactNode
 }
 
 // Una fila de «De este vehículo»: n.º y título, insignias, total con su modo, autor y fecha, y las acciones. La aprobada lleva un borde de acento. En escritorio, las
 // acciones a la derecha; angosto o al 200 %, todo en una columna. Sin cifras en un `aria-label` ni en un `title` (Modo Live: el total va con `<Monto>`).
-export function FilaDeEsteVehiculo({ fila, tituloDelVehiculo, esta, ...acciones }: Props) {
+export function FilaDeEsteVehiculo({ fila, tituloDelVehiculo, esta, casilla, ...acciones }: Props) {
   const { zonaHoraria } = useRegional()
   const titulo = tituloDeLaFila(fila, tituloDelVehiculo)
   return (
@@ -33,11 +36,14 @@ export function FilaDeEsteVehiculo({ fila, tituloDelVehiculo, esta, ...acciones 
       data-aprobada={fila.aprobada ? '' : undefined}
       data-esta={esta ? '' : undefined}
       className={cn(
-        'grid min-w-0 gap-3 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) p-3 @lg/de-este:grid-cols-[minmax(0,1fr)_auto]',
+        'grid min-w-0 gap-3 rounded-(--radius-md) border border-(--color-line) bg-(--color-surface) p-3',
+        casilla === null
+          ? '@lg/de-este:grid-cols-[minmax(0,1fr)_auto]'
+          : 'grid-cols-[auto_minmax(0,1fr)] gap-x-1 @lg/de-este:grid-cols-[auto_minmax(0,1fr)_auto]',
         fila.aprobada && 'border-l-4 border-l-(--color-primario)',
       )}
     >
-      {/* T311: la casilla de comparar va aquí (conCasillas). */}
+      {casilla}
       <div className="grid min-w-0 gap-1">
         <p className="min-w-0 font-medium [overflow-wrap:anywhere] text-(--color-ink)">
           N.º {fila.numero} · <span title={titulo}>{titulo}</span>
@@ -51,7 +57,11 @@ export function FilaDeEsteVehiculo({ fila, tituloDelVehiculo, esta, ...acciones 
           {fila.autor} · {fechaRelativa(fila.creadoEn, { zona: zonaHoraria })}
         </p>
       </div>
-      <AccionesDeLaFila id={fila.id} aprobada={fila.aprobada} esta={esta} {...acciones} />
+      <div
+        className={casilla === null ? 'contents' : 'col-span-2 grid min-w-0 @lg/de-este:col-span-1'}
+      >
+        <AccionesDeLaFila id={fila.id} aprobada={fila.aprobada} esta={esta} {...acciones} />
+      </div>
     </li>
   )
 }

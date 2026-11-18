@@ -67,6 +67,12 @@ export type {
 // La hoja de una cotización guardada (4.15-3): UNA lectura con su primer cálculo por la cotización, y la ruta de su página. Sólo se importa desde un Server Component.
 export { leerHojaDeUnaGuardada } from './composicion'
 export { rutaDeLaCotizacion } from '../../entities/ruta-de-la-hoja'
+// «Comparar cotizaciones» (`/cotizaciones/comparar?ids=`): la lectura de `ids` que hace la página. El enlace (`rutaDeComparar`) lo escriben las áreas por dentro.
+export {
+  MAXIMO_PARA_COMPARAR,
+  MINIMO_PARA_COMPARAR,
+  idsParaComparar,
+} from '../../entities/ruta-de-comparar'
 export type {
   CotizacionDeLaHoja,
   HojaDeUnaGuardada,
