@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Fragment, useId } from 'react'
 import { salirSinPerder } from '@/shared/ui/salida-con-cambios'
 import type { GrupoDelNavegador } from '../secciones'
-import { marcaDelEnlace } from './marca'
+import { marcaDelEnlace, rutaResuelta } from './marca'
 
 // El selector de sección del celular y de las pantallas angostas: las mismas secciones que el menú, por grupo. Elegir navega; con una
 // barra de cambios sin guardar, antes pregunta (`salirSinPerder()`). El valor sale de la ruta: si se sigue editando, vuelve solo a la
@@ -15,10 +15,16 @@ export function SelectorDeSeccion({ grupos }: { grupos: readonly GrupoDelNavegad
   const actual = usePathname()
   const router = useRouter()
   const id = useId()
+  // Una sub-sección plantilla (las partes de un origen) se ofrece sólo si resuelve con la ruta actual.
+  const resueltas = (subsecciones: GrupoDelNavegador['secciones'][number]['subsecciones']) =>
+    subsecciones.flatMap((sub) => {
+      const ruta = rutaResuelta(sub.ruta, actual)
+      return ruta === null ? [] : [{ ...sub, ruta }]
+    })
   const rutas = grupos.flatMap((grupo) =>
     grupo.secciones.flatMap((seccion) => [
       { ruta: seccion.ruta, subrutas: seccion.subsecciones.map((sub) => sub.ruta), exacta: false },
-      ...seccion.subsecciones
+      ...resueltas(seccion.subsecciones)
         .filter((sub) => sub.motivo === undefined)
         .map((sub) => ({ ruta: sub.ruta, subrutas: [], exacta: sub.ruta === seccion.ruta })),
     ]),
@@ -51,7 +57,7 @@ export function SelectorDeSeccion({ grupos }: { grupos: readonly GrupoDelNavegad
                 {seccion.subsecciones.some((sub) => sub.ruta === seccion.ruta) ? null : (
                   <option value={seccion.ruta}>{seccion.titulo}</option>
                 )}
-                {seccion.subsecciones.map((sub) =>
+                {resueltas(seccion.subsecciones).map((sub) =>
                   sub.motivo === undefined ? (
                     <option key={sub.clave} value={sub.ruta}>
                       {`${seccion.titulo} › ${sub.titulo}`}

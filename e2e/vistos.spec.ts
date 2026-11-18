@@ -36,12 +36,23 @@ test('E2E abrir un vehículo lo marca como el último visto, y se recuerda al vo
 }) => {
   await entrar(page, t.lector)
   await alInventario(page, t.terreno.corea.id)
-  await expect(filaDe(page, TITULO).getByText('Último visto')).toHaveCount(0)
+  await expect(filaDe(page, TITULO).getByTitle('Último visto', { exact: true })).toHaveCount(0)
   await abrirConUnClic(page, TITULO)
   await page.keyboard.press('Escape')
   await expect(resumenDe(page, TITULO)).toHaveCount(0)
   await expect(filaDe(page, TITULO).first()).toHaveAttribute('data-visto', 'ultimo')
-  await expect(filaDe(page, TITULO).getByText('Último visto')).toBeVisible()
+  await expect(filaDe(page, TITULO).getByTitle('Último visto', { exact: true })).toBeVisible()
+  // Sin texto a la vista: el lector lo oye (`sr-only`) y el icono cabe dentro de la fila, sin ensancharla.
+  await expect(filaDe(page, TITULO).first()).toContainText('último visto')
+  await expect(filaDe(page, TITULO).first().getByText('Último visto', { exact: true })).toHaveCount(
+    0,
+  )
+  const fila = await filaDe(page, TITULO).first().boundingBox()
+  const marca = await filaDe(page, TITULO)
+    .first()
+    .getByTitle('Último visto', { exact: true })
+    .boundingBox()
+  expect(marca && fila && marca.x + marca.width <= fila.x + fila.width).toBe(true)
   await expect(filaDe(page, OTRO).first()).toHaveAttribute('data-visto', 'nuevo')
   // Se registró en la base: al recargar, la trae.
   await expect
@@ -52,7 +63,7 @@ test('E2E abrir un vehículo lo marca como el último visto, y se recuerda al vo
     )
     .toBe('1')
   await page.reload()
-  await expect(filaDe(page, TITULO).getByText('Último visto')).toBeVisible()
+  await expect(filaDe(page, TITULO).getByTitle('Último visto', { exact: true })).toBeVisible()
 })
 
 test('E2E como un correo: lo no visto en negrita, lo visto en peso normal, y abrir otro mueve «Último visto» sin quitar el visto', async ({
@@ -92,6 +103,6 @@ test('E2E con «Vistos» apagado en el perfil la lista no marca nada', async ({ 
     )
     .toBe('false')
   await alInventario(page, t.terreno.corea.id)
-  await expect(filaDe(page, TITULO).getByText('Último visto')).toHaveCount(0)
+  await expect(filaDe(page, TITULO).getByTitle('Último visto', { exact: true })).toHaveCount(0)
   await expect(filaDe(page, TITULO).first()).not.toHaveAttribute('data-visto', /.+/)
 })

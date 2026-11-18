@@ -1,12 +1,17 @@
 # origenes
 
-Orígenes de vehículos configurables (subasta/apibara o manual), su layout de campos y sus categorías. Al crear uno nacen, por trigger y en la misma transacción, su flujo de logística (con sus reglas, sin fases) y los campos de su tipo. Uno de subasta nace con **un campo por cada dato normalizado que devuelve apibara** (el catálogo), todos encendidos. **No** nace una fórmula: «fórmula pendiente» es no tener una fila `publicada`.
+Orígenes de vehículos configurables (subasta/apibara o manual), su layout de campos, sus datos clave y sus categorías. Al crear uno nacen, por trigger y en la misma transacción, su flujo de logística (con sus reglas, sin fases) y los campos de su tipo. Uno de subasta nace con **un campo por cada dato normalizado que devuelve apibara** (el catálogo), todos encendidos. **No** nace una fórmula: «fórmula pendiente» es no tener una fila `publicada`.
 
 ## Entra y sale
 
-- Entra: `/configuracion/origenes` y `/[id]?seccion=datos|campos|categorias`.
+- Entra: `/configuracion/origenes` (la lista) y cada parte de un origen en su sub-ruta, `/[id]/datos|campos|categorias`; `/[id]` sin parte y
+  los enlaces de antes (`?seccion=`, con `?campo=`, `?categoria=` y `?panel=`) redirigen (`[id]/url-vieja.ts`). Las pantallas van partidas
+  por sub-ruta: `pantallas/origen.ts` (el marco: `SiguientesPasos`), `origen-datos.ts`, `origen-campos.ts` y `origen-categorias.ts`.
 - `index.ts`: `getOrigenes(incluirInactivos?)`, `leerLayout(origenId, { conUso })` (también los campos desactivados: quien consume filtra `activo`),
-  `leerCampoPrincipal(origenId)` (o `null`; para quien nombra un vehículo fuera del listado), `leerDatosNuevosDeApibara`, `leerOrigenes`, `pasosDe`.
+  `leerCampoPrincipal(origenId)` (o `null`; para quien nombra un vehículo fuera del listado), `leerDatosNuevosDeApibara`, `leerOrigenes`, `pasosDe`,
+  `faltasDeLaTarjeta`, `DATOS_COMUNES` y `leerDatosClave(origenId)` (para la ficha del vehículo: la lista resuelta, `{ de: 'comun', clave,
+etiqueta }` o `{ de: 'campo', clave, etiqueta, campoId }`, con los de fábrica si está vacía; las claves comunes son nombres de columna de
+  `vehiculos` en snake_case: `anio`, `categoria_id`, `url_origen`).
 - `client.ts`: concordancia (`pluralDe()`, `articulo()`, `concordar()`, `frasePorVacio()`…), tipos y `useLayoutActivo(origenId)` (lo lee el panel del
   vehículo de la hoja de cotizar al abrirse, para que la hoja no lo cargue en cada apertura).
 - Depende de `equipo` (`origenes.gestionar`). **No** depende de `empresa`, `flujos` ni `vehiculos`: lo trae la página por props o lo cuenta
@@ -14,7 +19,8 @@ Orígenes de vehículos configurables (subasta/apibara o manual), su layout de c
 
 ## Archivos clave
 
-- Espejos del SQL con test: `entities/origen.ts` (`motivoParaNoEliminar()` ↔ `origen_eliminar()`), `entities/preconfiguraciones.ts`
+- Espejos del SQL con test: `entities/datos-clave.ts` (`errorDeDatosClave()` ↔ `_origen_datos_clave_error()`, `DATOS_CLAVE_DE_FABRICA` ↔
+  `_origen_datos_clave_de_fabrica()`, con el juego común `casos-de-datos-clave.json` que corren Vitest y `db:probar`), `entities/origen.ts` (`motivoParaNoEliminar()` ↔ `origen_eliminar()`), `entities/preconfiguraciones.ts`
   (`origen_preconfigurar_campos()`, `origen_crear_flujo()`), `entities/catalogo-apibara.ts` (`_apibara_catalogo()`; también contra
   `e2e/fixtures/apibara/`), `CLAVES_RESERVADAS` de `entities/campo.ts` (`_origen_clave_reservada()`).
 - **El motor de campos es de `shared`** (`lib/campos`, `ui/campos`); acá, `CampoDeLayout` = `CampoBase` + lo propio del origen.
@@ -24,9 +30,10 @@ Orígenes de vehículos configurables (subasta/apibara o manual), su layout de c
 
 `origenes`, `origenes_campos`, `categorias`: sólo lectura para la app, se escriben por RPC. El motor `_campo_*`, `_campos_*`, `_atributos_*` lo
 comparten los leads.
-RPC: `origen_crear|guardar|eliminar`, `origen_apibara_rutas_sin_campo`, `origen_apibara_agregar`, `origen_campo_crear|guardar|mover|eliminar|impacto`,
+`origenes.datos_clave` (hasta 4, `check` de forma con `_origen_datos_clave_forma()`).
+RPC: `origen_crear|guardar|eliminar`, `origen_datos_clave_guardar`, `origen_apibara_rutas_sin_campo`, `origen_apibara_agregar`, `origen_campo_crear|guardar|mover|eliminar|impacto`,
 `categoria_crear|guardar|mover|eliminar`, `origenes_resumen`, `categorias_con_uso`. Triggers: `origen_crear_flujo`, `origen_preconfigurar_campos`,
-`origen_tipo_inmutable`, `origen_campo_validar`, `origen_activo_requerido` (en `vehiculos` y `cotizaciones`).
+`origen_tipo_inmutable`, `origen_datos_clave_de_fabrica`, `origen_campo_validar`, `origen_activo_requerido` (en `vehiculos` y `cotizaciones`).
 
 ## No se rompe
 
@@ -47,6 +54,11 @@ RPC: `origen_crear|guardar|eliminar`, `origen_apibara_rutas_sin_campo`, `origen_
 - **Campo principal**: uno por origen como mucho (`origenes_campos_principal_unico`), activo y nunca `moneda`. Marcar otro desmarca el anterior en la
   misma llamada (y mueve su versión); desactivarlo lo desmarca; sin principal, el vehículo se nombra por su título. `origen_campo_guardar` toma el
   origen `for no key update` antes que el campo y un `23505` del índice sale `PT409`.
+- **Datos clave**: hasta 4, en orden, sin repetidos; comunes del tipo (lote, plataforma y enlace sólo en subasta) o campos activos del origen.
+  Un origen nace con los de fábrica de su tipo (trigger `before insert`); vacíos = los de fábrica al leer. Se guardan enteros con la versión
+  del origen (un campo que ya no está activo sale `PT409`). **Desactivar o eliminar un campo lo quita de la lista en la misma llamada** (sólo
+  escribe si estaba: no mueve la versión en vano) y `origen_campo_eliminar` también toma el origen antes que el campo. `DATOS_COMUNES` está
+  espejado de `camposComunes()` de `vehiculos`, con su test en `src/app/(app)/configuracion/origenes/datos-comunes.test.ts`.
 - El aviso de impacto va **dentro** del panel del campo; `origen_campo_impacto` cuenta también la papelera.
 - Categoría: un nivel de anidado, un nombre por lugar (sin mayúsculas); con subcategorías activas no se desactiva; con subcategorías o vehículos no se
   elimina.

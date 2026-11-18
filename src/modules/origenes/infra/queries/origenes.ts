@@ -35,7 +35,7 @@ export const getOrigenesConUso = cache(async (): Promise<Resultado<OrigenConUso[
     supabase
       .from('origenes')
       .select(
-        'id, clave, nombre, sustantivo, genero, tipo, color, activo, apibara_plataformas, actualizado_en',
+        'id, clave, nombre, sustantivo, genero, tipo, color, activo, apibara_plataformas, datos_clave, actualizado_en',
       )
       .order('orden')
       .order('nombre'),

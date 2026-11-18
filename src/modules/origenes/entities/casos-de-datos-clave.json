@@ -1,0 +1,275 @@
+{
+  "casos": [
+    { "nombre": "vacía", "tipo": "manual", "datos": [], "camposActivos": [], "error": null },
+    {
+      "nombre": "cuatro comunes en un manual",
+      "tipo": "manual",
+      "datos": [
+        { "comun": "anio" },
+        { "comun": "kilometraje" },
+        { "comun": "vin" },
+        { "comun": "categoria_id" }
+      ],
+      "camposActivos": [],
+      "error": null
+    },
+    {
+      "nombre": "un campo activo y comunes",
+      "tipo": "manual",
+      "datos": [{ "campo": "color" }, { "comun": "anio" }, { "comun": "marca" }],
+      "camposActivos": ["color", "motor"],
+      "error": null
+    },
+    {
+      "nombre": "lote, plataforma y enlace en una subasta",
+      "tipo": "subasta",
+      "datos": [
+        { "comun": "lote" },
+        { "comun": "plataforma" },
+        { "comun": "url_origen" },
+        { "comun": "placado" }
+      ],
+      "camposActivos": [],
+      "error": null
+    },
+    {
+      "nombre": "campo de 40 letras con tilde",
+      "tipo": "subasta",
+      "datos": [{ "campo": "ñandúñandúñandúñandúñandúñandúñandúñandú" }],
+      "camposActivos": ["ñandúñandúñandúñandúñandúñandúñandúñandú"],
+      "error": null
+    },
+    {
+      "nombre": "nulo",
+      "tipo": "manual",
+      "datos": null,
+      "camposActivos": [],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "un objeto en vez de arreglo",
+      "tipo": "manual",
+      "datos": { "comun": "anio" },
+      "camposActivos": [],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "un texto suelto como elemento",
+      "tipo": "manual",
+      "datos": ["anio"],
+      "camposActivos": [],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "un elemento con las dos claves",
+      "tipo": "manual",
+      "datos": [{ "comun": "anio", "campo": "color" }],
+      "camposActivos": ["color"],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "un elemento con otra clave",
+      "tipo": "manual",
+      "datos": [{ "dato": "anio" }],
+      "camposActivos": [],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "un elemento vacío",
+      "tipo": "manual",
+      "datos": [{}],
+      "camposActivos": [],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "un número como valor",
+      "tipo": "manual",
+      "datos": [{ "campo": 7 }],
+      "camposActivos": [],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "campo vacío",
+      "tipo": "manual",
+      "datos": [{ "campo": "" }],
+      "camposActivos": [""],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "campo de 41 letras",
+      "tipo": "manual",
+      "datos": [{ "campo": "abcdefghijabcdefghijabcdefghijabcdefghija" }],
+      "camposActivos": ["abcdefghijabcdefghijabcdefghijabcdefghija"],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "cinco elementos con uno mal formado: primero la forma",
+      "tipo": "manual",
+      "datos": [
+        { "comun": "anio" },
+        { "comun": "vin" },
+        { "comun": "marca" },
+        { "comun": "modelo" },
+        { "x": 1 }
+      ],
+      "camposActivos": [],
+      "error": { "codigo": "forma", "mensaje": "Los datos clave no tienen la forma esperada." }
+    },
+    {
+      "nombre": "cinco elementos",
+      "tipo": "manual",
+      "datos": [
+        { "comun": "anio" },
+        { "comun": "vin" },
+        { "comun": "marca" },
+        { "comun": "modelo" },
+        { "comun": "placado" }
+      ],
+      "camposActivos": [],
+      "error": { "codigo": "tope", "mensaje": "Ya hay 4 datos clave: quita uno para sumar este." }
+    },
+    {
+      "nombre": "cinco con uno repetido: primero el tope",
+      "tipo": "manual",
+      "datos": [
+        { "comun": "anio" },
+        { "comun": "anio" },
+        { "comun": "marca" },
+        { "comun": "modelo" },
+        { "comun": "placado" }
+      ],
+      "camposActivos": [],
+      "error": { "codigo": "tope", "mensaje": "Ya hay 4 datos clave: quita uno para sumar este." }
+    },
+    {
+      "nombre": "común repetido",
+      "tipo": "manual",
+      "datos": [{ "comun": "anio" }, { "comun": "vin" }, { "comun": "anio" }],
+      "camposActivos": [],
+      "error": { "codigo": "repetido", "mensaje": "Un dato clave está repetido." }
+    },
+    {
+      "nombre": "campo repetido",
+      "tipo": "manual",
+      "datos": [{ "campo": "color" }, { "campo": "color" }],
+      "camposActivos": ["color"],
+      "error": { "codigo": "repetido", "mensaje": "Un dato clave está repetido." }
+    },
+    {
+      "nombre": "repetido y desconocido: primero el repetido",
+      "tipo": "manual",
+      "datos": [{ "comun": "titulo" }, { "comun": "titulo" }],
+      "camposActivos": [],
+      "error": { "codigo": "repetido", "mensaje": "Un dato clave está repetido." }
+    },
+    {
+      "nombre": "un común y un campo con la misma clave no se repiten",
+      "tipo": "manual",
+      "datos": [{ "comun": "vin" }, { "campo": "vin" }],
+      "camposActivos": ["vin"],
+      "error": null
+    },
+    {
+      "nombre": "el título no es dato común",
+      "tipo": "manual",
+      "datos": [{ "comun": "titulo" }],
+      "camposActivos": [],
+      "error": { "codigo": "comun_desconocido", "mensaje": "Ese dato común no existe." }
+    },
+    {
+      "nombre": "el precio no es dato común",
+      "tipo": "subasta",
+      "datos": [{ "comun": "precio" }],
+      "camposActivos": [],
+      "error": { "codigo": "comun_desconocido", "mensaje": "Ese dato común no existe." }
+    },
+    {
+      "nombre": "la clave en camelCase no es la columna",
+      "tipo": "manual",
+      "datos": [{ "comun": "categoriaId" }],
+      "camposActivos": [],
+      "error": { "codigo": "comun_desconocido", "mensaje": "Ese dato común no existe." }
+    },
+    {
+      "nombre": "plataforma en un manual",
+      "tipo": "manual",
+      "datos": [{ "comun": "anio" }, { "comun": "plataforma" }],
+      "camposActivos": [],
+      "error": {
+        "codigo": "solo_subasta",
+        "mensaje": "Ese dato sólo existe en un origen de subasta."
+      }
+    },
+    {
+      "nombre": "enlace de la subasta en un manual",
+      "tipo": "manual",
+      "datos": [{ "comun": "url_origen" }],
+      "camposActivos": [],
+      "error": {
+        "codigo": "solo_subasta",
+        "mensaje": "Ese dato sólo existe en un origen de subasta."
+      }
+    },
+    {
+      "nombre": "lote en un manual",
+      "tipo": "manual",
+      "datos": [{ "comun": "lote" }],
+      "camposActivos": [],
+      "error": {
+        "codigo": "solo_subasta",
+        "mensaje": "Ese dato sólo existe en un origen de subasta."
+      }
+    },
+    {
+      "nombre": "desconocido y de subasta en un manual: primero el desconocido",
+      "tipo": "manual",
+      "datos": [{ "comun": "lote" }, { "comun": "titulo" }],
+      "camposActivos": [],
+      "error": { "codigo": "comun_desconocido", "mensaje": "Ese dato común no existe." }
+    },
+    {
+      "nombre": "campo inactivo",
+      "tipo": "manual",
+      "datos": [{ "comun": "anio" }, { "campo": "viejo" }],
+      "camposActivos": ["color"],
+      "error": {
+        "codigo": "campo_inactivo",
+        "mensaje": "Uno de los campos elegidos ya no está activo en este origen. Recarga para ver los de ahora."
+      }
+    },
+    {
+      "nombre": "campo sin ningún activo",
+      "tipo": "subasta",
+      "datos": [{ "campo": "color" }],
+      "camposActivos": [],
+      "error": {
+        "codigo": "campo_inactivo",
+        "mensaje": "Uno de los campos elegidos ya no está activo en este origen. Recarga para ver los de ahora."
+      }
+    },
+    {
+      "nombre": "de subasta en un manual y campo inactivo: primero el de subasta",
+      "tipo": "manual",
+      "datos": [{ "campo": "viejo" }, { "comun": "plataforma" }],
+      "camposActivos": [],
+      "error": {
+        "codigo": "solo_subasta",
+        "mensaje": "Ese dato sólo existe en un origen de subasta."
+      }
+    }
+  ],
+  "deFabrica": {
+    "subasta": [
+      { "comun": "plataforma" },
+      { "comun": "url_origen" },
+      { "comun": "kilometraje" },
+      { "comun": "anio" }
+    ],
+    "manual": [
+      { "comun": "anio" },
+      { "comun": "kilometraje" },
+      { "comun": "vin" },
+      { "comun": "categoria_id" }
+    ]
+  }
+}

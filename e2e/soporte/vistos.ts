@@ -5,6 +5,11 @@ import { expect, type Locator } from '@playwright/test'
 export const NEGRITA = 700
 export const PESO_NORMAL = 400
 
+// La marca del último visto: un ojo con tooltip «Último visto» y el texto «, último visto» para el lector; ningún texto a la vista.
+export function marcaDeUltimoVisto(fila: Locator): Locator {
+  return fila.getByTitle('Último visto', { exact: true })
+}
+
 export async function pesoDelNombre(fila: Locator): Promise<number> {
   const nombre = fila.locator('[data-abre-resumen]').first()
   return nombre.evaluate((el) => Number(getComputedStyle(el).fontWeight))
@@ -17,6 +22,6 @@ export async function esperarMarca(
 ): Promise<void> {
   await expect(fila).toHaveAttribute('data-visto', marca)
   await expect.poll(() => pesoDelNombre(fila)).toBe(marca === 'nuevo' ? NEGRITA : PESO_NORMAL)
-  if (marca === 'ultimo') await expect(fila.getByText('Último visto')).toBeVisible()
-  else await expect(fila.getByText('Último visto')).toHaveCount(0)
+  if (marca === 'ultimo') await expect(marcaDeUltimoVisto(fila)).toBeVisible()
+  else await expect(marcaDeUltimoVisto(fila)).toHaveCount(0)
 }

@@ -64,9 +64,9 @@ const PANTALLAS = [
   ['empresa-integraciones', () => '/configuracion/empresa/integraciones'],
   ['empresa-comprobantes', () => '/configuracion/empresa/comprobantes'],
   ['origenes', () => '/configuracion/origenes'],
-  ['origen-datos', () => `/configuracion/origenes/${origen.id}?seccion=datos`],
-  ['origen-campos', () => `/configuracion/origenes/${origen.id}?seccion=campos`],
-  ['origen-categorias', () => `/configuracion/origenes/${origen.id}?seccion=categorias`],
+  ['origen-datos', () => `/configuracion/origenes/${origen.id}/datos`],
+  ['origen-campos', () => `/configuracion/origenes/${origen.id}/campos`],
+  ['origen-categorias', () => `/configuracion/origenes/${origen.id}/categorias`],
   ['leads-campos', () => '/configuracion/leads/campos'],
   ['leads-origenes', () => '/configuracion/leads/origenes'],
   ['leads-tipos', () => '/configuracion/leads/tipos'],
@@ -116,10 +116,6 @@ for (const zoom of ['100', '200'] as const) {
       if (zoom === '100' && !AL_CIEN.has(nombre)) continue
       await page.goto(url())
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-      // Las pestañas de un origen quedan bajo el título largo: sin llevar la barra a la vista, las tres capturas eran la misma imagen.
-      if (nombre.startsWith('origen-')) {
-        await page.getByRole('tablist').first().scrollIntoViewIfNeeded()
-      }
       // La barra de secciones se desplaza hasta la abierta recién al hidratar: se captura con ella ya a la vista.
       if ((await page.getByRole('tablist').count()) > 0) {
         await aLaVistaAlAcomodarse(

@@ -71,12 +71,16 @@ test('E2E abrir un vehículo en Logística lo marca como último y abrir otro de
   await page.goto(`/logistica/fase/${terreno.fases.transito}?origen=${terreno.a.id}`)
   await expect(filaDe(page, demorado.titulo)).toBeVisible()
   await expect(filaDe(page, demorado.titulo)).toHaveAttribute('data-visto', 'nuevo')
-  await expect(filaDe(page, demorado.titulo).getByText('Último visto')).toHaveCount(0)
+  await expect(
+    filaDe(page, demorado.titulo).getByTitle('Último visto', { exact: true }),
+  ).toHaveCount(0)
 
   // Abrirlo en Logística lo marca como el último al volver.
   await abrirEnLogistica(page, demorado)
   await expect(filaDe(page, demorado.titulo)).toHaveAttribute('data-visto', 'ultimo')
-  await expect(filaDe(page, demorado.titulo).getByText('Último visto')).toBeVisible()
+  await expect(
+    filaDe(page, demorado.titulo).getByTitle('Último visto', { exact: true }),
+  ).toBeVisible()
   // Lo no visto de la lista, en negrita; lo abierto, en peso normal.
   await esperarMarca(filaDe(page, reciente.titulo), 'nuevo')
   await esperarMarca(filaDe(page, demorado.titulo), 'ultimo')
@@ -85,7 +89,9 @@ test('E2E abrir un vehículo en Logística lo marca como último y abrir otro de
   await abrirEnLogistica(page, reciente)
   await expect(filaDe(page, reciente.titulo)).toHaveAttribute('data-visto', 'ultimo')
   await expect(filaDe(page, demorado.titulo)).toHaveAttribute('data-visto', 'visto')
-  await expect(filaDe(page, demorado.titulo).getByText('Último visto')).toHaveCount(0)
+  await expect(
+    filaDe(page, demorado.titulo).getByTitle('Último visto', { exact: true }),
+  ).toHaveCount(0)
   // Como un correo: el último y el visto, en peso normal.
   await esperarMarca(filaDe(page, reciente.titulo), 'ultimo')
   await esperarMarca(filaDe(page, demorado.titulo), 'visto')
@@ -98,5 +104,7 @@ test('E2E lo visto en Logística no cuenta en Vehículos', async ({ page }) => {
   // En el inventario, el último es el de la ficha (el demorado) y el que sólo se abrió en Logística no tiene marca.
   await expect(filaDe(page, demorado.titulo)).toHaveAttribute('data-visto', 'ultimo')
   await expect(filaDe(page, reciente.titulo)).toHaveAttribute('data-visto', 'nuevo')
-  await expect(filaDe(page, reciente.titulo).getByText('Último visto')).toHaveCount(0)
+  await expect(
+    filaDe(page, reciente.titulo).getByTitle('Último visto', { exact: true }),
+  ).toHaveCount(0)
 })

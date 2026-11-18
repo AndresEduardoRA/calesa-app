@@ -195,7 +195,7 @@ test('R6 abrir el resumen marca la fila como el último visto, y se recuerda al 
   await irAlListado(page, t.duena)
   const primera = filas(page).first()
   await expect(primera).toHaveAttribute('data-visto', 'nuevo')
-  await expect(primera.getByText('Último visto')).toHaveCount(0)
+  await expect(primera.getByTitle('Último visto', { exact: true })).toHaveCount(0)
   await abrirConUnClic(page, primera)
   await expect(resumen(page)).toBeVisible()
   // La marca la pone la URL del resumen: se espera su clave antes de cerrar y de recargar.
@@ -203,7 +203,7 @@ test('R6 abrir el resumen marca la fila como el último visto, y se recuerda al 
   await page.keyboard.press('Escape')
   await expect(resumen(page)).toHaveCount(0)
   await expect(primera).toHaveAttribute('data-visto', 'ultimo')
-  await expect(primera.getByText('Último visto')).toBeVisible()
+  await expect(primera.getByTitle('Último visto', { exact: true })).toBeVisible()
   // Al recargar la trae la base: hay que esperar a que el registro llegue.
   await expect
     .poll(() =>

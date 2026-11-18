@@ -78,11 +78,14 @@ test('la dueña guarda el lema y la dirección pública desde el hub, y quedan g
     .getByRole('main')
     .getByRole('link', { name: /^Sitio web/ })
     .click()
-  await expect(page).toHaveURL(/\/configuracion\/web$/)
-  await expect(page.getByRole('heading', { name: 'Ajustes', level: 2 })).toBeVisible()
+  // `/configuracion/web` abre la primera sub-sección que la dueña puede: Ajustes.
+  await expect(page).toHaveURL(/\/configuracion\/web\/ajustes$/)
+  await expect(page.getByRole('heading', { name: 'Ajustes', level: 1 })).toBeVisible()
 
   await lema(page).fill(LEMA)
   await direccion(page).fill(DIRECCION)
+  // El «Guardar» es el de la barra de cambios sin guardar, que aparece al cambiar algo.
+  await expect(page.getByRole('region', { name: 'Cambios sin guardar' })).toBeVisible()
   await page.getByRole('button', { name: 'Guardar' }).click()
   await expect(page.getByText('Ajustes del sitio guardados')).toBeVisible()
   expect(sql("select lema || '|' || direccion_publica from public.ajustes_web where id = 1")).toBe(

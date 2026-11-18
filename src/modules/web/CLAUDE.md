@@ -23,9 +23,11 @@ sólo `web.cola.participar`), en `docs/PENDIENTES.md`.
   y `pantallas/<área>.ts`; las entradas de la raíz sólo hacen `export *` de cada área. Lo nuevo va en su área; **un área no importa otra y el núcleo no
   importa ningún área** (lo vigila `scripts/guardas/areas-b/areas-de-web.test.ts`). Una pantalla cuyo nombre no dice su área (`perfil` → `turnos`,
   `sitio-legales|guias|faqs|testimonios` → `contenido`) va en `PANTALLAS_DE_AREA` de la guarda.
-- **Pestañas de Configuración › Sitio web**: un hueco por pestaña en `pantallas/sitio-{ajustes,legales,guias,faqs,testimonios}.ts` (`PESTANA_DE_<X>`, tipo
-  `HuecoDePestana<Props>`, que admite `null`: una pestaña nula no se dibuja y, sin ninguna, «Sitio web» no figura en el hub). El cuerpo se registra en
-  `src/app/(app)/configuracion/web/seccion-abierta.tsx`.
+- **Sub-rutas de Configuración › Sitio web**: una por parte (`/configuracion/web/{ajustes,legales,guias,faqs,testimonios}`), registradas en
+  `src/app/(app)/configuracion/web/seccion.ts` (menú, frase y permisos); cada una importa su pantalla de `pantallas/sitio-{ajustes,legales,guias,faqs,testimonios}.ts`.
+  `/configuracion/web` abre la primera que la persona puede y traduce `?seccion=` a su sub-ruta (`web/url-vieja.ts`). Ajustes, Legales y la política de la
+  cola se guardan con la barra de cambios sin guardar (`BarraDeCambiosSinGuardar`, hermana del formulario con `order-last`); Ajustes y Legales comparten
+  la versión de `ajustes_web`: cada action revalida las dos rutas.
 - `turnos`: `infra/turnos/mis-turnos.ts` lee `limit 6` **filtrado por `usuario_id` a mano** (la RLS deja ver todas a quien gestiona la cola); el título sale
   de `web.vehiculos` (un vehículo que dejó de ser público va sin título). «Contacté» va en un toque sin «Deshacer»; «Vincular a lead» por
   `?panel=vincular-turno&turno=`, montado en `src/app/(app)/_inicio/vincular-turno.tsx` con el panel de `leads`. En `/perfil` (`pantallas/perfil.ts`):
@@ -41,10 +43,11 @@ sólo `web.cola.participar`), en `docs/PENDIENTES.md`.
   `web.guias.publicar`, que la action comprueba antes). `infra/contenido/guias-escritura.ts`: `update … where actualizado_en = <esperado>` (cero filas =
   conflicto o «ya no existe»), nunca manda `cuerpo_html` ni `minutos_lectura`. Al guardar o eliminar se quitan del bucket `web` las imágenes y la portada
   que ya no están (`quitarSiHuerfano`); una subida nunca guardada queda huérfana (deuda aceptada). Categorías: panel `?panel=categorias` de «Guías»;
-  legales: `?seccion=legales` (`web.ajustes.gestionar`, `guardarLegales`).
+  legales: `/configuracion/web/legales` (`web.ajustes.gestionar`, `guardarLegales`).
 - `contenido` › FAQs y testimonios: lecturas con tope 100 + 1; actions con `web.contenido.gestionar`. La foto de un testimonio
   (`foto-de-testimonio.client.ts`) va a WebP, sube por hash al bucket `web` y se limpia con `quitarSiHuerfano`.
-- `cola`: `/configuracion/cola-web` (`pantallas/cola.ts`). `entities/cola/orden-de-la-rueda.ts` (`ordenDeLaRueda`) es **espejo documentado** del paso 5
+- `cola`: `/configuracion/cola-web` (`pantallas/cola.ts`): una página con «Sin asignar», «En la rueda» (con «Agregar a la rueda» y, dentro, los grupos de las
+  habilitadas que hoy no reciben turnos) y «Política de la cola», cada una con su título y su frase (`SeccionDeLaCola`). `entities/cola/orden-de-la-rueda.ts` (`ordenDeLaRueda`) es **espejo documentado** del paso 5
   de `web.solicitar_asesor`, con test: la base decide, esto sólo dibuja. La política se lee en `infra/cola/` porque un área no importa `sitio`. «Agregar a
   la rueda» (`?panel=agregar-a-la-rueda&q=`; la búsqueda la lee `src/app` con `leerEquipo` sólo con el panel abierto y si quien mira ve el equipo) y
   «Quitar» con «Deshacer» van por `cola_web_configurar`, que acepta todo `smallint` en prioridad y orden (los rangos angostos son del formulario).

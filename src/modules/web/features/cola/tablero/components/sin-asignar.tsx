@@ -13,6 +13,7 @@ import {
   type SolicitudSinAsignar,
 } from '../../../../entities/cola/solicitudes'
 import { useSinAsignar } from '../hooks/use-sin-asignar'
+import { SeccionDeLaCola } from './seccion-de-la-cola'
 
 type Props = { primera: PaginaDeSolicitudes }
 
@@ -21,19 +22,19 @@ type Props = { primera: PaginaDeSolicitudes }
 export function SinAsignar({ primera }: Props) {
   const conteo = conteoEnFrase(conteoDeSinAsignar(primera))
   return (
-    <section
-      aria-labelledby="sin-asignar-titulo"
-      className="grid gap-3 rounded-(--radius-md) border border-(--color-aviso) bg-(--color-aviso-soft) p-4"
+    <SeccionDeLaCola
+      id="sin-asignar-titulo"
+      titulo={
+        <>
+          Sin asignar
+          <span className="font-normal text-(--color-ink-soft) tabular-nums"> · {conteo}</span>
+        </>
+      }
+      descripcion="Las solicitudes de la web que todavía no tienen asesor."
+      className="rounded-(--radius-md) border border-(--color-aviso) bg-(--color-aviso-soft) p-4"
     >
-      <h2
-        id="sin-asignar-titulo"
-        className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-      >
-        Sin asignar
-        <span className="font-normal text-(--color-ink-soft) tabular-nums"> · {conteo}</span>
-      </h2>
       <ListaDeSinAsignar key={firmaDePagina(primera)} primera={primera} />
-    </section>
+    </SeccionDeLaCola>
   )
 }
 
