@@ -18,7 +18,7 @@ export const crearGuia = actionClient
     }
     const creada = await escribirGuias.crear(parsedInput)
     if (creada.ok) {
-      revalidatePath(RUTAS.configuracionDeWeb)
+      revalidatePath(RUTAS.guiasDelSitio)
     }
     return creada
   })

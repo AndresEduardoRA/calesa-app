@@ -34,7 +34,7 @@ export const guardarGuia = actionClient
       publicacion,
     })
     if (guardada.ok) {
-      revalidatePath(RUTAS.configuracionDeWeb)
+      revalidatePath(RUTAS.guiasDelSitio)
       revalidatePath(rutaDeGuia(id))
     }
     return guardada

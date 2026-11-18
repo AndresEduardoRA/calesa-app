@@ -57,7 +57,20 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/logistica/vehiculo/[id]': (t) => ({ url: `/logistica/vehiculo/${t.vehiculo}` }),
   '/logistica/bandeja/[grupo]': () => ({ url: '/logistica/bandeja/demorados' }),
   '/logistica/fase/[fase]': (t) => ({ url: `/logistica/fase/sin_fase?origen=${t.origen}` }),
-  '/configuracion/origenes/[id]': (t) => ({ url: `/configuracion/origenes/${t.origen}` }),
+  // Sin parte sólo redirige a «Datos» (en el navegador, tras el esqueleto): se barren sus tres partes.
+  '/configuracion/origenes/[id]': () => ({
+    pendiente: 'toda la página',
+    motivo: 'sólo redirige a /configuracion/origenes/<id>/datos, que se barre como su propia ruta',
+  }),
+  '/configuracion/origenes/[id]/datos': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/datos`,
+  }),
+  '/configuracion/origenes/[id]/campos': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/campos`,
+  }),
+  '/configuracion/origenes/[id]/categorias': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/categorias`,
+  }),
   '/repuestos/[id]': (t) => ({ url: `/repuestos/${t.proyectoDeRepuestos}` }),
   '/cotizaciones/[id]': (t) => ({ url: `/cotizaciones/${t.cotizacion}` }),
   '/repuestos/[id]/cotizaciones/[cotizacion]': (t) => ({
@@ -66,12 +79,14 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/web/guias/[id]': (t) => ({ url: `/configuracion/web/guias/${t.guia}` }),
 }
 
-// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino. Logística y Repuestos de
-// Configuración no dibujan nada sin sub-ruta: abren la primera (`/puertos`, `/catalogos`), que el barrido recorre con su propia entrada.
+// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino. Logística, Repuestos y
+// Sitio web de Configuración no dibujan nada sin sub-ruta: abren la primera que la dueña puede (`/puertos`, `/catalogos`, `/ajustes`), que el
+// barrido recorre con su propia entrada.
 export const REDIRECCIONES: Record<string, string> = {
   '/auth/nueva-contrasena': '/recuperar',
   '/configuracion/logistica': '/configuracion/logistica/puertos',
   '/configuracion/repuestos': '/configuracion/repuestos/catalogos',
+  '/configuracion/web': '/configuracion/web/ajustes',
 }
 
 // Las páginas estáticas que sólo redirigen en el navegador, tras el esqueleto: al cambiar la URL todavía se ve el esqueleto del destino,

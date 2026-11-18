@@ -88,6 +88,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Campo desactivado** — `origenes_campos.activo = false`: sale del formulario y filtros; sus datos siguen en `vehiculos.atributos`.
 - **Campo principal** — `origenes_campos.principal`: identifica al vehículo en la lista, el resumen y logística; uno por origen como mucho,
   activo y no de monto; sin él, el título.
+- **Datos clave** — `origenes.datos_clave` / `DatoClave`, `leerDatosClave()`, `origen_datos_clave_guardar()`: los hasta 4 datos, en orden,
+  que la ficha de un vehículo muestra primero. Los elige cada origen en «Campos» (la estrella, «Datos clave (n de 4)»); cada uno es un dato
+  común o un campo activo del origen. Vacíos = los de fábrica de su tipo (subasta: plataforma, enlace de la subasta, kilometraje y año;
+  manual: año, kilometraje, VIN y categoría).
 - **Rango (de un campo)** — `minimo`/`maximo` de `leads_campos` y `origenes_campos`, `_valor_fuera_de_rango()`: límites de un `numero` o
   `moneda` (nulo = sin límite); se rechaza el valor que cambia y queda fuera, no el que ya estaba. `*_campo_impacto().fuera_de_rango` los cuenta.
 - **Valor por defecto de un campo** — `valor_defecto` / `valorDefectoPara()`, `valorDefectoVigente()`: lo que el alta trae puesto; sólo precarga.
@@ -101,6 +105,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Vehículo** — `vehiculos`: el dato central; recorre el flujo de su origen.
 - **Atributos** — `vehiculos.atributos`, `leads.atributos`: campos del layout que no son columna. En un lead se leen por `leads_vista`, recortados.
 - **Dato común** — `camposComunes()` / columnas de `vehiculos`: lo que tiene todo vehículo y es columna (título, marca, año, VIN, precio…).
+  Como dato clave valen marca, modelo, año, VIN, categoría, kilometraje, placado y, en subasta, lote, plataforma y enlace de la subasta
+  (`DATOS_COMUNES` de `origenes`, por el nombre de su columna: `anio`, `categoria_id`, `url_origen`).
 - **Sin fase** — `vehiculos.fase_id` nulo / `<BadgeDeFase>` (dentro de `<BadgeDeSituacion>`): aún no entró al flujo de su origen; lo ubica quien mueve.
 - **Inventario** — `/vehiculos` / `<ListadoDeVehiculos>`: listado de vehículos, una pestaña por origen; con «propios» se lee por
   `vehiculos_inventario()` (por rutas, filtros en SQL), con «todos» por PostgREST (`fuenteDelInventario()`).

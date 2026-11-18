@@ -56,8 +56,7 @@ type Pantalla = {
   controles?: (page: Page) => [Locator, string][]
 }
 
-const DE_UN_ORIGEN = (seccion: string) => () =>
-  `/configuracion/origenes/${origen.id}?seccion=${seccion}`
+const DE_UN_ORIGEN = (seccion: string) => () => `/configuracion/origenes/${origen.id}/${seccion}`
 
 const PANTALLAS: Pantalla[] = [
   { titulo: 'el centro de ConfiguraciÃ³n', url: () => '/configuracion' },
@@ -166,7 +165,7 @@ test('al 200 %: en la ficha de un origen la clave interna cabe en su tarjeta y Â
     'Origen de clave larga',
     `clave_interna_${info.project.name}`,
   )
-  await page.goto(`/configuracion/origenes/${conClaveLarga.id}?seccion=datos`)
+  await page.goto(`/configuracion/origenes/${conClaveLarga.id}/datos`)
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   await dentroDe(page.locator('dd.font-mono').first(), 'main', 'la clave interna')
   const abrir = page.getByRole('link', { name: /^Abrir/ }).first()

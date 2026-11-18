@@ -18,7 +18,7 @@ export const eliminarCategoria = actionClient
     }
     const hecho = await escribirCategorias.eliminar(parsedInput)
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeWeb)
+      revalidatePath(RUTAS.guiasDelSitio)
     }
     return hecho
   })

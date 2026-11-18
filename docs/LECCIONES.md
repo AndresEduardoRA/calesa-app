@@ -177,7 +177,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Al cambiar un token de color corre `design/tokens.test.ts` (contraste AA) y actualiza su espejo del PDF (`estilos-del-documento.ts`) y `e2e/xcell-geometria.spec.ts`.
 - Dale a toda página nueva su `loading.tsx`, un `h1` (`sr-only` si no se ve) fuera del `Suspense` y un `<title>` único: lo exigen `estados-de-ruta.test.ts` y `accesibilidad.spec.ts`.
 - Una página que sólo redirige (tras su `loading.tsx`, la redirección es del navegador) se anota en `SOLO_REDIRIGEN` de
-  `e2e/soporte/accesibilidad-rutas.ts`: al cambiar la URL todavía se ve el esqueleto del destino y el barrido cuenta «0 h1».
+  `e2e/soporte/accesibilidad-rutas.ts`, o como `pendiente` en `DINAMICAS` si su ruta lleva un `[param]`: al cambiar la URL todavía se ve el
+  esqueleto del destino y el barrido cuenta «0 h1» o cae con «Execution context was destroyed».
 - Un control que sale de un `<Bloque>` plegado queda a la vista del barrido de accesibilidad: un `Switch` (un `span` con rol) no toma el nombre
   del `htmlFor` de su etiqueta; dale `aria-labelledby`.
 - Cuando un envío apaga el campo que tenía el foco y el diálogo pasa a mostrar el resultado, lleva el foco al resultado: si no, queda en `body`

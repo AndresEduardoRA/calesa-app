@@ -25,12 +25,19 @@ export type { LayoutDeOrigen } from './entities/repositorios'
 // El campo principal activo de un origen (6.13): con qué se nombra a un vehículo fuera del listado (logística).
 export { leerCampoPrincipal } from './composicion'
 
+// Los datos clave de un origen (los hasta 4 que la ficha de un vehículo muestra primero), resueltos con su etiqueta y de dónde sale cada
+// uno (`de: 'comun'`, con la clave de su columna en snake_case, o `de: 'campo'`); vacía en la base = los de fábrica de su tipo.
+export { leerDatosClave } from './composicion'
+export { DATOS_COMUNES } from './entities/datos-clave'
+export type { DatoClave, DatoClaveResuelto } from './entities/datos-clave'
+
 // Configuración › Orígenes: lo que lee la lista y el detalle de un origen
 export { leerOrigenes } from './composicion'
 export type { OrigenConUso } from './entities/origen'
 
 // Qué le falta a un origen para funcionar
 export {
+  faltasDeLaTarjeta,
   pasosDe,
   type ClaveDePaso,
   type PasoConDestino,

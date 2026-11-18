@@ -1,6 +1,7 @@
 'use client'
 
 import { ArrowDownIcon, ArrowUpIcon, PencilIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import {
   MOTIVO_PRIMERO_DE_SU_GRUPO,
   MOTIVO_ULTIMO_DE_SU_GRUPO,
@@ -18,6 +19,8 @@ type Props = {
   banderas: readonly BanderaDeCampo[]
   // Lo propio del módulo que dice la fila (un cambio que todavía se está aplicando).
   insignias?: readonly string[]
+  // Un control propio del módulo, antes de «Editar» (la estrella de un dato clave).
+  accion?: ReactNode
   puedeGestionar: boolean
   // Mientras algo se guarda no se toca nada: cada edición manda la versión que vio.
   ocupado: boolean
@@ -30,7 +33,16 @@ type Props = {
 
 // Un campo del layout: su orden, sus banderas y el panel para el resto.
 export function FilaDeCampo(props: Props) {
-  const { campo, banderas, insignias = [], puedeGestionar, ocupado, puedeSubir, puedeBajar } = props
+  const {
+    campo,
+    banderas,
+    insignias = [],
+    accion,
+    puedeGestionar,
+    ocupado,
+    puedeSubir,
+    puedeBajar,
+  } = props
   const { alAbrir, alMover, alCambiarBandera } = props
   const sinEditar = !puedeGestionar || ocupado
   return (
@@ -83,6 +95,7 @@ export function FilaDeCampo(props: Props) {
           </label>
         ))}
       </div>
+      {accion ? <div className="order-3 flex md:order-4">{accion}</div> : null}
       <Button
         variant="outline"
         className="order-3 h-11 md:order-4 md:h-8"

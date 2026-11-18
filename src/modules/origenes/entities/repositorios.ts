@@ -10,6 +10,7 @@ import type {
   TipoDeCampo,
   ValorDefecto,
 } from './campo'
+import type { DatoClave, DatoClaveResuelto } from './datos-clave'
 import type { DatoNuevoDeApibara } from './datos-nuevos-de-apibara'
 import type { Categoria } from './categoria'
 import type { ImpactoDeCampo } from './impacto'
@@ -42,6 +43,12 @@ export type RepositorioOrigenes = {
     apibaraPlataformas?: string[]
   }) => Promise<Resultado<Editado>>
   eliminar: (pedido: { id: string; actualizadoEnEsperado: string }) => Promise<Resultado<null>>
+  // La lista entera de datos clave, con la versión del origen; devuelve la versión nueva.
+  guardarDatosClave: (pedido: {
+    origenId: string
+    datos: readonly DatoClave[]
+    actualizadoEnEsperado: string
+  }) => Promise<Resultado<Editado>>
 }
 
 export type RepositorioCampos = {
@@ -116,6 +123,9 @@ export type LectorDeLayout = (
 
 // Lo que apibara trajo para los vehículos de un origen de subasta y el origen no tiene como campo.
 export type LectorDeDatosNuevos = (origenId: string) => Promise<Resultado<DatoNuevoDeApibara[]>>
+
+// Los datos clave de un origen resueltos para la ficha del vehículo: con su etiqueta y de dónde sale cada uno; vacía = los de fábrica.
+export type LectorDeDatosClave = (origenId: string) => Promise<Resultado<DatoClaveResuelto[]>>
 
 // El campo principal activo de un origen, o null si no tiene: con qué se nombra a sus vehículos (6.13).
 export type LectorDeCampoPrincipal = (origenId: string) => Promise<Resultado<CampoPrincipal | null>>
