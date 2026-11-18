@@ -27,20 +27,28 @@ export const getEmbudos: LectorDeEmbudos = async () => {
 }
 
 // El kanban: una RPC de invocador (la RLS decide qué tarjetas llegan y qué se cuenta).
-export const getTablero: LectorDeTablero = async ({ embudoId, tope, buscar }) => {
+export const getTablero: LectorDeTablero = async ({ embudoId, tope, buscar, lead }) => {
   const supabase = await createClient()
-  const { data, error } = await supabase.rpc('embudo_tablero', {
-    p_embudo: embudoId,
-    p_tope: tope,
-    p_tope_total: TOPE_DE_COLUMNA,
-    ...(buscar ? { p_buscar: buscar } : {}),
-  })
+  // Con lead, su propia lectura (por oportunidades_lead_etapa_idx), sin búsqueda; sin lead, la de siempre (por oportunidades_tablero_idx).
+  const { data, error } = lead
+    ? await supabase.rpc('embudo_tablero_del_lead', {
+        p_embudo: embudoId,
+        p_lead: lead.id,
+        p_tope: tope,
+        p_tope_total: TOPE_DE_COLUMNA,
+      })
+    : await supabase.rpc('embudo_tablero', {
+        p_embudo: embudoId,
+        p_tope: tope,
+        p_tope_total: TOPE_DE_COLUMNA,
+        ...(buscar ? { p_buscar: buscar } : {}),
+      })
   if (error) {
     return { ok: false, error: errorDePostgrest(error) }
   }
   if (data === null) {
     return ok(null)
   }
-  const tablero = tableroDesde(data, buscar)
+  const tablero = lead ? tableroDesde(data, null, lead) : tableroDesde(data, buscar)
   return tablero ? ok(tablero) : fallo('inesperado', 'No pudimos leer el embudo.')
 }

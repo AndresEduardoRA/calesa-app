@@ -1,12 +1,18 @@
 'use client'
 
-import { useId } from 'react'
+import { useId, useState } from 'react'
+import { Aviso } from '@/shared/ui/aviso'
 import { AvisoDeConflicto } from '@/shared/ui/aviso-de-conflicto'
 import { CambiosSinGuardar } from '@/shared/ui/cambios-sin-guardar'
 import { Drawer } from '@/shared/ui/drawer'
 import { PieDelPanel } from '@/shared/ui/pie-del-panel'
 import type { Embudo } from '../../../entities/embudo'
 import type { Oportunidad } from '../../../entities/oportunidad'
+import {
+  embudosParaCrear,
+  MOTIVO_SIN_EMBUDO_LIBRE,
+  type AbiertaEnEmbudo,
+} from '../../../entities/oportunidad-unica'
 import { useFormularioDeOportunidad } from '../hooks/use-formulario-de-oportunidad'
 import { CamposDeOportunidad } from './campos-de-oportunidad'
 
@@ -15,19 +21,33 @@ type Props = {
   // La que se edita; null = «Nueva oportunidad».
   oportunidad: Oportunidad | null
   embudos: readonly Embudo[]
+  // Dónde el lead ya tiene una abierta: al crear, esos embudos van apagados (una abierta por lead y embudo).
+  abiertas: readonly AbiertaEnEmbudo[]
   alGuardar: (oportunidad: Oportunidad) => void
   alCerrar: () => void
 }
 
 // «Nueva oportunidad» o «Editar»: un Drawer con su URL. Una nueva entra en la etapa inicial de su
 // embudo; se mueve después con «Mover a…».
-export function PanelDeOportunidad({ leadId, oportunidad, embudos, alGuardar, alCerrar }: Props) {
+export function PanelDeOportunidad({
+  leadId,
+  oportunidad,
+  embudos,
+  abiertas,
+  alGuardar,
+  alCerrar,
+}: Props) {
+  // Con lo que había al abrir: lo que se crea después no cambia las opciones de un panel que ya se cierra.
+  const [paraCrear] = useState(() => embudosParaCrear(embudos, abiertas))
   const formulario = useFormularioDeOportunidad({
     leadId,
     oportunidad,
     alGuardar,
     alTerminar: alCerrar,
+    embudoInicial: paraCrear.inicial ?? '',
   })
+  // Ningún embudo libre: no hay dónde crear.
+  const sinEmbudoLibre = !oportunidad && paraCrear.inicial === null
   const idFormulario = useId()
   return (
     <Drawer
@@ -43,7 +63,7 @@ export function PanelDeOportunidad({ leadId, oportunidad, embudos, alGuardar, al
           enCurso={formulario.enCurso}
           alCancelar={alCerrar}
           etiquetaDeGuardar={oportunidad ? 'Guardar' : 'Crear oportunidad'}
-          sinPuedeEnviar={formulario.sinCambios}
+          sinPuedeEnviar={formulario.sinCambios || sinEmbudoLibre}
         />
       }
     >
@@ -59,7 +79,12 @@ export function PanelDeOportunidad({ leadId, oportunidad, embudos, alGuardar, al
         {formulario.conflicto ? (
           <AvisoDeConflicto mensaje={formulario.conflicto} alRecargar={formulario.recargar} />
         ) : null}
-        <CamposDeOportunidad formulario={formulario} oportunidad={oportunidad} embudos={embudos} />
+        {sinEmbudoLibre ? <Aviso tono="info">{MOTIVO_SIN_EMBUDO_LIBRE}</Aviso> : null}
+        <CamposDeOportunidad
+          formulario={formulario}
+          oportunidad={oportunidad}
+          opcionesDeEmbudo={embudos.length > 1 ? paraCrear.opciones : null}
+        />
       </form>
     </Drawer>
   )

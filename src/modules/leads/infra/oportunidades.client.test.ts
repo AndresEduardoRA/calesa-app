@@ -44,7 +44,7 @@ describe('leerMasOportunidades: «Ver más» desde el navegador', () => {
     ])
     expect(leida).toEqual({
       ok: true,
-      data: { puedoCrear: true, hayMas: false, oportunidades: [] },
+      data: { puedoCrear: true, hayMas: false, oportunidades: [], abiertasPorEmbudo: [] },
     })
   })
 
@@ -70,15 +70,41 @@ describe('leerOportunidadesDelAviso: las primeras del lead al abrir «Nueva opor
     respuesta = { data: null, error: null }
   })
 
-  it('pide seis, sin cursor', async () => {
-    respuesta = { data: { puedo_crear: true, hay_mas: false, oportunidades: [] }, error: null }
+  it('pide seis, sin cursor, con dónde ya hay una abierta', async () => {
+    const abierta = {
+      embudo_id: '00000000-0000-4000-8000-0000000000cc',
+      embudo_nombre: 'Ventas',
+      es_default: true,
+      oportunidad_id: '00000000-0000-4000-8000-0000000000dd',
+    }
+    respuesta = {
+      data: {
+        puedo_crear: true,
+        hay_mas: false,
+        oportunidades: [],
+        abiertas_por_embudo: [abierta],
+      },
+      error: null,
+    }
     const leida = await leerOportunidadesDelAviso(LEAD)
     expect(llamadas).toEqual([
       { funcion: 'lead_oportunidades', args: { p_lead: LEAD, p_tamano: 6 } },
     ])
     expect(leida).toEqual({
       ok: true,
-      data: { puedoCrear: true, hayMas: false, oportunidades: [] },
+      data: {
+        puedoCrear: true,
+        hayMas: false,
+        oportunidades: [],
+        abiertasPorEmbudo: [
+          {
+            embudoId: abierta.embudo_id,
+            embudoNombre: 'Ventas',
+            esDefault: true,
+            oportunidadId: abierta.oportunidad_id,
+          },
+        ],
+      },
     })
   })
 

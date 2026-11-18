@@ -155,10 +155,13 @@ test('quién la ve: el compartido tiene la sección pero no la de Berta; la due�
 
 test('lo que aporta la ficha con la sección «Oportunidades»', async ({ page }, info) => {
   const lead = await leadDeBerta(`Op Pesa ${info.project.name}`)
+  const embudo = await embudoPorDefecto(t.personas.berta)
+  // Una abierta y dos ganadas: el embudo admite una sola abierta por lead.
   for (const n of [1, 2, 3]) {
     await oportunidad(t.personas.berta, lead.id, {
       titulo: `Pesa ${String(n)} ${info.project.name}`,
       monto_estimado: 1000 * n,
+      ...(n > 1 ? { etapa_id: etapa(embudo, 'Ganado') } : {}),
     })
   }
   await entrar(page, t.personas.berta)

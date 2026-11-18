@@ -238,7 +238,10 @@ begin
          to_json((select id from public.origenes_lead where clave = 'web')))::jsonb, null);
   if not exists (select 1 from public.leads_vista where id = v_lead) then reset role; raise exception 'c1 no ve el lead que creó'; end if;
   perform public.lead_guardar(v_lead, (select actualizado_en from public.leads where id = v_lead), '{"nombre": "Lead de c1 editado"}');
-  perform public.oportunidad_crear(v_op, v_lead, '{"titulo": "Venta de c1"}');
+  -- En un embudo propio: el por defecto ya tiene la base del alta, la abierta de ese lead ahí (una por lead y embudo).
+  perform public.embudo_crear(gen_random_uuid(), 'Embudo de c1');
+  perform public.oportunidad_crear(v_op, v_lead, jsonb_build_object('titulo', 'Venta de c1',
+    'embudo_id', (select e.id from public.embudos e where e.usuario_id = pg_temp.c(1) and e.nombre = 'Embudo de c1')));
   select count(*) into n from public.leads_vista where nombre = 'Lead de c1 editado';
   reset role;
   if n <> 1 then raise exception 'c1 debía ver su lead editado'; end if;

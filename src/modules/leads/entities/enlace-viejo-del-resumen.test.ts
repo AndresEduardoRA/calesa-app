@@ -110,3 +110,21 @@ describe('destinoDelEnlaceViejo: los paneles sin pestaña', () => {
     ).toBe(`/leads/${LEAD}?panel=anotar-seguimiento`)
   })
 })
+
+describe('destinoDelEnlaceViejo: el embudo filtrado por lead', () => {
+  it('`vista=embudo&lead=` es el filtro, no un enlace viejo (también con un panel del kanban)', () => {
+    expect(destinoDelEnlaceViejo({ lead: LEAD, vista: 'embudo' }, TODO)).toBeNull()
+    expect(destinoDelEnlaceViejo({ lead: LEAD, vista: 'embudo', panel: 'etapas' }, TODO)).toBeNull()
+  })
+  it('con algo que sólo pedía el resumen sigue llevando a la ficha', () => {
+    expect(
+      destinoDelEnlaceViejo({ lead: LEAD, vista: 'embudo', panel: 'anotar-seguimiento' }, TODO),
+    ).toBe(`/leads/${LEAD}?panel=anotar-seguimiento`)
+    expect(
+      destinoDelEnlaceViejo({ lead: LEAD, vista: 'embudo', pestana: 'recordatorios' }, TODO),
+    ).toBe(`/leads/${LEAD}?seccion=seguimientos`)
+  })
+  it('con otra vista, `lead=` sigue siendo un enlace viejo', () => {
+    expect(destinoDelEnlaceViejo({ lead: LEAD, vista: 'lista' }, NADA)).toBe(`/leads/${LEAD}`)
+  })
+})

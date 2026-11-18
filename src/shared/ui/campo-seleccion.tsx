@@ -2,7 +2,8 @@ import type { ComponentProps } from 'react'
 import { cn } from 'cn'
 import { Label } from './label'
 
-type Opcion = { valor: string; etiqueta: string }
+// `deshabilitada`: se ve pero no se elige (su etiqueta dice por qué).
+type Opcion = { valor: string; etiqueta: string; deshabilitada?: boolean }
 
 type Props = Omit<ComponentProps<'select'>, 'id' | 'children'> & {
   // Sirve de `id` y de `name`: el envío lee el formulario por nombre.
@@ -36,7 +37,7 @@ export function CampoSeleccion({ nombre, etiqueta, opciones, ayuda, error, ...re
         {...resto}
       >
         {opciones.map((opcion) => (
-          <option key={opcion.valor} value={opcion.valor}>
+          <option key={opcion.valor} value={opcion.valor} disabled={opcion.deshabilitada}>
             {opcion.etiqueta}
           </option>
         ))}
