@@ -106,6 +106,20 @@ type Gh = {
   refs?: { ref: string; sha: string }[]
   refsFalla?: string
   cuentas: string[]
+  // El CI de main para el cierre de la tanda (gh-falso.mjs).
+  ci?: {
+    main: string
+    corridas: {
+      databaseId: number
+      headSha: string
+      status: string
+      conclusion: string
+      event: string
+      createdAt: string
+      args?: string[]
+    }[]
+    artefactos?: Record<string, Record<string, string>>
+  }
   sinRed?: boolean
   limite?: boolean
   issueEditFalla?: boolean
@@ -148,11 +162,11 @@ function prepararRepo(local: string, conOrigen: boolean, conKit?: ConKit) {
   writeFileSync(join(repo, '.proyecto/proyecto.yaml'), MANIFIESTO)
   const datos = join(repo, '.orquestador')
   mkdirSync(join(datos, 'cola'), { recursive: true })
-  // Lo que entra solo a la cola, apagado: la tarea de dependencias crearía un issue en cada escenario y las del kit lo llamarían
-  // (dependencias.test.ts, kit-semanal.test.ts y kit-aviso.test.ts las encienden).
+  // Lo que entra solo a la cola, apagado: la tarea de dependencias crearía un issue en cada escenario, las del kit lo llamarían y el
+  // cierre de la tanda miraría el CI (dependencias.test.ts, kit-semanal.test.ts, kit-aviso.test.ts y cierre-tanda.test.ts las encienden).
   writeFileSync(
     join(datos, 'config.local.env'),
-    `DEPS_MENSUAL="no"\nKIT_SEMANAL="no"\nKIT_AVISAR="no"\n${local}`,
+    `DEPS_MENSUAL="no"\nKIT_SEMANAL="no"\nKIT_AVISAR="no"\nCIERRE_TANDA="no"\n${local}`,
   )
   if (conKit) traerElKit(repo, conKit)
   const falso = join(repo, '.gh-falso')

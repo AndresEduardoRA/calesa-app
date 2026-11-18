@@ -13,7 +13,8 @@
 # Cada sesión arranca desde cero (nada de contexto heredado). Si se corta (límite del plan, reinicio, tiempo), se retoma desde lo
 # commiteado en la rama. El estado vive en .orquestador/estado/<ID>/ como archivos de texto: sobrevive a reinicios. Lo que la spec
 # pide hacer al integrarse (`al_integrar: etiquetar <nombre>`) lo hace al integrar y, si GitHub falla, lo reintenta el espejo (al-integrar.sh).
-# Un PR integrado que toca flujo abre su tarea en el kit, y una vez por semana entra la de traer el flujo del kit (kit.sh).
+# Un PR integrado que toca flujo abre su tarea en el kit, y una vez por semana entra la de traer el flujo del kit (kit.sh). Al quedar
+# quieta la cola tras una tanda, verifica main y encola el cierre de la tanda (cierre-tanda.sh).
 #
 #   bash scripts/orquestador/orquestador.sh                 el bucle (lo que corre el servicio)
 #   … verificar        comprueba herramientas, cuentas, Docker, la cola y el aviso de prueba; crea las etiquetas cola:*
@@ -95,6 +96,11 @@ source "$ORQ/sin-sesion.sh"
 # Las mejoras del flujo entre el kit y este proyecto: la tarea semanal y lo que sube al kit al integrar.
 # shellcheck source=kit.sh
 source "$ORQ/kit.sh"
+# El cierre de la tanda: con la cola quieta tras una tanda, main verificado y la tarea que aplasta los docs y hace la retro.
+# shellcheck source=cierre-tanda.sh
+source "$ORQ/cierre-tanda.sh"
+# shellcheck source=cierre-main.sh
+source "$ORQ/cierre-main.sh"
 
 # ------------------------------------------------------------------------------------------------------------------ utilidades
 
@@ -347,7 +353,7 @@ cola_terminada() {
   if [ -n "$trab" ]; then
     avisar "Cola detenida" "$hechas integradas. Trabadas:$trab.${bloqueadas:+ Esperando:$bloqueadas.} bash scripts/orquestador/orquestador.sh estado" high warning
   else
-    avisar "Cola terminada" "Las $hechas tareas están integradas en main." default tada
+    avisar "Cola terminada" "Las $hechas tareas están integradas en main.$(linea_cierre)" default tada
   fi
 }
 
@@ -442,6 +448,7 @@ integrada() {
   fi
   hacer_al_integrar "$id"
   avisar_al_kit "$id"
+  cierre_al_integrar "$id"
 }
 
 trabar() {
