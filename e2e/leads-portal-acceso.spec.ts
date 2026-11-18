@@ -54,8 +54,8 @@ test('un compartido con el permiso ve el bloque y el estado, sin hacer clic', as
   const lead = await leadCompartido(`Portal Compartido ${info.project.name}`)
   await entrar(page, t.paco.email)
   await irAFicha(page, lead.id)
-  await expect(seccionPortal(page).getByText('Activo', { exact: true })).toBeVisible()
-  await expect(seccionPortal(page).getByText(/, por Pía Portal/)).toBeVisible()
+  await expect(seccionPortal(page).getByText(/^Tiene acceso desde /)).toBeVisible()
+  await expect(seccionPortal(page).getByText(/lo dio Pía Portal/)).toBeVisible()
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)

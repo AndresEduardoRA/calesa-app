@@ -159,7 +159,7 @@ test('todo a la vista sin un clic: la izquierda, el índice y los cuatro bloques
   await expect(page.getByRole('button', { name: 'Ver todos los seguimientos' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Vinculado', exact: true })).toBeVisible()
   await expect(
-    page.getByRole('region', { name: 'Acceso al portal' }).getByText('Activo', { exact: true }),
+    page.getByRole('region', { name: 'Acceso al portal' }).getByText(/^Tiene acceso desde /),
   ).toBeVisible()
   await expect(page.locator('main details')).toHaveCount(0)
   await expect(page.getByRole('tablist')).toHaveCount(0)

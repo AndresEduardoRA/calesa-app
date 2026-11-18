@@ -2,7 +2,7 @@
 // del Supabase LOCAL sin pasar por la pantalla: personas con `leads.portal.gestionar`, el acceso como
 // quedó, el login del cliente (como lo hará el portal de la Fase 8, con service_role) y la dirección de
 // la web.
-import type { Locator, Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { CONTRASENA } from './alta'
 import { PREFIJO_ROL_E2E, admin, correoDePrueba, crearPersona, darRolDePrueba } from './base'
 import { exigir } from './leads'
@@ -156,6 +156,22 @@ export async function actividadDelPortal(leadId: string): Promise<string> {
 
 export const seccionPortal = (page: Page): Locator =>
   page.getByRole('region', { name: 'Acceso al portal' })
+
+// Una línea del «⋯» del bloque del portal («Cambiar la clave», «Quitar el acceso»): abre el menú y la elige (un clic antes de hidratar se
+// pierde, por eso por vueltas con tope corto).
+export async function elegirEnElMenuDelPortal(page: Page, linea: string): Promise<void> {
+  const boton = seccionPortal(page).getByRole('button', {
+    name: 'Más acciones de acceso al portal',
+  })
+  const menu = page.getByRole('menu')
+  await expect(async () => {
+    if (!(await menu.isVisible())) {
+      await boton.click({ timeout: 1000 })
+    }
+    await expect(menu).toBeVisible({ timeout: 1000 })
+  }).toPass()
+  await menu.getByRole('menuitem', { name: linea }).click()
+}
 
 // «Dar acceso al portal» o «Volver a otorgar el acceso», antes de otorgar (después, el diálogo se
 // llama «<lead> ya tiene acceso al portal»).
