@@ -552,10 +552,10 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 ## JS en frío (con gzip, lo que el documento nombra)
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
-  `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a MEDIDO_ID), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
-  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). Al borde: `/cotizaciones` 373,6 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
-  `diferido()`), `/cotizaciones/[id]` MEDIDO_ID de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
-  `diferido()`) y `/cotizaciones/nuevo` MEDIDO_NUEVO de 460 (el campo del título va con `diferido()` dentro del panel)
+  `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
+  `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). Al borde: `/cotizaciones` 374,7 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `diferido()`), `/cotizaciones/[id]` 463,7 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`) y `/cotizaciones/nuevo` 456,5 de 460 (el campo del título va con `diferido()` dentro del panel)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 496,8 en 32 chunks: «Qué falta» de la ficha, la galería y subida de fotos, Documentos y
