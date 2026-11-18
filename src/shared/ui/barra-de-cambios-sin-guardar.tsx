@@ -1,5 +1,6 @@
 'use client'
 
+import { cn } from 'cn'
 import { useRef } from 'react'
 import { Button } from './button'
 import { ConfirmarDescarte } from './confirmar-descarte'
@@ -11,6 +12,9 @@ type Props = {
   formulario: string
   guardando?: boolean
   alDescartar: () => void
+  // Se suma a la de la barra. `order-last` la deja al final de la grilla de la página cuando su formulario no es lo último (sigue
+  // después de él en el DOM y en el orden del Tab).
+  className?: string
 }
 
 // La barra de un formulario de página (no de un `<Drawer>`, que tiene su pie): aparece al cambiar algo («Tienes cambios sin
@@ -22,6 +26,7 @@ export function BarraDeCambiosSinGuardar({
   formulario,
   guardando = false,
   alDescartar,
+  className,
 }: Props) {
   const barra = useRef<HTMLDivElement>(null)
   const { pendiente, seguir, descartar } = useSalidaConCambios(hayCambios, alDescartar, barra)
@@ -34,7 +39,10 @@ export function BarraDeCambiosSinGuardar({
       role="region"
       aria-label="Cambios sin guardar"
       data-pie-de-panel
-      className="sticky bottom-0 z-10 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-(--shadow-md)"
+      className={cn(
+        'sticky bottom-0 z-10 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-(--shadow-md)',
+        className,
+      )}
     >
       {pendiente ? (
         <ConfirmarDescarte alSeguir={seguir} alDescartar={descartar} />

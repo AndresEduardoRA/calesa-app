@@ -111,4 +111,18 @@ describe('BarraDeCambiosSinGuardar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Descartar' }))
     expect(salir).toHaveBeenCalledOnce()
   })
+
+  it('suma la clase que recibe a la suya', () => {
+    render(
+      <BarraDeCambiosSinGuardar
+        hayCambios
+        formulario="f"
+        alDescartar={vi.fn()}
+        className="order-last"
+      />,
+    )
+    const barra = screen.getByRole('region', { name: 'Cambios sin guardar' })
+    expect(barra.className).toContain('order-last')
+    expect(barra.className).toContain('sticky')
+  })
 })
