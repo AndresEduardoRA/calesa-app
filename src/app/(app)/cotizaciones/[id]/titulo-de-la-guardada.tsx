@@ -1,13 +1,18 @@
 import type { ReactNode } from 'react'
 import {
   CLAVE_DE_VEHICULO,
+  MOTIVO_DE_LA_FINAL,
   tituloAparteDelNumero,
   tituloDeLaCotizacion,
+  type CambioPermitido,
 } from '@/modules/cotizaciones'
 import { ProveedorDelTitulo } from '@/modules/cotizaciones/pantallas/cotizacion'
 import { elegidoDesde, type Vehiculo } from '@/modules/vehiculos'
+import type { ModoDeLaBarra } from '@/modules/vehiculos/pantallas/cotizar'
 import { puede, type Permisos } from '@/shared/lib/permisos'
+import { AvisoDeSubastaDeLaHoja } from '../aviso-de-subasta'
 import { BarraDeLaGuardadaDiferida } from './diferidos'
+import type { LoDelVehiculo } from './vehiculo-de-la-guardada'
 
 type Guardada = {
   cotizacion: {
@@ -22,8 +27,18 @@ type Guardada = {
   puedeGuardar: boolean
 }
 
+// Lo que la regla de `cotizaciones` permite, en el modo de la barra de `vehiculos`.
+const MODO: Readonly<Record<CambioPermitido, ModoDeLaBarra>> = {
+  elige: 'cambiar',
+  final: 'ver_elegido',
+  no: 'solo_mostrar',
+}
+
+const NO_SE_PUEDE_USAR = 'No se puede usar ese vehículo.'
+
 // El título de una guardada (T307) sobre la cabecera y la hoja: lo guardado, sin `key` (remontaría la hoja y su guardado): con la versión nueva (tras guardar o
-// «Recargar») el proveedor vuelve a lo guardado y su borrador va por versión. El automático es el título del vehículo si quien mira lo ve; si no, el guardado (la base no deja guardar a quien no ve el vehículo).
+// «Recargar») el proveedor vuelve a lo guardado y su borrador va por versión. El automático es el título del vehículo **de la hoja** (el elegido para cambiarlo, T315, o el
+// guardado) si quien mira lo ve; si no, el guardado (la base no deja guardar a quien no ve el vehículo). Un manual se respeta.
 export function ConElTituloDeLaGuardada({
   hoja,
   personaId,
@@ -53,24 +68,37 @@ export function ConElTituloDeLaGuardada({
   )
 }
 
-// La barra del vehículo de la cabecera (en lugar de «Vehículo: X»): el título grande y el vehículo debajo; con `puede_guardar`, abre el panel con el campo del título.
-// `diferido()` no dibuja nada en el servidor: el contenedor reserva desde el HTML el alto de la barra de una línea, así la hoja no salta al llegar (ni un clic cae
-// donde ya no está lo que se apuntó).
-export function barraDeLaCabecera(hoja: Guardada, vehiculo: Vehiculo | null, permisos: Permisos) {
+// La barra del vehículo de la cabecera (en lugar de «Vehículo: X»): el título grande y el vehículo de la hoja debajo; con `puede_guardar`, abre el panel con el campo del
+// título y, en una preventa, el de cotizar para elegir otro (T315). Bajo la barra, el aviso de subasta cerrada del vehículo recién elegido (no del guardado: la guardada no
+// paga esas lecturas al abrirse). `diferido()` no dibuja nada en el servidor: el contenedor reserva desde el HTML el alto de la barra de una línea, así la hoja no salta al
+// llegar (ni un clic cae donde ya no está lo que se apuntó).
+export function barraDeLaCabecera(
+  hoja: Guardada,
+  vehiculo: Vehiculo | null,
+  delVehiculo: LoDelVehiculo,
+  permisos: Permisos,
+) {
   const { cotizacion } = hoja
+  const { cambio, nuevo, origen, alta, rechazado } = delVehiculo
   return (
-    <div className="min-h-14 min-w-0">
+    <div className="grid min-h-14 min-w-0 gap-2">
       <BarraDeLaGuardadaDiferida
         origenId={cotizacion.origenId}
-        // Sólo nombra «Cierre subasta» en las listas del panel, que una guardada no dibuja.
-        esSubasta={false}
+        esSubasta={origen?.tipo === 'subasta'}
         claveDeLaUrl={CLAVE_DE_VEHICULO}
         numero={cotizacion.numero}
         elegido={vehiculo === null ? null : elegidoDesde(vehiculo)}
-        conVehiculo={cotizacion.vehiculoId !== null}
+        conVehiculo={cotizacion.vehiculoId !== null || nuevo !== null}
         puedeVer={puede(permisos, 'vehiculos.ver', cotizacion.origenId)}
         puedeGuardar={hoja.puedeGuardar}
+        modo={MODO[cambio]}
+        motivoSinCambiar={cambio === 'final' ? MOTIVO_DE_LA_FINAL : null}
+        avisoDelElegido={rechazado ? NO_SE_PUEDE_USAR : null}
+        alta={alta}
       />
+      {origen === null ? null : (
+        <AvisoDeSubastaDeLaHoja elegido={nuevo} origen={origen} permisos={permisos} />
+      )}
     </div>
   )
 }

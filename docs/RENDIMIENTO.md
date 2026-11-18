@@ -250,7 +250,9 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 - **Panel de revisiones de una guardada** (`e2e/cotizar-guardada-revisiones.spec.ts`): `cotizacion_revisiones` por cursor (`p_antes`), de a
   `TAMANO_DE_VER_MAS` hasta `TOPE_DE_LO_CARGADO`, por `cotizaciones_revisiones_cotizacion_idx (cotizacion_id, id desc)`. Primera página con
   20: ≤ 254 nodos y ≤ 12.503 B (≈ 12 nodos por fila: dos `<Monto>` por revisión; no envolver cada cambio en otro `<span>`). El tope de 500
-  se prueba en Vitest. «Ir a una fecha»: un pedido por salto con `p_hasta`; viaja en el chunk diferido del panel.
+  se prueba en Vitest. «Ir a una fecha»: un pedido por salto con `p_hasta`; viaja en el chunk diferido del panel. Los nombres de un cambio de
+  vehículo: **una** lectura de `vehiculos` por página, por `vehiculos_pkey`, con los ids de esa página (≤ 2 × `TAMANO_DE_VER_MAS`) y
+  `.limit(ids.length)`; ninguna si la página no cambia de vehículo, nunca una por fila.
   `medir-cotizacion-revisiones-fecha.sql`: el ancla por
   `cotizaciones_revisiones_cotizacion_creado_idx (cotizacion_id, creado_en desc, id desc)` y la página por
   `cotizaciones_revisiones_cotizacion_idx`; con 5.000 revisiones, los mismos bloques a cualquier profundidad e igual
