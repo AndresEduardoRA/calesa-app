@@ -95,3 +95,20 @@ export const celdaConAjuste = (
     : (celdasQueSeDibujan(secciones, c).find(
         (celda) => celda.nodo === nodo && (celda.ajustes || celda.secundario?.ajustes === true),
       ) ?? null)
+
+// La línea de arriba de «Avanzado», como en V1: qué cambia tocar un valor y, sólo a quien tiene el ⚙ en alguna celda del modal (la base lo dice por celda, `ajustes`, y
+// el área llenó el hueco), qué cambia el ⚙.
+export const LINEA_DEL_AVANZADO = 'Tocar un valor lo cambia sólo en esta cotización.'
+export const LINEA_DEL_AJUSTE = 'El ⚙ cambia el valor por defecto de las cotizaciones nuevas.'
+
+export function explicacionDelAvanzado(
+  secciones: readonly SeccionDeHoja[],
+  conAjuste: boolean,
+): string {
+  const algunAjuste =
+    conAjuste &&
+    secciones.some((s) =>
+      s.items.some((i) => i.tipo === 'celda' && (i.ajustes || i.secundario?.ajustes === true)),
+    )
+  return algunAjuste ? `${LINEA_DEL_AVANZADO} ${LINEA_DEL_AJUSTE}` : LINEA_DEL_AVANZADO
+}
