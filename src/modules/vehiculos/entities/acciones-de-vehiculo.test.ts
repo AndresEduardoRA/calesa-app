@@ -11,6 +11,7 @@ describe('accionesDeVehiculo', () => {
     expect(
       accionesDeVehiculo({
         editar: 'habilitada',
+        cotizar: 'oculta',
         publicar: 'habilitada',
         papelera: 'habilitada',
         actividad: 'oculta',
@@ -22,6 +23,7 @@ describe('accionesDeVehiculo', () => {
     expect(
       accionesDeVehiculo({
         editar: 'oculta',
+        cotizar: 'oculta',
         publicar: 'oculta',
         papelera: 'habilitada',
         actividad: 'oculta',
@@ -30,6 +32,7 @@ describe('accionesDeVehiculo', () => {
     expect(
       accionesDeVehiculo({
         editar: 'habilitada',
+        cotizar: 'oculta',
         publicar: 'oculta',
         papelera: 'oculta',
         actividad: 'oculta',
@@ -38,6 +41,7 @@ describe('accionesDeVehiculo', () => {
     expect(
       accionesDeVehiculo({
         editar: 'oculta',
+        cotizar: 'oculta',
         publicar: 'oculta',
         papelera: 'oculta',
         actividad: 'oculta',
@@ -49,6 +53,7 @@ describe('accionesDeVehiculo', () => {
     expect(
       accionesDeVehiculo({
         editar: 'oculta',
+        cotizar: 'oculta',
         publicar: 'apagada',
         papelera: 'apagada',
         actividad: 'oculta',
@@ -69,6 +74,7 @@ describe('accionesDeVehiculo', () => {
   it('la papelera es lo último: lo destructivo al final y separado de lo frecuente', () => {
     const bloques = accionesDeVehiculo({
       editar: 'habilitada',
+      cotizar: 'habilitada',
       publicar: 'habilitada',
       papelera: 'habilitada',
       actividad: 'habilitada',
@@ -76,16 +82,41 @@ describe('accionesDeVehiculo', () => {
     expect(bloques.at(-1)).toEqual(['papelera'])
     expect(bloques.slice(0, -1).flat()).not.toContain('papelera')
   })
+})
 
+describe('accionesDeVehiculo: las que dependen de dónde se dibuja', () => {
   it('T11 · «Ver actividad» sólo si se ofrece (la ficha, con actividad.ver), en su bloque antes de la papelera', () => {
     expect(
       accionesDeVehiculo({
         editar: 'habilitada',
+        cotizar: 'oculta',
         publicar: 'habilitada',
         papelera: 'habilitada',
         actividad: 'habilitada',
       }),
     ).toEqual([['editar', 'publicar'], ['actividad'], ['papelera']])
     expect(ETIQUETA_DE_ACCION_DE_VEHICULO.actividad).toBe('Ver actividad')
+  })
+
+  it('T335 · «Cotizar vehículo» va en el primer bloque, entre editar y publicar, y sin oferta no aparece', () => {
+    expect(
+      accionesDeVehiculo({
+        editar: 'habilitada',
+        cotizar: 'habilitada',
+        publicar: 'habilitada',
+        papelera: 'habilitada',
+        actividad: 'oculta',
+      }),
+    ).toEqual([['editar', 'cotizar', 'publicar'], ['papelera']])
+    expect(
+      accionesDeVehiculo({
+        editar: 'oculta',
+        cotizar: 'habilitada',
+        publicar: 'oculta',
+        papelera: 'oculta',
+        actividad: 'oculta',
+      }),
+    ).toEqual([['cotizar']])
+    expect(ETIQUETA_DE_ACCION_DE_VEHICULO.cotizar).toBe('Cotizar vehículo')
   })
 })

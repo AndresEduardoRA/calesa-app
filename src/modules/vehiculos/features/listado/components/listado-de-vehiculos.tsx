@@ -197,6 +197,7 @@ export function ListadoDeVehiculos(props: Props) {
           {...resto}
           esquema={esquema}
           vista={vista.vista}
+          paraCotizar={paraCotizar}
           alAbrir={resumen.abrir}
           abierto={resumen.id}
           accionDeVacio={permisoDeAlta.estado === 'habilitado' ? nuevo : undefined}

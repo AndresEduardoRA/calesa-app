@@ -2,6 +2,7 @@
 
 import { vehiculoDelAviso } from '../../../entities/avisos-de-vehiculo'
 import { papeleraDelVehiculo } from '../../../entities/papelera-permiso'
+import { rutaParaCotizar } from '../../../entities/ruta-para-cotizar'
 import { MenuDeVehiculo } from '../../acciones/components/menu-de-vehiculo'
 import { faseDe, type DatosDelOrigen, type FilaDeVehiculo, type ParaElMenuDeLaLista } from './tipos'
 
@@ -11,8 +12,8 @@ type Props = {
   para: ParaElMenuDeLaLista
 }
 
-// El «⋯» de una fila o una tarjeta del inventario: «Editar» (con permiso), «Publicar en la web…» (sin el permiso, no aparece) y, separada,
-// «Enviar a la papelera» (apagada con su motivo si ya se sabe que no va).
+// El «⋯» de una fila o una tarjeta del inventario: «Editar» (con permiso), «Cotizar vehículo» (si cotiza en el origen), «Publicar en la web…»
+// (sin el permiso, no aparece) y, separada, «Enviar a la papelera» (apagada con su motivo si ya se sabe que no va).
 export function MenuDeFila({ vehiculo, fases, para }: Props) {
   const editable = para.editables.has(vehiculo.id)
   const leadVisible = para.leadsVisibles.has(vehiculo.id)
@@ -20,6 +21,7 @@ export function MenuDeFila({ vehiculo, fases, para }: Props) {
     <MenuDeVehiculo
       vehiculo={vehiculo}
       editar={editable}
+      cotizar={para.cotizar === null ? null : rutaParaCotizar(para.cotizar, vehiculo.id)}
       publicar={para.publicar.estado === 'habilitado' ? para.publicar : null}
       papelera={papeleraDelVehiculo({
         eliminable: para.eliminables.has(vehiculo.id),

@@ -669,6 +669,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Fotos:** elegir (selector, soltar o cámara) las deja en una bandeja sin subir que dice lo que no entra y por qué (no es foto, > 25 MB,
   repetida, pasa de 24). «Subir N fotos» con avance; un fallo se dice entero con «Reintentar las N que faltan». Reordenar con botones o
   `Alt+←/→`; eliminar con «Deshacer».
+- **«⋯» de la fila y la tarjeta:** «Editar», «Cotizar vehículo» (la hoja de cotizar con el vehículo y su origen, sin lead; sólo si quien mira cotiza en ese
+  origen), «Publicar en la web…» y, separada, «Enviar a la papelera»; lo que no puede, no aparece.
 - **Vitrina:** «Publicar en la web…» en el «⋯» (en la ficha, sin permiso, apagado con motivo). Panel `?panel=vitrina`: interruptor, precio
   público (vacío = «Consultar»), rango, nota, destacado y «Así lo verá el visitante». Si la fase no publica o la web está apagada,
   «Publicado, no visible».

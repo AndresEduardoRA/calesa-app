@@ -23,9 +23,12 @@ test.describe.configure({ mode: 'serial' })
 let t: TerrenoDelResumen
 
 test.beforeAll(async ({}, info) => {
+  // Con las dos claves de cotizar, la fila ofrece «Cotizar vehículo» (T335) sea la dueña de prueba la primera del equipo o una invitada.
   t = await prepararResumen(`${info.project.name}_menu`, [
     'vehiculos.vitrina',
     'vehiculos.eliminar',
+    'cotizaciones.crear',
+    'cotizaciones.ver',
   ])
 })
 
@@ -63,6 +66,7 @@ test('con todo, el orden es el mismo en la fila, el resumen y la ficha, y la pap
   const deLaFila = await abrir(menuDeVehiculo(page, TITULO), page)
   expect(await opciones(deLaFila)).toEqual([
     'Editar',
+    'Cotizar vehículo',
     'Publicar en la web…',
     'Enviar a la papelera',
   ])
