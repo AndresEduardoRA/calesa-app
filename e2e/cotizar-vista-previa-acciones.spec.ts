@@ -179,7 +179,8 @@ test('E2E E4 en una guardada con cambios sin guardar, lo copiado y el PDF son lo
   const t = await abrirLaVistaPrevia(page)
   await expect(total(t)).toContainText('1.205,00')
   const texto = await copiarElTexto(page)
-  expect(texto.split('\n')[0]).toContain(`Cotización n.º ${numeroDeLaCotizacion(id)}`)
+  // El texto sale de la geometría (D19): la fecha y el número van en renglones del encabezado.
+  expect(texto.split('\n')).toContain(`Cotización n.º ${numeroDeLaCotizacion(id)}`)
   expect(sinBlancos(texto)).toContain(`Total:${await totalDe(t)}`)
   expect(texto).not.toContain('305,00')
   const bajada = page.waitForEvent('download')

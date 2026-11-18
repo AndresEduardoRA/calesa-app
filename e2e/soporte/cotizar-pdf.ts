@@ -72,7 +72,7 @@ export async function guardarLaHojaAbierta(page: Page): Promise<string> {
 }
 
 type Grupo = { id: string; etiqueta: string; bucket: string }
-type Nodo = { id: string; grupo?: string; clave?: string }
+type Nodo = { id: string; grupo?: string; clave?: string; etiqueta?: string }
 type Modo = { clave: string; buckets: { bucket: string; nodo: string }[]; total_en: string }
 
 export type Snapshot = {
@@ -88,6 +88,8 @@ export type Snapshot = {
   modos: Modo[] | null
   locale: string
   etiquetaDelTotal: string
+  // Las etiquetas que la plantilla de la forma 1 escribe por nodo (las demás son la del nodo).
+  etiquetas: Record<string, string>
 }
 
 // Lo guardado de una cotización con lo de SU versión de la fórmula que pide la cuenta, y la etiqueta del total de la plantilla publicada de su origen.
@@ -100,7 +102,9 @@ export function snapshotDe(id: string): Snapshot {
         'totalEn', f.definicion ->> 'total_en', 'modos', f.diseno -> 'cabecera' -> 'modos',
         'locale', (select locale from public.ajustes_empresa where id = 1),
         'etiquetaDelTotal', coalesce((select p.definicion -> 'total' ->> 'etiqueta' from public.plantillas_tarjeta p
-          where p.origen_id = c.origen_id order by p.version desc limit 1), 'Total'))
+          where p.origen_id = c.origen_id order by p.version desc limit 1), 'Total'),
+        'etiquetas', coalesce((select p.definicion -> 'etiquetas' from public.plantillas_tarjeta p
+          where p.origen_id = c.origen_id order by p.version desc limit 1), '{}'::jsonb))
         from public.cotizaciones c join public.formulas f on f.id = c.formula_id
        where c.id = ${literal(id)}::uuid`),
   ) as Snapshot
@@ -120,37 +124,48 @@ export function bucketsDelModo(s: Snapshot): { buckets: Map<string, string>; tot
     : { buckets: new Map(Object.entries(s.buckets)), totalEn: s.totalEn }
 }
 
-// Un monto en dólares al final de una línea («Remate USD 9.500,00»). La cuenta lee los de `es-BO` (el locale de la semilla).
-const MONTO = /(?:^|\s)(USD[\s ]-?[\d.,]+)$/
+// Un monto en dólares en una línea («Remate (costo aprox.) USD 9.500,00 Probabilidad…»): en la cuadrícula la leyenda, el tipo de cambio y el plazo pueden ir a
+// su derecha, y el título del grupo a su izquierda. La cuenta lee los de `es-BO` (el locale de la semilla).
+const MONTO = /(?:^|\s)(USD[\s ]-?\d[\d.]*,\d{2})(?=\s|$)/
 export const usd = (s: Snapshot, valor: number) =>
   formatearMonto(valor, { moneda: 'USD', locale: s.locale })
 const aNumero = (texto: string) =>
   Number(
     texto
-      .replace(/^USD[\s ]/, '')
+      .replace(/^USD[\s ]/, '')
       .replace(/\./g, '')
       .replace(',', '.'),
   )
 
-// Los montos impresos de cada grupo: las líneas con un monto entre el título del grupo y el siguiente título o el total.
+// La etiqueta con que la tarjeta nombra a un nodo: la que escribe la plantilla o la del nodo.
+const etiquetaDe = (s: Snapshot, n: Nodo) =>
+  Object.hasOwn(s.etiquetas, n.id) ? (s.etiquetas[n.id] ?? '') : (n.etiqueta ?? n.id)
+
+// Los montos impresos de cada grupo: el de cada línea cuyo monto sigue a la etiqueta de un miembro del grupo («<etiqueta> USD …»), esté donde esté la línea
+// (el título del grupo va arriba y comparte línea con el primer miembro si su fila es de un renglón).
 export function montosPorGrupo(lineas: string[], s: Snapshot): Map<string, string[]> {
-  const titulos = new Map(s.grupos.map((g) => [g.etiqueta, g.id]))
+  const miembros = s.nodos.filter((n) => n.grupo !== undefined)
   const montos = new Map<string, string[]>()
-  let actual: string | undefined
   for (const linea of lineas) {
-    if (titulos.has(linea)) {
-      actual = titulos.get(linea)
-      continue
-    }
-    if (linea.startsWith(s.etiquetaDelTotal)) {
-      break
-    }
-    const monto = MONTO.exec(linea)?.[1]
-    if (actual !== undefined && monto !== undefined) {
-      montos.set(actual, [...(montos.get(actual) ?? []), monto])
-    }
+    const hallado = MONTO.exec(linea)
+    const monto = hallado?.[1]
+    if (hallado === null || monto === undefined) continue
+    const antes = linea.slice(0, hallado.index + hallado[0].indexOf(monto)).trimEnd()
+    const de = miembros.find((n) => antes.endsWith(etiquetaDe(s, n)))
+    if (de?.grupo !== undefined) montos.set(de.grupo, [...(montos.get(de.grupo) ?? []), monto])
   }
   return montos
+}
+
+// El total impreso: la línea que es sólo el monto, o la etiqueta del total y el monto (si comparten renglón).
+export function totalImpreso(lineas: string[], s: Snapshot): string | null {
+  const linea = lineas.find((l) => {
+    const sinEtiqueta = l.startsWith(`${s.etiquetaDelTotal} `)
+      ? l.slice(s.etiquetaDelTotal.length + 1)
+      : l
+    return /^USD[\s ]-?\d[\d.]*,\d{2}$/.test(sinEtiqueta)
+  })
+  return linea === undefined ? null : (MONTO.exec(linea)?.[1] ?? null)
 }
 
 // (a) Cada grupo imprime, sin contar los ceros, los valores de sus nodos en el snapshot.
@@ -194,8 +209,7 @@ export function cuentaDelPdf(lineas: string[], s: Snapshot): Cuenta {
     maximo = Math.max(maximo, delBucket)
   }
   const tcDelTotal = tc(totalEn)
-  const linea = lineas.find((l) => l.startsWith(s.etiquetaDelTotal) && MONTO.test(l))
-  const total = aNumero(MONTO.exec(linea ?? '')?.[1] ?? 'NaN')
+  const total = aNumero(totalImpreso(lineas, s) ?? 'NaN')
   return {
     total,
     porLaCuenta: bs / tcDelTotal,
