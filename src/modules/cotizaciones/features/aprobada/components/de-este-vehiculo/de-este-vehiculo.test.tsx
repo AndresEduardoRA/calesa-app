@@ -151,6 +151,29 @@ describe('DeEsteVehiculo', () => {
 })
 
 describe('DeEsteVehiculo, estados', () => {
+  it('si falla la relectura tras aprobar, «Reintentar» vuelve a pedir la primera página', async () => {
+    h.aprobar.mockImplementation((pedido: { alCambiar: (a: boolean, id: string) => void }) => {
+      pedido.alCambiar(true, idDe(3))
+      return Promise.resolve()
+    })
+    const cursor = codificarCursor({
+      instante: fila(2).creadoEn,
+      id: idDe(2),
+      sentido: 'siguiente',
+    })
+    montar()
+    await responder(1, leida([fila(3), fila(2)], null, cursor))
+    fireEvent.click(
+      (await screen.findAllByRole('button', { name: 'Aprobar esta' }))[0] as HTMLElement,
+    )
+    await responder(2, { ok: false, error: { codigo: 'inesperado', mensaje: 'x' } })
+    fireEvent.click(await screen.findByRole('button', { name: 'Reintentar' }))
+    await waitFor(() => {
+      expect(pedidos).toHaveLength(3)
+    })
+    expect(pedidos[2]?.cursor).toBeNull()
+  })
+
   it('un error de lectura dice el texto con «Reintentar», que vuelve a pedir', async () => {
     montar()
     await responder(1, { ok: false, error: { codigo: 'inesperado', mensaje: 'x' } })

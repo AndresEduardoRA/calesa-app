@@ -34,14 +34,17 @@ const NO_PUDIMOS = 'No pudimos cargar las cotizaciones de este vehículo.'
 
 // Las páginas de «De este vehículo», de a `TAMANO_DE_ESTE_VEHICULO` por cursor y hasta `TOPE_DE_ESTE_VEHICULO`, con la aprobada primero. La forma es la de
 // `usePaginasDelHistorial`: una respuesta que ya no es la del último pedido (otro «Ver más», una relectura, el componente ya no está, el primer montaje de
-// `StrictMode`) se descarta, y ese `ultimo` es el único guardián.
+// `StrictMode`) se descarta, y ese `ultimo` (que sólo crece) es el único guardián.
 export function useDeEsteVehiculo(vehiculoId: string) {
   const [estado, setEstado] = useState<Estado>(SIN_LEER)
   const ultimo = useRef(0)
+  // Lo que pidió el último pedido (nulo = la primera página): «Reintentar» vuelve a pedir eso, también tras una relectura que falló.
+  const ultimoDesde = useRef<string | null>(null)
 
+  // Al desmontarse, lo que va en camino queda viejo. El número sólo crece: uno reutilizado dejaría pasar una respuesta vieja.
   useEffect(
     () => () => {
-      ultimo.current = -1
+      ultimo.current += 1
     },
     [],
   )
@@ -50,6 +53,7 @@ export function useDeEsteVehiculo(vehiculoId: string) {
   const leer = (desde: string | null) => {
     ultimo.current += 1
     const pedido = ultimo.current
+    ultimoDesde.current = desde
     setEstado((antes) => ({ ...antes, cargando: true, error: null }))
     leerDeEsteVehiculo({ vehiculoId, cursor: leerCursor(desde) })
       .catch((): Resultado<PaginaLeidaDeEsteVehiculo> => fallo('inesperado', NO_PUDIMOS))
@@ -99,7 +103,7 @@ export function useDeEsteVehiculo(vehiculoId: string) {
     },
     reintentar: () => {
       if (!estado.cargando) {
-        leer(estado.leido ? estado.siguiente : null)
+        leer(estado.leido ? ultimoDesde.current : null)
       }
     },
     // Tras aprobar o deshacer (aquí o en otra isla): la primera página otra vez, para que la nueva aprobada suba.

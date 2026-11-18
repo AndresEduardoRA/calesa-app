@@ -101,7 +101,8 @@ export function DeEsteVehiculo({
             esta={fila.id === cotizacionActual}
             motivo={motivoParaNoAprobarEsta(fila, aprobarEn)}
             aprobando={enCurso === fila.id}
-            ocupado={enCurso !== null}
+            // Un envío a la vez, y nada mientras se relee: la versión de la fila podría estar vieja.
+            ocupado={enCurso !== null || lista.cargando}
             alAprobar={() => {
               aprobar(fila)
             }}
