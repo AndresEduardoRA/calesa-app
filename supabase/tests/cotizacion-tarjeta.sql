@@ -401,6 +401,8 @@ begin
   if (select x ->> 'pct' from jsonb_array_elements(r -> 'nodos') x where x ->> 'id' = 'fees') is distinct from 'fees_pct'
      or (select array_agg(x ->> 'id' order by x ->> 'id') from jsonb_array_elements(r -> 'nodos') x) is distinct from array['fees', 'fees_pct', 'grua']
      or (select array_agg(x ->> 'id') from jsonb_array_elements(r -> 'grupos') x) is distinct from array['logistica']
+     -- Un grupo que sólo nombra un `plazo` no lleva su bucket: ninguna celda `tc_*` validó su tipo de cambio.
+     or r #> '{grupos,0,bucket}' is distinct from 'null'::jsonb
      or r -> 'tipos_de_cambio' <> '{"buckets": {}, "modos": {}}'
      or r -> 'modos' <> '[{"clave": "paralelo", "nombre": "Paralelo"}, {"clave": "unificado", "nombre": "Unificado"}]'
      or r #>> '{variante,nodo}' is distinct from 'variante' then

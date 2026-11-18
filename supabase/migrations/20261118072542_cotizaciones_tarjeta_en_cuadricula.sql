@@ -70,7 +70,9 @@ begin
                          from unnest(v_ids) x), '[]'::jsonb),
     'grupos', coalesce((select jsonb_agg(jsonb_build_object('id', g, 'etiqueta', v_grupos -> g ->> 'etiqueta',
                                                             'plazo', case when jsonb_typeof(v_grupos -> g -> 'plazo') = 'string' then v_grupos -> g -> 'plazo' end,
-                                                            'bucket', v_grupos -> g ->> 'bucket') order by g collate "C")
+                                                            -- El bucket sólo si una celda `tc_*` lo nombra (y la plantilla validó su tipo de cambio): un grupo de un `plazo` no lo lleva.
+                                                            'bucket', case when v_grupos -> g ->> 'bucket' = any (v_buckets) then v_grupos -> g ->> 'bucket' end)
+                                            order by g collate "C")
                           from unnest(v_de_grupo) g), '[]'::jsonb),
     'tipos_de_cambio', jsonb_build_object(
       'buckets', coalesce((select jsonb_object_agg(b, jsonb_build_object('nombre', v_tc ->> (fo.definicion -> 'buckets' ->> b), 'nodo', fo.definicion -> 'buckets' ->> b))
