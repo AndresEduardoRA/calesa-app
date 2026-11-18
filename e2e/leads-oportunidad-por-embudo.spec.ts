@@ -152,6 +152,8 @@ test('el embudo filtrado por lead: sólo las suyas con el chip, «Ver todas» lo
   // «Ver todas» quita el filtro: vuelven las de los demás leads.
   await page.getByRole('button', { name: 'Ver todas' }).click()
   await expect(page).not.toHaveURL(/[?&]lead=/)
+  // El tablero sin filtro llega del servidor: se espera antes de elegir otra etapa.
+  await expect(page.getByRole('button', { name: /^Quitar el filtro de / })).toHaveCount(0)
   await verEtapa(page, 'Nuevo')
   await expect(tarjeta(page, otro.lead.nombre)).toBeVisible()
 
