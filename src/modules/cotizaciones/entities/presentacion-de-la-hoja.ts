@@ -1,5 +1,5 @@
 import { itemSeDibuja, propsDeCelda, type ContextoDeHoja } from './binding'
-import type { CeldaDeHoja, SeccionDeHoja } from './hoja'
+import type { CeldaDeHoja, EnlaceDeLaAyuda, SeccionDeHoja } from './hoja'
 
 // Lo que la hoja dibuja en cada lugar (paso 4.13-4a, `docs/COTIZADOR.md` › «El diseño de la hoja (D7)»): las secciones `principal` en su orden, y las `avanzado` juntas detrás de **un**
 // botón «Avanzado» que va donde estaba la primera de ellas. Puro: la hoja recibe sólo las secciones que se dibujan (`seccionSeDibuja`).
@@ -49,6 +49,10 @@ export const tipoDeAyuda = (celda: CeldaDeHoja): TipoDeAyuda | null =>
 // El texto de la ayuda de una celda, o nulo si no tiene o es de una tabla.
 export const ayudaDeTexto = (celda: CeldaDeHoja): string | null =>
   celda.ayuda !== null && 'texto' in celda.ayuda ? celda.ayuda.texto : null
+
+// Los enlaces de la ayuda de texto de una celda (hasta 5, todos `https://`: el esquema de la hoja ya lo exigió), en su orden; vacío si no tiene.
+export const enlacesDeLaAyuda = (celda: CeldaDeHoja): readonly EnlaceDeLaAyuda[] =>
+  celda.ayuda !== null && 'texto' in celda.ayuda ? (celda.ayuda.enlaces ?? []) : []
 
 // La clave de la tabla de la ayuda de una celda, o nulo si no tiene o es de texto.
 export const tablaDeAyuda = (celda: CeldaDeHoja): string | null =>

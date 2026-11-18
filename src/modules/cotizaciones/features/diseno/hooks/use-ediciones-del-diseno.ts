@@ -15,11 +15,16 @@ import {
   alternarSecundario,
   ponerTotalDeLaTarjeta,
 } from '../../../entities/diseno/edicion-de-la-tarjeta'
+import type { EnlaceDeAyuda } from '../../../entities/diseno'
 import {
   ponerAtajos,
   ponerAyuda,
   ponerEfecto,
+  ponerEnlace,
+  quitarEnlace,
+  sumarEnlace,
   type AyudaDeCelda,
+  type DondeDelEnlace,
 } from '../../../entities/diseno/edicion-de-items'
 import {
   ponerAspectoDeItem,
@@ -49,6 +54,15 @@ function edicionesDelDiseno(
     },
     ponerAyuda: (seccion: string, nodo: string, ayuda: AyudaDeCelda | null) => {
       aplicar((d) => ponerAyuda(d, seccion, nodo, ayuda))
+    },
+    sumarEnlace: (seccion: string, nodo: string) => {
+      aplicar((d) => sumarEnlace(d, seccion, nodo))
+    },
+    ponerEnlace: (donde: DondeDelEnlace, cambios: Partial<EnlaceDeAyuda>) => {
+      aplicar((d) => ponerEnlace(d, donde, cambios))
+    },
+    quitarEnlace: (donde: DondeDelEnlace) => {
+      aplicar((d) => quitarEnlace(d, donde))
     },
     ponerVerTotalBs: (valor: boolean) => {
       aplicar((d) => ponerVerTotalBs(d, valor))

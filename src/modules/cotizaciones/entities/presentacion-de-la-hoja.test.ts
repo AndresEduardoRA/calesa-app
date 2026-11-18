@@ -6,6 +6,7 @@ import { crudaDeLaHoja, respuestaDePrueba } from './hoja-de-prueba.soporte'
 import {
   ayudaDeTexto,
   celdaConAjuste,
+  enlacesDeLaAyuda,
   celdaConAyuda,
   hayDatosPorRevisar,
   ordenDeLaHoja,
@@ -155,6 +156,17 @@ describe('ayudaDeTexto y tablaDeAyuda: cada una, lo suyo', () => {
 
   it('una celda sin ayuda no devuelve nada', () => {
     expect(ayudaDeTexto(de('a1'))).toBeNull()
+  })
+
+  it('los enlaces: los de la ayuda de texto, en su orden; vacío sin enlaces, con una tabla o sin ayuda', () => {
+    const enlaces = [
+      { titulo: 'Copart', url: 'https://www.copart.com/' },
+      { titulo: 'IAA', url: 'https://www.iaai.com/' },
+    ]
+    expect(enlacesDeLaAyuda({ ...de('b1'), ayuda: { texto: 'Mira', enlaces } })).toEqual(enlaces)
+    expect(enlacesDeLaAyuda(de('b1'))).toEqual([])
+    expect(enlacesDeLaAyuda(de('y1'))).toEqual([])
+    expect(enlacesDeLaAyuda(de('a1'))).toEqual([])
   })
 })
 
