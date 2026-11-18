@@ -1,11 +1,12 @@
 ---
 # El cierre de una tanda: lo crea solo el orquestador (cierre_de_tanda en cierre-tanda.sh) con la etiqueta `cierre` cuando la cola
 # quedó quieta tras una tanda y main salió verde de punta a punta. Reemplaza las llaves FECHA y RAMA_FECHA (AAAA-MM-DD, La Paz), SHA
-# (el main verde), CORRIDA (su corrida), TAREAS (las tareas de la tanda) y RESUMEN (resumen-tanda.mjs); en estos comentarios van sin
+# (el main verde), CORRIDA (su corrida), DEPENDE y APLASTAR (la tarea de aplastar las migraciones, si se encoló), TAREAS (las tareas de la tanda) y RESUMEN (resumen-tanda.mjs); en estos comentarios van sin
 # llaves: TAREAS y RESUMEN son de varias líneas y romperían el frontmatter. `cierre: tanda`: no cuenta como tarea de la tanda y, al
 # integrarse, la tanda siguiente cuenta desde ahí y se podan los transcriptos de ésta.
 titulo: cerrar la tanda del {{FECHA}}
 rama: chore/cerrar-tanda-{{RAMA_FECHA}}
+depende: { { DEPENDE } }
 conflicto: flujo docs
 nivel: capaz
 effort: high
@@ -37,9 +38,9 @@ En este orden; cada paso tiene su criterio de terminado.
    cuerpo de su PR: antes de borrarlo, que los enlaces de ese cuerpo apunten al sha del commit y no a la rama, con
    `gh api -X PATCH repos/{owner}/{repo}/pulls/<n> -F body=@<archivo>`); los archivos huérfanos que dejó la tanda; las ramas remotas
    integradas (`node scripts/flujo/limpiar-ramas.mjs`). Terminado: `docs/referencias/` sólo tiene referencias vigentes.
-4. **Migraciones:** con más de 40 en `supabase/migrations/`, no se aplastan aquí: abre un issue `cola` con la spec de «aplastar las
-   migraciones» (`pnpm db:aplastar`, `docs/FLUJO.md` › «La base»; ojo con las pruebas de migraciones de datos que el propio
-   `scripts/db/aplastar.sh` pide borrar), con `cierre: mejora`. Con 40 o menos, nada.
+4. **Migraciones:** cada cierre deja una sola. El aplastado va en su propio PR y ya está hecho: lo encoló el orquestador antes que esta
+   tarea, que depende de él (tarea: {{APLASTAR}}). Aquí sólo se comprueba: `ls supabase/migrations/` da la base sola y
+   `docs/ESTADO.md` nombra esa base. Si quedó más de una (entró una migración después), una línea en `docs/PENDIENTES.md`.
 5. **Retro con datos** (el resumen va abajo, más los PR de la tanda: `gh pr view <n> --comments`): las falencias que costaron tiempo,
    tokens o corrección, cada una con su evidencia (tarea, PR, minutos o dólares).
    - Cada falencia del **flujo** (orquestador, prompts, plantillas, CI, hooks, guardas, skills) con un arreglo claro: un issue nuevo

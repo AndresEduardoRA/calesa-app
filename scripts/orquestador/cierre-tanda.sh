@@ -116,10 +116,40 @@ cierre_de_tanda() {
   publicar_cierre "$sha" "$tanda"
 }
 
+# Las migraciones de main (la copia de la principal, que al-dia.sh mantiene al día). Más de una (la base) → el cierre las aplasta.
+migraciones_de_main() {
+  local n=0 f
+  for f in "$REPO"/supabase/migrations/*.sql; do [ -e "$f" ] && n=$((n + 1)); done
+  echo "$n"
+}
+
+# Cada cierre deja una sola migración, como el cierre a mano de T21–T40: si main tiene más de una, encola antes la tarea de
+# aplastarlas (plantillas/aplastar-migraciones.md, su propio PR, `cierre: aplastar`) y el cierre depende de ella. Una por cierre
+# (estado/.cierre-aplastar); `CIERRE_APLASTAR="no"` lo apaga. Deja en APLASTADO su id, o nada. Devuelve 1 si GitHub no respondió.
+encolar_aplastado() { # fecha
+  APLASTADO=$(cat "$EST/.cierre-aplastar" 2>/dev/null)
+  [ -n "$APLASTADO" ] && return 0
+  [ "${CIERRE_APLASTAR:-si}" = si ] || return 0
+  local n f
+  n=$(migraciones_de_main)
+  [ "$n" -gt 1 ] || return 0
+  f="$EST/aplastar-migraciones-$1.md"
+  sed -e "s/{{FECHA}}/$1/g" -e "s/{{RAMA_FECHA}}/$1/g" -e "s/{{MIGRACIONES}}/$n/g" "$ORQ/plantillas/aplastar-migraciones.md" >"$f"
+  publicar_entrada "$f" || return 1
+  if [ -n "$PUBLICADA" ]; then
+    APLASTADO=$PUBLICADA
+    echo "$APLASTADO" >"$EST/.cierre-aplastar"
+    log "$APLASTADO: aplastar las $n migraciones de main antes de cerrar la tanda, a la cola"
+  elif [ -f "$f.error" ]; then
+    log "✗ la tarea de aplastar las migraciones no se publica: plantillas/aplastar-migraciones.md no se lee ($(cat "$f.error")); el cierre sigue sin ella"
+  fi
+}
+
 publicar_cierre() { # sha tanda
-  local sha=$1 tanda=$2 fecha f t id tareas resumen n
+  local sha=$1 tanda=$2 fecha f t id tareas resumen n APLASTADO=""
   [ "$(cat "$EST/.cierre-roto" 2>/dev/null)" = "cierre $sha" ] && return 0
   fecha=$(TZ=America/La_Paz date +%F)
+  encolar_aplastado "$fecha" || return 1
   f="$EST/cerrar-tanda-$fecha.md"
   tareas=$(for id in $tanda; do echo "- $id · PR #$(est_get "$id" pr) · $(campo "$(spec_de "$id")" titulo)"; done)
   # shellcheck disable=SC2086 # los ids, uno por argumento
@@ -130,6 +160,8 @@ publicar_cierre() { # sha tanda
   t=${t//'{{RAMA_FECHA}}'/$fecha}
   t=${t//'{{SHA}}'/$sha}
   t=${t//'{{CORRIDA}}'/$(enlace_corrida)}
+  t=${t//'{{DEPENDE}}'/$APLASTADO}
+  t=${t//'{{APLASTAR}}'/${APLASTADO:-ninguna: main ya tiene una sola migración}}
   t=${t//'{{TAREAS}}'/$tareas}
   printf '%s\n' "${t//'{{RESUMEN}}'/$resumen}" >"$f"
   publicar_entrada "$f" cierre || return 1
@@ -161,7 +193,7 @@ cierre_al_integrar() { # ID
     *) return 0 ;;
   esac
   date +%s >"$EST/.cierre-desde"
-  rm -f "$EST/.cierre-run" "$EST/.cierre-rojo" "$EST/.cierre-publicado" "$EST/.cierre-roto"
+  rm -f "$EST/.cierre-run" "$EST/.cierre-rojo" "$EST/.cierre-publicado" "$EST/.cierre-roto" "$EST/.cierre-aplastar"
   touch "$EST/$1/cierre_hecho"
 }
 

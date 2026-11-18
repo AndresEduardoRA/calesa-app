@@ -120,7 +120,8 @@ Ningún doc lleva historia («se encontró X y se arregló»): eso es el PR. Lo 
 
 - Una migración nueva por cambio; después `pnpm db:reset`, `pnpm db:types` y `pnpm db:probar:rapido`; el completo lo corre el CI
   (`.claude/rules/migraciones.md`).
-- **Aplastar:** cuando las migraciones pasan de unas cuarenta, o antes de un despliegue grande, `pnpm db:aplastar` las funde en una
+- **Aplastar:** en cada cierre de tanda (el orquestador encola la tarea si main tiene más de una migración:
+  `scripts/orquestador/plantillas/aplastar-migraciones.md`), o antes de un despliegue grande, `pnpm db:aplastar` las funde en una
   base nueva y comprueba que deja la misma base (esquema, ACL, policies, triggers, catálogo, jobs, buckets). Va en su propio PR. Lo
   que hay que hacer después en un proyecto remoto: `docs/DESPLIEGUE.md` › «Tras aplastar las migraciones».
 - Producción (variables, secretos, Vercel) es de la persona; la base remota del proyecto (`db push`, `--include-seed`, `db reset
