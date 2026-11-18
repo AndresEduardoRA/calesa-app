@@ -3,7 +3,7 @@
 import type { Route } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { RUTAS } from '@/shared/lib/rutas'
+import { RUTAS, conVuelta } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { CLAVE_DE_SECCION, type LeadDeFicha } from '../../../entities/ficha'
 import { motivoParaNoEnviar } from '../../../entities/papelera'
@@ -13,7 +13,9 @@ import type { Marcas } from '../../marcas/hooks/use-marcas'
 import { NuevaOportunidadDelLead } from '../../oportunidades/components/nueva-oportunidad-del-lead'
 import { usePanelDeOportunidadRapida } from '../../oportunidades/hooks/use-panel-de-oportunidad-rapida'
 import { rutaDeLasOportunidadesDe } from '../../../entities/oportunidad-rapida'
+import { edicionDelMenu } from '../../../entities/acciones-de-lead'
 import { useAbrirEnLaFicha } from '../hooks/use-abrir-en-la-ficha'
+import { usePanelDeLead } from '../hooks/use-panel-de-lead'
 import { BotonEditarLead } from './boton-editar-lead'
 
 type Props = {
@@ -23,6 +25,8 @@ type Props = {
   etiquetas: Etiquetas
   alGestionar: () => void
   puedeEditar: boolean
+  // Cartera y `leads.telefonos_extra.editar`: sin `puedeEditar`, el «⋯» ofrece «Editar teléfonos».
+  puedeEditarExtras: boolean
   puedeEnviarAPapelera: boolean
   // La hoja de cotizar con este lead elegido, en el primer origen donde quien mira cotiza (la compone la página: `leads` no conoce `cotizaciones`); null si no cotiza.
   paraCotizar: string | null
@@ -59,7 +63,8 @@ function papeleraDeLaFicha(
   }
 }
 
-// Lo que se puede hacer con el lead desde su cabecera: «Editar», «Cotizar» (sólo a quien cotiza) y el «⋯», con la lista de siempre (`accionesDeLead()`). Anotar y agendar
+// Lo que se puede hacer con el lead desde su cabecera: «Editar», «Cotizar» (sólo a quien cotiza) y el «⋯», con la lista de siempre (`accionesDeLead()`):
+// «Cotizar lead» (con `returnTo` a la ficha) y «Editar lead» o «Editar teléfonos» (el panel de edición, `?panel=editar-lead`) también están ahí. Anotar y agendar
 // abren su modal (del bloque «Seguimientos y recordatorios») y llevan la página a ese bloque, sin navegar. «Nueva oportunidad…» abre su modal (con el aviso de las que ya tiene) donde
 // se está, y «Ver oportunidades» va a su sección. Enviar a la papelera se hace y ofrece «Deshacer»; después lleva al
 // listado, porque la ficha ya no existe para nadie. Con un vehículo vinculado que quien mira ve, se apaga con el motivo y ofrece ir a
@@ -71,12 +76,15 @@ export function AccionesDeLaFicha(props: Props) {
     etiquetas,
     alGestionar,
     puedeEditar,
+    puedeEditarExtras,
     puedeEnviarAPapelera,
     paraCotizar,
     paraActividad,
   } = props
   const router = useRouter()
   const oportunidad = usePanelDeOportunidadRapida()
+  const panel = usePanelDeLead()
+  const edicion = edicionDelMenu({ editar: puedeEditar, telefonos: puedeEditarExtras })
   const irA = (url: string) => {
     router.push(url as Route)
   }
@@ -84,7 +92,10 @@ export function AccionesDeLaFicha(props: Props) {
   return (
     <>
       {puedeEditar ? <BotonEditarLead /> : null}
-      {paraCotizar ? <EnlaceACotizar ruta={paraCotizar} /> : null}
+      {paraCotizar ? (
+        // Vuelve a la ficha, como «Cotizar lead» del «⋯».
+        <EnlaceACotizar ruta={conVuelta(paraCotizar, `${RUTAS.leads}/${ficha.id}`)} />
+      ) : null}
       <MenuDeLeadConMarcas
         leadId={ficha.id}
         nombre={ficha.nombre}
@@ -93,6 +104,7 @@ export function AccionesDeLaFicha(props: Props) {
         alGestionar={alGestionar}
         puedeEnviar={puedeEnviarAPapelera}
         conBorde
+        paraCotizar={paraCotizar}
         acciones={
           puedeEditar
             ? {
@@ -109,13 +121,8 @@ export function AccionesDeLaFicha(props: Props) {
               }
             : undefined
         }
-        verActividad={
-          paraActividad
-            ? () => {
-                irA(paraActividad)
-              }
-            : undefined
-        }
+        editar={edicion ? { modo: edicion, alEditar: panel.abrir } : undefined}
+        paraActividad={paraActividad}
         papelera={papeleraDeLaFicha(ficha, irA, enLaFicha.irA)}
       />
       {puedeEditar ? (

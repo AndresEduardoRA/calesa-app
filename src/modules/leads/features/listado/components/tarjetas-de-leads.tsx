@@ -3,21 +3,13 @@
 import { EnlaceDeLaFila, TarjetaDeLista } from '@/shared/ui/lista'
 import { tipoDelCatalogo } from '../../../entities/catalogos'
 import { camposDeLaTarjeta, type FilaDeLead } from '../../../entities/listado'
-import { useIrALasOportunidades } from '../../oportunidades/hooks/use-ir-a-las-oportunidades'
-import { MenuDeLead } from '../../marcas/components/menu-de-lead'
 import { BadgeDeTipo } from './badge-de-tipo'
 import { CeldaDeCampo } from './celda-de-campo'
+import { MenuDeLaFila } from './menu-de-la-fila'
 import { NombreDeFila } from './nombre-de-fila'
 import { telefonoDeLista } from './telefono-de-lista'
 import { OrigenDeLaTarjeta } from './origen-del-lead'
-import {
-  accionesDelMenu,
-  type DatosDeLaLista,
-  origenDelCatalogo,
-  type ParaMarcar,
-  rutaDeLaFicha,
-  verOportunidadesDelMenu,
-} from './tipos'
+import { type DatosDeLaLista, origenDelCatalogo, type ParaMarcar, rutaDeLaFicha } from './tipos'
 import {
   UltimoContactoDeTarjeta,
   useContextoDeUltimoContacto,
@@ -75,7 +67,6 @@ export function TarjetasDeLeads(props: Props) {
     ultimoContacto,
   } = props
   const contexto = useContextoDeUltimoContacto(ultimoContacto)
-  const irALasOportunidades = useIrALasOportunidades()
   return (
     <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
       {leads.map((lead) => {
@@ -86,20 +77,7 @@ export function TarjetasDeLeads(props: Props) {
             key={lead.id}
             idDeVisto={lead.id}
             href={rutaDeLaFicha(lead.id)}
-            acciones={
-              <>
-                <MenuDeLead
-                  leadId={lead.id}
-                  nombre={lead.nombre}
-                  marcas={lead.marcas}
-                  etiquetas={marcar.etiquetas}
-                  alGestionar={marcar.alGestionar}
-                  puedeEnviar={marcar.eliminables.includes(lead.id)}
-                  acciones={accionesDelMenu(marcar, lead)}
-                  verOportunidades={verOportunidadesDelMenu(irALasOportunidades, lead)}
-                />
-              </>
-            }
+            acciones={<MenuDeLaFila lead={lead} marcar={marcar} />}
           >
             {/* Con el texto al 200 % la tarjeta mide menos de 16 rem: el tipo pasa debajo y el nombre se parte en líneas, no se corta. */}
             <div className="flex items-start justify-between gap-2 @max-[16rem]:flex-col">

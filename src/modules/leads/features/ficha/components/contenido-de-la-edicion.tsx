@@ -39,6 +39,15 @@ export type Datos = {
   zona: string
 }
 
+// Lo que cambia cuando el panel se abre desde el «⋯» de la lista o del kanban y no desde la ficha: la ficha no está debajo para volver a
+// leerla con `router.refresh()`, así que quien abre dice qué hacer.
+export type SalidasFueraDeLaFicha = {
+  // Otra persona cambió el lead: traer su versión (el panel descarta lo escrito).
+  alRecargar: () => void
+  // Quien edita ya no ve el lead: se cierra el panel y la lista se vuelve a leer.
+  alPerderElLead: () => void
+}
+
 const idDe = (clave: string) => `lead-editar-${clave}`
 
 const texto = (valor: unknown) => (typeof valor === 'string' ? valor : '')
@@ -136,7 +145,11 @@ function GruposDeCampos({ ficha, campos, estado }: PropsDeGrupos) {
 }
 
 // Lo que pasa cuando el panel termina: se guardó (o no había nada) o quien edita ya no ve el lead.
-function salidasDelPanel(alCerrar: () => void, recargar: () => void) {
+function salidasDelPanel(
+  alCerrar: () => void,
+  recargar: () => void,
+  fueraDeLaFicha: SalidasFueraDeLaFicha | undefined,
+) {
   return {
     alGuardar: (sinCambios: boolean) => {
       if (!sinCambios) {
@@ -144,8 +157,14 @@ function salidasDelPanel(alCerrar: () => void, recargar: () => void) {
       }
       alCerrar()
     },
-    // Sin acceso ya no hay nada que editar: el servidor vuelve a leer y muestra la pantalla de lo que no se ve.
-    alPerderElLead: recargar,
+    // Sin acceso ya no hay nada que editar: en la ficha, el servidor vuelve a leer y muestra la pantalla de lo que no se ve; fuera de
+    // ella, el panel se cierra y la lista se vuelve a leer.
+    alPerderElLead: fueraDeLaFicha
+      ? () => {
+          alCerrar()
+          fueraDeLaFicha.alPerderElLead()
+        }
+      : recargar,
   }
 }
 
@@ -163,6 +182,7 @@ function useFocoEnElPrimerError(
 
 type PropsDelContenido = Datos & {
   alCerrar: () => void
+  fueraDeLaFicha: SalidasFueraDeLaFicha | undefined
   puedeEditarExtras: boolean
   puedeConfigurar: boolean
   // «Cambiar el principal» (cartera y `leads.editar`, sólo en la ficha): pasa al panel del cambio. Nulo, no se ofrece.
@@ -178,6 +198,7 @@ export function ContenidoDeLaEdicion({
   tipos,
   zona,
   alCerrar,
+  fueraDeLaFicha,
   puedeEditarExtras,
   puedeConfigurar,
   alCambiarElPrincipal,
@@ -198,7 +219,7 @@ export function ContenidoDeLaEdicion({
     origenes,
     tipos,
     zona,
-    ...salidasDelPanel(alCerrar, refrescarLaFicha),
+    ...salidasDelPanel(alCerrar, refrescarLaFicha, fueraDeLaFicha),
   })
 
   // Con algo escrito, la acción de un aviso que sale de la pantalla («Abrir ficha») pregunta en el pie; descartar tira el borrador.
@@ -230,7 +251,11 @@ export function ContenidoDeLaEdicion({
           alRecargar={() => {
             // Trae la versión de la otra persona: lo escrito acá se descarta a propósito.
             estado.descartarBorrador()
-            router.refresh()
+            if (fueraDeLaFicha) {
+              fueraDeLaFicha.alRecargar()
+            } else {
+              router.refresh()
+            }
           }}
         />
         <DatosFijos ficha={ficha} origenes={origenes} tipos={tipos} estado={estado} />

@@ -300,6 +300,13 @@ las trampas, en `docs/LECCIONES.md`.
   `?panel=` directo). Un `lead` que no es un id también redirige: la ficha dice lo mismo para todo. «Un arrastre no navega» se cumple como «elegir texto no
   navega»: el kanban no se arrastra («Mover a…» es un menú). Descartados: un `<a>` que envuelve la fila (no puede envolver un `<tr>` y anidaría el «⋯» y
   los enlaces de la fila), un «stretched link» (encerrado por la celda pegajosa) y conservar el resumen junto al enlace.
+- **El «⋯» del lead lleva a otros módulos sin conocerlos y sin un pedido por fila.** «Cotizar lead» y «Ver actividad» apuntan a `cotizaciones` y `actividad`,
+  que `leads` no importa: `src/app` arma cada ruta una vez por página (permisos y `getOrigenes()` de esa request) con `MARCADOR_DE_LEAD`, un uuid que no es de
+  nadie, en el lugar del id, y la fila lo reemplaza (`rutaDelLead()`); el `returnTo` se suma al elegir, con la URL de ese momento. «Editar lead» fuera de la
+  ficha abre el mismo panel por `?panel=editar-lead&para=<id>` y lee el lead al abrirse (`lead_ficha`, un pedido por apertura). La acción principal se destaca
+  en negrita, sola en su bloque y primera con el teclado (`principal` de `AccionDeMenu`), no con color: el «⋯» sigue siendo un menú y el color de marca es de
+  los botones. Descartados: pasar cada ruta armada en la fila (crece con la página), un botón «Cotizar» al lado del «⋯» en cada fila (ruido y bytes por fila)
+  y navegar a la ficha para editar (pierde la lista y sus filtros).
 - **La ficha se mide entera.** `?seccion=` no cambia el documento: un solo presupuesto (`PRESUPUESTO_DE_LA_FICHA_EN_KB`) sobre
   `/perfil` con 10 oportunidades, seguimientos y recordatorios, vínculos y portal, igual con 1.000 (lo que crece va por «Ver todos»), y el JS en frío
   de `/leads/[id]` tiene su tope (`docs/RENDIMIENTO.md`).

@@ -1,9 +1,10 @@
 'use client'
 
-import { parseAsString, useQueryState } from 'nuqs'
+import { parseAsString, useQueryStates } from 'nuqs'
 import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
 import { recordarQuienAbre } from '@/shared/ui/foco-de-quien-abre'
 import { abrirConVuelta, useVueltaDelFoco } from '@/shared/ui/vuelta-del-foco'
+import { CLAVE_PARA } from '../../../entities/acciones-de-fila'
 import { PANEL_COMPARTIR, PANEL_SALIR, PANEL_TRANSFERIR } from '../../../entities/cartera'
 import { PANEL_EDITAR_LEAD } from '../../../entities/edicion'
 import { PANEL_CAMBIAR_TELEFONO } from '../../../entities/telefonos'
@@ -19,16 +20,22 @@ const PANELES = new Set([
 // Qué panel de la ficha está abierto, en la URL (`?panel=editar-lead`, `cambiar-telefono`, `compartir-lead`, `transferir-lead` o
 // `salir-lead`; el viejo `agregar-telefono` lo reemplaza la ficha por `editar-lead&extra=nuevo`). Comparten la clave: no pueden estar
 // abiertos a la vez. Abrir suma al historial («atrás» lo cierra; tras recargar, devuelve el foco a quien lo abrió: `vuelta-del-foco.ts`).
-// Sin `shallow: false`: abrirlo no necesita al servidor, la ficha ya está.
+// Sin `shallow: false`: abrirlo no necesita al servidor, la ficha ya está. Cerrar quita también `para` (el lead del panel de edición abierto
+// desde el «⋯» de la lista o del kanban: `useEdicionDesdeLaLista()`).
+const PARAMETROS = { [CLAVE_DE_PANEL]: parseAsString, [CLAVE_PARA]: parseAsString }
+
 export function usePanelDeLead() {
-  const [panel, setPanel] = useQueryState(CLAVE_DE_PANEL, parseAsString)
+  const [parametros, setParametros] = useQueryStates(PARAMETROS)
+  const panel = parametros[CLAVE_DE_PANEL]
+  const setPanel = (valor: string | null, opciones?: { history: 'push' | 'replace' }) =>
+    setParametros({ [CLAVE_DE_PANEL]: valor }, opciones)
   useVueltaDelFoco(CLAVE_DE_PANEL, panel !== null && PANELES.has(panel))
   const abre = (valor: string) => () => {
     recordarQuienAbre()
     abrirConVuelta(CLAVE_DE_PANEL, () => setPanel(valor, { history: 'push' }), panel === valor)
   }
   const cierra = () => {
-    void setPanel(null)
+    void setParametros({ [CLAVE_DE_PANEL]: null, [CLAVE_PARA]: null })
   }
   return {
     // La edición de la ficha.

@@ -12,21 +12,13 @@ import { tipoDelCatalogo } from '../../../entities/catalogos'
 import type { OrigenConEstado } from '../../../entities/ficha'
 import { camposDeTabla } from '../../../entities/listado'
 import type { FilaDeLead } from '../../../entities/listado'
-import { useIrALasOportunidades } from '../../oportunidades/hooks/use-ir-a-las-oportunidades'
-import { MenuDeLead } from '../../marcas/components/menu-de-lead'
 import { BadgeDeTipo } from './badge-de-tipo'
 import { CeldaDeCampo } from './celda-de-campo'
+import { MenuDeLaFila } from './menu-de-la-fila'
 import { NombreDeFila } from './nombre-de-fila'
 import { telefonoDeLista } from './telefono-de-lista'
 import { OrigenDelLead } from './origen-del-lead'
-import {
-  accionesDelMenu,
-  type DatosDeLaLista,
-  origenDelCatalogo,
-  type ParaMarcar,
-  rutaDeLaFicha,
-  verOportunidadesDelMenu,
-} from './tipos'
+import { type DatosDeLaLista, origenDelCatalogo, type ParaMarcar, rutaDeLaFicha } from './tipos'
 import {
   RecordatorioDeFila,
   UltimoSeguimientoDeFila,
@@ -36,19 +28,9 @@ import {
 
 // El «⋯» de la fila, a la derecha: lo único que se hace desde la fila (crear una oportunidad también).
 function AccionesDeLaFila({ lead, marcar }: { lead: FilaDeLead; marcar: ParaMarcar }) {
-  const irALasOportunidades = useIrALasOportunidades()
   return (
     <div className="flex items-center justify-end gap-1">
-      <MenuDeLead
-        leadId={lead.id}
-        nombre={lead.nombre}
-        marcas={lead.marcas}
-        etiquetas={marcar.etiquetas}
-        alGestionar={marcar.alGestionar}
-        puedeEnviar={marcar.eliminables.includes(lead.id)}
-        acciones={accionesDelMenu(marcar, lead)}
-        verOportunidades={verOportunidadesDelMenu(irALasOportunidades, lead)}
-      />
+      <MenuDeLaFila lead={lead} marcar={marcar} />
     </div>
   )
 }

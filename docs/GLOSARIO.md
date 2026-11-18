@@ -255,6 +255,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Vuelta del foco** — `abrirConVuelta()`, `useVueltaDelFoco()` (`src/shared/ui/vuelta-del-foco.ts`): tras recargar con un panel por URL,
   «atrás» devuelve el foco a quien lo abrió (desde un menú, al botón del menú).
 - **Más acciones («⋯»)** — `<MasAcciones>` / `accionesDeLead()`, `accionesDeVehiculo()`: menú de fila, tarjeta, resumen o ficha.
+- **Acción principal del «⋯»** — `principal` de `AccionDeMenu` (`@/shared/ui/lista`), `ACCION_PRINCIPAL_DEL_LEAD`: la primera línea del «⋯», sola en su
+  bloque, en negrita y la primera que enfoca el teclado. Una por menú: «Cotizar lead» en el del lead (y la misma variante para el del vehículo).
+- **«Cotizar lead»** — `cotizar` de `accionesDeLead()`: la acción principal del «⋯» del lead (fila, tarjeta de la lista, kanban y ficha): la hoja de cotizar con
+  el lead elegido en el primer origen donde quien mira cotiza, con `returnTo` (`conVuelta()`) a donde estaba. Sin `cotizaciones.crear` en ningún origen, no está.
+- **«Editar lead»** — `editar` de `accionesDeLead()`, `edicionDelMenu()`: el panel de edición del lead (`?panel=editar-lead`; fuera de la ficha con `&para=<id>`)
+  desde su «⋯». Con sólo `leads.telefonos_extra.editar` se llama «Editar teléfonos» y abre el panel en modo teléfonos.
 - **Esquina de acciones** — `<EsquinaDeAcciones>` (`@/shared/ui/lista`): el lugar del «⋯» en una tarjeta de la lista (cada ítem de la vista
   Tarjetas, también la del kanban): arriba a la derecha; con `sobreImagen`, flotando sobre la foto con fondo translúcido y borde, y la casilla en
   la esquina izquierda como espejo. En la tabla el lugar es la columna pegada (`CeldaPegada lado="acciones"`).

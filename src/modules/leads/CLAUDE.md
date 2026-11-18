@@ -76,8 +76,12 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `vehiculos` tiene una copia).
 - Listado: `entities/filtros.ts`, `fuente-del-listado.ts`, `candidatos.ts`, `infra/queries/listado.ts` (`buscarLeads`, `contarLeadsHasta`). Ficha:
   `entities/ficha.ts`, `edicion.ts`, `infra/ficha.ts`.
-- `features/seguimientos/`, `features/recordatorios/`, `features/marcas/components/menu-de-lead.tsx` (el «⋯»; «Ver actividad» sólo en la ficha, con
-  `actividad.ver` y la ruta de `rutaDeActividadDe`); cartera, papelera, portal, embudo, oportunidades: `entities/<x>.ts` + `infra/<x>.ts`.
+- `features/seguimientos/`, `features/recordatorios/`, `features/marcas/components/menu-de-lead.tsx` (el «⋯», que dibuja la lista única
+  de `entities/acciones-de-lead.ts` con `lineas-del-menu-de-lead.tsx`; fila y tarjeta de la lista por `listado/components/menu-de-la-fila.tsx`, kanban por
+  `menu-de-lead-del-embudo.tsx`, ficha por `acciones-de-la-ficha.tsx`). «Cotizar lead» y «Ver actividad» llevan a otros módulos que `leads` no conoce:
+  `src/app/(app)/leads/rutas-del-menu.ts` arma sus rutas una vez por página con `MARCADOR_DE_LEAD` en el lugar del id y cada fila pone el suyo
+  (`rutaDelLead()`, `entities/ruta-por-lead.ts`). «Editar lead» fuera de la ficha: `?panel=editar-lead&para=<id>` (`useEdicionDesdeLaLista`,
+  `<EdicionDesdeLaLista>`, diferido) lee el lead al abrirse (`infra/ficha.client.ts`, `lead_ficha`) y dibuja el panel de la ficha; cartera, papelera, portal, embudo, oportunidades: `entities/<x>.ts` + `infra/<x>.ts`.
 - «Visto»: el listado y el kanban del embudo marcan el lead (`ProveedorDeMarcasDeVisto` de `equipo/client`, contexto leads); la tarjeta del kanban lleva `data-visto` y el sufijo en el enlace al lead
   (`idsDeLeadsDelTablero`: los primeros 200 leads del tablero). La ficha del lead lo registra (`RegistrarVisto`).
 - CSV: `entities/exportacion.ts`, `entities/importacion/`, `infra/importacion.ts`. Catálogos: `leads_catalogos()`, una llamada para listado, ficha y
