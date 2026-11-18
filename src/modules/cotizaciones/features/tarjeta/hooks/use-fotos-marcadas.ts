@@ -25,7 +25,8 @@ export function useFotosMarcadas(fotos: readonly FotoParaCompartir[]) {
     const control = new AbortController()
     enVuelo.current.set(foto.id, control)
     void pedirLaFoto(foto.completa, control.signal).then((resultado) => {
-      enVuelo.current.delete(foto.id)
+      // Sólo el suyo: desmarcar y volver a marcar deja otro pedido en vuelo para la misma foto.
+      if (enVuelo.current.get(foto.id) === control) enVuelo.current.delete(foto.id)
       if (control.signal.aborted) return
       if (resultado.ok) {
         setBajadas((antes) => new Map(antes).set(foto.id, resultado.data))
