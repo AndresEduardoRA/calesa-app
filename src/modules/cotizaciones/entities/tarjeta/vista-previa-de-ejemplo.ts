@@ -6,7 +6,8 @@ import type { ContextoDeLaCotizacion } from './contexto-de-la-cotizacion'
 import type { TarjetaLista } from './lectura-de-la-tarjeta'
 
 export const CONTEXTO_DE_EJEMPLO: ContextoDeLaCotizacion = {
-  fecha: 'Fecha de la cotización',
+  // Corto como una fecha de verdad: la conversión la pone en la columna angosta del grupo.
+  fecha: 'Fecha',
   numero: '123',
   titulo: 'Título de la cotización',
   asesor: 'Nombre del asesor',
