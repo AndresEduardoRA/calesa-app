@@ -13,6 +13,7 @@
 --   P6. Purgar una cotización (o su vehículo) borra la fila por la cascada y encola su ruta.
 --   P7. El barrido encola un objeto huérfano de `cotizaciones` más viejo que la gracia y no toca uno en uso como adjunto o como portada.
 --   P8. Las dos RPC son definer con search_path vacío, `poner` toma el candado `for no key update`; anon y PUBLIC no tienen nada; los ayudantes son de nadie.
+--   P9. El bucket: el objeto de `portada/` lo lee quien ve la cotización y todo lo que dibuja; con sólo `cotizaciones.ver` (sin ver el lead), no. Un adjunto, igual que siempre.
 
 -- Una persona activa con un rol propio y estas concesiones: 'clave' (alcance «todos») o 'clave:propios'.
 create or replace function pg_temp.po_persona(p_concesiones text[]) returns uuid language plpgsql as $f$
@@ -431,14 +432,14 @@ do $$
 declare f record; v_def text;
 begin
   for f in select p.oid, p.proname, p.prosecdef, p.proconfig from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-            where n.nspname = 'public' and p.proname in ('cotizacion_portada', 'cotizacion_portada_poner') loop
+            where n.nspname = 'public' and p.proname in ('cotizacion_portada', 'cotizacion_portada_poner', 'cotizacion_portada_visible') loop
     if not f.prosecdef or f.proconfig is distinct from array['search_path=""'] then raise exception '% perdió prosecdef o el search_path vacío', f.proname; end if;
     if not has_function_privilege('authenticated', f.oid, 'execute') or has_function_privilege('anon', f.oid, 'execute') then
       raise exception '%: execute debía ser de authenticated y no de anon', f.proname; end if;
     if exists (select 1 from pg_proc p, aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a where p.oid = f.oid and a.grantee = 0 and a.privilege_type = 'EXECUTE') then
       raise exception 'PUBLIC puede ejecutar %', f.proname; end if;
   end loop;
-  if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname in ('cotizacion_portada', 'cotizacion_portada_poner')) <> 2 then
+  if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname in ('cotizacion_portada', 'cotizacion_portada_poner', 'cotizacion_portada_visible')) <> 3 then
     raise exception 'faltan las RPC de la portada'; end if;
   v_def := pg_get_functiondef('public.cotizacion_portada_poner(uuid, text, text)'::regprocedure);
   if v_def !~ 'for no key update' or v_def ~* 'for update' then raise exception 'cotizacion_portada_poner no toma la cotización for no key update'; end if;
@@ -452,5 +453,34 @@ begin
   if has_table_privilege('authenticated', 'public.cotizaciones_portadas', 'insert') or has_table_privilege('authenticated', 'public.cotizaciones_portadas', 'update')
      or has_table_privilege('authenticated', 'public.cotizaciones_portadas', 'delete') or has_table_privilege('anon', 'public.cotizaciones_portadas', 'select') then
     raise exception 'cotizaciones_portadas da escritura a authenticated o algo a anon'; end if;
+end $$;
+rollback;
+
+-- @test portada: el objeto de portada/ lo lee quien ve todo lo que dibuja; con sólo ver la cotización, no; un adjunto, como siempre (P9)
+begin;
+do $$
+declare
+  duena uuid := pg_temp.po_persona(array['cotizaciones.ver', 'leads.ver']);
+  e jsonb := pg_temp.po_origen(); sin_lead uuid; nadie uuid; c uuid; c_sola uuid; r jsonb;
+  leer constant text := 'select coalesce(jsonb_agg(name order by name), ''[]'') from storage.objects where bucket_id = ''cotizaciones'' and name like %L';
+begin
+  sin_lead := pg_temp.po_persona(array['cotizaciones.ver']);
+  nadie := pg_temp.po_persona(array['leads.ver']);
+  c := pg_temp.po_cot(duena, e, pg_temp.po_lead(duena));
+  c_sola := pg_temp.po_cot(duena, e);
+  perform pg_temp.po_objeto(pg_temp.po_ruta(c, 1));
+  perform pg_temp.po_objeto(c || '/' || lpad('a', 64, '0') || '.pdf', '{"mimetype": "application/pdf", "size": 10}');
+  perform pg_temp.po_objeto(pg_temp.po_ruta(c_sola, 1));
+
+  r := pg_temp.po_corre(duena, format(leer, c || '/%'));
+  if jsonb_array_length(r) <> 2 then raise exception 'quien ve todo no leyó la portada y el adjunto: %', r; end if;
+  r := pg_temp.po_corre(sin_lead, format(leer, c || '/%'));
+  if r is distinct from jsonb_build_array(c || '/' || lpad('a', 64, '0') || '.pdf') then raise exception 'quien no ve el lead leyó la portada (o perdió el adjunto): %', r; end if;
+  -- Sin lead ni vehículo no hay nada que no vea: la lee.
+  r := pg_temp.po_corre(sin_lead, format(leer, c_sola || '/%'));
+  if jsonb_array_length(r) <> 1 then raise exception 'la portada de una sin lead no la leyó quien ve la cotización: %', r; end if;
+  r := pg_temp.po_corre(nadie, format(leer, c || '/%'));
+  if r is distinct from '[]'::jsonb then raise exception 'quien no ve la cotización leyó algo del bucket: %', r; end if;
+  if public.cotizacion_portada_visible(gen_random_uuid()) is distinct from false then raise exception 'cotizacion_portada_visible de una que no existe no es falso'; end if;
 end $$;
 rollback;

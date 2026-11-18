@@ -10130,6 +10130,7 @@ export type Database = {
         Args: { p_clave: string; p_cotizacion: string; p_ruta: string }
         Returns: undefined
       }
+      cotizacion_portada_visible: { Args: { p_cot: string }; Returns: boolean }
       cotizacion_puede_adjuntar: { Args: { p_cot: string }; Returns: boolean }
       cotizacion_reportar: { Args: { p_cotizacion: string; p_motivo: string }; Returns: Json }
       cotizacion_reporte_retirar: { Args: { p_cotizacion: string }; Returns: Json }

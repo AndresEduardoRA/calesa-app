@@ -174,6 +174,8 @@ declare
     -- (`puede_lead(…, 'leads.ver')`, `ve_todo`) y anotarla pide además poder guardarla; sus pruebas, `areas/tarjeta/portada.sql`.
     ('cotizacion_portada(uuid)', 'L'),
     ('cotizacion_portada_poner(uuid,text,text)', 'X'),
+    -- Lo pide la policy de leer del bucket para `portada/`: ver la cotización y, con un cliente vivo, `puede_lead(…, 'leads.ver')`; sólo un booleano.
+    ('cotizacion_portada_visible(uuid)', 'L'),
     -- Marcas de quien mira: su reporte (retirar toma la cotización antes del reporte, como moderar) y su favorita.
     ('cotizacion_reportar(uuid,text)', 'M'),
     ('cotizacion_reporte_retirar(uuid)', 'M'),

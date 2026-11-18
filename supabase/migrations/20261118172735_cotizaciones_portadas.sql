@@ -1,6 +1,6 @@
 -- La portada de la cotización (`docs/COTIZADOR.md` › «La portada de la cotización»): la imagen de la tarjeta de una cotización guardada, un WebP por hash en
--- el bucket privado `cotizaciones` (`<cotización>/portada/<sha-256>.webp`; las policies del bucket valen sin cambios: leer pide `cotizaciones.ver`, subir
--- `cotizacion_puede_adjuntar`). Se anota en su tabla, no en `cotizaciones` (`cotizacion_revision()` dejaría una revisión por cada cambio y un `update`
+-- el bucket privado `cotizaciones` (`<cotización>/portada/<sha-256>.webp`: subir pide `cotizacion_puede_adjuntar`, como un adjunto; leer pide además ver lo que
+-- dibuja, abajo). Se anota en su tabla, no en `cotizaciones` (`cotizacion_revision()` dejaría una revisión por cada cambio y un `update`
 -- movería la versión esperada de quien edita), con una clave que dice de qué está hecha: si la clave vigente ya no es la guardada, la portada quedó vieja y
 -- la ruta la arma otra vez.
 
@@ -107,6 +107,27 @@ comment on function public._cotizacion_portada_ve_todo(uuid, uuid) is
   'Si quien llama ve lo que la portada compartida de una cotización dibuja: el cliente vivo con leads.ver y el vehículo vivo con vehiculos.ver (leads_pkey, vehiculos_pkey). De nadie; la llaman cotizacion_portada y cotizacion_portada_poner.';
 revoke all on function public._cotizacion_portada_ve_todo(uuid, uuid) from public, anon, authenticated;
 grant execute on function public._cotizacion_portada_ve_todo(uuid, uuid) to service_role;
+
+-- Si quien llama puede bajar la portada de una cotización del bucket: la ve y ve todo lo que dibuja la compartida. La usa la policy «cotizaciones: leer» de
+-- storage para los objetos de `portada/`: con sólo `cotizaciones.ver`, la imagen nombraría un cliente que la lista le oculta. Falso para lo que no existe.
+create or replace function public.cotizacion_portada_visible(p_cot uuid) returns boolean
+language sql stable security definer set search_path = '' as $$
+  select coalesce((
+    select public.puede_cotizacion(c.id, 'cotizaciones.ver') and public._cotizacion_portada_ve_todo(c.lead_id, c.vehiculo_id)
+      from public.cotizaciones c where c.id = p_cot), false);
+$$;
+comment on function public.cotizacion_portada_visible(uuid) is
+  'Si quien llama ve la cotización y todo lo que dibuja su portada compartida (_cotizacion_portada_ve_todo). La pide la policy «cotizaciones: leer» de storage.objects para los objetos de <cotización>/portada/. Nunca nula.';
+revoke all on function public.cotizacion_portada_visible(uuid) from public, anon;
+grant execute on function public.cotizacion_portada_visible(uuid) to authenticated, service_role;
+
+-- La policy de leer el bucket: lo de siempre (ver la cotización de la carpeta) y, en `portada/`, además ver lo que dibuja. Los adjuntos no cambian.
+drop policy "cotizaciones: leer" on storage.objects;
+create policy "cotizaciones: leer" on storage.objects as permissive for select to authenticated
+  using (bucket_id = 'cotizaciones'
+         and (select public.puede_cotizacion(public._cotizacion_de_objeto(objects.name), 'cotizaciones.ver'))
+         and (split_part(objects.name, '/', 2) <> 'portada'
+              or (select public.cotizacion_portada_visible(public._cotizacion_de_objeto(objects.name)))));
 
 -- 4. Las RPC.
 
