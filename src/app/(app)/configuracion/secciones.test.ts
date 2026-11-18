@@ -6,6 +6,7 @@ import { NAVEGACION } from '../_shell/navegacion'
 import { SECCION_DE_COTIZACION } from './cotizacion/seccion'
 import { PERMISOS_DE_EMPRESA, SECCION_DE_EMPRESA } from './empresa/seccion'
 import { SECCION_DE_FLUJOS } from './flujos/seccion'
+import { SECCION_DE_LEADS } from './leads/seccion'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
 import {
   GRUPOS,
@@ -43,6 +44,7 @@ describe('secciones de configuración', () => {
     expect(porClave('cotizacion')).toBe(SECCION_DE_COTIZACION)
     expect(porClave('flujos')).toBe(SECCION_DE_FLUJOS)
     expect(porClave('repuestos')).toBe(SECCION_DE_REPUESTOS)
+    expect(porClave('leads')).toBe(SECCION_DE_LEADS)
   })
 
   it('los grupos son los cuatro, en su orden, y cada sección está en uno de ellos y en su orden', () => {
@@ -115,6 +117,22 @@ describe('grupos visibles de configuración', () => {
       })),
     ).toEqual([{ clave: 'ventas', secciones: ['leads'] }])
     expect(gruposVisibles([])).toEqual([])
+  })
+
+  it('con sólo leads.configurar, al navegador va «Campos» con su motivo y las otras seis sin él', () => {
+    const leads: Permisos = [{ clave: 'leads.configurar', origenId: null, alcance: 'todos' }]
+    const [ventas] = paraElNavegador(gruposVisibles(leads))
+    expect(
+      ventas?.secciones[0]?.subsecciones.map((sub) => [sub.clave, sub.motivo !== undefined]),
+    ).toEqual([
+      ['campos', true],
+      ['origenes', false],
+      ['tipos', false],
+      ['seguimientos', false],
+      ['embudo', false],
+      ['portal', false],
+      ['telefonos', false],
+    ])
   })
 })
 

@@ -1,7 +1,9 @@
 'use client'
 
+import { useId } from 'react'
 import { Aviso } from '@/shared/ui/aviso'
 import { AvisoDeConflicto } from '@/shared/ui/aviso-de-conflicto'
+import { BarraDeCambiosSinGuardar } from '@/shared/ui/barra-de-cambios-sin-guardar'
 import { Button } from '@/shared/ui/button'
 import { Confirmar } from '@/shared/ui/confirmar'
 import type { AjustesDeLeads } from '../../../entities/ajustes-de-leads'
@@ -10,11 +12,13 @@ import { usePlantillaDelEmbudo } from '../hooks/use-plantilla-del-embudo'
 import { useRestablecerPlantillaDelEmbudo } from '../hooks/use-restablecer-plantilla-del-embudo'
 import { RechazoAlRestablecer } from './rechazo-al-restablecer'
 
-// Configuración › Leads › «Plantilla del embudo» (`?seccion=embudo`): las etapas con que nace el embudo de cada persona. Quien la monta
-// le da la versión como `key`: lo guardado, acá o por otra persona, vuelve a montarla desde la base.
+// Configuración › Leads › «Plantilla del embudo» (`/configuracion/leads/embudo`): las etapas con que nace el embudo de cada persona. Al
+// cambiarlas aparece la barra de cambios sin guardar, al final de la sección (que es todo el cuerpo de la página: `sticky` se pega en toda
+// ella); «Restablecer» queda en su fila. Quien la monta le da la versión como `key`: lo guardado, acá o por otra persona, vuelve a montarla desde la base.
 export function PlantillaDelEmbudo({ embudo }: { embudo: AjustesDeLeads['embudo'] }) {
   const plantilla = usePlantillaDelEmbudo(embudo)
   const restablecimiento = useRestablecerPlantillaDelEmbudo(embudo)
+  const idDelFormulario = useId()
   return (
     <section aria-label="Plantilla del embudo" className="grid gap-4">
       {embudo.deFabrica ? (
@@ -23,6 +27,7 @@ export function PlantillaDelEmbudo({ embudo }: { embudo: AjustesDeLeads['embudo'
         </p>
       ) : null}
       <form
+        id={idDelFormulario}
         className="grid gap-4"
         onSubmit={(evento) => {
           evento.preventDefault()
@@ -40,13 +45,6 @@ export function PlantillaDelEmbudo({ embudo }: { embudo: AjustesDeLeads['embudo'
         <ListaDeEtapas panel={plantilla} />
         <div className="flex flex-wrap gap-2">
           <Button
-            type="submit"
-            className="min-h-11 md:min-h-9"
-            disabled={!plantilla.hayCambios || plantilla.enCurso}
-          >
-            {plantilla.enCurso ? 'Guardando…' : 'Guardar'}
-          </Button>
-          <Button
             type="button"
             variant="outline"
             className="min-h-11 md:min-h-9"
@@ -57,6 +55,12 @@ export function PlantillaDelEmbudo({ embudo }: { embudo: AjustesDeLeads['embudo'
           </Button>
         </div>
       </form>
+      <BarraDeCambiosSinGuardar
+        hayCambios={plantilla.hayCambios}
+        formulario={idDelFormulario}
+        guardando={plantilla.enCurso}
+        alDescartar={plantilla.descartar}
+      />
       <Confirmar
         abierto={restablecimiento.abierto}
         alCerrar={restablecimiento.cerrar}

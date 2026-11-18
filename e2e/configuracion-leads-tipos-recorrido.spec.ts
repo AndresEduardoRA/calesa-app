@@ -175,7 +175,7 @@ test('C · la asesora no ve la pantalla, y su alta ofrece los tipos activos', as
 }, info) => {
   await page.context().clearCookies()
   await entrar(page, asesora, { fresco: true })
-  await page.goto('/configuracion/leads?seccion=tipos')
+  await page.goto('/configuracion/leads/tipos')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
   await capturar(page, info, 'asesora-sin-permiso')
 

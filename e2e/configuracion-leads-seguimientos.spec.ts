@@ -50,13 +50,21 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-test('de fábrica: los tipos de siempre, cada uno con su icono, y la pestaña sigue a «Tipos de lead»', async ({
+test('de fábrica: los tipos de siempre, cada uno con su icono, y la sub-sección sigue a «Tipos de lead»', async ({
   page,
 }, info) => {
   await entrar(page, duena)
   await abrirTiposDeSeguimiento(page)
-  const pestanas = await page.getByRole('tab').allTextContents()
-  expect(pestanas.map((t) => t.trim())).toEqual([
+  // Las sub-secciones de Leads en su orden, en el selector de sección (está en el DOM en los dos anchos; el menú, sólo en el ancho), y la
+  // abierta es la elegida.
+  const selector = page.locator('select', {
+    has: page.locator('option', { hasText: 'Leads › Campos' }),
+  })
+  await expect(selector).toHaveValue('/configuracion/leads/seguimientos')
+  const deLeads = (await selector.locator('option').allTextContents())
+    .filter((texto) => texto.startsWith('Leads › '))
+    .map((texto) => texto.replace('Leads › ', ''))
+  expect(deLeads).toEqual([
     'Campos',
     'Orígenes del lead',
     'Tipos de lead',
@@ -65,10 +73,6 @@ test('de fábrica: los tipos de siempre, cada uno con su icono, y la pestaña si
     'Mensaje del portal',
     'Teléfonos extra',
   ])
-  await expect(page.getByRole('tab', { name: 'Tipos de seguimiento' })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
   // Los de fábrica, con el icono del catálogo al que migró el que tenían.
   expect(await iconoDeLaFila(filaDeTipoDeSeguimiento(page, 'WhatsApp'))).toBe('mensaje')
   expect(await iconoDeLaFila(filaDeTipoDeSeguimiento(page, 'Llamada'))).toBe('telefono')

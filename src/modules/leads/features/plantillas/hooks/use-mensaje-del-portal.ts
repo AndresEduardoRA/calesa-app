@@ -59,8 +59,13 @@ export function useMensajeDelPortal(portal: AjustesDeLeads['portal']) {
       setTexto(valor)
       setMotivo(null)
     },
-    // Algo cambiado que todavía no se guardó: «Guardar» se apaga sin cambios.
+    // Algo cambiado que todavía no se guardó: sin cambios, la barra no aparece.
     hayCambios: texto !== inicial,
+    // «Descartar» de la barra: vuelve el texto guardado y se borra el motivo. El conflicto queda.
+    descartar: () => {
+      setTexto(inicial)
+      setMotivo(null)
+    },
     motivo,
     conflicto,
     enCurso: guardar.isPending,

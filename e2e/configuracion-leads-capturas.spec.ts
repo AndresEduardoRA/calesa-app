@@ -46,7 +46,7 @@ const alDoscientos = (page: Page) =>
   })
 
 for (const zoom of ['100', '200'] as const) {
-  test(`las pestañas de Configuración › Leads al ${zoom} %`, async ({ page }, info) => {
+  test(`las sub-secciones de Configuración › Leads al ${zoom} %`, async ({ page }, info) => {
     await entrar(page, r.t.personas.duena)
     await abrirOrigenes(page)
     if (zoom === '200') await alDoscientos(page)
@@ -54,21 +54,19 @@ for (const zoom of ['100', '200'] as const) {
     await abrirTipos(page)
     if (zoom === '200') await alDoscientos(page)
     await capturar(page, info, `pestana-tipos-${zoom}`)
-    if (await page.getByRole('tab', { name: 'Tipos de seguimiento' }).count()) {
-      // Por la URL de la pestaña, no con un clic: un clic antes de hidratar se pierde y el encabezado nunca llega.
-      await abrirTiposDeSeguimiento(page)
-      if (zoom === '200') await alDoscientos(page)
-      await sinScrollHorizontal(page)
-      await capturar(page, info, `pestana-seguimientos-${zoom}`)
-      // El selector de icono, en el modal de «Nuevo tipo» (a este mismo tamaño de texto).
-      await page.getByRole('button', { name: 'Nuevo tipo' }).first().click()
-      const modal = page.getByRole('dialog', { name: 'Nuevo tipo de seguimiento' })
-      await expect(modal).toBeVisible()
-      await sinScrollHorizontal(page)
-      await capturar(page, info, `selector-de-icono-${zoom}`)
-      await page.keyboard.press('Escape')
-      await expect(modal).toBeHidden()
-    }
+    // Por la URL de la sub-ruta, no con un clic: un clic antes de hidratar se pierde y el encabezado nunca llega.
+    await abrirTiposDeSeguimiento(page)
+    if (zoom === '200') await alDoscientos(page)
+    await sinScrollHorizontal(page)
+    await capturar(page, info, `pestana-seguimientos-${zoom}`)
+    // El selector de icono, en el modal de «Nuevo tipo» (a este mismo tamaño de texto).
+    await page.getByRole('button', { name: 'Nuevo tipo' }).first().click()
+    const modal = page.getByRole('dialog', { name: 'Nuevo tipo de seguimiento' })
+    await expect(modal).toBeVisible()
+    await sinScrollHorizontal(page)
+    await capturar(page, info, `selector-de-icono-${zoom}`)
+    await page.keyboard.press('Escape')
+    await expect(modal).toBeHidden()
   })
 }
 

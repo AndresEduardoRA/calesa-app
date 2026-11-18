@@ -94,8 +94,8 @@ export async function borrarTiposDeSeguimientoDePrueba(): Promise<void> {
 // --- La pantalla --------------------------------------------------------------------------------------
 
 export async function abrirTiposDeSeguimiento(page: Page): Promise<void> {
-  await page.goto('/configuracion/leads?seccion=seguimientos')
-  await expect(page.getByRole('heading', { name: 'Tipos de seguimiento', level: 2 })).toBeVisible()
+  await page.goto('/configuracion/leads/seguimientos')
+  await expect(page.getByRole('heading', { name: 'Tipos de seguimiento', level: 1 })).toBeVisible()
 }
 
 // Lo de la lista (la fila, el «⋯», los nombres, el icono) es común a las tres pestañas: `soporte/lista-de-catalogo.ts`.
