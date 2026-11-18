@@ -208,3 +208,58 @@ describe('DeEsteVehiculo, estados', () => {
     expect(screen.queryByRole('button', { name: 'Ver más' })).toBeNull()
   })
 })
+
+describe('DeEsteVehiculo, las casillas de comparar', () => {
+  const montarConCasillas = () =>
+    render(
+      <DeEsteVehiculo
+        vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }}
+        cotizacionActual={idDe(2)}
+        aprobarEn="todos"
+        conCasillas
+        volverA={`/cotizaciones/${idDe(2)}`}
+        titulo={<h2>De este vehículo</h2>}
+      />,
+    )
+  const casilla = (n: number) =>
+    screen.getByRole('checkbox', { name: `Comparar la n.º ${String(n)}` })
+
+  it('el título del servidor desde el primer render; «Comparar» apagado hasta tener 2', async () => {
+    montarConCasillas()
+    expect(screen.getByRole('heading', { name: 'De este vehículo' })).toBeTruthy()
+    await responder(
+      1,
+      leida([fila(4), fila(3), fila(2), fila(1, { aprobada: true })], fila(1, { aprobada: true })),
+    )
+    const comparar = (await screen.findByRole('button', { name: 'Comparar' })) as HTMLButtonElement
+    expect(comparar.disabled).toBe(true)
+    expect(
+      document.getElementById(comparar.getAttribute('aria-describedby') ?? '')?.textContent,
+    ).toBe('Elige 2 o 3 para comparar.')
+    fireEvent.click(casilla(3))
+    expect(screen.getByRole('button', { name: 'Comparar' })).toBeTruthy()
+  })
+
+  it('con 2, un enlace en el orden de la lista con `returnTo`; con 3, las demás apagadas y el tope dicho', async () => {
+    montarConCasillas()
+    await responder(
+      1,
+      leida([fila(4), fila(3), fila(2), fila(1, { aprobada: true })], fila(1, { aprobada: true })),
+    )
+    await screen.findByRole('button', { name: 'Comparar' })
+    fireEvent.click(casilla(3))
+    fireEvent.click(casilla(1))
+    expect(screen.getByRole('link', { name: 'Comparar' }).getAttribute('href')).toBe(
+      `/cotizaciones/comparar?ids=${idDe(1)},${idDe(3)}&returnTo=%2Fcotizaciones%2F${idDe(2)}`,
+    )
+    fireEvent.click(casilla(4))
+    expect(screen.getByText('Puedes comparar hasta 3.')).toBeTruthy()
+    const cuarta = casilla(2)
+    expect(
+      cuarta.getAttribute('aria-disabled') === 'true' || cuarta.hasAttribute('data-disabled'),
+    ).toBe(true)
+    expect(
+      document.getElementById(cuarta.getAttribute('aria-describedby') ?? '')?.textContent,
+    ).toBe('Puedes comparar hasta 3.')
+  })
+})

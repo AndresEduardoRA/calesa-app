@@ -97,6 +97,27 @@ async function abrir(page: Page, correo: string, ruta: string): Promise<void> {
   await page.goto(ruta)
 }
 
+test('E2E desde «De este vehículo»: elegir dos y «Comparar» abre la comparación con `returnTo`', async ({
+  page,
+}, info) => {
+  await abrir(page, t.duena, `/cotizaciones/${vieja}`)
+  await page.getByRole('heading', { name: 'De este vehículo', level: 2 }).scrollIntoViewIfNeeded()
+  const comparar = page.getByRole('button', { name: 'Comparar', exact: true })
+  await expect(comparar).toBeDisabled()
+  await expect(comparar).toHaveAccessibleDescription('Elige 2 o 3 para comparar.')
+  const numeroDe = (id: string) =>
+    sql(`select numero from public.cotizaciones where id = ${literal(id)}::uuid`)
+  await page.getByRole('checkbox', { name: `Comparar la n.º ${numeroDe(medio)}` }).click()
+  await page.getByRole('checkbox', { name: `Comparar la n.º ${numeroDe(nueva)}` }).click()
+  await capturar(page, info, 'bloque-con-casillas')
+  await page.getByRole('link', { name: 'Comparar', exact: true }).click()
+  // En el orden de la lista: la aprobada (no elegida), después de la más nueva.
+  await expect(page).toHaveURL(
+    `/cotizaciones/comparar?ids=${nueva},${medio}&returnTo=${encodeURIComponent(`/cotizaciones/${vieja}`)}`,
+  )
+  await expect(page.locator('thead th[data-columna]')).toHaveCount(2)
+})
+
 test('E2E dos versiones lado a lado: alineadas por nodo, «—» en la que no tiene el nodo y lo distinto resaltado', async ({
   page,
 }, info) => {

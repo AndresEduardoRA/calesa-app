@@ -2,7 +2,7 @@
 
 import type { Route } from 'next'
 import Link from 'next/link'
-import { useEffect, useEffectEvent, useId } from 'react'
+import { useEffect, useEffectEvent, useId, useState, type ReactNode } from 'react'
 import { textoDelTope } from '@/shared/lib/conteo'
 import { TOPE_DE_ESTE_VEHICULO } from '@/shared/lib/paginacion'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
@@ -13,12 +13,19 @@ import {
   motivoParaNoAprobarEsta,
   type AprobarEn,
 } from '../../../../entities/aprobada/de-este-vehiculo'
+import {
+  alternar,
+  casillaApagada,
+  elegidasEnLaLista,
+} from '../../../../entities/aprobada/eleccion-para-comparar'
 import { rutaDelListado } from '../../../../entities/ruta-de-la-hoja'
 import { useAlCambiarLaAprobada } from '../../hooks/aprobada-del-vehiculo'
 import { useAprobarEsta } from '../../hooks/use-aprobar-esta'
 import { useDeEsteVehiculo, type DeEsteVehiculoLeido } from '../../hooks/use-de-este-vehiculo'
 import { useFocoAlLlegar } from '../../hooks/use-foco-al-llegar'
 import { ID_DE_ESTE_VEHICULO } from './ancla'
+import { BotonComparar } from './boton-comparar'
+import { CasillaDeComparar } from './casilla-de-comparar'
 import { EsqueletoDeEsteVehiculo } from './esqueleto-de-este-vehiculo'
 import { FilaDeEsteVehiculo } from './fila-de-este-vehiculo'
 
@@ -27,8 +34,11 @@ export type PropsDeEsteVehiculo = {
   // La cotización que se está mirando (la guardada o la del resumen): va marcada «Esta». Sin ella (la ficha del vehículo), ninguna lo es.
   cotizacionActual?: string
   aprobarEn: AprobarEn
-  // Las casillas de comparar (T311): hasta entonces, apagadas.
-  conCasillas?: false
+  // Las casillas de comparar y «Comparar» en la fila del título, que lleva a «Comparar cotizaciones» con `returnTo` = `volverA`.
+  conCasillas?: boolean
+  volverA?: string
+  // El título que ya dibujó el servidor (el h2 de la guardada, al que salta el «Ver» de la línea): va en la fila del título, junto a «Comparar».
+  titulo?: ReactNode
   // Tras aprobar o deshacer desde el bloque (el resumen refresca el listado).
   alCambiar?: () => void
   // Dibuja su propio título: el resumen no tiene el del servidor.
@@ -44,15 +54,22 @@ export function DeEsteVehiculo({
   aprobarEn,
   alCambiar,
   conTitulo = false,
+  conCasillas = false,
+  volverA,
+  titulo,
 }: PropsDeEsteVehiculo) {
   const lista = useDeEsteVehiculo(vehiculo.id)
   const fuente = useId()
-  const titulo = useId()
+  const idDelTitulo = useId()
+  const idDelAviso = useId()
+  // Las marcadas; las que se ven elegidas son las que siguen en la lista (tras aprobar o releer se sueltan las que ya no están).
+  const [marcadas, setMarcadas] = useState<readonly string[]>([])
+  const elegidas = elegidasEnLaLista(marcadas, lista.aLaVista)
   const leerAlMontar = useEffectEvent(lista.leerLaPrimera)
   useEffect(() => {
     leerAlMontar()
   }, [])
-  // El «Ver» de la línea salta al título del servidor; el resumen dibuja el suyo y no escucha.
+  // El «Ver» de la línea salta al título del servidor (que esta isla dibuja desde su primer render); el resumen dibuja el suyo y no escucha.
   useFocoAlLlegar(ID_DE_ESTE_VEHICULO, !conTitulo)
   useAlCambiarLaAprobada(vehiculo.id, fuente, () => {
     lista.releer()
@@ -63,32 +80,22 @@ export function DeEsteVehiculo({
   })
 
   if (!lista.leido) {
-    return lista.error ? (
-      <div role="alert">
-        <EstadoError
-          titulo="No pudimos cargar las cotizaciones de este vehículo."
-          alReintentar={lista.reintentar}
-          compacto
-        />
-      </div>
-    ) : (
-      <EsqueletoDeEsteVehiculo />
-    )
+    return <SinLeer titulo={titulo} lista={lista} />
   }
   if (!hayOtras(lista.aLaVista, cotizacionActual)) {
-    return null
+    return titulo ?? null
   }
   return (
     <section
-      aria-labelledby={conTitulo ? titulo : undefined}
+      aria-labelledby={conTitulo ? idDelTitulo : undefined}
       aria-label={conTitulo ? undefined : 'De este vehículo'}
       className="@container/de-este grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2"
     >
-      {conTitulo ? (
-        <h3 id={titulo} className="font-semibold text-(--color-ink)">
-          De este vehículo
-        </h3>
-      ) : null}
+      <FilaDelTitulo titulo={titulo} conTitulo={conTitulo} idDelTitulo={idDelTitulo}>
+        {conCasillas ? (
+          <BotonComparar elegidas={elegidas} volverA={volverA} idDelAviso={idDelAviso} />
+        ) : null}
+      </FilaDelTitulo>
       <ul
         aria-label="Cotizaciones de este vehículo"
         className="grid grid-cols-[minmax(0,1fr)] gap-2"
@@ -106,11 +113,95 @@ export function DeEsteVehiculo({
             alAprobar={() => {
               aprobar(fila)
             }}
+            casilla={
+              conCasillas ? (
+                <Casilla
+                  fila={fila}
+                  elegidas={elegidas}
+                  idDelAviso={idDelAviso}
+                  alElegir={setMarcadas}
+                />
+              ) : null
+            }
           />
         ))}
       </ul>
       <Pie lista={lista} vehiculoId={vehiculo.id} />
     </section>
+  )
+}
+
+// La fila del título: el del servidor, o el propio (el resumen), y «Comparar» a la derecha. Sin ninguno de los dos, nada.
+function FilaDelTitulo({
+  titulo,
+  conTitulo,
+  idDelTitulo,
+  children,
+}: {
+  titulo: ReactNode
+  conTitulo: boolean
+  idDelTitulo: string
+  children: ReactNode
+}) {
+  const encabezado =
+    titulo ??
+    (conTitulo ? (
+      <h3 id={idDelTitulo} className="font-semibold text-(--color-ink)">
+        De este vehículo
+      </h3>
+    ) : null)
+  if (encabezado === null && children === null) {
+    return null
+  }
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      {encabezado}
+      {children}
+    </div>
+  )
+}
+
+// Antes de la primera página: el título del servidor (si lo trae) y el esqueleto, o el error con «Reintentar».
+function SinLeer({ titulo, lista }: { titulo: ReactNode; lista: DeEsteVehiculoLeido }) {
+  return (
+    <>
+      {titulo}
+      {lista.error ? (
+        <div role="alert">
+          <EstadoError
+            titulo="No pudimos cargar las cotizaciones de este vehículo."
+            alReintentar={lista.reintentar}
+            compacto
+          />
+        </div>
+      ) : (
+        <EsqueletoDeEsteVehiculo />
+      )}
+    </>
+  )
+}
+
+function Casilla({
+  fila,
+  elegidas,
+  idDelAviso,
+  alElegir,
+}: {
+  fila: { id: string; numero: number }
+  elegidas: readonly string[]
+  idDelAviso: string
+  alElegir: (elegidas: readonly string[]) => void
+}) {
+  return (
+    <CasillaDeComparar
+      numero={fila.numero}
+      elegida={elegidas.includes(fila.id)}
+      apagada={casillaApagada(elegidas, fila.id)}
+      idDelAviso={idDelAviso}
+      alAlternar={() => {
+        alElegir(alternar(elegidas, fila.id))
+      }}
+    />
   )
 }
 
