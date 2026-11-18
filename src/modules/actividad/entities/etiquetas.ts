@@ -83,7 +83,11 @@ const CAMPOS_POR_TABLA: Readonly<Record<string, Readonly<Record<string, string>>
     subasta_resuelta_en: 'Subasta resuelta el',
     subasta_resuelta_por: 'Subasta resuelta por',
   },
-  cotizaciones: { total_base: 'Total en moneda base', titulo_manual: 'Título manual' },
+  cotizaciones: {
+    total_base: 'Total en moneda base',
+    titulo_manual: 'Título manual',
+    tarjeta_retoques: 'Retoques de la tarjeta',
+  },
   repuestos_items: { precio_cliente: 'Precio al cliente' },
 }
 
