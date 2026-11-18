@@ -112,6 +112,14 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   comparte con la página): `cotizacion_tarjeta` como quien pide, sin memoria, y `infra/tarjeta/pdf/` (Geist TTF recta e itálica). Lo baja quien ve la cotización, sin
   clave propia (pie de «Vista previa» de una guardada; `<a download>` en la tarjeta de lo guardado de la hoja nueva). Las pruebas leen su texto con
   `scripts/pdf/texto-del-pdf.ts`.
+- **La portada de la cotización** (área `tarjeta`; `docs/COTIZADOR.md` › «La portada de la cotización»): `GET /cotizaciones/[id]/portada` (`rutaDeLaPortada(id)`,
+  el mismo 404 que el PDF) lee `leerLaPortada()` (`cotizacion_portada`) y `queHacerConLaPortada()` decide: 304 con la ETag de hoy, bajar la guardada al día
+  (`bajarLaPortada()`) o armarla (`armarLaPortada(id, contextoDe)`, en `features/tarjeta/` porque cruza con `empresa`: la hoja de lo guardado, los ajustes y el
+  WebP de `imagenDeLaPortada()`, `sharp` con `import()`). La compartida (quien ve todo lo que dibuja, sin «Ver como») usa el contexto de la base y se guarda
+  **antes de responder** (`guardarLaPortada()`: subir por hash y `cotizacion_portada_poner`; un PT409 no se guarda); la de quien no ve todo, el de
+  `datos-de-la-tarjeta.ts` (como el PDF), sin ETag ni guardar. Al guardar, el núcleo avisa por el hueco de la vista previa y `<ProveedorDeLaTarjeta>` pide la ruta
+  (`pedirLaPortada()`, `areas/tarjeta/composicion-portada.client.ts`: un `fetch` que no se espera). El componente `<PortadaDeLaCotizacion>` sale por
+  `pantallas/tarjeta-portada.ts` (marco de la proporción que le den, recuadro con el total, visor por `diferido()`, Modo Live por CSS en `globals.css`).
 - **El diseño** (`/configuracion/cotizacion?seccion=diseno&origen=`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
   `cotizaciones_niveles` (no de `niveles_con_uso()`); edita secciones, celdas (ver y editar juntos con `ponerNiveles()`; `admiteNivel` apaga lo que la base
   rechazaría con `nivel_no_admitido`), atajos, interruptor, ayuda, modos, la tarjeta del total (variante y subtotal no se editan) y **el aspecto** de cada
@@ -133,7 +141,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `REJILLA_DE_SECCIONES`, `enLaRejilla`); `cifrasDelDiseno()` evalúa con datos en 0 y nunca lanza. Dibuja con las piezas del núcleo y **no con `LugaresDeLaHoja`** (lee
   `?ayuda=` y `?panel=`, que chocarían con la pestaña); un hijo de ancho propio en px dentro de una caja con scroll (los cortes `@4xl/hoja` y `@5xl` miran al
   hijo); «200 %» es 206 px con `zoom: 2`. Va `inert`, en un `diferido()` aparte.
-- Depende de `leads`, `vehiculos`, `empresa` (tipos de cambio) y `equipo` (`<VistasGuardadas>`); los orígenes entran por props desde `src/app`.
+- Depende de `leads`, `vehiculos`, `empresa` (tipos de cambio; los ajustes, en `armarLaPortada()`) y `equipo` (`<VistasGuardadas>`); los orígenes entran por props desde `src/app`.
 
 ## Áreas
 
@@ -167,11 +175,13 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   y `src/app/(app)/cotizaciones/[id]/huecos-de-la-guardada.tsx` los ordena: final, aprobada, comprobantes, comentarios y papelera (la destructiva al final;
   «De este vehículo» antes de «Comprobantes»). Cada componente recibe `{ cotizacion, puedeGuardar, permisos, vehiculo }` (`vehiculo`, el que la página leyó
   si quien mira lo ve, o nulo). Fichas: `areas/<área>/CLAUDE.md`.
-- **El resumen del listado** (`HuecosDelResumen`): `Pestanas`, `Comprobantes` y `DeEsteVehiculo` (entre «Abrir cotización» y las pestañas, sólo con un
-  vehículo que quien mira ve; `aprobarEn` lo manda la página y `alCambiar` refresca el listado; `pantallas/aprobada-resumen.ts`).
+- **El resumen del listado** (`HuecosDelResumen`): `Portada` (primero, arriba de los datos: `pantallas/tarjeta-resumen.ts`), `Pestanas`, `Comprobantes` y
+  `DeEsteVehiculo` (entre «Abrir cotización» y las pestañas, sólo con un vehículo que quien mira ve; `aprobarEn` lo manda la página y `alCambiar` refresca el
+  listado; `pantallas/aprobada-resumen.ts`). Cerrar el resumen borra también `?visor=&foto=` (el visor de la portada).
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
-- **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`; la llena
+- **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)` y
+  `alGuardarLaCotizacion(id)` (lo llaman `useNucleoDelGuardado` y `useCotizarEncima` con la cotización guardada: la portada); la llena
   `<ProveedorDeLaTarjeta>` (`pantallas/tarjeta.ts`) con la cáscara del modal y lo que sabe la página (vehículo, asesor, número, logo). El modal lee
   `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `geometriaDeLaTarjeta()` (pura) con `<TarjetaDeCotizacion>`: un lienzo del ancho de
   la tarjeta con cada celda en posición absoluta (`<CeldaDeLaTarjeta>`, en orden de lectura, con `data-celda`, `data-fila`, `data-columna`, `data-nodo`,
@@ -295,8 +305,8 @@ pide y anotar la subida), `comprobante_emitir|anular`, `comprobantes_serie_cambi
   PDF (`import()` en `areas/tarjeta/composicion.ts`) y nunca llega al navegador. El logo lo baja `logo-del-pdf.ts` con tope (`PESO_MAXIMO_LOGO`) y 2 s y
   llega como `Buffer`, nunca URL; un SVG con lo que react-pdf se salta o con `<image>`, y un WebP, dejan el PDF sin logo (`docs/PENDIENTES.md`, 4-98). Los
   metadatos no nombran al cliente, al asesor ni al vehículo. «Copiar texto» sale de la misma geometría. **La imagen** (`imagenDeUnaGuardada()`,
-  `infra/tarjeta/imagen/`, `ImageResponse` con `import()`): la misma geometría como PNG al ancho de la tarjeta, para la portada de la cotización; sin ruta
-  propia (quien la sirva suma las fuentes de `infra/tarjeta/pdf/fuentes/` a su `outputFileTracingIncludes`).
+  `infra/tarjeta/imagen/`, `ImageResponse` con `import()`): la misma geometría como PNG al ancho de la tarjeta, la base de la portada (su ruta suma las fuentes
+  de `infra/tarjeta/pdf/fuentes/` a `outputFileTracingIncludes`).
 - **Las tablas de referencia se escriben sólo con `tabla_referencia_publicar()`** (sin insert, update ni delete para `authenticated`). Candados: la tabla
   (`for update`) y después `formulas:<origen>` en orden de origen, como el ⚙ y revertir. Pruebas: `supabase/tests/areas/tablas/`,
   `scripts/carreras/tablas*.mjs`.

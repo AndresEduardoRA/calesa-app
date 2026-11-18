@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { rutaDeLaCotizacion, rutaDeLaHoja, rutaDelListado, rutaDelPdf } from './ruta-de-la-hoja'
+import {
+  rutaDeLaCotizacion,
+  rutaDeLaHoja,
+  rutaDeLaPortada,
+  rutaDelListado,
+  rutaDelPdf,
+} from './ruta-de-la-hoja'
 
 describe('rutaDeLaHoja', () => {
   it('lleva el origen y conserva el lead; el vehículo no viaja (es de otro origen)', () => {
@@ -21,6 +27,13 @@ describe('rutaDelPdf', () => {
     const id = '00000000-0000-4000-8000-000000000001'
     expect(rutaDelPdf(id)).toBe(`/cotizaciones/${id}/pdf`)
     expect(rutaDelPdf(id).startsWith(rutaDeLaCotizacion(id))).toBe(true)
+  })
+})
+
+describe('rutaDeLaPortada', () => {
+  it('es la portada de la cotización guardada, bajo su página', () => {
+    const id = '00000000-0000-4000-8000-000000000001'
+    expect(rutaDeLaPortada(id)).toBe(`/cotizaciones/${id}/portada`)
   })
 })
 
