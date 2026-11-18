@@ -1,204 +1,48 @@
 'use client'
 
-import { CarFrontIcon, Trash2Icon } from 'lucide-react'
+import type { Route } from 'next'
+import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
-import { MasAcciones, type AccionDeMenu } from '@/shared/ui/lista'
-import {
-  ETIQUETA_DE_ACCION_DE_LEAD,
-  accionesDeLead,
-  type ClaveDeAccionDeLead,
-} from '../../../entities/acciones-de-lead'
+import { conVuelta } from '@/shared/lib/rutas'
+import { MasAcciones } from '@/shared/ui/lista'
 import type { MarcasDeLead } from '../../../entities/marcas'
 import { SelectorDeEtiquetas } from '../../etiquetas/components/selector-de-etiquetas'
-import type { Etiquetas } from '../../etiquetas/hooks/use-etiquetas'
 import { useEnvioAPapelera } from '../../papelera/hooks/use-envio-a-papelera'
 import { useMarcas, type Marcas } from '../hooks/use-marcas'
-
-// Lo que cambia de una superficie a otra del «⋯» de un lead (la fila, la tarjeta del kanban y la ficha): la lista y su orden
-// son los mismos (`entities/acciones-de-lead.ts`); lo que cambia es qué pasa al elegir cada cosa.
-type PropsComunes = {
-  leadId: string
-  nombre: string
-  etiquetas: Etiquetas
-  alGestionar: () => void
-  // Quien mira puede enviar este lead a la papelera.
-  puedeEnviar: boolean
-  // Con el lead en la cartera y `leads.editar`: agendar un recordatorio, anotar un seguimiento y crear una oportunidad (abren su modal; qué
-  // modal y dónde lo dice cada superficie). Sin esto, no se ofrecen.
-  acciones?:
-    { alAnotar: () => void; alAgendar: () => void; alNuevaOportunidad: () => void } | undefined
-  // «Ver oportunidades»: con el lead en la cartera de quien mira, lleva a la sección «Oportunidades» de la ficha. Sin esto, no se ofrece.
-  verOportunidades?: (() => void) | undefined
-  // Lo que la papelera hace distinto donde el lead no se queda en pantalla: `alEnviado` (la ficha lleva al listado),
-  // y con un vehículo vinculado que quien mira ve, `motivo` la apaga y `alIrAVehiculos` ofrece ir a «Vehículos».
-  papelera?: { alEnviado?: () => void; motivo?: string | null; alIrAVehiculos?: () => void }
-  // Después de cambiar una marca: quien dibuja el menú puede volver a leer el lead.
-  alMarcar?: () => void
-  // «Ver actividad»: sólo la ficha, y sólo con `actividad.ver` (la ruta la arma la página). Sin esto, no se ofrece.
-  verActividad?: (() => void) | undefined
-  // En una cabecera (la de la ficha): con borde, como los botones de al lado.
-  conBorde?: boolean
-  // El kanban no trae las marcas ni la cartera del lead: se leen al abrir el menú (`alAbrir`) y mientras tanto, o si no llegan, el menú
-  // lo dice (`carga`).
-  alAbrir?: () => void
-  carga?: { cargando: boolean; aviso: string | null }
-}
-
-type Lineas = {
-  marcas: Marcas
-  envio: ReturnType<typeof useEnvioAPapelera>
-  abrirEtiquetas: () => void
-} & Pick<
-  PropsComunes,
-  'leadId' | 'acciones' | 'papelera' | 'alMarcar' | 'carga' | 'verActividad' | 'verOportunidades'
->
-
-const sinAccion = () => undefined
-
-type Constructor = (p: Lineas) => AccionDeMenu[]
-
-// Cada acción de la lista, con lo que hace en esta superficie.
-const LINEAS: Readonly<Record<ClaveDeAccionDeLead, Constructor>> = {
-  agendar: (p) => [
-    {
-      tipo: 'accion',
-      clave: 'agendar',
-      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.agendar,
-      despuesDeCerrar: true,
-      alElegir: p.acciones?.alAgendar ?? sinAccion,
-    },
-  ],
-  anotar: (p) => [
-    {
-      tipo: 'accion',
-      clave: 'anotar',
-      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.anotar,
-      despuesDeCerrar: true,
-      alElegir: p.acciones?.alAnotar ?? sinAccion,
-    },
-  ],
-  oportunidad: (p) => [
-    {
-      tipo: 'accion',
-      clave: 'oportunidad',
-      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.oportunidad,
-      despuesDeCerrar: true,
-      alElegir: p.acciones?.alNuevaOportunidad ?? sinAccion,
-    },
-  ],
-  oportunidades: (p) => [
-    {
-      tipo: 'accion',
-      clave: 'oportunidades',
-      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.oportunidades,
-      alElegir: p.verOportunidades ?? sinAccion,
-    },
-  ],
-  etiquetas: (p) => [
-    {
-      tipo: 'accion',
-      clave: 'etiquetas',
-      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.etiquetas,
-      despuesDeCerrar: true,
-      alElegir: p.abrirEtiquetas,
-    },
-  ],
-  favorito: (p) => [
-    {
-      tipo: 'casilla',
-      clave: 'favorito',
-      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.favorito,
-      marcada: p.marcas.marcas.esFavorito,
-      deshabilitada: p.marcas.enCurso.favorito,
-      alCambiar: (valor) => void p.marcas.favorito(valor).then(p.alMarcar),
-    },
-  ],
-  tachado: (p) => [
-    {
-      tipo: 'casilla',
-      clave: 'tachado',
-      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.tachado,
-      marcada: p.marcas.marcas.estaTachado,
-      deshabilitada: p.marcas.enCurso.tachado,
-      cierra: true,
-      alCambiar: (valor) => void p.marcas.tachado(valor).then(p.alMarcar),
-    },
-  ],
-  actividad: (p) => [
-    {
-      tipo: 'accion',
-      clave: 'actividad',
-      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.actividad,
-      alElegir: p.verActividad ?? sinAccion,
-    },
-  ],
-  papelera: (p) => {
-    const motivo = p.papelera?.motivo ?? null
-    const enviar: AccionDeMenu = {
-      tipo: 'accion',
-      clave: 'papelera',
-      etiqueta: ETIQUETA_DE_ACCION_DE_LEAD.papelera,
-      icono: <Trash2Icon aria-hidden />,
-      destructiva: true,
-      deshabilitada: p.envio.enCurso || motivo !== null,
-      alElegir: () => {
-        void p.envio.enviar([p.leadId]).then((entro) => {
-          if (entro) {
-            p.papelera?.alEnviado?.()
-          }
-        })
-      },
-    }
-    if (motivo === null) {
-      return [enviar]
-    }
-    // Con un vehículo vinculado se ve apagada, con el motivo, y ofrece ir a «Vehículos».
-    return [
-      enviar,
-      { tipo: 'nota', clave: 'motivo-papelera', texto: motivo },
-      {
-        tipo: 'accion',
-        clave: 'ir-a-vehiculos',
-        etiqueta: 'Ir a «Vehículos»',
-        icono: <CarFrontIcon aria-hidden />,
-        alElegir: p.papelera?.alIrAVehiculos ?? sinAccion,
-      },
-    ]
-  },
-}
-
-// Las líneas del «⋯», en el orden de la lista única y con un separador entre bloques.
-function lineasDelMenu(p: Lineas, puedeEnviar: boolean): AccionDeMenu[] {
-  const { carga } = p
-  if (carga?.aviso) {
-    return [{ tipo: 'nota', clave: 'aviso', texto: carga.aviso }]
-  }
-  if (carga?.cargando) {
-    return [{ tipo: 'nota', clave: 'cargando', texto: 'Cargando…' }]
-  }
-  const bloques = accionesDeLead({
-    actuar: p.acciones !== undefined,
-    verOportunidades: p.verOportunidades !== undefined,
-    enviar: puedeEnviar,
-    actividad: p.verActividad !== undefined,
-  })
-  return bloques.flatMap((bloque, indice) => [
-    ...(indice > 0 ? [{ tipo: 'separador' as const, clave: `separador-${String(indice)}` }] : []),
-    ...bloque.flatMap((clave) => LINEAS[clave](p)),
-  ])
-}
+import { lineasDelMenu, type PropsComunes } from './lineas-del-menu-de-lead'
 
 type PropsConMarcas = PropsComunes & {
   // Las marcas de quien mira sobre este lead, con lo que se ve mientras viaja cada pedido (`useMarcas`).
   marcas: Marcas
 }
 
+// Ir a otra página desde el menú: «Cotizar lead» vuelve a donde se estaba (`returnTo`, con su consulta: la lista con sus filtros, la ficha).
+function useIrA(paraCotizar: string | null | undefined, paraActividad: string | null | undefined) {
+  const router = useRouter()
+  const ir = (ruta: string) => {
+    router.push(ruta as Route)
+  }
+  return {
+    cotizar: paraCotizar
+      ? () => {
+          ir(conVuelta(paraCotizar, `${window.location.pathname}${window.location.search}`))
+        }
+      : undefined,
+    verActividad: paraActividad
+      ? () => {
+          ir(paraActividad)
+        }
+      : undefined,
+  }
+}
+
 // El «⋯» de un lead con sus marcas ya en un `useMarcas`: la ficha las comparte con las insignias de su cabecera. «Etiquetas…» cierra el
-// menú y abre el selector contra el mismo botón; agendar y anotar abren su modal y el foco vuelve a este botón. Nada de lo que pasa adentro
-// abre la fila ni la tarjeta de la lista (`<MasAcciones>`).
+// menú y abre el selector contra el mismo botón; agendar, anotar y editar abren su modal o panel y el foco vuelve a este botón. Nada de lo
+// que pasa adentro abre la fila ni la tarjeta de la lista (`<MasAcciones>`).
 export function MenuDeLeadConMarcas(props: PropsConMarcas) {
   const { marcas, leadId, nombre, etiquetas, alGestionar, puedeEnviar, alAbrir } = props
   const envio = useEnvioAPapelera()
+  const irA = useIrA(props.paraCotizar, props.paraActividad)
   const boton = useRef<HTMLButtonElement>(null)
   const [selector, setSelector] = useState(false)
   const lista = lineasDelMenu(
@@ -210,8 +54,10 @@ export function MenuDeLeadConMarcas(props: PropsConMarcas) {
       papelera: props.papelera,
       alMarcar: props.alMarcar,
       carga: props.carga,
-      verActividad: props.verActividad,
+      cotizar: irA.cotizar,
+      verActividad: irA.verActividad,
       verOportunidades: props.verOportunidades,
+      editar: props.editar,
       abrirEtiquetas: () => {
         setSelector(true)
       },

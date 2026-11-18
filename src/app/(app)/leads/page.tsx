@@ -24,6 +24,7 @@ import type { Permisos } from '@/shared/lib/permisos'
 import { redirigir } from '@/shared/lib/navegacion'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
+import { rutasDelMenuDeLaPagina } from './rutas-del-menu'
 
 export const metadata: Metadata = { title: 'Leads' }
 
@@ -76,7 +77,11 @@ export default async function PaginaLeads({ searchParams }: PageProps<'/leads'>)
       </Suspense>
     )
   }
-  const [ajustesLeidos, vistas] = await Promise.all([leerAjustes(), leerVistas('leads')])
+  const [ajustesLeidos, vistas, rutas] = await Promise.all([
+    leerAjustes(),
+    leerVistas('leads'),
+    rutasDelMenuDeLaPagina(sesion.permisos),
+  ])
   // Si no se pueden leer, el listado se dibuja igual: zona por defecto y el teléfono con «+».
   const ajustes = ajustesLeidos.ok ? ajustesLeidos.data.ajustes : null
   const listado = datosO(
@@ -96,6 +101,7 @@ export default async function PaginaLeads({ searchParams }: PageProps<'/leads'>)
       puedeExportar={puede(sesion.permisos, 'leads.exportar')}
       puedeConfigurarCampos={puede(sesion.permisos, 'leads.campos.gestionar')}
       codigoDePais={ajustes?.telefonoCc ?? null}
+      rutas={rutas}
     />
   )
 }
@@ -108,5 +114,9 @@ async function Embudo({
   quien: Parameters<typeof leerVistaDeEmbudo>[1]
 }) {
   await connection()
-  return <VistaDeEmbudo {...datosO(await leerVistaDeEmbudo(parametros, quien))} />
+  const [datos, rutas] = await Promise.all([
+    leerVistaDeEmbudo(parametros, quien),
+    rutasDelMenuDeLaPagina(quien.permisos),
+  ])
+  return <VistaDeEmbudo {...datosO(datos)} rutas={rutas} />
 }

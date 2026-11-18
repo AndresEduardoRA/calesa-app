@@ -100,6 +100,7 @@ type PropsDelLateral = Pick<
   | 'origen'
   | 'tipo'
   | 'puedeEditar'
+  | 'puedeEditarExtras'
   | 'puedeEnviarAPapelera'
   | 'paraCotizar'
   | 'paraActividad'
@@ -115,13 +116,20 @@ type PropsDelLateral = Pick<
 
 // La columna de la izquierda con las acciones de la cabecera («Editar», «Cotizar» y el «⋯») y las insignias de quien mira.
 function LateralConAcciones({ marcas, etiquetas, alGestionar, ...props }: PropsDelLateral) {
-  const { ficha, puedeEditar, puedeEnviarAPapelera, paraCotizar, paraActividad } = props
+  const {
+    ficha,
+    puedeEditar,
+    puedeEditarExtras,
+    puedeEnviarAPapelera,
+    paraCotizar,
+    paraActividad,
+  } = props
   return (
     <LateralDeLaFicha
       {...props}
       acciones={
         <AccionesDeLaFicha
-          {...{ ficha, marcas, etiquetas, alGestionar, puedeEditar }}
+          {...{ ficha, marcas, etiquetas, alGestionar, puedeEditar, puedeEditarExtras }}
           {...{ puedeEnviarAPapelera, paraCotizar, paraActividad }}
         />
       }
@@ -182,6 +190,7 @@ export function FichaDeLead({
             {...{ ficha, campos, origen, tipo, puedeEditar, puedeEnviarAPapelera, paraCotizar }}
             {...{ paraActividad, cartera, accionesDeCartera, marcas, etiquetas }}
             alGestionar={gestionar.abrir}
+            puedeEditarExtras={telefonos.puedeEditarExtras}
             conEditarTelefonos={telefonos.puedeEditarExtras && !puedeEditar}
             portal={ve.portal ? portal : null}
           />

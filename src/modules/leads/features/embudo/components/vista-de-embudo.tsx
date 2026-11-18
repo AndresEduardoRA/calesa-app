@@ -8,6 +8,8 @@ import { VistaYOpciones, type GrupoDeVistaYOpciones } from '@/shared/ui/vista-y-
 import type { Embudo } from '../../../entities/embudo'
 import { idsDeLeadsDelTablero, totalDelTablero, type Tablero } from '../../../entities/tablero'
 import { DialogoDeEtiquetas } from '../../etiquetas/components/dialogo-de-etiquetas'
+import type { RutasDelMenuDeLead } from '../../../entities/ruta-por-lead'
+import { EdicionDesdeLaLista } from '../../ficha/components/edicion-desde-la-lista'
 import { RefrescarAlVolver } from '../../ficha/components/refrescar-al-volver'
 import { AccionesDeFila } from '../../listado/components/acciones-de-fila'
 import type { ParaElMenuDelEmbudo } from '../lecturas'
@@ -23,7 +25,13 @@ import { PrimerEmbudo } from './primer-embudo'
 import { SelectorDeEmbudo } from './selector-de-embudo'
 import { TableroDeEmbudo } from './tablero-de-embudo'
 
-type Props = { embudos: Embudo[]; tablero: Tablero | null; paraElMenu: ParaElMenuDelEmbudo }
+type Props = {
+  embudos: Embudo[]
+  tablero: Tablero | null
+  paraElMenu: ParaElMenuDelEmbudo
+  // «Cotizar lead» y «Ver actividad» del «⋯» de cada tarjeta, con `MARCADOR_DE_LEAD` (las arma `src/app` una vez por página).
+  rutas: RutasDelMenuDeLead
+}
 
 // «Lista | Embudo» en «Vista y opciones», en el mismo lugar que en la lista.
 const GRUPO_DE_VISTA: GrupoDeVistaYOpciones = {
@@ -35,7 +43,7 @@ const GRUPO_DE_VISTA: GrupoDeVistaYOpciones = {
 
 // `/leads?vista=embudo`: el kanban de las oportunidades propias en el embudo elegido. La primera vez
 // prepara el embudo por defecto. Los filtros de la lista no se aplican aquí, y la pantalla lo dice.
-export function VistaDeEmbudo({ embudos, tablero, paraElMenu }: Props) {
+export function VistaDeEmbudo({ embudos, tablero, paraElMenu, rutas }: Props) {
   if (!tablero || embudos.length === 0) {
     return (
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
@@ -47,7 +55,7 @@ export function VistaDeEmbudo({ embudos, tablero, paraElMenu }: Props) {
       </div>
     )
   }
-  return <ConTablero embudos={embudos} inicial={tablero} paraElMenu={paraElMenu} />
+  return <ConTablero embudos={embudos} inicial={tablero} paraElMenu={paraElMenu} rutas={rutas} />
 }
 
 type PropsDeLaBarra = {
@@ -87,12 +95,37 @@ function BarraDelEmbudo({
   )
 }
 
+// Lo que abren los «⋯» de las tarjetas, montado una vez: gestionar etiquetas, anotar, agendar o crear una oportunidad, y editar el lead.
+function PanelesDelMenu({
+  menu,
+  paraElMenu,
+}: {
+  menu: ReturnType<typeof useMenuDelEmbudo>
+  paraElMenu: ParaElMenuDelEmbudo
+}) {
+  return (
+    <>
+      <DialogoDeEtiquetas etiquetas={menu.etiquetas} />
+      <AccionesDeFila filas={menu.leidos} puedeAnotar={paraElMenu.editar} />
+      <EdicionDesdeLaLista
+        edicion={menu.edicion}
+        permisos={{
+          editar: paraElMenu.editar,
+          telefonos: paraElMenu.telefonos,
+          configurar: paraElMenu.configurar,
+        }}
+      />
+    </>
+  )
+}
+
 function ConTablero(props: {
   embudos: Embudo[]
   inicial: Tablero
   paraElMenu: ParaElMenuDelEmbudo
+  rutas: RutasDelMenuDeLead
 }) {
-  const { embudos, inicial, paraElMenu } = props
+  const { embudos, inicial, paraElMenu, rutas } = props
   const vista = useVistaDeEmbudo()
   const estado = useTablero(inicial)
   const embudo = embudos.find((e) => e.id === inicial.embudo.id)
@@ -100,7 +133,7 @@ function ConTablero(props: {
   // «Visto» del módulo leads en cada tarjeta (el enlace al lead): una lectura por pantalla, los primeros 200 leads.
   const idsDeLeads = useMemo(() => idsDeLeadsDelTablero(estado.tablero), [estado.tablero])
   // El «⋯» de cada tarjeta es el del lead (`MenuDeLead`): sus etiquetas, «Gestionar» y los modales de anotar y agendar viven acá, una vez.
-  const menu = useMenuDelEmbudo(paraElMenu)
+  const menu = useMenuDelEmbudo(paraElMenu, rutas)
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <h1 className="sr-only">Embudo</h1>
@@ -156,8 +189,7 @@ function ConTablero(props: {
           }}
         />
       ) : null}
-      <DialogoDeEtiquetas etiquetas={menu.etiquetas} />
-      <AccionesDeFila filas={menu.leidos} puedeAnotar={paraElMenu.editar} />
+      <PanelesDelMenu menu={menu} paraElMenu={paraElMenu} />
       {/* Lo que se movió en otra pestaña (o en la ficha) aparece al volver. */}
       <RefrescarAlVolver activo={!vista.etapasAbierto && !vista.nuevoAbierto && !menu.hayPanel} />
     </div>

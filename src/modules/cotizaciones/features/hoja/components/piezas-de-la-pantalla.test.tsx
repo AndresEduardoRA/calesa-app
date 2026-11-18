@@ -23,6 +23,13 @@ describe('PestanasDeOrigen', () => {
     expect(enlaces.map((e) => e.getAttribute('aria-current'))).toEqual([null, 'page'])
   })
 
+  it('cambiar de origen conserva la pantalla a la que vuelve (`returnTo`)', () => {
+    render(<PestanasDeOrigen origenes={ORIGENES} actual="o1" leadId="l1" volverA="/leads?por=25" />)
+    expect(screen.getAllByRole('link')[1]?.getAttribute('href')).toBe(
+      '/cotizaciones/nuevo?origen=o2&lead=l1&returnTo=%2Fleads%3Fpor%3D25',
+    )
+  })
+
   it('sin lead, el enlace no lo inventa', () => {
     render(<PestanasDeOrigen origenes={ORIGENES} actual="o1" leadId={null} />)
     expect(screen.getAllByRole('link')[0]?.getAttribute('href')).toBe(

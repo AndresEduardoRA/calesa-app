@@ -15,7 +15,7 @@ import {
   tamanosHasta,
   type Pagina,
 } from '@/shared/lib/paginacion'
-import type { Permisos } from '@/shared/lib/permisos'
+import { puede, type Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import {
   buscarLeads,
@@ -35,6 +35,7 @@ import { filtrosDescartados, type FiltroDescartado } from '../../entities/filtro
 import { FILTRO_TACHADOS, TOPE_DE_OCULTOS, ocultaTachados } from '../../entities/filtros-de-marcas'
 import { MAXIMO_DE_PAGINA_DE_LEADS, clavesDeTabla, type FilaDeLead } from '../../entities/listado'
 import { puedeEditarLead } from '../../entities/edicion'
+import { puedeEditarTelefonosExtra } from '../../entities/telefonos'
 import type { RecorridoAcotado } from '../../entities/candidatos'
 import { condicionesDeLaPersona } from './condiciones-de-la-persona'
 import { puedeAbrirLaPapelera, puedeEnviarLead } from '../../entities/papelera'
@@ -66,8 +67,12 @@ export type DatosDelListado = {
   eliminables: string[]
   // Quien mira puede abrir la papelera de leads (envía, o puede vaciarla).
   puedeAbrirPapelera: boolean
-  // `leads.editar`: con el lead en la cartera, anotar y agendar desde el «⋯» de su fila.
+  // `leads.editar`: con el lead en la cartera, anotar, agendar y «Editar lead» desde el «⋯» de su fila.
   puedeAnotar: boolean
+  // `leads.telefonos_extra.editar`: con el lead en la cartera, «Editar teléfonos» (sin `leads.editar`) y los extras del panel de edición.
+  puedeEditarTelefonos: boolean
+  // `leads.configurar`: «Cambiar el máximo» en los teléfonos del panel de edición.
+  puedeConfigurarLeads: boolean
   // Los tipos de seguimiento (también los apagados) y el instante en que se leyó la página: dicen «hace 3 días» en cada fila.
   tiposDeSeguimiento: TipoDeSeguimientoEnCatalogo[]
   ahora: string
@@ -117,6 +122,8 @@ function permisosDelListado(permisos: Permisos) {
   return {
     puedeAbrirPapelera: puedeAbrirLaPapelera(permisos),
     puedeAnotar: puedeEditarLead(permisos, true),
+    puedeEditarTelefonos: puedeEditarTelefonosExtra(permisos, true),
+    puedeConfigurarLeads: puede(permisos, 'leads.configurar'),
   }
 }
 

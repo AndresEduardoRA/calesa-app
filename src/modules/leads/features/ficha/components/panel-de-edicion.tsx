@@ -11,7 +11,11 @@ import { useUltimo } from '@/shared/ui/use-ultimo'
 import type { LeadDeFicha } from '../../../entities/ficha'
 import { telefonosDeLaFicha } from '../../../entities/telefonos'
 import { usePanelDeLead } from '../hooks/use-panel-de-lead'
-import { ContenidoDeLaEdicion, type Datos } from './contenido-de-la-edicion'
+import {
+  ContenidoDeLaEdicion,
+  type Datos,
+  type SalidasFueraDeLaFicha,
+} from './contenido-de-la-edicion'
 import { TelefonosDelPanel } from './telefonos-del-panel'
 
 type Props = Datos & {
@@ -24,6 +28,8 @@ type Props = Datos & {
   puedeConfigurar: boolean
   // Cartera y `leads.editar`, en la ficha: «Cambiar el principal» en el bloque de teléfonos.
   puedeCambiarTelefono?: boolean
+  // Abierto desde el «⋯» de la lista o del kanban (`?panel=editar-lead&para=<id>`): qué hacer donde la ficha no está debajo.
+  fueraDeLaFicha?: SalidasFueraDeLaFicha
 }
 
 // El «modo teléfonos»: quien sólo administra los extras (sin `leads.editar`) ve los teléfonos y nada más; lo demás no se le ofrece.
@@ -75,6 +81,7 @@ type PropsDelCuerpo = Omit<Props, 'puedeEditar' | 'puedeCambiarTelefono'> & {
 function CuerpoDelPanel({
   soloTelefonos,
   alCerrar,
+  fueraDeLaFicha,
   puedeEditarExtras,
   puedeConfigurar,
   alCambiarElPrincipal,
@@ -90,6 +97,7 @@ function CuerpoDelPanel({
       key={`${ficha.id}-${ficha.actualizadoEn}`}
       {...datos}
       alCerrar={alCerrar}
+      fueraDeLaFicha={fueraDeLaFicha}
       puedeEditarExtras={puedeEditarExtras}
       puedeConfigurar={puedeConfigurar}
       alCambiarElPrincipal={alCambiarElPrincipal}
@@ -132,7 +140,7 @@ export function PanelDeEdicion({ puedeEditar, puedeCambiarTelefono, ...resto }: 
   const soloTelefonos = !puedeEditar && resto.puedeEditarExtras
   const abierto = (puedeEditar || resto.puedeEditarExtras) && panel.abierto
   const { ficha, descripcion } = useFichaALaVista(abierto, resto.ficha)
-  const paso = usePasoAlTelefono(panel, Boolean(puedeCambiarTelefono))
+  const paso = usePasoAlTelefono(panel, Boolean(puedeCambiarTelefono) && !resto.fueraDeLaFicha)
   return (
     <Drawer
       abierto={abierto}

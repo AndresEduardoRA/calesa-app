@@ -218,7 +218,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   a la vista, el selector de embudo y la búsqueda; en «Vista y opciones», «Lista | Embudo», «Etapas…» `?panel=etapas` y «Nuevo embudo…» `?panel=nuevo-embudo`).
 - **Lead** — `/leads/[id]` (`leads.ver` y acceso): **dos columnas, todo a la vista, sin pestañas ni acordeones** (desde 56 rem de contenedor; por
   debajo, y con el texto al 200 %, una sola en el mismo orden). **Izquierda**, pegajosa (se desplaza sola si no cabe): la cabecera (nombre, números,
-  marcas, «Editar» `?panel=editar-lead`, «Cotizar» para quien cotiza y el «⋯»), «Datos» (tipo, origen, alta y los grupos del layout sin plegar),
+  marcas, «Editar» `?panel=editar-lead`, «Cotizar» para quien cotiza y el «⋯», el de la lista con «Cotizar lead» y «Editar lead»), «Datos» (tipo, origen, alta y los grupos del layout sin plegar),
   «Teléfonos» (sólo lectura), «Quién lo tiene» y «Acceso al portal» (la cartera y `leads.portal.gestionar`). **Derecha**: el índice pegajoso («Índice de la
   ficha», enlaces de ancla con `aria-current="location"`; en el celular se desplaza de costado) y los bloques en su orden, cada uno por su permiso:
   «Seguimientos y recordatorios» (`?panel=anotar-seguimiento`, `editar-seguimiento&seguimiento=<id>`, `agendar-recordatorio`, `editar-recordatorio&recordatorio=<id>`;
@@ -385,8 +385,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   despliega en la misma fila todo el diff (`?cambio=<id>`: sólo lo que cambió, con la etiqueta del campo y cada monto con la moneda de su lado;
   sin moneda conocida, el número y «(moneda sin conocer)»); un `?cambio=` fuera de lo cargado sale arriba como «El cambio que abriste»;
   inválido o sin acceso, «No tienes acceso a este cambio.»; un error al desplegar queda en la fila con «Reintentar». Filtros como chips arriba:
-  persona y tipo de registro (`?persona=`, `?entidad=`), el registro (`?registro=`, desde «Ver actividad» del «⋯» de la ficha de lead y de
-  vehículo) y la fecha de «Ir a una fecha», cada uno con su «×», y «Limpiar filtros». «Ver más» con tope; retención de `actividad_dias` (14 si
+  persona y tipo de registro (`?persona=`, `?entidad=`), el registro (`?registro=`, desde «Ver actividad» del «⋯» de un lead —fila, tarjeta, kanban y
+  ficha— y de la ficha de vehículo) y la fecha de «Ir a una fecha», cada uno con su «×», y «Limpiar filtros». «Ver más» con tope; retención de `actividad_dias` (14 si
   no se puede leer). **Actividad reciente** (`ActividadReciente`, para una ficha; sola en `/actividad/reciente?entidad=&registro=`): los
   últimos 5 cambios del registro como frases, cada uno a su detalle en `/actividad`, y «Ver toda la actividad»; esqueleto, «Sin cambios en
   los últimos N días.» y error con «Reintentar»; sin `actividad.ver` no se dibuja.
@@ -1356,9 +1356,13 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
 - **Tus marcas (privadas, «Solo las ves tú.»):** «Tachados» (ocultarlos por defecto · mostrarlos también · sólo los tachados),
   «Favoritos», «Etiquetas». No reordenan. Una línea dice cuántos coincidentes ocultan los tachados, con «Mostrarlos». **Mientras se busca
   no se ocultan.**
-- **«⋯» de la fila** (la misma lista, en este orden, en fila, tarjeta, kanban y ficha): «Agendar recordatorio…», «Anotar seguimiento…» y «Nueva oportunidad…»
+- **«⋯» de la fila** (la misma lista, en este orden, en fila, tarjeta de la lista, kanban y ficha; `accionesDeLead()`): **«Cotizar lead»**, la acción principal,
+  sola arriba, en negrita y la primera con el teclado (`cotizaciones.crear` en algún origen: la hoja con el lead elegido en el primer origen donde quien mira cotiza,
+  con `returnTo` a donde estaba y «Volver» junto al título de la hoja; el destino se arma una vez por página, nunca por fila) · «Agendar recordatorio…», «Anotar seguimiento…» y «Nueva oportunidad…»
   (cartera y `leads.editar`, abren su modal con `?panel=…&para=<id>`; en la ficha, sin `para`) y «Ver oportunidades» (lead en la cartera de quien mira: lleva a
-  `/leads/<id>?seccion=oportunidades`) · «Etiquetas…», «Favorito», «Tachado» (con «Deshacer») · «Enviar a la papelera» (`leads.eliminar`). **«Nueva oportunidad…»
+  `/leads/<id>?seccion=oportunidades`) · **«Editar lead»** (cartera y `leads.editar`: el panel de edición, `?panel=editar-lead`, con `&para=<id>` fuera de la ficha, que
+  lee el lead al abrirse; con sólo `leads.telefonos_extra.editar` dice «Editar teléfonos» y abre el panel en modo teléfonos) · «Ver actividad» (`actividad.ver`:
+  `/actividad?registro=<id>`) · «Etiquetas…», «Favorito», «Tachado» (con «Deshacer») · «Enviar a la papelera» (`leads.eliminar`). **«Nueva oportunidad…»
   abre primero un aviso** con las oportunidades del lead que quien mira ve (título, etapa y estado; hasta 5, «y N más» con «Ver todas», cada una con «Ver»; incluida la base con
   que nace todo lead), «Crear igual» (sigue al formulario con «Título» —el nombre del lead— y «Monto estimado» opcional; «Crear oportunidad» deja el aviso y la lista donde estaba; un
   rechazo deja el modal abierto con lo escrito) y «Cancelar». Se lee al abrir el modal, con esqueleto; si falla, lo dice con «Reintentar» y «Crear igual» sigue ahí.

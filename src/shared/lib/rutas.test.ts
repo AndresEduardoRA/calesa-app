@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   PANEL_NUEVO_DE_VEHICULOS,
   RUTAS,
+  conVuelta,
   decidirAcceso,
   destinoTrasIngresar,
   esRutaPublica,
@@ -178,5 +179,22 @@ describe('rutas de crear', () => {
 
   it('la hoja de cotizar y el listado cuelgan de /cotizaciones', () => {
     expect(RUTAS.nuevaCotizacion).toBe(`${RUTAS.cotizaciones}/nuevo`)
+  })
+})
+
+describe('conVuelta', () => {
+  it('suma returnTo codificado a una ruta con consulta y vuelve con returnToSeguro', () => {
+    const ruta = conVuelta('/cotizaciones/nuevo?origen=o1&lead=l1', '/leads?vista=tarjetas&por=25')
+    expect(ruta).toBe(
+      '/cotizaciones/nuevo?origen=o1&lead=l1&returnTo=%2Fleads%3Fvista%3Dtarjetas%26por%3D25',
+    )
+    const leido = new URLSearchParams(ruta.split('?')[1]).get('returnTo')
+    expect(returnToSeguro(leido)).toBe('/leads?vista=tarjetas&por=25')
+  })
+
+  it('sin consulta la crea, reemplaza un returnTo anterior y sin volverA no toca nada', () => {
+    expect(conVuelta('/x', '/leads')).toBe('/x?returnTo=%2Fleads')
+    expect(conVuelta('/x?returnTo=%2Fviejo', '/nuevo')).toBe('/x?returnTo=%2Fnuevo')
+    expect(conVuelta('/x?a=1', null)).toBe('/x?a=1')
   })
 })
