@@ -106,7 +106,7 @@ describe('pdfDeLaTarjeta: la tarjeta de una cotización en A4', () => {
     expect(usd(1000, 'en-US')).not.toBe(usd(1000))
   })
 
-  it('cada grupo lleva el fondo claro de su tono', async () => {
+  it('cada grupo lleva el hex de su color', async () => {
     const { leido } = await leer()
     for (const fondo of ['#e8f5e9', '#fff7d6', '#ffe8d6']) {
       expect(leido.rellenos).toContain(fondo)

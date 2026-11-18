@@ -21,7 +21,7 @@ export function BloqueDeGrupos({ grupos, tonos, deshabilitado, motivoDe, alElegi
   return (
     <Bloque
       titulo="Grupos"
-      descripcion="El tono de cada grupo en la tarjeta."
+      descripcion="El color de cada grupo en la tarjeta."
       forzarAbierto={hayMotivo}
     >
       <div className="grid gap-3 md:grid-cols-2">
@@ -29,13 +29,13 @@ export function BloqueDeGrupos({ grupos, tonos, deshabilitado, motivoDe, alElegi
           const delCatalogo = new Set(tonos.map((t) => t.clave))
           const sinCatalogo = g.tono !== undefined && !delCatalogo.has(g.tono)
           const delGrupo =
-            g.tonoDelGrupo === undefined ? 'sin tono' : nombreDelTono(g.tonoDelGrupo, tonos)
+            g.tonoDelGrupo === undefined ? 'sin color' : nombreDelTono(g.tonoDelGrupo, tonos)
           return (
             <CampoSeleccion
               key={g.id}
               nombre={`tono-${g.id}`}
               data-campo={`grupos[${i}].tono`}
-              etiqueta={`Tono de «${g.etiqueta}»`}
+              etiqueta={`Color de «${g.etiqueta}»`}
               opciones={[
                 { valor: '', etiqueta: `Del grupo (${delGrupo})` },
                 ...tonos.map((t) => ({ valor: t.clave, etiqueta: t.nombre })),

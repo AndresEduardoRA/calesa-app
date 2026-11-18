@@ -3,7 +3,7 @@ import { StyleSheet } from '@react-pdf/renderer'
 import { FAMILIA_DEL_PDF } from './fuentes'
 
 // Los colores neutros del PDF: un espejo de los de `design/tokens.css` en claro (el PDF no lee CSS). Si cambian allá, cambian aquí; es el único lugar del documento que los
-// escribe. Los de cada grupo salen del tono `claro` de la lectura de la tarjeta.
+// escribe. Los de cada grupo salen del color del catálogo (`tarjeta` de la lectura: el hex de fondo y el texto que se lee).
 export const NEUTROS = {
   tinta: '#1b2130', // --color-ink
   tintaSuave: '#4a5468', // --color-ink-soft

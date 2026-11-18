@@ -28,7 +28,7 @@ describe('rechazoDePlantilla', () => {
       'aduana',
       'Falta el grupo «aduana»: la tarjeta lleva todos los grupos de la fórmula.',
     ],
-    ['tono_inexistente', 'compra', 'El grupo «compra» usa un tono que no está en el catálogo.'],
+    ['tono_inexistente', 'compra', 'El grupo «compra» usa un color que no está en el catálogo.'],
     ['nodo_inexistente', 'zz', 'La plantilla nombra «zz», que no es un nodo de la fórmula.'],
     [
       'nodo_sin_lugar',

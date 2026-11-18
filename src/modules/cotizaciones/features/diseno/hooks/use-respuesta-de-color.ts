@@ -7,9 +7,9 @@ import { useConflictoHastaLaVersion } from '@/shared/ui/use-conflicto-hasta-la-v
 import type { RespuestaDeTonos } from '../../../entities/diseno/respuesta-de-tonos'
 import type { Tono } from '../../../entities/diseno/tonos'
 
-// Lo que deja la respuesta de un envío del modal de un tono: el motivo junto a su campo (o arriba, si no es de un campo), el conflicto que espera la versión
+// Lo que deja la respuesta de un envío del modal de un color: el motivo junto a su campo (o arriba, si no es de un campo), el conflicto que espera la versión
 // nueva, lo que esperó la red, y si se cerró. `aplicar` devuelve si el modal terminó.
-export function useRespuestaDeTono(original: Tono | null, alCerrar: () => void) {
+export function useRespuestaDeColor(original: Tono | null, alCerrar: () => void) {
   const [errores, setErrores] = useState<Record<string, string>>({})
   const [aviso, setAviso] = useState<string | null>(null)
   const [conflicto, setConflicto] = useConflictoHastaLaVersion(original?.actualizadoEn ?? null)
@@ -19,7 +19,7 @@ export function useRespuestaDeTono(original: Tono | null, alCerrar: () => void) 
     if (envio === null) return false
     if (envio.ok) {
       setPendiente(null)
-      avisarExito(original ? 'Tono guardado.' : 'Tono creado.')
+      avisarExito(original ? 'Color guardado.' : 'Color creado.')
       alCerrar()
       return true
     }

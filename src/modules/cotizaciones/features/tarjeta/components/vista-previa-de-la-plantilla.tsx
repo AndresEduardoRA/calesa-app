@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo } from 'react'
-import { EstiloDeTonos } from '@/shared/ui/xcell'
 import {
   calculoDeEjemplo,
   PAGINA_DE_EJEMPLO,
@@ -34,7 +33,6 @@ export function VistaPreviaDeLaPlantilla({ lectura }: PropsDeLaVistaPreviaDeLaPl
     >
       <h3 className="text-(length:--text-md) font-semibold">Vista previa</h3>
       <p className="text-(length:--text-sm) text-(--color-ink-soft)">Cifras de ejemplo.</p>
-      <EstiloDeTonos tonos={modelo.tonos} />
       <TarjetaDeCotizacion modelo={modelo} />
       {conFilasDeMas ? (
         <p className="text-(length:--text-xs) text-(--color-ink-soft)">

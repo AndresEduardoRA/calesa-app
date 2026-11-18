@@ -44,7 +44,7 @@ const version = (
 })
 
 describe('alinearConLaFormula', () => {
-  it('quita el grupo que ya no está, deduplica y suma el que falta al final sin tono', () => {
+  it('quita el grupo que ya no está, deduplica y suma el que falta al final sin color', () => {
     const r = alinearConLaFormula(
       p({ grupos: [{ grupo: 'viejo' }, { grupo: 'compra', tono: 'verde' }, { grupo: 'compra' }] }),
       contexto,
@@ -53,7 +53,7 @@ describe('alinearConLaFormula', () => {
     expect(r.avisos).toEqual([
       'El grupo «viejo» ya no está en la fórmula: se quitó.',
       'El grupo «Compra» estaba repetido: se quitó el segundo.',
-      'El grupo «Logística» es nuevo en la fórmula: se sumó al final, sin tono.',
+      'El grupo «Logística» es nuevo en la fórmula: se sumó al final, sin color.',
     ])
   })
   it('quita las etiquetas y leyendas sin lugar, con la etiqueta del nodo o el id', () => {

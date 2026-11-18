@@ -60,7 +60,7 @@ export type ModeloDeTarjeta = {
   total: TotalDeTarjeta
   aparte: readonly { nodo: string; etiqueta: string; usd: number }[]
   nota: string | null
-  // Los tonos que usan los grupos, para `<EstiloDeTonos>`.
+  // Los colores que usan los grupos: fondo, borde y texto de cada uno en la tarjeta (la vista previa y el PDF).
   tonos: TarjetaLista['tonos']
 }
 

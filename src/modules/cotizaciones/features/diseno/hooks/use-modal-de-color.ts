@@ -16,10 +16,10 @@ import type { ListaDeTonos } from '../../../entities/diseno/tonos'
 
 const modoDe = (nuevo: boolean, editar: boolean) => (nuevo ? 'nuevo' : editar ? 'editar' : null)
 
-// Qué muestra el modal de tonos según la URL: `?panel=nuevo-tono` o `?panel=editar-tono&tono=<id>`. «Nuevo» no abre con el tope lleno y «Editar» no abre un tono que
-// no está (ni escribiendo la URL a mano): se revisa una vez, al llegar; se avisa y la URL se limpia. Si el que se edita desaparece con el modal abierto (otra
+// Qué muestra el modal de colores según la URL (con el nombre técnico): `?panel=nuevo-tono` o `?panel=editar-tono&tono=<id>`. «Nuevo» no abre con el tope lleno y
+// «Editar» no abre un color que no está (ni escribiendo la URL a mano): se revisa una vez, al llegar; se avisa y la URL se limpia. Si el que se edita desaparece con el modal abierto (otra
 // persona lo eliminó), el modal sigue a la vista y dice por qué ya no se guarda.
-export function useModalDeTono(lista: ListaDeTonos) {
+export function useModalDeColor(lista: ListaDeTonos) {
   const nuevo = usePanelPorUrl(PANEL_NUEVO_TONO)
   const editar = usePanelPorUrl(PANEL_EDITAR_TONO, [CLAVE_DE_TONO])
   const modo = modoDe(nuevo.abierto, editar.abierto)
