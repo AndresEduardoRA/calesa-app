@@ -66,9 +66,11 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/web/guias/[id]': (t) => ({ url: `/configuracion/web/guias/${t.guia}` }),
 }
 
-// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino.
+// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino. Configuración › Sitio web no
+// dibuja nada: abre la primera sub-sección que la dueña puede (Ajustes), y se barre ésa.
 export const REDIRECCIONES: Record<string, string> = {
   '/auth/nueva-contrasena': '/recuperar',
+  '/configuracion/web': '/configuracion/web/ajustes',
 }
 
 const claveDelOrigen = (proyecto: string) => `a11y_${proyecto}`
