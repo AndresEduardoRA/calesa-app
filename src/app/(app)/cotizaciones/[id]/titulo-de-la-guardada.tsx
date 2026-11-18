@@ -54,20 +54,24 @@ export function ConElTituloDeLaGuardada({
 }
 
 // La barra del vehículo de la cabecera (en lugar de «Vehículo: X»): el título grande y el vehículo debajo; con `puede_guardar`, abre el panel con el campo del título.
+// `diferido()` no dibuja nada en el servidor: el contenedor reserva desde el HTML el alto de la barra de una línea, así la hoja no salta al llegar (ni un clic cae
+// donde ya no está lo que se apuntó).
 export function barraDeLaCabecera(hoja: Guardada, vehiculo: Vehiculo | null, permisos: Permisos) {
   const { cotizacion } = hoja
   return (
-    <BarraDeLaGuardadaDiferida
-      origenId={cotizacion.origenId}
-      // Sólo nombra «Cierre subasta» en las listas del panel, que una guardada no dibuja.
-      esSubasta={false}
-      claveDeLaUrl={CLAVE_DE_VEHICULO}
-      numero={cotizacion.numero}
-      elegido={vehiculo === null ? null : elegidoDesde(vehiculo)}
-      conVehiculo={cotizacion.vehiculoId !== null}
-      puedeVer={puede(permisos, 'vehiculos.ver', cotizacion.origenId)}
-      puedeGuardar={hoja.puedeGuardar}
-    />
+    <div className="min-h-14 min-w-0">
+      <BarraDeLaGuardadaDiferida
+        origenId={cotizacion.origenId}
+        // Sólo nombra «Cierre subasta» en las listas del panel, que una guardada no dibuja.
+        esSubasta={false}
+        claveDeLaUrl={CLAVE_DE_VEHICULO}
+        numero={cotizacion.numero}
+        elegido={vehiculo === null ? null : elegidoDesde(vehiculo)}
+        conVehiculo={cotizacion.vehiculoId !== null}
+        puedeVer={puede(permisos, 'vehiculos.ver', cotizacion.origenId)}
+        puedeGuardar={hoja.puedeGuardar}
+      />
+    </div>
   )
 }
 

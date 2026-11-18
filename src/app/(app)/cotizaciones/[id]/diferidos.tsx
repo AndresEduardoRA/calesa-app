@@ -10,7 +10,7 @@ export const BarraDeLaGuardadaDiferida = diferido(
     esqueleto: (
       <div
         aria-hidden
-        className="h-16 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface-3)"
+        className="h-14 rounded-(--radius-card) border border-(--color-line) bg-(--color-surface-3)"
       />
     ),
   },
