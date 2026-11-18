@@ -157,15 +157,19 @@ export function montosPorGrupo(lineas: string[], s: Snapshot): Map<string, strin
   return montos
 }
 
-// El total impreso: la línea que es sólo el monto, o la etiqueta del total y el monto (si comparten renglón).
+// El total impreso: el primer monto que sigue a la etiqueta del total en su renglón (la leyenda, a su lado, puede sumarse al final) o, si el monto quedó en
+// otro renglón, el de los renglones vecinos (primero los de abajo).
 export function totalImpreso(lineas: string[], s: Snapshot): string | null {
-  const linea = lineas.find((l) => {
-    const sinEtiqueta = l.startsWith(`${s.etiquetaDelTotal} `)
-      ? l.slice(s.etiquetaDelTotal.length + 1)
-      : l
-    return /^USD[\s ]-?\d[\d.]*,\d{2}$/.test(sinEtiqueta)
-  })
-  return linea === undefined ? null : (MONTO.exec(linea)?.[1] ?? null)
+  const etiqueta = s.etiquetaDelTotal
+  const i = lineas.findIndex((l) => l.startsWith(etiqueta))
+  if (i < 0) return null
+  const enSuRenglon = MONTO.exec(` ${(lineas[i] ?? '').slice(etiqueta.length)}`)?.[1]
+  if (enSuRenglon !== undefined) return enSuRenglon
+  for (const vecino of [i + 1, i + 2, i - 1]) {
+    const monto = MONTO.exec(lineas[vecino] ?? '')?.[1]
+    if (monto !== undefined) return monto
+  }
+  return null
 }
 
 // (a) Cada grupo imprime, sin contar los ceros, los valores de sus nodos en el snapshot.

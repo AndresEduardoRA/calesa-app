@@ -128,9 +128,9 @@ test('E2E E1 en la hoja nueva «Copiar texto» deja la tarjeta como texto, con e
   expect(totalDeLaTarjeta).toMatch(/\d/)
   const texto = await copiarElTexto(page)
   const lineas = texto.split('\n')
-  // Primero el título de la cotización (automático: el del vehículo, que no se repite más abajo) y después el de la variante (T307).
-  expect(lineas[0]).toBe(`${TITULO_DEL_VEHICULO} ${info.project.name}`)
-  expect(lineas[1]).toBe('COTIZACIÓN VEHÍCULOS A GASOLINA EEUU - BOL')
+  // El texto sale de la geometría (D19 de T310): primero el título de la opción y después la fecha con el título de la cotización (automático: el del vehículo).
+  expect(lineas[0]).toBe('COTIZACIÓN VEHÍCULOS A GASOLINA EEUU - BOL')
+  expect(lineas[1]?.endsWith(` · ${TITULO_DEL_VEHICULO} ${info.project.name}`)).toBe(true)
   expect(lineas).toContain(`Asesor: ${asesora.nombre}`)
   expect(lineas.filter((l) => l === `${TITULO_DEL_VEHICULO} ${info.project.name}`)).toHaveLength(1)
   expect(lineas).toContain('Compra')
