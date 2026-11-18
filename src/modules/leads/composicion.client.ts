@@ -1,8 +1,6 @@
 // Composición del módulo en el navegador: lo que un componente necesita de `infra/*.client.ts`.
 // Separado de `composicion.ts` porque aquel importa `server-only`.
 export { leerLeadRapido } from './infra/lead-rapido.client'
-export { leerFichaDelLead } from './infra/ficha.client'
-export { leerTelefonosDelLead } from './infra/telefonos.client'
 export { leerChoques } from './infra/choques.client'
 export { leerCatalogosDeEdicion } from './infra/catalogos-de-edicion.client'
 export {
