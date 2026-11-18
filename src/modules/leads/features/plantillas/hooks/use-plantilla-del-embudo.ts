@@ -63,8 +63,10 @@ export function usePlantillaDelEmbudo(embudo: AjustesDeLeads['embudo']) {
 
   return {
     ...edicion,
-    // Algo cambiado que todavía no se guardó: «Guardar» se apaga sin cambios.
+    // Algo cambiado que todavía no se guardó: sin cambios, la barra no aparece.
     hayCambios: !etapasIguales(sinId(edicion.etapas), embudo.etapas),
+    // «Descartar» de la barra: vuelven las etapas guardadas y se borra el motivo (`reiniciar` lo borra al cambiar). El conflicto queda.
+    descartar: edicion.reiniciar,
     error,
     conflicto,
     enCurso: guardar.isPending,

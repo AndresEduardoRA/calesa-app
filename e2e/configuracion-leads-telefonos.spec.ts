@@ -43,12 +43,17 @@ test('la dueña cambia el máximo y enciende la regla, y se guarda', async ({ pa
   await entrar(page, t.personas.duena)
   await page.goto('/configuracion/leads/telefonos')
   const maximo = page.getByLabel('Máximo de teléfonos extra')
-  const guardar = page.getByRole('button', { name: 'Guardar' })
+  const barra = page.getByRole('region', { name: 'Cambios sin guardar' })
+  const guardar = barra.getByRole('button', { name: 'Guardar' })
   await expect(maximo).toHaveValue('6')
-  await expect(guardar).toBeDisabled()
+  await expect(barra).toHaveCount(0)
 
-  // Fuera del rango, el motivo sale junto al campo y no se envía.
-  await maximo.fill('25')
+  // Fuera del rango, el motivo sale junto al campo y no se envía. Un `fill` antes de hidratar no lo nota React: se reescribe hasta que
+  // aparece la barra.
+  await expect(async () => {
+    await maximo.fill('25')
+    await expect(barra).toBeVisible({ timeout: 500 })
+  }).toPass()
   await guardar.click()
   await expect(page.getByText('El máximo va de 0 a 20.')).toBeVisible()
   expect(await ajustesEnLaBase()).toMatchObject({ telefonos_extra_maximo: 6 })
@@ -56,7 +61,7 @@ test('la dueña cambia el máximo y enciende la regla, y se guarda', async ({ pa
   await maximo.fill('3')
   await page.getByRole('switch', { name: 'Los teléfonos extra cuentan como el principal' }).click()
   await guardar.click()
-  await expect(guardar).toBeDisabled()
+  await expect(barra).toHaveCount(0)
   expect(await ajustesEnLaBase()).toEqual({
     telefonos_extra_maximo: 3,
     telefonos_extra_como_principal: true,
