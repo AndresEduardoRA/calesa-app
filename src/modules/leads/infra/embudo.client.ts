@@ -10,14 +10,24 @@ export const leerPaginaDeEtapa: LectorDePaginaDeEtapa = async ({
   antes,
   tope,
   buscar,
+  leadId,
 }) => {
-  const { data, error } = await createClient().rpc('embudo_etapa_pagina', {
-    p_etapa: etapaId,
-    p_antes_en: antes.antesEn,
-    p_antes_id: antes.antesId,
-    p_tope: tope,
-    ...(buscar ? { p_buscar: buscar } : {}),
-  })
+  // Con lead, su propia lectura (por oportunidades_lead_etapa_idx); sin lead, la de siempre (por oportunidades_tablero_idx).
+  const { data, error } = leadId
+    ? await createClient().rpc('embudo_etapa_pagina_del_lead', {
+        p_etapa: etapaId,
+        p_lead: leadId,
+        p_antes_en: antes.antesEn,
+        p_antes_id: antes.antesId,
+        p_tope: tope,
+      })
+    : await createClient().rpc('embudo_etapa_pagina', {
+        p_etapa: etapaId,
+        p_antes_en: antes.antesEn,
+        p_antes_id: antes.antesId,
+        p_tope: tope,
+        ...(buscar ? { p_buscar: buscar } : {}),
+      })
   if (error) {
     return { ok: false, error: errorDePostgrest(error) }
   }

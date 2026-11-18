@@ -1,30 +1,32 @@
 'use client'
 
 import { useId } from 'react'
+import { AccionesDelAviso } from '@/shared/ui/acciones-del-aviso'
+import { Aviso } from '@/shared/ui/aviso'
 import { Campo } from '@/shared/ui/campo'
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
 import { Label } from '@/shared/ui/label'
 import { useRegional } from '@/shared/ui/regional'
 import { Textarea } from '@/shared/ui/textarea'
-import type { Embudo } from '../../../entities/embudo'
 import {
   LARGO_MAXIMO_DE_NOTAS,
   LARGO_MAXIMO_DE_TITULO,
   type Oportunidad,
 } from '../../../entities/oportunidad'
+import type { OpcionDeEmbudo } from '../../../entities/oportunidad-unica'
 import { CampoVehiculo } from '../../recordatorios/components/campo-vehiculo'
 import type { useFormularioDeOportunidad } from '../hooks/use-formulario-de-oportunidad'
 
 type Props = {
   formulario: ReturnType<typeof useFormularioDeOportunidad>
   oportunidad: Oportunidad | null
-  // Al crear y con más de uno, en cuál (sin elegir, el de por defecto).
-  embudos: readonly Embudo[]
+  // Al crear y con más de un embudo, en cuál (`embudosParaCrear()`: los que ya tienen una abierta, apagados); si no, null.
+  opcionesDeEmbudo: readonly OpcionDeEmbudo[] | null
 }
 
 // Los campos de una oportunidad: título, monto (en la moneda de la empresa, sin convertir), notas,
 // vehículo (uno del lead que quien escribe ve) y, al crear, el embudo.
-export function CamposDeOportunidad({ formulario: f, oportunidad, embudos }: Props) {
+export function CamposDeOportunidad({ formulario: f, oportunidad, opcionesDeEmbudo }: Props) {
   const id = useId()
   const { monedaBase } = useRegional()
   const moneda = oportunidad?.moneda ?? monedaBase
@@ -81,25 +83,23 @@ export function CamposDeOportunidad({ formulario: f, oportunidad, embudos }: Pro
           f.cambiar('vehiculo', valor)
         }}
       />
-      {!oportunidad && embudos.length > 1 ? (
+      {!oportunidad && opcionesDeEmbudo ? (
         <CampoSeleccion
           nombre="embudo"
           etiqueta="Embudo"
-          opciones={[
-            {
-              valor: '',
-              etiqueta: `${embudos.find((e) => e.esDefault)?.nombre ?? 'El de siempre'} (por defecto)`,
-            },
-            ...embudos
-              .filter((e) => !e.esDefault)
-              .map((e) => ({ valor: e.id, etiqueta: e.nombre })),
-          ]}
+          opciones={opcionesDeEmbudo}
           value={f.embudo}
+          error={f.errores.embudo}
           onChange={(evento) => {
             f.setEmbudo(evento.target.value)
           }}
         />
       ) : null}
+      {/* Sin el campo (un solo embudo), el rechazo del embudo se dice igual. */}
+      {!oportunidad && !opcionesDeEmbudo && f.errores.embudo ? (
+        <Aviso tono="peligro">{f.errores.embudo}</Aviso>
+      ) : null}
+      {f.abierta ? <AccionesDelAviso resueltas={f.abierta} /> : null}
     </div>
   )
 }

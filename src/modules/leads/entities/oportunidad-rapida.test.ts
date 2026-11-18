@@ -3,6 +3,7 @@ import { LARGO_MAXIMO_DE_TITULO } from './oportunidad'
 import type { OportunidadDelLead } from './oportunidad'
 import {
   avisoDeOportunidades,
+  crearIgual,
   rutaDeLasOportunidadesDe,
   hayCambiosEnOportunidadRapida,
   pedidoDeOportunidadRapida,
@@ -85,5 +86,28 @@ describe('rutaDeLasOportunidadesDe', () => {
     expect(rutaDeLasOportunidadesDe('L1', 'O1')).toBe(
       '/leads/L1?seccion=oportunidades&panel=editar-oportunidad&oportunidad=O1',
     )
+  })
+})
+
+describe('crearIgual', () => {
+  const enVentas = {
+    embudoId: '11111111-1111-4111-8111-111111111111',
+    embudoNombre: 'Ventas',
+    esDefault: true,
+    oportunidadId: '22222222-2222-4222-8222-222222222222',
+  }
+  it('con una abierta en el embudo por defecto va apagado, con su motivo y la abierta para «Abrir esa»', () => {
+    expect(crearIgual([enVentas])).toEqual({
+      puede: false,
+      motivo: 'Ya tiene una abierta en «Ventas».',
+      abierta: enVentas,
+    })
+  })
+  it('con abiertas sólo en otros embudos, o sin ninguna, se puede', () => {
+    expect(crearIgual([{ ...enVentas, esDefault: false }])).toEqual({ puede: true })
+    expect(crearIgual([])).toEqual({ puede: true })
+  })
+  it('sin la lectura (falló), se puede: decide la base', () => {
+    expect(crearIgual(null)).toEqual({ puede: true })
   })
 })

@@ -2,9 +2,7 @@
 
 import { useMemo } from 'react'
 import { ProveedorDeMarcasDeVisto } from '@/modules/equipo/client'
-import { Aviso } from '@/shared/ui/aviso'
-import { EstadoVacio } from '@/shared/ui/estados'
-import { VistaYOpciones, type GrupoDeVistaYOpciones } from '@/shared/ui/vista-y-opciones'
+import { VistaYOpciones } from '@/shared/ui/vista-y-opciones'
 import type { Embudo } from '../../../entities/embudo'
 import { idsDeLeadsDelTablero, totalDelTablero, type Tablero } from '../../../entities/tablero'
 import { DialogoDeEtiquetas } from '../../etiquetas/components/dialogo-de-etiquetas'
@@ -14,36 +12,30 @@ import { RefrescarAlVolver } from '../../ficha/components/refrescar-al-volver'
 import { AccionesDeFila } from '../../listado/components/acciones-de-fila'
 import type { ParaElMenuDelEmbudo } from '../lecturas'
 import { useTablero } from '../hooks/use-tablero'
-import { useVistaDeEmbudo } from '../hooks/use-vista-de-embudo'
-import { AccionesDelEmbudo } from './acciones-del-embudo'
-import { BusquedaDelEmbudo, ID_DE_LA_BUSQUEDA_DEL_EMBUDO } from './busqueda-del-embudo'
-import { ConmutadorDeVista } from './conmutador-de-vista'
+import { useQuitarLeadIgnorado, useVistaDeEmbudo } from '../hooks/use-vista-de-embudo'
+import { AvisoDelTablero } from './aviso-del-tablero'
+import { BarraDelEmbudo, GRUPO_DE_VISTA } from './barra-del-embudo'
+import { ID_DE_LA_BUSQUEDA_DEL_EMBUDO } from './busqueda-del-embudo'
 import { ProveedorDelMenuDelEmbudo, useMenuDelEmbudo } from './menu-de-lead-del-embudo'
 import { NuevoEmbudo } from './nuevo-embudo'
 import { PanelDeEtapas } from './panel-de-etapas'
 import { PrimerEmbudo } from './primer-embudo'
-import { SelectorDeEmbudo } from './selector-de-embudo'
 import { TableroDeEmbudo } from './tablero-de-embudo'
 
 type Props = {
   embudos: Embudo[]
   tablero: Tablero | null
   paraElMenu: ParaElMenuDelEmbudo
+  // Se pidió `?lead=` y el servidor no lo aceptó: se quita de la URL.
+  leadIgnorado: boolean
   // «Cotizar lead» y «Ver actividad» del «⋯» de cada tarjeta, con `MARCADOR_DE_LEAD` (las arma `src/app` una vez por página).
   rutas: RutasDelMenuDeLead
 }
 
-// «Lista | Embudo» en «Vista y opciones», en el mismo lugar que en la lista.
-const GRUPO_DE_VISTA: GrupoDeVistaYOpciones = {
-  clave: 'vista',
-  titulo: 'Vista',
-  contenido: <ConmutadorDeVista actual="embudo" />,
-  resumen: 'Embudo',
-}
-
 // `/leads?vista=embudo`: el kanban de las oportunidades propias en el embudo elegido. La primera vez
 // prepara el embudo por defecto. Los filtros de la lista no se aplican aquí, y la pantalla lo dice.
-export function VistaDeEmbudo({ embudos, tablero, paraElMenu, rutas }: Props) {
+export function VistaDeEmbudo({ embudos, tablero, paraElMenu, rutas, leadIgnorado }: Props) {
+  useQuitarLeadIgnorado(leadIgnorado)
   if (!tablero || embudos.length === 0) {
     return (
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
@@ -56,43 +48,6 @@ export function VistaDeEmbudo({ embudos, tablero, paraElMenu, rutas }: Props) {
     )
   }
   return <ConTablero embudos={embudos} inicial={tablero} paraElMenu={paraElMenu} rutas={rutas} />
-}
-
-type PropsDeLaBarra = {
-  embudos: Embudo[]
-  actual: string
-  alElegirEmbudo: (id: string) => void
-  alAbrirEtapas: () => void
-  alAbrirNuevo: () => void
-}
-
-// Arriba del kanban: el selector de embudo (elige qué se ve, como un filtro), la búsqueda (crece) y «Vista y opciones» con «Lista | Embudo»,
-// «Etapas…» y «Nuevo embudo…».
-function BarraDelEmbudo({
-  embudos,
-  actual,
-  alElegirEmbudo,
-  alAbrirEtapas,
-  alAbrirNuevo,
-}: PropsDeLaBarra) {
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <SelectorDeEmbudo embudos={embudos} actual={actual} alElegir={alElegirEmbudo} />
-      <BusquedaDelEmbudo />
-      <VistaYOpciones
-        grupos={[
-          GRUPO_DE_VISTA,
-          {
-            clave: 'embudo',
-            titulo: 'Embudo',
-            contenido: (
-              <AccionesDelEmbudo alAbrirEtapas={alAbrirEtapas} alAbrirNuevo={alAbrirNuevo} />
-            ),
-          },
-        ]}
-      />
-    </div>
-  )
 }
 
 // Lo que abren los «⋯» de las tarjetas, montado una vez: gestionar etiquetas, anotar, agendar o crear una oportunidad, y editar el lead.
@@ -140,25 +95,13 @@ function ConTablero(props: {
       <BarraDelEmbudo
         embudos={embudos}
         actual={inicial.embudo.id}
+        lead={inicial.lead}
         alElegirEmbudo={vista.elegirEmbudo}
+        alQuitarLead={vista.quitarLead}
         alAbrirEtapas={vista.abrirEtapas}
         alAbrirNuevo={vista.abrirNuevo}
       />
-      <Aviso tono="info">
-        <p>
-          {estado.tablero.busqueda
-            ? `Buscando «${estado.tablero.busqueda}» en tus oportunidades: el título o el nombre del lead, en todas las etapas.`
-            : 'Aquí ves tus oportunidades. Los filtros de la lista no se aplican en esta vista; para llegar a una, búscala.'}
-        </p>
-      </Aviso>
-      {/* Sin oportunidades se dice, y las columnas se ven igual: muestran las etapas del embudo. */}
-      {vacio ? (
-        <EstadoVacio
-          compacto
-          titulo="Todavía no tienes oportunidades en este embudo"
-          descripcion="Crea una desde la ficha de un lead, en «Oportunidades»."
-        />
-      ) : null}
+      <AvisoDelTablero tablero={estado.tablero} vacio={vacio} alVerTodas={vista.quitarLead} />
       <ProveedorDelMenuDelEmbudo valor={menu.valor}>
         <ProveedorDeMarcasDeVisto modulo="leads" tipo="lead" ids={idsDeLeads} abierto={null}>
           <TableroDeEmbudo

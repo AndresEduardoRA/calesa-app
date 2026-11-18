@@ -84,11 +84,11 @@ const conectar = async () => {
   return c
 }
 
-// El resultado de una llamada como valor: { ok, valor } o { ok: false, codigo, mensaje }.
+// El resultado de una llamada como valor: { ok, valor } o { ok: false, codigo, mensaje, hint, detail }.
 const comoValor = (promesa) =>
   promesa.then(
     (r) => ({ ok: true, valor: r.rows[0]?.r ?? null }),
-    (e) => ({ ok: false, codigo: e.code, mensaje: e.message }),
+    (e) => ({ ok: false, codigo: e.code, mensaje: e.message, hint: e.hint, detail: e.detail }),
   )
 
 async function esperarBloqueo(orquesta, pid) {

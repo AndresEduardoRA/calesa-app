@@ -12,6 +12,7 @@ import { oportunidadDelLeadDesde } from '../../../entities/ventana-de-oportunida
 import { MENSAJE_DE_VALIDACION } from '../../ficha/resultado'
 import { eliminarOportunidad } from '../actions/eliminar-oportunidad'
 import { moverOportunidad } from '../actions/mover-oportunidad'
+import { accionesDelRechazo } from '../../../entities/oportunidad-unica'
 import { restaurarOportunidad } from '../actions/restaurar-oportunidad'
 import {
   useVentanaDeOportunidades,
@@ -63,7 +64,7 @@ export function useOportunidades(
     setOcupada(null)
     if (!envio.ok) {
       ventana.poner(o)
-      avisarError(envio.error)
+      avisarError(envio.error, accionesDelRechazo(leadId, envio))
       return false
     }
     ponerRespuesta(envio.data.oportunidad)
@@ -90,7 +91,7 @@ export function useOportunidades(
         if (vuelta.ok) {
           ponerRespuesta(vuelta.data.oportunidad)
         } else {
-          avisarError(vuelta.error)
+          avisarError(vuelta.error, accionesDelRechazo(leadId, vuelta))
         }
       })
     })
