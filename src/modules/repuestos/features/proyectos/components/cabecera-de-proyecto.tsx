@@ -47,7 +47,7 @@ export function CabeceraDeProyecto({
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="grid min-w-0 gap-3">
+        <div className="grid min-w-0 flex-1 gap-3">
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-(length:--text-xl) font-semibold tabular-nums">
               Proyecto #{proyecto.numero}
