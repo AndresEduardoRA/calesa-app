@@ -214,6 +214,20 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T34]** El bloque «Ficha» de la ficha del vehículo dibuja todos los grupos con sus campos aunque estén en «—»: en el celular la página pasa de 6.000 px;
   plegar lo vacío o mostrar sólo lo que tiene valor.
 
+## Decisión de la persona
+
+Versiones mayores que `pnpm outdated` lista y la tarea mensual de dependencias no instala (`scripts/orquestador/README.md`).
+
+- @types/node 20.19.43 → 26.6.6 (decisión de la persona)
+- @vitejs/plugin-react 5.2.0 → 6.3.0 (decisión de la persona)
+- @xyflow/react 12.12.1 → 13.0.1 (decisión de la persona)
+- cn 0.4.0 → 0.5.2 (decisión de la persona)
+- jsdom 30.1.3 → 31.0.1 (decisión de la persona)
+- supabase 2.122.1 → 3.2.0 (decisión de la persona)
+- typescript 6.0.3 → 7.0.2 (decisión de la persona)
+- vitest 4.1.12 → 5.1.0 (decisión de la persona)
+- web-push 3.6.7 → 4.0.0 (decisión de la persona)
+
 ## Fuera de alcance
 
 - Multiidioma. Offline real (modo sin conexión y sincronización en segundo plano). Editor de artes (Konva). Directorio de contactos/empresas.
