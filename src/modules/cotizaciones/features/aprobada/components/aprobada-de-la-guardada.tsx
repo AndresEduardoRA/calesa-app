@@ -29,6 +29,7 @@ async function Marca({ cotizacion, permisos }: PropsDeUnHuecoDeLaGuardada) {
       actualizadoEn={cotizacion.actualizadoEn}
       aprobada={marca?.aprobada === true}
       motivo={motivoParaNoAprobar(cotizacion, marca)}
+      vehiculoId={cotizacion.vehiculoId}
     />
   )
 }

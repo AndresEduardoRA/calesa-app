@@ -381,6 +381,12 @@ candado de la aprobada del vehículo (aviso). Con todo tomado vuelve a mirar ver
 moverla. Aprobar la que ya lo es no cambia nada. Deja `cotizacion.aprobada` en la actividad y devuelve `{cotizacion, anterior}`; `anterior` sólo viaja
 si quien aprueba la ve, puede aprobarla (su origen) y sigue activa (es lo que necesita «Deshacer»).
 
+**Dónde se aprueba otra:** «Aprobar» de la cabecera de la guardada, «Aprobar» del «⋯» del listado y «Aprobar esta» del bloque **De este vehículo**
+(la guardada y el resumen del listado). El bloque lee `cotizaciones_de_este_vehiculo(vehículo, tamaño, cursor)` (invocadora: una página por
+`cotizaciones_vehiculo_creado_idx` y, sin cursor, la aprobada por `cotizaciones_aprobadas_pkey` marcada `fijada`), que trae la versión de cada fila para
+aprobarla y el nombre de su modo de tipo de cambio por `_nombre_del_modo()` (`security definer`: el nombre que ya dan la hoja y la tarjeta a quien
+tiene `cotizaciones.ver` del origen, una vez por versión y modo).
+
 Candados de la clase (todos en el orden común lead → vehículo → cotización → aprobada): la transacción que confirma ya tiene sus candados de fila y
 sólo lee `cotizaciones` y escribe `cotizaciones_aprobadas` tras el candado de aviso, así que no cierra ciclos. `cotizaciones_aprobadas.vehiculo_id`
 **no tiene FK a `vehiculos`**: el `insert` tomaría `key share` del vehículo al confirmar y cerraría un ciclo con su papelera. Pruebas:

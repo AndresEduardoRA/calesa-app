@@ -57,7 +57,12 @@ function dibujar(clase: 'preventa' | 'final', puedeGuardar: boolean, permisos: P
     throw new Error('El área papelera no llena `Acciones`')
   }
   return render(
-    <Acciones cotizacion={cotizacion(clase)} puedeGuardar={puedeGuardar} permisos={permisos} />,
+    <Acciones
+      cotizacion={cotizacion(clase)}
+      puedeGuardar={puedeGuardar}
+      permisos={permisos}
+      vehiculo={null}
+    />,
   )
 }
 

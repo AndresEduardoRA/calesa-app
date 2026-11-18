@@ -7,6 +7,7 @@ import {
   getAprobadasDeVehiculos,
   getMarcaDeLaGuardada,
 } from '../../infra/aprobada/leer'
+import { getOtrasDelVehiculo } from '../../infra/aprobada/otras-del-vehiculo'
 
 // Aprobar una cotización. La action de `features/aprobada/` lo usa; sale por la raíz sólo por el nombre.
 export const repositorioDeAprobada: RepositorioDeAprobada = aprobadaSupabase
@@ -15,3 +16,6 @@ export const repositorioDeAprobada: RepositorioDeAprobada = aprobadaSupabase
 export const leerAprobadasDeVehiculos = getAprobadasDeVehiculos
 export const leerAprobadasDeCotizaciones = getAprobadasDeCotizaciones
 export const leerMarcaDeLaGuardada = getMarcaDeLaGuardada
+
+// Cuántas otras cotizaciones del vehículo ve quien mira (la línea y el bloque «De este vehículo» de la guardada).
+export const leerOtrasDelVehiculo = getOtrasDelVehiculo

@@ -1,10 +1,11 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const h = vi.hoisted(() => ({ aprobar: vi.fn() }))
 
 vi.mock('../hooks/aprobar-la-cotizacion', () => ({ aprobarLaCotizacion: h.aprobar }))
 
+import { avisarAprobada } from '../hooks/aprobada-del-vehiculo'
 import { BotonAprobar } from './boton-aprobar'
 
 afterEach(cleanup)
@@ -79,5 +80,19 @@ describe('BotonAprobar', () => {
         false,
       )
     })
+  })
+
+  it('se pone al día cuando otra isla del vehículo aprueba otra o la devuelve', () => {
+    const VEHICULO = '33333333-3333-4333-8333-333333333333'
+    const OTRA = '44444444-4444-4444-8444-444444444444'
+    dibujar({ aprobada: true, vehiculoId: VEHICULO })
+    act(() => {
+      avisarAprobada({ vehiculoId: VEHICULO, aprobadaId: OTRA, fuente: 'bloque' })
+    })
+    expect(screen.getByRole('button', { name: 'Aprobar' })).toBeTruthy()
+    act(() => {
+      avisarAprobada({ vehiculoId: VEHICULO, aprobadaId: ID, fuente: 'bloque' })
+    })
+    expect(screen.getByText('Aprobada')).toBeTruthy()
   })
 })

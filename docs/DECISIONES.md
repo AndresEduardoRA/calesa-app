@@ -388,6 +388,20 @@ las trampas, en `docs/LECCIONES.md`.
 - **Aprobar es reversible, sin confirmar.** Se aprueba de una y el aviso ofrece «Deshacer» (aprueba la anterior con su versión); no mueve versiones y exige
   la versión de la cotización que se aprueba. La clave `cotizaciones.aprobar` se concede a quien ya cierra finales, en su origen.
 - **Primer resultado = `totales.usd`.** Lo que la hoja dibuja en la tarjeta del total, en USD y sin convertir; cada celda lleva la moneda congelada con él.
+- **«De este vehículo» con su propia lectura.** `cotizaciones_de_este_vehiculo()` aparte en vez de sumar columnas a `cotizaciones_listado()`: cambiar el
+  retorno es `drop` + `create` y rompe la infra del listado, `datos`, sus pruebas y su medición; el bloque necesita además la versión, el modo, el autor y la
+  aprobada fijada, todo en un pedido por página. La aprobada viaja aparte en la primera página (puede estar más allá de la página 10) y el código la pone
+  primera sin repetirla; el cursor sale de la página, nunca de ella.
+- **El nombre del modo por `_nombre_del_modo()`.** `formulas` sólo la lee quien configura; el nombre del modo ya lo dan la hoja y la tarjeta a quien tiene
+  `cotizaciones.ver` del origen, así que un `security definer` con el mismo chequeo (el de `cotizacion_tarjeta`) no expone nada nuevo. Se llama una vez por
+  versión y modo de la página (cada llamada pregunta el permiso: por fila eran ≈ 90 buffers cada una).
+- **El bloque es del área `aprobada`.** Usa «Aprobar» y la insignia del área; una pantalla sin prefijo sería núcleo, que no importa áreas. Sale por
+  `pantallas/aprobada-de-este-vehiculo.ts` para la ficha del vehículo y por `pantallas/aprobada-resumen.ts` para el resumen.
+- **La aprobada al día entre islas, sin refrescar.** Aprobar desde el bloque no puede refrescar la guardada (perdería lo tipeado): `avisarAprobada()` y
+  `useAlCambiarLaAprobada()` (un `Set` de oyentes por módulo) ponen al día «Aprobar» de la cabecera y el bloque relee su primera página. En el resumen sí se
+  refresca el listado (no tiene nada tipeado), como «Aprobar» del «⋯».
+- **Dónde aprueba quien mira lo manda el servidor.** `aprobarEn` (`origenesCon(permisos, 'cotizaciones.aprobar')`), no los permisos: con «Ver como» respeta el
+  rol elegido y la base vuelve a decidir al aprobar. El motivo dice primero el permiso y después la inválida, en el orden de la base.
 
 ### Papelera
 
