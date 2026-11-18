@@ -49,14 +49,27 @@ test('quien configura repuestos entra a los cuatro catálogos y el hub lista Rep
 }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto('/configuracion/repuestos')
-  await expect(page.getByRole('heading', { name: 'Repuestos', level: 1 })).toBeVisible()
+  // La sección abre «Catálogos», con su frase; «Cotizador de repuestos» está en el menú.
+  await expect(page).toHaveURL(/\/configuracion\/repuestos\/catalogos$/)
+  await expect(page.getByRole('heading', { name: 'Catálogos', level: 1 })).toBeVisible()
+  await expect(
+    page.getByText('Tipo de pieza, condición, vía de transporte y país de origen.'),
+  ).toBeVisible()
+  const menu = page.getByRole('navigation', { name: 'Secciones de Configuración' })
+  await expect(menu.getByRole('link', { name: 'Catálogos' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
+  await expect(menu.getByRole('link', { name: 'Cotizador de repuestos' })).toBeVisible()
   for (const catalogo of ['Tipo de pieza', 'Condición', 'Vía de transporte', 'País de origen']) {
     await expect(page.getByRole('heading', { name: catalogo, level: 2 })).toBeVisible()
   }
-  await expect(page.getByRole('tab')).toHaveCount(2)
-  // Una pestaña escrita a mano en la URL abre la misma.
+  // Una pestaña ajena escrita a mano en la URL abre la misma; la vieja `?seccion=cotizador` llega al cotizador con el modal que pedía.
   await page.goto('/configuracion/repuestos?seccion=basura')
-  await expect(page.getByRole('heading', { name: 'Tipo de pieza', level: 2 })).toBeVisible()
+  await expect(page).toHaveURL(/\/configuracion\/repuestos\/catalogos$/)
+  await page.goto('/configuracion/repuestos?seccion=cotizador&panel=tramo&tramo=nuevo&moneda=USD')
+  await expect(page).toHaveURL(/\/configuracion\/repuestos\/cotizador\?panel=tramo/)
+  await expect(page.getByRole('dialog', { name: 'Agregar tramo en USD' })).toBeVisible()
 
   await page.goto('/configuracion')
   // El hub es el `main`: el menú del marco tiene su entrada «Repuestos» aparte.
@@ -65,7 +78,7 @@ test('quien configura repuestos entra a los cuatro catálogos y el hub lista Rep
 
 test('el enlace de Configuración › Repuestos lleva al flujo de repuestos', async ({ page }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto('/configuracion/repuestos')
+  await page.goto('/configuracion/repuestos/cotizador')
   await page.getByRole('link', { name: 'Configurar el flujo de repuestos' }).click()
   await expect(page).toHaveURL(/\/configuracion\/flujos\?ambito=repuestos/)
   await expect(page.getByRole('heading', { name: 'Flujos', level: 1 })).toBeVisible()
@@ -74,7 +87,7 @@ test('el enlace de Configuración › Repuestos lleva al flujo de repuestos', as
 
 test('agregar, renombrar, desactivar y eliminar un tipo de pieza', async ({ page }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto('/configuracion/repuestos')
+  await page.goto('/configuracion/repuestos/catalogos')
   const bloque = page.locator('section[aria-labelledby="titulo-de-catalogo-tipo_pieza"]')
   const agregar = page.getByRole('dialog', { name: 'Agregar tipo de pieza' })
 
@@ -122,4 +135,6 @@ test('la asesora de la semilla no entra a Configuración › Repuestos', async (
   await page.goto('/configuracion/repuestos')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Tipo de pieza' })).toHaveCount(0)
+  await page.goto('/configuracion/repuestos/cotizador')
+  await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
 })

@@ -26,7 +26,7 @@ function Cargando() {
 }
 
 // Configuración › Logística › Categorías de gasto (6.11-4): se crean, renombran, eligen su propósito, ordenan (con un número), activan y desactivan; una con gastos no se elimina, se desactiva. Es un catálogo de
-// la empresa (decenas de filas): no se pagina. Escribir lo exige `logistica.catalogos.gestionar` (la RLS de la tabla); la pestaña ya lo pide.
+// la empresa (decenas de filas): no se pagina. Escribir lo exige `logistica.catalogos.gestionar` (la RLS de la tabla); la página ya lo pide.
 export function CategoriasDeGasto() {
   const datos = useCategoriasDeGasto()
   const { lectura } = datos
@@ -37,20 +37,8 @@ export function CategoriasDeGasto() {
   const montarEliminar = useAbiertoAlgunaVez(eliminacion.abierto)
 
   return (
-    <section className="grid gap-3" aria-labelledby="titulo-de-categorias">
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-        <div className="grid gap-0.5">
-          <h2
-            id="titulo-de-categorias"
-            className="text-(length:--text-lg) font-semibold text-(--color-ink)"
-          >
-            Categorías de gasto
-          </h2>
-          <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-            Es lo que se elige al registrar un gasto. El propósito «Tributos» es el que Aduana lee
-            para dar por pagada una declaración.
-          </p>
-        </div>
+    <section className="grid gap-3" aria-label="Categorías de gasto">
+      <div className="flex justify-end">
         <Button className={BOTON} onClick={modal.abrirNuevo}>
           <PlusIcon aria-hidden />
           Nueva categoría

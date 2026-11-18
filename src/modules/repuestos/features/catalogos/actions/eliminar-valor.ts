@@ -18,6 +18,6 @@ export const eliminarValor = actionClient
       return fallo('sin_permiso', SIN_PERMISO_PARA_LOS_CATALOGOS)
     }
     const hecho = await repositorioDeValores.eliminar(parsedInput)
-    if (hecho.ok) revalidatePath(RUTAS.configuracionDeRepuestos)
+    if (hecho.ok) revalidatePath(RUTAS.catalogosDeRepuestos)
     return hecho
   })

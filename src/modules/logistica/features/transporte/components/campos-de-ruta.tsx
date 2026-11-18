@@ -41,7 +41,7 @@ export function SinNavieras({ puedeCargar }: { puedeCargar: boolean }) {
       {TEXTO_SIN_NAVIERAS}{' '}
       {puedeCargar ? (
         <Link
-          href={`${RUTAS.configuracionDeLogistica}?seccion=navieras` as Route}
+          href={RUTAS.navierasDeLogistica as Route}
           className="font-medium text-(--color-ink) underline underline-offset-2"
         >
           Cargar navieras

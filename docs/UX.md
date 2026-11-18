@@ -428,16 +428,19 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   (`?seccion=reglas|documentos`; `?seccion=fases` es la pantalla). Las fases se crean desde la barra, se ordenan arrastrando o con «Mover
   antes/después» (y «Subir/Bajar» en la lista), se jubilan y reactivan; en el panel se editan y se agregan y quitan salidas y requisitos.
   Ver «Flujos: configuración (estados propios)» y siguientes.
-- **Logística (config)** — `/configuracion/logistica` (`logistica.catalogos.gestionar`): catálogos «Puertos» (nombre, país, código, orden y
-  activo), «Navieras» (nombre y activa; sin «Eliminar»: se desactivan) y «Categorías de gasto» (nombre, propósito de la lista fija de la
-  base, orden y activa; una con gastos no se elimina, se desactiva), en `?seccion=puertos|navieras|categorias-de-gasto` (sin barra con una
-  sola; una URL ajena abre «Puertos»). La tarjeta del hub sólo existe cuando algún área llena un catálogo; si no, la URL entra y dice «Por
-  ahora no hay nada que configurar aquí.». Ver «Logística: estados propios».
-- **Repuestos (config)** — `/configuracion/repuestos` (`repuestos.configurar`): pestaña «Catálogos» con tipo de pieza, condición, vía de
-  transporte y país de origen (agregar, editar nombre, orden y activo, desactivar, eliminar sin uso; tope 200 por catálogo con
-  `<AvisoDeTope>`; `?panel=nuevo-valor&catalogo=`, `editar-valor&valor=`, `eliminar-valor&valor=`). Pestaña «Cotizador»
-  (`?seccion=cotizador`): «Fórmula» con «Publicar cambios» y su historial, «Tramos de logística» y «Cajas» por moneda con sus modales en la
-  URL (`?panel=tramo|caja`). Arriba, el enlace a su flujo en Flujos (config).
+- **Logística (config)** — `/configuracion/logistica` (`logistica.catalogos.gestionar`) no tiene página propia: abre el primer catálogo que la
+  persona puede abrir. Cada catálogo es una sub-ruta del menú «Operación › Logística», con su título y su frase: `/puertos` («Puertos»: nombre,
+  país, código, orden y activo), `/navieras` («Navieras»: nombre y activa; sin «Eliminar»: se desactivan) y `/categorias-de-gasto`
+  («Categorías de gasto»: nombre, propósito de la lista fija de la base, orden y activa; una con gastos no se elimina, se desactiva). Sin título
+  de bloque ni segunda frase: sólo «Nuevo …» arriba a la derecha y la lista. Las URLs viejas `?seccion=puertos|navieras|categorias-de-gasto`
+  redirigen a su sub-ruta con sus `?panel=` (una ajena, a la primera). La sección sólo existe cuando algún área llena un catálogo; si no, la URL
+  entra y dice «Por ahora no hay nada que configurar aquí.». Ver «Logística: estados propios».
+- **Repuestos (config)** — `/configuracion/repuestos` (`repuestos.configurar`) abre `/catalogos`. **Catálogos** (`/configuracion/repuestos/catalogos`):
+  tipo de pieza, condición, vía de transporte y país de origen (agregar, editar nombre, orden y activo, desactivar, eliminar sin uso; tope 200 por
+  catálogo con `<AvisoDeTope>`; `?panel=nuevo-valor&catalogo=`, `editar-valor&valor=`, `eliminar-valor&valor=`). **Cotizador de repuestos**
+  (`/configuracion/repuestos/cotizador`): «Fórmula» con «Publicar cambios» (publica una versión nueva: no es una barra de «Guardar») y su
+  historial, «Tramos de logística» y «Cajas» por moneda con sus modales en la URL (`?panel=tramo|caja`). Las dos con el enlace a su flujo en
+  Flujos (config) arriba. Las URLs viejas `?seccion=catalogos|cotizador` redirigen a su sub-ruta con sus `?panel=`, `tramo`, `caja` y `moneda`.
 - **Sitio web (config)** — `/configuracion/web` (`web.ajustes.gestionar` o `web.contenido.gestionar`):
   `?seccion=ajustes|legales|guias|faqs|testimonios` («Ajustes» y «Legales» con `web.ajustes.gestionar`; el resto con
   `web.contenido.gestionar`; la barra sólo con dos o más). «Ajustes»: la fila única del sitio (nombre, lema, WhatsApp de respaldo, horario,
