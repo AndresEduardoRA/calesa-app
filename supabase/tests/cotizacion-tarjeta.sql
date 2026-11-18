@@ -164,8 +164,8 @@ begin
   r := pg_temp.ct_tarjeta(duena, fn);
   if r ->> 'estado' is distinct from 'lista' or (r #>> '{grupos,0,filas,1,etiqueta}') is distinct from 'CENT-k3' then raise exception '(b) la N: %', r; end if;
   -- (c) un tono que sólo elige la plantilla, borrado del catálogo.
-  insert into public.tonos (clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
-  select 'ct_tono', 'CT tono', claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta from public.tonos where clave = 'verde';
+  insert into public.tonos (clave, nombre, hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta)
+  select 'ct_tono', 'CT tono', hex, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta from public.tonos where clave = 'verde';
   perform pg_temp.ct_publicar(o_sub, jsonb_set((select definicion from public.plantillas_tarjeta where origen_id = o_sub and version = 1), '{grupos,0,tono}', '"ct_tono"'));
   r := pg_temp.ct_tarjeta(duena, f1);
   if (r #>> '{grupos,0,tono}') is distinct from 'ct_tono' or not exists (select 1 from jsonb_array_elements(r -> 'tonos') t where t ->> 'clave' = 'ct_tono') then raise exception '(c) el tono elegido: %', r; end if;

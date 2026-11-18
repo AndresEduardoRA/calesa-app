@@ -12,7 +12,7 @@ import { MOTIVO_SIN_PERMISO_DE_TONOS } from '../../../entities/diseno/tonos'
 import { comoResultado } from '../../niveles/actions/resultado'
 import { esquemaEliminarTono } from '../schemas/tonos'
 
-// Elimina un tono (`tono_eliminar`). Uno que alguna versión de una fórmula nombra no se elimina: la base responde 23503 con cuál lo usa y llega tal cual.
+// Elimina un color (`tono_eliminar`). Uno que alguna versión de una fórmula nombra no se elimina: la base responde 23503 con cuál lo usa y llega tal cual.
 export const eliminarTono = actionClient
   .inputSchema(esquemaEliminarTono)
   .action(async ({ parsedInput, ctx }): Promise<ResultadoDeAccion<RespuestaDeTonos>> => {

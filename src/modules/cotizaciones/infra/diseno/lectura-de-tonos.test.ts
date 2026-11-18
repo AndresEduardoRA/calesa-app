@@ -33,6 +33,7 @@ const fila = (extra: object = {}) => ({
   id: '11111111-1111-4111-8111-111111111111',
   clave: 'amarillo',
   nombre: 'Amarillo',
+  hex: '#fff7d6',
   actualizado_en: '2026-11-08T10:00:00.123456+00:00',
   claro_fondo: '#fff7d6',
   claro_borde: '#e9d27a',
@@ -47,16 +48,17 @@ describe('leerTonosSobre', () => {
   it('T2 · lee la tabla por nombre con el tope de la base y arma los colores por tema', async () => {
     const { cliente, pedido } = clienteFalso({ data: [fila()], error: null })
     const r = await leerTonosSobre(cliente)
-    expect(pedido).toEqual({ tabla: 'tonos', orden: 'nombre', tope: 24 })
+    expect(pedido).toEqual({ tabla: 'tonos', orden: 'nombre', tope: 48 })
     expect(r).toEqual({
       ok: true,
       data: {
-        tope: 24,
+        tope: 48,
         tonos: [
           {
             id: '11111111-1111-4111-8111-111111111111',
             clave: 'amarillo',
             nombre: 'Amarillo',
+            hex: '#fff7d6',
             actualizadoEn: '2026-11-08T10:00:00.123456+00:00',
             colores: {
               claro: { fondo: '#fff7d6', borde: '#e9d27a', tinta: '#1b2130' },

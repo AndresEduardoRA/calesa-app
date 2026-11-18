@@ -58,7 +58,7 @@ describe('consultaDeLaFormulaPublicada', () => {
 })
 
 describe('consultaDeLosTonos', () => {
-  it('el catálogo por nombre, con el tope de la base (24)', () => {
+  it('el catálogo por nombre, con el tope de la base (48)', () => {
     const { cliente, llamadas } = clienteFalso()
     void consultaDeLosTonos(cliente)
     expect(llamadas).toEqual([
@@ -68,7 +68,7 @@ describe('consultaDeLosTonos', () => {
         'clave, nombre, claro_fondo, claro_borde, claro_tinta, oscuro_fondo, oscuro_borde, oscuro_tinta',
       ],
       ['order', 'nombre'],
-      ['limit', 24],
+      ['limit', 48],
     ])
   })
 })

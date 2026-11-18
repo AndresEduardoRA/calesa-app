@@ -2,11 +2,12 @@
 // y qué filas suman a él), sin sumar ni quitar grupos (P2: la plantilla de la tarjeta nombra exactamente los grupos de la fórmula). Puro y nunca lanza: lo que no sirve es un
 // error por campo. Lo que vale la fórmula entera lo dice después `validarFormula()` (un grupo vacío, el doble conteo), como tras el «Aplicar» de una fila.
 import type { Formula, Grupo } from '../formula'
+import { TOPE_DE_COLORES } from '../colores'
 import { daMonto, esMonto, type Nodo } from '../nodos'
 import { filasDe } from './filas'
 
-// El catálogo de tonos no pasa de 24: el tope de `_tonos_tope()` en la base, el mismo `TOPE_DE_TONOS` del área `plantilla` (un área no importa otra).
-export const TOPE_DE_TONOS_DEL_EDITOR = 24
+// El catálogo de colores (`tonos`) no pasa de 48: el tope de `_tonos_tope()` en la base, `TOPE_DE_COLORES` del núcleo.
+export const TOPE_DE_TONOS_DEL_EDITOR = TOPE_DE_COLORES
 
 const MAXIMO_DE_ETIQUETA = 60
 const MAXIMO_DE_PLAZO = 40

@@ -1,5 +1,5 @@
 // El catálogo de tonos para la sección «Grupos» del editor de la fórmula (4.21-3c), desde el navegador y con la sesión de quien edita: una lectura al montarse la
-// sección. La policy `tonos: leer` la abre a todo `authenticated`; el catálogo no pasa de 24 (`_tonos_tope()`).
+// sección. La policy `tonos: leer` la abre a todo `authenticated`; el catálogo no pasa de 48 (`_tonos_tope()`).
 import { z } from 'zod'
 import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/browser'

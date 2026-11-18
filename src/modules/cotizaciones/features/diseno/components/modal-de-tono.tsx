@@ -2,14 +2,10 @@
 
 import { Campo } from '@/shared/ui/campo'
 import { ModalDeFormulario } from '@/shared/ui/modal-de-formulario'
-import {
-  LARGO_MAXIMO_DEL_NOMBRE_DE_TONO,
-  TEMAS_DE_UN_TONO,
-  type Tono,
-} from '../../../entities/diseno/tonos'
+import { LARGO_MAXIMO_DEL_NOMBRE_DE_TONO, type Tono } from '../../../entities/diseno/tonos'
 import { useFormularioDeTono } from '../hooks/use-formulario-de-tono'
 import type { Tonos } from '../hooks/use-tonos'
-import { CamposDeColor } from './campos-de-color'
+import { CampoDeColor } from './campo-de-color'
 
 type Props = {
   abierto: boolean
@@ -21,7 +17,7 @@ type Props = {
   noDisponible: string | null
 }
 
-const IDS = { formulario: 'tono', nombre: 'nombre' } as const
+const IDS = { formulario: 'tono', nombre: 'nombre', hex: 'hex' } as const
 
 // «Nuevo tono» y «Editar tono» (`?panel=nuevo-tono`, `?panel=editar-tono&tono=<id>`): el nombre y, por tema, fondo, borde y tinta. De él sale la clave del tono, que no
 // cambia nunca (la nombran los grupos de una fórmula). El contrato del modal (preguntar antes de cerrar con algo escrito, no cerrarse mientras guarda, el conflicto
@@ -67,17 +63,12 @@ export function ModalDeTono({ abierto, alCerrar, tonos, original, noDisponible }
         error={formulario.errores['nombre']}
         ayuda={`Hasta ${String(LARGO_MAXIMO_DEL_NOMBRE_DE_TONO)} caracteres. Dos tonos no pueden llamarse igual.`}
       />
-      {TEMAS_DE_UN_TONO.map((tema) => (
-        <CamposDeColor
-          key={tema}
-          tema={tema}
-          colores={formulario.colores[tema]}
-          errores={formulario.errores}
-          alEscribir={(color, valor) => {
-            formulario.escribirColor(tema, color, valor)
-          }}
-        />
-      ))}
+      <CampoDeColor
+        nombre={IDS.hex}
+        valor={formulario.hex}
+        error={formulario.errores['hex']}
+        alEscribir={formulario.escribirHex}
+      />
     </ModalDeFormulario>
   )
 }

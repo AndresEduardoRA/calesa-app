@@ -12,7 +12,7 @@ import { MOTIVO_SIN_PERMISO_DE_TONOS } from '../../../entities/diseno/tonos'
 import { comoResultado } from '../../niveles/actions/resultado'
 import { esquemaCrearTono } from '../schemas/tonos'
 
-// Crea un tono del catálogo (`tono_crear`), con el id del intento: repetirlo devuelve el mismo. El catálogo es de la empresa: el permiso se pide sin origen y la base lo vuelve a pedir.
+// Crea un color del catálogo (`tono_crear`, con su nombre y su hex), con el id del intento: repetirlo devuelve el mismo. El catálogo es de la empresa: el permiso se pide sin origen y la base lo vuelve a pedir.
 export const crearTono = actionClient
   .inputSchema(esquemaCrearTono)
   .action(async ({ parsedInput, ctx }): Promise<ResultadoDeAccion<RespuestaDeTonos>> => {

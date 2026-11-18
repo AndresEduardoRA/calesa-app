@@ -26,7 +26,7 @@ export function consultaDeLaFormulaPublicada(cliente: Cliente, origenId: string)
     .limit(1)
 }
 
-// El catálogo entero: la base no deja crear un 25.º (`_tonos_tope()`).
+// El catálogo entero: la base no deja crear un 49.º (`_tonos_tope()`).
 export function consultaDeLosTonos(cliente: Cliente) {
   return cliente
     .from('tonos')
