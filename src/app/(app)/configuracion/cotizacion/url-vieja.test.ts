@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { AccesoDeCotizacion } from './acceso'
-import { consultaDe, destinoDeLaUrlVieja } from './url-vieja'
+import { destinoDeLaUrlVieja } from './url-vieja'
 
 const A = '11111111-1111-4111-8111-111111111111'
 const B = '22222222-2222-4222-8222-222222222222'
@@ -107,14 +107,5 @@ describe('destinoDeLaUrlVieja, los casos no felices', () => {
         expect(ruta, caso).not.toMatch(/[?&](seccion|origen)=/)
       }
     }
-  })
-})
-
-describe('consultaDe', () => {
-  it('el primer valor de cada parámetro, en su orden', () => {
-    expect(consultaDe({ panel: ['a', 'b'], tabla: 't', vacio: undefined })).toEqual({
-      panel: 'a',
-      tabla: 't',
-    })
   })
 })

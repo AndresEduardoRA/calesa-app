@@ -1,5 +1,5 @@
-import { EsqueletoDeNiveles } from '@/modules/cotizaciones/pantallas/configuracion'
+import { EsqueletoTabla } from '@/shared/ui/esqueletos'
 
 export default function Cargando() {
-  return <EsqueletoDeNiveles />
+  return <EsqueletoTabla filas={3} columnas={2} />
 }

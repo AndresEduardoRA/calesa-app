@@ -113,14 +113,3 @@ export function busquedaDe(
   }
   return busqueda
 }
-
-// Lo mismo con el primer valor de cada parámetro, para pasarlo a `rutaDeConfiguracionDeCotizacion()`.
-export function consultaDe(
-  parametros: Record<string, string | string[] | undefined>,
-): Record<string, string> {
-  const consulta: Record<string, string> = {}
-  for (const [nombre, valor] of busquedaDe(parametros)) {
-    consulta[nombre] ??= valor
-  }
-  return consulta
-}
