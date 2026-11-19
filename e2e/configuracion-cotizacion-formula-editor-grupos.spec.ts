@@ -9,7 +9,7 @@ import {
   crearDuenaDePrueba,
 } from './soporte/base'
 import { MARCA, borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
-import { publicarFormulaConTexto } from './soporte/formula-editor'
+import { abrirModoAvanzado, publicarFormulaConTexto } from './soporte/formula-editor'
 import { leerBorrador } from './soporte/formula-editor-guardar'
 import { sql } from './soporte/sql'
 
@@ -59,7 +59,7 @@ test('E1: plazo y tono de un grupo; pasar «Con ayuda» a `gx` cambia «Total en
 
   await entrar(page, duena, { fresco: true })
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origen.id}`)
-  await page.getByRole('button', { name: 'Editar en un borrador', exact: true }).click()
+  await abrirModoAvanzado(page)
   await expect(grupos(page)).toBeVisible()
   await expect(previa(page)).toContainText(enBs(5 * tipoDeCambio('oficial')))
 

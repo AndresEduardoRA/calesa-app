@@ -11,6 +11,7 @@ import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar
 import {
   AUXILIAR_DEL_PORCENTAJE,
   FILA_CON_TEXTO,
+  abrirModoAvanzado,
   ajustarConstante,
   publicarFormulaConTexto,
 } from './soporte/formula-editor'
@@ -87,7 +88,7 @@ async function abrirFormula(page: Page, origenId: string) {
 
 async function abrirSobreLaPublicada(page: Page, origenId: string) {
   await abrirFormula(page, origenId)
-  await page.getByRole('button', { name: 'Editar en un borrador', exact: true }).click()
+  await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }
 
@@ -135,10 +136,12 @@ test('G1: sobre la publicada crea el borrador con su diseño; el segundo guardad
   expect(segundo!.actualizado_en).not.toBe(primero!.actualizado_en)
   expect(lecturas).toEqual([])
 
-  await page.getByRole('button', { name: 'Volver a la fórmula' }).click()
+  await page.getByRole('button', { name: 'Volver a la planilla' }).click()
   const tarjeta = page.getByRole('region', { name: 'Borrador' })
   await expect(tarjeta).toBeVisible()
-  await tarjeta.getByRole('button', { name: 'Editar', exact: true }).click()
+  // Las tarjetas de arriba no llevan «Editar»: la misma fórmula de trabajo se abre en el Modo avanzado desde la planilla.
+  await expect(tarjeta.getByRole('button', { name: 'Editar', exact: true })).toHaveCount(0)
+  await abrirModoAvanzado(page)
   await expect(fila(page, FILA_CON_TEXTO.id)).toContainText('=pub*6%')
   await expect(guardar(page)).toBeDisabled()
   await expect(estado(page)).toHaveText('No hay cambios por guardar.')
@@ -215,7 +218,7 @@ test('G4 (P1): una constante sin celda en el diseño se guarda con su aviso, y p
   await expect(estado(page)).toHaveText('Se guardó el borrador.')
   expect(leerBorrador(sinCelda.id)!.params['seguro_de_carga']).toBe(150)
 
-  await page.getByRole('button', { name: 'Volver a la fórmula' }).click()
+  await page.getByRole('button', { name: 'Volver a la planilla' }).click()
   await page.getByRole('button', { name: 'Publicar…' }).click()
   const modal = page.getByRole('dialog', { name: 'Publicar el borrador' })
   await modal.getByLabel('Nota').fill('Con seguro')
@@ -240,7 +243,7 @@ test('G8 (P2): la auxiliar de un número nuevo no pide celda: no se avisa y publ
   await guardar(page).click()
   await expect(estado(page)).toHaveText('Se guardó el borrador.')
 
-  await page.getByRole('button', { name: 'Volver a la fórmula' }).click()
+  await page.getByRole('button', { name: 'Volver a la planilla' }).click()
   await page.getByRole('button', { name: 'Publicar…' }).click()
   const modal = page.getByRole('dialog', { name: 'Publicar el borrador' })
   await modal.getByLabel('Nota').fill('Con un número nuevo')
