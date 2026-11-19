@@ -26,8 +26,9 @@ type Props = {
   camposClave: readonly CampoDeLayout[]
 }
 
-// «Datos principales» de la columna izquierda de la ficha: sólo los datos clave del origen, en su orden (en dos columnas en la lateral de escritorio;
-// en una en el celular y al 200 %: la rejilla mira su contenedor en rem), y «Ver más» a lo ancho, que abre la ficha completa (`?ver=ficha`).
+// «Datos principales» de la columna izquierda de la ficha: sólo los datos clave del origen, en su orden (en dos columnas en escritorio; en una en el
+// celular y al 200 %: desde `md` y con al menos 18 rem de contenedor, que al 200 % la lateral no tiene), y «Ver más» a lo ancho, que abre la ficha
+// completa (`?ver=ficha`).
 export function DatosPrincipalesDelVehiculo({
   vehiculo,
   origen,
@@ -52,7 +53,7 @@ export function DatosPrincipalesDelVehiculo({
         Datos principales
       </h2>
       {datos.length > 0 ? (
-        <dl className="grid grid-cols-1 gap-x-4 gap-y-3 @[22rem]:grid-cols-2">
+        <dl className="grid grid-cols-1 gap-x-4 gap-y-3 md:@[18rem]:grid-cols-2">
           {datos.map((dato) => (
             <Dato key={dato.clave} etiqueta={dato.etiqueta}>
               <ValorMostrado valor={dato.valor} />
