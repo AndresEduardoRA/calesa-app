@@ -2,6 +2,7 @@ import { formatearMonto } from '../src/shared/lib/formato'
 import { expect, test, type Page } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { leerElPdf } from './soporte/cotizar-pdf'
+import { capturar } from './soporte/recorrido'
 import {
   celdaEnPar,
   hermanasDe,
@@ -45,7 +46,7 @@ const abrirLaHoja = (page: Page) =>
 
 test('E1 la hoja en par: sin chips de la variante, la línea de las dos versiones, cada celda que cambia en dos y los dos totales', async ({
   page,
-}) => {
+}, info) => {
   await entrar(page, duena, { fresco: true })
   await abrirLaHoja(page)
   await expect(page.getByText('Dos versiones: 20 pies y 40 pies.')).toBeVisible()
@@ -60,10 +61,12 @@ test('E1 la hoja en par: sin chips de la variante, la línea de las dos versione
   const nodos = await page
     .locator('[data-hoja]')
     .evaluate((e) => e.querySelectorAll('*').length + 1)
-  test
-    .info()
-    .annotations.push({ type: 'medida', description: `nodos de la hoja en par: ${String(nodos)}` })
+  info.annotations.push({
+    type: 'medida',
+    description: `nodos de la hoja en par: ${String(nodos)}`,
+  })
   expect(nodos).toBeLessThanOrEqual(500)
+  await capturar(page, info, 'hoja-en-par')
 })
 
 test('E2 lo común vale para las dos; lo de una celda en par, sólo para su opción', async ({
@@ -79,11 +82,12 @@ test('E2 lo común vale para las dos; lo de una celda en par, sólo para su opci
   await conTotal(page, 'c20', 20000 + TRANSPORTE.c20)
 })
 
-test('E3 guardar crea las dos hermanas, que se enlazan', async ({ page }) => {
+test('E3 guardar crea las dos hermanas, que se enlazan', async ({ page }, info) => {
   await entrar(page, duena, { fresco: true })
   await abrirLaHoja(page)
   await tipearEn(celdaEnPar(page, 'transporte', 'c40'), '2500')
   await conTotal(page, 'c40', PRECIO + 2500)
+  await capturar(page, info, 'antes-de-guardar')
   await page.keyboard.press('ControlOrMeta+s')
   await expect(
     page.getByRole('heading', {
@@ -102,6 +106,7 @@ test('E3 guardar crea las dos hermanas, que se enlazan', async ({ page }) => {
   // La guardada de una hermana abre las dos juntas, cada una con lo suyo.
   await conTotal(page, 'c40', PRECIO + 2500)
   await conTotal(page, 'c20', PRECIO + TRANSPORTE.c20)
+  await capturar(page, info, 'guardada-con-su-hermana')
 })
 
 test('E4 en la guardada, guardar una guarda las dos', async ({ page }) => {
@@ -120,7 +125,7 @@ test('E4 en la guardada, guardar una guarda las dos', async ({ page }) => {
   expect(b2?.version).not.toBe(b?.version)
 })
 
-test('E5 la vista previa y el PDF traen las dos tarjetas', async ({ page }) => {
+test('E5 la vista previa y el PDF traen las dos tarjetas', async ({ page }, info) => {
   const [a] = hermanasDe(origen.id)
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/${a?.id ?? ''}`)
@@ -131,6 +136,7 @@ test('E5 la vista previa y el PDF traen las dos tarjetas', async ({ page }) => {
   const dialogo = page.getByRole('dialog', { name: 'Vista previa' })
   await expect(dialogo.locator('[data-tarjeta-de-cotizacion]')).toHaveCount(2)
   await expect(dialogo.getByRole('region', { name: 'Tarjeta de 40 pies' })).toBeVisible()
+  await capturar(page, info, 'vista-previa-de-las-dos')
   await page.keyboard.press('Escape')
   await expect(dialogo).toBeHidden()
   const pdf = await leerElPdf(page, a?.id ?? '')
@@ -158,4 +164,9 @@ test('E7 marcar final una manda la otra a la papelera', async ({ page }) => {
   await page.getByRole('dialog').getByRole('button', { name: 'Marcar final' }).click()
   await expect.poll(() => hermanasDe(origen.id).find((c) => c.id === a?.id)?.clase).toBe('final')
   expect(hermanasDe(origen.id).find((c) => c.id === b?.id)?.eliminada).toBe(true)
+  // Con la hermana en la papelera, la final se abre sola: su aviso y sus celdas de siempre.
+  await page.goto(`/cotizaciones/${a?.id ?? ''}`)
+  await expect(page.getByText('La de 40 pies no está disponible.')).toBeVisible()
+  await expect(page.locator('[data-nodo="transporte"]:visible')).toHaveCount(1)
+  await expect(page.getByText('Dos versiones: 20 pies y 40 pies.')).toHaveCount(0)
 })
