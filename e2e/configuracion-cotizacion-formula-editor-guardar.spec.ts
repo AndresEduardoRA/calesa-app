@@ -144,7 +144,8 @@ test('G1: sobre la publicada crea el borrador con su diseño; el segundo guardad
   await abrirModoAvanzado(page)
   await expect(fila(page, FILA_CON_TEXTO.id)).toContainText('=pub*6%')
   await expect(guardar(page)).toBeDisabled()
-  await expect(estado(page)).toHaveText('No hay cambios por guardar.')
+  // La misma sesión (la planilla y el Modo avanzado la comparten): sigue diciendo lo del último guardado, sin cambios por guardar.
+  await expect(estado(page)).toHaveText('Se guardó el borrador.')
 })
 
 test('G2 (4-5): tras un ⚙, guardar escribe el texto con el valor nuevo, sin tocar la fila', async ({
