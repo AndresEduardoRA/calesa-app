@@ -27,6 +27,7 @@ export const crudaDeUnaGuardada = (mas: Record<string, unknown> = {}) => {
       total_base: 2350,
       modo_tc: null,
       notas: null,
+      tarjeta_retoques: null,
       version: 1,
       cotizacion_padre_id: null,
       creado_en: '2026-11-03T14:00:00.000000+00:00',

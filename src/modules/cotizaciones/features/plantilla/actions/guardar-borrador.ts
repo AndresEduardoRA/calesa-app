@@ -8,10 +8,7 @@ import { RUTAS } from '@/shared/lib/rutas'
 import { actionClient } from '@/shared/lib/safe-action'
 import { repositorioDeLaPlantilla } from '../../../areas/plantilla/composicion'
 import { MOTIVO_SIN_PERMISO_DE_PLANTILLA } from '../../../entities/plantilla/escritura-de-la-plantilla'
-import {
-  mensajeDeTextoDeLaBase,
-  revisarTextoParaLaBase,
-} from '../../../entities/plantilla/texto-de-la-base'
+import { mensajeDeTextoDeLaBase, revisarTextoParaLaBase } from '../../../entities/texto-de-la-base'
 import { esquemaDeGuardar } from '../schemas/escritura'
 
 // Guarda el borrador de la plantilla del origen (`plantilla_guardar_borrador()`): la base vuelve a pedir `cotizaciones.configurar` del origen, la versión esperada y la

@@ -445,6 +445,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   y la tarjeta muestra sólo el total (fecha, número, asesor, vehículo, logo; sin filas, que podrían ser de un nivel restringido).
 - **Vista previa** — `?panel=vista-previa`, `<VistaPreviaDeLaHoja>`: modal con la tarjeta de la cotización (`<TarjetaDeCotizacion>`,
   `geometriaDeLaTarjeta()`) como la vería el cliente, escalada como una imagen; en una guardada, lo guardado.
+- **Retoque de la tarjeta** — `cotizaciones.tarjeta_retoques`, `RetoquesDeLaTarjeta`, `cotizacion_retocar_tarjeta()`, `aplicarRetoques()`: el texto
+  de una celda de texto cambiado o una fila oculta en la tarjeta de **una** cotización guardada, sin tocar la plantilla del origen; vale en la vista
+  previa, el PDF, «Copiar texto», compartir y la portada, y cotizar encima se lo lleva. Nunca una cifra, un color ni el logo. Un retoque de una celda o
+  fila que la plantilla de hoy ya no tiene **no aplica**: se ignora al dibujar y se quita al guardar.
+- **Retocar (modo)** — «Retocar» en el pie de la vista previa de una guardada (quien la puede guardar): el modal pasa a «Retocar la tarjeta», donde
+  tocar un texto lo edita y el ojo de cada fila la oculta o la muestra; «Listo» guarda todo junto, «Cancelar» lo descarta y «Volver a la plantilla»
+  quita los retoques.
 - **Portada de la cotización** — `cotizaciones_portadas`, `<PortadaDeLaCotizacion>`, `GET /cotizaciones/<id>/portada`: la imagen de la tarjeta de lo
   guardado de una cotización, en WebP por hash en el bucket `cotizaciones`, con la **clave de la portada** (`_cotizacion_portada_clave()`: de qué está
   hecha; distinta de la vigente, quedó vieja). La **compartida** es la guardada, para quien ve todo lo que dibuja; los demás reciben una armada con lo suyo.

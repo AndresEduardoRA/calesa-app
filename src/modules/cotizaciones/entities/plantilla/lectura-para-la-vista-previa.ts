@@ -9,7 +9,7 @@ import {
 } from '../vista-previa-de-la-plantilla'
 import { convertirPlantilla } from './convertir-plantilla'
 import type { Plantilla } from './forma-de-plantilla'
-import { btrim } from './json-de-la-base'
+import { btrim } from '../json-de-la-base'
 import type { TonoDelCatalogo } from './lectura-de-la-plantilla'
 import { esDeTodos, type NodoParaPlantilla } from './nodos-de-plantilla'
 import type { ContextoDePlantilla } from './validar-plantilla'

@@ -19,7 +19,7 @@ import {
 import type { Plantilla } from './forma-de-plantilla'
 import { grupo } from './grupos-de-la-conversion'
 import { idDeLaFila } from './ids-de-la-conversion'
-import { btrim } from './json-de-la-base'
+import { btrim } from '../json-de-la-base'
 import { esDeTodos, type ContextoDeNodos } from './nodos-de-plantilla'
 
 // La fila del logo arriba (con 2 columnas), el título de la opción (si la variante es del nivel «todos»), la fecha con el título de la cotización, el número y

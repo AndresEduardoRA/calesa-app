@@ -211,6 +211,13 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   cliente, vehículo con lote y VIN, asesor, número, vencimiento y logo (`PaginaDeLaTarjeta`). «Vencida» va en los avisos del modal, no en la tarjeta. El pie:
   Live y «Copiar texto» (`textoDeLaTarjeta()`, de la misma geometría, apagado sin tarjeta, con «Total desactualizado.» o sin total) y, en una guardada,
   «Descargar PDF» (`pedirElPdf()`: `fetch` sin seguir la redirección ni caché; un 404, la sesión que no vale u otro fallo se dicen en el pie con «Reintentar»).
+  **Los retoques** (`docs/COTIZADOR.md` › «Retoques de la tarjeta»): la página de una guardada pasa `DatosDeLaPagina.retoque` (`{ retoques, actualizadoEn,
+puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo los aplica (`lecturaRetocada()`). «Retocar» va en el pie con
+  `puedeRetocar` (apagado con su motivo: la tarjeta por omisión o la hoja con cambios) y pasa el mismo modal al modo «Retocar la tarjeta»: el estado
+  (`useEstadoDelModo()`, `useModoRetocar()`) vive en la vista previa y su interfaz llega en un chunk propio (`components/retoques/diferidos.tsx`: tarjeta
+  retocable con un botón por celda y el canal de filas, el campo, la fila elegida, el pie y la pregunta de «Volver a la plantilla»). «Listo» llama a la
+  action `retocarLaTarjeta` (revalida la página: la hoja se vuelve a montar con la versión nueva) y pide la portada. El modal es `propio` en
+  `scripts/guardas/modales-con-salida.ts` (pregunta al salir con cambios).
 
 ## Archivos clave
 
@@ -225,7 +232,13 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   topes en el núcleo, `entities/cuadricula-de-la-tarjeta.ts`). La conversión de la forma 1 (`convertir-plantilla.ts`, `armado-de-la-conversion.ts`,
   `grupos-de-la-conversion.ts`, `ids-de-la-conversion.ts`, `altos-de-la-conversion.ts`), espejo `_plantilla_convertir()`, con su juego `casos-de-conversion.json`
   (lo genera `casos-de-conversion.test.ts` con `ACTUALIZAR_CASOS=1`; Prettier no lo toca). **Lo que va a un `jsonb` o `text` pasa por
-  `revisarTextoParaLaBase()`** (un `\u0000`, un surrogate suelto o más de 8 niveles no los lee la base).
+  `revisarTextoParaLaBase()`** (un `\u0000`, un surrogate suelto o más de 8 niveles no los lee la base). Los dos ayudantes de un validador espejo están en el
+  núcleo (los usan `plantilla` y `tarjeta`): `entities/json-de-la-base.ts` (`jsonb_typeof`, bytes del texto jsonb, code points, `btrim`, orden C) y
+  `entities/texto-de-la-base.ts` (`revisarTextoParaLaBase(valor, { raiz })`).
+- Los retoques de la tarjeta: `validar_retoques()` y su espejo `entities/tarjeta/retoques/validar-retoques.ts` con el juego `casos-de-retoques.json`
+  (lo corren Vitest y `supabase/tests/areas/tarjeta/retoques.sql`); `aplicar-retoques.ts` (la cuadrícula retocada, las combinaciones reparadas y los que no
+  aplican), `para-guardar.ts` (lo que se manda: sólo lo que aplica y cambió), `borrador-de-retoques.ts` (el reductor del modo), `modo-de-la-tarjeta.ts`
+  (las filas con su banda, dónde va el campo, los motivos) y `fallo-del-modo.ts`; `infra/tarjeta/rpc-de-los-retoques.ts`.
 - Base: `evaluar_formula()` (espejo exacto de `motor.ts`), `cotizacion_evaluar()`, `cotizacion_hoja()`, `cotizacion_crear()`, `cotizacion_guardar()`,
   `_nodos_visibles()`, `_publicar_formula()` / `_preparar_publicacion()`; semillas `supabase/semillas/cotizador-*.sql`. Detalle: `docs/COTIZADOR.md` ›
   «El diseño de la hoja», «Niveles de acceso», «Quién escribe una cotización y cómo», «Cómo se guarda», «La lectura que abre la hoja», «La hoja abierta».
@@ -243,13 +256,15 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 
 `formulas`, `tonos`, `cotizaciones_niveles`, `tablas_referencia`, `tablas_referencia_filas`, `plantillas_tarjeta`, `cotizaciones`, `cotizaciones_revisiones`,
 `cotizaciones_comentarios`, `cotizaciones_adjuntos`, `cotizaciones_reportes`, `cotizaciones_favoritos`, `cotizaciones_aprobadas`, `cotizaciones_portadas`, `comprobantes`,
-`comprobantes_contadores`, `comprobantes_ajustes`.
+`comprobantes_contadores`, `comprobantes_ajustes`. `cotizaciones.tarjeta_retoques` (jsonb nulo, con `grant select` de columna: viaja en `cotizacion` por
+`_cotizacion_respuesta()`) guarda los retoques de la tarjeta de cada cotización.
 
 RPC: `formula_guardar_borrador`, `formula_publicar`, `formula_descartar_borrador`, `formula_cambiar_constante`, `formula_cambiar_cabecera` (el ⚙ de la
 cabecera: modo por defecto, «Ver total» por defecto y modos visibles) y `formula_revertir` (publican la N+1 desde la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las filas, sube la versión y publica la N+1 de cada fórmula que la usa),
 `tono_crear|guardar|eliminar` (los colores), `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
 `validar_plantilla`, `evaluar_formula`, `cotizacion_evaluar`, `cotizacion_hoja`, `cotizacion_tabla`, `cotizacion_tarjeta`, `cotizacion_crear`,
-`cotizacion_guardar` (`p_titulo_manual` al final), `cotizaciones_listado`, `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
+`cotizacion_guardar` (`p_titulo_manual` al final), `cotizacion_retocar_tarjeta` (los retoques de la tarjeta, con la versión; valida con `validar_retoques`
+contra la plantilla publicada de hoy), `cotizaciones_listado`, `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
 `_cotizaciones_ids_por_titulo`), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
 nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizaciones_aprobadas_de_vehiculos` (el «Costo estimado» de `/vehiculos`, invocadora), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
@@ -286,7 +301,7 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   con qué campo, sin las entradas del `match` que nombran un nodo; `_hoja_datos_del_vehiculo()`); lo que un nivel esconde no viaja por ninguna lectura
   (`docs/COTIZADOR.md` › «Niveles de acceso»).
 - **Nadie escribe `cotizaciones` ni `cotizaciones_revisiones` directo** (sin grants ni policies de escritura): una escritura nueva es una RPC
-  `security definer`, nunca un grant. `authenticated` no lee `valores|fuentes|totales|tipos_cambio` ni el `diff`; lo oculto sale por
+  `security definer`, nunca un grant (`cotizacion_crear`, `cotizacion_guardar`, `cotizacion_encima`, `cotizacion_retocar_tarjeta`…). `authenticated` no lee `valores|fuentes|totales|tipos_cambio` ni el `diff`; lo oculto sale por
   `cotizacion_leer|evaluar|revisiones|tabla`, recortado con `_cotizacion_recorte()` y `_nodos_visibles(formula_id)` de SU versión.
 - **Inventario de lo oculto:** una función nueva que pueda devolver esas columnas, `formulas.*` o las tablas de referencia, o un guardado/lectura nuevos del
   diseño, se registra en el inventario de `supabase/tests/cotizaciones-visibilidad.sql` y entra a la matriz por nivel de `cotizacion-hoja.sql`.

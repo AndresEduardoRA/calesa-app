@@ -1,3 +1,4 @@
+import type { RetoquesDeLaTarjeta } from './cuadricula-de-la-tarjeta'
 import type { DisenoDeHoja, HojaLista } from './hoja'
 import type { RespuestaDeRecalculo } from './recalculo'
 
@@ -20,6 +21,8 @@ export type CotizacionDeLaHoja = {
   titulo: string | null
   tituloManual: boolean
   notas: string | null
+  // Los retoques de su tarjeta (los textos y las filas ocultas sólo de esta cotización); nulo, la tarjeta tal cual la plantilla.
+  tarjetaRetoques: RetoquesDeLaTarjeta | null
   creadoEn: string
   // **El texto de la base, tal cual** (con sus microsegundos): es la versión que `cotizacion_guardar` compara. Nunca pasa por `Date`; sólo se muestra formateado.
   actualizadoEn: string

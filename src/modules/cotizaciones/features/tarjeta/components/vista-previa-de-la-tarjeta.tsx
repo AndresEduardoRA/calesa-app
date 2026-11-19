@@ -1,147 +1,114 @@
 'use client'
 
-import { useEffect, useId, useState } from 'react'
-import { EstadoError, EstadoSinPermiso } from '@/shared/ui/estados'
+import { useId } from 'react'
+import { ConfirmarDescarte } from '@/shared/ui/confirmar-descarte'
 import { Modal } from '@/shared/ui/modal'
-import { Skeleton } from '@/shared/ui/skeleton'
-import { LiveDelResumen } from '../../hoja/components/live-del-resumen'
+import { useCierreConCambios } from '@/shared/ui/use-cierre-con-cambios'
 import type { PropsDeLaVistaPrevia } from '../../hoja/components/huecos'
-import { avisoDelTotal, type AvisoDelTotal } from '../../../entities/tarjeta/aviso-del-total'
-import type { ContextoDeLaCotizacion } from '../../../entities/tarjeta/contexto-de-la-cotizacion'
-import type { Geometria } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
-import type { LecturaDeLaTarjeta } from '../../../entities/tarjeta/lectura-de-la-tarjeta'
-import type { EstadoDeLaLectura } from '../hooks/use-lectura-de-la-tarjeta'
+import { avisoDelTotal } from '../../../entities/tarjeta/aviso-del-total'
+import { motivoParaNoRetocar } from '../../../entities/tarjeta/retoques/modo-de-la-tarjeta'
 import { useModeloDeLaTarjeta, type PaginaDelModelo } from '../hooks/use-modelo-de-la-tarjeta'
-import { CopiarTextoDeLaTarjeta } from './copiar-texto-de-la-tarjeta'
-import { DescargarPdfDeLaTarjeta } from './descargar-pdf-de-la-tarjeta'
-import { TarjetaDeCotizacion } from './tarjeta-de-cotizacion'
+import {
+  useEstadoDelModo,
+  useModoRetocar,
+  type ModoRetocar,
+  type RetoqueDeLaPagina,
+} from '../hooks/use-modo-retocar'
+import { CuerpoDeLaVistaPrevia } from './cuerpo-de-la-vista-previa'
+import { PieDeLaVistaPrevia } from './pie-de-la-vista-previa'
+import { CuerpoDelModoDiferido, PieDelModoDiferido } from './retoques'
 
 // Lo que la página sabe de la tarjeta y la hoja no: lo da `<ProveedorDeLaTarjeta>`. `cotizacionId`: la de una guardada, que tiene PDF; nulo en la hoja nueva.
-export type DatosDeLaPagina = PaginaDelModelo & { cotizacionId: string | null }
+// `retoque`: los retoques de una guardada y si quien mira la puede retocar; la hoja nueva no lo pasa.
+export type DatosDeLaPagina = PaginaDelModelo & {
+  cotizacionId: string | null
+  retoque?: RetoqueDeLaPagina
+}
 
 type Props = PropsDeLaVistaPrevia & { pagina: DatosDeLaPagina }
 
-function EsqueletoDeLaTarjeta() {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const espera = setTimeout(() => {
-      setVisible(true)
-    }, 300)
-    return () => {
-      clearTimeout(espera)
-    }
-  }, [])
-  return (
-    <div aria-busy="true" aria-label="Cargando la tarjeta" className="grid gap-2">
-      {visible ? (
-        <>
-          <Skeleton className="h-16" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-16" />
-        </>
-      ) : null}
-    </div>
-  )
-}
-
-// Lo que el modal dice fuera de la tarjeta: la tarjeta es lo que ve el cliente y no lleva avisos de trabajo (tampoco «Vencida», D7 de T310).
-function Avisos({
-  lectura,
-  aviso,
-  idDelDesactualizado,
-  avisos,
-  vencida,
-}: {
-  lectura: LecturaDeLaTarjeta
-  aviso: AvisoDelTotal
-  idDelDesactualizado: string
-  avisos: Props['avisos']
-  // El día en que venció, ya formateado; nulo si no venció.
-  vencida: string | null
-}) {
-  const textos = [
-    aviso === 'desactualizado' ? 'Total desactualizado.' : null,
-    vencida === null ? null : `Esta cotización venció el ${vencida}.`,
-    lectura.estado === 'sin_plantilla'
-      ? 'Este origen no tiene una plantilla de tarjeta para esta versión de la fórmula: la tarjeta va sólo con el total.'
-      : null,
-    avisos.difiere ? 'Lo de hoy no es lo guardado: la tarjeta muestra lo guardado.' : null,
-    avisos.cambiosSinGuardar
-      ? 'Tus cambios sin guardar no están en la tarjeta: guarda para verlos.'
-      : null,
-  ].filter((t) => t !== null)
-  return (
-    <div role="status" className="grid gap-1">
-      {textos.map((texto) => (
-        <p
-          key={texto}
-          id={texto === 'Total desactualizado.' ? idDelDesactualizado : undefined}
-          className="text-(length:--text-sm) text-(--color-ink-soft)"
-        >
-          {texto}
-        </p>
-      ))}
-    </div>
-  )
-}
-
-type DelCuerpo = {
-  estado: EstadoDeLaLectura
-  reintentar: () => void
-  lectura: LecturaDeLaTarjeta | null
-  geometria: Geometria | null
-  contexto: ContextoDeLaCotizacion
-  aviso: AvisoDelTotal
-  idDelDesactualizado: string
-  avisos: Props['avisos']
-  vencida: boolean
-}
-
-function Cuerpo({
-  estado,
-  reintentar,
-  lectura,
-  geometria,
-  contexto,
-  aviso,
-  idDelDesactualizado,
-  avisos,
-  vencida,
-}: DelCuerpo) {
-  if (estado.tipo === 'cargando') {
-    return <EsqueletoDeLaTarjeta />
+// «Retocar» fuera del modo: sólo en una guardada que quien mira puede guardar y con la tarjeta leída; apagado con su motivo (la tarjeta por omisión: sin
+// plantilla que le sirva o sin los estados del primer recálculo).
+function retocarDe(
+  props: Props,
+  porOmision: boolean | null,
+  modo: ModoRetocar,
+): { motivo: string | null; alRetocar: () => void } | null {
+  if (props.pagina.retoque?.puedeRetocar !== true || porOmision === null) return null
+  return {
+    motivo: motivoParaNoRetocar({ porOmision, cambiosSinGuardar: props.avisos.cambiosSinGuardar }),
+    alRetocar: modo.empezar,
   }
-  if (estado.tipo === 'sin_permiso') {
-    return <EstadoSinPermiso titulo="No puedes ver la tarjeta de esta cotización." />
-  }
-  if (estado.tipo === 'error' || lectura === null || geometria === null) {
-    return (
-      <div role="alert">
-        <EstadoError titulo="No se pudo leer la tarjeta." alReintentar={reintentar} />
-      </div>
-    )
-  }
-  return (
-    <div className="grid min-w-0 gap-3">
-      <Avisos
-        lectura={lectura}
-        aviso={aviso}
-        idDelDesactualizado={idDelDesactualizado}
-        avisos={avisos}
-        vencida={vencida ? (contexto.venceEl ?? '') : null}
-      />
-      <TarjetaDeCotizacion geometria={geometria} logo={contexto.logo} />
-    </div>
-  )
 }
 
-// La vista previa de la tarjeta (4.18-2): un modal con su URL (`?panel=vista-previa`) que dibuja la tarjeta tal como la vería el cliente. Se monta la primera vez que se abre
-// (`useAbiertoAlgunaVez`, con `diferido()`): la hoja no carga la tarjeta, su modelo ni su lectura para dibujarse.
-// La lectura y la geometría se arman aquí: el cuerpo dibuja la tarjeta y el pie la copia (4.18-3b).
+// El modelo de la tarjeta (con el borrador en el modo, con los guardados fuera de él), el modo y la pregunta al salir con cambios.
+function useVistaPrevia(props: Props) {
+  const estadoDelModo = useEstadoDelModo()
+  const [{ retocando, borrador }] = estadoDelModo
+  const modelo = useModeloDeLaTarjeta({
+    ...props,
+    retoques: retocando ? borrador : (props.pagina.retoque?.retoques ?? null),
+    ocultarFilas: !retocando,
+  })
+  const plantilla = modelo.lectura?.estado === 'lista' ? modelo.lectura.definicion : null
+  const modo = useModoRetocar({
+    estado: estadoDelModo,
+    cotizacionId: props.pagina.cotizacionId,
+    retoque: props.pagina.retoque,
+    plantilla,
+  })
+  const cierre = useCierreConCambios({
+    hayCambios: modo.hayCambios,
+    alCerrar: () => {
+      modo.salir()
+      props.cerrar()
+    },
+    abierto: props.abierta && retocando,
+  })
+  return { modelo, plantilla, modo, cierre }
+}
+
+// Esc, la ✕ y el clic afuera en el modo: con un campo abierto, lo tipeado queda (Esc en el campo lo cancela antes de llegar aquí); con cambios, pregunta.
+const cerrarElModo = (modo: ModoRetocar, intentarCerrar: () => void) => () => {
+  if (modo.elegida?.tipo === 'celda') modo.dejar()
+  intentarCerrar()
+}
+
+// La vista previa de la tarjeta (4.18-2): un modal con su URL (`?panel=vista-previa`) que dibuja la tarjeta tal como la vería el cliente, con los retoques de
+// esa cotización. Se monta la primera vez que se abre (`useAbiertoAlgunaVez`, con `diferido()`): la hoja no carga la tarjeta, su modelo ni su lectura para
+// dibujarse. La lectura y la geometría se arman aquí: el cuerpo dibuja la tarjeta y el pie la copia (4.18-3b). En una guardada, «Retocar» pasa el mismo modal al
+// modo «Retocar la tarjeta» (su interfaz llega con `diferido()`): el borrador se dibuja con las filas ocultas atenuadas, «Listo» guarda y salir con cambios
+// pregunta en el pie.
 export default function VistaPreviaDeLaTarjeta(props: Props) {
-  const { estado, reintentar, lectura, contexto, geometria } = useModeloDeLaTarjeta(props)
+  const { modelo, plantilla, modo, cierre } = useVistaPrevia(props)
+  const { lectura, geometria, contexto } = modelo
   const idDelDesactualizado = useId()
   const aviso = avisoDelTotal(props.estado, props.calculo.totales.usd)
+  if (modo.retocando && geometria !== null && !geometria.porOmision && plantilla !== null) {
+    return (
+      <Modal
+        abierto={props.abierta}
+        alCerrar={cerrarElModo(modo, cierre.intentarCerrar)}
+        titulo="Retocar la tarjeta"
+        ancho="grande"
+        bloqueado={modo.enCurso}
+        pie={
+          cierre.confirmando ? (
+            <ConfirmarDescarte alSeguir={cierre.seguir} alDescartar={cierre.descartar} />
+          ) : (
+            <PieDelModoDiferido modo={modo} plantilla={plantilla} />
+          )
+        }
+      >
+        <CuerpoDelModoDiferido
+          modo={modo}
+          geometria={geometria}
+          logo={contexto.logo}
+          plantilla={plantilla}
+        />
+      </Modal>
+    )
+  }
   return (
     <Modal
       abierto={props.abierta}
@@ -149,30 +116,21 @@ export default function VistaPreviaDeLaTarjeta(props: Props) {
       titulo="Vista previa"
       // La tarjeta se escala al ancho del modal: en escritorio, uno grande la deja cerca de su tamaño.
       ancho="grande"
+      bloqueado={modo.enCurso}
       pie={
-        <>
-          <LiveDelResumen />
-          <CopiarTextoDeLaTarjeta
-            geometria={geometria}
-            lectura={lectura}
-            aviso={aviso}
-            idDelDesactualizado={idDelDesactualizado}
-          />
-          {props.pagina.cotizacionId === null ? null : (
-            <DescargarPdfDeLaTarjeta
-              cotizacionId={props.pagina.cotizacionId}
-              numero={props.pagina.numero}
-            />
-          )}
-        </>
+        <PieDeLaVistaPrevia
+          geometria={geometria}
+          lectura={lectura}
+          aviso={aviso}
+          idDelDesactualizado={idDelDesactualizado}
+          cotizacionId={props.pagina.cotizacionId}
+          numero={props.pagina.numero}
+          retocar={retocarDe(props, geometria === null ? null : geometria.porOmision, modo)}
+        />
       }
     >
-      <Cuerpo
-        estado={estado}
-        reintentar={reintentar}
-        lectura={lectura}
-        geometria={geometria}
-        contexto={contexto}
+      <CuerpoDeLaVistaPrevia
+        {...modelo}
         aviso={aviso}
         idDelDesactualizado={idDelDesactualizado}
         avisos={props.avisos}

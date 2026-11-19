@@ -42,6 +42,7 @@ const cotizacion = (cambios: Partial<CotizacionDeLaHoja> = {}): CotizacionDeLaHo
   titulo: null,
   tituloManual: false,
   notas: null,
+  tarjetaRetoques: null,
   creadoEn: '2026-11-01T10:00:00+00:00',
   actualizadoEn: '2026-11-07T11:00:00.123456+00:00',
   ...cambios,

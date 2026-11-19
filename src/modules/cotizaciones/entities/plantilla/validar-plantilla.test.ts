@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import type { Definicion } from '../formula'
 import type { Diseno } from '../diseno'
+import { bytesComoJsonb } from '../json-de-la-base'
 import {
   juegoDePlantilla,
   RUTA_DEL_JUEGO,
@@ -26,6 +27,13 @@ function contextoDe(c: CasoDePlantilla): ContextoDePlantilla {
     tonos: juego.tonos,
   }
 }
+
+describe('octetos de casos-de-plantilla.json', () => {
+  // Los mismos que la base comprueba con `octet_length(valor::text)` (T1 de plantilla-validar.sql).
+  it.each(juego.octetos)('$valor: $bytes bytes', ({ valor, bytes }) => {
+    expect(bytesComoJsonb(valor)).toBe(bytes)
+  })
+})
 
 describe('casos-de-plantilla.json', () => {
   it.each(juego.casos)('$nombre', (c) => {

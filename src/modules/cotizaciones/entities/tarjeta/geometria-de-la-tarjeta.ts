@@ -1,7 +1,7 @@
 // La geometría de la tarjeta de una cotización: el único modelo de dibujo, que pintan el HTML (la vista previa), el PDF y la imagen con posiciones absolutas
 // (lo único que entienden igual los tres: satori no tiene `grid`). Pura: toma la cuadrícula (ya convertida si era de la forma 1), la lectura, el cálculo
 // (valores, estados y totales por id de nodo) y el contexto de la cotización, y da el ancho y el alto en px y, por celda visible y en orden de lectura, su
-// rectángulo, su contenido ya resuelto y su estilo; más las filas ocultas con su motivo. Una fila se oculta si su nodo no aplica (o vale 0, con
+// rectángulo, su contenido ya resuelto y su estilo; las bandas de las filas que se dibujan, y las filas ocultas con su motivo. Una fila se oculta si su nodo no aplica (o vale 0, con
 // `no_aplica_o_cero`) y las celdas que la cruzan se acortan; una celda sin filas visibles no se dibuja. Sin plantilla o sin estados, la de por omisión.
 import type { CalculoDeLaTarjeta } from '../calculo-de-la-tarjeta'
 import type { CeldaDeLaTarjeta, FilaDeLaTarjeta } from '../cuadricula-de-la-tarjeta'
@@ -48,11 +48,16 @@ export type FilaOculta = {
   motivo: 'no_aplica' | 'cero'
 }
 
+// Una fila que se dibuja: su banda en px (la usa el modo «Retocar» para ocultarla).
+export type FilaDibujada = { id: string; y: number; alto: number }
+
 export type Geometria = {
   ancho: number
   alto: number
   porOmision: boolean
   celdas: CeldaDibujada[]
+  // Las filas que se dibujan, en orden.
+  filas: FilaDibujada[]
   ocultas: FilaOculta[]
 }
 
@@ -194,6 +199,9 @@ function dibujar(
     alto,
     porOmision,
     celdas: dibujadas.map((d) => d.celda),
+    filas: filas.flatMap((f, i) =>
+      motivos[i] === null ? [{ id: f.id, y: ys[i] ?? 0, alto: f.alto }] : [],
+    ),
     ocultas: ocultasDe(l),
   }
 }
