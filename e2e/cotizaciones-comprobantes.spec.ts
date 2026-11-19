@@ -1,3 +1,9 @@
+import {
+  cerrarElMenu,
+  elegirEnElMenu,
+  lineaAlAbrir,
+  lineaDelMenu,
+} from './soporte/menu-de-la-guardada'
 import { entrar } from './soporte/alta'
 import {
   comprobantesDe,
@@ -40,7 +46,7 @@ test.afterAll(async () => {
   await limpiarPapelera()
 })
 
-const botonEmitir = (page: Page) => page.getByRole('button', { name: 'Emitir comprobante' })
+const EMITIR = 'Emitir comprobante…'
 const dialogo = (page: Page) => page.getByRole('dialog')
 const seccion = (page: Page) => page.getByRole('region', { name: 'Comprobantes' })
 
@@ -50,13 +56,15 @@ test('E1 la dueña emite el comprobante de una final y lo anula con un motivo', 
   await page.goto(`/cotizaciones/${id}`)
   await expect(seccion(page)).toContainText('Todavía no tiene comprobantes.')
 
-  await botonEmitir(page).click()
+  await elegirEnElMenu(page, EMITIR)
   await expect(page).toHaveURL(/panel=emitir-comprobante/)
   await expect(dialogo(page)).toContainText('Emitir un comprobante de la cotización n.º')
   await dialogo(page).getByRole('button', { name: 'Emitir comprobante' }).click()
   await expect(page.getByText(`Emitiste el comprobante ${SERIE}-1.`)).toBeVisible()
   await expect(page).not.toHaveURL(/panel=/)
-  await expect(botonEmitir(page)).toHaveCount(0)
+  await expect(await lineaAlAbrir(page, 'Revisiones')).toBeVisible()
+  await expect(lineaDelMenu(page, EMITIR)).toHaveCount(0)
+  await cerrarElMenu(page)
   const fila = seccion(page).locator(`[data-comprobante="${SERIE}-1"]`)
   await expect(fila).toContainText('Vigente')
   await expect(fila).toContainText('Emitido el')
@@ -71,6 +79,6 @@ test('E1 la dueña emite el comprobante de una final y lo anula con un motivo', 
   await expect(fila).toContainText('Anulado')
   await expect(fila).toContainText('Se cargó mal el precio')
   await expect(fila.getByRole('button', { name: 'Anular' })).toHaveCount(0)
-  await expect(botonEmitir(page)).toBeVisible()
+  await expect(await lineaAlAbrir(page, EMITIR)).toBeVisible()
   expect(comprobantesDe(id)).toEqual([`${SERIE}-1|true|Se cargó mal el precio`])
 })

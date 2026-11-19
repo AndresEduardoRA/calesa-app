@@ -140,7 +140,8 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
      filas, tope de 1.000 filas, fallo con «Reintentar» o «Recargar»); con Modo Live sus cifras se tapan.
 4. **Resumen fijo:** total (y en moneda local si se pidió con «Ver total en moneda local», apagado al nacer y sólo si la versión da su
    moneda), garantía si está a la vista, modo de tipo de cambio y toggle **Live**; al pie en el celular (alto máximo 40 % de la ventana) y
-   al costado, pegado bajo la barra, desde 56 rem de la hoja (el 200 % lo pasa al pie). `Ctrl/Cmd+S` guarda (preventa); «Vista previa»
+   al costado, pegado bajo la barra, desde 56 rem de la hoja (el 200 % lo pasa al pie). `Ctrl/Cmd+S` guarda (preventa); en una guardada «Guardar» va en la
+   cabecera y «Vista previa» en su «⋯». «Vista previa»
    abre la tarjeta de la cotización (la cuadrícula tipo Excel de la plantilla, escalada como una imagen al ancho del modal, que en escritorio es
    grande (hasta 56 rem): nunca agranda ni desplaza la página de costado; en el celular, el modal a pantalla completa), con «Copiar texto» (apagado sin total o desactualizado) y, en una
    guardada, «Descargar PDF» (sin salir de la página; un fallo con «Reintentar»). Los avisos de trabajo van fuera de la tarjeta (total
@@ -392,18 +393,26 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   nuevo (un manual se respeta), «Guardar» se enciende y guardar deja «Cambió el vehículo: A → B» (uno que quien mira no ve, «un vehículo que no puedes ver»);
   el dato del vehículo de una tabla no se elige ahí. **En una final**, el vehículo en sólo lectura con «Una cotización final no cambia de vehículo.».
   Un `?vehiculo=` que no se puede usar deja la hoja con el guardado y dice bajo la barra «No se puede usar ese vehículo.» con «Elegir otro vehículo»;
-  la subasta cerrada del nuevo, su aviso de siempre bajo la barra. Quien sólo ve, la barra sin botón. La insignia «Aprobada» (todos los que la ven) o «Aprobar» (con `cotizaciones.aprobar` del
-  origen: sin confirmar; apagado con su motivo sin vehículo o si es inválida; al entrar pasa a la insignia y el aviso ofrece «Deshacer» 10 s;
-  PT409 con quién y cuándo y «Recargar»), «Revisiones», la cadena, «Cotizar encima» si no está al día, «Marcar final» (en una
-  preventa, con `cotizaciones.final.gestionar` del origen; `?panel=marcar-final`), «Emitir comprobante» (en una final activa sin
-  comprobante vigente, con `cotizaciones.comprobantes.emitir`; `?panel=emitir-comprobante`, el aviso nombra el número «S-N») y «Enviar a la
-  papelera» (quien puede guardarla o, en una preventa, quien tiene `cotizaciones.moderar`; vuelve al listado con «Deshacer»). Bajo la cabecera, si
+  la subasta cerrada del nuevo, su aviso de siempre bajo la barra. Quien sólo ve, la barra sin botón. **A la vista**, en la fila del título: la clase, la vigencia («Vale hasta el…» o «Vencida»), las insignias
+  («Aprobada», todos los que la ven, o «Aprobar», con `cotizaciones.aprobar` del origen: sin confirmar; apagado con su motivo sin vehículo o si es inválida;
+  al entrar pasa a la insignia y el aviso ofrece «Deshacer» 10 s; PT409 con quién y cuándo y «Recargar»; después «Reportada» o «Inválida»), **«Guardar»**
+  (sólo con `puede_guardar`; su motivo y «Elegir el vehículo» debajo; lo que dice el guardado sigue en el resumen) y **«Compartir»** (toda persona que
+  la ve; sin ícono; con el Modo Live no está: «Compartir la cotización» en `?panel=compartir`, estados en «Cotización: compartir»); debajo, la cadena de
+  versiones. **Lo demás, en el «⋯»** (`<MasAcciones>` con borde, arriba a la derecha), en el orden de la lista única (`accionesDeCotizacion()`, la misma
+  del «⋯» del listado sin «Compartir cotización…» ni «Aprobar», que aquí están a la vista): «Vista previa» (`?panel=vista-previa`) · «Descargar PDF»
+  («Descargando…» apagado mientras baja; un fallo lo avisa y se vuelve a elegir) · «Revisiones» · «Marcar final…» (en una preventa, con
+  `cotizaciones.final.gestionar` del origen; apagado con su motivo debajo; `?panel=marcar-final`) · «Emitir comprobante…» (en una final activa sin
+  comprobante vigente, con `cotizaciones.comprobantes.emitir`; `?panel=emitir-comprobante`, el aviso nombra el número «S-N») · «Cotizar encima» (si no
+  está al día y la base lo deja; apagado con cambios sin guardar; el aviso de versión conserva su botón) · «Favorita» · «Reportar…» · moderar
+  («Invalidar…», «Descartar los reportes…», «Reactivar…») y, separada al final, «Enviar a la papelera» (quien puede guardarla o, en una preventa, quien
+  tiene `cotizaciones.moderar`; vuelve al listado con «Deshacer»). Lo que llega tras leer (las marcas, el comprobante) aparece solo; cerrar un diálogo
+  abierto desde el «⋯» devuelve el foco al «⋯». En el celular el «⋯» (44 px) queda en la fila del título y «Guardar» y «Compartir» van debajo, mitad y
+  mitad; desde `md`, todo en una fila con el «⋯» al final; al 200 % la fila se parte. Bajo la cabecera, si
   el vehículo tiene otras que quien mira ve, «Hay 2 cotizaciones más de este vehículo · Ver» («Hay 1 cotización más…», «Hay más de 100…»): «Ver» salta al
   bloque (`#de-este-vehiculo`) con el foco en su título. Bajo la hoja, «De este vehículo» (se lee al acercarse; aprobar ahí pone al día la cabecera
   sin refrescar la hoja; «Comparar» en su título abre «Comparar cotizaciones» con `returnTo` a esta página; ver «Cotizaciones del lead y del vehículo») y después
   «Comprobantes» (en una final o en una que ya tiene alguno): del más nuevo, «Vigente» o «Anulado» con quién, cuándo y motivo, hasta 20
-  con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Al pie del resumen, junto a «Vista previa»,
-  **«Compartir»** (toda persona que la ve; sin ícono; con el Modo Live no está): «Compartir la cotización» en `?panel=compartir` (estados en «Cotización: compartir»).
+  con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno).
   En el pie de «Vista previa», **«Retocar»** (quien la puede guardar): el mismo modal pasa al modo «Retocar la tarjeta» (estados en «Cotización: retocar la
   tarjeta»). Estados en Flujo 2.
 - **Logística** — `/logistica` (`logistica.ver` en algún origen): la **bandeja del día** y la **cadena como gráfica**; en la URL: `?origen=` (orígenes con la logística encendida), `q` («dónde está»:
@@ -1253,7 +1262,7 @@ en la cabecera.
   subir se dice uno por línea. Cada archivo sube de a uno con su fila; un fallo deja la fila con el mensaje de la base, «Reintentar» y
   «Descartar». Cada adjunto: icono, nombre, tamaño, quién y cuándo; «Descargar» pide una URL firmada al tocarlo (60 s); «Quitar» (quien lo
   subió y aún puede adjuntar, o quien modera) por `?panel=quitar-adjunto&adjunto=<id>`. Sin miniaturas.
-- **Favorita, reportar y moderar** (cabecera, tras «Revisiones»): «Favorita» (marca privada, optimista; si la base la rechaza vuelve y
+- **Favorita, reportar y moderar** (en el «⋯» de la cabecera, tras «Cotizar encima»): «Favorita» (marca privada, optimista; si la base la rechaza vuelve y
   avisa), «Reportar…» (`?panel=reportar`: motivo con contador `n/500`; con uno propio, «Cambiar el motivo» y «Retirar mi reporte» con
   «Deshacer») y, sólo para quien modera (`cotizaciones.moderar` y, en una final, `cotizaciones.final.gestionar` del origen), «Invalidar…»
   en una activa, «Descartar los reportes…» si tiene y «Reactivar…» en una inválida. Insignia «Inválida» (todos) o «Reportada» (sólo quien
@@ -1396,7 +1405,7 @@ Excel. Edita el **borrador** de la plantilla (sólo la forma 2, la cuadrícula),
 
 ### Cotización: compartir (estados propios)
 
-«Compartir la cotización» (`PanelDeCompartir`, modal grande): `?panel=compartir` en el detalle y `?panel=compartir&para=<id>` en la lista (después, en las
+«Compartir la cotización» (`PanelDeCompartir`, modal grande): `?panel=compartir` en el detalle (el botón «Compartir», a la vista en su cabecera) y `?panel=compartir&para=<id>` en la lista (después, en las
 tarjetas, el resumen y la ficha del vehículo). Lo abre toda persona que ve la cotización, sin clave propia.
 
 - **Pestañas:** «Imagen» (la de entrada, sin escribir nada) y «Texto» (`?compartir=texto`; se borra al cerrar). Lo demás (la imagen, el formato, la zona y las

@@ -1,3 +1,4 @@
+import { elegirEnElMenu } from './soporte/menu-de-la-guardada'
 import { expect, test, type Page } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
@@ -165,7 +166,7 @@ test('E2E guardar deja la cotización con el vehículo nuevo, «Cambió el vehí
   expect(aprobadaDe(vehiculos.a)).toBe(cotizaciones.c0)
   expect(aprobadaDe(vehiculos.b)).toBe(cotizaciones.b1)
 
-  await page.getByRole('button', { name: 'Revisiones' }).click()
+  await elegirEnElMenu(page, 'Revisiones')
   const revisiones = page.getByRole('dialog', { name: /^Revisiones de la cotización/ })
   await expect(revisiones).toContainText(`Cambió el vehículo: ${titulos.a} → ${titulos.b}`)
   await capturar(page, info, 'revision-con-nombres')
@@ -201,7 +202,7 @@ test('E2E quien no ve el vehículo de antes lee «un vehículo que no puedes ver
 }) => {
   await entrar(page, vera, { fresco: true })
   await page.goto(`/cotizaciones/${cotizaciones.c1}`)
-  await page.getByRole('button', { name: 'Revisiones' }).click()
+  await elegirEnElMenu(page, 'Revisiones')
   await expect(page.getByRole('dialog', { name: /^Revisiones de la cotización/ })).toContainText(
     `Cambió el vehículo: un vehículo que no puedes ver → ${titulos.b}`,
   )

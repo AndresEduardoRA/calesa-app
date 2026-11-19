@@ -17,6 +17,11 @@ vi.mock('../hooks/use-cotizar-encima', () => ({
   }),
 }))
 
+import {
+  ConElMenu,
+  abrirElMenu,
+  lineaDelMenu,
+} from '../../hoja/components/menu-de-la-guardada/menu-de-la-guardada.soporte'
 import { AvisoDeVersion } from './aviso-de-version'
 
 const OTRA_FORMULA = '00000000-0000-4000-8000-0000000000ff'
@@ -106,5 +111,46 @@ describe('AvisoDeVersion (C8, C9)', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
     expect(cotizar).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('«Cotizar encima» en el «⋯» de la cabecera (T321)', () => {
+  const dibujar = (h: ReturnType<typeof hoja>, hayCambios = false) =>
+    render(
+      <ConElMenu numero={h.cotizacion.numero}>
+        <AvisoDeVersion hoja={h} hayCambios={hayCambios} />
+      </ConElMenu>,
+    )
+
+  it('va también en el «⋯» cuando el aviso lo ofrece, y elegirla cotiza', async () => {
+    const h = hoja()
+    dibujar(h)
+    await abrirElMenu(h.cotizacion.numero)
+    const linea = lineaDelMenu('Cotizar encima')
+    expect(linea?.getAttribute('aria-disabled')).toBeNull()
+    fireEvent.click(linea as HTMLElement)
+    expect(cotizar).toHaveBeenCalledTimes(1)
+    expect(boton()).toBeTruthy()
+  })
+
+  it('con cambios sin guardar, apagada con su motivo', async () => {
+    const h = hoja()
+    dibujar(h, true)
+    await abrirElMenu(h.cotizacion.numero)
+    const linea = lineaDelMenu('Cotizar encima')
+    expect(linea?.getAttribute('aria-disabled')).toBe('true')
+    expect(linea?.nextElementSibling?.textContent).toBe(AVISO_DE_CAMBIOS)
+  })
+
+  it('sin puede_cotizar_encima, o al día, no está', async () => {
+    for (const h of [
+      hoja({ puede_cotizar_encima: false }),
+      hoja({ publicada: { id: '00000000-0000-0000-0000-000000000001', version: 3 } }),
+    ]) {
+      dibujar(h)
+      await abrirElMenu(h.cotizacion.numero)
+      expect(lineaDelMenu('Cotizar encima')).toBeNull()
+      cleanup()
+    }
   })
 })

@@ -49,7 +49,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 
 ## Al borde
 
-- Presupuestos: la hoja, 492 nodos de 500; JS de `/cotizaciones/nuevo` 459,6 de 460 KB, de `/cotizaciones/[id]` 466,3 de 470 y de `/cotizaciones` 386,9 de 390. Con la regla del 5 % se sube el tope (`docs/RENDIMIENTO.md`).
+- Presupuestos: la hoja, 467 nodos de 500; JS de `/cotizaciones/nuevo` 460,4 de 465 KB, de `/cotizaciones/[id]` 472,2 de 480 y de `/cotizaciones` 387,1 de 390. Con la regla del 5 % se sube el tope (`docs/RENDIMIENTO.md`).
 - El e2e completo con los dos proyectos tarda ≈ 95 min de reloj (5a-4b): en CI va en 4 bloques.
 
 ## Siguiente

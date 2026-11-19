@@ -1,6 +1,6 @@
 # cotizaciones › comentarios
 
-El área `comentarios` de `cotizaciones`: comentarios de una cotización con un nivel de respuestas, adjuntos, y en la cabecera favorita, reportar y moderar. Ficha del módulo: `../../CLAUDE.md` › «Áreas».
+El área `comentarios` de `cotizaciones`: comentarios de una cotización con un nivel de respuestas, adjuntos, y en el «⋯» de la cabecera favorita, reportar y moderar. Ficha del módulo: `../../CLAUDE.md` › «Áreas».
 
 ## Qué es
 
@@ -36,7 +36,7 @@ Adjuntos: `<Adjuntos>` arriba del campo, dentro de `<Comentarios>`. El hueco pas
 
 Favorita, reportar y moderar: el hueco `Acciones` (`<MarcasDeLaGuardada>`, servidor tras `<Suspense>`) decide quién ve qué con
 `entities/comentarios/moderacion.ts` (espejo de `cotizacion_moderar`) y pasa al navegador sólo el id, la versión, la marca propia y las acciones ya
-calculadas; el hueco `Insignias` (`<InsigniaDeLaGuardada>`, sin JS) dibuja «Inválida» para todos y «Reportada» sólo para quien modera. «Reportar…» abre
+calculadas: son líneas del «⋯» de la cabecera (`<FavoritaDelMenu>`, una casilla optimista; `<MarcasDelMenu>`, «Reportar…» y moderar, con sus diálogos); el hueco `Insignias` (`<InsigniaDeLaGuardada>`, sin JS) dibuja «Inválida» para todos y «Reportada» sólo para quien modera. «Reportar…» abre
 `?panel=reportar` (`<ModalDeReportar>`, diferido); moderar, `?panel=moderar&accion=invalidar|descartar|reactivar` (`useModeracionPorUrl`,
 `<ConfirmarModeracion>`, diferido). El Zod de la lectura vive en `moderacion-lectura.ts`, que no viaja en frío. e2e: `e2e/cotizaciones-moderar.spec.ts`.
 

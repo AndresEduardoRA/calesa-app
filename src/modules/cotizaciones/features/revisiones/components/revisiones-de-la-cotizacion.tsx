@@ -1,10 +1,8 @@
 'use client'
 
-import { HistoryIcon } from 'lucide-react'
-import { useRef } from 'react'
-import { Button } from '@/shared/ui/button'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
+import { useAporteAlMenu } from '../../hoja/components/menu-de-la-guardada/use-aporte-al-menu'
 import { PANEL_DE_REVISIONES } from '../hooks/urls-de-revisiones'
 import { PanelDeRevisionesDiferido } from './diferidos'
 
@@ -15,35 +13,30 @@ type Props = {
   version: string
 }
 
-// «Revisiones» de la cabecera de una guardada: su botón y su panel con URL (`?panel=revisiones`). Recargar lo abre, «atrás» lo cierra; el código del panel se pide la primera vez.
+const SIN_BOTON = { current: null }
+
+// «Revisiones» de una guardada: su línea en el «⋯» de la cabecera y su panel con URL (`?panel=revisiones`). Recargar lo abre, «atrás» lo cierra y el foco vuelve al «⋯»;
+// el código del panel se pide la primera vez.
 export function RevisionesDeLaCotizacion({ cotizacionId, numero, version }: Props) {
-  const boton = useRef<HTMLButtonElement>(null)
   const panel = usePanelPorUrl(PANEL_DE_REVISIONES)
   const montar = useAbiertoAlgunaVez(panel.abierto)
-  return (
-    <>
-      <Button
-        ref={boton}
-        type="button"
-        variant="outline"
-        className="min-h-11 md:min-h-9"
-        onClick={() => {
-          panel.abrir()
-        }}
-      >
-        <HistoryIcon aria-hidden="true" className="size-4" />
-        Revisiones
-      </Button>
-      {montar ? (
-        <PanelDeRevisionesDiferido
-          abierto={panel.abierto}
-          alCerrar={panel.cerrar}
-          cotizacionId={cotizacionId}
-          numero={numero}
-          version={version}
-          botonDeRevisiones={boton}
-        />
-      ) : null}
-    </>
-  )
+  const { botonRef } = useAporteAlMenu({
+    revisiones: {
+      tipo: 'accion',
+      abre: true,
+      alElegir: () => {
+        panel.abrir()
+      },
+    },
+  })
+  return montar ? (
+    <PanelDeRevisionesDiferido
+      abierto={panel.abierto}
+      alCerrar={panel.cerrar}
+      cotizacionId={cotizacionId}
+      numero={numero}
+      version={version}
+      botonDeRevisiones={botonRef ?? SIN_BOTON}
+    />
+  ) : null
 }

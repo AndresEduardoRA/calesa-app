@@ -55,7 +55,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   (`HuecosDelResumen`, `features/hoja/components/huecos-del-resumen.ts`): `src/app` une `pantallas/comentarios-resumen.ts` (`Pestanas`, sólo la cáscara `diferido()`) y
   `pantallas/comprobantes-resumen.ts` (`Comprobantes`, bajo los adjuntos) en `listado-con-acciones.tsx`, y el servidor manda `quienesDelResumen()` (`puedeAdjuntar` y `puedeModerar` por
   id, de las reglas del «⋯» sobre la fila: ninguna pregunta a la base; una cotización sin entrada ahí no adjunta ni modera). Detalle: `areas/comentarios/CLAUDE.md` › «El resumen». «Nueva cotización»
-  (`origenParaNueva()`) y la tecla `N`. **El «⋯» de cada fila** (`accionesDeCotizacion()`: primero y solo «Compartir cotización…», aprobar, marcar final, favorita, reportar, invalidar / descartar /
+  (`origenParaNueva()`) y la tecla `N`. **El «⋯» de cada fila** (`accionesDeCotizacion()`, la lista del núcleo que también dibuja el «⋯» de la guardada: primero y solo «Compartir cotización…», aprobar, marcar final, favorita, reportar, invalidar / descartar /
   reactivar y, al final, la papelera) se compone en `src/app/(app)/cotizaciones/`: `menus-de-la-pagina.ts` (servidor) lee las marcas y la versión de la
   página (`leerMarcasDeLaPagina()`, tres lecturas por clave primaria) y arma lo que cada fila ofrece con las reglas de cada área (`ofertasDeLaFila()`;
   `puedeGuardarDesdeElListado()` espeja `_cotizacion_puede_guardar()`); `listado-con-acciones.tsx` y `use-acciones-de-la-lista.ts` (navegador) llaman a las
@@ -70,6 +70,13 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   dibuja la barra del vehículo de `vehiculos` que arma `src/app/(app)/cotizaciones/[id]/` (`barra-de-la-guardada.tsx`, diferida): el título grande y el
   vehículo debajo; con `puede_guardar` abre el panel con el campo del título arriba. Pendiente y borrador van por persona y cotización, el
   borrador además con la versión (`claves-de-la-hoja.ts`).
+- **La cabecera de una guardada, compacta** (`docs/UX.md` › «Cotización guardada»): a la vista la clase, la vigencia, las insignias, «Guardar» (sólo con
+  `puede_guardar`: el `BotonGuardar` del resumen se dibuja en su lugar por un portal, `useRanuraDeGuardar()`) y «Compartir» (`compartir()` del hueco de la vista
+  previa); lo demás en el «⋯» (`features/hoja/components/menu-de-la-guardada/`: `ProveedorDelMenuDeLaGuardada`, que la página pone sobre la cabecera y la hoja,
+  `useAporteAlMenu()` y `<MenuDeLaGuardada>`). Suman líneas la vista previa (`vista-previa`, sin botón en el pie cuando hay «⋯»), `<PdfDelMenu>` del área `tarjeta`
+  (`pdf`), las revisiones, `<AvisoDeVersion>` (`encima`, sólo si el aviso lo ofrece) y las áreas por `Acciones`; quien suma no lee las líneas (si no, se vuelve a
+  dibujar en bucle) y el foco vuelve al «⋯» (`botonRef`). La lista y su orden son del núcleo (`entities/acciones-de-cotizacion.ts`: `accionesDeCotizacion(ofertas,
+{ aLaVista })`, `A_LA_VISTA_EN_LA_GUARDADA`), la misma del «⋯» del listado.
 - **Cambiar el vehículo de una preventa guardada** (T315): `cambioDeVehiculo({ clase, puedeGuardar })` (`entities/vehiculo-de-la-guardada.ts`, del núcleo) da
   `elige` (la barra en modo `cambiar`: el panel de cotizar sin «Quitar», con alta; el dato del vehículo de una tabla no se elige ahí), `final` (`ver_elegido` con
   `MOTIVO_DE_LA_FINAL`) o `no` (`solo_mostrar`). Lo elegido vive en `?vehiculo=` (`CLAVE_DE_VEHICULO`, lo escribe el panel con `shallow: false`): `leerHojaDeUnaGuardada(id,
@@ -140,10 +147,10 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
   papelera o no se ve; `rutaDelPdf(id)`) arma la página (fecha del último guardado en la zona de `leerAjustes()`, que falla en vez de dar lo de fábrica) y
   pide `pdfDeUnaGuardada()` con el contexto de `contextoDeLaPagina()` (el cliente sólo con `leads.ver`: `src/app/(app)/cotizaciones/datos-de-la-tarjeta.ts`, que
   comparte con la página): `cotizacion_tarjeta` como quien pide, sin memoria, y `infra/tarjeta/pdf/` (Geist TTF recta e itálica). Lo baja quien ve la cotización, sin
-  clave propia (pie de «Vista previa» de una guardada; `<a download>` en la tarjeta de lo guardado de la hoja nueva). Las pruebas leen su texto con
+  clave propia (pie de «Vista previa» y «⋯» de la cabecera de una guardada, `<PdfDelMenu>`; `<a download>` en la tarjeta de lo guardado de la hoja nueva). Las pruebas leen su texto con
   `scripts/pdf/texto-del-pdf.ts`.
 - **«Compartir la cotización»** (área `tarjeta`; glosario, `docs/UX.md` › «Cotización: compartir»): el panel `PanelDeCompartir` (`features/tarjeta/components/compartir/`, por
-  `diferido()`), en `?panel=compartir` en el detalle (`CompartirDeLaGuardada`, junto a «Vista previa» por el hueco `compartir` de la vista previa, sólo con
+  `diferido()`), en `?panel=compartir` en el detalle (`CompartirDeLaGuardada`, a la vista en la cabecera por el hueco `compartir` de la vista previa, sólo con
   `cotizacionId`) y en `?panel=compartir&para=<id>` fuera de él (`DialogoDeCompartirDeLaFila` y `useAbrirCompartirDeLaFila()` por `pantallas/tarjeta-compartir.ts`:
   el «⋯» del listado; también para las tarjetas, el resumen y la ficha del vehículo); la pestaña en `?compartir=texto` (`entities/tarjeta/compartir/url.ts`). Con
   el Modo Live ni el botón ni la línea del «⋯»; por URL, el aviso. Lee `GET /cotizaciones/[id]/compartir` (`DatosParaCompartir`: `paraCompartirDeUnaGuardada()`
@@ -209,10 +216,11 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   el ⚙ por `ContextoDelAjuste` (`{ Ajuste, AjusteDeLaCabecera }`: el de cada celda y el de la cabecera): sin él ninguna celda lo dibuja ni se llama ningún hook del
   ajuste. Los campos «Por defecto» de la cabecera son del núcleo (`features/hoja/components/por-defecto/`): los usan el ⚙ de la cabecera y el editor del diseño. La base dice qué celda lo lleva (`ajustes`);
   `<LugarDelAjuste>` se monta con las secciones principales y también **dentro del modal «Avanzado»**, como la ayuda.
-- **La guardada** (`HuecosDeLaGuardada`): `Acciones` (cabecera, tras «Revisiones»), `Insignias` (cabecera, tras la clase y la vigencia), `BajoLaCabecera`
+- **La guardada** (`HuecosDeLaGuardada`): `Acciones` (las líneas que el área suma al «⋯» de la cabecera con `useAporteAlMenu()` y sus diálogos, nada a la vista;
+  el orden lo da `accionesDeCotizacion()`), `Insignias` (cabecera, tras la clase y la vigencia), `BajoLaCabecera`
   (entre la cabecera y la hoja: la línea de «De este vehículo») y `Debajo` (bajo la hoja, fuera del proveedor del ⚙). Los llenan
   `pantallas/{final,aprobada,comprobantes,comentarios,papelera}-cotizacion.ts` (cada uno con un vacío en `features/<área>/components/huecos-en-la-guardada.ts`)
-  y `src/app/(app)/cotizaciones/[id]/huecos-de-la-guardada.tsx` los ordena: final, aprobada, comprobantes, comentarios y papelera (la destructiva al final;
+  y `src/app/(app)/cotizaciones/[id]/huecos-de-la-guardada.tsx` los dibuja en el orden de las insignias y de lo de debajo («Aprobada» antes de «Reportada»;
   «De este vehículo» antes de «Comprobantes»). Cada componente recibe `{ cotizacion, puedeGuardar, permisos, vehiculo }` (`vehiculo`, el que la página leyó
   si quien mira lo ve, o nulo). Fichas: `areas/<área>/CLAUDE.md`.
 - **El resumen del listado** (`HuecosDelResumen`): `Portada` (primero tras la barra, arriba de los datos: `pantallas/tarjeta-resumen.ts`), `Pestanas`, `Comprobantes` y
@@ -228,7 +236,7 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - **La lista** (`HuecosDeLaLista`, `features/listado/components/tipos.ts`): `Portada` (la portada de cada tarjeta, en frío: `pantallas/tarjeta-portada.ts`) y
   `Comparar` (las casillas y «Comparar» de un grupo desplegado, `CompararDelGrupoDiferido` de `pantallas/aprobada-listado.ts`); los une `listado-con-acciones.tsx`.
 - **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`,
-  `compartir()` (lo que va junto a «Vista previa» en una guardada: «Compartir») y `alGuardarLaCotizacion(id)` (lo llaman `useNucleoDelGuardado` y `useCotizarEncima` con la cotización guardada: la portada); la llena
+  `compartir()` (lo que la cabecera de una guardada dibuja a la vista: «Compartir») y `alGuardarLaCotizacion(id)` (lo llaman `useNucleoDelGuardado` y `useCotizarEncima` con la cotización guardada: la portada); la llena
   `<ProveedorDeLaTarjeta>` (`pantallas/tarjeta.ts`) con la cáscara del modal y lo que sabe la página (vehículo, asesor, número, logo). El modal lee
   `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `geometriaDeLaTarjeta()` (pura) con `<TarjetaDeCotizacion>`: un lienzo del ancho de
   la tarjeta con cada celda en posición absoluta (`<CeldaDeLaTarjeta>`, en orden de lectura, con `data-celda`, `data-fila`, `data-columna`, `data-nodo`,
