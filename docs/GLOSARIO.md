@@ -809,6 +809,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   por la base (`_vehiculo_situacion()`): «En subasta» (`en_subasta`: subasta viva en el tramo de subasta), «Sin resolver» (`sin_resolver`:
   cerrada en el tramo y sin resultado), «No ganada» (`no_ganada`: se marcó así y sigue en el tramo; no cuenta) o su fase (`fase`). El tramo
   (`_vehiculo_en_tramo()`) es estar en una fase de subasta o no tener fase en un origen que tiene una.
+- **Frase de la subasta** — `fraseDeSubasta()` (`entities/frase-de-subasta.ts`), `data-frase-de-subasta`: la línea grande con color y cuenta del bloque
+  «Subasta» de la ficha, según la situación: «Se subasta en 2 días 4 h», «Cerró hace 3 h · sin resolver», «Ganada» (situación `fase` con el cierre
+  vencido), «No ganada». El cierre es `subastaFinEn ?? subastaEn`; la puja se llama «Puja actual» mientras sigue viva y «Puja final» al cerrar.
 - **Situación (filtro)** — `?situacion=` / `FILTRO_SITUACION`, condición `situacion_en`: «Situación» en el panel de filtros del inventario. Reemplaza al filtro «Fase»: una fase
   es una situación. Ofrece, en un origen de subasta, «En subasta», «Sin resolver» y «No ganadas» (`SITUACIONES_PROPIAS`) y, en todo origen, sus fases y «Sin fase»
   (`ninguna`). Una fase sólo trae lo que tiene esa situación (`fase`): lo de la subasta figura por la suya. Pedir «No ganadas» es la única forma de verlas en el inventario.

@@ -14,6 +14,8 @@ type Props = {
   origen: OrigenResumen
   layout: LayoutDeOrigen
   editable: boolean
+  // «Compra directa» en «Subasta»: el origen trae el «Buy it now» de apibara.
+  conCompraDirecta: boolean
   // «Cotización aprobada» con `cotizaciones.ver` del origen (null: ni el bloque ni la consulta) y lo que ofrece sin aprobada.
   aprobada: { cotizar: string | null } | null
 }
@@ -27,6 +29,7 @@ export function LateralDeLaFicha({
   layout,
   editable,
   aprobada,
+  conCompraDirecta,
 }: Props) {
   return (
     <>
@@ -41,7 +44,11 @@ export function LateralDeLaFicha({
       {origen.tipo === 'subasta' ? (
         <BloqueDeFicha ancla="subasta" titulo="Subasta" lado="lateral">
           <Suspense fallback={null}>
-            <BloqueSubasta vehiculo={vehiculo} editable={editable} />
+            <BloqueSubasta
+              vehiculo={vehiculo}
+              editable={editable}
+              conCompraDirecta={conCompraDirecta}
+            />
           </Suspense>
         </BloqueDeFicha>
       ) : null}

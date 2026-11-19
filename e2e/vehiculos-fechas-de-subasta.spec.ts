@@ -1,4 +1,4 @@
-import { expect, test } from './soporte/prueba'
+import { expect, test, type Page } from './soporte/prueba'
 import { desmontarSubasta, prepararSubasta, type EstadoDeApibara } from './soporte/apibara'
 import { admin } from './soporte/base'
 import { entrar } from './soporte/inventario'
@@ -55,13 +55,19 @@ async function fechasGuardadas() {
   )
 }
 
+// «Editar fechas» va en el «⋯» de «Subasta».
+async function editarFechas(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Más acciones de la subasta' }).click()
+  await page.getByRole('menuitem', { name: 'Editar fechas' }).click()
+}
+
 test('las fechas se escriben en la zona de quien edita y se guardan en UTC', async ({ page }) => {
   await entrar(page, duena)
   await page.goto(`/vehiculos/${vehiculoId}`)
   // El bloque de la columna izquierda (el primero): el grupo «Subasta» del layout también es una región, en «Ficha».
   const bloque = page.getByRole('region', { name: 'Subasta' }).first()
   await expect(bloque).toContainText('Sin fecha')
-  await bloque.getByRole('button', { name: 'Editar fechas' }).click()
+  await editarFechas(page)
   await expect(page).toHaveURL(/[?&]panel=fechas-de-subasta/)
   const modal = page.getByRole('dialog', { name: 'Fechas de la subasta' })
   await expect(modal).toContainText('Se escribe en hora de America/New_York')
@@ -84,6 +90,6 @@ test('las fechas se escriben en la zona de quien edita y se guardan en UTC', asy
   await expect(bloque).not.toContainText('Sin fecha')
 
   // Al volver a abrir, lo guardado se ve en la misma zona.
-  await bloque.getByRole('button', { name: 'Editar fechas' }).click()
+  await editarFechas(page)
   await expect(modal.getByLabel('Fecha de la subasta')).toHaveValue('2026-12-01T10:30')
 })

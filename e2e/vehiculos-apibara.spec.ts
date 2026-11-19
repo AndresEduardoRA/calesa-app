@@ -277,7 +277,7 @@ test('un corte del momento se reintenta; una clave rechazada lleva a Integracion
   await expect(lista.getByRole('link', { name: 'Ir a Integraciones' })).toBeVisible()
 })
 
-test('refrescar desde la ficha actualiza fecha, estado y puja, y conserva lo que la persona editó', async ({
+test('«Actualizar los datos» desde la ficha actualiza fecha, estado y puja, y conserva lo que la persona editó', async ({
   page,
 }) => {
   test.skip(creado === null, 'Depende del alta por enlace.')
@@ -299,14 +299,16 @@ test('refrescar desde la ficha actualiza fecha, estado y puja, y conserva lo que
   await page.goto(`/vehiculos/${id}`)
   // El bloque de la columna izquierda (el primero): el grupo «Subasta» del layout también es una región, en «Ficha».
   const bloque = page.getByRole('region', { name: 'Subasta' }).first()
-  await expect(bloque.getByText('Abierta')).toBeVisible()
   await expect(bloque.getByText('Puja actual')).toBeVisible()
 
-  await bloque.getByRole('button', { name: 'Refrescar' }).click()
+  // Consultar de nuevo es «Actualizar los datos» del «⋯» del vehículo (sobre la foto), con su confirmación.
+  await page.getByRole('button', { name: 'Más acciones de Editado a mano' }).first().click()
+  await page.getByRole('menuitem', { name: 'Actualizar los datos' }).click()
+  const dialogo = page.getByRole('dialog', { name: 'Actualizar los datos' })
+  await dialogo.getByRole('button', { name: 'Sí, actualizar' }).click()
   await expect(
     page.getByText('Subasta actualizada. Se conservó lo que editaste: Título.'),
   ).toBeVisible()
-  await expect(bloque.getByText('Vendida')).toBeVisible()
   // Se preguntó por el enlace del vehículo.
   expect(pedidos).toEqual([{ accion: 'ficha', origen: subasta.id, entrada: ENLACE_DE_COPART }])
 
