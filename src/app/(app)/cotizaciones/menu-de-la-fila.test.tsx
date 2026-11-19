@@ -4,6 +4,9 @@ import type { MenuDeUnaFila } from '@/modules/cotizaciones/pantallas/listado'
 import { CLASE_LIVE } from '@/shared/ui/guion-live'
 import { MenuDeLaFila, type AccionesDeLaFila } from './menu-de-la-fila'
 
+// `pantallas/listado` trae la lista, que guarda sus preferencias con una action de `equipo` (de servidor): acá no se llama.
+vi.mock('server-only', () => ({}))
+
 afterEach(cleanup)
 
 const acciones = (): AccionesDeLaFila => ({
@@ -146,5 +149,16 @@ describe('MenuDeLaFila', () => {
       />,
     )
     expect(screen.queryByRole('button')).toBeNull()
+  })
+})
+
+describe('MenuDeLaFila en la tarjeta de la lista (T319)', () => {
+  it('con `sinCompartir` no repite «Compartir cotización…»; en la tabla va primero', async () => {
+    await abrir({ sinCompartir: true })
+    expect(lineas()).not.toContain('Compartir cotización…')
+    expect(lineas()[0]).toBe('Aprobar')
+    cleanup()
+    await abrir()
+    expect(lineas()[0]).toBe('Compartir cotización…')
   })
 })

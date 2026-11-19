@@ -5,6 +5,7 @@ import type { RecalculoInicial } from '../../entities/apertura'
 import { calculoDeLoGuardado } from '../../entities/calculo-de-la-tarjeta'
 import { nombreDelModo } from '../../entities/cabecera-de-la-hoja'
 import type { HojaDeUnaGuardada } from '../../entities/hoja-de-una-guardada'
+import type { AnchoDeLaPortada } from '../../entities/ruta-de-la-hoja'
 import { archivoDelPdf } from '../../entities/tarjeta/archivo-del-pdf'
 import {
   lineasDeLaTarjeta,
@@ -161,6 +162,22 @@ export async function imagenDeLaPortada(
     return ok(await webpDeLaTarjeta(png.data.bytes))
   } catch (error) {
     console.error('[portada] No se pudo pasar la tarjeta a WebP.', error)
+    return fallo('inesperado', 'No se pudo armar la vista previa.')
+  }
+}
+
+// La miniatura de la portada (`?ancho=`, la de las listas): la grande achicada con `sharp`, que se carga sólo aquí, con `import()`. Si no se pudo, un fallo (la ruta
+// responde 500 y la portada ofrece «Reintentar»).
+export async function miniaturaDeLaPortada(
+  bytes: Uint8Array,
+  ancho: AnchoDeLaPortada,
+): Promise<Resultado<Uint8Array<ArrayBuffer>>> {
+  try {
+    const { miniaturaDeLaPortada: achicar } =
+      await import('../../infra/tarjeta/imagen/webp-de-la-tarjeta')
+    return ok(await achicar(bytes, ancho))
+  } catch (error) {
+    console.error('[portada] No se pudo achicar la portada.', error)
     return fallo('inesperado', 'No se pudo armar la vista previa.')
   }
 }

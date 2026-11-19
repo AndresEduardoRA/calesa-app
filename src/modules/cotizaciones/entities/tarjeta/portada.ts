@@ -2,6 +2,7 @@
 // clave de lo que la armó. Lo que dice `cotizacion_portada()` y qué hace la ruta con eso. Sin I/O.
 import { z } from 'zod'
 import { autorVisible } from '../historial-del-vehiculo'
+import type { AnchoDeLaPortada } from '../ruta-de-la-hoja'
 import type { ContextoDeLaCotizacion } from './contexto-de-la-cotizacion'
 
 // El bucket privado donde va la portada: el de los adjuntos (`<cotización>/portada/<sha-256>.webp`), con sus policies.
@@ -73,15 +74,22 @@ export function estadoDeLaPortadaDesde(json: unknown): EstadoDeLaPortada | null 
   }
 }
 
-// La ETag de la compartida: la clave entre comillas (una ETag fuerte).
-export const etiquetaDeLaPortada = (clave: string): string => `"${clave}"`
+// La ETag de la compartida: la clave entre comillas (una ETag fuerte); la de una miniatura lleva además su ancho (son otros bytes).
+export const etiquetaDeLaPortada = (
+  clave: string,
+  ancho: AnchoDeLaPortada | null = null,
+): string => (ancho === null ? `"${clave}"` : `"${clave}-${String(ancho)}"`)
 
-// Si `If-None-Match` nombra esta clave: acepta la forma débil (`W/"…"`) y una lista separada por comas.
-export function coincideLaEtiqueta(siNoneMatch: string | null, clave: string): boolean {
+// Si `If-None-Match` nombra esta clave (y esta variante): acepta la forma débil (`W/"…"`) y una lista separada por comas.
+export function coincideLaEtiqueta(
+  siNoneMatch: string | null,
+  clave: string,
+  ancho: AnchoDeLaPortada | null = null,
+): boolean {
   if (siNoneMatch === null) {
     return false
   }
-  const buscada = etiquetaDeLaPortada(clave)
+  const buscada = etiquetaDeLaPortada(clave, ancho)
   return siNoneMatch.split(',').some((parte) => parte.trim().replace(/^W\//, '') === buscada)
 }
 
@@ -95,15 +103,20 @@ export type QueHacerConLaPortada =
 
 // Qué hace la ruta con el estado. La compartida (la que se guarda y lleva ETag) es para quien ve todo lo que dibuja y mira con sus permisos (sin «Ver como»: la
 // interfaz le mostraría menos que la imagen). Guardar, sólo la compartida, si quien pide puede y la guardada falta o quedó vieja.
+// Con `ancho`, el 304 es contra la ETag de esa miniatura (el bucket guarda sólo la grande: lo bajado o armado se achica al responder).
 export function queHacerConLaPortada(
   estado: EstadoDeLaPortada,
-  { siNoneMatch, perspectivaPropia }: { siNoneMatch: string | null; perspectivaPropia: boolean },
+  {
+    siNoneMatch,
+    perspectivaPropia,
+    ancho = null,
+  }: { siNoneMatch: string | null; perspectivaPropia: boolean; ancho?: AnchoDeLaPortada | null },
 ): QueHacerConLaPortada {
   const contexto = perspectivaPropia ? estado.contexto : null
   if (contexto === null) {
     return { tipo: 'generar', contexto: null, guardar: false }
   }
-  if (coincideLaEtiqueta(siNoneMatch, estado.claveVigente)) {
+  if (coincideLaEtiqueta(siNoneMatch, estado.claveVigente, ancho)) {
     return { tipo: 'sin_cambios' }
   }
   if (estado.ruta !== null && estado.clave === estado.claveVigente) {

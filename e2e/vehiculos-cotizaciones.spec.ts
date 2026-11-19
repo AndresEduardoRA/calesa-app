@@ -215,7 +215,8 @@ test('E2E con 520: «Ver más» llega a 500, dice el tope y «Ver todas en Cotiz
   await expect(camino).toHaveAttribute('href', `/cotizaciones?vehiculo=${vehiculos.quinientas}`)
   await camino.click()
   await expect(page).toHaveURL(/\/cotizaciones\?vehiculo=/)
-  await expect(page.getByText('Cotizaciones de Pestaña quinientas.')).toBeVisible()
+  // Las de un solo vehículo no se agrupan, y el aviso lo dice (la lista nace agrupada: T319).
+  await expect(page.getByText('Cotizaciones de Pestaña quinientas, sin agrupar.')).toBeVisible()
 })
 
 test('E2E sin cotizaciones.ver no hay bloque ni entrada en el índice y ?seccion=cotizaciones se queda arriba', async ({

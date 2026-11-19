@@ -12,6 +12,12 @@ describe('vistaDeLista', () => {
     expect(vistaDeLista({ pedida: undefined, preferida: null })).toBe('tabla')
   })
 
+  it('sin URL ni preferencia, la de fábrica de esa lista', () => {
+    expect(vistaDeLista({ pedida: null, preferida: null, porDefecto: 'tarjetas' })).toBe('tarjetas')
+    expect(vistaDeLista({ pedida: null, preferida: 'tabla', porDefecto: 'tarjetas' })).toBe('tabla')
+    expect(vistaDeLista({ pedida: 'tabla', preferida: null, porDefecto: 'tarjetas' })).toBe('tabla')
+  })
+
   it('una vista que no existe en la URL es como no pedir nada', () => {
     expect(vistaDeLista({ pedida: 'mosaico', preferida: 'tarjetas' })).toBe('tarjetas')
     expect(esVistaDeLista('Tabla')).toBe(false)

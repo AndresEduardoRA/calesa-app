@@ -14,11 +14,12 @@
 //
 // La portada de la cotización (`docs/COTIZADOR.md` › «La portada de la cotización»), para `GET /cotizaciones/[id]/portada`: `leerLaPortada(id)` (el estado para quien
 // pide), `queHacerConLaPortada(estado, pedido)` (304, bajar la guardada o armarla), `bajarLaPortada(ruta)`, `armarLaPortada(id, contextoDe)` (el WebP de lo guardado
-// con el contexto que le den; `guardable` sin el primer recálculo es falso) y `guardarLaPortada({ id, bytes, clave })`. El componente sale por
-// `pantallas/tarjeta-portada.ts`.
+// con el contexto que le den; `guardable` sin el primer recálculo es falso), `guardarLaPortada({ id, bytes, clave })` y `miniaturaDeLaPortada(bytes, ancho)` (la de
+// `?ancho=480`, que piden las listas; `anchoDeLaPortada()` lee el parámetro). El componente sale por `pantallas/tarjeta-portada.ts`.
 export {
   bajarLaPortada,
   guardarLaPortada,
+  miniaturaDeLaPortada,
   imagenDeUnaGuardada,
   leerAsesorDeLaCotizacion,
   leerLaPortada,

@@ -217,6 +217,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Resuelve el alcance una vez en una `security definer` con el predicado de la policy: filtrar hijas cuyas policies preguntan por fila paga un `puede_*` por fila recorrida.
 - Con el plan genérico, varios filtros en la misma consulta parecen selectivos y ordenan toda la tabla: recorre el índice por lotes y filtra en plpgsql.
 - Usa como cursor el id de una fila visible y resuélvelo por PK: un cursor que es la clave de un grupo puede recorrer grupos invisibles.
+- En una invocadora, lo que se lee de un arreglo de ids ya elegidos (`unnest(v_ids)`) va en laterales con `limit`: con el plan genérico un `join … on c.id = u.id` se aplana en un hash join que recorre la tabla entera con la RLS (63.000 bloques y 2 s por página en la lista agrupada).
 - Lee un cupo «N por hora» con las N más recientes (`order by creado_en desc limit N`; libre = la más vieja + 1 h): así no hace falta `count(` ni otra excepción en `escala.sql`.
 - Mide el costo en altas e importación antes de un índice de n-gramas (duplica el tiempo) y prefiere un mínimo de 3 caracteres.
 - Mide como corre: sentencia preparada con parámetros (no literales), el `EXPLAIN` de una `security definer` como dueño de la tabla, y con volumen y fondo realista (el plan genérico estima por promedio): si no, el planificador elige otro plan.

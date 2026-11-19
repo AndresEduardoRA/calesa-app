@@ -47,9 +47,15 @@ export type Preferencias = {
   zonaHoraria: string | null
   // Cómo ve el inventario en escritorio, tabla o tarjetas (`vehiculos.vista`). null = nunca eligió: la tabla.
   vistaDeVehiculos: VistaDeLista | null
+  // Cómo ve la lista de cotizaciones en escritorio (`cotizaciones.vista`). null = nunca eligió: las tarjetas.
+  vistaDeCotizaciones: VistaDeLista | null
+  // Si ve la lista de cotizaciones agrupada por vehículo (`cotizaciones.agrupar`). null = nunca eligió: agrupada.
+  agruparCotizaciones: boolean | null
 }
 
 export const CLAVE_DE_VISTA_DE_VEHICULOS = 'vehiculos.vista'
+export const CLAVE_DE_VISTA_DE_COTIZACIONES = 'cotizaciones.vista'
+export const CLAVE_DE_AGRUPAR_COTIZACIONES = 'cotizaciones.agrupar'
 
 export const CLAVE_DE_ZONA_HORARIA = 'zona_horaria'
 
@@ -83,6 +89,8 @@ export function preferenciasDesde(crudo: unknown): Preferencias {
   const widgets = esquemaWidgetsDelTablero.safeParse(valores[CLAVE_WIDGETS_DEL_TABLERO])
   const zona = esquemaZonaHoraria.safeParse(valores[CLAVE_DE_ZONA_HORARIA])
   const vista = esquemaVistaDeLista.safeParse(valores[CLAVE_DE_VISTA_DE_VEHICULOS])
+  const vistaDeCotizaciones = esquemaVistaDeLista.safeParse(valores[CLAVE_DE_VISTA_DE_COTIZACIONES])
+  const agrupar = z.boolean().safeParse(valores[CLAVE_DE_AGRUPAR_COTIZACIONES])
   return {
     densidad: densidad.success ? densidad.data : null,
     tema: tema.success ? tema.data : null,
@@ -91,6 +99,8 @@ export function preferenciasDesde(crudo: unknown): Preferencias {
     vistos: preferenciaDeVistosDesde(valores[CLAVE_DE_VISTOS]),
     zonaHoraria: zona.success ? zona.data : null,
     vistaDeVehiculos: vista.success ? vista.data : null,
+    vistaDeCotizaciones: vistaDeCotizaciones.success ? vistaDeCotizaciones.data : null,
+    agruparCotizaciones: agrupar.success ? agrupar.data : null,
   }
 }
 
@@ -112,6 +122,11 @@ export const esquemaPreferencia = z.discriminatedUnion('clave', [
     clave: z.literal(CLAVE_DE_VISTA_DE_VEHICULOS),
     valor: esquemaVistaDeLista.nullable(),
   }),
+  z.object({
+    clave: z.literal(CLAVE_DE_VISTA_DE_COTIZACIONES),
+    valor: esquemaVistaDeLista.nullable(),
+  }),
+  z.object({ clave: z.literal(CLAVE_DE_AGRUPAR_COTIZACIONES), valor: z.boolean().nullable() }),
 ])
 
 export type Preferencia = z.infer<typeof esquemaPreferencia>
