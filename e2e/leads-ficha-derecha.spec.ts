@@ -252,7 +252,8 @@ test('E2E «Oportunidades»: las abiertas en filas de una línea, «Nueva» y «
   // Mover la primera a una etapa ganada desde su «⋯» la saca de la vista y entra la siguiente abierta.
   await bloque.getByRole('button', { name: 'Más acciones de «Flota de cinco»' }).click()
   await page.getByRole('menuitem', { name: 'Mover a' }).click()
-  await page.getByRole('menuitem', { name: 'Ganado' }).click()
+  // Un embudo creado nace con «Nueva», «Ganada» y «Perdida».
+  await page.getByRole('menuitem', { name: 'Ganada', exact: true }).click()
   await expect(bloque.getByText('Flota de cinco')).toHaveCount(0)
   await expect(filas).toHaveCount(3)
   await expect(filas.first()).toContainText('Camioneta usada')
