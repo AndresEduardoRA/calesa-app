@@ -8,7 +8,7 @@ export const CLAVE_APIBARA_DE_LA_PUJA = 'pricing.current_bid_usd'
 export const MONEDA_DE_LA_PUJA = 'USD'
 export const AYUDA_DE_LA_PUJA = 'Es la puja de la subasta, no el precio del vehículo'
 
-type CampoConApibara = { clave: string; activo: boolean; claveApibara?: string | null }
+export type CampoConApibara = { clave: string; activo: boolean; claveApibara?: string | null }
 
 export type ColumnaDePrecio = { tipo: 'precio' } | { tipo: 'puja'; clave: string }
 
@@ -36,7 +36,8 @@ type DeLaFila = {
   estadoSubasta: EstadoDeSubasta | null
 }
 
-function numeroDe(valor: unknown): number | null {
+// Un número de un atributo: el número, o un texto que es un número; lo demás es nulo.
+export function numeroDe(valor: unknown): number | null {
   if (typeof valor === 'number') return Number.isFinite(valor) ? valor : null
   if (typeof valor === 'string' && valor.trim() !== '') {
     const numero = Number(valor)
@@ -57,9 +58,4 @@ export function precioDeLaFila(
   if (valor === null) return null
   const final = vehiculo.estadoSubasta === 'terminada' || vehiculo.estadoSubasta === 'vendida'
   return { tipo: 'puja', valor, final }
-}
-
-// El rótulo completo, para la tarjeta: ahí no hay encabezado de columna que lo diga.
-export function rotuloDeLaPuja(final: boolean): string {
-  return final ? 'Puja final' : 'Puja actual'
 }

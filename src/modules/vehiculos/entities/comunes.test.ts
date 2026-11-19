@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { BLOQUES_COMUNES, camposComunes, valorComun, type CampoComun } from './comunes'
+import {
+  BLOQUES_COMUNES,
+  camposComunes,
+  etiquetaDeComun,
+  loteALaVista,
+  valorComun,
+  type CampoComun,
+} from './comunes'
 import type { Vehiculo } from './vehiculo'
 
 const VEHICULO: Vehiculo = {
@@ -47,6 +54,23 @@ const campo = (clave: CampoComun['clave']) => {
 }
 const valor = (clave: CampoComun['clave'], vehiculo: Vehiculo = VEHICULO) =>
   valorComun(campo(clave), vehiculo, CONTEXTO)
+
+describe('etiquetaDeComun', () => {
+  it('la etiqueta del dato común, la misma de la ficha', () => {
+    expect(etiquetaDeComun('lote')).toBe('Lote')
+    expect(etiquetaDeComun('anio')).toBe('Año')
+  })
+})
+
+describe('loteALaVista', () => {
+  it('el lote sin espacios alrededor; vacío, sólo espacios o nulo: nulo', () => {
+    expect(loteALaVista('75089446')).toBe('75089446')
+    expect(loteALaVista('  75089446 ')).toBe('75089446')
+    expect(loteALaVista('')).toBeNull()
+    expect(loteALaVista('   ')).toBeNull()
+    expect(loteALaVista(null)).toBeNull()
+  })
+})
 
 describe('camposComunes', () => {
   it('el lote, la plataforma y el enlace sólo van en un origen de subasta', () => {

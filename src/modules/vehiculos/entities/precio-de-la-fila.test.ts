@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  columnaDePrecio,
-  encabezadoDePrecio,
-  precioDeLaFila,
-  rotuloDeLaPuja,
-} from './precio-de-la-fila'
+import { columnaDePrecio, encabezadoDePrecio, precioDeLaFila } from './precio-de-la-fila'
 
 const puja = { clave: 'puja', activo: true, claveApibara: 'pricing.current_bid_usd' }
 const otro = { clave: 'color', activo: true, claveApibara: null }
@@ -59,10 +54,5 @@ describe('precioDeLaFila', () => {
     expect(precioDeLaFila({ ...fila, atributos: { puja: '3100.5' } }, columna)).toMatchObject({
       valor: 3100.5,
     })
-  })
-
-  it('el rótulo de la tarjeta', () => {
-    expect(rotuloDeLaPuja(false)).toBe('Puja actual')
-    expect(rotuloDeLaPuja(true)).toBe('Puja final')
   })
 })

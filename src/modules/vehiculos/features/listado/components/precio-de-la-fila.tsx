@@ -5,7 +5,6 @@ import {
   AYUDA_DE_LA_PUJA,
   encabezadoDePrecio,
   MONEDA_DE_LA_PUJA,
-  rotuloDeLaPuja,
   type ColumnaDePrecio,
   type PrecioDeLaFila,
 } from '../../../entities/precio-de-la-fila'
@@ -34,26 +33,6 @@ export function CeldaDePrecio({ precio }: { precio: PrecioDeLaFila | null }) {
       {precio.final ? (
         <span className="text-(length:--text-xs) text-(--color-ink-soft)">final</span>
       ) : null}
-    </span>
-  )
-}
-
-// En la tarjeta no hay encabezado: la puja lleva su rótulo completo, «Puja actual» o «Puja final».
-export function PrecioDeTarjeta({ precio }: { precio: PrecioDeLaFila | null }) {
-  if (precio === null) return null
-  if (precio.tipo === 'precio') {
-    return <Monto valor={precio.valor} className="text-(length:--text-sm) font-medium" />
-  }
-  return (
-    <span title={AYUDA_DE_LA_PUJA} className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className="text-(length:--text-xs) text-(--color-ink-soft)">
-        {rotuloDeLaPuja(precio.final)}
-      </span>
-      <Monto
-        valor={precio.valor}
-        moneda={MONEDA_DE_LA_PUJA}
-        className="text-(length:--text-sm) font-medium"
-      />
     </span>
   )
 }

@@ -84,6 +84,15 @@
   --color-celda-atencion: #ffe9d6; /* naranja: requiere revisión */
   --color-celda-atencion-borde: #f0b27a;
 
+  /* --- Sobre una foto (el chip del lote de la tarjeta de la lista) — fijos en ambos temas ----- */
+  --color-velo-de-foto: rgba(
+    16,
+    20,
+    32,
+    0.72
+  ); /* oscuro translúcido: se lee sobre cualquier foto */
+  --color-sobre-velo: #ffffff;
+
   /* --- Visitados / último abierto -------------------------------------- */
   --color-visitado: #7a5af8;
   --color-visitado-soft: rgba(122, 90, 248, 0.12);

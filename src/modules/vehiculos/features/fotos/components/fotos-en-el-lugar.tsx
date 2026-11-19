@@ -14,12 +14,14 @@ type Props = {
   modo?: 'carrusel' | 'abrir'
   // Qué visor abre `?visor=`: por defecto el id del vehículo. El mismo vehículo en dos lugares de una pantalla (dos grupos de «Relacionados») lleva una clave por lugar, o se abrirían dos.
   clave?: string
+  // Los puntos del carrusel a la derecha: en la tarjeta de la lista, donde el chip del lote va abajo a la izquierda.
+  puntos?: 'centro' | 'derecha'
   className?: string
 }
 
 // Las fotos de un vehículo donde se nombra (fila, tarjeta, ficha, hoja de cotizar): la portada y, al acercarse, el resto por
 // `leerFotosEnElLugar` (a lo sumo 24, una sola lectura). Siempre del mismo tamaño (4:3): con o sin foto, la lista no salta.
-export function FotosEnElLugar({ vehiculo, modo = 'carrusel', clave, className }: Props) {
+export function FotosEnElLugar({ vehiculo, modo = 'carrusel', clave, puntos, className }: Props) {
   const { id: vehiculoId, titulo, portadaRuta: portada } = vehiculo
   const cargar = useCallback(async (): Promise<readonly ImagenDelVisor[] | null> => {
     const leidas = await leerFotosEnElLugar(vehiculoId)
@@ -37,6 +39,7 @@ export function FotosEnElLugar({ vehiculo, modo = 'carrusel', clave, className }
       portada={portada ? urlPublica('vehiculos', portada) : null}
       cargar={cargar}
       modo={modo}
+      puntos={puntos}
       vacio={<CarFrontIcon className="size-5 text-(--color-ink-faint)" />}
       className={cn('aspect-4/3 rounded-(--radius-sm) bg-(--color-paper-dim)', className)}
     />
