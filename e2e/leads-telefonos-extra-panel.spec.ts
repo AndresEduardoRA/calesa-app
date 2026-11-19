@@ -2,6 +2,7 @@ import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import {
   abrirEdicion,
+  abrirVerMas,
   extrasDeLead,
   idDeLead,
   irAFicha,
@@ -101,9 +102,13 @@ test('la ficha sólo lee los teléfonos: «Editar» abre el panel y ahí se agre
   await entrar(page, t.personas.berta)
   const antes = await idDeLead(PROPIO_BERTA)
   await irAFicha(page, antes)
-  const lateral = page.getByRole('main')
-  await expect(lateral.getByText('Principal', { exact: true }).first()).toBeVisible()
+  // El principal en los datos clave; todos, en «Ver más».
+  await expect(page.locator('main dt:text-is("Teléfono principal")')).toBeVisible()
+  const datos = await abrirVerMas(page)
+  await expect(datos.getByText('Principal', { exact: true })).toBeVisible()
   await capturar(page, info, 'ficha-con-telefonos-extra')
+  await page.keyboard.press('Escape')
+  await expect(datos).toBeHidden()
   const numero = `+${completoCon(t, nacional())}`
 
   const panel = await abrirEdicion(page)
@@ -119,7 +124,7 @@ test('la ficha sólo lee los teléfonos: «Editar» abre el panel y ahí se agre
   expect(await extrasDeLead(antes)).toMatchObject([{ etiqueta: 'Oficina' }])
   await panel.getByRole('button', { name: 'Cancelar' }).click()
   await expect(panelDeEdicion(page)).toBeHidden()
-  await expect(lateral.getByText('Oficina', { exact: true })).toBeVisible()
+  await expect((await abrirVerMas(page)).getByText('Oficina', { exact: true })).toBeVisible()
 
   // El enlace de antes (`/leads?lead=<id>&extra=nuevo`) redirige a la ficha con el panel de edición y el modal del extra.
   await page.goto(`/leads?lead=${antes}&extra=nuevo`)

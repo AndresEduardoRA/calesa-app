@@ -1,5 +1,6 @@
 import { leerPlantillaSobre } from '../src/modules/cotizaciones/infra/plantilla/lectura-sobre'
 import { plantillaSobre } from '../src/modules/cotizaciones/infra/plantilla/rpc-de-la-plantilla'
+import type { VersionDePlantilla } from '../src/modules/cotizaciones/entities/plantilla/lectura-de-la-plantilla'
 import { validarPlantilla } from '../src/modules/cotizaciones/entities/plantilla/validar-plantilla'
 import { expect, test } from './soporte/prueba'
 import {
@@ -31,6 +32,12 @@ test.afterAll(async ({}, info) => {
   await limpiarTerrenoDePlantilla()
 })
 
+// La nota de un borrador de la forma 1 (lo que guarda este spec), o nada.
+const notaDe = (v: VersionDePlantilla | null) =>
+  v !== null && 'forma' in v.contenido && v.contenido.forma === 1
+    ? v.contenido.plantilla.nota
+    : undefined
+
 async function leer() {
   const { origenId, duena } = terreno()
   const r = await leerPlantillaSobre(duena, origenId)
@@ -58,7 +65,7 @@ test('E1: crear con la esperada nula, leer la misma hora con sus microsegundos y
   expect(leido.borrador?.actualizadoEn).toBe(creado.data)
   // Postgres quita los ceros finales de la fracción: de 1 a 6 decimales; la ida y vuelta de arriba prueba que no se trunca
   expect(creado.data).toMatch(/\.\d{1,6}(?:[+-]|Z)/)
-  expect(leido.borrador?.plantilla?.nota).toBe('Nota uno')
+  expect(notaDe(leido.borrador)).toBe('Nota uno')
 
   const guardado = await repositorio().guardar({
     origenId,
@@ -67,7 +74,7 @@ test('E1: crear con la esperada nula, leer la misma hora con sus microsegundos y
   })
   if (!guardado.ok) throw new Error(guardado.error.mensaje)
   expect(guardado.data).not.toBe(creado.data)
-  expect((await leer()).borrador?.plantilla?.nota).toBe('Nota dos')
+  expect(notaDe((await leer()).borrador)).toBe('Nota dos')
 })
 
 test('E2: guardar con la esperada vieja, o crear otra vez con nula, es un conflicto que no pisa nada', async () => {
@@ -95,7 +102,7 @@ test('E2: guardar con la esperada vieja, o crear otra vez con nula, es un confli
 
   const despues = await leer()
   expect(despues.borrador?.actualizadoEn).toBe(vigente)
-  expect(despues.borrador?.plantilla?.nota).toBe('Nota dos')
+  expect(notaDe(despues.borrador)).toBe('Nota dos')
 })
 
 test('E3: un rechazo va al campo que dice la base: la forma al guardar, lo de la fórmula al publicar, la nota en blanco al campo nota', async () => {

@@ -59,7 +59,9 @@ async function leadConOportunidades(
 }
 
 const items = (page: Page) => page.getByRole('article')
-const verMas = (page: Page) => page.getByRole('button', { name: 'Ver más' })
+// El de la sección: la columna de la ficha tiene su propio «Ver más» (el de los datos del lead).
+const verMas = (page: Page) =>
+  page.getByRole('region', { name: 'Tus oportunidades' }).getByRole('button', { name: 'Ver más' })
 const titulosVisibles = (page: Page) => items(page).evaluateAll((a) => a.map((x) => x.ariaLabel))
 // «Ver más» hasta tener `cuantas` a la vista. Antes de hidratar el clic no vale: se insiste hasta que la lista crece (con una lectura en
 // vuelo otro clic no pide nada, y al llegar todas el botón ya no está).

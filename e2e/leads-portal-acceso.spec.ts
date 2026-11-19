@@ -54,8 +54,8 @@ test('un compartido con el permiso ve el bloque y el estado, sin hacer clic', as
   const lead = await leadCompartido(`Portal Compartido ${info.project.name}`)
   await entrar(page, t.paco.email)
   await irAFicha(page, lead.id)
-  await expect(seccionPortal(page).getByText('Activo', { exact: true })).toBeVisible()
-  await expect(seccionPortal(page).getByText(/, por Pía Portal/)).toBeVisible()
+  await expect(seccionPortal(page).getByText(/^Tiene acceso desde /)).toBeVisible()
+  await expect(seccionPortal(page).getByText(/lo dio Pía Portal/)).toBeVisible()
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -65,7 +65,7 @@ test('sin el permiso, aunque tenga la cartera: ni el bloque, ni por la URL', asy
   const lead = await leadCompartido(`Portal Sin Permiso ${info.project.name}`)
   await entrar(page, t.personas.berta)
   await irAFicha(page, lead.id, '?seccion=portal')
-  await expect(page.getByText('Teléfonos', { exact: true }).first()).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Datos', level: 2 })).toBeVisible()
   await expect(seccionPortal(page)).toHaveCount(0)
 })
 
@@ -76,7 +76,7 @@ for (const quien of ['supervision', 'duena'] as const) {
     const lead = await leadCompartido(`Portal Sin Cartera ${quien} ${info.project.name}`)
     await entrar(page, quien === 'supervision' ? t.supervision.email : t.personas.duena)
     await irAFicha(page, lead.id, '?seccion=portal')
-    await expect(page.getByText('Teléfonos', { exact: true }).first()).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Datos', level: 2 })).toBeVisible()
     await expect(seccionPortal(page)).toHaveCount(0)
     // Ni por la base: el estado (con el código) no se le entrega.
     const { error } = await rpcComo(

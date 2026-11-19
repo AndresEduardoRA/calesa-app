@@ -1,10 +1,8 @@
 'use client'
 
 import type { Route } from 'next'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { RUTAS, conVuelta } from '@/shared/lib/rutas'
-import { buttonVariants } from '@/shared/ui/button'
+import { RUTAS } from '@/shared/lib/rutas'
 import { CLAVE_DE_SECCION, type LeadDeFicha } from '../../../entities/ficha'
 import { motivoParaNoEnviar } from '../../../entities/papelera'
 import type { Etiquetas } from '../../etiquetas/hooks/use-etiquetas'
@@ -16,7 +14,6 @@ import { rutaDeLasOportunidadesDe } from '../../../entities/oportunidad-rapida'
 import { edicionDelMenu } from '../../../entities/acciones-de-lead'
 import { useAbrirEnLaFicha } from '../hooks/use-abrir-en-la-ficha'
 import { usePanelDeLead } from '../hooks/use-panel-de-lead'
-import { BotonEditarLead } from './boton-editar-lead'
 
 type Props = {
   ficha: LeadDeFicha
@@ -32,17 +29,6 @@ type Props = {
   paraCotizar: string | null
   // `/actividad` de este lead, sólo con `actividad.ver` (la compone la página: `leads` no conoce `actividad`); null si no la ve.
   paraActividad: string | null
-}
-
-function EnlaceACotizar({ ruta }: { ruta: string }) {
-  return (
-    <Link
-      href={ruta as Route}
-      className={buttonVariants({ variant: 'outline', className: 'h-11 md:h-9' })}
-    >
-      Cotizar
-    </Link>
-  )
 }
 
 // Enviar a la papelera desde la ficha: con un vehículo vinculado se apaga con su motivo y ofrece ir a «Vehículos» (salta a Relacionados,
@@ -63,8 +49,8 @@ function papeleraDeLaFicha(
   }
 }
 
-// Lo que se puede hacer con el lead desde su cabecera: «Editar», «Cotizar» (sólo a quien cotiza) y el «⋯», con la lista de siempre (`accionesDeLead()`):
-// «Cotizar lead» (con `returnTo` a la ficha) y «Editar lead» o «Editar teléfonos» (el panel de edición, `?panel=editar-lead`) también están ahí. Anotar y agendar
+// El «⋯» de la cabecera de la ficha, con la lista de siempre (`accionesDeLead()`): «Cotizar lead» (sólo a quien cotiza, con `returnTo` a
+// la ficha) y «Editar lead» o «Editar teléfonos» (el panel de edición, `?panel=editar-lead`) están ahí y en ningún otro botón. Anotar y agendar
 // abren su modal (del bloque «Seguimientos y recordatorios») y llevan la página a ese bloque, sin navegar. «Nueva oportunidad…» abre su modal (con el aviso de las que ya tiene) donde
 // se está, y «Ver oportunidades» va a su sección. Enviar a la papelera se hace y ofrece «Deshacer»; después lleva al
 // listado, porque la ficha ya no existe para nadie. Con un vehículo vinculado que quien mira ve, se apaga con el motivo y ofrece ir a
@@ -91,11 +77,6 @@ export function AccionesDeLaFicha(props: Props) {
   const enLaFicha = useAbrirEnLaFicha(irA)
   return (
     <>
-      {puedeEditar ? <BotonEditarLead /> : null}
-      {paraCotizar ? (
-        // Vuelve a la ficha, como «Cotizar lead» del «⋯».
-        <EnlaceACotizar ruta={conVuelta(paraCotizar, `${RUTAS.leads}/${ficha.id}`)} />
-      ) : null}
       <MenuDeLeadConMarcas
         leadId={ficha.id}
         nombre={ficha.nombre}
@@ -103,7 +84,6 @@ export function AccionesDeLaFicha(props: Props) {
         etiquetas={etiquetas}
         alGestionar={alGestionar}
         puedeEnviar={puedeEnviarAPapelera}
-        conBorde
         paraCotizar={paraCotizar}
         acciones={
           puedeEditar

@@ -144,7 +144,7 @@ test('todo a la vista sin un clic: la izquierda, el índice y los cuatro bloques
   await entrar(page, t.personas.duena)
   await irAFicha(page, completo.id)
   await expect(tituloDeLaFicha(page, completo.nombre)).toBeVisible()
-  for (const nombre of ['Datos', 'Teléfonos', 'Quién lo tiene', 'Acceso al portal']) {
+  for (const nombre of ['Datos', 'Quién lo tiene', 'Acceso al portal']) {
     await expect(titulo(page, nombre)).toBeAttached()
   }
   await expect(indice(page).getByRole('link')).toHaveText(BLOQUES.map(([etiqueta]) => etiqueta))
@@ -159,7 +159,7 @@ test('todo a la vista sin un clic: la izquierda, el índice y los cuatro bloques
   await expect(page.getByRole('button', { name: 'Ver todos los seguimientos' })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Vinculado', exact: true })).toBeVisible()
   await expect(
-    page.getByRole('region', { name: 'Acceso al portal' }).getByText('Activo', { exact: true }),
+    page.getByRole('region', { name: 'Acceso al portal' }).getByText(/^Tiene acceso desde /),
   ).toBeVisible()
   await expect(page.locator('main details')).toHaveCount(0)
   await expect(page.getByRole('tablist')).toHaveCount(0)

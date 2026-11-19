@@ -14,3 +14,10 @@ export const EdicionFueraDeLaFichaDiferida = diferido(
   () => import('./edicion-fuera-de-la-ficha').then((modulo) => modulo.EdicionFueraDeLaFicha),
   { aviso: 'pantalla' },
 )
+
+// «Ver más» de los datos del lead (los grupos del layout y los teléfonos) se pide al abrirse: no viaja en el documento de la ficha. Se monta
+// con `useAbiertoAlgunaVez()`; sin red, lo dice sobre la pantalla con «Reintentar».
+export const ModalDeDatosDelLeadDiferido = diferido(
+  () => import('./modal-de-datos-del-lead').then((modulo) => modulo.ModalDeDatosDelLead),
+  { aviso: 'pantalla' },
+)

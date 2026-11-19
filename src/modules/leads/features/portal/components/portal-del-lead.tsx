@@ -1,19 +1,28 @@
 'use client'
 
 import { useAction } from 'next-safe-action/hooks'
-import { KeyRoundIcon } from 'lucide-react'
+import { KeyRoundIcon, LockOpenIcon } from 'lucide-react'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
 import { Button } from '@/shared/ui/button'
+import { TITULO_DE_BLOQUE } from '@/shared/ui/ficha-en-bloques'
+import { MasAcciones, type AccionDeMenu } from '@/shared/ui/lista'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
-import { EstadoVacio } from '@/shared/ui/estados'
 import { avisarError, avisarExito } from '@/shared/ui/toasts'
-import type { AccesoDelCliente } from '../../../entities/portal'
+import {
+  ETIQUETA_DEL_MENU_DEL_PORTAL,
+  ETIQUETA_DEL_PRINCIPAL,
+  accionesDelPortal,
+  type AccesoDelCliente,
+  type LineaDelMenuDelPortal,
+  type PrincipalDelPortal,
+} from '../../../entities/portal'
 import { MENSAJE_DE_VALIDACION } from '../../ficha/resultado'
 import { desbloquearPortal } from '../actions/desbloquear-portal'
 import { usePanelDePortal } from '../hooks/use-panel-de-portal'
+import { BotonCopiar } from './boton-copiar'
 import { DialogoDeOtorgarDiferido } from './diferidos'
 import { DialogoDeRevocar } from './dialogo-de-revocar'
-import { TarjetaDelAcceso } from './tarjeta-del-acceso'
+import { EstadoDelPortal } from './estado-del-portal'
 
 type Props = {
   leadId: string
@@ -26,14 +35,58 @@ type Props = {
   mensaje: string | null
 }
 
-// La sección «Portal» de la ficha (sólo con el lead en la cartera y `leads.portal.gestionar`): cómo está
-// el acceso del cliente y lo que se puede hacer. Nunca se dibuja vacía: sin acceso, explica y ofrece
-// darlo.
+const PRINCIPAL = 'h-11 w-full md:h-9'
+
+// El botón principal del bloque, a todo el ancho: compartir el código del acceso que vale, desbloquearlo o dar uno.
+function BotonPrincipal({
+  acceso,
+  principal,
+  enCurso,
+  alDarAcceso,
+  alDesbloquear,
+}: {
+  acceso: AccesoDelCliente
+  principal: PrincipalDelPortal
+  enCurso: boolean
+  alDarAcceso: () => void
+  alDesbloquear: () => void
+}) {
+  if (principal === 'compartir_acceso' && acceso.estado !== 'sin_acceso') {
+    return (
+      <BotonCopiar
+        texto={acceso.codigo}
+        etiqueta={ETIQUETA_DEL_PRINCIPAL.compartir_acceso}
+        copiado="Código copiado"
+        variante="default"
+        className={PRINCIPAL}
+      />
+    )
+  }
+  if (principal === 'desbloquear') {
+    return (
+      <Button className={PRINCIPAL} onClick={alDesbloquear} disabled={enCurso}>
+        <LockOpenIcon aria-hidden />
+        {ETIQUETA_DEL_PRINCIPAL.desbloquear}
+      </Button>
+    )
+  }
+  return (
+    <Button className={PRINCIPAL} onClick={alDarAcceso}>
+      <KeyRoundIcon aria-hidden />
+      {ETIQUETA_DEL_PRINCIPAL.dar_acceso}
+    </Button>
+  )
+}
+
+// «Acceso al portal» de la ficha (sólo con el lead en la cartera y `leads.portal.gestionar`), de un vistazo: el título, una línea de estado
+// y un botón principal a todo el ancho (`accionesDelPortal()`): «Dar acceso», «Compartir acceso» (copia el código) o «Desbloquear». Lo demás
+// («Cambiar la clave», «Quitar el acceso») va en el «⋯» del título, que en el DOM sigue al botón: Tab llega antes a lo principal.
 export function PortalDelLead({ leadId, leadNombre, acceso, empresa, direccion, mensaje }: Props) {
   const panel = usePanelDePortal()
   const desbloqueo = useAction(desbloquearPortal)
   const vigente = acceso.estado === 'activo' || acceso.estado === 'bloqueado'
   const montarOtorgar = useAbiertoAlgunaVez(panel.otorgando)
+  const acciones = accionesDelPortal(acceso)
 
   async function desbloquear() {
     const envio = await enviarAccion(desbloqueo.executeAsync({ leadId }), MENSAJE_DE_VALIDACION)
@@ -44,36 +97,45 @@ export function PortalDelLead({ leadId, leadNombre, acceso, empresa, direccion, 
     avisarExito('Listo: ya puede volver a intentar.')
   }
 
+  const alElegir: Record<LineaDelMenuDelPortal, () => void> = {
+    cambiar_clave: panel.abrirOtorgar,
+    quitar_acceso: panel.abrirRevocar,
+  }
+  const menu: AccionDeMenu[] = acciones.menu.map((clave) => ({
+    tipo: 'accion',
+    clave,
+    etiqueta: ETIQUETA_DEL_MENU_DEL_PORTAL[clave],
+    alElegir: alElegir[clave],
+    despuesDeCerrar: true,
+    destructiva: clave === 'quitar_acceso',
+    deshabilitada: desbloqueo.isExecuting,
+  }))
+
   return (
-    <section aria-labelledby="titulo-portal" className="grid gap-4">
-      <div className="grid gap-1">
-        <h2 id="titulo-portal" className="text-(length:--text-lg) font-semibold text-(--color-ink)">
-          Acceso al portal
-        </h2>
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          Con un código y una clave, el cliente ve en la web cómo va su compra.
-        </p>
+    <section
+      aria-labelledby="titulo-portal"
+      className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-3"
+    >
+      <h2 id="titulo-portal" className={TITULO_DE_BLOQUE}>
+        Acceso al portal
+      </h2>
+      <div className="col-span-2">
+        <EstadoDelPortal acceso={acceso} />
       </div>
-      {acceso.estado === 'sin_acceso' ? (
-        <EstadoVacio
-          Icono={KeyRoundIcon}
-          titulo="Todavía no tiene acceso al portal"
-          descripcion="Al dárselo verás un código para dictarle y un texto listo para mandarle por WhatsApp."
-          accion={
-            <Button className="h-11 md:h-9" onClick={panel.abrirOtorgar}>
-              Dar acceso
-            </Button>
-          }
-        />
-      ) : (
-        <TarjetaDelAcceso
+      <div className="col-span-2">
+        <BotonPrincipal
           acceso={acceso}
+          principal={acciones.principal}
           enCurso={desbloqueo.isExecuting}
-          alVolverAOtorgar={panel.abrirOtorgar}
-          alRevocar={panel.abrirRevocar}
+          alDarAcceso={panel.abrirOtorgar}
           alDesbloquear={() => void desbloquear()}
         />
-      )}
+      </div>
+      {menu.length > 0 ? (
+        <div className="col-start-2 row-start-1 -my-2 -mr-2 flex">
+          <MasAcciones nombre="acceso al portal" acciones={menu} />
+        </div>
+      ) : null}
       {montarOtorgar ? (
         <DialogoDeOtorgarDiferido
           abierto={panel.otorgando}

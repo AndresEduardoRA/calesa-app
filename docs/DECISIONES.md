@@ -335,8 +335,15 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### Listas, embudos y plantillas
 
-- **La ficha del lead en dos columnas, todo a la vista.** A la izquierda, pegajosa (`minmax(0, 24rem)`, se desplaza sola si no cabe), lo que identifica: cabecera, «Datos» sin plegar, «Teléfonos» de sólo lectura,
-  «Quién lo tiene» y «Acceso al portal»; a la derecha un índice pegajoso de anclas y los bloques en su orden. El corte lo decide el contenedor (56 rem, el
+- **La ficha del lead en dos columnas: la izquierda, lo clave; la derecha, todo a la vista.** A la izquierda, pegajosa (`minmax(0, 24rem)`, se desplaza
+  sola si no cabe), lo que identifica, como la ficha del vehículo: el nombre con el «⋯» arriba a la derecha (sin «Cotizar» ni «Editar» sueltos: están en
+  el «⋯»), quién lo tiene en una línea bajo el nombre, los datos clave del lead (tipo, origen, país, teléfono principal y «Notas» a lo ancho) con «Ver más»
+  (un modal por la URL, `?ver=datos`, con los grupos del layout y los teléfonos), «Quién lo tiene» con «Compartir» y «Transferir» a todo el ancho y
+  «Acceso al portal» con una línea de estado y un botón principal (lo demás en su «⋯»); a la derecha un índice pegajoso de anclas y los bloques en su orden.
+  El «⋯» va en la fila del nombre y no flotando en la esquina (taparía un nombre largo al 200 %); «Ver más» es un modal y no un acordeón en el lugar
+  (el acordeón metería los grupos en el documento, que está al borde de su tope). «Compartir acceso» copia el código y no usa la hoja de compartir del
+  navegador: la clave de un acceso que ya existe no se conoce (se vio una vez, al otorgarlo). «Cambiar la clave» es volver a otorgar (el mismo
+  diálogo). El país del teléfono se resuelve con la tabla de países después de hidratar: hasta que llega se ve «—». El corte lo decide el contenedor (56 rem, el
   de la unidad de logística): a 1280 px dos columnas, a 1024 y en el celular una, y con el texto al 200 % vuelve a una sin ensanchar. El marco vive en
   `shared` (`ficha-en-bloques`) para que la ficha del vehículo use el mismo. **El portal va en la izquierda**, bajo «Quién lo tiene»: desde «Saltar al
   contenido» se llega a «Dar acceso» sin pasar por el índice ni navegar. **«Vehículos» y Relacionados se funden**: el bloque es
@@ -525,7 +532,26 @@ las trampas, en `docs/LECCIONES.md`.
 - **Tope de 40 ítems por diseño.** El borrador lo admite; publicar, el ⚙ y revertir lo rechazan (`_diseno_maximo_de_items()`). Como la cobertura obliga a dibujar inputs y banderas, una fórmula con más de 40 tampoco se publica.
 - **«Se deduce restando» es sólo un aviso** sobre sumas directas; la autoridad es la visibilidad que compila la base al publicar.
 - **La plantilla lee la fórmula con lo que mira `validarPlantilla()`** (`looseObject`, `lectura-sobre.ts`), no con `esquemaDefinicion`: no se rompe con cada cambio de la fórmula. Guardar valida la forma; lo que cruza con la fórmula lo rechaza publicar.
-- **Con qué nace el editor de plantilla:** el borrador; si no hay, copia de la publicada; si no, la omisión. Una versión ilegible no se edita a medias. El PT409 no dice quién (la tabla no lo guarda).
+- **Con qué nace el editor de plantilla:** el borrador; si no hay (o no se lee), copia de la publicada; si no, la omisión. Una versión ilegible no se edita a
+  medias. El editor escribe **sólo la forma 2**: una forma 1 se alinea con la fórmula y se convierte al abrirla, lo dice y no se guarda sola; si lo
+  convertido no entra en la grilla (120 filas, 1.000 celdas), se toman los primeros 4 miembros de cada grupo y, si tampoco, sólo el total. El PT409 no dice
+  quién (la tabla no lo guarda).
+- **La referencia del lienzo se compone en `src/app`** (cruza el listado, la hoja guardada, `leads` y `vehiculos`, como el PDF), sin tocar la base: la
+  página la pide sin esperarla y la sección la espera en paralelo con la plantilla. Su tamaño es `UNA` del área listado (una cotización, no una página).
+- **El tope real de la cuadrícula son los 24 KiB, no las 1.000 celdas:** una celda mínima ocupa unos 80 bytes del texto del `jsonb`. Una operación del
+  editor se rechaza sólo si pasa un tope **y crece**: una convertida que ya los pasa se puede achicar.
+- **Las columnas no tienen rótulo en el esquema:** en pantalla dicen su letra (A a P) y, si el id es de la conversión, su nombre («B · Concepto»).
+- **Como Excel, con lo que ahorra bytes:** Supr sobre una celda sin estilo ni combinación la quita (se dibuja igual); tipear una letra sobre una celda de
+  texto o vacía empieza a escribir reemplazando; Enter confirma y deja el cursor en la misma celda; sin un bloque copiado en el editor, Ctrl+V pega el texto
+  del sistema en la celda activa.
+- **«Publicar…» queda a la vista** junto a «Guardar borrador» (cambia la imagen que recibe el cliente, como en V1) y «Descartar borrador…» va al «⋯».
+- **El menú contextual del lienzo sale de `DropdownMenu`** con un disparador invisible sobre la celda: no se suma un `context-menu` a `shared/ui`.
+- **Un rechazo de publicar con su `donde`** (una celda, fila o columna) ofrece «Ir a la celda», que lo elige en el lienzo.
+- **Guardar la tarjeta no remonta el editor:** lo elegido y el historial de deshacer siguen; la `key` del editor cambia sólo con una versión que no es la
+  que acaba de guardar (la de otra persona tras «Recargar», ninguna tras publicar o descartar). «Hay cambios» compara sin el orden de las claves.
+- **El tope del primer HTML de la pestaña «Tarjeta» se fija con la cuadrícula más grande** (16 × 120 y lo que entra en 24 KiB, con 500 miembros): el
+  escenario cambió con la forma 2 y el contexto reducido lleva todos los nodos del nivel «todos» (los ofrece «Dato»), así que el tope es lo medido más un
+  5 % (`docs/RENDIMIENTO.md`), no el de los bloques más un 5 %.
 - **La tarjeta de la cotización es una cuadrícula declarativa.** La forma 2 de la plantilla (columnas, filas y celdas libres, como en V1) se valida
   espejo en TS y SQL con listas cerradas (variables, `mostrar`, `ocultar_si`, 8 tamaños de letra) y nodos por id; los colores son una clave del
   catálogo o `auto`, nunca un hex suelto (un texto libre podría nombrar cualquier nodo; un hex, saltarse el catálogo). Un texto no mezcla texto y
@@ -536,7 +562,7 @@ las trampas, en `docs/LECCIONES.md`.
   Los mensajes de la forma 2 nombran la celda o la fila, nunca el nodo: no exponen un id restringido. Sin subtotales por grupo: serían dinero calculado
   fuera de la base.
 - **La forma 1 se convierte al leerla y no se migra.** `cotizacion_tarjeta` convierte la publicada (`_plantilla_convertir()`, espejo
-  `convertirPlantilla()`) con la misma apariencia y la vuelve a validar como cuadrícula; el editor de hoy sigue escribiendo la forma 1. Los ids de la
+  `convertirPlantilla()`) con la misma apariencia y la vuelve a validar como cuadrícula. Los ids de la
   conversión son deterministas (el de la fila sale del nodo, `n_<nodo>`; el de la celda, de su fila y su columna; uno de más de 41 caracteres se acorta
   con un FNV-1a de 32 bits espejado) porque los retoques por cotización y el editor de la cuadrícula se apoyan en ellos. El título de un grupo, su
   tipo de cambio y su plazo son celdas que abarcan las filas de sus miembros (no una fila de encabezado: `ocultar_si` mira un solo nodo y el encabezado

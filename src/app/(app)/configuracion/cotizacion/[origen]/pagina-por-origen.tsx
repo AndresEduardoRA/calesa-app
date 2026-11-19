@@ -16,7 +16,8 @@ export async function PaginaPorOrigen({
 }: {
   id: string
   pestana: PestanaDeCotizacion
-  ancho?: 'angosto' | 'ancho'
+  // `completo`: sin tope de ancho (la tarjeta).
+  ancho?: 'angosto' | 'ancho' | 'completo'
   contenido: (origen: OrigenDeCotizacion) => ReactNode
 }) {
   const abierto = await abrirOrigenDeCotizacion(id, pestana)

@@ -11,15 +11,18 @@ import { usePaises } from '../../telefono/hooks/use-paises'
 // Un número de la ficha: enlace de llamada para la cartera, texto para quien lo ve enmascarado. La
 // base ya entregó cada número como corresponde. Con la tabla de países (se pide después de
 // hidratar: el documento no cambia) el número se parte por su código y dice de qué país es, también
-// el de otro país. El enmascarado («•») no lleva país: con tres dígitos no es seguro.
+// el de otro país. El enmascarado («•») no lleva país: con tres dígitos no es seguro. `sinPais`: el
+// país ya se dice aparte (los datos clave de la ficha), el número sólo se parte por su código.
 export function NumeroDeTelefono({
   numero,
   codigoDePais,
   llamable,
+  sinPais = false,
 }: {
   numero: string
   codigoDePais: string | null
   llamable: boolean
+  sinPais?: boolean
 }) {
   const tabla = usePaises(numero !== '' && !numero.includes('•'))
   let texto = telefonoDeFicha(numero, codigoDePais)
@@ -47,7 +50,7 @@ export function NumeroDeTelefono({
   return (
     <>
       {numeroVisible}
-      {pais ? <span className="text-(--color-ink-soft)"> · {pais}</span> : null}
+      {pais && !sinPais ? <span className="text-(--color-ink-soft)"> · {pais}</span> : null}
     </>
   )
 }

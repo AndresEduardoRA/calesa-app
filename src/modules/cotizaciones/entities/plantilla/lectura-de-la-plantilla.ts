@@ -1,7 +1,9 @@
-// Lo que lee el editor de la plantilla de la tarjeta de un origen (4.19-3a): el borrador y la publicada ya leídos con `formaDePlantilla()`, y el contexto con el que
+// Lo que lee el editor de la plantilla de la tarjeta de un origen (4.19-3a): el borrador y la publicada ya leídos en una de sus dos formas, y el contexto con el que
 // `validarPlantilla()` las juzga (la fórmula publicada del origen y el catálogo de tonos). Reglas puras, sin I/O: las consultas están en `infra/plantilla/`.
 import { z } from 'zod'
 import { TOPE_DE_COLORES } from '../colores'
+import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
+import { formaDeCuadricula } from './forma-de-cuadricula'
 import { formaDePlantilla, type Plantilla } from './forma-de-plantilla'
 import type { DefinicionParaPlantilla, DisenoParaPlantilla } from './nodos-de-plantilla'
 import { esDeLaCuadricula, type ContextoDePlantilla } from './validar-plantilla'
@@ -24,16 +26,22 @@ export type TonoDelCatalogo = {
   readonly oscuro?: ColoresDelTonoDelCatalogo
 }
 
+// Lo que una versión guardada tiene: una plantilla de la forma 1 (la de grupos, que el editor convierte al abrirla), una cuadrícula (la forma 2, la que el editor
+// escribe) o, si ya no tiene ninguna de las dos formas, el motivo (el editor no la dibuja a medias).
+export type ContenidoDeLaVersion =
+  | { readonly forma: 1; readonly plantilla: Plantilla }
+  | { readonly forma: 2; readonly cuadricula: PlantillaEnCuadricula }
+  | { readonly motivo: string }
+
 // Una plantilla del origen (el borrador o la publicada). Las dos horas son el texto que da la base, con sus microsegundos: la versión esperada de guardar, publicar y
-// descartar es ese texto y nunca pasa por `Date`. `plantilla` es nula si lo guardado ya no tiene la forma (el editor no la dibuja a medias) y `motivo` dice por qué.
+// descartar es ese texto y nunca pasa por `Date`.
 export type VersionDePlantilla = {
   readonly id: string
   readonly version: number | null
   readonly nota: string | null
   readonly actualizadoEn: string
   readonly publicadoEn: string | null
-  readonly plantilla: Plantilla | null
-  readonly motivo: string | null
+  readonly contenido: ContenidoDeLaVersion
 }
 
 export type FilaDeVersionDePlantilla = {
@@ -57,6 +65,9 @@ export const esquemaDefinicionParaPlantilla = z.looseObject({
       // Lo que mira la conversión a la cuadrícula para la vista previa: la descripción y la variante con sus títulos.
       descripcion: z.string().nullish(),
       tipo: z.string().nullish(),
+      // El par porcentaje-monto: lo que la cuadrícula puede mostrar como «porcentaje».
+      op: z.string().nullish(),
+      pct: z.string().nullish(),
       opciones: z.array(z.looseObject({ clave: z.string(), titulo: z.string() })).nullish(),
     }),
   ),
@@ -106,12 +117,8 @@ export type PlantillaDelOrigen = {
   readonly tonos: readonly TonoDelCatalogo[]
 }
 
-// El editor de hoy escribe la forma 1: una cuadrícula guardada (la forma 2) llega como «la que perdió la forma», con este motivo (D14 de T310). Publicar desde
-// aquí la reemplaza hasta que llegue el editor de la cuadrícula (`docs/PENDIENTES.md`).
-export const MOTIVO_DE_LA_CUADRICULA =
-  'Esta versión es una cuadrícula: todavía no se edita desde aquí.'
-
-// Nunca lanza: lo guardado que no pasa la forma es `plantilla: null` con el mensaje del rechazo.
+// Nunca lanza: lo guardado que no pasa la forma es `{ motivo }` con el mensaje del rechazo. Una cuadrícula guardada ya la midió la base: no se vuelve a medir contra
+// los 24 KiB (un espejo que contara un byte de más la dejaría sin abrir).
 export function versionDePlantilla(fila: FilaDeVersionDePlantilla): VersionDePlantilla {
   const comun = {
     id: fila.id,
@@ -120,13 +127,21 @@ export function versionDePlantilla(fila: FilaDeVersionDePlantilla): VersionDePla
     actualizadoEn: fila.actualizadoEn,
     publicadoEn: fila.publicadoEn,
   }
-  if (esDeLaCuadricula(fila.definicion))
-    return { ...comun, plantilla: null, motivo: MOTIVO_DE_LA_CUADRICULA }
+  if (esDeLaCuadricula(fila.definicion)) {
+    const cuadricula = formaDeCuadricula(fila.definicion, { conTope: false })
+    return {
+      ...comun,
+      contenido: cuadricula.ok
+        ? { forma: 2, cuadricula: cuadricula.plantilla }
+        : { motivo: cuadricula.error.mensaje },
+    }
+  }
   const forma = formaDePlantilla(fila.definicion)
   return {
     ...comun,
-    plantilla: forma.ok ? forma.plantilla : null,
-    motivo: forma.ok ? null : forma.error.mensaje,
+    contenido: forma.ok
+      ? { forma: 1, plantilla: forma.plantilla }
+      : { motivo: forma.error.mensaje },
   }
 }
 

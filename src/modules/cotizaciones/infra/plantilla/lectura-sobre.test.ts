@@ -116,7 +116,7 @@ describe('leerPlantillaSobre', () => {
     if (!r.ok) throw new Error(r.error.mensaje)
     expect([...tablas].sort()).toEqual(['formulas', 'plantillas_tarjeta', 'tonos'])
     expect(r.data.borrador?.actualizadoEn).toBe(HORA)
-    expect(r.data.borrador?.plantilla).toEqual(PLANTILLA)
+    expect(r.data.borrador?.contenido).toEqual({ forma: 1, plantilla: PLANTILLA })
     expect(r.data.publicada).toMatchObject({
       id: PUBLICADA,
       version: 2,
@@ -172,8 +172,7 @@ describe('leerPlantillaSobre: lo que no se esperaba', () => {
     })
     const r = await leerPlantillaSobre(cliente, ORIGEN)
     if (!r.ok) throw new Error(r.error.mensaje)
-    expect(r.data.borrador).toMatchObject({
-      plantilla: null,
+    expect(r.data.borrador?.contenido).toEqual({
       motivo: 'La plantilla no tiene la forma esperada.',
     })
   })

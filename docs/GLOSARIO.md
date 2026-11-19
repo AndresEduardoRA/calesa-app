@@ -275,9 +275,15 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   Tarjetas, también la del kanban): arriba a la derecha; con `sobreImagen`, flotando sobre la foto con fondo translúcido y borde, y la casilla en
   la esquina izquierda como espejo. En la tabla el lugar es la columna pegada (`CeldaPegada lado="acciones"`).
 - **Filtro descartado** — `filtrosDescartados()` / `<AvisoDeFiltrosDescartados>`: filtro de la URL sobre un campo desactivado o eliminado.
-- **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: en dos columnas (`<FichaEnDosColumnas>`): a la izquierda cabecera, «Datos»,
-  «Teléfonos», «Quién lo tiene» y «Acceso al portal»; a la derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados,
-  cotizaciones). Edición en `?panel=editar-lead`.
+- **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: en dos columnas (`<FichaEnDosColumnas>`): a la izquierda la cabecera (el nombre
+  con el «⋯» arriba a la derecha y quién lo tiene debajo), «Datos» (los datos clave del lead y «Ver más»), «Quién lo tiene» y «Acceso al portal»; a la
+  derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados, cotizaciones). Edición en `?panel=editar-lead`.
+- **Datos clave del lead** — `entities/datos-clave-del-lead.ts` (`campoDelPais()`, `campoDeNotas()`, `datoDelCampo()`, `paisDeLosDatos()`),
+  `<DatosClaveDelLead>`: lo que «Datos» de la ficha del lead muestra a la vista: tipo, origen, país y teléfono principal, y «Notas» a lo ancho. «País» y
+  «Notas» son campos del layout de leads encontrados por su etiqueta o clave (sin tildes ni mayúsculas; «Notas» sólo si es texto largo); sin «País» o
+  vacío, el país del teléfono principal. No son los «Datos clave» del vehículo: éstos son fijos y no se eligen.
+- **Ver más (ficha del lead)** — `?ver=datos` (`CLAVE_DE_VER`, `VER_DATOS`), `<ModalDeDatosDelLead>`: el modal de sólo lectura con todos los datos del
+  lead (el alta, los grupos del layout y los teléfonos con sus extras), con «Editar» para quien puede. Su propia clave en la URL: no pisa `?panel=`.
 - **Ficha del vehículo** — `/vehiculos/[id]` / `BLOQUES_DE_LA_FICHA`, `bloquesDeQuienMira()`, `<FichaEnDosColumnas>`: en dos columnas; a la izquierda la
   cabecera (`<CabeceraDeVehiculo>`), «Cotización aprobada», la subasta y «Datos principales»; a la derecha el índice y sólo lo de ventas, por permiso
   («Cotizaciones de este vehículo», «Relacionados», «Actividad reciente», «Vitrina»). `?seccion=<ancla>` lleva al bloque. No: «detalle del vehículo».
@@ -451,11 +457,19 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Fila de la tarjeta** — `FilaDeLaTarjeta`, `definicion.filas[]` de la forma 2: una fila con su alto y su «Ocultar si…». No es la **Fila (de la
   fórmula)**.
 - **Ocultar si…** — `ocultar_si` de una fila de la tarjeta (`nunca`, `no_aplica`, `no_aplica_o_cero`): la fila no se dibuja si su nodo no aplica
-  en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0; las celdas combinadas que la cruzan se acortan. La vista previa
-  de Configuración dice cuáles: «Ocultas con esta referencia (N)».
+  en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0; las celdas combinadas que la cruzan se acortan. El lienzo de
+  Configuración dice cuáles y por qué con la referencia elegida: «Ocultas con esta referencia (N)».
 - **Dato de la tarjeta** — `{tipo: 'dato', …}` de una celda: una variable de la cotización (`VARIABLES_DE_LA_TARJETA`: `fecha_larga`, `numero`,
   `asesor_nombre`…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
   `plazo`). Un texto no mezcla texto y variables.
+- **Lienzo** — `LienzoDeLaPlantilla` (área `tarjeta`) con la capa del editor (`CapaDeEdicion`, `role="grid"`): la tarjeta de la cotización a escala
+  que se edita en Configuración › Cotización › un origen › Tarjeta, como un Excel (cabeceras de columna, asas de fila, selección, atajos). La dibuja el
+  mismo modelo de dibujo que el PDF. No es el lienzo del diagrama del flujo.
+- **Rango** — `Seleccion` de tipo `celdas` (`entities/plantilla/edicion/seleccion.ts`): las celdas de la tarjeta elegidas juntas en el lienzo (Shift+clic,
+  arrastrar, Shift+flechas); se agranda hasta contener entera cada combinación que corta. Lo que se combina, se vacía, se copia o recibe un formato.
+- **Referencia de la tarjeta** — `ReferenciaDeLaTarjeta` (`entities/referencia-de-la-tarjeta.ts`): con qué cifras se dibuja el lienzo: la cotización más
+  reciente del origen que quien configura ve (lo guardado, como el PDF) o las cifras de ejemplo (`?referencia=ejemplo`). Decide qué filas se ocultan:
+  «Ocultas con esta referencia (N)».
 - **Geometría de la tarjeta** — `Geometria`, `geometriaDeLaTarjeta()`: el único modelo de dibujo de la tarjeta de la cotización: el ancho, el alto
   y, por celda visible, su rectángulo en px, su contenido ya resuelto y su estilo, más las filas ocultas. Lo pintan con posiciones absolutas el HTML,
   el PDF (`DocumentoDeLaTarjeta`) y la imagen (`pngDeLaTarjeta()`).

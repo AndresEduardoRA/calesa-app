@@ -34,7 +34,7 @@ describe('geometriaDeLaTarjeta', () => {
   it('el ancho es la suma de las columnas y el alto, el de las filas visibles; cada celda con su rectángulo y su combinación', () => {
     const g = geometria()
     expect(g.ancho).toBe(490)
-    // fees no aplica (sin estado): su fila no se dibuja (25 px menos).
+    // fees no aplica (fuera de la variante): su fila no se dibuja (25 px menos).
     expect(g.alto).toBe(25 + 25 + 25 + 25 + 54 + 25 + 40)
     expect(celda(g, 'c_fecha')).toMatchObject({ x: 290, y: 0, ancho: 200, alto: 25 })
     expect(celda(g, 'c_flete')).toMatchObject({ x: 100, y: 75, ancho: 190, alto: 25 })
@@ -45,11 +45,19 @@ describe('geometriaDeLaTarjeta', () => {
     const g = geometria()
     expect(celda(g, 'c_compra')).toMatchObject({ y: 50, alto: 25 })
     expect(g.celdas.some((c) => c.fila === 'n_fees')).toBe(false)
+    // Con `no_aplica`, el título de la opción elegida de la variante (la lectura de prueba la trae y el cálculo eligió «gasolina»).
     expect(g.ocultas).toEqual([
-      { fila: 'n_fees', etiqueta: 'Fees', delNodo: 'Fees', motivo: 'no_aplica' },
+      {
+        fila: 'n_fees',
+        etiqueta: 'Fees',
+        delNodo: 'Fees',
+        motivo: 'no_aplica',
+        variante: 'COTIZACIÓN A GASOLINA',
+      },
     ])
     const sinRemate = calculoDePrueba({
       estados: new Map([
+        ['remate', 'fuera_de_variante'],
         ['flete', 'activo'],
         ['fees', 'activo'],
         ['garantia', 'activo'],
@@ -200,5 +208,36 @@ describe('geometriaDeLaTarjeta: los colores y la de por omisión', () => {
       expect(g.celdas.map(textoDe)).toContain('Toyota Hilux 2022')
     }
     expect(geometria().porOmision).toBe(false)
+  })
+})
+
+describe('las filas ocultas de geometriaDeLaTarjeta', () => {
+  it('un nodo sin estado (no es de la versión del cálculo) se dice aparte, antes que «no aplica»; el total nunca; sin variante en la lectura, `variante` nula', () => {
+    const sinFees = calculoDePrueba({
+      estados: new Map([
+        ['remate', 'activo'],
+        ['flete', 'activo'],
+        ['garantia', 'activo'],
+      ]),
+    })
+    const g = geometria(sinFees)
+    expect(g.ocultas).toEqual([
+      {
+        fila: 'n_fees',
+        etiqueta: 'Fees',
+        delNodo: 'Fees',
+        motivo: 'fuera_de_la_version',
+        variante: null,
+      },
+    ])
+    // El total no tiene estado y se dibuja igual.
+    expect(g.filas.map((f) => f.id)).toContain('total')
+    const sinVariante = geometria(calculoDePrueba(), lectura({ variante: null }))
+    expect(sinVariante.ocultas).toEqual([
+      { fila: 'n_fees', etiqueta: 'Fees', delNodo: 'Fees', motivo: 'no_aplica', variante: null },
+    ])
+    // Una opción que la lectura no nombra: sin título.
+    const otra = new Map(calculoDePrueba().valores).set('variante', 'diesel')
+    expect(geometria(calculoDePrueba({ valores: otra })).ocultas[0]?.variante).toBeNull()
   })
 })

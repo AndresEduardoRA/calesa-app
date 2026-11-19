@@ -23,9 +23,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 - **[—]** El dato del vehículo de una tabla (4.14-2c3) no se elige en el panel de una guardada: el lector de opciones lee `cotizacion_tabla` con la hoja abierta, que una guardada no tiene — falta uno por cotización (la celda dice «Falta un dato del vehículo.»).
 - **[4-72]** Quien ve una cotización pero no su vehículo no puede recalcularla («No se pudo recalcular») — que el recálculo de una guardada no dependa del vehículo, o que la pantalla diga por qué.
-- **[4-101]** El editor de la tarjeta no reordena, suma ni quita grupos a mano (manda la fórmula) — decidir viendo la vista previa.
 - **[T310]** Una plantilla de la forma 1 que ya no se convierte (un `{{` en una etiqueta, leyenda o nota, que la forma 1 admite como texto, o una fórmula con más de 120 filas convertidas) pasa a `sin_plantilla` sin aviso: la tarjeta va por omisión — que el editor o publicar la fórmula lo digan.
-- **[T310]** El editor de la tarjeta de hoy escribe la forma 1: publicar desde él reemplaza una cuadrícula (forma 2) publicada — hasta que llegue el editor de la cuadrícula (T325).
 - **[—]** Editor de la fórmula: sumar o quitar grupos y editar `buckets`, `total_en` y los modos — espera a que la plantilla de la tarjeta se edite junto con la fórmula.
 - **[—]** Editor del diseño: sumar y quitar secciones o ítems quedó sin dueño, y pasar un ítem de una sección a otra (hoy se ordena dentro de la suya).
 - **[—]** En la primera publicación de un origen (las dos esperadas nulas), el borrador puede nacer sobre una v1 que otra persona publicó entre medio — decidir si la esperada nula deja de valer.
@@ -122,7 +120,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `vehiculos_papelera_listar()` y `leads_papelera_listar()` usan el mismo `exists` por lote: sin medir si con poco volumen leen el índice entero.
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
 - **[—]** El bloque «Leads sin seguimiento» de Inicio cuesta lo que pesa la cartera de quien mira; no se midió con volumen.
-- **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 467 nodos de 500, JS de `/cotizaciones/nuevo` 460,4 de 465 y de `/cotizaciones/[id]` 472,0 de 480 KB, la ficha del lead entera 130,8 de 138 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
+- **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 467 nodos de 500, JS de `/cotizaciones/nuevo` 460,4 de 465 y de `/cotizaciones/[id]` 472,2 de 480 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
 - **[T33]** «Vincular o marcar un vehículo» de la ficha del lead (`?panel=agregar-vehiculo`, `shallow: false`) y cada cambio de un recordatorio (`router.refresh()`) releen todos los bloques de la ficha: con todo a la vista cuesta más que antes; se acota cuando moleste (que cada bloque relea lo suyo).
 - **[—]** Tope de 40 ítems por diseño: `subasta_usa` tiene 39 — para crecer, subir `_diseno_maximo_de_items()` y la constante midiendo la hoja, o partir la hoja.
 
