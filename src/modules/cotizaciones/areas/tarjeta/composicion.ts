@@ -15,7 +15,9 @@ import {
   geometriaDeLaTarjeta,
   type Geometria,
 } from '../../entities/tarjeta/geometria-de-la-tarjeta'
+import { lecturaRetocada } from '../../entities/tarjeta/retoques/aplicar-retoques'
 import { getAsesorDeLaCotizacion } from '../../infra/tarjeta/asesor-de-la-cotizacion'
+import { setRetoques } from '../../infra/tarjeta/retoques'
 import { logoDelPdf } from '../../infra/tarjeta/pdf/logo-del-pdf'
 import {
   bajarLaPortada as bajar,
@@ -32,6 +34,9 @@ export const leerAsesorDeLaCotizacion = getAsesorDeLaCotizacion
 // El vehículo de una cotización guardada (por clave primaria, sin la papelera), para las fotos de «Compartir la cotización».
 export const leerVehiculoDeLaCotizacion = getVehiculoDeLaCotizacion
 
+// Los retoques de la tarjeta de una cotización (`cotizacion_retocar_tarjeta()`, con la sesión de quien retoca): la base pide poder guardarla y la versión.
+export const guardarLosRetoques = setRetoques
+
 export type EntradaDelPdf = {
   // Lo que leyó `leerHojaDeUnaGuardada()` con la sesión de quien pide.
   lectura: { hoja: HojaDeUnaGuardada; inicial: RecalculoInicial }
@@ -46,7 +51,8 @@ export type EntradaDelPdf = {
 type EntradaDeLaGeometria = Pick<EntradaDelPdf, 'lectura' | 'contexto' | 'locale'>
 
 // La geometría de la tarjeta de **lo guardado** de una cotización (`calculoDeLoGuardado()`, como «Vista previa» de esa guardada; nunca lo de hoy), con la lectura
-// de la tarjeta de SU versión como quien pide. `sin_permiso` si la tarjeta no se ve.
+// de la tarjeta de SU versión como quien pide y SUS retoques (los que aplican: `lecturaRetocada()`). El PDF, compartir y la portada salen de aquí. `sin_permiso`
+// si la tarjeta no se ve.
 async function geometriaDeUnaGuardada(
   entrada: EntradaDeLaGeometria,
 ): Promise<Resultado<{ geometria: Geometria; hoja: HojaDeUnaGuardada }>> {
@@ -56,7 +62,7 @@ async function geometriaDeUnaGuardada(
     return { ok: false, error: tarjeta.error }
   }
   const geometria = geometriaDeLaTarjeta({
-    lectura: tarjeta.data,
+    lectura: lecturaRetocada(tarjeta.data, hoja.cotizacion.tarjetaRetoques).lectura,
     calculo: calculoDeLoGuardado(hoja, inicial.respuesta),
     contexto: entrada.contexto,
     monedaBs: hoja.diseno.cabecera.monedaBs,

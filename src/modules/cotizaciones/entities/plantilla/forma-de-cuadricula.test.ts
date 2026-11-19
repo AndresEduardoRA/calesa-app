@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { TOPE_EN_BYTES_DE_LA_CUADRICULA } from '../cuadricula-de-la-tarjeta'
 import { formaDeCuadricula } from './forma-de-cuadricula'
-import { bytesComoJsonb } from './json-de-la-base'
+import { bytesComoJsonb } from '../json-de-la-base'
 import { validarPlantilla } from './validar-plantilla'
 
 // Lo que el juego no puede llevar: el tope de 24 KiB y lo que sólo se alcanza sin él (lo convertido desde la forma 1, D12). Lo mismo prueba la base (T2 de

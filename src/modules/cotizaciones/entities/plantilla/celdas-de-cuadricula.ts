@@ -12,7 +12,7 @@ import {
   TAMANOS_DE_LETRA,
 } from '../cuadricula-de-la-tarjeta'
 import type { RechazoDePlantilla } from './motivos-de-plantilla'
-import { caracteres, esObjetoJsonb } from './json-de-la-base'
+import { caracteres, esObjetoJsonb } from '../json-de-la-base'
 import {
   campo,
   conClaveDeMas,

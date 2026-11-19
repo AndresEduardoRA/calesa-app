@@ -1,6 +1,4 @@
-import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { juegoDePlantilla, RUTA_DEL_JUEGO } from './juego-de-plantilla.soporte'
 import {
   btrim,
   bytesComoJsonb,
@@ -12,13 +10,12 @@ import {
   tipoJsonb,
 } from './json-de-la-base'
 
-const ruta = RUTA_DEL_JUEGO
-const juego = juegoDePlantilla(readFileSync(new URL(ruta, import.meta.url), 'utf8'))
-
+// Los `octetos` de cada juego (los que la base comprueba con `octet_length(valor::text)`) los corre el test de su validador: `validar-plantilla.test.ts`,
+// `validar-retoques.test.ts`.
 describe('bytesComoJsonb', () => {
-  // Los mismos `octetos` que la base comprueba con `octet_length(valor::text)` (T1 de plantilla-validar.sql).
-  it.each(juego.octetos)('$valor: $bytes bytes', ({ valor, bytes }) => {
-    expect(bytesComoJsonb(valor)).toBe(bytes)
+  it('cuenta como `jsonb::text`: espacios tras la coma y los dos puntos, `{}` y `[]` juntos', () => {
+    expect(bytesComoJsonb({ a: [1, 2], b: {} })).toBe('{"a": [1, 2], "b": {}}'.length)
+    expect(bytesComoJsonb('ñ')).toBe(4)
   })
 
   it('el orden de las claves no cambia la cuenta', () => {

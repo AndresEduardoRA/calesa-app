@@ -5,7 +5,7 @@
 import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
 import { formaDeCuadricula } from './forma-de-cuadricula'
 import { formaDePlantilla, type Plantilla } from './forma-de-plantilla'
-import { comoJson, esObjetoJsonb } from './json-de-la-base'
+import { comoJson, esObjetoJsonb } from '../json-de-la-base'
 import { rechazoDePlantilla, type RechazoDePlantilla } from './motivos-de-plantilla'
 import { revisarNodosDeCuadricula } from './nodos-de-cuadricula'
 import { revisarNodosDePlantilla, type ContextoDeNodos } from './nodos-de-plantilla'

@@ -145,6 +145,7 @@ describe('pdfDeLaTarjeta: la escala y las fuentes', () => {
       alto,
       porOmision: false,
       celdas: [],
+      filas: [],
       ocultas: [],
     })
     expect(escalaDelPdf(g(600, 400))).toBe(1)

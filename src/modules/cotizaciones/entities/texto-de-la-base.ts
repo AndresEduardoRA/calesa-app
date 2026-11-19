@@ -4,7 +4,7 @@
 
 export type MotivoDeTextoDeLaBase = 'nulo' | 'surrogate' | 'profundo' | 'no_json'
 
-// `donde` es la ruta en la notación de la base (`grupos[2].tono`, `etiquetas.flete`; la raíz, `definicion`). Nunca lleva el texto malo: el de una clave mala es la ruta del
+// `donde` es la ruta en la notación de la base (`grupos[2].tono`, `etiquetas.flete`; la raíz, `definicion` o la que se pida: `retoques`). Nunca lleva el texto malo: el de una clave mala es la ruta del
 // objeto que la tiene.
 export type ProblemaDeTextoDeLaBase = {
   readonly donde: string
@@ -13,7 +13,7 @@ export type ProblemaDeTextoDeLaBase = {
 
 // La forma de la plantilla llega a 3 niveles (`definicion.etiquetas.<id>`); 8 deja holgura y corta lo hostil.
 export const PROFUNDIDAD_MAXIMA = 8
-const RAIZ = 'definicion'
+const RAIZ_POR_OMISION = 'definicion'
 
 // Un surrogate alto sin su bajo, o un bajo sin su alto.
 const SURROGATE_SUELTO = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/
@@ -26,7 +26,6 @@ function problemaDeUnaCadena(s: string): MotivoDeTextoDeLaBase | null {
 type Pendiente = { readonly valor: unknown; readonly ruta: string; readonly nivel: number }
 
 const hijoDeObjeto = (ruta: string, clave: string) => (ruta === '' ? clave : `${ruta}.${clave}`)
-const dondeDe = (ruta: string) => (ruta === '' ? RAIZ : ruta)
 
 // `undefined` dentro de un objeto es una clave ausente y en un arreglo un `null`, como lo deja `JSON.stringify`; un `bigint`, una función, un símbolo o un número que no
 // es finito no son JSON.
@@ -37,8 +36,24 @@ function problemaDeUnEscalar(v: unknown): MotivoDeTextoDeLaBase | null | 'sigue'
   return typeof v === 'object' ? 'sigue' : 'no_json'
 }
 
-// El primer problema en orden (profundidad primero, hijos en su orden), o nulo si todo se puede guardar.
-export function revisarTextoParaLaBase(valor: unknown): ProblemaDeTextoDeLaBase | null {
+// Los hijos de un objeto o un arreglo con su ruta, en su orden; o el motivo de una clave que la base no lee.
+function hijosDe(v: object, ruta: string): [string, unknown][] | MotivoDeTextoDeLaBase {
+  if (Array.isArray(v)) return v.map((x, i): [string, unknown] => [`${ruta}[${i}]`, x])
+  const mala = Object.keys(v).find((k) => problemaDeUnaCadena(k) !== null)
+  if (mala !== undefined) return problemaDeUnaCadena(mala) ?? 'nulo'
+  return Object.entries(v as Record<string, unknown>).map(([k, x]): [string, unknown] => [
+    hijoDeObjeto(ruta, k),
+    x,
+  ])
+}
+
+// El primer problema en orden (profundidad primero, hijos en su orden), o nulo si todo se puede guardar. `raiz`: cómo se llama el valor entero en `donde`
+// (el parámetro de la RPC sin `p_`).
+export function revisarTextoParaLaBase(
+  valor: unknown,
+  { raiz = RAIZ_POR_OMISION }: { raiz?: string } = {},
+): ProblemaDeTextoDeLaBase | null {
+  const dondeDe = (ruta: string) => (ruta === '' ? raiz : ruta)
   const pila: Pendiente[] = [{ valor, ruta: '', nivel: 0 }]
   for (let hecho = pila.pop(); hecho !== undefined; hecho = pila.pop()) {
     const { valor: v, ruta, nivel } = hecho
@@ -48,18 +63,8 @@ export function revisarTextoParaLaBase(valor: unknown): ProblemaDeTextoDeLaBase 
       continue
     }
     if (nivel + 1 > PROFUNDIDAD_MAXIMA) return { donde: dondeDe(ruta), motivo: 'profundo' }
-    const hijos = Array.isArray(v)
-      ? v.map((x, i): [string, unknown] => [`${ruta}[${i}]`, x])
-      : Object.entries(v as Record<string, unknown>).map(([k, x]): [string, unknown] => [
-          hijoDeObjeto(ruta, k),
-          x,
-        ])
-    if (!Array.isArray(v)) {
-      const mala = Object.keys(v as object).find((k) => problemaDeUnaCadena(k) !== null)
-      if (mala !== undefined) {
-        return { donde: dondeDe(ruta), motivo: problemaDeUnaCadena(mala) ?? 'nulo' }
-      }
-    }
+    const hijos = hijosDe(v as object, ruta)
+    if (typeof hijos === 'string') return { donde: dondeDe(ruta), motivo: hijos }
     for (let i = hijos.length - 1; i >= 0; i--) {
       const hijo = hijos[i]
       if (hijo !== undefined) pila.push({ valor: hijo[1], ruta: hijo[0], nivel: nivel + 1 })

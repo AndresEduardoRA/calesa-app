@@ -101,6 +101,19 @@ describe('cambiosDeLaRevision: qué cambió en una revisión', () => {
 })
 
 describe('cambiosDeLaRevision › el título de la cotización (T307)', () => {
+  it('los retoques de la tarjeta: «Retocó la tarjeta», también al volver a la plantilla (a nulo)', () => {
+    const texto = (diff: Record<string, unknown>) => cambiosDeLaRevision(diff, new Map()).vistos
+    expect(texto({ tarjeta_retoques: { de: null, a: { celdas: 1, filas_ocultas: 0 } } })).toEqual([
+      'Retocó la tarjeta',
+    ])
+    expect(texto({ tarjeta_retoques: { de: { celdas: 2, filas_ocultas: 1 }, a: null } })).toEqual([
+      'Retocó la tarjeta',
+    ])
+    expect(
+      cambiosDeLaRevision({ tarjeta_retoques: { de: null, a: null } }, new Map()).sinCambios,
+    ).toBe(false)
+  })
+
   it('pasar de automático a manual, solo o junto al texto, se dice una vez', () => {
     const texto = (diff: Record<string, unknown>) => cambiosDeLaRevision(diff, new Map()).vistos
     expect(texto({ titulo_manual: { de: false, a: true } })).toEqual(['Cambió el título'])

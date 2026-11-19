@@ -45,6 +45,7 @@ const cotizacion = (clase: 'preventa' | 'final'): CotizacionDeLaHoja => ({
   titulo: 'Hilux',
   tituloManual: false,
   notas: null,
+  tarjetaRetoques: null,
   creadoEn: '2026-11-01T10:00:00+00:00',
   actualizadoEn: VERSION,
 })
