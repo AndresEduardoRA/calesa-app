@@ -4,7 +4,7 @@ name: ci
 # de este repo (546xx, sin bloque: supabase/config.toml) y las funciones edge, las de e2e/soporte/guardia.ts. Por niveles (docs/FLUJO.md,
 # .claude/rules/e2e.md): un PR
 # corre el Nivel 1 y los e2e dirigidos a lo tocado (el completo de escritorio si toca un disparador del Nivel 2:
-# scripts/e2e-dirigidos.mjs); cada noche, el completo de escritorio sobre main si hubo commits (y el aviso de la noche abre el issue
+# scripts/e2e-dirigidos.mjs); cada noche, el completo con los dos proyectos sobre main si hubo commits (y el aviso de la noche abre el issue
 # `noche-roja`, que a la segunda noche seguida entra a la cola: scripts/flujo/noche.mjs); antes de desplegar, el completo con los
 # dos proyectos a mano (workflow_dispatch, `proyectos: ambos`). El job `listo` resume a todos: es el único check que main exige, y con
 # él en verde GitHub integra el PR solo (auto-merge). En la plantilla del kit (.kit/plantilla, la salida «plantilla» de `cambios`) los
@@ -152,6 +152,10 @@ jobs:
         run: |
           if [ "$EVENTO" = pull_request ]; then
             node scripts/e2e-dirigidos.mjs --rango "$BASE_PR...HEAD" --github >> "$GITHUB_OUTPUT"
+          elif [ "$EVENTO" = schedule ]; then
+            # Cada noche, los dos proyectos: un PR corre en `movil` sólo los specs de lo que toca, y lo que rompe en el celular un spec
+            # ajeno llegaba a main sin que nadie lo viera. En 8 bloques, para tardar lo que tardaban 4 con sólo escritorio.
+            printf '%s\n' e2e_modo=completo e2e_specs= 'e2e_bloques=[1,2,3,4,5,6,7,8]' e2e_de=8 e2e_proyectos=ambos >> "$GITHUB_OUTPUT"
           else
             printf '%s\n' e2e_modo=completo e2e_specs= 'e2e_bloques=[1,2,3,4]' e2e_de=4 e2e_proyectos=escritorio >> "$GITHUB_OUTPUT"
           fi
