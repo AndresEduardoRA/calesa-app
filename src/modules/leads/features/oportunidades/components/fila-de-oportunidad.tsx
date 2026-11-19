@@ -30,38 +30,44 @@ export function FilaDeOportunidad({
   ...acciones
 }: Props) {
   return (
-    <article aria-label={o.titulo} className="flex min-h-11 min-w-0 items-center gap-2 md:min-h-9">
+    // Una línea; si no cabe (el celular con el texto al 200 %), lo de la derecha baja a la línea de abajo y el título conserva su lugar.
+    <article
+      aria-label={o.titulo}
+      className="flex min-h-11 min-w-0 flex-wrap items-center gap-x-2 md:min-h-9"
+    >
       <p
         title={o.titulo}
-        className="min-w-0 flex-1 truncate text-(length:--text-sm) font-medium text-(--color-ink)"
+        className="min-w-0 flex-1 basis-20 truncate text-(length:--text-sm) font-medium text-(--color-ink)"
       >
         {o.titulo}
       </p>
-      {nombrarEmbudo ? (
-        <span className="max-w-28 min-w-0 shrink truncate text-(length:--text-xs) text-(--color-ink-faint)">
-          {o.embudo.nombre}
-        </span>
-      ) : null}
-      <InsigniaDeEtiqueta
-        etiqueta={{ nombre: o.etapa.nombre, color: o.etapa.color }}
-        className="max-w-28 shrink-0"
-      />
-      {o.monto === null ? null : (
-        <Monto
-          valor={o.monto}
-          moneda={o.moneda}
-          className="shrink-0 text-(length:--text-sm) text-(--color-ink) tabular-nums"
+      <div className="ml-auto flex max-w-full min-w-0 items-center gap-2">
+        {nombrarEmbudo ? (
+          <span className="max-w-28 min-w-0 shrink truncate text-(length:--text-xs) text-(--color-ink-faint)">
+            {o.embudo.nombre}
+          </span>
+        ) : null}
+        <InsigniaDeEtiqueta
+          etiqueta={{ nombre: o.etapa.nombre, color: o.etapa.color }}
+          className="max-w-28 min-w-0 shrink"
         />
-      )}
-      {puedeEditar ? (
-        <MenuDeOportunidad
-          id={o.id}
-          titulo={o.titulo}
-          etapas={etapas}
-          actual={o.etapaId}
-          {...acciones}
-        />
-      ) : null}
+        {o.monto === null ? null : (
+          <Monto
+            valor={o.monto}
+            moneda={o.moneda}
+            className="shrink-0 text-(length:--text-sm) text-(--color-ink) tabular-nums"
+          />
+        )}
+        {puedeEditar ? (
+          <MenuDeOportunidad
+            id={o.id}
+            titulo={o.titulo}
+            etapas={etapas}
+            actual={o.etapaId}
+            {...acciones}
+          />
+        ) : null}
+      </div>
     </article>
   )
 }
