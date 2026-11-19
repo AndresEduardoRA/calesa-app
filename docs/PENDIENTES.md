@@ -115,7 +115,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[5a-40]** La baja de 200.000 leads tarda 9 corridas y 15 s porque ningún update de `cartera` es HOT (11 btree) — un índice que sostenga lo ajeno sin nombrar la cartera, sin romper `medir-escala.sql`; la persona aceptó el número actual.
 - **[6-5]** Medir `gastos_listar` y `pagos_listar` con volumen (≈ 50.000 filas, dueña con «todos» y una persona con «propios»): el filtro `en_cartera` por fila puede ir descartando al profundizar.
 - **[8-13c]** Índice `(fase_id, fase_desde, id)` en `repuestos_items` si la Cadena de repuestos y los bloques de Inicio llegan a miles — hoy alcanza `repuestos_items_fase_id_idx`.
-- **[—]** El editor de la fórmula tarda ≈ 1 s en abrir con 600 filas y ≈ 2 s con 2.000 (O(filas × nodos)) — una versión por lote de `textoVigente()`/`textoDeNodo()`.
+- **[—]** La planilla y el editor de la fórmula tardan ≈ 1 s en abrir con 600 filas y ≈ 2 s con 2.000 (O(filas × nodos), ahora al abrir la pestaña) — una versión por lote de `textoVigente()`/`textoDeNodo()`.
 - **[—]** El job de la papelera toma siempre los 50 lotes vencidos más viejos: 50 que no se pueden purgar del todo (pago, portal, comprobante) frenan para siempre a los nuevos; vale para los tres tipos.
 - **[—]** `vehiculos_papelera_listar()` y `leads_papelera_listar()` usan el mismo `exists` por lote: sin medir si con poco volumen leen el índice entero.
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
@@ -136,7 +136,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Limpieza y código
 
-- La vista previa del diseño de la hoja (Configuración) no dibuja la variante en par (`hojaDeLaVistaPrevia()` no trae `par`): lo hará la planilla de T324.
+- La vista previa del diseño de la hoja (Configuración › Hoja) no dibuja la variante en par (`hojaDeLaVistaPrevia()` no trae `par`); la planilla de la fórmula sí la muestra (sus dos opciones con «Se cotiza en par»).
 - En la vista previa de las hermanas, «Copiar texto» copia sólo el de la tarjeta de la cotización abierta (no une los dos).
 - `medir-cotizacion-crear.sql` y `medir-cotizacion-guardar.sql` no tienen un caso en par: crear y guardar en par llaman dos veces a lo que ya miden.
 
