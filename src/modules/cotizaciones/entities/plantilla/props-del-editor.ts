@@ -57,9 +57,6 @@ export function propsDelEditor(
   }
 }
 
-// Los ids de los nodos que viajan al navegador: la referencia del lienzo se recorta a ellos.
+// Los ids de los nodos que viajan al navegador: la referencia del lienzo se recorta a ellos (el valor de un nodo que no viaja, como un `pct` restringido, tampoco).
 export const idsDelContexto = (contexto: ContextoDePlantilla): ReadonlySet<string> =>
-  new Set([
-    ...(contexto.definicion.nodos ?? []).map((n) => n.id),
-    ...Object.keys(contexto.visibilidad ?? {}),
-  ])
+  new Set((contexto.definicion.nodos ?? []).map((n) => n.id))

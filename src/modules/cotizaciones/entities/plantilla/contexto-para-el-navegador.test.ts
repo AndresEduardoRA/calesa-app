@@ -188,3 +188,30 @@ describe('contextoParaElNavegador: el plazo y la variante', () => {
     expect(restringida.definicion.nodos?.map((n) => n.id)).toEqual(['total'])
   })
 })
+
+describe('contextoParaElNavegador: lo restringido que no se nombra', () => {
+  it('el nodo de un tipo de cambio de otro nivel no viaja, pero sí su `ver` (lo juzga el validador)', () => {
+    const base = mini()
+    const contexto: ContextoDePlantilla = {
+      ...base,
+      visibilidad: { ...base.visibilidad, tc_uni: { ver: 'costos' } },
+    }
+    const r = contextoParaElNavegador(contexto, VACIA)
+    expect((r.definicion.nodos ?? []).map((n) => n.id)).not.toContain('tc_uni')
+    expect(r.visibilidad?.['tc_uni']).toEqual({ ver: 'costos' })
+    expect(JSON.stringify(r)).not.toContain('Dólar unificado')
+  })
+
+  it('el `pct` de otro nivel de un nodo que viaja no viaja como nodo, pero sí su `ver`', () => {
+    const base = mini()
+    const contexto: ContextoDePlantilla = {
+      ...base,
+      visibilidad: { ...base.visibilidad, comision_pct: { ver: 'costos' } },
+    }
+    const r = contextoParaElNavegador(contexto, VACIA)
+    const ids = (r.definicion.nodos ?? []).map((n) => n.id)
+    expect(ids).toContain('comision')
+    expect(ids).not.toContain('comision_pct')
+    expect(r.visibilidad?.['comision_pct']).toEqual({ ver: 'costos' })
+  })
+})

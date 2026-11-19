@@ -1,8 +1,9 @@
 // Lo que el editor de la tarjeta lleva al navegador: del contexto de `validarPlantilla()` sólo lo que ese validador y el editor necesitan. La `definicion` entera de la
-// fórmula pesa decenas de KB y no se dibuja. Quedan los nodos del nivel «todos» (los que el editor ofrece para «Dato»), los restringidos que la cuadrícula ya nombra
-// (para marcarlos: con ellos no se podría publicar), los que dan el tipo de cambio de un bucket y la variante; de cada uno su etiqueta, su grupo, su salida, su
-// descripción y su par porcentaje-monto (`tipo`, `op`, `pct`), y de la variante sus opciones. Los buckets, los grupos, del diseño los modos y los secundarios, y de la
-// visibilidad sólo el `ver` de esos ids. Nunca el cuerpo de un nodo (su fórmula, sus entradas). Todo lo que se arma por id va por `Object.fromEntries`/`Map`:
+// fórmula pesa decenas de KB y no se dibuja. Quedan los nodos del nivel «todos» (los que el editor ofrece para «Dato», con los de los tipos de cambio y la variante) y
+// los restringidos que la cuadrícula ya nombra (para marcarlos: con ellos no se podría publicar); de cada uno su etiqueta, su grupo, su salida, su descripción y su
+// par porcentaje-monto (`tipo`, `op`, `pct`), y de la variante sus opciones. Los buckets, los grupos, del diseño los modos y los secundarios, y de la visibilidad sólo
+// el `ver` de esos ids, del `pct` de su par y de los que dan el tipo de cambio de un bucket (los juzga `tipoDeCambioRestringido()`). Nunca el cuerpo de un nodo (su
+// fórmula, sus entradas) ni un nodo restringido que la cuadrícula no nombra. Todo lo que se arma por id va por `Object.fromEntries`/`Map`:
 // `__proto__` y `constructor` son ids legales.
 import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
 import {
@@ -70,14 +71,9 @@ export function contextoParaElNavegador(
   ])
   const nombrados = nodosNombradosPor(cuadricula)
   const opcion = varianteDeTodos(contexto)
+  // Un nodo de un nivel restringido que la cuadrícula no nombra no viaja (tampoco el de un tipo de cambio): de él sólo va su `ver`, que juzga el validador.
   const nodos: NodoParaPlantilla[] = (definicion.nodos ?? [])
-    .filter(
-      (n) =>
-        esDeTodos(vis, n.id) ||
-        nombrados.has(n.id) ||
-        deTipoDeCambio.has(n.id) ||
-        n.id === opcion?.id,
-    )
+    .filter((n) => esDeTodos(vis, n.id) || nombrados.has(n.id) || n.id === opcion?.id)
     .map((n) => nodoReducido(n, opcion?.id))
   const reducida: DefinicionParaPlantilla = {
     nodos,

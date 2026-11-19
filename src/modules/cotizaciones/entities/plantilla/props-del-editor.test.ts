@@ -138,3 +138,19 @@ describe('propsDelEditor', () => {
     expect([...idsDelContexto(conCif.contexto)].sort()).toEqual(['cif', 'fees'])
   })
 })
+
+describe('idsDelContexto', () => {
+  it('sólo los nodos que viajan: un id que sólo está en la visibilidad (un `pct` o un tipo de cambio de otro nivel) no', () => {
+    const ids = idsDelContexto({
+      definicion: { nodos: [{ id: 'comision', pct: 'comision_pct' }] },
+      diseno: null,
+      visibilidad: {
+        comision: { ver: 'todos' },
+        comision_pct: { ver: 'costos' },
+        tc_uni: { ver: 'costos' },
+      },
+      tonos: null,
+    })
+    expect([...ids]).toEqual(['comision'])
+  })
+})
