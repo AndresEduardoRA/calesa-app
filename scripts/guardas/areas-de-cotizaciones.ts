@@ -25,7 +25,7 @@ export const AREAS_DE_COTIZACIONES = [
 // Las carpetas del núcleo que ya existían cuando se partió el módulo. Una nueva se suma aquí o a las áreas.
 const CARPETAS_DEL_NUCLEO: Readonly<Record<string, readonly string[]>> = {
   features: ['encima', 'historial', 'hoja', 'niveles', 'revisiones'],
-  entities: [],
+  entities: ['plantillas-de-v1'],
   infra: ['queries'],
   areas: ['nucleo'],
 }

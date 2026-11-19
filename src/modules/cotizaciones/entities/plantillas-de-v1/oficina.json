@@ -1,0 +1,609 @@
+{
+  "clave": "oficina",
+  "nombre": "Oficina",
+  "frase": "Venta en oficina: el precio acordado menos el descuento, al contado.",
+  "formula": {
+    "definicion": {
+      "nodos": [
+        {
+          "id": "tc_oficial",
+          "tipo": "tipo_cambio",
+          "clave": "oficial",
+          "etiqueta": "Oficial",
+          "formato": "raw"
+        },
+        {
+          "id": "tc_paralelo",
+          "tipo": "tipo_cambio",
+          "clave": "paralelo",
+          "etiqueta": "Paralelo",
+          "formato": "raw"
+        },
+        {
+          "id": "precio",
+          "tipo": "input",
+          "etiqueta": "Precio acordado",
+          "descripcion": "Precio de venta del vehículo"
+        },
+        {
+          "id": "descuento",
+          "tipo": "input",
+          "etiqueta": "Descuento",
+          "descripcion": "Rebaja aplicada, ya restada del total"
+        },
+        {
+          "id": "contado",
+          "tipo": "calculo",
+          "op": "restar",
+          "de": ["precio", "descuento"],
+          "etiqueta": "Precio con descuento",
+          "descripcion": "Precio acordado − descuento",
+          "grupo": "contado"
+        },
+        {
+          "id": "total",
+          "tipo": "calculo",
+          "op": "suma",
+          "de": ["contado"],
+          "etiqueta": "TOTAL",
+          "descripcion": "Vehículo disponible en oficina, con papeles al día",
+          "salida": "total"
+        }
+      ],
+      "buckets": {
+        "contado": "tc_paralelo"
+      },
+      "total_en": "tc_paralelo",
+      "grupos": [
+        {
+          "id": "contado",
+          "etiqueta": "Contado",
+          "plazo": "Contado",
+          "tono": "v1_verde_claro",
+          "bucket": "contado"
+        }
+      ]
+    },
+    "params": {},
+    "diseno": {
+      "cabecera": {
+        "modos": [
+          {
+            "clave": "aduana",
+            "nombre": "Aduana",
+            "buckets": [
+              {
+                "bucket": "contado",
+                "nodo": "tc_oficial"
+              }
+            ],
+            "total_en": "tc_oficial"
+          },
+          {
+            "clave": "paralelo",
+            "nombre": "Paralelo",
+            "buckets": [
+              {
+                "bucket": "contado",
+                "nodo": "tc_paralelo"
+              }
+            ],
+            "total_en": "tc_paralelo"
+          }
+        ],
+        "ver_total_bs": true,
+        "modo_por_defecto": "paralelo",
+        "ver_total_bs_por_defecto": false,
+        "modos_visibles": ["aduana", "paralelo"]
+      },
+      "secciones": [
+        {
+          "id": "contado",
+          "titulo": "Contado",
+          "presentacion": "principal",
+          "tono": "v1_verde_claro",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "precio",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "El precio de venta acordado con el cliente."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "descuento",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Rebaja aplicada: se resta del total."
+              }
+            }
+          ]
+        }
+      ],
+      "tarjeta_total": {
+        "nodo": "total",
+        "secundarios": []
+      }
+    }
+  },
+  "tarjeta": {
+    "forma": 2,
+    "columnas": [
+      {
+        "id": "concepto",
+        "ancho": 325
+      },
+      {
+        "id": "monto",
+        "ancho": 113
+      },
+      {
+        "id": "descripcion",
+        "ancho": 309
+      },
+      {
+        "id": "tipo_cambio",
+        "ancho": 72
+      },
+      {
+        "id": "tc",
+        "ancho": 50
+      },
+      {
+        "id": "plazo",
+        "ancho": 91
+      }
+    ],
+    "filas": [
+      {
+        "id": "meta",
+        "alto": 34,
+        "ocultar_si": "nunca"
+      },
+      {
+        "id": "titulo",
+        "alto": 44,
+        "ocultar_si": "nunca"
+      },
+      {
+        "id": "n_precio",
+        "alto": 32,
+        "ocultar_si": "no_aplica",
+        "nodo": "precio"
+      },
+      {
+        "id": "n_descuento",
+        "alto": 32,
+        "ocultar_si": "no_aplica_o_cero",
+        "nodo": "descuento"
+      },
+      {
+        "id": "total",
+        "alto": 60,
+        "ocultar_si": "nunca"
+      },
+      {
+        "id": "nota",
+        "alto": 40,
+        "ocultar_si": "nunca"
+      }
+    ],
+    "celdas": [
+      {
+        "id": "fecha",
+        "fila": "meta",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "dato",
+          "variable": "fecha_larga"
+        },
+        "estilo": {
+          "negrita": true,
+          "tamano": 14
+        }
+      },
+      {
+        "id": "categoria",
+        "fila": "meta",
+        "columna": "monto",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "texto",
+          "texto": "VENTA EN OFICINA"
+        },
+        "estilo": {
+          "negrita": true,
+          "alinear": "centro"
+        }
+      },
+      {
+        "id": "asesor_rotulo",
+        "fila": "meta",
+        "columna": "tipo_cambio",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "Asesor:"
+        },
+        "estilo": {
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha"
+        }
+      },
+      {
+        "id": "asesor",
+        "fila": "meta",
+        "columna": "tc",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "dato",
+          "variable": "asesor_iniciales"
+        },
+        "estilo": {
+          "negrita": true,
+          "tamano": 18,
+          "alinear": "centro"
+        }
+      },
+      {
+        "id": "titulo",
+        "fila": "titulo",
+        "columna": "concepto",
+        "abarca_columnas": 3,
+        "contenido": {
+          "tipo": "dato",
+          "variable": "titulo"
+        },
+        "estilo": {
+          "fondo": "v1_verde_oscuro",
+          "negrita": true,
+          "tamano": 22,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "cab_tc",
+        "fila": "titulo",
+        "columna": "tipo_cambio",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "texto",
+          "texto": "Tipo $ Cambio"
+        },
+        "estilo": {
+          "fondo": "v1_verde_oscuro",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "cab_plazo",
+        "fila": "titulo",
+        "columna": "plazo",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "Plazos Pagos"
+        },
+        "estilo": {
+          "fondo": "v1_amarillo_fuerte",
+          "negrita": true,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "precio_concepto",
+        "fila": "n_precio",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "PRECIO ACORDADO"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "precio_monto",
+        "fila": "n_precio",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "precio",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "negrita": true,
+          "tamano": 16,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "precio_descripcion",
+        "fila": "n_precio",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "precio",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "contado_tc",
+        "fila": "n_precio",
+        "columna": "tipo_cambio",
+        "abarca_filas": 2,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "contado",
+          "mostrar": "tc_nombre"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "contado_tc_valor",
+        "fila": "n_precio",
+        "columna": "tc",
+        "abarca_filas": 2,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "contado",
+          "mostrar": "tc_valor"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "negrita": true,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "contado_plazo",
+        "fila": "n_precio",
+        "columna": "plazo",
+        "abarca_filas": 2,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "contado",
+          "mostrar": "plazo"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "negrita": true,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "descuento_concepto",
+        "fila": "n_descuento",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "DESCUENTO"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "descuento_monto",
+        "fila": "n_descuento",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "descuento",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_naranja_claro",
+          "negrita": true,
+          "tamano": 16,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "descuento_descripcion",
+        "fila": "n_descuento",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "descuento",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "total_etiqueta",
+        "fila": "total",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "TOTAL DÓLARES:"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "negrita": true,
+          "tamano": 18,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "grueso"
+          }
+        }
+      },
+      {
+        "id": "total_monto",
+        "fila": "total",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "total",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_verde_claro",
+          "negrita": true,
+          "tamano": 18,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "grueso"
+          }
+        }
+      },
+      {
+        "id": "total_nota",
+        "fila": "total",
+        "columna": "descripcion",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "total",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_gris",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "logo",
+        "fila": "total",
+        "columna": "tc",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "logo"
+        },
+        "estilo": {
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "nota",
+        "fila": "nota",
+        "columna": "concepto",
+        "abarca_columnas": 6,
+        "contenido": {
+          "tipo": "texto",
+          "texto": "Nota: Esta es una cotización referencial. Los valores deben ajustarse según el tipo de cambio del día que se realicen los pagos."
+        },
+        "estilo": {
+          "fondo": "v1_verde_oscuro",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      }
+    ]
+  },
+  "colores": [
+    {
+      "clave": "v1_verde_oscuro",
+      "nombre": "V1 verde oscuro",
+      "hex": "#1e6b3a"
+    },
+    {
+      "clave": "v1_verde_claro",
+      "nombre": "V1 verde claro",
+      "hex": "#e3f5e9"
+    },
+    {
+      "clave": "v1_amarillo_fuerte",
+      "nombre": "V1 amarillo fuerte",
+      "hex": "#ffff00"
+    },
+    {
+      "clave": "v1_naranja_claro",
+      "nombre": "V1 naranja claro",
+      "hex": "#f4b183"
+    },
+    {
+      "clave": "v1_gris",
+      "nombre": "V1 gris",
+      "hex": "#d8d8d8"
+    }
+  ],
+  "unidad": {
+    "inputs": {
+      "precio": 25000,
+      "descuento": 1500
+    },
+    "banderas": {},
+    "vehiculo": {},
+    "overrides": {},
+    "tipos_cambio": {
+      "oficial": 11.9,
+      "paralelo": 12
+    }
+  },
+  "camposDelVehiculo": [],
+  "tiposDeCambio": [
+    {
+      "clave": "oficial",
+      "nombre": "Oficial"
+    },
+    {
+      "clave": "paralelo",
+      "nombre": "Paralelo"
+    }
+  ]
+}
