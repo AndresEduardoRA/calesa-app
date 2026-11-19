@@ -28,6 +28,7 @@ export type PortadaDeLaFila = ComponentType<{
   total: { valor: number; moneda?: string | null } | null
   ancho: AnchoDeLaPortada
   recorte: 'cubrir'
+  lugar: 'lista'
 }>
 
 // Las casillas y «Comparar» de un grupo desplegado (las del área `aprobada`, por hueco). Lleva el estado de las elegidas: dibuja cada línea con su casilla

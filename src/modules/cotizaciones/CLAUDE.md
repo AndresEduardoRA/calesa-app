@@ -40,7 +40,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   lee: agrupada sin texto, `leerListadoPorVehiculo()` (`cotizaciones_listado_por_vehiculo()`, `PaginaAgrupada` de `EntradaDelListado`: `grupo` con su `cabeza` y su
   `conteo`, o `suelta`, con `cortada`); con texto, la búsqueda agrupada en la página (`agruparLaPagina()`); sin agrupar, `entradasSinAgrupar()`. Los nombres, el modo
   (`leerModosDeCotizaciones()`, `cotizaciones_modos_de()`), el «⋯» y lo visto van sobre las cotizaciones que se dibujan. La tarjeta (`TarjetaEnLaLista`) lleva la
-  portada por el hueco `Portada` (`ancho={480}`, `recorte="cubrir"`), el «⋯» sin «Compartir» (`MenuDeFila(fila, { sinCompartir })`) y «Compartir» (`compartirDe`, nulo
+  portada por el hueco `Portada` (`ancho={480}`, `recorte="cubrir"`, `lugar="lista"`: su visor es `?visor=portada-de-la-lista-<id>`), el «⋯» sin «Compartir» (`MenuDeFila(fila, { sinCompartir })`) y «Compartir» (`compartirDe`, nulo
   sin la oferta o en Modo Live); la tabla, la columna «Título». Un grupo se despliega en el lugar (`BotonDelConteo`, `DespliegueDelGrupoDiferido`): lo lee
   `useGrupoDelListado()` desde el navegador (`areas/listado/composicion.client.ts`, `leerGrupoDelListado()`: `cotizaciones_listado(p_vehiculo)` o
   `cotizaciones_buscar(p_texto, p_vehiculo)` con los filtros de la página, de a `TAMANO_DE_ESTE_VEHICULO` hasta `TOPE_DE_ESTE_VEHICULO`, y los autores por
@@ -292,7 +292,9 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   `cotizaciones_lead_creado_idx`, sin la cartera, y el vehículo es un filtro sobre esas filas (L9). Lo que devuelve es la regla (L2 de
   `cotizaciones-visibilidad.sql`). **La lista agrupada** (`cotizaciones_listado_por_vehiculo()`) recorre lotes de `_cotizaciones_lote_del_listado()`, **espejo de
   `cotizaciones_listado()`** sin la ruta del vehículo: si cambia una ruta del listado, cambia la del lote (L7 de `areas/cotizaciones/listado-por-vehiculo.sql`); sus
-  lecturas derivadas van en laterales con `limit` (sin ellos el plan genérico recorre la tabla) y no lee `vehiculos`. **La búsqueda** (`cotizaciones_buscar()`, `supabase/tests/areas/cotizaciones/buscar.sql`, `medir-cotizaciones-buscar.sql`) es
+  lecturas derivadas van en laterales con `limit` (sin ellos el plan genérico recorre la tabla) y no lee `vehiculos`. La sonda, la cabeza y el conteo leen
+  `cotizaciones` bajo la RLS sin las rutas del lote: dan lo mismo porque las rutas del listado son la policy «cotizaciones: leer» por índice; si cambia la policy,
+  cambian las rutas del listado y del lote. **La búsqueda** (`cotizaciones_buscar()`, `supabase/tests/areas/cotizaciones/buscar.sql`, `medir-cotizaciones-buscar.sql`) es
   invocadora: nombra hasta `v_tope` (50) ids por fuente —clientes por `leads_candidatos()` y `leads_vista_por_ids()`, vehículos por origen, autores por
   `perfiles`, títulos por `_cotizaciones_ids_por_titulo()` (definer, `cotizaciones_titulo_trgm`, sólo lo que quien busca ve)— y de cada uno lee una página por `cotizaciones_lead_creado_idx`, `cotizaciones_vehiculo_creado_idx` o `cotizaciones_creador_idx` (el número, por
   `cotizaciones_numero_key`; el título, por la PK); lo que quien busca no ve no se nombra. La cotización de otra persona sólo se busca por autor donde se ve «todos».

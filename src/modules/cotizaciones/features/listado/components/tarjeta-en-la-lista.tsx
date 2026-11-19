@@ -71,6 +71,7 @@ function CabeceraDeLaTarjeta({
             total={{ valor: cotizacion.totalBase }}
             ancho={480}
             recorte="cubrir"
+            lugar="lista"
           />
         </div>
       ) : (

@@ -328,8 +328,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   casillas habilitan «Comparar» («Elige 2 o 3 para comparar.»; con 3, «Puedes comparar hasta 3.»). Estados del despliegue: tres líneas de esqueleto, «No
   pudimos cargar las cotizaciones de este vehículo.» o «No hay conexión.» con «Reintentar» (la lista sigue); si su cabeza ya no vale (papelera, invalidar, una
   más nueva) la página se relee. Si la base recorre su tope sin completar la página: «Revisamos muchas cotizaciones sin completar la página.» con «Seguir
-  buscando» (también en lugar del vacío). **La tarjeta de la lista:** la portada de la cotización arriba (miniatura de 480 px, 15:8, recortada desde arriba,
-  perezosa; su clic abre el visor) con el «⋯» encima (sin «Compartir»), el título (dos líneas, entero en `title`), «N.º n» con «Aprobada», «Final» y el origen
+  buscando» (también en lugar del vacío). **La tarjeta de la lista:** la portada de la cotización arriba (miniatura de 480 px, 15:8, recortada desde arriba a la izquierda,
+  perezosa; su clic abre el visor en `?visor=portada-de-la-lista-<id>`, así no se cruza con el del resumen abierto) con el «⋯» encima (sin «Compartir»), el título (dos líneas, entero en `title`), «N.º n» con «Aprobada», «Final» y el origen
   con su color en una línea, el total con su modo, «Cliente:» enlazado a su ficha (con `leads.ver`; si no, su nombre o «—»), autor · «hace…», la vigencia, la fila
   del conteo y **«Compartir»** como acción principal a todo el ancho (no en Modo Live). Todas miden lo mismo (filas de alto fijo, sin `auto-rows-fr`: el despliegue va
   a todo el ancho). **La tabla:** «Cotización» (sólo «N.º n»), **«Título»**, cliente, vehículo, origen, clase, total, vigencia, creada y el «⋯» con «Compartir
