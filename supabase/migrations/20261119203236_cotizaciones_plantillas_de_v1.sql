@@ -98,10 +98,14 @@ begin
     p_origen => p_origen, p_actualizado_en_esperado => p_plantilla_esperada, p_def => p_paquete -> 'tarjeta', p_nota => p_paquete ->> 'nota');
 
   -- Los colores: el candado del catálogo, el reuso y el lugar; después cada color nuevo con la clave que se eligió (`_tono_clave()` suma `_2` en silencio si
-  -- otro la tomó mientras tanto: eso es un PT409, no otro color).
+  -- otro la tomó mientras tanto, y un nombre que otro tomó da 23505: los dos son un PT409, no otro color).
   perform public._paquete_colores_preparar(p_paquete -> 'reusar', jsonb_array_length(p_paquete -> 'crear'));
   for v_c in select x from jsonb_array_elements(p_paquete -> 'crear') x loop
-    v_respuesta := public.tono_crear((v_c ->> 'id')::uuid, v_c ->> 'nombre', v_c ->> 'hex');
+    begin
+      v_respuesta := public.tono_crear((v_c ->> 'id')::uuid, v_c ->> 'nombre', v_c ->> 'hex');
+    exception when unique_violation then
+      raise exception 'Mientras elegías, cambiaron los colores del catálogo. Vuelve a elegir la plantilla.' using errcode = 'PT409';
+    end;
     select t ->> 'clave' into v_clave from jsonb_array_elements(v_respuesta -> 'lista' -> 'tonos') t where t ->> 'id' = v_c ->> 'id';
     v_distinta := v_clave is distinct from v_c ->> 'clave';
     if v_distinta then

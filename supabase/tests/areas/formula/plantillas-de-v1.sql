@@ -303,6 +303,27 @@ begin
 end $$;
 rollback;
 
+-- @test plantillas de V1: P8b un color nuevo cuyo nombre ya tomó otro mientras se elegía (23505 de `tono_crear`): el mismo PT409 y nada creado
+begin;
+select pg_temp.pv1_preparar();
+do $$
+declare o uuid := (select id from public.origenes where clave = 'prueba_pv1'); p jsonb; e text; antes bigint;
+begin
+  delete from public.tonos where clave like 'v1\_%';
+  p := pg_temp.pv1_paquete(pg_temp.pv1_doc('oficina'));
+  perform pg_temp.pv1_como(pg_temp.pv1_ana());
+  set local role authenticated;
+  perform public.tono_crear(gen_random_uuid(), 'v1 GRIS', '#000000');
+  reset role;
+  update public.tonos set clave = 'gris_de_otra' where nombre = 'v1 GRIS';
+  antes := (select count(*) from public.tonos);
+  e := pg_temp.pv1_error(pg_temp.pv1_ana(), o, p, null, null);
+  perform pg_temp.pv1_igual(e, 'PT409||Mientras elegías, cambiaron los colores del catálogo. Vuelve a elegir la plantilla.');
+  if (select count(*) from public.tonos) <> antes then raise exception 'quedaron colores'; end if;
+  if (pg_temp.pv1_formula(o)).id is not null or (pg_temp.pv1_tarjeta(o)).id is not null then raise exception 'quedó un borrador'; end if;
+end $$;
+rollback;
+
 -- @test plantillas de V1: P9 cada una de las cuatro se aplica y se publica (fórmula y tarjeta) con los validadores completos
 begin;
 select pg_temp.pv1_preparar();
