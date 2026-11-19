@@ -8,6 +8,8 @@ export type CotizacionDelListado = FilaDelListado & {
   autor: string
   // Es la cotización aprobada de su vehículo (`cotizaciones_aprobadas`): la insignia «Aprobada».
   aprobada: boolean
+  // El nombre de su modo de tipo de cambio (al lado del total en la tarjeta de la lista), o nulo si no tiene o no se leyó.
+  modo: string | null
 }
 
 export type NombresDelListado = {
@@ -16,6 +18,8 @@ export type NombresDelListado = {
   autores: ReadonlyMap<string, string>
   // Los ids de las cotizaciones de la página que son la aprobada de su vehículo.
   aprobadas: ReadonlySet<string>
+  // El nombre del modo de cada una (`cotizaciones_modos_de()`); sin él, ninguna lo dice.
+  modos?: ReadonlyMap<string, string>
 }
 
 type ClaveDeId = 'leadId' | 'vehiculoId' | 'creadoPor'
@@ -42,5 +46,18 @@ export function filasConNombres(
     vehiculo: fila.vehiculoId === null ? null : (nombres.vehiculos.get(fila.vehiculoId) ?? null),
     autor: nombres.autores.get(fila.creadoPor) ?? 'Sin nombre',
     aprobada: nombres.aprobadas.has(fila.id),
+    modo: nombres.modos?.get(fila.id) ?? null,
+  }))
+}
+
+// Las filas de una página sin agrupar como entradas de la lista: cada una sola (una `suelta`, aunque tenga vehículo), ordenada por sí misma.
+export function entradasSinAgrupar<F extends { id: string; creadoEn: string }>(
+  filas: readonly F[],
+): { tipo: 'suelta'; ordenEn: string; ordenId: string; cotizacion: F }[] {
+  return filas.map((fila) => ({
+    tipo: 'suelta',
+    ordenEn: fila.creadoEn,
+    ordenId: fila.id,
+    cotizacion: fila,
   }))
 }

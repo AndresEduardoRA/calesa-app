@@ -131,6 +131,23 @@ describe('armarPaginaPor: el cursor por otra columna', () => {
     })
   })
 
+  it('una lista de grupos pagina por la fila que la ordena (`idDe`), no por la que la representa', () => {
+    const grupo = (n: number) => ({
+      representa: 'otra',
+      ordenId: cotizada(n).id,
+      ordenEn: cotizada(n).cotizadoEn,
+    })
+    const pagina = armarPaginaPor([grupo(3), grupo(2), grupo(1)], 2, null, {
+      instanteDe: (una) => una.ordenEn,
+      idDe: (una) => una.ordenId,
+    })
+    expect(leerCursor(pagina.siguiente)).toEqual({
+      instante: cotizada(2).cotizadoEn,
+      id: cotizada(2).id,
+      sentido: 'siguiente',
+    })
+  })
+
   it('armarPagina sigue paginando por creadoEn', () => {
     const pagina = armarPagina([fila(3), fila(2), fila(1)], 2, null)
     expect(leerCursor(pagina.siguiente)).toEqual(cur(2, 'siguiente'))
