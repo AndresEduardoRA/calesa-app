@@ -3,6 +3,7 @@ import { CONTRASENA, entrar } from './soporte/alta'
 import { admin } from './soporte/base'
 import { bloque, esMovil, otraPersona } from './soporte/inventario'
 import { exigir } from './soporte/leads'
+import { quieto } from './soporte/esperas'
 import { idDePersona, sesionDe, telefonoAlAzar } from './soporte/leads-alta'
 import {
   activarCampo,
@@ -71,8 +72,11 @@ test('edita los fijos y un dato propio, y sólo viaja lo que cambió', async ({ 
   const corto = `Edita ${info.project.name}`
   const lead = await fichaDeBerta(page, corto, { e2e_color: 'rojo' })
   const panel = await abrirEdicion(page)
-  // En el celular el panel ocupa toda la pantalla y «Guardar» queda siempre a la vista.
+  // En el celular el panel ocupa toda la pantalla y «Guardar» queda siempre a la vista. Se mide el panel con su formulario y quieto: el
+  // primero que se ve puede ser el del esqueleto, mientras llegan los catálogos, y el del formulario entra después con su animación.
   if (esMovil(page)) {
+    await expect(panel.getByLabel('Nombre')).toBeVisible()
+    await quieto(panel)
     expect((await panel.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(
       (page.viewportSize()?.width ?? 0) - 1,
     )

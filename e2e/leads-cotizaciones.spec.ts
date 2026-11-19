@@ -91,6 +91,11 @@ const titulo = (page: Page): Locator =>
   page.getByRole('heading', { name: 'Cotizaciones', exact: true, level: 2 })
 const lista = (page: Page): Locator => page.getByRole('list', { name: 'Cotizaciones del lead' })
 const filas = (page: Page): Locator => lista(page).getByRole('listitem')
+// El del bloque: la columna de la ficha tiene su propio «Ver más» (el de los datos del lead).
+const verMas = (page: Page): Locator =>
+  page
+    .getByRole('region', { name: 'Cotizaciones', exact: true })
+    .getByRole('button', { name: 'Ver más' })
 
 // Los pedidos del navegador a `cotizaciones` (la sección lee desde el navegador; el servidor no lee cotizaciones para la ficha).
 function vigilarLecturas(page: Page): string[] {
@@ -156,9 +161,9 @@ test('E1 la dueña: «Cotizaciones» es el último bloque del índice, no se lee
     'href',
     /^\/cotizaciones\/[0-9a-f-]{36}$/,
   )
-  await page.getByRole('button', { name: 'Ver más' }).click()
+  await verMas(page).click()
   await expect(filas(page)).toHaveCount(22)
-  await expect(page.getByRole('button', { name: 'Ver más' })).toHaveCount(0)
+  await expect(verMas(page)).toHaveCount(0)
   expect(lecturas).toHaveLength(2)
 })
 
@@ -175,10 +180,10 @@ test('E2 con 520: «Ver más» llega a 500, dice el tope y «Ver todas en Cotiza
   await page.goto(`/leads/${leads.quinientas}?seccion=cotizaciones`)
   await expect(filas(page)).toHaveCount(20)
   for (let ronda = 2; ronda <= 25; ronda += 1) {
-    await page.getByRole('button', { name: 'Ver más' }).click()
+    await verMas(page).click()
     await expect(filas(page)).toHaveCount(Math.min(20 * ronda, 500))
   }
-  await expect(page.getByRole('button', { name: 'Ver más' })).toHaveCount(0)
+  await expect(verMas(page)).toHaveCount(0)
   await expect(page.getByText('Mostrando las 500 más recientes.')).toBeVisible()
   const nodos = await lista(page).evaluate((e) => e.querySelectorAll('*').length + 1)
   const primera = tamanos[0] ?? 0

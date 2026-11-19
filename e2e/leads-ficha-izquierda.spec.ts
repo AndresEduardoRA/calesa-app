@@ -13,6 +13,7 @@ import {
   ponerExtras,
   tituloDeLaFicha,
   type LeadDePrueba,
+  verMasDeDatos,
 } from './soporte/leads-ficha'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
@@ -141,7 +142,7 @@ test('E2E «Ver más»: el modal por la URL con todo, Esc vuelve el foco y «Edi
   await capturar(page, info, 'ver-mas')
   await page.keyboard.press('Escape')
   await expect(modal).toBeHidden()
-  await expect(page.getByRole('button', { name: 'Ver más', exact: true })).toBeFocused()
+  await expect(verMasDeDatos(page)).toBeFocused()
   await expect(page).not.toHaveURL(/ver=/)
 
   // Recargar con `?ver=datos` lo abre; «Editar» deja sólo el panel de edición.
@@ -164,7 +165,7 @@ test('E2E «Ver más» sin red: lo dice con «Reintentar» y la ficha sigue en p
   await irAFicha(page, completo.id)
   await esperarFichaHidratada(page)
   await context.setOffline(true)
-  await page.getByRole('button', { name: 'Ver más', exact: true }).click()
+  await verMasDeDatos(page).click()
   // El aviso, sobre la pantalla (sin red, otros diferidos que la página pide en ese momento dicen lo mismo, cada uno con su «Reintentar»).
   const avisos = page
     .locator('div.fixed.bottom-4')

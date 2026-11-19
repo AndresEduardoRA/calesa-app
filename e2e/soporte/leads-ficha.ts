@@ -199,13 +199,19 @@ export async function editarDelMenuDeLaFicha(page: Page): Promise<Locator> {
 export const modalDeDatos = (page: Page): Locator =>
   page.getByRole('dialog', { name: /^Datos de / })
 
+// El del bloque «Datos»: las oportunidades y las cotizaciones de la ficha tienen el suyo.
+export const verMasDeDatos = (page: Page): Locator =>
+  page
+    .getByRole('region', { name: 'Datos', exact: true })
+    .getByRole('button', { name: 'Ver más', exact: true })
+
 export async function abrirVerMas(page: Page): Promise<Locator> {
   const modal = modalDeDatos(page)
   await expect(async () => {
     if (await modal.isVisible()) {
       return
     }
-    await aLaVista(page.getByRole('button', { name: 'Ver más', exact: true })).click({
+    await aLaVista(verMasDeDatos(page)).click({
       timeout: 1000,
     })
     await expect(modal).toBeVisible({ timeout: 1000 })
