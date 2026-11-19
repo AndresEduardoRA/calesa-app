@@ -381,6 +381,9 @@ vigilar_prs() {
         a_arreglar "$id" "El PR #$pr choca con main (conflicto de merge). Lo integrado mientras tanto en main tocó lo mismo." choque
     elif [ "$listo" = FAILURE ] || [ "$listo" = CANCELLED ]; then
       migraciones_tras_main "$id" "$pr" || reintentar_ci_ajeno "$id" "$pr" "$j" || a_arreglar "$id" "$(motivo_ci "$pr" "$j")"
+    elif [ -z "$listo" ] && cayo_lo_del_pr "$id" "$j"; then
+      # El CI sigue en los e2e, pero ya cayó lo que es del PR: la sesión empieza ahora (su push cancela la corrida vieja).
+      migraciones_tras_main "$id" "$pr" || a_arreglar "$id" "$(motivo_ci "$pr" "$j")"
     elif [ "$merge_state" = BEHIND ]; then
       # main exige la rama al día: GitHub la pone al día con un merge (nunca fuerza). Una vez cada 15 min como mucho. Si la rama
       # trae migraciones y main integró una más nueva, el merge lo hace el orquestador y las renombra (si no, el CI cae por el orden).

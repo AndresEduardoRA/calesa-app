@@ -11,7 +11,8 @@
 # 4. Espera (hasta ESPERA_MAX s, 5400) al check «Listo · todo en verde»: integrado → vuelve a main al día (en un worktree, a
 #    origin/main suelto: main es de la principal) y borra las ramas ya integradas; atrasada respecto de main (otro PR se integró
 #    antes) → `PUT …/pulls/<n>/update-branch` y el CI vuelve a correr, con el orden de migraciones contra el main nuevo;
-#    rojo → dice qué job cayó y sale con 1 (se arregla, se commitea y se vuelve a correr). `--sin-esperar` sale tras el 3.
+#    rojo («Listo», o sin esperarlo un job que no es un bloque de e2e) → dice qué job cayó y sale con 1 (se arregla, se commitea y
+#    se vuelve a correr). `--sin-esperar` sale tras el 3.
 # Sale con 64 si no hay qué publicar o falta algo; con 1 si el CI cayó; con 75 si se agotó la espera (el PR sigue su curso solo).
 # Se ubica por la carpeta del propio guion, no por la de quien lo corre: corrido desde `proyectos/` publica igual su repo.
 set -euo pipefail
@@ -119,7 +120,9 @@ while :; do
     PUESTA=$(($(date +%s) + 600))
   fi
   LISTO=$(jq -r '[.statusCheckRollup[] | select(.__typename == "CheckRun" and (.name | startswith("Listo"))) | .conclusion] | last // ""' <<<"$ESTADO")
-  if [ "$LISTO" = FAILURE ] || [ "$LISTO" = CANCELLED ]; then
+  # Un job que no es un bloque de e2e (lint, tipos, pruebas, base, el build) caído ya es el rojo: no se esperan los ~20 min de los e2e.
+  TEMPRANO=$(jq -r '[.statusCheckRollup[] | select(.__typename == "CheckRun" and .conclusion == "FAILURE" and (.name | (startswith("Listo") or startswith("e2e · bloque ")) | not))] | length' <<<"$ESTADO")
+  if [ "$LISTO" = FAILURE ] || [ "$LISTO" = CANCELLED ] || [ "$TEMPRANO" -gt 0 ]; then
     echo "✗ el CI del PR #$PR cayó:" >&2
     jq -r '.statusCheckRollup[] | select(.__typename == "CheckRun" and (.conclusion == "FAILURE" or .conclusion == "CANCELLED") and (.name | startswith("Listo") | not)) | "  · " + .name + "  " + (.detailsUrl // "")' <<<"$ESTADO" >&2
     echo "  El detalle: gh run view <id> --log-failed. Arréglalo, commitea y vuelve a correr este guion." >&2

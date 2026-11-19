@@ -30,6 +30,27 @@ log_del_job() {
   if [ -n "$1" ]; then ghr run view --job "$1" --log-failed 2>/dev/null; else ghr run view "$2" --log-failed 2>/dev/null; fi
 }
 
+# id json-del-pr → 0 si ya cayó un job que no es un bloque de e2e (lint, tipos, pruebas, base, el build) sin la firma de la máquina del
+# CI: ese rojo es del PR y va a la sesión sin esperar a «Listo», que llega tras los bloques de e2e (unos 20 min después de un rojo que
+# cae en el primero). Los bloques de e2e sí esperan a «Listo»: relanzar lo ajeno pide la corrida terminada. Un job ya juzgado de la
+# máquina no se vuelve a leer en cada vuelta (`temprano_visto`).
+cayo_lo_del_pr() {
+  local id=$1 nombre job run vistos
+  vistos=$(est_get "$id" temprano_visto)
+  while IFS=$'\t' read -r nombre job run; do
+    grep -qE "$ES_JOB_DE_E2E" <<<"$nombre" && continue
+    [ -n "$run" ] || continue
+    [[ " $vistos " == *" ${job:-$run} "* ]] && continue
+    if grep -qE "$ES_INFRA" <<<"$(log_del_job "$job" "$run")"; then
+      vistos="$vistos ${job:-$run}"
+      est_set "$id" temprano_visto "$vistos"
+      continue
+    fi
+    return 0
+  done < <(jobs_caidos "$2")
+  return 1
+}
+
 # id pr json-del-pr → 0 si relanzó lo caído o espera el relanzamiento recién pedido (no hay que abrir sesión), 1 si no corresponde.
 reintentar_ci_ajeno() {
   local id=$1 pr=$2 j=$3 sha n caidos nombre job run log propios="" runs="" que="" r
