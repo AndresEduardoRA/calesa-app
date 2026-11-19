@@ -32,6 +32,10 @@ type Props = {
   atiendeLaUrl?: boolean
 }
 
+// En el bloque no hay «Anotar» a la vista (el «Continuar» del borrador se va al guardar): el foco vuelve al «+» del título.
+const focoDelMas = (resumen: boolean) =>
+  resumen ? document.querySelector<HTMLElement>('[data-mas-del-seguimiento]') : null
+
 // Debajo de la lista: en el resumen, «Ver todos»; en la línea completa, «Ver más» e «Ir a una fecha».
 function PieDeLaForma({
   resumen,
@@ -144,7 +148,9 @@ export function LineaDeSeguimientos({
             }
             modal.cerrar()
           }}
-          focoAlCerrar={() => modal.focoAlCerrar() ?? boton.current ?? !enDrawer}
+          focoAlCerrar={() =>
+            modal.focoAlCerrar() ?? boton.current ?? focoDelMas(resumen) ?? !enDrawer
+          }
           // «Recargar» tras un conflicto: la primera página y, si no vino ahí, el que se edita por su id.
           recargar={() => void seguimientos.releer(modal.original?.id ?? null)}
           recargando={seguimientos.cargando}

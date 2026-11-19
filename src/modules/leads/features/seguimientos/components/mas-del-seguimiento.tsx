@@ -50,6 +50,7 @@ export function MasDelSeguimiento({ puedoAnotar, puedoAgendar, hayTipos }: Props
     >
       <DropdownMenuTrigger
         aria-label={NOMBRE_DEL_MAS}
+        data-mas-del-seguimiento=""
         className="flex size-[44px] shrink-0 items-center justify-center rounded-(--radius-md) outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) md:size-8"
       >
         <PlusIcon aria-hidden className="size-4" />
