@@ -3,6 +3,7 @@
 export { BloqueDeFicha } from './bloque-de-ficha'
 export { EsqueletoDeFichaEnDosColumnas } from './esqueleto-de-ficha-en-dos-columnas'
 export { TITULO_DE_BLOQUE } from './estilos'
+export { TituloDeBloqueConAccion } from './titulo-con-accion'
 export { FichaEnDosColumnas } from './ficha-en-dos-columnas'
 export { IndiceDeBloques, type EntradaDelIndice } from './indice-de-bloques'
 export { irAlBloque } from './ir-al-bloque'
