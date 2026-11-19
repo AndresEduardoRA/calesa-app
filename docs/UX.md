@@ -447,7 +447,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   inválido o sin acceso, «No tienes acceso a este cambio.»; un error al desplegar queda en la fila con «Reintentar». Filtros como chips arriba:
   persona y tipo de registro (`?persona=`, `?entidad=`), el registro (`?registro=`, desde «Ver actividad» del «⋯» de un lead —fila, tarjeta, kanban y
   ficha— y de la ficha de vehículo) y la fecha de «Ir a una fecha», cada uno con su «×», y «Limpiar filtros». «Ver más» con tope; retención de `actividad_dias` (14 si
-  no se puede leer). **Actividad reciente** (`ActividadReciente`, para una ficha; sola en `/actividad/reciente?entidad=&registro=`): los
+  no se puede leer). **Actividad reciente** (en la ficha del vehículo, leída al acercarse; sola en `/actividad/reciente?entidad=&registro=`): los
   últimos 5 cambios del registro como frases, cada uno a su detalle en `/actividad`, y «Ver toda la actividad»; esqueleto, «Sin cambios en
   los últimos N días.» y error con «Reintentar»; sin `actividad.ver` no se dibuja.
 - **Configuración** — `/configuracion/*` (permiso de cada sección): inicio + secciones, del registro `secciones.ts` (grupos «Empresa y equipo»

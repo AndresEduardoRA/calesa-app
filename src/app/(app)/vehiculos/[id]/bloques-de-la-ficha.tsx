@@ -33,8 +33,8 @@ type Props = {
   camposPublicos: LayoutDeOrigen['campos']
 }
 
-// Lo de adentro de cada bloque, con su límite de error. Ninguno espera a acercarse en el marco: la isla de las cotizaciones ya lee al acercarse sola
-// (con su esqueleto), «Actividad reciente» llega tras su `<Suspense>` y «Relacionados» y «Vitrina» los abre la URL (sus paneles).
+// Lo de adentro de cada bloque, con su límite de error. Ninguno espera a acercarse en el marco: las islas de las cotizaciones y de la actividad leen al acercarse solas
+// (con su esqueleto) y «Relacionados» y «Vitrina» los abre la URL (sus paneles).
 function Contenido({
   ancla,
   titulo,
@@ -71,7 +71,7 @@ function Contenido({
       return (
         <BloqueDeFicha ancla={ancla} titulo={titulo}>
           <Suspense fallback={<EsqueletoDeActividadReciente />}>
-            <BloqueActividad vehiculoId={vehiculo.id} permisos={permisos} />
+            <BloqueActividad vehiculoId={vehiculo.id} />
           </Suspense>
         </BloqueDeFicha>
       )

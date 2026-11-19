@@ -11,8 +11,11 @@ Auditoría inmutable de 14 días: qué cambió, quién, cuándo y el diff, con p
   como chips (`?persona=`, `?entidad=`, `?registro=` sólo con `?entidad=`, que trae «Ver actividad» de la ficha de lead y de vehículo, y la fecha de «Ir a una
   fecha»). Una fila visible despliega su diff en la misma fila (`?cambio=<id>`, `replace`); uno fuera de lo cargado sale arriba como «El cambio que abriste».
   `pantallas/actividad-reciente.ts`: `<ActividadReciente tabla registroId permisos zona diasDeActividad>`, los últimos 5 cambios de un registro (servidor;
-  sólo el «Reintentar» es de cliente; su título es el de los bloques de ficha, `TituloDeBloqueConAccion`, con «Ver toda la actividad»), y
-  `EsqueletoDeActividadReciente` (el mismo alto). La monta la ficha del vehículo (bloque «Actividad reciente») y, sola, `/actividad/reciente`. `index.ts` también da `rutaDeActividadDe(tabla, id)`.
+  sólo el «Reintentar» es de cliente; su título es el de los bloques de ficha, `TituloDeBloqueConAccion`, con «Ver toda la actividad»; la monta, sola,
+  `/actividad/reciente`), `<ActividadRecienteAlAcercarse tabla registroId zona diasDeActividad>` (la misma región, con las filas leídas desde el
+  navegador la primera vez que el bloque está a 200 px de la vista —`leerActividadReciente` de `composicion.client.ts`— y su código por `diferido()`:
+  no pesan en el documento; la monta la ficha del vehículo, que ya comprobó `actividad.ver`) y `EsqueletoDeActividadReciente` (el mismo alto). Las dos
+  dibujan `FilasDeActividadReciente` dentro de `MarcoDeActividadReciente`. `index.ts` también da `rutaDeActividadDe(tabla, id)`.
 - Depende de `equipo` (`actividad.ver`) y `empresa` (zona y `actividad_dias`).
 
 ## Archivos clave

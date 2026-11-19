@@ -259,6 +259,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **Aprobar desde la ficha del vehículo refresca la página.** «Cotización aprobada» de la izquierda se lee en el servidor y no escucha a las islas: tras
   aprobar o deshacer, «Cotizaciones de este vehículo» hace `router.refresh()` en una transición. En la ficha no hay nada tipeado y la isla no se vuelve a
   montar (no cambian ni su posición ni su `key`); la isla ya apaga sus filas mientras relee.
+- **«Actividad reciente» de la ficha del vehículo se lee desde el navegador al acercarse**, con su código por `diferido()`: dibujada en el servidor,
+  sus cinco frases sumaban unos 13 KB al documento de la ficha (RSC y HTML) y lo pasaban de su presupuesto. La pieza del servidor sigue para
+  `/actividad/reciente`; las dos comparten el marco y las filas.
 - **La vista previa del bloque «Vitrina» va plegada en un `<details>` nativo**: sin JS, no pide la foto hasta abrirse y no repite el precio, que va
   arriba con `<Monto>`. El motivo de «Publicado, no visible» va escrito a la vista, no sólo en el `title` de la insignia.
 - **«Ganada» en la frase de la subasta sin copiar la situación:** en un origen de subasta, la situación `fase` con el cierre vencido sólo puede ser una
