@@ -24,6 +24,7 @@ export type {
   ValorDefecto,
 } from './entities/campo'
 export type { Categoria } from './entities/categoria'
+export type { DatoClaveResuelto } from './entities/datos-clave'
 
 // El layout activo de un origen, leído desde el navegador (el alta del panel del vehículo de la hoja de cotizar lo pide al abrirse).
 export {
