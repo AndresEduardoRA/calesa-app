@@ -245,11 +245,12 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   «Datos» (los datos clave del lead y «Ver más», `?ver=datos`), «Quién lo tiene» («Compartir» y «Transferir» a todo el ancho) y «Acceso al portal» (la
   cartera y `leads.portal.gestionar`). **Derecha**: el índice pegajoso («Índice de la
   ficha», enlaces de ancla con `aria-current="location"`; en el celular se desplaza de costado) y los bloques en su orden, cada uno por su permiso:
-  «Seguimientos y recordatorios» (`?panel=anotar-seguimiento`, `editar-seguimiento&seguimiento=<id>`, `agendar-recordatorio`, `editar-recordatorio&recordatorio=<id>`;
-  «Ver todos» en `?todos=seguimientos|recordatorios`), «Tus oportunidades» (con la cartera; `?panel=nueva-oportunidad`, `editar-oportunidad&oportunidad=<id>`),
-  «Relacionados» (`vehiculos.ver`; con la gestión de «Vehículos» al pie: `?panel=agregar-vehiculo`, `?panel=desvincular`) y «Cotizaciones» (con
-  `cotizaciones.ver` en algún origen; ver «Cotizaciones del lead y del vehículo»). `?seccion=seguimientos|vehiculos|oportunidades|cotizaciones|portal` lleva a su
-  bloque (`vehiculos` a Relacionados) y le da el foco al título; con un `?panel=` también abre lo suyo. Un bloque sin permiso no se dibuja ni está en el índice.
+  «Seguimiento» (`?panel=anotar-seguimiento`, `editar-seguimiento&seguimiento=<id>`, `agendar-recordatorio`, `editar-recordatorio&recordatorio=<id>`;
+  «Ver todos» y «Ver tus recordatorios» en `?todos=seguimientos|recordatorios`), «Cotizaciones» (con `cotizaciones.ver` en algún origen; «Cotizar» en el título;
+  ver «Cotizaciones del lead y del vehículo»), «Vehículos» (`vehiculos.ver`; el compacto de Relacionados con «Vincular o marcar» en el título y la gestión al pie:
+  `?panel=agregar-vehiculo`, `?panel=desvincular`) y «Oportunidades» (con la cartera; «Nueva» en el título; `?panel=nueva-oportunidad`,
+  `editar-oportunidad&oportunidad=<id>`). `?seccion=seguimientos|vehiculos|oportunidades|cotizaciones|portal` lleva a su bloque (`vehiculos` y `#relacionados`
+  a «Vehículos») y le da el foco al título; con un `?panel=` también abre lo suyo. Un bloque sin permiso no se dibuja ni está en el índice.
 - **Vehículos** — `/vehiculos` (`vehiculos.*`): tabla + panel de filtros. Pestaña por origen (`?origen=`); filtros en URL (`q`,
   `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; la fila y la tarjeta son enlaces a la ficha `/vehiculos/<id>` (Ctrl o el
   botón del medio abren otra pestaña; la casilla, el «⋯», «Publicar» y la foto no navegan); un `?vehiculo=<id>` viejo redirige a la ficha (ver «Enlace viejo»);
@@ -304,8 +305,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `?panel=vitrina` («Publicar en la web»), `?panel=imagenes` («Editar imágenes»), `?panel=actualizar-datos` («Actualizar los datos»),
   `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».»
   con «Reintentar»; uno caído no tumba a los demás).
-  - **Cotizaciones del lead y del vehículo** (bloque): en el lead, las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
-    Cotizaciones» (`/cotizaciones?lead=`), con la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura). En el vehículo, «De este
+  - **Cotizaciones del lead y del vehículo** (bloque): en el lead, «Cotizar» en el título (la hoja con este lead en el primer origen donde quien mira
+    cotiza, como «Cotizar lead») y las 3 más recientes que quien mira ve, con la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma
+    lectura), y «Ver todas» (`/cotizaciones?lead=`, sin número) si hay más. En el vehículo, «De este
     vehículo» (abajo): de a 10 con «Ver más» hasta 100 y «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`), con «Cotizar» en el título y las casillas
     de «Comparar» en su fila. Los dos se leen al acercarse; esqueleto, error con «Reintentar», «Sin cotizaciones que puedas ver.».
   - **De este vehículo** (bloque de la guardada y del resumen de `/cotizaciones`): las cotizaciones del mismo vehículo que quien mira ve, **la aprobada
@@ -866,8 +868,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 ### Relacionados (estados propios)
 
 Arriba de cada detalle, en dos presentaciones que elige cada lugar (`presentacion`, obligatoria): **en una línea** en logística
-(la página de la unidad y el drawer de `/logistica/gastos?vehiculo=`), y **compacta** en las fichas (`/vehiculos/[id]`, un bloque de la columna derecha, con `leads.ver`; `/leads/[id]`, un bloque
-de la columna derecha con la gestión de «Vehículos» al pie, con `vehiculos.ver`). Tres grupos: **Vinculado**, **Interesado** y **Cotizado** (éste sólo con `cotizaciones.ver`). **Un grupo sin nada (ni lo que no se ve) no
+(la página de la unidad y el drawer de `/logistica/gastos?vehiculo=`), y **compacta** en las fichas (`/vehiculos/[id]`, un bloque de la columna derecha, con `leads.ver`; `/leads/[id]`, el bloque
+«Vehículos» de la columna derecha, con «Vincular o marcar» en su título y la gestión al pie, con `vehiculos.ver`). Tres grupos: **Vinculado**, **Interesado** y **Cotizado** (éste sólo con `cotizaciones.ver`). **Un grupo sin nada (ni lo que no se ve) no
 se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «Relacionados»» del bloque o de la línea.
 
 - **En una línea:** `<section aria-label="Relacionados">` sin encabezado, con un chip por grupo con algo («Vinculado · n»; 44 px en el celular, 32 en escritorio) y, si hay acciones de grupos
@@ -884,7 +886,7 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
 - **Acciones** (cada una por su permiso y sus banderas; la base vuelve a exigirlas): «Cotizar», «Ver cotización», «Quitar interés» (en el lugar, con «Deshacer»), «Desvincular» (desde un
   vehículo, su confirmación `?panel=desvincular`; desde un lead, con la cartera en el lugar con «Deshacer», sin ella lleva a `?seccion=vehiculos&panel=desvincular&vinculado=<id>`), «Vincular a un lead» (sin
   vínculo) y «Marcar un interesado» (los dos abren el selector de leads de la ficha: `?panel=vincular-lead`, `?panel=marcar-interesado`; en un resumen o en la unidad llevan a la ficha con el panel
-  abierto), «Vincular o marcar un vehículo» (desde un lead: lleva a `?seccion=vehiculos&panel=agregar-vehiculo`) y «Ver todos» (`?relacionados=vinculado|interesado|cotizado`: un `<Drawer>` de a 20 por cursor con
+  abierto), «Vincular o marcar» (desde un lead: en el título del bloque «Vehículos», abre `?panel=agregar-vehiculo`; no va en ningún grupo) y «Ver todos» (`?relacionados=vinculado|interesado|cotizado`: un `<Drawer>` de a 20 por cursor con
   «Ver más» hasta 500, `AvisoDeTope`; se abre en el lugar, la ficha o la unidad; el de Vinculado en un vehículo trae el vínculo vigente y los anteriores; el enlace abre su drawer
   aunque el grupo no se dibuje).
 - **Estados:** cargando, `EsqueletoDeRelacionados` del alto de lo que viene (tres chips en una línea; el `h2` y tres celdas en la compacta);
@@ -1649,15 +1651,23 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
   clave» (el diálogo de volver a otorgar) y «Quitar el acceso» van en el «⋯», que sigue al botón en el orden del teclado.
 - **Enviar a la papelera:** último ítem del «⋯» (`leads.eliminar`); sin preguntar, con «Deshacer» 10 s. Con un vehículo vinculado visible,
   apagado con motivo y «Ir a «Vehículos»» (salta a Relacionados); si lo frena uno que no se ve, la base rechaza nombrando al lead, no al vehículo.
-- **Relacionados** (con `vehiculos.ver`; `?seccion=vehiculos` lleva acá): el bloque compacto (ver «Relacionados (estados propios)»): vinculados, interesados
-  (con nota) y cotizados con sus acciones en el «⋯» de cada fila («Desvincular»: con la cartera, en el lugar con «Deshacer»; sin ella, confirma en
-  `?panel=desvincular&vinculado=`; «Quitar interés»). Al pie, lo que no repite: «Vínculos anteriores» (3 a la vista y «Ver los N anteriores» en el lugar,
-  hasta 50 con su tope) y «Vincular o marcar un vehículo» (cartera y `leads.editar`: busca por título, VIN, lote o #número, «Vincular» y nota de interés
-  ≤ 500; `?panel=agregar-vehiculo`).
+- **La derecha:** el índice que baja y cuatro bloques compactos, de lo más usado a lo menos, cada uno por su permiso (sin permiso, ni el bloque ni su
+  entrada en el índice), con un solo título, una sola acción en él y lo demás en su «⋯»; sin subtítulos que repitan; 3 a la vista y «Ver todos» o «Ver
+  todas» (sin número) sólo si hay algo que no se ve. **Seguimiento** (ver «Leads: seguimientos y recordatorios»). **Cotizaciones** (ver «Cotizaciones del
+  lead y del vehículo»). **Vehículos** (con `vehiculos.ver`; `?seccion=vehiculos` y `#relacionados` llevan acá): el compacto de Relacionados (ver
+  «Relacionados (estados propios)») con «Vincular o marcar» en el título (cartera y `leads.editar`: abre `?panel=agregar-vehiculo`, que busca por título, VIN,
+  lote o #número, con «Vincular» y nota de interés ≤ 500); vinculados, interesados (con nota) y cotizados con sus acciones en el «⋯» de cada fila
+  («Desvincular»: con la cartera, en el lugar con «Deshacer»; sin ella, confirma en `?panel=desvincular&vinculado=`; «Quitar interés»). Al pie, «Vínculos
+  anteriores» plegados: un botón (`aria-expanded`) que los despliega en el lugar, hasta 50 con su tope. **Oportunidades** (con la cartera): las abiertas
+  (una por embudo) en filas de una línea (título, el embudo si quien mira tiene más de uno, la etapa con su color y el monto con `<Monto>`), hasta 3, con
+  «Mover a», «Editar» y «Eliminar» en el «⋯» de cada fila (una que se cierra sale de la vista); «Nueva» en el título (su nombre accesible, «Nueva
+  oportunidad»; `?panel=nueva-oportunidad`); «Ver todas» al embudo filtrado por el lead (`/leads?vista=embudo&embudo=<id>&lead=<id>`), en el de la primera
+  que se ve o, sin abiertas, en el por defecto de quien mira; las cerradas están ahí.
 - **Estados de los bloques:** cada uno tras su `<Suspense>` con su esqueleto del alto de lo que viene (el índice sale enseguida: son los permisos); uno que
-  falla al leer o al dibujar muestra su título, «No pudimos cargar «<título>».» y «Reintentar», y los demás siguen; vacíos con sus textos («Todavía no hay
-  seguimientos», «Ningún recordatorio pendiente sobre este lead.»…); fuera de la cartera se ve y no se edita (teléfonos enmascarados con «Completo solo
-  para su cartera.», privados «Solo la cartera», sin «Anotar», «Agendar» ni «Editar»); sin red el índice sigue (son anclas) y lo diferido dice «Sin
+  falla al leer o al dibujar muestra su título, «No pudimos cargar «<título>».» y «Reintentar», y los demás siguen; vacíos de una línea («Sin
+  seguimientos todavía.», «Sin cotizaciones que puedas ver.», «Sin vehículos.», «Sin oportunidades abiertas.»); sin recordatorio pendiente no se dibuja su
+  fila; fuera de la cartera se ve y no se edita (teléfonos enmascarados con «Completo solo para su cartera.», privados «Solo la cartera», sin «+», sin «⋯»
+  en las filas de seguimiento, sin «Vincular o marcar» y sin «Oportunidades»); sin `cotizaciones.crear`, «Cotizaciones» sin «Cotizar»; sin red el índice sigue (son anclas) y lo diferido dice «Sin
   conexión. No se pudo abrir esto.»; al 200 %, una sola columna sin ensanchar la página.
 
 ### Leads: papelera, importar y teléfonos (estados propios)
@@ -1688,10 +1698,14 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
   `Ctrl/Cmd+Enter` o `Ctrl/Cmd+S` guardan; recargar lo reabre con lo escrito; «atrás» deja un borrador; sin tipos activos, apagado con
   motivo. **Editar/eliminar** sólo lo propio (`?panel=editar-seguimiento&seguimiento=<id>`); eliminar con «Deshacer». Conflicto con
   «Recargar», conservando lo escrito.
-- **En la ficha, el bloque «Seguimientos y recordatorios»:** lo último y lo próximo, en dos columnas desde 36 rem: los 3 últimos seguimientos con «Anotar
-  seguimiento» y tus 3 recordatorios pendientes más próximos (los vencidos primero) con «Agendar recordatorio». «Ver todos los seguimientos» (si hay más)
-  y «Ver todos tus recordatorios» (si hay más o hay completados), sin número, abren un drawer en `?todos=seguimientos|recordatorios` («Seguimientos de
-  <nombre>», «Tus recordatorios sobre <nombre>») con la lista completa; con él abierto, los modales de la URL son del drawer.
+- **En la ficha, el bloque «Seguimiento»:** en una columna. En el título, un «+» («Anotar o agendar», cartera y `leads.editar`) que despliega «Anotar
+  seguimiento» (apagado con su motivo sin tipos activos) y «Agendar recordatorio», y un «⋯» con «Ver tus recordatorios»; al cerrarse el modal, el foco
+  vuelve al «+». Arriba, tu recordatorio pendiente más próximo en una fila, con «Completar» a la vista y «Editar» y «Eliminar» en su «⋯» (vencido: borde y
+  fondo de aviso y «Vencido»; sin pendientes no se dibuja). Debajo, los 3 últimos seguimientos en línea de tiempo: el icono de su tipo en un círculo sobre
+  una línea vertical, el título, «hace 2 h · Ana · <vehículo>», el ojo si lo ve el cliente y dos líneas del detalle, con «Editar» y «Eliminar» en el «⋯»
+  de los propios; un borrador sin guardar se dice arriba en una línea («Tienes un seguimiento sin guardar.» y «Continuar»). «Ver todos» (si hay más) y
+  «Ver tus recordatorios», sin número, abren un drawer en `?todos=seguimientos|recordatorios` («Seguimientos de <nombre>», «Tus recordatorios sobre
+  <nombre>») con la lista completa; con él abierto, los modales de la URL son del drawer.
 - **Línea de tiempo** (en «Ver todos»): de a 20 hasta 500; «Ir a una fecha» (no va a la URL) trae ese día y lo anterior; vacío.
 - **Tus recordatorios:** sólo los propios; «Agendar recordatorio» (cartera); vencidos primero con «Vencido»; «Completados» plegados (en «Ver todos»);
   «Completar»/«Reabrir», «Editar», «Eliminar» con «Deshacer». Modal por URL (`?panel=agendar-recordatorio`,
@@ -1709,9 +1723,9 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
   (`?q=`, desde 2 caracteres; busca título y nombre del lead en todas las columnas; es de la vista de embudo).
 - **Relacionados:** cada grupo muestra «n» o «100+» en su chip o en su título (una ventana de 101 por grupo, lo que no se ve incluido, nunca un total exacto), hasta 3 filas y «Ver todos» de a 20 por cursor hasta 500 con `<AvisoDeTope>`.
 - **Vehículos y ficha:** «Vínculos anteriores» (hasta 50) y «Agregar vehículo» dicen su tope al pie con `<AvisoDeTope>`; vinculados e interesados son
-  los grupos de Relacionados («100+», «Ver todos» hasta 500); el bloque de seguimientos muestra 3 y 3 y «Ver todos» lee de a 20 hasta 500;
-  «Oportunidades» muestra las 10 más recientes (abiertas primero) con «Ver más» de a 20 desde el navegador, hasta 500 (en el tope,
-  «Verlas en tu embudo»: el embudo filtrado por el lead).
+  los grupos de Relacionados («100+», «Ver todos» hasta 500); el bloque «Seguimiento» muestra 3 seguimientos y tu recordatorio más próximo, y «Ver
+  todos» lee de a 20 hasta 500; «Cotizaciones» muestra las 3 más recientes y «Ver todas» es el listado; «Oportunidades» muestra hasta 3 abiertas y lo
+  demás está en «Ver todas», el embudo filtrado por el lead.
 - **Papeleras:** de a 5 lotes por página (`?cursor=`); un lote trae hasta 200 y muestra 20 con «Mostrar los 200». Sin «Ítems por página»:
   su unidad es el lote.
 - **Sin red:** abrir un modal, panel o pestaña nunca pedidos dice «Sin conexión. No se pudo abrir esto.» con «Reintentar»; paginar sin red

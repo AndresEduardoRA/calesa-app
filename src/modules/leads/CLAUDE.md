@@ -28,12 +28,15 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
 - Rutas: `/leads`, `/leads/[id]` (`leads.ver`; la ficha en dos columnas, `FichaEnDosColumnas` de `shared`: a la izquierda, pegajosa, la cabecera (el «⋯» a
   la derecha del nombre y `textoDeLaCartera()` debajo; `useCartera` vive en `lateral-de-la-ficha.tsx` y alimenta la línea y «Quién lo tiene»), «Datos» (los
   datos clave del lead, `entities/datos-clave-del-lead.ts`, y «Ver más» en `?ver=datos`: `modal-de-datos-del-lead.tsx`, diferido, con los grupos y los
-  teléfonos de sólo lectura), «Quién lo tiene» y «Acceso al portal» (`accionesDelPortal()`: un botón principal y el resto en su «⋯»); a la derecha el índice y los bloques de `entities/bloques-de-la-ficha.ts`, todos a la
-  vista y cada uno por su permiso y tras su `<Suspense>`: «Seguimientos y recordatorios» (los últimos 3 y los 3 pendientes más próximos; «Ver todos» es un
-  drawer en `?todos=seguimientos|recordatorios`, con su propia clave), «Tus oportunidades», Relacionados con la gestión de «Vehículos» al pie y «Cotizaciones»
-  (se pide al acercarse). `?seccion=datos|seguimientos|vehiculos|oportunidades|cotizaciones|portal` lleva al bloque (`anclaDeLaSeccion()`: «vehiculos» es
-  Relacionados) y le da el foco al título; «Cotizaciones» con `cotizaciones.ver` en algún origen, sin mirar la cartera, la compone `src/app` con
-  `cotizaciones/pantallas/lead`; la composición vive en `src/app/(app)/leads/[id]/bloques.tsx`), `/leads/papelera`,
+  teléfonos de sólo lectura), «Quién lo tiene» y «Acceso al portal» (`accionesDelPortal()`: un botón principal y el resto en su «⋯»); a la derecha el índice y los cuatro bloques compactos de
+  `entities/bloques-de-la-ficha.ts`, en orden de uso, cada uno por su permiso, tras su `<Suspense>` y con su propio `h2` (`tabIndex={-1}`) y una sola acción
+  en él: «Seguimiento» (`ResumenDeSeguimientos`: el «+» de `mas-del-seguimiento.tsx` con `lineasDelMas()`, que sólo escribe el `?panel=`; el «⋯» con «Ver tus
+  recordatorios»; tu recordatorio más próximo, `PRIMEROS_DE_RECORDATORIOS` = 1; los últimos 3 en línea de tiempo, `fila-de-seguimiento.tsx`; «Ver todos» es un
+  drawer en `?todos=seguimientos|recordatorios`, con su propia clave), «Cotizaciones», «Vehículos» (el compacto de Relacionados, ancla `relacionados`) y
+  «Oportunidades» (sólo las abiertas, hasta 3, en filas de una línea: `entities/oportunidades-del-bloque.ts`; «Ver todas» al embudo filtrado por el lead).
+  `?seccion=datos|seguimientos|vehiculos|oportunidades|cotizaciones|portal` lleva al bloque (`anclaDeLaSeccion()`: «vehiculos» es «Vehículos») y le da el foco
+  al título; «Cotizaciones» (con `cotizaciones.ver` en algún origen, sin mirar la cartera) la compone `src/app` con su título y «Cotizar»
+  (`leads/[id]/bloque-cotizaciones.tsx`) y `cotizaciones/pantallas/lead`; la composición vive en `src/app/(app)/leads/[id]/bloques.tsx`), `/leads/papelera`,
   `/leads/importar` (`leads.crear`), `POST /leads/exportar` (`leads.exportar`), `/configuracion/leads/*` (una sub-ruta por pantalla de
   `pantallas/configuracion`: `campos` con `EditorDeCamposDeLead`, que con las `lead_campo_*` pide `leads.campos.gestionar`; `origenes`,
   `tipos`, `seguimientos`, `embudo`, `portal` y `telefonos` (`features/plantillas/`, con la barra de cambios sin guardar) con
@@ -69,7 +72,7 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   `src/app/(app)/_inicio/vincular-turno.tsx`; «+» abre el alta con `?elegir=vincular` y vuelve con `?vincular=<id>`.
 - «Escribirle por chat» (`features/chat/`): en el aviso «Lo tiene <persona>» del teléfono principal, enlace a `/chat?con=<duenoId>` sólo si el layout
   dijo `chat.participar` (falso por omisión) y la base mandó `dueno_id`. La base decide si se puede (`chat_directa`).
-- **«Relacionados» en el lead** (`vehiculos` lo dibuja; `leads` no lo importa): `FichaDeLead` recibe el nodo `relacionados` (un bloque de la columna derecha, con `GestionDeVehiculosDelLead` al pie).
+- **«Relacionados» en el lead** (`vehiculos` lo dibuja con el título «Vehículos» y «Vincular o marcar»; `leads` no lo importa): `FichaDeLead` recibe el nodo `relacionados` (el bloque «Vehículos» de la columna derecha, con `GestionDeVehiculosDelLead` al pie).
   `pantallas/relacionados.ts` reexporta el selector de leads (`PanelParaVincularDiferido`, con `titulo?`) para «Vincular a un lead» y «Marcar un interesado» de un vehículo.
 - Sin código: `getLead()`, `buscarLeads()`, `<ChipLead>`, `telefonoDe(leadId)`.
 
@@ -111,8 +114,8 @@ la causa en `hint` (`errorConCausa()`), y `entities/avisos-de-lead.ts` la vuelve
 `telefonos_actualizado_en`). Lecturas: `ajustes_leads_leer()` (sin permiso), `lead_telefonos_leer()` (sin uso en la app; sus pruebas SQL siguen),
 `verificar_telefono_extra()` (al tipear un extra), `telefonos_extra_choques()` (`leads.configurar`: por cursor sobre `leads_telefonos_pkey`, hasta 10.000
 filas por llamada, enmascarada), `leads_vista`, `leads_cartera_vista`, `lead_ficha()`, `leads_candidatos()` + `leads_vista_por_ids()`, `lead_oportunidades()` (invocadora,
-por cursor, de a 20 y hasta 100, por `oportunidades_lead_abiertas_idx` y `oportunidades_lead_cerradas_idx`; «Ver más» hasta 500; en la primera página,
-`abiertas_por_embudo`), `embudo_tablero_del_lead()` y `embudo_etapa_pagina_del_lead()` (invocadoras, el embudo filtrado por lead, por
+por cursor, de a 20 y hasta 100, por `oportunidades_lead_abiertas_idx` y `oportunidades_lead_cerradas_idx`; la ficha lee la primera página de 10 y dibuja
+hasta 3 abiertas; en la primera página, `abiertas_por_embudo`), `embudo_tablero_del_lead()` y `embudo_etapa_pagina_del_lead()` (invocadoras, el embudo filtrado por lead, por
 `oportunidades_lead_etapa_idx`).
 
 ## No se rompe
