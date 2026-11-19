@@ -18,8 +18,8 @@ import { esquemaDeAplicarPlantillaDeV1 } from '../schemas/plantilla-de-v1'
 
 // Empieza un origen desde una plantilla de V1 (`cotizacion_paquete_aplicar()`): crea los borradores de la fórmula (con su diseño) y de la tarjeta, y los colores que
 // falten, todo o nada; no publica. El navegador manda la clave del paquete y las versiones de los borradores que leyó; el paquete sale del código. Los colores se
-// eligen aquí contra el catálogo de ahora (si no caben, no se llama a la base) y la base vuelve a mirar el reuso y el tope bajo su candado. Cada color nuevo lleva el
-// id de este intento: repetir el pedido no duplica nada. docs/COTIZADOR.md › «Plantillas de V1».
+// eligen aquí contra el catálogo de ahora (si no caben, no se llama a la base) y la base vuelve a mirar el reuso y el tope bajo su candado. Repetir el pedido no duplica
+// nada: es todo o nada, y si el primero entró, el segundo trae las mismas versiones nulas o viejas y la base responde el PT409 de los borradores. docs/COTIZADOR.md › «Plantillas de V1».
 export const aplicarLaPlantillaDeV1 = actionClient
   .inputSchema(esquemaDeAplicarPlantillaDeV1)
   .action(async ({ parsedInput, ctx }): Promise<ResultadoDeAccion<Aplicada>> => {

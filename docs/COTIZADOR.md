@@ -1076,8 +1076,9 @@ mano desde sus bandas) y la base los publica (P9 de `supabase/tests/areas/formul
   los grupos con su plazo y su color («1er pago», «2do pago» y la póliza al oficial; Oficina, un grupo «Contado»), los modos de V1 («Aduana»: la suma de los
   dólares, todo al oficial; «Paralelo»: lo de afuera al paralelo y la aduana al oficial; «Unificado»: un solo dólar, el paralelo), con su modo por defecto
   (Unificado en USA y China, Paralelo en Oficina y Dealer), «Mostrar el total en bolivianos» ofrecido y apagado, las ayudas de cada celda y el nivel «Todos»
-  en ver y editar. La cuenta especial de USA entra en la base de la transferencia y nunca en el CIF; Dealer redondea a dólar entero la línea de los fees, la
-  transferencia y la nacionalización (`redondear`), y el export híbrido entra con el interruptor «Híbrido / eléctrico».
+  en ver y editar. La cuenta especial de USA entra en la base de la transferencia y nunca en el CIF; la nacionalización (la póliza en China) va a dólar entero
+  (`redondear`, sobrescribible: la póliza manual), como su línea de V1; los fees y la transferencia, el par porcentaje-monto de su celda, no (V1 también los
+  redondea: con montos enteros la diferencia es de centavos). En Dealer, el export híbrido entra con el interruptor «Híbrido / eléctrico».
 - **Las tablas congeladas** (`params.tablas`, «Las tablas congeladas (D5)»): USA lleva `depreciacion` (la `usa` de V1) y `depreciacion_moto` (la `usa_moto` de
   V1, que guarda porcentajes enteros: 5 es un factor de 0,05); China, `depreciacion` (la `china` de V1). **China no congela las comisiones por categoría**: su
   fórmula de V1 no las lee (la comisión de logística es la constante de 1.000). Oficina y Dealer no usan tablas (el factor DP de Dealer es una constante: no
@@ -1093,8 +1094,9 @@ mano desde sus bandas) y la base los publica (P9 de `supabase/tests/areas/formul
   esperada de la fórmula (nula = crear) y sin la publicada esperada; `plantilla_guardar_borrador()` con la de la tarjeta; `_paquete_colores_preparar()`
   (definer: toma `tonos` en `share row exclusive` y comprueba que cada color que se reusa sigue con su hex —si no, PT409 «Mientras elegías, cambiaron los
   colores del catálogo. Vuelve a elegir la plantilla.»— y que hay lugar); y `tono_crear()` por cada color nuevo, comparando la clave que da la base con la
-  esperada (otra: PT409). Los candados van en el orden de publicar (`formulas:` → `plantillas:` → `tonos`). Cualquier rechazo deshace todo y vuelve con su
-  mensaje (los PT409 de los borradores, tal cual); los ids de los colores los pone el servidor por intento, así reintentar no duplica. Devuelve
+  esperada (otra: PT409). Un color cuyo nombre o clave tomó otro mientras tanto también es ese PT409. Los candados van en el orden de publicar (`formulas:` → `plantillas:` →
+  `tonos`). Cualquier rechazo deshace todo y vuelve con su mensaje (los PT409 de los borradores, tal cual); reintentar no duplica: si el primero entró, el
+  segundo trae versiones que ya no son y da el PT409 de los borradores. Devuelve
   `{formula: {id, actualizado_en}, plantilla, colores}`. La nota de los dos borradores: «Empezado desde la plantilla de V1 «USA (subasta)».».
 - **No publica:** crea los borradores de la fórmula (con su diseño) y de la tarjeta; publicar es aparte, como siempre. El navegador manda la clave del
   paquete, nunca una fórmula.

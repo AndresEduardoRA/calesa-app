@@ -1617,7 +1617,7 @@ V1»). No publica.
 - **Al aplicar:** cierra el modal, avisa «Se crearon los borradores de la fórmula y de la tarjeta desde «USA (subasta)». Revísalos y publícalos.» y va a la
   pestaña Fórmula del origen, con los dos borradores y su nota «Empezado desde la plantilla de V1 «USA (subasta)».».
 - **Cargando:** cuatro tarjetas `Esqueleto` con el título y los botones apagados. **Error al leer:** «No se pudieron leer las plantillas.» con «Reintentar».
-  **Sin red** (al leer o al aplicar): «No hay conexión.» con «Reintentar»; reintentar no duplica nada (todo o nada, y los colores con el id del intento).
+  **Sin red** (al leer o al aplicar): «No hay conexión.» con «Reintentar»; reintentar no duplica nada (todo o nada: si el primero entró, el segundo da el PT409 con «Recargar»).
 - **Colores que no caben:** en la tarjeta del paquete elegido y en el pie, «No hay lugar para N colores más en el catálogo (máximo 48): elimina alguno que
   no se use.» con «Usar esta plantilla» apagado y ese motivo; si la base lo rechaza igual (otra persona sumó colores), el mismo texto y nada creado. Dos
   colores que ya existen con otro tono: su aviso, apagado igual.

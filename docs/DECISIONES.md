@@ -707,9 +707,12 @@ las trampas, en `docs/LECCIONES.md`.
   «Aduana» son los de V1, sus bolivianos van todos al oficial. Por defecto, Unificado en USA y China y Paralelo en Oficina y Compra dealer USA (el
   `quote_exchange_mode_dealer` de V1 es `blue`). China no congela las comisiones por categoría: su fórmula de V1 no las lee (la comisión de logística es la
   constante de 1.000) y sumarlas cambiaría sus totales. La `usa_moto` de V1 guarda porcentajes enteros (5 es el 5 %): se congela como factor (0,05). Compra
-  dealer USA cotiza como Auto gasolina o, con el interruptor, Híbrido / eléctrico (la variante única es el contenedor en par: Moto y USA → Chile no entran), su
-  factor DP es una constante (no tiene vehículo del que leer el año) y redondea a dólar entero la nacionalización (la línea que V1 deja con decimales). La
-  tarjeta no lleva «TOTAL BOLIVIANOS»: la forma 2 no tiene un monto en moneda local (con «Ver total Bs», el total lleva la segunda línea).
+  dealer USA cotiza como Auto gasolina o, con el interruptor, Híbrido / eléctrico (la variante única es el contenedor en par: Moto y USA → Chile no entran) y su
+  factor DP es una constante (no tiene vehículo del que leer el año). V1 suma las líneas a dólar entero: los paquetes redondean la nacionalización (la póliza en
+  China), que con los impuestos siempre lleva decimales, y no los fees ni la transferencia, que son el par porcentaje-monto de su celda (redondearlos pediría
+  otra celda por línea; con montos enteros la diferencia con V1 es de centavos). La
+  tarjeta no lleva «TOTAL BOLIVIANOS»: la forma 2 no tiene un monto en moneda local (con «Ver total Bs», el total lleva la segunda línea). La columna del
+  monto mide 140 px (la de V1, 110): el monto de V2 lleva «USD» y centavos y en 110 px se partía en dos renglones; la descripción cede esos 30 px.
 - **«Empezar desde una plantilla» es una acción del origen, no de una pestaña.** Va a la derecha de los chips de origen, secundaria (cada pestaña ya tiene su
   primaria) y en `?panel=plantillas-de-v1` de las cuatro. Un modal, no una página: es un clic y no se pierde la pestaña. La tarjeta de cada plantilla la
   dibuja el lienzo de la pestaña Tarjeta con cifras de ejemplo (no una imagen del servidor: sus colores todavía no están en el catálogo).
