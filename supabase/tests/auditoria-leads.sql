@@ -208,6 +208,13 @@ declare
     ('cotizacion_crear(uuid,uuid,uuid,jsonb,text,uuid,jsonb,text,clase_cotizacion,boolean,boolean,text,boolean)', 'X'),
     -- Cotizar encima (4.15-2): el lead es el de la anterior y se pide visible como en cotizacion_crear (comprobar, for key share, volver a comprobar), después de ver la anterior.
     ('cotizacion_encima(uuid,uuid)', 'X'),
+    -- Crear las dos cotizaciones hermanas y cotizar encima de ellas: llaman a cotizacion_crear y a cotizacion_encima (arriba) una vez por opción, que piden el
+    -- lead visible como siempre; encima en par toma además el lead de las anteriores `for key share` si quien llama lo ve, antes que ellas
+    -- (`areas/cotizaciones/hermanas-crear-guardar.sql`).
+    ('cotizacion_crear_en_par(uuid[],uuid,uuid,jsonb,text,uuid,text,boolean,boolean,text,boolean)', 'X'),
+    ('cotizacion_encima_en_par(uuid[],uuid[])', 'X'),
+    -- Guardar las dos hermanas: llama a cotizacion_guardar (abajo) para cada una; no toma el lead.
+    ('cotizacion_guardar_en_par(uuid[],uuid[],timestamp with time zone[],jsonb,text,text,text[],uuid,boolean,boolean)', 'X'),
     -- Guardar una cotización (4.10-3): no recibe un lead; la cotización que edita ya cuelga de uno que su dueña vio, y editarla no cambia quién la ve. El permiso es el de la cotización
     -- (`puede_cotizacion`) y no toma el lead: lo prueban `cotizacion-guardar.sql` y `cotizaciones-visibilidad.sql`.
     ('cotizacion_guardar(uuid,uuid,timestamp with time zone,jsonb,text,text,text,uuid,boolean,boolean)', 'X'),

@@ -784,6 +784,7 @@ export type Database = {
           favoritos_count: number
           formula_id: string
           fuentes: NonNullable<Json>
+          hermana_id: string | null
           id: string
           lead_id: string | null
           lote_papelera_id: string | null
@@ -818,6 +819,7 @@ export type Database = {
           favoritos_count?: number
           formula_id: string
           fuentes?: NonNullable<Json>
+          hermana_id?: string | null
           id?: string
           lead_id?: string | null
           lote_papelera_id?: string | null
@@ -851,6 +853,7 @@ export type Database = {
           favoritos_count?: number
           formula_id?: string
           fuentes?: NonNullable<Json>
+          hermana_id?: string | null
           id?: string
           lead_id?: string | null
           lote_papelera_id?: string | null
@@ -899,6 +902,13 @@ export type Database = {
             columns: ['formula_id']
             isOneToOne: false
             referencedRelation: 'formulas'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'cotizaciones_hermana_id_fkey'
+            columns: ['hermana_id']
+            isOneToOne: false
+            referencedRelation: 'cotizaciones'
             referencedColumns: ['id']
           },
           {
@@ -8118,6 +8128,7 @@ export type Database = {
         Args: { p_bucket: string; p_rutas: string[]; p_ya: boolean }
         Returns: number
       }
+      _entradas_en_par: { Args: { p_entradas: Json }; Returns: undefined }
       _equipo_busqueda_patron: { Args: { p_texto: string }; Returns: string }
       _equipo_lista_indexable: { Args: { p_texto: string }; Returns: boolean }
       _equipo_lista_recorrido: { Args: Record<PropertyKey, never>; Returns: number }
@@ -8705,6 +8716,7 @@ export type Database = {
       _logistica_dias: { Args: { p_fase: string }; Returns: number }
       _logistica_filtros: { Args: { p: Json }; Returns: Json }
       _logistica_lo_propio: { Args: { p_origen: string }; Returns: string[] }
+      _lote_con_hermanas: { Args: { p_cotizaciones: string[]; p_lote: string }; Returns: string[] }
       _lote_papelera_tocar: { Args: { p_lote: string }; Returns: string }
       _monto_en_base: {
         Args: { p_moneda: string; p_monto: number; p_tipo_cambio: string; p_valor?: number }
@@ -8741,6 +8753,7 @@ export type Database = {
       _niveles_del_diseno: { Args: { p_diseno: Json }; Returns: Json }
       _niveles_lista: { Args: Record<PropertyKey, never>; Returns: Json }
       _niveles_tope: { Args: Record<PropertyKey, never>; Returns: number }
+      _nodos_en_par: { Args: { p_def: Json }; Returns: string[] }
       _nodos_visibles: {
         Args: { p_formula: string }
         Returns: {
@@ -9653,6 +9666,7 @@ export type Database = {
         Args: { p_maximo: number; p_minimo: number; p_valor: Json }
         Returns: boolean
       }
+      _variante_en_par: { Args: { p_def: Json }; Returns: string }
       _vehiculo_a_lote: {
         Args: {
           p_lote: string
@@ -10112,7 +10126,24 @@ export type Database = {
         }
         Returns: Json
       }
+      cotizacion_crear_en_par: {
+        Args: {
+          p_abierta: string
+          p_con_la_abierta?: boolean
+          p_entradas: Json
+          p_ids: string[]
+          p_lead: string
+          p_modo_tc?: string
+          p_origen: string
+          p_titulo?: string
+          p_titulo_manual?: boolean
+          p_vehiculo?: string
+          p_ver_total_bs?: boolean
+        }
+        Returns: Json
+      }
       cotizacion_encima: { Args: { p_anterior: string; p_id: string }; Returns: Json }
+      cotizacion_encima_en_par: { Args: { p_anteriores: string[]; p_ids: string[] }; Returns: Json }
       cotizacion_evaluar: {
         Args: {
           p_abierta?: string
@@ -10120,6 +10151,7 @@ export type Database = {
           p_entradas: Json
           p_modo?: Json
           p_modo_tc?: string
+          p_opcion?: string
           p_origen?: string
           p_vehiculo?: string
         }
@@ -10134,6 +10166,21 @@ export type Database = {
           p_intento: string
           p_modo_tc: string
           p_notas: string
+          p_titulo: string
+          p_titulo_manual?: boolean
+          p_vehiculo: string
+          p_ver_total_bs: boolean
+        }
+        Returns: Json
+      }
+      cotizacion_guardar_en_par: {
+        Args: {
+          p_actualizados_en_esperados: string[]
+          p_entradas: Json
+          p_ids: string[]
+          p_intentos: string[]
+          p_modo_tc: string
+          p_notas: string[]
           p_titulo: string
           p_titulo_manual?: boolean
           p_vehiculo: string

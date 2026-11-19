@@ -715,7 +715,7 @@ export async function carrerasDeGuardar({ orquesta, carrera, espero, conectar, e
       'public.cotizacion_guardar(uuid,uuid,timestamptz,jsonb,text,text,text,uuid,boolean,boolean)',
       'public.cotizacion_crear(uuid,uuid,uuid,jsonb,text,uuid,jsonb,text,clase_cotizacion,boolean,boolean,text,boolean)',
       'public.cotizacion_hoja(uuid)',
-      'public.cotizacion_evaluar(jsonb,uuid,uuid,uuid,jsonb,text,text)',
+      'public.cotizacion_evaluar(jsonb,uuid,uuid,uuid,jsonb,text,text,text)',
       'public.cotizacion_retocar_tarjeta(uuid,timestamptz,jsonb)',
       'public.validar_retoques(jsonb,jsonb)',
     ]
