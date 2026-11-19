@@ -13,12 +13,12 @@ const nada: LoQueVe = { vehiculos: false, oportunidades: false, cotizaciones: fa
 const anclas = (ve: LoQueVe) => bloquesDelIndice(ve).map((bloque) => bloque.ancla)
 
 describe('bloquesDelIndice', () => {
-  it('con todos los permisos, los cuatro bloques en el orden del índice (el portal va en la izquierda)', () => {
-    expect(anclas(todo)).toEqual(['seguimientos', 'oportunidades', 'relacionados', 'cotizaciones'])
+  it('con todos los permisos, los cuatro bloques en el orden de uso (el portal va en la izquierda)', () => {
+    expect(anclas(todo)).toEqual(['seguimientos', 'cotizaciones', 'relacionados', 'oportunidades'])
     expect(anclas(todo)).not.toContain(ANCLA_DEL_PORTAL)
   })
 
-  it('sin permisos ni cartera, sólo «Seguimientos y recordatorios»', () => {
+  it('sin permisos ni cartera, sólo «Seguimiento»', () => {
     expect(anclas(nada)).toEqual(['seguimientos'])
   })
 
@@ -29,6 +29,34 @@ describe('bloquesDelIndice', () => {
     // El portal no suma nada al índice.
     expect(anclas({ ...nada, portal: true })).toEqual(['seguimientos'])
   })
+
+  it('sin `cotizaciones.ver`, sin `vehiculos.ver` y fuera de la cartera', () => {
+    expect(anclas({ ...todo, cotizaciones: false })).toEqual([
+      'seguimientos',
+      'relacionados',
+      'oportunidades',
+    ])
+    expect(anclas({ ...todo, vehiculos: false })).toEqual([
+      'seguimientos',
+      'cotizaciones',
+      'oportunidades',
+    ])
+    expect(anclas({ ...todo, oportunidades: false })).toEqual([
+      'seguimientos',
+      'cotizaciones',
+      'relacionados',
+    ])
+  })
+
+  it('lo que dice el índice: «Seguimiento, Cotizaciones, Vehículos, Oportunidades»', () => {
+    expect(bloquesDelIndice(todo).map((bloque) => bloque.etiqueta)).toEqual([
+      'Seguimiento',
+      'Cotizaciones',
+      'Vehículos',
+      'Oportunidades',
+    ])
+    expect(bloqueDeLaFicha('relacionados').titulo).toBe('Vehículos')
+  })
 })
 
 describe('anclaDeLaSeccion', () => {
@@ -36,7 +64,7 @@ describe('anclaDeLaSeccion', () => {
     expect(anclaDeLaSeccion('datos')).toBeNull()
   })
 
-  it('«Vehículos» lleva a Relacionados, donde quedó su gestión', () => {
+  it('`?seccion=vehiculos` lleva al bloque «Vehículos» (ancla `relacionados`)', () => {
     expect(anclaDeLaSeccion('vehiculos')).toBe('relacionados')
   })
 

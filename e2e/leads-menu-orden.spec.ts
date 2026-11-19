@@ -151,7 +151,7 @@ test('anotar y agendar abren su modal donde se pidieron: la ficha y el kanban', 
   await oportunidad(t.personas.berta, lead.id, { titulo })
   await entrar(page, t.personas.berta)
 
-  // La ficha abre el modal (el bloque «Seguimientos y recordatorios» ya está a la vista, sin navegar), sin `para`.
+  // La ficha abre el modal (el bloque «Seguimiento» ya está a la vista, sin navegar), sin `para`.
   await irAFicha(page, lead.id)
   let menu = await abrirMenuDeLaFicha(page)
   await menu.getByRole('menuitem', { name: 'Anotar seguimiento…' }).click()

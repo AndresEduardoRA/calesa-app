@@ -14,7 +14,7 @@ import {
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
 import { embudoPorDefecto, etapa, oportunidadesPorSql } from './soporte/leads-oportunidades'
 import { otorgarComo } from './soporte/leads-portal'
-import { drawerDeTodos } from './soporte/leads-seguimientos'
+import { drawerDeTodos, verTodosLosSeguimientos } from './soporte/leads-seguimientos'
 import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
@@ -130,10 +130,10 @@ const indice = (page: Page): Locator => page.getByRole('navigation', { name: 'Í
 const titulo = (page: Page, nombre: string): Locator =>
   page.getByRole('heading', { name: nombre, exact: true, level: 2 })
 const BLOQUES = [
-  ['Seguimientos', 'Seguimientos y recordatorios'],
-  ['Oportunidades', 'Tus oportunidades'],
-  ['Relacionados', 'Relacionados'],
+  ['Seguimiento', 'Seguimiento'],
   ['Cotizaciones', 'Cotizaciones'],
+  ['Vehículos', 'Vehículos'],
+  ['Oportunidades', 'Oportunidades'],
 ] as const
 
 test('todo a la vista sin un clic: la izquierda, el índice y los cuatro bloques; sin pestañas ni acordeones', async ({
@@ -156,7 +156,7 @@ test('todo a la vista sin un clic: la izquierda, el índice y los cuatro bloques
   await expect(
     page.getByRole('region', { name: 'Seguimientos', exact: true }).getByRole('article'),
   ).toHaveCount(3)
-  await expect(page.getByRole('button', { name: 'Ver todos los seguimientos' })).toBeVisible()
+  await expect(verTodosLosSeguimientos(page)).toBeVisible()
   await expect(page.getByRole('region', { name: 'Vinculado', exact: true })).toBeVisible()
   await expect(
     page.getByRole('region', { name: 'Acceso al portal' }).getByText(/^Tiene acceso desde /),
@@ -192,9 +192,9 @@ test('los enlaces de siempre: `?seccion=` lleva a su bloque y `?panel=` abre lo 
 }) => {
   await entrar(page, t.personas.duena)
   const casos = [
-    ['seguimientos', 'Seguimientos y recordatorios'],
-    ['vehiculos', 'Relacionados'],
-    ['oportunidades', 'Tus oportunidades'],
+    ['seguimientos', 'Seguimiento'],
+    ['vehiculos', 'Vehículos'],
+    ['oportunidades', 'Oportunidades'],
     ['portal', 'Acceso al portal'],
   ] as const
   for (const [seccion, nombre] of casos) {
@@ -225,7 +225,7 @@ test('la forma: en escritorio, «Datos» a la izquierda de los bloques; en el ce
     return medida
   }
   const datos = await caja(titulo(page, 'Datos'))
-  const seguimientos = await caja(titulo(page, 'Seguimientos y recordatorios'))
+  const seguimientos = await caja(titulo(page, 'Seguimiento'))
   if (esMovil(page)) {
     const orden = [
       page.getByRole('heading', { level: 1 }),
@@ -253,20 +253,20 @@ test('la forma: en escritorio, «Datos» a la izquierda de los bloques; en el ce
   )
 })
 
-test('«Ver todos los seguimientos» abre la línea completa en su drawer (`?todos=`) y Esc lo cierra', async ({
+test('«Ver todos» abre la línea completa en su drawer (`?todos=`) y Esc lo cierra', async ({
   page,
 }) => {
   await entrar(page, t.personas.duena)
   await irAFicha(page, completo.id)
   await esperarFichaHidratada(page)
-  await page.getByRole('button', { name: 'Ver todos los seguimientos' }).click()
+  await verTodosLosSeguimientos(page).click()
   await expect(page).toHaveURL(/todos=seguimientos/)
   const drawer = drawerDeTodos(page)
   await expect(drawer.getByRole('article')).toHaveCount(10)
   await page.keyboard.press('Escape')
   await expect(drawer).toBeHidden()
   await expect(page).not.toHaveURL(/todos=/)
-  await expect(page.getByRole('button', { name: 'Ver todos los seguimientos' })).toBeFocused()
+  await expect(verTodosLosSeguimientos(page)).toBeFocused()
 })
 
 test('el documento de la ficha entera pesa lo mismo con 10 que con 1.000 seguimientos, recordatorios y oportunidades', async ({
@@ -294,5 +294,5 @@ test('`?lead=<id>&pestana=` de cuando la lista tenía resumen lleva a la ficha e
   await entrar(page, t.personas.duena)
   await page.goto(`/leads?lead=${completo.id}&pestana=seguimientos`)
   await expect(page).toHaveURL(new RegExp(`/leads/${completo.id}\\?seccion=seguimientos`))
-  await expect(titulo(page, 'Seguimientos y recordatorios')).toBeFocused()
+  await expect(titulo(page, 'Seguimiento')).toBeFocused()
 })

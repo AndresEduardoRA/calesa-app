@@ -3,7 +3,6 @@ import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import type { Embudo } from './embudo'
 import type { Oportunidad, OportunidadDelLead } from './oportunidad'
 import {
-  caminoAlEmbudo,
   cursorDeOportunidades,
   oportunidadDelLeadDesde,
   ordenDeOportunidades,
@@ -280,11 +279,5 @@ describe('sumarPaginaDeOportunidades', () => {
     )
     expect(suma.lista).toHaveLength(TOPE_DE_LO_CARGADO)
     expect(suma.hayMas).toBe(true)
-  })
-})
-
-describe('caminoAlEmbudo', () => {
-  it('lleva al embudo de la última cargada filtrado por el lead', () => {
-    expect(caminoAlEmbudo('m1', 'l1')).toBe('/leads?vista=embudo&embudo=m1&lead=l1')
   })
 })

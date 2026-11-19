@@ -4,7 +4,7 @@ import { borrarRolesDePrueba } from './soporte/base'
 import { idDePersona, sembrarCotizaciones } from './soporte/cotizaciones-sembradas'
 import { limpiarGuardado, prepararGuardado } from './soporte/cotizar-guardar'
 import { borrarLeadsDePrueba, crearLead, marcarInteres, vincular } from './soporte/leads'
-import { panelAgregar } from './soporte/leads-vehiculos'
+import { abrirAgregarVehiculo, relacionadosDelLead } from './soporte/leads-vehiculos'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
@@ -70,6 +70,8 @@ test.afterAll(async () => {
 const bloque = (raiz: Page | Locator) => raiz.getByRole('region', { name: 'Relacionados' })
 const grupo = (raiz: Page | Locator, nombre: string) =>
   bloque(raiz).getByRole('region', { name: nombre, exact: true })
+const grupoDelLead = (page: Page, nombre: string) =>
+  relacionadosDelLead(page).getByRole('region', { name: nombre, exact: true })
 
 // La ficha del vehículo (compacta): cada lead en su tipo, a la vista; la leyenda no se ve, es la descripción del grupo para el lector.
 async function venEnLaFicha(page: Page) {
@@ -127,26 +129,23 @@ test('E2E la ficha de cada lead muestra el vehículo en su tipo, y vincular desd
   page,
 }, info) => {
   await entrar(page, duena, { fresco: true })
+  // En la ficha del lead, «Relacionados» es el bloque «Vehículos».
   await page.goto(`/leads/${leads.a}`)
-  await expect(grupo(page, 'Vinculado').getByText(titulos.principal)).toBeVisible()
-  await expect(grupo(page, 'Vinculado')).toHaveAccessibleDescription(
+  await expect(grupoDelLead(page, 'Vinculado').getByText(titulos.principal)).toBeVisible()
+  await expect(grupoDelLead(page, 'Vinculado')).toHaveAccessibleDescription(
     'Vehículos de los que este lead es dueño o comprador.',
   )
   await page.goto(`/leads/${leads.b}`)
-  await expect(grupo(page, 'Interesado').getByText(titulos.principal)).toBeVisible()
+  await expect(grupoDelLead(page, 'Interesado').getByText(titulos.principal)).toBeVisible()
   await page.goto(`/leads/${leads.c}`)
-  await expect(grupo(page, 'Cotizado').getByText(titulos.principal)).toBeVisible()
+  await expect(grupoDelLead(page, 'Cotizado').getByText(titulos.principal)).toBeVisible()
   await capturar(page, info, 'ficha-del-lead')
 
-  // Vincular o marcar un vehículo desde el lead D: el enlace abre el panel de la sección «Vehículos» y el vínculo aparece en la ficha del vehículo.
+  // Vincular o marcar un vehículo desde el lead D: en la ficha del lead el bloque se llama «Vehículos» y su título abre el panel; el vínculo aparece en
+  // la ficha del vehículo.
   await page.goto(`/leads/${leads.d}`)
-  await expect(bloque(page).getByText('Sin relacionados todavía.')).toBeVisible()
-  await bloque(page).getByRole('link', { name: 'Vincular o marcar un vehículo' }).click()
-  await expect(page).toHaveURL(
-    /seccion=vehiculos.*panel=agregar-vehiculo|panel=agregar-vehiculo.*seccion=vehiculos/,
-  )
-  const panel = panelAgregar(page)
-  await expect(panel).toBeVisible()
+  await expect(relacionadosDelLead(page).getByText('Sin vehículos.')).toBeVisible()
+  const panel = await abrirAgregarVehiculo(page)
   await panel.getByLabel('Buscar por título, VIN, lote o número').fill(titulos.libre)
   await panel.getByRole('radio', { name: new RegExp(titulos.libre) }).check()
   await panel.getByRole('button', { name: 'Vincular', exact: true }).click()
@@ -173,5 +172,5 @@ test('E2E marcar un interesado desde el vehículo con el selector aparece en la 
   await expect(selector).toBeHidden()
   await expect(grupo(page, 'Interesado').getByText(nombres.e)).toBeVisible()
   await page.goto(`/leads/${leads.e}`)
-  await expect(grupo(page, 'Interesado').getByText(titulos.otro)).toBeVisible()
+  await expect(grupoDelLead(page, 'Interesado').getByText(titulos.otro)).toBeVisible()
 })

@@ -25,9 +25,9 @@ import { bloquesDeLaFicha } from './bloques'
 
 export const metadata: Metadata = { title: 'Lead' }
 
-// Qué bloques ve quien mira: «Relacionados» (con la gestión de «Vehículos») sólo con `vehiculos.ver` en algún origen; «Oportunidades», con el
-// lead en la cartera; «Cotizaciones», con `cotizaciones.ver` en algún origen (la RLS recorta las filas; sin cartera ni origen: P2 del
-// 4.17-4); «Acceso al portal», con la cartera y `leads.portal.gestionar`. «Seguimientos y recordatorios» siempre.
+// Qué bloques ve quien mira: «Vehículos» sólo con `vehiculos.ver` en algún origen; «Oportunidades», con el lead en la cartera;
+// «Cotizaciones», con `cotizaciones.ver` en algún origen (la RLS recorta las filas; sin cartera ni origen: P2 del 4.17-4); «Acceso al portal»,
+// con la cartera y `leads.portal.gestionar`. «Seguimiento» siempre.
 const loQueVe = (permisos: Permisos, enCartera: boolean) => ({
   vehiculos: puede(permisos, 'vehiculos.ver'),
   oportunidades: enCartera,
@@ -35,7 +35,7 @@ const loQueVe = (permisos: Permisos, enCartera: boolean) => ({
   portal: puedeGestionarPortal(permisos, enCartera),
 })
 
-// La ficha de un lead, en dos columnas con todos sus bloques a la vista (`bloques.tsx`). Lo que no existe, lo que está en la papelera o sin
+// La ficha de un lead, en dos columnas con sus bloques compactos a la vista (`bloques.tsx`). Lo que no existe, lo que está en la papelera o sin
 // dueño y lo que la persona no ve se muestran igual: decir «no tienes permiso» confirmaría que existe. Qué recibe de él (el teléfono
 // completo, los datos «solo la cartera») lo decide la base. `?seccion=` (los enlaces de siempre) lleva al bloque.
 export default async function PaginaLead({ params, searchParams }: PageProps<'/leads/[id]'>) {
@@ -84,7 +84,7 @@ export default async function PaginaLead({ params, searchParams }: PageProps<'/l
           duenoDe(datos.cartera)?.usuarioId ?? null,
           sesion.usuarioId,
         )}
-        {...bloquesDeLaFicha(ficha, ve, sesion.permisos)}
+        {...bloquesDeLaFicha(ficha, ve, sesion.permisos, paraCotizar)}
       />
     </>
   )

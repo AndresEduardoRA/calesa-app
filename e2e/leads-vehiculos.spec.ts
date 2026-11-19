@@ -69,7 +69,7 @@ test('vincular y marcar interés con su nota desde el lead; la ficha del vehícu
   const camionetaId = await vehiculoDe(corea, camioneta, t.ada)
   await entrar(page, t.ada)
   await irAVehiculos(page, lead.id)
-  await expect(relacionadosDelLead(page).getByText('Sin relacionados todavía.')).toBeVisible()
+  await expect(relacionadosDelLead(page).getByText('Sin vehículos.')).toBeVisible()
 
   let panel = await elegirVehiculo(page, sedan)
   await expect(page).toHaveURL(/panel=agregar-vehiculo/)
@@ -206,10 +206,10 @@ test('con un vehículo vinculado, la papelera se apaga con el motivo; desvincula
   await expect(
     page.getByText('Tiene un vehículo vinculado: desvincúlalo en «Vehículos» antes de enviarlo.'),
   ).toBeVisible()
-  // «Ir a «Vehículos»» salta a Relacionados, en la misma página, y le da el foco a su título.
+  // «Ir a «Vehículos»» salta al bloque «Vehículos», en la misma página, y le da el foco a su título.
   await page.getByRole('menuitem', { name: 'Ir a «Vehículos»' }).click()
   await expect(
-    relacionadosDelLead(page).getByRole('heading', { name: 'Relacionados' }),
+    relacionadosDelLead(page).getByRole('heading', { name: 'Vehículos', exact: true }),
   ).toBeFocused()
 
   await accionDeLaFila(vinculados(page), auto, 'Desvincular')

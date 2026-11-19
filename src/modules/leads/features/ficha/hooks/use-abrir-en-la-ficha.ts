@@ -23,7 +23,7 @@ function trasCerrarElMenu(hacer: () => void) {
 }
 
 // Lo que el «⋯» de la cabecera abre en la misma ficha, sin navegar (un `router.push` volvería a leer todos los bloques): «Anotar
-// seguimiento…» y «Agendar recordatorio…» escriben su `?panel=` (el modal es del bloque «Seguimientos y recordatorios», que lo atiende y
+// seguimiento…» y «Agendar recordatorio…» escriben su `?panel=` (el modal es del bloque «Seguimiento», que lo atiende y
 // vigila la vuelta del foco; éstos sólo abren: `atiendeLaUrl: false`) y llevan la página a ese bloque sin quitarle el foco al modal; «Ver
 // oportunidades» e «Ir a «Vehículos»» saltan a su bloque. Si el bloque no está (sin permiso), navega a la ruta.
 export function useAbrirEnLaFicha(navegar: (url: string) => void) {

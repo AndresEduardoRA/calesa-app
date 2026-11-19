@@ -121,4 +121,16 @@ describe('leerCotizacionesDelLead: las de un lead desde el navegador (4.17-4b)',
     respuesta = { data: null, error: { code: '42501', message: 'Sin permiso.' } }
     expect((await leerCotizacionesDelLead({ leadId: LEAD, cursor: null })).ok).toBe(false)
   })
+
+  it('con `tamano: 3` pide 4 y arma una página de 3 con «siguiente» (el bloque de la ficha)', async () => {
+    respuesta = { data: Array.from({ length: 4 }, (_, i) => fila(i)), error: null }
+    const llena = await leerCotizacionesDelLead({ leadId: LEAD, cursor: null, tamano: 3 })
+    expect(llamadas.at(-1)).toEqual(['limit', 4])
+    expect(llena.ok && llena.data.filas).toHaveLength(3)
+    expect(llena.ok && llena.data.siguiente).not.toBeNull()
+    respuesta = { data: [fila(0), fila(1), fila(2)], error: null }
+    const justa = await leerCotizacionesDelLead({ leadId: LEAD, cursor: null, tamano: 3 })
+    expect(justa.ok && justa.data.filas).toHaveLength(3)
+    expect(justa.ok && justa.data.siguiente).toBeNull()
+  })
 })

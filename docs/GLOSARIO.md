@@ -146,9 +146,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Cotización activa** — `eliminado_en is null and estado in ('activa','reportada')`: la que cuenta para «Cotizado» y su índice parcial.
 - **Vínculo** — `vehiculos.lead_id` + `vehiculos_vinculos` / `vehiculo_vincular()`: lead dueño o comprador actual, uno a la vez, con historial.
 - **Vincular / Desvincular** — `vehiculo_vincular(p_vehiculo, p_actualizado_en_esperado, p_lead)` (nulo desvincula): con la versión del vehículo.
-- **Vehículos del lead** — `lead_vehiculos()`, `<GestionDeVehiculosDelLead>`, `?seccion=vehiculos`: la gestión al pie del bloque **Relacionados** de la
-  ficha (los vínculos anteriores, «Vincular o marcar un vehículo» y la confirmación de desvincular); vinculados e interesados, con sus acciones, son los
-  grupos de Relacionados. Sólo lo visible.
+- **Vehículos del lead** — `lead_vehiculos()`, `<GestionDeVehiculosDelLead>`, `?seccion=vehiculos`: en la ficha del lead, el bloque **Relacionados**
+  se llama «Vehículos» (en su título y en el índice; su ancla sigue siendo `#relacionados`), con «Vincular o marcar» en el título; al pie, la gestión
+  (los vínculos anteriores plegados tras su botón, el panel «Vincular o marcar un vehículo» y la confirmación de desvincular); vinculados e
+  interesados, con sus acciones, son los grupos de Relacionados. Sólo lo visible.
 - **Agregar vehículo** — `vehiculos_para_lead()`, `?panel=agregar-vehiculo`: buscar entre los vehículos visibles para vincular uno o marcar
   interés desde el lead.
 - **Vehículo de una nota** — `seguimientos.vehiculo_id`, `recordatorios.vehiculo_id`: vehículo opcional del lead que quien escribe ve.
@@ -313,6 +314,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Papelera de leads** — `leads_papelera_*`, `/leads/papelera`: borrado reversible por lote, todo o nada; revoca el portal.
 - **Seguimiento** — `seguimientos`, `tipos_seguimiento` / `seguimiento_*()`, `lead_seguimientos()`: contacto con el lead; nace privado; sólo
   su autor lo edita.
+- **Bloque «Seguimiento»** — `ResumenDeSeguimientos`, `#seguimientos`: el primer bloque de la derecha de la ficha del lead, con su «+» («Anotar o
+  agendar»), tu recordatorio pendiente más próximo y los últimos seguimientos en línea de tiempo; «Ver todos» y «Ver tus recordatorios» abren el
+  drawer `?todos=`. No es **Seguimiento**, el registro.
 - **Último contacto (de una fila)** — `ultimo_seguimiento_en`, `ultimo_seguimiento_visible`, `proximo_recordatorio` de `leads_vista` y
   `leads_cartera_vista` / `entities/ultimo-contacto.ts`, `<UltimoSeguimientoDeFila>`, `<RecordatorioDeFila>`: lo que el listado dice del último
   seguimiento (su tipo y su título si quien mira lo ve; si es privado de otra persona, sólo «hace X») y del próximo recordatorio pendiente de quien

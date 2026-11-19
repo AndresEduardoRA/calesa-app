@@ -1,5 +1,4 @@
 import { Suspense } from 'react'
-import { CotizacionesDelLead } from '@/modules/cotizaciones/pantallas/lead'
 import { getAjustes } from '@/modules/empresa'
 import type { Permisos } from '@/modules/equipo'
 import {
@@ -16,6 +15,7 @@ import { GestionDeVehiculosDelLead } from '@/modules/vehiculos/pantallas/vehicul
 import { leerDireccionPublica } from '@/modules/web'
 import { datosO } from '@/shared/lib/errores'
 import { RelacionadosDelLeadServidor } from '../../_relacionados/relacionados-del-lead'
+import { BloqueCotizacionesDelLead } from './bloque-cotizaciones'
 
 type Lead = { id: string; nombre: string }
 type LoQueVe = {
@@ -25,11 +25,17 @@ type LoQueVe = {
   portal: boolean
 }
 
-// Los bloques de la ficha del lead, cada uno detrás de su `<Suspense>` con su esqueleto (del alto de lo que viene: un salto a un bloque
-// de abajo no se mueve). Los de `vehiculos`, `cotizaciones`, `empresa` y `web` los compone esta ruta (`leads` no los importa). Uno que quien
+// Los bloques de la ficha del lead, cada uno con su título y detrás de su `<Suspense>` con su esqueleto (del alto de lo que viene: un salto
+// a un bloque de abajo no se mueve). Los de `vehiculos`, `cotizaciones`, `empresa` y `web` los compone esta ruta (`leads` no los importa). Uno que quien
 // mira no ve es nulo: no se lee ni se dibuja. Los vehículos del lead (para elegir uno en un seguimiento, un recordatorio o una oportunidad)
 // se piden una vez y se comparte la promesa (y `lead_vehiculos` se lee una vez por pedido: `cache`).
-export function bloquesDeLaFicha(lead: Lead, ve: LoQueVe, permisos: Permisos) {
+// `paraCotizar`: la hoja con este lead en el primer origen donde quien mira cotiza (la arma la página), o null: «Cotizaciones» sin «Cotizar».
+export function bloquesDeLaFicha(
+  lead: Lead,
+  ve: LoQueVe,
+  permisos: Permisos,
+  paraCotizar: string | null,
+) {
   const vehiculos = ve.vehiculos ? { vehiculos: opcionesDeVehiculoDelLead(lead.id) } : {}
   return {
     seguimientos: (
@@ -42,8 +48,8 @@ export function bloquesDeLaFicha(lead: Lead, ve: LoQueVe, permisos: Permisos) {
         <SeccionOportunidades leadId={lead.id} {...vehiculos} />
       </Suspense>
     ) : null,
-    // Relacionados (de un vistazo, con las acciones de cada fila) y, al pie, lo que queda de «Vehículos» (los anteriores, el panel para
-    // vincular o marcar uno y la confirmación de desvincular).
+    // «Vehículos»: los relacionados (de un vistazo, con las acciones de cada fila y «Vincular o marcar» en el título) y, al pie, los vínculos
+    // anteriores plegados, el panel para vincular o marcar uno y la confirmación de desvincular.
     relacionados: ve.vehiculos ? (
       <>
         <Suspense fallback={<EsqueletoDeRelacionados presentacion="compacta" />}>
@@ -54,8 +60,10 @@ export function bloquesDeLaFicha(lead: Lead, ve: LoQueVe, permisos: Permisos) {
         </Suspense>
       </>
     ) : null,
-    // Se lee desde el navegador al acercarse a la vista (el marco lo difiere); la `key` empieza de cero con otro lead.
-    cotizaciones: ve.cotizaciones ? <CotizacionesDelLead key={lead.id} leadId={lead.id} /> : null,
+    // El título con «Cotizar» lo dibuja el servidor; la lista se lee desde el navegador al acercarse a la vista.
+    cotizaciones: ve.cotizaciones ? (
+      <BloqueCotizacionesDelLead leadId={lead.id} cotizar={paraCotizar} />
+    ) : null,
     // El nombre de la empresa y la dirección de la web los componen `empresa` y `web`.
     portal: ve.portal ? (
       <Suspense fallback={<EsqueletoDePortal />}>

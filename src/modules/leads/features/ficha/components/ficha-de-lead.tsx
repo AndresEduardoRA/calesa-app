@@ -5,7 +5,6 @@ import type { Route } from 'next'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { RUTAS } from '@/shared/lib/rutas'
-import { Skeleton } from '@/shared/ui/skeleton'
 import {
   BloqueDeFicha,
   FichaEnDosColumnas,
@@ -50,12 +49,12 @@ type Props = {
   seccion: SeccionDeLead
   // Los bloques, cada uno detrás de su `<Suspense>` (los compone la página: los de `vehiculos` y `cotizaciones` viven en esos módulos).
   // Uno que quien mira no ve llega nulo y no se dibuja ni aparece en el índice (`ve`).
+  // Cada uno trae su título (un `h2` con su única acción): «Seguimiento», «Cotizaciones» (lee al acercarse a la vista), «Vehículos» (ancla
+  // `relacionados`, con la gestión de los vehículos del lead al pie) y «Oportunidades».
   seguimientos: ReactNode
-  oportunidades: ReactNode
-  // Relacionados con la gestión de «Vehículos» al pie.
-  relacionados: ReactNode
-  // «Cotizaciones»: se pide al acercarse a la vista.
   cotizaciones: ReactNode
+  relacionados: ReactNode
+  oportunidades: ReactNode
   // «Acceso al portal», en la columna de la izquierda.
   portal: ReactNode
   ve: LoQueVe
@@ -71,14 +70,6 @@ type Props = {
   // `/actividad` de este lead, si quien mira tiene `actividad.ver` (la arma la página): «Ver actividad» en el «⋯».
   paraActividad: string | null
 }
-
-// «Cotizaciones» hasta acercarse a la vista (se lee recién ahí): del alto aproximado del bloque, para que un salto no se mueva.
-const ESQUELETO_DE_COTIZACIONES = (
-  <div aria-hidden className="grid gap-2">
-    <Skeleton className="h-16 rounded-(--radius-card)" />
-    <Skeleton className="h-16 rounded-(--radius-card)" />
-  </div>
-)
 
 // El enlace de vuelta al listado, arriba de todo.
 function VolverALeads() {
@@ -140,8 +131,8 @@ function LateralConAcciones({ marcas, etiquetas, alGestionar, ...props }: PropsD
 }
 
 // La ficha de un lead en dos columnas: a la izquierda (pegajosa) quién es, sus datos clave, quién lo tiene y el portal; a la derecha
-// el índice y los bloques a la vista —seguimientos y recordatorios, oportunidades, relacionados y cotizaciones—, sin pestañas ni
-// acordeones. `?seccion=` lleva a su bloque y le da el foco a su título.
+// el índice y cuatro bloques compactos en orden de uso —Seguimiento, Cotizaciones, Vehículos, Oportunidades—, cada uno con su título y su
+// única acción, sin pestañas ni acordeones. `?seccion=` lleva a su bloque y le da el foco a su título.
 export function FichaDeLead({
   ficha,
   campos,
@@ -198,14 +189,7 @@ export function FichaDeLead({
         }
       >
         {bloques.map((bloque) => (
-          <BloqueDeFicha
-            key={bloque.ancla}
-            ancla={bloque.ancla}
-            titulo={bloque.titulo}
-            {...(bloque.ancla === 'cotizaciones'
-              ? { conTitulo: true, alAcercarse: true, esqueleto: ESQUELETO_DE_COTIZACIONES }
-              : {})}
-          >
+          <BloqueDeFicha key={bloque.ancla} ancla={bloque.ancla} titulo={bloque.titulo}>
             {contenido[bloque.ancla]}
           </BloqueDeFicha>
         ))}

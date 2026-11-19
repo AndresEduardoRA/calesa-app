@@ -220,30 +220,17 @@ describe('accionesDelGrupo', () => {
 })
 
 describe('accionesDelGrupo desde el lead y el vacío', () => {
-  it('lead: un solo enlace a la sección Vehículos, con la cartera', () => {
-    expect(
-      accionesDelGrupo({ tipo: 'vinculado', filas: 0, ocultos: 0 }, contexto(ANCLA_L))[0],
-    ).toMatchObject({
-      etiqueta: 'Vincular o marcar un vehículo',
-      href: `/leads/${LEAD}?seccion=vehiculos&panel=agregar-vehiculo`,
-    })
-    expect(
-      accionesDelGrupo({ tipo: 'interesado', filas: 0, ocultos: 0 }, contexto(ANCLA_L)),
-    ).toEqual([])
-    expect(
-      accionesDelGrupo(
-        { tipo: 'vinculado', filas: 0, ocultos: 0 },
-        contexto({ ...ANCLA_L, puedoActuar: false }),
-      ),
-    ).toEqual([])
+  it('lead: ningún grupo ofrece nada («Vincular o marcar» va en el título del bloque «Vehículos»)', () => {
+    for (const tipo of ['vinculado', 'interesado', 'cotizado'] as const) {
+      expect(accionesDelGrupo({ tipo, filas: 0, ocultos: 0 }, contexto(ANCLA_L))).toEqual([])
+      expect(accionesDelGrupo({ tipo, filas: 2, ocultos: 0 }, contexto(ANCLA_L))).toEqual([])
+    }
   })
-  it('todo vacío: vincular y marcar desde el vehículo; uno solo desde el lead', () => {
+  it('todo vacío: vincular y marcar desde el vehículo; nada desde el lead', () => {
     expect(claves(accionesDeTodoVacio(contexto(ANCLA_V)))).toEqual([
       'Vincular a un lead',
       'Marcar un interesado',
     ])
-    expect(claves(accionesDeTodoVacio(contexto(ANCLA_L)))).toEqual([
-      'Vincular o marcar un vehículo',
-    ])
+    expect(accionesDeTodoVacio(contexto(ANCLA_L))).toEqual([])
   })
 })

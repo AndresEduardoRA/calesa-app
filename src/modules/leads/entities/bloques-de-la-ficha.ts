@@ -14,17 +14,18 @@ export type BloqueDeLaFicha = {
   pide?: keyof LoQueVe
 }
 
-// En el orden del índice y de la columna de la derecha. El portal no está: vive en la izquierda, bajo «Quién lo tiene».
+// En el orden del índice y de la columna de la derecha, de lo más usado a lo menos. El portal no está: vive en la izquierda, bajo «Quién lo
+// tiene». «Vehículos» conserva el ancla `relacionados` (los enlaces `#relacionados` y `?seccion=vehiculos` de siempre siguen llegando).
 export const BLOQUES_DE_LA_FICHA: readonly BloqueDeLaFicha[] = [
-  { ancla: 'seguimientos', etiqueta: 'Seguimientos', titulo: 'Seguimientos y recordatorios' },
+  { ancla: 'seguimientos', etiqueta: 'Seguimiento', titulo: 'Seguimiento' },
+  { ancla: 'cotizaciones', etiqueta: 'Cotizaciones', titulo: 'Cotizaciones', pide: 'cotizaciones' },
+  { ancla: 'relacionados', etiqueta: 'Vehículos', titulo: 'Vehículos', pide: 'vehiculos' },
   {
     ancla: 'oportunidades',
     etiqueta: 'Oportunidades',
-    titulo: 'Tus oportunidades',
+    titulo: 'Oportunidades',
     pide: 'oportunidades',
   },
-  { ancla: 'relacionados', etiqueta: 'Relacionados', titulo: 'Relacionados', pide: 'vehiculos' },
-  { ancla: 'cotizaciones', etiqueta: 'Cotizaciones', titulo: 'Cotizaciones', pide: 'cotizaciones' },
 ]
 
 // El bloque «Acceso al portal», en la columna de la izquierda (sin entrada en el índice).
@@ -43,8 +44,8 @@ export function bloqueDeLaFicha(ancla: AnclaDeBloque): BloqueDeLaFicha {
   return bloque
 }
 
-// A qué bloque lleva un `?seccion=` (ya validado con `seccionDeLead()`): «Datos» es el principio de la ficha (nada que saltar), «Vehículos»
-// es Relacionados (con la gestión al pie) y el resto, el bloque de su nombre.
+// A qué bloque lleva un `?seccion=` (ya validado con `seccionDeLead()`): «Datos» es el principio de la ficha (nada que saltar), «vehiculos»
+// es el bloque «Vehículos» (ancla `relacionados`) y el resto, el bloque de su nombre.
 const ANCLA_DE_LA_SECCION: Record<SeccionDeLead, string | null> = {
   datos: null,
   seguimientos: 'seguimientos',
@@ -64,10 +65,11 @@ export const CLAVE_DE_TODOS = 'todos'
 export const TODOS_DE_LA_FICHA = ['seguimientos', 'recordatorios'] as const
 export type TodosDeLaFicha = (typeof TODOS_DE_LA_FICHA)[number]
 
-// Lo que el bloque «Seguimientos y recordatorios» lee y muestra a la vista: los últimos seguimientos y los recordatorios pendientes más
-// próximos (de `recordar_en` ascendente: los vencidos primero). Lo demás, en «Ver todos».
+// Lo que el bloque «Seguimiento» lee y muestra a la vista: los últimos seguimientos y tu recordatorio pendiente más próximo (de
+// `recordar_en` ascendente: un vencido primero). La lectura pide uno de más para saber si hay más. Lo demás, en «Ver todos» y en «Ver tus
+// recordatorios». Completar, editar o eliminar el de arriba vuelve a leer la ficha (`router.refresh()`), que trae el siguiente.
 export const PRIMEROS_DE_SEGUIMIENTOS = 3
-export const PRIMEROS_DE_RECORDATORIOS = 3
+export const PRIMEROS_DE_RECORDATORIOS = 1
 
 // «Ver más» de los datos del lead: un modal con su propia clave en la URL (`?ver=datos`), para no pisar los de `?panel=`.
 export const CLAVE_DE_VER = 'ver'

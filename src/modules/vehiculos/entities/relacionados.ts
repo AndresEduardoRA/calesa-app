@@ -38,6 +38,9 @@ export const LEYENDAS: Record<LadoDeRelacionados, Record<TipoDeRelacion, string>
 }
 
 export const TEXTO_DE_TODO_VACIO = 'Sin relacionados todavía.'
+// El bloque «Vehículos» de la ficha del lead (el «Relacionados» de un lead, con su nombre): su título y su vacío.
+export const TITULO_DE_VEHICULOS_DEL_LEAD = 'Vehículos'
+export const TEXTO_SIN_VEHICULOS = 'Sin vehículos.'
 export const TEXTO_DE_ERROR = 'No pudimos cargar los relacionados.'
 export const TEXTO_DE_CORTADA = 'No pudimos revisar el resto: hay muchos que no puedes ver.'
 export const TEXTO_DE_FUERA_DE_CARTERA = 'Fuera de tu cartera'

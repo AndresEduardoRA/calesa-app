@@ -48,7 +48,7 @@ test('anota un seguimiento con formato, se dibuja igual y no mueve la versión d
   const version = await versionDe(lead.id)
   await entrar(page, t.personas.berta)
   await irASeguimientos(page, lead.id)
-  await expect(page.getByText('Todavía no hay seguimientos')).toBeVisible()
+  await expect(page.getByText('Sin seguimientos todavía.')).toBeVisible()
 
   const formulario = await abrirAnotar(page)
   await formulario.getByLabel('Resumen').fill('Pidió el precio del RAV4')
@@ -200,7 +200,10 @@ test('eliminar se hace al instante y «Deshacer» lo devuelve', async ({ page },
   await formulario.getByRole('button', { name: 'Guardar' }).click()
   await expect(seguimiento(page, 'Para eliminar')).toBeVisible()
 
-  await seguimiento(page, 'Para eliminar').getByRole('button', { name: 'Eliminar' }).click()
+  await seguimiento(page, 'Para eliminar')
+    .getByRole('button', { name: 'Más acciones de «Para eliminar»' })
+    .click()
+  await page.getByRole('menuitem', { name: 'Eliminar' }).click()
   await expect(page.getByText('Seguimiento eliminado.')).toBeVisible()
   await expect(seguimiento(page, 'Para eliminar')).toHaveCount(0)
   expect((await seguimientosEnLaBase(lead.id))[0]?.eliminado_en).not.toBeNull()
@@ -249,7 +252,8 @@ test('el editor no le roba la N ni los atajos al marco, y lo escrito sobrevive a
   await page.keyboard.press('ControlOrMeta+Enter')
   await expect(seguimiento(page, 'Con atajos')).toBeVisible()
   await expect(page.getByText('Tienes un seguimiento sin guardar.')).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Anotar seguimiento' })).toBeFocused()
+  // «Continuar» se fue con el borrador: el foco va al «+» del bloque.
+  await expect(page.getByRole('button', { name: 'Anotar o agendar' })).toBeFocused()
   const [guardado] = await seguimientosEnLaBase(lead.id)
   expect(guardado?.detalle_texto).toBe('Nunca nada')
 })
