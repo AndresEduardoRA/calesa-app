@@ -119,6 +119,12 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
    - **Sin vehículo, el título es obligatorio** (para cualquier rol, después del cliente y del vehículo): «Guardar» apagado con «Escribe el
      título de la cotización.» y «Escribir el título», que abre `?panel=vehiculo` con el foco en el campo. Si la base lo rechaza igual (otra
      pestaña lo vació), el aviso dice lo mismo con el mismo botón y el campo lo repite debajo. Sólo espacios es vacío.
+     **Con una variante en par** (glosario: «Variante en par»): sin chips de esa variante; arriba de las secciones, «Dos versiones: <etiqueta 1> y
+     <etiqueta 2>.»; cada celda o subtotal que cambia según la opción va en dos celdas del mismo ancho, lado a lado («Transporte · 20 pies» | «Transporte · 40
+     pies»; en el celular, una debajo de la otra), y lo común una vez (vale para las dos; los atajos, los interruptores, el modo y «Ver total Bs», también). El
+     resumen muestra los dos totales («Total · 20 pies», con `<Monto>`), cada uno con sus avisos y su «Reintentar»; «Guardar» crea las dos **cotizaciones
+     hermanas** y lo guardado dice «Se guardaron las dos: n.º N (20 pies) y n.º M (40 pies).» con «Abrir la de 20 pies» y «Abrir la de 40 pies». El título se
+     escribe sin la opción (su tope deja lugar a « · <etiqueta>»). La vista previa muestra las dos tarjetas, una bajo la otra.
 3. **La hoja:** secciones en el orden declarado; cada monto en una **XCell** (`Tab` avanza, tipear abre edición, `Esc` cancela) con el color
    de su grupo en borde y fondo, ayuda y ⚙ si el permiso lo da, **en una fila como la de V1**: rótulo (se corta con «…» y el completo va en
    `title`) · monto en la monoespaciada (nunca se corta: baja de línea antes de encimarse) · el % chico y gris de un par · acciones; una celda
@@ -384,6 +390,12 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   queda y el aviso dice por qué); las que se fueron con su vehículo están en la papelera de vehículos.
 - **Cotizar** — `/cotizaciones/nuevo` (`cotizaciones.crear`): formulario hoja (XCell); `?origen=&lead=&vehiculo=&returnTo=` (se validan y
   se llevan; el vehículo va al recálculo); sin entrada en la navegación. Ver Flujo 2.
+- **Cotización guardada de una hermana** — bajo la cabecera, «Ver la de <etiqueta de la otra>» (enlace); con la hermana disponible y el mismo permiso de
+  guardar, la hoja en par con las dos (cada columna con su cotización) y «Guardar» guarda las dos (un PT409 de cualquiera dice «Cambió la de <etiqueta>: …» con
+  «Recargar» y no guarda ninguna); si lo común de las dos era distinto, «Lo común de las dos versiones era distinto: se muestra el de esta y, al guardar, queda en
+  las dos.». Si la hermana no se ve, está en la papelera, es inválida o sólo se puede guardar una, se abre sola con «La de <etiqueta> no está disponible.» y su
+  vehículo no se cambia (es de las dos). La vista previa, el PDF (una página por tarjeta) y «Compartir» (el texto de las dos opciones y las dos portadas en una
+  imagen) llevan las dos. Enviar una a la papelera manda las dos («Se enviaron 2 a la papelera.», «Deshacer» devuelve las dos).
 - **Cotización guardada** — `/cotizaciones/[id]` (`cotizaciones.ver`; edita quien la puede guardar, `puede_guardar` de la base): la hoja de
   SU versión; quien sólo ve, en sólo lectura. Cabecera: el h1 «Cotización n.º N» y, bajo el origen y el cliente, **la barra del vehículo** con el título grande y
   el vehículo debajo (o «Sin vehículo»); quien la puede guardar la abre en el panel del vehículo con el campo «Título de la cotización» arriba y guardar

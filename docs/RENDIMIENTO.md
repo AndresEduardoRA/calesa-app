@@ -809,6 +809,14 @@ pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACION
   va por filtro; Ana «finales» filtra la clase sobre sus propias; con un vehículo muy cotizado, un `en_cartera()` por cada ajena; una tanda
   contigua en la papelera dentro de un índice entero se lee antes de descartarse. Los `count(*)` por origen de `origenes_resumen()` y del
   borrado de un origen recorren la tabla (tope 100 ms con las 50.000 sembradas; el total exacto está en `docs/PENDIENTES.md`).
+- **La hoja en par** (glosario: «Variante en par»; `e2e/cotizar-hermanas.spec.ts`): la celda gemela suma los nodos de una celda y ninguno más; con la fórmula de
+  prueba (una común y una en par) `[data-hoja]` mide 116 nodos (tope de la hoja, 500). Lo del par va en su chunk diferido (`PantallaDeCotizarEnParDiferida`,
+  `PantallaDeUnParGuardadoDiferida`): en frío sólo viajan el ítem que reparte las celdas en par y las piezas del resumen. JS en frío medido: `/cotizaciones/nuevo`
+  461,5 KB en 29 chunks (tope 465, regla del 5 %) y `/cotizaciones/[id]` 468,5 de 470. Al abrir la hoja nueva en par, dos primeros cálculos en paralelo
+  (`recalcularAlAbrirEnPar()`); la guardada en par, cuatro llamadas desde el servidor en paralelo (las dos hojas y sus dos `cotizacion_evaluar`). Recalcular, dos
+  pedidos por pausa (uno en vuelo por columna). En la base, crear y guardar en par cuestan lo de dos altas o dos guardados (llaman dos veces a
+  `cotizacion_crear` y `cotizacion_guardar`, que miden `medir-cotizacion-crear.sql` y `medir-cotizacion-guardar.sql`); `cotizaciones_hermana_unica` sostiene
+  quién apunta a una cotización (la papelera y el `set null` de la purga).
 - La hoja dibujada (`e2e/cotizar-hoja-200.spec.ts`, 100 % y 200 %): `[data-hoja]` más «Avanzado» abierto ≤ 500 nodos con la fórmula más
   grande, como quien cotiza sin ⚙ (~12 nodos por celda: la celda en una fila no lleva el envoltorio de la cabecera); mide 446 al abrir y 467 usada, con los
   pasos de la hoja (de 5 a 8 nodos: la fila, sus 4 botones y el texto de cada punto). Lo que sume nodos a la hoja se para y se reporta. El aspecto

@@ -499,6 +499,19 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### La hoja
 
+- **Las cotizaciones hermanas (la variante en par).** Qué nodos van en par es una regla estática (`solo_en` o nombrar la variante o un nodo que ya va), espejada
+  en TS y SQL, para que la forma de la hoja no cambie al tipear. La opción no la elige la persona: la pone la base (`p_opcion` al calcular, `importadora.en_par` al
+  crear), así un nivel que esconde la variante cotiza igual; el `par` (etiquetas de las dos opciones) viaja a todo el que abre porque es configuración. Las RPC en
+  par llaman a `cotizacion_crear`, `cotizacion_guardar` y `cotizacion_encima` con ese ajuste de la transacción en vez de partirlas: sus definiciones y firmas las
+  fijan pruebas de medición, de candados y de auditoría. La segunda hermana nace 1 µs después (la de la primera opción es la aprobada y quedan juntas en las
+  listas). La base compone el título « · <etiqueta>» (el cliente manda el título sin la opción). La guardada de una hermana abre las dos y guardar guarda las dos
+  sólo si quien mira puede guardar las dos (nunca se dibuja editable lo que no se guarda); si no, sola. Al abrir dos guardadas por separado con lo común
+  distinto, manda lo de la que se abrió (con aviso) y al guardar queda en las dos; una hermana sin cambios no se reescribe. Los atajos, interruptores, el modo y
+  «Ver total Bs» son comunes. La papelera trata el par como un lote (enviar una manda la otra al mismo lote; restaurar o purgar algunas suma su hermana del
+  mismo lote, nunca cruza lotes ni purga una viva). «Cotizar encima» de una hermana crea un par nuevo en el acto. El PDF lleva una página A4 por tarjeta (una
+  tarjeta encogida a la mitad no se lee); la imagen de «Compartir» apila las dos portadas en el navegador (la portada sigue siendo una por cotización).
+- **El tope de JS de `/cotizaciones/nuevo` pasó a 465 KB** (regla del 5 %): con la hoja en par midió 461,5 KB (el ítem que reparte las celdas en par y las piezas
+  del resumen viajan en frío; la hoja en par, diferida).
 - **Vehículo y lead obligatorios: dos libertades por rol y origen.** `cotizaciones.crear.sin_vehiculo` y `cotizaciones.crear.sin_lead` (por origen, sin alcance; se suman, sin deny): sin la clave en ese origen el vínculo es obligatorio. Una final pide siempre los dos y cotizar encima aplica las mismas claves a la anterior (una anterior sin lead se cotiza encima sólo con `sin_lead` de su origen). Las hace cumplir la base (`cotizacion_crear`, `cotizacion_encima`, `_cotizacion_cadena`); la hoja decide con `sesion.permisos` (con «Ver como», los del rol elegido, un subconjunto de los reales: nunca afloja). El rol dueño las tiene sin origen: sin ellas nadie podría concederlas (`concesion_dominada()`) ni editar un rol que las tenga (`rol_dominado()`), y el dueño es «todo el catálogo».
 - **La hoja abierta la firma la base.** `cotizacion_hoja()` devuelve `abierta` con HMAC (clave en Vault); crear, evaluar y la ayuda de tabla reciben `p_abierta` y calculan con esa versión. Firma también la huella de las tarifas de la apertura, no sus valores: `crear` la compara con las que reconstruye del historial, porque un `cambiado_en` anterior a la apertura puede confirmar después. Cotizar pide `crear` y `ver` del origen.
 - **Cotizar encima.** La N+1 nace al tocar (`cotizacion_encima`), siempre preventa, con lo guardado de la última de la cadena; índice parcial `cotizaciones_encima_unica`. Quien no ve la N+1 sólo sabe que existe.

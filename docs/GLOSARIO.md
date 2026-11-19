@@ -373,6 +373,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Dirección de la web** — `ajustes_web.direccion_publica` / `leerDireccionPublica()`: la dirección pública del sitio.
 - **Cotización** — `cotizaciones`: cálculo de una fórmula para un lead/vehículo, con snapshot.
 - **Preventa / Final** — `clase_cotizacion`: borrador comercial / la que cierra el vehículo (una activa por vehículo).
+- **Cotizaciones hermanas** — `cotizaciones.hermana_id` (`HermanaDeLaGuardada`, `EnlaceALaHermana`): las dos cotizaciones de una **variante en par**, una por
+  opción, creadas y guardadas juntas (`cotizacion_crear_en_par`, `cotizacion_guardar_en_par`); se apuntan entre sí y comparten lead, vehículo, origen y versión.
+  Cada título lleva « · <etiqueta de su opción>». No son el **Par porcentaje-monto**.
 - **Cotización aprobada** — `cotizaciones_aprobadas`, `cotizacion_aprobar()`, `cotizaciones.aprobar` (por origen): la elegida de un vehículo, una sola por
   vehículo (la clave primaria es el vehículo). Nace aprobada la primera activa; si la aprobada se invalida o va a la papelera pasa a la más antigua que sigue
   activa. No es la **Final** (marcar una no aprueba ni al revés). Se ve como la insignia «Aprobada» y, en `/vehiculos`, como el **Costo estimado**.
@@ -531,6 +534,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Valor sugerido / modificado** — `cotizaciones.fuentes` (`sugerido` / `override`), `sobrescribible`: sugerido lo propone tabla, tramo o
   cálculo; modificado lo sobrescribió el asesor. No: `lookup`.
 - **Par porcentaje-monto** — `calculo porcentaje_de` `sobrescribible` y su `pct`: celda editable por monto o %; manda el monto si se sobrescribió.
+- **Variante en par** — «Se cotiza en par», `en_par` del nodo `opcion` de exactamente dos opciones (`par_sin_dos_opciones`); `ParDeHoja`, `nodosEnPar()` /
+  `_nodos_en_par()`: la hoja no dibuja sus chips y lo que cambia según la opción va en dos celdas («Transporte · 20 pies» | «Transporte · 40 pies»); guardar crea
+  dos **cotizaciones hermanas**. No es el **Par porcentaje-monto**.
 - **Fórmula como texto** — `compilarExpresion()` (`entities/compilador.ts`): `=(remate+fees)*4%`, `=SUMA(aduana)`; se compila a nodos.
 - **Nodo auxiliar** — `<fila>__<n>` en `compilarExpresion()`: cada operación anidada o número de una fórmula como texto, numerado en
   post-orden; cuáles lo son, `auxiliaresDe()` (`compilador-auxiliares.ts`). La constante auxiliar no pide celda en el diseño.
