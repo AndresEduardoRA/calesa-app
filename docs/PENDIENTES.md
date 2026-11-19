@@ -183,8 +183,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
   avisos (`data-pie-de-panel`).
 - **[T329]** En el menú de Configuración (8 rem) el motivo de una sub-sección apagada larga ocupa cinco renglones («Te falta el permiso
   «Gestionar los campos de los leads».»): acortarlo o mostrarlo al enfocar.
-- **[T34]** En el celular el carrusel de la ficha del vehículo, a todo el ancho y en 4:3, ocupa casi una pantalla antes del título: acotar su alto en una columna
-  (sin tocar el de la lateral de escritorio).
 - **[T34]** «Abrir la unidad» de «Qué falta» en la ficha del vehículo lleva a un hueco aunque su regla del flujo esté apagada (allí no estará): pasar a la ficha
   qué huecos dibuja la unidad (un dato de `leerQueFalta`) en vez de suponerlos todos.
 - **[T33]** Tras agregar un teléfono extra en el panel de edición de la ficha, el foco va a «Nombre» (la ficha se vuelve a leer y el panel se rearma) y no a «Agregar teléfono».
@@ -223,6 +221,11 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
   al abrir (o un zoom mínimo mayor) y dejar el «+/−/ajustar» para el resto.
 - **[T34]** El bloque «Ficha» de la ficha del vehículo dibuja todos los grupos con sus campos aunque estén en «—»: en el celular la página pasa de 6.000 px;
   plegar lo vacío o mostrar sólo lo que tiene valor.
+  Falta quitar ese bloque de la derecha: la ficha completa (`?ver=ficha`) ya muestra la ficha entera.
+- **[T338]** Con el texto al 200 % y una foto angosta (celular), la esquina con la vitrina y el «⋯» tapa en parte la flecha derecha del carrusel de la
+  ficha (y de la tarjeta grande de la lista): bajar las flechas o achicar la esquina cuando no caben.
+- **[T338]** «Ver en logística» está dos veces en la ficha del vehículo (los enlaces cortos de la cabecera y el título de «Fase y qué falta»): queda uno
+  al quitar ese bloque de la derecha.
 
 ## Decisión de la persona
 

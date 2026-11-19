@@ -271,20 +271,31 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   «—»); sin la clave no se dibuja ni se consulta. **«Compra directa»** (subasta): el campo del layout con la ruta de apibara `pricing.buy_now_usd`, en USD; sin
   ese campo activo o sin el dato, «—» (ese campo no se repite entre los «en tarjeta»).
   `/vehiculos/papelera` (por lote).
-- **Vehículo** — `/vehiculos/[id]` (según origen): **ficha en dos columnas**, todo a la vista sin un clic (sin pestañas ni acordeones). **Izquierda**
-  (pegajosa desde 56 rem de contenedor): la cabecera con el carrusel a todo el ancho, título, número, origen, situación (`<BadgeDeSituacion>`, la única vez),
-  la insignia de vitrina, «Editar» y el «⋯» (el mismo de la lista); «Datos principales» (marca, modelo, año, VIN, categoría, km, placado y, en subasta, lote, plataforma y
-  enlace); en un origen de subasta, el bloque «Subasta» con «Editar fechas» (`?panel=fechas-de-subasta`, inicio y cierre en su zona, vacío borra).
+- **Vehículo** — `/vehiculos/[id]` (según origen): **ficha en dos columnas**. **Izquierda** (pegajosa desde 56 rem de contenedor), sólo lo clave y
+  pensada también para mostrarle el vehículo a un cliente: la foto con su **tira de miniaturas** debajo (desplazable de costado, la actual marcada; un clic
+  abre el visor en esa foto, ← → la recorren y Enter la abre) y, sobre su esquina como en la tarjeta de la lista, la vitrina (el botón de la tarjeta, que
+  abre `?panel=vitrina`; sin permiso, apagado con su motivo) y el «⋯» (el mismo de la lista, con «Editar» e «Editar imágenes»: no hay «Editar» suelto);
+  título, número, origen, situación (`<BadgeDeSituacion>`, la única vez), la insignia de vitrina y los enlaces cortos «Ver en logística» (`logistica.ver`
+  del origen) y «Repuestos · Proyecto #N» (`repuestos.ver`, si tiene proyecto). Debajo, en este orden: **«Cotización aprobada»** (`cotizaciones.ver` del
+  origen: la portada de su tarjeta, n.º y título, total con su modo, autor y fecha, «Abrir» y «Compartir» —`?panel=compartir&para=<id>`, no en Modo Live—;
+  sin aprobada que quien mira vea, «Sin cotización aprobada» con «Cotizar» si cotiza en el origen); **«Subasta»** (sólo en un origen de subasta: la frase
+  con color y cuenta —«Se subasta en 2 días 4 h», «Cerró hace 3 h · sin resolver», «Ganada», «No ganada»—, el cierre en la zona de quien mira con la del
+  patio y la de la empresa más chicas, «Puja actual» o «Puja final» y «Compra directa» si el origen tiene el campo de apibara; «Editar fechas» en su «⋯»,
+  `?panel=fechas-de-subasta`; consultar de nuevo es «Actualizar los datos» del «⋯» del vehículo); **«Datos principales»** (sólo los datos clave del
+  origen, en dos columnas en la lateral y una en el celular y al 200 %, y «Ver más» a lo ancho, que abre la **ficha completa** en `?ver=ficha`: casi toda
+  la pantalla en escritorio y entera en el celular, sólo lectura, las fotos con su tira, los datos comunes, «Precio» y todos los grupos del layout; Esc y
+  «atrás» la cierran y el foco vuelve a «Ver más»).
   **Derecha**: el índice pegajoso («Índice de la ficha») y los bloques que quien mira ve, en este orden: «Fase y qué falta» (`logistica.ver` del origen:
   «Ver en logística» en su título y «Qué falta» de sólo lectura, ver «Logística: estados propios»), «Relacionados» compacto (`leads.ver`: el vinculado con
   «Desvincular» confirmado, los interesados y lo cotizado; ver «Relacionados (estados propios)»), «Cotizaciones» (`cotizaciones.ver` del origen, el
   historial completo, al acercarse), «Documentos» (`logistica.ver`, el hueco de la unidad, al acercarse), «Ficha» («Precio» y un grupo por layout del
-  origen; edición `?editar=`), «Repuestos» (`repuestos.ver`; sin proyecto, «Este vehículo no tiene proyecto de repuestos.» con «Crear proyecto de
-  repuestos» sólo si se puede editar; con él, «Proyecto #N», su estado y los ítems por fase) y «Fotos» (≤ 24, portada, orden; al acercarse). Un bloque sin
+  origen; edición `?editar=`) y «Repuestos» (`repuestos.ver`; sin proyecto, «Este vehículo no tiene proyecto de repuestos.» con «Crear proyecto de
+  repuestos» sólo si se puede editar; con él, «Proyecto #N», su estado y los ítems por fase). Las fotos se editan en «Editar imágenes». Un bloque sin
   permiso no está, tampoco en el índice. Arriba de las dos columnas, «Volver» y los avisos (limpieza, situación). En el celular y con el texto al 200 %,
-  una columna en el mismo orden. `?seccion=ficha|fotos|documentos|cotizaciones|repuestos` lleva a su bloque (si no lo ve, se queda arriba);
+  una columna en el mismo orden. `?seccion=ficha|documentos|cotizaciones|repuestos` lleva a su bloque (si no lo ve, se queda arriba); `?seccion=fotos`
+  redirige al visor en la primera foto (`?visor=<id>&foto=1`);
   `?panel=desvincular|vincular-lead|marcar-interesado` y `?relacionados=<tipo>` llevan a «Relacionados» y abren lo suyo; `?editar=`, `?panel=vitrina`
-  («Publicar en la web»), `?panel=imagenes` («Editar imágenes»), `?panel=actualizar-datos` («Actualizar los datos») y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».» con «Reintentar»).
+  («Publicar en la web»), `?panel=imagenes` («Editar imágenes»), `?panel=actualizar-datos` («Actualizar los datos»), `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».» con «Reintentar»).
   - **Cotizaciones del lead y del vehículo** (pestaña o bloque): las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
     Cotizaciones» (`/cotizaciones?lead=` o `?vehiculo=`); se lee al abrirla (en las fichas del lead y del vehículo es un bloque y se lee al acercarse); esqueleto, error con «Reintentar», «Sin cotizaciones que
     puedas ver.». Cada fila lleva la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura).
@@ -746,9 +757,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   abre solo); rechazos junto al campo (VIN o lote repetido también). Conflicto: quién y cuándo, «Ver cómo quedó» y «Recargar».
 - **Fotos:** elegir (selector, soltar o cámara) las deja en una bandeja sin subir que dice lo que no entra y por qué (no es foto, > 25 MB,
   repetida, pasa de 24). «Subir N fotos» con avance; un fallo se dice entero con «Reintentar las N que faltan». Reordenar con botones o
-  `Alt+←/→`; eliminar con «Deshacer». Lo mismo en el bloque «Fotos» de la ficha y en el drawer «Editar imágenes» del «⋯» (`?panel=imagenes`, con
+  `Alt+←/→`; eliminar con «Deshacer». Todo eso, en el drawer «Editar imágenes» del «⋯» (`?panel=imagenes`, con
   `&para=<id>` en la lista; esqueleto mientras se lee; con fotos elegidas sin subir, cerrar pregunta; al cerrar, la lista o la ficha ya tienen la portada
-  nueva). Un `para` que no es un id, de otro origen o que no se ve: el drawer dice «No existe o no tienes acceso».
+  nueva). Un `para` que no es un id, de otro origen o que no se ve: el drawer dice «No existe o no tienes acceso». La ficha no tiene bloque «Fotos»: se
+  editan sólo en «Editar imágenes» y se ven en la tira de la cabecera.
 - **«⋯» del vehículo** (el mismo, en este orden, en la fila, la tarjeta y la ficha; `accionesDeVehiculo()`): **«Cotizar vehículo»**, la acción principal (en
   negrita, con su icono y sola en su bloque: la hoja con el vehículo y su origen, sin lead y con `returnTo` = de donde salió, la lista con su consulta o la
   ficha; sin `cotizaciones.crear` en el origen no está) · «Editar» · «Editar imágenes» · «Publicar en la web…» («Editar publicación…» si ya está publicado) ·
@@ -785,7 +797,14 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   del mismo vehículo. Origen, filtros y cursor se quitan. Un `?vehiculo=` inexistente, en la papelera, de otro origen, que no se ve o que no es un id llega a
   la ficha: «No existe o no tienes acceso» con «Ir al inventario».
 - **Ficha (`/vehiculos/[id]`):** sin `logistica.ver`, ni «Qué falta», ni «Documentos», ni «Ver en logística»; sin `cotizaciones.ver`, ni «Cotizaciones» ni el
-  grupo Cotizado; sin `leads.ver`, sin «Relacionados»; el índice siempre tiene «Ficha» y «Fotos». Origen sin flujo legible: el error de «Qué falta» con
+  grupo Cotizado ni «Cotización aprobada»; sin `leads.ver`, sin «Relacionados»; sin `repuestos.ver` o sin proyecto, sin «Repuestos · Proyecto #N»; el
+  índice siempre tiene «Ficha». La foto: sin fotos, el recuadro 4:3 con su ícono (el «⋯» y la vitrina igual encima) y sin tira; con una, sin tira ni
+  flechas; si la lectura falla, la portada en su lugar y el visor dice «No se pudieron cargar las fotos.» con «Reintentar». La vitrina sin
+  `vehiculos.vitrina`: apagada (`aria-disabled`) con el motivo para el lector y en un aviso al tocarla. «Cotización aprobada»: la portada preparándose o
+  que falla, el recuadro de la portada con el total; en Modo Live, borrosa, sin «Compartir». «Subasta»: origen manual, no está; sin fechas, «Sin fecha de
+  cierre»; sin poder editar, sin su «⋯». «Datos principales»: sin datos clave guardados, los de fábrica de su tipo; un dato vacío, «—». La ficha completa
+  sin red: «Sin conexión. No se pudo abrir esto.» con «Reintentar»; mientras lee los grupos, su esqueleto, y si falla, «No pudimos cargar la ficha del
+  vehículo.» con «Reintentar». Origen sin flujo legible: el error de «Qué falta» con
   «Reintentar» y el resto sigue. Sin fase: «Sin fase» en la cabecera y «Todavía no tiene fase.» en «Qué falta». Subasta sin resolver: el aviso de arriba
   con «La ganamos» (no se repite en «Qué falta»). Sin red: el índice funciona (son anclas); lo diferido dice «Sin conexión» en su lugar con «Reintentar».
 

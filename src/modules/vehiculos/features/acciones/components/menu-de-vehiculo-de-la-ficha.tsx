@@ -59,7 +59,6 @@ export function MenuDeVehiculoDeLaFicha(props: Props) {
       papelera={papelera}
       paraCotizar={props.paraCotizar}
       paraActividad={paraActividad}
-      conBorde
       avisos={{ ...avisos, paraActividad }}
       alPublicar={vitrina.abrir}
       alEditarImagenes={() => {

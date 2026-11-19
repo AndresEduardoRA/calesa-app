@@ -80,6 +80,78 @@ function textoDelBoton(titulo: string, indice: number, total: number): string {
     : `Ver la foto de ${titulo}`
 }
 
+type Carrusel = ReturnType<typeof useCarrusel>
+
+// Lo que se ve en el lugar, ya con su estado (`useCarrusel`): la foto (el clic abre el visor), las flechas, los puntos y el gesto. Lo comparten el
+// carrusel de una lista y el de la ficha con su tira (`CarruselConTira`).
+export function EscenarioDelCarrusel({
+  c,
+  titulo,
+  modo = 'carrusel',
+  vacio,
+  className,
+  conPuntos = true,
+  puntos = 'centro',
+}: {
+  c: Carrusel
+  titulo: string
+  modo?: 'carrusel' | 'abrir'
+  vacio: ReactNode
+  className?: string
+  // Con la tira debajo, los puntos sobran.
+  conPuntos?: boolean
+  puntos?: 'centro' | 'derecha'
+}) {
+  const inicio = useRef<number | null>(null)
+  const conGesto = modo === 'carrusel'
+  return (
+    <span
+      data-no-abre=""
+      className={cn('group relative block shrink-0 overflow-hidden', className)}
+      onPointerEnter={c.acercarse}
+      onFocus={c.acercarse}
+      onPointerDown={(evento) => {
+        inicio.current = evento.clientX
+      }}
+      onPointerUp={(evento) => {
+        const dx = inicio.current === null ? 0 : evento.clientX - inicio.current
+        inicio.current = null
+        if (conGesto && Math.abs(dx) >= UMBRAL_DEL_GESTO) c.mover(dx < 0 ? 1 : -1)
+      }}
+    >
+      {c.enLugar ? (
+        <button
+          type="button"
+          aria-label={textoDelBoton(titulo, c.indice, c.total)}
+          className="absolute inset-0 block size-full cursor-zoom-in"
+          onClick={c.abrir}
+        >
+          <Image
+            src={c.enLugar}
+            alt=""
+            fill
+            unoptimized
+            loading="lazy"
+            sizes="(min-width: 768px) 320px, 100vw"
+            className="object-cover"
+          />
+        </button>
+      ) : (
+        <span aria-hidden className="absolute inset-0 flex items-center justify-center">
+          {vacio}
+        </span>
+      )}
+      {conGesto && c.conFlechas ? (
+        <>
+          <Flecha paso={-1} alMover={c.mover} />
+          <Flecha paso={1} alMover={c.mover} />
+        </>
+      ) : null}
+      {conGesto && conPuntos ? <Puntos total={c.total} actual={c.indice} lado={puntos} /> : null}
+    </span>
+  )
+}
+
 // Las fotos de una entidad en su lugar (tarjeta, fila, cabecera): la portada que ya trae la fila y, recién cuando alguien se acerca (puntero,
 // foco o toque), el resto, una sola vez (`useImagenes`). Con varias, flechas, puntos y gesto; el clic abre el visor grande en esa foto. Va con
 // `data-no-abre`: tocar la foto no abre la fila (ni su resumen ni su ficha).
@@ -91,54 +163,16 @@ export function CarruselEnElLugar({
   ...pedido
 }: Props) {
   const c = useCarrusel(pedido)
-  const inicio = useRef<number | null>(null)
-  const conGesto = modo === 'carrusel'
   return (
     <>
-      <span
-        data-no-abre=""
-        className={cn('group relative block shrink-0 overflow-hidden', className)}
-        onPointerEnter={c.acercarse}
-        onFocus={c.acercarse}
-        onPointerDown={(evento) => {
-          inicio.current = evento.clientX
-        }}
-        onPointerUp={(evento) => {
-          const dx = inicio.current === null ? 0 : evento.clientX - inicio.current
-          inicio.current = null
-          if (conGesto && Math.abs(dx) >= UMBRAL_DEL_GESTO) c.mover(dx < 0 ? 1 : -1)
-        }}
-      >
-        {c.enLugar ? (
-          <button
-            type="button"
-            aria-label={textoDelBoton(pedido.titulo, c.indice, c.total)}
-            className="absolute inset-0 block size-full cursor-zoom-in"
-            onClick={c.abrir}
-          >
-            <Image
-              src={c.enLugar}
-              alt=""
-              fill
-              unoptimized
-              loading="lazy"
-              sizes="(min-width: 768px) 320px, 100vw"
-              className="object-cover"
-            />
-          </button>
-        ) : (
-          <span aria-hidden className="absolute inset-0 flex items-center justify-center">
-            {vacio}
-          </span>
-        )}
-        {conGesto && c.conFlechas ? (
-          <>
-            <Flecha paso={-1} alMover={c.mover} />
-            <Flecha paso={1} alMover={c.mover} />
-          </>
-        ) : null}
-        {conGesto ? <Puntos total={c.total} actual={c.indice} lado={puntos} /> : null}
-      </span>
+      <EscenarioDelCarrusel
+        c={c}
+        titulo={pedido.titulo}
+        modo={modo}
+        vacio={vacio}
+        puntos={puntos}
+        {...(className === undefined ? {} : { className })}
+      />
       {c.montarVisor ? <VisorDeImagenes titulo={pedido.titulo} {...c.visor} /> : null}
     </>
   )

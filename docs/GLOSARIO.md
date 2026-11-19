@@ -91,7 +91,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Datos clave** — `origenes.datos_clave` / `DatoClave`, `leerDatosClave()`, `origen_datos_clave_guardar()`: los hasta 4 datos, en orden,
   que la ficha de un vehículo muestra primero. Los elige cada origen en «Campos» (la estrella, «Datos clave (n de 4)»); cada uno es un dato
   común o un campo activo del origen. Vacíos = los de fábrica de su tipo (subasta: plataforma, enlace de la subasta, kilometraje y año;
-  manual: año, kilometraje, VIN y categoría).
+  manual: año, kilometraje, VIN y categoría). La ficha del vehículo los dibuja en «Datos principales» (columna izquierda, `datosClaveDelVehiculo()`).
+- **Ficha completa (del vehículo)** — `<ModalDeFichaCompleta>`, `?ver=ficha`: el «Ver más» de «Datos principales» en la ficha del vehículo. Un modal
+  grande, de sólo lectura y con tipografía de vitrina, para mostrarle el vehículo a un cliente: las fotos con su tira, los datos comunes, «Precio» y
+  todos los grupos del layout del origen. No es el bloque «Ficha» de la derecha.
 - **Rango (de un campo)** — `minimo`/`maximo` de `leads_campos` y `origenes_campos`, `_valor_fuera_de_rango()`: límites de un `numero` o
   `moneda` (nulo = sin límite); se rechaza el valor que cambia y queda fuera, no el que ya estaba. `*_campo_impacto().fuera_de_rango` los cuenta.
 - **Valor por defecto de un campo** — `valor_defecto` / `valorDefectoPara()`, `valorDefectoVigente()`: lo que el alta trae puesto; sólo precarga.
@@ -117,6 +120,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Foto** — `vehiculos_imagenes` / `Foto`, `<SeccionDeFotos>`: una imagen de un vehículo (hasta 24).
 - **Visor de imágenes** — `<CarruselEnElLugar>`, `useVisorDeGaleria()`, `?visor=<clave>&foto=<n>`: las fotos de una entidad en grande,
   con flechas, ← →, «3 de 12» y miniaturas; en su lugar, la portada y, al acercarse, el resto (una sola lectura).
+- **Tira de miniaturas** — `<TiraDeMiniaturas>`, `<CarruselConTira>`: las miniaturas de una entidad en fila, desplazable de costado (hasta 24), con
+  la actual marcada (`aria-current` y borde). En el visor va bajo la foto grande; en la ficha del vehículo, bajo el carrusel (un clic abre el visor en
+  esa foto; ← → la recorren); en la ficha completa, arriba de los datos. No es la «Miniatura» (una sola foto chica).
 - **Alta suelta** — `vehiculo_crear(…, 'suelto')`, `vehiculos.crear`: dar de alta un vehículo desde el inventario (`/vehiculos`, «Nuevo», `N`) o por
   importación. **Alta desde cotizar** — `vehiculo_crear(…, 'cotizar')`, `vehiculos.crear.desde_cotizar`: desde la hoja de cotizar («+» y «Traer»
   del panel del vehículo). Cada una, su permiso por origen; `vehiculos.creado_desde` dice cuál fue.
@@ -817,6 +823,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   por la base (`_vehiculo_situacion()`): «En subasta» (`en_subasta`: subasta viva en el tramo de subasta), «Sin resolver» (`sin_resolver`:
   cerrada en el tramo y sin resultado), «No ganada» (`no_ganada`: se marcó así y sigue en el tramo; no cuenta) o su fase (`fase`). El tramo
   (`_vehiculo_en_tramo()`) es estar en una fase de subasta o no tener fase en un origen que tiene una.
+- **Frase de la subasta** — `fraseDeSubasta()` (`entities/frase-de-subasta.ts`), `data-frase-de-subasta`: la línea grande con color y cuenta del bloque
+  «Subasta» de la ficha, según la situación: «Se subasta en 2 días 4 h», «Cerró hace 3 h · sin resolver», «Ganada» (situación `fase` con el cierre
+  vencido), «No ganada». El cierre es `subastaFinEn ?? subastaEn`; la puja se llama «Puja actual» mientras sigue viva y «Puja final» al cerrar.
 - **Situación (filtro)** — `?situacion=` / `FILTRO_SITUACION`, condición `situacion_en`: «Situación» en el panel de filtros del inventario. Reemplaza al filtro «Fase»: una fase
   es una situación. Ofrece, en un origen de subasta, «En subasta», «Sin resolver» y «No ganadas» (`SITUACIONES_PROPIAS`) y, en todo origen, sus fases y «Sin fase»
   (`ninguna`). Una fase sólo trae lo que tiene esa situación (`fase`): lo de la subasta figura por la suya. Pedir «No ganadas» es la única forma de verlas en el inventario.
