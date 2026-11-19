@@ -32,6 +32,8 @@ type Props = {
   acciones: AccionesDeLaFila
   // La tarjeta de la lista ya tiene «Compartir» como acción principal: su «⋯» no lo repite.
   sinCompartir?: boolean
+  // En la barra del resumen, junto a «Abrir» y «Compartir»: con borde y de su alto (`MasAcciones conBorde`).
+  conBorde?: boolean
 }
 
 type Contexto = Props & { motivo: (clave: ClaveDeAccionDeCotizacion) => string | null }
@@ -109,11 +111,11 @@ const LINEAS: Readonly<Record<ClaveDeAccionDeCotizacion, Constructor>> = {
   ],
 }
 
-// El «⋯» de una cotización del listado, en la fila de la tabla y en la tarjeta de la lista: la lista de siempre (`accionesDeCotizacion()`), por bloques y con un separador
+// El «⋯» de una cotización del listado, en la fila de la tabla, en la tarjeta de la lista y en la barra del resumen: la lista de siempre (`accionesDeCotizacion()`), por bloques y con un separador
 // entre ellos. Lo que quien mira no puede hacer no está; lo que se sabe que la base rechazaría se ve apagado con su motivo. Con el Modo Live no se ofrece «Compartir
-// cotización…», y en la tarjeta tampoco (`sinCompartir`: ya es su acción principal). Sin nada que ofrecer no se dibuja.
+// cotización…», y en la tarjeta y el resumen tampoco (`sinCompartir`: ya está a la vista). Sin nada que ofrecer no se dibuja.
 export function MenuDeLaFila(props: Props) {
-  const { cotizacion, menu, sinCompartir = false } = props
+  const { cotizacion, menu, sinCompartir = false, conBorde = false } = props
   const { live } = useLive()
   const bloques = accionesDeCotizacion(
     live || sinCompartir ? { ...menu.ofertas, compartir: undefined } : menu.ofertas,
@@ -131,6 +133,7 @@ export function MenuDeLaFila(props: Props) {
       nombre={`N.º ${String(cotizacion.numero)}`}
       id={cotizacion.id}
       acciones={acciones}
+      conBorde={conBorde}
     />
   )
 }

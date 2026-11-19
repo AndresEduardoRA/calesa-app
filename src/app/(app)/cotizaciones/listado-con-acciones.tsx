@@ -85,6 +85,7 @@ export function ListadoConAcciones({ menus, ...props }: Props) {
             cotizacion={fila}
             menu={menu}
             sinCompartir={opciones?.sinCompartir === true}
+            conBorde={opciones?.conBorde === true}
             favorita={acciones.esFavorita(fila.id)}
             enCurso={acciones.enCurso(fila.id)}
             acciones={acciones.accionesDe(fila, menu)}

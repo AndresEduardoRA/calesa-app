@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { EsquemaDeFiltros } from '@/shared/lib/filtros'
 import { render } from '../../hoja/components/render-con-url.soporte'
@@ -17,8 +18,11 @@ vi.mock('@/shared/ui/vista-y-opciones/diferidos', async () => {
     await import('@/shared/ui/vista-y-opciones/panel-de-vista-y-opciones')
   return { PanelDeVistaYOpcionesDiferido: PanelDeVistaYOpciones }
 })
+// El resumen sólo con sus diálogos: dónde van se prueba aquí; lo demás, en su test.
 vi.mock('./diferidos', () => ({
-  ResumenDeCotizacionDiferido: () => null,
+  ResumenDeCotizacionDiferido: ({ dialogos }: { dialogos?: ReactNode }) => (
+    <div data-testid="resumen">{dialogos}</div>
+  ),
   VistasDeCotizacionesDiferido: () => <button>Vistas</button>,
 }))
 
@@ -240,5 +244,22 @@ describe('ListadoDeCotizaciones: tarjetas, grupos y «Compartir» (T319)', () =>
         .getByRole('switch', { name: 'Agrupar por vehículo' })
         .getAttribute('aria-checked'),
     ).toBe('true')
+  })
+})
+
+describe('ListadoDeCotizaciones: los diálogos y el resumen (T320)', () => {
+  const ID = '2f1c3a4b-5d6e-4f70-8a9b-0c1d2e3f4a5b'
+  const dialogos = <p data-testid="dialogos" />
+
+  it('con el resumen cerrado, los diálogos van en el listado', () => {
+    render(<ListadoDeCotizaciones {...base} dialogos={dialogos} />)
+    expect(screen.getAllByTestId('dialogos')).toHaveLength(1)
+    expect(screen.queryByTestId('resumen')).toBeNull()
+  })
+
+  it('con el resumen abierto, van una sola vez y dentro de él', () => {
+    render(<ListadoDeCotizaciones {...base} dialogos={dialogos} />, `?cotizacion=${ID}`)
+    expect(screen.getAllByTestId('dialogos')).toHaveLength(1)
+    expect(screen.getByTestId('resumen').contains(screen.getByTestId('dialogos'))).toBe(true)
   })
 })
