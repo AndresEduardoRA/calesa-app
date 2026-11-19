@@ -61,10 +61,7 @@ test('E1 la hoja en par: sin chips de la variante, la línea de las dos versione
   const nodos = await page
     .locator('[data-hoja]')
     .evaluate((e) => e.querySelectorAll('*').length + 1)
-  info.annotations.push({
-    type: 'medida',
-    description: `nodos de la hoja en par: ${String(nodos)}`,
-  })
+  console.warn(`[nodos] ${info.project.name}: la hoja en par, ${String(nodos)} nodos (tope 500)`)
   expect(nodos).toBeLessThanOrEqual(500)
   await capturar(page, info, 'hoja-en-par')
 })
