@@ -33,6 +33,45 @@ type Pendiente = { tipo: 'editar' } | { tipo: 'motivo'; etapa: EtapaGuardada }
 
 const RENGLON = 'min-h-11 md:min-h-8'
 
+// «Mover a»: las etapas de su embudo menos la actual. Una perdida pregunta el motivo (lo abre quien tiene el menú, cuando terminó de cerrarse).
+function SubmenuMoverA({
+  etapas,
+  actual,
+  alMover,
+  alElegirPerdida,
+}: Pick<Props, 'etapas' | 'actual' | 'alMover'> & {
+  alElegirPerdida: (etapa: EtapaGuardada) => void
+}) {
+  return (
+    <DropdownMenuSub>
+      {/* Se abre con el clic, el toque o el teclado, no al pasar el puntero: abierto por el paso, el clic que le sigue lo cerraba. */}
+      <DropdownMenuSubTrigger className={RENGLON} openOnHover={false}>
+        Mover a
+      </DropdownMenuSubTrigger>
+      <DropdownMenuSubContent className="w-56 max-w-(--available-width)">
+        {etapas
+          .filter((etapa) => etapa.id !== actual)
+          .map((etapa) => (
+            <DropdownMenuItem
+              key={etapa.id}
+              className={RENGLON}
+              onClick={() => {
+                if (etapa.esPerdida) {
+                  alElegirPerdida(etapa)
+                  return
+                }
+                void alMover(etapa, null)
+              }}
+            >
+              <PuntoDeColor color={etapa.color} className="size-2.5" />
+              {etapa.nombre}
+            </DropdownMenuItem>
+          ))}
+      </DropdownMenuSubContent>
+    </DropdownMenuSub>
+  )
+}
+
 // El «⋯» de una oportunidad del bloque: «Mover a» (un submenú con las etapas de su embudo menos la actual; sin arrastrar, con el teclado y
 // el dedo), «Editar» y «Eliminar» (con «Deshacer»). Lo que abre algo encima (el panel de editar, el modal del motivo de una perdida) espera
 // a que el menú termine de cerrarse: si no, el foco que vuelve al botón lo cierra. El botón lleva `data-mover-a`: el modal del motivo le
@@ -78,29 +117,14 @@ export function MenuDeOportunidad({
         <MoreHorizontalIcon aria-hidden className="size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-52 max-w-(--available-width)">
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger className={RENGLON}>Mover a</DropdownMenuSubTrigger>
-          <DropdownMenuSubContent className="w-56 max-w-(--available-width)">
-            {etapas
-              .filter((etapa) => etapa.id !== actual)
-              .map((etapa) => (
-                <DropdownMenuItem
-                  key={etapa.id}
-                  className={RENGLON}
-                  onClick={() => {
-                    if (etapa.esPerdida) {
-                      setPendiente({ tipo: 'motivo', etapa })
-                      return
-                    }
-                    void alMover(etapa, null)
-                  }}
-                >
-                  <PuntoDeColor color={etapa.color} className="size-2.5" />
-                  {etapa.nombre}
-                </DropdownMenuItem>
-              ))}
-          </DropdownMenuSubContent>
-        </DropdownMenuSub>
+        <SubmenuMoverA
+          etapas={etapas}
+          actual={actual}
+          alMover={alMover}
+          alElegirPerdida={(etapa) => {
+            setPendiente({ tipo: 'motivo', etapa })
+          }}
+        />
         <DropdownMenuItem
           className={RENGLON}
           onClick={() => {
