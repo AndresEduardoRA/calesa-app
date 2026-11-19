@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Button } from '@/shared/ui/button'
 import { Drawer } from '@/shared/ui/drawer'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -46,6 +46,8 @@ type Props = {
   compartirDe?: CompartirDe | undefined
   // Los diálogos del «⋯» y de «Compartir» mientras el resumen está abierto: dentro del Drawer, para que abrirlos no cuente como un clic afuera que lo cierra.
   dialogos?: ReactNode
+  // Avisa que su código llegó y está montado: recién ahí el listado le pasa los diálogos.
+  alMontarse?: (listo: true) => void
 }
 
 // Lo que dibuja la barra de arriba del resumen.
@@ -204,7 +206,11 @@ export function ResumenDeCotizacion({
   menuDeFila,
   compartirDe,
   dialogos,
+  alMontarse,
 }: Props) {
+  useEffect(() => {
+    alMontarse?.(true)
+  }, [alMontarse])
   const resumen = useResumenDeCotizacion()
   const base = vistaDelResumen({ texto: resumen.texto, filas, delServidor, yaPedido: false })
   const pedido = usePedidoAlServidor(resumen.id, base.tipo === 'cargando')

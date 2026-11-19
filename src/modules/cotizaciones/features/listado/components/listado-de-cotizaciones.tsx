@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { VistaGuardada } from '@/modules/equipo/client'
 import type { EsquemaDeFiltros } from '@/shared/lib/filtros'
 import type { VistaDeLista } from '@/shared/lib/vista-de-lista'
@@ -84,8 +84,10 @@ export function ListadoDeCotizaciones(props: Props) {
   const { esquema, pagina, vistas, porPagina, rutaDeNueva, vehiculo, lead, junto, origenes } = props
   const resumen = useResumenDeCotizacion()
   // El resumen llega recién al abrirse (`diferido()`) y, una vez visto, queda montado para irse con su animación.
-  const resumenAbierto = resumen.texto !== null
-  const resumenMontado = useAbiertoAlgunaVez(resumenAbierto)
+  const resumenMontado = useAbiertoAlgunaVez(resumen.texto !== null)
+  // Los diálogos van dentro del resumen sólo con su código ya llegado (`alMontarse`): mientras llega, en el listado, así un `?panel=` de la URL no espera al chunk.
+  const [resumenListo, setResumenListo] = useState(false)
+  const enElResumen = resumen.texto !== null && resumenListo
   const vista = useVistaDeCotizaciones(props.vistaPreferida)
   const agrupar = useAgruparCotizaciones(props.agruparPedido)
   const nueva = rutaDeNueva === null ? undefined : <NuevaCotizacion ruta={rutaDeNueva} />
@@ -130,7 +132,7 @@ export function ListadoDeCotizaciones(props: Props) {
         />
       </FilterShell>
       {/* Los diálogos van una sola vez: dentro del resumen mientras está abierto (un modal hermano del Drawer contaría como un clic afuera y lo cerraría), y aquí si no. */}
-      {resumenAbierto ? null : props.dialogos}
+      {enElResumen ? null : props.dialogos}
       {resumenMontado ? (
         <ResumenDeCotizacionDiferido
           filas={pagina.filas.map(cotizacionDeLaEntrada)}
@@ -142,7 +144,8 @@ export function ListadoDeCotizaciones(props: Props) {
           alCambiarLaAprobada={props.alCambiarLaAprobada}
           menuDeFila={props.menuDeFila}
           compartirDe={props.compartirDe}
-          dialogos={resumenAbierto ? props.dialogos : null}
+          dialogos={enElResumen ? props.dialogos : null}
+          alMontarse={setResumenListo}
         />
       ) : null}
     </div>

@@ -18,13 +18,28 @@ vi.mock('@/shared/ui/vista-y-opciones/diferidos', async () => {
     await import('@/shared/ui/vista-y-opciones/panel-de-vista-y-opciones')
   return { PanelDeVistaYOpcionesDiferido: PanelDeVistaYOpciones }
 })
-// El resumen sólo con sus diálogos: dónde van se prueba aquí; lo demás, en su test.
-vi.mock('./diferidos', () => ({
-  ResumenDeCotizacionDiferido: ({ dialogos }: { dialogos?: ReactNode }) => (
-    <div data-testid="resumen">{dialogos}</div>
-  ),
-  VistasDeCotizacionesDiferido: () => <button>Vistas</button>,
-}))
+// El resumen sólo con sus diálogos y su aviso de montado: dónde van se prueba aquí; lo demás, en su test. `resumenSinLlegar`: su código aún no llegó.
+const resumenSinLlegar = { valor: false }
+vi.mock('./diferidos', async () => {
+  const { useEffect } = await import('react')
+  function Resumen({
+    dialogos,
+    alMontarse,
+  }: {
+    dialogos?: ReactNode
+    alMontarse?: (listo: true) => void
+  }) {
+    useEffect(() => {
+      alMontarse?.(true)
+    }, [alMontarse])
+    return <div data-testid="resumen">{dialogos}</div>
+  }
+  return {
+    ResumenDeCotizacionDiferido: (props: Parameters<typeof Resumen>[0]) =>
+      resumenSinLlegar.valor ? null : <Resumen {...props} />,
+    VistasDeCotizacionesDiferido: () => <button>Vistas</button>,
+  }
+})
 
 beforeAll(() => {
   // jsdom no trae matchMedia: se prueba como una pantalla angosta.
@@ -255,6 +270,17 @@ describe('ListadoDeCotizaciones: los diálogos y el resumen (T320)', () => {
     render(<ListadoDeCotizaciones {...base} dialogos={dialogos} />)
     expect(screen.getAllByTestId('dialogos')).toHaveLength(1)
     expect(screen.queryByTestId('resumen')).toBeNull()
+  })
+
+  it('con el resumen abierto pero su código sin llegar, siguen en el listado (un `?panel=` no lo espera)', () => {
+    resumenSinLlegar.valor = true
+    try {
+      render(<ListadoDeCotizaciones {...base} dialogos={dialogos} />, `?cotizacion=${ID}`)
+      expect(screen.getAllByTestId('dialogos')).toHaveLength(1)
+      expect(screen.queryByTestId('resumen')).toBeNull()
+    } finally {
+      resumenSinLlegar.valor = false
+    }
   })
 
   it('con el resumen abierto, van una sola vez y dentro de él', () => {
