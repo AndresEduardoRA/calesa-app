@@ -10,14 +10,14 @@ cliente. Crear una final directo con `cotizacion_crear` hace lo mismo. `client.t
 
 ## En la pantalla
 
-- «Marcar final» en la cabecera de la guardada (`pantallas/final-cotizacion.ts` → `HUECOS_DE_FINAL_EN_LA_GUARDADA.Acciones`). El hueco
+- «Marcar final…» en el «⋯» de la cabecera de la guardada (`pantallas/final-cotizacion.ts` → `HUECOS_DE_FINAL_EN_LA_GUARDADA.Acciones`). El hueco
   (`marcar-la-guardada-final.tsx`, Server Component) lo dibuja sólo en una preventa y con `cotizaciones.final.gestionar` del origen (`puedeMarcarLaFinal`);
   al navegador llegan el id, el número y el motivo para no marcar (`motivoParaNoMarcar`: falta el vehículo o el cliente, con texto según `puedeGuardar`).
-  Es un `<button>` con las clases de `<Button>`, por el JS en frío de `/cotizaciones/[id]`.
+  Es una línea del «⋯» (`marcar-final-del-menu.tsx`, `useAporteAlMenu()`), apagada con el motivo debajo; el diálogo devuelve el foco al «⋯».
 - El `<Confirmar>` vive en `?panel=marcar-final` (`PANEL_MARCAR_FINAL`), se pide con `diferido()` al abrirse y se revisa al llegar (apagado: avisa el
   motivo y limpia la URL). Registrado en `scripts/guardas/confirmar-con-url-papelera.ts`.
 - La action `marcarFinal({ id })` (sin versión esperada) no llama a la base sin la clave en algún origen y revalida `/cotizaciones` al entrar.
-  `marcarLaFinal()` (función, no hook) cierra la URL, avisa y recién vuelve: al entrar la página se redibuja sin el botón y el diálogo se desmonta. Si no
+  `marcarLaFinal()` (función, no hook) cierra la URL, avisa y recién vuelve: al entrar la página se redibuja sin la línea y el diálogo se desmonta. Si no
   entra, el diálogo dice el motivo; el 23505 del índice (otra final se confirmó antes) es «Otra cotización de este vehículo ya es la final. Recarga para
   verla.».
 

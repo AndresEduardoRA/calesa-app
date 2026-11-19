@@ -40,7 +40,8 @@ pide tipear «purgar N»); lo que la base rechaza se dice dentro (un conflicto a
 (`resumenDePurga`: lo bloqueado, como una final con comprobante, con su motivo).
 
 En la guardada (`/cotizaciones/[id]`): `pantallas/papelera-cotizacion.ts` llena `Acciones` con «Enviar a la papelera» (`<EnviarLaGuardadaALaPapelera>`,
-Server Component que decide quién lo ve y dibuja `<BotonEnviarALaPapelera>` con el id y la versión; `outline`, tras «Revisiones»). Lo ve quien puede
+Server Component que decide quién lo ve y monta `<EnviarALaPapeleraDelMenu>` con el id y la versión: la última línea del «⋯» de la cabecera, separada y apagada
+mientras envía). Lo ve quien puede
 guardarla o, en una preventa, quien modera (`puedeEnviarLaCotizacion`, espejo de `_cotizacion_a_papelera()`). Se hace sin preguntar
 (`hooks/envio-a-papelera.ts`: llama a las actions sin `useAction`, porque el JS en frío de la guardada está al tope): lleva a `/cotizaciones` con ««T» se
 envió a la papelera.» y «Deshacer» 10 s, que restaura ese lote con la versión que devolvió el envío; si la base la rechaza (PT409 con «Recargar»; sin
