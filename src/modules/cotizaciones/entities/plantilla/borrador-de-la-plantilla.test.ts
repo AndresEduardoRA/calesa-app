@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { alinearConLaFormula, plantillaParaEditar } from './borrador-de-la-plantilla'
+import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
+import {
+  alinearConLaFormula,
+  AVISO_DE_LA_CONVERSION,
+  AVISO_DE_LA_OMISION,
+  AVISO_DEL_CORTE,
+  cuadriculaParaEditar,
+} from './borrador-de-la-plantilla'
+import { formaDeCuadricula } from './forma-de-cuadricula'
 import type { Plantilla } from './forma-de-plantilla'
+import { revisarLaGrilla } from './reglas-de-la-grilla'
 import type { VersionDePlantilla } from './lectura-de-la-plantilla'
 import type { ContextoDePlantilla } from './validar-plantilla'
 
@@ -30,7 +39,7 @@ const p = (o: Partial<Plantilla> = {}): Plantilla => ({
   ...o,
 })
 const version = (
-  plantilla: Plantilla | null,
+  definicion: Plantilla | PlantillaEnCuadricula | null,
   extra: Partial<VersionDePlantilla> = {},
 ): VersionDePlantilla => ({
   id: 'x',
@@ -38,8 +47,12 @@ const version = (
   nota: null,
   actualizadoEn: 'h',
   publicadoEn: null,
-  plantilla,
-  motivo: plantilla === null ? 'La plantilla no tiene la forma esperada.' : null,
+  contenido:
+    definicion === null
+      ? { motivo: 'La plantilla no tiene la forma esperada.' }
+      : 'forma' in definicion
+        ? { forma: 2, cuadricula: definicion }
+        : { forma: 1, plantilla: definicion },
   ...extra,
 })
 
@@ -78,80 +91,127 @@ describe('alinearConLaFormula', () => {
   })
 })
 
-describe('plantillaParaEditar', () => {
-  it('nace del borrador', () => {
-    const r = plantillaParaEditar({
-      borrador: version(p({ logo: true })),
+const TONOS = ['verde']
+const cuadricula = (): PlantillaEnCuadricula => ({
+  forma: 2,
+  columnas: [{ id: 'a', ancho: 100 }],
+  filas: [{ id: 'f', alto: 24, ocultar_si: 'nunca' }],
+  celdas: [{ id: 'c', fila: 'f', columna: 'a', contenido: { tipo: 'texto', texto: 'Hola' } }],
+})
+const textos = (q: PlantillaEnCuadricula) =>
+  q.celdas.flatMap((c) => (c.contenido.tipo === 'texto' ? [c.contenido.texto] : []))
+const nodos = (q: PlantillaEnCuadricula) =>
+  q.celdas.flatMap((c) =>
+    c.contenido.tipo === 'dato' && 'nodo' in c.contenido ? [c.contenido.nodo] : [],
+  )
+
+describe('cuadriculaParaEditar', () => {
+  it('un borrador de la forma 2 se usa tal cual, sin avisos', () => {
+    const r = cuadriculaParaEditar({
+      borrador: version(cuadricula()),
       publicada: version(p()),
       contexto,
+      tonos: TONOS,
     })
-    expect(r).toMatchObject({ de: 'borrador', avisos: [] })
-    expect(r.plantilla.logo).toBe(true)
+    expect(r).toEqual({ cuadricula: cuadricula(), de: 'borrador', avisos: [] })
   })
-  it('sin borrador, de la copia de la publicada', () => {
-    const r = plantillaParaEditar({
+  it('una forma 1 se alinea, se convierte a la cuadrícula y lo dice (no se guarda sola)', () => {
+    const r = cuadriculaParaEditar({
       borrador: null,
-      publicada: version(p({ nota: 'N' }), { version: 2 }),
+      publicada: version(p({ grupos: [{ grupo: 'compra' }] }), { version: 2 }),
       contexto,
+      tonos: TONOS,
     })
     expect(r.de).toBe('publicada')
-    expect(r.plantilla.nota).toBe('N')
+    expect(r.cuadricula.forma).toBe(2)
+    expect(formaDeCuadricula(r.cuadricula, { conTope: false }).ok).toBe(true)
+    expect(r.avisos[0]).toBe(AVISO_DE_LA_CONVERSION)
+    // Lo que alineó (el grupo «Logística» que faltaba) también se dice.
+    expect(r.avisos).toContain(
+      'El grupo «Logística» es nuevo en la fórmula: se sumó al final, sin color.',
+    )
+    expect(nodos(r.cuadricula)).toEqual(expect.arrayContaining(['fees', 'grua', 'total']))
   })
-  it('sin ninguna, la omisión: grupos de la fórmula, total de ≤ 40 caracteres, logo y columnas apagadas', () => {
-    const r = plantillaParaEditar({ borrador: null, publicada: null, contexto })
+  it('sin ninguna, la de por omisión convertida: los grupos de la fórmula y el total con la etiqueta de su nodo', () => {
+    const r = cuadriculaParaEditar({ borrador: null, publicada: null, contexto, tonos: TONOS })
     expect(r.de).toBe('omision')
-    expect(r.plantilla).toEqual({
-      grupos: [{ grupo: 'compra' }, { grupo: 'logistica' }],
-      total: { etiqueta: 'TOTAL DE LA FÓRMULA' },
-      logo: true,
-      columnas: col,
-    })
-    const largo = {
+    expect(r.avisos).toEqual([AVISO_DE_LA_OMISION])
+    expect(textos(r.cuadricula)).toContain('TOTAL DE LA FÓRMULA')
+    expect(nodos(r.cuadricula)).toEqual(expect.arrayContaining(['fees', 'grua', 'total']))
+    const sinEtiqueta = {
+      ...contexto,
+      definicion: { ...contexto.definicion, nodos: [{ id: 'total', salida: 'total' }] },
+    }
+    expect(
+      textos(
+        cuadriculaParaEditar({
+          borrador: null,
+          publicada: null,
+          contexto: sinEtiqueta,
+          tonos: TONOS,
+        }).cuadricula,
+      ),
+    ).toContain('Total')
+  })
+})
+
+describe('cuadriculaParaEditar: lo que no entra y lo que no se lee', () => {
+  it('si la conversión no entra en la grilla (más de 120 filas), toma los primeros 4 miembros de cada grupo y lo dice', () => {
+    const muchos = {
       ...contexto,
       definicion: {
         ...contexto.definicion,
-        nodos: [{ id: 'total', etiqueta: '😀'.repeat(50), salida: 'total' }],
+        nodos: [
+          ...Array.from({ length: 200 }, (_, i) => ({
+            id: `m${String(i)}`,
+            etiqueta: `M ${String(i)}`,
+            grupo: 'compra',
+          })),
+          { id: 'grua', etiqueta: 'Grúa', grupo: 'logistica' },
+          { id: 'total', etiqueta: 'Total', salida: 'total' },
+        ],
       },
     }
-    expect([
-      ...plantillaParaEditar({ borrador: null, publicada: null, contexto: largo }).plantilla.total
-        .etiqueta,
-    ]).toHaveLength(40)
-    const sinEtiqueta = { ...contexto, definicion: { ...contexto.definicion, nodos: [] } }
-    expect(
-      plantillaParaEditar({ borrador: null, publicada: null, contexto: sinEtiqueta }).plantilla
-        .total.etiqueta,
-    ).toBe('Total')
+    const r = cuadriculaParaEditar({
+      borrador: null,
+      publicada: null,
+      contexto: muchos,
+      tonos: TONOS,
+    })
+    expect(r.avisos).toEqual([AVISO_DE_LA_OMISION, AVISO_DEL_CORTE])
+    expect(r.cuadricula.filas.length).toBeLessThanOrEqual(120)
+    expect(revisarLaGrilla(r.cuadricula)).toBeNull()
+    expect([...new Set(nodos(r.cuadricula).filter((n) => n.startsWith('m')))]).toEqual([
+      'm0',
+      'm1',
+      'm2',
+      'm3',
+    ])
   })
-  it('un borrador ilegible parte de lo siguiente con su aviso', () => {
-    const r = plantillaParaEditar({
+  it('un borrador ilegible parte de la publicada con su aviso', () => {
+    const r = cuadriculaParaEditar({
       borrador: version(null),
-      publicada: version(p(), { version: 3 }),
+      publicada: version(cuadricula(), { version: 3 }),
       contexto,
+      tonos: TONOS,
     })
     expect(r.de).toBe('publicada')
-    expect(r.avisos[0]).toBe(
+    expect(r.cuadricula).toEqual(cuadricula())
+    expect(r.avisos).toEqual([
       'El borrador guardado no se pudo leer (La plantilla no tiene la forma esperada.): al guardar se reemplaza.',
-    )
+    ])
   })
-  it('una publicada ilegible parte de los grupos de la fórmula', () => {
-    const r = plantillaParaEditar({
+  it('una publicada ilegible parte de la de por omisión', () => {
+    const r = cuadriculaParaEditar({
       borrador: null,
       publicada: version(null, { version: 4 }),
       contexto,
+      tonos: TONOS,
     })
     expect(r.de).toBe('omision')
     expect(r.avisos[0]).toBe(
-      'La versión 4 publicada no se pudo leer (La plantilla no tiene la forma esperada.): se parte de los grupos de la fórmula.',
+      'La versión 4 publicada no se pudo leer (La plantilla no tiene la forma esperada.): se parte de la de por omisión.',
     )
-  })
-  it('siempre alinea', () => {
-    const r = plantillaParaEditar({
-      borrador: version(p({ grupos: [{ grupo: 'compra' }] })),
-      publicada: null,
-      contexto,
-    })
-    expect(r.plantilla.grupos.map((g) => g.grupo)).toEqual(['compra', 'logistica'])
-    expect(r.avisos).toHaveLength(1)
+    expect(r.avisos[1]).toBe(AVISO_DE_LA_OMISION)
   })
 })

@@ -1,13 +1,16 @@
 // La geometría de la tarjeta de una cotización: el único modelo de dibujo, que pintan el HTML (la vista previa), el PDF y la imagen con posiciones absolutas
 // (lo único que entienden igual los tres: satori no tiene `grid`). Pura: toma la cuadrícula (ya convertida si era de la forma 1), la lectura, el cálculo
 // (valores, estados y totales por id de nodo) y el contexto de la cotización, y da el ancho y el alto en px y, por celda visible y en orden de lectura, su
-// rectángulo, su contenido ya resuelto y su estilo; las bandas de las filas que se dibujan, y las filas ocultas con su motivo. Una fila se oculta si su nodo no aplica (o vale 0, con
-// `no_aplica_o_cero`) y las celdas que la cruzan se acortan; una celda sin filas visibles no se dibuja. Sin plantilla o sin estados, la de por omisión.
+// rectángulo, su contenido ya resuelto y su estilo; las bandas de las filas que se dibujan, y las filas ocultas con su motivo. Una fila se oculta si su nodo no está en
+// la versión del cálculo (no tiene estado), no aplica (o vale 0, con `no_aplica_o_cero`) y las celdas que la cruzan se acortan; una celda sin filas visibles no se
+// dibuja. Sin plantilla o sin estados, la de por omisión.
 import type { CalculoDeLaTarjeta } from '../calculo-de-la-tarjeta'
 import type { CeldaDeLaTarjeta, FilaDeLaTarjeta } from '../cuadricula-de-la-tarjeta'
+import type { MotivoDeLaOculta } from '../vista-previa-de-la-plantilla'
 import {
   aplica,
   contenidoDibujado,
+  esElTotal,
   valorDelNodo,
   type ContenidoDibujado,
   type EntradaDelContenido,
@@ -40,12 +43,15 @@ export type CeldaDibujada = {
   marca: MarcaDeLaCelda
 }
 
-// Una fila que no se dibuja: su rótulo (el primer texto o etiqueta que lleva), la etiqueta de su nodo y por qué.
+// Una fila que no se dibuja: su rótulo (el primer texto o etiqueta que lleva), la etiqueta de su nodo y por qué. Con `no_aplica`, `variante` es el título de la opción
+// elegida de la variante (si la lectura la trae y el cálculo la eligió): «No aplica en esta cotización: la variante es Moto». Es la misma forma que `OcultaParaEditar`
+// del hueco del lienzo (`entities/vista-previa-de-la-plantilla.ts`).
 export type FilaOculta = {
   fila: string
   etiqueta: string
   delNodo: string
-  motivo: 'no_aplica' | 'cero'
+  motivo: MotivoDeLaOculta
+  variante: string | null
 }
 
 // Una fila que se dibuja: su banda en px (la usa el modo «Retocar» para ocultarla).
@@ -69,9 +75,12 @@ export type EntradaDeLaGeometria = {
   locale: string
 }
 
-// Por qué no se dibuja una fila; nulo si se dibuja.
+// Por qué no se dibuja una fila; nulo si se dibuja. Un nodo sin estado (que no es el total) no está en la versión del cálculo: va antes que «no aplica».
 function motivoDeLaFila(e: EntradaDelContenido, f: FilaDeLaTarjeta): FilaOculta['motivo'] | null {
   if (f.ocultar_si === 'nunca' || f.nodo === undefined) return null
+  const { estados } = e.calculo
+  if (!esElTotal(e, f.nodo) && estados !== null && !estados.has(f.nodo))
+    return 'fuera_de_la_version'
   if (!aplica(e, f.nodo)) return 'no_aplica'
   return f.ocultar_si === 'no_aplica_o_cero' && valorDelNodo(e, f.nodo) === 0 ? 'cero' : null
 }
@@ -151,14 +160,30 @@ function dibujada(
   }
 }
 
+// El título de la opción elegida de la variante, o nulo sin variante en la lectura o sin una opción que coincida.
+function tituloDeLaVariante({ tarjeta, calculo }: EntradaDelContenido): string | null {
+  if (tarjeta.variante === null) return null
+  const clave = calculo.valores.get(tarjeta.variante.nodo)
+  return tarjeta.variante.opciones.find((o) => o.clave === clave)?.titulo ?? null
+}
+
 function ocultasDe(l: Lienzo): FilaOculta[] {
   const { filas, celdas } = l.e.tarjeta.definicion
+  const variante = tituloDeLaVariante(l.e)
   return filas.flatMap((f, i): FilaOculta[] => {
     const motivo = l.motivos[i]
     if (motivo == null || f.nodo === undefined) return []
     const delNodo = l.e.tarjeta.nodos.get(f.nodo)?.etiqueta ?? f.nodo
     const propias = celdas.filter((c) => c.fila === f.id).map((c) => contenidoDeRotulo(l.e, c))
-    return [{ fila: f.id, etiqueta: rotuloDe(propias, delNodo), delNodo, motivo }]
+    return [
+      {
+        fila: f.id,
+        etiqueta: rotuloDe(propias, delNodo),
+        delNodo,
+        motivo,
+        variante: motivo === 'no_aplica' ? variante : null,
+      },
+    ]
   })
 }
 

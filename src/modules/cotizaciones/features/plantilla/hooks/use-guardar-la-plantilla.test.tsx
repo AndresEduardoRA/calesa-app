@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { Plantilla } from '../../../entities/plantilla/forma-de-plantilla'
+import type { PlantillaEnCuadricula } from '../../../entities/cuadricula-de-la-tarjeta'
 import { useGuardarLaPlantilla } from './use-guardar-la-plantilla'
 
 const refrescar = vi.fn()
@@ -15,11 +15,11 @@ vi.mock('@/shared/ui/toasts', () => ({ avisarExito: (m: string) => avisarExito(m
 const ORIGEN = '00000000-0000-4000-8000-000000000001'
 const HORA = '2026-11-07T15:00:00.123456+00:00'
 const OTRA = '2026-11-07T15:05:00.654321+00:00'
-const plantilla: Plantilla = {
-  grupos: [{ grupo: 'compra' }],
-  total: { etiqueta: 'T' },
-  logo: true,
-  columnas: { leyenda: false, plazo: false, tipo_cambio: false },
+const plantilla: PlantillaEnCuadricula = {
+  forma: 2,
+  columnas: [{ id: 'a', ancho: 100 }],
+  filas: [{ id: 'f', alto: 20, ocultar_si: 'nunca' }],
+  celdas: [{ id: 'c', fila: 'f', columna: 'a', contenido: { tipo: 'texto', texto: 'Hola' } }],
 }
 const limpiarBorrador = vi.fn()
 

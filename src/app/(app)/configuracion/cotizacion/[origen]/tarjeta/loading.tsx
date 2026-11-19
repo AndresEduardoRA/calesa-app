@@ -1,5 +1,5 @@
-import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
+import { EsqueletoDeLaTarjeta } from './esqueleto-de-la-tarjeta'
 
 export default function Cargando() {
-  return <EsqueletoFormulario bloques={2} campos={4} />
+  return <EsqueletoDeLaTarjeta />
 }

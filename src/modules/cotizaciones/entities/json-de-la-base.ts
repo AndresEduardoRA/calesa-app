@@ -69,3 +69,20 @@ export function comoJson(entrada: unknown): unknown {
     return undefined
   }
 }
+
+// El texto de un valor JSON con las claves de cada objeto en orden: dos valores que la base guarda igual dan el mismo texto aunque sus claves vengan en otro
+// orden (un `jsonb` devuelve las suyas ordenadas por largo).
+function textoCanonico(v: unknown): string {
+  if (Array.isArray(v)) return `[${v.map(textoCanonico).join(',')}]`
+  if (esObjetoJsonb(v)) {
+    const pares = Object.keys(v)
+      .sort(compararComoC)
+      .map((k) => `${JSON.stringify(k)}:${textoCanonico(v[k])}`)
+    return `{${pares.join(',')}}`
+  }
+  return JSON.stringify(v)
+}
+
+// ¿Son el mismo JSON, sin mirar el orden de las claves? (Lo de la base contra lo que se edita: «hay cambios».)
+export const mismoJson = (a: unknown, b: unknown): boolean =>
+  textoCanonico(comoJson(a)) === textoCanonico(comoJson(b))

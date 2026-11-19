@@ -511,7 +511,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     origen conserva la pestaña y suelta lo demás), las pestañas Fórmula · Hoja · Tarjeta · Tablas y el título con su frase. «Fórmula»
     («Qué se calcula.»): `?panel=publicar-formula`, `revertir-formula&version=<id>`, `descartar-borrador`, `editar-formula`. «Hoja» («Cómo
     se ve y se llena la cotización.», el diseño de la hoja): `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe
-    el cliente.»): `?panel=publicar-tarjeta|descartar-plantilla`, con la vista previa al costado desde `xl`. «Tablas» («Valores de
+    el cliente.»): `?panel=publicar-tarjeta|descartar-plantilla` y `?referencia=ejemplo`, a todo el ancho (el lienzo es la vista previa). «Tablas» («Valores de
     referencia: depreciación, transporte…»): `?tabla=<id>` (el editor) y `?panel=publicar-tabla`. `/<origen>` sola abre «Fórmula» (`next.config.ts`). Un
     `<origen>` que no es un uuid, no existe o no es suyo abre la misma pestaña del primero que configura (sin error).
   - **General** (`/configuracion/cotizacion/general/colores|niveles|vigencia`; `/general` va a Colores, que sin su permiso lleva a la primera que abre): «Colores»
@@ -1313,37 +1313,85 @@ editar la fórmula de un origen.
 
 ### Cotización: tarjeta (estados propios)
 
-Configuración › Cotización › un origen › Tarjeta (`/configuracion/cotizacion/<origen>/tarjeta`): edita el **borrador** de la plantilla de la tarjeta, lo publica con nota y lo
-descarta.
+Configuración › Cotización › un origen › Tarjeta (`/configuracion/cotizacion/<origen>/tarjeta`, a todo el ancho): el editor de la tarjeta de la cotización como un
+Excel. Edita el **borrador** de la plantilla (sólo la forma 2, la cuadrícula), lo publica con nota y lo descarta.
 
-- **Quién entra y origen:** como «Fórmula»; la pestaña va después de «Fórmula». **Sin fórmula publicada**, no hay editor: «Falta publicar
-  la fórmula de <Origen>: la tarjeta se arma con sus grupos.» con «Ir a «Fórmula»».
-- **Arriba:** «Tarjeta de <Origen>» y de dónde nace (el borrador guardado, la versión publicada o los grupos de la fórmula) y, si hay
-  publicada, su versión, fecha y nota.
-- **Avisos** (en este orden): lo corregido al abrir (un grupo que la fórmula ya no tiene se quita, uno nuevo se suma al final sin color, la
-  etiqueta de un nodo sin lugar se quita; **no se guarda solo**), un color que ya no está en el catálogo, «Con esto no se podría publicar:
-  <motivo>» (no apaga «Guardar») y lo que pasó al guardar.
-- **Bloques:** «Grupos» (el color de cada uno; «Del grupo (<color>)» quita la clave; uno que ya no está sale «<clave> (ya no está)»),
-  «Total» (etiqueta y leyenda), «Filas» (plegado; etiqueta y leyenda de cada nodo, «Buscar fila», hasta 500 con aviso) y «Pie y columnas»
-  (plegado: nota, logo, leyenda, plazo, tipo de cambio). Cada campo dice «n de <tope>» (sin `maxLength`) y su motivo junto a él.
-- **Vista previa en vivo:** «Vista previa de la tarjeta» con «Cifras de ejemplo.» sigue a la plantilla de trabajo (guardada o no), convertida a
-  la cuadrícula como la dibuja la cotización (el título de la opción, la descripción de cada fila y el nombre del tipo de cambio incluidos) y
-  escalada a su columna; desde `xl` al costado y pegada arriba, si no debajo del editor. Corta cada grupo en 4 filas y lo dice. Debajo, «Ocultas con
-  esta referencia (N)» con «‹rótulo› — «X» no está en esta referencia» o «— «X» vale 0» (sin ocultas, nada). Esqueleto de alto fijo; sin conexión,
-  el aviso con «Reintentar» y el editor sigue; sin grupos, sólo el total. No es interactiva ni anuncia nada al tipear. Una versión guardada en
-  cuadrícula no se edita aquí: «Esta versión es una cuadrícula: todavía no se edita desde aquí.»
-- **Guardar:** activo de entrada sin borrador; con borrador, sólo si algo cambió; apagado con la forma rechazada, un envío en curso o un
-  conflicto. Entra: «Se guardó el borrador.» y los campos se apagan hasta que llega lo guardado.
-- **Conflicto (PT409):** el mensaje de la base, «Ver cómo quedó» (otra pestaña, sin perder lo tipeado) y «Recargar» (descarta lo escrito);
-  se va **al llegar** la versión nueva. **Sin conexión:** lo escrito queda, sale solo al volver, con «Reintentar». Lo tipeado sin guardar
-  vuelve tras recargar o cambiar de pestaña, con «Recuperamos lo que habías escrito y no guardaste.» y «Descartar».
-- **Publicar** (`?panel=publicar-tarjeta`): en la fila de «Guardar», apagado con su motivo a la vista sin borrador o con cambios sin
-  guardar (se publica lo guardado). Nota obligatoria (≤ 2.000). Entra: el encabezado dice «Publicada: versión N». PT409: el mensaje de la
-  base, «No se publicó nada.» y «Recargar» (la nota queda); sin borrador, «Publicar» apagado. Una regla de la base contra la fórmula, arriba
-  del modal. Por URL sin borrador: «No hay borrador para publicar.»
-- **Descartar** (`?panel=descartar-plantilla`): sólo con borrador, también con cambios sin guardar; se borra sin deshacer y el editor parte
-  de la publicada. PT409 con «Recargar»; sin respuesta, «No sabemos si se descartó: recarga para verlo.» (no reintenta solo). Por URL sin
-  borrador: «No hay borrador para descartar.»
+- **Quién entra y origen:** como «Fórmula»; la pestaña va después de «Hoja». **Sin fórmula publicada**, no hay editor: «Falta publicar la fórmula de
+  <Origen>: la tarjeta se arma con sus nodos.» con «Ir a la fórmula».
+- **Arriba:** «Tarjeta de <Origen>», de dónde nace («Sobre el borrador guardado el …», «Sin borrador: parte de la versión N publicada.» o «Sin borrador ni
+  publicada: parte de la de por omisión.») y, si hay publicada, su versión, fecha y nota. A la derecha, una acción principal, «Guardar borrador»;
+  «Publicar…» a la vista (apagado con su motivo escrito: «Guarda un borrador para poder publicarlo.» o «Guarda los cambios para poder publicarlos.») y el
+  «⋯» («Más acciones de la tarjeta») con «Descartar borrador…», sólo con borrador.
+- **Avisos** (en este orden): lo dicho al abrir —«Se convirtió a cuadrícula: revisa y guarda.» (una forma 1, borrador o publicada; con lo corregido al
+  alinearla con la fórmula), «Todavía no hay tarjeta: nace de la de por omisión.», «La fórmula tiene más filas de las que entran en una tarjeta: se tomaron
+  las primeras 4 de cada grupo. Revisa y guarda.» (o «quedó sólo el total») y una versión ilegible con su motivo (se parte de la que sigue)—; nada se guarda
+  solo. Después, «Con esto no se podría publicar: <motivo>» (un nodo restringido que la plantilla ya nombra, un color fuera del catálogo; no apaga
+  «Guardar borrador») y lo que pasó al guardar.
+- **La barra del lienzo:** «Deshacer» y «Rehacer» (su `title` dice qué: «Deshacer: combinar (Ctrl+Z)»), «Combinar», «Separar», «Insertar ▾» (fila arriba,
+  fila abajo, columna a la izquierda, columna a la derecha) y «Eliminar ▾» (filas, columnas). Lo que no se puede queda apagado sin perder el foco y, al
+  tocarlo, dice por qué; en los menús, el motivo va bajo cada opción («Elige más de una celda para combinar.», «Ya hay 16 columnas.», «Ya hay 120 filas.»,
+  «El ancho total pasaría de 1.600 px.», «La tarjeta pasaría de 24 KiB.», «El rango corta una combinación: elige uno que la contenga entera.»). A la
+  derecha, «Referencia:» (la cotización más reciente del origen que ves, «Cotización n.º N», o «Cifras de ejemplo»), «Ajustar | 100 %» y el tamaño de la
+  tarjeta («690 × 512 px»). Debajo, por qué no se hizo lo último que se pidió.
+- **El lienzo:** la tarjeta a escala con el mismo dibujo que el PDF y la imagen, las cabeceras de columna arriba («B · Concepto 190 px»: la letra y, si es
+  una columna de la conversión, su nombre; tocarla elige la columna) y las asas de fila a la izquierda (el número de la fila). Es una grilla accesible
+  (`role="grid"`, una fila por fila que se dibuja con su índice real, `aria-selected` en lo elegido) con **un solo** `tabindex=0`: el cursor va por
+  `aria-activedescendant`, con foco visible, y Tab sale al panel. Cada celda se nombra por lo que muestra, sin montos («Dato: «Remate» · Monto»); una casilla
+  vacía es un solo `div` sin hijos.
+  - **Elegir:** clic, Shift+clic, arrastrar, flechas y Shift+flechas, Home y End (con Ctrl, la primera y la última casilla), Ctrl/Cmd+A todo, Shift+Espacio la
+    fila, Ctrl+Espacio la columna, Esc suelta (el panel vuelve a «Resumen»). Un rango que corta una combinación se agranda hasta contenerla. Las filas ocultas
+    con la referencia no reciben el cursor.
+  - **Escribir en el lugar:** Enter, F2 o doble clic sobre una celda de texto o vacía abren el campo «Texto de la celda» encima, con «n de 300» y su motivo
+    («Un texto llega a 300 caracteres.», «Un texto no lleva «{{».»); tipear una letra empieza a escribir reemplazando. Enter confirma (el cursor queda en la
+    celda), Shift+Enter es un salto de línea, Esc descarta, salir confirma. Sobre un dato o el logo, Enter o F2 llevan al campo «Contenido» del panel. Un
+    texto que empieza con «=» es texto: la tarjeta no tiene fórmulas propias.
+  - **Atajos:** Supr o Retroceso vacían; Ctrl/Cmd+C copia lo elegido (en el editor, con contenido, formato y combinaciones; al sistema, su texto en TSV) y
+    Ctrl/Cmd+V lo pega desde la celda del cursor (sin nada copiado en el editor, el texto del sistema va a la celda activa); Ctrl/Cmd+Z deshace y
+    Ctrl/Cmd+Y o Ctrl/Cmd+Shift+Z rehacen, hasta 100 pasos (elegir no es un paso; lo escrito en un campo del panel se junta en uno hasta que cambia la
+    selección); Shift+F10 o la tecla Menú abren el menú contextual. ← desde la columna A va al asa de la fila y ↑ desde la primera fila, al borde de la
+    cabecera de esa columna (↓ o Esc vuelven).
+  - **Anchos y orden:** el borde derecho de cada cabecera se arrastra (el movimiento se divide por la escala; el ancho se ve mientras y es un paso al soltar,
+    de 24 a 640 px y con el total ≤ 1.600) o, con el foco, ←/→ cambian 1 px y con Shift 10 px. El asa de una fila se arrastra para ordenarla o, con el
+    teclado, Espacio la toma, las flechas la mueven, Espacio la suelta y Esc cancela, con anuncios («Tomaste la fila 4.», «La fila 4 va en el lugar 2 de 9.»,
+    «Soltaste la fila 4 en el lugar 2.», «Se canceló: la fila 4 volvió a su lugar.»); tocarla elige la fila. Una fila que es parte de una combinación vertical
+    no se mueve: «La fila 4 es parte de una combinación de 3 filas: sepárala para moverla.»
+  - **Menú contextual** (clic derecho, que elige la celda si quedaba fuera de lo elegido): «Copiar», «Pegar», «Vaciar», «Combinar», «Separar», «Insertar» y
+    «Eliminar», con lo apagado y su motivo como en la barra.
+  - **Anuncios** (`role="status"`): lo elegido («Fila 4 › Columna «B · Concepto».») y cada operación («Se combinaron 3 celdas.», «Se pegó una celda.»,
+    «Deshiciste: combinar.»).
+- **El panel** (a la derecha; debajo del lienzo con el texto al 200 %), según lo elegido:
+  - **Nada, «Resumen»:** «Columnas» (cada una con su ancho en número), «Σ ancho N / 1.600 px», «Sumar columna»; «Paleta» (los colores del catálogo, sólo para
+    ver) con «Editar en General › Colores»; «Tamaño: n de 24 KiB».
+  - **Una celda, un rango o columnas** (aplicado a todas): la ruta («Fila 4 › Columna «C · Monto»»); con columnas, su «Ancho»; «Contenido» (Texto | Dato |
+    Logo | Vacío; el texto con «n de 300»; «Dato» con «Buscar un dato», las variables «De la cotización» y los nodos de la fórmula del nivel «todos» por
+    grupo, a lo sumo 50 con «Escribe para acotar.», un restringido que la plantilla ya nombra marcado «Restringido», y «Qué mostrar» con lo que admite el
+    nodo); «Color» (fondo y texto: «Automático» y las muestras del catálogo; con un fondo en el que no se lee, el aviso suave «Con este color el texto de la
+    tarjeta se lee con dificultad.», que nunca frena); «Formato» (negrita, cursiva, tamaño de los 8 pasos, alineación horizontal y vertical); «Bordes» (el
+    lado o todos, y ninguno, fino o grueso); con celdas, «Seleccionar su fila» y «Seleccionar su columna».
+  - **Una fila:** «Fila N», su «Alto» (16 a 240 px) y «Ocultar si…» (Nunca | Si no aplica | Si no aplica o vale 0) con «El nodo que la decide».
+- **Ocultas con esta referencia (N)** (debajo del lienzo): cada fila que no se dibuja con la referencia elegida, con su rótulo, por qué («No aplica en esta
+  cotización: la variante es …», «Vale 0», «Su nodo no está en la versión de la referencia») y «Seleccionar la fila» (para cambiar su «Ocultar si…»); y
+  «Cambia a «Cifras de ejemplo» para verla en el lienzo.». Sin ocultas, nada. Con las cifras de ejemplo no se oculta ninguna.
+- **La referencia:** sin cotizaciones del origen que veas, sólo «Cifras de ejemplo», apagado, con «Todavía no hay cotizaciones de <Origen> que veas: se
+  usan cifras de ejemplo.»; si no se pudo leer, «No se pudo leer la cotización de referencia.» y cifras de ejemplo. Elegirla no va al servidor.
+- **Cargando:** el esqueleto de la ruta; antes de hidratar (no se sabe el ancho) y mientras llega el código del editor o del lienzo, esqueletos de alto
+  fijo. Sin conexión, el aviso con «Reintentar» en su lugar.
+- **Menos de 1.024 px:** «Este editor se usa en una pantalla de al menos 1.024 px.» y la tarjeta debajo en sólo lectura (con la referencia elegida); el
+  código del editor no se pide.
+- **Guardar borrador:** activo de entrada sin borrador o con uno de la forma 1 (se guarda convertido); con borrador, sólo si algo cambió; apagado con la
+  forma rechazada o la tarjeta de más de 24 KiB («La tarjeta pasa de 24 KiB: quita filas o textos.», escrito bajo el botón), un envío en curso o un
+  conflicto. Entra: «Se guardó el borrador.»; el panel y la barra se apagan hasta que llega lo guardado. Guardar no remonta el editor: lo elegido y el
+  historial de deshacer siguen. Una versión ajena («Recargar» tras un PT409), publicar o descartar sí lo remontan y lo vacían.
+- **Conflicto (PT409):** el mensaje de la base, «Ver cómo quedó» (otra pestaña, sin perder lo tipeado) y «Recargar» (descarta lo escrito); se va **al
+  llegar** la versión nueva. **Sin conexión:** lo hecho queda, sale solo al volver, con «Reintentar». Lo hecho sin guardar vuelve tras recargar o cambiar
+  de pestaña, con «Recuperamos lo que habías escrito y no guardaste.» y «Descartar» (recuperarlo es un paso: Ctrl+Z vuelve a lo guardado).
+- **Publicar** (`?panel=publicar-tarjeta`): nota obligatoria (≤ 2.000). Entra: el encabezado dice «Publicada: versión N». PT409: el mensaje de la base,
+  «No se publicó nada.» y «Recargar» (la nota queda); sin borrador, «Publicar» apagado. Una regla de la base contra la fórmula va arriba del modal y, si
+  nombra un lugar (`donde`), «Ir a la celda» («Ir a la fila», «Ir a la columna») cierra el modal y lo elige en el lienzo. Por URL sin borrador: «No hay
+  borrador para publicar.»
+- **Descartar** (`?panel=descartar-plantilla`, desde el «⋯»): sólo con borrador, también con cambios sin guardar; se borra sin deshacer y el editor parte
+  de la publicada. PT409 con «Recargar»; sin respuesta, «No sabemos si se descartó: recarga para verlo.» (no reintenta solo). Por URL sin borrador: «No hay
+  borrador para descartar.»
 
 ### Cotización: compartir (estados propios)
 

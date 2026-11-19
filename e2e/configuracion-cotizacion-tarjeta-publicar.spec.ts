@@ -5,19 +5,24 @@ import { plantillaSobre } from '../src/modules/cotizaciones/infra/plantilla/rpc-
 import {
   borradorGuardado,
   borrarLasPlantillasDelOrigen,
+  casillaDelLienzo,
+  comoTexto,
   crearConfiguradoraDeTarjeta,
+  cuadriculaValida,
+  escribirEnLaCelda,
   limpiarTerrenoDePlantilla,
   plantillaPublicada,
-  plantillaValida,
   prepararTerrenoDePlantilla,
   sembrarBorradorDePlantilla,
   visibilidadDeLaMini,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
-import { sinScrollHorizontal, tactil } from './soporte/recorrido'
 
-// Publicar la tarjeta con nota (4.19-3c): «Publicar…» abre `?panel=publicar-tarjeta`, la nota es obligatoria, lo publicado se comprueba en la base; el PT409 de la base
-// (otra persona guardó o publicó) se dice tal cual y conserva la nota; una regla contra la fórmula se dice arriba; por la URL, sin borrador no abre.
+// @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
+
+// Publicar la tarjeta con nota (T325): «Publicar…» abre `?panel=publicar-tarjeta`, la nota es obligatoria, lo publicado (la forma 2) se comprueba en la base; el PT409
+// de la base (otra persona guardó o publicó) se dice tal cual y conserva la nota; una regla contra la fórmula se dice arriba del modal con «Ir a la celda»; por la URL,
+// sin borrador no abre. La marca de archivo no deja medir (el editor es de escritorio): la prueba del celular (sin scroll horizontal, blancos táctiles) salió.
 test.describe.configure({ mode: 'serial' })
 
 let terreno: TerrenoDePlantilla | undefined
@@ -58,10 +63,10 @@ const enElModal = (page: Page) => page.getByRole('dialog', { name: /^Publicar la
 const publicarEnElModal = (page: Page) =>
   enElModal(page).getByRole('button', { name: 'Publicar', exact: true })
 
-test('E1: «Publicar…» abre el modal, la nota es obligatoria y con ella se publica', async ({
+test('E1: «Publicar…» abre el modal, la nota es obligatoria y con ella se publica la cuadrícula', async ({
   page,
 }) => {
-  sembrarBorradorDePlantilla(origenId(), plantillaValida('e1'))
+  sembrarBorradorDePlantilla(origenId(), cuadriculaValida('e1'))
   await abrirTarjeta(page)
   await publicar(page).click()
   await expect(page).toHaveURL(/panel=publicar-tarjeta/)
@@ -84,6 +89,7 @@ test('E1: «Publicar…» abre el modal, la nota es obligatoria y con ella se pu
   const publicada = plantillaPublicada(origenId())
   expect(publicada?.version).toBe(1)
   expect(publicada?.nota).toBe('Primera versión de la tarjeta')
+  expect((publicada?.definicion as unknown as { forma?: number } | undefined)?.forma).toBe(2)
   expect(borradorGuardado(origenId())).toBeNull()
 })
 
@@ -93,13 +99,21 @@ test('E2: «Publicar…» se apaga con su motivo a la vista; «Descartar borrado
   await abrirTarjeta(page)
   await expect(publicar(page)).toBeDisabled()
   await expect(page.getByText('Guarda un borrador para poder publicarlo.')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Descartar borrador…' })).toHaveCount(0)
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Más acciones de la tarjeta' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'Guardar borrador' }).click()
   await expect(page.getByText('Se guardó el borrador.')).toBeVisible()
   await expect(publicar(page)).toBeEnabled()
-  await expect(page.getByRole('button', { name: 'Descartar borrador…' })).toBeVisible()
-  await page.getByText('Pie y columnas').click()
-  await page.getByLabel('Nota de la tarjeta').fill('Un cambio sin guardar')
+  await page.getByRole('button', { name: 'Más acciones de la tarjeta' }).click()
+  await expect(page.getByRole('menuitem', { name: 'Descartar borrador…' })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await escribirEnLaCelda(
+    page,
+    page.getByRole('grid', { name: 'Lienzo de la tarjeta' }).getByRole('gridcell', {
+      name: 'Cotización n.º',
+      exact: true,
+    }),
+    'Un cambio sin guardar',
+  )
   await expect(publicar(page)).toBeDisabled()
   await expect(page.getByText('Guarda los cambios para poder publicarlos.')).toBeVisible()
 })
@@ -107,7 +121,7 @@ test('E2: «Publicar…» se apaga con su motivo a la vista; «Descartar borrado
 test('E3: un PT409 porque otra persona guardó se dice tal cual, conserva la nota, y «Recargar» lo quita al llegar la versión', async ({
   page,
 }) => {
-  const esperada = sembrarBorradorDePlantilla(origenId(), plantillaValida('e3'))
+  const esperada = sembrarBorradorDePlantilla(origenId(), cuadriculaValida('e3'))
   await abrirTarjeta(page)
   await publicar(page).click()
   await nota(page).fill('Mi nota')
@@ -115,7 +129,7 @@ test('E3: un PT409 porque otra persona guardó se dice tal cual, conserva la not
   const otra = await plantillaSobre(terreno.duena).guardar({
     origenId: origenId(),
     esperada,
-    definicion: plantillaValida('de la otra persona'),
+    definicion: cuadriculaValida('de la otra persona'),
   })
   if (!otra.ok) throw new Error(otra.error.mensaje)
   await publicarEnElModal(page).click()
@@ -134,13 +148,15 @@ test('E3: un PT409 porque otra persona guardó se dice tal cual, conserva la not
   await publicarEnElModal(page).click()
   await expect(page.getByText('Se publicó la tarjeta.')).toBeVisible()
   expect(plantillaPublicada(origenId())?.nota).toBe('Mi nota')
-  expect(plantillaPublicada(origenId())?.definicion.nota).toBe('Nota de la otra persona')
+  expect(comoTexto(plantillaPublicada(origenId())?.definicion)).toContain(
+    'Título de la otra persona',
+  )
 })
 
 test('E4: un PT409 porque otra persona publicó dice que el borrador ya no está y apaga «Publicar»; la nota no se pierde', async ({
   page,
 }) => {
-  const esperada = sembrarBorradorDePlantilla(origenId(), plantillaValida('e4'))
+  const esperada = sembrarBorradorDePlantilla(origenId(), cuadriculaValida('e4'))
   await abrirTarjeta(page)
   await publicar(page).click()
   await nota(page).fill('Mi nota')
@@ -173,7 +189,7 @@ test('E5: por la URL, sin borrador no abre, avisa y limpia; con borrador abre y 
   await expect(page.getByText('No hay borrador para publicar.')).toBeVisible()
   await expect(enElModal(page)).toHaveCount(0)
   await expect(page).not.toHaveURL(/panel=/)
-  sembrarBorradorDePlantilla(origenId(), plantillaValida('e5'))
+  sembrarBorradorDePlantilla(origenId(), cuadriculaValida('e5'))
   await page.reload()
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await publicar(page).click()
@@ -184,10 +200,10 @@ test('E5: por la URL, sin borrador no abre, avisa y limpia; con borrador abre y 
   expect(plantillaPublicada(origenId())).toBeNull()
 })
 
-test('E6: una regla de la base contra la fórmula se dice arriba del modal; la nota queda y no se publica nada', async ({
+test('E6: una regla de la base contra la fórmula se dice arriba del modal; la nota queda, no se publica nada e «Ir a la celda» la elige', async ({
   page,
 }) => {
-  sembrarBorradorDePlantilla(origenId(), plantillaValida('e6'))
+  sembrarBorradorDePlantilla(origenId(), cuadriculaValida('e6'))
   visibilidadDeLaMini(origenId(), { fees: { ver: 'costos' } })
   await abrirTarjeta(page)
   // El editor ya avisa, pero «Publicar…» sigue activo: decide la base.
@@ -196,25 +212,14 @@ test('E6: una regla de la base contra la fórmula se dice arriba del modal; la n
   await nota(page).fill('Mi nota')
   await publicarEnElModal(page).click()
   await expect(
-    enElModal(page).getByText('La tarjeta no puede mostrar «fees»: no es del nivel «todos».'),
+    enElModal(page).getByText(
+      'La tarjeta no puede mostrar lo que nombra la celda «c_fees»: no es del nivel «todos».',
+    ),
   ).toBeVisible()
   await expect(nota(page)).toHaveValue('Mi nota')
   expect(plantillaPublicada(origenId())).toBeNull()
-})
-
-test('E10: en móvil el modal no ensancha la página y sus controles son táctiles', async ({
-  page,
-}) => {
-  sembrarBorradorDePlantilla(origenId(), plantillaValida('e10'))
-  await abrirTarjeta(page)
-  await expect(publicar(page)).toBeVisible()
-  await tactil(page, publicar(page))
-  await sinScrollHorizontal(page)
-  await publicar(page).click()
-  await expect(enElModal(page)).toBeVisible()
-  await sinScrollHorizontal(page)
-  await page.evaluate(() => {
-    document.documentElement.style.fontSize = '200%'
-  })
-  await sinScrollHorizontal(page)
+  // «Ir a la celda» cierra el modal y elige la celda de los fees (fila 2, columna A).
+  await enElModal(page).getByRole('button', { name: 'Ir a la celda' }).click()
+  await expect(enElModal(page)).toHaveCount(0)
+  await expect(casillaDelLienzo(page, 2, 0)).toHaveAttribute('aria-selected', 'true')
 })

@@ -137,6 +137,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Nada que se hidrata usa `Date` del cliente: «Hoy» se calcula en el servidor y viaja como `YYYY-MM-DD` (cerca de la medianoche «Hoy» y «Ayer» cambian al hidratar), y una página de muestra no usa `Date`.
 - Usa una tupla `AlMenosUna<T>` bajo `noUncheckedIndexedAccess`, y recuerda que `ReadonlyArray.map` pierde la tupla.
 - Reemplaza las variables de una plantilla en una sola pasada con función: un valor con `{clave}` o `$&` se expandiría en `String.replace`.
+- Una grilla que atiende el teclado sólo toma las teclas que nacen en ella (`e.target === e.currentTarget`): si frena las flechas que suben desde un asa de
+  dnd-kit que lleva adentro, el sensor de teclado (escucha en la ventana) no las recibe y la fila no se mueve.
 - Desestructura lo que un hook devuelve para `ref=` (`const { alMontar, estilo } = useFila…`): con `ref={fila.algo}` el compilador de React
   toma `fila` por un ref y marca cada lectura suya en el render («Cannot access refs during render»).
 
@@ -330,6 +332,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 ### cotizaciones
 
 - Para «difiere de lo guardado» compara valores y totales, no sólo el total: una celda puede cambiar sin moverlo.
+- Compara un `jsonb` leído de la base con lo que se edita sin mirar el orden de las claves (`mismoJson()`): la base las devuelve ordenadas por largo y un
+  `JSON.stringify` dice «hay cambios» para siempre tras guardar (y `useBorradorDeEstado`, que compara el texto, guarda un «recuperado» falso).
 - react-pdf no dibuja WebP ni SVG con `<style>`, clases, `use`, `mask`, `filter` o `<image>`: una imagen para el PDF llega en PNG o JPG.
 - Un dibujo que comparten el HTML, react-pdf y `next/og` va por posiciones absolutas desde una geometría pura: satori no tiene `grid` (ni `<table>`, que tampoco dibuja react-pdf) y todo `div` con más de un hijo lleva `display: flex`.
 - Una fuente de react-pdf que lee del disco y no se importa no la ve el trazado de archivos: cada ruta que la usa la suma a `outputFileTracingIncludes` de `next.config.ts`.

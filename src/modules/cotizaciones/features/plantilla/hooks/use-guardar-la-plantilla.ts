@@ -7,31 +7,34 @@ import { avisarExito } from '@/shared/ui/toasts'
 import { useConflictoHastaLaVersion } from '@/shared/ui/use-conflicto-hasta-la-version'
 import { useReintentoAlVolver } from '@/shared/ui/use-reintento-al-volver'
 import { useUnEnvioALaVez } from '@/shared/ui/use-un-envio-a-la-vez'
-import type { Plantilla } from '../../../entities/plantilla/forma-de-plantilla'
+import type { PlantillaEnCuadricula } from '../../../entities/cuadricula-de-la-tarjeta'
 import { guardarBorrador } from '../actions/guardar-borrador'
 
 type Args = {
   origenId: string
   // El `actualizadoEn` del borrador leído, tal cual (texto, nunca `Date`); nulo sin borrador.
   esperada: string | null
-  plantilla: Plantilla
+  plantilla: PlantillaEnCuadricula
   // Se puede enviar: la forma pasa y hay cambios.
   puedeGuardar: boolean
   // Lo escrito ya está en la base (o se descarta al recargar): borra el borrador de la pestaña.
   limpiarBorrador: () => void
+  // Entró: la versión nueva del borrador (el `actualizado_en` que dejó la base). La pestaña no remonta el editor cuando llega esa versión: el historial sigue.
+  alGuardar?: (esperada: string) => void
 }
 
 type Pendiente = { desde: number }
 
 // El envío de la plantilla de la tarjeta (4.19-3b): un envío a la vez; el PT409 como conflicto, que se va **al llegar** la versión nueva y no al pulsar «Recargar»; sin
 // conexión, lo escrito queda y sale solo al volver (guardar con la misma esperada es seguro: si ya había entrado dirá PT409). Los campos se apagan al entrar, hasta que
-// la pestaña monta un editor nuevo con la versión nueva.
+// llega la versión nueva.
 export function useGuardarLaPlantilla({
   origenId,
   esperada,
   plantilla,
   puedeGuardar,
   limpiarBorrador,
+  alGuardar,
 }: Args) {
   const router = useRouter()
   const [aviso, setAviso] = useState<string | null>(null)
@@ -39,6 +42,12 @@ export function useGuardarLaPlantilla({
   const [conflicto, setConflicto] = useConflictoHastaLaVersion(esperada)
   const [pendiente, setPendiente] = useState<Pendiente | null>(null)
   const [entro, setEntro] = useState(false)
+  // Con la versión nueva (la propia, que no remonta el editor), los campos se encienden otra vez.
+  const [deLaVersion, setDeLaVersion] = useState(esperada)
+  if (esperada !== deLaVersion) {
+    setDeLaVersion(esperada)
+    setEntro(false)
+  }
   const [refrescando, refrescar] = useTransition()
   const { mandar, enCurso } = useUnEnvioALaVez()
 
@@ -57,6 +66,7 @@ export function useGuardarLaPlantilla({
       setPendiente(null)
       setEntro(true)
       limpiarBorrador()
+      alGuardar?.(envio.data)
       avisarExito('Se guardó el borrador.')
       refrescar(() => {
         router.refresh()

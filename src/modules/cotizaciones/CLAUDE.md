@@ -122,7 +122,9 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   (`{ id, nombre, activo }`) que `src/app` ya validó, sin selector propio; las URL las arma `rutaDeConfiguracionDeCotizacion(origenId, pestana,
 consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las actions revalidan `/configuracion/cotizacion` con `'layout'`. El inicio
   lee `leerPublicadasPorOrigen(ids)` (núcleo, `index.ts`: por origen, la versión de la fórmula publicada y si hay tarjeta publicada; a lo sumo
-  `TOPE_DE_ORIGENES_DEL_INICIO`, dos consultas por `formulas_publicada_unica` y `plantillas_publicada_unica`).
+  `TOPE_DE_ORIGENES_DEL_INICIO`, dos consultas por `formulas_publicada_unica` y `plantillas_publicada_unica`). La pestaña Tarjeta va a ancho completo
+  (`ancho="completo"` en `PaginaPorOrigen` y `MarcoDeCotizacion`) y su página pide la referencia del lienzo sin esperarla (`[origen]/tarjeta/referencia.ts`,
+  con `leerListadoDeCotizaciones()` y `UNA` del área `listado`, `leerHojaDeUnaGuardada()`, y `referenciaPlana()` y `calculoDeLoGuardado()` del núcleo).
 - Niveles: `/configuracion/cotizacion/general/niveles` (`equipo.roles.ver|gestionar`; `?panel=nuevo-nivel|renombrar-nivel|eliminar-nivel&nivel=<id>`).
 - Con Live, las cifras de la ayuda de una celda de dinero pasan por `<Monto>`; las de otra celda quedan a la vista.
 - Los `loading.tsx` de la hoja importan `pantallas/esqueleto-de-hoja.ts`, nunca el barril de su pantalla (con él, el HTML en frío baja dos chunks casi
@@ -258,6 +260,8 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
   `revisarTextoParaLaBase()`** (un `\u0000`, un surrogate suelto o más de 8 niveles no los lee la base). Los dos ayudantes de un validador espejo están en el
   núcleo (los usan `plantilla` y `tarjeta`): `entities/json-de-la-base.ts` (`jsonb_typeof`, bytes del texto jsonb, code points, `btrim`, orden C) y
   `entities/texto-de-la-base.ts` (`revisarTextoParaLaBase(valor, { raiz })`).
+- El editor de la tarjeta (área `plantilla`): sus operaciones puras en `entities/plantilla/edicion/` (mapa de la grilla, selección, contenido, estilo,
+  combinar, insertar, eliminar, portapapeles, topes medidos, ids, historial, atajos, disposición de la capa y el reductor que las une, cada una con su test).
 - Los retoques de la tarjeta: `validar_retoques()` y su espejo `entities/tarjeta/retoques/validar-retoques.ts` con el juego `casos-de-retoques.json`
   (lo corren Vitest y `supabase/tests/areas/tarjeta/retoques.sql`); `aplicar-retoques.ts` (la cuadrícula retocada, las combinaciones reparadas y los que no
   aplican), `para-guardar.ts` (lo que se manda: sólo lo que aplica y cambió), `borrador-de-retoques.ts` (el reductor del modo), `modo-de-la-tarjeta.ts`
@@ -357,12 +361,14 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   tipos de cambio por su nombre y su nodo, variante, colores); ningún id ni texto de un nodo de un nivel, para nadie (K4 de `cotizacion-tarjeta.sql`, en las dos
   formas). La geometría toma valores, estados y totales por id de nodo (`CalculoDeLaTarjeta`), nunca de la hoja de quien mira. En una guardada dibuja **lo guardado** (`calculoDeLoGuardado()`: el
   snapshot, con los estados del primer recálculo) y lo que difiere se dice fuera.
-- **El editor de la plantilla** (la pestaña «Tarjeta»: `/configuracion/cotizacion/<origen>/tarjeta`): al navegador llega sólo el contexto reducido y nada se importa del área
-  `formula`. Los modales de publicar y descartar (`?panel=publicar-tarjeta|descartar-plantilla`) **viven fuera de la `key` del editor**
-  (`origen:esperada`) para que «Recargar» tras un PT409 no pierda la nota. Su vista previa es un hueco: el tipo sin código
-  `entities/vista-previa-de-la-plantilla.ts` (la cuadrícula convertida con lo que nombra, `LecturaEnCuadricula`, plana y sin `Map`), que `plantilla` arma
-  (`lecturaParaLaVistaPrevia()`: 4 miembros por grupo, cifras y textos de ejemplo) y `tarjeta` dibuja con «Ocultas con esta referencia (N)»
-  (`pantallas/tarjeta-plantilla.ts`). Una cuadrícula guardada no se edita aquí (`MOTIVO_DE_LA_CUADRICULA`).
+- **El editor de la plantilla** (la pestaña «Tarjeta»: `/configuracion/cotizacion/<origen>/tarjeta`) escribe **sólo la forma 2**: una forma 1 se convierte
+  al abrirla (`cuadriculaParaEditar()`) y no se guarda sola. Al navegador llega sólo el contexto reducido (`contextoParaElNavegador(contexto, cuadricula)`:
+  los nodos del nivel «todos» y los restringidos que la cuadrícula nombra, nunca el cuerpo de un nodo) y nada se importa del área `formula`. Los modales de
+  publicar y descartar (`?panel=publicar-tarjeta|descartar-plantilla`) **viven fuera de la `key` del editor** para que «Recargar» tras un PT409 no pierda
+  la nota; esa `key` cambia sólo con una versión que no es la que el editor acaba de guardar (`useClaveDelEditor()`): guardar no lo remonta y el historial sigue. El lienzo es un hueco: los tipos sin código de `entities/vista-previa-de-la-plantilla.ts` (`PropsDelLienzoDeLaPlantilla`,
+  `GeometriaParaEditar`), que llena el área `tarjeta` (`LienzoDeLaPlantillaDiferido` por `pantallas/tarjeta-plantilla.ts`: dibuja con
+  `geometriaDeLaTarjeta()` y llama a `capa(g, escala)` y `debajo(g)`); la referencia (`entities/referencia-de-la-tarjeta.ts`, plana) llega recortada a los
+  ids del contexto reducido (`recortarLaReferencia()`). Las operaciones se miden con los topes (manda el de 24 KiB) y la capa no toca el dibujo compartido.
 - **El PDF** dibuja la misma geometría que la tarjeta de esa guardada, en una página A4 escalada entera (`escalaDelPdf()`): lo guardado y sólo lo que la lectura nombra.
   El título de la cotización es la variable `titulo` (`PaginaDeLaTarjeta.titulo`, `tituloAparteDelNumero()`; nunca de `cotizacion_tarjeta`): en la hoja nueva, el que se
   está escribiendo (`useTituloDeLaCotizacion()`). Los montos van con `formatearMonto()` y siempre con

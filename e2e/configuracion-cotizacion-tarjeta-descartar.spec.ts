@@ -3,21 +3,25 @@ import { entrar } from './soporte/alta'
 import { borrarOrigenesDeCotizar } from './soporte/cotizar-formula'
 import { plantillaSobre } from '../src/modules/cotizaciones/infra/plantilla/rpc-de-la-plantilla'
 import {
+  abrirDescartarLaTarjeta,
   borradorGuardado,
   borrarLasPlantillasDelOrigen,
+  comoTexto,
   crearConfiguradoraDeTarjeta,
+  cuadriculaValida,
   limpiarTerrenoDePlantilla,
   plantillaPublicada,
-  plantillaValida,
   prepararTerrenoDePlantilla,
   publicarPlantillaDeLaMini,
   sembrarBorradorDePlantilla,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
-import { quieto, sinScrollHorizontal, tactil } from './soporte/recorrido'
 
-// Descartar el borrador de la tarjeta (4.19-3c): «Descartar borrador…» abre `?panel=descartar-plantilla`; cancelar, Esc y «atrás» no borran; confirmar borra el borrador y
-// deja la publicada; el PT409 de la base (otra persona guardó o descartó) se dice tal cual y no borra; por la URL, sin borrador no abre.
+// @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
+
+// Descartar el borrador de la tarjeta (T325): «Descartar borrador…», en el «⋯» de los botones, abre `?panel=descartar-plantilla`; cancelar, Esc y «atrás» no borran;
+// confirmar borra el borrador y deja la publicada; el PT409 de la base (otra persona guardó o descartó) se dice tal cual y no borra; por la URL, sin borrador no abre.
+// La marca de archivo no deja medir (el editor es de escritorio): la prueba del celular (blancos táctiles y sin scroll horizontal) salió.
 test.describe.configure({ mode: 'serial' })
 
 let terreno: TerrenoDePlantilla | undefined
@@ -50,7 +54,7 @@ async function abrirTarjeta(page: Page, extra = '') {
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
 }
 
-const descartar = (page: Page) => page.getByRole('button', { name: 'Descartar borrador…' })
+const masAcciones = (page: Page) => page.getByRole('button', { name: 'Más acciones de la tarjeta' })
 const dialogo = (page: Page) =>
   page.getByRole('dialog', { name: /^Descartar el borrador de la tarjeta de / })
 const confirmar = (page: Page) =>
@@ -59,10 +63,10 @@ const confirmar = (page: Page) =>
 test('E7: cancelar, Esc y «atrás» no borran; confirmar borra el borrador y la publicada no cambia', async ({
   page,
 }) => {
-  publicarPlantillaDeLaMini(origenId(), plantillaValida('publicada'))
-  sembrarBorradorDePlantilla(origenId(), plantillaValida('borrador'))
+  publicarPlantillaDeLaMini(origenId(), cuadriculaValida('publicada'))
+  sembrarBorradorDePlantilla(origenId(), cuadriculaValida('borrador'))
   await abrirTarjeta(page)
-  await descartar(page).click()
+  await abrirDescartarLaTarjeta(page)
   await expect(page).toHaveURL(/panel=descartar-plantilla/)
   await expect(dialogo(page)).toBeVisible()
   await expect(
@@ -70,37 +74,40 @@ test('E7: cancelar, Esc y «atrás» no borran; confirmar borra el borrador y la
   ).toBeVisible()
   await dialogo(page).getByRole('button', { name: 'Cancelar' }).click()
   await expect(dialogo(page)).toHaveCount(0)
-  await descartar(page).click()
+  await abrirDescartarLaTarjeta(page)
+  await expect(dialogo(page)).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(dialogo(page)).toHaveCount(0)
-  await descartar(page).click()
+  await abrirDescartarLaTarjeta(page)
+  await expect(dialogo(page)).toBeVisible()
   await page.goBack()
   await expect(dialogo(page)).toHaveCount(0)
   expect(borradorGuardado(origenId())).not.toBeNull()
   // Confirmar.
-  await descartar(page).click()
+  await abrirDescartarLaTarjeta(page)
   await confirmar(page).click()
   await expect(page.getByText('Se descartó el borrador.')).toBeVisible()
   await expect(page).not.toHaveURL(/panel=/)
   await expect(page.getByText(/Sin borrador: parte de la versión 1 publicada\./)).toBeVisible()
-  await expect(descartar(page)).toHaveCount(0)
+  // Sin borrador no hay «⋯» (sólo lleva «Descartar borrador…»).
+  await expect(masAcciones(page)).toHaveCount(0)
   expect(borradorGuardado(origenId())).toBeNull()
-  expect(plantillaPublicada(origenId())?.definicion.nota).toBe('Nota publicada')
+  expect(comoTexto(plantillaPublicada(origenId())?.definicion)).toContain('Título publicada')
 })
 
 test('E8: un PT409 porque otra persona guardó no borra y «Recargar» lo quita al llegar; si otra descartó, dice que ya no está', async ({
   page,
 }) => {
-  const esperada = sembrarBorradorDePlantilla(origenId(), plantillaValida('e8'))
+  const esperada = sembrarBorradorDePlantilla(origenId(), cuadriculaValida('e8'))
   await abrirTarjeta(page)
   if (!terreno) throw new Error('No hay terreno.')
   const otra = await plantillaSobre(terreno.duena).guardar({
     origenId: origenId(),
     esperada,
-    definicion: plantillaValida('de la otra persona'),
+    definicion: cuadriculaValida('de la otra persona'),
   })
   if (!otra.ok) throw new Error(otra.error.mensaje)
-  await descartar(page).click()
+  await abrirDescartarLaTarjeta(page)
   await confirmar(page).click()
   await expect(dialogo(page).getByText(/El borrador de esta plantilla cambió/)).toBeVisible()
   await expect(confirmar(page)).toBeDisabled()
@@ -129,27 +136,17 @@ test('E8: un PT409 porque otra persona guardó no borra y «Recargar» lo quita 
   await expect(confirmar(page)).toBeDisabled()
 })
 
-test('E9: por la URL, sin borrador no abre y limpia; y en móvil el diálogo es táctil y no ensancha la página', async ({
+test('E9: por la URL, sin borrador no abre y limpia; con borrador, el «⋯» lo abre', async ({
   page,
 }) => {
   await abrirTarjeta(page, '&panel=descartar-plantilla')
   await expect(page.getByText('No hay borrador para descartar.')).toBeVisible()
   await expect(dialogo(page)).toHaveCount(0)
   await expect(page).not.toHaveURL(/panel=/)
-  sembrarBorradorDePlantilla(origenId(), plantillaValida('e9'))
+  sembrarBorradorDePlantilla(origenId(), cuadriculaValida('e9'))
   await page.reload()
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
-  await tactil(page, descartar(page))
-  await sinScrollHorizontal(page)
-  await descartar(page).click()
+  await abrirDescartarLaTarjeta(page)
   await expect(dialogo(page)).toBeVisible()
-  // Los botones del pie de `<Confirmar>` (`shared/ui`) miden 44 px en el celular (4-102).
-  await quieto(dialogo(page))
-  await tactil(page, dialogo(page).getByRole('button', { name: 'Cancelar' }))
-  await tactil(page, confirmar(page))
-  await sinScrollHorizontal(page)
-  await page.evaluate(() => {
-    document.documentElement.style.fontSize = '200%'
-  })
-  await sinScrollHorizontal(page)
+  await expect(confirmar(page)).toBeEnabled()
 })

@@ -129,6 +129,30 @@ describe('useFormularioDePublicacionDeLaTarjeta: lo que no entra', () => {
     expect(result.current.motivoDeNota).toBeNull()
     expect(result.current.nota).toBe('Mi nota')
     expect(result.current.guardado).toBe(false)
+    // `fees` no nombra un lugar de la cuadrícula: no hay «Ir a la celda».
+    expect(result.current.donde).toBeNull()
+  })
+
+  it('un rechazo con el lugar de la cuadrícula (`celdas.<id>`) deja `donde` para «Ir a la celda», y se va al volver a enviar', async () => {
+    const mensaje =
+      'La tarjeta no puede mostrar lo que nombra la celda «c_1»: no es del nivel «todos».'
+    const pedir = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        error: { codigo: 'regla', mensaje },
+        porCampo: { 'celdas.c_1': mensaje },
+      })
+      .mockResolvedValueOnce({ ok: true, data: ID })
+    const { result } = montar(pedir)
+    act(() => {
+      result.current.escribir('Mi nota')
+    })
+    await enviar(result)
+    expect(result.current.aviso).toBe(mensaje)
+    expect(result.current.donde).toBe('celdas.c_1')
+    await enviar(result)
+    expect(result.current.donde).toBeNull()
   })
 
   it('otro rechazo (sin permiso) es un aviso arriba', async () => {

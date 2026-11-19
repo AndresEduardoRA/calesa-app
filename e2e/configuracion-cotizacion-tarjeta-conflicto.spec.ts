@@ -5,17 +5,24 @@ import { plantillaSobre } from '../src/modules/cotizaciones/infra/plantilla/rpc-
 import {
   borradorGuardado,
   borrarLasPlantillasDelOrigen,
+  casillaDelLienzo,
+  comoTexto,
   crearConfiguradoraDeTarjeta,
+  cuadriculaValida,
+  escribirEnLaCelda,
   limpiarTerrenoDePlantilla,
-  plantillaValida,
   prepararTerrenoDePlantilla,
   sembrarBorradorDePlantilla,
+  tarjetaDibujada,
   visibilidadDeLaMini,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
 
-// El conflicto y los avisos del editor de la tarjeta (4.19-3b): el PT409 de la base se dice tal cual junto a lo tipeado; un tono que ya no está y un grupo que la fórmula
-// ya no tiene se avisan al abrir; lo que sólo ve la fórmula (un nodo o un tipo de cambio de otro nivel) avisa que no se podría publicar y no apaga «Guardar».
+// @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
+
+// El conflicto y los avisos del editor de la tarjeta (T325): el PT409 de la base se dice tal cual junto a lo escrito en el lienzo; lo que sólo ve la fórmula (un nodo o
+// un tipo de cambio de otro nivel que la cuadrícula nombra) avisa que no se podría publicar y no apaga «Guardar borrador». Los avisos de un tono que ya no está y de un
+// grupo que la fórmula ya no tiene eran del editor de la forma 1 (sus bloques de grupos): ya no existen.
 test.describe.configure({ mode: 'serial' })
 
 let terreno: TerrenoDePlantilla | undefined
@@ -46,100 +53,85 @@ async function abrirTarjeta(page: Page) {
   await entrar(page, configuradora, { fresco: true })
   await page.goto(`/configuracion/cotizacion?seccion=tarjeta&origen=${origenId()}`)
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
+  await expect(page.getByRole('grid', { name: 'Lienzo de la tarjeta' })).toBeVisible()
 }
 
-const guardar = (page: Page) => page.getByRole('button', { name: 'Guardar' })
-const abrirElPie = (page: Page) => page.getByText('Pie y columnas').click()
+const guardar = (page: Page) => page.getByRole('button', { name: 'Guardar borrador' })
+const delTitulo = (page: Page) => tarjetaDibujada(page).locator('[data-fila="f_titulo"]')
 
-test('E3: un PT409 se dice con el mensaje de la base, conserva lo tipeado, no envía y «Recargar» trae lo de la otra persona', async ({
+test('E3: un PT409 se dice con el mensaje de la base, conserva lo escrito, no envía y «Recargar» trae lo de la otra persona', async ({
   page,
 }) => {
-  const esperada = sembrarBorradorDePlantilla(origenId(), plantillaValida('inicial'))
+  const esperada = sembrarBorradorDePlantilla(origenId(), cuadriculaValida('inicial'))
   await abrirTarjeta(page)
-  await abrirElPie(page)
   // Otra sesión guarda antes.
   if (!terreno) throw new Error('No hay terreno.')
   const otra = await plantillaSobre(terreno.duena).guardar({
     origenId: origenId(),
     esperada,
-    definicion: plantillaValida('de la otra persona'),
+    definicion: cuadriculaValida('de la otra persona'),
   })
   if (!otra.ok) throw new Error(otra.error.mensaje)
-  await page.getByLabel('Nota de la tarjeta').fill('Lo mío')
+  await escribirEnLaCelda(page, casillaDelLienzo(page, 0, 0), 'Lo mío')
   await guardar(page).click()
   await expect(page.getByText(/El borrador de esta plantilla cambió/)).toBeVisible()
-  await expect(page.getByLabel('Nota de la tarjeta')).toHaveValue('Lo mío')
+  await expect(delTitulo(page)).toHaveText('Lo mío')
   await expect(page.getByRole('link', { name: /Ver cómo quedó/ })).toHaveAttribute(
     'href',
     `/configuracion/cotizacion/${origenId()}/tarjeta`,
   )
   await expect(guardar(page)).toBeDisabled()
-  expect(borradorGuardado(origenId())?.definicion.nota).toBe('Nota de la otra persona')
+  expect(comoTexto(borradorGuardado(origenId())?.definicion)).toContain('Título de la otra persona')
   await page.getByRole('button', { name: /Recargar/ }).click()
   await expect(page.getByText(/El borrador de esta plantilla cambió/)).toHaveCount(0)
-  await abrirElPie(page).catch(() => undefined)
-  await expect(page.getByLabel('Nota de la tarjeta')).toHaveValue('Nota de la otra persona')
+  await expect(delTitulo(page)).toHaveText('Título de la otra persona')
 })
 
-test('E5: un tono fuera del catálogo y un grupo que ya no está se avisan; «Del grupo» y guardar los resuelven', async ({
+test('E6: un nodo de otro nivel que la cuadrícula nombra avisa que no se podría publicar y «Guardar borrador» sigue activo', async ({
   page,
 }) => {
-  sembrarBorradorDePlantilla(origenId(), {
-    ...plantillaValida('e5'),
-    grupos: [
-      { grupo: 'compra', tono: 'fantasma' },
-      { grupo: 'viejo' },
-      { grupo: 'logistica' },
-      { grupo: 'aduana' },
-    ],
-  })
-  await abrirTarjeta(page)
-  await expect(page.getByText('El grupo «viejo» ya no está en la fórmula: se quitó.')).toBeVisible()
-  await expect(
-    page.getByText(/El color «fantasma» del grupo «Compra» ya no está en el catálogo/),
-  ).toBeVisible()
-  await page.getByLabel('Color de «Compra»').selectOption('')
-  await expect(page.getByText(/El color «fantasma»/)).toHaveCount(0)
-  await guardar(page).click()
-  await expect(page.getByText('Se guardó el borrador.')).toBeVisible()
-  await page.reload()
-  await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
-  await expect(page.getByText(/ya no está en la fórmula/)).toHaveCount(0)
-  await expect(page.getByText(/ya no está en el catálogo/)).toHaveCount(0)
-})
-
-test('E6: lo que sólo ve la fórmula avisa que no se podría publicar y «Guardar» sigue activo', async ({
-  page,
-}) => {
-  sembrarBorradorDePlantilla(origenId(), plantillaValida('e6'))
+  sembrarBorradorDePlantilla(origenId(), cuadriculaValida('e6'))
   visibilidadDeLaMini(origenId(), { fees: { ver: 'costos' } })
   await abrirTarjeta(page)
-  await abrirElPie(page)
-  // Sin cambios «Guardar» está apagado por C6; con uno, sólo la forma lo apagaría.
-  await page.getByLabel('Nota de la tarjeta').fill('Otra nota')
   await expect(
     page.getByText(
-      'Con esto no se podría publicar: La tarjeta no puede mostrar «fees»: no es del nivel «todos».',
+      'Con esto no se podría publicar: La tarjeta no puede mostrar lo que nombra la celda «c_fees»: no es del nivel «todos».',
     ),
   ).toBeVisible()
+  // Sin cambios «Guardar borrador» está apagado; con uno, sólo la forma lo apagaría.
+  await escribirEnLaCelda(page, casillaDelLienzo(page, 0, 0), 'Otro título')
   await expect(guardar(page)).toBeEnabled()
   await guardar(page).click()
   await expect(page.getByText('Se guardó el borrador.')).toBeVisible()
+  await expect
+    .poll(() => comoTexto(borradorGuardado(origenId())?.definicion))
+    .toContain('Otro título')
 })
 
-test('E6 (variante): el tipo de cambio de un bucket de otro nivel, al encender la columna', async ({
+test('E6 (variante): una celda con el tipo de cambio de un bucket de otro nivel avisa que no se podría publicar', async ({
   page,
 }) => {
-  sembrarBorradorDePlantilla(origenId(), plantillaValida('e6b'))
+  const base = cuadriculaValida('e6b')
+  sembrarBorradorDePlantilla(origenId(), {
+    ...base,
+    celdas: [
+      ...base.celdas,
+      {
+        id: 'c_tc',
+        fila: 'f_fees',
+        columna: 'monto',
+        contenido: { tipo: 'dato', nodo: 'nacionalizacion', mostrar: 'tc_valor' },
+      },
+    ],
+  })
   // `fees` vuelve a «todos»: si no, ganaría `nodo_restringido`.
   visibilidadDeLaMini(origenId(), { fees: { ver: 'todos' }, tc_adu: { ver: 'costos' } })
   await abrirTarjeta(page)
-  await abrirElPie(page)
-  await page.getByRole('switch', { name: 'Tipo de cambio' }).click()
   await expect(
     page.getByText(
-      'Con esto no se podría publicar: La tarjeta no puede nombrar el tipo de cambio de «tc_adu»: no es del nivel «todos».',
+      'Con esto no se podría publicar: La tarjeta no puede nombrar el tipo de cambio de la celda «c_tc»: no es del nivel «todos».',
     ),
   ).toBeVisible()
+  await escribirEnLaCelda(page, casillaDelLienzo(page, 0, 0), 'Con el tipo de cambio')
   await expect(guardar(page)).toBeEnabled()
 })
