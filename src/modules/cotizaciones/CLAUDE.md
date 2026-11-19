@@ -144,6 +144,13 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
   `TOPE_DE_ORIGENES_DEL_INICIO`, dos consultas por `formulas_publicada_unica` y `plantillas_publicada_unica`). La pestaña Tarjeta va a ancho completo
   (`ancho="completo"` en `PaginaPorOrigen` y `MarcoDeCotizacion`) y su página pide la referencia del lienzo sin esperarla (`[origen]/tarjeta/referencia.ts`,
   con `leerListadoDeCotizaciones()` y `UNA` del área `listado`, `leerHojaDeUnaGuardada()`, y `referenciaPlana()` y `calculoDeLoGuardado()` del núcleo).
+- **Empezar desde una plantilla** (área `plantilla`; `docs/COTIZADOR.md` › «Plantillas de V1»): `PaginaPorOrigen` pasa a `MarcoDeCotizacion` la
+  `accionDelOrigen` (`EmpezarDesdeUnaPlantilla` de `pantallas/plantilla-de-v1.ts`, a la derecha de los chips, con el hueco `Lienzo` lleno con
+  `LienzoDeLaPlantillaDiferido`). El modal (`?panel=plantillas-de-v1`, diferido, una `key` por apertura) pide al abrirse `GET [origen]/plantillas-de-v1` (la
+  ruta de `src/app` compone `getTiposCambio()` y `leerLayout()` con `leerPlantillasDeV1()` de `index.ts`; la lee `areas/plantilla/composicion-plantillas-de-v1.client.ts`,
+  que sólo importa el modal) y la action `aplicarLaPlantillaDeV1` (`features/plantilla/actions/`) elige los colores, reescribe sus claves y llama a
+  `cotizacion_paquete_aplicar()` con la clave del paquete y las versiones de los borradores. Los paquetes (`entities/plantillas-de-v1/`) nunca viajan al
+  navegador (`solo-del-servidor.test.ts`: una Server Action corta el camino).
 - Niveles: `/configuracion/cotizacion/general/niveles` (`equipo.roles.ver|gestionar`; `?panel=nuevo-nivel|renombrar-nivel|eliminar-nivel&nivel=<id>`).
 - Con Live, las cifras de la ayuda de una celda de dinero pasan por `<Monto>`; las de otra celda quedan a la vista.
 - Los `loading.tsx` de la hoja importan `pantallas/esqueleto-de-hoja.ts`, nunca el barril de su pantalla (con él, el HTML en frío baja dos chunks casi
@@ -213,7 +220,7 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
 
 El módulo se parte por **área**: `listado`, `tarjeta`, `plantilla`, `formula`, `diseno`, `tablas`, `papelera`, `final`, `comprobantes`, `comentarios`.
 Lo demás es el **núcleo** (la hoja, guardar, encima, revisiones, historial, niveles, el motor, el compilador, los validadores, el diseño, la apertura, la
-ruta): lo que comparten. La lista y las carpetas del núcleo están en `scripts/guardas/areas-de-cotizaciones.ts`.
+ruta, y las plantillas de V1 de `entities/plantillas-de-v1/`): lo que comparten. La lista y las carpetas del núcleo están en `scripts/guardas/areas-de-cotizaciones.ts`.
 
 - **Dónde va:** `features/<área>/`, `entities/<área>/`, `infra/<área>/` y sus entradas `areas/<área>/{index,client,composicion}.ts` (la composición empieza
   con `import 'server-only'`). Su pantalla es `pantallas/<área>.ts`; otra, `pantallas/<área>-<pantalla>.ts` (una pantalla paga lo que reexporta su archivo).
@@ -329,7 +336,8 @@ cabecera: modo por defecto, «Ver total» por defecto y modos visibles) y `formu
 contra la plantilla publicada de hoy), `cotizaciones_listado`, `cotizaciones_listado_por_vehiculo` (la lista agrupada, invocadora, con su lote
 `_cotizaciones_lote_del_listado`), `cotizaciones_modos_de` (el nombre del modo de hasta 100), `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
 `_cotizaciones_ids_por_titulo`), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
-nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizaciones_aprobadas_de_vehiculos` (el «Costo estimado» de `/vehiculos`, invocadora), `cotizacion_moderar` (con la versión),
+nula al guardar = crear), `cotizacion_paquete_aplicar` (una plantilla de V1, todo o nada: invocadora sobre las dos de guardar el borrador y `tono_crear`, con el
+candado del catálogo en el ayudante definer `_paquete_colores_preparar`), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizaciones_aprobadas_de_vehiculos` (el «Costo estimado» de `/vehiculos`, invocadora), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
 `cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `cotizacion_portada|portada_poner|portada_visible` (la portada de la cotización: el estado para
 quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.

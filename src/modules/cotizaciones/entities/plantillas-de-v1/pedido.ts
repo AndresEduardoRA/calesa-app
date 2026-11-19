@@ -45,3 +45,12 @@ export function pedidoDeLaPlantilla(
     })),
   }
 }
+
+// Lo que la action le pide a la base y lo que vuelve: las versiones nuevas de los dos borradores, como el texto de la base.
+export type PedidoDeAplicar = {
+  readonly origenId: string
+  readonly pedido: PedidoDePaquete
+  readonly formulaEsperada: string | null
+  readonly plantillaEsperada: string | null
+}
+export type Aplicada = { readonly formula: string; readonly plantilla: string }

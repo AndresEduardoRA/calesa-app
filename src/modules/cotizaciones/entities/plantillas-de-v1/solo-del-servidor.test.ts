@@ -13,7 +13,11 @@ import { archivosDelModulo } from '../../../../../scripts/guardas/areas-de-cotiz
 
 const PROHIBIDO = /^entities\/plantillas-de-v1\/(index(\.ts)?|[^/]+\.json)$/
 
-const esDeCliente = (texto: string) => /^\s*(?:\/\/[^\n]*\n\s*)*['"]use client['"]/.test(texto)
+const conDirectiva = (directiva: string) => (texto: string) =>
+  new RegExp(`^\\s*(?:\\/\\/[^\\n]*\\n\\s*)*['"]${directiva}['"]`).test(texto)
+const esDeCliente = conDirectiva('use client')
+// Una Server Action (`'use server'`): el bundler la cambia por una referencia, y lo que importa no viaja al navegador.
+const esDeServidor = conDirectiva('use server')
 
 // El archivo al que llega un destino del módulo, como lo resuelve TypeScript.
 function resuelto(destino: string, existe: ReadonlySet<string>): string {
@@ -36,7 +40,9 @@ function caminoProhibido(desde: string, archivos: readonly Archivo[]): string[] 
   for (let camino = cola.shift(); camino !== undefined; camino = cola.shift()) {
     const actual = camino[camino.length - 1] ?? desde
     if (PROHIBIDO.test(actual)) return camino
-    for (const e of especificadoresDe(porRuta.get(actual) ?? '')) {
+    const texto = porRuta.get(actual) ?? ''
+    if (actual !== desde && esDeServidor(texto)) continue
+    for (const e of especificadoresDe(texto)) {
       const destino = destinoEnElModulo(actual, e)
       if (destino === undefined) continue
       const siguiente = resuelto(destino, existe)
@@ -60,7 +66,7 @@ describe('las plantillas de V1 no viajan al navegador', () => {
     expect(caminos).toEqual([])
   })
 
-  it('la guarda caza un import directo y uno de paso', () => {
+  it('la guarda caza un import directo y uno de paso, y no sigue una Server Action', () => {
     const modulo = (rel: string, texto: string): Archivo => ({ ruta: `${MODULO}${rel}`, texto })
     const arbol = [
       modulo('features/x/a.tsx', "'use client'\nimport { b } from './b'\n"),
@@ -74,6 +80,11 @@ describe('las plantillas de V1 no viajan al navegador', () => {
         "'use client'\nimport type { PlantillaDeV1 } from '../../entities/plantillas-de-v1/tipos'\n",
       ),
       modulo('entities/plantillas-de-v1/tipos.ts', ''),
+      modulo('features/x/d.tsx', "'use client'\nimport { aplicar } from './e'\n"),
+      modulo(
+        'features/x/e.ts',
+        "'use server'\nimport { PLANTILLAS_DE_V1 } from '../../entities/plantillas-de-v1'\n",
+      ),
     ]
     expect(caminoProhibido('features/x/a.tsx', arbol)).toEqual([
       'features/x/a.tsx',
@@ -81,5 +92,7 @@ describe('las plantillas de V1 no viajan al navegador', () => {
       'entities/plantillas-de-v1/index.ts',
     ])
     expect(caminoProhibido('features/x/c.tsx', arbol)).toBeNull()
+    // Una Server Action corta el camino.
+    expect(caminoProhibido('features/x/d.tsx', arbol)).toBeNull()
   })
 })
