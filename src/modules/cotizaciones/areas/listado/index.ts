@@ -7,8 +7,10 @@ export {
   leerListadoDeCotizaciones,
   leerUnaDelListado,
 } from './composicion'
+// `UNA`: el tamaño de la lectura de UNA cotización (el resumen fuera de la página, la referencia del lienzo de la tarjeta); no es un tamaño de página.
 export {
   CLAVE_DE_RESUMEN_DE_COTIZACION,
+  UNA,
   idDelResumen,
 } from '../../entities/listado/resumen-del-listado'
 export type { LecturaDelServidor } from '../../entities/listado/resumen-del-listado'

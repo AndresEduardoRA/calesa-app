@@ -135,3 +135,9 @@ export {
   vehiculoParaCalcular,
 } from '../../entities/vehiculo-de-la-guardada'
 export type { CambioPermitido } from '../../entities/vehiculo-de-la-guardada'
+
+// La referencia del lienzo del editor de la plantilla (la cotización más reciente del origen que quien configura ve, dibujada con lo guardado): la arma `src/app` con las
+// lecturas del PDF (`leerHojaDeUnaGuardada()`, `calculoDeLoGuardado()`) y la pasa plana a la pestaña «Tarjeta».
+export { calculoDeLoGuardado } from '../../entities/calculo-de-la-tarjeta'
+export { referenciaPlana } from '../../entities/referencia-de-la-tarjeta'
+export type { ReferenciaDeLaTarjeta } from '../../entities/referencia-de-la-tarjeta'
