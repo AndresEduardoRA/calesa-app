@@ -690,6 +690,29 @@ las trampas, en `docs/LECCIONES.md`.
   la de la empresa (por su ciudad, «Hora de La Paz») o la del patio, sólo si se conoce.
 - **«Compartir cotización…» lleva «…» y va primero y solo en el «⋯»** (abre algo encima, como las demás que abren un diálogo). La pestaña va en
   `?compartir=texto` y no en `?pestana=`, que es del resumen del listado. Un `?para=` que no es un guid ni se pide: el panel dice que no hay acceso.
+- **Las plantillas de V1 viven en el código, no en la base.** Son cuatro paquetes fijos (`entities/plantillas-de-v1/*.json`, del núcleo: los usan el área
+  `plantilla` y las pruebas), que sólo importa el servidor (`solo-del-servidor.test.ts`): el navegador manda la clave y la action toma el paquete del código.
+  Así una plantilla no es un dato que alguien edite o borre, la prueba SQL los carga como juego y los publica con los validadores de verdad, y no tocan la
+  semilla. Llevan **congeladas** en `params.tablas` las tablas que su fórmula lee (la depreciación de V1); no crean tablas de referencia.
+- **Aplicar una plantilla de V1 es una RPC invocadora con un ayudante definer.** `cotizacion_paquete_aplicar()` llama a las RPC de siempre
+  (`formula_guardar_borrador`, `plantilla_guardar_borrador`, `tono_crear`), que vuelven a pedir el permiso; lo que necesita privilegios (el candado del
+  catálogo de colores, que `authenticated` no puede tomar) va en `_paquete_colores_preparar()`, que comprueba el reuso y el tope bajo ese candado. El orden es
+  el de publicar (`formulas:` → `plantillas:` → `tonos`) y los borradores van primero: el permiso del origen y los PT409 salen antes de tocar el catálogo. La
+  publicada esperada va nula: el paquete no sale de la publicada, así que publicar otra versión mientras se elige no cambia lo que se crea.
+- **Los colores de una plantilla de V1 se llaman «V1 <nombre>» y su clave es `v1_<nombre>`.** El mismo hex lleva el mismo nombre en los cuatro paquetes (el
+  segundo reusa los del primero). Una clave que ya existe con otro hex no se pisa: va `v1_<paquete>_<nombre>`; si también choca, no se crea nada. La elección
+  es pura y en el servidor de Next (la base la vuelve a mirar y compara la clave que da `_tono_clave()`, que sumaría `_2` en silencio).
+- **Lo que una plantilla de V1 toma de V1 y lo que no.** Los modos: «Aduana» = la suma de los dólares (los dos buckets al oficial), «Paralelo» = la fórmula
+  (lo de afuera al paralelo y la aduana al oficial, ÷ paralelo) y «Unificado» = un solo dólar, el paralelo (`engineOfficialDollar` de V1); los dólares de
+  «Aduana» son los de V1, sus bolivianos van todos al oficial. Por defecto, Unificado en USA y China y Paralelo en Oficina y Compra dealer USA (el
+  `quote_exchange_mode_dealer` de V1 es `blue`). China no congela las comisiones por categoría: su fórmula de V1 no las lee (la comisión de logística es la
+  constante de 1.000) y sumarlas cambiaría sus totales. La `usa_moto` de V1 guarda porcentajes enteros (5 es el 5 %): se congela como factor (0,05). Compra
+  dealer USA cotiza como Auto gasolina o, con el interruptor, Híbrido / eléctrico (la variante única es el contenedor en par: Moto y USA → Chile no entran), su
+  factor DP es una constante (no tiene vehículo del que leer el año) y redondea a dólar entero la nacionalización (la línea que V1 deja con decimales). La
+  tarjeta no lleva «TOTAL BOLIVIANOS»: la forma 2 no tiene un monto en moneda local (con «Ver total Bs», el total lleva la segunda línea).
+- **«Empezar desde una plantilla» es una acción del origen, no de una pestaña.** Va a la derecha de los chips de origen, secundaria (cada pestaña ya tiene su
+  primaria) y en `?panel=plantillas-de-v1` de las cuatro. Un modal, no una página: es un clic y no se pierde la pestaña. La tarjeta de cada plantilla la
+  dibuja el lienzo de la pestaña Tarjeta con cifras de ejemplo (no una imagen del servidor: sus colores todavía no están en el catálogo).
 
 ### Tablas de referencia
 
