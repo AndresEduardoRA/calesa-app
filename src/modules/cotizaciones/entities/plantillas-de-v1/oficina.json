@@ -164,11 +164,11 @@
       },
       {
         "id": "monto",
-        "ancho": 113
+        "ancho": 140
       },
       {
         "id": "descripcion",
-        "ancho": 309
+        "ancho": 282
       },
       {
         "id": "tipo_cambio",
@@ -357,7 +357,7 @@
         "estilo": {
           "fondo": "v1_verde_claro",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -467,7 +467,7 @@
         "estilo": {
           "fondo": "v1_naranja_claro",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -521,7 +521,7 @@
         "estilo": {
           "fondo": "v1_verde_claro",
           "negrita": true,
-          "tamano": 18,
+          "tamano": 16,
           "alinear": "centro",
           "bordes": {
             "todos": "grueso"

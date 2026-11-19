@@ -253,10 +253,19 @@
           "descripcion": "Gastos de despacho, al cambio oficial"
         },
         {
-          "id": "poliza",
+          "id": "poliza_calculada",
           "tipo": "calculo",
           "op": "suma",
           "de": ["total_impuestos", "total_poliza"],
+          "etiqueta": "Impuestos y póliza",
+          "descripcion": "Impuestos más gastos de despacho"
+        },
+        {
+          "id": "poliza",
+          "tipo": "calculo",
+          "op": "redondear",
+          "de": ["poliza_calculada"],
+          "n": 0,
           "etiqueta": "Póliza",
           "descripcion": "Costo de la póliza y gastos aduaneros",
           "grupo": "poliza",
@@ -701,11 +710,11 @@
       },
       {
         "id": "monto",
-        "ancho": 113
+        "ancho": 140
       },
       {
         "id": "descripcion",
-        "ancho": 309
+        "ancho": 282
       },
       {
         "id": "tipo_cambio",
@@ -942,7 +951,7 @@
         "estilo": {
           "fondo": "v1_verde",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1034,7 +1043,7 @@
         "estilo": {
           "fondo": "v1_verde",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1086,7 +1095,7 @@
         "estilo": {
           "fondo": "v1_verde",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1138,7 +1147,7 @@
         "estilo": {
           "fondo": "v1_crema",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1230,7 +1239,7 @@
         "estilo": {
           "fondo": "v1_crema",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1282,7 +1291,7 @@
         "estilo": {
           "fondo": "v1_crema",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1334,7 +1343,7 @@
         "estilo": {
           "fondo": "v1_crema",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1386,7 +1395,7 @@
         "estilo": {
           "fondo": "v1_crema",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1438,7 +1447,7 @@
         "estilo": {
           "fondo": "v1_crema",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1490,7 +1499,7 @@
         "estilo": {
           "fondo": "v1_dorado",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1583,7 +1592,7 @@
           "fondo": "v1_azul_marino",
           "texto": "v1_amarillo_fuerte",
           "negrita": true,
-          "tamano": 18,
+          "tamano": 16,
           "alinear": "centro",
           "bordes": {
             "todos": "grueso"

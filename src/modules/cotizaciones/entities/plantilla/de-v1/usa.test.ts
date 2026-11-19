@@ -8,7 +8,7 @@ describe('la plantilla de V1 «USA (subasta)»', () => {
   it('pasa los tres validadores contra su propia fórmula, en forma 2 y dentro de 24 KiB', () => {
     validarLosTres(p)
     expect(p.tarjeta.forma).toBe(2)
-    expect(p.tarjeta.columnas.map((c) => c.ancho)).toEqual([270, 110, 290, 95, 70, 125])
+    expect(p.tarjeta.columnas.map((c) => c.ancho)).toEqual([270, 140, 260, 95, 70, 125])
   })
 
   it('nombra en `colores` justo los colores que usan sus grupos, su diseño y su tarjeta', () => {
@@ -31,22 +31,24 @@ describe('la plantilla de V1 «USA (subasta)»', () => {
   //   GA            = 43.597,2 × 0,05                   =  2.179,86
   //   IVA           = (43.597,2 + 2.179,86) × 0,1494    =  6.839,092764
   //   ICE           = (43.597,2 + 2.179,86) × 0,15      =  6.866,559
-  //   impuestos     = 15.885,511764;  póliza = 100 + 150 + 70 + 300 + 160 = 780;  nacionalización = 16.665,511764
-  //   suma          = 44.914,08 + 16.665,511764         = 61.579,591764   (Unificado y Aduana: la suma de los dólares)
-  //   Bs (Paralelo) = 44.914,08 × 12 + 16.665,511764 × 11,9 = 737.288,5499916;  ÷ 12 = 61.440,7124993
-  it('con la unidad de ejemplo de V1 da los totales de la planilla de V1 en cada modo', () => {
+  //   impuestos     = 15.885,511764;  póliza = 100 + 150 + 70 + 300 + 160 = 780;  nacionalización = 16.665,511764 → la línea, a dólar entero: 16.666
+  //   suma          = 44.914,08 + 16.666                = 61.580,08   (Unificado y Aduana: la suma de los dólares; V1 redondea también los fees
+  //                   y la transferencia y da 61.580: la diferencia son los 0,08 de la transferencia)
+  //   Bs (Paralelo) = 44.914,08 × 12 + 16.666 × 11,9     = 737.294,36;  ÷ 12 = 61.441,196666…
+  it('con la unidad de ejemplo de V1 da los totales de la planilla de V1 en cada modo, la nacionalización a dólar entero', () => {
     const paralelo = calcular(p, 'paralelo')
     expect(paralelo.faltantes).toEqual([])
     expect(paralelo.valores['fees']).toBeCloseTo(4277, 9)
     expect(paralelo.valores['transferencia']).toBeCloseTo(1487.08, 9)
     expect(paralelo.valores['cif']).toBeCloseTo(43597.2, 9)
     expect(paralelo.valores['total_impuestos']).toBeCloseTo(15885.511764, 6)
-    expect(paralelo.valores['nacionalizacion']).toBeCloseTo(16665.511764, 6)
-    expect(paralelo.totales.suma_usd).toBeCloseTo(61579.591764, 6)
-    expect(paralelo.totales.bs).toBeCloseTo(737288.5499916, 6)
-    expect(paralelo.totales.usd).toBeCloseTo(61440.7124993, 6)
-    expect(calcular(p, 'unificado').totales.usd).toBeCloseTo(61579.591764, 6)
-    expect(calcular(p, 'aduana').totales.usd).toBeCloseTo(61579.591764, 6)
+    expect(paralelo.valores['nacionalizacion_calculada']).toBeCloseTo(16665.511764, 6)
+    expect(paralelo.valores['nacionalizacion']).toBe(16666)
+    expect(paralelo.totales.suma_usd).toBeCloseTo(61580.08, 6)
+    expect(paralelo.totales.bs).toBeCloseTo(737294.36, 6)
+    expect(paralelo.totales.usd).toBeCloseTo(61441.196666666, 6)
+    expect(calcular(p, 'unificado').totales.usd).toBeCloseTo(61580.08, 6)
+    expect(calcular(p, 'aduana').totales.usd).toBeCloseTo(61580.08, 6)
     // La garantía va aparte: 32.900 × 0,15, nunca en el total.
     expect(paralelo.valores['garantia']).toBeCloseTo(4935, 9)
   })
@@ -56,12 +58,12 @@ describe('la plantilla de V1 «USA (subasta)»', () => {
     // transferencia = (32.900 + 4.277 + 1.000) × 0,04 = 1.527,08; la suma crece 1.000 + 40.
     expect(r.valores['transferencia']).toBeCloseTo(1527.08, 9)
     expect(r.valores['cif']).toBeCloseTo(43597.2, 9)
-    expect(r.totales.usd).toBeCloseTo(61579.591764 + 1040, 6)
+    expect(r.totales.usd).toBeCloseTo(61580.08 + 1040, 6)
   })
 
   it('las variantes de V1: el híbrido suma el export, la moto no lleva documentación y USA → Chile no nacionaliza', () => {
     const hibrido = calcular(p, 'unificado', { variante: 'hibrido' })
-    expect(hibrido.totales.usd).toBeCloseTo(61579.591764 + 500, 6)
+    expect(hibrido.totales.usd).toBeCloseTo(61580.08 + 500, 6)
     const chile = calcular(p, 'unificado', {
       variante: 'chile',
       inputs: { transporte_bolivia: 0, transporte_chile: 3700 },

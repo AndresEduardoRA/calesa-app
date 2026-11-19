@@ -338,10 +338,19 @@
           "descripcion": "Gastos de despacho, al cambio oficial"
         },
         {
-          "id": "nacionalizacion",
+          "id": "nacionalizacion_calculada",
           "tipo": "calculo",
           "op": "suma",
           "de": ["total_impuestos", "total_poliza"],
+          "etiqueta": "Impuestos y póliza",
+          "descripcion": "Impuestos más gastos de despacho"
+        },
+        {
+          "id": "nacionalizacion",
+          "tipo": "calculo",
+          "op": "redondear",
+          "de": ["nacionalizacion_calculada"],
+          "n": 0,
           "etiqueta": "Nacionalización",
           "descripcion": "Póliza y gastos aduaneros",
           "solo_en": ["moto", "gasolina", "hibrido"],
@@ -905,11 +914,11 @@
       },
       {
         "id": "monto",
-        "ancho": 110
+        "ancho": 140
       },
       {
         "id": "descripcion",
-        "ancho": 290
+        "ancho": 260
       },
       {
         "id": "tipo_cambio",
@@ -1159,7 +1168,7 @@
         "estilo": {
           "fondo": "v1_verde",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1252,7 +1261,7 @@
         "estilo": {
           "fondo": "v1_verde",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1305,7 +1314,7 @@
         "estilo": {
           "fondo": "v1_verde",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1358,7 +1367,7 @@
         "estilo": {
           "fondo": "v1_verde",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1411,7 +1420,7 @@
         "estilo": {
           "fondo": "v1_amarillo",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1504,7 +1513,7 @@
         "estilo": {
           "fondo": "v1_amarillo",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1557,7 +1566,7 @@
         "estilo": {
           "fondo": "v1_amarillo",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1610,7 +1619,7 @@
         "estilo": {
           "fondo": "v1_amarillo",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1663,7 +1672,7 @@
         "estilo": {
           "fondo": "v1_amarillo",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1716,7 +1725,7 @@
         "estilo": {
           "fondo": "v1_amarillo",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1769,7 +1778,7 @@
         "estilo": {
           "fondo": "v1_naranja",
           "negrita": true,
-          "tamano": 16,
+          "tamano": 14,
           "alinear": "derecha",
           "bordes": {
             "todos": "fino"
@@ -1861,7 +1870,7 @@
         "estilo": {
           "fondo": "v1_amarillo_fuerte",
           "negrita": true,
-          "tamano": 18,
+          "tamano": 16,
           "alinear": "centro",
           "bordes": {
             "todos": "grueso"
