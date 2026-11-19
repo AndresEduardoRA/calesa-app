@@ -1,7 +1,9 @@
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   falso,
+  git,
   llamadas,
   publicar,
   publicarConEntorno,
@@ -89,5 +91,60 @@ exit 0`,
     ])
     const r = publicarConEntorno(repo, { ESPERA_MAX: '0' })
     expect(r.estado).toBe(75)
+  })
+})
+
+describe('publicar.sh › con migraciones', () => {
+  function ramaConMigracion() {
+    git('switch', '-q', '-c', 'feat/algo')
+    mkdirSync(join(repo, 'supabase/migrations'), { recursive: true })
+    writeFileSync(join(repo, 'supabase/migrations/20261119000000_algo.sql'), 'select 1;\n')
+    git('add', '.')
+    git('commit', '-q', '-m', 'feat(datos): algo nuevo')
+  }
+  // gh: el CI en verde en la punta `abc`; `atras` commits de main que le faltan; integrado al pedir el merge.
+  const conCi = (atras: number) =>
+    falso(
+      'gh',
+      `case "$1 $2" in
+  "auth token") exit 1 ;;
+  "pr create") touch "${join(raiz, 'pr-creado')}" ;;
+  "pr merge") case "$*" in *--squash*) touch "${join(raiz, 'integrado')}" ;; esac ;;
+  "api repos/{owner}/{repo}/compare/main...abc") echo ${String(atras)} ;;
+  "pr view")
+    [ -f "${join(raiz, 'pr-creado')}" ] || exit 1
+    case "$*" in
+      *statusCheckRollup*)
+        if [ -f "${join(raiz, 'integrado')}" ]; then echo '{"state":"MERGED","statusCheckRollup":[]}'
+        else echo '{"state":"OPEN","mergeable":"MERGEABLE","mergeStateStatus":"CLEAN","headRefOid":"abc","statusCheckRollup":[{"__typename":"CheckRun","name":"Listo · todo en verde","conclusion":"SUCCESS"}]}'; fi ;;
+      *) echo 7 ;;
+    esac ;;
+esac
+exit 0`,
+    )
+
+  it('no lleva auto-merge: en verde y al día con main, lo integra la espera con la punta probada', () => {
+    ramaConMigracion()
+    conCi(0)
+    const r = publicar()
+    expect(r.estado, r.stderr).toBe(0)
+    expect(llamadas()).not.toContain('gh pr merge 7 --auto')
+    expect(llamadas()).toContain('gh pr merge 7 --squash --match-head-commit abc')
+    expect(r.stdout).toContain('PR #7 integrado en main')
+  })
+
+  it('atrás de main, lo pone al día antes de integrarlo', () => {
+    ramaConMigracion()
+    conCi(2)
+    const r = publicarConEntorno(repo, { ESPERA_MAX: '0' })
+    expect(r.estado).toBe(75)
+    expect(llamadas()).toContain('gh api -X PUT repos/{owner}/{repo}/pulls/7/update-branch')
+    expect(llamadas()).not.toContain('--match-head-commit')
+  })
+
+  it('sin migraciones sigue con auto-merge', () => {
+    ramaConUnCommit()
+    expect(publicar('--sin-esperar').estado).toBe(0)
+    expect(llamadas()).toContain('gh pr merge 7 --auto --squash')
   })
 })

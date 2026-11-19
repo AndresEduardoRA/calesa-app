@@ -45,9 +45,12 @@ microdecisiones sola (`.claude/rules/ui.md`).
 ## GitHub
 
 - `main` está protegida: sólo avanza por PR y exige el check **`Listo · todo en verde`** (el job `listo` de `ci.yml`, que resume a los
-  demás) **sobre la rama al día con `main`** (strict): el orden de migraciones se comprueba contra el `main` en que se integra, no
-  contra el que había al abrir el PR. Una rama atrasada la pone al día `publicar.sh` (`PUT …/pulls/<n>/update-branch` por `gh api`, un merge; el subcomando `gh pr update-branch` no está en todo gh). El repo sólo admite squash, con auto-merge y borrado de la rama al integrar. La persona, como administradora, puede saltarse
-  la protección; una sesión no empuja `main` (`.claude/hooks/bloquear-peligrosos.sh`).
+  demás), **sin exigir la rama al día** («Require branches to be up to date» apagado): un PR en verde entra aunque `main` haya
+  avanzado. Lo que esa regla cuidaba: un PR con migraciones nuevas no lleva auto-merge y lo integran `publicar.sh` o el orquestador en
+  verde y al día con `main` (si quedó atrás, `PUT …/pulls/<n>/update-branch` por `gh api` y el CI otra vez); y si dos PR juntos dejan
+  `main` en rojo, el orquestador encola la tarea urgente de arreglarlo y no arranca tareas nuevas hasta verlo verde
+  (`scripts/orquestador/main-en-tanda.sh`). El repo sólo admite squash, con auto-merge y borrado de la rama al integrar. La persona,
+  como administradora, puede saltarse la protección; una sesión no empuja `main` (`.claude/hooks/bloquear-peligrosos.sh`).
 - La cuenta es la dueña del repo aunque la activa de la máquina sea otra: `publicar.sh` pide su token (`gh auth token --user <dueña>`)
   y nunca cambia la cuenta activa (`gh auth switch` es de la persona).
 - Un e2e que pasa al reintentar en CI no pone el PR en rojo; queda anotado en el PR (`e2e/soporte/reporter-de-inestables.ts`). Sólo
