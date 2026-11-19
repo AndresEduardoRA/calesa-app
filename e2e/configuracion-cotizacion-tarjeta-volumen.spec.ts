@@ -60,9 +60,7 @@ test('E7: el primer HTML no lleva un nodo que el editor no dibuja, y sí la desc
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  const respuesta = await page.request.get(
-    `/configuracion/cotizacion?seccion=tarjeta&origen=${mini.id}`,
-  )
+  const respuesta = await page.request.get(`/configuracion/cotizacion/${mini.id}/tarjeta`)
   expect(respuesta.ok()).toBe(true)
   const html = await respuesta.text()
   // Lo que no va en la tarjeta (el valor CIF, una comisión sin grupo) no viaja; la descripción de un miembro que la vista previa dibuja (uno de los primeros 4
@@ -76,9 +74,7 @@ test('E7: con 500 miembros se miden los bytes del primer HTML y los nodos del DO
   page,
 }, info) => {
   await entrar(page, configuradora, { fresco: true })
-  const respuesta = await page.request.get(
-    `/configuracion/cotizacion?seccion=tarjeta&origen=${con500.id}`,
-  )
+  const respuesta = await page.request.get(`/configuracion/cotizacion/${con500.id}/tarjeta`)
   const bytes = Buffer.byteLength(await respuesta.text())
   await abrir(page, con500.id)
   await page.getByText('Filas', { exact: true }).click()

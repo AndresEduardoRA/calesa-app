@@ -106,7 +106,7 @@ test('la asesora sin permisos de roles no ve la pantalla, ni la tarjeta en Confi
   await entrar(page, asesora, { fresco: true })
   await page.goto('/configuracion/cotizacion')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Niveles de acceso' })).toHaveCount(0)
+  await expect(page.getByRole('tab', { name: 'Niveles', exact: true })).toHaveCount(0)
   await capturar(page, info, 'niveles-asesora-sin-permiso')
   const cliente = await sesionDe(asesora, CONTRASENA)
   const uso = await cliente.rpc('niveles_con_uso')

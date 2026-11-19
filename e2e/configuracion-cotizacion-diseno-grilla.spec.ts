@@ -20,7 +20,7 @@ import {
 import { capturar, sinScrollHorizontal, textoGrandeAlCargar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
-// La rejilla de la hoja (docs/UX.md › «Cotización: diseño (estados propios)»; docs/GLOSARIO.md › «Aspecto» y «Rejilla de la hoja»): en el editor, el ancho de una
+// La rejilla de la hoja (docs/UX.md › «Cotización: hoja (estados propios)»; docs/GLOSARIO.md › «Aspecto» y «Rejilla de la hoja»): en el editor, el ancho de una
 // celda a 8 de 12, el orden de las secciones arrastrando y con el teclado, la densidad compacta y un tono en una sección, en vivo en la vista previa, y el borrador
 // que pasa la validación de la base al publicarse. Una cotización de una versión con ese aspecto lo dibuja; una de la versión vieja se ve como siempre, y el PDF no
 // cambia. El editor (Configuración) va sólo en escritorio; la hoja, en los dos proyectos, sobre un segundo origen con las dos versiones sembradas.
@@ -148,7 +148,7 @@ test('G1: el ancho de 8 de 12, el orden arrastrando y con el teclado, la densida
 }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto(`/configuracion/cotizacion?seccion=diseno&origen=${editor.id}`)
-  await expect(page.getByRole('heading', { name: 'Diseño', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Hoja', level: 1 })).toBeVisible()
 
   // «Base» a lo ancho (12 columnas) y «Precio» en 8 de 12.
   const base = seccionDelEditor(page, 'base')

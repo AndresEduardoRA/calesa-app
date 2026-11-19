@@ -53,8 +53,13 @@ test('de fábrica: «Todos» sólo se lee, «Costos» se renombra y retira pero 
   await entrar(page, duena)
   await page.goto('/configuracion')
   await page.getByRole('link', { name: /Cotización/ }).click()
-  await expect(page).toHaveURL(/\/configuracion\/cotizacion/)
-  await expect(page.getByRole('tab', { name: 'Niveles de acceso' })).toHaveAttribute(
+  await expect(page).toHaveURL(/\/configuracion\/cotizacion$/)
+  await page
+    .getByRole('list', { name: 'Partes generales' })
+    .getByRole('link', { name: /Niveles/ })
+    .click()
+  await expect(page).toHaveURL(/\/configuracion\/cotizacion\/general\/niveles$/)
+  await expect(page.getByRole('tab', { name: 'Niveles', exact: true })).toHaveAttribute(
     'aria-selected',
     'true',
   )
