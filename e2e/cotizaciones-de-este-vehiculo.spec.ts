@@ -1,3 +1,4 @@
+import { botonDelMenuDeLaGuardada } from './soporte/menu-de-la-guardada'
 import { CONTRASENA, entrar } from './soporte/alta'
 import { correoDePrueba, crearPersona, darRolDePrueba, PREFIJO_ROL_E2E } from './soporte/base'
 import {
@@ -193,7 +194,7 @@ test('E2E una cotización sola de su vehículo no dibuja ni la línea ni el bloq
   const s = await sembrar('De este E5', 1)
   const [sola = ''] = s.ids
   await abrir(page, t.duena, `/cotizaciones/${sola}`)
-  await expect(page.getByRole('button', { name: 'Revisiones' })).toBeVisible()
+  await expect(botonDelMenuDeLaGuardada(page)).toBeVisible()
   await expect(page.locator('[data-linea-de-este-vehiculo]')).toHaveCount(0)
   await expect(page.locator('#de-este-vehiculo')).toHaveCount(0)
   // Para mirar: así se veía toda guardada antes del bloque (nada de las otras del vehículo).

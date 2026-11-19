@@ -5,10 +5,10 @@ import {
   puedeModerarLaCotizacion,
 } from '../../../entities/comentarios/moderacion'
 import type { PropsDeUnHuecoDeLaGuardada } from '../../hoja/components/huecos'
-import { BotonFavorita } from './boton-favorita'
-import { BotonesDeMarcas } from './botones-de-marcas'
+import { FavoritaDelMenu } from './favorita-del-menu'
+import { MarcasDelMenu } from './marcas-del-menu'
 
-// «Favorita», «Reportar…» y, para quien modera, sus acciones, en la cabecera de la guardada (hueco `Acciones`, 4.27-4). Quién ve qué se decide aquí, en el servidor:
+// «Favorita», «Reportar…» y, para quien modera, sus acciones, en el «⋯» de la cabecera de la guardada (hueco `Acciones`, 4.27-4). Quién ve qué se decide aquí, en el servidor:
 // al navegador llegan sólo el id, la versión, la marca propia y las acciones ya calculadas, sin los permisos (el JS en frío de `/cotizaciones/[id]` está cerca del
 // tope). La lectura es la misma de la insignia (`cache`), tras `<Suspense>`; si falla, no se dibuja nada.
 export function MarcasDeLaGuardada(props: PropsDeUnHuecoDeLaGuardada) {
@@ -28,8 +28,8 @@ async function Marcas({ cotizacion, permisos }: PropsDeUnHuecoDeLaGuardada) {
   const acciones = puedeModerarLaCotizacion(cotizacion, permisos) ? accionesDeModerar(marcas) : []
   return (
     <>
-      <BotonFavorita cotizacionId={cotizacion.id} favorita={marcas.favorita} />
-      <BotonesDeMarcas
+      <FavoritaDelMenu cotizacionId={cotizacion.id} favorita={marcas.favorita} />
+      <MarcasDelMenu
         cotizacionId={cotizacion.id}
         numero={cotizacion.numero}
         actualizadoEn={cotizacion.actualizadoEn}

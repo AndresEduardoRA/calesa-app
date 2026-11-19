@@ -141,6 +141,9 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   dnd-kit que lleva adentro, el sensor de teclado (escucha en la ventana) no las recibe y la fila no se mueve.
 - Desestructura lo que un hook devuelve para `ref=` (`const { alMontar, estilo } = useFila…`): con `ref={fila.algo}` el compilador de React
   toma `fila` por un ref y marca cada lectura suya en el render («Cannot access refs during render»).
+- Un hijo que registra algo en el estado de un padre al montarse (las líneas del «⋯» de la guardada) lo hace en `useLayoutEffect`: el `setState` de un `useEffect`
+  de la hidratación se aplica recién cuando termina de hidratarse lo que llega tras `<Suspense>`, y entretanto el padre dibuja sin eso. Un `ref` que también es un
+  objeto de contexto con un `RefObject` adentro hace que el compilador marque `ref={ctx.funcion}`: la función va en su propio contexto.
 
 ## Módulos y JS en frío
 

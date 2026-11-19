@@ -1,3 +1,4 @@
+import { esperarLaGuardadaHidratada } from './soporte/menu-de-la-guardada'
 import { expect, test, type Page } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
@@ -49,6 +50,12 @@ test.afterAll(async () => {
 })
 
 const AVISO = '[data-aviso-de-version]'
+
+// Abre la guardada como quien la puede guardar y espera a que hidrate: «Cotizar encima» llega en el HTML y un toque antes de hidratar se pierde.
+async function abrirLaGuardada(page: Page, id: string): Promise<void> {
+  await page.goto(`/cotizaciones/${id}`)
+  await esperarLaGuardadaHidratada(page)
+}
 const botonEncima = (page: Page) => page.getByRole('button', { name: /^Cotiz(ar encima|ando)/ })
 const VENCIDA = 'Esta cotización está vencida.'
 const CON_CAMBIOS =
@@ -96,7 +103,7 @@ test('E2E con otra versión publicada: «Cotizar encima» crea la versión 2 y l
   await entrar(page, duena, { fresco: true })
   const anterior = await guardarUna(page)
   publicarLaVersionSiguiente(origen.id, 500)
-  await page.goto(`/cotizaciones/${anterior}`)
+  await abrirLaGuardada(page, anterior)
   await expect(page.locator(AVISO)).toContainText(
     'Esta cotización usa la versión 1; la de hoy es la 2.',
   )
@@ -125,7 +132,7 @@ test('E2E si otra persona cotizó encima mientras tanto, tocar dice que ya tiene
 }) => {
   await entrar(page, duena, { fresco: true })
   const anterior = await guardarUna(page, true)
-  await page.goto(`/cotizaciones/${anterior}`)
+  await abrirLaGuardada(page, anterior)
   await expect(botonEncima(page)).toBeVisible()
   const nueva = await cotizarEncimaComo({ email: duena, contrasena: CONTRASENA }, anterior)
   await botonEncima(page).click()
@@ -137,7 +144,7 @@ test('E2E si otra persona cotizó encima mientras tanto, tocar dice que ya tiene
 test('E2E dos toques seguidos crean una sola versión nueva', async ({ page }) => {
   await entrar(page, duena, { fresco: true })
   const anterior = await guardarUna(page, true)
-  await page.goto(`/cotizaciones/${anterior}`)
+  await abrirLaGuardada(page, anterior)
   await botonEncima(page).dblclick()
   await expect(page).toHaveURL(/\/cotizaciones\/[0-9a-f-]{36}$/)
   await expect(page).not.toHaveURL(new RegExp(`/cotizaciones/${anterior}$`))
@@ -149,7 +156,7 @@ test('E2E con lo tipeado y sin guardar el botón espera; tras «Guardar» se enc
 }) => {
   await entrar(page, duena, { fresco: true })
   const anterior = await guardarUna(page, true)
-  await page.goto(`/cotizaciones/${anterior}`)
+  await abrirLaGuardada(page, anterior)
   await expect(botonEncima(page)).not.toHaveAttribute('aria-disabled', 'true')
   await tipearEnLaHoja(page, 'pub', '50')
   await expect(botonEncima(page)).toHaveAttribute('aria-disabled', 'true')

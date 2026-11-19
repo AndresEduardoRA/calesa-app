@@ -20,7 +20,7 @@ import {
 import type { FotoBajada } from '../../hooks/use-fotos-marcadas'
 import type { PortadaParaCompartir } from '../../hooks/use-para-compartir-la-cotizacion'
 import { useDescargaDelPdf } from '../../hooks/use-descarga-del-pdf'
-import { textoDelFallo } from '../descargar-pdf-de-la-tarjeta'
+import { textoDelFalloDelPdf } from '../../../../entities/tarjeta/fallo-del-pdf'
 
 type Props = {
   cotizacionId: string
@@ -187,7 +187,7 @@ export function AccionesParaCompartir(props: Props) {
       </div>
       {pdf.estado.tipo === 'fallo' ? (
         <p role="alert" className="text-(length:--text-sm) text-(--color-ink-soft)">
-          {textoDelFallo(pdf.estado.codigo)}
+          {textoDelFalloDelPdf(pdf.estado.codigo)}
         </p>
       ) : null}
       {motivos.aLaVista.length > 0 ? (

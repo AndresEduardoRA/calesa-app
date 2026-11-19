@@ -1,3 +1,4 @@
+import { botonDelMenuDeLaGuardada } from './soporte/menu-de-la-guardada'
 import { entrar } from './soporte/alta'
 import {
   limpiarFinal,
@@ -87,7 +88,7 @@ test('E2E aprobar la segunda cotización cambia la columna de la lista de vehíc
 
   // La segunda: «Aprobar» en su guardada pasa a la insignia, sin refrescar la página.
   await page.goto(`/cotizaciones/${s.segunda}`)
-  await expect(page.getByRole('button', { name: 'Revisiones' })).toBeVisible()
+  await expect(botonDelMenuDeLaGuardada(page)).toBeVisible()
   await expect(cabecera(page).locator('[data-aprobada]')).toHaveCount(0)
   await page.getByRole('button', { name: 'Aprobar', exact: true }).click()
   await expect(cabecera(page).locator('[data-aprobada]')).toBeVisible()
@@ -119,7 +120,7 @@ test('E2E Ana, sin aprobar, ve la insignia «Aprobada» de la suya y no el botó
 }) => {
   const s = await sembrarDos('Aprobada E2', t.ana)
   await abrir(page, t.ana, `/cotizaciones/${s.primera}`)
-  await expect(page.getByRole('button', { name: 'Revisiones' })).toBeVisible()
+  await expect(botonDelMenuDeLaGuardada(page)).toBeVisible()
   await expect(cabecera(page).locator('[data-aprobada]')).toBeVisible()
   await abrirOtra(page, s.segunda)
   await expect(cabecera(page).locator('[data-aprobada]')).toHaveCount(0)
@@ -128,5 +129,5 @@ test('E2E Ana, sin aprobar, ve la insignia «Aprobada» de la suya y no el botó
 
 async function abrirOtra(page: Page, id: string): Promise<void> {
   await page.goto(`/cotizaciones/${id}`)
-  await expect(page.getByRole('button', { name: 'Revisiones' })).toBeVisible()
+  await expect(botonDelMenuDeLaGuardada(page)).toBeVisible()
 }

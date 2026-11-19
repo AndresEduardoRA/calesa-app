@@ -7,6 +7,7 @@ import { avisoDeVersion } from '../../../entities/aviso-de-version'
 import type { HojaDeUnaGuardada } from '../../../entities/hoja-de-una-guardada'
 import { textoDeEncima, type ResultadoDeEncima } from '../../../entities/resultado-de-encima'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
+import { useAporteAlMenu } from '../../hoja/components/menu-de-la-guardada/use-aporte-al-menu'
 import { useCotizarEncima } from '../hooks/use-cotizar-encima'
 
 const CON_CAMBIOS =
@@ -20,9 +21,26 @@ type Props = {
 
 // El aviso de una guardada que usa otra versión de la fórmula que la de hoy o ya venció (4.15-3b, P7), con «Cotizar encima» si la base dice que quien mira puede
 // (`puede_cotizar_encima`: no hay otra versión nueva y tiene con qué). El aviso lo ve todo el que abre la página; el botón, sólo quien puede. Sin nada que decir, no dibuja nada.
+// El mismo «Cotizar encima» va también en el «⋯» de la cabecera, cuando el botón del aviso se ve: con cambios, apagado con su motivo; mientras envía, «Cotizando…». Lo que
+// conteste la base se dice en el aviso.
 export function AvisoDeVersion({ hoja, hayCambios }: Props) {
   const lineas = avisoDeVersion(hoja)
   const encima = useCotizarEncima({ anterior: hoja.cotizacion.id })
+  useAporteAlMenu(
+    lineas.length > 0 && hoja.cadena.puedeCotizarEncima
+      ? {
+          encima: {
+            tipo: 'accion',
+            motivo: hayCambios ? CON_CAMBIOS : null,
+            ocupada: encima.enviando,
+            ...(encima.enviando ? { etiqueta: 'Cotizando…' } : {}),
+            alElegir: () => {
+              void encima.cotizar()
+            },
+          },
+        }
+      : null,
+  )
   if (lineas.length === 0) {
     return null
   }
