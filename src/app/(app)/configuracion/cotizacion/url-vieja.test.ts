@@ -36,6 +36,17 @@ describe('destinoDeLaUrlVieja', () => {
     expect(destino('seccion=tablas&origen=general')).toBe(`${BASE}/${A}/tablas`)
   })
 
+  it('con un origen ajeno, sin los parámetros de ese origen', () => {
+    expect(destino(`seccion=tablas&origen=${AJENO}&tabla=t1`)).toBe(`${BASE}/${A}/tablas`)
+    expect(destino(`seccion=formula&origen=${AJENO}&panel=revertir-formula&version=v1`)).toBe(
+      `${BASE}/${A}/formula`,
+    )
+    // En una parte general el origen no cuenta.
+    expect(destino(`seccion=niveles&origen=${AJENO}&panel=nuevo-nivel`)).toBe(
+      `${BASE}/general/niveles?panel=nuevo-nivel`,
+    )
+  })
+
   it('conserva los paneles y los demás parámetros, en su orden y con su primer valor', () => {
     expect(destino(`seccion=formula&origen=${B}&panel=publicar-formula`)).toBe(
       `${BASE}/${B}/formula?panel=publicar-formula`,
@@ -54,7 +65,9 @@ describe('destinoDeLaUrlVieja', () => {
     )
     expect(destino(`seccion=diseno&origen=${A}&vista=412`)).toBe(`${BASE}/${A}/hoja?vista=412`)
   })
+})
 
+describe('destinoDeLaUrlVieja, los casos no felices', () => {
   it('sin seccion, o con una desconocida, la primera de antes que abre, con lo demás', () => {
     expect(destino('panel=nuevo-nivel')).toBe(`${BASE}/general/niveles?panel=nuevo-nivel`)
     expect(destino(`origen=${B}`, configura)).toBe(`${BASE}/${B}/formula`)

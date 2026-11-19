@@ -11,6 +11,7 @@ import type { AccesoDeCotizacion } from './acceso'
 //   orden (`?panel=`, `?version=`, `?tabla=`, `?tono=`, `?nivel=`, `?vista=`…): ningún enlace profundo se pierde.
 // - Sin `seccion` (con otros parámetros) o con una desconocida: a la primera de antes que abre, con los demás parámetros.
 // - `seccion` de una que no abre: a la primera de antes que abre, sin parámetros (eran de otra parte).
+// - `?origen=` que no es suyo (o que no existe): la misma pestaña del primero, sin parámetros (eran de ese otro origen).
 // - Sin ninguna: null (la página decide).
 // El destino nunca lleva `seccion` ni `origen`: no redirige dos veces.
 
@@ -62,31 +63,41 @@ function rutaDe(
     : rutaDeConfiguracionDeCotizacion(origen, pestana)
 }
 
-export function destinoDeLaUrlVieja(
-  parametros: URLSearchParams,
-  acceso: AccesoDeCotizacion,
-): string | null {
-  if (parametros.size === 0) {
-    return null
-  }
-  const seccion = parametros.get('seccion')
-  const pedida = esClaveVieja(seccion) ? seccion : null
-  const primera = CLAVES_VIEJAS.find((clave) => abre(clave, acceso))
-  if (primera === undefined) {
-    return null
-  }
-  const origenPedido = parametros.get('origen')
-  if (pedida !== null && !abre(pedida, acceso)) {
-    return rutaDe(primera, null, acceso)
-  }
+// Lo demás de la URL, sin `seccion` ni `origen`, con el primer valor de cada parámetro y en su orden.
+function conservados(parametros: URLSearchParams): string {
   const resto = new URLSearchParams()
   for (const [nombre, valor] of parametros) {
     if (nombre !== 'seccion' && nombre !== 'origen' && !resto.has(nombre)) {
       resto.set(nombre, valor)
     }
   }
-  const ruta = rutaDe(pedida ?? primera, origenPedido, acceso)
-  const busqueda = resto.toString()
+  return resto.toString()
+}
+
+// Un `?origen=` que vino y no es de los suyos, en una pestaña de un origen.
+const deOtroOrigen = (clave: ClaveVieja, origen: string | null, acceso: AccesoDeCotizacion) =>
+  DEL_ORIGEN[clave] !== undefined && origen !== null && !acceso.origenes.includes(origen)
+
+export function destinoDeLaUrlVieja(
+  parametros: URLSearchParams,
+  acceso: AccesoDeCotizacion,
+): string | null {
+  const primera = CLAVES_VIEJAS.find((clave) => abre(clave, acceso))
+  if (parametros.size === 0 || primera === undefined) {
+    return null
+  }
+  const seccion = parametros.get('seccion')
+  const pedida = esClaveVieja(seccion) ? seccion : null
+  if (pedida !== null && !abre(pedida, acceso)) {
+    return rutaDe(primera, null, acceso)
+  }
+  const clave = pedida ?? primera
+  const origenPedido = parametros.get('origen')
+  if (deOtroOrigen(clave, origenPedido, acceso)) {
+    return rutaDe(clave, null, acceso)
+  }
+  const ruta = rutaDe(clave, origenPedido, acceso)
+  const busqueda = conservados(parametros)
   return busqueda === '' ? ruta : `${ruta}?${busqueda}`
 }
 

@@ -35,7 +35,7 @@ export async function TarjetasDelInicio({ permisos }: { permisos: Permisos }) {
         </p>
       ) : null}
       <ul
-        aria-label="Cotización por origen y general"
+        aria-label="Tarjetas de Cotización"
         className="grid grid-cols-[minmax(0,1fr)] gap-3 @min-[48rem]:grid-cols-2"
       >
         {origenes.map((origen) => (

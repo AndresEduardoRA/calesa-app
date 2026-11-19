@@ -18,7 +18,7 @@ export function TarjetaGeneral({ pestanas }: Props) {
           Lo que vale para toda la empresa.
         </p>
       </div>
-      <ul aria-label="General" className="grid gap-1">
+      <ul aria-label="Partes generales" className="grid gap-1">
         {pestanas.map((pestana) => {
           const frase = parteGeneral(pestana.clave).descripcion
           return (
