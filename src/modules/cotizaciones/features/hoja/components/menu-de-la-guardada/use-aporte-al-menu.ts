@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useEffect, useId, useRef, type RefObject } from 'react'
+import { useContext, useId, useLayoutEffect, useRef, type RefObject } from 'react'
 import { ContextoDelMenuEstable, type AporteAlMenu, type LineaDelMenu } from './contexto'
 
 // Las mismas líneas, con lo que hacen leído en el momento: así un aporte no cambia en cada dibujo (sólo cuando cambia lo que se ve).
@@ -44,10 +44,12 @@ export function useAporteAlMenu(aporte: AporteAlMenu | null): {
   const ultimo = useRef(aporte)
   // Lo que se ve de cada línea (sin las funciones): cambia el aporte sólo cuando cambia esto.
   const firma = aporte === null ? null : JSON.stringify(aporte)
-  useEffect(() => {
+  // En el commit (no en un efecto): un efecto de la hidratación se aplica recién cuando termina de hidratarse lo que llega tras `<Suspense>`, y el «⋯» se abriría sin
+  // estas líneas.
+  useLayoutEffect(() => {
     ultimo.current = aporte
   })
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (menu === null) {
       return
     }
