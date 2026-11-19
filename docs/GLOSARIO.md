@@ -91,7 +91,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Datos clave** — `origenes.datos_clave` / `DatoClave`, `leerDatosClave()`, `origen_datos_clave_guardar()`: los hasta 4 datos, en orden,
   que la ficha de un vehículo muestra primero. Los elige cada origen en «Campos» (la estrella, «Datos clave (n de 4)»); cada uno es un dato
   común o un campo activo del origen. Vacíos = los de fábrica de su tipo (subasta: plataforma, enlace de la subasta, kilometraje y año;
-  manual: año, kilometraje, VIN y categoría).
+  manual: año, kilometraje, VIN y categoría). La ficha del vehículo los dibuja en «Datos principales» (columna izquierda, `datosClaveDelVehiculo()`).
+- **Ficha completa (del vehículo)** — `<ModalDeFichaCompleta>`, `?ver=ficha`: el «Ver más» de «Datos principales» en la ficha del vehículo. Un modal
+  grande, de sólo lectura y con tipografía de vitrina, para mostrarle el vehículo a un cliente: las fotos con su tira, los datos comunes, «Precio» y
+  todos los grupos del layout del origen. No es el bloque «Ficha» de la derecha.
 - **Rango (de un campo)** — `minimo`/`maximo` de `leads_campos` y `origenes_campos`, `_valor_fuera_de_rango()`: límites de un `numero` o
   `moneda` (nulo = sin límite); se rechaza el valor que cambia y queda fuera, no el que ya estaba. `*_campo_impacto().fuera_de_rango` los cuenta.
 - **Valor por defecto de un campo** — `valor_defecto` / `valorDefectoPara()`, `valorDefectoVigente()`: lo que el alta trae puesto; sólo precarga.

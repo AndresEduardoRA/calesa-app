@@ -11,8 +11,10 @@ import { Button } from '@/shared/ui/button'
 import { Dato, ValorMostrado } from '@/shared/ui/campos'
 import { TITULO_DE_BLOQUE } from '@/shared/ui/ficha-en-bloques/estilos'
 import { useRegional } from '@/shared/ui/regional'
+import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { datosClaveDelVehiculo } from '../../../entities/datos-clave-del-vehiculo'
 import type { Vehiculo } from '../../../entities/vehiculo'
+import { ModalDeFichaCompletaDiferido } from './ficha-completa/diferidos'
 import { useFichaCompleta } from './ficha-completa/use-ficha-completa'
 
 type Props = {
@@ -36,6 +38,7 @@ export function DatosPrincipalesDelVehiculo({
   const { locale, zonaHoraria } = useRegional()
   const id = useId()
   const fichaCompleta = useFichaCompleta()
+  const montarFicha = useAbiertoAlgunaVez(fichaCompleta.abierto)
   const datos = datosClaveDelVehiculo(datosClave, vehiculo, {
     tipoDeOrigen: origen.tipo,
     campos: camposClave,
@@ -68,6 +71,15 @@ export function DatosPrincipalesDelVehiculo({
       >
         Ver más
       </Button>
+      {montarFicha ? (
+        <ModalDeFichaCompletaDiferido
+          abierto={fichaCompleta.abierto}
+          alCerrar={fichaCompleta.cerrar}
+          vehiculo={vehiculo}
+          origen={origen}
+          categorias={categorias}
+        />
+      ) : null}
     </section>
   )
 }
