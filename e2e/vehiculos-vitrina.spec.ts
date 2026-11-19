@@ -88,8 +88,9 @@ test.afterAll(async () => {
 
 const menu = (page: Page, titulo: string) =>
   page.getByRole('button', { name: `Más acciones de ${titulo}` })
-const publicar = (page: Page) => page.getByRole('menuitem', { name: 'Publicar en la web…' })
-// «Publicar en la web…» es un ítem del «⋯» de la ficha (9i): se abre el menú y se elige.
+// «Publicar en la web…» es un ítem del «⋯» de la ficha (9i): se abre el menú y se elige. Ya publicado se llama «Editar publicación…» (T336).
+const publicar = (page: Page) =>
+  page.getByRole('menuitem', { name: /^(Publicar en la web|Editar publicación)…$/ })
 async function publicarEnLaWeb(page: Page, titulo: string) {
   await menu(page, titulo).click()
   await publicar(page).click()
@@ -247,47 +248,54 @@ test('despublicar lo saca de la vitrina y conserva el precio', async ({ page }) 
   await expect(panel(page).getByLabel('Precio público')).toHaveValue('21500')
 })
 
-test('desde la lista, un toque publica lo que ya tiene precio, con «Deshacer»; sin precio, pide sólo el precio', async ({
+test('desde la lista, publicar abre el panel completo de la vitrina; sacar es un toque con «Deshacer»', async ({
   page,
 }) => {
-  // Su propio punto de partida (en el celular la prueba anterior no corre): el sedán sin publicar y con su precio; el oculto sin precio.
+  // Su propio punto de partida (en el celular la prueba anterior no corre): el sedán sin publicar y con su precio; el oculto publicado.
   sql(
     `update public.vehiculos set publicado_web = false, destacado_web = false, precio_web = 21500 where id = ${literal(sedan)}::uuid`,
   )
   sql(
-    `update public.vehiculos set publicado_web = false, precio_web = null, precio_web_hasta = null where id = ${literal(oculto)}::uuid`,
+    `update public.vehiculos set publicado_web = true, precio_web = null, precio_web_hasta = null where id = ${literal(oculto)}::uuid`,
   )
   await entrar(page, duena)
   await irAlOrigen(page, corea)
   const fila = (titulo: string) =>
     aLaVista(page.locator('tbody tr, li article').filter({ hasText: titulo }))
-  // El sedán, con su precio: se publica con un toque.
+  // Publicar abre el panel de la ficha, sin salir de la lista, con lo guardado (el precio).
   await fila(SEDAN)
     .getByRole('button', { name: `Publicar «${SEDAN}» en la web` })
     .click()
-  const aviso = page.locator('[data-sonner-toast]').filter({ hasText: 'se publicó en la web' })
-  await expect(aviso).toBeVisible()
-  await expect(fila(SEDAN).getByText('En vitrina', { exact: true })).toBeVisible()
-  await aviso.getByRole('button', { name: 'Deshacer' }).click()
-  await expect(fila(SEDAN).getByText('En vitrina', { exact: true })).toBeHidden()
-  // El oculto no tiene precio público: el panel chico pide sólo eso.
-  await fila(OCULTO)
-    .getByRole('button', { name: `Publicar «${OCULTO}» en la web` })
-    .click()
-  await expect(panel(page).getByLabel('Precio público')).toBeVisible()
-  await panel(page).getByRole('button', { name: 'Publicar sin precio' }).click()
+  await expect(page).toHaveURL(new RegExp(`panel=vitrina&para=${sedan}`))
+  await expect(panel(page).getByLabel('Precio público')).toHaveValue('21500')
+  await panel(page).getByRole('switch', { name: 'Publicado en la web' }).click()
+  await panel(page).getByRole('button', { name: 'Guardar' }).click()
   await expect(panel(page)).toBeHidden()
+  await expect(fila(SEDAN).getByText('En vitrina', { exact: true })).toBeVisible()
+  // Sacar de la web es un toque, con «Deshacer».
+  await fila(OCULTO)
+    .getByRole('button', { name: `Sacar «${OCULTO}» de la web` })
+    .click()
+  const aviso = page.locator('[data-sonner-toast]').filter({ hasText: 'salió de la web' })
+  await expect(aviso).toBeVisible()
+  await expect
+    .poll(() =>
+      sql(`select publicado_web::text from public.vehiculos where id = ${literal(oculto)}::uuid`),
+    )
+    .toBe('false')
+  await aviso.getByRole('button', { name: 'Deshacer' }).click()
   await expect
     .poll(() =>
       sql(`select publicado_web::text from public.vehiculos where id = ${literal(oculto)}::uuid`),
     )
     .toBe('true')
-  await fila(OCULTO)
-    .getByRole('button', { name: `Sacar «${OCULTO}» de la web` })
+  // El sedán vuelve a quedar sin publicar para la prueba siguiente.
+  await fila(SEDAN)
+    .getByRole('button', { name: `Sacar «${SEDAN}» de la web` })
     .click()
   await expect
     .poll(() =>
-      sql(`select publicado_web::text from public.vehiculos where id = ${literal(oculto)}::uuid`),
+      sql(`select publicado_web::text from public.vehiculos where id = ${literal(sedan)}::uuid`),
     )
     .toBe('false')
 })

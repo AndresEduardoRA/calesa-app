@@ -84,7 +84,12 @@ export function TarjetasDeVehiculos(props: Props) {
               <>
                 <InsigniaDeVitrina {...vitrinaDe(vehiculo, vitrina)} origen={origen} fase={fase} />
                 {menu.publicar.estado === 'habilitado' ? (
-                  <BotonDeVitrinaDeLaFila vehiculo={vehiculo} />
+                  <BotonDeVitrinaDeLaFila
+                    vehiculo={vehiculo}
+                    alPublicar={() => {
+                      menu.abrirVitrina(vehiculo.id)
+                    }}
+                  />
                 ) : null}
                 <InsigniaDeLimpieza fecha={vehiculo.limpiezaEl} hoy={limpiezaHoy} />
               </>

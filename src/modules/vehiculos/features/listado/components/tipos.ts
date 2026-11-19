@@ -27,10 +27,13 @@ export type DatosDelOrigen = {
 
 export type FilaDeVehiculo = Vehiculo
 
-// Lo que decide qué ofrece el «⋯» de cada fila, resuelto por la página: quién edita (los de esta página), a quién se puede enviar a la
-// papelera, si se puede publicar y si se puede cotizar en este origen.
+// Lo que decide qué ofrece el «⋯» de cada fila, resuelto por la página: quién edita (los de esta página) y si se edita en el origen, a quién se puede
+// enviar a la papelera, si se puede publicar, cotizar y ver la actividad, y qué se puede consultar en apibara; y lo que abre cada panel de la lista
+// (un solo hook por panel: ninguna fila suma hooks).
 export type ParaElMenuDeLaLista = {
   editables: ReadonlySet<string>
+  // Quien mira tiene `vehiculos.editar` en este origen: lo que no está en `editables` se ve apagado («propios»), no oculto.
+  editaEnElOrigen: boolean
   eliminables: ReadonlySet<string>
   publicar: PermisoDeVitrina
   // Los de esta página cuyo lead quien mira puede abrir («Ver el lead» en el aviso de un vehículo vinculado) y lo que puede abrir desde un aviso.
@@ -38,32 +41,52 @@ export type ParaElMenuDeLaLista = {
   alcance: AlcanceDeAvisos
   // «Cotizar vehículo»: la hoja de cotizar de este origen, o null si quien mira no cotiza en él (`origenesParaCotizar()`, lo decide la página).
   cotizar: ParaCotizar | null
+  // «Ver actividad»: la plantilla de `/actividad` con `MARCADOR_DE_VEHICULO` (cada fila pone su id), o null sin `actividad.ver`.
+  paraActividad: string | null
+  // «Actualizar los datos»: en un origen de subasta con apibara, los de esta página que tienen enlace, lote o VIN (`entradaDeRefresco()`); null = no aplica.
+  consultables: ReadonlySet<string> | null
+  abrirVitrina: (id: string) => void
+  abrirImagenes: (id: string) => void
+  abrirActualizar: (id: string) => void
 }
 
-// Lo que recibe el listado como listas, hecho conjuntos para preguntar por fila.
-export function paraElMenuDe(datos: {
+export type DatosDelMenuDeLaLista = {
   editables: readonly string[]
+  editaEnElOrigen: boolean
   eliminables: readonly string[]
   leadsVisibles: readonly string[]
   alcance: AlcanceDeAvisos
   publicar: PermisoDeVitrina
   cotizar: ParaCotizar | null
-}): ParaElMenuDeLaLista {
+  paraActividad: string | null
+  consultables: readonly string[] | null
+}
+
+// Lo que recibe el listado como listas, hecho conjuntos para preguntar por fila, con lo que abre cada panel.
+export function paraElMenuDe(
+  datos: DatosDelMenuDeLaLista,
+  paneles: Pick<ParaElMenuDeLaLista, 'abrirVitrina' | 'abrirImagenes' | 'abrirActualizar'>,
+): ParaElMenuDeLaLista {
   return {
     editables: new Set(datos.editables),
+    editaEnElOrigen: datos.editaEnElOrigen,
     eliminables: new Set(datos.eliminables),
     leadsVisibles: new Set(datos.leadsVisibles),
     alcance: datos.alcance,
     publicar: datos.publicar,
     cotizar: datos.cotizar,
+    paraActividad: datos.paraActividad,
+    consultables: datos.consultables === null ? null : new Set(datos.consultables),
+    ...paneles,
   }
 }
 
 // ¿Alguna fila de la página tiene algo en su «⋯»? Si no, la columna de acciones no se dibuja.
 export function hayMenuEnLaPagina(filas: readonly Vehiculo[], para: ParaElMenuDeLaLista): boolean {
+  const paraTodas = para.cotizar !== null || para.editaEnElOrigen || para.paraActividad !== null
   return (
     para.publicar.estado === 'habilitado' ||
-    (para.cotizar !== null && filas.length > 0) ||
+    (paraTodas && filas.length > 0) ||
     filas.some((fila) => para.editables.has(fila.id) || para.eliminables.has(fila.id))
   )
 }
