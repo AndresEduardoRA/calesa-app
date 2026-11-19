@@ -1,4 +1,5 @@
-// Un cálculo de la tarjeta para las pruebas de la hoja y de la tarjeta (4.18-2): remate, flete, GA y garantía activos, con el total en dólares y en Bs. Sólo para las pruebas
+// Un cálculo de la tarjeta para las pruebas de la hoja y de la tarjeta (4.18-2): remate, flete, GA y garantía activos (fees fuera de la variante: no aplica), con el total
+// en dólares y en Bs. Sólo para las pruebas
 // (el sufijo `.soporte.` lo deja fuera del mapa).
 import type { CalculoDeLaTarjeta } from './calculo-de-la-tarjeta'
 import type { Estado } from './motor-contexto'
@@ -9,6 +10,7 @@ const TODOS: Record<string, Estado> = {
   ga: 'activo',
   garantia: 'activo',
   total: 'activo',
+  fees: 'fuera_de_variante',
 }
 
 export const calculoDePrueba = (mas: Partial<CalculoDeLaTarjeta> = {}): CalculoDeLaTarjeta => ({

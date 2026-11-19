@@ -1,24 +1,11 @@
-// Lo de la cotización que la tarjeta muestra y no es un nodo de la fórmula: las variables de una celda (`fecha_larga`, `numero`, `asesor_nombre`…). Llega ya
-// formateado por quien arma la página (la fecha en la zona de la empresa), o nulo: una variable sin valor se dibuja vacía (D8 de T310).
+// Lo que se hace con el contexto de la cotización (`entities/contexto-de-la-cotizacion.ts`): el valor de cada variable de una celda y el contexto armado desde lo
+// que sabe la página, con las fechas en la zona de la empresa.
 import { formatearFecha, inicioDelDia } from '@/shared/lib/fechas'
+import type { ContextoDeLaCotizacion } from '../contexto-de-la-cotizacion'
 import type { VariableDeLaTarjeta } from '../cuadricula-de-la-tarjeta'
 
-export type ContextoDeLaCotizacion = {
-  // «6 nov 2026»: el día de hoy en la hoja nueva y el del último guardado en una guardada.
-  fecha: string
-  // El número pelado de una guardada; nulo en la hoja nueva.
-  numero: string | null
-  // El título de la cotización.
-  titulo: string | null
-  asesor: string | null
-  // El nombre del cliente, sólo si quien arma la página lo ve.
-  cliente: string | null
-  vehiculo: { titulo: string; lote: string | null; vin: string | null } | null
-  // «20 nov 2026»: el día en que vence; nulo sin vencimiento.
-  venceEl: string | null
-  // El logo de la empresa, si tiene uno.
-  logo: { nombre: string; url: string } | null
-}
+// El tipo vive en el núcleo (lo nombra también la referencia del editor de la plantilla); aquí, lo que se hace con él.
+export type { ContextoDeLaCotizacion }
 
 // Las iniciales de las dos primeras palabras, en mayúsculas: «Ana María López» → «AM».
 export function inicialesDe(nombre: string | null): string {
