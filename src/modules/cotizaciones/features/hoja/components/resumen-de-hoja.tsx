@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from '@/shared/ui/button'
 import { Monto } from '@/shared/ui/monto'
 import {
@@ -15,6 +16,7 @@ import type { EstadoDeRecalculo } from '../../../entities/recalculo'
 import { useResumenPlegado } from '../hooks/use-resumen-plegado'
 import { ElegirLoQueFalta } from './elegir-lo-que-falta'
 import { LiveDelResumen } from './live-del-resumen'
+import { useRanuraDeGuardar } from './menu-de-la-guardada/use-ranura-de-guardar'
 import { ModoDelResumen } from './modo-del-resumen'
 import { TotalEnMonedaLocal } from './total-en-moneda-local'
 import { ValorDeNodo } from './valor-de-nodo'
@@ -56,13 +58,23 @@ export type BotonDeGuardar = {
 }
 
 // «Guardar», además de `Ctrl/Cmd+S` (el celular no tiene atajo). Frena el `mousedown`: así el foco no sale de una celda abierta (un clic afuera descartaría lo que no es un
-// número) y el clic hace lo mismo que el atajo, que confirma la celda antes de guardar.
+// número) y el clic hace lo mismo que el atajo, que confirma la celda antes de guardar. En una guardada va en la cabecera, junto a «Compartir» (`useRanuraDeGuardar()`, por un
+// portal: sigue siendo de la hoja, con su estado, su motivo y su atajo); mientras la cabecera no montó su lugar, no se dibuja.
 function BotonGuardar({ motivo, motivoYaDicho, ocupado, alGuardar, paraElegir }: BotonDeGuardar) {
+  const ranura = useRanuraDeGuardar()
   const dicho = motivo !== null && !motivoYaDicho
-  return (
-    <div className="mr-auto grid gap-1">
+  if (ranura === null) {
+    return null
+  }
+  const enLaCabecera = ranura !== undefined
+  const boton = (
+    <div className={enLaCabecera ? 'grid gap-1' : 'mr-auto grid gap-1'}>
       <Button
-        className="min-h-11 justify-self-start md:min-h-8"
+        className={
+          enLaCabecera
+            ? 'min-h-11 w-full md:min-h-8 md:w-auto'
+            : 'min-h-11 justify-self-start md:min-h-8'
+        }
         disabled={motivo !== null || ocupado}
         aria-describedby={dicho ? 'motivo-para-no-guardar' : undefined}
         onMouseDown={(evento) => {
@@ -82,6 +94,7 @@ function BotonGuardar({ motivo, motivoYaDicho, ocupado, alGuardar, paraElegir }:
       )}
     </div>
   )
+  return enLaCabecera ? createPortal(boton, ranura) : boton
 }
 
 function AvisoDeFallo({

@@ -1,6 +1,8 @@
-import { cleanup, fireEvent, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { CabeceraDeLaGuardada } from './cabecera-de-la-guardada'
+import { ContextoDeLaVistaPrevia } from './hueco-de-la-vista-previa'
+import { ProveedorDelMenuDeLaGuardada } from './menu-de-la-guardada'
 import { render } from './render-con-url.soporte'
 
 vi.mock('../../revisiones/components/diferidos', () => ({
@@ -22,25 +24,57 @@ const props = {
   origen: 'Miami',
   cliente: null,
   vehiculo: null,
+  guardable: false,
+}
+
+// La cabecera como la monta la página: con el «⋯» (su proveedor) y, si se pide, con «Compartir» del hueco de la vista previa.
+const conMenu = (ui: React.ReactElement, compartir = false) => (
+  <ProveedorDelMenuDeLaGuardada>
+    {compartir ? (
+      <ContextoDeLaVistaPrevia
+        value={{ dibujar: () => null, compartir: () => <button type="button">Compartir</button> }}
+      >
+        {ui}
+      </ContextoDeLaVistaPrevia>
+    ) : (
+      ui
+    )}
+  </ProveedorDelMenuDeLaGuardada>
+)
+
+async function abrirElMenu() {
+  const boton = screen.getByRole('button', { name: 'Más acciones de N.º 123' })
+  act(() => {
+    fireEvent.pointerDown(boton)
+    fireEvent.mouseDown(boton)
+    fireEvent.click(boton)
+  })
+  await waitFor(() => {
+    expect(screen.getAllByRole('menuitem').length).toBeGreaterThan(0)
+  })
 }
 
 afterEach(cleanup)
 
-describe('CabeceraDeLaGuardada: «Revisiones» (C1)', () => {
-  it('el botón está para todo el que abre la página y abre el panel por su URL', () => {
-    render(<CabeceraDeLaGuardada {...props} />)
+describe('CabeceraDeLaGuardada: «Revisiones» en el «⋯» (C1)', () => {
+  it('la línea está para todo el que abre la página y abre el panel por su URL', async () => {
+    render(conMenu(<CabeceraDeLaGuardada {...props} />))
     expect(document.querySelector('[data-panel-de-revisiones]')).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Revisiones' }))
-    expect(
-      document
-        .querySelector('[data-panel-de-revisiones]')
-        ?.getAttribute('data-panel-de-revisiones'),
-    ).toBe('abierto')
+    expect(screen.queryByRole('button', { name: 'Revisiones' })).toBeNull()
+    await abrirElMenu()
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Revisiones' }))
+    await waitFor(() => {
+      expect(
+        document
+          .querySelector('[data-panel-de-revisiones]')
+          ?.getAttribute('data-panel-de-revisiones'),
+      ).toBe('abierto')
+    })
     expect(screen.getByText('Panel 123')).toBeTruthy()
   })
 
   it('recargar con ?panel=revisiones lo abre', () => {
-    render(<CabeceraDeLaGuardada {...props} />, '?panel=revisiones')
+    render(conMenu(<CabeceraDeLaGuardada {...props} />), '?panel=revisiones')
     expect(
       document
         .querySelector('[data-panel-de-revisiones]')
@@ -110,36 +144,33 @@ describe('CabeceraDeLaGuardada: la cadena (C7)', () => {
   })
 })
 
-// El contenedor de «Revisiones» y la fila de la cabecera que lo contiene.
-function filaDeLaCabecera() {
-  const contenedor = screen.getByRole('button', { name: 'Revisiones' }).closest('.ml-auto')
-  const fila = contenedor?.parentElement
-  if (!contenedor || !fila) throw new Error('No está la fila de la cabecera')
-  return { contenedor, fila }
-}
-
-describe('CabeceraDeLaGuardada: las acciones (4.15-6b, C2)', () => {
-  it('con `acciones`, van después de «Revisiones», en la misma fila y sin envoltorio', () => {
-    render(<CabeceraDeLaGuardada {...props} acciones={<button>Acción de prueba</button>} />)
-    const { contenedor, fila } = filaDeLaCabecera()
-    const accion = screen.getByRole('button', { name: 'Acción de prueba' })
-    expect(contenedor.nextElementSibling).toBe(accion)
-    expect(accion.parentElement).toBe(fila)
-  })
-
-  it('con `insignias`, van después de la vigencia y antes de «Revisiones», sin envoltorio (4.27-4)', () => {
-    render(<CabeceraDeLaGuardada {...props} insignias={<span>Insignia de prueba</span>} />)
-    const { contenedor, fila } = filaDeLaCabecera()
+describe('CabeceraDeLaGuardada: lo que va a la vista (T321)', () => {
+  it('en la fila del título: las insignias tras la vigencia, el «⋯» y el grupo de «Guardar» y «Compartir»', () => {
+    render(
+      conMenu(
+        <CabeceraDeLaGuardada {...props} guardable insignias={<span>Insignia de prueba</span>} />,
+        true,
+      ),
+    )
     const insignia = screen.getByText('Insignia de prueba')
-    expect(insignia.parentElement).toBe(fila)
-    expect(insignia.nextElementSibling).toBe(contenedor)
+    const fila = insignia.parentElement
     expect(insignia.previousElementSibling?.textContent).toMatch(/^Vale hasta el /)
+    const menu = screen.getByRole('button', { name: 'Más acciones de N.º 123' })
+    expect(menu.closest('div')?.parentElement).toBe(fila)
+    const grupo = document.querySelector('[data-acciones-de-la-cabecera]')
+    expect(grupo?.parentElement).toBe(fila)
+    expect(grupo?.children).toHaveLength(2)
+    expect(grupo?.lastElementChild?.textContent).toBe('Compartir')
   })
 
-  it('sin `acciones`, la fila tiene los cuatro hijos de siempre y «Revisiones» es el último (C9)', () => {
-    render(<CabeceraDeLaGuardada {...props} />)
-    const { contenedor, fila } = filaDeLaCabecera()
-    expect(fila.children).toHaveLength(4)
-    expect(fila.lastElementChild).toBe(contenedor)
+  it('sin `guardable`, no hay lugar para «Guardar»', () => {
+    render(conMenu(<CabeceraDeLaGuardada {...props} />, true))
+    expect(document.querySelector('[data-acciones-de-la-cabecera]')?.children).toHaveLength(1)
+  })
+
+  it('las `acciones` de las áreas quedan fuera de la fila: sólo montan sus diálogos', () => {
+    render(conMenu(<CabeceraDeLaGuardada {...props} acciones={<span>Diálogo de prueba</span>} />))
+    const fila = screen.getByRole('heading', { level: 1 }).parentElement
+    expect(screen.getByText('Diálogo de prueba').parentElement).not.toBe(fila)
   })
 })
