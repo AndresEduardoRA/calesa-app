@@ -2,6 +2,7 @@ import { formatearMonto } from '../src/shared/lib/formato'
 import { expect, test, type Page } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { leerElPdf } from './soporte/cotizar-pdf'
+import { elegirEnElMenu, esperarLaGuardadaHidratada } from './soporte/menu-de-la-guardada'
 import { capturar } from './soporte/recorrido'
 import {
   celdaEnPar,
@@ -110,6 +111,7 @@ test('E4 en la guardada, guardar una guarda las dos', async ({ page }) => {
   const [a, b] = hermanasDe(origen.id)
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/${b?.id ?? ''}`)
+  await esperarLaGuardadaHidratada(page)
   // Lo común (el precio) cambia en las dos; lo de una celda en par, sólo en la suya. Una hermana sin cambios no se reescribe.
   await tipearEn(page.locator('[data-nodo="precio"]:visible'), '11000')
   await tipearEn(celdaEnPar(page, 'transporte', 'c20'), '1800')
@@ -126,10 +128,8 @@ test('E5 la vista previa y el PDF traen las dos tarjetas', async ({ page }, info
   const [a] = hermanasDe(origen.id)
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/${a?.id ?? ''}`)
-  await page
-    .getByRole('complementary', { name: 'Resumen' })
-    .getByRole('button', { name: 'Vista previa' })
-    .click()
+  await esperarLaGuardadaHidratada(page)
+  await elegirEnElMenu(page, 'Vista previa')
   const dialogo = page.getByRole('dialog', { name: 'Vista previa' })
   await expect(dialogo.locator('[data-tarjeta-de-cotizacion]')).toHaveCount(2)
   await expect(dialogo.getByRole('region', { name: 'Tarjeta de 40 pies' })).toBeVisible()
@@ -144,7 +144,8 @@ test('E6 enviar una a la papelera manda las dos; «Deshacer» devuelve las dos',
   const [a] = hermanasDe(origen.id)
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/${a?.id ?? ''}`)
-  await page.getByRole('button', { name: 'Enviar a la papelera' }).click()
+  await esperarLaGuardadaHidratada(page)
+  await elegirEnElMenu(page, 'Enviar a la papelera')
   await expect(page.getByText('Se enviaron 2 a la papelera.')).toBeVisible()
   const enviadas = hermanasDe(origen.id)
   expect(enviadas.every((c) => c.eliminada)).toBe(true)
@@ -157,7 +158,8 @@ test('E7 marcar final una manda la otra a la papelera', async ({ page }) => {
   const [a, b] = hermanasDe(origen.id)
   await entrar(page, duena, { fresco: true })
   await page.goto(`/cotizaciones/${a?.id ?? ''}`)
-  await page.getByRole('button', { name: 'Marcar final' }).click()
+  await esperarLaGuardadaHidratada(page)
+  await elegirEnElMenu(page, 'Marcar final…')
   await page.getByRole('dialog').getByRole('button', { name: 'Marcar final' }).click()
   await expect.poll(() => hermanasDe(origen.id).find((c) => c.id === a?.id)?.clase).toBe('final')
   expect(hermanasDe(origen.id).find((c) => c.id === b?.id)?.eliminada).toBe(true)
