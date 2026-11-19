@@ -9,14 +9,20 @@ import { HUECOS_DE_COMENTARIOS_EN_EL_RESUMEN } from '@/modules/cotizaciones/pant
 import { HUECOS_DE_COMPROBANTES_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/comprobantes-resumen'
 import { DialogoDeMarcarFinalDeLaFila } from '@/modules/cotizaciones/pantallas/final-listado'
 import { ListadoDeCotizaciones } from '@/modules/cotizaciones/pantallas/listado'
-import { DialogoDeCompartirDeLaFila } from '@/modules/cotizaciones/pantallas/tarjeta-compartir'
+import { CompararDelGrupoDiferido } from '@/modules/cotizaciones/pantallas/aprobada-listado'
+import {
+  DialogoDeCompartirDeLaFila,
+  useAbrirCompartirDeLaFila,
+} from '@/modules/cotizaciones/pantallas/tarjeta-compartir'
+import { PortadaDeLaCotizacion } from '@/modules/cotizaciones/pantallas/tarjeta-portada'
 import { HUECOS_DE_TARJETA_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/tarjeta-resumen'
+import { useLive } from '@/shared/ui/live'
 import { MenuDeLaFila } from './menu-de-la-fila'
 import { useAccionesDeLaLista } from './use-acciones-de-la-lista'
 
 type Props = Omit<
   ComponentProps<typeof ListadoDeCotizaciones>,
-  'menuDeFila' | 'dialogos' | 'huecosDelResumen' | 'alCambiarLaAprobada'
+  'menuDeFila' | 'compartirDe' | 'huecos' | 'dialogos' | 'huecosDelResumen' | 'alCambiarLaAprobada'
 > & {
   // El menú de cada fila de la página (versión, marcas y lo que ofrece), por id: lo calcula el servidor (`menus-de-la-pagina.ts`). Una fila sin menú no tiene «⋯».
   menus: Readonly<Record<string, MenuDeUnaFila>>
@@ -31,26 +37,44 @@ const HUECOS_DEL_RESUMEN = {
   ...HUECOS_DE_APROBADA_EN_EL_RESUMEN,
 }
 
+// Lo que las áreas `tarjeta` y `aprobada` llenan en la lista: la portada de cada tarjeta (en frío: se ve al llegar) y «Comparar» de un grupo desplegado (diferido).
+const HUECOS_DE_LA_LISTA = { Portada: PortadaDeLaCotizacion, Comparar: CompararDelGrupoDiferido }
+
 // El listado de cotizaciones con su columna de acciones: une el «⋯» de cada fila con lo que hace cada área (compartir, aprobar, marcar final, favorita, reportar, moderar y la papelera: las mismas
 // actions y los mismos diálogos de la guardada) y monta los diálogos una vez. Es un Client Component porque el «⋯» necesita las filas y sus funciones; el servidor sólo manda datos.
 export function ListadoConAcciones({ menus, ...props }: Props) {
-  const filas = props.pagina.filas
+  // Las cotizaciones que dibuja la página: la cabeza de cada grupo y cada una sola.
+  const filas = props.pagina.filas.map((entrada) =>
+    entrada.tipo === 'grupo' ? entrada.cabeza : entrada.cotizacion,
+  )
   const acciones = useAccionesDeLaLista(filas, menus)
   const router = useRouter()
+  const { live } = useLive()
+  const abrirCompartir = useAbrirCompartirDeLaFila()
   return (
     <ListadoDeCotizaciones
       {...props}
+      huecos={HUECOS_DE_LA_LISTA}
       huecosDelResumen={HUECOS_DEL_RESUMEN}
+      // «Compartir» de la tarjeta: lo que ofrece su «⋯» (sin Modo Live), con el mismo panel.
+      compartirDe={(fila) =>
+        live || menus[fila.id]?.ofertas.compartir === undefined
+          ? null
+          : () => {
+              abrirCompartir(fila.id)
+            }
+      }
       // Aprobar desde «De este vehículo» del resumen cambia la insignia de otras filas: el listado no tiene nada tipeado y se refresca (como «Aprobar» del «⋯»).
       alCambiarLaAprobada={() => {
         router.refresh()
       }}
-      menuDeFila={(fila) => {
+      menuDeFila={(fila, opciones) => {
         const menu = menus[fila.id]
         return menu === undefined ? null : (
           <MenuDeLaFila
             cotizacion={fila}
             menu={menu}
+            sinCompartir={opciones?.sinCompartir === true}
             favorita={acciones.esFavorita(fila.id)}
             enCurso={acciones.enCurso(fila.id)}
             acciones={acciones.accionesDe(fila, menu)}

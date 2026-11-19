@@ -92,11 +92,19 @@ function observar(page: Page) {
 
 // Lo que pesa el documento que respondió el servidor para esa URL: tal cual y comprimido (lo que viaja de verdad).
 // Y que traiga una sola vista, la que toca a ese ancho (cierre 1): la tabla en escritorio, las tarjetas en el celular.
-async function pesoDelDocumento(page: Page, url: string): Promise<{ crudo: number; gzip: number }> {
+// Una sola vista en el HTML: la tabla en escritorio, salvo una lista que se pidió en tarjetas (`tarjetas`: las cotizaciones nacen así); en el celular, las tarjetas.
+async function pesoDelDocumento(
+  page: Page,
+  url: string,
+  { tarjetas = false }: { tarjetas?: boolean } = {},
+): Promise<{ crudo: number; gzip: number }> {
   const respuesta = await page.goto(url, { waitUntil: 'load' })
   const cuerpo = (await respuesta?.body()) ?? Buffer.alloc(0)
-  const movil = esMovil(page)
-  expect(vistasDelHtml(cuerpo.toString('utf8'))).toEqual({ tabla: !movil, tarjetas: movil })
+  const conTarjetas = esMovil(page) || tarjetas
+  expect(vistasDelHtml(cuerpo.toString('utf8'))).toEqual({
+    tabla: !conTarjetas,
+    tarjetas: conTarjetas,
+  })
   return { crudo: cuerpo.length, gzip: gzipSync(cuerpo).length }
 }
 
@@ -250,44 +258,61 @@ test('inventario de vehículos de la dueña: con el máximo (100) cabe en bytes 
 })
 
 // El listado de cotizaciones (4.16-4a) con las 50.000 de la siembra (`sembrar-cotizaciones.sql`: la dueña 2/5, Ana 1/25): el máximo (100) de la dueña y de Ana, en una sola vista, sin
-// pedidos del navegador y con una página profunda que no pesa más.
+// pedidos del navegador y con una página profunda que no pesa más. T319: en las cuatro formas de la lista (tabla y tarjetas, agrupada y sin agrupar: en el celular
+// «tabla» también es tarjetas); la profunda, en la de fábrica (tarjetas agrupadas).
+const FORMAS_DE_LA_LISTA = [
+  { vista: 'tarjetas', agrupar: 'si', profunda: true },
+  { vista: 'tarjetas', agrupar: 'no', profunda: false },
+  { vista: 'tabla', agrupar: 'si', profunda: false },
+  { vista: 'tabla', agrupar: 'no', profunda: false },
+] as const
 for (const [quien, correo] of [
   ['la dueña («todos»)', DUENA],
   ['Ana («propios»)', ANA],
 ] as const) {
-  test(`listado de cotizaciones de ${quien}: con el máximo (${String(MAXIMO_DE_PAGINA_DE_COTIZACIONES)}) cabe en bytes y en nodos, y una página profunda no pesa más`, async ({
-    page,
-  }, info) => {
-    test.setTimeout(240_000)
-    await entrarConSesion(page, correo, CLAVE)
-    await fijarPreferencia(correo, null)
-    const pedidos = observar(page)
-    const maximo = MAXIMO_DE_PAGINA_DE_COTIZACIONES
-    const peso = await pesoDelDocumento(page, `/cotizaciones?por=${String(maximo)}`)
-    await esperarLista(page)
-    // La lista y los nombres llegan con el HTML del servidor: el navegador no le pide nada a la base ni ejecuta acciones.
-    expect(pedidos.aLaBase()).toBe(0)
-    expect(pedidos.acciones()).toBe(0)
-    await expect(filasDelListado(page)).toHaveCount(maximo)
-    const primera = await nodos(page)
-    notas(
-      info,
-      'listado de cotizaciones',
-      `${quien}: ${String(peso.crudo)} bytes (${String(peso.gzip)} comprimidos), ${String(primera)} nodos, ${String(maximo)} filas`,
-    )
-    expect(peso.gzip).toBeLessThan(BYTES_MAXIMOS_DEL_DOCUMENTO.cotizaciones)
-    expect(primera).toBeLessThan(NODOS_MAXIMOS.cotizaciones)
-    await sinScrollHorizontal(page)
-    // Una página profunda (10 «Siguiente»): las filas son 100 y el DOM no crece con la profundidad.
-    await pasarPaginas(page, 10)
-    await expect(filasDelListado(page)).toHaveCount(maximo)
-    const profunda = await nodos(page)
-    notas(
-      info,
-      'página profunda de cotizaciones',
-      `${quien}: ${String(profunda)} nodos (la primera ${String(primera)})`,
-    )
-    expect(profunda).toBeLessThanOrEqual(Math.ceil(primera * 1.15))
-    expect(parametrosDe(page).get('por')).toBe(String(maximo))
-  })
+  for (const forma of FORMAS_DE_LA_LISTA) {
+    const nombre = `${forma.vista}, ${forma.agrupar === 'si' ? 'agrupada' : 'sin agrupar'}`
+    test(`listado de cotizaciones de ${quien} (${nombre}): con el máximo (${String(MAXIMO_DE_PAGINA_DE_COTIZACIONES)}) cabe en bytes y en nodos${forma.profunda ? ', y una página profunda no pesa más' : ''}`, async ({
+      page,
+    }, info) => {
+      test.setTimeout(240_000)
+      await entrarConSesion(page, correo, CLAVE)
+      await fijarPreferencia(correo, null)
+      const pedidos = observar(page)
+      const maximo = MAXIMO_DE_PAGINA_DE_COTIZACIONES
+      const peso = await pesoDelDocumento(
+        page,
+        `/cotizaciones?por=${String(maximo)}&vista=${forma.vista}&agrupar=${forma.agrupar}`,
+        { tarjetas: forma.vista === 'tarjetas' },
+      )
+      await esperarLista(page)
+      // La lista y los nombres llegan con el HTML del servidor: el navegador no le pide nada a la base ni ejecuta acciones.
+      expect(pedidos.aLaBase()).toBe(0)
+      expect(pedidos.acciones()).toBe(0)
+      await expect(filasDelListado(page)).toHaveCount(maximo)
+      const primera = await nodos(page)
+      notas(
+        info,
+        `listado de cotizaciones (${nombre})`,
+        `${quien}: ${String(peso.crudo)} bytes (${String(peso.gzip)} comprimidos), ${String(primera)} nodos, ${String(maximo)} filas`,
+      )
+      expect(peso.gzip).toBeLessThan(BYTES_MAXIMOS_DEL_DOCUMENTO.cotizaciones)
+      expect(primera).toBeLessThan(NODOS_MAXIMOS.cotizaciones)
+      await sinScrollHorizontal(page)
+      if (!forma.profunda) {
+        return
+      }
+      // Una página profunda (10 «Siguiente»): las filas son 100 y el DOM no crece con la profundidad.
+      await pasarPaginas(page, 10)
+      await expect(filasDelListado(page)).toHaveCount(maximo)
+      const profunda = await nodos(page)
+      notas(
+        info,
+        'página profunda de cotizaciones',
+        `${quien}: ${String(profunda)} nodos (la primera ${String(primera)})`,
+      )
+      expect(profunda).toBeLessThanOrEqual(Math.ceil(primera * 1.15))
+      expect(parametrosDe(page).get('por')).toBe(String(maximo))
+    })
+  }
 }
