@@ -85,12 +85,8 @@
   --color-celda-atencion-borde: #f0b27a;
 
   /* --- Sobre una foto (el chip del lote de la tarjeta de la lista) — fijos en ambos temas ----- */
-  --color-velo-de-foto: rgba(
-    16,
-    20,
-    32,
-    0.72
-  ); /* oscuro translúcido: se lee sobre cualquier foto */
+  /* oscuro translúcido: se lee sobre cualquier foto */
+  --color-velo-de-foto: rgba(16, 20, 32, 0.72);
   --color-sobre-velo: #ffffff;
 
   /* --- Visitados / último abierto -------------------------------------- */

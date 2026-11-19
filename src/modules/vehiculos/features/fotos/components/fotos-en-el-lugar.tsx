@@ -1,6 +1,6 @@
 'use client'
 
-import { CarFrontIcon } from 'lucide-react'
+import { CarIcon } from 'lucide-react'
 import { useCallback } from 'react'
 import { cn } from 'cn'
 import { urlPublica } from '@/shared/lib/almacen'
@@ -33,14 +33,16 @@ export function FotosEnElLugar({ vehiculo, modo = 'carrusel', clave, puntos, cla
     }))
   }, [vehiculoId])
   return (
+    // Una portada nueva (otra foto elegida como portada) vuelve a montar el carrusel: lo que ya había leído viene en el orden viejo.
     <CarruselEnElLugar
+      key={portada ?? ''}
       clave={clave ?? vehiculoId}
       titulo={titulo}
       portada={portada ? urlPublica('vehiculos', portada) : null}
       cargar={cargar}
       modo={modo}
       puntos={puntos}
-      vacio={<CarFrontIcon className="size-5 text-(--color-ink-faint)" />}
+      vacio={<CarIcon className="size-5 text-(--color-ink-faint)" />}
       className={cn('aspect-4/3 rounded-(--radius-sm) bg-(--color-paper-dim)', className)}
     />
   )

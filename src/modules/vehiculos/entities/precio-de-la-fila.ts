@@ -59,3 +59,8 @@ export function precioDeLaFila(
   const final = vehiculo.estadoSubasta === 'terminada' || vehiculo.estadoSubasta === 'vendida'
   return { tipo: 'puja', valor, final }
 }
+
+// El rótulo completo, para la tarjeta de la lista: ahí cada tarjeta dice si la puja es la actual o la final.
+export function rotuloDeLaPuja(final: boolean): string {
+  return final ? 'Puja final' : 'Puja actual'
+}
