@@ -132,6 +132,10 @@ describe('`?seccion=fotos` abre el visor', () => {
     expect(destinoDeLaSeccionFotos(ID, { visor: ID, foto: '1' })).toBeNull()
   })
 
+  it('con un id que no es un uuid no redirige (no se interpola en la ruta)', () => {
+    expect(destinoDeLaSeccionFotos('../../perfil?x=', { seccion: 'fotos' })).toBeNull()
+  })
+
   it('«Fotos» ya no es un bloque: el ancla no lleva a ningún lado', () => {
     expect(
       anclaDeLaUrl(

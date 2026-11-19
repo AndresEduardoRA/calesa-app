@@ -1,6 +1,7 @@
 // Los bloques de la ficha de un vehículo (docs/UX.md › Vehículo), en el orden de su índice: cada uno se dibuja sólo con su permiso y, si no
 // está, tampoco sale en el índice. «Ficha» siempre: el índice nunca queda vacío. Las fotos van a la izquierda (la tira bajo el carrusel) y se editan
 // en «Editar imágenes». Lo leen el servidor (la página) y el test: nada de cliente acá.
+import { z } from 'zod'
 import { puede, type Permisos } from '@/shared/lib/permisos'
 
 export const BLOQUES_DE_LA_FICHA = [
@@ -88,6 +89,10 @@ export function destinoDeLaSeccionFotos(
   vehiculoId: string,
   parametros: Readonly<Record<string, string | string[] | undefined>>,
 ): string | null {
+  // Un id que no es un uuid no se interpola en la ruta (podría traer `../` o `?`): la página ya dice «No existe o no tienes acceso».
+  if (!z.guid().safeParse(vehiculoId).success) {
+    return null
+  }
   const seccion = parametros[CLAVE_DE_SECCION]
   const pide = Array.isArray(seccion)
     ? seccion.includes(SECCION_DE_FOTOS)
