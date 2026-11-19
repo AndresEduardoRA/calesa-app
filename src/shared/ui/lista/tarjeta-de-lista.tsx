@@ -15,6 +15,8 @@ type Props = DestinoDeLaFila & {
   // El «⋯» y, si la lista las tiene, la casilla: objetivos propios de la tarjeta, fuera de la zona que abre. Van en su esquina de
   // arriba a la derecha (`<EsquinaDeAcciones>`); una tarjeta con foto arriba no los pasa acá: los pone sobre la foto.
   acciones?: ReactNode
+  // Se estira al alto de su celda (una grilla con filas iguales, `auto-rows-fr`): todas las tarjetas de la lista miden lo mismo.
+  estirada?: boolean
   children: ReactNode
 }
 
@@ -29,6 +31,7 @@ export function TarjetaDeLista({
   abierta = false,
   idDeVisto,
   acciones,
+  estirada = false,
   children,
 }: Props) {
   const visto = useVistoDeLista(idDeVisto)
@@ -40,7 +43,8 @@ export function TarjetaDeLista({
         data-visto={visto ?? undefined}
         className={cn(
           CLASES_DE_VISTO,
-          '@container flex items-start rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) has-[[data-abre-resumen]:focus-visible]:bg-(--color-surface-2)',
+          '@container flex rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) has-[[data-abre-resumen]:focus-visible]:bg-(--color-surface-2)',
+          estirada ? 'h-full items-stretch' : 'items-start',
           (alAbrir ?? href) !== undefined && 'cursor-pointer',
           abierta && 'bg-(--color-surface-2)',
         )}

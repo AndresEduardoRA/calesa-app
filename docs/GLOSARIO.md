@@ -112,7 +112,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `vehiculos_inventario()` (por rutas, filtros en SQL), con «todos» por PostgREST (`fuenteDelInventario()`).
 - **Lote (de mover)** — `cambiar_fase_lote()` / `<DrawerDelLote>`, `?panel=lote`: 1 a 200 vehículos de una fase movidos a otra con nota
   común, cada uno por sí mismo (resultado parcial). No es el «lote de papelera» ni el «lote de subasta».
-- **Lote de subasta** — `vehiculos.lote` + `plataforma`: identificador en la subasta (Copart/IAAI). No es el lote de papelera.
+- **Lote de subasta** — `vehiculos.lote` + `plataforma`: identificador en la subasta (Copart/IAAI). No es el lote de papelera. En `/vehiculos` es el chip
+  «Lote N» sobre la foto de la tarjeta de la lista (`<ChipDelLote>`, `loteALaVista()`) y la columna «Lote» de la tabla, sólo en un origen de subasta.
 - **Foto** — `vehiculos_imagenes` / `Foto`, `<SeccionDeFotos>`: una imagen de un vehículo (hasta 24).
 - **Visor de imágenes** — `<CarruselEnElLugar>`, `useVisorDeGaleria()`, `?visor=<clave>&foto=<n>`: las fotos de una entidad en grande,
   con flechas, ← →, «3 de 12» y miniaturas; en su lugar, la portada y, al acercarse, el resto (una sola lectura).
@@ -361,7 +362,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Preventa / Final** — `clase_cotizacion`: borrador comercial / la que cierra el vehículo (una activa por vehículo).
 - **Cotización aprobada** — `cotizaciones_aprobadas`, `cotizacion_aprobar()`, `cotizaciones.aprobar` (por origen): la elegida de un vehículo, una sola por
   vehículo (la clave primaria es el vehículo). Nace aprobada la primera activa; si la aprobada se invalida o va a la papelera pasa a la más antigua que sigue
-  activa. No es la **Final** (marcar una no aprueba ni al revés). Se ve como la insignia «Aprobada» y como la columna «Cotización aprobada» de `/vehiculos`.
+  activa. No es la **Final** (marcar una no aprueba ni al revés). Se ve como la insignia «Aprobada» y, en `/vehiculos`, como el **Costo estimado**.
+- **Costo estimado** — `ROTULO_DEL_COSTO_ESTIMADO`, `costoEstimadoDe()` (`vehiculos/entities/cotizacion-aprobada-de-la-fila.ts`), `cotizaciones_aprobadas_de_vehiculos()`:
+  la cotización aprobada de un vehículo en `/vehiculos` (columna de la tabla y fila de la tarjeta de la lista): su primer resultado con su moneda y el modo de tipo
+  de cambio de la cotización («US$27.999 · Unificado»), enlazado a ella. No son los campos de apibara «Costo estimado desde / hasta / mediano (USD)».
 - **De este vehículo** — `cotizaciones_de_este_vehiculo()`, `pantallas/aprobada-de-este-vehiculo.ts` (`DeEsteVehiculo`): el bloque de una cotización (su
   página y su resumen en `/cotizaciones`) con las otras del mismo vehículo, la aprobada primero y «Aprobar esta» en cada una; la que se mira va marcada
   **«Esta»**. No es el historial del vehículo (el panel de la hoja) ni el bloque «Cotizaciones» de la ficha del vehículo.
@@ -823,6 +827,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Puja actual** — `atributos.<campo de pricing.current_bid_usd>` / `columnaDePrecio()`, `precioDeLaFila()`: lo que va de la subasta, en
   USD. En un origen de subasta con ese campo, la columna «Precio» del inventario se llama así; nunca es el precio del vehículo.
 - **Puja final** — la puja actual de una subasta `terminada` o `vendida`: la celda lleva «final» y la tarjeta dice «Puja final».
+- **Compra directa** — `atributos.<campo de pricing.buy_now_usd>` / `columnaDeCompraDirecta()`, `compraDirectaDeLaFila()` (`vehiculos/entities/compra-directa-de-la-fila.ts`):
+  el precio «Buy it now» de una subasta, en USD: el valor de «Compra inmediata (USD)» de apibara, buscado por su ruta de apibara y no por la clave del campo.
+  Columna de la tabla y fila de la tarjeta de la lista de `/vehiculos`, sólo en un origen de subasta. No es el origen «Compra dealer USA».
 - **Respuesta guardada** — `vehiculos.apibara_raw` / `leerSubasta().raw`: lo que apibara devolvió, entero; sólo el servidor la lee.
 - **Consulta de apibara** — `apibara_consultas` / `apibara_consulta_guardar()`, `FichaDeApibara.consulta`: cada respuesta de la edge function,
   a nombre de quien consultó.

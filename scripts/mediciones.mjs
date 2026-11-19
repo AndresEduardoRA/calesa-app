@@ -188,7 +188,7 @@ export const MEDICIONES_CON_VOLUMEN = [
   ],
   [
     'supabase/tests/medir-cotizaciones-aprobadas.sql',
-    'La cotización aprobada con 50.000 cotizaciones, como authenticated y con el plan genérico: la lectura de 100 ids por vehículo (clave primaria) y por cotización (único) de la dueña y de Ana, sin recorrer la tabla (ms y buffers del EXPLAIN); y la reposición al confirmar sobre un vehículo con 100 y otro con 1.000 cotizaciones (los bloques de cotizaciones no crecen)',
+    'La cotización aprobada con 50.000 cotizaciones, como authenticated y con el plan genérico: la lectura de 100 ids por vehículo (`cotizaciones_aprobadas_de_vehiculos()`, por la clave primaria, con una llamada a `_nombre_del_modo()` por versión y modo) y por cotización (único) de la dueña y de Ana, sin recorrer la tabla (ms y buffers del EXPLAIN); y la reposición al confirmar sobre un vehículo con 100 y otro con 1.000 cotizaciones (los bloques de cotizaciones no crecen)',
     'mediana de 5 de 7 corridas',
   ],
   [

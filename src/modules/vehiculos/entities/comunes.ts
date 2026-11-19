@@ -119,6 +119,17 @@ export function camposComunes(tipoDeOrigen: 'subasta' | 'manual'): CampoComun[] 
   return TODOS.filter((campo) => tipoDeOrigen === 'subasta' || !campo.soloSubasta)
 }
 
+// La etiqueta de un dato común, para nombrarlo fuera de la ficha (la columna «Lote» y el chip de la tarjeta de la lista).
+export function etiquetaDeComun(clave: ClaveComun): string {
+  return TODOS.find((campo) => campo.clave === clave)?.etiqueta ?? clave
+}
+
+// El lote para mostrar: sin espacios alrededor, o nulo si no hay (vacío o sólo espacios): ni chip ni texto, la celda dice «—».
+export function loteALaVista(lote: string | null): string | null {
+  const limpio = lote?.trim() ?? ''
+  return limpio === '' ? null : limpio
+}
+
 const VACIO: ValorMostrado = { tipo: 'vacio' }
 
 type Contexto = { categorias: readonly CategoriaDeVehiculo[]; locale?: string }
