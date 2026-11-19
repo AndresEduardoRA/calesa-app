@@ -462,9 +462,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     («Qué se calcula.»): `?panel=publicar-formula`, `revertir-formula&version=<id>`, `descartar-borrador`, `editar-formula`. «Hoja» («Cómo
     se ve y se llena la cotización.», el diseño de la hoja): `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe
     el cliente.»): `?panel=publicar-tarjeta|descartar-plantilla`, con la vista previa al costado desde `xl`. «Tablas» («Valores de
-    referencia: depreciación, transporte…»): `?tabla=<id>` (el editor) y `?panel=publicar-tabla`. `/<origen>` sola abre «Fórmula». Un
+    referencia: depreciación, transporte…»): `?tabla=<id>` (el editor) y `?panel=publicar-tabla`. `/<origen>` sola abre «Fórmula» (`next.config.ts`). Un
     `<origen>` que no es un uuid, no existe o no es suyo abre la misma pestaña del primero que configura (sin error).
-  - **General** (`/configuracion/cotizacion/general/colores|niveles|vigencia`; `/general` abre la primera que abre): «Colores»
+  - **General** (`/configuracion/cotizacion/general/colores|niveles|vigencia`; `/general` va a Colores, que sin su permiso lleva a la primera que abre): «Colores»
     (`cotizaciones.configurar`; `?panel=nuevo-tono|editar-tono|eliminar-tono&tono=<id>`), «Niveles» (`equipo.roles.ver|gestionar`;
     `?panel=nuevo-nivel|renombrar-nivel|eliminar-nivel&nivel=<id>`) y «Vigencia» (`cotizaciones.configurar`), con sus pestañas (sin barra si
     sólo ve una).
