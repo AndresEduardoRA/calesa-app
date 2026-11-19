@@ -9,6 +9,13 @@ export const cabeceraDeLaGuardada = (page: Page): Locator =>
 export const botonDelMenuDeLaGuardada = (page: Page): Locator =>
   cabeceraDeLaGuardada(page).getByRole('button', { name: /^Más acciones de N\.º/ })
 
+// La guardada ya hidratada, para quien la puede guardar: «Guardar» se dibuja en la cabecera por un portal recién al hidratar (un clic antes se pierde).
+export async function esperarLaGuardadaHidratada(page: Page): Promise<void> {
+  await expect(
+    cabeceraDeLaGuardada(page).getByRole('button', { name: 'Guardar', exact: true }),
+  ).toBeVisible()
+}
+
 // Abre el «⋯» (si no está abierto) y lo devuelve.
 export async function abrirElMenu(page: Page): Promise<Locator> {
   const menu = page.getByRole('menu')
