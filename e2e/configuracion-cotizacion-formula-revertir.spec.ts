@@ -49,7 +49,10 @@ test.afterAll(async () => {
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}${resto}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  // Con `?panel=` el modal puede montarse antes de mirar: deja la página detrás con `aria-hidden`, y el título sigue dibujado.
+  await expect(
+    page.getByRole('heading', { name: 'Fórmula', level: 1, includeHidden: true }),
+  ).toBeVisible()
 }
 
 const modal = (page: Page, version: number) =>
