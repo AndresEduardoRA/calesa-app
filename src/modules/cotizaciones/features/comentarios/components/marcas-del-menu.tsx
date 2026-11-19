@@ -1,21 +1,13 @@
 'use client'
 
-import { FlagIcon } from 'lucide-react'
-import { buttonVariants } from '@/shared/ui/button'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
+import { ETIQUETA_DE_REPORTAR_SI_YA_REPORTO } from '../../../entities/acciones-de-cotizacion'
 import { PANEL_REPORTAR } from '../../../entities/comentarios/marcas-url'
 import type { AccionDeModerar } from '../../../entities/comentarios/moderacion'
+import { useAporteAlMenu, type AporteAlMenu } from '../../hoja/components/menu-de-la-guardada'
 import { useModeracionPorUrl } from '../hooks/use-moderacion-por-url'
 import { ConfirmarModeracionDiferido, ModalDeReportarDiferido } from './diferidos-de-marcas'
-
-const ETIQUETA_DE_LA_ACCION: Record<AccionDeModerar, string> = {
-  invalidar: 'Invalidar…',
-  descartar: 'Descartar los reportes…',
-  reactivar: 'Reactivar…',
-}
-
-const BOTON = buttonVariants({ variant: 'outline', className: 'min-h-11 md:min-h-9' })
 
 type Props = {
   cotizacionId: string
@@ -28,43 +20,38 @@ type Props = {
   acciones: readonly AccionDeModerar[]
 }
 
-// «Reportar…» y las acciones de moderar de la guardada (4.27-4). Cada una abre su diálogo por la URL (`?panel=reportar`, `?panel=moderar&accion=…`); el modal y el
-// Confirmar se cargan la primera vez que se abren.
-export function BotonesDeMarcas({
-  cotizacionId,
-  numero,
-  actualizadoEn,
-  miMotivo,
-  acciones,
-}: Props) {
+// «Reportar…» y las acciones de moderar de la guardada (4.27-4): sus líneas en el «⋯» de la cabecera y sus diálogos. Cada una abre el suyo por la URL (`?panel=reportar`,
+// `?panel=moderar&accion=…`); el modal y el Confirmar se cargan la primera vez que se abren.
+export function MarcasDelMenu({ cotizacionId, numero, actualizadoEn, miMotivo, acciones }: Props) {
   const reportar = usePanelPorUrl(PANEL_REPORTAR)
   const moderacion = useModeracionPorUrl(acciones)
   const reportarMontado = useAbiertoAlgunaVez(reportar.abierto)
   const moderarMontado = useAbiertoAlgunaVez(moderacion.accion !== null)
+  const aporte: AporteAlMenu = {
+    reportar: {
+      tipo: 'accion',
+      abre: true,
+      ...(miMotivo === null ? {} : { etiqueta: ETIQUETA_DE_REPORTAR_SI_YA_REPORTO }),
+      alElegir: () => {
+        reportar.abrir()
+      },
+    },
+    ...Object.fromEntries(
+      acciones.map((accion) => [
+        accion,
+        {
+          tipo: 'accion',
+          abre: true,
+          alElegir: () => {
+            moderacion.abrir(accion)
+          },
+        },
+      ]),
+    ),
+  }
+  useAporteAlMenu(aporte)
   return (
     <>
-      <button
-        type="button"
-        className={BOTON}
-        onClick={() => {
-          reportar.abrir()
-        }}
-      >
-        <FlagIcon aria-hidden />
-        {miMotivo === null ? 'Reportar…' : 'Reportaste esta cotización…'}
-      </button>
-      {acciones.map((accion) => (
-        <button
-          key={accion}
-          type="button"
-          className={BOTON}
-          onClick={() => {
-            moderacion.abrir(accion)
-          }}
-        >
-          {ETIQUETA_DE_LA_ACCION[accion]}
-        </button>
-      ))}
       {reportarMontado ? (
         <ModalDeReportarDiferido
           abierto={reportar.abierto}

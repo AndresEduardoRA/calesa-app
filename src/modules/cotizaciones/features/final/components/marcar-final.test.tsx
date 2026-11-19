@@ -20,6 +20,12 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: h.refresh }) })
 vi.mock('../actions/marcar-final', () => ({ marcarFinal: h.marcar }))
 vi.mock('@/shared/ui/toasts', () => h.toasts)
 
+import {
+  ConElMenu,
+  abrirElMenu,
+  lineaAlAbrir,
+  lineaDelMenu,
+} from '../../hoja/components/menu-de-la-guardada/menu-de-la-guardada.soporte'
 import { marcarLaFinal } from '../hooks/marcar-la-final'
 import { HUECOS_DE_FINAL_EN_LA_GUARDADA } from './huecos-en-la-guardada'
 
@@ -72,17 +78,19 @@ function dibujar(
         actualizaciones.push(evento)
       }}
     >
-      <Acciones
-        cotizacion={opciones.cotizacion ?? cotizacion()}
-        puedeGuardar={opciones.puedeGuardar ?? true}
-        vehiculo={null}
-        permisos={opciones.permisos ?? gestiona()}
-      />
+      <ConElMenu>
+        <Acciones
+          cotizacion={opciones.cotizacion ?? cotizacion()}
+          puedeGuardar={opciones.puedeGuardar ?? true}
+          vehiculo={null}
+          permisos={opciones.permisos ?? gestiona()}
+        />
+      </ConElMenu>
     </NuqsTestingAdapter>,
   )
 }
 
-const boton = () => screen.queryByRole('button', { name: 'Marcar final' })
+const linea = () => lineaAlAbrir('Marcar final…')
 const dialogo = () => screen.findByRole('dialog')
 const confirmar = async (veces = 1) => {
   const d = await dialogo()
@@ -101,41 +109,44 @@ beforeEach(() => {
   h.toasts.avisarExito.mockImplementation(() => h.orden.push('aviso'))
 })
 
-describe('«Marcar final» en la cabecera de la guardada: quién lo ve', () => {
+describe('«Marcar final…» en el «⋯» de la guardada: quién lo ve', () => {
   it('llena `Acciones` y no `Debajo`', () => {
     expect(HUECOS_DE_FINAL_EN_LA_GUARDADA.Acciones).toBeTypeOf('function')
     expect(HUECOS_DE_FINAL_EN_LA_GUARDADA.Debajo).toBeUndefined()
   })
 
-  it('lo ve en una preventa quien gestiona finales en su origen', () => {
+  it('lo ve en una preventa quien gestiona finales en su origen', async () => {
     dibujar()
-    expect(boton()).toBeTruthy()
+    expect(await linea()).toBeTruthy()
   })
 
-  it('nada con una final, sin la clave o con la clave de otro origen', () => {
+  it('nada con una final, sin la clave o con la clave de otro origen', async () => {
     for (const caso of [
       { cotizacion: cotizacion({ clase: 'final' }) },
       { permisos: [] as Permisos },
       { permisos: gestiona(OTRO_ORIGEN) },
     ]) {
-      const { container } = dibujar(caso)
-      expect(container.textContent).toBe('')
+      dibujar(caso)
+      await abrirElMenu()
+      expect(lineaDelMenu('Marcar final…')).toBeNull()
       cleanup()
     }
   })
 })
 
 describe('apagado con su motivo', () => {
-  it('sin vehículo, a quien puede guardarla: elige y guarda', () => {
+  it('sin vehículo, a quien puede guardarla: elige y guarda', async () => {
     dibujar({ cotizacion: cotizacion({ vehiculoId: null }) })
-    const b = boton() as HTMLButtonElement
-    expect(b.disabled).toBe(true)
-    const motivo = document.getElementById(b.getAttribute('aria-describedby') ?? '')
-    expect(motivo?.textContent).toBe('Para marcarla final, elige el vehículo y guarda.')
+    const l = await linea()
+    expect(l?.getAttribute('aria-disabled')).toBe('true')
+    expect(l?.nextElementSibling?.textContent).toBe(
+      'Para marcarla final, elige el vehículo y guarda.',
+    )
   })
 
-  it('sin lead, a quien no puede guardarla: que se lo pida a quien la cotizó', () => {
+  it('sin lead, a quien no puede guardarla: que se lo pida a quien la cotizó', async () => {
     dibujar({ cotizacion: cotizacion({ leadId: null }), puedeGuardar: false })
+    await abrirElMenu()
     expect(screen.getByText('Para marcarla final le falta el cliente: pídeselo a quien la cotizó.'))
   })
 
@@ -153,9 +164,9 @@ describe('apagado con su motivo', () => {
 })
 
 describe('el diálogo', () => {
-  it('el clic escribe ?panel=marcar-final', async () => {
+  it('elegirlo escribe ?panel=marcar-final', async () => {
     dibujar()
-    fireEvent.click(boton() as HTMLElement)
+    fireEvent.click((await linea()) as HTMLElement)
     await waitFor(() => expect(actualizaciones.at(-1)?.queryString).toBe('?panel=marcar-final'))
   })
 

@@ -10,7 +10,7 @@ export const CONFIRMAR_CON_URL_DE_LA_PAPELERA: Record<string, ConfirmarConUrl> =
   },
   // Marcar final la guardada (4.25-2): `?panel=marcar-final`.
   'src/modules/cotizaciones/features/final/components/confirmar-marcar-final.tsx': {
-    abre: 'src/modules/cotizaciones/features/final/components/boton-marcar-final.tsx',
+    abre: 'src/modules/cotizaciones/features/final/components/marcar-final-del-menu.tsx',
     senal: 'PANEL_MARCAR_FINAL',
   },
 }

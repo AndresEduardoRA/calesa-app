@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Permisos } from '@/shared/lib/permisos'
 import type { CotizacionDeLaHoja } from '../../../entities/hoja-de-una-guardada'
@@ -23,6 +23,12 @@ vi.mock('../actions/restaurar-de-papelera', () => ({
 }))
 vi.mock('@/shared/ui/toasts', () => h.toasts)
 
+import {
+  ConElMenu,
+  abrirElMenu,
+  lineaAlAbrir,
+  lineaDelMenu,
+} from '../../hoja/components/menu-de-la-guardada/menu-de-la-guardada.soporte'
 import { HUECOS_DE_PAPELERA_EN_LA_GUARDADA } from './huecos-en-la-guardada'
 
 afterEach(cleanup)
@@ -59,16 +65,21 @@ function dibujar(clase: 'preventa' | 'final', puedeGuardar: boolean, permisos: P
     throw new Error('El área papelera no llena `Acciones`')
   }
   return render(
-    <Acciones
-      cotizacion={cotizacion(clase)}
-      puedeGuardar={puedeGuardar}
-      permisos={permisos}
-      vehiculo={null}
-    />,
+    <ConElMenu numero={4}>
+      <Acciones
+        cotizacion={cotizacion(clase)}
+        puedeGuardar={puedeGuardar}
+        permisos={permisos}
+        vehiculo={null}
+      />
+    </ConElMenu>,
   )
 }
 
-const boton = () => screen.queryByRole('button', { name: 'Enviar a la papelera' })
+// La línea del «⋯», abriéndolo si hace falta.
+async function linea() {
+  return lineaDelMenu('Enviar a la papelera') ?? (await lineaAlAbrir('Enviar a la papelera', 4))
+}
 
 const enviada = {
   lote: LOTE,
@@ -84,27 +95,28 @@ beforeEach(() => {
   for (const f of Object.values(h.toasts)) f.mockReset()
 })
 
-describe('«Enviar a la papelera» en la cabecera de la guardada: quién lo ve', () => {
+describe('«Enviar a la papelera» en el «⋯» de la guardada: quién lo ve', () => {
   it('llena `Acciones` y no `Debajo`', () => {
     expect(HUECOS_DE_PAPELERA_EN_LA_GUARDADA.Acciones).toBeTypeOf('function')
     expect(HUECOS_DE_PAPELERA_EN_LA_GUARDADA.Debajo).toBeUndefined()
   })
 
-  it('lo ve quien puede guardarla, y en una preventa quien modera', () => {
+  it('lo ve quien puede guardarla, y en una preventa quien modera', async () => {
     dibujar('final', true, con('cotizaciones.ver'))
-    expect(boton()).toBeTruthy()
+    expect(await linea()).toBeTruthy()
     cleanup()
     dibujar('preventa', false, con('cotizaciones.moderar'))
-    expect(boton()).toBeTruthy()
+    expect(await linea()).toBeTruthy()
   })
 
-  it('no lo ve quien sólo la ve, ni en una final quien sólo modera', () => {
-    const { container } = dibujar('preventa', false, con('cotizaciones.ver'))
-    expect(boton()).toBeNull()
-    expect(container.textContent).toBe('')
+  it('no lo ve quien sólo la ve, ni en una final quien sólo modera', async () => {
+    dibujar('preventa', false, con('cotizaciones.ver'))
+    await abrirElMenu(4)
+    expect(lineaDelMenu('Enviar a la papelera')).toBeNull()
     cleanup()
     dibujar('final', false, con('cotizaciones.moderar'))
-    expect(boton()).toBeNull()
+    await abrirElMenu(4)
+    expect(lineaDelMenu('Enviar a la papelera')).toBeNull()
   })
 })
 
@@ -112,7 +124,7 @@ describe('enviar la guardada a la papelera', () => {
   it('envía la versión de la página tal cual, lleva al listado y ofrece «Deshacer»', async () => {
     h.enviar.mockResolvedValue({ data: { ok: true, data: enviada } })
     dibujar('preventa', true, con('cotizaciones.editar'))
-    fireEvent.click(boton() as HTMLElement)
+    fireEvent.click((await linea()) as HTMLElement)
     await waitFor(() => expect(h.push).toHaveBeenCalledWith('/cotizaciones'))
     expect(h.enviar).toHaveBeenCalledWith({ cotizaciones: [{ id: ID, actualizadoEn: VERSION }] })
     expect(h.toasts.avisarConDeshacer).toHaveBeenCalledWith(
@@ -134,7 +146,7 @@ describe('enviar la guardada a la papelera', () => {
       },
     })
     dibujar('preventa', true, con('cotizaciones.editar'))
-    fireEvent.click(boton() as HTMLElement)
+    fireEvent.click((await linea()) as HTMLElement)
     await waitFor(() =>
       expect(h.toasts.avisarError).toHaveBeenCalledWith({
         codigo: 'conflicto',
@@ -148,7 +160,7 @@ describe('enviar la guardada a la papelera', () => {
   it('sin red avisa y se queda', async () => {
     h.enviar.mockRejectedValue(new Error('sin red'))
     dibujar('preventa', true, con('cotizaciones.editar'))
-    fireEvent.click(boton() as HTMLElement)
+    fireEvent.click((await linea()) as HTMLElement)
     await waitFor(() => expect(h.toasts.avisarError).toHaveBeenCalled())
     expect(h.push).not.toHaveBeenCalled()
   })
@@ -157,10 +169,14 @@ describe('enviar la guardada a la papelera', () => {
     let responder: (valor: unknown) => void = () => undefined
     h.enviar.mockReturnValue(new Promise((r) => (responder = r)))
     dibujar('preventa', true, con('cotizaciones.editar'))
-    fireEvent.click(boton() as HTMLElement)
-    await waitFor(() => expect((boton() as HTMLButtonElement).disabled).toBe(true))
+    fireEvent.click((await linea()) as HTMLElement)
+    await waitFor(async () => {
+      expect((await linea())?.getAttribute('aria-disabled')).toBe('true')
+    })
     responder({ data: { ok: false, error: { codigo: 'regla', mensaje: 'No.' } } })
-    await waitFor(() => expect((boton() as HTMLButtonElement).disabled).toBe(false))
+    await waitFor(async () => {
+      expect((await linea())?.getAttribute('aria-disabled')).toBeNull()
+    })
     expect(h.toasts.avisarError).toHaveBeenCalledWith({ codigo: 'regla', mensaje: 'No.' })
   })
 })
@@ -180,7 +196,7 @@ describe('«Deshacer» en el aviso', () => {
       },
     })
     dibujar('preventa', true, con('cotizaciones.editar'))
-    fireEvent.click(boton() as HTMLElement)
+    fireEvent.click((await linea()) as HTMLElement)
     await waitFor(() => expect(h.toasts.avisarConDeshacer).toHaveBeenCalled())
     const deshacer = h.toasts.avisarConDeshacer.mock.calls[0]?.[1] as () => void
     deshacer()
@@ -207,7 +223,7 @@ describe('«Deshacer» en el aviso', () => {
       },
     })
     dibujar('preventa', true, con('cotizaciones.editar'))
-    fireEvent.click(boton() as HTMLElement)
+    fireEvent.click((await linea()) as HTMLElement)
     await waitFor(() => expect(h.toasts.avisarConDeshacer).toHaveBeenCalled())
     ;(h.toasts.avisarConDeshacer.mock.calls[0]?.[1] as () => void)()
     await waitFor(() =>
