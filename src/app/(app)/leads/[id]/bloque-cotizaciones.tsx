@@ -1,3 +1,4 @@
+import { cn } from 'cn'
 import type { Route } from 'next'
 import Link from 'next/link'
 import { CotizacionesDelLead } from '@/modules/cotizaciones/pantallas/lead'
@@ -26,11 +27,11 @@ export function BloqueCotizacionesDelLead({ leadId, cotizar }: Props) {
           cotizar === null ? null : (
             <Link
               href={cotizar as Route}
-              className={buttonVariants({
-                variant: 'outline',
-                size: 'sm',
-                className: 'min-h-11 md:min-h-8',
-              })}
+              // Con `cn`: sin él, el `border-transparent` de la base le gana al borde de «outline» y el enlace se ve sin borde.
+              className={cn(
+                buttonVariants({ variant: 'outline', size: 'sm' }),
+                'min-h-11 md:min-h-8',
+              )}
             >
               Cotizar
             </Link>
