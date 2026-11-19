@@ -322,10 +322,11 @@ test('E2E sin red: el índice sigue saltando y «Cotizaciones» lo dice', async 
   await context.setOffline(true)
   await indice(page).getByRole('link', { name: 'Cotizaciones' }).click()
   await expect(titulo(page, 'Cotizaciones')).toBeFocused()
+  // Con el código ya cargado, el error sin red es de la lectura: postgrest-js reintenta un GET tres veces (1, 2 y 4 s) antes de devolverlo.
   await expect(
     region(page, 'Cotizaciones').getByText(
       /Sin conexión\. No se pudo abrir esto\.|No pudimos cargar «Cotizaciones»\./,
     ),
-  ).toBeVisible()
+  ).toBeVisible({ timeout: 12_000 })
   await context.setOffline(false)
 })
