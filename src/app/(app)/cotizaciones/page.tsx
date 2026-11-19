@@ -2,44 +2,41 @@ import type { Metadata } from 'next'
 import { connection } from 'next/server'
 import { Suspense, type ReactNode } from 'react'
 import {
+  CLAVE_DE_AGRUPAR,
   MAXIMO_DE_PAGINA_DE_COTIZACIONES,
+  agruparDelListado,
   esquemaDelListado,
-  filasConNombres,
   idDelResumen,
-  idsDe,
-  leerAprobadasDeCotizaciones,
-  leerAutoresDeCotizaciones,
-  leerListadoDeCotizaciones,
-  leerUnaDelListado,
   origenParaNueva,
   pedidoDelListado,
   rutaDeLaHoja,
   CLAVE_DE_LEAD,
   CLAVE_DE_RESUMEN_DE_COTIZACION,
   CLAVE_DE_VEHICULO,
-  type FilaDelListado,
-  type LecturaDelServidor,
+  type PedidoDelGrupo,
+  type PedidoDelListado,
 } from '@/modules/cotizaciones'
 import { HUECOS_DE_PAPELERA_EN_EL_LISTADO } from '@/modules/cotizaciones/pantallas/papelera-listado'
 import { leerVistas, requerirSesion } from '@/modules/equipo'
 import { MarcasDeVistoDeLaPagina } from '@/modules/equipo/pantallas/marcas-de-visto'
-import { leerNombresDeLeads } from '@/modules/leads'
 import { getOrigenes } from '@/modules/origenes'
-import { leerTitulosDeVehiculos, leerVehiculo } from '@/modules/vehiculos'
+import { leerVehiculo } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
 import { CLAVE_DE_CURSOR, CLAVE_DE_POR_PAGINA, leerFiltros } from '@/shared/lib/filtros'
 import { leerCursor, leerPorPagina, tamanoDePagina, tamanosHasta } from '@/shared/lib/paginacion'
 import { origenesCon, puede, type Permisos } from '@/shared/lib/permisos'
-import { unParametro } from '@/shared/lib/rutas'
+import { RUTAS, unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { EsqueletoListado } from '@/shared/ui/esqueletos'
+import { leerLaDelResumen, leerLaPagina, nombreDelLead } from './lecturas-de-la-pagina'
 import { ListadoConAcciones } from './listado-con-acciones'
 import { menusDeLaPagina, quienesDelResumen } from './menus-de-la-pagina'
 
 export const metadata: Metadata = { title: 'Cotizaciones' }
 
-// Las cotizaciones que quien mira ve (`docs/UX.md` › «Cotizaciones»): una página por cursor con sus filtros en la URL. Lo que se ve lo decide la RLS (`cotizaciones_listado()` es invocadora);
-// acá sólo se arma el pedido, se leen los nombres de la página y se dibuja.
+// Las cotizaciones que quien mira ve (`docs/UX.md` › «Cotizaciones»): una página por cursor con sus filtros en la URL, agrupada por vehículo salvo que se apague. Lo que se
+// ve lo decide la RLS (`cotizaciones_listado()` y `cotizaciones_listado_por_vehiculo()` son invocadoras); acá sólo se arma el pedido, se leen los nombres de la página y
+// se dibuja.
 export default function PaginaDeCotizaciones({ searchParams }: PageProps<'/cotizaciones'>) {
   return (
     <Suspense fallback={<EsqueletoListado filas={8} columnas={8} />}>
@@ -48,50 +45,15 @@ export default function PaginaDeCotizaciones({ searchParams }: PageProps<'/cotiz
   )
 }
 
-// Los nombres de unas filas, una vez y por clave primaria: el cliente sólo con `leads.ver`; lo que quien mira no ve no llega y se dibuja «—».
-async function nombresDe(permisos: Permisos, filas: readonly FilaDelListado[]) {
-  const [clientes, vehiculos, autores, aprobadas] = await Promise.all([
-    puede(permisos, 'leads.ver')
-      ? leerNombresDeLeads(idsDe(filas, 'leadId'))
-      : Promise.resolve({ ok: true as const, data: new Map<string, string>() }),
-    leerTitulosDeVehiculos(idsDe(filas, 'vehiculoId')),
-    leerAutoresDeCotizaciones(idsDe(filas, 'creadoPor')),
-    // Cuáles son la aprobada de su vehículo: por el único de `cotizaciones_aprobadas`, con la RLS de quien mira.
-    leerAprobadasDeCotizaciones(filas.map((fila) => fila.id)),
-  ])
+// Los filtros de la página que valen para el despliegue de un grupo (las del vehículo que coinciden; con la búsqueda, las que la cumplen).
+function filtrosDelGrupo(pedido: PedidoDelListado): Omit<PedidoDelGrupo, 'vehiculoId' | 'cursor'> {
+  const { origenId, clase, mias, leadId, texto } = pedido
   return {
-    clientes: datosO(clientes),
-    vehiculos: datosO(vehiculos),
-    autores: datosO(autores),
-    aprobadas: datosO(aprobadas),
-  }
-}
-
-// Con `?lead=`, de quién son estas cotizaciones: el nombre sólo con `leads.ver` y si la lectura lo devuelve (la RLS de leads); si no, nulo, sin distinguir un lead que no existe de uno que no
-// se ve. Sin `?lead=`, `undefined`.
-async function nombreDelLead(permisos: Permisos, id: string | undefined) {
-  if (id === undefined) {
-    return undefined
-  }
-  if (!puede(permisos, 'leads.ver')) {
-    return { nombre: null }
-  }
-  return { nombre: datosO(await leerNombresDeLeads([id])).get(id) ?? null }
-}
-
-// La cotización de `?cotizacion=` cuando no está en la página (recargar, un enlace compartido, «Siguiente» con el resumen abierto): la lee el servidor, con la RLS de quien mira y su
-// «Vencida» de la función del listado (`leerUnaDelListado`), y sus nombres aparte (sólo ella: una página de 100 con 100 clientes distintos ya llena el tope de ids de cada lectura).
-// Si esa lectura falla, el listado no cae: `error`, y el resumen ofrece «Reintentar».
-async function leerLaDelResumen(permisos: Permisos, id: string): Promise<LecturaDelServidor> {
-  try {
-    const fila = datosO(await leerUnaDelListado(id))
-    if (fila === null) {
-      return { id, estado: 'no_disponible' }
-    }
-    const [cotizacion] = filasConNombres([fila], await nombresDe(permisos, [fila]))
-    return cotizacion === undefined ? { id, estado: 'error' } : { id, estado: 'listo', cotizacion }
-  } catch {
-    return { id, estado: 'error' }
+    ...(origenId === undefined ? {} : { origenId }),
+    ...(clase === undefined ? {} : { clase }),
+    ...(mias === undefined ? {} : { mias }),
+    ...(leadId === undefined ? {} : { leadId }),
+    ...(texto === undefined ? {} : { texto }),
   }
 }
 
@@ -102,6 +64,34 @@ function juntoDelListado(permisos: Permisos): ReactNode {
     return undefined
   }
   return <Junto permisos={permisos} />
+}
+
+type Parametros = Awaited<PageProps<'/cotizaciones'>['searchParams']>
+
+// Lo que pide la URL (con las preferencias de la persona): el tamaño, los filtros y el cursor, y si pide la lista agrupada por vehículo (`docs/UX.md` ›
+// «Cotizaciones»: la URL o la preferencia; con `?vehiculo=` la página no agrupa aunque se pida).
+function pedidoDeLaPagina(
+  esquema: ReturnType<typeof esquemaDelListado>,
+  parametros: Parametros,
+  preferencias: { porPagina: number | null; agruparCotizaciones: boolean | null },
+) {
+  const tamano = tamanoDePagina({
+    pedido: leerPorPagina(unParametro(parametros[CLAVE_DE_POR_PAGINA])),
+    preferencia: preferencias.porPagina,
+    maximo: MAXIMO_DE_PAGINA_DE_COTIZACIONES,
+  })
+  const pedido = pedidoDelListado(leerFiltros(esquema, parametros), {
+    cursor: leerCursor(unParametro(parametros[CLAVE_DE_CURSOR])),
+    tamano,
+    vehiculo: unParametro(parametros[CLAVE_DE_VEHICULO]),
+    lead: unParametro(parametros[CLAVE_DE_LEAD]),
+  })
+  const agruparPedido = agruparDelListado({
+    pedida: unParametro(parametros[CLAVE_DE_AGRUPAR]),
+    preferida: preferencias.agruparCotizaciones,
+    vehiculo: false,
+  })
+  return { tamano, pedido, agruparPedido }
 }
 
 async function Listado({
@@ -120,33 +110,26 @@ async function Listado({
     )
   }
   const esquema = esquemaDelListado(visibles)
-  const tamano = tamanoDePagina({
-    pedido: leerPorPagina(unParametro(parametros[CLAVE_DE_POR_PAGINA])),
-    preferencia: sesion.preferencias.porPagina,
-    maximo: MAXIMO_DE_PAGINA_DE_COTIZACIONES,
-  })
-  const pedido = pedidoDelListado(leerFiltros(esquema, parametros), {
-    cursor: leerCursor(unParametro(parametros[CLAVE_DE_CURSOR])),
-    tamano,
-    vehiculo: unParametro(parametros[CLAVE_DE_VEHICULO]),
-    lead: unParametro(parametros[CLAVE_DE_LEAD]),
-  })
-  const pagina = datosO(await leerListadoDeCotizaciones(pedido))
-  // La del resumen, si la URL trae una que no está en la página; los nombres de la página, en paralelo.
+  const { tamano, pedido, agruparPedido } = pedidoDeLaPagina(
+    esquema,
+    parametros,
+    sesion.preferencias,
+  )
+  const agrupada = agruparPedido && pedido.vehiculoId === undefined
+  const { pagina, cotizaciones, acotada } = await leerLaPagina(sesion.permisos, pedido, agrupada)
+  // La del resumen, si la URL trae una que no está en la página (también una línea de un grupo desplegado); lo demás, en paralelo.
   const idDelResumenUrl = idDelResumen(unParametro(parametros[CLAVE_DE_RESUMEN_DE_COTIZACION]))
   const faltaLaDelResumen =
-    idDelResumenUrl !== null && !pagina.filas.some((fila) => fila.id === idDelResumenUrl)
-  const [nombres, delServidor, deUnLead, vistas] = await Promise.all([
-    nombresDe(sesion.permisos, pagina.filas),
+    idDelResumenUrl !== null && !cotizaciones.some((fila) => fila.id === idDelResumenUrl)
+  const [delServidor, deUnLead, vistas] = await Promise.all([
     faltaLaDelResumen ? leerLaDelResumen(sesion.permisos, idDelResumenUrl) : null,
     nombreDelLead(sesion.permisos, pedido.leadId),
     leerVistas('cotizaciones'),
   ])
-  const filas = filasConNombres(pagina.filas, nombres)
   // El «⋯» de cada fila: su versión, sus marcas y lo que ofrece a quien mira (tres lecturas por clave primaria para toda la página).
-  const menus = await menusDeLaPagina(sesion, filas)
+  const menus = await menusDeLaPagina(sesion, cotizaciones)
   // Lo que cada pestaña del resumen deja hacer (adjuntar y moderar): las de la página y la que abrió la URL.
-  const quienes = quienesDelResumen(sesion, filas, delServidor)
+  const quienes = quienesDelResumen(sesion, cotizaciones, delServidor)
   // Con `?vehiculo=`, de quién son estas cotizaciones: el título sólo si quien mira ve el vehículo (la lectura es nula si no existe o no se ve).
   const deUnVehiculo =
     pedido.vehiculoId === undefined
@@ -161,22 +144,30 @@ async function Listado({
       consultas={[
         {
           tipo: 'cotizacion',
-          ids: pagina.filas.map((fila) => fila.id),
+          ids: cotizaciones.map((fila) => fila.id),
           parametro: CLAVE_DE_RESUMEN_DE_COTIZACION,
         },
       ]}
     >
       <ListadoConAcciones
         esquema={esquema}
-        pagina={{ ...pagina, filas }}
-        acotada={pagina.acotada}
+        pagina={pagina}
+        acotada={acotada}
+        vistaPreferida={sesion.preferencias.vistaDeCotizaciones}
+        agruparPedido={agruparPedido}
+        rutaDeClientes={puede(sesion.permisos, 'leads.ver') ? RUTAS.leads : null}
+        filtrosDelGrupo={filtrosDelGrupo(pedido)}
         vistas={datosO(vistas)}
         menus={menus}
         quienesDelResumen={quienes}
         aprobarEn={origenesCon(sesion.permisos, 'cotizaciones.aprobar')}
         delServidor={delServidor}
         porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_COTIZACIONES) }}
-        origenes={visibles.map((origen) => ({ id: origen.id, nombre: origen.nombre }))}
+        origenes={visibles.map((origen) => ({
+          id: origen.id,
+          nombre: origen.nombre,
+          color: origen.color,
+        }))}
         {...(deUnVehiculo === undefined ? {} : { vehiculo: deUnVehiculo })}
         {...(deUnLead === undefined ? {} : { lead: deUnLead })}
         rutaDeNueva={

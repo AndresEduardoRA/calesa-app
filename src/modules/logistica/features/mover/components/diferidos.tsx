@@ -34,9 +34,3 @@ export const DrawerDelLoteDiferido = diferido(() =>
 export const HuecoMoverElGrupoDiferido = diferido(() =>
   import('./hueco-mover-el-grupo').then((modulo) => modulo.HuecoMoverElGrupo),
 )
-
-// «Qué falta» de sólo lectura en la ficha del vehículo: su código se pide al hidratar la ficha (el bloque nace a la vista) y no pesa en la unidad.
-export const QueFaltaDeLaFichaDiferido = diferido(
-  () => import('./que-falta-de-la-ficha').then((modulo) => modulo.QueFaltaDeLaFicha),
-  { aviso: 'aqui', esqueleto: <EsqueletoDelHueco /> },
-)

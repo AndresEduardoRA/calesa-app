@@ -31,7 +31,7 @@ describe('faltasPorSeccion', () => {
         {
           clave: `formula-${CHINA.id}`,
           texto: 'Falta publicar la fórmula de China',
-          ruta: `/configuracion/cotizacion?seccion=formula&origen=${CHINA.id}`,
+          ruta: `/configuracion/cotizacion/${CHINA.id}/formula`,
         },
       ],
     })

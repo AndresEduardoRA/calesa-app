@@ -72,7 +72,8 @@ export function FilaDeDatoClave(props: Props) {
         </span>
         <span className="text-(length:--text-sm) text-(--color-ink-faint)">{dato.deDonde}</span>
       </span>
-      <span className="flex w-full gap-2 sm:w-auto">
+      {/* `flex-wrap`: al 200 % los tres botones no caben en un renglón del celular y ensanchaban la página. */}
+      <span className="flex w-full flex-wrap gap-2 sm:w-auto">
         <BotonDeLaFila
           {...comun}
           Icono={ArrowUpIcon}

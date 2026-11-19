@@ -82,7 +82,7 @@ const estado = (page: Page) => editor(page).locator('[data-guardado] [role="stat
 
 async function abrirFormula(page: Page, origenId: string) {
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
 }
 
 async function abrirSobreLaPublicada(page: Page, origenId: string) {

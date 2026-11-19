@@ -9,6 +9,7 @@ import { tablasParaAyuda } from '../../../entities/diseno/edicion-de-items'
 import type { DisenoParaEditar, NivelDelDiseno } from '../../../entities/diseno/edicion-del-diseno'
 import { useEdicionesDelDiseno } from '../hooks/use-ediciones-del-diseno'
 import { useEditorDelDiseno } from '../hooks/use-editor-del-diseno'
+import { useVistaPreviaDelDiseno } from '../hooks/use-vista-previa-del-diseno'
 import type { TonoDelCatalogo } from './aspecto'
 import { AvisosDelDiseno } from './avisos-del-diseno'
 import { BarraDeGuardado } from './barra-de-guardado'
@@ -30,8 +31,12 @@ type Props = {
   alRecargar: () => void
 }
 
+const CON_LA_VISTA_AL_COSTADO =
+  'grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,28rem)] xl:[&>*:not([data-columna-de-la-vista-previa])]:col-start-1'
+
 // El diseño de un origen en edición (4.22-2 y 4.22-3): «Guardar el borrador», el aviso y las secciones con sus ítems, que se ordenan arrastrando o con el
-// teclado. Cada cambio se aplica en el acto y `validarDiseno()` lo revisa; mientras guarda, todo espera.
+// teclado. Cada cambio se aplica en el acto y `validarDiseno()` lo revisa; mientras guarda, todo espera. Con la vista previa abierta y desde `xl`, la grilla
+// pasa a dos columnas: lo demás en la primera (cinco filas, en el orden del DOM) y la vista previa en la segunda, a lo alto de las cinco.
 export function EditorDelDiseno({
   origen,
   leida,
@@ -58,8 +63,9 @@ export function EditorDelDiseno({
   const tipos = useMemo(() => tiposDeCambio(leida.definicion), [leida.definicion])
   const { rechazo } = editor
   const lugar = rechazo?.lugar ?? null
+  const vista = useVistaPreviaDelDiseno()
   return (
-    <div className="grid min-w-0 gap-3">
+    <div className={vista.abierta ? CON_LA_VISTA_AL_COSTADO : 'grid min-w-0 gap-3'}>
       <BarraDeGuardado
         nombreDelOrigen={origen.nombre}
         enCurso={guardado.enCurso}
@@ -69,7 +75,13 @@ export function EditorDelDiseno({
         alGuardar={() => void guardado.guardar()}
         alRecargar={alRecargar}
       />
-      <PanelDeLaVistaPrevia origen={origen} trabajo={editor.trabajo} leida={leida} tonos={tonos} />
+      <PanelDeLaVistaPrevia
+        origen={origen}
+        trabajo={editor.trabajo}
+        leida={leida}
+        tonos={tonos}
+        vista={vista}
+      />
       <AvisosDelDiseno rechazo={editor.rechazo} avisos={editor.avisos} />
       <CabeceraDelDiseno
         cabecera={editor.trabajo.cabecera}

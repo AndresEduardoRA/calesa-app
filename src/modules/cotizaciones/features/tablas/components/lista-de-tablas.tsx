@@ -1,12 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { parseAsString, useQueryStates } from 'nuqs'
 import { fechaRelativa } from '@/shared/lib/fechas'
 import { formatearNumero } from '@/shared/lib/formato'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
 import { Badge } from '@/shared/ui/badge'
-import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
 import { useRegional } from '@/shared/ui/regional'
 import { TOPE_DE_TABLAS, type TablaDeReferencia } from '../../../entities/tablas/lectura'
 import { rutaDeLasTablas } from '../../../entities/tablas/rutas'
@@ -14,14 +12,9 @@ import { rutaDeLasTablas } from '../../../entities/tablas/rutas'
 type Origen = { id: string; nombre: string; activo: boolean }
 
 type Props = {
-  // Los orígenes donde quien mira configura las tablas (al menos uno), en el orden del catálogo.
-  origenes: readonly Origen[]
   origen: Origen
   lectura: { tablas: readonly TablaDeReferencia[]; hayMas: boolean }
 }
-
-const etiquetaDe = (origen: Origen) =>
-  origen.activo ? origen.nombre : `${origen.nombre} (inactivo)`
 
 function Publicada({ tabla }: { tabla: TablaDeReferencia }) {
   const { zonaHoraria, locale } = useRegional()
@@ -33,31 +26,11 @@ function Publicada({ tabla }: { tabla: TablaDeReferencia }) {
   return <p className="text-(--color-ink-soft)">{partes.join(' · ')}</p>
 }
 
-// La lista de tablas de referencia de un origen y las compartidas (4.23-3, C3): con más de un origen, un selector que escribe `?origen=` (y borra `?tabla=`); cada tabla
-// abre su editor. Las tablas nuevas y sus columnas se crean por SQL (P5 del 4.23-1).
-export function ListaDeTablas({ origenes, origen, lectura }: Props) {
+// La lista de tablas de referencia de un origen y las compartidas (4.23-3, C3): cada tabla abre su editor (el origen se elige en la página). Las tablas nuevas y sus columnas se crean por SQL (P5 del 4.23-1).
+export function ListaDeTablas({ origen, lectura }: Props) {
   const { locale } = useRegional()
-  const [url, setUrl] = useQueryStates(
-    { origen: parseAsString, tabla: parseAsString },
-    { shallow: false },
-  )
-  // Lo elegido se ve en el acto, mientras el servidor lee el origen nuevo.
-  const elegido = origenes.some((uno) => uno.id === url.origen) ? url.origen : origen.id
   return (
     <>
-      {origenes.length > 1 ? (
-        <div className="max-w-xs">
-          <CampoSeleccion
-            nombre="origen-de-las-tablas"
-            etiqueta="Origen"
-            opciones={origenes.map((uno) => ({ valor: uno.id, etiqueta: etiquetaDe(uno) }))}
-            value={elegido ?? origen.id}
-            onChange={(evento) => {
-              void setUrl({ origen: evento.target.value, tabla: null })
-            }}
-          />
-        </div>
-      ) : null}
       {lectura.tablas.length === 0 ? (
         <div className="grid gap-1 rounded-(--radius-lg) border border-(--color-line) bg-(--color-surface) p-3 text-(length:--text-sm)">
           <p className="text-(--color-ink)">{origen.nombre} no tiene tablas de referencia.</p>

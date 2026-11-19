@@ -147,6 +147,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Mide con `presupuesto-js` antes de importar `<Badge>` u otra utilidad de `shared` en la carga en frío de una pantalla pesada: `<Badge>` arrastra Base UI (+8,5 KB).
 - Saca un componente de un `pantallas/<área>.ts` ajeno a la ruta por su propio `pantallas/<área>-<pantalla>.ts`: importar de un barril con Client Components de otra pantalla puede arrastrarlos al JS en frío (el detalle de un proyecto cargaba el listado y «Nuevo proyecto», +5 %).
 - Haz que un `loading.tsx` importe sólo el esqueleto, nunca la pantalla ni el barril de `pantallas/`: baja su chunk dos veces en frío.
+- No pongas un `page.tsx` que sólo redirige en un segmento con hijos: pide su `loading.tsx`, y el esqueleto de cada nivel viaja en el HTML de todas las páginas de debajo (dos veces). La redirección fija va a `redirects()` de `next.config.ts`.
 - Manda al navegador las acciones ya calculadas por el servidor, no `permisos.ts` ni las reglas: importarlas suma JS en frío a la ruta.
 - Pasa al cliente sólo lo que dibuja (`contextoParaElNavegador()`): las props viajan en el primer HTML (≈ 100 B por nodo y por fila) y las del layout, en el de todas las pantallas (30 acciones de la paleta suman 7 KB a `/perfil`).
 - Pon en un archivo de `features/` del módulo la composición que cruza módulos: en una entrada la rechaza `boundaries`.
@@ -216,6 +217,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Resuelve el alcance una vez en una `security definer` con el predicado de la policy: filtrar hijas cuyas policies preguntan por fila paga un `puede_*` por fila recorrida.
 - Con el plan genérico, varios filtros en la misma consulta parecen selectivos y ordenan toda la tabla: recorre el índice por lotes y filtra en plpgsql.
 - Usa como cursor el id de una fila visible y resuélvelo por PK: un cursor que es la clave de un grupo puede recorrer grupos invisibles.
+- En una invocadora, lo que se lee de un arreglo de ids ya elegidos (`unnest(v_ids)`) va en laterales con `limit`: con el plan genérico un `join … on c.id = u.id` se aplana en un hash join que recorre la tabla entera con la RLS (63.000 bloques y 2 s por página en la lista agrupada).
 - Lee un cupo «N por hora» con las N más recientes (`order by creado_en desc limit N`; libre = la más vieja + 1 h): así no hace falta `count(` ni otra excepción en `escala.sql`.
 - Mide el costo en altas e importación antes de un índice de n-gramas (duplica el tiempo) y prefiere un mínimo de 3 caracteres.
 - Mide como corre: sentencia preparada con parámetros (no literales), el `EXPLAIN` de una `security definer` como dueño de la tabla, y con volumen y fondo realista (el plan genérico estima por promedio): si no, el planificador elige otro plan.

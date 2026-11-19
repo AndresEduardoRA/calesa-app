@@ -1,51 +1,47 @@
 import type { Metadata } from 'next'
-import { requerirSesion } from '@/modules/equipo'
-import { unParametro } from '@/shared/lib/rutas'
+import { Suspense } from 'react'
+import { puede, requerirSesion } from '@/modules/equipo'
+import { getOrigenes } from '@/modules/origenes'
+import { datosO } from '@/shared/lib/errores'
+import { redirigir } from '@/shared/lib/navegacion'
+import { EsqueletoTabla } from '@/shared/ui/esqueletos'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
-import { alMenosUna } from '../empresa/pestanas'
-import { pestanaDe, pestanasVisibles } from './pestanas'
-import { PestanasDeCotizacion } from './pestanas-de-cotizacion'
-import { SeccionAbierta } from './seccion-abierta'
+import { EncabezadoDeConfiguracion } from '../_navegacion/encabezado-de-configuracion'
+import { accesoDeCotizacion, puedeVerNiveles } from './acceso'
+import { SECCION_DE_COTIZACION } from './seccion'
+import { TarjetasDelInicio } from './tarjetas-del-inicio'
+import { busquedaDe, destinoDeLaUrlVieja } from './url-vieja'
 
 export const metadata: Metadata = { title: 'Configurar cotizaciones' }
 
-// Configuración › Cotización. Entra quien ve alguna pestaña (`pestanas.ts`): «Niveles de acceso» con `equipo.roles.ver` (los cambia quien tiene
-// `equipo.roles.gestionar`: cada nivel es un permiso de la matriz de Roles), «Fórmula», «Tarjeta», «Diseño» y «Tonos» con `cotizaciones.configurar` en algún origen
-// (4.20-2a, 4.19-3b, 4.22-2, 4.22-4), «Tablas» con la misma clave (4.23-3) y «Ajustes» con la misma clave (la cambia quien la tiene en todos los orígenes). La base
-// vuelve a exigir lo suyo en cada RPC y en las policies de `formulas` y `tablas_referencia`. Sin ninguna, «No tienes permiso» (y la sección no figura en Configuración).
+// Configuración › Cotización: una tarjeta por origen que la persona configura (`cotizaciones.configurar`) y una «General». Entra quien
+// configura algún origen o ve los roles (los niveles); sin ninguna, «No tienes permiso» (y la sección no figura en Configuración). Los enlaces
+// de antes (`?seccion=…&origen=…`, `?panel=…`) van a su sub-ruta (`url-vieja.ts`).
 export default async function PaginaDeCotizacion({
   searchParams,
 }: PageProps<'/configuracion/cotizacion'>) {
   const [sesion, parametros] = await Promise.all([requerirSesion(), searchParams])
-  const visibles = alMenosUna(pestanasVisibles(sesion.permisos))
-  if (!visibles) {
+  const configura = puede(sesion.permisos, 'cotizaciones.configurar')
+  if (!configura && !puedeVerNiveles(sesion.permisos)) {
     return <EstadoSinPermiso />
   }
-  const pestana = pestanaDe(unParametro(parametros['seccion']), visibles)
-  const origenPedido = unParametro(parametros['origen'])
-  const tablaPedida = unParametro(parametros['tabla'])
-  // La barra no recibe los permisos: sólo cuáles pestañas dibujar.
-  const [primera, ...resto] = visibles
-  const quitarPermisos = ({ clave, titulo }: { clave: string; titulo: string }) => ({
-    clave,
-    titulo,
-  })
-  const paraLaBarra = [quitarPermisos(primera), ...resto.map(quitarPermisos)] as const
+  const busqueda = busquedaDe(parametros)
+  if (busqueda.size > 0) {
+    const catalogo = configura ? datosO(await getOrigenes(true)) : []
+    const destino = destinoDeLaUrlVieja(busqueda, accesoDeCotizacion(sesion.permisos, catalogo))
+    if (destino !== null) {
+      redirigir(destino)
+    }
+  }
   return (
-    <div className={`grid gap-4 ${pestana === 'tarjeta' ? 'max-w-6xl' : 'max-w-3xl'}`}>
-      <div className="grid gap-1">
-        <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">Cotización</h1>
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          Lo que se configura de la hoja con la que se cotiza.
-        </p>
-      </div>
-      <PestanasDeCotizacion pestanas={paraLaBarra} />
-      <SeccionAbierta
-        pestana={pestana}
-        permisos={sesion.permisos}
-        origenPedido={origenPedido}
-        tablaPedida={tablaPedida}
+    <div className="grid max-w-4xl gap-4">
+      <EncabezadoDeConfiguracion
+        titulo={SECCION_DE_COTIZACION.titulo}
+        descripcion={SECCION_DE_COTIZACION.descripcion}
       />
+      <Suspense fallback={<EsqueletoTabla filas={4} columnas={2} />}>
+        <TarjetasDelInicio permisos={sesion.permisos} />
+      </Suspense>
     </div>
   )
 }

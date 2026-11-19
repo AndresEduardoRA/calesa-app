@@ -39,9 +39,10 @@ test('E2E escritorio · camino feliz: editar, sumar, mover y publicar una tabla 
 }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto('/configuracion/cotizacion')
+  await page.getByRole('link', { name: origen.nombre, exact: true }).click()
   await page.getByRole('tab', { name: 'Tablas' }).click()
-  await expect(page.getByRole('heading', { name: 'Tablas de referencia', level: 2 })).toBeVisible()
-  await page.getByLabel('Origen').selectOption(origen.id)
+  await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${origen.id}/tablas$`))
+  await expect(page.getByRole('heading', { name: 'Tablas', level: 1 })).toBeVisible()
   const lista = page.getByRole('list', { name: `Tablas de referencia de ${origen.nombre}` })
   await lista.getByRole('link', { name: 'Factores vivos' }).click()
 

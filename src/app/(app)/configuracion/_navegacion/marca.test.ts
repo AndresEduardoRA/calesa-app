@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { marcaDelEnlace, rutaResuelta } from './marca'
+import { marcaDelEnlace, rutaDelMenu, rutaResuelta } from './marca'
 
 describe('marcaDelEnlace', () => {
   it('la ruta exacta es la página', () => {
@@ -89,6 +89,56 @@ describe('sub-secciones plantilla (las partes de un origen)', () => {
       rutaResuelta('/configuracion/origenes/[id]/campos', '/configuracion/leads/campos'),
     ).toBeNull()
     expect(rutaResuelta('/configuracion/leads/campos', '/configuracion/origenes')).toBe(
+      '/configuracion/leads/campos',
+    )
+  })
+})
+
+describe('el comodín sólo acepta un id', () => {
+  const id = '00000000-0000-4000-8000-000000000001'
+  const formula = '/configuracion/cotizacion/[origen]/formula'
+
+  it('«general» no ocupa el lugar de un origen', () => {
+    expect(rutaResuelta(formula, '/configuracion/cotizacion/general/colores')).toBeNull()
+    expect(
+      marcaDelEnlace('/configuracion/cotizacion/general/colores', '/configuracion/cotizacion', [
+        formula,
+        '/configuracion/cotizacion/general/colores',
+      ]),
+    ).toBe('true')
+    expect(marcaDelEnlace('/configuracion/cotizacion/general/colores', formula)).toBeUndefined()
+  })
+
+  it('un id sí', () => {
+    expect(rutaResuelta(formula, `/configuracion/cotizacion/${id}/hoja`)).toBe(
+      `/configuracion/cotizacion/${id}/formula`,
+    )
+  })
+})
+
+describe('rutaDelMenu', () => {
+  const id = '00000000-0000-4000-8000-000000000001'
+  const formula = {
+    ruta: '/configuracion/cotizacion/[origen]/formula',
+    respaldo: '/configuracion/cotizacion?seccion=formula',
+  }
+
+  it('con un origen en la URL, la plantilla resuelta', () => {
+    expect(rutaDelMenu(formula, `/configuracion/cotizacion/${id}/tablas`)).toBe(
+      `/configuracion/cotizacion/${id}/formula`,
+    )
+  })
+
+  it('en el inicio o en General, una plantilla con respaldo da el respaldo', () => {
+    expect(rutaDelMenu(formula, '/configuracion/cotizacion')).toBe(formula.respaldo)
+    expect(rutaDelMenu(formula, '/configuracion/cotizacion/general/niveles')).toBe(formula.respaldo)
+  })
+
+  it('en la lista de orígenes, sin respaldo, nada; una ruta fija vuelve igual', () => {
+    expect(
+      rutaDelMenu({ ruta: '/configuracion/origenes/[id]/datos' }, '/configuracion/origenes'),
+    ).toBeNull()
+    expect(rutaDelMenu({ ruta: '/configuracion/leads/campos' }, '/configuracion/origenes')).toBe(
       '/configuracion/leads/campos',
     )
   })

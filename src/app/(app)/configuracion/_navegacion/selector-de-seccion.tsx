@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Fragment, useId } from 'react'
 import { salirSinPerder } from '@/shared/ui/salida-con-cambios'
 import type { GrupoDelNavegador } from '../secciones'
-import { marcaDelEnlace, rutaResuelta } from './marca'
+import { marcaDelEnlace, rutaDelMenu } from './marca'
 
 // El selector de sección del celular y de las pantallas angostas: las mismas secciones que el menú, por grupo. Elegir navega; con una
 // barra de cambios sin guardar, antes pregunta (`salirSinPerder()`). El valor sale de la ruta: si se sigue editando, vuelve solo a la
@@ -15,10 +15,10 @@ export function SelectorDeSeccion({ grupos }: { grupos: readonly GrupoDelNavegad
   const actual = usePathname()
   const router = useRouter()
   const id = useId()
-  // Una sub-sección plantilla (las partes de un origen) se ofrece sólo si resuelve con la ruta actual.
+  // Una sub-sección plantilla (las partes de un origen) se ofrece si resuelve con la ruta actual o si tiene respaldo.
   const resueltas = (subsecciones: GrupoDelNavegador['secciones'][number]['subsecciones']) =>
     subsecciones.flatMap((sub) => {
-      const ruta = rutaResuelta(sub.ruta, actual)
+      const ruta = rutaDelMenu(sub, actual)
       return ruta === null ? [] : [{ ...sub, ruta }]
     })
   const rutas = grupos.flatMap((grupo) =>

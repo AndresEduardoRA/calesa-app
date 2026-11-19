@@ -3,6 +3,8 @@ import {
   PANEL_NUEVO_DE_VEHICULOS,
   RUTAS,
   conVuelta,
+  rutaDeConfiguracionDeCotizacion,
+  PESTANAS_DE_COTIZACION,
   decidirAcceso,
   destinoTrasIngresar,
   esRutaPublica,
@@ -196,5 +198,45 @@ describe('conVuelta', () => {
     expect(conVuelta('/x', '/leads')).toBe('/x?returnTo=%2Fleads')
     expect(conVuelta('/x?returnTo=%2Fviejo', '/nuevo')).toBe('/x?returnTo=%2Fnuevo')
     expect(conVuelta('/x?a=1', null)).toBe('/x?a=1')
+  })
+})
+
+describe('rutaDeConfiguracionDeCotizacion', () => {
+  const O = '11111111-1111-4111-8111-111111111111'
+
+  it('lleva a cada pestaña del origen, en su orden', () => {
+    expect(PESTANAS_DE_COTIZACION.map((p) => rutaDeConfiguracionDeCotizacion(O, p))).toEqual([
+      `/configuracion/cotizacion/${O}/formula`,
+      `/configuracion/cotizacion/${O}/hoja`,
+      `/configuracion/cotizacion/${O}/tarjeta`,
+      `/configuracion/cotizacion/${O}/tablas`,
+    ])
+  })
+
+  it('codifica la consulta en su orden y el id', () => {
+    expect(
+      rutaDeConfiguracionDeCotizacion(O, 'tablas', { tabla: 't 1', panel: 'publicar-tabla' }),
+    ).toBe(`/configuracion/cotizacion/${O}/tablas?tabla=t+1&panel=publicar-tabla`)
+    expect(rutaDeConfiguracionDeCotizacion('a/b', 'formula')).toBe(
+      '/configuracion/cotizacion/a%2Fb/formula',
+    )
+  })
+
+  it('sin consulta (o vacía) no lleva «?»', () => {
+    expect(rutaDeConfiguracionDeCotizacion(O, 'hoja', {})).toBe(
+      `/configuracion/cotizacion/${O}/hoja`,
+    )
+  })
+
+  it('General tiene sus tres rutas fijas', () => {
+    expect([
+      RUTAS.coloresDeCotizacion,
+      RUTAS.nivelesDeCotizacion,
+      RUTAS.vigenciaDeCotizacion,
+    ]).toEqual([
+      '/configuracion/cotizacion/general/colores',
+      '/configuracion/cotizacion/general/niveles',
+      '/configuracion/cotizacion/general/vigencia',
+    ])
   })
 })

@@ -109,7 +109,7 @@ export function borrarNivelesDePrueba(): void {
 // --- La pantalla --------------------------------------------------------------------------------------
 
 export async function abrirNiveles(page: Page): Promise<void> {
-  await page.goto('/configuracion/cotizacion?seccion=niveles')
+  await page.goto('/configuracion/cotizacion/general/niveles')
   await expect(page.getByRole('heading', { name: 'Niveles de acceso', level: 2 })).toBeVisible()
 }
 

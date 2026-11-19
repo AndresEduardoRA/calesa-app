@@ -93,7 +93,7 @@ function contar(page: Page) {
 
 async function abrirEditor(page: Page, origenId: string) {
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
   await page
     .getByRole('region', { name: 'Borrador' })
     .getByRole('button', { name: 'Editar', exact: true })

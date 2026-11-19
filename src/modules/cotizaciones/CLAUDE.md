@@ -33,7 +33,18 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   mira), `?por=`, `?cursor=`; `?vehiculo=` y `?lead=` no son del esquema (ni chip ni los borra «Limpiar»): los escribe `rutaDelListado()` como camino a
   lo antiguo del historial del vehículo y del lead, y el aviso de arriba (`textoDelAviso()`) sólo nombra lo que quien mira ve. Los nombres llegan por
   clave primaria (leads sólo con `leads.ver`) y los une `filasConNombres()`: lo que no llega es «—». Lee `cotizaciones_listado()` (invocadora: decide la
-  RLS) por cursor, con `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (100). El clic abre el resumen `?cotizacion=` (por `diferido()`; abrir o cerrar borra `?pestana=`); la que no está
+  RLS) por cursor, con `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (50: la base da 50 sin pedido y admite 100). **«Tabla | Tarjetas» y «Agrupar por vehículo»** (T319, `docs/UX.md`): la vista por
+  `useVistaDeCotizaciones()` (`?vista=`, `cotizaciones.vista`, sin elegir tarjetas; sólo del cliente) y la agrupación por `useAgruparCotizaciones()` (`?agrupar=si|no`,
+  `cotizaciones.agrupar`, sin elegir agrupada; relee la página sin `?cursor=`); las dos preferencias se guardan con la action de `equipo`
+  (`guardarPreferenciaDeLaLista()`). La página decide con `agruparDelListado()` (con `?vehiculo=` nunca) y `src/app/(app)/cotizaciones/lecturas-de-la-pagina.ts`
+  lee: agrupada sin texto, `leerListadoPorVehiculo()` (`cotizaciones_listado_por_vehiculo()`, `PaginaAgrupada` de `EntradaDelListado`: `grupo` con su `cabeza` y su
+  `conteo`, o `suelta`, con `cortada`); con texto, la búsqueda agrupada en la página (`agruparLaPagina()`); sin agrupar, `entradasSinAgrupar()`. Los nombres, el modo
+  (`leerModosDeCotizaciones()`, `cotizaciones_modos_de()`), el «⋯» y lo visto van sobre las cotizaciones que se dibujan. La tarjeta (`TarjetaEnLaLista`) lleva la
+  portada por el hueco `Portada` (`ancho={480}`, `recorte="cubrir"`, `lugar="lista"`: su visor es `?visor=portada-de-la-lista-<id>`), el «⋯» sin «Compartir» (`MenuDeFila(fila, { sinCompartir })`) y «Compartir» (`compartirDe`, nulo
+  sin la oferta o en Modo Live); la tabla, la columna «Título». Un grupo se despliega en el lugar (`BotonDelConteo`, `DespliegueDelGrupoDiferido`): lo lee
+  `useGrupoDelListado()` desde el navegador (`areas/listado/composicion.client.ts`, `leerGrupoDelListado()`: `cotizaciones_listado(p_vehiculo)` o
+  `cotizaciones_buscar(p_texto, p_vehiculo)` con los filtros de la página, de a `TAMANO_DE_ESTE_VEHICULO` hasta `TOPE_DE_ESTE_VEHICULO`, y los autores por
+  `perfiles`); si su primera página no empieza por `ordenId` (`grupoQueCambio()`), `router.refresh()`. Las casillas y «Comparar» llegan por el hueco `Comparar`. El clic abre el resumen `?cotizacion=` (por `diferido()`; abrir o cerrar borra `?pestana=`); la que no está
   en la página la lee el servidor con `leerUnaDelListado()` (su fila y `cotizaciones_listado()` de tamaño `UNA` con el cursor `(creado_en, id + 1)`) y, si
   no llega, `usePedidoAlServidor()` pide una vez y luego «Reintentar»; `idDelResumen()` es la única lectura de la clave. **Las pestañas del resumen** (`?pestana=todo|adjuntos|revisiones|comentarios`, `entities/pestanas-del-resumen.ts`; «Todo» no escribe nada) son un hueco
   (`HuecosDelResumen`, `features/hoja/components/huecos-del-resumen.ts`): `src/app` une `pantallas/comentarios-resumen.ts` (`Pestanas`, sólo la cáscara `diferido()`) y
@@ -96,18 +107,23 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
 - **«Cotizar encima»** (`features/encima/`): el aviso (`avisoDeVersion()`: otra versión que la publicada hoy, o vencida) lo ve todo el que abre; el
   botón, sólo con `cadena.puedeCotizarEncima` (lo decide la base, no `puede()`: una anterior sin lead pide `sin_lead` y una sin vehículo, `sin_vehiculo`). El intento es el id de la nueva y se conserva sólo tras una pérdida; con
   cambios sin guardar o un pendiente el botón espera, porque la nueva lleva lo guardado.
-- **Historial** (pestaña de `/vehiculos/[id]` con `cotizaciones.ver` del origen del vehículo; sección de `/leads/[id]` con `cotizaciones.ver` en algún
-  origen, sin mirar la cartera: la RLS recorta): se lee al montarse desde el navegador por `composicion-historial.client.ts` (por
+- **Historial** (el del panel del vehículo de la hoja, `HistorialDelVehiculo`, y la sección de `/leads/[id]` con `cotizaciones.ver` en algún origen, sin
+  mirar la cartera: la RLS recorta; la ficha del vehículo usa «De este vehículo»): se lee al montarse desde el navegador por `composicion-historial.client.ts` (por
   `cotizaciones_vehiculo_creado_idx` o `cotizaciones_lead_creado_idx`), de a 20 hasta 500, y el tope dice «Ver todas en Cotizaciones». Va aparte de
-  `composicion.client.ts` y cada cáscara de `diferido()` en su `diferidos.tsx` (`features/historial/components/{pestana,lead}/`) porque lo que importa la
+  `composicion.client.ts` y cada cáscara de `diferido()` en su `diferidos.tsx` (`features/historial/components/` y `lead/`) porque lo que importa la
   hoja viaja en la carga en frío de `/cotizaciones/nuevo` (4-73). `usePaginasDelHistorial(de)` descarta lo viejo con `ultimo`; `<ListaDelHistorial>` espera
-  300 ms el esqueleto salvo con `esperarEsqueleto={false}` (pestaña y sección: llegan tras el esqueleto del `diferido()`).
-- Niveles: `/configuracion/cotizacion?seccion=niveles` (`equipo.roles.ver|gestionar`; `?panel=nuevo-nivel|renombrar-nivel|eliminar-nivel&nivel=<id>`).
+  300 ms el esqueleto salvo con `esperarEsqueleto={false}` (la sección del lead: llega tras el esqueleto del `diferido()`).
+- **Configuración › Cotización** (la arma `src/app/(app)/configuracion/cotizacion/`): cada sección del módulo recibe el **origen abierto**
+  (`{ id, nombre, activo }`) que `src/app` ya validó, sin selector propio; las URL las arma `rutaDeConfiguracionDeCotizacion(origenId, pestana,
+consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las actions revalidan `/configuracion/cotizacion` con `'layout'`. El inicio
+  lee `leerPublicadasPorOrigen(ids)` (núcleo, `index.ts`: por origen, la versión de la fórmula publicada y si hay tarjeta publicada; a lo sumo
+  `TOPE_DE_ORIGENES_DEL_INICIO`, dos consultas por `formulas_publicada_unica` y `plantillas_publicada_unica`).
+- Niveles: `/configuracion/cotizacion/general/niveles` (`equipo.roles.ver|gestionar`; `?panel=nuevo-nivel|renombrar-nivel|eliminar-nivel&nivel=<id>`).
 - Con Live, las cifras de la ayuda de una celda de dinero pasan por `<Monto>`; las de otra celda quedan a la vista.
 - Los `loading.tsx` de la hoja importan `pantallas/esqueleto-de-hoja.ts`, nunca el barril de su pantalla (con él, el HTML en frío baja dos chunks casi
   iguales). El núcleo del guardado (`useNucleoDelGuardado`: pendiente, un envío a la vez, reintento al volver la red) es el mismo de la hoja nueva y de la
   guardada. `hoja-de-una-guardada.ts` viaja al navegador sin Zod; su lectura es `hoja-de-una-guardada-lectura.ts` (sólo servidor).
-- **Tablas de referencia** (área `tablas`; `/configuracion/cotizacion?seccion=tablas&origen=&tabla=`, `cotizaciones.configurar`): la lista del origen y
+- **Tablas de referencia** (área `tablas`; `/configuracion/cotizacion/<origen>/tablas?tabla=`, `cotizaciones.configurar`): la lista del origen y
   las compartidas (tope 100; una compartida tapada por una propia va `tapada`) y, con `?tabla=` de esa lista, el editor por `diferido()` de a 100 filas.
   `leerTablaParaEditar()` lee **todas** las filas por cursor `(orden, id)` hasta 2.001: con una fila que no se lee o más de 2.000 no devuelve nada, porque
   publicar reemplaza todas. Se edita en memoria y se valida con el espejo de la base (`entities/tablas/validacion.ts`, `TOPE_DE_FILAS` = 2.000); el
@@ -136,7 +152,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `datos-de-la-tarjeta.ts` (como el PDF), sin ETag ni guardar. Al guardar, el núcleo avisa por el hueco de la vista previa y `<ProveedorDeLaTarjeta>` pide la ruta
   (`pedirLaPortada()`, `areas/tarjeta/composicion-portada.client.ts`: un `fetch` que no se espera). El componente `<PortadaDeLaCotizacion>` sale por
   `pantallas/tarjeta-portada.ts` (marco de la proporción que le den, recuadro con el total, visor por `diferido()`, Modo Live por CSS en `globals.css`).
-- **El diseño** (`/configuracion/cotizacion?seccion=diseno&origen=`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
+- **El diseño** (la pestaña «Hoja»: `/configuracion/cotizacion/<origen>/hoja`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
   `cotizaciones_niveles` (no de `niveles_con_uso()`); edita secciones, celdas (ver y editar juntos con `ponerNiveles()`; `admiteNivel` apaga lo que la base
   rechazaría con `nivel_no_admitido`), atajos, interruptor, ayuda, modos, la tarjeta del total (variante y subtotal no se editan) y **el aspecto** de cada
   pieza (`components/aspecto/`, operaciones puras en `entities/diseno/edicion-del-aspecto.ts`: el valor por defecto quita la clave), con el aviso «se deduce
@@ -145,14 +161,14 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   dnd-kit sólo viaja en el `diferido()` de la pestaña. El color sale del catálogo de colores (`catalogo` nulo si no se leyó: no se elige y `contextoDelEditor()`
   cuenta los colores que el diseño ya nombra); un rechazo de forma del aspecto va bajo su select (`campoDelRechazo()`). «Guardar el borrador» (`formula_guardar_borrador`, con la esperada de la publicada o la hora del borrador) manda `definicion` y
   `params` sin cambios. El área `diseno` replica la lectura y escritura de `formula` porque un área no importa otra.
-- **Los colores** (la pestaña «Colores»: `/configuracion/cotizacion?seccion=tonos`, `cotizaciones.configurar`; `?panel=nuevo-tono|editar-tono|eliminar-tono&tono=<id>`,
+- **Los colores** (`/configuracion/cotizacion/general/colores`, `cotizaciones.configurar`; `?panel=nuevo-tono|editar-tono|eliminar-tono&tono=<id>`,
   URL con el nombre técnico): son de la empresa, un nombre y un #hex, y se guardan al instante (`tono_crear(p_id, p_nombre, p_hex)`, `tono_guardar` con
   `{nombre?, hex?}` y `tono_eliminar` devuelven la lista entera). `entities/diseno/tonos.ts` espeja `_tono_nombre()` y `_tono_hex()` (los mismos textos);
   `entities/colores.ts` (núcleo: lo usan diseño, plantilla y tarjeta) espeja `_color_derivar()` (la hoja derivada con AA) y `_color_tinta_de_la_tarjeta()`,
   con el juego `supabase/tests/casos-de-colores.json`. El modal muestra en vivo la hoja y la tarjeta (`como-se-ve-el-color.tsx`) y avisa sin bloquear si el
   texto de la tarjeta no se lee. Un color en uso: 23503 con la fórmula que lo usa. Componentes y hooks se llaman «color»; tabla, RPC, actions, schemas e
   infra conservan «tono».
-- **La vista previa del diseño** (`?vista=412|1280|200`): `hojaDeLaVistaPrevia()` espeja `_cotizacion_hoja()` (con el aspecto y los colores de las secciones
+- **La vista previa del diseño** (`?vista=412|1280|200`; abierta y desde `xl`, al costado del editor): `hojaDeLaVistaPrevia()` espeja `_cotizacion_hoja()` (con el aspecto y los colores de las secciones
   que dibuja y de la cabecera) **sin niveles, tablas ni `dato_del_vehiculo`**; usa la misma rejilla que la hoja (`CONTENEDOR_DE_SECCIONES`,
   `REJILLA_DE_SECCIONES`, `enLaRejilla`); `cifrasDelDiseno()` evalúa con datos en 0 y nunca lanza. Dibuja con las piezas del núcleo y **no con `LugaresDeLaHoja`** (lee
   `?ayuda=` y `?panel=`, que chocarían con la pestaña); un hijo de ancho propio en px dentro de una caja con scroll (los cortes `@4xl/hoja` y `@5xl` miran al
@@ -198,8 +214,12 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda, la compone `src/app`): «Cotización aprobada» con `leerAprobadaDelVehiculo()` (`index.ts`),
   la tarjeta de `pantallas/aprobada-del-vehiculo.ts` (`AprobadaDelVehiculo`, `EsqueletoDeLaAprobada`) y, como un área no importa otra, la portada diferida y
   `BotonDeCompartirDeLaFila` de `pantallas/tarjeta-aprobada-del-vehiculo.ts` en sus ranuras; el diálogo, `DialogoDeCompartirDeLaFila` de `pantallas/tarjeta-compartir.ts`.
+  A la derecha, «Cotizaciones de este vehículo»: `DeEsteVehiculo` de `pantallas/aprobada-de-este-vehiculo.ts` (la isla al acercarse, sin título propio: lo dibuja el
+  servidor con «Cotizar»), con las casillas, `vacio` («Sin cotizaciones que puedas ver.»; sin `vacio`, sin filas no dibuja nada) y `alCambiar`, que refresca la página.
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
+- **La lista** (`HuecosDeLaLista`, `features/listado/components/tipos.ts`): `Portada` (la portada de cada tarjeta, en frío: `pantallas/tarjeta-portada.ts`) y
+  `Comparar` (las casillas y «Comparar» de un grupo desplegado, `CompararDelGrupoDiferido` de `pantallas/aprobada-listado.ts`); los une `listado-con-acciones.tsx`.
 - **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`,
   `compartir()` (lo que va junto a «Vista previa» en una guardada: «Compartir») y `alGuardarLaCotizacion(id)` (lo llaman `useNucleoDelGuardado` y `useCotizarEncima` con la cotización guardada: la portada); la llena
   `<ProveedorDeLaTarjeta>` (`pantallas/tarjeta.ts`) con la cáscara del modal y lo que sabe la página (vehículo, asesor, número, logo). El modal lee
@@ -262,7 +282,8 @@ cabecera: modo por defecto, «Ver total» por defecto y modos visibles) y `formu
 `tono_crear|guardar|eliminar` (los colores), `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
 `validar_plantilla`, `evaluar_formula`, `cotizacion_evaluar`, `cotizacion_hoja`, `cotizacion_tabla`, `cotizacion_tarjeta`, `cotizacion_crear`,
 `cotizacion_guardar` (`p_titulo_manual` al final), `cotizacion_retocar_tarjeta` (los retoques de la tarjeta, con la versión; valida con `validar_retoques`
-contra la plantilla publicada de hoy), `cotizaciones_listado`, `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
+contra la plantilla publicada de hoy), `cotizaciones_listado`, `cotizaciones_listado_por_vehiculo` (la lista agrupada, invocadora, con su lote
+`_cotizaciones_lote_del_listado`), `cotizaciones_modos_de` (el nombre del modo de hasta 100), `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
 `_cotizaciones_ids_por_titulo`), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
 nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizaciones_aprobadas_de_vehiculos` (el «Costo estimado» de `/vehiculos`, invocadora), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
@@ -279,7 +300,11 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   leakproof; la final va por parciales con `'final'` literal) y `lead_id` y `origen_id` tienen un solo índice entero al frente
   (`cotizaciones_lead_creado_idx`, `cotizaciones_origen_creado_idx`; L8 de `cotizaciones-listado.sql`). Con `p_lead` es una sola ruta por
   `cotizaciones_lead_creado_idx`, sin la cartera, y el vehículo es un filtro sobre esas filas (L9). Lo que devuelve es la regla (L2 de
-  `cotizaciones-visibilidad.sql`). **La búsqueda** (`cotizaciones_buscar()`, `supabase/tests/areas/cotizaciones/buscar.sql`, `medir-cotizaciones-buscar.sql`) es
+  `cotizaciones-visibilidad.sql`). **La lista agrupada** (`cotizaciones_listado_por_vehiculo()`) recorre lotes de `_cotizaciones_lote_del_listado()`, **espejo de
+  `cotizaciones_listado()`** sin la ruta del vehículo: si cambia una ruta del listado, cambia la del lote (L7 de `areas/cotizaciones/listado-por-vehiculo.sql`); sus
+  lecturas derivadas van en laterales con `limit` (sin ellos el plan genérico recorre la tabla) y no lee `vehiculos`. La sonda, la cabeza y el conteo leen
+  `cotizaciones` bajo la RLS sin las rutas del lote: dan lo mismo porque las rutas del listado son la policy «cotizaciones: leer» por índice; si cambia la policy,
+  cambian las rutas del listado y del lote. **La búsqueda** (`cotizaciones_buscar()`, `supabase/tests/areas/cotizaciones/buscar.sql`, `medir-cotizaciones-buscar.sql`) es
   invocadora: nombra hasta `v_tope` (50) ids por fuente —clientes por `leads_candidatos()` y `leads_vista_por_ids()`, vehículos por origen, autores por
   `perfiles`, títulos por `_cotizaciones_ids_por_titulo()` (definer, `cotizaciones_titulo_trgm`, sólo lo que quien busca ve)— y de cada uno lee una página por `cotizaciones_lead_creado_idx`, `cotizaciones_vehiculo_creado_idx` o `cotizaciones_creador_idx` (el número, por
   `cotizaciones_numero_key`; el título, por la PK); lo que quien busca no ve no se nombra. La cotización de otra persona sólo se busca por autor donde se ve «todos».
@@ -327,7 +352,7 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   tipos de cambio por su nombre y su nodo, variante, colores); ningún id ni texto de un nodo de un nivel, para nadie (K4 de `cotizacion-tarjeta.sql`, en las dos
   formas). La geometría toma valores, estados y totales por id de nodo (`CalculoDeLaTarjeta`), nunca de la hoja de quien mira. En una guardada dibuja **lo guardado** (`calculoDeLoGuardado()`: el
   snapshot, con los estados del primer recálculo) y lo que difiere se dice fuera.
-- **El editor de la plantilla** (`/configuracion/cotizacion?seccion=tarjeta`): al navegador llega sólo el contexto reducido y nada se importa del área
+- **El editor de la plantilla** (la pestaña «Tarjeta»: `/configuracion/cotizacion/<origen>/tarjeta`): al navegador llega sólo el contexto reducido y nada se importa del área
   `formula`. Los modales de publicar y descartar (`?panel=publicar-tarjeta|descartar-plantilla`) **viven fuera de la `key` del editor**
   (`origen:esperada`) para que «Recargar» tras un PT409 no pierda la nota. Su vista previa es un hueco: el tipo sin código
   `entities/vista-previa-de-la-plantilla.ts` (la cuadrícula convertida con lo que nombra, `LecturaEnCuadricula`, plana y sin `Map`), que `plantilla` arma

@@ -6,7 +6,6 @@ import { puede, requerirSesion, type Permisos } from '@/modules/equipo'
 import type { OrigenResumen } from '@/modules/origenes'
 import { rutaParaCotizar, type ParaCotizar, type Vehiculo } from '@/modules/vehiculos'
 import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
-import { redirigir } from '@/shared/lib/navegacion'
 import { conVuelta, RUTAS, unParametro } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
@@ -22,11 +21,11 @@ import {
   bloquesDeQuienMira,
   CLAVE_DE_RELACIONADOS,
   CLAVE_DE_SECCION,
-  destinoDeLaSeccionFotos,
 } from './bloques'
 import { BloquesDeLaFicha } from './bloques-de-la-ficha'
 import { LateralDeLaFicha } from './lateral-de-la-ficha'
 import { LlegarAlBloque } from './llegar-al-bloque'
+import { redirigirConPermisos, redirigirSinLeer } from './llegada-de-la-ficha'
 
 export const metadata: Metadata = { title: 'Vehículo' }
 
@@ -85,23 +84,29 @@ const entradaDelIndice = ({ ancla, etiqueta }: { ancla: string; etiqueta: string
   etiqueta,
 })
 
-// «Cotización aprobada» de la izquierda: con `cotizaciones.ver` del origen (si no, ni el bloque ni la consulta) y, sin aprobada, «Cotizar» con la hoja de
-// este vehículo y la vuelta a la ficha (sólo si cotiza en el origen: `paraCotizarDe()`).
+// «Cotizar» desde la ficha: la hoja con este vehículo y su origen, con la vuelta a la ficha; null si no cotiza en el origen (`paraCotizarDe()`). La usan
+// «Cotización aprobada» (sin aprobada) y el título de «Cotizaciones de este vehículo».
+function cotizarDesdeLaFicha(paraCotizar: ParaCotizar | null, vehiculoId: string): string | null {
+  return paraCotizar === null
+    ? null
+    : conVuelta(rutaParaCotizar(paraCotizar, vehiculoId), `${RUTAS.vehiculos}/${vehiculoId}`)
+}
+
+// «Cotización aprobada» de la izquierda: con `cotizaciones.ver` del origen (si no, ni el bloque ni la consulta) y, sin aprobada, «Cotizar».
 function aprobadaDe(
   permisos: Permisos,
-  vehiculoId: string,
   origenId: string,
-  paraCotizar: ParaCotizar | null,
+  cotizar: string | null,
 ): { cotizar: string | null } | null {
-  if (!puede(permisos, 'cotizaciones.ver', origenId)) {
-    return null
-  }
-  return {
-    cotizar:
-      paraCotizar === null
-        ? null
-        : conVuelta(rutaParaCotizar(paraCotizar, vehiculoId), `${RUTAS.vehiculos}/${vehiculoId}`),
-  }
+  return puede(permisos, 'cotizaciones.ver', origenId) ? { cotizar } : null
+}
+
+// Los campos públicos que trae la tarjeta de la vitrina: lo único del layout que necesita «Vitrina» (el layout entero ya viaja con el panel).
+function camposPublicosDe(
+  campos: Awaited<ReturnType<typeof lecturasDeLaFicha>>['suLayout']['campos'],
+  previa: Awaited<ReturnType<typeof lecturasDeLaFicha>>['previa'],
+) {
+  return previa === null ? [] : campos.filter((campo) => campo.clave in previa.tarjeta.atributos)
 }
 
 type Sesion = Awaited<ReturnType<typeof requerirSesion>>
@@ -137,26 +142,26 @@ function encabezadoDe(
   )
 }
 
-// La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda, pegajosa, lo que lo identifica (cabecera, datos principales y
-// subasta); a la derecha, el índice y todos los bloques que quien mira ve, a la vista (`bloques.ts`). `?seccion=` (los enlaces de siempre) y los
-// paneles de «Relacionados» llevan a su bloque; `?editar=`, `?panel=vitrina`, `?panel=fechas-de-subasta` y `?visor=` abren lo suyo.
+// La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda, pegajosa, lo que lo identifica (cabecera, aprobada, datos
+// principales y subasta); a la derecha, el índice y sólo lo de ventas que quien mira ve (`bloques.ts`): cotizaciones, relacionados, actividad y
+// vitrina. `?seccion=` de un bloque y los paneles de «Relacionados» llevan a su bloque; los de un bloque que se fue redirigen (`llegada-de-la-ficha.ts`:
+// `fotos` y `ficha` antes de leer, `documentos`, `fase` y `repuestos` con el permiso de su página); `?editar=`, `?panel=vitrina`,
+// `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo.
 export default async function PaginaVehiculo({
   params,
   searchParams,
 }: PageProps<'/vehiculos/[id]'>) {
   const [sesion, { id }, parametros] = await Promise.all([requerirSesion(), params, searchParams])
-  // `?seccion=fotos` (el bloque ya no está): el visor de la cabecera, en la primera foto.
-  const alVisor = destinoDeLaSeccionFotos(id, parametros)
-  if (alVisor !== null) {
-    redirigir(alVisor)
-  }
+  redirigirSinLeer(id, parametros)
   const { encontrado, origen } = await vehiculoYOrigen(id, sesion.permisos)
   if (!encontrado || !origen) {
     return <NoDisponible />
   }
+  await redirigirConPermisos(encontrado.id, origen.id, sesion.permisos, parametros)
   const lectura = await lecturasDeLaFicha(sesion, encontrado, origen, parametros)
   const { suLayout, editable, fase, avisos, previa, publicar } = lectura
   const visibles = bloquesDeQuienMira(sesion.permisos, origen.id)
+  const cotizar = cotizarDesdeLaFicha(lectura.paraCotizar, encontrado.id)
   return (
     <>
       <RegistrarLaVisita id={encontrado.id} />
@@ -179,7 +184,7 @@ export default async function PaginaVehiculo({
             layout={suLayout}
             editable={editable}
             conCompraDirecta={lectura.conCompraDirecta}
-            aprobada={aprobadaDe(sesion.permisos, encontrado.id, origen.id, lectura.paraCotizar)}
+            aprobada={aprobadaDe(sesion.permisos, origen.id, cotizar)}
           />
         }
         etiquetaDelLateral={`Datos de ${encontrado.titulo}`}
@@ -189,11 +194,14 @@ export default async function PaginaVehiculo({
           visibles={visibles}
           vehiculo={encontrado}
           origen={origen}
-          layout={suLayout}
-          editable={editable}
           permisos={sesion.permisos}
           ofrecerPapelera={lectura.ofrecerPapelera}
           avisos={avisos}
+          cotizar={cotizar}
+          previa={previa}
+          publicar={publicar}
+          fase={fase}
+          camposPublicos={camposPublicosDe(suLayout.campos, previa)}
         />
       </FichaEnDosColumnas>
       <LlegarAlBloque ancla={anclaDe(parametros, visibles)} />
