@@ -138,3 +138,44 @@ describe('lecturaDeLaTarjetaDeTrabajo', () => {
     expect(r.estado === 'lista' ? r.lectura.nodos[0]?.pct : null).toBe('tasa')
   })
 })
+
+describe('lecturaDeLaTarjetaDeTrabajo y los tipos de cambio', () => {
+  it('el tipo de cambio restringido de un bucket no viaja: ni su nodo ni su nombre', () => {
+    const base = lectura()
+    const contexto = base.contexto
+    if (contexto === null) throw new Error('sin contexto')
+    const conCambio: PlantillaEnCuadricula = {
+      ...cuadricula(['fees']),
+      celdas: [
+        ...cuadricula(['fees']).celdas,
+        {
+          id: 'tc_fees',
+          fila: 'f_fees',
+          columna: 'b',
+          contenido: { tipo: 'dato', nodo: 'fees', mostrar: 'tc_nombre' },
+        },
+      ],
+    }
+    const r = lecturaDeLaTarjetaDeTrabajo(
+      lectura({
+        borrador: version(conCambio),
+        contexto: {
+          ...contexto,
+          definicion: {
+            ...contexto.definicion,
+            nodos: [
+              ...(contexto.definicion.nodos ?? []),
+              { id: 'tc_x', etiqueta: 'TC secreto', tipo: 'tipo_cambio' },
+            ],
+            buckets: { b: 'tc_x' },
+          },
+          visibilidad: { ...contexto.visibilidad, tc_x: { ver: 'costos' } },
+        },
+      }),
+      origen,
+    )
+    expect(r.estado).toBe('lista')
+    if (r.estado !== 'lista') return
+    expect(r.lectura.tiposDeCambio.buckets).toEqual([{ bucket: 'b', nombre: null, nodo: null }])
+  })
+})

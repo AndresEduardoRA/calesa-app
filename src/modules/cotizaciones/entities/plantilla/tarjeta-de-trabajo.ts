@@ -1,6 +1,8 @@
 // La tarjeta de trabajo de un origen para la planilla de la fórmula (la tarjeta en vivo): la plantilla que se edita en la pestaña «Tarjeta» (el borrador si hay, si no
 // la publicada), leída con la fórmula publicada (las etiquetas de la tarjeta son las suyas) y sólo con lo del nivel «todos», como toda tarjeta: un nodo restringido,
-// el `pct` restringido de un par y el tipo de cambio restringido de un bucket no viajan (su fila no se dibuja: la geometría la da por fuera de la versión). Puro.
+// el `pct` restringido de un par y el tipo de cambio restringido de un bucket (su nombre y su nodo) no viajan. La cuadrícula viaja entera: una fila o una celda que
+// nombra un nodo restringido no se dibuja, porque sin el nodo en `nodos` el cálculo no le da estado y la geometría la da por fuera de la versión. El total va como
+// en toda tarjeta. Puro.
 import type { LecturaEnCuadricula } from '../cuadricula-de-la-tarjeta'
 import type { LecturaDeLaTarjetaEnVivo } from '../tarjeta-en-vivo'
 import type { PlantillaDelOrigen } from './lectura-de-la-plantilla'
@@ -15,7 +17,7 @@ function soloDeTodos(
   deTodos: (id: string) => boolean,
 ): LecturaEnCuadricula {
   const delTipo = <T extends TipoDeCambio>(tc: T): T =>
-    tc.nodo === null || deTodos(tc.nodo) ? tc : { ...tc, nodo: null }
+    tc.nodo === null || deTodos(tc.nodo) ? tc : { ...tc, nodo: null, nombre: null }
   return {
     ...lectura,
     nodos: lectura.nodos
