@@ -263,6 +263,9 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
   retocable con un botón por celda y el canal de filas, el campo, la fila elegida, el pie y la pregunta de «Volver a la plantilla»). «Listo» llama a la
   action `retocarLaTarjeta` (revalida la página: la hoja se vuelve a montar con la versión nueva) y pide la portada. El modal es `propio` en
   `scripts/guardas/modales-con-salida.ts` (pregunta al salir con cambios).
+- **La tarjeta en vivo de la planilla de la fórmula** (los tipos sin código de `entities/tarjeta-en-vivo.ts`): el área `plantilla` lee la tarjeta de trabajo del
+  origen con `leerLaTarjetaDeTrabajo({ id, nombre })` (`index.ts`; la lectura de la pestaña «Tarjeta», nunca rechaza: `lista`, `sin_tarjeta` o `no_se_leyo`) y
+  `lecturaDeLaTarjetaDeTrabajo()` (pura: el borrador antes que la publicada, leída con la fórmula publicada y sólo con lo del nivel «todos»).
 
 ## Archivos clave
 
