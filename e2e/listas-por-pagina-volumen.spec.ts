@@ -51,7 +51,9 @@ const NODOS_MAXIMOS = { leads: 4_650, vehiculos: 6_000, cotizaciones: 2_700 }
 // (2.147 en escritorio: la insignia «Aprobada»), cada uno a lo sumo un 5 % (`docs/RENDIMIENTO.md`).
 // T15: la columna de acciones («⋯» de cada fila: 4 nodos) y el menú de cada fila (versión, marcas y lo que ofrece) pasan las cotizaciones a 2.556 nodos y 46,8 KB comprimidos con
 // 100 filas (escritorio, la dueña; 2.540 y 45,4 KB Ana; 2.499 y 44,7 KB en el celular): lo medido + 5 %, como las columnas de leads (T07). Es lo que el listado dice de cada fila.
-const BYTES_MAXIMOS_DEL_DOCUMENTO = { leads: 55_500, vehiculos: 63_000, cotizaciones: 49_500 }
+// T336 (el «⋯» único y sus paneles en la lista): el inventario pasa de 62.732 a 63.040 B comprimidos con los mismos 5.621 nodos (las referencias a los paneles
+// diferidos y la plantilla de «Ver actividad» viajan una vez por página); el tope, lo medido más un 5 %.
+const BYTES_MAXIMOS_DEL_DOCUMENTO = { leads: 55_500, vehiculos: 66_000, cotizaciones: 49_500 }
 
 // Las cotizaciones (4.16-4a, 8 columnas) a 100 filas, medidas con las 50.000 de la siembra: 482 KB crudos y 37,1 KB comprimidos la dueña, 514 KB y 37,5 KB Ana (escritorio);
 // 400 y 431 KB crudos y 35,9 y 36,3 KB comprimidos en el celular; 1.979 nodos en escritorio y 2.024 en el celular. Los topes, lo medido más un 5 % (previos: 40.000 B y 3.000 nodos).
