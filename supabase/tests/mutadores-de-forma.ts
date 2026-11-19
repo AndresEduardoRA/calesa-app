@@ -222,6 +222,7 @@ const NODOS: Mutador[] = [
     opciones,
     por_defecto: 'A',
   }), // F25
+  enNodo('en_par_no_booleano', esTipo('opcion'), (n) => (n['en_par'] = 'si')), // F43
   enNodo('tabla_mala', esTipo('tabla'), (n) => (n['tabla'] = 'Tabla')), // F26
   enNodo('match_no_objeto', esTipo('tabla'), (n) => (n['match'] = [])), // F27
   enNodo('match_valor_malo', esTipo('tabla'), (n) => (n['match'] = { anio: 'Año' })), // F28

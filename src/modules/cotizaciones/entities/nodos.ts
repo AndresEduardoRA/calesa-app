@@ -89,6 +89,8 @@ const esquemaOpcion = z.strictObject({
   tipo: z.literal('opcion'),
   opciones: z.array(esquemaOpcionDeVariante).min(2),
   por_defecto: esquemaId.optional(),
+  // «Se cotiza en par» (glosario: «Variante en par»): sin la clave, la de siempre. Exactamente dos opciones (`par_sin_dos_opciones`).
+  en_par: z.boolean().optional(),
 })
 const esquemaTabla = z.strictObject({
   ...deValor,
