@@ -11,4 +11,5 @@ export const publicacionSupabase: RepositorioDeLaFormula = {
   descartar: async (pedido) => publicacionSobre(await createClient()).descartar(pedido),
   cambiarConstante: async (pedido) =>
     publicacionSobre(await createClient()).cambiarConstante(pedido),
+  cambiarCabecera: async (pedido) => publicacionSobre(await createClient()).cambiarCabecera(pedido),
 }

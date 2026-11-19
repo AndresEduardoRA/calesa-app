@@ -78,6 +78,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 
 - Dentro de una transacción `now()` no se mueve: la «esperada vieja» es la versión menos 1 µs, que guardar mueve la versión se prueba entre transacciones, y lo que debe moverse se deja en el pasado (`session_replication_role = replica`) con `ocurrido_en` explícitos y distintos.
 - Una función STABLE lee la foto de la sentencia que la llama: prueba su efecto con un ayudante `pg_temp` aparte.
+- Con `SOLO=<archivo de la lista fija>` el archivo corre sin la preparación de los anteriores (personas de `humo.sql`): falla con «cuenta bloqueada» o sin lo
+  sembrado. Un archivo de la lista fija se prueba con la corrida entera; uno de `areas/` arma lo suyo y sí corre solo.
 - PGlite ordena con colación C y la base real con ICU: escribe `collate "C"` explícito y prueba el orden con casos no ASCII, o la diferencia pasa sin verse.
 - PGlite no trae los privilegios por defecto de Supabase: un grant se prueba mirando la definición o en la base real.
 - Compara un valor que puede ser nulo con `is distinct from` o `is not true`: `= false` deja pasar el nulo y la prueba no cae.
@@ -327,6 +329,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - react-pdf no dibuja WebP ni SVG con `<style>`, clases, `use`, `mask`, `filter` o `<image>`: una imagen para el PDF llega en PNG o JPG.
 - Un dibujo que comparten el HTML, react-pdf y `next/og` va por posiciones absolutas desde una geometría pura: satori no tiene `grid` (ni `<table>`, que tampoco dibuja react-pdf) y todo `div` con más de un hijo lleva `display: flex`.
 - Una fuente de react-pdf que lee del disco y no se importa no la ve el trazado de archivos: cada ruta que la usa la suma a `outputFileTracingIncludes` de `next.config.ts`.
+- Un espejo de una regex entre JS y Postgres va en ASCII (`[!-~]`), sin `\S` ni la bandera `u`: con Unicode las dos clases no coinciden (la URL de un enlace de la ayuda, `URL_DE_ENLACE`).
 
 ### vehiculos
 

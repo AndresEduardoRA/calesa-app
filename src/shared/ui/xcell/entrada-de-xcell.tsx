@@ -17,6 +17,8 @@ type Props = {
   alEscribir: (texto: string) => void
   alCerrar: (tecla: TeclaDeCierre, evento: KeyboardEvent<HTMLInputElement>) => void
   alPerderElFoco: () => void
+  // El ancho del botón que reemplaza (en px); nulo si no se midió.
+  ancho: number | null
 }
 
 // Un campo de contraseña que se vacía solo invita a «Guardar contraseña». Las marcas de 1Password, LastPass, Bitwarden y Dashlane lo
@@ -79,6 +81,7 @@ export function EntradaDeXCell(props: Props) {
       aria-describedby={describedby}
       data-seleccion={seleccion}
       className={ENTRADA}
+      style={props.ancho === null ? undefined : { width: props.ancho }}
       value={texto}
       onChange={(evento: ChangeEvent<HTMLInputElement>) => {
         alEscribir(evento.target.value)

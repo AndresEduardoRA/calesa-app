@@ -38,8 +38,9 @@ const CONTROLES_CON_EL_PANEL = 29
 
 // Los Tab que cuesta pasar por cada lado editable de la subasta como la dueña, medidos (4.13-4d, los dos proyectos): 12 lados de la hoja en 24 Tab desde «Saltar al contenido» y 16
 // de «Avanzado» en 28 desde el primer valor. Como las teclas de control, es determinista: una parada nueva entre dos editables lo rompe a propósito. La hoja, 25 desde el
-// 4.14-2a: la barra del vehículo se cruza antes del primer lado; 26 desde el 4.14-3b, con la barra del cliente.
-const TABS_DE_LA_HOJA = 26
+// 4.14-2a: la barra del vehículo se cruza antes del primer lado; 26 desde el 4.14-3b, con la barra del cliente; 27 desde T312: el ⚙ de la cabecera (sólo quien
+// configura el origen, como la dueña) es una parada antes del primer lado. Los pasos de la hoja no lo son (`tabIndex -1`), y la tarea de la asesora no cambia.
+const TABS_DE_LA_HOJA = 27
 const TABS_DE_AVANZADO = 28
 
 let asesora = ''

@@ -105,6 +105,23 @@ export function publicacionSobre(cliente: SupabaseClient<Database>): Repositorio
           p_publicada_esperada: publicadaEsperada,
         }),
       ),
+    // Las tres claves siempre y la esperada siempre. El 22023 con `hint = 'cabecera'` («La cabecera ya tiene esos valores.») queda como aviso, sin campo.
+    cambiarCabecera: async ({
+      origenId,
+      modoPorDefecto,
+      verTotalBsPorDefecto,
+      modosVisibles,
+      publicadaEsperada,
+    }) =>
+      idPublicado(
+        await cliente.rpc('formula_cambiar_cabecera', {
+          p_origen: origenId,
+          p_modo_por_defecto: modoPorDefecto,
+          p_ver_total_bs_por_defecto: verTotalBsPorDefecto,
+          p_modos_visibles: [...modosVisibles],
+          p_publicada_esperada: publicadaEsperada,
+        }),
+      ),
     // `returns void`: sin error, entró. Con la hora del borrador que se leyó, siempre (4.21-3b-1).
     descartar: async ({ origenId, actualizadoEsperado }) => {
       const { error } = await cliente.rpc('formula_descartar_borrador', {

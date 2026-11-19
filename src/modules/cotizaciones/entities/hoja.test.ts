@@ -17,6 +17,10 @@ describe('hojaDesde: lo que abre la hoja de cotizar', () => {
       modos: [{ clave: 'unificado', nombre: 'Unificado' }],
       verTotalBs: true,
       monedaBs: 'BOB',
+      ajustes: false,
+      modoPorDefecto: null,
+      verTotalBsPorDefecto: false,
+      modosVisibles: null,
     })
     expect(hoja.tarjetaTotal.secundarios).toHaveLength(1)
     expect(hoja.tonos[0]?.clave).toBe('verde')
@@ -266,7 +270,15 @@ describe('hojaDesde: el aspecto (la rejilla de 12)', () => {
     // Lo demás, sin claves de aspecto.
     const vieja = hojaDesde(crudaDeLaHoja())
     if (vieja?.estado !== 'lista') throw new Error('no se leyó')
-    expect(Object.keys(vieja.cabecera).sort()).toEqual(['modos', 'monedaBs', 'verTotalBs'])
+    expect(Object.keys(vieja.cabecera).sort()).toEqual([
+      'ajustes',
+      'modoPorDefecto',
+      'modos',
+      'modosVisibles',
+      'monedaBs',
+      'verTotalBs',
+      'verTotalBsPorDefecto',
+    ])
     expect(Object.keys(vieja.secciones[0] ?? {}).sort()).toEqual([
       'id',
       'items',

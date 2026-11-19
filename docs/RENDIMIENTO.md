@@ -590,6 +590,9 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
   `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). `/leads` mide 526,5 KB en 36 chunks y
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,0 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 465,9 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 458,5 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action; los pasos de la hoja y el botón del ⚙ de la cabecera viajan en frío, su panel, los campos por defecto y los enlaces de la ayuda con `diferido()`)
   `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,4 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
   `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 464,0 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
   `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,7 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action)
@@ -763,13 +766,15 @@ fallar.
   contigua en la papelera dentro de un índice entero se lee antes de descartarse. Los `count(*)` por origen de `origenes_resumen()` y del
   borrado de un origen recorren la tabla (tope 100 ms con las 50.000 sembradas; el total exacto está en `docs/PENDIENTES.md`).
 - La hoja dibujada (`e2e/cotizar-hoja-200.spec.ts`, 100 % y 200 %): `[data-hoja]` más «Avanzado» abierto ≤ 500 nodos con la fórmula más
-  grande, como quien cotiza sin ⚙ (~13 nodos por celda); está cerca del techo: lo que sume nodos a la hoja se para y se reporta. El aspecto
+  grande, como quien cotiza sin ⚙ (~12 nodos por celda: la celda en una fila no lleva el envoltorio de la cabecera); mide 446 al abrir y 467 usada, con los
+  pasos de la hoja (de 5 a 8 nodos: la fila, sus 4 botones y el texto de cada punto). Lo que sume nodos a la hoja se para y se reporta. El aspecto
   (rejilla, espacios, letra y tono) va en clases y variables sobre los nodos de siempre: ningún nodo por celda ni por sección. Al abrir,
   2 llamadas desde el servidor (+ `leerVehiculo` con un vehículo en la URL, + `leerClienteElegido` con un `?lead=`, + `integracionActiva`
   con `vehiculos.crear` en un origen de subasta, todas en el mismo `Promise.all`) y ninguna del navegador hasta abrir un panel; después un
   pedido por pausa de tecleo, con 1 en vuelo como máximo (`e2e/cotizar-hoja.spec.ts`).
 - El ⚙ de una constante (`e2e/cotizar-ajuste-constante.spec.ts`): como quien configura, cada ⚙ son exactamente 3 nodos (botón, `svg`,
-  `use`) y la subasta ≤ 585 nodos (techo 600); las dos personas ven las mismas celdas. Ningún pedido al abrir la hoja ni al pasar por una
+  `use`), el ⚙ de la cabecera son 7 (la fila junto a los modos, el botón, su `svg` y sus cuatro trazos) y la subasta ≤ 585 nodos (techo 600; mide 516 al abrir
+  y 540 usada); las dos personas ven las mismas celdas. Ningún pedido al abrir la hoja ni al pasar por una
   celda; abrir un ⚙ lee una fila por `formulas_publicada_unica`, ≤ 70 B. Panel, hook, lectura y action con `diferido()`.
 - El ⚙ de un tipo de cambio (`e2e/cotizar-ajuste-tipo-cambio.spec.ts`): una llamada a `formula_tipo_cambio_del_nodo()`, ≤ 247 B; tras
   cambiarlo la hoja no relee. Bloque, hooks y action de `empresa` van con el panel por `diferido()`.

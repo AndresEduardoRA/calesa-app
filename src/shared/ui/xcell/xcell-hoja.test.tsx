@@ -23,47 +23,47 @@ describe('el tope de nodos', () => {
   const AYUDA: Partial<XCellProps> = { hasHelp: true, onHelp: () => undefined }
   const AJUSTES: Partial<XCellProps> = { hasSettings: true, onSettings: () => undefined }
 
-  it('la celda sola, 8; un par, 9; la ayuda o el ⚙ suman 3 cada uno; la más cargada, 21 (4.12-1 y 4.12-2)', () => {
-    expect(nodos({})).toBe(8)
+  it('la celda sola, 7; un par, 8; la ayuda o el ⚙ suman 3 cada uno; la más cargada, 20 (una fila: sin el envoltorio de la cabecera)', () => {
+    expect(nodos({})).toBe(7)
     cleanup()
-    expect(nodos(PAR)).toBe(9)
+    expect(nodos(PAR)).toBe(8)
     cleanup()
-    expect(nodos(AYUDA)).toBe(11)
+    expect(nodos(AYUDA)).toBe(10)
     cleanup()
-    expect(nodos(AJUSTES)).toBe(11)
+    expect(nodos(AJUSTES)).toBe(10)
     cleanup()
-    expect(nodos({ ...AYUDA, ...AJUSTES })).toBe(14)
+    expect(nodos({ ...AYUDA, ...AJUSTES })).toBe(13)
     cleanup()
-    expect(nodos({ ...AYUDA, ...AJUSTES, overridden: true })).toBe(17)
+    expect(nodos({ ...AYUDA, ...AJUSTES, overridden: true })).toBe(16)
     cleanup()
-    expect(nodos({ ...AYUDA, ...AJUSTES, disabledReason: 'Apagado' })).toBe(17)
+    expect(nodos({ ...AYUDA, ...AJUSTES, disabledReason: 'Apagado' })).toBe(16)
     cleanup()
     const cargadas: Partial<XCellProps>[] = [
       { ...PAR, overridden: true, error: 'Fuera de rango', ...AYUDA, ...AJUSTES },
       { ...PAR, suggested: true, disabledReason: 'Apagado por la variante', ...AYUDA, ...AJUSTES },
     ]
     for (const caso of cargadas) {
-      expect(nodos(caso)).toBeLessThanOrEqual(21)
+      expect(nodos(caso)).toBeLessThanOrEqual(20)
       cleanup()
     }
   })
 
-  it('el candado por lado (4.13-3c): un lado, 12; los dos con el mismo motivo, 12; con dos motivos o un lado y un error, 15; el par modificado con un lado, error, ayuda y ⚙, 24 (el peor)', () => {
+  it('el candado por lado (4.13-3c): un lado, 11; los dos con el mismo motivo, 11; con dos motivos o un lado y un error, 14; el par modificado con un lado, error, ayuda y ⚙, 23 (el peor)', () => {
     const UN_LADO: Partial<XCellProps> = { ...PAR, disabledReason: 'Se calcula' }
-    expect(nodos(UN_LADO)).toBe(12)
+    expect(nodos(UN_LADO)).toBe(11)
     cleanup()
-    expect(nodos({ ...UN_LADO, secondaryDisabledReason: 'Se calcula' })).toBe(12)
+    expect(nodos({ ...UN_LADO, secondaryDisabledReason: 'Se calcula' })).toBe(11)
     cleanup()
-    expect(nodos({ ...UN_LADO, secondaryDisabledReason: 'Nivel' })).toBe(15)
+    expect(nodos({ ...UN_LADO, secondaryDisabledReason: 'Nivel' })).toBe(14)
     cleanup()
-    expect(nodos({ ...UN_LADO, error: 'Fuera de rango' })).toBe(15)
+    expect(nodos({ ...UN_LADO, error: 'Fuera de rango' })).toBe(14)
     cleanup()
     expect(
       nodos({ ...UN_LADO, overridden: true, error: 'Fuera de rango', ...AYUDA, ...AJUSTES }),
-    ).toBe(24)
+    ).toBe(23)
   })
 
-  it('300 celdas de la mezcla caben en 3.500 nodos (4.13-3c: mide 3.485 con los candados por lado; el peor estado de una celda, 24)', () => {
+  it('300 celdas de la mezcla caben en 3.200 nodos (mide 3.185 en una fila; el peor estado de una celda, 23)', () => {
     const mezcla = (i: number): XCellProps => ({
       ...BASE,
       id: `n${String(i)}`,
@@ -89,7 +89,7 @@ describe('el tope de nodos', () => {
         ))}
       </div>,
     )
-    expect(container.querySelectorAll('*').length).toBeLessThanOrEqual(3500)
+    expect(container.querySelectorAll('*').length).toBeLessThanOrEqual(3200)
   })
 })
 

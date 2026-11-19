@@ -1,7 +1,12 @@
-// Editar la cabecera del diseño (4.22-3): «Ver total en moneda local» y los modos de tipo de cambio. Un modo es otro `buckets` y otro `total_en`; `sumarModo()` lo
-// crea copiando los de la fórmula, así valida de entrada. Nada muta lo que recibe; lo que `validarDiseno()` rechaza tras un cambio queda aplicado y lo dice el editor.
+// Editar la cabecera del diseño (4.22-3): «Ver total en moneda local», los modos de tipo de cambio y lo que trae por defecto (docs/GLOSARIO.md › «Modo por
+// defecto», «Modos visibles»). Un modo es otro `buckets` y otro `total_en`; `sumarModo()` lo crea copiando los de la fórmula, así valida de entrada. Nada muta lo que
+// recibe; lo que `validarDiseno()` rechaza tras un cambio queda aplicado y lo dice el editor, pero ninguna de estas ediciones deja un rechazo de lo de por defecto por su
+// culpa: quitar un modo o apagar «Ver total» limpian lo que nombraban.
+import type { PorDefecto } from '../cabecera-por-defecto'
 import type { Diseno, ModoDeTipoDeCambio } from '../diseno'
 import type { Definicion } from '../formula'
+
+type Cabecera = Diseno['cabecera']
 
 export const MAXIMO_DEL_NOMBRE_DE_MODO = 40
 // Lo que admite el id de una clave (`^[a-z][a-z0-9_]{0,40}$`).
@@ -9,9 +14,26 @@ const MAXIMO_DE_LA_CLAVE = 41
 
 export type TipoDeCambioDelDiseno = { id: string; etiqueta: string }
 
-export const ponerVerTotalBs = (diseno: Diseno, valor: boolean): Diseno => ({
+// Apagar «Ver total» quita también «Ver total» por defecto (no puede salir encendido si no se ofrece).
+export function ponerVerTotalBs(diseno: Diseno, valor: boolean): Diseno {
+  const { ver_total_bs_por_defecto: _porDefecto, ...resto } = diseno.cabecera
+  return {
+    ...diseno,
+    cabecera: valor
+      ? { ...diseno.cabecera, ver_total_bs: true }
+      : { ...resto, ver_total_bs: false },
+  }
+}
+
+// Lo que la cabecera trae por defecto, las tres claves juntas (como las escribe el ⚙ de la cabecera).
+export const ponerPorDefecto = (diseno: Diseno, pd: PorDefecto): Diseno => ({
   ...diseno,
-  cabecera: { ...diseno.cabecera, ver_total_bs: valor },
+  cabecera: {
+    ...diseno.cabecera,
+    modo_por_defecto: pd.modo,
+    ver_total_bs_por_defecto: pd.verTotalBs,
+    modos_visibles: [...pd.visibles],
+  },
 })
 
 // Los nodos `tipo_cambio` de la fórmula, en su orden: lo que un modo puede elegir.
@@ -56,7 +78,16 @@ export function sumarModo(definicion: Definicion, diseno: Diseno, nombre: string
     buckets: buckets.map(([bucket, nodo]) => ({ bucket, nodo })),
     total_en: definicion.total_en,
   }
-  return { ...diseno, cabecera: { ...diseno.cabecera, modos: [...diseno.cabecera.modos, modo] } }
+  const visibles = diseno.cabecera.modos_visibles
+  return {
+    ...diseno,
+    cabecera: {
+      ...diseno.cabecera,
+      modos: [...diseno.cabecera.modos, modo],
+      // Con una lista de visibles, el modo nuevo se ve (sin ella se ven todos).
+      ...(visibles === undefined ? {} : { modos_visibles: [...visibles, modo.clave] }),
+    },
+  }
 }
 
 export type CambioDeModo = {
@@ -93,7 +124,23 @@ export function ponerModo(diseno: Diseno, clave: string, cambios: CambioDeModo):
   }
 }
 
-export const quitarModo = (diseno: Diseno, clave: string): Diseno => ({
-  ...diseno,
-  cabecera: { ...diseno.cabecera, modos: diseno.cabecera.modos.filter((m) => m.clave !== clave) },
-})
+// Quitar un modo lo saca también de lo de por defecto: si era el modo por defecto, la clave se va (vale el primero que queda) y ése queda visible; sin modos, ni el
+// modo por defecto ni la lista de visibles.
+export function quitarModo(diseno: Diseno, clave: string): Diseno {
+  const modos = diseno.cabecera.modos.filter((m) => m.clave !== clave)
+  const { modo_por_defecto, modos_visibles, ...resto } = diseno.cabecera
+  const porDefecto = modo_por_defecto === clave ? undefined : modo_por_defecto
+  const efectivo = porDefecto ?? modos[0]?.clave
+  const quedan = modos_visibles?.filter((c) => c !== clave)
+  const visibles =
+    quedan === undefined || efectivo === undefined
+      ? undefined
+      : modos.map((m) => m.clave).filter((c) => c === efectivo || quedan.includes(c))
+  const cabecera: Cabecera = {
+    ...resto,
+    modos,
+    ...(porDefecto === undefined || modos.length === 0 ? {} : { modo_por_defecto: porDefecto }),
+    ...(visibles === undefined ? {} : { modos_visibles: visibles }),
+  }
+  return { ...diseno, cabecera }
+}

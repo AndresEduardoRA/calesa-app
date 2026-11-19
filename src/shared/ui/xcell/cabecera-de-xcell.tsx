@@ -1,4 +1,4 @@
-import { ACCIONES, BOTON_DE_ACCION, CABECERA, ETIQUETA, PUNTO } from './clases'
+import { ACCIONES, BOTON_DE_ACCION, ETIQUETA, PUNTO } from './clases'
 import {
   IconoDeXCell,
   ID_DE_AJUSTES,
@@ -13,10 +13,14 @@ export const PARADA_DE_AYUDA = 10
 export const PARADA_DE_AJUSTES = 11
 export const PARADA_DE_RESTABLECER = 12
 
-type Props = {
+type PropsDelRotulo = {
   idDeLaEtiqueta: string
   label: string
   sugerido: boolean
+}
+
+type PropsDeLasAcciones = {
+  label: string
   // Se dibujan si la hoja las pide (`hasHelp`, `hasSettings`) y ofrece con qué responder; la celda no decide permisos ni abre nada.
   alAyudar: (() => void) | null
   alAjustar: (() => void) | null
@@ -49,50 +53,56 @@ function BotonDeAccion({ parada, nombre, titulo, icono, alAccionar }: PropsDeAcc
   )
 }
 
-// Arriba de la celda: el punto de lo sugerido, la etiqueta (que se parte) y la ranura de las acciones, que siempre existe para que
-// aparecer o irse una acción no mueva el resto.
-export function CabeceraDeXCell(props: Props) {
-  const { idDeLaEtiqueta, label, sugerido, alAyudar, alAjustar, restablecer, alRestablecer } = props
+// Al principio de la fila: el punto de lo sugerido y el rótulo, que se corta con «…» y lleva el texto completo en `title`. Sin envoltorio: son hijos de la celda (un nodo
+// menos por celda; la hoja tiene cientos).
+export function RotuloDeXCell({ idDeLaEtiqueta, label, sugerido }: PropsDelRotulo) {
   return (
-    <div className={CABECERA}>
+    <>
       {sugerido ? (
         <>
           <span aria-hidden title="Sugerido" className={PUNTO} />
           <span className="sr-only">Sugerido</span>
         </>
       ) : null}
-      <span id={idDeLaEtiqueta} className={ETIQUETA}>
+      <span id={idDeLaEtiqueta} title={label} className={ETIQUETA}>
         {label}
       </span>
-      <span className={ACCIONES}>
-        {alAyudar === null ? null : (
-          <BotonDeAccion
-            parada={PARADA_DE_AYUDA}
-            nombre={`Ayuda de ${label}`}
-            titulo="Ayuda"
-            icono={ID_DE_AYUDA}
-            alAccionar={alAyudar}
-          />
-        )}
-        {alAjustar === null ? null : (
-          <BotonDeAccion
-            parada={PARADA_DE_AJUSTES}
-            nombre={`Cambiar el valor por defecto de ${label}`}
-            titulo="Cambiar el valor por defecto"
-            icono={ID_DE_AJUSTES}
-            alAccionar={alAjustar}
-          />
-        )}
-        {restablecer === null ? null : (
-          <BotonDeAccion
-            parada={PARADA_DE_RESTABLECER}
-            nombre={`${restablecer} de ${label}`}
-            titulo={restablecer}
-            icono={ID_DE_RESTABLECER}
-            alAccionar={alRestablecer}
-          />
-        )}
-      </span>
-    </div>
+    </>
+  )
+}
+
+// Al final de la fila, detrás del valor: la ranura de las acciones, que siempre existe para que aparecer o irse una acción no mueva el resto.
+export function AccionesDeXCell(props: PropsDeLasAcciones) {
+  const { label, alAyudar, alAjustar, restablecer, alRestablecer } = props
+  return (
+    <span className={ACCIONES}>
+      {alAyudar === null ? null : (
+        <BotonDeAccion
+          parada={PARADA_DE_AYUDA}
+          nombre={`Ayuda de ${label}`}
+          titulo="Ayuda"
+          icono={ID_DE_AYUDA}
+          alAccionar={alAyudar}
+        />
+      )}
+      {alAjustar === null ? null : (
+        <BotonDeAccion
+          parada={PARADA_DE_AJUSTES}
+          nombre={`Cambiar el valor por defecto de ${label}`}
+          titulo="Cambiar el valor por defecto"
+          icono={ID_DE_AJUSTES}
+          alAccionar={alAjustar}
+        />
+      )}
+      {restablecer === null ? null : (
+        <BotonDeAccion
+          parada={PARADA_DE_RESTABLECER}
+          nombre={`${restablecer} de ${label}`}
+          titulo={restablecer}
+          icono={ID_DE_RESTABLECER}
+          alAccionar={alRestablecer}
+        />
+      )}
+    </span>
   )
 }

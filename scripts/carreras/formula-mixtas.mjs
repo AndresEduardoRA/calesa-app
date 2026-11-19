@@ -1,5 +1,5 @@
 // Las carreras mixtas de las versiones de la fórmula (docs/COTIZADOR.md › «Versiones»): el ⚙ contra publicar el borrador y revertir contra
-// el ⚙, en los dos órdenes. Las tres publican la N+1 tras el candado del origen y comparan la publicada que tenían: la segunda da PT409 y
+// el ⚙, en los dos órdenes, y el ⚙ de la cabecera contra el de una constante y contra publicar el borrador, en los dos órdenes. Las tres publican la N+1 tras el candado del origen y comparan la publicada que tenían: la segunda da PT409 y
 // nada se pisa. B va con las esperadas que manda la app y sin ellas (la base las acepta nulas): sin esperada, el ⚙ compara la publicada que
 // leyó antes del candado y publicar compara la versión de origen del borrador. Mismo arnés y terreno que `tonos.mjs`.
 import { PERSONAS } from './terreno.mjs'
@@ -13,6 +13,20 @@ const engranaje = (t, valor, esperada) => ({
   sql: `public.formula_cambiar_constante($1, 'flete', $2, $3)`,
   args: [t.origen, valor, esperada],
 })
+// El ⚙ de la cabecera, siempre con la esperada (la app la manda siempre): «Unificado» por defecto.
+const engranajeDeLaCabecera = (t, esperada) => ({
+  persona: configura,
+  sql: `public.formula_cambiar_cabecera($1, 'unificado', false, array['paralelo', 'unificado'], $2)`,
+  args: [t.origen, esperada],
+})
+// El modo por defecto de la publicada de un origen (nulo sin la clave).
+async function modoPorDefecto(db, origen) {
+  const { rows } = await db.query(
+    `select diseno -> 'cabecera' ->> 'modo_por_defecto' as modo from public.formulas where origen_id = $1 and estado = 'publicada'`,
+    [origen],
+  )
+  return rows[0]?.modo ?? null
+}
 const publicarBorrador = (t, esperadas) => ({
   persona: configura,
   sql: `public.formula_publicar($1, 'Publica el borrador', $2, $3::timestamptz)`,
@@ -129,6 +143,55 @@ export async function carrerasMixtasDeLaFormula({ orquesta, carrera, espero }) {
         pub.version === 3 &&
         Number(pub.flete) === 1500,
       { a: r.a, b: r.b, pub },
+    )
+  }
+
+  console.log('El ⚙ de la cabecera y el de una constante, en los dos órdenes')
+  for (const primero of ['cabecera', 'constante']) {
+    const t = await conBorrador(orquesta, `cab_cte_${primero}`)
+    const cabecera = engranajeDeLaCabecera(t, t.v1)
+    const constante = engranaje(t, 1500, t.v1)
+    const r = await carrera(
+      orquesta,
+      primero === 'cabecera' ? { a: cabecera, b: constante } : { a: constante, b: cabecera },
+    )
+    const [pub] = await publicadas(orquesta, t.origen)
+    const modo = await modoPorDefecto(orquesta, t.origen)
+    const ganoLaCabecera = primero === 'cabecera'
+    espero(
+      `el segundo (${ganoLaCabecera ? 'la constante' : 'la cabecera'}) da conflicto (PT409) y la v2 es sólo del primero: ${r.b.mensaje}`,
+      r.a.ok &&
+        r.b.codigo === 'PT409' &&
+        pub?.id === r.a.valor &&
+        pub.version === 2 &&
+        Number(pub.flete) === (ganoLaCabecera ? FLETE : 1500) &&
+        modo === (ganoLaCabecera ? 'unificado' : null) &&
+        (await borradores(orquesta, t.origen)) === 1,
+      { a: r.a, b: r.b, pub, modo },
+    )
+  }
+
+  console.log('El ⚙ de la cabecera y publicar el borrador, en los dos órdenes')
+  for (const primero of ['cabecera', 'publicar']) {
+    const t = await conBorrador(orquesta, `cab_pub_${primero}`)
+    const cabecera = engranajeDeLaCabecera(t, t.v1)
+    const publicar = publicarBorrador(t, true)
+    const r = await carrera(
+      orquesta,
+      primero === 'cabecera' ? { a: cabecera, b: publicar } : { a: publicar, b: cabecera },
+    )
+    const [pub] = await publicadas(orquesta, t.origen)
+    const modo = await modoPorDefecto(orquesta, t.origen)
+    const ganoLaCabecera = primero === 'cabecera'
+    espero(
+      `el segundo da conflicto (PT409) y la v2 es la del primero; el borrador ${ganoLaCabecera ? 'sigue' : 'se publicó'}: ${r.b.mensaje}`,
+      r.a.ok &&
+        r.b.codigo === 'PT409' &&
+        pub?.id === (ganoLaCabecera ? r.a.valor : t.borrador) &&
+        pub.version === 2 &&
+        modo === (ganoLaCabecera ? 'unificado' : null) &&
+        (await borradores(orquesta, t.origen)) === (ganoLaCabecera ? 1 : 0),
+      { a: r.a, b: r.b, pub, modo },
     )
   }
 }
