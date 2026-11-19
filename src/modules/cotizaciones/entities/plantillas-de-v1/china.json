@@ -1,0 +1,1718 @@
+{
+  "clave": "china",
+  "nombre": "China",
+  "frase": "Compra en China con documentos, transferencia y logística al paralelo, y la póliza al oficial.",
+  "formula": {
+    "definicion": {
+      "nodos": [
+        {
+          "id": "tc_oficial",
+          "tipo": "tipo_cambio",
+          "clave": "oficial",
+          "etiqueta": "Oficial",
+          "formato": "raw"
+        },
+        {
+          "id": "tc_paralelo",
+          "tipo": "tipo_cambio",
+          "clave": "paralelo",
+          "etiqueta": "Paralelo",
+          "formato": "raw"
+        },
+        {
+          "id": "anio",
+          "tipo": "campo_vehiculo",
+          "campo": "anio",
+          "etiqueta": "Año",
+          "formato": "raw"
+        },
+        {
+          "id": "compra",
+          "tipo": "input",
+          "etiqueta": "Compra en China",
+          "descripcion": "Precio de compra en China",
+          "grupo": "primer_pago"
+        },
+        {
+          "id": "docs_export",
+          "tipo": "constante",
+          "etiqueta": "Documentos de exportación",
+          "descripcion": "Documentos de exportación China",
+          "grupo": "primer_pago"
+        },
+        {
+          "id": "transferencia_pct",
+          "tipo": "constante",
+          "etiqueta": "Transferencia (%)",
+          "formato": "pct"
+        },
+        {
+          "id": "transferencia",
+          "tipo": "calculo",
+          "op": "porcentaje_de",
+          "de": ["compra", "docs_export"],
+          "pct": "transferencia_pct",
+          "etiqueta": "Transferencia a China",
+          "descripcion": "Comisión + 4 % (transferencia a China)",
+          "grupo": "primer_pago"
+        },
+        {
+          "id": "grua",
+          "tipo": "constante",
+          "etiqueta": "Grúa",
+          "descripcion": "Traslado al puerto (China)",
+          "grupo": "segundo_pago"
+        },
+        {
+          "id": "transporte_maritimo",
+          "tipo": "input",
+          "etiqueta": "Transporte marítimo",
+          "descripcion": "China / Chile - Iquique",
+          "grupo": "segundo_pago"
+        },
+        {
+          "id": "desconsolidacion",
+          "tipo": "constante",
+          "etiqueta": "Desconsolidación",
+          "descripcion": "Cargos de manipuleo / contenedor",
+          "grupo": "segundo_pago"
+        },
+        {
+          "id": "transporte_terrestre",
+          "tipo": "constante",
+          "etiqueta": "Transporte terrestre",
+          "descripcion": "Chile - Iquique / Bolivia - Cbba.",
+          "grupo": "segundo_pago"
+        },
+        {
+          "id": "comision",
+          "tipo": "constante",
+          "etiqueta": "Comisión",
+          "descripcion": "Servicio de logística",
+          "grupo": "segundo_pago"
+        },
+        {
+          "id": "docs_ingreso",
+          "tipo": "constante",
+          "etiqueta": "Documentos de ingreso",
+          "descripcion": "Facturas y documentos de ingreso",
+          "grupo": "segundo_pago"
+        },
+        {
+          "id": "factor_dp",
+          "tipo": "tabla",
+          "tabla": "depreciacion",
+          "match": {
+            "anio": "anio"
+          },
+          "columna": "factor",
+          "etiqueta": "Factor DP",
+          "formato": "raw",
+          "sobrescribible": true
+        },
+        {
+          "id": "fob",
+          "tipo": "calculo",
+          "op": "multiplicar",
+          "de": ["compra", "factor_dp"],
+          "etiqueta": "FOB ajustado",
+          "descripcion": "Compra × factor DP"
+        },
+        {
+          "id": "seguro_pct",
+          "tipo": "constante",
+          "etiqueta": "Seguro (%)",
+          "formato": "pct"
+        },
+        {
+          "id": "seguro",
+          "tipo": "calculo",
+          "op": "porcentaje_de",
+          "de": ["fob"],
+          "pct": "seguro_pct",
+          "etiqueta": "Seguro",
+          "descripcion": "Sobre el FOB ya ajustado"
+        },
+        {
+          "id": "flete",
+          "tipo": "constante",
+          "etiqueta": "Flete marítimo",
+          "descripcion": "Monto fijo que entra directo al CIF"
+        },
+        {
+          "id": "gastos_puerto",
+          "tipo": "constante",
+          "etiqueta": "Gastos puerto",
+          "descripcion": "Monto fijo que entra directo al CIF"
+        },
+        {
+          "id": "gastos_garaje",
+          "tipo": "constante",
+          "etiqueta": "Gastos garaje",
+          "descripcion": "Monto fijo que entra directo al CIF"
+        },
+        {
+          "id": "utilidad",
+          "tipo": "constante",
+          "etiqueta": "Utilidad",
+          "descripcion": "Monto fijo que entra directo al CIF"
+        },
+        {
+          "id": "cif",
+          "tipo": "calculo",
+          "op": "suma",
+          "de": ["fob", "seguro", "flete", "gastos_puerto", "gastos_garaje", "utilidad"],
+          "etiqueta": "Valor CIF",
+          "descripcion": "El vehículo puesto en Bolivia, antes de impuestos",
+          "salida": "base_imponible"
+        },
+        {
+          "id": "ga_pct",
+          "tipo": "constante",
+          "etiqueta": "GA (%)",
+          "formato": "pct"
+        },
+        {
+          "id": "ga",
+          "tipo": "calculo",
+          "op": "porcentaje_de",
+          "de": ["cif"],
+          "pct": "ga_pct",
+          "etiqueta": "GA · gravamen arancelario",
+          "descripcion": "Sobre el CIF"
+        },
+        {
+          "id": "iva_pct",
+          "tipo": "constante",
+          "etiqueta": "IVA (%)",
+          "formato": "pct"
+        },
+        {
+          "id": "iva",
+          "tipo": "calculo",
+          "op": "porcentaje_de",
+          "de": ["cif", "ga"],
+          "pct": "iva_pct",
+          "etiqueta": "IVA",
+          "descripcion": "Sobre CIF + GA"
+        },
+        {
+          "id": "ice_pct",
+          "tipo": "constante",
+          "etiqueta": "ICE (%)",
+          "formato": "pct"
+        },
+        {
+          "id": "ice",
+          "tipo": "calculo",
+          "op": "porcentaje_de",
+          "de": ["cif", "ga"],
+          "pct": "ice_pct",
+          "etiqueta": "ICE",
+          "descripcion": "Sobre CIF + GA"
+        },
+        {
+          "id": "total_impuestos",
+          "tipo": "calculo",
+          "op": "suma",
+          "de": ["ga", "iva", "ice"],
+          "etiqueta": "Total impuestos",
+          "descripcion": "Al cambio oficial"
+        },
+        {
+          "id": "factura_garaje",
+          "tipo": "constante",
+          "etiqueta": "Factura garaje"
+        },
+        {
+          "id": "agencia",
+          "tipo": "constante",
+          "etiqueta": "Agencia"
+        },
+        {
+          "id": "gas_sao",
+          "tipo": "constante",
+          "etiqueta": "Gas y SAO"
+        },
+        {
+          "id": "factura_venta",
+          "tipo": "constante",
+          "etiqueta": "Factura de venta"
+        },
+        {
+          "id": "almacenaje",
+          "tipo": "constante",
+          "etiqueta": "Almacenaje"
+        },
+        {
+          "id": "total_poliza",
+          "tipo": "calculo",
+          "op": "suma",
+          "de": ["factura_garaje", "agencia", "gas_sao", "factura_venta", "almacenaje"],
+          "etiqueta": "Total póliza",
+          "descripcion": "Gastos de despacho, al cambio oficial"
+        },
+        {
+          "id": "poliza_calculada",
+          "tipo": "calculo",
+          "op": "suma",
+          "de": ["total_impuestos", "total_poliza"],
+          "etiqueta": "Impuestos y póliza",
+          "descripcion": "Impuestos más gastos de despacho"
+        },
+        {
+          "id": "poliza",
+          "tipo": "calculo",
+          "op": "redondear",
+          "de": ["poliza_calculada"],
+          "n": 0,
+          "etiqueta": "Póliza",
+          "descripcion": "Costo de la póliza y gastos aduaneros",
+          "grupo": "poliza",
+          "sobrescribible": true
+        },
+        {
+          "id": "total",
+          "tipo": "calculo",
+          "op": "suma",
+          "de": [
+            "compra",
+            "docs_export",
+            "transferencia",
+            "grua",
+            "transporte_maritimo",
+            "desconsolidacion",
+            "transporte_terrestre",
+            "comision",
+            "docs_ingreso",
+            "poliza"
+          ],
+          "etiqueta": "TOTAL",
+          "descripcion": "Todo con papeles, fuera de Aduana Nacional Cbba.",
+          "salida": "total"
+        }
+      ],
+      "buckets": {
+        "exterior": "tc_paralelo",
+        "aduana": "tc_oficial"
+      },
+      "total_en": "tc_paralelo",
+      "grupos": [
+        {
+          "id": "primer_pago",
+          "etiqueta": "1er pago",
+          "plazo": "1er pago",
+          "tono": "v1_verde",
+          "bucket": "exterior"
+        },
+        {
+          "id": "segundo_pago",
+          "etiqueta": "2do pago",
+          "plazo": "2do pago",
+          "tono": "v1_crema",
+          "bucket": "exterior"
+        },
+        {
+          "id": "poliza",
+          "etiqueta": "Póliza",
+          "plazo": "4 meses",
+          "tono": "v1_dorado",
+          "bucket": "aduana"
+        }
+      ]
+    },
+    "params": {
+      "docs_export": 1500,
+      "transferencia_pct": 0.04,
+      "grua": 1000,
+      "desconsolidacion": 900,
+      "transporte_terrestre": 600,
+      "comision": 1000,
+      "docs_ingreso": 700,
+      "seguro_pct": 0.02,
+      "flete": 900,
+      "gastos_puerto": 35,
+      "gastos_garaje": 200,
+      "utilidad": 20,
+      "factura_garaje": 100,
+      "agencia": 150,
+      "gas_sao": 70,
+      "factura_venta": 300,
+      "almacenaje": 160,
+      "ga_pct": 0,
+      "iva_pct": 0.1494,
+      "ice_pct": 0,
+      "tablas": {
+        "depreciacion": [
+          {
+            "anio": 2026,
+            "factor": 1
+          },
+          {
+            "anio": 2025,
+            "factor": 0.8
+          },
+          {
+            "anio": 2024,
+            "factor": 0.64
+          },
+          {
+            "anio": 2023,
+            "factor": 0.512
+          },
+          {
+            "anio": 2022,
+            "factor": 0.41
+          },
+          {
+            "anio": 2021,
+            "factor": 0.328
+          },
+          {
+            "anio": 2020,
+            "factor": 0.328
+          },
+          {
+            "anio": 2019,
+            "factor": 0.328
+          },
+          {
+            "anio": 2018,
+            "factor": 0.326
+          }
+        ]
+      }
+    },
+    "diseno": {
+      "cabecera": {
+        "modos": [
+          {
+            "clave": "aduana",
+            "nombre": "Aduana",
+            "buckets": [
+              {
+                "bucket": "exterior",
+                "nodo": "tc_oficial"
+              },
+              {
+                "bucket": "aduana",
+                "nodo": "tc_oficial"
+              }
+            ],
+            "total_en": "tc_oficial"
+          },
+          {
+            "clave": "paralelo",
+            "nombre": "Paralelo",
+            "buckets": [
+              {
+                "bucket": "exterior",
+                "nodo": "tc_paralelo"
+              },
+              {
+                "bucket": "aduana",
+                "nodo": "tc_oficial"
+              }
+            ],
+            "total_en": "tc_paralelo"
+          },
+          {
+            "clave": "unificado",
+            "nombre": "Unificado",
+            "buckets": [
+              {
+                "bucket": "exterior",
+                "nodo": "tc_paralelo"
+              },
+              {
+                "bucket": "aduana",
+                "nodo": "tc_paralelo"
+              }
+            ],
+            "total_en": "tc_paralelo"
+          }
+        ],
+        "ver_total_bs": true,
+        "modo_por_defecto": "unificado",
+        "ver_total_bs_por_defecto": false,
+        "modos_visibles": ["aduana", "paralelo", "unificado"]
+      },
+      "secciones": [
+        {
+          "id": "cambio",
+          "titulo": "Tipos de cambio",
+          "presentacion": "principal",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "tc_oficial",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Lo fija el dueño cada día. Convierte impuestos y póliza a bolivianos."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "tc_paralelo",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Convierte a bolivianos todo lo que se paga afuera."
+              }
+            }
+          ]
+        },
+        {
+          "id": "primer_pago",
+          "titulo": "1er pago",
+          "presentacion": "principal",
+          "tono": "v1_verde",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "compra",
+              "ancho": "completo",
+              "ayuda": {
+                "texto": "Lo carga el asesor: el precio pactado con el proveedor chino."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "docs_export",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Documentos de exportación del lado chino; entran en la transferencia."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "transferencia",
+              "ancho": "mitad",
+              "secundario": "porcentaje",
+              "ayuda": {
+                "texto": "Comisión por girar la plata: sale de la compra más los documentos de exportación."
+              }
+            }
+          ]
+        },
+        {
+          "id": "segundo_pago",
+          "titulo": "2do pago",
+          "presentacion": "principal",
+          "tono": "v1_crema",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "grua",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Traslado en China hasta el puerto."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "transporte_maritimo",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Tramo China – Chile (Iquique)."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "desconsolidacion",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Monto fijo del servicio de desconsolidación."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "transporte_terrestre",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Monto fijo del tramo Iquique – Cochabamba."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "comision",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Monto fijo del servicio de logística."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "docs_ingreso",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Facturas y documentos de ingreso."
+              }
+            }
+          ]
+        },
+        {
+          "id": "poliza",
+          "titulo": "Póliza",
+          "presentacion": "principal",
+          "tono": "v1_dorado",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "poliza",
+              "ancho": "completo",
+              "ayuda": {
+                "texto": "Impuestos más gastos de despacho, al cambio oficial. Se puede fijar a mano."
+              }
+            }
+          ]
+        },
+        {
+          "id": "cif",
+          "titulo": "CIF · vehículo puesto en Bolivia",
+          "presentacion": "avanzado",
+          "items": [
+            {
+              "tipo": "atajos",
+              "nodo": "factor_dp",
+              "columna": "anio",
+              "filas": 9
+            },
+            {
+              "tipo": "celda",
+              "nodo": "factor_dp",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Lo primero que se aplica: castiga la compra según el año de la unidad."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "seguro",
+              "ancho": "mitad",
+              "secundario": "porcentaje",
+              "ayuda": {
+                "texto": "Se calcula sobre el FOB ya ajustado, no sobre el valor original."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "flete",
+              "ancho": "tercio"
+            },
+            {
+              "tipo": "celda",
+              "nodo": "gastos_puerto",
+              "ancho": "tercio"
+            },
+            {
+              "tipo": "celda",
+              "nodo": "gastos_garaje",
+              "ancho": "tercio"
+            },
+            {
+              "tipo": "celda",
+              "nodo": "utilidad",
+              "ancho": "tercio"
+            },
+            {
+              "tipo": "subtotal",
+              "nodo": "cif"
+            }
+          ]
+        },
+        {
+          "id": "impuestos",
+          "titulo": "Impuestos de importación",
+          "presentacion": "avanzado",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "ga",
+              "ancho": "tercio",
+              "secundario": "porcentaje",
+              "ayuda": {
+                "texto": "Único impuesto que sale del CIF solo."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "iva",
+              "ancho": "tercio",
+              "secundario": "porcentaje",
+              "ayuda": {
+                "texto": "Sale del CIF más el GA ya sumado, no del CIF solo."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "ice",
+              "ancho": "tercio",
+              "secundario": "porcentaje",
+              "ayuda": {
+                "texto": "Igual que el IVA: sobre el CIF más el GA."
+              }
+            },
+            {
+              "tipo": "subtotal",
+              "nodo": "total_impuestos"
+            }
+          ]
+        },
+        {
+          "id": "gastos_de_despacho",
+          "titulo": "Póliza · gastos de despacho",
+          "presentacion": "avanzado",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "factura_garaje",
+              "ancho": "tercio"
+            },
+            {
+              "tipo": "celda",
+              "nodo": "agencia",
+              "ancho": "tercio"
+            },
+            {
+              "tipo": "celda",
+              "nodo": "gas_sao",
+              "ancho": "tercio"
+            },
+            {
+              "tipo": "celda",
+              "nodo": "factura_venta",
+              "ancho": "mitad"
+            },
+            {
+              "tipo": "celda",
+              "nodo": "almacenaje",
+              "ancho": "mitad"
+            },
+            {
+              "tipo": "subtotal",
+              "nodo": "total_poliza"
+            }
+          ]
+        }
+      ],
+      "tarjeta_total": {
+        "nodo": "total",
+        "secundarios": []
+      }
+    }
+  },
+  "tarjeta": {
+    "forma": 2,
+    "columnas": [
+      {
+        "id": "concepto",
+        "ancho": 325
+      },
+      {
+        "id": "monto",
+        "ancho": 140
+      },
+      {
+        "id": "descripcion",
+        "ancho": 282
+      },
+      {
+        "id": "tipo_cambio",
+        "ancho": 72
+      },
+      {
+        "id": "tc",
+        "ancho": 50
+      },
+      {
+        "id": "plazo",
+        "ancho": 91
+      }
+    ],
+    "filas": [
+      {
+        "id": "meta",
+        "alto": 34,
+        "ocultar_si": "nunca"
+      },
+      {
+        "id": "titulo",
+        "alto": 44,
+        "ocultar_si": "nunca"
+      },
+      {
+        "id": "n_compra",
+        "alto": 32,
+        "ocultar_si": "no_aplica_o_cero",
+        "nodo": "compra"
+      },
+      {
+        "id": "n_docs_export",
+        "alto": 32,
+        "ocultar_si": "no_aplica_o_cero",
+        "nodo": "docs_export"
+      },
+      {
+        "id": "n_transferencia",
+        "alto": 32,
+        "ocultar_si": "no_aplica_o_cero",
+        "nodo": "transferencia"
+      },
+      {
+        "id": "n_grua",
+        "alto": 32,
+        "ocultar_si": "no_aplica",
+        "nodo": "grua"
+      },
+      {
+        "id": "n_transporte_maritimo",
+        "alto": 32,
+        "ocultar_si": "no_aplica_o_cero",
+        "nodo": "transporte_maritimo"
+      },
+      {
+        "id": "n_desconsolidacion",
+        "alto": 32,
+        "ocultar_si": "no_aplica_o_cero",
+        "nodo": "desconsolidacion"
+      },
+      {
+        "id": "n_transporte_terrestre",
+        "alto": 32,
+        "ocultar_si": "no_aplica_o_cero",
+        "nodo": "transporte_terrestre"
+      },
+      {
+        "id": "n_comision",
+        "alto": 32,
+        "ocultar_si": "no_aplica_o_cero",
+        "nodo": "comision"
+      },
+      {
+        "id": "n_docs_ingreso",
+        "alto": 32,
+        "ocultar_si": "no_aplica_o_cero",
+        "nodo": "docs_ingreso"
+      },
+      {
+        "id": "n_poliza",
+        "alto": 32,
+        "ocultar_si": "no_aplica",
+        "nodo": "poliza"
+      },
+      {
+        "id": "total",
+        "alto": 60,
+        "ocultar_si": "nunca"
+      },
+      {
+        "id": "nota",
+        "alto": 40,
+        "ocultar_si": "nunca"
+      }
+    ],
+    "celdas": [
+      {
+        "id": "fecha",
+        "fila": "meta",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "dato",
+          "variable": "fecha_larga"
+        },
+        "estilo": {
+          "negrita": true,
+          "tamano": 14
+        }
+      },
+      {
+        "id": "categoria",
+        "fila": "meta",
+        "columna": "monto",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "texto",
+          "texto": "COTIZACIÓN ELÉCTRICOS CHINA"
+        },
+        "estilo": {
+          "negrita": true,
+          "alinear": "centro"
+        }
+      },
+      {
+        "id": "asesor_rotulo",
+        "fila": "meta",
+        "columna": "tipo_cambio",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "Asesor:"
+        },
+        "estilo": {
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha"
+        }
+      },
+      {
+        "id": "asesor",
+        "fila": "meta",
+        "columna": "tc",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "dato",
+          "variable": "asesor_iniciales"
+        },
+        "estilo": {
+          "negrita": true,
+          "tamano": 18,
+          "alinear": "centro"
+        }
+      },
+      {
+        "id": "titulo",
+        "fila": "titulo",
+        "columna": "concepto",
+        "abarca_columnas": 3,
+        "contenido": {
+          "tipo": "dato",
+          "variable": "titulo"
+        },
+        "estilo": {
+          "fondo": "v1_azul_marino",
+          "negrita": true,
+          "tamano": 22,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "cab_tc",
+        "fila": "titulo",
+        "columna": "tipo_cambio",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "texto",
+          "texto": "Tipo $ Cambio"
+        },
+        "estilo": {
+          "fondo": "v1_rojo",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "cab_plazo",
+        "fila": "titulo",
+        "columna": "plazo",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "Plazos Pagos"
+        },
+        "estilo": {
+          "fondo": "v1_amarillo_fuerte",
+          "negrita": true,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "compra_concepto",
+        "fila": "n_compra",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "COMPRA EN CHINA"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "compra_monto",
+        "fila": "n_compra",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "compra",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "compra_descripcion",
+        "fila": "n_compra",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "compra",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "primer_pago_tc",
+        "fila": "n_compra",
+        "columna": "tipo_cambio",
+        "abarca_columnas": 2,
+        "abarca_filas": 3,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "compra",
+          "mostrar": "tc_nombre"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "primer_pago_plazo",
+        "fila": "n_compra",
+        "columna": "plazo",
+        "abarca_filas": 3,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "compra",
+          "mostrar": "plazo"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "negrita": true,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "docs_export_concepto",
+        "fila": "n_docs_export",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "DOCUMENTOS DE EXPORTACIÓN"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "docs_export_monto",
+        "fila": "n_docs_export",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "docs_export",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "docs_export_descripcion",
+        "fila": "n_docs_export",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "docs_export",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "transferencia_concepto",
+        "fila": "n_transferencia",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "TRANSFERENCIA A CHINA"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "transferencia_monto",
+        "fila": "n_transferencia",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "transferencia",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "transferencia_descripcion",
+        "fila": "n_transferencia",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "transferencia",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_verde",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "grua_concepto",
+        "fila": "n_grua",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "GRÚA"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "grua_monto",
+        "fila": "n_grua",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "grua",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "grua_descripcion",
+        "fila": "n_grua",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "grua",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "segundo_pago_tc",
+        "fila": "n_grua",
+        "columna": "tipo_cambio",
+        "abarca_columnas": 2,
+        "abarca_filas": 6,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "grua",
+          "mostrar": "tc_nombre"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "segundo_pago_plazo",
+        "fila": "n_grua",
+        "columna": "plazo",
+        "abarca_filas": 6,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "grua",
+          "mostrar": "plazo"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "transporte_maritimo_concepto",
+        "fila": "n_transporte_maritimo",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "TRANSPORTE MARÍTIMO"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "transporte_maritimo_monto",
+        "fila": "n_transporte_maritimo",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "transporte_maritimo",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "transporte_maritimo_descripcion",
+        "fila": "n_transporte_maritimo",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "transporte_maritimo",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "desconsolidacion_concepto",
+        "fila": "n_desconsolidacion",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "DESCONSOLIDACIÓN"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "desconsolidacion_monto",
+        "fila": "n_desconsolidacion",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "desconsolidacion",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "desconsolidacion_descripcion",
+        "fila": "n_desconsolidacion",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "desconsolidacion",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "transporte_terrestre_concepto",
+        "fila": "n_transporte_terrestre",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "TRANSPORTE TERRESTRE"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "transporte_terrestre_monto",
+        "fila": "n_transporte_terrestre",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "transporte_terrestre",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "transporte_terrestre_descripcion",
+        "fila": "n_transporte_terrestre",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "transporte_terrestre",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "comision_concepto",
+        "fila": "n_comision",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "COMISIÓN"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "comision_monto",
+        "fila": "n_comision",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "comision",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "comision_descripcion",
+        "fila": "n_comision",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "comision",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "docs_ingreso_concepto",
+        "fila": "n_docs_ingreso",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "DOCUMENTOS DE INGRESO"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "docs_ingreso_monto",
+        "fila": "n_docs_ingreso",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "docs_ingreso",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "docs_ingreso_descripcion",
+        "fila": "n_docs_ingreso",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "docs_ingreso",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_crema",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "poliza_concepto",
+        "fila": "n_poliza",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "PÓLIZA"
+        },
+        "estilo": {
+          "fondo": "v1_dorado",
+          "tamano": 16,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "poliza_monto",
+        "fila": "n_poliza",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "poliza",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_dorado",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "derecha",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "poliza_descripcion",
+        "fila": "n_poliza",
+        "columna": "descripcion",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "poliza",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_dorado",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "poliza_tc",
+        "fila": "n_poliza",
+        "columna": "tipo_cambio",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "poliza",
+          "mostrar": "tc_nombre"
+        },
+        "estilo": {
+          "fondo": "v1_dorado",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "poliza_plazo",
+        "fila": "n_poliza",
+        "columna": "plazo",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "poliza",
+          "mostrar": "plazo"
+        },
+        "estilo": {
+          "fondo": "v1_dorado",
+          "negrita": true,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "total_etiqueta",
+        "fila": "total",
+        "columna": "concepto",
+        "contenido": {
+          "tipo": "texto",
+          "texto": "TOTAL APROX. DÓLARES AMERICANOS:"
+        },
+        "estilo": {
+          "fondo": "v1_azul_marino",
+          "negrita": true,
+          "tamano": 18,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "grueso"
+          }
+        }
+      },
+      {
+        "id": "total_monto",
+        "fila": "total",
+        "columna": "monto",
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "total",
+          "mostrar": "monto"
+        },
+        "estilo": {
+          "fondo": "v1_azul_marino",
+          "texto": "v1_amarillo_fuerte",
+          "negrita": true,
+          "tamano": 16,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "grueso"
+          }
+        }
+      },
+      {
+        "id": "total_nota",
+        "fila": "total",
+        "columna": "descripcion",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "dato",
+          "nodo": "total",
+          "mostrar": "descripcion"
+        },
+        "estilo": {
+          "fondo": "v1_azul_marino",
+          "negrita": true,
+          "tamano": 14,
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "logo",
+        "fila": "total",
+        "columna": "tc",
+        "abarca_columnas": 2,
+        "contenido": {
+          "tipo": "logo"
+        },
+        "estilo": {
+          "alinear": "centro",
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      },
+      {
+        "id": "nota",
+        "fila": "nota",
+        "columna": "concepto",
+        "abarca_columnas": 6,
+        "contenido": {
+          "tipo": "texto",
+          "texto": "Nota: Esta es una cotización referencial. Los valores deben ajustarse según el tipo de cambio del día que se realicen los pagos."
+        },
+        "estilo": {
+          "fondo": "v1_rojo",
+          "negrita": true,
+          "bordes": {
+            "todos": "fino"
+          }
+        }
+      }
+    ]
+  },
+  "colores": [
+    {
+      "clave": "v1_azul_marino",
+      "nombre": "V1 azul marino",
+      "hex": "#17365d"
+    },
+    {
+      "clave": "v1_rojo",
+      "nombre": "V1 rojo",
+      "hex": "#c00000"
+    },
+    {
+      "clave": "v1_amarillo_fuerte",
+      "nombre": "V1 amarillo fuerte",
+      "hex": "#ffff00"
+    },
+    {
+      "clave": "v1_verde",
+      "nombre": "V1 verde",
+      "hex": "#92d050"
+    },
+    {
+      "clave": "v1_crema",
+      "nombre": "V1 crema",
+      "hex": "#fce4d6"
+    },
+    {
+      "clave": "v1_dorado",
+      "nombre": "V1 dorado",
+      "hex": "#e7b717"
+    }
+  ],
+  "unidad": {
+    "inputs": {
+      "compra": 27500
+    },
+    "banderas": {},
+    "vehiculo": {
+      "anio": 2026
+    },
+    "overrides": {},
+    "tipos_cambio": {
+      "oficial": 11.9,
+      "paralelo": 12
+    }
+  },
+  "camposDelVehiculo": [
+    {
+      "clave": "anio",
+      "nombre": "Año"
+    }
+  ],
+  "tiposDeCambio": [
+    {
+      "clave": "oficial",
+      "nombre": "Oficial"
+    },
+    {
+      "clave": "paralelo",
+      "nombre": "Paralelo"
+    }
+  ]
+}

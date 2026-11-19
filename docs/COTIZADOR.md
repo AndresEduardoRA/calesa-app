@@ -1059,3 +1059,44 @@ ve_todo, puede_guardarla, contexto}`: `puede_guardarla` es `ve_todo` y `_cotizac
 - **En pantalla**, `<PortadaDeLaCotizacion>` (`pantallas/tarjeta-portada.ts`; en el resumen del listado, por el hueco `Portada`): la imagen con
   `object-contain` y `loading="lazy"` en un marco de la proporción que le dan (15:8 por omisión); mientras carga o si falla, un recuadro del mismo
   tamaño con el total y «Reintentar»; el clic la abre en el visor de fotos; en Modo Live, borrosa con «Oculto en Modo Live» y sin visor.
+
+## Plantillas de V1
+
+Una **plantilla de V1** (glosario) es un paquete fijo que replica un cotizador de V1: la fórmula con su diseño de la hoja y la tarjeta en forma 2. Hay
+cuatro, en `src/modules/cotizaciones/entities/plantillas-de-v1/` (un JSON por paquete; `index.ts` los lee y sólo lo importa el servidor:
+`solo-del-servidor.test.ts`): **USA (subasta)** (`usa`), **China** (`china`), **Oficina** (`oficina`) y **Compra dealer USA** (`dealer`). Cada uno pasa
+`validarFormula()`, `validarDiseno()` y `validarPlantilla()` contra su propia fórmula (`entities/plantilla/de-v1/*.test.ts`, con la cuenta de V1 hecha a
+mano desde sus bandas) y la base los publica (P9 de `supabase/tests/areas/formula/plantillas-de-v1.sql`, que los carga como juego). No cambian la semilla.
+
+- **De dónde sale cada uno** (`docs/referencias/cotizador-actual/v1/`): los conceptos, el orden, «de dónde sale» y los porcentajes, de las bandas de
+  `quote-formula-rows.ts` (`USA_FORMULA_BANDS`, `CHINA_FORMULA_BANDS`, `DEALER_FORMULA_BANDS`); los valores por defecto, de la versión publicada de cada
+  origen en el extracto de V1 (`usa` v2, `china` v2, `dealer` v1; `office` no versiona nada); la tarjeta, de `seed/{usa,china,office,dealer}.ts` (la de
+  Dealer, su v2), con las palabras de V1 y sin sus defectos. USA sigue la estructura del caso «excel» y reproduce sus cifras con lo tipeado en su hoja.
+- **Lo que trae:** las variantes de V1 (USA: Moto, Auto gasolina, USA → Chile, Híbrido / eléctrico; Dealer: el contenedor de 20 y de 40 pies **en par**),
+  los grupos con su plazo y su color («1er pago», «2do pago» y la póliza al oficial; Oficina, un grupo «Contado»), los modos de V1 («Aduana»: la suma de los
+  dólares, todo al oficial; «Paralelo»: lo de afuera al paralelo y la aduana al oficial; «Unificado»: un solo dólar, el paralelo), con su modo por defecto
+  (Unificado en USA y China, Paralelo en Oficina y Dealer), «Mostrar el total en bolivianos» ofrecido y apagado, las ayudas de cada celda y el nivel «Todos»
+  en ver y editar. La cuenta especial de USA entra en la base de la transferencia y nunca en el CIF; la nacionalización (la póliza en China) va a dólar entero
+  (`redondear`, sobrescribible: la póliza manual), como su línea de V1; los fees y la transferencia, el par porcentaje-monto de su celda, no (V1 también los
+  redondea: con montos enteros la diferencia es de centavos). En Dealer, el export híbrido entra con el interruptor «Híbrido / eléctrico».
+- **Las tablas congeladas** (`params.tablas`, «Las tablas congeladas (D5)»): USA lleva `depreciacion` (la `usa` de V1) y `depreciacion_moto` (la `usa_moto` de
+  V1, que guarda porcentajes enteros: 5 es un factor de 0,05); China, `depreciacion` (la `china` de V1). **China no congela las comisiones por categoría**: su
+  fórmula de V1 no las lee (la comisión de logística es la constante de 1.000). Oficina y Dealer no usan tablas (el factor DP de Dealer es una constante: no
+  hay vehículo del que leer el año). Las tablas nuevas no se crean desde aquí.
+- **Los colores** que nombran los grupos, el diseño y la tarjeta van en el paquete con su clave `v1_<nombre>` (la que da `_tono_clave()` del nombre «V1
+  <nombre>»: `v1_teal`, `v1_amarillo_fuerte`…); el mismo hex lleva el mismo nombre en los cuatro, así el segundo paquete reusa los del primero. Al aplicar, la
+  elección es pura y en el servidor de Next (`coloresDeLaPlantilla()`): la clave que no existe se crea; la que existe con el mismo hex se reusa; con otro hex,
+  va `v1_<paquete>_<nombre>`, que a su vez se reusa si tiene el mismo hex, y si también choca no se crea nada (PT409). Si no caben en el tope de 48: «No hay
+  lugar para N colores más en el catálogo (máximo 48): elimina alguno que no se use.». Después `plantillaConClaves()` reescribe los tonos de los grupos, del
+  diseño y de las celdas.
+- **Aplicar es todo o nada, en la base:** `cotizacion_paquete_aplicar(p_origen, p_paquete, p_formula_esperada, p_plantilla_esperada)`, **invocadora**, en este
+  orden: `assert_permiso('cotizaciones.configurar', p_origen)`; la forma de `p_paquete` (22023, `hint` `paquete.<pieza>`); `formula_guardar_borrador()` con la
+  esperada de la fórmula (nula = crear) y sin la publicada esperada; `plantilla_guardar_borrador()` con la de la tarjeta; `_paquete_colores_preparar()`
+  (definer: toma `tonos` en `share row exclusive` y comprueba que cada color que se reusa sigue con su hex —si no, PT409 «Mientras elegías, cambiaron los
+  colores del catálogo. Vuelve a elegir la plantilla.»— y que hay lugar); y `tono_crear()` por cada color nuevo, comparando la clave que da la base con la
+  esperada (otra: PT409). Un color cuyo nombre o clave tomó otro mientras tanto también es ese PT409. Los candados van en el orden de publicar (`formulas:` → `plantillas:` →
+  `tonos`). Cualquier rechazo deshace todo y vuelve con su mensaje (los PT409 de los borradores, tal cual); reintentar no duplica: si el primero entró, el
+  segundo trae versiones que ya no son y da el PT409 de los borradores. Devuelve
+  `{formula: {id, actualizado_en}, plantilla, colores}`. La nota de los dos borradores: «Empezado desde la plantilla de V1 «USA (subasta)».».
+- **No publica:** crea los borradores de la fórmula (con su diseño) y de la tarjeta; publicar es aparte, como siempre. El navegador manda la clave del
+  paquete, nunca una fórmula.

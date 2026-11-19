@@ -16,18 +16,21 @@ type Props = {
   // Con los dos, el selector de origen (las páginas por origen).
   origenes?: readonly OrigenDelSelector[]
   origenAbierto?: string
+  // Lo que se hace con el origen y no con una pestaña («Empezar desde una plantilla»): a la derecha de los chips; en el celular, a todo el ancho debajo.
+  accionDelOrigen?: ReactNode
   // `ancho`: la hoja, que lleva su vista previa al costado desde `xl`; `completo` (sin tope): la tarjeta, cuyo lienzo es la vista previa y lleva el panel a la derecha.
   ancho?: 'angosto' | 'ancho' | 'completo'
   children: ReactNode
 }
 
 // Lo común a las páginas de Configuración › Cotización, en este orden: «‹ Cotización» (vuelve al inicio, como «‹ Orígenes»), los chips de
-// origen (sólo por origen), las pestañas, el título con su frase y el contenido. No importa ningún módulo: cada página trae su pantalla.
+// origen (sólo por origen) con la acción del origen a su derecha, las pestañas, el título con su frase y el contenido. No importa ningún módulo: cada página trae su pantalla.
 export function MarcoDeCotizacion({
   parte,
   pestanas,
   origenes,
   origenAbierto,
+  accionDelOrigen,
   ancho = 'angosto',
   children,
 }: Props) {
@@ -41,7 +44,10 @@ export function MarcoDeCotizacion({
         Cotización
       </Link>
       {origenes && origenAbierto ? (
-        <SelectorDeOrigen origenes={origenes} abierto={origenAbierto} />
+        <div className="flex min-w-0 flex-wrap items-start justify-between gap-2">
+          <SelectorDeOrigen origenes={origenes} abierto={origenAbierto} />
+          {accionDelOrigen}
+        </div>
       ) : null}
       <PestanasDeCotizacion pestanas={pestanas} valor={parte.clave} />
       <EncabezadoDeConfiguracion titulo={parte.titulo} descripcion={parte.descripcion} />

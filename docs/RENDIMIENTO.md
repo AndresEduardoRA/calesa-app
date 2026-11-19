@@ -735,6 +735,12 @@ fallar.
   del PDF, en paralelo con la plantilla, recortada a los nodos del contexto reducido. El editor (lienzo, panel, dnd-kit y atajos: 26,4 KB gz, más dnd-kit, 15,0, el chunk que comparte con el orden del diseño), el modal de
   publicar y el diálogo de descartar van por `diferido()`; «Dato» dibuja 50 («Escribe para acotar.»). Deshacer guarda hasta 100 instantáneas en memoria.
   `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
+- «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, las cuatro pestañas de un origen): en frío sólo viajan el botón y las cáscaras de `diferido()` (medido
+  en KB gz con `medirJsEnFrio()`: Fórmula 444,6, Hoja 359,8, Tarjeta 364,7 y Tablas 362,0; ≤ +1,1 por pestaña). El modal llega al abrirse y el lienzo es el
+  chunk de la pestaña Tarjeta. Al abrirlo, una vez y sin caché, `GET [origen]/plantillas-de-v1`: el borrador de la fórmula (`formulas_borrador_unico`, `limit 1`), su
+  autor (`perfiles_pkey`), el de la tarjeta (`plantillas_borrador_unico`, `limit 1`) y el catálogo de colores (`limit 48`), más los tipos de cambio y los campos del
+  origen; responde ≤ 80 KB sin comprimir con las cuatro lecturas de la tarjeta (lo fijan `route.test.ts` y `plantillas-de-v1.test.ts`). Se dibujan cuatro
+  tarjetas de a lo sumo 54 celdas. Aplicar escribe dos borradores y ≤ 48 colores: ninguna lectura crece con los datos.
 - Planilla y editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrir la pestaña lee una fila de `formulas` por `formulas_pkey`
   (`definicion`, `params`, `estado`, `diseno`, `nota`) desde el navegador: con 600 filas ≤ 80.900 B; también el terreno de la vista previa (abajo) y el
   catálogo de colores (≤ 48 filas, seis columnas de colores); en el servidor, en paralelo con la fórmula, la plantilla de la tarjeta (la lectura de la

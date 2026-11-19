@@ -343,6 +343,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - react-pdf no dibuja WebP ni SVG con `<style>`, clases, `use`, `mask`, `filter` o `<image>`: una imagen para el PDF llega en PNG o JPG.
 - Un dibujo que comparten el HTML, react-pdf y `next/og` va por posiciones absolutas desde una geometría pura: satori no tiene `grid` (ni `<table>`, que tampoco dibuja react-pdf) y todo `div` con más de un hijo lleva `display: flex`.
 - Una fuente de react-pdf que lee del disco y no se importa no la ve el trazado de archivos: cada ruta que la usa la suma a `outputFileTracingIncludes` de `next.config.ts`.
+- Valida una plantilla de la tarjeta contra la visibilidad que compila la base (`_compilar_visibilidad()`, `visibilidadDeLaPlantilla()`), nunca con «todo del nivel «todos»»: lo que la hoja no dibuja no figura, y un `tc_nombre` cuyo tipo de cambio no tiene celda da `tipo_de_cambio_restringido` recién al publicar.
+- Una guarda que sigue los imports de un `'use client'` corta en un archivo `'use server'`: el bundler cambia la Server Action por una referencia y lo que importa no viaja.
 - Un espejo de una regex entre JS y Postgres va en ASCII (`[!-~]`), sin `\S` ni la bandera `u`: con Unicode las dos clases no coinciden (la URL de un enlace de la ayuda, `URL_DE_ENLACE`).
 
 ### vehiculos
