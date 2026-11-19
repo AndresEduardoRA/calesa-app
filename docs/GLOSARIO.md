@@ -116,6 +116,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Foto** — `vehiculos_imagenes` / `Foto`, `<SeccionDeFotos>`: una imagen de un vehículo (hasta 24).
 - **Visor de imágenes** — `<CarruselEnElLugar>`, `useVisorDeGaleria()`, `?visor=<clave>&foto=<n>`: las fotos de una entidad en grande,
   con flechas, ← →, «3 de 12» y miniaturas; en su lugar, la portada y, al acercarse, el resto (una sola lectura).
+- **Tira de miniaturas** — `<TiraDeMiniaturas>`, `<CarruselConTira>`: las miniaturas de una entidad en fila, desplazable de costado (hasta 24), con
+  la actual marcada (`aria-current` y borde). En el visor va bajo la foto grande; en la ficha del vehículo, bajo el carrusel (un clic abre el visor en
+  esa foto; ← → la recorren); en la ficha completa, arriba de los datos. No es la «Miniatura» (una sola foto chica).
 - **Alta suelta** — `vehiculo_crear(…, 'suelto')`, `vehiculos.crear`: dar de alta un vehículo desde el inventario (`/vehiculos`, «Nuevo», `N`) o por
   importación. **Alta desde cotizar** — `vehiculo_crear(…, 'cotizar')`, `vehiculos.crear.desde_cotizar`: desde la hoja de cotizar («+» y «Traer»
   del panel del vehículo). Cada una, su permiso por origen; `vehiculos.creado_desde` dice cuál fue.
