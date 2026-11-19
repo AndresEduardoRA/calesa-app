@@ -45,5 +45,6 @@ export function propsDeLaFila(
     alSumar: nueva.sumar,
     alCancelarSumar: nueva.cancelarSumar,
     alCrear: nueva.crear,
+    alPonerEnPar: editor.ponerEnPar,
   }
 }

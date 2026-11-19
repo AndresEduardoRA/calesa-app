@@ -23,8 +23,25 @@ const plano = (formula: Formula) => ({
 })
 
 // Una definición validada: `tc` (el tipo de cambio propio), `anio` (input, vale 0), `factor` (una fila de la tabla viva por `anio`) y las filas de texto.
-export function formulaDePrevia(proyecto: string, congelada?: number): Formula {
+// Con `variante`, una variante `contenedor` con esas claves al principio (para «Se cotiza en par»).
+export function formulaDePrevia(
+  proyecto: string,
+  congelada?: number,
+  variante?: readonly string[],
+): Formula {
+  const delContenedor: Nodo[] =
+    variante === undefined
+      ? []
+      : [
+          {
+            id: 'contenedor',
+            tipo: 'opcion',
+            etiqueta: 'Contenedor',
+            opciones: variante.map((c) => ({ clave: c, etiqueta: c, titulo: c })),
+          },
+        ]
   const base: Nodo[] = [
+    ...delContenedor,
     ...NODOS_DE_BASE.filter((n) => n.id !== 'tc').map((n) => n),
     { id: 'tc', tipo: 'tipo_cambio', etiqueta: 'Tipo de cambio', clave: claveDelCambio(proyecto) },
     { id: 'anio', tipo: 'input', etiqueta: 'Año' },
@@ -64,7 +81,20 @@ export function sembrarBorradorDePrevia(
   proyecto: string,
   congelada?: number,
 ): void {
-  const f = formulaDePrevia(proyecto, congelada)
+  insertarBorrador(origenId, autor, formulaDePrevia(proyecto, congelada))
+}
+
+// El mismo borrador con una variante `contenedor` de esas claves al principio (para «Se cotiza en par»).
+export function sembrarBorradorConVariante(
+  origenId: string,
+  autor: string,
+  proyecto: string,
+  variante: readonly string[],
+): void {
+  insertarBorrador(origenId, autor, formulaDePrevia(proyecto, undefined, variante))
+}
+
+function insertarBorrador(origenId: string, autor: string, f: Formula): void {
   sql(`
     insert into public.formulas (origen_id, estado, definicion, params, nota, creado_por)
     values (${literal(origenId)}::uuid, 'borrador', ${json(f.definicion)}, ${json(plano(f))}, 'Borrador E2E 4.21-3a-2',
