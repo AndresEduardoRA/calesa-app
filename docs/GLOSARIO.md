@@ -518,7 +518,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tramo (de un error de texto)** — `Tramo`, `ErrorDeCompilacion` (`entities/motivos-del-compilador.ts`): dónde está el error (`desde`,
   `largo`; `linea`, `columna`).
 - **Vigencia** — `ajustes_empresa.vigencia_dias` (7 por defecto, de 1 a 365): días que vale una cotización desde el día de su `creado_en`
-  (ver «Ajustes de cotización»).
+  (ver «Ajustes de cotización»). En Configuración › Cotización es la parte «Vigencia» de «General» (`/configuracion/cotizacion/general/vigencia`).
 - **Vencida** — derivada: `creado_en` + vigencia < hoy, por día en la zona de la empresa (`vence_el`, `vencida` de
   `cotizacion_hoja_guardada()`). No es un estado guardado.
 - **Cotizar encima (N+1)** — `cotizacion_encima()`, `cotizacion_padre_id`, `version`: la versión nueva de una cotización (otra cotización,
@@ -575,6 +575,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `comprobantes_serie_cambiar`) y `comprobantes_contadores` (último número de cada serie usada): numeración sin huecos.
 - **Diseño de la hoja** — `formulas.diseno` / `entities/diseno.ts`, `validarDiseno()`, `validar_diseno()`: cómo se ve la hoja de un origen
   (secciones, celdas, atajos, variantes, interruptores, modos, tarjeta) y el aspecto de cada pieza en la rejilla de la hoja.
+- **Hoja (pestaña)** — `/configuracion/cotizacion/<origen>/hoja`, clave `hoja` de `PESTANAS_DE_COTIZACION`: el nombre en la UI de la pestaña
+  de un origen donde se edita el diseño de la hoja («Cómo se ve y se llena la cotización.»). El término técnico sigue siendo «Diseño de la hoja»
+  (`features/diseno/`); la «Hoja» de cotizar es la pantalla donde se cotiza.
+- **General (Configuración › Cotización)** — `PARTES_GENERALES`, `/configuracion/cotizacion/general/colores|niveles|vigencia`: lo de
+  Configuración › Cotización que vale para toda la empresa (Colores, Niveles, Vigencia), aparte de lo de cada origen (Fórmula, Hoja, Tarjeta,
+  Tablas). No es un origen.
 - **Aspecto** — claves planas y opcionales del diseño de la hoja / `entities/aspecto-de-la-hoja.ts`, `features/hoja/components/clases-de-la-rejilla.ts`:
   cómo se ve una pieza, de escalas cerradas (nunca px, CSS ni hex). Ítem: ancho, alto, letra y énfasis; sección: ancho, alto, relleno,
   separación, densidad, letra, énfasis y color (clave `tono`); cabecera: color, relleno, letra y énfasis. Sin la clave, lo de siempre; el editor quita la clave

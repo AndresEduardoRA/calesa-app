@@ -14,7 +14,7 @@ import {
   publicarFormulaDeTresSumandos,
 } from './soporte/diseno-editor'
 
-// La pestaña «Diseño» de Configuración › Cotización (4.22-2, `docs/UX.md` › «Cotización: diseño (estados propios)»): el camino feliz en escritorio. Se ven las secciones
+// La pestaña «Diseño» de Configuración › Cotización (4.22-2, `docs/UX.md` › «Cotización: hoja (estados propios)»): el camino feliz en escritorio. Se ven las secciones
 // y las celdas; poner a una celda el nivel «Costos» avisa que se deduce restando (sin bloquear) y alinea quién la edita; una sección pasa a «Avanzado»; «Guardar el
 // borrador» crea el borrador con la definición y los `params` de la publicada tal cual; recargar vuelve a mostrar lo guardado.
 test.describe.configure({ mode: 'serial' })
@@ -47,7 +47,7 @@ const estado = (page: Page) => page.locator('[data-guardado] [role="status"]')
 
 async function abrirElDiseno(page: Page) {
   await page.goto(`/configuracion/cotizacion?seccion=diseno&origen=${origen.id}`)
-  await expect(page.getByRole('heading', { name: 'Diseño', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Hoja', level: 1 })).toBeVisible()
   await expect(seccion(page, 'base')).toBeVisible()
 }
 

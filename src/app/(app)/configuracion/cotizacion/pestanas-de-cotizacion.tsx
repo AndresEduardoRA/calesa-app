@@ -1,47 +1,35 @@
 'use client'
 
-import { parseAsString, parseAsStringLiteral, useQueryStates } from 'nuqs'
-import { useMemo } from 'react'
+import type { Route } from 'next'
+import { useRouter } from 'next/navigation'
 import { PestanasConDesborde } from '@/shared/ui/pestanas-con-desborde'
-import type { AlMenosUna } from '../empresa/pestanas'
+import { salirSinPerder } from '@/shared/ui/salida-con-cambios'
 
 type Props = {
-  // Las pestañas que esta persona puede abrir, sin sus permisos: la página decide cuáles.
-  pestanas: AlMenosUna<{ clave: string; titulo: string }>
+  // Las pestañas que esta persona ve, con su ruta ya resuelta (la del origen abierto); con `motivo`, apagada.
+  pestanas: readonly { clave: string; titulo: string; ruta: string; motivo?: string }[]
+  valor: string
 }
 
-// La pestaña abierta vive en la URL: se puede recargar y compartir el enlace. La primera es la de por defecto: elegirla quita `?seccion=`.
-export function PestanasDeCotizacion({ pestanas }: Props) {
-  const parametros = useMemo(
-    () => ({
-      seccion: parseAsStringLiteral(pestanas.map((pestana) => pestana.clave)).withDefault(
-        pestanas[0].clave,
-      ),
-      // Lo abierto en una pestaña no sobrevive al cambiar a otra.
-      panel: parseAsString,
-      nivel: parseAsString,
-      tono: parseAsString,
-      origen: parseAsString,
-      version: parseAsString,
-      tabla: parseAsString,
-    }),
-    [pestanas],
-  )
-  const [{ seccion }, setParametros] = useQueryStates(parametros, { shallow: false })
+// Las pestañas de una página de Configuración › Cotización (las de un origen o las de General). Cada una es una sub-ruta: elegir navega y
+// suelta los parámetros de la otra (`?panel=`, `?tabla=`, `?version=`, `?vista=`); con una barra de cambios sin guardar, antes pregunta
+// (`salirSinPerder()`). Con menos de dos no hay nada que elegir: no se dibuja.
+export function PestanasDeCotizacion({ pestanas, valor }: Props) {
+  const router = useRouter()
+  if (pestanas.length < 2) {
+    return null
+  }
   return (
     <PestanasConDesborde
       pestanas={pestanas}
-      valor={seccion}
+      valor={valor}
       alElegir={(elegida) => {
-        void setParametros({
-          seccion: elegida,
-          panel: null,
-          nivel: null,
-          tono: null,
-          origen: null,
-          version: null,
-          tabla: null,
-        })
+        const ruta = pestanas.find((pestana) => pestana.clave === elegida)?.ruta
+        if (ruta !== undefined && elegida !== valor) {
+          salirSinPerder(() => {
+            router.push(ruta as Route)
+          })
+        }
       }}
     />
   )

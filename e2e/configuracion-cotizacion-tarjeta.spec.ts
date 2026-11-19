@@ -82,17 +82,11 @@ test('E1: sin borrador ni publicada el editor parte de los grupos de la fórmula
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto('/configuracion/cotizacion')
+  await page.goto(`/configuracion/cotizacion/${origenId()}/formula`)
   const pestanas = page.getByRole('tab')
-  await expect(pestanas).toHaveText([
-    'Fórmula',
-    'Tarjeta',
-    'Diseño',
-    'Colores',
-    'Tablas',
-    'Ajustes',
-  ])
+  await expect(pestanas).toHaveText(['Fórmula', 'Hoja', 'Tarjeta', 'Tablas'])
   await page.getByRole('tab', { name: 'Tarjeta' }).click()
+  await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${origenId()}/tarjeta$`))
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(
     page.getByText('Sin borrador ni publicada: parte de los grupos de la fórmula.'),
@@ -127,12 +121,14 @@ test('E2: sin la clave no hay pestaña ni se abre por la URL; un origen ajeno ab
   await page.context().clearCookies()
   await entrar(page, configuradora, { fresco: true })
   await abrirTarjeta(page, ajeno.id)
-  await expect(page.getByLabel('Origen')).toHaveValue(origenId())
+  await expect(
+    page.getByRole('navigation', { name: 'Origen' }).locator('[aria-current="page"]'),
+  ).toHaveAttribute('href', `/configuracion/cotizacion/${origenId()}/tarjeta`)
   await page.goto(`/configuracion/cotizacion?seccion=tarjeta&origen=${sinFormula.id}`)
   await expect(page.getByText(/^Falta publicar la fórmula de /)).toBeVisible()
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toHaveCount(0)
   await page.getByRole('link', { name: 'Ir a «Fórmula»' }).click()
-  await expect(page).toHaveURL(new RegExp(`seccion=formula&origen=${sinFormula.id}`))
+  await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${sinFormula.id}/formula$`))
 })
 
 test('E4: lo tipeado y sin guardar vuelve tras recargar con «Descartar», y «Descartar» lo quita', async ({

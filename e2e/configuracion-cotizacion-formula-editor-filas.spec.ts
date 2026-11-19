@@ -52,7 +52,7 @@ const sumar = (page: Page, etiqueta: string) =>
 
 async function abrirEditor(page: Page) {
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origen.id}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
   await page
     .getByRole('region', { name: 'Borrador' })
     .getByRole('button', { name: 'Editar', exact: true })

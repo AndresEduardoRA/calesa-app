@@ -1,10 +1,12 @@
-// Las URL de la pestaña «Tablas» de Configuración › Cotización (4.23-3): la lista de un origen y el editor de una tabla.
+// Las URL de la pestaña «Tablas» de un origen en Configuración › Cotización (4.23-3): la lista del origen y el editor de una tabla.
 import type { Route } from 'next'
-import { RUTAS } from '@/shared/lib/rutas'
+import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
 
-// `?seccion=tablas&origen=<id>`, y con `tablaId`, `&tabla=<id>` (abre su editor).
+// `/configuracion/cotizacion/<origen>/tablas` y, con `tablaId`, `?tabla=<id>` (abre su editor).
 export function rutaDeLasTablas(origenId: string, tablaId?: string): Route {
-  const consulta = new URLSearchParams({ seccion: 'tablas', origen: origenId })
-  if (tablaId) consulta.set('tabla', tablaId)
-  return `${RUTAS.configuracionDeCotizacion}?${consulta.toString()}` as Route
+  return rutaDeConfiguracionDeCotizacion(
+    origenId,
+    'tablas',
+    tablaId ? { tabla: tablaId } : undefined,
+  )
 }

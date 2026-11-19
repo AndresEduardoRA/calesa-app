@@ -46,7 +46,7 @@ function guardaOtraPersona(origenId: string): void {
 
 async function abrirFormula(page: Page, origenId: string) {
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
 }
 
 test('G6: si otra persona guardó el borrador, publicar da su conflicto con «Recargar» y, tras recargar, publica', async ({

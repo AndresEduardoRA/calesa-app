@@ -157,10 +157,7 @@ test('E2E el inicio dice qué falta: la fórmula de un origen nuevo, con su enla
     name: `Falta publicar la fórmula de ${origen.nombre}`,
     exact: true,
   })
-  await expect(falta).toHaveAttribute(
-    'href',
-    `/configuracion/cotizacion?seccion=formula&origen=${origen.id}`,
-  )
+  await expect(falta).toHaveAttribute('href', `/configuracion/cotizacion/${origen.id}/formula`)
   await falta.click()
-  await expect(page).toHaveURL(new RegExp(`seccion=formula&origen=${origen.id}`))
+  await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${origen.id}/formula$`))
 })

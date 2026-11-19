@@ -12,7 +12,7 @@ import {
 } from './soporte/base'
 import { sql } from './soporte/sql'
 
-// La pestaña «Ajustes» de Configuración › Cotización (4.20-4b, `docs/UX.md` › «Cotización: ajustes (estados propios)»): la vigencia (si el vehículo y el lead son
+// La pestaña «Ajustes» de Configuración › Cotización (4.20-4b, `docs/UX.md` › «Cotización: vigencia (estados propios)»): la vigencia (si el vehículo y el lead son
 // obligatorios se decide por rol y origen en «Roles y permisos»; la línea de abajo lleva allí). La ve quien tiene `cotizaciones.configurar` en algún origen y la cambia quien la tiene en todos. El conflicto de versión lo prueba la T3 de
 // `supabase/tests/empresa-ajustes-de-cotizacion.sql`. La fila es única: se restaura al final (el e2e corre con un solo worker).
 test.describe.configure({ mode: 'serial' })
@@ -64,10 +64,13 @@ test('la dueña cambia la vigencia desde el hub y queda guardada; la línea de �
   await entrar(page, duena, { fresco: true })
   await page.goto('/configuracion')
   await page.getByRole('link', { name: /Cotización/ }).click()
-  await page.getByRole('tab', { name: 'Ajustes' }).click()
-  await expect(page).toHaveURL(/seccion=ajustes/)
-  await expect(page.getByRole('tab', { name: 'Ajustes' })).toHaveAttribute('aria-selected', 'true')
-  await expect(page.getByRole('heading', { name: 'Ajustes', level: 2 })).toBeVisible()
+  await page
+    .getByRole('list', { name: 'Partes generales' })
+    .getByRole('link', { name: /Vigencia/ })
+    .click()
+  await expect(page).toHaveURL(/\/configuracion\/cotizacion\/general\/vigencia$/)
+  await expect(page.getByRole('tab', { name: 'Vigencia' })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByRole('heading', { name: 'Vigencia', level: 1 })).toBeVisible()
   await expect(vigencia(page)).toHaveValue('15')
   await expect(
     page.getByText(
@@ -79,24 +82,37 @@ test('la dueña cambia la vigencia desde el hub y queda guardada; la línea de �
     '/configuracion/roles',
   )
 
+  // La barra aparece al cambiar el campo; descartar vuelve a lo guardado y la esconde.
+  await expect(page.getByRole('button', { name: 'Guardar' })).toHaveCount(0)
+  await vigencia(page).fill('20')
+  await expect(page.getByText('Tienes cambios sin guardar', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Descartar' }).click()
+  await expect(vigencia(page)).toHaveValue('15')
+  await expect(page.getByText('Tienes cambios sin guardar', { exact: true })).toBeHidden()
+
+  // Con cambios, cambiar de pestaña pregunta.
   await vigencia(page).fill('30')
+  await page.getByRole('tab', { name: 'Colores' }).click()
+  await page.getByRole('button', { name: 'Seguir editando' }).click()
+  await expect(page).toHaveURL(/general\/vigencia$/)
+  await expect(vigencia(page)).toHaveValue('30')
+
   await page.getByRole('button', { name: 'Guardar' }).click()
-  await expect(page.getByText('Ajustes de cotización guardados')).toBeVisible()
+  await expect(page.getByText('Vigencia guardada')).toBeVisible()
   expect(sql('select vigencia_dias from public.ajustes_empresa')).toBe('30')
 
   await page.reload()
   await expect(vigencia(page)).toHaveValue('30')
 })
 
-test('quien configura un solo origen ve los ajustes apagados, con el motivo y sin «Guardar»', async ({
+test('quien configura un solo origen ve la vigencia apagada, con el motivo y sin barra', async ({
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto('/configuracion/cotizacion')
-  // Entra por la fórmula: «Ajustes» va al final.
-  await expect(page.getByRole('tab', { name: 'Fórmula' })).toHaveAttribute('aria-selected', 'true')
-  await page.getByRole('tab', { name: 'Ajustes' }).click()
-  await expect(page.getByRole('heading', { name: 'Ajustes', level: 2 })).toBeVisible()
+  // El enlace de antes lleva a General › Vigencia.
+  await page.goto('/configuracion/cotizacion?seccion=ajustes')
+  await expect(page).toHaveURL(/\/configuracion\/cotizacion\/general\/vigencia$/)
+  await expect(page.getByRole('heading', { name: 'Vigencia', level: 1 })).toBeVisible()
   await expect(
     page.getByText('Cambiar estos ajustes pide configurar el cotizador en todos los orígenes.'),
   ).toBeVisible()

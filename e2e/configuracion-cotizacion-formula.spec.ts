@@ -69,23 +69,24 @@ const versiones = (page: Page) =>
 
 async function abrirFormula(page: Page, origenId: string) {
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
 }
 
-test('quien sólo configura la fórmula de un origen entra por el hub y cae en «Fórmula», sin los niveles ni el selector', async ({
+test('quien sólo configura la fórmula de un origen entra por el hub y su tarjeta a «Fórmula», con un solo origen y sin los niveles', async ({
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
   await page.goto('/configuracion')
   await page.getByRole('link', { name: /Cotización/ }).click()
-  await expect(page).toHaveURL(/\/configuracion\/cotizacion/)
+  await expect(page).toHaveURL(/\/configuracion\/cotizacion$/)
+  await page.getByRole('link', { name: chica.nombre, exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${chica.id}/formula$`))
   await expect(page.getByRole('tab', { name: 'Fórmula' })).toHaveAttribute('aria-selected', 'true')
-  await expect(page.getByRole('tab', { name: 'Niveles de acceso' })).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Publicada: versión 26' })).toBeVisible()
-  await expect(page.getByLabel('Origen')).toHaveCount(0)
-  // Los niveles tampoco se abren escribiendo la URL.
+  await expect(page.getByRole('navigation', { name: 'Origen' }).getByRole('link')).toHaveCount(1)
+  // Los niveles tampoco se abren escribiendo la URL: van a la fórmula de su origen.
   await page.goto('/configuracion/cotizacion?seccion=niveles')
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Niveles de acceso' })).toHaveCount(0)
   // Un origen que no es suyo abre el suyo.
   await abrirFormula(page, grande.id)
@@ -97,7 +98,9 @@ test('la dueña ve la publicada, el borrador atrasado y las versiones de a 20 co
 }) => {
   await entrar(page, duena)
   await abrirFormula(page, chica.id)
-  await expect(page.getByLabel('Origen')).toHaveValue(chica.id)
+  await expect(
+    page.getByRole('navigation', { name: 'Origen' }).getByRole('link', { name: chica.nombre }),
+  ).toHaveAttribute('aria-current', 'page')
   const publicada = page.getByRole('region', { name: 'Publicada' })
   await expect(publicada).toContainText('Publicada: versión 26')
   await expect(publicada).toContainText('Publicada E2E')

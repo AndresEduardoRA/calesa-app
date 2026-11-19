@@ -6,7 +6,8 @@ type Destino = {
   // null = la pantalla todavía no existe: el paso se dice, sin enlace. `pasos.test.ts` comprueba
   // que cada ruta declarada tiene su `page.tsx`.
   ruta: string | null
-  // La pantalla abre lo de este origen (`?origen=<id>`) y el permiso se mira en él (D8, D18).
+  // La pantalla abre lo de este origen y el permiso se mira en él (D8, D18): una ruta con `[origen]` lo lleva en su lugar; si no,
+  // como `?origen=<id>`.
   porOrigen?: true
   permiso: ClavePermiso
   motivo: string
@@ -21,7 +22,7 @@ export const DESTINOS_DE_PASO: Record<ClaveDePaso, Destino> = {
     motivo: 'Lo configura quien tiene el permiso «Configurar el flujo».',
   },
   formula: {
-    ruta: `${RUTAS.configuracionDeCotizacion}?seccion=formula`,
+    ruta: `${RUTAS.configuracionDeCotizacion}/[origen]/formula`,
     porOrigen: true,
     permiso: 'cotizaciones.configurar',
     motivo: 'La publica quien tiene el permiso «Configurar el cotizador».',
@@ -38,6 +39,13 @@ export const DESTINOS_DE_PASO: Record<ClaveDePaso, Destino> = {
   },
 }
 
+function conOrigen(ruta: string, origenId: string): string {
+  if (ruta.includes('[origen]')) {
+    return ruta.replace('[origen]', encodeURIComponent(origenId))
+  }
+  return `${ruta}${ruta.includes('?') ? '&' : '?'}origen=${origenId}`
+}
+
 export function conDestino(
   pasos: readonly PasoSiguiente[],
   permisos: Permisos,
@@ -51,7 +59,7 @@ export function conDestino(
       ...paso,
       ruta:
         destino.ruta !== null && destino.porOrigen
-          ? `${destino.ruta}${destino.ruta.includes('?') ? '&' : '?'}origen=${origenId}`
+          ? conOrigen(destino.ruta, origenId)
           : destino.ruta,
       // Lo que no tiene pantalla se dice igual para todos; sin el permiso, el motivo.
       motivoDeshabilitado: destino.ruta !== null && sinPermiso ? destino.motivo : null,

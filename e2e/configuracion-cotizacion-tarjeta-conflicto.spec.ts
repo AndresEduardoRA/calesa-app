@@ -71,7 +71,7 @@ test('E3: un PT409 se dice con el mensaje de la base, conserva lo tipeado, no en
   await expect(page.getByLabel('Nota de la tarjeta')).toHaveValue('Lo mío')
   await expect(page.getByRole('link', { name: /Ver cómo quedó/ })).toHaveAttribute(
     'href',
-    new RegExp(`seccion=tarjeta&origen=${origenId()}`),
+    `/configuracion/cotizacion/${origenId()}/tarjeta`,
   )
   await expect(guardar(page)).toBeDisabled()
   expect(borradorGuardado(origenId())?.definicion.nota).toBe('Nota de la otra persona')

@@ -121,7 +121,10 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
   await expect(pasos.getByText('Publica la fórmula')).toBeVisible()
   const formula = pasos.getByRole('listitem').filter({ hasText: 'Publica la fórmula' })
   await expect(pasos.getByRole('link', { name: 'Abrir' })).toHaveCount(3)
-  await expect(formula.getByRole('link')).toHaveAttribute('href', /seccion=formula&origen=/)
+  await expect(formula.getByRole('link')).toHaveAttribute(
+    'href',
+    /\/configuracion\/cotizacion\/[0-9a-f-]{36}\/formula$/,
+  )
 
   const corea = await origenDeLaBase('corea')
   expect(corea).toMatchObject({ nombre: MANUAL, tipo: 'manual', sustantivo: 'unidad', genero: 'f' })

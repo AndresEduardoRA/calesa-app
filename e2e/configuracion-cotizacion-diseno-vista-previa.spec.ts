@@ -10,7 +10,7 @@ import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar
 import { leerElBorradorDelDiseno, publicarFormulaDeTresSumandos } from './soporte/diseno-editor'
 import { sinScrollHorizontal } from './soporte/recorrido'
 
-// La vista previa de la pestaña «Diseño» (4.22-5, `docs/UX.md` › «Cotización: diseño (estados propios)»): el diseño en edición dibujado con los componentes de la hoja a 412 px, a
+// La vista previa de la pestaña «Diseño» (4.22-5, `docs/UX.md` › «Cotización: hoja (estados propios)»): el diseño en edición dibujado con los componentes de la hoja a 412 px, a
 // 1.280 px y a 412 con el texto al doble. Un recorrido: la elección va en la URL, cada ancho dispara sus cortes, la página no se ensancha, lo que se edita se ve sin guardar y la hoja
 // de prueba no se toca.
 test.describe.configure({ mode: 'serial' })
@@ -59,7 +59,7 @@ test('V1: la vista previa va a 412, a 1.280 y a 200 %, sigue al diseño sin guar
 }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto(`/configuracion/cotizacion?seccion=diseno&origen=${origen.id}`)
-  await expect(page.getByRole('heading', { name: 'Diseño', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Hoja', level: 1 })).toBeVisible()
   const boton = page.getByRole('button', { name: 'Vista previa', exact: true })
   await expect(boton).toHaveAttribute('aria-expanded', 'false')
   await expect(marco(page)).toHaveCount(0)

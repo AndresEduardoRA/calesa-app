@@ -68,7 +68,7 @@ test.afterAll(async () => {
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}${resto}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
 }
 
 const editor = (page: Page) => page.getByRole('region', { name: 'Editor de la fórmula' })
