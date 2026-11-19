@@ -153,6 +153,8 @@ test('E2E ficha izquierda · «Cotización aprobada» con su portada, «Abrir» 
   await alaFicha(page, t.principal)
   const aprobada = region(page, 'Cotización aprobada')
   await expect(aprobada.locator('[data-portada]')).toBeVisible()
+  await aprobada.scrollIntoViewIfNeeded()
+  await capturar(page, info, 'aprobada')
   await expect(aprobada.getByRole('link', { name: 'Abrir' })).toHaveAttribute(
     'href',
     `/cotizaciones/${t.cotizacion}`,
@@ -204,6 +206,7 @@ test('E2E ficha izquierda · la frase de «Subasta» en las cuatro situaciones, 
   const subasta = region(page, 'Subasta')
   await expect(subasta.getByText('Puja actual')).toBeVisible()
   await expect(subasta.getByText('Compra directa')).toBeVisible()
+  await subasta.scrollIntoViewIfNeeded()
   await capturar(page, info, 'subasta')
   await subasta.getByRole('button', { name: 'Más acciones de la subasta' }).click()
   await page.getByRole('menuitem', { name: 'Editar fechas' }).click()
@@ -229,6 +232,8 @@ test('E2E ficha izquierda · «Datos principales» con los datos clave del orige
   await expect(enlace).toHaveAttribute('rel', 'noopener noreferrer')
 
   const verMas = principales.getByRole('button', { name: 'Ver más' })
+  await verMas.scrollIntoViewIfNeeded()
+  await capturar(page, info, 'datos-principales')
   await verMas.click()
   await expect(page).toHaveURL(/[?&]ver=ficha/)
   const ficha = page.getByRole('dialog', { name: t.principal.titulo })
