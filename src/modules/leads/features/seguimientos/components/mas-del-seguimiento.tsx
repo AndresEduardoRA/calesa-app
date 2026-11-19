@@ -35,6 +35,12 @@ export function MasDelSeguimiento({ puedoAnotar, puedoAgendar, hayTipos }: Props
   }
   return (
     <DropdownMenu
+      // Abrirlo de nuevo antes de que termine de cerrarse olvida lo elegido: no se abre en el cierre siguiente.
+      onOpenChange={(abierto) => {
+        if (abierto) {
+          setPendiente(null)
+        }
+      }}
       onOpenChangeComplete={(abierto) => {
         if (abierto || pendiente === null) {
           return
