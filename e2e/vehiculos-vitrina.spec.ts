@@ -172,14 +172,15 @@ test('con el permiso se publica con su precio, mirando lo que verá el visitante
   await panel(page).getByRole('button', { name: 'Guardar' }).click()
   await descartarAviso(page, 'Publicado en la web')
   await expect(panel(page)).toBeHidden()
-  await expect(aLaVista(page.getByText('Publicado, no visible'))).toBeVisible()
+  // La insignia de la cabecera (la primera; el bloque «Vitrina» de la derecha dice lo mismo).
+  await expect(aLaVista(page.getByText('Publicado, no visible').first())).toBeVisible()
   expect(await vitrinaPublica(CLAVE_DE_COREA)).toEqual([])
 
   // Se enciende el sitio, el origen se hace visible y el vehículo entra a una fase que publica.
   await abrirVitrina([corea.id])
   await ponerEnFase(sedan, fase)
   await abrirFicha(page, sedan, SEDAN)
-  await expect(aLaVista(page.getByText('En vitrina', { exact: true }))).toBeVisible()
+  await expect(aLaVista(page.getByText('En vitrina', { exact: true }).first())).toBeVisible()
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)

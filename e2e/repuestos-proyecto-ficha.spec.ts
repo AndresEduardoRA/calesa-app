@@ -8,9 +8,10 @@ import {
 } from './soporte/base'
 import { literal, sql } from './soporte/sql'
 
-// 8.09-4: el resumen de repuestos en la ficha del vehículo y eliminar un proyecto vacío. Desde la pestaña «Repuestos» de un vehículo sin proyecto, «Crear proyecto de repuestos» abre el panel
-// ya vinculado; al crear y cargar un ítem, la pestaña lo muestra con su estado y «1 ítem». Un proyecto sin ítems se elimina de una vez y «Deshacer» lo devuelve; con un ítem ya no se ofrece. El spec
-// limpia lo que crea (los proyectos de su vehículo y los de etiqueta «E2E…»).
+// El proyecto de repuestos de un vehículo desde su ficha y eliminar un proyecto vacío. Sin proyecto, `?seccion=repuestos` (el enlace viejo) se queda en la ficha; el
+// panel «Nuevo proyecto» con el vehículo lo crea ya vinculado, y después la cabecera de la ficha dice «Repuestos · Proyecto #N» y `?seccion=repuestos` redirige al
+// proyecto. Un proyecto sin ítems se elimina de una vez y «Deshacer» lo devuelve; con un ítem ya no se ofrece. El spec limpia lo que crea (los proyectos de su
+// vehículo y los de etiqueta «E2E…»).
 test.describe.configure({ mode: 'serial' })
 
 const TITULO = 'E2E Repuestos ficha del vehículo'
@@ -46,32 +47,30 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-test('desde la ficha del vehículo, «Crear proyecto de repuestos» abre el panel ya vinculado y la pestaña lo muestra', async ({
+test('el proyecto de un vehículo: sin él la ficha se queda; con él, la cabecera lo enlaza y `?seccion=repuestos` redirige', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto(`/vehiculos/${vehiculoId}?seccion=repuestos`)
-  await expect(page.getByText('Este vehículo no tiene proyecto de repuestos.')).toBeVisible()
-  await page.getByRole('link', { name: 'Crear proyecto de repuestos' }).click()
-  await expect(page).toHaveURL(
-    new RegExp(`/repuestos\\?panel=nuevo-proyecto&vehiculo=${vehiculoId}`),
-  )
+  await expect(page.getByRole('heading', { name: TITULO, level: 1 })).toBeVisible()
+  await expect(page).toHaveURL(new RegExp(`/vehiculos/${vehiculoId}\\?seccion=repuestos$`))
+  await expect(page.getByRole('link', { name: /^Repuestos · Proyecto #\d+$/ })).toHaveCount(0)
+
+  await page.goto(`/repuestos?panel=nuevo-proyecto&vehiculo=${vehiculoId}`)
   const dialogo = page.getByRole('dialog', { name: 'Nuevo proyecto' })
   await expect(dialogo.getByText(TITULO)).toBeVisible()
   await dialogo.getByRole('button', { name: 'Crear proyecto' }).click()
   await expect(page).toHaveURL(/\/repuestos\/[0-9a-f-]{36}$/)
+  const proyecto = new URL(page.url()).pathname
   await expect(page.getByRole('link', { name: TITULO })).toBeVisible()
 
-  const nueva = page.getByLabel('Nuevo ítem: descripción')
-  await nueva.fill(ITEM)
-  await nueva.press('Enter')
-  await expect(page.getByLabel(`Descripción del ítem ${ITEM}`)).toBeVisible()
-
+  await page.goto(`/vehiculos/${vehiculoId}`)
+  await expect(page.getByRole('link', { name: /^Repuestos · Proyecto #\d+$/ })).toHaveAttribute(
+    'href',
+    proyecto,
+  )
   await page.goto(`/vehiculos/${vehiculoId}?seccion=repuestos`)
-  await expect(page.getByRole('link', { name: /^Abrir el proyecto #\d+$/ })).toBeVisible()
-  await expect(page.getByText('1 ítem', { exact: true })).toBeVisible()
-  await expect(page.getByText('En curso')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Crear proyecto de repuestos' })).toHaveCount(0)
+  await expect(page).toHaveURL(new RegExp(`${proyecto}$`))
 })
 
 test('un proyecto sin ítems se elimina de una vez, «Deshacer» lo devuelve y con un ítem ya no se ofrece', async ({

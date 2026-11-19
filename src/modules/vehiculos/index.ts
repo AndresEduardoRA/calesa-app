@@ -21,6 +21,10 @@ export { destinoDeLaVitrinaRapida } from './entities/enlace-viejo-de-la-vitrina-
 // Los paneles del «⋯» del vehículo (T336): sus claves de la URL, lo que el servidor lee al abrirse y la plantilla de las rutas que arma `src/app`
 // («Ver actividad» de cada fila).
 export { PANEL_ACTUALIZAR_LOS_DATOS, PANEL_DE_IMAGENES } from './features/acciones/claves'
+export {
+  CLAVE_DE_FICHA_COMPLETA,
+  FICHA_COMPLETA,
+} from './features/ficha/components/ficha-completa/claves'
 export { PANEL_DE_VITRINA } from './features/vitrina/claves'
 export { datosDelPanelDeImagenes } from './features/fotos/lecturas'
 export { MARCADOR_DE_VEHICULO } from './entities/ruta-por-vehiculo'

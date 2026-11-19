@@ -31,16 +31,5 @@ export {
   PANEL_NUEVO_PROYECTO,
   nuevoProyectoEnLaUrl,
 } from '../../entities/proyectos/paneles'
-export {
-  leerResumenDeVehiculo,
-  proyectoDe,
-  type ResumenDeVehiculo,
-} from '../../infra/proyectos/resumen'
-export {
-  NOMBRE_SIN_FASE,
-  ofertaDelResumen,
-  type GrupoDelResumen,
-  type OfertaDelResumen,
-  type ProyectoDeVehiculo,
-  type ResumenDeItems,
-} from '../../entities/proyectos/resumen'
+export { proyectoDe } from '../../infra/proyectos/resumen'
+export { type ProyectoDeVehiculo } from '../../entities/proyectos/resumen'
