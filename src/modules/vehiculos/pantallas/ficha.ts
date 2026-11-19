@@ -8,6 +8,7 @@ export { InsigniaDeVitrina } from '../features/vitrina/components/insignia-de-vi
 export { MenuDeVehiculoDeLaFicha } from '../features/acciones/components/menu-de-vehiculo-de-la-ficha'
 export { PanelDeVehiculo } from '../features/alta/components/panel-de-vehiculo'
 export { PanelDeVitrina } from '../features/vitrina/components/panel-de-vitrina'
+export { BloqueDeVitrina } from '../features/vitrina/components/bloque-de-vitrina'
 export { FichaDeVehiculo } from '../features/ficha/components/ficha-de-vehiculo'
 export { DatosPrincipalesDelVehiculo } from '../features/ficha/components/datos-principales-del-vehiculo'
 export { PanelesDelMenuDeLaFicha } from '../features/acciones/components/paneles-del-menu-de-la-ficha'
