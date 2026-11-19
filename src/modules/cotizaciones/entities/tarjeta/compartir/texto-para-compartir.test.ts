@@ -130,3 +130,42 @@ describe('zonasDisponibles', () => {
     expect(zonasDisponibles({ ...datos, vehiculo: null }).map((z) => z.clave)).toEqual(['empresa'])
   })
 })
+
+describe('textoParaCompartir de las cotizaciones hermanas', () => {
+  it('las cotizaciones hermanas: un bloque por opción, una debajo de la otra, y el modo una vez', () => {
+    const linea = (concepto: string | null, monto: string) => ({ concepto, monto, segunda: null })
+    const enPar: DatosParaCompartir = {
+      ...datos,
+      vehiculo: null,
+      versiones: [
+        {
+          etiqueta: '20 pies',
+          cotizacionId: '11111111-1111-4111-8111-111111111111',
+          conceptos: [linea('Transporte', '$ 1.500,00')],
+          total: linea('TOTAL', '$ 11.500,00'),
+        },
+        {
+          etiqueta: '40 pies',
+          cotizacionId: '22222222-2222-4222-8222-222222222222',
+          conceptos: [linea('Transporte', '$ 2.400,00')],
+          total: linea('TOTAL', '$ 12.400,00'),
+        },
+      ],
+    }
+    expect(texto(enPar, 'whatsapp')).toBe(
+      [
+        '*Hilux para Juan*',
+        '',
+        '*20 pies*',
+        'Transporte: $ 1.500,00',
+        '*TOTAL: $ 11.500,00*',
+        '',
+        '*40 pies*',
+        'Transporte: $ 2.400,00',
+        '*TOTAL: $ 12.400,00*',
+        '',
+        'Modo de tipo de cambio: Oficial',
+      ].join('\n'),
+    )
+  })
+})

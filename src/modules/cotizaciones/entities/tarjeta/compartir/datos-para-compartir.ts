@@ -12,6 +12,13 @@ const esquemaDeLaLinea = z.object({
   segunda: z.string().nullable(),
 })
 
+const esquemaDeLaVersion = z.object({
+  etiqueta: z.string(),
+  cotizacionId: z.guid(),
+  conceptos: z.array(esquemaDeLaLinea),
+  total: esquemaDeLaLinea.nullable(),
+})
+
 // Un enlace que se puede pegar: http o https, nunca otro esquema.
 const esquemaDelEnlace = z.url({ protocol: /^https?$/ })
 
@@ -42,6 +49,9 @@ export const esquemaDeLosDatos = z.object({
   modo: z.string().nullable(),
   zonaDeLaEmpresa: z.string(),
   locale: z.string(),
+  // Las cotizaciones hermanas (glosario: «Cotizaciones hermanas»): los conceptos y el total de cada opción, en el orden de las opciones (con su cotización, para su
+  // portada). Sin ellas, la cotización sola.
+  versiones: z.tuple([esquemaDeLaVersion, esquemaDeLaVersion]).optional(),
 })
 
 export type DatosParaCompartir = z.infer<typeof esquemaDeLosDatos>

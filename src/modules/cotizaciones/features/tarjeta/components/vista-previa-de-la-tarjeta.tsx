@@ -1,6 +1,6 @@
 'use client'
 
-import { useId } from 'react'
+import { useId, type ReactNode } from 'react'
 import { ConfirmarDescarte } from '@/shared/ui/confirmar-descarte'
 import { Modal } from '@/shared/ui/modal'
 import { useCierreConCambios } from '@/shared/ui/use-cierre-con-cambios'
@@ -16,6 +16,7 @@ import {
 } from '../hooks/use-modo-retocar'
 import { CuerpoDeLaVistaPrevia } from './cuerpo-de-la-vista-previa'
 import { PieDeLaVistaPrevia } from './pie-de-la-vista-previa'
+import { TarjetaDeLaHermana } from './tarjeta-de-la-hermana'
 import { CuerpoDelModoDiferido, PieDelModoDiferido } from './retoques'
 
 // Lo que la página sabe de la tarjeta y la hoja no: lo da `<ProveedorDeLaTarjeta>`. `cotizacionId`: la de una guardada, que tiene PDF; nulo en la hoja nueva.
@@ -47,6 +48,7 @@ function useVistaPrevia(props: Props) {
   const [{ retocando, borrador }] = estadoDelModo
   const modelo = useModeloDeLaTarjeta({
     ...props,
+    opcion: props.pagina.cotizacionId === null ? props.opcion : undefined,
     retoques: retocando ? borrador : (props.pagina.retoque?.retoques ?? null),
     ocultarFilas: !retocando,
   })
@@ -69,6 +71,27 @@ function useVistaPrevia(props: Props) {
 }
 
 // Esc, la ✕ y el clic afuera en el modo: con un campo abierto, lo tipeado queda (Esc en el campo lo cancela antes de llegar aquí); con cambios, pregunta.
+// En una hoja en par, las dos tarjetas una bajo la otra, en el orden de las opciones (glosario: «Cotizaciones hermanas»).
+function ConLaHermana({ props, children }: { props: Props; children: ReactNode }) {
+  const { hermana } = props
+  if (!hermana) return children
+  const suya = (
+    <TarjetaDeLaHermana
+      hermana={hermana}
+      formulaId={props.formulaId}
+      monedaBs={props.monedaBs}
+      pagina={props.pagina}
+    />
+  )
+  return (
+    <div className="grid min-w-0 gap-6">
+      {hermana.antes ? suya : null}
+      {children}
+      {hermana.antes ? null : suya}
+    </div>
+  )
+}
+
 const cerrarElModo = (modo: ModoRetocar, intentarCerrar: () => void) => () => {
   if (modo.elegida?.tipo === 'celda') modo.dejar()
   intentarCerrar()
@@ -129,13 +152,15 @@ export default function VistaPreviaDeLaTarjeta(props: Props) {
         />
       }
     >
-      <CuerpoDeLaVistaPrevia
-        {...modelo}
-        aviso={aviso}
-        idDelDesactualizado={idDelDesactualizado}
-        avisos={props.avisos}
-        vencida={props.pagina.vencida}
-      />
+      <ConLaHermana props={props}>
+        <CuerpoDeLaVistaPrevia
+          {...modelo}
+          aviso={aviso}
+          idDelDesactualizado={idDelDesactualizado}
+          avisos={props.avisos}
+          vencida={props.pagina.vencida}
+        />
+      </ConLaHermana>
     </Modal>
   )
 }

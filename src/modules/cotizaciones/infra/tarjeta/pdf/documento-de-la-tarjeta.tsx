@@ -15,6 +15,8 @@ export type PropsDelDocumento = {
   logo: LogoDelPdf | null
   // El nombre de la empresa: el autor del PDF.
   empresa: string
+  // La tarjeta de la cotización hermana (glosario: «Cotizaciones hermanas»): otra página, antes o después según el orden de las opciones.
+  hermana?: { geometria: Geometria; antes: boolean }
 }
 
 // 1 px de la tarjeta = 0,75 pt.
@@ -101,22 +103,48 @@ function Celda({ celda, k, logo }: { celda: CeldaDibujada; k: number; logo: Logo
 // La tarjeta de una cotización en una página A4 (D15 de T310): la misma geometría que la vista previa, escalada entera al menor factor que la hace entrar.
 // Dibuja la geometría y nada más (no lee, no calcula). Los montos con cifras (`formatearMonto()`, ya en la geometría) aunque Live esté encendido. Los metadatos
 // no nombran al cliente, al asesor ni al vehículo: el PDF se reenvía y no se ven al abrirlo.
-export function DocumentoDeLaTarjeta({ geometria, numero, logo, empresa }: PropsDelDocumento) {
-  const k = escalaDelPdf(geometria)
-  const g = escalarGeometria(geometria, PT_POR_PX * k)
+export function DocumentoDeLaTarjeta({
+  geometria,
+  numero,
+  logo,
+  empresa,
+  hermana,
+}: PropsDelDocumento) {
+  const paginas = hermana
+    ? hermana.antes
+      ? [hermana.geometria, geometria]
+      : [geometria, hermana.geometria]
+    : [geometria]
   return (
     <Document
       title={numero === null ? 'Cotización' : `Cotización n.º ${String(numero)}`}
       author={empresa}
       creator={empresa}
     >
-      <Page size="A4" style={estilos.pagina}>
-        <View style={{ position: 'relative', width: g.ancho, height: g.alto }} wrap={false}>
-          {g.celdas.map((c) => (
-            <Celda key={c.id} celda={c} k={PT_POR_PX * k} logo={logo} />
-          ))}
-        </View>
-      </Page>
+      {paginas.map((una, i) => (
+        <PaginaDeLaTarjeta key={String(i)} geometria={una} logo={logo} />
+      ))}
     </Document>
+  )
+}
+
+// Una tarjeta en su página A4, escalada entera (cada una con su escala: en par, una por cotización hermana).
+function PaginaDeLaTarjeta({
+  geometria,
+  logo,
+}: {
+  geometria: Geometria
+  logo: PropsDelDocumento['logo']
+}) {
+  const k = escalaDelPdf(geometria)
+  const g = escalarGeometria(geometria, PT_POR_PX * k)
+  return (
+    <Page size="A4" style={estilos.pagina}>
+      <View style={{ position: 'relative', width: g.ancho, height: g.alto }} wrap={false}>
+        {g.celdas.map((c) => (
+          <Celda key={c.id} celda={c} k={PT_POR_PX * k} logo={logo} />
+        ))}
+      </View>
+    </Page>
   )
 }

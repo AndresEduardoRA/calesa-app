@@ -3,10 +3,12 @@
 import { pngDesde } from '@/shared/lib/compartir'
 import { fallo, ok, type Resultado } from '@/shared/lib/errores'
 import {
+  apilarImagenes,
   pedirLaPortadaParaCompartir,
   pedirLasFotos,
   pedirLosDatos,
 } from '../../../areas/tarjeta/composicion-compartir.client'
+import type { DatosParaCompartir } from '../../../entities/tarjeta/compartir/datos-para-compartir'
 import { useParteDeCompartir } from './use-parte-de-compartir'
 
 // La portada lista para compartir: la URL del blob para mostrarla y el PNG que piden el portapapeles y el menú del sistema (armado antes del toque).
@@ -30,6 +32,24 @@ async function leerLaPortada(
   }
 }
 
+// Las dos portadas de las hermanas, apiladas en el orden de las opciones (glosario: «Cotizaciones hermanas»): si una no llega, ninguna (no se ofrece una sola a medias).
+async function leerLasDosPortadas(
+  versiones: NonNullable<DatosParaCompartir['versiones']>,
+  senal: AbortSignal,
+): Promise<Resultado<PortadaParaCompartir>> {
+  const [a, b] = await Promise.all(
+    versiones.map((v) => pedirLaPortadaParaCompartir(v.cotizacionId, senal)),
+  )
+  if (!a?.ok) return a ?? fallo('inesperado', NO_SE_ARMO)
+  if (!b?.ok) return b ?? fallo('inesperado', NO_SE_ARMO)
+  try {
+    const png = await apilarImagenes(a.data, b.data)
+    return ok({ url: URL.createObjectURL(png), png })
+  } catch {
+    return fallo('inesperado', NO_SE_ARMO)
+  }
+}
+
 const soltarLaPortada = (portada: PortadaParaCompartir) => {
   URL.revokeObjectURL(portada.url)
 }
@@ -42,11 +62,21 @@ export function useParaCompartirLaCotizacion(
 ) {
   const datos = useParteDeCompartir((senal) => pedirLosDatos(id, senal), activo ? id : null)
   // La portada va a la par de los datos (es lo que más tarda); las fotos, sólo con acceso y al elegirlas.
-  const portada = useParteDeCompartir(
+  const propia = useParteDeCompartir(
     (senal) => leerLaPortada(id, senal),
     activo ? id : null,
     soltarLaPortada,
   )
+  const versiones = datos.parte.estado === 'listo' ? datos.parte.dato.versiones : undefined
+  const apilada = useParteDeCompartir(
+    (senal) =>
+      versiones
+        ? leerLasDosPortadas(versiones, senal)
+        : Promise.resolve(fallo('inesperado', NO_SE_ARMO)),
+    activo && versiones ? `${id}:par` : null,
+    soltarLaPortada,
+  )
+  const portada = versiones ? apilada : propia
   const fotos = useParteDeCompartir(
     (senal) => pedirLasFotos(id, senal),
     activo && conFotos && datos.parte.estado === 'listo' ? id : null,

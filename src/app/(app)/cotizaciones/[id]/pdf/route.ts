@@ -11,6 +11,7 @@ import {
   vehiculoDe,
   vehiculoDeLaTarjeta,
 } from '../../datos-de-la-tarjeta'
+import { hermanaDelPdf } from './hermana-del-pdf'
 
 // El PDF de una cotización guardada (4.18-3a, `docs/COTIZADOR.md` › «Plantilla de tarjeta (PDF)»): la tarjeta de **lo guardado** en A4, armada en el servidor con la sesión de
 // quien lo pide (la RLS de la hoja guardada y de `cotizacion_tarjeta()` deciden; nunca la secret key). Lo ve quien ve la cotización (P4), sin clave propia.
@@ -55,20 +56,30 @@ export async function GET(_peticion: Request, { params }: RouteContext<'/cotizac
   }
   const { nombre, logoRuta, locale, zonaHoraria } = ajustes.data.ajustes
   const url = urlPublicaONull('marca', logoRuta)
+  const logo = url === null ? null : { nombre, url }
+  const nombreDelCliente = cliente?.nombre ?? null
+  // La hermana disponible va en otra página del mismo PDF (glosario: «Cotizaciones hermanas»).
+  const hermana = await hermanaDelPdf(hoja, {
+    cliente: nombreDelCliente,
+    vehiculo,
+    logo,
+    zona: zonaHoraria,
+  })
   const pdf = await pdfDeUnaGuardada({
+    ...(hermana ? { hermana } : {}),
     lectura: lectura.data,
     // El día del último guardado (P3 del 4.18-2) y el del vencimiento, en la zona de la empresa: lo mismo que la vista previa de esa guardada.
     contexto: contextoDeLaPagina(
       {
         // El de la página (sin el de respaldo «Cotización n.º N»); los metadatos del PDF no lo llevan (puede nombrar el vehículo).
         titulo: tituloDeLaTarjeta(hoja.cotizacion, vehiculo),
-        cliente: cliente?.nombre ?? null,
+        cliente: nombreDelCliente,
         vehiculo: vehiculoDeLaTarjeta(vehiculo),
         asesor,
         numero: hoja.cotizacion.numero,
         venceEl: hoja.venceEl,
         guardadaEl: hoja.cotizacion.actualizadoEn,
-        logo: url === null ? null : { nombre, url },
+        logo,
       },
       { zona: zonaHoraria, hoy: hoja.cotizacion.actualizadoEn },
     ),
