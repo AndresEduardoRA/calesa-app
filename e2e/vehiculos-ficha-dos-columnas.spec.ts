@@ -113,7 +113,8 @@ test('E2E ficha en dos columnas · todo a la vista sin un clic', async ({ page }
     'href',
     `/logistica/vehiculo/${id}`,
   )
-  await expect(page.getByRole('link', { name: 'Ver en logística' })).toHaveCount(1)
+  // El mismo enlace va también, corto, en la cabecera: acá se cuenta el del bloque.
+  await expect(fase.getByRole('link', { name: 'Ver en logística' })).toHaveCount(1)
   await expect(
     fase.getByRole('heading', { name: `Para pasar a «${terreno.b.nombre}»` }),
   ).toBeVisible()

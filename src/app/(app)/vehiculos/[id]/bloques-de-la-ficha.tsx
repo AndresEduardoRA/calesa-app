@@ -34,8 +34,8 @@ type Props = {
   avisos: AvisosDelMenu
 }
 
-// El título del bloque «Fase y qué falta» con «Ver en logística» en su línea: mover es de logística (el único enlace con ese nombre en la
-// página; lo ve quien ve el bloque, con `logistica.ver` del origen).
+// El título del bloque «Fase y qué falta» con «Ver en logística» en su línea: mover es de logística (lo ve quien ve el bloque, con `logistica.ver`
+// del origen). La cabecera lleva el mismo enlace corto hasta que este bloque deje la derecha (`docs/PENDIENTES.md`).
 function FaseYQueFalta({ vehiculoId, titulo }: { vehiculoId: string; titulo: string }) {
   return (
     <section aria-labelledby="fase-titulo" className="grid min-w-0 gap-3">

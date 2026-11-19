@@ -31,6 +31,7 @@ import { AvisosBajoLaCabecera } from './avisos-bajo-la-cabecera'
 import { papeleraYAvisosDe } from './avisos-de-la-ficha'
 import { RegistrarLaVisita } from './registrar-la-visita'
 import { Encabezado } from './encabezado'
+import { EnlacesCortos } from './enlaces-cortos'
 import { Paneles } from './paneles'
 import {
   anclaDeLaUrl,
@@ -170,6 +171,39 @@ const entradaDelIndice = ({ ancla, etiqueta }: { ancla: string; etiqueta: string
   etiqueta,
 })
 
+type Sesion = Awaited<ReturnType<typeof requerirSesion>>
+
+// La cabecera de la columna izquierda, con lo que la página resolvió: la vitrina y el «⋯» sobre la foto y los enlaces cortos.
+function encabezadoDe(
+  sesion: Sesion,
+  encontrado: Vehiculo,
+  origen: OrigenResumen,
+  lectura: Awaited<ReturnType<typeof lecturasDeLaFicha>>,
+) {
+  return (
+    <Encabezado
+      vehiculo={encontrado}
+      origen={origen}
+      fase={lectura.fase}
+      previa={lectura.previa}
+      publicar={lectura.publicar}
+      editable={lectura.editable}
+      paraActividad={paraActividadDe(sesion.permisos, encontrado.id)}
+      papelera={lectura.papelera}
+      avisos={lectura.avisos}
+      paraCotizar={lectura.paraCotizar}
+      editaEnElOrigen={lectura.editaEnElOrigen}
+      subasta={lectura.subasta}
+      enlaces={
+        <EnlacesCortos
+          vehiculoId={encontrado.id}
+          verLogistica={puede(sesion.permisos, 'logistica.ver', origen.id)}
+        />
+      }
+    />
+  )
+}
+
 // La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda, pegajosa, lo que lo identifica (cabecera, datos principales y
 // subasta); a la derecha, el índice y todos los bloques que quien mira ve, a la vista (`bloques.ts`). `?seccion=` (los enlaces de siempre) y los
 // paneles de «Relacionados» llevan a su bloque; `?editar=`, `?panel=vitrina`, `?panel=fechas-de-subasta` y `?visor=` abren lo suyo.
@@ -201,22 +235,7 @@ export default async function PaginaVehiculo({
         }
         lateral={
           <LateralDeLaFicha
-            encabezado={
-              <Encabezado
-                vehiculo={encontrado}
-                origen={origen}
-                fase={fase}
-                previa={previa}
-                publicar={publicar}
-                editable={editable}
-                paraActividad={paraActividadDe(sesion.permisos, encontrado.id)}
-                papelera={lectura.papelera}
-                avisos={avisos}
-                paraCotizar={lectura.paraCotizar}
-                editaEnElOrigen={lectura.editaEnElOrigen}
-                subasta={lectura.subasta}
-              />
-            }
+            encabezado={encabezadoDe(sesion, encontrado, origen, lectura)}
             vehiculo={encontrado}
             origen={origen}
             layout={suLayout}
