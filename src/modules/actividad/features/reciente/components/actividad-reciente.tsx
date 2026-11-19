@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { Suspense, type ReactNode } from 'react'
 import { formatearFecha, formatearHora } from '@/shared/lib/fechas'
 import { puede, type Permisos } from '@/shared/lib/permisos'
-import { Skeleton } from '@/shared/ui/skeleton'
+import { TituloDeBloqueConAccion } from '@/shared/ui/ficha-en-bloques'
 import { leerActividadReciente } from '../../../composicion'
 import { CLAVE_DE_CAMBIO } from '../../../entities/actividad'
 import { rutaDeActividadDe } from '../../../entities/filtros'
@@ -12,6 +12,7 @@ import { TAMANO_DE_ACTIVIDAD_RECIENTE } from '@/shared/lib/paginacion'
 import { FraseDeActividad } from '../../frase/components/frase-de-actividad'
 import { IconoDeEntidad } from '../../frase/components/icono-de-entidad'
 import { ErrorDeActividadReciente } from './error-de-actividad-reciente'
+import { FilasDelEsqueleto } from './esqueleto-de-actividad-reciente'
 
 type Props = {
   // La tabla y el id del registro (`vehiculos`, `leads`…), como en `rutaDeActividadDe()`.
@@ -35,31 +36,22 @@ export function ActividadReciente(props: Props) {
   }
   return (
     <section aria-labelledby={TITULO} className="grid min-w-0 gap-2">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <h2 id={TITULO} className="font-medium text-(--color-ink)">
-          Actividad reciente
-        </h2>
-        <Link
-          href={rutaDeActividadDe(props.tabla, props.registroId) as Route}
-          className="min-h-11 content-center text-(length:--text-sm) text-(--color-primario-ink) underline underline-offset-2 md:min-h-0"
-        >
-          Ver toda la actividad
-        </Link>
-      </div>
-      <Suspense fallback={<Esqueleto />}>
+      <TituloDeBloqueConAccion
+        id={TITULO}
+        titulo="Actividad reciente"
+        accion={
+          <Link
+            href={rutaDeActividadDe(props.tabla, props.registroId) as Route}
+            className="min-h-11 content-center text-(length:--text-sm) text-(--color-primario-ink) underline underline-offset-2 md:min-h-0"
+          >
+            Ver toda la actividad
+          </Link>
+        }
+      />
+      <Suspense fallback={<FilasDelEsqueleto />}>
         <Contenido {...props} />
       </Suspense>
     </section>
-  )
-}
-
-function Esqueleto() {
-  return (
-    <div aria-busy="true" aria-label="Cargando la actividad" className="grid gap-2">
-      {Array.from({ length: 3 }, (_, i) => (
-        <Skeleton key={i} className="h-10 w-full" />
-      ))}
-    </div>
   )
 }
 

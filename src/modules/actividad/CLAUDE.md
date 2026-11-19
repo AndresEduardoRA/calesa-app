@@ -11,7 +11,8 @@ Auditoría inmutable de 14 días: qué cambió, quién, cuándo y el diff, con p
   como chips (`?persona=`, `?entidad=`, `?registro=` sólo con `?entidad=`, que trae «Ver actividad» de la ficha de lead y de vehículo, y la fecha de «Ir a una
   fecha»). Una fila visible despliega su diff en la misma fila (`?cambio=<id>`, `replace`); uno fuera de lo cargado sale arriba como «El cambio que abriste».
   `pantallas/actividad-reciente.ts`: `<ActividadReciente tabla registroId permisos zona diasDeActividad>`, los últimos 5 cambios de un registro (servidor;
-  sólo el «Reintentar» es de cliente), sola en `/actividad/reciente` hasta que la monte una ficha. `index.ts` también da `rutaDeActividadDe(tabla, id)`.
+  sólo el «Reintentar» es de cliente; su título es el de los bloques de ficha, `TituloDeBloqueConAccion`, con «Ver toda la actividad»), y
+  `EsqueletoDeActividadReciente` (el mismo alto). La monta la ficha del vehículo (bloque «Actividad reciente») y, sola, `/actividad/reciente`. `index.ts` también da `rutaDeActividadDe(tabla, id)`.
 - Depende de `equipo` (`actividad.ver`) y `empresa` (zona y `actividad_dias`).
 
 ## Archivos clave
