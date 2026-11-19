@@ -73,7 +73,9 @@ export const filas = (page: Page): Locator =>
   page.locator('tbody tr, li article').filter({ visible: true })
 export const buscador = (page: Page): Locator =>
   page.getByRole('searchbox', { name: 'Buscar por número, título, cliente, vehículo o autor' })
-export const deLaPrueba = (): string => `/cotizaciones?origen=${origenDeLaPrueba}`
+// La lista de siempre (tabla, sin agrupar: T319): la búsqueda y el «⋯» se prueban sobre cada cotización como una fila.
+export const deLaPrueba = (): string =>
+  `/cotizaciones?origen=${origenDeLaPrueba}&vista=tabla&agrupar=no`
 
 export async function irA(page: Page, correo: string, ruta: string): Promise<void> {
   await entrar(page, correo, { fresco: true })

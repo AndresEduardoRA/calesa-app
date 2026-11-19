@@ -61,7 +61,7 @@ const conteo = (page: Page) => page.getByRole('button', { name: /cotizaciones de
 async function abrir(page: Page, ruta: string): Promise<void> {
   await entrar(page, t.duena, { fresco: true })
   await page.goto(ruta)
-  await expect(page.locator('article').first()).toBeVisible()
+  await expect(page.locator('tbody tr, article').first()).toBeVisible()
 }
 
 test('E2E por defecto, tarjetas agrupadas: el grupo con la portada de su aprobada y su conteo se despliega en el lugar y compara; la suelta va sola', async ({
@@ -87,6 +87,7 @@ test('E2E por defecto, tarjetas agrupadas: el grupo con la portada de su aprobad
   await expect(lineas).toHaveCount(4)
   await expect(lineas.first()).toHaveAttribute('data-linea-del-grupo', aprobada)
   await expect(lineas.first()).toContainText('En la tarjeta')
+  await despliegue.scrollIntoViewIfNeeded()
   await capturar(page, info, 'grupo-desplegado')
   const comparar = despliegue.getByRole('button', { name: 'Comparar' })
   await expect(comparar).toBeDisabled()
@@ -108,8 +109,10 @@ test('E2E «Compartir» de la tarjeta abre su panel y el «⋯» de la tarjeta n
   await tarjeta.getByRole('button', { name: 'Compartir', exact: true }).click()
   await expect.poll(() => new URL(page.url()).searchParams.get('panel')).toBe('compartir')
   expect(new URL(page.url()).searchParams.get('para')).toBe(suelta)
+  const panel = page.getByRole('dialog', { name: 'Compartir cotización' })
+  await expect(panel.getByRole('button', { name: 'Copiar texto' })).toBeVisible()
   await page.keyboard.press('Escape')
-  await expect(page).not.toHaveURL(/panel=compartir/)
+  await expect(panel).toBeHidden()
   await tarjeta.getByRole('button', { name: /^Más acciones de N\.º \d+$/ }).click()
   await expect(page.getByRole('menuitem').first()).toBeVisible()
   await expect(page.getByRole('menuitem', { name: /Compartir cotización/ })).toHaveCount(0)
@@ -178,7 +181,9 @@ test('E2E todas las tarjetas miden lo mismo', async ({ page }, info) => {
   await capturar(page, info, 'tarjetas-al-200')
 })
 
-test('E2E el clic en la portada no abre el resumen y el de la tarjeta sí', async ({ page }) => {
+test('E2E el clic en la portada no abre el resumen y el de la tarjeta sí; el visor de la tarjeta es suyo', async ({
+  page,
+}) => {
   await abrir(page, deLaPrueba())
   const tarjeta = tarjetaDe(page, suelta)
   await tarjeta.locator('[data-portada]').click({ position: { x: 10, y: 10 } })
