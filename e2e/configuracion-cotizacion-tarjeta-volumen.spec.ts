@@ -18,8 +18,10 @@ test.describe.configure({ mode: 'serial' })
 // 180.400 (regla del 5 %): las siete sub-rutas de Configuración › Leads reparten el JS común en dos chunks más y toda pantalla los nombra
 // en el HTML (170.966 → 172.068 B, el mismo JS). La vista previa en cuadrícula suma la descripción de 4 miembros por grupo y la variante: 172.802 B.
 // Las partes de un origen (Datos, Campos, Categorías) entran al menú de Configuración como plantilla y suman ~530 B a toda página de
-// Configuración: caben en el mismo tope.
-const TOPE_DE_BYTES_DEL_HTML = 180_400
+// Configuración: caben en el mismo tope. 189.400 (regla del 5 %): Configuración › Cotización por origen mide 183.947 B contra 172.768 de
+// main con el mismo guion; las siete partes de Cotización en el menú suman 6,2 KB a toda página de Configuración y el esqueleto del
+// inicio de Cotización viaja en cada sub-ruta.
+const TOPE_DE_BYTES_DEL_HTML = 189_400
 const TOPE_DE_NODOS_CON_500 = 5_000
 
 let configuradora = ''
