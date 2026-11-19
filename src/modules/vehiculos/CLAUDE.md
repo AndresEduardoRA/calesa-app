@@ -83,10 +83,21 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
     (`<PanelDeVitrinaDeLaLista>`) se leen en el servidor al abrirse (`datosDelPanelDeImagenes()`, `datosDelPanelDeVitrina()`, de `index.ts`; las llama
     `src/app/(app)/vehiculos/paneles.ts` sólo si la URL nombra el panel con un `para` que es un id). «Actualizar los datos» (`<ActualizarLosDatos>`,
     `features/subasta/`) es de un vehículo de la página (o de la ficha) y la página manda qué se puede consultar (`entradaDeRefresco()`).
-- **«Cotización aprobada»** (columna de la tabla y línea de la tarjeta): `ListadoDeVehiculos` recibe `aprobadas` (`AprobadasDeLaPagina`, por id de vehículo:
-  `{ ruta, monto, moneda }`, o `null` si quien mira no tiene `cotizaciones.ver` en algún origen: la columna no se dibuja) y lo arma `src/app/(app)/vehiculos/aprobadas.ts`
-  con `leerAprobadasDeVehiculos()` de `cotizaciones` (este módulo no la importa). `entities/cotizacion-aprobada-de-la-fila.ts`; `celda-de-aprobada.tsx` dibuja
-  `<Monto valor moneda>` enlazado (`data-no-abre`), «Sin total» sin monto y «—» sin aprobada. El monto cruza como texto.
+- **«Costo estimado»** (la cotización aprobada; columna de la tabla y fila de la tarjeta de la lista): `ListadoDeVehiculos` recibe `aprobadas` (`AprobadasDeLaPagina`,
+  por id de vehículo: `{ ruta, monto, moneda, modo }`, o `null` si quien mira no tiene `cotizaciones.ver` en algún origen: ni columna ni fila) y lo arma
+  `src/app/(app)/vehiculos/aprobadas.ts` con `leerAprobadasDeVehiculos()` de `cotizaciones` (este módulo no la importa; el modo llega en la misma lectura).
+  `entities/cotizacion-aprobada-de-la-fila.ts` (`ROTULO_DEL_COSTO_ESTIMADO`, `costoEstimadoDe()`); `costo-estimado.tsx` dibuja `<Monto valor moneda>` y « · modo»
+  en el mismo enlace (`data-no-abre`; el modo se corta, el monto no), «Sin total» sin monto ni modo y «—» sin aprobada. El monto cruza como texto.
+- **«Compra directa»** (subasta): `entities/compra-directa-de-la-fila.ts` (`columnaDeCompraDirecta()`: el campo activo con `claveApibara` = `pricing.buy_now_usd`,
+  nunca por su clave; `compraDirectaDeLaFila()`, `camposSinLaCompraDirecta()`: ese campo no se repite entre los «en tarjeta»), `compra-directa.tsx` (USD o «—»).
+- **Tarjeta de la lista** (`tarjeta-vehiculo.tsx`, la misma en escritorio y celular): `TarjetaDeLista estirada` en una `<ul>` con `auto-rows-fr` (todas del alto de
+  la más alta de la página); `foto-de-la-tarjeta.tsx` (carrusel con `puntos="derecha"`, la casilla y el «⋯» sobre la foto y `chip-del-lote.tsx`: «Lote N», sin
+  puntero, tokens `--color-velo-de-foto` y `--color-sobre-velo`); título en dos líneas reservadas; `datos-de-la-tarjeta.tsx` pegado abajo con las filas de la
+  pestaña (`FilasDeLaTarjeta`, resueltas una vez por página en `tarjetas-de-vehiculos.tsx`: precio o puja con «Puja actual» / «Puja final», «Compra directa»,
+  «Costo estimado» a lo ancho y los «en tarjeta», con «—»; `dt` y `dd` directo en la grilla, sin envoltorio por fila ni nodo para el «—»: son cien tarjetas contra
+  el tope de nodos). Nada en la tarjeta puede crecer sin tope (cada `dd` se corta): una desbordada agranda todas. `FotosEnElLugar` vuelve a montar su carrusel
+  cuando cambia la portada (lo ya leído viene en el orden viejo).
+- **Columnas de la tabla:** Nombre, Fase, Año, «Lote» (subasta, `etiquetaDeComun('lote')`), precio o puja, «Compra directa» (subasta), «Costo estimado» y los «en tarjeta».
 - `zonaDelPatioDe(vehiculo)` (`entities/zona-del-patio.ts`, por `index.ts`): la zona del patio por `atributos.ubicacion_estado`, o nula. La usa `src/app` al
   componer los datos para compartir una cotización (`/cotizaciones/[id]/compartir`), sin que `cotizaciones` lea atributos.
 - Depende de `origenes`, `flujos`, `equipo`; no importa `cotizaciones` ni `leads`. `leads` no importa `vehiculos`: vínculo, interesados y «Relacionados» viven acá aunque se
