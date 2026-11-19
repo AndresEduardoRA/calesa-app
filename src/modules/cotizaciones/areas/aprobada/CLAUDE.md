@@ -41,6 +41,12 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
   (`ID_DE_LA_RANURA_DE_COMPARAR`) y la isla pone «Comparar» ahí con un portal (`ranuraDeComparar`): el título nunca se vuelve a montar (el foco del «Ver»
   sigue en él) y las casillas y el botón viajan sólo en el chunk diferido.
 
+- **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda): `leerAprobadaDelVehiculo(vehiculoId)` (`infra/aprobada/leer.ts`, `cache()`) llama a
+  `cotizaciones_de_este_vehiculo()` con `TAMANO_DE_LA_APROBADA` (1) y devuelve la fijada o nula (no hay o quien mira no la ve: la RLS de la invocadora). La
+  dibuja `features/aprobada/components/aprobada-del-vehiculo/` (`pantallas/aprobada-del-vehiculo.ts`): la portada y «Compartir» (del área `tarjeta`) llegan como
+  ranuras que llena `src/app`; n.º y título (`tituloDeLaFila()`), total con su modo, autor y fecha y «Abrir»; sin fila, «Sin cotización aprobada» con
+  «Cotizar» si la página manda la ruta.
+
 - **Comparar cotizaciones** (`/cotizaciones/comparar`, `pantallas/aprobada-comparar.ts`): `leerParaComparar(ids)` (`infra/aprobada/para-comparar.ts`) lee en
   paralelo una `cotizacion_hoja_guardada` por id (sin `cotizacion_evaluar`) y las marcas de las ≤ 3 (`COLUMNAS_PARA_COMPARAR`: vehículo, origen, estado,
   autor, aprobada); una columna que falla lleva su error y las demás siguen, y si fallan las marcas falla la página. `veredictoDeComparar()` dice si se

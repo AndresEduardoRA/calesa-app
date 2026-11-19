@@ -1,15 +1,20 @@
 # vehiculos
 
-Inventario de vehículos por origen con atributos dinámicos: listado con filtros en la URL y vistas guardadas, ficha según el layout del origen, alta y edición en un panel, fotos (hasta 24, con portada), el bloque «Relacionados» (vinculado, interesado y cotizado, siempre arriba de cada detalle: en una línea en logística, compacto en las fichas) y el vínculo a un lead (con «Desvincular»; y, al pie de Relacionados en la ficha del lead, lo que no repite: «Vínculos anteriores», el panel «Vincular o marcar un vehículo» y la confirmación de desvincular, `GestionDeVehiculosDelLead`), la vitrina (publicar en la web con precio público y vista previa de lo que verá el visitante) la papelera por lotes (enviar con «Deshacer», restaurar y purgar) y, en un origen de subasta con apibara encendida, el alta pegando un enlace de Copart o IAAI, un VIN o un lote (de a uno o varios), con sus fotos, y «Refrescar» la subasta desde la ficha; y la limpieza automática de lo importado de una subasta que nadie compró, con su aviso previo y «Conservar».
+Inventario de vehículos por origen con atributos dinámicos: listado con filtros en la URL y vistas guardadas, ficha según el layout del origen, alta y edición en un panel, fotos (hasta 24, con portada), el bloque «Relacionados» (vinculado, interesado y cotizado, siempre arriba de cada detalle: en una línea en logística, compacto en las fichas) y el vínculo a un lead (con «Desvincular»; y, al pie de Relacionados en la ficha del lead, lo que no repite: «Vínculos anteriores», el panel «Vincular o marcar un vehículo» y la confirmación de desvincular, `GestionDeVehiculosDelLead`), la vitrina (publicar en la web con precio público y vista previa de lo que verá el visitante) la papelera por lotes (enviar con «Deshacer», restaurar y purgar) y, en un origen de subasta con apibara encendida, el alta pegando un enlace de Copart o IAAI, un VIN o un lote (de a uno o varios), con sus fotos, y «Actualizar los datos» de la subasta desde el «⋯»; y la limpieza automática de lo importado de una subasta que nadie compró, con su aviso previo y «Conservar».
 
 ## Entra y sale
 
 - Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`; cada fila y cada tarjeta es un enlace a la ficha, con `href` y `EnlaceDeLaFila` de `shared/ui/lista`; un `?vehiculo=<id>` viejo
   redirige a la ficha con su panel, su visor y su edición: `destinoDelEnlaceViejo()`, de `index.ts`, que llama la página con `redirigir()`; un
   `?panel=vitrina-rapida&para=<id>` viejo, a `?panel=vitrina&para=<id>`: `destinoDeLaVitrinaRapida()`; los paneles del «⋯» `?panel=imagenes|vitrina|actualizar-datos&para=<id>`),
-  `/vehiculos/papelera`, `/vehiculos/[id]` (la ficha en dos columnas: a la izquierda `CabeceraDeVehiculo` apilada, `DatosPrincipalesDelVehiculo` y la
-  subasta; a la derecha el índice y los bloques por permiso, que compone `src/app` con `logistica`, `cotizaciones` y `repuestos`. `?seccion=<bloque>` lleva
-  a su bloque si quien mira lo ve —si no, se queda arriba— y los paneles de «Relacionados» y `?relacionados=` llevan a «Relacionados»). Paneles: `?panel=nuevo`, `?editar=<id>`,
+  `/vehiculos/papelera`, `/vehiculos/[id]` (la ficha en dos columnas. A la izquierda, lo clave: `CabeceraDeVehiculo` con `FotosDeLaFicha` (el carrusel con
+  su tira de miniaturas, `CarruselConTira` de `shared`, por el id del vehículo: `?visor=<id>`) y, sobre su esquina (`sobreLaFoto`), `BotonDeVitrinaDeLaFicha`
+  (el de la fila, con `motivo`: apagado y enfocable sin `vehiculos.vitrina`) y el «⋯»; `enlaces` (los arma `src/app`); la «Cotización aprobada» que compone
+  `src/app` con `cotizaciones`; `BloqueDeSubasta` (la frase de `entities/frase-de-subasta.ts`, el cierre, la puja y la compra directa, y `MenuDeLaSubasta`
+  con «Editar fechas»); `DatosPrincipalesDelVehiculo` (los datos clave del origen con `entities/datos-clave-del-vehiculo.ts`, y «Ver más»: la ficha completa,
+  `features/ficha/components/ficha-completa/`, diferida, en `?ver=ficha`, que lee las fotos y `useLayoutActivo` de `origenes` al abrirse). A la derecha el
+  índice y los bloques por permiso, que compone `src/app` con `logistica`, `cotizaciones` y `repuestos`; sin bloque «Fotos». `?seccion=<bloque>` lleva
+  a su bloque si quien mira lo ve —si no, se queda arriba—, `?seccion=fotos` redirige al visor y los paneles de «Relacionados» y `?relacionados=` llevan a «Relacionados»). Paneles: `?panel=nuevo`, `?editar=<id>`,
   `?panel=vitrina`, `?panel=imagenes`, `?panel=actualizar-datos`, `?panel=desvincular` (con `&luego=papelera`, desde el aviso «Quitar el vínculo»: el aviso de desvinculado ofrece la papelera),
   `?panel=purgar&lote=`. Layout, categorías y orígenes (`origenes`), fases (`flujos`) y vistas guardadas
   (`equipo`) los lee la página y los pasa por props.
@@ -172,9 +177,9 @@ SQL; la usa `buscarVehiculos()` para «propios», por `fuenteDelInventario()`). 
   una ancla nueva = una línea en `_limpieza_ancla()`. Sólo `importado_apibara` en origen de subasta. «Conservar» no mueve la versión.
 - **apibara:** la llamada vive en la edge function, que llama el navegador; guarda el bruto en `apibara_consultas` y alta/refresco sólo mandan su id
   (`p_consulta`). Fecha y estado de subasta: `_vehiculo_subasta_desde()`; a mano, «Editar fechas» del bloque de la subasta
-  (`entities/fechas-de-subasta.ts`, `vehiculo_guardar` con `subasta_en`/`subasta_fin_en`). `precio` nunca sale de la puja. Refrescar no
+  (en su «⋯», `menu-de-la-subasta.tsx`; `entities/fechas-de-subasta.ts`, `vehiculo_guardar` con `subasta_en`/`subasta_fin_en`). `precio` nunca sale de la puja. Refrescar no
   pisa lo editado (`fusionarRefresco()`). `refrescarSubasta` devuelve además `fotasPorTraer` (las fotos de esa respuesta que el vehículo no tiene, filtradas
-  en el servidor: el bruto no cruza) y `sinFotos`; «Actualizar los datos» las trae con `useFotosDeSubasta().traer()` sin otra consulta, «Refrescar» las ignora. Con 429 o clave rechazada no se consulta la línea siguiente.
+  en el servidor: el bruto no cruza) y `sinFotos`; «Actualizar los datos» las trae con `useFotosDeSubasta().traer()` sin otra consulta; `useRefrescoDeSubasta()` (el aviso de la hoja) las ignora. Con 429 o clave rechazada no se consulta la línea siguiente.
 - Atajo `N`: abre «Nuevo» sólo si se puede. **El alta dice su contexto** (`vehiculo_crear(…, p_contexto)`, `PERMISO_DE_ALTA`): `suelto`
   (`vehiculos.crear`: inventario e importación) o `cotizar` (`vehiculos.crear.desde_cotizar`: el panel de la hoja y `cotizacion_crear` con
   vehículo nuevo); queda en `creado_desde`.

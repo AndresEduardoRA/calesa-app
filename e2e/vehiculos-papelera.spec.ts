@@ -236,7 +236,7 @@ test('purgar uno pide confirmar nombrándolo, y sus fotos salen de Storage con s
   context,
 }) => {
   await entrar(page, duena)
-  await page.goto(`/vehiculos/${id(T.fotos)}?seccion=fotos`)
+  await page.goto(`/vehiculos/${id(T.fotos)}?panel=imagenes`)
   await page
     .getByRole('group', { name: 'Elegir fotos' })
     .locator('input[type=file]:not([capture])')
