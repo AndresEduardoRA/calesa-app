@@ -135,6 +135,38 @@ describe('reintentar_ci_ajeno', () => {
   })
 })
 
+describe('cayo_lo_del_pr: el rojo sin esperar a «Listo»', () => {
+  const cayo = (raiz: string, j: string) =>
+    correr(raiz, `cayo_lo_del_pr T1 '${j}'; echo "rc=$?"`).stdout
+
+  it('un job que no es un bloque de e2e, caído sin la firma de la máquina, ya es el rojo del PR', () => {
+    const raiz = nuevaRaiz()
+    writeFileSync(join(raiz, 'gh/log-job-2'), "error TS2307: Cannot find module './soporte/x'\n")
+    expect(
+      cayo(raiz, prJson([{ nombre: 'Nivel 1 · lint, tipos, test:kit y mapa', run: 5, job: 2 }])),
+    ).toContain('rc=0')
+  })
+
+  it('un bloque de e2e caído espera a «Listo»: relanzar lo ajeno pide la corrida terminada', () => {
+    const raiz = nuevaRaiz()
+    writeFileSync(join(raiz, 'gh/log-job-1'), '  1) [escritorio] › e2e/x.spec.ts:1:1 › algo\n')
+    expect(cayo(raiz, prJson([{ nombre: 'e2e · bloque 1 de 4', run: 5 }]))).toContain('rc=1')
+  })
+
+  it('lo caído por la máquina del CI espera a «Listo», y su log se lee una sola vez', () => {
+    const raiz = nuevaRaiz()
+    writeFileSync(
+      join(raiz, 'gh/log-job-3'),
+      'Error: failed to start containers: supabase_db_app\n',
+    )
+    const j = prJson([{ nombre: 'Base · reset, tipos, probar, lint y advisors', run: 5, job: 3 }])
+    expect(cayo(raiz, j)).toContain('rc=1')
+    // Ya juzgado: aunque el log ahora dijera otra cosa, no se vuelve a leer.
+    writeFileSync(join(raiz, 'gh/log-job-3'), 'FAIL algo\n')
+    expect(cayo(raiz, j)).toContain('rc=1')
+  })
+})
+
 describe('motivo de un job: log_del_job', () => {
   it('lee el log del job caído, no el de toda la corrida', () => {
     const raiz = nuevaRaiz()

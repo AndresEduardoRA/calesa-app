@@ -1,102 +1,17 @@
 import { execFileSync, spawnSync } from 'node:child_process'
-import {
-  chmodSync,
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  rmSync,
-  symlinkSync,
-  writeFileSync,
-} from 'node:fs'
-import { tmpdir } from 'node:os'
+import { copyFileSync, mkdirSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-
-// `publicar.sh` publica la rama como un PR con auto-merge (docs/FLUJO.md). Se prueba con un repo temporal, un `origin` de verdad
-// (bare) y `gh` y `pnpm` falsos que registran lo que se les pide: lo que niega (main, árbol sucio, sin commits, título inválido) y el
-// camino feliz (empuja sin forzar, abre el PR con el título, enciende el auto-merge y, ya integrado, vuelve a main). El guion se
-// ubica por su propia carpeta: se copia al repo temporal y se corre desde ahí, como en un proyecto.
-const GUION_DEL_KIT = resolve('scripts/flujo/publicar.sh')
-const raices: string[] = []
-let raiz = ''
-let repo = ''
-
-const git = (...args: string[]) =>
-  execFileSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@ejemplo.test', ...args], {
-    cwd: repo,
-    encoding: 'utf8',
-  }).trim()
-
-function falso(nombre: string, cuerpo: string) {
-  writeFileSync(
-    join(raiz, 'bin', nombre),
-    `#!/usr/bin/env bash\necho "${nombre} $*" >> "${join(raiz, 'llamadas.txt')}"\n${cuerpo}\n`,
-  )
-  chmodSync(join(raiz, 'bin', nombre), 0o755)
-}
-
-beforeEach(() => {
-  raiz = mkdtempSync(join(tmpdir(), 'publicar-'))
-  raices.push(raiz)
-  repo = join(raiz, 'repo')
-  mkdirSync(join(raiz, 'bin'))
-  execFileSync('git', ['init', '-q', '--bare', '-b', 'main', join(raiz, 'origin.git')])
-  execFileSync('git', ['init', '-q', '-b', 'main', repo])
-  git('remote', 'add', 'origin', join(raiz, 'origin.git'))
-  writeFileSync(join(repo, 'a.txt'), 'a\n')
-  mkdirSync(join(repo, 'scripts/flujo'), { recursive: true })
-  writeFileSync(join(repo, 'scripts/flujo/limpiar-ramas.mjs'), 'console.log("limpiar")\n')
-  copyFileSync(GUION_DEL_KIT, join(repo, 'scripts/flujo/publicar.sh'))
-  git('add', '.')
-  git('commit', '-q', '-m', 'chore: inicio')
-  git('push', '-q', '-u', 'origin', 'main')
-  // `pnpm exec commitlint`: acepta un título con forma de commit convencional.
-  falso('pnpm', `grep -qE '^(feat|fix|chore|docs)(\\([a-z]+\\))?: [a-z]' || exit 1`)
-  // `gh`: sin PR hasta que se crea; después lo da por integrado.
-  falso(
-    'gh',
-    `case "$1 $2" in
-  "auth token") exit 1 ;;
-  "pr create") touch "${join(raiz, 'pr-creado')}" ;;
-  "pr view")
-    [ -f "${join(raiz, 'pr-creado')}" ] || exit 1
-    case "$*" in
-      *statusCheckRollup*) echo '{"state":"MERGED","mergeable":"UNKNOWN","statusCheckRollup":[]}' ;;
-      *) echo 7 ;;
-    esac ;;
-esac
-exit 0`,
-  )
-})
-afterAll(() => {
-  for (const r of raices) rmSync(r, { recursive: true, force: true })
-})
-
-function publicarDesde(cwd: string, ...args: string[]) {
-  const r = spawnSync('bash', [join(repo, 'scripts/flujo/publicar.sh'), ...args], {
-    cwd,
-    encoding: 'utf8',
-    env: {
-      NODE_ENV: 'test',
-      HOME: raiz,
-      PATH: `${join(raiz, 'bin')}:${process.env['PATH'] ?? ''}`,
-      ESPERA_PASO: '0',
-    },
-  })
-  return { estado: r.status, stderr: r.stderr, stdout: r.stdout }
-}
-const publicar = (...args: string[]) => publicarDesde(repo, ...args)
-const llamadas = () =>
-  existsSync(join(raiz, 'llamadas.txt')) ? readFileSync(join(raiz, 'llamadas.txt'), 'utf8') : ''
-
-function ramaConUnCommit(asunto = 'feat(leads): algo nuevo') {
-  git('switch', '-q', '-c', 'feat/algo')
-  writeFileSync(join(repo, 'b.txt'), 'b\n')
-  git('add', '.')
-  git('commit', '-q', '-m', asunto)
-}
+import { describe, expect, it } from 'vitest'
+import {
+  falso,
+  git,
+  llamadas,
+  publicar,
+  publicarDesde,
+  raiz,
+  ramaConUnCommit,
+  repo,
+} from './publicar-banco'
 
 describe('publicar.sh › lo que niega', () => {
   it('desde main no publica', () => {
@@ -193,38 +108,6 @@ describe('publicar.sh › en un worktree', () => {
     expect(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: wt, encoding: 'utf8' })).toBe(
       execFileSync('git', ['rev-parse', 'origin/main'], { cwd: repo, encoding: 'utf8' }),
     )
-  })
-})
-
-describe('publicar.sh › main que avanza', () => {
-  it('si main avanzó y la rama quedó atrás, la pone al día por la API (update-branch) y sigue esperando', () => {
-    ramaConUnCommit()
-    const vueltas = join(raiz, 'vueltas')
-    falso(
-      'gh',
-      `case "$1 $2" in
-  "auth token") exit 1 ;;
-  "pr create") touch "${join(raiz, 'pr-creado')}" ;;
-  "pr view")
-    [ -f "${join(raiz, 'pr-creado')}" ] || exit 1
-    case "$*" in
-      *statusCheckRollup*)
-        echo x >> "${vueltas}"
-        if [ "$(wc -l < "${vueltas}")" -lt 2 ]; then
-          echo '{"state":"OPEN","mergeable":"MERGEABLE","mergeStateStatus":"BEHIND","statusCheckRollup":[]}'
-        else
-          echo '{"state":"MERGED","mergeable":"UNKNOWN","mergeStateStatus":"UNKNOWN","statusCheckRollup":[]}'
-        fi ;;
-      *) echo 7 ;;
-    esac ;;
-esac
-exit 0`,
-    )
-    const r = publicar()
-    expect(r.estado, r.stderr).toBe(0)
-    expect(llamadas()).toContain('gh api -X PUT repos/{owner}/{repo}/pulls/7/update-branch')
-    expect(r.stdout).toContain('rama puesta al día')
-    expect(r.stdout).toContain('PR #7 integrado en main')
   })
 })
 
