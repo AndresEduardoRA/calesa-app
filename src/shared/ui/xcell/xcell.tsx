@@ -4,7 +4,7 @@
 // no calcula nada, dice «esta celda pasó a N» (`onCommit`) o «volver» (`onReset`) y la base recalcula (4.13). Ver `CLAUDE.md` de esta carpeta.
 import { memo, useId, useRef, type KeyboardEvent } from 'react'
 import { useRegional } from '../regional'
-import { CabeceraDeXCell, PARADA_DE_ACCIONES_DESDE } from './cabecera-de-xcell'
+import { AccionesDeXCell, PARADA_DE_ACCIONES_DESDE, RotuloDeXCell } from './cabecera-de-xcell'
 import { RAIZ } from './clases'
 import { accionesDe, candadosDe, estadosDe, notaDe, notasDe, type FormatoDeXCell } from './estado'
 import { LadoDeXCell } from './lado-de-xcell'
@@ -138,10 +138,15 @@ function XCellBase(props: XCellProps) {
         teclasDeLaCelda(evento, principalRef.current)
       }}
     >
-      <CabeceraDeXCell
+      <RotuloDeXCell
         idDeLaEtiqueta={`${uid}e`}
         label={label}
         sugerido={estados.includes('sugerido')}
+      />
+      {lado('principal')}
+      {hayPar ? lado('secundario') : null}
+      <AccionesDeXCell
+        label={label}
         alAyudar={acciones.alAyudar}
         alAjustar={acciones.alAjustar}
         restablecer={acciones.restablecer}
@@ -151,8 +156,6 @@ function XCellBase(props: XCellProps) {
           onReset(id)
         }}
       />
-      {lado('principal')}
-      {hayPar ? lado('secundario') : null}
       {notas.map(({ id: idDeLaNota, nota }) => (
         <NotaDeXCell key={idDeLaNota} id={idDeLaNota} nota={nota} />
       ))}

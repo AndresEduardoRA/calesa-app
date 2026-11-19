@@ -34,7 +34,9 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-const botonRevisiones = (page: Page) => page.getByRole('button', { name: 'Revisiones' })
+// Exacto: el ⚙ de la cabecera se llama «Configuración por defecto de <Origen>» y el origen de este spec lleva «revisiones» en su nombre.
+const botonRevisiones = (page: Page) =>
+  page.getByRole('button', { name: 'Revisiones', exact: true })
 const panel = (page: Page) =>
   page.getByRole('dialog', {
     name: `Revisiones de la cotización n.º ${numeroDeLaCotizacion(cotizacion)}`,

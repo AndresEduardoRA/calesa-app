@@ -30,7 +30,11 @@ export const getHojaDeUnaGuardada: LectorDeUnaGuardada = async (id, opciones) =>
   if (!hoja) {
     return fallo('inesperado', 'No pudimos leer la cotización. Recarga para volver a intentar.')
   }
-  const indice = indiceDeHoja(hoja.diseno.secciones, hoja.diseno.cabecera.modos)
+  const indice = indiceDeHoja(
+    hoja.diseno.secciones,
+    hoja.diseno.cabecera.modos,
+    hoja.diseno.cabecera.modoPorDefecto,
+  )
   const entradas = entradasDeLoGuardado(indice, hoja.guardado, hoja.cotizacion)
   const evaluar = async (vehiculoId: string | null) =>
     resultadoDeEvaluar(

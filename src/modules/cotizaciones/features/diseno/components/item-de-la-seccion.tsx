@@ -4,11 +4,12 @@ import type { AnchoDeCelda, SeccionDeDiseno } from '../../../entities/diseno'
 import type { NodosPorId } from '../../../entities/diseno/admite-nivel'
 import type { CambioDeAspectoDeItem } from '../../../entities/diseno/edicion-del-aspecto'
 import type { NivelDelDiseno } from '../../../entities/diseno/edicion-del-diseno'
-import { columnasParaAtajos } from '../../../entities/diseno/edicion-de-items'
+import { columnasParaAtajos, type AyudaDeCelda } from '../../../entities/diseno/edicion-de-items'
 import type { CambioDeNiveles } from '../../../entities/diseno/niveles'
 import type { EdicionesDelDiseno } from '../hooks/use-ediciones-del-diseno'
 import { useFilaOrdenable } from '../hooks/use-fila-ordenable'
 import type { ErrorDelAspecto } from './aspecto'
+import type { AccionesDeLosEnlaces } from './campos-de-los-enlaces'
 import { CeldaEditable } from './celda-editable'
 import { ItemDeAtajos } from './item-de-atajos'
 import { ItemDeInterruptor } from './item-de-interruptor'
@@ -29,6 +30,31 @@ type Props = {
   error: ErrorDelAspecto
   alPonerAncho: (nodo: string, ancho: AnchoDeCelda) => void
   alPonerNiveles: (nodo: string | undefined, cambios: CambioDeNiveles) => void
+}
+
+// La ayuda de la celda `nodo` y sus enlaces, atados a las ediciones del diseño.
+function accionesDeLaAyuda(
+  ediciones: EdicionesDelDiseno,
+  seccion: string,
+  nodo: string,
+): { alPonerAyuda: (ayuda: AyudaDeCelda | null) => void; enlaces: AccionesDeLosEnlaces } {
+  const enlaces: AccionesDeLosEnlaces = {
+    sumar: () => {
+      ediciones.sumarEnlace(seccion, nodo)
+    },
+    poner: (posicion, cambios) => {
+      ediciones.ponerEnlace({ seccion, nodo, posicion }, cambios)
+    },
+    quitar: (posicion) => {
+      ediciones.quitarEnlace({ seccion, nodo, posicion })
+    },
+  }
+  return {
+    alPonerAyuda: (ayuda) => {
+      ediciones.ponerAyuda(seccion, nodo, ayuda)
+    },
+    enlaces,
+  }
 }
 
 // Un ítem de la sección, según su tipo: la celda con su ancho, niveles y ayuda; los atajos y el interruptor con sus campos; la variante y el subtotal, de sólo
@@ -73,9 +99,7 @@ export function ItemDeLaSeccion({
           alPonerNiveles={(cambios) => {
             alPonerNiveles(item.nodo, cambios)
           }}
-          alPonerAyuda={(ayuda) => {
-            ediciones.ponerAyuda(seccion.id, item.nodo, ayuda)
-          }}
+          {...accionesDeLaAyuda(ediciones, seccion.id, item.nodo)}
         />
       )
     case 'atajos':

@@ -43,7 +43,8 @@ export type SecundarioDeCelda = EdicionDeHoja & {
   ajustes: boolean
 }
 
-export type AyudaDeCelda = { tabla: string } | { texto: string }
+export type EnlaceDeLaAyuda = { titulo: string; url: string }
+export type AyudaDeCelda = { tabla: string } | { texto: string; enlaces?: EnlaceDeLaAyuda[] }
 
 // La columna de la tabla de una celda y el dato del vehículo con que se busca (`tipo` ← `tipo_vehiculo`).
 export type DatoDelVehiculo = { tabla: string; columnas: { columna: string; campo: string }[] }
@@ -116,6 +117,11 @@ export type DisenoDeHoja = {
     modos: { clave: string; nombre: string }[]
     verTotalBs: boolean
     monedaBs: string | null
+    // El ⚙ de la cabecera (lo decide la base) y lo que el diseño trae por defecto: nulo o falso si no lo trae.
+    ajustes: boolean
+    modoPorDefecto: string | null
+    verTotalBsPorDefecto: boolean
+    modosVisibles: string[] | null
   }
   secciones: SeccionDeHoja[]
   tarjetaTotal: NodoDeTarjeta & { secundarios: NodoDeTarjeta[] }
@@ -224,6 +230,10 @@ export function disenoDe(h: Crudo<typeof esquemaDeDiseno>): DisenoDeHoja {
       modos: h.cabecera.modos,
       verTotalBs: h.cabecera.ver_total_bs,
       monedaBs: h.cabecera.moneda_bs,
+      ajustes: h.cabecera.ajustes ?? false,
+      modoPorDefecto: h.cabecera.modo_por_defecto ?? null,
+      verTotalBsPorDefecto: h.cabecera.ver_total_bs_por_defecto ?? false,
+      modosVisibles: h.cabecera.modos_visibles ?? null,
       ...aspectoDeCabecera(h.cabecera),
     },
     secciones: h.secciones.map((s) => ({

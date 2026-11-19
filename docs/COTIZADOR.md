@@ -259,13 +259,20 @@ Lo puro en `entities/formula/`: nunca lanza, no toca lo que recibe y es lineal c
 `formulas.diseno` (jsonb), versionado y publicado con la fórmula (un cambio de diseño publica la N+1). Lo validan `validarDiseno()`
 (`entities/validar-diseno.ts`, sobre el Zod de `entities/diseno.ts`) y `validar_diseno()` en la base, con juego
 (`entities/casos-de-diseno.json`) y corpus. **Declarativo:** nada de CSS, clases, HTML ni hex.
-Forma: `{ cabecera: {modos[], ver_total_bs, …aspecto}, secciones[], tarjeta_total: {nodo, secundarios[]} }`.
+Forma: `{ cabecera: {modos[], ver_total_bs, …aspecto, modo_por_defecto?, ver_total_bs_por_defecto?, modos_visibles?}, secciones[],
+tarjeta_total: {nodo, secundarios[]} }`.
 
 - **`cabecera.modos[]`** `{clave, nombre, buckets: [{bucket, nodo}], total_en}`: nombra **nodos `tipo_cambio`** (no claves) y llena
   **exactamente** los buckets de la fórmula; no hay modos en una fórmula sin `total_en`.
+- **Lo que la cabecera trae por defecto** (opcional; sin eso, todo como siempre): `modo_por_defecto` (la clave del modo con que abre una
+  cotización nueva; sin él, el primero), `ver_total_bs_por_defecto` (booleano: «Ver total» encendido al abrir una nueva; sin él, apagado) y
+  `modos_visibles` (las claves de los modos que se dibujan en el encabezado, en cualquier orden; sin la lista, todos). Una guardada abre con
+  lo suyo, y **el modo que tiene elegido se dibuja aunque no esté entre los visibles**: la visibilidad es del encabezado, no una regla de
+  guardado (`_cotizacion_modo` acepta cualquier modo del diseño).
 - **`secciones[]`, en orden** (el del DOM, de lectura y del `Tab`): `id`, `titulo?`, `presentacion` (`principal`/`avanzado`),
   `nivel_ver?`/`nivel_editar?` (los heredan sus ítems), `items[]`. Las `avanzado` van juntas en **un** modal «Avanzado».
-- **`items`:** `celda` (`nodo`, `ancho`, `secundario?`, `ayuda?` = una `tabla` o un `texto`, `nivel_ver?`, `nivel_editar?`; **el
+- **`items`:** `celda` (`nodo`, `ancho`, `secundario?`, `ayuda?` = una `tabla` o un `texto` con hasta 5 `enlaces` `{titulo, url}`
+  —título de 1 a 60 caracteres, URL `https://` de hasta 2000—, `nivel_ver?`, `nivel_editar?`; **el
   candado se deriva** —cálculo, dato del vehículo, condición apagada, otra variante o nivel que falta— y siempre dice su motivo; **el
   par porcentaje-monto es una sola celda**, con `secundario`); `atajos` (un nodo `tabla` sobrescribible, su `columna` y hasta 12
   `filas` como chips); `variante` (el nodo `opcion` como chips; obligatoria si hay variante); `interruptor` (una `bandera` con `efecto`
@@ -288,10 +295,16 @@ Forma: `{ cabecera: {modos[], ver_total_bs, …aspecto}, secciones[], tarjeta_to
 
 **Primero la forma (`forma`)**, el Zod de `diseno.ts`; **después, el tamaño (`demasiados_items`)**: a lo sumo 40 ítems sumando todas las
 secciones (principal o avanzado; la cabecera y la tarjeta no cuentan), con `donde` = la sección en la que la suma pasa del tope
-(`MAXIMO_DE_ITEMS_DEL_DISENO`; en la base, `_diseno_maximo_de_items()`). El borrador lo admite; publicar lo rechaza. **Después, 28 reglas
+(`MAXIMO_DE_ITEMS_DEL_DISENO`; en la base, `_diseno_maximo_de_items()`). El borrador lo admite; publicar lo rechaza. **Después, 34 reglas
 cruzadas** con código estable (lista en `entities/motivos-de-diseno.ts`; `donde` = id del nodo, sección, modo o grupo; en la base,
-`hint`). La última, `tono_inexistente`, revisa el tono de cada grupo, después el de la cabecera (`donde` = `cabecera`) y después el de cada
-sección (`donde` = su id), en ese orden. Las de nivel: `nivel_no_admitido` (el total, lo `aparte` o la variante con nivel efectivo de ver que no es «todos»: la base
+`hint`), en pasadas: §1 los modos; §1b lo que la cabecera trae por defecto, todas con `donde` = `cabecera` y en este orden:
+`modo_por_defecto_inexistente`, cada modo visible en orden (`modo_visible_inexistente` y después `modo_visible_repetido`),
+`modo_por_defecto_oculto` (el modo por defecto efectivo —el escrito o el primero— no está entre los visibles; también la lista vacía) y
+`ver_total_bs_por_defecto_no_ofrecido` (encendido sin `ver_total_bs`; apagado siempre vale); §2–5 las secciones, la tarjeta, los atajos y la
+cobertura; §6 `tono_inexistente`, que revisa el tono de cada grupo, después el de la cabecera (`donde` = `cabecera`) y después el de cada
+sección (`donde` = su id); §7 `ayuda_enlace_no_https` (`donde` = el nodo de la celda): la URL de un enlace de la ayuda cumple
+`^https://[!-~]+$` (ASCII imprimible sin espacios, la misma clase en JS y en Postgres: `URL_DE_ENLACE`). La forma de un enlace (de 1 a 5,
+`{titulo, url}`, los largos) es `forma`. Las de nivel: `nivel_no_admitido` (el total, lo `aparte` o la variante con nivel efectivo de ver que no es «todos»: la base
 siempre manda el total y lo `aparte`) y `editar_sin_ver` (ver restringido con editar ausente o «todos»; **ver abierto con editar
 restringido vale**). El primero que falla manda. **La definición llega ya validada.** `validar_diseno(def, diseno, niveles, retirados,
 tonos)`: STABLE, invoker, `search_path` vacío, 22023 con la regla en DETAIL y `donde` en HINT.
@@ -334,6 +347,12 @@ la pide.
 - **El ⚙** (`formula_cambiar_constante(origen, nodo, valor, publicada_esperada?)`, `cotizaciones.configurar`): publica la N+1 desde la
   publicada (definición y diseño, `params` con el valor nuevo; un nivel retirado no lo frena), **sin crear ni tocar el borrador**.
   Esperada nula = la publicada que lee al entrar; el mismo valor da 22023 (hint `valor`).
+- **El ⚙ de la cabecera** (`formula_cambiar_cabecera(origen, modo_por_defecto, ver_total_bs_por_defecto, modos_visibles, publicada_esperada?)`,
+  `cotizaciones.configurar`): publica la N+1 desde la publicada con las tres claves por defecto de la cabecera escritas siempre juntas (definición
+  y `params` iguales), **sin crear ni tocar el borrador**. Mismo contrato que el ⚙ de una constante: el permiso primero, la esperada (PT409 con
+  quién y cuándo), `_publicar_version()` (candado, validación entera del diseño, `formula.publicada` con `despues.cabecera`). 22023 con hint
+  `cabecera` si la publicada no tiene modos o ya tiene esos valores (los efectivos: lo que falta vale el primer modo, falso y todos). La hoja
+  lo dibuja sólo con `cabecera.ajustes`; «Aplicar también a esta cotización» cambia la hoja abierta como si la persona eligiera.
 - **Revertir** (`formula_revertir(origen, versión, nota, publicada_esperada)`, sin defaults, `cotizaciones.configurar`): publica la N+1
   como copia de una **archivada** (definición, params y **diseño**), sin tocar el borrador. Rechaza la publicada, un borrador, otro origen o
   inexistente (mismo texto) y la esperada nula (22023); un nivel retirado en ese diseño da 22023 `nivel_retirado`. `actividad` registra
@@ -352,8 +371,8 @@ la pide.
 - **Dónde se ven:** pestaña «Fórmula» de Configuración › Cotización: publicada, borrador (atrasado si su versión de origen ya no es la
   publicada) y versiones por cursor, sin lo oculto (`docs/UX.md` › «Cotización: fórmula (estados propios)»); ahí se publica con nota, se
   descarta (`<Confirmar>`) y se revierte.
-- **Carreras** (`scripts/carreras/tonos.mjs`, `formula-mixtas.mjs`): dos publicar, dos ⚙, el ⚙ contra publicar el borrador y revertir contra
-  el ⚙, en los dos órdenes y con o sin esperadas: la segunda da PT409 y nada se pisa.
+- **Carreras** (`scripts/carreras/tonos.mjs`, `formula-mixtas.mjs`): dos publicar, dos ⚙, el ⚙ contra publicar el borrador, revertir contra
+  el ⚙ y el ⚙ de la cabecera contra el de una constante y contra publicar, en los dos órdenes: la segunda da PT409 y nada se pisa.
 
 ### La cotización aprobada
 
@@ -546,7 +565,13 @@ de 24 h y, si esa versión ya no es la publicada, dejó de serlo hace menos de 2
 lo que la hoja necesita para dibujarse. No lee `cotizaciones` ni el snapshot. **Orden:** el permiso **antes de mirar nada** (`cotizaciones.crear`
 y `cotizaciones.ver` del origen); sin versión publicada, `{estado: 'sin_publicar', origen, puede_configurar}`; con ella, `{estado: 'lista',
 formula: {id, version}, abierta_en, abierta, cabecera, secciones, tarjeta_total, tonos}`. La `cabecera` es `{modos,
-ver_total_bs, moneda_bs}`.
+ver_total_bs, moneda_bs, ajustes}` más su aspecto y, sólo si el diseño las trae, `modo_por_defecto`, `ver_total_bs_por_defecto` y
+`modos_visibles` (las copia tal cual: la hoja calcula lo efectivo).
+
+- **`cabecera.ajustes` (el ⚙ de la cabecera):** `cotizaciones.configurar` del origen **y** al menos un modo. La base decide quién lo ve,
+  como el `ajustes` de cada celda; la hoja no mira permisos. Una cotización nueva abre con el modo por defecto (`modoInicial()`: el modo por
+  defecto o el primero) y con «Ver total» por defecto si la hoja lo ofrece (`verTotalBsAlAbrir()`); una guardada, con lo suyo. El
+  encabezado dibuja los modos visibles más el elegido (`modosDelEncabezado()`).
 
 - **`cabecera.moneda_bs`:** la `moneda_a` del tipo de cambio **activo** que nombra el `total_en` de esa versión (una fila por
   `tipos_cambio_clave_key`); JSON `null`, con la clave presente, si la versión no tiene `total_en` o ese tipo de cambio no existe o está
@@ -565,8 +590,9 @@ ver_total_bs, moneda_bs}`.
   (congelada sin viva activa) y `filas` también (tabla vacía: el motor da `tabla_sin_filas` y la pantalla lo dice).
 - **Una celda** lleva `nodo`, `etiqueta`, `tipo_nodo`, `formato`, `ancho`, `tono`, `editable`, `motivo`, `ajustes`, `ayuda`,
   `dato_del_vehiculo`, `solo_en` y `condicion`/`requerido_si` **sólo si su bandera se ve**. **`editable`:** `editar` de `_nodos_visibles()`
-  **y** que el nodo acepte un valor. **`motivo`** (lo que no se edita): `se_calcula`, `del_vehiculo`, `nivel` (con el **nombre** del nivel
-  que falta) o `no_se_edita`. **`ajustes` (⚙):** una constante con `cotizaciones.configurar` del origen, o un tipo de cambio con
+  **y** que el nodo acepte un valor. **`ayuda`:** la tabla (si existe y se lee) o `{texto, enlaces?}`; los enlaces viajan con su celda y la
+  hoja vuelve a exigir `URL_DE_ENLACE` antes de dibujar un `href`. **`motivo`** (lo que no se edita): `se_calcula`, `del_vehiculo`, `nivel`
+  (con el **nombre** del nivel que falta) o `no_se_edita`. **`ajustes` (⚙):** una constante con `cotizaciones.configurar` del origen, o un tipo de cambio con
   `empresa.tipos_cambio.gestionar`.
 - **El modo por clave:** la hoja recibe los modos sin sus `buckets`; `cotizacion_evaluar(…, p_modo_tc)` acepta la clave de un modo de esa
   versión (`_cotizacion_modo()`; ajena: `modo_invalido`). `p_modo` (objeto) sigue para el editor.

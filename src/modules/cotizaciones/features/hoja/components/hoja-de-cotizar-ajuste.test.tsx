@@ -154,5 +154,22 @@ describe('HojaDeCotizar: el ⚙ de «Avanzado», dentro del modal', () => {
   })
 })
 
+describe('HojaDeCotizar: la línea de «Avanzado»', () => {
+  const linea = (dialogo: HTMLElement) =>
+    dialogo.querySelector('[data-explicacion-del-avanzado]')?.textContent
+
+  it('con el ⚙ en una celda del modal, las dos frases; sin el hueco del ⚙, sólo la primera', async () => {
+    montarHoja('?panel=avanzado')
+    expect(linea(await screen.findByRole('dialog', { name: 'Avanzado' }))).toBe(
+      'Tocar un valor lo cambia sólo en esta cotización. El ⚙ cambia el valor por defecto de las cotizaciones nuevas.',
+    )
+    cleanup()
+    montarHoja('?panel=avanzado', { proveedor: false })
+    expect(linea(await screen.findByRole('dialog', { name: 'Avanzado' }))).toBe(
+      'Tocar un valor lo cambia sólo en esta cotización.',
+    )
+  })
+})
+
 // Para que el soporte no quede sin uso si cambia la forma del `Ajuste`.
 void AjusteDePrueba

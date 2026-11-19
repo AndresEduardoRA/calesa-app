@@ -6,7 +6,7 @@ import { validarFormula } from './validar'
 
 // Lo que comparten las pruebas de la semilla del cotizador (`semilla.test.ts` y `semilla-cifras.test.ts`; paso 4.08-3): leer los archivos
 // sembrados (`supabase/semillas/cotizador-*.sql` y los tipos de cambio de `supabase/seed.sql`) y los juegos, y evaluar una fórmula sembrada con los tipos de cambio sembrados.
-// Sólo lo usan esas pruebas.
+// Sólo lo usan pruebas (también `cabecera-de-la-hoja.test.ts`: un diseño viejo se ve igual).
 
 export const leer = (ruta: string) => readFileSync(new URL(ruta, import.meta.url), 'utf8')
 export const juegoFormulas = (

@@ -35,10 +35,13 @@ test.describe.configure({ mode: 'serial' })
 // Con el ⚙ (4.20-3b, P1 de la persona): el techo de 500 se mide como quien cotiza sin ⚙ (un rol con el nivel «costos» y sin `cotizaciones.configurar` ni
 // `empresa.tipos_cambio.gestionar`, que ve las mismas celdas), y quien configura tiene su tope: lo medido con la hoja usada más un 5 %, con techo en 600 y la misma regla.
 const TOPE_DE_NODOS = 500
-// La dueña con ⚙ (4.20-3b): 532 al abrir (21 ⚙) y 557 usada (22: la garantía suma el suyo); más un 5 %, 585.
+// La dueña con ⚙ (4.20-3b): 532 al abrir (21 ⚙) y 557 usada (22: la garantía suma el suyo); más un 5 %, 585. Con la celda en una fila, los pasos y el ⚙ de la
+// cabecera (T312): 516 al abrir y 540 usada; sin ⚙, 446 y 467.
 const TOPE_DE_NODOS_CON_AJUSTE = 585
 // Cada ⚙ son tres nodos (el botón, su `svg` y su `use`: `src/shared/ui/xcell/CLAUDE.md` › «Nodos por celda»).
 const NODOS_POR_AJUSTE = 3
+// El ⚙ de la cabecera (T312) son siete: la fila que lo pone junto a los modos, el botón, su `svg` y sus cuatro trazos.
+const NODOS_DEL_AJUSTE_DE_LA_CABECERA = 7
 
 let duena = ''
 let costos = ''
@@ -71,6 +74,9 @@ test.beforeAll(async ({}, info) => {
       'cotizaciones.crear.sin_lead',
       'cotizaciones.nivel.costos.ver',
       'cotizaciones.nivel.costos.editar',
+      // Ve vehículos y leads como la dueña: los pasos de la hoja («Vehículo», «Cliente») son los mismos y no cuentan como un ⚙.
+      'vehiculos.ver',
+      'leads.ver',
     ],
   })
   subasta = sql("select id from public.origenes where clave = 'subasta_usa'")
@@ -245,8 +251,12 @@ test('como quien configura, la misma hoja suma sólo sus ⚙ y cabe en su tope',
   anotar(info, 'con ⚙', medida, TOPE_DE_NODOS_CON_AJUSTE)
   expect(medida.celdas).toBe(sinAjuste.celdas)
   expect(medida.ajustesAlAbrir).toBeGreaterThan(0)
-  expect(medida.alAbrir - sinAjuste.alAbrir).toBe(NODOS_POR_AJUSTE * medida.ajustesAlAbrir)
-  expect(medida.usada - sinAjuste.usada).toBe(NODOS_POR_AJUSTE * medida.ajustesUsada)
+  expect(medida.alAbrir - sinAjuste.alAbrir).toBe(
+    NODOS_POR_AJUSTE * medida.ajustesAlAbrir + NODOS_DEL_AJUSTE_DE_LA_CABECERA,
+  )
+  expect(medida.usada - sinAjuste.usada).toBe(
+    NODOS_POR_AJUSTE * medida.ajustesUsada + NODOS_DEL_AJUSTE_DE_LA_CABECERA,
+  )
   expect(medida.alAbrir).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_AJUSTE)
   expect(medida.usada).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_AJUSTE)
 })

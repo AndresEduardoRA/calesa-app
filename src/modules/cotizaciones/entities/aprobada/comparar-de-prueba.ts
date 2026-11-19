@@ -66,6 +66,10 @@ export function hoja(d: Datos): HojaDeUnaGuardada {
         ],
         verTotalBs: false,
         monedaBs: null,
+        ajustes: false,
+        modoPorDefecto: null,
+        verTotalBsPorDefecto: false,
+        modosVisibles: null,
       },
       secciones: d.secciones,
       tarjetaTotal: {

@@ -6,6 +6,8 @@ import { crudaDeLaHoja, respuestaDePrueba } from './hoja-de-prueba.soporte'
 import {
   ayudaDeTexto,
   celdaConAjuste,
+  enlacesDeLaAyuda,
+  explicacionDelAvanzado,
   celdaConAyuda,
   hayDatosPorRevisar,
   ordenDeLaHoja,
@@ -156,6 +158,17 @@ describe('ayudaDeTexto y tablaDeAyuda: cada una, lo suyo', () => {
   it('una celda sin ayuda no devuelve nada', () => {
     expect(ayudaDeTexto(de('a1'))).toBeNull()
   })
+
+  it('los enlaces: los de la ayuda de texto, en su orden; vacío sin enlaces, con una tabla o sin ayuda', () => {
+    const enlaces = [
+      { titulo: 'Copart', url: 'https://www.copart.com/' },
+      { titulo: 'IAA', url: 'https://www.iaai.com/' },
+    ]
+    expect(enlacesDeLaAyuda({ ...de('b1'), ayuda: { texto: 'Mira', enlaces } })).toEqual(enlaces)
+    expect(enlacesDeLaAyuda(de('b1'))).toEqual([])
+    expect(enlacesDeLaAyuda(de('y1'))).toEqual([])
+    expect(enlacesDeLaAyuda(de('a1'))).toEqual([])
+  })
 })
 
 describe('tipoDeAyuda y tablaDeAyuda', () => {
@@ -259,5 +272,25 @@ describe('celdaConAjuste: el ⚙ lo da la base y la URL no abre lo que la hoja n
     expect(celdaConAjuste(principales, 'a4', c)).toBeNull()
     expect(celdaConAjuste(principales, 'no_existe', c)).toBeNull()
     expect(celdaConAjuste(principales, null, c)).toBeNull()
+  })
+})
+
+describe('explicacionDelAvanzado', () => {
+  const seccion = (items: Record<string, unknown>[]) =>
+    ({ id: 'x', titulo: null, presentacion: 'avanzado', items }) as unknown as SeccionDeHoja
+
+  it('a todos, qué cambia tocar un valor; con el ⚙ en alguna celda (o en su secundario), también qué cambia el ⚙', () => {
+    const sin = [seccion([{ tipo: 'celda', ajustes: false, secundario: null }])]
+    const conCelda = [seccion([{ tipo: 'celda', ajustes: true, secundario: null }])]
+    const conSecundario = [
+      seccion([{ tipo: 'celda', ajustes: false, secundario: { ajustes: true } }]),
+    ]
+    const solo = 'Tocar un valor lo cambia sólo en esta cotización.'
+    const ambas = `${solo} El ⚙ cambia el valor por defecto de las cotizaciones nuevas.`
+    expect(explicacionDelAvanzado(sin, true)).toBe(solo)
+    expect(explicacionDelAvanzado(conCelda, true)).toBe(ambas)
+    expect(explicacionDelAvanzado(conSecundario, true)).toBe(ambas)
+    // Sin el hueco del ⚙ lleno, ninguna celda lo dibuja.
+    expect(explicacionDelAvanzado(conCelda, false)).toBe(solo)
   })
 })
