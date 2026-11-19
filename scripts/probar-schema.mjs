@@ -201,6 +201,10 @@ const DATOS_DE_PRUEBA = {
   'areas/tarjeta/plantilla-convertir.sql': {
     _juego_de_conversion: 'src/modules/cotizaciones/entities/plantilla/casos-de-conversion.json',
   },
+  // El juego espejo de los retoques de la tarjeta de una cotización: lo corre también Vitest (`entities/tarjeta/retoques/validar-retoques.test.ts`).
+  'areas/tarjeta/retoques.sql': {
+    _juego_de_retoques: 'src/modules/cotizaciones/entities/tarjeta/retoques/casos-de-retoques.json',
+  },
   // El juego espejo de los colores del catálogo: lo genera TS con `derivarColores()` (`supabase/tests/casos-de-colores.ts`).
   'areas/diseno/colores.sql': {
     _casos_de_colores: path.join(base, 'tests', 'casos-de-colores.json'),

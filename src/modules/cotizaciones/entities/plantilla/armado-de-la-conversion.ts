@@ -11,7 +11,7 @@ import {
 import { altoDeLaFila, altoDeRenglones, altoDeTexto } from './altos-de-la-conversion'
 import { idDeLaCelda } from './ids-de-la-conversion'
 import type { Plantilla } from './forma-de-plantilla'
-import { btrim } from './json-de-la-base'
+import { btrim } from '../json-de-la-base'
 import type { ContextoDeNodos, NodoParaPlantilla } from './nodos-de-plantilla'
 
 export type Columna = (typeof COLUMNAS_DE_LA_CONVERSION)[number]

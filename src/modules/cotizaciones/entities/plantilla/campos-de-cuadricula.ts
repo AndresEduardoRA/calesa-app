@@ -1,7 +1,7 @@
 // Lo que comparten las piezas del espejo de la forma 2 (`forma-de-cuadricula.ts`, `celdas-de-cuadricula.ts`): leer una clave sin el prototipo, la forma de un id,
 // un entero en un rango y una clave de más. Como la base: `?` mira la clave, no el valor.
 import { rechazoDePlantilla } from './motivos-de-plantilla'
-import { ES_ID, esEntero } from './json-de-la-base'
+import { ES_ID, esEntero } from '../json-de-la-base'
 
 type Objeto = Readonly<Record<string, unknown>>
 

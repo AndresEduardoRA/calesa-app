@@ -152,6 +152,7 @@ create or replace function pg_temp.cv_registro() returns jsonb language sql as $
     'cotizaciones_papelera_enviar', jsonb_build_object('clase', 'no_devuelve', 'motivo', 'devuelve el lote, su versión, el id, número y título de cada enviada, y el código y motivo de cada rechazo (el título sólo de lo que se ve): _cotizacion_a_papelera() toma la fila entera y sólo devuelve esas tres claves (4.24-1a)'),
     '_nombre_del_modo', jsonb_build_object('clase', 'no_devuelve', 'motivo', 'lee formulas.diseno y devuelve sólo el nombre de un modo de cabecera.modos, a quien tiene cotizaciones.ver del origen de una versión publicada: el que ya dan cotizacion_hoja y cotizacion_tarjeta (areas/aprobada/de-este-vehiculo.sql)'),
     'cotizacion_portada', jsonb_build_object('clase', 'no_devuelve', 'motivo', 'devuelve la ruta y la clave de la portada, la clave vigente (un md5 de lo que dibuja la tarjeta: _cotizacion_portada_clave lee de cotizaciones la hora, la versión y el origen), ve_todo, puede_guardarla y, con ve_todo, el cliente, el vehículo y el asesor que dibuja la compartida: ningún valor, total ni diseño (areas/tarjeta/portada.sql)'),
+    'cotizacion_retocar_tarjeta', jsonb_build_object('clase', 'no_devuelve', 'motivo', 'llama a cotizacion_tarjeta sólo para validar los retoques contra la cuadrícula que se dibuja; devuelve actualizado_en, los retoques guardados y si fue repetido: ningún valor, total ni diseño (areas/tarjeta/retoques.sql)'),
     'cotizaciones_de_este_vehiculo', jsonb_build_object('clase', 'no_devuelve', 'motivo', 'corre como quien llama sobre columnas con grant de cotizaciones y devuelve de la fórmula sólo el nombre del modo (_nombre_del_modo): ningún valor, total oculto ni diseño (areas/aprobada/de-este-vehiculo.sql)'),
     'cotizaciones_aprobadas_de_vehiculos', jsonb_build_object('clase', 'no_devuelve', 'motivo', 'corre como quien llama sobre columnas con grant de cotizaciones_aprobadas y cotizaciones (el primer resultado congelado y su moneda, que ya da la tabla) y de la fórmula devuelve sólo el nombre del modo (_nombre_del_modo): ningún valor, total oculto ni diseño (areas/aprobada/de-vehiculos.sql)'),
     'cotizacion_evaluar', jsonb_build_object('clase', 'recorta',
@@ -275,7 +276,7 @@ rollback;
 begin;
 do $$
 declare
-  v_legible_c constant text := 'id, numero, origen_id, lead_id, vehiculo_id, creado_por, clase, estado, titulo, titulo_manual, formula_id, plantilla_id, total_base, moneda_mostrar, modo_tc, ver_total_bs, notas, version, creado_en, actualizado_en';
+  v_legible_c constant text := 'id, numero, origen_id, lead_id, vehiculo_id, creado_por, clase, estado, titulo, titulo_manual, formula_id, plantilla_id, total_base, moneda_mostrar, modo_tc, ver_total_bs, notas, tarjeta_retoques, version, creado_en, actualizado_en';
 begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
   set local role authenticated;

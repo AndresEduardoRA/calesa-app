@@ -165,6 +165,7 @@ describe('etiquetas', () => {
     expect(etiquetaDeCampo('leads', 'nombre')).toBe('Nombre')
     expect(etiquetaDeCampo('vehiculos', 'atributos.color', etiquetasDeAtributos)).toBe('Color')
     expect(etiquetaDeCampo('vehiculos', 'precio_web_nota')).toBe('Precio web nota')
+    expect(etiquetaDeCampo('cotizaciones', 'tarjeta_retoques')).toBe('Retoques de la tarjeta')
     expect(verboDeLaAccion('leads.update')).toBe('Cambió')
     expect(verboDeLaAccion('fase.mover')).toBe('Hizo «Fase mover» en')
     expect(verboDeLaAccion('vehiculo.subasta_resuelta')).toBe('Resolvió la subasta de')

@@ -51,6 +51,38 @@ const guarda = (
   args: [c, intento, v, JSON.stringify({ inputs: { a } }), titulo, vehiculo],
 })
 
+// Retocar la tarjeta (`cotizacion_retocar_tarjeta`): la persona, la cotización, la versión que tenía en pantalla y los retoques.
+const retoca = (persona, c, v, retoques) => ({
+  persona,
+  sql: 'public.cotizacion_retocar_tarjeta($1, $2::timestamptz, $3::jsonb)',
+  args: [c, v, JSON.stringify(retoques)],
+})
+// Una cuadrícula de dos celdas de texto, sin nodos (vale para cualquier versión): lo que la base valida al retocar.
+const CUADRICULA = {
+  forma: 2,
+  columnas: [{ id: 'a', ancho: 200 }],
+  filas: [
+    { id: 'f_saludo', alto: 24, ocultar_si: 'nunca' },
+    { id: 'f_nota', alto: 24, ocultar_si: 'nunca' },
+  ],
+  celdas: [
+    { id: 'c_saludo', fila: 'f_saludo', columna: 'a', contenido: { tipo: 'texto', texto: 'Hola' } },
+    { id: 'c_nota', fila: 'f_nota', columna: 'a', contenido: { tipo: 'texto', texto: 'Nota' } },
+  ],
+}
+const conCuadricula = (db, t) =>
+  db.query(
+    `insert into public.plantillas_tarjeta (origen_id, version, estado, definicion, publicado_en) values ($1, 1, 'publicada', $2::jsonb, now())`,
+    [t.origen, JSON.stringify(CUADRICULA)],
+  )
+const retocada = async (db, id) =>
+  (
+    await db.query(
+      `select tarjeta_retoques -> 'celdas' ->> 'c_saludo' as saludo, valores ->> 'a' as a, titulo from public.cotizaciones where id = $1`,
+      [id],
+    )
+  ).rows[0]
+
 export async function carrerasDeGuardar({ orquesta, carrera, espero, conectar, esperarBloqueo }) {
   const sinInterbloqueo = (...rs) => rs.every((r) => r.codigo !== '40P01')
 
@@ -604,6 +636,61 @@ export async function carrerasDeGuardar({ orquesta, carrera, espero, conectar, e
     )
   }
 
+  console.log('Retocar la tarjeta y guardar a la vez con la misma versión')
+  {
+    const t = await terreno(orquesta, 'g13')
+    await conCuadricula(orquesta, t)
+    const c = nuevoId()
+    await insertaCotizacion(orquesta, t, c)
+    const v = await version(orquesta, c)
+    const r = await carrera(orquesta, {
+      a: retoca(duena, c, v, { celdas: { c_saludo: 'De A' } }),
+      b: guarda(duena, t, c, v, { a: 12, titulo: 'B' }),
+    })
+    const f = await retocada(orquesta, c)
+    espero(
+      'retocar gana; guardar espera la fila y recibe el conflicto (PT409, nunca 40001) sin pisar nada',
+      r.a.ok && r.b.codigo === 'PT409' && f.saludo === 'De A' && f.a === '10' && f.titulo === null,
+      { a: r.a, b: r.b, f },
+    )
+    const c2 = nuevoId()
+    await insertaCotizacion(orquesta, t, c2)
+    const v2 = await version(orquesta, c2)
+    const r2 = await carrera(orquesta, {
+      a: guarda(duena, t, c2, v2, { a: 12, titulo: 'A' }),
+      b: retoca(duena, c2, v2, { celdas: { c_saludo: 'De B' } }),
+    })
+    const f2 = await retocada(orquesta, c2)
+    espero(
+      'guardar gana; retocar espera la fila y recibe el conflicto (PT409, nunca 40001) sin pisar nada',
+      r2.a.ok && r2.b.codigo === 'PT409' && f2.saludo === null && f2.a === '12',
+      { a: r2.a, b: r2.b, f2 },
+    )
+  }
+
+  console.log('Dos retocar la tarjeta a la vez con la misma versión')
+  {
+    const t = await terreno(orquesta, 'g14')
+    await conCuadricula(orquesta, t)
+    const c = nuevoId()
+    await insertaCotizacion(orquesta, t, c)
+    const v = await version(orquesta, c)
+    const r = await carrera(orquesta, {
+      a: retoca(duena, c, v, { celdas: { c_saludo: 'De A' } }),
+      b: retoca(duena, c, v, { celdas: { c_saludo: 'De B' }, filas_ocultas: ['f_nota'] }),
+    })
+    const f = await retocada(orquesta, c)
+    espero(
+      'gana el primero; el segundo espera la fila y recibe el conflicto (PT409, nunca 40001): una sola revisión',
+      r.a.ok &&
+        r.b.codigo === 'PT409' &&
+        sinInterbloqueo(r.a, r.b) &&
+        f.saludo === 'De A' &&
+        (await revisiones(orquesta, c)) === 1,
+      { a: r.a, b: r.b, f },
+    )
+  }
+
   console.log('Crear mientras cambia un tipo de cambio (sin esperarse)')
   {
     const t = await terreno(orquesta, 'g12')
@@ -629,9 +716,13 @@ export async function carrerasDeGuardar({ orquesta, carrera, espero, conectar, e
       'public.cotizacion_crear(uuid,uuid,uuid,jsonb,text,uuid,jsonb,text,clase_cotizacion,boolean,boolean,text,boolean)',
       'public.cotizacion_hoja(uuid)',
       'public.cotizacion_evaluar(jsonb,uuid,uuid,uuid,jsonb,text,text)',
+      'public.cotizacion_retocar_tarjeta(uuid,timestamptz,jsonb)',
+      'public.validar_retoques(jsonb,jsonb)',
     ]
     const internas = [
       'public._cotizacion_conservar(jsonb,jsonb,jsonb,jsonb)',
+      'public._retoques_normalizados(jsonb)',
+      'public._retoques_resumen(jsonb)',
       'public._cotizacion_entradas_de(jsonb,jsonb,jsonb)',
       'public._cotizacion_abierta(uuid,uuid,timestamptz)',
       'public._cotizacion_abierta_firmar(uuid,uuid,timestamptz)',
@@ -675,7 +766,7 @@ export async function carrerasDeGuardar({ orquesta, carrera, espero, conectar, e
       }
     }
     espero(
-      'guardar sólo para authenticated, los ayudantes de nadie y el intento y la huella sin lectura',
+      'guardar y retocar sólo para authenticated, los ayudantes de nadie y el intento y la huella sin lectura',
       mal.length === 0,
       { mal },
     )
