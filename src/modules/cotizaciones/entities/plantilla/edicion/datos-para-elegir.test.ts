@@ -1,0 +1,126 @@
+import { describe, expect, it } from 'vitest'
+import type { ContextoDePlantilla } from '../validar-plantilla'
+import {
+  acotarDatos,
+  mostrarQueAdmite,
+  nodosParaElegir,
+  nombreDeLaVariable,
+  nombreDeMostrar,
+  VARIABLES_PARA_ELEGIR,
+} from './datos-para-elegir'
+
+const contexto: ContextoDePlantilla = {
+  definicion: {
+    nodos: [
+      { id: 'remate', etiqueta: 'Remate', grupo: 'compra' },
+      { id: 'grua', etiqueta: 'Grúa', grupo: 'logistica' },
+      { id: 'comision_pct', etiqueta: 'Comisión (%)' },
+      {
+        id: 'comision',
+        etiqueta: 'Comisión',
+        tipo: 'calculo',
+        op: 'porcentaje_de',
+        pct: 'comision_pct',
+      },
+      { id: 'cif', etiqueta: 'CIF', salida: 'base_imponible' },
+      { id: 'total', etiqueta: 'TOTAL', salida: 'total' },
+      { id: 'huerfano', etiqueta: 'Huérfano', grupo: 'ya_no_esta' },
+    ],
+    grupos: [
+      { id: 'compra', etiqueta: 'Compra' },
+      { id: 'logistica', etiqueta: 'Logística' },
+    ],
+  },
+  diseno: null,
+  visibilidad: {
+    remate: { ver: 'todos' },
+    grua: { ver: 'todos' },
+    comision: { ver: 'todos' },
+    comision_pct: { ver: 'todos' },
+    total: { ver: 'todos' },
+    cif: { ver: 'costos' },
+    huerfano: { ver: 'todos' },
+  },
+  tonos: [],
+}
+
+describe('mostrarQueAdmite', () => {
+  it('siempre monto, etiqueta y descripción; tipo de cambio y plazo sólo de un nodo de un grupo de la fórmula', () => {
+    expect(mostrarQueAdmite('remate', contexto)).toEqual([
+      'monto',
+      'etiqueta',
+      'descripcion',
+      'tc_nombre',
+      'tc_valor',
+      'plazo',
+    ])
+    expect(mostrarQueAdmite('total', contexto)).toEqual(['monto', 'etiqueta', 'descripcion'])
+    expect(mostrarQueAdmite('huerfano', contexto)).toEqual(['monto', 'etiqueta', 'descripcion'])
+  })
+  it('el porcentaje sólo de un par porcentaje-monto (el nodo o su `pct`)', () => {
+    expect(mostrarQueAdmite('comision', contexto)).toContain('porcentaje')
+    expect(mostrarQueAdmite('comision_pct', contexto)).toContain('porcentaje')
+    expect(mostrarQueAdmite('remate', contexto)).not.toContain('porcentaje')
+  })
+})
+
+describe('nodosParaElegir', () => {
+  it('los del nivel «todos» por grupo de la fórmula y, al final, «Otros»; un restringido sólo si se nombra, marcado', () => {
+    const grupos = nodosParaElegir(contexto, new Set())
+    // `huerfano` nombra un grupo que la fórmula ya no tiene: va a «Otros», con los que no son de un grupo.
+    expect(grupos.map((g) => [g.etiqueta, g.nodos.map((n) => n.id)])).toEqual([
+      ['Compra', ['remate']],
+      ['Logística', ['grua']],
+      ['Otros', ['comision_pct', 'comision', 'total', 'huerfano']],
+    ])
+    const conCif = nodosParaElegir(contexto, new Set(['cif'])).flatMap((g) => g.nodos)
+    expect(conCif.find((n) => n.id === 'cif')).toEqual({
+      id: 'cif',
+      etiqueta: 'CIF',
+      restringido: true,
+    })
+    expect(conCif.find((n) => n.id === 'remate')?.restringido).toBe(false)
+  })
+})
+
+describe('acotarDatos', () => {
+  const grupos = [
+    {
+      id: 'g',
+      etiqueta: 'G',
+      nodos: Array.from({ length: 60 }, (_, i) => ({
+        id: `n${String(i)}`,
+        etiqueta: `Nodo ${String(i)}`,
+        restringido: false,
+      })),
+    },
+    { id: 'h', etiqueta: 'H', nodos: [{ id: 'grua', etiqueta: 'Grúa', restringido: false }] },
+  ]
+  it('a lo sumo el tope, y dice si quedaron fuera', () => {
+    const r = acotarDatos(grupos, '')
+    expect(r.grupos.flatMap((g) => g.nodos)).toHaveLength(50)
+    expect(r.hayMas).toBe(true)
+  })
+  it('por la etiqueta o el id, sin acentos ni mayúsculas', () => {
+    const r = acotarDatos(grupos, 'GRUA')
+    expect(r).toEqual({
+      grupos: [
+        { id: 'h', etiqueta: 'H', nodos: [{ id: 'grua', etiqueta: 'Grúa', restringido: false }] },
+      ],
+      hayMas: false,
+    })
+    expect(acotarDatos(grupos, 'n59').grupos.flatMap((g) => g.nodos.map((n) => n.id))).toEqual([
+      'n59',
+    ])
+  })
+})
+
+describe('los nombres', () => {
+  it('cada variable cerrada y cada «qué mostrar» en español; lo desconocido, tal cual', () => {
+    expect(VARIABLES_PARA_ELEGIR).toHaveLength(12)
+    expect(nombreDeLaVariable('fecha_larga')).toBe('Fecha')
+    expect(nombreDeLaVariable('__proto__')).toBe('__proto__')
+    expect(nombreDeMostrar('tc_valor')).toBe('Valor del tipo de cambio')
+    expect(nombreDeMostrar('otro')).toBe('otro')
+  })
+})
