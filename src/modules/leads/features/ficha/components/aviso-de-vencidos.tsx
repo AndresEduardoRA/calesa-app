@@ -17,7 +17,7 @@ export function textoDeVencidos(vencidos: number): string {
 }
 
 // Los recordatorios propios que ya pasaron y no se completaron, dichos arriba de la ficha, a lo ancho (vienen en `lead_ficha()`: no
-// cuesta otra lectura). «Verlos» salta al bloque «Seguimientos y recordatorios» de la misma página, sin navegar.
+// cuesta otra lectura). «Verlos» salta al bloque «Seguimiento» de la misma página, sin navegar.
 export function AvisoDeVencidos({ vencidos }: Props) {
   if (vencidos === 0) {
     return null

@@ -48,7 +48,7 @@ test('anota un seguimiento con formato, se dibuja igual y no mueve la versión d
   const version = await versionDe(lead.id)
   await entrar(page, t.personas.berta)
   await irASeguimientos(page, lead.id)
-  await expect(page.getByText('Todavía no hay seguimientos')).toBeVisible()
+  await expect(page.getByText('Sin seguimientos todavía.')).toBeVisible()
 
   const formulario = await abrirAnotar(page)
   await formulario.getByLabel('Resumen').fill('Pidió el precio del RAV4')

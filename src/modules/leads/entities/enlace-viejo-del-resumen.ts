@@ -21,7 +21,7 @@ import { VISTA_EMBUDO } from './tablero'
 import { CLAVE_DE_EXTRA_EN_PANEL, PANEL_AGREGAR_TELEFONO, VALOR_DE_EXTRA_NUEVO } from './telefonos'
 
 export const CLAVE_DEL_ENLACE_VIEJO = 'lead'
-// El resumen tuvo pestañas (`?pestana=seguimientos|recordatorios`): llevan al bloque «Seguimientos y recordatorios» de la ficha.
+// El resumen tuvo pestañas (`?pestana=seguimientos|recordatorios`): llevan al bloque «Seguimiento» de la ficha.
 export const CLAVE_DE_PESTANA_VIEJA = 'pestana'
 const PESTANAS_VIEJAS: ReadonlySet<string> = new Set(['seguimientos', 'recordatorios'])
 

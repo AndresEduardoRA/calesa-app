@@ -22,7 +22,7 @@ export type ResumenDeSeguimientos = {
   tipos: TipoDeSeguimiento[]
 }
 
-// El bloque «Seguimientos y recordatorios» de la ficha: los últimos seguimientos, los recordatorios pendientes más próximos y los tipos
+// El bloque «Seguimiento» de la ficha: los últimos seguimientos, el recordatorio pendiente más próximo y los tipos
 // activos, en paralelo y con un tope cada uno (`PRIMEROS_DE_*`). Lo demás lo lee «Ver todos» desde el navegador, por páginas.
 export async function leerResumenDeSeguimientos(
   leadId: string,
