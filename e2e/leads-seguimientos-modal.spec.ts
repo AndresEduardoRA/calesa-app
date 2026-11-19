@@ -5,7 +5,7 @@ import { otraPersona } from './soporte/inventario'
 import { exigir } from './soporte/leads'
 import { idDePersona } from './soporte/leads-alta'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
-import { nuevoLead, revocarCartera } from './soporte/leads-ficha'
+import { esperarFichaHidratada, nuevoLead, revocarCartera } from './soporte/leads-ficha'
 import { cabeEnLaPantalla, completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import {
   abrirAnotar,
@@ -50,7 +50,7 @@ test('Esc sin cambios cierra y el foco vuelve a quien lo abrió; el teclado reco
   await page.keyboard.press('Escape')
   await expect(modal).toHaveCount(0)
   await expect(page).not.toHaveURL(/panel=/)
-  await expect(page.getByRole('button', { name: 'Anotar seguimiento' })).toBeFocused()
+  await expect(page.getByRole('button', { name: 'Anotar o agendar' })).toBeFocused()
 
   // Del resumen, Tab llega al editor y, al final del modal, «Cancelar» y «Guardar».
   const otra = await abrirAnotar(page)
@@ -65,14 +65,14 @@ test('Esc sin cambios cierra y el foco vuelve a quien lo abrió; el teclado reco
   await expect(otra.getByRole('button', { name: 'Guardar' })).toBeFocused()
   await page.keyboard.press('Enter')
   await expect(seguimiento(page, 'Por teclado')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Anotar seguimiento' })).toBeFocused()
+  await expect(page.getByRole('button', { name: 'Anotar o agendar' })).toBeFocused()
 
-  // Editar devuelve el foco a su «Editar».
+  // Editar (desde el «⋯» de su fila) le devuelve el foco a ese «⋯».
   const edicion = await abrirEdicionDeSeguimiento(page, 'Por teclado')
   await page.keyboard.press('Escape')
   await expect(edicion).toHaveCount(0)
   await expect(
-    seguimiento(page, 'Por teclado').getByRole('button', { name: 'Editar' }),
+    seguimiento(page, 'Por teclado').getByRole('button', { name: 'Más acciones de «Por teclado»' }),
   ).toBeFocused()
 })
 
@@ -146,9 +146,14 @@ test('sin tipos activos el botón se apaga y dice por qué, y la URL no abre el 
   try {
     await entrar(page, t.personas.berta)
     await irASeguimientos(page, lead.id)
-    const boton = page.getByRole('button', { name: 'Anotar seguimiento' })
-    await expect(boton).toBeDisabled()
-    await expect(boton).toHaveAccessibleDescription('No hay tipos de seguimiento activos.')
+    // En el «+», «Anotar seguimiento» va apagado con su motivo.
+    await esperarFichaHidratada(page)
+    await page.getByRole('button', { name: 'Anotar o agendar' }).click()
+    await expect(page.getByRole('menuitem', { name: 'Anotar seguimiento' })).toBeDisabled()
+    await expect(
+      page.getByRole('menu').getByText('No hay tipos de seguimiento activos.'),
+    ).toBeVisible()
+    await page.keyboard.press('Escape')
     await irASeguimientos(page, lead.id, '&panel=anotar-seguimiento')
     await expect(page.getByText('No hay tipos de seguimiento activos.').first()).toBeVisible()
     await expect(modalDeSeguimiento(page, 'Anotar')).toHaveCount(0)

@@ -202,7 +202,7 @@ test('B · la fila lleva a la ficha, «atrás» vuelve a la lista, y lo privado 
   await entrar(page, r.t.personas.duena)
   await page.goto(`/leads?alcance=todos&lead=${r.uno.id}&pestana=seguimientos`)
   await expect(page).toHaveURL(new RegExp(`/leads/${r.uno.id}\\?seccion=seguimientos`))
-  const bloque = page.getByRole('region', { name: 'Seguimientos y recordatorios' })
+  const bloque = page.getByRole('region', { name: 'Seguimiento', exact: true })
   await expect(bloque).toBeVisible()
   await expect(bloque.getByText('Primera llamada del recorrido')).toHaveCount(0)
   await expect(bloque.getByRole('button', { name: 'Anotar seguimiento' })).toHaveCount(0)

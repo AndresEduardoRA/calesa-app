@@ -161,7 +161,7 @@ test('E2E los enlaces viejos del resumen redirigen a la ficha con lo suyo, sin s
   await page.goto(`/leads?lead=${lead.id}&pestana=seguimientos`)
   await expect(page).toHaveURL(new RegExp(`${ficha()}\\?seccion=seguimientos$`))
   await expect(
-    page.getByRole('heading', { name: 'Seguimientos y recordatorios', level: 2 }),
+    page.getByRole('heading', { name: 'Seguimiento', exact: true, level: 2 }),
   ).toBeFocused()
 
   await page.goto(`/leads?lead=${lead.id}&panel=anotar-seguimiento`)

@@ -185,13 +185,13 @@ test('la co-asesora ve sólo lo «Visible para el cliente» de la otra, sin cont
   await expect(seguimiento(otra, 'Sólo para mí')).toHaveCount(0)
   // El índice sin números (con la cartera, también «Oportunidades», que muestra sólo las suyas).
   await expect(otra.getByRole('navigation', { name: 'Índice de la ficha' })).toHaveText(
-    /^SeguimientosOportunidades$/,
+    /^SeguimientoOportunidades$/,
   )
   // Lo de Berta no se edita desde acá; Carlos sí anota.
   await expect(
     seguimiento(otra, 'Para el cliente').getByRole('button', { name: 'Editar' }),
   ).toHaveCount(0)
-  await expect(otra.getByRole('button', { name: 'Anotar seguimiento' })).toBeVisible()
+  await expect(otra.getByRole('button', { name: 'Anotar o agendar' })).toBeVisible()
 
   await revocarCartera(lead.id, carlos)
   await otra.reload()

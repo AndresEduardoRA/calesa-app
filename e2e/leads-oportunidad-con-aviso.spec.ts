@@ -126,7 +126,9 @@ test('«Ver oportunidades» lleva a la ficha en su sección, y un «Ver» del av
   let menu = await abrirMenuDelLead(page, lead.nombre)
   await elegir(menu, 'Ver oportunidades')
   await expect(page).toHaveURL(new RegExp(`/leads/${lead.id}\\?seccion=oportunidades`))
-  await expect(page.getByRole('heading', { name: 'Tus oportunidades' })).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Oportunidades', exact: true, level: 2 }),
+  ).toBeVisible()
 
   await irALeads(page, conElLead(lead.nombre))
   menu = await abrirMenuDelLead(page, lead.nombre)

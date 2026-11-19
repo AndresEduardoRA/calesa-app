@@ -215,7 +215,7 @@ test('«Quién lo tiene» de un lead compartido y agendar desde la ficha', async
   await capturar(page, info, 'quien-lo-tiene')
   await page.goto(`/leads/${compartido}?seccion=seguimientos`)
   await expect(
-    page.getByRole('heading', { name: 'Seguimientos y recordatorios', level: 2 }),
+    page.getByRole('heading', { name: 'Seguimiento', exact: true, level: 2 }),
   ).toBeFocused()
   await page.getByRole('button', { name: 'Agendar recordatorio' }).first().click()
   const modal = page.getByRole('dialog', { name: /recordatorio/i }).last()

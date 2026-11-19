@@ -183,9 +183,11 @@ test('cambiar la hora de uno ya avisado lo vuelve a dejar por avisar; eliminar o
   await formulario.getByRole('button', { name: 'Guardar' }).click()
   await expect(formulario).toHaveCount(0)
   await expect(recordatorio(page, 'Ya avisó, renombrado')).toBeVisible()
-  // El foco vuelve al «Editar» de ese recordatorio.
+  // El foco vuelve al «⋯» de ese recordatorio (en el bloque, «Editar» está en su «⋯»).
   await expect(
-    recordatorio(page, 'Ya avisó, renombrado').getByRole('button', { name: 'Editar' }),
+    recordatorio(page, 'Ya avisó, renombrado').getByRole('button', {
+      name: 'Más acciones de «Ya avisó, renombrado»',
+    }),
   ).toBeFocused()
   expect((await recordatoriosEnLaBase(lead.id))[0]?.notificado_en).not.toBeNull()
 
@@ -196,7 +198,10 @@ test('cambiar la hora de uno ya avisado lo vuelve a dejar por avisar; eliminar o
   await expect(recordatorio(page, 'Ya avisó, renombrado').getByText('Vencido')).toHaveCount(0)
   await expect.poll(async () => (await recordatoriosEnLaBase(lead.id))[0]?.notificado_en).toBeNull()
 
-  await recordatorio(page, 'Ya avisó, renombrado').getByRole('button', { name: 'Eliminar' }).click()
+  await recordatorio(page, 'Ya avisó, renombrado')
+    .getByRole('button', { name: 'Más acciones de «Ya avisó, renombrado»' })
+    .click()
+  await page.getByRole('menuitem', { name: 'Eliminar' }).click()
   await expect(page.getByText('Recordatorio eliminado.')).toBeVisible()
   await expect(recordatorio(page, 'Ya avisó, renombrado')).toHaveCount(0)
   await page.getByRole('button', { name: 'Deshacer' }).click()
