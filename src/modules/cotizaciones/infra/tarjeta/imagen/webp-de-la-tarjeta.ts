@@ -14,3 +14,16 @@ export async function webpDeLaTarjeta(png: Uint8Array): Promise<Uint8Array<Array
     .toBuffer()
   return new Uint8Array(webp)
 }
+
+// La miniatura de la portada para las listas (`?ancho=480`): la grande (lo bajado del bucket o lo recién armado) a ese ancho, sin agrandar, calidad 80. El bucket guarda
+// sólo la grande: la miniatura se achica al responder y el navegador la revalida con su ETag (304).
+export async function miniaturaDeLaPortada(
+  webp: Uint8Array,
+  ancho: number,
+): Promise<Uint8Array<ArrayBuffer>> {
+  const chica = await sharp(webp)
+    .resize({ width: ancho, withoutEnlargement: true })
+    .webp({ quality: CALIDAD_DE_LA_PORTADA })
+    .toBuffer()
+  return new Uint8Array(chica)
+}

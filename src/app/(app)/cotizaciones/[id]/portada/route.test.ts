@@ -23,15 +23,22 @@ const bajar = vi.fn()
 const armar = vi.fn()
 const guardar = vi.fn()
 const leerAsesor = vi.fn()
+const achicar = vi.fn()
 // Las reglas de la portada son las de verdad (las prueba su entidad); la E/S, simulada.
 vi.mock('@/modules/cotizaciones', async () => {
   const reglas = await vi.importActual<{
     queHacerConLaPortada: unknown
     etiquetaDeLaPortada: unknown
   }>('@/modules/cotizaciones/entities/tarjeta/portada')
+  const ruta = await vi.importActual<{ anchoDeLaPortada: unknown; CLAVE_DEL_ANCHO: unknown }>(
+    '@/modules/cotizaciones/entities/ruta-de-la-hoja',
+  )
   return {
     queHacerConLaPortada: reglas.queHacerConLaPortada,
     etiquetaDeLaPortada: reglas.etiquetaDeLaPortada,
+    anchoDeLaPortada: ruta.anchoDeLaPortada,
+    CLAVE_DEL_ANCHO: ruta.CLAVE_DEL_ANCHO,
+    miniaturaDeLaPortada: (bytes: Uint8Array, ancho: number) => achicar(bytes, ancho),
     leerLaPortada: (id: string) => leerPortada(id),
     bajarLaPortada: (ruta: string) => bajar(ruta),
     armarLaPortada: (id: string, contextoDe: unknown) => armar(id, contextoDe),
@@ -87,10 +94,14 @@ const fallo = (codigo: string) => ({ ok: false, error: { codigo, mensaje: 'x' } 
 // El contexto con que la ruta pidió armar la portada (lo que devuelve su `contextoDe` con la hoja).
 let contextoArmado: unknown = undefined
 
-const pedir = (id = ID, cabeceras: Record<string, string> = {}) =>
-  GET(new Request(`http://localhost/cotizaciones/${id}/portada`, { headers: cabeceras }), {
-    params: Promise.resolve({ id }),
-  })
+const pedir = (id = ID, cabeceras: Record<string, string> = {}, consulta = '') =>
+  GET(
+    new Request(`http://localhost/cotizaciones/${id}/portada${consulta}`, { headers: cabeceras }),
+    {
+      params: Promise.resolve({ id }),
+    },
+  )
+const CHICA = new Uint8Array([82, 73, 70, 70, 4, 8, 0, 0, 87, 69, 66, 80])
 
 beforeEach(() => {
   contextoArmado = undefined
@@ -103,6 +114,7 @@ beforeEach(() => {
   })
   guardar.mockResolvedValue({ ok: true, data: { guardada: true } })
   leerAsesor.mockResolvedValue({ ok: true, data: 'Ana Pérez' })
+  achicar.mockResolvedValue({ ok: true, data: CHICA })
   leerVehiculo.mockResolvedValue({
     ok: true,
     data: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
@@ -283,5 +295,29 @@ describe('GET /cotizaciones/[id]/portada: la propia', () => {
     expect(bajar).not.toHaveBeenCalled()
     expect(guardar).not.toHaveBeenCalled()
     expect(contextoArmado).not.toEqual(COMPARTIDO)
+  })
+})
+
+describe('GET /cotizaciones/[id]/portada?ancho=480: la miniatura de las listas', () => {
+  it('la guardada se achica con la ETag de la miniatura; 304 sólo con la suya', async () => {
+    leerPortada.mockResolvedValue(estado())
+    const r = await pedir(ID, {}, '?ancho=480')
+    expect([r.status, r.headers.get('etag')]).toEqual([200, `"${CLAVE}-480"`])
+    expect(new Uint8Array(await r.arrayBuffer())).toEqual(CHICA)
+    expect(achicar).toHaveBeenCalledWith(GUARDADOS, 480)
+    expect((await pedir(ID, { 'If-None-Match': `"${CLAVE}-480"` }, '?ancho=480')).status).toBe(304)
+    expect((await pedir(ID, { 'If-None-Match': `"${CLAVE}"` }, '?ancho=480')).status).toBe(200)
+  })
+
+  it('recién armada guarda la grande y entrega la miniatura; otro ancho da la grande; sin achicar, 500', async () => {
+    leerPortada.mockResolvedValue(estado({ ruta: null, clave: null }))
+    expect(new Uint8Array(await (await pedir(ID, {}, '?ancho=480')).arrayBuffer())).toEqual(CHICA)
+    expect(guardar).toHaveBeenCalledWith({ id: ID, bytes: BYTES, clave: CLAVE })
+    leerPortada.mockResolvedValue(estado())
+    achicar.mockClear()
+    expect((await pedir(ID, {}, '?ancho=999')).headers.get('etag')).toBe(`"${CLAVE}"`)
+    expect(achicar).not.toHaveBeenCalled()
+    achicar.mockResolvedValue({ ok: false, error: { codigo: 'inesperado', mensaje: 'x' } })
+    expect((await pedir(ID, {}, '?ancho=480')).status).toBe(500)
   })
 })

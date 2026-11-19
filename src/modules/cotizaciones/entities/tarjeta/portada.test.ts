@@ -95,8 +95,31 @@ describe('la etiqueta', () => {
   })
 })
 
+describe('la etiqueta de la miniatura', () => {
+  it('lleva su ancho: no es la de la grande ni coincide con ella', () => {
+    expect(etiquetaDeLaPortada(CLAVE, 480)).toBe(`"${CLAVE}-480"`)
+    expect(coincideLaEtiqueta(`"${CLAVE}-480"`, CLAVE, 480)).toBe(true)
+    expect(coincideLaEtiqueta(`"${CLAVE}"`, CLAVE, 480)).toBe(false)
+    expect(coincideLaEtiqueta(`"${CLAVE}-480"`, CLAVE)).toBe(false)
+  })
+})
+
 describe('queHacerConLaPortada', () => {
   const pide = { siNoneMatch: null, perspectivaPropia: true }
+
+  it('la miniatura da 304 sólo con su propia ETag', () => {
+    expect(
+      queHacerConLaPortada(estado(), { ...pide, ancho: 480, siNoneMatch: `"${CLAVE}-480"` }),
+    ).toEqual({
+      tipo: 'sin_cambios',
+    })
+    expect(
+      queHacerConLaPortada(estado(), { ...pide, ancho: 480, siNoneMatch: `"${CLAVE}"` }),
+    ).toEqual({
+      tipo: 'bajar',
+      ruta: RUTA,
+    })
+  })
 
   it('con la ETag de hoy, 304 sin bajar ni armar', () => {
     expect(queHacerConLaPortada(estado(), { ...pide, siNoneMatch: `"${CLAVE}"` })).toEqual({
