@@ -91,7 +91,7 @@ export function OportunidadesDelLead(props: Props) {
       ) : (
         <ul
           aria-label="Oportunidades abiertas"
-          className="grid grid-cols-[minmax(0,1fr)] divide-y divide-(--color-line)"
+          className="@container/oportunidades grid grid-cols-[minmax(0,1fr)] divide-y divide-(--color-line)"
         >
           {aLaVista.map((o) => (
             <li key={o.id} className="min-w-0">

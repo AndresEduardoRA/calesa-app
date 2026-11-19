@@ -36,14 +36,15 @@ export function FilaDeOportunidad({
       className="flex min-h-11 min-w-0 flex-wrap items-center gap-x-2 md:min-h-9"
     >
       <p
-        title={o.titulo}
+        title={nombrarEmbudo ? `${o.titulo} · ${o.embudo.nombre}` : o.titulo}
         className="min-w-0 flex-1 basis-20 truncate text-(length:--text-sm) font-medium text-(--color-ink)"
       >
         {o.titulo}
       </p>
       <div className="ml-auto flex max-w-full min-w-0 items-center gap-2">
         {nombrarEmbudo ? (
-          <span className="max-w-28 min-w-0 shrink truncate text-(length:--text-xs) text-(--color-ink-faint)">
+          // Desde 28 rem de lista (en el celular, en el `title` del título: la fila sigue en una línea).
+          <span className="hidden max-w-28 min-w-0 shrink truncate text-(length:--text-xs) text-(--color-ink-faint) @md/oportunidades:inline">
             {o.embudo.nombre}
           </span>
         ) : null}
