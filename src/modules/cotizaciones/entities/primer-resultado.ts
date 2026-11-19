@@ -1,5 +1,5 @@
 // El primer resultado de una cotización: lo que la hoja dibuja primero, en la tarjeta del total (`totales.usd`), y la moneda con que se dibuja. Es una sola regla para
-// la hoja, el total guardado y la columna «Cotización aprobada» de `/vehiculos`; espeja `_cotizacion_primer_resultado()` (la base lo congela en
+// la hoja, el total guardado y el «Costo estimado» de `/vehiculos`; espeja `_cotizacion_primer_resultado()` (la base lo congela en
 // `cotizaciones_aprobadas`).
 
 export const MONEDA_DEL_PRIMER_RESULTADO = 'USD'

@@ -106,6 +106,14 @@ const pares: Par[] = [
     medir: (tema: Tema) =>
       contraste(color(tema, 'ink').hex, sobre(color(tema, fondo), opacos(tema, 'surface'))),
   })),
+  // El texto sobre el velo de una foto (el chip del lote), con la foto más clara posible debajo: blanco.
+  {
+    arriba: 'sobre-velo',
+    fondo: 'velo-de-foto sobre blanco',
+    minimo: TEXTO,
+    medir: (tema: Tema) =>
+      contraste(color(tema, 'sobre-velo').hex, sobre(color(tema, 'velo-de-foto'), '#ffffff')),
+  },
   // El borde de un control (`--input` = `line-strong`) y el anillo de foco.
   ...['surface', 'surface-2', 'paper'].flatMap((fondo) => [
     {

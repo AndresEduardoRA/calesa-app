@@ -76,7 +76,8 @@ test('cada tamaño trae esa cantidad de filas, vuelve a la primera y se recuerda
 
 // Con 100 filas el inventario dibuja una sola vista (cierre 1): la tabla en escritorio, las tarjetas en el celular, ya en el
 // HTML del servidor. Con volumen, ~4.900 nodos en escritorio y ~3.300 en el celular (eran ~7.900: las dos vistas).
-const NODOS_CON_100 = 6_000
+// Con la tarjeta de la lista igual en el celular (T337), el tope de `listas-por-pagina-volumen.spec.ts`: 6.300.
+const NODOS_CON_100 = 6_300
 
 test('con 100 por página dibuja una sola vista y cabe en su presupuesto de nodos', async ({
   page,

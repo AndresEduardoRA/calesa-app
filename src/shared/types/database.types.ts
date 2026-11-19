@@ -10158,6 +10158,16 @@ export type Database = {
         Returns: Json
       }
       cotizacion_tarjeta: { Args: { p_formula: string }; Returns: Json }
+      cotizaciones_aprobadas_de_vehiculos: {
+        Args: { p_vehiculos: string[] }
+        Returns: {
+          cotizacion_id: string
+          modo: string
+          moneda: string
+          monto: string
+          vehiculo_id: string
+        }[]
+      }
       cotizaciones_buscar: {
         Args: {
           p_clase?: Database['public']['Enums']['clase_cotizacion']
