@@ -21,7 +21,7 @@ export function EnlaceALaHermana({
       {hermana.disponible ? (
         <Link
           href={rutaDeLaCotizacion(hermana.id) as Route}
-          className="inline-flex min-h-11 items-center font-medium text-(--color-accent) underline-offset-2 hover:underline md:min-h-0"
+          className="inline-flex min-h-11 items-center font-medium text-(--color-ink) underline md:min-h-0"
         >
           Ver la de {etiqueta}
         </Link>
