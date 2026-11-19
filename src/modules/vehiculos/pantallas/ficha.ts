@@ -1,4 +1,4 @@
-// Pantalla: La ficha de un vehículo (`/vehiculos/[id]`, en dos columnas): cabecera (con la tira y la vitrina), datos principales (con la ficha completa), ficha, subasta, vitrina, limpieza y el panel de edición. Sólo `src/app` importa este archivo (`.claude/rules/modulos.md`): reexporta lo que esa pantalla dibuja y nada más.
+// Pantalla: La ficha de un vehículo (`/vehiculos/[id]`, en dos columnas): cabecera (con la tira y la vitrina), datos principales (con la ficha completa), subasta, el bloque «Vitrina», limpieza y los paneles. Sólo `src/app` importa este archivo (`.claude/rules/modulos.md`): reexporta lo que esa pantalla dibuja y nada más.
 export { AvisoDeLimpieza } from '../features/limpieza/components/aviso-de-limpieza'
 export { AvisoDeSituacion } from '../features/situacion/components/aviso-de-situacion'
 export { BloqueDeSubasta } from '../features/subasta/components/bloque-de-subasta'
@@ -9,6 +9,5 @@ export { MenuDeVehiculoDeLaFicha } from '../features/acciones/components/menu-de
 export { PanelDeVehiculo } from '../features/alta/components/panel-de-vehiculo'
 export { PanelDeVitrina } from '../features/vitrina/components/panel-de-vitrina'
 export { BloqueDeVitrina } from '../features/vitrina/components/bloque-de-vitrina'
-export { FichaDeVehiculo } from '../features/ficha/components/ficha-de-vehiculo'
 export { DatosPrincipalesDelVehiculo } from '../features/ficha/components/datos-principales-del-vehiculo'
 export { PanelesDelMenuDeLaFicha } from '../features/acciones/components/paneles-del-menu-de-la-ficha'

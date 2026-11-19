@@ -94,7 +94,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   manual: año, kilometraje, VIN y categoría). La ficha del vehículo los dibuja en «Datos principales» (columna izquierda, `datosClaveDelVehiculo()`).
 - **Ficha completa (del vehículo)** — `<ModalDeFichaCompleta>`, `?ver=ficha`: el «Ver más» de «Datos principales» en la ficha del vehículo. Un modal
   grande, de sólo lectura y con tipografía de vitrina, para mostrarle el vehículo a un cliente: las fotos con su tira, los datos comunes, «Precio» y
-  todos los grupos del layout del origen. No es el bloque «Ficha» de la derecha.
+  todos los grupos del layout del origen. `?seccion=ficha` (el enlace viejo) la abre.
 - **Rango (de un campo)** — `minimo`/`maximo` de `leads_campos` y `origenes_campos`, `_valor_fuera_de_rango()`: límites de un `numero` o
   `moneda` (nulo = sin límite); se rechaza el valor que cambia y queda fuera, no el que ya estaba. `*_campo_impacto().fuera_de_rango` los cuenta.
 - **Valor por defecto de un campo** — `valor_defecto` / `valorDefectoPara()`, `valorDefectoVigente()`: lo que el alta trae puesto; sólo precarga.
@@ -277,8 +277,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   «Teléfonos», «Quién lo tiene» y «Acceso al portal»; a la derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados,
   cotizaciones). Edición en `?panel=editar-lead`.
 - **Ficha del vehículo** — `/vehiculos/[id]` / `BLOQUES_DE_LA_FICHA`, `bloquesDeQuienMira()`, `<FichaEnDosColumnas>`: en dos columnas; a la izquierda la
-  cabecera (`<CabeceraDeVehiculo>`), «Datos principales» y la subasta; a la derecha el índice y los bloques por permiso («Fase y qué falta», «Relacionados»,
-  «Cotizaciones», «Documentos», «Ficha», «Repuestos», «Fotos»). `?seccion=<ancla>` lleva al bloque. No: «detalle del vehículo».
+  cabecera (`<CabeceraDeVehiculo>`), «Cotización aprobada», la subasta y «Datos principales»; a la derecha el índice y sólo lo de ventas, por permiso
+  («Cotizaciones de este vehículo», «Relacionados», «Actividad reciente», «Vitrina»). `?seccion=<ancla>` lleva al bloque. No: «detalle del vehículo».
 - **Teléfono extra** — `leads_telefonos` / `lead_telefonos()`, `lead_telefono_guardar()`, `lead_telefono_quitar()`: número alterno con
   etiqueta opcional; se edita en el panel de edición de la ficha; la ficha y el resumen lo muestran sólo para leer.
 - **Máximo de teléfonos extra** — `ajustes_leads.telefonos_extra_maximo` / `telefonos.maximo`: cuántos extras admite un lead (0 a 20; 6 de
@@ -374,7 +374,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   de cambio de la cotización («US$27.999 · Unificado»), enlazado a ella. No son los campos de apibara «Costo estimado desde / hasta / mediano (USD)».
 - **De este vehículo** — `cotizaciones_de_este_vehiculo()`, `pantallas/aprobada-de-este-vehiculo.ts` (`DeEsteVehiculo`): el bloque de una cotización (su
   página y su resumen en `/cotizaciones`) con las otras del mismo vehículo, la aprobada primero y «Aprobar esta» en cada una; la que se mira va marcada
-  **«Esta»**. No es el historial del vehículo (el panel de la hoja) ni el bloque «Cotizaciones» de la ficha del vehículo.
+  **«Esta»**. En la ficha del vehículo es el bloque «Cotizaciones de este vehículo» (todas, ninguna marcada). No es el historial del vehículo (el panel de
+  la hoja).
 - **Comparar cotizaciones** — `/cotizaciones/comparar?ids=`, `entities/aprobada/comparar.ts` (`compararCotizaciones()`), `pantallas/aprobada-comparar.ts`
   (`TablaDeComparar`): 2 o 3 cotizaciones del mismo vehículo lado a lado, **lo guardado** de cada una (su versión, sus valores y su total, sin recálculo),
   una columna por cotización y una fila por nodo alineada por su id, con «Aprobar esta» al pie. Lo **distinto** se mide **contra la primera** columna (↑, ↓
@@ -388,8 +389,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Última cotización (de un vehículo)** — `vehiculos.cotizado_en`, `_vehiculo_cotizado()`: ordena «Últ. cotización» del panel del vehículo.
   Cotizar no edita el vehículo.
 - **Historial de cotizaciones (de un vehículo)** — `<HistorialDelVehiculo>` (`cotizaciones/features/historial`): las visibles por
-  `vehiculo_id`, de la más nueva, de a 20; plegado en el panel del vehículo, y la misma lista en la ficha del vehículo
-  (`<CotizacionesDelVehiculo>`) y del lead (`<CotizacionesDelLead>`, por `lead_id`). **Cotizado (n)**: `contarCotizacionesDelVehiculo()`.
+  `vehiculo_id`, de la más nueva, de a 20; plegado en el panel del vehículo, y la misma lista en la ficha del lead (`<CotizacionesDelLead>`, por
+  `lead_id`). **Cotizado (n)**: `contarCotizacionesDelVehiculo()`.
 - **Panel del vehículo** — `?panel=vehiculo` de `/cotizaciones/nuevo`, `<BarraDelVehiculo>` / `PanelDelVehiculo`
   (`vehiculos/features/panel-para-cotizar`): elige el vehículo por «Últ. cotización» o «Cierre subasta» (`?lista=ultima|cierre`) o buscando
   nombre, VIN o lote (`?buscar=`); «+» y «Traer» abren el alta del inventario en el panel (`?alta=mano|subasta`).
@@ -780,7 +781,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Bloque de la bandeja** — `BLOQUES_BANDEJA` / `bloquesVisibles()`: lista de pendientes del Inicio, según los permisos.
 - **Bloque** — `<Bloque>`: sección plegable de un formulario o un panel.
 - **Bloque (de una ficha)** — `<BloqueDeFicha>`, `#<ancla>` (`src/shared/ui/ficha-en-bloques`): una parte de una ficha en dos columnas, siempre a la
-  vista (no se pliega), con su ancla, su título `h2` y su error propio. No es `<Bloque>`, el plegable.
+  vista (no se pliega), con su ancla, su título `h2` (con su única acción a la derecha: `<TituloDeBloqueConAccion>`) y su error propio. No es `<Bloque>`,
+  el plegable.
 - **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra pegajosa arriba de la columna principal de una ficha en dos columnas, con un enlace de ancla
   por bloque y `aria-current="location"` en el que está a la vista. No navega: salta dentro de la misma página. No: «pestañas», «menú».
 - **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`…); responde el panel de más arriba.

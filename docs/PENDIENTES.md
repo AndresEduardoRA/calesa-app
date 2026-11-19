@@ -185,8 +185,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
   «Niveles de acceso», con «Nuevo color» y «Nuevo nivel»): llevar la acción principal junto al `h1` y quitar el `h2`.
 - **[T329]** En el menú de Configuración (8 rem) el motivo de una sub-sección apagada larga ocupa cinco renglones («Te falta el permiso
   «Gestionar los campos de los leads».»): acortarlo o mostrarlo al enfocar.
-- **[T34]** «Abrir la unidad» de «Qué falta» en la ficha del vehículo lleva a un hueco aunque su regla del flujo esté apagada (allí no estará): pasar a la ficha
-  qué huecos dibuja la unidad (un dato de `leerQueFalta`) en vez de suponerlos todos.
 - **[T33]** Tras agregar un teléfono extra en el panel de edición de la ficha, el foco va a «Nombre» (la ficha se vuelve a leer y el panel se rearma) y no a «Agregar teléfono».
 - **[T33]** Con «Ver todos los seguimientos» abierto, cerrar el modal de editar uno devuelve el foco al «Editar» del bloque de atrás (el primero con su `data-seguimiento-editar`), que está inerte bajo el drawer.
 - **[—]** Al volver de «Nuevo lead» a «Nuevo proyecto» se apilan dos avisos («Lead creado» y «Recuperamos lo que habías escrito y no guardaste.») — el
@@ -221,13 +219,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T29]** El `PT409` del panel de un tipo de cambio en Configuración dice el texto de la base, sin quién ni a cuánto: el popover de la barra ya lo arma con `conflictoDeValor()` y `tipos_cambio_vigentes()`.
 - **[T38]** El diagrama de un flujo de 7 fases abre a escala 0,6 en 1440 px y la última fase queda cortada a la derecha, con el texto de las cajas chico: encuadrarlo
   al abrir (o un zoom mínimo mayor) y dejar el «+/−/ajustar» para el resto.
-- **[T34]** El bloque «Ficha» de la ficha del vehículo dibuja todos los grupos con sus campos aunque estén en «—»: en el celular la página pasa de 6.000 px;
-  plegar lo vacío o mostrar sólo lo que tiene valor.
-  Falta quitar ese bloque de la derecha: la ficha completa (`?ver=ficha`) ya muestra la ficha entera.
 - **[T338]** Con el texto al 200 % y una foto angosta (celular), la esquina con la vitrina y el «⋯» tapa en parte la flecha derecha del carrusel de la
   ficha (y de la tarjeta grande de la lista): bajar las flechas o achicar la esquina cuando no caben.
-- **[T338]** «Ver en logística» está dos veces en la ficha del vehículo (los enlaces cortos de la cabecera y el título de «Fase y qué falta»): queda uno
-  al quitar ese bloque de la derecha.
 
 ## Decisión de la persona
 
@@ -250,7 +243,7 @@ Versiones mayores que `pnpm outdated` lista y la tarea mensual de dependencias n
 - La web pública en sí (repo aparte con `sitio-marketing` sobre el esquema `web`).
 - «Visto» en los pendientes de la agenda y en los bloques de Inicio.
 
-De esta versión, además: montar la «Actividad reciente» (`actividad/pantallas/actividad-reciente.ts`) en la ficha del vehículo (T339; hoy se ve sola en `/actividad/reciente`, que se quita al montarla), exportar la actividad; cambiar qué permisos
+De esta versión, además: exportar la actividad; cambiar qué permisos
 existen o la matriz de Roles; cambiar embudos ya existentes (la plantilla sólo toca los que nacen después); exportar seguimientos,
 documentos, fotos o repuestos y formatos que no sean CSV; importar `seguimientos`, `repuestos_items` y cotizaciones, y deshacer una
 importación de vehículos; métricas por asesor para quien no tiene `tablero.metricas.ver`; editar la cola desde el tablero; estabilizar

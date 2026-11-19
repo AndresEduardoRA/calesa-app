@@ -112,7 +112,7 @@ test('dar de alta un vehículo en Corea, con los valores por defecto y los atajo
   // Los bloques que existen, en el índice, y ninguno que lleve a lo que falta.
   await expect(
     page.getByRole('navigation', { name: 'Índice de la ficha' }).getByRole('link'),
-  ).toHaveText(['Qué falta', 'Relacionados', 'Cotizaciones', 'Documentos', 'Ficha', 'Repuestos'])
+  ).toHaveText(['Cotizaciones', 'Relacionados', 'Actividad', 'Vitrina'])
 })
 
 // 4-25: el precio se lee con el locale de la empresa (es-BO): el punto agrupa de a 3 y, en otro lugar, el campo dice cómo escribirlo.

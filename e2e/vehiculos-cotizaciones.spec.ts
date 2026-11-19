@@ -11,23 +11,23 @@ import { idDePersona, sembrarCotizaciones } from './soporte/cotizaciones-sembrad
 import { limpiarGuardado, prepararGuardado } from './soporte/cotizar-guardar'
 import { literal, sql } from './soporte/sql'
 
-// La pestaña «Cotizaciones» de la ficha del vehículo (paso 4.17-3, `docs/UX.md` › «Vehículo»): la ven quienes tienen `cotizaciones.ver` en el origen del vehículo (P1); se lee
-// desde el navegador al abrirla, de a 20 por cursor hasta 500, y en el tope dice «Ver todas en Cotizaciones» (el camino a lo antiguo). Con la RLS de quien mira.
+// «Cotizaciones de este vehículo» en la ficha del vehículo (`docs/UX.md` › «Vehículo»): la ven quienes tienen `cotizaciones.ver` en el origen del vehículo; la isla
+// «De este vehículo» lee desde el navegador al acercarse, de a 10 por cursor hasta 100, y en el tope dice «Ver todas en Cotizaciones» (el camino a lo antiguo). Con la
+// RLS de quien mira.
 
-// Presupuestos (`docs/RENDIMIENTO.md`). La primera respuesta es la consulta del historial del panel (4.14-2b): sus mismos topes de bytes (5.250) y de nodos con 20 (65).
-// Medido en el 4.17-3, en los dos proyectos: 4.996 bytes en escritorio y 4.912 en móvil la primera respuesta, 61 nodos con 20 y 1.501 con 500 (3 por fila + 1: el previo
-// de 1.600 alcanzó); el tope de los 500 es lo medido más un 5 %: 1.576. La respuesta de la página 25 pesa lo mismo que la 1.ª (la misma consulta de 21 filas): no crece con la profundidad.
+// Presupuestos (`docs/RENDIMIENTO.md`): la primera respuesta, la de «De este vehículo» (`cotizaciones-de-este-vehiculo.spec.ts`: 5.250 B); los nodos de la lista con
+// 10 y con 100, con las casillas de «Comparar» (lo medido más un 5 %).
 const TOPE_DE_BYTES = 5_250
-const TOPE_DE_NODOS_CON_20 = 65
-const TOPE_DE_NODOS_CON_500 = 1_576
+const TOPE_DE_NODOS_CON_10 = 240
+const TOPE_DE_NODOS_CON_100 = 2_400
 
 let origen = { id: '', nombre: '' }
 let duena = ''
 let sinClave = ''
 let ana = ''
-const vehiculos: Record<'veintidos' | 'quinientas' | 'ninguna' | 'propios', string> = {
+const vehiculos: Record<'veintidos' | 'cientodiez' | 'ninguna' | 'propios', string> = {
   veintidos: '',
-  quinientas: '',
+  cientodiez: '',
   ninguna: '',
   propios: '',
 }
@@ -74,7 +74,7 @@ test.beforeAll(async ({}, info) => {
   const deLaDuena = idDePersona(duena)
   const deAna = idDePersona(ana)
   vehiculos.veintidos = crearVehiculo('Pestaña veintidós')
-  vehiculos.quinientas = crearVehiculo('Pestaña quinientas')
+  vehiculos.cientodiez = crearVehiculo('Pestaña ciento diez')
   vehiculos.ninguna = crearVehiculo('Pestaña ninguna')
   vehiculos.propios = crearVehiculo('Pestaña propios')
   sembrarCotizaciones({
@@ -85,9 +85,9 @@ test.beforeAll(async ({}, info) => {
   })
   sembrarCotizaciones({
     origenId: origen.id,
-    vehiculoId: vehiculos.quinientas,
+    vehiculoId: vehiculos.cientodiez,
     creadoPor: deLaDuena,
-    cuantas: 520,
+    cuantas: 110,
   })
   // Del vehículo compartido: dos de la dueña y una de Ana (la más vieja).
   sembrarCotizaciones({
@@ -110,42 +110,39 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-// El índice de la ficha (un enlace por bloque que quien mira ve) y el bloque «Cotizaciones».
+// El índice de la ficha (un enlace por bloque que quien mira ve) y el bloque «Cotizaciones de este vehículo».
 const indice = (page: Page): Locator =>
   page.getByRole('navigation', { name: 'Índice de la ficha' }).getByRole('link')
 const bloque = (page: Page): Locator =>
-  page.getByRole('region', { name: 'Cotizaciones', exact: true })
-const lista = (page: Page): Locator => page.getByRole('list', { name: 'Cotizaciones del vehículo' })
-const filas = (page: Page): Locator => lista(page).getByRole('listitem')
+  page.getByRole('region', { name: 'Cotizaciones de este vehículo', exact: true })
+const titulo = (page: Page): Locator =>
+  bloque(page).getByRole('heading', { name: 'Cotizaciones de este vehículo', level: 2 })
+const lista = (page: Page): Locator =>
+  page.getByRole('list', { name: 'Cotizaciones de este vehículo' })
+const filas = (page: Page): Locator => lista(page).locator('[data-de-este-vehiculo]')
+const esLectura = (url: string) => url.includes('/rpc/cotizaciones_de_este_vehiculo')
 
-// Los pedidos del navegador a `cotizaciones` (el bloque lee desde el navegador al acercarse; el servidor no lee cotizaciones para la ficha).
+// Los pedidos del navegador a «De este vehículo» (el bloque lee desde el navegador al acercarse; el servidor no lee cotizaciones para la derecha de la ficha).
 function vigilarLecturas(page: Page): string[] {
   const lecturas: string[] = []
   page.on('request', (pedido) => {
-    if (new URL(pedido.url()).pathname === '/rest/v1/cotizaciones') {
+    if (esLectura(pedido.url()) && pedido.method() === 'POST') {
       lecturas.push(pedido.url())
     }
   })
   return lecturas
 }
 
-test('E2E la dueña: lejos del bloque no se lee nada; al saltar a «Cotizaciones» llegan 20 y «Ver más» lleva a 22', async ({
+test('E2E la dueña: lejos del bloque no se lee nada; al saltar llegan 10 y «Ver más» lleva a 22', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  // Una ventana baja: el bloque «Cotizaciones» (el tercero) queda lejos de la vista al llegar.
-  const ancho = page.viewportSize()?.width ?? 1280
+  // Una ventana angosta y baja: la ficha va en una columna y el bloque, bajo la cabecera, queda lejos de la vista al llegar.
+  const ancho = Math.min(page.viewportSize()?.width ?? 600, 600)
   await page.setViewportSize({ width: ancho, height: 320 })
   const lecturas = vigilarLecturas(page)
   await page.goto(`/vehiculos/${vehiculos.veintidos}`)
-  await expect(indice(page)).toHaveText([
-    'Qué falta',
-    'Relacionados',
-    'Cotizaciones',
-    'Documentos',
-    'Ficha',
-    'Repuestos',
-  ])
+  await expect(indice(page)).toHaveText(['Cotizaciones', 'Relacionados', 'Actividad', 'Vitrina'])
   await expect(page.getByRole('navigation', { name: 'Índice de la ficha' })).toHaveAttribute(
     'data-hidratado',
     'true',
@@ -153,19 +150,19 @@ test('E2E la dueña: lejos del bloque no se lee nada; al saltar a «Cotizaciones
   expect(lecturas).toEqual([])
 
   const respuesta = page.waitForResponse(
-    (r) => new URL(r.url()).pathname === '/rest/v1/cotizaciones',
+    (r) => esLectura(r.url()) && r.request().method() === 'POST',
   )
   await indice(page).getByText('Cotizaciones').click()
-  await expect(bloque(page).getByRole('heading', { name: 'Cotizaciones' })).toBeFocused()
+  await expect(titulo(page)).toBeFocused()
   const bytes = (await (await respuesta).body()).length
-  await expect(filas(page)).toHaveCount(20)
+  await expect(filas(page)).toHaveCount(10)
   expect(lecturas).toHaveLength(1)
   const nodos = await lista(page).evaluate((e) => e.querySelectorAll('*').length + 1)
   test.info().annotations.push({
     type: 'medido',
-    description: `nodos con 20: ${String(nodos)}, bytes: ${String(bytes)}`,
+    description: `nodos con 10: ${String(nodos)}, bytes: ${String(bytes)}`,
   })
-  expect(nodos).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_20)
+  expect(nodos).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_10)
   expect(bytes).toBeLessThanOrEqual(TOPE_DE_BYTES)
 
   const masNueva = sql(
@@ -173,49 +170,47 @@ test('E2E la dueña: lejos del bloque no se lee nada; al saltar a «Cotizaciones
   )
   await expect(filas(page).first()).toContainText(`N.º ${masNueva}`)
   await expect(filas(page).first()).toContainText('Gala Guarda')
-  await expect(filas(page).first().getByRole('link')).toHaveAttribute(
-    'href',
-    /^\/cotizaciones\/[0-9a-f-]{36}$/,
-  )
-  await bloque(page).getByRole('button', { name: 'Ver más' }).click()
-  await expect(filas(page)).toHaveCount(22)
+  for (const ronda of [20, 22]) {
+    await bloque(page).getByRole('button', { name: 'Ver más' }).click()
+    await expect(filas(page)).toHaveCount(ronda)
+  }
   await expect(bloque(page).getByRole('button', { name: 'Ver más' })).toHaveCount(0)
-  expect(lecturas).toHaveLength(2)
+  expect(lecturas).toHaveLength(3)
 })
 
-test('E2E con 520: «Ver más» llega a 500, dice el tope y «Ver todas en Cotizaciones» lleva al listado', async ({
+test('E2E con 110: «Ver más» llega a 100, dice el tope y «Ver todas en Cotizaciones» lleva al listado', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
   const tamanos: number[] = []
   page.on('response', (r) => {
-    if (new URL(r.url()).pathname === '/rest/v1/cotizaciones') {
+    if (esLectura(r.url()) && r.request().method() === 'POST') {
       void r.body().then((cuerpo) => tamanos.push(cuerpo.length))
     }
   })
-  await page.goto(`/vehiculos/${vehiculos.quinientas}?seccion=cotizaciones`)
-  await expect(filas(page)).toHaveCount(20)
-  for (let ronda = 2; ronda <= 25; ronda += 1) {
+  await page.goto(`/vehiculos/${vehiculos.cientodiez}?seccion=cotizaciones`)
+  await expect(filas(page)).toHaveCount(10)
+  for (let ronda = 2; ronda <= 10; ronda += 1) {
     await bloque(page).getByRole('button', { name: 'Ver más' }).click()
-    await expect(filas(page)).toHaveCount(Math.min(20 * ronda, 500))
+    await expect(filas(page)).toHaveCount(10 * ronda)
   }
   await expect(bloque(page).getByRole('button', { name: 'Ver más' })).toHaveCount(0)
-  await expect(page.getByText('Mostrando las 500 más recientes.')).toBeVisible()
+  await expect(page.getByText('Mostrando las 100 más recientes.')).toBeVisible()
   const nodos = await lista(page).evaluate((e) => e.querySelectorAll('*').length + 1)
   const primera = tamanos[0] ?? 0
-  const vigesimaQuinta = tamanos[24] ?? Number.POSITIVE_INFINITY
+  const decima = tamanos[9] ?? Number.POSITIVE_INFINITY
   test.info().annotations.push({
     type: 'medido',
-    description: `nodos con 500: ${String(nodos)}, bytes de la 1.ª: ${String(primera)}, de la 25.ª: ${String(vigesimaQuinta)}`,
+    description: `nodos con 100: ${String(nodos)}, bytes de la 1.ª: ${String(primera)}, de la 10.ª: ${String(decima)}`,
   })
-  expect(nodos).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_500)
-  expect(tamanos.length).toBeGreaterThanOrEqual(25)
-  expect(vigesimaQuinta).toBeLessThanOrEqual(primera * 1.05)
+  expect(nodos).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_100)
+  expect(tamanos.length).toBeGreaterThanOrEqual(10)
+  expect(decima).toBeLessThanOrEqual(primera * 1.05)
   const camino = page.getByRole('link', { name: 'Ver todas en Cotizaciones' })
-  await expect(camino).toHaveAttribute('href', `/cotizaciones?vehiculo=${vehiculos.quinientas}`)
+  await expect(camino).toHaveAttribute('href', `/cotizaciones?vehiculo=${vehiculos.cientodiez}`)
   await camino.click()
   await expect(page).toHaveURL(/\/cotizaciones\?vehiculo=/)
-  await expect(page.getByText('Cotizaciones de Pestaña quinientas.')).toBeVisible()
+  await expect(page.getByText('Cotizaciones de Pestaña ciento diez.')).toBeVisible()
 })
 
 test('E2E sin cotizaciones.ver no hay bloque ni entrada en el índice y ?seccion=cotizaciones se queda arriba', async ({
@@ -224,7 +219,7 @@ test('E2E sin cotizaciones.ver no hay bloque ni entrada en el índice y ?seccion
   await entrar(page, sinClave, { fresco: true })
   const lecturas = vigilarLecturas(page)
   await page.goto(`/vehiculos/${vehiculos.propios}?seccion=cotizaciones`)
-  await expect(indice(page).getByText('Ficha')).toBeVisible()
+  await expect(indice(page).getByText('Vitrina')).toBeVisible()
   await expect(indice(page).getByText('Cotizaciones')).toHaveCount(0)
   await expect(bloque(page)).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Pestaña propios', level: 1 })).toBeInViewport()
@@ -248,7 +243,7 @@ test('E2E un vehículo sin cotizaciones: llegar a su bloque por la URL dice que 
 }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto(`/vehiculos/${vehiculos.ninguna}?seccion=cotizaciones`)
-  await expect(bloque(page).getByRole('heading', { name: 'Cotizaciones' })).toBeFocused()
+  await expect(titulo(page)).toBeFocused()
   await expect(page.getByText('Sin cotizaciones que puedas ver.')).toBeVisible()
   await page.reload()
   await expect(page.getByText('Sin cotizaciones que puedas ver.')).toBeVisible()
