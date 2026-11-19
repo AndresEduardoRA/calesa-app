@@ -30,3 +30,5 @@ export function useVistaPreviaDelDiseno() {
     },
   }
 }
+
+export type VistaPreviaDelDiseno = ReturnType<typeof useVistaPreviaDelDiseno>

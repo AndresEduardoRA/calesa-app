@@ -14,7 +14,7 @@ import {
   publicarFormulaConModos,
 } from './soporte/diseno-editor'
 
-// La pestaña «Diseño», ítems, cabecera y tarjeta (4.22-3, `docs/UX.md` › «Cotización: diseño (estados propios)»): el camino feliz en escritorio. Se enciende «Ver total en moneda local»,
+// La pestaña «Diseño», ítems, cabecera y tarjeta (4.22-3, `docs/UX.md` › «Cotización: hoja (estados propios)»): el camino feliz en escritorio. Se enciende «Ver total en moneda local»,
 // se suma el modo «Paralelo» y se le cambian sus tipos de cambio, el interruptor pasa de «Habilita» a «Muestra», una celda gana su ayuda con un texto y la tarjeta muestra la garantía
 // junto al total. Nada avisa «Revisa el diseño»; «Guardar el borrador» lo escribe con la definición y los `params` de la publicada tal cual, y recargar lo vuelve a mostrar.
 test.describe.configure({ mode: 'serial' })
@@ -55,7 +55,7 @@ const garantia = (page: Page) =>
 
 async function abrirElDiseno(page: Page) {
   await page.goto(`/configuracion/cotizacion?seccion=diseno&origen=${origen.id}`)
-  await expect(page.getByRole('heading', { name: 'Diseño', level: 2 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Hoja', level: 1 })).toBeVisible()
   await expect(cabecera(page)).toBeVisible()
 }
 

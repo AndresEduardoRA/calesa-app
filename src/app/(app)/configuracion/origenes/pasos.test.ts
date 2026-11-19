@@ -19,7 +19,7 @@ describe('destinos de los siguientes pasos', () => {
 
   it('el flujo lleva a su pantalla y la fórmula a Cotización › Fórmula', () => {
     expect(DESTINOS_DE_PASO.flujo.ruta).toBe('/configuracion/flujos')
-    expect(DESTINOS_DE_PASO.formula.ruta).toBe('/configuracion/cotizacion?seccion=formula')
+    expect(DESTINOS_DE_PASO.formula.ruta).toBe('/configuracion/cotizacion/[origen]/formula')
   })
 })
 
@@ -69,7 +69,7 @@ describe('conDestino', () => {
       { clave: 'cotizaciones.configurar', origenId, alcance: 'todos' },
     ]
     const formula = conDestino(pasos, cotiza(ORIGEN), ORIGEN)[2]
-    expect(formula?.ruta).toBe(`/configuracion/cotizacion?seccion=formula&origen=${ORIGEN}`)
+    expect(formula?.ruta).toBe(`/configuracion/cotizacion/${ORIGEN}/formula`)
     expect(formula?.motivoDeshabilitado).toBeNull()
     expect(conDestino(pasos, cotiza(OTRO), ORIGEN)[2]?.motivoDeshabilitado).toContain(
       'Configurar el cotizador',

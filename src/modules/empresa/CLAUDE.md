@@ -6,8 +6,8 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
 
 - Entra: Configuración › Empresa, cuatro sub-rutas (`src/app/(app)/configuracion/empresa/`): «Datos de la empresa» (`/configuracion/empresa`:
   `FormularioEmpresa` e `IconosDeLaApp`), «Monedas y tipos de cambio» (`/monedas`: `MonedasYTiposCambio`), «Integraciones» (`/integraciones`:
-  `Integraciones`), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Cotización › Ajustes (`?seccion=ajustes`): la vigencia de
-  las cotizaciones (si el vehículo y el lead son obligatorios se decide por rol y origen, en «Roles y permisos»).
+  `Integraciones`), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Cotización › General › Vigencia (`/configuracion/cotizacion/general/vigencia`,
+  con la barra de cambios sin guardar): la vigencia de las cotizaciones (si el vehículo y el lead son obligatorios se decide por rol y origen, en «Roles y permisos»).
 - Sale (`index.ts`, **sin componentes**):
   - `getAjustes()`: lo mínimo de la empresa (nombre, logos, color, íconos, formato regional, zona, moneda base, registro abierto, primer registro), una
     lectura por request, sin sesión; nunca tumba (si la base no responde, identidad neutra con registro cerrado y error en el log). Lo usan `app/` y

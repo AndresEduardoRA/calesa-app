@@ -426,7 +426,7 @@ sólo lee `cotizaciones` y escribe `cotizaciones_aprobadas` tras el candado de a
   «todos», «La lectura de la tarjeta (4.18-1)») y los montos con `cotizacion_leer`, y `validar_plantilla` rechaza un nodo que no sea del
   nivel «todos». El primer resultado de la aprobada (`totales.usd`) viaja a todo el que ve la cotización: es lo que la tarjeta del total dibuja a «todos». Un inventario (`cotizaciones-visibilidad.sql`) registra toda función que pueda devolver esas columnas o `formulas.*`.
 - **Límite:** un nodo restringido, único oculto de una suma visible, se deduce restando; el editor del diseño lo avisa.
-- **Pantalla:** `/configuracion/cotizacion?seccion=niveles` (`docs/UX.md`). `niveles_con_uso()` devuelve `{tope, niveles}` con
+- **Pantalla:** `/configuracion/cotizacion/general/niveles` (`docs/UX.md`). `niveles_con_uso()` devuelve `{tope, niveles}` con
   banderas `se_renombra`, `se_retira`, `se_elimina` y `motivo_de_uso`: la UI no razona por nombre ni clave. En TS los permisos de un
   nivel se reconocen por su forma (`esClaveDeNivel()`), no están en `CLAVES_PERMISO`.
 
@@ -868,7 +868,7 @@ pierde los microsegundos) y pasan en serie por un candado por origen (`pg_adviso
 
 ### El editor de la plantilla
 
-- **La pestaña «Tarjeta»** (`?seccion=tarjeta&origen=`, `cotizaciones.configurar`) edita el **borrador**: el servidor arma
+- **La pestaña «Tarjeta»** (`/configuracion/cotizacion/<origen>/tarjeta`, `cotizaciones.configurar`) edita el **borrador**: el servidor arma
   `propsDelEditor()` (borrador, copia de la publicada u omisión, avisos y contexto reducido) y el navegador valida al tipear con
   `validarPlantilla()`. Al navegador no viaja la `definicion`: sólo los nodos con lugar en la tarjeta (o de tipo de cambio), grupos, modos,
   secundarios y el `{ver}` de la visibilidad.

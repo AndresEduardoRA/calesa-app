@@ -4,12 +4,16 @@
 // - `undefined`: otra página.
 // Se compara por segmentos (`/configuracion/web` no marca `/configuracion/web-otra`). Con `exacta` (la sub-sección índice, que vive en la
 // ruta de su sección) sólo su ruta es la página: las otras sub-secciones de la sección están debajo y no la marcan. Una sub-sección puede
-// ser una plantilla: un segmento `[x]` acepta cualquiera (`/configuracion/origenes/[id]/campos` es la parte «Campos» de cualquier origen)
-// y el menú la resuelve con la ruta actual (`rutaResuelta()`).
+// ser una plantilla: un segmento `[x]` acepta un uuid (`/configuracion/origenes/[id]/campos` es la parte «Campos» de cualquier origen; un
+// segmento fijo como `general` no es un origen) y el menú la resuelve con la ruta actual (`rutaResuelta()`). Sin regex de Zod: esto viaja al navegador.
 export type MarcaDelEnlace = 'page' | 'true' | undefined
 
 const segmentos = (ruta: string) => ruta.split('/').filter((segmento) => segmento !== '')
 const esComodin = (segmento: string) => segmento.startsWith('[') && segmento.endsWith(']')
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+// Un segmento de la ruta actual que puede ocupar el lugar de un `[x]`: sólo un id.
+const encaja = (segmento: string, delActual: string | undefined) =>
+  esComodin(segmento) ? delActual !== undefined && UUID.test(delActual) : segmento === delActual
 
 function estaEn(actual: string, ruta: string): boolean {
   const deActual = segmentos(actual)
@@ -17,7 +21,7 @@ function estaEn(actual: string, ruta: string): boolean {
   if (deRuta.length > deActual.length) {
     return false
   }
-  return deRuta.every((segmento, i) => esComodin(segmento) || segmento === deActual[i])
+  return deRuta.every((segmento, i) => encaja(segmento, deActual[i]))
 }
 
 export function marcaDelEnlace(
@@ -36,7 +40,8 @@ export function marcaDelEnlace(
 }
 
 // La ruta de una plantilla rellenada con la ruta actual: cada `[x]` toma el segmento de `actual` en su lugar, si los segmentos fijos
-// anteriores coinciden; si no se puede (la lista de orígenes no tiene id), null. Una ruta sin `[` vuelve igual.
+// anteriores coinciden y el segmento es un id; si no se puede (la lista de orígenes no tiene id; `general` no es un id), null. Una ruta sin
+// `[` vuelve igual.
 export function rutaResuelta(plantilla: string, actual: string): string | null {
   const deRuta = segmentos(plantilla)
   const ultimo = deRuta.findLastIndex(esComodin)
@@ -49,11 +54,20 @@ export function rutaResuelta(plantilla: string, actual: string): string | null {
     const delActual = deActual[i]
     if (i > ultimo) {
       resueltos.push(segmento)
-    } else if (delActual === undefined || (!esComodin(segmento) && segmento !== delActual)) {
+    } else if (delActual === undefined || !encaja(segmento, delActual)) {
       return null
     } else {
       resueltos.push(esComodin(segmento) ? delActual : segmento)
     }
   }
   return `/${resueltos.join('/')}`
+}
+
+// La ruta de una sub-sección en el menú y en el selector: su plantilla resuelta o, si no resuelve (no hay origen en la URL), su respaldo; sin
+// respaldo, null (no se dibuja).
+export function rutaDelMenu(
+  sub: { ruta: string; respaldo?: string },
+  actual: string,
+): string | null {
+  return rutaResuelta(sub.ruta, actual) ?? sub.respaldo ?? null
 }

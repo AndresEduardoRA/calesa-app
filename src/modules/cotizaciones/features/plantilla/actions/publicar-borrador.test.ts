@@ -77,7 +77,7 @@ describe('publicarBorrador', () => {
     const respuesta = await publicarBorrador(pedido)
     expect(h.pedidos).toEqual([pedido])
     expect(respuesta.data).toEqual({ ok: true, data: PUBLICADA })
-    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/cotizacion')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/cotizacion', 'layout')
   })
 
   it('la nota llega sin los espacios de los bordes', async () => {

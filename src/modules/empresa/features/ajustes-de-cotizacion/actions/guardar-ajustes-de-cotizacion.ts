@@ -22,7 +22,7 @@ export const guardarAjustesDeCotizacion = actionClient
       actualizadoEnEsperado: parsedInput.actualizadoEnEsperado,
     })
     if (guardado.ok) {
-      revalidatePath(RUTAS.configuracionDeCotizacion)
+      revalidatePath(RUTAS.configuracionDeCotizacion, 'layout')
       // La versión de la fila la llevan también el formulario de Empresa y sus íconos.
       revalidatePath(RUTAS.empresa)
     }

@@ -39,6 +39,23 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
     ],
   },
+  // Configuración › Cotización: `/general` y `/<origen>` solos no dibujan nada. Van a su primera parte (Colores, que redirige sola a la primera
+  // que la persona abre; «Fórmula» del origen, que comprueba el origen y el permiso) con su consulta. Aquí y no en un `page.tsx`: una página que
+  // sólo redirige pide su `loading.tsx`, y el esqueleto de cada nivel viaja en el HTML de todas las páginas de debajo. `general` va primero.
+  redirects() {
+    return Promise.resolve([
+      {
+        source: '/configuracion/cotizacion/general',
+        destination: '/configuracion/cotizacion/general/colores',
+        permanent: false,
+      },
+      {
+        source: '/configuracion/cotizacion/:origen',
+        destination: '/configuracion/cotizacion/:origen/formula',
+        permanent: false,
+      },
+    ])
+  },
   headers() {
     return Promise.resolve([
       {
