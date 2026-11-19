@@ -44,7 +44,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
   (Nivel 3, sobre `20815f1c`): 898 en verde, 31 saltadas, 0 caídas, 38,2 min.
 - **CI:** Nivel 1 siempre, «Base» si cambia código, los e2e dirigidos (o el completo de escritorio en 4 bloques si toca un disparador),
   y `Listo · todo en verde`, el único check que `main` exige; el completo de escritorio, cada noche.
-- **Base:** una sola migración (`20261117104552_base.sql`), aplastada con la huella de la base idéntica (`pnpm db:aplastar`).
+- **Base:** una sola migración (`20261119203236_base.sql`), aplastada con la huella de la base idéntica (`pnpm db:aplastar`).
 - **Despliegue:** el ensayo en seco en `listo` (`pnpm despliegue:en-seco`).
 
 ## Al borde
