@@ -279,6 +279,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - En un spec `serial` la primera caída deja las demás «did not run»: no las cuentes como verdes y corre por separado cada una.
 - Si un spec caído quedó en `/ingreso` (bajo carga o con el servidor recién levantado), es el inestable conocido del ingreso: repítelo solo antes de culpar al cambio.
 - Lo que depende de la hora (la marca de «ahora», un vencimiento) cambia el DOM según cuándo corre: un texto que la prueba busca exacto va en su propio elemento, y la prueba fija el reloj (`page.clock`) o no mira las filas que la hora puede tocar.
+- Si un e2e siembra fotos por SQL (`sembrarFotos()`) y después las edita, siembra también su fila en `vehiculos_imagenes_version`: sin versión, mover o fijar la portada no mandan nada y el clic pasa sin error.
 
 ## Vitest
 

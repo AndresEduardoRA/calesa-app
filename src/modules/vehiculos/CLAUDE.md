@@ -5,11 +5,12 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 ## Entra y sale
 
 - Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`; cada fila y cada tarjeta es un enlace a la ficha, con `href` y `EnlaceDeLaFila` de `shared/ui/lista`; un `?vehiculo=<id>` viejo
-  redirige a la ficha con su panel, su visor y su edición: `destinoDelEnlaceViejo()`, de `index.ts`, que llama la página con `redirigir()`),
+  redirige a la ficha con su panel, su visor y su edición: `destinoDelEnlaceViejo()`, de `index.ts`, que llama la página con `redirigir()`; un
+  `?panel=vitrina-rapida&para=<id>` viejo, a `?panel=vitrina&para=<id>`: `destinoDeLaVitrinaRapida()`; los paneles del «⋯» `?panel=imagenes|vitrina|actualizar-datos&para=<id>`),
   `/vehiculos/papelera`, `/vehiculos/[id]` (la ficha en dos columnas: a la izquierda `CabeceraDeVehiculo` apilada, `DatosPrincipalesDelVehiculo` y la
   subasta; a la derecha el índice y los bloques por permiso, que compone `src/app` con `logistica`, `cotizaciones` y `repuestos`. `?seccion=<bloque>` lleva
   a su bloque si quien mira lo ve —si no, se queda arriba— y los paneles de «Relacionados» y `?relacionados=` llevan a «Relacionados»). Paneles: `?panel=nuevo`, `?editar=<id>`,
-  `?panel=vitrina`, `?panel=desvincular` (con `&luego=papelera`, desde el aviso «Quitar el vínculo»: el aviso de desvinculado ofrece la papelera),
+  `?panel=vitrina`, `?panel=imagenes`, `?panel=actualizar-datos`, `?panel=desvincular` (con `&luego=papelera`, desde el aviso «Quitar el vínculo»: el aviso de desvinculado ofrece la papelera),
   `?panel=purgar&lote=`. Layout, categorías y orígenes (`origenes`), fases (`flujos`) y vistas guardadas
   (`equipo`) los lee la página y los pasa por props.
 - Hoja de cotizar (`/cotizaciones/nuevo` y la cabecera de una guardada, `/cotizaciones/[id]`; las compone `app/`): `<BarraDelVehiculo>` (`pantallas/cotizar`, con `obligatorio`: sin vehículo elegido, la etiqueta «Obligatorio»; de ahí sale también `PANEL_DEL_VEHICULO`, que la página pasa a la hoja para su «Elegir el vehículo») abre
@@ -69,8 +70,19 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 - **Situación en la ficha** (`features/situacion/`, `pantallas/ficha.ts` › `<AvisoDeSituacion>`): «Sin resolver» con «La ganamos» (el `href` lo
   arma `src/app`: `vehiculos` no conoce `logistica`) y «No la ganamos» (`marcarNoGanada`, con «Deshacer» 10 s); «No ganada» con quién y cuándo
   (`resolucionDeSubasta`, de `index.ts`) y «Deshacer». `puedeResolverLaSubasta(permisos, origen)`: `flujos.mover` o `.cualquiera` y `logistica.ver`. `useNoGanada({ vehiculoId, origenId, alLograrlo })` sale por `client.ts`: `logistica` lo usa en la fila de «Subastas sin resolver» de su bandeja del día (con `router.refresh()` al lograrlo).
-- «Cotizar vehículo» del «⋯» de la fila y la tarjeta: `paraCotizar` (`entities/ruta-para-cotizar.ts`, o `null` si no cotiza: `origenesParaCotizar()`); abre la
-  hoja sin lead. La ficha no lo ofrece (`MenuDeVehiculoDeLaFicha` no pasa `cotizar`).
+- **El «⋯» del vehículo** (T336), el mismo en la fila, la tarjeta y la ficha: la lista y su orden en `entities/acciones-de-vehiculo.ts` y cuándo se ofrece
+  cada acción en `entities/ofertas-del-menu-de-vehiculo.ts` (`ofertasDelMenuDeVehiculo()`, con test); lo dibujan `features/acciones/components/menu-de-vehiculo.tsx`
+  y `lineas-del-menu-de-vehiculo.tsx`, desde `listado/components/menu-de-fila.tsx` y `acciones/components/menu-de-vehiculo-de-la-ficha.tsx`.
+  - «Cotizar vehículo» (la principal): `paraCotizar` (`entities/ruta-para-cotizar.ts`, o `null` si no cotiza: `origenesParaCotizar()`, que arma
+    `src/app/(app)/vehiculos/para-cotizar.ts` para la lista y la ficha); abre la hoja sin lead con `returnTo` = la URL de ese momento (`conVuelta()`).
+  - «Ver actividad»: en la ficha la ruta armada; en la lista una plantilla por página con `MARCADOR_DE_VEHICULO` que cada fila completa (`rutaDelVehiculo()`,
+    `entities/ruta-por-vehiculo.ts`): `vehiculos` no conoce `actividad`.
+  - Los paneles: en la lista, un hook por panel y por lista (`usePanelConVehiculo`, desde `listado/hooks/use-menu-de-la-lista.ts`) y montados una vez
+    (`listado/components/paneles-de-la-lista.tsx`, con su `diferidos.tsx`); en la ficha, `PanelesDelMenuDeLaFicha` (`pantallas/ficha`, con
+    `acciones/components/diferidos-de-la-ficha.tsx`). «Editar imágenes» (`<PanelDeImagenes>`, `features/fotos/`) y la vitrina de la lista
+    (`<PanelDeVitrinaDeLaLista>`) se leen en el servidor al abrirse (`datosDelPanelDeImagenes()`, `datosDelPanelDeVitrina()`, de `index.ts`; las llama
+    `src/app/(app)/vehiculos/paneles.ts` sólo si la URL nombra el panel con un `para` que es un id). «Actualizar los datos» (`<ActualizarLosDatos>`,
+    `features/subasta/`) es de un vehículo de la página (o de la ficha) y la página manda qué se puede consultar (`entradaDeRefresco()`).
 - **«Cotización aprobada»** (columna de la tabla y línea de la tarjeta): `ListadoDeVehiculos` recibe `aprobadas` (`AprobadasDeLaPagina`, por id de vehículo:
   `{ ruta, monto, moneda }`, o `null` si quien mira no tiene `cotizaciones.ver` en algún origen: la columna no se dibuja) y lo arma `src/app/(app)/vehiculos/aprobadas.ts`
   con `leerAprobadasDeVehiculos()` de `cotizaciones` (este módulo no la importa). `entities/cotizacion-aprobada-de-la-fila.ts`; `celda-de-aprobada.tsx` dibuja
@@ -83,8 +95,8 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 ## Archivos clave
 
 - `entities/`: `filtros.ts` (`Condicion[]` neutras que `infra/` traduce), `comunes.ts` (único lugar con etiquetas fijas), `esquema.ts`
-  (`validarVehiculo()`, igual para formulario y action), `acciones-de-vehiculo.ts` (lista única del «⋯»; «Ver actividad» sólo en la ficha, con
-  `actividad.ver` y `rutaDeActividadDe`), `limpieza.ts` (sólo lee y dice), `papelera`, `vinculo`, `vitrina`, `foto`, `apibara`, `subasta*`,
+  (`validarVehiculo()`, igual para formulario y action), `acciones-de-vehiculo.ts` (lista única del «⋯») y `ofertas-del-menu-de-vehiculo.ts` (cuándo
+  se ofrece cada acción), `limpieza.ts` (sólo lee y dice), `papelera`, `vinculo`, `vitrina`, `foto`, `apibara`, `subasta*`,
   `enlace-viejo-del-resumen.ts`, `panel-para-cotizar.ts`. `infra/`: lecturas en `queries/`, escrituras por RPC, `*.client.ts` para el navegador.
 - `features/`: `alta`, `ficha`, `fotos`, `vitrina`, `papelera`, `vinculo`, `listado`, `acciones`, `subasta`, `limpieza`,
   `panel-para-cotizar`. `CLAVE_DE_EDICION` vive en `features/alta/claves.ts`, no en un `'use client'`.
@@ -132,7 +144,8 @@ SQL; la usa `buscarVehiculos()` para «propios», por `fuenteDelInventario()`). 
   versión **de las fotos** (`vehiculos_imagenes_version`). Máx. 24 y una portada (la base). Sin duplicados (hash). Objetos
   `vehiculos/<vehiculo_id>/<sha-256>.<webp|jpg>`; la app no borra objetos: eliminar encola en `cola_gc_storage` y «Deshacer» (10 s) los saca.
 - **Vitrina, sólo por** `vehiculo_vitrina` (estado entero, sin defaults, con versión; exige `vehiculos.vitrina` del origen y ver el vehículo).
-  Desde la lista: `BotonDeVitrinaDeLaFila` y `PanelDeVitrinaRapida` (`?panel=vitrina-rapida&para=`), con `datosDeLaFila()` (`entities/vitrina-rapida.ts`).
+  Desde la lista: el mismo formulario en `<PanelDeVitrinaDeLaLista>` (`?panel=vitrina&para=`); `BotonDeVitrinaDeLaFila` lo abre sin publicar y saca de la web
+  de un toque con «Deshacer» (`useSacarDeLaWeb`, `datosDeLaFila()` de `entities/vitrina-rapida.ts`).
   **Publicado no es «en vitrina»:** la regla vive en `interno.vitrina_vehiculos`; la app no la copia. Vista previa: `vehiculo_vitrina_previa()`.
 - **Papelera, sólo por RPC y con resultado parcial** (cada vehículo con su versión, lote hasta 200; restaurar/purgar con la versión del lote).
   Enviar ofrece «Deshacer» 10 s. Lo que no entra lo decide `_vehiculo_bloqueo()` (`{causa, motivo}`; `_vehiculo_motivo_de_bloqueo` es su texto; la
@@ -149,7 +162,8 @@ SQL; la usa `buscarVehiculos()` para «propios», por `fuenteDelInventario()`). 
 - **apibara:** la llamada vive en la edge function, que llama el navegador; guarda el bruto en `apibara_consultas` y alta/refresco sólo mandan su id
   (`p_consulta`). Fecha y estado de subasta: `_vehiculo_subasta_desde()`; a mano, «Editar fechas» del bloque de la subasta
   (`entities/fechas-de-subasta.ts`, `vehiculo_guardar` con `subasta_en`/`subasta_fin_en`). `precio` nunca sale de la puja. Refrescar no
-  pisa lo editado (`fusionarRefresco()`). Con 429 o clave rechazada no se consulta la línea siguiente.
+  pisa lo editado (`fusionarRefresco()`). `refrescarSubasta` devuelve además `fotasPorTraer` (las fotos de esa respuesta que el vehículo no tiene, filtradas
+  en el servidor: el bruto no cruza) y `sinFotos`; «Actualizar los datos» las trae con `useFotosDeSubasta().traer()` sin otra consulta, «Refrescar» las ignora. Con 429 o clave rechazada no se consulta la línea siguiente.
 - Atajo `N`: abre «Nuevo» sólo si se puede. **El alta dice su contexto** (`vehiculo_crear(…, p_contexto)`, `PERMISO_DE_ALTA`): `suelto`
   (`vehiculos.crear`: inventario e importación) o `cotizar` (`vehiculos.crear.desde_cotizar`: el panel de la hoja y `cotizacion_crear` con
   vehículo nuevo); queda en `creado_desde`.

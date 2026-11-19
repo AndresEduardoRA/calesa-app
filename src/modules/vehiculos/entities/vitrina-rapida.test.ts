@@ -5,7 +5,7 @@ const fila = {
   id: '0b1c2d3e-0000-4000-8000-000000000001',
   titulo: 'Kia Rio',
   actualizadoEn: '2026-11-14T10:00:00Z',
-  publicadoWeb: false,
+  publicadoWeb: true,
   precioWeb: 15000,
   precioWebHasta: 16000,
   precioWebNota: 'Con papeles',
@@ -13,25 +13,24 @@ const fila = {
 }
 
 describe('datosDeLaFila', () => {
-  it('publicar conserva lo guardado', () => {
-    expect(datosDeLaFila(fila, true)).toEqual({
-      publicado: true,
+  it('sacar apaga el destacado y conserva el precio, el «hasta» y la nota', () => {
+    expect(datosDeLaFila(fila, false)).toEqual({
+      publicado: false,
       precio: 15000,
       precioHasta: 16000,
       nota: 'Con papeles',
-      destacado: true,
+      destacado: false,
     })
   })
 
-  it('un precio nuevo mayor que el «hasta» lo suelta; sin precio no hay «hasta»', () => {
-    expect(datosDeLaFila(fila, true, 17000)).toMatchObject({ precio: 17000, precioHasta: null })
-    expect(datosDeLaFila(fila, true, null)).toMatchObject({ precio: null, precioHasta: null })
+  it('deshacer vuelve a publicar con lo guardado', () => {
+    expect(datosDeLaFila(fila, true)).toMatchObject({ publicado: true, destacado: true })
   })
 
-  it('sacar apaga el destacado', () => {
-    expect(datosDeLaFila({ ...fila, publicadoWeb: true }, false)).toMatchObject({
-      publicado: false,
-      destacado: false,
+  it('sin precio no hay «hasta»', () => {
+    expect(datosDeLaFila({ ...fila, precioWeb: null }, false)).toMatchObject({
+      precio: null,
+      precioHasta: null,
     })
   })
 })
