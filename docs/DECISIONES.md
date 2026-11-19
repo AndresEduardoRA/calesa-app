@@ -243,13 +243,27 @@ las trampas, en `docs/LECCIONES.md`.
   la lista; «Editar» va en el «⋯»), título, número, origen, situación y los enlaces cortos a logística y repuestos; después «Cotización aprobada»,
   «Subasta» (una frase con color y cuenta en vez de una tabla de datos) y «Datos principales» (sólo los datos clave del origen) con «Ver más», que abre la
   **ficha completa** en un modal grande de sólo lectura y con tipografía de vitrina (`?ver=ficha`; sus fotos no abren el visor encima: un solo nivel de
-  modal). Ningún bloque de la izquierda entra al índice. A la derecha, el índice y los bloques por permiso: «Fase y qué falta», «Relacionados»,
-  «Cotizaciones», «Documentos», «Ficha», «Repuestos»; las fotos no tienen bloque (la tira las muestra y «Editar imágenes» las edita) y `?seccion=fotos`
-  abre el visor. Nada se repite salvo «Ver en logística», que está en la cabecera y en el título de «Fase y qué falta» mientras ese bloque siga a la
-  derecha. Sin tope de ancho propio (con `max-w-4xl` nunca habría dos columnas). `?seccion=` es un ancla (sin permiso, se queda arriba) y los paneles de
-  «Relacionados» llevan a ese bloque. Sólo «Cotizaciones» y «Documentos» esperan a acercarse. Descartados: la tira vertical al costado de la foto (en 24 rem
+  modal). Ningún bloque de la izquierda entra al índice. Sin tope de ancho propio (con `max-w-4xl` nunca habría dos columnas). Descartados: la tira vertical al costado de la foto (en 24 rem
   le roba ancho y no entra al 200 %), puntos en vez de tira (no dejan elegir entre 24), «Ver más» como acordeón (alarga la columna), la ficha completa como
   drawer (poco lugar para fotos grandes), la subasta como tabla de datos, pestañas, tres columnas, índice vertical y un bloque «Lead» aparte.
+- **A la derecha de la ficha del vehículo, sólo lo de ventas**, sin repetir la izquierda: «Cotizaciones de este vehículo», «Relacionados», «Actividad
+  reciente» y «Vitrina», con el índice pegajoso; cada uno por su permiso y «Vitrina» siempre (sólo lectura sin `vehiculos.vitrina`), para que el índice no
+  quede vacío. La ficha entera está en «Ver más» de la izquierda; lo de logística (fase, qué falta, documentos) y lo de repuestos tiene su página y se
+  llega por los enlaces cortos de la cabecera. Los enlaces viejos redirigen reemplazando la entrada (`secciones-viejas.ts`): `?seccion=ficha` a
+  `?ver=ficha`, `fotos` al visor, `documentos` y `fase` a la unidad (con `logistica.ver` del origen), `repuestos` al proyecto (con `repuestos.ver` y si
+  tiene); sin el permiso o sin proyecto, la ficha se queda arriba (no hay destino que mostrar). «Crear proyecto de repuestos» deja de ofrecerse en la ficha:
+  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son «De este vehículo» (de a 10 hasta 100), no el historial de 500: la misma
+  isla de la guardada, con «Aprobar esta» y las casillas. Descartados: la vista previa de la vitrina siempre abierta (la tarjeta con foto mide más que la
+  columna y repite el precio), «Comparar» junto a «Cotizar» en el título (dos acciones en un título; va en su fila, con su ayuda) y mantener el historial
+  de 500 (otra lista para lo mismo).
+- **Aprobar desde la ficha del vehículo refresca la página.** «Cotización aprobada» de la izquierda se lee en el servidor y no escucha a las islas: tras
+  aprobar o deshacer, «Cotizaciones de este vehículo» hace `router.refresh()` en una transición. En la ficha no hay nada tipeado y la isla no se vuelve a
+  montar (no cambian ni su posición ni su `key`); la isla ya apaga sus filas mientras relee.
+- **«Actividad reciente» de la ficha del vehículo se lee desde el navegador al acercarse**, con su código por `diferido()`: dibujada en el servidor,
+  sus cinco frases sumaban unos 13 KB al documento de la ficha (RSC y HTML) y lo pasaban de su presupuesto. La pieza del servidor sigue para
+  `/actividad/reciente`; las dos comparten el marco y las filas.
+- **La vista previa del bloque «Vitrina» va plegada en un `<details>` nativo**: sin JS, no pide la foto hasta abrirse y no repite el precio, que va
+  arriba con `<Monto>`. El motivo de «Publicado, no visible» va escrito a la vista, no sólo en el `title` de la insignia.
 - **«Ganada» en la frase de la subasta sin copiar la situación:** en un origen de subasta, la situación `fase` con el cierre vencido sólo puede ser una
   ganada (si no, la base diría «Sin resolver» o «No ganada»); con el cierre futuro y fuera del tramo se muestra la cuenta sin el color de éxito. No se suma
   `es_subasta` a la fase que lee la ficha. La cuenta usa el texto de `cuentaRegresiva()` («en 2 días 4 h»), el mismo de toda la app.
@@ -763,11 +777,6 @@ las trampas, en `docs/LECCIONES.md`.
 - **En un drawer, «ir a» lleva a la página de la unidad** («Abrir la unidad»), salvo en el ítem, cuyos destinos ya son su vehículo o su proyecto. La franja
   «fuera de regla» no lleva acciones nuevas: no es una tarjeta de destino. Las faltas informativas también llevan acción. Las acciones sólo se apagan sin red.
 - **«Qué falta» sin realtime.** Se relee al volver el foco (≥ 5 s) y con `logistica:unidad-cambio`; destinos desde `fases_transiciones`, tope 12. Un fallo al leer el flujo apaga sólo los huecos con regla.
-- **«Qué falta» en la ficha del vehículo es de sólo lectura y no mira el DOM.** La misma lectura, sin «Elegir» ni el formulario de mover; todo hueco de la
-  unidad cuenta como existente y sólo «Documentos» está a mano (`LugarDeLasAcciones.aMano`): «Subir» y «Revisar» usan el bloque «Documentos» de la ficha
-  (su marcador `data-bloque-del-hueco` existe desde el primer dibujo, aunque el bloque espere a acercarse) y lo de transporte, aduana, pagos o repuestos
-  dice «Abrir la unidad» con `?hueco=`. Límite aceptado: en la ficha no se sabe si la regla del flujo de un hueco está apagada, así que «Abrir la unidad»
-  lleva igual a la unidad (allí el hueco no estará).
 - **Notas sin «Borrar».** Corregir sólo la propia, sin cambio de fase y sin versión (gana la última).
 - **El ítem de repuesto entra al motor como `UnidadAbierta`**, sin volver nulo `Unidad.origenId`: el camino del vehículo no cambia.
 

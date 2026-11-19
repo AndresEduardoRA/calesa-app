@@ -8,7 +8,7 @@ import { textoDelTope } from '@/shared/lib/conteo'
 import { TOPE_DE_ESTE_VEHICULO } from '@/shared/lib/paginacion'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
 import { buttonVariants } from '@/shared/ui/button'
-import { EstadoError } from '@/shared/ui/estados'
+import { EstadoError, EstadoVacio } from '@/shared/ui/estados'
 import {
   hayOtras,
   motivoParaNoAprobarEsta,
@@ -45,11 +45,14 @@ export type PropsDeEsteVehiculo = {
   alCambiar?: () => void
   // Dibuja su propio título: el resumen no tiene el del servidor.
   conTitulo?: boolean
+  // Sin ninguna, este texto (la ficha del vehículo, donde el bloque es lo único de sus cotizaciones). Sin él, no dibuja nada (la guardada y el resumen).
+  vacio?: string
 }
 
 // «De este vehículo»: las cotizaciones del vehículo que quien mira ve, la aprobada primero y marcada, «Esta» la que se mira y «Aprobar esta» en cada una (la aprobada
 // no lo lleva). De a 10 con «Ver más» hasta 100 y, ahí, «Ver todas en Cotizaciones». Se lee al montarse desde el navegador; tras aprobar o deshacer relee la primera
-// página y avisa a las otras islas del vehículo (la cabecera de la guardada). Nunca refresca la guardada (perdería lo tipeado). Sin otras, no dibuja nada.
+// página y avisa a las otras islas del vehículo (la cabecera de la guardada). Nunca refresca la guardada (perdería lo tipeado). Sin otras, no dibuja nada, o
+// `vacio` si se lo pide.
 export function DeEsteVehiculo({
   vehiculo,
   cotizacionActual,
@@ -59,6 +62,7 @@ export function DeEsteVehiculo({
   conCasillas = false,
   volverA,
   ranuraDeComparar,
+  vacio,
 }: PropsDeEsteVehiculo) {
   const lista = useDeEsteVehiculo(vehiculo.id)
   const fuente = useId()
@@ -84,7 +88,7 @@ export function DeEsteVehiculo({
     return <SinLeer lista={lista} />
   }
   if (!hayOtras(lista.aLaVista, cotizacionActual)) {
-    return null
+    return <SinOtras vacio={vacio} />
   }
   const comparar = conCasillas ? (
     <BotonComparar elegidas={elegidas} volverA={volverA} idDelAviso={idDelAviso} />
@@ -163,6 +167,11 @@ function FilaDelTitulo({
       {children}
     </div>
   )
+}
+
+// Sin otras: nada, o el vacío que pidió la pantalla.
+function SinOtras({ vacio }: { vacio: string | undefined }) {
+  return vacio === undefined ? null : <EstadoVacio titulo={vacio} compacto />
 }
 
 // Antes de la primera página: el esqueleto, o el error con «Reintentar».

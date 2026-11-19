@@ -10,7 +10,8 @@ Abiertos que lo tocan: **8-13a** a **8-13c** y la revisión de seguridad del sto
 - Depende de: `vehiculos`, `flujos`, `leads` (sólo por `src/app`: el módulo no los importa). Lo consumen `vehiculos`, `logistica`, `tablero`, `buscador`.
 - Las actions **no salen por los barriles** (las importan en relativo sus hooks) y comprueban su permiso con `puede()` antes de la base. Lo que cruza áreas
   lo compone `src/app/(app)/repuestos/` (render prop, hueco o props).
-- **`proyectos`** — `index.ts`: `proyectoDe(vehiculoId)`, `leerResumenDeVehiculo(vehiculoId)`, `esquemaDelListado`, `pedidoDelListado`,
+- **`proyectos`** — `index.ts`: `proyectoDe(vehiculoId)` (el proyecto vivo de un vehículo, con `cache()`: lo usa la ficha del vehículo para su enlace
+  corto «Repuestos · Proyecto #N» y para redirigir `?seccion=repuestos` a `rutaDelProyecto(id)`), `esquemaDelListado`, `pedidoDelListado`,
   `leerCursorDeProyectos`, `leerProyectosDelListado` (cursor = `numero`, sin «Anterior»), `estadoDelProyecto`. `pantallas/proyectos.ts`:
   `<ListadoDeProyectos>`, `<BotonNuevoProyecto>`, `useNuevoProyectoPorUrl`, `buscarProyectoAbierto`. `pantallas/proyectos-detalle.ts` (`/repuestos/[id]`):
   `<CabeceraDeProyecto>`, `<VehiculoQueNoSeVe>`.
@@ -27,8 +28,8 @@ Abiertos que lo tocan: **8-13a** a **8-13c** y la revisión de seguridad del sto
   `oculto`, `libre` o `ninguno`; manda el lead, nunca el teléfono) y lo dibuja `<ClienteDelProyecto>`; el lead lo lee `src/app` con `leerLeadParaEnlazar`
   de `leads` sólo con `lead_id` y `leads.ver` (`ProyectoDetallado.leadId`). El **vehículo** llega en el hueco `vehiculo` (ReactNode) que llena `src/app`
   (`vehiculo-del-proyecto.tsx`: `<VehiculoEnLaCabecera>` de `vehiculos`, `<VehiculoQueNoSeVe>` de `pantallas/proyectos-detalle.ts` o su error con «Reintentar», en su propio
-  `<Suspense>`); un proyecto externo (`vehiculo_id` nulo) lo dibuja la cabecera sola con `<ProyectoExterno>` («Proyecto externo · sin vehículo»). `pantallas/proyectos-vehiculo.ts`: `<ResumenRepuestos>`, la pestaña «Repuestos» de `/vehiculos/[id]` (`repuestos.ver` global;
-  ítems por fase, ≤ 201 leídos). El módulo no importa `buscador`: los buscadores de vehículo y lead los compone `src/app`.
+  `<Suspense>`); un proyecto externo (`vehiculo_id` nulo) lo dibuja la cabecera sola con `<ProyectoExterno>` («Proyecto externo · sin vehículo»).
+  El módulo no importa `buscador`: los buscadores de vehículo y lead los compone `src/app`.
 - **`items`** — `pantallas/items.ts`: `<HojaDeItems>` (`/repuestos/[id]`) con el panel `?panel=imagenes&item=`; `index.ts`: `leerProyecto`,
   `leerItemsDelProyecto`, `leerItem`, `cuentasDeLaHoja`, `FilaDeItem`. El hueco de la hoja (`HuecoDeLaHoja`) tiene cuatro ranuras: `accionDeFila(fila)`,
   `panel(api)`, `arriba(api)` (antes de la hoja, con sus filas vivas: los pasos y el panel del paso) y `pasoDeFila(fila)` (en la columna «Siguiente»: el
