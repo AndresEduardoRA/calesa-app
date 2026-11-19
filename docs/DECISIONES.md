@@ -427,8 +427,13 @@ las trampas, en `docs/LECCIONES.md`.
   número y título, «Final», total, autor y vigencia; sin cliente (es el mismo vehículo) ni «⋯» (las acciones están en su resumen): no se paga un menú ni un
   nombre de lead por línea. Se lee desde el navegador al desplegar (como «De este vehículo») con los filtros de la página. La insignia «Aprobada» no va en las
   líneas: la aprobada que coincide ya es la cabeza.
+- **El JS de `/cotizaciones` sube a 390 KB.** La tarjeta de la lista lleva la portada en frío (se ve al llegar: `next/image`, el recuadro y la cáscara del visor), el
+  conmutador y «Agrupar» con su action: 386,9 KB sobre 380, dentro de la regla del 5 %. Lo que no se ve al llegar (el despliegue de un grupo, sus líneas y
+  «Comparar») va con `diferido()`.
 - **«Vencida» una sola vez en la tarjeta.** La de la vigencia, al pie; las insignias de arriba son «Aprobada», «Final» y el origen con su color (menos ruido). El
   origen va como insignia y no repetido en «N.º n · origen».
+- **La tarjeta de la lista no repite el vehículo ni dice «Preventa».** Su título es el del vehículo (el automático) o el que se escribió, y un subtítulo con el
+  mismo nombre sería ruido; la clase sólo se marca cuando es «Final». El vehículo («—» si quien mira no lo ve) va en la tabla y en el resumen.
 - **La portada de la lista en miniatura, achicada al responder.** `?ancho=480` de la ruta de la portada, con su propia ETag; el bucket guarda sólo la grande (la
   del visor y la que se comparte): guardar las dos duplicaría la escritura y el refcount por una lectura que el navegador revalida con 304.
 

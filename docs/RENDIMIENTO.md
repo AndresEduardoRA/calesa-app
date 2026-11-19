@@ -595,10 +595,10 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 ## JS en frío (con gzip, lo que el documento nombra)
 
-- Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
+- Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 390 (regla del 5 %: las tarjetas de la lista, con la portada en frío, lo llevaron de 375,5 a 386,9),
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
   `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). `/leads` mide 526,5 KB en 36 chunks y
-  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,5 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 386,9 de 390 (el despliegue de un grupo y «Comparar» van con `diferido()`; con `<MenuDeVistas>` en frío serían 450: va con
   `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 466,3 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
   `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 459,6 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action; los pasos de la hoja y el botón del ⚙ de la cabecera viajan en frío, su panel, los campos por defecto y los enlaces de la ayuda con `diferido()`)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
