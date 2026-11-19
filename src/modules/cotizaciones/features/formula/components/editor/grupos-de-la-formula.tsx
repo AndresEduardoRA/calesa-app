@@ -5,17 +5,18 @@ import { textoDelTope } from '@/shared/lib/conteo'
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
 import type { Formula } from '../../../../entities/formula'
-import {
-  filasQuePuedenSumar,
-  opcionesDeBucket,
-  type CambiosDelGrupo,
-} from '../../../../entities/formula/grupos'
+import { opcionesDeBucket, type CambiosDelGrupo } from '../../../../entities/formula/grupos'
 import type { Diseno } from '../../../../entities/diseno'
 import type { EditorDeLaFormula, RechazoEnElEditor } from '../../hooks/use-editor-de-la-formula'
 import type { GrupoAbierto, MovidasDelGrupo } from '../../hooks/use-grupos-del-editor'
 import { useTonos } from '../../hooks/use-tonos'
-import type { FilaCandidata } from './filas-del-grupo'
 import { GrupoDelEditor } from './grupo-del-editor'
+import {
+  candidatasDe,
+  miembrosPorGrupo,
+  SIN_CANDIDATAS,
+  SIN_MIEMBROS,
+} from './miembros-de-los-grupos'
 
 type Props = {
   trabajo: Formula
@@ -52,33 +53,6 @@ export function GruposDeLaFormula({
       alAplicar={editor.grupos.aplicar}
     />
   )
-}
-
-type Miembro = { id: string; etiqueta: string }
-
-// Las filas de cada grupo, de un solo recorrido de los nodos por fórmula de trabajo.
-function miembrosPorGrupo(trabajo: Formula): Map<string, Miembro[]> {
-  const por = new Map<string, Miembro[]>()
-  for (const n of trabajo.definicion.nodos) {
-    if (n.grupo === undefined) continue
-    const lista = por.get(n.grupo) ?? []
-    lista.push({ id: n.id, etiqueta: n.etiqueta })
-    por.set(n.grupo, lista)
-  }
-  return por
-}
-
-const SIN_MIEMBROS: Miembro[] = []
-const SIN_CANDIDATAS: FilaCandidata[] = []
-
-// Las filas que pueden sumar a un grupo, con la etiqueta del grupo donde están.
-function candidatasDe(trabajo: Formula): FilaCandidata[] {
-  const etiquetas = new Map((trabajo.definicion.grupos ?? []).map((g) => [g.id, g.etiqueta]))
-  return filasQuePuedenSumar(trabajo).map((n) => ({
-    id: n.id,
-    etiqueta: n.etiqueta,
-    grupo: n.grupo === undefined ? null : (etiquetas.get(n.grupo) ?? n.grupo),
-  }))
 }
 
 // La sección «Grupos» del editor de la fórmula (4.21-3c, C1): una tarjeta por grupo, en el orden de `grupos`, hasta `TOPE_DE_LO_CARGADO`. Los tonos del catálogo se

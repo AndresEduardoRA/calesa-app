@@ -66,9 +66,14 @@ const montar = (alVolver = vi.fn()) =>
       formulaId={FORMULA}
       sobre="Sobre la versión 3 publicada."
       avanzado
+      alAbrirAvanzado={vi.fn()}
       alVolver={alVolver}
       recargando={false}
       alRecargar={vi.fn()}
+      alCambiarPendientes={vi.fn()}
+      tarjeta={{ estado: 'sin_tarjeta' }}
+      TarjetaEnVivo={() => null}
+      puedeCambiarTiposDeCambio={false}
     />,
   )
 
@@ -84,7 +89,7 @@ beforeEach(() => {
 })
 afterEach(cleanup)
 
-describe('EditorDeLaFormula: la lectura (T4)', () => {
+describe('El Modo avanzado: la lectura (T4)', () => {
   it('lee la versión pedida; mientras, el esqueleto', async () => {
     montar()
     expect(screen.getByRole('heading', { name: 'Editar la fórmula de Japón' })).toBeTruthy()
@@ -113,7 +118,7 @@ describe('EditorDeLaFormula: la lectura (T4)', () => {
         'Esa versión de la fórmula ya no se puede abrir: se descartó o ya no configuras Japón.',
       ),
     ).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Volver a la fórmula' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Volver a la planilla' }))
     expect(alVolver).toHaveBeenCalledTimes(1)
   })
 })

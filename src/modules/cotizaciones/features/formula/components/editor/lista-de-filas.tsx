@@ -7,13 +7,14 @@ import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
 import { EstadoSinResultados } from '@/shared/ui/estados'
 import type { Diseno } from '../../../../entities/diseno'
 import { cifraDeLaFila, type CifraDeLaFila } from '../../../../entities/formula/vista-previa'
-import type { EditorDeLaFormula, RechazoEnElEditor } from '../../hooks/use-editor-de-la-formula'
+import type { EditorDeLaFormula } from '../../hooks/use-editor-de-la-formula'
 import { filasVisibles } from '../../hooks/use-editor-de-la-formula.soporte'
 import { BuscarFila } from './buscar-fila'
 import { FilaDelEditor } from './fila-del-editor'
 import { GruposDeLaFormula } from './grupos-de-la-formula'
 import { GuardarBorrador } from './guardar-borrador'
 import { propsDeLaFila } from './props-de-la-fila'
+import { RechazoDeArriba } from './rechazo-de-arriba'
 import { VistaPreviaDeLaFormula } from './vista-previa-de-la-formula'
 
 type Props = {
@@ -28,19 +29,6 @@ type Props = {
 }
 
 const SIN_CIFRA: CifraDeLaFila = { tipo: 'nada' }
-
-// Un rechazo que no nombra una fila ni un grupo va arriba de la lista.
-function RechazoDeArriba({ rechazo }: { rechazo: RechazoEnElEditor | null }) {
-  if (rechazo === null || rechazo.filaId !== null || rechazo.grupoId !== null) return null
-  return (
-    <p
-      role="alert"
-      className="rounded-(--radius-md) bg-(--color-aviso-soft) p-2 text-(length:--text-sm) text-(--color-aviso-ink)"
-    >
-      {rechazo.mensaje}
-    </p>
-  )
-}
 
 // Las filas de la versión leída, en su orden (C4–C8): hasta `TOPE_DE_LO_CARGADO`, con «Buscar fila» como camino a las demás. Un rechazo de `validarFormula()` que no
 // nombra ninguna fila ni grupo va arriba de la lista. «Guardar el borrador» (4.21-3b-1) va arriba de todo; la sección «Grupos» (4.21-3c), tras la vista previa.

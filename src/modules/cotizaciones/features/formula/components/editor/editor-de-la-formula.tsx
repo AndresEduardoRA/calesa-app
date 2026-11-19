@@ -12,7 +12,7 @@ type Props = {
   children: ReactNode
 }
 
-// El marco del Modo avanzado (el editor de la fórmula en texto, `?panel=editar-formula`): su título, sobre qué versión se edita y «Volver a la fórmula». Lo que
+// El marco del Modo avanzado (el editor de la fórmula en texto, `?panel=editar-formula`): su título, sobre qué versión se edita y «Volver a la planilla». Lo que
 // va adentro lo pone la sesión (`SesionDeLaFormula`), que lee la versión y tiene la fórmula de trabajo.
 export function EditorDeLaFormula({ nombreDelOrigen, sobre, alVolver, children }: Props) {
   return (
@@ -25,7 +25,7 @@ export function EditorDeLaFormula({ nombreDelOrigen, sobre, alVolver, children }
           <p className="text-(length:--text-sm) text-(--color-ink-soft)">{sobre}</p>
         </div>
         <Button type="button" variant="outline" className="min-h-11 md:min-h-9" onClick={alVolver}>
-          Volver a la fórmula
+          Volver a la planilla
         </Button>
       </div>
       {children}
