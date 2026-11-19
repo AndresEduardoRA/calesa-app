@@ -203,6 +203,8 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda, la compone `src/app`): «Cotización aprobada» con `leerAprobadaDelVehiculo()` (`index.ts`),
   la tarjeta de `pantallas/aprobada-del-vehiculo.ts` (`AprobadaDelVehiculo`, `EsqueletoDeLaAprobada`) y, como un área no importa otra, la portada diferida y
   `BotonDeCompartirDeLaFila` de `pantallas/tarjeta-aprobada-del-vehiculo.ts` en sus ranuras; el diálogo, `DialogoDeCompartirDeLaFila` de `pantallas/tarjeta-compartir.ts`.
+  A la derecha, «Cotizaciones de este vehículo»: `DeEsteVehiculo` de `pantallas/aprobada-de-este-vehiculo.ts` (la isla al acercarse, sin título propio: lo dibuja el
+  servidor con «Cotizar»), con las casillas, `vacio` («Sin cotizaciones que puedas ver.»; sin `vacio`, sin filas no dibuja nada) y `alCambiar`, que refresca la página.
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
 - **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`,
