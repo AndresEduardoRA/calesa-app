@@ -176,17 +176,18 @@ test('E2E desde el detalle: la portada, dos fotos marcadas y el texto de WhatsAp
   expect((await descarga).suggestedFilename()).toBe(`cotizacion-${numero}.pdf`)
 })
 
-test('E2E desde el «⋯» de la lista se abre con su id; un id ajeno dice que no hay acceso', async ({
+test('E2E desde la tarjeta de la lista se abre con su id; un id ajeno dice que no hay acceso', async ({
   page,
 }) => {
   const numero = numeroDe(guardada)
   await entrar(page, asesora.email, { fresco: true })
+  // La lista nace en tarjetas: «Compartir» es su acción principal (el «⋯» de la tabla lo trae primero: `cotizaciones-tarjetas-y-grupos.spec.ts`).
   await page.goto(`/cotizaciones?q=${numero}`)
   await page
-    .getByRole('button', { name: `Más acciones de N.º ${numero}` })
+    .getByRole('button', { name: 'Compartir', exact: true })
+    .filter({ visible: true })
     .first()
     .click()
-  await page.getByRole('menuitem', { name: 'Compartir cotización…' }).click()
   await expect(page).toHaveURL(
     new RegExp(`[?&]panel=compartir&para=${guardada}|[?&]para=${guardada}.*panel=compartir`),
   )
@@ -214,6 +215,12 @@ test('E2E con el Modo Live no se ofrece: ni en el detalle ni en el «⋯», y la
   await expect(panel(page).getByText('Con el Modo Live no se comparte.')).toBeVisible()
 
   await page.goto(`/cotizaciones?q=${numero}`)
+  // Ni la acción principal de la tarjeta ni el «⋯» (en la tabla, tampoco).
+  await expect(
+    page.getByRole('button', { name: `Más acciones de N.º ${numero}` }).first(),
+  ).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Compartir', exact: true })).toHaveCount(0)
+  await page.goto(`/cotizaciones?q=${numero}&vista=tabla`)
   await page
     .getByRole('button', { name: `Más acciones de N.º ${numero}` })
     .first()

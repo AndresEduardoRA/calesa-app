@@ -32,7 +32,14 @@ test.afterAll(async () => {
 
 const filas = (page: Page): Locator =>
   page.locator('tbody tr, li article').filter({ visible: true })
-const enElOrigen = (): string => `/cotizaciones?origen=${t.origen.id}`
+// La lista de siempre (tabla, sin agrupar: T319): estas pruebas miran cada cotización como una fila. Las tarjetas y los grupos, en `cotizaciones-tarjetas-y-grupos.spec.ts`.
+const SIN_AGRUPAR = 'vista=tabla&agrupar=no'
+const enElOrigen = (): string => `/cotizaciones?origen=${t.origen.id}&${SIN_AGRUPAR}`
+// La más nueva sobre el vehículo «uno»: la tarjeta de la lista no dice el vehículo, así que se la elige por su número.
+const numeroDelUno = (): string =>
+  sql(
+    `select numero from public.cotizaciones where vehiculo_id = ${literal(t.vehiculos.uno)}::uuid order by creado_en desc, id desc limit 1`,
+  )
 const numeroDeLaVieja = (): string =>
   sql(
     `select numero from public.cotizaciones where origen_id = ${literal(t.origen.id)}::uuid and creado_en < now() - interval '5 days'`,
@@ -67,13 +74,19 @@ test('E1 la dueña ve Cotizaciones en el menú y cada fila con su cliente, vehí
 
   const vieja = filas(page).filter({ hasText: `N.º ${numeroDeLaVieja()}` })
   await expect(vieja).toContainText('Vencida')
-  // Sin vehículo, «—»; el cliente es el de la cotización.
+  // El cliente es el de la cotización. La tabla dice además el vehículo («—» sin él) y la clase; la tarjeta de la lista (el celular) no repite el vehículo (su
+  // título es el suyo o el que se escribió) y sólo marca «Final» (T319).
   await expect(vieja).toContainText(t.nombreDelLeadDeLaDuena)
-  await expect(vieja).toContainText('—')
+  if (!esMovil(page)) {
+    await expect(vieja).toContainText('—')
+  }
 
-  const conVehiculo = filas(page).filter({ hasText: TITULO_UNO }).first()
+  const conVehiculo = filas(page).filter({ hasText: `N.º ${numeroDelUno()}` })
   await expect(conVehiculo).toContainText(t.nombreDelLeadDeLaDuena)
-  await expect(conVehiculo).toContainText('Preventa')
+  if (!esMovil(page)) {
+    await expect(conVehiculo).toContainText(TITULO_UNO)
+    await expect(conVehiculo).toContainText('Preventa')
+  }
   await expect(conVehiculo).toContainText(t.origen.nombre)
   await expect(conVehiculo).toContainText('Vale hasta el')
   await expect(conVehiculo).toContainText('Gala Guarda')
@@ -133,7 +146,7 @@ test('E3 de a 10, Siguiente y Anterior caminan por cursor y un cursor sin filas 
     `select to_char(creado_en at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS.US"+00:00"') || '|' || id from public.cotizaciones order by creado_en asc, id asc limit 1`,
   ).split('|')
   const cursor = Buffer.from(`s|${instante ?? ''}|${id ?? ''}`).toString('base64url')
-  await page.goto(`/cotizaciones?por=10&cursor=${cursor}`)
+  await page.goto(`/cotizaciones?por=10&cursor=${cursor}&${SIN_AGRUPAR}`)
   await expect(page.getByText('No hay más en esta página')).toBeVisible()
 })
 
@@ -215,7 +228,7 @@ test('E7 ?vehiculo= muestra sólo las del vehículo con su aviso; «Ver todas» 
 
   // Un vehículo sin cotizaciones, sin otros filtros: lo dice y ofrece «Ver todas».
   const sinCotizar = crearVehiculoEn(t.origen.id, 'Listado sin cotizaciones')
-  await page.goto(`/cotizaciones?vehiculo=${sinCotizar}`)
+  await page.goto(`/cotizaciones?vehiculo=${sinCotizar}&${SIN_AGRUPAR}`)
   await expect(page.getByText('Sin cotizaciones de este vehículo que puedas ver.')).toBeVisible()
   // El aviso de arriba y el vacío traen cada uno su «Ver todas»: el del vacío es el último.
   await page.getByRole('link', { name: 'Ver todas' }).last().click()
@@ -250,7 +263,7 @@ test('E8 ?lead= muestra sólo las del lead con su aviso; conserva Clase, se comb
     page.getByText(`Cotizaciones de ${t.nombreDelLeadDeAna} sobre ${TITULO_UNO}.`),
   ).toBeVisible()
   // (Sin `?origen=`: un filtro del esquema haría de esto «Nada coincide».)
-  await page.goto(`/cotizaciones?lead=${t.leads.ana}&vehiculo=${t.vehiculos.dos}`)
+  await page.goto(`/cotizaciones?lead=${t.leads.ana}&vehiculo=${t.vehiculos.dos}&${SIN_AGRUPAR}`)
   await expect(
     page.getByText('Sin cotizaciones de este cliente sobre este vehículo que puedas ver.'),
   ).toBeVisible()
@@ -261,7 +274,7 @@ test('E8 ?lead= muestra sólo las del lead con su aviso; conserva Clase, se comb
     telefono: telefonoAlAzar(),
     deQuien: t.duena,
   })
-  await page.goto(`/cotizaciones?lead=${sinCotizar}`)
+  await page.goto(`/cotizaciones?lead=${sinCotizar}&${SIN_AGRUPAR}`)
   await expect(page.getByText('Sin cotizaciones de este cliente que puedas ver.')).toBeVisible()
   await page.getByRole('link', { name: 'Ver todas' }).last().click()
   await expect(page).not.toHaveURL(/lead=/)

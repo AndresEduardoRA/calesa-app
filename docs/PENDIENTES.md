@@ -97,6 +97,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Un `22023` de `_formula_rechazar` cuyo `hint` es un nodo llamado `valor` se pinta bajo el campo «Valor nuevo» del ⚙.
 - **[—]** Al descartar o publicar la fórmula, un error que no es PT409 ni falta de red muestra el mensaje de la base (guardar ya usa texto propio).
 - **[—]** Tras pasar a stock, el estado derivado de la cabecera del proyecto de repuestos (pendientes) sólo se actualiza al volver a entrar.
+- **[—]** En el celular, `menu-de-la-fila.spec.ts` › «el «⋯» de un vehículo… tarjeta compacta» cae: el «⋯» queda a 18 px del borde de arriba de la tarjeta (tope 8) desde
+  que la tarjeta del inventario es la de V1; la prueba mide contra la tarjeta y no contra la foto, como la de escritorio.
 
 ## Deuda técnica
 

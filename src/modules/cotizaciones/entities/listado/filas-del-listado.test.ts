@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { FilaDelListado } from './listado'
-import { filasConNombres, idsDe } from './filas-del-listado'
+import { entradasSinAgrupar, filasConNombres, idsDe } from './filas-del-listado'
 
 const L1 = '0b7a2f0e-1c2d-4e5f-8a9b-0c1d2e3f4a5b'
 const V1 = '1c8b3a1f-2d3e-4f60-9bac-1d2e3f4a5b6c'
@@ -77,5 +77,32 @@ describe('filasConNombres', () => {
 
   it('un autor que no llegó se llama «Sin nombre»', () => {
     expect(filasConNombres([fila('a', { creadoPor: P2 })], nombres)[0]?.autor).toBe('Sin nombre')
+  })
+})
+
+describe('el modo y las entradas sin agrupar', () => {
+  it('el modo llega si se leyó; si no, nulo', () => {
+    const base = {
+      clientes: new Map(),
+      vehiculos: new Map(),
+      autores: new Map(),
+      aprobadas: new Set<string>(),
+    }
+    expect(
+      filasConNombres([fila('a'), fila('b')], { ...base, modos: new Map([['a', 'Paralelo']]) }).map(
+        (f) => f.modo,
+      ),
+    ).toEqual(['Paralelo', null])
+    expect(filasConNombres([fila('a')], base)[0]?.modo).toBeNull()
+  })
+
+  it('sin agrupar, cada cotización es una entrada sola ordenada por sí misma', () => {
+    const [a] = entradasSinAgrupar([{ id: 'a', creadoEn: '2026-11-19T10:00:00Z' }])
+    expect(a).toEqual({
+      tipo: 'suelta',
+      ordenEn: '2026-11-19T10:00:00Z',
+      ordenId: 'a',
+      cotizacion: { id: 'a', creadoEn: '2026-11-19T10:00:00Z' },
+    })
   })
 })

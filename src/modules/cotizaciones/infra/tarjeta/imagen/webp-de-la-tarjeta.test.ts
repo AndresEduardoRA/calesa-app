@@ -4,7 +4,11 @@ import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('server-only', () => ({}))
 
-import { ANCHO_MAXIMO_DE_LA_PORTADA, webpDeLaTarjeta } from './webp-de-la-tarjeta'
+import {
+  ANCHO_MAXIMO_DE_LA_PORTADA,
+  miniaturaDeLaPortada,
+  webpDeLaTarjeta,
+} from './webp-de-la-tarjeta'
 
 const png = (ancho: number, alto: number) =>
   sharp({ create: { width: ancho, height: alto, channels: 3, background: '#e5e7eb' } })
@@ -27,6 +31,21 @@ describe('webpDeLaTarjeta', () => {
     expect(await sharp(webp).metadata()).toMatchObject({
       width: ANCHO_MAXIMO_DE_LA_PORTADA,
       height: 800,
+    })
+  })
+})
+
+describe('miniaturaDeLaPortada', () => {
+  it('achica la grande a 480 px con su proporción, y no agranda una más chica', async () => {
+    const grande = await webpDeLaTarjeta(await png(1600, 853))
+    expect(await sharp(await miniaturaDeLaPortada(grande, 480)).metadata()).toMatchObject({
+      format: 'webp',
+      width: 480,
+      height: 256,
+    })
+    const chica = await webpDeLaTarjeta(await png(300, 160))
+    expect(await sharp(await miniaturaDeLaPortada(chica, 480)).metadata()).toMatchObject({
+      width: 300,
     })
   })
 })

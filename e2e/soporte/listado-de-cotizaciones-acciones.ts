@@ -73,7 +73,9 @@ export const filas = (page: Page): Locator =>
   page.locator('tbody tr, li article').filter({ visible: true })
 export const buscador = (page: Page): Locator =>
   page.getByRole('searchbox', { name: 'Buscar por número, título, cliente, vehículo o autor' })
-export const deLaPrueba = (): string => `/cotizaciones?origen=${origenDeLaPrueba}`
+// La lista de siempre (tabla, sin agrupar: T319): la búsqueda y el «⋯» se prueban sobre cada cotización como una fila.
+export const deLaPrueba = (): string =>
+  `/cotizaciones?origen=${origenDeLaPrueba}&vista=tabla&agrupar=no`
 
 export async function irA(page: Page, correo: string, ruta: string): Promise<void> {
   await entrar(page, correo, { fresco: true })
@@ -106,11 +108,12 @@ export async function cerrarElMenu(page: Page): Promise<void> {
   await expect(page.getByRole('menu')).toBeHidden()
 }
 
-// Lo que el «⋯» ofrece, en el orden en que lo dibuja.
+// Lo que el «⋯» ofrece, en el orden en que lo dibuja, sin «Compartir cotización…»: va primero en el de la tabla y no en el de la tarjeta de la lista, donde es su
+// acción principal (lo prueba `cotizaciones-tarjetas-y-grupos.spec.ts`); así lo demás se compara igual en las dos vistas.
 export const lineasDelMenu = async (menu: Locator): Promise<string[]> =>
-  (await menu.getByRole('menuitem').allInnerTexts()).concat(
-    await menu.getByRole('menuitemcheckbox').allInnerTexts(),
-  )
+  (await menu.getByRole('menuitem').allInnerTexts())
+    .concat(await menu.getByRole('menuitemcheckbox').allInnerTexts())
+    .filter((linea) => linea !== 'Compartir cotización…')
 
 export const marcasEnLaBase = (id: string): string =>
   sql(`

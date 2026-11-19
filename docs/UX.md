@@ -335,8 +335,25 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     `<Suspense>`); si falla la lectura de las marcas, el error de la pantalla con «Reintentar»; si falla una columna, «No pudimos cargar la cotización #N.»
     con «Reintentar» en su cabecera y las demás siguen. En el celular y al 200 %, la tabla se desplaza de costado dentro de su caja con la pista de
     desborde (cada columna de 10 rem o más; la de etiquetas, a lo sumo el 35 %) y la página no desborda; el pie queda bajo su columna.
-- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (la fila, la tarjeta y el resumen nombran la cotización por su
-  **título** —el suyo o, sin él, el de su vehículo— bajo «N.º n», en dos líneas como mucho y entero en `title`; la tarjeta no repite «Vehículo:» si el título es su nombre) (arriba, la
+- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): **«Tabla | Tarjetas»** en «Vista y opciones» (sólo en escritorio; en el celular siempre tarjetas; por defecto
+  **tarjetas**; `?vista=` manda y elegir guarda `cotizaciones.vista`) y **«Agrupar por vehículo»** (un interruptor, **encendido por defecto**; `?agrupar=si|no` manda y
+  cambiarlo relee la lista desde la primera página y guarda `cotizaciones.agrupar`; las vistas guardadas recuerdan también la vista y la agrupación). **Agrupada:**
+  una tarjeta o fila por vehículo (la **cabeza del grupo**: su aprobada si quien mira la ve y coincide; si no, la más reciente que coincide) y las sin vehículo
+  sueltas, intercaladas por fecha; los grupos se ordenan por su cotización más reciente; la búsqueda y los filtros valen sobre las cotizaciones (un grupo existe si
+  alguna coincide y sólo cuenta las que coinciden); con `?vehiculo=` no se agrupa y el aviso de arriba dice «…, sin agrupar.»; con `?q=` se agrupa cada página.
+  «N cotizaciones de este vehículo» (en la tarjeta, en su fila reservada; en la tabla, bajo el vehículo; tope «100+»; con una sola no está) despliega en el lugar
+  (`aria-expanded`) la de la tarjeta («En la tarjeta») y las demás en **líneas compactas** (casilla, «N.º n» con su título, «Final», el total, autor · «hace…» y la
+  vigencia; sin cliente ni «⋯»; el clic abre su resumen), de a 10 con «Ver más» hasta 100 y ahí «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`); 2 o 3
+  casillas habilitan «Comparar» («Elige 2 o 3 para comparar.»; con 3, «Puedes comparar hasta 3.»). Estados del despliegue: tres líneas de esqueleto, «No
+  pudimos cargar las cotizaciones de este vehículo.» o «No hay conexión.» con «Reintentar» (la lista sigue); si su cabeza ya no vale (papelera, invalidar, una
+  más nueva) la página se relee. Si la base recorre su tope sin completar la página: «Revisamos muchas cotizaciones sin completar la página.» con «Seguir
+  buscando» (también en lugar del vacío). **La tarjeta de la lista:** la portada de la cotización arriba (miniatura de 480 px, 15:8, recortada desde arriba a la izquierda,
+  perezosa; su clic abre el visor en `?visor=portada-de-la-lista-<id>`, así no se cruza con el del resumen abierto) con el «⋯» encima (sin «Compartir»), el título (dos líneas, entero en `title`), «N.º n» con «Aprobada», «Final» y el origen
+  con su color en una línea, el total con su modo, «Cliente:» enlazado a su ficha (con `leads.ver`; si no, su nombre o «—»), autor · «hace…», la vigencia, la fila
+  del conteo y **«Compartir»** como acción principal a todo el ancho (no en Modo Live). Todas miden lo mismo (filas de alto fijo, sin `auto-rows-fr`: el despliegue va
+  a todo el ancho). **La tabla:** «Cotización» (sólo «N.º n»), **«Título»**, cliente, vehículo, origen, clase, total, vigencia, creada y el «⋯» con «Compartir
+  cotización…» primero. Y el resumen `?cotizacion=` (la fila, la tarjeta y el resumen nombran la cotización por su
+  **título** —el suyo o, sin él, el de su vehículo—, en dos líneas como mucho y entero en `title`) (arriba, la
   **portada de la cotización** a todo el ancho del resumen, en un marco 15:8 con la imagen entera: mientras se arma o carga, un recuadro del mismo marco con el total y
   «Preparando la vista previa…»; si falla o no hay red, «No se pudo cargar la vista previa.» con «Reintentar»; el marco crece con el texto al 200 %; el clic la abre en el
   visor de fotos (`?visor=portada-<id>`, que cerrar el resumen borra); en Modo Live, borrosa con «Oculto en Modo Live» encima y sin visor; luego lo de la fila, «Abrir cotización», «De este vehículo» —ver
@@ -347,9 +364,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
   ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, título de la cotización, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
-  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
-  de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: primero y sola, «Compartir cotización…» (toda persona que ve la fila; con el Modo
-  Live no está; abre «Compartir la cotización» en `?panel=compartir&para=<id>`), «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
+  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda, los filtros, la vista y la
+  agrupación) y, a la derecha de cada fila y sobre la portada de cada tarjeta, el **«⋯»** con la lista única de acciones según el rol: primero y sola, «Compartir
+  cotización…» (toda persona que ve la fila; con el Modo Live no está; en la tarjeta tampoco, porque es su acción principal; abre «Compartir la cotización» en
+  `?panel=compartir&para=<id>`), «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
   si es inválida), «Marcar final…» (`cotizaciones.final.gestionar`, en una preventa; apagada sin vehículo o cliente), casilla «Favorita», «Reportar…»,
   moderar («Invalidar…», «Descartar los reportes…», «Reactivar…», con `cotizaciones.moderar`) y, al final y separada, «Enviar a la papelera» (sin preguntar,
   con «Deshacer»). Son las mismas actions de la guardada; «Marcar final…», «Reportar…» y moderar abren su diálogo en `?panel=…&para=<id>`; filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin

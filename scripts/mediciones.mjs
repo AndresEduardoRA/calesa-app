@@ -182,6 +182,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     'mediana de 5 de 7 corridas',
   ],
   [
+    'supabase/tests/medir-cotizaciones-listado-por-vehiculo.sql',
+    'La lista /cotizaciones agrupada por vehículo (cotizaciones_listado_por_vehiculo()) con 50.000 y con 250.000 filas, como authenticated y con el plan genérico: la página 1, una profunda por cursor y una hacia atrás de la dueña (por origen, finales, «mías» y un lead), de Ana («propios» con su cartera y un vehículo de 5.005), de la «chica» y de Teo, con la página de 100 grupos y su conteo acotado; los índices de la ruta del lote, la sonda y el conteo por cotizaciones_vehiculo_creado_idx, la cabeza por cotizaciones_pkey y cotizaciones_aprobadas_pkey, sin recorrer la tabla ni crecer con N',
+    'mediana de 5 de 7 corridas',
+  ],
+  [
     'supabase/tests/medir-cotizaciones-de-este-vehiculo.sql',
     '«De este vehículo» (cotizaciones_de_este_vehiculo) de un vehículo con 5.000 cotizaciones entre 50.000 y 250.000, como authenticated y con el plan genérico: la primera página con la aprobada fijada y una profunda por cursor, de la dueña (por cotizaciones_vehiculo_creado_idx y cotizaciones_aprobadas_pkey, ms y buffers del EXPLAIN) y de Ana; las llamadas a _nombre_del_modo por página',
     'mediana de 5 de 7 corridas',

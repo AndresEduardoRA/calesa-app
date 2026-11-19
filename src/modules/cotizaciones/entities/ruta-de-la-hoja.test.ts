@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   rutaDeLaCotizacion,
   rutaDeLaHoja,
+  anchoDeLaPortada,
   rutaDeLaPortada,
   rutaDelListado,
   rutaDelPdf,
@@ -52,5 +53,20 @@ describe('rutaDelListado', () => {
     expect(rutaDelListado({ lead, vehiculo })).toBe(
       `/cotizaciones?lead=${lead}&vehiculo=${vehiculo}`,
     )
+  })
+})
+
+describe('la miniatura de la portada', () => {
+  it('con ancho, la ruta pide la miniatura; sin él, la grande', () => {
+    const id = '00000000-0000-4000-8000-000000000001'
+    expect(rutaDeLaPortada(id, { ancho: 480 })).toBe(`/cotizaciones/${id}/portada?ancho=480`)
+    expect(rutaDeLaPortada(id, {})).toBe(`/cotizaciones/${id}/portada`)
+  })
+
+  it('`?ancho=` sólo entiende los anchos de la miniatura', () => {
+    expect(anchoDeLaPortada('480')).toBe(480)
+    expect(anchoDeLaPortada('481')).toBeNull()
+    expect(anchoDeLaPortada('1600')).toBeNull()
+    expect(anchoDeLaPortada(null)).toBeNull()
   })
 })

@@ -1,19 +1,16 @@
 import 'server-only'
 import { z } from 'zod'
 import { MAXIMO_DE_PAGINA_DE_COTIZACIONES } from '../../entities/listado/listado'
-import type {
-  FilaDelListado,
-  PaginaDelListado,
-  PedidoDelListado,
-} from '../../entities/listado/listado'
+import type { PaginaDelListado, PedidoDelListado } from '../../entities/listado/listado'
 import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errores'
 import { armarPagina } from '@/shared/lib/paginacion'
 import { createClient } from '@/shared/lib/supabase/server'
+import { esquemaDeFila, filaDesde } from './fila-del-listado'
 
 // Una página del listado `/cotizaciones` (4.16-1): UNA llamada a `cotizaciones_listado()`, que corre como quien mira (la RLS decide) y lee cada ruta por su
 // índice (`cotizaciones_listado_idx`, `_finales_idx`, `_origen_creado_idx`, `_origen_finales_idx`, `_creador_idx`, `_lead_creado_idx` y `_vehiculo_creado_idx`; con 250.000 en
 // `supabase/tests/medir-cotizaciones-listado.sql`). Pide `tamano + 1` (la base suma la de más) y `armarPagina` dice si hay otra hacia cada lado.
-const esquemaDelPedido = z.object({
+export const esquemaDelPedido = z.object({
   origenId: z.guid().optional(),
   clase: z.enum(['preventa', 'final']).optional(),
   mias: z.boolean().optional(),
@@ -30,44 +27,8 @@ const esquemaDelPedido = z.object({
   tamano: z.int().min(1).max(MAXIMO_DE_PAGINA_DE_COTIZACIONES),
 })
 
-const esquemaDeFila = z.object({
-  id: z.guid(),
-  numero: z.number(),
-  origen_id: z.guid(),
-  lead_id: z.guid().nullable(),
-  vehiculo_id: z.guid().nullable(),
-  creado_por: z.guid(),
-  clase: z.enum(['preventa', 'final']),
-  estado: z.enum(['activa', 'reportada', 'invalida']),
-  titulo: z.string().nullable(),
-  total_base: z.number(),
-  moneda_mostrar: z.string().nullable(),
-  creado_en: z.string(),
-  vence_el: z.string(),
-  vencida: z.boolean(),
-})
-
 // La búsqueda suma a cada fila si alguna fuente se pasó del tope (la misma en todas).
 const esquemaDeFilaBuscada = esquemaDeFila.extend({ acotada: z.boolean().optional() })
-
-function filaDesde(f: z.infer<typeof esquemaDeFila>): FilaDelListado {
-  return {
-    id: f.id,
-    numero: f.numero,
-    origenId: f.origen_id,
-    leadId: f.lead_id,
-    vehiculoId: f.vehiculo_id,
-    creadoPor: f.creado_por,
-    clase: f.clase,
-    estado: f.estado,
-    titulo: f.titulo,
-    totalBase: f.total_base,
-    monedaMostrar: f.moneda_mostrar,
-    creadoEn: f.creado_en,
-    venceEl: f.vence_el,
-    vencida: f.vencida,
-  }
-}
 
 // Los filtros y el cursor de la RPC: un filtro vacío no se manda (la base lo toma nulo); el instante del cursor va tal como lo
 // devolvió la base (por `Date` perdería los microsegundos).

@@ -3,16 +3,19 @@
 type DeQuien = {
   lead?: { nombre: string | null } | undefined
   vehiculo?: { titulo: string | null } | undefined
+  // «Agrupar por vehículo» encendido: con `?vehiculo=` la lista no agrupa (son las de uno solo) y el aviso lo dice.
+  agrupar?: boolean | undefined
 }
 
-export function textoDelAviso({ lead, vehiculo }: DeQuien): string | null {
+export function textoDelAviso({ lead, vehiculo, agrupar = false }: DeQuien): string | null {
   const cliente = lead === undefined ? null : (lead.nombre ?? 'un cliente')
   const coche = vehiculo === undefined ? null : (vehiculo.titulo ?? 'un vehículo')
+  const cierre = coche !== null && agrupar ? ', sin agrupar.' : '.'
   if (cliente !== null && coche !== null) {
-    return `Cotizaciones de ${cliente} sobre ${coche}.`
+    return `Cotizaciones de ${cliente} sobre ${coche}${cierre}`
   }
   const quien = cliente ?? coche
-  return quien === null ? null : `Cotizaciones de ${quien}.`
+  return quien === null ? null : `Cotizaciones de ${quien}${cierre}`
 }
 
 export function textoDelVacio({

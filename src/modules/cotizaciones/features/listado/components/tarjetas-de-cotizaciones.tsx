@@ -1,99 +1,91 @@
 'use client'
 
-import { fechaRelativa } from '@/shared/lib/fechas'
-import { Badge } from '@/shared/ui/badge'
-import { AbrirResumen, SufijoDeVisto, TarjetaDeLista } from '@/shared/ui/lista'
-import { Monto } from '@/shared/ui/monto'
-import { useRegional } from '@/shared/ui/regional'
-import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
-import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
+import type { ReactNode } from 'react'
+import { cotizacionDeLaEntrada, textoDelConteo } from '../../../entities/listado/grupos-del-listado'
+import { BotonDelConteo } from './grupo'
+import { TarjetaEnLaLista } from './tarjeta-en-la-lista'
 import {
-  nombreDelOrigen,
-  SIN_NOMBRE,
-  type FilaDeCotizacion,
+  origenDe,
+  type CompartirDe,
+  type EntradaDeLaLista,
+  type HuecosDeLaLista,
   type MenuDeFila,
   type OrigenDelListado,
 } from './tipos'
-import { Vigencia } from './vigencia'
 
 type Props = {
-  cotizaciones: readonly FilaDeCotizacion[]
+  entradas: readonly EntradaDeLaLista[]
   origenes: readonly OrigenDelListado[]
   alAbrir: (id: string) => void
   // La cotización abierta en el resumen, para marcarla.
   abierta: string | null
-  // El «⋯» de cada tarjeta; sin él no hay botón.
   menuDeFila?: MenuDeFila | undefined
+  compartirDe?: CompartirDe | undefined
+  huecos?: HuecosDeLaLista | undefined
+  rutaDeClientes: string | null
+  // Qué grupos están desplegados (por la cotización que los ordena) y cómo se despliega uno.
+  desplegados: ReadonlySet<string>
+  alternar: (ordenId: string) => void
+  despliegue: (entrada: Extract<EntradaDeLaLista, { tipo: 'grupo' }>) => ReactNode
+  idDelDespliegue: (ordenId: string) => string
 }
 
-// El título de la cotización (`tituloDeLaCotizacion()`) bajo «N.º n», en dos líneas como mucho y entero en `title`; el de respaldo es el número, que ya está.
-function TituloDeLaTarjeta({ cotizacion }: { cotizacion: FilaDeCotizacion }) {
-  const titulo = tituloDeLaCotizacion(cotizacion)
-  return titulo === null || titulo.fuente === 'numero' ? null : (
-    <p
-      data-titulo-de-la-cotizacion=""
-      title={titulo.texto}
-      className="line-clamp-2 text-(length:--text-sm) break-words text-(--color-ink)"
-    >
-      {titulo.texto}
-    </p>
-  )
-}
-
-// Las cotizaciones de la página en el celular: una tarjeta por cotización, con lo mismo que la fila de la tabla. Un toque en la tarjeta abre el resumen; «N.º n» arriba es su botón (`<AbrirResumen>`) y el «⋯» de la derecha, sus acciones (T15).
+// La lista en tarjetas (en el celular siempre; en escritorio, por defecto o si la persona las eligió): una por grupo (con los datos de su cabeza) o por
+// cotización. Una grilla de columnas de 17 rem que no ensancha la página (`min(100%, 17rem)`), sin `auto-rows-fr`: el despliegue de un grupo va justo después de su
+// tarjeta, a todo el ancho (`col-span-full`), y estiraría todas las filas; las tarjetas miden lo mismo por sus filas de alto fijo (`TarjetaEnLaLista`).
 export function TarjetasDeCotizaciones({
-  cotizaciones,
+  entradas,
   origenes,
   alAbrir,
   abierta,
   menuDeFila,
+  compartirDe,
+  huecos,
+  rutaDeClientes,
+  desplegados,
+  alternar,
+  despliegue,
+  idDelDespliegue,
 }: Props) {
-  const { zonaHoraria } = useRegional()
   return (
-    <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">
-      {cotizaciones.map((cotizacion) => (
-        <TarjetaDeLista
-          key={cotizacion.id}
-          idDeVisto={cotizacion.id}
-          abierta={abierta === cotizacion.id}
-          acciones={menuDeFila?.(cotizacion)}
-          alAbrir={() => {
-            alAbrir(cotizacion.id)
-          }}
-        >
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <AbrirResumen
-              nombre={`N.º ${String(cotizacion.numero)}`}
-              className="font-medium text-(--color-ink) tabular-nums"
-            >
-              N.º {cotizacion.numero}
-            </AbrirResumen>
-            {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
-            <SufijoDeVisto id={cotizacion.id} />
-            <Badge variant="secondary">{ETIQUETA_DE_CLASE[cotizacion.clase]}</Badge>
-            {cotizacion.aprobada ? <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge> : null}
-            <span className="ml-auto font-medium tabular-nums">
-              <Monto valor={cotizacion.totalBase} />
-            </span>
-          </div>
-          <TituloDeLaTarjeta cotizacion={cotizacion} />
-          <p className="flex flex-wrap gap-x-3 gap-y-1 text-(length:--text-sm) [overflow-wrap:anywhere] text-(--color-ink-soft)">
-            <span>Cliente: {cotizacion.cliente ?? SIN_NOMBRE}</span>
-            {/* El vehículo no se repite si el título es su nombre. */}
-            {cotizacion.vehiculo !== null &&
-            cotizacion.vehiculo === tituloDeLaCotizacion(cotizacion)?.texto ? null : (
-              <span>Vehículo: {cotizacion.vehiculo ?? SIN_NOMBRE}</span>
-            )}
-            <span>{nombreDelOrigen(origenes, cotizacion.origenId)}</span>
-          </p>
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <Vigencia venceEl={cotizacion.venceEl} vencida={cotizacion.vencida} />
-            <span className="text-(length:--text-xs) text-(--color-ink-soft)">
-              {fechaRelativa(cotizacion.creadoEn, { zona: zonaHoraria })} · {cotizacion.autor}
-            </span>
-          </div>
-        </TarjetaDeLista>
-      ))}
+    <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-3">
+      {entradas.map((entrada) => {
+        const cotizacion = cotizacionDeLaEntrada(entrada)
+        const texto = entrada.tipo === 'grupo' ? textoDelConteo(entrada.conteo) : null
+        const abiertoElGrupo = entrada.tipo === 'grupo' && desplegados.has(entrada.ordenId)
+        return [
+          <TarjetaEnLaLista
+            key={entrada.ordenId}
+            cotizacion={cotizacion}
+            origen={origenDe(origenes, cotizacion.origenId)}
+            abierta={abierta === cotizacion.id}
+            alAbrir={() => {
+              alAbrir(cotizacion.id)
+            }}
+            menu={menuDeFila?.(cotizacion, { sinCompartir: true })}
+            compartir={compartirDe?.(cotizacion) ?? null}
+            Portada={huecos?.Portada}
+            rutaDeClientes={rutaDeClientes}
+            conteo={
+              texto === null ? null : (
+                <BotonDelConteo
+                  texto={texto}
+                  abierto={abiertoElGrupo}
+                  controla={idDelDespliegue(entrada.ordenId)}
+                  alAlternar={() => {
+                    alternar(entrada.ordenId)
+                  }}
+                />
+              )
+            }
+          />,
+          entrada.tipo === 'grupo' && abiertoElGrupo ? (
+            <li key={`${entrada.ordenId}-despliegue`} className="col-span-full min-w-0">
+              {despliegue(entrada)}
+            </li>
+          ) : null,
+        ]
+      })}
     </ul>
   )
 }

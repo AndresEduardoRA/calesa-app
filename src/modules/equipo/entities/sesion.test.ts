@@ -52,6 +52,8 @@ describe('sesionDesde', () => {
         vistos: VISTOS_POR_DEFECTO,
         zonaHoraria: null,
         vistaDeVehiculos: null,
+        vistaDeCotizaciones: null,
+        agruparCotizaciones: null,
       },
     })
   })
