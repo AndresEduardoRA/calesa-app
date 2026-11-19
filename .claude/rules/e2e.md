@@ -42,7 +42,7 @@ paths:
   sólo lo dirigido.
 - Nivel 3, antes de desplegar: el completo con los dos proyectos (Actions › ci › Run workflow,
   `proyectos: ambos`, que dispara la persona; o `pnpm test:e2e:completo` en local, ≈ 95 min). Cada noche el CI
-  corre el completo de escritorio sobre `main` si hubo commits. Un nivel no corrido se dice en el PR.
+  corre el completo con los dos proyectos sobre `main` si hubo commits. Un nivel no corrido se dice en el PR.
 - **Interfaz: cuándo los e2e dirigidos corren también en `movil`** (la regla vive aquí; la aplica
   `scripts/nivel.mjs` como `toca_interfaz` y `scripts/nivel.test.ts` falla si se separan).
   Un archivo cambiado es interfaz si no es una prueba (`*.test.*` o `*.spec.*`) y es un `.tsx` o un `.css`
