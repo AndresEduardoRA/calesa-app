@@ -1,18 +1,10 @@
 'use client'
 
-import type { Route } from 'next'
-import Link from 'next/link'
-import { fechaRelativa } from '@/shared/lib/fechas'
-import { Badge } from '@/shared/ui/badge'
-import { Button, buttonVariants } from '@/shared/ui/button'
+import { useEffect, type ReactNode } from 'react'
+import { Button } from '@/shared/ui/button'
 import { Drawer } from '@/shared/ui/drawer'
-import { Monto } from '@/shared/ui/monto'
-import { useRegional } from '@/shared/ui/regional'
 import { Skeleton } from '@/shared/ui/skeleton'
 import { useUltimo } from '@/shared/ui/use-ultimo'
-import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
-import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
-import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
 import {
   MENSAJE_DE_COTIZACION_NO_DISPONIBLE,
   rutaDelResumen,
@@ -27,8 +19,15 @@ import type {
 } from '../../hoja/components/huecos-del-resumen'
 import { usePedidoAlServidor } from '../hooks/use-pedido-al-servidor'
 import { useResumenDeCotizacion } from '../hooks/use-resumen-de-cotizacion'
-import { nombreDelOrigen, SIN_NOMBRE, type FilaDeCotizacion, type OrigenDelListado } from './tipos'
-import { Vigencia } from './vigencia'
+import { AccionesDelResumen } from './acciones-del-resumen'
+import { DatosDelResumen } from './datos-del-resumen'
+import {
+  nombreDelOrigen,
+  type CompartirDe,
+  type FilaDeCotizacion,
+  type MenuDeFila,
+  type OrigenDelListado,
+} from './tipos'
 
 type Props = {
   // Las filas de la página: de ahí sale lo que se ve de inmediato.
@@ -42,6 +41,19 @@ type Props = {
   // Dónde aprueba quien mira (para «De este vehículo»; sin él, «Aprobar esta» apagado con su motivo) y qué hacer tras aprobar desde el resumen.
   aprobarEn?: AprobarEnDelResumen
   alCambiarLaAprobada?: () => void
+  // La barra de arriba: el «⋯» de la fila (sin «Compartir») y «Compartir» de la tarjeta, los mismos del listado. Sin ellos, sólo «Abrir cotización».
+  menuDeFila?: MenuDeFila | undefined
+  compartirDe?: CompartirDe | undefined
+  // Los diálogos del «⋯» y de «Compartir» mientras el resumen está abierto: dentro del Drawer, para que abrirlos no cuente como un clic afuera que lo cierra.
+  dialogos?: ReactNode
+  // Avisa que su código llegó y está montado: recién ahí el listado le pasa los diálogos.
+  alMontarse?: (listo: true) => void
+}
+
+// Lo que dibuja la barra de arriba del resumen.
+type BarraDelResumen = {
+  menuDeFila: MenuDeFila | undefined
+  compartirDe: CompartirDe | undefined
 }
 
 // Lo que el resumen le pasa a «De este vehículo».
@@ -53,20 +65,10 @@ type DeEsteVehiculoEnElDetalle = {
 function EsqueletoDelResumen() {
   return (
     <div aria-busy="true" aria-label="Cargando la cotización" className="grid gap-2">
+      <Skeleton className="mb-2 h-11 w-full md:h-9" />
       <Skeleton className="h-4 w-1/3" />
       <Skeleton className="h-4 w-2/3" />
       <Skeleton className="h-4 w-1/2" />
-    </div>
-  )
-}
-
-function Dato({ nombre, children }: { nombre: string; children: React.ReactNode }) {
-  return (
-    <div className="grid gap-0.5">
-      <dt className="text-(length:--text-xs) text-(--color-ink-soft)">{nombre}</dt>
-      <dd className="text-(length:--text-sm) [overflow-wrap:anywhere] text-(--color-ink)">
-        {children}
-      </dd>
     </div>
   )
 }
@@ -77,17 +79,23 @@ function DetalleDeLaCotizacion({
   huecos,
   quien,
   deEsteVehiculo,
+  barra,
 }: {
   cotizacion: FilaDeCotizacion
   abierto: boolean
   huecos: HuecosDelResumen
   quien: QuienDelResumen
   deEsteVehiculo: DeEsteVehiculoEnElDetalle
+  barra: BarraDelResumen
 }) {
   const { Portada, Pestanas, Comprobantes, DeEsteVehiculo } = huecos
-  const { zonaHoraria } = useRegional()
   return (
     <div className="grid gap-4">
+      <AccionesDelResumen
+        cotizacionId={cotizacion.id}
+        compartir={barra.compartirDe?.(cotizacion) ?? null}
+        menu={barra.menuDeFila?.(cotizacion, { sinCompartir: true, conBorde: true }) ?? null}
+      />
       {Portada === undefined ? null : (
         <Portada
           key={cotizacion.id}
@@ -96,28 +104,7 @@ function DetalleDeLaCotizacion({
           total={{ valor: cotizacion.totalBase }}
         />
       )}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <Badge variant="secondary">{ETIQUETA_DE_CLASE[cotizacion.clase]}</Badge>
-        {cotizacion.aprobada ? <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge> : null}
-        <Vigencia venceEl={cotizacion.venceEl} vencida={cotizacion.vencida} />
-      </div>
-      <TituloDelResumen cotizacion={cotizacion} />
-      <p className="text-(length:--text-lg) font-medium tabular-nums">
-        <Monto valor={cotizacion.totalBase} />
-      </p>
-      <dl className="grid gap-3">
-        <Dato nombre="Cliente">{cotizacion.cliente ?? SIN_NOMBRE}</Dato>
-        <Dato nombre="Vehículo">{cotizacion.vehiculo ?? SIN_NOMBRE}</Dato>
-        <Dato nombre="Creada">
-          {fechaRelativa(cotizacion.creadoEn, { zona: zonaHoraria })} · {cotizacion.autor}
-        </Dato>
-      </dl>
-      <Link
-        href={rutaDeLaCotizacion(cotizacion.id) as Route}
-        className={buttonVariants({ className: 'h-11 w-fit md:h-9' })}
-      >
-        Abrir cotización
-      </Link>
+      <DatosDelResumen cotizacion={cotizacion} />
       {DeEsteVehiculo !== undefined &&
       abierto &&
       cotizacion.vehiculoId !== null &&
@@ -158,6 +145,7 @@ function ContenidoDelResumen({
   huecos,
   quienes,
   deEsteVehiculo,
+  barra,
 }: {
   vista: VistaDelResumen
   ultimo: FilaDeCotizacion | null
@@ -165,6 +153,7 @@ function ContenidoDelResumen({
   huecos: HuecosDelResumen
   quienes: Readonly<Record<string, QuienDelResumen>>
   deEsteVehiculo: DeEsteVehiculoEnElDetalle
+  barra: BarraDelResumen
 }) {
   if (vista.tipo === 'no_disponible') {
     return (
@@ -197,26 +186,15 @@ function ContenidoDelResumen({
       huecos={huecos}
       quien={quienes[cotizacion.id] ?? SIN_PERMISOS}
       deEsteVehiculo={deEsteVehiculo}
+      barra={barra}
     />
   )
 }
 
-// El título de la cotización (`tituloDeLaCotizacion()`): el suyo o el del vehículo; el de respaldo es el número, que ya dice el título del panel.
-function TituloDelResumen({ cotizacion }: { cotizacion: FilaDeCotizacion }) {
-  const titulo = tituloDeLaCotizacion(cotizacion)
-  return titulo === null || titulo.fuente === 'numero' ? null : (
-    <p
-      data-titulo-de-la-cotizacion=""
-      className="text-(length:--text-sm) [overflow-wrap:anywhere] text-(--color-ink)"
-    >
-      {titulo.texto}
-    </p>
-  )
-}
-
-// El resumen de una cotización (`?cotizacion=`) sin salir del listado: lo que ya trae su fila, con «Abrir cotización» a su página, «De este vehículo» y, debajo, las pestañas
-// «Todo», «Adjuntos», «Revisiones» y «Comentarios» que llenan las áreas (`huecos`). Sin «⋯»: las acciones de la cotización son de la fila. Si la cotización no está en la página, la leyó el servidor (`delServidor`); si tampoco, se le pide una vez (`router.refresh()`) y, si no llega, dice «error» con «Reintentar».
-// Una que no existe o que quien mira no ve dice lo mismo, sin explicar por qué.
+// El resumen de una cotización (`?cotizacion=`) sin salir del listado, en un panel ancho. Arriba, «Abrir cotización» (a su página), «Compartir cotización» y el «⋯» de
+// la fila sin «Compartir» (`menuDeFila`, `compartirDe`: los del listado); debajo, la portada, los datos de la fila, «De este vehículo» y las pestañas «Todo», «Adjuntos»,
+// «Revisiones» y «Comentarios» que llenan las áreas (`huecos`). Si la cotización no está en la página, la leyó el servidor (`delServidor`); si tampoco, se le pide una vez
+// (`router.refresh()`) y, si no llega, dice «error» con «Reintentar». Una que no existe o que quien mira no ve dice lo mismo, sin explicar por qué y sin la barra.
 export function ResumenDeCotizacion({
   filas,
   origenes,
@@ -225,7 +203,14 @@ export function ResumenDeCotizacion({
   quienes,
   aprobarEn,
   alCambiarLaAprobada,
+  menuDeFila,
+  compartirDe,
+  dialogos,
+  alMontarse,
 }: Props) {
+  useEffect(() => {
+    alMontarse?.(true)
+  }, [alMontarse])
   const resumen = useResumenDeCotizacion()
   const base = vistaDelResumen({ texto: resumen.texto, filas, delServidor, yaPedido: false })
   const pedido = usePedidoAlServidor(resumen.id, base.tipo === 'cargando')
@@ -243,6 +228,7 @@ export function ResumenDeCotizacion({
   const sinCotizacion = vista.tipo === 'no_disponible'
   return (
     <Drawer
+      ancho="amplio"
       abierto={resumen.texto !== null}
       alCerrar={resumen.cerrar}
       titulo={
@@ -265,7 +251,9 @@ export function ResumenDeCotizacion({
         huecos={huecos ?? {}}
         quienes={quienes ?? {}}
         deEsteVehiculo={{ aprobarEn: aprobarEn ?? SIN_DONDE_APROBAR, alCambiarLaAprobada }}
+        barra={{ menuDeFila, compartirDe }}
       />
+      {dialogos}
     </Drawer>
   )
 }

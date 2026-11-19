@@ -1,6 +1,7 @@
 'use client'
 
 import type { MouseEvent, ReactNode } from 'react'
+import { cn } from 'cn'
 import { esClicPropio } from '@/shared/lib/clic-de-fila'
 import { fechaRelativa } from '@/shared/lib/fechas'
 import { Badge } from '@/shared/ui/badge'
@@ -21,11 +22,13 @@ type Props = {
   // La casilla de «Comparar» (del hueco), o nada.
   casilla?: ReactNode
   alAbrir: (id: string) => void
+  // Es la abierta en el resumen: queda marcada, como la fila y la tarjeta.
+  abierta: boolean
 }
 
 // Una cotización desplegada de un grupo, compacta (`docs/DECISIONES.md`): la casilla, «N.º n» con su título en una línea, «Final», el total, quién y cuándo y la
-// vigencia. Sin cliente ni «⋯» (son las de un mismo vehículo; sus acciones están en el resumen). El clic abre su resumen, salvo la casilla.
-export function LineaDelGrupo({ linea, enLaTarjeta, casilla, alAbrir }: Props) {
+// vigencia. Sin cliente ni «⋯» (son las de un mismo vehículo; sus acciones están arriba del resumen). El clic abre su resumen, salvo la casilla; la abierta queda marcada.
+export function LineaDelGrupo({ linea, enLaTarjeta, casilla, alAbrir, abierta }: Props) {
   const { zonaHoraria } = useRegional()
   // Las de un grupo son del mismo vehículo: sólo su título propio (el del vehículo ya está en la tarjeta).
   const titulo = tituloAparteDelNumero(tituloDeLaCotizacion({ ...linea, vehiculo: null }))
@@ -37,7 +40,12 @@ export function LineaDelGrupo({ linea, enLaTarjeta, casilla, alAbrir }: Props) {
   return (
     <div
       data-linea-del-grupo={linea.id}
-      className="flex min-w-0 cursor-pointer items-start gap-2 rounded-(--radius-md) px-2 py-1.5 hover:bg-(--color-surface-2)"
+      data-state={abierta ? 'selected' : undefined}
+      aria-current={abierta ? 'true' : undefined}
+      className={cn(
+        'flex min-w-0 cursor-pointer items-start gap-2 rounded-(--radius-md) px-2 py-1.5 hover:bg-(--color-surface-2)',
+        abierta && 'bg-(--color-surface-2)',
+      )}
       onClick={abrir}
     >
       {casilla ? <div data-no-abre="">{casilla}</div> : null}
