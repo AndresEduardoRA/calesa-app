@@ -602,7 +602,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,4 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
   `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 464,0 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
   `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,7 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action)
-  (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Hoja» (`/configuracion/cotizacion/<origen>/hoja`), que no tiene tope; lo que se sume
+  (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño y las asas de fila del editor de la tarjeta) viaja sólo en los `diferido()` de las pestañas «Hoja» y «Tarjeta» (`/configuracion/cotizacion/<origen>/hoja|tarjeta`), que no tienen tope; lo que se sume
   `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,5 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
   `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 466,3 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
   `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 459,6 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action; los pasos de la hoja y el botón del ⚙ de la cabecera viajan en frío, su panel, los campos por defecto y los enlaces de la ayuda con `diferido()`)
@@ -636,7 +636,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   partes de un origen) suman al menú una pieza de cliente chica que las resuelve con la ruta (`subsecciones-del-menu.tsx`).
 - Configuración › Cotización: cada sub-ruta carga sólo su pantalla (`pantallas/formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
   JS en frío (KB gz, `.next-e2e`): inicio 352,4; `/<origen>/formula` 443,5, `/hoja` 359,1 (dnd-kit y el editor del diseño, en su `diferido()`),
-  `/tarjeta` 360,5, `/tablas` 361,5; `/general/colores` 359,1, `/niveles` 377,8, `/vigencia` 363,2. El inicio lee la tabla de orígenes
+  `/tarjeta` 364,9 (la pestaña dibuja en frío el aviso de menos de 1.024 px y arma la lectura del lienzo; el editor, 26,4, llega por `diferido()`), `/tablas` 361,5; `/general/colores` 359,1, `/niveles` 377,8, `/vigencia` 363,2. El inicio lee la tabla de orígenes
   (`getOrigenes(true)`, con `cache()`) y lo publicado por origen (dos PostgREST con `.in(ids).limit(ids.length)` por `formulas_publicada_unica` y
   `plantillas_publicada_unica`, tope 100 orígenes con aviso): nada cuenta ni crece con las cotizaciones. `/general` y `/<origen>` solos redirigen
   en `next.config.ts` (sin `page.tsx` ni `loading.tsx` intermedios: el esqueleto de cada nivel viajaría en todas las páginas de debajo).
@@ -718,13 +718,14 @@ fallar.
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
-- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 189.400 B y ≤ 5.000 nodos con
-  «Filas» abierto (medido 183.947 B en `/configuracion/cotizacion/<origen>/tarjeta`, 172.768 en la pestaña de antes con el mismo guion: las siete
-  partes de Cotización en el menú suman 6,2 KB a toda página de Configuración y el esqueleto del inicio de Cotización viaja en cada sub-ruta;
-  antes, 172.802 B y 4.907 nodos: la vista previa en cuadrícula suma la descripción de 4 miembros por grupo y la variante, y
-  cada ruta nueva puede repartir el JS común en más chunks, que el HTML de toda pantalla nombra; las partes de un origen en el menú de
-  Configuración suman ~530 B a toda página de Configuración). La tarjeta, el editor, el modal de publicar y el diálogo de descartar van por `diferido()`; «Buscar fila» filtra en el
-  navegador. `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
+- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros y la cuadrícula más grande que admite la forma 2 (16 × 120 y
+  las celdas de texto que entran en 24 KiB: 193; 1.000 no caben, manda el tope en bytes), primer HTML ≤ 223.900 B y ≤ 5.000 nodos (medido 213.199 B y 4.000
+  nodos: 193 celdas dibujadas, 1.727 casillas vacías de un nodo sin hijos cada una, 120 filas con su asa, las cabeceras y el panel). Crece contra el editor de
+  bloques (183.947 B) porque el contexto reducido lleva todos los nodos del nivel «todos» con su descripción (los ofrece «Dato») y la cuadrícula viaja entera;
+  la inicial y la guardada son el mismo objeto. La referencia es una fila de `cotizaciones_listado()` por `cotizaciones_origen_creado_idx` más las lecturas
+  del PDF, en paralelo con la plantilla, recortada a los nodos del contexto reducido. El editor (lienzo, panel, dnd-kit y atajos: 26,4 KB gz, más dnd-kit, 15,0, el chunk que comparte con el orden del diseño), el modal de
+  publicar y el diálogo de descartar van por `diferido()`; «Dato» dibuja 50 («Escribe para acotar.»). Deshacer guarda hasta 100 instantáneas en memoria.
+  `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
 - Editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrirlo lee una fila de `formulas` por `formulas_pkey`
   (`definicion`, `params`, `estado`, `diseno`, `nota`): con 600 filas ≤ 80.900 B; dibuja hasta 500 (`TOPE_DE_LO_CARGADO`) con
   `<AvisoDeTope>` y «Buscar fila»: ≤ 6.300 nodos. El estado de las filas es O(filas × nodos), una vez por fórmula de trabajo; filtrar y

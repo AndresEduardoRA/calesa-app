@@ -437,11 +437,19 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Fila de la tarjeta** — `FilaDeLaTarjeta`, `definicion.filas[]` de la forma 2: una fila con su alto y su «Ocultar si…». No es la **Fila (de la
   fórmula)**.
 - **Ocultar si…** — `ocultar_si` de una fila de la tarjeta (`nunca`, `no_aplica`, `no_aplica_o_cero`): la fila no se dibuja si su nodo no aplica
-  en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0; las celdas combinadas que la cruzan se acortan. La vista previa
-  de Configuración dice cuáles: «Ocultas con esta referencia (N)».
+  en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0; las celdas combinadas que la cruzan se acortan. El lienzo de
+  Configuración dice cuáles y por qué con la referencia elegida: «Ocultas con esta referencia (N)».
 - **Dato de la tarjeta** — `{tipo: 'dato', …}` de una celda: una variable de la cotización (`VARIABLES_DE_LA_TARJETA`: `fecha_larga`, `numero`,
   `asesor_nombre`…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
   `plazo`). Un texto no mezcla texto y variables.
+- **Lienzo** — `LienzoDeLaPlantilla` (área `tarjeta`) con la capa del editor (`CapaDeEdicion`, `role="grid"`): la tarjeta de la cotización a escala
+  que se edita en Configuración › Cotización › un origen › Tarjeta, como un Excel (cabeceras de columna, asas de fila, selección, atajos). La dibuja el
+  mismo modelo de dibujo que el PDF. No es el lienzo del diagrama del flujo.
+- **Rango** — `Seleccion` de tipo `celdas` (`entities/plantilla/edicion/seleccion.ts`): las celdas de la tarjeta elegidas juntas en el lienzo (Shift+clic,
+  arrastrar, Shift+flechas); se agranda hasta contener entera cada combinación que corta. Lo que se combina, se vacía, se copia o recibe un formato.
+- **Referencia de la tarjeta** — `ReferenciaDeLaTarjeta` (`entities/referencia-de-la-tarjeta.ts`): con qué cifras se dibuja el lienzo: la cotización más
+  reciente del origen que quien configura ve (lo guardado, como el PDF) o las cifras de ejemplo (`?referencia=ejemplo`). Decide qué filas se ocultan:
+  «Ocultas con esta referencia (N)».
 - **Geometría de la tarjeta** — `Geometria`, `geometriaDeLaTarjeta()`: el único modelo de dibujo de la tarjeta de la cotización: el ancho, el alto
   y, por celda visible, su rectángulo en px, su contenido ya resuelto y su estilo, más las filas ocultas. Lo pintan con posiciones absolutas el HTML,
   el PDF (`DocumentoDeLaTarjeta`) y la imagen (`pngDeLaTarjeta()`).

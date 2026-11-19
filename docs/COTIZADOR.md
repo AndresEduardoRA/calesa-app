@@ -769,8 +769,8 @@ La tarjeta de la cotización (la vista previa tipo Excel, el PDF y la imagen) se
 modelo** la dibuja (`geometriaDeLaTarjeta()`). Sólo nodos del nivel «todos». PDF en servidor con `@react-pdf/renderer`; imagen con `next/og`.
 
 **Dos formas de `plantillas_tarjeta.definicion`.** Con la clave `forma` en la raíz es la **forma 2** (la cuadrícula); sin ella, la **forma 1** (la de
-grupos), que se convierte a la cuadrícula al leerla y no se migra. El editor de hoy escribe la forma 1; una forma 2 guardada llega a él sin plantilla y
-con «Esta versión es una cuadrícula: todavía no se edita desde aquí.» (`docs/PENDIENTES.md`).
+grupos), que se convierte a la cuadrícula al leerla y no se migra. El editor escribe sólo la forma 2; una forma 1 guardada (borrador o publicada) se
+convierte al abrirla y se guarda convertida cuando quien edita guarda.
 
 **La forma 2**, estricta (`entities/cuadricula-de-la-tarjeta.ts`): `{forma: 2, columnas: [{id, ancho}], filas: [{id, alto, ocultar_si, nodo?}],
 celdas: [{id, fila, columna, abarca_columnas?, abarca_filas?, contenido, estilo?}]}`. Columnas de 24 a 640 px (hasta 16, **ancho total ≤ 1.600**);
@@ -828,7 +828,9 @@ de 120 filas o 1.000 celdas, un `{{` en una etiqueta o nota) se trata como `sin_
 
 **El modelo de dibujo** (`entities/tarjeta/geometria-de-la-tarjeta.ts`): de la cuadrícula, la lectura, el cálculo (valores, estados y totales por id) y
 el contexto de la cotización (las variables, ya formateadas: `contextoDeLaPagina()`), el ancho y el alto en px y, por celda visible y en orden de
-lectura, su rectángulo, su contenido resuelto y su estilo; más las filas ocultas con su motivo. Una fila se oculta si su nodo no aplica (o vale 0) y
+lectura, su rectángulo, su contenido resuelto y su estilo; más las filas ocultas con su motivo: `fuera_de_la_version` (el nodo de la fila no está en
+los estados del cálculo, salvo el total), `no_aplica` (con `variante`: el título de la opción elegida, si la lectura trae la variante) o `cero`. Esos
+motivos son sólo datos de las ocultas: el dibujo no cambia y `_portada_version_del_dibujo()` no sube. Una fila se oculta si su nodo no aplica (o vale 0) y
 las celdas que la cruzan se acortan; un dato de un nodo que no aplica, en una fila que se dibuja, va vacío; un monto nulo, «—». El monto del total sale
 de los totales y, con «Ver total Bs», lleva la segunda línea en moneda local. Sin plantilla o sin estados, la tarjeta por omisión (`por-omision.ts`).
 Lo pintan tres dibujos con posiciones absolutas (satori no tiene `grid`): el HTML (escalado como una imagen, `min(1, ancho del contenedor / ancho)`),
@@ -858,30 +860,56 @@ pierde los microsegundos) y pasan en serie por un candado por origen (`pg_adviso
 ### Lo que lee y escribe la plantilla desde TypeScript
 
 - **La versión esperada** es el `actualizado_en` de la base como texto con microsegundos (`z.iso.datetime({ offset: true })`, nunca
-  `Date`); `guardar` la manda siempre (`null` explícito para crear) y no manda `p_nota`. Un 22023 de `validar_plantilla()` va a
+  `Date`); `guardar` la manda siempre (`null` explícito para crear), manda la forma 2 y no manda `p_nota`. Un 22023 de `validar_plantilla()` va a
   `porCampo[donde]` con el mensaje de la base; «Publicar pide una nota.», a `porCampo.nota`; el PT409 es un conflicto sin nombre. Guardar
   sólo valida la forma; lo que cruza con la fórmula y los tonos lo rechaza publicar.
 - **Texto que la base no lee** (`\u0000`, surrogate suelto: 22P02, 22P05): la action lo ataja antes (`revisarTextoParaLaBase()`, tope de 8
   niveles) y lo dice junto al campo.
-- **La lectura** (`leerPlantillaDelOrigen()`, con la sesión de quien mira): borrador y publicada (la que perdió la forma llega con
-  `motivo` y sin plantilla), la fórmula publicada con lo que mira el validador y los colores (tope 48); sin fórmula publicada no hay contexto.
+- **La lectura** (`leerPlantillaDelOrigen()`, con la sesión de quien mira): borrador y publicada, cada una con su `contenido`
+  (`versionDePlantilla()`: `{forma: 1, plantilla}`, `{forma: 2, cuadricula}` —una cuadrícula guardada no se vuelve a medir contra los 24 KiB— o
+  `{motivo}` si perdió la forma), la fórmula publicada con lo que mira el validador (con el par `op`/`pct`) y los colores (tope 48); sin fórmula publicada
+  no hay contexto.
 
 ### El editor de la plantilla
 
-- **La pestaña «Tarjeta»** (`/configuracion/cotizacion/<origen>/tarjeta`, `cotizaciones.configurar`) edita el **borrador**: el servidor arma
-  `propsDelEditor()` (borrador, copia de la publicada u omisión, avisos y contexto reducido) y el navegador valida al tipear con
-  `validarPlantilla()`. Al navegador no viaja la `definicion`: sólo los nodos con lugar en la tarjeta (o de tipo de cambio), grupos, modos,
-  secundarios y el `{ver}` de la visibilidad.
-- **Alinear con la fórmula** (`alinearConLaFormula()`): quita el grupo que ya no está y la etiqueta o leyenda sin lugar, suma el nuevo al
-  final sin tono; no guarda solo. Lo que sólo ve la fórmula (`nodo_restringido`, `tipo_de_cambio_restringido`, un tono que ya no está)
-  avisa «Con esto no se podría publicar».
-- **Guardar, publicar y descartar** (`?panel=publicar-tarjeta` con nota obligatoria, `?panel=descartar-plantilla` con `<Confirmar>`) mandan
-  la `esperada` como texto; el PT409 se dice tal cual. «Publicar…» sólo sin cambios sin guardar. Los modales van **fuera de la `key`** del
-  editor (`PestanaDeLaTarjeta`): «Recargar» no pierde la nota.
-- **Vista previa en vivo** (`lecturaParaLaVistaPrevia()`): la plantilla de trabajo convertida a la cuadrícula como la convertiría la base
-  (`convertirPlantilla()` con el contexto reducido, 4 filas por grupo) y dibujada con la misma geometría, con **cifras de ejemplo** que se dicen: la
-  fila n-ésima con nodo vale `(n mod 8 + 1) × 250` USD, cada `pct` 5 %, cada tipo de cambio 6,96 y el total es la suma de los miembros. Debajo,
-  «Ocultas con esta referencia (N)» con el motivo de cada una (sin ocultas, nada).
+- **La pestaña «Tarjeta»** (`/configuracion/cotizacion/<origen>/tarjeta`, `cotizaciones.configurar`, a todo el ancho) edita el **borrador** como un
+  Excel y escribe **sólo la forma 2**. El servidor arma `propsDelEditor()`: la cuadrícula de la que nace (`cuadriculaParaEditar()`: el borrador; si no se
+  lee, la copia de la publicada; si no, la de por omisión), su procedencia, sus avisos y el contexto reducido. Una forma 2 se usa tal cual; una forma 1
+  pasa por `alinearConLaFormula()` y `convertirPlantilla()` con «Se convirtió a cuadrícula: revisa y guarda.» (no se guarda sola); sin plantilla, la
+  omisión convertida (los grupos de la fórmula y el total). Si lo convertido no entra en la grilla (más de 120 filas o 1.000 celdas), se convierte con los
+  primeros 4 miembros de cada grupo (`FILAS_POR_GRUPO_EN_LA_VISTA_PREVIA`) y, si tampoco, sólo con el total, y lo dice.
+- **El contexto reducido** (`contextoParaElNavegador(contexto, cuadricula)`): los nodos del nivel «todos» (lo que «Dato» ofrece), los restringidos que la
+  cuadrícula ya nombra (marcados: con ellos no se podría publicar), los del tipo de cambio de cada bucket y la variante; de cada uno etiqueta, grupo,
+  salida, descripción y el par `tipo`/`op`/`pct`, y el `{ver}` de la visibilidad. Nunca el cuerpo de un nodo ni la `definicion` entera.
+- **El lienzo es un hueco:** el área `plantilla` no importa la geometría (es del área `tarjeta`). La página pasa `LienzoDeLaPlantillaDiferido`
+  (`pantallas/tarjeta-plantilla.ts`, tipos en `entities/vista-previa-de-la-plantilla.ts`): recibe la lectura de la cuadrícula de trabajo
+  (`lecturaEnCuadricula()`, recalculada en cada cambio), la referencia, «Ajustar | 100 %» y el margen de la capa; dibuja la tarjeta con
+  `geometriaDeLaTarjeta()` y llama a `capa(g, escala)` (la grilla del editor, encima, sin escalar: multiplica por la escala) y a `debajo(g)` («Ocultas con
+  esta referencia»). `GeometriaParaEditar` lleva el tamaño, las filas que se dibujan con su banda y las ocultas; la `x` de cada columna la saca la capa
+  de los anchos de la plantilla, así no repite la regla de qué fila se oculta.
+- **La referencia** (`ReferenciaDeLaTarjeta`, núcleo): la compone `src/app` (`[origen]/tarjeta/referencia.ts`, `server-only`, nunca lanza) como el PDF:
+  `leerListadoDeCotizaciones()` con `UNA` (la más reciente que quien configura ve, sin papelera, por `cotizaciones_origen_creado_idx`), la hoja guardada
+  con su primer recálculo, el cliente, el vehículo y el asesor por PK y los ajustes, y `referenciaPlana(calculoDeLoGuardado(…))`. Sin estados (el
+  recálculo falló) es `no_se_leyo`: la tarjeta caería a la de por omisión. La página la pide sin esperarla y `SeccionDeLaPlantilla` la espera en paralelo
+  con la plantilla, y la recorta a los ids del contexto reducido (`recortarLaReferencia()`). Sin cotización o ilegible, las cifras de ejemplo: la fila
+  n-ésima con nodo vale `(n mod 8 + 1) × 250` USD, cada `pct` 5 %, cada tipo de cambio 6,96 y el total es la suma de los miembros. `?referencia=ejemplo`
+  las pide aunque haya cotización, sin ir al servidor.
+- **Las operaciones** son puras (`entities/plantilla/edicion/`): el mapa de la grilla, la selección (un rango que corta una combinación se agranda),
+  contenido, estilo, combinar y separar, insertar y eliminar (una combinación que cruza crece o se achica; insertar en su borde no la cambia), anchos y
+  altos, «Ocultar si…», mover una fila (no si es parte de una combinación vertical), copiar y pegar un bloque. Cada una se mide después
+  (`medido()`): se rechaza con su motivo si pasa un tope **y crece** (16 columnas, 120 filas, 1.000 celdas, 1.600 px, 24 KiB: el que manda) o rompe una
+  regla de la grilla. Ids nuevos: el menor libre en base 36 (`c1`, `f1`, `k1`). El reductor (`reductor.ts`) une selección, operaciones, el bloque
+  copiado, la celda en la que se escribe y el historial (`historial.ts`: instantáneas, tope 100, lo escrito en un campo se junta por clave hasta que
+  cambia la selección); la barra y el menú prueban cada operación en seco (`disponibilidad.ts`) para apagarla con el motivo del reductor.
+- **Validar:** `validarPlantilla(plantilla, null, {conTope: false})` para la forma, los 24 KiB aparte (apagan «Guardar borrador»), y con el contexto
+  reducido para «Con esto no se podría publicar». Lo tipeado sin guardar va en `sessionStorage` (`tarjeta-cuadricula:<origen>:<esperada>`) y se repone
+  sólo si sigue siendo una cuadrícula.
+- **Guardar, publicar y descartar** (`?panel=publicar-tarjeta` con nota obligatoria, `?panel=descartar-plantilla` con `<Confirmar>`) mandan la `esperada`
+  como texto; el PT409 se dice tal cual. «Publicar…» sólo sin cambios sin guardar. Un rechazo de publicar con un `donde` de la cuadrícula
+  (`celdas.<id>`, `filas.<id>`, `columnas.<id>`) ofrece «Ir a la celda», que lo elige en el lienzo (`seleccionDelDonde()`). Los modales van **fuera de la
+  `key`** del editor (`PestanaDeLaTarjeta`): «Recargar» no pierde la nota. Esa `key` cambia con una versión que no es la que el editor acaba de
+  guardar (`useClaveDelEditor()`): guardar no remonta el editor y el historial sigue; «hay cambios» compara sin el orden de las claves (`mismoJson()`). En una pantalla de menos de 1.024 px la pestaña dibuja el aviso y el lienzo sin
+  capa, y el código del editor no se pide.
 
 ### La lectura de la tarjeta
 
