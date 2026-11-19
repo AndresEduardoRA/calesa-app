@@ -71,7 +71,7 @@ const PANTALLAS = [
   ['leads-origenes', () => '/configuracion/leads/origenes'],
   ['leads-tipos', () => '/configuracion/leads/tipos'],
   ['leads-seguimientos', () => '/configuracion/leads/seguimientos'],
-  ['cotizacion-niveles', () => '/configuracion/cotizacion?seccion=niveles'],
+  ['cotizacion-niveles', () => '/configuracion/cotizacion/general/niveles'],
   ['logistica-puertos', () => '/configuracion/logistica/puertos'],
   ['logistica-navieras', () => '/configuracion/logistica/navieras'],
   ['logistica-categorias', () => '/configuracion/logistica/categorias-de-gasto'],

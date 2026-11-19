@@ -183,6 +183,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T327]** En el celular, la burbuja del chat queda sobre la esquina derecha de la barra de cambios sin guardar; con la barra a la altura de
   la burbuja (Configuración › Leads › «Mensaje del portal») roza la esquina de «Guardar»: subirla mientras la barra está a la vista, como los
   avisos (`data-pie-de-panel`).
+- **[T323]** Configuración › Cotización › General › Colores y Niveles repiten el título de la página en el `h2` de su lista («Colores»,
+  «Niveles de acceso», con «Nuevo color» y «Nuevo nivel»): llevar la acción principal junto al `h1` y quitar el `h2`.
 - **[T329]** En el menú de Configuración (8 rem) el motivo de una sub-sección apagada larga ocupa cinco renglones («Te falta el permiso
   «Gestionar los campos de los leads».»): acortarlo o mostrarlo al enfocar.
 - **[T34]** «Abrir la unidad» de «Qué falta» en la ficha del vehículo lleva a un hueco aunque su regla del flujo esté apagada (allí no estará): pasar a la ficha

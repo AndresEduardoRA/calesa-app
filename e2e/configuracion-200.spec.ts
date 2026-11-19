@@ -94,8 +94,8 @@ const PANTALLAS: Pantalla[] = [
     url: () => '/configuracion/leads/seguimientos',
   },
   {
-    titulo: 'Cotización › Niveles de acceso',
-    url: () => '/configuracion/cotizacion?seccion=niveles',
+    titulo: 'Cotización › General › Niveles',
+    url: () => '/configuracion/cotizacion/general/niveles',
     controles: (page) => [
       [page.getByRole('button', { name: /^Más acciones de / }).first(), 'el «⋯» del primer nivel'],
     ],

@@ -20,6 +20,6 @@ export const crearTono = actionClient
       return fallo('sin_permiso', MOTIVO_SIN_PERMISO_DE_TONOS)
     }
     const hecho = comoResultado(await repositorioDeTonos.crear(parsedInput))
-    if (hecho.ok) revalidatePath(RUTAS.configuracionDeCotizacion)
+    if (hecho.ok) revalidatePath(RUTAS.configuracionDeCotizacion, 'layout')
     return hecho
   })

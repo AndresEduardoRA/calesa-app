@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, type ComponentType } from 'react'
+import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
 import { Button } from '@/shared/ui/button'
 import { avisosDeTonos } from '../../../entities/plantilla/avisos-de-tonos'
 import type { Plantilla } from '../../../entities/plantilla/forma-de-plantilla'
@@ -122,7 +123,7 @@ export function EditorDeLaPlantilla({
           deLaLectura={[...avisos, ...deTonos, ...deArriba]}
           paraPublicar={editor.rechazoParaPublicar?.mensaje ?? null}
           guardar={guardar}
-          hrefVer={`?seccion=tarjeta&origen=${origen.id}`}
+          hrefVer={rutaDeConfiguracionDeCotizacion(origen.id, 'tarjeta')}
         />
         <CuerpoDelEditor
           plantilla={plantilla}

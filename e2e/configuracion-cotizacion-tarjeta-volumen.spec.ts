@@ -18,8 +18,10 @@ test.describe.configure({ mode: 'serial' })
 // 180.400 (regla del 5 %): las siete sub-rutas de Configuración › Leads reparten el JS común en dos chunks más y toda pantalla los nombra
 // en el HTML (170.966 → 172.068 B, el mismo JS). La vista previa en cuadrícula suma la descripción de 4 miembros por grupo y la variante: 172.802 B.
 // Las partes de un origen (Datos, Campos, Categorías) entran al menú de Configuración como plantilla y suman ~530 B a toda página de
-// Configuración: caben en el mismo tope.
-const TOPE_DE_BYTES_DEL_HTML = 180_400
+// Configuración: caben en el mismo tope. 189.400 (regla del 5 %): Configuración › Cotización por origen mide 183.947 B contra 172.768 de
+// main con el mismo guion; las siete partes de Cotización en el menú suman 6,2 KB a toda página de Configuración y el esqueleto del
+// inicio de Cotización viaja en cada sub-ruta.
+const TOPE_DE_BYTES_DEL_HTML = 189_400
 const TOPE_DE_NODOS_CON_500 = 5_000
 
 let configuradora = ''
@@ -60,9 +62,7 @@ test('E7: el primer HTML no lleva un nodo que el editor no dibuja, y sí la desc
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  const respuesta = await page.request.get(
-    `/configuracion/cotizacion?seccion=tarjeta&origen=${mini.id}`,
-  )
+  const respuesta = await page.request.get(`/configuracion/cotizacion/${mini.id}/tarjeta`)
   expect(respuesta.ok()).toBe(true)
   const html = await respuesta.text()
   // Lo que no va en la tarjeta (el valor CIF, una comisión sin grupo) no viaja; la descripción de un miembro que la vista previa dibuja (uno de los primeros 4
@@ -76,9 +76,7 @@ test('E7: con 500 miembros se miden los bytes del primer HTML y los nodos del DO
   page,
 }, info) => {
   await entrar(page, configuradora, { fresco: true })
-  const respuesta = await page.request.get(
-    `/configuracion/cotizacion?seccion=tarjeta&origen=${con500.id}`,
-  )
+  const respuesta = await page.request.get(`/configuracion/cotizacion/${con500.id}/tarjeta`)
   const bytes = Buffer.byteLength(await respuesta.text())
   await abrir(page, con500.id)
   await page.getByText('Filas', { exact: true }).click()

@@ -599,6 +599,14 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
   `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). `/leads` mide 526,5 KB en 36 chunks y
   `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 386,9 de 390 (el despliegue de un grupo y «Comparar» van con `diferido()`; con `<MenuDeVistas>` en frío serían 450: va con
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,0 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 465,9 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 458,5 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action; los pasos de la hoja y el botón del ⚙ de la cabecera viajan en frío, su panel, los campos por defecto y los enlaces de la ayuda con `diferido()`)
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,4 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 464,0 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,7 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action)
+  (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Hoja» (`/configuracion/cotizacion/<origen>/hoja`), que no tiene tope; lo que se sume
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,5 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
   `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 466,3 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
   `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 459,6 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action; los pasos de la hoja y el botón del ⚙ de la cabecera viajan en frío, su panel, los campos por defecto y los enlaces de la ayuda con `diferido()`)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
@@ -629,6 +637,12 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
   `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta. Las sub-secciones plantilla (las
   partes de un origen) suman al menú una pieza de cliente chica que las resuelve con la ruta (`subsecciones-del-menu.tsx`).
+- Configuración › Cotización: cada sub-ruta carga sólo su pantalla (`pantallas/formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
+  JS en frío (KB gz, `.next-e2e`): inicio 352,4; `/<origen>/formula` 443,5, `/hoja` 359,1 (dnd-kit y el editor del diseño, en su `diferido()`),
+  `/tarjeta` 360,5, `/tablas` 361,5; `/general/colores` 359,1, `/niveles` 377,8, `/vigencia` 363,2. El inicio lee la tabla de orígenes
+  (`getOrigenes(true)`, con `cache()`) y lo publicado por origen (dos PostgREST con `.in(ids).limit(ids.length)` por `formulas_publicada_unica` y
+  `plantillas_publicada_unica`, tope 100 orígenes con aviso): nada cuenta ni crece con las cotizaciones. `/general` y `/<origen>` solos redirigen
+  en `next.config.ts` (sin `page.tsx` ni `loading.tsx` intermedios: el esqueleto de cada nivel viajaría en todas las páginas de debajo).
 - Configuración › Orígenes: la lista de tarjetas, 215,7 KB gz en frío (29,4 propios de la página). Cada parte de un origen es su ruta y
   carga sólo lo suyo (`pantallas/origen-datos|campos|categorias.ts`) sobre una base común de 83 KB gz: `/[id]/datos` 284,7 KB (15,5
   propios), `/[id]/campos` 282,1 (12,8, con los datos clave) y `/[id]/categorias` 280,1 (10,8). Sin `diferido()` nuevo: el bloque de datos
@@ -707,8 +721,10 @@ fallar.
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
-- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 180.400 B y ≤ 5.000 nodos con
-  «Filas» abierto (medido 172.802 B y 4.907 nodos: la vista previa en cuadrícula suma la descripción de 4 miembros por grupo y la variante, y
+- Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros, primer HTML ≤ 189.400 B y ≤ 5.000 nodos con
+  «Filas» abierto (medido 183.947 B en `/configuracion/cotizacion/<origen>/tarjeta`, 172.768 en la pestaña de antes con el mismo guion: las siete
+  partes de Cotización en el menú suman 6,2 KB a toda página de Configuración y el esqueleto del inicio de Cotización viaja en cada sub-ruta;
+  antes, 172.802 B y 4.907 nodos: la vista previa en cuadrícula suma la descripción de 4 miembros por grupo y la variante, y
   cada ruta nueva puede repartir el JS común en más chunks, que el HTML de toda pantalla nombra; las partes de un origen en el menú de
   Configuración suman ~530 B a toda página de Configuración). La tarjeta, el editor, el modal de publicar y el diálogo de descartar van por `diferido()`; «Buscar fila» filtra en el
   navegador. `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.

@@ -226,3 +226,40 @@ describe('sub-secciones de configuración', () => {
     expect(primeraSubseccionAbierta(conSub, [])).toBeNull()
   })
 })
+
+describe('sub-secciones agrupadas de configuración', () => {
+  const repuestos: Permisos = [{ clave: 'repuestos.configurar', origenId: null, alcance: 'todos' }]
+
+  it('el grupo y el respaldo viajan sólo si la sub-sección los declara', () => {
+    const conGrupo: SeccionDeConfiguracion = {
+      ...SECCION_DE_REPUESTOS,
+      subsecciones: [
+        {
+          clave: 'x',
+          titulo: 'X',
+          descripcion: 'La X.',
+          ruta: '/configuracion/repuestos/[id]/x',
+          permisos: ['repuestos.configurar'],
+          grupo: 'Por origen',
+          respaldo: '/configuracion/repuestos?seccion=x',
+        },
+      ],
+    }
+    const [grupo] = paraElNavegador([
+      {
+        clave: 'operacion',
+        titulo: 'Operación',
+        secciones: [conSubseccionesVisibles(conGrupo, repuestos)],
+      },
+    ])
+    expect(grupo?.secciones[0]?.subsecciones).toEqual([
+      {
+        clave: 'x',
+        titulo: 'X',
+        ruta: '/configuracion/repuestos/[id]/x',
+        grupo: 'Por origen',
+        respaldo: '/configuracion/repuestos?seccion=x',
+      },
+    ])
+  })
+})

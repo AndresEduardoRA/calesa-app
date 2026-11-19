@@ -38,6 +38,10 @@ export type SubseccionDeConfiguracion = {
   permisos: readonly ClavePermiso[]
   // Con motivo, quien no tiene sus permisos la ve apagada en el menú y en el selector, con el motivo; sin él, no la ve.
   motivoSinPermiso?: string
+  // El rótulo que agrupa sub-secciones seguidas en el menú («Por origen», «General» de Cotización).
+  grupo?: string
+  // Adónde lleva una plantilla cuando no resuelve con la ruta actual (no hay origen en la URL): una ruta de la sección que redirige sola.
+  respaldo?: string
 }
 
 // Una sub-sección como la ve la persona: abierta, o apagada (sin permiso y con motivo).
@@ -153,6 +157,15 @@ export function gruposVisibles(permisos: Permisos): GrupoVisible[] {
 
 // Lo que el menú y el selector mandan al navegador: sólo lo que dibujan (sin el icono, que es una función, ni los permisos). Viaja en
 // el HTML de cada página de Configuración.
+export type SubseccionDelNavegador = {
+  clave: string
+  titulo: string
+  ruta: string
+  motivo?: string
+  grupo?: string
+  respaldo?: string
+}
+
 export type GrupoDelNavegador = {
   clave: string
   titulo: string
@@ -160,8 +173,8 @@ export type GrupoDelNavegador = {
     clave: string
     titulo: string
     ruta: string
-    // `motivo`, sólo en la apagada.
-    subsecciones: { clave: string; titulo: string; ruta: string; motivo?: string }[]
+    // `motivo`, sólo en la apagada; `grupo` y `respaldo`, sólo si la sub-sección los declara.
+    subsecciones: SubseccionDelNavegador[]
   }[]
 }
 
@@ -180,6 +193,8 @@ export function paraElNavegador(grupos: readonly GrupoVisible[]): GrupoDelNavega
         ...(sub.apagada && sub.motivoSinPermiso !== undefined
           ? { motivo: sub.motivoSinPermiso }
           : {}),
+        ...(sub.grupo === undefined ? {} : { grupo: sub.grupo }),
+        ...(sub.respaldo === undefined ? {} : { respaldo: sub.respaldo }),
       })),
     })),
   }))

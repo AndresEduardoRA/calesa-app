@@ -20,7 +20,7 @@ export const revertirVersion = actionClient
     }
     const hecho = await repositorioDeLaFormula.revertir(parsedInput)
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeCotizacion)
+      revalidatePath(RUTAS.configuracionDeCotizacion, 'layout')
     }
     return hecho
   })

@@ -1,3 +1,5 @@
+import type { Route } from 'next'
+
 // Rutas del acceso y la regla que decide quién pasa. Son nombres de rutas, no reglas del negocio:
 // las usan `src/proxy.ts`, las actions de ingreso y el route handler que canjea los enlaces.
 
@@ -28,6 +30,9 @@ export const RUTAS = {
   mensajeDelPortal: '/configuracion/leads/portal',
   telefonosExtraDeLeads: '/configuracion/leads/telefonos',
   configuracionDeCotizacion: '/configuracion/cotizacion',
+  coloresDeCotizacion: '/configuracion/cotizacion/general/colores',
+  nivelesDeCotizacion: '/configuracion/cotizacion/general/niveles',
+  vigenciaDeCotizacion: '/configuracion/cotizacion/general/vigencia',
   configuracionDeFlujos: '/configuracion/flujos',
   configuracionDeLogistica: '/configuracion/logistica',
   puertosDeLogistica: '/configuracion/logistica/puertos',
@@ -64,6 +69,23 @@ export const PANEL_NUEVO_DE_VEHICULOS = 'nuevo'
 // La unidad de logística (6.01) tiene su propia página: a ella apuntan las notificaciones de demora. `RUTAS` es un objeto fijo; la que lleva un id es una función.
 export function unidadDeLogistica(id: string): string {
   return `${RUTAS.logistica}/vehiculo/${encodeURIComponent(id)}`
+}
+
+// Las pestañas de un origen en Configuración › Cotización, en su orden: cada una es una sub-ruta `/configuracion/cotizacion/<origen>/<pestana>`.
+// Viven acá porque las arman las actions y los enlaces del módulo `cotizaciones`, que no pueden importar `src/app`.
+export const PESTANAS_DE_COTIZACION = ['formula', 'hoja', 'tarjeta', 'tablas'] as const
+
+export type PestanaDeCotizacion = (typeof PESTANAS_DE_COTIZACION)[number]
+
+// La pestaña de un origen, con su consulta en el orden en que viene (`?tabla=`, `?panel=`); sin consulta, sin `?`.
+export function rutaDeConfiguracionDeCotizacion(
+  origenId: string,
+  pestana: PestanaDeCotizacion,
+  consulta?: Record<string, string>,
+): Route {
+  const parametros = new URLSearchParams(consulta).toString()
+  const ruta = `${RUTAS.configuracionDeCotizacion}/${encodeURIComponent(origenId)}/${pestana}`
+  return (parametros === '' ? ruta : `${ruta}?${parametros}`) as Route
 }
 
 // Quien ya tiene sesión no tiene nada que hacer acá.

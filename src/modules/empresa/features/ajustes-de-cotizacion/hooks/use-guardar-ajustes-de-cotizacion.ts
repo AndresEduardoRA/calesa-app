@@ -39,7 +39,7 @@ export function useGuardarAjustesDeCotizacion({ actualizadoEn, formulario }: Opc
       enfocarPrimerError(elemento)
       return
     }
-    avisarExito('Ajustes de cotización guardados')
+    avisarExito('Vigencia guardada')
   }
 
   return { guardar, enCurso: isPending, errores: result.validationErrors?.fieldErrors }
