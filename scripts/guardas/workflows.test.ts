@@ -139,6 +139,10 @@ describe('ci.yml por niveles', () => {
   it('cada noche corre el completo (schedule), sólo si hubo commits', () => {
     expect(ci).toMatch(/^ {2}schedule:\n {4}- cron: '[^']+'/m)
     expect(leer('scripts/ci-cambios.sh')).toMatch(/schedule\)/)
+    // Con los dos proyectos: un PR corre `movil` sólo en lo que toca, y la noche es la que ve lo que rompió en otro lado.
+    expect(job('cambios')).toMatch(
+      /"\$EVENTO" = schedule \]; then\n(?:\s*#.*\n)*\s*printf .*e2e_proyectos=ambos/,
+    )
   })
 })
 
