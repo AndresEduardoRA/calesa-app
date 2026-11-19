@@ -96,12 +96,12 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
 - **«Cotizar encima»** (`features/encima/`): el aviso (`avisoDeVersion()`: otra versión que la publicada hoy, o vencida) lo ve todo el que abre; el
   botón, sólo con `cadena.puedeCotizarEncima` (lo decide la base, no `puede()`: una anterior sin lead pide `sin_lead` y una sin vehículo, `sin_vehiculo`). El intento es el id de la nueva y se conserva sólo tras una pérdida; con
   cambios sin guardar o un pendiente el botón espera, porque la nueva lleva lo guardado.
-- **Historial** (pestaña de `/vehiculos/[id]` con `cotizaciones.ver` del origen del vehículo; sección de `/leads/[id]` con `cotizaciones.ver` en algún
-  origen, sin mirar la cartera: la RLS recorta): se lee al montarse desde el navegador por `composicion-historial.client.ts` (por
+- **Historial** (el del panel del vehículo de la hoja, `HistorialDelVehiculo`, y la sección de `/leads/[id]` con `cotizaciones.ver` en algún origen, sin
+  mirar la cartera: la RLS recorta; la ficha del vehículo usa «De este vehículo»): se lee al montarse desde el navegador por `composicion-historial.client.ts` (por
   `cotizaciones_vehiculo_creado_idx` o `cotizaciones_lead_creado_idx`), de a 20 hasta 500, y el tope dice «Ver todas en Cotizaciones». Va aparte de
-  `composicion.client.ts` y cada cáscara de `diferido()` en su `diferidos.tsx` (`features/historial/components/{pestana,lead}/`) porque lo que importa la
+  `composicion.client.ts` y cada cáscara de `diferido()` en su `diferidos.tsx` (`features/historial/components/` y `lead/`) porque lo que importa la
   hoja viaja en la carga en frío de `/cotizaciones/nuevo` (4-73). `usePaginasDelHistorial(de)` descarta lo viejo con `ultimo`; `<ListaDelHistorial>` espera
-  300 ms el esqueleto salvo con `esperarEsqueleto={false}` (pestaña y sección: llegan tras el esqueleto del `diferido()`).
+  300 ms el esqueleto salvo con `esperarEsqueleto={false}` (la sección del lead: llega tras el esqueleto del `diferido()`).
 - **Configuración › Cotización** (la arma `src/app/(app)/configuracion/cotizacion/`): cada sección del módulo recibe el **origen abierto**
   (`{ id, nombre, activo }`) que `src/app` ya validó, sin selector propio; las URL las arma `rutaDeConfiguracionDeCotizacion(origenId, pestana,
 consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las actions revalidan `/configuracion/cotizacion` con `'layout'`. El inicio
