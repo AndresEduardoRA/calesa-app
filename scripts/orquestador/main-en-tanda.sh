@@ -15,8 +15,9 @@ MAIN_VISTO_CADA_S=${MAIN_VISTO_CADA_S:-300}
 CARPETA_DE_MIGRACIONES='supabase/migrations/'
 
 # pr → 0 si el PR agrega migraciones.
-con_migraciones() {
-  ghr pr view "$1" --json files --jq '.files[].path' 2>/dev/null | grep -q "^$CARPETA_DE_MIGRACIONES"
+con_migraciones() { # con la API paginada: `gh pr view --json files` corta en 100 archivos y una migración puede quedar afuera
+  ghr api --paginate "repos/{owner}/{repo}/pulls/$1/files?per_page=100" --jq '.[].filename' 2>/dev/null |
+    grep -q "^$CARPETA_DE_MIGRACIONES"
 }
 
 # sha → cuántos commits de main le faltan (vacío si GitHub no respondió).
