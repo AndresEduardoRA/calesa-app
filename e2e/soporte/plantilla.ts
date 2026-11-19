@@ -2,7 +2,9 @@
 // una asesora de la semilla que no configura nada, cada una con su sesión. Sin página: lo que la base entrega y niega a cada persona. Todo lo que crea lleva el prefijo de
 // `cotizar-formula` y se borra con `borrarOrigenesDeCotizar()` (las plantillas caen con su origen).
 import { readFileSync } from 'node:fs'
+import { expect, type Page } from '@playwright/test'
 import type { SupabaseClient } from '@supabase/supabase-js'
+import type { PlantillaEnCuadricula } from '../../src/modules/cotizaciones/entities/cuadricula-de-la-tarjeta'
 import type { Plantilla } from '../../src/modules/cotizaciones/entities/plantilla/forma-de-plantilla'
 import { CONTRASENA } from './alta'
 import {
@@ -148,4 +150,97 @@ export function plantillaPublicada(
   return fila === ''
     ? null
     : (JSON.parse(fila) as { version: number; nota: string | null; definicion: Plantilla })
+}
+
+// Una cuadrícula (la forma 2) chica y válida para la fórmula «mini», con `marca` en el título para distinguir una definición de otra: el título combinado en las dos
+// columnas, el remate (etiqueta y monto), los fees (su etiqueta, en `c_fees`) y el total. Las filas, por índice: 0 título, 1 remate, 2 fees, 3 total.
+export function cuadriculaValida(marca: string): PlantillaEnCuadricula {
+  return {
+    forma: 2,
+    columnas: [
+      { id: 'concepto', ancho: 190 },
+      { id: 'monto', ancho: 130 },
+    ],
+    filas: [
+      { id: 'f_titulo', alto: 28, ocultar_si: 'nunca' },
+      { id: 'f_remate', alto: 24, ocultar_si: 'nunca' },
+      { id: 'f_fees', alto: 24, ocultar_si: 'nunca' },
+      { id: 'f_total', alto: 28, ocultar_si: 'nunca' },
+    ],
+    celdas: [
+      {
+        id: 'c_titulo',
+        fila: 'f_titulo',
+        columna: 'concepto',
+        abarca_columnas: 2,
+        contenido: { tipo: 'texto', texto: `Título ${marca}` },
+      },
+      {
+        id: 'c_remate',
+        fila: 'f_remate',
+        columna: 'concepto',
+        contenido: { tipo: 'dato', nodo: 'remate', mostrar: 'etiqueta' },
+      },
+      {
+        id: 'c_remate_monto',
+        fila: 'f_remate',
+        columna: 'monto',
+        contenido: { tipo: 'dato', nodo: 'remate', mostrar: 'monto' },
+      },
+      {
+        id: 'c_fees',
+        fila: 'f_fees',
+        columna: 'concepto',
+        contenido: { tipo: 'dato', nodo: 'fees', mostrar: 'etiqueta' },
+      },
+      {
+        id: 'c_total',
+        fila: 'f_total',
+        columna: 'concepto',
+        contenido: { tipo: 'texto', texto: 'TOTAL' },
+      },
+      {
+        id: 'c_total_monto',
+        fila: 'f_total',
+        columna: 'monto',
+        contenido: { tipo: 'dato', nodo: 'total', mostrar: 'monto' },
+      },
+    ],
+  }
+}
+
+// La definición guardada como texto, para buscar una marca sin atarse a una forma.
+export const comoTexto = (definicion: unknown): string => JSON.stringify(definicion)
+
+export const lienzoDeLaTarjeta = (page: Page) =>
+  page.getByRole('grid', { name: 'Lienzo de la tarjeta' })
+
+// La tarjeta dibujada (la que ve el cliente) en el lienzo.
+export const tarjetaDibujada = (page: Page) => page.locator('[data-tarjeta-de-cotizacion]')
+
+// Escribe en el lugar una celda de la tarjeta: elegirla con el puntero (con el foco ya en la grilla), F2, el texto y Enter.
+export async function escribirEnLaCelda(
+  page: Page,
+  celda: ReturnType<Page['locator']>,
+  texto: string,
+): Promise<void> {
+  await celda.click()
+  await expect(celda).toHaveAttribute('aria-selected', 'true')
+  await expect(lienzoDeLaTarjeta(page)).toBeFocused()
+  await page.keyboard.press('F2')
+  const campo = page.getByRole('textbox', { name: 'Texto de la celda' })
+  await expect(campo).toBeFocused()
+  await campo.fill(texto)
+  await page.keyboard.press('Enter')
+  await expect(campo).toHaveCount(0)
+}
+
+// La casilla `f:k` del lienzo.
+export const casillaDelLienzo = (page: Page, f: number, k: number) =>
+  lienzoDeLaTarjeta(page).locator(`[data-pos="${String(f)}:${String(k)}"]`)
+
+// «Descartar borrador…», que vive en el «⋯» de los botones de la tarjeta.
+export async function abrirDescartarLaTarjeta(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Más acciones de la tarjeta' }).click()
+  await page.getByRole('menuitem', { name: 'Descartar borrador…' }).click()
 }

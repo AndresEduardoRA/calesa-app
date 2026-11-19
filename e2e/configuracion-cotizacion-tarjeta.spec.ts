@@ -4,15 +4,19 @@ import { PREFIJO_ROL_E2E, correoDePrueba, crearPersona, darRolDePrueba } from '.
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
 import {
   borradorGuardado,
+  escribirEnLaCelda,
+  lienzoDeLaTarjeta,
   limpiarTerrenoDePlantilla,
   prepararTerrenoDePlantilla,
+  tarjetaDibujada,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
-import { sinScrollHorizontal, tactil } from './soporte/recorrido'
 
-// La pestaña «Tarjeta» de Configuración › Cotización (4.19-3b, `docs/UX.md` › «Cotización: tarjeta (estados propios)»): quien configura el origen edita el borrador de la
-// plantilla de la tarjeta (los grupos con su tono, el total, las filas, la nota, el logo y las columnas) y lo guarda con la versión esperada. Sin la clave no hay pestaña;
-// sin fórmula publicada, un vacío con su enlace; lo escrito y sin guardar vuelve tras recargar.
+// @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
+
+// La pestaña «Tarjeta» de Configuración › Cotización (T325, `docs/UX.md` › «Cotización: tarjeta (estados propios)»): quien configura el origen edita el borrador de la
+// tarjeta en el lienzo (la forma 2) y lo guarda con la versión esperada. Sin plantilla nace de la de por omisión; sin la clave no hay pestaña; sin fórmula publicada, un
+// vacío con su enlace; lo escrito y sin guardar vuelve tras recargar. La marca de archivo no deja medir (el editor es de escritorio): sin «sin scroll horizontal».
 test.describe.configure({ mode: 'serial' })
 
 let proyecto = ''
@@ -76,9 +80,12 @@ async function abrirTarjeta(page: Page, id = origenId()) {
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
 }
 
-const guardar = (page: Page) => page.getByRole('button', { name: 'Guardar' })
+const guardar = (page: Page) => page.getByRole('button', { name: 'Guardar borrador' })
+// La celda de texto «Cotización n.º» de la tarjeta de por omisión (la conversión de la forma 1): su nombre accesible es su texto.
+const celdaConTexto = (page: Page, texto: string) =>
+  lienzoDeLaTarjeta(page).getByRole('gridcell', { name: texto, exact: true })
 
-test('E1: sin borrador ni publicada el editor parte de los grupos de la fórmula, guarda y lo guardado vuelve tras recargar', async ({
+test('E1: sin borrador ni publicada el editor nace de la de por omisión, guarda la cuadrícula y lo guardado vuelve tras recargar', async ({
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
@@ -89,24 +96,26 @@ test('E1: sin borrador ni publicada el editor parte de los grupos de la fórmula
   await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${origenId()}/tarjeta$`))
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(
-    page.getByText('Sin borrador ni publicada: parte de los grupos de la fórmula.'),
+    page.getByText('Sin borrador ni publicada: parte de la de por omisión.'),
   ).toBeVisible()
-  // Sin borrador, «Guardar» está activo desde el principio.
+  await expect(page.getByText('Todavía no hay tarjeta: nace de la de por omisión.')).toBeVisible()
+  // Sin borrador, «Guardar borrador» está activo desde el principio.
   await expect(guardar(page)).toBeEnabled()
-  await page.getByLabel('Etiqueta del total').fill('TOTAL EN DÓLARES')
-  await page.getByLabel('Color de «Compra»').selectOption({ index: 1 })
+  await escribirEnLaCelda(page, celdaConTexto(page, 'Cotización n.º'), 'Cotización número')
+  await expect(tarjetaDibujada(page).getByText('Cotización número', { exact: true })).toBeVisible()
   await guardar(page).click()
   await expect(page.getByText('Se guardó el borrador.')).toBeVisible()
+  await expect.poll(() => borradorGuardado(origenId())?.actualizadoEn ?? null).not.toBeNull()
   await page.reload()
-  await expect(page.getByLabel('Etiqueta del total')).toHaveValue('TOTAL EN DÓLARES')
   await expect(page.getByText(/^Sobre el borrador guardado el /)).toBeVisible()
+  await expect(tarjetaDibujada(page).getByText('Cotización número', { exact: true })).toBeVisible()
   // Sin cambios no hay qué guardar.
   await expect(guardar(page)).toBeDisabled()
   const guardado = borradorGuardado(origenId())
-  expect(guardado?.definicion.total.etiqueta).toBe('TOTAL EN DÓLARES')
-  expect(guardado?.definicion.grupos[0]?.tono).toBeTruthy()
-  // Sin aserción sobre los decimales de `actualizadoEn`: la base los escribe sin los ceros del final y el reloj de esta máquina da a veces sólo 3 o 5 (cayó con
-  // «.695», «.43929» y «.62499»). Que la versión esperada conserve los microsegundos lo prueba el PT409 de `-conflicto.spec.ts`.
+  expect((guardado?.definicion as unknown as { forma?: number } | undefined)?.forma).toBe(2)
+  expect(JSON.stringify(guardado?.definicion)).toContain('Cotización número')
+  // Sin aserción sobre los decimales de `actualizadoEn`: la base los escribe sin los ceros del final. Que la versión esperada conserve los microsegundos lo prueba el
+  // PT409 de `-conflicto.spec.ts`.
   expect(guardado?.actualizadoEn).toBeTruthy()
 })
 
@@ -115,6 +124,9 @@ test('E2: sin la clave no hay pestaña ni se abre por la URL; un origen ajeno ab
 }) => {
   await entrar(page, sinClave, { fresco: true })
   await page.goto('/configuracion/cotizacion?seccion=tarjeta')
+  // Sin la clave, el enlace viejo abre la primera parte que puede («Niveles»): se espera a que llegue antes de cambiar de cuenta (si no, la redirección en
+  // curso aborta la ida al ingreso).
+  await expect(page).toHaveURL(/\/configuracion\/cotizacion\/general\/niveles/)
   await expect(page.getByRole('tab', { name: 'Tarjeta' })).toHaveCount(0)
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toHaveCount(0)
 
@@ -125,32 +137,28 @@ test('E2: sin la clave no hay pestaña ni se abre por la URL; un origen ajeno ab
     page.getByRole('navigation', { name: 'Origen' }).locator('[aria-current="page"]'),
   ).toHaveAttribute('href', `/configuracion/cotizacion/${origenId()}/tarjeta`)
   await page.goto(`/configuracion/cotizacion?seccion=tarjeta&origen=${sinFormula.id}`)
-  await expect(page.getByText(/^Falta publicar la fórmula de /)).toBeVisible()
+  await expect(
+    page.getByText(/^Falta publicar la fórmula de .*: la tarjeta se arma con sus nodos\.$/),
+  ).toBeVisible()
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toHaveCount(0)
-  await page.getByRole('link', { name: 'Ir a «Fórmula»' }).click()
+  await page.getByRole('link', { name: 'Ir a la fórmula' }).click()
   await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${sinFormula.id}/formula$`))
 })
 
-test('E4: lo tipeado y sin guardar vuelve tras recargar con «Descartar», y «Descartar» lo quita', async ({
+test('E4: lo escrito en una celda y sin guardar vuelve tras recargar con «Descartar», y «Descartar» lo quita', async ({
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
   await abrirTarjeta(page)
-  await page.getByText('Pie y columnas').click()
-  await page.getByLabel('Nota de la tarjeta').fill('Escrita y sin guardar')
+  await expect(guardar(page)).toBeDisabled()
+  await escribirEnLaCelda(page, celdaConTexto(page, 'Cotización número'), 'Escrita y sin guardar')
   await expect(guardar(page)).toBeEnabled()
   await page.reload()
   await expect(page.getByText('Recuperamos lo que habías escrito y no guardaste.')).toBeVisible()
-  await expect(page.getByLabel('Nota de la tarjeta')).toHaveValue('Escrita y sin guardar')
+  await expect(
+    tarjetaDibujada(page).getByText('Escrita y sin guardar', { exact: true }),
+  ).toBeVisible()
   await page.getByRole('button', { name: 'Descartar', exact: true }).click()
-  await expect(page.getByLabel('Nota de la tarjeta')).toHaveValue('')
+  await expect(tarjetaDibujada(page).getByText('Cotización número', { exact: true })).toBeVisible()
   await expect(guardar(page)).toBeDisabled()
-})
-
-test('E8: sin scroll horizontal y con blancos táctiles', async ({ page }) => {
-  await entrar(page, configuradora, { fresco: true })
-  await abrirTarjeta(page)
-  await sinScrollHorizontal(page)
-  await tactil(page, guardar(page))
-  await tactil(page, page.getByLabel('Etiqueta del total'))
 })
