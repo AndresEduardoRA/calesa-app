@@ -22,8 +22,8 @@ Común: `id` (`^[a-z][a-z0-9_]{0,40}$`), `tipo`, `etiqueta`; `formato?` (`usd` p
 - `constante`: `condicion?`, `texto?`. Vale `params[id]`, el «valor por defecto global» que cambia el ⚙ (publica la N+1).
 - `tipo_cambio`: `clave` (una clave, un solo nodo). Vale el de `tipos_cambio` al cotizar; se congela.
 - `campo_vehiculo`: `campo` (`anio` o la clave de un campo del origen), del vehículo vinculado. `bandera`: el interruptor, 0 o 1.
-- `opcion`: `opciones: [{clave, etiqueta, titulo}]` (dos o más), `por_defecto?`. A lo sumo una. Vale la clave elegida (texto); la
-  nombran `solo_en` y un `match`, nunca un cálculo.
+- `opcion`: `opciones: [{clave, etiqueta, titulo}]` (dos o más), `por_defecto?`, `en_par?` («Se cotiza en par»: exactamente dos opciones; sin la clave, la
+  de siempre). A lo sumo una. Vale la clave elegida (texto); la nombran `solo_en` y un `match`, nunca un cálculo.
 - `tabla`: `tabla`, `match` {columna: nodo anterior o, si no hay uno con ese id, campo del vehículo}, `columna`, `sobrescribible?`,
   `condicion?`. `tramo`: `tabla`, `sobre` (un nodo), `columna`, `sobrescribible?`, `condicion?`: la fila con `desde ≤ sobre ≤ hasta`.
 - `calculo`: `op`, `sobrescribible?`, `condicion?`, `texto?`. Operaciones: `suma(de ≥ 1)`, `porcentaje_de(de ≥ 1, pct)` = Σde × pct,
@@ -55,6 +55,9 @@ Un nodo fuera de su variante (`solo_en`) o con `condicion` apagada vale 0 sin le
 deshabilitado con su motivo («El motor» › «La variante y el estado»). El `opcion` va antes que todo nodo con `solo_en`. El total no
 lleva `solo_en`, `condicion` ni `sobrescribible`.
 
+Una **variante en par** (`en_par`) no la elige la persona: la hoja cotiza las dos opciones a la vez y guardar crea dos **cotizaciones hermanas**
+(«Cotizaciones hermanas (la variante en par)», abajo).
+
 ### Las tablas congeladas (D5)
 
 Editar una tabla de referencia publica la N+1 de cada fórmula que la usa, y la fórmula congela en `params.tablas` las filas que usa:
@@ -80,7 +83,7 @@ en **cada** origen que la usa.
 
 ## Las reglas
 
-**Primero la forma (`forma`):** el Zod de `nodos.ts` y `formula.ts`. **Después, 30 reglas cruzadas** con código estable (contrato con la
+**Primero la forma (`forma`):** el Zod de `nodos.ts` y `formula.ts`. **Después, 31 reglas cruzadas** con código estable (contrato con la
 base; lista y textos de cada lado en `entities/motivos-de-formula.ts`); `donde` es el id del nodo, grupo o clave donde se rompe (en la
 base, `hint`): `nodo_duplicado`, `referencia_inexistente` (un `match` sin nodo es un campo del vehículo), `ciclo`,
 `referencia_hacia_adelante` (también `solo_en` antes del `opcion`), `referencia_de_tipo`, `total_unico`, `total_fijo`,
@@ -88,7 +91,7 @@ base, `hint`): `nodo_duplicado`, `referencia_inexistente` (un `match` sin nodo e
 `tipo_de_cambio_inexistente`, `bucket_inexistente`, `total_sin_tipo_de_cambio`, `grupos_sin_total_en`, `grupo_duplicado`,
 `grupo_inexistente`, `grupo_vacio`, `bucket_con_grupos`, `miembro_no_es_monto` (sólo `input`, `constante`, `tabla`, `tramo`, `calculo`,
 en usd o moneda), `miembro_con_salida`, `doble_conteo` (un miembro que acumula otro), `opcion_repetida`, `opcion_clave_repetida`,
-`opcion_por_defecto_inexistente`, `solo_en_sin_opcion`, `solo_en_opcion_inexistente`, `campo_con_punto` (un campo de vehículo con punto:
+`opcion_por_defecto_inexistente`, `par_sin_dos_opciones` (`en_par` con otra cantidad de opciones que dos), `solo_en_sin_opcion`, `solo_en_opcion_inexistente`, `campo_con_punto` (un campo de vehículo con punto:
 es una columna o la clave de un campo del origen).
 
 El validador **devuelve el primer rechazo**, en orden fijo, y es **lineal** (todo bucle y toda búsqueda pasan por `medidor.ts`).
@@ -702,6 +705,41 @@ el lead `for no key update`, el vehículo `for key share`, la fórmula y, despu�
 con todo tomado vuelve a mirar la cartera y la ayudante (el vínculo, en una sentencia nueva). Inserta y aplica `_final_aplicar`. No hay
 otra vuelta: lo que crear toma son sus parámetros. La preventa no cambia.
 
+## Cotizaciones hermanas (la variante en par)
+
+Con una variante `en_par` (glosario: «Variante en par» y «Cotizaciones hermanas») la hoja cotiza las dos opciones a la vez y guardar crea dos cotizaciones, una por
+opción, que se apuntan por `hermana_id`.
+
+- **Qué nodos van en par** (`nodosEnPar()` de `entities/en-par.ts`, espejo de `_nodos_en_par()`, con el juego `casos-de-en-par.json`): regla estática, sin
+  evaluar, en una pasada por el orden de la lista: un nodo va en par si tiene `solo_en` o si algo que nombra (`referenciasDe()`) es la variante o un nodo que ya va;
+  la variante y los tipos de cambio nunca. La forma de la hoja no cambia al tipear.
+- **La lectura** (`_cotizacion_hoja`): `par` (`{nodo, etiqueta, opciones: [{clave, etiqueta}, …]}`, a todo el que abre aunque su nivel esconda la variante: es
+  configuración) y `en_par: true` en cada celda y subtotal que va en par; el ítem de la variante no viaja. La guardada suma `par.opcion` (la de esa cotización) y
+  `hermana` (`{id, disponible, actualizado_en, puede_guardar}`; disponible si se ve, está viva y no es `invalida`; si no, sólo `{id, disponible: false}`).
+- **Calcular**: `cotizacion_evaluar(…, p_opcion)` pone la opción de cada columna de la hoja nueva (la base, no la persona: un nivel que esconde la variante cotiza
+  igual); una guardada calcula con la suya. Mandar `variante` en una versión en par es `variante_en_par`; `p_opcion` sin par, `sin_par`; una que no es del par,
+  `opcion_invalida`; con `p_cotizacion`, `llamada_invalida`.
+- **Crear** (`cotizacion_crear_en_par(p_ids, …, p_entradas[2], …)`): los dos ids del cliente como intento (candados en orden de id; dos mías, vivas y hermanas
+  vuelven con `repetido`; una sola, `intento_reusado`); `cotizacion_crear` una vez por opción con el ajuste de la transacción `importadora.en_par` (la opción por
+  su posición, la hermana y, la segunda, la hora de la primera + 1 µs: así la de la primera opción nace **aprobada** si el vehículo no tenía y quedan juntas en
+  toda lista). «Desactualizada» y «Guardar con la N» fallan en la primera, para las dos. `cotizacion_crear` sobre una versión en par sin ese ajuste es
+  `cotizar_en_par`.
+- **Guardar** (`cotizacion_guardar_en_par(p_ids, p_intentos, p_actualizados_en_esperados, p_entradas[2], …, p_notas[2], …)`): permiso de las dos y que sean
+  hermanas (`no_son_hermanas`) antes de los candados; los vehículos y después las dos cotizaciones en orden de id; `cotizacion_guardar` para cada una: si una
+  cambió, PT409 con su id en el `hint` y no se guarda ninguna; la que no cambió no se reescribe (como siempre). Cambiar el vehículo cambia el de las dos. Guardar
+  **suelta** una hermana (la otra no está disponible) no cambia el vehículo (`vehiculo_de_la_hermana`).
+- **El título**: el cliente manda el título sin la opción y la base guarda «<título> · <etiqueta>» en toda versión en par (el manual tiene el tope
+  `120 − largo(« · <etiqueta>»)`; el automático es el del vehículo cortado para que quepa).
+- **El invariante** (`trg_cotizaciones_hermanas`, diferido): la hermana existe, apunta de vuelta y comparte lead, vehículo, origen y versión (23514). La versión
+  y las revisiones no miran `hermana_id`.
+- **Cotizar encima** (`cotizacion_encima_en_par`): el par nuevo en el acto, cada una encima de su hermana de antes y con la opción de su misma posición en el par de
+  hoy (`puede_cotizar_encima_en_par`). Sin par hoy o sin la hermana, el `cotizacion_encima` de siempre.
+- **La papelera**: enviar una manda su hermana viva al mismo lote (sin versión; si quien envía no puede, queda viva y va en `rechazados`); restaurar o purgar sólo
+  algunas del lote suma su hermana del mismo lote. **Marcar final** una manda la otra a la papelera con las demás preventas del vehículo.
+- **La pantalla**: la guardada de una hermana abre las dos juntas (`modoDeLaHermana()`: la hermana disponible y el mismo permiso de guardar) y guardar cualquiera
+  guarda las dos; si no, sola con «La de <etiqueta> no está disponible.». La vista previa y el PDF llevan las dos tarjetas (una página A4 por tarjeta), y
+  «Compartir», los conceptos y el total de cada opción y las dos portadas apiladas en una imagen.
+
 ## Lo que se guarda en una cotización
 
 `formula_id` (recalcular o editar usa **esa** versión, nunca la vigente); `valores` (`{nodo_id: número | null}` de TODOS los nodos; el
@@ -709,8 +747,9 @@ otra vuelta: lo que crear toma son sus parámetros. La preventa no cambia.
 `tipos_cambio` (`{clave: valor}` congelados); `totales` (por moneda y por grupo); `titulo` (el **título de la cotización**, hasta 120) y
 `titulo_manual` (si lo escribió una persona; si no, es el del vehículo y la base lo rehace en cada guardado; las que ya tenían título antes de la
 columna quedaron manuales); `tarjeta_retoques` (los **retoques de la tarjeta**: textos y filas ocultas sólo de esta cotización; nula, la tarjeta tal
-cual la plantilla; «Retoques de la tarjeta», abajo). **Nada se lee directo** (sale por `cotizacion_leer()`,
-recortado por el nivel; `total_base`, `modo_tc`, `ver_total_bs`, `titulo`, `titulo_manual` y `tarjeta_retoques` sí son legibles) **ni se escribe directo**: se
+cual la plantilla; «Retoques de la tarjeta», abajo); `hermana_id` (la **cotización hermana** de una variante en par; nula si no tiene; purgar una la pone en
+nulo en la otra sin mover su versión). **Nada se lee directo** (sale por `cotizacion_leer()`,
+recortado por el nivel; `total_base`, `modo_tc`, `ver_total_bs`, `titulo`, `titulo_manual`, `tarjeta_retoques` y `hermana_id` sí son legibles) **ni se escribe directo**: se
 crea con `cotizacion_crear()`, se edita con `cotizacion_guardar()` y se retoca con `cotizacion_retocar_tarjeta()`.
 
 ## Binding con la XCell

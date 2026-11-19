@@ -31,6 +31,7 @@ export const REGLAS_DE_FORMULA = [
   'opcion_repetida',
   'opcion_clave_repetida',
   'opcion_por_defecto_inexistente',
+  'par_sin_dos_opciones',
   'solo_en_sin_opcion',
   'solo_en_opcion_inexistente',
   'campo_con_punto',
@@ -106,6 +107,7 @@ const MENSAJES: Record<ReglaDeFormula, (d: DatosDeRechazo) => string> = {
   opcion_clave_repetida: (d) => `La variante ${q(d.donde)} repite la opción ${q(d.clave)}.`,
   opcion_por_defecto_inexistente: (d) =>
     `La opción por defecto ${q(d.clave)} no es una opción de ${q(d.donde)}.`,
+  par_sin_dos_opciones: () => 'Una variante que se cotiza en par tiene exactamente dos opciones.',
   solo_en_sin_opcion: (d) =>
     `${q(d.donde)} dice en qué variantes vale, y la fórmula no tiene variante.`,
   solo_en_opcion_inexistente: (d) =>

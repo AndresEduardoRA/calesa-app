@@ -9,6 +9,7 @@ import { useAplicarFila } from './use-aplicar-fila'
 import { filasParaDibujar } from './use-editor-de-la-formula.soporte'
 import { useGuardadoDelEditor } from './use-guardar-borrador'
 import { useGruposDelEditor } from './use-grupos-del-editor'
+import { usePonerEnPar } from './use-poner-en-par'
 import { useSumarFila } from './use-sumar-fila'
 import { useVistaPrevia } from './use-vista-previa'
 
@@ -79,6 +80,7 @@ export function useEditorDeLaFormula({
   // Nada más abierto ni guardándose: se abre una fila o un grupo.
   const libre =
     abierta === null && nueva.sumando === null && grupos.abierto === null && !envio.enCurso
+  const alPonerEnPar = usePonerEnPar(libre, setTrabajo)
 
   return {
     trabajo,
@@ -104,6 +106,7 @@ export function useEditorDeLaFormula({
       setAbierta(null)
     },
     aplicar,
+    ponerEnPar: alPonerEnPar,
   }
 }
 

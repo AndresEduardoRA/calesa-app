@@ -1,3 +1,4 @@
+import type { RetoquesDeLaTarjeta } from '../../../entities/cuadricula-de-la-tarjeta'
 import type { ComponentType, ReactNode } from 'react'
 import type { Permisos } from '@/shared/lib/permisos'
 import type { CalculoDeLaTarjeta } from '../../../entities/calculo-de-la-tarjeta'
@@ -70,6 +71,23 @@ export type PropsDeLaVistaPrevia = {
   estado: EstadoDeRecalculo | null
   monedaBs: string | null
   avisos: { difiere: boolean; cambiosSinGuardar: boolean }
+  // La hoja en par (glosario: «Cotizaciones hermanas»): la etiqueta de la opción de esta tarjeta (en la hoja nueva el título lleva « · <etiqueta>») y la tarjeta de la
+  // otra opción, una bajo la otra en el orden de las opciones (`antes`: la de la hermana va primero). Lo de la página de la hermana pisa lo de esta.
+  opcion?: string
+  hermana?: HermanaEnLaVistaPrevia
+}
+
+export type HermanaEnLaVistaPrevia = {
+  calculo: CalculoDeLaTarjeta
+  estado: EstadoDeRecalculo | null
+  opcion: string
+  antes: boolean
+  pagina?: {
+    titulo: string | null
+    numero: number
+    guardadaEl: string
+    retoques: RetoquesDeLaTarjeta | null
+  }
 }
 
 export type HuecosDeLaHoja = {

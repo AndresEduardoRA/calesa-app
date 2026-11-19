@@ -33,11 +33,12 @@ const SIN_ELEGIR = { nuevo: null, origen: null, alta: null, rechazado: false } a
 export async function leerLoDelVehiculo(
   sesion: Quien,
   hoja: Guardada,
-  de: { vehiculoNuevo: string | null; vehiculoSoltado: boolean },
+  de: { vehiculoNuevo: string | null; vehiculoSoltado: boolean; hermanaSola?: boolean },
 ): Promise<LoDelVehiculo> {
   const cambio = cambioDeVehiculo({
     clase: hoja.cotizacion.clase,
     puedeGuardar: hoja.puedeGuardar,
+    hermanaSola: de.hermanaSola ?? false,
   })
   if (cambio !== 'elige') {
     return { cambio, ...SIN_ELEGIR }

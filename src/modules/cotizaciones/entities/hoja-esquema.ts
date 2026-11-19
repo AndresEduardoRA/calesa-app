@@ -111,6 +111,8 @@ export const esquemaCelda = z
     condicion: esquemaId.optional(),
     requerido_si: esquemaId.optional(),
     secundario: esquemaSecundario.optional(),
+    // Cambia según la opción de la variante en par (glosario: «Variante en par»): se dibuja en dos celdas. Lo decide la base.
+    en_par: z.literal(true).optional(),
     ...edicion,
   })
   .refine(coherente, ERROR_DE_MOTIVO)
@@ -156,6 +158,7 @@ const esquemaSubtotal = z.object({
   etiqueta: z.string().min(1),
   formato: z.enum(FORMATOS),
   tono: esquemaId.optional(),
+  en_par: z.literal(true).optional(),
   ...anchoDeItem,
 })
 
@@ -189,6 +192,7 @@ const esquemaDeNodoDeTarjeta = z.object({
   formato: z.enum(FORMATOS),
 })
 const esquemaOrigen = z.object({ id: z.guid(), nombre: z.string().min(1) })
+const esquemaOpcionDelPar = z.object({ clave: esquemaId, etiqueta: z.string().min(1) })
 
 // El diseño de una versión de la fórmula recortado al nivel de quien mira: lo que comparten la hoja de cotizar y la de una guardada (`cotizacion_hoja_guardada()`, 4.15-2),
 // que no trae hoja abierta (calcula por su cotización).
@@ -211,6 +215,16 @@ export const esquemaDeDiseno = z.object({
   secciones: z.array(esquemaSeccion),
   tarjeta_total: esquemaDeNodoDeTarjeta.extend({ secundarios: z.array(esquemaDeNodoDeTarjeta) }),
   tonos: z.array(esquemaTono),
+  // La variante en par: viaja a todo el que abre la hoja (sus etiquetas son configuración); en una guardada, `opcion` es la de esa cotización.
+  par: z
+    .object({
+      nodo: esquemaId,
+      etiqueta: z.string().min(1),
+      opciones: z.tuple([esquemaOpcionDelPar, esquemaOpcionDelPar]),
+      opcion: esquemaId.nullable().optional(),
+    })
+    .nullable()
+    .optional(),
 })
 export const esquemaLista = esquemaDeDiseno.extend({
   estado: z.literal('lista'),

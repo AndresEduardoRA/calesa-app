@@ -103,6 +103,19 @@ export const MUTADORES_DE_VARIANTE: readonly Mutador[] = [
     },
   },
   {
+    // «Se cotiza en par» en una variante que no tiene dos opciones: le suma una si tiene dos.
+    nombre: 'par_sin_dos_opciones',
+    aplicar: (f) => {
+      const v = opcionDe(f)
+      const ops = v ? opcionesDe(v.n) : []
+      if (!v || ops.length < 2 || !Array.isArray(v.n['opciones'])) return null
+      if (ops.length === 2)
+        v.n['opciones'].push({ clave: 'otra_mas', etiqueta: 'Otra', titulo: 'Otra' })
+      v.n['en_par'] = true
+      return 'par_sin_dos_opciones'
+    },
+  },
+  {
     nombre: 'quitar_variante',
     aplicar: (f) => {
       const v = opcionDe(f)

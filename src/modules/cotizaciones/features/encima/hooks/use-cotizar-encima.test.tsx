@@ -13,6 +13,7 @@ vi.mock('next-safe-action/hooks', () => ({ useAction: () => ({ executeAsync: eje
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh }) }))
 vi.mock('@/shared/ui/toasts', () => ({ avisarExito }))
 vi.mock('../actions/cotizar-encima', () => ({ cotizarEncima: {} }))
+vi.mock('../actions/cotizar-encima-en-par', () => ({ cotizarEncimaEnPar: {} }))
 
 import { ContextoDeLaVistaPrevia } from '../../hoja/components/hueco-de-la-vista-previa'
 import { useCotizarEncima } from './use-cotizar-encima'

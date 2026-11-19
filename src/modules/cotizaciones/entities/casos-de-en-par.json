@@ -1,0 +1,499 @@
+{
+  "descripcion": "Qué nodos van en par (glosario: «Variante en par»): la definición y los ids que cambian según la opción, en el orden de la lista. Lo corren entities/en-par.test.ts (nodosEnPar) y supabase/tests/areas/formula/en-par.sql (_nodos_en_par).",
+  "casos": [
+    {
+      "nombre": "sin variante en par no va ninguno, aunque haya solo_en",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "contenedor",
+            "tipo": "opcion",
+            "etiqueta": "Contenedor",
+            "opciones": [
+              {
+                "clave": "c20",
+                "etiqueta": "c20",
+                "titulo": "c20"
+              },
+              {
+                "clave": "c40",
+                "etiqueta": "c40",
+                "titulo": "c40"
+              }
+            ]
+          },
+          {
+            "id": "tc",
+            "tipo": "tipo_cambio",
+            "clave": "oficial",
+            "etiqueta": "TC",
+            "formato": "raw"
+          },
+          {
+            "id": "flete",
+            "tipo": "input",
+            "etiqueta": "Flete",
+            "solo_en": ["c20"]
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["flete"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ]
+      },
+      "en_par": []
+    },
+    {
+      "nombre": "directo por solo_en; el total que lo suma también; un input suelto no",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "contenedor",
+            "tipo": "opcion",
+            "etiqueta": "Contenedor",
+            "opciones": [
+              {
+                "clave": "c20",
+                "etiqueta": "c20",
+                "titulo": "c20"
+              },
+              {
+                "clave": "c40",
+                "etiqueta": "c40",
+                "titulo": "c40"
+              }
+            ],
+            "en_par": true
+          },
+          {
+            "id": "tc",
+            "tipo": "tipo_cambio",
+            "clave": "oficial",
+            "etiqueta": "TC",
+            "formato": "raw"
+          },
+          {
+            "id": "precio",
+            "tipo": "input",
+            "etiqueta": "Precio"
+          },
+          {
+            "id": "flete",
+            "tipo": "input",
+            "etiqueta": "Flete",
+            "solo_en": ["c40"]
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["precio", "flete"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ]
+      },
+      "en_par": ["flete", "total"]
+    },
+    {
+      "nombre": "por un match sobre la variante; un match con un campo del vehículo no cuenta",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "contenedor",
+            "tipo": "opcion",
+            "etiqueta": "Contenedor",
+            "opciones": [
+              {
+                "clave": "c20",
+                "etiqueta": "c20",
+                "titulo": "c20"
+              },
+              {
+                "clave": "c40",
+                "etiqueta": "c40",
+                "titulo": "c40"
+              }
+            ],
+            "en_par": true
+          },
+          {
+            "id": "tc",
+            "tipo": "tipo_cambio",
+            "clave": "oficial",
+            "etiqueta": "TC",
+            "formato": "raw"
+          },
+          {
+            "id": "anio",
+            "tipo": "campo_vehiculo",
+            "campo": "anio",
+            "etiqueta": "Año",
+            "formato": "raw"
+          },
+          {
+            "id": "transporte",
+            "tipo": "tabla",
+            "tabla": "transportes",
+            "match": {
+              "contenedor": "contenedor"
+            },
+            "columna": "monto",
+            "etiqueta": "Transporte"
+          },
+          {
+            "id": "arancel",
+            "tipo": "tabla",
+            "tabla": "aranceles",
+            "match": {
+              "anio": "anio",
+              "marca": "marca"
+            },
+            "columna": "pct",
+            "etiqueta": "Arancel",
+            "formato": "pct"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["transporte"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ]
+      },
+      "en_par": ["transporte", "total"]
+    },
+    {
+      "nombre": "indirecto por de, pct, condicion y sugerido_de, en cadena",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "contenedor",
+            "tipo": "opcion",
+            "etiqueta": "Contenedor",
+            "opciones": [
+              {
+                "clave": "c20",
+                "etiqueta": "c20",
+                "titulo": "c20"
+              },
+              {
+                "clave": "c40",
+                "etiqueta": "c40",
+                "titulo": "c40"
+              }
+            ],
+            "en_par": true
+          },
+          {
+            "id": "tc",
+            "tipo": "tipo_cambio",
+            "clave": "oficial",
+            "etiqueta": "TC",
+            "formato": "raw"
+          },
+          {
+            "id": "flete",
+            "tipo": "input",
+            "etiqueta": "Flete",
+            "solo_en": ["c20"]
+          },
+          {
+            "id": "tasa",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["flete"],
+            "etiqueta": "Tasa",
+            "formato": "pct"
+          },
+          {
+            "id": "base",
+            "tipo": "input",
+            "etiqueta": "Base"
+          },
+          {
+            "id": "recargo",
+            "tipo": "calculo",
+            "op": "porcentaje_de",
+            "de": ["base"],
+            "pct": "tasa",
+            "etiqueta": "Recargo"
+          },
+          {
+            "id": "doble",
+            "tipo": "bandera",
+            "etiqueta": "Doble",
+            "solo_en": ["c40"]
+          },
+          {
+            "id": "extra",
+            "tipo": "constante",
+            "etiqueta": "Extra",
+            "condicion": "doble"
+          },
+          {
+            "id": "sugerido",
+            "tipo": "input",
+            "etiqueta": "Sugerido",
+            "sugerido_de": "recargo"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["base"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ]
+      },
+      "en_par": ["flete", "tasa", "recargo", "doble", "extra", "sugerido"]
+    },
+    {
+      "nombre": "por requerido_si y por el sobre de un tramo y de depreciar",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "contenedor",
+            "tipo": "opcion",
+            "etiqueta": "Contenedor",
+            "opciones": [
+              {
+                "clave": "c20",
+                "etiqueta": "c20",
+                "titulo": "c20"
+              },
+              {
+                "clave": "c40",
+                "etiqueta": "c40",
+                "titulo": "c40"
+              }
+            ],
+            "en_par": true
+          },
+          {
+            "id": "tc",
+            "tipo": "tipo_cambio",
+            "clave": "oficial",
+            "etiqueta": "TC",
+            "formato": "raw"
+          },
+          {
+            "id": "pide",
+            "tipo": "bandera",
+            "etiqueta": "Pide",
+            "solo_en": ["c20"]
+          },
+          {
+            "id": "dato",
+            "tipo": "input",
+            "etiqueta": "Dato",
+            "requerido_si": "pide"
+          },
+          {
+            "id": "km",
+            "tipo": "input",
+            "etiqueta": "Km",
+            "solo_en": ["c40"]
+          },
+          {
+            "id": "seguro",
+            "tipo": "tramo",
+            "tabla": "seguros",
+            "sobre": "km",
+            "columna": "monto",
+            "etiqueta": "Seguro"
+          },
+          {
+            "id": "valor",
+            "tipo": "input",
+            "etiqueta": "Valor"
+          },
+          {
+            "id": "dep",
+            "tipo": "calculo",
+            "op": "depreciar",
+            "de": ["valor"],
+            "tabla": "depreciacion",
+            "sobre": "km",
+            "columna": "factor",
+            "etiqueta": "Depreciado"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["valor"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ]
+      },
+      "en_par": ["pide", "dato", "km", "seguro", "dep"]
+    },
+    {
+      "nombre": "la variante y los tipos de cambio nunca; un campo del vehículo con solo_en sí",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "tc",
+            "tipo": "tipo_cambio",
+            "clave": "oficial",
+            "etiqueta": "TC",
+            "formato": "raw"
+          },
+          {
+            "id": "contenedor",
+            "tipo": "opcion",
+            "etiqueta": "Contenedor",
+            "opciones": [
+              {
+                "clave": "c20",
+                "etiqueta": "c20",
+                "titulo": "c20"
+              },
+              {
+                "clave": "c40",
+                "etiqueta": "c40",
+                "titulo": "c40"
+              }
+            ],
+            "en_par": true
+          },
+          {
+            "id": "tc2",
+            "tipo": "tipo_cambio",
+            "clave": "paralelo",
+            "etiqueta": "TC 2",
+            "formato": "raw"
+          },
+          {
+            "id": "cil",
+            "tipo": "campo_vehiculo",
+            "campo": "cilindrada",
+            "etiqueta": "Cilindrada",
+            "solo_en": ["c20"],
+            "formato": "raw"
+          },
+          {
+            "id": "total",
+            "tipo": "input",
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ]
+      },
+      "en_par": ["cil"]
+    },
+    {
+      "nombre": "un nodo antes de lo que cambia no cambia: sólo cuenta lo que nombra",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "contenedor",
+            "tipo": "opcion",
+            "etiqueta": "Contenedor",
+            "opciones": [
+              {
+                "clave": "c20",
+                "etiqueta": "c20",
+                "titulo": "c20"
+              },
+              {
+                "clave": "c40",
+                "etiqueta": "c40",
+                "titulo": "c40"
+              }
+            ],
+            "en_par": true
+          },
+          {
+            "id": "tc",
+            "tipo": "tipo_cambio",
+            "clave": "oficial",
+            "etiqueta": "TC",
+            "formato": "raw"
+          },
+          {
+            "id": "precio",
+            "tipo": "input",
+            "etiqueta": "Precio"
+          },
+          {
+            "id": "doble",
+            "tipo": "calculo",
+            "op": "multiplicar",
+            "de": ["precio", "precio"],
+            "etiqueta": "Doble"
+          },
+          {
+            "id": "flete",
+            "tipo": "input",
+            "etiqueta": "Flete",
+            "solo_en": ["c20", "c40"]
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["doble", "flete"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ]
+      },
+      "en_par": ["flete", "total"]
+    },
+    {
+      "nombre": "la variante en par al final de las opciones de tres no importa: la regla es estática y sólo mira en_par",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "contenedor",
+            "tipo": "opcion",
+            "etiqueta": "Contenedor",
+            "opciones": [
+              {
+                "clave": "a",
+                "etiqueta": "a",
+                "titulo": "a"
+              },
+              {
+                "clave": "b",
+                "etiqueta": "b",
+                "titulo": "b"
+              },
+              {
+                "clave": "c",
+                "etiqueta": "c",
+                "titulo": "c"
+              }
+            ],
+            "en_par": true
+          },
+          {
+            "id": "x",
+            "tipo": "input",
+            "etiqueta": "X",
+            "solo_en": ["a"]
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["x"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ]
+      },
+      "en_par": ["x", "total"]
+    }
+  ]
+}

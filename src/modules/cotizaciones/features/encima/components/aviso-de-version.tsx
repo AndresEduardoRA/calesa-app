@@ -7,6 +7,7 @@ import { avisoDeVersion } from '../../../entities/aviso-de-version'
 import type { HojaDeUnaGuardada } from '../../../entities/hoja-de-una-guardada'
 import { textoDeEncima, type ResultadoDeEncima } from '../../../entities/resultado-de-encima'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
+import { encimaEnParDe } from '../../../entities/hermana'
 import { useAporteAlMenu } from '../../hoja/components/menu-de-la-guardada/use-aporte-al-menu'
 import { useCotizarEncima } from '../hooks/use-cotizar-encima'
 
@@ -25,7 +26,7 @@ type Props = {
 // conteste la base se dice en el aviso.
 export function AvisoDeVersion({ hoja, hayCambios }: Props) {
   const lineas = avisoDeVersion(hoja)
-  const encima = useCotizarEncima({ anterior: hoja.cotizacion.id })
+  const encima = useCotizarEncima({ anterior: hoja.cotizacion.id, enPar: encimaEnParDe(hoja) })
   useAporteAlMenu(
     lineas.length > 0 && hoja.cadena.puedeCotizarEncima
       ? {

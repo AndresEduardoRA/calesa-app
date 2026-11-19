@@ -30,6 +30,8 @@ type Props = {
   tituloManual?: boolean
   // Quien mira lo puede escribir: sin eso no hay campo ni borrador.
   puede?: boolean
+  // El tope del campo (`topeDelTituloEnPar()` en una hoja en par); sin él, 120.
+  tope?: number
 }
 
 const claveDe = (de: DeLaPestana) =>
@@ -46,6 +48,7 @@ export function ProveedorDelTitulo({
   titulo = null,
   tituloManual = false,
   puede = true,
+  tope,
 }: Props) {
   const nueva = !('cotizacionId' in deLaPestana)
   const version = 'cotizacionId' in deLaPestana ? deLaPestana.actualizadoEn : null
@@ -84,6 +87,7 @@ export function ProveedorDelTitulo({
       vehiculo,
       mostrado: tituloMostrado(estado, vehiculo),
       puede,
+      ...(tope === undefined ? {} : { tope }),
       escribir: (texto) => {
         setEstado(alEscribirElTitulo(texto))
         setRechazo(null)
@@ -105,7 +109,7 @@ export function ProveedorDelTitulo({
         }
       },
     }),
-    [estado, inicial, vehiculo, puede, focoPedido, rechazo, limpiar, nueva],
+    [estado, inicial, vehiculo, puede, focoPedido, rechazo, limpiar, nueva, tope],
   )
   return <ContextoDelTitulo value={valor}>{children}</ContextoDelTitulo>
 }

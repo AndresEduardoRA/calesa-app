@@ -86,6 +86,16 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   (el «Total guardado», sí), guardar manda `cambiaElVehiculo` (no va a la RPC: con él, un 42501 sin detalle es `vehiculo_sin_acceso`, que ofrece «Elegir otro
   vehículo») y, guardado, suelta `?vehiculo=` con `nuqs` sin ir al servidor; «Recargar» lo suelta yendo (`useSoltarElVehiculo()`). Tarjeta, PDF, huecos y cabecera
   siguen con lo guardado; la barra, el título y la hoja, con el nuevo.
+- **Las cotizaciones hermanas** (glosario: «Variante en par» y «Cotizaciones hermanas»; `docs/COTIZADOR.md` › «Cotizaciones hermanas»): con `hoja.par`, la página
+  nueva pide un primer cálculo por opción (`recalcularAlAbrirEnPar()`) y dibuja `PantallaDeCotizarEnParDiferida` (`pantallas/cotizar.ts`, por `diferido()`: lo del
+  par no viaja en frío); la guardada lee la hermana en paralelo (`src/app/(app)/cotizaciones/[id]/par-de-la-guardada.ts`, `modoDeLaHermana()`) y, si está
+  disponible y con el mismo permiso de guardar, dibuja `PantallaDeUnParGuardadoDiferida`; bajo la cabecera, `EnlaceALaHermana` (sin JS propio). La hoja en par
+  (`features/hoja/components/par/`) es `useHoja` dos veces (`useHojaEnPar`: una columna por opción, cada una con su recálculo; las acciones de lo común escriben en
+  las dos; un borrador para las dos), las celdas `enPar` en dos por `ContextoDelPar` (`ItemEnPar`) y el resumen con `TotalesEnPar`. Guardar: las actions
+  `crear-cotizaciones-en-par.ts` y `guardar-cotizaciones-en-par.ts` (sobre el núcleo del guardado; el título va sin la opción y con `topeDelTituloEnPar()`); cotizar
+  encima, `cotizar-encima-en-par.ts` (`encimaEnParDe()`). La tarjeta de la vista previa suma la de la hermana (`hermana` de `PropsDeLaVistaPrevia`,
+  `TarjetaDeLaHermana`), el PDF una página por hermana (`hermanaDelPdf()`) y «Compartir» sus `versiones` y las dos portadas apiladas (`apilarImagenes()`). Una
+  hermana abierta sola no cambia el vehículo (`cambioDeVehiculo({ hermanaSola })`).
 - **`/cotizaciones/comparar?ids=a,b[,c]&returnTo=`** (pide sesión; `cotizaciones.ver` de cada una lo decide la base): «Comparar cotizaciones», del área
   `aprobada` (`areas/aprobada/CLAUDE.md` › «Comparar cotizaciones»; `pantallas/aprobada-comparar.ts` y `aprobada-esqueleto-de-comparar.ts`). Lo guardado sin
   recálculo. El enlace (`rutaDeComparar`) y la lectura de `ids` (`idsParaComparar`: 2 o 3 guids distintos, en minúsculas, en el orden de la URL) son del
@@ -293,14 +303,15 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
 
 `formulas`, `tonos`, `cotizaciones_niveles`, `tablas_referencia`, `tablas_referencia_filas`, `plantillas_tarjeta`, `cotizaciones`, `cotizaciones_revisiones`,
 `cotizaciones_comentarios`, `cotizaciones_adjuntos`, `cotizaciones_reportes`, `cotizaciones_favoritos`, `cotizaciones_aprobadas`, `cotizaciones_portadas`, `comprobantes`,
-`comprobantes_contadores`, `comprobantes_ajustes`. `cotizaciones.tarjeta_retoques` (jsonb nulo, con `grant select` de columna: viaja en `cotizacion` por
+`comprobantes_contadores`, `comprobantes_ajustes`. `cotizaciones.hermana_id` (la cotización hermana, con su FK diferida, `on delete set null`, única y con `grant select` de columna) la escriben sólo las RPC en par. `cotizaciones.tarjeta_retoques` (jsonb nulo, con `grant select` de columna: viaja en `cotizacion` por
 `_cotizacion_respuesta()`) guarda los retoques de la tarjeta de cada cotización.
 
 RPC: `formula_guardar_borrador`, `formula_publicar`, `formula_descartar_borrador`, `formula_cambiar_constante`, `formula_cambiar_cabecera` (el ⚙ de la
 cabecera: modo por defecto, «Ver total» por defecto y modos visibles) y `formula_revertir` (publican la N+1 desde la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las filas, sube la versión y publica la N+1 de cada fórmula que la usa),
 `tono_crear|guardar|eliminar` (los colores), `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
 `validar_plantilla`, `evaluar_formula`, `cotizacion_evaluar`, `cotizacion_hoja`, `cotizacion_tabla`, `cotizacion_tarjeta`, `cotizacion_crear`,
-`cotizacion_guardar` (`p_titulo_manual` al final), `cotizacion_retocar_tarjeta` (los retoques de la tarjeta, con la versión; valida con `validar_retoques`
+`cotizacion_guardar` (`p_titulo_manual` al final), `cotizacion_crear_en_par`, `cotizacion_guardar_en_par` y `cotizacion_encima_en_par` (las cotizaciones hermanas, sobre las de siempre con
+`importadora.en_par`), `cotizacion_retocar_tarjeta` (los retoques de la tarjeta, con la versión; valida con `validar_retoques`
 contra la plantilla publicada de hoy), `cotizaciones_listado`, `cotizaciones_listado_por_vehiculo` (la lista agrupada, invocadora, con su lote
 `_cotizaciones_lote_del_listado`), `cotizaciones_modos_de` (el nombre del modo de hasta 100), `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
 `_cotizaciones_ids_por_titulo`), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
@@ -327,6 +338,10 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   invocadora: nombra hasta `v_tope` (50) ids por fuente —clientes por `leads_candidatos()` y `leads_vista_por_ids()`, vehículos por origen, autores por
   `perfiles`, títulos por `_cotizaciones_ids_por_titulo()` (definer, `cotizaciones_titulo_trgm`, sólo lo que quien busca ve)— y de cada uno lee una página por `cotizaciones_lead_creado_idx`, `cotizaciones_vehiculo_creado_idx` o `cotizaciones_creador_idx` (el número, por
   `cotizaciones_numero_key`; el título, por la PK); lo que quien busca no ve no se nombra. La cotización de otra persona sólo se busca por autor donde se ve «todos».
+- **Las cotizaciones hermanas** se apuntan entre sí y comparten lead, vehículo, origen y versión (`trg_cotizaciones_hermanas`, diferido); nadie escribe
+  `hermana_id` directo; la versión y las revisiones no lo miran. Una hoja nueva de una versión en par sólo se guarda en par (`cotizar_en_par`; cotizar encima de una hermana sin la otra
+  disponible usa el `cotizacion_encima` de siempre) y la opción nunca la manda la persona (`variante_en_par`). Una hermana abierta sola dibuja sus celdas `enPar`
+  como las de siempre (sin `ContextoDelPar`).
 - Crear con un vehículo, o guardar una que pasa a otro, mueve `vehiculos.cotizado_en` (trigger `trg_vehiculo_cotizado`, «sólo si es mayor»): cotizar toma
   la fila del vehículo `for no key update` hasta confirmar. Historial y «Cotizado (n)» van por `cotizaciones_vehiculo_creado_idx`
   (`vehiculo_id, creado_en desc, id desc`).

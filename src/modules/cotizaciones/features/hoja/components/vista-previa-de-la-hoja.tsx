@@ -12,7 +12,7 @@ import type { HojaLista } from '../../../entities/hoja'
 import { PANEL_DE_VISTA_PREVIA } from '../hooks/urls-de-la-hoja'
 import type { useHoja } from '../hooks/use-hoja'
 import { ContextoDeLaVistaPrevia } from './hueco-de-la-vista-previa'
-import type { PropsDeLaVistaPrevia } from './huecos'
+import type { HermanaEnLaVistaPrevia, PropsDeLaVistaPrevia } from './huecos'
 import { useAporteAlMenu } from './menu-de-la-guardada/use-aporte-al-menu'
 
 type Props = Omit<PropsDeLaVistaPrevia, 'abierta' | 'cerrar'>
@@ -66,6 +66,23 @@ type PropsDeLaHojaViva = {
   calculo?: CalculoDeLaTarjeta
   difiere?: boolean
   hayCambios?: boolean
+  // La hoja en par (glosario: «Cotizaciones hermanas»): la opción de esta tarjeta y la columna de la otra, con lo guardado de su cotización si la hay.
+  opcion?: string
+  hermana?: Omit<HermanaEnLaVistaPrevia, 'calculo' | 'estado'> & {
+    h: ReturnType<typeof useHoja>
+    calculo?: CalculoDeLaTarjeta | undefined
+  }
+}
+
+// La tarjeta de la otra opción: lo guardado o lo que su columna calcula ahora.
+function useHermana(hermana: PropsDeLaHojaViva['hermana']): HermanaEnLaVistaPrevia | undefined {
+  const r = hermana?.h.respuesta ?? null
+  const modo = hermana?.h.entradas.modoTc ?? null
+  const ver = hermana?.h.verTotalBs ?? false
+  const deLaColumna = useMemo(() => calculoDeLaRespuesta(r, modo, ver), [r, modo, ver])
+  if (!hermana) return undefined
+  const { h, calculo, ...resto } = hermana
+  return { ...resto, calculo: calculo ?? deLaColumna, estado: calculo ? null : h.estado }
 }
 
 // «Vista previa» con lo que la hoja sabe: la versión de su fórmula, la moneda del total en Bs y los números que dibuja (los de la hoja, o los guardados).
@@ -75,7 +92,10 @@ export function VistaPreviaDeLaHojaViva({
   calculo,
   difiere,
   hayCambios,
+  opcion,
+  hermana,
 }: PropsDeLaHojaViva) {
+  const deLaHermana = useHermana(hermana)
   const deLaHoja = useMemo(
     () => calculoDeLaRespuesta(h.respuesta, h.entradas.modoTc, h.verTotalBs),
     [h.respuesta, h.entradas.modoTc, h.verTotalBs],
@@ -91,6 +111,8 @@ export function VistaPreviaDeLaHojaViva({
         difiere: guardada && difiere === true,
         cambiosSinGuardar: guardada && hayCambios === true,
       }}
+      {...(opcion === undefined ? {} : { opcion })}
+      {...(deLaHermana ? { hermana: deLaHermana } : {})}
     />
   )
 }

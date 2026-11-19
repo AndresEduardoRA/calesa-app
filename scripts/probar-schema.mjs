@@ -209,6 +209,10 @@ const DATOS_DE_PRUEBA = {
   'areas/diseno/colores.sql': {
     _casos_de_colores: path.join(base, 'tests', 'casos-de-colores.json'),
   },
+  // El juego espejo de qué nodos van en par (glosario: «Variante en par»): lo corre también Vitest (`entities/en-par.test.ts`).
+  'areas/formula/en-par.sql': {
+    _juego_en_par: 'src/modules/cotizaciones/entities/casos-de-en-par.json',
+  },
   // El juego espejo de los datos clave de un origen: lo escribe la persona y lo corre también Vitest (`entities/datos-clave.test.ts`).
   'areas/origenes/datos-clave.sql': {
     _casos_de_datos_clave: 'src/modules/origenes/entities/casos-de-datos-clave.json',

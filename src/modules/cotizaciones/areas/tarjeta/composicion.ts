@@ -47,6 +47,8 @@ export type EntradaDelPdf = {
   locale: string
   empresa: string
   topeDelLogo: number
+  // La cotización hermana con su contexto (glosario: «Cotizaciones hermanas»): su tarjeta va en otra página del mismo PDF, en el orden de las opciones.
+  hermana?: Pick<EntradaDelPdf, 'lectura' | 'contexto'> & { antes: boolean }
 }
 
 type EntradaDeLaGeometria = Pick<EntradaDelPdf, 'lectura' | 'contexto' | 'locale'>
@@ -101,8 +103,18 @@ export async function pdfDeUnaGuardada(
     return armada
   }
   const { geometria, hoja } = armada.data
+  const hermana = entrada.hermana
+    ? await geometriaDeUnaGuardada({ ...entrada.hermana, locale: entrada.locale })
+    : null
+  const deLaHermana =
+    hermana?.ok && entrada.hermana
+      ? { geometria: hermana.data.geometria, antes: entrada.hermana.antes }
+      : null
   const logo = await logoDelPdf({
-    logo: conLogo(geometria) ? entrada.contexto.logo : null,
+    logo:
+      conLogo(geometria) || (deLaHermana !== null && conLogo(deLaHermana.geometria))
+        ? entrada.contexto.logo
+        : null,
     tope: entrada.topeDelLogo,
   })
   try {
@@ -112,6 +124,7 @@ export async function pdfDeUnaGuardada(
       numero: hoja.cotizacion.numero,
       logo,
       empresa: entrada.empresa,
+      ...(deLaHermana ? { hermana: deLaHermana } : {}),
     })
     return ok({ bytes, archivo: archivoDelPdf(hoja.cotizacion.numero) ?? 'cotizacion.pdf' })
   } catch (error) {

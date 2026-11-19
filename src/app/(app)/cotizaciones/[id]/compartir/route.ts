@@ -1,15 +1,12 @@
 import { z } from 'zod'
-import {
-  contextoDeLaPagina,
-  leerHojaDeUnaGuardada,
-  paraCompartirDeUnaGuardada,
-} from '@/modules/cotizaciones'
+import { leerHojaDeUnaGuardada, paraCompartirDeUnaGuardada } from '@/modules/cotizaciones'
 import { leerAjustes } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
 import { leerSubasta } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
 import { asesorDe, oNulo, vehiculoDe, vehiculoDeLaTarjeta } from '../../datos-de-la-tarjeta'
 import { datosParaCompartir } from './datos-para-compartir'
+import { contextoParaCompartir, versionesParaCompartir } from './versiones'
 
 // Lo que el panel «Compartir la cotización» necesita para armar el texto: el título, el autor, el vehículo con la zona
 // de su patio y el cierre de su subasta, y las cifras de la tarjeta de **lo guardado** (sólo lo del nivel «todos»: `cotizacion_tarjeta`, K4). Con la sesión de quien
@@ -65,33 +62,31 @@ export async function GET(
   }
   const { locale, zonaHoraria } = ajustes.data.ajustes
   // La cabecera de la tarjeta no se usa (el texto lleva sólo sus montos): el contexto va sin cliente ni logo.
+  const comun = {
+    vehiculo: vehiculoDeLaTarjeta(vehiculo),
+    asesor: autor,
+    zona: zonaHoraria,
+    locale,
+  }
   const cifras = await paraCompartirDeUnaGuardada({
     lectura: lectura.data,
-    contexto: contextoDeLaPagina(
-      {
-        titulo: null,
-        cliente: null,
-        vehiculo: vehiculoDeLaTarjeta(vehiculo),
-        asesor: autor,
-        numero: hoja.cotizacion.numero,
-        venceEl: hoja.venceEl,
-        guardadaEl: hoja.cotizacion.actualizadoEn,
-        logo: null,
-      },
-      { zona: zonaHoraria, hoy: hoja.cotizacion.actualizadoEn },
-    ),
+    contexto: contextoParaCompartir(hoja, comun),
     locale,
   })
   if (!cifras.ok) {
     return falla(cifras.error.codigo)
   }
+  // La hermana disponible: los conceptos y el total de las dos opciones (glosario: «Cotizaciones hermanas»).
+  const enPar = await versionesParaCompartir(lectura.data, cifras.data, comun)
   const datos = datosParaCompartir({
-    cotizacion: hoja.cotizacion,
+    cotizacion: enPar ? { ...hoja.cotizacion, titulo: enPar.tituloBase } : hoja.cotizacion,
     vehiculo,
     subasta: vehiculo === null ? null : subasta,
     autor,
     cifras: cifras.data,
     ajustes: { locale, zonaHoraria },
   })
-  return Response.json(datos, { headers: SIN_GUARDAR })
+  return Response.json(enPar ? { ...datos, versiones: enPar.versiones } : datos, {
+    headers: SIN_GUARDAR,
+  })
 }

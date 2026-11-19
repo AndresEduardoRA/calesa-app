@@ -1,5 +1,5 @@
 // Las reglas de la variante (decisión e de docs/DECISIONES.md, paso 4.05): a lo sumo un nodo `opcion`, sus
-// claves sin repetir, y `solo_en` después de él y con claves que existen.
+// claves sin repetir, dos opciones si se cotiza en par, y `solo_en` después de él y con claves que existen.
 import { esta, recorrer } from './medidor'
 import { soloEnDe, type NodoOpcion } from './nodos'
 import { esFallo, fallo, type Contexto, type Fallo } from './validar-contexto'
@@ -36,6 +36,9 @@ function clavesDe(ctx: Contexto, n: NodoOpcion): Set<string> | Fallo {
   if (n.por_defecto !== undefined && !esta(claves, n.por_defecto, ctx.m)) {
     return fallo('opcion_por_defecto_inexistente', { donde: n.id, clave: n.por_defecto })
   }
+  // «Se cotiza en par»: dos columnas en la hoja y dos cotizaciones hermanas al guardar (glosario: «Variante en par»).
+  if (n.en_par === true && n.opciones.length !== 2)
+    return fallo('par_sin_dos_opciones', { donde: n.id })
   return claves
 }
 

@@ -8,7 +8,14 @@ import { recalculoDesde, type RespuestaDeRecalculo } from './recalculo'
 // - `guardada`: SU versión y SUS tipos de cambio (`cotizacion_evaluar(p_cotizacion)`); el vehículo es el de la cotización (nulo, no se manda) o el elegido en una preventa
 //   para cambiarlo (T315: `p_vehiculo`, lo que daría cambiarlo antes de guardar). Nunca `p_origen` ni `p_abierta`.
 export type DeDondeCalcula =
-  | { tipo: 'abierta'; origenId: string; abierta: string; vehiculoId: string | null }
+  // `opcion`: la de su columna en una hoja en par (glosario: «Variante en par»); la pone la base, no la persona.
+  | {
+      tipo: 'abierta'
+      origenId: string
+      abierta: string
+      vehiculoId: string | null
+      opcion?: string
+    }
   | { tipo: 'guardada'; cotizacionId: string; vehiculoId: string | null }
 
 // Un recálculo de la hoja es UNA llamada a `cotizacion_evaluar()`. El modo de tipo de cambio va por su clave (`p_modo_tc`), nunca como objeto: sus buckets nombran tipos de
@@ -34,6 +41,7 @@ export function argumentosDeEvaluar(p: PedidoDeRecalculo) {
     p_origen: p.de.origenId,
     p_abierta: p.de.abierta,
     ...(p.de.vehiculoId === null ? {} : { p_vehiculo: p.de.vehiculoId }),
+    ...(p.de.opcion === undefined ? {} : { p_opcion: p.de.opcion }),
     ...modo,
   }
 }

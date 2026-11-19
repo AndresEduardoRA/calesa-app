@@ -8,6 +8,7 @@ import type { FilaAbierta } from '../../hooks/use-editor-de-la-formula'
 import { editable, type FilaParaDibujar } from '../../hooks/use-editor-de-la-formula.soporte'
 import { BotonesDeLaFila } from './botones-de-la-fila'
 import { CamposDeLaFila } from './campos-de-la-fila'
+import { CasillaEnPar } from './casilla-en-par'
 import { CifraDePrueba } from './cifra-de-prueba'
 import { EstadoDelTexto } from './estado-del-texto'
 import { SumarFila } from './sumar-fila'
@@ -39,6 +40,8 @@ export type FilaDelEditorProps = {
   alSumar: (id: string) => void
   alCancelarSumar: () => void
   alCrear: (pedido: Omit<PedidoDeFilaNueva, 'despuesDe'>) => void
+  // «Se cotiza en par» (sólo la fila de la variante): espera como «Editar» a lo que esté abierto.
+  alPonerEnPar: (nodoId: string, enPar: boolean) => void
 }
 
 const TIPOS: Record<FilaParaDibujar['nodo']['tipo'], string> = {
@@ -71,6 +74,19 @@ function LoSoltado({ soltados }: { soltados: string[] }) {
   )
 }
 
+// El rechazo de `validarFormula()` que nombra la fila.
+function RechazoDeLaFila({ rechazo }: { rechazo: string | null }) {
+  if (!rechazo) return null
+  return (
+    <p
+      role="alert"
+      className="rounded-(--radius-md) bg-(--color-aviso-soft) p-2 text-(--color-aviso-ink)"
+    >
+      {rechazo}
+    </p>
+  )
+}
+
 const textoInicial = (fila: FilaParaDibujar) => ('texto' in fila.texto ? fila.texto.texto : '')
 
 export const FilaDelEditor = memo(function FilaDelEditor({
@@ -91,6 +107,7 @@ export const FilaDelEditor = memo(function FilaDelEditor({
   alSumar,
   alCancelarSumar,
   alCrear,
+  alPonerEnPar,
 }: FilaDelEditorProps) {
   const error: ErrorDeFila | null = abierta?.error ?? null
   return (
@@ -131,15 +148,15 @@ export const FilaDelEditor = memo(function FilaDelEditor({
       ) : (
         <EstadoDelTexto texto={fila.texto} />
       )}
-      <LoSoltado soltados={soltados} />
-      {rechazo ? (
-        <p
-          role="alert"
-          className="rounded-(--radius-md) bg-(--color-aviso-soft) p-2 text-(--color-aviso-ink)"
-        >
-          {rechazo}
-        </p>
+      {fila.nodo.tipo === 'opcion' ? (
+        <CasillaEnPar
+          nodo={fila.nodo}
+          bloqueada={bloqueada || abierta !== null}
+          alCambiar={alPonerEnPar}
+        />
       ) : null}
+      <LoSoltado soltados={soltados} />
+      <RechazoDeLaFila rechazo={rechazo} />
       {sumando ? (
         <SumarFila
           ocupados={ocupados}

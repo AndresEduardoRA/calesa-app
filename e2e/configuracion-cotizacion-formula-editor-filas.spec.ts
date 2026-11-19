@@ -8,8 +8,10 @@ import {
   crearDuenaDePrueba,
 } from './soporte/base'
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
+import { leerBorrador } from './soporte/formula-editor-guardar'
 import {
   borrarLoDePrevia,
+  sembrarBorradorConVariante,
   sembrarBorradorDePrevia,
   sembrarTabla,
   sembrarTipoDeCambio,
@@ -23,6 +25,8 @@ test.describe.configure({ mode: 'serial' })
 let proyecto = ''
 let duena = ''
 let origen = { id: '', nombre: '' }
+let origenDeDos = { id: '', nombre: '' }
+let origenDeTres = { id: '', nombre: '' }
 
 test.beforeAll(async ({}, info) => {
   proyecto = info.project.name
@@ -36,6 +40,10 @@ test.beforeAll(async ({}, info) => {
   sembrarTabla({ proyecto, origenId: null, factor: 0.5 })
   origen = await crearOrigenDeCotizar(proyecto, 'sfila', false)
   sembrarBorradorDePrevia(origen.id, duena, proyecto)
+  origenDeDos = await crearOrigenDeCotizar(proyecto, 'spar2', false)
+  sembrarBorradorConVariante(origenDeDos.id, duena, proyecto, ['c20', 'c40'])
+  origenDeTres = await crearOrigenDeCotizar(proyecto, 'spar3', false)
+  sembrarBorradorConVariante(origenDeTres.id, duena, proyecto, ['a', 'b', 'c'])
 })
 
 test.afterAll(async () => {
@@ -50,8 +58,8 @@ const fila = (page: Page, id: string) => filas(page).locator(`li[data-fila="${id
 const sumar = (page: Page, etiqueta: string) =>
   page.getByRole('button', { name: `Sumar fila debajo de ${etiqueta}`, exact: true })
 
-async function abrirEditor(page: Page) {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origen.id}`)
+async function abrirEditor(page: Page, origenId = origen.id) {
+  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
   await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
   await page
     .getByRole('region', { name: 'Borrador' })
@@ -196,4 +204,29 @@ test('E10: la fila creada vuelve al recargar, con su «Descartar»; una fila que
   await fila(page, 'seguro').getByRole('button', { name: 'Cancelar', exact: true }).click()
   await page.getByRole('button', { name: 'Descartar', exact: true }).click()
   await expect(fila(page, 'seguro')).toHaveCount(0)
+})
+
+test('E11: «Se cotiza en par» se marca en la fila de la variante de dos opciones y queda en el borrador; con tres opciones va apagada', async ({
+  page,
+}) => {
+  await entrar(page, duena, { fresco: true })
+  await abrirEditor(page, origenDeDos.id)
+  const casilla = fila(page, 'contenedor').getByRole('checkbox', { name: 'Se cotiza en par' })
+  await expect(casilla).not.toBeChecked()
+  await casilla.click()
+  await expect(casilla).toBeChecked()
+  const editor = page.getByRole('region', { name: 'Editor de la fórmula' })
+  await editor.getByRole('button', { name: 'Guardar el borrador', exact: true }).click()
+  await expect(editor.locator('[data-guardado] [role="status"]')).toHaveText(
+    'Se guardó el borrador.',
+  )
+  const nodos = (leerBorrador(origenDeDos.id)?.definicion.nodos ?? []) as unknown[]
+  expect(nodos[0]).toMatchObject({ id: 'contenedor', en_par: true })
+
+  await abrirEditor(page, origenDeTres.id)
+  const apagada = fila(page, 'contenedor').getByRole('checkbox', { name: 'Se cotiza en par' })
+  await expect(apagada).toBeDisabled()
+  await expect(apagada).toHaveAccessibleDescription(
+    'Sólo una variante de dos opciones se cotiza en par.',
+  )
 })

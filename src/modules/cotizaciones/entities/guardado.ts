@@ -14,6 +14,8 @@ export type CotizacionGuardada = {
   totalUsd: number | null
   // La base ya tenía ese intento: lo que vuelve es lo que se guardó la primera vez (4-21).
   repetido: boolean
+  // Guardar en par: la de la segunda opción (glosario: «Cotizaciones hermanas»).
+  hermana?: CotizacionGuardada
 }
 
 export type MotivoDeRechazo =
@@ -85,6 +87,13 @@ const POR_DETALLE: Readonly<Record<string, MotivoDeRechazo>> = {
   origen_sin_formula: 'sin_formula',
   variante_sin_eleccion: 'variante_oculta',
   titulo_largo: 'titulo_largo',
+  // La variante en par (glosario: «Variante en par»): la fórmula de la hoja cambió mientras se cotizaba (o un cliente viejo): recargar.
+  cotizar_en_par: 'recargar_hoja',
+  sin_par: 'recargar_hoja',
+  variante_en_par: 'recargar_hoja',
+  // Las hermanas cambiaron mientras estaban abiertas (una se purgó, el vehículo de una sola).
+  no_son_hermanas: 'cotizacion_cambio',
+  vehiculo_de_la_hermana: 'cotizacion_cambio',
   ...Object.fromEntries([...DESCARTES].map((d) => [d, 'valor_descartado' as const])),
 }
 const DEL_TOTAL: Readonly<Record<string, MotivoDeRechazo>> = {

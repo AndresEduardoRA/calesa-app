@@ -15,6 +15,7 @@ import {
 import type { RetoquesDeLaTarjeta } from '../../../entities/cuadricula-de-la-tarjeta'
 import type { LecturaDeLaTarjeta } from '../../../entities/tarjeta/lectura-de-la-tarjeta'
 import { lecturaRetocada } from '../../../entities/tarjeta/retoques/aplicar-retoques'
+import { tituloDeLaHermana } from '../../../entities/titulo-en-par'
 import { useTituloDeLaCotizacion } from '../../hoja/hooks/use-titulo-de-la-cotizacion'
 import { useLecturaDeLaTarjeta, type EstadoDeLaLectura } from './use-lectura-de-la-tarjeta'
 
@@ -34,6 +35,8 @@ type Entrada = {
   retoques?: RetoquesDeLaTarjeta | null
   // Falso en el modo «Retocar»: las filas ocultas se dibujan para poder mostrarlas.
   ocultarFilas?: boolean
+  // La opción de una tarjeta de la hoja en par: el título que se está escribiendo lleva « · <etiqueta>» (glosario: «Cotizaciones hermanas»).
+  opcion?: string | undefined
 }
 
 // Lo ahora, una vez por montaje: el modal se monta al abrirse y la fecha de hoy no cambia mientras está abierto.
@@ -52,6 +55,7 @@ export function useModeloDeLaTarjeta({
   pagina,
   retoques = null,
   ocultarFilas = true,
+  opcion,
 }: Entrada): {
   estado: EstadoDeLaLectura
   reintentar: () => void
@@ -63,7 +67,9 @@ export function useModeloDeLaTarjeta({
   const { estado, reintentar } = useLecturaDeLaTarjeta(formulaId)
   const { zonaHoraria, locale } = useRegional()
   const hoy = useHoy()
-  const vivo = useTituloDeLaCotizacion()?.mostrado ?? null
+  const mostrado = useTituloDeLaCotizacion()?.mostrado ?? null
+  const vivo =
+    mostrado !== null && opcion !== undefined ? tituloDeLaHermana(mostrado, opcion) : mostrado
   const titulo = pagina.titulo === undefined ? vivo : pagina.titulo
   const contexto = useMemo(
     () => contextoDeLaPagina({ ...pagina, titulo }, { zona: zonaHoraria, hoy }),

@@ -87,13 +87,31 @@ function bloqueDelTotal(datos: DatosParaCompartir, formato: FormatoDeTexto): str
   ].filter((l): l is string => l !== null)
 }
 
+const lineasDe = (conceptos: DatosParaCompartir['conceptos']) =>
+  conceptos.flatMap((l) => [lineaDe(l), ...(l.segunda === null ? [] : [l.segunda])])
+
+// Las cotizaciones hermanas: un bloque por opción (su etiqueta, sus conceptos y su total), una debajo de la otra; el modo, una vez al final.
+function bloquesDeLasVersiones(datos: DatosParaCompartir, formato: FormatoDeTexto): string[][] {
+  const versiones = datos.versiones ?? []
+  return [
+    ...versiones.map((v) => [
+      negrita(v.etiqueta, formato),
+      ...lineasDe(v.conceptos),
+      ...bloqueDelTotal({ ...datos, total: v.total, modo: null }, formato),
+    ]),
+    datos.modo === null ? [] : [`Modo de tipo de cambio: ${datos.modo}`],
+  ]
+}
+
 export function textoParaCompartir(datos: DatosParaCompartir, opciones: Opciones): string {
   const { formato } = opciones
+  const cifras = datos.versiones
+    ? bloquesDeLasVersiones(datos, formato)
+    : [lineasDe(datos.conceptos), bloqueDelTotal(datos, formato)]
   const bloques = [
     [negrita(datos.titulo.texto, formato)],
     bloqueDelVehiculo(datos, opciones),
-    datos.conceptos.flatMap((l) => [lineaDe(l), ...(l.segunda === null ? [] : [l.segunda])]),
-    bloqueDelTotal(datos, formato),
+    ...cifras,
   ].filter((b) => b.length > 0)
   return bloques.map((b) => b.join('\n')).join(formato === 'simple' ? '\n' : '\n\n')
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { useContext } from 'react'
 import { bloqueoDeLado, valorDeSubtotal, type ContextoDeHoja } from '../../../entities/binding'
 import type { ItemDeHoja as Item } from '../../../entities/hoja'
 import type { AccionesDeHoja } from '../hooks/use-hoja'
@@ -7,6 +8,8 @@ import { AtajosDeHoja } from './atajos-de-hoja'
 import { CeldaDeHoja } from './celda-de-hoja'
 import { claseDelItem } from './clases-de-la-rejilla'
 import { InterruptorDeHoja } from './interruptor-de-hoja'
+import { ContextoDelPar } from './par/contexto-del-par'
+import { ItemEnPar } from './par/item-en-par'
 import { SubtotalDeHoja } from './subtotal-de-hoja'
 import { VarianteDeHoja } from './variante-de-hoja'
 
@@ -36,6 +39,11 @@ function Atajos({ item, contexto, acciones }: Props & { item: Extract<Item, { ti
 // Un ítem de una sección, con su `data-nodo` (lo que miran los e2e: el orden del DOM es el declarado). Su lugar en la rejilla de 12 pistas de su sección (columnas,
 // filas, letra y énfasis) sale de su aspecto (`claseDelItem()`): sin él, la celda con su ancho con nombre y lo demás a lo ancho, como siempre.
 export function ItemDeHoja({ item, contexto, acciones }: Props) {
+  // En una hoja en par, lo que cambia según la opción va en dos celdas (glosario: «Variante en par»). Sin el par (una hermana abierta sola), la celda de siempre.
+  const delPar = useContext(ContextoDelPar)
+  if ((item.tipo === 'celda' || item.tipo === 'subtotal') && item.enPar && delPar !== null) {
+    return <ItemEnPar item={item} acciones={acciones} />
+  }
   const clase = claseDelItem(item)
   switch (item.tipo) {
     case 'celda':

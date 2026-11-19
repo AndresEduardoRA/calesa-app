@@ -10,11 +10,14 @@ export const MOTIVO_DE_LA_FINAL = 'Una cotización final no cambia de vehículo.
 export function cambioDeVehiculo({
   clase,
   puedeGuardar,
+  hermanaSola = false,
 }: {
   clase: 'preventa' | 'final'
   puedeGuardar: boolean
+  // Una hermana abierta sola (la otra no está disponible): las dos comparten el vehículo, que se cambia con las dos (glosario: «Cotizaciones hermanas»).
+  hermanaSola?: boolean
 }): CambioPermitido {
-  if (!puedeGuardar) {
+  if (!puedeGuardar || hermanaSola) {
     return 'no'
   }
   return clase === 'final' ? 'final' : 'elige'
