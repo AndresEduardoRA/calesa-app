@@ -72,6 +72,16 @@ export const MAXIMO_DE_CARACTERES_DE_UN_TEXTO = 300
 // El texto del `jsonb` (`octet_length(definicion::text)`): el doble de la plantilla de V1 más grande, a KiB enteros (docs/DECISIONES.md).
 export const TOPE_EN_BYTES_DE_LA_CUADRICULA = 24576
 
+// Los retoques de la tarjeta de una cotización (`cotizaciones.tarjeta_retoques`; docs/COTIZADOR.md › «Retoques de la tarjeta»): el texto de las celdas de texto
+// que se cambió y las filas que se ocultaron, por id, sólo para esa cotización. Los nombra el núcleo (la cotización leída) y los usa el área `tarjeta`. Los
+// topes, los de la cuadrícula (la copia en `validar_retoques()`).
+export type RetoquesDeLaTarjeta = {
+  readonly celdas?: Readonly<Record<string, string>>
+  readonly filas_ocultas?: readonly string[]
+}
+export const TOPE_EN_BYTES_DE_LOS_RETOQUES = TOPE_EN_BYTES_DE_LA_CUADRICULA
+export const MAXIMO_DE_CARACTERES_DE_UN_RETOQUE = MAXIMO_DE_CARACTERES_DE_UN_TEXTO
+
 // Las columnas que pone la conversión de la forma 1, en su orden, con su ancho en px (690 como máximo: entra en A4 a escala 1, 517,5 de 523 pt útiles).
 // El monto, 130: un total de seis cifras a 14 px no se parte en dos renglones.
 export const COLUMNAS_DE_LA_CONVERSION = [

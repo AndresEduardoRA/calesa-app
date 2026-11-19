@@ -119,3 +119,28 @@ describe('hojaDeUnaGuardadaDesde: la cadena y la publicada (4.15-3b)', () => {
     expect(hojaDeUnaGuardadaDesde(crudaDeUnaGuardada({ encima: { raro: 1 } }))).toBeNull()
   })
 })
+
+describe('hojaDeUnaGuardadaDesde: los retoques de la tarjeta', () => {
+  it('los retoques de la tarjeta: los que trae la base; nulos o sin la columna, nulos', () => {
+    const base = crudaDeUnaGuardada()
+    const retoques = { celdas: { constructor: 'Para Juan' }, filas_ocultas: ['f_flete'] }
+    const con = hojaDeUnaGuardadaDesde({
+      ...base,
+      cotizacion: { ...base.cotizacion, tarjeta_retoques: retoques },
+    })
+    expect(con?.cotizacion.tarjetaRetoques).toEqual(retoques)
+    expect(hojaDeUnaGuardadaDesde(base)?.cotizacion.tarjetaRetoques).toBeNull()
+    const { tarjeta_retoques: _fuera, ...sinLaColumna } = base.cotizacion
+    void _fuera
+    expect(
+      hojaDeUnaGuardadaDesde({ ...base, cotizacion: sinLaColumna })?.cotizacion.tarjetaRetoques,
+    ).toBeNull()
+    // Un texto que no es texto no es lo que la base promete.
+    expect(
+      hojaDeUnaGuardadaDesde({
+        ...base,
+        cotizacion: { ...base.cotizacion, tarjeta_retoques: { celdas: { a: 1 } } },
+      }),
+    ).toBeNull()
+  })
+})

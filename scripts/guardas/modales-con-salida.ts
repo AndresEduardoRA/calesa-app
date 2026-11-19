@@ -57,9 +57,9 @@ export const MODALES: Record<string, RegistroDeModal> = {
     tambien: ['src/modules/equipo/features/equipo/components/enlace-invitacion.tsx'],
   },
   // --- cotizaciones
+  // El modo «Retocar» de la vista previa pregunta en el pie (useCierreConCambios, ConfirmarDescarte) y no se cierra mientras guarda.
   'src/modules/cotizaciones/features/tarjeta/components/vista-previa-de-la-tarjeta.tsx': {
-    sinFormulario:
-      'sólo dibuja la tarjeta de la cotización (lectura, carga, error y el botón Live): no hay nada tipeado que se pierda al cerrar',
+    propio: true,
   },
   'src/modules/cotizaciones/features/tarjeta/components/compartir/panel-de-compartir.tsx': {
     sinFormulario:

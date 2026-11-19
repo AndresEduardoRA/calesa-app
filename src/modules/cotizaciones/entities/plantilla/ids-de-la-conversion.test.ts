@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ES_ID } from './json-de-la-base'
+import { ES_ID } from '../json-de-la-base'
 import { fnv1a32, idDeLaCelda, idDeLaFila, idDerivado } from './ids-de-la-conversion'
 
 // Los mismos valores prueba la base (T3 de `supabase/tests/areas/tarjeta/plantilla-convertir.sql`).

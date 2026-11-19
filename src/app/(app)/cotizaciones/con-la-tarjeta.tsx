@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { ProveedorDeLaTarjeta } from '@/modules/cotizaciones/pantallas/tarjeta'
 import { getAjustes } from '@/modules/empresa'
 import { urlPublicaONull } from '@/shared/lib/almacen'
@@ -17,6 +17,8 @@ export type PropsDeLaTarjeta = {
   guardadaEl?: string | null
   // El título de una guardada ya resuelto (el guardado: la tarjeta dibuja lo guardado). La hoja nueva no lo pasa: la tarjeta lee el que se está escribiendo.
   titulo?: string | null
+  // Una guardada: sus retoques, su versión y si quien mira la puede guardar («Retocar»). La hoja nueva no lo pasa.
+  retoque?: ComponentProps<typeof ProveedorDeLaTarjeta>['retoque']
 }
 
 type Props = PropsDeLaTarjeta & {
@@ -36,6 +38,7 @@ export async function ConLaTarjeta({
   venceEl = null,
   guardadaEl = null,
   titulo,
+  retoque,
   cotizacionId,
   children,
 }: Props) {
@@ -53,6 +56,7 @@ export async function ConLaTarjeta({
       cotizacionId={cotizacionId}
       logo={url === null ? null : { nombre: ajustes.nombre, url }}
       {...(titulo === undefined ? {} : { titulo })}
+      {...(retoque === undefined ? {} : { retoque })}
     >
       {children}
     </ProveedorDeLaTarjeta>

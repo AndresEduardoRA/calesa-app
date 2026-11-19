@@ -3,7 +3,7 @@
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { Textarea } from '@/shared/ui/textarea'
-import { caracteres } from '../../../entities/plantilla/json-de-la-base'
+import { caracteres } from '../../../entities/json-de-la-base'
 
 type Props = {
   // Sirve de `id` y de `name`.

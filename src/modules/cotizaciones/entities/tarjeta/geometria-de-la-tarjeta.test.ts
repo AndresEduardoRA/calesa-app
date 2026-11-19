@@ -64,6 +64,22 @@ describe('geometriaDeLaTarjeta', () => {
     ])
   })
 
+  it('las filas que se dibujan, con su banda: una fila oculta no está y las de abajo suben', () => {
+    const g = geometria()
+    expect(g.filas.map((f) => f.id)).toEqual([
+      'fecha',
+      'asesor',
+      'n_remate',
+      'n_flete',
+      'total',
+      'a_garantia',
+      'nota',
+    ])
+    expect(g.filas[3]).toEqual({ id: 'n_flete', y: 75, alto: 25 })
+    const ultima = g.filas[g.filas.length - 1]
+    expect(ultima === undefined ? 0 : ultima.y + ultima.alto).toBe(g.alto)
+  })
+
   it('las celdas van en orden de lectura: fila por fila y, dentro, por columna', () => {
     const ids = geometria().celdas.map((c) => c.id)
     expect(ids.slice(0, 9)).toEqual([

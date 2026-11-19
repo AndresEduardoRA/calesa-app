@@ -145,7 +145,7 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
    grande (hasta 56 rem): nunca agranda ni desplaza la página de costado; en el celular, el modal a pantalla completa), con «Copiar texto» (apagado sin total o desactualizado) y, en una
    guardada, «Descargar PDF» (sin salir de la página; un fallo con «Reintentar»). Los avisos de trabajo van fuera de la tarjeta (total
    desactualizado, sin plantilla, lo de hoy no es lo guardado, cambios sin guardar, «Esta cotización venció el …»). La tarjeta de lo guardado
-   también ofrece «Descargar PDF».
+   también ofrece «Descargar PDF». En una guardada la tarjeta va con sus retoques y el pie suma «Retocar» (ver «Cotización: retocar la tarjeta»).
 
 Estados propios:
 
@@ -362,7 +362,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   «Comprobantes» (en una final o en una que ya tiene alguno): del más nuevo, «Vigente» o «Anulado» con quién, cuándo y motivo, hasta 20
   con aviso de tope; «Anular» el vigente pide motivo en `?panel=anular-comprobante` (sin id: hay a lo sumo uno). Al pie del resumen, junto a «Vista previa»,
   **«Compartir»** (toda persona que la ve; sin ícono; con el Modo Live no está): «Compartir la cotización» en `?panel=compartir` (estados en «Cotización: compartir»).
-  Estados en Flujo 2.
+  En el pie de «Vista previa», **«Retocar»** (quien la puede guardar): el mismo modal pasa al modo «Retocar la tarjeta» (estados en «Cotización: retocar la
+  tarjeta»). Estados en Flujo 2.
 - **Logística** — `/logistica` (`logistica.ver` en algún origen): la **bandeja del día** y la **cadena como gráfica**; en la URL: `?origen=` (orígenes con la logística encendida), `q` («dónde está»:
   nombre, VIN o lote; 3 letras o números) y `?panel=lote` (el lote de un contenedor o un booking). `/logistica/fase/[fase]` (la lista de una fase: `[fase]` es el id o `sin_fase`;
   `?origen=`, `q`, `demoradas`, `por_aprobar`, `contenedor`, `booking`, `naviera`, `cursor`), `/logistica/bandeja/[grupo]` (un grupo entero: `demorados`, `trabados`, `por-aprobar`, `por-vencer`,
@@ -1299,6 +1300,37 @@ tarjetas, el resumen y la ficha del vehículo). Lo abre toda persona que ve la c
 - **Modo Live:** ni el botón ni la línea del «⋯»; por URL, «Con el Modo Live no se comparte.» con «Cerrar» (también si se enciende con el panel abierto).
 - **Sin red:** arriba «No hay conexión.»; «Descargar PDF» y lo que todavía no se bajó, apagados con ese motivo; lo que ya está en memoria se copia o comparte.
 - **Texto al 200 %:** el cuerpo se desplaza con su pista y el pie queda a la vista.
+
+### Cotización: retocar la tarjeta (estados propios)
+
+El modo «Retocar la tarjeta» de «Vista previa» en una guardada (`/cotizaciones/[id]?panel=vista-previa`): cambiar textos y ocultar filas de **esta** tarjeta
+(`docs/COTIZADOR.md` › «Retoques de la tarjeta»), sin cifras ni colores. Su interfaz llega con `diferido()` al tocar «Retocar».
+
+- **Quién:** quien la puede guardar (`puede_guardar` de la base). Sin ese permiso, o en la hoja nueva, no hay «Retocar». Con la tarjeta por omisión,
+  apagado con «Esta cotización usa la tarjeta por omisión: no hay textos para retocar.»; con cambios sin guardar en la hoja, apagado con «Guarda o descarta
+  los cambios de la hoja para retocar la tarjeta.». Cargando la tarjeta o con su error, lo de siempre y sin «Retocar».
+- **El modo:** arriba «Toca un texto para cambiarlo; con el ojo de cada fila, ocúltala.»; la tarjeta del borrador con un botón sobre cada celda (el de una
+  de texto abre su campo; el de un dato, el logo o una vacía elige su fila) y, a la derecha, un canal de 44 px con un botón por fila (ojo tachado
+  «Ocultar la fila «…»», u ojo «Mostrar la fila «…»»); la píldora «Ocultar fila» o «Mostrar fila» sale al pasar, con el foco o con la fila elegida. Una fila
+  oculta se ve atenuada. Elegir una fila suma debajo «Fila «…»» con «Ocultar fila» o «Mostrar fila» a 44 px (y, desde una celda de dato, «Esta celda
+  muestra un dato de la cotización: no se retoca.»).
+- **El campo:** «Texto de la celda», sin `maxLength`, con «n de 300» (code points) y, si pasa, «Tiene N caracteres: el máximo es 300.»; Enter lo deja
+  (aunque sea largo: la celda queda marcada), Mayús+Enter es un salto de línea, Esc lo cancela. Va encima de la celda (al menos 240 px, dentro de la
+  tarjeta) si la tarjeta se ve casi a su tamaño y la celda es ancha; si no (el celular, el texto al 200 %, una celda angosta), a lo ancho bajo la tarjeta,
+  traído a la vista y con el foco.
+- **El pie:** «Listo» (principal; con un texto largo, apagado con «Acorta el texto de la celda «X»: tiene más de 300 caracteres.»), «Cancelar» (descarta sin
+  preguntar) y, si la cotización tiene retoques guardados, el «⋯» con «Volver a la plantilla», que pregunta en el mismo pie («¿Volver a la plantilla? Se
+  quitan los retoques de esta cotización.» con «Seguir retocando», con el foco, y «Volver a la plantilla») y guarda en el acto. En el celular a lo ancho
+  (44 px); desde `sm`, en fila.
+- **Salir con cambios** (Esc, la ✕, el clic afuera): «Tienes cambios sin guardar.» con «Seguir editando» y «Descartar» en el pie. Sin cambios, cierra.
+- **Tras «Listo»:** «Tarjeta retocada.» (al volver a la plantilla, «La tarjeta volvió a la plantilla.»); la página vuelve con la versión nueva y el modal se
+  dibuja otra vez, ya retocado. Mientras guarda, los controles van apagados y el modal no se cierra.
+- **Retoques que ya no aplican:** «1 retoque ya no aplica: se quitará al guardar.» («N retoques ya no aplican: se quitarán al guardar.»), sólo en el modo.
+- **Conflicto (`PT409`):** el aviso con quién y cuándo y «Recargar», que trae la versión nueva y descarta los retoques sin guardar; lo escrito queda hasta
+  recargar. **Ya no se puede retocar** (la papelera, el permiso): «Ya no puedes retocar esta cotización.» con «Recargar». **Sin red o un fallo:** «No se
+  pudo guardar.» con «Reintentar» (el mismo pedido); lo escrito queda. **Una regla de la base:** su mensaje junto a la celda o la fila (se abre su campo);
+  sin lugar, arriba.
+- **Modo Live:** los montos de la tarjeta siguen tapados; retocar textos funciona igual.
 
 ### Cotización: tablas (estados propios)
 
