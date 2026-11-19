@@ -59,8 +59,8 @@ function CabeceraDeLaPlanilla(
 }
 
 // La planilla de la fórmula (glosario: «Planilla de la fórmula»; la vista por defecto de la pestaña): la fórmula de trabajo como la planilla de V1, con filas numeradas
-// en bandas (A · concepto, B · %, C · valor, D · de dónde sale), las celdas que se editan marcadas y la barra de fórmula arriba; al costado (desde `xl`; debajo en
-// pantallas más chicas), «Totales» y la tarjeta en vivo con la unidad de ejemplo. Hace lo que el Modo avanzado sobre la misma fórmula de trabajo: lo aplicado en uno
+// en bandas (A · concepto, B · %, C · valor, D · de dónde sale), las celdas que se editan marcadas y la barra de fórmula arriba; al costado (cuando la planilla
+// mide 72 rem o más; si no, debajo), «Totales» y la tarjeta en vivo con la unidad de ejemplo. Hace lo que el Modo avanzado sobre la misma fórmula de trabajo: lo aplicado en uno
 // se ve en el otro. «Guardar el borrador» arriba, como en el Modo avanzado.
 export function PlanillaDeLaFormula(p: PropsDeLaPlanilla) {
   const { editor } = p
@@ -68,11 +68,12 @@ export function PlanillaDeLaFormula(p: PropsDeLaPlanilla) {
   const tonos = planilla.deLasBandas.tonos
   const motivo = planilla.ctx.motivo
   return (
-    <section aria-label="Planilla de la fórmula" className="grid min-w-0 gap-3">
+    <section aria-label="Planilla de la fórmula" className="@container/formula grid min-w-0 gap-3">
       <EstiloDeTonos tonos={tonos.tipo === 'listo' ? tonos.tonos : SIN_TONOS} />
       <CabeceraDeLaPlanilla {...p} motivo={motivo} idDelMotivo={planilla.ctx.idDelMotivo} />
       <RechazoDeArriba rechazo={editor.rechazo} />
-      <div className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+      {/* Al costado sólo si la planilla tiene lugar (un contenedor, no la pantalla: con el texto al 200 % o la columna de Configuración, la tabla no se aprieta). */}
+      <div className="grid min-w-0 gap-4 @6xl/formula:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
         <div className="grid min-w-0 content-start gap-3">
           <BarraDeFormula
             {...planilla.barra}

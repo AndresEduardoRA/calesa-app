@@ -112,10 +112,13 @@ export const FilaDeLaPlanilla = memo(function FilaDeLaPlanilla(p: FilaDeLaPlanil
         data-fila={fila.id}
         {...(elegida ? { 'data-elegida': '' } : {})}
         {...(rechazo === null ? {} : { 'data-rechazo': '' })}
-        className="group/fila data-elegida:[&>*]:bg-(--color-primario-soft)"
+        className="group/fila"
       >
         <td className={NUMERO}>{p.numero}</td>
-        <th scope="row" className={CONCEPTO}>
+        <th
+          scope="row"
+          className={`${CONCEPTO} group-data-elegida/fila:font-semibold group-data-elegida/fila:shadow-[inset_4px_0_0_var(--color-primario-ink)]`}
+        >
           <button
             type="button"
             aria-pressed={elegida}

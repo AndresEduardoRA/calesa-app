@@ -2,6 +2,7 @@
 
 import { textoDelFaltante } from '../../../../entities/textos-de-faltantes'
 import type { CifraDeLaFila } from '../../../../entities/formula/vista-previa'
+import { formatoDe } from '../../../../entities/nodos'
 import { ValorDeConstante } from '../editor/valor-de-constante'
 
 // Las cifras de la planilla llevan 2 decimales (los montos, los de `<Monto>`).
@@ -29,7 +30,14 @@ export function CeldaDelValor({ cifra, leyendo }: { cifra: CifraDeLaFila; leyend
     case 'nada':
       return null
     case 'valor':
-      return <ValorDeConstante valor={cifra.valor} formato={cifra.formato} decimales={DECIMALES} />
+      // Sin `formato`, un nodo es dinero (`usd`, como `formatoDe()` de la base).
+      return (
+        <ValorDeConstante
+          valor={cifra.valor}
+          formato={formatoDe({ formato: cifra.formato })}
+          decimales={DECIMALES}
+        />
+      )
     case 'texto':
       return <>{cifra.texto}</>
     case 'sin_cifra':
