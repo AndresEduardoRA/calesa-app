@@ -83,6 +83,33 @@ async function leerAlrededor(
   }
 }
 
+// Lo que sólo la página sabe de la tarjeta de «Vista previa»: lo guardado (título, número, vencimiento, último guardado), el cliente y el vehículo si quien
+// mira los ve, el asesor y los retoques con si quien mira la puede retocar (`puede_guardar` de la base).
+function tarjetaDeLaGuardada(
+  hoja: HojaDeUnaGuardada,
+  {
+    cliente,
+    vehiculo,
+    asesor,
+  }: Pick<Awaited<ReturnType<typeof leerAlrededor>>, 'cliente' | 'vehiculo' | 'asesor'>,
+) {
+  return {
+    titulo: tituloDeLaTarjeta(hoja.cotizacion, vehiculo),
+    cliente: cliente?.nombre ?? null,
+    vehiculo: vehiculoDeLaTarjeta(vehiculo),
+    asesor,
+    numero: hoja.cotizacion.numero,
+    vencida: hoja.vencida,
+    venceEl: hoja.venceEl,
+    guardadaEl: hoja.cotizacion.actualizadoEn,
+    retoque: {
+      retoques: hoja.cotizacion.tarjetaRetoques,
+      actualizadoEn: hoja.cotizacion.actualizadoEn,
+      puedeRetocar: hoja.puedeGuardar,
+    },
+  }
+}
+
 async function Cotizacion({
   params,
   searchParams,
@@ -139,16 +166,7 @@ async function Cotizacion({
           origenId={hoja.cotizacion.origenId}
           cotizacionId={hoja.cotizacion.id}
           permisos={sesion.permisos}
-          tarjeta={{
-            titulo: tituloDeLaTarjeta(hoja.cotizacion, vehiculo),
-            cliente: cliente?.nombre ?? null,
-            vehiculo: vehiculoDeLaTarjeta(vehiculo),
-            asesor,
-            numero: hoja.cotizacion.numero,
-            vencida: hoja.vencida,
-            venceEl: hoja.venceEl,
-            guardadaEl: hoja.cotizacion.actualizadoEn,
-          }}
+          tarjeta={tarjetaDeLaGuardada(hoja, { cliente, vehiculo, asesor })}
         >
           <PantallaDeUnaGuardada
             key={hoja.cotizacion.id}
