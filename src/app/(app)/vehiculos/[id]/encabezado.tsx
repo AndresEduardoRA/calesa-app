@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { FaseResumen } from '@/modules/flujos'
 import type { OrigenResumen } from '@/modules/origenes'
 import {
@@ -11,7 +12,7 @@ import {
   type VistaPreviaDeVitrina,
 } from '@/modules/vehiculos'
 import {
-  BotonEditarVehiculo,
+  BotonDeVitrinaDeLaFicha,
   CabeceraDeVehiculo,
   InsigniaDeVitrina,
   MenuDeVehiculoDeLaFicha,
@@ -36,10 +37,13 @@ type Props = {
   editaEnElOrigen: boolean
   // En un origen de subasta con apibara encendida: si tiene con qué consultar. null = no aplica.
   subasta: { consultable: boolean } | null
+  // Los enlaces cortos (logística, repuestos), en la línea de la situación.
+  enlaces?: ReactNode
 }
 
-// La cabecera de la ficha, arriba de la columna izquierda, con lo que la persona puede hacer desde ahí: «Editar» y el «⋯» con la lista única (la misma de
-// la fila y la tarjeta: «Cotizar vehículo» primero; publicar en la web, apagado y con el motivo si no tiene el permiso; y, separada, enviar a la papelera). «Ver en logística» va en el bloque «Fase y qué falta».
+// La cabecera de la ficha, arriba de la columna izquierda. Sobre la esquina de la foto, como en la tarjeta de la lista: la vitrina (apagada con el motivo
+// si no tiene el permiso) y el «⋯» con la lista única (la misma de la fila y la tarjeta: «Cotizar vehículo» primero, «Editar», «Editar imágenes»…; y,
+// separada, enviar a la papelera). No hay «Editar» suelto: está en el «⋯». Bajo el título, la situación y los enlaces cortos.
 export function Encabezado(props: Props) {
   const { vehiculo, origen, fase, previa, publicar, editable, papelera, paraActividad, avisos } =
     props
@@ -58,9 +62,10 @@ export function Encabezado(props: Props) {
           />
         ) : null
       }
-      acciones={
+      enlaces={props.enlaces}
+      sobreLaFoto={
         <>
-          {editable ? <BotonEditarVehiculo vehiculo={vehiculo} /> : null}
+          <BotonDeVitrinaDeLaFicha vehiculo={vehiculo} permiso={publicar} />
           <MenuDeVehiculoDeLaFicha
             vehiculo={vehiculo}
             publicar={publicar}

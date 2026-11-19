@@ -173,7 +173,9 @@ test('dos personas editan el mismo vehículo: la segunda se entera de quién lo 
   await entrar(deSara, soloCorea)
   const seltos = await vehiculoPorTitulo('Kia Seltos 2022')
   await deSara.goto(`/vehiculos/${seltos?.id ?? ''}`)
-  await deSara.getByRole('button', { name: 'Editar' }).click()
+  // «Editar» está en el «⋯» de la ficha, sobre la foto.
+  await deSara.getByRole('button', { name: 'Más acciones de Kia Seltos 2022' }).first().click()
+  await deSara.getByRole('menuitem', { name: 'Editar', exact: true }).click()
   const panelDeSara = deSara.getByRole('dialog', { name: 'Editar Kia Seltos 2022' })
   await panelDeSara.getByLabel('Modelo').fill('Seltos EX')
   await panelDeSara.getByRole('button', { name: 'Guardar', exact: true }).click()
