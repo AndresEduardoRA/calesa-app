@@ -154,16 +154,17 @@ export async function notaDelInteres(
   return data === null ? undefined : data.nota
 }
 
-// `?seccion=vehiculos` lleva al bloque Relacionados de la ficha, donde quedó la gestión de «Vehículos» (al pie: los anteriores, el panel
-// para vincular o marcar uno y la confirmación de desvincular).
+// `?seccion=vehiculos` lleva al bloque «Vehículos» de la ficha (el «Relacionados» del lead: «Vincular o marcar» en su título y, al pie, los
+// anteriores plegados, el panel para vincular o marcar uno y la confirmación de desvincular).
 export async function irAVehiculos(page: Page, leadId: string, consulta = ''): Promise<void> {
   await page.goto(`/leads/${leadId}?seccion=vehiculos${consulta}`)
   await expect(relacionadosDelLead(page)).toBeVisible()
 }
 
-// El bloque «Relacionados» compacto (los grupos) y el bloque entero de la ficha (con la gestión al pie).
+// La región «Vehículos» (el «Relacionados» compacto del lead: el título con su acción y los grupos) y el bloque entero de la ficha (con la
+// gestión al pie).
 export const relacionadosDelLead = (page: Page): Locator =>
-  aLaVista(page.getByRole('region', { name: 'Relacionados', exact: true }))
+  aLaVista(page.getByRole('region', { name: 'Vehículos', exact: true }))
 export const seccionVehiculos = (page: Page): Locator => aLaVista(page.locator('#relacionados'))
 export const vinculados = (page: Page): Locator =>
   relacionadosDelLead(page).getByRole('region', { name: 'Vinculado', exact: true })
@@ -182,30 +183,36 @@ export async function accionDeLaFila(
   await grupo.page().getByRole('menuitem', { name: accion, exact: true }).click()
 }
 
-// «Vincular o marcar un vehículo» de Relacionados: a la vista si no hay nada; si no, en el «⋯» de su grupo o del bloque.
+// «Vincular o marcar» del título del bloque «Vehículos». Un clic antes de hidratar se pierde: reintenta con tope corto y, en cada vuelta, mira
+// primero si la URL ya pide el panel (un clic de más sumaría una entrada al historial y rompería «atrás»).
 export async function abrirAgregarVehiculo(page: Page): Promise<Locator> {
   const panel = panelAgregar(page)
-  const nombre = 'Vincular o marcar un vehículo'
-  // El de la vez anterior termina de cerrarse antes de abrirlo de nuevo. Cada vuelta mira primero si el panel ya está, y los clics tienen su
-  // tope: en el celular un aviso puede tapar el «⋯» un momento, y un clic sin tope esperaría hasta vencer la prueba.
+  // El de la vez anterior termina de cerrarse antes de abrirlo de nuevo.
   await expect(panel).toBeHidden()
   await expect(async () => {
-    if (await panel.isVisible()) {
-      return
+    if (!/[?&]panel=agregar-vehiculo/.test(page.url())) {
+      await botonVincularOMarcar(page).click({ timeout: 2000 })
     }
-    const suelta = relacionadosDelLead(page).getByRole('link', { name: nombre })
-    if (await suelta.isVisible()) {
-      await suelta.click({ timeout: 2000 })
-    } else {
-      await relacionadosDelLead(page)
-        .getByRole('button', { name: /^Más acciones de «(Relacionados|Vinculado|Interesado)»$/ })
-        .first()
-        .click({ timeout: 2000 })
-      await page.getByRole('menuitem', { name: nombre }).click({ timeout: 2000 })
-    }
-    await expect(panel).toBeVisible({ timeout: 2000 })
+    await expect(page).toHaveURL(/[?&]panel=agregar-vehiculo/, { timeout: 2000 })
   }).toPass()
+  await expect(panel).toBeVisible()
   return panel
+}
+
+// La única acción del título del bloque «Vehículos» (con la cartera y `leads.editar`).
+export const botonVincularOMarcar = (page: Page): Locator =>
+  relacionadosDelLead(page).getByRole('button', { name: 'Vincular o marcar', exact: true })
+
+// «Vínculos anteriores» al pie del bloque: plegados tras su botón (`aria-expanded`); lo despliega si está plegado y devuelve la lista.
+export async function desplegarAnteriores(page: Page): Promise<Locator> {
+  const boton = seccionVehiculos(page).getByRole('button', { name: 'Vínculos anteriores' })
+  await expect(async () => {
+    if ((await boton.getAttribute('aria-expanded')) !== 'true') {
+      await boton.click({ timeout: 2000 })
+    }
+    await expect(boton).toHaveAttribute('aria-expanded', 'true', { timeout: 2000 })
+  }).toPass()
+  return seccionVehiculos(page).getByRole('list', { name: 'Vínculos anteriores' })
 }
 
 // Abre «Vincular o marcar un vehículo», busca y elige uno.

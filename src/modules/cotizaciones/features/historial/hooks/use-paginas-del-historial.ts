@@ -22,9 +22,10 @@ type Estado = {
 const SIN_LEER: Estado = { filas: [], siguiente: null, leido: false, cargando: false, error: null }
 
 // Las páginas del historial de cotizaciones de un vehículo o de un lead (`de`), de a `TAMANO_DE_VER_MAS` por cursor y hasta `TOPE_DE_LO_CARGADO`. La posición no va a la URL.
+// `tamano` cambia el de las del lead (el bloque «Cotizaciones» de la ficha lee 3 y deja lo demás a «Ver todas»).
 // Una respuesta de un pedido que ya no es el último (otro «Ver más», otra lista, el componente ya no está, el primer montaje de `StrictMode`) se descarta:
 // ese `ultimo` es el único guardián, y lo comparten el panel de la hoja (que lee al desplegar) y la pestaña de la ficha (que lee al montarse).
-export function usePaginasDelHistorial(de: ListaDe) {
+export function usePaginasDelHistorial(de: ListaDe, { tamano }: { tamano?: number } = {}) {
   const [estado, setEstado] = useState<Estado>(SIN_LEER)
   const ultimo = useRef(0)
 
@@ -44,7 +45,11 @@ export function usePaginasDelHistorial(de: ListaDe) {
     const lectura =
       'vehiculo' in de
         ? leerHistorialDelVehiculo({ vehiculoId: de.vehiculo, cursor })
-        : leerCotizacionesDelLead({ leadId: de.lead, cursor })
+        : leerCotizacionesDelLead({
+            leadId: de.lead,
+            cursor,
+            ...(tamano === undefined ? {} : { tamano }),
+          })
     lectura
       .catch((): Resultado<Pagina<CotizacionDelHistorial>> =>
         fallo('inesperado', 'No se pudo cargar el historial.'),

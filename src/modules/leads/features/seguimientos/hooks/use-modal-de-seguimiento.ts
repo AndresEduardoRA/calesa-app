@@ -175,12 +175,16 @@ export function useModalDeSeguimiento({ seguimientos, hayTipos, atiendeLaUrl = t
     },
     abrirEdicion: panel.abrirEdicion,
     cerrar: panel.cerrar,
-    // El «Editar» del que se estaba editando, si sigue en la lista; al crear, quien lo abrió si sigue en la página (en la ficha el bloque está
+    // El «Editar» del que se estaba editando (o el «⋯» de su fila en el bloque de la ficha), si sigue en la lista; al crear, quien lo abrió si sigue en la página (en la ficha el bloque está
     // siempre montado: sin esto, abierto desde la cabecera devolvería el foco al botón del bloque). `true`: el de Base UI (llegó abierto con la
     // página; tras un «atrás» lo devuelve `vuelta-del-foco`). Nulo: el modal elige su botón.
     focoAlCerrar: (): HTMLElement | boolean | null => {
       if (original) {
-        return document.querySelector<HTMLElement>(`[data-seguimiento-editar="${original.id}"]`)
+        // Primero el «Editar» a la vista (el del drawer «Ver todos», encima del bloque inerte); si no hay, el «⋯» de su fila en el bloque.
+        return (
+          document.querySelector<HTMLElement>(`[data-seguimiento-editar="${original.id}"]`) ??
+          document.querySelector<HTMLElement>(`[data-mas-acciones="seguimiento-${original.id}"]`)
+        )
       }
       const quien = focoDeQuienAbrio()
       if (typeof quien !== 'boolean') {

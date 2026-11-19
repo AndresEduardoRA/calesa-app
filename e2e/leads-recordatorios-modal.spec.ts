@@ -7,7 +7,8 @@ import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import {
   abrirAgendar,
   abrirEdicionDeRecordatorio,
-  bloqueDeRecordatorios,
+  bloqueSeguimiento,
+  botonMasDelSeguimiento,
   irASeguimientos,
   meterRecordatorio,
   modalDeRecordatorio,
@@ -195,9 +196,9 @@ test('sin la cartera no hay «Agendar recordatorio» y la URL no lo abre', async
   const lead = await leadDeBerta(`Rec Sin Cartera ${info.project.name}`)
   await entrar(page, t.personas.duena)
   await irASeguimientos(page, lead.id, '&panel=agendar-recordatorio')
-  await expect(bloqueDeRecordatorios(page)).toBeVisible()
-  await expect(
-    bloqueDeRecordatorios(page).getByRole('button', { name: 'Agendar recordatorio' }),
-  ).toHaveCount(0)
+  // Sin la cartera el bloque «Seguimiento» no tiene «+».
+  await expect(bloqueSeguimiento(page)).toBeVisible()
+  await expect(botonMasDelSeguimiento(page)).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Agendar recordatorio' })).toHaveCount(0)
   await expect(modalDeRecordatorio(page, 'Agendar')).toHaveCount(0)
 })

@@ -6,6 +6,7 @@ import { esperarFichaHidratada, nuevoLead } from './soporte/leads-ficha'
 import { esMovil } from './soporte/inventario'
 import { cabeEnLaPantalla, completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import {
+  botonMasDelSeguimiento,
   abrirAgendar,
   abrirEdicionDeRecordatorio,
   abrirAnotar,
@@ -46,8 +47,8 @@ test('agenda con «Mañana 09:00»; uno en el pasado se rechaza junto al campo',
   const lead = await leadDeBerta(`Rec Agendar ${info.project.name}`)
   await entrar(page, t.personas.berta)
   await irASeguimientos(page, lead.id)
-  const bloque = bloqueDeRecordatorios(page)
-  await expect(bloque.getByText('Ningún recordatorio pendiente sobre este lead.')).toBeVisible()
+  // Sin pendientes, el bloque «Seguimiento» no dibuja la fila del más próximo.
+  await expect(bloqueDeRecordatorios(page)).toHaveCount(0)
 
   const formulario = await abrirAgendar(page)
   await expect(page).toHaveURL(/panel=agendar-recordatorio/)
@@ -64,7 +65,8 @@ test('agenda con «Mañana 09:00»; uno en el pasado se rechaza junto al campo',
   await formulario.getByRole('button', { name: 'Guardar' }).dblclick()
   await expect(recordatorio(page, 'Llamar por el RAV4')).toBeVisible()
   await expect(formulario).toHaveCount(0)
-  await expect(bloque.getByRole('button', { name: 'Agendar recordatorio' })).toBeFocused()
+  // El foco vuelve al «+» que lo abrió.
+  await expect(botonMasDelSeguimiento(page)).toBeFocused()
   const guardados = await recordatoriosEnLaBase(lead.id)
   expect(guardados).toHaveLength(1)
   // 09:00 en la zona de la empresa (La Paz, UTC-4).
@@ -101,7 +103,7 @@ test('completar es poner: dos veces no cambia nada; reabrir lo devuelve', async 
     recordarEn: new Date(Date.now() + 86400_000).toISOString(),
   })
   await entrar(page, t.personas.berta)
-  // «Completados» vive en «Ver todos tus recordatorios»: el bloque de la ficha muestra sólo los pendientes más próximos.
+  // «Completados» vive en «Ver tus recordatorios»: el bloque de la ficha muestra sólo el pendiente más próximo.
   await irASeguimientos(page, lead.id, '', { todos: 'recordatorios' })
   await recordatorio(page, 'Mandar la cotización')
     .getByRole('button', { name: 'Completar' })
@@ -147,11 +149,11 @@ test('un vencido se avisa arriba de la ficha; completarlo quita el aviso', async
   await page.goto(`/leads/${lead.id}`)
   const aviso = page.getByText('Tienes 1 recordatorio vencido sobre este lead.')
   await expect(aviso).toBeVisible()
-  // «Verlos» salta al bloque «Seguimientos y recordatorios» de la misma página y le da el foco a su título.
+  // «Verlos» salta al bloque «Seguimiento» de la misma página y le da el foco a su título.
   await esperarFichaHidratada(page)
   await page.getByRole('link', { name: 'Verlos' }).click()
   await expect(
-    page.getByRole('heading', { name: 'Seguimientos y recordatorios', level: 2 }),
+    page.getByRole('heading', { name: 'Seguimiento', exact: true, level: 2 }),
   ).toBeFocused()
   const vencido = recordatorio(page, 'Era para ayer')
   await expect(vencido.getByText('Vencido')).toBeVisible()
@@ -181,9 +183,11 @@ test('cambiar la hora de uno ya avisado lo vuelve a dejar por avisar; eliminar o
   await formulario.getByRole('button', { name: 'Guardar' }).click()
   await expect(formulario).toHaveCount(0)
   await expect(recordatorio(page, 'Ya avisó, renombrado')).toBeVisible()
-  // El foco vuelve al «Editar» de ese recordatorio.
+  // El foco vuelve al «⋯» de ese recordatorio (en el bloque, «Editar» está en su «⋯»).
   await expect(
-    recordatorio(page, 'Ya avisó, renombrado').getByRole('button', { name: 'Editar' }),
+    recordatorio(page, 'Ya avisó, renombrado').getByRole('button', {
+      name: 'Más acciones de «Ya avisó, renombrado»',
+    }),
   ).toBeFocused()
   expect((await recordatoriosEnLaBase(lead.id))[0]?.notificado_en).not.toBeNull()
 
@@ -194,7 +198,10 @@ test('cambiar la hora de uno ya avisado lo vuelve a dejar por avisar; eliminar o
   await expect(recordatorio(page, 'Ya avisó, renombrado').getByText('Vencido')).toHaveCount(0)
   await expect.poll(async () => (await recordatoriosEnLaBase(lead.id))[0]?.notificado_en).toBeNull()
 
-  await recordatorio(page, 'Ya avisó, renombrado').getByRole('button', { name: 'Eliminar' }).click()
+  await recordatorio(page, 'Ya avisó, renombrado')
+    .getByRole('button', { name: 'Más acciones de «Ya avisó, renombrado»' })
+    .click()
+  await page.getByRole('menuitem', { name: 'Eliminar' }).click()
   await expect(page.getByText('Recordatorio eliminado.')).toBeVisible()
   await expect(recordatorio(page, 'Ya avisó, renombrado')).toHaveCount(0)
   await page.getByRole('button', { name: 'Deshacer' }).click()
@@ -220,9 +227,7 @@ test('el recordatorio de otra persona no existe para ti, ni en el lead que compa
   })
   await entrar(page, t.personas.berta)
   await irASeguimientos(page, lead.id)
-  await expect(
-    bloqueDeRecordatorios(page).getByText('Ningún recordatorio pendiente sobre este lead.'),
-  ).toBeVisible()
+  await expect(bloqueDeRecordatorios(page)).toHaveCount(0)
   await expect(page.getByText('El de Carlos')).toHaveCount(0)
   await expect(page.getByText(/recordatorios? vencidos? sobre este lead/)).toHaveCount(0)
 

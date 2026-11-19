@@ -2,7 +2,7 @@ import { expect, test } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { admin } from './soporte/base'
 import { exigir } from './soporte/leads'
-import { irAFicha } from './soporte/leads-ficha'
+import { cabeceraDeLaFicha, irAFicha } from './soporte/leads-ficha'
 import { AJENO_CARLOS, delLead, fila, irALeads } from './soporte/leads-listado'
 import { compartirCon } from './soporte/leads-vehiculos'
 import {
@@ -107,7 +107,9 @@ test('A · la dueña, con el permiso: el global y, aparte, el propio de quien lo
   await sinScrollHorizontal(page)
   // El título y las acciones no se montan (en el celular, con cuatro botones, se tapaban).
   const titulo = await page.getByRole('heading', { level: 1 }).boundingBox()
-  const favorito = await page.getByRole('button', { name: /^Más acciones de / }).boundingBox()
+  const favorito = await cabeceraDeLaFicha(page)
+    .getByRole('button', { name: /^Más acciones de / })
+    .boundingBox()
   expect(titulo).not.toBeNull()
   expect(favorito).not.toBeNull()
   if (titulo && favorito) {

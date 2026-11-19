@@ -10,7 +10,7 @@ import type {
   GruposDeRelacionados,
   PresentacionDeRelacionados,
 } from '../../../entities/relacionados'
-import { RelacionadosCompactos } from './relacionados-compactos'
+import { RelacionadosCompactos, type EncabezadoDeRelacionados } from './relacionados-compactos'
 import { RelacionadosEnLinea } from './relacionados-en-linea'
 import type { VerTodosDeUnGrupo } from './ver-todos-del-grupo'
 
@@ -25,13 +25,25 @@ type Props<Contraparte> = {
   verTodosDe: (grupo: GrupoDeRelacionados<Contraparte>) => VerTodosDeUnGrupo | null
   // `'linea'`: un chip por grupo con su popover (logística). `'compacta'`: los grupos con sus filas (las fichas).
   presentacion: PresentacionDeRelacionados
+  // Sólo en `'compacta'`: el título con su acción y la frase de todo vacío (la ficha del lead: «Vehículos»). Sin esto, «Relacionados».
+  encabezado?: EncabezadoDeRelacionados
+  vacio?: string
 }
 
 // El bloque «Relacionados»: Vinculado, Interesado y, con `cotizaciones.ver`, Cotizado; un grupo sin nada no se dibuja. Cada lugar dice cómo se ve; los datos, las acciones y las filas las
 // pone quien lo usa.
-export function Relacionados<Contraparte>({ presentacion, ...props }: Props<Contraparte>) {
+export function Relacionados<Contraparte>({
+  presentacion,
+  encabezado,
+  vacio,
+  ...props
+}: Props<Contraparte>) {
   return presentacion === 'compacta' ? (
-    <RelacionadosCompactos {...props} />
+    <RelacionadosCompactos
+      {...props}
+      {...(encabezado ? { encabezado } : {})}
+      {...(vacio === undefined ? {} : { vacio })}
+    />
   ) : (
     <RelacionadosEnLinea {...props} />
   )

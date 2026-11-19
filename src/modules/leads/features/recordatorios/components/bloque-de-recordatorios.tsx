@@ -3,6 +3,7 @@
 import { useRef } from 'react'
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import { PRIMEROS_DE_RECORDATORIOS } from '../../../entities/bloques-de-la-ficha'
+import { estadoDelRecordatorio } from '../../../entities/recordatorios'
 import { Button } from '@/shared/ui/button'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { useBusquedaDeRecordatorio } from '../hooks/use-busqueda-de-recordatorio'
@@ -11,15 +12,15 @@ import type { Recordatorios } from '../hooks/use-recordatorios'
 import { CompletadosPlegados } from './completados-plegados'
 import { ModalDeRecordatorioDiferido } from './diferidos'
 import { EsqueletoDeRecordatorios } from './esqueleto-de-recordatorios'
+import { ItemDeRecordatorio } from './item-de-recordatorio'
 import { ListaDeRecordatorios } from './lista-de-recordatorios'
 
 export type FormaDelBloque = {
   // Dentro del drawer «Ver todos»: sin botón a quien volver, el modal no devuelve el foco a ciegas (4-58, como `LineaDeSeguimientos`).
   enDrawer?: boolean
-  // «resumen» (el bloque de la ficha): los pendientes más próximos (`PRIMEROS_DE_RECORDATORIOS`), sin «Ver más» ni «Completados», y «Ver
-  // todos tus recordatorios» si hay más o hay completados. «completa» («Ver todos»): todo.
+  // «resumen» (el bloque «Seguimiento» de la ficha): sólo el pendiente más próximo (`PRIMEROS_DE_RECORDATORIOS`), en una fila, sin título,
+  // sin «Agendar» (está en el «+» del título) y sin pie; sin pendientes, nada. «completa» («Ver tus recordatorios»): todo.
   forma?: 'completa' | 'resumen'
-  alVerTodos?: () => void
   // Falso: otro dueño de los modales responde a la URL (el drawer «Ver todos» abierto encima del resumen).
   atiendeLaUrl?: boolean
 }
@@ -38,30 +39,18 @@ function Pendientes({
   zona,
   recordatorios,
   alEditar,
-  tope,
 }: {
   ahora: string
   zona: string
   recordatorios: Recordatorios
   alEditar: (id: string) => void
-  // En el resumen: cuántos se dibujan, sin «Ver más».
-  tope?: number
 }) {
   const { estado, listas } = recordatorios
   if (estado === 'cargando') {
     return <EsqueletoDeRecordatorios etiqueta="Cargando los recordatorios" />
   }
   if (estado === 'error') {
-    return (
-      <div role="alert" className="flex flex-wrap items-center gap-2">
-        <p className="text-(length:--text-sm) text-(--color-ink)">
-          No se pudieron cargar los recordatorios.
-        </p>
-        <Button type="button" variant="outline" size="sm" onClick={recordatorios.reintentar}>
-          Reintentar
-        </Button>
-      </div>
-    )
+    return <ErrorDeLaLectura recordatorios={recordatorios} />
   }
   if (listas.pendientes.lista.length === 0) {
     return (
@@ -72,8 +61,8 @@ function Pendientes({
   }
   return (
     <ListaDeRecordatorios
-      lista={tope === undefined ? listas.pendientes.lista : listas.pendientes.lista.slice(0, tope)}
-      hayMas={tope === undefined && listas.pendientes.hayMas}
+      lista={listas.pendientes.lista}
+      hayMas={listas.pendientes.hayMas}
       ahora={ahora}
       zona={zona}
       recordatorios={recordatorios}
@@ -85,53 +74,52 @@ function Pendientes({
   )
 }
 
-// «Ver todos tus recordatorios», sin número: si hay pendientes que no se ven o hay completados.
-function hayParaVerTodos(recordatorios: Recordatorios): boolean {
-  const { pendientes, hayCompletados } = recordatorios.listas
+// La primera lectura falló (sólo pasa sin lo leído en el servidor): una línea con «Reintentar».
+function ErrorDeLaLectura({ recordatorios }: { recordatorios: Recordatorios }) {
   return (
-    recordatorios.estado === 'listo' &&
-    (pendientes.hayMas || pendientes.lista.length > PRIMEROS_DE_RECORDATORIOS || hayCompletados)
+    <div role="alert" className="flex flex-wrap items-center gap-2">
+      <p className="text-(length:--text-sm) text-(--color-ink)">
+        No se pudieron cargar los recordatorios.
+      </p>
+      <Button type="button" variant="outline" size="sm" onClick={recordatorios.reintentar}>
+        Reintentar
+      </Button>
+    </div>
   )
 }
 
-// Debajo de los pendientes: en el resumen, «Ver todos tus recordatorios»; en la lista completa, «Completados» plegados.
-function PieDelBloque({
-  resumen,
-  alVerTodos,
+// En el bloque «Seguimiento»: tu pendiente más próximo (un vencido primero), o nada.
+function ElMasProximo({
   ahora,
   zona,
   recordatorios,
   alEditar,
 }: {
-  resumen: boolean
-  alVerTodos: (() => void) | undefined
   ahora: string
   zona: string
   recordatorios: Recordatorios
   alEditar: (id: string) => void
 }) {
-  if (!resumen) {
-    return (
-      <CompletadosPlegados
-        ahora={ahora}
-        zona={zona}
-        recordatorios={recordatorios}
-        alEditar={alEditar}
-      />
-    )
+  if (recordatorios.estado === 'error') {
+    return <ErrorDeLaLectura recordatorios={recordatorios} />
   }
-  if (!alVerTodos || !hayParaVerTodos(recordatorios)) {
+  const primero = recordatorios.listas.pendientes.lista.slice(0, PRIMEROS_DE_RECORDATORIOS).at(0)
+  if (recordatorios.estado === 'cargando' || primero === undefined) {
     return null
   }
   return (
-    <Button
-      type="button"
-      variant="outline"
-      className="min-h-11 w-fit md:min-h-9"
-      onClick={alVerTodos}
-    >
-      Ver todos tus recordatorios
-    </Button>
+    <ItemDeRecordatorio
+      compacto
+      recordatorio={primero}
+      estado={estadoDelRecordatorio(primero, ahora)}
+      zona={zona}
+      enCurso={recordatorios.enCurso}
+      alCompletar={(completado) => void recordatorios.completar(primero, completado)}
+      alEditar={() => {
+        alEditar(primero.id)
+      }}
+      alEliminar={() => void recordatorios.eliminar(primero)}
+    />
   )
 }
 
@@ -153,18 +141,56 @@ function useModalDelBloque(recordatorios: Recordatorios, atiendeLaUrl: boolean |
   })
 }
 
-// «Tus recordatorios» de este lead (el resumen del bloque de la ficha y «Ver todos»): «Agendar» arriba,
-// los pendientes —los vencidos primero, marcados— por páginas y, plegados, los completados, que se
-// leen al abrirse. Son personales: nadie más los ve. Agendar y editar abren un modal con su URL
-// (`?panel=agendar-recordatorio`, `?panel=editar-recordatorio&recordatorio=<id>`); uno de la URL que
-// no está cargado se lee por su id antes de decir que no está.
+// El modal de agendar y editar. En el bloque no hay «Agendar»: el foco vuelve a quien lo abrió (el «+», el «⋯» de la fila o el de la
+// cabecera); sin nadie, `focoSinOrigen`.
+function ModalDelBloque({
+  leadId,
+  zona,
+  modal,
+  recordatorios,
+  focoSinOrigen,
+}: {
+  leadId: string
+  zona: string
+  modal: ReturnType<typeof useModalDelBloque>
+  recordatorios: Recordatorios
+  focoSinOrigen: () => HTMLElement | boolean
+}) {
+  return (
+    <ModalDeRecordatorioDiferido
+      key={modal.llave}
+      abierto={modal.abierto}
+      alCerrar={modal.cerrar}
+      leadId={leadId}
+      zona={zona}
+      original={modal.original}
+      noDisponible={modal.noDisponible}
+      alGuardar={(guardado) => {
+        recordatorios.poner(guardado)
+        modal.cerrar()
+      }}
+      focoAlCerrar={() => modal.focoAlCerrar() ?? focoSinOrigen()}
+      // «Recargar» tras un conflicto: sólo ése, por su id.
+      alRecargar={() => {
+        if (modal.original) {
+          void recordatorios.recargarUno(modal.original.id)
+        }
+      }}
+    />
+  )
+}
+
+// «Tus recordatorios» de este lead. En «Ver tus recordatorios» (`completa`): «Agendar» arriba, los pendientes —los vencidos primero,
+// marcados— por páginas y, plegados, los completados, que se leen al abrirse. En el bloque «Seguimiento» (`resumen`): sólo el más próximo.
+// Son personales: nadie más los ve. Agendar y editar abren un modal con su URL (`?panel=agendar-recordatorio`,
+// `?panel=editar-recordatorio&recordatorio=<id>`; en el bloque, agendar lo pide el «+» del título); uno de la URL que no está cargado se
+// lee por su id antes de decir que no está.
 export function BloqueDeRecordatorios({
   leadId,
   zona,
   recordatorios,
   enDrawer,
   forma,
-  alVerTodos,
   atiendeLaUrl,
 }: Props) {
   const botonAgendar = useRef<HTMLButtonElement>(null)
@@ -172,12 +198,35 @@ export function BloqueDeRecordatorios({
   const modal = useModalDelBloque(recordatorios, atiendeLaUrl)
   const montar = useAbiertoAlgunaVez(modal.abierto)
   const ahora = new Date().toISOString()
-  const Titulo = resumen ? 'h3' : 'h2'
+  const dialogo = montar ? (
+    <ModalDelBloque
+      leadId={leadId}
+      zona={zona}
+      modal={modal}
+      recordatorios={recordatorios}
+      focoSinOrigen={() => botonAgendar.current ?? !enDrawer}
+    />
+  ) : null
+  if (resumen) {
+    return (
+      <>
+        <section aria-label="Tus recordatorios" className="grid min-w-0 empty:hidden">
+          <ElMasProximo
+            ahora={ahora}
+            zona={zona}
+            recordatorios={recordatorios}
+            alEditar={modal.abrirEdicion}
+          />
+        </section>
+        {dialogo}
+      </>
+    )
+  }
   return (
     <section aria-label="Tus recordatorios" className="grid content-start gap-2">
-      <Titulo className="text-(length:--text-sm) font-semibold text-(--color-ink)">
+      <h2 className="text-(length:--text-sm) font-semibold text-(--color-ink)">
         Tus recordatorios
-      </Titulo>
+      </h2>
       {recordatorios.puedoAgendar ? (
         <Button
           ref={botonAgendar}
@@ -194,38 +243,14 @@ export function BloqueDeRecordatorios({
         zona={zona}
         recordatorios={recordatorios}
         alEditar={modal.abrirEdicion}
-        tope={resumen ? PRIMEROS_DE_RECORDATORIOS : undefined}
       />
-      <PieDelBloque
-        resumen={resumen}
-        alVerTodos={alVerTodos}
+      <CompletadosPlegados
         ahora={ahora}
         zona={zona}
         recordatorios={recordatorios}
         alEditar={modal.abrirEdicion}
       />
-      {montar ? (
-        <ModalDeRecordatorioDiferido
-          key={modal.llave}
-          abierto={modal.abierto}
-          alCerrar={modal.cerrar}
-          leadId={leadId}
-          zona={zona}
-          original={modal.original}
-          noDisponible={modal.noDisponible}
-          alGuardar={(guardado) => {
-            recordatorios.poner(guardado)
-            modal.cerrar()
-          }}
-          focoAlCerrar={() => modal.focoAlCerrar() ?? botonAgendar.current ?? !enDrawer}
-          // «Recargar» tras un conflicto: sólo ése, por su id.
-          alRecargar={() => {
-            if (modal.original) {
-              void recordatorios.recargarUno(modal.original.id)
-            }
-          }}
-        />
-      ) : null}
+      {dialogo}
     </section>
   )
 }

@@ -62,7 +62,6 @@ export const ETIQUETAS = {
   desvincular: 'Desvincular',
   vincularALead: 'Vincular a un lead',
   marcarInteresado: 'Marcar un interesado',
-  vincularOMarcar: 'Vincular o marcar un vehículo',
 } as const
 
 // La ruta de la hoja con el vehículo y, si hay, el lead (sin tocar lo demás de su consulta). Null si en ese origen no se cotiza.
@@ -226,20 +225,10 @@ export type ResumenDeUnGrupo = {
   ocultos: number
 }
 
-// Lo que se ofrece en un grupo de un lead: vincular o marcar un vehículo se hace en la sección «Vehículos» de la ficha (su panel con su búsqueda y su nota): un solo enlace, en el primer grupo.
-function accionesDelGrupoDeLead(
-  grupo: ResumenDeUnGrupo,
-  ancla: AnclaDeLead,
-): AccionDeRelacionados[] {
-  return grupo.tipo === 'vinculado' && ancla.puedoActuar
-    ? [
-        enlace(
-          'vincular-o-marcar',
-          ETIQUETAS.vincularOMarcar,
-          rutaDeVehiculosDelLead(ancla.leadId, '&panel=agregar-vehiculo'),
-        ),
-      ]
-    : []
+// Lo que se ofrece en un grupo de un lead: nada. «Vincular o marcar» vive en el título del bloque «Vehículos» de la ficha del lead (`VincularOMarcar`), una sola
+// vez: ni en un grupo, ni en el «⋯» del bloque, ni junto a la frase de todo vacío.
+function accionesDelGrupoDeLead(): AccionDeRelacionados[] {
+  return []
 }
 
 // Lo que se ofrece en un grupo de un vehículo: vincular (sin vínculo, ni uno oculto que frena), desvincular un vínculo que quien mira no ve (sin fila no hay «⋯»: es la salida de siempre para quien
@@ -275,7 +264,7 @@ export function accionesDelGrupo(
 ): AccionDeRelacionados[] {
   const { ancla } = contexto
   return ancla.lado === 'lead'
-    ? accionesDelGrupoDeLead(grupo, ancla)
+    ? accionesDelGrupoDeLead()
     : accionesDelGrupoDeVehiculo(grupo, contexto, ancla)
 }
 

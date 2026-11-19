@@ -119,12 +119,14 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
 - **«Cotizar encima»** (`features/encima/`): el aviso (`avisoDeVersion()`: otra versión que la publicada hoy, o vencida) lo ve todo el que abre; el
   botón, sólo con `cadena.puedeCotizarEncima` (lo decide la base, no `puede()`: una anterior sin lead pide `sin_lead` y una sin vehículo, `sin_vehiculo`). El intento es el id de la nueva y se conserva sólo tras una pérdida; con
   cambios sin guardar o un pendiente el botón espera, porque la nueva lleva lo guardado.
-- **Historial** (el del panel del vehículo de la hoja, `HistorialDelVehiculo`, y la sección de `/leads/[id]` con `cotizaciones.ver` en algún origen, sin
-  mirar la cartera: la RLS recorta; la ficha del vehículo usa «De este vehículo»): se lee al montarse desde el navegador por `composicion-historial.client.ts` (por
-  `cotizaciones_vehiculo_creado_idx` o `cotizaciones_lead_creado_idx`), de a 20 hasta 500, y el tope dice «Ver todas en Cotizaciones». Va aparte de
-  `composicion.client.ts` y cada cáscara de `diferido()` en su `diferidos.tsx` (`features/historial/components/` y `lead/`) porque lo que importa la
-  hoja viaja en la carga en frío de `/cotizaciones/nuevo` (4-73). `usePaginasDelHistorial(de)` descarta lo viejo con `ultimo`; `<ListaDelHistorial>` espera
-  300 ms el esqueleto salvo con `esperarEsqueleto={false}` (la sección del lead: llega tras el esqueleto del `diferido()`).
+- **Historial** (el del panel del vehículo de la hoja, `HistorialDelVehiculo`; la ficha del vehículo usa «De este vehículo»): se lee al montarse desde el navegador
+  por `composicion-historial.client.ts` (por `cotizaciones_vehiculo_creado_idx`), de a 20 hasta 500, y el tope dice «Ver todas en Cotizaciones». El bloque
+  «Cotizaciones» de `/leads/[id]` (con `cotizaciones.ver` en algún origen, sin mirar la cartera: la RLS recorta; `pantallas/lead`, bajo el título con «Cotizar»
+  que arma `src/app`): `CotizacionesDelLeadAlAcercarse` muestra tres filas grises hasta acercarse a la vista y recién ahí pide el código (`diferido()`) y las 3 más
+  recientes (`leerCotizacionesDelLead({ tamano: 3 })` pide 4 por `cotizaciones_lead_creado_idx`), con «Ver todas» (`/cotizaciones?lead=`, sin número) si hay más;
+  la fila (`FilaDelHistorial`) es la de la lista larga. Va aparte de `composicion.client.ts` y cada cáscara de `diferido()` en su `diferidos.tsx`
+  (`features/historial/components/` y `lead/`) porque lo que importa la hoja viaja en la carga en frío de `/cotizaciones/nuevo` (4-73).
+  `usePaginasDelHistorial(de, { tamano })` descarta lo viejo con `ultimo`; `<ListaDelHistorial>` espera 300 ms el esqueleto salvo con `esperarEsqueleto={false}`.
 - **Configuración › Cotización** (la arma `src/app/(app)/configuracion/cotizacion/`): cada sección del módulo recibe el **origen abierto**
   (`{ id, nombre, activo }`) que `src/app` ya validó, sin selector propio; las URL las arma `rutaDeConfiguracionDeCotizacion(origenId, pestana,
 consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las actions revalidan `/configuracion/cotizacion` con `'layout'`. El inicio

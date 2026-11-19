@@ -2,7 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 import type { ParaRelacionados } from '../../../entities/acciones-de-relacionados'
-import type { RelacionadosDelLead } from '../../../entities/relacionados'
+import {
+  TITULO_DE_VEHICULOS_DEL_LEAD,
+  type RelacionadosDelLead,
+} from '../../../entities/relacionados'
 import { ErrorDeRelacionados } from './error-de-relacionados'
 import { RelacionadosDeUnLead } from './relacionados-de-un-lead'
 
@@ -12,13 +15,14 @@ type Props = {
   para: ParaRelacionados
 }
 
-// El bloque «Relacionados» de un lead con lo que leyó el servidor (la ficha del lead, en su presentación compacta). Cada acción lograda revalida la pantalla (`revalidarVinculo()`).
+// El bloque «Vehículos» (el «Relacionados» de un lead) con lo que leyó el servidor (la ficha del lead, en su presentación compacta). Cada acción lograda revalida la pantalla (`revalidarVinculo()`).
 export function RelacionadosDelLeadCliente({ datos, para }: Props) {
   const router = useRouter()
   if (datos === null) {
     return (
       <ErrorDeRelacionados
         presentacion="compacta"
+        titulo={TITULO_DE_VEHICULOS_DEL_LEAD}
         alReintentar={() => {
           router.refresh()
         }}

@@ -601,7 +601,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 390 (regla del 5 %: las tarjetas de la lista, con la portada en frío, lo llevaron de 375,5 a 386,9),
   `/cotizaciones/nuevo` 465 (con la subasta, `?origen=`; regla del 5 %: la línea «Descargar PDF» y el contexto del «⋯» de la guardada, que viajan con la hoja, la llevaron de 459,6 a 460,4), `/cotizaciones/[id]` 480 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7 y la cabecera compacta, con el menú de Base UI del «⋯» en frío, de 466,3 a 472,0), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
   `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). `/leads` mide 526,5 KB en 36 chunks y
-  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 386,9 de 390 (el despliegue de un grupo y «Comparar» van con `diferido()`; con `<MenuDeVistas>` en frío serían 450: va con
+  `/leads/[id]`, 558,3 KB (el «+» y los «⋯» de los bloques de la derecha van en frío: `DropdownMenu` y `MasAcciones` ya viajaban con el «⋯» de la cabecera). Al borde: `/cotizaciones` 386,9 de 390 (el despliegue de un grupo y «Comparar» van con `diferido()`; con `<MenuDeVistas>` en frío serían 450: va con
   `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,0 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
   `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 465,9 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
   `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 458,5 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action; los pasos de la hoja y el botón del ⚙ de la cabecera viajan en frío, su panel, los campos por defecto y los enlaces de la ayuda con `diferido()`)
@@ -675,12 +675,12 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `shared/lib/memoria-de-lectura.ts`).
 - Ficha del lead entera (`?seccion=` no cambia el documento; los grupos del layout y los teléfonos de «Ver más» no viajan en él: el modal se pide con
   `diferido()` al abrirlo): ≤ 138 KB sobre `/perfil` (`PRESUPUESTO_DE_LA_FICHA_EN_KB`),
-  medido 125,1 con 10 oportunidades, 3 de 10 seguimientos, 3 recordatorios, un vínculo, cuatro interesados y el portal, y 126 con 1.000 de cada uno
-  (`e2e/leads-ficha-dos-columnas.spec.ts`); lo que más pesa es el HTML de los ítems con sus acciones (≈ 31 KB el bloque de seguimientos, ≈ 30 KB
-  las 10 oportunidades, 11 Relacionados, 6 el portal) y su payload RSC. Igual con la semilla y con 100 orígenes + 100 tipos (manda los campos
+  medido 84,8 con 10 oportunidades (3 abiertas dibujadas), 3 de 10 seguimientos, el recordatorio más próximo, un vínculo, cuatro interesados y el portal,
+  y 84,7 con 1.000 de cada uno (`e2e/leads-ficha-dos-columnas.spec.ts`; en el celular, 84,6); lo que más pesa es el HTML de los bloques con sus acciones (Relacionados, el
+  portal, las filas de la línea de tiempo y de las oportunidades, cada una con su «⋯») y su payload RSC. Igual con la semilla y con 100 orígenes + 100 tipos (manda los campos
   activos y el origen y tipo del lead; el panel de edición los lee al abrirse, `leerCatalogosDeEdicion()`); `e2e/leads-ficha.spec.ts`. Al abrirla
-  desde la fila del listado (sin prefetch: todo viaja con el clic), ≤ 39 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 30,7 en escritorio y 29,7 en el celular). «Cotizaciones» lee 21 desde el navegador al acercarse
-  a la vista (200 px), no con la ficha.
+  desde la fila del listado (sin prefetch: todo viaja con el clic), ≤ 39 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 29,4 en escritorio y 28,5 en el celular). «Cotizaciones» lee 3 (+1) desde el navegador al acercarse
+  a la vista (200 px), no con la ficha; su título con «Cotizar» viaja con el documento.
   «Cotizar lead» del «⋯» de la cabecera suma, para quien tiene `cotizaciones.crear`, `getOrigenes()` (una por request) y ~90 B.
 - «Nuevo lead» es un solo drawer: 1 montaje y 1 entrada animada por apertura, 1 lectura de cada pedido (`e2e/leads-alta-un-drawer.spec.ts`).
 
@@ -771,9 +771,9 @@ fallar.
   bloques de `cotizaciones`; con 250.000 ≤ 1,2 × los bloques de 50.000 + 20 y ≤ máx(1,5 × t; t + 3 ms); `mis_leads()` 1 vez si va la cartera
   (ninguna con `p_lead`), `origenes_con_alcance()` ≤ 2 + 2 por ruta, `en_cartera()` ≤ una por fila leída de la cartera o del vehículo,
   ninguna a `alcance_de` ni a `_bajas_en_curso`; los índices de cada caso por nombre y ningún otro con bloques. Máximo de la base: 100 (la pantalla pide hasta 50, `MAXIMO_DE_PAGINA_DE_COTIZACIONES`).
-  La sección «Cotizaciones» de la ficha del lead (PostgREST, `lead_id = …`, `TAMANO_DE_VER_MAS` + 1, mismo archivo): la dueña ≤ 10 ms, Ana
-  ≤ 50 con su cartera y ≤ 100 con el ajeno. Se lee al abrir la sección, con `diferido()` en su `diferidos.tsx`;
-  `e2e/leads-cotizaciones.spec.ts`: ≤ 5.250 B, ≤ 65 nodos con 20 y ≤ 1.576 con 500, la 25.ª igual que la 1.ª.
+  El bloque «Cotizaciones» de la ficha del lead (PostgREST, `lead_id = …`, 3 + 1 por `cotizaciones_lead_creado_idx`, mismo archivo): la dueña ≤ 10 ms, Ana
+  ≤ 50 con su cartera y ≤ 100 con el ajeno. Se lee al acercarse a la vista, con `diferido()` en su `diferidos.tsx`; lo demás, en «Ver todas»
+  (`/cotizaciones?lead=`); `e2e/leads-cotizaciones.spec.ts`: la respuesta ≤ 1.500 B.
   **La lista agrupada por vehículo** (`cotizaciones_listado_por_vehiculo()`, `medir-cotizaciones-listado-por-vehiculo.sql`, `MEDIR_SOLO=medir-cotizaciones-listado-por-vehiculo
 pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (50) grupos + 1. Recorre lotes de `_cotizaciones_lote_del_listado()` (las rutas e índices del listado, sin la del
   vehículo; el primero de 4 × la página (204), duplicándose hasta 2.020 leídas: si no llena la página, `cortada`); hacia adelante sólo la primera de cada vehículo en la lectura

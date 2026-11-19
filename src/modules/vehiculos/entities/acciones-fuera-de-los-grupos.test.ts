@@ -119,22 +119,16 @@ describe('accionesFueraDeLosGrupos desde un vehículo', () => {
 })
 
 describe('accionesFueraDeLosGrupos desde un lead', () => {
-  it('sin vínculo y con interesados: «Vincular o marcar un vehículo» sólo con su cartera', () => {
+  // «Vincular o marcar» vive en el título del bloque «Vehículos»: ni en el «⋯» del bloque ni junto a la frase de todo vacío.
+  it('sin vínculo y con interesados: nada en el «⋯» del bloque', () => {
     const grupos = { ...vacios(), interesado: grupo('interesado', 1) }
-    expect(etiquetas(accionesFueraDeLosGrupos(grupos, contexto(ANCLA_L)).resto)).toEqual([
-      'Vincular o marcar un vehículo',
-    ])
-    expect(
-      accionesFueraDeLosGrupos(grupos, contexto({ ...ANCLA_L, puedoActuar: false })).resto,
-    ).toEqual([])
+    expect(accionesFueraDeLosGrupos(grupos, contexto(ANCLA_L)).resto).toEqual([])
   })
 
-  it('todo vacío: el enlace a la vista y nada en el «⋯»', () => {
-    const fuera = accionesFueraDeLosGrupos(vacios(), contexto(ANCLA_L))
-    expect(fuera.principal).toMatchObject({
-      tipo: 'enlace',
-      etiqueta: 'Vincular o marcar un vehículo',
+  it('todo vacío: ni acción a la vista ni «⋯»', () => {
+    expect(accionesFueraDeLosGrupos(vacios(), contexto(ANCLA_L))).toEqual({
+      principal: null,
+      resto: [],
     })
-    expect(fuera.resto).toEqual([])
   })
 })

@@ -5,21 +5,15 @@ import type { Route } from 'next'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { textoDelTope } from '@/shared/lib/conteo'
-import { fechaRelativa } from '@/shared/lib/fechas'
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
-import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
 import { EstadoError, EstadoVacio } from '@/shared/ui/estados'
-import { useRegional } from '@/shared/ui/regional'
 import { Skeleton } from '@/shared/ui/skeleton'
-import {
-  ETIQUETA_DE_APROBADA,
-  ETIQUETA_DE_CLASE,
-  type ListaDe,
-} from '../../../entities/historial-del-vehiculo'
-import { rutaDeLaCotizacion, rutaDelListado } from '../../../entities/ruta-de-la-hoja'
+import type { ListaDe } from '../../../entities/historial-del-vehiculo'
+import { rutaDelListado } from '../../../entities/ruta-de-la-hoja'
 import type { PaginasDelHistorial } from '../hooks/use-paginas-del-historial'
+import { FilaDelHistorial } from './fila-del-historial'
 
 // Lo que tarda menos que esto no muestra el esqueleto: un parpadeo cuesta más que la espera.
 const ESPERA_DEL_ESQUELETO_MS = 300
@@ -35,9 +29,8 @@ type Props = {
 }
 
 // Las cotizaciones de un vehículo o un lead que quien mira ve, de la más nueva a la más vieja, con sus estados (esqueleto, error, vacío) y su pie («Ver más» o el tope).
-// La comparten el historial del panel de la hoja, el bloque «Cotizaciones» de la ficha del vehículo y la sección de la ficha del lead; la lectura es de `usePaginasDelHistorial`.
+// La comparten el historial del panel de la hoja y el bloque «Cotizaciones» de la ficha del vehículo; la lectura es de `usePaginasDelHistorial`.
 export function ListaDelHistorial({ historial, de, etiqueta, esperarEsqueleto = true }: Props) {
-  const { zonaHoraria } = useRegional()
   if (!historial.leido) {
     if (historial.error) {
       return (
@@ -58,24 +51,7 @@ export function ListaDelHistorial({ historial, de, etiqueta, esperarEsqueleto = 
     <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2">
       <ul aria-label={etiqueta} className="grid grid-cols-[minmax(0,1fr)] gap-1">
         {historial.filas.map((cotizacion) => (
-          <li
-            key={cotizacion.id}
-            className="flex min-w-0 items-center gap-2 rounded-(--radius-md) p-2 text-(length:--text-sm) text-(--color-ink)"
-          >
-            <Link
-              href={rutaDeLaCotizacion(cotizacion.id) as Route}
-              className="min-w-0 flex-1 truncate hover:underline"
-            >
-              N.º {cotizacion.numero} · {fechaRelativa(cotizacion.creadoEn, { zona: zonaHoraria })}{' '}
-              · {cotizacion.autor}
-            </Link>
-            <Badge className="shrink-0">{ETIQUETA_DE_CLASE[cotizacion.clase]}</Badge>
-            {cotizacion.aprobada ? (
-              <Badge variant="secondary" className="shrink-0">
-                {ETIQUETA_DE_APROBADA}
-              </Badge>
-            ) : null}
-          </li>
+          <FilaDelHistorial key={cotizacion.id} cotizacion={cotizacion} />
         ))}
       </ul>
       <PieDelHistorial historial={historial} de={de} />

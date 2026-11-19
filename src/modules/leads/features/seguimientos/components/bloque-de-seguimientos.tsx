@@ -17,7 +17,7 @@ type Props = {
   vehiculos?: Promise<VehiculosParaNotas>
 }
 
-// El bloque «Seguimientos y recordatorios» de la ficha, leído en el servidor con la sesión de quien mira, detrás de su `<Suspense>`.
+// El bloque «Seguimiento» de la ficha, leído en el servidor con la sesión de quien mira, detrás de su `<Suspense>`.
 // Un error de lectura lo atrapa el límite del bloque: los demás siguen.
 export async function BloqueDeSeguimientos({ leadId, leadNombre, vehiculos }: Props) {
   await connection()

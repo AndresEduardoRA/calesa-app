@@ -3,7 +3,6 @@
 // ventana: ponerlo fuera correría el cursor y «Ver más» saltearía filas. Lo cargado tiene tope (`TOPE_DE_LO_CARGADO`).
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import type { Embudo } from './embudo'
-import { rutaDelEmbudoDelLead } from './embudo-del-lead'
 import type { Oportunidad, OportunidadDelLead } from './oportunidad'
 
 // Lo cargado: la lista y si hay más hacia atrás.
@@ -115,10 +114,4 @@ export function oportunidadDelLeadDesde(
     },
     embudo: { id: embudo.id, nombre: embudo.nombre },
   }
-}
-
-// El camino a lo antiguo cuando lo cargado llega al tope: el embudo de la última cargada filtrado por el lead (`?lead=`: todas sus etapas,
-// también las cerradas).
-export function caminoAlEmbudo(embudoId: string, leadId: string): string {
-  return rutaDelEmbudoDelLead(embudoId, leadId)
 }

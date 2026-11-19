@@ -335,7 +335,7 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### Listas, embudos y plantillas
 
-- **La ficha del lead en dos columnas: la izquierda, lo clave; la derecha, todo a la vista.** A la izquierda, pegajosa (`minmax(0, 24rem)`, se desplaza
+- **La ficha del lead en dos columnas: la izquierda, lo clave; la derecha, cuatro bloques compactos en orden de uso.** A la izquierda, pegajosa (`minmax(0, 24rem)`, se desplaza
   sola si no cabe), lo que identifica, como la ficha del vehículo: el nombre con el «⋯» arriba a la derecha (sin «Cotizar» ni «Editar» sueltos: están en
   el «⋯»), quién lo tiene en una línea bajo el nombre, los datos clave del lead (tipo, origen, país, teléfono principal y «Notas» a lo ancho) con «Ver más»
   (un modal por la URL, `?ver=datos`, con los grupos del layout y los teléfonos), «Quién lo tiene» con «Compartir» y «Transferir» a todo el ancho y
@@ -346,14 +346,24 @@ las trampas, en `docs/LECCIONES.md`.
   diálogo). El país del teléfono se resuelve con la tabla de países después de hidratar: hasta que llega se ve «—». El corte lo decide el contenedor (56 rem, el
   de la unidad de logística): a 1280 px dos columnas, a 1024 y en el celular una, y con el texto al 200 % vuelve a una sin ensanchar. El marco vive en
   `shared` (`ficha-en-bloques`) para que la ficha del vehículo use el mismo. **El portal va en la izquierda**, bajo «Quién lo tiene»: desde «Saltar al
-  contenido» se llega a «Dar acceso» sin pasar por el índice ni navegar. **«Vehículos» y Relacionados se funden**: el bloque es
-  el compacto de Relacionados (vinculados e interesados con sus acciones en el «⋯» de cada fila, «Ver todos» hasta 500) y al pie va sólo lo que no repite
-  (los anteriores, el panel para vincular o marcar y la confirmación). **Seguimientos y recordatorios** se resumen en 3 y 3
-  leídos en el servidor (los recordatorios pendientes más próximos: los vencidos primero) y «Ver todos» abre la lista completa en un drawer con su propia
-  clave (`?todos=`), que convive con los modales de `?panel=`; con él abierto los modales del resumen no responden (un solo dueño). Lo que el servidor manda
-  de nuevo se siembra sin volver a montar el resumen (el foco no se pierde tras guardar). **Cotizaciones** se pide al acercarse a la vista (200 px), sin
-  clic. `?seccion=` sigue valiendo: lleva al bloque y le da el foco a su título; si los bloques de arriba crecen mientras llegan, la vuelve a llevar (hasta 4 s)
-  salvo que la persona ya se haya movido. Descartadas: pestañas con un resumen arriba (sigue la navegación), acordeones (esconden y suman toques), tres columnas
+  contenido» se llega a «Dar acceso» sin pasar por el índice ni navegar. **La derecha** son cuatro bloques, de lo más usado a lo menos:
+  **Seguimiento → Cotizaciones → Vehículos → Oportunidades**, cada uno compacto (3 a la vista y «Ver todos» o «Ver todas», sin número, sólo si hay algo
+  que no se ve), con un solo título, **una sola acción en el título** y lo demás en su «⋯» (el del bloque o el de cada fila); ningún subtítulo repite lo
+  que dice el título o el botón, y los vacíos son de una línea. **Seguimiento**: un «+» que despliega anotar y agendar, tu recordatorio más próximo
+  arriba (leído de a 1: completarlo, editarlo o eliminarlo vuelve a leer la ficha, que trae el siguiente) y los últimos 3 seguimientos en línea de
+  tiempo; «Ver todos» y «Ver tus recordatorios» (en el «⋯») abren la lista completa en un drawer con su propia clave (`?todos=`), que convive con los
+  modales de `?panel=`; con él abierto los modales del bloque no responden (un solo dueño). Lo que el servidor manda de nuevo se siembra sin volver a
+  montar el bloque (el foco no se pierde tras guardar). **Cotizaciones**: «Cotizar» en el título (lo dibuja el servidor) y las 3 más recientes, leídas
+  desde el navegador al acercarse a la vista (200 px), sin clic. **Vehículos** es el compacto de Relacionados (vinculados e interesados con sus acciones
+  en el «⋯» de cada fila, «Ver todos» hasta 500) con «Vincular o marcar» en el título, y al pie sólo lo que no repite (los anteriores plegados tras su
+  botón, el panel y la confirmación). **Oportunidades**: sólo las abiertas, en filas de una línea (título, embudo si hay más de uno, etapa y monto);
+  las cerradas están en «Ver todas», el embudo filtrado por el lead; la lectura sigue trayendo 10 (cubre todas las abiertas posibles, una por embudo),
+  así una que se cierra al moverla deja entrar la siguiente sin leer otra vez. Los menús del «+» y de los «⋯» no van con `diferido()`: usan
+  `DropdownMenu` y `MasAcciones`, que ya viajan en frío con el «⋯» de la cabecera; diferirlos sumaría una espera de red al primer toque sin bajar KB.
+  `?seccion=` sigue valiendo: lleva al bloque y le da el foco a su título; si los bloques de arriba crecen mientras llegan, la vuelve a llevar (hasta 4 s)
+  salvo que la persona ya se haya movido. Descartadas: pestañas con un resumen arriba (sigue la navegación), pestañas dentro de la derecha (se queda el
+  índice que baja), tarjetas por ítem (más alto y más scroll), «Seguimiento» en dos columnas (divide la mirada y pide subtítulos), una barra fija con
+  todas las acciones (vuelve el ruido de botones), un mini kanban de oportunidades (crece sin tope y repite el embudo), acordeones (esconden y suman toques), tres columnas
   (no entran a 1280 px con la lateral de la app), el índice a la izquierda (compite con la columna de datos), el portal al final de la derecha (alarga la
   tarea de oro: había que pasar por el índice o bajar) y un bloque «Vehículos» aparte de Relacionados (dibujaba lo mismo dos veces).
 - **Los teléfonos de la ficha son de sólo lectura; se editan en el panel de edición.** Así no hay dos lugares para lo mismo y no se pierde ningún permiso:

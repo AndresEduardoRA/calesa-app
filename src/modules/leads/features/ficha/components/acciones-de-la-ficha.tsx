@@ -51,7 +51,7 @@ function papeleraDeLaFicha(
 
 // El «⋯» de la cabecera de la ficha, con la lista de siempre (`accionesDeLead()`): «Cotizar lead» (sólo a quien cotiza, con `returnTo` a
 // la ficha) y «Editar lead» o «Editar teléfonos» (el panel de edición, `?panel=editar-lead`) están ahí y en ningún otro botón. Anotar y agendar
-// abren su modal (del bloque «Seguimientos y recordatorios») y llevan la página a ese bloque, sin navegar. «Nueva oportunidad…» abre su modal (con el aviso de las que ya tiene) donde
+// abren su modal (del bloque «Seguimiento») y llevan la página a ese bloque, sin navegar. «Nueva oportunidad…» abre su modal (con el aviso de las que ya tiene) donde
 // se está, y «Ver oportunidades» va a su sección. Enviar a la papelera se hace y ofrece «Deshacer»; después lleva al
 // listado, porque la ficha ya no existe para nadie. Con un vehículo vinculado que quien mira ve, se apaga con el motivo y ofrece ir a
 // «Vehículos»; si lo frena uno que no ve, lo dice la base al intentar.

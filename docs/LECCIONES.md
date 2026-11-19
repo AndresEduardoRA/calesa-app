@@ -202,6 +202,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   montar y pierde el foco. Se queda en el servidor con una ranura vacía al lado y la isla pone lo suyo ahí con `createPortal`.
 - Una barra pegada abajo que aparece con la primera tecla (`sticky bottom-0`) tapa el campo donde se escribe si estaba en el borde de la pantalla: al
   aparecer, desplaza lo justo para dejarlo a la vista (`BarraDeCambiosSinGuardar`).
+- Un submenú de un menú (`DropdownMenuSubTrigger`) que se abre al pasar el puntero se vuelve a cerrar con el clic que le sigue: ponle `openOnHover={false}` y que lo abran el clic, el toque o el teclado.
 - Chrome ignora `autocomplete="off"` en un `type="password"` y el Chromium de Playwright no lo reproduce: eso sólo se comprueba a mano, no lo des por probado.
 
 ## Realtime y notificaciones
@@ -271,6 +272,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - No corras juntos dos specs que borran y siembran las mismas personas (`chat` y `chat-widget`): se pisan el terreno. Van en comandos aparte.
 - Afirma una cifra compartida (tablero, margen, conteos del mes) por el aumento que causa tu acción con `≥`, nunca por un total: otros specs escriben en el mismo período.
 - Un spec que escribe un secreto real (Vault de apibara) toma su huella al empezar y la deja igual al final: si no, rompe a los demás.
+- Un embudo creado por `embudo_crear()` nace con «Nueva», «Ganada» y «Perdida», no con las etapas del de por defecto («Nuevo», «Ganado»…): nombra la etapa del embudo que usas.
 - Para simular un estado que un job cierra, retén un candado que el job no puede tomar; no pauses `cron.job`.
 - Para probar qué camino usa la pantalla, mide con `pg_stat_statements` (con `workers: 1`) que crece una lectura y no la otra.
 - Distingue las Server Actions propias con un marcador (`intento`) en un vigilante que cuenta por URL: otras actions van a la misma URL (registrar la visita).

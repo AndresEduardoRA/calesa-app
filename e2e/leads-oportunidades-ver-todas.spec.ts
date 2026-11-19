@@ -1,10 +1,9 @@
 import { expect, test, type Page } from './soporte/prueba'
 import { formatearNumero } from '../src/shared/lib/formato'
-import { TAMANO_DE_VER_MAS, TOPE_DE_LO_CARGADO } from '../src/shared/lib/paginacion'
 import { entrar } from './soporte/alta'
 import { idDe } from './soporte/leads'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
-import { esperarFichaHidratada, irAFicha, nuevoLead, tituloDeLaFicha } from './soporte/leads-ficha'
+import { irAFicha, nuevoLead, tituloDeLaFicha } from './soporte/leads-ficha'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
 import {
   embudoPorDefecto,
@@ -14,9 +13,10 @@ import {
 } from './soporte/leads-oportunidades'
 import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
 
-// La sección «Oportunidades» de la ficha: el servidor dibuja las 10 más recientes (las abiertas primero) y «Ver más» lee de a 20 desde el
-// navegador, hasta 500 (5a-12, 4.17-2). Lo que no se ve no viaja con el documento de la ficha. El resto de la sección va en
-// `leads-oportunidades.spec.ts`. Cada prueba crea su propio lead sobre el terreno de `beforeAll`: ninguna alimenta a otra.
+// El bloque «Oportunidades» de la ficha: dibuja hasta 3 abiertas, en el orden de la base, y «Ver todas» (el embudo filtrado por el lead) si
+// hay algo que no se ve (T344). Lo que no se ve no viaja con el documento de la ficha. El resto del bloque va en `leads-oportunidades.spec.ts`
+// y `leads-ficha-derecha.spec.ts`. Cada prueba crea su propio lead sobre el terreno de `beforeAll`: ninguna alimenta a otra. Las abiertas del
+// mismo embudo entran por SQL (la guarda de una por embudo está en las RPC): sirven para medir el tope de lo que se dibuja.
 
 let t: TerrenoDelListado
 
@@ -58,83 +58,37 @@ async function leadConOportunidades(
   return lead
 }
 
-const items = (page: Page) => page.getByRole('article')
-// El de la sección: la columna de la ficha tiene su propio «Ver más» (el de los datos del lead).
-const verMas = (page: Page) =>
-  page.getByRole('region', { name: 'Tus oportunidades' }).getByRole('button', { name: 'Ver más' })
-const titulosVisibles = (page: Page) => items(page).evaluateAll((a) => a.map((x) => x.ariaLabel))
-// «Ver más» hasta tener `cuantas` a la vista. Antes de hidratar el clic no vale: se insiste hasta que la lista crece (con una lectura en
-// vuelo otro clic no pide nada, y al llegar todas el botón ya no está).
-async function verMasHasta(page: Page, cuantas: number) {
-  await expect(async () => {
-    if ((await items(page).count()) < cuantas && (await verMas(page).count()) > 0) {
-      await verMas(page).click()
-    }
-    await expect(items(page)).toHaveCount(cuantas, { timeout: 1000 })
-  }).toPass()
-}
+const filas = (page: Page) =>
+  page.getByRole('list', { name: 'Oportunidades abiertas' }).getByRole('article')
+const verTodas = (page: Page) =>
+  page
+    .getByRole('region', { name: 'Oportunidades', exact: true })
+    .getByRole('link', { name: 'Ver todas' })
+const titulosVisibles = (page: Page) => filas(page).evaluateAll((a) => a.map((x) => x.ariaLabel))
 
-test('con 12: se ven 10 con «Ver más», que trae las 12 sin cambiar la URL', async ({
+test('con 12 abiertas: se ven las primeras 3 en el orden de la base y «Ver todas» lleva al embudo filtrado por el lead', async ({
   page,
 }, info) => {
-  const lead = await leadConOportunidades(page, `VerMas ${info.project.name}`, { abiertas: 12 })
-  await expect(items(page)).toHaveCount(10)
-  const url = page.url()
-  await verMasHasta(page, 12)
-  await expect(verMas(page)).toHaveCount(0)
-  await expect(page.getByText(/Mostrando las/)).toHaveCount(0)
-  expect(page.url()).toBe(url)
-  expect(url).toContain(`/leads/${lead.id}`)
-})
-
-test('con 10 o menos no hay nada que ver: sin «Ver más» ni aviso', async ({ page }, info) => {
-  await leadConOportunidades(page, `Diez ${info.project.name}`, { abiertas: 10 })
-  await expect(items(page)).toHaveCount(10)
-  await expect(verMas(page)).toHaveCount(0)
-  await expect(page.getByText(/Mostrando las/)).toHaveCount(0)
-})
-
-test('con 25 (15 abiertas y 10 cerradas): «Ver más» las trae todas en el orden de la base y mover, eliminar y deshacer no la reinician', async ({
-  page,
-}, info) => {
-  const lead = await leadConOportunidades(page, `Veinticinco ${info.project.name}`, {
-    abiertas: 15,
-    cerradas: 10,
-  })
+  const lead = await leadConOportunidades(page, `VerTodas ${info.project.name}`, { abiertas: 12 })
   const enLaBase = titulosEnElOrdenDeLaBase(lead.id)
-  expect(enLaBase).toHaveLength(25)
-  await expect(items(page)).toHaveCount(10)
-  expect(await titulosVisibles(page)).toEqual(enLaBase.slice(0, 10))
-  await verMasHasta(page, 25)
-  expect(await titulosVisibles(page)).toEqual(enLaBase)
-  await expect(verMas(page)).toHaveCount(0)
-
-  // La 12.ª llegó por «Ver más»: se mueve a una etapa abierta y queda primera, con las 25 a la vista (no se reinició a 10).
-  const titulo = enLaBase[11] ?? ''
-  const item = page.getByRole('article', { name: titulo })
-  await item.getByRole('button', { name: `Mover «${titulo}» a otra etapa` }).click()
-  await page.getByRole('menuitem', { name: 'Contactado', exact: true }).click()
-  await expect(items(page)).toHaveCount(25)
-  await expect.poll(async () => (await titulosVisibles(page))[0]).toBe(titulo)
-  await expect(item.getByText('En «Contactado» desde')).toBeVisible()
-
-  // Eliminar una cerrada que llegó por «Ver más» deja 24 y «Deshacer» vuelve a 25. (Una abierta no se restauraría: las 15 son del mismo embudo y
-  // sólo se admite una abierta por lead y embudo.)
-  const cerrada = enLaBase[20] ?? ''
-  const suya = page.getByRole('article', { name: cerrada })
-  await suya.getByRole('button', { name: `Más acciones de «${cerrada}»` }).click()
-  await page.getByRole('menuitem', { name: 'Eliminar' }).click()
-  await expect(items(page)).toHaveCount(24)
-  await page.getByRole('button', { name: 'Deshacer' }).click()
-  await expect(items(page)).toHaveCount(25)
-  await expect(suya).toBeVisible()
-  await expect.poll(async () => (await titulosVisibles(page))[0]).toBe(titulo)
+  await expect(filas(page)).toHaveCount(3)
+  expect(await titulosVisibles(page)).toEqual(enLaBase.slice(0, 3))
+  const embudo = await embudoPorDefecto(t.personas.berta)
+  await expect(verTodas(page)).toHaveAttribute(
+    'href',
+    `/leads?vista=embudo&embudo=${embudo.id}&lead=${lead.id}`,
+  )
 })
 
-test('con 1.000 (600 abiertas y 400 cerradas): el documento pesa lo de 10, cada «Ver más» es una página de 20 que no crece y se detiene en 500', async ({
+test('con 2 abiertas y nada más no hay nada que ver: sin «Ver todas»', async ({ page }, info) => {
+  await leadConOportunidades(page, `Dos ${info.project.name}`, { abiertas: 2 })
+  await expect(filas(page)).toHaveCount(2)
+  await expect(verTodas(page)).toHaveCount(0)
+})
+
+test('con 1.000 (600 abiertas y 400 cerradas): el documento pesa lo de 10 y se dibujan 3', async ({
   page,
 }, info) => {
-  // Siembra 1.000 y da 25 vueltas de «Ver más»: tarda ~17 s y con el CI cargado pasaba de los 30 s de toda prueba.
   test.setTimeout(90_000)
   const lead = await leadConOportunidades(page, `Mil ${info.project.name}`, {
     abiertas: 600,
@@ -149,75 +103,12 @@ test('con 1.000 (600 abiertas y 400 cerradas): el documento pesa lo de 10, cada 
     (await documento(`/leads/${id}?seccion=oportunidades`)).length - base
   const conMil = await deLaFicha(lead.id)
   const deDiez = await deLaFicha(conDiez.id)
-
-  // El documento no crece con lo que hay: la sección trae 10 con 10 o con 1.000.
+  const resumen = `la ficha en «Oportunidades» aporta ${kb(deDiez)} KB con 10 y ${kb(conMil)} KB con 1.000`
+  console.warn(`[oportunidades] ${info.project.name}: ${resumen}`)
+  info.annotations.push({ type: 'KB de la ficha con oportunidades', description: resumen })
   expect(conMil).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_EN_KB * 1024)
   expect(conMil).toBeLessThanOrEqual(deDiez + 2 * 1024)
-
-  await page.goto(`/leads/${lead.id}?seccion=oportunidades`)
-  await expect(items(page)).toHaveCount(10)
-  // Cada paso cuenta un pedido por clic: el primero, antes de hidratar, se perdería (el bucle no insiste como `verMasHasta`).
-  await esperarFichaHidratada(page)
-  const seccion = page.locator('section[aria-labelledby="titulo-oportunidades"]')
-  const nodos = () => seccion.evaluate((s) => s.querySelectorAll('*').length)
-  const nodosCon10 = await nodos()
-  const respuestas: number[] = []
-  page.on('response', (r) => {
-    if (r.url().includes('/rpc/lead_oportunidades')) {
-      void r.body().then((b) => respuestas.push(b.length))
-    }
-  })
-
-  const pasos = Math.ceil((TOPE_DE_LO_CARGADO - 10) / TAMANO_DE_VER_MAS)
-  for (let paso = 1; paso <= pasos; paso += 1) {
-    const pedido = page.waitForRequest((r) => r.url().includes('/rpc/lead_oportunidades'))
-    await verMas(page).click()
-    const cuerpo = (await pedido).postDataJSON() as {
-      p_antes_abierta?: unknown
-      p_antes_en?: unknown
-      p_antes_id?: unknown
-    }
-    expect(cuerpo).toMatchObject({ p_lead: lead.id, p_tamano: TAMANO_DE_VER_MAS })
-    expect(typeof cuerpo.p_antes_abierta).toBe('boolean')
-    expect(typeof cuerpo.p_antes_en).toBe('string')
-    expect(typeof cuerpo.p_antes_id).toBe('string')
-    await expect(items(page)).toHaveCount(
-      Math.min(TOPE_DE_LO_CARGADO, 10 + paso * TAMANO_DE_VER_MAS),
-    )
-  }
-  await expect.poll(() => respuestas.length).toBe(pasos)
-
-  // En el tope: 500, sin «Ver más» y con el aviso.
-  await expect(items(page)).toHaveCount(TOPE_DE_LO_CARGADO)
-  await expect(verMas(page)).toHaveCount(0)
-  await expect(
-    page.getByText(
-      `Mostrando las ${String(TOPE_DE_LO_CARGADO)} más recientes, las abiertas primero.`,
-    ),
-  ).toBeVisible()
-
-  // El camino a lo que el tope deja afuera: el embudo filtrado por el lead.
-  const embudo = await embudoPorDefecto(t.personas.berta)
-  const camino = page.getByRole('link', { name: 'Verlas en tu embudo' })
-  const filtro = new URLSearchParams({ vista: 'embudo', embudo: embudo.id, lead: lead.id })
-  await expect(camino).toHaveAttribute('href', `/leads?${filtro.toString()}`)
-
-  // La página 25 no pesa más que la 1.ª (no crece con la profundidad) y los nodos crecen lineales y se detienen.
-  const primera = respuestas[0] ?? 0
-  const ultima = respuestas.at(-1) ?? 0
-  expect(ultima).toBeLessThanOrEqual(primera * 1.1)
-  const nodosCon500 = await nodos()
-  expect(nodosCon500).toBeLessThanOrEqual(1.1 * 50 * nodosCon10)
-
-  const resumen = `con 1.000 oportunidades la sección aporta ${kb(conMil)} KB (con 10, ${kb(deDiez)} KB); cada «Ver más» pesa ${String(primera)} B la 1.ª y ${String(ultima)} B la última; ${String(nodosCon10)} nodos con 10 y ${String(nodosCon500)} con 500`
-  console.warn(`[ficha] ${info.project.name}: ${resumen}`)
-  info.annotations.push({ type: 'ficha con 1.000 oportunidades', description: resumen })
-
-  // El enlace abre el embudo filtrado por el lead.
-  await camino.click()
-  await expect(page).toHaveURL(new RegExp(`vista=embudo&embudo=${embudo.id}&lead=${lead.id}`))
-  await expect(page.getByRole('heading', { name: 'Embudo', level: 1 })).toBeAttached()
-  await expect(
-    page.getByRole('button', { name: `Quitar el filtro de ${lead.nombre}` }),
-  ).toBeVisible()
+  await irAFicha(page, lead.id, '?seccion=oportunidades')
+  await expect(filas(page)).toHaveCount(3)
+  await expect(verTodas(page)).toBeVisible()
 })

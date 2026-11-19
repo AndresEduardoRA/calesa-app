@@ -1,21 +1,22 @@
 'use client'
 
-import { PlusIcon, TargetIcon } from 'lucide-react'
+import type { Route } from 'next'
+import Link from 'next/link'
 import { Button } from '@/shared/ui/button'
-import { EstadoVacio } from '@/shared/ui/estados'
+import { TituloDeBloqueConAccion } from '@/shared/ui/ficha-en-bloques'
 import type { Embudo } from '../../../entities/embudo'
 import type { OportunidadDelLead } from '../../../entities/oportunidad'
 import { abiertasDeLoCargado, type AbiertaEnEmbudo } from '../../../entities/oportunidad-unica'
+import { oportunidadesDelBloque } from '../../../entities/oportunidades-del-bloque'
 import { RefrescarAlVolver } from '../../ficha/components/refrescar-al-volver'
 import { useOportunidades } from '../hooks/use-oportunidades'
 import { usePanelDeMovida } from '../hooks/use-panel-de-movida'
 import { usePanelDeOportunidad } from '../hooks/use-panel-de-oportunidad'
-import { ItemDeOportunidad } from './item-de-oportunidad'
+import { FilaDeOportunidad } from './fila-de-oportunidad'
 import { MovidaDeLaFicha } from './movida-de-la-ficha'
 import { PanelDeOportunidad } from './panel-de-oportunidad'
-import { PieDeOportunidades } from './pie-de-oportunidades'
 
-// Con un panel o un modal abierto la sección no se vuelve a leer sola (reiniciaría lo escrito).
+// Con un panel o un modal abierto el bloque no se vuelve a leer solo (reiniciaría lo escrito).
 const hayPanelAbierto = (nueva: boolean, editando: unknown, movida: boolean) =>
   nueva || editando !== null || movida
 
@@ -27,51 +28,74 @@ type Props = {
   abiertasPorEmbudo: readonly AbiertaEnEmbudo[]
   // Cartera y `leads.editar` (lo dice la base).
   puedoCrear: boolean
-  // Tiene más de las que trajo el servidor: «Ver más» las lee desde el navegador.
+  // Tiene más de las que trajo el servidor: están en «Ver todas».
   hayMas: boolean
 }
 
-function BotonNuevaOportunidad({ alAbrir }: { alAbrir: () => void }) {
+// «Nueva» (su nombre accesible: «Nueva oportunidad»): la única acción del título.
+function BotonNueva({ alAbrir }: { alAbrir: () => void }) {
   return (
-    <Button className="min-h-11 md:min-h-8" onClick={alAbrir}>
-      <PlusIcon aria-hidden className="size-4" />
-      Nueva oportunidad
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      className="min-h-11 md:min-h-8"
+      aria-label="Nueva oportunidad"
+      onClick={alAbrir}
+    >
+      Nueva
     </Button>
   )
 }
 
-// La sección «Oportunidades»: las de quien mira sobre el lead (abiertas primero) y «Nueva oportunidad».
+// «Ver todas»: un enlace de texto, sin número, al embudo filtrado por el lead.
+function VerTodas({ href }: { href: string }) {
+  return (
+    <Link
+      href={href as Route}
+      className="inline-flex min-h-11 w-fit items-center text-(length:--text-sm) font-medium text-(--color-primario) underline-offset-2 hover:underline md:min-h-8"
+    >
+      Ver todas
+    </Link>
+  )
+}
+
+// El bloque «Oportunidades» de la ficha: las abiertas de quien mira sobre el lead (una por embudo), en filas de una línea, hasta tres; las
+// cerradas y lo que no se ve, en «Ver todas» (el embudo filtrado por este lead). «Nueva» en el título. Mover, editar y eliminar, en el «⋯»
+// de cada fila; una que se cierra al moverla sale de la vista.
 export function OportunidadesDelLead(props: Props) {
   const { leadId, inicial, embudos, puedoCrear } = props
   const panel = usePanelDeOportunidad()
   const movida = usePanelDeMovida()
-  const { lista, hayMas, cargando, enElTope, cargarMas, moverA, quitar, ocupada, alGuardar } =
-    useOportunidades(leadId, { oportunidades: inicial, hayMas: props.hayMas }, embudos)
+  const { lista, hayMas, moverA, quitar, ocupada, alGuardar } = useOportunidades(
+    leadId,
+    { oportunidades: inicial, hayMas: props.hayMas },
+    embudos,
+  )
   const editando = panel.editando ? (lista.find((o) => o.id === panel.editando) ?? null) : null
-  const nueva = puedoCrear ? <BotonNuevaOportunidad alAbrir={panel.abrirNueva} /> : null
+  const { aLaVista, verTodas } = oportunidadesDelBloque({ lista, hayMas, embudos, leadId })
   return (
     <section
       aria-labelledby="titulo-oportunidades"
-      className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-3"
+      className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="titulo-oportunidades" className="text-(length:--text-lg) font-medium">
-          Tus oportunidades
-        </h2>
-        {lista.length > 0 ? nueva : null}
-      </div>
-      {lista.length === 0 ? (
-        <EstadoVacio
-          Icono={TargetIcon}
-          titulo="Todavía no tienes oportunidades con este lead"
-          descripcion="Una oportunidad es un negocio que sigues en tu embudo. Sólo tú la ves."
-          accion={nueva}
-        />
+      <TituloDeBloqueConAccion
+        id="titulo-oportunidades"
+        titulo="Oportunidades"
+        accion={puedoCrear ? <BotonNueva alAbrir={panel.abrirNueva} /> : null}
+      />
+      {aLaVista.length === 0 ? (
+        <p className="text-(length:--text-sm) text-(--color-ink-faint)">
+          Sin oportunidades abiertas.
+        </p>
       ) : (
-        <ul className="grid gap-3">
-          {lista.map((o) => (
-            <li key={o.id}>
-              <ItemDeOportunidad
+        <ul
+          aria-label="Oportunidades abiertas"
+          className="@container/oportunidades grid grid-cols-[minmax(0,1fr)] divide-y divide-(--color-line)"
+        >
+          {aLaVista.map((o) => (
+            <li key={o.id} className="min-w-0">
+              <FilaDeOportunidad
                 oportunidad={o}
                 etapas={embudos.find((e) => e.id === o.embudoId)?.etapas ?? []}
                 nombrarEmbudo={embudos.length > 1}
@@ -90,15 +114,7 @@ export function OportunidadesDelLead(props: Props) {
           ))}
         </ul>
       )}
-      <PieDeOportunidades
-        hayMas={hayMas}
-        enElTope={enElTope}
-        cargando={cargando}
-        ocupada={ocupada !== null}
-        alVerMas={() => void cargarMas()}
-        lista={lista}
-        leadId={leadId}
-      />
+      {verTodas === null ? null : <VerTodas href={verTodas} />}
       {puedoCrear && (panel.nueva || editando) ? (
         <PanelDeOportunidad
           key={editando?.actualizadoEn ?? 'nueva'}

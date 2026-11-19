@@ -15,7 +15,7 @@ type Props = {
   todos: TodosAbiertos
 }
 
-// «Ver todos» del bloque «Seguimientos y recordatorios» (`?todos=`): la línea de tiempo completa (de a 20 hasta 500, «Ir a una fecha») o
+// «Ver todos» del bloque «Seguimiento» (`?todos=`): la línea de tiempo completa (de a 20 hasta 500, «Ir a una fecha») o
 // todos tus recordatorios (con «Completados»), leídos desde el navegador al abrirse; su código también llega al abrirse. No tiene
 // formulario: lo que se escribe va en sus modales, que guardan su borrador. Si algo cambió adentro, al cerrarse la ficha se vuelve a leer
 // una vez (el resumen de atrás se pone al día).
