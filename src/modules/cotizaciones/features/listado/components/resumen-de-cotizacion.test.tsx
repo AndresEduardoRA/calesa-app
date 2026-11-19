@@ -35,7 +35,7 @@ afterEach(() => {
 
 const ID = '2f1c3a4b-5d6e-4f70-8a9b-0c1d2e3f4a5b'
 const ORIGEN = '00000000-0000-4000-8000-0000000000aa'
-const origenes = [{ id: ORIGEN, nombre: 'Subastas' }]
+const origenes = [{ id: ORIGEN, nombre: 'Subastas', color: null }]
 
 const cotizacion = (extra: Partial<CotizacionDelListado> = {}): CotizacionDelListado => ({
   id: ID,
@@ -56,6 +56,7 @@ const cotizacion = (extra: Partial<CotizacionDelListado> = {}): CotizacionDelLis
   vehiculo: null,
   autor: 'Ana',
   aprobada: false,
+  modo: null,
   ...extra,
 })
 

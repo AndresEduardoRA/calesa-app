@@ -154,13 +154,36 @@ export function armarPagina<Fila extends Paginable>(
 }
 
 // Lo mismo para una lista ordenada por otra columna: `instanteDe` da el valor de esa columna en la
-// fila, que es lo que lleva el cursor (`OrdenDeCursor`).
+// fila, que es lo que lleva el cursor (`OrdenDeCursor`). Una lista de grupos pagina por la fila que la
+// ordena y no por la que la representa (la lista de cotizaciones agrupada por vehículo): pasa
+// `{ instanteDe, idDe }`.
+export type ClavesDelCursor<Fila> = {
+  instanteDe: (fila: Fila) => string
+  idDe: (fila: Fila) => string
+}
+
 export function armarPaginaPor<Fila extends { id: string }>(
   leidas: readonly Fila[],
   tamano: number,
   cursor: Cursor | null,
   instanteDe: (fila: Fila) => string,
+): Pagina<Fila>
+export function armarPaginaPor<Fila>(
+  leidas: readonly Fila[],
+  tamano: number,
+  cursor: Cursor | null,
+  claves: ClavesDelCursor<Fila>,
+): Pagina<Fila>
+export function armarPaginaPor<Fila>(
+  leidas: readonly Fila[],
+  tamano: number,
+  cursor: Cursor | null,
+  orden: ((fila: Fila) => string) | ClavesDelCursor<Fila>,
 ): Pagina<Fila> {
+  const { instanteDe, idDe } =
+    typeof orden === 'function'
+      ? { instanteDe: orden, idDe: (fila: Fila) => (fila as { id: string }).id }
+      : orden
   const hayMas = leidas.length > tamano
   const deLaPagina = leidas.slice(0, tamano)
   const haciaAtras = cursor?.sentido === 'anterior'
@@ -171,7 +194,7 @@ export function armarPaginaPor<Fila extends { id: string }>(
     return { filas: [], siguiente: null, anterior: null }
   }
   const hacia = (fila: Fila, sentido: Sentido) =>
-    codificarCursor({ instante: instanteDe(fila), id: fila.id, sentido })
+    codificarCursor({ instante: instanteDe(fila), id: idDe(fila), sentido })
   // Hacia adelante: hay «anterior» si se llegó con un cursor. Hacia atrás: siempre hay
   // «siguiente» (de ahí se vino), y «anterior» sólo si la consulta trajo una fila de más.
   const haySiguiente = haciaAtras || hayMas

@@ -190,6 +190,14 @@ export const RPC_PAGINADAS_DEL_NUCLEO: readonly RpcPaginada[] = [
     pideElCodigo: MAXIMO_DE_PAGINA_DE_COTIZACIONES,
     lista: 'listado de cotizaciones',
   },
+  // La lista de cotizaciones agrupada por vehículo (T319): grupos y sueltas con el mismo máximo del listado. Su lote (`_cotizaciones_lote_del_listado`) sólo lo llama
+  // la base: no figura acá (`_acotar_pagina(p_tamano, 404, 2020)`, lo vigila `supabase/tests/escala.sql`).
+  {
+    rpc: 'cotizaciones_listado_por_vehiculo',
+    parametro: 'p_tamano',
+    pideElCodigo: MAXIMO_DE_PAGINA_DE_COTIZACIONES,
+    lista: 'listado de cotizaciones agrupado por vehículo',
+  },
   // «De este vehículo» (las otras cotizaciones del vehículo en una guardada o su resumen): de a 10, y la base acota a 100 (lo que se dibuja como mucho).
   {
     rpc: 'cotizaciones_de_este_vehiculo',

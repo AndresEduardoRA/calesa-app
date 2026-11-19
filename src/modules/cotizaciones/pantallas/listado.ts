@@ -9,3 +9,4 @@ export {
 } from '../entities/acciones-de-cotizacion'
 export type { MenuDeUnaFila } from '../entities/listado/acciones-de-cotizacion'
 export type { QuienDelResumen } from '../features/hoja/components/huecos-del-resumen'
+export type { CompartirDe, HuecosDeLaLista, MenuDeFila } from '../features/listado/components/tipos'

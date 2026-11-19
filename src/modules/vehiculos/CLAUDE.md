@@ -13,8 +13,12 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   `src/app` con `cotizaciones`; `BloqueDeSubasta` (la frase de `entities/frase-de-subasta.ts`, el cierre, la puja y la compra directa, y `MenuDeLaSubasta`
   con «Editar fechas»); `DatosPrincipalesDelVehiculo` (los datos clave del origen con `entities/datos-clave-del-vehiculo.ts`, y «Ver más»: la ficha completa,
   `features/ficha/components/ficha-completa/`, diferida, en `?ver=ficha`, que lee las fotos y `useLayoutActivo` de `origenes` al abrirse). A la derecha el
-  índice y los bloques por permiso, que compone `src/app` con `logistica`, `cotizaciones` y `repuestos`; sin bloque «Fotos». `?seccion=<bloque>` lleva
-  a su bloque si quien mira lo ve —si no, se queda arriba—, `?seccion=fotos` redirige al visor y los paneles de «Relacionados» y `?relacionados=` llevan a «Relacionados»). Paneles: `?panel=nuevo`, `?editar=<id>`,
+  índice y sólo lo de ventas, por permiso, que compone `src/app` con `cotizaciones` y `actividad`: «Cotizaciones de este vehículo», «Relacionados»,
+  «Actividad reciente» y `BloqueDeVitrina` (`features/vitrina/components/bloque-de-vitrina.tsx`, siempre: con `previa`, el permiso, los nombres del motivo
+  y sólo los campos públicos de la tarjeta; «Editar» o «Publicar en la web…» abren `?panel=vitrina`, sin `vehiculos.vitrina` no hay botón; la vista previa
+  plegada en un `<details>`). `?seccion=<bloque>` lleva a su bloque si quien mira lo ve —si no, se queda arriba—; las de lo que se fue redirigen
+  (`secciones-viejas.ts` de la ruta: `fotos` al visor, `ficha` a `?ver=ficha` —`CLAVE_DE_FICHA_COMPLETA` y `FICHA_COMPLETA` salen por `index.ts`—,
+  `documentos`/`fase` a logística y `repuestos` al proyecto, con su permiso); los paneles de «Relacionados» y `?relacionados=` llevan a «Relacionados»). Paneles: `?panel=nuevo`, `?editar=<id>`,
   `?panel=vitrina`, `?panel=imagenes`, `?panel=actualizar-datos`, `?panel=desvincular` (con `&luego=papelera`, desde el aviso «Quitar el vínculo»: el aviso de desvinculado ofrece la papelera),
   `?panel=purgar&lote=`. Layout, categorías y orígenes (`origenes`), fases (`flujos`) y vistas guardadas
   (`equipo`) los lee la página y los pasa por props.
@@ -120,7 +124,8 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 - El listado dibuja una sola vista (tabla o tarjetas) elegida en servidor; los e2e buscan filas con `tbody tr, li article`. En escritorio,
   «Tabla | Tarjetas» en «Vista y opciones», con las vistas guardadas y la papelera (`useOpcionesDelListado`; `useVistaDelInventario`: `?vista=` o la preferencia `vehiculos.vista`; cambiar no pide la página). La columna de precio
   sale de `entities/precio-de-la-fila.ts` (`columnaDePrecio`, `precioDeLaFila`): en subasta, la puja con su nombre.
-- Bloques de la ficha: `src/app/(app)/vehiculos/[id]/bloques.ts` (`BLOQUES_DE_LA_FICHA`, `bloquesDeQuienMira()`, `anclaDeLaUrl()`), los que leen con su `bloque-<ancla>.tsx`.
+- Bloques de la ficha: `src/app/(app)/vehiculos/[id]/bloques.ts` (`BLOQUES_DE_LA_FICHA`, `bloquesDeQuienMira()`, `anclaDeLaUrl()`), cada uno con su `bloque-<ancla>.tsx`
+  si lo compone la ruta; los enlaces viejos, `secciones-viejas.ts` (puro, con test) y `llegada-de-la-ficha.ts` (lee los permisos y redirige).
 
 ## Tablas
 

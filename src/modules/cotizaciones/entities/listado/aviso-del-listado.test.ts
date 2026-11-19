@@ -43,3 +43,16 @@ describe('textoDelVacio', () => {
     )
   })
 })
+
+describe('el aviso con «Agrupar por vehículo»', () => {
+  it('con un vehículo y la agrupación encendida, dice que no agrupa; sin vehículo, nada cambia', () => {
+    expect(textoDelAviso({ vehiculo: { titulo: 'Hilux' }, agrupar: true })).toBe(
+      'Cotizaciones de Hilux, sin agrupar.',
+    )
+    expect(textoDelAviso({ vehiculo: { titulo: 'Hilux' }, agrupar: false })).toBe(
+      'Cotizaciones de Hilux.',
+    )
+    expect(textoDelAviso({ lead: { nombre: 'Ana' }, agrupar: true })).toBe('Cotizaciones de Ana.')
+    expect(textoDelAviso({ agrupar: true })).toBeNull()
+  })
+})

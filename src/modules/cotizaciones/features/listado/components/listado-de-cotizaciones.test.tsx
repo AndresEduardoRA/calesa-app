@@ -33,10 +33,14 @@ beforeAll(() => {
 afterEach(cleanup)
 
 const ESQUEMA: EsquemaDeFiltros = { busqueda: { clave: 'q', etiqueta: 'Buscar' }, filtros: [] }
-const VACIA = { filas: [], siguiente: null, anterior: null }
+const VACIA = { filas: [], siguiente: null, anterior: null, cortada: null }
 const base = {
   esquema: ESQUEMA,
   pagina: VACIA,
+  vistaPreferida: null,
+  agruparPedido: true,
+  rutaDeClientes: null,
+  filtrosDelGrupo: {},
   porPagina: { valor: 25, opciones: [25, 50] },
   origenes: [],
   rutaDeNueva: '/cotizaciones/nuevo?origen=o1' as string | null,
@@ -111,11 +115,22 @@ const fila = (numero: number) => ({
   vehiculo: null,
   autor: 'Ana',
   aprobada: false,
+  modo: null,
 })
+// Una cotización sola de la lista (sin agrupar, o sin vehículo).
+const sola = (numero: number) => {
+  const cotizacion = fila(numero)
+  return {
+    tipo: 'suelta' as const,
+    ordenEn: cotizacion.creadoEn,
+    ordenId: cotizacion.id,
+    cotizacion,
+  }
+}
 
 describe('ListadoDeCotizaciones: la columna de acciones (T15)', () => {
   it('sin `menuDeFila` no hay botón de acciones', () => {
-    render(<ListadoDeCotizaciones {...base} pagina={{ ...VACIA, filas: [fila(1)] }} />)
+    render(<ListadoDeCotizaciones {...base} pagina={{ ...VACIA, filas: [sola(1)] }} />)
     expect(screen.queryByRole('button', { name: /Más acciones/ })).toBeNull()
   })
 
@@ -123,7 +138,7 @@ describe('ListadoDeCotizaciones: la columna de acciones (T15)', () => {
     render(
       <ListadoDeCotizaciones
         {...base}
-        pagina={{ ...VACIA, filas: [fila(1), fila(2)] }}
+        pagina={{ ...VACIA, filas: [sola(1), sola(2)] }}
         menuDeFila={(una) => <button>Menú de {una.numero}</button>}
       />,
     )
@@ -134,7 +149,7 @@ describe('ListadoDeCotizaciones: la columna de acciones (T15)', () => {
     render(
       <ListadoDeCotizaciones
         {...base}
-        pagina={{ ...VACIA, filas: [fila(1), fila(2)] }}
+        pagina={{ ...VACIA, filas: [sola(1), sola(2)] }}
         menuDeFila={(una) => (una.numero === 1 ? <button>Menú de 1</button> : null)}
       />,
     )
@@ -151,10 +166,10 @@ describe('ListadoDeCotizaciones: la columna de acciones (T15)', () => {
 describe('ListadoDeCotizaciones: la búsqueda (T15)', () => {
   it('con una búsqueda acotada, avisa al pie de la lista que afine; sin ella, no', () => {
     const { rerender } = render(
-      <ListadoDeCotizaciones {...base} pagina={{ ...VACIA, filas: [fila(1)] }} acotada />,
+      <ListadoDeCotizaciones {...base} pagina={{ ...VACIA, filas: [sola(1)] }} acotada />,
     )
     expect(screen.getByRole('status').textContent).toMatch(/Escribe más para afinarla/)
-    rerender(<ListadoDeCotizaciones {...base} pagina={{ ...VACIA, filas: [fila(1)] }} />)
+    rerender(<ListadoDeCotizaciones {...base} pagina={{ ...VACIA, filas: [sola(1)] }} />)
     expect(screen.queryByText(/Escribe más para afinarla/)).toBeNull()
   })
 
@@ -168,5 +183,62 @@ describe('ListadoDeCotizaciones: la búsqueda (T15)', () => {
     ).toBe('Nueva cotización')
     const panel = await abrirOpciones()
     expect(within(panel).getByRole('button', { name: 'Vistas' })).toBeTruthy()
+  })
+})
+
+describe('ListadoDeCotizaciones: tarjetas, grupos y «Compartir» (T319)', () => {
+  const grupo = (numero: number, n: number) => {
+    const cabeza = { ...fila(numero), vehiculoId: '00000000-0000-4000-8000-0000000000ee' }
+    return {
+      tipo: 'grupo' as const,
+      ordenEn: cabeza.creadoEn,
+      ordenId: cabeza.id,
+      vehiculoId: cabeza.vehiculoId,
+      cabeza,
+      conteo: { n, hayMas: false },
+    }
+  }
+
+  it('un grupo dice cuántas tiene y se despliega en el lugar; una sola no lleva conteo', () => {
+    render(<ListadoDeCotizaciones {...base} pagina={{ ...VACIA, filas: [grupo(1, 3), sola(2)] }} />)
+    const conteo = screen.getByRole('button', { name: '3 cotizaciones de este vehículo' })
+    expect(conteo.getAttribute('aria-expanded')).toBe('false')
+    expect(screen.getAllByRole('button', { name: /cotizaciones de este vehículo/ })).toHaveLength(1)
+    fireEvent.click(conteo)
+    expect(conteo.getAttribute('aria-expanded')).toBe('true')
+    expect(document.getElementById(conteo.getAttribute('aria-controls') ?? '')).not.toBeNull()
+  })
+
+  it('«Compartir» es la acción principal de la tarjeta si se ofrece, y el «⋯» se pide sin él', () => {
+    const compartir = vi.fn()
+    const pedidos: unknown[] = []
+    render(
+      <ListadoDeCotizaciones
+        {...base}
+        pagina={{ ...VACIA, filas: [sola(1), sola(2)] }}
+        compartirDe={(una) => (una.numero === 1 ? compartir : null)}
+        menuDeFila={(una, opciones) => {
+          pedidos.push(opciones)
+          return <button>Menú de {una.numero}</button>
+        }}
+      />,
+    )
+    const botones = screen.getAllByRole('button', { name: 'Compartir' })
+    expect(botones).toHaveLength(1)
+    fireEvent.click(botones[0] as HTMLElement)
+    expect(compartir).toHaveBeenCalledTimes(1)
+    expect(
+      pedidos.every((opciones) => (opciones as { sinCompartir?: boolean }).sinCompartir === true),
+    ).toBe(true)
+  })
+
+  it('«Vista y opciones» trae «Agrupar por vehículo», encendido como lo pide la página', async () => {
+    render(<ListadoDeCotizaciones {...base} />)
+    const panel = await abrirOpciones()
+    expect(
+      within(panel)
+        .getByRole('switch', { name: 'Agrupar por vehículo' })
+        .getAttribute('aria-checked'),
+    ).toBe('true')
   })
 })

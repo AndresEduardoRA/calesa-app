@@ -278,7 +278,7 @@ test.describe('vehículos', () => {
     await focoVuelve(page, menuDeVehiculo(page, CON_FOTO))
   })
 
-  test('E2E el «⋯» de un vehículo: arriba a la derecha de la tarjeta compacta, o pegado a la derecha de la tabla', async ({
+  test('E2E el «⋯» de un vehículo: sobre la foto de la tarjeta, o pegado a la derecha de la tabla', async ({
     page,
   }, info) => {
     await entrarAlInventario(page, terreno.duena)
@@ -289,9 +289,12 @@ test.describe('vehículos', () => {
     await expect(boton).toBeVisible()
     await capturar(page, info, 'vehiculos')
     if (esMovil(page)) {
-      const medidas = await cajas(boton, 'article')
-      enLaEsquina(medidas, 'tarjeta compacta del vehículo')
-      mide44(medidas.boton, 'el «⋯» de la tarjeta compacta')
+      // En el celular la tabla es la tarjeta de la lista: el «⋯» va sobre su foto, como en la vista de tarjetas.
+      enLaEsquina(
+        await cajas(boton, '.relative', '[data-no-abre]'),
+        'el «⋯» sobre la foto de la tarjeta',
+      )
+      mide44((await cajas(boton, 'article')).boton, 'el «⋯» de la tarjeta')
       return
     }
     await columnaPegada(page, boton, 'tabla de vehículos')
@@ -316,16 +319,16 @@ test.describe('cotizaciones', () => {
   }, info) => {
     await entrar(page, terreno.t.duena, { fresco: true })
     if (!esMovil(page)) await page.setViewportSize({ width: 900, height: 800 })
-    await page.goto('/cotizaciones')
+    await page.goto('/cotizaciones?vista=tabla&agrupar=no') // en escritorio, la tabla: la lista nace en tarjetas (T319)
     const boton = aLaVista(
       page.getByRole('button', { name: `Más acciones de N.º ${terreno.numeros[0]}`, exact: true }),
     )
     await expect(boton).toBeVisible()
     await capturar(page, info, 'cotizaciones')
     if (esMovil(page)) {
-      const medidas = await cajas(boton, 'article')
-      enLaEsquina(medidas, 'tarjeta de la cotización en la lista')
-      mide44(medidas.boton, 'el «⋯» de la tarjeta')
+      // El «⋯» va sobre la portada (el contenedor `relative`), como el del inventario sobre la foto.
+      enLaEsquina(await cajas(boton, '.relative', '[data-no-abre]'), 'la portada de la tarjeta')
+      mide44((await cajas(boton, 'article')).boton, 'el «⋯» de la tarjeta')
       return
     }
     await desplazar(page, 'mitad')

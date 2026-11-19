@@ -194,6 +194,27 @@ describe('DeEsteVehiculo, estados', () => {
     })
   })
 
+  it('con `vacio`, sin ninguna dice ese texto; sin él, no dibuja nada', async () => {
+    render(
+      <DeEsteVehiculo
+        vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }}
+        aprobarEn="todos"
+        vacio="Sin cotizaciones que puedas ver."
+      />,
+    )
+    await responder(1, leida([]))
+    expect(await screen.findByText('Sin cotizaciones que puedas ver.')).toBeTruthy()
+    cleanup()
+    const { container } = render(
+      <DeEsteVehiculo vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }} aprobarEn="todos" />,
+    )
+    await responder(2, leida([]))
+    await waitFor(() => {
+      expect(screen.queryByLabelText('Cargando las cotizaciones de este vehículo')).toBeNull()
+    })
+    expect(container.textContent).toBe('')
+  })
+
   it('en el tope no pide más: «Ver todas en Cotizaciones» al listado del vehículo', async () => {
     const cursor = codificarCursor({
       instante: fila(1).creadoEn,

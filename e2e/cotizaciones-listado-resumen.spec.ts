@@ -35,12 +35,18 @@ test.afterAll(async () => {
 
 const filas = (page: Page): Locator =>
   page.locator('tbody tr, li article').filter({ visible: true })
-const enElOrigen = (): string => `/cotizaciones?origen=${t.origen.id}`
+// La lista de siempre (tabla, sin agrupar: T319): el resumen se abre desde cada cotización como una fila.
+const enElOrigen = (): string => `/cotizaciones?origen=${t.origen.id}&vista=tabla&agrupar=no`
 const vieja = (columna: 'id' | 'numero'): string =>
   sql(
     `select ${columna} from public.cotizaciones where origen_id = ${literal(t.origen.id)}::uuid and creado_en < now() - interval '5 days'`,
   )
 const resumen = (page: Page): Locator => page.getByRole('dialog')
+// La más nueva sobre el vehículo «uno», por su número (la tarjeta de la lista no repite el vehículo).
+const delUno = (page: Page): Locator =>
+  filas(page).filter({
+    hasText: `N.º ${sql(`select numero from public.cotizaciones where vehiculo_id = ${literal(t.vehiculos.uno)}::uuid order by creado_en desc, id desc limit 1`)}`,
+  })
 
 async function irAlListado(page: Page, correo: string, consulta = ''): Promise<void> {
   await entrar(page, correo, { fresco: true })
@@ -51,7 +57,8 @@ async function irAlListado(page: Page, correo: string, consulta = ''): Promise<v
 // Un clic en una parte de la fila que no es el botón del número: la celda del cliente en la tabla, el texto del cliente en la tarjeta.
 async function abrirConUnClic(page: Page, fila: Locator): Promise<void> {
   if (esMovil(page)) {
-    await fila.getByText('Cliente:').click()
+    // El título de la tarjeta de la lista: texto, no un botón ni un enlace (el cliente va enlazado a su ficha).
+    await fila.locator('[data-titulo-de-la-cotizacion]').click()
   } else {
     await fila.getByRole('cell').nth(1).click()
   }
@@ -77,7 +84,7 @@ test('R1 un clic en la fila o la tarjeta abre el resumen sin pedirle nada a la p
       pedidos.push(pedido.url())
     }
   })
-  const fila = filas(page).filter({ hasText: TITULO_UNO }).first()
+  const fila = delUno(page)
   await abrirConUnClic(page, fila)
   await expect(page).toHaveURL(/cotizacion=[0-9a-f-]{36}/)
   await expect(fila).toHaveAttribute('data-state', 'selected')

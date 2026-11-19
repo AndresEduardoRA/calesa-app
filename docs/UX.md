@@ -286,20 +286,28 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   origen, en dos columnas en la lateral y una en el celular y al 200 %, y «Ver más» a lo ancho, que abre la **ficha completa** en `?ver=ficha`: casi toda
   la pantalla en escritorio y entera en el celular, sólo lectura, las fotos con su tira, los datos comunes, «Precio» y todos los grupos del layout; Esc y
   «atrás» la cierran y el foco vuelve a «Ver más»).
-  **Derecha**: el índice pegajoso («Índice de la ficha») y los bloques que quien mira ve, en este orden: «Fase y qué falta» (`logistica.ver` del origen:
-  «Ver en logística» en su título y «Qué falta» de sólo lectura, ver «Logística: estados propios»), «Relacionados» compacto (`leads.ver`: el vinculado con
-  «Desvincular» confirmado, los interesados y lo cotizado; ver «Relacionados (estados propios)»), «Cotizaciones» (`cotizaciones.ver` del origen, el
-  historial completo, al acercarse), «Documentos» (`logistica.ver`, el hueco de la unidad, al acercarse), «Ficha» («Precio» y un grupo por layout del
-  origen; edición `?editar=`) y «Repuestos» (`repuestos.ver`; sin proyecto, «Este vehículo no tiene proyecto de repuestos.» con «Crear proyecto de
-  repuestos» sólo si se puede editar; con él, «Proyecto #N», su estado y los ítems por fase). Las fotos se editan en «Editar imágenes». Un bloque sin
-  permiso no está, tampoco en el índice. Arriba de las dos columnas, «Volver» y los avisos (limpieza, situación). En el celular y con el texto al 200 %,
-  una columna en el mismo orden. `?seccion=ficha|documentos|cotizaciones|repuestos` lleva a su bloque (si no lo ve, se queda arriba); `?seccion=fotos`
-  redirige al visor en la primera foto (`?visor=<id>&foto=1`);
-  `?panel=desvincular|vincular-lead|marcar-interesado` y `?relacionados=<tipo>` llevan a «Relacionados» y abren lo suyo; `?editar=`, `?panel=vitrina`
-  («Publicar en la web»), `?panel=imagenes` («Editar imágenes»), `?panel=actualizar-datos` («Actualizar los datos»), `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».» con «Reintentar»).
-  - **Cotizaciones del lead y del vehículo** (pestaña o bloque): las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
-    Cotizaciones» (`/cotizaciones?lead=` o `?vehiculo=`); se lee al abrirla (en las fichas del lead y del vehículo es un bloque y se lee al acercarse); esqueleto, error con «Reintentar», «Sin cotizaciones que
-    puedas ver.». Cada fila lleva la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura).
+  **Derecha**: el índice pegajoso («Índice de la ficha») y sólo lo de ventas, los bloques que quien mira ve en este orden: **«Cotizaciones de este
+  vehículo»** (`cotizaciones.ver` del origen: «De este vehículo» con las casillas y «Comparar» en su fila, al acercarse; «Cotizar» en el título, la hoja con
+  este vehículo y la vuelta a la ficha, sólo con `cotizaciones.crear` del origen; aprobar ahí pone al día «Cotización aprobada» de la izquierda; ver
+  «Cotizaciones del lead y del vehículo»), **«Relacionados»** compacto (`leads.ver`: el vinculado con «Desvincular» confirmado, los interesados y lo cotizado;
+  ver «Relacionados (estados propios)»), **«Actividad reciente»** (`actividad.ver`: los últimos 5 cambios del vehículo como frases y «Ver toda la actividad»,
+  `/actividad?entidad=vehiculos&registro=<id>`) y **«Vitrina»** (siempre; en sólo lectura sin `vehiculos.vitrina`: publicado, la insignia «En vitrina» o
+  «Publicado, no visible» con el motivo escrito, «Precio público» —«Consultar» sin precio— y «Así lo verá el visitante» plegado, con «Editar» en el título;
+  sin publicar, «No está en la web» con «Publicar en la web…»; los dos abren `?panel=vitrina`). Lo de logística y repuestos no tiene bloque: lo enlazan
+  «Ver en logística» y «Repuestos · Proyecto #N» de la cabecera; la ficha entera está en «Ver más» de la izquierda. Un bloque sin permiso no está, tampoco
+  en el índice. Arriba de las dos columnas, «Volver» y los avisos (limpieza, situación). En el celular y con el texto al 200 %, una columna en el mismo
+  orden. `?seccion=cotizaciones|relacionados|actividad|vitrina` lleva a su bloque (si no lo ve, se queda arriba). Los enlaces viejos a lo que se fue
+  redirigen reemplazando la entrada del historial: `?seccion=ficha` abre la ficha completa (`?ver=ficha`), `?seccion=fotos` el visor en la primera foto
+  (`?visor=<id>&foto=1`), `?seccion=documentos` va a `/logistica/vehiculo/<id>?hueco=documentos` y `?seccion=fase` a `/logistica/vehiculo/<id>` (con
+  `logistica.ver` del origen), `?seccion=repuestos` al proyecto `/repuestos/<id>` (con `repuestos.ver` y si tiene); sin el permiso o sin proyecto, la
+  ficha se queda arriba. `?panel=desvincular|vincular-lead|marcar-interesado` y `?relacionados=<tipo>` llevan a «Relacionados» y abren lo suyo; `?editar=`,
+  `?panel=vitrina` («Publicar en la web»), `?panel=imagenes` («Editar imágenes»), `?panel=actualizar-datos` («Actualizar los datos»),
+  `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».»
+  con «Reintentar»; uno caído no tumba a los demás).
+  - **Cotizaciones del lead y del vehículo** (bloque): en el lead, las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
+    Cotizaciones» (`/cotizaciones?lead=`), con la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura). En el vehículo, «De este
+    vehículo» (abajo): de a 10 con «Ver más» hasta 100 y «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`), con «Cotizar» en el título y las casillas
+    de «Comparar» en su fila. Los dos se leen al acercarse; esqueleto, error con «Reintentar», «Sin cotizaciones que puedas ver.».
   - **De este vehículo** (bloque de la guardada y del resumen de `/cotizaciones`): las cotizaciones del mismo vehículo que quien mira ve, **la aprobada
     primero** (insignia «Aprobada» y borde de acento) y después de la más nueva; de a 10 con «Ver más» y, en 100, «Mostrando las 100 más recientes.» con
     «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`). Cada fila: «N.º N · título» (`tituloDeLaCotizacion()`: el suyo, si no el del vehículo, si no «Cotización n.º N»), insignias
@@ -328,8 +336,25 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     `<Suspense>`); si falla la lectura de las marcas, el error de la pantalla con «Reintentar»; si falla una columna, «No pudimos cargar la cotización #N.»
     con «Reintentar» en su cabecera y las demás siguen. En el celular y al 200 %, la tabla se desplaza de costado dentro de su caja con la pista de
     desborde (cada columna de 10 rem o más; la de etiquetas, a lo sumo el 35 %) y la página no desborda; el pie queda bajo su columna.
-- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): tabla + resumen `?cotizacion=` (la fila, la tarjeta y el resumen nombran la cotización por su
-  **título** —el suyo o, sin él, el de su vehículo— bajo «N.º n», en dos líneas como mucho y entero en `title`; la tarjeta no repite «Vehículo:» si el título es su nombre) (arriba, la
+- **Cotizaciones** — `/cotizaciones` (`cotizaciones.*`): **«Tabla | Tarjetas»** en «Vista y opciones» (sólo en escritorio; en el celular siempre tarjetas; por defecto
+  **tarjetas**; `?vista=` manda y elegir guarda `cotizaciones.vista`) y **«Agrupar por vehículo»** (un interruptor, **encendido por defecto**; `?agrupar=si|no` manda y
+  cambiarlo relee la lista desde la primera página y guarda `cotizaciones.agrupar`; las vistas guardadas recuerdan también la vista y la agrupación). **Agrupada:**
+  una tarjeta o fila por vehículo (la **cabeza del grupo**: su aprobada si quien mira la ve y coincide; si no, la más reciente que coincide) y las sin vehículo
+  sueltas, intercaladas por fecha; los grupos se ordenan por su cotización más reciente; la búsqueda y los filtros valen sobre las cotizaciones (un grupo existe si
+  alguna coincide y sólo cuenta las que coinciden); con `?vehiculo=` no se agrupa y el aviso de arriba dice «…, sin agrupar.»; con `?q=` se agrupa cada página.
+  «N cotizaciones de este vehículo» (en la tarjeta, en su fila reservada; en la tabla, bajo el vehículo; tope «100+»; con una sola no está) despliega en el lugar
+  (`aria-expanded`) la de la tarjeta («En la tarjeta») y las demás en **líneas compactas** (casilla, «N.º n» con su título, «Final», el total, autor · «hace…» y la
+  vigencia; sin cliente ni «⋯»; el clic abre su resumen), de a 10 con «Ver más» hasta 100 y ahí «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`); 2 o 3
+  casillas habilitan «Comparar» («Elige 2 o 3 para comparar.»; con 3, «Puedes comparar hasta 3.»). Estados del despliegue: tres líneas de esqueleto, «No
+  pudimos cargar las cotizaciones de este vehículo.» o «No hay conexión.» con «Reintentar» (la lista sigue); si su cabeza ya no vale (papelera, invalidar, una
+  más nueva) la página se relee. Si la base recorre su tope sin completar la página: «Revisamos muchas cotizaciones sin completar la página.» con «Seguir
+  buscando» (también en lugar del vacío). **La tarjeta de la lista:** la portada de la cotización arriba (miniatura de 480 px, 15:8, recortada desde arriba a la izquierda,
+  perezosa; su clic abre el visor en `?visor=portada-de-la-lista-<id>`, así no se cruza con el del resumen abierto) con el «⋯» encima (sin «Compartir»), el título (dos líneas, entero en `title`), «N.º n» con «Aprobada», «Final» y el origen
+  con su color en una línea, el total con su modo, «Cliente:» enlazado a su ficha (con `leads.ver`; si no, su nombre o «—»), autor · «hace…», la vigencia, la fila
+  del conteo y **«Compartir»** como acción principal a todo el ancho (no en Modo Live). Todas miden lo mismo (filas de alto fijo, sin `auto-rows-fr`: el despliegue va
+  a todo el ancho). **La tabla:** «Cotización» (sólo «N.º n»), **«Título»**, cliente, vehículo, origen, clase, total, vigencia, creada y el «⋯» con «Compartir
+  cotización…» primero. Y el resumen `?cotizacion=` (la fila, la tarjeta y el resumen nombran la cotización por su
+  **título** —el suyo o, sin él, el de su vehículo—, en dos líneas como mucho y entero en `title`) (arriba, la
   **portada de la cotización** a todo el ancho del resumen, en un marco 15:8 con la imagen entera: mientras se arma o carga, un recuadro del mismo marco con el total y
   «Preparando la vista previa…»; si falla o no hay red, «No se pudo cargar la vista previa.» con «Reintentar»; el marco crece con el texto al 200 %; el clic la abre en el
   visor de fotos (`?visor=portada-<id>`, que cerrar el resumen borra); en Modo Live, borrosa con «Oculto en Modo Live» encima y sin visor; luego lo de la fila, «Abrir cotización», «De este vehículo» —ver
@@ -340,9 +365,10 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
   ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, título de la cotización, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
-  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda y los filtros) y, a la derecha
-  de cada fila y tarjeta, el **«⋯»** con la lista única de acciones según el rol: primero y sola, «Compartir cotización…» (toda persona que ve la fila; con el Modo
-  Live no está; abre «Compartir la cotización» en `?panel=compartir&para=<id>`), «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
+  resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda, los filtros, la vista y la
+  agrupación) y, a la derecha de cada fila y sobre la portada de cada tarjeta, el **«⋯»** con la lista única de acciones según el rol: primero y sola, «Compartir
+  cotización…» (toda persona que ve la fila; con el Modo Live no está; en la tarjeta tampoco, porque es su acción principal; abre «Compartir la cotización» en
+  `?panel=compartir&para=<id>`), «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
   si es inválida), «Marcar final…» (`cotizaciones.final.gestionar`, en una preventa; apagada sin vehículo o cliente), casilla «Favorita», «Reportar…»,
   moderar («Invalidar…», «Descartar los reportes…», «Reactivar…», con `cotizaciones.moderar`) y, al final y separada, «Enviar a la papelera» (sin preguntar,
   con «Deshacer»). Son las mismas actions de la guardada; «Marcar final…», «Reportar…» y moderar abren su diálogo en `?panel=…&para=<id>`; filtros mías, clase (preventa o final), origen; `?vehiculo=` y `?lead=` (ids fuera del esquema: sin
@@ -448,7 +474,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   inválido o sin acceso, «No tienes acceso a este cambio.»; un error al desplegar queda en la fila con «Reintentar». Filtros como chips arriba:
   persona y tipo de registro (`?persona=`, `?entidad=`), el registro (`?registro=`, desde «Ver actividad» del «⋯» de un lead —fila, tarjeta, kanban y
   ficha— y de la ficha de vehículo) y la fecha de «Ir a una fecha», cada uno con su «×», y «Limpiar filtros». «Ver más» con tope; retención de `actividad_dias` (14 si
-  no se puede leer). **Actividad reciente** (`ActividadReciente`, para una ficha; sola en `/actividad/reciente?entidad=&registro=`): los
+  no se puede leer). **Actividad reciente** (en la ficha del vehículo, leída al acercarse; sola en `/actividad/reciente?entidad=&registro=`): los
   últimos 5 cambios del registro como frases, cada uno a su detalle en `/actividad`, y «Ver toda la actividad»; esqueleto, «Sin cambios en
   los últimos N días.» y error con «Reintentar»; sin `actividad.ver` no se dibuja.
 - **Configuración** — `/configuracion/*` (permiso de cada sección): inicio + secciones, del registro `secciones.ts` (grupos «Empresa y equipo»
@@ -825,17 +851,20 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   (`?visor=<id>-resumen` pasa a `?visor=<id>`, con su `?foto=`; `?pestana=fotos` abre el visor en la primera foto; otra pestaña se quita) y `?editar=<id>`
   del mismo vehículo. Origen, filtros y cursor se quitan. Un `?vehiculo=` inexistente, en la papelera, de otro origen, que no se ve o que no es un id llega a
   la ficha: «No existe o no tienes acceso» con «Ir al inventario».
-- **Ficha (`/vehiculos/[id]`):** sin `logistica.ver`, ni «Qué falta», ni «Documentos», ni «Ver en logística»; sin `cotizaciones.ver`, ni «Cotizaciones» ni el
-  grupo Cotizado ni «Cotización aprobada»; sin `leads.ver`, sin «Relacionados»; sin `repuestos.ver` o sin proyecto, sin «Repuestos · Proyecto #N»; el
-  índice siempre tiene «Ficha». La foto: sin fotos, el recuadro 4:3 con su ícono (el «⋯» y la vitrina igual encima) y sin tira; con una, sin tira ni
-  flechas; si la lectura falla, la portada en su lugar y el visor dice «No se pudieron cargar las fotos.» con «Reintentar». La vitrina sin
-  `vehiculos.vitrina`: apagada (`aria-disabled`) con el motivo para el lector y en un aviso al tocarla. «Cotización aprobada»: la portada preparándose o
-  que falla, el recuadro de la portada con el total; en Modo Live, borrosa, sin «Compartir». «Subasta»: origen manual, no está; sin fechas, «Sin fecha de
-  cierre»; sin poder editar, sin su «⋯». «Datos principales»: sin datos clave guardados, los de fábrica de su tipo; un dato vacío, «—». La ficha completa
-  sin red: «Sin conexión. No se pudo abrir esto.» con «Reintentar»; mientras lee los grupos, su esqueleto, y si falla, «No pudimos cargar la ficha del
-  vehículo.» con «Reintentar». Origen sin flujo legible: el error de «Qué falta» con
-  «Reintentar» y el resto sigue. Sin fase: «Sin fase» en la cabecera y «Todavía no tiene fase.» en «Qué falta». Subasta sin resolver: el aviso de arriba
-  con «La ganamos» (no se repite en «Qué falta»). Sin red: el índice funciona (son anclas); lo diferido dice «Sin conexión» en su lugar con «Reintentar».
+- **Ficha (`/vehiculos/[id]`):** sin `logistica.ver`, sin «Ver en logística» (y `?seccion=documentos|fase` se queda arriba); sin `cotizaciones.ver`, ni
+  «Cotizaciones de este vehículo» ni el grupo Cotizado ni «Cotización aprobada»; sin `cotizaciones.crear`, sin «Cotizar» en el título; sin
+  `cotizaciones.aprobar`, «Aprobar esta» apagado con su motivo; un `PT409` al aprobar dice quién y cuándo; sin `leads.ver`, sin «Relacionados»; sin
+  `actividad.ver`, sin «Actividad reciente»; sin `repuestos.ver` o sin proyecto, sin «Repuestos · Proyecto #N» (y `?seccion=repuestos` se queda arriba);
+  el índice siempre tiene «Vitrina». «Actividad reciente»: esqueleto, «Sin cambios en los últimos N días.», «No se pudo cargar la actividad» con
+  «Reintentar». **«Vitrina»**: sin `vehiculos.vitrina`, sin «Editar» ni «Publicar en la web…» (el botón de la foto dice el motivo); si la vista previa no
+  se pudo leer, «No pudimos cargar «Vitrina».» con «Reintentar»; en Modo Live, el precio público tapado (`<Monto>`). La foto: sin fotos, el recuadro 4:3
+  con su ícono (el «⋯» y la vitrina igual encima) y sin tira; con una, sin tira ni flechas; si la lectura falla, la portada en su lugar y el visor dice «No
+  se pudieron cargar las fotos.» con «Reintentar». La vitrina de la foto sin `vehiculos.vitrina`: apagada (`aria-disabled`) con el motivo para el lector y
+  en un aviso al tocarla. «Cotización aprobada»: la portada preparándose o que falla, el recuadro de la portada con el total; en Modo Live, borrosa, sin
+  «Compartir». «Subasta»: origen manual, no está; sin fechas, «Sin fecha de cierre»; sin poder editar, sin su «⋯». «Datos principales»: sin datos clave
+  guardados, los de fábrica de su tipo; un dato vacío, «—». La ficha completa sin red: «Sin conexión. No se pudo abrir esto.» con «Reintentar»; mientras
+  lee los grupos, su esqueleto, y si falla, «No pudimos cargar la ficha del vehículo.» con «Reintentar». Sin fase: «Sin fase» en la cabecera. Subasta sin
+  resolver: el aviso de arriba con «La ganamos». Sin red: el índice funciona (son anclas); lo diferido dice «Sin conexión» en su lugar con «Reintentar».
 
 ### Relacionados (estados propios)
 
@@ -1061,7 +1090,7 @@ y enfoca su título).
   y la bandeja de documentos no se pierden. Los atajos («Ir a Documentos», «Ir a Gastos») eligen la pestaña y llevan el foco a ella. **Subir documentos** va en un drawer (`?subir=documentos`) abierto por el botón «Subir documentos» del hueco (apagado, con «Necesitas permiso para subir documentos.» escrito debajo, sin `logistica.documentos.subir`); con archivos en la bandeja cerrar pregunta, y al terminar sin fallos se cierra solo (con fallos queda abierto con «Reintentar los N que faltan»). En el celular y en los drawers la bandeja sigue en línea. En escritorio se piden al abrir tres huecos (Qué falta, Documentos, Notas); en el celular, uno.
 - **Celular y tableta vertical:** una columna, un bloque plegado por hueco en este orden —qué falta (abierto), documentos, notas, historial, transporte, repuestos, aduana, gastos, pagos, margen— y una barra «Mover» pegada abajo (44 px, sólo con `flujos.mover` del origen y el hueco «Qué falta»)
   que lo abre, lo trae a la vista y le da el foco. Si el flujo del origen no se pudo leer, los huecos que piden una regla no se dibujan y una línea lo dice; el resto sigue. La ficha del
-  vehículo lleva «Ver en logística» (en el título de su bloque «Fase y qué falta», con `logistica.ver`) a `/logistica/vehiculo/<id>`.
+  vehículo lleva «Ver en logística» (un enlace corto de su cabecera, con `logistica.ver`) a `/logistica/vehiculo/<id>`.
 - **«Qué falta» y mover** (abierto al inicio, el primero): una tarjeta por destino (las salidas de la fase actual; sin fase, las iniciales)
   con cada requisito y su estado **dicho con texto** («Cumplido» / «Falta»), «Obligatorio» / «Informativo», su detalle («1 de 2
   aprobados») y, en cada falta (obligatoria o informativa), **lo que la destraba**: un botón chico con el verbo («Subir», «Revisar», «Completar»,
@@ -1071,10 +1100,8 @@ y enfoca su título).
   ya subido, «Revisar» lleva a Documentos con el grupo del tipo a la vista (no se aprueba sin mirar el archivo); «Completar» lleva el foco al campo del
   transporte; «Registrar» abre «Registrar pago» vacío. Quien no puede: «Pedirlo» (con `agenda.tareas.asignar`) o «Pídeselo a quien administra los roles.»
   (en la línea sin otra acción; como nota del «⋯» si hay una). Lo que nunca podrá no aparece. Regla apagada (quien tiene la clave del hueco y el hueco no
-  se dibuja): ninguna acción. **En un drawer** (gastos, ítem), lo que sacaría de la pantalla dice «Abrir la unidad». **En la ficha del vehículo**
-  (bloque «Fase y qué falta»), de sólo lectura: «N días en la fase», por destino «Para pasar a «<destino>»» y sus requisitos (o «Listo para pasar a
-  «<destino>».»), sin «Elegir» ni «La ganamos»; «Subir» y «Revisar» se hacen en el bloque «Documentos» de la misma ficha y lo de otro hueco dice «Abrir la
-  unidad» (a ese hueco de la página de la unidad). **Sin red**: todo apagado y
+  se dibuja): ninguna acción. **En un drawer** (gastos, ítem), lo que sacaría de la pantalla dice «Abrir la unidad». La ficha del vehículo no lo
+  dibuja: enlaza a la unidad. **Sin red**: todo apagado y
   «Sin conexión: las acciones vuelven con la red.» en la línea viva. La franja «fuera de regla» sigue con su enlace. **«Pedírselo a alguien»**
   (`?pedir=requisito&falta=<id>`, un modal): la descripción es el título de la tarea («Falta: BL aprobado para pasar a «Embarcado»»); cargando, tres
   renglones; quién puede como radios (una sola persona, ya elegida; con más de 20, «Busca por nombre» desde 3 letras); nadie: «Nadie que pueda recibir
