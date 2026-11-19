@@ -296,8 +296,16 @@ test('E2E los enlaces de siempre llegan a lo suyo', async ({ page }) => {
   await abrirLaFicha(page, duena, lead, '?seccion=vehiculos')
   await expect(titulo(page, 'Vehículos')).toBeFocused()
   await expect(titulo(page, 'Vehículos')).toBeInViewport()
-  await irAFicha(page, lead, '#relacionados')
-  await expect(titulo(page, 'Vehículos')).toBeInViewport()
+  // `#relacionados` sigue siendo el ancla del bloque «Vehículos» (el del índice y los enlaces de siempre).
+  await expect(
+    page
+      .locator('#relacionados')
+      .getByRole('heading', { name: 'Vehículos', exact: true, level: 2 }),
+  ).toBeAttached()
+  await expect(indice(page).getByRole('link', { name: 'Vehículos' })).toHaveAttribute(
+    'href',
+    '#relacionados',
+  )
   await irAFicha(page, lead, '?panel=anotar-seguimiento')
   await expect(modalDeSeguimiento(page, 'Anotar')).toBeVisible()
   await irAFicha(page, lead, '?todos=recordatorios')
