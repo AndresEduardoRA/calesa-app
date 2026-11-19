@@ -38,6 +38,19 @@ async function irAOportunidades(page: Parameters<typeof irAFicha>[0], leadId: st
 const item = (page: Parameters<typeof irAFicha>[0], titulo: string) =>
   aLaVista(page.getByRole('article', { name: titulo }))
 
+// «Mover a» del «⋯» de la fila: un submenú con las etapas de su embudo.
+async function moverEnLaFicha(
+  page: Parameters<typeof irAFicha>[0],
+  titulo: string,
+  destino: string,
+) {
+  await item(page, titulo)
+    .getByRole('button', { name: `Más acciones de «${titulo}»` })
+    .click()
+  await page.getByRole('menuitem', { name: 'Mover a' }).click()
+  await page.getByRole('menuitem', { name: destino, exact: true }).click()
+}
+
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
 test('crear desde el panel: lo que falta se dice junto al campo y entra en la etapa inicial', async ({
   page,
@@ -45,7 +58,7 @@ test('crear desde el panel: lo que falta se dice junto al campo y entra en la et
   const lead = await leadDeBerta(`Op Crear ${info.project.name}`)
   await entrar(page, t.personas.berta)
   await irAOportunidades(page, lead.id)
-  await expect(page.getByText('Todavía no tienes oportunidades con este lead')).toBeVisible()
+  await expect(page.getByText('Sin oportunidades abiertas.')).toBeVisible()
   await page.getByRole('button', { name: 'Nueva oportunidad' }).click()
   await expect(page).toHaveURL(/panel=nueva-oportunidad/)
   const panel = page.getByRole('dialog', { name: 'Nueva oportunidad' })
@@ -59,10 +72,9 @@ test('crear desde el panel: lo que falta se dice junto al campo y entra en la et
   await panel.getByLabel('Notas (opcional)').fill('Quiere financiar')
   await panel.getByRole('button', { name: 'Crear oportunidad' }).click()
   await expect(item(page, titulo)).toBeVisible()
+  // Una línea: el título, la etapa y el monto (las notas se ven al editarla).
   await expect(item(page, titulo).getByText('Nuevo', { exact: true })).toBeVisible()
-  await expect(item(page, titulo).getByText('Abierta', { exact: true })).toBeVisible()
   await expect(item(page, titulo).getByText(/25\.000,50/)).toBeVisible()
-  await expect(item(page, titulo).getByText('Quiere financiar')).toBeVisible()
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -93,38 +105,35 @@ test('editar con versión: otra pestaña la cambió y se ofrece «Recargar» sin
   await expect(panel.getByRole('button', { name: 'Recargar' })).toBeVisible()
 })
 
-test('mover a una ganada desde la ficha y reabrir; eliminar ofrece «Deshacer»', async ({
+test('mover a una ganada desde la ficha la saca de las abiertas; eliminar ofrece «Deshacer»', async ({
   page,
 }, info) => {
   const lead = await leadDeBerta(`Op Mover ${info.project.name}`)
-  const embudo = await embudoPorDefecto(t.personas.berta)
   const titulo = `Mover ${info.project.name}`
   const op = await oportunidad(t.personas.berta, lead.id, { titulo })
   await entrar(page, t.personas.berta)
   await irAOportunidades(page, lead.id)
-  await item(page, titulo)
-    .getByRole('button', { name: `Mover «${titulo}» a otra etapa` })
-    .click()
-  await page.getByRole('menuitem', { name: 'Ganado', exact: true }).click()
-  await expect(item(page, titulo).getByText('Ganada', { exact: true })).toBeVisible()
+  await moverEnLaFicha(page, titulo, 'Contactado')
+  await expect(item(page, titulo).getByText('Contactado', { exact: true })).toBeVisible()
+  await moverEnLaFicha(page, titulo, 'Ganado')
+  // Cerrada: sale de la vista y queda en «Ver todas».
+  await expect(item(page, titulo)).toHaveCount(0)
+  await expect(page.getByText('Sin oportunidades abiertas.')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Ver todas' })).toBeVisible()
   await expect.poll(async () => (await enLaBase(op.id))?.estado).toBe('ganada')
-  await item(page, titulo)
-    .getByRole('button', { name: `Mover «${titulo}» a otra etapa` })
-    .click()
-  await page.getByRole('menuitem', { name: 'Contactado', exact: true }).click()
-  await expect
-    .poll(async () => enLaBase(op.id))
-    .toMatchObject({ estado: 'abierta', etapa_id: etapa(embudo, 'Contactado') })
 
-  await item(page, titulo)
-    .getByRole('button', { name: `Más acciones de «${titulo}»` })
+  const otra = `Otra ${info.project.name}`
+  const nueva = await oportunidad(t.personas.berta, lead.id, { titulo: otra })
+  await irAOportunidades(page, lead.id)
+  await item(page, otra)
+    .getByRole('button', { name: `Más acciones de «${otra}»` })
     .click()
   await page.getByRole('menuitem', { name: 'Eliminar' }).click()
-  await expect(item(page, titulo)).toHaveCount(0)
-  await expect.poll(async () => (await enLaBase(op.id))?.eliminado_en).not.toBeNull()
+  await expect(item(page, otra)).toHaveCount(0)
+  await expect.poll(async () => (await enLaBase(nueva.id))?.eliminado_en).not.toBeNull()
   await page.getByRole('button', { name: 'Deshacer' }).click()
-  await expect(item(page, titulo)).toBeVisible()
-  await expect.poll(async () => (await enLaBase(op.id))?.eliminado_en).toBeNull()
+  await expect(item(page, otra)).toBeVisible()
+  await expect.poll(async () => (await enLaBase(nueva.id))?.eliminado_en).toBeNull()
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -142,7 +151,7 @@ test('quién la ve: el compartido tiene la sección pero no la de Berta; la due�
   expect(error).toBeNull()
   await entrar(page, t.personas.carlos)
   await irAOportunidades(page, lead.id)
-  await expect(page.getByText('Todavía no tienes oportunidades con este lead')).toBeVisible()
+  await expect(page.getByText('Sin oportunidades abiertas.')).toBeVisible()
   await expect(page.getByText(titulo)).toHaveCount(0)
 
   const otra = await otraPersona(browser, page)
