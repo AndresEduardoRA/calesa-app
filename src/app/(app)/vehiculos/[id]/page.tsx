@@ -16,12 +16,14 @@ import {
   leerVehiculo,
   origenesVisibles,
   permisoDeVitrina,
+  rutaParaCotizar,
   vistaPreviaDe,
+  type ParaCotizar,
   type Vehiculo,
 } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
 import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
-import { RUTAS, unParametro } from '@/shared/lib/rutas'
+import { conVuelta, RUTAS, unParametro } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { FichaEnDosColumnas, IndiceDeBloques } from '@/shared/ui/ficha-en-bloques'
@@ -171,6 +173,25 @@ const entradaDelIndice = ({ ancla, etiqueta }: { ancla: string; etiqueta: string
   etiqueta,
 })
 
+// «Cotización aprobada» de la izquierda: con `cotizaciones.ver` del origen (si no, ni el bloque ni la consulta) y, sin aprobada, «Cotizar» con la hoja de
+// este vehículo y la vuelta a la ficha (sólo si cotiza en el origen: `paraCotizarDe()`).
+function aprobadaDe(
+  permisos: Permisos,
+  vehiculoId: string,
+  origenId: string,
+  paraCotizar: ParaCotizar | null,
+): { cotizar: string | null } | null {
+  if (!puede(permisos, 'cotizaciones.ver', origenId)) {
+    return null
+  }
+  return {
+    cotizar:
+      paraCotizar === null
+        ? null
+        : conVuelta(rutaParaCotizar(paraCotizar, vehiculoId), `${RUTAS.vehiculos}/${vehiculoId}`),
+  }
+}
+
 type Sesion = Awaited<ReturnType<typeof requerirSesion>>
 
 // La cabecera de la columna izquierda, con lo que la página resolvió: la vitrina y el «⋯» sobre la foto y los enlaces cortos.
@@ -240,6 +261,7 @@ export default async function PaginaVehiculo({
             origen={origen}
             layout={suLayout}
             editable={editable}
+            aprobada={aprobadaDe(sesion.permisos, encontrado.id, origen.id, lectura.paraCotizar)}
           />
         }
         etiquetaDelLateral={`Datos de ${encontrado.titulo}`}
@@ -267,6 +289,7 @@ export default async function PaginaVehiculo({
         enEdicion={lectura.enEdicion}
         imagenes={lectura.imagenes}
         actualizar={lectura.actualizar}
+        conCompartir={puede(sesion.permisos, 'cotizaciones.ver', origen.id)}
       />
     </>
   )
