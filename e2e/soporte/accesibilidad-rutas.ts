@@ -71,6 +71,18 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/origenes/[id]/categorias': (t) => ({
     url: `/configuracion/origenes/${t.origen}/categorias`,
   }),
+  '/configuracion/cotizacion/[origen]/formula': (t) => ({
+    url: `/configuracion/cotizacion/${t.origen}/formula`,
+  }),
+  '/configuracion/cotizacion/[origen]/hoja': (t) => ({
+    url: `/configuracion/cotizacion/${t.origen}/hoja`,
+  }),
+  '/configuracion/cotizacion/[origen]/tarjeta': (t) => ({
+    url: `/configuracion/cotizacion/${t.origen}/tarjeta`,
+  }),
+  '/configuracion/cotizacion/[origen]/tablas': (t) => ({
+    url: `/configuracion/cotizacion/${t.origen}/tablas`,
+  }),
   '/repuestos/[id]': (t) => ({ url: `/repuestos/${t.proyectoDeRepuestos}` }),
   '/cotizaciones/[id]': (t) => ({ url: `/cotizaciones/${t.cotizacion}` }),
   '/repuestos/[id]/cotizaciones/[cotizacion]': (t) => ({
