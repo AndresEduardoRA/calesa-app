@@ -2,7 +2,6 @@ import { expect, test, type Page } from './soporte/prueba'
 import { PREFIJO_ROL_E2E, correoDePrueba, crearPersona, darRolDePrueba } from './soporte/base'
 import {
   CLAVE,
-  aLaVista,
   entrar,
   irAlOrigen,
   menuDeVehiculo,
@@ -97,7 +96,11 @@ test('quien tiene al lead en su cartera ve el vínculo y edita el vehículo que 
   await expect(vinculo(page).getByText(/^Desde el /)).toBeVisible()
 
   // No lo creó ella, pero es de un lead de su cartera: «Editar» aparece y la base lo acepta.
-  await page.getByRole('button', { name: 'Editar' }).click()
+  await page
+    .getByRole('button', { name: `Más acciones de ${VINCULADO}` })
+    .first()
+    .click()
+  await page.getByRole('menuitem', { name: 'Editar', exact: true }).click()
   const panel = page.getByRole('dialog', { name: `Editar ${VINCULADO}` })
   await panel.getByLabel('Marca').fill('Hyundai')
   await panel.getByRole('button', { name: 'Guardar', exact: true }).click()
@@ -105,8 +108,12 @@ test('quien tiene al lead en su cartera ve el vínculo y edita el vehículo que 
   expect((await vehiculoPorTitulo(VINCULADO))?.marca).toBe('Hyundai')
 
   // Lo mismo con sus fotos.
-  await page.goto(`/vehiculos/${vinculado}?seccion=fotos`)
-  await expect(page.getByRole('button', { name: 'Elegir fotos' })).toBeVisible()
+  await page.goto(`/vehiculos/${vinculado}?panel=imagenes`)
+  await expect(
+    page
+      .getByRole('dialog', { name: 'Editar imágenes' })
+      .getByRole('button', { name: 'Elegir fotos' }),
+  ).toBeVisible()
 
   // En el inventario, «Editar» (en el «⋯») se puede sólo en el vinculado: en el otro se ve apagado con sus imágenes, con el motivo (edita lo propio y éste no lo es).
   await irAlOrigen(page, corea)
@@ -132,10 +139,18 @@ test('el interés de su lead se ve en el otro vehículo, que no puede editar', a
   await expect(interesados(page).getByText('Lo quiere en blanco')).toBeVisible()
   await expect(interesados(page).getByText(/lo marcó Ada Asesora/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Editar' })).toHaveCount(0)
+  // Sin poder editarlo, el «⋯» tiene «Editar imágenes» apagado; `?seccion=fotos` sólo abre el visor.
+  await page
+    .getByRole('button', { name: `Más acciones de ${SUELTO}` })
+    .first()
+    .click()
+  await expect(page.getByRole('menuitem', { name: 'Editar imágenes', exact: true })).toBeDisabled()
+  await page.keyboard.press('Escape')
   await page.goto(`/vehiculos/${suelto}?seccion=fotos`)
-  // Las fotos llegan por streaming: por un instante el texto está también en el tramo oculto
-  // que React todavía no movió a su lugar.
-  await expect(aLaVista(page.getByText('Este vehículo no tiene fotos'))).toBeVisible()
+  await expect(page.locator('[data-visor-de-imagenes]')).toBeVisible()
+  await expect(
+    page.locator('[data-visor-de-imagenes]').getByText('No tiene fotos todavía.'),
+  ).toBeVisible()
   await expect(page.getByRole('button', { name: 'Elegir fotos' })).toHaveCount(0)
 })
 

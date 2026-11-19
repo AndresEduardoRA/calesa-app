@@ -1,7 +1,12 @@
 import 'server-only'
 import { cache } from 'react'
 import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errores'
+import { TAMANO_DE_LA_APROBADA } from '@/shared/lib/paginacion'
 import { createClient } from '@/shared/lib/supabase/server'
+import {
+  paginaDeEsteVehiculoDesde,
+  type FilaDeEsteVehiculo,
+} from '../../entities/aprobada/de-este-vehiculo'
 import {
   COLUMNAS_DE_LA_MARCA,
   aprobadasDelVehiculoDesde,
@@ -72,5 +77,24 @@ export const getMarcaDeLaGuardada = cache(
     }
     const marca = marcaDeLaGuardadaDesde(data)
     return marca ? ok(marca) : fallo('inesperado', NO_SE_LEYO)
+  },
+)
+
+// La aprobada de un vehículo como la muestra la ficha (n.º, título, total con su moneda y el nombre del modo, autor y fecha): la fijada de
+// `cotizaciones_de_este_vehiculo()` (invocadora: la RLS de quien mira decide; una aprobada que no ve no llega). Sin cursor la fijada sale por
+// `cotizaciones_aprobadas_pkey` + `cotizaciones_pkey`, y la página de 1 (+1) por `cotizaciones_vehiculo_creado_idx`, que se descarta. Nula = sin aprobada
+// que quien mira vea. `cache`: una lectura por pedido.
+export const getAprobadaDelVehiculo = cache(
+  async (vehiculoId: string): Promise<Resultado<FilaDeEsteVehiculo | null>> => {
+    const supabase = await createClient()
+    const { data, error } = await supabase.rpc('cotizaciones_de_este_vehiculo', {
+      p_vehiculo: vehiculoId,
+      p_tamano: TAMANO_DE_LA_APROBADA,
+    })
+    if (error) {
+      return { ok: false, error: errorDePostgrest(error) }
+    }
+    const pagina = paginaDeEsteVehiculoDesde(data)
+    return pagina ? ok(pagina.fijada) : fallo('inesperado', NO_SE_LEYO)
   },
 )

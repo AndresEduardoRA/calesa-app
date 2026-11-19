@@ -51,7 +51,8 @@ locale)`, el único lector de un número tipeado.
   (marca en `history.state`; desde un menú, al botón del menú). La entrada queda también en `sessionStorage` porque `shallow: false` la borra del
   historial; con `router.push`: `abrirConVuelta(clave, () => { push(url); return alLlegarA(url) })`. La usa `usePanelPorUrl()`.
 - `ui/visor-de-imagenes/`: `<CarruselEnElLugar>` (la portada y, al acercarse, el resto por la `cargar` que recibe; `modo="abrir"` en un lugar
-  chico) y `useVisorDeGaleria()` (una galería ya leída); el visor vive en `?visor=<clave>&foto=<n>` (la foto cambia con `replace`).
+  chico), `<CarruselConTira>` (el de una ficha: pide al montarse y dibuja `<TiraDeMiniaturas>` debajo; `sobreLaFoto` para lo que va en su esquina),
+  `<TiraDeMiniaturas>` (con `conTeclado`, ← → Home End marcan y Enter elige), `useImagenes()` y `useVisorDeGaleria()` (una galería ya leída); el visor vive en `?visor=<clave>&foto=<n>` (la foto cambia con `replace`).
 - `ui/lista/`: `UnaSolaVista` (con `preferida`), `ConmutadorDeVista` («Tabla | Tarjetas», `lib/vista-de-lista.ts`; va en «Vista y opciones»), `TablaDeLista`,
   `FilaDeLista`, `TarjetaDeLista`, `EsquinaDeAcciones` (el lugar del «⋯» en la tarjeta; `sobreImagen` sobre una foto), `MasAcciones`, `AbrirResumen`, `EnlaceDeLaFila` (el nombre como enlace a la ficha en una lista sin resumen: la fila y la tarjeta reciben `href` en vez de `alAbrir`, `ir-desde-la-fila.ts`), `SimbolosDeLista`, `PestanasDelResumen` (con `alto="lleno"` ocupa el alto de su contenedor y cada pestaña se desplaza en su marco).
 - `ui/monto.tsx` + `live.ts` + `guion-live.tsx` (Modo Live), `regional.tsx`, `densidad.tsx`, `marca.tsx`, `estilo-de-marca.tsx`.

@@ -112,15 +112,7 @@ test('dar de alta un vehículo en Corea, con los valores por defecto y los atajo
   // Los bloques que existen, en el índice, y ninguno que lleve a lo que falta.
   await expect(
     page.getByRole('navigation', { name: 'Índice de la ficha' }).getByRole('link'),
-  ).toHaveText([
-    'Qué falta',
-    'Relacionados',
-    'Cotizaciones',
-    'Documentos',
-    'Ficha',
-    'Repuestos',
-    'Fotos',
-  ])
+  ).toHaveText(['Qué falta', 'Relacionados', 'Cotizaciones', 'Documentos', 'Ficha', 'Repuestos'])
 })
 
 // 4-25: el precio se lee con el locale de la empresa (es-BO): el punto agrupa de a 3 y, en otro lugar, el campo dice cómo escribirlo.
@@ -173,7 +165,9 @@ test('dos personas editan el mismo vehículo: la segunda se entera de quién lo 
   await entrar(deSara, soloCorea)
   const seltos = await vehiculoPorTitulo('Kia Seltos 2022')
   await deSara.goto(`/vehiculos/${seltos?.id ?? ''}`)
-  await deSara.getByRole('button', { name: 'Editar' }).click()
+  // «Editar» está en el «⋯» de la ficha, sobre la foto.
+  await deSara.getByRole('button', { name: 'Más acciones de Kia Seltos 2022' }).first().click()
+  await deSara.getByRole('menuitem', { name: 'Editar', exact: true }).click()
   const panelDeSara = deSara.getByRole('dialog', { name: 'Editar Kia Seltos 2022' })
   await panelDeSara.getByLabel('Modelo').fill('Seltos EX')
   await panelDeSara.getByRole('button', { name: 'Guardar', exact: true }).click()

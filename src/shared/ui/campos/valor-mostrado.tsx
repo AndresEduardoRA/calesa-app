@@ -16,7 +16,7 @@ export function ValorMostrado({ valor }: { valor: Valor }) {
         <a
           href={valor.url}
           target="_blank"
-          rel="noreferrer"
+          rel="noopener noreferrer"
           className="text-(--color-primario-ink) underline-offset-2 hover:underline"
         >
           Abrir enlace

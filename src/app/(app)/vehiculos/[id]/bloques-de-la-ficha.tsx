@@ -7,7 +7,7 @@ import { DocumentosEnLaFicha } from '@/modules/logistica/pantallas/documentos-un
 import type { LayoutDeOrigen, OrigenResumen } from '@/modules/origenes'
 import { EsqueletoDeResumen } from '@/modules/repuestos/pantallas/proyectos-vehiculo'
 import type { AvisosDelMenu, Vehiculo } from '@/modules/vehiculos'
-import { EsqueletoDeFotos, FichaDeVehiculo } from '@/modules/vehiculos/pantallas/ficha'
+import { FichaDeVehiculo } from '@/modules/vehiculos/pantallas/ficha'
 import { unidadDeLogistica } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { BloqueDeFicha } from '@/shared/ui/ficha-en-bloques'
@@ -16,7 +16,6 @@ import { Skeleton } from '@/shared/ui/skeleton'
 import { RelacionadosDeLaFicha } from '../../_relacionados/relacionados-del-vehiculo'
 import { BloqueDocumentos } from './bloque-documentos'
 import { BloqueFase } from './bloque-fase'
-import { BloqueFotos } from './bloque-fotos'
 import { BloqueRepuestos } from './bloque-repuestos'
 import type { AnclaDeLaFicha, BloqueDeLaFicha } from './bloques'
 import { EsqueletoDeDocumentos } from './esqueleto-de-documentos'
@@ -34,8 +33,8 @@ type Props = {
   avisos: AvisosDelMenu
 }
 
-// El título del bloque «Fase y qué falta» con «Ver en logística» en su línea: mover es de logística (el único enlace con ese nombre en la
-// página; lo ve quien ve el bloque, con `logistica.ver` del origen).
+// El título del bloque «Fase y qué falta» con «Ver en logística» en su línea: mover es de logística (lo ve quien ve el bloque, con `logistica.ver`
+// del origen). La cabecera lleva el mismo enlace corto hasta que este bloque deje la derecha (`docs/PENDIENTES.md`).
 function FaseYQueFalta({ vehiculoId, titulo }: { vehiculoId: string; titulo: string }) {
   return (
     <section aria-labelledby="fase-titulo" className="grid min-w-0 gap-3">
@@ -62,17 +61,17 @@ function FaseYQueFalta({ vehiculoId, titulo }: { vehiculoId: string; titulo: str
 }
 
 // Los bloques que montan su parte de cliente recién al acercarse (200 px antes de entrar a la vista): «Cotizaciones» y la lista de «Documentos»
-// leen desde el navegador recién ahí; lo que se lee en el servidor (la unidad, la galería) llega con el documento y sólo espera su código.
+// leen desde el navegador recién ahí; lo que se lee en el servidor (la unidad) llega con el documento y sólo espera su código.
 function AlAcercarse({
   ancla,
   titulo,
   props,
 }: {
-  ancla: 'cotizaciones' | 'documentos' | 'fotos'
+  ancla: 'cotizaciones' | 'documentos'
   titulo: string
   props: Props
 }) {
-  const { vehiculo, origen, editable } = props
+  const { vehiculo } = props
   switch (ancla) {
     case 'cotizaciones':
       return (
@@ -102,30 +101,11 @@ function AlAcercarse({
           </BloqueDeFicha>
         </DocumentosEnLaFicha>
       )
-    case 'fotos':
-      return (
-        <BloqueDeFicha
-          ancla={ancla}
-          titulo={titulo}
-          conTitulo
-          alAcercarse
-          esqueleto={<EsqueletoDeFotos />}
-        >
-          <Suspense fallback={<EsqueletoDeFotos />}>
-            <BloqueFotos
-              vehiculoId={vehiculo.id}
-              origenId={origen.id}
-              deSubasta={origen.tipo === 'subasta'}
-              puedeEditar={editable}
-            />
-          </Suspense>
-        </BloqueDeFicha>
-      )
   }
 }
 
 // Lo de adentro de cada bloque. Lo que abre la URL (Relacionados con sus paneles y «Ver todos») nunca espera a acercarse; sólo «Cotizaciones»,
-// «Documentos» y «Fotos» (ver `AlAcercarse`).
+// y «Documentos» (ver `AlAcercarse`).
 function Contenido({
   ancla,
   titulo,
@@ -175,7 +155,6 @@ function Contenido({
       )
     case 'cotizaciones':
     case 'documentos':
-    case 'fotos':
       return <AlAcercarse ancla={ancla} titulo={titulo} props={props} />
   }
 }
