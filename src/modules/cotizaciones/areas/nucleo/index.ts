@@ -129,3 +129,10 @@ export {
   vehiculoParaCalcular,
 } from '../../entities/vehiculo-de-la-guardada'
 export type { CambioPermitido } from '../../entities/vehiculo-de-la-guardada'
+
+// El «⋯» de una cotización (el del listado y el de la cabecera de la guardada): sus acciones y su orden, dichos una vez.
+export { accionesDeCotizacion } from '../../entities/acciones-de-cotizacion'
+export type {
+  ClaveDeAccionDeCotizacion,
+  OfertasDelMenuDeCotizacion,
+} from '../../entities/acciones-de-cotizacion'

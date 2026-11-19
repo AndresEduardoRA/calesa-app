@@ -6,6 +6,6 @@ export {
   ETIQUETA_DE_REPORTAR_SI_YA_REPORTO,
   accionesDeCotizacion,
   type ClaveDeAccionDeCotizacion,
-  type MenuDeUnaFila,
-} from '../entities/listado/acciones-de-cotizacion'
+} from '../entities/acciones-de-cotizacion'
+export type { MenuDeUnaFila } from '../entities/listado/acciones-de-cotizacion'
 export type { QuienDelResumen } from '../features/hoja/components/huecos-del-resumen'

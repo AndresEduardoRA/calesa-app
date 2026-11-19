@@ -57,8 +57,14 @@ function conDialogo(clave: ClaveDeAccionDeCotizacion, alElegir: () => void): Con
   ]
 }
 
+// Las que el listado ofrece: las demás de la lista única (vista previa, PDF, revisiones, comprobante, cotizar encima) son sólo del «⋯» de la guardada.
+type ClaveDeLaFila = Exclude<
+  ClaveDeAccionDeCotizacion,
+  'vista-previa' | 'pdf' | 'revisiones' | 'comprobante' | 'encima'
+>
+
 // Cada acción de la lista (`accionesDeCotizacion()`), con lo que hace en esta superficie.
-const LINEAS: Readonly<Record<ClaveDeAccionDeCotizacion, Constructor>> = {
+const LINEAS: Readonly<Record<ClaveDeLaFila, Constructor>> = {
   compartir: (c) => conDialogo('compartir', c.acciones.compartir)(c),
   aprobar: (c) => [
     {
@@ -107,6 +113,8 @@ const LINEAS: Readonly<Record<ClaveDeAccionDeCotizacion, Constructor>> = {
   ],
 }
 
+const esDeLaFila = (clave: ClaveDeAccionDeCotizacion): clave is ClaveDeLaFila => clave in LINEAS
+
 // El «⋯» de una cotización del listado, igual en la fila de la tabla y en la tarjeta del celular: la lista de siempre (`accionesDeCotizacion()`), por bloques y con un separador entre
 // ellos. Lo que quien mira no puede hacer no está; lo que se sabe que la base rechazaría se ve apagado con su motivo. Con el Modo Live no se ofrece «Compartir cotización…».
 // Sin nada que ofrecer no se dibuja.
@@ -122,7 +130,7 @@ export function MenuDeLaFila(props: Props) {
   const contexto: Contexto = { ...props, motivo: (clave) => menu.ofertas[clave]?.motivo ?? null }
   const acciones = bloques.flatMap((bloque, indice) => [
     ...(indice > 0 ? [{ tipo: 'separador' as const, clave: `separador-${String(indice)}` }] : []),
-    ...bloque.flatMap((clave) => LINEAS[clave](contexto)),
+    ...bloque.flatMap((clave) => (esDeLaFila(clave) ? LINEAS[clave](contexto) : [])),
   ])
   return (
     <MasAcciones

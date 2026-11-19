@@ -23,15 +23,8 @@ export {
   MAXIMO_DE_PAGINA_DE_COTIZACIONES,
   TOPE_DE_COINCIDENCIAS,
 } from '../../entities/listado/listado'
-export {
-  accionesDeCotizacion,
-  puedeGuardarDesdeElListado,
-} from '../../entities/listado/acciones-de-cotizacion'
-export type {
-  ClaveDeAccionDeCotizacion,
-  MenuDeUnaFila,
-  OfertasDelMenuDeCotizacion,
-} from '../../entities/listado/acciones-de-cotizacion'
+export { puedeGuardarDesdeElListado } from '../../entities/listado/acciones-de-cotizacion'
+export type { MenuDeUnaFila } from '../../entities/listado/acciones-de-cotizacion'
 export type {
   PaginaDelListado,
   ClaseDeCotizacion,
