@@ -25,10 +25,24 @@ beforeEach(() => {
 })
 afterEach(cleanup)
 
-function Prueba({ esperada = HORA as string | null, alCerrar = vi.fn() }) {
+function Prueba({
+  esperada = HORA as string | null,
+  alCerrar = vi.fn(),
+  alIrA,
+}: {
+  esperada?: string | null
+  alCerrar?: () => void
+  alIrA?: (donde: string) => void
+}) {
   return (
     <ProveedorAtajos>
-      <ModalDePublicarLaTarjeta abierto alCerrar={alCerrar} origen={ORIGEN} esperada={esperada} />
+      <ModalDePublicarLaTarjeta
+        abierto
+        alCerrar={alCerrar}
+        origen={ORIGEN}
+        esperada={esperada}
+        {...(alIrA === undefined ? {} : { alIrA })}
+      />
     </ProveedorAtajos>
   )
 }
@@ -108,5 +122,43 @@ describe('ModalDePublicarLaTarjeta', () => {
     expect(screen.queryByText(/cambió hace 1 min/)).toBeNull()
     expect(nota().value).toBe('Mi nota')
     expect(publicar().disabled).toBe(false)
+  })
+})
+
+describe('ModalDePublicarLaTarjeta: «Ir a la celda»', () => {
+  it('un rechazo con el lugar de la tarjeta ofrece «Ir a la celda», que cierra el modal y lo elige en el lienzo', async () => {
+    const mensaje =
+      'La tarjeta no puede mostrar lo que nombra la celda «c_1»: no es del nivel «todos».'
+    publicarBorrador.mockResolvedValue({
+      data: { ok: false, error: { codigo: 'regla', mensaje }, porCampo: { 'celdas.c_1': mensaje } },
+    })
+    const alCerrar = vi.fn()
+    const alIrA = vi.fn()
+    render(<Prueba alCerrar={alCerrar} alIrA={alIrA} />)
+    escribir('Mi nota')
+    fireEvent.click(publicar())
+    const ir = await screen.findByRole('button', { name: 'Ir a la celda' })
+    expect(screen.getByText(mensaje)).toBeTruthy()
+    fireEvent.click(ir)
+    expect(alCerrar).toHaveBeenCalledTimes(1)
+    expect(alIrA).toHaveBeenCalledWith('celdas.c_1')
+  })
+
+  it('un rechazo de una fila dice «Ir a la fila»; sin `alIrA` no se ofrece', async () => {
+    const mensaje =
+      'La tarjeta no puede mostrar lo que nombra la fila «f_1»: no es del nivel «todos».'
+    publicarBorrador.mockResolvedValue({
+      data: { ok: false, error: { codigo: 'regla', mensaje }, porCampo: { 'filas.f_1': mensaje } },
+    })
+    const { unmount } = render(<Prueba alIrA={vi.fn()} />)
+    escribir('Mi nota')
+    fireEvent.click(publicar())
+    expect(await screen.findByRole('button', { name: 'Ir a la fila' })).toBeTruthy()
+    unmount()
+    render(<Prueba />)
+    escribir('Mi nota')
+    fireEvent.click(publicar())
+    await screen.findByText(mensaje)
+    expect(screen.queryByRole('button', { name: /^Ir a la/ })).toBeNull()
   })
 })

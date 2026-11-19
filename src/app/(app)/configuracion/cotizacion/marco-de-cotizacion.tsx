@@ -6,6 +6,8 @@ import { EncabezadoDeConfiguracion } from '../_navegacion/encabezado-de-configur
 import { PestanasDeCotizacion } from './pestanas-de-cotizacion'
 import { SelectorDeOrigen, type OrigenDelSelector } from './selector-de-origen'
 
+const TOPE_DEL_ANCHO = { angosto: 'max-w-3xl', ancho: 'max-w-6xl', completo: '' } as const
+
 type Props = {
   // La parte que se ve: su título y su frase salen del registro (`seccion.ts`).
   parte: { clave: string; titulo: string; descripcion: string }
@@ -14,8 +16,8 @@ type Props = {
   // Con los dos, el selector de origen (las páginas por origen).
   origenes?: readonly OrigenDelSelector[]
   origenAbierto?: string
-  // `ancho`: la hoja y la tarjeta, que llevan su vista previa al costado desde `xl`.
-  ancho?: 'angosto' | 'ancho'
+  // `ancho`: la hoja, que lleva su vista previa al costado desde `xl`; `completo` (sin tope): la tarjeta, cuyo lienzo es la vista previa y lleva el panel a la derecha.
+  ancho?: 'angosto' | 'ancho' | 'completo'
   children: ReactNode
 }
 
@@ -30,7 +32,7 @@ export function MarcoDeCotizacion({
   children,
 }: Props) {
   return (
-    <div className={`grid min-w-0 gap-4 ${ancho === 'ancho' ? 'max-w-6xl' : 'max-w-3xl'}`}>
+    <div className={`grid min-w-0 gap-4 ${TOPE_DEL_ANCHO[ancho]}`}>
       <Link
         href={RUTAS.configuracionDeCotizacion}
         className="-ml-1 inline-flex min-h-11 w-fit items-center gap-1 rounded-(--radius-md) pr-2 pl-1 text-(length:--text-sm) text-(--color-ink-soft) outline-none hover:text-(--color-ink) focus-visible:shadow-(--shadow-focus) md:min-h-8"

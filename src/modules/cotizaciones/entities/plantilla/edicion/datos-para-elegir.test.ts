@@ -124,3 +124,31 @@ describe('los nombres', () => {
     expect(nombreDeMostrar('otro')).toBe('otro')
   })
 })
+
+describe('nodosParaElegir con etiquetas repetidas', () => {
+  it('distingue dos nodos con la misma etiqueta con su id', () => {
+    const contexto = {
+      definicion: {
+        nodos: [
+          { id: 'transporte_bolivia', etiqueta: 'Transporte', grupo: 'logistica' },
+          { id: 'transporte_chile', etiqueta: 'Transporte', grupo: 'logistica' },
+          { id: 'grua', etiqueta: 'Grúa', grupo: 'logistica' },
+        ],
+        grupos: [{ id: 'logistica', etiqueta: 'Logística' }],
+      },
+      diseno: null,
+      visibilidad: {
+        transporte_bolivia: { ver: 'todos' },
+        transporte_chile: { ver: 'todos' },
+        grua: { ver: 'todos' },
+      },
+      tonos: null,
+    }
+    const [logistica] = nodosParaElegir(contexto, new Set())
+    expect(logistica?.nodos.map((n) => n.etiqueta)).toEqual([
+      'Transporte (transporte_bolivia)',
+      'Transporte (transporte_chile)',
+      'Grúa',
+    ])
+  })
+})

@@ -99,7 +99,22 @@ export function nodosParaElegir(
     return nodos === undefined ? [] : [{ id: g.id, etiqueta: g.etiqueta || g.id, nodos }]
   })
   const otros = [...porGrupo.values()].flat()
-  return otros.length === 0 ? grupos : [...grupos, { id: null, etiqueta: 'Otros', nodos: otros }]
+  return distinguirRepetidas(
+    otros.length === 0 ? grupos : [...grupos, { id: null, etiqueta: 'Otros', nodos: otros }],
+  )
+}
+
+// Dos nodos con la misma etiqueta («Transporte» a Bolivia y a Chile) se distinguen con su id: «Transporte (transporte_chile)».
+function distinguirRepetidas(grupos: GrupoParaElegir[]): GrupoParaElegir[] {
+  const cuantas = new Map<string, number>()
+  for (const n of grupos.flatMap((g) => g.nodos))
+    cuantas.set(n.etiqueta, (cuantas.get(n.etiqueta) ?? 0) + 1)
+  return grupos.map((g) => ({
+    ...g,
+    nodos: g.nodos.map((n) =>
+      (cuantas.get(n.etiqueta) ?? 0) > 1 ? { ...n, etiqueta: `${n.etiqueta} (${n.id})` } : n,
+    ),
+  }))
 }
 
 const normal = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('es')

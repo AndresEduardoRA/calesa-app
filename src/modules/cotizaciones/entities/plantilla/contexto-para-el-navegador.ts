@@ -1,79 +1,84 @@
-// Lo que el editor de la plantilla lleva al navegador (4.19-3b): del contexto de `validarPlantilla()` sólo lo que ese validador y el editor necesitan. La `definicion`
-// entera de la fórmula pesa decenas de KB y no se dibuja; aquí quedan los nodos con lugar en la tarjeta (o que dan el tipo de cambio de un bucket), con su etiqueta,
-// su grupo y su salida; los buckets; los grupos; del diseño los modos y los secundarios, y de la visibilidad sólo el `ver` de esos ids. Nunca el cuerpo de un nodo.
-// Todo lo que se arma por id va por `Object.fromEntries`/`Map`: `__proto__` y `constructor` son ids legales.
+// Lo que el editor de la tarjeta lleva al navegador: del contexto de `validarPlantilla()` sólo lo que ese validador y el editor necesitan. La `definicion` entera de la
+// fórmula pesa decenas de KB y no se dibuja. Quedan los nodos del nivel «todos» (los que el editor ofrece para «Dato»), los restringidos que la cuadrícula ya nombra
+// (para marcarlos: con ellos no se podría publicar), los que dan el tipo de cambio de un bucket y la variante; de cada uno su etiqueta, su grupo, su salida, su
+// descripción y su par porcentaje-monto (`tipo`, `op`, `pct`), y de la variante sus opciones. Los buckets, los grupos, del diseño los modos y los secundarios, y de la
+// visibilidad sólo el `ver` de esos ids. Nunca el cuerpo de un nodo (su fórmula, sus entradas). Todo lo que se arma por id va por `Object.fromEntries`/`Map`:
+// `__proto__` y `constructor` son ids legales.
+import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
 import {
-  lugaresDe,
+  esDeTodos,
   type DefinicionParaPlantilla,
   type DisenoParaPlantilla,
   type NodoParaPlantilla,
   type VisibilidadParaPlantilla,
 } from './nodos-de-plantilla'
 import type { ContextoDePlantilla } from './validar-plantilla'
-import { FILAS_POR_GRUPO_EN_LA_VISTA_PREVIA } from '../vista-previa-de-la-plantilla'
-import { esDeTodos } from './nodos-de-plantilla'
 
-// La descripción (la leyenda de la vista previa) sólo de los miembros que dibuja (los primeros de cada grupo) y de lo aparte: el HTML no crece con 500 miembros.
-function conDescripcionDe({ definicion, diseno }: ContextoDePlantilla): ReadonlySet<string> {
-  const ids = new Set(diseno?.tarjeta_total?.secundarios ?? [])
-  const porGrupo = new Map<string, number>()
-  for (const n of definicion.nodos ?? []) {
-    if (n.grupo == null) continue
-    const vistos = porGrupo.get(n.grupo) ?? 0
-    if (vistos < FILAS_POR_GRUPO_EN_LA_VISTA_PREVIA) ids.add(n.id)
-    porGrupo.set(n.grupo, vistos + 1)
-  }
-  return ids
+// Los nodos que la cuadrícula nombra: los de las filas y los de las celdas.
+export function nodosNombradosPor(p: PlantillaEnCuadricula): ReadonlySet<string> {
+  return new Set([
+    ...p.filas.flatMap((f) => (f.nodo === undefined ? [] : [f.nodo])),
+    ...p.celdas.flatMap((c) =>
+      c.contenido.tipo === 'dato' && 'nodo' in c.contenido ? [c.contenido.nodo] : [],
+    ),
+  ])
 }
 
-// La variante, sólo si es del nivel «todos»: el título de la opción en la vista previa.
+// La variante, sólo si es del nivel «todos»: el título de la opción en la tarjeta y en «Ocultas con esta referencia».
 const varianteDeTodos = ({ definicion, visibilidad }: ContextoDePlantilla) =>
   (definicion.nodos ?? []).find(
     (n) => n.tipo === 'opcion' && visibilidad !== null && esDeTodos(visibilidad, n.id),
   )
 
-// Lo que viaja de un nodo: su etiqueta, su grupo y su salida; la descripción si se dibuja, y de la variante sus opciones con su título.
-function nodoReducido(
-  n: NodoParaPlantilla,
-  conDescripcion: ReadonlySet<string>,
-  opcion: string | undefined,
-): NodoParaPlantilla {
+const textoONulo = (v: unknown): string | null => (typeof v === 'string' ? v : null)
+
+// Lo que viaja de un nodo.
+function nodoReducido(n: NodoParaPlantilla, opcion: string | undefined): NodoParaPlantilla {
   return {
     id: n.id,
     etiqueta: n.etiqueta ?? null,
     grupo: n.grupo ?? null,
     salida: n.salida ?? null,
-    ...(conDescripcion.has(n.id) && typeof n.descripcion === 'string'
+    ...(typeof n.descripcion === 'string' && n.descripcion !== ''
       ? { descripcion: n.descripcion }
       : {}),
+    ...(typeof n.tipo === 'string' ? { tipo: n.tipo } : {}),
+    ...(textoONulo(n.op) === null ? {} : { op: n.op }),
+    ...(textoONulo(n.pct) === null ? {} : { pct: n.pct }),
     ...(n.id === opcion
-      ? {
-          tipo: 'opcion',
-          opciones: (n.opciones ?? []).map((o) => ({ clave: o.clave, titulo: o.titulo })),
-        }
+      ? { opciones: (n.opciones ?? []).map((o) => ({ clave: o.clave, titulo: o.titulo })) }
       : {}),
   }
 }
 
-export function contextoParaElNavegador(contexto: ContextoDePlantilla): ContextoDePlantilla {
+export function contextoParaElNavegador(
+  contexto: ContextoDePlantilla,
+  cuadricula: PlantillaEnCuadricula,
+): ContextoDePlantilla {
   const { definicion, diseno, visibilidad } = contexto
-  const { lugar } = lugaresDe(contexto)
+  const vis = visibilidad ?? {}
   const buckets = definicion.buckets ?? {}
   const deLosModos = (diseno?.cabecera?.modos ?? []).map((m) => ({
     clave: m.clave ?? null,
     nombre: m.nombre ?? null,
     buckets: (m.buckets ?? []).map(({ bucket, nodo }) => ({ bucket, nodo })),
   }))
-  // Los nodos que da el tipo de cambio de un bucket (el de omisión y los de cada modo): `tipoDeCambioRestringido()` los juzga por su visibilidad.
+  // Los nodos que dan el tipo de cambio de un bucket (el de omisión y los de cada modo): `tipoDeCambioRestringido()` los juzga por su visibilidad.
   const deTipoDeCambio = new Set([
     ...Object.values(buckets),
     ...deLosModos.flatMap((m) => m.buckets.map((b) => b.nodo)),
   ])
-  const conDescripcion = conDescripcionDe(contexto)
+  const nombrados = nodosNombradosPor(cuadricula)
   const opcion = varianteDeTodos(contexto)
   const nodos: NodoParaPlantilla[] = (definicion.nodos ?? [])
-    .filter((n) => lugar.has(n.id) || deTipoDeCambio.has(n.id) || n.id === opcion?.id)
-    .map((n) => nodoReducido(n, conDescripcion, opcion?.id))
+    .filter(
+      (n) =>
+        esDeTodos(vis, n.id) ||
+        nombrados.has(n.id) ||
+        deTipoDeCambio.has(n.id) ||
+        n.id === opcion?.id,
+    )
+    .map((n) => nodoReducido(n, opcion?.id))
   const reducida: DefinicionParaPlantilla = {
     nodos,
     buckets: Object.fromEntries(Object.entries(buckets)),
@@ -97,9 +102,9 @@ export function contextoParaElNavegador(contexto: ContextoDePlantilla): Contexto
     diseno: disenoReducido,
     visibilidad: visibilidadReducida(visibilidad, [
       ...nodos.map((n) => n.id),
+      ...nodos.flatMap((n) => (typeof n.pct === 'string' ? [n.pct] : [])),
       ...deTipoDeCambio,
-      ...lugar,
-      ...(opcion === undefined ? [] : [opcion.id]),
+      ...nombrados,
     ]),
     tonos: contexto.tonos,
   }

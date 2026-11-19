@@ -1,0 +1,140 @@
+// La lectura del lienzo del editor: la cuadrícula de trabajo con lo que nombra, como la entrega `cotizacion_tarjeta` (`LecturaEnCuadricula`), armada con el contexto
+// reducido y el catálogo. Se recalcula en cada cambio. Los nombres de los tipos de cambio son la etiqueta de su nodo (la base nombra el de `tipos_cambio`). La variante
+// va siempre que es del nivel «todos»: dice qué opción hace que una fila no aplique. Pura y plana. Todo por id va por `Map`.
+import type { LecturaEnCuadricula, PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
+import type { TonoDelCatalogo } from './lectura-de-la-plantilla'
+import { pctDelPar, pctsDeLosPares } from './nodos-de-cuadricula'
+import { esDeTodos, type NodoParaPlantilla } from './nodos-de-plantilla'
+import type { ContextoDePlantilla } from './validar-plantilla'
+
+type DatoDeNodo = { nodo: string; mostrar: string }
+
+function datosDe(p: PlantillaEnCuadricula): DatoDeNodo[] {
+  return p.celdas.flatMap((c) =>
+    c.contenido.tipo === 'dato' && 'nodo' in c.contenido
+      ? [{ nodo: c.contenido.nodo, mostrar: c.contenido.mostrar }]
+      : [],
+  )
+}
+
+const usaLaVariable = (p: PlantillaEnCuadricula, variable: string) =>
+  p.celdas.some(
+    (c) =>
+      c.contenido.tipo === 'dato' && 'variable' in c.contenido && c.contenido.variable === variable,
+  )
+
+function tiposDeCambio(
+  datos: readonly DatoDeNodo[],
+  contexto: ContextoDePlantilla,
+  nodos: ReadonlyMap<string, NodoParaPlantilla>,
+): LecturaEnCuadricula['tiposDeCambio'] {
+  const grupos = new Map((contexto.definicion.grupos ?? []).map((g) => [g.id, g]))
+  const buckets = new Set(
+    datos.flatMap((d) => {
+      if (d.mostrar !== 'tc_nombre' && d.mostrar !== 'tc_valor') return []
+      const grupo = nodos.get(d.nodo)?.grupo
+      const bucket = grupo == null ? null : grupos.get(grupo)?.bucket
+      return bucket == null ? [] : [bucket]
+    }),
+  )
+  const nombre = (nodo: string | null) =>
+    nodo === null ? null : (nodos.get(nodo)?.etiqueta ?? nodo)
+  const deOmision = contexto.definicion.buckets ?? {}
+  return {
+    buckets: [...buckets].map((bucket) => {
+      const nodo = Object.hasOwn(deOmision, bucket) ? (deOmision[bucket] ?? null) : null
+      return { bucket, nombre: nombre(nodo), nodo }
+    }),
+    modos: (contexto.diseno?.cabecera?.modos ?? []).flatMap((m) =>
+      (m.buckets ?? []).flatMap((b) =>
+        buckets.has(b.bucket) && m.clave != null
+          ? [{ modo: m.clave, bucket: b.bucket, nombre: nombre(b.nodo), nodo: b.nodo }]
+          : [],
+      ),
+    ),
+  }
+}
+
+function varianteDe(
+  contexto: ContextoDePlantilla,
+  nodos: readonly NodoParaPlantilla[],
+): LecturaEnCuadricula['variante'] {
+  const opcion = nodos.find((n) => n.tipo === 'opcion')
+  if (opcion === undefined || !esDeTodos(contexto.visibilidad ?? {}, opcion.id)) return null
+  return {
+    nodo: opcion.id,
+    opciones: (opcion.opciones ?? []).map((o) => ({ clave: o.clave, titulo: o.titulo })),
+  }
+}
+
+// Los nodos que nombran las filas y las celdas, con lo que la tarjeta dibuja de ellos (el `pct` de su par sólo si se muestra su porcentaje).
+function nodosNombrados(
+  p: PlantillaEnCuadricula,
+  nodos: ReadonlyMap<string, NodoParaPlantilla>,
+  pcts: ReadonlySet<string>,
+): LecturaEnCuadricula['nodos'] {
+  const datos = datosDe(p)
+  const conPorcentaje = new Set(datos.filter((d) => d.mostrar === 'porcentaje').map((d) => d.nodo))
+  const ids = new Set([
+    ...p.filas.flatMap((f) => (f.nodo === undefined ? [] : [f.nodo])),
+    ...datos.map((d) => d.nodo),
+  ])
+  return [...ids].map((id) => {
+    const n = nodos.get(id)
+    return {
+      id,
+      etiqueta: n?.etiqueta || id,
+      descripcion: n?.descripcion ?? null,
+      grupo: n?.grupo ?? null,
+      pct: conPorcentaje.has(id) ? pctDelPar(n, pcts) : null,
+    }
+  })
+}
+
+// Los grupos de un nodo con `tc_*` o `plazo`.
+function gruposNombrados(
+  p: PlantillaEnCuadricula,
+  contexto: ContextoDePlantilla,
+  nodos: ReadonlyMap<string, NodoParaPlantilla>,
+): LecturaEnCuadricula['grupos'] {
+  const conGrupo = new Set(
+    datosDe(p).flatMap((d) => {
+      const grupo = nodos.get(d.nodo)?.grupo
+      return ['tc_nombre', 'tc_valor', 'plazo'].includes(d.mostrar) && grupo != null ? [grupo] : []
+    }),
+  )
+  return (contexto.definicion.grupos ?? [])
+    .filter((g) => conGrupo.has(g.id))
+    .map((g) => ({
+      id: g.id,
+      etiqueta: g.etiqueta || g.id,
+      plazo: typeof g.plazo === 'string' && g.plazo !== '' ? g.plazo : null,
+      bucket: g.bucket ?? null,
+    }))
+}
+
+export function lecturaEnCuadricula(
+  cuadricula: PlantillaEnCuadricula,
+  contexto: ContextoDePlantilla,
+  tonos: readonly TonoDelCatalogo[],
+): LecturaEnCuadricula {
+  const lista = contexto.definicion.nodos ?? []
+  const nodos = new Map(lista.map((n) => [n.id, n]))
+  const usados = new Set(cuadricula.celdas.flatMap((c) => [c.estilo?.fondo, c.estilo?.texto]))
+  return {
+    definicion: cuadricula,
+    nodos: nodosNombrados(cuadricula, nodos, pctsDeLosPares(lista)),
+    grupos: gruposNombrados(cuadricula, contexto, nodos),
+    tiposDeCambio: tiposDeCambio(datosDe(cuadricula), contexto, nodos),
+    modos: usaLaVariable(cuadricula, 'modo_tc')
+      ? (contexto.diseno?.cabecera?.modos ?? []).flatMap((m) =>
+          m.clave == null ? [] : [{ clave: m.clave, nombre: m.nombre ?? m.clave }],
+        )
+      : [],
+    variante: varianteDe(contexto, lista),
+    colores: tonos.flatMap((t) =>
+      usados.has(t.clave) && t.hex !== undefined ? [{ clave: t.clave, hex: t.hex }] : [],
+    ),
+    total: { nodo: lista.find((n) => n.salida === 'total')?.id ?? null },
+  }
+}

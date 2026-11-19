@@ -2,6 +2,7 @@
 
 import { useAction } from 'next-safe-action/hooks'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
+import { Button } from '@/shared/ui/button'
 import { formatearFechaHora } from '@/shared/lib/fechas'
 import { ModalDeFormulario } from '@/shared/ui/modal-de-formulario'
 import { avisarExito } from '@/shared/ui/toasts'
@@ -22,7 +23,17 @@ type Props = {
   origen: { id: string; nombre: string }
   // El `actualizadoEn` del borrador que la pestaña leyó ahora (nulo: ya no está). La base lo compara.
   esperada: string | null
+  // «Ir a la celda» de un rechazo con su lugar: cierra el modal y lo elige en el lienzo.
+  alIrA?: (donde: string) => void
 }
+
+const IR_A = {
+  celdas: 'Ir a la celda',
+  filas: 'Ir a la fila',
+  columnas: 'Ir a la columna',
+} as const
+const irAlLugar = (donde: string) =>
+  IR_A[donde.startsWith('filas') ? 'filas' : donde.startsWith('columnas') ? 'columnas' : 'celdas']
 
 const MENSAJE_DE_VALIDACION = 'Revisa la nota.'
 const ID_DE_LA_NOTA = 'nota-de-la-version-de-la-tarjeta'
@@ -31,7 +42,7 @@ const ID_DE_LA_NOTA = 'nota-de-la-version-de-la-tarjeta'
 // cerrar con algo escrito, no cerrarse mientras publica, el conflicto con «Recargar» que conserva la nota, el que ya no se puede publicar) es de `ModalDeFormulario`;
 // el mensaje del conflicto es el de la base, tal cual, y no dice quién (P1). Quien lo monta le da una `key` por apertura y lo deja **fuera** de la `key` del editor: si no,
 // «Recargar» lo remontaría y se perdería la nota.
-export function ModalDePublicarLaTarjeta({ abierto, alCerrar, origen, esperada }: Props) {
+export function ModalDePublicarLaTarjeta({ abierto, alCerrar, origen, esperada, alIrA }: Props) {
   const publicar = useAction(publicarBorrador)
   // Tras «Recargar» sin borrador, la descripción sigue nombrando el último que tuvo.
   const nombrada = useUltimo(esperada)
@@ -75,6 +86,20 @@ export function ModalDePublicarLaTarjeta({ abierto, alCerrar, origen, esperada }
         motivo={formulario.motivoDeNota ?? undefined}
         alCambiar={formulario.escribir}
       />
+      {formulario.donde === null || alIrA === undefined ? null : (
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11 w-full md:min-h-9"
+          onClick={() => {
+            const donde = formulario.donde
+            alCerrar()
+            if (donde !== null) alIrA(donde)
+          }}
+        >
+          {irAlLugar(formulario.donde)}
+        </Button>
+      )}
     </ModalDeFormulario>
   )
 }

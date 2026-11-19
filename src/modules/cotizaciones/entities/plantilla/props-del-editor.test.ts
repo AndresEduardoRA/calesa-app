@@ -1,13 +1,28 @@
 import { describe, expect, it } from 'vitest'
+import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
+import { AVISO_DE_LA_CONVERSION } from './borrador-de-la-plantilla'
 import type { Plantilla } from './forma-de-plantilla'
 import type { PlantillaDelOrigen, VersionDePlantilla } from './lectura-de-la-plantilla'
-import { propsDelEditor } from './props-del-editor'
+import { idsDelContexto, propsDelEditor } from './props-del-editor'
 
 const plantilla: Plantilla = {
   grupos: [{ grupo: 'compra' }],
   total: { etiqueta: 'T' },
   logo: true,
   columnas: { leyenda: false, plazo: false, tipo_cambio: false },
+}
+const cuadricula: PlantillaEnCuadricula = {
+  forma: 2,
+  columnas: [{ id: 'a', ancho: 100 }],
+  filas: [{ id: 'f', alto: 20, ocultar_si: 'nunca' }],
+  celdas: [
+    {
+      id: 'c',
+      fila: 'f',
+      columna: 'a',
+      contenido: { tipo: 'dato', nodo: 'fees', mostrar: 'monto' },
+    },
+  ],
 }
 const HORA = '2026-11-07T15:00:00.123456+00:00'
 const v = (extra: Partial<VersionDePlantilla> = {}): VersionDePlantilla => ({
@@ -16,8 +31,7 @@ const v = (extra: Partial<VersionDePlantilla> = {}): VersionDePlantilla => ({
   nota: null,
   actualizadoEn: HORA,
   publicadoEn: null,
-  plantilla,
-  motivo: null,
+  contenido: { forma: 1, plantilla },
   ...extra,
 })
 const lectura = (extra: Partial<PlantillaDelOrigen> = {}): PlantillaDelOrigen => ({
@@ -33,13 +47,14 @@ const lectura = (extra: Partial<PlantillaDelOrigen> = {}): PlantillaDelOrigen =>
           etiqueta: 'Fees',
           // El cuerpo del nodo no viaja (la descripción de los primeros miembros sí: es la leyenda de la vista previa).
           texto: 'secreto',
-          op: 'suma',
+          entradas: ['remate'],
         } as never,
+        { id: 'cif', etiqueta: 'CIF', salida: 'base_imponible' },
       ],
       grupos: [{ id: 'compra', etiqueta: 'Compra', tono: 'verde', bucket: 'b' }],
     },
     diseno: null,
-    visibilidad: { fees: { ver: 'todos', editar: 'x' } },
+    visibilidad: { fees: { ver: 'todos', editar: 'x' }, cif: { ver: 'costos' } },
     tonos: ['verde'],
   },
   tonos: [{ clave: 'verde', nombre: 'Verde' }],
@@ -66,7 +81,7 @@ describe('propsDelEditor', () => {
     ])
     const texto = JSON.stringify(r)
     expect(texto).not.toContain('secreto')
-    expect(texto).not.toContain('"op"')
+    expect(texto).not.toContain('"entradas"')
     expect(texto).not.toContain('"editar"')
     expect(r.origen).toEqual({ id: 'o', nombre: 'Origen' })
   })
@@ -84,5 +99,42 @@ describe('propsDelEditor', () => {
     )!
     expect(r.publicada).toEqual({ version: 3, nota: 'N', publicadoEn: HORA })
     expect(r.de).toBe('publicada')
+  })
+  it('una forma 2 guardada en el borrador nace tal cual y es la guardada; una forma 1 se convierte y no cuenta como guardada', () => {
+    const conCuadricula = propsDelEditor(
+      lectura({ borrador: v({ contenido: { forma: 2, cuadricula } }) }),
+      origen,
+    )!
+    expect(conCuadricula.inicial).toEqual(cuadricula)
+    expect(conCuadricula.guardada).toEqual(cuadricula)
+    expect(conCuadricula.avisos).toEqual([])
+    const deLaForma1 = propsDelEditor(lectura({ borrador: v() }), origen)!
+    expect(deLaForma1.inicial.forma).toBe(2)
+    expect(deLaForma1.guardada).toBeNull()
+    expect(deLaForma1.avisos[0]).toBe(AVISO_DE_LA_CONVERSION)
+  })
+  it('el contexto lleva lo del nivel «todos» y los restringidos que la cuadrícula nombra; idsDelContexto, sus ids', () => {
+    const r = propsDelEditor(
+      lectura({ borrador: v({ contenido: { forma: 2, cuadricula } }) }),
+      origen,
+    )!
+    expect(r.contexto.definicion.nodos?.map((n) => n.id)).toEqual(['fees'])
+    expect([...idsDelContexto(r.contexto)]).toEqual(['fees'])
+    const nombraCif: PlantillaEnCuadricula = {
+      ...cuadricula,
+      celdas: [
+        {
+          id: 'c',
+          fila: 'f',
+          columna: 'a',
+          contenido: { tipo: 'dato', nodo: 'cif', mostrar: 'monto' },
+        },
+      ],
+    }
+    const conCif = propsDelEditor(
+      lectura({ borrador: v({ contenido: { forma: 2, cuadricula: nombraCif } }) }),
+      origen,
+    )!
+    expect([...idsDelContexto(conCif.contexto)].sort()).toEqual(['cif', 'fees'])
   })
 })

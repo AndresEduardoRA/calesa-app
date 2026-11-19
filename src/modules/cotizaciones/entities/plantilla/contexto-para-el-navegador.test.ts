@@ -1,17 +1,16 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { alinearConLaFormula } from './borrador-de-la-plantilla'
-import { contextoParaElNavegador } from './contexto-para-el-navegador'
+import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
+import { contextoParaElNavegador, nodosNombradosPor } from './contexto-para-el-navegador'
+import { formaDeCuadricula } from './forma-de-cuadricula'
 import {
   juegoDePlantilla,
   RUTA_DEL_JUEGO,
   type CasoDePlantilla,
 } from './juego-de-plantilla.soporte'
-import { esDeLaCuadricula } from './validar-plantilla'
-import { validarPlantilla, type ContextoDePlantilla } from './validar-plantilla'
+import { esDeLaCuadricula, validarPlantilla, type ContextoDePlantilla } from './validar-plantilla'
 
-const ruta = RUTA_DEL_JUEGO
-const juego = juegoDePlantilla(readFileSync(new URL(ruta, import.meta.url), 'utf8'))
+const juego = juegoDePlantilla(readFileSync(new URL(RUTA_DEL_JUEGO, import.meta.url), 'utf8'))
 
 function contextoDe(c: CasoDePlantilla): ContextoDePlantilla {
   const fo = juego.formulas[c.formula]
@@ -27,20 +26,78 @@ function contextoDe(c: CasoDePlantilla): ContextoDePlantilla {
 const mini = (): ContextoDePlantilla =>
   contextoDe({ nombre: 'x', formula: 'mini', plantilla: {}, valida: true })
 
+// Una cuadrícula que nombra estos nodos (una fila y una celda por cada uno).
+const nombrando = (...ids: string[]): PlantillaEnCuadricula => ({
+  forma: 2,
+  columnas: [{ id: 'a', ancho: 100 }],
+  filas:
+    ids.length === 0
+      ? [{ id: 'f', alto: 20, ocultar_si: 'nunca' }]
+      : ids.map((id) => ({ id: `f_${id}`, alto: 20, ocultar_si: 'no_aplica', nodo: id })),
+  celdas: ids.map((id) => ({
+    id: `c_${id}`,
+    fila: `f_${id}`,
+    columna: 'a',
+    contenido: { tipo: 'dato', nodo: id, mostrar: 'monto' },
+  })),
+})
+const VACIA = nombrando()
+
 describe('contextoParaElNavegador', () => {
-  it('no lleva el cuerpo de un nodo ni los nodos sin lugar', () => {
-    const texto = JSON.stringify(contextoParaElNavegador(contextoDe(juego.casos[0]!)))
-    for (const cuerpo of ['"op"', '"de"', '"pct"', '"tipo"', '"formato"', '"sobrescribible"']) {
+  it('lleva los nodos del nivel «todos» con su etiqueta, grupo, salida, descripción y par porcentaje-monto, nunca el cuerpo', () => {
+    const r = contextoParaElNavegador(mini(), VACIA)
+    const nodos = r.definicion.nodos ?? []
+    expect(nodos.map((n) => n.id)).toEqual(
+      expect.arrayContaining([
+        'remate',
+        'fees',
+        'grua',
+        'total',
+        'garantia',
+        'comision',
+        'comision_pct',
+        'tc_ext',
+      ]),
+    )
+    expect(nodos.find((n) => n.id === 'comision')).toEqual({
+      id: 'comision',
+      etiqueta: 'Comisión de la subasta',
+      grupo: null,
+      salida: null,
+      tipo: 'calculo',
+      op: 'porcentaje_de',
+      pct: 'comision_pct',
+    })
+    expect(nodos.find((n) => n.id === 'remate')).toMatchObject({ grupo: 'compra', tipo: 'input' })
+    const texto = JSON.stringify(r)
+    for (const cuerpo of [
+      '"de"',
+      '"formato"',
+      '"sobrescribible"',
+      '"entradas"',
+      '"formula"',
+      '"valor"',
+    ]) {
       expect(texto).not.toContain(cuerpo)
     }
-    const nodos = contextoParaElNavegador(mini()).definicion.nodos ?? []
-    // `cif` es base imponible: ni miembro, ni total, ni de tipo de cambio.
-    expect(nodos.map((n) => n.id)).not.toContain('cif')
-    expect(nodos.map((n) => n.id)).toEqual(
-      expect.arrayContaining(['remate', 'fees', 'total', 'tc_ext']),
-    )
   })
 
+  it('un restringido sólo viaja si la cuadrícula ya lo nombra (para marcarlo)', () => {
+    // `cif` es del nivel «costos» en la «mini».
+    expect(
+      (contextoParaElNavegador(mini(), VACIA).definicion.nodos ?? []).map((n) => n.id),
+    ).not.toContain('cif')
+    const r = contextoParaElNavegador(mini(), nombrando('cif'))
+    expect((r.definicion.nodos ?? []).map((n) => n.id)).toContain('cif')
+    expect(r.visibilidad).toMatchObject({ cif: { ver: 'costos' } })
+  })
+
+  it('nodosNombradosPor: los de las filas y los de las celdas', () => {
+    expect([...nodosNombradosPor(nombrando('fees', 'cif'))]).toEqual(['fees', 'cif'])
+  })
+})
+
+describe('contextoParaElNavegador: ids y el juego', () => {
   it('un id `__proto__` o `constructor` pasa como clave propia', () => {
     const contexto: ContextoDePlantilla = {
       definicion: {
@@ -55,52 +112,32 @@ describe('contextoParaElNavegador', () => {
       visibilidad: JSON.parse('{"constructor":{"ver":"todos","x":1},"__proto__":{"ver":"todos"}}'),
       tonos: ['verde'],
     }
-    const r = contextoParaElNavegador(contexto)
+    const r = contextoParaElNavegador(contexto, VACIA)
     expect(Object.hasOwn(r.visibilidad ?? {}, '__proto__')).toBe(true)
     expect(Object.hasOwn(r.visibilidad ?? {}, 'constructor')).toBe(true)
     expect((r.visibilidad as Record<string, unknown>)['constructor']).toEqual({ ver: 'todos' })
-    const p = {
-      grupos: [{ grupo: 'g' }],
-      total: { etiqueta: 'T' },
-      logo: true,
-      columnas: { leyenda: false, plazo: false, tipo_cambio: false },
-    }
-    expect(validarPlantilla(p, r).ok).toBe(validarPlantilla(p, contexto).ok)
+    const p = nombrando('constructor', '__proto__')
+    expect(validarPlantilla(p, contextoParaElNavegador(contexto, p)).ok).toBe(
+      validarPlantilla(p, contexto).ok,
+    )
   })
 
-  // Sólo la forma 1: el editor de hoy no escribe la cuadrícula (la forma 2 la valida la base al guardar y al publicar).
-  it.each(juego.casos.filter((c) => !esDeLaCuadricula(c.plantilla)))(
-    'el juego, «$nombre»: mismo ok y mismo donde que con el contexto entero',
-    (c) => {
-      const entero = contextoDe(c)
-      const a = validarPlantilla(c.plantilla, entero)
-      const b = validarPlantilla(c.plantilla, contextoParaElNavegador(entero))
-      expect(b.ok).toBe(a.ok)
-      if (!a.ok && !b.ok) expect(b.error.donde).toBe(a.error.donde)
-    },
-  )
-
-  it('no vale en general: {a sin lugar, z inexistente} difiere sin alinear y coincide al alinear', () => {
-    const entero = mini()
-    const reducido = contextoParaElNavegador(entero)
-    const p = {
-      grupos: [{ grupo: 'compra' }, { grupo: 'logistica' }, { grupo: 'aduana' }],
-      etiquetas: { cif: 'A', zzz: 'Z' },
-      total: { etiqueta: 'T' },
-      logo: true,
-      columnas: { leyenda: false, plazo: false, tipo_cambio: false },
-    }
-    const sinAlinar = [validarPlantilla(p, entero), validarPlantilla(p, reducido)]
-    const donde = (r: (typeof sinAlinar)[number]) => (r.ok ? null : r.error.donde)
-    expect(donde(sinAlinar[0]!)).toBe('zzz')
-    expect(donde(sinAlinar[1]!)).toBe('cif')
-    const a = alinearConLaFormula(p, entero).plantilla
-    expect(validarPlantilla(a, entero).ok).toBe(true)
-    expect(validarPlantilla(a, reducido).ok).toBe(true)
+  // La forma 2 (la que escribe el editor): con el contexto reducido, el mismo juicio que con el entero.
+  it.each(
+    juego.casos.filter(
+      (c) => esDeLaCuadricula(c.plantilla) && formaDeCuadricula(c.plantilla, { conTope: false }).ok,
+    ),
+  )('el juego, «$nombre»: mismo ok y mismo donde que con el contexto entero', (c) => {
+    const entero = contextoDe(c)
+    const cuadricula = c.plantilla as PlantillaEnCuadricula
+    const a = validarPlantilla(c.plantilla, entero)
+    const b = validarPlantilla(c.plantilla, contextoParaElNavegador(entero, cuadricula))
+    expect(b.ok).toBe(a.ok)
+    if (!a.ok && !b.ok) expect(b.error.donde).toBe(a.error.donde)
   })
 })
 
-describe('contextoParaElNavegador: el plazo', () => {
+describe('contextoParaElNavegador: el plazo y la variante', () => {
   it('el plazo del grupo pasa sólo si es un texto', () => {
     const contexto = {
       definicion: {
@@ -112,37 +149,8 @@ describe('contextoParaElNavegador: el plazo', () => {
       visibilidad: null,
       tonos: [],
     } as unknown as ContextoDePlantilla
-    const grupos = contextoParaElNavegador(contexto).definicion.grupos ?? []
+    const grupos = contextoParaElNavegador(contexto, VACIA).definicion.grupos ?? []
     expect(grupos.map((g) => g.plazo)).toEqual(['2 días', null, null])
-  })
-})
-
-describe('contextoParaElNavegador: lo que pide la vista previa', () => {
-  it('la descripción sólo de los primeros 4 miembros de cada grupo y de lo aparte (la leyenda de la vista previa)', () => {
-    const miembros = Array.from({ length: 6 }, (_, i) => ({
-      id: `n${String(i)}`,
-      etiqueta: `N${String(i)}`,
-      grupo: 'g',
-      descripcion: `D${String(i)}`,
-    }))
-    const contexto: ContextoDePlantilla = {
-      definicion: {
-        nodos: [
-          ...miembros,
-          { id: 'suelto', etiqueta: 'S', descripcion: 'DS' },
-          { id: 'garantia', etiqueta: 'G', salida: 'aparte', descripcion: 'DG' },
-          { id: 'total', etiqueta: 'T', salida: 'total', descripcion: 'DT' },
-        ],
-        grupos: [{ id: 'g', etiqueta: 'G', bucket: 'b' }],
-        buckets: {},
-      },
-      diseno: { tarjeta_total: { secundarios: ['garantia'] } },
-      visibilidad: {},
-      tonos: [],
-    }
-    const nodos = contextoParaElNavegador(contexto).definicion.nodos ?? []
-    const conDescripcion = nodos.filter((n) => n.descripcion != null).map((n) => n.id)
-    expect(conDescripcion).toEqual(['n0', 'n1', 'n2', 'n3', 'garantia'])
   })
 
   it('la variante del nivel «todos» viaja con sus opciones (clave y título); restringida, no', () => {
@@ -160,28 +168,23 @@ describe('contextoParaElNavegador: lo que pide la vista previa', () => {
         grupos: [],
         buckets: {},
       },
-      diseno: {
-        cabecera: {
-          modos: [{ clave: 'unificado', nombre: 'Unificado', buckets: [] }],
-        },
-      },
-      visibilidad: { variante: { ver: 'todos' } },
+      diseno: { cabecera: { modos: [{ clave: 'unificado', nombre: 'Unificado', buckets: [] }] } },
+      visibilidad: { variante: { ver: 'todos' }, total: { ver: 'todos' } },
       tonos: [],
     }
-    const r = contextoParaElNavegador(contexto)
+    const r = contextoParaElNavegador(contexto, VACIA)
     expect(r.definicion.nodos?.find((n) => n.id === 'variante')).toMatchObject({
       tipo: 'opcion',
       opciones: [{ clave: 'moto', titulo: 'MOTO' }],
     })
-    expect(r.visibilidad).toMatchObject({ variante: { ver: 'todos' } })
     expect(r.diseno?.cabecera?.modos?.[0]).toMatchObject({
       clave: 'unificado',
       nombre: 'Unificado',
     })
-    const restringida = contextoParaElNavegador({
-      ...contexto,
-      visibilidad: { variante: { ver: 'costos' } },
-    })
+    const restringida = contextoParaElNavegador(
+      { ...contexto, visibilidad: { variante: { ver: 'costos' }, total: { ver: 'todos' } } },
+      VACIA,
+    )
     expect(restringida.definicion.nodos?.map((n) => n.id)).toEqual(['total'])
   })
 })
