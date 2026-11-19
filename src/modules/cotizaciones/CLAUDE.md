@@ -206,6 +206,9 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - **El resumen del listado** (`HuecosDelResumen`): `Portada` (primero, arriba de los datos: `pantallas/tarjeta-resumen.ts`), `Pestanas`, `Comprobantes` y
   `DeEsteVehiculo` (entre «Abrir cotización» y las pestañas, sólo con un vehículo que quien mira ve; `aprobarEn` lo manda la página y `alCambiar` refresca el
   listado; `pantallas/aprobada-resumen.ts`). Cerrar el resumen borra también `?visor=&foto=` (el visor de la portada).
+- **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda, la compone `src/app`): «Cotización aprobada» con `leerAprobadaDelVehiculo()` (`index.ts`),
+  la tarjeta de `pantallas/aprobada-del-vehiculo.ts` (`AprobadaDelVehiculo`, `EsqueletoDeLaAprobada`) y, como un área no importa otra, la portada diferida y
+  `BotonDeCompartirDeLaFila` de `pantallas/tarjeta-aprobada-del-vehiculo.ts` en sus ranuras; el diálogo, `DialogoDeCompartirDeLaFila` de `pantallas/tarjeta-compartir.ts`.
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
 - **La lista** (`HuecosDeLaLista`, `features/listado/components/tipos.ts`): `Portada` (la portada de cada tarjeta, en frío: `pantallas/tarjeta-portada.ts`) y

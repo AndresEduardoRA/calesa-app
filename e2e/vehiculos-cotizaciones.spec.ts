@@ -145,7 +145,6 @@ test('E2E la dueña: lejos del bloque no se lee nada; al saltar a «Cotizaciones
     'Documentos',
     'Ficha',
     'Repuestos',
-    'Fotos',
   ])
   await expect(page.getByRole('navigation', { name: 'Índice de la ficha' })).toHaveAttribute(
     'data-hidratado',

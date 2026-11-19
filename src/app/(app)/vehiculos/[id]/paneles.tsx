@@ -7,6 +7,7 @@ import {
   type Vehiculo,
   type VistaPreviaDeVitrina,
 } from '@/modules/vehiculos'
+import { DialogoDeCompartirDeLaFila } from '@/modules/cotizaciones/pantallas/tarjeta-compartir'
 import {
   PanelDeVehiculo,
   PanelDeVitrina,
@@ -28,10 +29,12 @@ type Props = {
   imagenes: DatosDelPanelDeImagenes | null
   // «Actualizar los datos», si se ofrece.
   actualizar: { puedeConfigurar: boolean } | null
+  // «Compartir» de la aprobada (`?panel=compartir&para=<id>`), con `cotizaciones.ver` del origen.
+  conCompartir: boolean
 }
 
 // Los paneles laterales de la ficha, cada uno con su URL: publicar (`?panel=vitrina`), editar (`?editar=`), sus imágenes (`?panel=imagenes`) y
-// actualizar los datos de la subasta (`?panel=actualizar-datos`). Desde la ficha sólo se edita: el alta vive en el inventario.
+// actualizar los datos de la subasta (`?panel=actualizar-datos`) y compartir la cotización aprobada (`?panel=compartir&para=<id>`). Desde la ficha sólo se edita: el alta vive en el inventario.
 export function Paneles(props: Props) {
   const { vehiculo, origen, fase, layout, previa, publicar, enEdicion } = props
   return (
@@ -57,6 +60,7 @@ export function Paneles(props: Props) {
         enEdicion={enEdicion}
         apibara={SIN_APIBARA}
       />
+      {props.conCompartir ? <DialogoDeCompartirDeLaFila /> : null}
     </>
   )
 }

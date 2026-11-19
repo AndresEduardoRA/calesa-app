@@ -2,7 +2,12 @@
 //
 // La cotización aprobada de un vehículo (B4): las lecturas que las páginas de `src/app` unen a otras pantallas (la columna de `/vehiculos`, la insignia del listado) y
 // sus tipos. Los componentes salen por `pantallas/aprobada-<pantalla>.ts`.
-export { leerAprobadasDeCotizaciones, leerAprobadasDeVehiculos } from './composicion'
+export {
+  leerAprobadaDelVehiculo,
+  leerAprobadasDeCotizaciones,
+  leerAprobadasDeVehiculos,
+} from './composicion'
+export type { FilaDeEsteVehiculo } from '../../entities/aprobada/de-este-vehiculo'
 export { motivoParaNoAprobar, puedeAprobar } from '../../entities/aprobada/acceso'
 export type { CotizacionAprobadaDelVehiculo } from '../../entities/aprobada/tipos'
 
