@@ -335,8 +335,15 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### Listas, embudos y plantillas
 
-- **La ficha del lead en dos columnas, todo a la vista.** A la izquierda, pegajosa (`minmax(0, 24rem)`, se desplaza sola si no cabe), lo que identifica: cabecera, «Datos» sin plegar, «Teléfonos» de sólo lectura,
-  «Quién lo tiene» y «Acceso al portal»; a la derecha un índice pegajoso de anclas y los bloques en su orden. El corte lo decide el contenedor (56 rem, el
+- **La ficha del lead en dos columnas: la izquierda, lo clave; la derecha, todo a la vista.** A la izquierda, pegajosa (`minmax(0, 24rem)`, se desplaza
+  sola si no cabe), lo que identifica, como la ficha del vehículo: el nombre con el «⋯» arriba a la derecha (sin «Cotizar» ni «Editar» sueltos: están en
+  el «⋯»), quién lo tiene en una línea bajo el nombre, los datos clave del lead (tipo, origen, país, teléfono principal y «Notas» a lo ancho) con «Ver más»
+  (un modal por la URL, `?ver=datos`, con los grupos del layout y los teléfonos), «Quién lo tiene» con «Compartir» y «Transferir» a todo el ancho y
+  «Acceso al portal» con una línea de estado y un botón principal (lo demás en su «⋯»); a la derecha un índice pegajoso de anclas y los bloques en su orden.
+  El «⋯» va en la fila del nombre y no flotando en la esquina (taparía un nombre largo al 200 %); «Ver más» es un modal y no un acordeón en el lugar
+  (el acordeón metería los grupos en el documento, que está al borde de su tope). «Compartir acceso» copia el código y no usa la hoja de compartir del
+  navegador: la clave de un acceso que ya existe no se conoce (se vio una vez, al otorgarlo). «Cambiar la clave» es volver a otorgar (el mismo
+  diálogo). El país del teléfono se resuelve con la tabla de países después de hidratar: hasta que llega se ve «—». El corte lo decide el contenedor (56 rem, el
   de la unidad de logística): a 1280 px dos columnas, a 1024 y en el celular una, y con el texto al 200 % vuelve a una sin ensanchar. El marco vive en
   `shared` (`ficha-en-bloques`) para que la ficha del vehículo use el mismo. **El portal va en la izquierda**, bajo «Quién lo tiene»: desde «Saltar al
   contenido» se llega a «Dar acceso» sin pasar por el índice ni navegar. **«Vehículos» y Relacionados se funden**: el bloque es

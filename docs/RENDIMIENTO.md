@@ -673,14 +673,15 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   hueco del buscador; el formulario de «Tu ficha en la web» se monta y se pide con `diferido()` al abrirla. El layout `(app)` no manda
   catálogos al alta: `<AltaDeLead>` no recibe nada y los lee del navegador (`infra/contexto-de-alta.client.ts`, memoria de 60 s en
   `shared/lib/memoria-de-lectura.ts`).
-- Ficha del lead entera (todo a la vista: `?seccion=` no cambia el documento): ≤ 138 KB sobre `/perfil` (`PRESUPUESTO_DE_LA_FICHA_EN_KB`),
-  medido 130,8 con 10 oportunidades, 3 de 10 seguimientos, 3 recordatorios, un vínculo, cuatro interesados y el portal, y 131,6 con 1.000 de cada uno
+- Ficha del lead entera (`?seccion=` no cambia el documento; los grupos del layout y los teléfonos de «Ver más» no viajan en él: el modal se pide con
+  `diferido()` al abrirlo): ≤ 138 KB sobre `/perfil` (`PRESUPUESTO_DE_LA_FICHA_EN_KB`),
+  medido 125,1 con 10 oportunidades, 3 de 10 seguimientos, 3 recordatorios, un vínculo, cuatro interesados y el portal, y 126 con 1.000 de cada uno
   (`e2e/leads-ficha-dos-columnas.spec.ts`); lo que más pesa es el HTML de los ítems con sus acciones (≈ 31 KB el bloque de seguimientos, ≈ 30 KB
   las 10 oportunidades, 11 Relacionados, 6 el portal) y su payload RSC. Igual con la semilla y con 100 orígenes + 100 tipos (manda los campos
   activos y el origen y tipo del lead; el panel de edición los lee al abrirse, `leerCatalogosDeEdicion()`); `e2e/leads-ficha.spec.ts`. Al abrirla
   desde la fila del listado (sin prefetch: todo viaja con el clic), ≤ 39 KB de RSC (`PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB`, medido 30,7 en escritorio y 29,7 en el celular). «Cotizaciones» lee 21 desde el navegador al acercarse
   a la vista (200 px), no con la ficha.
-  «Cotizar» de la cabecera suma, para quien tiene `cotizaciones.crear`, `getOrigenes()` (una por request) y ~90 B.
+  «Cotizar lead» del «⋯» de la cabecera suma, para quien tiene `cotizaciones.crear`, `getOrigenes()` (una por request) y ~90 B.
 - «Nuevo lead» es un solo drawer: 1 montaje y 1 entrada animada por apertura, 1 lectura de cada pedido (`e2e/leads-alta-un-drawer.spec.ts`).
 
 ## Cotizador (fórmula, diseño, cotizaciones)

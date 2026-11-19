@@ -12,6 +12,7 @@ import {
   accesoEnLaBase,
   actividadDelPortal,
   dialogoDeOtorgar,
+  elegirEnElMenuDelPortal,
   fijarDireccionDeLaWeb,
   limpiarPortal,
   loginDelCliente,
@@ -62,7 +63,7 @@ test('dar acceso con una clave escrita: el código en grande, el texto sin enlac
   const empresa = await nombreDeLaEmpresa()
   await entrar(page, t.pia.email)
   await irAPortal(page, lead.id)
-  await expect(seccionPortal(page).getByText('Todavía no tiene acceso al portal')).toBeVisible()
+  await expect(seccionPortal(page).getByText('Sin acceso', { exact: true })).toBeVisible()
   await seccionPortal(page).getByRole('button', { name: 'Dar acceso' }).click()
   await expect(page).toHaveURL(/panel=otorgar-portal/)
   const dialogo = dialogoDeOtorgar(page)
@@ -108,8 +109,12 @@ test('dar acceso con una clave escrita: el código en grande, el texto sin enlac
 
   await listo.getByRole('button', { name: 'Listo' }).click()
   await expect(page).not.toHaveURL(/panel=/)
-  await expect(seccionPortal(page).getByText('Activo', { exact: true })).toBeVisible()
+  await expect(seccionPortal(page).getByText(/^Tiene acceso desde /)).toBeVisible()
   await expect(seccionPortal(page).getByText(codigo, { exact: true })).toBeVisible()
+  // «Compartir acceso» copia el código; cambiar la clave y quitarlo, en el «⋯» del bloque.
+  await seccionPortal(page).getByRole('button', { name: 'Compartir acceso' }).click()
+  await expect(seccionPortal(page).getByRole('button', { name: 'Código copiado' })).toBeVisible()
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(codigo)
   await expect(page.getByText(clave)).toHaveCount(0)
 })
 
@@ -157,7 +162,7 @@ test('volver a otorgar con la versión: si otra persona otorgó antes, lo dice y
   const primero = await otorgarComo(t.pia.email, lead.id, 'clave-primera-1')
   await entrar(page, t.pia.email)
   await irAPortal(page, lead.id)
-  await seccionPortal(page).getByRole('button', { name: 'Volver a otorgar' }).click()
+  await elegirEnElMenuDelPortal(page, 'Cambiar la clave')
   const dialogo = dialogoDeOtorgar(page)
   await expect(
     dialogo.getByText(`El código ${primero.codigo} y su clave dejan de valer`),
@@ -224,7 +229,7 @@ test('revocar pide confirmación, corta la sesión del cliente y deja volver a o
   expect(sesion).not.toBeNull()
   await entrar(page, t.pia.email)
   await irAPortal(page, lead.id)
-  await seccionPortal(page).getByRole('button', { name: 'Revocar' }).click()
+  await elegirEnElMenuDelPortal(page, 'Quitar el acceso')
   await expect(page).toHaveURL(/panel=revocar-portal/)
   const confirmar = page.getByRole('dialog', { name: `Revocar el acceso de ${lead.nombre}` })
   await expect(
@@ -232,12 +237,12 @@ test('revocar pide confirmación, corta la sesión del cliente y deja volver a o
   ).toBeVisible()
   await confirmar.getByRole('button', { name: 'Revocar acceso' }).click()
   await expect(page.getByText(`Se revocó el acceso de ${lead.nombre} al portal.`)).toBeVisible()
-  await expect(seccionPortal(page).getByText('Revocado', { exact: true })).toBeVisible()
+  await expect(seccionPortal(page).getByText('Sin acceso', { exact: true })).toBeVisible()
   await expect(seccionPortal(page).getByText(/Lo revocó Pía Portal/)).toBeVisible()
   expect((await accesoEnLaBase(lead.id))?.habilitado).toBe(false)
   expect(await snapshotDelCliente(lead.id, sesion?.otorgado_en ?? '')).toBeNull()
-  await expect(seccionPortal(page).getByRole('button', { name: 'Volver a otorgar' })).toBeVisible()
-  await expect(seccionPortal(page).getByRole('button', { name: 'Revocar' })).toHaveCount(0)
+  await expect(seccionPortal(page).getByRole('button', { name: 'Dar acceso' })).toBeVisible()
+  await expect(seccionPortal(page).getByRole('button', { name: /^Más acciones/ })).toHaveCount(0)
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -251,11 +256,12 @@ test('bloqueado tras cinco fallos: dice hasta qué hora y «Desbloquear» lo lim
   }
   await entrar(page, t.pia.email)
   await irAPortal(page, lead.id)
-  await expect(seccionPortal(page).getByText('Bloqueado', { exact: true })).toBeVisible()
-  await expect(seccionPortal(page).getByText(/no puede entrar hasta las \d{2}:\d{2}/)).toBeVisible()
+  await expect(
+    seccionPortal(page).getByText(/^Bloqueado: no puede entrar hasta las \d{2}:\d{2}\.$/),
+  ).toBeVisible()
   await seccionPortal(page).getByRole('button', { name: 'Desbloquear' }).click()
   await expect(page.getByText('Listo: ya puede volver a intentar.')).toBeVisible()
-  await expect(seccionPortal(page).getByText('Activo', { exact: true })).toBeVisible()
+  await expect(seccionPortal(page).getByText(/^Tiene acceso desde /)).toBeVisible()
   const fila = await accesoEnLaBase(lead.id)
   expect(fila?.intentos_fallidos).toBe(0)
   expect(fila?.bloqueado_hasta).toBeNull()

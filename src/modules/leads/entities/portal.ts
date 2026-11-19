@@ -88,6 +88,43 @@ export function accesoVigente(acceso: AccesoDelCliente | null): boolean {
   return acceso?.estado === 'activo' || acceso?.estado === 'bloqueado'
 }
 
+// Lo que el bloque «Acceso al portal» ofrece en cada estado: un botón principal a todo el ancho y, mientras el acceso vale, el resto
+// en su «⋯». Sin acceso o revocado se da uno nuevo; activo, se comparte el código (la clave no se conoce: se vio una vez, al otorgarlo);
+// bloqueado, se desbloquea. «Cambiar la clave» es volver a otorgar (el mismo diálogo); «Quitar el acceso», revocar.
+export type PrincipalDelPortal = 'dar_acceso' | 'compartir_acceso' | 'desbloquear'
+export type LineaDelMenuDelPortal = 'cambiar_clave' | 'quitar_acceso'
+
+export const ETIQUETA_DEL_PRINCIPAL: Record<PrincipalDelPortal, string> = {
+  dar_acceso: 'Dar acceso',
+  compartir_acceso: 'Compartir acceso',
+  desbloquear: 'Desbloquear',
+}
+
+export const ETIQUETA_DEL_MENU_DEL_PORTAL: Record<LineaDelMenuDelPortal, string> = {
+  cambiar_clave: 'Cambiar la clave',
+  quitar_acceso: 'Quitar el acceso',
+}
+
+export type AccionesDelPortal = {
+  principal: PrincipalDelPortal
+  // Vacío: el bloque no dibuja su «⋯».
+  menu: readonly LineaDelMenuDelPortal[]
+}
+
+const MENU_DEL_ACCESO_VIGENTE: readonly LineaDelMenuDelPortal[] = ['cambiar_clave', 'quitar_acceso']
+
+export function accionesDelPortal(acceso: AccesoDelCliente): AccionesDelPortal {
+  switch (acceso.estado) {
+    case 'sin_acceso':
+    case 'revocado':
+      return { principal: 'dar_acceso', menu: [] }
+    case 'activo':
+      return { principal: 'compartir_acceso', menu: MENU_DEL_ACCESO_VIGENTE }
+    case 'bloqueado':
+      return { principal: 'desbloquear', menu: MENU_DEL_ACCESO_VIGENTE }
+  }
+}
+
 export type AccesoOtorgado = {
   codigo: string
   otorgadoEn: string

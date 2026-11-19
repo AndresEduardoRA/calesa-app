@@ -11,6 +11,7 @@ import { admin } from './soporte/base'
 import { exigir } from './soporte/leads'
 import { codigoDePaisDeLaEmpresa, leadsConTelefono, telefonoAlAzar } from './soporte/leads-alta'
 import { abrirAgregarTelefono } from './soporte/leads-ficha-telefonos'
+import { abrirVerMas } from './soporte/leads-ficha'
 
 // @sin-celular-archivo: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
 
@@ -142,7 +143,12 @@ test('lo guardado lleva el país, y la ficha lo muestra en cada teléfono, tambi
   expect(lead?.atributos).toMatchObject({ pais: 'Argentina' })
 
   await page.goto(`/leads/${lead?.id ?? ''}`)
-  await expect(page.getByText('· Argentina', { exact: false }).first()).toBeVisible()
+  // El país es un dato clave; el teléfono principal va sin él al lado, y en «Ver más» cada teléfono lleva el suyo.
+  await expect(page.locator('main dt:text-is("País") + dd')).toHaveText('Argentina')
+  const datos = await abrirVerMas(page)
+  await expect(datos.getByText('· Argentina', { exact: false }).first()).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(datos).toBeHidden()
   const extra = await abrirAgregarTelefono(page)
   await extra.getByLabel('Teléfono extra').fill('+1 809 555 1234')
   await expect(extra.getByText(COMO('+1 8095551234 · República Dominicana'))).toBeVisible()

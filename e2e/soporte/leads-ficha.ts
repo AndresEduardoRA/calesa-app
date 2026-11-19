@@ -153,21 +153,76 @@ export const tituloDeLaFicha = (page: Page, nombre: string): Locator =>
 export const panelDeEdicion = (page: Page): Locator =>
   page.getByRole('dialog', { name: /^Editar / })
 
-// «Editar» de la cabecera de la ficha (el `<header>` de la columna de la izquierda): seguimientos y recordatorios también tienen el suyo.
-export const botonEditar = (page: Page): Locator =>
-  aLaVista(cabeceraDeLaFicha(page).getByRole('button', { name: 'Editar', exact: true }))
-
 // El `<header>` de la ficha: el del `h1` (los seguimientos llevan su propio `<header>`, con su «Editar»).
 export const cabeceraDeLaFicha = (page: Page): Locator =>
   page.locator('main header').filter({ has: page.getByRole('heading', { level: 1 }) })
 
-// Abre el panel con el botón y espera a que esté (la página hidrata antes de que el clic valga).
+// El «⋯» de la cabecera, arriba a la derecha del nombre. Local y no el de `leads-marcas.ts` (que importa este archivo): las filas de
+// «Relacionados» llevan el suyo y no cuentan.
+const menuDeLaCabecera = (page: Page): Locator =>
+  aLaVista(cabeceraDeLaFicha(page).getByRole('button', { name: /^Más acciones de / }))
+
+// Abre el «⋯» de la cabecera (si no está abierto) y elige una línea, con tope corto por vuelta: un clic antes de hidratar se pierde.
+// Sigue hasta que `listo` esté a la vista; si ya lo está, no toca nada.
+export async function elegirEnElMenuDeLaFicha(
+  page: Page,
+  linea: string | RegExp,
+  listo: Locator,
+): Promise<void> {
+  await expect(async () => {
+    if (await listo.isVisible()) {
+      return
+    }
+    const menu = page.getByRole('menu')
+    if (!(await menu.isVisible())) {
+      await menuDeLaCabecera(page).click({ timeout: 1000 })
+    }
+    await menu.getByRole('menuitem', { name: linea }).click({ timeout: 1000 })
+    await expect(listo).toBeVisible({ timeout: 1000 })
+  }).toPass()
+}
+
+// La línea «Editar lead» o «Editar teléfonos» del «⋯» de la cabecera, con el menú abierto (la ficha no tiene otro «Editar» del lead).
+// Sin poder editar, no está: `toHaveCount(0)`. Deja el menú abierto.
+export async function editarDelMenuDeLaFicha(page: Page): Promise<Locator> {
+  const menu = page.getByRole('menu')
+  await expect(async () => {
+    if (!(await menu.isVisible())) {
+      await menuDeLaCabecera(page).click({ timeout: 1000 })
+    }
+    await expect(menu).toBeVisible({ timeout: 1000 })
+  }).toPass()
+  return menu.getByRole('menuitem', { name: /^Editar (lead|teléfonos)$/ })
+}
+
+// «Ver más» de los datos del lead (`?ver=datos`): abre el modal con todo y lo devuelve (un clic antes de hidratar se pierde).
+export const modalDeDatos = (page: Page): Locator =>
+  page.getByRole('dialog', { name: /^Datos de / })
+
+// El del bloque «Datos»: las oportunidades y las cotizaciones de la ficha tienen el suyo.
+export const verMasDeDatos = (page: Page): Locator =>
+  page
+    .getByRole('region', { name: 'Datos', exact: true })
+    .getByRole('button', { name: 'Ver más', exact: true })
+
+export async function abrirVerMas(page: Page): Promise<Locator> {
+  const modal = modalDeDatos(page)
+  await expect(async () => {
+    if (await modal.isVisible()) {
+      return
+    }
+    await aLaVista(verMasDeDatos(page)).click({
+      timeout: 1000,
+    })
+    await expect(modal).toBeVisible({ timeout: 1000 })
+  }).toPass()
+  return modal
+}
+
+// Abre el panel de edición con «Editar lead» del «⋯» y espera a que esté.
 export async function abrirEdicion(page: Page): Promise<Locator> {
   const panel = panelDeEdicion(page)
-  await expect(async () => {
-    await botonEditar(page).click()
-    await expect(panel).toBeVisible({ timeout: 1000 })
-  }).toPass()
+  await elegirEnElMenuDeLaFicha(page, 'Editar lead', panel)
   return panel
 }
 

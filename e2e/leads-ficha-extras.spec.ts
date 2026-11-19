@@ -4,8 +4,10 @@ import { esMovil } from './soporte/inventario'
 import { sesionDe } from './soporte/leads-alta'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
 import {
+  abrirVerMas,
   botonCambiar,
   constanciasDe,
+  editarDelMenuDeLaFicha,
   extrasDeLead,
   irAFicha,
   nuevoLead,
@@ -204,9 +206,14 @@ test('la dueña con «todos» y sin cartera no ve ninguna acción y la base la r
   await irAFicha(page, ajeno.id)
   await expect(tituloDeLaFicha(page, ajeno.nombre)).toBeVisible()
   await expect(page.getByText('Completo solo para su cartera.')).toBeVisible()
-  await expect(page.getByText('Casa', { exact: true })).toBeVisible()
-  await expect(page.locator('main header').getByRole('button', { name: 'Editar' })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Editar teléfonos' })).toHaveCount(0)
+  // Los extras se leen en «Ver más», sin «Editar» ni «Editar teléfonos».
+  const modal = await abrirVerMas(page)
+  await expect(modal.getByText('Casa', { exact: true })).toBeVisible()
+  await expect(modal.getByRole('button', { name: /^Editar/ })).toHaveCount(0)
+  await page.keyboard.press('Escape')
+  await expect(modal).toBeHidden()
+  await expect(await editarDelMenuDeLaFicha(page)).toHaveCount(0)
+  await page.keyboard.press('Escape')
   await expect(botonCambiar(page)).toHaveCount(0)
   await expect(botonAgregarTelefono(page)).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Quitar' })).toHaveCount(0)

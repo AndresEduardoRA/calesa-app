@@ -5,7 +5,12 @@
 // `lead_revocar_acceso()`, `lead_salir()`): esto sólo gobierna qué se dibuja. Nada de React ni de
 // Supabase.
 import { z } from 'zod'
-import { cantidadAcotada } from '@/shared/lib/conteo'
+import {
+  cantidadAcotada,
+  conteoAcotado,
+  conteoCorto,
+  type ConteoAcotado,
+} from '@/shared/lib/conteo'
 import { alcanceDe, type Permisos } from '@/shared/lib/permisos'
 import { TOPE_DE_VINCULADOS, VEHICULOS } from './ficha'
 
@@ -140,6 +145,62 @@ export function sePuedeQuitarA(persona: PersonaDeCartera, acciones: AccionesDeCa
 
 export function duenoDe(cartera: readonly PersonaDeCartera[]): PersonaDeCartera | null {
   return cartera.find((p) => p.tipoAcceso === 'dueno') ?? null
+}
+
+// La línea de quién lo tiene, bajo el nombre del lead: el dueño, el primer compartido y cuántos más (con tope: el detalle está en
+// «Quién lo tiene»). Sólo nombres, nunca correo ni teléfono (la cartera no los trae). Nula si quien mira no ve a nadie.
+export const TOPE_DE_COMPARTIDOS_NOMBRADOS = 99
+
+type Nombrado = { nombre: string; esYo: boolean }
+
+export type ResumenDeLaCartera = {
+  dueno: Nombrado | null
+  primerCompartido: Nombrado | null
+  // Los compartidos además del primero, con tope.
+  masCompartidos: ConteoAcotado
+}
+
+const nombrado = (persona: PersonaDeCartera): Nombrado => ({
+  nombre: persona.nombre,
+  esYo: persona.esYo,
+})
+
+export function resumenDeLaCartera(
+  cartera: readonly PersonaDeCartera[],
+): ResumenDeLaCartera | null {
+  if (cartera.length === 0) {
+    return null
+  }
+  const dueno = duenoDe(cartera)
+  const compartidos = cartera.filter((p) => p !== dueno)
+  const [primero] = compartidos
+  return {
+    dueno: dueno ? nombrado(dueno) : null,
+    primerCompartido: primero ? nombrado(primero) : null,
+    masCompartidos: conteoAcotado(
+      Math.max(0, compartidos.length - 1),
+      TOPE_DE_COMPARTIDOS_NOMBRADOS,
+    ),
+  }
+}
+
+const conTu = (persona: Nombrado) => (persona.esYo ? `${persona.nombre} (tú)` : persona.nombre)
+
+// «Dueño: Ana · Compartido con Luis y 1 más», «Dueño: Ana (tú)» o, sin dueño a la vista, «Compartido con Luis».
+export function textoDeLaCartera(cartera: readonly PersonaDeCartera[]): string | null {
+  const resumen = resumenDeLaCartera(cartera)
+  if (!resumen) {
+    return null
+  }
+  const partes: string[] = []
+  if (resumen.dueno) {
+    partes.push(`${ETIQUETA_DE_ACCESO.dueno}: ${conTu(resumen.dueno)}`)
+  }
+  if (resumen.primerCompartido) {
+    const mas = resumen.masCompartidos.n > 0 ? ` y ${conteoCorto(resumen.masCompartidos)} más` : ''
+    partes.push(`Compartido con ${conTu(resumen.primerCompartido)}${mas}`)
+  }
+  return partes.join(' · ')
 }
 
 // Lo que se dice antes de transferir: quién deja de ser dueño, quién pasa a serlo y que el saliente

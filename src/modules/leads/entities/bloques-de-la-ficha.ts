@@ -68,3 +68,7 @@ export type TodosDeLaFicha = (typeof TODOS_DE_LA_FICHA)[number]
 // próximos (de `recordar_en` ascendente: los vencidos primero). Lo demás, en «Ver todos».
 export const PRIMEROS_DE_SEGUIMIENTOS = 3
 export const PRIMEROS_DE_RECORDATORIOS = 3
+
+// «Ver más» de los datos del lead: un modal con su propia clave en la URL (`?ver=datos`), para no pisar los de `?panel=`.
+export const CLAVE_DE_VER = 'ver'
+export const VER_DATOS = 'datos'

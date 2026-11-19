@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Permisos } from '@/shared/lib/permisos'
 import {
   accesoDesde,
+  accionesDelPortal,
   accesoVigente,
   motivoDeClave,
   otorgadoDesde,
@@ -128,5 +129,40 @@ describe('motivoDeClave (espejo de _portal_clave_validar)', () => {
     )
     expect(motivoDeClave('clave\ncon salto')).not.toBeNull()
     expect(motivoDeClave('Ñandú-2026 ✓ clave')).toBeNull()
+  })
+})
+
+describe('accionesDelPortal', () => {
+  const vigente = accesoDesde(ACTIVO)
+  if (vigente?.estado !== 'activo') {
+    throw new Error('el acceso de prueba no se leyó')
+  }
+
+  it('sin acceso: dar acceso y sin «⋯»', () => {
+    expect(accionesDelPortal({ estado: 'sin_acceso' })).toEqual({
+      principal: 'dar_acceso',
+      menu: [],
+    })
+  })
+
+  it('activo: compartir el acceso; cambiar la clave y quitarlo en el «⋯»', () => {
+    expect(accionesDelPortal(vigente)).toEqual({
+      principal: 'compartir_acceso',
+      menu: ['cambiar_clave', 'quitar_acceso'],
+    })
+  })
+
+  it('bloqueado: desbloquear, con el mismo «⋯»', () => {
+    expect(accionesDelPortal({ ...vigente, estado: 'bloqueado' })).toEqual({
+      principal: 'desbloquear',
+      menu: ['cambiar_clave', 'quitar_acceso'],
+    })
+  })
+
+  it('revocado: dar uno nuevo y sin «⋯» (el código ya no vale)', () => {
+    expect(accionesDelPortal({ ...vigente, estado: 'revocado' })).toEqual({
+      principal: 'dar_acceso',
+      menu: [],
+    })
   })
 })

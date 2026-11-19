@@ -1,6 +1,6 @@
 'use client'
 
-import { LogOutIcon, SendIcon, UserMinusIcon, UserPlusIcon } from 'lucide-react'
+import { UserMinusIcon } from 'lucide-react'
 import { formatearFecha } from '@/shared/lib/fechas'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
@@ -9,7 +9,6 @@ import { useRegional } from '@/shared/ui/regional'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import {
   ETIQUETA_DE_ACCESO,
-  ETIQUETA_DE_SALIR,
   TITULO_DE_CARTERA,
   sePuedeQuitarA,
   type AccionesDeCartera,
@@ -17,7 +16,8 @@ import {
 } from '../../../entities/cartera'
 import type { NumerosDeLead } from '@/shared/lib/numeros-de-lead'
 import { usePanelDeLead } from '../../ficha/hooks/use-panel-de-lead'
-import { useCartera } from '../hooks/use-cartera'
+import type { CarteraDelLead } from '../hooks/use-cartera'
+import { BotonesDeCartera } from './botones-de-cartera'
 import { DialogoDeSalirDiferido, PanelDeCarteraDiferido } from './diferidos'
 
 type Props = {
@@ -29,8 +29,8 @@ type Props = {
     vehiculosVinculados: number
     vePortal: boolean
   }
-  // Como la leyó la página: quién lo tiene, con nombres y tipo de acceso (sin correo ni teléfono).
-  cartera: readonly PersonaDeCartera[]
+  // Quién lo tiene y sus movimientos (`useCartera`, que vive en la columna: la línea de la cabecera lee la misma).
+  cartera: CarteraDelLead
   // Lo que quien mira puede hacer: lo decide la página con sus permisos y la cartera.
   acciones: AccionesDeCartera
 }
@@ -81,56 +81,11 @@ function FilaDePersona({
   )
 }
 
-function BotonesDeCartera({
-  acciones,
-  enCurso,
-  alSalir,
-}: {
-  acciones: AccionesDeCartera
-  enCurso: boolean
-  alSalir: () => void
-}) {
-  const panel = usePanelDeLead()
-  return (
-    <div className="flex flex-wrap gap-2">
-      {acciones.compartir ? (
-        <Button
-          variant="outline"
-          className="h-11 md:h-9"
-          onClick={panel.compartir.abrir}
-          disabled={enCurso}
-        >
-          <UserPlusIcon aria-hidden />
-          Compartir
-        </Button>
-      ) : null}
-      {acciones.transferir ? (
-        <Button
-          variant="outline"
-          className="h-11 md:h-9"
-          onClick={panel.transferir.abrir}
-          disabled={enCurso}
-        >
-          <SendIcon aria-hidden />
-          Transferir
-        </Button>
-      ) : null}
-      {acciones.salir ? (
-        <Button variant="ghost" className="h-11 md:h-9" onClick={alSalir} disabled={enCurso}>
-          <LogOutIcon aria-hidden />
-          {ETIQUETA_DE_SALIR}
-        </Button>
-      ) : null}
-    </div>
-  )
-}
-
 // «Quién lo tiene», en la columna de la izquierda de la ficha: nombres y tipo de acceso de todas las personas
 // que lo tienen, para quien ve el lead. Compartir, transferir (con confirmación), quitar acceso y
 // «Salir de este lead» se dibujan sólo para quien puede; la base lo vuelve a decidir.
-export function BloqueDeCartera({ lead, cartera: inicial, acciones }: Props) {
+export function BloqueDeCartera({ lead, cartera, acciones }: Props) {
   const panel = usePanelDeLead()
-  const cartera = useCartera(lead.id, inicial)
   const hayAcciones = acciones.compartir || acciones.transferir || acciones.salir
   const compartiendo = acciones.compartir && panel.compartir.abierto
   const transfiriendo = acciones.transferir && panel.transferir.abierto

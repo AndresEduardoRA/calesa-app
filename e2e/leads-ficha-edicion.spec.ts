@@ -3,6 +3,7 @@ import { CONTRASENA, entrar } from './soporte/alta'
 import { admin } from './soporte/base'
 import { bloque, esMovil, otraPersona } from './soporte/inventario'
 import { exigir } from './soporte/leads'
+import { quieto } from './soporte/esperas'
 import { idDePersona, sesionDe, telefonoAlAzar } from './soporte/leads-alta'
 import {
   activarCampo,
@@ -17,7 +18,7 @@ import {
   NO_DISPONIBLE,
   abrirEdicion,
   alGuardarFicha,
-  botonEditar,
+  editarDelMenuDeLaFicha,
   cuerpoDeAccion,
   edicionesRegistradas,
   irAFicha,
@@ -71,8 +72,11 @@ test('edita los fijos y un dato propio, y sólo viaja lo que cambió', async ({ 
   const corto = `Edita ${info.project.name}`
   const lead = await fichaDeBerta(page, corto, { e2e_color: 'rojo' })
   const panel = await abrirEdicion(page)
-  // En el celular el panel ocupa toda la pantalla y «Guardar» queda siempre a la vista.
+  // En el celular el panel ocupa toda la pantalla y «Guardar» queda siempre a la vista. Se mide el panel con su formulario y quieto: el
+  // primero que se ve puede ser el del esqueleto, mientras llegan los catálogos, y el del formulario entra después con su animación.
   if (esMovil(page)) {
+    await expect(panel.getByLabel('Nombre')).toBeVisible()
+    await quieto(panel)
     expect((await panel.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(
       (page.viewportSize()?.width ?? 0) - 1,
     )
@@ -311,7 +315,8 @@ test('la dueña con «todos» ve lo ajeno y no lo edita: sin botón, sin panel y
   await irAFicha(page, lead.id)
   await expect(tituloDeLaFicha(page, lead.nombre)).toBeVisible()
   // Editar es contenido: pide la cartera, y «todos» no basta. No hay botón y la URL no abre nada.
-  await expect(botonEditar(page)).toHaveCount(0)
+  // El «⋯» no ofrece editarlo.
+  await expect(await editarDelMenuDeLaFicha(page)).toHaveCount(0)
   await irAFicha(page, lead.id, '?panel=editar-lead')
   await expect(tituloDeLaFicha(page, lead.nombre)).toBeVisible()
   await expect(page.getByRole('dialog')).toHaveCount(0)

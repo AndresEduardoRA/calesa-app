@@ -111,10 +111,9 @@ type PropsDelLateral = Pick<
   marcas: Marcas
   etiquetas: Etiquetas
   alGestionar: () => void
-  conEditarTelefonos: boolean
 }
 
-// La columna de la izquierda con las acciones de la cabecera («Editar», «Cotizar» y el «⋯») y las insignias de quien mira.
+// La columna de la izquierda con el «⋯» de la cabecera y las insignias de quien mira.
 function LateralConAcciones({ marcas, etiquetas, alGestionar, ...props }: PropsDelLateral) {
   const {
     ficha,
@@ -127,7 +126,7 @@ function LateralConAcciones({ marcas, etiquetas, alGestionar, ...props }: PropsD
   return (
     <LateralDeLaFicha
       {...props}
-      acciones={
+      menu={
         <AccionesDeLaFicha
           {...{ ficha, marcas, etiquetas, alGestionar, puedeEditar, puedeEditarExtras }}
           {...{ puedeEnviarAPapelera, paraCotizar, paraActividad }}
@@ -140,7 +139,7 @@ function LateralConAcciones({ marcas, etiquetas, alGestionar, ...props }: PropsD
   )
 }
 
-// La ficha de un lead en dos columnas: a la izquierda (pegajosa) quién es, sus datos, teléfonos, quién lo tiene y el portal; a la derecha
+// La ficha de un lead en dos columnas: a la izquierda (pegajosa) quién es, sus datos clave, quién lo tiene y el portal; a la derecha
 // el índice y los bloques a la vista —seguimientos y recordatorios, oportunidades, relacionados y cotizaciones—, sin pestañas ni
 // acordeones. `?seccion=` lleva a su bloque y le da el foco a su título.
 export function FichaDeLead({
@@ -191,7 +190,6 @@ export function FichaDeLead({
             {...{ paraActividad, cartera, accionesDeCartera, marcas, etiquetas }}
             alGestionar={gestionar.abrir}
             puedeEditarExtras={telefonos.puedeEditarExtras}
-            conEditarTelefonos={telefonos.puedeEditarExtras && !puedeEditar}
             portal={ve.portal ? portal : null}
           />
         }
