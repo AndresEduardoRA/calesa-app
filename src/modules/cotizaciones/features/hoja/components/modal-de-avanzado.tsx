@@ -4,6 +4,7 @@ import type { RefObject } from 'react'
 import { Modal } from '@/shared/ui/modal'
 import type { ContextoDeHoja } from '../../../entities/binding'
 import type { SeccionDeHoja as Seccion } from '../../../entities/hoja'
+import { explicacionDelAvanzado } from '../../../entities/presentacion-de-la-hoja'
 import type { AyudaDeLaHoja } from '../hooks/use-ayuda-de-la-hoja'
 import type { AccionesDeHoja } from '../hooks/use-hoja'
 import type { AjusteEnLaHoja } from './huecos'
@@ -64,6 +65,12 @@ export function ModalDeAvanzado({
       focoAlCerrar={() => botonDeAvanzado.current ?? true}
     >
       <div data-avanzado-cuerpo="" inert={guardando} className="grid min-w-0 gap-4">
+        <p
+          data-explicacion-del-avanzado=""
+          className="text-(length:--text-sm) text-(--color-ink-soft)"
+        >
+          {explicacionDelAvanzado(secciones, ajuste !== null)}
+        </p>
         {secciones.map((seccion) => (
           <SeccionDeHoja
             key={seccion.id}

@@ -11,6 +11,11 @@ export const REGLAS_DE_DISENO = [
   'modo_bucket_repetido',
   'modo_tipo_de_cambio_inexistente',
   'modo_incompleto',
+  'modo_por_defecto_inexistente',
+  'modo_visible_inexistente',
+  'modo_visible_repetido',
+  'modo_por_defecto_oculto',
+  'ver_total_bs_por_defecto_no_ofrecido',
   'seccion_duplicada',
   'nivel_inexistente',
   'nivel_retirado',
@@ -33,6 +38,7 @@ export const REGLAS_DE_DISENO = [
   'nodo_con_dos_niveles',
   'nodo_sin_seccion',
   'tono_inexistente',
+  'ayuda_enlace_no_https',
 ] as const
 
 export type ReglaDeDiseno = (typeof REGLAS_DE_DISENO)[number]
@@ -70,6 +76,15 @@ const MENSAJES: Record<ReglaDeDiseno, (d: DatosDeRechazoDeDiseno) => string> = {
     `El modo ${q(d.donde)} nombra ${q(d.ref)}, que no es un tipo de cambio de la fórmula.`,
   modo_incompleto: (d) =>
     `El modo ${q(d.donde)} tiene que llenar todos los buckets de la fórmula y le falta alguno.`,
+  modo_por_defecto_inexistente: (d) =>
+    `El modo por defecto ${q(d.ref)} no es un modo de la cabecera.`,
+  modo_visible_inexistente: (d) =>
+    `Las opciones visibles nombran ${q(d.ref)}, que no es un modo de la cabecera.`,
+  modo_visible_repetido: (d) => `Las opciones visibles nombran dos veces ${q(d.ref)}.`,
+  modo_por_defecto_oculto: (d) =>
+    `El modo por defecto ${q(d.ref)} tiene que quedar entre las opciones visibles.`,
+  ver_total_bs_por_defecto_no_ofrecido: () =>
+    '«Ver total» no puede salir encendido por defecto si la cabecera no lo ofrece.',
   seccion_duplicada: (d) => `Hay dos secciones con el id ${q(d.donde)}.`,
   nivel_inexistente: (d) => `${q(d.donde)} usa el nivel ${q(d.nivel)}, que no existe.`,
   nivel_retirado: (d) =>
@@ -108,6 +123,8 @@ const MENSAJES: Record<ReglaDeDiseno, (d: DatosDeRechazoDeDiseno) => string> = {
     d.pieza === 'cabecera'
       ? 'La cabecera usa un color que no está en el catálogo.'
       : `${d.pieza === 'seccion' ? 'La sección' : 'El grupo'} ${q(d.donde)} usa un color que no está en el catálogo.`,
+  ayuda_enlace_no_https: (d) =>
+    `Un enlace de la ayuda de ${q(d.donde)} tiene que empezar con https:// y no llevar espacios.`,
 }
 
 export function rechazoDeDiseno(

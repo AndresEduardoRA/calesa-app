@@ -1,7 +1,12 @@
 'use client'
 
 import type { KeyboardEvent, RefObject } from 'react'
-import { BOTON_DEL_LADO_BLOQUEADO, BOTON_DEL_VALOR } from './clases'
+import {
+  BOTON_DEL_LADO_BLOQUEADO,
+  BOTON_DEL_PORCENTAJE,
+  BOTON_DEL_PORCENTAJE_BLOQUEADO,
+  BOTON_DEL_VALOR,
+} from './clases'
 import { ID_DEL_ATAJO } from './simbolos-de-xcell'
 import { TextoDeValor } from './texto-de-valor'
 import type { DatosDeLado, Lado } from './use-edicion'
@@ -24,7 +29,19 @@ type Props = {
   principalRef: RefObject<HTMLElement | null>
   alAbrir: (lado: Lado) => void
   alTeclear: (lado: Lado, evento: KeyboardEvent<HTMLButtonElement>) => void
+  // Lo que mide el botón al abrirse la edición: la entrada toma ese ancho y abrir no mueve nada.
+  alMedir: (ancho: number) => void
 }
+
+// El monto, en la monoespaciada y en semibold; el porcentaje de un par, chico y gris (`clases.ts`).
+const claseDelBoton = (lado: Lado, soloEsteLado: boolean) =>
+  lado === 'principal'
+    ? soloEsteLado
+      ? BOTON_DEL_LADO_BLOQUEADO
+      : BOTON_DEL_VALOR
+    : soloEsteLado
+      ? BOTON_DEL_PORCENTAJE_BLOQUEADO
+      : BOTON_DEL_PORCENTAJE
 
 // El valor de un lado de la celda cuando no se edita. Deshabilitado es `aria-disabled`, no `disabled`: se alcanza con Tab y se lee.
 export function BotonDelValor(props: Props) {
@@ -35,7 +52,7 @@ export function BotonDelValor(props: Props) {
       id={idDelBoton}
       type="button"
       data-parada={lado === 'principal' ? 0 : 1}
-      className={props.soloEsteLado ? BOTON_DEL_LADO_BLOQUEADO : BOTON_DEL_VALOR}
+      className={claseDelBoton(lado, props.soloEsteLado)}
       aria-labelledby={`${idDeLaEtiqueta} ${idDelBoton}`}
       aria-describedby={
         conAtajo
@@ -55,10 +72,12 @@ export function BotonDelValor(props: Props) {
           elemento.focus()
         }
       }}
-      onClick={() => {
+      onClick={(evento) => {
+        props.alMedir(evento.currentTarget.offsetWidth)
         alAbrir(lado)
       }}
       onKeyDown={(evento) => {
+        props.alMedir(evento.currentTarget.offsetWidth)
         alTeclear(lado, evento)
       }}
     >

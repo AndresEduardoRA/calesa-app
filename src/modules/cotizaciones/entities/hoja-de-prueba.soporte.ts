@@ -118,6 +118,10 @@ export type CabeceraCruda = {
   modos: { clave: string; nombre: string }[]
   ver_total_bs: boolean
   moneda_bs: string | null
+  ajustes?: boolean
+  modo_por_defecto?: string
+  ver_total_bs_por_defecto?: boolean
+  modos_visibles?: string[]
 }
 
 export const crudaDeLaHoja = (cabecera: Partial<CabeceraCruda> = {}) => ({

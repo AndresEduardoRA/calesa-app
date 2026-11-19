@@ -144,13 +144,29 @@ describe('el tono', () => {
 })
 
 describe('la etiqueta', () => {
-  it('muy larga: se parte, nunca se corta ni lleva «…»', () => {
+  it('muy larga: se corta con «…» y el texto completo va en `title` (y en el nombre del grupo); el valor nunca se corta', () => {
     const largo = 'Impuesto interno de importación de vehículos usados '.repeat(5).trim()
     const c = celda({ label: largo })
     const etiqueta = c.raiz.querySelector(`[id$="e"]`)
     expect(etiqueta?.textContent).toBe(largo)
-    expect(etiqueta?.className).toContain('[overflow-wrap:anywhere]')
-    expect(c.raiz.innerHTML).not.toMatch(/truncate|text-ellipsis|line-clamp/)
+    expect(etiqueta?.getAttribute('title')).toBe(largo)
+    expect(etiqueta?.className).toContain('truncate')
+    expect(screen.getByRole('group', { name: largo })).toBeTruthy()
+    const valor = c.raiz.querySelector('[data-parada="0"]')
+    expect(valor?.className).toContain('whitespace-nowrap')
+    expect(valor?.className).toContain('shrink-0')
+    expect(valor?.className).not.toMatch(/truncate|text-ellipsis/)
+  })
+
+  it('el monto va en la monoespaciada; el porcentaje de un par, chico y de peso normal', () => {
+    const c = celda({ secondaryId: 'pct', secondaryFormat: 'porcentaje', secondaryValue: 0.1 })
+    const monto = c.raiz.querySelector('[data-parada="0"]')
+    const porcentaje = c.raiz.querySelector('[data-parada="1"]')
+    expect(monto?.className).toMatch(/\bfont-mono\b/)
+    expect(monto?.className).toMatch(/\btabular-nums\b/)
+    expect(porcentaje?.className).toMatch(/\btext-xs\b/)
+    expect(porcentaje?.className).toMatch(/\bfont-normal\b/)
+    expect(porcentaje?.className).toContain('var(--color-ink-soft)')
   })
 
   it('el grupo se llama como la etiqueta', () => {

@@ -2,8 +2,10 @@
 
 import { Interruptor } from '@/shared/ui/interruptor'
 import type { Tono } from '@/shared/ui/xcell'
+import { porDefectoDe } from '../../../entities/cabecera-por-defecto'
 import type { Diseno } from '../../../entities/diseno'
 import type { TipoDeCambioDelDiseno } from '../../../entities/diseno/edicion-de-la-cabecera'
+import { CamposPorDefectoDeLaCabecera } from '../../hoja/components/por-defecto/campos-por-defecto-de-la-cabecera'
 import type { EdicionesDelDiseno } from '../hooks/use-ediciones-del-diseno'
 import { CamposDelAspectoDeLaCabecera, type ErrorDelAspecto, type TonoDelCatalogo } from './aspecto'
 import { ModoEditable } from './modo-editable'
@@ -26,8 +28,40 @@ type Props = {
   error: ErrorDelAspecto
 }
 
-// La cabecera de la hoja: si ofrece «Ver total en moneda local», los modos de tipo de cambio y su aspecto. Los modos que ya hubiera siguen editables aunque la
-// fórmula ya no los admita.
+// Lo que la cabecera trae por defecto, con los campos del núcleo (los del ⚙ de la cabecera); sin modos no hay qué configurar.
+function PorDefectoDelDiseno({
+  cabecera,
+  ediciones,
+  ocupado,
+}: Pick<Props, 'cabecera' | 'ediciones' | 'ocupado'>) {
+  const porDefecto = porDefectoDe({
+    modos: cabecera.modos,
+    modoPorDefecto: cabecera.modo_por_defecto ?? null,
+    verTotalBsPorDefecto: cabecera.ver_total_bs_por_defecto ?? false,
+    modosVisibles: cabecera.modos_visibles ?? null,
+  })
+  if (porDefecto === null) {
+    return null
+  }
+  return (
+    <div
+      data-por-defecto-del-diseno=""
+      className="rounded-(--radius-md) bg-(--color-surface-2) p-3"
+    >
+      <CamposPorDefectoDeLaCabecera
+        modos={cabecera.modos}
+        valor={porDefecto}
+        alCambiar={ediciones.ponerPorDefecto}
+        ofreceVerTotalBs={cabecera.ver_total_bs}
+        moneda={null}
+        deshabilitado={ocupado}
+      />
+    </div>
+  )
+}
+
+// La cabecera de la hoja: si ofrece «Ver total en moneda local», los modos de tipo de cambio, lo que trae por defecto (los mismos campos y textos que el ⚙ de la
+// cabecera en la hoja; la moneda no se sabe acá: «moneda local») y su aspecto. Los modos que ya hubiera siguen editables aunque la fórmula ya no los admita.
 export function CabeceraDelDiseno({
   cabecera,
   tieneTotalEn,
@@ -77,6 +111,7 @@ export function CabeceraDelDiseno({
         ))}
       </ul>
       <SumarUnModo motivo={motivo} ocupado={ocupado} alSumar={ediciones.sumarModo} />
+      <PorDefectoDelDiseno cabecera={cabecera} ediciones={ediciones} ocupado={ocupado} />
       <CamposDelAspectoDeLaCabecera
         cabecera={cabecera}
         catalogo={catalogo}

@@ -3,8 +3,13 @@
 import {
   EFECTOS_DE_INTERRUPTOR,
   MAXIMO_DE_ATAJOS,
+  MAXIMO_DE_ENLACES,
+  MAXIMO_DE_LA_URL_DEL_ENLACE,
+  MAXIMO_DEL_TITULO_DEL_ENLACE,
+  URL_DE_ENLACE,
   type CeldaDeDiseno,
   type Diseno,
+  type EnlaceDeAyuda,
   type ItemDeDiseno,
 } from '../diseno'
 import type { Definicion } from '../formula'
@@ -79,7 +84,8 @@ export function ponerEfecto(
   )
 }
 
-// La ayuda es una tabla o un texto, no las dos: escribir una quita la otra; vacía, de blancos, sin tabla o `null` quita la clave. Un texto más largo se corta.
+// La ayuda es una tabla o un texto (con sus enlaces), no las dos: escribir una quita la otra; vacía, de blancos, sin tabla o `null` quita la clave (los enlaces piden
+// texto: se van con él). Un texto más largo se corta. Escribir el texto conserva los enlaces que ya tenía.
 export function ponerAyuda(
   diseno: Diseno,
   seccionId: string,
@@ -91,13 +97,80 @@ export function ponerAyuda(
     if ('tabla' in ayuda) return ayuda.tabla === '' ? null : { tabla: ayuda.tabla }
     // Sin `trim()`: el texto se escribe letra a letra y un espacio al final es el de la palabra que sigue. Sólo blancos = sin ayuda.
     const texto = Array.from(ayuda.texto).slice(0, MAXIMO_DE_LA_AYUDA).join('')
-    return texto.trim() === '' ? null : { texto }
+    return texto.trim() === ''
+      ? null
+      : { texto, ...(ayuda.enlaces ? { enlaces: ayuda.enlaces } : {}) }
   })()
   return enItem(diseno, { seccion: seccionId, tipo: 'celda', nodo: nodoId }, (it) => {
     if (it.tipo !== 'celda') return it
-    const { ayuda: _anterior, ...resto } = it
-    return limpia === null ? resto : { ...resto, ayuda: limpia }
+    const { ayuda: anterior, ...resto } = it
+    if (limpia === null) return resto
+    const enlaces = anterior !== undefined && 'texto' in anterior ? anterior.enlaces : undefined
+    return {
+      ...resto,
+      ayuda:
+        'texto' in limpia && limpia.enlaces === undefined && enlaces
+          ? { ...limpia, enlaces }
+          : limpia,
+    }
   })
+}
+
+// Cambia los enlaces de la ayuda de texto de una celda (sin ayuda de texto no hay enlaces que tocar); sin ninguno, la clave se va.
+function conEnlaces(
+  diseno: Diseno,
+  seccionId: string,
+  nodoId: string,
+  cambiar: (enlaces: readonly EnlaceDeAyuda[]) => EnlaceDeAyuda[],
+): Diseno {
+  return enItem(diseno, { seccion: seccionId, tipo: 'celda', nodo: nodoId }, (it) => {
+    if (it.tipo !== 'celda' || it.ayuda === undefined || !('texto' in it.ayuda)) return it
+    const { enlaces: antes, ...texto } = it.ayuda
+    const despues = cambiar(antes ?? [])
+    return { ...it, ayuda: despues.length === 0 ? texto : { ...texto, enlaces: despues } }
+  })
+}
+
+// «Agregar enlace»: uno vacío al final, hasta `MAXIMO_DE_ENLACES`.
+export const sumarEnlace = (diseno: Diseno, seccionId: string, nodoId: string): Diseno =>
+  conEnlaces(diseno, seccionId, nodoId, (enlaces) =>
+    enlaces.length >= MAXIMO_DE_ENLACES ? [...enlaces] : [...enlaces, { titulo: '', url: '' }],
+  )
+
+// El enlace en `posicion` de la ayuda de la celda `nodo` de la sección `seccion`.
+export type DondeDelEnlace = { seccion: string; nodo: string; posicion: number }
+
+export const ponerEnlace = (
+  diseno: Diseno,
+  donde: DondeDelEnlace,
+  cambios: Partial<EnlaceDeAyuda>,
+): Diseno =>
+  conEnlaces(diseno, donde.seccion, donde.nodo, (enlaces) =>
+    enlaces.map((e, i) => (i === donde.posicion ? { ...e, ...cambios } : e)),
+  )
+
+export const quitarEnlace = (diseno: Diseno, donde: DondeDelEnlace): Diseno =>
+  conEnlaces(diseno, donde.seccion, donde.nodo, (enlaces) =>
+    enlaces.filter((_, i) => i !== donde.posicion),
+  )
+
+// Lo que se dice junto al campo de un enlace mientras se tipea (el espejo de la forma y de `ayuda_enlace_no_https`); nada si vale.
+export function rechazoDelEnlace(enlace: EnlaceDeAyuda): { titulo?: string; url?: string } {
+  const largoDelTitulo = Array.from(enlace.titulo).length
+  const titulo =
+    largoDelTitulo === 0
+      ? 'Escribe un título.'
+      : largoDelTitulo > MAXIMO_DEL_TITULO_DEL_ENLACE
+        ? `Hasta ${String(MAXIMO_DEL_TITULO_DEL_ENLACE)} caracteres.`
+        : undefined
+  const url = !enlace.url.startsWith('https://')
+    ? 'Tiene que empezar con https://.'
+    : Array.from(enlace.url).length > MAXIMO_DE_LA_URL_DEL_ENLACE
+      ? `Hasta ${String(MAXIMO_DE_LA_URL_DEL_ENLACE)} caracteres.`
+      : !URL_DE_ENLACE.test(enlace.url)
+        ? 'No puede llevar espacios ni tildes.'
+        : undefined
+  return { ...(titulo ? { titulo } : {}), ...(url ? { url } : {}) }
 }
 
 // Las tablas de referencia que nombran los nodos de la fórmula, en orden de aparición y sin repetir; la actual siempre va.

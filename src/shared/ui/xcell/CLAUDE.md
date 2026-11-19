@@ -44,13 +44,14 @@ disabledReason?, secondaryDisabledReason?, tone?, error?, secondaryId?, secondar
 - **El atajo se anuncia.** El valor, con acciones, lleva `aria-keyshortcuts="ArrowRight"` **y** `aria-describedby` a «Más acciones con la flecha derecha.»
   (NVDA y JAWS no leen `aria-keyshortcuts`). El texto vive **una vez por hoja** en `<SimbolosDeXCell/>` (`hidden`, que sigue contando para
   `aria-describedby`), después de la nota. En los dos lados de un par; sin acciones, nada. Lo prueba `e2e/xcell-teclado.spec.ts` con CDP.
-- Si la etiqueta no tiene 6 rem junto a las acciones (tres de 44 px al 200 % en 412 px), las acciones bajan a su fila, a la derecha. Entre acciones, 8 px
-  (el contorno del foco ocupa 4).
+- **Una fila, como la XCell de V1:** rótulo · valor(es) · acciones, hermanos en la raíz (`RotuloDeXCell` y `AccionesDeXCell`, sin envoltorio). El rótulo crece desde
+  6 rem; lo que no cabe baja de línea y `justify-end` lo deja a la derecha, el valor y las acciones juntos. Entre acciones, 8 px (el contorno del foco ocupa 4).
 
 ## Estados (`data-estado`, suman)
 
 `normal` · `sugerido` (punto + «Sugerido» para el lector) · `modificado` (anillo interior en la tinta + ↺) · `deshabilitado` (candado + el motivo escrito,
-borde discontinuo; `aria-disabled`, no `disabled`), **sólo con todos los lados bloqueados**. Ningún estado es sólo color.
+borde discontinuo y gris con su monto: la raíz pisa `--tono-fondo|borde|tinta` con `surface-2`, `line-strong` e `ink-soft`, que pasan AA; `aria-disabled`, no
+`disabled`), **sólo con todos los lados bloqueados** (otra variante, condición apagada, un nivel). Ningún estado es sólo color.
 
 **Las notas (`notasDe()` en `estado.ts`).** Primero el aviso de lo tipeado o, si no hay, el `error` (`role=alert`): describe a todos los lados. Después el
 candado de cada lado bloqueado, **una nota por texto distinto**. El error y un candado **conviven**. Cada botón describe, en orden, el aviso o el error,
@@ -93,11 +94,14 @@ candado de cada lado bloqueado, **una nota por texto distinto**. El error y un c
 - **Lo que pisa quien la contiene:** el relleno de la celda lee `--xcell-relleno` y la separación entre sus filas `--xcell-separacion`, con respaldo
   igual a lo de siempre (8 y 6 px): la sección «compacta» de la hoja los pone a 4 y 2 px. La letra sigue `--text-sm` (la hoja la pisa con la «Letra»
   de una pieza) y el peso se hereda (el «Énfasis» fuerte); la etiqueta queda en `font-medium`. El blanco táctil de 44 px no cambia.
-- **Tamaños:** la etiqueta se parte (`[overflow-wrap:anywhere]`), nunca se corta. La entrada ocupa la caja exacta del valor y mide 44 px en px. El anillo del
-  modificado es **interior** (`ring-inset`) y el foco, un contorno **exterior**: se ven a la vez.
-- **Nodos por celda:** los fija `xcell-hoja.test.tsx` (normal 8, par 9; la ayuda o el ⚙ suman 3 cada uno; el peor, par modificado con un lado bloqueado,
-  error, ayuda y ⚙: 24). Iconos por sprite (2 nodos cada uno). Topes de 300 celdas: 3.100 en el banco (`e2e/xcell-teclado.spec.ts`) y 3.500 en la mezcla de
-  `xcell-hoja.test.tsx`. Un nodo más por celda son 300: lo ven los dos.
+- **Tamaños:** el rótulo se corta con «…» (`truncate`) y el texto completo va en `title` y en el nombre del grupo. **El valor nunca se corta**
+  (`whitespace-nowrap`, `shrink-0`, desde 6 rem): va en la monoespaciada de los tokens (`font-mono`, Geist Mono) con `tabular-nums` y semibold, y los separadores
+  son los de `formato.ts`. El porcentaje de un par, como en V1, chico (`text-xs`), de peso normal y gris (sin tono, `ink-soft`; con tono, la tinta del tono). La
+  entrada toma el ancho medido del botón al abrirse (`LadoDeXCell`) y mide 44 px en px: abrir no mueve nada. El anillo del modificado es **interior**
+  (`ring-inset`) y el foco, un contorno **exterior**: se ven a la vez.
+- **Nodos por celda:** los fija `xcell-hoja.test.tsx` (normal 7, par 8; la ayuda o el ⚙ suman 3 cada uno; el peor, par modificado con un lado bloqueado,
+  error, ayuda y ⚙: 23). Iconos por sprite (2 nodos cada uno). Topes de 300 celdas: 3.100 en el banco (`e2e/xcell-teclado.spec.ts`) y 3.200 en la mezcla de
+  `xcell-hoja.test.tsx` (mide 3.185). Un nodo más por celda son 300: lo ven los dos.
 
 ## Cómo se prueba
 

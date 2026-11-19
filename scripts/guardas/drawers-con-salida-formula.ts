@@ -8,4 +8,10 @@ export const DRAWERS_DE_LA_FORMULA: Record<string, RegistroDeDrawer> = {
     formulario: 'src/modules/cotizaciones/features/formula/components/hoja/cuerpo-del-ajuste.tsx',
     mecanismo: 'contexto',
   },
+  // El ⚙ de la cabecera: lo elegido no tiene borrador; el cuerpo pide `preguntaAlCerrar` y su pie es `<PieDelPanel>`.
+  'src/modules/cotizaciones/features/formula/components/hoja/panel-del-ajuste-de-la-cabecera.tsx': {
+    formulario:
+      'src/modules/cotizaciones/features/formula/components/hoja/cuerpo-del-ajuste-de-la-cabecera.tsx',
+    mecanismo: 'contexto',
+  },
 }

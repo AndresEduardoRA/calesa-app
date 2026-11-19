@@ -14,6 +14,7 @@ import {
 } from './mutadores-de-diseno-base'
 import type { Azar } from './mutadores-de-formula'
 import { MUTADORES_DE_FORMA_DEL_ASPECTO } from './mutadores-de-diseno-aspecto-forma'
+import { MUTADORES_DE_FORMA_POR_DEFECTO } from './mutadores-de-diseno-por-defecto'
 
 type Objetivo = (e: Entrada, azar: Azar) => Objeto | undefined
 const lista = (x: Json | undefined): Json[] => (Array.isArray(x) ? x : [])
@@ -203,4 +204,5 @@ export const MUTADORES_DE_FORMA_DE_DISENO: readonly MutadorDeDiseno[] = [
     poner('filas', elegir(azar, [1.5, 0.5, 12.5] as Json[]) ?? 1.5)(a),
   ),
   forma('D59', unItem('interruptor'), poner('efecto', 'otro')),
+  ...MUTADORES_DE_FORMA_POR_DEFECTO,
 ]

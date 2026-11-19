@@ -8,3 +8,10 @@ export const PanelDelAjusteDiferido = diferido(
   () => import('./panel-del-ajuste').then((modulo) => modulo.PanelDelAjuste),
   { aviso: 'pantalla' },
 )
+
+// El del ⚙ de la cabecera, igual: el panel, sus hooks, la lectura de la cabecera publicada y la action llegan al abrirlo.
+export const PanelDelAjusteDeLaCabeceraDiferido = diferido(
+  () =>
+    import('./panel-del-ajuste-de-la-cabecera').then((modulo) => modulo.PanelDelAjusteDeLaCabecera),
+  { aviso: 'pantalla' },
+)
