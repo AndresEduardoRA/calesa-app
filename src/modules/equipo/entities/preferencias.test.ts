@@ -14,6 +14,8 @@ describe('preferenciasDesde', () => {
       vistos: VISTOS_POR_DEFECTO,
       zonaHoraria: null,
       vistaDeVehiculos: null,
+      vistaDeCotizaciones: null,
+      agruparCotizaciones: null,
     })
   })
 
@@ -26,6 +28,8 @@ describe('preferenciasDesde', () => {
       vistos: VISTOS_POR_DEFECTO,
       zonaHoraria: null,
       vistaDeVehiculos: null,
+      vistaDeCotizaciones: null,
+      agruparCotizaciones: null,
     }
     expect(preferenciasDesde({})).toEqual(sinElegir)
     expect(preferenciasDesde(null)).toEqual(sinElegir)
@@ -40,6 +44,8 @@ describe('preferenciasDesde', () => {
       vistos: VISTOS_POR_DEFECTO,
       zonaHoraria: null,
       vistaDeVehiculos: null,
+      vistaDeCotizaciones: null,
+      agruparCotizaciones: null,
     })
   })
 
@@ -148,5 +154,34 @@ describe('la vista del inventario', () => {
     expect(esquemaPreferencia.safeParse({ clave: 'vehiculos.vista', valor: 'lista' }).success).toBe(
       false,
     )
+  })
+})
+
+describe('la lista de cotizaciones', () => {
+  it('«cotizaciones.vista» se lee si es tabla o tarjetas; otra cosa queda sin elegir', () => {
+    expect(preferenciasDesde({ 'cotizaciones.vista': 'tabla' }).vistaDeCotizaciones).toBe('tabla')
+    expect(preferenciasDesde({ 'cotizaciones.vista': 'lista' }).vistaDeCotizaciones).toBeNull()
+    expect(
+      esquemaPreferencia.safeParse({ clave: 'cotizaciones.vista', valor: 'tarjetas' }).success,
+    ).toBe(true)
+    expect(
+      esquemaPreferencia.safeParse({ clave: 'cotizaciones.vista', valor: 'Tabla' }).success,
+    ).toBe(false)
+  })
+
+  it('«cotizaciones.agrupar» sólo como booleano; «si» o 1 quedan sin elegir', () => {
+    expect(preferenciasDesde({ 'cotizaciones.agrupar': false }).agruparCotizaciones).toBe(false)
+    expect(preferenciasDesde({ 'cotizaciones.agrupar': true }).agruparCotizaciones).toBe(true)
+    expect(preferenciasDesde({ 'cotizaciones.agrupar': 'si' }).agruparCotizaciones).toBeNull()
+    expect(preferenciasDesde({ 'cotizaciones.agrupar': 1 }).agruparCotizaciones).toBeNull()
+    expect(
+      esquemaPreferencia.safeParse({ clave: 'cotizaciones.agrupar', valor: false }).success,
+    ).toBe(true)
+    expect(
+      esquemaPreferencia.safeParse({ clave: 'cotizaciones.agrupar', valor: null }).success,
+    ).toBe(true)
+    expect(
+      esquemaPreferencia.safeParse({ clave: 'cotizaciones.agrupar', valor: 'no' }).success,
+    ).toBe(false)
   })
 })
