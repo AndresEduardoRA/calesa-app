@@ -44,6 +44,8 @@ export function useVistaPrevia({
   }, [validacion, lectura.estado])
   return {
     rechazo: validacion.rechazo,
+    // La fórmula de trabajo validada (nula si no valida): la planilla la calcula con la unidad de ejemplo.
+    validada: validacion.formula,
     lectura: lectura.estado,
     reintentarLaLectura: lectura.reintentar,
     vista,

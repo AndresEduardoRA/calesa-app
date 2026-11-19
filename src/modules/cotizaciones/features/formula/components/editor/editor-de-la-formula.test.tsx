@@ -9,7 +9,7 @@ import {
 } from '../../../../entities/formula/fila-de-prueba.soporte'
 import type { TerrenoDePrueba } from '../../../../entities/formula/terreno-de-prueba'
 import { CifraDePrueba } from './cifra-de-prueba'
-import { EditorDeLaFormula } from './editor-de-la-formula'
+import { SesionDeLaFormula } from '../sesion/sesion-de-la-formula'
 
 // «Guardar el borrador» (4.21-3b-1): la action no llega aquí (su composición es del servidor).
 vi.mock('../../actions/guardar-borrador', () => ({
@@ -28,6 +28,10 @@ vi.mock('../../../../areas/formula/composicion.client', () => ({
     }),
 }))
 vi.mock('@/shared/ui/toasts', () => ({ avisar: vi.fn() }))
+// Las filas del Modo avanzado llegan por `diferido()`: aquí, directas.
+vi.mock('../sesion/diferidos', async () => ({
+  ListaDeFilasDiferida: (await import('./lista-de-filas')).ListaDeFilas,
+}))
 
 const ORIGEN = { id: '11111111-1111-4111-8111-111111111111', nombre: 'Japón' }
 const FORMULA = '22222222-2222-4222-8222-222222222222'
@@ -57,10 +61,11 @@ const responder = async (n: number, r: Respuesta) => {
 
 const montar = (alVolver = vi.fn()) =>
   render(
-    <EditorDeLaFormula
+    <SesionDeLaFormula
       origen={ORIGEN}
       formulaId={FORMULA}
       sobre="Sobre la versión 3 publicada."
+      avanzado
       alVolver={alVolver}
       recargando={false}
       alRecargar={vi.fn()}

@@ -5,7 +5,7 @@ import { useState, useTransition } from 'react'
 import type { FormulaDelOrigen as Formula } from '../../../entities/formula/versiones'
 import { usePanelDeLaFormula } from '../hooks/use-panel-de-la-formula'
 import { AccionesDeLaFormula } from './acciones-de-la-formula'
-import { EditorDeLaFormulaDiferido } from './diferidos'
+import { SesionDeLaFormulaDiferida } from './diferidos'
 import { VistaDeLaFormula } from './vista-de-la-formula'
 
 type Origen = { id: string; nombre: string; activo: boolean }
@@ -41,11 +41,12 @@ export function FormulaDelOrigen({ origen, formula }: Props) {
   return (
     <div className="grid min-w-0 gap-4">
       {panel.editando && sobre ? (
-        <EditorDeLaFormulaDiferido
+        <SesionDeLaFormulaDiferida
           key={`${origen.id}:${String(vuelta)}`}
           origen={origen}
           formulaId={sobre.id}
           sobre={sobreQue(formula)}
+          avanzado
           alVolver={panel.cerrar}
           recargando={recargando}
           alRecargar={recargar}
