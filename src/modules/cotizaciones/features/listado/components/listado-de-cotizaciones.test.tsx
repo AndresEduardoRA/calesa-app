@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, screen, within } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { EsquemaDeFiltros } from '@/shared/lib/filtros'
 import { render } from '../../hoja/components/render-con-url.soporte'
@@ -17,10 +18,28 @@ vi.mock('@/shared/ui/vista-y-opciones/diferidos', async () => {
     await import('@/shared/ui/vista-y-opciones/panel-de-vista-y-opciones')
   return { PanelDeVistaYOpcionesDiferido: PanelDeVistaYOpciones }
 })
-vi.mock('./diferidos', () => ({
-  ResumenDeCotizacionDiferido: () => null,
-  VistasDeCotizacionesDiferido: () => <button>Vistas</button>,
-}))
+// El resumen sólo con sus diálogos y su aviso de montado: dónde van se prueba aquí; lo demás, en su test. `resumenSinLlegar`: su código aún no llegó.
+const resumenSinLlegar = { valor: false }
+vi.mock('./diferidos', async () => {
+  const { useEffect } = await import('react')
+  function Resumen({
+    dialogos,
+    alMontarse,
+  }: {
+    dialogos?: ReactNode
+    alMontarse?: (listo: true) => void
+  }) {
+    useEffect(() => {
+      alMontarse?.(true)
+    }, [alMontarse])
+    return <div data-testid="resumen">{dialogos}</div>
+  }
+  return {
+    ResumenDeCotizacionDiferido: (props: Parameters<typeof Resumen>[0]) =>
+      resumenSinLlegar.valor ? null : <Resumen {...props} />,
+    VistasDeCotizacionesDiferido: () => <button>Vistas</button>,
+  }
+})
 
 beforeAll(() => {
   // jsdom no trae matchMedia: se prueba como una pantalla angosta.
@@ -240,5 +259,33 @@ describe('ListadoDeCotizaciones: tarjetas, grupos y «Compartir» (T319)', () =>
         .getByRole('switch', { name: 'Agrupar por vehículo' })
         .getAttribute('aria-checked'),
     ).toBe('true')
+  })
+})
+
+describe('ListadoDeCotizaciones: los diálogos y el resumen (T320)', () => {
+  const ID = '2f1c3a4b-5d6e-4f70-8a9b-0c1d2e3f4a5b'
+  const dialogos = <p data-testid="dialogos" />
+
+  it('con el resumen cerrado, los diálogos van en el listado', () => {
+    render(<ListadoDeCotizaciones {...base} dialogos={dialogos} />)
+    expect(screen.getAllByTestId('dialogos')).toHaveLength(1)
+    expect(screen.queryByTestId('resumen')).toBeNull()
+  })
+
+  it('con el resumen abierto pero su código sin llegar, siguen en el listado (un `?panel=` no lo espera)', () => {
+    resumenSinLlegar.valor = true
+    try {
+      render(<ListadoDeCotizaciones {...base} dialogos={dialogos} />, `?cotizacion=${ID}`)
+      expect(screen.getAllByTestId('dialogos')).toHaveLength(1)
+      expect(screen.queryByTestId('resumen')).toBeNull()
+    } finally {
+      resumenSinLlegar.valor = false
+    }
+  })
+
+  it('con el resumen abierto, van una sola vez y dentro de él', () => {
+    render(<ListadoDeCotizaciones {...base} dialogos={dialogos} />, `?cotizacion=${ID}`)
+    expect(screen.getAllByTestId('dialogos')).toHaveLength(1)
+    expect(screen.getByTestId('resumen').contains(screen.getByTestId('dialogos'))).toBe(true)
   })
 })

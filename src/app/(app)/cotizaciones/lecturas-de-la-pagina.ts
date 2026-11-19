@@ -63,7 +63,7 @@ export async function nombreDelLead(permisos: Permisos, id: string | undefined) 
 }
 
 // La cotización de `?cotizacion=` cuando no está en la página (recargar, un enlace compartido, «Siguiente» con el resumen abierto, una línea de un grupo desplegado):
-// la lee el servidor, con la RLS de quien mira y su «Vencida» de la función del listado (`leerUnaDelListado`), y sus nombres aparte. Si esa lectura falla, el listado
+// la lee el servidor, con la RLS de quien mira y su «Vencida» de la función del listado (`leerUnaDelListado`), y sus nombres y su modo aparte. Si esa lectura falla, el listado
 // no cae: `error`, y el resumen ofrece «Reintentar».
 export async function leerLaDelResumen(
   permisos: Permisos,
@@ -74,7 +74,7 @@ export async function leerLaDelResumen(
     if (fila === null) {
       return { id, estado: 'no_disponible' }
     }
-    const [cotizacion] = filasConNombres([fila], await nombresDe(permisos, [fila]))
+    const [cotizacion] = filasConNombres([fila], await nombresDe(permisos, [fila], { modos: true }))
     return cotizacion === undefined ? { id, estado: 'error' } : { id, estado: 'listo', cotizacion }
   } catch {
     return { id, estado: 'error' }

@@ -18,6 +18,10 @@ las trampas, en `docs/LECCIONES.md`.
 - **Una regla que vive en SQL y en TS se prueba como espejo.** Los mismos casos corren en Vitest y en `db:probar` (fórmula del cotizador y de repuestos, `shared/lib/campos/rango.ts`, `portal-mensaje.ts`, `normalizar_telefono`); decide la base. Cambiar un lado exige cambiar el otro.
 - **Las funciones edge (Deno) no importan de `src/`: llevan una copia exacta.** `importar-csv` con `leer.ts` y `plantillas.ts`; una guarda exige copias idénticas y la misma versión de `papaparse`.
 - **Stack local por variables de entorno.** La CLI lee `SUPABASE_PROJECT_ID` y los puertos del entorno (`.env.carril`); no se genera un `config.toml` por worktree.
+- **`main` no exige la rama al día.** Con varias tareas en paralelo, cada integración obligaba a las demás a otra vuelta entera del CI
+  (unas 40 en dos días de tanda). Un PR en verde entra aunque `main` haya avanzado; el PR con migraciones nuevas entra al día
+  (sin auto-merge, lo integran `publicar.sh` o el orquestador) y `main` en rojo frena lo nuevo hasta la urgente que lo arregla
+  (`scripts/orquestador/main-en-tanda.sh`). La cola de GitHub (merge queue) lo haría mejor, pero pide un repo de una organización.
 
 ## Base de datos y permisos
 
@@ -449,9 +453,16 @@ las trampas, en `docs/LECCIONES.md`.
 - **Con búsqueda, se agrupa la página.** `cotizaciones_buscar()` tiene sus propias fuentes y su tope: agrupar en la base duplicaría cada una. La página junta las de
   su vehículo (la cabeza, la aprobada si está entre ellas) y el conteo es el de esa página; el despliegue busca con el mismo texto y el vehículo.
 - **El despliegue de un grupo son líneas compactas, no tarjetas.** La de la tarjeta primero («En la tarjeta», para poder compararla) y las demás con casilla,
-  número y título, «Final», total, autor y vigencia; sin cliente (es el mismo vehículo) ni «⋯» (las acciones están en su resumen): no se paga un menú ni un
+  número y título, «Final», total, autor y vigencia; sin cliente (es el mismo vehículo) ni «⋯» (las acciones están arriba de su resumen): no se paga un menú ni un
   nombre de lead por línea. Se lee desde el navegador al desplegar (como «De este vehículo») con los filtros de la página. La insignia «Aprobada» no va en las
   líneas: la aprobada que coincide ya es la cabeza.
+- **El resumen de la cotización lleva arriba sus acciones.** «Abrir cotización» (la principal), «Compartir cotización» y el «⋯» con la lista única de la fila sin
+  «Compartir» (ya está a la vista), los mismos `menuDeFila` y `compartirDe` de la tarjeta: una sola lista de acciones. La cotización del resumen que no está en la
+  página (una línea de un grupo desplegado, otra página) entra a los menús con `conLaDelResumen()`: un id más en las tres lecturas por clave primaria de las marcas.
+  Los diálogos del listado se dibujan dentro del Drawer mientras está abierto y su código ya llegó (un modal hermano cuenta como un clic afuera y lo cierra) y en el
+  listado si no (así un `?panel=` de la URL no espera al chunk del resumen): un solo montaje a la vez. El panel es `ancho="amplio"`: con el normal (3/4 del celular) no caben «Abrir» y «Compartir» mitad y mitad con el «⋯» a 44 px. Barra pegajosa no:
+  le quita alto a la portada en un panel corto. Enviar a la papelera desde ese «⋯» deja el resumen abierto: al refrescarse dice que ya no está disponible y
+  «Deshacer» la devuelve.
 - **El JS de `/cotizaciones` sube a 390 KB.** La tarjeta de la lista lleva la portada en frío (se ve al llegar: `next/image`, el recuadro y la cáscara del visor), el
   conmutador y «Agrupar» con su action: 386,9 KB sobre 380, dentro de la regla del 5 %. Lo que no se ve al llegar (el despliegue de un grupo, sus líneas y
   «Comparar») va con `diferido()`.

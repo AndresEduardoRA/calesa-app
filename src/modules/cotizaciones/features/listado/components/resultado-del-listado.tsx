@@ -70,7 +70,8 @@ function useGruposDesplegados({
   filtrosDelGrupo,
   huecos,
   alAbrir,
-}: Pick<Props, 'filtrosDelGrupo' | 'huecos' | 'alAbrir'>) {
+  abierta,
+}: Pick<Props, 'filtrosDelGrupo' | 'huecos' | 'alAbrir' | 'abierta'>) {
   const [desplegados, setDesplegados] = useState<ReadonlySet<string>>(new Set())
   const alternar = (ordenId: string) => {
     setDesplegados((antes) => {
@@ -90,6 +91,7 @@ function useGruposDesplegados({
         ordenId={filtrosDelGrupo.texto === undefined ? entrada.ordenId : null}
         Comparar={huecos?.Comparar}
         alAbrir={alAbrir}
+        abierta={abierta}
       />
     </div>
   )
@@ -114,7 +116,7 @@ export function ResultadoDelListado({
   filtrosDelGrupo,
   acotada,
 }: Props) {
-  const grupos = useGruposDesplegados({ filtrosDelGrupo, huecos, alAbrir })
+  const grupos = useGruposDesplegados({ filtrosDelGrupo, huecos, alAbrir, abierta })
   if (pagina.filas.length === 0) {
     return pagina.cortada === null ? (
       <SinFilas accionDeVacio={accionDeVacio} vacioDeLoFiltrado={vacioDeLoFiltrado} />

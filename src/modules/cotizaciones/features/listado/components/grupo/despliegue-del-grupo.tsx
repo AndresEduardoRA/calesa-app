@@ -29,6 +29,8 @@ export type PropsDelDespliegue = {
   ordenId: string | null
   Comparar?: CompararDelGrupo | undefined
   alAbrir: (id: string) => void
+  // La cotización abierta en el resumen, para marcar su línea.
+  abierta: string | null
 }
 
 const BOTON = buttonVariants({
@@ -81,6 +83,7 @@ export function DespliegueDelGrupo({
   ordenId,
   Comparar,
   alAbrir,
+  abierta,
 }: PropsDelDespliegue) {
   const grupo = useGrupoDelListado({ pedido, ordenId })
   const ruta = usePathname()
@@ -127,6 +130,7 @@ export function DespliegueDelGrupo({
           enLaTarjeta={una.id === cabeza.id}
           casilla={casilla}
           alAbrir={alAbrir}
+          abierta={abierta === una.id}
         />
       )
     }

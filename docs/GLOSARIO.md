@@ -248,7 +248,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   n.º 12». Se busca con `12` o `#12`.
 - **Número global** — `leads.numero` / `leads_numeros_globales`, `leads.numero_global.ver`, `NumerosDeLead.numero`: consecutivo de la empresa
   («N.º 1.234»); nulo sin el permiso.
-- **Resumen** — `?cotizacion=` / `<ResumenDeCotizacion>`: vistazo de una cotización sin salir de la lista. Las listas de vehículos y de leads no
+- **Resumen** — `?cotizacion=` / `<ResumenDeCotizacion>`: vistazo de una cotización sin salir de la lista, con «Abrir cotización», «Compartir cotización» y el
+  «⋯» de la fila arriba (la **barra del resumen**, `<AccionesDelResumen>`). Las listas de vehículos y de leads no
   tienen: abren la ficha (`<EnlaceDeLaFila>`; un `?vehiculo=` o un `?lead=` viejo redirige a ella).
 - **Enlace de la fila** — `<EnlaceDeLaFila>` (`src/shared/ui/lista/`), `href` de `<FilaDeLista>`/`<TarjetaDeLista>`: el nombre de una fila o una tarjeta
   como enlace a la ficha, en una lista sin resumen; el resto del ítem navega igual (Ctrl o el botón del medio, otra pestaña).

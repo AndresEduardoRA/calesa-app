@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { VistaGuardada } from '@/modules/equipo/client'
 import type { EsquemaDeFiltros } from '@/shared/lib/filtros'
 import type { VistaDeLista } from '@/shared/lib/vista-de-lista'
@@ -46,7 +46,8 @@ type Props = {
   agruparPedido: boolean
   // Las vistas guardadas de quien mira (T15), como en `/leads` y `/vehiculos`.
   vistas: readonly VistaGuardada[]
-  // El «⋯» de cada fila y de cada tarjeta, «Compartir» de cada tarjeta y los diálogos que abren (uno por pantalla): los une `src/app`, que junta lo de cada área.
+  // El «⋯» de cada fila, de cada tarjeta y del resumen, «Compartir» de cada tarjeta y del resumen y los diálogos que abren (uno por pantalla): los une `src/app`, que
+  // junta lo de cada área.
   menuDeFila?: MenuDeFila
   compartirDe?: CompartirDe
   dialogos?: ReactNode
@@ -84,6 +85,9 @@ export function ListadoDeCotizaciones(props: Props) {
   const resumen = useResumenDeCotizacion()
   // El resumen llega recién al abrirse (`diferido()`) y, una vez visto, queda montado para irse con su animación.
   const resumenMontado = useAbiertoAlgunaVez(resumen.texto !== null)
+  // Los diálogos van dentro del resumen sólo con su código ya llegado (`alMontarse`): mientras llega, en el listado, así un `?panel=` de la URL no espera al chunk.
+  const [resumenListo, setResumenListo] = useState(false)
+  const enElResumen = resumen.texto !== null && resumenListo
   const vista = useVistaDeCotizaciones(props.vistaPreferida)
   const agrupar = useAgruparCotizaciones(props.agruparPedido)
   const nueva = rutaDeNueva === null ? undefined : <NuevaCotizacion ruta={rutaDeNueva} />
@@ -127,7 +131,8 @@ export function ListadoDeCotizaciones(props: Props) {
           acotada={props.acotada}
         />
       </FilterShell>
-      {props.dialogos}
+      {/* Los diálogos van una sola vez: dentro del resumen mientras está abierto (un modal hermano del Drawer contaría como un clic afuera y lo cerraría), y aquí si no. */}
+      {enElResumen ? null : props.dialogos}
       {resumenMontado ? (
         <ResumenDeCotizacionDiferido
           filas={pagina.filas.map(cotizacionDeLaEntrada)}
@@ -137,6 +142,10 @@ export function ListadoDeCotizaciones(props: Props) {
           quienes={props.quienesDelResumen}
           aprobarEn={props.aprobarEn}
           alCambiarLaAprobada={props.alCambiarLaAprobada}
+          menuDeFila={props.menuDeFila}
+          compartirDe={props.compartirDe}
+          dialogos={enElResumen ? props.dialogos : null}
+          alMontarse={setResumenListo}
         />
       ) : null}
     </div>

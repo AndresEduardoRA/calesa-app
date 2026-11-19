@@ -6,7 +6,9 @@
 # 1. Comprueba: una rama que no es main, el árbol limpio y commits propios sobre origin/main.
 # 2. El título del PR es el mensaje del commit que queda en main (squash): un commit convencional. Sin `--titulo` vale el asunto del
 #    único commit de la rama; con más de uno hay que darlo. Lo valida commitlint, igual que el CI.
-# 3. Empuja la rama (nunca fuerza), abre el PR (o le actualiza el título) y le enciende el auto-merge con squash.
+# 3. Empuja la rama (nunca fuerza), abre el PR (o le actualiza el título) y le enciende el auto-merge con squash. Un PR con migraciones
+#    nuevas no lo lleva: main no exige la rama al día, y una migración no puede entrar antes que una más nueva ya integrada. Ese lo
+#    integra la espera del 4 (o el orquestador) en verde y al día con main.
 #    Si esta misma punta ya se integró en un PR (se vuelve a correr tras un corte), no abre otro: lo dice y sale con 0.
 # 4. Espera (hasta ESPERA_MAX s, 5400) al check «Listo · todo en verde»: integrado → vuelve a main al día (en un worktree, a
 #    origin/main suelto: main es de la principal) y borra las ramas ya integradas; atrasada respecto de main (otro PR se integró
@@ -92,15 +94,22 @@ else
   gh api -X PATCH "repos/{owner}/{repo}/pulls/$PR" -f title="$TITULO" >/dev/null
   echo "✓ PR #$PR actualizado: $TITULO"
 fi
-gh pr merge "$PR" --auto --squash >/dev/null ||
-  falta "no se pudo encender el auto-merge del PR #$PR (¿«Allow auto-merge» y la protección de main? docs/FLUJO.md › «GitHub»)."
-echo "✓ auto-merge encendido: GitHub lo integra con «Listo · todo en verde»."
+CON_MIGRACIONES=0
+git diff --quiet --diff-filter=A origin/main...HEAD -- supabase/migrations/ || CON_MIGRACIONES=1
+if [ "$CON_MIGRACIONES" = 1 ]; then
+  gh pr merge "$PR" --disable-auto >/dev/null 2>&1 || true
+  echo "✓ con migraciones: sin auto-merge; entra en verde y al día con main (esta espera o el orquestador lo integran)."
+else
+  gh pr merge "$PR" --auto --squash >/dev/null ||
+    falta "no se pudo encender el auto-merge del PR #$PR (¿«Allow auto-merge» y la protección de main? docs/FLUJO.md › «GitHub»)."
+  echo "✓ auto-merge encendido: GitHub lo integra con «Listo · todo en verde»."
+fi
 [ "$ESPERAR" = 1 ] || exit 0
 
 LIMITE=$(($(date +%s) + ${ESPERA_MAX:-5400}))
 PUESTA=0
 while :; do
-  ESTADO=$(gh pr view "$PR" --json state,mergeable,mergeStateStatus,statusCheckRollup)
+  ESTADO=$(gh pr view "$PR" --json state,mergeable,mergeStateStatus,statusCheckRollup,headRefOid)
   case "$(jq -r .state <<<"$ESTADO")" in
     MERGED) break ;;
     CLOSED) echo "✗ el PR #$PR se cerró sin integrarse." >&2; exit 1 ;;
@@ -109,7 +118,7 @@ while :; do
     echo "✗ el PR #$PR choca con main: git merge origin/main, resuelve, commitea y vuelve a correr." >&2
     exit 1
   fi
-  # main exige la rama al día (otro PR se integró antes): GitHub la pone al día con un merge, nunca fuerza; como mucho cada 10 min.
+  # Si main exige la rama al día (otro PR se integró antes), GitHub la pone al día con un merge, nunca fuerza; como mucho cada 10 min.
   if [ "$(jq -r '.mergeStateStatus // ""' <<<"$ESTADO")" = BEHIND ] && [ "$(date +%s)" -ge "$PUESTA" ]; then
     # Por la API y no `gh pr update-branch`: ese subcomando no existe en el gh de algunas máquinas (2.46) y el fallo se tragaba en silencio.
     if gh api -X PUT "repos/{owner}/{repo}/pulls/$PR/update-branch" >/dev/null 2>&1; then
@@ -127,6 +136,18 @@ while :; do
     jq -r '.statusCheckRollup[] | select(.__typename == "CheckRun" and (.conclusion == "FAILURE" or .conclusion == "CANCELLED") and (.name | startswith("Listo") | not)) | "  · " + .name + "  " + (.detailsUrl // "")' <<<"$ESTADO" >&2
     echo "  El detalle: gh run view <id> --log-failed. Arréglalo, commitea y vuelve a correr este guion." >&2
     exit 1
+  fi
+  # Con migraciones: en verde y al día, se integra acá (sólo si la punta sigue siendo la probada); atrás, se pone al día primero.
+  if [ "$CON_MIGRACIONES" = 1 ] && [ "$LISTO" = SUCCESS ]; then
+    PUNTA=$(jq -r .headRefOid <<<"$ESTADO")
+    ATRAS=$(gh api "repos/{owner}/{repo}/compare/main...$PUNTA" --jq .behind_by 2>/dev/null || true)
+    if [ "$ATRAS" = 0 ]; then
+      gh pr merge "$PR" --squash --match-head-commit "$PUNTA" >/dev/null 2>&1 && echo "· en verde y al día con main: integrado."
+    elif [ -n "$ATRAS" ] && [ "$(date +%s)" -ge "$PUESTA" ]; then
+      gh api -X PUT "repos/{owner}/{repo}/pulls/$PR/update-branch" >/dev/null 2>&1 &&
+        echo "· con migraciones y $ATRAS commits atrás de main: rama puesta al día; el CI vuelve a correr."
+      PUESTA=$(($(date +%s) + 600))
+    fi
   fi
   if [ "$(date +%s)" -ge "$LIMITE" ]; then
     echo "· el PR #$PR sigue esperando al CI: se integra solo cuando termine en verde (gh pr view $PR)." >&2

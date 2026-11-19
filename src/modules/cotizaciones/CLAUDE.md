@@ -44,9 +44,14 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   sin la oferta o en Modo Live); la tabla, la columna «Título». Un grupo se despliega en el lugar (`BotonDelConteo`, `DespliegueDelGrupoDiferido`): lo lee
   `useGrupoDelListado()` desde el navegador (`areas/listado/composicion.client.ts`, `leerGrupoDelListado()`: `cotizaciones_listado(p_vehiculo)` o
   `cotizaciones_buscar(p_texto, p_vehiculo)` con los filtros de la página, de a `TAMANO_DE_ESTE_VEHICULO` hasta `TOPE_DE_ESTE_VEHICULO`, y los autores por
-  `perfiles`); si su primera página no empieza por `ordenId` (`grupoQueCambio()`), `router.refresh()`. Las casillas y «Comparar» llegan por el hueco `Comparar`. El clic abre el resumen `?cotizacion=` (por `diferido()`; abrir o cerrar borra `?pestana=`); la que no está
+  `perfiles`); si su primera página no empieza por `ordenId` (`grupoQueCambio()`), `router.refresh()`. Las casillas y «Comparar» llegan por el hueco `Comparar`. El clic abre el resumen `?cotizacion=` (por `diferido()`, `ancho="amplio"`; abrir o cerrar borra `?pestana=`; la abierta queda marcada en la tabla, la tarjeta y la
+  línea de un grupo desplegado). **La barra del resumen** (`AccionesDelResumen`): «Abrir cotización», «Compartir cotización» (`compartirDe`) y el «⋯»
+  (`menuDeFila(fila, { sinCompartir: true, conBorde: true })`), sólo con la cotización a la vista; debajo, `DatosDelResumen` (título, insignias, total con su modo,
+  cliente, vehículo, creada y vigencia). Los `dialogos` del listado van dentro del Drawer mientras está abierto y montado (`alMontarse`; si no, abrirlos lo cerraría) y en el listado si no. La
+  del resumen que no está en la página entra a los menús, a `quienesDelResumen()` y a los datos de los diálogos por `conLaDelResumen()`
+  (`src/app/(app)/cotizaciones/la-del-resumen.ts`), y `leerLaDelResumen()` trae su modo; la que no está
   en la página la lee el servidor con `leerUnaDelListado()` (su fila y `cotizaciones_listado()` de tamaño `UNA` con el cursor `(creado_en, id + 1)`) y, si
-  no llega, `usePedidoAlServidor()` pide una vez y luego «Reintentar»; `idDelResumen()` es la única lectura de la clave. **Las pestañas del resumen** (`?pestana=todo|adjuntos|revisiones|comentarios`, `entities/pestanas-del-resumen.ts`; «Todo» no escribe nada) son un hueco
+  no llega, `usePedidoAlServidor()` pide una vez (escribe la clave con `shallow: false`, no `router.refresh()`: nuqs escribe la URL después) y luego «Reintentar»; `idDelResumen()` es la única lectura de la clave. **Las pestañas del resumen** (`?pestana=todo|adjuntos|revisiones|comentarios`, `entities/pestanas-del-resumen.ts`; «Todo» no escribe nada) son un hueco
   (`HuecosDelResumen`, `features/hoja/components/huecos-del-resumen.ts`): `src/app` une `pantallas/comentarios-resumen.ts` (`Pestanas`, sólo la cáscara `diferido()`) y
   `pantallas/comprobantes-resumen.ts` (`Comprobantes`, bajo los adjuntos) en `listado-con-acciones.tsx`, y el servidor manda `quienesDelResumen()` (`puedeAdjuntar` y `puedeModerar` por
   id, de las reglas del «⋯» sobre la fila: ninguna pregunta a la base; una cotización sin entrada ahí no adjunta ni modera). Detalle: `areas/comentarios/CLAUDE.md` › «El resumen». «Nueva cotización»
@@ -216,8 +221,8 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   y `src/app/(app)/cotizaciones/[id]/huecos-de-la-guardada.tsx` los dibuja en el orden de las insignias y de lo de debajo («Aprobada» antes de «Reportada»;
   «De este vehículo» antes de «Comprobantes»). Cada componente recibe `{ cotizacion, puedeGuardar, permisos, vehiculo }` (`vehiculo`, el que la página leyó
   si quien mira lo ve, o nulo). Fichas: `areas/<área>/CLAUDE.md`.
-- **El resumen del listado** (`HuecosDelResumen`): `Portada` (primero, arriba de los datos: `pantallas/tarjeta-resumen.ts`), `Pestanas`, `Comprobantes` y
-  `DeEsteVehiculo` (entre «Abrir cotización» y las pestañas, sólo con un vehículo que quien mira ve; `aprobarEn` lo manda la página y `alCambiar` refresca el
+- **El resumen del listado** (`HuecosDelResumen`): `Portada` (primero tras la barra, arriba de los datos: `pantallas/tarjeta-resumen.ts`), `Pestanas`, `Comprobantes` y
+  `DeEsteVehiculo` (entre los datos y las pestañas, sólo con un vehículo que quien mira ve; `aprobarEn` lo manda la página y `alCambiar` refresca el
   listado; `pantallas/aprobada-resumen.ts`). Cerrar el resumen borra también `?visor=&foto=` (el visor de la portada).
 - **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda, la compone `src/app`): «Cotización aprobada» con `leerAprobadaDelVehiculo()` (`index.ts`),
   la tarjeta de `pantallas/aprobada-del-vehiculo.ts` (`AprobadaDelVehiculo`, `EsqueletoDeLaAprobada`) y, como un área no importa otra, la portada diferida y

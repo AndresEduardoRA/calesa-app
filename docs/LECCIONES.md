@@ -166,6 +166,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   `@container scroll-state(…)`, no con una animación ligada al desplazamiento (`animation-timeline`): cada celda sumaría una animación que
   nunca termina, y `quieto()`, `recibeElClic()` y las capturas esperan a que terminen.
 - Lo que se desplaza de costado no debe ensanchar la página en el celular: `min-w-0` en la raíz de una barra de pestañas y `relative` en una lista `overflow-x-auto` con un `sr-only` adentro (es absoluto y escapa del recorte). Mídelo con `scrollWidth` del documento, no a ojo.
+- Para que el servidor vuelva a leer lo que una clave de `nuqs` recién escrita pide, escríbela con `shallow: false` (y `startTransition` si hay que esperar), no con `router.refresh()`: nuqs escribe la URL un tick después y el refresco sale con la de antes (`usePedidoAlServidor`).
 - Si un panel lee su URL con `nuqs`, escríbela con `nuqs` (con `router.replace` el panel no se entera) y no lo cierres justo antes de un `router.push`/`replace`: nuqs escribe después y pisa el destino; navega y deja que el panel salga solo.
 - Respalda en `sessionStorage` lo que guardes en `history.state`: con `shallow: false` Next lo pisa a los ~60 ms y Chromium no conserva un `replaceState` en `pagehide`.
 - Elige la primera pestaña con `parseAsStringLiteral(claves).withDefault(primera)`: con `parseAsString` la URL se ensucia con la clave por defecto.

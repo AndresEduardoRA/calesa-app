@@ -312,12 +312,15 @@ Si el servicio no encuentra `claude`, `pnpm` o `node`, agrega sus rutas a `PATH_
   `git merge --ff-only origin/main` (nunca empuja). Si eso cambió `scripts/orquestador/`, se relanza con `exec` antes de lanzar nada
   (mismo PID y mismo candado: las sesiones en curso siguen). En otra rama, con cambios o con commits que `origin/main` no tiene, no la
   toca: lo dice una vez en el log y `plan` lo muestra en una línea. Sin red, lo reintenta en la vuelta siguiente.
-- **Publica** con `publicar.sh --sin-esperar`: el PR queda con auto-merge y el carril se suelta mientras corre el CI.
+- **Publica** con `publicar.sh --sin-esperar`: el PR queda con auto-merge (salvo con migraciones nuevas) y el carril se suelta mientras
+  corre el CI.
 - **Vigila** el PR cada minuto: integrado → borra worktree y rama. CI rojo o choque con main → una sesión de arreglo con el final del
   log de cada job caído, no el del agregador «Listo» (desde el 3.er intento, con el nivel `NIVEL_ARREGLAR_DIFICIL`). Un job que no es
   un bloque de e2e (lint, tipos, pruebas, base, el build) caído sin la firma de la máquina no espera a «Listo»: la sesión empieza en
   cuanto cae (`cayo_lo_del_pr`), sin los ~20 min de los e2e. Rama atrasada → la
-  pone al día (merge, nunca fuerza). Un choque con main lo causa otra tarea: gasta un intento de `MAX_CHOQUES`, no de `MAX_ARREGLOS`.
+  pone al día (merge, nunca fuerza). main no exige la rama al día (`main-en-tanda.sh`): un PR con migraciones nuevas, sin auto-merge,
+  lo integra el orquestador en verde y al día (`integrar_con_migraciones`); y cada 5 min mira el CI del push a main: en rojo, la tarea
+  urgente de dejarlo verde (`plantillas/main-en-rojo-en-tanda.md`, una vez por sha) y ninguna tarea nueva arranca hasta verlo verde. Un choque con main lo causa otra tarea: gasta un intento de `MAX_CHOQUES`, no de `MAX_ARREGLOS`.
   - **Sin sesión** cuando no pide criterio (`sin-sesion.sh`): si todo lo caído es ajeno al PR (bloques de e2e en specs que el PR no
     toca, o un log con la firma de la máquina del CI: Docker, la red, el runner), relanza lo caído hasta `REINTENTOS_CI_POR_PUNTA`
     veces por punta (con un bloque de e2e entre lo caído, una sola vez por tarea: ya cayó dos veces y cada puesta al día es otra

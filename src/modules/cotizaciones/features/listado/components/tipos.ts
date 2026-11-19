@@ -9,10 +9,11 @@ export type FilaDeCotizacion = CotizacionDelListado
 export type EntradaDeLaLista = EntradaDelListado<FilaDeCotizacion>
 
 // El «⋯» de una fila o una tarjeta: lo dibuja quien compone la pantalla (`src/app`, que une lo de cada área); sin él, sin menú. Devuelve nulo si la fila no tiene qué
-// ofrecer. `sinCompartir`: la tarjeta de la lista ya tiene «Compartir» como acción principal y su «⋯» no lo repite.
+// ofrecer. `sinCompartir`: la tarjeta de la lista y el resumen ya tienen «Compartir» a la vista y su «⋯» no lo repite. `conBorde`: junto a botones (la barra del
+// resumen), con borde y de su alto.
 export type MenuDeFila = (
   fila: FilaDeCotizacion,
-  opciones?: { sinCompartir?: boolean },
+  opciones?: { sinCompartir?: boolean; conBorde?: boolean },
 ) => ReactNode
 
 // «Compartir» de una cotización (abre el panel de compartir), o nulo si no se ofrece: sin la oferta del «⋯» o en Modo Live.

@@ -162,3 +162,18 @@ describe('MenuDeLaFila en la tarjeta de la lista (T319)', () => {
     expect(lineas()[0]).toBe('Compartir cotización…')
   })
 })
+
+describe('MenuDeLaFila en la barra del resumen (T320)', () => {
+  it('con `conBorde` el botón lleva borde, como «Abrir» y «Compartir» a su lado; sin él, no', async () => {
+    await abrir({ sinCompartir: true, conBorde: true })
+    expect(screen.getByRole('button', { name: 'Más acciones de N.º 12' }).className).toContain(
+      'border',
+    )
+    expect(lineas()).not.toContain('Compartir cotización…')
+    cleanup()
+    await abrir()
+    expect(screen.getByRole('button', { name: 'Más acciones de N.º 12' }).className).not.toContain(
+      'border',
+    )
+  })
+})
