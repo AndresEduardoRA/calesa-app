@@ -113,3 +113,48 @@ test('D2: cabecera, modos, interruptor, ayuda y tarjeta se editan y se guardan; 
   await expect(garantia(page)).toBeChecked()
   await expect(estado(page)).toHaveText('No hay cambios por guardar.')
 })
+
+test('D3: lo de por defecto de la cabecera y un enlace de la ayuda se editan con su validación y se guardan en el borrador', async ({
+  page,
+}) => {
+  await entrar(page, duena, { fresco: true })
+  await abrirElDiseno(page)
+  await cabecera(page).getByLabel('Nombre del modo').fill('Unificado')
+  await cabecera(page).getByRole('button', { name: 'Sumar un modo', exact: true }).click()
+  await expect(modo(page, 'unificado')).toBeVisible()
+  const porDefecto = page.locator('[data-por-defecto-del-diseno]')
+  await porDefecto
+    .getByRole('group', { name: 'Tipo de cambio por defecto' })
+    .getByRole('radio', { name: 'Unificado' })
+    .check()
+  const visibles = porDefecto.getByRole('group', { name: 'Opciones visibles en el encabezado' })
+  await expect(visibles.getByRole('checkbox', { name: 'Unificado' })).toBeDisabled()
+  await visibles.getByRole('checkbox', { name: 'Paralelo' }).click()
+  await porDefecto
+    .getByRole('checkbox', { name: 'Mostrar el total en moneda local por defecto' })
+    .click()
+
+  const precio = page.locator('li[data-celda="precio"]')
+  await precio.getByRole('button', { name: 'Agregar enlace' }).click()
+  await precio.getByLabel('Título del enlace 1').fill('Copart')
+  await precio.getByLabel('Dirección del enlace 1').fill('http://www.copart.com/')
+  await expect(precio.getByText('Tiene que empezar con https://.')).toBeVisible()
+  await precio.getByLabel('Dirección del enlace 1').fill('https://www.copart.com/')
+  await expect(precio.getByText('Tiene que empezar con https://.')).toHaveCount(0)
+
+  await guardar(page).click()
+  await expect(estado(page)).toHaveText('Se guardó el borrador.')
+  const diseno = leerElBorradorDelDiseno(origen.id)?.diseno
+  expect(diseno?.cabecera).toMatchObject({
+    modo_por_defecto: 'unificado',
+    ver_total_bs_por_defecto: true,
+    modos_visibles: ['unificado'],
+  })
+  const item = diseno?.secciones.flatMap((s) => s.items).find((i) => i.nodo === 'precio')
+  expect(item).toMatchObject({
+    ayuda: {
+      texto: 'El precio de la subasta',
+      enlaces: [{ titulo: 'Copart', url: 'https://www.copart.com/' }],
+    },
+  })
+})

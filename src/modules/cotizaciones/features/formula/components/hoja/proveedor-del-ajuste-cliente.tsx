@@ -2,13 +2,14 @@
 
 import type { ReactNode } from 'react'
 import { ContextoDelAjuste, type AjusteDeArea } from '../../../hoja/components/hueco-del-ajuste'
+import { AjusteDeLaCabecera } from './ajuste-de-la-cabecera'
 import { AjusteDeLaCelda } from './ajuste-de-la-celda'
 import { ContextoDelOrigenDelAjuste } from './origen-del-ajuste'
 
 // Un valor de módulo: no cambia mientras la página vive, así que ninguna celda (en `memo`) se vuelve a dibujar por él.
-const AJUSTE: AjusteDeArea = { Ajuste: AjusteDeLaCelda }
+const AJUSTE: AjusteDeArea = { Ajuste: AjusteDeLaCelda, AjusteDeLaCabecera }
 
-// Enciende el ⚙ de las celdas en la hoja (4.20-3b): llena `ContextoDelAjuste` (el hueco del núcleo) y da el origen al panel. Sólo viaja esto y la cáscara de `diferido()`.
+// Enciende el ⚙ de las celdas y el de la cabecera en la hoja (4.20-3b): llena `ContextoDelAjuste` (el hueco del núcleo) y da el origen al panel. Sólo viaja esto y la cáscara de `diferido()`.
 export function ProveedorDelAjusteCliente({
   origenId,
   children,

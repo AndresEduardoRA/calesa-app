@@ -119,7 +119,8 @@ export function Drawer({
           conFondo={!alCostado}
           className={clasesDelPanel(lado, ancho)}
         >
-          <SheetHeader className="border-b border-(--color-line)">
+          {/* `pr-12`: la ✕ va en una esquina (`absolute`, 2,5 rem desde el borde); un título largo baja de línea antes de encimarse con ella. */}
+          <SheetHeader className="border-b border-(--color-line) pr-12">
             <SheetTitle>{titulo}</SheetTitle>
             {descripcion ? <SheetDescription>{descripcion}</SheetDescription> : null}
           </SheetHeader>

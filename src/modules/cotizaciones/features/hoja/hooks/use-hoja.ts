@@ -14,7 +14,7 @@ import {
   type Entradas,
   type IndiceDeHoja,
 } from '../../../entities/entradas'
-import { ofreceVerTotalBs } from '../../../entities/cabecera-de-la-hoja'
+import { ofreceVerTotalBs, verTotalBsAlAbrir } from '../../../entities/cabecera-de-la-hoja'
 import type { HojaLista } from '../../../entities/hoja'
 import type { DeDondeCalcula } from '../../../entities/pedido-de-recalculo'
 import { useBorradorDeHoja } from './use-borrador-de-hoja'
@@ -92,7 +92,7 @@ export function useHoja({
   vehiculoId,
   de: deQuien,
   iniciales: inicialesDe = entradasIniciales,
-  verTotalBsInicial = false,
+  verTotalBsInicial = verTotalBsAlAbrir(hoja.cabecera),
   alCambiar,
   borrador,
 }: AperturaDeHoja & {
@@ -109,8 +109,8 @@ export function useHoja({
     alCambiarRef.current = alCambiar
   })
   const indice = useMemo(
-    () => indiceDeHoja(hoja.secciones, hoja.cabecera.modos),
-    [hoja.secciones, hoja.cabecera.modos],
+    () => indiceDeHoja(hoja.secciones, hoja.cabecera.modos, hoja.cabecera.modoPorDefecto),
+    [hoja.secciones, hoja.cabecera.modos, hoja.cabecera.modoPorDefecto],
   )
   const iniciales = useMemo(() => inicialesDe(indice), [inicialesDe, indice])
   const [entradas, setEntradas] = useState<Entradas>(iniciales)

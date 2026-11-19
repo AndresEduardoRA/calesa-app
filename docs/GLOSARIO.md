@@ -478,6 +478,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tipo de cambio oficial / paralelo** — `tipos_cambio.clave` (`oficial`, `paralelo`): TCO y TCP; cada fila o grupo elige el suyo.
 - **Modo de tipo de cambio** — `diseno.cabecera.modos[]` / `cotizaciones.modo_tc`: nombre (Aduana, Paralelo, Unificado…) y qué tipo de cambio
   llena cada bucket. La hoja abre con el marcado (`Entradas.modoTc`); con uno solo no se elige y el resumen lo nombra.
+- **Modo por defecto** — `diseno.cabecera.modo_por_defecto` / `modoInicial()`: el modo con que abre una cotización nueva del origen (sin él, el
+  primero); va con «Ver total» por defecto (`ver_total_bs_por_defecto`). Lo cambian el ⚙ de la cabecera y el diseño de Configuración.
+- **Modos visibles** — `diseno.cabecera.modos_visibles` / `modosDelEncabezado()`: los modos que se dibujan en el encabezado de la hoja (sin la
+  lista, todos). El modo por defecto siempre está entre ellos, y el que una cotización tiene elegido se dibuja aunque no lo esté.
+- **Pasos de la hoja** — `pasosDeLaHoja()` / `<PasosDeLaHoja>`: la fila «Hoja · Vehículo · Cliente · Vista previa» de arriba de la hoja (como
+  en V1). Cada paso abre su panel de hoy y lleva un punto (elegido, obligatorio que falta, falta un dato) con su texto; no reemplaza las barras.
 - **Grupo (de la hoja)** — `definicion.grupos[]` / `nodo.grupo`: filas con bucket, plazo de pago y color, con subtotal en USD y Bs. No es un nodo.
 - **Plazo de pago** — atributo del grupo: cuándo se paga, como texto («2 días», «4 meses (Aprox.)»).
 - **Total en dólares** — `definicion.total_en`; en el motor `totales.usd` (y `totales.suma_usd`): total en Bs ÷ tipo de cambio de `total_en`.
@@ -606,7 +612,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Celda (de la hoja)** — ítem `celda` del diseño: la `XCell` de un nodo: ancho (de 1 a 12 columnas; `completo`, `mitad` y `tercio` de los
   diseños guardados son 12, 6 y 4), alto, letra, énfasis, ayuda y niveles. Se ordena dentro de su sección.
 - **Ayuda (de una celda)** — `ayuda` de una `celda`: texto o tabla de referencia que abre «Ayuda de X» en un panel de sólo lectura
-  (`?ayuda=texto|tabla&nodo=<id>`); la tabla se lee con la hoja abierta.
+  (`?ayuda=texto|tabla&nodo=<id>`); la tabla se lee con la hoja abierta. El texto puede llevar hasta 5 **enlaces** (`ayuda.enlaces[]`,
+  `EnlaceDeAyuda`: título de hasta 60 caracteres y URL `https://`), que se abren en otra pestaña bajo «Consulta estas fuentes».
 - **Secundario (de una celda)** — `secundario` de una `celda`: el % (o monto) junto al valor en un `porcentaje_de`; obligatorio si el monto se
   sobrescribe.
 - **Subtotal (de la hoja)** — ítem `subtotal` del diseño: un nodo de cálculo dibujado como franja (el «CIF» de «avanzado»).

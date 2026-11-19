@@ -407,6 +407,11 @@ las trampas, en `docs/LECCIONES.md`.
 - **Grupos en el editor.** No se suman ni se quitan (la plantilla nombra exactamente los de la fórmula); `buckets` y `total_en` no se editan; una auxiliar nunca suma a un grupo.
 - **Lo tipeado se normaliza a 15 cifras**, como la XCell: «1,1 %» manda 0,011. Las comparaciones con lo guardado también van a 15 cifras.
 - **El ⚙ espera la publicada que leyó el panel**, nunca la versión que dibuja la hoja; si difieren, el panel lo dice. Lo enciende un proveedor y lo decide la base; sin proveedor no se registra el panel.
+- **El ⚙ de la cabecera publica la N+1 desde la publicada, sin tocar el borrador**, como el de una constante (`formula_cambiar_cabecera()`, parámetros
+  tipados en vez de un `jsonb` abierto). Escribe siempre las tres claves por defecto juntas y compara «los mismos valores» sobre los efectivos: no hay
+  normalización que espejar. Es un `<Drawer>` con su URL (`?ajuste=cabecera`), el mismo patrón que el ⚙ de una celda; los textos y el orden, los de V1.
+  «Aplicar también» va apagada en una guardada de sólo lectura y si la versión de la hoja no tiene el modo. Sin red dice «No hay conexión.» con «Reintentar»
+  (reenviar es seguro: la base compara la esperada).
 - **El ⚙ de un tipo de cambio.** `formula_tipo_cambio_del_nodo()` (definer, pide `empresa.tipos_cambio.gestionar` y ver el nodo; todo rechazo da `null`); manda sólo `{id, actualizadoEnEsperado, valor}`.
 
 ### La hoja
@@ -415,6 +420,20 @@ las trampas, en `docs/LECCIONES.md`.
 - **La hoja abierta la firma la base.** `cotizacion_hoja()` devuelve `abierta` con HMAC (clave en Vault); crear, evaluar y la ayuda de tabla reciben `p_abierta` y calculan con esa versión. Firma también la huella de las tarifas de la apertura, no sus valores: `crear` la compara con las que reconstruye del historial, porque un `cambiado_en` anterior a la apertura puede confirmar después. Cotizar pide `crear` y `ver` del origen.
 - **Cotizar encima.** La N+1 nace al tocar (`cotizacion_encima`), siempre preventa, con lo guardado de la última de la cadena; índice parcial `cotizaciones_encima_unica`. Quien no ve la N+1 sólo sabe que existe.
 - **Revisiones con totales por clave.** El diff se compara después de recortar (`_cotizacion_diff_recortado()`); «Ir a una fecha» es `p_hasta` exclusivo en `cotizacion_revisiones()`, anclando y paginando por id.
+- **La celda (XCell) va en una fila, como la de V1:** rótulo · valor(es) · acciones. El rótulo se corta con «…» y el texto completo va en `title` (y en el
+  nombre del grupo); el monto, en la monoespaciada, nunca se corta y baja de línea antes de encimarse; el % de un par, chico y gris al lado (con tono, en la
+  tinta del tono: el gris sobre un color no garantiza AA). Sin el envoltorio de la cabecera: un nodo menos por celda paga los de los pasos.
+- **El modo elegido se dibuja aunque no sea visible; la visibilidad no es una regla de guardado.** Los modos visibles son sólo del encabezado
+  (`modosDelEncabezado()`): `_cotizacion_modo` sigue aceptando cualquier modo del diseño, así una guardada vieja no pierde el suyo. Una cotización nueva abre con
+  el modo por defecto y «Ver total» por defecto; una guardada, con lo suyo.
+- **Los pasos de la hoja no reemplazan las barras.** «Hoja · Vehículo · Cliente · Vista previa» van debajo de los modos y abren los paneles de hoy; las barras
+  del vehículo y del cliente se quedan arriba, fuera de la `key` de la hoja (adentro se volverían a montar con cada `key`). «Vehículo» y «Cliente» sólo si su
+  barra tiene panel (`vehiculos.ver` del origen, `leads.ver`); en una guardada, «Vehículo» sólo si no es `solo_mostrar` y nunca «Cliente». **Van fuera del orden
+  de Tab** (`tabIndex -1`): la tarea de oro «cotizar» no suma paradas (lo pidió la persona) y con el teclado lo mismo se alcanza por las barras, «Vista previa»
+  del resumen y las celdas. El nombre de cada botón es lo que se ve («Vehículo», sin chocar con el de la barra, «Vehículo: …»); el punto es su descripción y su
+  `title`.
+- **Los enlaces de la ayuda piden texto** (`{texto, enlaces?}`: no hay ayuda de sólo enlaces; borrar el texto se los lleva). Su URL se valida en la base, en el
+  esquema del diseño **y** en el de la hoja (`URL_DE_ENLACE`), con `rel="noopener noreferrer"`.
 - **«Ver total Bs» se guarda con la cotización.** `ver_total_bs` validado contra el diseño de esa versión; `moneda_bs` sale del TC de `total_en`; si es nula no hay interruptor. El modo de TC es parte de las entradas.
 - **La ayuda de tabla.** Si la celda es de dinero, cada cifra pasa por `<Monto>`; sólo columnas declaradas; tope 1.000 filas. `dato_del_vehiculo` (columna ← campo de texto) guarda en el vehículo por `vehiculo_guardar` y recarga.
 - **Paneles de la hoja.** Vehículo y cliente leen desde el navegador y escriben su URL con `nuqs` + `replace`; elegir cliente conserva lo tipeado (borrador por persona, origen y vehículo); «Nuevo lead» es el del shell con `?elegir=`.

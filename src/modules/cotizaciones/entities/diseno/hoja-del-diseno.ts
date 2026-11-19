@@ -172,6 +172,11 @@ export function hojaDeLaVistaPrevia(
       modos: diseno.cabecera.modos.map((m) => ({ clave: m.clave, nombre: m.nombre })),
       verTotalBs: diseno.cabecera.ver_total_bs,
       monedaBs: null,
+      // La vista previa no tiene ⚙ de la cabecera (va `inert`); lo de por defecto, como lo trae el diseño.
+      ajustes: false,
+      modoPorDefecto: diseno.cabecera.modo_por_defecto ?? null,
+      verTotalBsPorDefecto: diseno.cabecera.ver_total_bs_por_defecto ?? false,
+      modosVisibles: diseno.cabecera.modos_visibles ?? null,
       ...aspectoDeCabecera(diseno.cabecera),
     },
     secciones,

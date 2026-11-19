@@ -11,6 +11,7 @@ import {
   RELLENOS,
   SECUNDARIOS,
   SEPARACIONES,
+  URL_DE_ENLACE,
 } from './diseno'
 import { esquemaCampo, esquemaId, FORMATOS } from './nodos'
 
@@ -76,9 +77,15 @@ const aspectoComun = {
   tono: esquemaId.optional(),
 }
 
+// Los enlaces de la ayuda de texto: la URL se vuelve a mirar aquí (`URL_DE_ENLACE`), así un `href` nunca recibe algo que no sea `https://`.
 const esquemaAyuda = z.union([
   z.object({ tabla: esquemaId }),
-  z.object({ texto: z.string().min(1) }),
+  z.object({
+    texto: z.string().min(1),
+    enlaces: z
+      .array(z.object({ titulo: z.string().min(1), url: z.string().regex(URL_DE_ENLACE) }))
+      .optional(),
+  }),
 ])
 
 // Qué columna de la tabla de una celda casa con qué dato del vehículo (4.14-2c2): las filas para elegirlo las da `cotizacion_tabla`.
@@ -193,6 +200,12 @@ export const esquemaDeDiseno = z.object({
     ver_total_bs: z.boolean(),
     // La moneda en que se escribe el total en Bs (`cabecera.moneda_bs`): nula sin `total_en` o sin su tipo de cambio activo.
     moneda_bs: z.string().length(3).nullable(),
+    // Quien mira tiene el ⚙ de la cabecera (`cotizaciones.configurar` del origen y al menos un modo): lo decide la base.
+    ajustes: z.boolean().optional(),
+    // Lo que la cabecera trae por defecto (docs/GLOSARIO.md › «Modo por defecto», «Modos visibles»): sólo si el diseño lo trae.
+    modo_por_defecto: esquemaId.optional(),
+    ver_total_bs_por_defecto: z.boolean().optional(),
+    modos_visibles: z.array(esquemaId).optional(),
     ...aspectoComun,
   }),
   secciones: z.array(esquemaSeccion),
