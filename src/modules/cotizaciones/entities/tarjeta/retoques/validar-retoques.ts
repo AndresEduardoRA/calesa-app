@@ -43,16 +43,16 @@ function revisarLaForma(v: unknown): ResultadoDeRetoques | null {
 // Cada celda en orden C: un texto, de una celda de texto que está, de hasta 300 caracteres.
 function revisarLasCeldas(
   celdas: Readonly<Record<string, unknown>>,
-  tipos: ReadonlyMap<string, string>,
+  tipos: ReadonlyMap<string, string | undefined>,
 ): { rechazo: ResultadoDeRetoques } | { celdas: Record<string, string> } {
   const pares: [string, string][] = []
   for (const id of clavesEnOrdenC(celdas)) {
     const donde = `celdas.${id}`
     const texto = celdas[id]
     if (typeof texto !== 'string') return { rechazo: no('forma', donde) }
-    const tipo = tipos.get(id)
-    if (tipo === undefined) return { rechazo: no('celda_inexistente', donde) }
-    if (tipo !== 'texto') return { rechazo: no('celda_no_es_texto', donde) }
+    // Como `?` y `->>` de la base: una celda sin `tipo` está, pero no es de texto.
+    if (!tipos.has(id)) return { rechazo: no('celda_inexistente', donde) }
+    if (tipos.get(id) !== 'texto') return { rechazo: no('celda_no_es_texto', donde) }
     if (caracteres(texto) > MAXIMO_DE_CARACTERES_DE_UN_RETOQUE) {
       return { rechazo: no('texto_largo', donde) }
     }

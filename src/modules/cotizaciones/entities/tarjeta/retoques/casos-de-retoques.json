@@ -101,6 +101,30 @@
           }
         }
       ]
+    },
+    "sin_tipo": {
+      "forma": 2,
+      "columnas": [
+        {
+          "id": "a",
+          "ancho": 200
+        }
+      ],
+      "filas": [
+        {
+          "id": "f",
+          "alto": 24,
+          "ocultar_si": "nunca"
+        }
+      ],
+      "celdas": [
+        {
+          "id": "c_rara",
+          "fila": "f",
+          "columna": "a",
+          "contenido": {}
+        }
+      ]
     }
   },
   "casos": [
@@ -610,6 +634,19 @@
       "motivo": {
         "regla": "fila_repetida",
         "donde": "filas_ocultas.f_flete"
+      }
+    },
+    {
+      "nombre": "borde: una celda sin tipo está, pero no es de texto",
+      "plantilla": "sin_tipo",
+      "retoques": {
+        "celdas": {
+          "c_rara": "x"
+        }
+      },
+      "motivo": {
+        "regla": "celda_no_es_texto",
+        "donde": "celdas.c_rara"
       }
     }
   ],
