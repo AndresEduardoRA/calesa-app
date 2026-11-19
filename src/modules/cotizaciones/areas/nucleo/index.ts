@@ -88,8 +88,13 @@ export type { DisenoDeHoja } from '../../entities/hoja'
 
 // La pantalla de cotizar (4.13-2): el primer cálculo que hace el servidor junto con la hoja, qué orígenes se cotizan, qué se ve al abrir y la URL. Los componentes salen por
 // `pantallas/cotizar.ts`. `recalcularAlAbrir` sólo se importa desde un Server Component.
-export { recalcularAlAbrir } from './composicion'
-export { aperturaDe } from '../../entities/apertura'
+export { recalcularAlAbrir, recalcularAlAbrirEnPar } from './composicion'
+export { aperturaDe, inicialDe } from '../../entities/apertura'
+// La hoja en par (glosario: «Variante en par» y «Cotizaciones hermanas»): cómo abre la guardada de una hermana.
+export { modoDeLaHermana, type ModoDeLaHermana } from '../../entities/hermana'
+export type { ParDeHoja } from '../../entities/hoja-en-par'
+export { ladoDeLaOpcion } from '../../entities/hoja-en-par'
+export { topeDelTituloEnPar, tituloBaseDeLaHermana } from '../../entities/titulo-en-par'
 export { modoInicial } from '../../entities/cabecera-de-la-hoja'
 export type { Apertura, RecalculoInicial } from '../../entities/apertura'
 export { origenElegido, origenesParaCotizar } from '../../entities/origenes-para-cotizar'

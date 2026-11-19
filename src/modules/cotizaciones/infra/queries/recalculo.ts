@@ -1,7 +1,10 @@
 import 'server-only'
 import { ENTRADAS_VACIAS, entradasDelPedido } from '../../entities/entradas'
 import { argumentosDeEvaluar, resultadoDeEvaluar } from '../../entities/pedido-de-recalculo'
-import type { RecalculadorAlAbrir } from '../../entities/repositorios-de-hoja'
+import type {
+  RecalculadorAlAbrir,
+  RecalculadorAlAbrirEnPar,
+} from '../../entities/repositorios-de-hoja'
 import { createClient } from '@/shared/lib/supabase/server'
 
 // El primer cálculo de la hoja, con las entradas vacías y el modo con que abre la hoja, junto con la lectura de la hoja: así llega dibujada con sus valores y el navegador no pide nada al abrir.
@@ -11,6 +14,7 @@ export const recalcularAlAbrir: RecalculadorAlAbrir = async ({
   vehiculoId,
   abierta,
   modoTc,
+  opcion,
 }) => {
   const supabase = await createClient()
   const entradas = entradasDelPedido(ENTRADAS_VACIAS)
@@ -19,7 +23,13 @@ export const recalcularAlAbrir: RecalculadorAlAbrir = async ({
       await supabase.rpc(
         'cotizacion_evaluar',
         argumentosDeEvaluar({
-          de: { tipo: 'abierta', origenId, abierta, vehiculoId: vehiculo },
+          de: {
+            tipo: 'abierta',
+            origenId,
+            abierta,
+            vehiculoId: vehiculo,
+            ...(opcion === undefined ? {} : { opcion }),
+          },
           entradas,
           modoTc,
         }),
@@ -35,4 +45,16 @@ export const recalcularAlAbrir: RecalculadorAlAbrir = async ({
   return sinVehiculo.ok
     ? { resultado: sinVehiculo, vehiculoSoltado: true }
     : { resultado: primero, vehiculoSoltado: false }
+}
+
+// El primer cálculo de una hoja en par (glosario: «Variante en par»): uno por opción, en paralelo (cada columna calcula con la suya).
+export const recalcularAlAbrirEnPar: RecalculadorAlAbrirEnPar = async ({ opciones, ...pedido }) => {
+  const [a, b] = await Promise.all([
+    recalcularAlAbrir({ ...pedido, opcion: opciones[0] }),
+    recalcularAlAbrir({ ...pedido, opcion: opciones[1] }),
+  ])
+  return {
+    resultados: [a.resultado, b.resultado],
+    vehiculoSoltado: a.vehiculoSoltado || b.vehiculoSoltado,
+  }
 }

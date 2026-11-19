@@ -26,6 +26,8 @@ export type TituloDeLaCotizacion = {
   ponerRechazo: (texto: string | null) => void
   // Guardada la cotización: el borrador se va (y la hoja nueva vuelve a automático para la próxima).
   alGuardar: () => void
+  // Lo que puede medir: 120, o menos en una hoja en par (el título de cada hermana lleva « · <su opción>»).
+  tope?: number
 }
 
 export const ContextoDelTitulo = createContext<TituloDeLaCotizacion | null>(null)

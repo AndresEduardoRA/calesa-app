@@ -2,6 +2,8 @@
 export { EsqueletoDeHoja } from '../features/hoja/components/esqueleto-de-hoja'
 export { FormulaSinPublicar } from '../features/hoja/components/formula-sin-publicar'
 export { PantallaDeCotizar } from '../features/hoja/components/pantalla-de-cotizar'
+// La hoja en par (glosario: «Variante en par»), sólo la cáscara diferida: se pide con una fórmula en par.
+export { PantallaDeCotizarEnParDiferida } from '../features/hoja/components/par'
 export { PestanasDeOrigen } from '../features/hoja/components/pestanas-de-origen'
 export { HistorialDelVehiculo } from '../features/historial/components/diferidos'
 // El título de la cotización (T307): su proveedor (sobre las barras y la hoja) y el campo, que va arriba del panel del vehículo.

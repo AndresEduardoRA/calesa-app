@@ -1,5 +1,12 @@
 import type { ReactNode } from 'react'
-import { CLAVE_DE_VEHICULO, MOTIVO_DE_LA_FINAL, type CambioPermitido } from '@/modules/cotizaciones'
+import {
+  CLAVE_DE_VEHICULO,
+  MOTIVO_DE_LA_FINAL,
+  tituloBaseDeLaHermana,
+  topeDelTituloEnPar,
+  type CambioPermitido,
+  type ParDeHoja,
+} from '@/modules/cotizaciones'
 import { ProveedorDelTitulo } from '@/modules/cotizaciones/pantallas/cotizacion'
 import { elegidoDesde, type Vehiculo } from '@/modules/vehiculos'
 import type { ModoDeLaBarra } from '@/modules/vehiculos/pantallas/cotizar'
@@ -37,14 +44,21 @@ export function ConElTituloDeLaGuardada({
   hoja,
   personaId,
   vehiculo,
+  par,
   children,
 }: {
-  hoja: Guardada
+  hoja: Guardada & { opcionDelPar?: string | null | undefined }
   personaId: string
   vehiculo: Vehiculo | null
+  // Con la variante en par, el título se edita sin la opción de esta (la base la pone al guardar) y con el tope menor.
+  par?: ParDeHoja | undefined
   children: ReactNode
 }) {
-  const { cotizacion } = hoja
+  const etiqueta = par?.opciones.find((o) => o.clave === hoja.opcionDelPar)?.etiqueta
+  const cotizacion =
+    etiqueta === undefined
+      ? hoja.cotizacion
+      : { ...hoja.cotizacion, titulo: tituloBaseDeLaHermana(hoja.cotizacion.titulo, etiqueta) }
   return (
     <ProveedorDelTitulo
       deLaPestana={{
@@ -56,6 +70,7 @@ export function ConElTituloDeLaGuardada({
       titulo={cotizacion.titulo}
       tituloManual={cotizacion.tituloManual}
       puede={hoja.puedeGuardar}
+      {...(par ? { tope: topeDelTituloEnPar(par) } : {})}
     >
       {children}
     </ProveedorDelTitulo>

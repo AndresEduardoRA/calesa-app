@@ -7,6 +7,7 @@ import { avisoDeVersion } from '../../../entities/aviso-de-version'
 import type { HojaDeUnaGuardada } from '../../../entities/hoja-de-una-guardada'
 import { textoDeEncima, type ResultadoDeEncima } from '../../../entities/resultado-de-encima'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
+import { encimaEnParDe } from '../../../entities/hermana'
 import { useCotizarEncima } from '../hooks/use-cotizar-encima'
 
 const CON_CAMBIOS =
@@ -22,7 +23,7 @@ type Props = {
 // (`puede_cotizar_encima`: no hay otra versión nueva y tiene con qué). El aviso lo ve todo el que abre la página; el botón, sólo quien puede. Sin nada que decir, no dibuja nada.
 export function AvisoDeVersion({ hoja, hayCambios }: Props) {
   const lineas = avisoDeVersion(hoja)
-  const encima = useCotizarEncima({ anterior: hoja.cotizacion.id })
+  const encima = useCotizarEncima({ anterior: hoja.cotizacion.id, enPar: encimaEnParDe(hoja) })
   if (lineas.length === 0) {
     return null
   }

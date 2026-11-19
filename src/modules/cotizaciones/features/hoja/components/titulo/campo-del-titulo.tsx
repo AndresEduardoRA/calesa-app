@@ -31,10 +31,10 @@ function ayudaDelCampo(titulo: TituloDeLaCotizacion, automatico: string | null) 
   return titulo.estado.manual || automatico === null ? null : AYUDA_DEL_AUTOMATICO
 }
 
-function Contador({ largo }: { largo: number }) {
-  return largo >= AVISO_DEL_TOPE_DEL_TITULO ? (
+function Contador({ largo, tope }: { largo: number; tope: number }) {
+  return largo >= Math.min(AVISO_DEL_TOPE_DEL_TITULO, tope - 20) ? (
     <span className="text-xs text-(--color-ink-soft) tabular-nums" aria-live="polite">
-      {String(largo)}/{String(TOPE_DEL_TITULO)}
+      {String(largo)}/{String(tope)}
     </span>
   ) : null
 }
@@ -61,14 +61,14 @@ function Campo({ titulo }: { titulo: TituloDeLaCotizacion }) {
         <label htmlFor={id} className="text-(length:--text-sm) font-medium text-(--color-ink)">
           Título de la cotización
         </label>
-        <Contador largo={largoDelTitulo(valor)} />
+        <Contador largo={largoDelTitulo(valor)} tope={titulo.tope ?? TOPE_DEL_TITULO} />
       </div>
       <Input
         ref={campo}
         id={id}
         type="text"
         autoComplete="off"
-        maxLength={TOPE_DEL_TITULO}
+        maxLength={titulo.tope ?? TOPE_DEL_TITULO}
         placeholder={automatico ?? 'Escribe el título'}
         aria-describedby={ayuda === null ? undefined : idDeLaAyuda}
         aria-invalid={conRechazo ? true : undefined}

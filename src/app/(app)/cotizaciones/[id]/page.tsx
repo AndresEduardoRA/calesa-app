@@ -8,11 +8,7 @@ import {
   leerHojaDeUnaGuardada,
   type HojaDeUnaGuardada,
 } from '@/modules/cotizaciones'
-import {
-  CabeceraDeLaGuardada,
-  EsqueletoDeHoja,
-  PantallaDeUnaGuardada,
-} from '@/modules/cotizaciones/pantallas/cotizacion'
+import { CabeceraDeLaGuardada, EsqueletoDeHoja } from '@/modules/cotizaciones/pantallas/cotizacion'
 import { requerirSesion } from '@/modules/equipo'
 import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import { PANEL_DEL_VEHICULO } from '@/modules/vehiculos/pantallas/cotizar'
@@ -28,6 +24,8 @@ import {
 } from '../datos-de-la-tarjeta'
 import { idDeUrl, type Quien } from '../vehiculo-de-la-hoja'
 import { HUECOS_DE_LA_GUARDADA, dibujarHuecos } from './huecos-de-la-guardada'
+import { HojaDeLaGuardada, LaHermana } from './hoja-de-la-guardada'
+import { esHermanaSola, leerElParDeLaGuardada } from './par-de-la-guardada'
 import { barraDeLaCabecera, ConElTituloDeLaGuardada } from './titulo-de-la-guardada'
 import { leerLoDelVehiculo } from './vehiculo-de-la-guardada'
 
@@ -80,13 +78,14 @@ async function leerAlrededor(
   sesion: Quien,
   id: string,
   lectura: { hoja: HojaDeUnaGuardada; vehiculoNuevo: string | null; vehiculoSoltado: boolean },
+  hermanaSola: boolean,
 ) {
   const { hoja, vehiculoNuevo, vehiculoSoltado } = lectura
   const [cliente, vehiculo, asesor, delVehiculo] = await Promise.all([
     clienteDe(sesion.permisos, hoja.cotizacion.leadId),
     vehiculoDe(hoja.cotizacion.vehiculoId),
     asesorDe(id),
-    leerLoDelVehiculo(sesion, hoja, { vehiculoNuevo, vehiculoSoltado }),
+    leerLoDelVehiculo(sesion, hoja, { vehiculoNuevo, vehiculoSoltado, hermanaSola }),
   ])
   if (vehiculoNuevo !== null && delVehiculo.nuevo === null) {
     // La hoja calculó con el elegido pero su lectura no llegó (un fallo, o se fue a la papelera entre las dos): la barra y el título nombrarían el de antes con el total
@@ -160,18 +159,22 @@ async function Cotizacion({
     // Sube al `error.tsx` de la pantalla, que ofrece «Reintentar».
     throw new Error(lectura.error.mensaje)
   }
-  const { hoja, inicial, vehiculoNuevo } = lectura.data
-  const { cliente, vehiculo, asesor, delVehiculo, deLaHoja } = await leerAlrededor(
-    sesion,
-    id,
-    lectura.data,
-  )
+  const { hoja } = lectura.data
+  const [{ cliente, vehiculo, asesor, delVehiculo, deLaHoja }, delPar] = await Promise.all([
+    leerAlrededor(sesion, id, lectura.data, esHermanaSola(hoja)),
+    leerElParDeLaGuardada(lectura.data, idDeUrl(url[CLAVE_DE_VEHICULO])),
+  ])
   const props = propsDeLosHuecos(hoja, sesion.permisos, vehiculo)
   return (
     <>
       <RegistrarVisita tipo="cotizacion" id={hoja.cotizacion.id} />
       <RegistrarVisto modulo="cotizaciones" tipo="cotizacion" id={hoja.cotizacion.id} />
-      <ConElTituloDeLaGuardada hoja={hoja} personaId={sesion.usuarioId} vehiculo={deLaHoja}>
+      <ConElTituloDeLaGuardada
+        hoja={hoja}
+        personaId={sesion.usuarioId}
+        vehiculo={deLaHoja}
+        par={hoja.diseno.par}
+      >
         <CabeceraDeLaGuardada
           id={hoja.cotizacion.id}
           numero={hoja.cotizacion.numero}
@@ -188,6 +191,7 @@ async function Cotizacion({
           acciones={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Acciones', props)}
           insignias={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Insignias', props)}
         />
+        <LaHermana hoja={hoja} delPar={delPar} />
         {dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'BajoLaCabecera', props)}
         <ConProveedorDeLaHoja
           origenId={hoja.cotizacion.origenId}
@@ -195,14 +199,11 @@ async function Cotizacion({
           permisos={sesion.permisos}
           tarjeta={tarjetaDeLaGuardada(hoja, { cliente, vehiculo, asesor })}
         >
-          <PantallaDeUnaGuardada
-            key={hoja.cotizacion.id}
-            hoja={hoja}
-            inicial={inicial}
+          <HojaDeLaGuardada
+            lectura={lectura.data}
+            delPar={delPar}
             personaId={sesion.usuarioId}
-            panelDelTitulo={PANEL_DEL_VEHICULO}
-            vehiculoNuevo={vehiculoNuevo}
-            cambiaVehiculo={delVehiculo.cambio === 'elige'}
+            cambio={delVehiculo.cambio}
             pasos={pasosDeLaGuardada(delVehiculo.cambio, lectura.data)}
           />
         </ConProveedorDeLaHoja>

@@ -6,6 +6,7 @@ import type { HojaDeUnaGuardada } from './hoja-de-una-guardada'
 import type { ResultadoDeEncima } from './resultado-de-encima'
 import type { PedidoDeEdicion } from './pedido-de-edicion'
 import type { PedidoDeGuardado } from './pedido-de-guardado'
+import type { PedidoDeCrearEnPar, PedidoDeGuardarEnPar } from './pedido-en-par'
 import type { PedidoDeRecalculo } from './pedido-de-recalculo'
 import type { RespuestaDeRecalculo } from './recalculo'
 import type { PedidoDeTabla, TablaDeAyuda } from './tabla-de-ayuda'
@@ -28,16 +29,41 @@ export type RecalculadorAlAbrir = (pedido: {
   abierta: string
   // El modo con que abre la hoja (P1): el primer cálculo ya lo lleva.
   modoTc: string | null
+  // La opción de una columna de la hoja en par (glosario: «Variante en par»).
+  opcion?: string
 }) => Promise<{
   resultado: Resultado<RespuestaDeRecalculo>
   vehiculoSoltado: boolean
 }>
 
 // El guardado de la hoja (`cotizacion_crear()`, con la sesión y la RLS de quien cotiza): lo guardado, la respuesta perdida o el rechazo con su motivo. Nunca lanza.
+export type RecalculadorAlAbrirEnPar = (
+  pedido: Omit<Parameters<RecalculadorAlAbrir>[0], 'opcion'> & {
+    opciones: readonly [string, string]
+  },
+) => Promise<{
+  resultados: readonly [Resultado<RespuestaDeRecalculo>, Resultado<RespuestaDeRecalculo>]
+  vehiculoSoltado: boolean
+}>
+
 export type CreadorDeCotizacion = (pedido: PedidoDeGuardado) => Promise<ResultadoDeCrear>
 
 // Los cambios de una cotización guardada (`cotizacion_guardar()`, 4.15-3): lo guardado, la respuesta perdida o el rechazo con su motivo. Nunca lanza.
 export type GuardadorDeCotizacion = (pedido: PedidoDeEdicion) => Promise<ResultadoDeCrear>
+
+// Las cotizaciones hermanas (glosario: «Cotizaciones hermanas»): crear y guardar las dos en una transacción, y cotizar encima del par. `etiquetas`, en el orden de las
+// opciones: el PT409 nombra por su opción la que cambió.
+export type CreadorEnPar = (pedido: PedidoDeCrearEnPar) => Promise<ResultadoDeCrear>
+export type GuardadorEnPar = (
+  pedido: PedidoDeGuardarEnPar,
+  etiquetas: readonly [string, string],
+) => Promise<ResultadoDeCrear>
+// `cual`: la posición de la que se abrió, la que vuelve como creada.
+export type CotizadorEncimaEnPar = (pedido: {
+  anteriores: readonly [string, string]
+  intentos: readonly [string, string]
+  cual: 0 | 1
+}) => Promise<ResultadoDeEncima>
 
 // Cotizar encima de una guardada (`cotizacion_encima()`, 4.15-2): crea la N+1 en el acto. El intento es el id de la nueva (el mismo intento, de esta anterior, devuelve la misma).
 // La nueva o el rechazo con su motivo, la respuesta perdida. Nunca lanza.

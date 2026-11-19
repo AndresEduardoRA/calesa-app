@@ -7,11 +7,11 @@ import {
   CLAVE_DE_VEHICULO,
   origenElegido,
   origenesParaCotizar,
+  topeDelTituloEnPar,
 } from '@/modules/cotizaciones'
 import {
   EsqueletoDeHoja,
   FormulaSinPublicar,
-  PantallaDeCotizar,
   PestanasDeOrigen,
   ProveedorDelTitulo,
 } from '@/modules/cotizaciones/pantallas/cotizar'
@@ -25,6 +25,7 @@ import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
 import { idDeUrl, type Quien, type VehiculoDeLaUrl } from '../vehiculo-de-la-hoja'
 import { BarrasDeLaHoja } from './barras-de-la-hoja'
+import { PantallaDeLaHoja } from './pantalla-de-la-hoja'
 import { tarjetaDeLaHojaNueva, tituloDelElegido } from './tarjeta-de-la-hoja'
 import { TituloDeLaHoja, volverDe } from './volver-de-la-hoja'
 import {
@@ -105,11 +106,14 @@ function ConElTitulo({
   sesion,
   origen,
   elegido,
+  tope,
   children,
 }: {
   sesion: { usuarioId: string }
   origen: { id: string }
   elegido: VehiculoDeLaUrl
+  // En una hoja en par, el título lleva « · <opción>»: su tope es menor.
+  tope?: number | undefined
   children: ReactNode
 }) {
   return (
@@ -120,6 +124,7 @@ function ConElTitulo({
         vehiculoAlAbrir: elegido?.vehiculo.id ?? null,
       }}
       vehiculo={tituloDelElegido(elegido)}
+      {...(tope === undefined ? {} : { tope })}
     >
       {children}
     </ProveedorDelTitulo>
@@ -127,6 +132,36 @@ function ConElTitulo({
 }
 
 // La hoja del origen elegido, con sus dos barras (vehículo y cliente) y las pestañas de origen.
+// En una hoja en par el título lleva « · <opción>»: su tope es menor.
+const topeDelTitulo = (hoja: { par?: Parameters<typeof topeDelTituloEnPar>[0] }) =>
+  hoja.par ? topeDelTituloEnPar(hoja.par) : undefined
+
+// Lo que se dibuja en lugar de la hoja: sin permiso, el error (sube al `error.tsx` de la pantalla, que ofrece «Reintentar») o «Falta publicar la fórmula».
+function SinHoja({
+  apertura,
+  origenId,
+  pestanas,
+}: {
+  apertura: Exclude<Awaited<ReturnType<typeof leerLoDeLaHoja>>['apertura'], { tipo: 'lista' }>
+  origenId: string
+  pestanas: ReactNode
+}) {
+  if (apertura.tipo === 'sin_permiso') {
+    return (
+      <EstadoSinPermiso descripcion="No tienes permiso para cotizar en este origen. Pídeselo a quien administra los roles." />
+    )
+  }
+  if (apertura.tipo === 'error') {
+    throw new Error(apertura.error.mensaje)
+  }
+  return (
+    <>
+      {pestanas}
+      <SinPublicar origenId={origenId} hoja={apertura.hoja} />
+    </>
+  )
+}
+
 async function HojaDelOrigen({
   sesion,
   asesor,
@@ -143,31 +178,14 @@ async function HojaDelOrigen({
 }) {
   const lead = idDeUrl(url[CLAVE_DE_LEAD])
   const vehiculo = idDeUrl(url[CLAVE_DE_VEHICULO])
-  const { apertura, vehiculoSoltado, leido, conteo, alta, layout, cliente } = await leerLoDeLaHoja(
-    sesion,
-    origen,
-    { lead, vehiculo },
-  )
-  if (apertura.tipo === 'sin_permiso') {
-    return (
-      <EstadoSinPermiso descripcion="No tienes permiso para cotizar en este origen. Pídeselo a quien administra los roles." />
-    )
-  }
-  if (apertura.tipo === 'error') {
-    // Sube al `error.tsx` de la pantalla, que ofrece «Reintentar».
-    throw new Error(apertura.error.mensaje)
-  }
+  const { apertura, vehiculoSoltado, leido, conteo, alta, layout, cliente, inicialDeLaSegunda } =
+    await leerLoDeLaHoja(sesion, origen, { lead, vehiculo })
   // Un lead que no se ve se suelta, como el vehículo: ni la hoja ni las pestañas de origen lo llevan.
   const leadUsado = cliente?.id ?? null
   const dePestanas = { origenes, actual: origen.id, leadId: leadUsado, volverA: volverDe(url) }
   const pestanas = <PestanasDeOrigen {...dePestanas} />
-  if (apertura.tipo === 'sin_publicar') {
-    return (
-      <>
-        {pestanas}
-        <SinPublicar origenId={origen.id} hoja={apertura.hoja} />
-      </>
-    )
+  if (apertura.tipo !== 'lista') {
+    return <SinHoja apertura={apertura} origenId={origen.id} pestanas={pestanas} />
   }
   const vehiculoUsado = vehiculoSoltado ? null : vehiculo
   const elegido = vehiculoSoltado ? null : leido
@@ -177,7 +195,13 @@ async function HojaDelOrigen({
   return (
     <>
       {pestanas}
-      <ConElTitulo key={origen.id} sesion={sesion} origen={origen} elegido={elegido}>
+      <ConElTitulo
+        key={origen.id}
+        sesion={sesion}
+        origen={origen}
+        elegido={elegido}
+        tope={topeDelTitulo(apertura.hoja)}
+      >
         <BarrasDeLaHoja
           sesion={sesion}
           origen={origen}
@@ -191,10 +215,10 @@ async function HojaDelOrigen({
           permisos={sesion.permisos}
           tarjeta={tarjetaDeLaHojaNueva({ elegido, cliente, asesor })}
         >
-          <PantallaDeCotizar
+          <PantallaDeLaHoja
             key={`${origen.id}:${leadUsado ?? '-'}:${vehiculoUsado ?? '-'}`}
             hoja={apertura.hoja}
-            inicial={apertura.inicial}
+            iniciales={[apertura.inicial, inicialDeLaSegunda]}
             vehiculoId={vehiculoUsado}
             vehiculoSoltado={vehiculoSoltado}
             leadId={leadUsado}

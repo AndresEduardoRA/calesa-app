@@ -23,6 +23,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: refrescar }) })
 vi.mock('next-safe-action/hooks', () => ({ useAction: () => ({ executeAsync: ejecutar }) }))
 vi.mock('../actions/guardar-cotizacion', () => ({ guardarCotizacion: {} }))
 vi.mock('../../encima/actions/cotizar-encima', () => ({ cotizarEncima: {} }))
+vi.mock('../../encima/actions/cotizar-encima-en-par', () => ({ cotizarEncimaEnPar: {} }))
 
 // «Recargar» en la hoja de una cotización guardada (4.15-3, C9): pide la lectura al servidor y, cuando llega, la hoja se vuelve a montar con ella aunque la versión de la
 // cotización no se haya movido (`nodo_no_editable`, un recálculo que pide recargar). Sin eso la hoja conservaba lo que la base rechazó y el próximo «Guardar» caía igual.

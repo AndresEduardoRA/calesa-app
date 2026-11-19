@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { disenoDe } from './hoja'
 import { esquemaDeDiseno } from './hoja-esquema'
-import type { HojaDeUnaGuardada } from './hoja-de-una-guardada'
+import type { HermanaDeLaGuardada, HojaDeUnaGuardada } from './hoja-de-una-guardada'
 
 // La respuesta de `cotizacion_hoja_guardada()` (4.15-2) leída con Zod, en la forma de `hoja-de-una-guardada.ts`. Sólo la importa el servidor (la lectura): el navegador recibe la
 // hoja ya leída y no necesita los esquemas. Trae además la cadena (`anterior`, `encima`, `puede_cotizar_encima`) y la publicada de hoy (4.15-3b): una respuesta sin ellas no es lo que la base promete.
@@ -29,6 +29,7 @@ const esquemaDeLaCotizacion = z.object({
     .optional(),
   creado_en: z.string().min(1),
   actualizado_en: z.string().min(1),
+  hermana_id: z.guid().nullable().optional(),
 })
 
 const esquemaDeUnaVersion = z.object({ id: z.guid(), numero: z.int(), version: z.int().positive() })
@@ -48,7 +49,29 @@ const esquemaDeUnaGuardada = esquemaDeDiseno.extend({
   anterior: esquemaDeUnaVersion.nullable(),
   encima: z.union([esquemaDeUnaVersion, z.object({ oculta: z.literal(true) })]).nullable(),
   puede_cotizar_encima: z.boolean(),
+  puede_cotizar_encima_en_par: z.boolean().optional(),
+  hermana: z
+    .union([
+      z.object({
+        id: z.guid(),
+        disponible: z.literal(true),
+        actualizado_en: z.string().min(1),
+        puede_guardar: z.boolean(),
+      }),
+      z.object({ id: z.guid(), disponible: z.literal(false) }),
+    ])
+    .nullable()
+    .optional(),
 })
+
+const hermanaDe = (
+  h: z.infer<typeof esquemaDeUnaGuardada>['hermana'],
+): HermanaDeLaGuardada | null => {
+  if (!h) return null
+  return h.disponible
+    ? { id: h.id, disponible: true, actualizadoEn: h.actualizado_en, puedeGuardar: h.puede_guardar }
+    : { id: h.id, disponible: false }
+}
 
 // La respuesta de la base ya en la forma que usa la página, o nulo si no es lo que la base promete.
 export function hojaDeUnaGuardadaDesde(crudo: unknown): HojaDeUnaGuardada | null {
@@ -76,6 +99,7 @@ export function hojaDeUnaGuardadaDesde(crudo: unknown): HojaDeUnaGuardada | null
       tarjetaRetoques: c.tarjeta_retoques ?? null,
       creadoEn: c.creado_en,
       actualizadoEn: c.actualizado_en,
+      ...(c.hermana_id ? { hermanaId: c.hermana_id } : {}),
     },
     guardado: {
       valores: new Map(Object.entries(h.valores)),
@@ -87,6 +111,12 @@ export function hojaDeUnaGuardadaDesde(crudo: unknown): HojaDeUnaGuardada | null
     venceEl: h.vence_el,
     vencida: h.vencida,
     publicada: h.publicada,
-    cadena: { anterior: h.anterior, encima: h.encima, puedeCotizarEncima: h.puede_cotizar_encima },
+    cadena: {
+      anterior: h.anterior,
+      encima: h.encima,
+      puedeCotizarEncima: h.puede_cotizar_encima,
+      ...(h.puede_cotizar_encima_en_par ? { puedeCotizarEncimaEnPar: true } : {}),
+    },
+    ...(h.par ? { hermana: hermanaDe(h.hermana), opcionDelPar: h.par.opcion ?? null } : {}),
   }
 }

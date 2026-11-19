@@ -5,8 +5,10 @@ import {
   eleccionesDeLaHoja,
   leerHojaParaCotizar,
   modoInicial,
+  inicialDe,
   obligatoriosAlCotizar,
   recalcularAlAbrir,
+  recalcularAlAbrirEnPar,
 } from '@/modules/cotizaciones'
 import { leerClienteElegido, type ClienteElegido } from '@/modules/leads'
 import { PANEL_DEL_CLIENTE } from '@/modules/leads/pantallas/cotizar'
@@ -23,6 +25,23 @@ import { altaDelPanelDe, elegidoDeLaUrl, type Quien } from '../vehiculo-de-la-ho
 // navegador no pide nada al abrir. Un pedido más en serie, que se ahorra cuando no hay hoja que calcular (sin permiso, sin publicar).
 export async function abrirLaHoja(origenId: string, vehiculoId: string | null) {
   const hoja = await leerHojaParaCotizar(origenId)
+  // Con la variante en par (glosario: «Variante en par»), un primer cálculo por opción: la hoja abre con las dos columnas calculadas.
+  if (hoja.ok && hoja.data.estado === 'lista' && hoja.data.par) {
+    const { par } = hoja.data
+    const enPar = await recalcularAlAbrirEnPar({
+      origenId,
+      vehiculoId,
+      abierta: hoja.data.abierta,
+      modoTc: modoInicial(hoja.data.cabecera),
+      opciones: [par.opciones[0].clave, par.opciones[1].clave],
+    })
+    const apertura = aperturaDe(hoja, enPar.resultados[0])
+    return {
+      apertura,
+      vehiculoSoltado: enPar.vehiculoSoltado,
+      inicialDeLaSegunda: inicialDe(hoja.data, enPar.resultados[1]),
+    }
+  }
   const alAbrir =
     hoja.ok && hoja.data.estado === 'lista'
       ? await recalcularAlAbrir({

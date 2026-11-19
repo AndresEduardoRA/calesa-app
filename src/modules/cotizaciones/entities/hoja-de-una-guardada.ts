@@ -24,6 +24,8 @@ export type CotizacionDeLaHoja = {
   // Los retoques de su tarjeta (los textos y las filas ocultas sólo de esta cotización); nulo, la tarjeta tal cual la plantilla.
   tarjetaRetoques: RetoquesDeLaTarjeta | null
   creadoEn: string
+  // La hermana (glosario: «Cotizaciones hermanas»): la otra opción de una variante en par; sin la clave, ninguna.
+  hermanaId?: string | null
   // **El texto de la base, tal cual** (con sus microsegundos): es la versión que `cotizacion_guardar` compara. Nunca pasa por `Date`; sólo se muestra formateado.
   actualizadoEn: string
 }
@@ -46,7 +48,14 @@ export type CadenaDeLaCotizacion = {
   anterior: VersionDeLaCadena | null
   encima: VersionDeLaCadena | { oculta: true } | null
   puedeCotizarEncima: boolean
+  // Cotizar encima del par: la hermana disponible y la publicada de hoy en par (lo decide la base).
+  puedeCotizarEncimaEnPar?: boolean
 }
+
+// La hermana de una guardada (glosario: «Cotizaciones hermanas»): disponible si se ve, está viva y no es inválida; de una que no, sólo su id.
+export type HermanaDeLaGuardada =
+  | { id: string; disponible: true; actualizadoEn: string; puedeGuardar: boolean }
+  | { id: string; disponible: false }
 
 export type HojaDeUnaGuardada = {
   diseno: DisenoDeHoja
@@ -60,6 +69,9 @@ export type HojaDeUnaGuardada = {
   // La versión publicada de la fórmula del origen hoy (la cotización usa SU versión: `diseno.formula`); nula si el origen no tiene una publicada.
   publicada: { id: string; version: number } | null
   cadena: CadenaDeLaCotizacion
+  // Con una variante en par: su hermana (nula si no tiene) y la clave de la opción de esta cotización.
+  hermana?: HermanaDeLaGuardada | null
+  opcionDelPar?: string | null
 }
 
 // El diseño de una guardada como la hoja que dibuja `HojaDeCotizar`. No tiene hoja abierta ni su hora (calcula por su cotización, `DeDondeCalcula`: nunca se lee) y el vehículo

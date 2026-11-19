@@ -7,6 +7,10 @@ const B = '00000000-0000-4000-8000-0000000000bb'
 describe('cambioDeVehiculo: qué deja hacer la barra del vehículo de una guardada', () => {
   it('una preventa que se puede guardar elige otro; una final, sólo dice por qué no', () => {
     expect(cambioDeVehiculo({ clase: 'preventa', puedeGuardar: true })).toBe('elige')
+    // Una hermana abierta sola: el vehículo se cambia con las dos.
+    expect(cambioDeVehiculo({ clase: 'preventa', puedeGuardar: true, hermanaSola: true })).toBe(
+      'no',
+    )
     expect(cambioDeVehiculo({ clase: 'final', puedeGuardar: true })).toBe('final')
   })
 

@@ -69,3 +69,6 @@ export const claveDelBorradorDeUnaGuardada = ({
   actualizadoEn,
 }: DeUnaGuardada & { actualizadoEn: string }) =>
   `cotizar-guardada:${personaId}:${cotizacionId}:${actualizadoEn}`
+
+// Las claves de una hoja en par (glosario: «Variante en par»): las de la hoja con su marca, porque el pendiente y el borrador del par tienen otra forma.
+export const claveEnPar = (clave: string): string => `${clave}:par`

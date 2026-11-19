@@ -25,6 +25,7 @@ vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: refrescar }) })
 vi.mock('next-safe-action/hooks', () => ({ useAction: () => ({ executeAsync: ejecutar }) }))
 vi.mock('../actions/guardar-cotizacion', () => ({ guardarCotizacion: {} }))
 vi.mock('../../encima/actions/cotizar-encima', () => ({ cotizarEncima: {} }))
+vi.mock('../../encima/actions/cotizar-encima-en-par', () => ({ cotizarEncimaEnPar: {} }))
 
 // Cambiar el vehículo de una preventa guardada (T315): la hoja calcula con el elegido (`?vehiculo=`), es un cambio que guardar, guardar lo manda y lo suelta de la URL sin ir al
 // servidor; «Recargar» lo suelta yendo; el aviso de C11 no se dice con otro vehículo; uno que ya no se puede usar ofrece «Elegir otro vehículo».

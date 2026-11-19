@@ -26,6 +26,7 @@ import {
   type TipoDeNodoDeHoja,
 } from './hoja-esquema'
 import type { Formato } from './nodos'
+import type { ParDeHoja } from './hoja-en-par'
 
 // La hoja que la pantalla recibe de `cotizacion_hoja()` (paso 4.13): la respuesta leída con `hoja-esquema.ts` y en camelCase.
 export type { MotivoDeCandado, TipoDeNodoDeHoja } from './hoja-esquema'
@@ -67,6 +68,8 @@ export type CeldaDeHoja = EdicionDeHoja &
     condicion: string | null
     requeridoSi: string | null
     secundario: SecundarioDeCelda | null
+    // Cambia según la opción de la variante en par: se dibuja en dos celdas (sin la clave, una).
+    enPar?: true
   }
 export type ChipDeAtajos = { etiqueta: string; valor: number | null }
 export type AtajosDeHoja = AspectoDeItemConAncho & {
@@ -96,6 +99,7 @@ export type SubtotalDeHoja = AspectoDeItemConAncho & {
   etiqueta: string
   formato: Formato
   tono: string | null
+  enPar?: true
 }
 export type ItemDeHoja =
   CeldaDeHoja | AtajosDeHoja | VarianteDeHoja | InterruptorDeHoja | SubtotalDeHoja
@@ -126,6 +130,8 @@ export type DisenoDeHoja = {
   secciones: SeccionDeHoja[]
   tarjetaTotal: NodoDeTarjeta & { secundarios: NodoDeTarjeta[] }
   tonos: Tono[]
+  // La variante en par (`hoja-en-par.ts`); sin la clave, la hoja de siempre.
+  par?: ParDeHoja
 }
 
 export type HojaLista = DisenoDeHoja & {
@@ -176,6 +182,7 @@ function celdaDe(c: Crudo<typeof esquemaCelda>): CeldaDeHoja {
           ajustes: c.secundario.ajustes,
         }
       : null,
+    ...(c.en_par ? { enPar: true as const } : {}),
   }
 }
 
@@ -212,6 +219,7 @@ function itemDe(i: Crudo<typeof esquemaItem>): ItemDeHoja {
         etiqueta: i.etiqueta,
         formato: i.formato,
         tono: i.tono ?? null,
+        ...(i.en_par ? { enPar: true as const } : {}),
         ...aspectoDeItemConAncho(i),
       }
     default: {
@@ -245,6 +253,9 @@ export function disenoDe(h: Crudo<typeof esquemaDeDiseno>): DisenoDeHoja {
     })),
     tarjetaTotal: h.tarjeta_total,
     tonos: h.tonos,
+    ...(h.par
+      ? { par: { nodo: h.par.nodo, etiqueta: h.par.etiqueta, opciones: h.par.opciones } }
+      : {}),
   }
 }
 
