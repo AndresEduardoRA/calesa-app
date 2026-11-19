@@ -51,8 +51,9 @@ function MasDeLaFila({
   )
 }
 
-// Un seguimiento en la línea de tiempo del bloque «Seguimiento»: el icono de su tipo en un círculo sobre la línea (el nombre del tipo, para
-// quien lee en voz alta y al pasar el puntero), el título, «hace 2 h · Ana · <vehículo>», el ojo si lo ve el cliente y dos líneas del detalle.
+// Un seguimiento en la línea de tiempo del bloque «Seguimiento»: el icono de su tipo en un círculo sobre la línea, el título,
+// «Llamada · hace 2 h · Ana · <vehículo>» (el nombre del tipo a la vista: un tipo sin icono, o desactivado, sigue nombrando a los suyos), el ojo
+// si lo ve el cliente y dos líneas del detalle.
 // Lo que se hace con él, en su «⋯» (`data-mas-acciones="seguimiento-<id>"`: el modal de editar le devuelve el foco ahí). El `<li>` y la línea
 // vertical los pone la lista.
 export function FilaDeSeguimiento({
@@ -70,7 +71,7 @@ export function FilaDeSeguimiento({
       className="grid min-w-0 grid-cols-[2rem_minmax(0,1fr)] items-start gap-x-3"
     >
       <span
-        title={seguimiento.tipoNombre}
+        aria-hidden
         className="relative z-[1] flex size-8 items-center justify-center rounded-full border border-(--color-line) bg-(--color-surface) text-(--color-ink-soft)"
       >
         <IconoDelCatalogo clave={seguimiento.tipoIcono} className="size-4" />
@@ -78,7 +79,6 @@ export function FilaDeSeguimiento({
       <div className="grid min-w-0 gap-0.5">
         <div className="flex min-w-0 items-start gap-1">
           <h3 className="min-w-0 grow pt-1.5 text-(length:--text-sm) font-medium break-words text-(--color-ink)">
-            <span className="sr-only">{seguimiento.tipoNombre}: </span>
             {seguimiento.titulo}
           </h3>
           {seguimiento.visibilidad === 'publico' ? (
@@ -100,6 +100,8 @@ export function FilaDeSeguimiento({
           ) : null}
         </div>
         <p className="text-(length:--text-xs) text-(--color-ink-faint)">
+          <span className="text-(--color-ink-soft)">{seguimiento.tipoNombre}</span>
+          {' · '}
           <time
             dateTime={seguimiento.ocurridoEn}
             title={formatearFechaHora(seguimiento.ocurridoEn, { zona })}

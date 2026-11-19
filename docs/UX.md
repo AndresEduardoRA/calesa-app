@@ -1702,7 +1702,8 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
   seguimiento» (apagado con su motivo sin tipos activos) y «Agendar recordatorio», y un «⋯» con «Ver tus recordatorios»; al cerrarse el modal, el foco
   vuelve al «+». Arriba, tu recordatorio pendiente más próximo en una fila, con «Completar» a la vista y «Editar» y «Eliminar» en su «⋯» (vencido: borde y
   fondo de aviso y «Vencido»; sin pendientes no se dibuja). Debajo, los 3 últimos seguimientos en línea de tiempo: el icono de su tipo en un círculo sobre
-  una línea vertical, el título, «hace 2 h · Ana · <vehículo>», el ojo si lo ve el cliente y dos líneas del detalle, con «Editar» y «Eliminar» en el «⋯»
+  una línea vertical, el título, «Llamada · hace 2 h · Ana · <vehículo>» (el nombre del tipo a la vista: uno sin icono o desactivado sigue nombrando a
+  los suyos), el ojo si lo ve el cliente y dos líneas del detalle, con «Editar» y «Eliminar» en el «⋯»
   de los propios; un borrador sin guardar se dice arriba en una línea («Tienes un seguimiento sin guardar.» y «Continuar»). «Ver todos» (si hay más) y
   «Ver tus recordatorios», sin número, abren un drawer en `?todos=seguimientos|recordatorios` («Seguimientos de <nombre>», «Tus recordatorios sobre
   <nombre>») con la lista completa; con él abierto, los modales de la URL son del drawer.
