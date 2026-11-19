@@ -16,8 +16,9 @@ import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 import { sembrarFotos } from './soporte/vehiculos-lista'
 
-// La ficha del vehículo en dos columnas (`docs/UX.md` › Vehículo), sobre el vehículo `uno` del terreno de «Qué falta» (A → B pide el BL y el contenedor) con
-// un vinculado, dos interesados, una cotización y dos fotos. Qué bloque ve quién: `bloques.test.ts`; las acciones: `acciones-a-dibujar.test.ts`.
+// La ficha del vehículo en dos columnas (`docs/UX.md` › Vehículo): a la derecha, sólo lo de ventas —«Cotizaciones de este vehículo», «Relacionados»,
+// «Actividad reciente» y «Vitrina»—, y los enlaces viejos a lo que se fue redirigen (`secciones-viejas.test.ts`). Sobre el vehículo `uno` del terreno de
+// «Qué falta», con un vinculado, dos interesados, dos cotizaciones (la más vieja, la aprobada) y dos fotos. Qué bloque ve quién: `bloques.test.ts`.
 test.describe.configure({ mode: 'serial' })
 
 let terreno: TerrenoDeQueFalta
@@ -31,6 +32,21 @@ const variante = (proyecto: string) => `f_${proyecto}`
 const conFormula = () => sql("select id from public.origenes where clave = 'subasta_usa'")
 const idDe = (correo: string) =>
   sql(`select id from public.perfiles where email = ${literal(correo)}`)
+const sembrar = (cuantas: number, desde = 0) => {
+  sembrarCotizaciones({
+    origenId: conFormula(),
+    vehiculoId: id,
+    creadoPor: idDe(duena),
+    cuantas,
+    desde,
+  })
+}
+const cotizacionesDelVehiculo = () =>
+  sql(
+    `select numero from public.cotizaciones where vehiculo_id = ${literal(id)}::uuid order by creado_en, id`,
+  )
+    .split('\n')
+    .filter((n) => n !== '')
 
 test.beforeAll(async ({}, info) => {
   const proyecto = info.project.name
@@ -56,19 +72,15 @@ test.beforeAll(async ({}, info) => {
     })
     await marcarInteres({ vehiculoId: id, leadId: lead, quien: duena })
   }
-  sembrarCotizaciones({
-    origenId: conFormula(),
-    vehiculoId: id,
-    creadoPor: idDe(duena),
-    cuantas: 1,
-  })
+  // Dos, sembradas sin triggers: la aprobada la pone el relleno de la base (la más vieja).
+  sembrar(2)
+  sql('select public._cotizaciones_aprobadas_rellenar();')
   await sembrarFotos(id, 2)
   sinLogistica = await personaSinLogistica(proyecto, terreno.origen.id)
 })
 
 test.afterAll(async ({}, info) => {
   sql(`delete from public.cotizaciones where vehiculo_id = ${literal(id)}::uuid`)
-  sql(`delete from public.documentos where vehiculo_id = ${literal(id)}::uuid`)
   await admin().from('vehiculos_imagenes').delete().eq('vehiculo_id', id)
   await borrarQueFalta(variante(info.project.name))
   await borrarLeadsDePrueba()
@@ -81,6 +93,12 @@ const tituloDe = (page: Page, nombre: string): Locator =>
   page.locator('main').getByRole('heading', { name: nombre, exact: true, level: 2 })
 const region = (page: Page, nombre: string): Locator =>
   page.getByRole('region', { name: nombre, exact: true })
+const filas = (page: Page): Locator =>
+  page
+    .getByRole('list', { name: 'Cotizaciones de este vehículo' })
+    .locator('[data-de-este-vehiculo]')
+
+const BLOQUES = ['Cotizaciones de este vehículo', 'Relacionados', 'Actividad reciente', 'Vitrina']
 
 async function alaFicha(page: Page, busqueda = ''): Promise<void> {
   await page.goto(`/vehiculos/${id}${busqueda}`)
@@ -88,97 +106,148 @@ async function alaFicha(page: Page, busqueda = ''): Promise<void> {
   await expect(indice(page)).toHaveAttribute('data-hidratado', 'true')
 }
 
-test('E2E ficha en dos columnas · todo a la vista sin un clic', async ({ page }, info) => {
+test('E2E ficha en dos columnas · a la derecha sólo lo de ventas, en su orden', async ({
+  page,
+}, info) => {
   await entrar(page, duena, { fresco: true })
   await alaFicha(page)
-  // Izquierda: el carrusel, el título, la aprobada y los datos principales.
-  await expect(page.getByRole('button', { name: /foto/i }).first()).toBeVisible()
-  await expect(tituloDe(page, 'Datos principales')).toBeVisible()
-  const principales = region(page, 'Datos principales')
-  // Sólo los datos clave del origen (los de fábrica traen el año y el kilometraje en los dos tipos) y «Ver más».
-  for (const dato of ['Año', 'Kilometraje']) {
-    await expect(principales.getByText(dato, { exact: true })).toBeVisible()
-  }
-  await expect(principales.getByRole('button', { name: 'Ver más' })).toBeVisible()
-  // Derecha: el índice y los bloques, en su orden.
+  // Derecha: el índice y los cuatro bloques, en su orden.
   await expect(indice(page).getByRole('link')).toHaveText([
-    'Qué falta',
-    'Relacionados',
     'Cotizaciones',
-    'Documentos',
-    'Ficha',
-    'Repuestos',
+    'Relacionados',
+    'Actividad',
+    'Vitrina',
   ])
-  const fase = region(page, 'Fase y qué falta')
-  await expect(fase.getByRole('link', { name: 'Ver en logística' })).toHaveAttribute(
-    'href',
-    `/logistica/vehiculo/${id}`,
-  )
-  // El mismo enlace va también, corto, en la cabecera: acá se cuenta el del bloque.
-  await expect(fase.getByRole('link', { name: 'Ver en logística' })).toHaveCount(1)
-  await expect(
-    fase.getByRole('heading', { name: `Para pasar a «${terreno.b.nombre}»` }),
-  ).toBeVisible()
-  await expect(
-    fase.locator('[data-requisito="falta"]').filter({ hasText: terreno.tipoDeBl.nombre }),
-  ).toBeVisible()
-  const relacionados = region(page, 'Relacionados')
-  await expect(relacionados.getByRole('region', { name: 'Vinculado', exact: true })).toBeVisible()
-  await expect(relacionados.getByRole('region', { name: 'Interesado', exact: true })).toBeVisible()
-  await capturar(page, info, 'ficha-arriba')
-  for (const nombre of ['Cotizaciones', 'Documentos', 'Ficha', 'Repuestos']) {
+  const ys: number[] = []
+  for (const nombre of BLOQUES) {
     await expect(tituloDe(page, nombre)).toBeAttached()
+    ys.push((await cajaDe(tituloDe(page, nombre))).y)
   }
-  await region(page, 'Cotizaciones').scrollIntoViewIfNeeded()
-  await expect(
-    page.getByRole('list', { name: 'Cotizaciones del vehículo' }).getByRole('listitem'),
-  ).toHaveCount(1)
-  // Ni pestañas ni acordeones.
-  await expect(page.locator('main [role=tablist]')).toHaveCount(0)
-  await expect(page.locator('main details')).toHaveCount(0)
-  // «Fotos» ya no es un bloque: las fotos van en la tira de la cabecera.
-  await expect(region(page, 'Fotos')).toHaveCount(0)
-  await region(page, 'Repuestos').scrollIntoViewIfNeeded()
+  expect(ys).toEqual([...ys].sort((a, b) => a - b))
+  // Lo que se fue: la ficha repetida, lo de logística y lo de repuestos (quedan sus enlaces cortos en la cabecera).
+  for (const nombre of ['Ficha', 'Fase y qué falta', 'Documentos', 'Repuestos', 'Fotos']) {
+    await expect(region(page, nombre)).toHaveCount(0)
+  }
+  await expect(page.getByRole('link', { name: 'Ver en logística' })).toHaveCount(1)
+  await capturar(page, info, 'ficha-arriba')
+  // Las cotizaciones llegan al acercarse: la aprobada primero.
+  await region(page, 'Cotizaciones de este vehículo').scrollIntoViewIfNeeded()
+  await expect(filas(page)).toHaveCount(2)
+  await expect(filas(page).first()).toHaveAttribute('data-aprobada', '')
+  await region(page, 'Vitrina').scrollIntoViewIfNeeded()
   await capturar(page, info, 'ficha-abajo')
 })
 
-test('E2E ficha en dos columnas · el índice salta al bloque y le da el foco a su título', async ({
+test('E2E ficha en dos columnas · «Cotizar» en el título y «Aprobar esta» pone al día la aprobada de la izquierda', async ({
   page,
 }) => {
   await entrar(page, duena)
-  await alaFicha(page)
-  for (const [etiqueta, nombre] of [
-    ['Ficha', 'Ficha'],
-    ['Documentos', 'Documentos'],
-    ['Qué falta', 'Fase y qué falta'],
-    ['Repuestos', 'Repuestos'],
-  ] as const) {
-    const enlace = indice(page).getByRole('link', { name: etiqueta, exact: true })
-    await enlace.click()
-    await expect(tituloDe(page, nombre)).toBeFocused()
-    await expect(tituloDe(page, nombre)).toBeInViewport()
-    await expect(enlace).toHaveAttribute('aria-current', 'location')
-  }
+  await alaFicha(page, '?seccion=cotizaciones')
+  await expect(tituloDe(page, 'Cotizaciones de este vehículo')).toBeFocused()
+  const bloque = region(page, 'Cotizaciones de este vehículo')
+  const cotizar = bloque.getByRole('link', { name: 'Cotizar', exact: true })
+  await expect(cotizar).toHaveAttribute(
+    'href',
+    new RegExp(`returnTo=${encodeURIComponent(`/vehiculos/${id}`)}`),
+  )
+  const [vieja = '', nueva = ''] = cotizacionesDelVehiculo()
+  const aprobada = region(page, 'Cotización aprobada')
+  await expect(aprobada).toContainText(`N.º ${vieja}`)
+  const otra = filas(page).filter({ hasText: `N.º ${nueva}` })
+  await otra.getByRole('button', { name: 'Aprobar esta' }).click()
+  // La izquierda se lee en el servidor: el bloque refresca la página.
+  await expect(aprobada).toContainText(`N.º ${nueva}`)
+  await expect(filas(page).first()).toContainText(`N.º ${nueva}`)
+  await cotizar.click()
+  await expect(page).toHaveURL(/\/cotizaciones\/nuevo\?/)
 })
 
-test('E2E ficha en dos columnas · los enlaces viejos llevan a su bloque o abren lo suyo', async ({
+test('E2E ficha en dos columnas · «Actividad reciente» lleva a toda la actividad del vehículo', async ({
   page,
 }) => {
   await entrar(page, duena)
-  for (const [seccion, nombre] of [
-    ['ficha', 'Ficha'],
-    ['documentos', 'Documentos'],
-    ['cotizaciones', 'Cotizaciones'],
-    ['repuestos', 'Repuestos'],
-  ] as const) {
-    await alaFicha(page, `?seccion=${seccion}`)
-    await expect(tituloDe(page, nombre)).toBeFocused()
-    await expect(tituloDe(page, nombre)).toBeInViewport()
+  await alaFicha(page, '?seccion=actividad')
+  await expect(tituloDe(page, 'Actividad reciente')).toBeFocused()
+  const actividad = region(page, 'Actividad reciente')
+  await expect(actividad.getByRole('link', { name: 'Ver toda la actividad' })).toHaveAttribute(
+    'href',
+    `/actividad?entidad=vehiculos&registro=${id}`,
+  )
+  // Las filas se leen desde el navegador al acercarse: el alta del vehículo es la última.
+  await expect(actividad.getByRole('listitem').last()).toContainText(`creó ${titulo}`)
+})
+
+test('E2E ficha en dos columnas · «Vitrina» sin publicar y publicada', async ({ page }, info) => {
+  sql(
+    `update public.vehiculos set publicado_web = false, precio_web = null, precio_web_hasta = null where id = ${literal(id)}::uuid`,
+  )
+  await entrar(page, duena)
+  await alaFicha(page, '?seccion=vitrina')
+  const vitrina = region(page, 'Vitrina')
+  await expect(tituloDe(page, 'Vitrina')).toBeFocused()
+  await expect(vitrina.getByText('No está en la web')).toBeVisible()
+  await vitrina.getByRole('button', { name: 'Publicar en la web…' }).click()
+  await expect(page).toHaveURL(/[?&]panel=vitrina/)
+  await expect(page.getByRole('dialog', { name: 'Publicar en la web' })).toBeVisible()
+
+  sql(
+    `update public.vehiculos set publicado_web = true, precio_web = 15000 where id = ${literal(id)}::uuid`,
+  )
+  await alaFicha(page, '?seccion=vitrina')
+  await expect(vitrina.getByText('Precio público')).toBeVisible()
+  await expect(vitrina.getByText('Consultar')).toHaveCount(0)
+  // Se vea o no en la web, lo dice; si no se ve, el motivo va escrito a la vista.
+  const noVisible = vitrina.getByText('Publicado, no visible')
+  if ((await noVisible.count()) > 0) {
+    await expect(
+      vitrina.getByText(
+        /no publica en la web|está desactivado|no está entre los orígenes|web pública está apagada|no entró a ninguna fase/,
+      ),
+    ).toBeVisible()
+  } else {
+    await expect(vitrina.getByText('En vitrina')).toBeVisible()
   }
+  const previa = vitrina.getByRole('region', { name: 'Así lo verá el visitante' })
+  await expect(previa).toBeHidden()
+  await vitrina.getByText('Así lo verá el visitante').click()
+  await expect(previa).toBeVisible()
+  await capturar(page, info, 'vitrina-publicada')
+  await vitrina.getByRole('button', { name: 'Editar' }).click()
+  await expect(page.getByRole('dialog', { name: 'Publicar en la web' })).toBeVisible()
+
+  sql(`update public.vehiculos set precio_web = null where id = ${literal(id)}::uuid`)
+  await alaFicha(page, '?seccion=vitrina')
+  // El del bloque (el primero; la vista previa plegada repite el precio).
+  await expect(vitrina.getByText('Consultar', { exact: true }).first()).toBeVisible()
+})
+
+test('E2E ficha en dos columnas · los enlaces viejos redirigen o llevan a su bloque', async ({
+  page,
+}) => {
+  await entrar(page, duena)
+  // `?seccion=ficha` abre la ficha completa; `?seccion=fotos`, el visor.
+  await page.goto(`/vehiculos/${id}?seccion=ficha`)
+  await expect(page).toHaveURL(new RegExp(`/vehiculos/${id}\\?ver=ficha$`))
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await page.goto(`/vehiculos/${id}?seccion=fotos`)
+  await expect(page).toHaveURL(new RegExp(`[?&]visor=${id}&foto=1`))
+  await expect(page.locator('[data-visor-de-imagenes]')).toBeVisible()
+  // Lo de logística, a la unidad; una redirección reemplaza la entrada (atrás no vuelve a la ficha).
+  await page.goto('/perfil')
+  await page.goto(`/vehiculos/${id}?seccion=documentos`)
+  await expect(page).toHaveURL(new RegExp(`/logistica/vehiculo/${id}\\?hueco=documentos$`))
+  await page.goBack()
+  await expect(page).toHaveURL(/\/perfil$/)
+  await page.goto(`/vehiculos/${id}?seccion=fase`)
+  await expect(page).toHaveURL(new RegExp(`/logistica/vehiculo/${id}$`))
+  // Sin proyecto de repuestos, `?seccion=repuestos` se queda arriba de la ficha.
+  await alaFicha(page, '?seccion=repuestos')
+  await expect(page).toHaveURL(new RegExp(`/vehiculos/${id}\\?seccion=repuestos$`))
+  await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeInViewport()
   // Con un panel abierto, lo de atrás sale del árbol de accesibilidad: se espera lo que abre la URL.
   for (const [busqueda, nombre] of [
     [`?editar=${id}`, `Editar ${titulo}`],
-    ['?panel=vitrina', undefined],
+    ['?panel=vitrina', 'Publicar en la web'],
     ['?panel=desvincular', undefined],
     ['?panel=marcar-interesado', 'Marcar un interesado'],
     ['?relacionados=interesado', undefined],
@@ -186,55 +255,30 @@ test('E2E ficha en dos columnas · los enlaces viejos llevan a su bloque o abren
     await page.goto(`/vehiculos/${id}${busqueda}`)
     await expect(page.getByRole('dialog', nombre ? { name: nombre } : {})).toBeVisible()
   }
-  await page.goto(`/vehiculos/${id}?visor=${id}&foto=1`)
-  await expect(page.locator('[data-visor-de-imagenes]')).toBeVisible()
-  await expect(page.locator('[data-visor-de-imagenes]')).toHaveCount(1)
-  // `?seccion=fotos` (el bloque que ya no está) abre ese visor en la primera foto.
-  await page.goto(`/vehiculos/${id}?seccion=fotos`)
-  await expect(page).toHaveURL(new RegExp(`[?&]visor=${id}&foto=1`))
-  await expect(page.locator('[data-visor-de-imagenes]')).toBeVisible()
 })
 
-test('E2E ficha en dos columnas · sin el permiso, el bloque no está ni en el índice', async ({
+test('E2E ficha en dos columnas · sin permisos, sólo «Vitrina» y sin sus botones', async ({
   page,
 }, info) => {
-  // Sólo ve el vehículo y los leads: ni «Qué falta», ni «Documentos», ni «Ver en logística», ni cotizaciones, ni repuestos.
+  // Ve el vehículo y los leads: ni cotizaciones, ni actividad, ni logística, ni la vitrina para editar.
   await entrar(page, sinLogistica, { fresco: true })
   await alaFicha(page)
-  await expect(indice(page).getByRole('link')).toHaveText(['Relacionados', 'Ficha'])
-  await expect(page.getByRole('link', { name: 'Ver en logística' })).toHaveCount(0)
-  await expect(region(page, 'Fase y qué falta')).toHaveCount(0)
-  await expect(region(page, 'Documentos')).toHaveCount(0)
-  await capturar(page, info, 'sin-logistica')
-})
-
-test('E2E ficha en dos columnas · con logística y sin leads, cotizaciones ni repuestos', async ({
-  page,
-}) => {
+  await expect(indice(page).getByRole('link')).toHaveText(['Relacionados', 'Vitrina'])
+  await expect(region(page, 'Cotizaciones de este vehículo')).toHaveCount(0)
+  await expect(region(page, 'Actividad reciente')).toHaveCount(0)
+  const vitrina = region(page, 'Vitrina')
+  await expect(vitrina).toBeVisible()
+  await expect(vitrina.getByRole('button')).toHaveCount(0)
+  await capturar(page, info, 'sin-permisos')
+  // Sin logística, sus enlaces viejos se quedan arriba de la ficha.
+  await alaFicha(page, '?seccion=documentos')
+  await expect(page).toHaveURL(new RegExp(`/vehiculos/${id}\\?seccion=documentos$`))
+  await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeInViewport()
+  // Sólo con logística: «Vitrina» es lo único del índice.
+  await page.context().clearCookies()
   await entrar(page, terreno.sinAsignar.correo, { fresco: true })
   await alaFicha(page)
-  await expect(indice(page).getByRole('link')).toHaveText(['Qué falta', 'Documentos', 'Ficha'])
-  await expect(region(page, 'Cotizaciones')).toHaveCount(0)
-  await expect(region(page, 'Repuestos')).toHaveCount(0)
-})
-
-test('E2E ficha en dos columnas · «Subir» de «Qué falta» se hace en el bloque Documentos; lo de transporte abre la unidad', async ({
-  page,
-}) => {
-  await entrar(page, duena)
-  await alaFicha(page)
-  const fase = region(page, 'Fase y qué falta')
-  const contenedor = fase.locator('[data-requisito="falta"]').filter({ hasText: 'Contenedor' })
-  await expect(contenedor.getByRole('link', { name: /^Abrir la unidad: / })).toHaveAttribute(
-    'href',
-    `/logistica/vehiculo/${id}?hueco=transporte`,
-  )
-  const bl = fase.locator('[data-requisito="falta"]').filter({ hasText: terreno.tipoDeBl.nombre })
-  await bl.getByRole('button', { name: `Subir «${terreno.tipoDeBl.nombre}»` }).click()
-  const bandeja = page.getByRole('form', { name: 'Subir documentos' })
-  await expect(bandeja.getByLabel('Tipo de documento')).toHaveValue(terreno.tipoDeBl.id)
-  await expect(bandeja.locator(':focus')).toHaveCount(1)
-  await expect(page).toHaveURL(new RegExp(`/vehiculos/${id}`))
+  await expect(indice(page).getByRole('link')).toHaveText(['Vitrina'])
 })
 
 test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en el celular y al 200 %', async ({
@@ -253,14 +297,7 @@ test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en 
       tituloDe(page, 'Cotización aprobada'),
       tituloDe(page, 'Datos principales'),
       indice(page),
-      ...[
-        'Fase y qué falta',
-        'Relacionados',
-        'Cotizaciones',
-        'Documentos',
-        'Ficha',
-        'Repuestos',
-      ].map((nombre) => tituloDe(page, nombre)),
+      ...BLOQUES.map((nombre) => tituloDe(page, nombre)),
     ]
     const ys: number[] = []
     for (const elemento of enOrden) {
@@ -277,30 +314,25 @@ test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en 
     .toBe(true)
   // Una sola columna: la cabecera arriba del índice.
   expect((await cajaDe(h1)).abajo).toBeLessThanOrEqual((await cajaDe(indice(page))).y)
+  await region(page, 'Cotizaciones de este vehículo').scrollIntoViewIfNeeded()
   await capturar(page, info, 'texto-al-200')
 })
 
-test('E2E ficha en dos columnas · el documento no crece con los documentos ni las cotizaciones', async ({
+test('E2E ficha en dos columnas · el documento no crece con las cotizaciones', async ({
   page,
 }, info) => {
   await entrar(page, duena)
   const largo = async (ruta: string) => (await (await page.goto(ruta))?.body())?.length ?? 0
   const perfil = await largo('/perfil')
-  const conUno = (await largo(`/vehiculos/${id}`)) - perfil
-  sql(`insert into public.documentos (vehiculo_id, tipo_documento_id, nombre_archivo)
-    select ${literal(id)}::uuid, ${literal(terreno.tipoDeBl.id)}::uuid, 'doc-' || n || '.pdf' from generate_series(1, 60) n`)
-  sembrarCotizaciones({
-    origenId: conFormula(),
-    vehiculoId: id,
-    creadoPor: idDe(duena),
-    cuantas: 600,
-    desde: 5,
-  })
-  const conMuchos = (await largo(`/vehiculos/${id}`)) - perfil
+  sql(`delete from public.cotizaciones where vehiculo_id = ${literal(id)}::uuid`)
+  sembrar(1)
+  const conUna = (await largo(`/vehiculos/${id}`)) - perfil
+  sembrar(600, 5)
+  const conMuchas = (await largo(`/vehiculos/${id}`)) - perfil
   const kb = (bytes: number) => Math.round((bytes / 1024) * 10) / 10
-  const medido = `la ficha aporta ${String(kb(conUno))} KB con 1 cotización y ${String(kb(conMuchos))} KB con 60 documentos y 601 cotizaciones`
+  const medido = `la ficha aporta ${String(kb(conUna))} KB con 1 cotización y ${String(kb(conMuchas))} KB con 601`
   console.warn(`[ficha del vehículo] ${info.project.name}: ${medido}`)
   info.annotations.push({ type: 'documento de la ficha', description: medido })
-  expect(Math.abs(conMuchos - conUno)).toBeLessThanOrEqual(1024)
-  expect(conUno).toBeLessThanOrEqual(PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB * 1024)
+  expect(Math.abs(conMuchas - conUna)).toBeLessThanOrEqual(1024)
+  expect(conUna).toBeLessThanOrEqual(PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB * 1024)
 })

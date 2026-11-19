@@ -5,16 +5,34 @@
 export {
   leerAutoresDeCotizaciones,
   leerListadoDeCotizaciones,
+  leerListadoPorVehiculo,
+  leerModosDeCotizaciones,
   leerUnaDelListado,
 } from './composicion'
 // `UNA`: el tamaño de la lectura de UNA cotización (el resumen fuera de la página, la referencia del lienzo de la tarjeta); no es un tamaño de página.
+export {
+  CLAVE_DE_AGRUPAR,
+  agruparDelListado,
+  agruparLaPagina,
+  cotizacionDeLaEntrada,
+  leerAgrupar,
+} from '../../entities/listado/grupos-del-listado'
+export type {
+  EntradaDelListado,
+  PaginaAgrupada,
+  PedidoDelGrupo,
+} from '../../entities/listado/grupos-del-listado'
 export {
   CLAVE_DE_RESUMEN_DE_COTIZACION,
   UNA,
   idDelResumen,
 } from '../../entities/listado/resumen-del-listado'
 export type { LecturaDelServidor } from '../../entities/listado/resumen-del-listado'
-export { filasConNombres, idsDe } from '../../entities/listado/filas-del-listado'
+export {
+  entradasSinAgrupar,
+  filasConNombres,
+  idsDe,
+} from '../../entities/listado/filas-del-listado'
 export type { CotizacionDelListado } from '../../entities/listado/filas-del-listado'
 export {
   esquemaDelListado,

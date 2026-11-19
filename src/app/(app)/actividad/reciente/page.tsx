@@ -15,8 +15,8 @@ export const metadata: Metadata = { title: 'Actividad reciente' }
 // `docs/UX.md` › «Actividad»: si no se pueden leer los ajustes, la retención de fábrica.
 const DIAS_POR_DEFECTO = 14
 
-// La «Actividad reciente» de un registro sola (`?entidad=<tabla>&registro=<id>`): donde se ve y se prueba la pieza mientras ninguna ficha la
-// monta (la del vehículo, T339). Sin `actividad.ver` la pieza no dibuja nada.
+// La «Actividad reciente» de un registro sola (`?entidad=<tabla>&registro=<id>`): donde se ve y se prueba la pieza fuera de una ficha (ya la
+// monta la ficha del vehículo). Sin `actividad.ver` la pieza no dibuja nada.
 export default function PaginaDeActividadReciente({
   searchParams,
 }: PageProps<'/actividad/reciente'>) {

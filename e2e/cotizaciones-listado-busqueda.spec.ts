@@ -104,19 +104,23 @@ test('E2E guardar una vista con la búsqueda y abrirla desde otra pantalla del l
   const guardada = sql(
     `select params::text from public.vistas_guardadas v join public.perfiles p on p.id = v.usuario_id where p.email = ${literal(terreno.t.duena)} and v.pantalla = 'cotizaciones' and v.nombre = 'E2E Mascotas'`,
   )
+  // La vista recuerda también cómo se veía la lista (T319): tabla y sin agrupar.
   expect(JSON.parse(guardada)).toEqual({
     origen: terreno.t.origen.id,
     q: 'mascota',
     clase: 'preventa',
+    vista: 'tabla',
+    agrupar: 'no',
   })
 
-  // Desde el listado sin nada puesto, aplicarla vuelve a poner la búsqueda y los filtros.
+  // Desde el listado sin nada puesto (tarjetas agrupadas), aplicarla vuelve a poner la búsqueda, los filtros, la vista y la agrupación.
   await page.goto('/cotizaciones')
   await expect(filas(page).first()).toBeVisible()
   await abrirVistaYOpciones(page)
   await page.getByRole('button', { name: 'E2E Mascotas', exact: true }).click()
   await expect(page).toHaveURL(/q=mascota/)
   await expect(page).toHaveURL(/clase=preventa/)
+  await expect(page).toHaveURL(/agrupar=no/)
   await expect(filas(page)).toHaveCount(3)
   await expect(page.getByRole('searchbox').first()).toHaveValue('mascota')
 })

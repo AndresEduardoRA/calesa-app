@@ -1,87 +1,50 @@
 'use client'
 
-import { fechaRelativa } from '@/shared/lib/fechas'
-import { Badge } from '@/shared/ui/badge'
-import {
-  AbrirResumen,
-  CabeceraPegada,
-  CeldaPegada,
-  FilaDeLista,
-  SufijoDeVisto,
-  TablaDeLista,
-} from '@/shared/ui/lista'
-import { Monto } from '@/shared/ui/monto'
-import { useRegional } from '@/shared/ui/regional'
+import { Fragment, type ReactNode } from 'react'
+import { CabeceraPegada, TablaDeLista } from '@/shared/ui/lista'
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
-import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
-import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
-import {
-  nombreDelOrigen,
-  SIN_NOMBRE,
-  type FilaDeCotizacion,
-  type MenuDeFila,
-  type OrigenDelListado,
-} from './tipos'
-import { Vigencia } from './vigencia'
+import { cotizacionDeLaEntrada, textoDelConteo } from '../../../entities/listado/grupos-del-listado'
+import { FilaDeLaCotizacion } from './celdas-de-la-tabla'
+import { BotonDelConteo } from './grupo'
+import type { EntradaDeLaLista, MenuDeFila, OrigenDelListado } from './tipos'
 
 type Props = {
-  cotizaciones: readonly FilaDeCotizacion[]
+  entradas: readonly EntradaDeLaLista[]
   origenes: readonly OrigenDelListado[]
   alAbrir: (id: string) => void
   // La cotización abierta en el resumen, para marcarla.
   abierta: string | null
-  // El «⋯» de cada fila, a la derecha; sin él no hay columna.
+  // El «⋯» de cada fila, a la derecha, con «Compartir cotización…» primero; sin él no hay columna.
   menuDeFila?: MenuDeFila | undefined
+  desplegados: ReadonlySet<string>
+  alternar: (ordenId: string) => void
+  despliegue: (entrada: Extract<EntradaDeLaLista, { tipo: 'grupo' }>) => ReactNode
+  idDelDespliegue: (ordenId: string) => string
 }
 
-const VACIO = <span className="text-(--color-ink-faint)">{SIN_NOMBRE}</span>
+// Las columnas de la tabla (sin la del «⋯»): lo que ocupa la fila del despliegue.
+const COLUMNAS = 9
 
-// «N.º n» (el botón de la fila, la parada de Tab) y, debajo, su título (`tituloDeLaCotizacion()`: el suyo o el del vehículo; el de respaldo es el número, que ya está), pegados
-// a la izquierda, en dos líneas como mucho y entero en `title`.
-function CeldaDelNumero({ cotizacion }: { cotizacion: FilaDeCotizacion }) {
-  const titulo = tituloDeLaCotizacion(cotizacion)
-  return (
-    <CeldaPegada lado="nombre">
-      <div className="grid min-w-0">
-        <span className="flex items-center">
-          <AbrirResumen
-            nombre={`N.º ${String(cotizacion.numero)}`}
-            className="w-fit font-medium text-(--color-ink) tabular-nums"
-          >
-            N.º {cotizacion.numero}
-          </AbrirResumen>
-          {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
-          <SufijoDeVisto id={cotizacion.id} />
-        </span>
-        {titulo === null || titulo.fuente === 'numero' ? null : (
-          <span
-            data-titulo-de-la-cotizacion=""
-            title={titulo.texto}
-            className="line-clamp-2 max-w-60 text-(length:--text-xs) break-words text-(--color-ink-soft)"
-          >
-            {titulo.texto}
-          </span>
-        )}
-      </div>
-    </CeldaPegada>
-  )
-}
-
-// Las cotizaciones de la página en escritorio, con el patrón de lista (`@/shared/ui/lista`): «N.º n» es el botón de la fila (`<AbrirResumen>`, la parada de Tab) y, debajo, su título. Un clic en la
-// fila abre el resumen `?cotizacion=` (4.16-4b), salvo el «⋯» de la derecha (T15): las acciones de la lista única, según el rol.
+// La lista en tabla (escritorio, si la persona la eligió), con el patrón de lista (`@/shared/ui/lista`): «N.º n» es el botón de la fila; un clic en la fila abre el
+// resumen `?cotizacion=`, salvo el «⋯» de la derecha y el conteo de un grupo. Agrupada, la fila de un grupo es la de su cabeza y lleva en «Vehículo» el botón
+// «N cotizaciones de este vehículo», que despliega las demás en una fila debajo.
 export function TablaDeCotizaciones({
-  cotizaciones,
+  entradas,
   origenes,
   alAbrir,
   abierta,
   menuDeFila,
+  desplegados,
+  alternar,
+  despliegue,
+  idDelDespliegue,
 }: Props) {
-  const { zonaHoraria } = useRegional()
   return (
     <TablaDeLista>
       <TableHeader>
         <TableRow>
           <CabeceraPegada lado="nombre">Cotización</CabeceraPegada>
+          <TableHead>Título</TableHead>
           <TableHead>Cliente</TableHead>
           <TableHead>Vehículo</TableHead>
           <TableHead>Origen</TableHead>
@@ -97,45 +60,46 @@ export function TablaDeCotizaciones({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {cotizaciones.map((cotizacion) => (
-          <FilaDeLista
-            key={cotizacion.id}
-            idDeVisto={cotizacion.id}
-            abierta={abierta === cotizacion.id}
-            alAbrir={() => {
-              alAbrir(cotizacion.id)
-            }}
-          >
-            <CeldaDelNumero cotizacion={cotizacion} />
-            <TableCell className="max-w-48 truncate">{cotizacion.cliente ?? VACIO}</TableCell>
-            <TableCell className="max-w-48 truncate">{cotizacion.vehiculo ?? VACIO}</TableCell>
-            <TableCell className="max-w-40 truncate">
-              {nombreDelOrigen(origenes, cotizacion.origenId)}
-            </TableCell>
-            <TableCell>
-              <span className="flex flex-wrap gap-1">
-                <Badge variant="secondary">{ETIQUETA_DE_CLASE[cotizacion.clase]}</Badge>
-                {cotizacion.aprobada ? (
-                  <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge>
-                ) : null}
-              </span>
-            </TableCell>
-            <TableCell className="text-right tabular-nums">
-              <Monto valor={cotizacion.totalBase} />
-            </TableCell>
-            <TableCell>
-              <Vigencia venceEl={cotizacion.venceEl} vencida={cotizacion.vencida} />
-            </TableCell>
-            <TableCell className="text-(length:--text-sm) text-(--color-ink-soft)">
-              {fechaRelativa(cotizacion.creadoEn, { zona: zonaHoraria })} · {cotizacion.autor}
-            </TableCell>
-            {menuDeFila ? (
-              <CeldaPegada lado="acciones" className="text-right">
-                {menuDeFila(cotizacion)}
-              </CeldaPegada>
-            ) : null}
-          </FilaDeLista>
-        ))}
+        {entradas.map((entrada) => {
+          const cotizacion = cotizacionDeLaEntrada(entrada)
+          const texto = entrada.tipo === 'grupo' ? textoDelConteo(entrada.conteo) : null
+          const abiertoElGrupo = entrada.tipo === 'grupo' && desplegados.has(entrada.ordenId)
+          return (
+            <Fragment key={entrada.ordenId}>
+              <FilaDeLaCotizacion
+                cotizacion={cotizacion}
+                origenes={origenes}
+                abierta={abierta === cotizacion.id}
+                alAbrir={() => {
+                  alAbrir(cotizacion.id)
+                }}
+                conteo={
+                  texto === null ? null : (
+                    <BotonDelConteo
+                      texto={texto}
+                      abierto={abiertoElGrupo}
+                      controla={idDelDespliegue(entrada.ordenId)}
+                      alAlternar={() => {
+                        alternar(entrada.ordenId)
+                      }}
+                    />
+                  )
+                }
+                menu={menuDeFila ? menuDeFila(cotizacion) : undefined}
+              />
+              {entrada.tipo === 'grupo' && abiertoElGrupo ? (
+                <TableRow className="hover:bg-transparent">
+                  <TableCell
+                    colSpan={menuDeFila ? COLUMNAS + 1 : COLUMNAS}
+                    className="whitespace-normal"
+                  >
+                    {despliegue(entrada)}
+                  </TableCell>
+                </TableRow>
+              ) : null}
+            </Fragment>
+          )
+        })}
       </TableBody>
     </TablaDeLista>
   )

@@ -196,6 +196,10 @@ declare
     -- La búsqueda del listado (T15): invocadora, la RLS de cotizaciones decide; nombra a los leads por `leads_candidatos()` y `leads_vista_por_ids()` (sólo los que quien busca ve), y recibe un lead
     -- (`p_lead`) sólo como filtro de sus filas, como el listado.
     ('cotizaciones_buscar(text,integer,uuid,clase_cotizacion,boolean,uuid,uuid,timestamp with time zone,uuid,boolean)', 'L'),
+    -- La lista agrupada por vehículo y su lote (T319): invocadoras, la RLS de cotizaciones decide (el lote es el espejo de las rutas del listado); devuelven el id
+    -- del lead de cada fila y reciben un lead (`p_lead`) sólo como filtro, como el listado. Sus pruebas, `areas/cotizaciones/listado-por-vehiculo.sql`.
+    ('cotizaciones_listado_por_vehiculo(integer,uuid,clase_cotizacion,boolean,uuid,timestamp with time zone,uuid,boolean)', 'L'),
+    ('_cotizaciones_lote_del_listado(integer,uuid,clase_cotizacion,boolean,uuid,timestamp with time zone,uuid,boolean)', 'L'),
     -- El inventario por rutas (4.16-2a): invocadora, la RLS de vehiculos decide; devuelve el lead_id de cada vehículo y no recibe ninguno (la cartera la saca de mis_leads()).
     ('vehiculos_inventario(uuid,integer,jsonb,timestamp with time zone,uuid,boolean)', 'L'),
     -- Crear una cotización (4.10-2): el lead es obligatorio y se pide visible (`leads.ver`, la regla de la policy de insert que se fue), no de la cartera: una cotización cuelga de un lead que quien

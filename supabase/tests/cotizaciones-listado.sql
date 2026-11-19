@@ -180,7 +180,7 @@ begin
 end $$;
 rollback;
 
--- @test cotizaciones_listado: L4 el tamaño se acota: nulo da el máximo + 1, 0 da 2 y 1.000 da el máximo + 1
+-- @test cotizaciones_listado: L4 el tamaño se acota: nulo da el de la pantalla (50) + 1, 0 da 2 y 1.000 da el máximo (100) + 1
 begin;
 do $$
 declare duena constant uuid := '00000000-0000-0000-0000-000000000001'; t jsonb := pg_temp.cl_terreno(); i int; v_n int; v_tam int; v_esperado int;
@@ -188,7 +188,8 @@ begin
   for i in 1 .. 120 loop perform pg_temp.cl_cot(t, duena, now() - i * interval '1 second'); end loop;
   foreach v_tam in array array[null, 0, 1, 1000, 50] loop
     select count(*) into v_n from pg_temp.cl_pagina(duena, v_tam, (t ->> 'o')::uuid);
-    v_esperado := case when v_tam is null or v_tam >= 100 then 101 when v_tam < 1 then 2 else v_tam + 1 end;
+    -- Sin pedido, `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (50); con uno, hasta 100.
+    v_esperado := case when v_tam is null then 51 when v_tam >= 100 then 101 when v_tam < 1 then 2 else v_tam + 1 end;
     if v_n <> v_esperado then raise exception 'L4: con tamaño % salen % (debían salir %)', coalesce(v_tam::text, 'nulo'), v_n, v_esperado; end if;
   end loop;
 end $$;

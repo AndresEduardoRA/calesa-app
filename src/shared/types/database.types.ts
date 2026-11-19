@@ -7883,6 +7883,23 @@ export type Database = {
         Args: { p_origen?: string; p_texto: string }
         Returns: string[]
       }
+      _cotizaciones_lote_del_listado: {
+        Args: {
+          p_clase?: Database['public']['Enums']['clase_cotizacion']
+          p_cursor_en?: string
+          p_cursor_id?: string
+          p_hacia_atras?: boolean
+          p_lead?: string
+          p_mias?: boolean
+          p_origen?: string
+          p_tamano: number
+        }
+        Returns: {
+          creado_en: string
+          id: string
+          vehiculo_id: string
+        }[]
+      }
       _cotizaciones_papelera_lote_json: {
         Args: {
           p_dias: number
@@ -10247,6 +10264,45 @@ export type Database = {
           vehiculo_id: string
           vence_el: string
           vencida: boolean
+        }[]
+      }
+      cotizaciones_listado_por_vehiculo: {
+        Args: {
+          p_clase?: Database['public']['Enums']['clase_cotizacion']
+          p_cursor_en?: string
+          p_cursor_id?: string
+          p_hacia_atras?: boolean
+          p_lead?: string
+          p_mias?: boolean
+          p_origen?: string
+          p_tamano: number
+        }
+        Returns: {
+          clase: Database['public']['Enums']['clase_cotizacion']
+          creado_en: string
+          creado_por: string
+          estado: Database['public']['Enums']['estado_cotizacion']
+          grupo_n: number
+          id: string
+          lead_id: string
+          moneda_mostrar: string
+          numero: number
+          orden_en: string
+          orden_id: string
+          origen_id: string
+          tipo: string
+          titulo: string
+          total_base: number
+          vehiculo_id: string
+          vence_el: string
+          vencida: boolean
+        }[]
+      }
+      cotizaciones_modos_de: {
+        Args: { p_ids: string[] }
+        Returns: {
+          id: string
+          modo: string
         }[]
       }
       cotizaciones_papelera_enviar: { Args: { p_cotizaciones: Json }; Returns: Json }

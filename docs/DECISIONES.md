@@ -243,13 +243,27 @@ las trampas, en `docs/LECCIONES.md`.
   la lista; «Editar» va en el «⋯»), título, número, origen, situación y los enlaces cortos a logística y repuestos; después «Cotización aprobada»,
   «Subasta» (una frase con color y cuenta en vez de una tabla de datos) y «Datos principales» (sólo los datos clave del origen) con «Ver más», que abre la
   **ficha completa** en un modal grande de sólo lectura y con tipografía de vitrina (`?ver=ficha`; sus fotos no abren el visor encima: un solo nivel de
-  modal). Ningún bloque de la izquierda entra al índice. A la derecha, el índice y los bloques por permiso: «Fase y qué falta», «Relacionados»,
-  «Cotizaciones», «Documentos», «Ficha», «Repuestos»; las fotos no tienen bloque (la tira las muestra y «Editar imágenes» las edita) y `?seccion=fotos`
-  abre el visor. Nada se repite salvo «Ver en logística», que está en la cabecera y en el título de «Fase y qué falta» mientras ese bloque siga a la
-  derecha. Sin tope de ancho propio (con `max-w-4xl` nunca habría dos columnas). `?seccion=` es un ancla (sin permiso, se queda arriba) y los paneles de
-  «Relacionados» llevan a ese bloque. Sólo «Cotizaciones» y «Documentos» esperan a acercarse. Descartados: la tira vertical al costado de la foto (en 24 rem
+  modal). Ningún bloque de la izquierda entra al índice. Sin tope de ancho propio (con `max-w-4xl` nunca habría dos columnas). Descartados: la tira vertical al costado de la foto (en 24 rem
   le roba ancho y no entra al 200 %), puntos en vez de tira (no dejan elegir entre 24), «Ver más» como acordeón (alarga la columna), la ficha completa como
   drawer (poco lugar para fotos grandes), la subasta como tabla de datos, pestañas, tres columnas, índice vertical y un bloque «Lead» aparte.
+- **A la derecha de la ficha del vehículo, sólo lo de ventas**, sin repetir la izquierda: «Cotizaciones de este vehículo», «Relacionados», «Actividad
+  reciente» y «Vitrina», con el índice pegajoso; cada uno por su permiso y «Vitrina» siempre (sólo lectura sin `vehiculos.vitrina`), para que el índice no
+  quede vacío. La ficha entera está en «Ver más» de la izquierda; lo de logística (fase, qué falta, documentos) y lo de repuestos tiene su página y se
+  llega por los enlaces cortos de la cabecera. Los enlaces viejos redirigen reemplazando la entrada (`secciones-viejas.ts`): `?seccion=ficha` a
+  `?ver=ficha`, `fotos` al visor, `documentos` y `fase` a la unidad (con `logistica.ver` del origen), `repuestos` al proyecto (con `repuestos.ver` y si
+  tiene); sin el permiso o sin proyecto, la ficha se queda arriba (no hay destino que mostrar). «Crear proyecto de repuestos» deja de ofrecerse en la ficha:
+  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son «De este vehículo» (de a 10 hasta 100), no el historial de 500: la misma
+  isla de la guardada, con «Aprobar esta» y las casillas. Descartados: la vista previa de la vitrina siempre abierta (la tarjeta con foto mide más que la
+  columna y repite el precio), «Comparar» junto a «Cotizar» en el título (dos acciones en un título; va en su fila, con su ayuda) y mantener el historial
+  de 500 (otra lista para lo mismo).
+- **Aprobar desde la ficha del vehículo refresca la página.** «Cotización aprobada» de la izquierda se lee en el servidor y no escucha a las islas: tras
+  aprobar o deshacer, «Cotizaciones de este vehículo» hace `router.refresh()` en una transición. En la ficha no hay nada tipeado y la isla no se vuelve a
+  montar (no cambian ni su posición ni su `key`); la isla ya apaga sus filas mientras relee.
+- **«Actividad reciente» de la ficha del vehículo se lee desde el navegador al acercarse**, con su código por `diferido()`: dibujada en el servidor,
+  sus cinco frases sumaban unos 13 KB al documento de la ficha (RSC y HTML) y lo pasaban de su presupuesto. La pieza del servidor sigue para
+  `/actividad/reciente`; las dos comparten el marco y las filas.
+- **La vista previa del bloque «Vitrina» va plegada en un `<details>` nativo**: sin JS, no pide la foto hasta abrirse y no repite el precio, que va
+  arriba con `<Monto>`. El motivo de «Publicado, no visible» va escrito a la vista, no sólo en el `title` de la insignia.
 - **«Ganada» en la frase de la subasta sin copiar la situación:** en un origen de subasta, la situación `fase` con el cierre vencido sólo puede ser una
   ganada (si no, la base diría «Sin resolver» o «No ganada»); con el cierre futuro y fuera del tramo se muestra la cuenta sin el color de éxito. No se suma
   `es_subasta` a la fase que lee la ficha. La cuenta usa el texto de `cuentaRegresiva()` («en 2 días 4 h»), el mismo de toda la app.
@@ -417,7 +431,34 @@ las trampas, en `docs/LECCIONES.md`.
 - **Título de la cotización: automático o manual, y qué se muestra si falta.** La base decide el automático (el título del vehículo, cortado a 120) al crear y en cada guardado: no se confía en el cliente y el título nunca queda viejo tras guardar; no sigue solo a un cambio posterior del nombre del vehículo. `titulo_manual` dice si lo escribió una persona (las que ya tenían título quedaron manuales, sin mover la versión). Sin vehículo no hay automático: el texto que llega es manual, y sin texto la base rechaza (también en guardar). `p_titulo_manual` de guardar va al final con default nulo («manual si trae texto»): las llamadas posicionales conservan su sentido. Lo que se muestra cuando falta sale de una sola función (`tituloDeLaCotizacion()`): el del vehículo y, sin vehículo, «Cotización n.º N» (el término de toda la app). El buscador global lo escribe sin el vehículo (no lo devuelve) y sin importar `cotizaciones`. **El automático es un dato de la cotización:** quien la ve lee su título aunque no vea el vehículo (se guarda para buscarse y nombrarla en toda superficie, como lo pidió la persona); lo que se muestra de respaldo con el vehículo, en cambio, sale sólo del vehículo que quien mira ve. Las viejas sin título no se rellenan: toman el automático en su primer guardado.
 - **El título se escribe arriba del panel del vehículo, y la guardada lo muestra en la barra de su cabecera.** Como V1: un campo en el panel, la barra con el título grande y el vehículo debajo. `vehiculos` no conoce `cotizaciones`: la barra recibe el título resuelto y un hueco arriba del panel (`arribaDelPanel`) que llena `src/app`. En la guardada la barra reemplaza «Vehículo: X» bajo el h1 «Cotización n.º N» (un solo bloque, el título no se repite); su panel no elige vehículo (`modo='ver_elegido'`) y quien sólo ve la tiene sin botón. «Escribir el título» pide el foco por el proveedor, no por la URL, y el buscador del panel no se lo quita: con vehículo nadie lo pide y el foco sigue en el buscador. La barra de la guardada va con `diferido()` y un contenedor que reserva su alto desde el HTML (`diferido()` no dibuja nada en el servidor: sin él la hoja salta al llegar); aun así `/cotizaciones/[id]` pasó de 460 KB (463,7): el tope sube a 470 por la regla del 5 %.
 - **El «⋯» del listado de cotizaciones se compone en `src/app`.** Un área no importa otra: la lista única (`accionesDeCotizacion()`) vive en `listado`; quién ve qué lo calcula el servidor con las reglas de cada área sobre lo que la página leyó (`menus-de-la-pagina.ts`; sin permisos al navegador) y las actions y los diálogos son los de la guardada. Las marcas y la versión de la página salen de tres lecturas por clave primaria; una fila sin ellas no tiene «⋯» (no se ofrece lo que depende de una versión que no se leyó). «Enviar a la papelera» se ofrece con el espejo de `_cotizacion_puede_guardar()` (editar por alcance, o es suya); la cartera del lead no se adivina: la dice la base.
-- **Listado por rutas e invocador.** `cotizaciones_listado()` deja decidir a la RLS; «Mías» = `creado_por`; salen todas las versiones; `p_lead`/`p_vehiculo` filtran fuera del esquema de filtros. Máx. 100. Lead no visible = «—».
+- **Listado por rutas e invocador.** `cotizaciones_listado()` deja decidir a la RLS; «Mías» = `creado_por`; salen todas las versiones; `p_lead`/`p_vehiculo` filtran fuera del esquema de filtros. Máx. 50 en la pantalla (la base admite hasta 100). Lead no visible = «—».
+- **La lista nace en tarjetas y agrupada por vehículo.** Lo pidió la persona (como V1): `cotizaciones.vista` y `cotizaciones.agrupar` sin elegir son tarjetas y
+  agrupada; la URL manda y elegir guarda. La vista cambia en el cliente sin releer (las mismas filas); la agrupación relee (es otra lectura) y vuelve a la primera
+  página. Por eso el máximo de la página es uno solo para tabla, tarjetas, agrupada o no (`MAXIMO_DE_PAGINA_DE_COTIZACIONES`), y bajó de 100 a 50: con la portada
+  y sus filas cada tarjeta suma ≈ 40 nodos y 100 no caben en el presupuesto del listado (2.700 nodos, 49.500 B), como en leads. `cotizaciones_listado()` y
+  `cotizaciones_buscar()` dan 50 sin pedido y siguen admitiendo 100 (lo medido).
+- **La agrupada pagina por la cabeza de cada grupo, no por `vehiculos.cotizado_en`.** `cotizaciones_listado_por_vehiculo()` recorre las cotizaciones por las
+  rutas del listado (un lote de `_cotizaciones_lote_del_listado()`, espejo de `cotizaciones_listado()`) y se queda con la primera de cada vehículo; el cursor es
+  `(creado_en, id)` de esa cotización. Por `cotizado_en` un vehículo que quien mira no ve (sin `vehiculos.ver`) perdería su grupo, quien ve «propios» recorrería
+  vehículos ajenos hasta llenar la página, y la fecha no retrocede con la papelera ni dice qué coincide con los filtros. Las sueltas se intercalan solas por fecha:
+  no hace falta `cotizaciones_sin_vehiculo_idx`. Hacia adelante sólo la primera de un vehículo en la lectura pregunta (una sonda por
+  `cotizaciones_vehiculo_creado_idx`, desde el cursor) y sin cursor ninguna; si la lectura llegó al final, el conteo sale de lo leído. Con 2.020 leídas sin llenar
+  la página, `cortada` y «Seguir buscando».
+- **Con búsqueda, se agrupa la página.** `cotizaciones_buscar()` tiene sus propias fuentes y su tope: agrupar en la base duplicaría cada una. La página junta las de
+  su vehículo (la cabeza, la aprobada si está entre ellas) y el conteo es el de esa página; el despliegue busca con el mismo texto y el vehículo.
+- **El despliegue de un grupo son líneas compactas, no tarjetas.** La de la tarjeta primero («En la tarjeta», para poder compararla) y las demás con casilla,
+  número y título, «Final», total, autor y vigencia; sin cliente (es el mismo vehículo) ni «⋯» (las acciones están en su resumen): no se paga un menú ni un
+  nombre de lead por línea. Se lee desde el navegador al desplegar (como «De este vehículo») con los filtros de la página. La insignia «Aprobada» no va en las
+  líneas: la aprobada que coincide ya es la cabeza.
+- **El JS de `/cotizaciones` sube a 390 KB.** La tarjeta de la lista lleva la portada en frío (se ve al llegar: `next/image`, el recuadro y la cáscara del visor), el
+  conmutador y «Agrupar» con su action: 386,9 KB sobre 380, dentro de la regla del 5 %. Lo que no se ve al llegar (el despliegue de un grupo, sus líneas y
+  «Comparar») va con `diferido()`.
+- **«Vencida» una sola vez en la tarjeta.** La de la vigencia, al pie; las insignias de arriba son «Aprobada», «Final» y el origen con su color (menos ruido). El
+  origen va como insignia y no repetido en «N.º n · origen».
+- **La tarjeta de la lista no repite el vehículo ni dice «Preventa».** Su título es el del vehículo (el automático) o el que se escribió, y un subtítulo con el
+  mismo nombre sería ruido; la clase sólo se marca cuando es «Final». El vehículo («—» si quien mira no lo ve) va en la tabla y en el resumen.
+- **La portada de la lista en miniatura, achicada al responder.** `?ancho=480` de la ruta de la portada, con su propia ETag; el bucket guarda sólo la grande (la
+  del visor y la que se comparte): guardar las dos duplicaría la escritura y el refcount por una lectura que el navegador revalida con 304.
 
 ### La fórmula
 
@@ -748,11 +789,6 @@ las trampas, en `docs/LECCIONES.md`.
 - **En un drawer, «ir a» lleva a la página de la unidad** («Abrir la unidad»), salvo en el ítem, cuyos destinos ya son su vehículo o su proyecto. La franja
   «fuera de regla» no lleva acciones nuevas: no es una tarjeta de destino. Las faltas informativas también llevan acción. Las acciones sólo se apagan sin red.
 - **«Qué falta» sin realtime.** Se relee al volver el foco (≥ 5 s) y con `logistica:unidad-cambio`; destinos desde `fases_transiciones`, tope 12. Un fallo al leer el flujo apaga sólo los huecos con regla.
-- **«Qué falta» en la ficha del vehículo es de sólo lectura y no mira el DOM.** La misma lectura, sin «Elegir» ni el formulario de mover; todo hueco de la
-  unidad cuenta como existente y sólo «Documentos» está a mano (`LugarDeLasAcciones.aMano`): «Subir» y «Revisar» usan el bloque «Documentos» de la ficha
-  (su marcador `data-bloque-del-hueco` existe desde el primer dibujo, aunque el bloque espere a acercarse) y lo de transporte, aduana, pagos o repuestos
-  dice «Abrir la unidad» con `?hueco=`. Límite aceptado: en la ficha no se sabe si la regla del flujo de un hueco está apagada, así que «Abrir la unidad»
-  lleva igual a la unidad (allí el hueco no estará).
 - **Notas sin «Borrar».** Corregir sólo la propia, sin cambio de fase y sin versión (gana la última).
 - **El ítem de repuesto entra al motor como `UnidadAbierta`**, sin volver nulo `Unidad.origenId`: el camino del vehículo no cambia.
 

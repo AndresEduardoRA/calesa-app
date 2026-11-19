@@ -1,109 +1,157 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
-import type { ReactNode } from 'react'
-import { CLAVE_DE_CURSOR, cumpleElMinimo } from '@/shared/lib/filtros'
-import { ubicacionDeLaPagina, type Pagina } from '@/shared/lib/paginacion'
+import type { Route } from 'next'
+import Link from 'next/link'
+import { usePathname, useSearchParams } from 'next/navigation'
+import { useState, type ReactNode } from 'react'
+import { CLAVE_DE_CURSOR } from '@/shared/lib/filtros'
+import { ubicacionDeLaPagina } from '@/shared/lib/paginacion'
+import type { VistaDeLista } from '@/shared/lib/vista-de-lista'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
-import { EstadoPaginaSinFilas, EstadoSinResultados, EstadoVacio } from '@/shared/ui/estados'
-import { useFiltrosDelListado } from '@/shared/ui/filtros'
 import { UnaSolaVista } from '@/shared/ui/lista'
 import { Paginacion, UbicacionDeLaPagina } from '@/shared/ui/paginacion'
-import { MINIMO_DE_BUSQUEDA_DE_COTIZACIONES } from '../../../entities/listado/filtros-del-listado'
+import type { PaginaAgrupada, PedidoDelGrupo } from '../../../entities/listado/grupos-del-listado'
 import { TOPE_DE_COINCIDENCIAS } from '../../../entities/listado/listado'
-import { EnlaceVerTodas } from './aviso-de-lo-filtrado'
+import { DespliegueDelGrupoDiferido } from './grupo'
+import { SinFilas } from './sin-filas'
 import { TablaDeCotizaciones } from './tabla-de-cotizaciones'
 import { TarjetasDeCotizaciones } from './tarjetas-de-cotizaciones'
-import type { FilaDeCotizacion, MenuDeFila, OrigenDelListado } from './tipos'
+import type {
+  CompartirDe,
+  EntradaDeLaLista,
+  FilaDeCotizacion,
+  HuecosDeLaLista,
+  MenuDeFila,
+  OrigenDelListado,
+} from './tipos'
 
 type Props = {
-  pagina: Pagina<FilaDeCotizacion>
+  pagina: PaginaAgrupada<FilaDeCotizacion>
+  // La vista de escritorio (en el celular, siempre tarjetas).
+  vista: VistaDeLista
   origenes: readonly OrigenDelListado[]
-  // «Nueva cotización», si la persona puede cotizar en algún origen: llena el vacío de primera vez.
   accionDeVacio?: ReactNode
-  // Con `?vehiculo=` o `?lead=`: el vacío sin otros filtros habla de ese vehículo o cliente (`textoDelVacio()`); sin ellos, null.
   vacioDeLoFiltrado: string | null
-  // Abre el resumen de una cotización y cuál está abierta (`?cotizacion=`).
   alAbrir: (id: string) => void
   abierta: string | null
-  // El «⋯» de cada fila y de cada tarjeta (T15).
   menuDeFila?: MenuDeFila | undefined
-  // Con una búsqueda, alguna fuente (clientes, vehículos o personas) tenía más coincidencias que el tope: se avisa al pie de la lista.
+  compartirDe?: CompartirDe | undefined
+  huecos?: HuecosDeLaLista | undefined
+  rutaDeClientes: string | null
+  // Los filtros de la página, para el despliegue de un grupo (las del vehículo que coinciden).
+  filtrosDelGrupo: Omit<PedidoDelGrupo, 'vehiculoId' | 'cursor'>
   acotada: boolean
 }
 
-// Nada coincide. Con una búsqueda puesta (que alcanza el mínimo), «Limpiar búsqueda» la quita y deja los filtros (los chips los quitan); sin ella, «Limpiar filtros».
-function SinResultados() {
-  const filtros = useFiltrosDelListado()
-  const texto = filtros.valores.busqueda.trim()
-  if (!cumpleElMinimo(texto, MINIMO_DE_BUSQUEDA_DE_COTIZACIONES)) {
-    return <EstadoSinResultados alLimpiar={filtros.limpiar} />
-  }
+const idDelDespliegue = (ordenId: string) => `grupo-${ordenId}`
+
+// «Seguir buscando»: la misma URL con el cursor de donde quedó la base.
+function SeguirBuscando({ cursor }: { cursor: string }) {
+  const ruta = usePathname()
+  const parametros = new URLSearchParams(useSearchParams())
+  parametros.set(CLAVE_DE_CURSOR, cursor)
   return (
-    <EstadoSinResultados
-      alLimpiar={() => {
-        filtros.buscar('')
-      }}
-      etiquetaDeLimpiar="Limpiar búsqueda"
-      descripcion={`Ninguna cotización coincide con «${texto}». Busca por número, título, cliente, vehículo o autor.`}
+    <AvisoDeTope
+      texto="Revisamos muchas cotizaciones sin completar la página."
+      camino={
+        <Link
+          href={`${ruta}?${parametros.toString()}` as Route}
+          className="underline hover:text-(--color-ink)"
+        >
+          Seguir buscando
+        </Link>
+      }
     />
   )
 }
 
-// La lista o el estado que corresponda: vacío de primera vez, vacío por filtro (con «Limpiar») o una página que se quedó sin filas. Una sola vista (`<UnaSolaVista>`): la tabla
-// desde `md` y las tarjetas por debajo. Sin total ni «Página N de M»: sólo dónde estás y Anterior o Siguiente.
+// Qué grupos están desplegados (por la cotización que los ordena: no son de la URL) y cómo se despliega uno.
+function useGruposDesplegados({
+  filtrosDelGrupo,
+  huecos,
+  alAbrir,
+}: Pick<Props, 'filtrosDelGrupo' | 'huecos' | 'alAbrir'>) {
+  const [desplegados, setDesplegados] = useState<ReadonlySet<string>>(new Set())
+  const alternar = (ordenId: string) => {
+    setDesplegados((antes) => {
+      const despues = new Set(antes)
+      if (!despues.delete(ordenId)) {
+        despues.add(ordenId)
+      }
+      return despues
+    })
+  }
+  // El bloque lleva el id que nombra `aria-controls` desde el primer cuadro (mientras llega su código, el esqueleto).
+  const despliegue = (entrada: Extract<EntradaDeLaLista, { tipo: 'grupo' }>) => (
+    <div id={idDelDespliegue(entrada.ordenId)}>
+      <DespliegueDelGrupoDiferido
+        cabeza={entrada.cabeza}
+        pedido={{ ...filtrosDelGrupo, vehiculoId: entrada.vehiculoId }}
+        ordenId={filtrosDelGrupo.texto === undefined ? entrada.ordenId : null}
+        Comparar={huecos?.Comparar}
+        alAbrir={alAbrir}
+      />
+    </div>
+  )
+  return { desplegados, alternar, despliegue, idDelDespliegue }
+}
+
+// La lista o el estado que corresponda (`SinFilas`). Una sola vista (`<UnaSolaVista preferida>`): la tabla sólo en escritorio y si la persona la eligió; si no, las
+// tarjetas. Agrupada, cada grupo se despliega en el lugar (lo desplegado vive aquí: no es de la URL). Sin total ni «Página N de M»: dónde estás y Anterior o
+// Siguiente; si la base recorrió su tope sin completar la página, «Seguir buscando».
 export function ResultadoDelListado({
   pagina,
+  vista,
   origenes,
   accionDeVacio,
   vacioDeLoFiltrado,
   alAbrir,
   abierta,
   menuDeFila,
+  compartirDe,
+  huecos,
+  rutaDeClientes,
+  filtrosDelGrupo,
   acotada,
 }: Props) {
-  const filtros = useFiltrosDelListado()
-  const hayCursor = useSearchParams().has(CLAVE_DE_CURSOR)
-
+  const grupos = useGruposDesplegados({ filtrosDelGrupo, huecos, alAbrir })
   if (pagina.filas.length === 0) {
-    if (filtros.hayFiltros) {
-      return <SinResultados />
-    }
-    if (hayCursor) {
-      return <EstadoPaginaSinFilas />
-    }
-    if (vacioDeLoFiltrado !== null) {
-      return <EstadoVacio titulo={vacioDeLoFiltrado} accion={<EnlaceVerTodas />} />
-    }
-    return (
-      <EstadoVacio
-        titulo="Todavía no hay cotizaciones que puedas ver."
-        descripcion="Las que se guarden desde la hoja de cotizar van a aparecer acá."
-        accion={accionDeVacio}
-      />
+    return pagina.cortada === null ? (
+      <SinFilas accionDeVacio={accionDeVacio} vacioDeLoFiltrado={vacioDeLoFiltrado} />
+    ) : (
+      <SeguirBuscando cursor={pagina.cortada} />
     )
   }
-
+  const ubicacion = ubicacionDeLaPagina({
+    ...pagina,
+    filas: pagina.filas.map((entrada) => ({ id: entrada.ordenId, creadoEn: entrada.ordenEn })),
+  })
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
-      <UbicacionDeLaPagina ubicacion={ubicacionDeLaPagina(pagina)} />
+      <UbicacionDeLaPagina ubicacion={ubicacion} />
       <UnaSolaVista
+        preferida={vista}
         tabla={() => (
           <TablaDeCotizaciones
-            cotizaciones={pagina.filas}
+            entradas={pagina.filas}
             origenes={origenes}
             alAbrir={alAbrir}
             abierta={abierta}
             menuDeFila={menuDeFila}
+            {...grupos}
           />
         )}
         tarjetas={() => (
           <TarjetasDeCotizaciones
-            cotizaciones={pagina.filas}
+            entradas={pagina.filas}
             origenes={origenes}
             alAbrir={alAbrir}
             abierta={abierta}
             menuDeFila={menuDeFila}
+            compartirDe={compartirDe}
+            huecos={huecos}
+            rutaDeClientes={rutaDeClientes}
+            {...grupos}
           />
         )}
       />
@@ -113,6 +161,7 @@ export function ResultadoDelListado({
           camino="Escribe más para afinarla."
         />
       ) : null}
+      {pagina.cortada === null ? null : <SeguirBuscando cursor={pagina.cortada} />}
       <Paginacion siguiente={pagina.siguiente} anterior={pagina.anterior} />
     </div>
   )

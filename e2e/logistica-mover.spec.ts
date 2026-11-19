@@ -161,7 +161,7 @@ test('E2E mover · el historial dice quién movió y con qué nota; las notas se
   ).toBeVisible()
   await expect(notas.getByLabel('Corregir la nota')).toHaveCount(0)
 
-  // La ficha del vehículo enlaza a su unidad en logística desde la cabecera (el bloque «Fase y qué falta» de la derecha repite el enlace).
+  // La ficha del vehículo enlaza a su unidad en logística desde la cabecera («Ver en logística», un enlace corto).
   await page.goto(`/vehiculos/${conCambioDeOtra}`)
   await page.locator('main header').first().getByRole('link', { name: 'Ver en logística' }).click()
   await expect(page).toHaveURL(new RegExp(`/logistica/vehiculo/${conCambioDeOtra}$`))

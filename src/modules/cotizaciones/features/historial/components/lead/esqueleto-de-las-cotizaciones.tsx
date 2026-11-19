@@ -1,6 +1,6 @@
 import { Skeleton } from '@/shared/ui/skeleton'
 
-// Lo que se ve mientras llega el código del bloque «Cotizaciones»: las tres filas de la lista. Aparte del componente para que `diferidos.tsx` no lo arrastre a la carga en frío.
+// Lo que se ve mientras llega el código de la sección «Cotizaciones» de la ficha del lead: las tres filas de la lista. Aparte del componente para que `diferidos.tsx` no lo arrastre a la carga en frío.
 export function EsqueletoDeLasCotizaciones() {
   return (
     <div aria-busy="true" aria-label="Cargando las cotizaciones" className="grid gap-2">
