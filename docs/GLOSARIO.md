@@ -548,7 +548,20 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Fila (de la fórmula)** — `Fila`, `filasDe()` (`entities/formula/filas.ts`): un nodo que no es auxiliar de otro, con sus auxiliares y su
   `texto`; una línea del editor.
 - **Editor de la fórmula** — `EditorDeLaFormula` (`features/formula/components/editor/`), `?panel=editar-formula`: donde se escriben en texto
-  las filas de la fórmula de un origen, sobre el borrador o la publicada; compila cada fila al aplicar.
+  las filas de la fórmula de un origen, sobre el borrador o la publicada; compila cada fila al aplicar. En la pantalla se llama «Modo avanzado».
+- **Modo avanzado** — el editor de la fórmula en texto (`?panel=editar-formula`), detrás del botón «Modo avanzado» de la planilla; comparte la
+  fórmula de trabajo con ella. No es «Avanzado» (la sección de la hoja que se edita en un modal).
+- **Planilla de la fórmula** — `PlanillaDeLaFormula` (`features/formula/components/planilla/`): la vista por defecto de la pestaña «Fórmula», como la
+  planilla de V1: filas numeradas con A · concepto, B · %, C · valor y D · de dónde sale, en bandas, con las celdas que se editan marcadas.
+- **Banda (de la planilla)** — `BandaDeLaPlanilla`, `bandasDeLaPlanilla()`: un tramo de la planilla con su cabecera: «Tipo de cambio», «Unidad de
+  ejemplo», «Variante», cada grupo con su color, y «Sin grupo».
+- **De dónde sale** — `deDondeSale()` (`entities/formula/de-donde-sale.ts`), la columna D de la planilla: lo que calcula una fila, en palabras y con
+  las etiquetas de lo que nombra («(Remate + Fees) × 4 %», «monto fijo»).
+- **Unidad de ejemplo** — `UnidadDeEjemplo` (`entities/formula/unidad-de-ejemplo.ts`): lo que se tipea en la banda «Unidad de ejemplo» de la planilla
+  (los `input`, los datos del vehículo, las banderas y la variante) para ver el efecto de cada cambio en C, «Totales» y la tarjeta en vivo. Arranca
+  en ceros como las «Cifras de prueba» y no se guarda.
+- **Barra de fórmula** — `BarraDeFormula`, arriba de la tabla de la planilla: el texto de la fila elegida, que se edita y se aplica como en el Modo
+  avanzado (una fila a la vez).
 - **Cifras de prueba** — `calcularLaVistaPrevia()`, «Vista previa» del editor: `evaluar()` con datos en 0, opciones apagadas, variante por
   defecto, tipos de cambio de hoy y tablas vivas; no se guarda.
 - **Texto vigente** — `textoVigente()` (`entities/formula/texto-vigente.ts`): el texto de una fila con el valor del ⚙ de una constante escrito

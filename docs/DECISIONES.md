@@ -498,7 +498,19 @@ las trampas, en `docs/LECCIONES.md`.
 - **Publicar sin pisar el borrador.** El ⚙ y revertir publican la N+1 desde la publicada (`_publicar_version()`, candado por origen); publicar un borrador atrasado da PT409 con quién publicó; revertir a un nivel retirado se rechaza.
 - **Versión esperada del borrador.** `formula_guardar_borrador`, `_descartar_` y `_publicar` la llevan al final con `default null`, sin sobrecargas; en guardar, nula = crear. Guardar devuelve `{id, actualizado_en}` y el editor sigue sin releer.
 - **Orden en las RPC del borrador.** Permiso, validación (fuera del candado, es lo caro), candado del origen, borrador `for update`, esperadas y escritura. Descartar lo puede cualquiera con `configurar` del origen (limpia el olvidado de quien se fue).
-- **Qué edita el editor en texto.** Sólo cálculos y constantes; el id de una fila no cambia; un negativo no se escribe en el texto; tope 2.000 por fila en UTF-16. La vista previa usa «Cifras de prueba» que no se guardan. `key` = `<origen>:<vuelta>`.
+- **La fórmula se ve como planilla** (A · concepto, B · %, C · valor, D · de dónde sale) **y el editor en texto es el «Modo avanzado».** Los dos editan
+  la misma fórmula de trabajo, que tiene la sesión; las tarjetas de la publicada y del borrador ya no llevan «Editar». La sesión se vuelve a montar
+  con «Recargar» o si la versión cambia por algo que no hizo ella (publicar, descartar, revertir), nunca al guardar.
+- **Editar un valor en la planilla nunca pregunta.** C de una constante o B de un par escriben `params` y reescriben su texto, como el ⚙; si el texto no
+  puede decirlo, queda «el texto ya no manda» y «Pisar el valor» rige sólo al recompilar ese texto en la barra de fórmula.
+- **«Publicar…» espera mientras haya cambios aplicados sin guardar** («Guarda el borrador antes de publicar: se publica lo guardado.»): publicar algo
+  distinto de lo que muestra la planilla sería un error de dinero.
+- **La planilla en el celular y con el texto al 200 %** se desplaza de costado en su marco con «#» y A pegadas (D se parte en líneas): las dos cosas
+  pasan con el mismo ancho angosto y se eligió la del celular en vez de bajar B–D bajo A. «Totales» y la tarjeta van al costado cuando la planilla mide
+  72 rem o más (una consulta de contenedor, no `xl`): a 1.280 px la columna de Configuración deja ≈ 52 rem y la tabla quedaría apretada.
+- **La tarjeta en vivo** dibuja la plantilla de trabajo leída con la fórmula publicada (sus etiquetas) y los valores de la fórmula de trabajo; «Ver total»
+  sale del diseño (`ver_total_bs_por_defecto`, apagado sin él) y no se cambia en la planilla.
+- **Qué edita el editor en texto.** Sólo cálculos y constantes; el id de una fila no cambia; un negativo no se escribe en el texto; tope 2.000 por fila en UTF-16. La vista previa usa «Cifras de prueba» que no se guardan. `key` = `<origen>:<vuelta>:<sesión>`.
 - **Grupos en el editor.** No se suman ni se quitan (la plantilla nombra exactamente los de la fórmula); `buckets` y `total_en` no se editan; una auxiliar nunca suma a un grupo.
 - **Lo tipeado se normaliza a 15 cifras**, como la XCell: «1,1 %» manda 0,011. Las comparaciones con lo guardado también van a 15 cifras.
 - **El ⚙ espera la publicada que leyó el panel**, nunca la versión que dibuja la hoja; si difieren, el panel lo dice. Lo enciende un proveedor y lo decide la base; sin proveedor no se registra el panel.

@@ -155,6 +155,14 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
   publicar reemplaza todas. Se edita en memoria y se valida con el espejo de la base (`entities/tablas/validacion.ts`, `TOPE_DE_FILAS` = 2.000); el
   borrador va por versión en `sessionStorage` (pausado mientras publica) y el editor lleva `key` id:versión. «Publicar» (`?panel=publicar-tabla`,
   `tabla_referencia_publicar()`): el PT409 y el 22023 con `hint` llegan tal cual (`porCampo` con el camino de la celda).
+- **La fórmula** (área `formula`; `/configuracion/cotizacion/<origen>/formula`, `cotizaciones.configurar`, a ancho completo): arriba la publicada, el
+  borrador y las versiones (`VistaDeLaFormula`) y abajo la sesión de edición (`SesionDeLaFormula` por `diferido()`: lee la versión desde el navegador y
+  llama **una vez** a `useEditorDeLaFormula`), que dibuja la planilla (`components/planilla/`, por `diferido()`; lo que arma, `usePlanilla()`) o, con
+  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula de trabajo. La unidad
+  de ejemplo y el modo viven en la sesión; «Publicar…» espera con cambios aplicados sin guardar (`alCambiarPendientes`, en `useLayoutEffect`). La `key` de la
+  sesión es `<origen>:<vuelta>:<sesión>` (`otraSesion()`). La página pasa `tarjeta` (la promesa de `leerLaTarjetaDeTrabajo()`), `TarjetaEnVivo` y
+  `puedeCambiarTiposDeCambio`. Las celdas editables usan `BOTON_DEL_VALOR` y `ENTRADA` de `@/shared/ui/xcell`; los colores de las bandas, `leerTonosDelCatalogo()`
+  con claro y oscuro y `<EstiloDeTonos>`.
 - **El PDF** (área `tarjeta`): `GET /cotizaciones/[id]/pdf` (`requerirSesion()`; 404 en texto igual al de la página para lo que no existe, está en la
   papelera o no se ve; `rutaDelPdf(id)`) arma la página (fecha del último guardado en la zona de `leerAjustes()`, que falla en vez de dar lo de fábrica) y
   pide `pdfDeUnaGuardada()` con el contexto de `contextoDeLaPagina()` (el cliente sólo con `leads.ver`: `src/app/(app)/cotizaciones/datos-de-la-tarjeta.ts`, que
