@@ -29,11 +29,11 @@ describe('la plantilla de V1 «Compra dealer USA»', () => {
   //   CIF = 52.000 + 1.040 + 900 + 35 + 200 + 20 = 54.195;  GA = 2.709,75;  IVA = 56.904,75 × 0,1494 = 8.501,56965;  ICE = 8.535,7125
   //   nacionalización = 19.747,03215 + 780 = 20.527,03215 → la línea, a dólar entero: 20.527
   //   Bs (Paralelo) = 86.260 × 12 + 20.527 × 11,9 = 1.279.391,3;  ÷ 12 = 106.615,941666…;  suma = 106.787
-  it('con la unidad de ejemplo de V1 da los totales de la planilla de V1, cada línea a dólar entero', () => {
+  it('con la unidad de ejemplo de V1 da los totales de la planilla de V1, la nacionalización a dólar entero', () => {
     const r = calcular(p, 'paralelo')
     expect(r.faltantes).toEqual([])
-    expect(r.valores['nacionalizacion']).toBeCloseTo(20527.03215, 6)
-    expect(r.valores['nacionalizacion_linea']).toBe(20527)
+    expect(r.valores['nacionalizacion_calculada']).toBeCloseTo(20527.03215, 6)
+    expect(r.valores['nacionalizacion']).toBe(20527)
     expect(r.totales.bs).toBeCloseTo(1279391.3, 6)
     expect(r.totales.usd).toBeCloseTo(106615.94166666667, 6)
     expect(r.totales.suma_usd).toBe(106787)

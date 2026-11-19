@@ -65,17 +65,8 @@
           "pct": "fees_pct",
           "etiqueta": "Fees y/o tax",
           "descripcion": "Tarifas del dealer USA, aprox.",
+          "grupo": "primer_pago",
           "sobrescribible": true
-        },
-        {
-          "id": "fees_linea",
-          "tipo": "calculo",
-          "op": "redondear",
-          "de": ["fees"],
-          "n": 0,
-          "etiqueta": "Fees y/o tax",
-          "descripcion": "Tarifas del dealer USA, aprox.",
-          "grupo": "primer_pago"
         },
         {
           "id": "transferencia_pct",
@@ -89,15 +80,6 @@
           "op": "porcentaje_de",
           "de": ["precio", "fees"],
           "pct": "transferencia_pct",
-          "etiqueta": "Transferencia a USA",
-          "descripcion": "Comisión giro 4 %"
-        },
-        {
-          "id": "transferencia_linea",
-          "tipo": "calculo",
-          "op": "redondear",
-          "de": ["transferencia"],
-          "n": 0,
           "etiqueta": "Transferencia a USA",
           "descripcion": "Comisión giro 4 %",
           "grupo": "primer_pago"
@@ -313,23 +295,23 @@
           "descripcion": "Gastos de despacho, al cambio oficial"
         },
         {
-          "id": "nacionalizacion",
+          "id": "nacionalizacion_calculada",
           "tipo": "calculo",
           "op": "suma",
           "de": ["total_impuestos", "total_poliza"],
-          "etiqueta": "Nacionalización",
-          "descripcion": "Póliza y gastos aduaneros",
-          "sobrescribible": true
+          "etiqueta": "Impuestos y póliza",
+          "descripcion": "Impuestos más gastos de despacho"
         },
         {
-          "id": "nacionalizacion_linea",
+          "id": "nacionalizacion",
           "tipo": "calculo",
           "op": "redondear",
-          "de": ["nacionalizacion"],
+          "de": ["nacionalizacion_calculada"],
           "n": 0,
           "etiqueta": "Nacionalización",
           "descripcion": "Póliza y gastos aduaneros",
-          "grupo": "poliza"
+          "grupo": "poliza",
+          "sobrescribible": true
         },
         {
           "id": "total",
@@ -337,8 +319,8 @@
           "op": "suma",
           "de": [
             "precio",
-            "fees_linea",
-            "transferencia_linea",
+            "fees",
+            "transferencia",
             "grua",
             "export_20",
             "export_40",
@@ -346,7 +328,7 @@
             "transporte_40",
             "comision",
             "documentacion",
-            "nacionalizacion_linea"
+            "nacionalizacion"
           ],
           "etiqueta": "TOTAL",
           "descripcion": "Todo con papeles, fuera de Aduana Nacional Cochabamba",
@@ -479,6 +461,29 @@
           ]
         },
         {
+          "id": "cambio",
+          "titulo": "Tipos de cambio",
+          "presentacion": "principal",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "tc_oficial",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Lo fija el dueño cada día. Convierte impuestos y póliza a bolivianos."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "tc_paralelo",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Convierte a bolivianos todo lo que se paga afuera."
+              }
+            }
+          ]
+        },
+        {
           "id": "primer_pago",
           "titulo": "1er pago",
           "presentacion": "principal",
@@ -587,7 +592,7 @@
               "nodo": "nacionalizacion",
               "ancho": "completo",
               "ayuda": {
-                "texto": "Impuestos más gastos de despacho, al cambio oficial. Se puede fijar a mano."
+                "texto": "Impuestos más gastos de despacho, a dólar entero y al cambio oficial. Se puede fijar a mano (la póliza manual)."
               }
             }
           ]
@@ -780,16 +785,16 @@
         "nodo": "precio"
       },
       {
-        "id": "n_fees_linea",
+        "id": "n_fees",
         "alto": 32,
         "ocultar_si": "no_aplica_o_cero",
-        "nodo": "fees_linea"
+        "nodo": "fees"
       },
       {
-        "id": "n_transferencia_linea",
+        "id": "n_transferencia",
         "alto": 32,
         "ocultar_si": "no_aplica_o_cero",
-        "nodo": "transferencia_linea"
+        "nodo": "transferencia"
       },
       {
         "id": "n_grua",
@@ -834,10 +839,10 @@
         "nodo": "documentacion"
       },
       {
-        "id": "n_nacionalizacion_linea",
+        "id": "n_nacionalizacion",
         "alto": 32,
         "ocultar_si": "no_aplica_o_cero",
-        "nodo": "nacionalizacion_linea"
+        "nodo": "nacionalizacion"
       },
       {
         "id": "total",
@@ -1074,12 +1079,12 @@
         }
       },
       {
-        "id": "fees_linea_concepto",
-        "fila": "n_fees_linea",
+        "id": "fees_concepto",
+        "fila": "n_fees",
         "columna": "concepto",
         "contenido": {
           "tipo": "dato",
-          "nodo": "fees_linea",
+          "nodo": "fees",
           "mostrar": "etiqueta"
         },
         "estilo": {
@@ -1091,12 +1096,12 @@
         }
       },
       {
-        "id": "fees_linea_monto",
-        "fila": "n_fees_linea",
+        "id": "fees_monto",
+        "fila": "n_fees",
         "columna": "monto",
         "contenido": {
           "tipo": "dato",
-          "nodo": "fees_linea",
+          "nodo": "fees",
           "mostrar": "monto"
         },
         "estilo": {
@@ -1110,12 +1115,12 @@
         }
       },
       {
-        "id": "fees_linea_descripcion",
-        "fila": "n_fees_linea",
+        "id": "fees_descripcion",
+        "fila": "n_fees",
         "columna": "descripcion",
         "contenido": {
           "tipo": "dato",
-          "nodo": "fees_linea",
+          "nodo": "fees",
           "mostrar": "descripcion"
         },
         "estilo": {
@@ -1127,12 +1132,12 @@
         }
       },
       {
-        "id": "transferencia_linea_concepto",
-        "fila": "n_transferencia_linea",
+        "id": "transferencia_concepto",
+        "fila": "n_transferencia",
         "columna": "concepto",
         "contenido": {
           "tipo": "dato",
-          "nodo": "transferencia_linea",
+          "nodo": "transferencia",
           "mostrar": "etiqueta"
         },
         "estilo": {
@@ -1144,12 +1149,12 @@
         }
       },
       {
-        "id": "transferencia_linea_monto",
-        "fila": "n_transferencia_linea",
+        "id": "transferencia_monto",
+        "fila": "n_transferencia",
         "columna": "monto",
         "contenido": {
           "tipo": "dato",
-          "nodo": "transferencia_linea",
+          "nodo": "transferencia",
           "mostrar": "monto"
         },
         "estilo": {
@@ -1163,12 +1168,12 @@
         }
       },
       {
-        "id": "transferencia_linea_descripcion",
-        "fila": "n_transferencia_linea",
+        "id": "transferencia_descripcion",
+        "fila": "n_transferencia",
         "columna": "descripcion",
         "contenido": {
           "tipo": "dato",
-          "nodo": "transferencia_linea",
+          "nodo": "transferencia",
           "mostrar": "descripcion"
         },
         "estilo": {
@@ -1591,12 +1596,12 @@
         }
       },
       {
-        "id": "nacionalizacion_linea_concepto",
-        "fila": "n_nacionalizacion_linea",
+        "id": "nacionalizacion_concepto",
+        "fila": "n_nacionalizacion",
         "columna": "concepto",
         "contenido": {
           "tipo": "dato",
-          "nodo": "nacionalizacion_linea",
+          "nodo": "nacionalizacion",
           "mostrar": "etiqueta"
         },
         "estilo": {
@@ -1608,12 +1613,12 @@
         }
       },
       {
-        "id": "nacionalizacion_linea_monto",
-        "fila": "n_nacionalizacion_linea",
+        "id": "nacionalizacion_monto",
+        "fila": "n_nacionalizacion",
         "columna": "monto",
         "contenido": {
           "tipo": "dato",
-          "nodo": "nacionalizacion_linea",
+          "nodo": "nacionalizacion",
           "mostrar": "monto"
         },
         "estilo": {
@@ -1627,12 +1632,12 @@
         }
       },
       {
-        "id": "nacionalizacion_linea_descripcion",
-        "fila": "n_nacionalizacion_linea",
+        "id": "nacionalizacion_descripcion",
+        "fila": "n_nacionalizacion",
         "columna": "descripcion",
         "contenido": {
           "tipo": "dato",
-          "nodo": "nacionalizacion_linea",
+          "nodo": "nacionalizacion",
           "mostrar": "descripcion"
         },
         "estilo": {
@@ -1645,12 +1650,12 @@
       },
       {
         "id": "poliza_tc",
-        "fila": "n_nacionalizacion_linea",
+        "fila": "n_nacionalizacion",
         "columna": "tipo_cambio",
         "abarca_columnas": 2,
         "contenido": {
           "tipo": "dato",
-          "nodo": "nacionalizacion_linea",
+          "nodo": "nacionalizacion",
           "mostrar": "tc_nombre"
         },
         "estilo": {
@@ -1665,11 +1670,11 @@
       },
       {
         "id": "poliza_plazo",
-        "fila": "n_nacionalizacion_linea",
+        "fila": "n_nacionalizacion",
         "columna": "plazo",
         "contenido": {
           "tipo": "dato",
-          "nodo": "nacionalizacion_linea",
+          "nodo": "nacionalizacion",
           "mostrar": "plazo"
         },
         "estilo": {

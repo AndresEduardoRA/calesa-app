@@ -11,14 +11,10 @@ import { validarDiseno } from '../../validar-diseno'
 import type { ClaveDePlantillaDeV1 } from '../../plantillas-de-v1/claves'
 import { plantillaDeV1 } from '../../plantillas-de-v1'
 import type { PlantillaDeV1, UnidadDePlantillaDeV1 } from '../../plantillas-de-v1/tipos'
+import { visibilidadDeLaPlantilla } from '../../plantillas-de-v1/visibilidad'
 import { validarPlantilla } from '../validar-plantilla'
 
 export const paquete = (clave: ClaveDePlantillaDeV1): PlantillaDeV1 => plantillaDeV1(clave)
-
-const visibilidadDeTodos = (p: PlantillaDeV1) =>
-  Object.fromEntries(
-    p.formula.definicion.nodos.map((n) => [n.id, { ver: 'todos', editar: 'todos' }]),
-  )
 
 // Los tres validadores en verde y la tarjeta en forma 2, dentro de su tope.
 export function validarLosTres(p: PlantillaDeV1) {
@@ -34,7 +30,7 @@ export function validarLosTres(p: PlantillaDeV1) {
   const tarjeta = validarPlantilla(p.tarjeta, {
     definicion: p.formula.definicion,
     diseno: p.formula.diseno,
-    visibilidad: visibilidadDeTodos(p),
+    visibilidad: visibilidadDeLaPlantilla(p),
     tonos,
   })
   expect(tarjeta.ok ? tarjeta.forma : tarjeta.error).toBe(2)

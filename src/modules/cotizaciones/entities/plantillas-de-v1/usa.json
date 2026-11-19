@@ -587,6 +587,29 @@
           ]
         },
         {
+          "id": "cambio",
+          "titulo": "Tipos de cambio",
+          "presentacion": "principal",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "tc_oficial",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Lo fija el dueño cada día. Convierte impuestos y póliza a bolivianos."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "tc_paralelo",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Convierte a bolivianos todo lo que se paga afuera."
+              }
+            }
+          ]
+        },
+        {
           "id": "primer_pago",
           "titulo": "1er pago",
           "presentacion": "principal",

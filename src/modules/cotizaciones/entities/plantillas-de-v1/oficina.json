@@ -98,6 +98,29 @@
       },
       "secciones": [
         {
+          "id": "cambio",
+          "titulo": "Tipos de cambio",
+          "presentacion": "principal",
+          "items": [
+            {
+              "tipo": "celda",
+              "nodo": "tc_oficial",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Convierte el total a bolivianos en el modo «Aduana»."
+              }
+            },
+            {
+              "tipo": "celda",
+              "nodo": "tc_paralelo",
+              "ancho": "mitad",
+              "ayuda": {
+                "texto": "Convierte el total a bolivianos: una venta en plaza se cobra al paralelo."
+              }
+            }
+          ]
+        },
+        {
           "id": "contado",
           "titulo": "Contado",
           "presentacion": "principal",
@@ -118,6 +141,10 @@
               "ayuda": {
                 "texto": "Rebaja aplicada: se resta del total."
               }
+            },
+            {
+              "tipo": "subtotal",
+              "nodo": "contado"
             }
           ]
         }
