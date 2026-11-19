@@ -17,19 +17,19 @@ type Props = {
   alPublicar?: () => void
   // Abre «Descartar el borrador» (`?panel=descartar-borrador`, 4.20-2c), también atrasado.
   alDescartar?: () => void
-  // Abre el editor sobre el borrador (`?panel=editar-formula`, 4.21-3a-1), también atrasado.
-  alEditar?: () => void
+  // Hay cambios aplicados en la planilla sin guardar: «Publicar…» espera con su motivo (se publica lo guardado).
+  publicarEspera?: boolean
 }
 
 // El borrador del origen (a lo sumo uno): quién lo guardó, cuándo, sobre qué versión empezó y, si desde entonces se publicó otra, que publicarlo dará conflicto
 // (4.20-1: la base lo rechaza con quién publicó). «Publicar…» sólo al día (4.20-2b): atrasado, el aviso ya dice por qué no. «Descartar…» siempre (4.20-2c): un borrador
-// atrasado ya no se publica, y se descarta. «Editar» abre el editor en texto sobre él (4.21-3a-1).
+// atrasado ya no se publica, y se descarta. Se edita en la planilla, debajo; con cambios aplicados sin guardar, «Publicar…» espera.
 export function TarjetaDelBorrador({
   borrador,
   publicada,
   alPublicar,
   alDescartar,
-  alEditar,
+  publicarEspera = false,
 }: Props) {
   const { zonaHoraria } = useRegional()
   const atrasado = borradorAtrasado(borrador, publicada)
@@ -55,9 +55,9 @@ export function TarjetaDelBorrador({
         </p>
       ) : null}
       <BotonesDelBorrador
-        {...(alEditar ? { alEditar } : {})}
         {...(alPublicar && !atrasado ? { alPublicar } : {})}
         {...(alDescartar ? { alDescartar } : {})}
+        publicarEspera={publicarEspera}
       />
     </section>
   )

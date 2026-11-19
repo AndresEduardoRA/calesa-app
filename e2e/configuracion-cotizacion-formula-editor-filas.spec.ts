@@ -8,6 +8,7 @@ import {
   crearDuenaDePrueba,
 } from './soporte/base'
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
+import { abrirModoAvanzado } from './soporte/formula-editor'
 import { leerBorrador } from './soporte/formula-editor-guardar'
 import {
   borrarLoDePrevia,
@@ -61,10 +62,7 @@ const sumar = (page: Page, etiqueta: string) =>
 async function abrirEditor(page: Page, origenId = origen.id) {
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
   await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
-  await page
-    .getByRole('region', { name: 'Borrador' })
-    .getByRole('button', { name: 'Editar', exact: true })
-    .click()
+  await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }
 

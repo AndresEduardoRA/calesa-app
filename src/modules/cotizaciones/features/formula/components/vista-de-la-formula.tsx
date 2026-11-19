@@ -6,31 +6,29 @@ import { ListaDeVersiones } from './lista-de-versiones'
 import { TarjetaDeLaPublicada } from './tarjeta-de-la-publicada'
 import { TarjetaDelBorrador } from './tarjeta-del-borrador'
 
-type Origen = { id: string; nombre: string; activo: boolean }
-
 type Props = {
   origen: Origen
   formula: Formula
   panel: PanelDeLaFormula
+  // Hay cambios aplicados en la planilla sin guardar: «Publicar…» espera.
+  publicarEspera: boolean
 }
 
-// Lo que la pestaña «Fórmula» muestra cuando no edita (4.20-2a): la publicada del origen, su borrador y sus versiones (el origen se elige en la página).
-// «Editar» (el borrador) y «Editar en un borrador» (la publicada, si no hay borrador) abren el editor (4.21-3a-1).
-export function VistaDeLaFormula({ origen, formula, panel }: Props) {
+type Origen = { id: string; nombre: string; activo: boolean }
+
+// Lo de arriba de la pestaña «Fórmula» (4.20-2a): la publicada del origen, su borrador y sus versiones (el origen se elige en la página). Se edita en la planilla, debajo;
+// el Modo avanzado se abre desde su barra.
+export function VistaDeLaFormula({ origen, formula, panel, publicarEspera }: Props) {
   return (
     <>
-      <TarjetaDeLaPublicada
-        publicada={formula.publicada}
-        origen={origen.nombre}
-        {...(formula.borrador ? {} : { alEditar: panel.abrirEditor })}
-      />
+      <TarjetaDeLaPublicada publicada={formula.publicada} origen={origen.nombre} />
       {formula.borrador ? (
         <TarjetaDelBorrador
           borrador={formula.borrador}
           publicada={formula.publicada}
           alPublicar={panel.abrirPublicar}
           alDescartar={panel.abrirDescartar}
-          alEditar={panel.abrirEditor}
+          publicarEspera={publicarEspera}
         />
       ) : null}
       {/* Con otra publicada (se publicó o se revirtió) la lista vuelve a la primera página del servidor. */}

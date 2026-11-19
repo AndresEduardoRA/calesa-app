@@ -101,3 +101,35 @@ describe('TarjetaDelBorrador', () => {
     expect(screen.queryByRole('button', { name: 'Descartar…' })).toBeNull()
   })
 })
+
+describe('TarjetaDelBorrador con la planilla', () => {
+  it('no ofrece «Editar»: se edita en la planilla, debajo', () => {
+    render(
+      <TarjetaDelBorrador
+        borrador={borrador(V3, 3)}
+        publicada={{ id: V3, version: 3 }}
+        alPublicar={vi.fn()}
+        alDescartar={vi.fn()}
+      />,
+    )
+    expect(screen.queryByRole('button', { name: 'Editar' })).toBeNull()
+  })
+
+  it('con cambios aplicados sin guardar, «Publicar…» espera y dice por qué', () => {
+    const alPublicar = vi.fn()
+    render(
+      <TarjetaDelBorrador
+        borrador={borrador(V3, 3)}
+        publicada={{ id: V3, version: 3 }}
+        alPublicar={alPublicar}
+        publicarEspera
+      />,
+    )
+    const publicar = screen.getByRole('button', { name: 'Publicar…' }) as HTMLButtonElement
+    expect(publicar.disabled).toBe(true)
+    const motivo = screen.getByText('Guarda el borrador antes de publicar: se publica lo guardado.')
+    expect(publicar.getAttribute('aria-describedby')).toBe(motivo.id)
+    fireEvent.click(publicar)
+    expect(alPublicar).not.toHaveBeenCalled()
+  })
+})

@@ -735,9 +735,13 @@ fallar.
   del PDF, en paralelo con la plantilla, recortada a los nodos del contexto reducido. El editor (lienzo, panel, dnd-kit y atajos: 26,4 KB gz, más dnd-kit, 15,0, el chunk que comparte con el orden del diseño), el modal de
   publicar y el diálogo de descartar van por `diferido()`; «Dato» dibuja 50 («Escribe para acotar.»). Deshacer guarda hasta 100 instantáneas en memoria.
   `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
-- Editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrirlo lee una fila de `formulas` por `formulas_pkey`
-  (`definicion`, `params`, `estado`, `diseno`, `nota`): con 600 filas ≤ 80.900 B; dibuja hasta 500 (`TOPE_DE_LO_CARGADO`) con
-  `<AvisoDeTope>` y «Buscar fila»: ≤ 6.300 nodos. El estado de las filas es O(filas × nodos), una vez por fórmula de trabajo; filtrar y
+- Planilla y editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrir la pestaña lee una fila de `formulas` por `formulas_pkey`
+  (`definicion`, `params`, `estado`, `diseno`, `nota`) desde el navegador: con 600 filas ≤ 80.900 B; también el terreno de la vista previa (abajo) y el
+  catálogo de colores (≤ 48 filas, seis columnas de colores); en el servidor, en paralelo con la fórmula, la plantilla de la tarjeta (la lectura de la
+  pestaña «Tarjeta»). Nada se relee al tipear ni al aplicar, ni al pasar al Modo avanzado (la misma sesión). La planilla y el Modo avanzado dibujan
+  hasta 500 (`TOPE_DE_LO_CARGADO`) con `<AvisoDeTope>` y «Buscar fila»: ≤ 6.300 nodos cada uno; la sesión, la planilla, el Modo avanzado y la tarjeta en
+  vivo van por `diferido()`. Tipear en la unidad de ejemplo o cambiar el modo sólo vuelve a correr `evaluar()` (lineal); «de dónde sale» y las bandas,
+  una vez por fórmula de trabajo. El estado de las filas es O(filas × nodos), una vez por fórmula de trabajo; filtrar y
   tipear no lo recalculan (`use-editor-de-la-formula.soporte.escala.test.ts`: razón cuadrática ≤ 1,1). Abierto: con miles de filas pasa de
   1 s. Compilar y validar corren en el navegador al aplicar, con `diferido()`. La vista previa: 3 pedidos en el caso habitual (tipos de
   cambio; tablas vivas; sus filas por páginas de `limit(1000)` por `tablas_referencia_filas_tabla_orden_idx`) y ≤ 8, constantes

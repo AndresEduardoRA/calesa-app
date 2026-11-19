@@ -42,6 +42,19 @@ export function useSumarFila({
     [sumando, trabajo, alCrear],
   )
 
+  // Abre el formulario sin mirar lo abierto: lo llama quien ya cerró lo suyo en el mismo manejador (`sumarDebajo` del editor), donde `hayAbierta` aún es el del
+  // render anterior. Estables, como los `set`: la planilla los pasa a filas `memo`.
+  const abrirFormulario = useCallback((tras: string) => {
+    setCreada(null)
+    setSumando({ tras, error: null })
+  }, [])
+  const soltarLaCreada = useCallback(() => {
+    setCreada(null)
+  }, [])
+  const cancelarSumar = useCallback(() => {
+    setSumando(null)
+  }, [])
+
   return {
     sumando,
     creada,
@@ -52,12 +65,9 @@ export function useSumarFila({
         setSumando({ tras, error: null })
       }
     },
-    cancelarSumar: () => {
-      setSumando(null)
-    },
-    soltarLaCreada: () => {
-      setCreada(null)
-    },
+    abrirFormulario,
+    cancelarSumar,
+    soltarLaCreada,
     crear,
   }
 }

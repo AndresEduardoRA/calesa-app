@@ -11,6 +11,7 @@ import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar
 import {
   AUXILIAR_DEL_PORCENTAJE,
   FILA_CON_TEXTO,
+  abrirModoAvanzado,
   ajustarConstante,
   publicarFormulaConTexto,
   sembrarBorradorDeNFilas,
@@ -79,8 +80,7 @@ const texto = (page: Page, etiqueta: string) =>
 
 async function abrirEditor(page: Page, origenId: string) {
   await abrirFormula(page, origenId)
-  await page.getByRole('button', { name: 'Editar en un borrador', exact: true }).click()
-  await expect(page).toHaveURL(/panel=editar-formula/)
+  await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }
 
@@ -161,30 +161,36 @@ test('lo aplicado vuelve al recargar, con su «Descartar»', async ({ page }) =>
   await expect(fila(page, FILA_CON_TEXTO.id)).toContainText(FILA_CON_TEXTO.texto)
 })
 
-test('se entra desde el borrador o la publicada, «atrás» vuelve, un tipo de cambio no se edita y sin fórmula no abre', async ({
+test('«Modo avanzado» se entra desde el borrador o la publicada, «atrás» vuelve, un tipo de cambio no se edita y sin fórmula no abre', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
   await abrirFormula(page, conBorrador.id)
-  // Con borrador, la publicada no ofrece otro.
+  // Las tarjetas de arriba ya no ofrecen «Editar»: se edita en la planilla, y el Modo avanzado se abre desde su barra.
   await expect(page.getByRole('button', { name: 'Editar en un borrador' })).toHaveCount(0)
-  const editar = page
-    .getByRole('region', { name: 'Borrador' })
-    .getByRole('button', { name: 'Editar', exact: true })
-  await editar.click()
+  await expect(
+    page
+      .getByRole('region', { name: 'Borrador' })
+      .getByRole('button', { name: 'Editar', exact: true }),
+  ).toHaveCount(0)
+  const avanzado = page
+    .getByRole('region', { name: 'Planilla de la fórmula' })
+    .getByRole('button', { name: 'Modo avanzado', exact: true })
+  await avanzado.click()
   await expect(page).toHaveURL(/panel=editar-formula/)
   await expect(editor(page)).toContainText('Sobre el borrador de Eda Edita.')
   await expect(fila(page, 'tc')).toBeVisible()
   await expect(fila(page, 'tc').getByRole('button', { name: /^Editar/ })).toHaveCount(0)
   await page.goBack()
   await expect(editor(page)).toBeHidden()
-  await expect(editar).toBeFocused()
+  await expect(avanzado).toBeFocused()
 
   await abrirEditor(page, conTexto.id)
   await expect(editor(page)).toContainText('Sobre la versión 1 publicada.')
-  await page.getByRole('button', { name: 'Volver a la fórmula' }).click()
+  await page.getByRole('button', { name: 'Volver a la planilla' }).click()
   await expect(editor(page)).toBeHidden()
   await expect(page).not.toHaveURL(/panel=/)
+  await expect(page.getByRole('region', { name: 'Planilla de la fórmula' })).toBeVisible()
 
   await abrirFormula(page, sinFormula.id, '&panel=editar-formula')
   await expect(
@@ -192,24 +198,35 @@ test('se entra desde el borrador o la publicada, «atrás» vuelve, un tipo de c
   ).toBeVisible()
   await expect(page).not.toHaveURL(/panel=/)
   await expect(editor(page)).toHaveCount(0)
+  await expect(page.getByRole('region', { name: 'Planilla de la fórmula' })).toHaveCount(0)
 })
 
-test('con 600 filas dibuja 500 con su aviso y «Buscar fila» lleva a las demás', async ({
+test('con 600 filas, la planilla y el Modo avanzado dibujan 500 con su aviso y «Buscar fila» lleva a las demás', async ({
   page,
 }, info) => {
   await entrar(page, duena, { fresco: true })
-  await abrirFormula(page, grande.id)
+  // La definición se lee al abrir la pestaña (la planilla es la vista por defecto): la espera va antes de entrar.
   const respuesta = page.waitForResponse(
     (r) => r.url().includes('/rest/v1/formulas') && r.url().includes('definicion'),
   )
   const desde = Date.now()
-  await page
-    .getByRole('region', { name: 'Borrador' })
-    .getByRole('button', { name: 'Editar', exact: true })
-    .click()
-  await expect(fila(page, 'fila_497')).toBeVisible()
+  await abrirFormula(page, grande.id)
+  const planilla = page.getByRole('region', { name: 'Planilla de la fórmula' })
+  const filaDeLaPlanilla = (id: string) => planilla.locator(`tr[data-fila="${id}"]`)
+  await expect(filaDeLaPlanilla('fila_497')).toBeVisible()
   const ms = Date.now() - desde
   const bytes = (await (await respuesta).body()).length
+  await expect(planilla.locator('tr[data-fila]')).toHaveCount(500)
+  await expect(filaDeLaPlanilla('fila_498')).toHaveCount(0)
+  await expect(
+    planilla.getByRole('status').filter({ hasText: 'Mostrando las 500 primeras filas.' }),
+  ).toBeVisible()
+  const nodosDeLaPlanilla = await planilla
+    .locator('table')
+    .evaluate((tabla) => tabla.querySelectorAll('*').length + 1)
+
+  await abrirModoAvanzado(page)
+  await expect(fila(page, 'fila_497')).toBeVisible()
   await expect(filas(page).locator('li[data-fila]')).toHaveCount(500)
   await expect(fila(page, 'fila_498')).toHaveCount(0)
   await expect(
@@ -218,9 +235,10 @@ test('con 600 filas dibuja 500 con su aviso y «Buscar fila» lleva a las demás
   const nodos = await filas(page).evaluate((lista) => lista.querySelectorAll('*').length + 1)
   info.annotations.push({
     type: 'medida',
-    description: `${String(bytes)} B de la definición, ${String(nodos)} nodos con 500, ${String(ms)} ms hasta la fila 497`,
+    description: `${String(bytes)} B de la definición, ${String(nodosDeLaPlanilla)} nodos en la planilla y ${String(nodos)} en el Modo avanzado con 500, ${String(ms)} ms hasta la fila 497`,
   })
   expect(bytes).toBeLessThanOrEqual(TOPE_DE_BYTES_DE_LA_DEFINICION)
+  expect(nodosDeLaPlanilla).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_500)
   expect(nodos).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_500)
 
   const buscar = page.getByRole('searchbox', { name: 'Buscar fila' })

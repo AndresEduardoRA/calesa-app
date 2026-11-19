@@ -140,6 +140,8 @@ export function useGuardadoDelEditor(args: Args) {
       hayCambios,
     }),
     avisoDelDiseno,
+    // Lo aplicado no es lo guardado: «Publicar…» espera (se publica lo guardado).
+    hayCambios,
     guardar,
   }
 }

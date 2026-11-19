@@ -162,8 +162,12 @@ test('la lista de versiones pesa lo medido: bytes de «Ver más» y nodos con 20
       .getByRole('list', { name: 'Versiones de la fórmula' })
       .evaluate((lista) => lista.querySelectorAll('*').length + 1)
   const con20 = await nodos()
+  // Sólo la página de versiones: la planilla de abajo lee la definición de la versión al abrirse, y esa no se cuenta.
   const respuesta = page.waitForResponse(
-    (r) => r.url().includes('/rest/v1/formulas') && r.request().method() === 'GET',
+    (r) =>
+      r.url().includes('/rest/v1/formulas') &&
+      !r.url().includes('definicion') &&
+      r.request().method() === 'GET',
   )
   await page.getByRole('button', { name: 'Ver más' }).click()
   const bytes = (await (await respuesta).body()).length

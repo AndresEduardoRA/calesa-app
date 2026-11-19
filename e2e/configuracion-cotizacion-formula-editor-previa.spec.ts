@@ -15,6 +15,7 @@ import {
   sembrarTabla,
   sembrarTipoDeCambio,
 } from './soporte/formula-editor-previa'
+import { abrirModoAvanzado } from './soporte/formula-editor'
 import { sql } from './soporte/sql'
 
 // La vista previa del editor de la fórmula (4.21-3a-2, P5, `docs/UX.md` › «Cotización: fórmula»): al abrir el editor, «Cifras de prueba.» con el total y la cifra de cada
@@ -68,10 +69,7 @@ const previa = (page: Page) => page.getByRole('region', { name: 'Vista previa' }
 async function abrirEditor(page: Page, origenId: string) {
   await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
   await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
-  await page
-    .getByRole('region', { name: 'Borrador' })
-    .getByRole('button', { name: 'Editar', exact: true })
-    .click()
+  await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }
 
@@ -96,10 +94,7 @@ test('E2: de dos tablas con la misma clave gana la del origen; sin ella, la comp
   await abrirEditor(page, delOrigen.id)
   await expect(fila(page, 'factor').locator('[data-cifra]')).toHaveText('0,25')
   await page.goto('/configuracion/cotizacion?seccion=formula&origen=' + soloCompartida.id)
-  await page
-    .getByRole('region', { name: 'Borrador' })
-    .getByRole('button', { name: 'Editar', exact: true })
-    .click()
+  await abrirModoAvanzado(page)
   await expect(fila(page, 'factor').locator('[data-cifra]')).toHaveText('0,5')
 })
 

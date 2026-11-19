@@ -235,9 +235,20 @@ Lo puro en `entities/formula/`: nunca lanza, no toca lo que recibe y es lineal c
   constante da `pisa_un_valor` hasta `confirmaPisar`: nunca se deshace un ⚙ en silencio.
 - **Las filas sembradas** no traen texto: `textoDeNodo()` lo escribe (`a+b+c`, `SI(b; x)`, sin «=») sólo si compilarlo da exactamente ese
   nodo; si no, `null` y la fila se muestra por sus campos.
-- **La pantalla** (`features/formula/components/editor/`, `?panel=editar-formula`): compila al aplicar con `compilarFila()` (sin
-  `validarFormula()` si la fila da error), valida la fórmula de trabajo tras cada cambio (el rechazo, en su fila) y la guarda con
-  `formula_guardar_borrador()`.
+- **La pantalla:** la **planilla** (`features/formula/components/planilla/`, la vista por defecto) y el **Modo avanzado** (`components/editor/`,
+  `?panel=editar-formula`), sobre una sola fórmula de trabajo que tiene la sesión (`components/sesion/`, `useEditorDeLaFormula` una vez): compila al
+  aplicar con `compilarFila()` (sin `validarFormula()` si la fila da error), valida la fórmula de trabajo tras cada cambio (el rechazo, en su fila) y
+  la guarda con `formula_guardar_borrador()`. La sesión se vuelve a montar con «Recargar» o si la versión cambia por algo que no hizo ella
+  (`otraSesion()`: publicar, descartar, revertir); guardar sobre la publicada no la vuelve a montar.
+- **La planilla:** `bandasDeLaPlanilla()` (`planilla.ts`) reparte las filas en bandas (tipo de cambio, unidad de ejemplo, variante, un grupo por banda
+  y «Sin grupo»; cada fila una vez, numeradas en el orden en que se dibujan); `celdaB()` y `editableEnC()` dicen qué celdas se editan.
+  `deDondeSale()` (`de-donde-sale.ts`) dice cada fila en palabras con las etiquetas (nunca ids): una frase por tipo de nodo y por operación, las
+  auxiliares en línea (una constante con su valor, un cálculo entre paréntesis), nunca lanza y es lineal. `cambiarValorDeConstante()`
+  (`valor-en-la-planilla.ts`) escribe `params[id]` como el ⚙ y reescribe el texto de la fila que la contiene (`textoVigente()`); si el texto no
+  puede decirlo queda `no_manda`. La **unidad de ejemplo** (`unidad-de-ejemplo.ts`: `inputs`, `banderas`, `vehiculo` por campo y la variante) se
+  calcula con `calcularLaVistaPrevia(formula, terreno, unidad, modo)`: `entradaDeLaUnidad()` suelta lo que la fórmula ya no tiene, `modoDelMotor()`
+  pasa el modo del diseño al motor y un modo que no cubre un bucket da `no_calcula`. `totalesDeLaUnidad()` arma «Totales» y `calculoDeLaUnidad()`
+  la tarjeta en vivo (sólo los ids que su lectura nombra).
 - **Vista previa** (`calcularLaVistaPrevia()`): `evaluar()` con `entradaDePrueba()` (datos en 0, banderas apagadas, variante por defecto,
   sin overrides) y los tipos de cambio y tablas que lee el navegador (`consulta-del-terreno-de-prueba.ts`: la del origen gana a la
   compartida, páginas de 1.000 filas); la congelada manda. «Sumar fila» (`sumarFila()`, `idDeFilaNueva()`) compila con un destino nuevo y

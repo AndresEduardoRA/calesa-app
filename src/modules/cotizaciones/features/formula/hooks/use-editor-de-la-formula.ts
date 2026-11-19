@@ -6,6 +6,7 @@ import type { Formula } from '../../../entities/formula'
 import type { ErrorDeFila } from '../../../entities/formula/compilar-fila'
 import type { FormulaParaEditar } from '../../../entities/formula/edicion'
 import { useAplicarFila } from './use-aplicar-fila'
+import { useCambiosDeLaPlanilla } from './use-cambios-de-la-planilla'
 import { filasParaDibujar } from './use-editor-de-la-formula.soporte'
 import { useGuardadoDelEditor } from './use-guardar-borrador'
 import { useGruposDelEditor } from './use-grupos-del-editor'
@@ -25,6 +26,14 @@ export type RechazoEnElEditor = { mensaje: string; filaId: string | null; grupoI
 // auxiliar que otra fila nombra) deja la fila abierta y la fórmula igual; `pisa_un_valor` (4-5) espera «Pisar el valor». Tras cada cambio (y al leer) corre
 // `validarFormula()`: lo que rechaza queda aplicado y se dice en su fila (un borrador inválido sólo vive aquí: la base valida al guardar). Guardar el borrador
 // (4.21-3b-1) y lo aplicado en la pestaña son de `useGuardadoDelEditor`; mientras guarda, nada se abre, se aplica ni se suma.
+// Abrir una fila o un grupo: sólo con nada abierto, y suelta la marca de la fila recién creada.
+const siEstaLibre =
+  (libre: boolean, soltarLaCreada: () => void) => (abrir: (id: string) => void) => (id: string) => {
+    if (!libre) return
+    soltarLaCreada()
+    abrir(id)
+  }
+
 export function useEditorDeLaFormula({
   origenId,
   leida,
@@ -81,7 +90,15 @@ export function useEditorDeLaFormula({
   const libre =
     abierta === null && nueva.sumando === null && grupos.abierto === null && !envio.enCurso
   const alPonerEnPar = usePonerEnPar(libre, setTrabajo)
-
+  const siLibre = siEstaLibre(libre, nueva.soltarLaCreada)
+  const planilla = useCambiosDeLaPlanilla({
+    trabajo,
+    libre,
+    ocupado: grupos.abierto !== null || envio.enCurso,
+    setTrabajo,
+    setAbierta,
+    nueva,
+  })
   return {
     trabajo,
     libre,
@@ -90,23 +107,18 @@ export function useEditorDeLaFormula({
     abierta,
     aplicada,
     guardado,
-    abrir: (id: string) => {
-      if (!libre) return
-      nueva.soltarLaCreada()
+    abrir: siLibre((id) => {
       setAbierta({ id, error: null })
-    },
+    }),
     grupos,
-    abrirGrupo: (id: string) => {
-      if (!libre) return
-      nueva.soltarLaCreada()
-      grupos.abrir(id)
-    },
+    abrirGrupo: siLibre(grupos.abrir),
     nueva,
     cancelar: () => {
       setAbierta(null)
     },
     aplicar,
     ponerEnPar: alPonerEnPar,
+    ...planilla,
   }
 }
 

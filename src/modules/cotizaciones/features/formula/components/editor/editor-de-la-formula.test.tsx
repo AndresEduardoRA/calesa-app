@@ -9,7 +9,7 @@ import {
 } from '../../../../entities/formula/fila-de-prueba.soporte'
 import type { TerrenoDePrueba } from '../../../../entities/formula/terreno-de-prueba'
 import { CifraDePrueba } from './cifra-de-prueba'
-import { EditorDeLaFormula } from './editor-de-la-formula'
+import { SesionDeLaFormula } from '../sesion/sesion-de-la-formula'
 
 // «Guardar el borrador» (4.21-3b-1): la action no llega aquí (su composición es del servidor).
 vi.mock('../../actions/guardar-borrador', () => ({
@@ -28,6 +28,10 @@ vi.mock('../../../../areas/formula/composicion.client', () => ({
     }),
 }))
 vi.mock('@/shared/ui/toasts', () => ({ avisar: vi.fn() }))
+// Las filas del Modo avanzado llegan por `diferido()`: aquí, directas.
+vi.mock('../sesion/diferidos', async () => ({
+  ListaDeFilasDiferida: (await import('./lista-de-filas')).ListaDeFilas,
+}))
 
 const ORIGEN = { id: '11111111-1111-4111-8111-111111111111', nombre: 'Japón' }
 const FORMULA = '22222222-2222-4222-8222-222222222222'
@@ -57,13 +61,19 @@ const responder = async (n: number, r: Respuesta) => {
 
 const montar = (alVolver = vi.fn()) =>
   render(
-    <EditorDeLaFormula
+    <SesionDeLaFormula
       origen={ORIGEN}
       formulaId={FORMULA}
       sobre="Sobre la versión 3 publicada."
+      avanzado
+      alAbrirAvanzado={vi.fn()}
       alVolver={alVolver}
       recargando={false}
       alRecargar={vi.fn()}
+      alCambiarPendientes={vi.fn()}
+      tarjeta={{ estado: 'sin_tarjeta' }}
+      TarjetaEnVivo={() => null}
+      puedeCambiarTiposDeCambio={false}
     />,
   )
 
@@ -79,7 +89,7 @@ beforeEach(() => {
 })
 afterEach(cleanup)
 
-describe('EditorDeLaFormula: la lectura (T4)', () => {
+describe('El Modo avanzado: la lectura (T4)', () => {
   it('lee la versión pedida; mientras, el esqueleto', async () => {
     montar()
     expect(screen.getByRole('heading', { name: 'Editar la fórmula de Japón' })).toBeTruthy()
@@ -108,7 +118,7 @@ describe('EditorDeLaFormula: la lectura (T4)', () => {
         'Esa versión de la fórmula ya no se puede abrir: se descartó o ya no configuras Japón.',
       ),
     ).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Volver a la fórmula' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Volver a la planilla' }))
     expect(alVolver).toHaveBeenCalledTimes(1)
   })
 })

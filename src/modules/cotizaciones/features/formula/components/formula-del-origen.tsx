@@ -1,11 +1,16 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useState, useTransition, type ComponentType } from 'react'
+import { mismaVersion, otraSesion, type SobreQueVersion } from '../../../entities/formula/sesion'
 import type { FormulaDelOrigen as Formula } from '../../../entities/formula/versiones'
+import type {
+  LecturaDeLaTarjetaEnVivo,
+  PropsDeLaTarjetaEnVivo,
+} from '../../../entities/tarjeta-en-vivo'
 import { usePanelDeLaFormula } from '../hooks/use-panel-de-la-formula'
 import { AccionesDeLaFormula } from './acciones-de-la-formula'
-import { EditorDeLaFormulaDiferido } from './diferidos'
+import { SesionDeLaFormulaDiferida } from './diferidos'
 import { VistaDeLaFormula } from './vista-de-la-formula'
 
 type Origen = { id: string; nombre: string; activo: boolean }
@@ -13,6 +18,9 @@ type Origen = { id: string; nombre: string; activo: boolean }
 type Props = {
   origen: Origen
   formula: Formula
+  tarjeta: LecturaDeLaTarjetaEnVivo
+  TarjetaEnVivo: ComponentType<PropsDeLaTarjetaEnVivo>
+  puedeCambiarTiposDeCambio: boolean
 }
 
 // Sobre qué versión se edita: el borrador o, sin él, la publicada.
@@ -21,17 +29,36 @@ const sobreQue = (formula: Formula) =>
     ? `Sobre el borrador de ${formula.borrador.autor}.`
     : `Sobre la versión ${String(formula.publicada?.version ?? '')} publicada.`
 
-// La pestaña «Fórmula» de un origen en Configuración › Cotización (4.20-2a): su publicada, su borrador y sus versiones (`VistaDeLaFormula`). Desde el borrador se
-// publica y desde una archivada se revierte (4.20-2b, `?panel=publicar-formula`, `?panel=revertir-formula&version=<id>`); el borrador se descarta (4.20-2c,
-// `?panel=descartar-borrador`). Con `?panel=editar-formula` (4.21-3a-1), el editor en texto ocupa el lugar del selector, las tarjetas y la lista: edita el
-// borrador o, sin él, la publicada. Su `key` no lleva la versión (4.21-3b-1, C8): guardar sobre la publicada crea el borrador y el editor sigue montado; sólo
-// «Recargar» tras un conflicto lo vuelve a montar, en la misma transición que trae la pestaña, sobre lo que haya entonces.
-export function FormulaDelOrigen({ origen, formula }: Props) {
+// La pestaña «Fórmula» de un origen en Configuración › Cotización: arriba su publicada, su borrador y sus versiones (`VistaDeLaFormula`; desde el borrador se publica
+// y desde una archivada se revierte, `?panel=publicar-formula`, `?panel=revertir-formula&version=<id>`; el borrador se descarta, `?panel=descartar-borrador`) y abajo
+// la planilla de la fórmula, sobre el borrador o, sin él, la publicada. Con `?panel=editar-formula`, el Modo avanzado (el editor en texto) ocupa el lugar de todo:
+// la sesión que tiene la fórmula de trabajo es la misma y no se vuelve a montar al cambiar de modo. Su `key` no lleva la versión (C8): guardar sobre la publicada
+// crea el borrador y la sesión sigue montada; la vuelven a montar «Recargar» tras un conflicto (en la misma transición que trae la pestaña) y una versión que cambió
+// por otra cosa (`otraSesion()`: publicar, descartar, revertir). «Publicar…» espera
+// mientras haya cambios aplicados sin guardar: se publica lo guardado.
+export function FormulaDelOrigen({
+  origen,
+  formula,
+  tarjeta,
+  TarjetaEnVivo,
+  puedeCambiarTiposDeCambio,
+}: Props) {
   const panel = usePanelDeLaFormula()
   const router = useRouter()
   const [vuelta, setVuelta] = useState(0)
+  const [pendientes, setPendientes] = useState(false)
   const [recargando, recargarPagina] = useTransition()
   const sobre = formula.borrador ?? formula.publicada
+  const version: SobreQueVersion | null =
+    sobre === null ? null : { tipo: formula.borrador ? 'borrador' : 'publicada', id: sobre.id }
+  // La versión sobre la que se edita cambió por algo que no hizo la sesión (publicar, descartar, revertir): otra sesión, sobre la nueva.
+  const [generacion, setGeneracion] = useState({ version, sesion: 0 })
+  if (!mismaVersion(generacion.version, version)) {
+    setGeneracion({
+      version,
+      sesion: generacion.sesion + (otraSesion(generacion.version, version) ? 1 : 0),
+    })
+  }
   const recargar = () => {
     recargarPagina(() => {
       router.refresh()
@@ -40,19 +67,31 @@ export function FormulaDelOrigen({ origen, formula }: Props) {
   }
   return (
     <div className="grid min-w-0 gap-4">
-      {panel.editando && sobre ? (
-        <EditorDeLaFormulaDiferido
-          key={`${origen.id}:${String(vuelta)}`}
+      {panel.editando && sobre ? null : (
+        <VistaDeLaFormula
+          origen={origen}
+          formula={formula}
+          panel={panel}
+          publicarEspera={pendientes}
+        />
+      )}
+      {sobre ? (
+        <SesionDeLaFormulaDiferida
+          key={`${origen.id}:${String(vuelta)}:${String(generacion.sesion)}`}
           origen={origen}
           formulaId={sobre.id}
           sobre={sobreQue(formula)}
+          avanzado={panel.editando}
+          alAbrirAvanzado={panel.abrirEditor}
           alVolver={panel.cerrar}
           recargando={recargando}
           alRecargar={recargar}
+          alCambiarPendientes={setPendientes}
+          tarjeta={tarjeta}
+          TarjetaEnVivo={TarjetaEnVivo}
+          puedeCambiarTiposDeCambio={puedeCambiarTiposDeCambio}
         />
-      ) : (
-        <VistaDeLaFormula origen={origen} formula={formula} panel={panel} />
-      )}
+      ) : null}
       <AccionesDeLaFormula panel={panel} origen={origen} formula={formula} />
     </div>
   )

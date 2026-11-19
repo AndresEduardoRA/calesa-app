@@ -4,7 +4,11 @@ import type { MotivoDeNoManda } from '../../../../entities/formula/texto-vigente
 import type { CambioEnLaFila, TextoDeLaFila } from '../../hooks/use-editor-de-la-formula.soporte'
 import { ValorDeConstante } from './valor-de-constante'
 
-type Props = { texto: Exclude<TextoDeLaFila, { modo: 'campos' }> }
+type Props = {
+  texto: Exclude<TextoDeLaFila, { modo: 'campos' }>
+  // Sin el texto (la barra de fórmula ya lo muestra en su campo): sólo lo que dice de él.
+  sinTexto?: boolean
+}
 
 const MOTIVOS: Record<Exclude<MotivoDeNoManda, 'valor_no_escribible'>, string> = {
   no_compila: 'ya no compila con la fórmula de ahora.',
@@ -22,13 +26,15 @@ function Cambio({ cambio }: { cambio: CambioEnLaFila }) {
 }
 
 // El texto de una fila cerrada (C4, 4-5): al día, reescrito tras un ⚙ (sólo se muestra: guardarlo así es del 4.21-3b) o «ya no manda».
-export function EstadoDelTexto({ texto }: Props) {
+export function EstadoDelTexto({ texto, sinTexto = false }: Props) {
   if (texto.modo === 'solo_lectura') {
     return null
   }
   return (
     <div className="grid min-w-0 gap-1">
-      <code className="break-all whitespace-pre-wrap text-(--color-ink)">{texto.texto}</code>
+      {sinTexto ? null : (
+        <code className="break-all whitespace-pre-wrap text-(--color-ink)">{texto.texto}</code>
+      )}
       {texto.modo === 'reescrito'
         ? texto.cambios.map((cambio) => (
             <p key={cambio.id} className="text-(--color-ink-soft)">

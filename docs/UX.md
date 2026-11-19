@@ -533,7 +533,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   - **Por origen** (`/configuracion/cotizacion/<origen>/formula|hoja|tarjeta|tablas`, `<origen>` = id; `cotizaciones.configurar` de ese
     origen): «‹ Cotización», los chips «Origen» (todos los que configura, a la vista, con el punto de su color y «(inactivo)»; cambiar de
     origen conserva la pestaña y suelta lo demás), las pestañas Fórmula · Hoja · Tarjeta · Tablas y el título con su frase. «Fórmula»
-    («Qué se calcula.»): `?panel=publicar-formula`, `revertir-formula&version=<id>`, `descartar-borrador`, `editar-formula`. «Hoja» («Cómo
+    («Qué se calcula.», a todo el ancho): arriba la publicada, el borrador y las versiones, y abajo la planilla de la fórmula; `?panel=publicar-formula`,
+    `revertir-formula&version=<id>`, `descartar-borrador` y `editar-formula` (el Modo avanzado). «Hoja» («Cómo
     se ve y se llena la cotización.», el diseño de la hoja): `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe
     el cliente.»): `?panel=publicar-tarjeta|descartar-plantilla` y `?referencia=ejemplo`, a todo el ancho (el lienzo es la vista previa). «Tablas» («Valores de
     referencia: depreciación, transporte…»): `?tabla=<id>` (el editor) y `?panel=publicar-tabla`. `/<origen>` sola abre «Fórmula» (`next.config.ts`). Un
@@ -1296,7 +1297,8 @@ editar la fórmula de un origen.
 - **Origen:** los chips «Origen» muestran los que tienen la clave, en el orden del catálogo, también los inactivos («(inactivo)»); el abierto
   va marcado (`aria-current`). Uno ajeno o inexistente en la URL abre la misma pestaña del primero; sin ninguno, la primera parte general.
 - **Arriba:** la publicada (versión, nota, quién y cuándo) o, sin ella, que no se puede cotizar en el origen; el borrador si hay (de quién,
-  cuándo, nota, versión sobre la que empezó y, si se publicó otra después, que publicarlo dará conflicto).
+  cuándo, nota, versión sobre la que empezó y, si se publicó otra después, que publicarlo dará conflicto). Ninguna lleva «Editar»: se edita en la
+  planilla, debajo. Con cambios aplicados sin guardar, «Publicar…» espera: «Guarda el borrador antes de publicar: se publica lo guardado.»
 - **Versiones:** publicadas y archivadas de la más nueva (sin autor: «Alguien»), de a 20 hasta 500; en el tope, «Ir a la versión» (un
   número) que lee desde ahí hacia atrás con «Volver a la más nueva»; la posición no va a la URL. Estados: esqueleto, error con
   «Reintentar», vacío, vacío desde la N y fallo de «Ver más» sin perder lo cargado.
@@ -1311,13 +1313,34 @@ editar la fórmula de un origen.
 - **Descartar** (`?panel=descartar-borrador`, `<Confirmar>`; al día **y atrasado**): borra el borrador sin deshacer; publicada y lista no
   cambian. Lo que no entró queda en el diálogo con el mensaje de la base o, sin respuesta, «No sabemos si se descartó: recarga para verlo.»
   (sin reintento solo). Por URL sin borrador: avisa y limpia.
-- **Editar** (`?panel=editar-formula`): «Editar» en el borrador (también atrasado) o «Editar en un borrador» en la publicada; sin ninguna,
-  la URL avisa y se limpia. El editor ocupa el lugar de la sección, con «Volver a la fórmula» («atrás» también); lee la versión desde el
-  navegador (esqueleto, error con «Reintentar», versión que ya no se abre). Cada fila: etiqueta, id y tipo; un cálculo o una constante,
-  su texto vigente (tras un ⚙, el reescrito con su aviso) y «Editar», que abre su texto (una fila a la vez; «Aplicar» o `Ctrl/Cmd+Enter`
-  compila, Esc cierra; el error queda bajo el texto; pisar un valor del ⚙ pide «Pisar el valor»; un rechazo de la fórmula entera va a la
-  fila que nombra). Lo aplicado se repone al volver o recargar, con «Descartar», hasta guardar. Hasta 500 filas con aviso y «Buscar fila».
-- **Vista previa y filas nuevas:** «Vista previa» con «Cifras de prueba.» y qué se supuso (datos en 0, opciones apagadas, variante por
+- **Planilla** (la vista por defecto, sobre el borrador o, sin él, la publicada; sin ninguna, el vacío de la publicada y no hay planilla): lee la
+  versión desde el navegador al abrir la pestaña (esqueleto, error con «Reintentar», versión que ya no se abre). Arriba «Sobre…», «Modo avanzado»
+  (outline), «Guardar el borrador» y la frase «Las celdas que se editan están marcadas. Todo lo demás se calcula, igual que en la planilla.». La tabla:
+  «#» (sólo para leer, el mismo al buscar), «A · concepto» (etiqueta e id; elige la fila), «B · %» (el porcentaje de un `porcentaje_de`), «C · valor»
+  (con la unidad de ejemplo; sin cifra, «—» con su motivo en el `title` y para el lector) y «D · de dónde sale». Bandas, en este orden: «Tipo de
+  cambio» («no se versiona: cambia varias veces por semana», el valor de hoy y, con `empresa.tipos_cambio.gestionar`, «Cambiar en Empresa ›
+  Monedas»), «Unidad de ejemplo» («no se guarda: sirve para ver el efecto de cada cambio», «Volver a ceros»: los `input`, los datos del vehículo,
+  las banderas como interruptor y la variante como chips; con «Se cotiza en par», «Se cotiza en par: el cliente recibe las dos.»), «Variante» (sus
+  opciones y «Se cotiza en par»), un grupo por banda con su color, plazo, tipo de cambio del modo elegido y «Editar grupo» (el formulario de
+  siempre, debajo), y «Sin grupo». Se editan en su celda, con el estilo de la XCell editable y el nombre «<concepto>, valor»: el valor de una
+  constante en C y el % de un par en B (escriben `params` y reescriben su texto, como el ⚙; nunca preguntan; lo que no se lee o no entra deja el
+  valor anterior con el motivo y `aria-invalid`) y la unidad de ejemplo. Mientras haya texto sin aplicar, un grupo abierto, una fila nueva o un
+  guardado, las celdas de la fórmula esperan con su motivo arriba de la tabla. **Barra de fórmula**, arriba de la tabla: la fila elegida (número,
+  etiqueta, id) con su texto; el primer cambio lo abre, «Aplicar» o `Ctrl/Cmd+Enter` compila, Esc o «Descartar» vuelven al texto de la fila; el
+  error queda debajo y la fila se marca; «Pisar el valor» como hoy; con texto sin aplicar, elegir otra fila no la cambia («Aplica o descarta el
+  cambio de «X» antes de elegir otra fila.»). Una fila que no se escribe dice «Esta fila no se escribe: <de dónde sale>.». «Sumar fila debajo» va en
+  su «⋯». Hasta 500 filas con aviso y «Buscar fila». **Al costado** (cuando la planilla mide 72 rem o más; si no, debajo): «Totales» (el total en dólares y
+  en la moneda local con el modo elegido, la base imponible y lo aparte, cada uno con `<Monto>` y cómo sale; lo aparte apagado dice por qué) y
+  «Tarjeta de la cotización» (la plantilla de trabajo del origen, el borrador si hay, con la unidad de ejemplo y el selector de modo «Tipo de
+  cambio» con dos o más modos; sin plantilla, «Este origen todavía no tiene tarjeta.» con «La imagen que recibe el cliente»; si no se leyó,
+  «Reintentar»). En el celular y con el texto al 200 % la tabla se desplaza de costado en su marco con «#» y A pegadas; la página no se ensancha.
+- **Modo avanzado** (`?panel=editar-formula`; los enlaces viejos lo abren): el editor en texto, sin cambios en su contenido, sobre la misma
+  fórmula de trabajo que la planilla (lo aplicado en uno se ve en el otro), con «Volver a la planilla» («atrás» también, y el foco vuelve a «Modo
+  avanzado»). Sin fórmula, la URL avisa y se limpia. Cada fila: etiqueta, id y tipo; un cálculo o una constante, su texto vigente (tras un ⚙, el
+  reescrito con su aviso) y «Editar», que abre su texto (una fila a la vez; «Aplicar» o `Ctrl/Cmd+Enter` compila, Esc cierra; el error queda bajo
+  el texto; pisar un valor del ⚙ pide «Pisar el valor»; un rechazo de la fórmula entera va a la fila que nombra). Lo aplicado se repone al volver
+  o recargar, con «Descartar», hasta guardar. Hasta 500 filas con aviso y «Buscar fila».
+- **Vista previa y filas nuevas** (Modo avanzado): «Vista previa» con «Cifras de prueba.» y qué se supuso (datos en 0, opciones apagadas, variante por
   defecto, tipos de cambio y tablas de hoy): esqueleto, error, fórmula inválida, sin cálculo posible y, calculada, los totales por
   `<Monto>` con avisos de lo que no se pudo leer (tabla inexistente o de 1.000 filas o más, tipo de cambio inactivo). Cada fila suma su
   cifra o por qué no la tiene. «Sumar fila debajo de <etiqueta>»: etiqueta, tipo (Cálculo o Constante), nombre (propuesto desde la
@@ -1328,7 +1351,7 @@ editar la fórmula de un origen.
   «Recargar» (lo aplicado y no guardado se pierde); regla de la base, sin permiso, sin respuesta y otro error, cada uno con su mensaje. Lo
   que el diseño no muestra (una constante sin celda) se avisa: «Para publicar, el diseño de la hoja tiene que mostrar: «…». Puedes guardar
   igual.»; sin diseño, todavía no se puede publicar.
-- **Grupos:** con grupos, una tarjeta por grupo en el orden de la fórmula (hasta `TOPE_DE_LO_CARGADO`): etiqueta, id, plazo, color, tipo de
+- **Grupos** (Modo avanzado; en la planilla, «Editar grupo» en su banda abre el mismo formulario): con grupos, una tarjeta por grupo en el orden de la fórmula (hasta `TOPE_DE_LO_CARGADO`): etiqueta, id, plazo, color, tipo de
   cambio (bucket), filas y «Editar». Sin grupos no se dibuja; no se suman ni quitan grupos (la plantilla de la tarjeta los nombra). El
   formulario: etiqueta, plazo de pago (opcional), color (del catálogo, leído al montarse; «Aplicar» espera a que llegue), tipo de cambio (el
   bucket; con modos, cada modo elige el de cada bucket) y «Filas del grupo» con «Quitar» (sin grupo, una fila no entra en el total) y

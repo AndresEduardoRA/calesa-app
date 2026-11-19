@@ -12,6 +12,7 @@ const calculada = (usd: number | null, bs: number | null): VistaPrevia => ({
   estados: new Map(),
   faltantes: new Map(),
   totales: { usd, bs, monedaBs: 'BOB' },
+  grupos: new Map(),
 })
 const LISTA: LecturaDelTerreno = {
   tipo: 'lista',

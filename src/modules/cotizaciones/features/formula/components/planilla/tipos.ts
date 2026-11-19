@@ -1,0 +1,29 @@
+// Lo que la sesión le pasa a la planilla de la fórmula (sin código: lo importan la sesión y la planilla, que va por `diferido()`).
+import type { ComponentType, Dispatch, SetStateAction } from 'react'
+import type { Diseno } from '../../../../entities/diseno'
+import type { UnidadDeEjemplo } from '../../../../entities/formula/unidad-de-ejemplo'
+import type {
+  LecturaDeLaTarjetaEnVivo,
+  PropsDeLaTarjetaEnVivo,
+} from '../../../../entities/tarjeta-en-vivo'
+import type { EditorDeLaFormula } from '../../hooks/use-editor-de-la-formula'
+
+export type PropsDeLaPlanilla = {
+  editor: EditorDeLaFormula
+  // El diseño de la versión leída: los modos de tipo de cambio y «Ver total» por defecto.
+  diseno: Diseno | null
+  origen: { id: string; nombre: string }
+  // «Sobre el borrador de <persona>.» o «Sobre la versión N publicada.»
+  sobre: string
+  // La unidad de ejemplo y el modo elegido viven en la sesión: sobreviven al ir y volver del Modo avanzado y se pierden al recargar.
+  unidad: UnidadDeEjemplo
+  alCambiarUnidad: Dispatch<SetStateAction<UnidadDeEjemplo>>
+  modo: string | null
+  alElegirModo: (clave: string) => void
+  alAbrirAvanzado: () => void
+  recargando: boolean
+  alRecargar: () => void
+  tarjeta: LecturaDeLaTarjetaEnVivo
+  TarjetaEnVivo: ComponentType<PropsDeLaTarjetaEnVivo>
+  puedeCambiarTiposDeCambio: boolean
+}

@@ -10,6 +10,8 @@ export const LISTAS_SIN_PATRON: Record<string, string> = {
     'es una tabla de referencia de sólo lectura en un panel, no una lista de registros: no tiene resumen ni «⋯» por fila',
   'src/modules/cotizaciones/features/aprobada/components/comparar/tabla-de-comparar.tsx':
     'es la comparación lado a lado de 2 o 3 cotizaciones (una columna por cotización, una fila por nodo), no una lista de registros: no tiene resumen ni «⋯» por fila',
+  'src/modules/cotizaciones/features/formula/components/planilla/tabla-de-la-planilla.tsx':
+    'es la planilla de la fórmula (las filas de un grafo con sus columnas A a D, como la planilla de V1), no una lista de registros: no tiene resumen ni «⋯» por fila',
   'src/modules/tablero/features/metricas/graficas/tabla-equivalente.tsx':
     'es la tabla de «Ver como tabla» de una gráfica (los mismos números, de sólo lectura), no una lista de registros: no tiene resumen ni «⋯» por fila',
 }

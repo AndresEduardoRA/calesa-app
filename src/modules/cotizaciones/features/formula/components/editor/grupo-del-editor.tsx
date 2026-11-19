@@ -35,7 +35,8 @@ const SIN_GRUPO = 'Sin grupo, una fila no entra en el total.'
 const nombreDelTono = (tonos: EstadoDeLosTonos, clave: string) =>
   tonos.tipo === 'listo' ? (tonos.tonos.find((t) => t.clave === clave)?.nombre ?? clave) : clave
 
-function LoMovido({ movidas }: { movidas: MovidasDelGrupo }) {
+// Lo que el último «Aplicar» de un grupo movió de filas (también lo dice la banda del grupo en la planilla).
+export function LoMovido({ movidas }: { movidas: MovidasDelGrupo }) {
   return (
     <div role="status" className="grid gap-1 text-(--color-ink-soft)">
       {movidas.entraron.map((f) => (
