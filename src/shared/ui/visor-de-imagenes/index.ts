@@ -1,4 +1,7 @@
+export { CarruselConTira } from './carrusel-con-tira'
 export { CarruselEnElLugar } from './carrusel-en-el-lugar'
+export { TiraDeMiniaturas } from './tira-de-miniaturas'
 export { CLAVE_DEL_VISOR } from './use-carrusel'
 export type { CargaDeImagenes, ImagenDelVisor } from './tipos'
+export { useImagenes } from './use-imagenes'
 export { useVisorDeGaleria } from './use-visor-de-galeria'

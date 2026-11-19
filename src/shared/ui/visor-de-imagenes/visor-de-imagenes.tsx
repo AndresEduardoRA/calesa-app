@@ -7,6 +7,7 @@ import { Button } from '../button'
 import { Dialog, DialogClose, DialogContent, DialogTitle } from '../dialog'
 import { Skeleton } from '../skeleton'
 import { contador, vecina, type ImagenDelVisor } from './tipos'
+import { TiraDeMiniaturas } from './tira-de-miniaturas'
 import type { EstadoDeImagenes } from './use-imagenes'
 
 type Props = {
@@ -85,49 +86,6 @@ function Escenario({
   )
 }
 
-// La tira de miniaturas: la actual marcada con borde y `aria-current`, no sólo con color.
-function Miniaturas({
-  imagenes,
-  actual,
-  alIrA,
-}: {
-  imagenes: readonly ImagenDelVisor[]
-  actual: number
-  alIrA: (indice: number) => void
-}) {
-  if (imagenes.length < 2) return null
-  return (
-    <ol className="flex shrink-0 gap-2 overflow-x-auto p-2" aria-label="Miniaturas">
-      {imagenes.map((imagen, indice) => (
-        <li key={imagen.id} className="shrink-0">
-          <button
-            type="button"
-            aria-label={`Ver la foto ${contador(indice, imagenes.length)}`}
-            aria-current={indice === actual ? 'true' : undefined}
-            className={cn(
-              'relative block aspect-4/3 w-16 overflow-hidden rounded-(--radius-sm) border-2 transition',
-              indice === actual ? 'border-(--color-primario)' : 'border-transparent opacity-70',
-            )}
-            onClick={() => {
-              alIrA(indice)
-            }}
-          >
-            <Image
-              src={imagen.miniatura}
-              alt=""
-              fill
-              unoptimized
-              loading="lazy"
-              sizes="64px"
-              className="object-cover"
-            />
-          </button>
-        </li>
-      ))}
-    </ol>
-  )
-}
-
 function Cuerpo({
   estado,
   actual,
@@ -139,7 +97,9 @@ function Cuerpo({
     return (
       <>
         <Escenario imagenes={estado.imagenes} actual={actual} alIrA={alIrA} titulo={titulo} />
-        <Miniaturas imagenes={estado.imagenes} actual={actual} alIrA={alIrA} />
+        <div className="shrink-0 p-1">
+          <TiraDeMiniaturas imagenes={estado.imagenes} actual={actual} alElegir={alIrA} />
+        </div>
       </>
     )
   }

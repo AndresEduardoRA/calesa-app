@@ -15,7 +15,7 @@ import {
 } from './soporte/vehiculos-lista'
 
 // El «⋯» de un vehículo, el mismo en la fila, la tarjeta y la ficha (9i, T336): «Cotizar vehículo» sola arriba; «Editar», «Editar imágenes» y
-// «Publicar en la web…»; «Ver actividad»; y, separada, «Enviar a la papelera». La ficha además tiene el botón «Editar»; lo que una persona no puede
+// «Publicar en la web…»; «Ver actividad»; y, separada, «Enviar a la papelera». En la ficha no hay «Editar» suelto: va en el «⋯»; lo que una persona no puede
 // hacer no aparece (y la papelera, si ya se sabe que no va, se ve apagada con el motivo). Capturas: `E2E_CAPTURAS=e2e-capturas/9i`.
 test.describe.configure({ mode: 'serial' })
 
@@ -79,7 +79,7 @@ test('con todo, el orden es el mismo en la fila y la ficha, y la papelera va sep
 
   await page.goto(`/vehiculos/${t.id}`)
   await expect(page.getByRole('heading', { name: TITULO, level: 1 })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Editar', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Editar', exact: true })).toHaveCount(0)
   const deLaFicha = await abrir(
     page.getByRole('button', { name: `Más acciones de ${TITULO}` }),
     page,

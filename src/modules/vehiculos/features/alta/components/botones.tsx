@@ -1,6 +1,6 @@
 'use client'
 
-import { PencilIcon, PlusIcon } from 'lucide-react'
+import { PlusIcon } from 'lucide-react'
 import { concordar, type OrigenResumen } from '@/modules/origenes/client'
 import { Button } from '@/shared/ui/button'
 import type { PermisoDeAlta } from '../../../entities/permisos'
@@ -31,43 +31,6 @@ export function BotonNuevoVehiculo({ origen, permiso }: PropsDeNuevo) {
     >
       <PlusIcon aria-hidden />
       {concordar(origen.genero, { m: 'Nuevo', f: 'Nueva' })} {origen.sustantivo}
-    </Button>
-  )
-}
-
-type PropsDeEditar = {
-  vehiculo: { id: string; titulo: string }
-  // En una fila de la lista va sólo el ícono; en la ficha, con su texto.
-  compacto?: boolean
-}
-
-export function BotonEditarVehiculo({ vehiculo, compacto = false }: PropsDeEditar) {
-  const panel = usePanelDeVehiculo()
-  if (compacto) {
-    return (
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        className="size-11 md:size-7"
-        aria-label={`Editar ${vehiculo.titulo}`}
-        onClick={() => {
-          panel.editar(vehiculo.id)
-        }}
-      >
-        <PencilIcon aria-hidden />
-      </Button>
-    )
-  }
-  return (
-    <Button
-      variant="outline"
-      className="h-11 md:h-9"
-      onClick={() => {
-        panel.editar(vehiculo.id)
-      }}
-    >
-      <PencilIcon aria-hidden />
-      Editar
     </Button>
   )
 }

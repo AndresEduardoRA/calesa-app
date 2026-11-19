@@ -110,10 +110,13 @@ test('sin el permiso, «Publicar en la web…» se ve apagado en el «⋯» y di
   await abrirFicha(page, sedan, SEDAN)
   await menu(page, SEDAN).click()
   await expect(publicar(page)).toBeDisabled()
+  // El motivo, en el menú (el botón de vitrina de la foto lo lleva también, para el lector).
   await expect(
-    page.getByText(`No tienes permiso para publicar en la web lo de ${corea.nombre}.`, {
-      exact: false,
-    }),
+    page
+      .getByRole('menu')
+      .getByText(`No tienes permiso para publicar en la web lo de ${corea.nombre}.`, {
+        exact: false,
+      }),
   ).toBeVisible()
   await page.keyboard.press('Escape')
   // La dirección del panel tampoco lo abre.
@@ -127,7 +130,7 @@ test('con el permiso se publica con su precio, mirando lo que verá el visitante
 }) => {
   await entrar(page, duena)
   // Una foto, para que haya portada.
-  await page.goto(`/vehiculos/${sedan}?seccion=fotos`)
+  await page.goto(`/vehiculos/${sedan}?panel=imagenes`)
   await page
     .getByRole('group', { name: 'Elegir fotos' })
     .locator('input[type=file]:not([capture])')

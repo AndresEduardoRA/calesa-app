@@ -1,11 +1,10 @@
 'use client'
 
 import { CarIcon } from 'lucide-react'
-import { useCallback } from 'react'
 import { cn } from 'cn'
 import { urlPublica } from '@/shared/lib/almacen'
-import { CarruselEnElLugar, type ImagenDelVisor } from '@/shared/ui/visor-de-imagenes'
-import { leerFotosEnElLugar } from '../../../composicion-fotos.client'
+import { CarruselEnElLugar } from '@/shared/ui/visor-de-imagenes'
+import { useCargarFotos } from '../hooks/use-cargar-fotos'
 
 type Props = {
   // La fila: su id, su título y la miniatura de la portada (ruta en el bucket `vehiculos`).
@@ -23,15 +22,7 @@ type Props = {
 // `leerFotosEnElLugar` (a lo sumo 24, una sola lectura). Siempre del mismo tamaño (4:3): con o sin foto, la lista no salta.
 export function FotosEnElLugar({ vehiculo, modo = 'carrusel', clave, puntos, className }: Props) {
   const { id: vehiculoId, titulo, portadaRuta: portada } = vehiculo
-  const cargar = useCallback(async (): Promise<readonly ImagenDelVisor[] | null> => {
-    const leidas = await leerFotosEnElLugar(vehiculoId)
-    if (!leidas.ok) return null
-    return leidas.data.map((foto) => ({
-      id: foto.id,
-      miniatura: urlPublica('vehiculos', foto.rutaMiniatura),
-      grande: urlPublica('vehiculos', foto.ruta),
-    }))
-  }, [vehiculoId])
+  const cargar = useCargarFotos(vehiculoId)
   return (
     // Una portada nueva (otra foto elegida como portada) vuelve a montar el carrusel: lo que ya había leído viene en el orden viejo.
     <CarruselEnElLugar
