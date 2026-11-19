@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Resultado } from '@/shared/lib/errores'
 
 const pedidos: { ruta: string; resolver: (r: Resultado<Blob>) => void }[] = []
-vi.mock('../../../areas/tarjeta/composicion.client', () => ({
+vi.mock('../../../areas/tarjeta/composicion-pdf.client', () => ({
   pedirElPdf: (ruta: string) =>
     new Promise<Resultado<Blob>>((resolver) => {
       pedidos.push({ ruta, resolver })
