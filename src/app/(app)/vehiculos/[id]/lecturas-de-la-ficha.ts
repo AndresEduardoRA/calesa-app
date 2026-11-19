@@ -6,6 +6,7 @@ import { leerFasesDeOrigen } from '@/modules/flujos'
 import { getOrigenes, leerLayout, type OrigenResumen } from '@/modules/origenes'
 import {
   PANEL_DE_IMAGENES,
+  columnaDeCompraDirecta,
   datosDelPanelDeImagenes,
   editablesDe,
   eliminablesDe,
@@ -24,9 +25,6 @@ import { paraCotizarDe } from '../para-cotizar'
 import { papeleraYAvisosDe } from './avisos-de-la-ficha'
 
 // Las lecturas de la ficha del vehículo (`page.tsx`), en el servidor.
-
-// La clave de apibara del precio «Buy it now» (`_apibara_catalogo()`, el campo `compra_inmediata`).
-const CLAVE_DE_COMPRA_DIRECTA = 'pricing.buy_now_usd'
 
 // El vehículo y su origen, si quien mira ve los dos (un id que no es un uuid no se ve).
 export async function vehiculoYOrigen(id: string, permisos: Permisos) {
@@ -81,9 +79,7 @@ export async function lecturasDeLaFicha(
   return {
     suLayout,
     // «Compra directa» de «Subasta»: el origen tiene activo el campo de apibara que trae el «Buy it now».
-    conCompraDirecta: suLayout.campos.some(
-      (campo) => campo.activo && campo.claveApibara === CLAVE_DE_COMPRA_DIRECTA,
-    ),
+    conCompraDirecta: columnaDeCompraDirecta(deSubasta, suLayout.campos).tipo === 'campo',
     editable,
     fase,
     papelera,

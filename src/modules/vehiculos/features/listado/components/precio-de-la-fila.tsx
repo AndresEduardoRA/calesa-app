@@ -38,22 +38,27 @@ export function CeldaDePrecio({ precio }: { precio: PrecioDeLaFila | null }) {
   )
 }
 
-// En la tarjeta no hay encabezado: la puja lleva su rótulo completo, «Puja actual» o «Puja final».
-export function PrecioDeTarjeta({ precio }: { precio: PrecioDeLaFila | null }) {
-  if (precio === null) return null
-  if (precio.tipo === 'precio') {
-    return <Monto valor={precio.valor} className="text-(length:--text-sm) font-medium" />
-  }
+// En la tarjeta de la lista el rótulo es de cada tarjeta: «Precio», o la puja con su nombre completo («Puja actual» o «Puja final»), que dice qué es.
+export function RotuloDePrecioDeTarjeta({
+  columna,
+  precio,
+}: {
+  columna: ColumnaDePrecio
+  precio: PrecioDeLaFila | null
+}) {
+  if (precio?.tipo !== 'puja') return <EncabezadoDePrecio columna={columna} />
   return (
-    <span title={AYUDA_DE_LA_PUJA} className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className="text-(length:--text-xs) text-(--color-ink-soft)">
-        {rotuloDeLaPuja(precio.final)}
-      </span>
-      <Monto
-        valor={precio.valor}
-        moneda={MONEDA_DE_LA_PUJA}
-        className="text-(length:--text-sm) font-medium"
-      />
+    <span title={AYUDA_DE_LA_PUJA}>
+      {rotuloDeLaPuja(precio.final)}
+      <span className="sr-only">. {AYUDA_DE_LA_PUJA}.</span>
     </span>
+  )
+}
+
+// Y el valor, sin la marca «final» (ya la dice el rótulo).
+export function ValorDePrecioDeTarjeta({ precio }: { precio: PrecioDeLaFila | null }) {
+  if (precio === null) return VACIO
+  return (
+    <Monto valor={precio.valor} moneda={precio.tipo === 'puja' ? MONEDA_DE_LA_PUJA : undefined} />
   )
 }

@@ -23,7 +23,8 @@ import type {
 
 const NO_SE_LEYO = 'No se pudo leer la cotización aprobada.'
 
-// La aprobada de cada vehículo de una página del inventario, por `cotizaciones_aprobadas_pkey (vehiculo_id)`. Un vehículo sin fila no sale: «—».
+// La aprobada de cada vehículo de una página del inventario con el nombre del modo de su cotización: la RPC `cotizaciones_aprobadas_de_vehiculos` (corre como quien
+// mira, ≤ 100 ids) por `cotizaciones_aprobadas_pkey (vehiculo_id)` y `cotizaciones_pkey`, y `_nombre_del_modo()` una vez por versión y modo. Un vehículo sin fila no sale: «—».
 export async function getAprobadasDeVehiculos(
   vehiculoIds: readonly string[],
 ): Promise<Resultado<CotizacionAprobadaDelVehiculo[]>> {
@@ -31,11 +32,9 @@ export async function getAprobadasDeVehiculos(
     return ok([])
   }
   const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('cotizaciones_aprobadas')
-    .select('vehiculo_id, cotizacion_id, monto::text, moneda')
-    .in('vehiculo_id', [...vehiculoIds])
-    .limit(vehiculoIds.length)
+  const { data, error } = await supabase.rpc('cotizaciones_aprobadas_de_vehiculos', {
+    p_vehiculos: [...vehiculoIds],
+  })
   if (error) {
     return { ok: false, error: errorDePostgrest(error) }
   }

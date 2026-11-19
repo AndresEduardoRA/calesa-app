@@ -14,16 +14,32 @@ type Props = PedidoDelCarrusel & {
   // `carrusel`: flechas, puntos y gesto en el lugar (tarjeta, cabecera). `abrir`: un lugar chico (la fila de una tabla) que sólo abre el visor.
   modo?: 'carrusel' | 'abrir'
   vacio: ReactNode
+  // Dónde van los puntos: al centro (por omisión) o a la derecha, si abajo a la izquierda hay algo encima de la foto (el chip del lote de la tarjeta de la lista).
+  puntos?: 'centro' | 'derecha'
   className?: string
 }
 
 const FLECHA_CHICA =
   'absolute top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-(--color-ink) opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100'
 
-function Puntos({ total, actual }: { total: number; actual: number }) {
+function Puntos({
+  total,
+  actual,
+  lado,
+}: {
+  total: number
+  actual: number
+  lado: 'centro' | 'derecha'
+}) {
   if (total < 2) return null
   return (
-    <span aria-hidden className="absolute inset-x-0 bottom-1.5 flex justify-center gap-1">
+    <span
+      aria-hidden
+      className={cn(
+        'absolute inset-x-0 bottom-1.5 flex gap-1',
+        lado === 'derecha' ? 'justify-end pr-2' : 'justify-center',
+      )}
+    >
       {Array.from({ length: Math.min(total, 8) }, (_, indice) => (
         <span
           key={indice}
@@ -75,6 +91,7 @@ export function EscenarioDelCarrusel({
   vacio,
   className,
   conPuntos = true,
+  puntos = 'centro',
 }: {
   c: Carrusel
   titulo: string
@@ -83,6 +100,7 @@ export function EscenarioDelCarrusel({
   className?: string
   // Con la tira debajo, los puntos sobran.
   conPuntos?: boolean
+  puntos?: 'centro' | 'derecha'
 }) {
   const inicio = useRef<number | null>(null)
   const conGesto = modo === 'carrusel'
@@ -129,7 +147,7 @@ export function EscenarioDelCarrusel({
           <Flecha paso={1} alMover={c.mover} />
         </>
       ) : null}
-      {conGesto && conPuntos ? <Puntos total={c.total} actual={c.indice} /> : null}
+      {conGesto && conPuntos ? <Puntos total={c.total} actual={c.indice} lado={puntos} /> : null}
     </span>
   )
 }
@@ -137,7 +155,13 @@ export function EscenarioDelCarrusel({
 // Las fotos de una entidad en su lugar (tarjeta, fila, cabecera): la portada que ya trae la fila y, recién cuando alguien se acerca (puntero,
 // foco o toque), el resto, una sola vez (`useImagenes`). Con varias, flechas, puntos y gesto; el clic abre el visor grande en esa foto. Va con
 // `data-no-abre`: tocar la foto no abre la fila (ni su resumen ni su ficha).
-export function CarruselEnElLugar({ modo = 'carrusel', vacio, className, ...pedido }: Props) {
+export function CarruselEnElLugar({
+  modo = 'carrusel',
+  vacio,
+  puntos = 'centro',
+  className,
+  ...pedido
+}: Props) {
   const c = useCarrusel(pedido)
   return (
     <>
@@ -146,6 +170,7 @@ export function CarruselEnElLugar({ modo = 'carrusel', vacio, className, ...pedi
         titulo={pedido.titulo}
         modo={modo}
         vacio={vacio}
+        puntos={puntos}
         {...(className === undefined ? {} : { className })}
       />
       {c.montarVisor ? <VisorDeImagenes titulo={pedido.titulo} {...c.visor} /> : null}
