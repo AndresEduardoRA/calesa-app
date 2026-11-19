@@ -2,7 +2,8 @@
 # Lo que se arregla sin abrir una sesión de arreglo (README.md › «Cómo decide»): casos que en una tanda costaban una sesión de Opus y
 # una hora de reloj cada uno, y que no piden criterio.
 #   - `reintentar_ci_ajeno`: todo lo caído en el CI es ajeno al PR (un bloque de e2e en specs que el PR no toca, o la máquina del CI:
-#     Docker, la red, el runner, GitHub) → se vuelven a correr los jobs caídos, hasta REINTENTOS_CI_POR_PUNTA veces por punta del PR.
+#     Docker, la red, el runner, GitHub) → se vuelven a correr los jobs caídos, hasta REINTENTOS_CI_POR_PUNTA veces por punta del PR
+#     (con un bloque de e2e entre lo caído, una sola vez por tarea).
 #   - `poner_al_dia_sin_sesion`: el PR choca con main sólo en docs Markdown (las listas que suman todas las tareas: PENDIENTES,
 #     DECISIONES, LECCIONES…) → merge de main con la unión de las dos partes en esos docs. Si choca algo más, va la sesión.
 #   - `migraciones_tras_main`: otra tarea integró una migración más nueva que las de la rama (el CI exige que las del PR vayan después,
@@ -53,7 +54,7 @@ cayo_lo_del_pr() {
 
 # id pr json-del-pr → 0 si relanzó lo caído o espera el relanzamiento recién pedido (no hay que abrir sesión), 1 si no corresponde.
 reintentar_ci_ajeno() {
-  local id=$1 pr=$2 j=$3 sha n caidos nombre job run log propios="" runs="" que="" r
+  local id=$1 pr=$2 j=$3 sha n caidos nombre job run log propios="" runs="" que="" r e2e=""
   sha=$(jq -r .headRefOid <<<"$j")
   [ -n "$sha" ] || return 1
   n=0
@@ -76,12 +77,19 @@ reintentar_ci_ajeno() {
       [ -n "$propios" ] || propios=$(ghr pr view "$pr" --json files --jq '.files[].path' 2>/dev/null) || return 1
       grep -oE 'e2e/[A-Za-z0-9_./-]+\.spec\.ts' <<<"$log" | grep -qxF -f <(printf '%s\n' "$propios") && return 1
       que="$que, $nombre (e2e ajeno al PR)"
+      e2e=1
     else
       # Lint, tipos, pruebas, base o el build caídos sin señal de la máquina: son del PR.
       return 1
     fi
     [[ " $runs " == *" $run "* ]] || runs="$runs $run"
   done <<<"$caidos"
+  # Un bloque de e2e en rojo ya cayó dos veces (Playwright reintenta una en CI): relanzarlo rara vez lo pone verde (1 de 7 tareas en
+  # una tanda) y cada vuelta son ~20 min. Una vez por tarea, no por punta: cada puesta al día con main es una punta nueva.
+  if [ -n "$e2e" ]; then
+    [ -z "$(est_get "$id" e2e_ajeno_relanzado)" ] || return 1
+    est_set "$id" e2e_ajeno_relanzado "$sha"
+  fi
   est_set "$id" reintento_ci "$sha"
   est_set "$id" reintento_ci_en "$(date +%s)"
   est_set "$id" reintentos_ci $((n + 1))

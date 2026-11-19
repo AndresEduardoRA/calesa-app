@@ -320,7 +320,8 @@ Si el servicio no encuentra `claude`, `pnpm` o `node`, agrega sus rutas a `PATH_
   pone al día (merge, nunca fuerza). Un choque con main lo causa otra tarea: gasta un intento de `MAX_CHOQUES`, no de `MAX_ARREGLOS`.
   - **Sin sesión** cuando no pide criterio (`sin-sesion.sh`): si todo lo caído es ajeno al PR (bloques de e2e en specs que el PR no
     toca, o un log con la firma de la máquina del CI: Docker, la red, el runner), relanza lo caído hasta `REINTENTOS_CI_POR_PUNTA`
-    veces por punta; si el PR choca con main sólo en docs Markdown, hace el merge con la unión de las dos partes en esos docs; si main
+    veces por punta (con un bloque de e2e entre lo caído, una sola vez por tarea: ya cayó dos veces y cada puesta al día es otra
+    punta); si el PR choca con main sólo en docs Markdown, hace el merge con la unión de las dos partes en esos docs; si main
     integró una migración más nueva que las de la rama (rama atrasada o el CI rojo por el orden), hace el merge y renombra las de la
     rama, en su orden, con la hora de ahora (`chore(db): llevar las migraciones…`). Commitea y empuja: el CI vuelve a correr.
 - **Límite del plan** de Claude: es de la cuenta, así que la pausa es de la máquina. El orquestador que lo detecta escribe la hora de
