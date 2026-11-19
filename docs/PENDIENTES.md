@@ -222,6 +222,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T34]** El bloque «Ficha» de la ficha del vehículo dibuja todos los grupos con sus campos aunque estén en «—»: en el celular la página pasa de 6.000 px;
   plegar lo vacío o mostrar sólo lo que tiene valor.
   Falta quitar ese bloque de la derecha: la ficha completa (`?ver=ficha`) ya muestra la ficha entera.
+- **[T338]** Con el texto al 200 % y una foto angosta (celular), la esquina con la vitrina y el «⋯» tapa en parte la flecha derecha del carrusel de la
+  ficha (y de la tarjeta grande de la lista): bajar las flechas o achicar la esquina cuando no caben.
 - **[T338]** «Ver en logística» está dos veces en la ficha del vehículo (los enlaces cortos de la cabecera y el título de «Fase y qué falta»): queda uno
   al quitar ese bloque de la derecha.
 
