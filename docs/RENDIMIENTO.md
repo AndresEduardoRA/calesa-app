@@ -613,13 +613,18 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   «Actualizar los datos» no pesan en frío. Abrir «Editar imágenes» o la vitrina (`?panel=…&para=<id>`, `shallow: false`) vuelve a pedir la página de la
   lista al servidor, como `?editar=`; la página lee sólo el panel nombrado (la galería ≤ 24 con la subasta en un origen de subasta, o el vehículo por pk y,
   si se abre, `vehiculo_vitrina_previa`). «Actualizar los datos» es una consulta a apibara por confirmación, nunca al abrir el menú.
-- `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 497,1 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`): «Qué falta» de la ficha, la galería y subida de fotos, Documentos y
-  Cotizaciones van con `diferido()`. El documento de la ficha aporta 52,4 KB sobre `/perfil` con una cotización y lo mismo con 60
-  documentos y 601 cotizaciones (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 56, `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Lecturas por pedido,
-  tras su `<Suspense>` y en paralelo: `vehiculo_relacionados` (≤ 9 filas), la subasta y sus ajustes, `leerUnidad` una vez (`cache()`, la comparten
-  «Fase y qué falta» y «Documentos»), la galería ≤ 24 (en el servidor aunque el bloque espere a acercarse para montar su código), el resumen de
-  repuestos (1 + 201), la limpieza y la resolución; desde el navegador, `leerQueFalta` al montarse, Cotizaciones (21, de a 20 hasta 500) y Documentos (51)
-  al acercarse. Sin caché de cliente: `router.refresh()` y `revalidarVinculo()` vuelven a dibujar todos los bloques.
+- `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 501,0 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`): «Qué
+  falta» de la ficha, Documentos, Cotizaciones, la ficha completa (`?ver=ficha`, con `useAbiertoAlgunaVez`), la portada de la aprobada y «Compartir» van con
+  `diferido()`; la tira es la del visor. El documento de la ficha aporta 57,2 KB sobre `/perfil` con una cotización y lo mismo con 60 documentos y 601
+  cotizaciones (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 58, subido de 56 por la regla del 5 %; `e2e/vehiculos-ficha-dos-columnas.spec.ts`).
+  Lecturas por pedido, tras su `<Suspense>` y en paralelo: `vehiculo_relacionados` (≤ 9 filas), la subasta y sus ajustes, `leerUnidad` una vez
+  (`cache()`, la comparten «Fase y qué falta» y «Documentos»), la aprobada (`cotizaciones_de_este_vehiculo` con `TAMANO_DE_LA_APROBADA`: la fijada por
+  `cotizaciones_aprobadas_pkey` y ≤ 2 filas por `cotizaciones_vehiculo_creado_idx`), los datos clave (`leerDatosClave`, 1 o 2 lecturas por PK; al documento
+  viajan sólo sus ≤ 4 campos), el proyecto de repuestos (`proyectoDe`, `cache()`: una fila por `repuestos_proyecto_por_vehiculo`, la comparten el enlace
+  corto y el bloque) y su resumen (1 + 201), la limpieza y la resolución; desde el navegador, las fotos de la tira al montarse (≤ 24 miniaturas de 480
+  px, una lectura; la grande sólo en el visor y en la ficha completa), `leerQueFalta` al montarse, Cotizaciones (21, de a 20 hasta 500) y Documentos (51)
+  al acercarse, y el layout activo al abrir la ficha completa. Sin caché de cliente: `router.refresh()` y `revalidarVinculo()` vuelven a dibujar todos
+  los bloques.
 - `/configuracion/flujos`: 409,0 KB en frío (28 chunks), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
   (`scripts/guardas/xyflow-diferido.test.ts`). Una sola lectura del flujo (los topes de `leerFlujoParaConfigurar`); hasta 200 cajas y 500

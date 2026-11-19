@@ -91,13 +91,15 @@ async function alaFicha(page: Page, busqueda = ''): Promise<void> {
 test('E2E ficha en dos columnas · todo a la vista sin un clic', async ({ page }, info) => {
   await entrar(page, duena, { fresco: true })
   await alaFicha(page)
-  // Izquierda: el carrusel, el título y los datos principales.
+  // Izquierda: el carrusel, el título, la aprobada y los datos principales.
   await expect(page.getByRole('button', { name: /foto/i }).first()).toBeVisible()
   await expect(tituloDe(page, 'Datos principales')).toBeVisible()
   const principales = region(page, 'Datos principales')
-  for (const dato of ['Marca', 'Modelo', 'Año', 'VIN']) {
+  // Sólo los datos clave del origen (los de fábrica traen el año y el kilometraje en los dos tipos) y «Ver más».
+  for (const dato of ['Año', 'Kilometraje']) {
     await expect(principales.getByText(dato, { exact: true })).toBeVisible()
   }
+  await expect(principales.getByRole('button', { name: 'Ver más' })).toBeVisible()
   // Derecha: el índice y los bloques, en su orden.
   await expect(indice(page).getByRole('link')).toHaveText([
     'Qué falta',
@@ -106,14 +108,14 @@ test('E2E ficha en dos columnas · todo a la vista sin un clic', async ({ page }
     'Documentos',
     'Ficha',
     'Repuestos',
-    'Fotos',
   ])
   const fase = region(page, 'Fase y qué falta')
   await expect(fase.getByRole('link', { name: 'Ver en logística' })).toHaveAttribute(
     'href',
     `/logistica/vehiculo/${id}`,
   )
-  await expect(page.getByRole('link', { name: 'Ver en logística' })).toHaveCount(1)
+  // El mismo enlace va también, corto, en la cabecera: acá se cuenta el del bloque.
+  await expect(fase.getByRole('link', { name: 'Ver en logística' })).toHaveCount(1)
   await expect(
     fase.getByRole('heading', { name: `Para pasar a «${terreno.b.nombre}»` }),
   ).toBeVisible()
@@ -124,7 +126,7 @@ test('E2E ficha en dos columnas · todo a la vista sin un clic', async ({ page }
   await expect(relacionados.getByRole('region', { name: 'Vinculado', exact: true })).toBeVisible()
   await expect(relacionados.getByRole('region', { name: 'Interesado', exact: true })).toBeVisible()
   await capturar(page, info, 'ficha-arriba')
-  for (const nombre of ['Cotizaciones', 'Documentos', 'Ficha', 'Repuestos', 'Fotos']) {
+  for (const nombre of ['Cotizaciones', 'Documentos', 'Ficha', 'Repuestos']) {
     await expect(tituloDe(page, nombre)).toBeAttached()
   }
   await region(page, 'Cotizaciones').scrollIntoViewIfNeeded()
@@ -134,8 +136,9 @@ test('E2E ficha en dos columnas · todo a la vista sin un clic', async ({ page }
   // Ni pestañas ni acordeones.
   await expect(page.locator('main [role=tablist]')).toHaveCount(0)
   await expect(page.locator('main details')).toHaveCount(0)
-  await region(page, 'Fotos').scrollIntoViewIfNeeded()
-  await expect(page.getByRole('list', { name: 'Fotos del vehículo' })).toBeVisible()
+  // «Fotos» ya no es un bloque: las fotos van en la tira de la cabecera.
+  await expect(region(page, 'Fotos')).toHaveCount(0)
+  await region(page, 'Repuestos').scrollIntoViewIfNeeded()
   await capturar(page, info, 'ficha-abajo')
 })
 
@@ -145,7 +148,7 @@ test('E2E ficha en dos columnas · el índice salta al bloque y le da el foco a 
   await entrar(page, duena)
   await alaFicha(page)
   for (const [etiqueta, nombre] of [
-    ['Fotos', 'Fotos'],
+    ['Ficha', 'Ficha'],
     ['Documentos', 'Documentos'],
     ['Qué falta', 'Fase y qué falta'],
     ['Repuestos', 'Repuestos'],
@@ -164,7 +167,6 @@ test('E2E ficha en dos columnas · los enlaces viejos llevan a su bloque o abren
   await entrar(page, duena)
   for (const [seccion, nombre] of [
     ['ficha', 'Ficha'],
-    ['fotos', 'Fotos'],
     ['documentos', 'Documentos'],
     ['cotizaciones', 'Cotizaciones'],
     ['repuestos', 'Repuestos'],
@@ -187,6 +189,10 @@ test('E2E ficha en dos columnas · los enlaces viejos llevan a su bloque o abren
   await page.goto(`/vehiculos/${id}?visor=${id}&foto=1`)
   await expect(page.locator('[data-visor-de-imagenes]')).toBeVisible()
   await expect(page.locator('[data-visor-de-imagenes]')).toHaveCount(1)
+  // `?seccion=fotos` (el bloque que ya no está) abre ese visor en la primera foto.
+  await page.goto(`/vehiculos/${id}?seccion=fotos`)
+  await expect(page).toHaveURL(new RegExp(`[?&]visor=${id}&foto=1`))
+  await expect(page.locator('[data-visor-de-imagenes]')).toBeVisible()
 })
 
 test('E2E ficha en dos columnas · sin el permiso, el bloque no está ni en el índice', async ({
@@ -195,7 +201,7 @@ test('E2E ficha en dos columnas · sin el permiso, el bloque no está ni en el �
   // Sólo ve el vehículo y los leads: ni «Qué falta», ni «Documentos», ni «Ver en logística», ni cotizaciones, ni repuestos.
   await entrar(page, sinLogistica, { fresco: true })
   await alaFicha(page)
-  await expect(indice(page).getByRole('link')).toHaveText(['Relacionados', 'Ficha', 'Fotos'])
+  await expect(indice(page).getByRole('link')).toHaveText(['Relacionados', 'Ficha'])
   await expect(page.getByRole('link', { name: 'Ver en logística' })).toHaveCount(0)
   await expect(region(page, 'Fase y qué falta')).toHaveCount(0)
   await expect(region(page, 'Documentos')).toHaveCount(0)
@@ -207,12 +213,7 @@ test('E2E ficha en dos columnas · con logística y sin leads, cotizaciones ni r
 }) => {
   await entrar(page, terreno.sinAsignar.correo, { fresco: true })
   await alaFicha(page)
-  await expect(indice(page).getByRole('link')).toHaveText([
-    'Qué falta',
-    'Documentos',
-    'Ficha',
-    'Fotos',
-  ])
+  await expect(indice(page).getByRole('link')).toHaveText(['Qué falta', 'Documentos', 'Ficha'])
   await expect(region(page, 'Cotizaciones')).toHaveCount(0)
   await expect(region(page, 'Repuestos')).toHaveCount(0)
 })
@@ -249,6 +250,7 @@ test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en 
     // Una columna, en orden.
     const enOrden = [
       h1,
+      tituloDe(page, 'Cotización aprobada'),
       tituloDe(page, 'Datos principales'),
       indice(page),
       ...[
@@ -258,7 +260,6 @@ test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en 
         'Documentos',
         'Ficha',
         'Repuestos',
-        'Fotos',
       ].map((nombre) => tituloDe(page, nombre)),
     ]
     const ys: number[] = []

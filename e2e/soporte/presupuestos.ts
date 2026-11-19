@@ -44,9 +44,9 @@ export const PRESUPUESTO_DE_LA_FICHA_EN_KB = 138
 export const PRESUPUESTO_DEL_RSC_DE_LA_FICHA_EN_KB = 39
 
 // Lo que la ficha de un vehículo (T34, en dos columnas) aporta al documento sobre `/perfil`, en KB: con 60 documentos y 600 cotizaciones pesa lo
-// mismo que con una (los dos bloques se leen desde el navegador al acercarse; `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Medido 52,4 KB: lo medido más
-// un 5 %, hacia arriba a la unidad.
-export const PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB = 56
+// mismo que con una (los dos bloques se leen desde el navegador al acercarse; `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Medido 57,2 KB, con la columna
+// izquierda (la aprobada, los datos clave y los enlaces cortos, cada uno tras su `<Suspense>`): 56 más la regla del 5 %.
+export const PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB = 58
 
 // El documento de `/perfil` (los bytes del HTML con el payload RSC, sin comprimir), en KB, con 100 orígenes y 100 tipos de lead: lo que paga
 // toda pantalla del marco (`e2e/presupuesto-js.spec.ts`). Antes del cierre 5b-fix el shell mandaba el contexto del alta de lead (los

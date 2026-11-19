@@ -3,6 +3,7 @@ import 'server-only'
 import type { RepositorioDeAprobada } from '../../entities/aprobada/repositorio'
 import { aprobadaSupabase } from '../../infra/aprobada/aprobar'
 import {
+  getAprobadaDelVehiculo,
   getAprobadasDeCotizaciones,
   getAprobadasDeVehiculos,
   getMarcaDeLaGuardada,
@@ -17,6 +18,9 @@ export const repositorioDeAprobada: RepositorioDeAprobada = aprobadaSupabase
 export const leerAprobadasDeVehiculos = getAprobadasDeVehiculos
 export const leerAprobadasDeCotizaciones = getAprobadasDeCotizaciones
 export const leerMarcaDeLaGuardada = getMarcaDeLaGuardada
+
+// La aprobada de un vehículo, con lo que muestra la ficha del vehículo (su bloque «Cotización aprobada»).
+export const leerAprobadaDelVehiculo = getAprobadaDelVehiculo
 
 // Cuántas otras cotizaciones del vehículo ve quien mira (la línea y el bloque «De este vehículo» de la guardada).
 export const leerOtrasDelVehiculo = getOtrasDelVehiculo
