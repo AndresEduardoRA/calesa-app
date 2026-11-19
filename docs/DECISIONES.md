@@ -260,6 +260,21 @@ las trampas, en `docs/LECCIONES.md`.
   `::after` absoluto queda encerrado en la celda pegajosa, que es `sticky`, y en la tarjeta tapa la selección de texto y obliga a subir cada botón con
   `z-index`), un `<a>` que envuelve el `<tr>` o `display: contents` (rompen la semántica de la tabla) y un botón «Abrir ficha» por fila (suma una parada de
   Tab y nodos).
+- **Las tarjetas de la lista miden todas lo mismo, sólo con CSS.** La `<ul>` lleva `auto-rows-fr` (todas las filas de la grilla miden lo que la más alta de
+  la página) y cada tarjeta se estira a su fila (`TarjetaDeLista estirada`); adentro, el título reserva dos líneas (`line-clamp-2` y `min-h-[2lh]`), la línea de
+  datos una, y las filas de datos van pegadas abajo (`mt-auto`), fijas para toda la pestaña y con «—» si falta el dato, así quedan alineadas aunque las
+  insignias de una se partan. El `dt` y el `dd` de cada fila van directo en la grilla (`grid-flow-row-dense`, la columna por clase), sin envoltorio, y el «—» es
+  texto: cien tarjetas en el celular entran así en el tope de nodos del inventario. Descartados: `subgrid` (iguala sólo dentro de cada fila visual y obliga a contar las filas de cada tarjeta), un alto fijo en rem
+  (recorta o desborda con el texto al 200 %) y medir con JS.
+- **Una sola tarjeta para escritorio y celular: la de la foto arriba.** En el celular la grilla da una columna con el mismo orden. La miniatura de 80 px a la
+  izquierda no admite el chip del lote ni la casilla y el «⋯» sobre la foto; con una sola, además, no hay salto de layout al hidratar.
+- **El chip del lote, oscuro y con tokens propios.** `--color-velo-de-foto` (oscuro translúcido) y `--color-sobre-velo` (blanco), fijos en los dos temas: se lee
+  sobre cualquier foto (el par entra en `design/tokens.test.ts` sobre blanco). Va abajo a la izquierda sin recibir el puntero (el carrusel sigue siendo de la
+  foto) y, en la tarjeta, los puntos del carrusel van a la derecha (`puntos="derecha"`) para que nunca se toquen.
+- **«Costo estimado» es la cotización aprobada con otro nombre en la lista.** El mismo dato (el primer resultado con su moneda), con el modo de tipo de cambio de
+  su cotización dentro del mismo enlace; los tipos siguen llamándose «aprobada» y sólo cambia el rótulo de la UI (`ROTULO_DEL_COSTO_ESTIMADO`).
+- **«Compra directa» se busca por la ruta de apibara (`pricing.buy_now_usd`), no por la clave del campo**, como la puja: un origen puede tener ese campo con
+  otra clave. Sólo en un origen de subasta, en USD, y ese campo sale de los «en tarjeta» del layout (sería el mismo dato dos veces); la puja no cambia.
 
 ## Leads
 
@@ -568,6 +583,10 @@ las trampas, en `docs/LECCIONES.md`.
   retorno es `drop` + `create` y rompe la infra del listado, `datos`, sus pruebas y su medición; el bloque necesita además la versión, el modo, el autor y la
   aprobada fijada, todo en un pedido por página. La aprobada viaja aparte en la primera página (puede estar más allá de la página 10) y el código la pone
   primera sin repetirla; el cursor sale de la página, nunca de ella.
+- **El modo del «Costo estimado» en la misma lectura, por una RPC invocadora.** `cotizaciones_aprobadas_de_vehiculos()` reemplaza la lectura de PostgREST de las
+  aprobadas de una página de `/vehiculos`: PostgREST no puede llamar `_nombre_del_modo()` en un `select` y llamarlo aparte serían N idas. Sigue siendo una
+  lectura por página (≤ 100 ids), con la RLS de quien mira; el nombre, una vez por versión y modo. Lee además cada cotización por `cotizaciones_pkey`, por eso
+  su presupuesto en `medir-cotizaciones-aprobadas.sql` es de 1.000 buffers y no 600 (≈ 4 por fila, y ≈ 100 por versión al mirar el permiso).
 - **El nombre del modo por `_nombre_del_modo()`.** `formulas` sólo la lee quien configura; el nombre del modo ya lo dan la hoja y la tarjeta a quien tiene
   `cotizaciones.ver` del origen, así que un `security definer` con el mismo chequeo (el de `cotizacion_tarjeta`) no expone nada nuevo. Se llama una vez por
   versión y modo de la página (cada llamada pregunta el permiso: por fila eran ≈ 90 buffers cada una).

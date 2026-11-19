@@ -9,7 +9,7 @@ import { expect, test, type Page } from './soporte/prueba'
 import { literal, sql } from './soporte/sql'
 
 // La cotización aprobada de un vehículo (B4, `docs/UX.md` › «Cotización guardada», «Vehículos» y «Cotizaciones»): la primera activa nace aprobada y su primer
-// resultado sale en la columna «Cotización aprobada» de `/vehiculos` (en el celular, en la tarjeta), enlazado a ella. Quien aprueba en el origen elige la segunda desde
+// resultado sale en el «Costo estimado» de `/vehiculos` (la columna, o la fila de la tarjeta), enlazado a ella. Quien aprueba en el origen elige la segunda desde
 // su guardada («Aprobar» pasa a la insignia «Aprobada»), y la lista de vehículos pasa a mostrar su monto y su enlace; el listado de cotizaciones la marca. Quien no aprueba
 // ve la insignia y no el botón. El terreno lo arma `soporte/cotizaciones-final.ts`; la siembra escribe sin triggers (como el resto), así que el relleno de la aprobada se
 // llama a mano, como lo hace la siembra de volumen.

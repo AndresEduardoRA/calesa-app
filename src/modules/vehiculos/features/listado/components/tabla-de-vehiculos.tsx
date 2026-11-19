@@ -11,9 +11,17 @@ import {
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { rutaDeLaFichaDelVehiculo } from '../../../entities/acciones-de-relacionados'
 import { camposDeTarjeta, type CampoDeVehiculo } from '../../../entities/campo'
+import { etiquetaDeComun, loteALaVista } from '../../../entities/comunes'
+import {
+  camposSinLaCompraDirecta,
+  columnaDeCompraDirecta,
+  compraDirectaDeLaFila,
+  ROTULO_DE_LA_COMPRA_DIRECTA,
+  type ColumnaDeCompraDirecta,
+} from '../../../entities/compra-directa-de-la-fila'
 import {
   aprobadaDeLaFila,
-  ENCABEZADO_DE_LA_APROBADA,
+  ROTULO_DEL_COSTO_ESTIMADO,
   type AprobadasDeLaPagina,
 } from '../../../entities/cotizacion-aprobada-de-la-fila'
 import {
@@ -37,7 +45,8 @@ import {
   type FilaDeVehiculo,
   type ParaElMenuDeLaLista,
 } from './tipos'
-import { CeldaDeAprobada } from './celda-de-aprobada'
+import { CeldaDeCompraDirecta } from './compra-directa'
+import { CeldaDeCostoEstimado } from './costo-estimado'
 import { CeldaDePrecio, EncabezadoDePrecio } from './precio-de-la-fila'
 import { ValorDeCampo } from './valor-de-campo'
 import { FotosEnElLugar } from '../../fotos/components/fotos-en-el-lugar'
@@ -51,7 +60,7 @@ type Props = DatosDelOrigen & {
   menu: ParaElMenuDeLaLista
   // Las filas que se pueden elegir (para enviarlas juntas a la papelera) y las elegidas.
   seleccion: SeleccionDelListado
-  // Su cotización aprobada por vehículo; nulo = quien mira no ve cotizaciones: la columna no se dibuja.
+  // Su cotización aprobada por vehículo (el «Costo estimado»); nulo = quien mira no ve cotizaciones: la columna no se dibuja.
   aprobadas: AprobadasDeLaPagina | null
 }
 
@@ -70,6 +79,8 @@ type PropsDeFila = Pick<
   columnas: readonly CampoDeVehiculo[]
   // «Precio» o, en un origen de subasta con la puja en su layout, «Puja actual».
   columnaPrecio: ColumnaDePrecio
+  // En un origen de subasta, las columnas «Lote» y «Compra directa» (`no_aplica` en uno manual: no hay ninguna de las dos).
+  columnaCompra: ColumnaDeCompraDirecta
   // Alguna fila de la página tiene algo en su «⋯»: la columna existe.
   conMenu: boolean
 }
@@ -97,6 +108,36 @@ function CasillaDeLaFila({
   )
 }
 
+// La situación (o la fase), si está en la vitrina, «Publicar» y la fecha de la limpieza.
+function CeldaDeFase({
+  vehiculo,
+  fase,
+  origen,
+  vitrina,
+  limpiezaHoy,
+  menu,
+}: Pick<PropsDeFila, 'vehiculo' | 'origen' | 'vitrina' | 'limpiezaHoy' | 'menu'> & {
+  fase: ReturnType<typeof faseDe>
+}) {
+  return (
+    <TableCell>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <BadgeDeSituacion situacion={vehiculo.situacion} fase={fase} />
+        <InsigniaDeVitrina {...vitrinaDe(vehiculo, vitrina)} origen={origen} fase={fase} />
+        {menu.publicar.estado === 'habilitado' ? (
+          <BotonDeVitrinaDeLaFila
+            vehiculo={vehiculo}
+            alPublicar={() => {
+              menu.abrirVitrina(vehiculo.id)
+            }}
+          />
+        ) : null}
+        <InsigniaDeLimpieza fecha={vehiculo.limpiezaEl} hoy={limpiezaHoy} />
+      </div>
+    </TableCell>
+  )
+}
+
 // La fila de un vehículo: un enlace a su ficha (el nombre es el `<a>`; el resto de la fila navega igual). La casilla va delante del nombre y
 // el «⋯» pegado a la derecha; esa columna sólo existe si alguna fila de la página la usa.
 function FilaDeTabla({
@@ -104,6 +145,7 @@ function FilaDeTabla({
   identidad,
   columnas,
   columnaPrecio,
+  columnaCompra,
   origen,
   fases,
   vitrina,
@@ -137,28 +179,29 @@ function FilaDeTabla({
           </div>
         </div>
       </CeldaPegada>
-      <TableCell>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <BadgeDeSituacion situacion={vehiculo.situacion} fase={fase} />
-          <InsigniaDeVitrina {...vitrinaDe(vehiculo, vitrina)} origen={origen} fase={fase} />
-          {menu.publicar.estado === 'habilitado' ? (
-            <BotonDeVitrinaDeLaFila
-              vehiculo={vehiculo}
-              alPublicar={() => {
-                menu.abrirVitrina(vehiculo.id)
-              }}
-            />
-          ) : null}
-          <InsigniaDeLimpieza fecha={vehiculo.limpiezaEl} hoy={limpiezaHoy} />
-        </div>
-      </TableCell>
+      <CeldaDeFase
+        vehiculo={vehiculo}
+        fase={fase}
+        origen={origen}
+        vitrina={vitrina}
+        limpiezaHoy={limpiezaHoy}
+        menu={menu}
+      />
       <TableCell className="text-right tabular-nums">{vehiculo.anio ?? VACIO}</TableCell>
+      {columnaCompra.tipo === 'no_aplica' ? null : (
+        <TableCell className="tabular-nums">{loteALaVista(vehiculo.lote) ?? VACIO}</TableCell>
+      )}
       <TableCell className="text-right">
         <CeldaDePrecio precio={precioDeLaFila(vehiculo, columnaPrecio)} />
       </TableCell>
+      {columnaCompra.tipo === 'no_aplica' ? null : (
+        <TableCell className="text-right">
+          <CeldaDeCompraDirecta valor={compraDirectaDeLaFila(vehiculo.atributos, columnaCompra)} />
+        </TableCell>
+      )}
       {aprobadas === null ? null : (
         <TableCell className="text-right">
-          <CeldaDeAprobada aprobada={aprobadaDeLaFila(aprobadas, vehiculo.id)} />
+          <CeldaDeCostoEstimado aprobada={aprobadaDeLaFila(aprobadas, vehiculo.id)} />
         </TableCell>
       )}
       {columnas.map((campo) => (
@@ -175,14 +218,16 @@ function FilaDeTabla({
   )
 }
 
-// El inventario de un origen en escritorio, con el patrón de lista (`@/shared/ui/lista`): lo común adelante y, después, una columna
-// por cada campo «en tarjeta» del layout. Un clic en cualquier parte de la fila abre la ficha del vehículo, salvo el de la casilla, la
+// El inventario de un origen en escritorio, con el patrón de lista (`@/shared/ui/lista`): lo común adelante (en subasta, con «Lote» y «Compra directa»;
+// con `cotizaciones.ver`, «Costo estimado») y, después, una columna por cada campo «en tarjeta» del layout (sin el de la compra directa). Un clic en cualquier parte de la fila abre la ficha del vehículo, salvo el de la casilla, la
 // miniatura, «Publicar» y el «⋯». La tabla es tan ancha como lo pidan sus columnas y se desplaza dentro de su tarjeta, con el nombre a la vista.
 export function TablaDeVehiculos({ vehiculos, campos, encabezado, ...resto }: Props) {
   const { menu, seleccion, vehiculos: filas } = { ...resto, vehiculos }
   const conMenu = hayMenuEnLaPagina(filas, menu)
-  const columnas = camposDeTarjeta(campos)
-  const columnaPrecio = columnaDePrecio(resto.origen.tipo === 'subasta', campos)
+  const esSubasta = resto.origen.tipo === 'subasta'
+  const columnaCompra = columnaDeCompraDirecta(esSubasta, campos)
+  const columnas = camposSinLaCompraDirecta(camposDeTarjeta(campos), columnaCompra)
+  const columnaPrecio = columnaDePrecio(esSubasta, campos)
   const identidadDe = useIdentidad(campos)
   return (
     <TablaDeLista>
@@ -202,11 +247,17 @@ export function TablaDeVehiculos({ vehiculos, campos, encabezado, ...resto }: Pr
           </CabeceraPegada>
           <TableHead>Fase</TableHead>
           <TableHead className="text-right">Año</TableHead>
+          {columnaCompra.tipo === 'no_aplica' ? null : (
+            <TableHead>{etiquetaDeComun('lote')}</TableHead>
+          )}
           <TableHead className="text-right">
             <EncabezadoDePrecio columna={columnaPrecio} />
           </TableHead>
+          {columnaCompra.tipo === 'no_aplica' ? null : (
+            <TableHead className="text-right">{ROTULO_DE_LA_COMPRA_DIRECTA}</TableHead>
+          )}
           {resto.aprobadas === null ? null : (
-            <TableHead className="text-right">{ENCABEZADO_DE_LA_APROBADA}</TableHead>
+            <TableHead className="text-right">{ROTULO_DEL_COSTO_ESTIMADO}</TableHead>
           )}
           {columnas.map((campo) => (
             <TableHead key={campo.clave}>{campo.etiqueta}</TableHead>
@@ -226,6 +277,7 @@ export function TablaDeVehiculos({ vehiculos, campos, encabezado, ...resto }: Pr
             identidad={identidadDe(vehiculo)}
             columnas={columnas}
             columnaPrecio={columnaPrecio}
+            columnaCompra={columnaCompra}
             conMenu={conMenu}
             {...resto}
           />
