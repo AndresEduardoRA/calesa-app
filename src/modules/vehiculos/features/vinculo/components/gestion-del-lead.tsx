@@ -10,9 +10,10 @@ import { HistorialDeVinculos } from './historial-de-vinculos'
 
 type Props = { leadId: string; leadNombre: string; datos: VehiculosDelLead }
 
-// La gestión de los vehículos del lead que no repite Relacionados: «Vínculos anteriores» (sólo los de vehículos que quien mira ve), el
-// panel «Vincular o marcar un vehículo» (con la cartera: `puedoActuar`; sin ella la URL no abre nada) y la confirmación de desvincular,
-// que pide quien no podría volver a vincular (quien sí, desvincula en la fila de Relacionados con «Deshacer»).
+// Lo que va al pie del bloque «Vehículos» de la ficha del lead y no repite sus grupos: «Vínculos anteriores» plegados (sólo los de vehículos
+// que quien mira ve), el panel «Vincular o marcar un vehículo» (lo abre el botón del título, `VincularOMarcar`; con la cartera: `puedoActuar`;
+// sin ella la URL no abre nada; acá se atiende la URL y la vuelta del foco) y la confirmación de desvincular, que pide quien no podría volver a
+// vincular (quien sí, desvincula en la fila con «Deshacer»).
 export function GestionDelLead({ leadId, leadNombre, datos }: Props) {
   const acciones = useVinculo(leadId)
   const panel = usePanelAgregarVehiculo()

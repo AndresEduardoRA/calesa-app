@@ -135,8 +135,12 @@ test('E2E la ficha dibuja el bloque compacto sin leyendas a la vista, sin grupos
   await page.keyboard.press('Escape')
   await expect(todos).toBeHidden()
 
+  // En la ficha del lead, el mismo bloque compacto se llama «Vehículos».
   await page.goto(`/leads/${leads.a}`)
-  await expect(grupo(page, 'Vinculado').getByText(titulo)).toBeVisible()
-  await expect(grupo(page, 'Interesado')).toHaveCount(0)
+  const delLead = page.getByRole('region', { name: 'Vehículos', exact: true })
+  await expect(
+    delLead.getByRole('region', { name: 'Vinculado', exact: true }).getByText(titulo),
+  ).toBeVisible()
+  await expect(delLead.getByRole('region', { name: 'Interesado', exact: true })).toHaveCount(0)
   await capturar(page, info, 'ficha-lead-compacta')
 })
