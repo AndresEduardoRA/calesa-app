@@ -1,4 +1,5 @@
 // @sin-celular-archivo: el recorrido encadena tablero, actividad, datos y el dinero de la unidad, pantallas de escritorio por sus propios specs; las cuatro tareas de oro en el celular las midió el 9.14-1
+import { elegirEnElMenu } from './soporte/menu-de-la-guardada'
 import { readFileSync } from 'node:fs'
 import { expect, test } from './soporte/prueba'
 import { abrirConN, dialogo } from './soporte/alta'
@@ -166,8 +167,7 @@ test('E2E R3 la asesora marca final su cotización y el lead pasa a cliente', as
   // todos. La dueña no está en la cartera de un lead que registró su asesora, así que la final es de la asesora (D11).
   await cambiarDeCuenta(page, tr.asesora.email)
   await page.goto(`/cotizaciones/${laCotizacion}`)
-  await expect(page.getByRole('button', { name: 'Revisiones' })).toBeVisible()
-  await page.getByRole('button', { name: 'Marcar final' }).click()
+  await elegirEnElMenu(page, 'Marcar final…')
   await page.getByRole('dialog').getByRole('button', { name: 'Marcar final' }).click()
   await expect(page.getByText(/Marcaste la n\.º \d+ como final\./)).toBeVisible()
   expect(

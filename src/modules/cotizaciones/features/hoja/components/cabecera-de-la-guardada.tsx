@@ -2,7 +2,7 @@
 
 import type { Route } from 'next'
 import Link from 'next/link'
-import type { ReactNode } from 'react'
+import { useContext, type ReactNode } from 'react'
 import { formatearFecha } from '@/shared/lib/fechas'
 import { Badge } from '@/shared/ui/badge'
 import { useRegional } from '@/shared/ui/regional'
@@ -10,6 +10,9 @@ import type { CadenaDeLaCotizacion } from '../../../entities/hoja-de-una-guardad
 import { ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
 import { RevisionesDeLaCotizacion } from '../../revisiones/components/revisiones-de-la-cotizacion'
+import { ContextoDeLaVistaPrevia } from './hueco-de-la-vista-previa'
+import { ContextoDeLaRanura } from './menu-de-la-guardada/contexto'
+import { MenuDeLaGuardada } from './menu-de-la-guardada/menu-de-la-guardada'
 
 type Props = {
   id: string
@@ -29,14 +32,19 @@ type Props = {
   vehiculo: string | null
   // La barra del vehículo con el título de la cotización (T307), ya armada por la página (`vehiculos` y `cotizaciones` no se conocen): reemplaza «Vehículo: X».
   barra?: ReactNode
-  // Lo que un área suma en la fila del título, después de «Revisiones» (4.15-6b): sus botones, ya dibujados por la página.
+  // Si quien mira la puede guardar (`puede_guardar` de la base): sólo así va el lugar de «Guardar».
+  guardable: boolean
+  // Lo que las áreas suman al «⋯» (4.15-6b): sus líneas y sus diálogos, ya dibujados por la página; no dibujan nada a la vista.
   acciones?: ReactNode
   // Lo que un área suma después de la clase y de la vigencia (4.27-4): sus insignias, ya dibujadas por la página.
   insignias?: ReactNode
 }
 
-// La cabecera de una cotización guardada: «Cotización n.º N», su clase, hasta cuándo vale (o «Vencida»), de qué origen y cliente es y, en la barra, su título y su vehículo. El número es un identificador:
-// va sin separador de miles. La fecha se muestra en la zona de la empresa.
+// La cabecera de una cotización guardada: «Cotización n.º N», su clase, hasta cuándo vale (o «Vencida»), las insignias de las áreas («Aprobar» o «Aprobada», «Reportada»…),
+// lo principal a la vista («Guardar», que el resumen dibuja aquí por un portal, y «Compartir», del hueco de la vista previa) y lo demás en el «⋯» (`docs/UX.md` › «Cotización
+// guardada»); debajo, la cadena de versiones, de qué origen y cliente es y, en la barra, su título y su vehículo. En el celular el «⋯» queda en la fila del título y «Guardar» y
+// «Compartir» van debajo, mitad y mitad; desde `md`, todo en una fila con el «⋯» al final. El número es un identificador: va sin separador de miles. La fecha se muestra en la
+// zona de la empresa.
 export function CabeceraDeLaGuardada({
   id,
   numero,
@@ -50,14 +58,17 @@ export function CabeceraDeLaGuardada({
   cliente,
   vehiculo,
   barra,
+  guardable,
   acciones,
   insignias,
 }: Props) {
   const { zonaHoraria } = useRegional()
+  const compartir = useContext(ContextoDeLaVistaPrevia)?.compartir?.()
+  const ponerRanura = useContext(ContextoDeLaRanura)
   return (
     <header data-cabecera-de-la-guardada="" className="grid min-w-0 gap-2">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">
+        <h1 className="min-w-0 text-(length:--text-xl) font-semibold [overflow-wrap:anywhere] text-(--color-ink)">
           Cotización n.º {String(numero)}
         </h1>
         <Badge variant="secondary">{ETIQUETA_DE_CLASE[clase]}</Badge>
@@ -69,11 +80,21 @@ export function CabeceraDeLaGuardada({
           </span>
         )}
         {insignias}
-        <div className="ml-auto">
-          <RevisionesDeLaCotizacion cotizacionId={id} numero={numero} version={actualizadoEn} />
+        <div className="ml-auto md:order-last md:ml-0">
+          <MenuDeLaGuardada cotizacionId={id} numero={numero} />
         </div>
-        {acciones}
+        <div
+          data-acciones-de-la-cabecera=""
+          className="grid w-full auto-cols-fr grid-flow-col items-start gap-2 empty:hidden md:ml-auto md:flex md:w-auto"
+        >
+          {guardable && ponerRanura !== null ? (
+            <div ref={ponerRanura} className="grid min-h-11 md:min-h-8" />
+          ) : null}
+          {compartir}
+        </div>
       </div>
+      <RevisionesDeLaCotizacion cotizacionId={id} numero={numero} version={actualizadoEn} />
+      {acciones}
       <CadenaDeVersiones version={version} cadena={cadena} />
       <p className="flex flex-wrap gap-x-4 gap-y-1 text-(length:--text-sm) [overflow-wrap:anywhere] text-(--color-ink-soft)">
         <span>{origen}</span>

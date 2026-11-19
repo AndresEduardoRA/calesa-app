@@ -8,7 +8,11 @@ import {
   leerHojaDeUnaGuardada,
   type HojaDeUnaGuardada,
 } from '@/modules/cotizaciones'
-import { CabeceraDeLaGuardada, EsqueletoDeHoja } from '@/modules/cotizaciones/pantallas/cotizacion'
+import {
+  CabeceraDeLaGuardada,
+  EsqueletoDeHoja,
+  ProveedorDelMenuDeLaGuardada,
+} from '@/modules/cotizaciones/pantallas/cotizacion'
 import { requerirSesion } from '@/modules/equipo'
 import { RegistrarVisto } from '@/modules/equipo/pantallas/visto-de-la-ficha'
 import { PANEL_DEL_VEHICULO } from '@/modules/vehiculos/pantallas/cotizar'
@@ -128,7 +132,7 @@ function tarjetaDeLaGuardada(
   }
 }
 
-// Lo que reciben los huecos de las áreas (acciones de la cabecera, la línea de bajo la cabecera y lo de bajo la hoja); el vehículo, sólo si quien mira lo ve.
+// Lo que reciben los huecos de las áreas (las líneas del «⋯» de la cabecera, sus insignias, la línea de bajo la cabecera y lo de bajo la hoja); el vehículo, sólo si quien mira lo ve.
 function propsDeLosHuecos(
   hoja: Pick<HojaDeUnaGuardada, 'cotizacion' | 'puedeGuardar'>,
   permisos: Permisos,
@@ -169,45 +173,48 @@ async function Cotizacion({
     <>
       <RegistrarVisita tipo="cotizacion" id={hoja.cotizacion.id} />
       <RegistrarVisto modulo="cotizaciones" tipo="cotizacion" id={hoja.cotizacion.id} />
-      <ConElTituloDeLaGuardada
-        hoja={hoja}
-        personaId={sesion.usuarioId}
-        vehiculo={deLaHoja}
-        par={hoja.diseno.par}
-      >
-        <CabeceraDeLaGuardada
-          id={hoja.cotizacion.id}
-          numero={hoja.cotizacion.numero}
-          clase={hoja.cotizacion.clase}
-          actualizadoEn={hoja.cotizacion.actualizadoEn}
-          version={hoja.cotizacion.version}
-          cadena={hoja.cadena}
-          venceEl={hoja.venceEl}
-          vencida={hoja.vencida}
-          origen={hoja.diseno.origen.nombre}
-          cliente={cliente?.nombre ?? null}
-          vehiculo={vehiculo?.titulo ?? null}
-          barra={barraDeLaCabecera(hoja, deLaHoja, delVehiculo, sesion.permisos)}
-          acciones={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Acciones', props)}
-          insignias={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Insignias', props)}
-        />
-        <LaHermana hoja={hoja} delPar={delPar} />
-        {dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'BajoLaCabecera', props)}
-        <ConProveedorDeLaHoja
-          origenId={hoja.cotizacion.origenId}
-          cotizacionId={hoja.cotizacion.id}
-          permisos={sesion.permisos}
-          tarjeta={tarjetaDeLaGuardada(hoja, { cliente, vehiculo, asesor })}
+      <ProveedorDelMenuDeLaGuardada>
+        <ConElTituloDeLaGuardada
+          hoja={hoja}
+          personaId={sesion.usuarioId}
+          vehiculo={deLaHoja}
+          par={hoja.diseno.par}
         >
-          <HojaDeLaGuardada
-            lectura={lectura.data}
-            delPar={delPar}
-            personaId={sesion.usuarioId}
-            cambio={delVehiculo.cambio}
-            pasos={pasosDeLaGuardada(delVehiculo.cambio, lectura.data)}
-          />
-        </ConProveedorDeLaHoja>
-      </ConElTituloDeLaGuardada>
+          <ConProveedorDeLaHoja
+            origenId={hoja.cotizacion.origenId}
+            cotizacionId={hoja.cotizacion.id}
+            permisos={sesion.permisos}
+            tarjeta={tarjetaDeLaGuardada(hoja, { cliente, vehiculo, asesor })}
+          >
+            <CabeceraDeLaGuardada
+              id={hoja.cotizacion.id}
+              numero={hoja.cotizacion.numero}
+              clase={hoja.cotizacion.clase}
+              actualizadoEn={hoja.cotizacion.actualizadoEn}
+              version={hoja.cotizacion.version}
+              cadena={hoja.cadena}
+              venceEl={hoja.venceEl}
+              vencida={hoja.vencida}
+              origen={hoja.diseno.origen.nombre}
+              cliente={cliente?.nombre ?? null}
+              vehiculo={vehiculo?.titulo ?? null}
+              barra={barraDeLaCabecera(hoja, deLaHoja, delVehiculo, sesion.permisos)}
+              guardable={hoja.puedeGuardar}
+              acciones={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Acciones', props)}
+              insignias={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Insignias', props)}
+            />
+            <LaHermana hoja={hoja} delPar={delPar} />
+            {dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'BajoLaCabecera', props)}
+            <HojaDeLaGuardada
+              lectura={lectura.data}
+              delPar={delPar}
+              personaId={sesion.usuarioId}
+              cambio={delVehiculo.cambio}
+              pasos={pasosDeLaGuardada(delVehiculo.cambio, lectura.data)}
+            />
+          </ConProveedorDeLaHoja>
+        </ConElTituloDeLaGuardada>
+      </ProveedorDelMenuDeLaGuardada>
       {dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Debajo', props)}
     </>
   )

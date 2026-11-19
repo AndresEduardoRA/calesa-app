@@ -20,7 +20,7 @@ export const REGISTRO: Record<string, ConfirmarConUrl> = {
   },
   // `?panel=emitir-comprobante` (4.26-2).
   'src/modules/cotizaciones/features/comprobantes/components/confirmar-emitir-comprobante.tsx': {
-    abre: 'src/modules/cotizaciones/features/comprobantes/components/boton-emitir-comprobante.tsx',
+    abre: 'src/modules/cotizaciones/features/comprobantes/components/emitir-comprobante-del-menu.tsx',
     senal: 'PANEL_EMITIR_COMPROBANTE',
   },
   // `?panel=eliminar-tipo&tipo=<id>` (5.09).

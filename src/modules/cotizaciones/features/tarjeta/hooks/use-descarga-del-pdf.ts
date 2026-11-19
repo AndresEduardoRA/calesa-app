@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import type { CodigoError } from '@/shared/lib/errores'
-import { pedirElPdf } from '../../../areas/tarjeta/composicion.client'
+import { pedirElPdf } from '../../../areas/tarjeta/composicion-pdf.client'
 import { rutaDelPdf } from '../../../entities/ruta-de-la-hoja'
 import { archivoDelPdf } from '../../../entities/tarjeta/archivo-del-pdf'
 

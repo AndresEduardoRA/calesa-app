@@ -1,3 +1,4 @@
+import { botonDelMenuDeLaGuardada, cabeceraDeLaGuardada } from './soporte/menu-de-la-guardada'
 import type { Page } from '@playwright/test'
 import { expect, test } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
@@ -9,12 +10,7 @@ import {
 } from './soporte/base'
 import { ocultoDeUnaFormulaSembrada } from './soporte/cotizar-formula'
 import { guardarLaHojaAbierta } from './soporte/cotizar-pdf'
-import {
-  abrirLaHoja,
-  cotizarEnLaSubasta,
-  resumen,
-  urlDeLaSubasta,
-} from './soporte/cotizar-vista-previa'
+import { abrirLaHoja, cotizarEnLaSubasta, urlDeLaSubasta } from './soporte/cotizar-vista-previa'
 import { borrarFotosDe } from './soporte/fotos'
 import { borrarLeadsDePrueba, crearLead } from './soporte/leads'
 import { telefonoAlAzar } from './soporte/leads-alta'
@@ -109,7 +105,7 @@ test('E2E desde el detalle: la portada, dos fotos marcadas y el texto de WhatsAp
   guardada = await guardarLaHojaAbierta(page)
   const numero = numeroDe(guardada)
   await page.goto(`/cotizaciones/${guardada}`)
-  await resumen(page).getByRole('button', { name: 'Compartir', exact: true }).click()
+  await cabeceraDeLaGuardada(page).getByRole('button', { name: 'Compartir', exact: true }).click()
   await expect(page).toHaveURL(/[?&]panel=compartir/)
   await expect(panel(page).getByText(`Creado por ${asesora.nombre}`)).toBeVisible()
 
@@ -208,8 +204,10 @@ test('E2E con el Modo Live no se ofrece: ni en el detalle ni en el «⋯», y la
   const live = page.getByRole('button', { name: 'Modo Live: ocultar los montos' }).first()
   await live.click()
   await expect(live).toHaveAttribute('aria-pressed', 'true')
-  await expect(resumen(page).getByRole('button', { name: 'Vista previa' })).toBeVisible()
-  await expect(resumen(page).getByRole('button', { name: 'Compartir', exact: true })).toHaveCount(0)
+  await expect(botonDelMenuDeLaGuardada(page)).toBeVisible()
+  await expect(
+    cabeceraDeLaGuardada(page).getByRole('button', { name: 'Compartir', exact: true }),
+  ).toHaveCount(0)
 
   await page.goto(`/cotizaciones/${guardada}?panel=compartir`)
   await expect(panel(page).getByText('Con el Modo Live no se comparte.')).toBeVisible()

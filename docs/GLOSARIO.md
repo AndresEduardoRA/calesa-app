@@ -262,7 +262,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   escritorio; en el inventario la recuerda `vehiculos.vista`. Por debajo de 768 px siempre tarjetas. No es una «Vista guardada».
 - **Vuelta del foco** — `abrirConVuelta()`, `useVueltaDelFoco()` (`src/shared/ui/vuelta-del-foco.ts`): tras recargar con un panel por URL,
   «atrás» devuelve el foco a quien lo abrió (desde un menú, al botón del menú).
-- **Más acciones («⋯»)** — `<MasAcciones>` / `accionesDeLead()`, `accionesDeVehiculo()`: menú de fila, tarjeta, resumen o ficha.
+- **Más acciones («⋯»)** — `<MasAcciones>` / `accionesDeLead()`, `accionesDeVehiculo()`, `accionesDeCotizacion()`: menú de fila, tarjeta, resumen, ficha o
+  cabecera de una cotización guardada (`<MenuDeLaGuardada>`: lo que no está a la vista, en el mismo orden que el «⋯» de la fila del listado).
 - **Acción principal del «⋯»** — `principal` de `AccionDeMenu` (`@/shared/ui/lista`), `ACCION_PRINCIPAL_DEL_LEAD`: la primera línea del «⋯», sola en su
   bloque, en negrita y la primera que enfoca el teclado. Una por menú: «Cotizar lead» en el del lead y «Cotizar vehículo» en el del vehículo
   (`ACCION_PRINCIPAL_DEL_VEHICULO`).
@@ -836,7 +837,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Buscador del listado de cotizaciones** — `?q=` / `cotizaciones_buscar()`, `MINIMO_DE_BUSQUEDA_DE_COTIZACIONES`, `TOPE_DE_COINCIDENCIAS`: número, título, cliente,
   vehículo (título, VIN o lote) y autor; distinto del buscador global (`buscador_cotizaciones()`).
 - **Menú de la fila (cotizaciones)** — `accionesDeCotizacion()`, `MenuDeUnaFila`, `<MenuDeLaFila>`: el «⋯» de una cotización del listado, con la lista única de
-  acciones (`aprobar`, `final`, `favorita`, `reportar`, `invalidar`, `descartar`, `reactivar`, `papelera`) y lo que cada rol ve.
+  acciones (`compartir`, `aprobar`, `final`, `favorita`, `reportar`, `invalidar`, `descartar`, `reactivar`, `papelera`; las demás de la lista, sólo en el
+  «⋯» de la guardada) y lo que cada rol ve.
 - **Importación** — `importaciones`: carga CSV con vista previa por fila.
 - **Importación total** — `importacion_crear()`, `importaciones` con `archivo_ruta`: la de `/datos`, que `importar-csv` procesa por lotes a
   nombre de quien importa y para un destino (`asignar_a`).

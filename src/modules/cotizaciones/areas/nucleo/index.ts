@@ -143,6 +143,13 @@ export {
 } from '../../entities/vehiculo-de-la-guardada'
 export type { CambioPermitido } from '../../entities/vehiculo-de-la-guardada'
 
+// El «⋯» de una cotización (el del listado y el de la cabecera de la guardada): sus acciones y su orden, dichos una vez.
+export { accionesDeCotizacion } from '../../entities/acciones-de-cotizacion'
+export type {
+  ClaveDeAccionDeCotizacion,
+  OfertasDelMenuDeCotizacion,
+} from '../../entities/acciones-de-cotizacion'
+
 // La referencia del lienzo del editor de la plantilla (la cotización más reciente del origen que quien configura ve, dibujada con lo guardado): la arma `src/app` con las
 // lecturas del PDF (`leerHojaDeUnaGuardada()`, `calculoDeLoGuardado()`) y la pasa plana a la pestaña «Tarjeta».
 export { calculoDeLoGuardado } from '../../entities/calculo-de-la-tarjeta'

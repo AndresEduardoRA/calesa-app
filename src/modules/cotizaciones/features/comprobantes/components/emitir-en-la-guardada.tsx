@@ -3,9 +3,9 @@ import { leerComprobantesDeLaCotizacion } from '../../../areas/comprobantes/comp
 import { puedeEmitirComprobante } from '../../../entities/comprobantes/acceso'
 import { vigenteDe } from '../../../entities/comprobantes/comprobante'
 import type { PropsDeUnHuecoDeLaGuardada } from '../../hoja/components/huecos'
-import { BotonEmitirComprobante } from './boton-emitir-comprobante'
+import { EmitirComprobanteDelMenu } from './emitir-comprobante-del-menu'
 
-// «Emitir comprobante» en la cabecera de la guardada (hueco `Acciones`, 4.26-2). Quién lo ve se decide aquí, en el servidor, tras `<Suspense>` (no retrasa la
+// «Emitir comprobante…» en el «⋯» de la cabecera de la guardada (hueco `Acciones`, 4.26-2). Quién lo ve se decide aquí, en el servidor, tras `<Suspense>` (no retrasa la
 // hoja): una final activa sin vigente, con la clave. Al navegador llegan el id, el número y la versión, sin los permisos. Si la lectura falla no dibuja nada.
 export function EmitirEnLaGuardada(props: PropsDeUnHuecoDeLaGuardada) {
   if (props.cotizacion.clase !== 'final') {
@@ -31,7 +31,7 @@ async function Emitir({ cotizacion, permisos }: PropsDeUnHuecoDeLaGuardada) {
     return null
   }
   return (
-    <BotonEmitirComprobante
+    <EmitirComprobanteDelMenu
       cotizacionId={cotizacion.id}
       numero={cotizacion.numero}
       actualizadoEn={cotizacion.actualizadoEn}

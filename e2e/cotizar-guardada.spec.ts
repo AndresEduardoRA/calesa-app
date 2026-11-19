@@ -29,6 +29,13 @@ import {
   tipearEnLaHoja,
   totalDeLaHoja,
 } from './soporte/cotizar-guardar'
+import {
+  abrirElMenu,
+  cabeceraDeLaGuardada,
+  cerrarElMenu,
+  lineaDelMenu,
+  opcionesDelMenu,
+} from './soporte/menu-de-la-guardada'
 import { literal, sql } from './soporte/sql'
 
 // La página de una cotización guardada (paso 4.15-3, `docs/UX.md` › «Cotizar»): `/cotizaciones/[id]` abre la hoja de SU versión con lo que se guardó, en sólo lectura para quien
@@ -157,9 +164,56 @@ test('E2E quien sólo ve la cotización la abre en sólo lectura: sin «Guardar�
     page.getByText('Sólo lectura: no puedes guardar esta cotización.', { exact: true }),
   ).toBeVisible()
   await expect(page.getByRole('button', { name: 'Guardar', exact: true })).toHaveCount(0)
+  await abrirElMenu(page)
+  await expect(lineaDelMenu(page, 'Vista previa')).toBeVisible()
+  await expect(lineaDelMenu(page, 'Favorita')).toBeVisible()
+  await expect(lineaDelMenu(page, 'Enviar a la papelera')).toHaveCount(0)
+  await cerrarElMenu(page)
   await expect(totalDeLaHoja(page)).toBeVisible()
   await page.keyboard.press('ControlOrMeta+s')
   await expect(page.getByText('Cambios guardados.')).toHaveCount(0)
+})
+
+// Lo que el detalle deja a la vista y no repite en su «⋯» (en la lista, «Compartir cotización…» y «Aprobar» van en el «⋯» de la fila).
+const A_LA_VISTA = ['Compartir cotización…', 'Aprobar']
+
+test('E2E el «⋯» del detalle ofrece lo mismo y en el mismo orden que el de la lista', async ({
+  page,
+}) => {
+  await entrar(page, duena, { fresco: true })
+  const numero = numeroDeLaCotizacion(guardada)
+  await page.goto(`/cotizaciones?q=${numero}`)
+  const deLaFila = page.getByRole('button', { name: `Más acciones de N.º ${numero}` }).first()
+  const menuDeLaFila = page.getByRole('menu')
+  await expect(async () => {
+    if (!(await menuDeLaFila.isVisible())) {
+      await deLaFila.click()
+    }
+    await expect(menuDeLaFila).toBeVisible({ timeout: 1000 })
+  }).toPass()
+  await expect(menuDeLaFila.getByRole('menuitemcheckbox', { name: 'Favorita' })).toBeVisible()
+  const deLaLista = (await opcionesDelMenu(menuDeLaFila)).filter((l) => l !== '---')
+  await page.keyboard.press('Escape')
+  await expect(menuDeLaFila).toBeHidden()
+
+  await page.goto(`/cotizaciones/${guardada}`)
+  await expect(encabezado(page, guardada)).toBeVisible()
+  const menu = await abrirElMenu(page)
+  // Las marcas llegan tras `<Suspense>`: se espera su línea (y la primera de las demás) antes de leer el orden.
+  await expect(lineaDelMenu(page, 'Favorita')).toBeVisible()
+  await expect(lineaDelMenu(page, 'Vista previa')).toBeVisible()
+  const delDetalle = await opcionesDelMenu(menu)
+  expect(delDetalle.slice(0, 3)).toEqual(['Vista previa', 'Descargar PDF', 'Revisiones'])
+  expect(delDetalle.slice(-2)).toEqual(['---', 'Enviar a la papelera'])
+  const comunes = delDetalle.filter((l) => deLaLista.includes(l))
+  expect(comunes).toEqual(deLaLista.filter((l) => !A_LA_VISTA.includes(l)))
+  for (const aLaVista of ['Guardar', 'Compartir', 'Compartir cotización…', 'Aprobar']) {
+    expect(delDetalle).not.toContain(aLaVista)
+  }
+  await cerrarElMenu(page)
+  const cabecera = cabeceraDeLaGuardada(page)
+  await expect(cabecera.getByRole('button', { name: 'Guardar', exact: true })).toBeVisible()
+  await expect(cabecera.getByRole('button', { name: 'Compartir', exact: true })).toBeVisible()
 })
 
 test('E2E una cotización que no existe y un id que no es un id dicen lo mismo', async ({

@@ -13,31 +13,47 @@ import { PANEL_DE_VISTA_PREVIA } from '../hooks/urls-de-la-hoja'
 import type { useHoja } from '../hooks/use-hoja'
 import { ContextoDeLaVistaPrevia } from './hueco-de-la-vista-previa'
 import type { HermanaEnLaVistaPrevia, PropsDeLaVistaPrevia } from './huecos'
+import { useAporteAlMenu } from './menu-de-la-guardada/use-aporte-al-menu'
 
 type Props = Omit<PropsDeLaVistaPrevia, 'abierta' | 'cerrar'>
 
-// «Vista previa» del pie del resumen (4.18-2): el botón y el modal con su URL (`?panel=vista-previa`; recargar lo abre y «atrás» lo cierra). Lo dibuja el área `tarjeta` por el
-// hueco `ContextoDeLaVistaPrevia`: sin proveedor no hay botón ni nodo. El código del modal se pide la primera vez que se abre. Está también para quien sólo ve la cotización: ver
-// la tarjeta no es guardar. Un solo elemento en la hoja (la hoja está al borde de sus 500 nodos): el modal va en un portal, fuera de `[data-hoja]`.
+// «Vista previa» (4.18-2): el modal con su URL (`?panel=vista-previa`; recargar lo abre y «atrás» lo cierra) y lo que lo abre: el botón del pie del resumen en la hoja nueva y,
+// en una guardada, su línea del «⋯» de la cabecera (sin un nodo en la hoja). Lo dibuja el área `tarjeta` por el hueco `ContextoDeLaVistaPrevia`: sin proveedor no hay botón,
+// línea ni nodo. El código del modal se pide la primera vez que se abre. Está también para quien sólo ve la cotización: ver la tarjeta no es guardar. El modal va en un
+// portal, fuera de `[data-hoja]` (la hoja está al borde de sus 500 nodos).
 export function VistaPreviaDeLaHoja(props: Props) {
   const area = useContext(ContextoDeLaVistaPrevia)
   const panel = usePanelPorUrl(PANEL_DE_VISTA_PREVIA)
   const montar = useAbiertoAlgunaVez(panel.abierto)
+  const { enElMenu } = useAporteAlMenu(
+    area === null
+      ? null
+      : {
+          'vista-previa': {
+            tipo: 'accion',
+            abre: true,
+            alElegir: () => {
+              panel.abrir()
+            },
+          },
+        },
+  )
   if (area === null) {
     return null
   }
   return (
     <>
-      <Button
-        variant="outline"
-        className="min-h-11 md:min-h-8"
-        onClick={() => {
-          panel.abrir()
-        }}
-      >
-        Vista previa
-      </Button>
-      {area.compartir?.()}
+      {enElMenu ? null : (
+        <Button
+          variant="outline"
+          className="min-h-11 md:min-h-8"
+          onClick={() => {
+            panel.abrir()
+          }}
+        >
+          Vista previa
+        </Button>
+      )}
       {montar ? area.dibujar({ ...props, abierta: panel.abierto, cerrar: panel.cerrar }) : null}
     </>
   )

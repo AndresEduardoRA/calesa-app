@@ -1,4 +1,5 @@
 // Lo que comparten los e2e de «Vista previa» de la tarjeta (paso 4.18-2): los lugares del modal y sus gestos. Sólo para las pruebas.
+import { cabeceraDeLaGuardada, elegirEnElMenu } from './menu-de-la-guardada'
 import { expect, type Locator, type Page, type TestInfo } from '@playwright/test'
 import { entrar } from './alta'
 import { tipearEnLaHoja } from './cotizar-guardar'
@@ -51,8 +52,13 @@ export async function abrirLaHoja(page: Page, quien: string, url: string) {
 export const alDia = (page: Page) =>
   expect(resumen(page)).toHaveAttribute('aria-busy', 'false', { timeout: 15_000 })
 
+// En la hoja nueva, el botón del pie del resumen; en una guardada, la línea del «⋯» de su cabecera.
 export async function abrirLaVistaPrevia(page: Page): Promise<Locator> {
-  await resumen(page).getByRole('button', { name: 'Vista previa' }).click()
+  if ((await cabeceraDeLaGuardada(page).count()) > 0) {
+    await elegirEnElMenu(page, 'Vista previa')
+  } else {
+    await resumen(page).getByRole('button', { name: 'Vista previa' }).click()
+  }
   await expect(dialogo(page)).toBeVisible()
   await expect(tarjeta(page)).toBeVisible()
   return tarjeta(page)

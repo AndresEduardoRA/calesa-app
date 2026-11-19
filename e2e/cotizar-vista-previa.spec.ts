@@ -315,7 +315,7 @@ test('E2E si lo de hoy no es lo guardado, la tarjeta dibuja lo guardado y lo dic
     'Lo de hoy no es lo guardado: la tarjeta muestra lo guardado.',
   )
   await cerrarLaVistaPrevia(page)
-  await resumen(page).getByRole('button', { name: 'Guardar', exact: true }).click()
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Cambios guardados.')).toBeVisible()
   await page.reload()
   await expect(page.locator('[data-total]')).toContainText('405,00')

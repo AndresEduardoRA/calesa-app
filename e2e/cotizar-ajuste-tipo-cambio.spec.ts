@@ -1,6 +1,7 @@
 import { expect, test, type Page } from './soporte/prueba'
 import { escribirElTitulo } from './soporte/cotizar-titulo'
 import { entrar } from './soporte/alta'
+import { esperarLaGuardadaHidratada } from './soporte/menu-de-la-guardada'
 import { guardarPorLaHoja } from './soporte/cotizar-guardada'
 import {
   celdaDeLaHoja,
@@ -168,6 +169,8 @@ test('E4: en una guardada dice que la cotización conserva su tipo de cambio, si
   const id = await guardarPorLaHoja(page, { origenId: origen.id, lead, pub: '4' })
   await page.goto(`/cotizaciones/${id}`)
   await expect(page.locator('[data-hoja]')).toBeVisible()
+  // El ⚙ llega en el HTML y un clic antes de hidratar se pierde: «Guardar» en la cabecera dice que la guardada ya hidrató.
+  await esperarLaGuardadaHidratada(page)
   await engranaje(page).click()
   const abierto = panel(page)
   await expect(
