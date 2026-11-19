@@ -265,7 +265,10 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
   `scripts/guardas/modales-con-salida.ts` (pregunta al salir con cambios).
 - **La tarjeta en vivo de la planilla de la fórmula** (los tipos sin código de `entities/tarjeta-en-vivo.ts`): el área `plantilla` lee la tarjeta de trabajo del
   origen con `leerLaTarjetaDeTrabajo({ id, nombre })` (`index.ts`; la lectura de la pestaña «Tarjeta», nunca rechaza: `lista`, `sin_tarjeta` o `no_se_leyo`) y
-  `lecturaDeLaTarjetaDeTrabajo()` (pura: el borrador antes que la publicada, leída con la fórmula publicada y sólo con lo del nivel «todos»).
+  `lecturaDeLaTarjetaDeTrabajo()` (pura: el borrador antes que la publicada, leída con la fórmula publicada y sólo con lo del nivel «todos»). El área `tarjeta` la
+  dibuja con `TarjetaEnVivo` (`pantallas/tarjeta-formula.ts`, con su propio `diferidos.tsx`: el del área viaja con la hoja): `geometriaDeLaTarjeta()` con
+  `CONTEXTO_DE_EJEMPLO`, `role="group"` «Tarjeta de la cotización» y `data-tarjeta-de-cotizacion`, achicada a su columna. El área `formula` arma el cálculo con la
+  unidad de ejemplo (`calculoDeLaUnidad()`: sólo los ids que la lectura nombra; sin cifra, las filas a la vista sin valores) y `src/app` une las tres.
 
 ## Archivos clave
 
