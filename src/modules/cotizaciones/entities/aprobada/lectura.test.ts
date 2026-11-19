@@ -36,28 +36,43 @@ describe('resultadoDeAprobar', () => {
 })
 
 describe('aprobadasDelVehiculoDesde', () => {
-  it('el monto queda como texto, también nulo', () => {
+  it('el monto queda como texto, también nulo, y el modo llega con su nombre o nulo', () => {
     expect(
       aprobadasDelVehiculoDesde([
-        { vehiculo_id: V, cotizacion_id: A, monto: '1234.50', moneda: 'USD' },
-        { vehiculo_id: B, cotizacion_id: B, monto: null, moneda: 'USD' },
+        { vehiculo_id: V, cotizacion_id: A, monto: '1234.50', moneda: 'USD', modo: 'Unificado' },
+        { vehiculo_id: B, cotizacion_id: B, monto: null, moneda: 'USD', modo: null },
       ]),
     ).toEqual([
-      { vehiculoId: V, cotizacionId: A, monto: '1234.50', moneda: 'USD' },
-      { vehiculoId: B, cotizacionId: B, monto: null, moneda: 'USD' },
+      { vehiculoId: V, cotizacionId: A, monto: '1234.50', moneda: 'USD', modo: 'Unificado' },
+      { vehiculoId: B, cotizacionId: B, monto: null, moneda: 'USD', modo: null },
     ])
+  })
+
+  it('sin la clave del modo o con un modo que no es texto: nulo', () => {
+    expect(
+      aprobadasDelVehiculoDesde([{ vehiculo_id: V, cotizacion_id: A, monto: '1', moneda: 'USD' }]),
+    ).toBeNull()
+    expect(
+      aprobadasDelVehiculoDesde([
+        { vehiculo_id: V, cotizacion_id: A, monto: '1', moneda: 'USD', modo: 3 },
+      ]),
+    ).toBeNull()
   })
 
   it('una moneda que no es un código, un monto numérico o un id roto: nulo', () => {
     expect(
-      aprobadasDelVehiculoDesde([{ vehiculo_id: V, cotizacion_id: A, monto: '1', moneda: 'usd' }]),
-    ).toBeNull()
-    expect(
-      aprobadasDelVehiculoDesde([{ vehiculo_id: V, cotizacion_id: A, monto: 1, moneda: 'USD' }]),
+      aprobadasDelVehiculoDesde([
+        { vehiculo_id: V, cotizacion_id: A, monto: '1', moneda: 'usd', modo: null },
+      ]),
     ).toBeNull()
     expect(
       aprobadasDelVehiculoDesde([
-        { vehiculo_id: 'x', cotizacion_id: A, monto: '1', moneda: 'USD' },
+        { vehiculo_id: V, cotizacion_id: A, monto: 1, moneda: 'USD', modo: null },
+      ]),
+    ).toBeNull()
+    expect(
+      aprobadasDelVehiculoDesde([
+        { vehiculo_id: 'x', cotizacion_id: A, monto: '1', moneda: 'USD', modo: null },
       ]),
     ).toBeNull()
   })

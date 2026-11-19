@@ -259,11 +259,18 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   (el panel completo de la ficha) y «Actualizar los datos» `?panel=actualizar-datos&para=<id>`; junto al estado de vitrina de cada fila, «Publicar» abre ese
   mismo panel y «Sacar de la web» se hace de un toque con «Deshacer» (con `vehiculos.vitrina` del origen). Un `?panel=vitrina-rapida&para=<id>` viejo
   redirige a `?panel=vitrina&para=<id>` con el resto de su consulta.
-  En escritorio, «Tabla | Tarjetas» en «Vista y opciones», con las vistas guardadas, «Ítems por página» y la papelera (`?vista=`, recordada en `vehiculos.vista`; las tarjetas van en grilla, con el carrusel en la foto). En un
-  origen de subasta con el campo de la puja, «Precio» es «Puja actual» (USD, «final» si terminó o se vendió; sin puja, «—»). Con
-  `cotizaciones.ver` en algún origen, la columna «Cotización aprobada» (en la tarjeta, «Cotización aprobada» y el monto): el primer resultado de la
-  aprobada del vehículo con su moneda, enlazado a esa cotización (sin total, «Sin total»; sin aprobada o una que no se ve, «—»); sin la clave no se
-  dibuja ni se consulta.
+  En escritorio, «Tabla | Tarjetas» en «Vista y opciones», con las vistas guardadas, «Ítems por página» y la papelera (`?vista=`, recordada en `vehiculos.vista`).
+  **Tarjetas de la lista** (en escritorio si se eligen; en el celular, siempre, una columna con la misma tarjeta): en grilla y **todas del mismo alto**. Arriba la
+  foto 4:3 con su carrusel (los puntos a la derecha), la casilla arriba a la izquierda, el «⋯» arriba a la derecha y, en subasta, el chip «Lote N» abajo a la
+  izquierda (velo oscuro, sin lote no está); después el título en dos líneas (cortado con «…», entero en el `title` y el nombre del enlace), la línea
+  `#n · año · VIN` en una, la situación con sus insignias y, pegadas abajo, las **filas de datos fijas** de la pestaña, con «—» si falta el dato: el precio o
+  la puja («Puja actual» o «Puja final») y, en subasta, «Compra directa»; «Costo estimado» a lo ancho; los campos «en tarjeta» de a dos.
+  **Tabla:** Nombre, Fase, Año, «Lote» (subasta), «Precio» o «Puja actual», «Compra directa» (subasta), «Costo estimado» (con `cotizaciones.ver`) y los campos
+  «en tarjeta». En un origen de subasta con el campo de la puja, «Precio» es «Puja actual» (USD, «final» si terminó o se vendió; sin puja, «—»).
+  **«Costo estimado»** (con `cotizaciones.ver` en algún origen): el primer resultado de la aprobada del vehículo con su moneda y el modo de tipo de cambio de
+  su cotización («US$27.999 · Unificado»), todo enlazado a esa cotización (sin modo, sólo el monto; sin total, «Sin total»; sin aprobada o una que no se ve,
+  «—»); sin la clave no se dibuja ni se consulta. **«Compra directa»** (subasta): el campo del layout con la ruta de apibara `pricing.buy_now_usd`, en USD; sin
+  ese campo activo o sin el dato, «—» (ese campo no se repite entre los «en tarjeta»).
   `/vehiculos/papelera` (por lote).
 - **Vehículo** — `/vehiculos/[id]` (según origen): **ficha en dos columnas**, todo a la vista sin un clic (sin pestañas ni acordeones). **Izquierda**
   (pegajosa desde 56 rem de contenedor): la cabecera con el carrusel a todo el ancho, título, número, origen, situación (`<BadgeDeSituacion>`, la única vez),

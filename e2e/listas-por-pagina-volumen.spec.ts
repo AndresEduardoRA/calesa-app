@@ -41,13 +41,15 @@ const ANA = 'ana-volumen@ejemplo.com'
 // (la tabla o las tarjetas): leads a 100 filas, 5.020 → 2.594 en escritorio y 5.015 → 2.781 en el celular; inventario
 // 7.894 → 4.916 y 7.888 → 3.295. Antes las dos vistas estaban en el DOM.
 // T07: las columnas «Último seguimiento» y «Recordatorio» con las 100 filas llenas pesan ~720 nodos (escritorio 4.035; celular 4.419).
-const NODOS_MAXIMOS = { leads: 4_650, vehiculos: 6_000, cotizaciones: 2_700 }
+// T337: el celular dibuja la misma tarjeta de la lista que el escritorio (la foto con el chip del lote, las filas de datos fijas con «—», sin envoltorio por fila):
+// 6.150 nodos con 100 (escritorio, la tabla con «Lote» y «Compra directa»: 5.703); el tope, 6.300 (un 5 % sobre 6.000, `docs/RENDIMIENTO.md`).
+const NODOS_MAXIMOS = { leads: 4_650, vehiculos: 6_300, cotizaciones: 2_700 }
 // Lo que pesa, comprimido, el documento de la primera respuesta (el HTML y el flujo de React) con el máximo de la lista:
 // lo medido con un margen. Cierre 1: leads a 100, 46,5 → 37,6 KB (705 → 465 KB crudos en escritorio, 427 en el celular);
 // inventario 57,2 → 47,3 KB (1,39 MB → 920 KB crudos; 740 en el celular). Un peso que de pronto se duplica es una columna
 // que nadie pensó, o la otra vista que volvió al HTML.
 // T07: esas dos columnas pesan ~7 KB comprimidos a 100 filas llenas (52,9 KB en escritorio, 51,2 en el celular): tope = lo medido + 5 %.
-// Con «Cotización aprobada»: inventario 60.000 → 63.000 B (61,2 KB en escritorio: el id de cada vehículo y de su cotización viajan como props) y cotizaciones 2.130 → 2.200 nodos
+// Con la cotización aprobada (hoy el «Costo estimado»): inventario 60.000 → 63.000 B (61,2 KB en escritorio: el id de cada vehículo y de su cotización viajan como props) y cotizaciones 2.130 → 2.200 nodos
 // (2.147 en escritorio: la insignia «Aprobada»), cada uno a lo sumo un 5 % (`docs/RENDIMIENTO.md`).
 // T15: la columna de acciones («⋯» de cada fila: 4 nodos) y el menú de cada fila (versión, marcas y lo que ofrece) pasan las cotizaciones a 2.556 nodos y 46,8 KB comprimidos con
 // 100 filas (escritorio, la dueña; 2.540 y 45,4 KB Ana; 2.499 y 44,7 KB en el celular): lo medido + 5 %, como las columnas de leads (T07). Es lo que el listado dice de cada fila.

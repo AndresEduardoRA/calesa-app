@@ -15,6 +15,8 @@ export type CotizacionAprobadaDelVehiculo = {
   cotizacionId: string
   monto: string | null
   moneda: string
+  // El nombre del modo de tipo de cambio de la cotización, ya resuelto por la base; nulo = sin modo, uno que la versión no tiene o sin permiso en su origen.
+  modo: string | null
 }
 
 // Lo que la guardada necesita saber de su cotización: si es la aprobada y en qué estado está.

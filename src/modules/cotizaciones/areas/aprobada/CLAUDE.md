@@ -22,8 +22,9 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
   refresca** (`.claude/rules/acciones.md`: remontaría lo tipeado en la hoja).
 - Errores: el texto de la base (PT409 con quién y cuándo + «Recargar», 42501, 22023, 23514); sin red, «Sin conexión: no se aprobó…»; inesperado tras llegar,
   «No sabemos si se aprobó: recarga para verlo.» + «Recargar». Ninguna cifra en un `aria-label` ni en un `title`.
-- **Las lecturas por página** (`leerAprobadasDeVehiculos(ids)` para `/vehiculos`, `leerAprobadasDeCotizaciones(ids)` para el listado): una consulta por clave
-  primaria o por el único, de ≤ 100 ids, con `.limit(ids.length)`; sin ids no consultan. El monto cruza como texto (`monto::text`).
+- **Las lecturas por página**, de ≤ 100 ids y sin consultar si no hay ids: `leerAprobadasDeVehiculos(ids)` para el «Costo estimado» de `/vehiculos` es la RPC
+  `cotizaciones_aprobadas_de_vehiculos` (por la clave primaria, con el nombre del modo de la cotización: `modo`, nulo sin modo o sin permiso en el origen de la
+  versión); `leerAprobadasDeCotizaciones(ids)` para el listado, una consulta por el único con `.limit(ids.length)`. El monto cruza como texto (`monto::text`).
 
 - **De este vehículo** (`features/aprobada/components/de-este-vehiculo/`): en la guardada, la línea bajo la cabecera (`BajoLaCabecera`) y la sección bajo la
   hoja (`Debajo`), Server Components tras `<Suspense>` que leen `leerOtrasDelVehiculo()` (las otras del vehículo con `limit 101` por PostgREST, `cache()`:
@@ -54,6 +55,7 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
 
 ## En la base
 
-`cotizacion_aprobar(id, versión)` y el mantenimiento al confirmar: `docs/COTIZADOR.md`. La lectura del bloque, `cotizaciones_de_este_vehiculo()` (invocadora) con
-`_nombre_del_modo()` (`security definer`, el nombre del modo a quien tiene `cotizaciones.ver` del origen). Pruebas: `supabase/tests/areas/aprobada/` (`de-este-vehiculo.sql`
-para el bloque), `scripts/carreras/cotizaciones-aprobada.mjs`, `supabase/tests/medir-cotizaciones-aprobadas.sql` y `medir-cotizaciones-de-este-vehiculo.sql`.
+`cotizacion_aprobar(id, versión)` y el mantenimiento al confirmar: `docs/COTIZADOR.md`. La lectura del bloque, `cotizaciones_de_este_vehiculo()` (invocadora), y la del
+«Costo estimado» de `/vehiculos`, `cotizaciones_aprobadas_de_vehiculos(ids)` (invocadora, hasta 100 ids), las dos con `_nombre_del_modo()` (`security definer`, el
+nombre del modo a quien tiene `cotizaciones.ver` del origen; una llamada por versión y modo). Pruebas: `supabase/tests/areas/aprobada/` (`de-este-vehiculo.sql`
+para el bloque, `de-vehiculos.sql` para el inventario), `scripts/carreras/cotizaciones-aprobada.mjs`, `supabase/tests/medir-cotizaciones-aprobadas.sql` y `medir-cotizaciones-de-este-vehiculo.sql`.
