@@ -6,7 +6,8 @@ no lee la base y **no calcula nada**. Dice «esta celda pasó a N» (`onCommit`)
 ## Entra y sale
 
 - Entra: `@/shared/lib` (`formato`, `color`, `numero-tipeado`), `../monto`, `../regional`, `../live`, `../lista/simbolos-de-lista` (los trazos de los iconos).
-- Sale: `index.ts` → `XCell`, `EstiloDeTonos`, `SimbolosDeXCell` y los tipos; la usa la hoja de `cotizaciones`. `xcell.soporte.tsx` (`celda()`, `abrir()`,
+- Sale: `index.ts` → `XCell`, `EstiloDeTonos`, `SimbolosDeXCell` y los tipos; la usa la hoja de `cotizaciones`. También `BOTON_DEL_VALOR` y `ENTRADA`
+  (`clases.ts`): el estilo de lo editable, para otra superficie que marca así sus celdas (la planilla de la fórmula de `cotizaciones`). `xcell.soporte.tsx` (`celda()`, `abrir()`,
   `BASE`) es **sólo de las pruebas** (importa vitest y testing-library; `scripts/mapa.sh` no lista los `.soporte.`).
 - La hoja monta **una vez** `<SimbolosDeXCell/>` (los iconos y la descripción que anuncia las flechas) y `<EstiloDeTonos tonos={…}/>` (las filas de
   `tonos`, que lee ella; `shared` no las busca).
