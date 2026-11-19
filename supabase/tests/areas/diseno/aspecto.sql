@@ -242,7 +242,7 @@ begin
   if not exists (select 1 from jsonb_path_query(r, 'strict $.secciones[*].items[*] ? (@.tipo == "atajos")')) then raise exception 'no llegaron los atajos'; end if;
   -- Ningún nivel viaja.
   if exists (select 1 from jsonb_path_query(r, 'strict $.secciones[*]') x where x ? 'nivel_ver' or x ? 'nivel_editar') then raise exception 'viaja un nivel de sección'; end if;
-  if (r -> 'cabecera') - 'modos' - 'ver_total_bs' - 'moneda_bs' is distinct from '{"tono": "asp_cabecera", "relleno": "grande", "letra": "grande", "enfasis": "fuerte"}'::jsonb then
+  if (r -> 'cabecera') - 'modos' - 'ver_total_bs' - 'moneda_bs' - 'ajustes' is distinct from '{"tono": "asp_cabecera", "relleno": "grande", "letra": "grande", "enfasis": "fuerte"}'::jsonb then
     raise exception 'el aspecto de la cabecera: %', r -> 'cabecera';
   end if;
   select array_agg(t ->> 'clave' order by t ->> 'clave') into v_tonos from jsonb_array_elements(r -> 'tonos') t;
@@ -287,7 +287,7 @@ begin
 end $$;
 rollback;
 
--- @test aspecto: la hoja de la semilla (subasta_usa) no trae ninguna clave de aspecto: las mismas claves de siempre
+-- @test aspecto: la hoja de la semilla (subasta_usa) no trae ninguna clave de aspecto: las mismas claves de siempre (y el ⚙ de la cabecera)
 begin;
 do $$
 declare
@@ -298,7 +298,7 @@ begin
   perform pg_temp.asp_persona(q, o, array['cotizaciones.ver', 'cotizaciones.crear', 'cotizaciones.nivel.costos.ver']);
   r := pg_temp.asp_corre(q, format('select public.cotizacion_hoja(%L)', o));
   if r ? 'error' then raise exception 'la hoja: %', r; end if;
-  if (select array_agg(k order by k) from jsonb_object_keys(r -> 'cabecera') k) is distinct from array['modos', 'moneda_bs', 'ver_total_bs'] then
+  if (select array_agg(k order by k) from jsonb_object_keys(r -> 'cabecera') k) is distinct from array['ajustes', 'modos', 'moneda_bs', 'ver_total_bs'] then
     raise exception 'la cabecera de la semilla: %', r -> 'cabecera';
   end if;
   if exists (select 1 from jsonb_path_query(r, 'strict $.secciones[*]') x

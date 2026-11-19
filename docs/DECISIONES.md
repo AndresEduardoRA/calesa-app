@@ -191,9 +191,28 @@ las trampas, en `docs/LECCIONES.md`.
 - **Fotos.** Bucket público `vehiculos/<vehiculo_id>/<sha-256>`; dos tamaños hechos en el navegador (≤ 1600 y miniatura 480) sin optimizador; versión propia (`vehiculos_imagenes_version`), tope 24; duplicado por hash del original.
 - **Storage de vehículos se limpia por cola.** La app no borra objetos de `vehiculos`; la limpieza reclama con candado y recuento y borra con ≥ 24 h; el barrido de huérfanos va por cursor por bucket.
 - **Vitrina: una sola definición de lo público.** `interno.vitrina_vehiculos` calcula condiciones y `visible`; `web.vehiculos` y `vehiculo_vitrina_previa()` salen de ella. Publicar lleva versión y manda el estado entero; despublicar apaga el destacado.
-- **Vitrina desde la lista: lo que «falta» es el precio público.** La base no exige nada para publicar (sin precio, la web dice «Consultar»); desde
-  la fila, un toque publica lo que ya tiene precio o saca de la web, con «Deshacer»; sin precio, un panel chico (`?panel=vitrina-rapida&para=`)
-  pide sólo eso, con «Publicar sin precio». El «hasta», la nota, el destacado y la vista previa siguen en el panel de la ficha.
+- **Vitrina desde la lista: el panel completo de la ficha, sin salir de la lista.** «Publicar en la web…» del «⋯» y el «Publicar» de la fila abren el mismo
+  panel de la ficha (`?panel=vitrina&para=<id>`: interruptor, precio, rango, nota, destacado y la vista previa); no hay un panel chico que pida sólo el precio.
+  «Sacar de la web» sigue de un toque con «Deshacer» (sacar no pide nada). Un `?panel=vitrina-rapida&para=` viejo redirige en el servidor
+  (`destinoDeLaVitrinaRapida()`), con el resto de la consulta.
+- **Un solo «⋯» del vehículo, con «Cotizar vehículo» primero.** La fila, la tarjeta y la ficha dibujan la misma lista (`accionesDeVehiculo()`):
+  «Cotizar vehículo» sola y destacada; «Editar», «Editar imágenes», «Publicar en la web…» y «Actualizar los datos»; «Ver actividad»; la papelera al final.
+  Cuándo se ofrece cada una lo dice una función pura con test (`ofertasDelMenuDeVehiculo()`). Editar, imágenes y actualizar comparten la regla: con
+  `vehiculos.editar` en el origen y un vehículo que no edita («propios»), apagadas con el motivo; sin la clave en el origen, ocultas (un lector no ve un «⋯»
+  lleno de apagadas). «Actualizar los datos» sin enlace, lote ni VIN se ve apagada con el motivo, no oculta. En la lista, publicar sin el permiso no está
+  (en la ficha, apagado con el motivo). La ficha conserva además el botón «Editar» de su cabecera. «Cotizar vehículo» suma `returnTo` = la URL de ese
+  momento (la hoja ya lo lee: `volver-de-la-hoja.tsx`) y «Ver actividad» llega a cada fila como plantilla con `MARCADOR_DE_VEHICULO` (`vehiculos` no
+  conoce `actividad`). Descartados: «Cotizar» como botón fuera del «⋯» (repetía y sumaba nodos por fila).
+- **Los paneles del «⋯» en la lista se leen en el servidor al abrirse.** «Editar imágenes» y «Publicar en la web…» escriben `?panel=…&para=<id>` con
+  `shallow: false`, como `?editar=`: la página lee sólo el panel que la URL nombra (`src/app/(app)/vehiculos/paneles.ts`). Así las fotos que faltan de la
+  subasta salen del bruto sin que el bruto cruce al navegador, cada cambio de fotos redibuja la galería y la lista por `revalidatePath`, y un vehículo que no
+  está en la página también abre. El costo: abrir pide la página de la lista otra vez, y el documento del inventario con 100 filas sube de 62.732 a
+  63.040 B comprimidos con los mismos nodos (su tope pasa a 66.000 B, regla del 5 %). Un hook por panel y por lista (`useMenuDeLaLista()`): ninguna fila
+  suma hooks ni nodos. Descartado: leer en el navegador (no trae las fotos de la subasta sin el bruto y la galería no se refresca sola).
+- **«Actualizar los datos» es «Refrescar» con confirmación y las fotos que faltan.** Mismo motor (`useRefrescoDeSubasta`, `fusionarRefresco()`); la action
+  devuelve además las fotos de esa respuesta que el vehículo no tiene (ya filtradas en el servidor) y las trae sin otra consulta. Pide confirmar en un
+  `<Modal>` propio con «Sí, actualizar» / «No, volver» (`<Confirmar>` fija «Cancelar» y cambiarlo tocaba `src/shared`). Se ofrece sólo en un origen de
+  subasta con apibara encendida.
 - **Papelera.** Una sola lista de bloqueo (`_vehiculo_motivo_de_bloqueo`) para enviar y purgar; envío por lote con versión por vehículo y resultado parcial; restaurar vuelve sin publicar. Purga manual y automática son la misma función.
 - **apibara: la llamada vive en la edge function y la hace el navegador.** La función guarda el bruto en `apibara_consultas` y el navegador manda una referencia (de quien llama, < 24 h). Ningún test llama a la API real.
 - **La zona de una subasta sale del estado del patio, en el navegador.** apibara no da la zona de la subasta, pero sí el estado de la ubicación
@@ -233,7 +252,7 @@ las trampas, en `docs/LECCIONES.md`.
   de «visto» y el color de la fila con el foco) y el resto de la fila le pasa el clic (`href` en `<FilaDeLista>`/`<TarjetaDeLista>`): Ctrl, Cmd o Shift + clic y
   el botón del medio abren otra pestaña, con texto elegido (copiar el VIN) no navega, y la casilla, el «⋯», «Publicar» y la foto siguen siendo suyos
   (`esClicPropio`). Sin prefetch: cien filas serían cien pedidos de una ruta dinámica, y la ficha tiene su `loading.tsx`. «Cotizar vehículo» pasó al «⋯» de la
-  fila (después de «Editar»; el orden final del «⋯» es de T336). Un `?vehiculo=<id>` viejo redirige en el servidor (`destinoDelEnlaceViejo()`, `redirect()`: no
+  fila (es su acción principal: ver «Un solo «⋯» del vehículo»). Un `?vehiculo=<id>` viejo redirige en el servidor (`destinoDelEnlaceViejo()`, `redirect()`: no
   suma al historial) a la ficha con el `?panel=` que la ficha abre, el visor de sus fotos (`<id>-resumen` y `?pestana=fotos` pasan a `?visor=<id>`) y
   `?editar=` del mismo vehículo; lo demás (origen, filtros, cursor) se quita, porque la ficha tiene «volver al origen». Descartados: un «stretched link» (un
   `::after` absoluto queda encerrado en la celda pegajosa, que es `sticky`, y en la tarjeta tapa la selección de texto y obliga a subir cada botón con
@@ -388,6 +407,11 @@ las trampas, en `docs/LECCIONES.md`.
 - **Grupos en el editor.** No se suman ni se quitan (la plantilla nombra exactamente los de la fórmula); `buckets` y `total_en` no se editan; una auxiliar nunca suma a un grupo.
 - **Lo tipeado se normaliza a 15 cifras**, como la XCell: «1,1 %» manda 0,011. Las comparaciones con lo guardado también van a 15 cifras.
 - **El ⚙ espera la publicada que leyó el panel**, nunca la versión que dibuja la hoja; si difieren, el panel lo dice. Lo enciende un proveedor y lo decide la base; sin proveedor no se registra el panel.
+- **El ⚙ de la cabecera publica la N+1 desde la publicada, sin tocar el borrador**, como el de una constante (`formula_cambiar_cabecera()`, parámetros
+  tipados en vez de un `jsonb` abierto). Escribe siempre las tres claves por defecto juntas y compara «los mismos valores» sobre los efectivos: no hay
+  normalización que espejar. Es un `<Drawer>` con su URL (`?ajuste=cabecera`), el mismo patrón que el ⚙ de una celda; los textos y el orden, los de V1.
+  «Aplicar también» va apagada en una guardada de sólo lectura y si la versión de la hoja no tiene el modo. Sin red dice «No hay conexión.» con «Reintentar»
+  (reenviar es seguro: la base compara la esperada).
 - **El ⚙ de un tipo de cambio.** `formula_tipo_cambio_del_nodo()` (definer, pide `empresa.tipos_cambio.gestionar` y ver el nodo; todo rechazo da `null`); manda sólo `{id, actualizadoEnEsperado, valor}`.
 
 ### La hoja
@@ -396,6 +420,20 @@ las trampas, en `docs/LECCIONES.md`.
 - **La hoja abierta la firma la base.** `cotizacion_hoja()` devuelve `abierta` con HMAC (clave en Vault); crear, evaluar y la ayuda de tabla reciben `p_abierta` y calculan con esa versión. Firma también la huella de las tarifas de la apertura, no sus valores: `crear` la compara con las que reconstruye del historial, porque un `cambiado_en` anterior a la apertura puede confirmar después. Cotizar pide `crear` y `ver` del origen.
 - **Cotizar encima.** La N+1 nace al tocar (`cotizacion_encima`), siempre preventa, con lo guardado de la última de la cadena; índice parcial `cotizaciones_encima_unica`. Quien no ve la N+1 sólo sabe que existe.
 - **Revisiones con totales por clave.** El diff se compara después de recortar (`_cotizacion_diff_recortado()`); «Ir a una fecha» es `p_hasta` exclusivo en `cotizacion_revisiones()`, anclando y paginando por id.
+- **La celda (XCell) va en una fila, como la de V1:** rótulo · valor(es) · acciones. El rótulo se corta con «…» y el texto completo va en `title` (y en el
+  nombre del grupo); el monto, en la monoespaciada, nunca se corta y baja de línea antes de encimarse; el % de un par, chico y gris al lado (con tono, en la
+  tinta del tono: el gris sobre un color no garantiza AA). Sin el envoltorio de la cabecera: un nodo menos por celda paga los de los pasos.
+- **El modo elegido se dibuja aunque no sea visible; la visibilidad no es una regla de guardado.** Los modos visibles son sólo del encabezado
+  (`modosDelEncabezado()`): `_cotizacion_modo` sigue aceptando cualquier modo del diseño, así una guardada vieja no pierde el suyo. Una cotización nueva abre con
+  el modo por defecto y «Ver total» por defecto; una guardada, con lo suyo.
+- **Los pasos de la hoja no reemplazan las barras.** «Hoja · Vehículo · Cliente · Vista previa» van debajo de los modos y abren los paneles de hoy; las barras
+  del vehículo y del cliente se quedan arriba, fuera de la `key` de la hoja (adentro se volverían a montar con cada `key`). «Vehículo» y «Cliente» sólo si su
+  barra tiene panel (`vehiculos.ver` del origen, `leads.ver`); en una guardada, «Vehículo» sólo si no es `solo_mostrar` y nunca «Cliente». **Van fuera del orden
+  de Tab** (`tabIndex -1`): la tarea de oro «cotizar» no suma paradas (lo pidió la persona) y con el teclado lo mismo se alcanza por las barras, «Vista previa»
+  del resumen y las celdas. El nombre de cada botón es lo que se ve («Vehículo», sin chocar con el de la barra, «Vehículo: …»); el punto es su descripción y su
+  `title`.
+- **Los enlaces de la ayuda piden texto** (`{texto, enlaces?}`: no hay ayuda de sólo enlaces; borrar el texto se los lleva). Su URL se valida en la base, en el
+  esquema del diseño **y** en el de la hoja (`URL_DE_ENLACE`), con `rel="noopener noreferrer"`.
 - **«Ver total Bs» se guarda con la cotización.** `ver_total_bs` validado contra el diseño de esa versión; `moneda_bs` sale del TC de `total_en`; si es nula no hay interruptor. El modo de TC es parte de las entradas.
 - **La ayuda de tabla.** Si la celda es de dinero, cada cifra pasa por `<Monto>`; sólo columnas declaradas; tope 1.000 filas. `dato_del_vehiculo` (columna ← campo de texto) guarda en el vehículo por `vehiculo_guardar` y recarga.
 - **Paneles de la hoja.** Vehículo y cliente leen desde el navegador y escriben su URL con `nuqs` + `replace`; elegir cliente conserva lo tipeado (borrador por persona, origen y vehículo); «Nuevo lead» es el del shell con `?elegir=`.

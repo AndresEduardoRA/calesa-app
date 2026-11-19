@@ -10,6 +10,7 @@ import {
 } from './soporte/base'
 import { publicarLaVersionSiguiente } from './soporte/cotizar-formula'
 import { guardarPorLaHoja } from './soporte/cotizar-guardada'
+import { crearSubastaCopiada } from './soporte/cotizar-subasta-copiada'
 import {
   celdaDeLaHoja,
   guardarConElAtajo,
@@ -17,7 +18,6 @@ import {
   prepararGuardado,
   tipearEnLaHoja,
 } from './soporte/cotizar-guardar'
-import { crearOrigenDePrueba } from './soporte/origenes'
 import { literal, sql } from './soporte/sql'
 
 // El ⚙ de una constante en la hoja (paso 4.20-3b, `docs/UX.md` › «Cotizar»): el botón de la celda abre «Valor por defecto de <celda>» (`?ajuste=celda&nodo=`), que lee la publicada
@@ -35,25 +35,10 @@ let duena = ''
 let lead = ''
 let sinAjuste = ''
 
-// Un origen de prueba con la fórmula publicada de `subasta_usa`, copiada: el ⚙ publica la N+1 de ese origen y no toca el de la semilla, que miran otros specs.
-async function crearSubastaCopiada(): Promise<string> {
-  const copia = await crearOrigenDePrueba(
-    `E2E 4.13 ajuste subasta ${proyecto}`,
-    `4_13_ajsub_${proyecto}`,
-    { tipo: 'subasta' },
-  )
-  sql(`
-    insert into public.formulas (origen_id, version, estado, definicion, params, diseno, visibilidad, nota, publicado_en)
-    select ${literal(copia.id)}::uuid, 1, 'publicada', f.definicion, f.params, f.diseno, f.visibilidad, 'E2E 4.20-3b copia de la subasta', now()
-    from public.formulas f join public.origenes o on o.id = f.origen_id
-    where o.clave = 'subasta_usa' and f.estado = 'publicada'`)
-  return copia.id
-}
-
 test.beforeAll(async ({}, info) => {
   proyecto = info.project.name
   ;({ origen, duena, lead } = await prepararGuardado(proyecto, 'ajuste'))
-  subasta = await crearSubastaCopiada()
+  subasta = await crearSubastaCopiada(`E2E 4.13 ajuste subasta ${proyecto}`, `ajsub_${proyecto}`)
   sinAjuste = correoDePrueba(`sin-ajuste-${proyecto}`)
   await crearPersona({
     email: sinAjuste,

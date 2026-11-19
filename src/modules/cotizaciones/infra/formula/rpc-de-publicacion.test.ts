@@ -274,3 +274,50 @@ describe('publicacionSobre › cambiarConstante', () => {
     expect(hecho.ok ? null : hecho.error.codigo).toBe('inesperado')
   })
 })
+
+describe('publicacionSobre › cambiarCabecera', () => {
+  const pedido = {
+    origenId: ORIGEN,
+    modoPorDefecto: 'unificado',
+    verTotalBsPorDefecto: true,
+    modosVisibles: ['unificado'],
+    publicadaEsperada: PUBLICADA,
+  }
+
+  it('llama formula_cambiar_cabecera con las tres claves y la publicada esperada, siempre', async () => {
+    const { cliente, llamadas } = clienteFalso({ data: NUEVA, error: null })
+    const hecho = await publicacionSobre(cliente).cambiarCabecera(pedido)
+    expect(llamadas).toEqual([
+      [
+        'formula_cambiar_cabecera',
+        {
+          p_origen: ORIGEN,
+          p_modo_por_defecto: 'unificado',
+          p_ver_total_bs_por_defecto: true,
+          p_modos_visibles: ['unificado'],
+          p_publicada_esperada: PUBLICADA,
+        },
+      ],
+    ])
+    expect(hecho).toEqual({ ok: true, data: NUEVA })
+  })
+
+  it('el PT409 es un conflicto con el mensaje de la base; los mismos valores, una regla sin campo', async () => {
+    const conflicto = clienteFalso({
+      data: null,
+      error: { code: 'PT409', message: 'Ana publicó la versión 3 hace 2 min.' },
+    })
+    expect(await publicacionSobre(conflicto.cliente).cambiarCabecera(pedido)).toEqual({
+      ok: false,
+      error: { codigo: 'conflicto', mensaje: 'Ana publicó la versión 3 hace 2 min.' },
+    })
+    const mismos = clienteFalso({
+      data: null,
+      error: { code: '22023', message: 'La cabecera ya tiene esos valores.', hint: 'cabecera' },
+    })
+    expect(await publicacionSobre(mismos.cliente).cambiarCabecera(pedido)).toEqual({
+      ok: false,
+      error: { codigo: 'regla', mensaje: 'La cabecera ya tiene esos valores.' },
+    })
+  })
+})

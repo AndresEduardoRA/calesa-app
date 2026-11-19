@@ -36,8 +36,8 @@ const plural = (n: number) => (n === 1 ? 'sección va' : 'secciones van')
 // de prueba. No usa `LugaresDeLaHoja` (arrastra `?ayuda=` y `?panel=` de la URL, que aquí chocarían con la pestaña) ni dibuja las secciones «avanzado»: las nombra aparte.
 export function HojaDePrueba({ hoja, respuesta }: Props) {
   const indice = useMemo(
-    () => indiceDeHoja(hoja.secciones, hoja.cabecera.modos),
-    [hoja.secciones, hoja.cabecera.modos],
+    () => indiceDeHoja(hoja.secciones, hoja.cabecera.modos, hoja.cabecera.modoPorDefecto),
+    [hoja.secciones, hoja.cabecera.modos, hoja.cabecera.modoPorDefecto],
   )
   const contexto = useMemo<ContextoDeHoja>(
     () => ({ indice, entradas: entradasIniciales(indice), respuesta }),

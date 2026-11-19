@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react'
 import type { Permisos } from '@/shared/lib/permisos'
 import type { CalculoDeLaTarjeta } from '../../../entities/calculo-de-la-tarjeta'
-import type { CeldaDeHoja } from '../../../entities/hoja'
+import type { CeldaDeHoja, DisenoDeHoja } from '../../../entities/hoja'
 import type { CotizacionDeLaHoja } from '../../../entities/hoja-de-una-guardada'
 import type { DeDondeCalcula } from '../../../entities/pedido-de-recalculo'
 import type { EstadoDeRecalculo } from '../../../entities/recalculo'
@@ -30,6 +30,23 @@ export type PropsDelAjuste = {
     // Cambiar la celda como si se tipeara, y volver a leer la hoja.
     alConfirmar: AccionesDeHoja['alConfirmar']
     alRecargar: () => void
+  }
+}
+
+// Lo que recibe el panel del ⚙ de la cabecera (`?ajuste=cabecera`): si está abierto, cómo cerrarlo, el nombre del origen (sale de la base) y lo que la hoja le da para
+// «Aplicar también a esta cotización»: su versión, su cabecera, lo elegido y cómo cambiarlo como si la persona lo eligiera.
+export type PropsDelAjusteDeLaCabecera = {
+  abierto: boolean
+  cerrar: () => void
+  origen: string
+  hoja: {
+    formula: { id: string; version: number }
+    cabecera: DisenoDeHoja['cabecera']
+    modoElegido: string | null
+    verTotalBs: boolean
+    soloLectura: boolean
+    alElegirModo: (clave: string) => void
+    alCambiarVerTotalBs: (valor: boolean) => void
   }
 }
 

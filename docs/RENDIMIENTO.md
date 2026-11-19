@@ -381,7 +381,7 @@ inferior), que no se dibuja hasta abrirse: la carga sólo paga el botón. En el 
   las 100 filas llenas de la siembra, ≤ 4.650 nodos y 55.500 B gz (`listas-por-pagina-volumen.spec.ts`). Las columnas «Último seguimiento» y «Recordatorio» pesan
   ~7 nodos y ~70 B comprimidos por fila llena (100 filas llenas: 4.035 nodos y 52,9 KB en escritorio; 4.419 nodos y 51,2 KB en celular). Es lo que el listado
   dice de cada lead; bajarlo pide un máximo de 50 por página.
-- Inventario de vehículos: 100; ≤ 6.000 nodos y 63.000 B gz (60.000 + 5 % por la columna «Cotización aprobada»: 61,2 KB con 100 filas; las props son un `Record` por id de vehículo con la ruta, el monto y la moneda de su aprobada).
+- Inventario de vehículos: 100; ≤ 6.000 nodos y 66.000 B gz (medido 63.040 B y 5.621 nodos con 100 filas y el «⋯» único con sus paneles, que no suma nodos por fila: lo medido + 5 %; antes 63.000 por la columna «Cotización aprobada», cuyas props son un `Record` por id de vehículo con la ruta, el monto y la moneda de su aprobada).
 - Listado de cotizaciones: 100; ≤ 2.700 nodos y 49.500 B gz (lo medido + 5 %: la columna de acciones, `<MasAcciones>` de 4 nodos por fila, y el menú de cada fila —versión,
   marcas y lo que ofrece—: medido 2.556 nodos y 46,8 KB en escritorio la dueña; 2.540 y 45,4 KB Ana; 2.499 y 44,7 KB en el celular). Bajarlo pide un
   máximo de 50 por página, como en leads. Las vistas guardadas van por `diferido()`: `/cotizaciones` en frío mide 368,6 KB de 380 (con el menú de vistas en frío serían 440).
@@ -590,12 +590,20 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - Topes (`PRESUPUESTO_DE_JS_EN_KB`, lo medido más un 5 % a la decena): `/leads` 560, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 380,
   `/cotizaciones/nuevo` 460 (con la subasta, `?origen=`), `/cotizaciones/[id]` 470 (regla del 5 %: el título de la cotización la llevó de 458,9 a 463,7), `/logistica` 390, `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470,
   `/leads/[id]` 590; `/cotizaciones/papelera` 440 (en su spec). `/leads` mide 526,5 KB en 36 chunks y
+  `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,0 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
+  `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 465,9 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 458,5 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action; los pasos de la hoja y el botón del ⚙ de la cabecera viajan en frío, su panel, los campos por defecto y los enlaces de la ayuda con `diferido()`)
   `/leads/[id]`, 554,9 KB. Al borde: `/cotizaciones` 375,4 de 380 (con `<MenuDeVistas>` en frío serían 440: va con
   `diferido()`; la portada del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de `use-carrusel`), `/cotizaciones/[id]` 464,0 de 470 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
   `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 456,7 de 460 (el campo del título va con `diferido()` dentro del panel; pedir la portada al guardar es un `fetch`, sin action)
   (`docs/PENDIENTES.md`). La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada ruta). dnd-kit (el orden del diseño) viaja sólo en el `diferido()` de la pestaña «Diseño» de `/configuracion/cotizacion`, que no tiene tope; lo que se sume
   a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB). La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
-- `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 496,8 en 32 chunks: «Qué falta» de la ficha, la galería y subida de fotos, Documentos y
+- `/vehiculos` (el inventario): ≤ 530 KB, medido 502,1 en 34 chunks. El «⋯» de la fila sigue siendo un botón (su contenido se arma al abrirse) y sus
+  paneles van una vez por lista con `diferido()` + `useAbiertoAlgunaVez()` (`listado/components/diferidos.tsx`): «Editar imágenes», la vitrina completa y
+  «Actualizar los datos» no pesan en frío. Abrir «Editar imágenes» o la vitrina (`?panel=…&para=<id>`, `shallow: false`) vuelve a pedir la página de la
+  lista al servidor, como `?editar=`; la página lee sólo el panel nombrado (la galería ≤ 24 con la subasta en un origen de subasta, o el vehículo por pk y,
+  si se abre, `vehiculo_vitrina_previa`). «Actualizar los datos» es una consulta a apibara por confirmación, nunca al abrir el menú.
+- `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 497,1 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`): «Qué falta» de la ficha, la galería y subida de fotos, Documentos y
   Cotizaciones van con `diferido()`. El documento de la ficha aporta 52,4 KB sobre `/perfil` con una cotización y lo mismo con 60
   documentos y 601 cotizaciones (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 56, `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Lecturas por pedido,
   tras su `<Suspense>` y en paralelo: `vehiculo_relacionados` (≤ 9 filas), la subasta y sus ajustes, `leerUnidad` una vez (`cache()`, la comparten
@@ -756,13 +764,15 @@ fallar.
   contigua en la papelera dentro de un índice entero se lee antes de descartarse. Los `count(*)` por origen de `origenes_resumen()` y del
   borrado de un origen recorren la tabla (tope 100 ms con las 50.000 sembradas; el total exacto está en `docs/PENDIENTES.md`).
 - La hoja dibujada (`e2e/cotizar-hoja-200.spec.ts`, 100 % y 200 %): `[data-hoja]` más «Avanzado» abierto ≤ 500 nodos con la fórmula más
-  grande, como quien cotiza sin ⚙ (~13 nodos por celda); está cerca del techo: lo que sume nodos a la hoja se para y se reporta. El aspecto
+  grande, como quien cotiza sin ⚙ (~12 nodos por celda: la celda en una fila no lleva el envoltorio de la cabecera); mide 446 al abrir y 467 usada, con los
+  pasos de la hoja (de 5 a 8 nodos: la fila, sus 4 botones y el texto de cada punto). Lo que sume nodos a la hoja se para y se reporta. El aspecto
   (rejilla, espacios, letra y tono) va en clases y variables sobre los nodos de siempre: ningún nodo por celda ni por sección. Al abrir,
   2 llamadas desde el servidor (+ `leerVehiculo` con un vehículo en la URL, + `leerClienteElegido` con un `?lead=`, + `integracionActiva`
   con `vehiculos.crear` en un origen de subasta, todas en el mismo `Promise.all`) y ninguna del navegador hasta abrir un panel; después un
   pedido por pausa de tecleo, con 1 en vuelo como máximo (`e2e/cotizar-hoja.spec.ts`).
 - El ⚙ de una constante (`e2e/cotizar-ajuste-constante.spec.ts`): como quien configura, cada ⚙ son exactamente 3 nodos (botón, `svg`,
-  `use`) y la subasta ≤ 585 nodos (techo 600); las dos personas ven las mismas celdas. Ningún pedido al abrir la hoja ni al pasar por una
+  `use`), el ⚙ de la cabecera son 7 (la fila junto a los modos, el botón, su `svg` y sus cuatro trazos) y la subasta ≤ 585 nodos (techo 600; mide 516 al abrir
+  y 540 usada); las dos personas ven las mismas celdas. Ningún pedido al abrir la hoja ni al pasar por una
   celda; abrir un ⚙ lee una fila por `formulas_publicada_unica`, ≤ 70 B. Panel, hook, lectura y action con `diferido()`.
 - El ⚙ de un tipo de cambio (`e2e/cotizar-ajuste-tipo-cambio.spec.ts`): una llamada a `formula_tipo_cambio_del_nodo()`, ≤ 247 B; tras
   cambiarlo la hoja no relee. Bloque, hooks y action de `empresa` van con el panel por `diferido()`.

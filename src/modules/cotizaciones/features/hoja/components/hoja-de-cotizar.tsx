@@ -20,9 +20,9 @@ import type { useGuardarLaHoja } from '../hooks/use-guardar-la-hoja'
 import type { Guardado, VistaDelGuardado } from '../hooks/use-nucleo-del-guardado'
 import { useHoja, type AperturaDeHoja } from '../hooks/use-hoja'
 import { AvisoDelGuardado } from './aviso-de-guardado'
-import { CabeceraDeHoja } from './cabecera-de-hoja'
+import { ColumnaDeLaHoja } from './columna-de-la-hoja'
+import type { PasosDeLaPagina } from './pasos-de-la-hoja'
 import { ResumenDeHoja } from './resumen-de-hoja'
-import { SeccionesDeLaHoja } from './secciones-de-la-hoja'
 import { VistaPreviaDeLaHojaViva } from './vista-previa-de-la-hoja'
 
 type Props = {
@@ -57,6 +57,8 @@ type Props = {
   // Lo que dibuja la vista previa de una guardada: lo guardado (P5 a, `calculoDeLoGuardado`) y si lo de hoy no lo es (`difiereAlAbrir`: la vista previa lo dice fuera de la
   // tarjeta). Sin él, la tarjeta dibuja lo que la hoja calcula ahora (la hoja nueva).
   deLoGuardado?: { calculo: CalculoDeLaTarjeta; difiere: boolean }
+  // Los pasos de la hoja (debajo de los modos): los paneles del vehículo y del cliente que la página sabe abrir. Sin ellos, no hay pasos.
+  pasos?: PasosDeLaPagina
 }
 
 // Las salidas del aviso de guardado: las de la hoja nueva o, en una guardada, «Escribir el título» y, si puede cambiarlo, «Elegir otro vehículo» (abren el panel del vehículo).
@@ -172,96 +174,42 @@ function useRecargar(alRecargar: (() => void) | undefined): () => void {
   return alRecargar ?? router.refresh
 }
 
-// La columna de la izquierda: lo que se pone encima (el aviso de versión de una guardada), la cabecera (modos y «Ver total Bs») y las secciones del diseño.
-function ColumnaDeLaHoja({
-  hoja,
-  h,
-  contexto,
-  secciones,
-  guardando,
-  soloLectura,
-  encima,
-  alRecargar,
-}: {
-  hoja: HojaLista
-  h: ReturnType<typeof useHoja>
-  contexto: ContextoDeHoja
-  secciones: HojaLista['secciones']
-  guardando: boolean
-  soloLectura: boolean
-  encima: ReactNode
-  alRecargar: () => void
-}) {
-  return (
-    <div className="grid min-w-0 flex-1 gap-4">
-      {encima}
-      <CabeceraDeHoja
-        cabecera={hoja.cabecera}
-        modoElegido={h.entradas.modoTc}
-        alElegirModo={h.acciones.alElegirModo}
-        verTotalBs={h.verTotalBs}
-        alCambiarVerTotalBs={h.alCambiarVerTotalBs}
-        deshabilitado={soloLectura}
-      />
-      <SeccionesDeLaHoja
-        secciones={secciones}
-        contexto={contexto}
-        acciones={h.acciones}
-        guardando={guardando}
-        de={h.de}
-        formula={hoja.formula}
-        alRecargar={alRecargar}
-      />
-    </div>
-  )
+// Lo que la hoja arma al montarse: el recálculo (`useHoja`), lo que ven las celdas y los botones de guardar, con el guardado de la guardada que edita o el de la nueva.
+function useArmadoDeLaHoja(p: Props) {
+  const raiz = useRef<HTMLDivElement>(null)
+  const vista = p.edicion?.guardado ?? p.guardado
+  const h = useHoja({
+    hoja: p.hoja,
+    inicial: p.inicial,
+    vehiculoId: p.vehiculoId,
+    alCambiar: vista?.olvidarAviso,
+    borrador: p.borrador,
+    ...p.abre,
+  })
+  const contexto = useContextoDeLaHoja(h, p.seEligen)
+  const { boton, hayCambios } = useBotonesDeGuardar({
+    h,
+    contexto,
+    hoja: p.hoja,
+    leadId: p.leadId,
+    vehiculoId: p.vehiculoId,
+    obligatorios: p.obligatorios,
+    elecciones: p.elecciones,
+    guardado: p.guardado,
+    edicion: p.edicion,
+    raiz,
+  })
+  return { raiz, vista, h, contexto, boton, hayCambios }
 }
 
 // La hoja de cotizar: las secciones del diseño en su orden (las avanzadas, detrás de un botón «Avanzado» con su modal), cada celda con su `XCell`, y el resumen. Recalcula en la base 150 ms después de la última confirmación.
 // Guarda con `Ctrl/Cmd+S` o «Guardar» (el guardado vive en el marco, `useGuardado`): confirma la celda abierta, espera al total al día (P8) y arma el pedido con las
 // entradas que ese recálculo calculó y la misma hoja abierta. Mientras guarda no se toca (`inert`): lo guardado la reemplaza y lo tecleado en el medio se perdería sin aviso. Los iconos y los tonos se montan una sola vez por hoja.
-export function HojaDeCotizar({
-  hoja,
-  inicial,
-  vehiculoId,
-  vehiculoSoltado,
-  leadId,
-  obligatorios,
-  elecciones,
-  borrador,
-  guardado,
-  seEligen,
-  abre,
-  edicion,
-  soloLectura = false,
-  totalGuardado,
-  alRecargar,
-  encima,
-  deLoGuardado,
-}: Props) {
-  const raiz = useRef<HTMLDivElement>(null)
+export function HojaDeCotizar(props: Props) {
+  const { hoja, vehiculoSoltado, elecciones, edicion, soloLectura = false } = props
+  const { totalGuardado, alRecargar, encima, deLoGuardado, pasos } = props
   const recargar = useRecargar(alRecargar)
-  const vista = edicion?.guardado ?? guardado // el de la guardada que edita o el de la nueva
-  const h = useHoja({
-    hoja,
-    inicial,
-    vehiculoId,
-    alCambiar: vista?.olvidarAviso,
-    borrador,
-    ...abre,
-  })
-  const contexto = useContextoDeLaHoja(h, seEligen)
-  const { boton, hayCambios } = useBotonesDeGuardar({
-    h,
-    contexto,
-    hoja,
-    leadId,
-    vehiculoId,
-    obligatorios,
-    elecciones,
-    guardado,
-    edicion,
-    raiz,
-  })
+  const { raiz, vista, h, contexto, boton, hayCambios } = useArmadoDeLaHoja(props)
   const guardando = vista?.estado.tipo === 'guardando'
   const dibujadas = hoja.secciones.filter((seccion) => seccionSeDibuja(seccion, contexto))
   if (dibujadas.length === 0) {
@@ -280,6 +228,7 @@ export function HojaDeCotizar({
           soloLectura={soloLectura}
           encima={encima?.(hayCambios)}
           alRecargar={recargar}
+          pasos={pasos}
         />
         <ResumenDeLaHoja
           hoja={hoja}

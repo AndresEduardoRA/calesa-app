@@ -64,9 +64,25 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
 (`docs/referencias/cotizador-actual.md`) y otro al Excel (`docs/referencias/excel-de-cotizacion.md`).
 
 1. **Entrada:** desde la ficha del lead, el «⋯» de un vehículo en el inventario («Cotizar vehículo») o el listado. Arriba, pestañas de orígenes (nombres de la base; «Oficina»
-   es un origen) y los **modos** de tipo de cambio del diseño (Aduana, Paralelo, Unificado…; se eligen con dos o más, la hoja abre con el
-   primero marcado; con uno solo no se elige y el resumen lo nombra). `Ctrl/Cmd+K → «Nueva cotización»` abre la hoja.
-2. **Pasos:** **la hoja** (preventa o final), **vehículo**, **cliente**, **vista previa**; no hay paso «Oficina».
+   es un origen) y los **modos** de tipo de cambio del diseño (Aduana, Paralelo, Unificado…; se eligen con dos o más; una cotización nueva abre
+   con el **modo por defecto** del diseño, o el primero, y con «Ver total» por defecto; el encabezado dibuja los **modos visibles** más el
+   elegido, que se ve aunque esté oculto; con uno solo no se elige y el resumen lo nombra). `Ctrl/Cmd+K → «Nueva cotización»` abre la hoja.
+   - **El ⚙ de la cabecera** (icono de reguladores junto a los modos, 44 px; sólo a quien configura el origen y con al menos un modo): abre
+     el panel «Configuración por defecto de <Origen>» (`?ajuste=cabecera`) con el aviso «Con esto arrancan las cotizaciones nuevas de
+     <Origen>. El selector del encabezado sigue cambiando sólo la cotización abierta.», «Tipo de cambio por defecto» (radios), «Mostrar el
+     total en <moneda> por defecto» (si se ofrece y hay moneda), «Opciones visibles en el encabezado» (con dos modos o más; el modo por
+     defecto, marcado y apagado con «El modo por defecto debe quedar visible.»), «Aplicar también a esta cotización» (marcada; su ayuda «Si lo
+     desmarcas, esta cotización se queda en <modo actual>.»; apagada con «Esta cotización usa la versión N, que no tiene ese modo.» o «Sólo
+     ves esta cotización: no cambia.») y el pie «Cancelar» · «Guardar por defecto». Cargando: esqueleto tras 300 ms; lectura que falla:
+     «No pudimos leer la configuración por defecto.» con «Reintentar»; conflicto: el mensaje de la base con «Volver a leer» (lo elegido
+     queda); sin red: «No hay conexión.» con «Reintentar»; los mismos valores: «La cabecera ya tiene esos valores.». No muestra cifras.
+2. **Pasos:** **la hoja** (preventa o final), **vehículo**, **cliente**, **vista previa**; no hay paso «Oficina». Debajo de los modos, la fila
+   de **pasos de la hoja** «Hoja · Vehículo · Cliente · Vista previa» (como en V1, partes iguales; 44 px en el celular; al 200 % en dos filas):
+   «Hoja» cierra lo abierto y lleva el foco a la primera celda que se edita (su punto, «falta un dato» si el cálculo trae un requerido sin
+   valor); «Vehículo» y «Cliente» abren su panel (su punto: «elegido» u «obligatorio que falta»; sin punto si falta y es opcional; sólo si la
+   barra tiene panel; en una guardada, «Cliente» no va); «Vista previa» abre la tarjeta. El punto lleva su texto para el lector (la descripción
+   del botón) y su `title` («Vehículo: elegido»). Van fuera del orden de Tab: con el teclado, lo mismo está en las barras, en «Vista previa» del
+   resumen y en las celdas. Las barras del vehículo y del cliente se quedan arriba.
    - **Vehículo:** arriba del panel, el campo **«Título de la cotización»** (hasta 120 caracteres; el contador «N/120» aparece desde 100):
      automático, muestra el título del vehículo elegido con la ayuda «Automático: toma el título del vehículo.»; escribir lo vuelve manual
      (cambiar de vehículo lo respeta) y vaciarlo lo devuelve a automático (con el foco puesto queda vacío, con el del vehículo de ejemplo). La
@@ -103,9 +119,12 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
    - **Sin vehículo, el título es obligatorio** (para cualquier rol, después del cliente y del vehículo): «Guardar» apagado con «Escribe el
      título de la cotización.» y «Escribir el título», que abre `?panel=vehiculo` con el foco en el campo. Si la base lo rechaza igual (otra
      pestaña lo vació), el aviso dice lo mismo con el mismo botón y el campo lo repite debajo. Sólo espacios es vacío.
-3. **La hoja:** secciones en el orden declarado; cada monto en una **XCell** (`Tab` avanza, tipear abre edición, `Esc` cancela) con el tono
-4. **La hoja:** secciones en el orden declarado; cada monto en una **XCell** (`Tab` avanza, tipear abre edición, `Esc` cancela) con el color
-   de su grupo, ayuda y ⚙ si el permiso lo da. Lo **sugerido** lleva un punto; sobrescrito queda **modificado** (anillo y ↺). Atajos (chips
+3. **La hoja:** secciones en el orden declarado; cada monto en una **XCell** (`Tab` avanza, tipear abre edición, `Esc` cancela) con el color
+   de su grupo en borde y fondo, ayuda y ⚙ si el permiso lo da, **en una fila como la de V1**: rótulo (se corta con «…» y el completo va en
+   `title`) · monto en la monoespaciada (nunca se corta: baja de línea antes de encimarse) · el % chico y gris de un par · acciones; una celda
+   apagada (otra variante, condición apagada) se ve gris con su monto. Arriba del modal «Avanzado», «Tocar un valor lo cambia sólo en esta
+   cotización.» y, a quien tiene el ⚙, «El ⚙ cambia el valor por defecto de las cotizaciones nuevas.». La ayuda de texto de una celda puede
+   traer hasta 5 enlaces («Consulta estas fuentes», una tarjeta por enlace que abre en otra pestaña). Lo **sugerido** lleva un punto; sobrescrito queda **modificado** (anillo y ↺). Atajos (chips
    de año), **variante** (Moto, Auto Gasolina…), **interruptores** (habilitar fila, mostrar garantía). **Una celda que quien mira no puede
    ver no se dibuja ni llega**; una que no puede editar va con candado y su motivo. **Recalcula en la base** 150 ms después de la última
    tecla. En el celular y al 200 %, una columna en el mismo orden.
@@ -119,7 +138,7 @@ La hoja es **configurable por origen** (`docs/COTIZADOR.md` › «El diseño de 
      Configuración › Empresa › Monedas y que la cotización conserva el suyo.
    - **La ayuda** («Ayuda de X») abre un panel de sólo lectura con su texto o su tabla de referencia (la de la hoja abierta; cargando, sin
      filas, tope de 1.000 filas, fallo con «Reintentar» o «Recargar»); con Modo Live sus cifras se tapan.
-5. **Resumen fijo:** total (y en moneda local si se pidió con «Ver total en moneda local», apagado al nacer y sólo si la versión da su
+4. **Resumen fijo:** total (y en moneda local si se pidió con «Ver total en moneda local», apagado al nacer y sólo si la versión da su
    moneda), garantía si está a la vista, modo de tipo de cambio y toggle **Live**; al pie en el celular (alto máximo 40 % de la ventana) y
    al costado, pegado bajo la barra, desde 56 rem de la hoja (el 200 % lo pasa al pie). `Ctrl/Cmd+S` guarda (preventa); «Vista previa»
    abre la tarjeta de la cotización (la cuadrícula tipo Excel de la plantilla, escalada como una imagen al ancho del modal, que en escritorio es
@@ -234,8 +253,11 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; la fila y la tarjeta son enlaces a la ficha `/vehiculos/<id>` (Ctrl o el
   botón del medio abren otra pestaña; la casilla, el «⋯», «Publicar» y la foto no navegan); un `?vehiculo=<id>` viejo redirige a la ficha (ver «Enlace viejo»);
   alta `?panel=nuevo` (sin el alta suelta pero con la de cotizar: «Nuevo» apagado con «Cotizar un vehículo nuevo», que abre la hoja con el panel
-  del vehículo en alta); edición `?editar=`; `?vitrina=si|no`, `?limpieza=si|no`; junto al estado de vitrina de cada fila, «Publicar» / «Sacar de la
-  web» con un toque y «Deshacer» (con `vehiculos.vitrina` del origen; sin precio público, `?panel=vitrina-rapida&para=<id>` pide sólo el precio).
+  del vehículo en alta); edición `?editar=`; `?vitrina=si|no`, `?limpieza=si|no`; el «⋯» de cada fila y tarjeta (el mismo de la ficha: ver «Vehículos
+  (estados propios)»), con sus paneles sin salir de la lista: «Editar imágenes» `?panel=imagenes&para=<id>`, «Publicar en la web…» `?panel=vitrina&para=<id>`
+  (el panel completo de la ficha) y «Actualizar los datos» `?panel=actualizar-datos&para=<id>`; junto al estado de vitrina de cada fila, «Publicar» abre ese
+  mismo panel y «Sacar de la web» se hace de un toque con «Deshacer» (con `vehiculos.vitrina` del origen). Un `?panel=vitrina-rapida&para=<id>` viejo
+  redirige a `?panel=vitrina&para=<id>` con el resto de su consulta.
   En escritorio, «Tabla | Tarjetas» en «Vista y opciones», con las vistas guardadas, «Ítems por página» y la papelera (`?vista=`, recordada en `vehiculos.vista`; las tarjetas van en grilla, con el carrusel en la foto). En un
   origen de subasta con el campo de la puja, «Precio» es «Puja actual» (USD, «final» si terminó o se vendió; sin puja, «—»). Con
   `cotizaciones.ver` en algún origen, la columna «Cotización aprobada» (en la tarjeta, «Cotización aprobada» y el monto): el primer resultado de la
@@ -244,7 +266,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `/vehiculos/papelera` (por lote).
 - **Vehículo** — `/vehiculos/[id]` (según origen): **ficha en dos columnas**, todo a la vista sin un clic (sin pestañas ni acordeones). **Izquierda**
   (pegajosa desde 56 rem de contenedor): la cabecera con el carrusel a todo el ancho, título, número, origen, situación (`<BadgeDeSituacion>`, la única vez),
-  la insignia de vitrina, «Editar» y el «⋯»; «Datos principales» (marca, modelo, año, VIN, categoría, km, placado y, en subasta, lote, plataforma y
+  la insignia de vitrina, «Editar» y el «⋯» (el mismo de la lista); «Datos principales» (marca, modelo, año, VIN, categoría, km, placado y, en subasta, lote, plataforma y
   enlace); en un origen de subasta, el bloque «Subasta» con «Editar fechas» (`?panel=fechas-de-subasta`, inicio y cierre en su zona, vacío borra).
   **Derecha**: el índice pegajoso («Índice de la ficha») y los bloques que quien mira ve, en este orden: «Fase y qué falta» (`logistica.ver` del origen:
   «Ver en logística» en su título y «Qué falta» de sólo lectura, ver «Logística: estados propios»), «Relacionados» compacto (`leads.ver`: el vinculado con
@@ -255,7 +277,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   permiso no está, tampoco en el índice. Arriba de las dos columnas, «Volver» y los avisos (limpieza, situación). En el celular y con el texto al 200 %,
   una columna en el mismo orden. `?seccion=ficha|fotos|documentos|cotizaciones|repuestos` lleva a su bloque (si no lo ve, se queda arriba);
   `?panel=desvincular|vincular-lead|marcar-interesado` y `?relacionados=<tipo>` llevan a «Relacionados» y abren lo suyo; `?editar=`, `?panel=vitrina`
-  («Publicar en la web») y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».» con «Reintentar»).
+  («Publicar en la web»), `?panel=imagenes` («Editar imágenes»), `?panel=actualizar-datos` («Actualizar los datos») y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».» con «Reintentar»).
   - **Cotizaciones del lead y del vehículo** (pestaña o bloque): las que quien mira ve, de la más nueva, de a 20 con «Ver más» y, en 500, «Ver todas en
     Cotizaciones» (`/cotizaciones?lead=` o `?vehiculo=`); se lee al abrirla (en las fichas del lead y del vehículo es un bloque y se lee al acercarse); esqueleto, error con «Reintentar», «Sin cotizaciones que
     puedas ver.». Cada fila lleva la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma lectura).
@@ -716,12 +738,25 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   abre solo); rechazos junto al campo (VIN o lote repetido también). Conflicto: quién y cuándo, «Ver cómo quedó» y «Recargar».
 - **Fotos:** elegir (selector, soltar o cámara) las deja en una bandeja sin subir que dice lo que no entra y por qué (no es foto, > 25 MB,
   repetida, pasa de 24). «Subir N fotos» con avance; un fallo se dice entero con «Reintentar las N que faltan». Reordenar con botones o
-  `Alt+←/→`; eliminar con «Deshacer».
-- **«⋯» de la fila y la tarjeta:** «Editar», «Cotizar vehículo» (la hoja de cotizar con el vehículo y su origen, sin lead; sólo si quien mira cotiza en ese
-  origen), «Publicar en la web…» y, separada, «Enviar a la papelera»; lo que no puede, no aparece.
-- **Vitrina:** «Publicar en la web…» en el «⋯» (en la ficha, sin permiso, apagado con motivo). Panel `?panel=vitrina`: interruptor, precio
-  público (vacío = «Consultar»), rango, nota, destacado y «Así lo verá el visitante». Si la fase no publica o la web está apagada,
-  «Publicado, no visible».
+  `Alt+←/→`; eliminar con «Deshacer». Lo mismo en el bloque «Fotos» de la ficha y en el drawer «Editar imágenes» del «⋯» (`?panel=imagenes`, con
+  `&para=<id>` en la lista; esqueleto mientras se lee; con fotos elegidas sin subir, cerrar pregunta; al cerrar, la lista o la ficha ya tienen la portada
+  nueva). Un `para` que no es un id, de otro origen o que no se ve: el drawer dice «No existe o no tienes acceso».
+- **«⋯» del vehículo** (el mismo, en este orden, en la fila, la tarjeta y la ficha; `accionesDeVehiculo()`): **«Cotizar vehículo»**, la acción principal (en
+  negrita, con su icono y sola en su bloque: la hoja con el vehículo y su origen, sin lead y con `returnTo` = de donde salió, la lista con su consulta o la
+  ficha; sin `cotizaciones.crear` en el origen no está) · «Editar» · «Editar imágenes» · «Publicar en la web…» («Editar publicación…» si ya está publicado) ·
+  «Actualizar los datos» · «Ver actividad» (`actividad.ver`) · y, separada, «Enviar a la papelera». Editar, imágenes y actualizar: con `vehiculos.editar` en
+  el origen y un vehículo que no edita, apagadas con «No tienes permiso para editar este vehículo.»; sin la clave en el origen, no están. «Actualizar los
+  datos» sólo en un origen de subasta con apibara encendida (si no, no está); sin enlace, lote ni VIN, apagada con «No tiene enlace, lote ni VIN para
+  consultar la subasta.». Sin nada que ofrecer, no hay «⋯».
+- **Actualizar los datos** (`?panel=actualizar-datos`): «Consultar a apibara gasta cuota. ¿Actualizar ahora?» con «Sí, actualizar» / «No, volver»; consulta
+  con el diálogo abierto (no se cierra mientras tanto), cierra y dice el resultado («Subasta actualizada.», «Subasta consultada: no había datos nuevos.»,
+  «Se conservó lo que editaste: …») y, si trajo fotos que faltan, las trae con su aviso de progreso. Clave o cuota en falta: «Ir a Integraciones» para quien
+  configura; al resto, el motivo y «Pídele a quien administra la empresa que revise la integración con apibara.». Un fallo del momento, «Reintentar»; otra
+  persona editó, «Recargar». Sin red, «Sí, actualizar» apagado con «No hay conexión. Vuelve a intentar cuando vuelva.». Un `para` que no está en la página o
+  que no se puede consultar no abre: avisa y limpia la URL.
+- **Vitrina:** «Publicar en la web…» en el «⋯» (en la lista, sin permiso no está; en la ficha, apagado con motivo). Panel `?panel=vitrina` (en la lista,
+  `&para=<id>`, leído al abrirse, con esqueleto): interruptor, precio público (vacío = «Consultar»), rango, nota, destacado y «Así lo verá el visitante».
+  Si la fase no publica o la web está apagada, «Publicado, no visible». Desde la lista, «Sacar de la web» es un toque con «Deshacer».
 - **Papelera:** enviar no pregunta: se hace con «Deshacer» 10 s, desde el «⋯» o eligiendo filas (casilla sólo en las que puede). El
   resultado se dice entero; lo publicado se despublica; lo que no puede ir (vinculado a un lead, fuera de su fase inicial) va apagado con
   motivo. Pantalla por lote; restaurar vuelve sin publicar; purgar (`vehiculos.papelera.purgar`) nombra lo que borra y un lote de varios
@@ -1315,7 +1350,9 @@ aspecto en la rejilla de 12 y su vista previa.
   que el diseño usa se muestra «(retirado)». Elegir quién ve alinea quién edita. **Lo que no admite nivel** (el total y lo que va aparte,
   o una sección que los tiene): «Quién la ve» apagado con su motivo.
 - **Ítems que no son celda:** por celda, «Ayuda con una tabla» (las que nombra la fórmula) o «Ayuda con un texto» (≤ 300): una quita la
-  otra. Atajos: «Columna de los chips» y «Cuántos chips (1 a 12)». Interruptor: «Habilita» (apagado, deshabilita lo que condiciona) o
+  otra. El texto lleva hasta 5 enlaces: «Agregar enlace» (apagado con «Hasta 5 enlaces.» o, sin texto, «Escribe primero el texto de la
+  ayuda.»), «Título del enlace N» (≤ 60) y «Dirección del enlace N» validados al tipear («Escribe un título.», «Hasta 60 caracteres.»,
+  «Tiene que empezar con https://.», «No puede llevar espacios ni tildes.») y «Quitar»; borrar el texto se lleva los enlaces. Atajos: «Columna de los chips» y «Cuántos chips (1 a 12)». Interruptor: «Habilita» (apagado, deshabilita lo que condiciona) o
   «Muestra» (apagado, no lo dibuja). Variante y subtotal se ven y no se editan.
 - **Ordenar:** cada sección y cada ítem tienen su asa («Mover la sección «Base»», «Mover «Precio»», 44 px): se arrastra (las secciones en su
   lista, los ítems dentro de su sección: pasar uno a otra sección cambiaría quién lo ve) o, con el foco en el asa, Espacio la toma, las
@@ -1334,7 +1371,9 @@ aspecto en la rejilla de 12 y su vista previa.
 - **Cabecera de la hoja:** «Ofrecer «Ver total en moneda local»» (la hoja lo muestra apagado) y los modos de tipo de cambio: nombre, «Tipo
   de cambio de <bucket>» por bucket de la fórmula, «Total en» y «Quitar el modo» (sin confirmar: es borrador). «Sumar un modo» copia los
   tipos de cambio de la fórmula, con la clave derivada del nombre (no cambia al renombrar). Sin total en moneda local o sin tipos de cambio
-  en la fórmula, «Sumar» se apaga con su motivo y los modos existentes siguen editables.
+  en la fórmula, «Sumar» se apaga con su motivo y los modos existentes siguen editables. Con un modo o más, los campos **por defecto**, los
+  mismos del ⚙ de la cabecera de la hoja: «Tipo de cambio por defecto», «Mostrar el total en moneda local por defecto» (si se ofrece) y
+  «Opciones visibles en el encabezado»; se guardan en el borrador. Quitar un modo o apagar «Ver total» limpian lo que nombraban.
 - **Tarjeta del total:** lo que muestran el resumen y el PDF (repite lo que la hoja dibuja): «Total» (los nodos marcados como total; con
   uno solo, apagado) y «Mostrar «<nodo>» junto al total» por cada nodo «aparte»; uno elegido que dejó de ser «aparte» se sigue mostrando
   para poder quitarlo.

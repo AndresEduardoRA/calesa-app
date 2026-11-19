@@ -14,9 +14,9 @@ import {
   type TerrenoDeLaLista,
 } from './soporte/vehiculos-lista'
 
-// El «⋯» de un vehículo, el mismo en la fila, la tarjeta y la ficha (9i): «Editar», «Cotizar vehículo» (sólo la fila y la tarjeta) y
-// «Publicar en la web…» arriba y, separada, «Enviar a la papelera». «Editar» es un botón en la ficha; lo que una persona no puede hacer no
-// aparece (y la papelera, si ya se sabe que no va, se ve apagada con el motivo). Capturas: `E2E_CAPTURAS=e2e-capturas/9i`.
+// El «⋯» de un vehículo, el mismo en la fila, la tarjeta y la ficha (9i, T336): «Cotizar vehículo» sola arriba; «Editar», «Editar imágenes» y
+// «Publicar en la web…»; «Ver actividad»; y, separada, «Enviar a la papelera». La ficha además tiene el botón «Editar»; lo que una persona no puede
+// hacer no aparece (y la papelera, si ya se sabe que no va, se ve apagada con el motivo). Capturas: `E2E_CAPTURAS=e2e-capturas/9i`.
 test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDeLaLista
@@ -63,13 +63,17 @@ test('con todo, el orden es el mismo en la fila y la ficha, y la papelera va sep
   await entrar(page, t.terreno.duena)
   await alInventario(page, t.terreno.corea.id)
   const deLaFila = await abrir(menuDeVehiculo(page, TITULO), page)
-  expect(await opciones(deLaFila)).toEqual([
-    'Editar',
+  // La dueña tiene `actividad.ver`: «Ver actividad» también en la fila.
+  const TODAS = [
     'Cotizar vehículo',
+    'Editar',
+    'Editar imágenes',
     'Publicar en la web…',
+    'Ver actividad',
     'Enviar a la papelera',
-  ])
-  await expect(deLaFila.getByRole('separator')).toHaveCount(1)
+  ]
+  expect(await opciones(deLaFila)).toEqual(TODAS)
+  await expect(deLaFila.getByRole('separator')).toHaveCount(3)
   await capturar(page, info, 'menu-del-vehiculo-fila')
   await cerrar(page, deLaFila)
 
@@ -80,21 +84,18 @@ test('con todo, el orden es el mismo en la fila y la ficha, y la papelera va sep
     page.getByRole('button', { name: `Más acciones de ${TITULO}` }),
     page,
   )
-  // La dueña tiene `actividad.ver`: sólo la ficha le ofrece «Ver actividad», antes de la papelera.
-  expect(await opciones(deLaFicha)).toEqual([
-    'Publicar en la web…',
-    'Ver actividad',
-    'Enviar a la papelera',
-  ])
+  expect(await opciones(deLaFicha)).toEqual(TODAS)
   await capturar(page, info, 'menu-del-vehiculo-ficha')
   await cerrar(page, deLaFicha)
 })
 
-test('lo que no se puede no aparece: con sólo «editar» el «⋯» tiene «Editar»', async ({ page }) => {
+test('lo que no se puede no aparece: con sólo «editar» el «⋯» tiene «Editar» y «Editar imágenes»', async ({
+  page,
+}) => {
   await entrar(page, t.terreno.soloCorea)
   await alInventario(page, t.terreno.corea.id)
   const menu = await abrir(menuDeVehiculo(page, TITULO), page)
-  expect(await opciones(menu)).toEqual(['Editar'])
+  expect(await opciones(menu)).toEqual(['Editar', 'Editar imágenes'])
   await expect(menu.getByRole('separator')).toHaveCount(0)
 })
 
@@ -105,12 +106,14 @@ test('sin nada que ofrecer no hay «⋯»', async ({ page }) => {
   await expect(menuDeVehiculo(page, TITULO)).toHaveCount(0)
 })
 
-test('«Publicar en la web…» lleva a la ficha con el panel abierto', async ({ page }) => {
+test('«Publicar en la web…» abre el panel de la vitrina sin salir de la lista', async ({
+  page,
+}) => {
   await entrar(page, t.terreno.duena)
   await alInventario(page, t.terreno.corea.id)
   const menu = await abrir(menuDeVehiculo(page, TITULO), page)
   await menu.getByRole('menuitem', { name: 'Publicar en la web…' }).click()
-  await expect(page).toHaveURL(new RegExp(`/vehiculos/${t.id}\\?.*panel=vitrina`))
+  await expect(page).toHaveURL(new RegExp(`/vehiculos\\?.*panel=vitrina&para=${t.id}`))
   await expect(page.getByRole('dialog', { name: 'Publicar en la web' })).toBeVisible()
 })
 

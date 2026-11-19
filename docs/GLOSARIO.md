@@ -256,7 +256,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   «atrás» devuelve el foco a quien lo abrió (desde un menú, al botón del menú).
 - **Más acciones («⋯»)** — `<MasAcciones>` / `accionesDeLead()`, `accionesDeVehiculo()`: menú de fila, tarjeta, resumen o ficha.
 - **Acción principal del «⋯»** — `principal` de `AccionDeMenu` (`@/shared/ui/lista`), `ACCION_PRINCIPAL_DEL_LEAD`: la primera línea del «⋯», sola en su
-  bloque, en negrita y la primera que enfoca el teclado. Una por menú: «Cotizar lead» en el del lead (y la misma variante para el del vehículo).
+  bloque, en negrita y la primera que enfoca el teclado. Una por menú: «Cotizar lead» en el del lead y «Cotizar vehículo» en el del vehículo
+  (`ACCION_PRINCIPAL_DEL_VEHICULO`).
 - **«Cotizar lead»** — `cotizar` de `accionesDeLead()`: la acción principal del «⋯» del lead (fila, tarjeta de la lista, kanban y ficha): la hoja de cotizar con
   el lead elegido en el primer origen donde quien mira cotiza, con `returnTo` (`conVuelta()`) a donde estaba. Sin `cotizaciones.crear` en ningún origen, no está.
 - **«Editar lead»** — `editar` de `accionesDeLead()`, `edicionDelMenu()`: el panel de edición del lead (`?panel=editar-lead`; fuera de la ficha con `&para=<id>`)
@@ -470,6 +471,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tipo de cambio oficial / paralelo** — `tipos_cambio.clave` (`oficial`, `paralelo`): TCO y TCP; cada fila o grupo elige el suyo.
 - **Modo de tipo de cambio** — `diseno.cabecera.modos[]` / `cotizaciones.modo_tc`: nombre (Aduana, Paralelo, Unificado…) y qué tipo de cambio
   llena cada bucket. La hoja abre con el marcado (`Entradas.modoTc`); con uno solo no se elige y el resumen lo nombra.
+- **Modo por defecto** — `diseno.cabecera.modo_por_defecto` / `modoInicial()`: el modo con que abre una cotización nueva del origen (sin él, el
+  primero); va con «Ver total» por defecto (`ver_total_bs_por_defecto`). Lo cambian el ⚙ de la cabecera y el diseño de Configuración.
+- **Modos visibles** — `diseno.cabecera.modos_visibles` / `modosDelEncabezado()`: los modos que se dibujan en el encabezado de la hoja (sin la
+  lista, todos). El modo por defecto siempre está entre ellos, y el que una cotización tiene elegido se dibuja aunque no lo esté.
+- **Pasos de la hoja** — `pasosDeLaHoja()` / `<PasosDeLaHoja>`: la fila «Hoja · Vehículo · Cliente · Vista previa» de arriba de la hoja (como
+  en V1). Cada paso abre su panel de hoy y lleva un punto (elegido, obligatorio que falta, falta un dato) con su texto; no reemplaza las barras.
 - **Grupo (de la hoja)** — `definicion.grupos[]` / `nodo.grupo`: filas con bucket, plazo de pago y color, con subtotal en USD y Bs. No es un nodo.
 - **Plazo de pago** — atributo del grupo: cuándo se paga, como texto («2 días», «4 meses (Aprox.)»).
 - **Total en dólares** — `definicion.total_en`; en el motor `totales.usd` (y `totales.suma_usd`): total en Bs ÷ tipo de cambio de `total_en`.
@@ -598,7 +605,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Celda (de la hoja)** — ítem `celda` del diseño: la `XCell` de un nodo: ancho (de 1 a 12 columnas; `completo`, `mitad` y `tercio` de los
   diseños guardados son 12, 6 y 4), alto, letra, énfasis, ayuda y niveles. Se ordena dentro de su sección.
 - **Ayuda (de una celda)** — `ayuda` de una `celda`: texto o tabla de referencia que abre «Ayuda de X» en un panel de sólo lectura
-  (`?ayuda=texto|tabla&nodo=<id>`); la tabla se lee con la hoja abierta.
+  (`?ayuda=texto|tabla&nodo=<id>`); la tabla se lee con la hoja abierta. El texto puede llevar hasta 5 **enlaces** (`ayuda.enlaces[]`,
+  `EnlaceDeAyuda`: título de hasta 60 caracteres y URL `https://`), que se abren en otra pestaña bajo «Consulta estas fuentes».
 - **Secundario (de una celda)** — `secundario` de una `celda`: el % (o monto) junto al valor en un `porcentaje_de`; obligatorio si el monto se
   sobrescribe.
 - **Subtotal (de la hoja)** — ítem `subtotal` del diseño: un nodo de cálculo dibujado como franja (el «CIF» de «avanzado»).
@@ -824,6 +832,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Ruta de apibara** — `origenes_campos.clave_apibara`: dónde está un dato en la respuesta (`vehicle_specs.engine.raw`); una por origen.
 - **Datos nuevos de apibara** — `DatoNuevoDeApibara` / `origen_apibara_rutas_sin_campo()`: datos que la API trajo y aún no son campo.
 - **Refrescar** — `refrescarSubasta` / `vehiculo_subasta_refrescar()`: volver a preguntar a apibara; siempre actualiza fecha, estado y respuesta.
+- **Actualizar los datos** — `actualizar` de `accionesDeVehiculo()` / `<ActualizarLosDatos>`, `useActualizarLosDatos()` (`?panel=actualizar-datos`): la acción
+  del «⋯» del vehículo que vuelve a consultar la subasta en apibara con el mismo motor que «Refrescar» (pide confirmar: gasta cuota) y trae las fotos de esa
+  respuesta que faltan. Sólo en un origen de subasta con apibara encendida.
+- **Editar imágenes** — `imagenes` de `accionesDeVehiculo()` / `<PanelDeImagenes>` (`?panel=imagenes`): la acción del «⋯» del vehículo que abre en su propio
+  drawer lo que hace el bloque «Fotos» de la ficha.
 - **Línea pegada** — `Linea` / `lineasDePegado()`: renglón pegado para alta desde apibara (enlace Copart/IAAI, VIN o lote); hasta 20.
 - **Fotos de la subasta** — `fotosDeSubasta()` / `<BotonTraerFotos>`: las primeras 24 imágenes de la respuesta (la primera, portada).
 - **Cuota de apibara** — `UsoDeApibara` / `<UsoDeApibara>`: consultas hechas y restantes en el período; agotada (429), la API calla hasta que

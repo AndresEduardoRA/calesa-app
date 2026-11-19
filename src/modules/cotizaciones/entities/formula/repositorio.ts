@@ -35,6 +35,15 @@ export type PedidoDeCambiarConstante = {
   publicadaEsperada: string
 }
 
+// Lo que se manda desde el ⚙ de la cabecera (`formula_cambiar_cabecera()`): las tres claves por defecto, siempre, y la publicada que se leyó.
+export type PedidoDeCambiarCabecera = {
+  origenId: string
+  modoPorDefecto: string
+  verTotalBsPorDefecto: boolean
+  modosVisibles: readonly string[]
+  publicadaEsperada: string
+}
+
 // El id de la versión nueva, o el error; `campo` dice que el rechazo es del valor tipeado (el 22023 con `hint = 'valor'`: «La constante ya tiene ese valor.»).
 export type ResultadoDelCambio =
   { ok: true; data: string } | { ok: false; error: ErrorApp; campo?: 'valor' }
@@ -60,11 +69,12 @@ export type BorradorGuardado = { id: string; actualizadoEn: string }
 
 // Las escrituras de la fórmula desde Configuración › Cotización (4.20-2b y 2c), por las RPC del 4.20-1 y la de descartar. Publicar y revertir devuelven el id de la
 // versión publicada; descartar, nada;
-// cambiar una constante (el ⚙ de la hoja, 4.20-3a) publica la N+1 y devuelve su id; guardar el borrador (4.21-3b-1) devuelve la fila escrita.
+// cambiar una constante (el ⚙ de la hoja, 4.20-3a) o la cabecera (su ⚙) publica la N+1 y devuelve su id; guardar el borrador (4.21-3b-1) devuelve la fila escrita.
 export interface RepositorioDeLaFormula {
   guardarBorrador(pedido: PedidoDeGuardar): Promise<Resultado<BorradorGuardado>>
   publicar(pedido: PedidoDePublicar): Promise<Resultado<string>>
   revertir(pedido: PedidoDeRevertir): Promise<Resultado<string>>
   descartar(pedido: PedidoDeDescartar): Promise<Resultado<null>>
   cambiarConstante(pedido: PedidoDeCambiarConstante): Promise<ResultadoDelCambio>
+  cambiarCabecera(pedido: PedidoDeCambiarCabecera): Promise<Resultado<string>>
 }

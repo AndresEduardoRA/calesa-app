@@ -51,6 +51,15 @@ function hojaDeAvanzado(): HojaLista {
         presentacion: 'principal',
         items: [
           celda('b1', { ayuda: { texto: 'Cómo se usa b1' } }),
+          celda('b3', {
+            ayuda: {
+              texto: 'Mira la subasta',
+              enlaces: [
+                { titulo: 'Copart', url: 'https://www.copart.com/' },
+                { titulo: 'IAA', url: 'https://www.iaai.com/' },
+              ],
+            },
+          }),
           celda('b2', { ayuda: { tabla: 'aduana' } }),
         ],
       },
@@ -64,7 +73,7 @@ function hojaDeAvanzado(): HojaLista {
 }
 
 const AL_DIA: RecalculoInicial = {
-  respuesta: respuestaDePrueba({ valores: { a1: 1, x1: 2, b1: 3, b2: 4, y1: 5 } }),
+  respuesta: respuestaDePrueba({ valores: { a1: 1, x1: 2, b1: 3, b2: 4, b3: 6, y1: 5 } }),
   estado: { tipo: 'al_dia' },
 }
 
@@ -111,5 +120,22 @@ describe('HojaDeCotizar: la ayuda de texto', () => {
       expect(screen.queryByRole('dialog')).toBeNull()
     })
     expect(screen.queryByText('Cómo se usa x1')).toBeNull()
+  })
+
+  it('los enlaces de la ayuda abren en otra pestaña, sin opener ni referrer, y su nombre lo dice', async () => {
+    montar('?ayuda=texto&nodo=b3')
+    const panel = await screen.findByRole('dialog', { name: 'Ayuda de B3' })
+    expect(within(panel).getByRole('heading', { name: 'Consulta estas fuentes' })).toBeTruthy()
+    const enlace = within(panel).getByRole('link', { name: /^Copart\s*\(abre en otra pestaña\)$/ })
+    expect(enlace.getAttribute('href')).toBe('https://www.copart.com/')
+    expect(enlace.getAttribute('target')).toBe('_blank')
+    expect(enlace.getAttribute('rel')).toBe('noopener noreferrer')
+    expect(within(panel).getAllByRole('link')).toHaveLength(2)
+  })
+
+  it('una ayuda sin enlaces no dice «Consulta estas fuentes»', async () => {
+    montar('?ayuda=texto&nodo=b1')
+    const panel = await screen.findByRole('dialog', { name: 'Ayuda de B1' })
+    expect(within(panel).queryByText('Consulta estas fuentes')).toBeNull()
   })
 })

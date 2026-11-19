@@ -1,7 +1,9 @@
 import type { FaseResumen } from '@/modules/flujos'
 import type { OrigenResumen } from '@/modules/origenes'
 import {
+  rutaParaCotizar,
   type AlcanceDeAvisos,
+  type ParaCotizar,
   type PermisoDePapelera,
   type PermisoDeVitrina,
   type Vehiculo,
@@ -28,10 +30,16 @@ type Props = {
   avisos: { vehiculo: VehiculoDelAviso; alcance: AlcanceDeAvisos }
   // `/actividad` de este vehículo, con `actividad.ver` (la arma la página); null si no la ve: «Ver actividad» en el «⋯».
   paraActividad: string | null
+  // «Cotizar vehículo»: la hoja de cotizar de su origen, o null si quien mira no cotiza en él.
+  paraCotizar: ParaCotizar | null
+  // Si edita en el origen (sin editar este vehículo, el «⋯» muestra apagado lo de editar).
+  editaEnElOrigen: boolean
+  // En un origen de subasta con apibara encendida: si tiene con qué consultar. null = no aplica.
+  subasta: { consultable: boolean } | null
 }
 
-// La cabecera de la ficha, arriba de la columna izquierda, con lo que la persona puede hacer desde ahí: «Editar» y el «⋯» con la lista de siempre (publicar en la
-// web, apagado y con el motivo si no tiene el permiso, y, separada, enviar a la papelera). «Ver en logística» va en el bloque «Fase y qué falta».
+// La cabecera de la ficha, arriba de la columna izquierda, con lo que la persona puede hacer desde ahí: «Editar» y el «⋯» con la lista única (la misma de
+// la fila y la tarjeta: «Cotizar vehículo» primero; publicar en la web, apagado y con el motivo si no tiene el permiso; y, separada, enviar a la papelera). «Ver en logística» va en el bloque «Fase y qué falta».
 export function Encabezado(props: Props) {
   const { vehiculo, origen, fase, previa, publicar, editable, papelera, paraActividad, avisos } =
     props
@@ -57,7 +65,13 @@ export function Encabezado(props: Props) {
             vehiculo={vehiculo}
             publicar={publicar}
             papelera={papelera}
+            editable={editable}
+            editaEnElOrigen={props.editaEnElOrigen}
+            paraCotizar={
+              props.paraCotizar === null ? null : rutaParaCotizar(props.paraCotizar, vehiculo.id)
+            }
             paraActividad={paraActividad}
+            subasta={props.subasta}
             avisos={avisos}
           />
         </>

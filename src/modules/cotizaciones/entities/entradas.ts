@@ -72,7 +72,7 @@ export type IndiceDeHoja = {
   variante: VarianteDeHoja | null
   // Clave de una opción de la variante → su etiqueta.
   opciones: ReadonlyMap<string, string>
-  // Las claves de los modos de tipo de cambio que declara el diseño y el primero, con el que abre la hoja.
+  // Las claves de los modos de tipo de cambio que declara el diseño y el que abre una cotización nueva (el modo por defecto o el primero).
   modos: ReadonlySet<string>
   modoInicial: string | null
 }
@@ -86,6 +86,7 @@ export function entradasIniciales(indice: IndiceDeHoja): Entradas {
 export function indiceDeHoja(
   secciones: readonly SeccionDeHoja[],
   modos: readonly { clave: string }[] = [],
+  modoPorDefecto: string | null = null,
 ): IndiceDeHoja {
   const celdas = new Map<string, CeldaDeHoja>()
   const lados = new Map<string, LadoDeCelda>()
@@ -121,7 +122,7 @@ export function indiceDeHoja(
     variante,
     opciones,
     modos: new Set(modos.map((m) => m.clave)),
-    modoInicial: modoInicial({ modos }),
+    modoInicial: modoInicial({ modos, modoPorDefecto }),
   }
 }
 

@@ -16,6 +16,22 @@ export { MAXIMO_DE_PAGINA_DE_VEHICULOS } from './entities/vehiculo'
 export { fuenteDelInventario, type FuenteDelInventario } from './entities/fuente-del-inventario'
 // Un `/vehiculos?vehiculo=<id>` viejo (la lista ya no tiene resumen): a dónde redirige, en la ficha.
 export { destinoDelEnlaceViejo } from './entities/enlace-viejo-del-resumen'
+// Un `/vehiculos?panel=vitrina-rapida&para=<id>` viejo (el panel chico de publicar ya no existe): a dónde redirige, al panel completo de la vitrina.
+export { destinoDeLaVitrinaRapida } from './entities/enlace-viejo-de-la-vitrina-rapida'
+// Los paneles del «⋯» del vehículo (T336): sus claves de la URL, lo que el servidor lee al abrirse y la plantilla de las rutas que arma `src/app`
+// («Ver actividad» de cada fila).
+export { PANEL_ACTUALIZAR_LOS_DATOS, PANEL_DE_IMAGENES } from './features/acciones/claves'
+export { PANEL_DE_VITRINA } from './features/vitrina/claves'
+export { datosDelPanelDeImagenes } from './features/fotos/lecturas'
+export { MARCADOR_DE_VEHICULO } from './entities/ruta-por-vehiculo'
+// «Cotizar vehículo» de la ficha: la hoja con este vehículo (la página arma la de su origen con `cotizaciones`).
+export { rutaParaCotizar, type ParaCotizar } from './entities/ruta-para-cotizar'
+export type {
+  DatosDelPanelDeImagenes,
+  DatosDelPanelDeVitrina,
+} from './entities/paneles-de-la-lista'
+// Con qué se vuelve a preguntar a apibara por un vehículo (enlace, lote o VIN); null = no se puede («Actualizar los datos» apagada).
+export { entradaDeRefresco } from './entities/subasta'
 export type { Vehiculo } from './entities/vehiculo'
 // La zona del patio de un vehículo de subasta (de sus atributos): la hora del patio en el texto para compartir una cotización
 export { zonaDelPatioDe } from './entities/zona-del-patio'
@@ -55,7 +71,11 @@ export { editablesDe, eliminablesDe, leadsVisiblesDe } from './features/permisos
 export { FILTRO_SITUACION, condicionesDe, esquemaDeFiltros } from './entities/filtros'
 
 // La vitrina: qué se ve en la web pública y quién publica. Las dos lecturas no tumban la pantalla
-export { vistaPreviaDe, vitrinaDelOrigen } from './features/vitrina/lecturas'
+export {
+  datosDelPanelDeVitrina,
+  vistaPreviaDe,
+  vitrinaDelOrigen,
+} from './features/vitrina/lecturas'
 export {
   permisoDeVitrina,
   type PermisoDeVitrina,

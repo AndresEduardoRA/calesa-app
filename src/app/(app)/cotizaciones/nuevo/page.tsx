@@ -263,7 +263,8 @@ async function HojaDelOrigen({
   const vehiculoUsado = vehiculoSoltado ? null : vehiculo
   const elegido = vehiculoSoltado ? null : leido
   const paraElegir = paraElegirDe(apertura.hoja, elegido, layout)
-  const { obligatorios, elecciones } = reglasDeLaHoja(sesion.permisos, origen.id)
+  const elegidos = { vehiculo: vehiculoUsado, lead: leadUsado }
+  const { obligatorios, elecciones, pasos } = reglasDeLaHoja(sesion.permisos, origen.id, elegidos)
   return (
     <>
       {pestanas}
@@ -293,6 +294,7 @@ async function HojaDelOrigen({
             personaId={sesion.usuarioId}
             // La celda sin valor por un dato que quien mira elige en el panel dice dónde se elige (4.14-2c3).
             seEligen={camposQueSeEligen(paraElegir)}
+            pasos={pasos}
           />
         </ConProveedorDeLaHoja>
       </ConElTitulo>

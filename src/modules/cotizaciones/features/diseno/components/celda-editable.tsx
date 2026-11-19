@@ -20,6 +20,7 @@ import {
   type ErrorDelAspecto,
 } from './aspecto'
 import { CamposDeLaAyuda } from './campos-de-la-ayuda'
+import type { AccionesDeLosEnlaces } from './campos-de-los-enlaces'
 import { TituloConAsa } from './orden'
 import { SelectorDeNivel } from './selector-de-nivel'
 
@@ -40,6 +41,7 @@ type Props = {
   alPonerAspecto: (cambios: CambioDeAspectoDeItem) => void
   alPonerNiveles: (cambios: CambioDeNiveles) => void
   alPonerAyuda: (ayuda: AyudaDeCelda | null) => void
+  enlaces: AccionesDeLosEnlaces
 }
 
 // Una celda de la sección: su asa, su etiqueta, el ancho (de 12 columnas a 1; un ancho guardado con nombre se muestra por su número), quién la ve y quién la
@@ -58,6 +60,7 @@ export function CeldaEditable({
   alPonerAspecto,
   alPonerNiveles,
   alPonerAyuda,
+  enlaces,
 }: Props) {
   const base = `${seccion.id}__${celda.nodo}`
   const admite = celdaAdmiteNivel(celda, nodos)
@@ -111,6 +114,7 @@ export function CeldaEditable({
         tablas={tablas}
         ocupado={ocupado}
         alPonerAyuda={alPonerAyuda}
+        enlaces={enlaces}
       />
       <CamposDelAspectoDelItem
         base={base}

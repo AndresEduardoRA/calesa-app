@@ -78,6 +78,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 
 - Dentro de una transacción `now()` no se mueve: la «esperada vieja» es la versión menos 1 µs, que guardar mueve la versión se prueba entre transacciones, y lo que debe moverse se deja en el pasado (`session_replication_role = replica`) con `ocurrido_en` explícitos y distintos.
 - Una función STABLE lee la foto de la sentencia que la llama: prueba su efecto con un ayudante `pg_temp` aparte.
+- Con `SOLO=<archivo de la lista fija>` el archivo corre sin la preparación de los anteriores (personas de `humo.sql`): falla con «cuenta bloqueada» o sin lo
+  sembrado. Un archivo de la lista fija se prueba con la corrida entera; uno de `areas/` arma lo suyo y sí corre solo.
 - PGlite ordena con colación C y la base real con ICU: escribe `collate "C"` explícito y prueba el orden con casos no ASCII, o la diferencia pasa sin verse.
 - PGlite no trae los privilegios por defecto de Supabase: un grant se prueba mirando la definición o en la base real.
 - Compara un valor que puede ser nulo con `is distinct from` o `is not true`: `= false` deja pasar el nulo y la prueba no cae.
@@ -279,6 +281,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - En un spec `serial` la primera caída deja las demás «did not run»: no las cuentes como verdes y corre por separado cada una.
 - Si un spec caído quedó en `/ingreso` (bajo carga o con el servidor recién levantado), es el inestable conocido del ingreso: repítelo solo antes de culpar al cambio.
 - Lo que depende de la hora (la marca de «ahora», un vencimiento) cambia el DOM según cuándo corre: un texto que la prueba busca exacto va en su propio elemento, y la prueba fija el reloj (`page.clock`) o no mira las filas que la hora puede tocar.
+- Si un e2e siembra fotos por SQL (`sembrarFotos()`) y después las edita, siembra también su fila en `vehiculos_imagenes_version`: sin versión, mover o fijar la portada no mandan nada y el clic pasa sin error.
 
 ## Vitest
 
@@ -326,6 +329,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - react-pdf no dibuja WebP ni SVG con `<style>`, clases, `use`, `mask`, `filter` o `<image>`: una imagen para el PDF llega en PNG o JPG.
 - Un dibujo que comparten el HTML, react-pdf y `next/og` va por posiciones absolutas desde una geometría pura: satori no tiene `grid` (ni `<table>`, que tampoco dibuja react-pdf) y todo `div` con más de un hijo lleva `display: flex`.
 - Una fuente de react-pdf que lee del disco y no se importa no la ve el trazado de archivos: cada ruta que la usa la suma a `outputFileTracingIncludes` de `next.config.ts`.
+- Un espejo de una regex entre JS y Postgres va en ASCII (`[!-~]`), sin `\S` ni la bandera `u`: con Unicode las dos clases no coinciden (la URL de un enlace de la ayuda, `URL_DE_ENLACE`).
 
 ### vehiculos
 

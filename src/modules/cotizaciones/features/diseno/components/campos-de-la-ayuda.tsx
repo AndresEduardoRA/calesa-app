@@ -4,6 +4,7 @@ import { Campo } from '@/shared/ui/campo'
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
 import type { CeldaDeDiseno } from '../../../entities/diseno'
 import { MAXIMO_DE_LA_AYUDA, type AyudaDeCelda } from '../../../entities/diseno/edicion-de-items'
+import { CamposDeLosEnlaces, type AccionesDeLosEnlaces } from './campos-de-los-enlaces'
 
 type Props = {
   base: string
@@ -12,10 +13,11 @@ type Props = {
   tablas: readonly string[]
   ocupado: boolean
   alPonerAyuda: (ayuda: AyudaDeCelda | null) => void
+  enlaces: AccionesDeLosEnlaces
 }
 
-// La ayuda de una celda: una tabla de referencia que se abre o un texto, nunca las dos. Escribir una quita la otra.
-export function CamposDeLaAyuda({ base, ayuda, tablas, ocupado, alPonerAyuda }: Props) {
+// La ayuda de una celda: una tabla de referencia que se abre o un texto (con hasta 5 enlaces), nunca las dos. Escribir una quita la otra.
+export function CamposDeLaAyuda({ base, ayuda, tablas, ocupado, alPonerAyuda, enlaces }: Props) {
   const tabla = ayuda !== undefined && 'tabla' in ayuda ? ayuda.tabla : ''
   const texto = ayuda !== undefined && 'texto' in ayuda ? ayuda.texto : ''
   const opciones = [
@@ -46,6 +48,13 @@ export function CamposDeLaAyuda({ base, ayuda, tablas, ocupado, alPonerAyuda }: 
         onChange={(evento) => {
           alPonerAyuda({ texto: evento.target.value })
         }}
+      />
+      <CamposDeLosEnlaces
+        base={base}
+        enlaces={ayuda !== undefined && 'texto' in ayuda ? (ayuda.enlaces ?? []) : []}
+        hayTexto={texto.trim() !== ''}
+        ocupado={ocupado}
+        acciones={enlaces}
       />
     </div>
   )
