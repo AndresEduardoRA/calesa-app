@@ -1,14 +1,17 @@
 import type { Metadata } from 'next'
-import { CLAVE_DE_VEHICULO, origenesParaCotizar, rutaDeLaHoja } from '@/modules/cotizaciones'
+import { rutaDeActividadDe } from '@/modules/actividad'
 import { getAjustes, getPoliticaDeLimpieza, integracionActiva } from '@/modules/empresa'
 import { leerVistas, puede, requerirSesion } from '@/modules/equipo'
 import { leerFasesDeOrigen } from '@/modules/flujos'
-import { getOrigenes, leerLayout, type OrigenResumen } from '@/modules/origenes'
+import { getOrigenes, leerLayout } from '@/modules/origenes'
 import {
   MAXIMO_DE_PAGINA_DE_VEHICULOS,
   buscarVehiculos,
   condicionesDe,
+  MARCADOR_DE_VEHICULO,
+  destinoDeLaVitrinaRapida,
   destinoDelEnlaceViejo,
+  entradaDeRefresco,
   editablesDe,
   eliminablesDe,
   alcanceDeAvisos,
@@ -24,6 +27,7 @@ import {
   puedeAbrirLaPapelera,
   sinResolverDe,
   vitrinaDelOrigen,
+  type Vehiculo,
 } from '@/modules/vehiculos'
 import { ListadoDeVehiculos } from '@/modules/vehiculos/pantallas/listado'
 import { datosO } from '@/shared/lib/errores'
@@ -35,14 +39,30 @@ import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { aprobadasDeLaPagina } from './aprobadas'
 import { vehiculoEnEdicion } from './edicion'
+import { panelesDeLaUrl } from './paneles'
+import { paraCotizarDe } from './para-cotizar'
 
 export const metadata: Metadata = { title: 'Vehículos' }
 
-// «Cotizar vehículo» del «⋯» de la fila: la hoja de cotizar de este origen si la persona tiene las dos claves y el origen está activo; si no, la línea no está (la base vuelve a exigirlas).
-function paraCotizarDe(permisos: Permisos, origen: OrigenResumen) {
-  return origenesParaCotizar(permisos, [origen]).length === 1
-    ? { ruta: rutaDeLaHoja({ origen: origen.id, lead: null }), claveDelVehiculo: CLAVE_DE_VEHICULO }
-    : null
+// Lo que el «⋯» de cada fila suma a lo de la página: si edita en el origen (lo que no puede editar se ve apagado); «Ver actividad», con `actividad.ver`,
+// como una plantilla con `MARCADOR_DE_VEHICULO` (cada fila pone su id; `vehiculos` no conoce `actividad`); y, en un origen de subasta con apibara
+// encendida (`filas`), qué se puede consultar para «Actualizar los datos».
+function delMenu(permisos: Permisos, origenId: string, filas: readonly Vehiculo[] | null) {
+  return {
+    editaEnElOrigen: puede(permisos, 'vehiculos.editar', origenId),
+    paraActividad: puede(permisos, 'actividad.ver')
+      ? rutaDeActividadDe('vehiculos', MARCADOR_DE_VEHICULO)
+      : null,
+    subasta:
+      filas === null
+        ? null
+        : {
+            consultables: filas.flatMap((fila) =>
+              entradaDeRefresco(fila) === null ? [] : [fila.id],
+            ),
+            puedeConfigurar: puede(permisos, 'empresa.ajustes.gestionar'),
+          },
+  }
 }
 
 // Un enlace viejo al resumen (`?vehiculo=<id>`, con su `panel`, `visor`, `foto`, `pestana` y `editar`): la lista ya no tiene resumen, así que va a la
@@ -58,6 +78,11 @@ function redirigirElEnlaceViejo(parametros: Awaited<PageProps<'/vehiculos'>['sea
   })
   if (destino) {
     redirigir(destino)
+  }
+  // El panel chico de publicar ya no existe: su enlace abre el panel completo de la vitrina, con el resto de la consulta.
+  const vitrina = destinoDeLaVitrinaRapida(parametros)
+  if (vitrina) {
+    redirigir(vitrina)
   }
 }
 
@@ -82,6 +107,26 @@ async function deLaPagina(
   ])
   const leadsVisibles = await leadsVisiblesDe(sesion, filas, eliminables)
   return { editables, eliminables, leadsVisibles, aprobadas }
+}
+
+// Los paneles que nombra la URL, leídos sólo si la nombra: la edición (`?editar=`) y los del «⋯» (`?panel=imagenes|vitrina&para=`); y si se publica en
+// este origen (sin eso la vitrina no se lee ni se abre).
+async function panelesDeLaPagina(
+  parametros: Record<string, string | string[] | undefined>,
+  sesion: Awaited<ReturnType<typeof requerirSesion>>,
+  origen: { id: string; nombre: string },
+  conSubasta: boolean,
+) {
+  const publicar = permisoDeVitrina(sesion.permisos, origen)
+  const [enEdicion, paneles] = await Promise.all([
+    vehiculoEnEdicion(parametros, sesion, origen.id),
+    panelesDeLaUrl(parametros, sesion, {
+      id: origen.id,
+      conSubasta,
+      publica: publicar.estado === 'habilitado',
+    }),
+  ])
+  return { enEdicion, publicar, ...paneles }
 }
 
 // De a cuántos: lo que pide la URL, si no lo que eligió la persona.
@@ -135,7 +180,7 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
     ...(limpiezaActiva ? { limpieza: { activa: true } } : {}),
     conSubasta: deSubasta,
   })
-  const [leida, enEdicion, sinResolver] = await Promise.all([
+  const [leida, paneles, sinResolver] = await Promise.all([
     buscarVehiculos({
       fuente: fuenteDelInventario(sesion.permisos, origen.id),
       origenId: origen.id,
@@ -147,7 +192,7 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
       cursor: leerCursor(unParametro(parametros[CLAVE_DE_CURSOR])),
       tamano,
     }),
-    vehiculoEnEdicion(parametros, sesion, origen.id),
+    panelesDeLaPagina(parametros, sesion, origen, deSubasta && apibaraActiva),
     deSubasta ? sinResolverDe(origen.id) : Promise.resolve(null),
   ])
   const pagina = datosO(leida)
@@ -173,11 +218,11 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
       alcance={alcanceDeAvisos(sesion.permisos, origen.id)}
       verPapelera={puedeAbrirLaPapelera(sesion.permisos)}
       aprobadas={aprobadas}
-      publicar={permisoDeVitrina(sesion.permisos, origen)}
       paraCotizar={paraCotizarDe(sesion.permisos, origen)}
+      {...delMenu(sesion.permisos, origen.id, deSubasta && apibaraActiva ? pagina.filas : null)}
+      {...paneles}
       vistaPreferida={sesion.preferencias.vistaDeVehiculos}
       sinResolver={sinResolver}
-      enEdicion={enEdicion}
       apibara={{
         activa: apibaraActiva,
         puedeConfigurar: puede(sesion.permisos, 'empresa.ajustes.gestionar'),

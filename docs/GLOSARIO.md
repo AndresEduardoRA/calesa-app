@@ -256,7 +256,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   «atrás» devuelve el foco a quien lo abrió (desde un menú, al botón del menú).
 - **Más acciones («⋯»)** — `<MasAcciones>` / `accionesDeLead()`, `accionesDeVehiculo()`: menú de fila, tarjeta, resumen o ficha.
 - **Acción principal del «⋯»** — `principal` de `AccionDeMenu` (`@/shared/ui/lista`), `ACCION_PRINCIPAL_DEL_LEAD`: la primera línea del «⋯», sola en su
-  bloque, en negrita y la primera que enfoca el teclado. Una por menú: «Cotizar lead» en el del lead (y la misma variante para el del vehículo).
+  bloque, en negrita y la primera que enfoca el teclado. Una por menú: «Cotizar lead» en el del lead y «Cotizar vehículo» en el del vehículo
+  (`ACCION_PRINCIPAL_DEL_VEHICULO`).
 - **«Cotizar lead»** — `cotizar` de `accionesDeLead()`: la acción principal del «⋯» del lead (fila, tarjeta de la lista, kanban y ficha): la hoja de cotizar con
   el lead elegido en el primer origen donde quien mira cotiza, con `returnTo` (`conVuelta()`) a donde estaba. Sin `cotizaciones.crear` en ningún origen, no está.
 - **«Editar lead»** — `editar` de `accionesDeLead()`, `edicionDelMenu()`: el panel de edición del lead (`?panel=editar-lead`; fuera de la ficha con `&para=<id>`)
@@ -824,6 +825,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Ruta de apibara** — `origenes_campos.clave_apibara`: dónde está un dato en la respuesta (`vehicle_specs.engine.raw`); una por origen.
 - **Datos nuevos de apibara** — `DatoNuevoDeApibara` / `origen_apibara_rutas_sin_campo()`: datos que la API trajo y aún no son campo.
 - **Refrescar** — `refrescarSubasta` / `vehiculo_subasta_refrescar()`: volver a preguntar a apibara; siempre actualiza fecha, estado y respuesta.
+- **Actualizar los datos** — `actualizar` de `accionesDeVehiculo()` / `<ActualizarLosDatos>`, `useActualizarLosDatos()` (`?panel=actualizar-datos`): la acción
+  del «⋯» del vehículo que vuelve a consultar la subasta en apibara con el mismo motor que «Refrescar» (pide confirmar: gasta cuota) y trae las fotos de esa
+  respuesta que faltan. Sólo en un origen de subasta con apibara encendida.
+- **Editar imágenes** — `imagenes` de `accionesDeVehiculo()` / `<PanelDeImagenes>` (`?panel=imagenes`): la acción del «⋯» del vehículo que abre en su propio
+  drawer lo que hace el bloque «Fotos» de la ficha.
 - **Línea pegada** — `Linea` / `lineasDePegado()`: renglón pegado para alta desde apibara (enlace Copart/IAAI, VIN o lote); hasta 20.
 - **Fotos de la subasta** — `fotosDeSubasta()` / `<BotonTraerFotos>`: las primeras 24 imágenes de la respuesta (la primera, portada).
 - **Cuota de apibara** — `UsoDeApibara` / `<UsoDeApibara>`: consultas hechas y restantes en el período; agotada (429), la API calla hasta que

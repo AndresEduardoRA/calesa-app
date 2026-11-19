@@ -1,31 +1,48 @@
 // El «⋯» de un vehículo, dicho una sola vez: qué acciones tiene, en qué orden y cuáles se ven. La fila del inventario, la tarjeta y la ficha
 // dibujan esta lista (`features/acciones/components/menu-de-vehiculo.tsx`); ninguna escribe la suya. Es la de los leads
-// (`leads/entities/acciones-de-lead.ts`) con lo que ya existe de un vehículo: lo que se hace seguido arriba, lo destructivo al final y separado.
-// Lo que una persona no puede hacer no aparece (los permisos no cambian: salen de `editablesDe()`, `permisoDeVitrina()` y `permisoDePapelera()`).
+// (`leads/entities/acciones-de-lead.ts`): la acción principal sola arriba (cotizar), lo que se hace con el vehículo, «Ver actividad» y lo
+// destructivo al final y separado. Cuándo se ofrece cada una lo dice `ofertas-del-menu-de-vehiculo.ts`.
 
-export type ClaveDeAccionDeVehiculo = 'editar' | 'cotizar' | 'publicar' | 'actividad' | 'papelera'
+export type ClaveDeAccionDeVehiculo =
+  'cotizar' | 'editar' | 'imagenes' | 'publicar' | 'actualizar' | 'actividad' | 'papelera'
 
 export const ETIQUETA_DE_ACCION_DE_VEHICULO: Readonly<Record<ClaveDeAccionDeVehiculo, string>> = {
-  editar: 'Editar',
-  // Lleva a la hoja de cotizar con este vehículo y su origen (`rutaParaCotizar()`): sólo en el «⋯» de la fila y la tarjeta, si quien mira cotiza
-  // en ese origen.
+  // Lleva a la hoja de cotizar con este vehículo y su origen (`rutaParaCotizar()`), con `returnTo` = donde se estaba.
   cotizar: 'Cotizar vehículo',
-  // Abre el panel de la vitrina, con su vista previa: lleva «…».
+  editar: 'Editar',
+  // Abre su propio drawer (`?panel=imagenes`).
+  imagenes: 'Editar imágenes',
+  // Abre el panel de la vitrina, con su vista previa: lleva «…». Ya publicado, «Editar publicación…» (`etiquetaDeAccionDeVehiculo`).
   publicar: 'Publicar en la web…',
+  // Vuelve a consultar la subasta en apibara (pide confirmar: gasta cuota).
+  actualizar: 'Actualizar los datos',
   // Lleva a otra página (`/actividad` de este vehículo): sin «…».
   actividad: 'Ver actividad',
   papelera: 'Enviar a la papelera',
 }
 
-// El orden, en bloques: lo que se hace seguido arriba (editar, cotizar y publicar), «Ver actividad» (sólo la ficha, con `actividad.ver`) y lo
-// destructivo al final y separado (la papelera).
+// La acción principal del «⋯» (en negrita, con su icono y sola en su bloque).
+export const ACCION_PRINCIPAL_DEL_VEHICULO: ClaveDeAccionDeVehiculo = 'cotizar'
+
+// El texto de una acción según el vehículo: publicar dice «Editar publicación…» si ya está en la web.
+export function etiquetaDeAccionDeVehiculo(
+  clave: ClaveDeAccionDeVehiculo,
+  { publicado }: { publicado: boolean },
+): string {
+  return clave === 'publicar' && publicado
+    ? 'Editar publicación…'
+    : ETIQUETA_DE_ACCION_DE_VEHICULO[clave]
+}
+
+// El orden, en bloques: cotizar sola arriba; editar, sus imágenes, la web y la subasta; «Ver actividad»; y la papelera al final y separada.
 export const BLOQUES_DEL_MENU_DE_VEHICULO: readonly (readonly ClaveDeAccionDeVehiculo[])[] = [
-  ['editar', 'cotizar', 'publicar'],
+  ['cotizar'],
+  ['editar', 'imagenes', 'publicar', 'actualizar'],
   ['actividad'],
   ['papelera'],
 ]
 
-// Cómo se ofrece cada una: `oculta` no existe; `apagada` se ve y no se puede (dice por qué, debajo: la ficha de siempre); `habilitada` se puede.
+// Cómo se ofrece cada una: `oculta` no existe; `apagada` se ve y no se puede (dice por qué, debajo); `habilitada` se puede.
 export type OfertaDeAccion = 'oculta' | 'apagada' | 'habilitada'
 
 export type OfertasDelMenuDeVehiculo = Readonly<Record<ClaveDeAccionDeVehiculo, OfertaDeAccion>>

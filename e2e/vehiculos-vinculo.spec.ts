@@ -108,12 +108,18 @@ test('quien tiene al lead en su cartera ve el vínculo y edita el vehículo que 
   await page.goto(`/vehiculos/${vinculado}?seccion=fotos`)
   await expect(page.getByRole('button', { name: 'Elegir fotos' })).toBeVisible()
 
-  // En el inventario, «Editar» (en el «⋯») sólo en el vinculado: del otro no hay menú, no tiene nada que ofrecerle.
+  // En el inventario, «Editar» (en el «⋯») se puede sólo en el vinculado: en el otro se ve apagado con sus imágenes, con el motivo (edita lo propio y éste no lo es).
   await irAlOrigen(page, corea)
   await menuDeVehiculo(page, VINCULADO).click()
-  await expect(page.getByRole('menuitem', { name: 'Editar', exact: true })).toBeVisible()
+  await expect(page.getByRole('menuitem', { name: 'Editar', exact: true })).toBeEnabled()
   await page.keyboard.press('Escape')
-  await expect(menuDeVehiculo(page, SUELTO)).toHaveCount(0)
+  await expect(page.getByRole('menu')).toBeHidden()
+  await menuDeVehiculo(page, SUELTO).click()
+  await expect(page.getByRole('menuitem', { name: 'Editar', exact: true })).toBeDisabled()
+  await expect(page.getByRole('menuitem', { name: 'Editar imágenes', exact: true })).toBeDisabled()
+  await expect(
+    page.getByRole('menu').getByText('No tienes permiso para editar este vehículo.').first(),
+  ).toBeVisible()
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
