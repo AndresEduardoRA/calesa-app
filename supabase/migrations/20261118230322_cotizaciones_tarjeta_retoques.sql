@@ -1,7 +1,7 @@
 -- Los retoques de la tarjeta (`docs/COTIZADOR.md` › «Retoques de la tarjeta»): quien puede guardar una cotización cambia los textos y oculta filas de SU
--- tarjeta, sin tocar la plantilla del origen. Se guardan en la cotización (`cotizaciones.tarjeta_retoques`), los escribe sólo
--- `cotizacion_retocar_tarjeta()` y la base los valida contra lo que se dibuja hoy: la plantilla publicada del origen, convertida a cuadrícula y validada
--- contra la versión de la cotización (`cotizacion_tarjeta()`). La app los aplica al dibujar (`aplicarRetoques()`): vista previa, PDF, «Copiar texto», la
+-- tarjeta, sin tocar la plantilla del origen. Se guardan en la cotización (`cotizaciones.tarjeta_retoques`); los escribe `cotizacion_retocar_tarjeta()`,
+-- que los valida contra lo que se dibuja hoy (la plantilla publicada del origen, convertida a cuadrícula y validada contra la versión de la cotización:
+-- `cotizacion_tarjeta()`), y cotizar encima los copia tal cual (los que dejaron de aplicar se ignoran al dibujar). La app los aplica al dibujar (`aplicarRetoques()`): vista previa, PDF, «Copiar texto», la
 -- portada y compartir. `cotizacion_hoja_guardada()` no cambia: el grant de la columna la hace viajar en `cotizacion` (`_cotizacion_respuesta()` devuelve
 -- toda columna que `authenticated` lee), y también en lo que devuelven crear, guardar y cotizar encima.
 
@@ -9,7 +9,7 @@
 alter table public.cotizaciones add column tarjeta_retoques jsonb
   constraint cotizaciones_tarjeta_retoques_objeto check (tarjeta_retoques is null or jsonb_typeof(tarjeta_retoques) = 'object');
 comment on column public.cotizaciones.tarjeta_retoques is
-  'Los retoques de la tarjeta de esta cotización: {celdas?: {<id de celda de texto>: texto}, filas_ocultas?: [<id de fila>]}, validados contra la plantilla publicada del origen (validar_retoques). Nula = la tarjeta tal cual la plantilla. Sólo la escribe cotizacion_retocar_tarjeta(); cotizacion_encima() la copia.';
+  'Los retoques de la tarjeta de esta cotización: {celdas?: {<id de celda de texto>: texto}, filas_ocultas?: [<id de fila>]}. Nula = la tarjeta tal cual la plantilla. Los escribe cotizacion_retocar_tarjeta(), que los valida contra la plantilla publicada de hoy (validar_retoques); cotizacion_encima() los copia tal cual. Los que dejaron de aplicar (otra plantilla publicada) se ignoran al dibujar.';
 grant select (tarjeta_retoques) on public.cotizaciones to authenticated;
 
 -- 2. El validador, espejo de `validarRetoques()` (`entities/tarjeta/retoques/validar-retoques.ts`) con el juego `casos-de-retoques.json`. Invocador, sin leer
