@@ -4,6 +4,7 @@
 import type { Formula, FilaDeTabla } from '../formula'
 import type { Entrada } from '../motor-entrada'
 import type { Nodo } from '../nodos'
+import { UNIDAD_EN_CEROS, type UnidadDeEjemplo } from './unidad-de-ejemplo'
 
 // PostgREST no devuelve más de 1.000 filas por pedido (`max_rows`, `supabase/config.toml`): una página de menos es entera y una de exactamente 1.000 puede estar cortada.
 export const FILAS_POR_PAGINA = 1000
@@ -161,14 +162,19 @@ export function avisosDelTerreno(terreno: TerrenoDePrueba, nombreDelOrigen: stri
   })
 }
 
-// La entrada del motor con las cifras de prueba (P5): los datos en 0, las opciones apagadas, la variante por defecto, sin overrides y el vehículo vacío.
-export function entradaDePrueba(terreno: TerrenoDePrueba): Entrada {
+// La entrada del motor con las cifras de prueba (P5): sin unidad, los datos en 0, las opciones apagadas, la variante por defecto, sin overrides y el vehículo vacío.
+// Con la unidad de ejemplo de la planilla, lo que se tipeó en ella; quien llama ya la pasó por `entradaDeLaUnidad()` (lo que la fórmula ya no tiene haría lanzar al motor).
+export function entradaDePrueba(
+  terreno: TerrenoDePrueba,
+  unidad: UnidadDeEjemplo = UNIDAD_EN_CEROS,
+): Entrada {
   return {
-    inputs: {},
-    banderas: {},
+    inputs: { ...unidad.inputs },
+    banderas: { ...unidad.banderas },
     tipos_cambio: terreno.tipos_cambio,
-    vehiculo: {},
+    vehiculo: { ...unidad.vehiculo },
     tablas: terreno.tablas,
+    ...(unidad.variante === undefined ? {} : { variante: unidad.variante }),
     overrides: {},
   }
 }
