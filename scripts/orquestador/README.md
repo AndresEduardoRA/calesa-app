@@ -314,7 +314,9 @@ Si el servicio no encuentra `claude`, `pnpm` o `node`, agrega sus rutas a `PATH_
   toca: lo dice una vez en el log y `plan` lo muestra en una línea. Sin red, lo reintenta en la vuelta siguiente.
 - **Publica** con `publicar.sh --sin-esperar`: el PR queda con auto-merge y el carril se suelta mientras corre el CI.
 - **Vigila** el PR cada minuto: integrado → borra worktree y rama. CI rojo o choque con main → una sesión de arreglo con el final del
-  log de cada job caído, no el del agregador «Listo» (desde el 3.er intento, con el nivel `NIVEL_ARREGLAR_DIFICIL`). Rama atrasada → la
+  log de cada job caído, no el del agregador «Listo» (desde el 3.er intento, con el nivel `NIVEL_ARREGLAR_DIFICIL`). Un job que no es
+  un bloque de e2e (lint, tipos, pruebas, base, el build) caído sin la firma de la máquina no espera a «Listo»: la sesión empieza en
+  cuanto cae (`cayo_lo_del_pr`), sin los ~20 min de los e2e. Rama atrasada → la
   pone al día (merge, nunca fuerza). Un choque con main lo causa otra tarea: gasta un intento de `MAX_CHOQUES`, no de `MAX_ARREGLOS`.
   - **Sin sesión** cuando no pide criterio (`sin-sesion.sh`): si todo lo caído es ajeno al PR (bloques de e2e en specs que el PR no
     toca, o un log con la firma de la máquina del CI: Docker, la red, el runner), relanza lo caído hasta `REINTENTOS_CI_POR_PUNTA`
