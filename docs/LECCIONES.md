@@ -315,6 +315,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - En un hook, busca el subcomando saltando las opciones globales (`pnpm -C x up`, `pnpm --filter web …`): mirar el primer argumento deja pasar la orden con una opción delante.
 - Con dos cuentas en `gh`, no cambies la activa: pide el token de la dueña del repo por llamada (`GH_TOKEN=$(gh auth token --user <dueña>)`), como hace `scripts/flujo/publicar.sh`.
 - `gh pr merge --auto` sin protección en `main` integra en el acto, antes del CI: el auto-merge sólo espera lo que la rama exige («Listo · todo en verde»).
+- Pide los archivos de un PR con la API paginada (`gh api --paginate repos/{owner}/{repo}/pulls/<n>/files?per_page=100`): `gh pr view --json files` corta en 100 y lo que queda afuera (una migración) no se ve.
 - La cuenta de líneas de `max-lines` (300) vale también para un `.test.ts`: una prueba nueva que no cabe va en su propio archivo.
 - `supabase db reset --linked` (CLI 2.120) no siembra aunque `[db.seed]` esté encendido: resetea con `--no-seed` y aplica cada semilla con
   `db query --linked -f`, cortando si una falla (`scripts/demo/resetear.sh`); sin el seed no hay rol dueño y la primera cuenta nace sin permisos.

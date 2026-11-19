@@ -36,7 +36,7 @@ migraciones_tras_main() { return 1; }
 publicar_entrada() { cp "$1" "$G/publicada.md"; PUBLICADA=T900; }
 ghr() {
   case "$*" in
-    "pr view"*) cat "$G/files" ;;
+    "api --paginate repos/{owner}/{repo}/pulls/"*) cat "$G/files" ;;
     "api repos/{owner}/{repo}/compare/"*) cat "$G/atras" ;;
     "pr merge"*) echo "$*" >>"$G/merge" ;;
     "api -X PUT"*) echo "$*" >>"$G/put" ;;

@@ -19,8 +19,8 @@ export function nuevaRaiz() {
   return raiz
 }
 
-// Corre `cuerpo` con las funciones del orquestador que usa sin-sesion.sh. `ghr` responde: `pr view` con gh/files, `run view` con
-// gh/log-<run> y `run rerun` anota en gh/rerun.
+// Corre `cuerpo` con las funciones del orquestador que usa sin-sesion.sh. `ghr` responde: `api --paginate` (los archivos del PR) con
+// gh/files, `run view` con gh/log-<run> y `run rerun` anota en gh/rerun.
 export function correr(raiz: string, cuerpo: string) {
   const preludio = `
 set -uo pipefail
@@ -33,7 +33,7 @@ campo() { sed -n "s/^$2: *//p" "$1" | head -n 1; }
 spec_de() { echo "$COLA/$1.md"; }
 ghr() {
   case "$1 $2" in
-    "pr view") cat "$G/files" ;;
+    "api --paginate") cat "$G/files" ;;
     "run view") if [ "$3" = --job ]; then cat "$G/log-job-$4" 2>/dev/null; else cat "$G/log-$3" 2>/dev/null; fi ;;
     "run rerun") echo "$3" >>"$G/rerun" ;;
   esac

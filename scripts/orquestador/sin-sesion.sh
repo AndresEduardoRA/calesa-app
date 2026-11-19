@@ -74,7 +74,7 @@ reintentar_ci_ajeno() {
       que="$que, $nombre (la máquina del CI)"
     elif grep -qE "$ES_JOB_DE_E2E" <<<"$nombre"; then
       # Un spec caído que el PR toca es del PR: nada de reintentar.
-      [ -n "$propios" ] || propios=$(ghr pr view "$pr" --json files --jq '.files[].path' 2>/dev/null) || return 1
+      [ -n "$propios" ] || propios=$(ghr api --paginate "repos/{owner}/{repo}/pulls/$pr/files?per_page=100" --jq '.[].filename' 2>/dev/null) || return 1
       grep -oE 'e2e/[A-Za-z0-9_./-]+\.spec\.ts' <<<"$log" | grep -qxF -f <(printf '%s\n' "$propios") && return 1
       que="$que, $nombre (e2e ajeno al PR)"
       e2e=1
