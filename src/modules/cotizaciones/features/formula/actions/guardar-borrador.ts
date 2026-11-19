@@ -22,7 +22,7 @@ export const guardarBorrador = actionClient
     }
     const hecho = await repositorioDeLaFormula.guardarBorrador(parsedInput)
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeCotizacion)
+      revalidatePath(RUTAS.configuracionDeCotizacion, 'layout')
     }
     return hecho
   })

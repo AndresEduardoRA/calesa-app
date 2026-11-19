@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import type { Permisos } from '@/shared/lib/permisos'
 import {
   autoresDe,
   borradorAtrasado,
@@ -9,7 +8,6 @@ import {
   estadoDesde,
   MAXIMA_VERSION,
   nombreDelAutor,
-  origenesParaConfigurar,
   paginaDeVersiones,
   versionDeOrigenPorLeer,
   versionesDesde,
@@ -194,29 +192,5 @@ describe('cursorDeIrA', () => {
         expect(resultado.error.mensaje).toBe('Escribe un número de versión.')
       }
     }
-  })
-})
-
-describe('origenesParaConfigurar', () => {
-  const origenes = [
-    { id: ID(1), activo: true },
-    { id: ID(2), activo: false },
-    { id: ID(3), activo: true },
-  ]
-
-  it('los de la clave, en su orden y también los inactivos', () => {
-    const permisos: Permisos = [
-      { clave: 'cotizaciones.configurar', origenId: ID(2), alcance: 'todos' },
-      { clave: 'cotizaciones.configurar', origenId: ID(3), alcance: 'propios' },
-      { clave: 'cotizaciones.ver', origenId: ID(1), alcance: 'todos' },
-    ]
-    expect(origenesParaConfigurar(permisos, origenes).map((o) => o.id)).toEqual([ID(2), ID(3)])
-  })
-
-  it('la clave en todos los orígenes, todos', () => {
-    const permisos: Permisos = [
-      { clave: 'cotizaciones.configurar', origenId: null, alcance: 'todos' },
-    ]
-    expect(origenesParaConfigurar(permisos, origenes)).toHaveLength(3)
   })
 })

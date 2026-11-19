@@ -3,7 +3,6 @@
 // `visibilidad`) nunca viaja: los esquemas son estrictos y una fila con una columna de más es un error de lectura, no una fila.
 import { z } from 'zod'
 import { fallo, ok, type Resultado } from '@/shared/lib/errores'
-import { puede, type Permisos } from '@/shared/lib/permisos'
 import { TAMANO_DE_VER_MAS } from '@/shared/lib/paginacion'
 
 // Las columnas de una fila de la lista y las del estado (la publicada y el borrador).
@@ -218,13 +217,4 @@ export function cursorDeIrA(texto: string): Resultado<number> {
   return leido.success
     ? ok(leido.data + 1)
     : fallo('validacion', leido.error.issues[0]?.message ?? 'Escribe un número de versión.')
-}
-
-// Los orígenes donde la persona configura la fórmula (`cotizaciones.configurar` de ese origen), en el orden del catálogo y también los inactivos: su fórmula se sigue
-// pudiendo mirar. Lo que protege es la base (la policy `formulas: leer` pide la misma clave).
-export function origenesParaConfigurar<O extends { id: string }>(
-  permisos: Permisos,
-  origenes: readonly O[],
-): O[] {
-  return origenes.filter((origen) => puede(permisos, 'cotizaciones.configurar', origen.id))
 }

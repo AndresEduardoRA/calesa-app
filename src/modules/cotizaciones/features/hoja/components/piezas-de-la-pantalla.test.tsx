@@ -44,14 +44,14 @@ describe('FormulaSinPublicar', () => {
       <FormulaSinPublicar
         origen="Oficina"
         puedeConfigurar
-        accion={<a href="/configuracion/cotizacion">Ir a la configuración de cotización</a>}
+        accion={<a href="#configurar">Ir a la configuración de cotización</a>}
       />,
     )
     expect(screen.getByText('Falta publicar la fórmula de Oficina')).toBeTruthy()
     expect(
       screen.getByText('Sin una fórmula publicada no se puede cotizar en este origen.'),
     ).toBeTruthy()
-    expect(screen.getByRole('link').getAttribute('href')).toBe('/configuracion/cotizacion')
+    expect(screen.getByRole('link').getAttribute('href')).toBe('#configurar')
   })
 
   it('sin la acción no hay enlace: el núcleo no dibuja uno propio', () => {

@@ -1,4 +1,4 @@
-// Los textos de los selects del aspecto (docs/UX.md › «Cotización: diseño (estados propios)»).
+// Los textos de los selects del aspecto (docs/UX.md › «Cotización: hoja (estados propios)»).
 import {
   COLUMNAS_DE_LA_REJILLA,
   DENSIDADES_DE_SECCION,

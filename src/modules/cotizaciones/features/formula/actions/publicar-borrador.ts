@@ -20,7 +20,7 @@ export const publicarBorrador = actionClient
     }
     const hecho = await repositorioDeLaFormula.publicar(parsedInput)
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeCotizacion)
+      revalidatePath(RUTAS.configuracionDeCotizacion, 'layout')
     }
     return hecho
   })

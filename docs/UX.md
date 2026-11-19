@@ -448,13 +448,33 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   últimas con `leads.configurar`. La que no puedes abrir va apagada en el menú con «Te falta el permiso «…».» y su URL abre la primera
   habilitada. Un `?seccion=` viejo va a su sub-ruta con todos los demás parámetros (`?panel=`, `?campo=`…), o a la primera sin ellos si
   apunta a una apagada. Sin ninguno de los dos permisos, «No tienes permiso» y la sección no está en el menú ni en el inicio.
-- **Cotización (config)** — `/configuracion/cotizacion` (`equipo.roles.ver|gestionar` o `cotizaciones.configurar` en algún origen):
-  `?seccion=niveles|formula|tarjeta|diseno|tonos|tablas|ajustes`, cada pestaña con sus permisos, Niveles primero y Ajustes al final.
-  «Fórmula» con `?origen=` (los orígenes con la clave, también los inactivos), `?panel=publicar-formula`,
-  `?panel=revertir-formula&version=<id>`, `?panel=descartar-borrador` y `?panel=editar-formula` (el editor en texto). «Diseño» con
-  `?origen=`. «Colores» (`tonos`) con `?panel=nuevo-tono`, `editar-tono&tono=<id>` y `eliminar-tono&tono=<id>`. «Tarjeta» con `?origen=`,
-  `?panel=publicar-tarjeta` y `?panel=descartar-plantilla`. «Tablas» con `?origen=`, `?tabla=<id>` (el editor) y `?panel=publicar-tabla`.
-  Estados en las secciones «Cotización: …».
+- **Cotización (config)** — `/configuracion/cotizacion` (`equipo.roles.ver|gestionar` o `cotizaciones.configurar` en algún origen),
+  registrada en el menú de Configuración con dos grupos (`configuracion/cotizacion/seccion.ts`):
+  - **El inicio:** una tarjeta por origen donde la persona tiene `cotizaciones.configurar` (también los inactivos, con «Inactivo»; tope 100
+    con aviso) y la tarjeta «General». La de un origen: el punto de su color y el nombre (enlace a su «Fórmula»), «vN publicada» o «Sin
+    fórmula publicada», «Tarjeta publicada» o «Sin tarjeta», y lo que falta como enlaces a su pestaña («Falta publicar la fórmula»; con
+    fórmula, «Falta publicar la tarjeta»; un inactivo no muestra faltas) o «Nada pendiente». «General»: «Lo que vale para toda la
+    empresa.» y sus partes con su frase (Niveles apagada con su motivo para quien configura sin ver los roles). Sin orígenes con la clave,
+    «No configuras ningún origen.» y «General»; quien sólo ve los roles, sólo «General» con «Niveles».
+  - **Por origen** (`/configuracion/cotizacion/<origen>/formula|hoja|tarjeta|tablas`, `<origen>` = id; `cotizaciones.configurar` de ese
+    origen): «‹ Cotización», los chips «Origen» (todos los que configura, a la vista, con el punto de su color y «(inactivo)»; cambiar de
+    origen conserva la pestaña y suelta lo demás), las pestañas Fórmula · Hoja · Tarjeta · Tablas y el título con su frase. «Fórmula»
+    («Qué se calcula.»): `?panel=publicar-formula`, `revertir-formula&version=<id>`, `descartar-borrador`, `editar-formula`. «Hoja» («Cómo
+    se ve y se llena la cotización.», el diseño de la hoja): `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe
+    el cliente.»): `?panel=publicar-tarjeta|descartar-plantilla`, con la vista previa al costado desde `xl`. «Tablas» («Valores de
+    referencia: depreciación, transporte…»): `?tabla=<id>` (el editor) y `?panel=publicar-tabla`. `/<origen>` sola abre «Fórmula». Un
+    `<origen>` que no es un uuid, no existe o no es suyo abre la misma pestaña del primero que configura (sin error).
+  - **General** (`/configuracion/cotizacion/general/colores|niveles|vigencia`; `/general` abre la primera que abre): «Colores»
+    (`cotizaciones.configurar`; `?panel=nuevo-tono|editar-tono|eliminar-tono&tono=<id>`), «Niveles» (`equipo.roles.ver|gestionar`;
+    `?panel=nuevo-nivel|renombrar-nivel|eliminar-nivel&nivel=<id>`) y «Vigencia» (`cotizaciones.configurar`), con sus pestañas (sin barra si
+    sólo ve una).
+  - **Sin permiso** en una sub-ruta: la primera que abre (`primeraDeCotizacion()`: la misma pestaña del primer origen, Colores, Niveles);
+    sin nada, «No tienes permiso».
+  - **Los enlaces de antes** (`url-vieja.ts`): `?seccion=formula|diseno|tarjeta|tablas` → `/<origen>/formula|hoja|tarjeta|tablas` (el
+    `?origen=` suyo o el primero), `?seccion=tonos|colores` → `/general/colores`, `niveles` → `/general/niveles`, `ajustes` →
+    `/general/vigencia`, con todos los demás parámetros (`?panel=`, `?version=`, `?tabla=`, `?tono=`, `?nivel=`, `?vista=`). Sin `seccion`
+    y con otros parámetros, o con una desconocida, la primera de antes que abre; una que no abre, la primera sin parámetros.
+    Estados en las secciones «Cotización: …».
 - **Empresa** — `/configuracion/empresa` (`empresa.*`), cuatro sub-rutas en el menú de Configuración (`configuracion/empresa/seccion.ts`):
   «Datos de la empresa» (la índice, `/configuracion/empresa`: el formulario y los íconos), «Monedas y tipos de cambio» (`/monedas`: tipos de
   cambio, «Leyenda al compartir» y monedas; `?tc=`, `?moneda=`, crear en `?panel=`), «Integraciones» (`/integraciones`) y «Comprobantes»
@@ -1139,7 +1159,7 @@ y enfoca su título).
 
 ### Cotización: niveles de acceso (estados propios)
 
-Configuración › Cotización (`?seccion=niveles`). Hermana de «Tipos de seguimiento»; **un nivel retirado se deshace** y **el motivo de por
+Configuración › Cotización › General › Niveles (`/configuracion/cotizacion/general/niveles`). Hermana de «Tipos de seguimiento»; **un nivel retirado se deshace** y **el motivo de por
 qué no se elimina viene de la base**.
 
 - **Quién entra:** `equipo.roles.ver` o `equipo.roles.gestionar` (cada nivel es un permiso de la matriz de Roles); sin ninguno, «No tienes
@@ -1185,12 +1205,13 @@ en la cabecera.
 
 ### Cotización: fórmula (estados propios)
 
-Configuración › Cotización (`?seccion=formula&origen=<id>`): ver, publicar, revertir, descartar y editar la fórmula de un origen.
+Configuración › Cotización › un origen › Fórmula (`/configuracion/cotizacion/<origen>/formula`): ver, publicar, revertir, descartar y
+editar la fórmula de un origen.
 
-- **Quién entra:** `cotizaciones.configurar` en algún origen, aunque no tenga los permisos de los niveles (entonces «Fórmula» es la única
-  pestaña y `?seccion=niveles` la abre). La base vuelve a decidir: la policy `formulas: leer` sólo deja ver los orígenes con la clave.
-- **Origen:** los que tienen la clave, en el orden del catálogo, también los inactivos («(inactivo)»). Con más de uno, el selector escribe
-  `?origen=`; uno ajeno o inexistente abre el primero; cambiar de pestaña lo limpia. Sin ninguno, su vacío.
+- **Quién entra:** `cotizaciones.configurar` en ese origen, aunque no tenga los permisos de los niveles (entonces «Niveles» va apagada con su
+  motivo). La base vuelve a decidir: la policy `formulas: leer` sólo deja ver los orígenes con la clave.
+- **Origen:** los chips «Origen» muestran los que tienen la clave, en el orden del catálogo, también los inactivos («(inactivo)»); el abierto
+  va marcado (`aria-current`). Uno ajeno o inexistente en la URL abre la misma pestaña del primero; sin ninguno, la primera parte general.
 - **Arriba:** la publicada (versión, nota, quién y cuándo) o, sin ella, que no se puede cotizar en el origen; el borrador si hay (de quién,
   cuándo, nota, versión sobre la que empezó y, si se publicó otra después, que publicarlo dará conflicto).
 - **Versiones:** publicadas y archivadas de la más nueva (sin autor: «Alguien»), de a 20 hasta 500; en el tope, «Ir a la versión» (un
@@ -1233,11 +1254,10 @@ Configuración › Cotización (`?seccion=formula&origen=<id>`): ver, publicar, 
 
 ### Cotización: tarjeta (estados propios)
 
-Configuración › Cotización (`?seccion=tarjeta&origen=<id>`): edita el **borrador** de la plantilla de la tarjeta, lo publica con nota y lo
+Configuración › Cotización › un origen › Tarjeta (`/configuracion/cotizacion/<origen>/tarjeta`): edita el **borrador** de la plantilla de la tarjeta, lo publica con nota y lo
 descarta.
 
-- **Quién entra:** `cotizaciones.configurar` en algún origen; la pestaña va después de «Fórmula» (sin la clave, `?seccion=tarjeta` abre la
-  primera de las suyas). **Origen:** como en «Fórmula». Sin orígenes, su vacío; **sin fórmula publicada**, no hay editor: «Falta publicar
+- **Quién entra y origen:** como «Fórmula»; la pestaña va después de «Fórmula». **Sin fórmula publicada**, no hay editor: «Falta publicar
   la fórmula de <Origen>: la tarjeta se arma con sus grupos.» con «Ir a «Fórmula»».
 - **Arriba:** «Tarjeta de <Origen>» y de dónde nace (el borrador guardado, la versión publicada o los grupos de la fórmula) y, si hay
   publicada, su versión, fecha y nota.
@@ -1294,10 +1314,10 @@ tarjetas, el resumen y la ficha del vehículo). Lo abre toda persona que ve la c
 
 ### Cotización: tablas (estados propios)
 
-Configuración › Cotización (`?seccion=tablas&origen=<id>`): editar y publicar las filas de las tablas de referencia
+Configuración › Cotización › un origen › Tablas (`/configuracion/cotizacion/<origen>/tablas`): editar y publicar las filas de las tablas de referencia
 (`tabla_referencia_publicar()`).
 
-- **Quién entra y origen:** como «Fórmula»; el selector escribe `?origen=` y borra `?tabla=`.
+- **Quién entra y origen:** como «Fórmula»; cambiar de origen con los chips suelta `?tabla=`.
 - **Lista:** las tablas activas del origen y las compartidas, por clave: nombre como enlace a `?tabla=<id>`, clave, «Compartida» y
   «Tapada por la de <Origen>» (`<Badge>`) y «Versión N · <persona> · <cuándo>». Vacía: «<Origen> no tiene tablas de referencia.» y «Las
   tablas nuevas y sus columnas todavía no se crean desde aquí.». Tope 100 con aviso. Esqueleto y error de la ruta.
@@ -1320,28 +1340,28 @@ Configuración › Cotización (`?seccion=tablas&origen=<id>`): editar y publica
   cambios no vuelven); una celda rechazada, su mensaje con «Ir a la celda»; sin permiso (una compartida pide configurar cada origen que la
   usa) y lo demás, arriba del modal.
 
-### Cotización: ajustes (estados propios)
+### Cotización: vigencia (estados propios)
 
-Configuración › Cotización (`?seccion=ajustes`): la vigencia, una fila para todas las cotizaciones.
+Configuración › Cotización › General › Vigencia (`/configuracion/cotizacion/general/vigencia`): la vigencia, una fila para todas las cotizaciones.
 
-- **Quién:** la pestaña (la última) la ve quien tiene `cotizaciones.configurar` en algún origen; la cambia quien la tiene en todos (la
-  concesión sin origen). Sin eso, los campos apagados con su motivo arriba y sin «Guardar». La base lo vuelve a exigir en
+- **Quién:** la ve quien tiene `cotizaciones.configurar` en algún origen; la cambia quien la tiene en todos (la concesión sin origen). Sin
+  eso, el campo apagado con su motivo arriba y sin barra. La base lo vuelve a exigir en
   `empresa_guardar_ajustes_de_cotizacion()`.
-- **Formulario:** bloque «Vigencia» con «Vigencia (días)» (1 a 365; fuera de rango, el motivo junto al campo con el foco), y una línea: «Si una
+- **Formulario:** «Vigencia (días)» (1 a 365; fuera de rango, el motivo junto al campo con el foco), y una línea: «Si una
   cotización pide vehículo y lead se decide por rol y origen en «Roles y permisos».», con el enlace «Ir a Roles y permisos» para quien ve o gestiona
   los roles. Sin borrador. Esqueleto; si la lectura falla, el error de la ruta (nunca los de fábrica).
-- **Guardar:** «Guardando…» con los campos apagados; entró: aviso y el formulario se monta con lo guardado. Otra persona cambió la fila
+- **Guardar:** la barra de cambios sin guardar («Tienes cambios sin guardar» · «Descartar» · «Guardar») aparece al cambiar el campo; salir
+  con cambios pregunta. «Guardando…» con el campo apagado; entró: «Vigencia guardada» y el formulario se monta con lo guardado. Otra persona cambió la fila
   (aquí o en Empresa): el texto de la base con «Recargar» y lo tipeado queda; igual sin conexión o sin permiso.
 - **Dónde se nota:** la vigencia mueve «Vencida», «vence el», la tarjeta y el PDF de todas las cotizaciones, también las guardadas (se
   calcula al leer).
 
-### Cotización: diseño (estados propios)
+### Cotización: hoja (estados propios)
 
-Configuración › Cotización (`?seccion=diseno&origen=<id>`): secciones, celdas, ítems, cabecera y tarjeta del total de la hoja, su orden, su
+Configuración › Cotización › un origen › Hoja (`/configuracion/cotizacion/<origen>/hoja`, el diseño de la hoja): secciones, celdas, ítems, cabecera y tarjeta del total de la hoja, su orden, su
 aspecto en la rejilla de 12 y su vista previa.
 
-- **Quién entra:** `cotizaciones.configurar` en algún origen (la pestaña va después de «Fórmula»); sin ninguno, su vacío. Selector
-  «Origen» con 2 o más, como «Fórmula».
+- **Quién entra y origen:** como «Fórmula».
 - **Qué abre:** el borrador o, sin él, la publicada. Sin versión o sin diseño lo dice (aquí no se crea uno). Cargando,
   `EsqueletoFormulario`; una lectura que falla sube al «Reintentar» de la ruta.
 - **Secciones y celdas:** por sección, «Título» (≤ 80; vacío lo quita), «Dónde va» (Principal | Avanzado), «Quién la ve» y «Quién la
@@ -1389,12 +1409,13 @@ aspecto en la rejilla de 12 y su vista previa.
   doble. Con cifras de prueba (datos en 0; si la fórmula aún no calcula, se dibuja sin cifras). Dibuja el orden y el aspecto en vivo con la
   misma rejilla que la hoja. Es la de quien lo ve todo y sólo se ve: sin
   foco, sin acciones, sin tocar la URL de la hoja. Las secciones «Avanzado» no se dibujan y se dice cuántas. Diseño vacío: «No hay nada que
-  dibujar.» Su código se pide al abrirla (`diferido()`); un color que no llega deja la hoja sin colores.
+  dibujar.» Su código se pide al abrirla (`diferido()`); un color que no llega deja la hoja sin colores. Abierta y desde `xl`, va al costado
+  del editor, pegada arriba al desplazarse; cerrada, el botón queda en su lugar. Por debajo de `xl`, en línea.
 - **200 %:** la fila de campos de una celda va en columna bajo `@container` estrecho (el resto, `.claude/rules/ui.md`).
 
 ### Cotización: colores (estados propios)
 
-Configuración › Cotización › «Colores» (`?seccion=tonos`: la clave y las URL conservan el nombre técnico): el catálogo de colores de la
+Configuración › Cotización › General › Colores (`/configuracion/cotizacion/general/colores`; los paneles conservan el nombre técnico `tono`): el catálogo de colores de la
 empresa, que nombran los grupos de una fórmula y las secciones y la cabecera del diseño. Es de **toda la empresa**, no de un origen, y **se
 guarda al instante** (cada color es una escritura propia; no entra en el borrador del diseño).
 
