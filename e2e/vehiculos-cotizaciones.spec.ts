@@ -16,10 +16,10 @@ import { literal, sql } from './soporte/sql'
 // RLS de quien mira.
 
 // Presupuestos (`docs/RENDIMIENTO.md`): la primera respuesta, la de «De este vehículo» (`cotizaciones-de-este-vehiculo.spec.ts`: 5.250 B); los nodos de la lista con
-// 10 y con 100, con las casillas de «Comparar» (lo medido más un 5 %).
+// 10 y con 100, con las casillas de «Comparar»: medidos 191 y 1.901 en los dos proyectos, más un 5 %.
 const TOPE_DE_BYTES = 5_250
-const TOPE_DE_NODOS_CON_10 = 240
-const TOPE_DE_NODOS_CON_100 = 2_400
+const TOPE_DE_NODOS_CON_10 = 201
+const TOPE_DE_NODOS_CON_100 = 1_997
 
 let origen = { id: '', nombre: '' }
 let duena = ''
@@ -158,10 +158,9 @@ test('E2E la dueña: lejos del bloque no se lee nada; al saltar llegan 10 y «Ve
   await expect(filas(page)).toHaveCount(10)
   expect(lecturas).toHaveLength(1)
   const nodos = await lista(page).evaluate((e) => e.querySelectorAll('*').length + 1)
-  test.info().annotations.push({
-    type: 'medido',
-    description: `nodos con 10: ${String(nodos)}, bytes: ${String(bytes)}`,
-  })
+  const medido = `nodos con 10: ${String(nodos)}, bytes: ${String(bytes)}`
+  console.warn(`[cotizaciones de este vehículo] ${test.info().project.name}: ${medido}`)
+  test.info().annotations.push({ type: 'medido', description: medido })
   expect(nodos).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_10)
   expect(bytes).toBeLessThanOrEqual(TOPE_DE_BYTES)
 
@@ -199,10 +198,9 @@ test('E2E con 110: «Ver más» llega a 100, dice el tope y «Ver todas en Cotiz
   const nodos = await lista(page).evaluate((e) => e.querySelectorAll('*').length + 1)
   const primera = tamanos[0] ?? 0
   const decima = tamanos[9] ?? Number.POSITIVE_INFINITY
-  test.info().annotations.push({
-    type: 'medido',
-    description: `nodos con 100: ${String(nodos)}, bytes de la 1.ª: ${String(primera)}, de la 10.ª: ${String(decima)}`,
-  })
+  const medido = `nodos con 100: ${String(nodos)}, bytes de la 1.ª: ${String(primera)}, de la 10.ª: ${String(decima)}`
+  console.warn(`[cotizaciones de este vehículo] ${test.info().project.name}: ${medido}`)
+  test.info().annotations.push({ type: 'medido', description: medido })
   expect(nodos).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_100)
   expect(tamanos.length).toBeGreaterThanOrEqual(10)
   expect(decima).toBeLessThanOrEqual(primera * 1.05)

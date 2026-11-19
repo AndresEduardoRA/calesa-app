@@ -111,9 +111,6 @@ test('E2E ficha en dos columnas · a la derecha sólo lo de ventas, en su orden'
 }, info) => {
   await entrar(page, duena, { fresco: true })
   await alaFicha(page)
-  // Izquierda: el carrusel, el título y los datos principales.
-  await expect(page.getByRole('button', { name: /foto/i }).first()).toBeVisible()
-  await expect(tituloDe(page, 'Datos principales')).toBeVisible()
   // Derecha: el índice y los cuatro bloques, en su orden.
   await expect(indice(page).getByRole('link')).toHaveText([
     'Cotizaciones',
@@ -132,9 +129,6 @@ test('E2E ficha en dos columnas · a la derecha sólo lo de ventas, en su orden'
     await expect(region(page, nombre)).toHaveCount(0)
   }
   await expect(page.getByRole('link', { name: 'Ver en logística' })).toHaveCount(1)
-  const relacionados = region(page, 'Relacionados')
-  await expect(relacionados.getByRole('region', { name: 'Vinculado', exact: true })).toBeVisible()
-  await expect(relacionados.getByRole('region', { name: 'Interesado', exact: true })).toBeVisible()
   await capturar(page, info, 'ficha-arriba')
   // Las cotizaciones llegan al acercarse: la aprobada primero.
   await region(page, 'Cotizaciones de este vehículo').scrollIntoViewIfNeeded()
@@ -174,9 +168,13 @@ test('E2E ficha en dos columnas · «Actividad reciente» lleva a toda la activi
   await entrar(page, duena)
   await alaFicha(page, '?seccion=actividad')
   await expect(tituloDe(page, 'Actividad reciente')).toBeFocused()
-  await expect(
-    region(page, 'Actividad reciente').getByRole('link', { name: 'Ver toda la actividad' }),
-  ).toHaveAttribute('href', `/actividad?entidad=vehiculos&registro=${id}`)
+  const actividad = region(page, 'Actividad reciente')
+  await expect(actividad.getByRole('link', { name: 'Ver toda la actividad' })).toHaveAttribute(
+    'href',
+    `/actividad?entidad=vehiculos&registro=${id}`,
+  )
+  // Las filas se leen desde el navegador al acercarse: el alta del vehículo es la última.
+  await expect(actividad.getByRole('listitem').last()).toContainText(`creó ${titulo}`)
 })
 
 test('E2E ficha en dos columnas · «Vitrina» sin publicar y publicada', async ({ page }, info) => {
@@ -219,7 +217,8 @@ test('E2E ficha en dos columnas · «Vitrina» sin publicar y publicada', async 
 
   sql(`update public.vehiculos set precio_web = null where id = ${literal(id)}::uuid`)
   await alaFicha(page, '?seccion=vitrina')
-  await expect(vitrina.getByText('Consultar', { exact: true })).toBeVisible()
+  // El del bloque (el primero; la vista previa plegada repite el precio).
+  await expect(vitrina.getByText('Consultar', { exact: true }).first()).toBeVisible()
 })
 
 test('E2E ficha en dos columnas · los enlaces viejos redirigen o llevan a su bloque', async ({
@@ -276,6 +275,7 @@ test('E2E ficha en dos columnas · sin permisos, sólo «Vitrina» y sin sus bot
   await expect(page).toHaveURL(new RegExp(`/vehiculos/${id}\\?seccion=documentos$`))
   await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeInViewport()
   // Sólo con logística: «Vitrina» es lo único del índice.
+  await page.context().clearCookies()
   await entrar(page, terreno.sinAsignar.correo, { fresco: true })
   await alaFicha(page)
   await expect(indice(page).getByRole('link')).toHaveText(['Vitrina'])

@@ -102,13 +102,21 @@ test('dar de alta un vehículo en Corea, con los valores por defecto y los atajo
   await expect(panel).toBeHidden()
   await expect(vehiculo(page, 'Kia Seltos 2022')).toBeVisible()
 
-  // Su nombre lleva a su ficha: los datos por los grupos del layout y la fase de sólo lectura.
+  // Su nombre lleva a su ficha: la fase de sólo lectura y los datos por los grupos del layout.
   await aLaVista(page.getByRole('link', { name: 'Kia Seltos 2022', exact: true })).click()
   await expect(page.getByRole('heading', { name: 'Kia Seltos 2022', level: 1 })).toBeVisible()
   await expect(aLaVista(page.getByText('Sin fase'))).toBeVisible()
   await expect(aLaVista(page.getByText('KNDEU2AA5N7123456'))).toBeVisible()
-  await expect(aLaVista(page.getByText('Verde', { exact: true }))).toBeVisible()
-  await expect(aLaVista(page.getByText('Automática', { exact: true }))).toBeVisible()
+  // El resto de la ficha, en la ficha completa («Ver más» de «Datos principales»).
+  await page
+    .getByRole('region', { name: 'Datos principales' })
+    .getByRole('button', { name: 'Ver más' })
+    .click()
+  const completa = page.getByRole('dialog', { name: 'Kia Seltos 2022' })
+  await expect(completa.getByText('Verde', { exact: true })).toBeVisible()
+  await expect(completa.getByText('Automática', { exact: true })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(completa).toBeHidden()
   // Los bloques que existen, en el índice, y ninguno que lleve a lo que falta.
   await expect(
     page.getByRole('navigation', { name: 'Índice de la ficha' }).getByRole('link'),

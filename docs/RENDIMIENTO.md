@@ -277,7 +277,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   ≤ 5.250 B la primera respuesta y ≤ 65 nodos. «Cotizado (n)» es la misma consulta con `select('id')`, en paralelo con la hoja.
 - «Cotizaciones de este vehículo» de `/vehiculos/[id]`: «De este vehículo» (`cotizaciones_de_este_vehiculo`, de a `TAMANO_DE_ESTE_VEHICULO` = 10 hasta
   `TOPE_DE_ESTE_VEHICULO` = 100), al acercarse el bloque (nunca con el documento), código con el `diferido()` de la isla. `e2e/vehiculos-cotizaciones.spec.ts`:
-  ≤ 5.250 B la 1.ª respuesta, ≤ NODOS10 nodos con 10 y ≤ NODOS100 con 100, con las casillas; la 10.ª respuesta pesa lo que la 1.ª.
+  ≤ 5.250 B la 1.ª respuesta, ≤ 201 nodos con 10 y ≤ 1.997 con 100 (medidos 191 y 1.901 más un 5 %), con las casillas; la 10.ª respuesta pesa lo que la 1.ª.
 - **Comparar cotizaciones** (`/cotizaciones/comparar`): a lo sumo 3 `cotizacion_hoja_guardada()` (por `cotizaciones_pkey`) y una lectura de las marcas por
   PostgREST de ≤ 3 filas (`cotizaciones_pkey` con la aprobada por `cotizaciones_aprobadas_cotizacion_id_key`, `.limit(ids.length)`), todo en paralelo tras
   `<Suspense>`; sin `cotizacion_evaluar`. Ninguna lista que crezca: sin cursor, sin conteo, sin medición propia. Lo dibujado: ≤ 3 columnas × los nodos
@@ -611,18 +611,19 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   «Actualizar los datos» no pesan en frío. Abrir «Editar imágenes» o la vitrina (`?panel=…&para=<id>`, `shallow: false`) vuelve a pedir la página de la
   lista al servidor, como `?editar=`; la página lee sólo el panel nombrado (la galería ≤ 24 con la subasta en un origen de subasta, o el vehículo por pk y,
   si se abre, `vehiculo_vitrina_previa`). «Actualizar los datos» es una consulta a apibara por confirmación, nunca al abrir el menú.
-- `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido JSDESPUES en CHUNKS chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
-  «Cotizaciones de este vehículo» (la cáscara de la isla), la ficha completa (`?ver=ficha`, con `useAbiertoAlgunaVez`), la portada de la aprobada y
+- `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 501,9 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
+  «Cotizaciones de este vehículo» y «Actividad reciente» (las cáscaras de sus islas), la ficha completa (`?ver=ficha`, con `useAbiertoAlgunaVez`), la portada de la aprobada y
   «Compartir» van con `diferido()`; la tira es la del visor; «Vitrina» es de cliente y su vista previa ya viajaba con el panel. El documento de la ficha
-  aporta DOC1 KB sobre `/perfil` con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 58;
+  aporta 53,7 KB sobre `/perfil` con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 58;
   `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Lecturas por pedido, tras su `<Suspense>` y en paralelo: `vehiculo_relacionados` (≤ 9 filas), la
   subasta y sus ajustes, la aprobada (`cotizaciones_de_este_vehiculo` con `TAMANO_DE_LA_APROBADA`: la fijada por `cotizaciones_aprobadas_pkey` y ≤ 2
   filas por `cotizaciones_vehiculo_creado_idx`), los datos clave (`leerDatosClave`, 1 o 2 lecturas por PK; al documento viajan sólo sus ≤ 4 campos), la
   vitrina (`vehiculo_vitrina_previa`, una, la comparten la cabecera, el bloque y el panel; al bloque viajan sólo los campos públicos de la tarjeta),
-  «Actividad reciente» (`actividad_listar` por registro, ≤ 6 filas por su índice, y los ajustes de la empresa), el proyecto de repuestos (`proyectoDe`,
+  los ajustes de la empresa (la zona y los días de «Actividad reciente»), el proyecto de repuestos (`proyectoDe`,
   `cache()`: una fila por `repuestos_proyecto_por_vehiculo`, para el enlace corto y, sólo con `?seccion=repuestos`, la redirección), la limpieza y la
   resolución; desde el navegador, las fotos de la tira al montarse (≤ 24 miniaturas de 480 px, una lectura; la grande sólo en el visor y en la ficha
-  completa), «Cotizaciones de este vehículo» (11 por página, de a 10 hasta 100) al acercarse y el layout activo al abrir la ficha completa. Sin caché de
+  completa), «Cotizaciones de este vehículo» (11 por página, de a 10 hasta 100) y «Actividad reciente» (`actividad_listar` por registro, ≤ 6 filas por
+  su índice) al acercarse, y el layout activo al abrir la ficha completa. Sin caché de
   cliente: `router.refresh()` (también tras aprobar desde el bloque) y `revalidarVinculo()` vuelven a dibujar todos los bloques.
 - `/configuracion/flujos`: 409,0 KB en frío (28 chunks), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
