@@ -708,9 +708,10 @@ otra vuelta: lo que crear toma son sus parámetros. La preventa no cambia.
 `opcion` guarda su clave; un nodo fuera de variante o apagado guarda 0); `fuentes` (`{nodo_id: default|sugerido|override|input}`);
 `tipos_cambio` (`{clave: valor}` congelados); `totales` (por moneda y por grupo); `titulo` (el **título de la cotización**, hasta 120) y
 `titulo_manual` (si lo escribió una persona; si no, es el del vehículo y la base lo rehace en cada guardado; las que ya tenían título antes de la
-columna quedaron manuales). **Nada se lee directo** (sale por `cotizacion_leer()`,
-recortado por el nivel; `total_base`, `modo_tc`, `ver_total_bs`, `titulo` y `titulo_manual` sí son legibles) **ni se escribe directo**: se crea con
-`cotizacion_crear()` y se edita con `cotizacion_guardar()`.
+columna quedaron manuales); `tarjeta_retoques` (los **retoques de la tarjeta**: textos y filas ocultas sólo de esta cotización; nula, la tarjeta tal
+cual la plantilla; «Retoques de la tarjeta», abajo). **Nada se lee directo** (sale por `cotizacion_leer()`,
+recortado por el nivel; `total_base`, `modo_tc`, `ver_total_bs`, `titulo`, `titulo_manual` y `tarjeta_retoques` sí son legibles) **ni se escribe directo**: se
+crea con `cotizacion_crear()`, se edita con `cotizacion_guardar()` y se retoca con `cotizacion_retocar_tarjeta()`.
 
 ## Binding con la XCell
 
@@ -898,6 +899,36 @@ lo exige la plantilla; su valor sale del snapshot), los modos si se muestra `mod
 `cotizacion-tarjeta.sql`, por cada nivel, en la forma 1 convertida y en cada forma de nombrar un nodo en la cuadrícula; el inventario de
 `cotizaciones-visibilidad.sql` la registra).
 
+### Retoques de la tarjeta
+
+Los **retoques de la tarjeta** cambian textos y ocultan filas de la tarjeta de **una** cotización guardada, sin tocar la plantilla del origen. Se
+guardan en `cotizaciones.tarjeta_retoques`: `{celdas?: {<id de celda>: texto}, filas_ocultas?: [<id de fila>]}` (nula: la tarjeta tal cual la
+plantilla). Sólo el texto de las celdas `texto` de la cuadrícula y filas enteras: nunca las celdas de `dato` (montos, etiquetas, tipos de cambio,
+variables), el logo, los colores, los tamaños, las columnas ni las combinaciones.
+
+- **`validar_retoques(retoques, plantilla)`**: STABLE, invocadora, `search_path` vacío, sin leer tablas; 22023 con la regla en DETAIL y el `donde` en
+  HINT; el primer rechazo manda. Con la plantilla nula, toda celda y toda fila es inexistente. En este orden: `forma` (el objeto, `retoques`),
+  `demasiado_grande` (más de 24 KiB del texto del `jsonb`, el tope de la cuadrícula; `retoques`), `forma` (la clave de más en orden C; `celdas` que
+  no es un objeto); por cada celda en orden C (`celdas.<id>`): `forma` (no es un texto), `celda_inexistente`, `celda_no_es_texto` y `texto_largo` (más
+  de 300 caracteres); `forma` (`filas_ocultas` que no es un arreglo); por cada fila en su orden: `forma` (`filas_ocultas[i]`), `fila_inexistente` y
+  `fila_repetida` (`filas_ocultas.<id>`). Un `{{` se dibuja tal cual: en la cuadrícula nada interpola. Espejo `validarRetoques()`
+  (`entities/tarjeta/retoques/`) con el juego `casos-de-retoques.json`, que corren Vitest y R1 de `supabase/tests/areas/tarjeta/retoques.sql`.
+- **`cotizacion_retocar_tarjeta(id, actualizado_en_esperado, retoques)`**, `security definer`: pide lo que pide guardarla
+  (`_cotizacion_puede_guardar()`) antes y después de tomar la fila `for no key update`; la papelera, lo que no existe y lo que no se ve dan el mismo
+  42501; la versión va antes que la validación (el PT409 de `_conflicto_de_edicion()`: quién y cuándo). Valida contra **lo que se dibuja hoy**: la
+  cuadrícula de `cotizacion_tarjeta(formula_id)` si está `lista` (la publicada del origen, convertida si es de la forma 1 y validada contra la versión
+  de la cotización); si no, ninguna. Nulo, `{}` o lo vacío dejan la columna nula (`_retoques_normalizados()`); los mismos retoques que hay no escriben
+  nada (ni versión, ni revisión, ni actividad). Devuelve `{actualizado_en, retoques, repetido}`. Retocar mueve `actualizado_en`: es guardar la
+  cotización (cambian la fecha del último guardado de la tarjeta y su portada).
+- **Al dibujar**, `aplicarRetoques()` cambia el texto de las celdas de texto que están y quita las filas ocultas antes de la geometría, reparando las
+  combinaciones: una celda que empieza en una fila oculta pasa a la primera fila que le queda, la que la cruza se acorta y la que se queda sin filas no
+  se dibuja. Un retoque de una celda que ya no está o dejó de ser de texto, o de una fila que ya no está, **no aplica**: se ignora y se cuenta. Todo lo que
+  dibuja esa tarjeta pasa por ahí: la vista previa, «Copiar texto», el PDF, compartir y la portada (`lecturaRetocada()` en `geometriaDeUnaGuardada()` y
+  en `useModeloDeLaTarjeta()`). El modo «Retocar» dice cuántos no aplican y «Listo» guarda sólo los que aplican.
+- **La revisión** guarda cuántos hay (`{celdas: n, filas_ocultas: m}` por lado, `_retoques_resumen()`), nunca los textos, y «Revisiones» dice «Retocó
+  la tarjeta» (también al volver a la plantilla). La actividad la deja `cotizacion_auditar()`, con quien retocó.
+- **Cotizar encima** se los lleva, como el título y las notas; los que no apliquen a la plantilla de hoy se ignoran al dibujar.
+
 ### El PDF
 
 `GET /cotizaciones/<id>/pdf` da la tarjeta de una cotización **guardada** en una página A4: la misma `geometriaDeLaTarjeta()` que «Vista previa»,
@@ -938,6 +969,7 @@ ve_todo, puede_guardarla, contexto}`: `puede_guardarla` es `ve_todo` y `_cotizac
   Reemplaza la fila y manda la ruta vieja a la cola de limpieza si nadie más la usa.
 - **Cuándo se arma.** Al guardar (crear, guardar y cotizar encima), después de la respuesta del guardado: el núcleo avisa por el hueco de la vista previa
   (`alGuardarLaCotizacion`) y el área `tarjeta` pide la ruta (`pedirLaPortada()`, un `fetch` que nadie espera); el guardado no la espera ni ve sus fallos.
+  Al retocar la tarjeta, lo mismo desde el modo «Retocar» tras «Listo».
   Y al pedirla vieja o sin portada. En los dos casos la ruta la arma y, si quien pide puede guardarla, la guarda **antes de responder** (nunca en `after()`:
   la sesión podría renovarse con la respuesta ya enviada). Sin el primer recálculo (la tarjeta saldría sólo con el total) se entrega pero no se guarda. Una
   plantilla nueva se ve sola, sin relleno masivo.

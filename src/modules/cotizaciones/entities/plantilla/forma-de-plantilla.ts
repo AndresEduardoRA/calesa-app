@@ -11,7 +11,7 @@ import {
   compararComoC,
   ES_ID,
   esObjetoJsonb,
-} from './json-de-la-base'
+} from '../json-de-la-base'
 
 export type GrupoDePlantilla = { readonly grupo: string; readonly tono?: string }
 

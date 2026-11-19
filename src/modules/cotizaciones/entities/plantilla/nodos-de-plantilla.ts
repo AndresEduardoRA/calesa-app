@@ -2,7 +2,7 @@
 // `leyendas` es un nodo de la fórmula con lugar en la tarjeta (un miembro de un grupo, el total o lo aparte de la tarjeta del total), y lo que dibuja es del
 // nivel «todos» (no figurar en la visibilidad compilada cuenta como restringido). Todo lo que se busca por id va por `Map`/`Set`/`Object.hasOwn`.
 import { rechazoDePlantilla, type RechazoDePlantilla } from './motivos-de-plantilla'
-import { clavesEnOrdenC, compararComoC, esObjetoJsonb } from './json-de-la-base'
+import { clavesEnOrdenC, compararComoC, esObjetoJsonb } from '../json-de-la-base'
 import type { Plantilla } from './forma-de-plantilla'
 
 // Lo que se lee de la fórmula, el diseño y la visibilidad: sólo eso, y lo que la base pasa por `coalesce`, opcional (la `Definicion` y el `Diseno` de verdad

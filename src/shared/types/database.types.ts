@@ -794,6 +794,7 @@ export type Database = {
           origen_id: string
           plantilla_id: string | null
           reportes_count: number
+          tarjeta_retoques: Json | null
           tipos_cambio: NonNullable<Json>
           titulo: string | null
           titulo_manual: boolean
@@ -827,6 +828,7 @@ export type Database = {
           origen_id: string
           plantilla_id?: string | null
           reportes_count?: number
+          tarjeta_retoques?: Json | null
           tipos_cambio: NonNullable<Json>
           titulo?: string | null
           titulo_manual?: boolean
@@ -859,6 +861,7 @@ export type Database = {
           origen_id?: string
           plantilla_id?: string | null
           reportes_count?: number
+          tarjeta_retoques?: Json | null
           tipos_cambio?: NonNullable<Json>
           titulo?: string | null
           titulo_manual?: boolean
@@ -9378,6 +9381,8 @@ export type Database = {
         }
         Returns: undefined
       }
+      _retoques_normalizados: { Args: { p: Json }; Returns: Json }
+      _retoques_resumen: { Args: { p: Json }; Returns: Json }
       _revision_etiquetas: { Args: { p_def: Json; p_filas: Json }; Returns: Json }
       _rol_para_editar: { Args: { p_esperado: string; p_rol: string }; Returns: undefined }
       _rol_tocar: { Args: { p_rol: string }; Returns: string }
@@ -10140,6 +10145,10 @@ export type Database = {
       cotizacion_puede_adjuntar: { Args: { p_cot: string }; Returns: boolean }
       cotizacion_reportar: { Args: { p_cotizacion: string; p_motivo: string }; Returns: Json }
       cotizacion_reporte_retirar: { Args: { p_cotizacion: string }; Returns: Json }
+      cotizacion_retocar_tarjeta: {
+        Args: { p_actualizado_en_esperado: string; p_id: string; p_retoques: Json }
+        Returns: Json
+      }
       cotizacion_revisiones: {
         Args: { p_antes?: number; p_cotizacion: string; p_hasta?: string; p_tamano?: number }
         Returns: Json
@@ -11714,6 +11723,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      validar_retoques: { Args: { p_plantilla: Json; p_retoques: Json }; Returns: undefined }
       vehiculo_conservar: { Args: { p_conservar: boolean; p_vehiculo: string }; Returns: Json }
       vehiculo_crear: {
         Args: {

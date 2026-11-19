@@ -7,12 +7,18 @@ import { calculoDePrueba, crudaDeLaTarjeta } from '../../../entities/tarjeta/tar
 
 type Pedido = { formulaId: string; resolver: (r: Resultado<LecturaDeLaTarjeta>) => void }
 const pedidos: Pedido[] = []
+// La action del modo «Retocar» (llega con la vista previa): sin servidor en las pruebas.
+const retocarLaTarjeta = vi.hoisted(() => vi.fn())
+vi.mock('../actions/retocar-la-tarjeta', () => ({ retocarLaTarjeta }))
+vi.mock('../../../areas/tarjeta/composicion-portada.client', () => ({ pedirLaPortada: vi.fn() }))
 vi.mock('../../../areas/tarjeta/composicion.client', () => ({
   leerTarjeta: (formulaId: string) =>
     new Promise<Resultado<LecturaDeLaTarjeta>>((resolver) => {
       pedidos.push({ formulaId, resolver })
     }),
 }))
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
 
 import VistaPreviaDeLaTarjeta, { type DatosDeLaPagina } from './vista-previa-de-la-tarjeta'
 

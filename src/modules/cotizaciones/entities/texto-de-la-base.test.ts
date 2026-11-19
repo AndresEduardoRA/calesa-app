@@ -51,6 +51,20 @@ describe('revisarTextoParaLaBase: el carácter que la base no lee', () => {
     })
   })
 
+  it('la raíz se nombra como se pida: sólo cambia el `donde` del valor entero o de una clave suya', () => {
+    expect(revisarTextoParaLaBase('a\u0000b', { raiz: 'retoques' })).toEqual({
+      donde: 'retoques',
+      motivo: 'nulo',
+    })
+    expect(revisarTextoParaLaBase({ [`a${ALTO}`]: 'x' }, { raiz: 'retoques' })).toEqual({
+      donde: 'retoques',
+      motivo: 'surrogate',
+    })
+    expect(
+      revisarTextoParaLaBase({ celdas: { saludo: `x${BAJO}` } }, { raiz: 'retoques' }),
+    ).toEqual({ donde: 'celdas.saludo', motivo: 'surrogate' })
+  })
+
   it('en un valor de objeto, con la ruta de la base', () => {
     expect(revisarTextoParaLaBase({ etiquetas: { flete: `x${ALTO}` } })).toEqual({
       donde: 'etiquetas.flete',

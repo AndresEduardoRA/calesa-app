@@ -207,6 +207,9 @@ declare
     -- Guardar una cotización (4.10-3): no recibe un lead; la cotización que edita ya cuelga de uno que su dueña vio, y editarla no cambia quién la ve. El permiso es el de la cotización
     -- (`puede_cotizacion`) y no toma el lead: lo prueban `cotizacion-guardar.sql` y `cotizaciones-visibilidad.sql`.
     ('cotizacion_guardar(uuid,uuid,timestamp with time zone,jsonb,text,text,text,uuid,boolean,boolean)', 'X'),
+    -- Retocar la tarjeta de una cotización: no recibe un lead ni lo lee; pide lo que pide guardarla (`_cotizacion_puede_guardar`, antes y después del candado) y devuelve sólo
+    -- la versión y los retoques (`areas/tarjeta/retoques.sql`).
+    ('cotizacion_retocar_tarjeta(uuid,timestamp with time zone,jsonb)', 'X'),
     -- Las tareas de la agenda (7.06-1), como los eventos: el lead vinculado se pide visible (`lead_visible_al_escribir`); reasignar cambió de firma
     -- (con versión). Responden sólo {resultado, id, actualizado_en} (`areas/agenda/tareas.sql`).
     ('tarea_crear(uuid,jsonb,uuid)', 'X'),

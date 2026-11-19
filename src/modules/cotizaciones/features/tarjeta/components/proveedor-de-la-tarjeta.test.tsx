@@ -8,6 +8,9 @@ import type { LecturaDeLaTarjeta } from '../../../entities/tarjeta/lectura-de-la
 
 const pedirLaPortada = vi.hoisted(() => vi.fn())
 vi.mock('../../../areas/tarjeta/composicion-portada.client', () => ({ pedirLaPortada }))
+// La action del modo «Retocar» (llega con la vista previa): sin servidor en las pruebas.
+const retocarLaTarjeta = vi.hoisted(() => vi.fn())
+vi.mock('../actions/retocar-la-tarjeta', () => ({ retocarLaTarjeta }))
 vi.mock('../../../areas/tarjeta/composicion.client', () => ({
   leerTarjeta: () =>
     Promise.resolve<Resultado<LecturaDeLaTarjeta>>({

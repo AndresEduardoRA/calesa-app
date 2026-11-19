@@ -522,6 +522,24 @@ las trampas, en `docs/LECCIONES.md`.
 - **El barrido del bucket `cotizaciones` tiene su rama, como `vehiculos`.** `not exists` sobre adjuntos y portadas, por el índice de `ruta` de cada una: la
   rama genérica llama a `storage_refcount()` por objeto y una ventana de 10.000 costaba ≈ 0,9 s (≈ 0,2 s así). Una tabla nueva con rutas de ese bucket va en
   las dos; si falta en la rama, `storage_gc_reclamar()` igual la descarta al ver el refcount.
+- **Los retoques de la tarjeta son de una cotización, sólo textos y filas ocultas.** Se guardan en `cotizaciones.tarjeta_retoques` (por id de celda y de
+  fila) y se aplican a la cuadrícula antes de la geometría, así todo lo que dibuja esa tarjeta los sigue solo; nunca cifras, colores, el logo, tamaños,
+  columnas ni combinaciones (la plantilla del origen sigue mandando en la forma). Cotizar encima se los lleva, como el título y las notas. Un `{{` se dibuja
+  tal cual: en la cuadrícula nada interpola. Retocar pide lo que pide guardar, sin permiso propio, y es guardar la cotización: mueve `actualizado_en` (la
+  fecha del último guardado de la tarjeta, la de la cabecera y la clave de la portada).
+- **La base valida los retoques contra lo que se dibuja hoy.** `cotizacion_retocar_tarjeta()` toma la cuadrícula de `cotizacion_tarjeta()` (la publicada,
+  convertida y validada contra la versión de esa cotización); los que dejaron de aplicar (otra plantilla publicada) se ignoran al dibujar y el modo dice que se
+  quitarán al guardar. La versión se compara antes que nada, sin intento: un reenvío tras una respuesta perdida da el PT409 «desde otra ventana».
+- **La revisión de un retoque guarda cantidades, no los textos.** `{celdas: n, filas_ocultas: m}` por lado: una página de 20 revisiones con los textos llegaría a
+  ≈ 1 MB, y «Revisiones» sólo dice «Retocó la tarjeta». La actividad, en cambio, guarda la fila entera como con las notas y el título (`cotizacion_auditar()`):
+  caduca a los 14 días, no es lo oculto por nivel y su diff muestra qué texto cambió.
+- **«Retocar» se apaga con la hoja sin guardar, y guardar los retoques revalida la página.** La hoja necesita la versión nueva para su próximo «Guardar» (si
+  no, daría PT409 contra uno mismo), así que la action revalida y la hoja se vuelve a montar por su `key`; es seguro porque no hay nada tipeado en la hoja
+  que perder. La portada se pide desde el navegador tras «Listo», como al guardar, nunca en `after()`.
+- **«Volver a la plantilla» pregunta en el pie del modal, no con `<Confirmar>`**: sería un modal sobre otro. Confirmar guarda en el acto (es irreversible).
+- **El campo de una celda va encima de ella sólo si se escribe cómodo.** Con la tarjeta casi a su tamaño (escala ≥ 0,75), la celda escalada de ≥ 160 px y la
+  letra sin agrandar; si no (el celular, el texto al 200 %), a lo ancho del modal bajo la tarjeta. Las filas se ocultan desde un canal de 44 px a la derecha
+  (un botón por banda, siempre a la vista) y, para las bandas de menos de 24 px, desde «Ocultar fila» a 44 px bajo la tarjeta.
 - **El aspecto de la hoja es declarativo, cerrado y plano.** Claves opcionales junto a las de siempre (`ancho`, `alto`, `relleno`, `separacion`, `densidad`, `letra`, `enfasis`, `tono`), de escalas
   cerradas y validadas igual en TS y en SQL: nada de px, CSS ni hex. No se llaman `estilo`, `clase` ni `color` (el juego las rechaza). Sin la clave, lo de siempre, así un diseño viejo se ve igual;
   el editor quita la clave en vez de escribir el valor por defecto. La cabecera no lleva ancho ni alto (va sola en su fila) y la tarjeta del resumen no lleva aspecto (es fija).

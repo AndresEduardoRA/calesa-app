@@ -1,6 +1,6 @@
 // Los cambios que hace el editor sobre una plantilla (4.19-3b): funciones puras e inmutables que devuelven otra. Una etiqueta o una leyenda en blanco quita la clave
 // (una etiqueta pide 1 carácter y una leyenda vacía es lo mismo que sin leyenda); un diccionario que queda vacío se quita; sin nota o sin tono, sin la clave.
-import { btrim } from './json-de-la-base'
+import { btrim } from '../json-de-la-base'
 import type { Plantilla } from './forma-de-plantilla'
 
 type Diccionario = Readonly<Record<string, string>>
