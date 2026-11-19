@@ -127,7 +127,7 @@ test('con el permiso se publica con su precio, mirando lo que verá el visitante
 }) => {
   await entrar(page, duena)
   // Una foto, para que haya portada.
-  await page.goto(`/vehiculos/${sedan}?seccion=fotos`)
+  await page.goto(`/vehiculos/${sedan}?panel=imagenes`)
   await page
     .getByRole('group', { name: 'Elegir fotos' })
     .locator('input[type=file]:not([capture])')

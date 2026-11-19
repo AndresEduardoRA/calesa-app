@@ -6,6 +6,7 @@ import { puede, requerirSesion, type Permisos } from '@/modules/equipo'
 import type { OrigenResumen } from '@/modules/origenes'
 import { rutaParaCotizar, type ParaCotizar, type Vehiculo } from '@/modules/vehiculos'
 import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
+import { redirigir } from '@/shared/lib/navegacion'
 import { conVuelta, RUTAS, unParametro } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
@@ -21,6 +22,7 @@ import {
   bloquesDeQuienMira,
   CLAVE_DE_RELACIONADOS,
   CLAVE_DE_SECCION,
+  destinoDeLaSeccionFotos,
 } from './bloques'
 import { BloquesDeLaFicha } from './bloques-de-la-ficha'
 import { LateralDeLaFicha } from './lateral-de-la-ficha'
@@ -143,6 +145,11 @@ export default async function PaginaVehiculo({
   searchParams,
 }: PageProps<'/vehiculos/[id]'>) {
   const [sesion, { id }, parametros] = await Promise.all([requerirSesion(), params, searchParams])
+  // `?seccion=fotos` (el bloque ya no está): el visor de la cabecera, en la primera foto.
+  const alVisor = destinoDeLaSeccionFotos(id, parametros)
+  if (alVisor !== null) {
+    redirigir(alVisor)
+  }
   const { encontrado, origen } = await vehiculoYOrigen(id, sesion.permisos)
   if (!encontrado || !origen) {
     return <NoDisponible />
