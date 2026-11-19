@@ -26,6 +26,9 @@ export type ContextoDeLasFilas = {
 }
 
 const SIN_CIFRA: CifraDeLaFila = { tipo: 'nada' }
+// Las filas sin el formulario de «Sumar fila debajo» reciben estas, estables: `crear` y `cancelarSumar` cambian en cada render y redibujarían las 500 filas `memo`.
+const SIN_CREAR = () => undefined
+const SIN_CANCELAR = () => undefined
 
 const numeroDe = (vista: VistaPrevia | null, id: string): number | null => {
   const v = vista?.tipo === 'calculada' ? vista.valores.get(id) : undefined
@@ -48,7 +51,13 @@ function bDe(ctx: ContextoDeLasFilas, fila: FilaParaDibujar): CeldaB | null {
 function unidadDe(unidad: UnidadDeEjemplo, nodo: Nodo): ValorDeLaUnidad | undefined {
   if (nodo.tipo === 'input') return unidad.inputs[nodo.id] ?? 0
   if (nodo.tipo === 'bandera') return unidad.banderas[nodo.id] ?? false
-  if (nodo.tipo === 'opcion') return unidad.variante ?? nodo.por_defecto ?? null
+  if (nodo.tipo === 'opcion') {
+    // Una clave que ya no es opción (se quitó en el Modo avanzado) no se marca: el cálculo usa la por defecto (`entradaDeLaUnidad()`).
+    const { variante } = unidad
+    return variante !== undefined && nodo.opciones.some((o) => o.clave === variante)
+      ? variante
+      : (nodo.por_defecto ?? null)
+  }
   if (nodo.tipo !== 'campo_vehiculo') return undefined
   return Object.hasOwn(unidad.vehiculo, nodo.campo) ? (unidad.vehiculo[nodo.campo] ?? null) : null
 }
@@ -60,6 +69,7 @@ export function propsDeLaFila(
 ): FilaDeLaPlanillaProps {
   const { editor } = ctx
   const { nueva } = editor
+  const sumando = nueva.sumando?.tras === fila.id ? { error: nueva.sumando.error } : null
   return {
     numero,
     fila,
@@ -76,10 +86,10 @@ export function propsDeLaFila(
     bloqueada: ctx.motivo !== null,
     idDelMotivo: ctx.idDelMotivo,
     rechazo: editor.rechazo?.filaId === fila.id ? editor.rechazo.mensaje : null,
-    sumando: nueva.sumando?.tras === fila.id ? { error: nueva.sumando.error } : null,
+    sumando,
     ocupados: nueva.ocupados,
-    alCrear: nueva.crear,
-    alCancelarSumar: nueva.cancelarSumar,
+    alCrear: sumando === null ? SIN_CREAR : nueva.crear,
+    alCancelarSumar: sumando === null ? SIN_CANCELAR : nueva.cancelarSumar,
     alElegir: ctx.alElegir,
     alCambiarValor: editor.cambiarValor,
     acciones: ctx.acciones,

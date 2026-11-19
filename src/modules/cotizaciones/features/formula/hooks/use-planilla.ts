@@ -91,7 +91,11 @@ function useBandas(
   busqueda: string,
   deLaBarra: string | null,
 ) {
-  const visibles = filasVisibles(editor.filas, busqueda, editor.nueva.sumando?.tras ?? deLaBarra)
+  const forzada = editor.nueva.sumando?.tras ?? deLaBarra
+  const visibles = useMemo(
+    () => filasVisibles(editor.filas, busqueda, forzada),
+    [editor.filas, busqueda, forzada],
+  )
   const ids = useMemo(() => new Set(visibles.filas.map((f) => f.id)), [visibles.filas])
   const buscando = busqueda.trim() !== ''
   const bandas = useMemo(

@@ -51,6 +51,9 @@ export function useSumarFila({
   const soltarLaCreada = useCallback(() => {
     setCreada(null)
   }, [])
+  const cancelarSumar = useCallback(() => {
+    setSumando(null)
+  }, [])
 
   return {
     sumando,
@@ -63,9 +66,7 @@ export function useSumarFila({
       }
     },
     abrirFormulario,
-    cancelarSumar: () => {
-      setSumando(null)
-    },
+    cancelarSumar,
     soltarLaCreada,
     crear,
   }
