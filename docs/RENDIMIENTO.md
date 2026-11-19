@@ -388,9 +388,11 @@ inferior), que no se dibuja hasta abrirse: la carga sólo paga el botón. En el 
   ~7 nodos y ~70 B comprimidos por fila llena (100 filas llenas: 4.035 nodos y 52,9 KB en escritorio; 4.419 nodos y 51,2 KB en celular). Es lo que el listado
   dice de cada lead; bajarlo pide un máximo de 50 por página.
 - Inventario de vehículos: 100; ≤ 6.300 nodos y 66.000 B gz con 100 filas: en escritorio (la tabla, con «Lote», «Compra directa» y «Costo estimado» con su modo) medido 5.703 nodos y 63.488 B; en el celular (la misma tarjeta de la lista que en escritorio: la foto con el chip del lote y las filas de datos fijas con «—», `dt` y `dd` directo en la grilla, sin envoltorio por fila ni nodo para el «—») 6.150 nodos y 63.539 B. El tope de nodos, un 5 % sobre 6.000; el «⋯» único con sus paneles no suma nodos por fila y el «Costo estimado» viaja como un `Record` por id de vehículo con la ruta, el monto, la moneda y el modo.
-- Listado de cotizaciones: 100; ≤ 2.700 nodos y 49.500 B gz (lo medido + 5 %: la columna de acciones, `<MasAcciones>` de 4 nodos por fila, y el menú de cada fila —versión,
-  marcas y lo que ofrece—: medido 2.556 nodos y 46,8 KB en escritorio la dueña; 2.540 y 45,4 KB Ana; 2.499 y 44,7 KB en el celular). Bajarlo pide un
-  máximo de 50 por página, como en leads. Las vistas guardadas van por `diferido()`: `/cotizaciones` en frío mide 368,6 KB de 380 (con el menú de vistas en frío serían 440).
+- Listado de cotizaciones: **50** (como leads); ≤ 2.700 nodos y 49.500 B gz. Con la tarjeta de la lista (la portada con su recuadro, el «⋯», seis filas de datos,
+  el conteo del grupo y «Compartir»: ≈ 40 nodos cada una) 100 medían 4.329 nodos y 61,3 KB en el celular, agrupada: más del 5 % sobre el tope, así que el máximo
+  bajó a 50 para las cuatro formas (tabla y tarjetas, agrupada o no; la vista cambia en el cliente sin releer). Medido con 50 (escritorio, la dueña): tarjetas agrupada 2.310 nodos y 41,9 KB, sin
+  agrupar 2.142 y 38,8 KB; tabla agrupada 1.703 y 39,4 KB, sin agrupar 1.539 y 36,7 KB; Ana, 2.154 y 39,2 KB en tarjetas agrupada; el celular, 2.287 y 41,9 KB.
+  La página profunda no crece (≤ 15 %). Las vistas guardadas van por `diferido()`: `/cotizaciones` en frío mide 368,6 KB de 380 (con el menú de vistas en frío serían 440).
 - Sin selector: las papeleras (5 lotes × 20), «Ver más» de seguimientos y recordatorios, la columna del kanban (50, tope 500,
   `TAMANO_DE_COLUMNA`) y las listas de tope fijo.
 - En la base cada RPC con tamaño acota con `_acotar_pagina(pedido, por_defecto, máximo)`: seguimientos y recordatorios 20 hasta 50;
@@ -740,10 +742,21 @@ fallar.
   es leakproof). Topes: la dueña y la chica ≤ 10 ms, Ana y Teo ≤ 50 (Ana con un vehículo de 5.005 o un lead ajeno, ≤ 100); la dueña ≤ 116
   bloques de `cotizaciones`; con 250.000 ≤ 1,2 × los bloques de 50.000 + 20 y ≤ máx(1,5 × t; t + 3 ms); `mis_leads()` 1 vez si va la cartera
   (ninguna con `p_lead`), `origenes_con_alcance()` ≤ 2 + 2 por ruta, `en_cartera()` ≤ una por fila leída de la cartera o del vehículo,
-  ninguna a `alcance_de` ni a `_bajas_en_curso`; los índices de cada caso por nombre y ningún otro con bloques. Máximo: 100.
+  ninguna a `alcance_de` ni a `_bajas_en_curso`; los índices de cada caso por nombre y ningún otro con bloques. Máximo de la base: 100 (la pantalla pide hasta 50, `MAXIMO_DE_PAGINA_DE_COTIZACIONES`).
   La sección «Cotizaciones» de la ficha del lead (PostgREST, `lead_id = …`, `TAMANO_DE_VER_MAS` + 1, mismo archivo): la dueña ≤ 10 ms, Ana
   ≤ 50 con su cartera y ≤ 100 con el ajeno. Se lee al abrir la sección, con `diferido()` en su `diferidos.tsx`;
   `e2e/leads-cotizaciones.spec.ts`: ≤ 5.250 B, ≤ 65 nodos con 20 y ≤ 1.576 con 500, la 25.ª igual que la 1.ª.
+  **La lista agrupada por vehículo** (`cotizaciones_listado_por_vehiculo()`, `medir-cotizaciones-listado-por-vehiculo.sql`, `MEDIR_SOLO=medir-cotizaciones-listado-por-vehiculo
+pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (50) grupos + 1. Recorre lotes de `_cotizaciones_lote_del_listado()` (las rutas e índices del listado, sin la del
+  vehículo; el primero de 4 × la página (204), duplicándose hasta 2.020 leídas: si no llena la página, `cortada`); hacia adelante sólo la primera de cada vehículo en la lectura
+  pregunta si hay otra más nueva antes del cursor (una sonda `limit 1` por `cotizaciones_vehiculo_creado_idx`; sin cursor, ninguna); la cabeza por
+  `cotizaciones_pkey` y `cotizaciones_aprobadas_pkey` en laterales con `limit` (sin ellos el plan genérico hacía un hash join que recorría la tabla entera: 63.000
+  bloques y 2 s para Ana); el conteo, `limit 101` por `cotizaciones_vehiculo_creado_idx`, o lo leído si la lectura llegó al final. No lee `vehiculos`. Medido con
+  250.000 y páginas de 50 (igual con 50.000, bloques ≤ 1,2 × + 20): la dueña 5–12 ms (600–2.200 bloques), Teo 5–6, la «chica» 3, Ana 6–24 ms (≈ 9.000 bloques:
+  la cartera de 1.000 leads en cada lote) y 57 ms con el lead del vehículo de 5.005 del que ve 5 (antes de contar lo leído y saltar las sondas repetidas, 152).
+  Topes: la dueña y la chica ≤ 30 ms, Ana y Teo ≤ 100; un lote por página en todos los casos.
+  **La miniatura de la portada** (`?ancho=480`): la lista pide la portada achicada (`sharp`, al responder; el bucket guarda sólo la grande), perezosa y con su
+  propia ETag (304 al volver). La grande, sólo en el visor.
   **La cotización aprobada** (`cotizaciones_aprobadas`, una fila por vehículo; `medir-cotizaciones-aprobadas.sql`, `db:medir:volumen`): tres lecturas por página, todas
   de ≤ 100 ids y una consulta, en paralelo con lo que ya se lee: el «Costo estimado» de la lista de vehículos por la RPC `cotizaciones_aprobadas_de_vehiculos()`
   (invocadora: `cotizaciones_aprobadas_pkey (vehiculo_id)`, cada cotización por `cotizaciones_pkey` y `_nombre_del_modo()` una vez por versión y modo), el

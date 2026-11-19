@@ -372,8 +372,19 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Comparar cotizaciones** — `/cotizaciones/comparar?ids=`, `entities/aprobada/comparar.ts` (`compararCotizaciones()`), `pantallas/aprobada-comparar.ts`
   (`TablaDeComparar`): 2 o 3 cotizaciones del mismo vehículo lado a lado, **lo guardado** de cada una (su versión, sus valores y su total, sin recálculo),
   una columna por cotización y una fila por nodo alineada por su id, con «Aprobar esta» al pie. Lo **distinto** se mide **contra la primera** columna (↑, ↓
-  o ≠). Se llega por las casillas de «De este vehículo». No es la «Celda» de la hoja ni la «tarjeta de la cotización»: en la interfaz cada columna es «la
-  cotización #N» y sus filas son de nodos.
+  o ≠). Se llega por las casillas de «De este vehículo» y por las de un **grupo de un vehículo** desplegado en `/cotizaciones`. No es la «Celda» de la hoja ni
+  la «tarjeta de la cotización»: en la interfaz cada columna es «la cotización #N» y sus filas son de nodos.
+- **Tarjeta de la lista** — `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): cada ítem de la vista «Tarjetas» de `/cotizaciones`:
+  la **portada de la cotización** arriba (en miniatura) con el «⋯» encima, el título, «N.º n» con sus insignias, el total con su modo, el cliente, el autor, la
+  vigencia, el conteo de su grupo y «Compartir». No es la **tarjeta de la cotización** (la vista previa tipo Excel que la portada muestra).
+- **Grupo de un vehículo** — `EntradaDelListado` de `tipo: 'grupo'`, `cotizaciones_listado_por_vehiculo()`: en `/cotizaciones` agrupada («Agrupar por
+  vehículo», `?agrupar=`, `cotizaciones.agrupar`), las cotizaciones de un vehículo que quien mira ve y coinciden con la búsqueda y los filtros, en una tarjeta o
+  fila con «N cotizaciones de este vehículo» que despliega las demás en el lugar. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
+  **Grupo (de la hoja)**, el **Grupo (de la bandeja del día)** ni el **Grupo (de transporte)**.
+- **Cabeza del grupo** — `cabeza` de un grupo de un vehículo: la cotización que lo representa en su tarjeta o fila: su **aprobada** si quien mira la ve y
+  coincide; si no, la más reciente que coincide. La lista ordena y pagina los grupos por su cotización más reciente (`ordenEn`, `ordenId`), no por la cabeza.
+- **Miniatura de la portada** — `?ancho=480` de `GET /cotizaciones/<id>/portada` (`ANCHOS_DE_LA_PORTADA`, `miniaturaDeLaPortada()`): la portada achicada a
+  480 px que piden las listas, con su propia ETag; el bucket guarda sólo la grande, que pide el visor.
 - **Primer resultado** — `entities/primer-resultado.ts`, `cotizaciones_aprobadas.monto` y `moneda`: lo que la hoja dibuja primero en la tarjeta del total
   (`totales.usd`, en USD). La aprobada lo lleva congelado para que la lista de vehículos lo lea sin unir cotizaciones.
 - **Papelera de cotizaciones** — `cotizaciones_papelera_*`, `cotizaciones.papelera.purgar`, `/cotizaciones/papelera`: borrado reversible por
