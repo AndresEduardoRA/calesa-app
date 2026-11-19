@@ -132,6 +132,8 @@ test('con 25 (15 abiertas y 10 cerradas): «Ver más» las trae todas en el orde
 test('con 1.000 (600 abiertas y 400 cerradas): el documento pesa lo de 10, cada «Ver más» es una página de 20 que no crece y se detiene en 500', async ({
   page,
 }, info) => {
+  // Siembra 1.000 y da 25 vueltas de «Ver más»: tarda ~17 s y con el CI cargado pasaba de los 30 s de toda prueba.
+  test.setTimeout(90_000)
   const lead = await leadConOportunidades(page, `Mil ${info.project.name}`, {
     abiertas: 600,
     cerradas: 400,
