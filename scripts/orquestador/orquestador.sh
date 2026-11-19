@@ -102,6 +102,9 @@ source "$ORQ/kit.sh"
 source "$ORQ/cierre-tanda.sh"
 # shellcheck source=cierre-main.sh
 source "$ORQ/cierre-main.sh"
+# Integrar sin la rama al día: los PR con migraciones entran al día, y main en rojo frena lo nuevo.
+# shellcheck source=main-en-tanda.sh
+source "$ORQ/main-en-tanda.sh"
 
 # ------------------------------------------------------------------------------------------------------------------ utilidades
 
@@ -238,6 +241,7 @@ bucle() {
     avisar_turnos
     revisar_procesos
     vigilar_prs
+    vigilar_main
     espejo
     con_issues || { al_integrar_pendientes; avisos_kit_pendientes; } # sin espejo: lo que un corte dejó pendiente
     probar_fin_de_pausa
@@ -319,6 +323,7 @@ lanzar() {
           ;;
         nuevas:pendiente)
           deps_listas "$(spec_de "$id")" || continue
+          frena_lo_nuevo "$(spec_de "$id")" && continue
           quien=$(llave_ocupada_por "$id") && continue
           ;;
         *) continue ;;
@@ -381,6 +386,9 @@ vigilar_prs() {
         a_arreglar "$id" "El PR #$pr choca con main (conflicto de merge). Lo integrado mientras tanto en main tocó lo mismo." choque
     elif [ "$listo" = FAILURE ] || [ "$listo" = CANCELLED ]; then
       migraciones_tras_main "$id" "$pr" || reintentar_ci_ajeno "$id" "$pr" "$j" || a_arreglar "$id" "$(motivo_ci "$pr" "$j")"
+    elif [ "$listo" = SUCCESS ] && con_migraciones "$pr"; then
+      # Sin auto-merge (publicar.sh): entra en verde y al día con main, para que su migración no quede antes de una más nueva.
+      integrar_con_migraciones "$id" "$pr" "$j"
     elif [ -z "$listo" ] && cayo_lo_del_pr "$id" "$j"; then
       # El CI sigue en los e2e, pero ya cayó lo que es del PR: la sesión empieza ahora (su push cancela la corrida vieja).
       migraciones_tras_main "$id" "$pr" || a_arreglar "$id" "$(motivo_ci "$pr" "$j")"

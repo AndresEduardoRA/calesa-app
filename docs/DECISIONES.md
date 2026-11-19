@@ -18,6 +18,10 @@ las trampas, en `docs/LECCIONES.md`.
 - **Una regla que vive en SQL y en TS se prueba como espejo.** Los mismos casos corren en Vitest y en `db:probar` (fórmula del cotizador y de repuestos, `shared/lib/campos/rango.ts`, `portal-mensaje.ts`, `normalizar_telefono`); decide la base. Cambiar un lado exige cambiar el otro.
 - **Las funciones edge (Deno) no importan de `src/`: llevan una copia exacta.** `importar-csv` con `leer.ts` y `plantillas.ts`; una guarda exige copias idénticas y la misma versión de `papaparse`.
 - **Stack local por variables de entorno.** La CLI lee `SUPABASE_PROJECT_ID` y los puertos del entorno (`.env.carril`); no se genera un `config.toml` por worktree.
+- **`main` no exige la rama al día.** Con varias tareas en paralelo, cada integración obligaba a las demás a otra vuelta entera del CI
+  (unas 40 en dos días de tanda). Un PR en verde entra aunque `main` haya avanzado; el PR con migraciones nuevas entra al día
+  (sin auto-merge, lo integran `publicar.sh` o el orquestador) y `main` en rojo frena lo nuevo hasta la urgente que lo arregla
+  (`scripts/orquestador/main-en-tanda.sh`). La cola de GitHub (merge queue) lo haría mejor, pero pide un repo de una organización.
 
 ## Base de datos y permisos
 
