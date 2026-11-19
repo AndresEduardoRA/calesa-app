@@ -28,6 +28,7 @@ import { origenesCon, puede, type Permisos } from '@/shared/lib/permisos'
 import { RUTAS, unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { EsqueletoListado } from '@/shared/ui/esqueletos'
+import { conLaDelResumen } from './la-del-resumen'
 import { leerLaDelResumen, leerLaPagina, nombreDelLead } from './lecturas-de-la-pagina'
 import { ListadoConAcciones } from './listado-con-acciones'
 import { menusDeLaPagina, quienesDelResumen } from './menus-de-la-pagina'
@@ -126,8 +127,9 @@ async function Listado({
     nombreDelLead(sesion.permisos, pedido.leadId),
     leerVistas('cotizaciones'),
   ])
-  // El «⋯» de cada fila: su versión, sus marcas y lo que ofrece a quien mira (tres lecturas por clave primaria para toda la página).
-  const menus = await menusDeLaPagina(sesion, cotizaciones)
+  // El «⋯» de cada fila y el de la del resumen que no está en la página: su versión, sus marcas y lo que ofrece a quien mira (tres lecturas por clave primaria
+  // para toda la página, con un id más si hay una del resumen).
+  const menus = await menusDeLaPagina(sesion, conLaDelResumen(cotizaciones, delServidor))
   // Lo que cada pestaña del resumen deja hacer (adjuntar y moderar): las de la página y la que abrió la URL.
   const quienes = quienesDelResumen(sesion, cotizaciones, delServidor)
   // Con `?vehiculo=`, de quién son estas cotizaciones: el título sólo si quien mira ve el vehículo (la lectura es nula si no existe o no se ve).

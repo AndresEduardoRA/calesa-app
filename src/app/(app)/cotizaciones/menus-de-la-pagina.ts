@@ -16,6 +16,7 @@ import {
 } from '@/modules/cotizaciones'
 import type { QuienDelResumen } from '@/modules/cotizaciones/pantallas/listado'
 import type { Permisos } from '@/shared/lib/permisos'
+import { conLaDelResumen } from './la-del-resumen'
 
 type Quien = { permisos: Permisos; usuarioId: string }
 
@@ -84,9 +85,8 @@ export function quienesDelResumen(
   filas: readonly CotizacionDelListado[],
   delServidor: LecturaDelServidor | null,
 ): Record<string, QuienDelResumen> {
-  const todas = delServidor?.estado === 'listo' ? [...filas, delServidor.cotizacion] : filas
   return Object.fromEntries(
-    todas.map((fila) => [
+    conLaDelResumen(filas, delServidor).map((fila) => [
       fila.id,
       {
         puedeAdjuntar: puedeGuardarDesdeElListado(fila, quien.permisos, quien.usuarioId),

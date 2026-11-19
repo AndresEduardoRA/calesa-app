@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import type { ComponentProps } from 'react'
+import { useMemo, type ComponentProps } from 'react'
 import type { MenuDeUnaFila } from '@/modules/cotizaciones/pantallas/listado'
 import { HUECOS_DE_APROBADA_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/aprobada-resumen'
 import { DialogosDeMarcasDeLaFila } from '@/modules/cotizaciones/pantallas/comentarios-listado'
@@ -17,6 +17,7 @@ import {
 import { PortadaDeLaCotizacion } from '@/modules/cotizaciones/pantallas/tarjeta-portada'
 import { HUECOS_DE_TARJETA_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/tarjeta-resumen'
 import { useLive } from '@/shared/ui/live'
+import { conLaDelResumen } from './la-del-resumen'
 import { MenuDeLaFila } from './menu-de-la-fila'
 import { useAccionesDeLaLista } from './use-acciones-de-la-lista'
 
@@ -43,9 +44,18 @@ const HUECOS_DE_LA_LISTA = { Portada: PortadaDeLaCotizacion, Comparar: CompararD
 // El listado de cotizaciones con su columna de acciones: une el «⋯» de cada fila con lo que hace cada área (compartir, aprobar, marcar final, favorita, reportar, moderar y la papelera: las mismas
 // actions y los mismos diálogos de la guardada) y monta los diálogos una vez. Es un Client Component porque el «⋯» necesita las filas y sus funciones; el servidor sólo manda datos.
 export function ListadoConAcciones({ menus, ...props }: Props) {
-  // Las cotizaciones que dibuja la página: la cabeza de cada grupo y cada una sola.
-  const filas = props.pagina.filas.map((entrada) =>
-    entrada.tipo === 'grupo' ? entrada.cabeza : entrada.cotizacion,
+  // Las cotizaciones que dibuja la página (la cabeza de cada grupo y cada una sola) y la del resumen que no está en ella (una línea de un grupo desplegado, otra página):
+  // sus diálogos piden sus datos.
+  const { pagina, delServidor } = props
+  const filas = useMemo(
+    () =>
+      conLaDelResumen(
+        pagina.filas.map((entrada) =>
+          entrada.tipo === 'grupo' ? entrada.cabeza : entrada.cotizacion,
+        ),
+        delServidor,
+      ),
+    [pagina, delServidor],
   )
   const acciones = useAccionesDeLaLista(filas, menus)
   const router = useRouter()
