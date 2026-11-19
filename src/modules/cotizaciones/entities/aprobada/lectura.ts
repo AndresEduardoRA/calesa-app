@@ -48,6 +48,7 @@ const esquemaDeLasAprobadas = z.array(
     // `monto::text`: el numeric tal cual, sin pasar por un número.
     monto: z.string().nullable(),
     moneda: z.string().regex(/^[A-Z]{3}$/),
+    modo: z.string().nullable(),
   }),
 )
 
@@ -59,6 +60,7 @@ export function aprobadasDelVehiculoDesde(filas: unknown): CotizacionAprobadaDel
         cotizacionId: f.cotizacion_id,
         monto: f.monto,
         moneda: f.moneda,
+        modo: f.modo,
       }))
     : null
 }
