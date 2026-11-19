@@ -1,3 +1,4 @@
+import { elegirEnElMenu } from './soporte/menu-de-la-guardada'
 import { expect, test, type Page } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { literal, sql } from './soporte/sql'
@@ -11,7 +12,7 @@ import {
 } from './soporte/cotizar-encima'
 import { limpiarGuardado, prepararGuardado, tipearEnLaHoja } from './soporte/cotizar-guardar'
 
-// Las revisiones de una cotización guardada (paso 4.15-3b, `docs/UX.md` › «Cotizar»): el botón «Revisiones» de `/cotizaciones/[id]` abre un panel de sólo lectura con su URL
+// Las revisiones de una cotización guardada (paso 4.15-3b, `docs/UX.md` › «Cotizar»): «Revisiones» del «⋯» de `/cotizaciones/[id]` abre un panel de sólo lectura con su URL
 // (`?panel=revisiones`): quién guardó, cuándo, qué cambió y el total antes y después, de a 20 por cursor. Lo recorta la base con la sesión de quien mira.
 test.describe.configure({ mode: 'serial' })
 
@@ -34,9 +35,10 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-// Exacto: el ⚙ de la cabecera se llama «Configuración por defecto de <Origen>» y el origen de este spec lleva «revisiones» en su nombre.
-const botonRevisiones = (page: Page) =>
-  page.getByRole('button', { name: 'Revisiones', exact: true })
+// «Revisiones» va en el «⋯» de la cabecera (exacto: el ⚙ de la cabecera se llama «Configuración por defecto de <Origen>» y el origen de este spec lleva «revisiones»).
+const botonRevisiones = (page: Page) => ({
+  click: () => elegirEnElMenu(page, 'Revisiones'),
+})
 const panel = (page: Page) =>
   page.getByRole('dialog', {
     name: `Revisiones de la cotización n.º ${numeroDeLaCotizacion(cotizacion)}`,

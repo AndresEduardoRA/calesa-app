@@ -1,3 +1,4 @@
+import { elegirEnElMenu } from './soporte/menu-de-la-guardada'
 import { entrar } from './soporte/alta'
 import {
   limpiarFinal,
@@ -53,8 +54,7 @@ test('T1 la dueña ve las cinco cifras y «Convertidos» sube al marcar final', 
 
   const { ids } = await sembrarParaMarcar(t, 'T1')
   await page.goto(`/cotizaciones/${ids[0] ?? ''}`)
-  await expect(page.getByRole('button', { name: 'Revisiones' })).toBeVisible()
-  await page.getByRole('button', { name: 'Marcar final' }).click()
+  await elegirEnElMenu(page, 'Marcar final…')
   await page.getByRole('dialog').getByRole('button', { name: 'Marcar final' }).click()
   await expect(page.getByText(/Marcaste la n\.º \d+ como final\./)).toBeVisible()
 

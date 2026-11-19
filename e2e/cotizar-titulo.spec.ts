@@ -1,3 +1,4 @@
+import { elegirEnElMenu } from './soporte/menu-de-la-guardada'
 import { expect, test, type Page } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { esperarDosCuadros } from './soporte/barra-de-filtros'
@@ -181,7 +182,7 @@ test('E2E cambiar el título en la guardada y guardar deja «Cambió el título�
   await escribirYCerrar(page, `${titulo} (revisado)`)
   await page.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Cambios guardados.')).toBeVisible()
-  await page.getByRole('button', { name: 'Revisiones' }).click()
+  await elegirEnElMenu(page, 'Revisiones')
   await expect(page.getByRole('dialog', { name: /^Revisiones de la cotización/ })).toContainText(
     'Cambió el título',
   )

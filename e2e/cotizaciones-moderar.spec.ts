@@ -1,10 +1,17 @@
 import { entrar } from './soporte/alta'
 import { sembrarConTitulos } from './soporte/cotizaciones-papelera'
 import { limpiarGuardado, prepararGuardado } from './soporte/cotizar-guardar'
+import {
+  abrirElMenu,
+  cerrarElMenu,
+  elegirEnElMenu,
+  lineaAlAbrir,
+  lineaDelMenu,
+} from './soporte/menu-de-la-guardada'
 import { expect, test, type Page } from './soporte/prueba'
 import { literal, sql } from './soporte/sql'
 
-// Favorita, reportar y moderar una cotización guardada (paso 4.27-4, `docs/UX.md` › «Cotización: comentarios»): en la cabecera, la estrella
+// Favorita, reportar y moderar una cotización guardada (paso 4.27-4, `docs/UX.md` › «Cotización: comentarios»): en el «⋯» de la cabecera, la casilla
 // «Favorita», «Reportar…» (`?panel=reportar`) y, para quien modera, «Invalidar…», «Descartar los reportes…» y «Reactivar…» (`?panel=moderar&accion=…`), con la
 // insignia «Reportada» o «Inválida». La dueña modera. Permisos, versión y candados ya tienen sus pruebas SQL (`supabase/tests/areas/comentarios/`).
 
@@ -39,31 +46,31 @@ test('E2E favorita, reportar, invalidar y reactivar', async ({ page }) => {
   await expect(arriba.getByRole('heading', { name: /Cotización n\.º/ })).toBeVisible()
 
   // Favorita: cambia al tocar y la base la guarda.
-  const estrella = arriba.getByRole('button', { name: 'Favorita' })
-  await expect(estrella).toHaveAttribute('aria-pressed', 'false')
+  const estrella = await lineaAlAbrir(page, 'Favorita')
+  await expect(estrella).toHaveAttribute('aria-checked', 'false')
   await estrella.click()
-  await expect(estrella).toHaveAttribute('aria-pressed', 'true')
+  await expect(estrella).toHaveAttribute('aria-checked', 'true')
   await expect.poll(() => enLaBase(id)).toBe('activa · 0 · true')
 
   // Sin reportes, quien modera puede invalidar, pero no descartar.
-  await expect(arriba.getByRole('button', { name: 'Invalidar…' })).toBeVisible()
-  await expect(arriba.getByRole('button', { name: 'Descartar los reportes…' })).toHaveCount(0)
+  await expect(lineaDelMenu(page, 'Invalidar…')).toBeVisible()
+  await expect(lineaDelMenu(page, 'Descartar los reportes…')).toHaveCount(0)
 
   // Reportar con un motivo.
-  await arriba.getByRole('button', { name: 'Reportar…' }).click()
+  await lineaDelMenu(page, 'Reportar…').click()
   await expect(page).toHaveURL(/panel=reportar/)
   const modal = page.getByRole('dialog', { name: /Reportar la cotización n\.º/ })
   await modal.getByRole('textbox', { name: '¿Qué está mal?' }).fill('El precio no cuadra')
   await modal.getByRole('button', { name: 'Enviar el reporte' }).click()
   await expect(modal).toBeHidden()
   await expect(page.getByText('Reporte enviado.', { exact: true })).toBeVisible()
-  await expect(arriba.getByRole('button', { name: 'Reportaste esta cotización…' })).toBeVisible()
   await expect(arriba.getByText('Reportada', { exact: true })).toBeVisible()
-  await expect(arriba.getByRole('button', { name: 'Descartar los reportes…' })).toBeVisible()
+  await expect(await lineaAlAbrir(page, 'Reportaste esta cotización…')).toBeVisible()
+  await expect(lineaDelMenu(page, 'Descartar los reportes…')).toBeVisible()
   await expect.poll(() => enLaBase(id)).toBe('activa · 1 · true')
 
   // Invalidar: el Confirmar muestra el motivo; los reportes se conservan.
-  await arriba.getByRole('button', { name: 'Invalidar…' }).click()
+  await lineaDelMenu(page, 'Invalidar…').click()
   await expect(page).toHaveURL(/panel=moderar&accion=invalidar/)
   const confirmar = page.getByRole('dialog', { name: /Invalidar la cotización n\.º/ })
   await expect(confirmar.getByText('El precio no cuadra', { exact: true })).toBeVisible()
@@ -77,18 +84,17 @@ test('E2E favorita, reportar, invalidar y reactivar', async ({ page }) => {
   // Recargar lo conserva.
   await page.reload()
   await expect(arriba.getByText('Inválida', { exact: true })).toBeVisible()
-  await expect(arriba.getByRole('button', { name: 'Favorita' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  )
+  await expect(await lineaAlAbrir(page, 'Favorita')).toHaveAttribute('aria-checked', 'true')
+  await cerrarElMenu(page)
 
   // Reactivar: vuelve a valer y se borran sus reportes.
-  await arriba.getByRole('button', { name: 'Reactivar…' }).click()
+  await elegirEnElMenu(page, 'Reactivar…')
   const reactivar = page.getByRole('dialog', { name: /Reactivar la cotización n\.º/ })
   await reactivar.getByRole('button', { name: 'Reactivar', exact: true }).click()
   await expect(reactivar).toBeHidden()
   await expect(arriba.getByText('Inválida', { exact: true })).toHaveCount(0)
-  await expect(arriba.getByRole('button', { name: 'Reportar…' })).toBeVisible()
-  await expect(arriba.getByRole('button', { name: 'Invalidar…' })).toBeVisible()
+  await abrirElMenu(page)
+  await expect(lineaDelMenu(page, 'Reportar…')).toBeVisible()
+  await expect(lineaDelMenu(page, 'Invalidar…')).toBeVisible()
   await expect.poll(() => enLaBase(id)).toBe('activa · 0 · true')
 })
