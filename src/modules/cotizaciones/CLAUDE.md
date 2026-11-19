@@ -47,11 +47,11 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `perfiles`); si su primera página no empieza por `ordenId` (`grupoQueCambio()`), `router.refresh()`. Las casillas y «Comparar» llegan por el hueco `Comparar`. El clic abre el resumen `?cotizacion=` (por `diferido()`, `ancho="amplio"`; abrir o cerrar borra `?pestana=`; la abierta queda marcada en la tabla, la tarjeta y la
   línea de un grupo desplegado). **La barra del resumen** (`AccionesDelResumen`): «Abrir cotización», «Compartir cotización» (`compartirDe`) y el «⋯»
   (`menuDeFila(fila, { sinCompartir: true, conBorde: true })`), sólo con la cotización a la vista; debajo, `DatosDelResumen` (título, insignias, total con su modo,
-  cliente, vehículo, creada y vigencia). Los `dialogos` del listado van dentro del Drawer mientras está abierto (si no, abrirlos lo cerraría) y en el listado si no. La
+  cliente, vehículo, creada y vigencia). Los `dialogos` del listado van dentro del Drawer mientras está abierto y montado (`alMontarse`; si no, abrirlos lo cerraría) y en el listado si no. La
   del resumen que no está en la página entra a los menús, a `quienesDelResumen()` y a los datos de los diálogos por `conLaDelResumen()`
   (`src/app/(app)/cotizaciones/la-del-resumen.ts`), y `leerLaDelResumen()` trae su modo; la que no está
   en la página la lee el servidor con `leerUnaDelListado()` (su fila y `cotizaciones_listado()` de tamaño `UNA` con el cursor `(creado_en, id + 1)`) y, si
-  no llega, `usePedidoAlServidor()` pide una vez y luego «Reintentar»; `idDelResumen()` es la única lectura de la clave. **Las pestañas del resumen** (`?pestana=todo|adjuntos|revisiones|comentarios`, `entities/pestanas-del-resumen.ts`; «Todo» no escribe nada) son un hueco
+  no llega, `usePedidoAlServidor()` pide una vez (escribe la clave con `shallow: false`, no `router.refresh()`: nuqs escribe la URL después) y luego «Reintentar»; `idDelResumen()` es la única lectura de la clave. **Las pestañas del resumen** (`?pestana=todo|adjuntos|revisiones|comentarios`, `entities/pestanas-del-resumen.ts`; «Todo» no escribe nada) son un hueco
   (`HuecosDelResumen`, `features/hoja/components/huecos-del-resumen.ts`): `src/app` une `pantallas/comentarios-resumen.ts` (`Pestanas`, sólo la cáscara `diferido()`) y
   `pantallas/comprobantes-resumen.ts` (`Comprobantes`, bajo los adjuntos) en `listado-con-acciones.tsx`, y el servidor manda `quienesDelResumen()` (`puedeAdjuntar` y `puedeModerar` por
   id, de las reglas del «⋯» sobre la fila: ninguna pregunta a la base; una cotización sin entrada ahí no adjunta ni modera). Detalle: `areas/comentarios/CLAUDE.md` › «El resumen». «Nueva cotización»

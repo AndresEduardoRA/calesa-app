@@ -295,6 +295,11 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   5.219) y ≤ 240 nodos (medido 165: ≈ 15 por fila, porque cada una lleva n.º, título, insignias, `<Monto>`, modo, autor, fecha y dos acciones; el tope de 65
   del historial era para filas de 3 nodos). Código: la isla al acercarse y la cáscara `diferido()` en su `diferidos.tsx`; el bloque, al acercarse (guardada) o
   al abrir el resumen. `/cotizaciones/[id]` 458,9 de 460 KB; `/cotizaciones` 373,6 de 380 (sólo la cáscara del hueco; el resumen ya era diferido).
+- **La barra del resumen** (`e2e/cotizaciones-drawer.spec.ts`): abrir el resumen no pide nada nuevo: el «⋯» y «Compartir» salen de lo que la página ya leyó. La
+  cotización del resumen que no está en la página (una línea de un grupo desplegado, otra página) suma su id a las tres lecturas por clave primaria de las marcas
+  (`conLaDelResumen()`) y una llamada a `cotizaciones_modos_de([id])` dentro de `leerLaDelResumen()`, en el mismo pedido al servidor. La barra suma 3 botones al
+  resumen y ninguno a la lista (los diálogos cerrados no dibujan). Código: `AccionesDelResumen` y `DatosDelResumen` viajan en el chunk diferido del resumen;
+  en frío, unas líneas del listado: `/cotizaciones` midió 386,9 KB de 390 (lo mismo que antes).
 - **«Compartir la cotización»** (`e2e/cotizaciones-compartir.spec.ts`): por apertura, un `GET /cotizaciones/<id>/compartir` (la hoja guardada, `cotizacion_tarjeta`,
   el vehículo y la subasta por clave primaria, el autor y los ajustes: lo mismo que un PDF, sin dibujarlo) y la portada con la caché del navegador (un 304 con su
   ETag); al elegir «Fotos», `…/compartir/fotos` (el vehículo por `cotizaciones_pkey` y `vehiculos_imagenes` por `vehiculo_id`, ≤ 24) con miniaturas de 480 px

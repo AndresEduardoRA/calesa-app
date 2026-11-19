@@ -439,8 +439,8 @@ las trampas, en `docs/LECCIONES.md`.
 - **El resumen de la cotización lleva arriba sus acciones.** «Abrir cotización» (la principal), «Compartir cotización» y el «⋯» con la lista única de la fila sin
   «Compartir» (ya está a la vista), los mismos `menuDeFila` y `compartirDe` de la tarjeta: una sola lista de acciones. La cotización del resumen que no está en la
   página (una línea de un grupo desplegado, otra página) entra a los menús con `conLaDelResumen()`: un id más en las tres lecturas por clave primaria de las marcas.
-  Los diálogos del listado se dibujan dentro del Drawer mientras está abierto (un modal hermano cuenta como un clic afuera y lo cierra) y en el listado si no: un solo
-  montaje a la vez. El panel es `ancho="amplio"`: con el normal (3/4 del celular) no caben «Abrir» y «Compartir» mitad y mitad con el «⋯» a 44 px. Barra pegajosa no:
+  Los diálogos del listado se dibujan dentro del Drawer mientras está abierto y su código ya llegó (un modal hermano cuenta como un clic afuera y lo cierra) y en el
+  listado si no (así un `?panel=` de la URL no espera al chunk del resumen): un solo montaje a la vez. El panel es `ancho="amplio"`: con el normal (3/4 del celular) no caben «Abrir» y «Compartir» mitad y mitad con el «⋯» a 44 px. Barra pegajosa no:
   le quita alto a la portada en un panel corto. Enviar a la papelera desde ese «⋯» deja el resumen abierto: al refrescarse dice que ya no está disponible y
   «Deshacer» la devuelve.
 - **El JS de `/cotizaciones` sube a 390 KB.** La tarjeta de la lista lleva la portada en frío (se ve al llegar: `next/image`, el recuadro y la cáscara del visor), el
