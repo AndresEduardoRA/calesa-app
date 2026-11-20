@@ -17,6 +17,7 @@ import {
   publicarLaVersionSiguiente,
 } from './soporte/cotizar-formula'
 import { sembrarBorrador } from './soporte/formula-versiones'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // Publicar el borrador de la fórmula con nota desde la Fórmula de un origen (Configuración › Orígenes) (4.20-2b, `docs/UX.md` › «Cotización: fórmula (estados propios)»): por
 // `formula_publicar()` con la publicada que se leyó; la nota vacía se rechaza antes de pedir; el PT409 de la base se muestra tal cual (sin «Recargá», 4.20-1) con
@@ -69,8 +70,8 @@ test.afterAll(async () => {
 })
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
-  await page.goto(`/configuracion/origenes/${origenId}/formula${resto}`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origenId, 'planilla', resto)
+  await enLaPestana(page, 'Planilla')
 }
 
 const modal = (page: Page) => page.getByRole('dialog', { name: 'Publicar el borrador' })

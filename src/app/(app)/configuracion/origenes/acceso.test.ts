@@ -43,7 +43,7 @@ describe('pestanasDelOrigen', () => {
       ['campos', `/configuracion/origenes/${A}/campos`],
       ['categorias', `/configuracion/origenes/${A}/categorias`],
       ['flujo', `/configuracion/origenes/${A}/flujo`],
-      ['formula', `/configuracion/origenes/${A}/formula`],
+      ['formulas', `/configuracion/origenes/${A}/formulas`],
       ['tablas', `/configuracion/origenes/${A}/tablas`],
     ])
   })
@@ -57,11 +57,11 @@ describe('pestanasDelOrigen', () => {
       campos: undefined,
       categorias: undefined,
       flujo: 'Lo configura quien tiene el permiso «Configurar el flujo».',
-      formula: undefined,
+      formulas: undefined,
       tablas: undefined,
     })
     const enOtro = pestanasDelOrigen(con('cotizaciones.configurar', B), A)
-    expect(enOtro.find((p) => p.clave === 'formula')?.motivo).toBe(
+    expect(enOtro.find((p) => p.clave === 'formulas')?.motivo).toBe(
       'Lo configura quien tiene el permiso «Configurar el cotizador».',
     )
     expect(enOtro.find((p) => p.clave === 'tablas')?.motivo).toBe(
@@ -71,7 +71,7 @@ describe('pestanasDelOrigen', () => {
 
   it('puedeAbrirLaPestana dice lo mismo que las pestañas', () => {
     expect(puedeAbrirLaPestana(con('flujos.configurar', A), A, 'flujo')).toBe(true)
-    expect(puedeAbrirLaPestana(con('flujos.configurar', A), A, 'formula')).toBe(false)
+    expect(puedeAbrirLaPestana(con('flujos.configurar', A), A, 'formulas')).toBe(false)
     expect(puedeAbrirLaPestana(con('flujos.configurar', A), A, 'campos')).toBe(true)
   })
 })

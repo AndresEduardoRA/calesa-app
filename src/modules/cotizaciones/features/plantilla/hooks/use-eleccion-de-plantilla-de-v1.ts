@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
+import { rutaDeLaFormula } from '@/shared/lib/rutas'
 import { useRegional } from '@/shared/ui/regional'
 import { avisarExito } from '@/shared/ui/toasts'
 import type { PlantillaDeV1ParaElegir } from '../../../entities/plantilla/datos-de-plantillas-de-v1'
@@ -14,7 +14,7 @@ import { usePlantillasDeV1 } from './use-plantillas-de-v1'
 export type PasoDeLaEleccion = 'elegir' | 'confirmar'
 
 // El modal «Empezar desde una plantilla» como modelo: la lectura al abrir, la plantilla elegida, el paso (elegir o confirmar, sólo si hay borradores o avisos) y
-// aplicar. Al aplicar avisa y lleva a la Fórmula del origen (la action ya revalidó la página); un rechazo queda en el modal con su salida.
+// aplicar. Al aplicar avisa y lleva a la planilla de esa fórmula (la action ya revalidó la página); un rechazo queda en el modal con su salida.
 export function useEleccionDePlantillaDeV1(
   origen: { id: string; nombre: string },
   formula: { id: string; nombre: string },
@@ -31,7 +31,7 @@ export function useEleccionDePlantillaDeV1(
     avisarExito(
       `Se crearon los borradores de la fórmula y de la tarjeta desde «${plantilla?.nombre ?? ''}». Revísalos y publícalos.`,
     )
-    router.push(rutaDeConfiguracionDeCotizacion(origen.id, 'formula'))
+    router.push(rutaDeLaFormula(origen.id, formula.id, 'planilla'))
   })
   const pregunta =
     plantilla === null || lectura.estado !== 'lista'

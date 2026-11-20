@@ -126,7 +126,7 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
   await expect(paso('Flujo')).toContainText('Sin fases: sus vehículos no se pueden mover')
   await expect(paso('Fórmula').getByRole('link')).toHaveAttribute(
     'href',
-    /\/configuracion\/origenes\/[0-9a-f-]{36}\/formula$/,
+    /\/configuracion\/origenes\/[0-9a-f-]{36}\/formulas$/,
   )
 
   const corea = await origenDeLaBase('corea')

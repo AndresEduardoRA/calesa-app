@@ -15,6 +15,7 @@ import {
   sinTextoCortado,
   textoGrandeAlCargar,
 } from './soporte/recorrido'
+import { urlDeLaFormula } from './soporte/rutas-de-la-formula'
 
 // Configuración al 200 % del texto (5a-18 y c.1/c.2 de la sesión de defectos al 200 %): cada pantalla de Configuración, en el celular y en
 // escritorio, no ensancha la página (`sinScrollHorizontal`), deja a la vista su título, su pestaña activa y lo que pone al borde derecho
@@ -87,8 +88,15 @@ const PANTALLAS: Pantalla[] = [
   { titulo: 'la página de un origen › Campos', url: DE_UN_ORIGEN('campos') },
   { titulo: 'la página de un origen › Categorías', url: DE_UN_ORIGEN('categorias') },
   { titulo: 'la página de un origen › Flujo', url: DE_UN_ORIGEN('flujo') },
-  { titulo: 'la página de un origen › Fórmula', url: DE_UN_ORIGEN('formula') },
-  { titulo: 'la página de un origen › Fórmula › Hoja', url: DE_UN_ORIGEN('formula/hoja') },
+  { titulo: 'la página de un origen › Fórmulas', url: DE_UN_ORIGEN('formulas') },
+  {
+    titulo: 'la página de un origen › una fórmula › Planilla',
+    url: () => urlDeLaFormula(origen.id, 'planilla'),
+  },
+  {
+    titulo: 'la página de un origen › una fórmula › Hoja',
+    url: () => urlDeLaFormula(origen.id, 'hoja'),
+  },
   { titulo: 'la página de un origen › Tablas', url: DE_UN_ORIGEN('tablas') },
   { titulo: 'Leads › Campos', url: () => '/configuracion/leads/campos' },
   { titulo: 'Leads › Orígenes del lead', url: () => '/configuracion/leads/origenes' },

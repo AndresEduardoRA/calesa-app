@@ -4,7 +4,7 @@
 import { z } from 'zod'
 import type { ResultadoDeAccion } from '@/shared/lib/enviar-accion'
 import { conflicto, errorDePostgrest, fallo, ok } from '@/shared/lib/errores'
-import { esquemaDeLosAvisos, type AvisoDeLaCopia } from './avisos-de-la-copia'
+import { esquemaDeLosAvisos, type AvisoDeLaCopia } from '../avisos-de-la-copia'
 
 export type RespuestaDeLaBase = {
   data: unknown

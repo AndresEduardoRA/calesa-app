@@ -2,7 +2,7 @@ import { IdCardIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
 import Link from 'next/link'
 import { datosO } from '@/shared/lib/errores'
-import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
+import { rutaDeLaFormula } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { leerPlantillaDelOrigen } from '../../../areas/plantilla/composicion'
@@ -50,13 +50,13 @@ export async function SeccionDeLaPlantilla({
     return (
       <EstadoVacio
         Icono={IdCardIcon}
-        titulo={`Falta publicar la fórmula de ${origen.nombre}: la tarjeta se arma con sus nodos.`}
+        titulo={`Falta publicar la planilla de «${formula.nombre}»: la tarjeta se arma con sus filas.`}
         accion={
           <Link
-            href={rutaDeConfiguracionDeCotizacion(origen.id, 'formula')}
+            href={rutaDeLaFormula(origen.id, formula.id, 'planilla')}
             className={buttonVariants({ className: 'min-h-11 md:min-h-8' })}
           >
-            Ir a la fórmula
+            Ir a la planilla
           </Link>
         }
         compacto

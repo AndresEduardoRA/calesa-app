@@ -10,6 +10,7 @@ import {
 } from './soporte/cotizar-formula'
 import { sembrarBorrador, sembrarVersiones } from './soporte/formula-versiones'
 import { literal, sql } from './soporte/sql'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // Revertir la fórmula a una versión archivada desde la Fórmula de un origen (Configuración › Orígenes) (4.20-2b, `docs/UX.md` › «Cotización: fórmula (estados propios)»): publica la
 // N+1 como copia de esa versión con su diseño (`formula_revertir()`), sin tocar el borrador; la nota viene escrita y vacía se rechaza antes de pedir; el PT409 de la base
@@ -49,9 +50,9 @@ test.afterAll(async () => {
 })
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
-  await page.goto(`/configuracion/origenes/${origenId}/formula${resto}`)
+  await abrirLaFormula(page, origenId, 'planilla', resto)
   // Con `?panel=` el modal puede montarse antes de mirar: deja la página detrás con `aria-hidden`, y el título sigue dibujado.
-  await enLaPestana(page, 'Fórmula', { includeHidden: true })
+  await enLaPestana(page, 'Planilla', { includeHidden: true })
 }
 
 const modal = (page: Page, version: number) =>

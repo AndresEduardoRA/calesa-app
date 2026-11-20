@@ -10,6 +10,7 @@ import type {
   PropsDeLaTarjetaEnVivo,
 } from '../../../entities/tarjeta-en-vivo'
 import { usePanelDeLaFormula } from '../hooks/use-panel-de-la-formula'
+import { AvisosDeLaCopia } from './avisos-de-la-copia'
 import { AccionesDeLaFormula } from './acciones-de-la-formula'
 import { SesionDeLaFormulaDiferida } from './diferidos'
 import { VistaDeLaFormula } from './vista-de-la-formula'
@@ -74,6 +75,7 @@ export function FormulaDelOrigen({
   }
   return (
     <div className="grid min-w-0 gap-4">
+      <AvisosDeLaCopia origenId={origen.id} formulaDelOrigenId={formulaDelOrigenId} />
       {panel.editando && sobre ? null : (
         <VistaDeLaFormula
           origen={origen}
@@ -86,6 +88,7 @@ export function FormulaDelOrigen({
         <SesionDeLaFormulaDiferida
           key={`${formulaDelOrigenId}:${String(vuelta)}:${String(generacion.sesion)}`}
           origen={origen}
+          formulaDelOrigenId={formulaDelOrigenId}
           formulaId={sobre.id}
           sobre={sobreQue(formula)}
           avanzado={panel.editando}

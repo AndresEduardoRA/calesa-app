@@ -104,6 +104,7 @@ export function PlanillaDeLaFormula(p: PropsDeLaPlanilla) {
           />
           <TarjetaDeLaUnidad
             origenId={p.origen.id}
+            formulaDelOrigenId={p.formulaDelOrigenId}
             tarjeta={p.tarjeta}
             TarjetaEnVivo={p.TarjetaEnVivo}
             vista={planilla.vista}

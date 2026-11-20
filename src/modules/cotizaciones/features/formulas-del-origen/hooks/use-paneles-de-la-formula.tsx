@@ -59,6 +59,8 @@ type Args = {
   activa: { id: string; nombre: string } | null
   // «Copiar»: en la lista abre «Nueva fórmula» con la copia; en el editor lleva a la lista con ese panel.
   alCopiar: (formula: FormulaDeLaLista) => void
+  // «Activar…»: en la lista abre su panel; el editor lo cambia por ir a la lista con ese panel (ahí se ve qué deja de usarse).
+  alActivar?: (formula: FormulaDeLaLista) => void
   // Desde el editor, archivar o eliminar vuelven a la lista.
   volverALaLista: boolean
 }
@@ -70,6 +72,7 @@ export function usePanelesDeLaFormula({
   formulas,
   activa,
   alCopiar,
+  alActivar,
   volverALaLista,
 }: Args): {
   menuDe: (formula: FormulaDeLaLista) => AccionDeMenu[]
@@ -81,21 +84,11 @@ export function usePanelesDeLaFormula({
   const eliminar = usePanelDeLaFormula(PANEL_ELIMINAR_FORMULA, formulas)
   const menuDe = (formula: FormulaDeLaLista) =>
     menuDeLaFormulaDelOrigen(formula, {
-      alRenombrar: () => {
-        renombrar.abrir(formula.id)
-      },
-      alCopiar: () => {
-        alCopiar(formula)
-      },
-      alActivar: () => {
-        activar.abrir(formula.id)
-      },
-      alArchivar: () => {
-        archivar.abrir(formula.id)
-      },
-      alEliminar: () => {
-        eliminar.abrir(formula.id)
-      },
+      alRenombrar: () => renombrar.abrir(formula.id),
+      alCopiar: () => alCopiar(formula),
+      alActivar: () => (alActivar ? alActivar(formula) : activar.abrir(formula.id)),
+      alArchivar: () => archivar.abrir(formula.id),
+      alEliminar: () => eliminar.abrir(formula.id),
     })
   const paneles = (
     <>

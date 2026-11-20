@@ -181,8 +181,8 @@ test('E2E el inicio dice en Orígenes qué le falta a un origen nuevo, con su en
     name: `${origen.nombre}: falta publicar la fórmula y publicar la tarjeta`,
     exact: true,
   })
-  await expect(falta).toHaveAttribute('href', `/configuracion/origenes/${origen.id}/formula`)
+  await expect(falta).toHaveAttribute('href', `/configuracion/origenes/${origen.id}/formulas`)
   await falta.click()
-  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${origen.id}/formula$`))
+  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${origen.id}/formulas$`))
   await expect(page.getByRole('heading', { name: origen.nombre, level: 1 })).toBeVisible()
 })

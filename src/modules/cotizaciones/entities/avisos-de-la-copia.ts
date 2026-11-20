@@ -1,6 +1,7 @@
 // Los avisos de la copia (docs/GLOSARIO.md): lo que `formula_del_origen_crear()` cambió o no pudo resolver al copiar una fórmula de otro origen. Viajan de la
 // action a la planilla por `sessionStorage` (una vez, por id de la fórmula) y los datos del vehículo que faltan quedan además marcados en sus filas.
 import { z } from 'zod'
+import { textoDelCampoQueFalta } from './campos-que-faltan'
 
 export const esquemaDeUnAviso = z.discriminatedUnion('tipo', [
   z.object({ tipo: z.literal('tabla_del_destino'), clave: z.string().min(1) }),
@@ -36,7 +37,7 @@ export function textosDeLosAvisos(avisos: readonly AvisoDeLaCopia[]): TextoDeUnA
       case 'campo':
         return {
           clave: `${String(i)}:${aviso.nodo}`,
-          texto: `El dato «${aviso.campo}» no existe en este origen: elige otro o créalo.`,
+          texto: textoDelCampoQueFalta(aviso.campo),
           tablas: false,
         }
     }

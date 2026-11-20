@@ -10,6 +10,14 @@ export const CAMPOS_COMUNES: readonly string[] = [
   'precio',
 ]
 
+// Cuántas claves de campos del origen se leen para saberlo: los de un origen son decenas, y PostgREST corta en 1.000 (`max_rows`).
+export const TOPE_DE_CAMPOS_DEL_ORIGEN = 1000
+
+// Si la definición nombra algún dato del vehículo que no es una columna común: sólo entonces hace falta leer los campos del origen.
+export function nombraCamposPropios(definicion: { nodos: readonly NodoLeido[] } | null): boolean {
+  return camposQueFaltan(definicion, new Set()).length > 0
+}
+
 export type CampoQueFalta = { nodo: string; campo: string }
 
 type NodoLeido = { id?: unknown; tipo?: unknown; campo?: unknown }
@@ -26,3 +34,7 @@ export function camposQueFaltan(
     return [{ nodo: nodo.id, campo }]
   })
 }
+
+// Lo que dice la fila de la planilla que nombra un dato que el origen no tiene.
+export const textoDelCampoQueFalta = (campo: string) =>
+  `El dato «${campo}» no existe en este origen: elige otro o créalo.`

@@ -7,6 +7,7 @@ import { lecturaEnCuadricula } from '../../../entities/plantilla/lectura-en-cuad
 import type { PropsDelEditor } from '../../../entities/plantilla/props-del-editor'
 import type { ReferenciaDeLaTarjeta } from '../../../entities/referencia-de-la-tarjeta'
 import type { PropsDelLienzoDeLaPlantilla } from '../../../entities/vista-previa-de-la-plantilla'
+import { useLugarPedido } from '../hooks/use-lugar-pedido'
 import { usePanelDeLaTarjeta } from '../hooks/use-panel-de-la-tarjeta'
 import { useReferenciaDelLienzo } from '../hooks/use-referencia-del-lienzo'
 import { AccionesDeLaPlantilla } from './acciones-de-la-plantilla'
@@ -51,7 +52,11 @@ export function PestanaDeLaTarjeta({ editor, referencia, Lienzo, puedeCambiarElL
     () => true,
     () => false,
   )
-  const [irA, setIrA] = useState<{ donde: string; vez: number } | null>(null)
+  // El primer `irA` puede venir de la URL (`?lugar=`, el «Ir a la celda» del rechazo de «Activar»).
+  const lugarPedido = useLugarPedido()
+  const [irA, setIrA] = useState<{ donde: string; vez: number } | null>(() =>
+    lugarPedido === null ? null : { donde: lugarPedido, vez: 1 },
+  )
   const clave = useClaveDelEditor(
     `${editor.origen.id}:${editor.formulaDelOrigenId}`,
     editor.esperada,

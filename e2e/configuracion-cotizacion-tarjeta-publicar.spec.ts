@@ -17,6 +17,7 @@ import {
   visibilidadDeLaMini,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
+import { urlDeLaFormula } from './soporte/rutas-de-la-formula'
 
 // @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
 
@@ -49,7 +50,7 @@ test.beforeEach(() => {
   borrarLasPlantillasDelOrigen(origenId())
 })
 
-const URL_DE_LA_TARJETA = () => `/configuracion/origenes/${origenId()}/formula/tarjeta`
+const URL_DE_LA_TARJETA = () => urlDeLaFormula(origenId(), 'tarjeta')
 
 async function abrirTarjeta(page: Page, extra = '') {
   await entrar(page, configuradora, { fresco: true })

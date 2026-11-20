@@ -3,7 +3,7 @@
 // planilla o el diseño, su sub-pestaña. Lo demás no tiene destino.
 import type { Route } from 'next'
 import { rutaDeLaFormula } from '@/shared/lib/rutas'
-import { CLAVE_DE_LA_FILA, CLAVE_DEL_LUGAR } from './rutas'
+import { CLAVE_DE_LA_FILA_PEDIDA, CLAVE_DEL_LUGAR_PEDIDO } from '../llegada-al-editor'
 
 export type DestinoDelRechazo = { etiqueta: string; ruta: Route }
 
@@ -27,13 +27,13 @@ export function destinoDelRechazoDeActivar(
     if (fila === '') return null
     return {
       etiqueta: 'Ir a la fila',
-      ruta: rutaDeLaFormula(origenId, formulaId, 'planilla', { [CLAVE_DE_LA_FILA]: fila }),
+      ruta: rutaDeLaFormula(origenId, formulaId, 'planilla', { [CLAVE_DE_LA_FILA_PEDIDA]: fila }),
     }
   }
   if (LUGAR_DE_LA_TARJETA.test(causa)) {
     return {
       etiqueta: irAlLugar(causa),
-      ruta: rutaDeLaFormula(origenId, formulaId, 'tarjeta', { [CLAVE_DEL_LUGAR]: causa }),
+      ruta: rutaDeLaFormula(origenId, formulaId, 'tarjeta', { [CLAVE_DEL_LUGAR_PEDIDO]: causa }),
     }
   }
   if (causa === 'tarjeta') {

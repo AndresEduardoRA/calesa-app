@@ -17,6 +17,7 @@ import {
 } from './soporte/plantilla'
 import { publicarLaMiniConMiembros } from './soporte/plantilla-volumen'
 import { borrarPersonasDePrueba, borrarRolesDePrueba } from './soporte/base'
+import { abrirLaFormula, urlDeLaFormula } from './soporte/rutas-de-la-formula'
 
 // @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
 
@@ -102,7 +103,7 @@ test.afterAll(async ({}, info) => {
 })
 
 async function abrir(page: Page, id: string) {
-  await page.goto(`/configuracion/origenes/${id}/formula/tarjeta`)
+  await abrirLaFormula(page, id, 'tarjeta')
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(page.getByRole('grid', { name: 'Lienzo de la tarjeta' })).toBeVisible()
 }
@@ -111,7 +112,7 @@ test('E7: el primer HTML no lleva un nodo restringido que la plantilla no nombra
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  const respuesta = await page.request.get(`/configuracion/origenes/${mini.id}/formula/tarjeta`)
+  const respuesta = await page.request.get(urlDeLaFormula(mini.id, 'tarjeta'))
   expect(respuesta.ok()).toBe(true)
   const html = await respuesta.text()
   // El valor CIF es de «costos» y la plantilla no lo nombra: no viaja. La descripción de un nodo del nivel «todos» sí (el selector de «Dato» la ofrece).
@@ -123,7 +124,7 @@ test('E7: con 500 miembros y la cuadrícula más grande se miden los bytes del p
   page,
 }, info) => {
   await entrar(page, configuradora, { fresco: true })
-  const respuesta = await page.request.get(`/configuracion/origenes/${con500.id}/formula/tarjeta`)
+  const respuesta = await page.request.get(urlDeLaFormula(con500.id, 'tarjeta'))
   const bytes = Buffer.byteLength(await respuesta.text())
   await abrir(page, con500.id)
   const lienzo = page.getByRole('grid', { name: 'Lienzo de la tarjeta' })
@@ -138,10 +139,7 @@ test('E7: con 500 miembros y la cuadrícula más grande se miden los bytes del p
     }
   })
   // El JS en frío de la ruta (con el build de `.next-e2e`; el editor llega después por `diferido()`): se anota, la ruta no tiene presupuesto.
-  const js = await medirJsEnFrio(
-    page.context(),
-    `/configuracion/origenes/${con500.id}/formula/tarjeta`,
-  )
+  const js = await medirJsEnFrio(page.context(), urlDeLaFormula(con500.id, 'tarjeta'))
   const medido = `${String(bytes)} B, ${String(nodos)} nodos (${String(celdas)} celdas, ${String(vacias)} casillas vacías), JS en frío ${String(enKB(js.bytes))} KB gz en ${String(js.chunks)} chunks`
   info.annotations.push({ type: 'medido', description: medido })
   console.warn(

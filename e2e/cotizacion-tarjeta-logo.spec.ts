@@ -33,6 +33,7 @@ import {
   publicarComoLaDuena,
   urlDeLaHoja,
 } from './soporte/tarjeta-cuadricula'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // El logo de la empresa en la tarjeta de la cotización (`docs/COTIZADOR.md` › «Plantilla de tarjeta (PDF)»): la celda `{tipo: 'logo'}` dibuja sólo el logo,
 // `contain` en la celda menos su relleno y alineado como la celda, en la vista previa (hoja nueva y guardada), el PDF y la imagen de la tarjeta, con un logo WebP
@@ -229,7 +230,7 @@ test('E2E el editor ofrece el dato «Nombre de la empresa» y avisa, con «Abrir
       "update public.ajustes_empresa set logo_ruta = 'logos/no-existe-e2e-tjlogo.webp' where id = 1",
     )
     await entrar(page, duena, { fresco: true })
-    await page.goto(`/configuracion/origenes/${origen}/formula/tarjeta`)
+    await abrirLaFormula(page, origen, 'tarjeta')
     const lienzo = page.getByRole('grid', { name: 'Lienzo de la tarjeta' })
     await expect(lienzo).toBeVisible()
     await expect(page.locator('[data-referencia-del-lienzo]')).toHaveValue('cotizacion')

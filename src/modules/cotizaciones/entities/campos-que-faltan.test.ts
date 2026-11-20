@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { camposQueFaltan } from './campos-que-faltan'
+import { camposQueFaltan, nombraCamposPropios, textoDelCampoQueFalta } from './campos-que-faltan'
 
 // Los casos de `supabase/tests/areas/formula/fdo-crear.sql`: un campo común nunca falta; uno del origen tampoco; uno que el origen no tiene, sí.
 describe('camposQueFaltan', () => {
@@ -22,5 +22,23 @@ describe('camposQueFaltan', () => {
 
   it('sin definición, nada', () => {
     expect(camposQueFaltan(null, new Set())).toEqual([])
+  })
+})
+
+describe('nombraCamposPropios', () => {
+  it('sólo con un dato del vehículo que no es común hace falta leer los campos del origen', () => {
+    const conComun = { nodos: [{ id: 'a', tipo: 'campo_vehiculo', campo: 'anio' }] }
+    const conPropio = { nodos: [{ id: 'b', tipo: 'campo_vehiculo', campo: 'cilindrada' }] }
+    expect(nombraCamposPropios(null)).toBe(false)
+    expect(nombraCamposPropios(conComun)).toBe(false)
+    expect(nombraCamposPropios(conPropio)).toBe(true)
+  })
+})
+
+describe('textoDelCampoQueFalta', () => {
+  it('nombra el dato y dice qué hacer', () => {
+    expect(textoDelCampoQueFalta('cilindrada')).toBe(
+      'El dato «cilindrada» no existe en este origen: elige otro o créalo.',
+    )
   })
 })

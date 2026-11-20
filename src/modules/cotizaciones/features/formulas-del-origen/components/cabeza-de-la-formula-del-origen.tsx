@@ -6,8 +6,14 @@ import { useRouter } from 'next/navigation'
 import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
 import { rutaDeLasFormulas } from '@/shared/lib/rutas'
 import { EsquinaDeAcciones, MasAcciones } from '@/shared/ui/lista'
+import { salirSinPerder } from '@/shared/ui/salida-con-cambios'
 import type { FormulaDeLaLista } from '../../../entities/formulas-del-origen/lista'
-import { CLAVE_DE_LA_COPIA, PANEL_NUEVA_FORMULA } from '../../../entities/formulas-del-origen/rutas'
+import {
+  CLAVE_DE_LA_COPIA,
+  CLAVE_DE_LA_FORMULA,
+  PANEL_ACTIVAR_FORMULA,
+  PANEL_NUEVA_FORMULA,
+} from '../../../entities/formulas-del-origen/rutas'
 import { usePanelesDeLaFormula } from '../hooks/use-paneles-de-la-formula'
 import { EstadoDeLaFormula } from './estado-de-la-formula'
 
@@ -18,20 +24,24 @@ type Props = {
 }
 
 // La cabeza del editor de una fórmula del origen (`…/formulas/<id>/planilla|hoja|tarjeta`): «‹ Fórmulas», el nombre, el estado y el «⋯» (el mismo de su fila en la
-// lista). «Copiar» lleva a la lista con «Nueva fórmula» abierto; archivar o eliminar vuelven a la lista. Las sub-pestañas las pone `src/app` debajo.
+// lista). «Copiar» y «Activar…» llevan a la lista con su panel abierto (antes preguntan si hay cambios sin guardar); archivar o eliminar vuelven a la lista. Las sub-pestañas las pone `src/app` debajo.
 export function CabezaDeLaFormulaDelOrigen({ origen, formula, activa }: Props) {
   const router = useRouter()
+  // Con cambios sin guardar en la planilla, la hoja o la tarjeta, antes pregunta.
+  const irALaLista = (consulta: Record<string, string>) => {
+    salirSinPerder(() => {
+      router.push(rutaDeLasFormulas(origen.id, consulta))
+    })
+  }
   const { menuDe, paneles } = usePanelesDeLaFormula({
     origen,
     formulas: [formula],
     activa,
     alCopiar: (copia) => {
-      router.push(
-        rutaDeLasFormulas(origen.id, {
-          [CLAVE_DE_PANEL]: PANEL_NUEVA_FORMULA,
-          [CLAVE_DE_LA_COPIA]: copia.id,
-        }),
-      )
+      irALaLista({ [CLAVE_DE_PANEL]: PANEL_NUEVA_FORMULA, [CLAVE_DE_LA_COPIA]: copia.id })
+    },
+    alActivar: (aActivar) => {
+      irALaLista({ [CLAVE_DE_PANEL]: PANEL_ACTIVAR_FORMULA, [CLAVE_DE_LA_FORMULA]: aActivar.id })
     },
     volverALaLista: true,
   })

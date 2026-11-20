@@ -16,6 +16,7 @@ import {
   sembrarBorradorDePlantilla,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
 
@@ -50,7 +51,7 @@ test.beforeEach(() => {
 
 async function abrirTarjeta(page: Page, extra = '') {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto(`/configuracion/origenes/${origenId()}/formula/tarjeta${extra}`)
+  await abrirLaFormula(page, origenId(), 'tarjeta', extra)
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
 }
 

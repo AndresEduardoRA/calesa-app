@@ -262,7 +262,7 @@ describe('rutaDeParteDelOrigen', () => {
       `/configuracion/origenes/${O}/campos`,
       `/configuracion/origenes/${O}/categorias`,
       `/configuracion/origenes/${O}/flujo`,
-      `/configuracion/origenes/${O}/formula`,
+      `/configuracion/origenes/${O}/formulas`,
       `/configuracion/origenes/${O}/tablas`,
     ])
     expect(rutaDeParteDelOrigen(O, 'flujo', { fase: 'f', vista: 'lista' })).toBe(

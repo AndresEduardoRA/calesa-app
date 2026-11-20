@@ -7,3 +7,4 @@ export type { FormulaAbierta, ActivaDelOrigen } from '../../infra/formulas-del-o
 export type { ListaDeFormulasDelOrigen } from '../../infra/formulas-del-origen/lista'
 export type { FormulaDeLaLista } from '../../entities/formulas-del-origen/lista'
 export { estadoDeLaFormula } from '../../entities/formulas-del-origen/lista'
+export { CLAVE_DE_LA_COPIA, PANEL_NUEVA_FORMULA } from '../../entities/formulas-del-origen/rutas'

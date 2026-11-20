@@ -82,7 +82,7 @@ export const PARTES_DEL_ORIGEN = [
   'campos',
   'categorias',
   'flujo',
-  'formula',
+  'formulas',
   'tablas',
 ] as const
 

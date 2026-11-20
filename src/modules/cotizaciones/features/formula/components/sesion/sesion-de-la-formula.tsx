@@ -21,6 +21,8 @@ import { EstadoDeLaLectura } from './estado-de-la-lectura'
 
 export type PropsDeLaSesion = {
   origen: { id: string; nombre: string }
+  // La fórmula del origen que se edita (sus enlaces a la tarjeta).
+  formulaDelOrigenId: string
   // La versión que se edita: la del borrador o, sin él, la publicada.
   formulaId: string
   // «Sobre el borrador de <persona>.» o «Sobre la versión N publicada.»
@@ -85,6 +87,7 @@ function SesionLista({ leida, ...p }: PropsDeLaSesion & { leida: FormulaParaEdit
       editor={editor}
       diseno={leida.diseno}
       origen={p.origen}
+      formulaDelOrigenId={p.formulaDelOrigenId}
       sobre={p.sobre}
       unidad={unidad}
       alCambiarUnidad={setUnidad}
