@@ -183,6 +183,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
+- **[T414]** Con el texto al 200 % en el celular, la cabecera del resumen de la cotización ocupa casi toda la pantalla (el monto se corta contra el borde y las pestañas quedan debajo, sin desplazamiento del drawer, que va con `desplazamiento="propio"`): dejar que el drawer se desplace cuando la cabecera no deja alto a las pestañas, o plegar la cabecera a título y total (`resumen-de-cotizacion.tsx`, `cabecera-del-resumen.tsx`).
+- **[T414]** En el celular, la fila «Creada» de la cabecera del resumen parte su valor bajo la etiqueta («Creada» sola y debajo «hace 2 minutos · …»): dejar la etiqueta con el primer tramo del valor.
 - **[—]** La imagen de la tarjeta quita el recuadro al cargar (`onLoad`) y la grande del resumen puede verse un instante como un marco gris vacío hasta que el
   navegador la decodifica: pasar a «lista» tras `img.decode()` (`imagen-de-la-tarjeta.tsx`, `useCargaDeLaImagen()`).
 - **[—]** En el celular, el buscador de la barra superior muestra «Bu» cortado contra «+ Nuevo»: dibujar sólo la lupa cuando no cabe la palabra.

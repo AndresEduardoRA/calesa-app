@@ -326,7 +326,7 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
     lectura), y «Ver todas» (`/cotizaciones?lead=`, sin número) si hay más. En el vehículo, «De este
     vehículo» (ver abajo): de a 10 con «Ver más» hasta 100 y «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`), con «Cotizar» en el título y las casillas
     de «Comparar» en su fila. Los dos se leen al acercarse; esqueleto, error con «Reintentar», «Sin cotizaciones que puedas ver.».
-  - **De este vehículo** (bloque de la guardada y del resumen de `/cotizaciones`): las cotizaciones del mismo vehículo que quien mira ve, **la aprobada
+  - **De este vehículo** (bloque de la guardada y quinta pestaña del resumen de la cotización): las cotizaciones del mismo vehículo que quien mira ve, **la aprobada
     primero** (insignia «Aprobada» y borde de acento) y después de la más nueva; de a 10 con «Ver más» y, en 100, «Mostrando las 100 más recientes.» con
     «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`). Cada fila: «N.º N · título» (`tituloDeLaCotizacion()`: el suyo, si no el del vehículo, si no «Cotización n.º N»), insignias
     «Aprobada», «Final», «Vencida» y «Esta» (la que se mira), el total (`<Monto>`) con el nombre del modo de tipo de cambio, autor y fecha; **«Aprobar esta»**
@@ -379,17 +379,17 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   **barra del resumen**: «Abrir cotización» (primario, a `/cotizaciones/<id>`), «Compartir cotización» (el mismo panel de la tarjeta; no en Modo Live ni sin la oferta)
   y, al final, el «⋯» de la fila sin «Compartir» (también para una línea del modal de un grupo o una de otra página); los dos botones crecen por igual: en el celular
   mitad y mitad con el «⋯» a 44 px y, con el texto al 200 %, se parten en filas sin salirse; sin la cotización a la vista (no disponible, error, cargando) no hay barra;
-  sus diálogos se abren sobre el resumen sin cerrarlo. Debajo, la
-  **imagen de la tarjeta** a todo el ancho del resumen, en un marco 15:8 con la imagen entera: fuera de la vista, esperando su turno (a lo sumo cuatro a la vez) o mientras se arma, un recuadro del mismo marco
-  con el total y «Preparando la imagen…»; si falla o no hay red, «No se pudo armar la imagen.» con «Reintentar»; el marco crece con el texto al 200 %; el clic la abre en el
-  visor de fotos (`?visor=imagen-<id>`, que cerrar el resumen borra; un enlace con la clave de antes, `portada-<id>`, también lo abre); en Modo Live, borrosa con «Oculto en Modo Live» encima y sin visor; luego lo de la fila (el título, la clase y «Aprobada», el total con su modo, cliente,
-  vehículo, creada · autor y la vigencia; el número va en el título del panel), «De este vehículo» —ver
-  «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado; sus casillas y «Comparar» abren «Comparar cotizaciones» y «Volver»
-  regresa a este resumen, sin los filtros— y debajo las
-  **pestañas** `?pestana=`: «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
-  para guardarla, «Adjuntar»—, «Adjuntos» —los archivos y, en una final o con alguno, sus comprobantes de sólo lectura—, «Revisiones» y «Comentarios»; cada una se lee al elegirla, por
+  sus diálogos se abren sobre el resumen sin cerrarlo. Debajo, la **cabecera resumida** (fija, ≤ 120 px de alto en escritorio; crece con el texto al 200 %): a la izquierda la **miniatura de la imagen
+  de la tarjeta** (480 px, 15:8, recortada desde arriba a la izquierda; su clic abre el visor de fotos `?visor=imagen-<id>`, que cerrar el resumen borra; mientras se arma o si falla, un recuadro chico con el total y «Preparando…» o «Reintentar»;
+  en Modo Live, borrosa con «Oculto en Modo Live» y sin visor) y, a su derecha, el título (el número va en el del panel), el total con su modo, la clase con «Aprobada» y «Vencida», cliente, vehículo, creada · autor y la vigencia; en el celular, la
+  miniatura a la izquierda y el texto en líneas cortas. Y, ocupando el resto del alto, las **pestañas** `?pestana=` (todo el ancho del panel en partes iguales; si no caben, la lista se desplaza de costado con su pista; la
+  cabecera queda fija y cada pestaña se desplaza por su cuenta): «Todo» —adjuntos, revisiones y comentarios en una línea de tiempo, lo más nuevo arriba, con «Ver más»; vacía ofrece «Agregar comentario» y, con permiso
+  para guardarla, «Adjuntar»—, «Adjuntos» —los archivos y, en una final o con alguno, sus comprobantes de sólo lectura—, «Revisiones», «Comentarios» y, sólo con un vehículo que quien mira ve, **«De este vehículo»** (`?pestana=vehiculo`; sin
+  vehículo, `?pestana=vehiculo` abre «Todo») —ver «Cotizaciones del lead y del vehículo»; sin otras cotizaciones dice «Ésta es la única cotización de este vehículo.»; tras aprobar ahí se refresca el listado; sus casillas y «Comparar» abren «Comparar cotizaciones» y «Volver»
+  regresa a este resumen, sin los filtros—; cada pestaña se lee al elegirla, por
   cursor y con tope, y una que falla lo dice sin tumbar a las otras; se adjunta y se comenta ahí con los permisos de la guardada; una que no se
-  ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, título de la cotización, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
+  ve dice que ya no está disponible. **El resumen también abre sobre la ficha del lead y la del vehículo** (`?cotizacion=<id>`): trae su propia lectura, su barra y su «⋯»; «Abrir cotización» lleva a la página de la
+  cotización con «Volver» a la ficha (`returnTo`) y cerrarlo deja la ficha como estaba); **buscador** (`?q=`: número —«#12» sólo número—, título de la cotización, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
   resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda, los filtros, la vista y la
   agrupación) y, a la derecha de cada fila y sobre la imagen de cada tarjeta, el **«⋯»** con la lista única de acciones según el rol: primero y sola, «Compartir

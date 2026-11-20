@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { z } from 'zod'
 import { puede, requerirSesion } from '@/modules/equipo'
 import {
@@ -17,10 +18,11 @@ import { FichaDeLead, LeadNoDisponible } from '@/modules/leads/pantallas/ficha'
 import { RegistrarVisita } from '@/modules/buscador/pantallas/visita'
 import { datosO } from '@/shared/lib/errores'
 import type { Permisos } from '@/shared/lib/permisos'
-import { unParametro } from '@/shared/lib/rutas'
+import { RUTAS, unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { RegistrarVisto } from '@/modules/equipo/client'
 import { paraActividadDe, paraCotizarDe } from '../rutas-del-menu'
+import { ResumenDeLaPagina } from '../../cotizaciones/resumen-de-la-pagina'
 import { bloquesDeLaFicha } from './bloques'
 
 export const metadata: Metadata = { title: 'Lead' }
@@ -86,6 +88,12 @@ export default async function PaginaLead({ params, searchParams }: PageProps<'/l
         )}
         {...bloquesDeLaFicha(ficha, ve, sesion.permisos, paraCotizar)}
       />
+      {/* El resumen de una cotización (`?cotizacion=`): sólo se lee y se dibuja con esa clave en la URL. */}
+      {ve.cotizaciones ? (
+        <Suspense fallback={null}>
+          <ResumenDeLaPagina parametros={searchParams} ruta={`${RUTAS.leads}/${ficha.id}`} />
+        </Suspense>
+      ) : null}
     </>
   )
 }

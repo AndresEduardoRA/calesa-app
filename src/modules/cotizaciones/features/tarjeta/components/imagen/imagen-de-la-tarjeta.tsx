@@ -29,6 +29,8 @@ export type PropsDeLaImagen = {
   // Dónde se dibuja: el visor vive en `?visor=` con una clave por lugar (`claveDelVisorDeLaImagen()`), así la tarjeta y el resumen abierto de la misma cotización
   // no abren dos visores.
   lugar?: LugarDeLaImagen
+  // La miniatura de una cabecera (el resumen): su recuadro y su aviso de Modo Live en letra chica, sin crecer.
+  miniatura?: boolean
 }
 
 // La imagen (la miniatura, si se pidió un ancho) y la del visor (siempre la grande). «Reintentar» suma `?intento=`: otra URL (la anterior quedó fallida en el navegador).
@@ -50,6 +52,7 @@ export function ImagenDeLaTarjeta({
   ancho,
   recorte = 'contener',
   lugar = 'resumen',
+  miniatura = false,
 }: PropsDeLaImagen) {
   const { live } = useLive()
   const [observar, aLaVista] = useALaVista<HTMLDivElement>({ seguir: true })
@@ -92,7 +95,9 @@ export function ImagenDeLaTarjeta({
       {lista ? (
         <p
           data-imagen-oculta
-          className="pointer-events-none absolute inset-0 items-center justify-center p-4 text-center text-(length:--text-sm) font-medium text-(--color-ink)"
+          className={`pointer-events-none absolute inset-0 items-center justify-center text-center font-medium text-(--color-ink) ${
+            miniatura ? 'p-1 text-(length:--text-xs)' : 'p-4 text-(length:--text-sm)'
+          }`}
         >
           Oculto en Modo Live
         </p>
@@ -101,6 +106,7 @@ export function ImagenDeLaTarjeta({
           total={total}
           fallo={imagen.carga === 'fallo'}
           alReintentar={imagen.reintentar}
+          miniatura={miniatura}
         />
       )}
       {visor.montar ? (

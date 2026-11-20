@@ -13,7 +13,7 @@ import { literal, sql } from './soporte/sql'
 
 // «De este vehículo» (`docs/UX.md` › «Cotización guardada», «Cotizaciones» y «Cotizaciones del lead y del vehículo»): desde una cotización se ven las otras del
 // mismo vehículo, la aprobada primero y marcada, «Esta» la que se mira, y «Aprobar esta» aprueba otra (la base lo confirma, la cabecera se pone al día y «Deshacer» la
-// devuelve). En el detalle, la línea bajo la cabecera salta al bloque; en el resumen del listado, el mismo bloque entre «Abrir cotización» y las pestañas. Quien no
+// devuelve). En el detalle, la línea bajo la cabecera salta al bloque; en el resumen del listado, el mismo bloque como la quinta pestaña (`?pestana=vehiculo`), con Aprobar y Comparar. Quien no
 // aprueba lo ve apagado con su motivo; una cotización sola de su vehículo no dibuja nada. El terreno es el de `soporte/cotizaciones-final.ts` (sembrado sin triggers:
 // el relleno de la aprobada se llama a mano).
 test.describe.configure({ mode: 'serial' })
@@ -148,33 +148,62 @@ test('E2E «Aprobar esta» vuelve aprobada a otra, la cabecera se pone al día y
   await expect(cabecera(page).locator('[data-aprobada]')).toBeVisible()
 })
 
-test('E2E en el resumen del listado, el mismo bloque entre «Abrir cotización» y las pestañas', async ({
+test('E2E en el resumen del listado, «De este vehículo» es la quinta pestaña: aprueba y compara desde ahí', async ({
   page,
 }, info) => {
-  const [, segunda = ''] = tres.ids
+  const [primera = '', segunda = '', tercera = ''] = tres.ids
+  // Sin `?pestana=` abre «Todo»: el bloque no se dibuja hasta elegir la pestaña.
   await abrir(page, t.duena, `/cotizaciones?vehiculo=${tres.vehiculoId}&cotizacion=${segunda}`)
   const drawer = page.getByRole('dialog')
-  await expect(drawer.getByRole('heading', { name: 'De este vehículo' })).toBeVisible()
+  const pestanas = drawer.getByRole('tab')
+  await expect(pestanas).toHaveText([
+    'Todo',
+    'Adjuntos',
+    'Revisiones',
+    'Comentarios',
+    'De este vehículo',
+  ])
+  await expect(drawer.getByRole('tab', { name: 'Todo' })).toHaveAttribute('aria-selected', 'true')
+  await expect(filas(page)).toHaveCount(0)
+  await drawer.getByRole('tab', { name: 'De este vehículo' }).click()
+  await expect(page).toHaveURL(/pestana=vehiculo/)
   await expect(filas(page)).toHaveCount(3)
   await expect(filas(page).first()).toHaveAttribute('data-aprobada', '')
-  // El orden: «Abrir cotización», el bloque y las pestañas.
-  const orden = await drawer.evaluate((d) => {
-    const abrirCotizacion = [...d.querySelectorAll('a')].find(
-      (a) => a.textContent === 'Abrir cotización',
-    )
-    const lista = d.querySelector('[aria-label="Cotizaciones de este vehículo"]')
-    const pestanas = d.querySelector('[role="tablist"]')
-    const despues = (a: Node | null | undefined, b: Node | null | undefined) =>
-      a != null &&
-      b != null &&
-      (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
-    return {
-      bloqueTrasAbrir: despues(abrirCotizacion, lista),
-      pestanasTrasBloque: despues(lista, pestanas),
-    }
-  })
-  expect(orden).toEqual({ bloqueTrasAbrir: true, pestanasTrasBloque: true })
-  await capturar(page, info, 'resumen')
+  // El bloque no repite su título: la pestaña lo es.
+  await expect(drawer.getByRole('heading', { name: 'De este vehículo' })).toHaveCount(0)
+  await capturar(page, info, 'resumen-vehiculo')
+
+  // Aprobar desde la pestaña.
+  const otra = filas(page).filter({ hasText: `N.º ${numeroDe(tercera)}` })
+  await otra.getByRole('button', { name: 'Aprobar esta' }).click()
+  await expect.poll(() => aprobadaDe(tres.vehiculoId)).toBe(tercera)
+  await page
+    .locator('[data-sonner-toast]')
+    .filter({ hasText: `La n.º ${numeroDe(tercera)} es la aprobada del vehículo.` })
+    .getByRole('button', { name: 'Deshacer' })
+    .click()
+  await expect.poll(() => aprobadaDe(tres.vehiculoId)).toBe(primera)
+
+  // Comparar desde la pestaña: vuelve al resumen.
+  await page.getByRole('checkbox', { name: `Comparar la n.º ${numeroDe(primera)}` }).click()
+  await page.getByRole('checkbox', { name: `Comparar la n.º ${numeroDe(tercera)}` }).click()
+  await page.getByRole('link', { name: 'Comparar', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Comparar cotizaciones', level: 1 })).toBeVisible()
+})
+
+test('E2E `?pestana=vehiculo` abre la quinta pestaña', async ({ page }) => {
+  const [, segunda = ''] = tres.ids
+  await abrir(
+    page,
+    t.duena,
+    `/cotizaciones?vehiculo=${tres.vehiculoId}&cotizacion=${segunda}&pestana=vehiculo`,
+  )
+  const drawer = page.getByRole('dialog')
+  await expect(drawer.getByRole('tab', { name: 'De este vehículo' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  await expect(filas(page)).toHaveCount(3)
 })
 
 test('E2E sin `cotizaciones.aprobar`, «Aprobar esta» apagado con su motivo', async ({ page }) => {
@@ -202,8 +231,25 @@ test('E2E una cotización sola de su vehículo no dibuja ni la línea ni el bloq
   await page.goto(`/cotizaciones?vehiculo=${s.vehiculoId}&cotizacion=${sola}`)
   const drawer = page.getByRole('dialog')
   await expect(drawer.getByRole('link', { name: 'Abrir cotización' })).toBeVisible()
-  await expect(drawer.getByRole('tablist')).toBeVisible()
   await expect(drawer.getByRole('heading', { name: 'De este vehículo' })).toHaveCount(0)
+  // Con el vehículo pero sin otras cotizaciones: la pestaña existe y dice que es la única.
+  await drawer.getByRole('tab', { name: 'De este vehículo' }).click()
+  await expect(drawer.getByText('Ésta es la única cotización de este vehículo.')).toBeVisible()
+})
+
+test('E2E sin vehículo, el resumen tiene cuatro pestañas y `?pestana=vehiculo` abre «Todo»', async ({
+  page,
+}) => {
+  const { ids } = await sembrarParaMarcar(t, 'De este E7', { cuantas: 1, sinVehiculo: true })
+  await abrir(page, t.duena, `/cotizaciones?cotizacion=${ids[0] ?? ''}&pestana=vehiculo`)
+  const drawer = page.getByRole('dialog')
+  await expect(drawer.getByRole('tab')).toHaveText([
+    'Todo',
+    'Adjuntos',
+    'Revisiones',
+    'Comentarios',
+  ])
+  await expect(drawer.getByRole('tab', { name: 'Todo' })).toHaveAttribute('aria-selected', 'true')
 })
 
 test('E2E «De este vehículo» cabe en su presupuesto de bytes y de nodos', async ({
@@ -216,7 +262,9 @@ test('E2E «De este vehículo» cabe en su presupuesto de bytes y de nodos', asy
     (r) =>
       r.url().includes('/rpc/cotizaciones_de_este_vehiculo') && r.request().method() === 'POST',
   )
-  await page.goto(`/cotizaciones?vehiculo=${s.vehiculoId}&cotizacion=${s.ids.at(-1) ?? ''}`)
+  await page.goto(
+    `/cotizaciones?vehiculo=${s.vehiculoId}&cotizacion=${s.ids.at(-1) ?? ''}&pestana=vehiculo`,
+  )
   const bytes = (await (await respuesta).body()).length
   // La página de 10 y la aprobada (la más vieja, fuera de la página) primero.
   await expect(filas(page)).toHaveCount(11)

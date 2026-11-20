@@ -157,9 +157,11 @@ describe('ResumenDeCotizacion: la barra de arriba (T320)', () => {
     expect(screen.getByRole('dialog').contains(screen.getByTestId('dialogos'))).toBe(true)
   })
 
-  it('el total va con su modo; la vigencia es un dato', () => {
+  it('el total va con su modo; la vigencia va con la creación', () => {
     dibujar({ busqueda: `?cotizacion=${ID}`, filas: [cotizacion({ modo: 'Paralelo' })] })
     expect(document.querySelector('[data-modo-del-total]')?.textContent).toBe('Paralelo')
-    expect(screen.getByText('Vigencia').nextElementSibling?.textContent).toContain('Vale hasta el')
+    expect(document.querySelector('[data-cabecera-del-resumen]')?.textContent).toContain(
+      'Vale hasta el',
+    )
   })
 })

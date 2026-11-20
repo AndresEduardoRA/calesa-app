@@ -305,7 +305,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 - **La barra del resumen** (`e2e/cotizaciones-drawer.spec.ts`): abrir el resumen no pide nada nuevo: el «⋯» y «Compartir» salen de lo que la página ya leyó. La
   cotización del resumen que no está en la página (una línea del modal de un grupo, otra página) suma su id a las tres lecturas por clave primaria de las marcas
   (`conLaDelResumen()`) y una llamada a `cotizaciones_modos_de([id])` dentro de `leerLaDelResumen()`, en el mismo pedido al servidor. La barra suma 3 botones al
-  resumen y ninguno a la lista (los diálogos cerrados no dibujan). Código: `AccionesDelResumen` y `DatosDelResumen` viajan en el chunk diferido del resumen;
+  resumen y ninguno a la lista (los diálogos cerrados no dibujan). Código: `AccionesDelResumen` y `CabeceraDelResumen` viajan en el chunk diferido del resumen;
   en frío, unas líneas del listado.
 - **«Compartir la cotización»** (`e2e/cotizaciones-compartir.spec.ts`): por apertura, un `GET /cotizaciones/<id>/compartir` (la hoja guardada, `cotizacion_tarjeta`,
   el vehículo y la subasta por clave primaria, el autor y los ajustes: lo mismo que un PDF, sin dibujarlo) y la imagen de la tarjeta con la caché del navegador (un 304
@@ -605,7 +605,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 ## JS en frío (con gzip, lo que el documento nombra)
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB` de `e2e/soporte/presupuestos.ts`, lo medido más un 5 % a la decena; uno pasado por ≤ 5 % se sube con la regla del 5 %):
-  `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 390 (con las tarjetas de la lista y la imagen de la tarjeta en frío),
+  `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 400 (con las tarjetas de la lista, la imagen de la tarjeta en frío y el hook de los menús de las filas que comparte con las fichas),
   `/cotizaciones/nuevo` 465 (con la subasta, `?origen=`; la línea «Descargar PDF» y el contexto del «⋯» de la guardada viajan con la hoja), `/cotizaciones/[id]` 480
   (el título de la cotización y la cabecera compacta, con el menú de Base UI del «⋯» en frío), `/cotizaciones/comparar` 380, `/logistica` 390,
   `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470; `/cotizaciones/papelera` 440 (en su spec).
@@ -813,7 +813,7 @@ pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACION
   `_cotizaciones_aprobadas_rellenar()` (inserta sin triggers). La isla de la guardada suma ≈ 1,5 KB a `/cotizaciones/[id]` (sin Base UI nuevo).
   La pantalla (`e2e/cotizaciones-listado.spec.ts`, `e2e/listas-por-pagina-volumen.spec.ts`): una vista, 8 columnas, el máximo sin pedidos
   del navegador ni acciones: ≤ 39.500 B y ≤ 2.200 nodos; diez «Siguiente» no los suben. El resumen `?cotizacion=`: abrir desde la fila no
-  le pide nada a la página ni a la lista; lee la pestaña «Todo» (sus tres lecturas, abajo) y, con vehículo, «De este vehículo»; fuera de la página cuesta un pedido por `cotizaciones_pkey` y un `cotizaciones_listado()` de tamaño 1, más sus tres nombres.
+  le pide nada a la página ni a la lista; lee la pestaña «Todo» (sus tres lecturas, abajo); «De este vehículo» (quinta pestaña, sólo con vehículo) lee al elegirla; fuera de la página cuesta un pedido por `cotizaciones_pkey` y un `cotizaciones_listado()` de tamaño 1, más sus tres nombres.
   `router.refresh()` sólo si la URL trae una que nadie trajo (una vez por id) y en cada «Reintentar». Los nombres de la página (cliente,
   vehículo, autor) son tres lecturas por PK de ≤ 100 ids en paralelo (`leads_vista_por_ids`, `vehiculos_pkey`, `perfiles_pkey`): límite sin
   assert.

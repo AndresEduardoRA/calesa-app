@@ -29,6 +29,9 @@ type Props = {
   // Un formulario con muchos campos pide más lugar que una ficha corta.
   ancho?: 'normal' | 'amplio'
   pie?: ReactNode
+  // Quién se desplaza: el cuerpo (por defecto) o lo de adentro, que lo hace por su cuenta y deja fijo lo de arriba (una cabecera con pestañas que llenan el resto). Con `'propio'`
+  // el cuerpo no se desplaza y sus hijos deben ocupar su alto.
+  desplazamiento?: 'cuerpo' | 'propio'
   // A dónde va el foco al cerrar (el de Base UI). Sin esto: el elemento que tenía el foco antes de abrir, que un panel abierto por la
   // URL (con `shallow: false`) a veces ya no tiene: un panel que se apila sobre otro devuelve el foco a quien lo abrió.
   focoAlCerrar?: Popup['finalFocus']
@@ -50,6 +53,34 @@ function clasesDelPanel(lado: NonNullable<Props['lado']>, ancho: NonNullable<Pro
   )
 }
 
+// El encabezado y el cuerpo del panel. `pr-12`: la ✕ va en una esquina (`absolute`, 2,5 rem desde el borde); un título largo baja de línea antes de encimarse con ella.
+function CuerpoDelPanel({
+  titulo,
+  descripcion,
+  desplazamiento,
+  children,
+}: Pick<Props, 'titulo' | 'descripcion' | 'children'> & {
+  desplazamiento: NonNullable<Props['desplazamiento']>
+}) {
+  return (
+    <>
+      <SheetHeader className="border-b border-(--color-line) pr-12">
+        <SheetTitle>{titulo}</SheetTitle>
+        {descripcion ? <SheetDescription>{descripcion}</SheetDescription> : null}
+      </SheetHeader>
+      <div
+        className={
+          desplazamiento === 'propio'
+            ? 'min-h-0 flex-1 overflow-hidden p-4'
+            : 'flex-1 overflow-y-auto p-4'
+        }
+      >
+        {children}
+      </div>
+    </>
+  )
+}
+
 // Panel lateral: el segundo nivel de cualquier pantalla (crear, editar, ver una ficha sin salir
 // de la lista). Un modal nunca abre otro modal; un drawer sí puede abrirse desde uno.
 // Cerrarlo no pregunta (lo escrito queda en el borrador del formulario). Lo que sí pregunta es la acción de un aviso que sale de la
@@ -64,6 +95,7 @@ export function Drawer({
   lado = 'right',
   ancho = 'normal',
   pie,
+  desplazamiento = 'cuerpo',
   focoAlCerrar,
   alCostado = false,
   children,
@@ -119,12 +151,9 @@ export function Drawer({
           conFondo={!alCostado}
           className={clasesDelPanel(lado, ancho)}
         >
-          {/* `pr-12`: la ✕ va en una esquina (`absolute`, 2,5 rem desde el borde); un título largo baja de línea antes de encimarse con ella. */}
-          <SheetHeader className="border-b border-(--color-line) pr-12">
-            <SheetTitle>{titulo}</SheetTitle>
-            {descripcion ? <SheetDescription>{descripcion}</SheetDescription> : null}
-          </SheetHeader>
-          <div className="flex-1 overflow-y-auto p-4">{children}</div>
+          <CuerpoDelPanel titulo={titulo} descripcion={descripcion} desplazamiento={desplazamiento}>
+            {children}
+          </CuerpoDelPanel>
           {pieAMostrar ? (
             <SheetFooter className="border-t border-(--color-line)">{pieAMostrar}</SheetFooter>
           ) : null}
