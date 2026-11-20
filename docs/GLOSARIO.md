@@ -86,7 +86,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Campo de fábrica** — `origenes_campos.es_sistema`, `leads_campos.es_sistema`: preconfigurado; no se elimina ni cambia de tipo o clave.
   «Sistema» nombra otra cosa (rol dueño).
 - **Campo desactivado** — `origenes_campos.activo = false`: sale del formulario y filtros; sus datos siguen en `vehiculos.atributos`.
-- **Campo principal** — `origenes_campos.principal`: identifica al vehículo en la lista, el resumen y logística; uno por origen como mucho,
+- **Campo principal** — `origenes_campos.principal`: identifica al vehículo en la lista y en logística; uno por origen como mucho,
   activo y no de monto; sin él, el título.
 - **Datos clave** — `origenes.datos_clave` / `DatoClave`, `leerDatosClave()`, `origen_datos_clave_guardar()`: los hasta 4 datos, en orden,
   que la ficha de un vehículo muestra primero. Los elige cada origen en «Campos» (la estrella, «Datos clave (n de 4)»); cada uno es un dato
@@ -135,7 +135,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Interesado** — `vehiculos_interesados` / `vehiculo_interesado_marcar()`, `vehiculo_interesado_quitar()`: lead interesado en un vehículo
   (N:M), nota ≤ 500. Es un tipo de **Relacionados**.
 - **Relacionados** — `vehiculo_relacionados()`, `lead_relacionados()` (y `*_pagina()`), `<Relacionados>` / `?relacionados=<tipo>`: el bloque siempre
-  visible de cada detalle (ficha del vehículo, su resumen, la unidad de logística y ficha del lead) con tres grupos por tipo:
+  visible de cada detalle (ficha del vehículo, la unidad de logística y ficha del lead) con tres grupos por tipo:
   **Vinculado**, **Interesado** y **Cotizado**. Desde un vehículo se ven leads; desde un lead, vehículos. Cada grupo lleva su cantidad (con tope),
   sus primeras filas, lo que quien mira no ve contado («1 que no puedes ver») y «Ver todos» por cursor. Lo que está en una papelera no cuenta. Un
   grupo sin nada no se dibuja. Se ve en una línea de chips en logística, y compacto en las fichas (`PresentacionDeRelacionados`).
@@ -278,7 +278,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Filtro descartado** — `filtrosDescartados()` / `<AvisoDeFiltrosDescartados>`: filtro de la URL sobre un campo desactivado o eliminado.
 - **Ficha del lead** — `/leads/[id]` / `lead_ficha()`, `<FichaDeLead>`: en dos columnas (`<FichaEnDosColumnas>`): a la izquierda la cabecera (el nombre
   con el «⋯» arriba a la derecha y quién lo tiene debajo), «Datos» (los datos clave del lead y «Ver más»), «Quién lo tiene» y «Acceso al portal»; a la
-  derecha el índice y los bloques (seguimientos y recordatorios, oportunidades, relacionados, cotizaciones). Edición en `?panel=editar-lead`.
+  derecha el índice y los bloques, en su orden (`BLOQUES_DE_LA_FICHA` de `leads`): «Seguimiento», «Cotizaciones», «Vehículos» y «Oportunidades». Edición
+  en `?panel=editar-lead`.
 - **Datos clave del lead** — `entities/datos-clave-del-lead.ts` (`campoDelPais()`, `campoDeNotas()`, `datoDelCampo()`, `paisDeLosDatos()`),
   `<DatosClaveDelLead>`: lo que «Datos» de la ficha del lead muestra a la vista: tipo, origen, país y teléfono principal, y «Notas» a lo ancho. «País» y
   «Notas» son campos del layout de leads encontrados por su etiqueta o clave (sin tildes ni mayúsculas; «Notas» sólo si es texto largo); sin «País» o
@@ -289,13 +290,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cabecera (`<CabeceraDeVehiculo>`), «Cotización aprobada», la subasta y «Datos principales»; a la derecha el índice y sólo lo de ventas, por permiso
   («Cotizaciones de este vehículo», «Relacionados», «Actividad reciente», «Vitrina»). `?seccion=<ancla>` lleva al bloque. No: «detalle del vehículo».
 - **Teléfono extra** — `leads_telefonos` / `lead_telefonos()`, `lead_telefono_guardar()`, `lead_telefono_quitar()`: número alterno con
-  etiqueta opcional; se edita en el panel de edición de la ficha; la ficha y el resumen lo muestran sólo para leer.
+  etiqueta opcional; se edita en el panel de edición de la ficha; la ficha lo muestra sólo para leer.
 - **Máximo de teléfonos extra** — `ajustes_leads.telefonos_extra_maximo` / `telefonos.maximo`: cuántos extras admite un lead (0 a 20; 6 de
   fábrica). Quien ya tiene más los conserva y no agrega hasta bajar del máximo.
 - **Extras como el principal** — `ajustes_leads.telefonos_extra_como_principal` / `telefonos.comoPrincipal`, «Los teléfonos extra cuentan como
   el principal» (apagado de fábrica): con ella, un extra es único entre leads vivos y registrar ese número encuentra a su lead.
 - **Choque de teléfonos** — `telefonos_extra_choques()` / `<ChoquesDeTelefonos>`: un extra cuyo número es el principal o el extra de otro lead
-  vivo; la lista de Configuración › Leads, enmascarada, por cursor y sin total.
+  vivo; la lista de Configuración › Leads › Teléfonos extra, enmascarada, por cursor y sin total.
 - **Editar teléfonos extra** — permiso `leads.telefonos_extra.editar` (con alcance): agregar, rotular y quitar extras; el principal sigue con
   `leads.editar`.
 - **«Anterior»** — `leads_telefonos.etiqueta` / `ETIQUETA_DEL_ANTERIOR`: etiqueta del principal reemplazado, que queda como teléfono extra.
@@ -346,9 +347,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   o restaurar otra abierta ahí se rechaza con «Abrir esa».
 - **Oportunidad base** — `_lead_oportunidad_base()`: la que nace con todo lead nuevo (alta rápida, importación, «Datos», turno de la web), abierta,
   en la etapa inicial del embudo por defecto de quien lo crea y con el nombre del lead de título. Intacta, no cuenta como trabajo al deshacer.
-- **«Nueva oportunidad…»** — `?panel=oportunidad-rapida&para=<id>` / `<ModalDeOportunidadRapida>`: crear una oportunidad desde el «⋯» de un lead (fila, tarjeta, kanban, resumen y ficha). Primero
+- **«Nueva oportunidad…»** — `?panel=oportunidad-rapida&para=<id>` / `<ModalDeOportunidadRapida>`: crear una oportunidad desde el «⋯» de un lead (fila, tarjeta, kanban y ficha). Primero
   avisa de las que el lead ya tiene (`<AvisoDeOportunidadesDelLead>`: «Crear igual» o «Cancelar»); después, el nombre del lead de título y el monto opcional, en la etapa
-  inicial del embudo por defecto. **«Ver oportunidades»**, la otra línea del «⋯»: la ficha en su bloque «Tus oportunidades».
+  inicial del embudo por defecto. **«Ver oportunidades»**, la otra línea del «⋯»: la ficha en su bloque «Oportunidades».
 - **Embudo por defecto** — `embudos.es_default` / `embudo_por_defecto()`: el creado la primera vez («Ventas»); no se elimina, se renombra.
 - **Plantilla del embudo** — `ajustes_leads.embudo_etapas` / `embudo_plantilla_guardar()`: etapas con que nace el embudo por defecto de cada
   persona; nula = las seis de fábrica (`_embudo_etapas_de_fabrica()`). Sólo afecta a los que nacen después.
@@ -396,9 +397,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   una columna por cotización y una fila por nodo alineada por su id, con «Aprobar esta» al pie. Lo **distinto** se mide **contra la primera** columna (↑, ↓
   o ≠). Se llega por las casillas de «De este vehículo» y por las de un **grupo de un vehículo** desplegado en `/cotizaciones`. No es la «Celda» de la hoja ni
   la «tarjeta de la cotización»: en la interfaz cada columna es «la cotización #N» y sus filas son de nodos.
-- **Tarjeta de la lista** — `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): cada ítem de la vista «Tarjetas» de `/cotizaciones`:
-  la **portada de la cotización** arriba (en miniatura) con el «⋯» encima, el título, «N.º n» con sus insignias, el total con su modo, el cliente, el autor, la
-  vigencia, el conteo de su grupo y «Compartir». No es la **tarjeta de la cotización** (la vista previa tipo Excel que la portada muestra).
+- **Tarjeta de la lista** — `<TarjetaDeLista>` (`@/shared/ui/lista`): cada ítem de la vista «Tarjetas» de un listado. La de `/cotizaciones` es
+  `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): la **portada de la cotización** arriba (en miniatura) con el «⋯» encima, el
+  título, «N.º n» con sus insignias, el total con su modo, el cliente, el autor, la vigencia, el conteo de su grupo y «Compartir». No es la **tarjeta de la
+  cotización** (la vista previa tipo Excel que la portada muestra).
 - **Grupo de un vehículo** — `EntradaDelListado` de `tipo: 'grupo'`, `cotizaciones_listado_por_vehiculo()`: en `/cotizaciones` agrupada («Agrupar por
   vehículo», `?agrupar=`, `cotizaciones.agrupar`), las cotizaciones de un vehículo que quien mira ve y coinciden con la búsqueda y los filtros, en una tarjeta o
   fila con «N cotizaciones de este vehículo» que despliega las demás en el lugar. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
@@ -415,8 +417,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Última cotización (de un vehículo)** — `vehiculos.cotizado_en`, `_vehiculo_cotizado()`: ordena «Últ. cotización» del panel del vehículo.
   Cotizar no edita el vehículo.
 - **Historial de cotizaciones (de un vehículo)** — `<HistorialDelVehiculo>` (`cotizaciones/features/historial`): las visibles por
-  `vehiculo_id`, de la más nueva, de a 20; plegado en el panel del vehículo, y la misma lista en la ficha del lead (`<CotizacionesDelLead>`, por
-  `lead_id`). **Cotizado (n)**: `contarCotizacionesDelVehiculo()`.
+  `vehiculo_id`, de la más nueva, de a 20; plegado en el panel del vehículo. En la ficha del lead, el bloque «Cotizaciones» (`<CotizacionesDelLead>`,
+  por `lead_id`) muestra las 3 más recientes y «Ver todas» (`/cotizaciones?lead=`). **Cotizado (n)**: `contarCotizacionesDelVehiculo()`.
 - **Panel del vehículo** — `?panel=vehiculo` de `/cotizaciones/nuevo`, `<BarraDelVehiculo>` / `PanelDelVehiculo`
   (`vehiculos/features/panel-para-cotizar`): elige el vehículo por «Últ. cotización» o «Cierre subasta» (`?lista=ultima|cierre`) o buscando
   nombre, VIN o lote (`?buscar=`); «+» y «Traer» abren el alta del inventario en el panel (`?alta=mano|subasta`).
@@ -476,8 +478,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Lienzo** — `LienzoDeLaPlantilla` (área `tarjeta`) con la capa del editor (`CapaDeEdicion`, `role="grid"`): la tarjeta de la cotización a escala
   que se edita en Configuración › Cotización › un origen › Tarjeta, como un Excel (cabeceras de columna, asas de fila, selección, atajos). La dibuja el
   mismo modelo de dibujo que el PDF. No es el lienzo del diagrama del flujo.
-- **Rango** — `Seleccion` de tipo `celdas` (`entities/plantilla/edicion/seleccion.ts`): las celdas de la tarjeta elegidas juntas en el lienzo (Shift+clic,
-  arrastrar, Shift+flechas); se agranda hasta contener entera cada combinación que corta. Lo que se combina, se vacía, se copia o recibe un formato.
+- **Rango (de la tarjeta)** — `Seleccion` de tipo `celdas` (`entities/plantilla/edicion/seleccion.ts`): las celdas de la tarjeta elegidas juntas en el lienzo (Shift+clic,
+  arrastrar, Shift+flechas); se agranda hasta contener entera cada combinación que corta. Lo que se combina, se vacía, se copia o recibe un formato. No es el **Rango (de un campo)**.
 - **Referencia de la tarjeta** — `ReferenciaDeLaTarjeta` (`entities/referencia-de-la-tarjeta.ts`): con qué cifras se dibuja el lienzo: la cotización más
   reciente del origen que quien configura ve (lo guardado, como el PDF) o las cifras de ejemplo (`?referencia=ejemplo`). Decide qué filas se ocultan:
   «Ocultas con esta referencia (N)».
@@ -603,7 +605,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   título del vehículo (`vehiculos.titulo`) ni el de la opción de la variante (`titulo_opcion`).
 - **Ajustes de cotización** — `AjustesDeCotizacion` (`empresa`): la vigencia, de `ajustes_empresa`; los cambia
   `empresa_guardar_ajustes_de_cotizacion()` con `cotizaciones.configurar` en todos los orígenes y la versión de la fila (Configuración ›
-  Cotización › Ajustes).
+  Cotización › General › Vigencia).
 - **Intento (de una cotización)** — `id` uuid del cliente: `cotizacion_crear` (`p_id`), `cotizacion_guardar` (`p_intento`): repetirlo devuelve
   lo mismo (`repetido: true`); con otros datos, `intento_reusado`.
 - **Hoja abierta (versión y hora)** — `abierta` de `cotizacion_hoja()`; `p_abierta` de `cotizacion_crear` y `cotizacion_evaluar`: versión,
@@ -921,8 +923,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Actualizar los datos** — `actualizar` de `accionesDeVehiculo()` / `<ActualizarLosDatos>`, `useActualizarLosDatos()` (`?panel=actualizar-datos`): la acción
   del «⋯» del vehículo que vuelve a consultar la subasta en apibara con el mismo motor que «Refrescar» (pide confirmar: gasta cuota) y trae las fotos de esa
   respuesta que faltan. Sólo en un origen de subasta con apibara encendida.
-- **Editar imágenes** — `imagenes` de `accionesDeVehiculo()` / `<PanelDeImagenes>` (`?panel=imagenes`): la acción del «⋯» del vehículo que abre en su propio
-  drawer lo que hace el bloque «Fotos» de la ficha.
+- **Editar imágenes** — `imagenes` de `accionesDeVehiculo()` / `<PanelDeImagenes>` (`?panel=imagenes`): la acción del «⋯» del vehículo que abre en un drawer
+  sus fotos (`<SeccionDeFotos>`: subir, ordenar, portada, quitar y traer las que faltan de la subasta); la ficha sólo las muestra, en el carrusel de su cabecera.
 - **Línea pegada** — `Linea` / `lineasDePegado()`: renglón pegado para alta desde apibara (enlace Copart/IAAI, VIN o lote); hasta 20.
 - **Fotos de la subasta** — `fotosDeSubasta()` / `<BotonTraerFotos>`: las primeras 24 imágenes de la respuesta (la primera, portada).
 - **Cuota de apibara** — `UsoDeApibara` / `<UsoDeApibara>`: consultas hechas y restantes en el período; agotada (429), la API calla hasta que
