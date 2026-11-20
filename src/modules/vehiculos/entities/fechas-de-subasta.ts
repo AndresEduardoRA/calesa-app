@@ -2,6 +2,9 @@
 // instante en UTC (`instanteDeLocal`). Vacío borra la fecha. La base vuelve a validar todo (`vehiculo_guardar`, `_vehiculo_instante`).
 import { abreviaturaDeZona, instanteDeLocal, localDeInstante } from '@/shared/lib/fechas'
 
+// `?panel=fechas-de-subasta`: lo abre «Editar fechas de subasta» del «⋯» de la ficha y lo nombra también el enlace viejo del resumen (`entities/enlace-viejo-del-resumen.ts`).
+export const PANEL_DE_FECHAS_DE_SUBASTA = 'fechas-de-subasta'
+
 export type BorradorDeFechas = { inicio: string; cierre: string }
 export type FechasDeSubasta = { subastaEn: string | null; subastaFinEn: string | null }
 

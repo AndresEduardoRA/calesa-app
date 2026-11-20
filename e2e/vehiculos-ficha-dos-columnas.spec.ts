@@ -12,6 +12,7 @@ import { borrarLeadsDePrueba, crearLead, marcarInteres, vincular } from './sopor
 import { PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB } from './soporte/presupuestos'
 import { borrarQueFalta, sembrarQueFalta, type TerrenoDeQueFalta } from './soporte/que-falta'
 import { cajaDe, personaSinLogistica } from './soporte/ficha-del-vehiculo'
+import { compartirApuntaA } from './soporte/ficha-izquierda'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 import { sembrarFotos } from './soporte/vehiculos-lista'
@@ -93,6 +94,8 @@ const tituloDe = (page: Page, nombre: string): Locator =>
   page.locator('main').getByRole('heading', { name: nombre, exact: true, level: 2 })
 const region = (page: Page, nombre: string): Locator =>
   page.getByRole('region', { name: nombre, exact: true })
+// La subasta y el costo de la izquierda (sin título a la vista): «Subasta y costo» o, en un origen manual, «Precio y costo».
+const costo = (page: Page): Locator => page.getByRole('region', { name: / y costo$/ })
 const filas = (page: Page): Locator =>
   page
     .getByRole('list', { name: 'Cotizaciones de este vehículo' })
@@ -138,7 +141,7 @@ test('E2E ficha en dos columnas · a la derecha sólo lo de ventas, en su orden'
   await capturar(page, info, 'ficha-abajo')
 })
 
-test('E2E ficha en dos columnas · «Cotizar» en el título y «Aprobar esta» pone al día la aprobada de la izquierda', async ({
+test('E2E ficha en dos columnas · «Cotizar» en el título y «Aprobar esta» pone al día el costo estimado de la izquierda', async ({
   page,
 }) => {
   await entrar(page, duena)
@@ -151,13 +154,13 @@ test('E2E ficha en dos columnas · «Cotizar» en el título y «Aprobar esta» 
     new RegExp(`returnTo=${encodeURIComponent(`/vehiculos/${id}`)}`),
   )
   const [vieja = '', nueva = ''] = cotizacionesDelVehiculo()
-  const aprobada = region(page, 'Cotización aprobada')
-  await expect(aprobada).toContainText(`N.º ${vieja}`)
+  // El «Costo estimado» de la izquierda abre Compartir de la aprobada: primero la más vieja, luego la nueva.
+  const compartir = costo(page).getByRole('button', { name: /^Compartir la cotización aprobada/ })
+  await compartirApuntaA(page, compartir, vieja)
   const otra = filas(page).filter({ hasText: `N.º ${nueva}` })
   await otra.getByRole('button', { name: 'Aprobar esta' }).click()
-  // La izquierda se lee en el servidor: el bloque refresca la página.
-  await expect(aprobada).toContainText(`N.º ${nueva}`)
   await expect(filas(page).first()).toContainText(`N.º ${nueva}`)
+  await compartirApuntaA(page, compartir, nueva)
   await cotizar.click()
   await expect(page).toHaveURL(/\/cotizaciones\/nuevo\?/)
 })
@@ -294,7 +297,7 @@ test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en 
     // Una columna, en orden.
     const enOrden = [
       h1,
-      tituloDe(page, 'Cotización aprobada'),
+      costo(page),
       tituloDe(page, 'Datos principales'),
       indice(page),
       ...BLOQUES.map((nombre) => tituloDe(page, nombre)),

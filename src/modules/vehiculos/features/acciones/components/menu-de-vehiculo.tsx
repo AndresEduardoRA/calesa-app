@@ -35,6 +35,7 @@ type Props = {
   paraActividad: string | null
   // Lo que abre cada panel donde se dibuja el menú (el inventario con `para=<id>`, la ficha sin él).
   alEditarImagenes?: () => void
+  alEditarFechas?: () => void
   alPublicar?: () => void
   alActualizar?: () => void
   // Se envió: el vehículo ya no está donde se miraba (la ficha vuelve al inventario).
@@ -75,6 +76,7 @@ export function MenuDeVehiculo(props: Props) {
       panel.editar(vehiculo.id)
     },
     imagenes: props.alEditarImagenes ?? sinAccion,
+    fechas: props.alEditarFechas ?? sinAccion,
     publicar: props.alPublicar ?? sinAccion,
     actualizar: props.alActualizar ?? sinAccion,
     verActividad: () => {

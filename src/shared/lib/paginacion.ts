@@ -31,9 +31,6 @@ export const TOPE_DE_LO_CARGADO = 500
 export const TAMANO_DE_COLUMNA = 50
 export const TAMANO_DE_ESTE_VEHICULO = 10
 export const TOPE_DE_ESTE_VEHICULO = 100
-// La aprobada en la ficha del vehículo: `cotizaciones_de_este_vehiculo()` con la página más chica (el mínimo de `_acotar_pagina`); sólo se usa la
-// fijada, que llega aparte.
-export const TAMANO_DE_LA_APROBADA = 1
 // La logística para cientos de miles de vehículos: la lista de una fase (una página de a 50, por cursor `(fase_desde, id)`) y la bandeja del día
 // (un grupo en la portada = sus primeras 5 filas con un conteo hasta 100; la página de un grupo, de a 20).
 export const TAMANO_DE_LA_FASE = 50

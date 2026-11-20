@@ -1,3 +1,4 @@
+import { expect, type Locator, type Page } from '@playwright/test'
 import { admin } from './base'
 import { sembrarCotizaciones } from './cotizaciones-sembradas'
 import { PREFIJO_CLAVE_E2E, borrarOrigenes, crearOrigenDePrueba } from './origenes'
@@ -75,7 +76,7 @@ async function fasesDe(origen: string): Promise<{ subasta: string; comprado: str
   return { subasta: id('Subasta'), comprado: id('Comprado') }
 }
 
-// El campo «Tono de pintura» y el de la compra directa (la clave de apibara del «Buy it now»), y los datos clave: enlace, tono de pintura, año y lote.
+// El campo «Tono de pintura», el de la puja y el de la compra directa (la clave de apibara del «Buy it now»), y los datos clave: enlace, tono de pintura, año y lote.
 function camposYDatosClave(origen: string): void {
   // Un origen de subasta nace con los campos del catálogo de apibara (entre ellos `compra_inmediata`): se encienden, no se repiten.
   sql(`
@@ -84,6 +85,7 @@ function camposYDatosClave(origen: string): void {
     insert into public.origenes_campos (origen_id, clave, etiqueta, tipo, grupo, orden, clave_apibara)
       values (${literal(origen)}::uuid, 'compra_inmediata', 'Compra inmediata (USD)', 'moneda', 'Precios', 2, 'pricing.buy_now_usd')
       on conflict (origen_id, clave) do update set activo = true, clave_apibara = 'pricing.buy_now_usd';
+    update public.origenes_campos set activo = true where origen_id = ${literal(origen)}::uuid and clave = 'puja_actual';
     update public.origenes set datos_clave = '[{"comun":"url_origen"},{"campo":"tono_de_pintura"},{"comun":"anio"},{"comun":"lote"}]'::jsonb
       where id = ${literal(origen)}::uuid;`)
 }
@@ -119,7 +121,7 @@ async function cargarVehiculos(
           anio: 2021,
           lote: '58540656',
           plataforma: 'copart',
-          atributos: { tono_de_pintura: 'Rojo' },
+          atributos: { tono_de_pintura: 'Rojo', puja_actual: 4100, compra_inmediata: 15000 },
           apibara_sync_en: enHoras(-2),
           apibara_raw: { pricing: { current_bid_usd: 4100, buy_now_usd: 15000 } },
         },
@@ -185,4 +187,21 @@ export async function sembrarLaIzquierda(p: string, duena: string): Promise<Terr
     ),
     proyecto: { id: proyectoId, numero: numero.trim() },
   }
+}
+
+const idDeLaCotizacion = (numero: string): string =>
+  sql(`select id from public.cotizaciones where numero::text = ${literal(numero)}`)
+
+// El «Costo estimado» de la izquierda abre Compartir de la aprobada. La izquierda se lee en el servidor: tras aprobar otra, la página
+// termina de leerse sola, así que se prueba hasta que el botón apunte a la cotización pedida y se cierra el panel al salir.
+export async function compartirApuntaA(page: Page, boton: Locator, numero: string): Promise<void> {
+  const id = idDeLaCotizacion(numero)
+  await expect(async () => {
+    await boton.click()
+    await expect(page).toHaveURL(/panel=compartir/)
+    const apunta = page.url().includes(`para=${id}`)
+    await page.keyboard.press('Escape')
+    await expect(page).not.toHaveURL(/panel=compartir/)
+    if (!apunta) throw new Error('El costo estimado sigue en la aprobada anterior.')
+  }).toPass()
 }

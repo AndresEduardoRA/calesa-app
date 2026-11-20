@@ -1,7 +1,11 @@
-// Pantalla: La ficha de un vehículo (`/vehiculos/[id]`, en dos columnas): cabecera (con la tira y la vitrina), datos principales (con la ficha completa), subasta, el bloque «Vitrina», limpieza y los paneles. Sólo `src/app` importa este archivo (`.claude/rules/modulos.md`): reexporta lo que esa pantalla dibuja y nada más.
+// Pantalla: La ficha de un vehículo (`/vehiculos/[id]`, en dos columnas): cabecera (con la tira y la vitrina), datos principales (con la ficha completa), costo y subasta (la cuenta del cierre, la puja, la compra directa y el costo estimado), el modal de las fechas de la subasta, el bloque «Vitrina», limpieza y los paneles. Sólo `src/app` importa este archivo (`.claude/rules/modulos.md`): reexporta lo que esa pantalla dibuja y nada más.
 export { AvisoDeLimpieza } from '../features/limpieza/components/aviso-de-limpieza'
 export { AvisoDeSituacion } from '../features/situacion/components/aviso-de-situacion'
-export { BloqueDeSubasta } from '../features/subasta/components/bloque-de-subasta'
+export { PanelDeFechasDeSubasta } from '../features/subasta/components/panel-de-fechas-de-subasta'
+export {
+  CostoYSubasta,
+  EsqueletoDeCostoYSubasta,
+} from '../features/ficha/components/costo-y-subasta'
 export { CabeceraDeVehiculo } from '../features/ficha/components/cabecera-de-vehiculo'
 export { BotonDeVitrinaDeLaFicha } from '../features/vitrina/components/boton-de-vitrina-de-la-ficha'
 export { InsigniaDeVitrina } from '../features/vitrina/components/insignia-de-vitrina'

@@ -13,6 +13,7 @@ const TODO: EntradaDelMenuDeVehiculo = {
   edicion: 'editable',
   publicar: { estado: 'habilitado' },
   subasta: { consultable: true },
+  fechas: true,
   actividad: true,
   papelera: { estado: 'habilitado' },
 }
@@ -22,6 +23,7 @@ const NADA: EntradaDelMenuDeVehiculo = {
   edicion: 'sin_permiso',
   publicar: null,
   subasta: null,
+  fechas: false,
   actividad: false,
   papelera: { estado: 'oculto' },
 }
@@ -32,7 +34,7 @@ describe('ofertasDelMenuDeVehiculo', () => {
     expect(Object.values(ofertas).every((una) => una.oferta === 'habilitada')).toBe(true)
     expect(accionesDeVehiculo(soloLasOfertas(ofertas))).toEqual([
       ['cotizar'],
-      ['editar', 'imagenes', 'publicar', 'actualizar'],
+      ['editar', 'imagenes', 'fechas', 'publicar', 'actualizar'],
       ['actividad'],
       ['papelera'],
     ])
@@ -46,7 +48,7 @@ describe('ofertasDelMenuDeVehiculo', () => {
     const bloques = accionesDeVehiculo(
       soloLasOfertas(ofertasDelMenuDeVehiculo({ ...TODO, cotizar: false })),
     )
-    expect(bloques[0]).toEqual(['editar', 'imagenes', 'publicar', 'actualizar'])
+    expect(bloques[0]).toEqual(['editar', 'imagenes', 'fechas', 'publicar', 'actualizar'])
   })
 
   it('con editar en el origen y un vehículo ajeno («propios»): editar, imágenes y actualizar apagadas con el motivo', () => {
@@ -104,5 +106,21 @@ describe('ofertasDelMenuDeVehiculo', () => {
     expect(
       ofertasDelMenuDeVehiculo({ ...TODO, papelera: { estado: 'oculto' } }).papelera.oferta,
     ).toBe('oculta')
+  })
+})
+
+describe('«Editar fechas de subasta»', () => {
+  it('sólo donde la superficie la ofrece (la ficha de una subasta) y con la regla de la edición', () => {
+    expect(ofertasDelMenuDeVehiculo({ ...TODO, fechas: false }).fechas.oferta).toBe('oculta')
+    expect(ofertasDelMenuDeVehiculo(TODO).fechas.oferta).toBe('habilitada')
+    expect(ofertasDelMenuDeVehiculo({ ...TODO, edicion: 'propios' }).fechas).toEqual({
+      oferta: 'apagada',
+      motivo: SIN_PERMISO_PARA_EDITAR,
+    })
+    expect(ofertasDelMenuDeVehiculo({ ...TODO, edicion: 'sin_permiso' }).fechas.oferta).toBe(
+      'oculta',
+    )
+    // No depende de apibara: se escribe a mano.
+    expect(ofertasDelMenuDeVehiculo({ ...TODO, subasta: null }).fechas.oferta).toBe('habilitada')
   })
 })

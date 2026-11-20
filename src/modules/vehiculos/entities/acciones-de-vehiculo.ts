@@ -4,7 +4,14 @@
 // destructivo al final y separado. Cuándo se ofrece cada una lo dice `ofertas-del-menu-de-vehiculo.ts`.
 
 export type ClaveDeAccionDeVehiculo =
-  'cotizar' | 'editar' | 'imagenes' | 'publicar' | 'actualizar' | 'actividad' | 'papelera'
+  | 'cotizar'
+  | 'editar'
+  | 'imagenes'
+  | 'fechas'
+  | 'publicar'
+  | 'actualizar'
+  | 'actividad'
+  | 'papelera'
 
 export const ETIQUETA_DE_ACCION_DE_VEHICULO: Readonly<Record<ClaveDeAccionDeVehiculo, string>> = {
   // Lleva a la hoja de cotizar con este vehículo y su origen (`rutaParaCotizar()`), con `returnTo` = donde se estaba.
@@ -12,6 +19,8 @@ export const ETIQUETA_DE_ACCION_DE_VEHICULO: Readonly<Record<ClaveDeAccionDeVehi
   editar: 'Editar',
   // Abre su propio drawer (`?panel=imagenes`).
   imagenes: 'Editar imágenes',
+  // Abre el modal de las fechas de la subasta (`?panel=fechas-de-subasta`): sólo la ficha lo monta y sólo en un origen de subasta.
+  fechas: 'Editar fechas de subasta',
   // Abre el panel de la vitrina, con su vista previa: lleva «…». Ya publicado, «Editar publicación…» (`etiquetaDeAccionDeVehiculo`).
   publicar: 'Publicar en la web…',
   // Vuelve a consultar la subasta en apibara (pide confirmar: gasta cuota).
@@ -34,10 +43,10 @@ export function etiquetaDeAccionDeVehiculo(
     : ETIQUETA_DE_ACCION_DE_VEHICULO[clave]
 }
 
-// El orden, en bloques: cotizar sola arriba; editar, sus imágenes, la web y la subasta; «Ver actividad»; y la papelera al final y separada.
+// El orden, en bloques: cotizar sola arriba; editar, sus imágenes, sus fechas de subasta, la web y la subasta; «Ver actividad»; y la papelera al final y separada.
 export const BLOQUES_DEL_MENU_DE_VEHICULO: readonly (readonly ClaveDeAccionDeVehiculo[])[] = [
   ['cotizar'],
-  ['editar', 'imagenes', 'publicar', 'actualizar'],
+  ['editar', 'imagenes', 'fechas', 'publicar', 'actualizar'],
   ['actividad'],
   ['papelera'],
 ]
