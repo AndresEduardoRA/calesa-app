@@ -33,6 +33,7 @@ function fila(n: number, extra: Partial<FilaDeEsteVehiculo> = {}): FilaDeEsteVeh
     creadoEn: '2026-11-17T10:00:00.123456+00:00',
     actualizadoEn: '2026-11-17T10:00:00.123456+00:00',
     vencida: false,
+    venceEl: '2026-11-27',
     aprobada: false,
     ...extra,
   }
@@ -55,6 +56,7 @@ function cruda(n: number, extra: Record<string, unknown> = {}) {
     creado_en: '2026-11-17T10:00:00.123456+00:00',
     editada_en: '2026-11-17T10:00:00.654321+00:00',
     vencida: false,
+    vence_el: '2026-11-27',
     aprobada: false,
     fijada: false,
     ...extra,

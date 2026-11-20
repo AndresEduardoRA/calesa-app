@@ -20,6 +20,7 @@ const FILA: FilaDeEsteVehiculo = {
   creadoEn: '2026-11-17T12:00:00.000Z',
   actualizadoEn: '2026-11-17T12:00:00.000Z',
   vencida: false,
+  venceEl: '2026-11-27',
   aprobada: true,
 }
 
