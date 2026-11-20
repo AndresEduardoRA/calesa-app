@@ -181,7 +181,7 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
           // Sin `leads.ver`, el cliente no se lee ni se nombra.
           cliente: null,
           vehiculo: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
-          asesor: 'Ana Pérez',
+          asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
           numero: 12,
           empresa: 'Importadora Prueba',
           venceEl: '2026-11-20',

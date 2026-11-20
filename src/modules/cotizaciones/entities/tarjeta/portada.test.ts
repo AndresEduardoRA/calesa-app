@@ -13,7 +13,7 @@ const RUTA = `00000000-0000-4000-8000-000000000001/portada/${'a'.repeat(64)}.web
 const CONTEXTO = {
   cliente: 'Juan Pérez',
   vehiculo: { titulo: 'Hilux', lote: '44', vin: null },
-  asesor: 'Ana',
+  asesor: { nombre: 'Ana', telefono: null, cargo: null, foto: null },
 }
 
 const respuesta = (cambios: Record<string, unknown> = {}) => ({
@@ -51,7 +51,7 @@ describe('estadoDeLaPortadaDesde', () => {
       contexto: {
         cliente: 'Juan Pérez',
         vehiculo: { titulo: 'Hilux', lote: '44', vin: null },
-        asesor: 'ana',
+        asesor: { nombre: 'ana', telefono: null, cargo: null, foto: null },
       },
     })
   })

@@ -82,7 +82,7 @@ export async function GET(
     cotizacion: enPar ? { ...hoja.cotizacion, titulo: enPar.tituloBase } : hoja.cotizacion,
     vehiculo,
     subasta: vehiculo === null ? null : subasta,
-    autor,
+    autor: autor?.nombre ?? null,
     cifras: cifras.data,
     ajustes: { locale, zonaHoraria },
   })

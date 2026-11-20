@@ -32,7 +32,7 @@ const pagina: DatosDeLaPagina = {
   titulo: null,
   cliente: null,
   vehiculo: { titulo: 'Toyota Hilux 2020', lote: null, vin: null },
-  asesor: 'Ana Pérez',
+  asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
   numero: null,
   vencida: false,
   venceEl: null,

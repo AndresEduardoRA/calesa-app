@@ -61,7 +61,15 @@ export function estadoDeLaPortadaDesde(json: unknown): EstadoDeLaPortada | null 
       ? {
           cliente: e.contexto.cliente,
           vehiculo: e.contexto.vehiculo,
-          asesor: e.contexto.asesor === null ? null : autorVisible(e.contexto.asesor),
+          asesor:
+            e.contexto.asesor === null
+              ? null
+              : {
+                  nombre: autorVisible(e.contexto.asesor),
+                  telefono: null,
+                  cargo: null,
+                  foto: null,
+                },
         }
       : null
   return {

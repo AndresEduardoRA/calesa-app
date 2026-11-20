@@ -8,6 +8,7 @@ import {
   origenElegido,
   origenesParaCotizar,
   topeDelTituloEnPar,
+  type AsesorDeLaTarjeta,
 } from '@/modules/cotizaciones'
 import {
   EsqueletoDeHoja,
@@ -71,7 +72,7 @@ async function Hoja({
   return (
     <HojaDelOrigen
       sesion={sesion}
-      asesor={nombreVisible(sesion)}
+      asesor={{ nombre: nombreVisible(sesion), telefono: null, cargo: null, foto: null }}
       url={url}
       origenes={origenes}
       origen={origen}
@@ -171,7 +172,7 @@ async function HojaDelOrigen({
 }: {
   sesion: Quien & { permisos: Permisos }
   // «Asesor:» de la tarjeta: quien cotiza.
-  asesor: string
+  asesor: AsesorDeLaTarjeta
   url: Awaited<PageProps<'/cotizaciones/nuevo'>['searchParams']>
   origenes: readonly OrigenResumen[]
   origen: OrigenResumen

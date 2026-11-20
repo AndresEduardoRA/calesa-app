@@ -38,6 +38,7 @@ export {
 export { armarLaPortada, type PortadaArmada } from '../../features/tarjeta/armar-la-portada'
 export {
   contextoDeLaPagina,
+  type AsesorDeLaTarjeta,
   type ContextoDeLaCotizacion,
   type PaginaDeLaTarjeta,
 } from '../../entities/tarjeta/contexto-de-la-cotizacion'

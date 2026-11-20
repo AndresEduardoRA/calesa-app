@@ -259,7 +259,7 @@ describe('GET /cotizaciones/[id]/portada: la propia', () => {
     expect(contextoArmado).toEqual({
       cliente: null,
       vehiculo: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
-      asesor: 'Ana Pérez',
+      asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
     })
     expect(leerCliente).not.toHaveBeenCalled()
     expect(leerVehiculo).toHaveBeenCalledWith(VEHICULO)
@@ -276,7 +276,11 @@ describe('GET /cotizaciones/[id]/portada: la propia', () => {
     leerVehiculo.mockResolvedValue(fallo('inesperado'))
     await pedir()
     expect(leerCliente).toHaveBeenCalledWith(LEAD)
-    expect(contextoArmado).toEqual({ cliente: 'Juan Pérez', vehiculo: null, asesor: 'Ana Pérez' })
+    expect(contextoArmado).toEqual({
+      cliente: 'Juan Pérez',
+      vehiculo: null,
+      asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
+    })
   })
 
   it('con «Ver como» también: la guardada no se baja ni se guarda, aunque vea todo', async () => {

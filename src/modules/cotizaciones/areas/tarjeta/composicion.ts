@@ -19,7 +19,7 @@ import {
 import { lecturaRetocada } from '../../entities/tarjeta/retoques/aplicar-retoques'
 import { getAsesorDeLaCotizacion } from '../../infra/tarjeta/asesor-de-la-cotizacion'
 import { setRetoques } from '../../infra/tarjeta/retoques'
-import { logoParaDibujar } from '../../infra/tarjeta/logo-de-la-tarjeta'
+import { fotoParaDibujar, logoParaDibujar } from '../../infra/tarjeta/logo-de-la-tarjeta'
 import {
   bajarLaPortada as bajar,
   getEstadoDeLaPortada,
@@ -90,8 +90,21 @@ export async function paraCompartirDeUnaGuardada(
   })
 }
 
-// El logo, sólo si la tarjeta lo dibuja.
-const conLogo = (geometria: Geometria) => geometria.celdas.some((c) => c.contenido.tipo === 'logo')
+// El logo y la foto del asesor, sólo si alguna de las tarjetas los dibuja, y a la vez, nunca uno tras otro: cada uno espera hasta 2 s.
+function imagenesParaDibujar(geometrias: readonly Geometria[], entrada: EntradaDelPdf) {
+  const lleva = (tipo: 'logo' | 'foto_del_asesor') =>
+    geometrias.some((g) => g.celdas.some((c) => c.contenido.tipo === tipo))
+  return Promise.all([
+    logoParaDibujar({
+      logo: lleva('logo') ? entrada.contexto.logo : null,
+      tope: entrada.topeDelLogo,
+    }),
+    fotoParaDibujar({
+      foto: lleva('foto_del_asesor') ? (entrada.contexto.asesor?.foto ?? null) : null,
+      tope: entrada.topeDelLogo,
+    }),
+  ])
+}
 
 // El PDF de una cotización guardada (4.18-3a): la geometría de lo guardado en A4. react-pdf se carga sólo aquí, con `import()` (C9). `sin_permiso` si la
 // tarjeta no se ve; lo demás que falle, `inesperado`.
@@ -110,19 +123,17 @@ export async function pdfDeUnaGuardada(
     hermana?.ok && entrada.hermana
       ? { geometria: hermana.data.geometria, antes: entrada.hermana.antes }
       : null
-  const logo = await logoParaDibujar({
-    logo:
-      conLogo(geometria) || (deLaHermana !== null && conLogo(deLaHermana.geometria))
-        ? entrada.contexto.logo
-        : null,
-    tope: entrada.topeDelLogo,
-  })
+  const [logo, foto] = await imagenesParaDibujar(
+    deLaHermana ? [geometria, deLaHermana.geometria] : [geometria],
+    entrada,
+  )
   try {
     const { pdfDeLaTarjeta } = await import('../../infra/tarjeta/pdf/pdf-de-la-tarjeta')
     const bytes = await pdfDeLaTarjeta({
       geometria,
       numero: hoja.cotizacion.numero,
       logo,
+      foto,
       empresa: entrada.empresa,
       ...(deLaHermana ? { hermana: deLaHermana } : {}),
     })
@@ -144,13 +155,10 @@ export async function imagenDeUnaGuardada(
     return armada
   }
   const { geometria } = armada.data
-  const logo = await logoParaDibujar({
-    logo: conLogo(geometria) ? entrada.contexto.logo : null,
-    tope: entrada.topeDelLogo,
-  })
+  const [logo, foto] = await imagenesParaDibujar([geometria], entrada)
   try {
     const { pngDeLaTarjeta } = await import('../../infra/tarjeta/imagen/imagen-de-la-tarjeta')
-    const bytes = await pngDeLaTarjeta({ geometria, logo })
+    const bytes = await pngDeLaTarjeta({ geometria, logo, foto })
     return ok({ bytes, ancho: Math.ceil(geometria.ancho), alto: Math.ceil(geometria.alto) })
   } catch (error) {
     console.error('[imagen] No se pudo dibujar la tarjeta.', error)

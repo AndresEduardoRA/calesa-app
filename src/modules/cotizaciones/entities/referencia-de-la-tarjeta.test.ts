@@ -12,7 +12,7 @@ const CONTEXTO: ContextoDeLaCotizacion = {
   fecha: '6 nov 2026',
   numero: '12',
   titulo: 'Hilux',
-  asesor: 'Ana Pérez',
+  asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
   cliente: null,
   vehiculo: null,
   venceEl: null,

@@ -16,7 +16,11 @@ describe('paginaDeLaPortada', () => {
     expect(
       paginaDeLaPortada({
         hoja: hoja('Hilux para Juan'),
-        contexto: { cliente: 'Juan', vehiculo: VEHICULO, asesor: 'Ana' },
+        contexto: {
+          cliente: 'Juan',
+          vehiculo: VEHICULO,
+          asesor: { nombre: 'Ana', telefono: null, cargo: null, foto: null },
+        },
         empresa: 'Calesa',
         logo: LOGO,
       }),
@@ -24,7 +28,7 @@ describe('paginaDeLaPortada', () => {
       titulo: 'Hilux para Juan',
       cliente: 'Juan',
       vehiculo: VEHICULO,
-      asesor: 'Ana',
+      asesor: { nombre: 'Ana', telefono: null, cargo: null, foto: null },
       numero: 12,
       venceEl: '2026-11-20',
       guardadaEl: GUARDADA_EL,

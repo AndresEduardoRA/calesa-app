@@ -2,6 +2,7 @@ import {
   leerAsesorDeLaCotizacion,
   tituloAparteDelNumero,
   tituloDeLaCotizacion,
+  type AsesorDeLaTarjeta,
 } from '@/modules/cotizaciones'
 import { leerClienteElegido } from '@/modules/leads'
 import { leerVehiculo } from '@/modules/vehiculos'
@@ -21,9 +22,11 @@ export async function vehiculoDe(vehiculoId: string | null) {
   return vehiculoId === null ? null : datosO(await leerVehiculo(vehiculoId))
 }
 
-export async function asesorDe(id: string) {
+export async function asesorDe(id: string): Promise<AsesorDeLaTarjeta | null> {
   const lectura = await leerAsesorDeLaCotizacion(id)
-  return lectura.ok ? lectura.data : null
+  return lectura.ok && lectura.data !== null
+    ? { nombre: lectura.data, telefono: null, cargo: null, foto: null }
+    : null
 }
 
 // El título de la tarjeta y del PDF de una guardada: el guardado (la tarjeta dibuja lo guardado), sin el de respaldo «Cotización n.º N», que ya escribe el número.
