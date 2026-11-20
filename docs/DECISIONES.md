@@ -607,6 +607,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Publicar…» queda a la vista** junto a «Guardar borrador» (cambia la imagen que recibe el cliente, como en V1) y «Descartar borrador…» va al «⋯».
 - **El menú contextual del lienzo sale de `DropdownMenu`** con un disparador invisible sobre la celda: no se suma un `context-menu` a `shared/ui`.
 - **Un rechazo de publicar con su `donde`** (una celda, fila o columna) ofrece «Ir a la celda», que lo elige en el lienzo.
+- **Con el lienzo de la tarjeta a la vista, la página reserva el canal de su barra** (`html:has([data-lienzo-marco])`, sólo esa pantalla: en las demás no
+  hace falta y con barras clásicas restaría unos 15 px), y «Ajustar» deja 8 px a la derecha de la tarjeta para el borde de la última columna
+  (`MARGEN_DEL_LIENZO.derecha`). Sin `setTimeout` ni histéresis: un margen de escala dejaría la tarjeta desbordando al cambiar la ventana.
 - **Guardar la tarjeta no remonta el editor:** lo elegido y el historial de deshacer siguen; la `key` del editor cambia sólo con una versión que no es la
   que acaba de guardar (la de otra persona tras «Recargar», ninguna tras publicar o descartar). «Hay cambios» compara sin el orden de las claves.
 - **El tope del primer HTML de la pestaña «Tarjeta» se fija con la cuadrícula más grande** (16 × 120 y lo que entra en 24 KiB, con 500 miembros): el
