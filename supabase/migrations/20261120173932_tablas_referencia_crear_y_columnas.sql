@@ -170,8 +170,9 @@ begin
 end;
 $$;
 
--- Una compartida cambia lo de cada origen que la usa: hace falta `cotizaciones.configurar` de cada origen cuya publicada la usa (como publicar). El
--- 42501 nombra el origen: cualquiera lee los nombres de los orígenes (policy `origenes: leer`).
+-- Una compartida cambia lo de cada origen que la usa: hace falta `cotizaciones.configurar` de cada origen cuya publicada o borrador la usa (publicar
+-- mira sólo la publicada; aquí el borrador también cuenta como uso, y sin este permiso el 23503 nombraría el borrador de un origen ajeno). El 42501
+-- nombra el origen y no dice si es la publicada o el borrador: cualquiera lee los nombres de los orígenes (policy `origenes: leer`).
 create or replace function public._tabla_referencia_permiso_de_quienes_la_usan(p_tabla uuid)
 returns void
 language plpgsql
@@ -181,9 +182,8 @@ set search_path = ''
 as $$
 declare v_o record;
 begin
-  for v_o in select u.origen_id, o.nombre from public._tabla_referencia_usada_en(p_tabla) u
-               join public.origenes o on o.id = u.origen_id                                       -- origenes_pkey
-              where u.formula_id is not null order by u.origen_id loop
+  for v_o in select distinct u.origen_id, u.origen as nombre from public._tabla_referencia_usos(p_tabla) u
+              order by u.origen_id loop
     if not public.tiene_permiso('cotizaciones.configurar', v_o.origen_id) then
       raise exception 'La usa la fórmula de %, donde no tienes «cotizaciones.configurar».', v_o.nombre using errcode = '42501';
     end if;

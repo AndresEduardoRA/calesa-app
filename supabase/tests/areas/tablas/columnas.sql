@@ -188,7 +188,7 @@ begin
 end $$;
 rollback;
 
--- @test tablas columnas: una compartida que usan dos orígenes los nombra a los dos; sin permiso en uno que la usa, 42501 con su nombre
+-- @test tablas columnas: una compartida que usan dos orígenes los nombra a los dos; sin permiso en uno que la usa (publicada o borrador), 42501 con su nombre
 begin;
 select pg_temp.tk_preparar();
 do $$
@@ -203,6 +203,12 @@ begin
   -- Quien configura los dos quita la que nadie usa.
   r := pg_temp.tk_cambiar(a, t.id, pg_temp.tk_cols('tk_comun', '{nota}'), 1);
   perform pg_temp.tk_igual(r::text, '{"version": 2}');
+  -- Si en tk dos sólo la usa el borrador, también pide su permiso: el 23503 no nombra el borrador de un origen ajeno.
+  delete from public.formulas where origen_id = (select id from public.origenes where clave = 'prueba_tk2');
+  perform pg_temp.tk_formula((select id from public.origenes where clave = 'prueba_tk2'), 'borrador',
+    '[{"id":"remate","tipo":"input"},{"id":"comun","tipo":"tabla","tabla":"tk_comun","match":{"pais":"remate"},"columna":"pais"}]');
+  perform pg_temp.tk_igual(pg_temp.tk_error(b, pg_temp.tk_sql(t.id, pg_temp.tk_cols('tk_comun', '{pais}'), 2)),
+    '42501|La usa la fórmula de Prueba tk dos, donde no tienes «cotizaciones.configurar».|');
 end $$;
 rollback;
 
