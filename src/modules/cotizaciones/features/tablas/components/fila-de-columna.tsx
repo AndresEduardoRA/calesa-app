@@ -145,8 +145,9 @@ export function FilaDeColumna(props: Props) {
   const errorDe = (campo: string) => (camino ? porCampo[`${camino}.${campo}`] : undefined)
   return (
     <li className="grid min-w-0 gap-2 rounded-(--radius-card) border border-(--color-line) p-3">
-      <div className="flex min-w-0 items-start gap-2">
-        <div className="grid min-w-0 flex-1 gap-1">
+      {/* El nombre ocupa la línea y, si no le quedan 12 rem (el celular con el texto grande), los botones bajan a la siguiente. */}
+      <div className="flex min-w-0 flex-wrap items-start gap-2">
+        <div className="grid min-w-0 grow basis-48 gap-1">
           <Input
             id={`${id}-etiqueta`}
             value={columna.etiqueta}
@@ -162,26 +163,28 @@ export function FilaDeColumna(props: Props) {
           />
           <Error id={`${id}-etiqueta`} texto={errorDe('etiqueta')} />
         </div>
-        <BotonesDeOrden
-          prefijo={prefijo}
-          id={columna.llave}
-          nombre={nombre}
-          puedeSubir={props.puedeSubir && !enCurso}
-          puedeBajar={props.puedeBajar && !enCurso}
-          alMover={props.alMover}
-        />
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-11 md:size-8"
-          aria-label={`Quitar ${nombre}`}
-          title={props.puedeQuitar ? undefined : 'Una tabla tiene al menos una columna.'}
-          disabled={!props.puedeQuitar || enCurso}
-          onClick={props.alQuitar}
-        >
-          <Trash2Icon aria-hidden />
-        </Button>
+        <div className="ml-auto flex items-start gap-2">
+          <BotonesDeOrden
+            prefijo={prefijo}
+            id={columna.llave}
+            nombre={nombre}
+            puedeSubir={props.puedeSubir && !enCurso}
+            puedeBajar={props.puedeBajar && !enCurso}
+            alMover={props.alMover}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="size-11 md:size-8"
+            aria-label={`Quitar ${nombre}`}
+            title={props.puedeQuitar ? undefined : 'Una tabla tiene al menos una columna.'}
+            disabled={!props.puedeQuitar || enCurso}
+            onClick={props.alQuitar}
+          >
+            <Trash2Icon aria-hidden />
+          </Button>
+        </div>
       </div>
       {columna.nueva ? (
         <CamposDeLaNueva props={props} id={id} nombre={nombre} errorDe={errorDe} />
