@@ -292,6 +292,15 @@ test('E2E escritorio · eliminar la que nunca estuvo activa y archivar la que s�
   const archivadas = page.getByRole('list', { name: 'Fórmulas archivadas' })
   await expect(archivadas.getByRole('link', { name: 'Prueba blanco', exact: true })).toBeVisible()
   await expect(archivadas).toContainText('Archivada')
+
+  // Renombrarla con la sección abierta: la pantalla se vuelve a leer y las archivadas también.
+  await archivadas.getByRole('button', { name: 'Más acciones de Prueba blanco' }).click()
+  await page.getByRole('menuitem', { name: 'Renombrar' }).click()
+  const renombrar = modal(page, 'Renombrar «Prueba blanco»')
+  await renombrar.getByLabel('Nombre', { exact: true }).fill('Prueba guardada')
+  await renombrar.getByRole('button', { name: 'Renombrar' }).click()
+  await expect(renombrar).toBeHidden()
+  await expect(archivadas.getByRole('link', { name: 'Prueba guardada', exact: true })).toBeVisible()
 })
 
 test('E2E escritorio · con 50 fórmulas «Nueva fórmula» queda apagada con su aviso', async ({

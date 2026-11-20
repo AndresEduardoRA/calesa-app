@@ -28,7 +28,7 @@ export const VACIO_DE_FORMULAS =
 // derecha (en el vacío, junto al texto), apagada en el tope; abajo, «Archivadas». Monta una vez los paneles de la pantalla.
 export function ListaDeFormulas({ origen, lectura, origenesParaCopiar }: Props) {
   const formulas = ordenDeLaLista(lectura.formulas)
-  const archivadas = useArchivadas(origen.id)
+  const archivadas = useArchivadas(origen.id, lectura)
   const nueva = usePanelPorUrl(PANEL_NUEVA_FORMULA, [CLAVE_DE_LA_COPIA])
   const aperturaDeNueva = useApertura(nueva.abierto)
   const enElTope = lectura.hayMas || formulas.length >= TOPE_DE_FORMULAS_DEL_ORIGEN
