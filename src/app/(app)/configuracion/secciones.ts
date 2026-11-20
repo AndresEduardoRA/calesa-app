@@ -32,6 +32,9 @@ export type SubseccionDeConfiguracion = {
   titulo: string
   // Una frase: qué se configura ahí. La dibuja la página con su título (`EncabezadoDeConfiguracion`); no viaja al navegador.
   descripcion: string
+  // Lo que la persona escribiría para buscarla además de su título («logo, colores» en Datos de la empresa): el buscador de Configuración
+  // las lee, sin distinguir acentos ni mayúsculas.
+  palabras?: readonly string[]
   // La de su sección (la índice) o la de su sección, una barra y algo más. Puede ser una plantilla con `[x]` (las partes de un origen):
   // el menú la rellena con la ruta actual y, si no puede, no la dibuja (`_navegacion/marca.ts`).
   ruta: string
@@ -56,6 +59,8 @@ export type SeccionDeConfiguracion = {
   titulo: string
   // Una frase: qué se configura ahí.
   descripcion: string
+  // Lo que la persona escribiría para buscarla además de su título; las de sus sub-secciones, aparte.
+  palabras?: readonly string[]
   ruta: string
   Icono: LucideIcon
   permisos: readonly ClavePermiso[]
@@ -69,6 +74,16 @@ export const SECCIONES = [
     clave: 'equipo',
     titulo: 'Equipo',
     descripcion: 'Las personas, sus roles, las invitaciones, el bloqueo y la baja.',
+    palabras: [
+      'personas',
+      'usuarios',
+      'invitar',
+      'invitación',
+      'bloquear',
+      'baja',
+      'correo',
+      'miembros',
+    ],
     ruta: RUTAS.equipo,
     Icono: UsersRoundIcon,
     permisos: ['equipo.usuarios.ver', 'equipo.usuarios.gestionar'],
@@ -79,6 +94,7 @@ export const SECCIONES = [
     clave: 'roles',
     titulo: 'Roles y permisos',
     descripcion: 'Qué puede hacer cada rol, por origen y con qué alcance.',
+    palabras: ['permisos', 'accesos', 'quién puede', 'matriz', 'concesión'],
     ruta: RUTAS.roles,
     Icono: ShieldCheckIcon,
     permisos: ['equipo.roles.ver', 'equipo.roles.gestionar'],
@@ -89,6 +105,7 @@ export const SECCIONES = [
     clave: 'origenes',
     titulo: 'Orígenes',
     descripcion: 'De dónde vienen los vehículos: sus datos, sus campos y sus categorías.',
+    palabras: ['país', 'subasta', 'usa', 'china', 'campos', 'categorías', 'vehículos', 'tipo'],
     ruta: RUTAS.origenes,
     Icono: MapPinIcon,
     permisos: PERMISOS_DE_ORIGENES,
@@ -103,6 +120,11 @@ export const SECCIONES = [
   SECCION_DE_WEB,
   SECCION_DE_COLA_WEB,
 ] as const satisfies readonly SeccionDeConfiguracion[]
+
+// El ícono de cada sección por su clave: el menú lo dibuja en el servidor (una función no cruza al navegador).
+export const ICONO_DE_SECCION: Readonly<Record<string, LucideIcon>> = Object.fromEntries(
+  SECCIONES.map((seccion: SeccionDeConfiguracion) => [seccion.clave, seccion.Icono]),
+)
 
 function puedeAbrir(permisos: Permisos, claves: readonly ClavePermiso[]): boolean {
   return claves.some((clave) => puede(permisos, clave))
@@ -164,6 +186,7 @@ export type SubseccionDelNavegador = {
   motivo?: string
   grupo?: string
   respaldo?: string
+  palabras?: readonly string[]
 }
 
 export type GrupoDelNavegador = {
@@ -173,7 +196,9 @@ export type GrupoDelNavegador = {
     clave: string
     titulo: string
     ruta: string
-    // `motivo`, sólo en la apagada; `grupo` y `respaldo`, sólo si la sub-sección los declara.
+    // Sólo si la sección las declara.
+    palabras?: readonly string[]
+    // `motivo`, sólo en la apagada; `grupo`, `respaldo` y `palabras`, sólo si la sub-sección los declara.
     subsecciones: SubseccionDelNavegador[]
   }[]
 }
@@ -186,6 +211,7 @@ export function paraElNavegador(grupos: readonly GrupoVisible[]): GrupoDelNavega
       clave: seccion.clave,
       titulo: seccion.titulo,
       ruta: seccion.ruta,
+      ...(seccion.palabras === undefined ? {} : { palabras: seccion.palabras }),
       subsecciones: seccion.subsecciones.map((sub) => ({
         clave: sub.clave,
         titulo: sub.titulo,
@@ -195,6 +221,7 @@ export function paraElNavegador(grupos: readonly GrupoVisible[]): GrupoDelNavega
           : {}),
         ...(sub.grupo === undefined ? {} : { grupo: sub.grupo }),
         ...(sub.respaldo === undefined ? {} : { respaldo: sub.respaldo }),
+        ...(sub.palabras === undefined ? {} : { palabras: sub.palabras }),
       })),
     })),
   }))

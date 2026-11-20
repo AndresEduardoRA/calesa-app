@@ -20,6 +20,8 @@ export const VARIABLES_DE_LA_TARJETA = [
   'vehiculo_vin',
   'vence_el',
   'modo_tc',
+  'asesor_telefono',
+  'asesor_cargo',
 ] as const
 export type VariableDeLaTarjeta = (typeof VARIABLES_DE_LA_TARJETA)[number]
 
@@ -109,6 +111,8 @@ export type ContenidoDeLaCelda =
   | { readonly tipo: 'dato'; readonly variable: string }
   | { readonly tipo: 'dato'; readonly nodo: string; readonly mostrar: Mostrar }
   | { readonly tipo: 'logo' }
+  // La foto de perfil del asesor (quien mira o comparte la tarjeta); sin foto, sus iniciales en un círculo.
+  | { readonly tipo: 'foto_del_asesor' }
   | { readonly tipo: 'vacio' }
 
 export type BordesDeLaCelda = { readonly todos?: Borde } & { readonly [L in Lado]?: Borde }

@@ -11,7 +11,7 @@ import {
 
 vi.mock('server-only', () => ({}))
 
-import { LADO_MAXIMO, logoParaDibujar } from './logo-de-la-tarjeta'
+import { LADO_MAXIMO, fotoParaDibujar, logoParaDibujar } from './logo-de-la-tarjeta'
 
 // El logo de los dibujos del servidor de la tarjeta (el PDF y la imagen): se baja con tope y espera; lo que react-pdf o satori no leen se convierte a PNG.
 const URL_DEL_LOGO = 'http://127.0.0.1:54721/storage/v1/object/public/marca/logos/abc.png'
@@ -241,5 +241,23 @@ describe('logoParaDibujar: lo que pesa, tarda o falla no va, y no lanza', () => 
       (await logoParaDibujar({ logo: pedido({ estado: 'sin_plantilla' }), tope: TOPE }))?.tipo,
     ).toBe('png')
     expect(llamadas).toEqual([URL_DEL_LOGO])
+  })
+})
+
+describe('fotoParaDibujar: la foto del asesor, con la misma regla que el logo', () => {
+  it('baja la foto y la deja lista; sin foto (o la de ejemplo) no baja nada', async () => {
+    con(PNG)
+    expect((await fotoParaDibujar({ foto: URL_DEL_LOGO, tope: TOPE }))?.tipo).toBe('png')
+    expect(llamadas).toEqual([URL_DEL_LOGO])
+    expect(await fotoParaDibujar({ foto: null, tope: TOPE })).toBeNull()
+    expect(await fotoParaDibujar({ foto: '', tope: TOPE })).toBeNull()
+    expect(llamadas).toEqual([URL_DEL_LOGO])
+  })
+
+  it('la que no se dibuja lo avisa como foto del asesor, sin la URL', async () => {
+    con(WEBP_ROTO)
+    expect(await fotoParaDibujar({ foto: URL_DEL_LOGO, tope: TOPE })).toBeNull()
+    expect(String(avisos.mock.calls[0]?.[0])).toContain('sin foto del asesor')
+    expect(JSON.stringify(avisos.mock.calls)).not.toContain(URL_DEL_LOGO)
   })
 })

@@ -60,9 +60,10 @@ async function registrarConsentimientoDeLaCiudad(page: Page, linea: string) {
 
 async function abrirLaPestana(page: Page) {
   await entrar(page, duena)
-  await page.goto('/configuracion')
+  await page.goto('/configuracion/inicio')
   await page
     .getByRole('main')
+    .getByRole('region')
     .getByRole('link', { name: /^Sitio web/ })
     .click()
   await expect(page).toHaveURL(/\/configuracion\/web\/ajustes$/)

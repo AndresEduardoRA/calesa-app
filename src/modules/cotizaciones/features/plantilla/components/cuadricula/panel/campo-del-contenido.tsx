@@ -30,6 +30,7 @@ const TIPOS = [
   { valor: 'texto', texto: 'Texto' },
   { valor: 'dato', texto: 'Dato' },
   { valor: 'logo', texto: 'Logo' },
+  { valor: 'foto_del_asesor', texto: 'Foto del asesor' },
   { valor: 'vacio', texto: 'Vacío' },
 ] as const
 
@@ -77,13 +78,13 @@ function CampoDelTexto({
 const textoDe = (c: ContenidoDeLaCelda | null) => (c?.tipo === 'texto' ? c.texto : '')
 const datoDe = (c: ContenidoDeLaCelda | null) => (c?.tipo === 'dato' ? c : null)
 
-// Elegir el tipo: Texto (con el texto de antes si lo tenía), Logo o Vacío cambian la celda; Dato espera a que se elija uno.
+// Elegir el tipo: Texto (con el texto de antes si lo tenía), Logo, Foto del asesor o Vacío cambian la celda; Dato espera a que se elija uno.
 function contenidoDelTipo(t: Tipo, actual: ContenidoDeLaCelda | null): ContenidoDeLaCelda | null {
   if (t === 'texto') return { tipo: 'texto', texto: textoDe(actual) }
-  return t === 'logo' || t === 'vacio' ? { tipo: t } : null
+  return t === 'logo' || t === 'foto_del_asesor' || t === 'vacio' ? { tipo: t } : null
 }
 
-// «Contenido» de lo elegido: Texto | Dato | Logo | Vacío. Elegir «Dato» muestra el selector y no cambia la celda hasta elegir uno; un texto que empieza con «=» es texto.
+// «Contenido» de lo elegido: Texto | Dato | Logo | Foto del asesor | Vacío. Elegir «Dato» muestra el selector y no cambia la celda hasta elegir uno; un texto que empieza con «=» es texto.
 export function CampoDelContenido({
   contenido,
   clave,

@@ -80,15 +80,15 @@ function PieDeCompartir({
         motivos={c.motivos}
         opcion={opcion}
         texto={c.texto}
-        portada={c.portada.parte.estado === 'listo' ? c.portada.parte.dato : null}
-        portadaFallida={c.portada.parte.estado === 'error'}
+        imagen={c.imagen.parte.estado === 'listo' ? c.imagen.parte.dato : null}
+        imagenFallida={c.imagen.parte.estado === 'error'}
         fotos={c.fotosMarcadas.listas}
       />
     </div>
   )
 }
 
-// «Compartir cotización» (`docs/GLOSARIO.md` › «Compartir la cotización»): la imagen (la portada o las fotos marcadas del vehículo) y el texto tal como saldrán, y los
+// «Compartir cotización» (`docs/GLOSARIO.md` › «Compartir la cotización»): la imagen (la de la tarjeta o las fotos marcadas del vehículo) y el texto tal como saldrán, y los
 // botones para copiarlos, descargarlos, mandarlos por el menú del sistema o bajar el PDF. Lo abre su URL (`?panel=compartir`, y `&para=<id>` fuera del detalle); se pide
 // con `diferido()` y cada apertura empieza de cero (`key`). Con el Modo Live no se comparte.
 export function PanelDeCompartir(props: PropsDelPanelDeCompartir) {

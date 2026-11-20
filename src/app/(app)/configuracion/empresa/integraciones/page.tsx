@@ -8,14 +8,14 @@ import { SeccionIntegraciones } from './seccion'
 export const metadata: Metadata = { title: INTEGRACIONES_DE_LA_EMPRESA.titulo }
 
 // Configuración › Empresa › Integraciones. Entra quien tiene alguno de los dos permisos de la empresa; se edita con
-// `empresa.ajustes.gestionar` (sin él, deshabilitada con el motivo). Cada integración guarda al instante.
+// `empresa.ajustes.gestionar` (sin él, deshabilitada con el motivo). Los interruptores guardan al instante; lo demás se edita en un modal.
 export default async function PaginaIntegracionesDeLaEmpresa() {
   const { permisos } = await requerirSesion()
   if (!PERMISOS_DE_LA_EMPRESA.some((clave) => puede(permisos, clave))) {
     return <EstadoSinPermiso />
   }
   return (
-    <div className="grid max-w-3xl gap-4">
+    <div className="grid max-w-6xl gap-4">
       <EncabezadoDeConfiguracion {...INTEGRACIONES_DE_LA_EMPRESA} />
       <SeccionIntegraciones puedeEditar={puede(permisos, 'empresa.ajustes.gestionar')} />
     </div>

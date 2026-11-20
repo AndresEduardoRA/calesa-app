@@ -1,6 +1,6 @@
 import { Skeleton } from '@/shared/ui/skeleton'
 
-// Mientras se lee «Cotización aprobada»: el marco de la portada (15:8) y dos líneas.
+// Mientras se lee «Cotización aprobada»: el marco de la imagen (15:8) y dos líneas.
 export function EsqueletoDeLaAprobada() {
   return (
     <div aria-hidden className="grid min-w-0 gap-3">

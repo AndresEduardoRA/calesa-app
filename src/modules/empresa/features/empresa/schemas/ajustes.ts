@@ -7,6 +7,11 @@ import {
 } from '../../../entities/ajustes-empresa'
 import { RUTA_DE_LOGO, validarColorDeMarca } from '../../../entities/marca'
 import { localeCanonico, zonaHorariaValida } from '../../../entities/regional'
+import {
+  CAMPOS_DE_LA_TARJETA,
+  type CampoDeLaTarjeta,
+  type TarjetaConCampos,
+} from '../../../entities/tarjetas-de-la-empresa'
 
 // Un dato que puede quedar vacío: el campo en blanco se guarda como «sin dato».
 function opcional(largoMaximo: number) {
@@ -109,3 +114,28 @@ export const esquemaAjustes = z.object({
 })
 
 export type EntradaDeAjustes = z.input<typeof esquemaAjustes>
+
+// Lo que guarda cada tarjeta de Datos: sólo sus claves, y las que no cambiaron ni viajan (`empresa_guardar_ajustes()` no toca una clave
+// ausente). La versión es obligatoria y hay que cambiar algo: un guardado vacío no tiene sentido y no debe mover la versión de la fila.
+export const esquemaCambiosDeAjustes = esquemaAjustes
+  .omit({ actualizadoEnEsperado: true })
+  .partial()
+  .extend({ actualizadoEnEsperado: z.string().min(1) })
+  .strict()
+  .refine(
+    (cambios) =>
+      Object.entries<unknown>(cambios).some(
+        ([clave, valor]) => clave !== 'actualizadoEnEsperado' && valor !== undefined,
+      ),
+    { error: 'No hay nada que guardar.' },
+  )
+
+export type EntradaDeCambiosDeAjustes = z.input<typeof esquemaCambiosDeAjustes>
+
+// Lo mismo que valida el servidor, para los campos de una tarjeta: el cliente pone el motivo junto al campo antes de enviar.
+export function esquemaDeLaTarjeta(tarjeta: TarjetaConCampos) {
+  const mascara = Object.fromEntries(
+    CAMPOS_DE_LA_TARJETA[tarjeta].map((campo) => [campo, true]),
+  ) as Record<CampoDeLaTarjeta, true>
+  return esquemaAjustes.pick(mascara).partial()
+}

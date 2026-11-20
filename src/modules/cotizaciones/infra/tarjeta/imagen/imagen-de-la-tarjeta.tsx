@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react'
 import { ImageResponse } from 'next/og'
 import { COLOR_TINTA } from '@/shared/config/app'
 import { cajaDelLogo } from '../../../entities/tarjeta/caja-del-logo'
+import { circuloDeLasIniciales } from '../../../entities/tarjeta/circulo-de-las-iniciales'
 import { FONDO_AUTOMATICO, RELLENO_DE_LA_CELDA } from '../../../entities/tarjeta/estilo-de-la-celda'
 import type { CeldaDibujada, Geometria } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
 import {
@@ -16,8 +17,9 @@ import type { LogoDeLaTarjeta } from '../logo-de-la-tarjeta'
 
 // La tarjeta de una cotización como imagen PNG (`ImageResponse` de `next/og`, en el servidor: no suma JS a ninguna pantalla), al ancho de la tarjeta en px: la
 // misma geometría que la vista previa y el PDF, pintada con posiciones absolutas (satori no tiene `grid` y todo `div` con más de un hijo lleva `display: flex`).
-// Geist de la tarjeta; el logo, el que ya bajó y convirtió `logoParaDibujar()`, como `data:`, en el rectángulo de `cajaDelLogo()`. La usa la portada de la cotización: si cambias cómo se dibuja, sube
-// `_portada_version_del_dibujo()` en una migración (si no, las portadas ya guardadas no se rehacen).
+// Geist de la tarjeta; el logo y la foto del asesor, los que ya bajaron y convirtieron `logoParaDibujar()` y `fotoParaDibujar()`, como `data:`, en el rectángulo de
+// `cajaDelLogo()`; sin foto, las iniciales en el círculo de `circuloDeLasIniciales()`. La usa la imagen de la tarjeta: si cambias cómo se dibuja, sube
+// `VERSION_DEL_DIBUJO` (`entities/tarjeta/etiqueta-de-la-imagen.ts`; si no, el navegador sigue con la que ya tiene).
 
 type Fuente = { name: string; data: Buffer; weight: 400 | 600; style: 'normal' | 'italic' }
 
@@ -76,6 +78,9 @@ function estiloDe(c: CeldaDibujada): CSSProperties {
 
 type LogoEnDatos = { src: string; ancho: number; alto: number }
 
+const enDatos = (imagen: LogoDeLaTarjeta | null): LogoEnDatos | null =>
+  imagen === null ? null : { src: comoDatos(imagen), ancho: imagen.ancho, alto: imagen.alto }
+
 // El logo en la caja interior de su celda: un `div` de ese tamaño y, adentro, el `<img>` en el rectángulo de `cajaDelLogo()` (satori no tiene un `object-position`
 // confiable).
 function LogoDeLaCelda({ celda, logo }: { celda: CeldaDibujada; logo: LogoEnDatos }) {
@@ -104,7 +109,55 @@ function LogoDeLaCelda({ celda, logo }: { celda: CeldaDibujada; logo: LogoEnDato
   )
 }
 
-function Celda({ celda, logo }: { celda: CeldaDibujada; logo: LogoEnDatos | null }) {
+// Las iniciales del asesor en su círculo, alineado como la celda en su caja interior.
+function InicialesDeLaCelda({ celda, iniciales }: { celda: CeldaDibujada; iniciales: string }) {
+  const c = circuloDeLasIniciales(celda, 1)
+  if (c === null) {
+    return null
+  }
+  return (
+    <div
+      style={{
+        display: 'flex',
+        position: 'relative',
+        width: c.interior.ancho,
+        height: c.interior.alto,
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          position: 'absolute',
+          left: c.x,
+          top: c.y,
+          width: c.diametro,
+          height: c.diametro,
+          alignItems: 'center',
+          justifyContent: 'center',
+          border: `${String(c.borde)}px solid ${celda.estilo.texto}`,
+          borderRadius: c.diametro / 2,
+          color: celda.estilo.texto,
+          fontSize: c.letra,
+          fontWeight: 600,
+          fontStyle: 'normal',
+          lineHeight: 1,
+        }}
+      >
+        {iniciales}
+      </div>
+    </div>
+  )
+}
+
+function Celda({
+  celda,
+  logo,
+  foto,
+}: {
+  celda: CeldaDibujada
+  logo: LogoEnDatos | null
+  foto: LogoEnDatos | null
+}) {
   const c = celda.contenido
   return (
     <div style={estiloDe(celda)}>
@@ -116,6 +169,12 @@ function Celda({ celda, logo }: { celda: CeldaDibujada; logo: LogoEnDatos | null
         <div style={{ display: 'flex' }}>{c.segunda.texto}</div>
       ) : null}
       {c.tipo === 'logo' && logo !== null ? <LogoDeLaCelda celda={celda} logo={logo} /> : null}
+      {c.tipo === 'foto_del_asesor' && foto !== null ? (
+        <LogoDeLaCelda celda={celda} logo={foto} />
+      ) : null}
+      {c.tipo === 'foto_del_asesor' && foto === null ? (
+        <InicialesDeLaCelda celda={celda} iniciales={c.iniciales} />
+      ) : null}
     </div>
   )
 }
@@ -124,13 +183,17 @@ function Celda({ celda, logo }: { celda: CeldaDibujada; logo: LogoEnDatos | null
 export async function pngDeLaTarjeta({
   geometria,
   logo,
+  foto,
 }: {
   geometria: Geometria
   logo: LogoDeLaTarjeta | null
+  // La foto del asesor; nula, las iniciales.
+  foto: LogoDeLaTarjeta | null
 }): Promise<Uint8Array<ArrayBuffer>> {
   const ancho = Math.ceil(geometria.ancho)
   const alto = Math.ceil(geometria.alto)
-  const datos = logo === null ? null : { src: comoDatos(logo), ancho: logo.ancho, alto: logo.alto }
+  const datos = enDatos(logo)
+  const deLaFoto = enDatos(foto)
   const respuesta = new ImageResponse(
     <div
       style={{
@@ -143,7 +206,7 @@ export async function pngDeLaTarjeta({
       }}
     >
       {geometria.celdas.map((c) => (
-        <Celda key={c.id} celda={c} logo={datos} />
+        <Celda key={c.id} celda={c} logo={datos} foto={deLaFoto} />
       ))}
     </div>,
     { width: ancho, height: alto, fonts: await leerFuentes() },

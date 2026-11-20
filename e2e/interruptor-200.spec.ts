@@ -22,10 +22,9 @@ test.afterAll(async () => {
   await borrarPersonasDePrueba()
 })
 
-// Pantallas con interruptores de los dos tamaños: la matriz (normal), Empresa (normal, con su texto) y los campos de leads (`sm`).
+// Pantallas con interruptores de los dos tamaños: la matriz (normal), Integraciones (normal, con su texto) y los campos de leads (`sm`).
 const PANTALLAS = [
   '/configuracion/roles',
-  '/configuracion/empresa',
   '/configuracion/empresa/integraciones',
   '/configuracion/leads/campos',
 ]
@@ -244,16 +243,13 @@ test('al 100 %: se dibuja igual, píxel a píxel, que con la pista y el pulgar e
 // escritorio, 33).
 const MARGEN_MINIMO = 16
 
-// Las pantallas con un `<Interruptor>` dentro de un `<Bloque>`; el segundo dato es el bloque que nace plegado y hay que abrir.
-const PANTALLAS_CON_TARJETA = [
-  ['/configuracion/empresa', 'Políticas'],
-  ['/configuracion/empresa/integraciones', null],
-] as const
+// Las pantallas con un `<Interruptor>` dentro de una `<TarjetaDeAjustes>`.
+const PANTALLAS_CON_TARJETA = ['/configuracion/empresa/integraciones'] as const
 
 async function margenesConLaTarjeta(page: Page) {
   return page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('[data-slot=interruptor]')].flatMap((raiz) => {
-      const tarjeta = raiz.closest('[data-slot=bloque]')
+      const tarjeta = raiz.closest('[data-slot=tarjeta-de-ajustes]')
       const pista = raiz.querySelector('[data-slot=switch]')
       if (!tarjeta || !pista) return []
       const t = tarjeta.getBoundingClientRect()
@@ -269,10 +265,9 @@ test('al 200 %: el interruptor deja 16 px o más entre su borde y el de su tarje
 }) => {
   await textoGrandeAlCargar(page)
   await entrar(page)
-  for (const [url, plegado] of PANTALLAS_CON_TARJETA) {
+  for (const url of PANTALLAS_CON_TARJETA) {
     await page.goto(url)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    if (plegado) await page.locator('summary', { hasText: plegado }).click()
     const margenes = await margenesConLaTarjeta(page)
     expect(margenes.length, `${url}: ningún interruptor dentro de una tarjeta`).toBeGreaterThan(0)
     for (const { titulo, margen } of margenes) {

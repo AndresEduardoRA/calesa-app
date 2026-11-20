@@ -51,7 +51,7 @@ type Props = {
   menuDeFila?: MenuDeFila
   compartirDe?: CompartirDe
   dialogos?: ReactNode
-  // La portada de cada tarjeta y «Comparar» de un grupo (de otras áreas, por hueco).
+  // La imagen de cada tarjeta y «Comparar» de un grupo (de otras áreas, por hueco).
   huecos?: HuecosDeLaLista
   // La ruta de las fichas de los clientes, si quien mira ve leads (el cliente de la tarjeta va enlazado).
   rutaDeClientes: string | null

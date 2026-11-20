@@ -29,6 +29,7 @@ const esquemaDelContenido = z.union([
   z.object({ tipo: z.literal('dato'), variable: id }),
   z.object({ tipo: z.literal('dato'), nodo: id, mostrar: z.enum(MOSTRAR) }),
   z.object({ tipo: z.literal('logo') }),
+  z.object({ tipo: z.literal('foto_del_asesor') }),
   z.object({ tipo: z.literal('vacio') }),
 ])
 

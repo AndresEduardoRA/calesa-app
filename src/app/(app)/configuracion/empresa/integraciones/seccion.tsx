@@ -1,5 +1,5 @@
 import { leerIntegraciones, leerVehiculosQueCambian } from '@/modules/empresa'
-import { Integraciones } from '@/modules/empresa/pantallas/configuracion-empresa'
+import { TarjetasDeIntegraciones } from '@/modules/empresa/pantallas/configuracion-empresa'
 import { entornoPublico } from '@/shared/config/entorno'
 import { datosO } from '@/shared/lib/errores'
 import { EstadoVacio } from '@/shared/ui/estados'
@@ -22,7 +22,7 @@ export async function SeccionIntegraciones({ puedeEditar }: { puedeEditar: boole
   const pushWeb = integraciones.find((una) => una.clave === 'push_web')
   const conteo = webPublica && puedeEditar ? await leerVehiculosQueCambian() : null
   return (
-    <Integraciones
+    <TarjetasDeIntegraciones
       apibara={apibara}
       webPublica={webPublica}
       pushWeb={pushWeb}

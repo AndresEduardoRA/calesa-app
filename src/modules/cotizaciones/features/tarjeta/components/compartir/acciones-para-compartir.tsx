@@ -18,7 +18,7 @@ import {
   type OpcionDeImagen,
 } from '../../../../entities/tarjeta/compartir/motivos-de-compartir'
 import type { FotoBajada } from '../../hooks/use-fotos-marcadas'
-import type { PortadaParaCompartir } from '../../hooks/use-para-compartir-la-cotizacion'
+import type { ImagenDeLaTarjetaParaCompartir } from '../../hooks/use-para-compartir-la-cotizacion'
 import { useDescargaDelPdf } from '../../hooks/use-descarga-del-pdf'
 import { textoDelFalloDelPdf } from '../../../../entities/tarjeta/fallo-del-pdf'
 
@@ -28,10 +28,10 @@ type Props = {
   capacidades: Capacidades
   motivos: MotivosDeCompartir
   opcion: OpcionDeImagen
-  // Lo que ya está en memoria: el texto, la portada (con su PNG) y las fotos marcadas y bajadas.
+  // Lo que ya está en memoria: el texto, la imagen de la tarjeta (con su PNG) y las fotos marcadas y bajadas.
   texto: string | null
-  portada: PortadaParaCompartir | null
-  portadaFallida: boolean
+  imagen: ImagenDeLaTarjetaParaCompartir | null
+  imagenFallida: boolean
   fotos: readonly FotoBajada[]
 }
 
@@ -41,13 +41,13 @@ const FALLO = { codigo: 'inesperado', mensaje: MENSAJE_INESPERADO } as const
 const extensionDe = (blob: Blob) =>
   blob.type === 'image/png' ? 'png' : blob.type === 'image/jpeg' ? 'jpg' : 'webp'
 
-// Los archivos de lo que se comparte, con el nombre que lleva cada uno: la portada en PNG o las fotos como están guardadas.
+// Los archivos de lo que se comparte, con el nombre que lleva cada uno: la imagen de la tarjeta en PNG o las fotos como están guardadas.
 function archivosDe(props: Props): File[] {
   if (props.opcion === 'cotizacion') {
-    return props.portada === null
+    return props.imagen === null
       ? []
       : [
-          new File([props.portada.png], `cotizacion-${String(props.numero)}.png`, {
+          new File([props.imagen.png], `cotizacion-${String(props.numero)}.png`, {
             type: 'image/png',
           }),
         ]
@@ -100,7 +100,7 @@ async function compartir(props: Props) {
   if (texto === null) return
   try {
     const hecho = await compartirConElSistema(texto, archivosDe(props))
-    if (hecho !== null && props.opcion === 'cotizacion' && props.portadaFallida) {
+    if (hecho !== null && props.opcion === 'cotizacion' && props.imagenFallida) {
       avisar('Se compartió el texto. La imagen no se pudo armar.')
     }
   } catch (error) {
@@ -114,7 +114,7 @@ async function compartir(props: Props) {
 
 function copiarLaImagen(props: Props) {
   const imagen =
-    props.opcion === 'cotizacion' ? (props.portada?.png ?? null) : (props.fotos[0]?.blob ?? null)
+    props.opcion === 'cotizacion' ? (props.imagen?.png ?? null) : (props.fotos[0]?.blob ?? null)
   if (imagen !== null) {
     void hacer(() => copiarImagen(pngDesde(imagen)), 'Imagen copiada')
   }

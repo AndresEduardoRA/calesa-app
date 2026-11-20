@@ -29,7 +29,7 @@ const montar = (fila: FilaDeEsteVehiculo | null, cotizar: string | null) =>
       fila={fila}
       tituloDelVehiculo="Toyota Hilux 2021"
       cotizar={cotizar}
-      portada={<p>portada</p>}
+      imagen={<p>imagen</p>}
       compartir={<button type="button">Compartir</button>}
     />,
   )
@@ -37,9 +37,9 @@ const montar = (fila: FilaDeEsteVehiculo | null, cotizar: string | null) =>
 afterEach(cleanup)
 
 describe('<AprobadaDelVehiculo>', () => {
-  it('con la aprobada: portada, n.º con el título del vehículo, total con su modo, autor, «Abrir» y «Compartir»', () => {
+  it('con la aprobada: imagen, n.º con el título del vehículo, total con su modo, autor, «Abrir» y «Compartir»', () => {
     montar(FILA, '/cotizaciones/nuevo')
-    expect(screen.getByText('portada')).toBeTruthy()
+    expect(screen.getByText('imagen')).toBeTruthy()
     expect(screen.getByText('N.º 42 · Toyota Hilux 2021')).toBeTruthy()
     expect(screen.getByText(/· Paralelo/)).toBeTruthy()
     expect(document.querySelector('[data-monto-valor]')).not.toBeNull()
@@ -58,7 +58,7 @@ describe('<AprobadaDelVehiculo>', () => {
     expect(screen.getByRole('link', { name: 'Cotizar' }).getAttribute('href')).toBe(
       '/cotizaciones/nuevo?origen=o&vehiculo=v',
     )
-    expect(screen.queryByText('portada')).toBeNull()
+    expect(screen.queryByText('imagen')).toBeNull()
   })
 
   it('sin aprobada y sin permiso de cotizar: sin «Cotizar»', () => {

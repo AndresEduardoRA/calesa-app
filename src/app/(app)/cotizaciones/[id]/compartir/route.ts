@@ -4,11 +4,17 @@ import { leerAjustes } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
 import { leerSubasta } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
-import { asesorDe, oNulo, vehiculoDe, vehiculoDeLaTarjeta } from '../../datos-de-la-tarjeta'
+import {
+  asesorQueMira,
+  autorDe,
+  oNulo,
+  vehiculoDe,
+  vehiculoDeLaTarjeta,
+} from '../../datos-de-la-tarjeta'
 import { datosParaCompartir } from './datos-para-compartir'
 import { contextoParaCompartir, versionesParaCompartir } from './versiones'
 
-// Lo que el panel «Compartir la cotización» necesita para armar el texto: el título, el autor, el vehículo con la zona
+// Lo que el panel «Compartir la cotización» necesita para armar el texto: el título, el autor (quien la creó), el asesor (quien comparte), el vehículo con la zona
 // de su patio y el cierre de su subasta, y las cifras de la tarjeta de **lo guardado** (sólo lo del nivel «todos»: `cotizacion_tarjeta`, K4). Con la sesión de quien
 // pide (la RLS decide; nunca la secret key). Se pide una vez por apertura; también es el control de acceso del panel. Lo comparte quien ve la cotización, sin clave
 // propia (como el PDF).
@@ -50,10 +56,11 @@ export async function GET(
     return falla(lectura.error.codigo)
   }
   const { hoja } = lectura.data
-  const [vehiculo, subasta, autor, ajustes] = await Promise.all([
+  const [vehiculo, subasta, autor, asesor, ajustes] = await Promise.all([
     oNulo(vehiculoDe(hoja.cotizacion.vehiculoId)),
     oNulo(subastaDe(hoja.cotizacion.vehiculoId)),
-    asesorDe(id),
+    autorDe(id),
+    asesorQueMira(),
     leerAjustes(),
   ])
   // Sin los ajustes no se sabe en qué zona ni con qué formato decirlo: no se adivina con los de fábrica.
@@ -64,7 +71,7 @@ export async function GET(
   // La cabecera de la tarjeta no se usa (el texto lleva sólo sus montos): el contexto va sin cliente ni logo.
   const comun = {
     vehiculo: vehiculoDeLaTarjeta(vehiculo),
-    asesor: autor,
+    asesor,
     zona: zonaHoraria,
     locale,
   }
@@ -83,6 +90,7 @@ export async function GET(
     vehiculo,
     subasta: vehiculo === null ? null : subasta,
     autor,
+    asesor,
     cifras: cifras.data,
     ajustes: { locale, zonaHoraria },
   })

@@ -58,39 +58,55 @@ test('E2E escritorio · encender la web pública, guardar dirección y secreto, 
   const secreto = `e2e-revalidar-${randomBytes(8).toString('hex')}`
   await entrar(page, duena, { fresco: true })
   await page.goto('/configuracion/empresa/integraciones')
-  const web = page.locator('details', { has: page.getByText('Web pública', { exact: true }) })
+  const web = page.getByRole('region', { name: 'Web pública', exact: true })
   const activa = web.getByRole('switch', { name: 'Activa' })
+  const abrirDelMenu = async (accion: string) => {
+    await web.getByRole('button', { name: 'Más acciones de Web pública' }).click()
+    await page.getByRole('menuitem', { name: accion }).click()
+  }
 
-  // La ayuda dice cuántos vehículos empiezan a verse (la semilla puede no tener ninguno).
+  // La ayuda dice cuántos vehículos empiezan a verse (la semilla puede no tener ninguno); sin clave, la tarjeta lo dice.
   await expect(
     web.getByText(/Al encenderla, .+ empiezan? a verse en el sitio\.|Con la integración activa/),
   ).toBeVisible()
-  const probar = web.getByRole('button', { name: 'Probar' })
-  await expect(probar).toBeDisabled()
-  await expect(web.getByText('Guarda la dirección para probar.')).toBeVisible()
+  await expect(web.getByText('Apagada', { exact: true })).toBeVisible()
+  await web.getByRole('button', { name: 'Más acciones de Web pública' }).click()
+  await expect(page.getByRole('menuitem', { name: 'Probar' })).toBeDisabled()
+  await expect(page.getByText('Guarda la dirección para probar.')).toBeVisible()
+  await page.keyboard.press('Escape')
 
   await activa.click()
   await expect(page.getByText('Web pública activada')).toBeVisible()
   await expect(activa).toBeChecked()
+  await expect(web.getByText('Falta la clave', { exact: true }).first()).toBeVisible()
 
   // Sin https no se guarda; el loopback sí, porque la base del e2e es local.
-  const direccion = web.getByLabel('Dirección de revalidación')
+  await web.getByRole('button', { name: 'Configurar' }).click()
+  const configurar = page.getByRole('dialog', { name: 'Configurar la web pública' })
+  const direccion = configurar.getByLabel('Dirección de revalidación')
   await direccion.fill('http://ejemplo.com')
-  await web.getByRole('button', { name: 'Guardar dirección' }).click()
+  await configurar.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.locator('#revalidarUrl-error')).toContainText('https://')
   await direccion.fill(`http://127.0.0.1:${puerto}/api/revalidar`)
-  await web.getByRole('button', { name: 'Guardar dirección' }).click()
+  await configurar.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Dirección de revalidación guardada')).toBeVisible()
-  await expect(web.getByText('Guarda el secreto para probar.')).toBeVisible()
+  await expect(configurar).toBeHidden()
+  await web.getByRole('button', { name: 'Más acciones de Web pública' }).click()
+  await expect(page.getByText('Guarda el secreto para probar.')).toBeVisible()
+  await page.keyboard.press('Escape')
 
-  // El secreto se guarda y no vuelve, ni a la vista ni en lo que manda el servidor.
-  await web.getByLabel('Secreto', { exact: true }).fill(secreto)
-  await web.getByRole('button', { name: 'Guardar secreto' }).click()
+  // El secreto es otra escritura, en su modal: se guarda y no vuelve, ni a la vista ni en lo que manda el servidor.
+  await abrirDelMenu('Cargar el secreto')
+  const modalDelSecreto = page.getByRole('dialog', { name: 'Cargar el secreto' })
+  await modalDelSecreto.getByLabel('Secreto', { exact: true }).fill(secreto)
+  await modalDelSecreto.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Secreto de revalidación guardado')).toBeVisible()
-  await expect(web.getByText(/Guardado el .+ No se puede ver/)).toBeVisible()
+  await expect(modalDelSecreto).toBeHidden()
+  await expect(web.getByText(/Guardado el .+/)).toBeVisible()
+  await expect(web.getByText('No se puede ver: sólo reemplazar.')).toBeVisible()
   expect(await page.content()).not.toContain(secreto)
 
-  await probar.click()
+  await abrirDelMenu('Probar')
   await expect(web.getByText('Respondió 204.')).toBeVisible()
   await expect(web.getByText(/Con http:\/\/ sólo se prueba/)).toBeVisible()
   expect(await page.content()).not.toContain(secreto)

@@ -1,7 +1,5 @@
 import { act, cleanup, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { ContextoDeLaVistaPrevia } from '../components/hueco-de-la-vista-previa'
-import type { ReactNode } from 'react'
 import { claveDelPendiente } from '../../../entities/claves-de-la-hoja'
 import type { ResultadoDeCrear } from '../../../entities/guardado'
 import type { PedidoDeGuardado } from '../../../entities/pedido-de-guardado'
@@ -165,42 +163,5 @@ describe('useGuardado: los rechazos y la hoja que no arma', () => {
     })
     expect(hook.result.current.estado.tipo).toBe('listo')
     expect(ejecutar).not.toHaveBeenCalled()
-  })
-})
-
-describe('useGuardado: la portada de la cotización', () => {
-  // El área de la vista previa (la tarjeta) recibe el id de la guardada: sólo con la cotización guardada, nunca con un rechazo.
-  const conVistaPrevia = (alGuardarLaCotizacion: (id: string) => void) =>
-    renderHook(
-      () =>
-        useGuardado({
-          hoja: { personaId: PERSONA, origenId: ORIGEN, leadId: LEAD, vehiculoId: null },
-          alGuardar: () => {},
-        }),
-      {
-        wrapper: ({ children }: { children: ReactNode }) => (
-          <ContextoDeLaVistaPrevia value={{ dibujar: () => null, alGuardarLaCotizacion }}>
-            {children}
-          </ContextoDeLaVistaPrevia>
-        ),
-      },
-    )
-
-  it('con la cotización guardada avisa al área con su id; con un rechazo, no', async () => {
-    const alGuardarLaCotizacion = vi.fn()
-    const hook = conVistaPrevia(alGuardarLaCotizacion)
-    ejecutar.mockResolvedValueOnce(respuesta({ tipo: 'rechazo', motivo: 'transitorio' }))
-    await guardar(hook, armarCon(1))
-    expect(alGuardarLaCotizacion).not.toHaveBeenCalled()
-    ejecutar.mockResolvedValueOnce(GUARDADA)
-    await guardar(hook, armarCon(2))
-    expect(alGuardarLaCotizacion).toHaveBeenCalledExactlyOnceWith(ORIGEN)
-  })
-
-  it('sin el área de la vista previa guarda igual', async () => {
-    ejecutar.mockResolvedValueOnce(GUARDADA)
-    const hook = montar()
-    await guardar(hook, armarCon(1))
-    expect(hook.result.current.estado.tipo).toBe('guardada')
   })
 })

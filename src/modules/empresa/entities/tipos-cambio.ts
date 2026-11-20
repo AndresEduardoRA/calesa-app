@@ -92,6 +92,56 @@ export function historialDesde(
   }))
 }
 
+// Un par de monedas con los tipos de cambio que hay entre ellas (USD → BOB): la unidad con la que se ordena Configuración › Empresa › Monedas.
+export type GrupoDePar = {
+  // «USD-BOB»: también lo que `?par=` lleva al abrir «Nuevo tipo de cambio» de ese par.
+  clave: string
+  monedaDe: string
+  monedaA: string
+  // El por defecto adelante, luego los activos y, a igual, el orden de la base.
+  tipos: TipoCambio[]
+}
+
+export const claveDelPar = (monedaDe: string, monedaA: string): string => `${monedaDe}-${monedaA}`
+
+// Los tipos de cambio agrupados por par de monedas. Primero los pares que salen de la moneda base, y después por código.
+export function gruposPorPar(tipos: readonly TipoCambio[], monedaBase: string): GrupoDePar[] {
+  const grupos = new Map<string, GrupoDePar>()
+  for (const tipo of tipos) {
+    const clave = claveDelPar(tipo.monedaDe, tipo.monedaA)
+    const grupo = grupos.get(clave) ?? {
+      clave,
+      monedaDe: tipo.monedaDe,
+      monedaA: tipo.monedaA,
+      tipos: [],
+    }
+    grupo.tipos.push(tipo)
+    grupos.set(clave, grupo)
+  }
+  const rango = (grupo: GrupoDePar) => (grupo.monedaDe === monedaBase ? 0 : 1)
+  return [...grupos.values()]
+    .map((grupo) => ({
+      ...grupo,
+      tipos: [...grupo.tipos].sort(
+        (uno, otro) =>
+          Number(otro.esDefault) - Number(uno.esDefault) ||
+          Number(otro.activo) - Number(uno.activo),
+      ),
+    }))
+    .sort(
+      (uno, otro) =>
+        rango(uno) - rango(otro) ||
+        uno.monedaDe.localeCompare(otro.monedaDe) ||
+        uno.monedaA.localeCompare(otro.monedaA),
+    )
+}
+
+// Lo que dice `?par=USD-BOB`: las dos monedas, o null si no es un par.
+export function parDeLaClave(clave: string | null): { monedaDe: string; monedaA: string } | null {
+  const [monedaDe, monedaA, ...resto] = (clave ?? '').split('-')
+  return monedaDe && monedaA && resto.length === 0 ? { monedaDe, monedaA } : null
+}
+
 // Los que se pueden usar hoy, con el por defecto adelante.
 export function vigentes(tipos: readonly TipoCambio[]): TipoCambio[] {
   return tipos

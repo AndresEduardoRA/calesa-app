@@ -173,12 +173,9 @@ declare
     ('cotizacion_comentario_borrar(uuid,timestamp with time zone)', 'X'),
     ('cotizacion_adjuntar(uuid,text,text,text,integer)', 'X'),
     ('cotizacion_adjunto_quitar(uuid)', 'X'),
-    -- La portada de la cotización: reciben una cotización, no un lead, y piden verla (`puede_cotizacion`); el nombre del cliente sale sólo a quien ve el lead
-    -- (`puede_lead(…, 'leads.ver')`, `ve_todo`) y anotarla pide además poder guardarla; sus pruebas, `areas/tarjeta/portada.sql`.
-    ('cotizacion_portada(uuid)', 'L'),
-    ('cotizacion_portada_poner(uuid,text,text)', 'X'),
-    -- Lo pide la policy de leer del bucket para `portada/`: ver la cotización y, con un cliente vivo, `puede_lead(…, 'leads.ver')`; sólo un booleano.
-    ('cotizacion_portada_visible(uuid)', 'L'),
+    -- La huella de la imagen de la tarjeta: recibe una cotización, no un lead, y pide verla (`puede_cotizacion`); el nombre del cliente entra en el md5 sólo si
+    -- quien pide ve el lead (`puede_lead(…, 'leads.ver')`) y devuelve sólo el md5; sus pruebas, `areas/tarjeta/imagen.sql`.
+    ('cotizacion_imagen_huella(uuid)', 'L'),
     -- Marcas de quien mira: su reporte (retirar toma la cotización antes del reporte, como moderar) y su favorita.
     ('cotizacion_reportar(uuid,text)', 'M'),
     ('cotizacion_reporte_retirar(uuid)', 'M'),

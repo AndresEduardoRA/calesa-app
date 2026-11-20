@@ -87,18 +87,19 @@ async function abrirElPopover(page: Page) {
   return popover
 }
 
-// En el panel de un tipo de cambio de Configuración, enciende o apaga «En la barra superior» y guarda.
+// El interruptor «En la barra» de la tarjeta de un tipo de cambio de Configuración: guarda al instante.
+const enLaBarraDe = (page: Page, nombre: string) =>
+  page
+    .getByRole('region', { name: nombre, exact: true })
+    .getByRole('switch', { name: 'En la barra' })
+
 async function ponerEnLaBarra(page: Page, nombre: string, enLaBarra: boolean) {
-  await page.getByRole('button', { name: new RegExp(`^${nombre}`) }).click()
-  const panel = page.getByRole('dialog')
-  const interruptor = panel.getByRole('switch', { name: 'En la barra superior' })
+  const interruptor = enLaBarraDe(page, nombre)
   await expect(interruptor).toBeEnabled()
   await interruptor.click()
-  await expect(interruptor).toBeChecked({ checked: enLaBarra })
-  await panel.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText(`Tipo de cambio «${nombre}» guardado`)).toBeVisible()
-  await panel.getByRole('button', { name: 'Cerrar' }).first().click()
-  await expect(panel).toBeHidden()
+  await expect(interruptor).toBeChecked({ checked: enLaBarra })
+  await expect(interruptor).toBeEnabled()
 }
 
 test('la empresa marca oficial y paralelo y la barra muestra los dos', async ({
@@ -107,13 +108,12 @@ test('la empresa marca oficial y paralelo y la barra muestra los dos', async ({
 }, info) => {
   await entrar(page, duena)
   await page.goto('/configuracion/empresa/monedas')
-  await expect(page.getByText(/En la barra superior se ven hasta 3/)).toBeVisible()
   // La semilla deja el oficial, como la migración en una base con datos: nada cambió al desplegar.
-  await expect(page.getByRole('button', { name: /^Oficial/ })).toContainText('En la barra')
+  await expect(enLaBarraDe(page, 'Oficial')).toBeChecked()
   await expect(barra(page)).toContainText('11,68')
 
   await ponerEnLaBarra(page, 'Paralelo', true)
-  await expect(page.getByRole('button', { name: /^Paralelo/ })).toContainText('En la barra')
+  await expect(enLaBarraDe(page, 'Paralelo')).toBeChecked()
   await expect(barra(page)).toContainText('12,20')
   await expect(barra(page)).toContainText('11,68')
   // En el celular el primero y «+1»; en el escritorio los dos a la vista.
@@ -146,7 +146,7 @@ test('la empresa marca oficial y paralelo y la barra muestra los dos', async ({
   await ponerEnLaBarra(page, 'Paralelo', false)
   await expect(barra(page)).toContainText('11,68')
   await expect(barra(page)).not.toContainText('12,20')
-  await expect(page.getByRole('button', { name: /^Oficial/ })).not.toContainText('En la barra')
+  await expect(enLaBarraDe(page, 'Oficial')).not.toBeChecked()
 })
 
 test('quien puede cambia un valor en el popover y ve su nombre', async ({ page }, info) => {

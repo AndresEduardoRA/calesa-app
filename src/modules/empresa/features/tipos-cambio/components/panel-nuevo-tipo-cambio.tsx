@@ -9,6 +9,7 @@ import { useCambiosSinGuardar } from '@/shared/ui/cambios-del-panel'
 import { Campo } from '@/shared/ui/campo'
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
 import { Drawer } from '@/shared/ui/drawer'
+import { useApertura } from '@/shared/ui/use-apertura'
 import { useHayCambiosEnFormulario } from '@/shared/ui/use-hay-cambios-en-formulario'
 import { valorTipeado, type Moneda } from '../../../entities/tipos-cambio'
 import type { EdicionesDeTiposCambio } from '../hooks/use-tipos-cambio'
@@ -18,13 +19,16 @@ type Props = {
   // Las monedas activas.
   monedas: readonly Moneda[]
   monedaBase: string
+  // El par de `?par=USD-BOB` (el «+ Tipo de cambio» de un grupo): las dos monedas ya elegidas. null = de la base a otra.
+  par: { monedaDe: string; monedaA: string } | null
   ediciones: EdicionesDeTiposCambio
   alCerrar: () => void
 }
 
 type PropsDeCampos = {
   opciones: readonly { valor: string; etiqueta: string }[]
-  monedaBase: string
+  // La moneda que se propone de este lado.
+  de: string
   // La moneda que se propone del otro lado.
   otra: string
   errores: EdicionesDeTiposCambio['errores']['crear']
@@ -32,7 +36,7 @@ type PropsDeCampos = {
   valorInvalido: string | null
 }
 
-function Campos({ opciones, monedaBase, otra, errores, valorInvalido }: PropsDeCampos) {
+function Campos({ opciones, de, otra, errores, valorInvalido }: PropsDeCampos) {
   return (
     <>
       <Campo
@@ -48,7 +52,7 @@ function Campos({ opciones, monedaBase, otra, errores, valorInvalido }: PropsDeC
           nombre="monedaDe"
           etiqueta="Una unidad de"
           opciones={opciones}
-          defaultValue={monedaBase}
+          defaultValue={de}
           error={errorDeCampo(errores, 'monedaDe')}
         />
         <CampoSeleccion
@@ -70,20 +74,14 @@ function Campos({ opciones, monedaBase, otra, errores, valorInvalido }: PropsDeC
   )
 }
 
-type PropsDelFormulario = Pick<Props, 'monedaBase' | 'ediciones' | 'alCerrar'> & {
+type PropsDelFormulario = Pick<Props, 'ediciones' | 'alCerrar'> & {
+  de: string
   idFormulario: string
   opciones: readonly { valor: string; etiqueta: string }[]
   otra: string
 }
 
-function Formulario({
-  idFormulario,
-  opciones,
-  monedaBase,
-  otra,
-  ediciones,
-  alCerrar,
-}: PropsDelFormulario) {
+function Formulario({ idFormulario, opciones, de, otra, ediciones, alCerrar }: PropsDelFormulario) {
   const [valorInvalido, setValorInvalido] = useState<string | null>(null)
   const { locale } = useRegional()
   const errores = ediciones.errores.crear
@@ -126,7 +124,7 @@ function Formulario({
     >
       <Campos
         opciones={opciones}
-        monedaBase={monedaBase}
+        de={de}
         otra={otra}
         errores={errores}
         valorInvalido={valorInvalido}
@@ -135,13 +133,25 @@ function Formulario({
   )
 }
 
-export function PanelNuevoTipoCambio({ abierto, monedas, monedaBase, ediciones, alCerrar }: Props) {
+export function PanelNuevoTipoCambio({
+  abierto,
+  monedas,
+  monedaBase,
+  par,
+  ediciones,
+  alCerrar,
+}: Props) {
   const idFormulario = useId()
+  // Cada apertura empieza de cero, con el par que la abrió.
+  const apertura = useApertura(abierto)
   const opciones = monedas.map((moneda) => ({
     valor: moneda.codigo,
     etiqueta: `${moneda.codigo} · ${moneda.nombre}`,
   }))
-  const otra = monedas.find((moneda) => moneda.codigo !== monedaBase)?.codigo
+  const codigos = new Set(monedas.map((moneda) => moneda.codigo))
+  const delPar = par !== null && codigos.has(par.monedaDe) && codigos.has(par.monedaA) ? par : null
+  const de = delPar?.monedaDe ?? monedaBase
+  const otra = delPar?.monedaA ?? monedas.find((moneda) => moneda.codigo !== monedaBase)?.codigo
 
   return (
     <Drawer
@@ -162,9 +172,10 @@ export function PanelNuevoTipoCambio({ abierto, monedas, monedaBase, ediciones, 
     >
       {otra ? (
         <Formulario
+          key={apertura}
           idFormulario={idFormulario}
           opciones={opciones}
-          monedaBase={monedaBase}
+          de={de}
           otra={otra}
           ediciones={ediciones}
           alCerrar={alCerrar}

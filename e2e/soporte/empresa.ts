@@ -2,6 +2,7 @@
 // empresa es una fila única y los tipos de cambio vienen sembrados: lo que un e2e les cambia se
 // deja como en `supabase/seed.sql`.
 import { createClient } from '@supabase/supabase-js'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { admin, entorno } from './base'
 
 type AjustesEnLaBase = {
@@ -276,4 +277,13 @@ export async function pedirSecreto(persona?: {
   }
   const { data, error } = await cliente.rpc('integracion_secreto', { p_clave: 'apibara' })
   return { codigo: error?.code ?? null, dato: data as unknown }
+}
+
+// Abre el modal de una tarjeta de ajustes con su «Editar» y devuelve el diálogo (`?panel=<tarjeta>`).
+export async function editarTarjeta(page: Page, titulo: string): Promise<Locator> {
+  const tarjeta = page.getByRole('region', { name: titulo, exact: true })
+  await tarjeta.getByRole('button', { name: 'Editar', exact: true }).click()
+  const dialogo = page.getByRole('dialog', { name: titulo, exact: true })
+  await expect(dialogo).toBeVisible()
+  return dialogo
 }

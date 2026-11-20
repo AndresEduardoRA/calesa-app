@@ -38,24 +38,33 @@ export const rutaDeLaCotizacion = (id: string): string => `/cotizaciones/${id}`
 // El PDF de una cotización guardada (4.18-3a): bajo su página, lo arma el route handler con lo guardado. El único lugar que escribe esa ruta (la usa «Descargar PDF», 4.18-3b).
 export const rutaDelPdf = (id: string): string => `${rutaDeLaCotizacion(id)}/pdf`
 
-// Los tamaños en que se pide la portada además de la grande (`.claude/rules/escala.md`: la miniatura de 480 px en toda lista). `?ancho=` con otro valor es la grande.
-export const ANCHOS_DE_LA_PORTADA = [480] as const
-export type AnchoDeLaPortada = (typeof ANCHOS_DE_LA_PORTADA)[number]
+// Los tamaños en que se pide la imagen de la tarjeta además de la grande (`.claude/rules/escala.md`: la miniatura de 480 px en toda lista). `?ancho=` con otro valor es
+// la grande.
+export const ANCHOS_DE_LA_IMAGEN = [480] as const
+export type AnchoDeLaImagen = (typeof ANCHOS_DE_LA_IMAGEN)[number]
 export const CLAVE_DEL_ANCHO = 'ancho'
+// «Reintentar» pide otra URL (`?intento=n`): el navegador no reusa la respuesta que falló. La ruta lo ignora.
+export const CLAVE_DEL_INTENTO = 'intento'
 
-// La portada de una cotización guardada (la imagen de su tarjeta, `docs/COTIZADOR.md` › «La portada de la cotización»): bajo su página, la sirve su route handler. El único lugar que
-// escribe esa ruta; con `ancho`, la miniatura (la de las listas).
-export const rutaDeLaPortada = (
+// La imagen de la tarjeta de una cotización guardada (`docs/COTIZADOR.md` › «La imagen de la tarjeta»): bajo su página, la arma su route handler para quien la pide.
+// El único lugar que escribe esa ruta; con `ancho`, la miniatura (la de las listas); con `intento` > 0, la de «Reintentar».
+export const rutaDeLaImagen = (
   id: string,
-  { ancho }: { ancho?: AnchoDeLaPortada } = {},
+  { ancho, intento = 0 }: { ancho?: AnchoDeLaImagen | undefined; intento?: number } = {},
 ): string => {
-  const ruta = `${rutaDeLaCotizacion(id)}/portada`
-  return ancho === undefined
-    ? ruta
-    : `${ruta}?${new URLSearchParams({ [CLAVE_DEL_ANCHO]: String(ancho) }).toString()}`
+  const parametros = new URLSearchParams()
+  if (ancho !== undefined) {
+    parametros.set(CLAVE_DEL_ANCHO, String(ancho))
+  }
+  if (intento > 0) {
+    parametros.set(CLAVE_DEL_INTENTO, String(intento))
+  }
+  const consulta = parametros.toString()
+  const ruta = `${rutaDeLaCotizacion(id)}/imagen`
+  return consulta === '' ? ruta : `${ruta}?${consulta}`
 }
 
 // `?ancho=` leído: uno de los anchos de la miniatura, o nulo (la grande).
-export function anchoDeLaPortada(texto: string | null | undefined): AnchoDeLaPortada | null {
-  return ANCHOS_DE_LA_PORTADA.find((ancho) => String(ancho) === texto) ?? null
+export function anchoDeLaImagen(texto: string | null | undefined): AnchoDeLaImagen | null {
+  return ANCHOS_DE_LA_IMAGEN.find((ancho) => String(ancho) === texto) ?? null
 }
