@@ -772,9 +772,7 @@ declare
   v_s text;
   r text;
   g int;
-  i int;
   j int;
-  k int;
   jp int;
 begin
   -- §0 la forma de lo que llega: la entrada y el modo, como los Zod de TS.
