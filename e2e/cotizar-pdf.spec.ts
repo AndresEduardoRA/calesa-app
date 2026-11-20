@@ -16,7 +16,12 @@ import {
   guardarPorLaHoja,
   publicarConTablaViva,
 } from './soporte/cotizar-guardada'
-import { limpiarGuardado, prepararGuardado, tipearEnLaHoja } from './soporte/cotizar-guardar'
+import {
+  limpiarGuardado,
+  NOMBRE_DE_LA_DUENA_DEL_GUARDADO,
+  prepararGuardado,
+  tipearEnLaHoja,
+} from './soporte/cotizar-guardar'
 import {
   exigirNoDisponible,
   mandarALaPapelera,
@@ -215,7 +220,7 @@ test('E2E si lo de hoy no es lo guardado, el PDF lleva lo guardado', async ({ pa
   expect(lineas.some((l) => l.includes(usd(s, 405)))).toBe(false)
 })
 
-test('E2E la asesora y la dueña, que ve «costos», descargan las mismas líneas, sin ninguna celda de un nivel', async ({
+test('E2E la asesora y la dueña, que ve «costos», descargan las mismas líneas (cada una, de asesora), sin ninguna celda de un nivel', async ({
   page,
 }) => {
   const oculto = ocultoDeUnaFormulaSembrada('subasta_usa', 'costos')
@@ -225,7 +230,11 @@ test('E2E la asesora y la dueña, que ve «costos», descargan las mismas línea
   const deLaAsesora = (await leerElPdf(page, id)).lineas
   await abrirLaHoja(page, duena, `/cotizaciones/${id}`)
   const deLaDuena = (await leerElPdf(page, id)).lineas
-  expect(deLaDuena).toEqual(deLaAsesora)
+  // El asesor es quien lo descarga; lo demás, igual.
+  expect(deLaAsesora).toContain(`Asesor: ${asesora.nombre}`)
+  expect(deLaDuena).toContain(`Asesor: ${NOMBRE_DE_LA_DUENA_DEL_GUARDADO}`)
+  const sinElAsesor = (lineas: string[]) => lineas.filter((l) => !l.startsWith('Asesor: '))
+  expect(sinElAsesor(deLaDuena)).toEqual(sinElAsesor(deLaAsesora))
   for (const etiqueta of oculto.etiquetas) {
     expect(
       deLaDuena.some((l) => l.includes(etiqueta)),
