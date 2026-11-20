@@ -43,7 +43,7 @@ describe('consultaDelValorPorDefecto', () => {
       ['from', 'formulas'],
       [
         'select',
-        'id, version, v0:params->flete, v1:params->fees_pct, formulas_del_origen!formulas_formula_del_origen_fkey!inner(activa)',
+        'id, version, v0:params->flete, v1:params->fees_pct, formulas_del_origen!formulas_formula_del_origen_fkey!inner()',
       ],
       ['eq', 'origen_id', ORIGEN],
       ['eq', 'estado', 'publicada'],

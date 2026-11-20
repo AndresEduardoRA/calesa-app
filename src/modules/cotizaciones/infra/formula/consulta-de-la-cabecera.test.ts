@@ -44,7 +44,7 @@ describe('consultaDeLaCabecera', () => {
       ['from', 'formulas'],
       [
         'select',
-        'id, version, cabecera:diseno->cabecera, formulas_del_origen!formulas_formula_del_origen_fkey!inner(activa)',
+        'id, version, cabecera:diseno->cabecera, formulas_del_origen!formulas_formula_del_origen_fkey!inner()',
       ],
       ['eq', 'origen_id', ORIGEN],
       ['eq', 'estado', 'publicada'],
