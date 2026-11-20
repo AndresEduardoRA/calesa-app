@@ -1,5 +1,5 @@
-import { writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { correr, leer, nuevaRaiz, prJson } from './sin-sesion-banco'
 
@@ -115,5 +115,25 @@ describe('cayo_lo_del_pr: el rojo sin esperar a «Listo»', () => {
     // Ya juzgado: aunque el log ahora dijera otra cosa, no se vuelve a leer.
     writeFileSync(join(raiz, 'gh/log-job-3'), 'FAIL algo\n')
     expect(cayo(raiz, j)).toContain('rc=1')
+  })
+})
+
+// motivo_ci vive en orquestador.sh, pero usa jobs_caidos y log_del_job de sin-sesion.sh: se toma su definición tal cual.
+describe('motivo_ci: lo que lee la sesión de arreglo y lo que dicen el log y el aviso', () => {
+  const definicion = readFileSync(resolve('scripts/orquestador/orquestador.sh'), 'utf8').match(
+    /^motivo_ci\(\) \{[\s\S]*?^\}$/m,
+  )?.[0]
+
+  it('la primera línea nombra los jobs caídos, sin el agregador «Listo»', () => {
+    const raiz = nuevaRaiz()
+    writeFileSync(join(raiz, 'gh/log-job-3'), 'Error: algo se rompió\n')
+    const j = prJson([
+      { nombre: 'e2e · bloque 2 de 4', run: 77, job: 3 },
+      { nombre: 'Base', run: 77, job: 4 },
+    ])
+    const salida = correr(raiz, `${definicion ?? ''}\nmotivo_ci 9 '${j}'`).stdout
+    expect(salida.split('\n')[0]).toBe('El CI del PR #9 cayó: e2e · bloque 2 de 4, Base.')
+    expect(salida).not.toContain('Listo')
+    expect(salida).toContain('Error: algo se rompió')
   })
 })

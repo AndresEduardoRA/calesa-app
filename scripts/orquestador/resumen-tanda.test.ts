@@ -112,7 +112,14 @@ it('por tarea: el ciclo, el plan y cada sesión con minutos, costo y turnos, las
   expect(r).toContain('| T3 | — | — → — | — | — | 0/0 |  |')
   expect(r).toContain('- 3 tareas · reloj de la tanda 2 h 05 · 40 min de sesiones · $8.00')
   expect(r).toContain('- Por modelo: opus 63 % · sonnet 38 %')
-  expect(r).toContain('- Retomas 2 · arreglos 1 · trabadas 1')
+  expect(r).toContain('- Retomas 2 · arreglos 1 · trabadas 1 (lo que gastó un intento)')
+  expect(r).toContain(
+    '- Sesiones: 2 de tarea ($6.00) · 0 de retomar ($0.00) · 0 de arreglar ($0.00)',
+  )
+  // Lo de toda la tanda va antes que la tabla, y la tabla va de la tarea más cara a la más barata.
+  expect(r.indexOf('### Totales')).toBe(0)
+  expect(r.indexOf('### Trabadas')).toBeLessThan(r.indexOf('### Tareas'))
+  expect(r.indexOf('| T1 ')).toBeLessThan(r.indexOf('| T2 '))
 })
 
 it('lo que más se repitió: los comandos normalizados y los más lentos por sus timestamps', () => {
@@ -120,7 +127,7 @@ it('lo que más se repitió: los comandos normalizados y los más lentos por sus
   const r = correr('--estado', est, '--cola', cola, 'T1', 'T2')
   expect(r).toContain('- 3× `pnpm test`')
   expect(r).toContain('- 1× `git status`')
-  expect(r).toMatch(/Los más lentos:\n\n- 2 min `pnpm test`\n- 30 s `pnpm test`\n$/)
+  expect(r).toMatch(/Los más lentos:\n\n- 2 min `pnpm test`\n- 30 s `pnpm test`\n\n### Tareas/)
 })
 
 it('lo puro: el log, las duraciones, los comandos y el tope de 6 KB', () => {
@@ -139,14 +146,47 @@ it('lo puro: el log, las duraciones, los comandos y el tope de 6 KB', () => {
   const recortado = aTope(largo)
   expect(Buffer.byteLength(recortado)).toBeLessThanOrEqual(TOPE)
   expect(recortado).toMatch(/\n\(recortado a 6 KB\)\n$/)
-  const muchas = Array.from({ length: 60 }, (_, i) => ({
+  const muchas = Array.from({ length: 120 }, (_, i) => ({
     id: `T${i}`,
     titulo: 'una tarea con un título bastante largo para llenar',
     pr: String(i),
     retomas: 0,
     arreglos: 0,
     sesiones: [],
-    log: { arreglos: [], trabas: [] },
+    log: { arreglos: [], choques: [], trabas: [] },
   }))
-  expect(Buffer.byteLength(armarResumen(muchas))).toBeLessThanOrEqual(TOPE)
+  // Con muchas tareas se recorta la cola de la tabla, nunca los totales ni las trabas.
+  const resumen = armarResumen(muchas)
+  expect(Buffer.byteLength(resumen)).toBeLessThanOrEqual(TOPE)
+  expect(resumen).toContain('- 120 tareas ·')
+  expect(resumen).toContain('### Trabadas')
+  expect(resumen).toMatch(/\n\(recortado a 6 KB\)\n$/)
+})
+
+it('el log: las dos formas del «a arreglar», los choques aparte y los motivos repetidos juntos', () => {
+  const log = leerLog(
+    [
+      '2026-01-01 00:00:00 T5: a arreglar (intento 1): El CI del PR #9 cayó: e2e · bloque 2 de 4.',
+      '2026-01-01 00:01:00 T5: a arreglar (intento 2): El PR #9 choca con main (conflicto de merge).',
+      '2026-01-01 00:02:00 T5: a arreglar (arreglos: 2): El CI del PR #9 cayó: e2e · bloque 2 de 4.',
+      '2026-01-01 00:03:00 T5: a arreglar (choques: 1): El PR #9 choca con main (conflicto de merge).',
+    ].join('\n'),
+  )
+  expect(log['T5']?.arreglos).toHaveLength(2)
+  expect(log['T5']?.choques).toHaveLength(2)
+  const r = armarResumen([
+    {
+      id: 'T5',
+      titulo: '',
+      pr: '9',
+      retomas: 0,
+      arreglos: 2,
+      sesiones: [],
+      log: log['T5'] ?? { arreglos: [], choques: [], trabas: [] },
+    },
+  ])
+  expect(r).toContain('### A arreglar\n\n- T5 (×2): El CI del PR #9 cayó: e2e · bloque 2 de 4.\n')
+  expect(r).toContain(
+    '### Choques con main\n\n- T5 (×2): El PR #9 choca con main (conflicto de merge).\n',
+  )
 })

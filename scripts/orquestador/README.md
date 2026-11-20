@@ -33,7 +33,7 @@ Nunca toca el árbol de trabajo de la principal: crea sus worktrees en `.orquest
 | `scripts/orquestador/sin-sesion.sh`              | Lo que se arregla sin abrir una sesión: relanzar lo caído por algo ajeno al PR, unir un choque que es sólo de docs y llevar las migraciones de la rama después de las de main                                                                                                                                                                                                                                                                |
 | `scripts/orquestador/kit.sh`                     | El flujo entre el kit y este proyecto: la tarea semanal de traer el flujo del kit y, al integrar un PR que toca flujo, su tarea en el kit                                                                                                                                                                                                                                                                                                    |
 | `scripts/orquestador/cierre-tanda.sh`            | El cierre de la tanda: cuándo hay una que cerrar, la tarea del cierre y, al integrarse, la poda de los transcriptos; la verificación de main antes de cerrar (y la tarea urgente si sale roja), en `cierre-main.sh`                                                                                                                                                                                                                          |
-| `scripts/orquestador/resumen-tanda.mjs`          | El resumen de una tanda en Markdown (≤ 6 KB) que lleva la tarea del cierre: tiempos, costos, retomas, arreglos, trabas y los comandos más repetidos y más lentos; lo de cada sesión, en `resumen-sesion.mjs`                                                                                                                                                                                                                                 |
+| `scripts/orquestador/resumen-tanda.mjs`          | El resumen de una tanda en Markdown (≤ 6 KB) que lleva la tarea del cierre: totales, trabas, arreglos, choques y los comandos más repetidos y más lentos, y al final cada tarea; lo de cada sesión, en `resumen-sesion.mjs`                                                                                                                                                                                                                  |
 | `scripts/orquestador/cola-entrada.sh`            | La entrada (`.orquestador/entrada/`), la tarea mensual de dependencias y la adopción de las tareas locales de antes                                                                                                                                                                                                                                                                                                                          |
 | `scripts/orquestador/pedidos.sh`                 | Un pedido en texto libre (`pedido`): lanzar su redacción y la sesión en modo plan; lo que hace con su `SPEC:` o sus `PREGUNTAS:`, en `pedidos-salida.sh`                                                                                                                                                                                                                                                                                     |
 | `scripts/orquestador/redaccion.mjs`              | Lo puro de la redacción: el hilo del issue (rondas, respuesta, conversación) y la salida de la sesión                                                                                                                                                                                                                                                                                                                                        |
@@ -125,8 +125,9 @@ Las de lo que entra solo a la cola no son de estado, y el espejo no las toca:
 
 **El espejo, en cada vuelta** (o ya, con `espejo`):
 
-- La entrada: cada `entrada/<tema>.md` se vuelve un issue, pasa a la cola como `T<n>` y se borra; una spec rota queda con su motivo
-  en `<tema>.md.error`. `entrada/respuesta-T<n>.md` se publica como comentario en el issue `<n>`.
+- La entrada: cada `entrada/<tema>.md` se vuelve un issue, pasa a la cola como `T<n>` y se borra; una spec rota, o con la rama de una
+  tarea ya integrada, queda con su motivo en `<tema>.md.error`. `entrada/respuesta-T<n>.md` se publica como comentario en el issue
+  `<n>`. La publica un proceso por vez (`estado/.entrada.lock`): el comando `entrada` y la vuelta del bucle no la duplican.
 - Issues abiertos con `cola` → archivo nuevo o actualizado. Si cambió el archivo y no el issue, el archivo sube al issue; si
   cambiaron los dos, manda el issue (la copia del archivo queda en `estado/<ID>/`). Un issue editado mientras su tarea corre no
   toca la sesión en curso: se toma en la siguiente retoma y se avisa con un comentario.
@@ -225,8 +226,9 @@ con la cola en issues, nunca en el kit ni en un repo en construcción (ése tien
   apaga), y el cierre depende de ella: cada tanda termina con una sola migración.
 - **El cierre:** después, la tarea de `plantillas/cerrar-tanda.md` con `cola` y `cierre`: aplastar los docs, sacar lo que sobra fuera
   de main, comprobar que quedó una sola migración y la retro con datos (hasta tres issues de mejora del flujo).
-  Lleva la lista de tareas y el resumen de `resumen-tanda.mjs` (por tarea: lanzada → integrada, minutos y costo del plan y de cada
-  sesión, retomas, arreglos y trabas; los totales; los comandos más repetidos y más lentos). Avisa «Tanda cerrándose».
+  Lleva la lista de tareas y el resumen de `resumen-tanda.mjs` (primero lo de toda la tanda: los totales con las sesiones de retomar
+  y de arreglar, las trabas, los arreglos, los choques y los comandos más repetidos y más lentos; al final, cada tarea de la más cara
+  a la más barata, que es lo que se recorta). Avisa «Tanda cerrándose».
 - **Al integrarse el cierre:** la tanda siguiente cuenta desde ahí y se podan los transcriptos de las sesiones de la tanda
   (`sesion-*.jsonl`, `plan.jsonl` y sus `.err`); queda lo chico (estado, pr, logs, prompts, plan.md). Omitido (cerraste su issue),
   sólo vuelve a contar. Mientras hay un cierre en camino, el aviso «Cola terminada» lo dice.

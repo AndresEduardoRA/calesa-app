@@ -122,6 +122,8 @@ type Gh = {
   }
   sinRed?: boolean
   limite?: boolean
+  // Los issues que la lista de abiertos todavía no trae (gh-falso.mjs).
+  listaAtrasada?: number[]
   issueEditFalla?: boolean
   // Los repos nombrados explícitamente (el kit), que atiende gh-falso-git.mjs.
   git?: Record<

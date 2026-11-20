@@ -413,10 +413,15 @@ vigilar_prs() {
   done
 }
 
+# La primera línea nombra los jobs caídos: es la que llevan el log, el aviso al celular y el resumen de la tanda.
 motivo_ci() { # pr json → texto con los jobs caídos y el final del log de cada uno (no el del agregador «Listo», que no dice nada)
-  local pr=$1 j=$2 nombre job run ver n=0
-  echo "El CI del PR #$pr cayó. Jobs en rojo:"
-  jq -r '.statusCheckRollup[]? | select(.__typename == "CheckRun" and (.conclusion == "FAILURE" or .conclusion == "CANCELLED") and ((.name | startswith("Listo")) | not)) | "- \(.name) (\(.conclusion)): \(.detailsUrl)"' <<<"$j"
+  local pr=$1 j=$2 nombre job run ver n=0 caidos filtro
+  filtro='.statusCheckRollup[]? | select(.__typename == "CheckRun" and (.conclusion == "FAILURE" or .conclusion == "CANCELLED") and ((.name | startswith("Listo")) | not))'
+  caidos=$(jq -r "[$filtro | .name] | join(\", \")" <<<"$j")
+  echo "El CI del PR #$pr cayó: ${caidos:-ningún job en rojo a la vista (sólo el agregador)}."
+  echo
+  echo "Jobs en rojo:"
+  jq -r "$filtro | \"- \\(.name) (\\(.conclusion)): \\(.detailsUrl)\"" <<<"$j"
   while IFS=$'\t' read -r nombre job run; do
     [ -n "$run" ] || continue
     n=$((n + 1))
