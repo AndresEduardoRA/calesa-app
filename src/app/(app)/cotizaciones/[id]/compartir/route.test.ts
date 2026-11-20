@@ -12,11 +12,13 @@ vi.mock('@/shared/lib/navegacion', () => ({
 }))
 
 const leerHoja = vi.fn()
+const leerAutor = vi.fn()
 const leerAsesor = vi.fn()
 const cifras = vi.fn()
 vi.mock('@/modules/cotizaciones', () => ({
   leerHojaDeUnaGuardada: (id: string) => leerHoja(id),
-  leerAsesorDeLaCotizacion: (id: string) => leerAsesor(id),
+  leerAutorDeLaCotizacion: (id: string) => leerAutor(id),
+  leerAsesorQueMira: () => leerAsesor(),
   paraCompartirDeUnaGuardada: (entrada: unknown) => cifras(entrada),
   contextoDeLaPagina: (pagina: unknown) => pagina,
   enlaceParaCompartir: (t: string | null) => (t?.startsWith('https://') ? t : null),
@@ -39,6 +41,10 @@ vi.mock('@/modules/vehiculos', () => ({
 vi.mock('@/modules/leads', () => ({ leerClienteElegido: vi.fn() }))
 const leerAjustes = vi.fn()
 vi.mock('@/modules/empresa', () => ({ leerAjustes: () => leerAjustes() }))
+vi.mock('@/shared/lib/almacen', () => ({
+  urlPublicaONull: (bucket: string, ruta: string | null) =>
+    ruta === null ? null : `https://almacen.test/${bucket}/${ruta}`,
+}))
 
 import { GET } from './route'
 
@@ -73,6 +79,13 @@ const LINEAS = {
   total: { concepto: 'Total', monto: '$ 1.300,00', segunda: null },
   modo: 'Oficial',
 }
+// Quien comparte: Luis, aunque la creó Ana.
+const LUIS = {
+  nombre: 'Luis Rojas',
+  telefono: '+59170000002',
+  cargo: 'Asesor comercial',
+  fotoRuta: 'u/luis.webp',
+}
 const pedir = (id = ID) =>
   GET(new Request(`http://localhost/cotizaciones/${id}/compartir`), {
     params: Promise.resolve({ id }),
@@ -82,7 +95,8 @@ const fallo = (codigo: string) => ({ ok: false, error: { codigo, mensaje: 'x' } 
 beforeEach(() => {
   sesion.mockResolvedValue({ usuarioId: ID, estado: 'activa', permisos: [] })
   leerHoja.mockResolvedValue({ ok: true, data: { hoja, inicial: {} } })
-  leerAsesor.mockResolvedValue({ ok: true, data: 'Ana Pérez' })
+  leerAutor.mockResolvedValue({ ok: true, data: 'Ana Pérez' })
+  leerAsesor.mockResolvedValue({ ok: true, data: LUIS })
   leerVehiculo.mockResolvedValue({ ok: true, data: vehiculo })
   leerSubasta.mockResolvedValue({
     ok: true,
@@ -124,6 +138,7 @@ describe('GET /cotizaciones/[id]/compartir', () => {
       numero: 12,
       titulo: { texto: 'Toyota Hilux 2022', fuente: 'vehiculo' },
       autor: 'Ana Pérez',
+      asesor: { nombre: 'Luis Rojas', cargo: 'Asesor comercial', telefono: '+59170000002' },
       vehiculo: {
         titulo: 'Toyota Hilux 2022',
         lote: '4455',
@@ -139,13 +154,29 @@ describe('GET /cotizaciones/[id]/compartir', () => {
       zonaDeLaEmpresa: 'America/La_Paz',
       locale: 'es-BO',
     })
-    // Las cifras salen de la tarjeta de lo guardado, con el locale de la empresa y sin el cliente.
+    // Las cifras salen de la tarjeta de lo guardado, con el locale de la empresa, sin el cliente y con quien comparte de asesor.
     expect(cifras).toHaveBeenCalledWith(
       expect.objectContaining({
         locale: 'es-BO',
-        contexto: expect.objectContaining({ cliente: null }),
+        contexto: expect.objectContaining({
+          cliente: null,
+          asesor: {
+            nombre: 'Luis Rojas',
+            telefono: '+59170000002',
+            cargo: 'Asesor comercial',
+            foto: 'https://almacen.test/avatares/u/luis.webp',
+          },
+        }),
       }),
     )
+  })
+
+  it('un autor o un asesor que no se leen no tumban nada: van sin nombrar', async () => {
+    leerAutor.mockResolvedValue(fallo('inesperado'))
+    leerAsesor.mockResolvedValue(fallo('inesperado'))
+    const datos = (await (await pedir()).json()) as { autor: unknown; asesor: unknown }
+    expect(datos.autor).toBeNull()
+    expect(datos.asesor).toBeNull()
   })
 
   it('sin vehículo que se vea, sin la parte del vehículo; una subasta que no se lee no tumba nada', async () => {

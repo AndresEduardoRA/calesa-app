@@ -1,5 +1,5 @@
-import { EsqueletoTabla } from '@/shared/ui/esqueletos'
+import { EsqueletoTarjetas } from '@/shared/ui/esqueletos'
 
 export default function CargandoMonedasDeLaEmpresa() {
-  return <EsqueletoTabla filas={6} columnas={4} />
+  return <EsqueletoTarjetas tarjetas={4} />
 }

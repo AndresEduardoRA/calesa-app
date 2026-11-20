@@ -40,6 +40,7 @@ async function leer(
     calculo?: CalculoDeLaTarjeta
     locale?: string
     logo?: LogoDeLaTarjeta
+    foto?: LogoDeLaTarjeta
   } = {},
 ) {
   const geometria = geometriaDeLaTarjeta({
@@ -53,6 +54,7 @@ async function leer(
     geometria,
     numero: 12,
     logo: entrada.logo ?? null,
+    foto: entrada.foto ?? null,
     empresa: 'Importadora Prueba',
   })
   const leido = textoDelPdf(bytes)
@@ -156,6 +158,33 @@ describe('pdfDeLaTarjeta: el logo', () => {
     const con = await leer({ logo: { datos, tipo: 'png', ancho: 400, alto: 100 } })
     expect(con.leido.imagenes).toBe(1)
     expect(con.lineas).toEqual(sin.lineas)
+  })
+})
+
+describe('pdfDeLaTarjeta: la foto del asesor', () => {
+  const conLaFoto = () => {
+    const definicion = crudaDeLaTarjeta().definicion
+    const celdas = definicion.celdas.map((c) =>
+      c.id === 'c_logo' ? { ...c, contenido: { tipo: 'foto_del_asesor' } } : c,
+    )
+    return lecturaDe({ definicion: { ...definicion, celdas } })
+  }
+
+  it('sin foto, sus iniciales en el círculo; con foto, una imagen en su lugar', async () => {
+    const sin = await leer({ lectura: conLaFoto() })
+    expect(sin.leido.imagenes).toBe(0)
+    expect(contiene(sin.lineas, 'AP')).toBe(true)
+    const datos = await sharp({
+      create: { width: 64, height: 64, channels: 3, background: { r: 220, g: 20, b: 20 } },
+    })
+      .png()
+      .toBuffer()
+    const con = await leer({
+      lectura: conLaFoto(),
+      foto: { datos, tipo: 'png', ancho: 64, alto: 64 },
+    })
+    expect(con.leido.imagenes).toBe(1)
+    expect(contiene(con.lineas, 'AP')).toBe(false)
   })
 })
 

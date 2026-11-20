@@ -1,14 +1,14 @@
 import { Suspense } from 'react'
-import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
+import { EsqueletoTarjetas } from '@/shared/ui/esqueletos'
 import { leerSerieVigente } from '../../../areas/comprobantes/composicion'
 import { ErrorDeLectura } from './error-de-lectura'
-import { FormularioDeSerie } from './formulario-de-serie'
+import { TarjetaDeLaSerie } from './tarjeta-de-la-serie'
 
-// La pestaña «Comprobantes» de Configuración › Empresa (4.26-3): la serie vigente se lee en el servidor tras `<Suspense>`. Si la lectura falla, el error con
+// La pestaña «Comprobantes» de Configuración › Empresa (4.26-3): la serie vigente se lee en el servidor tras `<Suspense>` y se dibuja como una tarjeta sin `key` de versión: el modal recibe la versión por props al abrir. Si la lectura falla, el error con
 // «Reintentar»; nunca una serie inventada.
 export function SerieDeComprobantes({ puedeCambiar }: { puedeCambiar: boolean }) {
   return (
-    <Suspense fallback={<EsqueletoFormulario />}>
+    <Suspense fallback={<EsqueletoTarjetas tarjetas={1} />}>
       <Serie puedeCambiar={puedeCambiar} />
     </Suspense>
   )
@@ -19,11 +19,5 @@ async function Serie({ puedeCambiar }: { puedeCambiar: boolean }) {
   if (!lectura.ok) {
     return <ErrorDeLectura titulo="No se pudo cargar la serie" />
   }
-  return (
-    <FormularioDeSerie
-      key={lectura.data.actualizadoEn}
-      vigente={lectura.data}
-      puedeCambiar={puedeCambiar}
-    />
-  )
+  return <TarjetaDeLaSerie vigente={lectura.data} puedeCambiar={puedeCambiar} />
 }

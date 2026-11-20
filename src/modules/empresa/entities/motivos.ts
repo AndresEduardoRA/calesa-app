@@ -24,6 +24,10 @@ export const MOTIVO_SIN_LOGO = 'Carga el logo y guarda: los íconos se dibujan a
 
 export const MOTIVO_SIN_SECRETO = 'Guarda la clave antes de activarla.'
 
+export const MOTIVO_SIN_USO_SIN_CLAVE = 'Guarda la clave para ver el uso.'
+
+export const MOTIVO_INTEGRACION_NO_INSTALADA = 'Esta integración no está en la instalación.'
+
 export const MOTIVO_PROBAR_SIN_DIRECCION = 'Guarda la dirección para probar.'
 
 export const MOTIVO_PROBAR_SIN_SECRETO = 'Guarda el secreto para probar.'

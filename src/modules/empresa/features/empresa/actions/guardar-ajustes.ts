@@ -7,12 +7,12 @@ import { RUTAS } from '@/shared/lib/rutas'
 import { actionClient } from '@/shared/lib/safe-action'
 import { repositorioEmpresa } from '../../../composicion'
 import { MOTIVO_SIN_PERMISO_AJUSTES } from '../../../entities/motivos'
-import { esquemaAjustes } from '../schemas/ajustes'
+import { esquemaCambiosDeAjustes } from '../schemas/ajustes'
 
-// Guarda marca, datos legales, región y políticas de una vez. La base repite el permiso, compara
+// Guarda lo que cambió una tarjeta de Datos (sólo sus claves). La base repite el permiso, compara
 // la versión (`PT409`) y cuida la moneda base (`empresa_guardar_ajustes`).
 export const guardarAjustes = actionClient
-  .inputSchema(esquemaAjustes)
+  .inputSchema(esquemaCambiosDeAjustes)
   .action(async ({ parsedInput, ctx }) => {
     if (!puede(ctx.permisos, 'empresa.ajustes.gestionar')) {
       return fallo('sin_permiso', MOTIVO_SIN_PERMISO_AJUSTES)

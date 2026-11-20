@@ -71,8 +71,8 @@ test('la dueña crea un rol y le da permisos acotados a un origen', async ({ pag
   // Llega por su menú: Configuración → Roles y permisos.
   await page.getByRole('button', { name: `Menú de ${DUENA}` }).click()
   await page.getByRole('menuitem', { name: 'Configuración' }).click()
-  await expect(page).toHaveURL('/configuracion')
-  await page.getByRole('link', { name: /Roles y permisos/ }).click()
+  await expect(page).toHaveURL('/configuracion/inicio')
+  await page.getByRole('region').getByRole('link', { name: 'Roles y permisos' }).click()
   await expect(page.getByRole('heading', { name: 'Roles y permisos' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Nuevo rol' }).click()

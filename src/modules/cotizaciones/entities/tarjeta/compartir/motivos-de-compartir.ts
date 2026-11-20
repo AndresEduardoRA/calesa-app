@@ -16,12 +16,12 @@ export const MOTIVO_UNA_SOLA_FOTO = 'Elige una sola foto para copiarla.'
 
 export type EstadoDeLaParte = 'leyendo' | 'listo' | 'error'
 
-// Qué imagen se comparte: la portada de la cotización o las fotos marcadas del vehículo.
+// Qué imagen se comparte: la de la tarjeta de la cotización o las fotos marcadas del vehículo.
 export type OpcionDeImagen = 'cotizacion' | 'fotos'
 
 export type EntradaDeLosMotivos = {
   opcion: OpcionDeImagen
-  portada: EstadoDeLaParte
+  imagen: EstadoDeLaParte
   // Las marcadas y, de ellas, cuántas ya están bajadas a tamaño completo.
   fotos: { marcadas: number; listas: number }
   texto: EstadoDeLaParte
@@ -47,8 +47,8 @@ function motivoDeLaImagen(e: EntradaDeLosMotivos): string | null {
     if (e.fotos.listas < e.fotos.marcadas) return e.enLinea ? MOTIVO_FOTOS_BAJANDO : MOTIVO_SIN_RED
     return null
   }
-  if (e.portada === 'listo') return null
-  if (e.portada === 'error') return MOTIVO_IMAGEN_FALLIDA
+  if (e.imagen === 'listo') return null
+  if (e.imagen === 'error') return MOTIVO_IMAGEN_FALLIDA
   return e.enLinea ? MOTIVO_SIN_IMAGEN : MOTIVO_SIN_RED
 }
 
@@ -59,14 +59,14 @@ function motivoDeCopiarImagen(e: EntradaDeLosMotivos, sinImagen: string | null):
   return e.capacidades.portapapelesDeImagenes ? null : MOTIVO_SIN_PORTAPAPELES_DE_IMAGENES
 }
 
-// El menú del sistema espera al texto y a lo que se manda; con la portada fallida manda sólo el texto (la falla ya está a la vista).
+// El menú del sistema espera al texto y a lo que se manda; con la imagen de la tarjeta fallida manda sólo el texto (la falla ya está a la vista).
 function motivoDeCompartir(
   e: EntradaDeLosMotivos,
   sinImagen: string | null,
   sinTexto: string | null,
 ) {
   if (sinTexto !== null) return sinTexto
-  return e.opcion === 'cotizacion' && e.portada === 'error' ? null : sinImagen
+  return e.opcion === 'cotizacion' && e.imagen === 'error' ? null : sinImagen
 }
 
 export function motivosDeCompartir(e: EntradaDeLosMotivos): MotivosDeCompartir {

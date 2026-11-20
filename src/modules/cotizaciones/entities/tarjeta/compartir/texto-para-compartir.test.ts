@@ -39,6 +39,9 @@ describe('textoParaCompartir', () => {
         '*TOTAL: $ 1.300,00*',
         'Bs 9.048,00',
         'Modo de tipo de cambio: Oficial',
+        '',
+        'Asesor: Luis Rojas, Asesor comercial',
+        'WhatsApp: +59170000002',
       ].join('\n'),
     )
   })
@@ -75,8 +78,35 @@ describe('textoParaCompartir', () => {
         '*Hilux para Juan*',
         'Remate: $ 1.000,00\n$ 300,00',
         '*TOTAL: $ 1.300,00*\nBs 9.048,00\nModo de tipo de cambio: Oficial',
+        'Asesor: Luis Rojas, Asesor comercial\nWhatsApp: +59170000002',
       ].join('\n\n'),
     )
+  })
+})
+
+describe('textoParaCompartir: la firma del asesor (quien comparte)', () => {
+  const firma = (asesor: DatosParaCompartir['asesor']) =>
+    texto({ ...datos, asesor }, 'facebook')
+      .split('\n\n')
+      .at(-1)
+
+  it('con todo: su nombre con su cargo y su WhatsApp tal como lo guardó, al final', () => {
+    expect(firma(datos.asesor)).toBe('Asesor: Luis Rojas, Asesor comercial\nWhatsApp: +59170000002')
+  })
+
+  it('sin cargo, sólo el nombre; sin WhatsApp, sin esa línea', () => {
+    expect(firma({ nombre: 'Luis Rojas', cargo: null, telefono: '+59170000002' })).toBe(
+      'Asesor: Luis Rojas\nWhatsApp: +59170000002',
+    )
+    expect(firma({ nombre: 'Luis Rojas', cargo: 'Asesor comercial', telefono: null })).toBe(
+      'Asesor: Luis Rojas, Asesor comercial',
+    )
+  })
+
+  it('sin asesor, el texto termina en el total', () => {
+    const t = texto({ ...datos, asesor: null }, 'facebook')
+    expect(t).not.toMatch(/Asesor:|WhatsApp:/)
+    expect(t.endsWith('Modo de tipo de cambio: Oficial')).toBe(true)
   })
 })
 
@@ -165,6 +195,9 @@ describe('textoParaCompartir de las cotizaciones hermanas', () => {
         '*TOTAL: $ 12.400,00*',
         '',
         'Modo de tipo de cambio: Oficial',
+        '',
+        'Asesor: Luis Rojas, Asesor comercial',
+        'WhatsApp: +59170000002',
       ].join('\n'),
     )
   })

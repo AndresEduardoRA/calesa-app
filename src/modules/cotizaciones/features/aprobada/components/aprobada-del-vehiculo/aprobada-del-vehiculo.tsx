@@ -22,19 +22,19 @@ type Props = {
   tituloDelVehiculo: string
   // La hoja de cotizar con este vehículo y su origen, con la vuelta a la ficha (la arma `src/app`), o null sin `cotizaciones.crear` en el origen.
   cotizar: string | null
-  // Del área `tarjeta`, compuestos por `src/app` (un área no importa otra): la portada de la aprobada y su «Compartir» (que no se ofrece en Modo Live).
-  portada: ReactNode
+  // Del área `tarjeta`, compuestos por `src/app` (un área no importa otra): la imagen de la tarjeta de la aprobada y su «Compartir» (que no se ofrece en Modo Live).
+  imagen: ReactNode
   compartir: ReactNode
 }
 
-// «Cotización aprobada» en la ficha del vehículo: la portada de su tarjeta (el clic la abre en grande; en Modo Live, borrosa con «Oculto en Modo Live»),
+// «Cotización aprobada» en la ficha del vehículo: la imagen de su tarjeta (el clic la abre en grande; en Modo Live, borrosa con «Oculto en Modo Live»),
 // n.º y título, total con su modo, autor y fecha, y «Abrir» y «Compartir» a lo ancho (sin «Compartir» en Modo Live). Sin aprobada que quien mira vea,
 // «Sin cotización aprobada» con «Cotizar» si puede. Sin cifras en un `aria-label` ni en un `title`: el total va con `<Monto>`.
 export function AprobadaDelVehiculo({
   fila,
   tituloDelVehiculo,
   cotizar,
-  portada,
+  imagen,
   compartir,
 }: Props) {
   const { zonaHoraria } = useRegional()
@@ -65,7 +65,7 @@ export function AprobadaDelVehiculo({
   const titulo = tituloDeLaFila(fila, tituloDelVehiculo)
   return (
     <div data-aprobada-del-vehiculo="" className="grid min-w-0 gap-3">
-      {portada}
+      {imagen}
       <div className="grid min-w-0 gap-1">
         <p className="min-w-0 font-medium [overflow-wrap:anywhere] text-(--color-ink)">
           N.º {fila.numero} · {titulo}

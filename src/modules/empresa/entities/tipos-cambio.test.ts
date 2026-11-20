@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   claveDeTipoCambio,
   decimalesDeValor,
+  gruposPorPar,
+  parDeLaClave,
   historialDesde,
   motivoParaNoMarcar,
   paraLaBarra,
@@ -255,5 +257,35 @@ describe('abrir lo guardado y guardar sin tocar conserva el valor (4.13-3c, C14)
         expect(valorTipeado(textoParaEditar(valor, locale), locale)).toEqual({ ok: true, valor })
       }
     }
+  })
+})
+
+describe('gruposPorPar', () => {
+  it('agrupa por par, los de la moneda base primero y el por defecto adelante', () => {
+    const grupos = gruposPorPar(
+      [
+        tipo({ id: 'a', clave: 'eur', monedaDe: 'EUR', monedaA: 'BOB' }),
+        tipo({ id: 'b', clave: 'paralelo' }),
+        tipo({ id: 'c', clave: 'oficial', esDefault: true }),
+        tipo({ id: 'd', clave: 'viejo', activo: false }),
+        tipo({ id: 'e', clave: 'bob', monedaDe: 'BOB', monedaA: 'USD' }),
+      ],
+      'USD',
+    )
+    expect(grupos.map((grupo) => grupo.clave)).toEqual(['USD-BOB', 'BOB-USD', 'EUR-BOB'])
+    expect(grupos[0]?.tipos.map((uno) => uno.id)).toEqual(['c', 'b', 'd'])
+  })
+
+  it('sin tipos no hay grupos', () => {
+    expect(gruposPorPar([], 'USD')).toEqual([])
+  })
+})
+
+describe('parDeLaClave', () => {
+  it('lee «USD-BOB» y rechaza lo que no es un par', () => {
+    expect(parDeLaClave('USD-BOB')).toEqual({ monedaDe: 'USD', monedaA: 'BOB' })
+    expect(parDeLaClave('USD')).toBeNull()
+    expect(parDeLaClave('USD-BOB-EUR')).toBeNull()
+    expect(parDeLaClave(null)).toBeNull()
   })
 })

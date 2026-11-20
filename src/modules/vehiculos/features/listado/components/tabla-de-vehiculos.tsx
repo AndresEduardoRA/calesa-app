@@ -45,6 +45,7 @@ import {
   type FilaDeVehiculo,
   type ParaElMenuDeLaLista,
 } from './tipos'
+import { CuentaRegresivaDelCierre } from '../../subasta/components/cuenta-regresiva-del-cierre'
 import { CeldaDeCompraDirecta } from './compra-directa'
 import { CeldaDeCostoEstimado } from './costo-estimado'
 import { CeldaDePrecio, EncabezadoDePrecio } from './precio-de-la-fila'
@@ -71,7 +72,7 @@ const HUECO_DE_CASILLA = <span aria-hidden className="size-[44px] shrink-0 md:si
 
 type PropsDeFila = Pick<
   Props,
-  'origen' | 'fases' | 'vitrina' | 'limpiezaHoy' | 'menu' | 'seleccion' | 'aprobadas'
+  'origen' | 'fases' | 'vitrina' | 'limpiezaHoy' | 'menu' | 'seleccion' | 'aprobadas' | 'ahora'
 > & {
   vehiculo: FilaDeVehiculo
   // Lo que lo nombra: su campo principal (con el título debajo) o su título.
@@ -108,7 +109,7 @@ function CasillaDeLaFila({
   )
 }
 
-// La situación (o la fase), si está en la vitrina, «Publicar» y la fecha de la limpieza.
+// La situación (o la fase), si está en la vitrina, «Publicar» y la fecha de la limpieza; debajo, en un vehículo en subasta, la cuenta regresiva de su cierre.
 function CeldaDeFase({
   vehiculo,
   fase,
@@ -116,7 +117,8 @@ function CeldaDeFase({
   vitrina,
   limpiezaHoy,
   menu,
-}: Pick<PropsDeFila, 'vehiculo' | 'origen' | 'vitrina' | 'limpiezaHoy' | 'menu'> & {
+  ahora,
+}: Pick<PropsDeFila, 'vehiculo' | 'origen' | 'vitrina' | 'limpiezaHoy' | 'menu' | 'ahora'> & {
   fase: ReturnType<typeof faseDe>
 }) {
   return (
@@ -134,6 +136,13 @@ function CeldaDeFase({
         ) : null}
         <InsigniaDeLimpieza fecha={vehiculo.limpiezaEl} hoy={limpiezaHoy} />
       </div>
+      {origen.tipo === 'subasta' && vehiculo.situacion === 'en_subasta' ? (
+        <CuentaRegresivaDelCierre
+          cierre={vehiculo.cierreSubastaEn}
+          ahora={ahora}
+          className="mt-1"
+        />
+      ) : null}
     </TableCell>
   )
 }
@@ -153,6 +162,7 @@ function FilaDeTabla({
   menu,
   seleccion,
   aprobadas,
+  ahora,
   conMenu,
 }: PropsDeFila) {
   const fase = faseDe(fases, vehiculo.faseId)
@@ -186,6 +196,7 @@ function FilaDeTabla({
         vitrina={vitrina}
         limpiezaHoy={limpiezaHoy}
         menu={menu}
+        ahora={ahora}
       />
       <TableCell className="text-right tabular-nums">{vehiculo.anio ?? VACIO}</TableCell>
       {columnaCompra.tipo === 'no_aplica' ? null : (

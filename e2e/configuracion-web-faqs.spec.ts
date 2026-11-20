@@ -53,9 +53,10 @@ test('crear, publicar, ordenar, despublicar y eliminar: lo que ve la web públic
   const primera = pregunta('Primera')
   const segunda = pregunta('Segunda')
   await entrar(page, duena)
-  await page.goto('/configuracion')
+  await page.goto('/configuracion/inicio')
   await page
     .getByRole('main')
+    .getByRole('region')
     .getByRole('link', { name: /^Sitio web/ })
     .click()
   await expect(page).toHaveURL(/\/configuracion\/web\/ajustes$/)

@@ -150,7 +150,7 @@ export const CONTEXTO_DE_PRUEBA = {
   fecha: '6 nov 2026',
   numero: '12',
   titulo: null,
-  asesor: 'Ana Pérez',
+  asesor: { nombre: 'Ana Pérez', telefono: '+59170000001', cargo: 'Asesora', foto: null },
   cliente: null,
   vehiculo: { titulo: 'Toyota Hilux 2022', lote: null, vin: null },
   venceEl: null,

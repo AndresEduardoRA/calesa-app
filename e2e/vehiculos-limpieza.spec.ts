@@ -1,6 +1,7 @@
 import { expect, test, type Page } from './soporte/prueba'
 import { desmontarSubasta, prepararSubasta, type EstadoDeApibara } from './soporte/apibara'
 import { admin } from './soporte/base'
+import { editarTarjeta } from './soporte/empresa'
 import { aLaVista, cerrarPanelDeFiltros, entrar, panelDeFiltros } from './soporte/inventario'
 
 // La limpieza automática de los vehículos de subasta contra la app compilada y el Supabase local:
@@ -306,10 +307,10 @@ test('apagada, no hay filtro ni avisos; los días de gracia se editan en Empresa
 }) => {
   await entrar(page, duena)
   await page.goto('/configuracion/empresa')
-  await page.getByText('Políticas', { exact: true }).click()
-  await page.getByLabel('Días de gracia de la limpieza').fill('10')
-  await page.getByRole('switch', { name: 'Limpieza automática de subastas' }).click()
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
+  const politicas = await editarTarjeta(page, 'Políticas')
+  await politicas.getByLabel('Días de gracia de la limpieza').fill('10')
+  await politicas.getByRole('switch', { name: 'Limpieza automática de subastas' }).click()
+  await politicas.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
   const guardado = await admin()
     .from('ajustes_empresa')

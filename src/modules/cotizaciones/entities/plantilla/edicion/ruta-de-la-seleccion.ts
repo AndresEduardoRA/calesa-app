@@ -40,7 +40,7 @@ export function anuncioDeLaSeleccion(
   return n > 1 ? `${ruta}: ${String(n)} casillas.` : `${ruta}.`
 }
 
-// El nombre de lo que una celda muestra, para su `aria-label` y la cabecera del panel: el texto, «Dato: «Remate» · Monto», «Dato: Número», «Logo» o «Vacía».
+// El nombre de lo que una celda muestra, para su `aria-label` y la cabecera del panel: el texto, «Dato: «Remate» · Monto», «Dato: Número», «Logo», «Foto del asesor» o «Vacía».
 export function nombreDelContenido(
   c: ContenidoDeLaCelda | null,
   nombres: {
@@ -52,6 +52,7 @@ export function nombreDelContenido(
   if (c === null || c.tipo === 'vacio') return 'Vacía'
   if (c.tipo === 'texto') return c.texto.trim() === '' ? 'Vacía' : c.texto
   if (c.tipo === 'logo') return 'Logo'
+  if (c.tipo === 'foto_del_asesor') return 'Foto del asesor'
   if ('variable' in c) return `Dato: ${nombres.variable(c.variable)}`
   return `Dato: «${nombres.nodo(c.nodo)}» · ${nombres.mostrar(c.mostrar)}`
 }

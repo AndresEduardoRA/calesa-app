@@ -19,6 +19,7 @@ export const CAMPOS_DE_LEADS = {
   clave: 'campos',
   titulo: 'Campos',
   descripcion: 'Los datos de cada lead, en qué grupo van y quién los ve.',
+  palabras: ['datos del lead', 'grupos', 'quién ve', 'privacidad'],
   ruta: RUTAS.camposDeLeads,
   permisos: ['leads.campos.gestionar'],
   motivoSinPermiso: 'Te falta el permiso «Gestionar los campos de los leads».',
@@ -28,6 +29,7 @@ export const ORIGENES_DE_LEADS = {
   clave: 'origenes',
   titulo: 'Orígenes del lead',
   descripcion: 'De dónde llegan los leads y cuál se elige por defecto.',
+  palabras: ['fuente', 'canal', 'facebook', 'por defecto'],
   ruta: RUTAS.origenesDeLeads,
   ...CON_CONFIGURAR,
 } as const satisfies SubseccionDeConfiguracion
@@ -36,6 +38,7 @@ export const TIPOS_DE_LEAD = {
   clave: 'tipos',
   titulo: 'Tipos de lead',
   descripcion: 'Qué es cada lead: prospecto o cliente, con sus tipos.',
+  palabras: ['prospecto', 'cliente'],
   ruta: RUTAS.tiposDeLead,
   ...CON_CONFIGURAR,
 } as const satisfies SubseccionDeConfiguracion
@@ -44,6 +47,7 @@ export const TIPOS_DE_SEGUIMIENTO = {
   clave: 'seguimientos',
   titulo: 'Tipos de seguimiento',
   descripcion: 'Cómo se contactó a un lead: llamada, visita, mensaje…',
+  palabras: ['llamada', 'visita', 'mensaje', 'contacto'],
   ruta: RUTAS.tiposDeSeguimiento,
   ...CON_CONFIGURAR,
 } as const satisfies SubseccionDeConfiguracion
@@ -52,6 +56,7 @@ export const PLANTILLA_DEL_EMBUDO = {
   clave: 'embudo',
   titulo: 'Plantilla del embudo',
   descripcion: 'Las etapas con las que nace un embudo nuevo.',
+  palabras: ['etapas', 'pipeline', 'fases'],
   ruta: RUTAS.plantillaDelEmbudo,
   ...CON_CONFIGURAR,
 } as const satisfies SubseccionDeConfiguracion
@@ -60,6 +65,7 @@ export const MENSAJE_DEL_PORTAL = {
   clave: 'portal',
   titulo: 'Mensaje del portal',
   descripcion: 'El mensaje que recibe un cliente con su acceso al portal.',
+  palabras: ['whatsapp', 'código', 'clave', 'acceso', 'mensaje', 'enlace'],
   ruta: RUTAS.mensajeDelPortal,
   ...CON_CONFIGURAR,
 } as const satisfies SubseccionDeConfiguracion
@@ -68,6 +74,7 @@ export const TELEFONOS_EXTRA = {
   clave: 'telefonos',
   titulo: 'Teléfonos extra',
   descripcion: 'Cuántos teléfonos extra tiene un lead y si cuentan como el principal.',
+  palabras: ['celular', 'teléfono principal', 'extra'],
   ruta: RUTAS.telefonosExtraDeLeads,
   ...CON_CONFIGURAR,
 } as const satisfies SubseccionDeConfiguracion
@@ -93,6 +100,7 @@ export const SECCION_DE_LEADS = {
   clave: 'leads',
   titulo: 'Leads',
   descripcion: 'Los campos, los orígenes y tipos de lead, los seguimientos, el embudo y el portal.',
+  palabras: ['clientes', 'prospectos', 'embudo', 'seguimientos', 'portal', 'teléfonos'],
   ruta: RUTAS.configuracionDeLeads,
   Icono: ContactRoundIcon,
   permisos: PERMISOS_DE_LEADS,

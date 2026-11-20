@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { guardarBorradorDeEstado } from '@/shared/lib/borrador'
 import type { RecalculoInicial } from '../../../../entities/apertura'
 import { claveDeLaHoja, claveDelBorrador, claveEnPar } from '../../../../entities/claves-de-la-hoja'
@@ -14,7 +14,6 @@ import type { AperturaDeHoja } from '../../hooks/use-hoja'
 import { useGuardadoEnPar } from '../../hooks/use-guardado-en-par'
 import { useSoltarLoAbierto } from '../../hooks/urls-de-la-hoja'
 import { useTituloDeLaCotizacion } from '../../hooks/use-titulo-de-la-cotizacion'
-import { ContextoDeLaVistaPrevia } from '../hueco-de-la-vista-previa'
 import type { PasosDeLaPagina } from '../pasos-de-la-hoja'
 import { HermanasGuardadas } from './hermanas-guardadas'
 import { HojaEnPar } from './hoja-en-par'
@@ -43,14 +42,6 @@ function useAperturas(hoja: Props['hoja'], vehiculoId: string | null) {
       })) as unknown as readonly [AperturaDeHoja, AperturaDeHoja],
     [origenId, abierta, par, vehiculoId],
   )
-}
-
-// La portada de la hermana: el núcleo pide la de la primera; ésta, la de la segunda, una vez.
-function usePortadaDeLaHermana(id: string | null) {
-  const area = useContext(ContextoDeLaVistaPrevia)
-  useEffect(() => {
-    if (id !== null) area?.alGuardarLaCotizacion?.(id)
-  }, [id, area])
 }
 
 // Lo que congela el marco mientras guarda: las props de la hoja (una action que renueva la sesión dibuja otra hoja abierta).
@@ -121,7 +112,6 @@ export function PantallaDeCotizarEnPar({ leadId, personaId, seEligen, ...props }
     guardado.olvidarAviso()
   }
   const guardada = guardado.estado.tipo === 'guardada' ? guardado.estado : null
-  usePortadaDeLaHermana(guardada?.cotizacion.hermana?.id ?? null)
   if (guardada) {
     return (
       <HermanasGuardadas

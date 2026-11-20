@@ -28,6 +28,8 @@ export const NOMBRES_DE_LAS_VARIABLES: Readonly<Record<VariableDeLaTarjeta, stri
   vehiculo_vin: 'VIN del vehículo',
   vence_el: 'Vence el',
   modo_tc: 'Modo de tipo de cambio',
+  asesor_telefono: 'WhatsApp del asesor',
+  asesor_cargo: 'Cargo del asesor',
 }
 
 export const NOMBRES_DE_MOSTRAR: Readonly<Record<Mostrar, string>> = {

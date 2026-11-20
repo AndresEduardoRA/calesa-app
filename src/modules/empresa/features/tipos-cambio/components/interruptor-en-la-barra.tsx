@@ -24,6 +24,8 @@ type Props = {
   alCambiar: (enLaBarra: boolean) => void
   // Sin permiso, o guardando.
   bloqueado: boolean
+  // Cómo se llama: «En la barra superior» en el panel, «En la barra» en la tarjeta.
+  titulo?: string
 }
 
 function ayudaDe({ tipo, tipos, activo }: Pick<Props, 'tipo' | 'tipos' | 'activo'>): string {
@@ -51,11 +53,19 @@ function ayudaDe({ tipo, tipos, activo }: Pick<Props, 'tipo' | 'tipos' | 'activo
 
 // «En la barra superior» en el panel de un tipo de cambio: viaja en el mismo «Guardar» que el valor (una sola versión por fila). Sumarlo pide que
 // esté activo y que haya lugar; quitarlo siempre se puede. Apagado, la ayuda dice por qué.
-export function InterruptorEnLaBarra({ tipo, tipos, activo, valor, alCambiar, bloqueado }: Props) {
+export function InterruptorEnLaBarra({
+  tipo,
+  tipos,
+  activo,
+  valor,
+  alCambiar,
+  bloqueado,
+  titulo = 'En la barra superior',
+}: Props) {
   const motivo = motivoParaNoMarcar({ tipo, activo, tipos })
   return (
     <Interruptor
-      titulo="En la barra superior"
+      titulo={titulo}
       ayuda={ayudaDe({ tipo, tipos, activo })}
       valor={valor}
       alCambiar={alCambiar}

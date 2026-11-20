@@ -25,7 +25,8 @@ function enTramos(resueltas: readonly Resuelta[]): { grupo?: string; subs: Resue
 // Las sub-secciones de una sección en el menú, con cada plantilla rellenada con la ruta actual (las partes del origen que se ve) o, si no
 // resuelve, con su respaldo. La que no resuelve ni tiene respaldo no se dibuja; si no queda ninguna, tampoco la lista. La índice (en la ruta
 // de su sección) se marca sólo en su ruta; la que no se puede abrir va apagada con su motivo. Las que declaran `grupo` van bajo su rótulo
-// (un `<p>`, no un encabezado, como los grupos del menú). Se esconde por CSS mientras su sección no está marcada.
+// (un `<p>`, no un encabezado, como los grupos del menú). Van sangradas bajo su sección, con una línea guía a la izquierda. Se esconde por CSS
+// mientras su sección no está marcada.
 export function SubseccionesDelMenu({
   claveDeSeccion,
   rutaDeSeccion,
@@ -46,7 +47,12 @@ export function SubseccionesDelMenu({
   const renglon = (sub: Resuelta) => (
     <li key={sub.clave}>
       {sub.motivo === undefined ? (
-        <EnlaceDelMenu ruta={sub.ruta} exacta={sub.ruta === rutaDeSeccion} titulo={sub.titulo} />
+        <EnlaceDelMenu
+          ruta={sub.ruta}
+          exacta={sub.ruta === rutaDeSeccion}
+          titulo={sub.titulo}
+          nivel="sub"
+        />
       ) : (
         <RenglonApagado
           clave={`${claveDeSeccion}-${sub.clave}`}
@@ -57,17 +63,17 @@ export function SubseccionesDelMenu({
     </li>
   )
   return (
-    <ul className="grid gap-0.5 pl-3">
+    <ul className="ml-[1.125rem] grid gap-0.5 border-l border-(--color-line)">
       {enTramos(resueltas).map((tramo, i) => {
         if (tramo.grupo === undefined) {
           return tramo.subs.map(renglon)
         }
         const idDelRotulo = `subgrupo-${claveDeSeccion}-${String(i)}`
         return (
-          <li key={idDelRotulo} className="grid gap-0.5 pt-1">
+          <li key={idDelRotulo} className="grid gap-0.5 pt-1.5">
             <p
               id={idDelRotulo}
-              className="px-2.5 text-(length:--text-xs) font-medium text-(--color-ink-soft)"
+              className="pl-3 text-(length:--text-xs) font-medium text-(--color-ink-soft) italic"
             >
               {tramo.grupo}
             </p>

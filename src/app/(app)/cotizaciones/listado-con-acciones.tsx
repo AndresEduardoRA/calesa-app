@@ -14,7 +14,7 @@ import {
   DialogoDeCompartirDeLaFila,
   useAbrirCompartirDeLaFila,
 } from '@/modules/cotizaciones/pantallas/tarjeta-compartir'
-import { PortadaDeLaCotizacion } from '@/modules/cotizaciones/pantallas/tarjeta-portada'
+import { ImagenDeLaTarjeta } from '@/modules/cotizaciones/pantallas/tarjeta-imagen'
 import { HUECOS_DE_TARJETA_EN_EL_RESUMEN } from '@/modules/cotizaciones/pantallas/tarjeta-resumen'
 import { useLive } from '@/shared/ui/live'
 import { conLaDelResumen } from './la-del-resumen'
@@ -29,7 +29,7 @@ type Props = Omit<
   menus: Readonly<Record<string, MenuDeUnaFila>>
 }
 
-// Lo que las áreas `tarjeta`, `comentarios`, `comprobantes` y `aprobada` llenan en el resumen: la portada, las pestañas, en «Adjuntos» los comprobantes y «De este vehículo». Sólo cáscaras con
+// Lo que las áreas `tarjeta`, `comentarios`, `comprobantes` y `aprobada` llenan en el resumen: la imagen de la tarjeta, las pestañas, en «Adjuntos» los comprobantes y «De este vehículo». Sólo cáscaras con
 // `diferido()`: el listado no paga su código.
 const HUECOS_DEL_RESUMEN = {
   ...HUECOS_DE_TARJETA_EN_EL_RESUMEN,
@@ -38,8 +38,8 @@ const HUECOS_DEL_RESUMEN = {
   ...HUECOS_DE_APROBADA_EN_EL_RESUMEN,
 }
 
-// Lo que las áreas `tarjeta` y `aprobada` llenan en la lista: la portada de cada tarjeta (en frío: se ve al llegar) y «Comparar» de un grupo desplegado (diferido).
-const HUECOS_DE_LA_LISTA = { Portada: PortadaDeLaCotizacion, Comparar: CompararDelGrupoDiferido }
+// Lo que las áreas `tarjeta` y `aprobada` llenan en la lista: la imagen de cada tarjeta (en frío: se ve al llegar) y «Comparar» de un grupo desplegado (diferido).
+const HUECOS_DE_LA_LISTA = { Imagen: ImagenDeLaTarjeta, Comparar: CompararDelGrupoDiferido }
 
 // El listado de cotizaciones con su columna de acciones: une el «⋯» de cada fila con lo que hace cada área (compartir, aprobar, marcar final, favorita, reportar, moderar y la papelera: las mismas
 // actions y los mismos diálogos de la guardada) y monta los diálogos una vez. Es un Client Component porque el «⋯» necesita las filas y sus funciones; el servidor sólo manda datos.

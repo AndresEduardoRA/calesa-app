@@ -106,6 +106,9 @@ export const formulaVigente = (origenId: string): string =>
     `select id from public.formulas where origen_id = ${literal(origenId)}::uuid and estado = 'publicada'`,
   )
 
+// El nombre de la dueña de `prepararGuardado()`: el asesor de la tarjeta cuando ella la mira.
+export const NOMBRE_DE_LA_DUENA_DEL_GUARDADO = 'Gala Guarda'
+
 // Lo que preparan los specs del guardado: un origen con la fórmula de prueba, una dueña (guarda sin vehículo y sin lead: tiene las dos claves) y un lead suyo. `proyecto` va en los nombres: dos proyectos no se pisan.
 export async function prepararGuardado(
   proyecto: string,
@@ -117,7 +120,11 @@ export async function prepararGuardado(
   await borrarPersonasDePrueba()
   const origen = await crearOrigenDeCotizar(proyecto, resto, true, dosModos)
   const duena = correoDePrueba(`duena-${resto}-${proyecto}`)
-  await crearDuenaDePrueba({ email: duena, contrasena: CONTRASENA, nombre: 'Gala Guarda' })
+  await crearDuenaDePrueba({
+    email: duena,
+    contrasena: CONTRASENA,
+    nombre: NOMBRE_DE_LA_DUENA_DEL_GUARDADO,
+  })
   const lead = await crearLead({
     nombre: `cotizar ${resto} ${proyecto}`,
     telefono: telefonoAlAzar(),

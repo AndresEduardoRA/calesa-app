@@ -19,6 +19,17 @@ export const DATOS_DE_LA_EMPRESA = {
   clave: 'datos',
   titulo: 'Datos de la empresa',
   descripcion: 'La marca, los datos legales, la región y las políticas de la empresa.',
+  palabras: [
+    'logo',
+    'colores',
+    'nombre',
+    'marca',
+    'nit',
+    'dirección',
+    'región',
+    'políticas',
+    'legal',
+  ],
   ruta: RUTAS.empresa,
   permisos: PERMISOS_DE_LA_EMPRESA,
 } as const satisfies SubseccionDeConfiguracion
@@ -28,6 +39,7 @@ export const MONEDAS_DE_LA_EMPRESA = {
   titulo: 'Monedas y tipos de cambio',
   descripcion:
     'Las monedas, los tipos de cambio con su historial y los que se ven en la barra superior.',
+  palabras: ['dólar', 'boliviano', 'cambio', 'cotización del dólar', 'barra superior'],
   ruta: RUTAS.monedasDeEmpresa,
   permisos: PERMISOS_DE_LA_EMPRESA,
 } as const satisfies SubseccionDeConfiguracion
@@ -36,6 +48,7 @@ export const INTEGRACIONES_DE_LA_EMPRESA = {
   clave: 'integraciones',
   titulo: 'Integraciones',
   descripcion: 'Los servicios externos que usa el sistema, como apibara.',
+  palabras: ['apibara', 'api', 'servicios', 'conexión'],
   ruta: RUTAS.integracionesDeEmpresa,
   permisos: PERMISOS_DE_LA_EMPRESA,
 } as const satisfies SubseccionDeConfiguracion
@@ -56,6 +69,18 @@ export const SECCION_DE_EMPRESA = {
   clave: 'empresa',
   titulo: 'Empresa',
   descripcion: 'La marca, los datos legales, la región, las monedas y las integraciones.',
+  palabras: [
+    'logo',
+    'colores',
+    'nombre',
+    'marca',
+    'nit',
+    'dirección',
+    'región',
+    'moneda',
+    'tipo de cambio',
+    'integraciones',
+  ],
   ruta: RUTAS.empresa,
   Icono: Building2Icon,
   permisos: PERMISOS_DE_EMPRESA,
