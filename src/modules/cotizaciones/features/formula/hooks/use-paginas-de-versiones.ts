@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { fallo, type ErrorApp, type Resultado } from '@/shared/lib/errores'
+import { fallo, ok, type ErrorApp, type Resultado } from '@/shared/lib/errores'
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import { leerPaginaDeVersiones } from '../../../areas/formula/composicion.client'
 import type { PaginaConAutores } from '../../../entities/formula/versiones'
@@ -34,11 +34,14 @@ function trasLeer(
   return { ...antes, pagina, desde, cargando: false, error: null }
 }
 
-// Las versiones de la fórmula de un origen: la primera página llega del servidor y «Ver más» lee las siguientes desde el navegador, de a `TAMANO_DE_VER_MAS` por cursor
+// Las versiones de la fórmula de trabajo de un origen (por su id; nulo si el origen todavía no tiene: no hay nada que pedir): la primera página llega del servidor y «Ver más» lee las siguientes desde el navegador, de a `TAMANO_DE_VER_MAS` por cursor
 // (el número de la última) y hasta `TOPE_DE_LO_CARGADO`; en el tope, «Ir a la versión» es el camino a lo antiguo. Un pedido a la vez; la respuesta de uno que ya no es el
 // último (otro «Ir a la versión», «Volver a la más nueva», el componente ya no está) se descarta. La posición no va a la URL: al recargar vuelve a la más nueva.
 // Otro origen es otro componente (la pestaña lleva `key` con el origen).
-export function usePaginasDeVersiones(origenId: string, inicial: PaginaConAutores) {
+export function usePaginasDeVersiones(
+  formulaDelOrigenId: string | null,
+  inicial: PaginaConAutores,
+) {
   const [estado, setEstado] = useState<Estado>({
     pagina: inicial,
     desde: null,
@@ -64,7 +67,11 @@ export function usePaginasDeVersiones(origenId: string, inicial: PaginaConAutore
       error: null,
       ultimoPedido: { cursor, reemplaza, desde },
     }))
-    leerPaginaDeVersiones({ origenId, cursor })
+    const lectura =
+      formulaDelOrigenId === null
+        ? Promise.resolve(ok({ filas: [], siguiente: null }))
+        : leerPaginaDeVersiones({ formulaDelOrigenId, cursor })
+    lectura
       .catch((): Resultado<PaginaConAutores> =>
         fallo('inesperado', 'No se pudieron cargar más versiones.'),
       )

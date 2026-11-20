@@ -12,6 +12,8 @@ const esquemaDeEsperada = z.discriminatedUnion('sobre', [
 
 export const esquemaDeGuardarDiseno = z.object({
   origenId: z.guid(),
+  // La fórmula del origen de la versión leída (el diseño se edita sobre una versión que existe: nunca nula).
+  formulaDelOrigenId: z.guid(),
   definicion: esquemaDefinicion,
   params: z.record(z.string(), z.unknown()).refine((p) => esquemaParams.safeParse(p).success, {
     error: 'Los valores no tienen su forma.',

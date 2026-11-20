@@ -13,7 +13,7 @@ import { usePaginasDeVersiones, type PaginasDeVersiones } from '../hooks/use-pag
 import { IrALaVersion } from './ir-a-la-version'
 
 type Props = {
-  origenId: string
+  formulaDelOrigenId: string | null
   // La primera página, leída en el servidor.
   inicial: PaginaConAutores
   // Sin publicada no hay a qué revertir: no se ofrece.
@@ -24,9 +24,14 @@ type Props = {
 
 // Las versiones publicadas y archivadas del origen, de la más nueva a la más vieja: «Publicada» en la vigente, su nota y quién la publicó y cuándo. Cada archivada
 // lleva «Revertir» (4.20-2b) si el origen tiene publicada.
-export function ListaDeVersiones({ origenId, inicial, conPublicada = false, alRevertir }: Props) {
+export function ListaDeVersiones({
+  formulaDelOrigenId,
+  inicial,
+  conPublicada = false,
+  alRevertir,
+}: Props) {
   const { zonaHoraria } = useRegional()
-  const versiones = usePaginasDeVersiones(origenId, inicial)
+  const versiones = usePaginasDeVersiones(formulaDelOrigenId, inicial)
   return (
     <section aria-labelledby="titulo-versiones" className="grid min-w-0 gap-2">
       <h3

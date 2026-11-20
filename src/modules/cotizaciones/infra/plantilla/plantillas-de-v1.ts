@@ -30,26 +30,37 @@ const esquemaDelCatalogo = z.array(
   z.object({ clave: z.string(), nombre: z.string(), hex: z.string() }),
 )
 
-// Los dos borradores del origen y el catálogo de colores, en paralelo; después el nombre de quien empezó el borrador de la fórmula (la tarjeta no lo guarda).
+const NADA = { data: [], error: null }
+
+// Sin fórmula del origen no hay borradores: no se consulta.
+const siHay = <T>(formulaDelOrigenId: string | null, consulta: (id: string) => T) =>
+  formulaDelOrigenId === null ? NADA : consulta(formulaDelOrigenId)
+
+// Los dos borradores de la fórmula de trabajo del origen (la que escribe `cotizacion_paquete_aplicar()`, que va por el origen; nula si el origen todavía no tiene:
+// sin borradores) y el catálogo de colores, en paralelo; después el nombre de quien empezó el borrador de la fórmula (la tarjeta no lo guarda).
 export async function leerEstadoParaPlantillasDeV1(
   cliente: Cliente,
-  origenId: string,
+  formulaDelOrigenId: string | null,
 ): Promise<Resultado<EstadoParaPlantillasDeV1>> {
   const [formula, tarjeta, tonos] = await Promise.all([
-    // `formulas_borrador_unico`: índice único parcial por `origen_id` donde `estado = 'borrador'`.
-    cliente
-      .from('formulas')
-      .select('creado_por, actualizado_en')
-      .eq('origen_id', origenId)
-      .eq('estado', 'borrador')
-      .limit(1),
+    // `formulas_borrador_unico`: índice único parcial por `formula_del_origen_id` donde `estado = 'borrador'`.
+    siHay(formulaDelOrigenId, (id) =>
+      cliente
+        .from('formulas')
+        .select('creado_por, actualizado_en')
+        .eq('formula_del_origen_id', id)
+        .eq('estado', 'borrador')
+        .limit(1),
+    ),
     // `plantillas_borrador_unico`, igual.
-    cliente
-      .from('plantillas_tarjeta')
-      .select('actualizado_en')
-      .eq('origen_id', origenId)
-      .eq('estado', 'borrador')
-      .limit(1),
+    siHay(formulaDelOrigenId, (id) =>
+      cliente
+        .from('plantillas_tarjeta')
+        .select('actualizado_en')
+        .eq('formula_del_origen_id', id)
+        .eq('estado', 'borrador')
+        .limit(1),
+    ),
     // El catálogo entero: la base no deja crear un 49.º (`_tonos_tope()`).
     cliente.from('tonos').select('clave, nombre, hex').order('nombre').limit(TOPE_DE_TONOS),
   ])

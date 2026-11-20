@@ -5,9 +5,10 @@ import { leerDisenoSobre, leerNivelesSobre } from './lectura-del-diseno'
 
 type Respuesta = { data: unknown; error: { message: string; code?: string } | null }
 
-// Un cliente que responde `formulas` según el `estado` que se pide y cuenta las llamadas.
+// Un cliente que responde `formulas` según el `estado` que se pide y cuenta las llamadas y los filtros.
 function clienteFalso(porEstado: Record<string, Respuesta>, niveles?: Respuesta) {
   const llamadas: string[] = []
+  const filtros: [string, string][] = []
   const cliente = {
     from: (tabla: string) => {
       llamadas.push(tabla)
@@ -15,6 +16,7 @@ function clienteFalso(porEstado: Record<string, Respuesta>, niveles?: Respuesta)
       const consulta: Record<string, unknown> = {}
       for (const metodo of ['select', 'order', 'limit']) consulta[metodo] = () => consulta
       consulta['eq'] = (columna: string, valor: string) => {
+        filtros.push([columna, valor])
         if (columna === 'estado') estado = valor
         return consulta
       }
@@ -25,10 +27,10 @@ function clienteFalso(porEstado: Record<string, Respuesta>, niveles?: Respuesta)
       return consulta
     },
   }
-  return { cliente: cliente as unknown as SupabaseClient<Database>, llamadas }
+  return { cliente: cliente as unknown as SupabaseClient<Database>, llamadas, filtros }
 }
 
-const ORIGEN = '11111111-1111-4111-8111-111111111111'
+const FDO = '11111111-1111-4111-8111-111111111111'
 const DEFINICION = { nodos: [{ id: 'a', tipo: 'input', etiqueta: 'A' }] }
 const DISENO = {
   cabecera: { modos: [], ver_total_bs: false },
@@ -43,6 +45,7 @@ const DISENO = {
 }
 const fila = (estado: string, id: string, extra: object = {}) => ({
   id,
+  formula_del_origen_id: FDO,
   estado,
   definicion: DEFINICION,
   params: { flete: 900 },
@@ -56,12 +59,15 @@ const PUBLICADA = '33333333-3333-4333-8333-333333333333'
 
 describe('leerDisenoSobre', () => {
   it('T6 · el borrador gana a la publicada', async () => {
-    const { cliente } = clienteFalso({
+    const { cliente, filtros } = clienteFalso({
       borrador: { data: [fila('borrador', BORRADOR)], error: null },
       publicada: { data: [fila('publicada', PUBLICADA)], error: null },
     })
-    const r = await leerDisenoSobre(cliente, ORIGEN)
+    const r = await leerDisenoSobre(cliente, FDO)
     expect(r.ok && r.data?.id).toBe(BORRADOR)
+    // De una fórmula del origen: la que guardar manda después.
+    expect(r.ok && r.data?.formulaDelOrigenId).toBe(FDO)
+    expect(filtros).toContainEqual(['formula_del_origen_id', FDO])
     expect(r.ok && r.data?.actualizadoEn).toBe('2026-11-08T10:00:00.123456+00:00')
   })
 
@@ -70,11 +76,11 @@ describe('leerDisenoSobre', () => {
       borrador: { data: [], error: null },
       publicada: { data: [fila('publicada', PUBLICADA, { diseno: null })], error: null },
     })
-    const r = await leerDisenoSobre(sinBorrador.cliente, ORIGEN)
+    const r = await leerDisenoSobre(sinBorrador.cliente, FDO)
     expect(r.ok && r.data?.estado).toBe('publicada')
     expect(r.ok && r.data?.diseno).toBeNull()
 
-    const nada = await leerDisenoSobre(clienteFalso({}).cliente, ORIGEN)
+    const nada = await leerDisenoSobre(clienteFalso({}).cliente, FDO)
     expect(nada).toEqual({ ok: true, data: null })
   })
 
@@ -82,14 +88,14 @@ describe('leerDisenoSobre', () => {
     const malo = clienteFalso({
       borrador: { data: [fila('borrador', BORRADOR, { definicion: { nodos: 3 } })], error: null },
     })
-    const r = await leerDisenoSobre(malo.cliente, ORIGEN)
+    const r = await leerDisenoSobre(malo.cliente, FDO)
     expect(!r.ok && r.error.codigo).toBe('inesperado')
 
     const roto = clienteFalso({ borrador: { data: null, error: { message: 'x', code: '42501' } } })
-    expect((await leerDisenoSobre(roto.cliente, ORIGEN)).ok).toBe(false)
+    expect((await leerDisenoSobre(roto.cliente, FDO)).ok).toBe(false)
   })
 
-  it('un origen que no es un guid no consulta', async () => {
+  it('una fórmula del origen que no es un guid no consulta', async () => {
     const { cliente, llamadas } = clienteFalso({})
     const r = await leerDisenoSobre(cliente, 'no-es-guid')
     expect(r.ok).toBe(false)

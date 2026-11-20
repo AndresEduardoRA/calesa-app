@@ -113,7 +113,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   concesiones.
 - **Para cotizar y mover** — `pasosParaCotizarYMover()` / `<ParaCotizarYMover>`: lo que le falta a un origen activo para cotizar y mover sus
   vehículos, en cinco pasos con su estado (✓ listo, ⚠ aviso, ✗ bloquea): Datos (apibara en una subasta), Campos, Flujo (con fases), Fórmula
-  (publicada) y Tarjeta (publicada), cada uno enlazado a su pestaña de la página del origen. Un inactivo dice sólo «Inactivo». Lo accionable se ve
+  (activa) y Tarjeta (publicada en la fórmula de trabajo), cada uno enlazado a su pestaña de la página del origen. Un inactivo dice sólo «Inactivo». Lo accionable se ve
   también en el inicio de Configuración como **lo que falta** (`faltasPorSeccion()`, `<QueFaltaDeLaSeccion>`: una línea por origen en Orígenes,
   apibara en Empresa). No: «siguientes pasos», «checklist».
 - **Página del origen** — `/configuracion/origenes/<id>/<pestaña>` (`MarcoDelOrigen`, `PESTANAS_DEL_ORIGEN`): todo lo de un origen en un lugar,
@@ -124,7 +124,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   compartidas. No es el catálogo de repuestos ni el de apibara.
 - **Flujo de repuestos** — `/configuracion/repuestos/flujo` (`FLUJO_DE_REPUESTOS_EN_CONFIGURACION`): el flujo de los repuestos, que se configura en
   la sección Repuestos con el mismo editor que la pestaña Flujo de un origen.
-- **Fórmula pendiente** — origen sin fila `publicada` en `formulas`: un origen nuevo no se cotiza hasta publicar la primera.
+- **Fórmula pendiente** — origen sin **fórmula activa** (`origenes_resumen().formula_publicada`): un origen nuevo no se cotiza hasta publicar la primera.
 - **Vehículo** — `vehiculos`: el dato central; recorre el flujo de su origen.
 - **Atributos** — `vehiculos.atributos`, `leads.atributos`: campos del layout que no son columna. En un lead se leen por `leads_vista`, recortados.
 - **Dato común** — `camposComunes()` / columnas de `vehiculos`: lo que tiene todo vehículo y es columna (título, marca, año, VIN, precio…).
@@ -455,7 +455,15 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Panel del cliente** — `?panel=cliente` de `/cotizaciones/nuevo`, `<BarraDelCliente>` / `PanelDelCliente` (`leads/features/panel-para-cotizar`):
   elige el lead entre «míos» por reciente, por clase (`?clase=`) o buscando nombre o `#n` (`?buscar=`); su «+» abre el alta del shell con
   `?elegir=<clave>` (`claveParaElegir()`) y la hoja elige al creado.
-- **Fórmula** — `formulas` (`definicion`, `params`): grafo de nodos versionado por origen; ver `docs/COTIZADOR.md`.
+- **Fórmula** — `formulas` (`definicion`, `params`): grafo de nodos versionado por fórmula del origen; ver `docs/COTIZADOR.md`.
+- **Fórmula del origen** — `formulas_del_origen` (`nombre`, `activa`, `archivada_en`): una fórmula con nombre de un origen, con sus versiones
+  (`formulas.formula_del_origen_id`: su borrador, su publicada y sus archivadas) y su **Plantilla de tarjeta**. Un origen tiene varias; se crea en
+  blanco o como copia de una del mismo origen o de otro (`formula_del_origen_crear()`), y se renombra, archiva, elimina y activa por RPC
+  (`formula_del_origen_renombrar|archivar|eliminar|activar`). No: «variante», «plantilla» (la plantilla es la de la tarjeta).
+- **Fórmula activa** — `formulas_del_origen.activa` (`formulas_del_origen_activa_unica`): la fórmula del origen con que se cotiza, a lo sumo una por
+  origen y siempre con versión publicada; se cotiza con su publicada (`_publicada_de_la_activa()`). Activar otra publica sus borradores y apaga la anterior.
+- **Fórmula de trabajo** — `_fdo_de_trabajo()` / `leerFormulaDeTrabajoSobre()`: la que leen y escriben las sub-pestañas Fórmula, Hoja y Tarjeta de la página del origen y la que
+  usa una RPC que no recibe `p_formula_del_origen`: la activa o, sin ella, la más nueva sin archivar; el primer guardado de un origen sin ninguna la crea.
 - **Nodo** — `definicion.nodos[]`: una línea de la fórmula: input, constante, tipo de cambio, campo, bandera, tabla, tramo, cálculo.
 - **Constante** — nodo `constante` + `params`: valor por defecto versionado que el ⚙ de la XCell cambia.
 - **Versión del flujo** — `flujos.actualizado_en` como texto ISO: la lee el editor del flujo y la devuelve cada escritura para detectar
@@ -467,8 +475,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   lo del flujo.
 - **Diagrama del flujo** — `DiagramaDelFlujo` (`disponerDiagrama()`): las fases como cajas en su orden y las salidas como flechas (ramas arriba,
   vueltas atrás abajo); apoyo visual del editor del flujo, la lista es la versión navegable. No: «grafo», «tablero».
-- **Versión de la fórmula** — `formulas.version`: número de una publicada o archivada, por origen (el borrador no tiene).
-- **Borrador de la fórmula** — `formulas.estado = 'borrador'`: a lo sumo uno por origen, sin número; lo publicado no cambia hasta publicarlo.
+- **Versión de la fórmula** — `formulas.version`: número de una publicada o archivada, por fórmula del origen (el borrador no tiene).
+- **Borrador de la fórmula** — `formulas.estado = 'borrador'`: a lo sumo uno por fórmula del origen, sin número; lo publicado no cambia hasta publicarlo.
   «Descartar…» (`<Confirmar>`) no se deshace. No es la «Pregunta al descartar» ni el «Borrador» de un formulario (`useBorrador()`).
 - **Versión de origen** — `formulas.version_origen_id`: en un borrador, la publicada sobre la que se empezó (si ya no lo es, publicar da
   PT409); en una publicada o archivada, la que reemplazó.
@@ -497,7 +505,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tarjeta de la cotización** — `<TarjetaDeCotizacion>`, `geometriaDeLaTarjeta()`: la vista previa tipo Excel de una cotización, lo que ve el
   cliente: la misma en la vista previa, el PDF, la imagen y «Copiar texto». No es la **tarjeta de la lista** (cada ítem de la vista Tarjetas de un
   listado) ni la **Tarjeta del total** de la hoja.
-- **Plantilla de tarjeta** — `plantillas_tarjeta`: cómo se ve la tarjeta de la cotización, versionada aparte y validada por `validar_plantilla()`.
+- **Plantilla de tarjeta** — `plantillas_tarjeta`: cómo se ve la tarjeta de la cotización, de una fórmula del origen, versionada aparte y validada por `validar_plantilla()`.
   Dos formas: la **forma 1** (grupos con color, etiquetas y leyendas por nodo, total, nota, logo, columnas), que se convierte a la cuadrícula al
   leerla (`convertirPlantilla()`, `_plantilla_convertir()`) y no se migra; y la **forma 2** o **cuadrícula** (`"forma": 2`: columnas, filas y
   celdas libres, como en V1), `PlantillaEnCuadricula` en `entities/cuadricula-de-la-tarjeta.ts`.

@@ -37,14 +37,18 @@ const MODOS = [
 ]
 
 describe('consultaDeLaCabecera', () => {
-  it('la publicada del origen, una fila, con id, versión y sólo la cabecera del diseño', () => {
+  it('la publicada de la fórmula activa del origen, una fila, con id, versión y sólo la cabecera del diseño', () => {
     const { cliente, llamadas } = clienteFalso({ data: [], error: null })
     void consultaDeLaCabecera(cliente, ORIGEN)
     expect(llamadas).toEqual([
       ['from', 'formulas'],
-      ['select', 'id, version, cabecera:diseno->cabecera'],
+      [
+        'select',
+        'id, version, cabecera:diseno->cabecera, formulas_del_origen!formulas_formula_del_origen_fkey!inner()',
+      ],
       ['eq', 'origen_id', ORIGEN],
       ['eq', 'estado', 'publicada'],
+      ['eq', 'formulas_del_origen.activa', true],
       ['limit', 1],
     ])
   })

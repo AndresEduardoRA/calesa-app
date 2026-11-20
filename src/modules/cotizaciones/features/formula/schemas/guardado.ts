@@ -12,6 +12,8 @@ const esquemaDeEsperada = z.discriminatedUnion('sobre', [
 
 export const esquemaDeGuardarBorrador = z.object({
   origenId: z.guid(),
+  // La fórmula del origen de la versión que se edita (la dice su fila); nula, la de trabajo.
+  formulaDelOrigenId: z.guid().nullable(),
   definicion: esquemaDefinicion,
   params: z.record(z.string(), z.unknown()).refine((p) => esquemaParams.safeParse(p).success, {
     error: 'Los valores no tienen su forma.',

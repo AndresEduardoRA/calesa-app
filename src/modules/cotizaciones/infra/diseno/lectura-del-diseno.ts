@@ -1,5 +1,6 @@
-// Lo que lee la pestaña «Diseño» de la página del origen (4.22-2) sobre el cliente que recibe: el diseño de un origen para editarlo y los niveles que el
-// diseño puede nombrar. Sin `server-only`, para que una prueba la corra; `lectura.ts` la envuelve con el cliente de la sesión de quien mira. La policy `formulas: leer`
+// Lo que lee la pestaña «Diseño» de la página del origen (4.22-2) sobre el cliente que recibe: el diseño de una fórmula del origen (la de trabajo, que resuelve
+// `lectura.ts`) para editarlo y los niveles que el diseño puede nombrar. Sin `server-only`, para que una prueba la corra; `lectura.ts` la envuelve con el cliente de
+// la sesión de quien mira. La policy `formulas: leer`
 // deja ver sólo los orígenes donde tiene `cotizaciones.configurar` (D7); `cotizaciones_niveles` la lee cualquier `authenticated`.
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
@@ -18,6 +19,7 @@ const NO_SE_LEYO = 'No pudimos leer el diseño.'
 
 const esquemaDeLaFila = z.strictObject({
   id: z.guid(),
+  formula_del_origen_id: z.guid(),
   estado: z.enum(['borrador', 'publicada']),
   definicion: z.unknown(),
   params: z.record(z.string(), z.unknown()),
@@ -26,12 +28,12 @@ const esquemaDeLaFila = z.strictObject({
   actualizado_en: z.string().min(1),
 })
 
-// Un borrador y una publicada por origen: `formulas_borrador_unico` y `formulas_publicada_unica` (`origen_id` con `where estado = …`).
-function consulta(cliente: Cliente, origenId: string, estado: 'borrador' | 'publicada') {
+// Un borrador y una publicada por fórmula del origen: `formulas_borrador_unico` y `formulas_publicada_unica` (`formula_del_origen_id` con `where estado = …`).
+function consulta(cliente: Cliente, formulaDelOrigenId: string, estado: 'borrador' | 'publicada') {
   return cliente
     .from('formulas')
-    .select('id, estado, definicion, params, diseno, nota, actualizado_en')
-    .eq('origen_id', origenId)
+    .select('id, formula_del_origen_id, estado, definicion, params, diseno, nota, actualizado_en')
+    .eq('formula_del_origen_id', formulaDelOrigenId)
     .eq('estado', estado)
     .limit(1)
 }
@@ -39,14 +41,14 @@ function consulta(cliente: Cliente, origenId: string, estado: 'borrador' | 'publ
 // El borrador gana a la publicada; sin ninguna, nulo. Lo que no tiene la forma de una fórmula no se edita.
 export async function leerDisenoSobre(
   cliente: Cliente,
-  origenId: string,
+  formulaDelOrigenId: string,
 ): Promise<Resultado<DisenoParaEditar | null>> {
-  if (!z.guid().safeParse(origenId).success) {
-    return fallo('validacion', 'Ese origen no es válido.')
+  if (!z.guid().safeParse(formulaDelOrigenId).success) {
+    return fallo('validacion', 'Esa fórmula no es válida.')
   }
   const [borrador, publicada] = await Promise.all([
-    consulta(cliente, origenId, 'borrador'),
-    consulta(cliente, origenId, 'publicada'),
+    consulta(cliente, formulaDelOrigenId, 'borrador'),
+    consulta(cliente, formulaDelOrigenId, 'publicada'),
   ])
   const error = borrador.error ?? publicada.error
   if (error) return { ok: false, error: errorDePostgrest(error) }
@@ -61,6 +63,7 @@ export async function leerDisenoSobre(
   const { id, estado, params, diseno, nota, actualizado_en } = fila.data
   return ok({
     id,
+    formulaDelOrigenId: fila.data.formula_del_origen_id,
     estado,
     actualizadoEn: actualizado_en,
     nota,

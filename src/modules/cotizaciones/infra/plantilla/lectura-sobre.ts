@@ -1,4 +1,5 @@
-// Lo que lee el editor de la plantilla de la tarjeta de un origen, sobre el cliente que recibe (4.19-3a): las tres consultas en paralelo y cada fila leída con Zod.
+// Lo que lee el editor de la plantilla de la tarjeta de una fórmula del origen, sobre el cliente que recibe (4.19-3a): las tres consultas en paralelo y cada fila
+// leída con Zod. Sin fórmula del origen (el origen todavía no tiene), sólo los tonos.
 // Sin `server-only`, para que una prueba la corra contra la base; `lectura.ts` la envuelve con el cliente de la sesión.
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
@@ -132,16 +133,18 @@ function leerTonos(data: unknown): Resultado<readonly TonoDelCatalogo[]> {
 // El primer error de las tres (en el orden plantillas, fórmula, tonos): una lectura que falla sube al `error.tsx` de la ruta, con `datosO()`.
 const falla = (respuestas: Respuesta[]) => respuestas.find((r) => r.error !== null)?.error ?? null
 
+const NADA: Respuesta = { data: [], error: null }
+
 export async function leerPlantillaSobre(
   cliente: Cliente,
-  origenId: string,
+  formulaDelOrigenId: string | null,
 ): Promise<Resultado<PlantillaDelOrigen>> {
-  if (!z.guid().safeParse(origenId).success) {
-    return fallo('validacion', 'Ese origen no es válido.')
+  if (formulaDelOrigenId !== null && !z.guid().safeParse(formulaDelOrigenId).success) {
+    return fallo('validacion', 'Esa fórmula no es válida.')
   }
   const respuestas = await Promise.all([
-    consultaDeLasPlantillas(cliente, origenId),
-    consultaDeLaFormulaPublicada(cliente, origenId),
+    formulaDelOrigenId === null ? NADA : consultaDeLasPlantillas(cliente, formulaDelOrigenId),
+    formulaDelOrigenId === null ? NADA : consultaDeLaFormulaPublicada(cliente, formulaDelOrigenId),
     consultaDeLosTonos(cliente),
   ])
   const error = falla(respuestas)
@@ -154,6 +157,7 @@ export async function leerPlantillaSobre(
   const tonos = leerTonos(deLosTonos.data)
   if (!tonos.ok) return tonos
   return ok({
+    formulaDelOrigenId,
     ...plantillas.data,
     formula: formula.data === null ? null : { id: formula.data.id, version: formula.data.version },
     contexto: contextoDeValidacion(formula.data, tonos.data),

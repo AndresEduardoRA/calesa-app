@@ -5,6 +5,7 @@ import { MOTIVO_SIN_PERMISO_DE_FORMULA } from '../../../entities/formula/publica
 import type { BorradorGuardado, PedidoDeGuardar } from '../../../entities/formula/repositorio'
 
 const ORIGEN = '11111111-1111-4111-8111-111111111111'
+const FDO = '99999999-9999-4999-8999-999999999999'
 const OTRO_ORIGEN = '44444444-4444-4444-8444-444444444444'
 const PUBLICADA = '22222222-2222-4222-8222-222222222222'
 const BORRADOR = '33333333-3333-4333-8333-333333333333'
@@ -49,6 +50,7 @@ const DEFINICION: Definicion = {
 }
 const crear = {
   origenId: ORIGEN,
+  formulaDelOrigenId: FDO,
   definicion: DEFINICION,
   params: { flete: 900 },
   diseno: null,

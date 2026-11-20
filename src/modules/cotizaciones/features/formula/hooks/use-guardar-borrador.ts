@@ -45,8 +45,16 @@ const valoresDe = (formula: Formula): Valores => ({
   params: paramsPlanos(formula),
 })
 
-const baseDe = ({ id, actualizadoEn, estado, diseno, nota }: FormulaParaEditar): BaseDelEditor => ({
+const baseDe = ({
   id,
+  formulaDelOrigenId,
+  actualizadoEn,
+  estado,
+  diseno,
+  nota,
+}: FormulaParaEditar): BaseDelEditor => ({
+  id,
+  formulaDelOrigenId,
   actualizadoEn,
   estado,
   diseno,

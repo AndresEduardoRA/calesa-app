@@ -409,10 +409,54 @@ la pide.
 - **La fórmula sólo la lee quien la configura** (`cotizaciones.configurar` del origen), y `formula_auditar()` no copia `definicion`,
   `params`, `diseno` ni `visibilidad` a `actividad`. Semilla: `subasta_usa`, `planilla_usa`, `oficina` (`supabase/semillas/`).
 
+### Fórmulas del origen
+
+- **Un origen tiene una o más fórmulas con nombre** (`formulas_del_origen`, nombre de 1 a 60, único en el origen sin distinguir mayúsculas,
+  también entre las archivadas). Cada una tiene su borrador, sus versiones (`formulas.formula_del_origen_id`), su diseño y su plantilla de
+  tarjeta (`plantillas_tarjeta.formula_del_origen_id`). Las dos FK son compuestas, `(origen_id, formula_del_origen_id)`: una versión nunca
+  cuelga de la fórmula de otro origen. Se lee con `cotizaciones.configurar` del origen y se escribe sólo por RPC.
+- **La activa** (`activa`, a lo sumo una por origen: `formulas_del_origen_activa_unica`) es la que se cotiza: la hoja, el cálculo por
+  origen, `formula_para_cotizar()`, crear, cotizar encima y la publicada que ofrece una hoja guardada leen la publicada de la activa
+  (`_publicada_de_la_activa()`). Una activa siempre tiene publicada y no está archivada. Un origen sin activa se ve «sin publicar».
+- **La de trabajo** es la que editan las RPC de la fórmula y de la plantilla cuando no reciben `p_formula_del_origen`: la activa; si no hay,
+  la más nueva sin archivar; si no hay ninguna, guardar crea «Fórmula» («Fórmula 2»… si el nombre está tomado). Con el id, la de ese origen
+  (otro origen o una que no existe: el mismo 42501 del permiso; una archivada: 22023 «Esta fórmula está archivada.», hint
+  `formula_del_origen`).
+- **La primera publicada de un origen sin activa la activa** (`trg_fdo_asignar`, que también cuelga de la de trabajo una versión o una
+  plantilla insertada sin fórmula del origen: las pruebas y el e2e que insertan directo siguen igual; corre también con
+  `session_replication_role = replica`).
+- **«Guardar con la N»** vale mientras la versión abierta no lleve más de 24 h reemplazada: por una versión posterior de su fórmula o porque
+  su fórmula dejó de ser la activa (`desactivada_en`), lo primero que pasó.
+- **La tarjeta de una versión** se dibuja con la plantilla publicada de **su** fórmula del origen, y la huella de la imagen se mueve con esa
+  plantilla.
+- **Las RPC** (todas con `cotizaciones.configurar` del origen antes del candado; la que no existe da el mismo 42501; las de una que ya existe, con
+  su `actualizado_en` esperado y PT409 con quién y cuándo, `_conflicto_de_edicion()`; candados `formulas:` y después `plantillas:` del origen,
+  y la fila `for no key update`):
+  - `formula_del_origen_crear(id, origen, nombre, copia_de?, pieza?)`: en blanco (fórmula con un tipo de cambio y tarjeta de omisión) o copia
+    de la publicada o del borrador (`pieza`) de otra, del mismo origen o de otro (copiar de otro origen pide configurar también allí). **Nace
+    como borradores, sin versión**: nunca toca lo que se cotiza. Idempotente por `id` (otros datos: PT409); tope de 50 sin archivar (22023,
+    hint `formulas`); nombre repetido: 23505, hint `nombre`. Una copia de otro origen usa las tablas del destino que tengan la clave, crea
+    las que falten con las filas de la copia, y queda marcada (`copiada_de_otro_origen`, también la copia de una copia) hasta que sus datos
+    del vehículo existan en el destino: publicar y activar los exigen. Devuelve `{ id, actualizado_en, avisos }` (las tablas usadas o
+    creadas y los datos que faltan).
+  - `formula_del_origen_renombrar(id, esperada, nombre)` (también archivada) y `formula_del_origen_archivar(id, esperada)` devuelven el
+    `actualizado_en` nuevo; una archivada no se edita ni se activa (22023, hint `formula_del_origen`).
+  - `formula_del_origen_eliminar(id, esperada)`: sólo la que nunca estuvo activa ni se usó para cotizar (si no, 23503: archivarla), con sus
+    versiones y su tarjeta.
+  - `formula_del_origen_activar(id, esperada, nota, activa_esperada, borrador_esperado, publicada_esperada, plantilla_borrador_esperado,
+plantilla_publicada_esperada)`: cada pieza con su esperada (la activa que se vio: PT409 «Ana activó «Planilla» hace 2 min.»). Pide nota,
+    alguna versión de la fórmula y alguna tarjeta. Publica con esa nota el borrador de la fórmula (o, en una copia marcada, exige los datos del
+    vehículo) y el de la tarjeta, validado contra la publicada de esa fórmula; sin borrador de tarjeta, valida la publicada contra la versión
+    que se va a cotizar. Después apaga la activa anterior (`desactivada_en`, `formula_del_origen.desactivar`) y prende ésta. Activar la activa
+    sólo publica lo pendiente. Un error corta todo.
+  - La archivada o la activa no se archivan ni se eliminan (22023, hint `activa`: activar otra primero). `actividad` registra
+    `formula_del_origen.crear|renombrar|archivar|eliminar|activar|desactivar`.
+
 ### Versiones
 
-- **Una serie por origen:** a lo sumo un borrador y una publicada; publicar archiva la publicada. Guardar, descartar y publicar el
-  borrador, el ⚙ y revertir toman el candado del origen (`pg_advisory_xact_lock(hashtextextended('formulas:' || origen, 0))`) después del
+- **Una serie por fórmula del origen:** a lo sumo un borrador y una publicada (`formulas_borrador_unico`, `formulas_publicada_unica`; el número,
+  `formulas_formula_del_origen_id_version_key`); publicar archiva la publicada. Guardar, descartar y publicar el borrador y revertir escriben
+  en la de `p_formula_del_origen` o, sin él, en la de trabajo; el ⚙ (constante y cabecera), en la activa. Todas toman el candado del origen (`pg_advisory_xact_lock(hashtextextended('formulas:' || origen, 0))`) después del
   permiso (42501 antes de cualquier PT409) y, en guardar, de la validación; recién después leen la publicada y comparan con su esperada.
 - **Versión de origen** (`formulas.version_origen_id`): la publicada sobre la que se empezó el borrador (la escribe
   `formula_guardar_borrador()` al crearlo; pisarlo no la cambia). Publicarlo cuando ya no es la publicada: PT409 «Después de que empezaste
@@ -624,17 +668,18 @@ entero si cambió. Al leerla, `_cotizacion_diff_recortado()` recorta los dos lad
 grupo visible cuyo único cambio es su Bs oculto, o un grupo oculto que se movió, no se delata.
 
 **«Desactualizada», en el alta.** Aplica a guardar una cotización **nueva** (editar una vieja no avisa): vive en `cotizacion_crear()`,
-que recibe la hoja abierta (`p_abierta`). Si la versión publicada de hoy es otra (se compara **por id**) o una tarifa que la fórmula
+que recibe la hoja abierta (`p_abierta`). Si la versión publicada de hoy (la de la fórmula activa) es otra (se compara **por id**) o una tarifa que la fórmula
 nombra cambió (`tipos_cambio_historial`): **PT409, `detail desactualizada`, `hint formula` o `tipo_cambio`**, sin guardar. **«Guardar con
 la N»** es `p_con_la_abierta := true`: se crea con la versión de la apertura y las tarifas de entonces, sólo si la hoja se abrió hace menos
-de 24 h y, si esa versión ya no es la publicada, dejó de serlo hace menos de 24 h. El intento repetido vuelve antes.
+de 24 h y, si esa versión ya no es la publicada, dejó de serlo hace menos de 24 h (por una versión posterior de su fórmula o porque su fórmula
+dejó de ser la activa, `desactivada_en`: lo primero que pasó). El intento repetido vuelve antes.
 
 **Candados.** Guardar toma **el vehículo actual y el nuevo (sólo si cambia), `for key share`, en orden de id, y después la cotización
 `for no key update`**; ni el lead ni la fórmula (`formulas` es append-only).
 
 ### La lectura que abre la hoja
 
-**`cotizacion_hoja(origen)`** es UNA lectura al abrir la pantalla de cotizar: el diseño publicado **recortado al nivel de quien mira** y
+**`cotizacion_hoja(origen)`** es UNA lectura al abrir la pantalla de cotizar: el diseño publicado de la fórmula activa **recortado al nivel de quien mira** y
 lo que la hoja necesita para dibujarse. No lee `cotizaciones` ni el snapshot. **Orden:** el permiso **antes de mirar nada** (`cotizaciones.crear`
 y `cotizaciones.ver` del origen); sin versión publicada, `{estado: 'sin_publicar', origen, puede_configurar}`; con ella, `{estado: 'lista',
 formula: {id, version}, abierta_en, abierta, cabecera, secciones, tarjeta_total, tonos}`. La `cabecera` es `{modos,
@@ -701,7 +746,7 @@ el mismo texto.
   como la hoja nueva);
 - `puede_guardar` = `_cotizacion_puede_guardar()`: sin él, **ninguna** celda es editable y el motivo no es un nivel (`no_se_edita`); con
   él, se edita lo que `_nodos_visibles()` deja, como en `cotizacion_guardar`. Quien sólo ve abre el diseño en sólo lectura;
-- `publicada: {id, version}` (la de hoy del origen, o nula), `vence_el` y `vencida`: el día de `creado_en` en la zona de la empresa +
+- `publicada: {id, version}` (la de la fórmula activa de hoy del origen, o nula), `vence_el` y `vencida`: el día de `creado_en` en la zona de la empresa +
   `ajustes_empresa.vigencia_dias`, vencida si ese día ya pasó (por día, no por hora);
 - `anterior: {id, numero, version}` si se ve; `encima`, la versión nueva viva: `{id, numero, version}` si se ve, `{"oculta": true}` si no;
 - `puede_cotizar_encima`: `cotizaciones.crear` del origen, ve su lead (o no lleva y tiene `cotizaciones.crear.sin_lead`), ve su vehículo (o no lleva y tiene `cotizaciones.crear.sin_vehiculo`), sin versión nueva
@@ -709,7 +754,7 @@ el mismo texto.
 
 `cotizacion_encima(p_id, p_anterior)` crea **en el acto** la versión nueva: otra cotización, preventa (también encima de una final), con
 `cotizacion_padre_id` = la anterior, `version` + 1, su propio número, el lead y el vehículo de la anterior, quien llama como `creado_por`,
-la publicada y las tarifas de hoy. La anterior no cambia. **Una viva por anterior** (`cotizaciones_encima_unica`, parcial: una en la
+la publicada de la fórmula activa y las tarifas de hoy. La anterior no cambia. **Una viva por anterior** (`cotizaciones_encima_unica`, parcial: una en la
 papelera no cuenta). Sin `p_abierta` (no sale de una hoja vista).
 
 - **El orden y los errores:** `assert_activo`; ver la anterior (lo que no existe, está en la papelera o no se ve: el 42501 de
@@ -952,8 +997,10 @@ el PDF y la imagen (`pngDeLaTarjeta()`, al ancho de la tarjeta). «Copiar texto�
 
 ### Versiones de la plantilla
 
-Guardar el borrador, publicarlo y descartarlo piden la versión que se vio (`plantillas_tarjeta.actualizado_en`, como texto: un `Date`
-pierde los microsegundos) y pasan en serie por un candado por origen (`pg_advisory_xact_lock(hashtextextended('plantillas:' || origen,
+Cada fórmula del origen tiene su plantilla: a lo sumo un borrador y una publicada (`plantillas_borrador_unico`, `plantillas_publicada_unica`, por
+`formula_del_origen_id`). Las tres RPC reciben `p_formula_del_origen` al final (nulo: la de trabajo; guardar la crea si el origen no tiene ninguna) y
+publicar valida contra la publicada de **esa** fórmula. Guardar el borrador, publicarlo y descartarlo piden la versión que se vio
+(`plantillas_tarjeta.actualizado_en`, como texto: un `Date` pierde los microsegundos) y pasan en serie por un candado por origen (`pg_advisory_xact_lock(hashtextextended('plantillas:' || origen,
 0))`), tomado tras el permiso (`cotizaciones.configurar` del origen) y lo que se rechaza sin mirar el estado, y antes de leer el borrador
 `for update`. Sin el candado, dos publicar a la vez publicarían las dos.
 
@@ -1030,7 +1077,7 @@ pierde los microsegundos) y pasan en serie por un candado por origen (`pg_adviso
 
 **`cotizacion_tarjeta(p_formula)`**, `security definer`, da lo que dibuja la tarjeta de **una versión** de la fórmula. Pide
 `cotizaciones.ver` (cualquier alcance) del origen de la versión; una versión que no existe y un borrador dan el mismo 42501 que no tener el
-permiso, también a la dueña. La plantilla es la **publicada hoy** del origen, validada otra vez contra **esa** versión (sin el catálogo); la de la forma
+permiso, también a la dueña. La plantilla es la **publicada hoy** de la fórmula del origen de esa versión, validada otra vez contra **esa** versión (sin el catálogo); la de la forma
 1 se convierte (con el catálogo de hoy: un color borrado cae al del grupo) y lo convertido se valida sin el tope. Si no le sirve, `{estado:
 'sin_plantilla'}` sin regla ni `donde` (la tarjeta «por omisión»). Con ella, `{estado: 'lista', plantilla: {version}, definicion: <forma 2>, nodos:
 [{id, etiqueta, descripcion, grupo, pct}], grupos: [{id, etiqueta, plazo, bucket}], tipos_de_cambio: {buckets: {b: {nombre, nodo}}, modos: {clave:

@@ -21,6 +21,8 @@ type Props = {
   abierto: boolean
   alCerrar: () => void
   origen: { id: string; nombre: string }
+  // La fórmula del origen de lo que la pestaña leyó: la base escribe en ella.
+  formulaDelOrigenId: string
   // El `actualizadoEn` del borrador que la pestaña leyó ahora (nulo: ya no está). La base lo compara.
   esperada: string | null
   // «Ir a la celda» de un rechazo con su lugar: cierra el modal y lo elige en el lienzo.
@@ -42,7 +44,14 @@ const ID_DE_LA_NOTA = 'nota-de-la-version-de-la-tarjeta'
 // cerrar con algo escrito, no cerrarse mientras publica, el conflicto con «Recargar» que conserva la nota, el que ya no se puede publicar) es de `ModalDeFormulario`;
 // el mensaje del conflicto es el de la base, tal cual, y no dice quién (P1). Quien lo monta le da una `key` por apertura y lo deja **fuera** de la `key` del editor: si no,
 // «Recargar» lo remontaría y se perdería la nota.
-export function ModalDePublicarLaTarjeta({ abierto, alCerrar, origen, esperada, alIrA }: Props) {
+export function ModalDePublicarLaTarjeta({
+  abierto,
+  alCerrar,
+  origen,
+  formulaDelOrigenId,
+  esperada,
+  alIrA,
+}: Props) {
   const publicar = useAction(publicarBorrador)
   // Tras «Recargar» sin borrador, la descripción sigue nombrando el último que tuvo.
   const nombrada = useUltimo(esperada)
@@ -51,7 +60,12 @@ export function ModalDePublicarLaTarjeta({ abierto, alCerrar, origen, esperada, 
     esperada,
     pedir: (nota, laEsperada) =>
       enviarAccion(
-        publicar.executeAsync({ origenId: origen.id, esperada: laEsperada, nota }),
+        publicar.executeAsync({
+          origenId: origen.id,
+          formulaDelOrigenId,
+          esperada: laEsperada,
+          nota,
+        }),
         MENSAJE_DE_VALIDACION,
       ),
     alGuardar: () => {

@@ -6,10 +6,11 @@ import { createClient } from '@/shared/lib/supabase/browser'
 import { MAXIMA_VERSION, type PaginaConAutores } from '../../entities/formula/versiones'
 import { leerPaginaConAutores } from './consulta-de-versiones'
 
-export type PedidoDeVersiones = { origenId: string; cursor: number | null }
+// La fórmula del origen de la pestaña (la de trabajo que leyó el servidor), no el origen: la lista no cambia de fórmula si otra pasa a ser la activa.
+export type PedidoDeVersiones = { formulaDelOrigenId: string; cursor: number | null }
 
 const esquemaDelPedido = z.object({
-  origenId: z.guid(),
+  formulaDelOrigenId: z.guid(),
   cursor: z
     .number()
     .int()
@@ -25,5 +26,5 @@ export async function leerPaginaDeVersiones(
   if (!valido.success) {
     return fallo('validacion', 'Ese pedido de versiones no es válido.')
   }
-  return leerPaginaConAutores(createClient(), valido.data.origenId, valido.data.cursor)
+  return leerPaginaConAutores(createClient(), valido.data.formulaDelOrigenId, valido.data.cursor)
 }

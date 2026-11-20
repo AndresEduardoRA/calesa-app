@@ -205,7 +205,7 @@ begin
   if to_regprocedure('public.plantilla_guardar_borrador(uuid, jsonb, text)') is not null or to_regprocedure('public.plantilla_publicar(uuid, text)') is not null then
     raise exception 'siguen las firmas sin versión';
   end if;
-  for v_p in select * from (values ('public.plantilla_guardar_borrador(uuid, timestamptz, jsonb, text)', 1), ('public.plantilla_publicar(uuid, timestamptz, text)', 0), ('public.plantilla_descartar_borrador(uuid, timestamptz)', 0)) x (f, d) loop
+  for v_p in select * from (values ('public.plantilla_guardar_borrador(uuid, timestamptz, jsonb, text, uuid)', 2), ('public.plantilla_publicar(uuid, timestamptz, text, uuid)', 1), ('public.plantilla_descartar_borrador(uuid, timestamptz, uuid)', 1)) x (f, d) loop
     v_f := v_p.f;
     if to_regprocedure(v_f) is null then raise exception 'falta %', v_f; end if;
     if not has_function_privilege('authenticated', v_f, 'execute') or not has_function_privilege('service_role', v_f, 'execute')

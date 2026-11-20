@@ -8,6 +8,8 @@ import type { ContextoDePlantilla } from './validar-plantilla'
 
 export type PropsDelEditor = {
   readonly origen: { readonly id: string; readonly nombre: string }
+  // La fórmula del origen de lo leído: las escrituras la mandan.
+  readonly formulaDelOrigenId: string
   // La versión esperada de guardar: el `actualizadoEn` del borrador tal cual (texto), nulo sin borrador.
   readonly esperada: string | null
   readonly inicial: PlantillaEnCuadricula
@@ -29,7 +31,13 @@ export function propsDelEditor(
   lectura: PlantillaDelOrigen,
   origen: { id: string; nombre: string },
 ): PropsDelEditor | null {
-  if (lectura.formula === null || lectura.contexto === null) return null
+  if (
+    lectura.formula === null ||
+    lectura.contexto === null ||
+    lectura.formulaDelOrigenId === null
+  ) {
+    return null
+  }
   const nace = cuadriculaParaEditar({
     borrador: lectura.borrador,
     publicada: lectura.publicada,
@@ -43,6 +51,7 @@ export function propsDelEditor(
       : null
   return {
     origen: { id: origen.id, nombre: origen.nombre },
+    formulaDelOrigenId: lectura.formulaDelOrigenId,
     esperada: borrador?.actualizadoEn ?? null,
     inicial: nace.cuadricula,
     de: nace.de,

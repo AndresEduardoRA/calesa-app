@@ -28,6 +28,7 @@ const DISENO = { cabecera: {}, secciones: [] } as unknown as Diseno
 
 const publicada: BaseDelEditor = {
   id: PUBLICADA,
+  formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   actualizadoEn: HORA,
   estado: 'publicada',
   diseno: DISENO,
@@ -35,6 +36,7 @@ const publicada: BaseDelEditor = {
 }
 const borrador: BaseDelEditor = {
   id: BORRADOR,
+  formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   actualizadoEn: HORA,
   estado: 'borrador',
   diseno: DISENO,
@@ -98,6 +100,8 @@ describe('pedidoDeGuardar: crear sobre la publicada o pisar el borrador (C1)', (
     expect(p.diseno).toBe(DISENO)
     expect(p.nota).toBeNull()
     expect(p.origenId).toBe(ORIGEN)
+    // La fórmula del origen de la versión leída: guardar escribe en ella aunque otra pase a ser la de trabajo.
+    expect(p.formulaDelOrigenId).toBe('44444444-4444-4444-8444-444444444444')
   })
 
   it('sobre el borrador pisa: la hora leída, su diseño y su nota', () => {
