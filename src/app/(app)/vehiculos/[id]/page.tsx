@@ -1,6 +1,7 @@
 import { ArrowLeftIcon } from 'lucide-react'
 import type { Metadata, Route } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { rutaDeActividadDe } from '@/modules/actividad'
 import { puede, requerirSesion, type Permisos } from '@/modules/equipo'
 import type { OrigenResumen } from '@/modules/origenes'
@@ -10,6 +11,7 @@ import { conVuelta, RUTAS, unParametro } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { FichaEnDosColumnas, IndiceDeBloques } from '@/shared/ui/ficha-en-bloques'
+import { ResumenDeLaPagina } from '../../cotizaciones/resumen-de-la-pagina'
 import { AvisosBajoLaCabecera } from './avisos-bajo-la-cabecera'
 import { RegistrarLaVisita } from './registrar-la-visita'
 import { Encabezado } from './encabezado'
@@ -142,6 +144,21 @@ function encabezadoDe(
   )
 }
 
+// El resumen de una cotización (`?cotizacion=`): sólo se lee y se dibuja con esa clave en la URL.
+function ResumenDeLaFicha({
+  parametros,
+  vehiculoId,
+}: {
+  parametros: PageProps<'/vehiculos/[id]'>['searchParams']
+  vehiculoId: string
+}) {
+  return (
+    <Suspense fallback={null}>
+      <ResumenDeLaPagina parametros={parametros} ruta={`${RUTAS.vehiculos}/${vehiculoId}`} />
+    </Suspense>
+  )
+}
+
 // La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda lo que lo identifica (cabecera, aprobada, datos
 // principales y subasta); a la derecha, el índice y sólo lo de ventas que quien mira ve (`bloques.ts`): cotizaciones, relacionados, actividad y
 // vitrina. `?seccion=` de un bloque y los paneles de «Relacionados» llevan a su bloque; los de un bloque que se fue redirigen (`llegada-de-la-ficha.ts`:
@@ -205,6 +222,9 @@ export default async function PaginaVehiculo({
         />
       </FichaEnDosColumnas>
       <LlegarAlBloque ancla={anclaDe(parametros, visibles)} />
+      {puede(sesion.permisos, 'cotizaciones.ver', origen.id) ? (
+        <ResumenDeLaFicha parametros={searchParams} vehiculoId={encontrado.id} />
+      ) : null}
       <Paneles
         vehiculo={encontrado}
         origen={origen}

@@ -12,7 +12,10 @@ const pestanas = [
   { clave: 'fotos', titulo: 'Fotos' },
 ] as const
 
-function dibujar(alto?: 'contenido' | 'lleno') {
+function dibujar(
+  alto?: 'contenido' | 'lleno',
+  extra: { reparto?: 'compacto' | 'igual'; panelDesplazable?: boolean } = {},
+) {
   return render(
     <PestanasDelResumen
       etiqueta="Secciones"
@@ -20,6 +23,7 @@ function dibujar(alto?: 'contenido' | 'lleno') {
       activa="fotos"
       alElegir={() => {}}
       alto={alto}
+      {...extra}
     >
       <p>contenido</p>
     </PestanasDelResumen>,
@@ -56,5 +60,20 @@ describe('PestanasDelResumen › alto', () => {
     expect(container.firstElementChild?.className).toContain('h-full')
     expect(container.firstElementChild?.className).toContain('grid-rows-[auto_minmax(0,1fr)]')
     expect(screen.getByRole('tabpanel').className).toContain('min-h-0')
+  })
+
+  it('con reparto «igual» la lista ocupa todo el ancho, en partes iguales y con desplazamiento; el panel se desplaza si se pide', () => {
+    const { container } = dibujar('lleno', { reparto: 'igual', panelDesplazable: true })
+    expect(screen.getByRole('tablist').className).toContain('grid-flow-col')
+    expect(screen.getByRole('tablist').className).toContain('overflow-x-auto')
+    expect(screen.getByRole('tablist').parentElement?.className).not.toContain('md:w-fit')
+    expect(screen.getByRole('tabpanel').className).toContain('overflow-y-auto')
+    expect(container.firstElementChild?.className).toContain('h-full')
+  })
+
+  it('sin reparto «igual», la lista mide lo que su contenido (desde 768 px) y el panel no se desplaza', () => {
+    dibujar('lleno')
+    expect(screen.getByRole('tablist').parentElement?.className).toContain('md:w-fit')
+    expect(screen.getByRole('tabpanel').className).not.toContain('overflow-y-auto')
   })
 })
