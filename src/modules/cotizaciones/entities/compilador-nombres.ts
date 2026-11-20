@@ -89,8 +89,23 @@ function pareceA1(s: string): boolean {
   return i > digitos && i === s.length
 }
 
-// Qué es un nombre suelto del texto. `permiteVariante`: el primer argumento de SI, donde la variante es «no es una bandera»
-// y no «no se usa en un cálculo».
+// Lo que dice el error de la variante leída como un número: su id y una de sus opciones, para el ejemplo del mensaje.
+export const datosDeVariante = (nodo: Nodo): DatosDeError => ({
+  nombre: nodo.id,
+  ...(nodo.tipo === 'opcion' && nodo.opciones[0] !== undefined
+    ? { texto: nodo.opciones[0].clave }
+    : {}),
+})
+
+// Si la variante tiene una opción con esa clave.
+export function tieneOpcion(nodo: Nodo, clave: string, m: Medidor): boolean {
+  if (nodo.tipo !== 'opcion') return false
+  for (const o of recorrer(nodo.opciones, m)) if (o.clave === clave) return true
+  return false
+}
+
+// Qué es un nombre suelto del texto. `permiteVariante`: donde la variante se compara (`variante="a"`) o donde va una condición
+// (ahí el error es «no es una condición» y no «no se usa en un cálculo»).
 export function resolverNombre(
   nombres: Nombres,
   texto: string,
@@ -100,7 +115,8 @@ export function resolverNombre(
   if (texto === nombres.destino.id) return { codigo: 'ciclo', datos }
   const nodo = buscar(nombres.porId, texto, nombres.m)
   if (nodo !== undefined) {
-    if (nodo.tipo === 'opcion' && !permiteVariante) return { codigo: 'variante_en_calculo', datos }
+    if (nodo.tipo === 'opcion' && !permiteVariante)
+      return { codigo: 'variante_en_calculo', datos: datosDeVariante(nodo) }
     return { nodo }
   }
   if (esta(nombres.posteriores, texto, nombres.m))

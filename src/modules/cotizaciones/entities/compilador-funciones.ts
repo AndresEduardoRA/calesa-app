@@ -1,48 +1,42 @@
 // Las funciones del texto (docs/COTIZADOR.md › «Fórmulas como texto»): sólo operaciones que el grafo ya tiene. Al cerrarse
-// el paréntesis se revisa cada argumento contra lo que su posición pide y se arma la operación.
+// el paréntesis se revisa cuántos argumentos llegaron y cada uno contra lo que su posición pide, y se arma la operación.
 import {
-  argumentoInvalido,
   demasiadosTerminos,
   errorEn,
+  esError,
   faltaUnValor,
   funcionDesconocida,
   type Arbol,
-  type Calculo,
-  type Campos,
   type ErrorCrudo,
   type EspecDeFuncion,
   type Marco,
-  type OpDeArbol,
-  type Referencia,
+  type Rango,
 } from './compilador-arbol'
+import { calculo, expandirGrupo, invalido, type Contar } from './compilador-argumentos'
+import { cerrarExtremo, cerrarLogica, cerrarSi } from './compilador-condiciones'
 import type { Token } from './compilador-lexico'
-import { buscar, esta, recorrer } from './medidor'
 import type { Nombres } from './compilador-nombres'
+import { recorrer } from './medidor'
+import type { DatosDeError } from './motivos-del-compilador'
 import { formatoDe } from './nodos'
+
+export type { Contar } from './compilador-argumentos'
 
 export const FUNCIONES: ReadonlyMap<string, EspecDeFuncion> = new Map(
   (
     [
       { nombre: 'SUMA', args: ['grupo'] },
-      { nombre: 'SI', args: ['bandera', 'valor'] },
+      { nombre: 'SI', args: ['condicion', 'valor', 'valor'], minimo: 2 },
+      { nombre: 'Y', args: [], resto: 'condicion', minimo: 2 },
+      { nombre: 'O', args: [], resto: 'condicion', minimo: 2 },
+      { nombre: 'MAX', args: ['valor_o_grupo'], resto: 'valor', minimo: 1 },
+      { nombre: 'MIN', args: ['valor_o_grupo'], resto: 'valor', minimo: 1 },
       { nombre: 'REDONDEAR', args: ['valor', 'entero'] },
       { nombre: 'PORCENTAJE_DE', args: ['valor', 'pct'] },
       { nombre: 'DEPRECIAR', args: ['valor', 'clave', 'nodo', 'clave'] },
     ] satisfies EspecDeFuncion[]
   ).map((f) => [f.nombre, f] as const),
 )
-
-// Cuenta términos de más; false si pasa el tope.
-export type Contar = (n: number) => boolean
-
-const NECESITA: Record<string, string> = {
-  grupo: 'el nombre de un grupo',
-  bandera: 'el nombre de una bandera',
-  nodo: 'el nombre de un nodo',
-  clave: 'un id en minúsculas (letras, números y _)',
-  entero: 'un número entero de 0 a 6',
-  pct: 'un porcentaje: un nodo con formato pct o un número como 4%',
-}
 
 // El patrón de un id (`esquemaId`), sin regex: una letra minúscula y hasta 40 más entre a-z, 0-9 y _.
 function esIdValido(s: string): boolean {
@@ -55,59 +49,13 @@ function esIdValido(s: string): boolean {
   return true
 }
 
-const invalido = (a: Arbol, tipo: string) => argumentoInvalido(a, NECESITA[tipo])
-
-type Rango = { desde: number; hasta: number }
-
-const calculo = (
-  op: OpDeArbol,
-  r: Rango,
-  hijos: Arbol[],
-  extra: { campos?: Campos; pct?: Arbol } = {},
-): Calculo => ({
-  k: 'calc',
-  op,
-  hijos,
-  campos: extra.campos ?? {},
-  deFuncion: true,
-  paren: false,
-  desde: r.desde,
-  hasta: r.hasta,
-  ...(extra.pct === undefined ? {} : { pct: extra.pct }),
-})
-
-function cerrarSuma(
-  arg: Arbol,
-  rango: { desde: number; hasta: number },
-  nombres: Nombres,
-  contar: Contar,
-) {
+function cerrarSuma(arg: Arbol, rango: Rango, nombres: Nombres, contar: Contar) {
   if (arg.k !== 'clave') return invalido(arg, 'grupo')
-  const g = arg.texto
-  const dato = { nombre: g }
-  if (!esta(nombres.grupos, g, nombres.m)) return errorEn(arg, 'grupo_inexistente', dato)
-  if (nombres.destino.grupo === g) return errorEn(arg, 'ciclo', { nombre: nombres.destino.id })
-  if (esta(nombres.conMiembrosPosteriores, g, nombres.m))
-    return errorEn(arg, 'referencia_hacia_adelante', dato)
-  const miembros = buscar(nombres.miembros, g, nombres.m) ?? []
-  if (miembros.length === 0) return errorEn(arg, 'grupo_vacio', dato)
-  if (!contar(miembros.length)) return demasiadosTerminos(arg)
-  const hijos: Referencia[] = []
-  for (const nodo of recorrer(miembros, nombres.m)) {
-    hijos.push({ k: 'ref', nodo, paren: false, desde: arg.desde, hasta: arg.hasta })
-  }
-  return calculo('suma', rango, hijos)
+  const hijos = expandirGrupo(arg, nombres, contar)
+  return esError(hijos) ? hijos : calculo('suma', rango, hijos)
 }
 
-function cerrarSi(args: Arbol[], rango: { desde: number; hasta: number }) {
-  const [b, x] = args
-  if (b === undefined || x === undefined) return faltaUnValor(rango)
-  if (b.k !== 'ref') return invalido(b, 'bandera')
-  if (b.nodo.tipo !== 'bandera') return errorEn(b, 'no_es_bandera', { nombre: b.nodo.id })
-  return calculo('si', rango, [x], { campos: { condicion: b.nodo.id } })
-}
-
-function cerrarRedondear(args: Arbol[], rango: { desde: number; hasta: number }) {
+function cerrarRedondear(args: Arbol[], rango: Rango) {
   const [x, n] = args
   if (x === undefined || n === undefined) return faltaUnValor(rango)
   const entero = n.k === 'num' && !n.pct && !n.negativo && Number.isInteger(n.valor) && n.valor <= 6
@@ -115,7 +63,7 @@ function cerrarRedondear(args: Arbol[], rango: { desde: number; hasta: number })
   return calculo('redondear', rango, [x], { campos: { n: n.valor } })
 }
 
-function cerrarPorcentaje(args: Arbol[], rango: { desde: number; hasta: number }, contar: Contar) {
+function cerrarPorcentaje(args: Arbol[], rango: Rango, contar: Contar) {
   const [x, p] = args
   if (x === undefined || p === undefined) return faltaUnValor(rango)
   if (p.k === 'ref') {
@@ -128,7 +76,7 @@ function cerrarPorcentaje(args: Arbol[], rango: { desde: number; hasta: number }
   return calculo('porcentaje_de', rango, cadena ? x.hijos : [x], { pct: p })
 }
 
-function cerrarDepreciar(args: Arbol[], rango: { desde: number; hasta: number }) {
+function cerrarDepreciar(args: Arbol[], rango: Rango) {
   const [x, t, s, c] = args
   if (x === undefined || t === undefined || s === undefined || c === undefined) {
     return faltaUnValor(rango)
@@ -139,6 +87,21 @@ function cerrarDepreciar(args: Arbol[], rango: { desde: number; hasta: number })
   return calculo('depreciar', rango, [x], {
     campos: { tabla: t.texto, sobre: s.nodo.id, columna: c.texto },
   })
+}
+
+// Cuántos argumentos lleva: fijos, entre dos números o sin tope.
+function cuantos(spec: EspecDeFuncion, minimo: number, maximo: number | undefined): DatosDeError {
+  if (minimo === maximo) return { nombre: spec.nombre, cantidad: minimo }
+  return maximo === undefined
+    ? { nombre: spec.nombre, minimo }
+    : { nombre: spec.nombre, minimo, maximo }
+}
+
+// Ningún argumento de estas funciones es un texto entre comillas.
+function textoFueraDeLugar(args: Arbol[], nombres: Nombres): ErrorCrudo | undefined {
+  for (const a of recorrer(args, nombres.m))
+    if (a.k === 'texto') return errorEn(a, 'texto_fuera_de_lugar')
+  return undefined
 }
 
 // Se cerró el paréntesis de una función: sus argumentos ya están en `marco.args`.
@@ -152,34 +115,45 @@ export function cerrarFuncion(
   const nombreRango = marco.nombreRango
   if (spec === undefined || nombreRango === undefined)
     return funcionDesconocida({ desde: 0, hasta: 0 }, '')
-  if (marco.args.length !== spec.args.length) {
-    return errorEn(nombreRango, 'cantidad_de_argumentos', {
-      nombre: spec.nombre,
-      cantidad: spec.args.length,
-    })
+  const n = marco.args.length
+  const minimo = spec.minimo ?? spec.args.length
+  const maximo = spec.resto === undefined ? spec.args.length : undefined
+  if (n < minimo || (maximo !== undefined && n > maximo)) {
+    return errorEn(nombreRango, 'cantidad_de_argumentos', cuantos(spec, minimo, maximo))
   }
+  const fuera = textoFueraDeLugar(marco.args, nombres)
+  if (fuera !== undefined) return fuera
   const rango = { desde: nombreRango.desde, hasta: cierre.hasta }
-  return porNombre(spec.nombre, marco.args, rango, { nombres, contar })
+  return porNombre(spec.nombre, marco.args, { rango, nombreRango }, { nombres, contar })
 }
 
 function porNombre(
   nombre: string,
   args: Arbol[],
-  rango: Rango,
-  { nombres, contar }: { nombres: Nombres; contar: Contar },
+  r: { rango: Rango; nombreRango: Rango },
+  ctx: { nombres: Nombres; contar: Contar },
 ): Arbol | ErrorCrudo {
+  const { rango } = r
   const primero = args[0]
   switch (nombre) {
     case 'SUMA':
       return primero === undefined
         ? faltaUnValor(rango)
-        : cerrarSuma(primero, rango, nombres, contar)
+        : cerrarSuma(primero, rango, ctx.nombres, ctx.contar)
     case 'SI':
       return cerrarSi(args, rango)
+    case 'Y':
+      return cerrarLogica('y', args, rango, ctx)
+    case 'O':
+      return cerrarLogica('o', args, rango, ctx)
+    case 'MAX':
+      return cerrarExtremo('max', args, r, ctx)
+    case 'MIN':
+      return cerrarExtremo('min', args, r, ctx)
     case 'REDONDEAR':
       return cerrarRedondear(args, rango)
     case 'PORCENTAJE_DE':
-      return cerrarPorcentaje(args, rango, contar)
+      return cerrarPorcentaje(args, rango, ctx.contar)
     default:
       return cerrarDepreciar(args, rango)
   }

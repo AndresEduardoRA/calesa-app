@@ -1556,8 +1556,8 @@
       }
     },
     {
-      "nombre": "otro igual en medio",
-      "texto": "remate = fees",
+      "nombre": "un carácter que no es de la gramática en medio",
+      "texto": "remate & fees",
       "esperado": {
         "error": {
           "codigo": "caracter_invalido",
@@ -2804,11 +2804,11 @@
       }
     },
     {
-      "nombre": "SI con un monto como bandera",
+      "nombre": "SI con un monto como condición",
       "texto": "SI(remate; fees)",
       "esperado": {
         "error": {
-          "codigo": "no_es_bandera",
+          "codigo": "no_es_condicion",
           "desde": 3,
           "largo": 6,
           "linea": 1,
@@ -2817,11 +2817,11 @@
       }
     },
     {
-      "nombre": "SI con la variante como bandera",
+      "nombre": "SI con la variante como condición",
       "texto": "SI(variante; fees)",
       "esperado": {
         "error": {
-          "codigo": "no_es_bandera",
+          "codigo": "no_es_condicion",
           "desde": 3,
           "largo": 8,
           "linea": 1,
@@ -3037,6 +3037,896 @@
           "largo": 1,
           "linea": 1,
           "columna": 8
+        }
+      }
+    },
+    {
+      "nombre": "comparar: igual, con espacios",
+      "texto": "remate = fees",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "fees"],
+            "cmp": "="
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "comparar: mayor que un número, la raíz nueva en raw",
+      "texto": "remate>1000",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "1000",
+            "formato": "raw"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "total__1"],
+            "cmp": ">"
+          }
+        ],
+        "params": {
+          "total__1": 1000
+        }
+      }
+    },
+    {
+      "nombre": "comparar: menor o igual",
+      "texto": "remate<=fees",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "fees"],
+            "cmp": "<="
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "comparar: distinto",
+      "texto": "remate<>fees",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "fees"],
+            "cmp": "<>"
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "comparar: menor",
+      "texto": "remate<fees",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "fees"],
+            "cmp": "<"
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "comparar: va después de + y de *",
+      "texto": "remate+fees>=flete*2",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "calculo",
+            "etiqueta": "remate+fees",
+            "op": "suma",
+            "de": ["remate", "fees"]
+          },
+          {
+            "id": "total__2",
+            "tipo": "constante",
+            "etiqueta": "2",
+            "formato": "raw"
+          },
+          {
+            "id": "total__3",
+            "tipo": "calculo",
+            "etiqueta": "flete*2",
+            "op": "multiplicar",
+            "de": ["flete", "total__2"]
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["total__1", "total__3"],
+            "cmp": ">="
+          }
+        ],
+        "params": {
+          "total__2": 2
+        }
+      }
+    },
+    {
+      "nombre": "comparar: dos comparaciones entre paréntesis sí se comparan",
+      "texto": "(remate>1)=(fees>1)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "1",
+            "formato": "raw"
+          },
+          {
+            "id": "total__2",
+            "tipo": "calculo",
+            "etiqueta": "(remate>1)",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "total__1"],
+            "cmp": ">"
+          },
+          {
+            "id": "total__3",
+            "tipo": "constante",
+            "etiqueta": "1",
+            "formato": "raw"
+          },
+          {
+            "id": "total__4",
+            "tipo": "calculo",
+            "etiqueta": "(fees>1)",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["fees", "total__3"],
+            "cmp": ">"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["total__2", "total__4"],
+            "cmp": "="
+          }
+        ],
+        "params": {
+          "total__1": 1,
+          "total__3": 1
+        }
+      }
+    },
+    {
+      "nombre": "comparar: la fila con formato lo conserva",
+      "texto": "remate>1000",
+      "contexto": {
+        "destino": {
+          "id": "total",
+          "etiqueta": "Total",
+          "salida": "total",
+          "formato": "usd"
+        }
+      },
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "1000",
+            "formato": "raw"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "formato": "usd",
+            "salida": "total",
+            "op": "comparar",
+            "de": ["remate", "total__1"],
+            "cmp": ">"
+          }
+        ],
+        "params": {
+          "total__1": 1000
+        }
+      }
+    },
+    {
+      "nombre": "SI con condición y rama si no: elegir, la condición primera",
+      "texto": "SI(remate>1000; remate*2; fees)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "1000",
+            "formato": "raw"
+          },
+          {
+            "id": "total__2",
+            "tipo": "calculo",
+            "etiqueta": "remate>1000",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "total__1"],
+            "cmp": ">"
+          },
+          {
+            "id": "total__3",
+            "tipo": "constante",
+            "etiqueta": "2",
+            "formato": "raw"
+          },
+          {
+            "id": "total__4",
+            "tipo": "calculo",
+            "etiqueta": "remate*2",
+            "op": "multiplicar",
+            "de": ["remate", "total__3"]
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "elegir",
+            "de": ["total__4", "fees"],
+            "prueba": "total__2"
+          }
+        ],
+        "params": {
+          "total__1": 1000,
+          "total__3": 2
+        }
+      }
+    },
+    {
+      "nombre": "SI con condición sin rama si no: elegir de una rama",
+      "texto": "SI(remate>1000; fees)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "1000",
+            "formato": "raw"
+          },
+          {
+            "id": "total__2",
+            "tipo": "calculo",
+            "etiqueta": "remate>1000",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "total__1"],
+            "cmp": ">"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "elegir",
+            "de": ["fees"],
+            "prueba": "total__2"
+          }
+        ],
+        "params": {
+          "total__1": 1000
+        }
+      }
+    },
+    {
+      "nombre": "SI de bandera con rama si no: elegir",
+      "texto": "SI(activa; remate; fees)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "elegir",
+            "de": ["remate", "fees"],
+            "prueba": "activa"
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "SI anidados",
+      "texto": "SI(Y(remate>1; activa); MAX(remate; fees); SI(fees<1; 0; flete))",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "1",
+            "formato": "raw"
+          },
+          {
+            "id": "total__2",
+            "tipo": "calculo",
+            "etiqueta": "remate>1",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "total__1"],
+            "cmp": ">"
+          },
+          {
+            "id": "total__3",
+            "tipo": "calculo",
+            "etiqueta": "Y(remate>1; activa)",
+            "formato": "raw",
+            "op": "y",
+            "de": ["total__2", "activa"]
+          },
+          {
+            "id": "total__4",
+            "tipo": "calculo",
+            "etiqueta": "MAX(remate; fees)",
+            "op": "max",
+            "de": ["remate", "fees"]
+          },
+          {
+            "id": "total__5",
+            "tipo": "constante",
+            "etiqueta": "1",
+            "formato": "raw"
+          },
+          {
+            "id": "total__6",
+            "tipo": "calculo",
+            "etiqueta": "fees<1",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["fees", "total__5"],
+            "cmp": "<"
+          },
+          {
+            "id": "total__7",
+            "tipo": "constante",
+            "etiqueta": "0",
+            "formato": "raw"
+          },
+          {
+            "id": "total__8",
+            "tipo": "calculo",
+            "etiqueta": "SI(fees<1; 0; flete)",
+            "op": "elegir",
+            "de": ["total__7", "flete"],
+            "prueba": "total__6"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "elegir",
+            "de": ["total__4", "total__8"],
+            "prueba": "total__3"
+          }
+        ],
+        "params": {
+          "total__1": 1,
+          "total__5": 1,
+          "total__7": 0
+        }
+      }
+    },
+    {
+      "nombre": "Y de comparaciones y una bandera",
+      "texto": "Y(remate>1; fees<2; activa)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "1",
+            "formato": "raw"
+          },
+          {
+            "id": "total__2",
+            "tipo": "calculo",
+            "etiqueta": "remate>1",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "total__1"],
+            "cmp": ">"
+          },
+          {
+            "id": "total__3",
+            "tipo": "constante",
+            "etiqueta": "2",
+            "formato": "raw"
+          },
+          {
+            "id": "total__4",
+            "tipo": "calculo",
+            "etiqueta": "fees<2",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["fees", "total__3"],
+            "cmp": "<"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "y",
+            "de": ["total__2", "total__4", "activa"]
+          }
+        ],
+        "params": {
+          "total__1": 1,
+          "total__3": 2
+        }
+      }
+    },
+    {
+      "nombre": "O con la variante comparada",
+      "texto": "O(activa; variante=\"b\")",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "calculo",
+            "etiqueta": "variante=\"b\"",
+            "formato": "raw",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "=",
+            "clave": "b"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "o",
+            "de": ["activa", "total__1"]
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "la variante igual a una opción",
+      "texto": "variante=\"a\"",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "=",
+            "clave": "a"
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "una opción distinta de la variante, al revés",
+      "texto": "\"b\"<>variante",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "formato": "raw",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "<>",
+            "clave": "b"
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "MAX de valores",
+      "texto": "MAX(remate; fees; 3)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "3",
+            "formato": "raw"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "max",
+            "de": ["remate", "fees", "total__1"]
+          }
+        ],
+        "params": {
+          "total__1": 3
+        }
+      }
+    },
+    {
+      "nombre": "MIN de valores",
+      "texto": "MIN(remate; 0)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "0",
+            "formato": "raw"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "min",
+            "de": ["remate", "total__1"]
+          }
+        ],
+        "params": {
+          "total__1": 0
+        }
+      }
+    },
+    {
+      "nombre": "MAX de un grupo",
+      "texto": "MAX(compra)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "max",
+            "de": ["fees", "flete"]
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "MIN de un grupo con espacios",
+      "texto": "MIN( compra )",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "min",
+            "de": ["fees", "flete"]
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "texto sin cerrar",
+      "texto": "variante=\"a",
+      "esperado": {
+        "error": {
+          "codigo": "texto_sin_cerrar",
+          "desde": 9,
+          "largo": 1,
+          "linea": 1,
+          "columna": 10
+        }
+      }
+    },
+    {
+      "nombre": "un texto en una cuenta",
+      "texto": "\"a\"+1",
+      "esperado": {
+        "error": {
+          "codigo": "texto_fuera_de_lugar",
+          "desde": 0,
+          "largo": 3,
+          "linea": 1,
+          "columna": 1
+        }
+      }
+    },
+    {
+      "nombre": "un texto como grupo",
+      "texto": "SUMA(\"compra\")",
+      "esperado": {
+        "error": {
+          "codigo": "texto_fuera_de_lugar",
+          "desde": 5,
+          "largo": 8,
+          "linea": 1,
+          "columna": 6
+        }
+      }
+    },
+    {
+      "nombre": "un texto solo",
+      "texto": "\"a\"",
+      "esperado": {
+        "error": {
+          "codigo": "texto_fuera_de_lugar",
+          "desde": 0,
+          "largo": 3,
+          "linea": 1,
+          "columna": 1
+        }
+      }
+    },
+    {
+      "nombre": "un texto como condición",
+      "texto": "SI(\"a\"; 1)",
+      "esperado": {
+        "error": {
+          "codigo": "texto_fuera_de_lugar",
+          "desde": 3,
+          "largo": 3,
+          "linea": 1,
+          "columna": 4
+        }
+      }
+    },
+    {
+      "nombre": "dos textos comparados",
+      "texto": "\"a\"=\"b\"",
+      "esperado": {
+        "error": {
+          "codigo": "texto_fuera_de_lugar",
+          "desde": 0,
+          "largo": 3,
+          "linea": 1,
+          "columna": 1
+        }
+      }
+    },
+    {
+      "nombre": "comparaciones encadenadas",
+      "texto": "remate<fees<flete",
+      "esperado": {
+        "error": {
+          "codigo": "comparacion_encadenada",
+          "desde": 11,
+          "largo": 1,
+          "linea": 1,
+          "columna": 12
+        }
+      }
+    },
+    {
+      "nombre": "la variante comparada y otra comparación encadenada",
+      "texto": "variante=\"a\"=fees",
+      "esperado": {
+        "error": {
+          "codigo": "comparacion_encadenada",
+          "desde": 12,
+          "largo": 1,
+          "linea": 1,
+          "columna": 13
+        }
+      }
+    },
+    {
+      "nombre": "comparar un número con un texto",
+      "texto": "remate=\"a\"",
+      "esperado": {
+        "error": {
+          "codigo": "comparar_texto_con_numero",
+          "desde": 7,
+          "largo": 3,
+          "linea": 1,
+          "columna": 8
+        }
+      }
+    },
+    {
+      "nombre": "Y con un monto",
+      "texto": "Y(activa; remate)",
+      "esperado": {
+        "error": {
+          "codigo": "no_es_condicion",
+          "desde": 10,
+          "largo": 6,
+          "linea": 1,
+          "columna": 11
+        }
+      }
+    },
+    {
+      "nombre": "la variante con una opción que no tiene",
+      "texto": "variante=\"c\"",
+      "esperado": {
+        "error": {
+          "codigo": "opcion_inexistente",
+          "desde": 9,
+          "largo": 3,
+          "linea": 1,
+          "columna": 10
+        }
+      }
+    },
+    {
+      "nombre": "SI con cuatro argumentos",
+      "texto": "SI(activa; 1; 2; 3)",
+      "esperado": {
+        "error": {
+          "codigo": "cantidad_de_argumentos",
+          "desde": 0,
+          "largo": 2,
+          "linea": 1,
+          "columna": 1
+        }
+      }
+    },
+    {
+      "nombre": "Y con uno",
+      "texto": "Y(activa)",
+      "esperado": {
+        "error": {
+          "codigo": "cantidad_de_argumentos",
+          "desde": 0,
+          "largo": 1,
+          "linea": 1,
+          "columna": 1
+        }
+      }
+    },
+    {
+      "nombre": "MAX de un valor solo",
+      "texto": "MAX(remate)",
+      "esperado": {
+        "error": {
+          "codigo": "cantidad_de_argumentos",
+          "desde": 0,
+          "largo": 3,
+          "linea": 1,
+          "columna": 1
+        }
+      }
+    },
+    {
+      "nombre": "un SI como condición",
+      "texto": "SI(SI(activa; 1); 2)",
+      "esperado": {
+        "error": {
+          "codigo": "argumento_invalido",
+          "desde": 3,
+          "largo": 13,
+          "linea": 1,
+          "columna": 4
+        }
+      }
+    },
+    {
+      "nombre": "una cuenta como condición",
+      "texto": "SI(remate+1; 2)",
+      "esperado": {
+        "error": {
+          "codigo": "argumento_invalido",
+          "desde": 3,
+          "largo": 8,
+          "linea": 1,
+          "columna": 4
+        }
+      }
+    },
+    {
+      "nombre": "la variante con mayor",
+      "texto": "variante>\"a\"",
+      "esperado": {
+        "error": {
+          "codigo": "variante_en_calculo",
+          "desde": 0,
+          "largo": 8,
+          "linea": 1,
+          "columna": 1
+        }
+      }
+    },
+    {
+      "nombre": "un número igual a la variante",
+      "texto": "remate=variante",
+      "esperado": {
+        "error": {
+          "codigo": "variante_en_calculo",
+          "desde": 7,
+          "largo": 8,
+          "linea": 1,
+          "columna": 8
+        }
+      }
+    },
+    {
+      "nombre": "la variante en una cuenta dentro de SI",
+      "texto": "SI(variante+1; 2)",
+      "esperado": {
+        "error": {
+          "codigo": "variante_en_calculo",
+          "desde": 3,
+          "largo": 8,
+          "linea": 1,
+          "columna": 4
+        }
+      }
+    },
+    {
+      "nombre": "MAX de un grupo y otro valor",
+      "texto": "MAX(compra; remate)",
+      "esperado": {
+        "error": {
+          "codigo": "grupo_sin_suma",
+          "desde": 4,
+          "largo": 6,
+          "linea": 1,
+          "columna": 5
+        }
+      }
+    },
+    {
+      "nombre": "MAX de un grupo en una cuenta",
+      "texto": "MAX(compra+1)",
+      "esperado": {
+        "error": {
+          "codigo": "grupo_sin_suma",
+          "desde": 4,
+          "largo": 6,
+          "linea": 1,
+          "columna": 5
         }
       }
     }
