@@ -200,6 +200,9 @@ export async function compartirApuntaA(page: Page, boton: Locator, numero: strin
     await boton.click()
     await expect(page).toHaveURL(/panel=compartir/)
     const apunta = page.url().includes(`para=${id}`)
+    // Con el diálogo ya dibujado: un Escape que llega antes de que se monte no lo cierra y el botón queda tapado.
+    const dialogo = page.getByRole('dialog', { name: 'Compartir cotización' })
+    await expect(dialogo).toBeVisible()
     await page.keyboard.press('Escape')
     await expect(page).not.toHaveURL(/panel=compartir/)
     if (!apunta) throw new Error('El costo estimado sigue en la aprobada anterior.')
