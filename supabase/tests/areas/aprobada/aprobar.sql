@@ -6,7 +6,8 @@
 --   A2. Sin vehículo 22023 (hint vehiculo); inválida 23514; versión vieja PT409; sin versión 22023.
 --   A3. La anterior sólo llega si quien aprueba la ve; sin ella no hay «Deshacer».
 --   A4. Visibilidad: cada persona lee de `cotizaciones_aprobadas` exactamente las aprobadas de las cotizaciones que ve; nadie escribe la tabla; anon, nada.
---   A5. Candados: el permiso antes de tomar nada; vehículo → cotización → candado de la aprobada; el trigger anota sin candados y repone en orden.
+--   A5. Candados: el permiso antes de tomar nada; vehículo → cotización (y su hermana) → candado de la aprobada; de cotizaciones sólo escribe la marca
+--       privada; el trigger anota sin candados y repone en orden.
 
 create or replace function pg_temp.ap_persona(p_concesiones text[]) returns uuid language plpgsql as $f$
 declare v_id uuid := gen_random_uuid(); v_rol uuid; c text;
@@ -225,15 +226,17 @@ rollback;
 do $$
 declare s text; p_tiene integer; p_veh integer; p_cot integer; p_apr integer; t text;
 begin
-  select pg_get_functiondef('public.cotizacion_aprobar(uuid, timestamptz)'::regprocedure) into s;
+  select pg_get_functiondef('public.cotizacion_aprobar(uuid, timestamptz, boolean)'::regprocedure) into s;
   p_tiene := position('tiene_permiso(' in s);
   p_veh := position('for key share' in s);
-  p_cot := regexp_instr(s, 'for\s+share');
+  -- La cotización y su hermana, con el candado de escribir: aprobar una privada la hace pública (T413).
+  p_cot := regexp_instr(s, 'for\s+no\s+key\s+update');
   p_apr := regexp_instr(s, '_aprobada_candado\(');
   if p_tiene = 0 or p_veh = 0 or p_cot = 0 or p_apr = 0 then raise exception 'A5: falta una pieza (% % % %)', p_tiene, p_veh, p_cot, p_apr; end if;
   if not (p_tiene < p_veh and p_veh < p_cot and p_cot < p_apr) then raise exception 'A5: orden de candados roto (% % % %)', p_tiene, p_veh, p_cot, p_apr; end if;
   if position('Falta la versión' in s) = 0 or position('Falta la versión' in s) > p_veh then raise exception 'A5: la versión se pide antes de tomar el vehículo'; end if;
-  if position('update public.cotizaciones ' in s) > 0 then raise exception 'A5: aprobar escribe cotizaciones'; end if;
+  if regexp_count(s, 'update public\.cotizaciones ') <> regexp_count(s, 'update public\.cotizaciones x set privada = false where ') then
+    raise exception 'A5: aprobar escribe de cotizaciones algo más que la marca privada'; end if;
   select pg_get_functiondef('public._cotizaciones_aprobadas_al_confirmar()'::regprocedure) into s;
   if position('order by x' in s) = 0 or position('_aprobada_candado' in s) = 0 or position('_aprobada_candado' in s) > position('_aprobada_reponer' in s) then
     raise exception 'A5: al confirmar debe ordenar y tomar el candado antes de reponer'; end if;

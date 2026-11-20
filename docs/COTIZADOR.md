@@ -792,6 +792,33 @@ el lead `for no key update`, el vehículo `for key share`, la fórmula y, despu�
 con todo tomado vuelve a mirar la cartera y la ayudante (el vínculo, en una sentencia nueva). Inserta y aplica `_final_aplicar`. No hay
 otra vuelta: lo que crear toma son sus parámetros. La preventa no cambia.
 
+### Cotizaciones privadas
+
+Una **cotización privada** (`cotizaciones.privada`, falsa al nacer) la ven sólo quien la creó y quien tiene `cotizaciones.privadas.ver` **del origen
+de la cotización** (por origen, sin alcance; el dueño la tiene). Para el resto **no existe**: la regla va en la policy «cotizaciones: leer», en
+`puede_cotizacion()` (y con ella en toda RPC, tabla hija o policy del bucket que pide ver una cotización) y en las copias de la policy de las funciones
+definer (`_cotizaciones_ids_por_titulo`, el buscador, los relacionados, la actividad); una privada ajena no ocupa lugar en ninguna ventana ni tope. Las
+lecturas invocadoras (el listado, la lista agrupada, la búsqueda, «De este vehículo») no cambian de rutas: la RLS la descarta sobre la fila que cada
+ruta ya leyó. Quién ve qué, por rol y origen: `cotizaciones.ver` «propios» = las suyas y las de su cartera (sin las privadas de otros);
+`cotizaciones.ver` «todos» = todas menos las privadas de otros; con `cotizaciones.privadas.ver`, todas. «Ver como» no cambia lo que decide la base.
+
+**Quién la cambia:** sólo quien la creó. Al crearla, con `p_privada` de `cotizacion_crear()` y `cotizacion_crear_en_par()` (en el mismo `insert`:
+crear y después marcar dejaría un momento en que se ve; una final privada, 22023 `hint privada`). Después, con
+**`cotizacion_privada_cambiar(id, privada, versión esperada)`**: ver (42501, igual para inexistente o en la papelera), ser quien la creó (42501
+«Sólo quien la creó la hace privada o pública.»), la marca no nula (22023 `hint privada`); candados en el orden común: el vehículo `for key share`,
+ella y su hermana por id `for no key update` y, al hacerla privada, el de la aprobada del vehículo; con todo tomado vuelve a mirar ver y exige la
+versión (PT409). Una final o la aprobada de su vehículo no se hacen privadas (23514, «Una final no se hace privada.» y «Es la aprobada de su vehículo: no
+se hace privada.»). La versión, la revisión (`{privada: {de, a}}`) y la actividad las dejan los triggers de siempre. Devuelve `{resultado: cambiada |
+sin_cambios, privada, actualizado_en}`.
+
+**Lo que la hace pública:** aprobarla (`cotizacion_aprobar(…, p_hacerla_publica)`: sin pedirlo, 22023 `hint privada` «Al aprobarla deja de ser
+privada.», para que una pantalla que no avisó abra el aviso; aprobar toma ella y su hermana `for no key update`) y marcarla final (`_final_aplicar`,
+con su hermana antes de que vaya a la papelera). Una final nunca es privada (`cotizaciones_final_no_privada`) y la aprobada tampoco: `_aprobada_reponer()`
+elige sólo entre las públicas (un vehículo con sólo privadas no tiene aprobada; hacer pública una la vuelve candidata). Las hermanas comparten la marca
+(`trg_cotizaciones_hermanas`); cotizar encima la hereda (quien cotiza encima es el autor de la nueva). Una privada no mueve `vehiculos.cotizado_en`;
+hacerla pública sí. Pruebas: `supabase/tests/areas/cotizaciones/privadas.sql`, L2 de `cotizaciones-visibilidad.sql`, el caso de `humo.sql` y A4 de
+`scripts/carreras/cotizaciones-aprobada.mjs`.
+
 ## Cotizaciones hermanas (la variante en par)
 
 Con una variante `en_par` (glosario: «Variante en par» y «Cotizaciones hermanas») la hoja cotiza las dos opciones a la vez y guardar crea dos cotizaciones, una por
