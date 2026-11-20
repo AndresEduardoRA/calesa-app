@@ -91,8 +91,8 @@ export function Marco({
           </div>
         </header>
         {aviso}
-        {/* `md:pb-20`: el último renglón sube por encima de lo que flota abajo a la derecha (`flotantes.tsx`). */}
-        <main id="contenido" className="flex-1 p-4 md:p-6 md:pb-20">
+        {/* `md:pb-14`: el último renglón y el paginador quedan por encima de lo que flota abajo a la derecha (`flotantes.tsx`). */}
+        <main id="contenido" className="flex-1 p-4 md:p-6 md:pb-14">
           {children}
         </main>
       </div>
