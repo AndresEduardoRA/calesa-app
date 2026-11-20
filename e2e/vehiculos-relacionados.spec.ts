@@ -67,7 +67,8 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-const bloque = (raiz: Page | Locator) => raiz.getByRole('region', { name: 'Relacionados' })
+const bloque = (raiz: Page | Locator) =>
+  raiz.getByRole('region', { name: 'Relacionados', exact: true })
 const grupo = (raiz: Page | Locator, nombre: string) =>
   bloque(raiz).getByRole('region', { name: nombre, exact: true })
 const grupoDelLead = (page: Page, nombre: string) =>
