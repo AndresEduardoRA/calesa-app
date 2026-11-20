@@ -27,7 +27,7 @@ import {
   urlDeLaHoja,
 } from './soporte/tarjeta-cuadricula'
 
-// La portada de la cotización (`docs/COTIZADOR.md` › «La portada de la cotización»): guardar la arma y la guarda; `GET /cotizaciones/<id>/portada` la da en WebP
+// La portada de la cotización (`docs/COTIZADOR.md` › «La imagen de la tarjeta»): guardar la arma y la guarda; `GET /cotizaciones/<id>/portada` la da en WebP
 // de hasta 1.600 px con su ETag, y el resumen del listado la muestra y la abre en el visor; publicar otra plantilla la rehace; en Modo Live se ve borrosa y sin
 // visor; sin permiso o en la papelera, el 404 del PDF. Un origen propio con la fórmula de la subasta y la réplica de V1 publicada: nunca la plantilla de la semilla.
 test.describe.configure({ mode: 'serial' })

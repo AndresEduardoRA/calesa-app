@@ -4,7 +4,7 @@ import { pngDesde } from '@/shared/lib/compartir'
 import { fallo, ok, type Resultado } from '@/shared/lib/errores'
 import {
   apilarImagenes,
-  pedirLaPortadaParaCompartir,
+  pedirLaImagenParaCompartir,
   pedirLasFotos,
   pedirLosDatos,
 } from '../../../areas/tarjeta/composicion-compartir.client'
@@ -20,7 +20,7 @@ async function leerLaPortada(
   id: string,
   senal: AbortSignal,
 ): Promise<Resultado<PortadaParaCompartir>> {
-  const webp = await pedirLaPortadaParaCompartir(id, senal)
+  const webp = await pedirLaImagenParaCompartir(id, senal)
   if (!webp.ok) {
     return webp
   }
@@ -38,7 +38,7 @@ async function leerLasDosPortadas(
   senal: AbortSignal,
 ): Promise<Resultado<PortadaParaCompartir>> {
   const [a, b] = await Promise.all(
-    versiones.map((v) => pedirLaPortadaParaCompartir(v.cotizacionId, senal)),
+    versiones.map((v) => pedirLaImagenParaCompartir(v.cotizacionId, senal)),
   )
   if (!a?.ok) return a ?? fallo('inesperado', NO_SE_ARMO)
   if (!b?.ok) return b ?? fallo('inesperado', NO_SE_ARMO)

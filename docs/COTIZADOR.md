@@ -780,7 +780,7 @@ opción, que se apuntan por `hermana_id`.
   algunas del lote suma su hermana del mismo lote. **Marcar final** una manda la otra a la papelera con las demás preventas del vehículo.
 - **La pantalla**: la guardada de una hermana abre las dos juntas (`modoDeLaHermana()`: la hermana disponible y el mismo permiso de guardar) y guardar cualquiera
   guarda las dos; si no, sola con «La de <etiqueta> no está disponible.». La vista previa y el PDF llevan las dos tarjetas (una página A4 por tarjeta), y
-  «Compartir», los conceptos y el total de cada opción y las dos portadas apiladas en una imagen.
+  «Compartir», los conceptos y el total de cada opción y las dos imágenes de la tarjeta apiladas en una.
 
 ## Lo que se guarda en una cotización
 
@@ -916,7 +916,7 @@ de 120 filas o 1.000 celdas, un `{{` en una etiqueta o nota) se trata como `sin_
 el contexto de la cotización (las variables, ya formateadas: `contextoDeLaPagina()`), el ancho y el alto en px y, por celda visible y en orden de
 lectura, su rectángulo, su contenido resuelto y su estilo; más las filas ocultas con su motivo: `fuera_de_la_version` (el nodo de la fila no está en
 los estados del cálculo, salvo el total), `no_aplica` (con `variante`: el título de la opción elegida, si la lectura trae la variante) o `cero`. Esos
-motivos son sólo datos de las ocultas: el dibujo no cambia y `_portada_version_del_dibujo()` no sube. Una fila se oculta si su nodo no aplica (o vale 0) y
+motivos son sólo datos de las ocultas: el dibujo no cambia y `VERSION_DEL_DIBUJO` no sube. Una fila se oculta si su nodo no aplica (o vale 0) y
 las celdas que la cruzan se acortan; un dato de un nodo que no aplica, en una fila que se dibuja, va vacío; un monto nulo, «—». El monto del total sale
 de los totales y, con «Ver total Bs», lleva la segunda línea en moneda local. Sin plantilla o sin estados, la tarjeta por omisión (`por-omision.ts`).
 Lo pintan tres dibujos con posiciones absolutas (satori no tiene `grid`): el HTML (escalado como una imagen, `min(1, ancho del contenedor / ancho)`),
@@ -1034,11 +1034,11 @@ variables), el logo, los colores, los tamaños, las columnas ni las combinacione
   cuadrícula de `cotizacion_tarjeta(formula_id)` si está `lista` (la publicada del origen, convertida si es de la forma 1 y validada contra la versión
   de la cotización); si no, ninguna. Nulo, `{}` o lo vacío dejan la columna nula (`_retoques_normalizados()`); los mismos retoques que hay no escriben
   nada (ni versión, ni revisión, ni actividad). Devuelve `{actualizado_en, retoques, repetido}`. Retocar mueve `actualizado_en`: es guardar la
-  cotización (cambian la fecha del último guardado de la tarjeta y su portada).
+  cotización (cambian la fecha del último guardado de la tarjeta y la huella de su imagen).
 - **Al dibujar**, `aplicarRetoques()` cambia el texto de las celdas de texto que están y quita las filas ocultas antes de la geometría, reparando las
   combinaciones: una celda que empieza en una fila oculta pasa a la primera fila que le queda, la que la cruza se acorta y la que se queda sin filas no
   se dibuja. Un retoque de una celda que ya no está o dejó de ser de texto, o de una fila que ya no está, **no aplica**: se ignora y se cuenta. Todo lo que
-  dibuja esa tarjeta pasa por ahí: la vista previa, «Copiar texto», el PDF, compartir y la portada (`lecturaRetocada()` en `geometriaDeUnaGuardada()` y
+  dibuja esa tarjeta pasa por ahí: la vista previa, «Copiar texto», el PDF, compartir y la imagen de la tarjeta (`lecturaRetocada()` en `geometriaDeUnaGuardada()` y
   en `useModeloDeLaTarjeta()`). El modo «Retocar» dice cuántos no aplican y «Listo» guarda sólo los que aplican.
 - **La revisión** guarda cuántos hay (`{celdas: n, filas_ocultas: m}` por lado, `_retoques_resumen()`), nunca los textos, y «Revisiones» dice «Retocó
   la tarjeta» (también al volver a la plantilla). La actividad la deja `cotizacion_auditar()`, con quien retocó.
@@ -1057,42 +1057,28 @@ de cambio **no es la suma de las filas** sino Bs ÷ tc(`total_en`), con Bs = Σ 
 con las filas impresas y la tolerancia del redondeo. Los montos van con `formatearMonto()` y siempre con cifras (el Modo Live es de la
 pantalla); el logo, en `Buffer` por `logoParaDibujar()`, que pasa a PNG lo que react-pdf o satori no leen (WebP, SVG con estilos). Lo dibuja
 `src/modules/cotizaciones/infra/tarjeta/pdf/` con `@react-pdf/renderer` y Geist en TTF (recta e itálica). La misma tarjeta como PNG:
-`imagenDeUnaGuardada()` (`infra/tarjeta/imagen/`, `ImageResponse`), la base de la portada de la cotización.
+`imagenDeUnaGuardada()` (`infra/tarjeta/imagen/`, `ImageResponse`), la base de la imagen de la tarjeta.
 
-### La portada de la cotización
+### La imagen de la tarjeta
 
-La **portada de la cotización** es la imagen de la tarjeta de una cotización guardada: la de lo guardado (como el PDF), en WebP de hasta 1.600 px
-de ancho (calidad 80, con `sharp` en el servidor), guardada por hash en el bucket privado `cotizaciones` (`<cotización>/portada/<sha-256>.webp`: subir pide
-poder guardarla, como un adjunto; leer, además de ver la cotización, ver lo que dibuja: `cotizacion_portada_visible()` en la policy «cotizaciones: leer»). Se anota en `cotizaciones_portadas` (una fila por
-cotización: `ruta`, `clave`, `generada_en`), no en `cotizaciones`: un `update` dejaría una revisión y movería la versión esperada de quien edita.
+La **imagen de la tarjeta** (glosario) es la tarjeta de una cotización guardada como imagen, **para quien la pide**: la de lo guardado (como el PDF), con
+lo que esa persona ve (el cliente sólo con `leads.ver`, el vehículo con `vehiculos.ver`, como el PDF) y ella como asesor, en WebP de hasta 1.600 px de ancho
+(calidad 80, con `sharp` en el servidor; la miniatura de las listas, de 480 px, achicada del mismo PNG). **Se arma al pedirla y no se guarda**: ni tabla ni
+objetos en el bucket. Lo que evita volver a dibujarla es la caché del navegador con su `ETag`.
 
-- **La clave** dice de qué está hecha: `_cotizacion_portada_clave()` = `p<versión del dibujo>-md5` de todo lo que el dibujo lee: la cotización
-  (`actualizado_en`, la versión, el origen), la plantilla publicada del origen (o ninguna), esa versión de la fórmula, los colores (clave y hex), los
-  tipos de cambio (nombre, activo y moneda; nunca el valor del día), el cliente y el vehículo vivos (nombre; título, lote y VIN: no su `actualizado_en`,
-  que una fase o una foto mueven), quien la creó (nombre y correo) y los ajustes de la empresa. Todo por clave primaria o índice único, y dos catálogos
-  de decenas de filas. Un cambio en cómo se dibuja sube `_portada_version_del_dibujo()` en una migración. Clave guardada distinta de la vigente: la
-  portada quedó vieja.
-- **La compartida y la propia.** La portada guardada es una sola para todos y lleva el cliente y el vehículo. La recibe quien **ve todo lo que dibuja**
-  (`ve_todo`: el cliente vivo con `leads.ver`, el vehículo vivo con `vehiculos.ver`) sin «Ver como»; los demás reciben una armada en el momento con lo
-  suyo (como el PDF), sin guardarla.
-- **`cotizacion_portada(id)`** (pide ver; 42501 igual para lo que no existe, está en la papelera o no se ve) da `{ruta, clave, clave_vigente,
-ve_todo, puede_guardarla, contexto}`: `puede_guardarla` es `ve_todo` y `_cotizacion_puede_guardar()`, y `contexto` (el cliente, el vehículo y quien la
-  creó: lo que mira la clave), sólo con `ve_todo`.
-- **`cotizacion_portada_poner(id, ruta, clave)`** anota la subida: pide poder guardarla y `ve_todo` (antes de mirar la ruta y otra vez tras tomar la
-  cotización `for no key update`), la ruta en la carpeta `portada/` de la cotización y el objeto en storage, WebP de hasta 5 MB (22023 con `hint`), y la
-  clave, la vigente tras el candado (si no, PT409 «La tarjeta cambió mientras se armaba la imagen.»: quien llama entrega su imagen sin guardarla).
-  Reemplaza la fila y manda la ruta vieja a la cola de limpieza si nadie más la usa.
-- **Cuándo se arma.** Al guardar (crear, guardar y cotizar encima), después de la respuesta del guardado: el núcleo avisa por el hueco de la vista previa
-  (`alGuardarLaCotizacion`) y el área `tarjeta` pide la ruta (`pedirLaPortada()`, un `fetch` que nadie espera); el guardado no la espera ni ve sus fallos.
-  Al retocar la tarjeta, lo mismo desde el modo «Retocar» tras «Listo».
-  Y al pedirla vieja o sin portada. En los dos casos la ruta la arma y, si quien pide puede guardarla, la guarda **antes de responder** (nunca en `after()`:
-  la sesión podría renovarse con la respuesta ya enviada). Sin el primer recálculo (la tarjeta saldría sólo con el total) se entrega pero no se guarda. Una
-  plantilla nueva se ve sola, sin relleno masivo.
-- **La ruta** `GET /cotizaciones/<id>/portada` (`requerirSesion()`): lo que no existe, está en la papelera o no se ve, el mismo 404 en texto que el PDF.
-  La compartida va con `ETag` = la clave y `Cache-Control: private, no-cache` (con `If-None-Match` igual, 304 sin bajar ni armar nada); al día, la baja
-  del bucket con la sesión de quien pide. La propia va con `no-store` y sin `ETag`. Si armarla falla, 500: nunca una vieja.
-- **Se va** con la cotización: la cascada borra la fila al purgar (las dos purgas encolan su ruta) y el barrido de huérfanos del bucket `cotizaciones`
-  (`storage_gc_reclamar()`, rama propia por `not exists` sobre adjuntos y portadas) se lleva lo que quedó sin fila.
+- **La huella** dice de qué está hecha para quien pide: `cotizacion_imagen_huella(id)` (definer; pide ver la cotización: 42501 igual para lo que no existe,
+  está en la papelera o no se ve) = `i-md5` de todo lo que el dibujo lee: la cotización (`actualizado_en`, la versión, el origen), la plantilla publicada
+  del origen (o ninguna), esa versión de la fórmula, los colores (clave y hex), los tipos de cambio (nombre, activo y moneda; nunca el valor del día), el
+  cliente y el vehículo vivos **sólo si quien pide los ve** (nombre; título, lote y VIN: no su `actualizado_en`, que una fase o una foto mueven), quien
+  pide (su nombre, correo, WhatsApp, cargo y foto: el asesor) y los ajustes de la empresa. Todo por clave primaria o índice único, y dos catálogos de
+  decenas de filas. Devuelve sólo el md5.
+- **La ETag** la arma la app (`etiquetaDeLaImagen()`): `"<huella>.<usuario>.v<VERSION_DEL_DIBUJO>.<ancho o g>"`. El usuario va aparte para que dos
+  personas nunca compartan una; un cambio en cómo se dibuja sube `VERSION_DEL_DIBUJO` (`entities/tarjeta/etiqueta-de-la-imagen.ts`), sin migración.
+- **La ruta** `GET /cotizaciones/<id>/imagen` (`requerirSesion()`; `?ancho=480`, la miniatura; otro ancho se ignora): lo que no existe, está en la papelera
+  o no se ve, el mismo 404 en texto que el PDF. Con un `If-None-Match` igual (también `W/` o en una lista), 304 sin dibujar nada; si no, la arma y la
+  entrega con la `ETag` y `Cache-Control: private, no-cache`. Con «Ver como» (la perspectiva cambia los permisos, no la persona) y sin el primer recálculo
+  (la tarjeta saldría sólo con el total), `no-store` y sin `ETag`. Si armarla falla, 500 en texto con `no-store`: nunca una vieja. `Server-Timing` dice
+  cuánto tardaron la huella y el armado. La ruta vieja, `/cotizaciones/<id>/portada`, es un 308 a ésta con su consulta.
 - **En pantalla**, `<PortadaDeLaCotizacion>` (`pantallas/tarjeta-portada.ts`; en el resumen del listado, por el hueco `Portada`): la imagen con
   `object-contain` y `loading="lazy"` en un marco de la proporción que le dan (15:8 por omisión); mientras carga o si falla, un recuadro del mismo
   tamaño con el total y «Reintentar»; el clic la abre en el visor de fotos; en Modo Live, borrosa con «Oculto en Modo Live» y sin visor.

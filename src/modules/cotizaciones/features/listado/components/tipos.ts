@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react'
 import type { CotizacionDelListado } from '../../../entities/listado/filas-del-listado'
 import type { EntradaDelListado } from '../../../entities/listado/grupos-del-listado'
-import type { AnchoDeLaPortada } from '../../../entities/ruta-de-la-hoja'
+import type { AnchoDeLaImagen } from '../../../entities/ruta-de-la-hoja'
 
 export type FilaDeCotizacion = CotizacionDelListado
 
@@ -27,7 +27,7 @@ export type PortadaDeLaFila = ComponentType<{
   cotizacionId: string
   numero: number
   total: { valor: number; moneda?: string | null } | null
-  ancho: AnchoDeLaPortada
+  ancho: AnchoDeLaImagen
   recorte: 'cubrir'
   lugar: 'lista'
 }>

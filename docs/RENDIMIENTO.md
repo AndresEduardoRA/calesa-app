@@ -301,8 +301,8 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   resumen y ninguno a la lista (los diálogos cerrados no dibujan). Código: `AccionesDelResumen` y `DatosDelResumen` viajan en el chunk diferido del resumen;
   en frío, unas líneas del listado.
 - **«Compartir la cotización»** (`e2e/cotizaciones-compartir.spec.ts`): por apertura, un `GET /cotizaciones/<id>/compartir` (la hoja guardada, `cotizacion_tarjeta`,
-  el vehículo y la subasta por clave primaria, el autor y los ajustes: lo mismo que un PDF, sin dibujarlo) y la portada con la caché del navegador (un 304 con su
-  ETag); al elegir «Fotos», `…/compartir/fotos` (el vehículo por `cotizaciones_pkey` y `vehiculos_imagenes` por `vehiculo_id`, ≤ 24) con miniaturas de 480 px
+  el vehículo y la subasta por clave primaria, el autor y los ajustes: lo mismo que un PDF, sin dibujarlo) y la imagen de la tarjeta con la caché del navegador (un 304
+  con su ETag); al elegir «Fotos», `…/compartir/fotos` (el vehículo por `cotizaciones_pkey` y `vehiculos_imagenes` por `vehiculo_id`, ≤ 24) con miniaturas de 480 px
   `lazy`, y la completa (≤ 1.600 px) sólo de lo marcado. Cambiar de pestaña, formato o zona no pide nada. Código: el panel entero por `diferido()`; en frío sólo el
   botón del detalle y la línea del «⋯» (que no se dibuja hasta abrir el menú); la hoja nueva no dibuja el botón.
 - **Los retoques de la tarjeta** (`e2e/cotizar-retoques.spec.ts`): sin lista ni consulta que crezca. `cotizacion_retocar_tarjeta()` lee la cotización por
@@ -376,7 +376,7 @@ creado_en desc, id desc) where eliminado_en is null and situacion <> 'fase'`; re
   de rechazadas, ≤ 20 × 1.000 por PK y sólo al «Descargar». No es una tabla que crece.
 - `storage-gc`: 100 por ronda, 5 rondas; 2.000 huérfanos encolados por pasada; el barrido lleva un cursor por bucket (`cola_gc_barrido`):
   10.000 objetos por pasada, 5 pasadas por corrida. Barre `vehiculos` y `cotizaciones`, cada uno con su rama por `not exists` sobre las tablas que lo
-  referencian (`medir-jobs.sql`, 100.000 objetos en `cotizaciones` con adjuntos y portadas en uso: ≈ 0,2 s por ventana que encola 10.000 y ≈ 0,18 s la
+  referencian (`medir-jobs.sql`, 100.000 objetos en `cotizaciones` con adjuntos en uso: ≈ 0,2 s por ventana que encola 10.000 y ≈ 0,18 s la
   misma ya encolada; topes 4 s y 1 s, los de `vehiculos`).
 - `leads-campos-privacidad` (lotes de 5.000, hasta 10 por corrida) y `equipo-bajas` (arriba).
 
@@ -857,12 +857,11 @@ pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACION
   `cotizacion_tarjeta`, asesor y vehículo por PK y `leerAjustes()` (una RPC más que `getAjustes()`); el logo ≤ 1 MB con 2 s de espera. Topes:
   150 KB y 1,5 s (40.406 B y 150 ms medidos con la cuadrícula: una página A4). La tarjeta de lo guardado lo ofrece con un `<a download>` sin JS.
   La imagen de la tarjeta (`imagenDeUnaGuardada()`) sale al ancho de la tarjeta (≤ 1.600 px) y carga `next/og` sólo con `import()` en el servidor.
-- Portada de la cotización (`GET /cotizaciones/<id>/portada`, `e2e/cotizaciones-portada.spec.ts`): una llamada a `cotizacion_portada()` (la cotización
-  por PK y la clave: todo por PK o índice único, y los catálogos de colores y tipos de cambio, decenas de filas) y, con la ETag de hoy, 304 sin nada más; al
-  día, una bajada del bucket; si falta o quedó vieja, lo del PDF de una cotización más el WebP (`sharp`, sólo en el servidor) y, si quien pide puede
-  guardarla, una subida y una RPC antes de responder. Una lista de N portadas son N pedidos `loading="lazy"` independientes, nunca una lectura por fila
-  dentro de otra. `private, no-cache` con ETag: el navegador revalida con un 304. La de la réplica de V1 (`e2e/cotizaciones-portada.spec.ts`, al ancho de la
-  tarjeta) pesa ≈ 35 KB (35.414 B).
+- Imagen de la tarjeta (`GET /cotizaciones/<id>/imagen`): una llamada a `cotizacion_imagen_huella()` (la cotización, el cliente, el vehículo, el perfil
+  de quien pide y los ajustes por PK, la plantilla por índice único, y los catálogos de colores y tipos de cambio, decenas de filas) y, con la ETag igual, 304
+  sin nada más; si no, lo del PDF de una cotización más el WebP (`sharp`, sólo en el servidor), sin escribir nada. Una lista de N imágenes son N pedidos
+  independientes, nunca una lectura por fila dentro de otra. `private, no-cache` con ETag: el navegador revalida con un 304. `Server-Timing` dice lo que
+  tardaron la huella y el armado.
 - Tarea de oro 2 (`e2e/cotizar-tarea-de-oro*.spec.ts`; deterministas: una parada nueva en el camino las rompe): robot < 30 s y KLM ≤ 90 s.
   Teclas de control: el tramo de la hoja hasta el PDF ≤ 29; con el panel del vehículo ≤ 29; con un enlace de subasta, exactamente 33; con
   el cliente, ≤ 29 si existe y ≤ 30 si es nuevo. Cada lado editable de la hoja y de «Avanzado» se alcanza con Tab, en orden.

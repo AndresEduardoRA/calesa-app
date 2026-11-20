@@ -44,7 +44,7 @@ afterEach(() => {
 describe('<PortadaDeLaCotizacion>', () => {
   it('pide la imagen a su ruta, lazy; mientras carga, el recuadro con el total y «Preparando la vista previa…»', () => {
     montar()
-    expect(pedida()).toBe(`/cotizaciones/${ID}/portada`)
+    expect(pedida()).toBe(`/cotizaciones/${ID}/imagen`)
     expect(imagen().getAttribute('loading')).toBe('lazy')
     expect(screen.getByRole('status').textContent).toBe('Preparando la vista previa…')
     // El total, con <Monto> (el formato regional lo prueba `formato.ts`).
@@ -64,7 +64,7 @@ describe('<PortadaDeLaCotizacion>', () => {
     expect(screen.getByText('No se pudo cargar la vista previa.')).toBeTruthy()
     expect(screen.queryByRole('status')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
-    expect(pedida()).toBe(`/cotizaciones/${ID}/portada?intento=1`)
+    expect(pedida()).toBe(`/cotizaciones/${ID}/imagen?intento=1`)
     expect(screen.getByRole('status').textContent).toBe('Preparando la vista previa…')
   })
 
@@ -77,7 +77,7 @@ describe('<PortadaDeLaCotizacion>', () => {
     )
     expect(screen.getByText('visor con 1 pedidos')).toBeTruthy()
     expect(visor).toHaveBeenLastCalledWith(
-      expect.objectContaining({ url: `/cotizaciones/${ID}/portada`, pedidos: 1 }),
+      expect.objectContaining({ url: `/cotizaciones/${ID}/imagen`, pedidos: 1 }),
     )
   })
 

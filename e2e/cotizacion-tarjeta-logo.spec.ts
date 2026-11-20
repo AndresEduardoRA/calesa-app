@@ -171,7 +171,7 @@ test('E2E la imagen de la tarjeta pinta el logo WebP y el PNG abajo a la derecha
     const caja = await cajaInteriorDe(celdaDelLogo(await abrirLaGuardada(page)))
     for (const logo of [logos.webp, logos.png]) {
       await ponerElLogo(logo.datos, logo.extension, logo.tipo)
-      const respuesta = await page.request.get(`/cotizaciones/${guardada}/portada`)
+      const respuesta = await page.request.get(`/cotizaciones/${guardada}/imagen`)
       expect(respuesta.status()).toBe(200)
       const puntos = await puntosDeLaCaja(await respuesta.body(), caja)
       expect(esAzul(puntos.abajoDerecha), `${logo.extension}: abajo a la derecha`).toBe(true)

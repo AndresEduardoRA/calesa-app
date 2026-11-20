@@ -10,7 +10,6 @@ const pedidos: Pedido[] = []
 // La action del modo «Retocar» (llega con la vista previa): sin servidor en las pruebas.
 const retocarLaTarjeta = vi.hoisted(() => vi.fn())
 vi.mock('../actions/retocar-la-tarjeta', () => ({ retocarLaTarjeta }))
-vi.mock('../../../areas/tarjeta/composicion-portada.client', () => ({ pedirLaPortada: vi.fn() }))
 vi.mock('../../../areas/tarjeta/composicion.client', () => ({
   leerTarjeta: (formulaId: string) =>
     new Promise<Resultado<LecturaDeLaTarjeta>>((resolver) => {

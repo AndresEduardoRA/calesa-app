@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { useLive } from '@/shared/ui/live'
 import { CLAVE_DEL_VISOR } from '@/shared/ui/visor-de-imagenes'
-import { rutaDeLaPortada, type AnchoDeLaPortada } from '../../../../entities/ruta-de-la-hoja'
+import { rutaDeLaImagen, type AnchoDeLaImagen } from '../../../../entities/ruta-de-la-hoja'
 import { VisorDeLaPortadaDiferido } from './diferidos'
 import { RecuadroDeLaPortada } from './recuadro-de-la-portada'
 
@@ -22,7 +22,7 @@ export type PropsDeLaPortada = {
   // Ancho ÷ alto del marco.
   proporcion?: number
   // La miniatura (las listas: 480 px); sin él, la grande. El visor pide siempre la grande.
-  ancho?: AnchoDeLaPortada
+  ancho?: AnchoDeLaImagen
   // Cómo va la imagen en el marco: entera (`contener`, por defecto) o llenándolo desde arriba a la izquierda (`cubrir`: la tarjeta de la lista; una portada de la
   // proporción del marco no se recorta, una más alta conserva su cabecera y una más ancha, el título y la columna de conceptos).
   recorte?: 'contener' | 'cubrir'
@@ -33,21 +33,17 @@ export type PropsDeLaPortada = {
 
 type Carga = 'cargando' | 'lista' | 'fallo'
 
-// «Reintentar» pide otra URL (la anterior quedó fallida en el navegador).
-const conIntento = (ruta: string, intento: number): string =>
-  intento === 0 ? ruta : `${ruta}${ruta.includes('?') ? '&' : '?'}intento=${String(intento)}`
-
 // La clave del visor en `?visor=`, una por lugar: la tarjeta de la lista y el resumen abierto de la misma cotización no abren dos.
 const claveDelVisor = (id: string, lugar: 'resumen' | 'lista'): string =>
   lugar === 'lista' ? `portada-de-la-lista-${id}` : `portada-${id}`
 
-// La imagen (la miniatura, si se pidió un ancho) y la del visor (siempre la grande).
-const urlsDeLaPortada = (id: string, ancho: AnchoDeLaPortada | undefined, intento: number) => ({
-  url: conIntento(rutaDeLaPortada(id, ancho === undefined ? {} : { ancho }), intento),
-  urlDelVisor: conIntento(rutaDeLaPortada(id), intento),
+// La imagen (la miniatura, si se pidió un ancho) y la del visor (siempre la grande). «Reintentar» suma `?intento=`: otra URL (la anterior quedó fallida en el navegador).
+const urlsDeLaPortada = (id: string, ancho: AnchoDeLaImagen | undefined, intento: number) => ({
+  url: rutaDeLaImagen(id, ancho === undefined ? { intento } : { ancho, intento }),
+  urlDelVisor: rutaDeLaImagen(id, { intento }),
 })
 
-// La portada de la cotización (`docs/COTIZADOR.md` › «La portada de la cotización»): la imagen de su tarjeta, pedida a su ruta con `loading="lazy"` (la miniatura de
+// La portada de la cotización (`docs/COTIZADOR.md` › «La imagen de la tarjeta»): la imagen de su tarjeta, pedida a su ruta con `loading="lazy"` (la miniatura de
 // una lista pide la misma: es una por cotización). Mientras llega o si falla, el recuadro con el total en el mismo marco, que crece si el texto no cabe. El clic la
 // abre en el visor de fotos (su código llega al primer clic). En Modo Live, borrosa con «Oculto en Modo Live» y sin visor: lo hace el CSS de `globals.css`
 // (`data-portada-imagen`, `data-portada-oculta`) antes de hidratar, y `useLive()` corta el clic.

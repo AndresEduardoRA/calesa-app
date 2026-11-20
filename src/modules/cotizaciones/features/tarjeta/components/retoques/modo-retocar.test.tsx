@@ -16,7 +16,6 @@ vi.mock('../../../../areas/tarjeta/composicion.client', () => ({
 }))
 const retocarLaTarjeta = vi.hoisted(() => vi.fn())
 vi.mock('../../actions/retocar-la-tarjeta', () => ({ retocarLaTarjeta }))
-vi.mock('../../../../areas/tarjeta/composicion-portada.client', () => ({ pedirLaPortada: vi.fn() }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
 
 import VistaPreviaDeLaTarjeta, { type DatosDeLaPagina } from '../vista-previa-de-la-tarjeta'

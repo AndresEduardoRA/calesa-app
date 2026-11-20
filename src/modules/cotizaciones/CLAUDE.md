@@ -96,7 +96,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   las dos; un borrador para las dos), las celdas `enPar` en dos por `ContextoDelPar` (`ItemEnPar`) y el resumen con `TotalesEnPar`. Guardar: las actions
   `crear-cotizaciones-en-par.ts` y `guardar-cotizaciones-en-par.ts` (sobre el núcleo del guardado; el título va sin la opción y con `topeDelTituloEnPar()`); cotizar
   encima, `cotizar-encima-en-par.ts` (`encimaEnParDe()`). La tarjeta de la vista previa suma la de la hermana (`hermana` de `PropsDeLaVistaPrevia`,
-  `TarjetaDeLaHermana`), el PDF una página por hermana (`hermanaDelPdf()`) y «Compartir» sus `versiones` y las dos portadas apiladas (`apilarImagenes()`). Una
+  `TarjetaDeLaHermana`), el PDF una página por hermana (`hermanaDelPdf()`) y «Compartir» sus `versiones` y las dos imágenes de la tarjeta apiladas (`apilarImagenes()`). Una
   hermana abierta sola no cambia el vehículo (`cambioDeVehiculo({ hermanaSola })`).
 - **`/cotizaciones/comparar?ids=a,b[,c]&returnTo=`** (pide sesión; `cotizaciones.ver` de cada una lo decide la base): «Comparar cotizaciones», del área
   `aprobada` (`areas/aprobada/CLAUDE.md` › «Comparar cotizaciones»; `pantallas/aprobada-comparar.ts` y `aprobada-esqueleto-de-comparar.ts`). Lo guardado sin
@@ -186,17 +186,18 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
   el «⋯» del listado; también para las tarjetas, el resumen y la ficha del vehículo); la pestaña en `?compartir=texto` (`entities/tarjeta/compartir/url.ts`). Con
   el Modo Live ni el botón ni la línea del «⋯»; por URL, el aviso. Lee `GET /cotizaciones/[id]/compartir` (`DatosParaCompartir`: `paraCompartirDeUnaGuardada()`
   da los montos de la tarjeta de lo guardado con `lineasDeLaTarjeta()`; `src/app` suma el vehículo con `zonaDelPatioDe()` de `vehiculos` y la subasta) y, al
-  elegir «Fotos», `…/compartir/fotos` (`leerVehiculoDeLaCotizacion()` por `cotizaciones_pkey` y `leerGaleria()`); la portada, por su ruta con la caché del
-  navegador, pasada a PNG en el navegador. El texto lo arma `textoParaCompartir()` (puro), con la firma del asesor (quien comparte: `DatosParaCompartir.asesor`; «Creado por» es `autor`, de
+  elegir «Fotos», `…/compartir/fotos` (`leerVehiculoDeLaCotizacion()` por `cotizaciones_pkey` y `leerGaleria()`); la imagen de la tarjeta (`pedirLaImagenParaCompartir()`), por su
+  ruta con la caché del navegador, pasada a PNG en el navegador. El texto lo arma `textoParaCompartir()` (puro), con la firma del asesor (quien comparte: `DatosParaCompartir.asesor`; «Creado por» es `autor`, de
   `leerAutorDeLaCotizacion()`); los motivos de los botones, `motivosDeCompartir()`. Desde el navegador,
   por `areas/tarjeta/composicion-compartir.client.ts` (la importa sólo el panel). Lo genérico del navegador, `src/shared/lib/compartir.ts`.
-- **La portada de la cotización** (área `tarjeta`; `docs/COTIZADOR.md` › «La portada de la cotización»): `GET /cotizaciones/[id]/portada` (`rutaDeLaPortada(id)`,
-  el mismo 404 que el PDF) lee `leerLaPortada()` (`cotizacion_portada`) y `queHacerConLaPortada()` decide: 304 con la ETag de hoy, bajar la guardada al día
-  (`bajarLaPortada()`) o armarla (`armarLaPortada(id, contextoDe)`, en `features/tarjeta/` porque cruza con `empresa`: la hoja de lo guardado, los ajustes y el
-  WebP de `imagenDeLaPortada()`, `sharp` con `import()`). La compartida (quien ve todo lo que dibuja, sin «Ver como») usa el contexto de la base y se guarda
-  **antes de responder** (`guardarLaPortada()`: subir por hash y `cotizacion_portada_poner`; un PT409 no se guarda); la de quien no ve todo, el de
-  `datos-de-la-tarjeta.ts` (como el PDF), sin ETag ni guardar. Al guardar, el núcleo avisa por el hueco de la vista previa y `<ProveedorDeLaTarjeta>` pide la ruta
-  (`pedirLaPortada()`, `areas/tarjeta/composicion-portada.client.ts`: un `fetch` que no se espera). El componente `<PortadaDeLaCotizacion>` sale por
+- **La imagen de la tarjeta** (área `tarjeta`; glosario, `docs/COTIZADOR.md` › «La imagen de la tarjeta»): `GET /cotizaciones/[id]/imagen` (`rutaDeLaImagen(id,
+{ ancho?, intento? })`, el mismo 404 que el PDF; `?ancho=480` es la miniatura de las listas y otro ancho se ignora; `?intento=`, sólo otra URL) se arma **al pedirla, para
+  quien la pide**, y no se guarda. Lee la huella (`leerHuellaDeLaImagen()`, `cotizacion_imagen_huella()`; lo que no se ve, 404) y, con un `If-None-Match` que
+  `coincideLaEtiqueta()` con `etiquetaDeLaImagen()` (huella, usuario, `VERSION_DEL_DIBUJO` y ancho), responde 304 sin dibujar; si no, `armarLaImagen(id, { contextoDe,
+ancho })` (en `features/tarjeta/` porque cruza con `empresa`: la hoja de lo guardado, los ajustes, el logo y el WebP de `webpDeUnaGuardada()`, `sharp` con
+  `import()`) con el contexto de quien pide (`datos-de-la-tarjeta.ts`, como el PDF: el cliente sólo con `leads.ver`, y él como asesor). Con la ETag, `private,
+no-cache`; con «Ver como» (sin leer la huella) o sin el primer recálculo, `no-store` y sin ETag; un fallo, 500 en texto. `Server-Timing` dice lo que tardó la
+  huella y el armado. `/cotizaciones/[id]/portada` (la ruta vieja) es un 308 a `/imagen` con su consulta (`next.config.ts`). El componente `<PortadaDeLaCotizacion>` sale por
   `pantallas/tarjeta-portada.ts` (marco de la proporción que le den, recuadro con el total, visor por `diferido()`, Modo Live por CSS en `globals.css`).
 - **El diseño** (la pestaña «Hoja»: `/configuracion/cotizacion/<origen>/hoja`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
   `cotizaciones_niveles` (no de `niveles_con_uso()`); edita secciones, celdas (ver y editar juntos con `ponerNiveles()`; `admiteNivel` apaga lo que la base
@@ -219,7 +220,7 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
   `REJILLA_DE_SECCIONES`, `enLaRejilla`); `cifrasDelDiseno()` evalúa con datos en 0 y nunca lanza. Dibuja con las piezas del núcleo y **no con `LugaresDeLaHoja`** (lee
   `?ayuda=` y `?panel=`, que chocarían con la pestaña); un hijo de ancho propio en px dentro de una caja con scroll (los cortes `@4xl/hoja` y `@5xl` miran al
   hijo); «200 %» es 206 px con `zoom: 2`. Va `inert`, en un `diferido()` aparte.
-- Depende de `leads`, `vehiculos`, `empresa` (tipos de cambio; los ajustes, en `armarLaPortada()`) y `equipo` (`<VistasGuardadas>`); los orígenes entran por props desde `src/app`.
+- Depende de `leads`, `vehiculos`, `empresa` (tipos de cambio; los ajustes, en `armarLaImagen()`) y `equipo` (`<VistasGuardadas>`); los orígenes entran por props desde `src/app`.
 
 ## Áreas
 
@@ -267,8 +268,8 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
 - **La lista** (`HuecosDeLaLista`, `features/listado/components/tipos.ts`): `Portada` (la portada de cada tarjeta, en frío: `pantallas/tarjeta-portada.ts`) y
   `Comparar` (las casillas y «Comparar» del modal de un grupo, `CompararDelGrupoDiferido` de `pantallas/aprobada-listado.ts`); los une `listado-con-acciones.tsx`.
-- **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`,
-  `compartir()` (lo que la cabecera de una guardada dibuja a la vista: «Compartir») y `alGuardarLaCotizacion(id)` (lo llaman `useNucleoDelGuardado` y `useCotizarEncima` con la cotización guardada: la portada); la llena
+- **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`
+  y `compartir()` (lo que la cabecera de una guardada dibuja a la vista: «Compartir»); la llena
   `<ProveedorDeLaTarjeta>` (`pantallas/tarjeta.ts`) con la cáscara del modal y lo que sabe la página (vehículo, asesor, número, logo). El modal lee
   `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `geometriaDeLaTarjeta()` (pura) con `<TarjetaDeCotizacion>`: un lienzo del ancho de
   la tarjeta con cada celda en posición absoluta (`<CeldaDeLaTarjeta>`, en orden de lectura, con `data-celda`, `data-fila`, `data-columna`, `data-nodo`,
@@ -289,7 +290,7 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
   `puedeRetocar` (apagado con su motivo: la tarjeta por omisión o la hoja con cambios) y pasa el mismo modal al modo «Retocar la tarjeta»: el estado
   (`useEstadoDelModo()`, `useModoRetocar()`) vive en la vista previa y su interfaz llega en un chunk propio (`components/retoques/diferidos.tsx`: tarjeta
   retocable con un botón por celda y el canal de filas, el campo, la fila elegida, el pie y la pregunta de «Volver a la plantilla»). «Listo» llama a la
-  action `retocarLaTarjeta` (revalida la página: la hoja se vuelve a montar con la versión nueva) y pide la portada. El modal es `propio` en
+  action `retocarLaTarjeta` (revalida la página: la hoja se vuelve a montar con la versión nueva). El modal es `propio` en
   `scripts/guardas/modales-con-salida.ts` (pregunta al salir con cambios).
 - **La tarjeta en vivo de la planilla de la fórmula** (los tipos sin código de `entities/tarjeta-en-vivo.ts`): el área `plantilla` lee la tarjeta de trabajo del
   origen con `leerLaTarjetaDeTrabajo({ id, nombre })` (`index.ts`; la lectura de la pestaña «Tarjeta», nunca rechaza: `lista`, `sin_tarjeta` o `no_se_leyo`) y
@@ -336,7 +337,7 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
 ## Tablas
 
 `formulas`, `tonos`, `cotizaciones_niveles`, `tablas_referencia`, `tablas_referencia_filas`, `plantillas_tarjeta`, `cotizaciones`, `cotizaciones_revisiones`,
-`cotizaciones_comentarios`, `cotizaciones_adjuntos`, `cotizaciones_reportes`, `cotizaciones_favoritos`, `cotizaciones_aprobadas`, `cotizaciones_portadas`, `comprobantes`,
+`cotizaciones_comentarios`, `cotizaciones_adjuntos`, `cotizaciones_reportes`, `cotizaciones_favoritos`, `cotizaciones_aprobadas`, `comprobantes`,
 `comprobantes_contadores`, `comprobantes_ajustes`. `cotizaciones.hermana_id` (la cotización hermana, con su FK diferida, `on delete set null`, única y con `grant select` de columna) la escriben sólo las RPC en par. `cotizaciones.tarjeta_retoques` (jsonb nulo, con `grant select` de columna: viaja en `cotizacion` por
 `_cotizacion_respuesta()`) guarda los retoques de la tarjeta de cada cotización.
 
@@ -352,8 +353,8 @@ contra la plantilla publicada de hoy), `cotizaciones_listado`, `cotizaciones_lis
 nula al guardar = crear), `cotizacion_paquete_aplicar` (una plantilla de V1, todo o nada: invocadora sobre las dos de guardar el borrador y `tono_crear`, con el
 candado del catálogo en el ayudante definer `_paquete_colores_preparar`), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizaciones_aprobadas_de_vehiculos` (el «Costo estimado» de `/vehiculos`, invocadora), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
-`cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `cotizacion_portada|portada_poner|portada_visible` (la portada de la cotización: el estado para
-quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.
+`cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `cotizacion_imagen_huella` (la huella de la imagen de la tarjeta para quien
+la pide: la base de su ETag), `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.
 
 ## No se rompe
 
@@ -441,7 +442,7 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   el SVG que react-pdf dibuja fiel, tal cual; lo demás que `sharp` lee (WebP, SVG con estilos, un raster grande), a PNG de hasta 1.024 px; un SVG que nombra
   otro archivo o lo que no se lee, sin logo. Los dos lo ubican con `cajaDelLogo()` (`entities/tarjeta/caja-del-logo.ts`). Los
   metadatos no nombran al cliente, al asesor ni al vehículo. «Copiar texto» sale de la misma geometría. **La imagen** (`imagenDeUnaGuardada()`,
-  `infra/tarjeta/imagen/`, `ImageResponse` con `import()`): la misma geometría como PNG al ancho de la tarjeta, la base de la portada (su ruta suma las fuentes
+  `infra/tarjeta/imagen/`, `ImageResponse` con `import()`): la misma geometría como PNG al ancho de la tarjeta, la base de la imagen de la tarjeta (`webpDeUnaGuardada()`; su ruta suma las fuentes
   de `infra/tarjeta/pdf/fuentes/` a `outputFileTracingIncludes`).
 - **Las tablas de referencia se escriben sólo con `tabla_referencia_publicar()`** (sin insert, update ni delete para `authenticated`). Candados: la tabla
   (`for update`) y después `formulas:<origen>` en orden de origen, como el ⚙ y revertir. Pruebas: `supabase/tests/areas/tablas/`,
@@ -451,14 +452,13 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   borrar `for update`); la cotización antes que sus reportes. Borrar no deja respuestas eliminadas ni raíces eliminadas sin respuestas
   (`cotizaciones_comentarios_respuesta_viva_check`). Pruebas: `supabase/tests/areas/comentarios/`.
 
-- **La portada** (`cotizaciones_portadas`, una fila por cotización; `docs/COTIZADOR.md` › «La portada de la cotización»): **nadie la escribe directo**, sólo
-  `cotizacion_portada_poner()` (pide ver, poder guardar y ver todo lo que dibuja la compartida, antes de mirar la ruta y otra vez tras tomar la cotización
-  `for no key update`; la clave, la vigente tras el candado, o PT409). Su policy pregunta por fila con `puede_cotizacion`; el objeto de `portada/` del bucket
-  lo lee sólo quien ve todo lo que dibuja (`cotizacion_portada_visible()` en la policy «cotizaciones: leer» de storage). La imagen no depende del nivel de quien
-  la arma: la tarjeta sólo nombra nodos del nivel «todos» (K4) y los totales viajan para todos. La clave
-  (`_cotizacion_portada_clave()`) mira todo lo que el dibujo lee: algo nuevo que la tarjeta dibuje entra ahí, y un cambio en cómo se dibuja sube
-  `_portada_version_del_dibujo()` en una migración. Su ruta cuenta en `storage_refcount()` y en la rama `cotizaciones` del barrido; quien la reemplaza o la
-  purga, la encola. Pruebas: `supabase/tests/areas/tarjeta/portada.sql`.
+- **La imagen de la tarjeta no se guarda** (`docs/COTIZADOR.md` › «La imagen de la tarjeta»): ni tabla ni objetos en el bucket; cada persona recibe la suya. La
+  huella (`cotizacion_imagen_huella()`, definer: pide ver la cotización, 42501 igual para lo que no existe, está en la papelera o no se ve, y devuelve sólo un md5)
+  mira todo lo que el dibujo lee **y lo que quien pide ve**: la cotización, la plantilla publicada, su versión de la fórmula, los colores y los tipos de cambio, el
+  cliente y el vehículo sólo si los ve (`puede_lead`, `puede_vehiculo`), su perfil (el asesor) y los ajustes de la empresa. Algo nuevo que la tarjeta dibuje entra
+  ahí; un cambio en cómo se dibuja sube `VERSION_DEL_DIBUJO` (`entities/tarjeta/etiqueta-de-la-imagen.ts`). La ETag lleva el usuario: dos personas nunca comparten
+  una. La imagen no depende del nivel de quien la arma: la tarjeta sólo nombra nodos del nivel «todos» (K4) y los totales viajan para todos. Pruebas:
+  `supabase/tests/areas/tarjeta/imagen.sql`, `src/app/(app)/cotizaciones/[id]/imagen/route.test.ts`.
 - **La aprobada** (`cotizaciones_aprobadas`, una fila por vehículo; `docs/COTIZADOR.md` › «La cotización aprobada»): **nadie la escribe directo**, sólo
   `cotizacion_aprobar()` y `_aprobada_reponer()`, que corre al confirmar (`trg_cotizaciones_aprobadas_al_confirmar`, diferido: en un bloque de prueba que se
   revierte hay que forzarlo con `set constraints … immediate`). Invariante: con alguna cotización activa y el vehículo vivo, exactamente una fila y apunta

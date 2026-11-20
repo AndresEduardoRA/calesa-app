@@ -1,0 +1,132 @@
+import { z } from 'zod'
+import {
+  anchoDeLaImagen,
+  armarLaImagen,
+  CLAVE_DEL_ANCHO,
+  coincideLaEtiqueta,
+  etiquetaDeLaImagen,
+  leerHuellaDeLaImagen,
+  type ContextoDeQuienMira,
+} from '@/modules/cotizaciones'
+import { requerirSesion } from '@/modules/equipo'
+import type { Permisos } from '@/shared/lib/permisos'
+import {
+  asesorQueMira,
+  clienteDe,
+  oNulo,
+  vehiculoDe,
+  vehiculoDeLaTarjeta,
+} from '../../datos-de-la-tarjeta'
+
+// La imagen de la tarjeta de una cotización guardada (`docs/COTIZADOR.md` › «La imagen de la tarjeta»): lo guardado en WebP, armado al pedirlo para quien lo pide
+// (su asesor es esa persona; el cliente, sólo si lo ve), con su sesión (la base decide; nunca la secret key). No se guarda en ningún lado del servidor.
+//
+//   GET /cotizaciones/<id>/imagen[?ancho=480]
+//   200 image/webp | 304 | 307 al ingreso o a cerrar la sesión | 404 text/plain | 500 text/plain
+//
+// La ETag es la huella de lo que dibuja para quien pide (`cotizacion_imagen_huella()`), quien pide, la versión del dibujo y el ancho; con `private, no-cache` el
+// navegador pregunta cada vez y, si nada cambió, recibe un 304 sin que se arme nada. Con «Ver como» (la interfaz muestra los permisos de otro rol) o sin el primer
+// recálculo (la tarjeta sale sólo con el total), `no-store` y sin ETag. Lo que no existe, está en la papelera o no se ve es el mismo 404 que el PDF, nunca 403.
+// Si armarla falla, 500 `no-store`: nunca una vieja. `/portada` redirige aquí (308, `next.config.ts`).
+const NO_DISPONIBLE = 'Esta cotización ya no está disponible: no existe o ya no tienes acceso.'
+const NO_SE_PUDO = 'No se pudo armar la imagen. Vuelve a intentarlo.'
+const SIN_ADIVINAR = { 'X-Content-Type-Options': 'nosniff' }
+const SIN_GUARDAR = { 'Cache-Control': 'private, no-store', ...SIN_ADIVINAR }
+
+const texto = (cuerpo: string, status: number) =>
+  new Response(cuerpo, {
+    status,
+    headers: { 'Content-Type': 'text/plain; charset=utf-8', ...SIN_GUARDAR },
+  })
+
+// Lo que no existe, está en la papelera o no se ve, 404; lo demás, 500.
+const falla = (codigo: string) =>
+  codigo === 'sin_permiso' || codigo === 'no_encontrado'
+    ? texto(NO_DISPONIBLE, 404)
+    : texto(NO_SE_PUDO, 500)
+
+const conEtiqueta = (etiqueta: string) => ({
+  'Cache-Control': 'private, no-cache',
+  ETag: etiqueta,
+  ...SIN_ADIVINAR,
+})
+
+// Cuánto tardó cada paso, para la pestaña de red (`Server-Timing`), en ms enteros: es una cabecera, no un número que se muestra.
+const tiempos = (pasos: Record<string, number>) =>
+  Object.entries(pasos)
+    .map(([paso, ms]) => `${paso};dur=${String(Math.round(ms))}`)
+    .join(', ')
+
+// Lo que dibuja la imagen de quien pide: lo que esa persona ve, como el PDF (el cliente sólo con `leads.ver`; un error al leerlo, sin ese dato) y ella como asesor.
+async function contextoDeQuienMira(
+  permisos: Permisos,
+  cotizacion: { leadId: string | null; vehiculoId: string | null },
+): Promise<ContextoDeQuienMira> {
+  const [cliente, vehiculo, asesor] = await Promise.all([
+    oNulo(clienteDe(permisos, cotizacion.leadId)),
+    oNulo(vehiculoDe(cotizacion.vehiculoId)),
+    asesorQueMira(),
+  ])
+  return { cliente: cliente?.nombre ?? null, vehiculo: vehiculoDeLaTarjeta(vehiculo), asesor }
+}
+
+// La etiqueta de quien mira con sus permisos, o nula con «Ver como». Un fallo de la huella es la respuesta (404 o 500).
+async function etiquetaDe(
+  id: string,
+  sesion: { usuarioId: string; perspectiva: { rol: unknown } },
+  ancho: ReturnType<typeof anchoDeLaImagen>,
+): Promise<{ etiqueta: string | null } | { respuesta: Response }> {
+  if (sesion.perspectiva.rol !== null) {
+    return { etiqueta: null }
+  }
+  const huella = await leerHuellaDeLaImagen(id)
+  if (!huella.ok) {
+    return { respuesta: falla(huella.error.codigo) }
+  }
+  return {
+    etiqueta: etiquetaDeLaImagen({ huella: huella.data, usuarioId: sesion.usuarioId, ancho }),
+  }
+}
+
+export async function GET(
+  peticion: Request,
+  { params }: RouteContext<'/cotizaciones/[id]/imagen'>,
+) {
+  // La segunda barrera tras el proxy: sin sesión, al ingreso; con la cuenta dada de baja, a cerrar la sesión. Antes de leer nada.
+  const sesion = await requerirSesion()
+  const { id } = await params
+  if (!z.guid().safeParse(id).success) {
+    return texto(NO_DISPONIBLE, 404)
+  }
+  const ancho = anchoDeLaImagen(new URL(peticion.url).searchParams.get(CLAVE_DEL_ANCHO))
+  const inicio = performance.now()
+  const leida = await etiquetaDe(id, sesion, ancho)
+  if ('respuesta' in leida) {
+    return leida.respuesta
+  }
+  const { etiqueta } = leida
+  const huella = performance.now() - inicio
+  if (etiqueta !== null && coincideLaEtiqueta(peticion.headers.get('if-none-match'), etiqueta)) {
+    return new Response(null, {
+      status: 304,
+      headers: { ...conEtiqueta(etiqueta), 'Server-Timing': tiempos({ huella }) },
+    })
+  }
+  const armada = await armarLaImagen(id, {
+    contextoDe: (hoja) => contextoDeQuienMira(sesion.permisos, hoja.cotizacion),
+    ancho,
+  })
+  if (!armada.ok) {
+    return falla(armada.error.codigo)
+  }
+  const cabeceras =
+    etiqueta !== null && armada.data.conRecalculo ? conEtiqueta(etiqueta) : SIN_GUARDAR
+  return new Response(armada.data.bytes, {
+    status: 200,
+    headers: {
+      'Content-Type': 'image/webp',
+      ...cabeceras,
+      'Server-Timing': tiempos({ huella, armar: performance.now() - inicio - huella }),
+    },
+  })
+}

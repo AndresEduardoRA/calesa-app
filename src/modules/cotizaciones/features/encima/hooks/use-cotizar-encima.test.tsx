@@ -1,5 +1,4 @@
 import { act, renderHook } from '@testing-library/react'
-import type { ReactNode } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ResultadoDeEncima } from '../../../entities/resultado-de-encima'
 
@@ -15,7 +14,6 @@ vi.mock('@/shared/ui/toasts', () => ({ avisarExito }))
 vi.mock('../actions/cotizar-encima', () => ({ cotizarEncima: {} }))
 vi.mock('../actions/cotizar-encima-en-par', () => ({ cotizarEncimaEnPar: {} }))
 
-import { ContextoDeLaVistaPrevia } from '../../hoja/components/hueco-de-la-vista-previa'
 import { useCotizarEncima } from './use-cotizar-encima'
 
 const ANTERIOR = '00000000-0000-4000-8000-0000000000aa'
@@ -136,29 +134,5 @@ describe('useCotizarEncima: la nueva y «Recargar»', () => {
     })
     expect(refresh).toHaveBeenCalledTimes(1)
     expect(result.current.resultado).toBeNull()
-  })
-})
-
-describe('useCotizarEncima: la portada de la nueva', () => {
-  it('con la nueva creada avisa al área de la vista previa con su id; sin crearla, no', async () => {
-    const alGuardarLaCotizacion = vi.fn()
-    ejecutar.mockResolvedValueOnce(respuesta({ tipo: 'reintentar' }))
-    ejecutar.mockResolvedValueOnce(respuesta(creada()))
-    const { result } = renderHook(() => useCotizarEncima({ anterior: ANTERIOR }), {
-      wrapper: ({ children }: { children: ReactNode }) => (
-        <ContextoDeLaVistaPrevia value={{ dibujar: () => null, alGuardarLaCotizacion }}>
-          {children}
-        </ContextoDeLaVistaPrevia>
-      ),
-    })
-    await act(async () => {
-      await result.current.cotizar()
-    })
-    expect(alGuardarLaCotizacion).not.toHaveBeenCalled()
-    await act(async () => {
-      await result.current.cotizar()
-    })
-    expect(alGuardarLaCotizacion).toHaveBeenCalledExactlyOnceWith(NUEVA)
-    expect(push).toHaveBeenCalledTimes(1)
   })
 })

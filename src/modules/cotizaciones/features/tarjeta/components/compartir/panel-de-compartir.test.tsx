@@ -5,10 +5,10 @@ import { CLASE_LIVE } from '@/shared/ui/guion-live'
 import { DATOS_DE_PRUEBA } from '../../../../entities/tarjeta/compartir/compartir.soporte'
 
 const pedirLosDatos = vi.hoisted(() => vi.fn())
-const pedirLaPortadaParaCompartir = vi.hoisted(() => vi.fn())
+const pedirLaImagenParaCompartir = vi.hoisted(() => vi.fn())
 vi.mock('../../../../areas/tarjeta/composicion-compartir.client', () => ({
   pedirLosDatos,
-  pedirLaPortadaParaCompartir,
+  pedirLaImagenParaCompartir,
   pedirLasFotos: vi.fn(() => Promise.resolve({ ok: true, data: [] })),
   pedirLaFoto: vi.fn(),
   MENSAJE_SIN_ACCESO: 'No tienes acceso a esta cotización.',
@@ -29,7 +29,7 @@ function abrir(cotizacionId = ID) {
 beforeEach(() => {
   pedirLosDatos.mockResolvedValue({ ok: true, data: DATOS_DE_PRUEBA })
   // La portada no llega en jsdom (no hay lienzo): queda «Preparando la vista previa…».
-  pedirLaPortadaParaCompartir.mockReturnValue(new Promise(() => undefined))
+  pedirLaImagenParaCompartir.mockReturnValue(new Promise(() => undefined))
 })
 afterEach(() => {
   cleanup()

@@ -398,9 +398,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   o ≠). Se llega por las casillas de «De este vehículo» y por las del **modal del grupo** de un vehículo en `/cotizaciones`. No es la «Celda» de la hoja ni
   la «tarjeta de la cotización»: en la interfaz cada columna es «la cotización #N» y sus filas son de nodos.
 - **Tarjeta de la lista** — `<TarjetaDeLista>` (`@/shared/ui/lista`): cada ítem de la vista «Tarjetas» de un listado. La de `/cotizaciones` es
-  `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): la **portada de la cotización** arriba (en miniatura) con el «⋯» encima, el
+  `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): la **imagen de la tarjeta** arriba (en miniatura) con el «⋯» encima, el
   título, «N.º n» con sus insignias, el total con su modo, el cliente, el autor, la vigencia, el conteo de su grupo y «Compartir». No es la **tarjeta de la
-  cotización** (la vista previa tipo Excel que la portada muestra).
+  cotización** (la vista previa tipo Excel que esa imagen muestra).
 - **Grupo de un vehículo** — `EntradaDelListado` de `tipo: 'grupo'`, `cotizaciones_listado_por_vehiculo()`: en `/cotizaciones` agrupada («Agrupar por
   vehículo», `?agrupar=`, `cotizaciones.agrupar`), las cotizaciones de un vehículo que quien mira ve y coinciden con la búsqueda y los filtros, en una tarjeta o
   fila con «N cotizaciones de este vehículo» que abre el **modal del grupo**. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
@@ -410,8 +410,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   **resumen** (`?cotizacion=`) que abre una de sus líneas ni «De este vehículo» (el bloque de la ficha del vehículo).
 - **Cabeza del grupo** — `cabeza` de un grupo de un vehículo: la cotización que lo representa en su tarjeta o fila: su **aprobada** si quien mira la ve y
   coincide; si no, la más reciente que coincide. La lista ordena y pagina los grupos por su cotización más reciente (`ordenEn`, `ordenId`), no por la cabeza.
-- **Miniatura de la portada** — `?ancho=480` de `GET /cotizaciones/<id>/portada` (`ANCHOS_DE_LA_PORTADA`, `miniaturaDeLaPortada()`): la portada achicada a
-  480 px que piden las listas, con su propia ETag; el bucket guarda sólo la grande, que pide el visor.
+- **Miniatura de la imagen** — `?ancho=480` de `GET /cotizaciones/<id>/imagen` (`ANCHOS_DE_LA_IMAGEN`, `webpDeLaTarjeta()`): la imagen de la tarjeta
+  achicada a 480 px que piden las listas, con su propia ETag; el visor pide la grande.
 - **Primer resultado** — `entities/primer-resultado.ts`, `cotizaciones_aprobadas.monto` y `moneda`: lo que la hoja dibuja primero en la tarjeta del total
   (`totales.usd`, en USD). La aprobada lo lleva congelado para que la lista de vehículos lo lea sin unir cotizaciones.
 - **Papelera de cotizaciones** — `cotizaciones_papelera_*`, `cotizaciones.papelera.purgar`, `/cotizaciones/papelera`: borrado reversible por
@@ -471,7 +471,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo, foto del asesor o vacío) y su estilo. La de logo dibuja
   sólo el logo de la empresa, a la medida de la celda; su nombre es el dato «Nombre de la empresa» (`empresa_nombre`). No es la **Celda (de la hoja)**.
 - **Asesor (de la tarjeta)** — `AsesorDeLaTarjeta` (`ContextoDeLaCotizacion.asesor`: nombre, teléfono, cargo y foto), `leerAsesorQueMira()`, variables
-  `asesor_*`: quien mira o comparte la tarjeta, su PDF o su texto, nunca quien creó la cotización (ese es el **autor**, «Creado por»). Con «Ver como», la
+  `asesor_*`: quien mira o comparte la tarjeta, su imagen, su PDF o su texto, nunca quien creó la cotización (ese es el **autor**, «Creado por»). Con «Ver como», la
   persona real. Sus datos salen de su perfil: `whatsapp_web`, `cargo_web` y `avatar_ruta`.
 - **Autor (de una cotización)** — `cotizaciones.creado_por`, `leerAutorDeLaCotizacion()`: quien la creó; «Creado por» del panel de compartir, de la lista y
   del historial. No es el asesor de la tarjeta.
@@ -505,20 +505,20 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `geometriaDeLaTarjeta()`) como la vería el cliente, escalada como una imagen; en una guardada, lo guardado.
 - **Retoque de la tarjeta** — `cotizaciones.tarjeta_retoques`, `RetoquesDeLaTarjeta`, `cotizacion_retocar_tarjeta()`, `aplicarRetoques()`: el texto
   de una celda de texto cambiado o una fila oculta en la tarjeta de **una** cotización guardada, sin tocar la plantilla del origen; vale en la vista
-  previa, el PDF, «Copiar texto», compartir y la portada, y cotizar encima se lo lleva. Nunca una cifra, un color ni el logo. Un retoque de una celda o
+  previa, el PDF, «Copiar texto», compartir y la imagen de la tarjeta, y cotizar encima se lo lleva. Nunca una cifra, un color ni el logo. Un retoque de una celda o
   fila que la plantilla de hoy ya no tiene **no aplica**: se ignora al dibujar y se quita al guardar.
 - **Retocar (modo)** — «Retocar» en el pie de la vista previa de una guardada (quien la puede guardar): el modal pasa a «Retocar la tarjeta», donde
   tocar un texto lo edita y el ojo de cada fila la oculta o la muestra; «Listo» guarda todo junto, «Cancelar» lo descarta y «Volver a la plantilla»
   quita los retoques.
-- **Portada de la cotización** — `cotizaciones_portadas`, `<PortadaDeLaCotizacion>`, `GET /cotizaciones/<id>/portada`: la imagen de la tarjeta de lo
-  guardado de una cotización, en WebP por hash en el bucket `cotizaciones`, con la **clave de la portada** (`_cotizacion_portada_clave()`: de qué está
-  hecha; distinta de la vigente, quedó vieja). La **compartida** es la guardada, para quien ve todo lo que dibuja; los demás reciben una armada con lo suyo.
-  No es la **Portada** de un vehículo.
+- **Imagen de la tarjeta** — `GET /cotizaciones/<id>/imagen`, `armarLaImagen()`, `rutaDeLaImagen()`: la tarjeta de lo guardado de una cotización en WebP,
+  armada al pedirla **para quien la pide** (lo que esa persona ve y ella como asesor) y nunca guardada; la caché del navegador la reusa con su ETag, que sale
+  de la **huella de la imagen** (`cotizacion_imagen_huella()`: de qué está hecha para quien pide). En la lista, el resumen y la ficha del vehículo; «Compartir»
+  la manda. No es la **Portada** de un vehículo ni la **Vista previa** (el modal con la tarjeta en HTML).
 - **PDF de la cotización** — `GET /cotizaciones/<id>/pdf`, `pdfDeUnaGuardada()`: la tarjeta de lo guardado en A4; lo descarga quien la ve
   («Descargar PDF», junto a «Copiar texto» y en «Compartir la cotización»). No es el **Compartir** de un lead.
 - **Compartir la cotización** — `PanelDeCompartir`, `DatosParaCompartir`, `textoParaCompartir()`, rutas `GET /cotizaciones/<id>/compartir` y
   `…/compartir/fotos`, `?panel=compartir` (en el detalle) y `?panel=compartir&para=<id>` (fuera de él), pestaña en `?compartir=texto`: el panel «Compartir
-  cotización» para mandarle la cotización a un cliente. La pestaña **«Imagen»** ofrece **«Cotización»** (la portada de la cotización) o **«Fotos»** (las del
+  cotización» para mandarle la cotización a un cliente. La pestaña **«Imagen»** ofrece **«Cotización»** (la imagen de la tarjeta) o **«Fotos»** (las del
   vehículo, para marcar); la pestaña **«Texto»**, un **formato** («Simple», «WhatsApp», «Facebook», «TikTok») y una **zona** («Hora de <la ciudad de la
   empresa>» o «Hora del patio»); el texto firma con el asesor (quien comparte: «Asesor: nombre, cargo» y «WhatsApp: …»). Botones: «Compartir» (el menú del sistema del celular), «Copiar imagen», «Descargar imagen», «Copiar texto» y «Descargar PDF».
   Sólo lleva lo del nivel «todos» (lo que dibuja la tarjeta de la cotización). No es el **Compartir** de un lead ni **Compartir los tipos de cambio**.

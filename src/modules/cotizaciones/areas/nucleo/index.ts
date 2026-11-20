@@ -104,7 +104,7 @@ export {
   CLAVE_DE_VEHICULO,
   CLAVE_DEL_ANCHO,
   RUTA_DE_LA_HOJA,
-  anchoDeLaPortada,
+  anchoDeLaImagen,
   rutaDeLaHoja,
   rutaDelListado,
 } from '../../entities/ruta-de-la-hoja'

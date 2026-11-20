@@ -1,4 +1,4 @@
-// Lo que el panel «Compartir la cotización» pide desde el navegador, con la sesión de quien mira: los datos del texto, la portada, la lista de fotos y cada foto. Un
+// Lo que el panel «Compartir la cotización» pide desde el navegador, con la sesión de quien mira: los datos del texto, la imagen de la tarjeta, la lista de fotos y cada foto. Un
 // `fetch` que no sigue la redirección (sin sesión la ruta manda al ingreso) y da textos propios, nunca el cuerpo de la respuesta: un 404 es «No tienes acceso a esta
 // cotización.», la redirección la sesión vencida y un pedido que no llegó, sin conexión.
 import { MENSAJE_SIN_CONEXION, fallo, ok, type Resultado } from '@/shared/lib/errores'
@@ -8,7 +8,7 @@ import {
   type DatosParaCompartir,
   type FotoParaCompartir,
 } from '../../entities/tarjeta/compartir/datos-para-compartir'
-import { rutaDeLaCotizacion, rutaDeLaPortada } from '../../entities/ruta-de-la-hoja'
+import { rutaDeLaCotizacion, rutaDeLaImagen } from '../../entities/ruta-de-la-hoja'
 
 export const MENSAJE_SIN_ACCESO = 'No tienes acceso a esta cotización.'
 export const MENSAJE_SESION_QUE_NO_VALE = 'Tu sesión ya no vale: vuelve a entrar.'
@@ -93,10 +93,10 @@ export async function pedirLasFotos(
   return leidas.ok ? ok(leidas.data.fotos) : leidas
 }
 
-// La portada (WebP): con la caché del navegador, que revalida con su ETag (un 304 barato si no cambió).
-export async function pedirLaPortadaParaCompartir(id: string, senal?: AbortSignal) {
+// La imagen de la tarjeta (WebP) para quien comparte: con la caché del navegador, que revalida con su ETag (un 304 barato si no cambió).
+export async function pedirLaImagenParaCompartir(id: string, senal?: AbortSignal) {
   const pedido = { tipo: IMAGEN, cache: 'default', alFallar: NO_SE_ARMO_LA_IMAGEN, senal } as const
-  return leerBlob(await pedir(rutaDeLaPortada(id), pedido), NO_SE_ARMO_LA_IMAGEN)
+  return leerBlob(await pedir(rutaDeLaImagen(id), pedido), NO_SE_ARMO_LA_IMAGEN)
 }
 
 // Una foto a tamaño completo, del bucket público (otro origen): un `fetch` (nunca un `<img>`) para tener los bytes que se comparten.

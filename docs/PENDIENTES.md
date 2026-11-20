@@ -30,7 +30,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Editor del diseño: sumar y quitar secciones o ítems, y pasar un ítem de una sección a otra (hoy se ordena dentro de la suya) — sin tarea que lo tome.
 - **[—]** En la primera publicación de un origen (las dos esperadas nulas), el borrador puede nacer sobre una v1 que otra persona publicó entre medio — decidir si la esperada nula deja de valer.
 - **[T314]** «Compartir la cotización» sin el asistente de IA de V1 para reescribir el texto («hazlo más corto», «más profesional»…): decidir si vuelve y con qué proveedor.
-- **[T314]** «Compartir la cotización» sin el editor de imagen 9:16 de V1 (la historia de WhatsApp o Instagram con la foto y la cotización): hoy se comparte la portada o las fotos tal cual.
+- **[T314]** «Compartir la cotización» sin el editor de imagen 9:16 de V1 (la historia de WhatsApp o Instagram con la foto y la cotización): hoy se comparte la imagen de la tarjeta o las fotos tal cual.
 - **[T326]** Plantillas de V1: la `usa_moto` de V1 guarda porcentajes enteros (5 … 30) que su motor multiplica tal cual como factor DP; la plantilla los congela como 5 % … 30 % (0,05 … 0,30): confirmar qué cálculo es el bueno para una moto.
 - **[T326]** Plantillas de V1: Compra dealer USA no cotiza Moto ni USA → Chile (V1 sí): la fórmula admite una sola variante y la suya es el contenedor en par — decidir si hacen falta.
 - **[—]** Sin hacer: el filtro «Favoritas» y la insignia en el listado, quién reportó en la lista de reportes, el tiempo real en comentarios y el motivo de lo bloqueado en la fila de un lote de la papelera.
