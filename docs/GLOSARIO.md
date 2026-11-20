@@ -27,6 +27,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Preferencia** — `preferencias_usuario` / `Preferencias`: elección de interfaz por persona (densidad, tema), igual en todos sus dispositivos.
 - **Zona de quien mira** — `preferencias_usuario.zona_horaria` / `useRegional().zonaDeLaPersona`: en qué zona ve cada persona las fechas de
   subasta (`/perfil` › «Zona horaria»); sin elegir, la de la empresa. Lo demás sigue en la zona de la empresa.
+- **Cuenta regresiva del cierre** — `cuentaDelCierre()` (`vehiculos/entities/cuenta-regresiva-del-cierre.ts`), `<CuentaRegresivaDelCierre>`: lo que le falta a una subasta
+  viva para cerrar, contado cada segundo («Cierra en 2 d 04:12:33»; ámbar con menos de 24 h, roja con menos de 1 h; «Cerrando…», «Cerró hace 3 min», «Sin fecha de
+  cierre»). La dibujan la tarjeta y la fila de la lista de vehículos en subasta y la ficha, con un solo temporizador por página. No es la **frase de subasta** de la ficha.
 - **Hora del patio** — `zonaDelPatio()` / `<FechaDeSubasta>`: la hora de una subasta en la zona de su patio, estimada por el estado de la
   ubicación (`ubicacion_estado`); un estado con dos zonas toma la de la mayoría.
 - **Densidad** — `useDensidad()` / `--fila` (`compacta` | `comoda`): altura de las filas; compacta con mouse, cómoda en táctil, o la elegida.
@@ -387,7 +390,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   activa. No es la **Final** (marcar una no aprueba ni al revés). Se ve como la insignia «Aprobada» y, en `/vehiculos`, como el **Costo estimado**.
 - **Costo estimado** — `ROTULO_DEL_COSTO_ESTIMADO`, `costoEstimadoDe()` (`vehiculos/entities/cotizacion-aprobada-de-la-fila.ts`), `cotizaciones_aprobadas_de_vehiculos()`:
   la cotización aprobada de un vehículo en `/vehiculos` (columna de la tabla y fila de la tarjeta de la lista): su primer resultado con su moneda y el modo de tipo
-  de cambio de la cotización («US$27.999 · Unificado»), enlazado a ella. No son los campos de apibara «Costo estimado desde / hasta / mediano (USD)».
+  de cambio de la cotización («US$27.999 · Unificado»), en un botón que abre «Compartir la cotización» de la aprobada sin salir de la lista. No son los campos de apibara «Costo estimado desde / hasta / mediano (USD)».
 - **De este vehículo** — `cotizaciones_de_este_vehiculo()`, `pantallas/aprobada-de-este-vehiculo.ts` (`DeEsteVehiculo`): el bloque de una cotización (su
   página y su resumen en `/cotizaciones`) con las otras del mismo vehículo, la aprobada primero y «Aprobar esta» en cada una; la que se mira va marcada
   **«Esta»**. En la ficha del vehículo es el bloque «Cotizaciones de este vehículo» (todas, ninguna marcada). No es el historial del vehículo (el panel de

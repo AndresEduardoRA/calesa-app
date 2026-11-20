@@ -273,10 +273,13 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   izquierda (velo oscuro, sin lote no está); después el título en dos líneas (cortado con «…», entero en el `title` y el nombre del enlace), la línea
   `#n · año · VIN` en una, la situación con sus insignias y, pegadas abajo, las **filas de datos fijas** de la pestaña, con «—» si falta el dato: el precio o
   la puja («Puja actual» o «Puja final») y, en subasta, «Compra directa»; «Costo estimado» a lo ancho; los campos «en tarjeta» de a dos.
+  En un origen de subasta, cada vehículo en subasta lleva su **cuenta regresiva del cierre** («Cierra en 2 d 04:12:33», viva cada segundo, ámbar con menos de 24 h
+  y roja con menos de 1 h; «Cerrando…», «Cerró hace 3 min» o «Sin fecha de cierre»; con `prefers-reduced-motion`, cada minuto y sin segundos): en la tarjeta,
+  arriba de la línea que separa los datos; en la tabla, debajo de «En subasta» en la columna Fase.
   **Tabla:** Nombre, Fase, Año, «Lote» (subasta), «Precio» o «Puja actual», «Compra directa» (subasta), «Costo estimado» (con `cotizaciones.ver`) y los campos
   «en tarjeta». En un origen de subasta con el campo de la puja, «Precio» es «Puja actual» (USD, «final» si terminó o se vendió; sin puja, «—»).
   **«Costo estimado»** (con `cotizaciones.ver` en algún origen): el primer resultado de la aprobada del vehículo con su moneda y el modo de tipo de cambio de
-  su cotización («US$27.999 · Unificado»), todo enlazado a esa cotización (sin modo, sólo el monto; sin total, «Sin total»; sin aprobada o una que no se ve,
+  su cotización («US$27.999 · Unificado»), todo en un botón que abre «Compartir la cotización» de la aprobada sobre la lista (`?panel=compartir&para=<id>`; en Modo Live es texto; nombre accesible «Compartir la cotización aprobada (US$27.999 · Unificado)») (sin modo, sólo el monto; sin total, «Sin total»; sin aprobada o una que no se ve,
   «—»); sin la clave no se dibuja ni se consulta. **«Compra directa»** (subasta): el campo del layout con la ruta de apibara `pricing.buy_now_usd`, en USD; sin
   ese campo activo o sin el dato, «—» (ese campo no se repite entre los «en tarjeta»).
   `/vehiculos/papelera` (por lote).
