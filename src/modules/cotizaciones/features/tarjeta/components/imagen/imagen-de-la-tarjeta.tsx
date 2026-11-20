@@ -62,7 +62,7 @@ export function ImagenDeLaTarjeta({
   return (
     <div
       ref={observar}
-      data-imagen-de-la-tarjeta
+      data-imagen-de-la-tarjeta={cotizacionId}
       className="relative grid w-full overflow-hidden rounded-(--radius-card) border border-(--color-line) bg-(--color-paper-dim)"
       style={{ aspectRatio: String(proporcion) }}
     >

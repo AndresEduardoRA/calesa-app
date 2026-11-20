@@ -58,10 +58,9 @@ test.afterAll(async () => {
 })
 
 const deLaPrueba = (resto = ''): string => `/cotizaciones?origen=${t.origen.id}${resto}`
+// Por el marco de su imagen, que lleva el id (la imagen se pide recién a la vista).
 const tarjetaDe = (page: Page, id: string) =>
-  page
-    .locator('article')
-    .filter({ has: page.locator(`[data-imagen-de-la-tarjeta] img[src*="${id}"]`) })
+  page.locator('article').filter({ has: page.locator(`[data-imagen-de-la-tarjeta="${id}"]`) })
 const conteo = (page: Page) => page.getByRole('button', { name: /cotizaciones de este vehículo$/ })
 
 async function abrir(page: Page, ruta: string): Promise<void> {
@@ -81,7 +80,8 @@ test('E2E por defecto, tarjetas agrupadas: el grupo con la imagen de su aprobada
   expect(grupo.ids).toHaveLength(4)
   const delGrupo = tarjetaDe(page, aprobada)
   await expect(delGrupo).toHaveCount(1)
-  // La miniatura de la imagen de la aprobada.
+  // La miniatura de la imagen de la aprobada: se pide al llegar a la vista.
+  await delGrupo.scrollIntoViewIfNeeded()
   await expect(delGrupo.locator('[data-imagen-de-la-tarjeta] img')).toHaveAttribute(
     'src',
     /imagen\?ancho=480/,
