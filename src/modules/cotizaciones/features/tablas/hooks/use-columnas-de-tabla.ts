@@ -56,6 +56,8 @@ export function useColumnasDeTabla({ tabla, origenId, alCerrar }: Opciones) {
   const [error, setError] = useState<string | null>(null)
   const [conflicto, setConflicto] = useConflictoHastaLaVersion(String(tabla.version))
   const [recargando, recargarPagina] = useTransition()
+  // Entró: mientras se cierra, otro envío iría con la versión vieja y volvería como conflicto.
+  const [listo, setListo] = useState(false)
   const cambiar = useAction(cambiarColumnas)
   const envio = useUnEnvioALaVez()
 
@@ -63,7 +65,7 @@ export function useColumnasDeTabla({ tabla, origenId, alCerrar }: Opciones) {
   const hayCambios = hayCambiosEn(edicion, tabla.columnas)
 
   async function enviar(): Promise<boolean> {
-    if (!hayCambios || conflicto !== null) return false
+    if (listo || !hayCambios || conflicto !== null) return false
     const local = validarColumnas(columnas, tabla.columnas)
     if (local) {
       setPorCampo({ [local.camino]: local.mensaje })
@@ -83,6 +85,7 @@ export function useColumnasDeTabla({ tabla, origenId, alCerrar }: Opciones) {
     )
     if (hecho === null) return false
     if (hecho.ok) {
+      setListo(true)
       setPorCampo({})
       setError(null)
       alCerrar()
@@ -115,7 +118,7 @@ export function useColumnasDeTabla({ tabla, origenId, alCerrar }: Opciones) {
     error,
     conflicto,
     recargando,
-    enCurso: envio.enCurso,
+    enCurso: envio.enCurso || listo,
     hayCambios,
     seQuitaAlguna: edicion.columnas.some((c) => c.seQuita),
     resumen: resumenDeLosCambios(edicion, tabla.columnas),

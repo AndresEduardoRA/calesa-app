@@ -30,9 +30,12 @@ export function DesactivarTabla({ abierto, alCerrar, tabla, origenId }: Props) {
   const { mandar, enCurso } = useUnEnvioALaVez()
   const [conflicto, setConflicto] = useState<string | null>(null)
   const [sinRed, setSinRed] = useState(false)
+  // Entró: mientras navega a la lista, otro clic reenviaría sobre una tabla ya inactiva.
+  const [listo, setListo] = useState(false)
   const [recargando, recargarPagina] = useTransition()
 
   async function confirmar() {
+    if (listo) return
     const hecho = await mandar(() =>
       enviarAccion(
         desactivar.executeAsync({ tablaId: tabla.id, origenId, versionEsperada: tabla.version }),
@@ -42,6 +45,7 @@ export function DesactivarTabla({ abierto, alCerrar, tabla, origenId }: Props) {
     if (hecho === null) return
     setSinRed(false)
     if (hecho.ok) {
+      setListo(true)
       // La ruta nueva ya no lleva `?panel=`: cierra el diálogo. Cerrarlo antes escribiría la URL después y pisaría esta.
       avisarExito(`Desactivaste «${tabla.nombre}».`)
       router.replace(rutaDeLasTablas(origenId))
@@ -67,7 +71,7 @@ export function DesactivarTabla({ abierto, alCerrar, tabla, origenId }: Props) {
       titulo={`Desactivar «${tabla.nombre}»`}
       descripcion={DESCRIPCION_DE_DESACTIVAR}
       etiquetaConfirmar="Desactivar"
-      enCurso={enCurso}
+      enCurso={enCurso || listo}
       deshabilitado={conflicto !== null}
     >
       {conflicto ? (
