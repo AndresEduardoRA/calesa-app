@@ -2,144 +2,52 @@ import type { Page } from '@playwright/test'
 import { expect, test } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
-  admin,
   borrarPersonasDePrueba,
   borrarRolesDePrueba,
   correoDePrueba,
   crearDuenaDePrueba,
 } from './soporte/base'
+import {
+  RELLENO,
+  borrarTerrenoDeSubasta,
+  guardarVistaVieja,
+  sembrarTerrenoDeSubasta,
+  titulosDeSubasta,
+  type TerrenoDeSubasta,
+  type TituloDeSubasta,
+} from './soporte/filtro-de-subasta'
 import { aLaVista, cerrarPanelDeFiltros, panelDeFiltros, vehiculo } from './soporte/inventario'
-import { PREFIJO_CLAVE_E2E, borrarOrigenes, crearOrigenDePrueba } from './soporte/origenes'
 import { capturar } from './soporte/recorrido'
-import { borrarVehiculosDe, vistasDe } from './soporte/vehiculos'
+import { vistasDe } from './soporte/vehiculos'
 import { abrirVistaYOpciones } from './soporte/vista-y-opciones'
 
-// El filtro «Situación» del inventario (docs/UX.md › «Vehículos»): las fases del origen más «En subasta», «Sin resolver» y «No ganadas», que se combina con
-// los demás filtros, vive en la URL y se guarda en una vista. Y el atajo «Sin resolver» con su conteo. La equivalencia de las dos copias de cada condición
-// la ata `vehiculos-inventario-postgrest.spec.ts`; el plan, `db:medir:volumen`. Terreno propio por SQL de servicio, borrado al empezar y al terminar.
+// «Subasta» y «Fase», los filtros del inventario (docs/UX.md › «Vehículos»): «Subasta» es una a la vez (cuándo cierra, las vivas, sin resolver o no ganadas) y sólo
+// existe en un origen de subasta, con el orden «Cierre más próximo» (el de siempre cuando «Subasta» tiene valor); «Fase» son las fases del origen y «Sin fase».
+// Viven en la URL, se guardan en una vista, el `?situacion=` viejo redirige con 308 y el atajo «Sin resolver» pone su filtro. La equivalencia de las dos copias
+// de cada condición la ata `vehiculos-inventario-postgrest.spec.ts`; el plan, `db:medir:volumen`. Terreno propio por SQL de servicio, borrado al empezar y al terminar.
 test.describe.configure({ mode: 'serial' })
-
-const DIA = 86_400_000
-
-type Terreno = { origen: string; otro: string; comprado: string }
 
 let proyecto = ''
 let correo = ''
-let terreno: Terreno
+let terreno: TerrenoDeSubasta
 
-const claveDe = (p: string) => `${PREFIJO_CLAVE_E2E}fsit_${p}`
-const otraClaveDe = (p: string) => `${PREFIJO_CLAVE_E2E}fsit_otro_${p}`
-const sinPrefijo = (clave: string) => clave.slice(PREFIJO_CLAVE_E2E.length)
-
-const titulos = (p: string) => ({
-  enSubasta: `E2E En subasta ${p}`,
-  sinResolverNueva: `E2E Sin resolver nueva ${p}`,
-  sinResolverVieja: `E2E Sin resolver vieja ${p}`,
-  noGanada: `E2E No ganada ${p}`,
-  comprado: `E2E Comprado ${p}`,
-  sinFase: `E2E Sin fase ${p}`,
-})
-
-function exigir(error: { message: string } | null, que: string): void {
-  if (error) throw new Error(`No se pudo ${que}: ${error.message}`)
-}
-
-async function borrarTerreno(p: string): Promise<void> {
-  await borrarVehiculosDe([claveDe(p), otraClaveDe(p)])
-  await borrarOrigenes([claveDe(p), otraClaveDe(p)])
-}
-
-// Un origen de subasta con «Subasta» (la subasta, inicial) y «Comprado», y un vehículo en cada situación: uno con la subasta viva, dos con la subasta
-// terminada (de 2020 y de 2015), uno marcado «No ganada», uno ya «Comprado» y uno sin fase ni subasta. Y otro origen, sólo para cambiar de pestaña.
-async function sembrar(p: string): Promise<Terreno> {
-  const origen = await crearOrigenDePrueba(`E2E Situación filtro ${p}`, sinPrefijo(claveDe(p)), {
-    tipo: 'subasta',
-    plataformas: ['copart'],
-  })
-  const otro = await crearOrigenDePrueba(`E2E Otro origen ${p}`, sinPrefijo(otraClaveDe(p)))
-  const cliente = admin()
-  const flujo = await cliente
-    .from('flujos')
-    .select('id')
-    .eq('origen_id', origen.id)
-    .single<{ id: string }>()
-  exigir(flujo.error, 'leer el flujo')
-  const fases = await cliente
-    .from('fases')
-    .insert([
-      { flujo_id: flujo.data?.id, nombre: 'Subasta', orden: 1, es_inicial: true, es_subasta: true },
-      {
-        flujo_id: flujo.data?.id,
-        nombre: 'Comprado',
-        orden: 2,
-        es_inicial: false,
-        es_subasta: false,
-      },
-    ])
-    .select('id, nombre')
-    .returns<{ id: string; nombre: string }[]>()
-  exigir(fases.error, 'crear las fases')
-  const fase = (nombre: string) => fases.data?.find((f) => f.nombre === nombre)?.id ?? ''
-  const t = titulos(p)
-  const hace = new Date(Date.now() - 2 * DIA).toISOString()
-  const futuro = new Date(Date.now() + 5 * DIA).toISOString()
-  const terminada = { estado_subasta: 'terminada', subasta_en: hace }
-  const enSubasta = { fase_id: fase('Subasta'), fase_desde: hace }
-  const filas = await cliente
-    .from('vehiculos')
-    .insert([
-      {
-        origen_id: origen.id,
-        titulo: t.enSubasta,
-        anio: 2021,
-        ...enSubasta,
-        estado_subasta: 'abierta',
-        subasta_en: futuro,
-        subasta_fin_en: futuro,
-      },
-      { origen_id: origen.id, titulo: t.sinResolverNueva, anio: 2020, ...enSubasta, ...terminada },
-      { origen_id: origen.id, titulo: t.sinResolverVieja, anio: 2015, ...enSubasta, ...terminada },
-      {
-        origen_id: origen.id,
-        titulo: t.noGanada,
-        anio: 2020,
-        ...enSubasta,
-        ...terminada,
-        subasta_resultado: 'no_ganada',
-        subasta_resuelta_en: hace,
-      },
-      { origen_id: origen.id, titulo: t.comprado, anio: 2020, fase_id: fase('Comprado') },
-      { origen_id: origen.id, titulo: t.sinFase, anio: 2019 },
-    ])
-    .select('titulo, situacion')
-    .returns<{ titulo: string; situacion: string }[]>()
-  exigir(filas.error, 'cargar los vehículos')
-  const situacionDe = (titulo: string) => filas.data?.find((v) => v.titulo === titulo)?.situacion
-  const esperadas: [string, string][] = [
-    [t.enSubasta, 'en_subasta'],
-    [t.sinResolverNueva, 'sin_resolver'],
-    [t.sinResolverVieja, 'sin_resolver'],
-    [t.noGanada, 'no_ganada'],
-    [t.comprado, 'fase'],
-    [t.sinFase, 'fase'],
-  ]
-  for (const [titulo, situacion] of esperadas) {
-    if (situacionDe(titulo) !== situacion) {
-      throw new Error(`«${titulo}» quedó ${situacionDe(titulo)} y debía ser ${situacion}.`)
-    }
-  }
-  return { origen: origen.id, otro: otro.id, comprado: fase('Comprado') }
-}
+// Sin filtrar: todo menos la no ganada (y el relleno, que no se mira acá).
+const SIN_FILTRAR: TituloDeSubasta[] = [
+  'vivaHoy',
+  'enSubasta',
+  'vivaSinFecha',
+  'sinResolverNueva',
+  'sinResolverVieja',
+  'comprado',
+  'sinFase',
+]
 
 // Lo que se ve en la lista: cada título del terreno, visible o no.
-async function exigirLista(
-  page: Page,
-  visibles: (keyof ReturnType<typeof titulos>)[],
-): Promise<void> {
-  const t = titulos(proyecto)
+async function exigirLista(page: Page, visibles: TituloDeSubasta[]): Promise<void> {
+  const t = titulosDeSubasta(proyecto)
   for (const [clave, titulo] of Object.entries(t)) {
     const lugar = vehiculo(page, titulo)
-    if (visibles.includes(clave as keyof typeof t)) {
+    if (visibles.includes(clave as TituloDeSubasta)) {
       await expect(lugar).toBeVisible()
     } else {
       await expect(lugar).toBeHidden()
@@ -147,69 +55,72 @@ async function exigirLista(
   }
 }
 
+const filas = (page: Page) => aLaVista(page.locator('tbody tr, li article'))
+
+// Los títulos del terreno en el orden de la lista (cada fila nombra uno; el relleno también cuenta).
+async function ordenDeLaLista(page: Page): Promise<string[]> {
+  const textos = await filas(page).allInnerTexts()
+  const t = Object.values(titulosDeSubasta(proyecto))
+  const relleno = new RegExp(`E2E Relleno \\d+ ${proyecto}`)
+  return textos.map(
+    (texto) => t.find((titulo) => texto.includes(titulo)) ?? relleno.exec(texto)?.[0] ?? texto,
+  )
+}
+
 const irA = async (page: Page, consulta = '') =>
   page.goto(`/vehiculos?origen=${terreno.origen}${consulta}`)
+
+const chips = (page: Page) => page.getByRole('list', { name: 'Filtros activos' })
 
 test.beforeAll(async ({}, info) => {
   proyecto = info.project.name
   correo = correoDePrueba(`duena-filtro-situacion-${proyecto}`)
-  await borrarTerreno(proyecto)
+  await borrarTerrenoDeSubasta(proyecto)
   await borrarPersonasDePrueba()
   await borrarRolesDePrueba()
   await crearDuenaDePrueba({ email: correo, contrasena: CONTRASENA, nombre: 'Dalia Filtro' })
-  terreno = await sembrar(proyecto)
+  terreno = await sembrarTerrenoDeSubasta(proyecto)
 })
 
 test.afterAll(async () => {
-  await borrarTerreno(proyecto)
+  await borrarTerrenoDeSubasta(proyecto)
   await borrarPersonasDePrueba()
   await borrarRolesDePrueba()
 })
 
-test('E2E situación filtro · sin filtrar no salen las no ganadas, y cada situación trae las suyas', async ({
-  page,
-}) => {
-  await entrar(page, correo, { fresco: true })
-  await irA(page)
-  await exigirLista(page, [
-    'enSubasta',
-    'sinResolverNueva',
-    'sinResolverVieja',
-    'comprado',
-    'sinFase',
-  ])
-
-  await irA(page, '&situacion=en_subasta')
-  await exigirLista(page, ['enSubasta'])
-  await irA(page, '&situacion=sin_resolver')
-  await exigirLista(page, ['sinResolverNueva', 'sinResolverVieja'])
-  await irA(page, '&situacion=no_ganada')
-  await exigirLista(page, ['noGanada'])
-  await irA(page, '&situacion=ninguna')
-  await exigirLista(page, ['sinFase'])
-  // Una fase: las que tienen esa fase y nada más («Subasta» no es «En subasta»: las de la subasta figuran por su situación).
-  await irA(page, `&situacion=${terreno.comprado}`)
-  await exigirLista(page, ['comprado'])
-  // Varias a la vez, con las no ganadas incluidas.
-  await irA(page, `&situacion=no_ganada,en_subasta,${terreno.comprado}`)
-  await exigirLista(page, ['noGanada', 'enSubasta', 'comprado'])
-})
-
-test('E2E situación filtro · se elige en el panel, sale como chip y se combina con otro filtro', async ({
+test('E2E subasta filtro · el panel tiene «Subasta» (una a la vez) y «Fase» (varias), y se combinan con otro filtro', async ({
   page,
 }, info) => {
-  await entrar(page, correo)
+  await entrar(page, correo, { fresco: true })
   await irA(page)
+  await exigirLista(page, SIN_FILTRAR)
   let panel = await panelDeFiltros(page)
-  await expect(panel.getByRole('checkbox', { name: 'Sin fase' })).toBeVisible()
-  await panel.getByRole('checkbox', { name: 'Sin resolver' }).check()
-  await capturar(page, info, 'panel-de-situacion')
+  const subasta = panel.getByRole('group', { name: 'Subasta' })
+  const fase = panel.getByRole('group', { name: 'Fase' })
+  await expect(subasta.getByRole('radio', { name: 'Cualquiera' })).toBeChecked()
+  for (const nombre of [
+    'Cierra hoy',
+    'Cierra en 48 h',
+    'Cierra esta semana',
+    'Todas las vivas',
+    'Sin resolver',
+    'No ganadas',
+  ]) {
+    await expect(subasta.getByRole('radio', { name: nombre })).toBeVisible()
+  }
+  for (const nombre of ['En subasta', 'Comprado', 'Sin fase']) {
+    await expect(fase.getByRole('checkbox', { name: nombre })).toBeVisible()
+  }
+  // «En subasta» es la fase y nada más: el filtro de la subasta dice «Todas las vivas».
+  await expect(panel.getByText('En subasta', { exact: true })).toHaveCount(1)
+  await expect(panel.getByRole('group', { name: 'Orden' })).toBeVisible()
+
+  await subasta.getByRole('radio', { name: 'Sin resolver' }).check()
+  await capturar(page, info, 'panel-de-subasta')
   await cerrarPanelDeFiltros(page)
-  await expect(page).toHaveURL(/situacion=sin_resolver/)
+  await expect(page).toHaveURL(/subasta=sin_resolver/)
   await exigirLista(page, ['sinResolverNueva', 'sinResolverVieja'])
-  await expect(
-    page.getByRole('list', { name: 'Filtros activos' }).getByText('Situación: Sin resolver'),
-  ).toBeVisible()
+  await expect(chips(page).getByText('Subasta: Sin resolver')).toBeVisible()
 
   // Con el año: sólo la de 2020 en adelante.
   panel = await panelDeFiltros(page)
@@ -217,47 +128,127 @@ test('E2E situación filtro · se elige en el panel, sale como chip y se combina
   await cerrarPanelDeFiltros(page)
   await expect(page).toHaveURL(/anio\.min=2018/)
   await exigirLista(page, ['sinResolverNueva'])
-
-  // Y las no ganadas con el mismo año: ahora sí se ven.
-  await irA(page, '&situacion=no_ganada,sin_resolver&anio.min=2018')
-  await exigirLista(page, ['noGanada', 'sinResolverNueva'])
 })
 
-test('E2E situación filtro · el atajo «Sin resolver» cuenta, filtra y se quita', async ({
-  page,
-}, info) => {
+test('E2E subasta filtro · cada valor de «Subasta» y de «Fase» trae lo suyo', async ({ page }) => {
   await entrar(page, correo)
-  await irA(page)
-  const atajo = aLaVista(page.getByRole('button', { name: /^Sin resolver/ }))
-  await expect(atajo).toContainText('2')
-  await expect(atajo).toHaveAttribute('aria-pressed', 'false')
-  await atajo.click()
-  await expect(page).toHaveURL(/situacion=sin_resolver/)
+  await irA(page, '&subasta=hoy')
+  await exigirLista(page, ['vivaHoy'])
+  // Las vivas por el cierre más próximo: la de hoy, la de dentro de 5 días y, al final, la que no tiene fecha.
+  await irA(page, '&subasta=vivas')
+  await exigirLista(page, ['vivaHoy', 'enSubasta', 'vivaSinFecha'])
+  const t = titulosDeSubasta(proyecto)
+  expect(await ordenDeLaLista(page)).toEqual([t.vivaHoy, t.enSubasta, t.vivaSinFecha])
+  await irA(page, '&subasta=semana')
+  await exigirLista(page, ['vivaHoy', ...cierraEstaSemana()])
+  await irA(page, '&subasta=sin_resolver')
   await exigirLista(page, ['sinResolverNueva', 'sinResolverVieja'])
-  await expect(atajo).toHaveAttribute('aria-pressed', 'true')
-  await capturar(page, info, 'atajo-puesto')
-  await atajo.click()
-  await expect(page).not.toHaveURL(/situacion=/)
+  await irA(page, '&subasta=no_ganadas')
+  await exigirLista(page, ['noGanada'])
+  await expect(chips(page).getByText('Subasta: No ganadas')).toBeVisible()
+
+  await irA(page, '&fase=ninguna')
+  await exigirLista(page, ['sinFase'])
+  await irA(page, `&fase=${terreno.fases.comprado}`)
+  await exigirLista(page, ['comprado'])
+  // La fase de la subasta es una columna: trae todo lo que está en ella, viva o no (sin la no ganada, que se pide aparte).
+  await irA(page, `&fase=${terreno.fases.enSubasta}`)
   await exigirLista(page, [
+    'vivaHoy',
     'enSubasta',
+    'vivaSinFecha',
     'sinResolverNueva',
     'sinResolverVieja',
-    'comprado',
-    'sinFase',
   ])
-
-  // Sin ninguna pendiente (ni el filtro puesto), no hay atajo.
-  await page.goto(`/vehiculos?origen=${terreno.otro}`)
-  await expect(page.getByRole('link', { name: `E2E Otro origen ${proyecto}` })).toHaveAttribute(
-    'aria-current',
-    'page',
-  )
-  await expect(aLaVista(page.getByRole('button', { name: /^Sin resolver/ }))).toHaveCount(0)
+  // Las dos a la vez se suman como cualquier filtro.
+  await irA(page, `&subasta=sin_resolver&fase=${terreno.fases.enSubasta},ninguna`)
+  await exigirLista(page, ['sinResolverNueva', 'sinResolverVieja'])
 })
 
-test('E2E situación filtro · una vista guardada vuelve a poner la situación', async ({ page }) => {
+// La de dentro de 5 días cierra esta semana sólo si la semana (lunes a domingo, en La Paz) llega hasta ahí.
+function cierraEstaSemana(): TituloDeSubasta[] {
+  const enLaPaz = new Date(Date.now() - 4 * 3_600_000)
+  const dia = enLaPaz.getUTCDay()
+  const hastaElLunes = dia === 0 ? 1 : 8 - dia
+  return hastaElLunes > 5 ? ['enSubasta'] : []
+}
+
+test('E2E subasta filtro · «Cierre más próximo» ordena por tramos y pagina sin repetir', async ({
+  page,
+}) => {
   await entrar(page, correo)
-  await irA(page, '&situacion=no_ganada&anio.min=2018')
+  await irA(page, '&orden=cierre&por=10')
+  await expect(chips(page).getByText('Orden: Cierre más próximo')).toBeVisible()
+  await expect(page.getByText('Cierre más próximo primero')).toBeVisible()
+  const t = titulosDeSubasta(proyecto)
+  await expect(filas(page)).toHaveCount(10)
+  const primera = await ordenDeLaLista(page)
+  // Primero las vivas por su cierre, después la viva sin fecha y después el resto por alta.
+  expect(primera.slice(0, 3)).toEqual([t.vivaHoy, t.enSubasta, t.vivaSinFecha])
+
+  const paginas = page.getByRole('navigation', { name: 'Páginas' })
+  await aLaVista(paginas.getByRole('link', { name: 'Siguiente' })).click()
+  await expect(page).toHaveURL(/cursor=2(~|%7E)/)
+  // Siete «sin filtrar» (sin la no ganada) más el relleno: las que faltan, sin repetir ninguna.
+  await expect(filas(page)).toHaveCount(SIN_FILTRAR.length + RELLENO - 10)
+  const segunda = await ordenDeLaLista(page)
+  expect(segunda.filter((titulo) => primera.includes(titulo))).toEqual([])
+  const volver = aLaVista(page.getByRole('link', { name: 'Volver al principio' }))
+  await expect(volver).toBeVisible()
+
+  await aLaVista(paginas.getByRole('link', { name: 'Anterior' })).click()
+  await expect(filas(page)).toHaveCount(10)
+  expect(await ordenDeLaLista(page)).toEqual(primera)
+
+  await aLaVista(paginas.getByRole('link', { name: 'Siguiente' })).click()
+  await expect(page).toHaveURL(/cursor=/)
+  await aLaVista(page.getByRole('link', { name: 'Volver al principio' })).click()
+  await expect(page).not.toHaveURL(/cursor=/)
+  await expect(page.getByText('Cierre más próximo primero')).toBeVisible()
+})
+
+const REDIRECCIONES: {
+  vieja: (t: TerrenoDeSubasta) => string
+  nuevas: (t: TerrenoDeSubasta) => Record<string, string>
+}[] = [
+  { vieja: () => 'en_subasta', nuevas: () => ({ subasta: 'vivas' }) },
+  { vieja: () => 'sin_resolver', nuevas: () => ({ subasta: 'sin_resolver' }) },
+  { vieja: () => 'no_ganada', nuevas: () => ({ subasta: 'no_ganadas' }) },
+  {
+    vieja: (t) => `${t.fases.comprado},ninguna`,
+    nuevas: (t) => ({ fase: `${t.fases.comprado},ninguna` }),
+  },
+]
+
+for (const { vieja, nuevas } of REDIRECCIONES) {
+  test(`E2E subasta filtro · el enlace viejo con «situacion» redirige con 308 · ${vieja({ origen: '', otro: '', fases: { enSubasta: '', comprado: '<fase>' } })}`, async ({
+    page,
+  }) => {
+    await entrar(page, correo)
+    const consulta = new URLSearchParams({
+      origen: terreno.origen,
+      situacion: vieja(terreno),
+      q: 'E2E',
+    })
+    const respuesta = await page.request.get(`/vehiculos?${consulta.toString()}`, {
+      maxRedirects: 0,
+    })
+    expect(respuesta.status()).toBe(308)
+    const destino = new URL(respuesta.headers()['location'] ?? '', 'http://x')
+    expect(destino.pathname).toBe('/vehiculos')
+    expect(Object.fromEntries(destino.searchParams)).toEqual({
+      origen: terreno.origen,
+      q: 'E2E',
+      ...nuevas(terreno),
+    })
+  })
+}
+
+test('E2E subasta filtro · una vista guardada vuelve a poner «Subasta», y una vieja se lee traducida', async ({
+  page,
+}) => {
+  await entrar(page, correo)
+  await irA(page, '&subasta=no_ganadas&anio.min=2018')
   await exigirLista(page, ['noGanada'])
   await abrirVistaYOpciones(page)
   await page.getByLabel('Guardar los filtros de ahora').fill('Las que perdimos')
@@ -266,16 +257,67 @@ test('E2E situación filtro · una vista guardada vuelve a poner la situación',
   expect(await vistasDe(correo)).toEqual([
     {
       nombre: 'Las que perdimos',
-      params: { origen: terreno.origen, situacion: 'no_ganada', 'anio.min': '2018' },
+      params: { origen: terreno.origen, subasta: 'no_ganadas', 'anio.min': '2018' },
     },
   ])
 
+  // La que guardó el filtro de antes: se aplica con las claves nuevas y es «la de ahora».
+  await guardarVistaVieja(correo, 'Perdidas de antes', {
+    origen: terreno.origen,
+    situacion: 'no_ganada',
+  })
   await page.goto(`/vehiculos?origen=${terreno.otro}`)
   await abrirVistaYOpciones(page)
-  await page.getByRole('button', { name: 'Las que perdimos', exact: true }).click()
-  await expect(page).toHaveURL(/situacion=no_ganada/)
+  await page.getByRole('button', { name: 'Perdidas de antes', exact: true }).click()
+  await expect(page).toHaveURL(/subasta=no_ganadas/)
+  await expect(page).not.toHaveURL(/situacion=/)
   await exigirLista(page, ['noGanada'])
-  await expect(
-    page.getByRole('list', { name: 'Filtros activos' }).getByText('Situación: No ganadas'),
-  ).toBeVisible()
+  await expect(chips(page).getByText('Subasta: No ganadas')).toBeVisible()
+  await abrirVistaYOpciones(page)
+  const actual = page.getByRole('button', { name: /^Perdidas de antes/ })
+  await expect(actual).toHaveAttribute('aria-current', 'true')
+  await expect(actual).toContainText('la de ahora')
+})
+
+test('E2E subasta filtro · el atajo «Sin resolver» cuenta, pone «Subasta» y se quita', async ({
+  page,
+}, info) => {
+  await entrar(page, correo)
+  await irA(page)
+  const atajo = aLaVista(page.getByRole('button', { name: /^Sin resolver/ }))
+  await expect(atajo).toContainText('2')
+  await expect(atajo).toHaveAttribute('aria-pressed', 'false')
+  await atajo.click()
+  await expect(page).toHaveURL(/subasta=sin_resolver/)
+  await exigirLista(page, ['sinResolverNueva', 'sinResolverVieja'])
+  await expect(atajo).toHaveAttribute('aria-pressed', 'true')
+  await capturar(page, info, 'atajo-puesto')
+  await atajo.click()
+  await expect(page).not.toHaveURL(/subasta=/)
+  await exigirLista(page, SIN_FILTRAR)
+})
+
+test('E2E subasta filtro · un origen manual no tiene «Subasta», ni «Orden», ni el atajo', async ({
+  page,
+}) => {
+  await entrar(page, correo)
+  await page.goto(`/vehiculos?origen=${terreno.otro}`)
+  await expect(page.getByRole('link', { name: `E2E Otro origen ${proyecto}` })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
+  await expect(aLaVista(page.getByRole('button', { name: /^Sin resolver/ }))).toHaveCount(0)
+  const panel = await panelDeFiltros(page)
+  await expect(panel.getByRole('spinbutton', { name: 'Año, desde' })).toBeVisible()
+  await expect(panel.getByRole('group', { name: 'Subasta' })).toHaveCount(0)
+  await expect(panel.getByRole('group', { name: 'Orden' })).toHaveCount(0)
+})
+
+test('E2E subasta filtro · sin resultados ofrece «Limpiar filtros»', async ({ page }) => {
+  await entrar(page, correo)
+  await irA(page, '&subasta=hoy&q=NadaSeLlamaAsi')
+  await expect(filas(page)).toHaveCount(0)
+  await aLaVista(page.getByRole('button', { name: 'Limpiar filtros' })).click()
+  await expect(page).not.toHaveURL(/subasta=/)
+  await exigirLista(page, SIN_FILTRAR)
 })

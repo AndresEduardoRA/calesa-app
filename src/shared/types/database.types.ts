@@ -9793,7 +9793,13 @@ export type Database = {
       }
       _vehiculos_inventario_patron: { Args: { p_i: number }; Returns: string }
       _vehiculos_inventario_sql: {
-        Args: { p_filtros: Json; p_rutas: string; p_sentido: string }
+        Args: {
+          p_filtros: Json
+          p_orden?: string
+          p_rutas: string
+          p_sentido: string
+          p_tramo?: number
+        }
         Returns: string
       }
       _vehiculos_inventario_validar: { Args: { p_filtros: Json }; Returns: undefined }
@@ -11916,8 +11922,10 @@ export type Database = {
         Args: {
           p_cursor_en?: string
           p_cursor_id?: string
+          p_cursor_tramo?: number
           p_filtros?: Json
           p_hacia_atras?: boolean
+          p_orden?: string
           p_origen: string
           p_tamano?: number
         }

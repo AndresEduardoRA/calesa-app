@@ -27,6 +27,7 @@ import { useVistaDelInventario } from '../hooks/use-vista-del-inventario'
 import { AtajoSinResolver } from './atajo-sin-resolver'
 import { PestanasDeOrigen } from './pestanas-de-origen'
 import { PieDeFiltros } from './pie-de-filtros'
+import type { OrdenDelInventario } from '../../../entities/filtros-de-subasta'
 import { ResultadoDelListado } from './resultado-del-listado'
 import type { SubastaDeLaLista } from './paneles-de-la-lista'
 import type {
@@ -46,6 +47,8 @@ type Props = DatosDelOrigen & {
   origenes: readonly OrigenResumen[]
   esquema: EsquemaDeFiltros
   pagina: Pagina<FilaDeVehiculo>
+  // El orden de la página («Más recientes» o «Cierre más próximo», `ordenElegido()`).
+  orden: OrdenDelInventario
   // «Ítems por página»: lo que dibuja esta página y hasta cuánto ofrece el selector.
   porPagina: { valor: number; opciones: readonly number[] }
   vistas: readonly VistaGuardada[]

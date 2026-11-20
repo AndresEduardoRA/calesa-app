@@ -238,6 +238,13 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   (≈ 100 bloques de `vehiculos` y ≈ 4 ms con 50.000 y con 250.000, sin filas descartadas); con varias propias o con fases, una ruta por rama unidas con `union all`
   (Postgres no ordena por `creado_en` a través de varios valores de un índice: con un `= any` la misma lista leía todas las de la situación y crecía con N). Las fases
   siguen por `vehiculos_origen_listado_idx`. El atajo «Sin resolver» pide `tope + 1` (100) filas por el mismo índice.
+  **«Subasta» por cierre** (`cierre_entre` y `p_orden = 'cierre'`; `medir-vehiculos-inventario-cierre.sql`): el tramo 0 (vivas con cierre) por
+  `vehiculos_subasta_viva_cierre_idx (origen_id, cierre_subasta_en, id)` y el 1 (vivas sin fecha) por `vehiculos_subasta_viva_sin_fecha_idx`, parciales de las vivas;
+  el 2 por `vehiculos_origen_listado_idx`. Con 50.000 y 250.000: una ventana por cierre ≈ 5 ms y 111 bloques, todas las vivas ≈ 9 ms, «Anterior» desde el tramo 1
+  ≈ 9 ms, hondo en el tramo 2 ≈ 4 ms y 15 bloques; tope 10 ms. Sin filtro por cierre lee los tres tramos (≈ 16 ms, plano con N): tope 20 ms, el presupuesto de la
+  página del inventario. «Cierra hoy» por «Más recientes» ordena las vivas de la ventana (crecen con las subastas vivas, no con el inventario): sin el chequeo de
+  crecimiento ni de bloques, con el tope de tiempo. El índice del tramo 1 sólo gana con 250.000: con 50.000 el plan prefiere `vehiculos_situacion_idx`, y la
+  forma se exige sólo con el volumen grande.
   Límites sin assert: más de 5.000 en la cartera recorre el origen (R1); R3 crece con los vehículos de la cartera, no con N; un filtro sin
   coincidencias recorre todo lo que la persona creó; 500 alternativas sin coincidencias ≈ 144 ms (el tope de la validación);
   `por_limpiar` llama a `limpieza_el(v)` por candidata; el costo fijo de una llamada no crece con las concesiones.
@@ -613,7 +620,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   ruta). dnd-kit (el orden del diseño y las asas de fila del editor de la tarjeta) viaja sólo en los `diferido()` de las pestañas «Hoja» y «Tarjeta»
   (`/configuracion/cotizacion/<origen>/hoja|tarjeta`), que no tienen tope; lo que se sume a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB).
   La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
-- `/vehiculos` (el inventario): ≤ 530 KB, medido 503,4 en 34 chunks (las tarjetas de la lista con el lote, el costo estimado y la compra directa: +1,3). El «⋯» de la fila sigue siendo un botón (su contenido se arma al abrirse) y sus
+- `/vehiculos` (el inventario): ≤ 530 KB, medido 506,8 en 33 chunks (los filtros «Subasta» y «Fase» y el orden por cierre con su ubicación: +3,4). El «⋯» de la fila sigue siendo un botón (su contenido se arma al abrirse) y sus
   paneles van una vez por lista con `diferido()` + `useAbiertoAlgunaVez()` (`listado/components/diferidos.tsx`): «Editar imágenes», la vitrina completa y
   «Actualizar los datos» no pesan en frío. Abrir «Editar imágenes» o la vitrina (`?panel=…&para=<id>`, `shallow: false`) vuelve a pedir la página de la
   lista al servidor, como `?editar=`; la página lee sólo el panel nombrado (la galería ≤ 24 con la subasta en un origen de subasta, o el vehículo por pk y,
