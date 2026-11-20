@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { cambiosDeLegales, legalesDesde, legalesInvalidos, sinImagenes } from './legales'
+import {
+  cambiosDeLegales,
+  estadoDeLegal,
+  extractoDeLegal,
+  legalesDesde,
+  legalesInvalidos,
+  sinImagenes,
+  type LegalGuardado,
+} from './legales'
 
 const parrafo = (texto: string) => ({
   type: 'paragraph',
@@ -89,5 +97,70 @@ describe('legalesInvalidos', () => {
     )
     expect(motivos.terminosTitulo).toBe('Escribe el título.')
     expect(motivos.privacidadTitulo).toBe('El título lleva hasta 120 caracteres.')
+  })
+})
+
+describe('con un solo documento (un modal por documento)', () => {
+  it('cambiosDeLegales manda sólo el que llega', () => {
+    const cambios = cambiosDeLegales({
+      privacidad: { titulo: ' Privacidad ', doc: doc(parrafo('Cuidamos tus datos.')) },
+    })
+    expect(Object.keys(cambios)).toEqual(['privacidad'])
+    expect(cambios.privacidad?.titulo).toBe('Privacidad')
+  })
+  it('legalesInvalidos no revisa el que no llega', () => {
+    const motivos = legalesInvalidos(
+      { terminos: { titulo: 'T', doc: doc(parrafo('Texto.')) } },
+      {
+        terminos: null,
+        privacidad: { titulo: 'P', doc: doc(parrafo('Antes.')) as never, actualizadoEn: VERSION },
+      },
+    )
+    expect(motivos).toEqual({})
+  })
+})
+
+describe('estadoDeLegal', () => {
+  const legal: LegalGuardado = { titulo: 'T', doc: doc(parrafo('x')) as never, actualizadoEn: null }
+  it('lo guardado está publicado y lo que no existe no', () => {
+    expect(estadoDeLegal(legal)).toBe('publicada')
+    expect(estadoDeLegal(null)).toBe('sin-publicar')
+  })
+})
+
+describe('extractoDeLegal', () => {
+  const de = (...bloques: unknown[]) => doc(...bloques) as never
+  it('junta los párrafos en una línea', () => {
+    expect(extractoDeLegal(de(parrafo('Pagas al recibir.'), parrafo('Sin devoluciones.')))).toBe(
+      'Pagas al recibir. Sin devoluciones.',
+    )
+  })
+  it('corta en una palabra entera y marca que siguió', () => {
+    const largo = 'palabra '.repeat(40)
+    const extracto = extractoDeLegal(de(parrafo(largo)), 30)
+    expect(extracto.endsWith('…')).toBe(true)
+    expect(extracto.length).toBeLessThanOrEqual(31)
+    expect(extracto).not.toContain('palabr…')
+  })
+  it('entra a las listas y a los títulos', () => {
+    const lista = {
+      type: 'bulletList',
+      content: [
+        { type: 'listItem', content: [parrafo('Uno')] },
+        { type: 'listItem', content: [parrafo('Dos')] },
+      ],
+    }
+    expect(
+      extractoDeLegal(
+        de(
+          {
+            type: 'heading',
+            attrs: { level: 2 },
+            content: [{ type: 'text', text: 'Condiciones' }],
+          },
+          lista,
+        ),
+      ),
+    ).toBe('Condiciones Uno Dos')
   })
 })

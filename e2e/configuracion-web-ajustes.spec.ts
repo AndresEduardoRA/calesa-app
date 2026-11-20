@@ -1,6 +1,7 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
-import { expect, test, type Page } from './soporte/prueba'
+import { expect, test, type Locator } from './soporte/prueba'
 import { admin } from './soporte/base'
+import { editarTarjeta } from './soporte/empresa'
 import { entrar, limpiarInventario, prepararInventario, type Terreno } from './soporte/inventario'
 import { literal, sql } from './soporte/sql'
 import { cargarVehiculos, vehiculoPorTitulo } from './soporte/vehiculos'
@@ -12,8 +13,8 @@ import {
   vitrinaPublica,
 } from './soporte/vitrina'
 
-// La pestaña «Ajustes» de Configuración › Sitio web (8.01-4): guardar el lema y la dirección pública entrando por el hub, y apagar un
-// origen avisando cuántos vehículos publicados dejan de verse. El conflicto de versión y la validación los prueba
+// «Ajustes» de Configuración › Sitio web (8.01-4), en tarjetas con un modal cada una: guardar el lema y la dirección pública entrando por el hub, y
+// apagar un origen desde «Vitrina» avisando cuántos vehículos publicados dejan de verse. El conflicto de versión y la validación los prueba
 // `supabase/tests/areas/web/ajustes-guardar.sql`. `ajustes_web` es una fila que otros specs leen: se restaura al final (un solo worker).
 test.describe.configure({ mode: 'serial' })
 
@@ -64,10 +65,8 @@ test.afterAll(async () => {
   await limpiarInventario()
 })
 
-const lema = (page: Page) => page.getByLabel('Lema', { exact: true })
-const direccion = (page: Page) => page.getByLabel('Dirección pública', { exact: true })
-const casillaDeCorea = (page: Page) =>
-  page.getByRole('checkbox', { name: corea.nombre, exact: true })
+const casillaDeCorea = (dialogo: Locator) =>
+  dialogo.getByRole('checkbox', { name: corea.nombre, exact: true })
 
 test('la dueña guarda el lema y la dirección pública desde el hub, y quedan guardados', async ({
   page,
@@ -83,32 +82,41 @@ test('la dueña guarda el lema y la dirección pública desde el hub, y quedan g
   await expect(page).toHaveURL(/\/configuracion\/web\/ajustes$/)
   await expect(page.getByRole('heading', { name: 'Ajustes', level: 1 })).toBeVisible()
 
-  await lema(page).fill(LEMA)
-  await direccion(page).fill(DIRECCION)
-  // El «Guardar» es el de la barra de cambios sin guardar, que aparece al cambiar algo.
-  await expect(page.getByRole('region', { name: 'Cambios sin guardar' })).toBeVisible()
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  const identidad = await editarTarjeta(page, 'Identidad del sitio')
+  await identidad.getByLabel('Lema', { exact: true }).fill(LEMA)
+  await identidad.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Ajustes del sitio guardados')).toBeVisible()
+  await expect(identidad).toBeHidden()
+
+  const contacto = await editarTarjeta(page, 'Contacto')
+  await contacto.getByLabel('Dirección pública', { exact: true }).fill(DIRECCION)
+  await contacto.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(contacto).toBeHidden()
   expect(sql("select lema || '|' || direccion_publica from public.ajustes_web where id = 1")).toBe(
     `${LEMA}|${DIRECCION}`,
   )
 
+  // La guardada de una tarjeta no pisa lo de otra: la tarjeta dice lo nuevo tras recargar.
   await page.reload()
-  await expect(lema(page)).toHaveValue(LEMA)
-  await expect(direccion(page)).toHaveValue(DIRECCION)
+  await expect(
+    page.getByRole('region', { name: 'Identidad del sitio', exact: true }),
+  ).toContainText(LEMA)
+  await expect(page.getByRole('region', { name: 'Contacto', exact: true })).toContainText(
+    'autos-del-sur.example',
+  )
 })
 
 test('apagar un origen avisa cuántos vehículos publicados dejan de verse', async ({ page }) => {
   expect((await vitrinaPublica(CLAVE_DE_COREA)).map((fila) => fila.titulo)).toEqual([PUBLICADO])
   await entrar(page, duena)
   await page.goto('/configuracion/web')
-  await expect(casillaDeCorea(page)).toBeChecked()
 
-  await casillaDeCorea(page).click()
+  const vitrina = await editarTarjeta(page, 'Vitrina')
+  await casillaDeCorea(vitrina).click()
   await expect(
     page.getByText(`Al guardar, deja de verse en la web 1 vehículo publicado de ${corea.nombre}.`),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await vitrina.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Ajustes del sitio guardados')).toBeVisible()
   expect(
     sql(

@@ -8,14 +8,14 @@ import { SeccionLegales } from './seccion'
 
 export const metadata: Metadata = { title: LEGALES_DEL_SITIO.titulo }
 
-// Configuración › Sitio web › Legales (`web.ajustes.gestionar`): los términos y la privacidad, con la barra de cambios sin guardar.
+// Configuración › Sitio web › Legales (`web.ajustes.gestionar`): los términos y la privacidad, una tarjeta por documento que se edita en un modal.
 export default async function PaginaDeLegalesDelSitio() {
   const { permisos } = await requerirSesion()
   if (entrarASubseccion(permisos, LEGALES_DEL_SITIO) === 'sin-permiso') {
     return <EstadoSinPermiso />
   }
   return (
-    <div className="grid max-w-3xl gap-4">
+    <div className="grid max-w-6xl gap-4">
       <EncabezadoDeConfiguracion {...LEGALES_DEL_SITIO} />
       <SeccionLegales />
     </div>
