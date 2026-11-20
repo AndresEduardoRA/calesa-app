@@ -1,4 +1,4 @@
-// Lo que el e2e de Configuración › Flujos › Documentos prepara y mira en la base del Supabase LOCAL. Todo tipo que crea un e2e lleva este prefijo en su
+// Lo que el e2e de los tipos de documento (Catálogos › Tipos de documento y el panel del flujo) prepara y mira en la base del Supabase LOCAL. Todo tipo que crea un e2e lleva este prefijo en su
 // nombre: es lo único que la limpieza borra (con los requisitos que lo usen, antes: la FK es `restrict`).
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
@@ -73,10 +73,16 @@ export type Grupo = 'empresa' | 'flujo'
 export const seccionDelGrupo = (page: Page, grupo: Grupo): Locator =>
   page.locator(`section[aria-labelledby="titulo-de-tipos-${grupo}"]`)
 
+// Los de un flujo: en el panel de la pestaña Flujo del origen (`?seccion=documentos`), sólo los de ese flujo.
 export async function abrirDocumentos(page: Page, origenId = origenDeLaSubasta()): Promise<void> {
-  await page.goto(`/configuracion/flujos?seccion=documentos&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'De toda la empresa', level: 2 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/flujo?seccion=documentos`)
   await expect(page.getByRole('heading', { name: 'Sólo de este flujo', level: 2 })).toBeVisible()
+}
+
+// Los de toda la empresa: Configuración › Catálogos › Tipos de documento.
+export async function abrirLosDeLaEmpresa(page: Page, consulta = ''): Promise<void> {
+  await page.goto(`/configuracion/catalogos/tipos-de-documento${consulta}`)
+  await expect(page.getByRole('heading', { name: 'De toda la empresa', level: 2 })).toBeVisible()
 }
 
 // Los nombres de las filas de un grupo, en el orden en que se ven.

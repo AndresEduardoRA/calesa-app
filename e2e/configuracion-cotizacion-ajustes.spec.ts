@@ -12,7 +12,7 @@ import {
 } from './soporte/base'
 import { sql } from './soporte/sql'
 
-// La pestaña «Ajustes» de Configuración › Cotización (4.20-4b, `docs/UX.md` › «Cotización: vigencia (estados propios)»): la vigencia (si el vehículo y el lead son
+// Configuración › Catálogos › «Vigencia» (4.20-4b, `docs/UX.md` › «Cotización: vigencia (estados propios)»): la vigencia (si el vehículo y el lead son
 // obligatorios se decide por rol y origen en «Roles y permisos»; la línea de abajo lleva allí). La ve quien tiene `cotizaciones.configurar` en algún origen y la cambia quien la tiene en todos. El conflicto de versión lo prueba la T3 de
 // `supabase/tests/empresa-ajustes-de-cotizacion.sql`. La fila es única: se restaura al final (el e2e corre con un solo worker).
 test.describe.configure({ mode: 'serial' })
@@ -56,6 +56,7 @@ test.afterAll(async () => {
 })
 
 const vigencia = (page: Page) => page.getByLabel('Vigencia (días)')
+const menu = (page: Page) => page.getByRole('navigation', { name: 'Secciones de Configuración' })
 
 test('la dueña cambia la vigencia desde el hub y queda guardada; la línea de «Roles y permisos» la lleva allí', async ({
   page,
@@ -63,16 +64,13 @@ test('la dueña cambia la vigencia desde el hub y queda guardada; la línea de �
   sql('update public.ajustes_empresa set vigencia_dias = 15')
   await entrar(page, duena, { fresco: true })
   await page.goto('/configuracion/inicio')
-  await page
-    .getByRole('region')
-    .getByRole('link', { name: /Cotización/ })
-    .click()
-  await page
-    .getByRole('list', { name: 'Partes generales' })
-    .getByRole('link', { name: /Vigencia/ })
-    .click()
-  await expect(page).toHaveURL(/\/configuracion\/cotizacion\/general\/vigencia$/)
-  await expect(page.getByRole('tab', { name: 'Vigencia' })).toHaveAttribute('aria-selected', 'true')
+  await page.getByRole('region').getByRole('link', { name: 'Catálogos', exact: true }).click()
+  await menu(page).getByRole('link', { name: 'Vigencia', exact: true }).click()
+  await expect(page).toHaveURL(/\/configuracion\/catalogos\/vigencia$/)
+  await expect(menu(page).getByRole('link', { name: 'Vigencia', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
   await expect(page.getByRole('heading', { name: 'Vigencia', level: 1 })).toBeVisible()
   await expect(vigencia(page)).toHaveValue('15')
   await expect(
@@ -93,11 +91,11 @@ test('la dueña cambia la vigencia desde el hub y queda guardada; la línea de �
   await expect(vigencia(page)).toHaveValue('15')
   await expect(page.getByText('Tienes cambios sin guardar', { exact: true })).toBeHidden()
 
-  // Con cambios, cambiar de pestaña pregunta.
+  // Con cambios, ir a otro catálogo pregunta.
   await vigencia(page).fill('30')
-  await page.getByRole('tab', { name: 'Colores' }).click()
+  await menu(page).getByRole('link', { name: 'Colores', exact: true }).click()
   await page.getByRole('button', { name: 'Seguir editando' }).click()
-  await expect(page).toHaveURL(/general\/vigencia$/)
+  await expect(page).toHaveURL(/catalogos\/vigencia$/)
   await expect(vigencia(page)).toHaveValue('30')
 
   await page.getByRole('button', { name: 'Guardar' }).click()
@@ -112,9 +110,7 @@ test('quien configura un solo origen ve la vigencia apagada, con el motivo y sin
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  // El enlace de antes lleva a General › Vigencia.
-  await page.goto('/configuracion/cotizacion?seccion=ajustes')
-  await expect(page).toHaveURL(/\/configuracion\/cotizacion\/general\/vigencia$/)
+  await page.goto('/configuracion/catalogos/vigencia')
   await expect(page.getByRole('heading', { name: 'Vigencia', level: 1 })).toBeVisible()
   await expect(
     page.getByText('Cambiar estos ajustes pide configurar el cotizador en todos los orígenes.'),

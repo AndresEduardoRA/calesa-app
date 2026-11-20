@@ -24,7 +24,7 @@ const CAJA = 'rounded-(--radius-md) px-3 py-2 text-(length:--text-sm)'
 
 type Props = { flujo: FlujoParaConfigurar }
 
-// La franja de «Revisar» sobre el selector (hueco `franjaDeRevisar`, 5.12): cerrada, el resumen; abierta, la lista por nivel. Nace cerrada siempre. Lo leído
+// La franja de «Revisar» sobre el flujo (hueco `franjaDeRevisar`, 5.12): cerrada, el resumen; abierta, la lista por nivel. Nace cerrada siempre. Lo leído
 // viene de `<ProveedorDeRevisar>` (una sola lectura para la franja y el diagrama), que relee tras cada guardado sin volver al esqueleto. Sólo avisa y abre:
 // nunca impide guardar. Cambiar de flujo la vuelve a cerrar.
 export function FranjaDeRevisar({ flujo }: Props) {

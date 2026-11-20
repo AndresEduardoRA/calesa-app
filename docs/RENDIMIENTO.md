@@ -618,7 +618,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `diferido()`) (`docs/PENDIENTES.md`).
 - La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada
   ruta). dnd-kit (el orden del diseño y las asas de fila del editor de la tarjeta) viaja sólo en los `diferido()` de las pestañas «Hoja» y «Tarjeta»
-  (`/configuracion/cotizacion/<origen>/hoja|tarjeta`), que no tienen tope; lo que se sume a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB).
+  (`/configuracion/origenes/<id>/formula/hoja|tarjeta`), que no tienen tope; lo que se sume a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB).
   La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/vehiculos` (el inventario): ≤ 530 KB, medido 506,8 en 33 chunks (los filtros «Subasta» y «Fase» y el orden por cierre con su ubicación: +3,4). El «⋯» de la fila sigue siendo un botón (su contenido se arma al abrirse) y sus
   paneles van una vez por lista con `diferido()` + `useAbiertoAlgunaVez()` (`listado/components/diferidos.tsx`): «Editar imágenes», la vitrina completa y
@@ -638,7 +638,8 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   completa), «Cotizaciones de este vehículo» (11 por página, de a 10 hasta 100) y «Actividad reciente» (`actividad_listar` por registro, ≤ 6 filas por
   su índice) al acercarse, y el layout activo al abrir la ficha completa. Sin caché de
   cliente: `router.refresh()` (también tras aprobar desde el bloque) y `revalidarVinculo()` vuelven a dibujar todos los bloques.
-- `/configuracion/flujos`: 409,0 KB en frío (28 chunks), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega
+- El flujo (la pestaña «Flujo» de un origen, `/configuracion/origenes/<id>/flujo`, 427,6 KB en frío en 30 chunks, y
+  `/configuracion/repuestos/flujo`, 406,3 en 27), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
   (`scripts/guardas/xyflow-diferido.test.ts`). Una sola lectura del flujo (los topes de `leerFlujoParaConfigurar`); hasta 200 cajas y 500
   flechas, con `onlyRenderVisibleElements`.
@@ -646,19 +647,20 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   Components) y las piezas de cliente chicas (la marca del enlace, la vuelta, el `<select>` del selector de sección y el buscador con su búsqueda, que
   filtra lo que el menú ya recibe más las `palabras` del registro, ≈ 2 KB más en el HTML); los íconos de las secciones se dibujan en el servidor y no
   cruzan como código; no importa `secciones.ts`, `permisos.ts` ni ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
-  `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta. Las sub-secciones plantilla (las
-  partes de un origen) suman al menú una pieza de cliente chica que las resuelve con la ruta (`subsecciones-del-menu.tsx`).
+  `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta (inicio: 356,4 KB en frío).
+  Los orígenes que la persona abre entran al menú como sub-ítems de «Orígenes» al pedir la página (`getOrigenes(true)`, con `cache()`, tope 20 con
+  «Ver todos»): no cruzan como código, son enlaces del mismo menú.
 - Configuración › Empresa (tarjetas de ajustes, cada modal con `diferido()` al abrirse por primera vez): JS en frío (KB gz, `.next-e2e`) `/empresa` 228,4, `/empresa/integraciones` 228,4, `/empresa/comprobantes` 358,9 (sin tope propio).
-- Configuración › Cotización: cada sub-ruta carga sólo su pantalla (`pantallas/formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
-  JS en frío (KB gz, `.next-e2e`): inicio 352,4; `/<origen>/formula` 443,5, `/hoja` 359,1 (dnd-kit y el editor del diseño, en su `diferido()`),
-  `/tarjeta` 364,9 (la pestaña dibuja en frío el aviso de menos de 1.024 px y arma la lectura del lienzo; el editor, 26,4, llega por `diferido()`), `/tablas` 361,5; `/general/colores` 359,1, `/niveles` 377,8, `/vigencia` 363,2. El inicio lee la tabla de orígenes
-  (`getOrigenes(true)`, con `cache()`) y lo publicado por origen (dos PostgREST con `.in(ids).limit(ids.length)` por `formulas_publicada_unica` y
-  `plantillas_publicada_unica`, tope 100 orígenes con aviso): nada cuenta ni crece con las cotizaciones. `/general` y `/<origen>` solos redirigen
-  en `next.config.ts` (sin `page.tsx` ni `loading.tsx` intermedios: el esqueleto de cada nivel viajaría en todas las páginas de debajo).
-- Configuración › Orígenes: la lista de tarjetas, 215,7 KB gz en frío (29,4 propios de la página). Cada parte de un origen es su ruta y
-  carga sólo lo suyo (`pantallas/origen-datos|campos|categorias.ts`) sobre una base común de 83 KB gz: `/[id]/datos` 284,7 KB (15,5
-  propios), `/[id]/campos` 282,1 (12,8, con los datos clave) y `/[id]/categorias` 280,1 (10,8). Sin `diferido()` nuevo: el bloque de datos
-  clave se ve apenas carga «Campos». Medido con los manifiestos del build de e2e (`.next-e2e`).
+- La página de un origen y Catálogos: cada pestaña y cada catálogo carga sólo su pantalla (`pantallas/origen-*`, `formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
+  JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formula` 470,6,
+  `/formula/hoja` 387,3 (dnd-kit y el editor del diseño, en su `diferido()`), `/formula/tarjeta` 392,6 (la pestaña dibuja en frío el aviso de menos de 1.024 px
+  y arma la lectura del lienzo; el editor, 26,4, llega por `diferido()`), `/tablas` 388,3; `/configuracion/catalogos/colores` 356,8, `/niveles` 366,7,
+  `/vigencia` 359,3, `/puertos`, `/navieras` y `/categorias-de-gasto` 356,4, `/tipos-de-documento` 370,4, `/tablas` 359,1. El marco del origen (encabezado,
+  «Para cotizar y mover» y las pestañas) lee `origenes_resumen()` una vez por pedido (`leerElOrigen`, con `cache()`, la comparten el marco y la pestaña) y,
+  en un origen de subasta, si apibara está activa: nada cuenta ni crece con las cotizaciones. `/configuracion/origenes/<id>` y `/formula` solos redirigen
+  con `route.ts` (308), sin `page.tsx` ni `loading.tsx` intermedios.
+- Configuración › Orígenes: la lista de tarjetas, 382,8 KB gz en frío en 26 chunks (`medirJsEnFrio()`); muestra sólo los orígenes que la persona
+  abre, con su tira de pasos de la misma lectura. Sin `diferido()` nuevo: el bloque de datos clave se ve apenas carga «Campos».
 - «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`); el
   botón viaja con `FilterShell` aunque la lista no lo dibuje.
 - El `index.ts` de un módulo no exporta componentes: cada pantalla trae los suyos por `pantallas/<pantalla>.ts`. `scripts/guardas/barriles.test.ts`
@@ -728,21 +730,23 @@ fallar.
 - La hoja de una guardada (`cotizacion_hoja_guardada()`, `medir-cotizacion-hoja-guardada.sql`, 50.000 y 250.000): ≤ 20 ms y 1.500
   buffers, razón de `cotizacion_crear`, 0 recorridos de `cotizaciones` (la anterior por la clave; la nueva viva por `cotizacion_padre_id`),
   `_nodos_visibles` 2 veces y la respuesta de la dueña ≤ 14.230 B. Guarda: buscar la nueva sin índice recorre.
-- Versiones de la fórmula (Configuración › Cotización › «Fórmula», `infra/formula/consulta-de-versiones.ts`): PostgREST de a 20 + 1 por
+- Versiones de la fórmula (la pestaña «Fórmula» de un origen, `infra/formula/consulta-de-versiones.ts`): PostgREST de a 20 + 1 por
   cursor sobre `formulas_origen_id_version_key` (`version < n`), sin `definicion`, `params`, `diseno` ni `visibilidad`; tope 500 con «Ir a la
   versión»; la primera página, el estado (`limit 2`) y los autores en el servidor, «Ver más» desde el navegador. El plan lo fija
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
 - Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros y la cuadrícula más grande que admite la forma 2 (16 × 120 y
-  las celdas de texto que entran en 24 KiB: 193; 1.000 no caben, manda el tope en bytes), primer HTML ≤ 223.900 B y ≤ 5.000 nodos (medido 213.199 B y 4.000
+  las celdas de texto que entran en 24 KiB: 193; 1.000 no caben, manda el tope en bytes), primer HTML ≤ 267.400 B y ≤ 5.000 nodos (medido 254.607 B y 4.000
   nodos: 193 celdas dibujadas, 1.727 casillas vacías de un nodo sin hijos cada una, 120 filas con su asa, las cabeceras y el panel). Crece contra el editor de
   bloques (183.947 B) porque el contexto reducido lleva todos los nodos del nivel «todos» con su descripción (los ofrece «Dato») y la cuadrícula viaja entera;
+  y por el marco de la página del origen (encabezado, «Para cotizar y mover», pestañas, sub-pestañas y el esqueleto de cada nivel, que el payload lleva dos
+  veces): ≈ 40 KB fijos, que no crecen con los miembros ni con la cuadrícula (el editor con sus datos es una sola fila de 104 KB);
   la inicial y la guardada son el mismo objeto. La referencia es una fila de `cotizaciones_listado()` por `cotizaciones_origen_creado_idx` más las lecturas
   del PDF, en paralelo con la plantilla, recortada a los nodos del contexto reducido. El editor (lienzo, panel, dnd-kit y atajos: 26,4 KB gz, más dnd-kit, 15,0, el chunk que comparte con el orden del diseño), el modal de
   publicar y el diálogo de descartar van por `diferido()`; «Dato» dibuja 50 («Escribe para acotar.»). Deshacer guarda hasta 100 instantáneas en memoria.
-  `pantallas/tarjeta-plantilla.ts` no entra a la hoja. `/configuracion/cotizacion` no tiene presupuesto de JS.
-- «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, las cuatro pestañas de un origen): en frío sólo viajan el botón y las cáscaras de `diferido()` (medido
+  `pantallas/tarjeta-plantilla.ts` no entra a la hoja. La página del origen no tiene presupuesto de JS.
+- «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, las sub-pestañas de la Fórmula de un origen): en frío sólo viajan el botón y las cáscaras de `diferido()` (medido
   en KB gz con `medirJsEnFrio()`: Fórmula 444,6, Hoja 359,8, Tarjeta 364,7 y Tablas 362,0; ≤ +1,1 por pestaña). El modal llega al abrirse y el lienzo es el
   chunk de la pestaña Tarjeta. Al abrirlo, una vez y sin caché, `GET [origen]/plantillas-de-v1`: el borrador de la fórmula (`formulas_borrador_unico`, `limit 1`), su
   autor (`perfiles_pkey`), el de la tarjeta (`plantillas_borrador_unico`, `limit 1`) y el catálogo de colores (`limit 48`), más los tipos de cambio y los campos del

@@ -20,7 +20,7 @@ type Props = {
   catalogo: readonly TonoDelCatalogo[] | null
 }
 
-// La pestaña «Hoja» de un origen en Configuración › Cotización (el diseño de la hoja, 4.22-2). Sin versión o sin diseño, un
+// La pestaña «Hoja» de la Fórmula de un origen (Configuración › Orígenes) (el diseño de la hoja, 4.22-2). Sin versión o sin diseño, un
 // vacío. El editor no se vuelve a montar al guardar (su `key` no lleva la versión); sólo «Recargar» tras un conflicto lo monta de nuevo, en la misma transición que
 // trae la pestaña, sobre lo que haya entonces.
 export function DisenoDelOrigen({ origen, leida, niveles, tonos, catalogo }: Props) {

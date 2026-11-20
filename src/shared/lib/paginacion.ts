@@ -42,6 +42,10 @@ export const LOTES_POR_PAGINA = 5
 export const TOPE_DEL_EQUIPO = 100
 // De cada lote de la papelera (hasta 200) se ven los primeros; «Mostrar los N» trae el lote entero (cierre 1).
 export const PRIMEROS_DEL_LOTE = 20
+// Configuración › Orígenes: la lista dibuja los primeros que la persona abre, por su orden; el menú nombra los primeros como sub-ítems y
+// sigue con «Ver todos los orígenes».
+export const TOPE_DE_LA_LISTA_DE_ORIGENES = 100
+export const TOPE_DE_ORIGENES_DEL_MENU = 20
 
 // Un número de la lista de tamaños, o `null`: lo que no lo es (7, 100000, -5, «abc», 25.5) no se pide.
 export function esTamanoDePagina(valor: unknown): valor is TamanoDePagina {

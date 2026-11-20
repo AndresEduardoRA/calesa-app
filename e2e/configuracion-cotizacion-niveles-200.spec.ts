@@ -24,7 +24,7 @@ import {
 } from './soporte/niveles-a-la-vista'
 import { capturar, quieto, recibeElClic, sinScrollHorizontal } from './soporte/recorrido'
 
-// Configuración › Cotización › Niveles con el texto al 200 % (4-15, visto al mirar las capturas del 4.09-2): el estado y el uso de cada fila (de fábrica, creada,
+// Configuración › Catálogos › Niveles con el texto al 200 % (4-15, visto al mirar las capturas del 4.09-2): el estado y el uso de cada fila (de fábrica, creada,
 // en uso, sin uso y retirada) se leen enteros —con la tabla de escritorio, la columna del «⋯» pegada a la derecha los tapaba— y un aviso no tapa ningún texto
 // de la lista ni el «⋯» de una fila. Con la dueña, en escritorio y celular; lo que se juzga mirando, en `E2E_CAPTURAS=e2e-capturas/4-15-niveles-200/<carpeta>`.
 test.describe.configure({ mode: 'serial' })

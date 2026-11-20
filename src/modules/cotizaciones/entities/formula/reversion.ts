@@ -1,4 +1,4 @@
-// Revertir la fórmula de un origen a una versión archivada desde Configuración › Cotización › «Fórmula» (4.20-2b): publica la N+1 como copia de esa versión, con su
+// Revertir la fórmula de un origen a una versión archivada desde la página del origen › «Fórmula» (4.20-2b): publica la N+1 como copia de esa versión, con su
 // diseño (`formula_revertir()`, 4.20-1), sin tocar el borrador. Aquí, el panel de la URL, la nota escrita de antemano y a cuál se revierte.
 
 export const PANEL_REVERTIR_FORMULA = 'revertir-formula'

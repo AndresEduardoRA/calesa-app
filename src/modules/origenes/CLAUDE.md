@@ -4,12 +4,17 @@ Orígenes de vehículos configurables (subasta/apibara o manual), su layout de c
 
 ## Entra y sale
 
-- Entra: `/configuracion/origenes` (la lista) y cada parte de un origen en su sub-ruta, `/[id]/datos|campos|categorias`; `/[id]` sin parte y
-  los enlaces de antes (`?seccion=`, con `?campo=`, `?categoria=` y `?panel=`) redirigen (`[id]/url-vieja.ts`). Las pantallas van partidas
-  por sub-ruta: `pantallas/origen.ts` (el marco: `SiguientesPasos`), `origen-datos.ts`, `origen-campos.ts` y `origen-categorias.ts`.
+- Entra: `/configuracion/origenes` (la lista: sólo los orígenes que quien mira abre, tope 100 con aviso) y **la página del origen**,
+  `/configuracion/origenes/[id]/datos|campos|categorias|flujo|formula|tablas` (`src/app` arma el layout de `[id]` con el encabezado, «Para cotizar y
+  mover» y las pestañas; las pestañas Flujo, Fórmula y Tablas dibujan pantallas de `flujos` y `cotizaciones`, que este módulo no conoce). `/[id]` sin
+  pestaña y los enlaces de antes (`?seccion=`, con `?campo=`, `?categoria=` y `?panel=`) redirigen con 308 (`[id]/route.ts`, `[id]/url-vieja.ts`). Las
+  pantallas van partidas por pestaña: `pantallas/origen.ts` (el marco: `ParaCotizarYMover` y `MenuDelOrigen`, el «⋯» con activar, desactivar y
+  eliminar), `origen-datos.ts`, `origen-campos.ts` y `origen-categorias.ts`.
 - `index.ts`: `getOrigenes(incluirInactivos?)`, `leerLayout(origenId, { conUso })` (también los campos desactivados: quien consume filtra `activo`),
-  `leerCampoPrincipal(origenId)` (o `null`; para quien nombra un vehículo fuera del listado), `leerDatosNuevosDeApibara`, `leerOrigenes`, `pasosDe`,
-  `faltasDeLaTarjeta`, `DATOS_COMUNES` y `leerDatosClave(origenId)` (para la ficha del vehículo: la lista resuelta, `{ de: 'comun', clave,
+  `leerCampoPrincipal(origenId)` (o `null`; para quien nombra un vehículo fuera del listado), `leerDatosNuevosDeApibara`, `leerOrigenes`,
+  `pasosParaCotizarYMover(origen, { apibaraActiva })` y `pasosQueFaltan()` (los cinco pasos de «Para cotizar y mover», glosario: Datos, Campos, Flujo,
+  Fórmula y Tarjeta, con `estado` listo|aviso|bloquea; un inactivo, `{ inactivo: true }`; la tarjeta publicada sale de `origenes_resumen().tarjeta_publicada`),
+  `DATOS_COMUNES` y `leerDatosClave(origenId)` (para la ficha del vehículo: la lista resuelta, `{ de: 'comun', clave,
 etiqueta }` o `{ de: 'campo', clave, etiqueta, campoId }`, con los de fábrica si está vacía; las claves comunes son nombres de columna de
   `vehiculos` en snake_case: `anio`, `categoria_id`, `url_origen`).
 - `client.ts`: concordancia (`pluralDe()`, `articulo()`, `concordar()`, `frasePorVacio()`…), tipos y `useLayoutActivo(origenId)` (lo lee el panel del
@@ -24,7 +29,9 @@ etiqueta }` o `{ de: 'campo', clave, etiqueta, campoId }`, con los de fábrica s
   (`origen_preconfigurar_campos()`, `origen_crear_flujo()`), `entities/catalogo-apibara.ts` (`_apibara_catalogo()`; también contra
   `e2e/fixtures/apibara/`), `CLAVES_RESERVADAS` de `entities/campo.ts` (`_origen_clave_reservada()`).
 - **El motor de campos es de `shared`** (`lib/campos`, `ui/campos`); acá, `CampoDeLayout` = `CampoBase` + lo propio del origen.
-- `src/app/(app)/configuracion/origenes/pasos.ts`: a dónde lleva cada siguiente paso (test contra las pantallas existentes).
+- `entities/pasos.ts`: `pasosParaCotizarYMover()` y `faltasDeLaTarjeta()` (la lista, en corto), con su test. `src/app/(app)/configuracion/origenes/pasos.ts`:
+  a dónde lleva cada paso y su motivo sin permiso en ese origen (test contra las pantallas existentes); `acceso.ts` y `pestanas.ts`: las pestañas, su
+  permiso en el origen y su motivo.
 
 ## Tablas
 
@@ -62,7 +69,8 @@ RPC: `origen_crear|guardar|eliminar`, `origen_datos_clave_guardar`, `origen_apib
 - El aviso de impacto va **dentro** del panel del campo; `origen_campo_impacto` cuenta también la papelera.
 - Categoría: un nivel de anidado, un nombre por lugar (sin mayúsculas); con subcategorías activas no se desactiva; con subcategorías o vehículos no se
   elimina.
-- Entra quien tiene `origenes.gestionar`; de sólo lectura, `flujos.configurar` o `cotizaciones.configurar`. No hay `origenes.ver`.
+- Entra quien tiene `origenes.gestionar`; de sólo lectura, `flujos.configurar` o `cotizaciones.configurar`, cada uno **en ese origen** (la base
+  pide el permiso en algún origen: el filtro por origen es de `src/app`). No hay `origenes.ver`.
 - Plataformas: las que están en `integraciones.config.plataformas` (techo) y en `origenes.apibara_plataformas`; sin elegida, las de la integración.
 
 ## Ojo

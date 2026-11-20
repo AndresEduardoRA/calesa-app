@@ -175,7 +175,7 @@ describe('la frase del sistema y de la configuración', () => {
       }),
     )
     expect(textoDeLaFrase(fase)).toBe('Ana cambió Nombre de una fase: A → B')
-    expect(fase.registro.enlace).toBe('/configuracion/flujos')
+    expect(fase.registro.enlace).toBe('/configuracion/origenes')
     expect(fase.icono).toBe('configuracion')
   })
 })

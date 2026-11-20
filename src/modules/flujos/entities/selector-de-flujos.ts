@@ -1,5 +1,5 @@
-// El selector de la pantalla de flujos: una pestaña por flujo que quien mira puede configurar. Puro; los orígenes los trae `src/app` (el módulo no
-// importa `origenes`) y los flujos los filtra `flujosConfigurables()` por permisos.
+// Los flujos que quien mira puede configurar, con el nombre y el color de su origen, y la elección del que abre una página. Puro; los orígenes los
+// trae `src/app` (el módulo no importa `origenes`) y los flujos los filtra `flujosConfigurables()` por permisos.
 import type { FlujoConfigurable } from './flujo'
 
 // Lo que el selector necesita de un origen: su nombre y su color vienen de la fila, nunca de un texto fijo.
@@ -8,7 +8,7 @@ export type OrigenDelSelector = { id: string; nombre: string; color: string; act
 export const CLAVE_DE_REPUESTOS = 'repuestos'
 
 export type EntradaDelSelector = {
-  // El id del origen o `repuestos`: lo que se escribe en la URL y el valor de la pestaña.
+  // El id del origen o `repuestos`.
   clave: string
   titulo: string
   // El de repuestos no tiene color de origen.
@@ -44,19 +44,22 @@ export function armarSelector(
   return entradas
 }
 
-// Qué pestaña abre la URL (D12): `?ambito=repuestos` si hay flujo de repuestos; si no, `?origen=` si es de los suyos; si no, la primera.
-// Una URL escrita a mano nunca es un error.
-export function elegirEntrada(
+// El flujo que abre una página: el de un origen (su pestaña Flujo) o el de repuestos (Repuestos › Flujo de repuestos).
+export type FlujoFijo = { origenId: string } | { ambito: typeof CLAVE_DE_REPUESTOS }
+
+// La entrada de ese flujo, o `null` si no está entre las que quien mira puede configurar. Nunca cae en otra: la pestaña de un origen no abre el
+// flujo de otro.
+export function entradaFija(
   entradas: readonly EntradaDelSelector[],
-  pedido: { origen: string | null; ambito: string | null },
+  fijo: FlujoFijo,
 ): EntradaDelSelector | null {
-  if (pedido.ambito === CLAVE_DE_REPUESTOS) {
-    const repuestos = entradas.find((e) => e.clave === CLAVE_DE_REPUESTOS)
-    if (repuestos) return repuestos
-  }
-  if (pedido.origen) {
-    const origen = entradas.find((e) => e.clave === pedido.origen && e.clave !== CLAVE_DE_REPUESTOS)
-    if (origen) return origen
-  }
-  return entradas[0] ?? null
+  const clave = 'origenId' in fijo ? fijo.origenId : CLAVE_DE_REPUESTOS
+  return entradas.find((entrada) => entrada.clave === clave) ?? null
+}
+
+// Lo que dice la página cuando su flujo no está: cada origen nace con el suyo, así que no hay acción para crearlo.
+export function textoSinFlujo(fijo: FlujoFijo): string {
+  return 'origenId' in fijo
+    ? 'Este origen todavía no tiene flujo.'
+    : 'Todavía no hay flujo de repuestos.'
 }

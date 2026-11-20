@@ -1,4 +1,4 @@
-// Descartar el borrador de la plantilla de la tarjeta desde Configuración › Cotización › «Tarjeta» (4.19-3c): el panel de la URL, por qué no se abre y los textos del
+// Descartar el borrador de la plantilla de la tarjeta desde la página del origen › «Tarjeta» (4.19-3c): el panel de la URL, por qué no se abre y los textos del
 // `<Confirmar>`. Borrarlo no toca la publicada; el permiso, la versión esperada y el borrado son de `plantilla_descartar_borrador()`. El PT409 no dice quién (P1).
 
 export const PANEL_DESCARTAR_PLANTILLA = 'descartar-plantilla'

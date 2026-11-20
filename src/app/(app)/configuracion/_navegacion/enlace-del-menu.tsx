@@ -20,6 +20,7 @@ const CLASE = {
 
 export function EnlaceDelMenu({
   ruta,
+  marca,
   subrutas,
   exacta,
   titulo,
@@ -27,6 +28,8 @@ export function EnlaceDelMenu({
   icono,
 }: {
   ruta: string
+  // El prefijo con que se marca, si no es su ruta (un origen, en todas sus pestañas).
+  marca?: string | undefined
   subrutas?: readonly string[]
   // La sub-sección índice: se marca sólo en su ruta exacta (`marcaDelEnlace`).
   exacta?: boolean
@@ -39,7 +42,7 @@ export function EnlaceDelMenu({
     <Link
       // Las rutas del menú existen: lo garantiza secciones.test.ts contra el disco.
       href={ruta as Route}
-      aria-current={marcaDelEnlace(usePathname(), ruta, subrutas, exacta)}
+      aria-current={marcaDelEnlace(usePathname(), marca ?? ruta, subrutas, exacta)}
       className={CLASE[nivel]}
     >
       {icono}

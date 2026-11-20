@@ -25,7 +25,7 @@ export function EstadoDeLosPasos({ estado, puedeConfigurar, alReintentar }: Prop
         </p>
         {puedeConfigurar ? (
           <Link
-            href={`${RUTAS.configuracionDeFlujos}?ambito=repuestos` as Route}
+            href={RUTAS.flujoDeRepuestos as Route}
             className={buttonVariants({
               variant: 'outline',
               size: 'sm',

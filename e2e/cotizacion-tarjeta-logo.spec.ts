@@ -229,7 +229,7 @@ test('E2E el editor ofrece el dato «Nombre de la empresa» y avisa, con «Abrir
       "update public.ajustes_empresa set logo_ruta = 'logos/no-existe-e2e-tjlogo.webp' where id = 1",
     )
     await entrar(page, duena, { fresco: true })
-    await page.goto(`/configuracion/cotizacion/${origen}/tarjeta`)
+    await page.goto(`/configuracion/origenes/${origen}/formula/tarjeta`)
     const lienzo = page.getByRole('grid', { name: 'Lienzo de la tarjeta' })
     await expect(lienzo).toBeVisible()
     await expect(page.locator('[data-referencia-del-lienzo]')).toHaveValue('cotizacion')

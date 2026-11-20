@@ -1,4 +1,4 @@
-// Las lecturas de la fórmula de un origen para Configuración › Cotización › «Fórmula» (4.20-2a), sobre el cliente que recibe: el del servidor (la primera página y el
+// Las lecturas de la fórmula de un origen para la Fórmula del origen › «Fórmula» (4.20-2a), sobre el cliente que recibe: el del servidor (la primera página y el
 // estado) y el del navegador («Ver más» e «Ir a la versión»). Corren con la sesión de quien mira: la policy `formulas: leer` deja ver sólo los orígenes donde tiene
 // `cotizaciones.configurar`, y `perfiles: leer`, a todo usuario activo. Nombran sus columnas: lo oculto (`definicion`, `params`, `diseno`, `visibilidad`) no viaja.
 import type { SupabaseClient } from '@supabase/supabase-js'

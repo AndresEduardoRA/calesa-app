@@ -1,4 +1,4 @@
-// Editar el diseño de un origen desde Configuración › Cotización › Diseño (4.22-2): la versión que se abre, las operaciones puras sobre una sección y una celda,
+// Editar el diseño de un origen desde la página del origen › Diseño (4.22-2): la versión que se abre, las operaciones puras sobre una sección y una celda,
 // el pedido de guardar el borrador y si hay algo por guardar. Nada muta lo que recibe. El diseño que sale de aquí lo vuelve a revisar `validarDiseno()` en cada cambio
 // y la base al publicar; guardar un borrador no exige que valide (como la fórmula, 4.21-3b-1).
 import type { Resultado } from '@/shared/lib/errores'
