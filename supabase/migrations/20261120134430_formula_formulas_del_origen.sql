@@ -112,7 +112,7 @@ comment on column public.plantillas_tarjeta.formula_del_origen_id is 'La fórmul
 create function public._fdo_de_trabajo(p_origen uuid, p_crear boolean) returns uuid
   language plpgsql security definer set search_path = '' as $$
 declare
-  v_id uuid; v_n int := 1;
+  v_id uuid;
 begin
   select d.id into v_id from public.formulas_del_origen d where d.origen_id = p_origen and d.activa;   -- formulas_del_origen_activa_unica
   if v_id is null then
@@ -122,7 +122,7 @@ begin
   if v_id is not null or not coalesce(p_crear, false) or p_origen is null then
     return v_id;
   end if;
-  loop
+  for v_n in 1..60 loop
     begin
       insert into public.formulas_del_origen (origen_id, nombre, creado_por)
       values (p_origen, case when v_n = 1 then 'Fórmula' else 'Fórmula ' || v_n end, (select auth.uid()))
@@ -134,12 +134,9 @@ begin
       if v_id is not null then
         return v_id;
       end if;
-      v_n := v_n + 1;
-      if v_n > 60 then
-        raise;
-      end if;
     end;
   end loop;
+  raise exception 'No pudimos nombrar la fórmula del origen: renombra alguna archivada.' using errcode = '23505', hint = 'nombre';
 end $$;
 comment on function public._fdo_de_trabajo(uuid, boolean) is 'Interna: la fórmula de trabajo del origen (la activa; si no hay, la más nueva sin archivar). Con p_crear crea «Fórmula» si el origen no tiene ninguna. docs/COTIZADOR.md › «Fórmulas del origen».';
 
@@ -597,7 +594,7 @@ begin
     returning actualizado_en into v_v;
     return v_v;
   end if;
-  if v_b.id is null then perform public._plantilla_borrador_ausente(p_origen, p_actualizado_en_esperado, v_fdo.id); end if;
+  if v_b.id is null then perform public._plantilla_borrador_ausente(v_fdo.id, p_actualizado_en_esperado); end if;
   perform public._exigir_version(v_b.actualizado_en, p_actualizado_en_esperado,
     'El borrador de esta plantilla cambió ' || public._hace(v_b.actualizado_en) || ', mientras lo editabas.');
   update public.plantillas_tarjeta set definicion = p_def, nota = p_nota where id = v_b.id returning actualizado_en into v_v;
@@ -616,7 +613,7 @@ declare
   v_b public.plantillas_tarjeta; v_pub uuid; v_ver int; fo record;
 begin
   select * into v_b from public.plantillas_tarjeta where formula_del_origen_id = p_formula_del_origen and estado = 'borrador' for update;   -- plantillas_borrador_unico
-  if v_b.id is null then perform public._plantilla_borrador_ausente(p_origen, p_esperada, p_formula_del_origen); end if;
+  if v_b.id is null then perform public._plantilla_borrador_ausente(p_formula_del_origen, p_esperada); end if;
   perform public._exigir_version(v_b.actualizado_en, p_esperada,
     'El borrador de esta plantilla cambió ' || public._hace(v_b.actualizado_en) || ', mientras lo editabas.');
   select id into v_pub from public.plantillas_tarjeta where formula_del_origen_id = p_formula_del_origen and estado = 'publicada';   -- plantillas_publicada_unica
@@ -661,7 +658,7 @@ begin
   perform pg_advisory_xact_lock(hashtextextended('plantillas:' || p_origen::text, 0));
   v_fdo := public._fdo_resolver(p_origen, p_formula_del_origen, false);
   select * into v_b from public.plantillas_tarjeta where formula_del_origen_id = v_fdo.id and estado = 'borrador' for update;   -- plantillas_borrador_unico
-  if v_b.id is null then perform public._plantilla_borrador_ausente(p_origen, p_actualizado_en_esperado, v_fdo.id); end if;
+  if v_b.id is null then perform public._plantilla_borrador_ausente(v_fdo.id, p_actualizado_en_esperado); end if;
   perform public._exigir_version(v_b.actualizado_en, p_actualizado_en_esperado,
     'El borrador de esta plantilla cambió ' || public._hace(v_b.actualizado_en) || ', mientras lo editabas.');
   delete from public.plantillas_tarjeta where id = v_b.id;
@@ -671,7 +668,7 @@ revoke all on function public.plantilla_descartar_borrador(uuid, timestamptz, uu
 grant execute on function public.plantilla_descartar_borrador(uuid, timestamptz, uuid) to authenticated, service_role;
 comment on function public.plantilla_descartar_borrador(uuid, timestamptz, uuid) is 'Descarta el borrador de la plantilla de una fórmula del origen (cotizaciones.configurar; p_formula_del_origen nula: la de trabajo). PT409 si cambió o ya no está. docs/COTIZADOR.md › «Versiones de la plantilla (4.19-1)».';
 
-CREATE OR REPLACE FUNCTION "public"."_plantilla_borrador_ausente"("p_origen" "uuid", "p_esperada" timestamp with time zone, "p_formula_del_origen" "uuid") RETURNS "void"
+CREATE OR REPLACE FUNCTION "public"."_plantilla_borrador_ausente"("p_formula_del_origen" "uuid", "p_esperada" timestamp with time zone) RETURNS "void"
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO ''
     AS $$
@@ -685,9 +682,9 @@ begin
   raise exception 'El borrador ya no está: se descartó.' using errcode = 'PT409';
 end;
 $$;
-revoke all on function public._plantilla_borrador_ausente(uuid, timestamptz, uuid) from public, anon, authenticated;
-grant execute on function public._plantilla_borrador_ausente(uuid, timestamptz, uuid) to service_role;
-comment on function public._plantilla_borrador_ausente(uuid, timestamptz, uuid) is 'Interna: el PT409 de guardar, publicar, descartar o activar un borrador de plantilla que ya no está (se publicó o se descartó). docs/COTIZADOR.md › «Versiones de la plantilla (4.19-1)».';
+revoke all on function public._plantilla_borrador_ausente(uuid, timestamptz) from public, anon, authenticated;
+grant execute on function public._plantilla_borrador_ausente(uuid, timestamptz) to service_role;
+comment on function public._plantilla_borrador_ausente(uuid, timestamptz) is 'Interna: el PT409 de guardar, publicar, descartar o activar un borrador de plantilla que ya no está (se publicó o se descartó). docs/COTIZADOR.md › «Versiones de la plantilla (4.19-1)».';
 
 -- Las tablas de referencia: cada fórmula del origen sin archivar con publicada que la usa.
 create function public._tabla_referencia_usada_en(p_tabla uuid, p_origen uuid default null)
@@ -2369,7 +2366,7 @@ begin
       raise exception 'Ya hay un borrador de esta plantilla, guardado %.', public._hace(v_pb.actualizado_en) using errcode = 'PT409';
     end if;
   else
-    if v_pb.id is null then perform public._plantilla_borrador_ausente(v_origen, p_plantilla_borrador_esperado, p_id); end if;
+    if v_pb.id is null then perform public._plantilla_borrador_ausente(p_id, p_plantilla_borrador_esperado); end if;
     perform public._exigir_version(v_pb.actualizado_en, p_plantilla_borrador_esperado,
       'El borrador de esta plantilla cambió ' || public._hace(v_pb.actualizado_en) || ', mientras lo editabas.');
   end if;

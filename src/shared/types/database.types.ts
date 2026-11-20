@@ -9090,7 +9090,7 @@ export type Database = {
         Returns: number
       }
       _plantilla_borrador_ausente: {
-        Args: { p_esperada: string; p_formula_del_origen: string; p_origen: string }
+        Args: { p_esperada: string; p_formula_del_origen: string }
         Returns: undefined
       }
       _plantilla_conversion_fila: {
