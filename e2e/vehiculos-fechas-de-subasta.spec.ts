@@ -86,7 +86,8 @@ test('las fechas se escriben en la zona de quien edita y se guardan en UTC', asy
   expect(new Date(guardadas.subasta_en ?? '').toISOString()).toBe('2026-12-01T15:30:00.000Z')
   expect(guardadas.subasta_fin_en).toBeNull()
 
-  // Al volver a abrir, lo guardado se ve en la misma zona.
+  // Al volver a abrir, lo guardado se ve en la misma zona. Tras guardar la ficha se vuelve a leer: se abre cuando esa lectura ya llegó.
+  await page.waitForLoadState('networkidle')
   await editarFechas(page)
   await expect(modal.getByLabel('Fecha de la subasta')).toHaveValue('2026-12-01T10:30')
 })
