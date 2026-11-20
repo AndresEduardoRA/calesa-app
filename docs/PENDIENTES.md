@@ -185,7 +185,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
-- **[—]** Con el texto al 200 % en el celular, Empresa › Monedas y tipos de cambio ensancha la página (522 px en 412): la tarjeta «Moneda base» con su «Cambiar» empuja el contenido; caen `configuracion-200.spec.ts` › «Monedas y tipos de cambio» y «se leen enteras las tarjetas» en `movil`.
 - **[T414]** Con el texto al 200 % en el celular, la cabecera del resumen de la cotización ocupa casi toda la pantalla (el monto se corta contra el borde y las pestañas quedan debajo, sin desplazamiento del drawer, que va con `desplazamiento="propio"`): dejar que el drawer se desplace cuando la cabecera no deja alto a las pestañas, o plegar la cabecera a título y total (`resumen-de-cotizacion.tsx`, `cabecera-del-resumen.tsx`).
 - **[T414]** En el celular, la fila «Creada» de la cabecera del resumen parte su valor bajo la etiqueta («Creada» sola y debajo «hace 2 minutos · …»): dejar la etiqueta con el primer tramo del valor.
 - **[—]** La imagen de la tarjeta quita el recuadro al cargar (`onLoad`) y la grande del resumen puede verse un instante como un marco gris vacío hasta que el
