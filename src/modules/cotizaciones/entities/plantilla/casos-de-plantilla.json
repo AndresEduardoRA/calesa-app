@@ -18914,6 +18914,396 @@
       "motivo": { "regla": "mostrar_no_admitido", "donde": "celdas.total_monto" }
     },
     {
+      "nombre": "condiciones: el plazo del total en el dato de la condición de una fila",
+      "formula": "variante",
+      "plantilla": {
+        "forma": 2,
+        "columnas": [
+          {
+            "id": "concepto",
+            "ancho": 200
+          },
+          {
+            "id": "monto",
+            "ancho": 120
+          }
+        ],
+        "filas": [
+          {
+            "id": "cabeza",
+            "alto": 30,
+            "ocultar_si": "nunca"
+          },
+          {
+            "id": "precio",
+            "alto": 24,
+            "ocultar_si": "no_aplica",
+            "nodo": "precio"
+          },
+          {
+            "id": "aviso",
+            "alto": 20,
+            "ocultar_si": "condiciones",
+            "si": [
+              {
+                "es": "opcion",
+                "nodo": "motor",
+                "opcion": "gasolina"
+              },
+              {
+                "es": "no_vacio",
+                "dato": {
+                  "tipo": "dato",
+                  "nodo": "total",
+                  "mostrar": "plazo"
+                }
+              }
+            ]
+          },
+          {
+            "id": "total",
+            "alto": 32,
+            "ocultar_si": "nunca"
+          }
+        ],
+        "celdas": [
+          {
+            "id": "titulo",
+            "fila": "cabeza",
+            "columna": "concepto",
+            "contenido": {
+              "tipo": "respaldo",
+              "datos": [
+                {
+                  "tipo": "dato",
+                  "variable": "titulo"
+                },
+                {
+                  "tipo": "dato",
+                  "variable": "vehiculo_titulo"
+                }
+              ]
+            }
+          },
+          {
+            "id": "seguro",
+            "fila": "cabeza",
+            "columna": "monto",
+            "contenido": {
+              "tipo": "condiciones",
+              "ramas": [
+                {
+                  "si": [
+                    {
+                      "es": "encendido",
+                      "nodo": "seguro"
+                    }
+                  ],
+                  "contenido": {
+                    "tipo": "texto",
+                    "texto": "Con seguro"
+                  }
+                }
+              ],
+              "si_no": {
+                "tipo": "vacio"
+              }
+            }
+          },
+          {
+            "id": "precio_concepto",
+            "fila": "precio",
+            "columna": "concepto",
+            "contenido": {
+              "tipo": "dato",
+              "nodo": "precio",
+              "mostrar": "etiqueta"
+            }
+          },
+          {
+            "id": "precio_monto",
+            "fila": "precio",
+            "columna": "monto",
+            "contenido": {
+              "tipo": "condiciones",
+              "ramas": [
+                {
+                  "si": [
+                    {
+                      "es": "mayor",
+                      "nodo": "precio",
+                      "a": 1000
+                    }
+                  ],
+                  "contenido": {
+                    "tipo": "dato",
+                    "nodo": "precio",
+                    "mostrar": "monto"
+                  }
+                }
+              ],
+              "si_no": {
+                "tipo": "texto",
+                "texto": "A consultar"
+              }
+            }
+          },
+          {
+            "id": "aviso",
+            "fila": "aviso",
+            "columna": "concepto",
+            "abarca_columnas": 2,
+            "contenido": {
+              "tipo": "texto",
+              "texto": "Sólo diésel"
+            }
+          },
+          {
+            "id": "total_etiqueta",
+            "fila": "total",
+            "columna": "concepto",
+            "contenido": {
+              "tipo": "texto",
+              "texto": "TOTAL"
+            }
+          },
+          {
+            "id": "total_monto",
+            "fila": "total",
+            "columna": "monto",
+            "contenido": {
+              "tipo": "respaldo",
+              "datos": [
+                {
+                  "tipo": "dato",
+                  "nodo": "total",
+                  "mostrar": "monto"
+                },
+                {
+                  "tipo": "dato",
+                  "nodo": "precio",
+                  "mostrar": "monto"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "motivo": {
+        "regla": "mostrar_no_admitido",
+        "donde": "filas.aviso"
+      }
+    },
+    {
+      "nombre": "condiciones: el tipo de cambio en la condición de una fila, de un nivel",
+      "formula": "variante",
+      "plantilla": {
+        "forma": 2,
+        "columnas": [
+          {
+            "id": "concepto",
+            "ancho": 200
+          },
+          {
+            "id": "monto",
+            "ancho": 120
+          }
+        ],
+        "filas": [
+          {
+            "id": "cabeza",
+            "alto": 30,
+            "ocultar_si": "nunca"
+          },
+          {
+            "id": "precio",
+            "alto": 24,
+            "ocultar_si": "no_aplica",
+            "nodo": "precio"
+          },
+          {
+            "id": "aviso",
+            "alto": 20,
+            "ocultar_si": "condiciones",
+            "si": [
+              {
+                "es": "opcion",
+                "nodo": "motor",
+                "opcion": "gasolina"
+              },
+              {
+                "es": "no_vacio",
+                "dato": {
+                  "tipo": "dato",
+                  "nodo": "precio",
+                  "mostrar": "tc_nombre"
+                }
+              }
+            ]
+          },
+          {
+            "id": "total",
+            "alto": 32,
+            "ocultar_si": "nunca"
+          }
+        ],
+        "celdas": [
+          {
+            "id": "titulo",
+            "fila": "cabeza",
+            "columna": "concepto",
+            "contenido": {
+              "tipo": "respaldo",
+              "datos": [
+                {
+                  "tipo": "dato",
+                  "variable": "titulo"
+                },
+                {
+                  "tipo": "dato",
+                  "variable": "vehiculo_titulo"
+                }
+              ]
+            }
+          },
+          {
+            "id": "seguro",
+            "fila": "cabeza",
+            "columna": "monto",
+            "contenido": {
+              "tipo": "condiciones",
+              "ramas": [
+                {
+                  "si": [
+                    {
+                      "es": "encendido",
+                      "nodo": "seguro"
+                    }
+                  ],
+                  "contenido": {
+                    "tipo": "texto",
+                    "texto": "Con seguro"
+                  }
+                }
+              ],
+              "si_no": {
+                "tipo": "vacio"
+              }
+            }
+          },
+          {
+            "id": "precio_concepto",
+            "fila": "precio",
+            "columna": "concepto",
+            "contenido": {
+              "tipo": "dato",
+              "nodo": "precio",
+              "mostrar": "etiqueta"
+            }
+          },
+          {
+            "id": "precio_monto",
+            "fila": "precio",
+            "columna": "monto",
+            "contenido": {
+              "tipo": "condiciones",
+              "ramas": [
+                {
+                  "si": [
+                    {
+                      "es": "mayor",
+                      "nodo": "precio",
+                      "a": 1000
+                    },
+                    {
+                      "es": "no_vacio",
+                      "dato": {
+                        "tipo": "dato",
+                        "nodo": "precio",
+                        "mostrar": "monto"
+                      }
+                    }
+                  ],
+                  "contenido": {
+                    "tipo": "dato",
+                    "nodo": "precio",
+                    "mostrar": "monto"
+                  }
+                }
+              ],
+              "si_no": {
+                "tipo": "texto",
+                "texto": "A consultar"
+              }
+            }
+          },
+          {
+            "id": "aviso",
+            "fila": "aviso",
+            "columna": "concepto",
+            "abarca_columnas": 2,
+            "contenido": {
+              "tipo": "texto",
+              "texto": "Sólo diésel"
+            }
+          },
+          {
+            "id": "total_etiqueta",
+            "fila": "total",
+            "columna": "concepto",
+            "contenido": {
+              "tipo": "texto",
+              "texto": "TOTAL"
+            }
+          },
+          {
+            "id": "total_monto",
+            "fila": "total",
+            "columna": "monto",
+            "contenido": {
+              "tipo": "respaldo",
+              "datos": [
+                {
+                  "tipo": "dato",
+                  "nodo": "total",
+                  "mostrar": "monto"
+                },
+                {
+                  "tipo": "dato",
+                  "nodo": "precio",
+                  "mostrar": "monto"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "visibilidad": {
+        "tc": {
+          "ver": "costos"
+        },
+        "motor": {
+          "ver": "todos"
+        },
+        "seguro": {
+          "ver": "todos"
+        },
+        "precio": {
+          "ver": "todos"
+        },
+        "margen": {
+          "ver": "costos"
+        },
+        "total": {
+          "ver": "todos"
+        }
+      },
+      "motivo": {
+        "regla": "tipo_de_cambio_restringido",
+        "donde": "filas.aviso"
+      }
+    },
+    {
       "nombre": "condiciones: el plazo del total en el dato de una condición",
       "formula": "variante",
       "plantilla": {
