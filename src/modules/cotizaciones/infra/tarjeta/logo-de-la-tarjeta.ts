@@ -1,7 +1,7 @@
 import 'server-only'
 import type { ContextoDeLaCotizacion } from '../../entities/tarjeta/contexto-de-la-cotizacion'
 
-// El logo de la empresa para los dibujos del servidor de la tarjeta (el PDF y la imagen). Se baja aquí con tope de bytes y de tiempo y llega como `Buffer`, nunca
+// Una imagen para los dibujos del servidor de la tarjeta (el PDF y la imagen): el logo de la empresa y la foto del asesor. Se baja aquí con tope de bytes y de tiempo y llega como `Buffer`, nunca
 // como URL (react-pdf la bajaría sin espera ni tope y la guardaría en su caché de proceso), con sus medidas: los dos dibujos lo ubican en la celda con
 // `cajaDelLogo()`. Va según sus primeros bytes:
 // - PNG y JPEG de hasta `LADO_MAXIMO` px, tal cual;
@@ -10,8 +10,8 @@ import type { ContextoDeLaCotizacion } from '../../entities/tarjeta/contexto-de-
 // - lo demás que `sharp` lee (el WebP con que se suben los logos, un SVG con estilos, un raster grande), convertido a PNG de hasta `LADO_MAXIMO` px.
 // Un SVG que nombra otro archivo (un `href` o un `url()` que no es `#…` ni `data:`, un `@import`, un `<!ENTITY`) no se dibuja: leería algo sin tope ni espera.
 // Por eso es SVG todo lo que tenga `<svg` en el texto, aunque empiece con un comentario, un DOCTYPE o un BOM, y no se dibuja lo comprimido (un `.svgz` esconde
-// su texto) ni lo que `sharp` lee como SVG sin que el texto lo dijera. Un logo que no va, que tarda o que pesa de más deja el dibujo sin logo y lo dice por
-// consola, sin la URL; nunca rompe el dibujo.
+// su texto) ni lo que `sharp` lee como SVG sin que el texto lo dijera. Una imagen que no va, que tarda o que pesa de más deja el dibujo sin ella (la foto, con las
+// iniciales) y lo dice por consola, sin la URL; nunca rompe el dibujo.
 export type LogoDeLaTarjeta = {
   datos: Buffer
   tipo: 'png' | 'jpg' | 'svg'
@@ -19,9 +19,7 @@ export type LogoDeLaTarjeta = {
   alto: number
 }
 
-type Entrada = {
-  // El logo de la empresa: nulo si la tarjeta no lo dibuja o la empresa no tiene uno (entonces no se baja nada).
-  logo: ContextoDeLaCotizacion['logo']
+type Espera = {
   tope: number
   esperaMs?: number
   // Para las pruebas: una señal propia en vez de la espera.
@@ -117,16 +115,15 @@ async function paraDibujar(datos: Buffer, tipo: Tipo): Promise<LogoDeLaTarjeta |
   return { datos: data, tipo: 'png', ancho: info.width, alto: info.height }
 }
 
-export async function logoParaDibujar({
-  logo,
+// La imagen de `url` lista para dibujar, o nula. `etiqueta` es lo que el aviso dice que falta («logo», «foto del asesor»).
+export async function imagenParaDibujar({
+  url,
+  etiqueta,
   tope,
   esperaMs = ESPERA_MS,
   signal,
-}: Entrada): Promise<LogoDeLaTarjeta | null> {
-  if (logo === null) {
-    return null
-  }
-  const bajado = await bajar(logo.url, tope, signal ?? AbortSignal.timeout(esperaMs)).catch(
+}: Espera & { url: string; etiqueta: string }): Promise<LogoDeLaTarjeta | null> {
+  const bajado = await bajar(url, tope, signal ?? AbortSignal.timeout(esperaMs)).catch(
     () => 'no se pudo bajar a tiempo',
   )
   let motivo: string
@@ -145,6 +142,26 @@ export async function logoParaDibujar({
     }
     motivo = listo
   }
-  console.warn(`[tarjeta] La tarjeta sale sin logo: ${motivo}.`)
+  console.warn(`[tarjeta] La tarjeta sale sin ${etiqueta}: ${motivo}.`)
   return null
+}
+
+// El logo de la empresa: nulo si la tarjeta no lo dibuja o la empresa no tiene uno (entonces no se baja nada).
+export function logoParaDibujar({
+  logo,
+  ...espera
+}: Espera & { logo: ContextoDeLaCotizacion['logo'] }): Promise<LogoDeLaTarjeta | null> {
+  return logo === null
+    ? Promise.resolve(null)
+    : imagenParaDibujar({ url: logo.url, etiqueta: 'logo', ...espera })
+}
+
+// La foto del asesor: nula si la tarjeta no la dibuja o el asesor no tiene una (entonces no se baja nada y la celda lleva sus iniciales).
+export function fotoParaDibujar({
+  foto,
+  ...espera
+}: Espera & { foto: string | null }): Promise<LogoDeLaTarjeta | null> {
+  return foto === null || foto === ''
+    ? Promise.resolve(null)
+    : imagenParaDibujar({ url: foto, etiqueta: 'foto del asesor', ...espera })
 }

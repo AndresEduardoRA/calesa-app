@@ -13,7 +13,7 @@ type Guardada<T> = { pedido: string; parte: ParteDeCompartir<T> }
 
 const INESPERADO = { codigo: 'inesperado', mensaje: MENSAJE_INESPERADO } as const
 
-// Una parte de lo que se comparte (los datos, la portada, la lista de fotos): se lee una vez por `clave` (nula: todavía no, `quieta`) y otra con `reintentar()`. Lo que
+// Una parte de lo que se comparte (los datos, la imagen de la tarjeta, la lista de fotos): se lee una vez por `clave` (nula: todavía no, `quieta`) y otra con `reintentar()`. Lo que
 // llega tarde se descarta (el pedido se corta) y lo que ocupa memoria (una URL de un blob) se suelta con `liberar` al cambiar o al desmontarse. `leer` y `liberar` se
 // toman del último render: lo que decide cuándo se vuelve a leer es el pedido.
 export function useParteDeCompartir<T>(

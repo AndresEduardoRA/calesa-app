@@ -13,7 +13,7 @@ import { leerAjustes } from '@/modules/empresa'
 import { urlPublicaONull } from '@/shared/lib/almacen'
 import type { Permisos } from '@/shared/lib/permisos'
 import {
-  asesorDe,
+  asesorQueMira,
   clienteDe,
   oNulo,
   tituloDeLaTarjeta,
@@ -33,11 +33,11 @@ async function leer(origenId: string, permisos: Permisos): Promise<ReferenciaDeL
   const lectura = await leerHojaDeUnaGuardada(fila.id)
   if (!lectura.ok) return NO_SE_LEYO
   const { hoja, inicial } = lectura.data
-  // Como el PDF de esa guardada: el cliente sólo con `leads.ver` y si quien mira lo ve, el vehículo si lo ve, quien la creó y los ajustes (la zona y el logo).
+  // Como el PDF de esa guardada: el cliente sólo con `leads.ver` y si quien mira lo ve, el vehículo si lo ve, el asesor (quien mira) y los ajustes (la zona y el logo).
   const [cliente, vehiculo, asesor, ajustes] = await Promise.all([
     oNulo(clienteDe(permisos, hoja.cotizacion.leadId)),
     oNulo(vehiculoDe(hoja.cotizacion.vehiculoId)),
-    asesorDe(fila.id),
+    asesorQueMira(),
     leerAjustes(),
   ])
   if (!ajustes.ok) return NO_SE_LEYO

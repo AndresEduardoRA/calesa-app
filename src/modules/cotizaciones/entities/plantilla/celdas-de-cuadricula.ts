@@ -33,7 +33,7 @@ const CLAVES_DE_UNA_CELDA = new Set([
   'contenido',
   'estilo',
 ])
-const TIPOS = ['texto', 'dato', 'logo', 'vacio'] as const
+const TIPOS = ['texto', 'dato', 'logo', 'vacio', 'foto_del_asesor'] as const
 const SOLO_EL_TIPO = new Set(['tipo'])
 const DEL_TEXTO = new Set(['tipo', 'texto'])
 const DE_LA_VARIABLE = new Set(['tipo', 'variable'])

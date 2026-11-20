@@ -43,7 +43,7 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
 
 - **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda): `leerAprobadaDelVehiculo(vehiculoId)` (`infra/aprobada/leer.ts`, `cache()`) llama a
   `cotizaciones_de_este_vehiculo()` con `TAMANO_DE_LA_APROBADA` (1) y devuelve la fijada o nula (no hay o quien mira no la ve: la RLS de la invocadora). La
-  dibuja `features/aprobada/components/aprobada-del-vehiculo/` (`pantallas/aprobada-del-vehiculo.ts`): la portada y «Compartir» (del área `tarjeta`) llegan como
+  dibuja `features/aprobada/components/aprobada-del-vehiculo/` (`pantallas/aprobada-del-vehiculo.ts`): la imagen de la tarjeta y «Compartir» (del área `tarjeta`) llegan como
   ranuras que llena `src/app`; n.º y título (`tituloDeLaFila()`), total con su modo, autor y fecha y «Abrir»; sin fila, «Sin cotización aprobada» con
   «Cotizar» si la página manda la ruta.
 

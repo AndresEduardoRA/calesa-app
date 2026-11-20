@@ -8,9 +8,9 @@ const esquemaDelAutor = z.array(
   z.object({ perfiles: z.object({ nombre: z.string(), email: z.string() }).nullable() }),
 )
 
-// A quien creó una cotización guardada, para «Asesor:» de su tarjeta (P2 a). Una lectura por clave primaria (`cotizaciones_pkey`, `limit(1)`) como quien mira (la RLS decide) con el
+// El autor de una cotización guardada (quien la creó), para «Creado por» de «Compartir»: el asesor de la tarjeta es quien la mira (`getAsesorQueMira()`). Una lectura por clave primaria (`cotizaciones_pkey`, `limit(1)`) como quien mira (la RLS decide) con el
 // autor embebido: las columnas que ya leen el historial y el listado (`perfiles!cotizaciones_creado_por_fkey`). Sin fila o sin autor, nulo.
-export async function getAsesorDeLaCotizacion(id: string): Promise<Resultado<string | null>> {
+export async function getAutorDeLaCotizacion(id: string): Promise<Resultado<string | null>> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('cotizaciones')

@@ -10,7 +10,7 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   // El «Nuevo» de la barra que abre también el de la agenda (T37) lo llevó a 500,3 KB en 33 chunks: regla del 5 %, lo medido más un 5 % a la decena.
   '/vehiculos': 530,
   // El listado de cotizaciones (4.16-4a), sin el resumen (4.16-4b): medido 358,4 KB en 23 chunks, más un 5 % hacia arriba a la decena. Con las tarjetas de la lista
-  // (T319: la portada en frío, el conmutador, «Agrupar» y sus preferencias; el despliegue y «Comparar» diferidos) midió 386,9 KB: regla del 5 % sobre 380, a la decena.
+  // (T319: la imagen de la tarjeta en frío, el conmutador, «Agrupar» y sus preferencias; el despliegue y «Comparar» diferidos) midió 386,9 KB: regla del 5 % sobre 380, a la decena.
   '/cotizaciones': 390,
   // La hoja de cotizar con la subasta de la semilla (`?origen=`, el diseño más grande del juego), su presupuesto formal desde el 4.13-4d: medido 429,5 KB en 25 chunks, más un 5 % hacia arriba a la decena.
   // Con la línea «Descargar PDF» y el contexto del «⋯» de la guardada, que viajan con la hoja (T321; el pedido del PDF sin la lectura de la tarjeta), llegó a 460,4 KB en 28

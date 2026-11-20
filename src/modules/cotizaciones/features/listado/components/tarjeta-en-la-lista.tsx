@@ -16,7 +16,7 @@ import {
   SIN_NOMBRE,
   type FilaDeCotizacion,
   type OrigenDelListado,
-  type PortadaDeLaFila,
+  type ImagenDeLaFila,
 } from './tipos'
 import { Vigencia } from './vigencia'
 
@@ -25,11 +25,11 @@ type Props = {
   origen: OrigenDelListado | null
   abierta: boolean
   alAbrir: () => void
-  // El «⋯» sin «Compartir» (ya es la acción principal), sobre la portada.
+  // El «⋯» sin «Compartir» (ya es la acción principal), sobre la imagen.
   menu: ReactNode
   // «Compartir»: abre el panel de compartir; nulo sin la oferta o en Modo Live (no se dibuja).
   compartir: (() => void) | null
-  Portada?: PortadaDeLaFila | undefined
+  Imagen?: ImagenDeLaFila | undefined
   // La ruta de las fichas de los clientes, si quien mira ve leads (el cliente va enlazado); si no, nulo.
   rutaDeClientes: string | null
   // La fila del conteo de un grupo («3 cotizaciones de este vehículo»): su lugar se reserva aunque esté vacía.
@@ -55,17 +55,17 @@ function InsigniaDelOrigen({ origen }: { origen: OrigenDelListado | null }) {
   )
 }
 
-// Arriba: la portada (su clic abre el visor, no el resumen) con el «⋯» encima; sin el hueco, el marco vacío de la misma proporción.
+// Arriba: la imagen de la tarjeta (su clic abre el visor, no el resumen) con el «⋯» encima; sin el hueco, el marco vacío de la misma proporción.
 function CabeceraDeLaTarjeta({
   cotizacion,
   menu,
-  Portada,
-}: Pick<Props, 'cotizacion' | 'menu' | 'Portada'>) {
+  Imagen,
+}: Pick<Props, 'cotizacion' | 'menu' | 'Imagen'>) {
   return (
     <div className="relative w-full">
-      {Portada ? (
+      {Imagen ? (
         <div data-no-abre="">
-          <Portada
+          <Imagen
             cotizacionId={cotizacion.id}
             numero={cotizacion.numero}
             total={{ valor: cotizacion.totalBase }}
@@ -131,9 +131,9 @@ function ClienteDeLaTarjeta({
   )
 }
 
-// Una tarjeta de la lista de cotizaciones (`docs/GLOSARIO.md` › «Tarjeta de la lista»): la portada arriba con el «⋯» encima y, debajo, el título, «N.º n» con sus
+// Una tarjeta de la lista de cotizaciones (`docs/GLOSARIO.md` › «Tarjeta de la lista»): la imagen de la tarjeta arriba con el «⋯» encima y, debajo, el título, «N.º n» con sus
 // insignias, el total con su modo, el cliente, el autor, la vigencia, la fila del conteo y «Compartir». Todas miden lo mismo sin `auto-rows-fr`: cada fila de la tarjeta tiene su alto fijo (el título dos líneas, cada dato una con «…», la del conteo reservada) y la
-// tarjeta se estira a su celda. Un clic en cualquier parte abre el resumen, salvo la portada, el cliente, el conteo, «Compartir» y el «⋯» (`esClicPropio`).
+// tarjeta se estira a su celda. Un clic en cualquier parte abre el resumen, salvo la imagen, el cliente, el conteo, «Compartir» y el «⋯» (`esClicPropio`).
 export function TarjetaEnLaLista(props: Props) {
   const { cotizacion, abierta, alAbrir, compartir, conteo } = props
   const { zonaHoraria } = useRegional()

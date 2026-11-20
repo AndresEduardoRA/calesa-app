@@ -1,6 +1,7 @@
 import {
   enlaceParaCompartir,
   tituloDeLaCotizacion,
+  type AsesorDeLaTarjeta,
   type DatosParaCompartir,
 } from '@/modules/cotizaciones'
 import { zonaDelPatioDe, type Vehiculo } from '@/modules/vehiculos'
@@ -14,13 +15,14 @@ function isoONulo(texto: string | null): string | null {
   return Number.isNaN(ms) ? null : new Date(ms).toISOString()
 }
 
-// Lo que el panel «Compartir» recibe, armado con lo que la ruta leyó (puro): el título que se muestra, el autor, el vehículo (si quien pide lo ve, con la zona de su
+// Lo que el panel «Compartir» recibe, armado con lo que la ruta leyó (puro): el título que se muestra, el autor, el asesor (quien comparte, sin su foto), el vehículo (si quien pide lo ve, con la zona de su
 // patio y el cierre de su subasta), las cifras de la tarjeta de lo guardado y la zona y el locale de la empresa.
 export function datosParaCompartir({
   cotizacion,
   vehiculo,
   subasta,
   autor,
+  asesor,
   cifras,
   ajustes,
 }: {
@@ -28,6 +30,7 @@ export function datosParaCompartir({
   vehiculo: Vehiculo | null
   subasta: Subasta | null
   autor: string | null
+  asesor: AsesorDeLaTarjeta | null
   cifras: Pick<DatosParaCompartir, 'conceptos' | 'total' | 'modo'>
   ajustes: { zonaHoraria: string; locale: string }
 }): DatosParaCompartir {
@@ -40,6 +43,10 @@ export function datosParaCompartir({
     numero: cotizacion.numero,
     titulo,
     autor,
+    asesor:
+      asesor === null
+        ? null
+        : { nombre: asesor.nombre, cargo: asesor.cargo, telefono: asesor.telefono },
     vehiculo:
       vehiculo === null
         ? null

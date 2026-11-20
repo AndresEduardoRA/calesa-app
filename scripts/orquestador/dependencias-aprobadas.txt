@@ -12,5 +12,5 @@
 @dnd-kit/utilities
 # T30: pasar un nodo del DOM a imagen, sólo si ImageResponse de Next no alcanza.
 html-to-image
-# T313: pasar la imagen de la tarjeta (el PNG de ImageResponse) a WebP en el servidor para la portada de la cotización; Next ya la trae para sus imágenes.
+# T313: pasar la imagen de la tarjeta (el PNG de ImageResponse) a WebP en el servidor para la imagen de la tarjeta; Next ya la trae para sus imágenes.
 sharp

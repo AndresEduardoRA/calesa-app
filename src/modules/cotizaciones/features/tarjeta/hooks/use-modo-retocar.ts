@@ -3,7 +3,6 @@
 import { useMemo, useReducer, useState, type Dispatch } from 'react'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
 import { avisarExito } from '@/shared/ui/toasts'
-import { pedirLaPortada } from '../../../areas/tarjeta/composicion-portada.client'
 import type {
   PlantillaEnCuadricula,
   RetoquesDeLaTarjeta,
@@ -73,7 +72,7 @@ const accionesDelBorrador = (despachar: Dispatch<AccionDelModo>) => ({
   },
 })
 
-// El envío a la base («Listo» y «Volver a la plantilla») y lo que pasa después: el aviso y la portada si entró, el fallo (y lo elegido de su `donde`) si no.
+// El envío a la base («Listo» y «Volver a la plantilla») y lo que pasa después: el aviso si entró, el fallo (y lo elegido de su `donde`) si no.
 function useEnvioDelModo({
   cotizacionId,
   actualizadoEn,
@@ -111,7 +110,6 @@ function useEnvioDelModo({
       despachar({ tipo: 'salir' })
       return
     }
-    pedirLaPortada(cotizacionId)
     avisarExito(retoques === null ? 'La tarjeta volvió a la plantilla.' : 'Tarjeta retocada.')
     setEnvio({ tipo: 'guardado', esperado: actualizadoEn })
   }

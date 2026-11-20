@@ -203,18 +203,18 @@ html:has([data-lienzo-marco]) {
 }
 
 /*
- * La portada de la cotización (una imagen con cifras): con el Modo Live se ve borrosa y con «Oculto en Modo Live» encima, por CSS como <Monto> (sin un instante
+ * La imagen de la tarjeta de una cotización (con cifras): con el Modo Live se ve borrosa y con «Oculto en Modo Live» encima, por CSS como <Monto> (sin un instante
  * con las cifras a la vista antes de hidratar). El clic al visor lo corta `useLive()`.
  */
-[data-portada-oculta] {
+[data-imagen-oculta] {
   display: none;
 }
 
-.live [data-portada-imagen] {
+.live [data-imagen] {
   filter: blur(1rem);
 }
 
-.live [data-portada-oculta] {
+.live [data-imagen-oculta] {
   display: flex;
   background-color: color-mix(in oklab, var(--color-paper) 55%, transparent);
 }

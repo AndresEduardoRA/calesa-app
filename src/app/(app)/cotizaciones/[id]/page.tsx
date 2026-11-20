@@ -20,7 +20,7 @@ import type { Permisos } from '@/shared/lib/permisos'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
 import {
-  asesorDe,
+  asesorQueMira,
   clienteDe,
   tituloDeLaTarjeta,
   vehiculoDe,
@@ -80,7 +80,6 @@ function NoDisponible() {
 // el PDF, los huecos y la cabecera siguen con lo guardado (`vehiculo`).
 async function leerAlrededor(
   sesion: Quien,
-  id: string,
   lectura: { hoja: HojaDeUnaGuardada; vehiculoNuevo: string | null; vehiculoSoltado: boolean },
   hermanaSola: boolean,
 ) {
@@ -88,7 +87,7 @@ async function leerAlrededor(
   const [cliente, vehiculo, asesor, delVehiculo] = await Promise.all([
     clienteDe(sesion.permisos, hoja.cotizacion.leadId),
     vehiculoDe(hoja.cotizacion.vehiculoId),
-    asesorDe(id),
+    asesorQueMira(),
     leerLoDelVehiculo(sesion, hoja, { vehiculoNuevo, vehiculoSoltado, hermanaSola }),
   ])
   if (vehiculoNuevo !== null && delVehiculo.nuevo === null) {
@@ -165,7 +164,7 @@ async function Cotizacion({
   }
   const { hoja } = lectura.data
   const [{ cliente, vehiculo, asesor, delVehiculo, deLaHoja }, delPar] = await Promise.all([
-    leerAlrededor(sesion, id, lectura.data, esHermanaSola(hoja)),
+    leerAlrededor(sesion, lectura.data, esHermanaSola(hoja)),
     leerElParDeLaGuardada(lectura.data, idDeUrl(url[CLAVE_DE_VEHICULO])),
   ])
   const props = propsDeLosHuecos(hoja, sesion.permisos, vehiculo)

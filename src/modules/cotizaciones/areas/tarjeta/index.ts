@@ -1,7 +1,8 @@
 // La API de servidor del área `tarjeta` de `cotizaciones`. Sale por el `index.ts` de la raíz, que sólo la reexporta (4.15-4).
 //
-// `leerAsesorDeLaCotizacion(id)` (4.18-2): a quien creó una cotización guardada, para el «Asesor:» de su tarjeta; la lee `/cotizaciones/[id]`. La tarjeta en pantalla
-// (`<ProveedorDeLaTarjeta>`) sale por `pantallas/tarjeta.ts`.
+// `leerAsesorQueMira()`: el asesor de la tarjeta, quien la mira o la comparte (la foto como ruta de `avatares`); lo leen la página de una guardada,
+// la hoja nueva, el PDF, «Compartir» y la referencia del editor. `leerAutorDeLaCotizacion(id)`: quien la creó, para «Creado por» de «Compartir». La tarjeta en
+// pantalla (`<ProveedorDeLaTarjeta>`) sale por `pantallas/tarjeta.ts`.
 //
 // `pdfDeUnaGuardada({ lectura, contexto, locale, empresa, topeDelLogo })` (4.18-3a): los bytes y el nombre del PDF de una guardada, de lo guardado; lo pide
 // `GET /cotizaciones/[id]/pdf`, que arma el contexto con `contextoDeLaPagina()` (puro).
@@ -10,19 +11,17 @@
 // pide `GET /cotizaciones/[id]/compartir`, que suma el vehículo y arma `DatosParaCompartir`. `leerVehiculoDeLaCotizacion(id)`: el vehículo por clave primaria, para
 // `GET /cotizaciones/[id]/compartir/fotos`.
 //
-// `imagenDeUnaGuardada(entrada)`: la misma tarjeta como PNG (`{ bytes, ancho, alto }`), la base de la portada.
+// `imagenDeUnaGuardada(entrada)`: la misma tarjeta como PNG (`{ bytes, ancho, alto, completa }`), la base de la imagen.
 //
-// La portada de la cotización (`docs/COTIZADOR.md` › «La portada de la cotización»), para `GET /cotizaciones/[id]/portada`: `leerLaPortada(id)` (el estado para quien
-// pide), `queHacerConLaPortada(estado, pedido)` (304, bajar la guardada o armarla), `bajarLaPortada(ruta)`, `armarLaPortada(id, contextoDe)` (el WebP de lo guardado
-// con el contexto que le den; `guardable` sin el primer recálculo es falso), `guardarLaPortada({ id, bytes, clave })` y `miniaturaDeLaPortada(bytes, ancho)` (la de
-// `?ancho=480`, que piden las listas; `anchoDeLaPortada()` lee el parámetro). El componente sale por `pantallas/tarjeta-portada.ts`.
+// La imagen de la tarjeta (`docs/COTIZADOR.md` › «La imagen de la tarjeta»), para `GET /cotizaciones/[id]/imagen`: `leerHuellaDeLaImagen(id)` (la huella de lo que
+// dibuja para quien pide; lo que no ve, `no_encontrado`), `etiquetaDeLaImagen({ huella, usuarioId, ancho })` y `coincideLaEtiqueta(siNoneMatch, etiqueta)` (la
+// ETag y el 304), y `armarLaImagen(id, { contextoDe, ancho })` (el WebP de lo guardado con el contexto de quien mira, `ContextoLeido`; `conRecalculo` falso sin el
+// primer recálculo y `completa` falso si una lectura falló o el logo o la foto no llegaron). El componente sale por `pantallas/tarjeta-imagen.ts`.
 export {
-  bajarLaPortada,
-  guardarLaPortada,
-  miniaturaDeLaPortada,
   imagenDeUnaGuardada,
-  leerAsesorDeLaCotizacion,
-  leerLaPortada,
+  leerAsesorQueMira,
+  leerAutorDeLaCotizacion,
+  leerHuellaDeLaImagen,
   leerVehiculoDeLaCotizacion,
   paraCompartirDeUnaGuardada,
   pdfDeUnaGuardada,
@@ -35,16 +34,20 @@ export {
   type DatosParaCompartir,
   type FotoParaCompartir,
 } from '../../entities/tarjeta/compartir/datos-para-compartir'
-export { armarLaPortada, type PortadaArmada } from '../../features/tarjeta/armar-la-portada'
+export {
+  armarLaImagen,
+  type ContextoLeido,
+  type ImagenArmada,
+} from '../../features/tarjeta/armar-la-imagen'
 export {
   contextoDeLaPagina,
+  type AsesorDeLaTarjeta,
   type ContextoDeLaCotizacion,
   type PaginaDeLaTarjeta,
 } from '../../entities/tarjeta/contexto-de-la-cotizacion'
 export {
-  etiquetaDeLaPortada,
-  queHacerConLaPortada,
-  type ContextoCompartido,
-  type EstadoDeLaPortada,
-  type QueHacerConLaPortada,
-} from '../../entities/tarjeta/portada'
+  coincideLaEtiqueta,
+  etiquetaDeLaImagen,
+  VERSION_DEL_DIBUJO,
+} from '../../entities/tarjeta/etiqueta-de-la-imagen'
+export type { ContextoDeQuienMira } from '../../entities/tarjeta/pagina-de-la-imagen'
