@@ -96,7 +96,7 @@ begin
   if not coalesce(v_ok, false) or v_total > 1000 then
     raise exception 'Los filtros del inventario no son válidos.' using errcode = '22023', hint = 'filtros';
   end if;
-exception when invalid_datetime_format or datetime_field_overflow or numeric_value_out_of_range then
+exception when invalid_datetime_format or datetime_field_overflow or numeric_value_out_of_range or invalid_time_zone_displacement_value then
   raise exception 'Los filtros del inventario no son válidos.' using errcode = '22023', hint = 'filtros';
 end $_$;
 

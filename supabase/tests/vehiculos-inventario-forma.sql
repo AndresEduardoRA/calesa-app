@@ -244,6 +244,7 @@ declare
     '[{"tipo": "cierre_entre", "desde": "2026-11-21T00:00:00Z", "hasta": "2026-11-21T00:00:00Z"}]', '[{"tipo": "cierre_entre", "desde": "2026-11-21T00:00:00Z", "hasta": "2026-11-20T00:00:00-04:00"}]',
     '[{"tipo": "cierre_entre", "desde": "2026-11-20T00:00:00Z", "hasta": "2026-11-21T00:00:00Z"}, {"tipo": "cierre_entre", "desde": "2026-11-20T00:00:00Z", "hasta": "2026-11-22T00:00:00Z"}]',
     '[{"tipo": "cierre_entre", "desde": "2026-11-20T00:00:00Z", "hasta": "2026-11-21T00:00:00Z"}, {"tipo": "situacion_en", "situaciones": ["en_subasta"], "fases": [], "sinFase": false}]',
+    '[{"tipo": "cierre_entre", "desde": "2026-11-20T00:00:00+99:99", "hasta": "2026-11-21T00:00:00Z"}]',
     -- Los topes: 501 por arreglo, 1.001 sumando todo el pedido, 1.001 caracteres por texto y por alternativa.
     jsonb_build_array(jsonb_build_object('tipo', 'columna_en', 'columna', 'fase_id', 'valores', u500 || to_jsonb(gen_random_uuid()), 'incluirNulo', false)),
     jsonb_build_array(jsonb_build_object('tipo', 'en_vitrina', 'valor', true, 'fases', u500 || to_jsonb(gen_random_uuid()))),
