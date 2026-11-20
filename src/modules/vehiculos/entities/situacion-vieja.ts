@@ -1,5 +1,5 @@
 // El filtro viejo «Situación» (`?situacion=`: las situaciones propias, las fases y «Sin fase» en una sola lista) se partió en «Subasta» y «Fase». Un enlace
-// guardado redirige con 308 al equivalente (lo llama `src/app/(app)/vehiculos/page.tsx` con `redirigirPermanente()`, fuera de todo `try`) y una vista guardada
+// guardado redirige con 308 al equivalente (lo llama `src/app/(app)/vehiculos/enlace-viejo/route.ts`, adonde lo reescribe `src/proxy.ts`) y una vista guardada
 // se lee traducida (sin migrar datos): su enlace y «la vista actual» usan las claves nuevas. Sin I/O.
 //   en_subasta → subasta=vivas · sin_resolver → subasta=sin_resolver · no_ganada → subasta=no_ganadas · las fases y `ninguna` → fase=
 // «Subasta» es una a la vez: si venían varias propias gana la primera en su orden (vivas › sin resolver › no ganadas). Un `subasta` o un `fase` que ya esté se

@@ -81,7 +81,7 @@ export {
   type OrdenDelInventario,
 } from './entities/filtros-de-subasta'
 export { leerCursorDelCierre } from './entities/cursor-del-cierre'
-// El `?situacion=` viejo: 308 al equivalente, y las vistas guardadas leídas con las claves nuevas
+// El `?situacion=` viejo: 308 al equivalente (`vehiculos/enlace-viejo/route.ts`), y las vistas guardadas leídas con las claves nuevas
 export { conSituacionTraducida, destinoDeLaSituacionVieja } from './entities/situacion-vieja'
 
 // La vitrina: qué se ve en la web pública y quién publica. Las dos lecturas no tumban la pantalla

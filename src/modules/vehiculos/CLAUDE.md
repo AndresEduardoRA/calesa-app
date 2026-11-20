@@ -4,7 +4,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 
 ## Entra y sale
 
-- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?subasta=`, `?orden=` y `?fase=`; un `?situacion=` viejo redirige con 308: `destinoDeLaSituacionVieja()`—, `?cursor=`, `?vitrina=si|no`; cada fila y cada tarjeta es un enlace a la ficha, con `href` y `EnlaceDeLaFila` de `shared/ui/lista`; un `?vehiculo=<id>` viejo
+- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?subasta=`, `?orden=` y `?fase=`; un `?situacion=` viejo redirige con 308: `src/proxy.ts` lo reescribe a `/vehiculos/enlace-viejo`, que responde con `destinoDeLaSituacionVieja()`—, `?cursor=`, `?vitrina=si|no`; cada fila y cada tarjeta es un enlace a la ficha, con `href` y `EnlaceDeLaFila` de `shared/ui/lista`; un `?vehiculo=<id>` viejo
   redirige a la ficha con su panel, su visor y su edición: `destinoDelEnlaceViejo()`, de `index.ts`, que llama la página con `redirigir()`; un
   `?panel=vitrina-rapida&para=<id>` viejo, a `?panel=vitrina&para=<id>`: `destinoDeLaVitrinaRapida()`; los paneles del «⋯» `?panel=imagenes|vitrina|actualizar-datos&para=<id>`),
   `/vehiculos/papelera`, `/vehiculos/[id]` (la ficha en dos columnas. A la izquierda, lo clave: `CabeceraDeVehiculo` con `FotosDeLaFicha` (el carrusel con

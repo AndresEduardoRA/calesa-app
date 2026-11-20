@@ -9,7 +9,6 @@ import {
   buscarVehiculos,
   condicionesDe,
   conSituacionTraducida,
-  destinoDeLaSituacionVieja,
   esSubastaElegida,
   FILTRO_SUBASTA,
   leerCursorDelCierre,
@@ -39,7 +38,7 @@ import { datosO } from '@/shared/lib/errores'
 import { CLAVE_DE_CURSOR, CLAVE_DE_POR_PAGINA, leerFiltros } from '@/shared/lib/filtros'
 import type { Permisos } from '@/shared/lib/permisos'
 import { leerCursor, leerPorPagina, tamanoDePagina, tamanosHasta } from '@/shared/lib/paginacion'
-import { redirigir, redirigirPermanente } from '@/shared/lib/navegacion'
+import { redirigir } from '@/shared/lib/navegacion'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { aprobadasDeLaPagina } from './aprobadas'
@@ -89,11 +88,6 @@ function redirigirElEnlaceViejo(parametros: Awaited<PageProps<'/vehiculos'>['sea
   const vitrina = destinoDeLaVitrinaRapida(parametros)
   if (vitrina) {
     redirigir(vitrina)
-  }
-  // El filtro «Situación» se partió en «Subasta» y «Fase»: el enlace guardado va al equivalente con 308 (cambió para siempre).
-  const situacion = destinoDeLaSituacionVieja(parametros)
-  if (situacion) {
-    redirigirPermanente(situacion)
   }
 }
 
