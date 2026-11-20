@@ -4,7 +4,10 @@ import {
   RUTAS,
   conVuelta,
   rutaDeConfiguracionDeCotizacion,
+  rutaDeLaFormula,
+  rutaDeLasFormulas,
   rutaDeParteDelOrigen,
+  PARTES_DE_LA_FORMULA,
   PARTES_DEL_ORIGEN,
   PESTANAS_DE_COTIZACION,
   decidirAcceso,
@@ -227,6 +230,25 @@ describe('rutaDeConfiguracionDeCotizacion', () => {
   it('sin consulta (o vacía) no lleva «?»', () => {
     expect(rutaDeConfiguracionDeCotizacion(O, 'hoja', {})).toBe(
       `/configuracion/origenes/${O}/formula/hoja`,
+    )
+  })
+})
+
+describe('rutaDeLasFormulas y rutaDeLaFormula', () => {
+  const O = '11111111-1111-4111-8111-111111111111'
+  const F = '22222222-2222-4222-8222-222222222222'
+  it('la lista y cada parte de una fórmula, con su consulta', () => {
+    expect(rutaDeLasFormulas(O)).toBe(`/configuracion/origenes/${O}/formulas`)
+    expect(rutaDeLasFormulas(O, { panel: 'nueva-formula' })).toBe(
+      `/configuracion/origenes/${O}/formulas?panel=nueva-formula`,
+    )
+    expect(PARTES_DE_LA_FORMULA.map((parte) => rutaDeLaFormula(O, F, parte))).toEqual([
+      `/configuracion/origenes/${O}/formulas/${F}/planilla`,
+      `/configuracion/origenes/${O}/formulas/${F}/hoja`,
+      `/configuracion/origenes/${O}/formulas/${F}/tarjeta`,
+    ])
+    expect(rutaDeLaFormula('a/b', F, 'planilla', { fila: 'n1' })).toBe(
+      `/configuracion/origenes/a%2Fb/formulas/${F}/planilla?fila=n1`,
     )
   })
 })
