@@ -94,6 +94,16 @@ las trampas, en `docs/LECCIONES.md`.
 - **Lo que falta en el inicio de Configuración: sólo lo accionable, donde se resuelve.** Los siguientes pasos de cada origen activo van a la tarjeta de la sección que los resuelve (la fórmula a Cotización, el flujo a Flujos, apibara una vez a Empresa) y sólo si la persona puede hacerlos (`conDestino()` sin motivo). El paso de los permisos no va: es un aviso blando (los roles para todos los orígenes ya alcanzan) y queda en la página del origen. Si la integración no se puede leer, apibara cuenta como activa: no se inventa una falta.
 - **La barra de cambios sin guardar no frena el «atrás» del navegador.** Frena los enlaces (en la fase de captura), las salidas por `salirSinPerder()` y, con la pregunta del navegador, recargar y cerrar. El App Router no ofrece cómo frenar el «atrás» sin parchear el historial, y parchearlo rompe la vuelta del foco.
 - **PWA.** `id: '/'` igual que `start_url` (cambiarlo reinstala la app a todos); sin aviso que invite a instalar; los atajos del manifest no se filtran por permiso (se pide sin sesión). Íconos, tarjeta y PDF salen del logo normal; el oscuro lo elige el CSS.
+- **Las páginas de ajustes son tarjetas resumen que se editan en un modal.** Empresa, Integraciones y Comprobantes (y después Sitio web, el perfil y
+  Monedas) muestran lo guardado como texto en `<TarjetaDeAjustes>` y editan en un `ModalDeFormulario` por tarjeta (`?panel=<tarjeta>`), sin acordeones ni
+  barra de cambios sin guardar: de un vistazo se ve qué está configurado y la página entra sin desplazar. Mampostería con columnas CSS (`columns-1
+@2xl:columns-2 @5xl:columns-3`, `break-inside-avoid`) sobre un contenedor con nombre: sin JavaScript, sin huecos, y manda el ancho de la página, no el de la
+  pantalla (el menú de Configuración se lo quita). **Una escritura por modal** (la clave de una integración no va con su dirección: las dos usan la
+  misma versión de la fila y encadenadas la segunda chocaría consigo misma). La versión llega por props al abrir y nunca va en la `key` (guardar
+  remontaría el modal y borraría lo tipeado); la `key` es por apertura. `useEnvioConVersion()` (`@/shared/ui`): el conflicto deja «Recargar» y
+  «Guardar» apagado hasta que llega la versión nueva; sin red espera y reenvía al volver. Los interruptores de una tarjeta guardan al instante.
+  Descartados: el formulario largo en bloques plegables, la edición en el lugar (sin versión por campo), un drawer al costado (tapa lo que se
+  edita) y la mampostería con JavaScript (suma bytes en frío y parpadea). En esas páginas reemplaza la regla de los bloques plegables.
 
 ## Equipo
 
