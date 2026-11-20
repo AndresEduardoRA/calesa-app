@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { MenuMovil } from './menu-movil'
 import { HuecoBuscador } from './huecos/buscador'
 import { ConmutadorLive } from './conmutador-live'
+import { LateralPlegable } from './lateral-plegable'
 
 type Props = {
   nombreEmpresa: string
@@ -53,15 +54,7 @@ export function Marco({
         Saltar al contenido
       </a>
 
-      <aside
-        data-barra-lateral=""
-        className="sticky top-0 hidden h-dvh w-(--sidebar) shrink-0 flex-col border-r border-(--color-line) bg-(--color-surface) md:flex"
-      >
-        <div className="flex h-(--topbar) shrink-0 items-center border-b border-(--color-line) px-4">
-          {marca}
-        </div>
-        <div className="flex-1 overflow-y-auto p-2">{navegacion}</div>
-      </aside>
+      <LateralPlegable marca={marca} navegacion={navegacion} />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="@container sticky top-0 z-30 flex h-(--topbar) shrink-0 items-center gap-2 border-b border-(--color-line) bg-(--color-surface) px-2 md:px-5">

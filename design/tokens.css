@@ -39,6 +39,7 @@
   --fila-compacta: 38px; /* densidad escritorio */
   --fila-comoda: 48px; /* densidad táctil */
   --sidebar: 15.5rem;
+  --sidebar-plegado: 3.5rem; /* el menú lateral plegado a sólo íconos */
   --topbar: 3.25rem;
 
   /* --- Marca (default neutro; la empresa lo pisa en runtime) ------------ */

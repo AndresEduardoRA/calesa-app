@@ -71,6 +71,24 @@
 }
 
 /*
+ * Con la barra lateral plegada, el contador de Chat (`NoLeidosDeLaBarra`) es un punto en la esquina de su ícono. El número sigue en su `aria-label`.
+ * Los avisos no se mueven: siguen abajo a la izquierda con el ancho de siempre.
+ */
+[data-barra-lateral][data-plegado] [data-no-leidos-de-la-barra] {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.55rem;
+  margin: 0;
+  min-width: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  overflow: hidden;
+  font-size: 0;
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+/*
  * Con el lienzo de la tarjeta a la vista (el editor de Configuración › Cotización › Tarjeta), la página reserva el canal de su barra: la escala de «Ajustar»
  * sale del ancho, el alto de la página de la escala, y la barra que aparece no debe cambiar el ancho (si no, el lienzo tiembla en un ciclo de pocos píxeles).
  */

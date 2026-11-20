@@ -40,6 +40,8 @@ describe('atajoDe', () => {
     expect(atajoDe(tecla('N', { shiftKey: true }))).toBe('abrirNuevo')
     expect(atajoDe(tecla('?', { shiftKey: true }))).toBe('ayuda')
     expect(atajoDe(tecla('Enter', { ctrlKey: true }))).toBe('guardarYSeguir')
+    expect(atajoDe(tecla('b', { ctrlKey: true }))).toBe('plegarMenu')
+    expect(atajoDe(tecla('B', { metaKey: true }))).toBe('plegarMenu')
   })
 
   it('devuelve null para lo que no es un atajo', () => {
@@ -54,6 +56,10 @@ describe('valeMientrasSeEscribe', () => {
     expect(valeMientrasSeEscribe('cerrar')).toBe(true)
     expect(valeMientrasSeEscribe('buscar')).toBe(true)
     expect(valeMientrasSeEscribe('guardar')).toBe(true)
+  })
+
+  it('frena Ctrl+B: en un campo enriquecido es la negrita', () => {
+    expect(valeMientrasSeEscribe('plegarMenu')).toBe(false)
   })
 
   it('frena los de una sola tecla', () => {
