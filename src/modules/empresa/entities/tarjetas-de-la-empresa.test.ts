@@ -114,9 +114,13 @@ describe('cambiosDeLaTarjeta', () => {
   })
 
   it('la moneda base no viaja con datos cargados, aunque se haya tocado', () => {
-    const escrito = { ...borradorDeLaTarjeta('region', AJUSTES), monedaBase: 'BOB' }
-    expect(cambiosDeLaTarjeta('region', AJUSTES, escrito, { conDatosCargados: true })).toBeNull()
-    expect(cambiosDeLaTarjeta('region', AJUSTES, escrito, LIBRE)).toEqual({ monedaBase: 'BOB' })
+    const escrito = { ...borradorDeLaTarjeta('moneda-base', AJUSTES), monedaBase: 'BOB' }
+    expect(
+      cambiosDeLaTarjeta('moneda-base', AJUSTES, escrito, { conDatosCargados: true }),
+    ).toBeNull()
+    expect(cambiosDeLaTarjeta('moneda-base', AJUSTES, escrito, LIBRE)).toEqual({
+      monedaBase: 'BOB',
+    })
   })
 
   it('el color se compara con lo guardado: quitarlo es un cambio', () => {

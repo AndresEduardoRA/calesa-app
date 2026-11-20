@@ -12,7 +12,6 @@ import {
 } from '@/shared/ui/tarjetas-de-ajustes'
 import type { AjustesEmpresa } from '../../../entities/ajustes-empresa'
 import { MOTIVO_SIN_LOGO, MOTIVO_SIN_PERMISO_AJUSTES } from '../../../entities/motivos'
-import type { Moneda } from '../../../entities/tipos-cambio'
 import { useVolverALosNeutros } from '../../iconos/hooks/use-iconos'
 import { usePanelesDeLaEmpresa, type MotivosDeLosPaneles } from '../hooks/use-paneles-de-la-empresa'
 import {
@@ -36,10 +35,7 @@ type Props = {
   logoOscuroUrl: string | null
   // La dirección del ícono de 192 px en uso (el propio o el neutro), ya armada en el servidor.
   iconoActualUrl: string
-  // Las monedas activas, para elegir la base.
-  monedas: readonly Moneda[]
   zonas: readonly string[]
-  conDatosCargados: boolean
   // Sin `empresa.ajustes.gestionar` se ve todo, con «Editar» apagado y el motivo.
   puedeEditar: boolean
 }
@@ -143,8 +139,8 @@ type Paneles = ReturnType<typeof usePanelesDeLaEmpresa>
 
 // Los cinco modales, cada uno recién cuando se abre por primera vez.
 function ModalesDeLaEmpresa({ props, paneles }: { props: Props; paneles: Paneles }) {
-  const { ajustes, conDatosCargados } = props
-  const deLosModales = { ajustes, conDatosCargados, alCerrar: paneles.cerrar }
+  const { ajustes } = props
+  const deLosModales = { ajustes, alCerrar: paneles.cerrar }
   return (
     <>
       {paneles.identidad.montar ? (
@@ -159,7 +155,6 @@ function ModalesDeLaEmpresa({ props, paneles }: { props: Props; paneles: Paneles
         <ModalDeRegionDiferido
           {...deLosModales}
           abierto={paneles.region.abierto}
-          monedas={props.monedas}
           zonas={props.zonas}
         />
       ) : null}
@@ -186,7 +181,7 @@ function ModalesDeLaEmpresa({ props, paneles }: { props: Props; paneles: Paneles
 // Las cinco tarjetas de Datos de la empresa, con lo guardado a la vista; cada «Editar» abre su modal (`?panel=<tarjeta>`), que se pide
 // recién entonces. Una escritura por modal, todas con la misma versión de la fila.
 export function TarjetasDeLaEmpresa(props: Props) {
-  const { ajustes, puedeEditar, conDatosCargados } = props
+  const { ajustes, puedeEditar } = props
   const motivo = puedeEditar ? null : MOTIVO_SIN_PERMISO_AJUSTES
   const motivos: MotivosDeLosPaneles = {
     identidad: motivo,
@@ -217,7 +212,7 @@ export function TarjetasDeLaEmpresa(props: Props) {
           motivo={motivo}
           abrir={paneles.region.abrir}
         >
-          <ValoresDeLaTarjeta filas={filasDeRegion(ajustes, conDatosCargados)} />
+          <ValoresDeLaTarjeta filas={filasDeRegion(ajustes)} />
         </TarjetaEditable>
         <TarjetaEditable
           titulo="Datos legales y de contacto"
