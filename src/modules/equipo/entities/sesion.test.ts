@@ -54,6 +54,7 @@ describe('sesionDesde', () => {
         vistaDeVehiculos: null,
         vistaDeCotizaciones: null,
         agruparCotizaciones: null,
+        menuPlegado: null,
       },
     })
   })

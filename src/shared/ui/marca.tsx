@@ -8,6 +8,8 @@ type Props = {
   // El logo para el tema oscuro: con él, cada tema dibuja el suyo. Sin él, vale el normal.
   logoOscuroUrl?: string | null
   className?: string
+  // Clases del nombre: la barra lateral plegada lo deja sólo para el lector (el logo queda solo).
+  nombreClassName?: string
 }
 
 // El glifo neutro de public/iconos/marca.svg, dibujado acá para que tome el color de la empresa:
@@ -51,7 +53,7 @@ function Logo({
 // La identidad del despliegue. Sin logo cargado, el glifo neutro con el color de la marca. Con logo
 // para el tema oscuro van los dos y el tema elige por CSS: la clase `.dark` llega antes de pintar,
 // así el servidor y el cliente dibujan lo mismo y no parpadea al hidratar.
-export function Marca({ nombre, logoUrl, logoOscuroUrl, className }: Props) {
+export function Marca({ nombre, logoUrl, logoOscuroUrl, className, nombreClassName }: Props) {
   const claro = logoOscuroUrl ? 'dark:hidden' : undefined
   return (
     <span className={cn('flex min-w-0 items-center gap-2.5', className)}>
@@ -63,7 +65,12 @@ export function Marca({ nombre, logoUrl, logoOscuroUrl, className }: Props) {
       {logoOscuroUrl ? (
         <Logo url={logoOscuroUrl} className="hidden dark:block" data-logo="oscuro" />
       ) : null}
-      <span className="truncate text-(length:--text-base) font-semibold text-(--color-ink)">
+      <span
+        className={cn(
+          'truncate text-(length:--text-base) font-semibold text-(--color-ink)',
+          nombreClassName,
+        )}
+      >
         {nombre}
       </span>
     </span>
