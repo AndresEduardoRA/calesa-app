@@ -20,11 +20,30 @@ const CLAVE_VIEJA: Record<PestanaDeCotizacion, string> = {
   tablas: 'tablas',
 }
 
-const DEL_ORIGEN: Record<PestanaDeCotizacion, { titulo: string; descripcion: string }> = {
-  formula: { titulo: 'Fórmula', descripcion: 'Qué se calcula.' },
-  hoja: { titulo: 'Hoja', descripcion: 'Cómo se ve y se llena la cotización.' },
-  tarjeta: { titulo: 'Tarjeta', descripcion: 'La imagen que recibe el cliente.' },
-  tablas: { titulo: 'Tablas', descripcion: 'Valores de referencia: depreciación, transporte…' },
+const DEL_ORIGEN: Record<
+  PestanaDeCotizacion,
+  { titulo: string; descripcion: string; palabras: readonly string[] }
+> = {
+  formula: {
+    titulo: 'Fórmula',
+    descripcion: 'Qué se calcula.',
+    palabras: ['cálculo', 'costo', 'margen', 'publicar'],
+  },
+  hoja: {
+    titulo: 'Hoja',
+    descripcion: 'Cómo se ve y se llena la cotización.',
+    palabras: ['plantilla', 'excel', 'celdas', 'diseño'],
+  },
+  tarjeta: {
+    titulo: 'Tarjeta',
+    descripcion: 'La imagen que recibe el cliente.',
+    palabras: ['imagen', 'pdf', 'cliente', 'compartir'],
+  },
+  tablas: {
+    titulo: 'Tablas',
+    descripcion: 'Valores de referencia: depreciación, transporte…',
+    palabras: ['depreciación', 'transporte', 'referencia', 'aranceles'],
+  },
 }
 
 export const PARTES_DEL_ORIGEN: readonly ParteDelOrigen[] = PESTANAS_DE_COTIZACION.map((clave) => ({
@@ -49,6 +68,7 @@ export const PARTES_GENERALES = [
     clave: 'colores',
     titulo: 'Colores',
     descripcion: 'Los colores de la hoja y de la tarjeta, para toda la empresa.',
+    palabras: ['color', 'tema', 'tarjeta'],
     ruta: RUTAS.coloresDeCotizacion,
     permisos: ['cotizaciones.configurar'],
     grupo: 'General',
@@ -57,6 +77,7 @@ export const PARTES_GENERALES = [
     clave: 'niveles',
     titulo: 'Niveles',
     descripcion: 'Quién ve y edita qué celdas.',
+    palabras: ['permisos', 'celdas', 'editar', 'ver'],
     ruta: RUTAS.nivelesDeCotizacion,
     permisos: ['equipo.roles.ver', 'equipo.roles.gestionar'],
     motivoSinPermiso: MOTIVO_SIN_VER_ROLES,
@@ -66,6 +87,7 @@ export const PARTES_GENERALES = [
     clave: 'vigencia',
     titulo: 'Vigencia',
     descripcion: 'Cuántos días vale una cotización.',
+    palabras: ['días', 'vence', 'caducidad', 'validez'],
     ruta: RUTAS.vigenciaDeCotizacion,
     permisos: ['cotizaciones.configurar'],
     grupo: 'General',
@@ -93,6 +115,17 @@ export const SECCION_DE_COTIZACION = {
   titulo: 'Cotización',
   descripcion:
     'La fórmula, la hoja, la tarjeta y las tablas de cada origen, y los colores, los niveles y la vigencia.',
+  palabras: [
+    'cotizador',
+    'precio',
+    'fórmula',
+    'hoja',
+    'tarjeta',
+    'tablas',
+    'colores',
+    'niveles',
+    'vigencia',
+  ],
   ruta: RUTAS.configuracionDeCotizacion,
   Icono: CalculatorIcon,
   permisos: ['equipo.roles.ver', 'equipo.roles.gestionar', 'cotizaciones.configurar'],

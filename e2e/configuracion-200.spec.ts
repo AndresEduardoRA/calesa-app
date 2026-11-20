@@ -59,7 +59,7 @@ type Pantalla = {
 const DE_UN_ORIGEN = (seccion: string) => () => `/configuracion/origenes/${origen.id}/${seccion}`
 
 const PANTALLAS: Pantalla[] = [
-  { titulo: 'el centro de Configuración', url: () => '/configuracion' },
+  { titulo: 'el centro de Configuración', url: () => '/configuracion/inicio' },
   { titulo: 'Empresa › Datos de la empresa', url: () => '/configuracion/empresa' },
   {
     titulo: 'Empresa › Monedas y tipos de cambio',

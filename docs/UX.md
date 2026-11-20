@@ -503,19 +503,27 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   no se puede leer). **Actividad reciente** (en la ficha del vehículo, leída al acercarse; sola en `/actividad/reciente?entidad=&registro=`): los
   últimos 5 cambios del registro como frases, cada uno a su detalle en `/actividad`, y «Ver toda la actividad»; esqueleto, «Sin cambios en
   los últimos N días.» y error con «Reintentar»; sin `actividad.ver` no se dibuja.
-- **Configuración** — `/configuracion/*` (permiso de cada sección): inicio + secciones, del registro `secciones.ts` (grupos «Empresa y equipo»
-  · «Ventas» · «Operación» · «Web»). Dentro de una sección (layout de `/configuracion`): a la izquierda el **menú de Configuración** desde 1024 px
-  y con 44 rem de contenedor (con el texto al 200 % pasa al selector), con las secciones que la persona puede abrir por grupo, la actual con
-  `aria-current="page"` y debajo sus sub-secciones; arriba «‹ Configuración» (al inicio) y, donde no se ve el menú, el **selector de sección**
-  (`<select>` nativo con su «Sección», por grupo, a 44 px en el celular; elegir navega y, con cambios sin guardar, pregunta). En el inicio no
-  van ni el menú, ni el selector, ni la vuelta. Un grupo sin secciones que abrir no se dibuja; sin ninguna, «No tienes permiso» y sin menú.
-  Cada sub-sección es una sub-ruta con su `h1` y una frase (`EncabezadoDeConfiguracion`); la **índice** vive en la ruta de su sección y se
-  marca sólo ahí (el selector no repite la sección). La que la persona no puede abrir y declara su motivo va **apagada** con el motivo debajo
-  en el menú (no es enlace) y como `<option disabled>` con el motivo en el selector; su URL abre la primera sub-sección que sí puede.
-  Equipo, Roles y Flujos sólo se envuelven. **El inicio:** una tarjeta por grupo (`h2`) con, por sección, su título (el enlace), una
-  frase y **lo que falta**, en la sección donde se resuelve: «Falta publicar la fórmula de {origen}» (Cotización), «Falta configurar el flujo de
-  {origen}» (Flujos), «Falta activar apibara» una vez (Empresa); sólo de orígenes activos y lo que la persona puede hacer (no el paso de los
-  permisos), con su enlace al paso; hasta 3 y «Y N más». Llega después de las tarjetas; si no se puede leer, la tarjeta queda con su frase.
+- **Configuración** — `/configuracion/*` (permiso de cada sección): inicio en `/configuracion/inicio` (`/configuracion` redirige con 308 y su consulta)
+  - secciones, del registro `secciones.ts` (grupos «Empresa y equipo» · «Ventas» · «Operación» · «Web»). En **toda** página de Configuración, el inicio
+    incluido (layout de `/configuracion`): a la izquierda el **menú de Configuración** desde 1024 px y con 44 rem de contenedor (con el texto al 200 % pasa
+    al selector), de tres niveles que no se confunden: el **grupo** es un rótulo en mayúscula chica (no es enlace), la **sección** un renglón con su ícono del
+    catálogo y su nombre (la abierta, en negrita; la página, con acento y `aria-current="page"`) y **sólo la sección abierta** despliega sus sub-secciones,
+    sangradas bajo una línea guía a la izquierda (la actual, con el acento en esa línea y `aria-current="page"`). Arriba del menú, el **buscador** (abajo).
+    Donde no se ve el menú (celular y pantallas angostas), arriba de la página: el **selector de sección** (`<select>` nativo con su «Sección», por grupo, a
+    44 px; elegir navega y, con cambios sin guardar, pregunta) y, dentro de una sección, el buscador y «‹ Configuración» (la vuelta al inicio; en el inicio no
+    va). **Buscar en Configuración** (la tecla `/` enfoca el que se ve; Esc lo vacía): al tipear filtra secciones y sub-secciones por nombre y por las
+    `palabras` que declara el registro (sin acentos ni mayúsculas; cada palabra escrita es el comienzo de una del título o de las palabras), sólo lo que la
+    persona puede abrir; cada resultado con su camino («Empresa › Datos de la empresa»), hasta 12; Enter abre el primero, las flechas recorren la lista; sin
+    resultados, «Nada coincide con «x».» con «Limpiar». En el inicio es el campo de la página y los resultados ocupan el lugar de las tarjetas; dentro de una
+    sección va arriba del menú y los resultados ocupan el lugar del menú (en el celular, un panel debajo del campo). La búsqueda se vacía al cambiar de
+    pantalla. Un grupo sin secciones que abrir no se dibuja; sin ninguna, «No tienes permiso» y sin menú.
+    Cada sub-sección es una sub-ruta con su `h1` y una frase (`EncabezadoDeConfiguracion`); la **índice** vive en la ruta de su sección y se
+    marca sólo ahí (el selector no repite la sección). La que la persona no puede abrir y declara su motivo va **apagada** con el motivo debajo
+    en el menú (no es enlace) y como `<option disabled>` con el motivo en el selector; su URL abre la primera sub-sección que sí puede.
+    Equipo, Roles y Flujos sólo se envuelven. **El inicio:** las tarjetas, una por grupo (`h2`), en **mampostería** (columnas CSS: dos desde 40 rem de contenedor, sin huecos entre tarjetas
+    de distinto alto), con, por sección, su título (el enlace), una frase y **lo que falta**, en la sección donde se resuelve: «Falta publicar la fórmula de {origen}» (Cotización), «Falta configurar el flujo de
+    {origen}» (Flujos), «Falta activar apibara» una vez (Empresa); sólo de orígenes activos y lo que la persona puede hacer (no el paso de los
+    permisos), con su enlace al paso; hasta 3 y «Y N más». Llega después de las tarjetas; si no se puede leer, la tarjeta queda con su frase.
 - **Leads (config)** — `/configuracion/leads` (`leads.campos.gestionar` o `leads.configurar`), siete sub-rutas en el menú de Configuración
   (`configuracion/leads/seccion.ts`), sin sub-sección índice: la raíz abre la primera que la persona puede abrir. «Campos» (`/campos`,
   `leads.campos.gestionar`; `?campo=`), «Orígenes del lead» (`/origenes`; `?panel=nuevo-origen`/`editar-origen&origen=<id>`), «Tipos de

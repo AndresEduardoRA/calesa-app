@@ -13,7 +13,8 @@ export const RUTAS = {
   cierre: '/auth/cerrar',
   perfil: '/perfil',
   notificaciones: '/notificaciones',
-  configuracion: '/configuracion',
+  // El inicio de Configuración. `/configuracion` solo redirige aquí en el servidor (`next.config.ts`).
+  inicioDeConfiguracion: '/configuracion/inicio',
   equipo: '/configuracion/equipo',
   roles: '/configuracion/roles',
   empresa: '/configuracion/empresa',

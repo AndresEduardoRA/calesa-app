@@ -65,9 +65,10 @@ test('la dueña guarda los términos y un visitante los lee; la privacidad sin t
   page,
 }) => {
   await entrar(page, duena)
-  await page.goto('/configuracion')
+  await page.goto('/configuracion/inicio')
   await page
     .getByRole('main')
+    .getByRole('region')
     .getByRole('link', { name: /^Sitio web/ })
     .click()
   await page

@@ -1,5 +1,5 @@
 // Una sub-sección que la persona no puede abrir y declara su motivo: un renglón del menú que no es un enlace, con el estilo de
-// `EnlaceDelMenu` apagado y, debajo, el motivo en texto visible (el lector lo lee por `aria-describedby`). Se dibuja en el servidor.
+// una sub-sección de `EnlaceDelMenu` apagado y, debajo, el motivo en texto visible (el lector lo lee por `aria-describedby`). Se dibuja en el servidor.
 export function RenglonApagado({
   clave,
   titulo,
@@ -15,11 +15,11 @@ export function RenglonApagado({
       <span
         aria-disabled="true"
         aria-describedby={idDelMotivo}
-        className="flex min-h-9 cursor-not-allowed items-center rounded-(--radius-md) px-2.5 py-1.5 text-(length:--text-sm) text-(--color-ink-faint)"
+        className="flex min-h-8 cursor-not-allowed items-center py-1 pr-2 pl-3 text-(length:--text-sm) text-(--color-ink-faint)"
       >
         {titulo}
       </span>
-      <p id={idDelMotivo} className="px-2.5 text-(length:--text-xs) text-(--color-ink-soft)">
+      <p id={idDelMotivo} className="pl-3 text-(length:--text-xs) text-(--color-ink-soft)">
         {motivo}
       </p>
     </div>

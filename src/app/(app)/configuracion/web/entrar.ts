@@ -15,7 +15,7 @@ export function entrarASubseccion(
     return 'sin-permiso'
   }
   if (!subseccion.permisos.some((clave) => puede(permisos, clave))) {
-    redirigir(primeraSubseccionAbierta(SECCION_DE_WEB, permisos) ?? RUTAS.configuracion)
+    redirigir(primeraSubseccionAbierta(SECCION_DE_WEB, permisos) ?? RUTAS.inicioDeConfiguracion)
   }
   return 'abierta'
 }
