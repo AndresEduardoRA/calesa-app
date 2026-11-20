@@ -1,6 +1,7 @@
 import { ChevronLeftIcon } from 'lucide-react'
 import type { Route } from 'next'
 import Link from 'next/link'
+import { connection } from 'next/server'
 import { integracionActiva } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
 import { pasosParaCotizarYMover } from '@/modules/origenes'
@@ -17,10 +18,13 @@ import { PestanasDeLaRuta } from './pestanas-de-la-ruta'
 // «Inactivo» y, para quien gestiona orígenes, el «⋯» arriba a la derecha; «Para cotizar y mover» con un paso por pestaña (o «Inactivo»);
 // y las pestañas, con las que no abre apagadas y su motivo. Para quien no abre el origen no dibuja nada: la pestaña dice por qué.
 export async function MarcoDelOrigen({ id }: { id: string }) {
-  const [sesion, origen] = await Promise.all([requerirSesion(), leerElOrigen(id)])
-  if (!puedeAbrirElOrigen(sesion.permisos, origen.id)) {
+  // Sin esto, el armado del cascarón de un origen nuevo lee la sesión al prerenderizar (`Date.now()` de supabase-js).
+  await connection()
+  const sesion = await requerirSesion()
+  if (!puedeAbrirElOrigen(sesion.permisos, id)) {
     return null
   }
+  const origen = await leerElOrigen(id)
   const apibaraActiva = origen.tipo === 'subasta' ? await integracionActiva('apibara') : false
   const tira = pasosParaCotizarYMover(origen, { apibaraActiva })
   return (

@@ -42,12 +42,17 @@ export const leerElOrigen = cache(async (id: string): Promise<OrigenConUso> => {
 })
 
 // Lo que cada pestaña de un origen comprueba antes de dibujarse: cada página lo hace sola (un layout no protege a su página). Se abre con
-// cualquiera de los tres permisos en ese origen; la pestaña pide además el suyo (`acceso.ts`).
+// cualquiera de los tres permisos en ese origen; la pestaña pide además el suyo (`acceso.ts`). El permiso va antes de leer: `origenes_resumen()`
+// rechaza a quien no tiene ninguno en algún origen, y a quien no abre este no se le dice si existe.
 export async function abrirOrigen(id: string, parte: ParteDelOrigen): Promise<OrigenAbierto> {
-  const [sesion, origen] = await Promise.all([requerirSesion(), leerElOrigen(id)])
-  if (!puedeAbrirElOrigen(sesion.permisos, origen.id)) {
+  const sesion = await requerirSesion()
+  if (!puedeAbrirElOrigen(sesion.permisos, id)) {
+    if (!z.guid().safeParse(id).success) {
+      notFound()
+    }
     return { tipo: 'ajeno', puedeVerOtros: puedeAbrirOrigenes(sesion.permisos) }
   }
+  const origen = await leerElOrigen(id)
   const pestanas = pestanasDelOrigen(sesion.permisos, origen.id)
   const pedida = pestanas.find((pestana) => pestana.clave === parte)
   const primera = pestanas.find((pestana) => pestana.motivo === undefined)
