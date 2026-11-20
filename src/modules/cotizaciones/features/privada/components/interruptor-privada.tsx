@@ -6,7 +6,8 @@ import { AYUDA_DEL_INTERRUPTOR, ETIQUETA_DE_PRIVADA } from '../../../entities/pr
 
 // El interruptor «Privada» al guardar una nueva (glosario: «Cotización privada»), sobre el pie del resumen: su nombre, a quién se la muestra (`aria-describedby`) y el
 // interruptor, apagado mientras guarda. Sólo lo dibuja la hoja nueva (`useMarcaDeLaNueva()`), que siempre es una preventa y la guarda quien la crea; una guardada la cambia
-// por su «⋯».
+// por su «⋯». En el celular el resumen va pegado abajo y la burbuja del chat (`bottom-20 right-4`, 44 px) cae a la altura de esta fila: el margen derecho deja el interruptor
+// a su izquierda.
 export function InterruptorPrivada({
   privada,
   alCambiar,
@@ -18,7 +19,10 @@ export function InterruptorPrivada({
 }) {
   const id = useId()
   return (
-    <div className="flex min-h-11 items-center justify-between gap-3" data-interruptor-privada="">
+    <div
+      className="flex min-h-11 items-center justify-between gap-3 max-md:pr-[44px]"
+      data-interruptor-privada=""
+    >
       <div className="grid min-w-0 gap-0.5">
         <span className="text-(length:--text-sm) font-medium text-(--color-ink)">
           {ETIQUETA_DE_PRIVADA}
