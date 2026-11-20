@@ -178,7 +178,7 @@ test('E2E el inicio dice en Orígenes qué le falta a un origen nuevo, con su en
   const ventas = page.getByRole('main').getByRole('region', { name: 'Ventas' })
   // Configura sólo el cotizador en ese origen: el flujo (sin fases) no se le dice; la fórmula y la tarjeta sí, en una línea.
   const falta = ventas.getByRole('link', {
-    name: `${origen.nombre}: falta publicar la fórmula y publicar la tarjeta`,
+    name: `${origen.nombre}: falta activar una fórmula y publicar la tarjeta`,
     exact: true,
   })
   await expect(falta).toHaveAttribute('href', `/configuracion/origenes/${origen.id}/formulas`)
