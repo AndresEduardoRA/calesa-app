@@ -103,9 +103,11 @@ test('E2E «Ajustar»: arrastrar el borde de una columna deja el lienzo quieto',
   await arrastrarLaColumna(page, 'k2', 20)
   await capturar(page, info, 'ajustar-columna')
   await quietoYElige(page, 'Ajustar, tras la columna')
-  // «Ajustar» deja lugar al borde de la última columna: el marco no se desplaza de costado.
+  // «Ajustar» deja lugar al borde de la última columna y el alto no tiene fracciones: el marco no saca barras propias.
   const marco = page.locator('[data-lienzo-marco]')
-  expect(await marco.evaluate((m) => m.scrollWidth - m.clientWidth)).toBeLessThanOrEqual(0)
+  expect(
+    await marco.evaluate((m) => [m.scrollWidth - m.clientWidth, m.scrollHeight - m.clientHeight]),
+  ).toEqual([0, 0])
 })
 
 test('E2E «Ajustar»: arrastrar una fila y cambiar su alto deja el lienzo quieto', async ({

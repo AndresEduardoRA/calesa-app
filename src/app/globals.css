@@ -70,6 +70,14 @@
   }
 }
 
+/*
+ * Con el lienzo de la tarjeta a la vista (el editor de Configuración › Cotización › Tarjeta), la página reserva el canal de su barra: la escala de «Ajustar»
+ * sale del ancho, el alto de la página de la escala, y la barra que aparece no debe cambiar el ancho (si no, el lienzo tiembla en un ciclo de pocos píxeles).
+ */
+html:has([data-lienzo-marco]) {
+  scrollbar-gutter: stable;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
