@@ -11,7 +11,7 @@ import { esquemaDeCambiarConstante } from '../schemas/constante'
 // El ⚙ de una constante desde la hoja (4.20-3a; la pantalla, 4.20-3b): publica la N+1 de la fórmula del origen con el valor nuevo (`formula_cambiar_constante()`, con la
 // publicada esperada siempre); la base vuelve a pedir `cotizaciones.configurar` del origen y no toca el borrador. Devuelve el id de la versión nueva.
 //
-// Sin revalidar ni refrescar, ni aun Configuración › Cotización: en Next 16.4.3 `revalidatePath` (con cualquier ruta), `revalidateTag`, `updateTag` y `refresh`
+// Sin revalidar ni refrescar, ni aun la página del origen: en Next 16.4.3 `revalidatePath` (con cualquier ruta), `revalidateTag`, `updateTag` y `refresh`
 // vuelven a dibujar la página desde la que se llama la action, y la hoja se remontaría con otra abierta a medio tipear (como `crear-cotizacion.ts`). La pestaña
 // «Fórmula» es dinámica y se vuelve a leer al ir a ella; si se la ve desde el historial, sus escrituras dan el PT409 de la base.
 export const cambiarConstante = actionClient

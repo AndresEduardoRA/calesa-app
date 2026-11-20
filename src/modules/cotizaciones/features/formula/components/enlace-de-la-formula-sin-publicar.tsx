@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 
-// El enlace de «Falta publicar la fórmula de <origen>» a Configuración › Cotización: el núcleo (`<FormulaSinPublicar>`) lo recibe como `accion` y la página lo une
+// El enlace de «Falta publicar la fórmula de <origen>» a la Fórmula del origen: el núcleo (`<FormulaSinPublicar>`) lo recibe como `accion` y la página lo une
 // (`pantallas/formula-hoja.ts`). Lleva a la pestaña «Fórmula» de ese origen (4.20-2a), que dice que todavía no tiene una versión publicada.
 export function EnlaceDeLaFormulaSinPublicar({ origenId }: { origenId: string }) {
   return (

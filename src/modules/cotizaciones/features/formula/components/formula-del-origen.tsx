@@ -32,7 +32,7 @@ const sobreQue = (formula: Formula) =>
     ? `Sobre el borrador de ${formula.borrador.autor}.`
     : `Sobre la versión ${String(formula.publicada?.version ?? '')} publicada.`
 
-// La pestaña «Fórmula» de un origen en Configuración › Cotización: arriba su publicada, su borrador y sus versiones (`VistaDeLaFormula`; desde el borrador se publica
+// La pestaña «Fórmula» de la Fórmula de un origen (Configuración › Orígenes): arriba su publicada, su borrador y sus versiones (`VistaDeLaFormula`; desde el borrador se publica
 // y desde una archivada se revierte, `?panel=publicar-formula`, `?panel=revertir-formula&version=<id>`; el borrador se descarta, `?panel=descartar-borrador`) y abajo
 // la planilla de la fórmula, sobre el borrador o, sin él, la publicada. Con `?panel=editar-formula`, el Modo avanzado (el editor en texto) ocupa el lugar de todo:
 // la sesión que tiene la fórmula de trabajo es la misma y no se vuelve a montar al cambiar de modo. Su `key` no lleva la versión (C8): guardar sobre la publicada

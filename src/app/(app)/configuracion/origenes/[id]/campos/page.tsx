@@ -2,9 +2,8 @@ import type { Metadata } from 'next'
 import { leerDatosNuevosDeApibara, leerLayout } from '@/modules/origenes'
 import { DatosNuevosDeApibara, EditorDeCampos } from '@/modules/origenes/pantallas/origen-campos'
 import { datosO } from '@/shared/lib/errores'
-import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { abrirOrigen } from '../abrir-origen'
-import { MarcoDelOrigen } from '../marco-del-origen'
+import { NoSeAbre } from '../no-se-abre'
 
 export const metadata: Metadata = { title: 'Campos del origen' }
 
@@ -13,11 +12,11 @@ export const metadata: Metadata = { title: 'Campos del origen' }
 export default async function PaginaCamposDelOrigen({
   params,
 }: PageProps<'/configuracion/origenes/[id]/campos'>) {
-  const abierto = await abrirOrigen((await params).id)
-  if (abierto.sinPermiso) {
-    return <EstadoSinPermiso />
+  const abierto = await abrirOrigen((await params).id, 'campos')
+  if (abierto.tipo !== 'abierto') {
+    return <NoSeAbre abierto={abierto} />
   }
-  const { sesion, origen, puedeGestionar } = abierto
+  const { origen, puedeGestionar } = abierto
   const [layout, nuevos] = await Promise.all([
     leerLayout(origen.id, { conUso: false }),
     origen.tipo === 'subasta' && puedeGestionar ? leerDatosNuevosDeApibara(origen.id) : null,
@@ -26,7 +25,7 @@ export default async function PaginaCamposDelOrigen({
   // Si no se pudo averiguar, el editor sigue: es un aviso, no la pantalla.
   const datosNuevos = nuevos?.ok ? nuevos.data : []
   return (
-    <MarcoDelOrigen origen={origen} permisos={sesion.permisos} parte="campos">
+    <div className="grid max-w-3xl gap-4">
       <div className="grid gap-6">
         {datosNuevos.length > 0 ? (
           <DatosNuevosDeApibara origenId={origen.id} datos={datosNuevos} />
@@ -40,6 +39,6 @@ export default async function PaginaCamposDelOrigen({
           versionDelOrigen={origen.actualizadoEn}
         />
       </div>
-    </MarcoDelOrigen>
+    </div>
   )
 }

@@ -67,7 +67,7 @@ export type PedidoDeGuardar = {
 // La fila escrita: su id y la hora que le puso la base, para volver a guardar sin releer.
 export type BorradorGuardado = { id: string; actualizadoEn: string }
 
-// Las escrituras de la fórmula desde Configuración › Cotización (4.20-2b y 2c), por las RPC del 4.20-1 y la de descartar. Publicar y revertir devuelven el id de la
+// Las escrituras de la fórmula desde la página del origen (4.20-2b y 2c), por las RPC del 4.20-1 y la de descartar. Publicar y revertir devuelven el id de la
 // versión publicada; descartar, nada;
 // cambiar una constante (el ⚙ de la hoja, 4.20-3a) o la cabecera (su ⚙) publica la N+1 y devuelve su id; guardar el borrador (4.21-3b-1) devuelve la fila escrita.
 export interface RepositorioDeLaFormula {

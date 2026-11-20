@@ -1,40 +1,39 @@
-import { ArrowLeftIcon } from 'lucide-react'
+import { ChevronLeftIcon } from 'lucide-react'
 import type { Route } from 'next'
 import Link from 'next/link'
-import type { ReactNode } from 'react'
 import { integracionActiva } from '@/modules/empresa'
-import type { Permisos } from '@/modules/equipo'
-import { pasosDe, type OrigenConUso } from '@/modules/origenes'
-import { ETIQUETA_DE_TIPO_DE_ORIGEN } from '@/modules/origenes/client'
-import { SiguientesPasos } from '@/modules/origenes/pantallas/origen'
+import { requerirSesion } from '@/modules/equipo'
+import { pasosParaCotizarYMover } from '@/modules/origenes'
+import { MenuDelOrigen, ParaCotizarYMover } from '@/modules/origenes/pantallas/origen'
+import { puede } from '@/shared/lib/permisos'
 import { RUTAS } from '@/shared/lib/rutas'
 import { Badge } from '@/shared/ui/badge'
+import { pestanasDelOrigen, puedeAbrirElOrigen } from '../acceso'
 import { conDestino } from '../pasos'
-import { subseccionDeOrigen, type ParteDelOrigen } from '../subsecciones'
+import { leerElOrigen } from './abrir-origen'
+import { PestanasDeLaRuta } from './pestanas-de-la-ruta'
 
-type Props = {
-  origen: OrigenConUso
-  permisos: Permisos
-  parte: ParteDelOrigen
-  children: ReactNode
-}
-
-// Lo común a las partes de un origen: la vuelta a la lista, el nombre como título con su tipo y su estado, la frase de la parte que se ve
-// y lo que le falta para funcionar. El salto entre partes lo dan el menú de Configuración y, donde no se ve, el selector de sección.
-export async function MarcoDelOrigen({ origen, permisos, parte, children }: Props) {
+// El encabezado de la página de un origen, común a sus seis pestañas: la vuelta a la lista; el punto de color, el nombre, «Activo» o
+// «Inactivo» y, para quien gestiona orígenes, el «⋯» arriba a la derecha; «Para cotizar y mover» con un paso por pestaña (o «Inactivo»);
+// y las pestañas, con las que no abre apagadas y su motivo. Para quien no abre el origen no dibuja nada: la pestaña dice por qué.
+export async function MarcoDelOrigen({ id }: { id: string }) {
+  const [sesion, origen] = await Promise.all([requerirSesion(), leerElOrigen(id)])
+  if (!puedeAbrirElOrigen(sesion.permisos, origen.id)) {
+    return null
+  }
   const apibaraActiva = origen.tipo === 'subasta' ? await integracionActiva('apibara') : false
-  const pasos = conDestino(pasosDe(origen, { apibaraActiva }), permisos, origen.id)
+  const tira = pasosParaCotizarYMover(origen, { apibaraActiva })
   return (
-    <div className="grid max-w-3xl gap-4">
+    <div className="grid min-w-0 gap-4">
       <Link
         href={RUTAS.origenes as Route}
-        className="inline-flex w-fit items-center gap-1 text-(length:--text-sm) text-(--color-ink-soft) hover:text-(--color-ink)"
+        className="-ml-1 inline-flex min-h-11 w-fit items-center gap-1 rounded-(--radius-md) pr-2 pl-1 text-(length:--text-sm) text-(--color-ink-soft) outline-none hover:text-(--color-ink) focus-visible:shadow-(--shadow-focus) md:min-h-8"
       >
-        <ArrowLeftIcon aria-hidden className="size-4" />
+        <ChevronLeftIcon aria-hidden className="size-4 shrink-0" />
         Orígenes
       </Link>
-      <div className="grid gap-1">
-        <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <span
             aria-hidden
             className="size-3.5 shrink-0 rounded-full"
@@ -43,15 +42,23 @@ export async function MarcoDelOrigen({ origen, permisos, parte, children }: Prop
           <h1 className="min-w-0 text-(length:--text-xl) font-semibold break-words text-(--color-ink)">
             {origen.nombre}
           </h1>
-          <Badge variant="secondary">{ETIQUETA_DE_TIPO_DE_ORIGEN[origen.tipo]}</Badge>
-          {origen.activo ? null : <Badge variant="outline">Inactivo</Badge>}
+          {origen.activo ? (
+            <Badge className="bg-(--color-positivo-soft) text-(--color-positivo-ink)">Activo</Badge>
+          ) : (
+            <Badge variant="outline">Inactivo</Badge>
+          )}
         </div>
-        <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          {subseccionDeOrigen(parte).descripcion}
-        </p>
+        {puede(sesion.permisos, 'origenes.gestionar') ? <MenuDelOrigen origen={origen} /> : null}
       </div>
-      <SiguientesPasos nombre={origen.nombre} pasos={pasos} />
-      {children}
+      {tira.inactivo ? (
+        <ParaCotizarYMover inactivo />
+      ) : (
+        <ParaCotizarYMover pasos={conDestino(tira.pasos, sesion.permisos, origen.id)} />
+      )}
+      <PestanasDeLaRuta
+        pestanas={pestanasDelOrigen(sesion.permisos, origen.id)}
+        sinSegmento="datos"
+      />
     </div>
   )
 }

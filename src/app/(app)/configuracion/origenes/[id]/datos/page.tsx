@@ -1,24 +1,22 @@
 import type { Metadata } from 'next'
 import { DatosDelOrigen } from '@/modules/origenes/pantallas/origen-datos'
-import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { abrirOrigen } from '../abrir-origen'
-import { MarcoDelOrigen } from '../marco-del-origen'
+import { NoSeAbre } from '../no-se-abre'
 
 export const metadata: Metadata = { title: 'Datos del origen' }
 
-// Configuración › Orígenes › un origen › Datos: el nombre, el sustantivo, el color y las plataformas, con la barra de cambios sin guardar,
-// y debajo activar, desactivar o eliminar el origen.
+// Configuración › Orígenes › un origen › Datos: el nombre, el sustantivo, el color y las plataformas, con la barra de cambios sin guardar.
 export default async function PaginaDatosDelOrigen({
   params,
 }: PageProps<'/configuracion/origenes/[id]/datos'>) {
-  const abierto = await abrirOrigen((await params).id)
-  if (abierto.sinPermiso) {
-    return <EstadoSinPermiso />
+  const abierto = await abrirOrigen((await params).id, 'datos')
+  if (abierto.tipo !== 'abierto') {
+    return <NoSeAbre abierto={abierto} />
   }
-  const { sesion, origen, puedeGestionar } = abierto
+  const { origen, puedeGestionar } = abierto
   return (
-    <MarcoDelOrigen origen={origen} permisos={sesion.permisos} parte="datos">
+    <div className="grid max-w-3xl gap-4">
       <DatosDelOrigen origen={origen} puedeGestionar={puedeGestionar} />
-    </MarcoDelOrigen>
+    </div>
   )
 }
