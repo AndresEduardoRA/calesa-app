@@ -100,6 +100,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Al descartar o publicar la fórmula, un error que no es PT409 ni falta de red muestra el mensaje de la base (guardar ya usa texto propio).
 - **[—]** Tras pasar a stock, el estado derivado de la cabecera del proyecto de repuestos (pendientes) sólo se actualiza al volver a entrar.
 - **[—]** Dos e2e de escritorio cayeron en la noche del 2026-11-19 sobre `c880e916`: `configuracion-cotizacion-tarjeta-excel.spec.ts:118` (ensanchar una columna arrastrando y mover una fila con el teclado) y `cotizaciones-tarjetas-y-grupos.spec.ts:184` (el clic en la portada no abre el resumen) — el issue `noche-roja` #395 lleva la cuenta; se arreglan si caen otra noche (`.claude/rules/e2e.md`).
+- **[—]** «Actividad reciente» de la ficha del vehículo escribe el cambio de lead con su id («Lead de …: — → dbe6287c-…»): va el nombre del lead,
+  o sin el id si quien mira no lo ve.
 
 ## Deuda técnica
 
