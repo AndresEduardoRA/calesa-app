@@ -168,7 +168,7 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
     expect(new Uint8Array(await r.arrayBuffer())).toEqual(BYTES)
   })
 
-  it('arma el contexto: el título, el vehículo con lote y VIN, el asesor, el vencimiento, el logo y las fechas en la zona de la empresa (el último guardado, no hoy)', async () => {
+  it('arma el contexto: el título, el vehículo con lote y VIN, el asesor, el vencimiento, la empresa, el logo y las fechas en la zona de la empresa (el último guardado, no hoy)', async () => {
     await pedir()
     expect(leerHoja).toHaveBeenCalledWith(ID)
     expect(leerAsesor).toHaveBeenCalledWith(ID)
@@ -183,6 +183,7 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
           vehiculo: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
           asesor: 'Ana Pérez',
           numero: 12,
+          empresa: 'Importadora Prueba',
           venceEl: '2026-11-20',
           guardadaEl: GUARDADA_EL,
           logo: { nombre: 'Importadora Prueba', url: 'https://almacen.test/marca/logos/abc.png' },
