@@ -61,8 +61,15 @@ function operando(id: string, p: Paso): string {
   if (n === undefined) return FALTA
   if (!p.ctx.auxiliares.has(id) || p.hondo >= PROFUNDIDAD_MAXIMA) return n.etiqueta
   if (n.tipo === 'constante') return valorDeConstante(n, p.ctx)
+  if (n.tipo === 'tabla' || n.tipo === 'tramo') return enLaTabla(n, { ...p, hondo: p.hondo + 1 })
   if (n.tipo !== 'calculo') return n.etiqueta
   return `(${calculo(n, { ...p, hondo: p.hondo + 1 })})`
+}
+
+// Una búsqueda auxiliar (BUSCARV) en línea: la tabla, por su clave, y lo que se busca en ella.
+function enLaTabla(n: Extract<Nodo, { tipo: 'tabla' | 'tramo' }>, p: Paso): string {
+  const por = n.tipo === 'tramo' ? [n.sobre] : Object.values(n.match)
+  return `de la tabla ${n.tabla} por ${lista(por, 'y', p)}`
 }
 
 const unidos = (ids: readonly string[], separador: string, p: Paso): string =>

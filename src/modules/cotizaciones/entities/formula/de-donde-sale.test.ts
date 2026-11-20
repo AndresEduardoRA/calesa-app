@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { formatearPorcentaje } from '@/shared/lib/formato'
+import { compilarExpresion } from '../compilador'
 import type { Nodo } from '../nodos'
 import { contextoDeDondeSale, deDondeSale } from './de-donde-sale'
 import {
@@ -178,6 +179,50 @@ describe('deDondeSale: las auxiliares se dicen en línea', () => {
 
   it('las auxiliares anidadas se expanden todas, con los números en el locale', () => {
     expect(dicha('redondo')).toBe('(Base × 1,5) redondeado a 2 decimales')
+  })
+})
+
+describe('deDondeSale: condiciones, extremos y BUSCARV en línea', () => {
+  const texto =
+    'SI(remate>1000; MAX(remate*0.1; 150); BUSCARV(remate; "fletes"; "monto"; VERDADERO))'
+  const exacta = 'BUSCARV(remate; "tasas"; "tasa")+fees'
+  const tablas = [
+    { clave: 'fletes', columnas: ['desde', 'hasta', 'monto'] },
+    { clave: 'tasas', columnas: ['importe', 'tasa'] },
+  ]
+  const nodos: unknown[] = [...NODOS_DE_BASE]
+  const params: Record<string, number> = {}
+  for (const [id, t] of [
+    ['envio', texto],
+    ['tasa', exacta],
+  ] as const) {
+    const r = compilarExpresion(t, {
+      nodos: nodos as Nodo[],
+      grupos: [],
+      params,
+      destino: { id, etiqueta: id },
+      tablas,
+    })
+    if (!r.ok) throw new Error(r.error.mensaje)
+    nodos.push(...r.nodos.map((n) => (n.id === id ? { ...n, texto: t } : n)))
+    Object.assign(params, r.params)
+  }
+  const formula = formulaCruda(nodos, params)
+  const ctx = contextoDeDondeSale(formula, 'es-BO')
+  const dicha = (id: string) => {
+    const n = nodoDe(formula, id)
+    if (n === undefined) throw new Error('falta el nodo')
+    return deDondeSale(n, ctx)
+  }
+
+  it('el SI dice su condición sin paréntesis, el MAX con sus términos y el BUSCARV por tramo con su tabla', () => {
+    expect(dicha('envio')).toBe(
+      '(el mayor de (Remate × 0,1) y 150) si Remate > 1.000, si no de la tabla fletes por Remate',
+    )
+  })
+
+  it('un BUSCARV exacto se dice por lo que busca, con la tabla por su clave', () => {
+    expect(dicha('tasa')).toBe('de la tabla tasas por Remate + Fees')
   })
 })
 

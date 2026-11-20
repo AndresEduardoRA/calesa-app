@@ -59,6 +59,20 @@ describe('conservar (C5)', () => {
     expect(conservar(suma(), viejo, '=a+b').soltados).toEqual(['sugerido_de', 'requerido_si'])
   })
 
+  it('la comparación y la prueba de un SI con condición son de la operación: nunca se dicen soltados', () => {
+    const elegir = nodo({ tipo: 'calculo', op: 'elegir', prueba: 'p', de: ['a', 'b'] })
+    const comparar = nodo({ tipo: 'calculo', op: 'comparar', de: ['a', 'b'], cmp: '>' })
+    expect(conservar(suma(), elegir, '=a+b').soltados).toEqual([])
+    expect(conservar(suma(), comparar, '=a+b').soltados).toEqual([])
+  })
+
+  it('un SI con condición no es el de una bandera: el interruptor pasa y no se suelta', () => {
+    const elegir = nodo({ tipo: 'calculo', op: 'elegir', prueba: 'p', de: ['a'] })
+    const r = conservar(elegir, suma({ condicion: 'c' }), '=SI(a>b; a)')
+    expect(r.nodo).toMatchObject({ condicion: 'c', prueba: 'p' })
+    expect(r.soltados).toEqual([])
+  })
+
   it('no toca lo que recibe', () => {
     const raiz = suma()
     const viejo = suma({ seccion: 'Costos' })
