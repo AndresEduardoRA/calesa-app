@@ -675,7 +675,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `shared/lib/memoria-de-lectura.ts`).
 - Ficha del lead entera (`?seccion=` no cambia el documento; los grupos del layout y los teléfonos de «Ver más» no viajan en él: el modal se pide con
   `diferido()` al abrirlo): ≤ 138 KB sobre `/perfil` (`PRESUPUESTO_DE_LA_FICHA_EN_KB`),
-  medido 84,8 con 10 oportunidades (3 abiertas dibujadas), 3 de 10 seguimientos, el recordatorio más próximo, un vínculo, cuatro interesados y el portal,
+  medido 84,8 con 10 oportunidades (hasta 3 por etapa dibujadas; el tablero con su arrastre `@dnd-kit` llega con `diferido()`), 3 de 10 seguimientos, el recordatorio más próximo, un vínculo, cuatro interesados y el portal,
   y 84,7 con 1.000 de cada uno (`e2e/leads-ficha-dos-columnas.spec.ts`; en el celular, 84,6); lo que más pesa es el HTML de los bloques con sus acciones (Relacionados, el
   portal, las filas de la línea de tiempo y de las oportunidades, cada una con su «⋯») y su payload RSC. Igual con la semilla y con 100 orígenes + 100 tipos (manda los campos
   activos y el origen y tipo del lead; el panel de edición los lee al abrirse, `leerCatalogosDeEdicion()`); `e2e/leads-ficha.spec.ts`. Al abrirla
