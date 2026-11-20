@@ -286,7 +286,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   abre `?panel=vitrina`; sin permiso, apagado con su motivo) y el «⋯» (el mismo de la lista, con «Editar» e «Editar imágenes»: no hay «Editar» suelto);
   título, número, origen, situación (`<BadgeDeSituacion>`, la única vez), la insignia de vitrina y los enlaces cortos «Ver en logística» (`logistica.ver`
   del origen) y «Repuestos · Proyecto #N» (`repuestos.ver`, si tiene proyecto). Debajo, en este orden: **«Cotización aprobada»** (`cotizaciones.ver` del
-  origen: la portada de su tarjeta, n.º y título, total con su modo, autor y fecha, «Abrir» y «Compartir» —`?panel=compartir&para=<id>`, no en Modo Live—;
+  origen: la imagen de su tarjeta, n.º y título, total con su modo, autor y fecha, «Abrir» y «Compartir» —`?panel=compartir&para=<id>`, no en Modo Live—;
   sin aprobada que quien mira vea, «Sin cotización aprobada» con «Cotizar» si cotiza en el origen); **«Subasta»** (sólo en un origen de subasta: la frase
   con color y cuenta —«Se subasta en 2 días 4 h», «Cerró hace 3 h · sin resolver», «Ganada», «No ganada»—, el cierre en la zona de quien mira con la del
   patio y la de la empresa más chicas, «Puja actual» o «Puja final» y «Compra directa» si el origen tiene el campo de apibara; «Editar fechas» en su «⋯»,
@@ -360,8 +360,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   resumen). Estados del modal: tres líneas de esqueleto, «No pudimos cargar las cotizaciones de este vehículo.» o «No hay conexión.» con «Reintentar» (la lista sigue); si su cabeza ya no vale (papelera,
   invalidar, una más nueva) la página se relee. Un `vehiculo` que no es un id no abre nada, avisa y limpia la URL; si el grupo no está en la página del enlace, el modal se arma sólo con lo que lee
   (título «Cotizaciones de este vehículo», sin la aprobada primera). Si la base recorre su tope sin completar la página: «Revisamos muchas cotizaciones sin completar la página.» con «Seguir
-  buscando» (también en lugar del vacío). **La tarjeta de la lista:** la portada de la cotización arriba (miniatura de 480 px, 15:8, recortada desde arriba a la izquierda,
-  perezosa; su clic abre el visor en `?visor=portada-de-la-lista-<id>`, así no se cruza con el del resumen abierto) con el «⋯» encima (sin «Compartir»), el título (dos líneas, entero en `title`), «N.º n» con «Aprobada», «Final» y el origen
+  buscando» (también en lugar del vacío). **La tarjeta de la lista:** la imagen de la tarjeta arriba (miniatura de 480 px, 15:8, recortada desde arriba a la izquierda,
+  perezosa; su clic abre el visor en `?visor=imagen-de-la-lista-<id>`, así no se cruza con el del resumen abierto) con el «⋯» encima (sin «Compartir»), el título (dos líneas, entero en `title`), «N.º n» con «Aprobada», «Final» y el origen
   con su color en una línea, el total con su modo, «Cliente:» enlazado a su ficha (con `leads.ver`; si no, su nombre o «—»), autor · «hace…», la vigencia, la fila
   del conteo y **«Compartir»** como acción principal a todo el ancho (no en Modo Live). Todas miden lo mismo (filas de alto fijo, sin `auto-rows-fr`: el despliegue va
   a todo el ancho). **La tabla:** «Cotización» (sólo «N.º n»), **«Título»**, cliente, vehículo, origen, clase, total, vigencia, creada y el «⋯» con «Compartir
@@ -371,9 +371,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   y, al final, el «⋯» de la fila sin «Compartir» (también para una línea del modal de un grupo o una de otra página); los dos botones crecen por igual: en el celular
   mitad y mitad con el «⋯» a 44 px y, con el texto al 200 %, se parten en filas sin salirse; sin la cotización a la vista (no disponible, error, cargando) no hay barra;
   sus diálogos se abren sobre el resumen sin cerrarlo. Debajo, la
-  **portada de la cotización** a todo el ancho del resumen, en un marco 15:8 con la imagen entera: mientras se arma o carga, un recuadro del mismo marco con el total y
-  «Preparando la vista previa…»; si falla o no hay red, «No se pudo cargar la vista previa.» con «Reintentar»; el marco crece con el texto al 200 %; el clic la abre en el
-  visor de fotos (`?visor=portada-<id>`, que cerrar el resumen borra); en Modo Live, borrosa con «Oculto en Modo Live» encima y sin visor; luego lo de la fila (el título, la clase y «Aprobada», el total con su modo, cliente,
+  **imagen de la tarjeta** a todo el ancho del resumen, en un marco 15:8 con la imagen entera: mientras se arma o carga, un recuadro del mismo marco con el total y
+  «Preparando la imagen…»; si falla o no hay red, «No se pudo armar la imagen.» con «Reintentar»; el marco crece con el texto al 200 %; el clic la abre en el
+  visor de fotos (`?visor=imagen-<id>`, que cerrar el resumen borra; un enlace con la clave de antes, `portada-<id>`, también lo abre); en Modo Live, borrosa con «Oculto en Modo Live» encima y sin visor; luego lo de la fila (el título, la clase y «Aprobada», el total con su modo, cliente,
   vehículo, creada · autor y la vigencia; el número va en el título del panel), «De este vehículo» —ver
   «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado; sus casillas y «Comparar» abren «Comparar cotizaciones» y «Volver»
   regresa a este resumen, sin los filtros— y debajo las
@@ -383,7 +383,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   ve dice que ya no está disponible); **buscador** (`?q=`: número —«#12» sólo número—, título de la cotización, cliente, vehículo por título, VIN o lote, y autor; 3 letras o un
   número; quien no ve a un lead o a un vehículo no encuentra por él; con más de 50 coincidencias en una fuente avisa «Escribe más para afinarla»; sin
   resultados dice qué se buscó y ofrece «Limpiar búsqueda»), **vistas guardadas** en «Vista y opciones» como en leads y vehículos (la búsqueda, los filtros, la vista y la
-  agrupación) y, a la derecha de cada fila y sobre la portada de cada tarjeta, el **«⋯»** con la lista única de acciones según el rol: primero y sola, «Compartir
+  agrupación) y, a la derecha de cada fila y sobre la imagen de cada tarjeta, el **«⋯»** con la lista única de acciones según el rol: primero y sola, «Compartir
   cotización…» (toda persona que ve la fila; con el Modo Live no está; en la tarjeta tampoco, porque es su acción principal; abre «Compartir la cotización» en
   `?panel=compartir&para=<id>`), «Aprobar» (`cotizaciones.aprobar`; apagada con su motivo sin vehículo o
   si es inválida), «Marcar final…» (`cotizaciones.final.gestionar`, en una preventa; apagada sin vehículo o cliente), casilla «Favorita», «Reportar…»,
@@ -400,8 +400,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   guardar, la hoja en par con las dos (cada columna con su cotización) y «Guardar» guarda las dos (un PT409 de cualquiera dice «Cambió la de <etiqueta>: …» con
   «Recargar» y no guarda ninguna); si lo común de las dos era distinto, «Lo común de las dos versiones era distinto: se muestra el de esta y, al guardar, queda en
   las dos.». Si la hermana no se ve, está en la papelera, es inválida o sólo se puede guardar una, se abre sola con «La de <etiqueta> no está disponible.» y su
-  vehículo no se cambia (es de las dos). La vista previa, el PDF (una página por tarjeta) y «Compartir» (el texto de las dos opciones y las dos portadas en una
-  imagen) llevan las dos. Enviar una a la papelera manda las dos («Se enviaron 2 a la papelera.», «Deshacer» devuelve las dos).
+  vehículo no se cambia (es de las dos). La vista previa, el PDF (una página por tarjeta) y «Compartir» (el texto de las dos opciones y las dos imágenes de la tarjeta en una
+  sola) llevan las dos. Enviar una a la papelera manda las dos («Se enviaron 2 a la papelera.», «Deshacer» devuelve las dos).
 - **Cotización guardada** — `/cotizaciones/[id]` (`cotizaciones.ver`; edita quien la puede guardar, `puede_guardar` de la base): la hoja de
   SU versión; quien sólo ve, en sólo lectura. Cabecera: el h1 «Cotización n.º N» y, bajo el origen y el cliente, **la barra del vehículo** con el título grande y
   el vehículo debajo (o «Sin vehículo»); quien la puede guardar la abre en el panel del vehículo con el campo «Título de la cotización» arriba y guardar
@@ -870,7 +870,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   se pudo leer, «No pudimos cargar «Vitrina».» con «Reintentar»; en Modo Live, el precio público tapado (`<Monto>`). La foto: sin fotos, el recuadro 4:3
   con su ícono (el «⋯» y la vitrina igual encima) y sin tira; con una, sin tira ni flechas; si la lectura falla, la portada en su lugar y el visor dice «No
   se pudieron cargar las fotos.» con «Reintentar». La vitrina de la foto sin `vehiculos.vitrina`: apagada (`aria-disabled`) con el motivo para el lector y
-  en un aviso al tocarla. «Cotización aprobada»: la portada preparándose o que falla, el recuadro de la portada con el total; en Modo Live, borrosa, sin
+  en un aviso al tocarla. «Cotización aprobada»: la imagen de la tarjeta preparándose o que falla, su recuadro con el total; en Modo Live, borrosa, sin
   «Compartir». «Subasta»: origen manual, no está; sin fechas, «Sin fecha de cierre»; sin poder editar, sin su «⋯». «Datos principales»: sin datos clave
   guardados, los de fábrica de su tipo; un dato vacío, «—». La ficha completa sin red: «Sin conexión. No se pudo abrir esto.» con «Reintentar»; mientras
   lee los grupos, su esqueleto, y si falla, «No pudimos cargar la ficha del vehículo.» con «Reintentar». Sin fase: «Sin fase» en la cabecera. Subasta sin
@@ -1437,8 +1437,8 @@ tarjetas, el resumen y la ficha del vehículo). Lo abre toda persona que ve la c
 
 - **Pestañas:** «Imagen» (la de entrada, sin escribir nada) y «Texto» (`?compartir=texto`; se borra al cerrar). Lo demás (la imagen, el formato, la zona y las
   fotos marcadas) es de este envío: cada apertura empieza de cero.
-- **«Imagen»:** «Cotización | Fotos» (botones juntos; «Fotos» sólo si el vehículo tiene fotos y quien mira lo ve). «Cotización»: la portada en su marco 15:8;
-  mientras se arma, el recuadro de la portada con «Preparando la vista previa…»; si falla, «No se pudo armar la imagen.» con «Reintentar» (el texto y el PDF
+- **«Imagen»:** «Cotización | Fotos» (botones juntos; «Fotos» sólo si el vehículo tiene fotos y quien mira lo ve). «Cotización»: la imagen de la tarjeta en su marco 15:8;
+  mientras se arma, su recuadro con «Preparando la imagen…»; si falla, «No se pudo armar la imagen.» con «Reintentar» (el texto y el PDF
   siguen). «Fotos»: la grilla de miniaturas (480 px, a lo sumo 24, se parte sola), cada una una casilla con la marca en una esquina de 44 px; marcarla baja la
   completa en segundo plano; una que no baja se desmarca con «No se pudo bajar la foto N.»; una miniatura que no carga deja el hueco con el auto. Si la lista no
   llega: «No se pudieron leer las fotos.» con «Reintentar».
@@ -1446,12 +1446,12 @@ tarjetas, el resumen y la ficha del vehículo). Lo abre toda persona que ve la c
   empresa> | Hora del patio»; el texto de sólo lectura («Armando el texto…» mientras llega; si falla, «No se pudo armar el texto.» con «Reintentar»). El texto
   termina con la firma de quien comparte: «Asesor: <nombre>, <cargo>» y «WhatsApp: <número tal como lo guardó>»; sin cargo, sólo el nombre; sin WhatsApp, sin
   esa línea; si su perfil no se leyó, sin firma. La imagen y el PDF también lo nombran a él.
-- **Pie:** «Creado por <autor>» (sin autor, no va) y los botones. Celular con el menú del sistema (que comparte archivos): «Compartir» (principal; la portada o
+- **Pie:** «Creado por <autor>» (sin autor, no va) y los botones. Celular con el menú del sistema (que comparte archivos): «Compartir» (principal; la imagen de la tarjeta o
   las fotos marcadas y el texto), «Copiar texto» y «Descargar PDF», en columna a lo ancho y a 44 px. Escritorio: «Copiar imagen» (una sola imagen: con fotos,
-  una marcada), «Descargar imagen» (la portada en PNG o cada foto marcada), «Copiar texto» y «Descargar PDF», en una fila que se parte. Lo apagado dice su
+  una marcada), «Descargar imagen» (la de la tarjeta en PNG o cada foto marcada), «Copiar texto» y «Descargar PDF», en una fila que se parte. Lo apagado dice su
   motivo debajo, sin repetirse («La imagen todavía no está lista.», «Preparando las fotos…», «Elige al menos una foto.», «Elige una sola foto para copiarla.»,
   «Este navegador no permite copiar imágenes.», «Este navegador no permite copiar texto.», «No hay conexión.»). El PDF que falla, el texto de «Vista previa»
-  con «Reintentar». Avisos: «Texto copiado», «Imagen copiada»; con la portada fallida, «Compartir» manda el texto y avisa «Se compartió el texto. La imagen no se
+  con «Reintentar». Avisos: «Texto copiado», «Imagen copiada»; con la imagen de la tarjeta fallida, «Compartir» manda el texto y avisa «Se compartió el texto. La imagen no se
   pudo armar.».
 - **Sin acceso** (no existe, en la papelera, no se ve o el id no es de una cotización): «No tienes acceso a esta cotización.» con «Cerrar», sin pie de acciones.
 - **Modo Live:** ni el botón ni la línea del «⋯»; por URL, «Con el Modo Live no se comparte.» con «Cerrar» (también si se enciende con el panel abierto).
@@ -1616,7 +1616,7 @@ V1»). No publica.
 - **PT409** (otra persona guardó o publicó mientras se elegía): el mensaje de la base tal cual, nada creado y «Recargar», que vuelve a pedir el GET y
   reinicia el paso. **Una regla de la base** (no debería pasar: la prueban los paquetes): «La base rechazó la plantilla: <mensaje> (<donde>).», nada creado.
 - **Celular y 200 %:** una columna; la tarjeta escala con su marco (`min(1, ancho / ancho de la tarjeta)`); los botones del pie a todo el ancho.
-- **Modo Live:** el lienzo es el de la pestaña Tarjeta, con sus reglas; son cifras de ejemplo, sin portada ni «Compartir».
+- **Modo Live:** el lienzo es el de la pestaña Tarjeta, con sus reglas; son cifras de ejemplo, sin imagen de la tarjeta ni «Compartir».
 
 ### Cotización: colores (estados propios)
 

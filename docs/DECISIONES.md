@@ -679,6 +679,8 @@ las trampas, en `docs/LECCIONES.md`.
   serviría lo de otro rol.
 - **La ruta vieja de la imagen sigue andando.** `/cotizaciones/<id>/portada` es un 308 a `/imagen` con su consulta (`next.config.ts`): un enlace o una caché
   del navegador que la nombre no da 404.
+  Lo mismo el visor: `?visor=portada-<id>` y `?visor=portada-de-la-lista-<id>` lo siguen abriendo (`esClaveDelVisorDeLaImagen()`), aunque las claves de hoy
+  son `imagen-<id>` e `imagen-de-la-lista-<id>`.
 - **El barrido del bucket `cotizaciones` tiene su rama, como `vehiculos`.** `not exists` sobre los adjuntos, por el índice de `ruta`: la
   rama genérica llama a `storage_refcount()` por objeto y una ventana de 10.000 costaba ≈ 0,9 s (≈ 0,2 s así). Una tabla nueva con rutas de ese bucket va en
   las dos; si falta en la rama, `storage_gc_reclamar()` igual la descarta al ver el refcount.

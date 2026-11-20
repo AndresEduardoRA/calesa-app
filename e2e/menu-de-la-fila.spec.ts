@@ -326,8 +326,8 @@ test.describe('cotizaciones', () => {
     await expect(boton).toBeVisible()
     await capturar(page, info, 'cotizaciones')
     if (esMovil(page)) {
-      // El «⋯» va sobre la portada (el contenedor `relative`), como el del inventario sobre la foto.
-      enLaEsquina(await cajas(boton, '.relative', '[data-no-abre]'), 'la portada de la tarjeta')
+      // El «⋯» va sobre la imagen de la tarjeta (el contenedor `relative`), como el del inventario sobre la foto.
+      enLaEsquina(await cajas(boton, '.relative', '[data-no-abre]'), 'la imagen de la tarjeta')
       mide44((await cajas(boton, 'article')).boton, 'el «⋯» de la tarjeta')
       return
     }

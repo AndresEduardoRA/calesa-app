@@ -48,7 +48,7 @@ export function useCompartirLaCotizacion(cotizacionId: string, activo: boolean) 
     activo,
     conFotos: opcion === 'fotos',
   })
-  const { datos, portada, fotos } = lecturas
+  const { datos, imagen, fotos } = lecturas
   const fotosMarcadas = useFotosMarcadas(
     fotos.parte.estado === 'listo' ? fotos.parte.dato : SIN_FOTOS,
   )
@@ -61,7 +61,7 @@ export function useCompartirLaCotizacion(cotizacionId: string, activo: boolean) 
   const texto = leidos === null ? null : textoParaCompartir(leidos, { formato, zona, ahora })
   const motivos = motivosDeCompartir({
     opcion,
-    portada: estadoDe(portada.parte),
+    imagen: estadoDe(imagen.parte),
     fotos: { marcadas: fotosMarcadas.cuantas, listas: fotosMarcadas.listas.length },
     texto: estadoDe(datos.parte),
     capacidades,

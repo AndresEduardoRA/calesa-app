@@ -28,7 +28,7 @@ function abrir(cotizacionId = ID) {
 
 beforeEach(() => {
   pedirLosDatos.mockResolvedValue({ ok: true, data: DATOS_DE_PRUEBA })
-  // La portada no llega en jsdom (no hay lienzo): queda «Preparando la vista previa…».
+  // La imagen de la tarjeta no llega en jsdom (no hay lienzo): queda «Preparando la imagen…».
   pedirLaImagenParaCompartir.mockReturnValue(new Promise(() => undefined))
 })
 afterEach(() => {
@@ -38,10 +38,10 @@ afterEach(() => {
 })
 
 describe('<PanelDeCompartir>', () => {
-  it('con todo leído: «Imagen» con la portada que se prepara, «Fotos» si el vehículo las tiene, el autor y los motivos a la vista', async () => {
+  it('con todo leído: «Imagen» con la de la tarjeta que se prepara, «Fotos» si el vehículo las tiene, el autor y los motivos a la vista', async () => {
     abrir()
     expect(await screen.findByText('Creado por Ana Pérez')).toBeTruthy()
-    expect(screen.getByText('Preparando la vista previa…')).toBeTruthy()
+    expect(screen.getByText('Preparando la imagen…')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Fotos' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Copiar imagen' }).hasAttribute('disabled')).toBe(
       true,

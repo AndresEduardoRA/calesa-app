@@ -236,7 +236,7 @@ describe('geometriaDeLaTarjeta: los colores y la de por omisión', () => {
     })
   })
 
-  it('no depende de lo que la hoja de quien mira trae de más: la portada compartida es la misma para todo nivel', () => {
+  it('no depende de lo que la hoja de quien mira trae de más: la imagen compartida es la misma para todo nivel', () => {
     // Quien tiene un nivel mayor recibe valores y estados de nodos que la tarjeta no nombra (sólo nombra los del nivel «todos», K4 de
     // `cotizacion-tarjeta.sql`): la geometría no los lee.
     const base = calculoDePrueba()

@@ -110,7 +110,7 @@ export async function pedirLaFoto(url: string, senal?: AbortSignal): Promise<Res
   return leerBlob(await pedir(url, pedido), 'No se pudo bajar la foto.')
 }
 
-// Las dos portadas de las cotizaciones hermanas apiladas en una sola imagen PNG (glosario: «Cotizaciones hermanas»), una bajo la otra y al ancho de la más ancha,
+// Las dos imágenes de la tarjeta de las cotizaciones hermanas apiladas en una sola imagen PNG (glosario: «Cotizaciones hermanas»), una bajo la otra y al ancho de la más ancha,
 // sobre blanco. En el navegador, sin pedir nada nuevo al servidor.
 export async function apilarImagenes(arriba: Blob, abajo: Blob): Promise<Blob> {
   const [a, b] = await Promise.all([createImageBitmap(arriba), createImageBitmap(abajo)])
@@ -118,7 +118,7 @@ export async function apilarImagenes(arriba: Blob, abajo: Blob): Promise<Blob> {
   lienzo.width = Math.max(a.width, b.width)
   lienzo.height = a.height + b.height
   const pintor = lienzo.getContext('2d')
-  if (pintor === null) throw new Error('Sin lienzo para apilar las portadas.')
+  if (pintor === null) throw new Error('Sin lienzo para apilar las imágenes.')
   pintor.fillStyle = '#ffffff'
   pintor.fillRect(0, 0, lienzo.width, lienzo.height)
   pintor.drawImage(a, 0, 0)

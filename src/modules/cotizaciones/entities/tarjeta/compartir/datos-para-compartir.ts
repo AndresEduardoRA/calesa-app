@@ -55,7 +55,7 @@ export const esquemaDeLosDatos = z.object({
   zonaDeLaEmpresa: z.string(),
   locale: z.string(),
   // Las cotizaciones hermanas (glosario: «Cotizaciones hermanas»): los conceptos y el total de cada opción, en el orden de las opciones (con su cotización, para su
-  // portada). Sin ellas, la cotización sola.
+  // imagen). Sin ellas, la cotización sola.
   versiones: z.tuple([esquemaDeLaVersion, esquemaDeLaVersion]).optional(),
 })
 

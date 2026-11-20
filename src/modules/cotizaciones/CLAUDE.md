@@ -40,7 +40,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   lee: agrupada sin texto, `leerListadoPorVehiculo()` (`cotizaciones_listado_por_vehiculo()`, `PaginaAgrupada` de `EntradaDelListado`: `grupo` con su `cabeza` y su
   `conteo`, o `suelta`, con `cortada`); con texto, la búsqueda agrupada en la página (`agruparLaPagina()`); sin agrupar, `entradasSinAgrupar()`. Los nombres, el modo
   (`leerModosDeCotizaciones()`, `cotizaciones_modos_de()`), el «⋯» y lo visto van sobre las cotizaciones que se dibujan. La tarjeta (`TarjetaEnLaLista`) lleva la
-  portada por el hueco `Portada` (`ancho={480}`, `recorte="cubrir"`, `lugar="lista"`: su visor es `?visor=portada-de-la-lista-<id>`), el «⋯» sin «Compartir» (`MenuDeFila(fila, { sinCompartir })`) y «Compartir» (`compartirDe`, nulo
+  imagen de la tarjeta por el hueco `Imagen` (`ancho={480}`, `recorte="cubrir"`, `lugar="lista"`: su visor es `?visor=imagen-de-la-lista-<id>`), el «⋯» sin «Compartir» (`MenuDeFila(fila, { sinCompartir })`) y «Compartir» (`compartirDe`, nulo
   sin la oferta o en Modo Live); la tabla, la columna «Título». «N cotizaciones de este vehículo» (`BotonDelConteo`) abre el modal del grupo (`ModalDelGrupoDiferido`, `features/listado/components/grupo/`; la URL `?panel=cotizaciones-del-vehiculo&vehiculo=<id>`
   por `useModalDelGrupo()` con `usePanelPorUrl()`; `PANEL_DE_COTIZACIONES_DEL_VEHICULO`, `tituloDelModalDelGrupo()` y `idDelVehiculoDelModal()` del núcleo; con ese panel la página **no lee `?vehiculo=` como filtro**,
   `pedidoDeLaPagina()`; `Modal` con `completoEnCelular`): lo lee `useGrupoDelListado()` desde el navegador (`areas/listado/composicion.client.ts`, `leerGrupoDelListado()`:
@@ -197,8 +197,9 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
 ancho })` (en `features/tarjeta/` porque cruza con `empresa`: la hoja de lo guardado, los ajustes, el logo y el WebP de `webpDeUnaGuardada()`, `sharp` con
   `import()`) con el contexto de quien pide (`datos-de-la-tarjeta.ts`, como el PDF: el cliente sólo con `leads.ver`, y él como asesor). Con la ETag, `private,
 no-cache`; con «Ver como» (sin leer la huella) o sin el primer recálculo, `no-store` y sin ETag; un fallo, 500 en texto. `Server-Timing` dice lo que tardó la
-  huella y el armado. `/cotizaciones/[id]/portada` (la ruta vieja) es un 308 a `/imagen` con su consulta (`next.config.ts`). El componente `<PortadaDeLaCotizacion>` sale por
-  `pantallas/tarjeta-portada.ts` (marco de la proporción que le den, recuadro con el total, visor por `diferido()`, Modo Live por CSS en `globals.css`).
+  huella y el armado. `/cotizaciones/[id]/portada` (la ruta vieja) es un 308 a `/imagen` con su consulta (`next.config.ts`). El componente `<ImagenDeLaTarjeta>` sale por
+  `pantallas/tarjeta-imagen.ts` (marco de la proporción que le den, recuadro con el total, visor por `diferido()` con la clave de
+  `claveDelVisorDeLaImagen()`, que acepta también la de antes, `portada-…`; Modo Live por CSS en `globals.css`).
 - **El diseño** (la pestaña «Hoja»: `/configuracion/cotizacion/<origen>/hoja`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
   `cotizaciones_niveles` (no de `niveles_con_uso()`); edita secciones, celdas (ver y editar juntos con `ponerNiveles()`; `admiteNivel` apaga lo que la base
   rechazaría con `nivel_no_admitido`), atajos, interruptor, ayuda, modos, la tarjeta del total (variante y subtotal no se editan) y **el aspecto** de cada
@@ -256,17 +257,17 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   y `src/app/(app)/cotizaciones/[id]/huecos-de-la-guardada.tsx` los dibuja en el orden de las insignias y de lo de debajo («Aprobada» antes de «Reportada»;
   «De este vehículo» antes de «Comprobantes»). Cada componente recibe `{ cotizacion, puedeGuardar, permisos, vehiculo }` (`vehiculo`, el que la página leyó
   si quien mira lo ve, o nulo). Fichas: `areas/<área>/CLAUDE.md`.
-- **El resumen del listado** (`HuecosDelResumen`): `Portada` (primero tras la barra, arriba de los datos: `pantallas/tarjeta-resumen.ts`), `Pestanas`, `Comprobantes` y
+- **El resumen del listado** (`HuecosDelResumen`): `Imagen` (primero tras la barra, arriba de los datos: `pantallas/tarjeta-resumen.ts`), `Pestanas`, `Comprobantes` y
   `DeEsteVehiculo` (entre los datos y las pestañas, sólo con un vehículo que quien mira ve; `aprobarEn` lo manda la página y `alCambiar` refresca el
-  listado; `pantallas/aprobada-resumen.ts`). Cerrar el resumen borra también `?visor=&foto=` (el visor de la portada).
+  listado; `pantallas/aprobada-resumen.ts`). Cerrar el resumen borra también `?visor=&foto=` (el visor de la imagen).
 - **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda, la compone `src/app`): «Cotización aprobada» con `leerAprobadaDelVehiculo()` (`index.ts`),
-  la tarjeta de `pantallas/aprobada-del-vehiculo.ts` (`AprobadaDelVehiculo`, `EsqueletoDeLaAprobada`) y, como un área no importa otra, la portada diferida y
+  la tarjeta de `pantallas/aprobada-del-vehiculo.ts` (`AprobadaDelVehiculo`, `EsqueletoDeLaAprobada`) y, como un área no importa otra, la imagen de la tarjeta diferida y
   `BotonDeCompartirDeLaFila` de `pantallas/tarjeta-aprobada-del-vehiculo.ts` en sus ranuras; el diálogo, `DialogoDeCompartirDeLaFila` de `pantallas/tarjeta-compartir.ts`.
   A la derecha, «Cotizaciones de este vehículo»: `DeEsteVehiculo` de `pantallas/aprobada-de-este-vehiculo.ts` (la isla al acercarse, sin título propio: lo dibuja el
   servidor con «Cotizar»), con las casillas, `vacio` («Sin cotizaciones que puedas ver.»; sin `vacio`, sin filas no dibuja nada) y `alCambiar`, que refresca la página.
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
-- **La lista** (`HuecosDeLaLista`, `features/listado/components/tipos.ts`): `Portada` (la portada de cada tarjeta, en frío: `pantallas/tarjeta-portada.ts`) y
+- **La lista** (`HuecosDeLaLista`, `features/listado/components/tipos.ts`): `Imagen` (la imagen de cada tarjeta, en frío: `pantallas/tarjeta-imagen.ts`) y
   `Comparar` (las casillas y «Comparar» del modal de un grupo, `CompararDelGrupoDiferido` de `pantallas/aprobada-listado.ts`); los une `listado-con-acciones.tsx`.
 - **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`
   y `compartir()` (lo que la cabecera de una guardada dibuja a la vista: «Compartir»); la llena

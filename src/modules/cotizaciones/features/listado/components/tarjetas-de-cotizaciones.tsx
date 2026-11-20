@@ -56,7 +56,7 @@ export function TarjetasDeCotizaciones({
             }}
             menu={menuDeFila?.(cotizacion, { sinCompartir: true })}
             compartir={compartirDe?.(cotizacion) ?? null}
-            Portada={huecos?.Portada}
+            Imagen={huecos?.Imagen}
             rutaDeClientes={rutaDeClientes}
             conteo={
               texto === null || entrada.tipo !== 'grupo' ? null : (

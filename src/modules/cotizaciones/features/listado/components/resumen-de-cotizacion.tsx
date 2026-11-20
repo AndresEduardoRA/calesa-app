@@ -88,7 +88,7 @@ function DetalleDeLaCotizacion({
   deEsteVehiculo: DeEsteVehiculoEnElDetalle
   barra: BarraDelResumen
 }) {
-  const { Portada, Pestanas, Comprobantes, DeEsteVehiculo } = huecos
+  const { Imagen, Pestanas, Comprobantes, DeEsteVehiculo } = huecos
   return (
     <div className="grid gap-4">
       <AccionesDelResumen
@@ -96,8 +96,8 @@ function DetalleDeLaCotizacion({
         compartir={barra.compartirDe?.(cotizacion) ?? null}
         menu={barra.menuDeFila?.(cotizacion, { sinCompartir: true, conBorde: true }) ?? null}
       />
-      {Portada === undefined ? null : (
-        <Portada
+      {Imagen === undefined ? null : (
+        <Imagen
           key={cotizacion.id}
           cotizacionId={cotizacion.id}
           numero={cotizacion.numero}
@@ -192,7 +192,7 @@ function ContenidoDelResumen({
 }
 
 // El resumen de una cotización (`?cotizacion=`) sin salir del listado, en un panel ancho. Arriba, «Abrir cotización» (a su página), «Compartir cotización» y el «⋯» de
-// la fila sin «Compartir» (`menuDeFila`, `compartirDe`: los del listado); debajo, la portada, los datos de la fila, «De este vehículo» y las pestañas «Todo», «Adjuntos»,
+// la fila sin «Compartir» (`menuDeFila`, `compartirDe`: los del listado); debajo, la imagen de la tarjeta, los datos de la fila, «De este vehículo» y las pestañas «Todo», «Adjuntos»,
 // «Revisiones» y «Comentarios» que llenan las áreas (`huecos`). Si la cotización no está en la página, la leyó el servidor (`delServidor`); si tampoco, se le pide una vez
 // (`router.refresh()`) y, si no llega, dice «error» con «Reintentar». Una que no existe o que quien mira no ve dice lo mismo, sin explicar por qué y sin la barra.
 export function ResumenDeCotizacion({

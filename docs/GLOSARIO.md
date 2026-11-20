@@ -510,7 +510,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Retocar (modo)** — «Retocar» en el pie de la vista previa de una guardada (quien la puede guardar): el modal pasa a «Retocar la tarjeta», donde
   tocar un texto lo edita y el ojo de cada fila la oculta o la muestra; «Listo» guarda todo junto, «Cancelar» lo descarta y «Volver a la plantilla»
   quita los retoques.
-- **Imagen de la tarjeta** — `GET /cotizaciones/<id>/imagen`, `armarLaImagen()`, `rutaDeLaImagen()`: la tarjeta de lo guardado de una cotización en WebP,
+- **Imagen de la tarjeta** — `GET /cotizaciones/<id>/imagen`, `armarLaImagen()`, `rutaDeLaImagen()`, `<ImagenDeLaTarjeta>`: la tarjeta de lo guardado de una cotización en WebP,
   armada al pedirla **para quien la pide** (lo que esa persona ve y ella como asesor) y nunca guardada; la caché del navegador la reusa con su ETag, que sale
   de la **huella de la imagen** (`cotizacion_imagen_huella()`: de qué está hecha para quien pide). En la lista, el resumen y la ficha del vehículo; «Compartir»
   la manda. No es la **Portada** de un vehículo ni la **Vista previa** (el modal con la tarjeta en HTML).

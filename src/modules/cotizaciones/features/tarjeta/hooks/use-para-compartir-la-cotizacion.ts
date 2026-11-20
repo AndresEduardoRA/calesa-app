@@ -11,15 +11,15 @@ import {
 import type { DatosParaCompartir } from '../../../entities/tarjeta/compartir/datos-para-compartir'
 import { useParteDeCompartir } from './use-parte-de-compartir'
 
-// La portada lista para compartir: la URL del blob para mostrarla y el PNG que piden el portapapeles y el menú del sistema (armado antes del toque).
-export type PortadaParaCompartir = { url: string; png: Blob }
+// La imagen de la tarjeta lista para compartir: la URL del blob para mostrarla y el PNG que piden el portapapeles y el menú del sistema (armado antes del toque).
+export type ImagenDeLaTarjetaParaCompartir = { url: string; png: Blob }
 
 const NO_SE_ARMO = 'No se pudo armar la imagen.'
 
-async function leerLaPortada(
+async function leerLaImagen(
   id: string,
   senal: AbortSignal,
-): Promise<Resultado<PortadaParaCompartir>> {
+): Promise<Resultado<ImagenDeLaTarjetaParaCompartir>> {
   const webp = await pedirLaImagenParaCompartir(id, senal)
   if (!webp.ok) {
     return webp
@@ -32,11 +32,11 @@ async function leerLaPortada(
   }
 }
 
-// Las dos portadas de las hermanas, apiladas en el orden de las opciones (glosario: «Cotizaciones hermanas»): si una no llega, ninguna (no se ofrece una sola a medias).
-async function leerLasDosPortadas(
+// Las dos imágenes de las hermanas, apiladas en el orden de las opciones (glosario: «Cotizaciones hermanas»): si una no llega, ninguna (no se ofrece una sola a medias).
+async function leerLasDosImagenes(
   versiones: NonNullable<DatosParaCompartir['versiones']>,
   senal: AbortSignal,
-): Promise<Resultado<PortadaParaCompartir>> {
+): Promise<Resultado<ImagenDeLaTarjetaParaCompartir>> {
   const [a, b] = await Promise.all(
     versiones.map((v) => pedirLaImagenParaCompartir(v.cotizacionId, senal)),
   )
@@ -50,36 +50,36 @@ async function leerLasDosPortadas(
   }
 }
 
-const soltarLaPortada = (portada: PortadaParaCompartir) => {
-  URL.revokeObjectURL(portada.url)
+const soltarLaImagen = (imagen: ImagenDeLaTarjetaParaCompartir) => {
+  URL.revokeObjectURL(imagen.url)
 }
 
-// Lo que el panel «Compartir la cotización» pide, cada parte por su lado (si una falla, las otras siguen): los datos del texto y la portada, una vez por apertura
+// Lo que el panel «Compartir la cotización» pide, cada parte por su lado (si una falla, las otras siguen): los datos del texto y la imagen de la tarjeta, una vez por apertura
 // mientras `activo` (con el Modo Live no se pide nada), y la lista de fotos sólo cuando se eligen («Fotos»).
 export function useParaCompartirLaCotizacion(
   id: string,
   { activo, conFotos }: { activo: boolean; conFotos: boolean },
 ) {
   const datos = useParteDeCompartir((senal) => pedirLosDatos(id, senal), activo ? id : null)
-  // La portada va a la par de los datos (es lo que más tarda); las fotos, sólo con acceso y al elegirlas.
+  // La imagen va a la par de los datos (es lo que más tarda); las fotos, sólo con acceso y al elegirlas.
   const propia = useParteDeCompartir(
-    (senal) => leerLaPortada(id, senal),
+    (senal) => leerLaImagen(id, senal),
     activo ? id : null,
-    soltarLaPortada,
+    soltarLaImagen,
   )
   const versiones = datos.parte.estado === 'listo' ? datos.parte.dato.versiones : undefined
   const apilada = useParteDeCompartir(
     (senal) =>
       versiones
-        ? leerLasDosPortadas(versiones, senal)
+        ? leerLasDosImagenes(versiones, senal)
         : Promise.resolve(fallo('inesperado', NO_SE_ARMO)),
     activo && versiones ? `${id}:par` : null,
-    soltarLaPortada,
+    soltarLaImagen,
   )
-  const portada = versiones ? apilada : propia
+  const imagen = versiones ? apilada : propia
   const fotos = useParteDeCompartir(
     (senal) => pedirLasFotos(id, senal),
     activo && conFotos && datos.parte.estado === 'listo' ? id : null,
   )
-  return { datos, portada, fotos }
+  return { datos, imagen, fotos }
 }
