@@ -82,7 +82,8 @@ test('carga el logo al guardar, regenera los íconos y el manifest los sirve', a
   expect((await ajustesGuardados()).logo_ruta).toBeNull()
   await page.unroute('**/storage/v1/object/marca/**')
 
-  // Ahora sí: se sube al guardar.
+  // Ahora sí: se sube al guardar, junto con el nombre que el manifest dirá.
+  await identidad.getByLabel('Nombre de la empresa').fill('Importadora Andina')
   await identidad.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
   await expect(identidad).toBeHidden()
