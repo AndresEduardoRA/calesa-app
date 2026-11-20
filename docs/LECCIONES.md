@@ -332,6 +332,9 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   integrada) no gasta un intento de arreglo: lo mecánico va sin sesión (`scripts/orquestador/sin-sesion.sh`) y el choque cuenta aparte. (kit)
 - `claude -p` en un worktree pide el trust de la principal en `~/.claude.json` (`projects[<principal>].hasTrustDialogAccepted`): sin él
   ignora los `permissions.allow` del proyecto. `orquestador.sh verificar` lo revisa. (kit)
+- Para que el orquestador tome un cambio suyo no reinicies el servicio: al integrarse en `main` se relanza solo con `exec` y las
+  sesiones en curso siguen. `systemctl --user restart` corta esas sesiones (`KillMode=control-group`) y cada una se retoma con otra
+  sesión que reconstruye lo hecho. Para frenar lanzamientos va `orquestador.sh pausar`. (kit)
 
 ## Por módulo
 
