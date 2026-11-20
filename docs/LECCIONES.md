@@ -169,6 +169,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 
 - Con el texto al 200 % los media queries siguen en px: escribe una columna lateral como `minmax(0, 24rem)`, no rem fijos, y en una rejilla de 12 pistas que colapsa usa `gap-x-0 @lg:gap-x-3` (las pistas van a 0 y los 11 huecos fijos desbordan).
 - En el celular, la burbuja del chat flota a 80–124 px del borde inferior y a 16–60 px del derecho: un control alineado a la derecha en algo pegado abajo (el resumen de la hoja) queda debajo sin que ningún desplazamiento lo libere; dale `max-md:pr-[44px]` a su fila.
+- `TableCell` y `TableHead` de `src/shared/ui/table` son `whitespace-nowrap`: una celda con un texto que debe partirse (un motivo debajo de un control) lleva `whitespace-normal`, o el texto se derrama sobre la columna de al lado sin que nada falle.
 - Nombra los contenedores (`@container/hoja`, `@4xl/hoja`): una consulta de contenedor la resuelve el contenedor más cercano al descendiente, no el que lleva la clase.
 - Un estilo que depende del desplazamiento (la sombra de una columna pegada) va con `container-type: scroll-state` y
   `@container scroll-state(…)`, no con una animación ligada al desplazamiento (`animation-timeline`): cada celda sumaría una animación que
