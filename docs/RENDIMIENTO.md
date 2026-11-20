@@ -660,7 +660,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `loading` y el de `page`); por eso existe `pantallas/esqueleto-de-hoja.ts`. Se ve comparando `entryJSFiles` de
   `page_client-reference-manifest.js` entre dos builds.
 - react-pdf no llega al navegador, pero estar en el grafo del servidor suma ≈ 0,45 KB al runtime de Turbopack de **todas** las rutas.
-- El marco (shell): en el JS de toda pantalla viajan el botón de la burbuja del chat, `usePathname`, el store del contador y
+- El marco (shell): en el JS de toda pantalla viajan el menú lateral plegable (`LateralPlegable`, `ProveedorDelMenuPlegado`: un botón, un contexto y `Ctrl/Cmd+B`; sin librería nueva), el botón de la burbuja del chat, `usePathname`, el store del contador y
   `useAlDescansar`; el cliente de Supabase, la suscripción, el panel, la lista, el hilo y el redactor van con `diferido()`. La campana: su
   contador con Realtime y su popover van con `diferido()` (sin eso `/cotizaciones` subía ≈ 66 KB). Una `chat_no_leidos` al montar y otra por
   ráfaga de señales (≥ 250 ms). Los tipos de cambio de la barra: en frío sólo el botón con los de la barra (≤ 3, `{id, nombre, monedaA, valor}`
