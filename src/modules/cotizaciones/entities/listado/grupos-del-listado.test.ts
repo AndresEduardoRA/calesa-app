@@ -6,7 +6,9 @@ import {
   cotizacionDeLaEntrada,
   grupoQueCambio,
   leerAgrupar,
+  idDelVehiculoDelModal,
   lineasDelGrupo,
+  tituloDelModalDelGrupo,
   textoDelConteo,
 } from './grupos-del-listado'
 
@@ -82,7 +84,7 @@ describe('el conteo del grupo', () => {
   })
 })
 
-describe('el despliegue de un grupo', () => {
+describe('el modal de un grupo', () => {
   it('la cabeza ya no vale si la primera página no empieza por la cotización del orden', () => {
     expect(grupoQueCambio({ ordenId: 'a' }, [{ id: 'a' }, { id: 'b' }])).toBe(false)
     expect(grupoQueCambio({ ordenId: 'a' }, [{ id: 'n' }, { id: 'a' }])).toBe(true)
@@ -93,5 +95,22 @@ describe('el despliegue de un grupo', () => {
     expect(
       lineasDelGrupo({ id: 'c' }, [{ id: 'a' }, { id: 'c' }, { id: 'b' }]).map((f) => f.id),
     ).toEqual(['c', 'a', 'b'])
+  })
+
+  it('sin cabeza (el grupo no está en la página), las leídas en su orden', () => {
+    expect(lineasDelGrupo(null, [{ id: 'a' }, { id: 'b' }]).map((f) => f.id)).toEqual(['a', 'b'])
+  })
+
+  it('el título dice el vehículo, o «este vehículo» si no se conoce', () => {
+    expect(tituloDelModalDelGrupo('Toyota Hilux 2019')).toBe('Cotizaciones de Toyota Hilux 2019')
+    expect(tituloDelModalDelGrupo(null)).toBe('Cotizaciones de este vehículo')
+    expect(tituloDelModalDelGrupo('  ')).toBe('Cotizaciones de este vehículo')
+  })
+
+  it('el vehículo del enlace es un guid en minúsculas; otra cosa no abre nada', () => {
+    const id = '0A0A0A0A-0000-4000-8000-0000000000AA'
+    expect(idDelVehiculoDelModal(id)).toBe(id.toLowerCase())
+    expect(idDelVehiculoDelModal('hilux')).toBeNull()
+    expect(idDelVehiculoDelModal(null)).toBeNull()
   })
 })

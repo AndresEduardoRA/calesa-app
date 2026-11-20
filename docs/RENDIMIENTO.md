@@ -296,7 +296,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   del historial era para filas de 3 nodos). Código: la isla al acercarse y la cáscara `diferido()` en su `diferidos.tsx`; el bloque, al acercarse (guardada) o
   al abrir el resumen. En frío, sólo la cáscara del hueco (el resumen ya es diferido).
 - **La barra del resumen** (`e2e/cotizaciones-drawer.spec.ts`): abrir el resumen no pide nada nuevo: el «⋯» y «Compartir» salen de lo que la página ya leyó. La
-  cotización del resumen que no está en la página (una línea de un grupo desplegado, otra página) suma su id a las tres lecturas por clave primaria de las marcas
+  cotización del resumen que no está en la página (una línea del modal de un grupo, otra página) suma su id a las tres lecturas por clave primaria de las marcas
   (`conLaDelResumen()`) y una llamada a `cotizaciones_modos_de([id])` dentro de `leerLaDelResumen()`, en el mismo pedido al servidor. La barra suma 3 botones al
   resumen y ninguno a la lista (los diálogos cerrados no dibujan). Código: `AccionesDelResumen` y `DatosDelResumen` viajan en el chunk diferido del resumen;
   en frío, unas líneas del listado.

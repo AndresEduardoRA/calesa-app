@@ -218,14 +218,15 @@ describe('ListadoDeCotizaciones: tarjetas, grupos y «Compartir» (T319)', () =>
     }
   }
 
-  it('un grupo dice cuántas tiene y se despliega en el lugar; una sola no lleva conteo', () => {
+  it('un grupo dice cuántas tiene y abre un modal, no se despliega; una sola no lleva conteo', () => {
     render(<ListadoDeCotizaciones {...base} pagina={{ ...VACIA, filas: [grupo(1, 3), sola(2)] }} />)
     const conteo = screen.getByRole('button', { name: '3 cotizaciones de este vehículo' })
-    expect(conteo.getAttribute('aria-expanded')).toBe('false')
+    expect(conteo.getAttribute('aria-haspopup')).toBe('dialog')
+    expect(conteo.hasAttribute('aria-expanded')).toBe(false)
     expect(screen.getAllByRole('button', { name: /cotizaciones de este vehículo/ })).toHaveLength(1)
+    // Nada se despliega en la lista: lo que abre es el modal de la URL (lo recorre el e2e).
     fireEvent.click(conteo)
-    expect(conteo.getAttribute('aria-expanded')).toBe('true')
-    expect(document.getElementById(conteo.getAttribute('aria-controls') ?? '')).not.toBeNull()
+    expect(document.querySelector('[data-despliegue-del-grupo]')).toBeNull()
   })
 
   it('«Compartir» es la acción principal de la tarjeta si se ofrece, y el «⋯» se pide sin él', () => {

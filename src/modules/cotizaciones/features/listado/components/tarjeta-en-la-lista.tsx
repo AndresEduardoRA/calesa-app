@@ -132,8 +132,7 @@ function ClienteDeLaTarjeta({
 }
 
 // Una tarjeta de la lista de cotizaciones (`docs/GLOSARIO.md` › «Tarjeta de la lista»): la portada arriba con el «⋯» encima y, debajo, el título, «N.º n» con sus
-// insignias, el total con su modo, el cliente, el autor, la vigencia, la fila del conteo y «Compartir». Todas miden lo mismo sin `auto-rows-fr` (el despliegue de un
-// grupo, a todo el ancho, estiraría la fila): cada fila de la tarjeta tiene su alto fijo (el título dos líneas, cada dato una con «…», la del conteo reservada) y la
+// insignias, el total con su modo, el cliente, el autor, la vigencia, la fila del conteo y «Compartir». Todas miden lo mismo sin `auto-rows-fr`: cada fila de la tarjeta tiene su alto fijo (el título dos líneas, cada dato una con «…», la del conteo reservada) y la
 // tarjeta se estira a su celda. Un clic en cualquier parte abre el resumen, salvo la portada, el cliente, el conteo, «Compartir» y el «⋯» (`esClicPropio`).
 export function TarjetaEnLaLista(props: Props) {
   const { cotizacion, abierta, alAbrir, compartir, conteo } = props
