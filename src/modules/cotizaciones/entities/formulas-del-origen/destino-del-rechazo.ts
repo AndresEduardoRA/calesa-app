@@ -1,6 +1,7 @@
-// A dónde lleva un rechazo de `formula_del_origen_activar()`: el `hint` de la base (la causa del error) dice qué frenó, y el modal ofrece ir ahí (docs/UX.md).
-// Un nodo abre la planilla con esa fila elegida; un lugar de la tarjeta, la tarjeta con «Ir a la celda»; la tarjeta, la
-// planilla o el diseño, su sub-pestaña. Lo demás no tiene destino.
+// A dónde lleva un rechazo de `formula_del_origen_activar()`: el `hint` de la base (la causa del error)
+// dice qué frenó, y el modal ofrece ir ahí (docs/UX.md › «Cotización: fórmulas del origen»). Un nodo abre
+// la planilla con esa fila elegida; un lugar de la tarjeta, la tarjeta con «Ir a la celda»; la tarjeta,
+// la planilla o el diseño, su pestaña del editor. Lo demás no tiene destino.
 import type { Route } from 'next'
 import { rutaDeLaFormula } from '@/shared/lib/rutas'
 import { CLAVE_DE_LA_FILA_PEDIDA, CLAVE_DEL_LUGAR_PEDIDO } from '../llegada-al-editor'

@@ -1,5 +1,6 @@
-// El «⋯» de una fórmula del origen: el mismo en su fila de la lista y en la cabeza de su editor (docs/UX.md). Quien lo dibuja
-// pone qué hace cada línea; aquí sólo cuáles van, en qué orden y por qué una está apagada.
+// El «⋯» de una fórmula del origen: el mismo en su fila de la lista y en la cabeza de su editor
+// (docs/UX.md › «Cotización: fórmulas del origen»). Quien lo dibuja pone qué hace cada línea; aquí sólo
+// cuáles van, en qué orden y por qué una está apagada.
 import type { AccionDeMenu } from '@/shared/ui/lista'
 import { tieneTarjeta, tieneVersion, type FormulaDeLaLista } from './lista'
 

@@ -579,8 +579,8 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   cotizaciones; la tarjeta entera abre sus Datos.
 - **La página del origen** — `/configuracion/origenes/<id>/<pestaña>`: arriba «‹ Orígenes»; el punto de color, el nombre como `h1`, «Activo» o
   «Inactivo» y, con `origenes.gestionar`, el «⋯» arriba a la derecha (activar, desactivar, eliminar: `?panel=eliminar-origen`). Debajo, **«Para cotizar y
-  mover»** (`h2`): cinco pasos —Datos, Campos, Flujo (con fases), Fórmula (publicada) y Tarjeta (publicada)— con ✓ «Listo», ⚠ o ✗ y una frase corta,
-  cada uno enlazado a su pestaña (la Tarjeta, a `formula/tarjeta`; Datos con aviso de apibara, a Integraciones); sin el permiso del paso, el motivo
+  mover»** (`h2`): cinco pasos —Datos, Campos, Flujo (con fases), Fórmula (una activa) y Tarjeta (la de la activa, publicada)— con ✓ «Listo», ⚠ o ✗ y una frase corta,
+  cada uno enlazado a su pestaña (la Fórmula, a la lista `/formulas`; la Tarjeta, a `formula/tarjeta`, la de la fórmula de trabajo; Datos con aviso de apibara, a Integraciones); sin el permiso del paso, el motivo
   debajo y sin enlace; en el celular, dos columnas. Un inactivo dice sólo «Inactivo: no recibe vehículos ni cotizaciones nuevos.». Después, las
   **pestañas** (en el celular la barra se desplaza dentro de su ancho y deja a la vista la abierta), cada una su sub-ruta; la que no se abre va
   apagada con su motivo:
@@ -595,19 +595,22 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
     (`?fase=<id>`); las reglas y los tipos de documento se abren en el mismo panel (`?seccion=reglas|documentos`). Las fases se crean desde la barra, se
     ordenan arrastrando o con «Mover antes/después» (y «Subir/Bajar» en la lista), se jubilan y reactivan; en el panel se editan y se agregan y quitan
     salidas y requisitos. Ver «Flujos: configuración (estados propios)» y siguientes.
-  - **Fórmula** (`/formula`, `cotizaciones.configurar` en el origen; apagada con «Lo configura quien tiene el permiso «Configurar el cotizador».»), con
-    sus sub-pestañas **Fórmula · Hoja · Tarjeta** (`/formula`, `/formula/hoja`, `/formula/tarjeta`) y «Empezar desde una plantilla» a la derecha
-    (`?panel=plantillas-de-v1`). «Fórmula» («Qué se calcula.», a todo el ancho): arriba la publicada, el borrador y las versiones, y abajo la planilla;
-    `?panel=publicar-formula`, `revertir-formula&version=<id>`, `descartar-borrador` y `editar-formula` (el Modo avanzado). «Hoja» («Cómo se ve y se
-    llena la cotización.»): `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe el cliente.»): `?panel=publicar-tarjeta|
-descartar-plantilla` y `?referencia=ejemplo`, a todo el ancho.
+  - **Fórmulas** (`/formulas`, `cotizaciones.configurar` en el origen; apagada con «Lo configura quien tiene el permiso «Configurar el cotizador».»): la
+    lista de las fórmulas del origen («Cotización: fórmulas del origen (estados propios)»). Cada una se edita en `/formulas/<fórmula>/<parte>`, con la
+    cabeza del editor (el nombre, su estado y el «⋯» de la lista) y sus pestañas **Planilla · Hoja · Tarjeta** (`/planilla`, `/hoja`, `/tarjeta`;
+    `/formulas/<fórmula>` sola abre la planilla) y «Empezar desde una plantilla» a la derecha (`?panel=plantillas-de-v1`, escribe en esa fórmula).
+    «Planilla» («Qué se calcula.», a todo el ancho): arriba la publicada, el borrador y las versiones, y abajo la planilla; `?panel=publicar-formula`,
+    `revertir-formula&version=<id>`, `descartar-borrador` y `editar-formula` (el Modo avanzado). «Hoja» («Cómo se ve y se llena la cotización.»):
+    `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe el cliente.»): `?panel=publicar-tarjeta|descartar-plantilla` y
+    `?referencia=ejemplo`, a todo el ancho. La ruta corta `/formula`, `/formula/hoja` y `/formula/tarjeta` responde 308 a esa parte de la fórmula de
+    trabajo (por persona, con su consulta) o, sin ninguna, a la lista.
   - **Tablas** (`/tablas`, `cotizaciones.configurar` en el origen): las del origen y las compartidas que usa (una compartida tapada por una propia va
     «Tapada por la de <origen>»); `?tabla=<id>` (el editor) y `?panel=publicar-tabla|nueva-tabla|columnas-de-tabla|desactivar-tabla`. Una compartida se edita ahí con el aviso de a quién le cambia.
   - `/<id>` sola abre (308) la primera pestaña que la persona abre, y `/<id>?seccion=…` su parte, conservando `?campo=`, `?categoria=` y `?panel=`. Una
     pestaña que no abre, por URL: «No puedes abrir esta pestaña», su motivo e «Ir a <la primera que abre>»; un origen ajeno, «No puedes abrir este
     origen» (con «Ver los orígenes» si abre otros), sin decirle si existe; a quien sí podría abrirlo, uno que no existe es un 404.
   - **Las URLs de antes** redirigen con 308 y su consulta: `/configuracion/cotizacion/<origen>/formula|hoja|tarjeta|tablas` (y `/<origen>` solo) a la
-    pestaña del origen, `/configuracion/cotizacion/general/*` y `?seccion=tonos|colores|niveles|ajustes|vigencia` a Catálogos,
+    pestaña del origen (la fórmula, por su ruta corta), `?seccion=formula` del origen a `/formulas`, `/configuracion/cotizacion/general/*` y `?seccion=tonos|colores|niveles|ajustes|vigencia` a Catálogos,
     `/configuracion/flujos?origen=` a su Flujo (`?ambito=repuestos` al de repuestos; sin origen, el primero que la persona configura), `?seccion=documentos`
     sin `flujos.configurar` a Tipos de documento, y `/configuracion/logistica/*` a su catálogo. Lo que no se resuelve, a la lista de orígenes.
 - **Sitio web (config)** — `/configuracion/web` abre la primera sub-sección que la persona puede; cada una es una sub-ruta del menú de Configuración
@@ -1310,15 +1313,48 @@ en la cabecera.
   conflicto: el texto de la base con «Recargar»; una acción que ya no corresponde avisa y se limpia. Si la lectura falla, la cabecera sigue
   sin nada de esto.
 
+### Cotización: fórmulas del origen (estados propios)
+
+Configuración › Orígenes › un origen › Fórmulas (`/configuracion/origenes/<id>/formulas`, `cotizaciones.configurar` en el origen): las fórmulas
+del origen; la activa es la que se cotiza.
+
+- **La lista:** la activa primero, con ★ y «Activa · vN»; las demás por nombre, con su estado en una insignia («vN publicada, no activa»,
+  «Borrador»; «Con borrador sin publicar» al lado si tiene las dos). Cada fila: el nombre como enlace a su planilla, «Editar» y el «⋯» arriba a la
+  derecha. Lee 51 y dibuja hasta 50; en el tope, «Este origen ya tiene 50 fórmulas: archiva o elimina alguna para crear otra.» y «Nueva fórmula»
+  apagada. Cargando, el esqueleto; un error, «Reintentar»; sin fórmulas, «Este origen todavía no tiene fórmulas: crea la primera en blanco o copia
+  una.» con «Nueva fórmula».
+- **El «⋯»** (el mismo en la cabeza del editor): Renombrar · Copiar · Activar… · Eliminar (si nunca estuvo activa) o Archivar (si lo estuvo).
+  La activa no ofrece «Activar…» (lo pendiente se publica desde su planilla o su tarjeta) y dice por qué no se archiva; sin planilla guardada o sin
+  tarjeta, «Activar…» va apagada con su motivo. Una archivada sólo se renombra o se copia.
+- **«Archivadas»**, plegada debajo: al abrirla lee de a 20 hasta 500 (con su aviso de tope), con esqueleto, «Reintentar» sin perder lo cargado y
+  «Ninguna archivada.».
+- **Nueva fórmula** (`?panel=nueva-formula`; Copiar abre el mismo con `&copia=<fórmula>`): «Cómo empieza» —En blanco, Copia de este origen,
+  Copia de otro origen (sólo si la persona configura otro; si no, «No configuras el cotizador de otro origen.»)—, la fórmula y la versión que se
+  copia (publicada o borrador; la que no hay va apagada con su motivo; de otro origen no se elige: su publicada y, si no tiene, su borrador, dicho bajo «Fórmula») y el nombre (una copia propone
+  «<nombre> (copia)»). Un nombre repetido se dice junto al campo; sin un tipo de cambio, «Abrir Monedas». Entró: abre su planilla.
+- **Los avisos de la copia** (de otro origen): arriba de la planilla, «Lo que cambió al copiar la fórmula», un renglón por tabla creada o usada del
+  destino (con «Abrir Tablas») y por dato del vehículo que el origen no tiene; esos datos quedan además marcados en su fila («El dato «x» no existe
+  en este origen: elige otro o créalo.»). Quedan hasta «Ocultar».
+- **Renombrar** (`?panel=renombrar-formula&formula=<id>`), **Archivar** y **Eliminar** (`<Confirmar>`; eliminar una que ya se usó ofrece
+  «Archivar» en el mismo lugar): un PT409 con el texto de la base y «Recargar», que conserva lo escrito.
+- **Activar…** (`?panel=activar-formula&formula=<id>`): qué se publica (la planilla y la tarjeta con su borrador, si tienen) y qué cambia (cuál deja
+  de cotizarse), y la nota obligatoria. Un PT409 (otra persona activó, publicó o guardó) con «Recargar»; un rechazo que nombra una fila
+  (`?fila=<nodo>` en la planilla), un lugar de la tarjeta (`?lugar=`) o una pestaña ofrece ir ahí, y la nota no se pierde. Por URL, una que ya
+  está activa, archivada o no está: avisa y limpia.
+- **El editor de una fórmula:** su cabeza dice el nombre, el estado y el «⋯»; Copiar y Activar llevan a la lista con su panel (preguntan antes si
+  hay cambios sin guardar), y archivar o eliminar vuelven a la lista. Una archivada dice «Esta fórmula está archivada: cópiala para seguir
+  editándola.» con «Copiar» y «Volver a Fórmulas», sin sus pestañas. Una fórmula que no existe o es de otro origen, 404.
+- **Modo Live:** la lista y los modales no muestran montos.
+
 ### Cotización: fórmula (estados propios)
 
-Configuración › Orígenes › un origen › Fórmula (`/configuracion/origenes/<id>/formula`): ver, publicar, revertir, descartar y
-editar la fórmula de un origen.
+Configuración › Orígenes › un origen › Fórmulas › una fórmula › Planilla (`/configuracion/origenes/<id>/formulas/<fórmula>/planilla`): ver,
+publicar, revertir, descartar y editar una fórmula del origen. `?fila=<nodo>` elige esa fila al abrir y se borra de la URL.
 
 - **Quién entra:** `cotizaciones.configurar` en ese origen, aunque no tenga los permisos de los niveles (entonces «Niveles» va apagada con su
   motivo). La base vuelve a decidir: la policy `formulas: leer` sólo deja ver los orígenes con la clave.
 - **Origen:** la página es la de ese origen (también inactivo); para cambiar de origen, el menú o la lista de orígenes. Sin la clave en el origen,
-  la pestaña Fórmula va apagada con su motivo; un origen ajeno, «No puedes abrir este origen».
+  la pestaña Fórmulas va apagada con su motivo; un origen ajeno, «No puedes abrir este origen».
 - **Arriba:** la publicada (versión, nota, quién y cuándo) o, sin ella, que no se puede cotizar en el origen; el borrador si hay (de quién,
   cuándo, nota, versión sobre la que empezó y, si se publicó otra después, que publicarlo dará conflicto). Ninguna lleva «Editar»: se edita en la
   planilla, debajo. Con cambios aplicados sin guardar, «Publicar…» espera: «Guarda el borrador antes de publicar: se publica lo guardado.»
@@ -1355,10 +1391,10 @@ editar la fórmula de un origen.
   su «⋯». Hasta 500 filas con aviso y «Buscar fila». **Al costado** (cuando la planilla mide 72 rem o más; si no, debajo): «Totales» (el total en dólares y
   en la moneda local con el modo elegido, la base imponible y lo aparte, cada uno con `<Monto>` y cómo sale; lo aparte apagado dice por qué) y
   «Tarjeta de la cotización» (la plantilla de trabajo del origen, el borrador si hay, con la unidad de ejemplo y el selector de modo «Tipo de
-  cambio» con dos o más modos; sin plantilla, «Este origen todavía no tiene tarjeta.» con «La imagen que recibe el cliente»; si no se leyó,
+  cambio» con dos o más modos; sin plantilla, «Esta fórmula todavía no tiene tarjeta.» con «La imagen que recibe el cliente»; si no se leyó,
   «Reintentar»). En el celular y con el texto al 200 % la tabla se desplaza de costado en su marco con «#» y A pegadas; la página no se ensancha.
 - **Modo avanzado** (`?panel=editar-formula`; los enlaces viejos lo abren): el editor en texto, sobre la misma
-  fórmula de trabajo que la planilla (lo aplicado en uno se ve en el otro), con «Volver a la planilla» («atrás» también, y el foco vuelve a «Modo
+  fórmula que la planilla (lo aplicado en uno se ve en el otro), con «Volver a la planilla» («atrás» también, y el foco vuelve a «Modo
   avanzado»). Sin fórmula, la URL avisa y se limpia. Cada fila: etiqueta, id y tipo; un cálculo o una constante, su texto vigente (tras un ⚙, el
   reescrito con su aviso) y «Editar», que abre su texto (una fila a la vez; «Aplicar» o `Ctrl/Cmd+Enter` compila, Esc cierra; el error queda bajo
   el texto; pisar un valor del ⚙ pide «Pisar el valor»; un rechazo de la fórmula entera va a la fila que nombra). Lo aplicado se repone al volver
@@ -1383,7 +1419,7 @@ editar la fórmula de un origen.
 
 ### Cotización: tarjeta (estados propios)
 
-Configuración › Orígenes › un origen › Fórmula › Tarjeta (`/configuracion/origenes/<id>/formula/tarjeta`, a todo el ancho): el editor de la tarjeta de la cotización como un
+Configuración › Orígenes › un origen › Fórmulas › una fórmula › Tarjeta (`/configuracion/origenes/<id>/formulas/<fórmula>/tarjeta`, a todo el ancho; `?lugar=` va a ese lugar al abrir y se borra): el editor de la tarjeta de la cotización como un
 Excel. Edita el **borrador** de la plantilla (sólo la forma 2, la cuadrícula), lo publica con nota y lo descarta.
 
 - **Quién entra y origen:** como «Fórmula»; la pestaña va después de «Hoja». **Sin fórmula publicada**, no hay editor: «Falta publicar la fórmula de
@@ -1585,7 +1621,7 @@ Configuración › Catálogos › Vigencia (`/configuracion/catalogos/vigencia`)
 
 ### Cotización: hoja (estados propios)
 
-Configuración › Orígenes › un origen › Fórmula › Hoja (`/configuracion/origenes/<id>/formula/hoja`, el diseño de la hoja): secciones, celdas, ítems, cabecera y tarjeta del total de la hoja, su orden, su
+Configuración › Orígenes › un origen › Fórmulas › una fórmula › Hoja (`/configuracion/origenes/<id>/formulas/<fórmula>/hoja`, el diseño de la hoja): secciones, celdas, ítems, cabecera y tarjeta del total de la hoja, su orden, su
 aspecto en la rejilla de 12 y su vista previa.
 
 - **Quién entra y origen:** como «Fórmula».
@@ -1642,7 +1678,7 @@ aspecto en la rejilla de 12 y su vista previa.
 
 ### Cotización: empezar desde una plantilla (estados propios)
 
-Configuración › Orígenes › un origen › Fórmula › «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, en sus tres sub-pestañas): un modal grande que
+Configuración › Orígenes › un origen › Fórmulas › una fórmula › «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, en sus tres pestañas; escribe en esa fórmula): un modal grande que
 crea con un clic los **borradores** de la fórmula (con su diseño) y de la tarjeta del origen desde una plantilla de V1 (`docs/COTIZADOR.md` › «Plantillas de
 V1»). No publica.
 
@@ -1657,7 +1693,7 @@ V1»). No publica.
   sumarlo en Orígenes › Campos.»). Botones «Reemplazar» (con borradores) o «Usar esta plantilla» (sólo avisos), primario, y «Volver», que regresa a la
   lista sin escribir nada.
 - **Al aplicar:** cierra el modal, avisa «Se crearon los borradores de la fórmula y de la tarjeta desde «USA (subasta)». Revísalos y publícalos.» y va a la
-  pestaña Fórmula del origen, con los dos borradores y su nota «Empezado desde la plantilla de V1 «USA (subasta)».».
+  planilla de esa fórmula, con los dos borradores y su nota «Empezado desde la plantilla de V1 «USA (subasta)».».
 - **Cargando:** cuatro tarjetas `Esqueleto` con el título y los botones apagados. **Error al leer:** «No se pudieron leer las plantillas.» con «Reintentar».
   **Sin red** (al leer o al aplicar): «No hay conexión.» con «Reintentar»; reintentar no duplica nada (todo o nada: si el primero entró, el segundo da el PT409 con «Recargar»).
 - **Colores que no caben:** en la tarjeta del paquete elegido y en el pie, «No hay lugar para N colores más en el catálogo (máximo 48): elimina alguno que
