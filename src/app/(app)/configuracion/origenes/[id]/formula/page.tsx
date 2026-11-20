@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { leerLaTarjetaDeTrabajo } from '@/modules/cotizaciones'
+import { leerLaTarjetaDeLaFormula } from '@/modules/cotizaciones'
 import { SeccionDeLaFormula } from '@/modules/cotizaciones/pantallas/formula'
 import { TarjetaEnVivoDiferida } from '@/modules/cotizaciones/pantallas/tarjeta-formula'
 import { puede } from '@/shared/lib/permisos'
 import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
 import { abrirOrigen } from '../abrir-origen'
 import { NoSeAbre } from '../no-se-abre'
+import { ConLaFormulaDeTrabajo } from './con-la-formula-de-trabajo'
 
 export const metadata: Metadata = { title: 'Fórmula del origen' }
 
@@ -25,12 +26,20 @@ export default async function PaginaDeLaFormula({
   const origen = { id, nombre, activo }
   return (
     <Suspense fallback={<EsqueletoFormulario bloques={2} campos={4} />}>
-      <SeccionDeLaFormula
-        origen={origen}
-        tarjeta={leerLaTarjetaDeTrabajo(origen)}
-        TarjetaEnVivo={TarjetaEnVivoDiferida}
-        puedeCambiarTiposDeCambio={puede(abierto.sesion.permisos, 'empresa.tipos_cambio.gestionar')}
-      />
+      <ConLaFormulaDeTrabajo origenId={id}>
+        {(formula) => (
+          <SeccionDeLaFormula
+            origen={origen}
+            formula={formula}
+            tarjeta={leerLaTarjetaDeLaFormula(origen, formula.id)}
+            TarjetaEnVivo={TarjetaEnVivoDiferida}
+            puedeCambiarTiposDeCambio={puede(
+              abierto.sesion.permisos,
+              'empresa.tipos_cambio.gestionar',
+            )}
+          />
+        )}
+      </ConLaFormulaDeTrabajo>
     </Suspense>
   )
 }

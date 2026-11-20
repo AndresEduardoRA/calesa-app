@@ -11,19 +11,19 @@ import { datosDePlantillasDeV1 } from '../../entities/plantilla/plantillas-de-v1
 import { PLANTILLAS_DE_V1 } from '../../entities/plantillas-de-v1'
 import { plantillasDeV1Supabase } from '../../infra/plantilla/plantillas-de-v1-de-la-sesion'
 
-// El borrador, la publicada y lo que las valida (la fórmula publicada y el catálogo de tonos) de un origen, con la sesión de quien mira (4.19-3a).
+// El borrador, la publicada y lo que las valida (la fórmula publicada y el catálogo de tonos) de una fórmula del origen, con la sesión de quien mira (4.19-3a).
 export const leerPlantillaDelOrigen = leerLaPlantillaDelOrigen
 // Guardar el borrador, publicarlo con nota y descartarlo, por las RPC del 4.19-1 (4.19-3a).
 export const repositorioDeLaPlantilla: RepositorioDeLaPlantilla = plantillaSupabase
 
-// La tarjeta de trabajo del origen para la tarjeta en vivo de la planilla de la fórmula (`entities/tarjeta-en-vivo.ts`): la misma lectura que la pestaña «Tarjeta»
+// La tarjeta de una fórmula del origen para la tarjeta en vivo de su planilla (`entities/tarjeta-en-vivo.ts`): la misma lectura que la sub-pestaña «Tarjeta»
 // (`plantillas_tarjeta`, `formulas` y `tonos` con la sesión de quien mira), en el servidor y en paralelo con la de la fórmula. Nunca rechaza: un fallo es `no_se_leyo`.
-export async function leerLaTarjetaDeTrabajo(origen: {
-  id: string
-  nombre: string
-}): Promise<LecturaDeLaTarjetaEnVivo> {
+export async function leerLaTarjetaDeLaFormula(
+  origen: { id: string; nombre: string },
+  formulaDelOrigenId: string,
+): Promise<LecturaDeLaTarjetaEnVivo> {
   try {
-    const leida = await leerLaPlantillaDelOrigen(origen.id)
+    const leida = await leerLaPlantillaDelOrigen(formulaDelOrigenId)
     return leida.ok ? lecturaDeLaTarjetaDeTrabajo(leida.data, origen) : { estado: 'no_se_leyo' }
   } catch {
     return { estado: 'no_se_leyo' }

@@ -5,6 +5,7 @@ import { LienzoDeLaPlantillaDiferido } from '@/modules/cotizaciones/pantallas/ta
 import { puede } from '@/shared/lib/permisos'
 import { abrirOrigen } from '../../abrir-origen'
 import { NoSeAbre } from '../../no-se-abre'
+import { ConLaFormulaDeTrabajo } from '../con-la-formula-de-trabajo'
 import { EsqueletoDeLaTarjeta } from './esqueleto-de-la-tarjeta'
 import { leerReferenciaDeLaTarjeta } from './referencia'
 
@@ -25,12 +26,17 @@ export default async function PaginaDeLaTarjeta({
   const { id, nombre, activo } = abierto.origen
   return (
     <Suspense fallback={<EsqueletoDeLaTarjeta />}>
-      <SeccionDeLaPlantilla
-        origen={{ id, nombre, activo }}
-        referencia={leerReferenciaDeLaTarjeta(id, sesion.permisos)}
-        Lienzo={LienzoDeLaPlantillaDiferido}
-        puedeCambiarElLogo={puede(sesion.permisos, 'empresa.ajustes.gestionar')}
-      />
+      <ConLaFormulaDeTrabajo origenId={id}>
+        {(formula) => (
+          <SeccionDeLaPlantilla
+            origen={{ id, nombre, activo }}
+            formula={formula}
+            referencia={leerReferenciaDeLaTarjeta(id, sesion.permisos)}
+            Lienzo={LienzoDeLaPlantillaDiferido}
+            puedeCambiarElLogo={puede(sesion.permisos, 'empresa.ajustes.gestionar')}
+          />
+        )}
+      </ConLaFormulaDeTrabajo>
     </Suspense>
   )
 }

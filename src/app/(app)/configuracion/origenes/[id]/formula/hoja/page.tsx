@@ -4,6 +4,7 @@ import { SeccionDelDiseno } from '@/modules/cotizaciones/pantallas/diseno'
 import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
 import { abrirOrigen } from '../../abrir-origen'
 import { NoSeAbre } from '../../no-se-abre'
+import { ConLaFormulaDeTrabajo } from '../con-la-formula-de-trabajo'
 
 export const metadata: Metadata = { title: 'Hoja del origen' }
 
@@ -20,7 +21,9 @@ export default async function PaginaDeLaHoja({
   return (
     <div className="grid max-w-6xl min-w-0 gap-4">
       <Suspense fallback={<EsqueletoFormulario bloques={2} campos={4} />}>
-        <SeccionDelDiseno origen={{ id, nombre, activo }} />
+        <ConLaFormulaDeTrabajo origenId={id}>
+          {(formula) => <SeccionDelDiseno origen={{ id, nombre, activo }} formula={formula} />}
+        </ConLaFormulaDeTrabajo>
       </Suspense>
     </div>
   )
