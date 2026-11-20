@@ -1310,7 +1310,7 @@ declare
   v_yo uuid := (select auth.uid());
   c public.cotizaciones;
   a record;
-  v_formula uuid; v_uso uuid; v_vuelta int := 0; v_version int;
+  v_formula uuid; v_uso uuid; v_vuelta int := 0; v_version int; v_fdo uuid; v_otra text;
   v_ab_formula uuid; v_ab_en timestamptz; v_ab_huella text;
   v_veh uuid := p_vehiculo;
   v_modo jsonb;
@@ -1432,14 +1432,23 @@ begin
     raise exception 'Escribe el título de la cotización.' using errcode = '22023', hint = 'titulo';
   end if;
 
-  -- La fórmula publicada, `for share` por su id: si publicaron mientras esperábamos, READ COMMITTED descarta la fila que ya se archivó y se vuelve a leer la nueva.
+  -- La fórmula activa y su publicada, `for share` por su id: activar otra espera a esta alta, y si publicaron o activaron mientras esperábamos,
+  -- READ COMMITTED descarta la fila que ya cambió y se vuelve a leer.
   loop
     v_vuelta := v_vuelta + 1;
-    select f.id into v_formula from public.formulas f where f.origen_id = p_origen and f.estado = 'publicada';
-    if v_formula is null then
+    v_formula := null;
+    select d.id into v_fdo from public.formulas_del_origen d where d.origen_id = p_origen and d.activa;   -- formulas_del_origen_activa_unica
+    if v_fdo is null then
       perform public._motor_fallar('origen_sin_formula', null, 'Este origen no tiene una fórmula publicada.');
     end if;
-    perform 1 from public.formulas f where f.id = v_formula and f.estado = 'publicada' for share;
+    perform 1 from public.formulas_del_origen d where d.id = v_fdo and d.activa for share;
+    if found then
+      select f.id into v_formula from public.formulas f where f.formula_del_origen_id = v_fdo and f.estado = 'publicada';   -- formulas_publicada_unica
+      if v_formula is null then
+        perform public._motor_fallar('origen_sin_formula', null, 'Este origen no tiene una fórmula publicada.');
+      end if;
+      perform 1 from public.formulas f where f.id = v_formula and f.estado = 'publicada' for share;
+    end if;
     exit when found;
     if v_vuelta >= 3 then
       raise exception 'La fórmula cambió mientras cotizabas. Vuelve a intentarlo.' using errcode = 'PT409';
@@ -1452,6 +1461,12 @@ begin
   if v_ab_formula is distinct from v_formula then
     select f.version into v_version from public.formulas f where f.id = v_formula;
     if not p_con_la_abierta then
+      -- La abierta es de otra fórmula del origen: mientras cotizaba se activó la de ahora (formulas_pkey y formulas_del_origen_pkey).
+      select d.nombre into v_otra from public.formulas ab, public.formulas_del_origen d
+       where ab.id = v_ab_formula and ab.formula_del_origen_id is distinct from v_fdo and d.id = v_fdo;
+      if v_otra is not null then
+        raise exception 'Se activó la fórmula «%» mientras cotizabas: ahora se cotiza con su versión %.', v_otra, v_version using errcode = 'PT409', detail = 'desactualizada', hint = 'formula';
+      end if;
       raise exception 'Se publicó la versión % de la hoja mientras cotizabas.', v_version using errcode = 'PT409', detail = 'desactualizada', hint = 'formula';
     end if;
     perform public._cotizacion_abierta(p_origen, v_ab_formula, v_ab_en);
@@ -1658,7 +1673,7 @@ AS $function$
 declare
   v_yo uuid := (select auth.uid());
   c public.cotizaciones; ant public.cotizaciones; a record;
-  v_formula uuid; v_vuelta int := 0; v_enc uuid;
+  v_formula uuid; v_vuelta int := 0; v_enc uuid; v_fdo uuid;
   v_lleva jsonb; v_modo_tc text; v_bs boolean; v_res jsonb; v_total_base numeric; v_constraint text; v_desc int;
   v_lead uuid; v_vehiculo uuid; v_tomas int := 0;
   -- Lo fija `cotizacion_encima_en_par` (la posición de la opción, la hermana nueva y la hora); nulo fuera de ella.
@@ -1742,14 +1757,22 @@ begin
     raise exception 'Elige el vehículo de la cotización.' using errcode = '22023', hint = 'vehiculo';
   end if;
 
-  -- La publicada de hoy, `for share` (como en `cotizacion_crear`).
+  -- La publicada de la fórmula activa de hoy, `for share` (como en `cotizacion_crear`).
   loop
     v_vuelta := v_vuelta + 1;
-    select f.id into v_formula from public.formulas f where f.origen_id = ant.origen_id and f.estado = 'publicada';
-    if v_formula is null then
+    v_formula := null;
+    select d.id into v_fdo from public.formulas_del_origen d where d.origen_id = ant.origen_id and d.activa;   -- formulas_del_origen_activa_unica
+    if v_fdo is null then
       perform public._motor_fallar('origen_sin_formula', null, 'Este origen no tiene una fórmula publicada.');
     end if;
-    perform 1 from public.formulas f where f.id = v_formula and f.estado = 'publicada' for share;
+    perform 1 from public.formulas_del_origen d where d.id = v_fdo and d.activa for share;
+    if found then
+      select f.id into v_formula from public.formulas f where f.formula_del_origen_id = v_fdo and f.estado = 'publicada';   -- formulas_publicada_unica
+      if v_formula is null then
+        perform public._motor_fallar('origen_sin_formula', null, 'Este origen no tiene una fórmula publicada.');
+      end if;
+      perform 1 from public.formulas f where f.id = v_formula and f.estado = 'publicada' for share;
+    end if;
     exit when found;
     if v_vuelta >= 3 then
       raise exception 'La fórmula cambió mientras cotizabas. Vuelve a intentarlo.' using errcode = 'PT409';
