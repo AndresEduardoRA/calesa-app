@@ -1925,7 +1925,9 @@ begin
 end;
 $$;
 
-CREATE OR REPLACE FUNCTION "public"."origenes_resumen"() RETURNS TABLE("origen_id" "uuid", "vehiculos" integer, "cotizaciones" integer, "campos_activos" integer, "categorias" integer, "fases" integer, "formula_publicada" boolean, "concesiones" integer)
+-- `formula_publicada` pasa a decir si el origen tiene fórmula activa (una activa siempre tiene versión publicada) y `tarjeta_publicada`, si la fórmula de trabajo
+-- (la activa o, si no hay, la más nueva sin archivar: la que edita la pestaña Tarjeta) tiene su plantilla publicada. Mismas columnas, mismo orden y mismos grants.
+CREATE OR REPLACE FUNCTION "public"."origenes_resumen"() RETURNS TABLE("origen_id" "uuid", "vehiculos" integer, "cotizaciones" integer, "campos_activos" integer, "categorias" integer, "fases" integer, "formula_publicada" boolean, "concesiones" integer, "tarjeta_publicada" boolean)
     LANGUAGE "plpgsql" STABLE SECURITY DEFINER
     SET "search_path" TO ''
     AS $$
@@ -1942,7 +1944,13 @@ begin
     (select count(*)::int from public.categorias k where k.origen_id = o.id),
     (select count(*)::int from public.fases f join public.flujos fl on fl.id = f.flujo_id where fl.origen_id = o.id and f.activa),
     exists (select 1 from public.formulas_del_origen fo where fo.origen_id = o.id and fo.activa),   -- formulas_del_origen_activa_unica
-    (select count(*)::int from public.roles_permisos rp where rp.origen_id = o.id)
+    (select count(*)::int from public.roles_permisos rp where rp.origen_id = o.id),
+    -- La de trabajo, como `_fdo_de_trabajo()` sin crear (la activa nunca está archivada): ≤ 50 por formulas_del_origen_origen_idx; su publicada, por plantillas_publicada_unica.
+    exists (select 1 from public.plantillas_tarjeta p
+             where p.estado = 'publicada'
+               and p.formula_del_origen_id = (select d.id from public.formulas_del_origen d
+                                               where d.origen_id = o.id and d.archivada_en is null
+                                               order by d.activa desc, d.creado_en desc, d.id desc limit 1))
   from public.origenes o
   order by o.orden, o.nombre;
 end;

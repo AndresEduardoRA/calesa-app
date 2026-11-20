@@ -593,6 +593,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **El nombre es único en el origen sin distinguir mayúsculas, también entre las archivadas; el tope de 50 cuenta las no archivadas** (sin preguntar). No hay
   desarchivar.
 - **Publicar una tabla de referencia publica la N+1 de cada fórmula no archivada del origen con publicada que la use**, no sólo la de la activa.
+- **«Para cotizar y mover» mira la activa y la fórmula de trabajo** (sin preguntar): `origenes_resumen().formula_publicada` dice si hay activa y
+  `tarjeta_publicada`, si la fórmula de trabajo (la que edita la sub-pestaña Tarjeta; con activa, la activa) tiene su plantilla publicada. Una tarjeta publicada
+  en otra fórmula del origen no cuenta: no es la que se cotiza ni la que se edita.
 - **Crear y activar entran al inventario de visibilidad como `no_devuelve`:** leen la fórmula pero crear devuelve `{id, actualizado_en, avisos}` y
   activar, ids y números.
 - **Las sub-pestañas Fórmula, Hoja y Tarjeta escriben en la fórmula del origen que leyeron** (`p_formula_del_origen`), no en la de trabajo de cuando guardan: si
