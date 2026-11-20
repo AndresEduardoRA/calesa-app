@@ -297,10 +297,16 @@ las trampas, en `docs/LECCIONES.md`.
   llega por los enlaces cortos de la cabecera. Los enlaces viejos redirigen reemplazando la entrada (`secciones-viejas.ts`): `?seccion=ficha` a
   `?ver=ficha`, `fotos` al visor, `documentos` y `fase` a la unidad (con `logistica.ver` del origen), `repuestos` al proyecto (con `repuestos.ver` y si
   tiene); sin el permiso o sin proyecto, la ficha se queda arriba (no hay destino que mostrar). «Crear proyecto de repuestos» no se ofrece en la ficha:
-  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son «De este vehículo» (de a 10 hasta 100), no el historial de 500: la misma
-  isla de la guardada, con «Aprobar esta» y las casillas. Descartados: la vista previa de la vitrina siempre abierta (la tarjeta con foto mide más que la
+  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son la fila de tarjetas (ver «Las cotizaciones de las fichas, en una fila de tarjetas»), no el historial de 500. Descartados: la vista previa de la vitrina siempre abierta (la tarjeta con foto mide más que la
   columna y repite el precio), «Comparar» junto a «Cotizar» en el título (dos acciones en un título; va en su fila, con su ayuda) y mantener el historial
   de 500 (otra lista para lo mismo).
+- **Las cotizaciones de las fichas, en una fila de tarjetas.** La ficha del lead y la del vehículo muestran las últimas 10 que quien mira ve como
+  `TarjetaEnLaLista` (la del listado) en una fila con desplazamiento horizontal, y una última tarjeta «Ver más» a `/cotizaciones?lead=` o `?vehiculo=`: la
+  imagen y el total dicen más que una fila de texto, y el listado ya sabe filtrar. Una sola lectura con tope (`TARJETAS_EN_LA_FICHA`, 10 + 1 para saber si
+  hay más), sin cursor ni «cargar más»: lo que sigue es el listado. Sin «⋯» en la tarjeta (el resumen que abre el clic lo trae) y el total sin moneda
+  aparte (`<Monto>` con su modo). El lead lee `cotizaciones_listado(p_lead)` y el vehículo `cotizaciones_de_este_vehiculo()`, que devuelve `vence_el` para la
+  vigencia. Descartados: seguir con las filas de «De este vehículo» (sin imagen ni «Compartir» a la vista), paginar dentro de la fila (otra lista infinita) y una
+  cuadrícula (alarga la columna).
 - **Aprobar desde la ficha del vehículo refresca la página.** «Cotización aprobada» de la izquierda se lee en el servidor y no escucha a las islas: tras
   aprobar o deshacer, «Cotizaciones de este vehículo» hace `router.refresh()` en una transición. En la ficha no hay nada tipeado y la isla no se vuelve a
   montar (no cambian ni su posición ni su `key`); la isla ya apaga sus filas mientras relee.
@@ -907,7 +913,7 @@ las trampas, en `docs/LECCIONES.md`.
   marcaron: así la aprobada, si está elegida, es la referencia de lo distinto. El `returnTo` desde el resumen del listado es `/cotizaciones?cotizacion=<id>`,
   sin los filtros (leerlos pediría `useSearchParams()` fuera de un `<Suspense>`).
 - **El bloque es del área `aprobada`.** Usa «Aprobar» y la insignia del área; una pantalla sin prefijo sería núcleo, que no importa áreas. Sale por
-  `pantallas/aprobada-de-este-vehiculo.ts` para la ficha del vehículo y por `pantallas/aprobada-resumen.ts` para el resumen.
+  `pantallas/aprobada-resumen.ts` para el resumen (la ficha del vehículo dibuja su fila de tarjetas con las piezas del área).
 - **La aprobada al día entre islas, sin refrescar.** Aprobar desde el bloque no puede refrescar la guardada (perdería lo tipeado): `avisarAprobada()` y
   `useAlCambiarLaAprobada()` (un `Set` de oyentes por módulo) ponen al día «Aprobar» de la cabecera y el bloque relee su primera página. En el resumen sí se
   refresca el listado (no tiene nada tipeado), como «Aprobar» del «⋯».
@@ -938,8 +944,9 @@ las trampas, en `docs/LECCIONES.md`.
   son conteos sin ids ni montos.
 - **El interruptor vive en la URL** (`?privada=si`, `replace`): la hoja nueva se vuelve a montar al elegir el cliente o el vehículo y un estado local se
   perdería; se borra al guardar. El pedido manda `privada` sólo encendido: un pendiente de antes, sin el campo, se guarda pública.
-- **Aprobar una privada, una pregunta por URL con `desde`** (`?panel=aprobar-privada&para=<id>&desde=…`): el listado y «De este vehículo» dentro del resumen
-  montan la misma pregunta y `desde` evita que abran dos. «De este vehículo» y Comparar no leen la marca: abren la pregunta con el rechazo de la base. En la
+- **Aprobar una privada, una pregunta por URL con `desde`** (`?panel=aprobar-privada&para=<id>&desde=…`): el listado, o las tarjetas de la ficha del vehículo,
+  y «De este vehículo» dentro del resumen montan la misma pregunta y `desde` evita que abran dos. «De este vehículo», las tarjetas de la ficha y Comparar no
+  preguntan por la marca leída (la de la tarjeta es sólo la insignia y pudo cambiar): abren la pregunta con el rechazo de la base. En la
   guardada, hacerla privada o pública y aprobar una privada esperan a que se guarden los cambios, y al entrar la página se vuelve a leer (la versión cambió).
 - **«Quién crea y quién ve», un cuadro sobre la matriz, no otro permiso.** Escribe `cotizaciones.crear`, `cotizaciones.ver` (propios o todos) y
   `cotizaciones.privadas.ver` con las mismas RPC de Roles, en «Todos los orígenes» o en el origen de `?origen=` (no una grilla rol × origen completa: no cabe

@@ -10477,8 +10477,10 @@ export type Database = {
           numero: number
           origen: string
           origen_id: string
+          privada: boolean
           titulo: string
           total: number
+          vence_el: string
           vencida: boolean
         }[]
       }

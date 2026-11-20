@@ -18,8 +18,8 @@ import { literal, sql } from './soporte/sql'
 // el relleno de la aprobada se llama a mano).
 test.describe.configure({ mode: 'serial' })
 
-// Presupuestos (`docs/RENDIMIENTO.md`): la primera respuesta con 10 filas y la fijada, como el historial (5.250 B); los nodos de la lista con esas 11 filas.
-const TOPE_DE_BYTES = 5_250
+// Presupuestos (`docs/RENDIMIENTO.md`): la primera respuesta con 10 filas y la fijada, como el historial más la vigencia de cada fila (`vence_el`: medido 5.327 B, tope con un 5 %); los nodos de la lista con esas 11 filas.
+const TOPE_DE_BYTES = 5_600
 const TOPE_DE_NODOS_CON_11 = 240
 
 let t: TerrenoDeLaFinal

@@ -141,14 +141,11 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
 - **«Cotizar encima»** (`features/encima/`): el aviso (`avisoDeVersion()`: otra versión que la publicada hoy, o vencida) lo ve todo el que abre; el
   botón, sólo con `cadena.puedeCotizarEncima` (lo decide la base, no `puede()`: una anterior sin lead pide `sin_lead` y una sin vehículo, `sin_vehiculo`). El intento es el id de la nueva y se conserva sólo tras una pérdida; con
   cambios sin guardar o un pendiente el botón espera, porque la nueva lleva lo guardado.
-- **Historial** (el del panel del vehículo de la hoja, `HistorialDelVehiculo`; la ficha del vehículo usa «De este vehículo»): se lee al montarse desde el navegador
-  por `composicion-historial.client.ts` (por `cotizaciones_vehiculo_creado_idx`), de a 20 hasta 500, y el tope dice «Ver todas en Cotizaciones». El bloque
-  «Cotizaciones» de `/leads/[id]` (con `cotizaciones.ver` en algún origen, sin mirar la cartera: la RLS recorta; `pantallas/lead`, bajo el título con «Cotizar»
-  que arma `src/app`): `CotizacionesDelLeadAlAcercarse` muestra tres filas grises hasta acercarse a la vista y recién ahí pide el código (`diferido()`) y las 3 más
-  recientes (`leerCotizacionesDelLead({ tamano: 3 })` pide 4 por `cotizaciones_lead_creado_idx`), con «Ver todas» (`/cotizaciones?lead=`, sin número) si hay más;
-  la fila (`FilaDelHistorial`) es la de la lista larga. Va aparte de `composicion.client.ts` y cada cáscara de `diferido()` en su `diferidos.tsx`
-  (`features/historial/components/` y `lead/`) porque lo que importa la hoja viaja en la carga en frío de `/cotizaciones/nuevo` (4-73).
-  `usePaginasDelHistorial(de, { tamano })` descarta lo viejo con `ultimo`; `<ListaDelHistorial>` espera 300 ms el esqueleto salvo con `esperarEsqueleto={false}`.
+- **Historial** (el del panel del vehículo de la hoja, `HistorialDelVehiculo`; las fichas del vehículo y del lead usan la fila de tarjetas): se lee al montarse desde el navegador
+  por `composicion-historial.client.ts` (por `cotizaciones_vehiculo_creado_idx`), de a 20 hasta 500, y el tope dice «Ver todas en Cotizaciones». Va aparte de `composicion.client.ts` y
+  cada cáscara de `diferido()` en su `diferidos.tsx` porque lo que importa la hoja viaja en la carga en frío de `/cotizaciones/nuevo` (4-73).
+  `usePaginasDelHistorial(de)` descarta lo viejo con `ultimo`; `<ListaDelHistorial>` espera 300 ms el esqueleto salvo con `esperarEsqueleto={false}`.
+  El bloque «Cotizaciones» de `/leads/[id]` (con `cotizaciones.ver` en algún origen, sin mirar la cartera: la RLS recorta; `pantallas/listado-fichas`, bajo el título con «Cotizar» que arma `src/app`) es la fila de tarjetas.
 - **La configuración** vive en la página de cada origen (la arma `src/app/(app)/configuracion/origenes/[id]/`): la pestaña Fórmula con sus sub-pestañas
   Fórmula · Hoja · Tarjeta y la pestaña Tablas. Cada sección del módulo recibe el **origen abierto** (`{ id, nombre, activo }`) que `src/app` ya validó,
   sin selector propio; las URL las arma `rutaDeConfiguracionDeCotizacion(origenId, pestana, consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|
@@ -252,7 +249,7 @@ no-cache`; con «Ver como» (sin leer la huella), sin el primer recálculo o inc
 ## Áreas
 
 El módulo se parte por **área**: `listado`, `tarjeta`, `plantilla`, `formula`, `diseno`, `tablas`, `papelera`, `final`, `comprobantes`, `comentarios`.
-Lo demás es el **núcleo** (la hoja, guardar, encima, revisiones, historial, niveles, el motor, el compilador, los validadores, el diseño, la apertura, la
+Lo demás es el **núcleo** (la hoja, guardar, encima, revisiones, historial, la fila de tarjetas de las fichas (`features/fichas/`), niveles, el motor, el compilador, los validadores, el diseño, la apertura, la
 ruta, y las plantillas de V1 de `entities/plantillas-de-v1/`): lo que comparten. La lista y las carpetas del núcleo están en `scripts/guardas/areas-de-cotizaciones.ts`.
 
 - **Dónde va:** `features/<área>/`, `entities/<área>/`, `infra/<área>/` y sus entradas `areas/<área>/{index,client,composicion}.ts` (la composición empieza
@@ -289,8 +286,18 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda, la compone `src/app`): «Cotización aprobada» con `leerAprobadaDelVehiculo()` (`index.ts`),
   la tarjeta de `pantallas/aprobada-del-vehiculo.ts` (`AprobadaDelVehiculo`, `EsqueletoDeLaAprobada`) y, como un área no importa otra, la imagen de la tarjeta diferida y
   `BotonDeCompartirDeLaFila` de `pantallas/tarjeta-aprobada-del-vehiculo.ts` en sus ranuras; el diálogo, `DialogoDeCompartirDeLaFila` de `pantallas/tarjeta-compartir.ts`.
-  A la derecha, «Cotizaciones de este vehículo»: `DeEsteVehiculo` de `pantallas/aprobada-de-este-vehiculo.ts` (la isla al acercarse, sin título propio: lo dibuja el
-  servidor con «Cotizar»), con las casillas, `vacio` («Sin cotizaciones que puedas ver.»; sin `vacio`, sin filas no dibuja nada) y `alCambiar`, que refresca la página.
+  A la derecha, «Cotizaciones de este vehículo»: `TarjetasDelVehiculo` de `pantallas/aprobada-fichas.ts` (la isla del área `aprobada`, abajo, al acercarse, sin título propio: lo dibuja el
+  servidor con «Cotizar» y una ranura `ID_DE_LA_RANURA_DE_COMPARAR` donde la isla pone «Comparar» con un portal); `src/app` le pasa la fila de tarjetas del listado (`Tarjetas`, de
+  `pantallas/listado-fichas.ts`) con la imagen (`pantallas/tarjeta-imagen.ts`) y `compartir` (`useAbrirCompartirDeLaFila()`, nulo en Modo Live) ya unidos, `aprobarEn` y `alCambiar`, que refresca la página.
+- **La fila de tarjetas** (glosario: «Fila de tarjetas»): las últimas `TARJETAS_EN_LA_FICHA` (10) cotizaciones que quien mira ve, cada una `TarjetaEnLaLista` (la de la vista Tarjetas del listado, con
+  `sinCliente`, `casilla` y `aprobar`; `FilaParaLaTarjeta` = `DatosDeLaTarjeta`, del núcleo) dentro de `FilaDeTarjetas` (snap, flechas ‹ ›, `useDesborde`, la última «Ver más» a `rutaDelListado({ lead | vehiculo })`);
+  el clic abre el resumen sobre la ficha (`useResumenDeCotizacion({ delServidor: true })`: `?cotizacion=` pide la página, el servidor dibuja el resumen) y deja marcada la abierta. **Una sola lectura**, sin cursor.
+  Se parte por área, porque un área no importa otra: el **núcleo** (`features/fichas/components/`) lleva `FilaDeTarjetas`, `EsqueletoDeLasTarjetas`, `SinCotizaciones` y `PropsDeLasTarjetasDeLaFicha` (lo que la fila
+  pide a quien lee), y `entities/tarjetas-de-la-ficha.ts` (`DatosDeLaTarjeta`, `tarjetasALaVista()`: corta a 10, sin repetir, y dice si hay más); el **listado**
+  (`features/listado/components/fichas/`) dibuja `TarjetasDeLaFicha` (estados + tarjetas, `TarjetasDeLaFichaDiferida` para el hueco del vehículo) y `TarjetasDelLead` (al acercarse; `useTarjetasDelLead()` y
+  `leerTarjetasDelLead()` de `infra/listado/tarjetas-del-lead.client.ts`: `cotizaciones_listado(p_lead)`, 10 + 1 por `cotizaciones_lead_creado_idx`, y en paralelo autores, modos y aprobadas de esas 10; monta
+  `DialogoDeCompartirDeLaFila` por `dialogos` sólo con el resumen cerrado); `aprobada` (`features/aprobada/components/fichas/`) lleva la isla del vehículo (`cotizaciones_de_este_vehiculo()` con la aprobada fijada
+  primero, `useDeEsteVehiculo`, `tarjetaDeEsteVehiculo()`, la casilla, «Aprobar esta» —una privada abre su pregunta con `desde=ficha`— y «Comparar»). Las dos lecturas traen `privada`: la tarjeta lleva la insignia. Sin «⋯» en la tarjeta: el resumen lo trae.
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
 - **La lista** (`HuecosDeLaLista`, `features/listado/components/tipos.ts`): `Imagen` (la imagen de cada tarjeta, en frío: `pantallas/tarjeta-imagen.ts`) y

@@ -30,8 +30,10 @@ const fila = (i: number, extra: Record<string, unknown> = {}) => ({
   creado_en: `2026-10-29T08:${String(59 - i).padStart(2, '0')}:00.123456+00:00`,
   editada_en: '2026-10-29T09:00:00.654321+00:00',
   vencida: false,
+  vence_el: '2026-11-27',
   aprobada: false,
   fijada: false,
+  privada: false,
   ...extra,
 })
 

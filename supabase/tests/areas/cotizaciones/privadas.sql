@@ -136,6 +136,7 @@ create or replace function pg_temp.priv_lecturas(p uuid, v uuid, num text, l uui
     'por_titulo', exists (select 1 from public.cotizaciones_buscar('zqxprivadaqz', 50) b where b.id = p),
     'agrupada', exists (select 1 from public.cotizaciones_listado_por_vehiculo(100) g where g.vehiculo_id = v),
     'de_este_vehiculo', exists (select 1 from public.cotizaciones_de_este_vehiculo(v, 50) d where d.id = p),
+    'de_este_vehiculo_privada', (select d.privada from public.cotizaciones_de_este_vehiculo(v, 50) d where d.id = p and not d.fijada),
     'buscador_numero', exists (select 1 from public.buscador_cotizaciones(num, 10) b where b.id = p),
     'buscador_titulo', exists (select 1 from public.buscador_cotizaciones('zqxprivadaqz', 10) b where b.id = p),
     'rel_vehiculo', public.vehiculo_relacionados(v) -> 'cotizados',
@@ -327,6 +328,7 @@ begin
       raise exception 'P6: % debía % verla y dio %', q.nombre, case when q.la_ve then '' else 'no' end, r;
     end if;
     if q.la_ve and (r ->> 'listado_privada')::boolean is distinct from true then raise exception 'P6: el listado no trae la marca a %', q.nombre; end if;
+    if q.la_ve and (r ->> 'de_este_vehiculo_privada')::boolean is distinct from true then raise exception 'P6: «De este vehículo» no trae la marca a %', q.nombre; end if;
     -- Los relacionados: quien la ve, una fila; quien no, nada (ni leída ni oculta). El `case` va antes: un `if` termina en el primer `then`.
     v_filas := case when q.la_ve then 1 else 0 end;
     if (r -> 'rel_vehiculo' ->> 'leidos')::int is distinct from v_filas

@@ -9,14 +9,14 @@ import { useAprobarPrivadaPorUrl } from './use-aprobar-privada-por-url'
 
 type Aprobable = Pick<FilaDeEsteVehiculo, 'id' | 'numero' | 'actualizadoEn'>
 
-// «Aprobar esta» de una fila de «De este vehículo» o de una columna de «Comparar cotizaciones»: un envío a la vez (`enCurso`, la que va) y, al entrar o al deshacer,
+// «Aprobar esta» de una fila de «De este vehículo», de una tarjeta de la ficha del vehículo o de una columna de «Comparar cotizaciones»: un envío a la vez (`enCurso`, la que va) y, al entrar o al deshacer,
 // el aviso a las otras islas del vehículo y `alCambiar` con la que quedó aprobada (el bloque relee su primera página; el resumen refresca el listado; comparar mueve
-// la insignia). Una privada (la base lo dice: estas filas no traen la marca) abre la pregunta de `desde`, que la pantalla monta con `pedidoDe`.
+// la insignia). Una privada (la base lo dice, con la marca al día) abre la pregunta de `desde`, que la pantalla monta con `pedidoDe`.
 export function useAprobarEsta(
   vehiculoId: string,
   fuente: string,
   alCambiar: (idAprobada: string) => void,
-  desde: Extract<DesdeDondeSeAprueba, 'vehiculo' | 'comparar'>,
+  desde: Extract<DesdeDondeSeAprueba, 'vehiculo' | 'ficha' | 'comparar'>,
 ) {
   const [enCurso, setEnCurso] = useState<string | null>(null)
   const pregunta = useAprobarPrivadaPorUrl(desde)

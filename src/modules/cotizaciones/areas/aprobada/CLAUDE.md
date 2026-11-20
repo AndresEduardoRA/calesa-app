@@ -20,10 +20,11 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
   le anota al núcleo (`anotar-aprobada.tsx` → `anotarAprobada()` de `features/privada/hooks/aprobada-anotada.ts`) y se pone al día con los avisos entre islas: «Hacer
   privada» del «⋯» sale apagada en la aprobada.
 - **Una privada pregunta antes** (glosario: «Cotización privada»): aprobarla la hace pública y «Deshacer» no la vuelve privada. «Aprobar…» (con puntos: abre algo) abre
-  `<DialogoDeAprobarPrivada>` en `?panel=aprobar-privada&para=<id>&desde=fila|guardada|vehiculo|comparar` (`useAprobarPrivadaPorUrl(desde)`, `entities/aprobada/url.ts`;
-  `desde` evita que el listado y «De este vehículo» dentro del resumen abran dos), con `AVISO_AL_APROBAR` y, en la guardada, que lo no guardado se pierde. Confirmar
-  llama a `aprobarHaciendolaPublica()` (`hacerlaPublica`, `p_hacerla_publica`); en la guardada, al entrar, `router.refresh()` (la versión cambió). «De este vehículo» y
-  Comparar no leen la marca: la base rechaza sin `p_hacerla_publica` (22023, `hint privada` → `causa: CAUSA_PRIVADA`) y `alSerPrivada` abre la misma pregunta.
+  `<DialogoDeAprobarPrivada>` en `?panel=aprobar-privada&para=<id>&desde=fila|guardada|vehiculo|ficha|comparar` (`useAprobarPrivadaPorUrl(desde)`, `entities/aprobada/url.ts`;
+  `desde` evita que el listado, o las tarjetas de la ficha del vehículo (`ficha`), y «De este vehículo» dentro del resumen abran dos), con `AVISO_AL_APROBAR` y, en la guardada, que lo no guardado se pierde. Confirmar
+  llama a `aprobarHaciendolaPublica()` (`hacerlaPublica`, `p_hacerla_publica`); en la guardada, al entrar, `router.refresh()` (la versión cambió). «De este vehículo», las
+  tarjetas de la ficha y Comparar no preguntan por la marca leída (`cotizaciones_de_este_vehiculo()` la trae sólo para la insignia): la base rechaza sin `p_hacerla_publica`
+  (22023, `hint privada` → `causa: CAUSA_PRIVADA`) y `alSerPrivada` abre la misma pregunta.
   Registrado en `scripts/guardas/confirmar-con-url-papelera.ts`.
 - **No hay `<Confirmar>` para una pública:** aprobar es reversible. `aprobarLaCotizacion()` (función, no hook; sin `useAction`: el JS en frío de la guardada está al tope) llama a la
   action, aplica lo devuelto con `alCambiar` y avisa con «Deshacer» 10 s si llegó `anterior` (aprueba la anterior con su versión). **La action no revalida ni
@@ -39,11 +40,11 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
   la comparten); sin otras, sin vehículo visible o si falla, nada. La lista es una isla que pide su código y su primera página al acercarse
   (`al-acercarse.tsx` → `diferidos.tsx`) y lee desde el navegador por `composicion.client.ts` (`cotizaciones_de_este_vehiculo`, de a 10 hasta 100;
   `useDeEsteVehiculo`, con `ultimo` como único guardián). En el resumen entra por `pantallas/aprobada-resumen.ts` (sólo la cáscara) como la quinta pestaña «De este vehículo» (`?pestana=vehiculo`; sin `conTitulo`: la pestaña es el título;
-  con `vacio`, «Ésta es la única cotización de este vehículo.»). La aprobada va primero (`filasALaVista()`: la fijada, sin repetir), «Esta» la que se mira, y **«Aprobar esta»** en las demás: el servidor manda
+  con `vacio`, «Ésta es la única cotización de este vehículo.»). La ficha del vehículo no lo usa: dibuja su fila de tarjetas (`features/aprobada/components/fichas/`, con la fila que le da el listado por hueco), que reutiliza `useDeEsteVehiculo`, `useAprobarEsta`, la casilla y `BotonComparar`. La aprobada va primero (`filasALaVista()`: la fijada, sin repetir), «Esta» la que se mira, y **«Aprobar esta»** en las demás: el servidor manda
   dónde aprueba quien mira (`aprobarEn`, de `origenesCon`) y `motivoParaNoAprobarEsta()` da el motivo (el permiso del origen y después inválida, como la base).
   Aprobar usa `aprobarLaCotizacion()` (su `alCambiar` recibe además el id que quedó aprobado); tras entrar o deshacer el bloque relee su primera página y
   avisa a las otras islas del vehículo (`hooks/aprobada-del-vehiculo.ts`: `avisarAprobada()`, `useAlCambiarLaAprobada()`), así «Aprobar» de la cabecera se
-  pone al día sin refrescar la hoja. `pantallas/aprobada-de-este-vehiculo.ts` presta la isla a otra pantalla (la ficha del vehículo). **Las casillas**
+  pone al día sin refrescar la hoja. **Las casillas**
   (`conCasillas` con `volverA`): una por fila (`casilla-de-comparar.tsx`) y «Comparar» en la fila del título (`boton-comparar.tsx`), con la lógica pura en
   `entities/aprobada/eleccion-para-comparar.ts` (hasta 3, en el orden de la lista, se sueltan las que ya no están). En la guardada el h2 lo dibuja el servidor con una ranura vacía al lado
   (`ID_DE_LA_RANURA_DE_COMPARAR`) y la isla pone «Comparar» ahí con un portal (`ranuraDeComparar`): el título nunca se vuelve a montar (el foco del «Ver»

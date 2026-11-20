@@ -21,7 +21,8 @@ const PARAMETROS = {
 // Qué cotización está abierta en el resumen, en la URL (`?cotizacion=`): sobrevive a recargar y se puede compartir. Abrir suma al historial («atrás» lo cierra), empieza en la
 // pestaña «Todo» (`?pestana=` se borra al abrir y al cerrar) y abrir la que ya está abierta no suma otra. Sin `shallow: false`: abrirlo no pide nada al servidor; el resumen se dibuja con la fila de la página. `texto` es la URL tal cual (abre el resumen aunque no sea
 // un guid: dice «no disponible») e `id` es el guid en minúsculas, o null. Tras recargar con el resumen abierto, «atrás» devuelve el foco a quien lo abrió (`vuelta-del-foco.ts`).
-export function useResumenDeCotizacion() {
+// `delServidor`: la pantalla dibuja el resumen en el servidor (la ficha del lead y la del vehículo, `ResumenDeLaPagina`); abrir pide la página con la clave en la URL. Cerrar no pide nada.
+export function useResumenDeCotizacion({ delServidor = false }: { delServidor?: boolean } = {}) {
   const [parametros, setParametros] = useQueryStates(PARAMETROS)
   const texto = parametros[CLAVE_DE_RESUMEN_DE_COTIZACION]
   const id = idDelResumen(texto)
@@ -38,7 +39,7 @@ export function useResumenDeCotizacion() {
               [CLAVE_DE_RESUMEN_DE_COTIZACION]: cotizacionId,
               [CLAVE_DE_PESTANA_DEL_RESUMEN]: null,
             },
-            { history: 'push' },
+            { history: 'push', shallow: !delServidor },
           ),
         id === idDelResumen(cotizacionId),
       )

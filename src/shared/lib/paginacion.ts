@@ -31,6 +31,9 @@ export const TOPE_DE_LO_CARGADO = 500
 export const TAMANO_DE_COLUMNA = 50
 export const TAMANO_DE_ESTE_VEHICULO = 10
 export const TOPE_DE_ESTE_VEHICULO = 100
+// Las cotizaciones de la ficha del lead y de la del vehículo, en una fila de tarjetas que se desliza: las últimas de quien mira y, al final, «Ver más» al listado filtrado.
+// Una sola lectura, sin cursor ni «Ver más» propio (la base lee una más para saber si hay otras).
+export const TARJETAS_EN_LA_FICHA = 10
 // La aprobada en la ficha del vehículo: `cotizaciones_de_este_vehiculo()` con la página más chica (el mínimo de `_acotar_pagina`); sólo se usa la
 // fijada, que llega aparte.
 export const TAMANO_DE_LA_APROBADA = 1

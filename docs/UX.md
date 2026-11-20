@@ -304,7 +304,7 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   la pantalla en escritorio y entera en el celular, sólo lectura, las fotos con su tira, los datos comunes, «Precio» y todos los grupos del layout; Esc y
   «atrás» la cierran y el foco vuelve a «Ver más»).
   **Derecha**: el índice quieto arriba de la columna («Índice de la ficha»; en el celular, pegajoso) y sólo lo de ventas, con su propio desplazamiento, los bloques que quien mira ve en este orden: **«Cotizaciones de este
-  vehículo»** (`cotizaciones.ver` del origen: «De este vehículo» con las casillas y «Comparar» en su fila, al acercarse; «Cotizar» en el título, la hoja con
+  vehículo»** (`cotizaciones.ver` del origen: la fila de tarjetas con «Aprobar esta» y las casillas de «Comparar» (el botón en el título), al acercarse; «Cotizar» en el título, la hoja con
   este vehículo y la vuelta a la ficha, sólo con `cotizaciones.crear` del origen; aprobar ahí pone al día «Cotización aprobada» de la izquierda; ver
   «Cotizaciones del lead y del vehículo»), **«Relacionados»** compacto (`leads.ver`: el vinculado con «Desvincular» confirmado, los interesados y lo cotizado;
   ver «Relacionados (estados propios)»), **«Actividad reciente»** (`actividad.ver`: los últimos 5 cambios del vehículo como frases y «Ver toda la actividad»,
@@ -321,11 +321,14 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   `?panel=vitrina` («Publicar en la web»), `?panel=imagenes` («Editar imágenes»), `?panel=actualizar-datos` («Actualizar los datos»),
   `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».»
   con «Reintentar»; uno caído no tumba a los demás).
-  - **Cotizaciones del lead y del vehículo** (bloque): en el lead, «Cotizar» en el título (la hoja con este lead en el primer origen donde quien mira
-    cotiza, como «Cotizar lead») y las 3 más recientes que quien mira ve, con la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma
-    lectura), y «Ver todas» (`/cotizaciones?lead=`, sin número) si hay más. En el vehículo, «De este
-    vehículo» (ver abajo): de a 10 con «Ver más» hasta 100 y «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`), con «Cotizar» en el título y las casillas
-    de «Comparar» en su fila. Los dos se leen al acercarse; esqueleto, error con «Reintentar», «Sin cotizaciones que puedas ver.».
+  - **Cotizaciones del lead y del vehículo** (bloque): una **fila de tarjetas** que se desliza, sólo tarjetas (sin filas de letras), de las **últimas 10** que quien mira ve
+    (la más reciente primero; en el vehículo, la aprobada primero) y, al final, la tarjeta **«Ver más»** a `/cotizaciones?lead=` o `?vehiculo=` (el listado filtrado). Cada tarjeta es la
+    de la lista (`docs/GLOSARIO.md` › «Fila de tarjetas»): la imagen de la tarjeta, el título en dos líneas, «N.º n» con «Aprobada», «Final», autor · hace…, el total con su modo
+    (`<Monto>`), la vigencia y **«Compartir»** a la vista (no en Modo Live); sin línea de cliente ni «⋯» (el resumen que abre lo trae). Un clic abre el resumen sobre la ficha (`?cotizacion=`)
+    y deja marcada la tarjeta abierta; cerrarlo deja la ficha donde estaba. Se desliza con el dedo, la rueda o las flechas ‹ › (escritorio); un degradado en el borde dice que sigue. En el lead, «Cotizar»
+    en el título (la hoja con este lead en el primer origen donde quien mira cotiza, como «Cotizar lead»). En el vehículo, «Cotizar» en el título, **«Aprobar esta»** al pie de cada tarjeta menos la
+    aprobada (con `cotizaciones.aprobar` del origen; apagado con su motivo; tras aprobar la ficha se refresca) y una casilla sobre la imagen para **«Comparar»** 2 o 3, cuyo botón va en el título del bloque. Los dos
+    se leen al acercarse; esqueleto de 3 tarjetas, error con «Reintentar», «Sin cotizaciones que puedas ver.».
   - **De este vehículo** (bloque de la guardada y quinta pestaña del resumen de la cotización): las cotizaciones del mismo vehículo que quien mira ve, **la aprobada
     primero** (insignia «Aprobada» y borde de acento) y después de la más nueva; de a 10 con «Ver más» y, en 100, «Mostrando las 100 más recientes.» con
     «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`). Cada fila: «N.º N · título» (`tituloDeLaCotizacion()`: el suyo, si no el del vehículo, si no «Cotización n.º N»), insignias

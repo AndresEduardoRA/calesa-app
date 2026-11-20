@@ -419,10 +419,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Costo estimado** — `ROTULO_DEL_COSTO_ESTIMADO`, `costoEstimadoDe()` (`vehiculos/entities/cotizacion-aprobada-de-la-fila.ts`), `cotizaciones_aprobadas_de_vehiculos()`:
   la cotización aprobada de un vehículo en `/vehiculos` (columna de la tabla y fila de la tarjeta de la lista): su primer resultado con su moneda y el modo de tipo
   de cambio de la cotización («US$27.999 · Unificado»), en un botón que abre «Compartir la cotización» de la aprobada sin salir de la lista. No son los campos de apibara «Costo estimado desde / hasta / mediano (USD)».
-- **De este vehículo** — `cotizaciones_de_este_vehiculo()`, `pantallas/aprobada-de-este-vehiculo.ts` (`DeEsteVehiculo`): el bloque de una cotización (su
+- **Fila de tarjetas** — `pantallas/listado-fichas.ts` (`TarjetasDelLead`) y `pantallas/aprobada-fichas.ts` (`TarjetasDelVehiculo`), `features/fichas/`: el bloque de cotizaciones de la ficha del lead y de la del
+  vehículo. Una fila que se desliza (snap, flechas ‹ › en escritorio, pista de desborde) con las últimas 10 cotizaciones que quien mira ve, cada una como **tarjeta de la lista**, y
+  al final la tarjeta «Ver más» al listado filtrado. En el vehículo la aprobada va primera y cada tarjeta suma «Aprobar esta» y la casilla de «Comparar». No es «De este vehículo» (las otras
+  del vehículo de una cotización) ni la **vista Tarjetas** de `/cotizaciones` (una cuadrícula, con cursor).
+- **De este vehículo** — `cotizaciones_de_este_vehiculo()`, `features/aprobada/components/de-este-vehiculo/`: el bloque de una cotización (su
   página y su resumen en `/cotizaciones`) con las otras del mismo vehículo, la aprobada primero y «Aprobar esta» en cada una; la que se mira va marcada
-  **«Esta»**. En la ficha del vehículo es el bloque «Cotizaciones de este vehículo» (todas, ninguna marcada). No es el historial del vehículo (el panel de
-  la hoja).
+  **«Esta»**. No es el historial del vehículo (el panel de la hoja) ni las tarjetas de la ficha del vehículo (**fila de tarjetas**: las últimas 10, con «Ver más»).
 - **Comparar cotizaciones** — `/cotizaciones/comparar?ids=`, `entities/aprobada/comparar.ts` (`compararCotizaciones()`), `pantallas/aprobada-comparar.ts`
   (`TablaDeComparar`): 2 o 3 cotizaciones del mismo vehículo lado a lado, **lo guardado** de cada una (su versión, sus valores y su total, sin recálculo),
   una columna por cotización y una fila por nodo alineada por su id, con «Aprobar esta» al pie. Lo **distinto** se mide **contra la primera** columna (↑, ↓
@@ -451,8 +454,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Última cotización (de un vehículo)** — `vehiculos.cotizado_en`, `_vehiculo_cotizado()`: ordena «Últ. cotización» del panel del vehículo.
   Cotizar no edita el vehículo.
 - **Historial de cotizaciones (de un vehículo)** — `<HistorialDelVehiculo>` (`cotizaciones/features/historial`): las visibles por
-  `vehiculo_id`, de la más nueva, de a 20; plegado en el panel del vehículo. En la ficha del lead, el bloque «Cotizaciones» (`<CotizacionesDelLead>`,
-  por `lead_id`) muestra las 3 más recientes y «Ver todas» (`/cotizaciones?lead=`). **Cotizado (n)**: `contarCotizacionesDelVehiculo()`.
+  `vehiculo_id`, de la más nueva, de a 20; plegado en el panel del vehículo. La ficha del lead no lo usa: dibuja su **fila de tarjetas**. **Cotizado (n)**: `contarCotizacionesDelVehiculo()`.
 - **Panel del vehículo** — `?panel=vehiculo` de `/cotizaciones/nuevo`, `<BarraDelVehiculo>` / `PanelDelVehiculo`
   (`vehiculos/features/panel-para-cotizar`): elige el vehículo por «Últ. cotización» o «Cierre subasta» (`?lista=ultima|cierre`) o buscando
   nombre, VIN o lote (`?buscar=`); «+» y «Traer» abren el alta del inventario en el panel (`?alta=mano|subasta`).

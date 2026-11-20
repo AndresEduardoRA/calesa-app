@@ -1,7 +1,7 @@
-// El historial de cotizaciones de un vehículo o de un lead desde el navegador, con la sesión de quien mira: la RLS de `cotizaciones` decide cuáles llegan (un «propios» ve las suyas
+// El historial de cotizaciones de un vehículo desde el navegador, con la sesión de quien mira: la RLS de `cotizaciones` decide cuáles llegan (un «propios» ve las suyas
 // y las de su cartera). Va por el navegador porque el historial se lee al desplegarlo (o al abrir la pestaña o la sección) y cada «Ver más» pide su página sin ir al servidor.
-// Una página de `TAMANO_DE_VER_MAS` (o del `tamano` pedido: el bloque «Cotizaciones» de la ficha del lead lee 3) y una fila de más para saber si hay otra. La sostienen
-// `cotizaciones_vehiculo_creado_idx (vehiculo_id, creado_en desc, id desc)` y `cotizaciones_lead_creado_idx` (el bloque de la ficha del lead); el borde del cursor sobre
+// Una página de `TAMANO_DE_VER_MAS` y una fila de más para saber si hay otra. La sostiene
+// `cotizaciones_vehiculo_creado_idx (vehiculo_id, creado_en desc, id desc)`; el borde del cursor sobre
 // `creado_en` va como condición propia para que entre al índice (`aplicarCursor()`).
 import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errores'
 import {
@@ -20,12 +20,6 @@ import {
 } from '../entities/historial-del-vehiculo'
 
 export type PedidoDelHistorial = { vehiculoId: string; cursor: Cursor | null }
-export type PedidoDeLasDelLead = {
-  leadId: string
-  cursor: Cursor | null
-  // Cuántas por página; sin esto, `TAMANO_DE_VER_MAS`.
-  tamano?: number
-}
 
 export function leerHistorialDelVehiculo({
   vehiculoId,
@@ -34,17 +28,8 @@ export function leerHistorialDelVehiculo({
   return leerPaginaPor('vehiculo_id', vehiculoId, cursor, TAMANO_DE_VER_MAS)
 }
 
-export function leerCotizacionesDelLead({
-  leadId,
-  cursor,
-  tamano = TAMANO_DE_VER_MAS,
-}: PedidoDeLasDelLead): Promise<Resultado<Pagina<CotizacionDelHistorial>>> {
-  // Por `cotizaciones_lead_creado_idx (lead_id, creado_en desc, id desc)`.
-  return leerPaginaPor('lead_id', leadId, cursor, tamano)
-}
-
 async function leerPaginaPor(
-  columna: 'vehiculo_id' | 'lead_id',
+  columna: 'vehiculo_id',
   id: string,
   cursor: Cursor | null,
   tamano: number,
