@@ -8,7 +8,8 @@ import type { AlCambiarDelCuadro, RolDelCuadro } from './tipos'
 
 type Props = { filas: readonly RolDelCuadro[]; alCambiar: AlCambiarDelCuadro }
 
-// El cuadro desde 768 px: un renglón por rol, «Crea» y «Ve» en columnas.
+// El cuadro desde 768 px: un renglón por rol, «Crea» y «Ve» en columnas. Las celdas con un motivo debajo anulan el `whitespace-nowrap` de `TableCell`:
+// sin eso, el de «Crea» se derrama sobre la columna «Ve».
 export function TablaDelCuadro({ filas, alCambiar }: Props) {
   return (
     <Table>
@@ -32,7 +33,7 @@ export function TablaDelCuadro({ filas, alCambiar }: Props) {
                 </p>
               ) : null}
             </TableCell>
-            <TableCell className="py-2 align-top">
+            <TableCell className="py-2 align-top whitespace-normal">
               <ControlDeCrea
                 {...fila}
                 alCambiar={(crea) => {
