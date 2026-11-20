@@ -29,7 +29,12 @@ export async function BloqueAprobada({ vehiculo, cotizar }: Props) {
           <ImagenDeLaTarjetaDiferida
             cotizacionId={fila.id}
             numero={fila.numero}
-            total={{ valor: fila.totalBase, moneda: fila.monedaMostrar }}
+            // Sin moneda, la base (como el total de la tarjeta); con `null`, `<Monto>` daría sólo el número.
+            total={
+              fila.monedaMostrar === null
+                ? { valor: fila.totalBase }
+                : { valor: fila.totalBase, moneda: fila.monedaMostrar }
+            }
           />
         )
       }
