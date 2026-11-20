@@ -56,7 +56,7 @@ export function CampoColor({ valor, alCambiar, error }: Props) {
             // El color sale de lo que se está tipeando: no es un token.
             style={{ background: marca.tokens.primario, color: marca.tokens.sobrePrimario }}
           >
-            Guardar
+            Botón
           </span>
           Así se ven los botones. Vacío, queda el color neutro.
         </p>
