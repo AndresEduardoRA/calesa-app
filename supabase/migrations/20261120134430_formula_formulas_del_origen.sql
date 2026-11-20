@@ -483,15 +483,19 @@ CREATE OR REPLACE FUNCTION "public"."formula_cambiar_constante"("p_origen" "uuid
     LANGUAGE "plpgsql" SECURITY DEFINER
     SET "search_path" TO ''
     AS $$
-declare v_pub public.formulas; v_anterior numeric; v_f text; v_fdo public.formulas_del_origen;
+declare v_pub public.formulas; v_anterior numeric; v_f text; v_fdo public.formulas_del_origen; v_esperada uuid;
 begin
   perform public.assert_permiso('cotizaciones.configurar', p_origen);
+  -- Sin esperada, la publicada leída antes del candado (lo que quien llama tenía a la vista): si alguien publicó o activó mientras tanto, PT409.
+  v_esperada := coalesce(p_publicada_esperada, (select f.id from public.formulas f
+                                                 where f.formula_del_origen_id = coalesce(p_formula_del_origen, public._fdo_de_trabajo(p_origen, false))
+                                                   and f.origen_id = p_origen and f.estado = 'publicada'));   -- formulas_publicada_unica
   perform pg_advisory_xact_lock(hashtextextended('formulas:' || p_origen::text, 0));
   v_fdo := public._fdo_resolver(p_origen, p_formula_del_origen, false);
   select * into v_pub from public.formulas where formula_del_origen_id = v_fdo.id and estado = 'publicada';   -- formulas_publicada_unica
   if v_pub.id is null then raise exception 'El origen no tiene fórmula publicada.' using errcode = '22023'; end if;
-  -- Se compara con lo leído aquí, que es lo que se copia: `_publicar_version` vuelve a comparar tras el candado.
-  if p_publicada_esperada is not null and p_publicada_esperada is distinct from v_pub.id then
+  -- Se compara con lo leído aquí, tras el candado, que es lo que se copia.
+  if v_esperada is distinct from v_pub.id then
     v_f := public._version_publicada_por(v_pub.id);
     raise exception '%.', upper(left(v_f, 1)) || substr(v_f, 2) using errcode = 'PT409';
   end if;
@@ -521,6 +525,7 @@ declare
   v_visibles jsonb;
   v_pedido jsonb;
   v_fdo public.formulas_del_origen;
+  v_esperada uuid;
 begin
   perform public.assert_permiso('cotizaciones.configurar', p_origen);
   if p_modo_por_defecto is null then
@@ -532,12 +537,16 @@ begin
   if p_modos_visibles is null then
     raise exception 'Elige las opciones visibles.' using errcode = '22023', hint = 'modos_visibles';
   end if;
+  -- Sin esperada, la publicada leída antes del candado (lo que quien llama tenía a la vista): si alguien publicó o activó mientras tanto, PT409.
+  v_esperada := coalesce(p_publicada_esperada, (select f.id from public.formulas f
+                                                 where f.formula_del_origen_id = coalesce(p_formula_del_origen, public._fdo_de_trabajo(p_origen, false))
+                                                   and f.origen_id = p_origen and f.estado = 'publicada'));   -- formulas_publicada_unica
   perform pg_advisory_xact_lock(hashtextextended('formulas:' || p_origen::text, 0));
   v_fdo := public._fdo_resolver(p_origen, p_formula_del_origen, false);
   select * into v_pub from public.formulas where formula_del_origen_id = v_fdo.id and estado = 'publicada';   -- formulas_publicada_unica
   if v_pub.id is null then raise exception 'El origen no tiene fórmula publicada.' using errcode = '22023'; end if;
-  -- Se compara con lo leído aquí, que es lo que se copia: `_publicar_version` vuelve a comparar tras el candado.
-  if p_publicada_esperada is not null and p_publicada_esperada is distinct from v_pub.id then
+  -- Se compara con lo leído aquí, tras el candado, que es lo que se copia.
+  if v_esperada is distinct from v_pub.id then
     v_f := public._version_publicada_por(v_pub.id);
     raise exception '%.', upper(left(v_f, 1)) || substr(v_f, 2) using errcode = 'PT409';
   end if;
