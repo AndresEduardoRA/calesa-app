@@ -86,6 +86,29 @@ describe('flujo.mjs', () => {
   })
 })
 
+it('tocaFlujo: una lección en varias líneas sube entera, en una sola; una línea de contexto corta la viñeta', () => {
+  const patrones = ['docs/LECCIONES.md']
+  expect(
+    tocaFlujo(
+      [
+        {
+          filename: 'docs/LECCIONES.md',
+          patch:
+            '+- Para que tome un cambio no reinicies el servicio:\n+  se relanza solo y las sesiones\n+  siguen. (kit)\n' +
+            ' - Una vieja que sigue\n+  suelta. (semilla)',
+        },
+      ],
+      patrones,
+    ),
+  ).toEqual({
+    rutas: [],
+    kit: [
+      '- Para que tome un cambio no reinicies el servicio: se relanza solo y las sesiones siguen. (kit)',
+    ],
+    semilla: ['suelta. (semilla)'],
+  })
+})
+
 const d = (base: string | null, nuevo: string | null, propio: string | null, extra = {}) =>
   decidir({
     ruta: 'scripts/flujo/x.sh',
@@ -123,14 +146,14 @@ describe('flujo.mjs › specAlKit', () => {
       toca: {
         rutas: ['scripts/flujo/a.sh', 'scripts/flujo/b`\n## Decisiones.sh'],
         kit: [],
-        semilla: [`- ${'x'.repeat(400)}\r (semilla)`],
+        semilla: [`- ${'x'.repeat(700)}\r (semilla)`],
       },
     })
     expect(spec).toContain(
       '- `scripts/flujo/a.sh`\n- y 1 con caracteres que no se listan (míralas en el PR)\n',
     )
     expect(spec).not.toContain('## Decisiones')
-    expect(spec).toContain(`\n- ${'x'.repeat(298)}…`)
+    expect(spec).toContain(`\n- ${'x'.repeat(598)}…`)
     expect(spec.split('\n')).toHaveLength(5)
   })
 })
