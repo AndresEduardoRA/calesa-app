@@ -465,15 +465,15 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   USA (subasta), China, Oficina y Compra dealer USA. Vive en el código, no en la base, y no publica. No es la **Plantilla de tarjeta** (sólo la tarjeta,
   versionada en la base).
 - **Celda de la tarjeta** — `CeldaDeLaTarjeta`, `definicion.celdas[]` de la forma 2: un rectángulo de la cuadrícula con su posición (`fila`,
-  `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo o vacío) y su estilo. No es la **Celda (de la
-  hoja)**.
+  `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo o vacío) y su estilo. La de logo dibuja sólo el logo
+  de la empresa, a la medida de la celda; su nombre es el dato «Nombre de la empresa» (`empresa_nombre`). No es la **Celda (de la hoja)**.
 - **Fila de la tarjeta** — `FilaDeLaTarjeta`, `definicion.filas[]` de la forma 2: una fila con su alto y su «Ocultar si…». No es la **Fila (de la
   fórmula)**.
 - **Ocultar si…** — `ocultar_si` de una fila de la tarjeta (`nunca`, `no_aplica`, `no_aplica_o_cero`): la fila no se dibuja si su nodo no aplica
   en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0; las celdas combinadas que la cruzan se acortan. El lienzo de
   Configuración dice cuáles y por qué con la referencia elegida: «Ocultas con esta referencia (N)».
-- **Dato de la tarjeta** — `{tipo: 'dato', …}` de una celda: una variable de la cotización (`VARIABLES_DE_LA_TARJETA`: `fecha_larga`, `numero`,
-  `asesor_nombre`…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
+- **Dato de la tarjeta** — `{tipo: 'dato', …}` de una celda: una variable de la cotización (`VARIABLES_DE_LA_TARJETA`: `empresa_nombre`, «Nombre de
+  la empresa»; `fecha_larga`, `numero`, `asesor_nombre`…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
   `plazo`). Un texto no mezcla texto y variables.
 - **Lienzo** — `LienzoDeLaPlantilla` (área `tarjeta`) con la capa del editor (`CapaDeEdicion`, `role="grid"`): la tarjeta de la cotización a escala
   que se edita en Configuración › Cotización › un origen › Tarjeta, como un Excel (cabeceras de columna, asas de fila, selección, atajos). La dibuja el

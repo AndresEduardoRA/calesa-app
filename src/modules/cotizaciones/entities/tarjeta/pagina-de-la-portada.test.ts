@@ -12,11 +12,12 @@ const LOGO = { nombre: 'Importadora', url: 'https://almacen.test/marca/logo.png'
 const VEHICULO = { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null }
 
 describe('paginaDeLaPortada', () => {
-  it('arma la página con el título guardado, el contexto, el número, el vencimiento y el último guardado tal cual', () => {
+  it('arma la página con el título guardado, el contexto, el número, el vencimiento, el último guardado tal cual y la empresa', () => {
     expect(
       paginaDeLaPortada({
         hoja: hoja('Hilux para Juan'),
         contexto: { cliente: 'Juan', vehiculo: VEHICULO, asesor: 'Ana' },
+        empresa: 'Calesa',
         logo: LOGO,
       }),
     ).toEqual({
@@ -27,6 +28,7 @@ describe('paginaDeLaPortada', () => {
       numero: 12,
       venceEl: '2026-11-20',
       guardadaEl: GUARDADA_EL,
+      empresa: 'Calesa',
       logo: LOGO,
     })
   })
@@ -36,6 +38,7 @@ describe('paginaDeLaPortada', () => {
       paginaDeLaPortada({
         hoja: hoja(null),
         contexto: { cliente: null, vehiculo: VEHICULO, asesor: null },
+        empresa: 'Calesa',
         logo: null,
       }).titulo,
     ).toBe('Toyota Hilux 2020')
@@ -43,6 +46,7 @@ describe('paginaDeLaPortada', () => {
       paginaDeLaPortada({
         hoja: hoja(null),
         contexto: { cliente: null, vehiculo: null, asesor: null },
+        empresa: 'Calesa',
         logo: null,
       }).titulo,
     ).toBeNull()

@@ -1,13 +1,12 @@
 import type { CSSProperties } from 'react'
 import { COLOR_TINTA } from '@/shared/config/app'
-import { Marca } from '@/shared/ui/marca'
 import { Monto } from '@/shared/ui/monto'
 import { RELLENO_DE_LA_CELDA } from '../../../entities/tarjeta/estilo-de-la-celda'
 import type { CeldaDibujada } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
+import { LogoDeLaCelda } from './logo-de-la-celda'
 
 const JUSTIFICAR = { arriba: 'flex-start', centro: 'center', abajo: 'flex-end' } as const
 const ALINEAR = { izquierda: 'left', centro: 'center', derecha: 'right' } as const
-const ALINEAR_LOGO = { izquierda: 'flex-start', centro: 'center', derecha: 'flex-end' } as const
 
 // El rectángulo de la celda con su estilo: posiciones absolutas en px (la geometría ya las calculó), el fondo y el texto en hex (del catálogo o `auto`), el
 // borde «negro» de la tarjeta (#1b2130) por lado y el relleno que completa 4 px con él. Son datos ya validados: van en línea.
@@ -46,12 +45,16 @@ function estiloDe(c: CeldaDibujada): CSSProperties {
   }
 }
 
+type Logo = { nombre: string; url: string } | null
+
 function Contenido({
   celda,
   logo,
+  alFallarElLogo,
 }: {
   celda: CeldaDibujada
-  logo: { nombre: string; url: string } | null
+  logo: Logo
+  alFallarElLogo: (() => void) | undefined
 }) {
   const c = celda.contenido
   switch (c.tipo) {
@@ -69,13 +72,15 @@ function Contenido({
         </>
       )
     case 'logo':
+      // La caja interior: la celda menos `RELLENO_DE_LA_CELDA` por lado (el borde va adentro del relleno).
       return logo === null ? null : (
-        <span
-          className="flex min-w-0"
-          style={{ justifyContent: ALINEAR_LOGO[celda.estilo.alinear] }}
-        >
-          <Marca nombre={logo.nombre} logoUrl={logo.url} />
-        </span>
+        <LogoDeLaCelda
+          logo={logo}
+          ancho={Math.max(0, celda.ancho - 2 * RELLENO_DE_LA_CELDA)}
+          alto={Math.max(0, celda.alto - 2 * RELLENO_DE_LA_CELDA)}
+          estilo={celda.estilo}
+          {...(alFallarElLogo ? { alFallar: alFallarElLogo } : {})}
+        />
       )
     case 'vacio':
       return null
@@ -83,13 +88,15 @@ function Contenido({
 }
 
 // Una celda de la tarjeta, con sus `data-*` para las pruebas (la fila, la columna, el nodo y qué muestra, la variable, el color y el total). Los montos van con
-// `<Monto>`: el Modo Live los tapa.
+// `<Monto>`: el Modo Live los tapa. La celda logo dibuja sólo el logo, a la medida de la celda (`<LogoDeLaCelda>`); si no carga, `alFallarElLogo`.
 export function CeldaDeLaTarjeta({
   celda,
   logo,
+  alFallarElLogo,
 }: {
   celda: CeldaDibujada
-  logo: { nombre: string; url: string } | null
+  logo: Logo
+  alFallarElLogo?: () => void
 }) {
   const m = celda.marca
   return (
@@ -103,7 +110,7 @@ export function CeldaDeLaTarjeta({
       {...(m.total === true ? { 'data-total-usd': '' } : {})}
       style={estiloDe(celda)}
     >
-      <Contenido celda={celda} logo={logo} />
+      <Contenido celda={celda} logo={logo} alFallarElLogo={alFallarElLogo} />
     </div>
   )
 }

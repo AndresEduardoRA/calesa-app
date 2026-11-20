@@ -1,4 +1,5 @@
 // @vitest-environment node
+import sharp from 'sharp'
 import { describe, expect, it, vi } from 'vitest'
 import { textoDelPdf } from '../../../../../../scripts/pdf/texto-del-pdf'
 import { formatearMonto } from '@/shared/lib/formato'
@@ -20,6 +21,7 @@ vi.mock('server-only', () => ({}))
 import { escalaDelPdf } from './documento-de-la-tarjeta'
 import { VARIANTES_DE_LAS_FUENTES } from '../fuentes-de-la-tarjeta'
 import { pdfDeLaTarjeta } from './pdf-de-la-tarjeta'
+import type { LogoDeLaTarjeta } from '../logo-de-la-tarjeta'
 
 // El documento de la tarjeta (D15 de T310): la geometría de la tarjeta dibujada con el renderer real en una página A4 y leída con el lector de las pruebas.
 const CONTEXTO: ContextoDeLaCotizacion = { ...CONTEXTO_DE_PRUEBA, logo: null }
@@ -33,19 +35,24 @@ const lecturaDe = (mas: Record<string, unknown> = {}): LecturaDeLaTarjeta => {
 }
 
 async function leer(
-  entrada: { lectura?: LecturaDeLaTarjeta; calculo?: CalculoDeLaTarjeta; locale?: string } = {},
+  entrada: {
+    lectura?: LecturaDeLaTarjeta
+    calculo?: CalculoDeLaTarjeta
+    locale?: string
+    logo?: LogoDeLaTarjeta
+  } = {},
 ) {
   const geometria = geometriaDeLaTarjeta({
     lectura: entrada.lectura ?? lecturaDe(),
     calculo: entrada.calculo ?? calculoDePrueba(),
-    contexto: CONTEXTO,
+    contexto: entrada.logo ? CONTEXTO_DE_PRUEBA : CONTEXTO,
     monedaBs: 'BOB',
     locale: entrada.locale ?? 'es-BO',
   })
   const bytes = await pdfDeLaTarjeta({
     geometria,
     numero: 12,
-    logo: null,
+    logo: entrada.logo ?? null,
     empresa: 'Importadora Prueba',
   })
   const leido = textoDelPdf(bytes)
@@ -135,6 +142,20 @@ describe('pdfDeLaTarjeta: la tarjeta de una cotización en una página A4', () =
     }
     expect(crudo).toMatch(/\/Author\b/)
     expect(crudo).not.toMatch(/\/Subject\b|\/Keywords\b/)
+  })
+})
+
+describe('pdfDeLaTarjeta: el logo', () => {
+  it('con logo (un PNG, como queda un WebP convertido) lleva una imagen y las mismas líneas', async () => {
+    const datos = await sharp({
+      create: { width: 400, height: 100, channels: 3, background: { r: 29, g: 78, b: 216 } },
+    })
+      .png()
+      .toBuffer()
+    const sin = await leer()
+    const con = await leer({ logo: { datos, tipo: 'png', ancho: 400, alto: 100 } })
+    expect(con.leido.imagenes).toBe(1)
+    expect(con.lineas).toEqual(sin.lineas)
   })
 })
 

@@ -268,7 +268,10 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `geometriaDeLaTarjeta()` (pura) con `<TarjetaDeCotizacion>`: un lienzo del ancho de
   la tarjeta con cada celda en posición absoluta (`<CeldaDeLaTarjeta>`, en orden de lectura, con `data-celda`, `data-fila`, `data-columna`, `data-nodo`,
   `data-mostrar`, `data-variable`, `data-color` y `data-total-usd`), escalado como una imagen (`useEscalaDeLaTarjeta()`, nunca agranda); la página manda título,
-  cliente, vehículo con lote y VIN, asesor, número, vencimiento y logo (`PaginaDeLaTarjeta`). «Vencida» va en los avisos del modal, no en la tarjeta. El pie:
+  cliente, vehículo con lote y VIN, asesor, número, vencimiento, nombre de la empresa y logo (`PaginaDeLaTarjeta`). La celda logo es `<LogoDeLaCelda>`: sólo
+  el logo (`next/image`, `data-logo-de-la-celda`), `contain` en la caja interior de la celda y alineado como ella; sin URL (las cifras de ejemplo), la muestra
+  punteada «Logo»; si no carga, la celda queda vacía y llama a `alFallarElLogo` (el editor de la tarjeta lo avisa, con «Abrir Empresa» si quien mira tiene
+  `empresa.ajustes.gestionar`, que baja de la página). «Vencida» va en los avisos del modal, no en la tarjeta. El pie:
   Live y «Copiar texto» (`textoDeLaTarjeta()`, de la misma geometría, apagado sin tarjeta, con «Total desactualizado.» o sin total) y, en una guardada,
   «Descargar PDF» (`pedirElPdf()`: `fetch` sin seguir la redirección ni caché; un 404, la sesión que no vale u otro fallo se dicen en el pie con «Reintentar»).
   **Los retoques** (`docs/COTIZADOR.md` › «Retoques de la tarjeta»): la página de una guardada pasa `DatosDeLaPagina.retoque` (`{ retoques, actualizadoEn,
@@ -421,8 +424,10 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   El título de la cotización es la variable `titulo` (`PaginaDeLaTarjeta.titulo`, `tituloAparteDelNumero()`; nunca de `cotizacion_tarjeta`): en la hoja nueva, el que se
   está escribiendo (`useTituloDeLaCotizacion()`). Los montos van con `formatearMonto()` y siempre con
   cifras aunque Live esté encendido: es lo que se entrega al cliente (la excepción a `<Monto>`, `docs/DECISIONES.md`). react-pdf se carga sólo al pedir un
-  PDF (`import()` en `areas/tarjeta/composicion.ts`) y nunca llega al navegador. El logo lo baja `logo-del-pdf.ts` con tope (`PESO_MAXIMO_LOGO`) y 2 s y
-  llega como `Buffer`, nunca URL; un SVG con lo que react-pdf se salta o con `<image>`, y un WebP, dejan el PDF sin logo (`docs/PENDIENTES.md`, 4-98). Los
+  PDF (`import()` en `areas/tarjeta/composicion.ts`) y nunca llega al navegador. El logo del PDF y de la imagen lo baja `logoParaDibujar()`
+  (`infra/tarjeta/logo-de-la-tarjeta.ts`) con tope (`PESO_MAXIMO_LOGO`) y 2 s, y llega como `Buffer` con sus medidas, nunca URL: PNG y JPEG de hasta 1.024 px y
+  el SVG que react-pdf dibuja fiel, tal cual; lo demás que `sharp` lee (WebP, SVG con estilos, un raster grande), a PNG de hasta 1.024 px; un SVG que nombra
+  otro archivo o lo que no se lee, sin logo. Los dos lo ubican con `cajaDelLogo()` (`entities/tarjeta/caja-del-logo.ts`). Los
   metadatos no nombran al cliente, al asesor ni al vehículo. «Copiar texto» sale de la misma geometría. **La imagen** (`imagenDeUnaGuardada()`,
   `infra/tarjeta/imagen/`, `ImageResponse` con `import()`): la misma geometría como PNG al ancho de la tarjeta, la base de la portada (su ruta suma las fuentes
   de `infra/tarjeta/pdf/fuentes/` a `outputFileTracingIncludes`).

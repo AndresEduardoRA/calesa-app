@@ -15,6 +15,7 @@ export const CONTEXTO_DE_EJEMPLO: ContextoDeLaCotizacion = {
   vehiculo: { titulo: 'Vehículo de la cotización', lote: 'Lote', vin: 'VIN' },
   venceEl: 'Fecha de vencimiento',
   // Sin url: la marca dibuja su glifo neutro y el interruptor «Logo» se nota.
+  empresa: 'Tu empresa',
   logo: { nombre: 'Tu empresa', url: '' },
 }
 

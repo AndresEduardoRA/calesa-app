@@ -16,6 +16,7 @@ const CONTEXTO: ContextoDeLaCotizacion = {
   cliente: null,
   vehiculo: null,
   venceEl: null,
+  empresa: null,
   logo: null,
 }
 

@@ -24,6 +24,7 @@ const LEIDA: ReferenciaLeida = {
     cliente: null,
     vehiculo: null,
     venceEl: null,
+    empresa: null,
     logo: null,
   },
 }

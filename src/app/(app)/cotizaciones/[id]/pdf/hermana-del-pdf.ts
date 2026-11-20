@@ -9,6 +9,7 @@ import { asesorDe, tituloDeLaTarjeta, vehiculoDeLaTarjeta } from '../../datos-de
 type Comun = {
   cliente: string | null
   vehiculo: { titulo: string; lote: string | null; vin: string | null } | null
+  empresa: string
   logo: { nombre: string; url: string } | null
   zona: string
 }
@@ -32,6 +33,7 @@ export async function hermanaDelPdf(hoja: HojaDeUnaGuardada, comun: Comun) {
       numero: otra.cotizacion.numero,
       venceEl: otra.venceEl,
       guardadaEl: otra.cotizacion.actualizadoEn,
+      empresa: comun.empresa,
       logo: comun.logo,
     },
     { zona: comun.zona, hoy: otra.cotizacion.actualizadoEn },

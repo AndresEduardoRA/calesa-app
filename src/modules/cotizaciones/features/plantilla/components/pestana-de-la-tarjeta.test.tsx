@@ -87,7 +87,12 @@ afterEach(() => {
 function Pestana({ esperada }: { esperada: string }) {
   return (
     <NuqsTestingAdapter searchParams="?panel=publicar-tarjeta" hasMemory>
-      <PestanaDeLaTarjeta editor={editor(esperada)} referencia={REFERENCIA} Lienzo={Lienzo} />
+      <PestanaDeLaTarjeta
+        editor={editor(esperada)}
+        referencia={REFERENCIA}
+        Lienzo={Lienzo}
+        puedeCambiarElLogo={false}
+      />
     </NuqsTestingAdapter>
   )
 }

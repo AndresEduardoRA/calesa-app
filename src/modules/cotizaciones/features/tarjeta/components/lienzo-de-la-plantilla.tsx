@@ -21,24 +21,14 @@ import { CeldaDeLaTarjeta } from './celda-de-la-tarjeta'
 
 const SIN_MARGEN: MargenDelLienzo = { arriba: 0, izquierda: 0 }
 
-// El lienzo del editor de la plantilla (el hueco de `entities/vista-previa-de-la-plantilla.ts`): la cuadrícula de trabajo dibujada con **el mismo modelo de dibujo**
-// que el PDF, la imagen y la vista previa de cotizar (`geometriaDeLaTarjeta()` y `<CeldaDeLaTarjeta>`), con lo guardado de la cotización de referencia o con las
-// cifras de ejemplo. «Ajustar» achica la tarjeta para caber en su lugar (nunca agranda; el margen de la capa, a los dos lados, no cuenta); «100 %» la deja a escala 1
-// y el marco se desplaza de costado. La escala mide el contenedor del marco (`data-medida-del-lienzo`, con `contain: inline-size`), no el marco: la barra del marco
-// no cambia el ancho medido (`useEscalaDeLaTarjeta`). Encima, sin escalar, la capa del editor (cabeceras, asas y la grilla accesible): por eso la tarjeta dibujada va `aria-hidden` cuando hay
-// capa. Sin capa es la tarjeta en sólo lectura. Debajo, fuera del marco que se desplaza, lo que el editor ponga (las filas ocultas con esta referencia). No lee ni
-// escribe.
-export function LienzoDeLaPlantilla({
-  lectura,
-  referencia,
-  escala: modo,
-  margen = SIN_MARGEN,
-  capa,
-  debajo,
-}: PropsDelLienzoDeLaPlantilla) {
+// La geometría de la tarjeta con lo guardado de la referencia o, sin una, con las cifras de ejemplo, y el logo que dibuja.
+function useGeometriaDelLienzo(
+  lectura: PropsDelLienzoDeLaPlantilla['lectura'],
+  referencia: PropsDelLienzoDeLaPlantilla['referencia'],
+) {
   const { locale } = useRegional()
   const leida = referencia?.estado === 'cotizacion' ? referencia : null
-  const { geometria, logo } = useMemo(() => {
+  return useMemo(() => {
     const tarjeta = lecturaDesdeLaPlana(lectura)
     const contexto = leida === null ? CONTEXTO_DE_EJEMPLO : leida.contexto
     return {
@@ -52,6 +42,25 @@ export function LienzoDeLaPlantilla({
       logo: contexto.logo,
     }
   }, [lectura, leida, locale])
+}
+
+// El lienzo del editor de la plantilla (el hueco de `entities/vista-previa-de-la-plantilla.ts`): la cuadrícula de trabajo dibujada con **el mismo modelo de dibujo**
+// que el PDF, la imagen y la vista previa de cotizar (`geometriaDeLaTarjeta()` y `<CeldaDeLaTarjeta>`), con lo guardado de la cotización de referencia o con las
+// cifras de ejemplo. «Ajustar» achica la tarjeta para caber en su lugar (nunca agranda; el margen de la capa, a los dos lados, no cuenta); «100 %» la deja a escala 1
+// y el marco se desplaza de costado. La escala mide el contenedor del marco (`data-medida-del-lienzo`, con `contain: inline-size`), no el marco: la barra del marco
+// no cambia el ancho medido (`useEscalaDeLaTarjeta`). Encima, sin escalar, la capa del editor (cabeceras, asas y la grilla accesible): por eso la tarjeta dibujada va `aria-hidden` cuando hay
+// capa. Sin capa es la tarjeta en sólo lectura. Debajo, fuera del marco que se desplaza, lo que el editor ponga (las filas ocultas con esta referencia). Si el
+// logo de la referencia no carga, `alFallarElLogo` (el editor lo avisa). No lee ni escribe.
+export function LienzoDeLaPlantilla({
+  lectura,
+  referencia,
+  escala: modo,
+  margen = SIN_MARGEN,
+  capa,
+  debajo,
+  alFallarElLogo,
+}: PropsDelLienzoDeLaPlantilla) {
+  const { geometria, logo } = useGeometriaDelLienzo(lectura, referencia)
   const para = useMemo(() => paraEditar(geometria), [geometria])
   const derecha = margen.derecha ?? 0
   const { ref, escala: ajustada } = useEscalaDeLaTarjeta(
@@ -93,7 +102,12 @@ export function LienzoDeLaPlantilla({
           >
             <div className="relative origin-top-left" style={lienzo}>
               {geometria.celdas.map((c) => (
-                <CeldaDeLaTarjeta key={c.id} celda={c} logo={logo} />
+                <CeldaDeLaTarjeta
+                  key={c.id}
+                  celda={c}
+                  logo={logo}
+                  {...(alFallarElLogo ? { alFallarElLogo } : {})}
+                />
               ))}
             </div>
           </div>

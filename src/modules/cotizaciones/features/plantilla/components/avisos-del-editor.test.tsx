@@ -30,6 +30,8 @@ describe('AvisosDelEditor', () => {
         deLaLectura={[]}
         paraPublicar={null}
         hrefVer="?seccion=tarjeta&origen=o"
+        logoRoto={false}
+        puedeCambiarElLogo={false}
         guardar={guardar({
           conflicto: 'El borrador de esta plantilla cambió hace 2 min, mientras lo editabas.',
           recargar,
@@ -53,6 +55,8 @@ describe('AvisosDelEditor', () => {
         deLaLectura={['Primero', 'Segundo']}
         paraPublicar="La tarjeta no puede mostrar «fees»: no es del nivel «todos»."
         hrefVer="?"
+        logoRoto
+        puedeCambiarElLogo={false}
         guardar={guardar({ aviso: 'No se pudo guardar.' })}
       />,
     )
@@ -63,6 +67,7 @@ describe('AvisosDelEditor', () => {
       'Primero',
       'Segundo',
       'Con esto no se podría publicar: La tarjeta no puede mostrar «fees»: no es del nivel «todos».',
+      'El logo de la empresa no se pudo dibujar: súbelo de nuevo en Empresa. Para cambiar el logo, pídeselo a quien administra los roles.',
       'No se pudo guardar.',
     ])
   })
@@ -73,9 +78,29 @@ describe('AvisosDelEditor', () => {
         deLaLectura={[]}
         paraPublicar={null}
         hrefVer="?"
+        logoRoto={false}
+        puedeCambiarElLogo={false}
         guardar={guardar({ esperandoConexion: true })}
       />,
     )
     expect(screen.getByRole('button', { name: 'Reintentar' })).toBeTruthy()
+  })
+
+  it('el logo que no se dibuja, con permiso: «Abrir Empresa» lleva a sus ajustes', () => {
+    render(
+      <AvisosDelEditor
+        deLaLectura={[]}
+        paraPublicar={null}
+        hrefVer="?"
+        logoRoto
+        puedeCambiarElLogo
+        guardar={guardar()}
+      />,
+    )
+    expect(screen.getByText(/El logo de la empresa no se pudo dibujar/)).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Abrir Empresa' }).getAttribute('href')).toBe(
+      '/configuracion/empresa',
+    )
+    expect(screen.queryByText(/pídeselo/)).toBeNull()
   })
 })

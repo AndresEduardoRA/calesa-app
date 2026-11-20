@@ -592,6 +592,11 @@ las trampas, en `docs/LECCIONES.md`.
   sola página A4 (1 px = 0,75 pt); ninguno agranda. El total de la tarjeta es el de los totales y, con «Ver total Bs», lleva la moneda local en un segundo
   renglón (no hay variable ni `ocultar_si` que exprese «Ver total Bs»). «Vencida» sale de la tarjeta: es un aviso de trabajo y va en los del modal.
   «Copiar texto» sale de la misma geometría.
+- **La celda logo dibuja sólo el logo, a la medida de la celda.** `contain` dentro de la celda menos su relleno, alineado por `alinear` y
+  `alinear_vertical`, igual en el HTML, el PDF y la imagen (`cajaDelLogo()`); el nombre de la empresa es otro dato, «Nombre de la empresa». Lo que react-pdf o
+  satori no leen (el WebP con que se suben los logos, un SVG con estilos) lo convierte a PNG el servidor con `sharp` al dibujar, hasta 1.024 px, como el tope
+  de un logo raster; un SVG que nombra otro archivo no se dibuja (leería algo sin tope ni espera). Convertir al dibujar y no al subir deja servir los logos
+  ya subidos sin migrarlos. Si el logo no carga en el lienzo del editor, el editor lo avisa con «Abrir Empresa».
 - **Con qué nace el editor de plantilla:** el borrador; si no hay (o no se lee), copia de la publicada; si no, la omisión. Una versión ilegible no se edita a
   medias. El editor escribe **sólo la forma 2**: una forma 1 se alinea con la fórmula y se convierte al abrirla, lo dice y no se guarda sola; si lo
   convertido no entra en la grilla (120 filas, 1.000 celdas), se toman los primeros 4 miembros de cada grupo y, si tampoco, sólo el total. El PT409 no dice

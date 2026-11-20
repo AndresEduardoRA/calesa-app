@@ -28,7 +28,7 @@ type Props = PropsDeLaTarjeta & {
 }
 
 // La pantalla de la hoja (`/cotizaciones/nuevo` y `/cotizaciones/[id]`) con «Vista previa» (4.18-2): el proveedor del área `tarjeta` con lo que sólo la página sabe (el asesor, el
-// vehículo, el logo de la empresa). Sin él la hoja no dibuja el botón.
+// vehículo, el nombre y el logo de la empresa). Sin él la hoja no dibuja el botón.
 export async function ConLaTarjeta({
   vehiculo,
   asesor,
@@ -54,6 +54,7 @@ export async function ConLaTarjeta({
       venceEl={venceEl}
       guardadaEl={guardadaEl}
       cotizacionId={cotizacionId}
+      empresa={ajustes.nombre}
       logo={url === null ? null : { nombre: ajustes.nombre, url }}
       {...(titulo === undefined ? {} : { titulo })}
       {...(retoque === undefined ? {} : { retoque })}

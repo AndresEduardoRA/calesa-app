@@ -21,6 +21,7 @@ type Props = {
   ejemplo: boolean
   alElegirReferencia: (ejemplo: boolean) => void
   Lienzo: ComponentType<PropsDelLienzoDeLaPlantilla>
+  alFallarElLogo: () => void
 }
 
 // La barra y el lienzo: la tarjeta a escala que dibuja el área `tarjeta` (el hueco `Lienzo`), con la capa del editor encima y, debajo, las filas ocultas con esta
@@ -34,6 +35,7 @@ export function ZonaDelLienzo({
   ejemplo,
   alElegirReferencia,
   Lienzo,
+  alFallarElLogo,
 }: Props) {
   return (
     <div className="grid min-w-0 content-start gap-2">
@@ -60,6 +62,7 @@ export function ZonaDelLienzo({
         referencia={referenciaUsada(referencia, ejemplo)}
         escala={lienzo.escala}
         margen={MARGEN_DEL_LIENZO}
+        alFallarElLogo={alFallarElLogo}
         capa={(g, factor) => (
           <CapaDeEdicion
             g={g}

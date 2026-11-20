@@ -2,17 +2,18 @@ import 'server-only'
 // `Image` de react-pdf no es un `<img>` del DOM: no lleva `alt` (el PDF no tiene árbol de accesibilidad con él); el nombre propio evita confundirlo con el de next/image.
 import { Document, Image as ImagenDelPdf, Page, Text, View } from '@react-pdf/renderer'
 import { COLOR_TINTA } from '@/shared/config/app'
+import { cajaDelLogo } from '../../../entities/tarjeta/caja-del-logo'
 import { escalarGeometria } from '../../../entities/tarjeta/escalar-geometria'
 import { RELLENO_DE_LA_CELDA } from '../../../entities/tarjeta/estilo-de-la-celda'
 import type { CeldaDibujada, Geometria } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
 import { estilos, MARGEN_DEL_PDF, PAGINA_A4 } from './estilos-del-documento'
-import type { LogoDelPdf } from './logo-del-pdf'
+import type { LogoDeLaTarjeta } from '../logo-de-la-tarjeta'
 
 export type PropsDelDocumento = {
   geometria: Geometria
   // El número de la guardada: el título del PDF.
   numero: number | null
-  logo: LogoDelPdf | null
+  logo: LogoDeLaTarjeta | null
   // El nombre de la empresa: el autor del PDF.
   empresa: string
   // La tarjeta de la cotización hermana (glosario: «Cotizaciones hermanas»): otra página, antes o después según el orden de las opciones.
@@ -75,7 +76,46 @@ const estiloDelTexto = (c: CeldaDibujada, k: number, renglones: number) =>
     textAlign: ALINEAR[c.estilo.alinear],
   }) as const
 
-function Celda({ celda, k, logo }: { celda: CeldaDibujada; k: number; logo: LogoDelPdf | null }) {
+// El logo en la caja interior de su celda: un hijo de ese tamaño (así `justifyContent` de la celda no lo mueve) y, adentro, la imagen en el rectángulo de
+// `cajaDelLogo()` (react-pdf no tiene un `object-position` confiable).
+function LogoDeLaCelda({
+  celda,
+  k,
+  logo,
+}: {
+  celda: CeldaDibujada
+  k: number
+  logo: LogoDeLaTarjeta
+}) {
+  const caja = cajaDelLogo(celda, k, logo)
+  if (caja === null) {
+    return null
+  }
+  return (
+    <View style={{ position: 'relative', width: caja.interior.ancho, height: caja.interior.alto }}>
+      <ImagenDelPdf
+        src={logo.datos}
+        style={{
+          position: 'absolute',
+          left: caja.logo.x,
+          top: caja.logo.y,
+          width: caja.logo.ancho,
+          height: caja.logo.alto,
+        }}
+      />
+    </View>
+  )
+}
+
+function Celda({
+  celda,
+  k,
+  logo,
+}: {
+  celda: CeldaDibujada
+  k: number
+  logo: LogoDeLaTarjeta | null
+}) {
   const c = celda.contenido
   return (
     <View style={estiloDe(celda, k)}>
@@ -91,10 +131,7 @@ function Celda({ celda, k, logo }: { celda: CeldaDibujada; k: number; logo: Logo
         </>
       ) : null}
       {c.tipo === 'logo' && logo !== null ? (
-        <ImagenDelPdf
-          src={logo.datos}
-          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-        />
+        <LogoDeLaCelda celda={celda} k={k} logo={logo} />
       ) : null}
     </View>
   )
