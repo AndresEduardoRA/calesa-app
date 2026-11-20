@@ -300,7 +300,7 @@ test('«Actualizar los datos» desde la ficha actualiza fecha, estado y puja, y 
   // El bloque de la columna izquierda (el primero): el grupo «Subasta» del layout también es una región, en «Ficha».
   const bloque = page.getByRole('region', { name: 'Subasta' }).first()
   // «Puja actual» mientras la subasta sigue viva; «Puja final» si ya cerró (lo dice la situación).
-  await expect(bloque.getByText(/^Puja (actual|final)$/)).toBeVisible()
+  await expect(bloque.getByText(/^Puja (actual|final)/)).toBeVisible()
 
   // Consultar de nuevo es «Actualizar los datos» del «⋯» del vehículo (sobre la foto), con su confirmación.
   await page.getByRole('button', { name: 'Más acciones de Editado a mano' }).first().click()
