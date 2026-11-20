@@ -38,7 +38,9 @@ y los codemods siguen bloqueados.
 
 ## Verificar (Nivel 1) y publicar
 
-- `pnpm lint`, `pnpm typecheck`, `pnpm test`. Con `supabase/` tocado: migración nueva (`pnpm exec supabase migration new`), `pnpm db:reset`,
+- `bash scripts/flujo/verificar.sh`, **una vez, al final** y en segundo plano (corre en paralelo `pnpm lint`, `pnpm typecheck`, `pnpm test` y
+  `bash scripts/mapa.sh --check`, y si el árbol es el que ya pasó, dice «ya verificado» y no corre nada; `--forzar` lo corre igual). No
+  repitas los comandos sueltos ni lo corras tras cada commit. Con `supabase/` tocado: migración nueva (`pnpm exec supabase migration new`), `pnpm db:reset`,
   `pnpm db:types`, `pnpm db:probar:rapido`, `pnpm db:lint`; con dinero, RLS o permisos de por medio, también `pnpm db:carreras`.
 - Los e2e de lo tocado, nombrados: los nuevos de esta tarea y los existentes del módulo (`pnpm test:e2e <specs> --project escritorio`;
   y `--project movil` si tocaste interfaz). No corras `test:e2e:completo` salvo que la spec lo pida (el cierre de la construcción corre el Nivel 3): si la tarea
