@@ -6,7 +6,7 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
 
 - Entra: Configuración › Empresa, cuatro sub-rutas (`src/app/(app)/configuracion/empresa/`): «Datos de la empresa» (`/configuracion/empresa`:
   `TarjetasDeLaEmpresa`, cinco tarjetas: Identidad, Región, Datos legales y de contacto, Políticas, Íconos de la app), «Monedas y tipos de cambio» (`/monedas`: `MonedasYTiposCambio`, tarjetas: la moneda base, un grupo por par con una `TarjetaDeTipoCambio` cada tipo, las monedas activas y «Al compartir»), «Integraciones» (`/integraciones`:
-  `TarjetasDeIntegraciones`, una tarjeta por integración con su estado), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Cotización › General › Vigencia (`/configuracion/cotizacion/general/vigencia`,
+  `TarjetasDeIntegraciones`, una tarjeta por integración con su estado), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Catálogos › Vigencia (`/configuracion/catalogos/vigencia`,
   con la barra de cambios sin guardar): la vigencia de las cotizaciones (si el vehículo y el lead son obligatorios se decide por rol y origen, en «Roles y permisos»).
 - Sale (`index.ts`, **sin componentes**):
   - `getAjustes()`: lo mínimo de la empresa (nombre, logos, color, íconos, formato regional, zona, moneda base, registro abierto, primer registro), una

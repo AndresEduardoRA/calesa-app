@@ -2,7 +2,7 @@
 import { z } from 'zod'
 import { cortarAlTope } from '@/shared/lib/conteo'
 import { formatearNumero } from '@/shared/lib/formato'
-import { RUTAS } from '@/shared/lib/rutas'
+import { RUTAS, rutaDeParteDelOrigen } from '@/shared/lib/rutas'
 import { CLAVE_DE_REPUESTOS } from '../selector-de-flujos'
 
 export const TOPE_DEL_IMPACTO = 50
@@ -73,13 +73,12 @@ export function textoDelImpacto(nombreDeLaRegla: string, impacto: ImpactoDeRegla
     : `${cabeza} la usan ${n} requisitos de espera (${dePara}).`
 }
 
-// El inspector de una fase: la pestaña «Fases» del flujo (`?origen=` o `?ambito=repuestos`) con `?fase=`.
+// El inspector de una fase: la pestaña Flujo del origen (o Repuestos › Flujo de repuestos) con `?fase=`.
 export function hrefDeFase(claveDelFlujo: string, faseId: string): string {
-  const flujo =
-    claveDelFlujo === CLAVE_DE_REPUESTOS
-      ? `ambito=${CLAVE_DE_REPUESTOS}`
-      : `origen=${encodeURIComponent(claveDelFlujo)}`
-  return `${RUTAS.configuracionDeFlujos}?seccion=fases&${flujo}&fase=${encodeURIComponent(faseId)}`
+  const fase = { fase: faseId }
+  return claveDelFlujo === CLAVE_DE_REPUESTOS
+    ? `${RUTAS.flujoDeRepuestos}?${new URLSearchParams(fase).toString()}`
+    : rutaDeParteDelOrigen(claveDelFlujo, 'flujo', fase)
 }
 
 // Lo que responde la action de cambiar una regla: cambiada (con la versión nueva) o «en uso» (no se escribió nada).

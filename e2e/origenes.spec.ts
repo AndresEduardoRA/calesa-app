@@ -17,6 +17,7 @@ import {
   irAParte,
   irADetalle,
   origenPorClave,
+  tarjetaDelOrigen,
 } from './soporte/origenes'
 import { apagarApibara } from './soporte/apibara'
 import { descartarAviso } from './soporte/inventario'
@@ -116,17 +117,16 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
   await panel.getByRole('button', { name: 'Crear origen' }).click()
   await expect(page.getByText(`Origen «${MANUAL}» creado`)).toBeVisible()
 
-  // Cae en la pantalla del origen, con lo que le falta. Cada paso lleva a su pantalla: la fórmula, a
-  // Cotización › Fórmula con este origen.
+  // Cae en la página del origen (su pestaña Datos), con «Para cotizar y mover»: cada paso lleva a su pestaña.
+  await expect(page).toHaveURL(/\/configuracion\/origenes\/[0-9a-f-]{36}\/datos$/)
   await expect(page.getByRole('heading', { name: MANUAL, level: 1 })).toBeVisible()
-  const pasos = page.getByRole('region', { name: `Siguientes pasos para ${MANUAL}` })
-  await expect(pasos.getByText('Configura el flujo')).toBeVisible()
-  await expect(pasos.getByText('Publica la fórmula')).toBeVisible()
-  const formula = pasos.getByRole('listitem').filter({ hasText: 'Publica la fórmula' })
-  await expect(pasos.getByRole('link', { name: 'Abrir' })).toHaveCount(3)
-  await expect(formula.getByRole('link')).toHaveAttribute(
+  const tira = page.getByRole('region', { name: 'Para cotizar y mover' })
+  const paso = (titulo: string) => tira.getByRole('listitem').filter({ hasText: titulo })
+  await expect(tira.getByRole('listitem')).toHaveCount(5)
+  await expect(paso('Flujo')).toContainText('Sin fases: sus vehículos no se pueden mover')
+  await expect(paso('Fórmula').getByRole('link')).toHaveAttribute(
     'href',
-    /\/configuracion\/cotizacion\/[0-9a-f-]{36}\/formula$/,
+    /\/configuracion\/origenes\/[0-9a-f-]{36}\/formula$/,
   )
 
   const corea = await origenDeLaBase('corea')
@@ -174,9 +174,10 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
   // Un origen de subasta suma activar apibara a lo que le falta.
   await expect(
     page
-      .getByRole('region', { name: `Siguientes pasos para ${SUBASTA}` })
-      .getByText('Activa apibara'),
-  ).toBeVisible()
+      .getByRole('region', { name: 'Para cotizar y mover' })
+      .getByRole('listitem')
+      .filter({ hasText: 'Datos' }),
+  ).toContainText('Activa apibara para traer sus subastas')
 })
 
 test('un nombre repetido se dice en el campo y lo tipeado queda', async ({ page }) => {
@@ -262,7 +263,7 @@ test('sin el permiso, la sección sale deshabilitada y dice por qué', async ({ 
   await expect(page.getByText(MOTIVO_SIN_PERMISO)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Nuevo origen' })).toBeDisabled()
 
-  await page.getByRole('link', { name: new RegExp(MANUAL) }).click()
+  await tarjetaDelOrigen(page, MANUAL).click()
   await expect(page.getByRole('heading', { name: MANUAL, level: 1 })).toBeVisible()
   await irAParte(page, 'Campos')
   // Next conserva la pestaña anterior oculta: sólo cuenta lo que se ve.
@@ -334,8 +335,9 @@ test('desactivar es reversible, y eliminar sólo vale sin uso', async ({ page })
   await entrar(page, duena)
   await irADetalle(page, 'Corea del Sur')
 
-  // Desactivar: se hace y se ofrece «Deshacer».
-  await page.getByRole('switch', { name: 'Activo' }).click()
+  // Desactivar (en el «⋯» del encabezado): se hace y se ofrece «Deshacer».
+  await page.getByRole('button', { name: 'Más acciones de Corea del Sur' }).click()
+  await page.getByRole('menuitem', { name: 'Desactivar' }).click()
   await expect(page.getByText('«Corea del Sur» desactivado')).toBeVisible()
   await expect(page.getByText('Inactivo', { exact: true })).toBeVisible()
   expect((await origenDeLaBase('corea')).activo).toBe(false)
@@ -344,9 +346,9 @@ test('desactivar es reversible, y eliminar sólo vale sin uso', async ({ page })
 
   // Eliminar pide tipear el nombre; el origen y lo que colgaba desaparecen.
   const id = (await origenDeLaBase('subasta_japon')).id
-  await page.goto('/configuracion/origenes')
-  await page.getByRole('link', { name: new RegExp(SUBASTA) }).click()
-  await page.getByRole('button', { name: 'Eliminar origen' }).click()
+  await irADetalle(page, SUBASTA)
+  await page.getByRole('button', { name: `Más acciones de ${SUBASTA}` }).click()
+  await page.getByRole('menuitem', { name: 'Eliminar origen' }).click()
   const dialogo = page.getByRole('dialog')
   await expect(dialogo.getByRole('button', { name: 'Eliminar origen' })).toBeDisabled()
   await dialogo.getByLabel(/Para confirmar/).fill(SUBASTA)

@@ -1,5 +1,6 @@
 // @sin-celular-archivo: pantalla de Configuración; en el celular se ve igual y el camino feliz va sólo en escritorio (e2e.md, 2026-11-08).
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -54,8 +55,8 @@ const garantia = (page: Page) =>
   tarjeta(page).getByRole('checkbox', { name: 'Mostrar «Garantía» junto al total' })
 
 async function abrirElDiseno(page: Page) {
-  await page.goto(`/configuracion/cotizacion?seccion=diseno&origen=${origen.id}`)
-  await expect(page.getByRole('heading', { name: 'Hoja', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origen.id}/formula/hoja`)
+  await enLaPestana(page, 'Hoja')
   await expect(cabecera(page)).toBeVisible()
 }
 

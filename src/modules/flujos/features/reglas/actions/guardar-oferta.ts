@@ -23,6 +23,7 @@ export const guardarOferta = actionClient
     if (!hecho.ok) {
       return hecho
     }
-    revalidatePath(RUTAS.configuracionDeFlujos, 'layout')
+    revalidatePath(RUTAS.origenes, 'layout')
+    revalidatePath(RUTAS.configuracionDeRepuestos, 'layout')
     return { ok: true, data: { version: hecho.data } }
   })

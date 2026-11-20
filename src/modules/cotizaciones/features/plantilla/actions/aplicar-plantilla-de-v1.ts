@@ -44,7 +44,7 @@ export const aplicarLaPlantillaDeV1 = actionClient
       plantillaEsperada,
     })
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeCotizacion, 'layout')
+      revalidatePath(RUTAS.origenes, 'layout')
     }
     return hecho
   })

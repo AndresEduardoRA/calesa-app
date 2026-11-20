@@ -25,7 +25,7 @@ import {
 } from './soporte/niveles'
 import { capturar, sinScrollHorizontal } from './soporte/recorrido'
 
-// Los casos no felices de Configuración › Cotización › Niveles (paso 4.09-2): el nombre vacío, repetido, largo o de una clave que ya existe; un nivel
+// Los casos no felices de Configuración › Catálogos › Niveles (paso 4.09-2): el nombre vacío, repetido, largo o de una clave que ya existe; un nivel
 // en uso (se retira, no se elimina, y lo dice la base); una pestaña vieja que intenta eliminar uno que otra persona puso en uso; el tope de 10 con los
 // retirados dentro; dos personas editando el mismo nivel; una URL que nombra uno que no existe; y una URL que nombra uno que no existe. Quién ve qué está en `*-permisos`.
 test.describe.configure({ mode: 'serial' })
@@ -116,7 +116,7 @@ test('un nivel en uso: Eliminar apagado con el motivo de la base y Retirar al la
   // Una URL que pide eliminarlo no abre y dice por qué.
   await noAbre(
     page,
-    `/configuracion/cotizacion?seccion=niveles&panel=eliminar-nivel&nivel=${uso.id}`,
+    `/configuracion/catalogos/niveles?panel=eliminar-nivel&nivel=${uso.id}`,
     /Está en 2 celdas de 1 origen/,
     /panel=eliminar-nivel/,
   )
@@ -186,7 +186,7 @@ test('el tope de 10: los retirados cuentan, «Nuevo nivel» se apaga diciendo po
   // Por la URL tampoco abre, y dice el motivo.
   await noAbre(
     page,
-    '/configuracion/cotizacion?seccion=niveles&panel=nuevo-nivel',
+    '/configuracion/catalogos/niveles?panel=nuevo-nivel',
     /Ya hay 10 niveles, que es el máximo/,
     /panel=nuevo-nivel/,
   )
@@ -249,13 +249,13 @@ test('una URL que nombra un nivel que no existe, o uno que no se puede cambiar, 
   await entrar(page, duena)
   await noAbre(
     page,
-    `/configuracion/cotizacion?seccion=niveles&panel=renombrar-nivel&nivel=${INEXISTENTE}`,
+    `/configuracion/catalogos/niveles?panel=renombrar-nivel&nivel=${INEXISTENTE}`,
     'Ese nivel ya no existe.',
     /panel=renombrar-nivel/,
   )
   await noAbre(
     page,
-    `/configuracion/cotizacion?seccion=niveles&panel=eliminar-nivel&nivel=${INEXISTENTE}`,
+    `/configuracion/catalogos/niveles?panel=eliminar-nivel&nivel=${INEXISTENTE}`,
     'Ese nivel ya no existe.',
     /panel=eliminar-nivel/,
   )
@@ -263,11 +263,8 @@ test('una URL que nombra un nivel que no existe, o uno que no se puede cambiar, 
   const todos = nivelEnLaBase('Todos')
   await noAbre(
     page,
-    `/configuracion/cotizacion?seccion=niveles&panel=renombrar-nivel&nivel=${todos?.id ?? ''}`,
+    `/configuracion/catalogos/niveles?panel=renombrar-nivel&nivel=${todos?.id ?? ''}`,
     'El nivel «Todos» no se renombra.',
     /panel=renombrar-nivel/,
   )
-  // Una pestaña que no existe abre la primera.
-  await page.goto('/configuracion/cotizacion?seccion=otra')
-  await expect(page.getByRole('heading', { name: 'Niveles de acceso', level: 2 })).toBeVisible()
 })

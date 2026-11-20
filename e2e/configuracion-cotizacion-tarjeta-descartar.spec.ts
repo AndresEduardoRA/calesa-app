@@ -50,7 +50,7 @@ test.beforeEach(() => {
 
 async function abrirTarjeta(page: Page, extra = '') {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto(`/configuracion/cotizacion?seccion=tarjeta&origen=${origenId()}${extra}`)
+  await page.goto(`/configuracion/origenes/${origenId()}/formula/tarjeta${extra}`)
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
 }
 
@@ -139,7 +139,7 @@ test('E8: un PT409 porque otra persona guardó no borra y «Recargar» lo quita 
 test('E9: por la URL, sin borrador no abre y limpia; con borrador, el «⋯» lo abre', async ({
   page,
 }) => {
-  await abrirTarjeta(page, '&panel=descartar-plantilla')
+  await abrirTarjeta(page, '?panel=descartar-plantilla')
   await expect(page.getByText('No hay borrador para descartar.')).toBeVisible()
   await expect(dialogo(page)).toHaveCount(0)
   await expect(page).not.toHaveURL(/panel=/)

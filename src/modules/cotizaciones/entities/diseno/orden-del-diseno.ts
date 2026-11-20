@@ -1,4 +1,4 @@
-// Ordenar el diseño (Configuración › Cotización › Diseño): mover una sección en la lista de secciones y un ítem dentro de su sección. Un ítem no cambia
+// Ordenar el diseño (la Hoja de la Fórmula de un origen): mover una sección en la lista de secciones y un ítem dentro de su sección. Un ítem no cambia
 // de sección (heredaría otros niveles: cambiaría quién lo ve). Puras: un lugar fuera de la lista devuelve el diseño tal cual.
 import type { Diseno } from '../diseno'
 import { conSeccion } from './edicion-del-diseno'

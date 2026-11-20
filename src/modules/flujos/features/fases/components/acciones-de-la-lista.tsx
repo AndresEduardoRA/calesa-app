@@ -15,8 +15,8 @@ type Props = { flujo: FlujoParaConfigurar }
 const ID_DEL_MOTIVO = 'motivo-de-nueva-fase'
 
 // El hueco `accionesDeLaLista` de la pantalla de flujos: «Nueva fase» a la derecha del título, y —una vez por pantalla— el modal que abre y la
-// confirmación de «Jubilar o eliminar», que se abren por la URL y se piden con `diferido()` la primera vez. Sin permiso no hay nada que apagar: el selector
-// de flujos sólo ofrece los que la persona configura (D1).
+// confirmación de «Jubilar o eliminar», que se abren por la URL y se piden con `diferido()` la primera vez. Sin permiso no hay nada que apagar: la página
+// del flujo sólo se abre a quien lo configura (D1).
 export function AccionesDeLaLista({ flujo }: Props) {
   const lista = useListaDeFases(flujo)
   const modal = useModalDeNuevaFase(flujo)

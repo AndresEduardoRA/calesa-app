@@ -10,15 +10,13 @@ import { GrupoDeTipos } from './grupo-de-tipos'
 
 type Props = {
   vistas: VistasDeGrupos
-  // El flujo elegido, para nombrarlo («Sólo de Miami»); nulo si no hay.
+  // El flujo del panel, para nombrarlo («Sólo de Miami»); nulo si no hay.
   nombreDelFlujo: string | null
-  // Entre los dos grupos va el selector de flujo, que dibuja el servidor.
-  selector: React.ReactNode
 }
 
-// Configuración › Flujos › Documentos: los tipos de documento de toda la empresa y los del flujo elegido. Los dos grupos vienen de la página (las
-// escrituras no devuelven la lista: la página se vuelve a leer), un solo modal y una sola confirmación por la URL sirven a los dos.
-export function TiposDeDocumento({ vistas, nombreDelFlujo, selector }: Props) {
+// Los tipos de documento de un grupo: los de toda la empresa (Catálogos › Tipos de documento) o los del flujo (su panel). El grupo viene de la página
+// (las escrituras no devuelven la lista: la página se vuelve a leer); el modal y la confirmación por la URL son los mismos para los dos.
+export function TiposDeDocumento({ vistas, nombreDelFlujo }: Props) {
   const tipos = useTiposDeDocumento(vistas)
   const modal = useModalDeTipo(vistas)
   const montar = useAbiertoAlgunaVez(modal.abierto)
@@ -29,18 +27,19 @@ export function TiposDeDocumento({ vistas, nombreDelFlujo, selector }: Props) {
 
   return (
     <div className="grid gap-6">
-      <GrupoDeTipos
-        clave="empresa"
-        vista={vistas.empresa}
-        titulo="De toda la empresa"
-        detalle="Se piden en cualquier flujo que los use."
-        vacio="No hay tipos de toda la empresa."
-        tipos={tipos}
-        alNuevo={modal.abrirNuevo}
-        alEditar={modal.abrirEdicion}
-        alPedirEliminar={eliminacion.abrir}
-      />
-      {selector}
+      {vistas.empresa ? (
+        <GrupoDeTipos
+          clave="empresa"
+          vista={vistas.empresa}
+          titulo="De toda la empresa"
+          detalle="Se piden en cualquier flujo que los use."
+          vacio="No hay tipos de toda la empresa."
+          tipos={tipos}
+          alNuevo={modal.abrirNuevo}
+          alEditar={modal.abrirEdicion}
+          alPedirEliminar={eliminacion.abrir}
+        />
+      ) : null}
       {vistas.flujo ? (
         <GrupoDeTipos
           clave="flujo"

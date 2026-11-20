@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -92,8 +93,8 @@ function contar(page: Page) {
 }
 
 async function abrirEditor(page: Page, origenId: string) {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/formula`)
+  await enLaPestana(page, 'Fórmula')
   await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }

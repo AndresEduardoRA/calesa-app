@@ -1,4 +1,4 @@
-// Publicar el borrador de la fórmula de un origen desde Configuración › Cotización › «Fórmula» (4.20-2b): la nota, el panel de la URL y por qué no se abre o ya no se
+// Publicar el borrador de la fórmula de un origen desde la página del origen › «Fórmula» (4.20-2b): la nota, el panel de la URL y por qué no se abre o ya no se
 // puede publicar. La regla de verdad (el permiso, la nota, la esperada, el borrador atrasado, la validación) es de `formula_publicar()`: esto sólo evita pedir lo que
 // la base va a rechazar y dice por qué con el modal a la vista.
 import { z } from 'zod'

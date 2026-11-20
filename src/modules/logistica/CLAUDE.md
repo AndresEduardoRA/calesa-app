@@ -154,7 +154,7 @@ y su regla de `flujos_reglas` está activa; el orden es `ORDEN_DE_HUECOS`, no el
   repite la aritmética de centavos de `gastos_prorratear` (los que sobran, a los primeros) sólo para la vista previa. El `lote` es el id del intento: se
   conserva si no se sabe qué pasó y se renueva al cambiar lo escrito o al rechazar la base.
   **Categorías de gasto** (`logistica.catalogos.gestionar`): escritura directa bajo la RLS; `categoria.ts` fija los propósitos del `check` de la base.
-- **Área `transporte`.** **Catálogos:** `pantallas/transporte-catalogos.ts`, sub-rutas «Puertos» y «Navieras» de `/configuracion/logistica/puertos` y `/navieras`
+- **Área `transporte`.** **Catálogos:** `pantallas/transporte-catalogos.ts`, sub-rutas «Puertos» y «Navieras» de Configuración › Catálogos (`/configuracion/catalogos/puertos` y `/navieras`)
   (`logistica.catalogos.gestionar`; cada catálogo trae su `clave` —el último tramo de su sub-ruta— y su frase). Escritura directa bajo la RLS (`infra/transporte/catalogos.ts`): 0 filas = «No tienes permiso…», nunca éxito; sin versión.
   **No hay «Eliminar»** (borrar dejaría nulos los transportes y vaciaría la oferta): se desactiva. `entities/transporte/catalogo.ts` valida (nombre 1–80, país
   ≤ 60, código ≤ 12 en mayúsculas sin espacios, orden 0–32.767); un puerto **sin país** no lo cubre la unicidad de la base (`NULL ≠ NULL`): la action lo mira,

@@ -4,6 +4,8 @@ import {
   RUTAS,
   conVuelta,
   rutaDeConfiguracionDeCotizacion,
+  rutaDeParteDelOrigen,
+  PARTES_DEL_ORIGEN,
   PESTANAS_DE_COTIZACION,
   decidirAcceso,
   destinoTrasIngresar,
@@ -204,39 +206,70 @@ describe('conVuelta', () => {
 describe('rutaDeConfiguracionDeCotizacion', () => {
   const O = '11111111-1111-4111-8111-111111111111'
 
-  it('lleva a cada pestaña del origen, en su orden', () => {
+  it('lleva a cada pestaña del cotizador en la página del origen, en su orden', () => {
     expect(PESTANAS_DE_COTIZACION.map((p) => rutaDeConfiguracionDeCotizacion(O, p))).toEqual([
-      `/configuracion/cotizacion/${O}/formula`,
-      `/configuracion/cotizacion/${O}/hoja`,
-      `/configuracion/cotizacion/${O}/tarjeta`,
-      `/configuracion/cotizacion/${O}/tablas`,
+      `/configuracion/origenes/${O}/formula`,
+      `/configuracion/origenes/${O}/formula/hoja`,
+      `/configuracion/origenes/${O}/formula/tarjeta`,
+      `/configuracion/origenes/${O}/tablas`,
     ])
   })
 
   it('codifica la consulta en su orden y el id', () => {
     expect(
       rutaDeConfiguracionDeCotizacion(O, 'tablas', { tabla: 't 1', panel: 'publicar-tabla' }),
-    ).toBe(`/configuracion/cotizacion/${O}/tablas?tabla=t+1&panel=publicar-tabla`)
+    ).toBe(`/configuracion/origenes/${O}/tablas?tabla=t+1&panel=publicar-tabla`)
     expect(rutaDeConfiguracionDeCotizacion('a/b', 'formula')).toBe(
-      '/configuracion/cotizacion/a%2Fb/formula',
+      '/configuracion/origenes/a%2Fb/formula',
     )
   })
 
   it('sin consulta (o vacía) no lleva «?»', () => {
     expect(rutaDeConfiguracionDeCotizacion(O, 'hoja', {})).toBe(
-      `/configuracion/cotizacion/${O}/hoja`,
+      `/configuracion/origenes/${O}/formula/hoja`,
     )
   })
+})
 
-  it('General tiene sus tres rutas fijas', () => {
+describe('rutaDeParteDelOrigen', () => {
+  const O = '11111111-1111-4111-8111-111111111111'
+
+  it('lleva a cada pestaña del origen, en su orden, con su consulta', () => {
+    expect(PARTES_DEL_ORIGEN.map((parte) => rutaDeParteDelOrigen(O, parte))).toEqual([
+      `/configuracion/origenes/${O}/datos`,
+      `/configuracion/origenes/${O}/campos`,
+      `/configuracion/origenes/${O}/categorias`,
+      `/configuracion/origenes/${O}/flujo`,
+      `/configuracion/origenes/${O}/formula`,
+      `/configuracion/origenes/${O}/tablas`,
+    ])
+    expect(rutaDeParteDelOrigen(O, 'flujo', { fase: 'f', vista: 'lista' })).toBe(
+      `/configuracion/origenes/${O}/flujo?fase=f&vista=lista`,
+    )
+  })
+})
+
+describe('Catálogos', () => {
+  it('lo global de la empresa vive bajo /configuracion/catalogos', () => {
     expect([
       RUTAS.coloresDeCotizacion,
       RUTAS.nivelesDeCotizacion,
       RUTAS.vigenciaDeCotizacion,
+      RUTAS.puertosDeLogistica,
+      RUTAS.navierasDeLogistica,
+      RUTAS.categoriasDeGastoDeLogistica,
+      RUTAS.tiposDeDocumento,
+      RUTAS.tablasCompartidas,
     ]).toEqual([
-      '/configuracion/cotizacion/general/colores',
-      '/configuracion/cotizacion/general/niveles',
-      '/configuracion/cotizacion/general/vigencia',
+      '/configuracion/catalogos/colores',
+      '/configuracion/catalogos/niveles',
+      '/configuracion/catalogos/vigencia',
+      '/configuracion/catalogos/puertos',
+      '/configuracion/catalogos/navieras',
+      '/configuracion/catalogos/categorias-de-gasto',
+      '/configuracion/catalogos/tipos-de-documento',
+      '/configuracion/catalogos/tablas',
     ])
+    expect(RUTAS.flujoDeRepuestos).toBe('/configuracion/repuestos/flujo')
   })
 })

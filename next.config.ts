@@ -8,6 +8,9 @@ import {
   validaLaCompilacion,
 } from './src/shared/config/esquemas'
 
+// Un id en una ruta de `redirects()` (la sintaxis de path-to-regexp).
+const ID = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
   typedRoutes: true,
@@ -39,15 +42,18 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
     ],
   },
-  // Configuración › Cotización: `/general` y `/<origen>` solos no dibujan nada. Van a su primera parte (Colores, que redirige sola a la primera
-  // que la persona abre; «Fórmula» del origen, que comprueba el origen y el permiso) con su consulta. Aquí y no en un `page.tsx`: una página que
-  // sólo redirige pide su `loading.tsx`, y el esqueleto de cada nivel viaja en el HTML de todas las páginas de debajo. `general` va primero.
+  // Las URL fijas de la vieja Configuración › Cotización y › Logística van a la página del origen y a Catálogos, con su consulta. Aquí y no en un
+  // `page.tsx`: una página que sólo redirige pide su `loading.tsx` y la redirección es del navegador. `general` va antes que `:origen`, y `:origen`
+  // es un uuid de un solo segmento (no se traga `plantillas-de-v1`). Las que dependen de la consulta o de la persona son `route.ts`.
   // `/configuracion` solo no dibuja nada: el inicio vive en `/configuracion/inicio` (308, con su consulta). `/configuracion/inicio` no choca con
   // ninguna sección: ninguna se llama «inicio». La ruta vieja de la imagen de la tarjeta va a la de hoy con su consulta (308: un enlace o una
   // caché del navegador que la nombre sigue andando).
   redirects() {
     return Promise.resolve([
       { source: '/configuracion', destination: '/configuracion/inicio', permanent: true },
+      // Las páginas de Configuración › Cotización y Logística que se mudaron a la página de cada origen y a Catálogos (308, con su
+      // consulta). Las raíces (`/configuracion/cotizacion`, `/flujos`, `/logistica`) dependen de la consulta o del permiso: son `route.ts`.
+      // `:origen` es un id: `[origen]/plantillas-de-v1` (dos segmentos) sigue en su `route.ts`.
       {
         source: '/cotizaciones/:id/portada',
         destination: '/cotizaciones/:id/imagen',
@@ -55,13 +61,43 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/configuracion/cotizacion/general',
-        destination: '/configuracion/cotizacion/general/colores',
-        permanent: false,
+        destination: '/configuracion/catalogos/colores',
+        permanent: true,
       },
       {
-        source: '/configuracion/cotizacion/:origen',
-        destination: '/configuracion/cotizacion/:origen/formula',
-        permanent: false,
+        source: '/configuracion/cotizacion/general/:parte(colores|niveles|vigencia)',
+        destination: '/configuracion/catalogos/:parte',
+        permanent: true,
+      },
+      {
+        source: `/configuracion/cotizacion/:origen(${ID})/formula`,
+        destination: '/configuracion/origenes/:origen/formula',
+        permanent: true,
+      },
+      {
+        source: `/configuracion/cotizacion/:origen(${ID})/hoja`,
+        destination: '/configuracion/origenes/:origen/formula/hoja',
+        permanent: true,
+      },
+      {
+        source: `/configuracion/cotizacion/:origen(${ID})/tarjeta`,
+        destination: '/configuracion/origenes/:origen/formula/tarjeta',
+        permanent: true,
+      },
+      {
+        source: `/configuracion/cotizacion/:origen(${ID})/tablas`,
+        destination: '/configuracion/origenes/:origen/tablas',
+        permanent: true,
+      },
+      {
+        source: `/configuracion/cotizacion/:origen(${ID})`,
+        destination: '/configuracion/origenes/:origen/formula',
+        permanent: true,
+      },
+      {
+        source: '/configuracion/logistica/:catalogo(puertos|navieras|categorias-de-gasto)',
+        destination: '/configuracion/catalogos/:catalogo',
+        permanent: true,
       },
     ])
   },

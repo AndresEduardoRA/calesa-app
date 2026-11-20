@@ -1,11 +1,12 @@
 import type { LucideIcon } from 'lucide-react'
 import type { GrupoDelNavegador } from '../secciones'
 import { EnlaceDelMenu } from './enlace-del-menu'
+import { marcaDe } from './marca'
 import { SubseccionesDelMenu } from './subsecciones-del-menu'
 
 // El menú de Configuración, en tres niveles que no se confunden: el grupo es un rótulo en mayúscula chica (no es un enlace); la sección,
 // un renglón con su ícono; y sólo la sección abierta despliega sus sub-secciones, sangradas y con su línea guía (se esconden por CSS mientras su
-// sección no está marcada; una plantilla, como las partes de un origen, se rellena con la ruta actual). La sub-sección índice se marca sólo en
+// sección no está marcada; en Orígenes, un renglón por origen). La sub-sección índice se marca sólo en
 // su ruta; la que no se puede abrir va apagada con su motivo. Los rótulos no son encabezados: la página pone su `h1` después.
 export function MenuDeConfiguracion({
   grupos,
@@ -37,7 +38,7 @@ export function MenuDeConfiguracion({
                   >
                     <EnlaceDelMenu
                       ruta={seccion.ruta}
-                      subrutas={seccion.subsecciones.map((sub) => sub.ruta)}
+                      subrutas={seccion.subsecciones.map(marcaDe)}
                       titulo={seccion.titulo}
                       nivel="seccion"
                       icono={Icono ? <Icono aria-hidden className="size-4 shrink-0" /> : null}

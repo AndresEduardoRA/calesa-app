@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -45,8 +46,8 @@ function guardaOtraPersona(origenId: string): void {
 }
 
 async function abrirFormula(page: Page, origenId: string) {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/formula`)
+  await enLaPestana(page, 'Fórmula')
 }
 
 test('G6: si otra persona guardó el borrador, publicar da su conflicto con «Recargar» y, tras recargar, publica', async ({

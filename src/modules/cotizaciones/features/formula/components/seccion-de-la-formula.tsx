@@ -20,7 +20,7 @@ type Props = {
   puedeCambiarTiposDeCambio: boolean
 }
 
-// La pestaña «Fórmula» de un origen en Configuración › Cotización (4.20-2a), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: la
+// La pestaña «Fórmula» de la Fórmula de un origen (Configuración › Orígenes) (4.20-2a), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: la
 // publicada, el borrador y la primera página de versiones, la tarjeta de trabajo y el catálogo de tablas (BUSCARV; null si no se leyó), a la vez. La base vuelve a decidir (policy `formulas: leer`). Una lectura de la
 // fórmula que falla sube al `error.tsx` de la ruta, que ofrece «Reintentar».
 export async function SeccionDeLaFormula({

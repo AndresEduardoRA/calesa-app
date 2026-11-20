@@ -13,7 +13,7 @@ import {
   sembrarNaviera,
 } from './soporte/reglas-de-flujo'
 
-// Configuración › Flujos › Reglas (5.11, `docs/UX.md` › «Flujos: reglas y oferta de transporte (estados propios)»): apagar «Aduana» con una fase que la
+// Las reglas del flujo de un origen (5.11, `docs/UX.md` › «Flujos: reglas y oferta de transporte (estados propios)»): apagar «Aduana» con una fase que la
 // permite no apaga y nombra la fase; tras quitarla de la fase, apaga y «Deshacer» la vuelve; la oferta guarda dos puertos y, con una naviera sembrada por
 // SQL, la naviera. Corre sobre su propio origen de subasta (su flujo nace con «Aduana» encendida): no toca el flujo de la semilla. Un solo recorrido del
 // camino feliz: la base ya tiene sus pruebas de cada regla.
@@ -51,7 +51,7 @@ test('la dueña apaga una regla sin uso con «Deshacer» y guarda la oferta de t
 }) => {
   const fase = `${PREFIJO_DE_REGLAS_E2E} En aduana`
   const naviera = `${PREFIJO_DE_REGLAS_E2E} Naviera ${proyecto}`
-  const url = `/configuracion/flujos?seccion=reglas&origen=${origenId}`
+  const url = `/configuracion/origenes/${origenId}/flujo?seccion=reglas`
   const aduana = () => page.getByRole('switch', { name: 'Aduana', exact: true })
   const toast = (texto: string) => page.locator('[data-sonner-toast]').filter({ hasText: texto })
   expect(reglaEnLaBase(origenId, 'aduana')).toBe(true)
@@ -69,7 +69,7 @@ test('la dueña apaga una regla sin uso con «Deshacer» y guarda la oferta de t
   await expect(aviso).toContainText(`la usa la fase «${fase}»`)
   await expect(aviso.getByRole('link', { name: fase })).toHaveAttribute(
     'href',
-    `/configuracion/flujos?seccion=fases&origen=${origenId}&fase=${faseId}`,
+    `/configuracion/origenes/${origenId}/flujo?fase=${faseId}`,
   )
   await expect(aduana()).toBeChecked()
   expect(reglaEnLaBase(origenId, 'aduana')).toBe(true)
@@ -94,7 +94,7 @@ test('la dueña apaga una regla sin uso con «Deshacer» y guarda la oferta de t
   const navieras = page.getByRole('group', { name: 'Navieras' })
   await expect(origen).toContainText('Vacío: se ofrecen todos.')
   await expect(destino).toContainText('Vacío: se ofrecen todos.')
-  await expect(navieras).toContainText('Todavía no hay navieras cargadas. Se cargan en Logística.')
+  await expect(navieras).toContainText('Todavía no hay navieras cargadas. Se cargan en Catálogos.')
   const guardar = page.getByRole('button', { name: 'Guardar oferta' })
   await expect(guardar).toBeDisabled()
 

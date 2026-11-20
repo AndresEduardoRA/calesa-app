@@ -1,4 +1,4 @@
-// El panel al costado de Configuración › Flujos (`panel-del-flujo.tsx`): muestra una fase (`?fase=<id>`) o una sección del flujo entero
+// El panel al costado del editor del flujo (`panel-del-flujo.tsx`): muestra una fase (`?fase=<id>`) o una sección del flujo entero
 // (`?seccion=reglas|documentos`). Qué muestra según la URL, y qué claves de URL limpiar al pasar de una cosa a otra. Sin I/O.
 
 // Las secciones del flujo entero que se abren en el panel desde la barra del flujo. `?seccion=fases` (los enlaces viejos) no es una: es la pantalla.

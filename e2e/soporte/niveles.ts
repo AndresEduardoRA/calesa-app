@@ -1,4 +1,4 @@
-// Lo que los e2e de Configuración › Cotización › Niveles y de la matriz de Roles preparan y miran en la base del Supabase LOCAL. Todo nivel que
+// Lo que los e2e de Configuración › Catálogos › Niveles y de la matriz de Roles preparan y miran en la base del Supabase LOCAL. Todo nivel que
 // crea un e2e lleva este prefijo en su nombre (y `e2e_4_09` en su clave): es lo único que la limpieza borra, junto con sus dos permisos y los
 // borradores de fórmula que lo nombren. El tope de niveles es de toda la base (10, con «todos» y los retirados): `llenarNivelesHasta()` cuenta lo
 // que ya hay, que otros specs o `db:carreras` pueden haber dejado.
@@ -109,7 +109,7 @@ export function borrarNivelesDePrueba(): void {
 // --- La pantalla --------------------------------------------------------------------------------------
 
 export async function abrirNiveles(page: Page): Promise<void> {
-  await page.goto('/configuracion/cotizacion/general/niveles')
+  await page.goto('/configuracion/catalogos/niveles')
   await expect(page.getByRole('heading', { name: 'Niveles de acceso', level: 2 })).toBeVisible()
 }
 

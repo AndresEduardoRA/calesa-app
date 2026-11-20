@@ -1,16 +1,10 @@
-import type { ClaveDePaso, PasoConDestino } from '@/modules/origenes'
+import type { ClaveDePaso } from '@/modules/origenes'
+import type { PasoConDestino } from './origenes/pasos'
 
-// Lo que falta, en el inicio de Configuración: los siguientes pasos de cada origen activo, en la tarjeta de la sección donde se resuelven.
-// Sólo lo que la persona puede hacer (el paso con pantalla y sin motivo para no poder). El paso «Revisa los permisos» no va: es un aviso
-// blando (los roles para todos los orígenes ya alcanzan al origen) y sigue en la página del origen.
-export type SeccionConFaltas = 'cotizacion' | 'flujos' | 'empresa'
-
-export const SECCION_DEL_PASO: Record<ClaveDePaso, SeccionConFaltas | null> = {
-  formula: 'cotizacion',
-  flujo: 'flujos',
-  apibara: 'empresa',
-  permisos: null,
-}
+// Lo que falta, en el inicio de Configuración: una línea por origen activo con lo que le falta para cotizar y mover (los pasos de «Para
+// cotizar y mover» que no están listos), en la tarjeta de Orígenes y enlazada a la primera pestaña que falla. apibara es de la empresa: va
+// una sola vez, en la tarjeta de Empresa. Sólo lo que la persona puede hacer: un paso con motivo (sin el permiso en ese origen) no se dice.
+export type SeccionConFaltas = 'origenes' | 'empresa'
 
 export type Falta = { clave: string; texto: string; ruta: string }
 
@@ -20,42 +14,51 @@ export type FaltasPorSeccion = Partial<Record<SeccionConFaltas, Falta[]>>
 export const TOPE_DE_FALTAS = 3
 
 export type PasosDeUnOrigen = {
-  origen: { id: string; nombre: string; activo: boolean }
+  origen: { id: string; nombre: string }
+  // Los que no están listos, con su destino (`conDestino`).
   pasos: readonly PasoConDestino[]
 }
 
-function textoDe(clave: ClaveDePaso, nombre: string): string {
-  switch (clave) {
-    case 'formula':
-      return `Falta publicar la fórmula de ${nombre}`
-    case 'flujo':
-      return `Falta configurar el flujo de ${nombre}`
-    case 'apibara':
-      return 'Falta activar apibara'
-    case 'permisos':
-      return `Faltan los permisos de ${nombre}`
+const LO_QUE_FALTA: Record<Exclude<ClaveDePaso, 'datos'>, string> = {
+  campos: 'activar sus campos',
+  flujo: 'configurar el flujo',
+  formula: 'publicar la fórmula',
+  tarjeta: 'publicar la tarjeta',
+}
+
+// «a», «a y b», «a, b y c». Cada parte es un infinitivo: «falta» concuerda con cualquier cantidad.
+function enUnaFrase(partes: readonly string[]): string {
+  if (partes.length <= 1) {
+    return partes.join('')
   }
+  return `${partes.slice(0, -1).join(', ')} y ${partes.at(-1) ?? ''}`
 }
 
 export function faltasPorSeccion(origenes: readonly PasosDeUnOrigen[]): FaltasPorSeccion {
   const faltas: FaltasPorSeccion = {}
   for (const { origen, pasos } of origenes) {
-    if (!origen.activo) {
+    const posibles = pasos.filter((paso) => paso.estado !== 'listo' && paso.motivo === null)
+    const apibara = posibles.find((paso) => paso.clave === 'datos')
+    if (apibara && !faltas.empresa?.some((falta) => falta.clave === 'apibara')) {
+      ;(faltas.empresa ??= []).push({
+        clave: 'apibara',
+        texto: 'Falta activar apibara',
+        ruta: apibara.ruta,
+      })
+    }
+    const delOrigen = posibles.filter((paso) => paso.clave !== 'datos')
+    const [primero] = delOrigen
+    if (primero === undefined) {
       continue
     }
-    for (const paso of pasos) {
-      const seccion = SECCION_DEL_PASO[paso.clave]
-      if (!seccion || !paso.pendiente || paso.ruta === null || paso.motivoDeshabilitado !== null) {
-        continue
-      }
-      const lista = (faltas[seccion] ??= [])
-      // apibara es de la empresa, no de cada subasta: una sola vez.
-      const clave = paso.clave === 'apibara' ? 'apibara' : `${paso.clave}-${origen.id}`
-      if (lista.some((falta) => falta.clave === clave)) {
-        continue
-      }
-      lista.push({ clave, texto: textoDe(paso.clave, origen.nombre), ruta: paso.ruta })
-    }
+    const partes = delOrigen.map(
+      (paso) => LO_QUE_FALTA[paso.clave as Exclude<ClaveDePaso, 'datos'>],
+    )
+    ;(faltas.origenes ??= []).push({
+      clave: origen.id,
+      texto: `${origen.nombre}: falta ${enUnaFrase(partes)}`,
+      ruta: primero.ruta,
+    })
   }
   return faltas
 }

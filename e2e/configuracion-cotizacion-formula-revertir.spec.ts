@@ -1,5 +1,6 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import { borrarPersonasDePrueba, correoDePrueba, crearDuenaDePrueba } from './soporte/base'
 import {
@@ -10,7 +11,7 @@ import {
 import { sembrarBorrador, sembrarVersiones } from './soporte/formula-versiones'
 import { literal, sql } from './soporte/sql'
 
-// Revertir la fórmula a una versión archivada desde Configuración › Cotización › «Fórmula» (4.20-2b, `docs/UX.md` › «Cotización: fórmula (estados propios)»): publica la
+// Revertir la fórmula a una versión archivada desde la Fórmula de un origen (Configuración › Orígenes) (4.20-2b, `docs/UX.md` › «Cotización: fórmula (estados propios)»): publica la
 // N+1 como copia de esa versión con su diseño (`formula_revertir()`), sin tocar el borrador; la nota viene escrita y vacía se rechaza antes de pedir; el PT409 de la base
 // se muestra tal cual con «Recargar»; la URL (`?panel=revertir-formula&version=<id>`) se revisa al llegar.
 test.describe.configure({ mode: 'serial' })
@@ -48,11 +49,9 @@ test.afterAll(async () => {
 })
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}${resto}`)
+  await page.goto(`/configuracion/origenes/${origenId}/formula${resto}`)
   // Con `?panel=` el modal puede montarse antes de mirar: deja la página detrás con `aria-hidden`, y el título sigue dibujado.
-  await expect(
-    page.getByRole('heading', { name: 'Fórmula', level: 1, includeHidden: true }),
-  ).toBeVisible()
+  await enLaPestana(page, 'Fórmula', { includeHidden: true })
 }
 
 const modal = (page: Page, version: number) =>
@@ -121,21 +120,21 @@ test('la URL no abre revertir la publicada, una versión que no está ni un orig
   page,
 }) => {
   await entrar(page, duena)
-  await abrirFormula(page, porUrl.id, `&panel=revertir-formula&version=${idDe(porUrl.id, 3)}`)
+  await abrirFormula(page, porUrl.id, `?panel=revertir-formula&version=${idDe(porUrl.id, 3)}`)
   await expect(page.getByText('Esa ya es la versión publicada.')).toBeVisible()
   await expect(page).not.toHaveURL(/panel=/)
   const ajena = '00000000-0000-4000-8000-00000000abcd'
-  await abrirFormula(page, porUrl.id, `&panel=revertir-formula&version=${ajena}`)
+  await abrirFormula(page, porUrl.id, `?panel=revertir-formula&version=${ajena}`)
   await expect(
     page.getByText('Esa versión no está en la lista: búscala y elige «Revertir».'),
   ).toBeVisible()
   await expect(page).not.toHaveURL(/panel=/)
-  await abrirFormula(page, sinPublicada.id, `&panel=revertir-formula&version=${ajena}`)
+  await abrirFormula(page, sinPublicada.id, `?panel=revertir-formula&version=${ajena}`)
   await expect(page.getByText('Sin una versión publicada no hay a qué revertir.')).toBeVisible()
   await expect(page).not.toHaveURL(/panel=/)
   await expect(page.getByRole('dialog')).toHaveCount(0)
   // Llegar con una archivada de la primera página sí abre.
-  await abrirFormula(page, porUrl.id, `&panel=revertir-formula&version=${idDe(porUrl.id, 2)}`)
+  await abrirFormula(page, porUrl.id, `?panel=revertir-formula&version=${idDe(porUrl.id, 2)}`)
   await expect(modal(page, 2)).toBeVisible()
 })
 

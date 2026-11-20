@@ -1,21 +1,19 @@
 import { MapPinIcon, ShieldCheckIcon, UsersRoundIcon, type LucideIcon } from 'lucide-react'
 import { puede, type ClavePermiso, type Permisos } from '@/shared/lib/permisos'
 import { RUTAS } from '@/shared/lib/rutas'
+import { SECCION_DE_CATALOGOS } from './catalogos/seccion'
 import { SECCION_DE_COLA_WEB } from './cola-web/seccion'
-import { SECCION_DE_COTIZACION } from './cotizacion/seccion'
 import { SECCION_DE_EMPRESA } from './empresa/seccion'
-import { SECCION_DE_FLUJOS } from './flujos/seccion'
 import { SECCION_DE_LEADS } from './leads/seccion'
-import { SECCIONES_DE_LOGISTICA } from './logistica/seccion'
 import { PERMISOS_DE_ORIGENES } from './origenes/acceso'
-import { SUBSECCIONES_DE_ORIGEN } from './origenes/subsecciones'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
 import { SECCION_DE_WEB } from './web/seccion'
 
 // El registro de Configuración: la única fuente del inicio, del menú de Configuración y del selector de sección del celular. Cada
 // sección se abre con cualquiera de sus permisos (ver o gestionar) y pertenece a un grupo; sus sub-secciones son las sub-rutas que
-// registra cada página (se suman aquí, con su `page.tsx`). secciones.test.ts falla si una ruta o sub-ruta no tiene su `page.tsx`.
-// La sub-sección índice vive en la ruta de su sección (la que abre la sección); las demás, debajo.
+// registra cada página (se suman aquí, con su `page.tsx`). secciones.test.ts falla si una ruta o sub-ruta no tiene su `page.tsx` (o, la
+// raíz que sólo redirige, su `route.ts`). La sub-sección índice vive en la ruta de su sección (la que abre la sección); las demás, debajo.
+// Los orígenes no son sub-secciones fijas: el menú suma uno por origen que la persona abre (`_navegacion/grupos-de-quien-mira.ts`).
 
 // Los grupos de Configuración, en el orden en que se dibujan. No: «área» (es otra cosa en el glosario).
 export const GRUPOS = [
@@ -35,16 +33,13 @@ export type SubseccionDeConfiguracion = {
   // Lo que la persona escribiría para buscarla además de su título («logo, colores» en Datos de la empresa): el buscador de Configuración
   // las lee, sin distinguir acentos ni mayúsculas.
   palabras?: readonly string[]
-  // La de su sección (la índice) o la de su sección, una barra y algo más. Puede ser una plantilla con `[x]` (las partes de un origen):
-  // el menú la rellena con la ruta actual y, si no puede, no la dibuja (`_navegacion/marca.ts`).
+  // La de su sección (la índice) o la de su sección, una barra y algo más.
   ruta: string
   permisos: readonly ClavePermiso[]
   // Con motivo, quien no tiene sus permisos la ve apagada en el menú y en el selector, con el motivo; sin él, no la ve.
   motivoSinPermiso?: string
-  // El rótulo que agrupa sub-secciones seguidas en el menú («Por origen», «General» de Cotización).
+  // El rótulo que agrupa sub-secciones seguidas en el menú («Cotizaciones», «Logística» de Catálogos).
   grupo?: string
-  // Adónde lleva una plantilla cuando no resuelve con la ruta actual (no hay origen en la URL): una ruta de la sección que redirige sola.
-  respaldo?: string
 }
 
 // Una sub-sección como la ve la persona: abierta, o apagada (sin permiso y con motivo).
@@ -101,21 +96,35 @@ export const SECCIONES = [
     grupo: 'empresa-y-equipo',
     subsecciones: [],
   },
+  SECCION_DE_LEADS,
   {
     clave: 'origenes',
     titulo: 'Orígenes',
-    descripcion: 'De dónde vienen los vehículos: sus datos, sus campos y sus categorías.',
-    palabras: ['país', 'subasta', 'usa', 'china', 'campos', 'categorías', 'vehículos', 'tipo'],
+    descripcion:
+      'De dónde vienen los vehículos: sus datos, campos y categorías, su flujo, su fórmula y sus tablas.',
+    palabras: [
+      'país',
+      'subasta',
+      'usa',
+      'china',
+      'campos',
+      'categorías',
+      'vehículos',
+      'tipo',
+      'fórmula',
+      'flujo',
+      'fases',
+      'tablas',
+      'hoja',
+      'tarjeta',
+    ],
     ruta: RUTAS.origenes,
     Icono: MapPinIcon,
     permisos: PERMISOS_DE_ORIGENES,
     grupo: 'ventas',
-    subsecciones: SUBSECCIONES_DE_ORIGEN,
+    subsecciones: [],
   },
-  SECCION_DE_LEADS,
-  SECCION_DE_COTIZACION,
-  SECCION_DE_FLUJOS,
-  ...SECCIONES_DE_LOGISTICA,
+  SECCION_DE_CATALOGOS,
   SECCION_DE_REPUESTOS,
   SECCION_DE_WEB,
   SECCION_DE_COLA_WEB,
@@ -183,9 +192,10 @@ export type SubseccionDelNavegador = {
   clave: string
   titulo: string
   ruta: string
+  // El prefijo con que se marca en el menú, si no es su ruta: un origen abre su pestaña Datos y se marca en todas (`/configuracion/origenes/<id>`).
+  marca?: string
   motivo?: string
   grupo?: string
-  respaldo?: string
   palabras?: readonly string[]
 }
 
@@ -198,7 +208,7 @@ export type GrupoDelNavegador = {
     ruta: string
     // Sólo si la sección las declara.
     palabras?: readonly string[]
-    // `motivo`, sólo en la apagada; `grupo`, `respaldo` y `palabras`, sólo si la sub-sección los declara.
+    // `motivo`, sólo en la apagada; `grupo` y `palabras`, sólo si la sub-sección los declara.
     subsecciones: SubseccionDelNavegador[]
   }[]
 }
@@ -220,7 +230,6 @@ export function paraElNavegador(grupos: readonly GrupoVisible[]): GrupoDelNavega
           ? { motivo: sub.motivoSinPermiso }
           : {}),
         ...(sub.grupo === undefined ? {} : { grupo: sub.grupo }),
-        ...(sub.respaldo === undefined ? {} : { respaldo: sub.respaldo }),
         ...(sub.palabras === undefined ? {} : { palabras: sub.palabras }),
       })),
     })),

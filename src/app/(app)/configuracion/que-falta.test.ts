@@ -1,69 +1,68 @@
 import { describe, expect, it } from 'vitest'
-import type { ClaveDePaso, PasoSiguiente } from '@/modules/origenes'
+import type { ClaveDePaso, PasoParaCotizar } from '@/modules/origenes'
 import type { ClavePermiso, Permisos } from '@/shared/lib/permisos'
 import { conDestino } from './origenes/pasos'
 import { faltasPorSeccion } from './que-falta'
 
-const CHINA = { id: '00000000-0000-4000-8000-000000000001', nombre: 'China', activo: true }
-const JAPON = { id: '00000000-0000-4000-8000-000000000002', nombre: 'Japón', activo: true }
+const CHINA = { id: '00000000-0000-4000-8000-000000000001', nombre: 'China' }
+const JAPON = { id: '00000000-0000-4000-8000-000000000002', nombre: 'Japón' }
 
-const pendientes = (...claves: ClaveDePaso[]): PasoSiguiente[] =>
-  claves.map((clave) => ({ clave, titulo: clave, detalle: '', pendiente: true }))
+const faltan = (...pasos: [ClaveDePaso, PasoParaCotizar['estado']][]): PasoParaCotizar[] =>
+  pasos.map(([clave, estado]) => ({ clave, titulo: clave, estado, frase: 'x' }))
 
 const con = (...claves: ClavePermiso[]): Permisos =>
   claves.map((clave) => ({ clave, origenId: null, alcance: 'todos' }))
 
-const TODO = con(
-  'cotizaciones.configurar',
-  'flujos.configurar',
-  'empresa.ajustes.gestionar',
-  'equipo.roles.gestionar',
-)
+const TODO = con('cotizaciones.configurar', 'flujos.configurar', 'empresa.ajustes.gestionar')
 
-function de(origen: typeof CHINA, pasos: PasoSiguiente[], permisos: Permisos = TODO) {
+function de(origen: typeof CHINA, pasos: PasoParaCotizar[], permisos: Permisos = TODO) {
   return { origen, pasos: conDestino(pasos, permisos, origen.id) }
 }
 
 describe('faltasPorSeccion', () => {
-  it('un origen sin fórmula: en Cotización, con el enlace a su fórmula', () => {
-    expect(faltasPorSeccion([de(CHINA, pendientes('formula'))])).toEqual({
-      cotizacion: [
+  it('una línea por origen en Orígenes, enlazada a la primera pestaña que falla', () => {
+    expect(
+      faltasPorSeccion([de(CHINA, faltan(['flujo', 'bloquea'], ['formula', 'bloquea']))]),
+    ).toEqual({
+      origenes: [
         {
-          clave: `formula-${CHINA.id}`,
-          texto: 'Falta publicar la fórmula de China',
-          ruta: `/configuracion/cotizacion/${CHINA.id}/formula`,
+          clave: CHINA.id,
+          texto: 'China: falta configurar el flujo y publicar la fórmula',
+          ruta: `/configuracion/origenes/${CHINA.id}/flujo`,
         },
       ],
     })
   })
 
-  it('sin configurar el cotizador en ese origen, no se ofrece', () => {
-    const enOtro: Permisos = [
+  it('la tarjeta, a la sub-pestaña de Fórmula; tres o más, con comas', () => {
+    expect(faltasPorSeccion([de(JAPON, faltan(['tarjeta', 'aviso']))]).origenes?.[0]?.ruta).toBe(
+      `/configuracion/origenes/${JAPON.id}/formula/tarjeta`,
+    )
+    expect(
+      faltasPorSeccion([
+        de(CHINA, faltan(['campos', 'aviso'], ['flujo', 'bloquea'], ['tarjeta', 'aviso'])),
+      ]).origenes?.[0]?.texto,
+    ).toBe('China: falta activar sus campos, configurar el flujo y publicar la tarjeta')
+  })
+
+  it('sin el permiso en ese origen, ese paso no se dice; sin ninguno, no hay línea', () => {
+    const soloFormulaEnOtro: Permisos = [
       { clave: 'cotizaciones.configurar', origenId: JAPON.id, alcance: 'todos' },
     ]
-    expect(faltasPorSeccion([de(CHINA, pendientes('formula'), enOtro)])).toEqual({})
-  })
-
-  it('un origen inactivo no pide nada', () => {
     expect(
-      faltasPorSeccion([de({ ...CHINA, activo: false }, pendientes('formula', 'flujo'))]),
+      faltasPorSeccion([de(CHINA, faltan(['formula', 'bloquea']), soloFormulaEnOtro)]),
     ).toEqual({})
+    const soloFlujo = con('flujos.configurar')
+    expect(
+      faltasPorSeccion([de(CHINA, faltan(['flujo', 'bloquea'], ['formula', 'bloquea']), soloFlujo)])
+        .origenes?.[0]?.texto,
+    ).toBe('China: falta configurar el flujo')
   })
 
-  it('el flujo sin fases va a Flujos con su origen', () => {
-    expect(faltasPorSeccion([de(CHINA, pendientes('flujo'))]).flujos).toEqual([
-      {
-        clave: `flujo-${CHINA.id}`,
-        texto: 'Falta configurar el flujo de China',
-        ruta: `/configuracion/flujos?origen=${CHINA.id}`,
-      },
-    ])
-  })
-
-  it('dos subastas sin apibara: una sola falta en Empresa', () => {
+  it('apibara va una sola vez a Empresa, aunque haya dos subastas', () => {
     const faltas = faltasPorSeccion([
-      de(CHINA, pendientes('apibara')),
-      de(JAPON, pendientes('apibara')),
+      de(CHINA, faltan(['datos', 'aviso'])),
+      de(JAPON, faltan(['datos', 'aviso'], ['formula', 'bloquea'])),
     ])
     expect(faltas.empresa).toEqual([
       {
@@ -72,21 +71,18 @@ describe('faltasPorSeccion', () => {
         ruta: '/configuracion/empresa/integraciones',
       },
     ])
+    expect(faltas.origenes?.map((falta) => falta.texto)).toEqual([
+      'Japón: falta publicar la fórmula',
+    ])
   })
 
-  it('los permisos del origen no van al inicio, ni lo que ya está hecho', () => {
-    const hecho = pendientes('formula').map((paso) => ({ ...paso, pendiente: false }))
-    expect(faltasPorSeccion([de(CHINA, [...pendientes('permisos'), ...hecho])])).toEqual({})
+  it('sin el permiso de la empresa, apibara no se dice', () => {
+    expect(
+      faltasPorSeccion([de(CHINA, faltan(['datos', 'aviso']), con('flujos.configurar'))]),
+    ).toEqual({})
   })
 
-  it('cada sección junta las de todos los orígenes, en su orden', () => {
-    const faltas = faltasPorSeccion([
-      de(CHINA, pendientes('formula')),
-      de(JAPON, pendientes('formula')),
-    ])
-    expect(faltas.cotizacion?.map((falta) => falta.texto)).toEqual([
-      'Falta publicar la fórmula de China',
-      'Falta publicar la fórmula de Japón',
-    ])
+  it('sin pasos que falten, nada', () => {
+    expect(faltasPorSeccion([de(CHINA, [])])).toEqual({})
   })
 })

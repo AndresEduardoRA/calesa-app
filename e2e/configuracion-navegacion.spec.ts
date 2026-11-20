@@ -13,8 +13,9 @@ import {
 } from './soporte/base'
 import { PREFIJO_CLAVE_E2E, crearOrigenDePrueba } from './soporte/origenes'
 
-// La navegación de Configuración: desde cada sección se vuelve al inicio con «‹ Configuración», el menú de Configuración (también en el inicio) marca la sección
-// actual y salta a otra, quien sólo configura los leads ve sólo «Ventas › Leads», y el inicio dice lo que falta con su enlace al paso.
+// La navegación de Configuración: el menú son cuatro grupos (Empresa y equipo, Ventas, Operación, Web) sin Cotización, Flujos ni Logística; desde cada
+// sección se vuelve al inicio con «‹ Configuración»; el menú (también en el inicio) marca la sección actual y salta a otra; quien sólo configura los
+// leads ve sólo «Ventas › Leads»; y el inicio dice en Orígenes lo que le falta a cada origen, con su enlace a la pestaña.
 
 let duena = ''
 let soloLeads = ''
@@ -50,7 +51,7 @@ test.beforeAll(async ({}, info) => {
     permisos: ['leads.configurar'],
   })
   // Nace sin fórmula publicada. Quien configura el cotizador sólo en él ve sólo su falta: las de los orígenes de otros specs, no.
-  origen = await crearOrigenDePrueba(`E2E Navega ${proyecto}`, claveDelOrigen())
+  origen = await crearOrigenDePrueba(`E2E Navega ${proyecto}`, claveDelOrigen(), { tipo: 'manual' })
   cotizadora = correoDePrueba(`cotiza-navegacion-${proyecto}`)
   await crearPersona({
     email: cotizadora,
@@ -88,6 +89,19 @@ test('E2E desde cada sección del menú se vuelve al inicio de Configuración', 
     .getByRole('link')
     .evaluateAll((enlaces) => enlaces.map((enlace) => enlace.getAttribute('href') ?? ''))
   expect(rutas.length).toBeGreaterThanOrEqual(9)
+  // Cotización, Flujos y Logística ya no son secciones: lo de cada origen vive en su página y lo global en Catálogos.
+  for (const [grupo, secciones] of [
+    ['Empresa y equipo', ['Empresa', 'Equipo', 'Roles y permisos']],
+    ['Ventas', ['Leads', 'Orígenes']],
+    ['Operación', ['Catálogos', 'Repuestos']],
+  ] as const) {
+    await expect(
+      menu(page).getByRole('list', { name: grupo, exact: true }).locator(':scope > li > a'),
+    ).toHaveText([...secciones])
+  }
+  for (const vieja of ['Cotización', 'Flujos', 'Logística']) {
+    await expect(menu(page).getByRole('link', { name: vieja, exact: true })).toHaveCount(0)
+  }
   for (const ruta of rutas) {
     await page.goto(ruta)
     await expect(volver(page), ruta).toBeVisible()
@@ -107,17 +121,26 @@ test('E2E el menú marca la sección actual y salta a otra', async ({ page }) =>
   await page.goto('/configuracion/leads')
   await expect(page).toHaveURL('/configuracion/leads/campos')
   const leads = menu(page).getByRole('link', { name: 'Leads', exact: true })
-  const flujos = menu(page).getByRole('link', { name: 'Flujos', exact: true })
+  const catalogos = menu(page).getByRole('link', { name: 'Catálogos', exact: true })
   await expect(leads).toHaveAttribute('aria-current', 'true')
   await expect(menu(page).getByRole('link', { name: 'Campos', exact: true })).toHaveAttribute(
     'aria-current',
     'page',
   )
-  await expect(flujos).not.toHaveAttribute('aria-current')
-  await flujos.click()
-  await expect(page).toHaveURL(/\/configuracion\/flujos/)
-  await expect(flujos).toHaveAttribute('aria-current', 'page')
+  await expect(catalogos).not.toHaveAttribute('aria-current')
+  // Catálogos tampoco tiene índice: abre el primer catálogo (Colores) y despliega sus tramos.
+  await catalogos.click()
+  await expect(page).toHaveURL('/configuracion/catalogos/colores')
+  await expect(catalogos).toHaveAttribute('aria-current', 'true')
+  await expect(menu(page).getByRole('link', { name: 'Colores', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
   await expect(leads).not.toHaveAttribute('aria-current')
+  for (const tramo of ['Cotizaciones', 'Logística']) {
+    await expect(menu(page).getByRole('list', { name: tramo, exact: true })).toBeVisible()
+  }
+  await expect(menu(page).getByRole('link', { name: 'Tablas compartidas' })).toBeVisible()
 })
 
 test('E2E con sólo configurar los leads se ve sólo «Ventas › Leads»', async ({ page }) => {
@@ -146,18 +169,20 @@ test('E2E con sólo configurar los leads se ve sólo «Ventas › Leads»', asyn
   await expect(main.getByRole('region', { name: 'Ventas' }).getByRole('link')).toHaveText(['Leads'])
 })
 
-test('E2E el inicio dice qué falta: la fórmula de un origen nuevo, con su enlace', async ({
+test('E2E el inicio dice en Orígenes qué le falta a un origen nuevo, con su enlace a la pestaña', async ({
   page,
 }) => {
   await page.context().clearCookies()
   await entrar(page, cotizadora, { fresco: true })
   await page.goto('/configuracion/inicio')
   const ventas = page.getByRole('main').getByRole('region', { name: 'Ventas' })
+  // Configura sólo el cotizador en ese origen: el flujo (sin fases) no se le dice; la fórmula y la tarjeta sí, en una línea.
   const falta = ventas.getByRole('link', {
-    name: `Falta publicar la fórmula de ${origen.nombre}`,
+    name: `${origen.nombre}: falta publicar la fórmula y publicar la tarjeta`,
     exact: true,
   })
-  await expect(falta).toHaveAttribute('href', `/configuracion/cotizacion/${origen.id}/formula`)
+  await expect(falta).toHaveAttribute('href', `/configuracion/origenes/${origen.id}/formula`)
   await falta.click()
-  await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${origen.id}/formula$`))
+  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${origen.id}/formula$`))
+  await expect(page.getByRole('heading', { name: origen.nombre, level: 1 })).toBeVisible()
 })
