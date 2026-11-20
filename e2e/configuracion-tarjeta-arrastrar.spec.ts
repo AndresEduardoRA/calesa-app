@@ -15,13 +15,19 @@ import {
   type TerrenoDeArrastrar,
 } from './soporte/tarjeta-arrastrar'
 
-// @sin-celular-archivo: editor de Configuración que no existe bajo 1.024 px; por debajo, un aviso y la tarjeta en sólo lectura
-
 // El editor de la tarjeta queda quieto tras arrastrar un borde (`docs/LECCIONES.md` › Interfaz): con «Ajustar» la escala depende del ancho del lienzo y el alto de la
 // página, de la escala; si la barra de la página o la del marco cambian el ancho medido, la escala, el alto y la barra entran en un ciclo de pocos píxeles. Tras
 // arrastrar el borde de una columna, el asa de una fila o cambiar su alto, con «Ajustar», con «100 %» y con otro ancho de ventana: en cada alto de ventana de la banda
 // donde la barra aparece o no, el lienzo no cambia de tamaño; durante 2 s, cada 100 ms, tampoco; y un clic elige una casilla.
 test.describe.configure({ mode: 'serial' })
+
+// El editor no existe bajo 1.024 px (un aviso y la tarjeta en sólo lectura) y el celular superpone sus barras, que no restan ancho: ahí el ciclo no puede pasar.
+// Como `leads-tabla-ancha.spec.ts`, se salta en el celular en vez de marcarse sin celular: mide la disposición y cambia la ventana, y la guarda de
+// `e2e/soporte/sin-celular.ts` no deja hacer eso a un spec marcado.
+test.skip(
+  ({ isMobile }) => isMobile,
+  'El editor de la tarjeta es de escritorio y el celular superpone sus barras.',
+)
 
 // El Chromium sin interfaz de Playwright esconde las barras (`--hide-scrollbars`): sin ellas el ciclo no existe y la prueba no prueba nada.
 test.use({
