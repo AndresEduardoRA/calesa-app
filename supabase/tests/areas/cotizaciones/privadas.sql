@@ -18,6 +18,8 @@
 --   P8. Aprobar una privada: sin el aviso 22023 (hint privada) y nada cambia; con él queda pública con su hermana y aprobada, y devuelve la versión nueva.
 --   P9. Marcar final una privada la hace pública con su hermana (que va a la papelera pública).
 --   P10. La aprobada automática se elige entre las públicas; una privada no mueve `cotizado_en` y hacerla pública sí.
+--   P11. La papelera no nombra una privada ajena a quien purga sin el permiso: ni en el lote ni en su cuenta, ni un lote de sólo privadas, ni la lista por
+--        tipo, ni lo que devuelve restaurar el lote (que la restaura igual, con todo el lote). Con el permiso del origen la ve.
 
 create temp sequence priv_telefono;
 
@@ -437,5 +439,52 @@ begin
   perform pg_temp.priv_cot(a, e, true, 90);
   perform pg_temp.priv_confirmar();
   if (select x.cotizacion_id from public.cotizaciones_aprobadas x where x.vehiculo_id = (e ->> 'v')::uuid) is distinct from p then raise exception 'P10: una privada desplazó a la aprobada'; end if;
+end $$;
+rollback;
+
+-- @test cotizaciones privadas: P11 la papelera no nombra una privada ajena: ni el lote, ni su cuenta, ni la lista por tipo, ni lo que devuelve restaurar
+begin;
+do $$
+declare
+  a uuid := pg_temp.priv_persona(array['cotizaciones.ver']); e jsonb := pg_temp.priv_terreno(a);
+  sin uuid := pg_temp.priv_persona(array['cotizaciones.ver', 'cotizaciones.papelera.purgar']);
+  con uuid; p uuid; q uuid; s uuid; l1 uuid; l2 uuid; r jsonb; v_sql text;
+begin
+  con := pg_temp.priv_persona(array['cotizaciones.ver', 'cotizaciones.papelera.purgar', 'cotizaciones.privadas.ver:todos:' || (e ->> 'o')]);
+  p := pg_temp.priv_cot(a, e, true, 30, p_titulo => 'PRIV zqxpapeleraqz', p_con_vehiculo => false);
+  q := pg_temp.priv_cot(a, e, false, 20, p_con_vehiculo => false);
+  s := pg_temp.priv_cot(a, e, true, 10, p_titulo => 'PRIV zqxpapeleraqz', p_con_vehiculo => false);
+  insert into public.lotes_papelera (tipo, creado_por, resumen) values ('cotizaciones', a, '{"cantidad": 2}') returning id into l1;
+  insert into public.lotes_papelera (tipo, creado_por, resumen) values ('cotizaciones', a, '{"cantidad": 1}') returning id into l2;
+  update public.cotizaciones set eliminado_en = now(), eliminado_por = a, lote_papelera_id = l1 where id in (p, q);
+  update public.cotizaciones set eliminado_en = now(), eliminado_por = a, lote_papelera_id = l2 where id = s;
+  -- Lo que cada quien ve de los dos lotes: {lote: [ids de sus cotizaciones], cuenta}, el lote suelto y la lista por tipo.
+  v_sql := format($q$select jsonb_build_object(
+      'lotes', (select coalesce(jsonb_object_agg(x ->> 'id', jsonb_build_object(
+                  'ids', (select coalesce(jsonb_agg(c ->> 'id' order by c ->> 'id'), '[]') from jsonb_array_elements(x -> 'cotizaciones') c),
+                  'cuenta', (x ->> 'en_papelera')::int)), '{}')
+                from jsonb_array_elements(public.cotizaciones_papelera_listar(p_tope => 51)) x where x ->> 'id' in (%L, %L)),
+      'l2', public.cotizaciones_papelera_lote(%L) is not null,
+      'por_tipo', (select coalesce(jsonb_agg(t.registro_id order by t.registro_id), '[]') from public.papelera_listar('cotizaciones') t
+                    where t.registro_id in (%L, %L, %L)))$q$, l1, l2, l2, p, q, s);
+  r := pg_temp.priv_corre(sin, v_sql);
+  if r ? 'error' then raise exception 'P11: quien purga sin el permiso no pudo leer: %', r; end if;
+  if r -> 'lotes' is distinct from jsonb_build_object(l1, jsonb_build_object('ids', jsonb_build_array(q), 'cuenta', 1))
+     or (r ->> 'l2')::boolean or r -> 'por_tipo' is distinct from jsonb_build_array(q) then
+    raise exception 'P11: quien purga sin el permiso ve %', r;
+  end if;
+  r := pg_temp.priv_corre(con, v_sql);
+  if r ? 'error' then raise exception 'P11: quien tiene el permiso no pudo leer: %', r; end if;
+  if (r -> 'lotes' -> (l1::text) ->> 'cuenta')::int is distinct from 2 or not (r -> 'lotes' ? (l2::text)) or not (r ->> 'l2')::boolean
+     or jsonb_array_length(r -> 'por_tipo') is distinct from 3 then
+    raise exception 'P11: quien tiene el permiso ve %', r;
+  end if;
+  -- Restaurar el lote mixto sin el permiso: vuelven las dos, pero la respuesta sólo nombra la pública.
+  r := pg_temp.priv_corre(sin, format('select public.cotizaciones_papelera_restaurar(%L, %L)', l1, (select l.actualizado_en from public.lotes_papelera l where l.id = l1)));
+  if r ? 'error' then raise exception 'P11: restaurar dio %', r; end if;
+  if (select jsonb_agg(x ->> 'id') from jsonb_array_elements(r -> 'restaurados') x) is distinct from jsonb_build_array(q) or r ->> 'quedan' is distinct from '0' then
+    raise exception 'P11: restaurar devolvió %', r;
+  end if;
+  if (pg_temp.priv_fila(p)).eliminado_en is not null then raise exception 'P11: la privada no volvió con su lote'; end if;
 end $$;
 rollback;
