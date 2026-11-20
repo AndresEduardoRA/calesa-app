@@ -38,6 +38,14 @@ export function piezaParaCopiarDeOtro(formula: Pick<FormulaDeLaLista, 'formula'>
   return null
 }
 
+// Qué versión se copia de otro origen, dicho bajo el campo «Fórmula» (no se elige: `piezaParaCopiarDeOtro()`).
+export function frasePiezaDeOtro(formula: Pick<FormulaDeLaLista, 'formula'>): string {
+  const pieza = piezaParaCopiarDeOtro(formula)
+  if (pieza === 'publicada') return 'Se copia su versión publicada.'
+  if (pieza === 'borrador') return 'No tiene versión publicada: se copia su borrador.'
+  return 'Esa fórmula no tiene nada que copiar.'
+}
+
 // Por qué no se puede copiar esa versión de una fórmula (el texto de la base), o nulo si se puede.
 export function motivoDeLaPieza(
   formula: Pick<FormulaDeLaLista, 'formula'>,

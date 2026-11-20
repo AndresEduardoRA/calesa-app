@@ -2,7 +2,7 @@
 
 import { Button } from '@/shared/ui/button'
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
-import { motivoDeLaPieza } from '../../../entities/formulas-del-origen/copiar'
+import { frasePiezaDeOtro, motivoDeLaPieza } from '../../../entities/formulas-del-origen/copiar'
 import type { FormulaDeLaLista } from '../../../entities/formulas-del-origen/lista'
 import type { useNuevaFormula } from '../hooks/use-nueva-formula'
 
@@ -39,6 +39,7 @@ function CampoDeLaFormula({ formulario: f }: { formulario: Formulario }) {
           etiqueta: formula.archivadaEn ? `${formula.nombre} (archivada)` : formula.nombre,
         })),
       ]}
+      ayuda={f.como === 'otro' && f.copia ? frasePiezaDeOtro(f.copia) : undefined}
       error={f.errores['copia']}
     />
   )

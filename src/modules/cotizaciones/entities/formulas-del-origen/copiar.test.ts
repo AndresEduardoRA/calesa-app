@@ -5,6 +5,7 @@ import {
   nombreDeLaCopia,
   origenesParaCopiar,
   piezaParaCopiarDeOtro,
+  frasePiezaDeOtro,
 } from './copiar'
 
 const A = 'a'
@@ -47,6 +48,18 @@ describe('piezaParaCopiarDeOtro y motivoDeLaPieza', () => {
     expect(piezaParaCopiarDeOtro({ formula: { publicada: P, borrador: B1 } })).toBe('publicada')
     expect(piezaParaCopiarDeOtro({ formula: { publicada: null, borrador: B1 } })).toBe('borrador')
     expect(piezaParaCopiarDeOtro({ formula: { publicada: null, borrador: null } })).toBeNull()
+  })
+
+  it('dice qué versión se copia de otro origen', () => {
+    expect(frasePiezaDeOtro({ formula: { publicada: P, borrador: B1 } })).toBe(
+      'Se copia su versión publicada.',
+    )
+    expect(frasePiezaDeOtro({ formula: { publicada: null, borrador: B1 } })).toBe(
+      'No tiene versión publicada: se copia su borrador.',
+    )
+    expect(frasePiezaDeOtro({ formula: { publicada: null, borrador: null } })).toBe(
+      'Esa fórmula no tiene nada que copiar.',
+    )
   })
 
   it('dice por qué no se copia la versión que no existe', () => {
