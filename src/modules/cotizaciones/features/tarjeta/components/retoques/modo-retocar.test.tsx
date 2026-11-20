@@ -37,6 +37,7 @@ const pagina: DatosDeLaPagina = {
   vencida: false,
   venceEl: null,
   guardadaEl: null,
+  empresa: null,
   logo: null,
   cotizacionId: null,
 }

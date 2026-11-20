@@ -26,6 +26,7 @@ export function valorDeLaVariable(
   delCalculo: { tituloOpcion: string | null; modo: string | null },
 ): string {
   const valores: Record<VariableDeLaTarjeta, string | null | undefined> = {
+    empresa_nombre: contexto.empresa,
     fecha_larga: contexto.fecha,
     numero: contexto.numero,
     titulo: contexto.titulo,
@@ -53,6 +54,8 @@ export type PaginaDeLaTarjeta = {
   venceEl: string | null
   // El último guardado (el texto de la base) de una guardada; nulo en la hoja nueva, que dice hoy.
   guardadaEl: string | null
+  // El nombre de la empresa.
+  empresa: string | null
   logo: ContextoDeLaCotizacion['logo']
 }
 
@@ -72,6 +75,7 @@ export function contextoDeLaPagina(
       pagina.venceEl === null
         ? null
         : formatearFecha(inicioDelDia(pagina.venceEl, { zona }), { zona }),
+    empresa: pagina.empresa,
     logo: pagina.logo,
   }
 }

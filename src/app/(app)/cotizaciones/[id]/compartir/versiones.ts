@@ -17,7 +17,7 @@ type Comun = {
   locale: string
 }
 
-// Lo de la página de una cotización para sus cifras de compartir (sin título, cliente ni logo: el texto los arma aparte).
+// Lo de la página de una cotización para sus cifras de compartir (sin título, cliente, empresa ni logo: el texto los arma aparte).
 export const contextoParaCompartir = (hoja: HojaDeUnaGuardada, comun: Comun) =>
   contextoDeLaPagina(
     {
@@ -28,6 +28,7 @@ export const contextoParaCompartir = (hoja: HojaDeUnaGuardada, comun: Comun) =>
       numero: hoja.cotizacion.numero,
       venceEl: hoja.venceEl,
       guardadaEl: hoja.cotizacion.actualizadoEn,
+      empresa: null,
       logo: null,
     },
     { zona: comun.zona, hoy: hoja.cotizacion.actualizadoEn },

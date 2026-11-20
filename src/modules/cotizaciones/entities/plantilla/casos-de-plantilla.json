@@ -3035,7 +3035,8 @@
           { "id": "f8", "alto": 24, "ocultar_si": "nunca" },
           { "id": "f9", "alto": 24, "ocultar_si": "nunca" },
           { "id": "f10", "alto": 24, "ocultar_si": "nunca" },
-          { "id": "f11", "alto": 24, "ocultar_si": "nunca" }
+          { "id": "f11", "alto": 24, "ocultar_si": "nunca" },
+          { "id": "f12", "alto": 24, "ocultar_si": "nunca" }
         ],
         "celdas": [
           {
@@ -3109,6 +3110,12 @@
             "fila": "f11",
             "columna": "a",
             "contenido": { "tipo": "dato", "variable": "modo_tc" }
+          },
+          {
+            "id": "v12",
+            "fila": "f12",
+            "columna": "a",
+            "contenido": { "tipo": "dato", "variable": "empresa_nombre" }
           }
         ]
       },

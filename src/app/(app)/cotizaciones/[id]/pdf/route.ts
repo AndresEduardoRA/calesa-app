@@ -62,6 +62,7 @@ export async function GET(_peticion: Request, { params }: RouteContext<'/cotizac
   const hermana = await hermanaDelPdf(hoja, {
     cliente: nombreDelCliente,
     vehiculo,
+    empresa: nombre,
     logo,
     zona: zonaHoraria,
   })
@@ -79,6 +80,7 @@ export async function GET(_peticion: Request, { params }: RouteContext<'/cotizac
         numero: hoja.cotizacion.numero,
         venceEl: hoja.venceEl,
         guardadaEl: hoja.cotizacion.actualizadoEn,
+        empresa: nombre,
         logo,
       },
       { zona: zonaHoraria, hoy: hoja.cotizacion.actualizadoEn },

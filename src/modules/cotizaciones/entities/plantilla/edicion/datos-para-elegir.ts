@@ -15,6 +15,7 @@ import type { ContextoDePlantilla } from '../validar-plantilla'
 export const TOPE_DE_DATOS_A_LA_VISTA = 50
 
 export const NOMBRES_DE_LAS_VARIABLES: Readonly<Record<VariableDeLaTarjeta, string>> = {
+  empresa_nombre: 'Nombre de la empresa',
   fecha_larga: 'Fecha',
   numero: 'Número de la cotización',
   titulo: 'Título de la cotización',
