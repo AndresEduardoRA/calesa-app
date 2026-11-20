@@ -11191,6 +11191,7 @@ export type Database = {
           fases: number
           formula_publicada: boolean
           origen_id: string
+          tarjeta_publicada: boolean
           vehiculos: number
         }[]
       }
