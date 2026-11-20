@@ -16,6 +16,7 @@ describe('preferenciasDesde', () => {
       vistaDeVehiculos: null,
       vistaDeCotizaciones: null,
       agruparCotizaciones: null,
+      embudoDeLaFicha: null,
     })
   })
 
@@ -30,6 +31,7 @@ describe('preferenciasDesde', () => {
       vistaDeVehiculos: null,
       vistaDeCotizaciones: null,
       agruparCotizaciones: null,
+      embudoDeLaFicha: null,
     }
     expect(preferenciasDesde({})).toEqual(sinElegir)
     expect(preferenciasDesde(null)).toEqual(sinElegir)
@@ -46,6 +48,7 @@ describe('preferenciasDesde', () => {
       vistaDeVehiculos: null,
       vistaDeCotizaciones: null,
       agruparCotizaciones: null,
+      embudoDeLaFicha: null,
     })
   })
 
@@ -183,5 +186,23 @@ describe('la lista de cotizaciones', () => {
     expect(
       esquemaPreferencia.safeParse({ clave: 'cotizaciones.agrupar', valor: 'no' }).success,
     ).toBe(false)
+  })
+})
+
+describe('el embudo de la ficha del lead', () => {
+  const ID = '6f1d8f0e-3b52-4c1e-9a53-0d2a1d3c9b11'
+
+  it('«leads.embudo_de_la_ficha» se lee si es un id; otra cosa queda sin elegir', () => {
+    expect(preferenciasDesde({ 'leads.embudo_de_la_ficha': ID }).embudoDeLaFicha).toBe(ID)
+    expect(preferenciasDesde({ 'leads.embudo_de_la_ficha': 'ventas' }).embudoDeLaFicha).toBeNull()
+    expect(preferenciasDesde({ 'leads.embudo_de_la_ficha': 7 }).embudoDeLaFicha).toBeNull()
+    expect(preferenciasDesde({}).embudoDeLaFicha).toBeNull()
+  })
+
+  it('se guarda sólo un id (o null, que borra la elección)', () => {
+    const clave = 'leads.embudo_de_la_ficha'
+    expect(esquemaPreferencia.safeParse({ clave, valor: ID }).success).toBe(true)
+    expect(esquemaPreferencia.safeParse({ clave, valor: null }).success).toBe(true)
+    expect(esquemaPreferencia.safeParse({ clave, valor: 'ventas' }).success).toBe(false)
   })
 })
