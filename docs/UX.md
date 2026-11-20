@@ -915,8 +915,8 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
 - **En una línea:** `<section aria-label="Relacionados">` sin encabezado, con un chip por grupo con algo («Vinculado · n»; 44 px en el celular, 32 en escritorio) y, si hay acciones de grupos
   que no se dibujan, el «⋯» pegado al último chip. Cada chip abre un popover (su código se pide al primer clic) con el grupo: leyenda a la vista, filas, acciones y «Ver todos» (que cierra el
   popover antes de abrir su drawer). Al 200 % los chips y el «⋯» bajan de renglón; el popover no pasa del ancho de la pantalla.
-- **Compacta:** `<section aria-label="Relacionados">` con el `h2` «Relacionados» y su «⋯», y los grupos con algo en una grilla en rem (`auto-fill`, mínimo 16 rem: una columna en el celular o
-  en una lateral angosta, hasta tres a lo ancho; al 200 % caen columnas, no ensancha), sin borde por grupo. Cada grupo: una línea de título con el `h3` «<Tipo> · n», «Ver todos» y el «⋯» del
+- **Compacta:** `<section aria-label="Relacionados">` con el `h2` «Relacionados» y su «⋯», y los grupos con algo en una grilla en rem (`auto-fit`, mínimo 16 rem: una columna en el celular o
+  en una lateral angosta; en pantallas grandes los grupos con algo llenan el ancho, sin pistas vacías, y las filas de un grupo van en la misma grilla; al 200 % caen columnas, no ensancha), sin borde por grupo. Cada grupo: una línea de título con el `h3` «<Tipo> · n», «Ver todos» y el «⋯» del
   grupo («Más acciones de «<Tipo>»»), hasta 3 filas y lo que no se ve contado. **Sin leyendas a la vista:** la leyenda es el `title` del `h3` y la descripción del grupo para el lector
   (`aria-describedby` a un texto `sr-only`). Sin botones sueltos: las acciones del grupo, en su «⋯»; las de cada fila, en el de la fila.
 - **Filas:** desde un vehículo, el lead (nombre enlazado, números como siempre, «Fuera de tu cartera» si se ve enmascarado, nunca el teléfono); desde un lead, el vehículo (miniatura que abre
@@ -1750,14 +1750,18 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
   «Relacionados (estados propios)») con «Vincular o marcar» en el título (cartera y `leads.editar`: abre `?panel=agregar-vehiculo`, que busca por título, VIN,
   lote o #número, con «Vincular» y nota de interés ≤ 500); vinculados, interesados (con nota) y cotizados con sus acciones en el «⋯» de cada fila
   («Desvincular»: con la cartera, en el lugar con «Deshacer»; sin ella, confirma en `?panel=desvincular&vinculado=`; «Quitar interés»). Al pie, «Vínculos
-  anteriores» plegados: un botón (`aria-expanded`) que los despliega en el lugar, hasta 50 con su tope. **Oportunidades** (con la cartera): las abiertas
-  (una por embudo) en filas de una línea (título, el embudo si quien mira tiene más de uno, la etapa con su color y el monto con `<Monto>`), hasta 3, con
-  «Mover a», «Editar» y «Eliminar» en el «⋯» de cada fila (una que se cierra sale de la vista); «Nueva» en el título (su nombre accesible, «Nueva
-  oportunidad»; `?panel=nueva-oportunidad`); «Ver todas» al embudo filtrado por el lead (`/leads?vista=embudo&embudo=<id>&lead=<id>`), en el de la primera
-  que se ve o, sin abiertas, en el por defecto de quien mira; las cerradas están ahí.
+  anteriores» plegados: un botón (`aria-expanded`) que los despliega en el lugar, hasta 50 con su tope. **Oportunidades** (con la cartera): el **embudo del lead**.
+  Un selector de embudo (sólo si quien mira tiene más de uno; lo elegido se recuerda por persona) y una columna por etapa del embudo elegido, con el nombre sobre su color y
+  las oportunidades de este lead en ella (abiertas, ganadas y perdidas), hasta 3 por columna. Cada tarjeta: título (hasta dos líneas), vehículo si lo tiene, monto con `<Monto>`,
+  motivo si es perdida y su «⋯» arriba a la derecha con «Mover a», «Editar» y «Eliminar». **Arrastrar** una tarjeta a otra columna la mueve (mouse; con el teclado, Tab a la
+  tarjeta, Espacio la toma, las flechas la llevan a la etapa de al lado y Espacio la suelta; Esc cancela; cada paso se anuncia en español); soltar en una perdida pide el motivo
+  como «Mover a» (`?panel=mover-oportunidad`). Desde 36 rem de bloque, columnas de 11 rem en una fila que se desplaza de costado; debajo (el celular, el texto al 200 %), las etapas una
+  bajo otra, una vacía es sólo su encabezado, y se mueve con «Mover a» (no se arrastra). «Nueva» en el título (su nombre accesible, «Nueva oportunidad»; `?panel=nueva-oportunidad`,
+  empieza en el embudo que se ve) y, a su lado, el «⋯» del bloque con «Ver en el embudo» (`/leads?vista=embudo&embudo=<id>&lead=<id>`, el embudo que se ve); si algo no se dibuja (más por leer o
+  más de 3 en una etapa), «Ver en el embudo» también al pie, como enlace de texto sin número.
 - **Estados de los bloques:** cada uno tras su `<Suspense>` con su esqueleto del alto de lo que viene (el índice sale enseguida: son los permisos); uno que
   falla al leer o al dibujar muestra su título, «No pudimos cargar «<título>».» y «Reintentar», y los demás siguen; vacíos de una línea («Sin
-  seguimientos todavía.», «Sin cotizaciones que puedas ver.», «Sin vehículos.», «Sin oportunidades abiertas.»); sin recordatorio pendiente no se dibuja su
+  seguimientos todavía.», «Sin cotizaciones que puedas ver.», «Sin vehículos.», «Sin oportunidades en «<embudo>».»); sin recordatorio pendiente no se dibuja su
   fila; fuera de la cartera se ve y no se edita (teléfonos enmascarados con «Completo solo para su cartera.», privados «Solo la cartera», sin «+», sin «⋯»
   en las filas de seguimiento, sin «Vincular o marcar» y sin «Oportunidades»); sin `cotizaciones.crear`, «Cotizaciones» sin «Cotizar»; sin red el índice sigue (son anclas) y lo diferido dice «Sin
   conexión. No se pudo abrir esto.»; al 200 %, una sola columna sin ensanchar la página.
@@ -1817,8 +1821,8 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 - **Relacionados:** cada grupo muestra «n» o «100+» en su chip o en su título (una ventana de 101 por grupo, lo que no se ve incluido, nunca un total exacto), hasta 3 filas y «Ver todos» de a 20 por cursor hasta 500 con `<AvisoDeTope>`.
 - **Vehículos y ficha:** «Vínculos anteriores» (hasta 50) y «Agregar vehículo» dicen su tope al pie con `<AvisoDeTope>`; vinculados e interesados son
   los grupos de Relacionados («100+», «Ver todos» hasta 500); el bloque «Seguimiento» muestra 3 seguimientos y tu recordatorio más próximo, y «Ver
-  todos» lee de a 20 hasta 500; «Cotizaciones» muestra las 3 más recientes y «Ver todas» es el listado; «Oportunidades» muestra hasta 3 abiertas y lo
-  demás está en «Ver todas», el embudo filtrado por el lead.
+  todos» lee de a 20 hasta 500; «Cotizaciones» muestra las 3 más recientes y «Ver todas» es el listado; «Oportunidades» dibuja hasta 3 por etapa y lo
+  demás está en «Ver en el embudo», el embudo filtrado por el lead.
 - **Papeleras:** de a 5 lotes por página (`?cursor=`); un lote trae hasta 200 y muestra 20 con «Mostrar los 200». Sin «Ítems por página»:
   su unidad es el lote.
 - **Sin red:** abrir un modal, panel o pestaña nunca pedidos dice «Sin conexión. No se pudo abrir esto.» con «Reintentar»; paginar sin red

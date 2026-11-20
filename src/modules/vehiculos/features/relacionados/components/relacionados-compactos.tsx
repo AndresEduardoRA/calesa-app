@@ -53,8 +53,9 @@ function TituloPropio({ titulo, accion, mas }: EncabezadoDeRelacionados & { mas:
   return <TituloDeBloqueConAccion id={ID_DEL_TITULO} titulo={titulo} accion={acciones} />
 }
 
-// «Relacionados» compacto (las fichas): el título («Relacionados», o el de `encabezado` con su acción) con el «⋯» de lo que no tiene grupo a la vista, y los grupos con algo en columnas que caben (una en el celular o en una
-// lateral angosta, hasta tres a lo ancho; en rem, así con el texto al 200 % caen columnas en vez de ensanchar). Si no hay nada, la frase con una acción a la vista.
+// «Relacionados» compacto (las fichas): el título («Relacionados», o el de `encabezado` con su acción) con el «⋯» de lo que no tiene grupo a la vista, y los grupos con algo en columnas que caben y que llenan el ancho (una
+// en el celular o en una lateral angosta; en pantallas grandes, una grilla que se adapta a cuántos grupos hay, sin columnas vacías: `auto-fit`; en rem, así
+// con el texto al 200 % caen columnas en vez de ensanchar). Si no hay nada, la frase con una acción a la vista.
 export function RelacionadosCompactos<Contraparte>({
   grupos,
   contexto,
@@ -100,7 +101,7 @@ export function RelacionadosCompactos<Contraparte>({
           ) : null}
         </div>
       ) : (
-        <div className="grid min-w-0 grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))] gap-x-4 gap-y-3">
+        <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-x-4 gap-y-3">
           {lista.map((grupo) => (
             <GrupoCompacto
               key={grupo.tipo}

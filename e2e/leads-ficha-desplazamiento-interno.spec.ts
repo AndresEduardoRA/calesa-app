@@ -91,7 +91,15 @@ test('`?seccion=` desplaza la columna derecha y, al volver a la ficha, cada colu
   await expect(titulo(page, 'Oportunidades')).toBeInViewport()
   expect((await medidaDe(columnaPrincipal(page))).arriba).toBeGreaterThan(0)
   expect(await desplazamientoDeLaVentana(page)).toBeLessThanOrEqual(1)
-  // La izquierda, a su final; la derecha, donde la dejó el salto.
+  // La derecha, donde la dejó el salto: con el embudo del lead ya dibujado (llega con su código y el bloque crece; el salto lo sigue).
+  await expect(page.getByRole('group', { name: /^Etapas de/ })).toBeVisible()
+  await expect
+    .poll(async () => {
+      const { sobra, arriba } = await medidaDe(columnaPrincipal(page))
+      return sobra - arriba
+    })
+    .toBeLessThanOrEqual(1)
+  // La izquierda, a su final.
   const principal = (await medidaDe(columnaPrincipal(page))).arriba
   await columnaLateral(page).evaluate((e) => {
     e.scrollTop = e.scrollHeight

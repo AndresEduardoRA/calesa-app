@@ -33,7 +33,10 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   en él: «Seguimiento» (`ResumenDeSeguimientos`: el «+» de `mas-del-seguimiento.tsx` con `lineasDelMas()`, que sólo escribe el `?panel=`; el «⋯» con «Ver tus
   recordatorios»; tu recordatorio más próximo, `PRIMEROS_DE_RECORDATORIOS` = 1; los últimos 3 en línea de tiempo, `fila-de-seguimiento.tsx`; «Ver todos» es un
   drawer en `?todos=seguimientos|recordatorios`, con su propia clave), «Cotizaciones», «Vehículos» (el compacto de Relacionados, ancla `relacionados`) y
-  «Oportunidades» (sólo las abiertas, hasta 3, en filas de una línea: `entities/oportunidades-del-bloque.ts`; «Ver todas» al embudo filtrado por el lead).
+  «Oportunidades» (el **embudo del lead**, `entities/tablero-del-lead.ts`: una columna por etapa del embudo elegido con las oportunidades de este lead, hasta 3 por columna,
+  que se arrastran de una columna a otra —`@dnd-kit` con mouse y teclado, en `tablero-del-lead.tsx` detrás de `diferido()`— o se mueven con «Mover a» del «⋯» de cada tarjeta, la
+  única forma en el celular; el selector de embudo sólo con más de uno y su elección se recuerda por persona en `leads.embudo_de_la_ficha`; «Nueva» en el título y, a su lado, el «⋯» del bloque
+  con «Ver en el embudo», el embudo filtrado por el lead, que también va al pie si algo no se dibuja).
   `?seccion=datos|seguimientos|vehiculos|oportunidades|cotizaciones|portal` lleva al bloque (`anclaDeLaSeccion()`: «vehiculos» es «Vehículos») y le da el foco
   al título; «Cotizaciones» (con `cotizaciones.ver` en algún origen, sin mirar la cartera) la compone `src/app` con su título y «Cotizar»
   (`leads/[id]/bloque-cotizaciones.tsx`) y `cotizaciones/pantallas/lead`; la composición vive en `src/app/(app)/leads/[id]/bloques.tsx`), `/leads/papelera`,
@@ -114,8 +117,8 @@ la causa en `hint` (`errorConCausa()`), y `entities/avisos-de-lead.ts` la vuelve
 `telefonos_actualizado_en`). Lecturas: `ajustes_leads_leer()` (sin permiso), `lead_telefonos_leer()` (sin uso en la app; sus pruebas SQL siguen),
 `verificar_telefono_extra()` (al tipear un extra), `telefonos_extra_choques()` (`leads.configurar`: por cursor sobre `leads_telefonos_pkey`, hasta 10.000
 filas por llamada, enmascarada), `leads_vista`, `leads_cartera_vista`, `lead_ficha()`, `leads_candidatos()` + `leads_vista_por_ids()`, `lead_oportunidades()` (invocadora,
-por cursor, de a 20 y hasta 100, por `oportunidades_lead_abiertas_idx` y `oportunidades_lead_cerradas_idx`; la ficha lee la primera página de 10 y dibuja
-hasta 3 abiertas; en la primera página, `abiertas_por_embudo`), `embudo_tablero_del_lead()` y `embudo_etapa_pagina_del_lead()` (invocadoras, el embudo filtrado por lead, por
+por cursor, de a 20 y hasta 100, por `oportunidades_lead_abiertas_idx` y `oportunidades_lead_cerradas_idx`; la ficha lee la primera página de 10 (abiertas primero) y
+las reparte por etapa del embudo elegido; en la primera página, `abiertas_por_embudo`), `embudo_tablero_del_lead()` y `embudo_etapa_pagina_del_lead()` (invocadoras, el embudo filtrado por lead, por
 `oportunidades_lead_etapa_idx`).
 
 ## No se rompe

@@ -13,8 +13,8 @@ import {
 } from './soporte/leads-oportunidades'
 import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
 
-// El bloque «Oportunidades» de la ficha: dibuja hasta 3 abiertas, en el orden de la base, y «Ver todas» (el embudo filtrado por el lead) si
-// hay algo que no se ve (T344). Lo que no se ve no viaja con el documento de la ficha. El resto del bloque va en `leads-oportunidades.spec.ts`
+// El bloque «Oportunidades» de la ficha, el embudo del lead: cada columna dibuja hasta 3 oportunidades, en el orden de la base, y «Ver en el embudo»
+// (el embudo filtrado por el lead) si hay algo que no se ve (T344, T424). Lo que no se ve no viaja con el documento de la ficha. El resto del bloque va en `leads-oportunidades.spec.ts`
 // y `leads-ficha-derecha.spec.ts`. Cada prueba crea su propio lead sobre el terreno de `beforeAll`: ninguna alimenta a otra. Las abiertas del
 // mismo embudo entran por SQL (la guarda de una por embudo está en las RPC): sirven para medir el tope de lo que se dibuja.
 
@@ -58,15 +58,14 @@ async function leadConOportunidades(
   return lead
 }
 
-const filas = (page: Page) =>
-  page.getByRole('list', { name: 'Oportunidades abiertas' }).getByRole('article')
+const filas = (page: Page) => page.getByRole('group', { name: /^Etapas de «/ }).getByRole('article')
 const verTodas = (page: Page) =>
   page
     .getByRole('region', { name: 'Oportunidades', exact: true })
-    .getByRole('link', { name: 'Ver todas' })
+    .getByRole('link', { name: 'Ver en el embudo' })
 const titulosVisibles = (page: Page) => filas(page).evaluateAll((a) => a.map((x) => x.ariaLabel))
 
-test('con 12 abiertas: se ven las primeras 3 en el orden de la base y «Ver todas» lleva al embudo filtrado por el lead', async ({
+test('con 12 abiertas: se ven las primeras 3 en el orden de la base y «Ver en el embudo» lleva al embudo filtrado por el lead', async ({
   page,
 }, info) => {
   const lead = await leadConOportunidades(page, `VerTodas ${info.project.name}`, { abiertas: 12 })
@@ -80,7 +79,9 @@ test('con 12 abiertas: se ven las primeras 3 en el orden de la base y «Ver toda
   )
 })
 
-test('con 2 abiertas y nada más no hay nada que ver: sin «Ver todas»', async ({ page }, info) => {
+test('con 2 abiertas y nada más no hay nada que ver: sin «Ver en el embudo»', async ({
+  page,
+}, info) => {
   await leadConOportunidades(page, `Dos ${info.project.name}`, { abiertas: 2 })
   await expect(filas(page)).toHaveCount(2)
   await expect(verTodas(page)).toHaveCount(0)

@@ -381,8 +381,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Motivo de pérdida** — `oportunidades.motivo_perdida`: opcional, hasta 200, al mover a perdida; se limpia al reabrir.
 - **Vista de embudo** — `/leads?vista=embudo` / `<VistaDeEmbudo>`: kanban de tus oportunidades en un embudo; los filtros de la lista no aplican.
 - **Embudo filtrado por lead** — `/leads?vista=embudo&embudo=<id>&lead=<id>` / `embudo_tablero_del_lead()`, `<ChipDelLead>`: las oportunidades de
-  quien mira sobre un lead en un embudo, en todas sus etapas, con el chip «De <nombre>» y «Ver todas» (quita el filtro). Es la vista de todas las
+  quien mira sobre un lead en un embudo, en todas sus etapas, con el chip «De <nombre>» y «Ver todas» (quita el filtro; se llega con «Ver en el embudo» de la ficha del lead). Es la vista de todas las
   de un lead; cambiar de embudo lo conserva y un `lead=` que no se ve se quita.
+- **Embudo del lead** — `<OportunidadesDelLead>` / `entities/tablero-del-lead.ts`, preferencia `leads.embudo_de_la_ficha`: el bloque «Oportunidades» de la ficha: una columna por etapa
+  del embudo elegido con las oportunidades de ese lead, que se mueven arrastrando o con «Mover a». No es la vista de embudo (`/leads?vista=embudo`, el kanban de todos tus leads); su «Ver en el
+  embudo» lleva al embudo filtrado por lead.
 - **Portal del cliente** — `accesos_portal` / `web.portal_*` / `?seccion=portal`: lo que el cliente ve en la web con código y clave: sus
   vehículos, lo «Visible para el cliente» y novedades.
 - **Mensaje del portal** — `ajustes_leads.portal_mensaje` / `portal_mensaje_guardar()`: texto para WhatsApp al dar acceso, con `{cliente}`,

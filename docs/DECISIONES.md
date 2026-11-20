@@ -376,6 +376,15 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### Listas, embudos y plantillas
 
+- **El embudo del lead en la ficha se arrastra con el mouse y el teclado, no con el dedo.** `MouseSensor` (a partir de 5 px, así un clic en el «⋯» no arranca nada) y
+  `KeyboardSensor` con flechas que pasan a la columna vecina (`crearTecladoDelArrastre()`); no hay sensor táctil: en una pantalla que se desplaza con el dedo arrastrar
+  pelearía con el desplazamiento, y «Mover a» del «⋯» ya existe. La tarjeta sigue siendo un `article` con su nombre (no un botón), enfocable para el teclado; soltar en una
+  perdida abre el modal del motivo de siempre (`?panel=mover-oportunidad`) y la tarjeta se queda en su columna hasta confirmar. El selector de embudo sólo con más de uno; si
+  se crea una oportunidad en otro embudo que el que se ve, el bloque pasa a ése y lo recuerda como si lo hubiera elegido con el selector (se ve entrar lo que se creó, y la próxima vez se abre ahí). Descartadas: arrastrar sólo desde un asa (un blanco más para un bloque angosto), «Mover a» como única
+  forma (no es lo pedido), conteos por columna (serían totales: la ficha lee 10).
+- **Los grupos de «Vehículos» llenan el ancho con `auto-fit`.** La grilla compacta de Relacionados usaba `auto-fill`: con un solo grupo en una pantalla grande quedaban pistas
+  vacías a la derecha. `auto-fit` las colapsa, y las filas de cada grupo van en la misma grilla, así una fila sola o un grupo solo ocupan todo el bloque.
+
 - **La ficha del lead en dos columnas: la izquierda, lo clave; la derecha, cuatro bloques compactos en orden de uso.** A la izquierda (`minmax(0, 24rem)`, se desplaza
   sola si no cabe), lo que identifica, como la ficha del vehículo: el nombre con el «⋯» arriba a la derecha (sin «Cotizar» ni «Editar» sueltos: están en
   el «⋯»), quién lo tiene en una línea bajo el nombre, los datos clave del lead (tipo, origen, país, teléfono principal y «Notas» a lo ancho) con «Ver más»
@@ -397,9 +406,11 @@ las trampas, en `docs/LECCIONES.md`.
   montar el bloque (el foco no se pierde tras guardar). **Cotizaciones**: «Cotizar» en el título (lo dibuja el servidor) y las 3 más recientes, leídas
   desde el navegador al acercarse a la vista (200 px), sin clic. **Vehículos** es el compacto de Relacionados (vinculados e interesados con sus acciones
   en el «⋯» de cada fila, «Ver todos» hasta 500) con «Vincular o marcar» en el título, y al pie sólo lo que no repite (los anteriores plegados tras su
-  botón, el panel y la confirmación). **Oportunidades**: sólo las abiertas, en filas de una línea (título, embudo si hay más de uno, etapa y monto);
-  las cerradas están en «Ver todas», el embudo filtrado por el lead; la lectura sigue trayendo 10 (cubre todas las abiertas posibles, una por embudo),
-  así una que se cierra al moverla deja entrar la siguiente sin leer otra vez. Los menús del «+» y de los «⋯» no van con `diferido()`: usan
+  botón, el panel y la confirmación). **Oportunidades**: el embudo de este lead, no una lista: una columna por etapa del embudo elegido (el último
+  que la persona dejó, recordado por persona en `leads.embudo_de_la_ficha`, o el por defecto) con las oportunidades de este lead en cada una, también ganadas y perdidas; arrastrar una a otra
+  columna la mueve (`@dnd-kit`, mouse y teclado, detrás de `diferido()`) y «Mover a» del «⋯» queda para el teclado y el celular, que no arrastra. La lectura sigue trayendo 10 (abiertas primero:
+  cubre todas las abiertas posibles, una por embudo); cada columna dibuja hasta 3 y lo que no se ve está en «Ver en el embudo», el embudo filtrado por el lead (en el «⋯» del bloque y al pie
+  si algo no se dibuja), sin número. Los menús del «+» y de los «⋯» no van con `diferido()`: usan
   `DropdownMenu` y `MasAcciones`, que ya viajan en frío con el «⋯» de la cabecera; diferirlos sumaría una espera de red al primer toque sin bajar KB.
   `?seccion=` sigue valiendo: lleva al bloque y le da el foco a su título; si los bloques de arriba crecen mientras llegan, la vuelve a llevar (hasta 4 s)
   salvo que la persona ya se haya movido. Descartadas: pestañas con un resumen arriba (sigue la navegación), pestañas dentro de la derecha (se queda el
@@ -418,7 +429,7 @@ las trampas, en `docs/LECCIONES.md`.
   fila o en la ficha, a un toque. Un `?lead=` viejo redirige en el servidor (`destinoDelEnlaceViejo()`) a la ficha **sin leer el lead**: con los permisos de
   la sesión (supuesta la cartera) se quitan los paneles que no podría abrir, y la cartera la decide la ficha, que no abre un panel de un lead ajeno (como con un
   `?panel=` directo). Un `lead` que no es un id también redirige: la ficha dice lo mismo para todo. «Un arrastre no navega» se cumple como «elegir texto no
-  navega»: el kanban no se arrastra («Mover a…» es un menú). Descartados: un `<a>` que envuelve la fila (no puede envolver un `<tr>` y anidaría el «⋯» y
+  navega»: el kanban de `/leads` no se arrastra («Mover a…» es un menú); el embudo del lead en la ficha sí, con el mouse y el teclado, en una fila de columnas de un solo lead (pocas tarjetas). Descartados: un `<a>` que envuelve la fila (no puede envolver un `<tr>` y anidaría el «⋯» y
   los enlaces de la fila), un «stretched link» (encerrado por la celda pegajosa) y conservar el resumen junto al enlace.
 - **El «⋯» del lead lleva a otros módulos sin conocerlos y sin un pedido por fila.** «Cotizar lead» y «Ver actividad» apuntan a `cotizaciones` y `actividad`,
   que `leads` no importa: `src/app` arma cada ruta una vez por página (permisos y `getOrigenes()` de esa request) con `MARCADOR_DE_LEAD`, un uuid que no es de
