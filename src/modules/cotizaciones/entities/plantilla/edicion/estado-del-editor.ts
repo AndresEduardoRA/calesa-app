@@ -1,6 +1,7 @@
 // El estado del editor de la tarjeta y las acciones que lo cambian (`reductor.ts`): la cuadrícula de trabajo, lo elegido, el historial (deshacer y rehacer), el bloque
 // copiado, la celda en la que se escribe y lo que se anuncia. Sólo tipos y el estado inicial.
 import type {
+  CondicionDeLaTarjeta,
   ContenidoDeLaCelda,
   OcultarPorNodo,
   PlantillaEnCuadricula,
@@ -63,6 +64,12 @@ export type AccionDelEditor =
       readonly fila: number
       readonly ocultar: OcultarPorNodo
       readonly nodo: string | null
+    }
+  | {
+      readonly tipo: 'ocultarSegun'
+      readonly fila: number
+      readonly si: readonly CondicionDeLaTarjeta[]
+      readonly clave?: string
     }
   | { readonly tipo: 'moverFila'; readonly desde: number; readonly hasta: number }
   | { readonly tipo: 'sumarColumna' }
