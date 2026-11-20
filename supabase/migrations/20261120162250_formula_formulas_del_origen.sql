@@ -617,7 +617,7 @@ comment on function public.plantilla_guardar_borrador(uuid, timestamptz, jsonb, 
 
 -- Publicar el borrador de la plantilla de una fórmula del origen, con el candado `plantillas:` ya tomado: valida contra la publicada de ESA
 -- fórmula. La usan plantilla_publicar y formula_del_origen_activar.
-create function public._plantilla_publicar_en(p_origen uuid, p_formula_del_origen uuid, p_nota text, p_esperada timestamptz) returns uuid
+create function public._plantilla_publicar_en(p_formula_del_origen uuid, p_nota text, p_esperada timestamptz) returns uuid
   language plpgsql security definer set search_path = '' as $$
 declare
   v_b public.plantillas_tarjeta; v_pub uuid; v_ver int; fo record;
@@ -636,9 +636,9 @@ begin
   update public.plantillas_tarjeta set estado = 'publicada', version = v_ver, nota = p_nota, publicado_en = now() where id = v_b.id;
   return v_b.id;
 end $$;
-revoke all on function public._plantilla_publicar_en(uuid, uuid, text, timestamptz) from public, anon, authenticated;
-grant execute on function public._plantilla_publicar_en(uuid, uuid, text, timestamptz) to service_role;
-comment on function public._plantilla_publicar_en(uuid, uuid, text, timestamptz) is 'Interna: publica el borrador de la plantilla de una fórmula del origen, validado contra la publicada de esa fórmula, con el candado plantillas: tomado. La usan plantilla_publicar y formula_del_origen_activar. docs/COTIZADOR.md › «Versiones de la plantilla (4.19-1)».';
+revoke all on function public._plantilla_publicar_en(uuid, text, timestamptz) from public, anon, authenticated;
+grant execute on function public._plantilla_publicar_en(uuid, text, timestamptz) to service_role;
+comment on function public._plantilla_publicar_en(uuid, text, timestamptz) is 'Interna: publica el borrador de la plantilla de una fórmula del origen, validado contra la publicada de esa fórmula, con el candado plantillas: tomado. La usan plantilla_publicar y formula_del_origen_activar. docs/COTIZADOR.md › «Versiones de la plantilla (4.19-1)».';
 
 create function public.plantilla_publicar(p_origen uuid, p_actualizado_en_esperado timestamptz, p_nota text, p_formula_del_origen uuid default null) returns uuid
   language plpgsql security definer set search_path = '' as $$
@@ -650,7 +650,7 @@ begin
   if coalesce(btrim(p_nota), '') = '' then raise exception 'Publicar pide una nota.' using errcode = '22023', hint = 'nota'; end if;
   perform pg_advisory_xact_lock(hashtextextended('plantillas:' || p_origen::text, 0));
   v_fdo := public._fdo_resolver(p_origen, p_formula_del_origen, false);
-  return public._plantilla_publicar_en(p_origen, v_fdo.id, p_nota, p_actualizado_en_esperado);
+  return public._plantilla_publicar_en(v_fdo.id, p_nota, p_actualizado_en_esperado);
 end $$;
 revoke all on function public.plantilla_publicar(uuid, timestamptz, text, uuid) from public, anon;
 grant execute on function public.plantilla_publicar(uuid, timestamptz, text, uuid) to authenticated, service_role;
@@ -2426,7 +2426,7 @@ begin
   end if;
   if v_pb.id is not null then
     -- Valida el borrador contra la publicada de esta fórmula (la recién publicada, si la hubo).
-    v_plantilla := public._plantilla_publicar_en(v_origen, p_id, p_nota, v_pb.actualizado_en);
+    v_plantilla := public._plantilla_publicar_en(p_id, p_nota, v_pb.actualizado_en);
   else
     -- La tarjeta publicada tiene que calzar con la versión que se va a cotizar (como la dibuja cotizacion_tarjeta: sin el catálogo de colores).
     select * into fo from public.formulas f where f.id = v_formula;   -- formulas_pkey

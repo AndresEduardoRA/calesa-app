@@ -9150,7 +9150,7 @@ export type Database = {
         Returns: Json
       }
       _plantilla_publicar_en: {
-        Args: { p_esperada: string; p_formula_del_origen: string; p_nota: string; p_origen: string }
+        Args: { p_esperada: string; p_formula_del_origen: string; p_nota: string }
         Returns: string
       }
       _portal_clave_validar: { Args: { p_clave: string }; Returns: undefined }
