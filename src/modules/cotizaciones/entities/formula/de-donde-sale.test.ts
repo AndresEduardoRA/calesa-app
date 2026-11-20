@@ -113,6 +113,37 @@ describe('deDondeSale: un caso por cada operación, con etiquetas y nunca ids', 
     ['redondear a 2', { op: 'redondear', de: ['remate'], n: 2 }, 'Remate redondeado a 2 decimales'],
     ['redondear a 1', { op: 'redondear', de: ['remate'], n: 1 }, 'Remate redondeado a 1 decimal'],
     ['redondear a 0', { op: 'redondear', de: ['remate'], n: 0 }, 'Remate redondeado sin decimales'],
+    ['comparar', { op: 'comparar', de: ['remate', 'fees'], cmp: '>=' }, 'Remate ≥ Fees'],
+    ['comparar distinto', { op: 'comparar', de: ['remate', 'fees'], cmp: '<>' }, 'Remate ≠ Fees'],
+    [
+      'es_opcion',
+      { op: 'es_opcion', de: ['variante'], cmp: '=', clave: 'peru' },
+      'Variante es «Perú»',
+    ],
+    [
+      'es_opcion distinto',
+      { op: 'es_opcion', de: ['variante'], cmp: '<>', clave: 'chile' },
+      'Variante no es «Chile»',
+    ],
+    ['y', { op: 'y', de: ['b', 'c'] }, 'Bandera B está encendida y Bandera C está encendida'],
+    [
+      'o de tres',
+      { op: 'o', de: ['b', 'c', 'b'] },
+      'Bandera B está encendida, Bandera C está encendida o Bandera B está encendida',
+    ],
+    [
+      'elegir con las dos ramas',
+      { op: 'elegir', de: ['remate', 'fees'], prueba: 'b' },
+      'Remate si Bandera B está encendida, si no Fees',
+    ],
+    [
+      'elegir sin la rama «si no»',
+      { op: 'elegir', de: ['remate'], prueba: 'b' },
+      'Remate si Bandera B está encendida, si no 0',
+    ],
+    ['max', { op: 'max', de: ['remate', 'fees', 'flete'] }, 'el mayor de Remate, Fees y Flete'],
+    ['min', { op: 'min', de: ['remate', 'fees'] }, 'el menor de Remate y Fees'],
+    ['min de uno', { op: 'min', de: ['remate'] }, 'el menor de Remate'],
   ])('%s', (_, resto, esperada) => {
     const dicha = frase(calculo(resto))
     expect(dicha).toBe(esperada)

@@ -8081,6 +8081,1762 @@
           "agencia": "default"
         }
       }
+    },
+    {
+      "nombre": "funciones de Excel: con A mayor que B y la variante por defecto",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "variante",
+            "tipo": "opcion",
+            "etiqueta": "Variante",
+            "opciones": [
+              {
+                "clave": "moto",
+                "etiqueta": "Moto",
+                "titulo": "Moto"
+              },
+              {
+                "clave": "auto",
+                "etiqueta": "Auto",
+                "titulo": "Auto"
+              }
+            ],
+            "por_defecto": "auto"
+          },
+          {
+            "id": "tc_paralelo",
+            "tipo": "tipo_cambio",
+            "clave": "paralelo",
+            "etiqueta": "TC paralelo",
+            "formato": "raw"
+          },
+          {
+            "id": "nuevo",
+            "tipo": "bandera",
+            "etiqueta": "Es nuevo",
+            "formato": "raw"
+          },
+          {
+            "id": "anio",
+            "tipo": "campo_vehiculo",
+            "campo": "anio",
+            "etiqueta": "Año",
+            "formato": "raw"
+          },
+          {
+            "id": "a",
+            "tipo": "input",
+            "etiqueta": "A"
+          },
+          {
+            "id": "b",
+            "tipo": "input",
+            "etiqueta": "B"
+          },
+          {
+            "id": "c",
+            "tipo": "input",
+            "etiqueta": "C"
+          },
+          {
+            "id": "x",
+            "tipo": "input",
+            "etiqueta": "X"
+          },
+          {
+            "id": "y",
+            "tipo": "input",
+            "etiqueta": "Y"
+          },
+          {
+            "id": "xy",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["x", "y"],
+            "etiqueta": "xy"
+          },
+          {
+            "id": "caro",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">",
+            "formato": "raw",
+            "etiqueta": "caro"
+          },
+          {
+            "id": "igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "igual"
+          },
+          {
+            "id": "distinto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<>",
+            "formato": "raw",
+            "etiqueta": "distinto"
+          },
+          {
+            "id": "mayor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "mayor_igual"
+          },
+          {
+            "id": "menor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<=",
+            "formato": "raw",
+            "etiqueta": "menor_igual"
+          },
+          {
+            "id": "menor",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<",
+            "formato": "raw",
+            "etiqueta": "menor"
+          },
+          {
+            "id": "exacto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["xy", "c"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "exacto"
+          },
+          {
+            "id": "reciente",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["anio", "c"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "reciente"
+          },
+          {
+            "id": "es_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "=",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "es_moto"
+          },
+          {
+            "id": "no_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "<>",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "no_moto"
+          },
+          {
+            "id": "ambos",
+            "tipo": "calculo",
+            "op": "y",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "ambos"
+          },
+          {
+            "id": "alguno",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "alguno"
+          },
+          {
+            "id": "con_anio",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["nuevo", "reciente", "caro"],
+            "formato": "raw",
+            "etiqueta": "con_anio"
+          },
+          {
+            "id": "si_no",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "b"],
+            "prueba": "caro",
+            "etiqueta": "si_no"
+          },
+          {
+            "id": "solo_si",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a"],
+            "prueba": "caro",
+            "etiqueta": "solo_si"
+          },
+          {
+            "id": "por_anio",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "anio"],
+            "prueba": "nuevo",
+            "etiqueta": "por_anio"
+          },
+          {
+            "id": "el_mayor",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_mayor"
+          },
+          {
+            "id": "el_menor",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_menor"
+          },
+          {
+            "id": "mayor_con_anio",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "anio", "c"],
+            "etiqueta": "mayor_con_anio"
+          },
+          {
+            "id": "uno_solo",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["b"],
+            "etiqueta": "uno_solo"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["el_mayor", "si_no"],
+            "salida": "total",
+            "bucket": "origen",
+            "etiqueta": "total"
+          }
+        ],
+        "buckets": {
+          "origen": "tc_paralelo"
+        }
+      },
+      "params": {},
+      "entrada": {
+        "tipos_cambio": {
+          "paralelo": 10
+        },
+        "inputs": {
+          "a": 1500,
+          "b": 1000,
+          "c": 1200,
+          "x": 1,
+          "y": 2
+        },
+        "banderas": {
+          "nuevo": true
+        },
+        "vehiculo": {
+          "anio": 2020
+        }
+      },
+      "esperado": {
+        "valores": {
+          "caro": 1,
+          "igual": 0,
+          "distinto": 1,
+          "mayor_igual": 1,
+          "menor_igual": 0,
+          "menor": 0,
+          "exacto": 0,
+          "reciente": 1,
+          "es_moto": 0,
+          "no_moto": 1,
+          "ambos": 1,
+          "alguno": 1,
+          "con_anio": 1,
+          "si_no": 1500,
+          "solo_si": 1500,
+          "por_anio": 1500,
+          "el_mayor": 1500,
+          "el_menor": 1000,
+          "mayor_con_anio": 2020,
+          "uno_solo": 1000,
+          "total": 3000
+        },
+        "faltantes": []
+      }
+    },
+    {
+      "nombre": "funciones de Excel: con A menor que B y la moto elegida",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "variante",
+            "tipo": "opcion",
+            "etiqueta": "Variante",
+            "opciones": [
+              {
+                "clave": "moto",
+                "etiqueta": "Moto",
+                "titulo": "Moto"
+              },
+              {
+                "clave": "auto",
+                "etiqueta": "Auto",
+                "titulo": "Auto"
+              }
+            ],
+            "por_defecto": "auto"
+          },
+          {
+            "id": "tc_paralelo",
+            "tipo": "tipo_cambio",
+            "clave": "paralelo",
+            "etiqueta": "TC paralelo",
+            "formato": "raw"
+          },
+          {
+            "id": "nuevo",
+            "tipo": "bandera",
+            "etiqueta": "Es nuevo",
+            "formato": "raw"
+          },
+          {
+            "id": "anio",
+            "tipo": "campo_vehiculo",
+            "campo": "anio",
+            "etiqueta": "Año",
+            "formato": "raw"
+          },
+          {
+            "id": "a",
+            "tipo": "input",
+            "etiqueta": "A"
+          },
+          {
+            "id": "b",
+            "tipo": "input",
+            "etiqueta": "B"
+          },
+          {
+            "id": "c",
+            "tipo": "input",
+            "etiqueta": "C"
+          },
+          {
+            "id": "x",
+            "tipo": "input",
+            "etiqueta": "X"
+          },
+          {
+            "id": "y",
+            "tipo": "input",
+            "etiqueta": "Y"
+          },
+          {
+            "id": "xy",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["x", "y"],
+            "etiqueta": "xy"
+          },
+          {
+            "id": "caro",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">",
+            "formato": "raw",
+            "etiqueta": "caro"
+          },
+          {
+            "id": "igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "igual"
+          },
+          {
+            "id": "distinto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<>",
+            "formato": "raw",
+            "etiqueta": "distinto"
+          },
+          {
+            "id": "mayor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "mayor_igual"
+          },
+          {
+            "id": "menor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<=",
+            "formato": "raw",
+            "etiqueta": "menor_igual"
+          },
+          {
+            "id": "menor",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<",
+            "formato": "raw",
+            "etiqueta": "menor"
+          },
+          {
+            "id": "exacto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["xy", "c"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "exacto"
+          },
+          {
+            "id": "reciente",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["anio", "c"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "reciente"
+          },
+          {
+            "id": "es_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "=",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "es_moto"
+          },
+          {
+            "id": "no_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "<>",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "no_moto"
+          },
+          {
+            "id": "ambos",
+            "tipo": "calculo",
+            "op": "y",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "ambos"
+          },
+          {
+            "id": "alguno",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "alguno"
+          },
+          {
+            "id": "con_anio",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["nuevo", "reciente", "caro"],
+            "formato": "raw",
+            "etiqueta": "con_anio"
+          },
+          {
+            "id": "si_no",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "b"],
+            "prueba": "caro",
+            "etiqueta": "si_no"
+          },
+          {
+            "id": "solo_si",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a"],
+            "prueba": "caro",
+            "etiqueta": "solo_si"
+          },
+          {
+            "id": "por_anio",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "anio"],
+            "prueba": "nuevo",
+            "etiqueta": "por_anio"
+          },
+          {
+            "id": "el_mayor",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_mayor"
+          },
+          {
+            "id": "el_menor",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_menor"
+          },
+          {
+            "id": "mayor_con_anio",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "anio", "c"],
+            "etiqueta": "mayor_con_anio"
+          },
+          {
+            "id": "uno_solo",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["b"],
+            "etiqueta": "uno_solo"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["el_mayor", "si_no"],
+            "salida": "total",
+            "bucket": "origen",
+            "etiqueta": "total"
+          }
+        ],
+        "buckets": {
+          "origen": "tc_paralelo"
+        }
+      },
+      "params": {},
+      "entrada": {
+        "tipos_cambio": {
+          "paralelo": 10
+        },
+        "inputs": {
+          "a": 800,
+          "b": 1000,
+          "c": 1200,
+          "x": 1,
+          "y": 2
+        },
+        "banderas": {
+          "nuevo": false
+        },
+        "vehiculo": {
+          "anio": 1000
+        },
+        "variante": "moto"
+      },
+      "esperado": {
+        "valores": {
+          "caro": 0,
+          "igual": 0,
+          "distinto": 1,
+          "mayor_igual": 0,
+          "menor_igual": 1,
+          "menor": 1,
+          "exacto": 0,
+          "reciente": 0,
+          "es_moto": 1,
+          "no_moto": 0,
+          "ambos": 0,
+          "alguno": 0,
+          "con_anio": 0,
+          "si_no": 1000,
+          "solo_si": 0,
+          "por_anio": 1000,
+          "el_mayor": 1200,
+          "el_menor": 800,
+          "mayor_con_anio": 1200,
+          "uno_solo": 1000,
+          "total": 2200
+        },
+        "faltantes": []
+      }
+    },
+    {
+      "nombre": "funciones de Excel: la igualdad es exacta en dobles: 0,1 + 0,2 no es 0,3",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "variante",
+            "tipo": "opcion",
+            "etiqueta": "Variante",
+            "opciones": [
+              {
+                "clave": "moto",
+                "etiqueta": "Moto",
+                "titulo": "Moto"
+              },
+              {
+                "clave": "auto",
+                "etiqueta": "Auto",
+                "titulo": "Auto"
+              }
+            ],
+            "por_defecto": "auto"
+          },
+          {
+            "id": "tc_paralelo",
+            "tipo": "tipo_cambio",
+            "clave": "paralelo",
+            "etiqueta": "TC paralelo",
+            "formato": "raw"
+          },
+          {
+            "id": "nuevo",
+            "tipo": "bandera",
+            "etiqueta": "Es nuevo",
+            "formato": "raw"
+          },
+          {
+            "id": "anio",
+            "tipo": "campo_vehiculo",
+            "campo": "anio",
+            "etiqueta": "Año",
+            "formato": "raw"
+          },
+          {
+            "id": "a",
+            "tipo": "input",
+            "etiqueta": "A"
+          },
+          {
+            "id": "b",
+            "tipo": "input",
+            "etiqueta": "B"
+          },
+          {
+            "id": "c",
+            "tipo": "input",
+            "etiqueta": "C"
+          },
+          {
+            "id": "x",
+            "tipo": "input",
+            "etiqueta": "X"
+          },
+          {
+            "id": "y",
+            "tipo": "input",
+            "etiqueta": "Y"
+          },
+          {
+            "id": "xy",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["x", "y"],
+            "etiqueta": "xy"
+          },
+          {
+            "id": "caro",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">",
+            "formato": "raw",
+            "etiqueta": "caro"
+          },
+          {
+            "id": "igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "igual"
+          },
+          {
+            "id": "distinto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<>",
+            "formato": "raw",
+            "etiqueta": "distinto"
+          },
+          {
+            "id": "mayor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "mayor_igual"
+          },
+          {
+            "id": "menor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<=",
+            "formato": "raw",
+            "etiqueta": "menor_igual"
+          },
+          {
+            "id": "menor",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<",
+            "formato": "raw",
+            "etiqueta": "menor"
+          },
+          {
+            "id": "exacto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["xy", "c"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "exacto"
+          },
+          {
+            "id": "reciente",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["anio", "c"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "reciente"
+          },
+          {
+            "id": "es_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "=",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "es_moto"
+          },
+          {
+            "id": "no_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "<>",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "no_moto"
+          },
+          {
+            "id": "ambos",
+            "tipo": "calculo",
+            "op": "y",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "ambos"
+          },
+          {
+            "id": "alguno",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "alguno"
+          },
+          {
+            "id": "con_anio",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["nuevo", "reciente", "caro"],
+            "formato": "raw",
+            "etiqueta": "con_anio"
+          },
+          {
+            "id": "si_no",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "b"],
+            "prueba": "caro",
+            "etiqueta": "si_no"
+          },
+          {
+            "id": "solo_si",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a"],
+            "prueba": "caro",
+            "etiqueta": "solo_si"
+          },
+          {
+            "id": "por_anio",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "anio"],
+            "prueba": "nuevo",
+            "etiqueta": "por_anio"
+          },
+          {
+            "id": "el_mayor",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_mayor"
+          },
+          {
+            "id": "el_menor",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_menor"
+          },
+          {
+            "id": "mayor_con_anio",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "anio", "c"],
+            "etiqueta": "mayor_con_anio"
+          },
+          {
+            "id": "uno_solo",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["b"],
+            "etiqueta": "uno_solo"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["el_mayor", "si_no"],
+            "salida": "total",
+            "bucket": "origen",
+            "etiqueta": "total"
+          }
+        ],
+        "buckets": {
+          "origen": "tc_paralelo"
+        }
+      },
+      "params": {},
+      "entrada": {
+        "tipos_cambio": {
+          "paralelo": 10
+        },
+        "inputs": {
+          "a": 7,
+          "b": 7,
+          "c": 0.3,
+          "x": 0.1,
+          "y": 0.2
+        },
+        "vehiculo": {
+          "anio": 2020
+        }
+      },
+      "esperado": {
+        "valores": {
+          "xy": 0.30000000000000004,
+          "exacto": 0,
+          "igual": 1,
+          "distinto": 0,
+          "mayor_igual": 1,
+          "menor_igual": 1,
+          "caro": 0,
+          "menor": 0,
+          "el_mayor": 7,
+          "el_menor": 0.3,
+          "si_no": 7
+        },
+        "faltantes": []
+      }
+    },
+    {
+      "nombre": "funciones de Excel: 0,2 + 0,1 frente a 0,3 por el otro lado",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "variante",
+            "tipo": "opcion",
+            "etiqueta": "Variante",
+            "opciones": [
+              {
+                "clave": "moto",
+                "etiqueta": "Moto",
+                "titulo": "Moto"
+              },
+              {
+                "clave": "auto",
+                "etiqueta": "Auto",
+                "titulo": "Auto"
+              }
+            ],
+            "por_defecto": "auto"
+          },
+          {
+            "id": "tc_paralelo",
+            "tipo": "tipo_cambio",
+            "clave": "paralelo",
+            "etiqueta": "TC paralelo",
+            "formato": "raw"
+          },
+          {
+            "id": "nuevo",
+            "tipo": "bandera",
+            "etiqueta": "Es nuevo",
+            "formato": "raw"
+          },
+          {
+            "id": "anio",
+            "tipo": "campo_vehiculo",
+            "campo": "anio",
+            "etiqueta": "Año",
+            "formato": "raw"
+          },
+          {
+            "id": "a",
+            "tipo": "input",
+            "etiqueta": "A"
+          },
+          {
+            "id": "b",
+            "tipo": "input",
+            "etiqueta": "B"
+          },
+          {
+            "id": "c",
+            "tipo": "input",
+            "etiqueta": "C"
+          },
+          {
+            "id": "x",
+            "tipo": "input",
+            "etiqueta": "X"
+          },
+          {
+            "id": "y",
+            "tipo": "input",
+            "etiqueta": "Y"
+          },
+          {
+            "id": "xy",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["x", "y"],
+            "etiqueta": "xy"
+          },
+          {
+            "id": "caro",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">",
+            "formato": "raw",
+            "etiqueta": "caro"
+          },
+          {
+            "id": "igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "igual"
+          },
+          {
+            "id": "distinto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<>",
+            "formato": "raw",
+            "etiqueta": "distinto"
+          },
+          {
+            "id": "mayor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "mayor_igual"
+          },
+          {
+            "id": "menor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<=",
+            "formato": "raw",
+            "etiqueta": "menor_igual"
+          },
+          {
+            "id": "menor",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<",
+            "formato": "raw",
+            "etiqueta": "menor"
+          },
+          {
+            "id": "exacto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["xy", "c"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "exacto"
+          },
+          {
+            "id": "reciente",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["anio", "c"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "reciente"
+          },
+          {
+            "id": "es_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "=",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "es_moto"
+          },
+          {
+            "id": "no_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "<>",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "no_moto"
+          },
+          {
+            "id": "ambos",
+            "tipo": "calculo",
+            "op": "y",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "ambos"
+          },
+          {
+            "id": "alguno",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "alguno"
+          },
+          {
+            "id": "con_anio",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["nuevo", "reciente", "caro"],
+            "formato": "raw",
+            "etiqueta": "con_anio"
+          },
+          {
+            "id": "si_no",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "b"],
+            "prueba": "caro",
+            "etiqueta": "si_no"
+          },
+          {
+            "id": "solo_si",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a"],
+            "prueba": "caro",
+            "etiqueta": "solo_si"
+          },
+          {
+            "id": "por_anio",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "anio"],
+            "prueba": "nuevo",
+            "etiqueta": "por_anio"
+          },
+          {
+            "id": "el_mayor",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_mayor"
+          },
+          {
+            "id": "el_menor",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_menor"
+          },
+          {
+            "id": "mayor_con_anio",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "anio", "c"],
+            "etiqueta": "mayor_con_anio"
+          },
+          {
+            "id": "uno_solo",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["b"],
+            "etiqueta": "uno_solo"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["el_mayor", "si_no"],
+            "salida": "total",
+            "bucket": "origen",
+            "etiqueta": "total"
+          }
+        ],
+        "buckets": {
+          "origen": "tc_paralelo"
+        }
+      },
+      "params": {},
+      "entrada": {
+        "tipos_cambio": {
+          "paralelo": 10
+        },
+        "inputs": {
+          "a": 1,
+          "b": 2,
+          "c": 0.30000000000000004,
+          "x": 0.2,
+          "y": 0.1
+        },
+        "vehiculo": {
+          "anio": 2020
+        }
+      },
+      "esperado": {
+        "valores": {
+          "xy": 0.30000000000000004,
+          "exacto": 1
+        },
+        "faltantes": []
+      }
+    },
+    {
+      "nombre": "funciones de Excel: un null vuelve null la comparación, el Y, el O que lo lee, MAX y la rama elegida",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "variante",
+            "tipo": "opcion",
+            "etiqueta": "Variante",
+            "opciones": [
+              {
+                "clave": "moto",
+                "etiqueta": "Moto",
+                "titulo": "Moto"
+              },
+              {
+                "clave": "auto",
+                "etiqueta": "Auto",
+                "titulo": "Auto"
+              }
+            ],
+            "por_defecto": "auto"
+          },
+          {
+            "id": "tc_paralelo",
+            "tipo": "tipo_cambio",
+            "clave": "paralelo",
+            "etiqueta": "TC paralelo",
+            "formato": "raw"
+          },
+          {
+            "id": "nuevo",
+            "tipo": "bandera",
+            "etiqueta": "Es nuevo",
+            "formato": "raw"
+          },
+          {
+            "id": "anio",
+            "tipo": "campo_vehiculo",
+            "campo": "anio",
+            "etiqueta": "Año",
+            "formato": "raw"
+          },
+          {
+            "id": "a",
+            "tipo": "input",
+            "etiqueta": "A"
+          },
+          {
+            "id": "b",
+            "tipo": "input",
+            "etiqueta": "B"
+          },
+          {
+            "id": "c",
+            "tipo": "input",
+            "etiqueta": "C"
+          },
+          {
+            "id": "x",
+            "tipo": "input",
+            "etiqueta": "X"
+          },
+          {
+            "id": "y",
+            "tipo": "input",
+            "etiqueta": "Y"
+          },
+          {
+            "id": "xy",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["x", "y"],
+            "etiqueta": "xy"
+          },
+          {
+            "id": "caro",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">",
+            "formato": "raw",
+            "etiqueta": "caro"
+          },
+          {
+            "id": "igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "igual"
+          },
+          {
+            "id": "distinto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<>",
+            "formato": "raw",
+            "etiqueta": "distinto"
+          },
+          {
+            "id": "mayor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "mayor_igual"
+          },
+          {
+            "id": "menor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<=",
+            "formato": "raw",
+            "etiqueta": "menor_igual"
+          },
+          {
+            "id": "menor",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<",
+            "formato": "raw",
+            "etiqueta": "menor"
+          },
+          {
+            "id": "exacto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["xy", "c"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "exacto"
+          },
+          {
+            "id": "reciente",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["anio", "c"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "reciente"
+          },
+          {
+            "id": "es_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "=",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "es_moto"
+          },
+          {
+            "id": "no_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "<>",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "no_moto"
+          },
+          {
+            "id": "ambos",
+            "tipo": "calculo",
+            "op": "y",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "ambos"
+          },
+          {
+            "id": "alguno",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "alguno"
+          },
+          {
+            "id": "con_anio",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["nuevo", "reciente", "caro"],
+            "formato": "raw",
+            "etiqueta": "con_anio"
+          },
+          {
+            "id": "si_no",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "b"],
+            "prueba": "caro",
+            "etiqueta": "si_no"
+          },
+          {
+            "id": "solo_si",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a"],
+            "prueba": "caro",
+            "etiqueta": "solo_si"
+          },
+          {
+            "id": "por_anio",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "anio"],
+            "prueba": "nuevo",
+            "etiqueta": "por_anio"
+          },
+          {
+            "id": "el_mayor",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_mayor"
+          },
+          {
+            "id": "el_menor",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_menor"
+          },
+          {
+            "id": "mayor_con_anio",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "anio", "c"],
+            "etiqueta": "mayor_con_anio"
+          },
+          {
+            "id": "uno_solo",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["b"],
+            "etiqueta": "uno_solo"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["el_mayor", "si_no"],
+            "salida": "total",
+            "bucket": "origen",
+            "etiqueta": "total"
+          }
+        ],
+        "buckets": {
+          "origen": "tc_paralelo"
+        }
+      },
+      "params": {},
+      "entrada": {
+        "tipos_cambio": {
+          "paralelo": 10
+        },
+        "inputs": {
+          "a": 1500,
+          "b": 1000,
+          "c": 1200,
+          "x": 1,
+          "y": 2
+        },
+        "banderas": {
+          "nuevo": false
+        }
+      },
+      "esperado": {
+        "valores": {
+          "anio": null,
+          "reciente": null,
+          "con_anio": null,
+          "mayor_con_anio": null,
+          "por_anio": null,
+          "caro": 1,
+          "ambos": 0,
+          "alguno": 1,
+          "el_mayor": 1500,
+          "total": 3000
+        },
+        "faltantes": [
+          {
+            "codigo": "campo_sin_valor",
+            "donde": "anio",
+            "ref": "anio"
+          }
+        ]
+      }
+    },
+    {
+      "nombre": "funciones de Excel: la rama no elegida puede ser null",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "variante",
+            "tipo": "opcion",
+            "etiqueta": "Variante",
+            "opciones": [
+              {
+                "clave": "moto",
+                "etiqueta": "Moto",
+                "titulo": "Moto"
+              },
+              {
+                "clave": "auto",
+                "etiqueta": "Auto",
+                "titulo": "Auto"
+              }
+            ],
+            "por_defecto": "auto"
+          },
+          {
+            "id": "tc_paralelo",
+            "tipo": "tipo_cambio",
+            "clave": "paralelo",
+            "etiqueta": "TC paralelo",
+            "formato": "raw"
+          },
+          {
+            "id": "nuevo",
+            "tipo": "bandera",
+            "etiqueta": "Es nuevo",
+            "formato": "raw"
+          },
+          {
+            "id": "anio",
+            "tipo": "campo_vehiculo",
+            "campo": "anio",
+            "etiqueta": "Año",
+            "formato": "raw"
+          },
+          {
+            "id": "a",
+            "tipo": "input",
+            "etiqueta": "A"
+          },
+          {
+            "id": "b",
+            "tipo": "input",
+            "etiqueta": "B"
+          },
+          {
+            "id": "c",
+            "tipo": "input",
+            "etiqueta": "C"
+          },
+          {
+            "id": "x",
+            "tipo": "input",
+            "etiqueta": "X"
+          },
+          {
+            "id": "y",
+            "tipo": "input",
+            "etiqueta": "Y"
+          },
+          {
+            "id": "xy",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["x", "y"],
+            "etiqueta": "xy"
+          },
+          {
+            "id": "caro",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">",
+            "formato": "raw",
+            "etiqueta": "caro"
+          },
+          {
+            "id": "igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "igual"
+          },
+          {
+            "id": "distinto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<>",
+            "formato": "raw",
+            "etiqueta": "distinto"
+          },
+          {
+            "id": "mayor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "mayor_igual"
+          },
+          {
+            "id": "menor_igual",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<=",
+            "formato": "raw",
+            "etiqueta": "menor_igual"
+          },
+          {
+            "id": "menor",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["a", "b"],
+            "cmp": "<",
+            "formato": "raw",
+            "etiqueta": "menor"
+          },
+          {
+            "id": "exacto",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["xy", "c"],
+            "cmp": "=",
+            "formato": "raw",
+            "etiqueta": "exacto"
+          },
+          {
+            "id": "reciente",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["anio", "c"],
+            "cmp": ">=",
+            "formato": "raw",
+            "etiqueta": "reciente"
+          },
+          {
+            "id": "es_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "=",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "es_moto"
+          },
+          {
+            "id": "no_moto",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["variante"],
+            "cmp": "<>",
+            "clave": "moto",
+            "formato": "raw",
+            "etiqueta": "no_moto"
+          },
+          {
+            "id": "ambos",
+            "tipo": "calculo",
+            "op": "y",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "ambos"
+          },
+          {
+            "id": "alguno",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["caro", "nuevo"],
+            "formato": "raw",
+            "etiqueta": "alguno"
+          },
+          {
+            "id": "con_anio",
+            "tipo": "calculo",
+            "op": "o",
+            "de": ["nuevo", "reciente", "caro"],
+            "formato": "raw",
+            "etiqueta": "con_anio"
+          },
+          {
+            "id": "si_no",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "b"],
+            "prueba": "caro",
+            "etiqueta": "si_no"
+          },
+          {
+            "id": "solo_si",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a"],
+            "prueba": "caro",
+            "etiqueta": "solo_si"
+          },
+          {
+            "id": "por_anio",
+            "tipo": "calculo",
+            "op": "elegir",
+            "de": ["a", "anio"],
+            "prueba": "nuevo",
+            "etiqueta": "por_anio"
+          },
+          {
+            "id": "el_mayor",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_mayor"
+          },
+          {
+            "id": "el_menor",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["a", "b", "c"],
+            "etiqueta": "el_menor"
+          },
+          {
+            "id": "mayor_con_anio",
+            "tipo": "calculo",
+            "op": "max",
+            "de": ["a", "anio", "c"],
+            "etiqueta": "mayor_con_anio"
+          },
+          {
+            "id": "uno_solo",
+            "tipo": "calculo",
+            "op": "min",
+            "de": ["b"],
+            "etiqueta": "uno_solo"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["el_mayor", "si_no"],
+            "salida": "total",
+            "bucket": "origen",
+            "etiqueta": "total"
+          }
+        ],
+        "buckets": {
+          "origen": "tc_paralelo"
+        }
+      },
+      "params": {},
+      "entrada": {
+        "tipos_cambio": {
+          "paralelo": 10
+        },
+        "inputs": {
+          "a": 1500,
+          "b": 1000,
+          "c": 1200,
+          "x": 1,
+          "y": 2
+        },
+        "banderas": {
+          "nuevo": true
+        }
+      },
+      "esperado": {
+        "valores": {
+          "anio": null,
+          "por_anio": 1500,
+          "con_anio": null,
+          "mayor_con_anio": null
+        },
+        "faltantes": [
+          {
+            "codigo": "campo_sin_valor",
+            "donde": "anio",
+            "ref": "anio"
+          }
+        ]
+      }
     }
   ]
 }

@@ -3,13 +3,13 @@
 // mismo valor); si no (una forma que la gramática no tiene, o un `de` que nombra un nodo posterior), es nulo y la fila se muestra por sus campos.
 import type { Formula } from '../formula'
 import type { Medidor } from '../medidor'
-import type { Nodo, NodoCalculo } from '../nodos'
+import { esDeComparacion, type Nodo, type NodoDeCuenta } from '../nodos'
 import { compilarFilaBase } from './compilar-fila-base'
 import { filasDe } from './filas'
 import { escribirLiteral } from './literal'
 import { mismaEstructura } from './misma-estructura'
 
-function textoDeCalculo(nodo: NodoCalculo): string {
+function textoDeCuenta(nodo: NodoDeCuenta): string {
   const [x = ''] = nodo.de
   switch (nodo.op) {
     case 'suma':
@@ -38,7 +38,8 @@ function textoDeCalculo(nodo: NodoCalculo): string {
 function textoDe(nodo: Nodo, formula: Formula): string | null {
   if (nodo.tipo === 'constante')
     return escribirLiteral(formula.params.constantes[nodo.id] ?? Number.NaN, nodo.formato === 'pct')
-  return nodo.tipo === 'calculo' ? textoDeCalculo(nodo) : null
+  if (nodo.tipo !== 'calculo' || esDeComparacion(nodo)) return null
+  return textoDeCuenta(nodo)
 }
 
 const sinTexto = (n: Nodo): Nodo => ({ ...n, texto: undefined }) as Nodo

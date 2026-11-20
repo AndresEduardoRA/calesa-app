@@ -4,6 +4,7 @@ import {
   bucketDe,
   condicionDe,
   daMonto,
+  esCondicion,
   esMonto,
   esquemaNodo,
   formatoDe,
@@ -79,6 +80,29 @@ const CASOS: [string, Record<string, unknown>, string[]][] = [
     ['de:b', 'sobre:e'],
   ],
   ['redondear', { id: 'a', tipo: 'calculo', op: 'redondear', de: ['b'], n: 2 }, ['de:b']],
+  [
+    'comparar',
+    { id: 'a', tipo: 'calculo', op: 'comparar', de: ['b', 'c'], cmp: '>=', condicion: 'd' },
+    ['de:b', 'de:c', 'condicion:d'],
+  ],
+  [
+    'es_opcion',
+    { id: 'a', tipo: 'calculo', op: 'es_opcion', de: ['v'], cmp: '<>', clave: 'x', condicion: 'd' },
+    ['variante:v', 'condicion:d'],
+  ],
+  ['y', { id: 'a', tipo: 'calculo', op: 'y', de: ['b', 'c'] }, ['prueba:b', 'prueba:c']],
+  [
+    'o',
+    { id: 'a', tipo: 'calculo', op: 'o', de: ['b', 'c'], condicion: 'd' },
+    ['prueba:b', 'prueba:c', 'condicion:d'],
+  ],
+  [
+    'elegir',
+    { id: 'a', tipo: 'calculo', op: 'elegir', de: ['b', 'c'], prueba: 'p', condicion: 'd' },
+    ['prueba:p', 'de:b', 'de:c', 'condicion:d'],
+  ],
+  ['max', { id: 'a', tipo: 'calculo', op: 'max', de: ['b'] }, ['de:b']],
+  ['min', { id: 'a', tipo: 'calculo', op: 'min', de: ['b', 'c'] }, ['de:b', 'de:c']],
 ]
 
 describe('referenciasDe', () => {
@@ -99,6 +123,14 @@ describe('esquemaNodo', () => {
       { id: 'a', tipo: 'tipo_cambio', clave: 'oficial', solo_en: ['x'] },
       { id: 'a', tipo: 'input', sobrescribible: true },
       { id: 'tablas', tipo: 'constante' },
+      { id: 'a', tipo: 'calculo', op: 'comparar', de: ['b', 'c'], cmp: '=>' },
+      { id: 'a', tipo: 'calculo', op: 'comparar', de: ['b', 'c', 'd'], cmp: '>' },
+      { id: 'a', tipo: 'calculo', op: 'es_opcion', de: ['v'], cmp: '>', clave: 'x' },
+      { id: 'a', tipo: 'calculo', op: 'es_opcion', de: ['v'], cmp: '=', clave: 'X' },
+      { id: 'a', tipo: 'calculo', op: 'y', de: ['b'] },
+      { id: 'a', tipo: 'calculo', op: 'elegir', de: ['b', 'c', 'd'], prueba: 'p' },
+      { id: 'a', tipo: 'calculo', op: 'elegir', de: ['b'] },
+      { id: 'a', tipo: 'calculo', op: 'max', de: [] },
     ]
     for (const m of malos)
       expect(esquemaNodo.safeParse({ etiqueta: 'X', ...m }).success).toBe(false)
@@ -168,5 +200,26 @@ describe('lo que se lee de un nodo', () => {
       true,
     ])
     expect(sobrescribibleDe(input)).toBe(false)
+  })
+})
+
+describe('esCondicion', () => {
+  it('una bandera y las operaciones que valen 1 o 0 sirven de condición; un número o un SI, no', () => {
+    const si = ['bandera', 'comparar', 'es_opcion', 'y', 'o']
+    const no = [
+      'input',
+      'constante',
+      'tramo',
+      'opcion',
+      'suma',
+      'si',
+      'depreciar',
+      'elegir',
+      'max',
+      'min',
+    ]
+    const porNombre = new Map(CASOS.map(([nombre, crudo]) => [nombre, nodo(crudo)]))
+    for (const nombre of si) expect(esCondicion(porNombre.get(nombre) as Nodo), nombre).toBe(true)
+    for (const nombre of no) expect(esCondicion(porNombre.get(nombre) as Nodo), nombre).toBe(false)
   })
 })
