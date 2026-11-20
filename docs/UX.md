@@ -820,7 +820,12 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   el badge «En la barra» en los que se ven. Debajo, «Leyenda al compartir»: la leyenda de lo que se comparte (un campo, «n de 120»
   sin `maxLength`, con la barra de cambios sin guardar al final de la página; sin `empresa.tipos_cambio.gestionar`, apagado con su motivo y sin
   barra; `PT409` con «Recargar»). **Comprobantes:** la serie se guarda con la barra.
-  **Integraciones:** apibara no se activa sin su clave, que nunca se muestra («Reemplazar»).
+  **Integraciones:** una tarjeta por integración (apibara, Web pública, Avisos push) con su estado («Activa», «Apagada» o «Falta la clave») junto al
+  título, lo guardado como texto (la clave sólo dice «Guardada el …»: no se muestra nunca) y el interruptor, que guarda al instante. «Configurar»
+  (dirección y plataformas de apibara, dirección de revalidación) y la clave o el secreto («Cargar la clave», «Reemplazar la clave») son modales
+  distintos (`?panel=apibara|clave-apibara|web-publica|secreto-web-publica`), una escritura cada uno. «Ver uso» y «Probar» van en el «⋯» y su
+  resultado, en la tarjeta; apagados con su motivo («Guarda la dirección para probar.»). apibara no se activa sin su clave. Sin
+  `empresa.ajustes.gestionar`: todo a la vista con «Configurar» e interruptores apagados y el motivo arriba; un `?panel=` a mano se rechaza.
 
 ### Vehículos (estados propios)
 

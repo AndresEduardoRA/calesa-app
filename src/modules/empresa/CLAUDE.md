@@ -6,7 +6,7 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
 
 - Entra: Configuración › Empresa, cuatro sub-rutas (`src/app/(app)/configuracion/empresa/`): «Datos de la empresa» (`/configuracion/empresa`:
   `TarjetasDeLaEmpresa`, cinco tarjetas: Identidad, Región, Datos legales y de contacto, Políticas, Íconos de la app), «Monedas y tipos de cambio» (`/monedas`: `MonedasYTiposCambio`), «Integraciones» (`/integraciones`:
-  `Integraciones`), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Cotización › General › Vigencia (`/configuracion/cotizacion/general/vigencia`,
+  `TarjetasDeIntegraciones`, una tarjeta por integración con su estado), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Cotización › General › Vigencia (`/configuracion/cotizacion/general/vigencia`,
   con la barra de cambios sin guardar): la vigencia de las cotizaciones (si el vehículo y el lead son obligatorios se decide por rol y origen, en «Roles y permisos»).
 - Sale (`index.ts`, **sin componentes**):
   - `getAjustes()`: lo mínimo de la empresa (nombre, logos, color, íconos, formato regional, zona, moneda base, registro abierto, primer registro), una
@@ -22,7 +22,7 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
   - Ajustes de cotización: `leerAjustesDeCotizacion()` (con la versión; falla en vez de dar los de fábrica), `puedeCambiarAjustesDeCotizacion()`
     (`cotizaciones.configurar` en todos los orígenes, espejo de la RPC), `type AjustesDeCotizacion`. La action `guardarAjustesDeCotizacion` no sale
     por `client.ts`: la usa `<FormularioDeAjustesDeCotizacion>`, de este módulo.
-- Pantallas: `pantallas/configuracion-empresa.ts` (`<FormularioEmpresa>`, `<MonedasYTiposCambio>`, `<Integraciones>`, `<IconosDeLaApp>`) y
+- Pantallas: `pantallas/configuracion-empresa.ts` (`<TarjetasDeLaEmpresa>`, `<TarjetasDeIntegraciones>`, `<MonedasYTiposCambio>`) y
   `pantallas/configuracion-cotizacion.ts` (`<FormularioDeAjustesDeCotizacion>`).
 - Compartir los tipos de cambio: `responderCompartirTiposCambio('texto' | 'imagen', ids)` (la usan las rutas `src/app/(app)/tipos-de-cambio/texto` e `imagen`,
   tras `requerirSesion()`: `ids` = guid separados por coma, de 1 a 30, validados por `idsParaCompartir()`; 400, 404 o 500 en `text/plain`, sin caché) y
@@ -46,7 +46,8 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
   `probarRevalidacion()` comprueba el permiso y valida la dirección guardada antes de crear el admin, que sólo llama
   `integracion_secreto('web_publica')`. `composicion.ts` / `composicion.client.ts`.
 - `features/empresa/` (`guardar-con-logo.ts`: commit diferido contra puertos), `features/iconos/`, `features/integraciones/` (apibara, web pública,
-  avisos push; `<CampoSecreto>` con un `nombre` de campo propio por tarjeta), `features/tipos-cambio/` (`<AvisoDeTope>` con más de 30 cambios; `components/popover-de-la-barra/`, el contenido diferido del popover
+  avisos push: tarjetas con su estado y un modal por escritura: `?panel=apibara|clave-apibara|web-publica|secreto-web-publica`, cada uno con
+  `useEnvioConVersion()`; los textos del secreto en `entities/textos-del-secreto.ts`), `features/tipos-cambio/` (`<AvisoDeTope>` con más de 30 cambios; `components/popover-de-la-barra/`, el contenido diferido del popover
   de la barra, con `<PieDelPopover>` para las acciones sobre todos; `entities/tipos-cambio-vigentes.ts`, sus filas y el conflicto),
   `features/ajustes-de-cotizacion/` (sin borrador, remonta con `key` = versión).
 
@@ -121,6 +122,9 @@ valor}`, la misma revalidación): sin el permiso o con el Modo Live no hay lápi
 - `<Marca>` y `<EstiloDeMarca>` viven en `src/shared/ui` y reciben todo por props. El color entra como `<style>` con `:root` y `.dark`.
 - El secreto va a Vault por `integracion_guardar_secreto()`; la app sólo lee `integraciones.secreto_guardado_en`; `integraciones.config` lleva lo no
   secreto. Variables de entorno sólo para infraestructura del despliegue (`docs/DECISIONES.md`).
+- Una escritura por modal en Integraciones: la dirección o las plataformas, y la clave o el secreto, usan la misma versión de la fila y encadenadas la
+  segunda chocaría consigo misma (`PT409`). Los interruptores (`Activa`) guardan al instante desde la tarjeta. `estadoDeIntegracion()`: Activa, Apagada o
+  Falta la clave (apibara sin clave; web pública prendida sin secreto; push prendido sin clave pública).
 - `push_web` («Avisos push»): un interruptor con la versión de la fila; encender no exige la clave pública (si falta, la tarjeta lo dice; la calcula
   `app/` y llega por props); cada persona lo enciende en su perfil. `web_publica` revalida el sitio desde la base (cola
   `interno.web_revalidar_pendiente`, job `web-revalidar`; contrato en la ficha de `web`). Integración nueva: `CLAVES_INTEGRACION`; con secreto,

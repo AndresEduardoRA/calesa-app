@@ -219,37 +219,51 @@ test('guarda la clave de apibara sin volver a mostrarla, y recién entonces la a
 
   // Sin clave guardada no se puede activar, y se dice por qué. La web pública tiene su propio
   // «Activa»: el de apibara es el de su tarjeta.
-  const tarjeta = page.locator('details', { has: page.getByText('apibara', { exact: true }) })
+  const tarjeta = page.getByRole('region', { name: 'apibara', exact: true })
   const activa = tarjeta.getByRole('switch', { name: 'Activa' })
   await expect(activa).toHaveAttribute('data-disabled', '')
   await expect(page.getByText('Guarda la clave antes de activarla.')).toBeVisible()
+  const alMenu = async (accion: string) => {
+    await tarjeta.getByRole('button', { name: 'Más acciones de apibara' }).click()
+    await page.getByRole('menuitem', { name: accion }).click()
+  }
 
-  await page.getByLabel('Clave', { exact: true }).fill(secreto)
-  await page.getByRole('button', { name: 'Guardar clave' }).click()
+  // La clave es su propia escritura, en su modal.
+  await alMenu('Cargar la clave')
+  const claveModal = page.getByRole('dialog', { name: 'Cargar la clave' })
+  await claveModal.getByLabel('Clave', { exact: true }).fill(secreto)
+  await claveModal.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Clave de apibara guardada')).toBeVisible()
+  await expect(claveModal).toBeHidden()
 
   // Queda dicho que está guardada; la clave no vuelve, ni a la vista ni en lo que manda el servidor.
-  await expect(page.getByText(/Guardada el .+ No se puede ver/)).toBeVisible()
-  await expect(page.getByLabel('Clave', { exact: true })).toBeHidden()
+  await expect(tarjeta.getByText(/Guardada el /)).toBeVisible()
+  await expect(tarjeta.getByText('No se puede ver: sólo reemplazar.')).toBeVisible()
   expect(await page.content()).not.toContain(secreto)
-  await page.getByRole('button', { name: 'Reemplazar' }).click()
-  await expect(page.getByLabel('Clave nueva')).toHaveValue('')
-  await page.getByRole('button', { name: 'Cancelar' }).click()
+  await alMenu('Reemplazar la clave')
+  const reemplazo = page.getByRole('dialog', { name: 'Reemplazar la clave' })
+  await expect(reemplazo.getByLabel('Clave nueva')).toHaveValue('')
+  await reemplazo.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(reemplazo).toBeHidden()
 
-  // Con la clave en Vault, ahora sí. Prender el interruptor no borra lo tipeado y sin guardar en
-  // la configuración, aunque las dos cosas sean la misma fila.
-  await page.getByLabel('Dirección del servicio').fill('https://api.apibara.tech/v2')
+  // Con la clave en Vault, ahora sí. Encender el interruptor guarda al instante.
   await activa.click()
   await expect(page.getByText('apibara activada')).toBeVisible()
   await expect(activa).toBeChecked()
-  await expect(page.getByLabel('Dirección del servicio')).toHaveValue('https://api.apibara.tech/v2')
 
   // La dirección no puede apuntar fuera de apibara.tech: ahí viaja la clave.
-  await page.getByLabel('Dirección del servicio').fill('https://atacante.example')
-  await page.getByRole('button', { name: 'Guardar configuración' }).click()
+  await alMenu('Configurar')
+  const configurar = page.getByRole('dialog', { name: 'Configurar apibara' })
+  await configurar.getByLabel('Dirección del servicio').fill('https://atacante.example')
+  await configurar.getByRole('button', { name: 'Guardar', exact: true }).click()
   // El error, no la ayuda: las dos dicen «ser de apibara.tech».
   await expect(page.locator('#endpoint-error')).toContainText('ser de apibara.tech')
   expect(await estadoDeApibara()).toEqual({ activa: true, conSecreto: true })
+  await configurar.getByLabel('Dirección del servicio').fill('https://api.apibara.tech/v2')
+  await configurar.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(page.getByText('Configuración de apibara guardada')).toBeVisible()
+  await expect(configurar).toBeHidden()
+  await expect(tarjeta.getByText('https://api.apibara.tech/v2')).toBeVisible()
 
   // Contra la base real: ni quien la guardó ni alguien sin sesión pueden pedir la clave.
   const rechazo = { codigo: '42501', dato: null }
