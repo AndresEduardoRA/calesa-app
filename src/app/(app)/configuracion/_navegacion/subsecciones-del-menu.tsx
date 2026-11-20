@@ -1,16 +1,14 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
 import type { SubseccionDelNavegador } from '../secciones'
 import { EnlaceDelMenu } from './enlace-del-menu'
-import { rutaDelMenu } from './marca'
 import { RenglonApagado } from './renglon-apagado'
 
-type Resuelta = SubseccionDelNavegador & { ruta: string }
+type Sub = SubseccionDelNavegador
 
-// Las sub-secciones resueltas, en tramos seguidos con el mismo `grupo` (sin grupo, un tramo sin rótulo).
-function enTramos(resueltas: readonly Resuelta[]): { grupo?: string; subs: Resuelta[] }[] {
-  const tramos: { grupo?: string; subs: Resuelta[] }[] = []
+// Las sub-secciones en tramos seguidos con el mismo `grupo` (sin grupo, un tramo sin rótulo).
+function enTramos(resueltas: readonly Sub[]): { grupo?: string; subs: Sub[] }[] {
+  const tramos: { grupo?: string; subs: Sub[] }[] = []
   for (const sub of resueltas) {
     const ultimo = tramos.at(-1)
     if (ultimo && ultimo.grupo === sub.grupo) {
@@ -22,9 +20,8 @@ function enTramos(resueltas: readonly Resuelta[]): { grupo?: string; subs: Resue
   return tramos
 }
 
-// Las sub-secciones de una sección en el menú, con cada plantilla rellenada con la ruta actual (las partes del origen que se ve) o, si no
-// resuelve, con su respaldo. La que no resuelve ni tiene respaldo no se dibuja; si no queda ninguna, tampoco la lista. La índice (en la ruta
-// de su sección) se marca sólo en su ruta; la que no se puede abrir va apagada con su motivo. Las que declaran `grupo` van bajo su rótulo
+// Las sub-secciones de una sección en el menú (en Orígenes, un renglón por origen, que se marca en todas sus pestañas). Sin ninguna, no hay
+// lista. La índice (en la ruta de su sección) se marca sólo en su ruta; la que no se puede abrir va apagada con su motivo. Las que declaran `grupo` van bajo su rótulo
 // (un `<p>`, no un encabezado, como los grupos del menú). Van sangradas bajo su sección, con una línea guía a la izquierda. Se esconde por CSS
 // mientras su sección no está marcada.
 export function SubseccionesDelMenu({
@@ -36,19 +33,15 @@ export function SubseccionesDelMenu({
   rutaDeSeccion: string
   subsecciones: readonly SubseccionDelNavegador[]
 }) {
-  const actual = usePathname()
-  const resueltas = subsecciones.flatMap((sub) => {
-    const ruta = rutaDelMenu(sub, actual)
-    return ruta === null ? [] : [{ ...sub, ruta }]
-  })
-  if (resueltas.length === 0) {
+  if (subsecciones.length === 0) {
     return null
   }
-  const renglon = (sub: Resuelta) => (
+  const renglon = (sub: Sub) => (
     <li key={sub.clave}>
       {sub.motivo === undefined ? (
         <EnlaceDelMenu
           ruta={sub.ruta}
+          marca={sub.marca}
           exacta={sub.ruta === rutaDeSeccion}
           titulo={sub.titulo}
           nivel="sub"
@@ -64,7 +57,7 @@ export function SubseccionesDelMenu({
   )
   return (
     <ul className="ml-[1.125rem] grid gap-0.5 border-l border-(--color-line)">
-      {enTramos(resueltas).map((tramo, i) => {
+      {enTramos(subsecciones).map((tramo, i) => {
         if (tramo.grupo === undefined) {
           return tramo.subs.map(renglon)
         }
