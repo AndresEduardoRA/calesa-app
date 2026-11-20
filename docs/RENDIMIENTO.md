@@ -643,6 +643,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   cruzan como código; no importa `secciones.ts`, `permisos.ts` ni ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
   `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta. Las sub-secciones plantilla (las
   partes de un origen) suman al menú una pieza de cliente chica que las resuelve con la ruta (`subsecciones-del-menu.tsx`).
+- Configuración › Empresa (tarjetas de ajustes, cada modal con `diferido()` al abrirse por primera vez): JS en frío (KB gz, `.next-e2e`) `/empresa` 228,4, `/empresa/integraciones` 228,4, `/empresa/comprobantes` 358,9 (sin tope propio).
 - Configuración › Cotización: cada sub-ruta carga sólo su pantalla (`pantallas/formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
   JS en frío (KB gz, `.next-e2e`): inicio 352,4; `/<origen>/formula` 443,5, `/hoja` 359,1 (dnd-kit y el editor del diseño, en su `diferido()`),
   `/tarjeta` 364,9 (la pestaña dibuja en frío el aviso de menos de 1.024 px y arma la lectura del lienzo; el editor, 26,4, llega por `diferido()`), `/tablas` 361,5; `/general/colores` 359,1, `/niveles` 377,8, `/vigencia` 363,2. El inicio lee la tabla de orígenes
