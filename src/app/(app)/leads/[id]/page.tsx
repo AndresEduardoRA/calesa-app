@@ -84,7 +84,10 @@ export default async function PaginaLead({ params, searchParams }: PageProps<'/l
           duenoDe(datos.cartera)?.usuarioId ?? null,
           sesion.usuarioId,
         )}
-        {...bloquesDeLaFicha(ficha, ve, sesion.permisos, paraCotizar)}
+        {...bloquesDeLaFicha(ficha, ve, sesion.permisos, {
+          paraCotizar,
+          embudoRecordado: sesion.preferencias.embudoDeLaFicha,
+        })}
       />
     </>
   )

@@ -5,14 +5,22 @@ import Link from 'next/link'
 import { Button } from '@/shared/ui/button'
 import { TituloDeBloqueConAccion } from '@/shared/ui/ficha-en-bloques'
 import type { Embudo } from '../../../entities/embudo'
-import type { OportunidadDelLead } from '../../../entities/oportunidad'
+import { rutaDelEmbudoDelLead } from '../../../entities/embudo-del-lead'
+import type { Oportunidad, OportunidadDelLead } from '../../../entities/oportunidad'
 import { abiertasDeLoCargado, type AbiertaEnEmbudo } from '../../../entities/oportunidad-unica'
-import { oportunidadesDelBloque } from '../../../entities/oportunidades-del-bloque'
+import {
+  tableroDelLead,
+  vacioDelTablero,
+  type TableroDelLead,
+} from '../../../entities/tablero-del-lead'
+import { SelectorDeEmbudo } from '../../embudo/components/selector-de-embudo'
 import { RefrescarAlVolver } from '../../ficha/components/refrescar-al-volver'
+import { useEmbudoDelBloque } from '../hooks/use-embudo-del-bloque'
 import { useOportunidades } from '../hooks/use-oportunidades'
 import { usePanelDeMovida } from '../hooks/use-panel-de-movida'
 import { usePanelDeOportunidad } from '../hooks/use-panel-de-oportunidad'
-import { FilaDeOportunidad } from './fila-de-oportunidad'
+import { TableroDelLeadDiferido } from './diferidos'
+import { MenuDelBloque } from './menu-del-bloque'
 import { MovidaDeLaFicha } from './movida-de-la-ficha'
 import { PanelDeOportunidad } from './panel-de-oportunidad'
 
@@ -24,11 +32,13 @@ type Props = {
   leadId: string
   inicial: readonly OportunidadDelLead[]
   embudos: readonly Embudo[]
+  // El embudo que esta persona dejó a la vista la última vez (`leads.embudo_de_la_ficha`), o nada.
+  embudoRecordado: string | null
   // Dónde ya tiene una abierta (de la primera lectura del servidor; lo cargado manda: `abiertasDeLoCargado`): al crear, esos embudos van apagados.
   abiertasPorEmbudo: readonly AbiertaEnEmbudo[]
   // Cartera y `leads.editar` (lo dice la base).
   puedoCrear: boolean
-  // Tiene más de las que trajo el servidor: están en «Ver todas».
+  // Tiene más de las que trajo el servidor: están en «Ver en el embudo».
   hayMas: boolean
 }
 
@@ -48,84 +58,169 @@ function BotonNueva({ alAbrir }: { alAbrir: () => void }) {
   )
 }
 
-// «Ver todas»: un enlace de texto, sin número, al embudo filtrado por el lead.
-function VerTodas({ href }: { href: string }) {
+// «Ver en el embudo» al pie, sólo cuando algo no se dibuja: un enlace de texto, sin número, a la vista filtrada por el lead.
+function VerEnElEmbudo({ href }: { href: string }) {
   return (
     <Link
       href={href as Route}
       className="inline-flex min-h-11 w-fit items-center text-(length:--text-sm) font-medium text-(--color-primario) underline-offset-2 hover:underline md:min-h-8"
     >
-      Ver todas
+      Ver en el embudo
     </Link>
   )
 }
 
-// El bloque «Oportunidades» de la ficha: las abiertas de quien mira sobre el lead (una por embudo), en filas de una línea, hasta tres; las
-// cerradas y lo que no se ve, en «Ver todas» (el embudo filtrado por este lead). «Nueva» en el título. Mover, editar y eliminar, en el «⋯»
-// de cada fila; una que se cierra al moverla sale de la vista.
+type Oportunidades = ReturnType<typeof useOportunidades>
+
+// El título: «Nueva» (si puede crear) y, a su lado, el «⋯» del bloque.
+function TituloDelBloque(props: {
+  puedoCrear: boolean
+  alNueva: () => void
+  verEnElEmbudo: string
+}) {
+  return (
+    <TituloDeBloqueConAccion
+      id="titulo-oportunidades"
+      titulo="Oportunidades"
+      accion={
+        <div className="flex min-w-0 gap-1 [&>*:first-child]:grow">
+          {props.puedoCrear ? <BotonNueva alAbrir={props.alNueva} /> : null}
+          <MenuDelBloque verEnElEmbudo={props.verEnElEmbudo} />
+        </div>
+      }
+    />
+  )
+}
+
+type PropsDelTablero = {
+  tablero: TableroDelLead<OportunidadDelLead> | null
+  puedoCrear: boolean
+  oportunidades: Oportunidades
+  movida: ReturnType<typeof usePanelDeMovida>
+  alEditar: (id: string) => void
+}
+
+// El tablero, o el vacío (sin embudo, o sin oportunidades de este lead en el elegido), y «Ver en el embudo» si algo no se dibuja.
+function CuerpoDelTablero({
+  tablero,
+  puedoCrear,
+  oportunidades,
+  movida,
+  alEditar,
+}: PropsDelTablero) {
+  if (tablero === null || tablero.vacio) {
+    return (
+      <p className="text-(length:--text-sm) text-(--color-ink-faint)">
+        {vacioDelTablero(tablero?.embudo.nombre ?? null)}
+      </p>
+    )
+  }
+  return (
+    <>
+      <div className="min-h-24 min-w-0">
+        <TableroDelLeadDiferido
+          tablero={tablero}
+          puedeEditar={puedoCrear}
+          ocupada={oportunidades.ocupada}
+          alMover={oportunidades.moverA}
+          alPedirMotivo={movida.pedir}
+          alEditar={(o) => {
+            alEditar(o.id)
+          }}
+          alEliminar={(o) => void oportunidades.quitar(o)}
+        />
+      </div>
+      {tablero.hayMasFuera ? <VerEnElEmbudo href={tablero.verEnElEmbudo} /> : null}
+    </>
+  )
+}
+
+type PropsDelPanel = {
+  puedoCrear: boolean
+  panel: ReturnType<typeof usePanelDeOportunidad>
+  editando: OportunidadDelLead | null
+  embudos: readonly Embudo[]
+  embudo: Embudo | null
+  abiertas: readonly AbiertaEnEmbudo[]
+  leadId: string
+  alGuardar: (oportunidad: Oportunidad) => void
+  elegir: (embudoId: string) => void
+}
+
+// «Nueva oportunidad» o «Editar» en su panel con URL (empieza en el embudo que se ve).
+function PanelDelBloque({ puedoCrear, panel, editando, embudo, elegir, ...resto }: PropsDelPanel) {
+  if (!puedoCrear || !(panel.nueva || editando)) {
+    return null
+  }
+  return (
+    <PanelDeOportunidad
+      key={editando?.actualizadoEn ?? 'nueva'}
+      leadId={resto.leadId}
+      oportunidad={editando}
+      embudos={resto.embudos}
+      embudoPreferido={embudo?.id ?? null}
+      abiertas={resto.abiertas}
+      alGuardar={(creada) => {
+        resto.alGuardar(creada)
+        // Una nueva en otro embudo que el que se ve: se pasa a ése, para que la persona la vea entrar.
+        if (!editando && embudo && creada.embudoId !== embudo.id) {
+          elegir(creada.embudoId)
+        }
+      }}
+      alCerrar={panel.cerrar}
+    />
+  )
+}
+
+// El bloque «Oportunidades» de la ficha: el embudo de este lead. Una columna por etapa del embudo elegido (el selector sólo si quien mira tiene más
+// de uno; recuerda el último), con las oportunidades de este lead en cada etapa, que se mueven arrastrando o con «Mover a» del «⋯» de cada una.
+// «Nueva» en el título y, a su lado, el «⋯» del bloque con «Ver en el embudo» (la vista filtrada por este lead).
 export function OportunidadesDelLead(props: Props) {
   const { leadId, inicial, embudos, puedoCrear } = props
   const panel = usePanelDeOportunidad()
   const movida = usePanelDeMovida()
-  const { lista, hayMas, moverA, quitar, ocupada, alGuardar } = useOportunidades(
+  const oportunidades = useOportunidades(
     leadId,
     { oportunidades: inicial, hayMas: props.hayMas },
     embudos,
   )
+  const { lista, hayMas, moverA, alGuardar } = oportunidades
+  const { embudo, elegir } = useEmbudoDelBloque(embudos, props.embudoRecordado)
   const editando = panel.editando ? (lista.find((o) => o.id === panel.editando) ?? null) : null
-  const { aLaVista, verTodas } = oportunidadesDelBloque({ lista, hayMas, embudos, leadId })
+  const tablero = embudo ? tableroDelLead({ lista, hayMas, embudo, leadId }) : null
   return (
     <section
       aria-labelledby="titulo-oportunidades"
-      className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2"
+      className="@container/oportunidades grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2"
     >
-      <TituloDeBloqueConAccion
-        id="titulo-oportunidades"
-        titulo="Oportunidades"
-        accion={puedoCrear ? <BotonNueva alAbrir={panel.abrirNueva} /> : null}
+      <TituloDelBloque
+        puedoCrear={puedoCrear}
+        alNueva={panel.abrirNueva}
+        verEnElEmbudo={tablero?.verEnElEmbudo ?? rutaDelEmbudoDelLead(null, leadId)}
       />
-      {aLaVista.length === 0 ? (
-        <p className="text-(length:--text-sm) text-(--color-ink-faint)">
-          Sin oportunidades abiertas.
-        </p>
-      ) : (
-        <ul
-          aria-label="Oportunidades abiertas"
-          className="@container/oportunidades grid grid-cols-[minmax(0,1fr)] divide-y divide-(--color-line)"
-        >
-          {aLaVista.map((o) => (
-            <li key={o.id} className="min-w-0">
-              <FilaDeOportunidad
-                oportunidad={o}
-                etapas={embudos.find((e) => e.id === o.embudoId)?.etapas ?? []}
-                nombrarEmbudo={embudos.length > 1}
-                puedeEditar={puedoCrear}
-                ocupada={ocupada === o.id}
-                alMover={(etapa, motivo) => moverA(o, etapa, motivo)}
-                alPedirMotivo={(etapa) => {
-                  movida.pedir(o, etapa)
-                }}
-                alEditar={() => {
-                  panel.abrirEdicion(o.id)
-                }}
-                alEliminar={() => void quitar(o)}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
-      {verTodas === null ? null : <VerTodas href={verTodas} />}
-      {puedoCrear && (panel.nueva || editando) ? (
-        <PanelDeOportunidad
-          key={editando?.actualizadoEn ?? 'nueva'}
-          leadId={leadId}
-          oportunidad={editando}
-          embudos={embudos}
-          abiertas={abiertasDeLoCargado(props.abiertasPorEmbudo, lista, hayMas, embudos)}
-          alGuardar={alGuardar}
-          alCerrar={panel.cerrar}
-        />
+      {embudo && embudos.length > 1 ? (
+        <div>
+          <SelectorDeEmbudo embudos={embudos} actual={embudo.id} alElegir={elegir} />
+        </div>
       ) : null}
+      <CuerpoDelTablero
+        tablero={tablero}
+        puedoCrear={puedoCrear}
+        oportunidades={oportunidades}
+        movida={movida}
+        alEditar={panel.abrirEdicion}
+      />
+      <PanelDelBloque
+        puedoCrear={props.puedoCrear}
+        panel={panel}
+        editando={editando}
+        embudos={embudos}
+        embudo={embudo}
+        abiertas={abiertasDeLoCargado(props.abiertasPorEmbudo, lista, hayMas, embudos)}
+        leadId={leadId}
+        alGuardar={alGuardar}
+        elegir={elegir}
+      />
       <MovidaDeLaFicha
         activa={puedoCrear}
         panel={movida}
