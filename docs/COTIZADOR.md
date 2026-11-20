@@ -101,7 +101,8 @@ La estructura de una tabla (su existencia, sus columnas, si está activa) tambi�
 - **`tabla_referencia_columnas(p_tabla, p_columnas, p_version_esperada)`** manda la lista entera, en orden: de 1 a 20, clave
   `^[a-z][a-z0-9_]{0,40}$` única, etiqueta de hasta 60 sin repetir (sin distinguir mayúsculas ASCII) y tipo `numero`, `anio` o `texto` (uno de
   antes se conserva si la columna sigue con el suyo). Una columna que sigue no cambia de tipo (22023); renombrar es cambiar la etiqueta, la
-  clave queda. Quitar una columna que nombra una fórmula publicada o el borrador de un origen que recibe la tabla da 23503 con quién
+  clave queda. Quitar una columna que nombra la publicada o el borrador de una fórmula del origen sin archivar (las archivadas no cuentan), en
+  un origen que recibe la tabla, da 23503 con quién
   («La columna «País» la usa la fórmula publicada de Japón.»): la usa un nodo `tabla` por su `match` o su `columna`, y un `tramo` o un
   `depreciar` por su `columna`, `desde` y `hasta`. Quitarla borra sus valores de todas las filas. Sube la versión con una nota automática
   («Columnas: sumó «Recargo»; renombró «A» a «B»; quitó «C»; cambió el orden.») y no publica ninguna fórmula (no cambian filas). Devuelve

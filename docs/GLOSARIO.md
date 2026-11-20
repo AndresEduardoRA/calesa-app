@@ -497,8 +497,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   publicar la N+1 de ninguna fórmula y borra de las filas la clave quitada.
 - **Tabla desactivada** — `tablas_referencia.activa = false` (`tabla_referencia_desactivar()`): sale de las listas y de BUSCARV; no se deshace
   desde la app y su clave queda tomada.
-- **Tabla o columna en uso** — `_tabla_referencia_usos()`: la nombra la fórmula publicada o el borrador de un origen que recibe la tabla. Una
-  tabla en uso no se desactiva y una columna en uso no se quita.
+- **Tabla o columna en uso** — `_tabla_referencia_usos()`: la nombra la publicada o el borrador de una fórmula del origen sin archivar, en un
+  origen que recibe la tabla. Una tabla en uso no se desactiva y una columna en uso no se quita.
 - **Tabla compartida** — tabla de referencia con `origen_id` nulo: la usan los orígenes sin una propia de esa clave; la propia la **tapa** (va
   `tapada` en la lista de ese origen). Se edita en Catálogos › Tablas compartidas o desde la pestaña Tablas de un origen que la usa, con el aviso
   de a quién le cambia; publicarla pide `cotizaciones.configurar` en cada origen que la usa.

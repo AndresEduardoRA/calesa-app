@@ -178,3 +178,25 @@ begin
     '23503|La usa la fórmula publicada de Prueba td dos: quítala de esa fórmula para desactivarla.|tabla');
 end $$;
 rollback;
+
+-- @test tablas desactivar: la publicada de una fórmula del origen archivada no la usa; la de otra sin archivar del mismo origen sí
+begin;
+select pg_temp.td_preparar();
+do $$
+declare a uuid := '00000000-0000-4000-8000-00000000e00a'; o uuid := pg_temp.td_origen('prueba_td'); t public.tablas_referencia := pg_temp.td_tabla('td_sola', pg_temp.td_origen('prueba_td'));
+        v_vieja uuid; v_nueva uuid;
+begin
+  perform pg_temp.td_formula(o, 'publicada', '[{"id":"r","tipo":"input"},{"id":"t","tipo":"tramo","tabla":"td_sola","sobre":"r","columna":"monto"}]');
+  select formula_del_origen_id into v_vieja from public.formulas where origen_id = o and estado = 'publicada';
+  insert into public.formulas_del_origen (origen_id, nombre) values (o, 'Otra td') returning id into v_nueva;
+  update public.formulas_del_origen set activa = false where id = v_vieja;
+  update public.formulas_del_origen set archivada_en = now() where id = v_vieja;
+  perform pg_temp.td_igual(pg_temp.td_error(a, pg_temp.td_sql(t.id, 1)), 'sin error');
+  update public.tablas_referencia set activa = true where id = t.id;
+  insert into public.formulas (origen_id, formula_del_origen_id, version, estado, definicion, params, diseno, visibilidad, publicado_en)
+  values (o, v_nueva, 1, 'publicada', '{"nodos":[{"id":"r","tipo":"input"},{"id":"t","tipo":"tramo","tabla":"td_sola","sobre":"r","columna":"monto"}]}',
+          '{}', '{"secciones": []}', '{}', now());
+  perform pg_temp.td_igual(pg_temp.td_error(a, pg_temp.td_sql(t.id, 1)),
+    '23503|La usa la fórmula publicada de Prueba td: quítala de esa fórmula para desactivarla.|tabla');
+end $$;
+rollback;

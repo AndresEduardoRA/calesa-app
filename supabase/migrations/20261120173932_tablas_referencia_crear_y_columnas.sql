@@ -100,7 +100,7 @@ $$;
 -- Quién usa la tabla («en uso», glosario): por cada origen que la recibe (la propia de su origen, o la compartida en los orígenes sin una propia
 -- activa de esa clave, como `_tabla_referencia_usada_en`), cada fórmula publicada o borrador que la nombra: un nodo con `tabla` = la clave, su copia
 -- congelada en `params.tablas` o una ayuda `{tabla}` del diseño. `columnas`: las que nombran sus nodos de esa tabla (el `match` y la `columna` de un
--- `tabla`; la `columna`, `desde` y `hasta` de un `tramo` o de un `depreciar`). No supone una sola publicada por origen.
+-- `tabla`; la `columna`, `desde` y `hasta` de un `tramo` o de un `depreciar`). Cuenta cada fórmula del origen sin archivar: un origen puede tener varias publicadas.
 create or replace function public._tabla_referencia_usos(p_tabla uuid)
 returns table (origen_id uuid, origen text, estado text, columnas text[])
 language sql
@@ -127,8 +127,10 @@ as $$
       or (t.origen_id is null
           and not exists (select 1 from public.tablas_referencia r                               -- tablas_referencia_origen_id_clave_key
                            where r.origen_id = o.id and r.clave = t.clave and r.activa))
+    join public.formulas_del_origen d                                                            -- formulas_del_origen_origen_idx
+      on d.origen_id = o.id and d.archivada_en is null
     join public.formulas f                                                                       -- formulas_publicada_unica, formulas_borrador_unico
-      on f.origen_id = o.id and f.estado in ('publicada', 'borrador')
+      on f.formula_del_origen_id = d.id and f.estado in ('publicada', 'borrador')
    where t.id = p_tabla
      and (exists (select 1 from jsonb_array_elements(case when jsonb_typeof(f.definicion -> 'nodos') = 'array' then f.definicion -> 'nodos' else '[]'::jsonb end) n
                    where n ->> 'tabla' = t.clave)
