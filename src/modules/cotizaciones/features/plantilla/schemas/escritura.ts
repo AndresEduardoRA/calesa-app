@@ -5,10 +5,13 @@ import { esquemaDeNotaDePlantilla } from '../../../entities/plantilla/escritura-
 // decimales, y nunca pasa por un `Date`.
 const esquemaDeLaEsperada = z.iso.datetime({ offset: true })
 
+// Todas mandan la fórmula del origen de lo leído (sin ella no hay editor: la pestaña lo abre sólo con una fórmula publicada).
+
 // Lo que manda «Guardar»: el borrador que se leyó (nula sólo para crear el primero) y la plantilla. Su forma la juzga la base; lo que no es un JSON que la base lee lo ataja
 // la action antes (`revisarTextoParaLaBase()`).
 export const esquemaDeGuardar = z.object({
   origenId: z.guid(),
+  formulaDelOrigenId: z.guid(),
   esperada: esquemaDeLaEsperada.nullable(),
   definicion: z.unknown(),
 })
@@ -16,6 +19,7 @@ export const esquemaDeGuardar = z.object({
 // Lo que manda «Publicar»: el borrador que se leyó, siempre, y la nota.
 export const esquemaDePublicar = z.object({
   origenId: z.guid(),
+  formulaDelOrigenId: z.guid(),
   esperada: esquemaDeLaEsperada,
   nota: esquemaDeNotaDePlantilla,
 })
@@ -23,5 +27,6 @@ export const esquemaDePublicar = z.object({
 // Lo que manda «Descartar borrador»: el borrador que se leyó, siempre.
 export const esquemaDeDescartar = z.object({
   origenId: z.guid(),
+  formulaDelOrigenId: z.guid(),
   esperada: esquemaDeLaEsperada,
 })

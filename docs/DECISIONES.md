@@ -552,7 +552,7 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### La fórmula
 
-- **Grafo versionado validado en SQL.** Lista de nodos con operaciones cerradas; `validar_formula()` y `evaluar_formula()` son espejo exacto de `validar.ts`/`evaluar()` con corpus de paridad; un borrador y una publicada por origen; snapshot por cotización. Se escribe como texto compilado al grafo.
+- **Grafo versionado validado en SQL.** Lista de nodos con operaciones cerradas; `validar_formula()` y `evaluar_formula()` son espejo exacto de `validar.ts`/`evaluar()` con corpus de paridad; un borrador y una publicada por fórmula del origen y una fórmula activa por origen; snapshot por cotización. Se escribe como texto compilado al grafo.
 - **`HOY()` no se admite** (lo decidió la persona): el compilador da `hoy_no_soportado`. Si una fórmula real lo pide, compila a un nodo `fecha_cotizacion` congelado con la cotización, con paridad TS/SQL.
 - **El SI con condición es otra operación, `elegir`; el `si` de una bandera no cambia.** `si` depende de su `condicion`, que es una bandera y además el
   interruptor del nodo: ampliarlo a una condición cualquiera y a una rama «si no» lo volvía de dos formas, con chequeos cruzados en Zod y en SQL y otro
@@ -571,9 +571,35 @@ las trampas, en `docs/LECCIONES.md`.
 - **El ejemplo de un mensaje del compilador usa el nombre que la persona escribió** (`SI necesita una condición, por ejemplo remate>1000.`), nunca una
   referencia A1: en la fórmula no hay celdas.
 - **Sin «Sugerido: X» junto a un valor modificado.** La celda muestra el override con anillo y ↺, que lo quita. Si se reabre, `evaluar()` y `evaluar_formula()` devuelven `sugeridos[id]` sólo de nodos con override.
-- **Publicar sin pisar el borrador.** El ⚙ y revertir publican la N+1 desde la publicada (`_publicar_version()`, candado por origen); publicar un borrador atrasado da PT409 con quién publicó; revertir a un nivel retirado se rechaza.
+- **Publicar sin pisar el borrador.** El ⚙ y revertir publican la N+1 desde la publicada (`_publicar_version()`, candado por origen, compartido por todas sus fórmulas); publicar un borrador atrasado da PT409 con quién publicó; revertir a un nivel retirado se rechaza.
 - **Versión esperada del borrador.** `formula_guardar_borrador`, `_descartar_` y `_publicar` la llevan al final con `default null`, sin sobrecargas; en guardar, nula = crear. Guardar devuelve `{id, actualizado_en}` y el editor sigue sin releer.
 - **Orden en las RPC del borrador.** Permiso, validación (fuera del candado, es lo caro), candado del origen, borrador `for update`, esperadas y escritura. Descartar lo puede cualquiera con `configurar` del origen (limpia el olvidado de quien se fue).
+- **Varias fórmulas por origen, una activa.** Cada fórmula del origen tiene su borrador, sus versiones (numeradas desde 1) y su tarjeta; la activa es la
+  única que se cotiza (`_publicada_de_la_activa()`). Los candados siguen siendo los del origen (`formulas:` y después `plantillas:`), compartidos por todas: no
+  hay orden nuevo y las carreras de antes siguen valiendo.
+- **La primera publicada de un origen sin activa la activa** (sin preguntar): sin esto un origen nuevo no se cotizaría hasta tener el botón «Activar». Una
+  activa siempre tiene publicada.
+- **Una copia de otro origen queda marcada hasta que sus datos del vehículo existan en el destino** (sin preguntar): publicar y activar lo exigen sólo a
+  esas (`copiada_de_otro_origen`, también la copia de una copia); las demás publican como siempre, sin romper fórmulas ni semillas.
+- **Copiar no toca los colores:** el catálogo es de la empresa y hay una por despliegue, así que toda clave que la copia nombra ya existe, y un color en uso
+  no se elimina.
+- **Un trigger de compatibilidad cuelga de la fórmula de trabajo lo insertado sin fórmula del origen** (sin preguntar): la semilla, las pruebas, las carreras
+  y el e2e insertan directo en `formulas` y `plantillas_tarjeta`; reescribirlos era riesgo sin valor. Las RPC siempre pasan el id.
+- **«Guardar con la N» deja de valer con lo primero que pase:** una versión posterior de su fórmula o que su fórmula deje de ser la activa
+  (`desactivada_en`), con la misma ventana de 24 h.
+- **Activar pide la activa que se vio** (sin preguntar): dos personas activando a la vez, la segunda recibe un PT409 con quién y cuándo en vez de pisar.
+- **Activar sin ninguna tarjeta se rechaza** (sin preguntar; 22023, hint `tarjeta`): cada fórmula lleva su tarjeta, y activar re-valida la publicada contra
+  la versión que se va a cotizar.
+- **El nombre es único en el origen sin distinguir mayúsculas, también entre las archivadas; el tope de 50 cuenta las no archivadas** (sin preguntar). No hay
+  desarchivar.
+- **Publicar una tabla de referencia publica la N+1 de cada fórmula no archivada del origen con publicada que la use**, no sólo la de la activa.
+- **«Para cotizar y mover» mira la activa y la fórmula de trabajo** (sin preguntar): `origenes_resumen().formula_publicada` dice si hay activa y
+  `tarjeta_publicada`, si la fórmula de trabajo (la que edita la sub-pestaña Tarjeta; con activa, la activa) tiene su plantilla publicada. Una tarjeta publicada
+  en otra fórmula del origen no cuenta: no es la que se cotiza ni la que se edita.
+- **Crear y activar entran al inventario de visibilidad como `no_devuelve`:** leen la fórmula pero crear devuelve `{id, actualizado_en, avisos}` y
+  activar, ids y números.
+- **Las sub-pestañas Fórmula, Hoja y Tarjeta escriben en la fórmula del origen que leyeron** (`p_formula_del_origen`), no en la de trabajo de cuando guardan: si
+  otra pasa a ser la de trabajo con la pestaña abierta, lo escrito no salta de fórmula. El ⚙ de la hoja no la manda: cambia la activa, la que se cotiza.
 - **La fórmula se ve como planilla** (A · concepto, B · %, C · valor, D · de dónde sale) **y el editor en texto es el «Modo avanzado».** Los dos editan
   la misma fórmula de trabajo, que tiene la sesión; las tarjetas de la publicada y del borrador no llevan «Editar». La sesión se vuelve a montar
   con «Recargar» o si la versión cambia por algo que no hizo ella (publicar, descartar, revertir), nunca al guardar.
@@ -584,7 +610,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **La planilla en el celular y con el texto al 200 %** se desplaza de costado en su marco con «#» y A pegadas (D se parte en líneas): las dos cosas
   pasan con el mismo ancho angosto y se eligió la del celular en vez de bajar B–D bajo A. «Totales» y la tarjeta van al costado cuando la planilla mide
   72 rem o más (una consulta de contenedor, no `xl`): a 1.280 px la columna de Configuración deja ≈ 52 rem y la tabla quedaría apretada.
-- **La tarjeta en vivo** dibuja la plantilla de trabajo leída con la fórmula publicada (sus etiquetas) y los valores de la fórmula de trabajo; «Ver total»
+- **La tarjeta en vivo** dibuja la plantilla de la fórmula de trabajo leída con su fórmula publicada (sus etiquetas) y los valores de la fórmula de trabajo; «Ver total»
   sale del diseño (`ver_total_bs_por_defecto`, apagado sin él) y no se cambia en la planilla.
 - **Qué edita el editor en texto.** Sólo cálculos y constantes; el id de una fila no cambia; un negativo no se escribe en el texto; tope 2.000 por fila en UTF-16. La vista previa usa «Cifras de prueba» que no se guardan. `key` = `<origen>:<vuelta>:<sesión>`.
 - **Grupos en el editor.** No se suman ni se quitan (la plantilla nombra exactamente los de la fórmula); `buckets` y `total_en` no se editan; una auxiliar nunca suma a un grupo.
@@ -711,7 +737,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **El texto de la tarjeta.** `texto: auto` es la tinta oscura de la interfaz (#1b2130, «negro») o el blanco, el de más contraste sobre el hex del
   fondo (o sobre el blanco si el fondo es `auto`): `textoAutomatico()`, en el núcleo. Los bordes de las celdas son de ese «negro». `fondo: auto` es
   blanco: no hay banda gris del vehículo (no hay hex fuera del catálogo). `auto` nunca es una clave del catálogo (`_tono_clave()` la salta).
-- **La tarjeta lee la moneda de SU versión y la plantilla publicada de hoy.** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso y se quitan juntas (`docs/PENDIENTES.md`): no volver a darles uso.
+- **La tarjeta lee la moneda de SU versión y la plantilla publicada hoy de la fórmula del origen de esa versión.** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso y se quitan juntas (`docs/PENDIENTES.md`): no volver a darles uso.
 - **El título de la cotización va en la página de la tarjeta, no en `cotizacion_tarjeta`.** Esa RPC es la plantilla de la fórmula (nada por cotización): el título resuelto (`tituloAparteDelNumero()`: sin el de respaldo «Cotización n.º N») llega como `PaginaDeLaTarjeta.titulo` y es la variable `titulo` de la cuadrícula, aparte del título de la opción (`titulo_opcion`). La forma 1 convertida lo pone en la fila de la fecha, a su lado (como iba en el PDF, y sin sumar una fila que no se puede ocultar); los metadatos del PDF no lo llevan, porque puede nombrar el vehículo.
 - **PDF e imagen en servidor.** `@react-pdf/renderer` y `ImageResponse` de `next/og`, cargados con `import()` desde la composición del área: nunca llegan
   al navegador. Sin imágenes de cotización generadas en el cliente. Las fuentes son Geist del release `vercel/geist-font` v1.9.2 (zip sha256

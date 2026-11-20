@@ -1,10 +1,10 @@
 -- La lista de versiones de la fórmula de Configuración › Cotización › «Fórmula» (4.20-2a, `infra/formula/consulta-de-versiones.ts`): PostgREST sobre `formulas` con la
--- sesión de quien mira, `origen_id = $1 and version is not null [and version < $cursor] order by version desc limit 21`. La sostiene
--- `formulas_origen_id_version_key (origen_id, version)` recorrido hacia atrás, sin `Sort`, con y sin cursor y a cualquier profundidad; la policy `formulas: leer`
--- deja ver sólo los orígenes con `cotizaciones.configurar`. Corre en PGlite (`pnpm db:probar`), después de la lista fija; crea su persona, su rol y sus orígenes
+-- sesión de quien mira, `formula_del_origen_id = $1 and version is not null [and version < $cursor] order by version desc limit 21`. La sostiene
+-- `formulas_formula_del_origen_id_version_key (formula_del_origen_id, version)` recorrido hacia atrás, sin `Sort`, con y sin cursor y a cualquier profundidad; la
+-- policy `formulas: leer` deja ver sólo los orígenes con `cotizaciones.configurar`. Corre en PGlite (`pnpm db:probar`), después de la lista fija; crea su persona, su rol y sus orígenes
 -- (no se apoya en las del humo) y los borra al terminar.
 
--- @test fórmula: las versiones de un origen se leen por cursor sobre su índice, sin ordenar
+-- @test fórmula: las versiones de una fórmula del origen se leen por cursor sobre su índice, sin ordenar
 reset role;
 -- 2.000 versiones archivadas en un origen propio (sin la auditoría por fila: no es lo que se prueba) y unas pocas en otro, para que el índice tenga vecinos.
 alter table public.formulas disable trigger trg_auditar;
@@ -42,7 +42,7 @@ select set_config('request.jwt.claim.role', 'authenticated', false);
 set role authenticated;
 do $$
 declare
-  o uuid := (select id from public.origenes where clave = 'prueba_versiones');
+  o uuid := (select d.id from public.formulas_del_origen d join public.origenes x on x.id = d.origen_id where x.clave = 'prueba_versiones');
   consulta text;
   linea text;
   plan text;
@@ -50,15 +50,15 @@ declare
 begin
   -- Sin cursor, y con cursor cerca de la más nueva (1.981) y en lo hondo (101).
   foreach consulta in array array[
-    format('select id, version, estado, nota, publicado_por, publicado_en from public.formulas where origen_id = %L and version is not null order by version desc limit 21', o),
-    format('select id, version, estado, nota, publicado_por, publicado_en from public.formulas where origen_id = %L and version is not null and version < 1981 order by version desc limit 21', o),
-    format('select id, version, estado, nota, publicado_por, publicado_en from public.formulas where origen_id = %L and version is not null and version < 101 order by version desc limit 21', o)
+    format('select id, version, estado, nota, publicado_por, publicado_en from public.formulas where formula_del_origen_id = %L and version is not null order by version desc limit 21', o),
+    format('select id, version, estado, nota, publicado_por, publicado_en from public.formulas where formula_del_origen_id = %L and version is not null and version < 1981 order by version desc limit 21', o),
+    format('select id, version, estado, nota, publicado_por, publicado_en from public.formulas where formula_del_origen_id = %L and version is not null and version < 101 order by version desc limit 21', o)
   ] loop
     plan := '';
     for linea in execute 'explain (costs off) ' || consulta loop
       plan := plan || linea || E'\n';
     end loop;
-    if plan !~ 'Index Scan Backward using formulas_origen_id_version_key' then
+    if plan !~ 'Index Scan Backward using formulas_formula_del_origen_id_version_key' then
       raise exception 'la lista de versiones dejó de ir por su índice hacia atrás: %', plan;
     end if;
     if plan ~ 'Sort' or plan ~ 'Seq Scan' then
@@ -68,7 +68,7 @@ begin
     if n <> 21 then raise exception 'la página debía traer 21 (20 y una de más), trajo %', n; end if;
   end loop;
   -- El cursor corta donde debe: la primera de la página con cursor 101 es la 100.
-  if (select max(version) from (select version from public.formulas where origen_id = o and version is not null and version < 101 order by version desc limit 21) q) <> 100 then
+  if (select max(version) from (select version from public.formulas where formula_del_origen_id = o and version is not null and version < 101 order by version desc limit 21) q) <> 100 then
     raise exception 'el cursor no cortó en la 100';
   end if;
 end $$;

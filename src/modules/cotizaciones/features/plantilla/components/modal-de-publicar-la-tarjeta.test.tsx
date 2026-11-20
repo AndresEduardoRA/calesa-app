@@ -18,6 +18,7 @@ vi.mock('@/shared/ui/toasts', () => ({
 const HORA = '2026-11-07T15:00:00.123456+00:00'
 const OTRA = '2026-11-07T16:00:00.654321+00:00'
 const ORIGEN = { id: '00000000-0000-4000-8000-000000000001', nombre: 'Mini' }
+const FDO = '44444444-4444-4444-8444-444444444444'
 
 beforeEach(() => {
   publicarBorrador.mockReset()
@@ -40,6 +41,7 @@ function Prueba({
         abierto
         alCerrar={alCerrar}
         origen={ORIGEN}
+        formulaDelOrigenId={FDO}
         esperada={esperada}
         {...(alIrA === undefined ? {} : { alIrA })}
       />
@@ -71,7 +73,7 @@ describe('ModalDePublicarLaTarjeta', () => {
     expect(publicarBorrador).not.toHaveBeenCalled()
   })
 
-  it('con nota llama con { origenId, esperada, nota }, avisa y cierra', async () => {
+  it('con nota llama con { origenId, formulaDelOrigenId, esperada, nota }, avisa y cierra', async () => {
     publicarBorrador.mockResolvedValue({ data: { ok: true, data: 'id-publicada' } })
     const alCerrar = vi.fn()
     render(<Prueba alCerrar={alCerrar} />)
@@ -82,6 +84,7 @@ describe('ModalDePublicarLaTarjeta', () => {
     })
     expect(publicarBorrador).toHaveBeenCalledWith({
       origenId: ORIGEN.id,
+      formulaDelOrigenId: FDO,
       esperada: HORA,
       nota: 'Subo el flete',
     })

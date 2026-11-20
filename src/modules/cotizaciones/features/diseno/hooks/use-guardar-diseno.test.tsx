@@ -37,6 +37,7 @@ const HORA_NUEVA = '2026-11-08T10:02:10.654321+00:00'
 const diseno = disenoDe([seccion('s', [celda('a'), celda('b')])])
 const leida = (estado: 'borrador' | 'publicada'): DisenoParaEditar => ({
   id: estado === 'publicada' ? PUBLICADA : BORRADOR,
+  formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   estado,
   actualizadoEn: HORA,
   nota: estado === 'borrador' ? 'A medias' : 'De la publicación',

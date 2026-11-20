@@ -313,7 +313,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   `lazy`, y la completa (≤ 1.600 px) sólo de lo marcado. Cambiar de pestaña, formato o zona no pide nada. Código: el panel entero por `diferido()`; en frío sólo el
   botón del detalle y la línea del «⋯» (que no se dibuja hasta abrir el menú); la hoja nueva no dibuja el botón.
 - **Los retoques de la tarjeta** (`e2e/cotizar-retoques.spec.ts`): sin lista ni consulta que crezca. `cotizacion_retocar_tarjeta()` lee la cotización por
-  `cotizaciones_pkey` y la tarjeta por `cotizacion_tarjeta()` (la publicada por `plantillas_publicada_unica`, la versión por `formulas_pkey`); los retoques
+  `cotizaciones_pkey` y la tarjeta por `cotizacion_tarjeta()` (la versión por `formulas_pkey`, la publicada de su fórmula del origen por `plantillas_publicada_unica`); los retoques
   tienen el tope de su forma (≤ 1.000 celdas, ≤ 120 filas, 300 caracteres por texto, 24 KiB) y la revisión guarda sólo cantidades. Lo que se dibuja en el
   modo: un botón por celda y uno por fila, los topes de la plantilla. Código: la vista previa (ya diferida) suma el estado del modo, `aplicarRetoques()` y
   «Retocar»; la interfaz del modo, en su propio chunk (`components/retoques/diferidos.tsx`). En frío sólo una prop del proveedor (la de los retoques, unos
@@ -660,6 +660,9 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   «Para cotizar y mover» y las pestañas) lee `origenes_resumen()` una vez por pedido (`leerElOrigen`, con `cache()`, la comparten el marco y la pestaña) y,
   en un origen de subasta, si apibara está activa: nada cuenta ni crece con las cotizaciones. `/configuracion/origenes/<id>` y `/formula` solos redirigen
   con `route.ts` (308), sin `page.tsx` ni `loading.tsx` intermedios.
+  Cada pestaña de un origen lee antes su fórmula de trabajo: una fila de `formulas_del_origen` por `formulas_del_origen_origen_idx`
+  (`limit 1`), entre a lo sumo 50 sin archivar por origen (el tope de `formula_del_origen_crear()`, 22023 hint `formulas`); versiones, borradores y
+  tarjeta van después por los índices de esa fórmula del origen.
 - Configuración › Orígenes: la lista de tarjetas, 382,8 KB gz en frío en 26 chunks (`medirJsEnFrio()`); muestra sólo los orígenes que la persona
   abre, con su tira de pasos de la misma lectura. Sin `diferido()` nuevo: el bloque de datos clave se ve apenas carga «Campos».
 - «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`); el
@@ -732,7 +735,7 @@ fallar.
   buffers, razón de `cotizacion_crear`, 0 recorridos de `cotizaciones` (la anterior por la clave; la nueva viva por `cotizacion_padre_id`),
   `_nodos_visibles` 2 veces y la respuesta de la dueña ≤ 14.230 B. Guarda: buscar la nueva sin índice recorre.
 - Versiones de la fórmula (la pestaña «Fórmula» de un origen, `infra/formula/consulta-de-versiones.ts`): PostgREST de a 20 + 1 por
-  cursor sobre `formulas_origen_id_version_key` (`version < n`), sin `definicion`, `params`, `diseno` ni `visibilidad`; tope 500 con «Ir a la
+  cursor sobre `formulas_formula_del_origen_id_version_key` (`version < n`, la serie de la fórmula de trabajo), sin `definicion`, `params`, `diseno` ni `visibilidad`; tope 500 con «Ir a la
   versión»; la primera página, el estado (`limit 2`) y los autores en el servidor, «Ver más» desde el navegador. El plan lo fija
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
@@ -749,7 +752,7 @@ fallar.
   `pantallas/tarjeta-plantilla.ts` no entra a la hoja. La página del origen no tiene presupuesto de JS.
 - «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, las sub-pestañas de la Fórmula de un origen): en frío sólo viajan el botón y las cáscaras de `diferido()` (medido
   en KB gz con `medirJsEnFrio()`: Fórmula 444,6, Hoja 359,8, Tarjeta 364,7 y Tablas 362,0; ≤ +1,1 por pestaña). El modal llega al abrirse y el lienzo es el
-  chunk de la pestaña Tarjeta. Al abrirlo, una vez y sin caché, `GET [origen]/plantillas-de-v1`: el borrador de la fórmula (`formulas_borrador_unico`, `limit 1`), su
+  chunk de la pestaña Tarjeta. Al abrirlo, una vez y sin caché, `GET [origen]/plantillas-de-v1`: la fórmula de trabajo (`formulas_del_origen_origen_idx`, `limit 1`), su borrador (`formulas_borrador_unico`, `limit 1`), su
   autor (`perfiles_pkey`), el de la tarjeta (`plantillas_borrador_unico`, `limit 1`) y el catálogo de colores (`limit 48`), más los tipos de cambio y los campos del
   origen; responde ≤ 80 KB sin comprimir con las cuatro lecturas de la tarjeta (lo fijan `route.test.ts` y `plantillas-de-v1.test.ts`). Se dibujan cuatro
   tarjetas de a lo sumo 54 celdas. Aplicar escribe dos borradores y ≤ 48 colores: ninguna lectura crece con los datos.
@@ -849,7 +852,7 @@ pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACION
 - El ⚙ de una constante (`e2e/cotizar-ajuste-constante.spec.ts`): como quien configura, cada ⚙ son exactamente 3 nodos (botón, `svg`,
   `use`), el ⚙ de la cabecera son 7 (la fila junto a los modos, el botón, su `svg` y sus cuatro trazos) y la subasta ≤ 585 nodos (techo 600; mide 516 al abrir
   y 540 usada); las dos personas ven las mismas celdas. Ningún pedido al abrir la hoja ni al pasar por una
-  celda; abrir un ⚙ lee una fila por `formulas_publicada_unica`, ≤ 70 B. Panel, hook, lectura y action con `diferido()`.
+  celda; abrir un ⚙ lee una fila, la publicada de la activa (`formulas_del_origen_activa_unica` y `formulas_publicada_unica`), ≤ 70 B. Panel, hook, lectura y action con `diferido()`.
 - El ⚙ de un tipo de cambio (`e2e/cotizar-ajuste-tipo-cambio.spec.ts`): una llamada a `formula_tipo_cambio_del_nodo()`, ≤ 247 B; tras
   cambiarlo la hoja no relee. Bloque, hooks y action de `empresa` van con el panel por `diferido()`.
 - Vista previa de la tarjeta (`e2e/cotizar-vista-previa.spec.ts`): ninguna lectura al abrir la hoja; suma un elemento al pie del resumen;

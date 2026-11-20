@@ -6,12 +6,17 @@ import { useUltimo } from '@/shared/ui/use-ultimo'
 import { motivoParaNoAbrirDescartar } from '../../../entities/formula/descarte'
 import { motivoParaNoAbrirPublicar } from '../../../entities/formula/publicacion'
 import { motivoParaNoAbrirRevertir, versionParaRevertir } from '../../../entities/formula/reversion'
-import type { FormulaDelOrigen } from '../../../entities/formula/versiones'
+import type { LecturaDeLaFormula } from '../../../entities/formula/versiones'
 import type { PanelDeLaFormula } from './use-panel-de-la-formula'
 
 type Modo = 'publicar' | 'revertir' | 'descartar' | 'editar' | null
 
-function motivoDe(modo: Modo, panel: PanelDeLaFormula, formula: FormulaDelOrigen, origen: string) {
+function motivoDe(
+  modo: Modo,
+  panel: PanelDeLaFormula,
+  formula: LecturaDeLaFormula,
+  origen: string,
+) {
   if (modo === 'editar') {
     return formula.borrador || formula.publicada
       ? null
@@ -52,7 +57,7 @@ function modoDe(panel: PanelDeLaFormula): Modo {
 // va sigue nombrándolo.
 export function useAperturaDeLaFormula(
   panel: PanelDeLaFormula,
-  formula: FormulaDelOrigen,
+  formula: LecturaDeLaFormula,
   origen: string,
 ) {
   const modo = modoDe(panel)

@@ -42,14 +42,14 @@ const OCULTO = /definicion|params|diseno|visibilidad/
 const select = (llamadas: Llamada[]) => String(llamadas.find(([m]) => m === 'select')?.[1])
 
 describe('consultaDeVersiones', () => {
-  it('la primera página: sin lo oculto, del origen, sin borrador, de la más nueva y una de más', () => {
+  it('la primera página: sin lo oculto, de la fórmula del origen, sin borrador, de la más nueva y una de más', () => {
     const { cliente, llamadas } = clienteFalso()
     void consultaDeVersiones(cliente, O1, null)
     expect(select(llamadas)).not.toMatch(OCULTO)
     expect(llamadas).toEqual([
       ['from', 'formulas'],
       ['select', 'id, version, estado, nota, publicado_por, publicado_en'],
-      ['eq', 'origen_id', O1],
+      ['eq', 'formula_del_origen_id', O1],
       ['not', 'version', 'is', null],
       ['order', 'version', { ascending: false }],
       ['limit', 21],
@@ -68,7 +68,7 @@ describe('consultaDelEstado', () => {
     const { cliente, llamadas } = clienteFalso()
     void consultaDelEstado(cliente, O1)
     expect(select(llamadas)).not.toMatch(OCULTO)
-    expect(llamadas).toContainEqual(['eq', 'origen_id', O1])
+    expect(llamadas).toContainEqual(['eq', 'formula_del_origen_id', O1])
     expect(llamadas).toContainEqual(['in', 'estado', ['borrador', 'publicada']])
     expect(llamadas).toContainEqual(['limit', 2])
   })

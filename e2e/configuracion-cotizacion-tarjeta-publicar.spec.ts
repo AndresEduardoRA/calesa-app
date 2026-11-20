@@ -128,6 +128,8 @@ test('E3: un PT409 porque otra persona guardó se dice tal cual, conserva la not
   if (!terreno) throw new Error('No hay terreno.')
   const otra = await plantillaSobre(terreno.duena).guardar({
     origenId: origenId(),
+    // La otra persona escribe en la fórmula de trabajo, la única del origen.
+    formulaDelOrigenId: null,
     esperada,
     definicion: cuadriculaValida('de la otra persona'),
   })
@@ -163,6 +165,8 @@ test('E4: un PT409 porque otra persona publicó dice que el borrador ya no está
   if (!terreno) throw new Error('No hay terreno.')
   const otra = await plantillaSobre(terreno.duena).publicar({
     origenId: origenId(),
+    // La otra persona escribe en la fórmula de trabajo, la única del origen.
+    formulaDelOrigenId: null,
     esperada,
     nota: 'La de la otra persona',
   })

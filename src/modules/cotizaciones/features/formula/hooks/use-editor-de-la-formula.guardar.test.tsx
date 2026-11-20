@@ -59,6 +59,7 @@ const formula = () =>
   ])
 const leida = (estado: 'borrador' | 'publicada', f: Formula = formula()): FormulaParaEditar => ({
   id: FORMULA,
+  formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   actualizadoEn: HORA,
   estado,
   diseno: DISENO,

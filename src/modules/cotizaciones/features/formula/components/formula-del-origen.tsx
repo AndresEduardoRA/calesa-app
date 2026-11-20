@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition, type ComponentType } from 'react'
 import type { CatalogoDeTablas } from '../../../entities/compilador'
 import { mismaVersion, otraSesion, type SobreQueVersion } from '../../../entities/formula/sesion'
-import type { FormulaDelOrigen as Formula } from '../../../entities/formula/versiones'
+import type { LecturaDeLaFormula as Formula } from '../../../entities/formula/versiones'
 import type {
   LecturaDeLaTarjetaEnVivo,
   PropsDeLaTarjetaEnVivo,

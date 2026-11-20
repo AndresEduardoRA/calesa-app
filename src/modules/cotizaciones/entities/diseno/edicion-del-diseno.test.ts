@@ -19,11 +19,13 @@ const leer = (ruta: string) => readFileSync(new URL(ruta, import.meta.url), 'utf
 const diseno = disenoDe([seccion('s', [celda('a'), celda('b')]), seccion('t', [celda('c')])])
 const leida = { definicion: formulaDePrueba, params: { tasa: 0.1, tablas: { x: [{ k: 1 }] } } }
 const ORIGEN = '11111111-1111-4111-8111-111111111111'
+const FDO = '44444444-4444-4444-8444-444444444444'
 
 describe('pedidoDeGuardarDiseno', () => {
   it('T2 · sobre la publicada: nota nula y esperada «publicada»', () => {
     const base = {
       id: '22222222-2222-4222-8222-222222222222',
+      formulaDelOrigenId: FDO,
       estado: 'publicada' as const,
       actualizadoEn: '2026-11-08T10:00:00.123456+00:00',
       nota: 'de la publicación',
@@ -31,11 +33,14 @@ describe('pedidoDeGuardarDiseno', () => {
     const p = pedidoDeGuardarDiseno(base, leida, diseno, ORIGEN)
     expect(p.nota).toBeNull()
     expect(p.esperada).toStrictEqual({ sobre: 'publicada', publicadaId: base.id })
+    // Escribe en la fórmula del origen de lo que leyó, no en la de trabajo de cuando guarda.
+    expect(p.formulaDelOrigenId).toBe(FDO)
   })
 
   it('T2 · sobre el borrador: su nota y su hora tal cual; definición y params iguales a lo leído', () => {
     const base = {
       id: '22222222-2222-4222-8222-222222222222',
+      formulaDelOrigenId: FDO,
       estado: 'borrador' as const,
       actualizadoEn: '2026-11-08T10:00:00.123456+00:00',
       nota: 'mi nota',

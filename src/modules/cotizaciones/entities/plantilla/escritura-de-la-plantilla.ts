@@ -10,13 +10,25 @@ import { revisarTextoParaLaBase } from '../texto-de-la-base'
 
 // `esperada` es el `actualizado_en` del borrador que se leyó, tal cual lo dio la base (con sus microsegundos): nula sólo para crear el primero. Publicar y descartar la
 // piden siempre (con una nula la base no compara y no daría PT409).
+// `formulaDelOrigenId`: la fórmula del origen de la plantilla leída; la base escribe en ella y no en la de trabajo de ese momento (nula: la de trabajo, como las
+// pruebas que escriben por otra persona).
 export type PedidoDeGuardarLaPlantilla = {
   origenId: string
+  formulaDelOrigenId: string | null
   esperada: string | null
   definicion: unknown
 }
-export type PedidoDePublicarLaPlantilla = { origenId: string; esperada: string; nota: string }
-export type PedidoDeDescartarLaPlantilla = { origenId: string; esperada: string }
+export type PedidoDePublicarLaPlantilla = {
+  origenId: string
+  formulaDelOrigenId: string | null
+  esperada: string
+  nota: string
+}
+export type PedidoDeDescartarLaPlantilla = {
+  origenId: string
+  formulaDelOrigenId: string | null
+  esperada: string
+}
 
 // Guardar da la nueva versión del borrador (el `actualizado_en` que dejó la base); publicar, el id de la plantilla publicada; descartar, nada.
 export interface RepositorioDeLaPlantilla {

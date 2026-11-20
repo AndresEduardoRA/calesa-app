@@ -297,6 +297,9 @@ declare
     -- El margen del mes (9.11-1): no recibe lead; lee pagos (sin su `lead_id`) y el total de la final, pide `logistica.margen.ver` y sólo sus
     -- orígenes, y devuelve sumas en moneda base que el panel de la unidad ya muestra (`areas/tablero/margen-y-cola.sql`).
     ('tablero_margen(date,date)', 'X'),
+    -- Eliminar una fórmula del origen: de `cotizaciones` sólo pregunta si alguna se hizo con una versión de esa fórmula, sin leer el lead ni
+    -- devolver nada de ella; pide `cotizaciones.configurar` del origen (`areas/formula/fdo-renombrar-archivar-eliminar.sql`).
+    ('formula_del_origen_eliminar(uuid,timestamp with time zone)', 'X'),
     ('storage_refcount(text,text)', 'X'),
     -- La policy de subir a Storage `repuestos`: no recibe lead; de `repuestos_proyectos` sólo mira si está vivo y abierto, y devuelve un booleano
     -- (`areas/repuestos/escritura-directa.sql`).
