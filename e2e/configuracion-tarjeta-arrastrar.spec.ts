@@ -137,7 +137,7 @@ test('E2E «100 %»: arrastrar una columna y una fila deja el lienzo quieto', as
   await arrastrarLaColumna(page, 'k1', -30)
   await capturar(page, info, 'real-columna')
   await quietoYElige(page, '100 %, tras la columna')
-  await arrastrarLaFila(page, 'f3', 'f6')
+  await arrastrarLaFila(page, 'f2', 'f5')
   await capturar(page, info, 'real-fila')
   await quietoYElige(page, '100 %, tras la fila')
 })
