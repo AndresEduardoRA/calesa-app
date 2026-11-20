@@ -110,6 +110,7 @@ export function sesionSinPerfil(usuarioId: string, email: string): Sesion {
       vistaDeCotizaciones: null,
       agruparCotizaciones: null,
       embudoDeLaFicha: null,
+      menuPlegado: null,
     },
   }
 }

@@ -3,3 +3,4 @@
 // de vistas guardadas y la insignia de rol, que el marco no usa, y todo lo que el shell importa viaja en el
 // JS de **todas** las pantallas (`docs/RENDIMIENTO.md`). Nada de servidor: para eso está `shell.ts`.
 export { usePerspectiva } from './features/perspectiva/hooks/use-perspectiva'
+export { useMenuPlegado } from './features/perfil/hooks/use-menu-plegado'

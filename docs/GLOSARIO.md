@@ -25,6 +25,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Estado de la cuenta** — `EstadoCuenta` (`activa` | `bloqueada` | `baja`): si puede operar; bloqueada o de baja no se queda adentro.
 - **Perfil** — `perfiles` / `/perfil`: lo que cada persona edita de sí misma: nombre, foto y preferencias.
 - **Preferencia** — `preferencias_usuario` / `Preferencias`: elección de interfaz por persona (densidad, tema), igual en todos sus dispositivos.
+- **Menú plegado** — `menu.plegado` / `Preferencias.menuPlegado`, `useMenuPlegado()`, `<LateralPlegable>` (`_shell/`): el menú lateral de escritorio reducido a una columna de sólo
+  íconos, con su nombre en `title` y para el lector y el contador de Chat como punto. Se alterna con «Plegar menú» / «Desplegar menú» o `Ctrl/Cmd+B`. No: «colapsado», «mini», «compacto» (la densidad es otra cosa).
 - **Zona de quien mira** — `preferencias_usuario.zona_horaria` / `useRegional().zonaDeLaPersona`: en qué zona ve cada persona las fechas de
   subasta (`/perfil` › «Zona horaria»); sin elegir, la de la empresa. Lo demás sigue en la zona de la empresa.
 - **Cuenta regresiva del cierre** — `cuentaDelCierre()` (`vehiculos/entities/cuenta-regresiva-del-cierre.ts`), `<CuentaRegresivaDelCierre>`: lo que le falta a una subasta
@@ -871,7 +873,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   el plegable.
 - **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra arriba de la columna principal de una ficha en dos columnas (quieta mientras los bloques se desplazan por dentro; pegajosa en el celular), con un enlace de ancla
   por bloque y `aria-current="location"` en el que está a la vista. No navega: salta dentro de la misma página. No: «pestañas», «menú».
-- **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`…); responde el panel de más arriba.
+- **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`, `Ctrl/Cmd+B`…); responde el panel de más arriba.
 - **Filtro** — `EsquemaDeFiltros`, `DefFiltro` / `<FilterShell>`: lo que acota un listado; cada uno declara los suyos y viven en la URL. Van en el botón
   «Filtros»; lo que cambia cómo se ve la lista (vista, alcance, ítems por página), en «Vista y opciones».
 - **Vista y opciones** — `<VistaYOpciones>`, `GrupoDeVistaYOpciones` (`src/shared/ui/vista-y-opciones`): el botón de la barra de un listado que agrupa

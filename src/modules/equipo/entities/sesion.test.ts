@@ -55,6 +55,7 @@ describe('sesionDesde', () => {
         vistaDeCotizaciones: null,
         agruparCotizaciones: null,
         embudoDeLaFicha: null,
+        menuPlegado: null,
       },
     })
   })

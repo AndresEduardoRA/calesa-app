@@ -2,53 +2,36 @@ import { describe, expect, it } from 'vitest'
 import { esquemaPreferencia, preferenciasDesde } from './preferencias'
 import { VISTOS_POR_DEFECTO } from './vistos'
 
+const SIN_ELEGIR = {
+  densidad: null,
+  tema: null,
+  porPagina: null,
+  widgetsDelTablero: null,
+  vistos: VISTOS_POR_DEFECTO,
+  zonaHoraria: null,
+  vistaDeVehiculos: null,
+  vistaDeCotizaciones: null,
+  agruparCotizaciones: null,
+  embudoDeLaFicha: null,
+  menuPlegado: null,
+}
+
 describe('preferenciasDesde', () => {
   it('lee lo que la persona eligió', () => {
     expect(
       preferenciasDesde({ densidad: 'comoda', tema: 'dark', 'listas.por_pagina': 25 }),
-    ).toEqual({
-      densidad: 'comoda',
-      tema: 'dark',
-      porPagina: 25,
-      widgetsDelTablero: null,
-      vistos: VISTOS_POR_DEFECTO,
-      zonaHoraria: null,
-      vistaDeVehiculos: null,
-      vistaDeCotizaciones: null,
-      agruparCotizaciones: null,
-      embudoDeLaFicha: null,
-    })
+    ).toEqual({ ...SIN_ELEGIR, densidad: 'comoda', tema: 'dark', porPagina: 25 })
   })
 
   it('sin elección, todo queda en automático', () => {
-    const sinElegir = {
-      densidad: null,
-      tema: null,
-      porPagina: null,
-      widgetsDelTablero: null,
-      vistos: VISTOS_POR_DEFECTO,
-      zonaHoraria: null,
-      vistaDeVehiculos: null,
-      vistaDeCotizaciones: null,
-      agruparCotizaciones: null,
-      embudoDeLaFicha: null,
-    }
-    expect(preferenciasDesde({})).toEqual(sinElegir)
-    expect(preferenciasDesde(null)).toEqual(sinElegir)
+    expect(preferenciasDesde({})).toEqual(SIN_ELEGIR)
+    expect(preferenciasDesde(null)).toEqual(SIN_ELEGIR)
   })
 
   it('un valor desconocido no rompe: esa preferencia queda sin elegir', () => {
     expect(preferenciasDesde({ densidad: 'enorme', tema: 'dark', tablero: { a: 1 } })).toEqual({
-      densidad: null,
+      ...SIN_ELEGIR,
       tema: 'dark',
-      porPagina: null,
-      widgetsDelTablero: null,
-      vistos: VISTOS_POR_DEFECTO,
-      zonaHoraria: null,
-      vistaDeVehiculos: null,
-      vistaDeCotizaciones: null,
-      agruparCotizaciones: null,
-      embudoDeLaFicha: null,
     })
   })
 
@@ -204,5 +187,21 @@ describe('el embudo de la ficha del lead', () => {
     expect(esquemaPreferencia.safeParse({ clave, valor: ID }).success).toBe(true)
     expect(esquemaPreferencia.safeParse({ clave, valor: null }).success).toBe(true)
     expect(esquemaPreferencia.safeParse({ clave, valor: 'ventas' }).success).toBe(false)
+  })
+})
+
+describe('«menu.plegado»', () => {
+  it('se lee si es un booleano y, si no, queda sin elegir', () => {
+    expect(preferenciasDesde({ 'menu.plegado': true }).menuPlegado).toBe(true)
+    expect(preferenciasDesde({ 'menu.plegado': false }).menuPlegado).toBe(false)
+    expect(preferenciasDesde({ 'menu.plegado': 'si' }).menuPlegado).toBeNull()
+    expect(preferenciasDesde({ 'menu.plegado': 1 }).menuPlegado).toBeNull()
+    expect(preferenciasDesde({}).menuPlegado).toBeNull()
+  })
+
+  it('se guarda como booleano o se borra con null', () => {
+    expect(esquemaPreferencia.safeParse({ clave: 'menu.plegado', valor: true }).success).toBe(true)
+    expect(esquemaPreferencia.safeParse({ clave: 'menu.plegado', valor: null }).success).toBe(true)
+    expect(esquemaPreferencia.safeParse({ clave: 'menu.plegado', valor: 'si' }).success).toBe(false)
   })
 })

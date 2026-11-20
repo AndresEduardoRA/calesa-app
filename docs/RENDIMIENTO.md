@@ -421,7 +421,7 @@ inferior), que no se dibuja hasta abrirse: la carga sólo paga el botón. En el 
   `Sort` ni `Seq Scan` y ≤ 1 descarte, con 1.000 en una columna sobre 20.000 de fondo; el tablero y su «Ver más» ≤ 50 ms (medido: 12 y 4,3 ms).
 - La guarda de «una abierta por lead y embudo» es un `select … limit 1` por `oportunidades_lead_abiertas_idx` tras un candado por (lead, embudo);
   `abiertas_por_embudo` (sólo en la primera página de `lead_oportunidades`) es una sonda `limit 1` por embudo, 10 como mucho, por el mismo índice.
-- Nodos con una columna en el tope (500 tarjetas): ≤ 10.250 en escritorio y 6.000 en el celular (`leads-escala.spec.ts`); el «⋯» de cada
+- Nodos con una columna en el tope (500 tarjetas): ≤ 10.300 en escritorio (medidos 10.252, con el menú lateral plegable: un `<span>` por entrada y su botón) y 6.000 en el celular (`leads-escala.spec.ts`); el «⋯» de cada
   tarjeta cuesta exactamente 3 nodos (`<use>` a un símbolo de `src/shared/ui/lista/simbolos-de-lista.tsx`; `e2e/mas-acciones-icono.spec.ts`).
   El servidor dibuja una sola distribución según el ancho de la petición.
 - Oportunidades de la ficha: 10 en el servidor y «Ver más» de a `TAMANO_DE_VER_MAS` desde el navegador hasta `TOPE_DE_LO_CARGADO`, con
@@ -668,7 +668,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `loading` y el de `page`); por eso existe `pantallas/esqueleto-de-hoja.ts`. Se ve comparando `entryJSFiles` de
   `page_client-reference-manifest.js` entre dos builds.
 - react-pdf no llega al navegador, pero estar en el grafo del servidor suma ≈ 0,45 KB al runtime de Turbopack de **todas** las rutas.
-- El marco (shell): en el JS de toda pantalla viajan el botón de la burbuja del chat, `usePathname`, el store del contador y
+- El marco (shell): en el JS de toda pantalla viajan el menú lateral plegable (`LateralPlegable`, `ProveedorDelMenuPlegado`: un botón, un contexto y `Ctrl/Cmd+B`; sin librería nueva), el botón de la burbuja del chat, `usePathname`, el store del contador y
   `useAlDescansar`; el cliente de Supabase, la suscripción, el panel, la lista, el hilo y el redactor van con `diferido()`. La campana: su
   contador con Realtime y su popover van con `diferido()` (sin eso `/cotizaciones` subía ≈ 66 KB). Una `chat_no_leidos` al montar y otra por
   ráfaga de señales (≥ 250 ms). Los tipos de cambio de la barra: en frío sólo el botón con los de la barra (≤ 3, `{id, nombre, monedaA, valor}`
@@ -676,7 +676,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `diferido()` y su código se adelanta al pasar el puntero. Al abrirlo, una `tipos_cambio_vigentes()` de ≤ 31 filas (un `limit 1` por tipo
   sobre `tipos_cambio_historial_tipo_idx` y dos búsquedas por `perfiles_pkey`), sin caché; tras guardar se relee sin esqueleto. Es una
   tabla de configuración: sin medición de volumen.
-- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 119 KB (medido: 115,2, 117.971 B) (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
+- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 121 KB (medido: 120,5) (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
   semilla y con 100 + 100 + 100 catálogos (± 1 KB): lo paga toda pantalla del marco. Las ≈ 30 acciones de la paleta viajan como props del
   hueco del buscador; el formulario de «Tu ficha en la web» se monta y se pide con `diferido()` al abrirla. El layout `(app)` no manda
   catálogos al alta: `<AltaDeLead>` no recibe nada y los lee del navegador (`infra/contexto-de-alta.client.ts`, memoria de 60 s en
