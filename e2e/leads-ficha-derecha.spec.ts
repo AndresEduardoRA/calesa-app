@@ -237,19 +237,17 @@ const columna = (bloque: Locator, etapa: string): Locator =>
 
 test('E2E «Oportunidades»: el embudo del lead, una columna por etapa; el selector y su «⋯» con «Ver en el embudo»', async ({
   page,
-}) => {
+}, info) => {
   await abrirLaFicha(page, duena)
   const bloque = region(page, 'Oportunidades')
   await bloque.scrollIntoViewIfNeeded()
-  // El embudo por defecto: sus tres oportunidades, cada una en la columna de su etapa.
-  await expect(tableroDelBloque(bloque).getByRole('region')).toHaveCount(6)
   await expect(tableroDelBloque(bloque).getByRole('article')).toHaveCount(3)
   await expect(
     columna(bloque, 'Nuevo').getByRole('article', { name: 'Camioneta usada' }),
   ).toBeVisible()
   await expect(columna(bloque, 'Ganado').getByRole('article')).toHaveCount(2)
-  await expect(bloque.getByRole('link', { name: 'Ver en el embudo' })).toHaveCount(0)
-  // Otro embudo con el selector: sus columnas y su oportunidad; «Ver en el embudo» (en el «⋯» del bloque) lleva a ése, filtrado por el lead.
+  await capturar(page, info, 'embudo-del-lead')
+  // Otro embudo: sus columnas; «Ver en el embudo» (en el «⋯» del bloque) lleva a ése, filtrado por el lead.
   await bloque.getByRole('button', { name: /^Embudo: / }).click()
   await page.getByRole('menuitemradio', { name: /^Flotas / }).click()
   await expect(

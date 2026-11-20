@@ -5,6 +5,7 @@ import { rpcComo } from './soporte/leads-cartera'
 import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import { esperarFichaHidratada, irAFicha, nuevoLead } from './soporte/leads-ficha'
 import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
+import { capturar } from './soporte/recorrido'
 import { enLaBase, etapa, embudoPorDefecto, oportunidad } from './soporte/leads-oportunidades'
 
 // El embudo del lead en la ficha se mueve arrastrando una oportunidad a otra columna: con el mouse y con el teclado (Tab a la tarjeta, Espacio la
@@ -80,9 +81,11 @@ test('con el mouse: arrastrar la tarjeta a otra columna la mueve y queda en la b
   const titulo = `Arrastre ${info.project.name}`
   const { op } = await irAlEmbudoDelLead(page, `Arr Mouse ${info.project.name}`, titulo)
   await expect(columna(page, 'Nuevo').getByRole('article', { name: titulo })).toBeVisible()
+  await capturar(page, info, 'antes-de-arrastrar')
   await arrastrarA(page, titulo, 'Cotizado')
   await expect(columna(page, 'Cotizado').getByRole('article', { name: titulo })).toBeVisible()
   await expect(columna(page, 'Nuevo').getByRole('article')).toHaveCount(0)
+  await capturar(page, info, 'despues-de-arrastrar')
   await expect.poll(async () => (await enLaBase(op.id))?.estado).toBe('abierta')
   const embudo = await embudoPorDefecto(t.personas.berta)
   await expect.poll(async () => (await enLaBase(op.id))?.etapa_id).toBe(etapa(embudo, 'Cotizado'))
@@ -131,6 +134,7 @@ test('con el teclado: Espacio toma la tarjeta, la flecha la lleva a la etapa de 
     page.locator('[role="status"][aria-live="assertive"]').filter({ hasText: `«${titulo}»` }),
   ).toBeAttached()
   const anuncio = page.locator('[role="status"][aria-live="assertive"]')
+  await capturar(page, info, 'tomada-con-el-teclado')
   await page.keyboard.press('ArrowRight')
   await page.keyboard.press('ArrowRight')
   // Se suelta cuando ya se anunció la columna: con la persona, el dibujo siempre llega antes que la tecla.

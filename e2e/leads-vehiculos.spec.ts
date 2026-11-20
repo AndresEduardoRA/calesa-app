@@ -318,13 +318,14 @@ test('lo que aporta la ficha entera con un vehículo vinculado', async ({ page }
 // @sin-celular: mide el ancho de una pantalla grande (1920 px): el celular no tiene hueco que medir
 test('a 1920 px el grupo con vehículos llena el ancho del bloque, sin hueco a la derecha', async ({
   page,
-}) => {
+}, info) => {
   const lead = await leadDe(t.ada, `Ancho ${p}`)
   const autoId = await vehiculoDe(corea, `Ancho del bloque ${p}`, t.ada)
   await vincular(autoId, lead.id)
   await page.setViewportSize({ width: 1920, height: 1080 })
   await entrar(page, t.ada)
   await irAVehiculos(page, lead.id)
+  await capturar(page, info, 'vehiculos-a-1920')
   const bloque = await relacionadosDelLead(page).boundingBox()
   const grupo = await vinculados(page).boundingBox()
   const fila = await vinculados(page).getByRole('listitem').first().boundingBox()
