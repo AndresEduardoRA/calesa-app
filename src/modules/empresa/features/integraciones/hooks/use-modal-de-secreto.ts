@@ -22,6 +22,14 @@ type Opciones = {
 // escritura: la dirección o las plataformas, en otro modal, usan la misma versión de la fila y encadenadas la segunda chocaría consigo misma.
 export function useModalDeSecreto({ abierto, alCerrar, clave, integracion }: Opciones) {
   const [secreto, setSecreto] = useState('')
+  // Al cerrarse, el secreto tipeado se va: el modal queda montado y no puede conservarlo en el documento.
+  const [estabaAbierto, setEstabaAbierto] = useState(abierto)
+  if (abierto !== estabaAbierto) {
+    setEstabaAbierto(abierto)
+    if (!abierto) {
+      setSecreto('')
+    }
+  }
   const entrada = { clave, secreto, actualizadoEnEsperado: integracion.actualizadoEn }
 
   const formulario = useEnvioConVersion({
