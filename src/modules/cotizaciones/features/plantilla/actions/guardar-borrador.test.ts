@@ -3,6 +3,7 @@ import type { PedidoDeGuardarLaPlantilla } from '../../../entities/plantilla/esc
 import { MOTIVO_SIN_PERMISO_DE_PLANTILLA } from '../../../entities/plantilla/escritura-de-la-plantilla'
 
 const ORIGEN = '11111111-1111-4111-8111-111111111111'
+const FDO = '99999999-9999-4999-8999-999999999999'
 const OTRO_ORIGEN = '44444444-4444-4444-8444-444444444444'
 const PERSONA = '55555555-5555-4555-8555-555555555555'
 const HORA = '2026-11-07T15:00:00.123456+00:00'
@@ -46,7 +47,7 @@ vi.mock('../../../areas/plantilla/composicion', () => ({
 const { guardarBorrador } = await import('./guardar-borrador')
 
 const definicion = { grupos: [{ grupo: 'compra' }], logo: true }
-const pedido = { origenId: ORIGEN, esperada: HORA, definicion }
+const pedido = { origenId: ORIGEN, formulaDelOrigenId: FDO, esperada: HORA, definicion }
 const configura = (origenId: string) => [
   { clave: 'cotizaciones.configurar', origen_id: origenId, alcance: 'todos' as const },
 ]
@@ -77,7 +78,7 @@ describe('guardarBorrador: lo que entra', () => {
     const respuesta = await guardarBorrador(pedido)
     expect(h.pedidos).toEqual([pedido])
     expect(respuesta.data).toEqual({ ok: true, data: NUEVA })
-    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/cotizacion', 'layout')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/origenes', 'layout')
   })
 
   it('crear el primero: la esperada nula llega nula', async () => {
@@ -150,6 +151,7 @@ describe('guardarBorrador: el texto que la base no lee', () => {
   it('sin plantilla (undefined) no llama al repositorio', async () => {
     const respuesta = await guardarBorrador({
       origenId: ORIGEN,
+      formulaDelOrigenId: FDO,
       esperada: HORA,
       definicion: undefined,
     })

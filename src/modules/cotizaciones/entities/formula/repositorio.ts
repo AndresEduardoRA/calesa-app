@@ -4,8 +4,11 @@ import type { Definicion } from '../formula'
 
 // Lo que se manda para publicar el borrador de un origen: la publicada que la pestaña leyó (nula si el origen no tiene) y la hora del borrador que leyó (4.21-3b-1),
 // que la base compara (PT409 si cambiaron).
+// `formulaDelOrigenId` en las de Configuración: la fórmula del origen que la pestaña leyó (nula: la de trabajo, como la base). El ⚙ de la hoja no la manda: escribe
+// en la de trabajo, que es la activa, y su publicada esperada frena si otra pasó a ser la activa.
 export type PedidoDePublicar = {
   origenId: string
+  formulaDelOrigenId: string | null
   nota: string
   publicadaEsperada: string | null
   actualizadoEsperado: string
@@ -14,6 +17,7 @@ export type PedidoDePublicar = {
 // Lo que se manda para revertir a una versión archivada: la publicada que se leyó, siempre (sin publicada no se revierte).
 export type PedidoDeRevertir = {
   origenId: string
+  formulaDelOrigenId: string | null
   versionId: string
   nota: string
   publicadaEsperada: string
@@ -23,6 +27,7 @@ export type PedidoDeRevertir = {
 // ese (PT409 si cambió o ya no está).
 export type PedidoDeDescartar = {
   origenId: string
+  formulaDelOrigenId: string | null
   actualizadoEsperado: string
 }
 
@@ -57,6 +62,7 @@ export type EsperadaDeGuardar =
 // el diseño y la nota que la base escribe tal cual.
 export type PedidoDeGuardar = {
   origenId: string
+  formulaDelOrigenId: string | null
   definicion: Definicion
   params: Record<string, unknown>
   diseno: Diseno | null
@@ -67,7 +73,7 @@ export type PedidoDeGuardar = {
 // La fila escrita: su id y la hora que le puso la base, para volver a guardar sin releer.
 export type BorradorGuardado = { id: string; actualizadoEn: string }
 
-// Las escrituras de la fórmula desde Configuración › Cotización (4.20-2b y 2c), por las RPC del 4.20-1 y la de descartar. Publicar y revertir devuelven el id de la
+// Las escrituras de la fórmula desde la página del origen (4.20-2b y 2c), por las RPC del 4.20-1 y la de descartar. Publicar y revertir devuelven el id de la
 // versión publicada; descartar, nada;
 // cambiar una constante (el ⚙ de la hoja, 4.20-3a) o la cabecera (su ⚙) publica la N+1 y devuelve su id; guardar el borrador (4.21-3b-1) devuelve la fila escrita.
 export interface RepositorioDeLaFormula {

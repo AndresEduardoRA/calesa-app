@@ -23,7 +23,7 @@ import { DrawerDelLote, ProveedorDeLaSeleccion } from '@/modules/logistica/panta
 import { cumpleElMinimo } from '@/shared/lib/filtros'
 import { redirigir } from '@/shared/lib/navegacion'
 import type { Permisos } from '@/shared/lib/permisos'
-import { unParametro } from '@/shared/lib/rutas'
+import { rutaDeParteDelOrigen, unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { BandejaDeLaPortada } from './bandeja-del-dia'
 import { MarcasDeLogistica } from './marcas-de-logistica'
@@ -202,7 +202,12 @@ async function CadenaDelOrigen({
     return <EstadoDeLaGrafica tipo="error" />
   }
   if (resumen.data.fases.length === 0) {
-    return <EstadoDeLaGrafica tipo="sin_fases" enlaceAFlujos={enlaceAFlujos} />
+    return (
+      <EstadoDeLaGrafica
+        tipo="sin_fases"
+        enlaceAlFlujo={enlaceAFlujos ? rutaDeParteDelOrigen(origenId, 'flujo') : undefined}
+      />
+    )
   }
   return <GraficaDeLaCadena resumen={resumen.data} origenId={origenId} />
 }

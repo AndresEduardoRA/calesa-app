@@ -49,7 +49,7 @@ test.beforeEach(() => {
   borrarLasPlantillasDelOrigen(origenId())
 })
 
-const URL_DE_LA_TARJETA = () => `/configuracion/cotizacion?seccion=tarjeta&origen=${origenId()}`
+const URL_DE_LA_TARJETA = () => `/configuracion/origenes/${origenId()}/formula/tarjeta`
 
 async function abrirTarjeta(page: Page, extra = '') {
   await entrar(page, configuradora, { fresco: true })
@@ -128,6 +128,8 @@ test('E3: un PT409 porque otra persona guardó se dice tal cual, conserva la not
   if (!terreno) throw new Error('No hay terreno.')
   const otra = await plantillaSobre(terreno.duena).guardar({
     origenId: origenId(),
+    // La otra persona escribe en la fórmula de trabajo, la única del origen.
+    formulaDelOrigenId: null,
     esperada,
     definicion: cuadriculaValida('de la otra persona'),
   })
@@ -163,6 +165,8 @@ test('E4: un PT409 porque otra persona publicó dice que el borrador ya no está
   if (!terreno) throw new Error('No hay terreno.')
   const otra = await plantillaSobre(terreno.duena).publicar({
     origenId: origenId(),
+    // La otra persona escribe en la fórmula de trabajo, la única del origen.
+    formulaDelOrigenId: null,
     esperada,
     nota: 'La de la otra persona',
   })
@@ -185,7 +189,7 @@ test('E4: un PT409 porque otra persona publicó dice que el borrador ya no está
 test('E5: por la URL, sin borrador no abre, avisa y limpia; con borrador abre y «atrás» lo cierra', async ({
   page,
 }) => {
-  await abrirTarjeta(page, '&panel=publicar-tarjeta')
+  await abrirTarjeta(page, '?panel=publicar-tarjeta')
   await expect(page.getByText('No hay borrador para publicar.')).toBeVisible()
   await expect(enElModal(page)).toHaveCount(0)
   await expect(page).not.toHaveURL(/panel=/)

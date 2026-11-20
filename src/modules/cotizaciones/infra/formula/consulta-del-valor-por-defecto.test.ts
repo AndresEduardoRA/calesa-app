@@ -36,14 +36,18 @@ const ORIGEN = '11111111-1111-4111-8111-111111111111'
 const PUBLICADA = '22222222-2222-4222-8222-222222222222'
 
 describe('consultaDelValorPorDefecto', () => {
-  it('la publicada del origen, una fila, con id, versión y el valor de cada nodo (sin el resto de params)', () => {
+  it('la publicada de la fórmula activa del origen, una fila, con id, versión y el valor de cada nodo (sin el resto de params)', () => {
     const { cliente, llamadas } = clienteFalso({ data: [], error: null })
     void consultaDelValorPorDefecto(cliente, ORIGEN, ['flete', 'fees_pct'])
     expect(llamadas).toEqual([
       ['from', 'formulas'],
-      ['select', 'id, version, v0:params->flete, v1:params->fees_pct'],
+      [
+        'select',
+        'id, version, v0:params->flete, v1:params->fees_pct, formulas_del_origen!formulas_formula_del_origen_fkey!inner()',
+      ],
       ['eq', 'origen_id', ORIGEN],
       ['eq', 'estado', 'publicada'],
+      ['eq', 'formulas_del_origen.activa', true],
       ['limit', 1],
     ])
   })

@@ -5,6 +5,7 @@ import {
 } from '../../../entities/plantilla/escritura-de-la-plantilla'
 
 const ORIGEN = '11111111-1111-4111-8111-111111111111'
+const FDO = '99999999-9999-4999-8999-999999999999'
 const OTRO_ORIGEN = '44444444-4444-4444-8444-444444444444'
 const PERSONA = '55555555-5555-4555-8555-555555555555'
 const HORA = '2026-11-07T15:00:00.123456+00:00'
@@ -46,7 +47,7 @@ vi.mock('../../../areas/plantilla/composicion', () => ({
 
 const { descartarBorrador } = await import('./descartar-borrador')
 
-const pedido = { origenId: ORIGEN, esperada: HORA }
+const pedido = { origenId: ORIGEN, formulaDelOrigenId: FDO, esperada: HORA }
 const configura = (origenId: string) => [
   { clave: 'cotizaciones.configurar', origen_id: origenId, alcance: 'todos' as const },
 ]
@@ -76,7 +77,7 @@ describe('descartarBorrador', () => {
     const respuesta = await descartarBorrador(pedido)
     expect(h.pedidos).toEqual([pedido])
     expect(respuesta.data).toEqual({ ok: true, data: null })
-    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/cotizacion', 'layout')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/origenes', 'layout')
   })
 
   it('un conflicto llega tal cual y no revalida', async () => {

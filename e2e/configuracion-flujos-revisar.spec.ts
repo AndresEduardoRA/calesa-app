@@ -10,7 +10,7 @@ import {
 import { borrarOrigenes, crearOrigenDePrueba } from './soporte/origenes'
 import { literal, sql } from './soporte/sql'
 
-// Configuración › Flujos › la franja de «Revisar» (5.12-2, `docs/UX.md` › «Flujos: revisar (estados propios)»): un flujo con una fase sin salida y una espera
+// El flujo de un origen › la franja de «Revisar» (5.12-2, `docs/UX.md` › «Flujos: revisar (estados propios)»): un flujo con una fase sin salida y una espera
 // mutua con el flujo de repuestos da «2 avisos»; abierta, el aviso de la fase sin salida abre su inspector, y al agregarle la salida desde ahí el aviso se va.
 // Un solo recorrido: cada código lo prueba la base (`supabase/tests/flujos-revisar.sql`). Todo se siembra por SQL.
 test.describe.configure({ mode: 'serial' })
@@ -117,7 +117,7 @@ test(`${P} la franja marca la fase sin salida y la espera cruzada, abre la fase 
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/flujos?origen=${origen.id}`)
+  await page.goto(`/configuracion/origenes/${origen.id}/flujo`)
   const franja = page.getByRole('region', { name: 'Revisar el flujo' })
   const resumen = franja.getByRole('button', { name: /^Revisar:/ })
   await expect(resumen).toHaveText(/2 avisos/)

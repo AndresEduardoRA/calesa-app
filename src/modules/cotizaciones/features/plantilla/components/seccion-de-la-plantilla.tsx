@@ -28,7 +28,7 @@ type Props = {
   puedeCambiarElLogo: boolean
 }
 
-// La pestaña «Tarjeta» de un origen en Configuración › Cotización, leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: el borrador, la
+// La pestaña «Tarjeta» de la Fórmula de un origen (Configuración › Orígenes), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: el borrador, la
 // publicada y la fórmula con la que se validan, y la referencia, a la vez. Al editor sólo llega lo que dibuja (`propsDelEditor()`) y la referencia recortada a sus
 // nodos. La base vuelve a decidir (policy `plantillas_tarjeta: leer`). Una lectura de la plantilla que falla sube al `error.tsx` de la ruta, con «Reintentar».
 export async function SeccionDeLaPlantilla({

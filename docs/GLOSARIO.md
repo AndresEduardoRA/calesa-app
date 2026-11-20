@@ -111,9 +111,20 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Origen sin uso** — `motivoParaNoEliminar()` / `origen_eliminar()`: sin vehículos (papelera incluida), cotizaciones ni fórmula publicada.
 - **Uso de un origen** — `origenes_resumen()` / `UsoDeOrigen`: vehículos, cotizaciones, campos, categorías, fases, ¿fórmula publicada? y
   concesiones.
-- **Siguientes pasos** — `pasosDe()` / `<SiguientesPasos>`: lo que falta a un origen para funcionar (fases, fórmula, permisos, apibara). Lo
-  accionable se ve también en el inicio de Configuración como **lo que falta** (`faltasPorSeccion()`, `<QueFaltaDeLaSeccion>`).
-- **Fórmula pendiente** — origen sin fila `publicada` en `formulas`: un origen nuevo no se cotiza hasta publicar la primera.
+- **Para cotizar y mover** — `pasosParaCotizarYMover()` / `<ParaCotizarYMover>`: lo que le falta a un origen activo para cotizar y mover sus
+  vehículos, en cinco pasos con su estado (✓ listo, ⚠ aviso, ✗ bloquea): Datos (apibara en una subasta), Campos, Flujo (con fases), Fórmula
+  (activa) y Tarjeta (publicada en la fórmula de trabajo), cada uno enlazado a su pestaña de la página del origen. Un inactivo dice sólo «Inactivo». Lo accionable se ve
+  también en el inicio de Configuración como **lo que falta** (`faltasPorSeccion()`, `<QueFaltaDeLaSeccion>`: una línea por origen en Orígenes,
+  apibara en Empresa). No: «siguientes pasos», «checklist».
+- **Página del origen** — `/configuracion/origenes/<id>/<pestaña>` (`MarcoDelOrigen`, `PESTANAS_DEL_ORIGEN`): todo lo de un origen en un lugar,
+  con su encabezado, «Para cotizar y mover» y seis **pestañas**: Datos, Campos, Categorías, Flujo, Fórmula (con sus sub-pestañas Fórmula, Hoja y
+  Tarjeta) y Tablas. Cada pestaña pide su permiso en ese origen; la que no se abre va apagada con su motivo.
+- **Catálogos (Configuración)** — `SECCION_DE_CATALOGOS`, `/configuracion/catalogos/<clave>`: lo que es de toda la empresa y no de un origen, en
+  tres tramos: «Cotizaciones» (Colores, Niveles, Vigencia), «Logística» (Puertos, Navieras, Categorías de gasto, Tipos de documento) y las Tablas
+  compartidas. No es el catálogo de repuestos ni el de apibara.
+- **Flujo de repuestos** — `/configuracion/repuestos/flujo` (`FLUJO_DE_REPUESTOS_EN_CONFIGURACION`): el flujo de los repuestos, que se configura en
+  la sección Repuestos con el mismo editor que la pestaña Flujo de un origen.
+- **Fórmula pendiente** — origen sin **fórmula activa** (`origenes_resumen().formula_publicada`): un origen nuevo no se cotiza hasta publicar la primera.
 - **Vehículo** — `vehiculos`: el dato central; recorre el flujo de su origen.
 - **Atributos** — `vehiculos.atributos`, `leads.atributos`: campos del layout que no son columna. En un lead se leen por `leads_vista`, recortados.
 - **Dato común** — `camposComunes()` / columnas de `vehiculos`: lo que tiene todo vehículo y es columna (título, marca, año, VIN, precio…).
@@ -262,7 +273,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Número global** — `leads.numero` / `leads_numeros_globales`, `leads.numero_global.ver`, `NumerosDeLead.numero`: consecutivo de la empresa
   («N.º 1.234»); nulo sin el permiso.
 - **Resumen** — `?cotizacion=` / `<ResumenDeCotizacion>`: vistazo de una cotización sin salir de la lista, con «Abrir cotización», «Compartir cotización» y el
-  «⋯» de la fila arriba (la **barra del resumen**, `<AccionesDelResumen>`). Las listas de vehículos y de leads no
+  «⋯» de la fila arriba (la **barra del resumen**, `<AccionesDelResumen>`), la **cabecera del resumen** (`<CabeceraDelResumen>`: la miniatura de la imagen de la tarjeta y los datos de la fila, fija y de ≤ 120 px) y las
+  pestañas debajo. También abre sobre la ficha del lead y la del vehículo (`<ResumenFueraDelListado>`). Las listas de vehículos y de leads no
   tienen: abren la ficha (`<EnlaceDeLaFila>`; un `?vehiculo=` o un `?lead=` viejo redirige a ella).
 - **Enlace de la fila** — `<EnlaceDeLaFila>` (`src/shared/ui/lista/`), `href` de `<FilaDeLista>`/`<TarjetaDeLista>`: el nombre de una fila o una tarjeta
   como enlace a la ficha, en una lista sin resumen; el resto del ítem navega igual (Ctrl o el botón del medio, otra pestaña).
@@ -369,8 +381,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Motivo de pérdida** — `oportunidades.motivo_perdida`: opcional, hasta 200, al mover a perdida; se limpia al reabrir.
 - **Vista de embudo** — `/leads?vista=embudo` / `<VistaDeEmbudo>`: kanban de tus oportunidades en un embudo; los filtros de la lista no aplican.
 - **Embudo filtrado por lead** — `/leads?vista=embudo&embudo=<id>&lead=<id>` / `embudo_tablero_del_lead()`, `<ChipDelLead>`: las oportunidades de
-  quien mira sobre un lead en un embudo, en todas sus etapas, con el chip «De <nombre>» y «Ver todas» (quita el filtro). Es la vista de todas las
+  quien mira sobre un lead en un embudo, en todas sus etapas, con el chip «De <nombre>» y «Ver todas» (quita el filtro; se llega con «Ver en el embudo» de la ficha del lead). Es la vista de todas las
   de un lead; cambiar de embudo lo conserva y un `lead=` que no se ve se quita.
+- **Embudo del lead** — `<OportunidadesDelLead>` / `entities/tablero-del-lead.ts`, preferencia `leads.embudo_de_la_ficha`: el bloque «Oportunidades» de la ficha: una columna por etapa
+  del embudo elegido con las oportunidades de ese lead, que se mueven arrastrando o con «Mover a». No es la vista de embudo (`/leads?vista=embudo`, el kanban de todos tus leads); su «Ver en el
+  embudo» lleva al embudo filtrado por lead.
 - **Portal del cliente** — `accesos_portal` / `web.portal_*` / `?seccion=portal`: lo que el cliente ve en la web con código y clave: sus
   vehículos, lo «Visible para el cliente» y novedades.
 - **Mensaje del portal** — `ajustes_leads.portal_mensaje` / `portal_mensaje_guardar()`: texto para WhatsApp al dar acceso, con `{cliente}`,
@@ -440,20 +455,28 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Panel del cliente** — `?panel=cliente` de `/cotizaciones/nuevo`, `<BarraDelCliente>` / `PanelDelCliente` (`leads/features/panel-para-cotizar`):
   elige el lead entre «míos» por reciente, por clase (`?clase=`) o buscando nombre o `#n` (`?buscar=`); su «+» abre el alta del shell con
   `?elegir=<clave>` (`claveParaElegir()`) y la hoja elige al creado.
-- **Fórmula** — `formulas` (`definicion`, `params`): grafo de nodos versionado por origen; ver `docs/COTIZADOR.md`.
+- **Fórmula** — `formulas` (`definicion`, `params`): grafo de nodos versionado por fórmula del origen; ver `docs/COTIZADOR.md`.
+- **Fórmula del origen** — `formulas_del_origen` (`nombre`, `activa`, `archivada_en`): una fórmula con nombre de un origen, con sus versiones
+  (`formulas.formula_del_origen_id`: su borrador, su publicada y sus archivadas) y su **Plantilla de tarjeta**. Un origen tiene varias; se crea en
+  blanco o como copia de una del mismo origen o de otro (`formula_del_origen_crear()`), y se renombra, archiva, elimina y activa por RPC
+  (`formula_del_origen_renombrar|archivar|eliminar|activar`). No: «variante», «plantilla» (la plantilla es la de la tarjeta).
+- **Fórmula activa** — `formulas_del_origen.activa` (`formulas_del_origen_activa_unica`): la fórmula del origen con que se cotiza, a lo sumo una por
+  origen y siempre con versión publicada; se cotiza con su publicada (`_publicada_de_la_activa()`). Activar otra publica sus borradores y apaga la anterior.
+- **Fórmula de trabajo** — `_fdo_de_trabajo()` / `leerFormulaDeTrabajoSobre()`: la que leen y escriben las sub-pestañas Fórmula, Hoja y Tarjeta de la página del origen y la que
+  usa una RPC que no recibe `p_formula_del_origen`: la activa o, sin ella, la más nueva sin archivar; el primer guardado de un origen sin ninguna la crea.
 - **Nodo** — `definicion.nodos[]`: una línea de la fórmula: input, constante, tipo de cambio, campo, bandera, tabla, tramo, cálculo.
 - **Constante** — nodo `constante` + `params`: valor por defecto versionado que el ⚙ de la XCell cambia.
-- **Versión del flujo** — `flujos.actualizado_en` como texto ISO: la lee la pantalla de Flujos y la devuelve cada escritura para detectar
+- **Versión del flujo** — `flujos.actualizado_en` como texto ISO: la lee el editor del flujo y la devuelve cada escritura para detectar
   cambio ajeno (`PT409`); `useVersionDelFlujo()` la entrega a las acciones.
 - **Inspector de fase** — lo de una fase en el panel del flujo (`?fase=<id>`, `ContenidoDeLaFase`): sus avisos y acciones y cuatro bloques a la vista,
   «Datos», «Requisitos para entrar», «Salidas y quién mueve» y «Reglas que la afectan».
-- **Panel del flujo** — `PanelDelFlujo`: el `<Drawer>` al costado de Configuración › Flujos (no modal desde 1024 px) con una fase (`?fase=<id>`) o lo
+- **Panel del flujo** — `PanelDelFlujo`: el `<Drawer>` al costado del editor del flujo (pestaña Flujo de un origen, Flujo de repuestos) (no modal desde 1024 px) con una fase (`?fase=<id>`) o lo
   del flujo entero, «Reglas del flujo» o «Tipos de documento» (`?seccion=reglas|documentos`); gana `?seccion=`. No: «sidebar», «inspector» para
   lo del flujo.
 - **Diagrama del flujo** — `DiagramaDelFlujo` (`disponerDiagrama()`): las fases como cajas en su orden y las salidas como flechas (ramas arriba,
-  vueltas atrás abajo); apoyo visual de Configuración › Flujos, la lista es la versión navegable. No: «grafo», «tablero».
-- **Versión de la fórmula** — `formulas.version`: número de una publicada o archivada, por origen (el borrador no tiene).
-- **Borrador de la fórmula** — `formulas.estado = 'borrador'`: a lo sumo uno por origen, sin número; lo publicado no cambia hasta publicarlo.
+  vueltas atrás abajo); apoyo visual del editor del flujo, la lista es la versión navegable. No: «grafo», «tablero».
+- **Versión de la fórmula** — `formulas.version`: número de una publicada o archivada, por fórmula del origen (el borrador no tiene).
+- **Borrador de la fórmula** — `formulas.estado = 'borrador'`: a lo sumo uno por fórmula del origen, sin número; lo publicado no cambia hasta publicarlo.
   «Descartar…» (`<Confirmar>`) no se deshace. No es la «Pregunta al descartar» ni el «Borrador» de un formulario (`useBorrador()`).
 - **Versión de origen** — `formulas.version_origen_id`: en un borrador, la publicada sobre la que se empezó (si ya no lo es, publicar da
   PT409); en una publicada o archivada, la que reemplazó.
@@ -467,11 +490,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Publicar una tabla de referencia** — `tabla_referencia_publicar()`: reemplaza sus filas, sube `tablas_referencia.version` y publica la
   N+1 de cada fórmula que la usa con la copia congelada.
 - **Tabla compartida** — tabla de referencia con `origen_id` nulo: la usan los orígenes sin una propia de esa clave; la propia la **tapa** (va
-  `tapada` en la lista de ese origen). Publicarla pide `cotizaciones.configurar` en cada origen que la usa.
+  `tapada` en la lista de ese origen). Se edita en Catálogos › Tablas compartidas o desde la pestaña Tablas de un origen que la usa, con el aviso
+  de a quién le cambia; publicarla pide `cotizaciones.configurar` en cada origen que la usa.
 - **Tarjeta de la cotización** — `<TarjetaDeCotizacion>`, `geometriaDeLaTarjeta()`: la vista previa tipo Excel de una cotización, lo que ve el
   cliente: la misma en la vista previa, el PDF, la imagen y «Copiar texto». No es la **tarjeta de la lista** (cada ítem de la vista Tarjetas de un
   listado) ni la **Tarjeta del total** de la hoja.
-- **Plantilla de tarjeta** — `plantillas_tarjeta`: cómo se ve la tarjeta de la cotización, versionada aparte y validada por `validar_plantilla()`.
+- **Plantilla de tarjeta** — `plantillas_tarjeta`: cómo se ve la tarjeta de la cotización, de una fórmula del origen, versionada aparte y validada por `validar_plantilla()`.
   Dos formas: la **forma 1** (grupos con color, etiquetas y leyendas por nodo, total, nota, logo, columnas), que se convierte a la cuadrícula al
   leerla (`convertirPlantilla()`, `_plantilla_convertir()`) y no se migra; y la **forma 2** o **cuadrícula** (`"forma": 2`: columnas, filas y
   celdas libres, como en V1), `PlantillaEnCuadricula` en `entities/cuadricula-de-la-tarjeta.ts`.
@@ -499,7 +523,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   la empresa»; `fecha_larga`, `numero`, `asesor_nombre`, `asesor_telefono` «WhatsApp del asesor», `asesor_cargo` «Cargo del asesor»…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
   `plazo`). Un texto no mezcla texto y variables.
 - **Lienzo** — `LienzoDeLaPlantilla` (área `tarjeta`) con la capa del editor (`CapaDeEdicion`, `role="grid"`): la tarjeta de la cotización a escala
-  que se edita en Configuración › Cotización › un origen › Tarjeta, como un Excel (cabeceras de columna, asas de fila, selección, atajos). La dibuja el
+  que se edita en la página del origen › Fórmula › Tarjeta, como un Excel (cabeceras de columna, asas de fila, selección, atajos). La dibuja el
   mismo modelo de dibujo que el PDF. No es el lienzo del diagrama del flujo.
 - **Rango (de la tarjeta)** — `Seleccion` de tipo `celdas` (`entities/plantilla/edicion/seleccion.ts`): las celdas de la tarjeta elegidas juntas en el lienzo (Shift+clic,
   arrastrar, Shift+flechas); se agranda hasta contener entera cada combinación que corta. Lo que se combina, se vacía, se copia o recibe un formato. No es el **Rango (de un campo)**.
@@ -604,7 +628,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tramo (de un error de texto)** — `Tramo`, `ErrorDeCompilacion` (`entities/motivos-del-compilador.ts`): dónde está el error (`desde`,
   `largo`; `linea`, `columna`).
 - **Vigencia** — `ajustes_empresa.vigencia_dias` (7 por defecto, de 1 a 365): días que vale una cotización desde el día de su `creado_en`
-  (ver «Ajustes de cotización»). En Configuración › Cotización es la parte «Vigencia» de «General» (`/configuracion/cotizacion/general/vigencia`).
+  (ver «Ajustes de cotización»). Se configura en Catálogos › Vigencia (`/configuracion/catalogos/vigencia`).
 - **Vencida** — derivada: `creado_en` + vigencia < hoy, por día en la zona de la empresa (`vence_el`, `vencida` de
   `cotizacion_hoja_guardada()`). No es un estado guardado.
 - **Cotizar encima (N+1)** — `cotizacion_encima()`, `cotizacion_padre_id`, `version`: la versión nueva de una cotización (otra cotización,
@@ -661,12 +685,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `comprobantes_serie_cambiar`) y `comprobantes_contadores` (último número de cada serie usada): numeración sin huecos.
 - **Diseño de la hoja** — `formulas.diseno` / `entities/diseno.ts`, `validarDiseno()`, `validar_diseno()`: cómo se ve la hoja de un origen
   (secciones, celdas, atajos, variantes, interruptores, modos, tarjeta) y el aspecto de cada pieza en la rejilla de la hoja.
-- **Hoja (pestaña)** — `/configuracion/cotizacion/<origen>/hoja`, clave `hoja` de `PESTANAS_DE_COTIZACION`: el nombre en la UI de la pestaña
-  de un origen donde se edita el diseño de la hoja («Cómo se ve y se llena la cotización.»). El término técnico sigue siendo «Diseño de la hoja»
+- **Hoja (pestaña)** — `/configuracion/origenes/<id>/formula/hoja`, clave `hoja` de `SUBPESTANAS_DE_LA_FORMULA`: el nombre en la UI de la
+  sub-pestaña de la Fórmula de un origen donde se edita el diseño de la hoja («Cómo se ve y se llena la cotización.»). El término técnico sigue siendo «Diseño de la hoja»
   (`features/diseno/`); la «Hoja» de cotizar es la pantalla donde se cotiza.
-- **General (Configuración › Cotización)** — `PARTES_GENERALES`, `/configuracion/cotizacion/general/colores|niveles|vigencia`: lo de
-  Configuración › Cotización que vale para toda la empresa (Colores, Niveles, Vigencia), aparte de lo de cada origen (Fórmula, Hoja, Tarjeta,
-  Tablas). No es un origen.
 - **Aspecto** — claves planas y opcionales del diseño de la hoja / `entities/aspecto-de-la-hoja.ts`, `features/hoja/components/clases-de-la-rejilla.ts`:
   cómo se ve una pieza, de escalas cerradas (nunca px, CSS ni hex). Ítem: ancho, alto, letra y énfasis; sección: ancho, alto, relleno,
   separación, densidad, letra, énfasis y color (clave `tono`); cabecera: color, relleno, letra y énfasis. Sin la clave, lo de siempre; el editor quita la clave
@@ -770,8 +791,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   nulo) o de un flujo; formatos y vencimiento (`ninguno`, `solicitar`, `renovar`, con `aviso_dias`). En uso se desactiva. No: «clase de documento».
 - **Transporte** — `transportes`: naviera, puertos, contenedor, booking y fechas de UNA unidad.
 - **Puerto** — `puertos`: origen o destino de un transporte; nombre, país y código opcionales, `orden`, `activo`. Catálogo en Configuración ›
-  Logística › Puertos; se desactiva, no se elimina. No: «terminal», «destino».
-- **Naviera** — `navieras`: la empresa que lleva el contenedor; nombre y `activo`. Catálogo en Configuración › Logística › Navieras; se
+  Catálogos › Puertos; se desactiva, no se elimina. No: «terminal», «destino».
+- **Naviera** — `navieras`: la empresa que lleva el contenedor; nombre y `activo`. Catálogo en Configuración › Catálogos › Navieras; se
   desactiva; cada flujo ofrece las suyas (`flujos_transporte_oferta`). No: «línea marítima», «carrier».
 - **Embarque / Contenedor** — grupo por `transportes.booking` / `contenedor`: agrupación, no entidad.
 - **Grupo (de transporte)** — unidades que comparten `booking` o `contenedor`; no es entidad: `transporte_grupos()` lo cuenta y

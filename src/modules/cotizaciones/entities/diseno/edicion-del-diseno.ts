@@ -1,4 +1,4 @@
-// Editar el diseño de un origen desde Configuración › Cotización › Diseño (4.22-2): la versión que se abre, las operaciones puras sobre una sección y una celda,
+// Editar el diseño de un origen desde la página del origen › Diseño (4.22-2): la versión que se abre, las operaciones puras sobre una sección y una celda,
 // el pedido de guardar el borrador y si hay algo por guardar. Nada muta lo que recibe. El diseño que sale de aquí lo vuelve a revisar `validarDiseno()` en cada cambio
 // y la base al publicar; guardar un borrador no exige que valide (como la fórmula, 4.21-3b-1).
 import type { Resultado } from '@/shared/lib/errores'
@@ -17,9 +17,11 @@ import type { ContextoDeDiseno } from '../validar-diseno'
 export type NivelDelDiseno = { clave: string; nombre: string; retirado: boolean }
 
 // La versión que se edita: el borrador o, sin borrador, la publicada. `actualizadoEn` es el texto de la base (con sus microsegundos): nunca pasa por `Date`.
-// `params` va tal cual lo guarda la base: este editor no los toca.
+// `params` va tal cual lo guarda la base: este editor no los toca. `formulaDelOrigenId`, la fórmula del origen de esa versión (la de trabajo al leerla): guardar
+// escribe en ella y no en la de trabajo de ese momento.
 export type DisenoParaEditar = {
   id: string
+  formulaDelOrigenId: string
   estado: 'borrador' | 'publicada'
   actualizadoEn: string
   nota: string | null
@@ -34,6 +36,7 @@ export type EsperadaDeGuardarDiseno =
 // Lo que se manda a `formula_guardar_borrador()`: la definición y los `params` salen como se leyeron.
 export type PedidoDeGuardarDiseno = {
   origenId: string
+  formulaDelOrigenId: string
   definicion: Definicion
   params: Record<string, unknown>
   diseno: Diseno
@@ -55,7 +58,10 @@ export const MOTIVO_SIN_PERMISO_DEL_DISENO =
 export const MAXIMO_DEL_TITULO = 80
 
 // Sobre qué guarda el editor: la versión leída y, tras guardar, la fila que devolvió la base.
-export type BaseDelDiseno = Pick<DisenoParaEditar, 'id' | 'estado' | 'actualizadoEn' | 'nota'>
+export type BaseDelDiseno = Pick<
+  DisenoParaEditar,
+  'id' | 'formulaDelOrigenId' | 'estado' | 'actualizadoEn' | 'nota'
+>
 
 // Sobre la publicada crea el borrador (su id como esperada, la nota nula: la de la publicada es de su publicación); sobre el borrador lo pisa con su hora y su nota.
 export function pedidoDeGuardarDiseno(
@@ -64,7 +70,13 @@ export function pedidoDeGuardarDiseno(
   diseno: Diseno,
   origenId: string,
 ): PedidoDeGuardarDiseno {
-  const comun = { origenId, definicion: leida.definicion, params: leida.params, diseno }
+  const comun = {
+    origenId,
+    formulaDelOrigenId: base.formulaDelOrigenId,
+    definicion: leida.definicion,
+    params: leida.params,
+    diseno,
+  }
   return base.estado === 'publicada'
     ? { ...comun, nota: null, esperada: { sobre: 'publicada', publicadaId: base.id } }
     : {

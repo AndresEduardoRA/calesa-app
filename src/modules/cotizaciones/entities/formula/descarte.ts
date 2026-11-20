@@ -1,4 +1,4 @@
-// Descartar el borrador de la fórmula de un origen desde Configuración › Cotización › «Fórmula» (4.20-2c): el panel de la URL, por qué no se abre y los textos del
+// Descartar el borrador de la fórmula de un origen desde la página del origen › «Fórmula» (4.20-2c): el panel de la URL, por qué no se abre y los textos del
 // `<Confirmar>`. Borrarlo no toca la publicada; el permiso y el borrado son de `formula_descartar_borrador()`, que borra el borrador del origen sin versión esperada
 // (P1 del 4.20-2c: la esperada llega en el 4.21, con la de `formula_guardar_borrador()`). Lo descarta todo el que configura el origen (P2), también uno atrasado.
 import type { EstadoDeLaFormula } from './versiones'

@@ -18,7 +18,6 @@ import {
   type ValoresDeOrigen,
 } from '../hooks/use-valores-de-origen'
 import { CamposDeOrigen } from './campos-de-origen'
-import { EstadoDelOrigen } from './estado-del-origen'
 
 type Props = { origen: OrigenConUso; puedeGestionar: boolean }
 
@@ -139,7 +138,6 @@ function ContenidoDelOrigen({ origen, puedeGestionar }: Props) {
         }}
         alEnviar={(elemento) => void guardar(elemento)}
       />
-      <EstadoDelOrigen origen={origen} puedeGestionar={puedeGestionar} />
       {puedeGestionar ? (
         <BarraDeCambiosSinGuardar
           hayCambios={hayCambiosEnElOrigen(valores, guardado)}

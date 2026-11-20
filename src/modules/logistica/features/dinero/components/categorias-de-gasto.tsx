@@ -25,7 +25,7 @@ function Cargando() {
   )
 }
 
-// Configuración › Logística › Categorías de gasto (6.11-4): se crean, renombran, eligen su propósito, ordenan (con un número), activan y desactivan; una con gastos no se elimina, se desactiva. Es un catálogo de
+// Configuración › Catálogos › Categorías de gasto (6.11-4): se crean, renombran, eligen su propósito, ordenan (con un número), activan y desactivan; una con gastos no se elimina, se desactiva. Es un catálogo de
 // la empresa (decenas de filas): no se pagina. Escribir lo exige `logistica.catalogos.gestionar` (la RLS de la tabla); la página ya lo pide.
 export function CategoriasDeGasto() {
   const datos = useCategoriasDeGasto()

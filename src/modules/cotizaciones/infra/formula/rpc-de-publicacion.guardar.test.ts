@@ -34,6 +34,7 @@ const DISENO = { cabecera: { modos: [], ver_total_bs: false } }
 
 const base = {
   origenId: ORIGEN,
+  formulaDelOrigenId: null,
   definicion: DEFINICION,
   params: { flete: 900 },
   diseno: DISENO,

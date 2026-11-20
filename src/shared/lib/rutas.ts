@@ -30,16 +30,19 @@ export const RUTAS = {
   plantillaDelEmbudo: '/configuracion/leads/embudo',
   mensajeDelPortal: '/configuracion/leads/portal',
   telefonosExtraDeLeads: '/configuracion/leads/telefonos',
-  configuracionDeCotizacion: '/configuracion/cotizacion',
-  coloresDeCotizacion: '/configuracion/cotizacion/general/colores',
-  nivelesDeCotizacion: '/configuracion/cotizacion/general/niveles',
-  vigenciaDeCotizacion: '/configuracion/cotizacion/general/vigencia',
-  configuracionDeFlujos: '/configuracion/flujos',
-  configuracionDeLogistica: '/configuracion/logistica',
-  puertosDeLogistica: '/configuracion/logistica/puertos',
-  navierasDeLogistica: '/configuracion/logistica/navieras',
-  categoriasDeGastoDeLogistica: '/configuracion/logistica/categorias-de-gasto',
+  // Catálogos: lo global de la empresa (los colores, los niveles y la vigencia de la cotización; los puertos, las navieras, las categorías
+  // de gasto y los tipos de documento de toda la empresa; las tablas compartidas). Lo de cada origen vive en su página.
+  catalogos: '/configuracion/catalogos',
+  coloresDeCotizacion: '/configuracion/catalogos/colores',
+  nivelesDeCotizacion: '/configuracion/catalogos/niveles',
+  vigenciaDeCotizacion: '/configuracion/catalogos/vigencia',
+  puertosDeLogistica: '/configuracion/catalogos/puertos',
+  navierasDeLogistica: '/configuracion/catalogos/navieras',
+  categoriasDeGastoDeLogistica: '/configuracion/catalogos/categorias-de-gasto',
+  tiposDeDocumento: '/configuracion/catalogos/tipos-de-documento',
+  tablasCompartidas: '/configuracion/catalogos/tablas',
   configuracionDeRepuestos: '/configuracion/repuestos',
+  flujoDeRepuestos: '/configuracion/repuestos/flujo',
   catalogosDeRepuestos: '/configuracion/repuestos/catalogos',
   cotizadorDeRepuestos: '/configuracion/repuestos/cotizador',
   configuracionDeWeb: '/configuracion/web',
@@ -72,21 +75,56 @@ export function unidadDeLogistica(id: string): string {
   return `${RUTAS.logistica}/vehiculo/${encodeURIComponent(id)}`
 }
 
-// Las pestañas de un origen en Configuración › Cotización, en su orden: cada una es una sub-ruta `/configuracion/cotizacion/<origen>/<pestana>`.
-// Viven acá porque las arman las actions y los enlaces del módulo `cotizaciones`, que no pueden importar `src/app`.
+// Las pestañas de la página de un origen, en su orden: cada una es una sub-ruta `/configuracion/origenes/<id>/<parte>`. Viven acá porque
+// las arman las actions y los enlaces de otros módulos (cotizaciones, flujos), que no pueden importar `src/app`.
+export const PARTES_DEL_ORIGEN = [
+  'datos',
+  'campos',
+  'categorias',
+  'flujo',
+  'formula',
+  'tablas',
+] as const
+
+export type ParteDelOrigen = (typeof PARTES_DEL_ORIGEN)[number]
+
+function conConsulta(ruta: string, consulta?: Record<string, string>): Route {
+  const parametros = new URLSearchParams(consulta).toString()
+  return (parametros === '' ? ruta : `${ruta}?${parametros}`) as Route
+}
+
+// Una pestaña de un origen, con su consulta en el orden en que viene (`?fase=`, `?panel=`); sin consulta, sin `?`.
+export function rutaDeParteDelOrigen(
+  origenId: string,
+  parte: ParteDelOrigen,
+  consulta?: Record<string, string>,
+): Route {
+  return conConsulta(`${RUTAS.origenes}/${encodeURIComponent(origenId)}/${parte}`, consulta)
+}
+
+// Lo que se configura del cotizador de un origen: la Fórmula (con sus sub-pestañas Hoja y Tarjeta) y las Tablas, en su orden.
 export const PESTANAS_DE_COTIZACION = ['formula', 'hoja', 'tarjeta', 'tablas'] as const
 
 export type PestanaDeCotizacion = (typeof PESTANAS_DE_COTIZACION)[number]
 
-// La pestaña de un origen, con su consulta en el orden en que viene (`?tabla=`, `?panel=`); sin consulta, sin `?`.
+const RUTA_EN_EL_ORIGEN: Record<PestanaDeCotizacion, string> = {
+  formula: 'formula',
+  hoja: 'formula/hoja',
+  tarjeta: 'formula/tarjeta',
+  tablas: 'tablas',
+}
+
+// Una pestaña del cotizador de un origen, en la página del origen (`…/origenes/<id>/formula`, `…/formula/hoja`, `…/formula/tarjeta`,
+// `…/tablas`), con su consulta en el orden en que viene (`?tabla=`, `?panel=`); sin consulta, sin `?`.
 export function rutaDeConfiguracionDeCotizacion(
   origenId: string,
   pestana: PestanaDeCotizacion,
   consulta?: Record<string, string>,
 ): Route {
-  const parametros = new URLSearchParams(consulta).toString()
-  const ruta = `${RUTAS.configuracionDeCotizacion}/${encodeURIComponent(origenId)}/${pestana}`
-  return (parametros === '' ? ruta : `${ruta}?${parametros}`) as Route
+  return conConsulta(
+    `${RUTAS.origenes}/${encodeURIComponent(origenId)}/${RUTA_EN_EL_ORIGEN[pestana]}`,
+    consulta,
+  )
 }
 
 // Quien ya tiene sesión no tiene nada que hacer acá.

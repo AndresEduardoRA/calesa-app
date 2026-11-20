@@ -13,7 +13,7 @@ type Props = {
   origen: Origen
 }
 
-// La pestaña «Hoja» de un origen en Configuración › Cotización (el diseño de la hoja, 4.22-2), leída en el servidor con la sesión de quien mira y detrás de
+// La pestaña «Hoja» de la Fórmula de un origen (Configuración › Orígenes) (el diseño de la hoja, 4.22-2), leída en el servidor con la sesión de quien mira y detrás de
 // `<Suspense>`: el borrador o la publicada y los niveles. La base vuelve a decidir (policy `formulas: leer`). Una lectura que falla sube al
 // `error.tsx` de la ruta, que ofrece «Reintentar».
 export async function SeccionDelDiseno({ origen }: Props) {

@@ -55,6 +55,7 @@ const formula = () =>
   ])
 const leidaDe = (f: Formula, hora = HORA): FormulaParaEditar => ({
   id: FORMULA,
+  formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   actualizadoEn: hora,
   estado: 'borrador',
   diseno: null,

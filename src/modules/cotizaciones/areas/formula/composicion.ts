@@ -1,4 +1,4 @@
-// Composición del área `formula` de `cotizaciones` en el servidor: la pestaña «Fórmula» de Configuración › Cotización (4.20-2a) y lo que escribe (4.20-2b). Sale por la
+// Composición del área `formula` de `cotizaciones` en el servidor: la pestaña «Fórmula» de la página del origen (4.20-2a) y lo que escribe (4.20-2b). Sale por la
 // `composicion.ts` de la raíz.
 import 'server-only'
 import type { RepositorioDeLaFormula } from '../../entities/formula/repositorio'

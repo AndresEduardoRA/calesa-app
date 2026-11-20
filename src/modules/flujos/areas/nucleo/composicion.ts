@@ -11,6 +11,6 @@ import { getFlujoParaConfigurar, getFlujosConfigurables } from '../../infra/quer
 
 export const leerFasesDeOrigen: LectorDeFases = getFasesDeOrigen
 
-// El flujo entero para configurarlo (5.02) y los flujos que quien mira puede configurar. Los lee `/configuracion/flujos`.
+// El flujo entero para configurarlo (5.02) y los flujos que quien mira puede configurar. Los leen la pestaña Flujo de cada origen y Repuestos › Flujo de repuestos.
 export const leerFlujoParaConfigurar: LectorDeFlujo = getFlujoParaConfigurar
 export const leerFlujosConfigurables: LectorDeFlujosConfigurables = getFlujosConfigurables

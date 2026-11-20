@@ -12,6 +12,8 @@ type Props = {
   abierto: boolean
   alCerrar: () => void
   origen: { id: string; nombre: string }
+  // La fórmula del origen que la pestaña leyó (nula si el origen todavía no tiene): la base publica sobre ella y no sobre la de trabajo de ahora.
+  formulaDelOrigenId: string | null
   // La publicada que la pestaña leyó (nula si el origen no tiene) y la hora del borrador (4.21-3b-1): la base las compara.
   publicadaId: string | null
   borradorActualizadoEn: string | null
@@ -27,7 +29,15 @@ const MENSAJE_DE_VALIDACION = 'Revisa la nota.'
 // La versión del formulario es la publicada y la hora del borrador: un conflicto se va cuando «Recargar» trae otra cualquiera. Sin borrador no se manda nada
 // (`noDisponible` lo dice).
 export function ModalDePublicar(props: Props) {
-  const { abierto, alCerrar, origen, publicadaId, borradorActualizadoEn, noDisponible } = props
+  const {
+    abierto,
+    alCerrar,
+    origen,
+    formulaDelOrigenId,
+    publicadaId,
+    borradorActualizadoEn,
+    noDisponible,
+  } = props
   const publicar = useAction(publicarBorrador)
   const formulario = useFormularioDePublicacion({
     abierto,
@@ -37,6 +47,7 @@ export function ModalDePublicar(props: Props) {
       enviarAccion(
         publicar.executeAsync({
           origenId: origen.id,
+          formulaDelOrigenId,
           nota,
           publicadaEsperada: publicadaId,
           actualizadoEsperado: borradorActualizadoEn ?? '',

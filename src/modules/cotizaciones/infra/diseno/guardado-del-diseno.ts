@@ -1,4 +1,5 @@
-// El guardado del borrador del diseño (4.22-2) sobre el cliente que recibe: `formula_guardar_borrador()` con la definición y los `params` tal cual se leyeron.
+// El guardado del borrador del diseño (4.22-2) sobre el cliente que recibe: `formula_guardar_borrador()` en la fórmula del origen de la versión leída, con la
+// definición y los `params` tal cual se leyeron.
 // Replica lo que hace el área `formula` (una guarda impide importarla); los mensajes de la base llegan tal cual (el PT409 dice quién guardó y cuándo).
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
@@ -11,9 +12,18 @@ const esquemaDelGuardado = z.strictObject({ id: z.guid(), actualizado_en: z.stri
 // Una sola esperada (sin hora crea; con hora pisa) y la nota sólo si hay (la base la toma nula).
 export function guardadoDelDisenoSobre(cliente: SupabaseClient<Database>): RepositorioDelDiseno {
   return {
-    guardarBorrador: async ({ origenId, definicion, params, diseno, nota, esperada }) => {
+    guardarBorrador: async ({
+      origenId,
+      formulaDelOrigenId,
+      definicion,
+      params,
+      diseno,
+      nota,
+      esperada,
+    }) => {
       const { data, error } = await cliente.rpc('formula_guardar_borrador', {
         p_origen: origenId,
+        p_formula_del_origen: formulaDelOrigenId,
         p_def: definicion as Json,
         p_params: params as Json,
         p_diseno: diseno as Json,

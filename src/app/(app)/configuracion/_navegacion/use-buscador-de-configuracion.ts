@@ -56,10 +56,7 @@ export function useBuscadorDeConfiguracion(
 
   const sinCampo = sinCampoEn === actual
   const buscando = !sinCampo && normalizar(texto) !== ''
-  const resultados = useMemo(
-    () => buscarEnConfiguracion(grupos, texto, actual),
-    [grupos, texto, actual],
-  )
+  const resultados = useMemo(() => buscarEnConfiguracion(grupos, texto), [grupos, texto])
 
   const limpiar = () => {
     setTexto('')

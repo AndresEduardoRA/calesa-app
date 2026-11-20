@@ -23,7 +23,7 @@ import {
 } from './soporte/niveles'
 import { aLaVistaSinDesplazar, capturar, sinScrollHorizontal, tactil } from './soporte/recorrido'
 
-// El recorrido de Configuración › Cotización › Niveles (paso 4.09-2): los dos de fábrica, crear (con sus dos permisos para el dueño), renombrar,
+// El recorrido de Configuración › Catálogos › Niveles (paso 4.09-2): los dos de fábrica, crear (con sus dos permisos para el dueño), renombrar,
 // cerrar con algo escrito, retirar y restaurar con «Deshacer», eliminar uno sin uso, el foco y el texto al 200 %. Con la dueña, en escritorio y
 // celular. Lo que se juzga mirando, en `E2E_CAPTURAS=e2e-capturas/niveles`. Los casos no felices están en `*-casos`.
 test.describe.configure({ mode: 'serial' })
@@ -52,20 +52,11 @@ test('de fábrica: «Todos» sólo se lee, «Costos» se renombra y retira pero 
 }, info) => {
   await entrar(page, duena)
   await page.goto('/configuracion/inicio')
-  await page
-    .getByRole('region')
-    .getByRole('link', { name: /Cotización/ })
-    .click()
-  await expect(page).toHaveURL(/\/configuracion\/cotizacion$/)
-  await page
-    .getByRole('list', { name: 'Partes generales' })
-    .getByRole('link', { name: /Niveles/ })
-    .click()
-  await expect(page).toHaveURL(/\/configuracion\/cotizacion\/general\/niveles$/)
-  await expect(page.getByRole('tab', { name: 'Niveles', exact: true })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
+  // Por el buscador del inicio, que está en escritorio y en el celular (el menú, sólo en escritorio).
+  await page.getByRole('searchbox', { name: 'Buscar en Configuración' }).fill('niveles')
+  await page.getByRole('link', { name: 'Catálogos › Niveles', exact: true }).click()
+  await expect(page).toHaveURL(/\/configuracion\/catalogos\/niveles$/)
+  await expect(page.getByRole('heading', { name: 'Niveles', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Niveles de acceso', level: 2 })).toBeVisible()
   await expect(page.getByText(/de 10 niveles posibles\./)).toBeVisible()
 

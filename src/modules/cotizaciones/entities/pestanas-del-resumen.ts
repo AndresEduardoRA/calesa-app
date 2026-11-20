@@ -10,14 +10,23 @@ export const PESTANAS_DEL_RESUMEN_DE_COTIZACION = [
   { clave: 'adjuntos', titulo: 'Adjuntos' },
   { clave: 'revisiones', titulo: 'Revisiones' },
   { clave: 'comentarios', titulo: 'Comentarios' },
+  { clave: 'vehiculo', titulo: 'De este vehículo' },
 ] as const
 
 export type PestanaDelResumenDeCotizacion =
   (typeof PESTANAS_DEL_RESUMEN_DE_COTIZACION)[number]['clave']
 
-// La de la URL; lo que no es una pestaña que existe abre «Todo».
+// Las pestañas que se ven: «De este vehículo» sólo si la cotización tiene un vehículo que quien mira ve.
+export function pestanasDelResumenDeCotizacion({ conVehiculo }: { conVehiculo: boolean }) {
+  return PESTANAS_DEL_RESUMEN_DE_COTIZACION.filter((p) => conVehiculo || p.clave !== 'vehiculo')
+}
+
+// La de la URL; lo que no es una pestaña que existe abre «Todo», y «vehiculo» sin vehículo, también.
 export function pestanaDelResumenDeCotizacion(
   valor: string | null | undefined,
+  { conVehiculo = true }: { conVehiculo?: boolean } = {},
 ): PestanaDelResumenDeCotizacion {
-  return PESTANAS_DEL_RESUMEN_DE_COTIZACION.find((p) => p.clave === valor)?.clave ?? 'todo'
+  return (
+    pestanasDelResumenDeCotizacion({ conVehiculo }).find((p) => p.clave === valor)?.clave ?? 'todo'
+  )
 }

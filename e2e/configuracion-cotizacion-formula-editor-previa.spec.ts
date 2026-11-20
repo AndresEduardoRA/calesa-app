@@ -1,5 +1,6 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -67,8 +68,8 @@ const fila = (page: Page, id: string) => filas(page).locator(`li[data-fila="${id
 const previa = (page: Page) => page.getByRole('region', { name: 'Vista previa' })
 
 async function abrirEditor(page: Page, origenId: string) {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/formula`)
+  await enLaPestana(page, 'Fórmula')
   await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }
@@ -93,8 +94,7 @@ test('E2: de dos tablas con la misma clave gana la del origen; sin ella, la comp
   await entrar(page, duena, { fresco: true })
   await abrirEditor(page, delOrigen.id)
   await expect(fila(page, 'factor').locator('[data-cifra]')).toHaveText('0,25')
-  await page.goto('/configuracion/cotizacion?seccion=formula&origen=' + soloCompartida.id)
-  await abrirModoAvanzado(page)
+  await abrirEditor(page, soloCompartida.id)
   await expect(fila(page, 'factor').locator('[data-cifra]')).toHaveText('0,5')
 })
 

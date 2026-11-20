@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { TABLA_DEMASIADO_GRANDE, TABLA_NO_ENCONTRADA } from '../../entities/tablas/lectura'
-import { leerTablaParaEditar, leerTablasDeReferencia } from './lectura'
+import { leerTablaParaEditar, leerTablasCompartidas, leerTablasDeReferencia } from './lectura'
 import {
   clienteSimulado,
   filasDe,
+  id,
   ORIGEN,
   pedidosDe,
   TABLA,
@@ -105,5 +106,22 @@ describe('leerTablasDeReferencia', () => {
     const leida = await leerTablasDeReferencia(cliente, `${ORIGEN},origen_id.not.is.null`)
     expect(leida.ok).toBe(false)
     expect(llamadas).toEqual([])
+  })
+})
+
+describe('leerTablasCompartidas', () => {
+  it('lee sólo las de origen nulo y activas, en un pedido con tope + 1', async () => {
+    const compartida = { ...tablaDeLaBase(), id: id(7), origen_id: null, clave: 'aranceles' }
+    const inactiva = { ...tablaDeLaBase(false), id: id(8), origen_id: null, clave: 'viejas' }
+    const { cliente, llamadas } = clienteSimulado({
+      tablas_referencia: [tablaDeLaBase(), compartida, inactiva],
+    })
+    const leida = await leerTablasCompartidas(cliente)
+    expect(leida.ok && leida.data.tablas.map((t) => [t.clave, t.compartida, t.tapada])).toEqual([
+      ['aranceles', true, false],
+    ])
+    expect(llamadas.map((l) => [l.filtros, l.limite])).toEqual([
+      [['eq:activa', 'is:origen_id'], 101],
+    ])
   })
 })

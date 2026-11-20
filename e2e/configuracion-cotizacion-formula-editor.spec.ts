@@ -1,5 +1,6 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -68,8 +69,8 @@ test.afterAll(async () => {
 })
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}${resto}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/formula${resto}`)
+  await enLaPestana(page, 'Fórmula')
 }
 
 const editor = (page: Page) => page.getByRole('region', { name: 'Editor de la fórmula' })
@@ -192,7 +193,7 @@ test('«Modo avanzado» se entra desde el borrador o la publicada, «atrás» vu
   await expect(page).not.toHaveURL(/panel=/)
   await expect(page.getByRole('region', { name: 'Planilla de la fórmula' })).toBeVisible()
 
-  await abrirFormula(page, sinFormula.id, '&panel=editar-formula')
+  await abrirFormula(page, sinFormula.id, '?panel=editar-formula')
   await expect(
     page.getByText(`No hay una fórmula para editar en ${sinFormula.nombre}.`),
   ).toBeVisible()

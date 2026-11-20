@@ -36,7 +36,8 @@ begin
   return v_id;
 end $f$;
 
--- Pone una plantilla publicada en el origen sin pasar por `plantilla_publicar` (archiva la que había: plantillas_publicada_unica).
+-- Pone una plantilla publicada en el origen sin pasar por `plantilla_publicar`: cuelga de su fórmula de trabajo (la única del origen en estas pruebas) y
+-- archiva la que había (plantillas_publicada_unica, una por fórmula del origen).
 create or replace function pg_temp.ct_publicar(p_origen uuid, p_def jsonb) returns void language plpgsql as $f$
 begin
   update public.plantillas_tarjeta set estado = 'archivada' where origen_id = p_origen and estado = 'publicada';

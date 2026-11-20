@@ -24,7 +24,8 @@ export const publicarTabla = actionClient
     }
     const hecho = await repositorioDeTablas.publicar(parsedInput)
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeCotizacion, 'layout')
+      revalidatePath(RUTAS.origenes, 'layout')
+      revalidatePath(RUTAS.catalogos, 'layout')
     }
     return hecho
   })

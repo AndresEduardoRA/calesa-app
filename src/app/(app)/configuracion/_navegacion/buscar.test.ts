@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Permisos } from '@/shared/lib/permisos'
 import { gruposVisibles, paraElNavegador, type GrupoDelNavegador } from '../secciones'
 import { TOPE_DE_RESULTADOS, buscarEnConfiguracion, normalizar } from './buscar'
+import { conOrigenesEnElMenu, subseccionesDeOrigenes } from './origenes-del-menu'
 
 const TODO: Permisos = [
   'equipo.usuarios.gestionar',
@@ -19,8 +20,8 @@ const TODO: Permisos = [
 ].map((clave) => ({ clave, origenId: null, alcance: 'todos' }) as Permisos[number])
 
 const grupos = paraElNavegador(gruposVisibles(TODO))
-const caminos = (texto: string, de: readonly GrupoDelNavegador[] = grupos, actual = '/') =>
-  buscarEnConfiguracion(de, texto, actual).map((r) => r.camino)
+const caminos = (texto: string, de: readonly GrupoDelNavegador[] = grupos) =>
+  buscarEnConfiguracion(de, texto).map((r) => r.camino)
 
 describe('normalizar', () => {
   it('quita acentos, mayúsculas y espacios de más', () => {
@@ -46,7 +47,7 @@ describe('buscarEnConfiguracion', () => {
   })
 
   it('la sección y su sub-sección índice, que abren lo mismo, se ven como la sub-sección', () => {
-    const empresa = buscarEnConfiguracion(grupos, 'empresa', '/')
+    const empresa = buscarEnConfiguracion(grupos, 'empresa')
     expect(empresa.map((r) => r.ruta).filter((r) => r === '/configuracion/empresa')).toHaveLength(1)
     expect(empresa[0]?.camino).toBe('Empresa › Datos de la empresa')
   })
@@ -70,20 +71,28 @@ describe('buscarEnConfiguracion', () => {
     expect(caminos('portal', [])).toEqual([])
   })
 
-  it('una plantilla se rellena con la ruta actual o usa su respaldo', () => {
+  it('lo de un origen se busca en Orígenes; lo global, en Catálogos', () => {
+    expect(caminos('fórmula')[0]).toBe('Orígenes')
+    expect(caminos('flujo')).toContain('Orígenes')
+    expect(caminos('colores')[0]).toBe('Catálogos › Colores')
+    expect(caminos('tablas compartidas')[0]).toBe('Catálogos › Tablas compartidas')
+    expect(caminos('flujo de repuestos')[0]).toBe('Repuestos › Flujo de repuestos')
+  })
+
+  it('cada origen que suma el menú se encuentra por su nombre y abre su pestaña Datos', () => {
     const id = '00000000-0000-4000-8000-000000000001'
-    const conOrigen = buscarEnConfiguracion(grupos, 'campos', `/configuracion/origenes/${id}/datos`)
-    expect(conOrigen.map((r) => r.ruta)).toContain(`/configuracion/origenes/${id}/campos`)
-    const sinOrigen = buscarEnConfiguracion(grupos, 'fórmula', '/configuracion/inicio')
-    const formula = sinOrigen.find((r) => r.camino === 'Cotización › Fórmula')
-    expect(formula?.ruta).toBe('/configuracion/cotizacion?seccion=formula')
-    // Sin origen en la URL y sin respaldo, la parte de un origen no se ofrece.
-    expect(
-      buscarEnConfiguracion(grupos, 'categorías', '/configuracion/inicio').map((r) => r.camino),
-    ).not.toContain('Orígenes › Categorías')
+    const conOrigenes = conOrigenesEnElMenu(
+      grupos,
+      subseccionesDeOrigenes([{ id, nombre: 'Japón' }], TODO),
+    )
+    expect(buscarEnConfiguracion(conOrigenes, 'japon')[0]).toEqual({
+      clave: `origenes-${id}`,
+      camino: 'Orígenes › Japón',
+      ruta: `/configuracion/origenes/${id}/datos`,
+    })
   })
 
   it('dibuja como mucho el tope', () => {
-    expect(buscarEnConfiguracion(grupos, 'e', '/').length).toBeLessThanOrEqual(TOPE_DE_RESULTADOS)
+    expect(buscarEnConfiguracion(grupos, 'e').length).toBeLessThanOrEqual(TOPE_DE_RESULTADOS)
   })
 })

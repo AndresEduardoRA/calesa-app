@@ -1,5 +1,6 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -60,8 +61,8 @@ const sumar = (page: Page, etiqueta: string) =>
   page.getByRole('button', { name: `Sumar fila debajo de ${etiqueta}`, exact: true })
 
 async function abrirEditor(page: Page, origenId = origen.id) {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/formula`)
+  await enLaPestana(page, 'Fórmula')
   await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }

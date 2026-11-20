@@ -14,6 +14,7 @@ import { lineaApagada, masAccionesDe, menuDe } from './soporte/lista-de-catalogo
 import {
   PREFIJO_DE_TIPO_DE_DOCUMENTO_E2E,
   abrirDocumentos,
+  abrirLosDeLaEmpresa,
   borrarTiposDeDocumentoDePrueba,
   modalDeTipo,
   nombresDelGrupo,
@@ -23,9 +24,9 @@ import {
   usarEnUnRequisito,
 } from './soporte/tipos-de-documento'
 
-// Configuración › Flujos › Documentos (5.09, `docs/UX.md` › «Flujos: tipos de documento (estados propios)»): la dueña crea un tipo del flujo con vencimiento,
-// lo edita, lo sube de orden, desactiva uno en uso (y lee por qué no se elimina) y elimina uno sin uso; quien sólo configura el flujo ve los de toda la
-// empresa deshabilitados, con el motivo. Un solo recorrido del camino feliz: la base ya tiene sus pruebas de cada regla.
+// Los tipos de documento (5.09, `docs/UX.md` › «Flujos: tipos de documento (estados propios)»): en el panel del flujo de un origen la dueña crea un tipo del
+// flujo con vencimiento, lo edita, lo sube de orden, desactiva uno en uso (y lee por qué no se elimina) y elimina uno sin uso; quien sólo configura el flujo
+// ve en Catálogos › Tipos de documento los de toda la empresa deshabilitados, con el motivo, y cambia los de su flujo. Un solo recorrido del camino feliz: la base ya tiene sus pruebas de cada regla.
 test.describe.configure({ mode: 'serial' })
 
 let proyecto = ''
@@ -70,10 +71,13 @@ test('la dueña crea un tipo del flujo con vencimiento, lo edita y lo sube de or
   const renombrado = nombre('Seguro marítimo')
   const segundo = nombre('Factura')
   await entrar(page, duena, { fresco: true })
-  await abrirDocumentos(page)
-  const flujo = seccionDelGrupo(page, 'flujo')
-  // Los de toda la empresa de la semilla, ya a la vista y con su uso.
+  // Los de toda la empresa de la semilla, en Catálogos.
+  await abrirLosDeLaEmpresa(page)
   await expect(page.getByRole('button', { name: 'Abrir BL', exact: true })).toBeVisible()
+  // Los del flujo, en su panel: sólo los suyos.
+  await abrirDocumentos(page)
+  await expect(page.getByRole('heading', { name: 'De toda la empresa', level: 2 })).toHaveCount(0)
+  const flujo = seccionDelGrupo(page, 'flujo')
 
   // Crear con vencimiento «renovar»: 365 días de vigencia y aviso a los 30.
   await flujo.getByRole('button', { name: 'Nuevo tipo' }).click()
@@ -173,7 +177,7 @@ test('quien sólo configura el flujo ve los tipos de toda la empresa deshabilita
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  await abrirDocumentos(page)
+  await abrirLosDeLaEmpresa(page)
   const empresa = seccionDelGrupo(page, 'empresa')
   const motivo =
     'Los tipos de documento de toda la empresa los cambia quien gestiona los catálogos de logística.'
@@ -185,12 +189,12 @@ test('quien sólo configura el flujo ve los tipos de toda la empresa deshabilita
     motivo,
   )
   expect(await lineaApagada(page, 'BL', 'Editar')).toBe(true)
+  // Escribir la URL a mano no abre lo que no puede: no hay modal.
+  await abrirLosDeLaEmpresa(page, '?panel=nuevo-tipo&de=empresa')
+  await expect(page.getByRole('dialog', { name: /^Nuevo tipo de documento/ })).toBeHidden()
   // Lo de su flujo sí lo puede cambiar.
+  await abrirDocumentos(page)
   await expect(
     seccionDelGrupo(page, 'flujo').getByRole('button', { name: 'Nuevo tipo' }),
   ).toBeEnabled()
-  // Escribir la URL a mano no abre lo que no puede: no hay modal (los tipos están en el panel del flujo, que también es un diálogo).
-  await page.goto('/configuracion/flujos?seccion=documentos&panel=nuevo-tipo&de=empresa')
-  await expect(page.getByRole('heading', { name: 'De toda la empresa', level: 2 })).toBeVisible()
-  await expect(page.getByRole('dialog', { name: /^Nuevo tipo de documento/ })).toBeHidden()
 })

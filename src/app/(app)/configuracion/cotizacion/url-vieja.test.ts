@@ -1,111 +1,66 @@
 import { describe, expect, it } from 'vitest'
-import type { AccesoDeCotizacion } from './acceso'
 import { destinoDeLaUrlVieja } from './url-vieja'
 
 const A = '11111111-1111-4111-8111-111111111111'
-const B = '22222222-2222-4222-8222-222222222222'
-const AJENO = '99999999-9999-4999-8999-999999999999'
-const BASE = '/configuracion/cotizacion'
+const ORIGEN = `/configuracion/origenes/${A}`
 
-const todo: AccesoDeCotizacion = { origenes: [A, B], configura: true, veNiveles: true }
-const configura: AccesoDeCotizacion = { origenes: [A, B], configura: true, veNiveles: false }
-const soloRoles: AccesoDeCotizacion = { origenes: [], configura: false, veNiveles: true }
-
-const destino = (consulta: string, acceso = todo) =>
-  destinoDeLaUrlVieja(new URLSearchParams(consulta), acceso)
-
-describe('destinoDeLaUrlVieja', () => {
-  it('sin parámetros, el inicio', () => {
-    expect(destino('')).toBeNull()
+describe('la URL vieja de Configuración › Cotización', () => {
+  it('sin nada, la lista de orígenes', () => {
+    expect(destinoDeLaUrlVieja({})).toBe('/configuracion/origenes')
   })
 
-  it('cada pestaña de antes va a su sub-ruta, del origen pedido', () => {
-    expect(destino(`seccion=formula&origen=${B}`)).toBe(`${BASE}/${B}/formula`)
-    expect(destino(`seccion=diseno&origen=${B}`)).toBe(`${BASE}/${B}/hoja`)
-    expect(destino(`seccion=tarjeta&origen=${B}`)).toBe(`${BASE}/${B}/tarjeta`)
-    expect(destino(`seccion=tablas&origen=${B}`)).toBe(`${BASE}/${B}/tablas`)
-    expect(destino('seccion=tonos')).toBe(`${BASE}/general/colores`)
-    expect(destino('seccion=colores')).toBe(`${BASE}/general/colores`)
-    expect(destino('seccion=niveles')).toBe(`${BASE}/general/niveles`)
-    expect(destino('seccion=ajustes')).toBe(`${BASE}/general/vigencia`)
+  it('cada pestaña de un origen va a su pestaña en la página del origen', () => {
+    expect(destinoDeLaUrlVieja({ seccion: 'formula', origen: A })).toBe(`${ORIGEN}/formula`)
+    expect(destinoDeLaUrlVieja({ seccion: 'diseno', origen: A })).toBe(`${ORIGEN}/formula/hoja`)
+    expect(destinoDeLaUrlVieja({ seccion: 'tarjeta', origen: A })).toBe(`${ORIGEN}/formula/tarjeta`)
+    expect(destinoDeLaUrlVieja({ seccion: 'tablas', origen: A })).toBe(`${ORIGEN}/tablas`)
   })
 
-  it('sin origen, o con uno ajeno, el primero que configura', () => {
-    expect(destino('seccion=formula')).toBe(`${BASE}/${A}/formula`)
-    expect(destino(`seccion=diseno&origen=${AJENO}`)).toBe(`${BASE}/${A}/hoja`)
-    expect(destino('seccion=tablas&origen=general')).toBe(`${BASE}/${A}/tablas`)
+  it('con sólo el origen, su Fórmula', () => {
+    expect(destinoDeLaUrlVieja({ origen: A })).toBe(`${ORIGEN}/formula`)
   })
 
-  it('con un origen ajeno, sin los parámetros de ese origen', () => {
-    expect(destino(`seccion=tablas&origen=${AJENO}&tabla=t1`)).toBe(`${BASE}/${A}/tablas`)
-    expect(destino(`seccion=formula&origen=${AJENO}&panel=revertir-formula&version=v1`)).toBe(
-      `${BASE}/${A}/formula`,
+  it('lo general va a Catálogos, con sus paneles', () => {
+    expect(destinoDeLaUrlVieja({ seccion: 'niveles', panel: 'nuevo-nivel' })).toBe(
+      '/configuracion/catalogos/niveles?panel=nuevo-nivel',
     )
-    // En una parte general el origen no cuenta.
-    expect(destino(`seccion=niveles&origen=${AJENO}&panel=nuevo-nivel`)).toBe(
-      `${BASE}/general/niveles?panel=nuevo-nivel`,
+    expect(destinoDeLaUrlVieja({ seccion: 'tonos', panel: 'editar-tono', tono: 'azul' })).toBe(
+      '/configuracion/catalogos/colores?panel=editar-tono&tono=azul',
+    )
+    expect(destinoDeLaUrlVieja({ seccion: 'colores' })).toBe('/configuracion/catalogos/colores')
+    expect(destinoDeLaUrlVieja({ seccion: 'ajustes', origen: A })).toBe(
+      '/configuracion/catalogos/vigencia',
     )
   })
 
-  it('conserva los paneles y los demás parámetros, en su orden y con su primer valor', () => {
-    expect(destino(`seccion=formula&origen=${B}&panel=publicar-formula`)).toBe(
-      `${BASE}/${B}/formula?panel=publicar-formula`,
-    )
-    expect(destino(`seccion=formula&panel=revertir-formula&origen=${A}&version=v1`)).toBe(
-      `${BASE}/${A}/formula?panel=revertir-formula&version=v1`,
-    )
-    expect(destino(`seccion=tablas&origen=${B}&tabla=t1&panel=publicar-tabla`)).toBe(
-      `${BASE}/${B}/tablas?tabla=t1&panel=publicar-tabla`,
-    )
-    expect(destino('seccion=tonos&panel=editar-tono&tono=azul')).toBe(
-      `${BASE}/general/colores?panel=editar-tono&tono=azul`,
-    )
-    expect(destino('seccion=niveles&panel=renombrar-nivel&nivel=n1&nivel=n2')).toBe(
-      `${BASE}/general/niveles?panel=renombrar-nivel&nivel=n1`,
-    )
-    expect(destino(`seccion=diseno&origen=${A}&vista=412`)).toBe(`${BASE}/${A}/hoja?vista=412`)
-  })
-})
-
-describe('destinoDeLaUrlVieja, los casos no felices', () => {
-  it('sin seccion, o con una desconocida, la primera de antes que abre, con lo demás', () => {
-    expect(destino('panel=nuevo-nivel')).toBe(`${BASE}/general/niveles?panel=nuevo-nivel`)
-    expect(destino(`origen=${B}`, configura)).toBe(`${BASE}/${B}/formula`)
-    expect(destino('seccion=otra', configura)).toBe(`${BASE}/${A}/formula`)
-    expect(destino('seccion=<script>&panel=x')).toBe(`${BASE}/general/niveles?panel=x`)
-  })
-
-  it('una que no abre lleva a la primera que sí, sin parámetros', () => {
-    expect(destino('seccion=niveles&panel=nuevo-nivel', configura)).toBe(`${BASE}/${A}/formula`)
-    expect(destino(`seccion=formula&origen=${A}&panel=publicar-formula`, soloRoles)).toBe(
-      `${BASE}/general/niveles`,
-    )
-  })
-
-  it('quien configura sin orígenes va a Colores', () => {
-    const sinOrigenes = { origenes: [], configura: true, veNiveles: false }
-    expect(destino('seccion=formula', sinOrigenes)).toBe(`${BASE}/general/colores`)
-  })
-
-  it('sin nada que abrir, null', () => {
+  it('conserva los demás parámetros de un origen', () => {
     expect(
-      destino('seccion=formula', { origenes: [], configura: false, veNiveles: false }),
-    ).toBeNull()
+      destinoDeLaUrlVieja({ seccion: 'tablas', origen: A, tabla: 't1', panel: 'publicar-tabla' }),
+    ).toBe(`${ORIGEN}/tablas?tabla=t1&panel=publicar-tabla`)
+    expect(destinoDeLaUrlVieja({ seccion: 'diseno', origen: A, vista: '412' })).toBe(
+      `${ORIGEN}/formula/hoja?vista=412`,
+    )
   })
 
-  it('nunca devuelve seccion ni origen en el destino', () => {
+  it('una pestaña de un origen sin origen, o con uno que no es un id, va a la lista sin parámetros', () => {
+    expect(destinoDeLaUrlVieja({ seccion: 'formula', panel: 'publicar-formula' })).toBe(
+      '/configuracion/origenes',
+    )
+    expect(destinoDeLaUrlVieja({ seccion: 'tablas', origen: 'general' })).toBe(
+      '/configuracion/origenes',
+    )
+    expect(destinoDeLaUrlVieja({ seccion: '<script>', origen: A })).toBe('/configuracion/origenes')
+  })
+
+  it('nunca devuelve seccion ni origen', () => {
     const casos = [
-      'seccion=formula&seccion=tarjeta',
-      `seccion=tarjeta&origen=${A}&origen=${B}`,
-      'seccion=ajustes&origen=x',
-      'seccion=niveles&seccion=niveles',
-      'origen=x&otra=1',
+      { seccion: ['formula', 'tarjeta'], origen: A },
+      { seccion: 'tarjeta', origen: [A, A] },
+      { seccion: 'niveles', origen: 'x' },
+      { origen: 'x', otra: '1' },
     ]
-    for (const acceso of [todo, configura, soloRoles]) {
-      for (const caso of casos) {
-        const ruta = destino(caso, acceso) ?? ''
-        expect(ruta, caso).not.toMatch(/[?&](seccion|origen)=/)
-      }
+    for (const caso of casos) {
+      expect(destinoDeLaUrlVieja(caso)).not.toMatch(/[?&](seccion|origen)=/)
     }
   })
 })

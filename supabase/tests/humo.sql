@@ -475,6 +475,21 @@ do $$ declare o uuid; f2 uuid; d text; begin
 end $$;
 reset role;
 
+-- @test fórmulas del origen: «formulas_del_origen: leer» deja ver las de los orígenes donde se configura (la dueña, la activa de cada uno) y al asesor, ninguna
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', false);
+set role authenticated;
+do $$ begin
+  if not exists (select 1 from public.formulas_del_origen d join public.origenes o on o.id = d.origen_id where o.clave = 'subasta_usa' and d.activa) then
+    raise exception 'la dueña no ve la fórmula activa de subasta_usa'; end if;
+end $$;
+reset role;
+select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000002', false);
+set role authenticated;
+do $$ begin
+  if exists (select 1 from public.formulas_del_origen) then raise exception 'el asesor, sin cotizaciones.configurar, ve fórmulas del origen'; end if;
+end $$;
+reset role;
+
 -- @test acceso: ajustes sin sesión con las columnas contadas; mi_sesion dice el estado de la cuenta
 select set_config('request.jwt.claim.sub', '', false);
 select set_config('request.jwt.claim.role', 'anon', false);

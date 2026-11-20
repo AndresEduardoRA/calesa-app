@@ -3,7 +3,7 @@
 import { PestanasDelResumen } from '@/shared/ui/lista'
 import { useUltimo } from '@/shared/ui/use-ultimo'
 import {
-  PESTANAS_DEL_RESUMEN_DE_COTIZACION,
+  pestanasDelResumenDeCotizacion,
   type PestanaDelResumenDeCotizacion,
 } from '../../../../entities/pestanas-del-resumen'
 import type { PropsDeLasPestanasDelResumen } from '../../../hoja/components/huecos-del-resumen'
@@ -15,7 +15,8 @@ import {
   TodoDelResumenDiferido,
 } from './diferidos'
 
-// Las pestañas del resumen de una cotización (`?pestana=`): «Todo» (adjuntos, revisiones y comentarios en una línea de tiempo) y cada uno por separado. Sólo se dibuja la elegida y cada
+// Las pestañas del resumen de una cotización (`?pestana=`): «Todo» (adjuntos, revisiones y comentarios en una línea de tiempo), cada uno por separado y, con vehículo, «De este vehículo» (el
+// bloque que arma el resumen). Ocupan todo el ancho en partes iguales y llenan el alto del resumen: la cabecera queda fija y cada pestaña se desplaza por su cuenta. Sólo se dibuja la elegida y cada
 // una lee lo suyo al elegirse (`diferido()`), por cursor y con tope. Mientras el resumen se cierra (`?pestana=` ya se borró) se queda en la que estaba, sin leer otra.
 export function PestanasDeLaCotizacion({
   cotizacion,
@@ -23,16 +24,21 @@ export function PestanasDeLaCotizacion({
   puedeModerar,
   abierto,
   Comprobantes,
+  deEsteVehiculo,
 }: PropsDeLasPestanasDelResumen) {
-  const url = usePestanaDelResumen()
+  const conVehiculo = deEsteVehiculo !== undefined && deEsteVehiculo !== null
+  const url = usePestanaDelResumen({ conVehiculo })
   const mostrada =
     useUltimo<PestanaDelResumenDeCotizacion>(abierto ? url.pestana : null) ?? url.pestana
   return (
     <PestanasDelResumen
       etiqueta="Secciones de la cotización"
-      pestanas={PESTANAS_DEL_RESUMEN_DE_COTIZACION}
+      pestanas={pestanasDelResumenDeCotizacion({ conVehiculo })}
       activa={mostrada}
       alElegir={url.elegir}
+      alto="lleno"
+      reparto="igual"
+      panelDesplazable
     >
       {/* `key`: con otra cotización abierta, cada pestaña lee la suya. */}
       {mostrada === 'adjuntos' ? (
@@ -46,6 +52,8 @@ export function PestanasDeLaCotizacion({
         />
       ) : mostrada === 'revisiones' ? (
         <RevisionesDelResumenDiferido key={cotizacion.id} cotizacionId={cotizacion.id} />
+      ) : mostrada === 'vehiculo' ? (
+        <div key={cotizacion.id}>{deEsteVehiculo}</div>
       ) : mostrada === 'comentarios' ? (
         <ComentariosDelResumenDiferido
           key={cotizacion.id}

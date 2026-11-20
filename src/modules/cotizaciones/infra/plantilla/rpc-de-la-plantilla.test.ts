@@ -23,6 +23,7 @@ const ORIGEN = '11111111-1111-4111-8111-111111111111'
 const PUBLICADA = '22222222-2222-4222-8222-222222222222'
 const HORA = '2026-11-07T15:00:00.123456+00:00'
 const DEFINICION = { grupos: [], logo: true }
+const FDO = '44444444-4444-4444-8444-444444444444'
 const INESPERADO = {
   ok: false,
   error: {
@@ -36,6 +37,7 @@ describe('plantillaSobre › guardar', () => {
     const { cliente, llamadas } = clienteFalso({ data: HORA, error: null })
     const hecho = await plantillaSobre(cliente).guardar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       esperada: null,
       definicion: DEFINICION,
     })
@@ -52,6 +54,7 @@ describe('plantillaSobre › guardar', () => {
     const { cliente, llamadas } = clienteFalso({ data: HORA, error: null })
     await plantillaSobre(cliente).guardar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       esperada: HORA,
       definicion: DEFINICION,
     })
@@ -63,6 +66,7 @@ describe('plantillaSobre › guardar', () => {
       const { cliente } = clienteFalso({ data, error: null })
       const hecho = await plantillaSobre(cliente).guardar({
         origenId: ORIGEN,
+        formulaDelOrigenId: null,
         esperada: null,
         definicion: DEFINICION,
       })
@@ -82,6 +86,7 @@ describe('plantillaSobre › guardar', () => {
     })
     const hecho = await plantillaSobre(cliente).guardar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       esperada: HORA,
       definicion: DEFINICION,
     })
@@ -97,6 +102,7 @@ describe('plantillaSobre › guardar', () => {
     const { cliente } = clienteFalso({ data: null, error: { code: 'PT409', message: mensaje } })
     const hecho = await plantillaSobre(cliente).guardar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       esperada: HORA,
       definicion: DEFINICION,
     })
@@ -109,6 +115,7 @@ describe('plantillaSobre › publicar', () => {
     const { cliente, llamadas } = clienteFalso({ data: PUBLICADA, error: null })
     const hecho = await plantillaSobre(cliente).publicar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       esperada: HORA,
       nota: 'Nueva portada',
     })
@@ -125,6 +132,7 @@ describe('plantillaSobre › publicar', () => {
     const { cliente } = clienteFalso({ data: 'no-es-guid', error: null })
     const hecho = await plantillaSobre(cliente).publicar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       esperada: HORA,
       nota: 'x',
     })
@@ -138,6 +146,7 @@ describe('plantillaSobre › publicar', () => {
     })
     const hecho = await plantillaSobre(cliente).publicar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       esperada: HORA,
       nota: '',
     })
@@ -148,7 +157,11 @@ describe('plantillaSobre › publicar', () => {
 describe('plantillaSobre › descartar', () => {
   it('manda el origen y la esperada; sin error, entró', async () => {
     const { cliente, llamadas } = clienteFalso({ data: null, error: null })
-    const hecho = await plantillaSobre(cliente).descartar({ origenId: ORIGEN, esperada: HORA })
+    const hecho = await plantillaSobre(cliente).descartar({
+      origenId: ORIGEN,
+      formulaDelOrigenId: null,
+      esperada: HORA,
+    })
     expect(hecho).toEqual({ ok: true, data: null })
     expect(llamadas).toEqual([
       ['plantilla_descartar_borrador', { p_origen: ORIGEN, p_actualizado_en_esperado: HORA }],
@@ -158,7 +171,41 @@ describe('plantillaSobre › descartar', () => {
   it('un PT409 («el borrador ya no está») es un conflicto', async () => {
     const mensaje = 'El borrador ya no está: la versión 3 se publicó hace un momento.'
     const { cliente } = clienteFalso({ data: null, error: { code: 'PT409', message: mensaje } })
-    const hecho = await plantillaSobre(cliente).descartar({ origenId: ORIGEN, esperada: HORA })
+    const hecho = await plantillaSobre(cliente).descartar({
+      origenId: ORIGEN,
+      formulaDelOrigenId: null,
+      esperada: HORA,
+    })
     expect(hecho).toEqual({ ok: false, error: { codigo: 'conflicto', mensaje } })
+  })
+})
+
+describe('plantillaSobre › la fórmula del origen', () => {
+  it('guardar, publicar y descartar la mandan si viene: escriben en la que la pestaña leyó', async () => {
+    const { cliente, llamadas } = clienteFalso({ data: HORA, error: null })
+    const repositorio = plantillaSobre(cliente)
+    await repositorio.guardar({
+      origenId: ORIGEN,
+      formulaDelOrigenId: FDO,
+      esperada: HORA,
+      definicion: DEFINICION,
+    })
+    await repositorio.publicar({
+      origenId: ORIGEN,
+      formulaDelOrigenId: FDO,
+      esperada: HORA,
+      nota: 'Va',
+    })
+    await repositorio.descartar({ origenId: ORIGEN, formulaDelOrigenId: FDO, esperada: HORA })
+    expect(
+      llamadas.map(([rpc, args]) => [
+        rpc,
+        (args as Record<string, unknown>)['p_formula_del_origen'],
+      ]),
+    ).toEqual([
+      ['plantilla_guardar_borrador', FDO],
+      ['plantilla_publicar', FDO],
+      ['plantilla_descartar_borrador', FDO],
+    ])
   })
 })

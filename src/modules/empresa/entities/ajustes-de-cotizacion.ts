@@ -1,5 +1,5 @@
 // Los ajustes de cotización (docs/GLOSARIO.md): la vigencia (D1), la columna de `ajustes_empresa` que vale para todas las cotizaciones. Los cambia `empresa_guardar_ajustes_de_cotizacion()` con la misma
-// versión de la fila que el formulario de Empresa; la pantalla, Configuración › Cotización › Ajustes (4.20-4b).
+// versión de la fila que el formulario de Empresa; la pantalla, Configuración › Catálogos › Vigencia (4.20-4b).
 import { origenesCon, type Permisos } from '@/shared/lib/permisos'
 import type { Tables } from '@/shared/types/database.types'
 

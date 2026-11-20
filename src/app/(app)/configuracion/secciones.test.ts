@@ -3,9 +3,8 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { Permisos } from '@/shared/lib/permisos'
 import { NAVEGACION } from '../_shell/navegacion'
-import { SECCION_DE_COTIZACION } from './cotizacion/seccion'
+import { SECCION_DE_CATALOGOS } from './catalogos/seccion'
 import { PERMISOS_DE_EMPRESA, SECCION_DE_EMPRESA } from './empresa/seccion'
-import { SECCION_DE_FLUJOS } from './flujos/seccion'
 import { SECCION_DE_LEADS } from './leads/seccion'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
 import {
@@ -27,22 +26,20 @@ describe('secciones de configuración', () => {
   const porClave = (clave: string) =>
     SECCIONES.find((seccion: SeccionDeConfiguracion) => seccion.clave === clave)
 
-  it('son las de hoy, ordenadas por grupo, y Cotización viene de su carpeta', () => {
+  it('son las de hoy, ordenadas por grupo: Ventas = Leads, Orígenes; Operación = Catálogos, Repuestos', () => {
     expect(SECCIONES.map((seccion) => seccion.clave)).toEqual([
       'empresa',
       'equipo',
       'roles',
-      'origenes',
       'leads',
-      'cotizacion',
-      'flujos',
-      'logistica',
+      'origenes',
+      'catalogos',
       'repuestos',
       'web',
       'cola-web',
     ])
-    expect(porClave('cotizacion')).toBe(SECCION_DE_COTIZACION)
-    expect(porClave('flujos')).toBe(SECCION_DE_FLUJOS)
+    expect(porClave('catalogos')).toBe(SECCION_DE_CATALOGOS)
+    expect(porClave('catalogos')?.grupo).toBe('operacion')
     expect(porClave('repuestos')).toBe(SECCION_DE_REPUESTOS)
     expect(porClave('leads')).toBe(SECCION_DE_LEADS)
   })
@@ -74,9 +71,13 @@ describe('secciones de configuración', () => {
     expect(porClave('empresa')?.permisos).toBe(PERMISOS_DE_EMPRESA)
   })
 
+  // Una ruta existe si tiene su `page.tsx` o, la raíz que sólo redirige, su `route.ts`.
+  const existe = (ruta: string) =>
+    existsSync(path.join(APP, ruta, 'page.tsx')) || existsSync(path.join(APP, ruta, 'route.ts'))
+
   it('cada sección y cada sub-sección llevan a una pantalla que existe', () => {
     for (const seccion of SECCIONES as readonly SeccionDeConfiguracion[]) {
-      expect(existsSync(path.join(APP, seccion.ruta, 'page.tsx')), seccion.ruta).toBe(true)
+      expect(existe(seccion.ruta), seccion.ruta).toBe(true)
       for (const sub of seccion.subsecciones) {
         expect(sub.ruta === seccion.ruta || sub.ruta.startsWith(`${seccion.ruta}/`), sub.ruta).toBe(
           true,
@@ -107,13 +108,12 @@ describe('secciones de configuración', () => {
 })
 
 describe('palabras e íconos de configuración', () => {
-  it('cada sección declara sus palabras, y cada sub-sección fija también (las de logística salen de sus catálogos)', () => {
+  it('cada sección declara sus palabras, y cada sub-sección también (salvo los catálogos de logística, que salen del módulo)', () => {
     for (const seccion of SECCIONES as readonly SeccionDeConfiguracion[]) {
       expect(seccion.palabras?.length, seccion.clave).toBeGreaterThan(0)
-      if (seccion.clave === 'logistica') {
-        continue
-      }
-      for (const sub of seccion.subsecciones) {
+      for (const sub of seccion.subsecciones.filter(
+        (una) => una.grupo !== 'Logística' || una.palabras,
+      )) {
         expect(sub.palabras?.length, sub.ruta).toBeGreaterThan(0)
       }
     }
@@ -126,16 +126,22 @@ describe('palabras e íconos de configuración', () => {
   })
 })
 
-describe('sub-secciones plantilla de configuración', () => {
-  it('Orígenes trae sus tres partes como sub-secciones plantilla', () => {
+describe('Orígenes en el registro', () => {
+  it('no trae sub-secciones fijas (el menú suma una por origen) y se busca por lo que hay en cada origen', () => {
     const origenes = SECCIONES.find(
       (seccion: SeccionDeConfiguracion) => seccion.clave === 'origenes',
     )
-    expect(origenes?.subsecciones.map((sub) => sub.ruta)).toEqual([
-      '/configuracion/origenes/[id]/datos',
-      '/configuracion/origenes/[id]/campos',
-      '/configuracion/origenes/[id]/categorias',
-    ])
+    expect(origenes?.subsecciones).toEqual([])
+    expect(origenes?.palabras).toEqual(
+      expect.arrayContaining(['fórmula', 'flujo', 'fases', 'tablas', 'hoja', 'tarjeta']),
+    )
+  })
+
+  it('ninguna sección es una de las que se mudaron', () => {
+    const claves = SECCIONES.map((seccion: SeccionDeConfiguracion) => seccion.clave)
+    for (const vieja of ['cotizacion', 'flujos', 'logistica']) {
+      expect(claves).not.toContain(vieja)
+    }
   })
 })
 
@@ -252,7 +258,7 @@ describe('sub-secciones de configuración', () => {
 describe('sub-secciones agrupadas de configuración', () => {
   const repuestos: Permisos = [{ clave: 'repuestos.configurar', origenId: null, alcance: 'todos' }]
 
-  it('el grupo y el respaldo viajan sólo si la sub-sección los declara', () => {
+  it('el grupo viaja sólo si la sub-sección lo declara', () => {
     const conGrupo: SeccionDeConfiguracion = {
       ...SECCION_DE_REPUESTOS,
       subsecciones: [
@@ -260,10 +266,9 @@ describe('sub-secciones agrupadas de configuración', () => {
           clave: 'x',
           titulo: 'X',
           descripcion: 'La X.',
-          ruta: '/configuracion/repuestos/[id]/x',
+          ruta: '/configuracion/repuestos/x',
           permisos: ['repuestos.configurar'],
           grupo: 'Por origen',
-          respaldo: '/configuracion/repuestos?seccion=x',
         },
       ],
     }
@@ -278,9 +283,8 @@ describe('sub-secciones agrupadas de configuración', () => {
       {
         clave: 'x',
         titulo: 'X',
-        ruta: '/configuracion/repuestos/[id]/x',
+        ruta: '/configuracion/repuestos/x',
         grupo: 'Por origen',
-        respaldo: '/configuracion/repuestos?seccion=x',
       },
     ])
   })

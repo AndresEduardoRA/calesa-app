@@ -70,7 +70,7 @@ export function MonedasYTiposCambio(props: Props) {
     )
 
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       {puedeGestionar ? null : <Aviso>{MOTIVO_SIN_PERMISO_TIPOS_CAMBIO}</Aviso>}
       <TarjetasDeAjustes etiqueta="Moneda base">
         <TarjetaDeMonedaBase

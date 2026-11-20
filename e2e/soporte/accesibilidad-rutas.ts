@@ -57,11 +57,7 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/logistica/vehiculo/[id]': (t) => ({ url: `/logistica/vehiculo/${t.vehiculo}` }),
   '/logistica/bandeja/[grupo]': () => ({ url: '/logistica/bandeja/demorados' }),
   '/logistica/fase/[fase]': (t) => ({ url: `/logistica/fase/sin_fase?origen=${t.origen}` }),
-  // Sin parte sólo redirige a «Datos» (en el navegador, tras el esqueleto): se barren sus tres partes.
-  '/configuracion/origenes/[id]': () => ({
-    pendiente: 'toda la página',
-    motivo: 'sólo redirige a /configuracion/origenes/<id>/datos, que se barre como su propia ruta',
-  }),
+  // La página de un origen sin parte es un `route.ts` (308 a la primera pestaña que se abre): no es una página y no se barre. Se barren sus pestañas.
   '/configuracion/origenes/[id]/datos': (t) => ({
     url: `/configuracion/origenes/${t.origen}/datos`,
   }),
@@ -71,17 +67,20 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/origenes/[id]/categorias': (t) => ({
     url: `/configuracion/origenes/${t.origen}/categorias`,
   }),
-  '/configuracion/cotizacion/[origen]/formula': (t) => ({
-    url: `/configuracion/cotizacion/${t.origen}/formula`,
+  '/configuracion/origenes/[id]/flujo': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/flujo`,
   }),
-  '/configuracion/cotizacion/[origen]/hoja': (t) => ({
-    url: `/configuracion/cotizacion/${t.origen}/hoja`,
+  '/configuracion/origenes/[id]/formula': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/formula`,
   }),
-  '/configuracion/cotizacion/[origen]/tarjeta': (t) => ({
-    url: `/configuracion/cotizacion/${t.origen}/tarjeta`,
+  '/configuracion/origenes/[id]/formula/hoja': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/formula/hoja`,
   }),
-  '/configuracion/cotizacion/[origen]/tablas': (t) => ({
-    url: `/configuracion/cotizacion/${t.origen}/tablas`,
+  '/configuracion/origenes/[id]/formula/tarjeta': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/formula/tarjeta`,
+  }),
+  '/configuracion/origenes/[id]/tablas': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/tablas`,
   }),
   '/repuestos/[id]': (t) => ({ url: `/repuestos/${t.proyectoDeRepuestos}` }),
   '/cotizaciones/[id]': (t) => ({ url: `/cotizaciones/${t.cotizacion}` }),
@@ -91,13 +90,12 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/web/guias/[id]': (t) => ({ url: `/configuracion/web/guias/${t.guia}` }),
 }
 
-// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino. Logística, Repuestos y
-// Sitio web de Configuración no dibujan nada sin sub-ruta: abren la primera que la dueña puede (`/puertos`, `/catalogos`, `/ajustes`), que el
-// barrido recorre con su propia entrada.
+// Sin sesión de recuperación, elegir la contraseña manda a pedir otro enlace: se barre lo que dibuja ese destino. Repuestos y Sitio web de
+// Configuración no dibujan nada sin sub-ruta: abren la primera que la dueña puede (`/flujo`, `/ajustes`), que el barrido recorre con su propia
+// entrada. Las raíces que redirigen con un `route.ts` (Catálogos, un origen, las URL viejas) no son páginas y no se barren.
 export const REDIRECCIONES: Record<string, string> = {
   '/auth/nueva-contrasena': '/recuperar',
-  '/configuracion/logistica': '/configuracion/logistica/puertos',
-  '/configuracion/repuestos': '/configuracion/repuestos/catalogos',
+  '/configuracion/repuestos': '/configuracion/repuestos/flujo',
   '/configuracion/web': '/configuracion/web/ajustes',
 }
 

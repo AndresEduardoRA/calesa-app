@@ -314,3 +314,22 @@ test('lo que aporta la ficha entera con un vehículo vinculado', async ({ page }
   expect(datos - base).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_EN_KB * 1024)
   expect(vehiculos - base).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_EN_KB * 1024)
 })
+
+test('a 1920 px el grupo con vehículos llena el ancho del bloque, sin hueco a la derecha', async ({
+  page,
+}, info) => {
+  const lead = await leadDe(t.ada, `Ancho ${p}`)
+  const autoId = await vehiculoDe(corea, `Ancho del bloque ${p}`, t.ada)
+  await vincular(autoId, lead.id)
+  await page.setViewportSize({ width: 1920, height: 1080 })
+  await entrar(page, t.ada)
+  await irAVehiculos(page, lead.id)
+  await capturar(page, info, 'vehiculos-a-1920')
+  const bloque = await relacionadosDelLead(page).boundingBox()
+  const grupo = await vinculados(page).boundingBox()
+  const fila = await vinculados(page).getByRole('listitem').first().boundingBox()
+  expect(bloque && grupo && fila).toBeTruthy()
+  // Un solo grupo: ocupa todo el ancho (no una columna de 16 rem con el resto en blanco), y su fila también.
+  expect(Math.abs((grupo?.width ?? 0) - (bloque?.width ?? 1))).toBeLessThanOrEqual(2)
+  expect(Math.abs((fila?.width ?? 0) - (bloque?.width ?? 1))).toBeLessThanOrEqual(2)
+})

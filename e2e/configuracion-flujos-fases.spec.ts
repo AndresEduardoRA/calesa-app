@@ -13,7 +13,7 @@ import { PREFIJO_CLAVE_E2E, borrarOrigenes, crearOrigenDePrueba } from './soport
 import { sql, literal } from './soporte/sql'
 import { borrarVehiculosDe } from './soporte/vehiculos'
 
-// Configuración › Flujos › Fases (5.04, `docs/UX.md` › «Flujos: fases (estados propios)»): sobre un origen que crea el spec, la dueña arma fases con
+// El flujo de un origen › Fases (5.04, `docs/UX.md` › «Flujos: fases (estados propios)»): sobre un origen que crea el spec, la dueña arma fases con
 // «Nueva fase», sube una con el teclado, elimina una sin historial, edita los datos en el inspector y jubila y reactiva una con historial. Tres pruebas del
 // camino feliz, en serie (las dos últimas viven de las fases de la primera): las reglas de cada error, el conflicto y el permiso ya los prueba la base
 // (`supabase/tests/areas/flujos/fases*.sql`).
@@ -82,7 +82,7 @@ async function cerrarInspector(page: Page) {
 
 test('la dueña crea fases, sube una y elimina otra', async ({ page }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/flujos?origen=${origenId}&vista=lista`)
+  await page.goto(`/configuracion/origenes/${origenId}/flujo?vista=lista`)
   await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeVisible()
   await expect(nombresEnPantalla(page)).toHaveCount(0)
 
@@ -132,7 +132,7 @@ test('la dueña crea fases, sube una y elimina otra', async ({ page }) => {
 
 test('la dueña edita los datos de una fase en el inspector', async ({ page }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/flujos?origen=${origenId}&vista=lista`)
+  await page.goto(`/configuracion/origenes/${origenId}/flujo?vista=lista`)
   for (const nombre of ['E2E 5.04 Puerto', 'E2E 5.04 Aduana', 'E2E 5.04 Cierre']) {
     const modal = await crearFase(page, nombre, 'Intermedia')
     await expect(modal).toBeHidden()
@@ -219,7 +219,7 @@ test('la dueña jubila una fase con historial y la reactiva', async ({ page }) =
     where fl.origen_id = ${origen} and f.nombre = 'E2E 5.04 Aduana'
   `)
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/flujos?origen=${origenId}&vista=lista`)
+  await page.goto(`/configuracion/origenes/${origenId}/flujo?vista=lista`)
   const fila = page.getByRole('row').filter({ hasText: 'E2E 5.04 Aduana' })
   await expect(fila).not.toContainText('Jubilada')
 

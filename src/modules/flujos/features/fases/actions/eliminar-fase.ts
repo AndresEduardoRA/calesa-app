@@ -20,7 +20,8 @@ export const eliminarFase = actionClient
     const hecho = comoResultado(await repositorioDeFases.eliminar(parsedInput))
     if (hecho.ok) {
       // La pantalla relee la lista: ninguna RPC la devuelve. Vehículos lee las fases del origen.
-      revalidatePath(RUTAS.configuracionDeFlujos, 'layout')
+      revalidatePath(RUTAS.origenes, 'layout')
+      revalidatePath(RUTAS.configuracionDeRepuestos, 'layout')
       revalidatePath(RUTAS.vehiculos, 'layout')
     }
     return hecho

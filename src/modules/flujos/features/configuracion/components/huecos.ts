@@ -10,11 +10,11 @@ type DeUnaFase = { flujo: FlujoParaConfigurar; fase: FaseParaConfigurar }
 type DeUnaFaseConRoles = DeUnaFase & { roles: readonly RolLeido[] }
 
 // Los huecos de la pantalla de flujos (5.02): cada área de `flujos` llena el suyo en su paso, sin editar la pantalla. Son componentes **de cliente**
-// opcionales (D14): lo que cruza de `src/app` a la pantalla sólo es serializable si lo es; vacío = nada dibujado. Los junta `src/app/(app)/configuracion/flujos/huecos.ts`.
+// opcionales (D14): lo que cruza de `src/app` a la pantalla sólo es serializable si lo es; vacío = nada dibujado. Los junta `src/app/(app)/configuracion/_flujo/huecos.ts`.
 export type HuecosDelFlujo = {
-  // Envuelve la franja, el selector y el flujo: lee «Revisar» una vez y da las marcas de cada fase (`ContextoDeMarcasDelDiagrama`).
+  // Envuelve la franja y el flujo: lee «Revisar» una vez y da las marcas de cada fase (`ContextoDeMarcasDelDiagrama`).
   proveedorDeRevisar?: ComponentType<DelFlujoConHijos>
-  // Sobre el selector, la franja de avisos de «Revisar» (5.12).
+  // Sobre el flujo, la franja de avisos de «Revisar» (5.12).
   franjaDeRevisar?: ComponentType<DelFlujo>
   // Envuelve el flujo abierto: ordenar las fases arrastrando o con «Mover antes/después» (`ContextoDeOrdenDeFases`).
   ordenDeFases?: ComponentType<DelFlujoConHijos>

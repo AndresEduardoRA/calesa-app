@@ -44,7 +44,12 @@ const ENTIDADES: Readonly<Record<string, Entidad>> = {
   formulas: {
     icono: 'formula',
     enFrase: 'una fórmula',
-    configuracion: RUTAS.configuracionDeCotizacion,
+    configuracion: RUTAS.origenes,
+  },
+  formulas_del_origen: {
+    icono: 'formula',
+    enFrase: 'una fórmula del origen',
+    configuracion: RUTAS.origenes,
   },
   ajustes_empresa: {
     icono: 'configuracion',
@@ -70,17 +75,17 @@ const ENTIDADES: Readonly<Record<string, Entidad>> = {
   fases: {
     icono: 'configuracion',
     enFrase: 'una fase',
-    configuracion: RUTAS.configuracionDeFlujos,
+    configuracion: RUTAS.origenes,
   },
   fases_requisitos: {
     icono: 'configuracion',
     enFrase: 'un requisito',
-    configuracion: RUTAS.configuracionDeFlujos,
+    configuracion: RUTAS.origenes,
   },
   fases_transiciones: {
     icono: 'configuracion',
     enFrase: 'una transición',
-    configuracion: RUTAS.configuracionDeFlujos,
+    configuracion: RUTAS.origenes,
   },
   integraciones: {
     icono: 'configuracion',
@@ -106,7 +111,7 @@ const ENTIDADES: Readonly<Record<string, Entidad>> = {
   plantillas_tarjeta: {
     icono: 'configuracion',
     enFrase: 'una plantilla de tarjeta',
-    configuracion: RUTAS.configuracionDeCotizacion,
+    configuracion: RUTAS.origenes,
   },
   roles_permisos: { icono: 'configuracion', enFrase: 'una concesión', configuracion: RUTAS.roles },
   tipos_cambio: {

@@ -24,6 +24,7 @@ vi.mock('./diferidos', () => ({
 
 const HORA = '2026-11-07T15:00:00.123456+00:00'
 const ORIGEN = { id: 'o', nombre: 'Mini' }
+const FDO = '44444444-4444-4444-8444-444444444444'
 
 beforeEach(() => {
   avisarError.mockReset()
@@ -41,7 +42,14 @@ const panel = (cambios: Partial<PanelDeLaTarjeta>, cerrar = vi.fn()): PanelDeLaT
 
 describe('AccionesDeLaPlantilla', () => {
   it('no monta nada mientras ningún panel se abrió', () => {
-    render(<AccionesDeLaPlantilla panel={panel({})} origen={ORIGEN} esperada={HORA} />)
+    render(
+      <AccionesDeLaPlantilla
+        panel={panel({})}
+        origen={ORIGEN}
+        formulaDelOrigenId={FDO}
+        esperada={HORA}
+      />,
+    )
     expect(screen.queryByTestId('modal-publicar')).toBeNull()
   })
 
@@ -51,6 +59,7 @@ describe('AccionesDeLaPlantilla', () => {
       <AccionesDeLaPlantilla
         panel={panel({ publicando: true }, cerrar)}
         origen={ORIGEN}
+        formulaDelOrigenId={FDO}
         esperada={null}
       />,
     )
@@ -64,7 +73,12 @@ describe('AccionesDeLaPlantilla', () => {
 
   it('con borrador monta el modal abierto con la esperada', () => {
     render(
-      <AccionesDeLaPlantilla panel={panel({ publicando: true })} origen={ORIGEN} esperada={HORA} />,
+      <AccionesDeLaPlantilla
+        panel={panel({ publicando: true })}
+        origen={ORIGEN}
+        formulaDelOrigenId={FDO}
+        esperada={HORA}
+      />,
     )
     const modal = screen.getByTestId('modal-publicar')
     expect(modal.getAttribute('data-abierto')).toBe('true')
@@ -78,6 +92,7 @@ describe('AccionesDeLaPlantilla', () => {
       <AccionesDeLaPlantilla
         panel={panel({ descartando: true }, cerrar)}
         origen={ORIGEN}
+        formulaDelOrigenId={FDO}
         esperada={null}
       />,
     )
@@ -94,6 +109,7 @@ describe('AccionesDeLaPlantilla', () => {
       <AccionesDeLaPlantilla
         panel={panel({ descartando: true })}
         origen={ORIGEN}
+        formulaDelOrigenId={FDO}
         esperada={HORA}
       />,
     )
