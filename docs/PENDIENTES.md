@@ -97,6 +97,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Un `22023` de `_formula_rechazar` cuyo `hint` es un nodo llamado `valor` se pinta bajo el campo «Valor nuevo» del ⚙.
 - **[—]** Al descartar o publicar la fórmula, un error que no es PT409 ni falta de red muestra el mensaje de la base (guardar ya usa texto propio).
 - **[—]** Tras pasar a stock, el estado derivado de la cabecera del proyecto de repuestos (pendientes) sólo se actualiza al volver a entrar.
+- **[—]** Dos e2e de escritorio cayeron en la noche del 2026-11-19 sobre `c880e916`: `configuracion-cotizacion-tarjeta-excel.spec.ts:118` (ensanchar una columna arrastrando y mover una fila con el teclado) y `cotizaciones-tarjetas-y-grupos.spec.ts:184` (el clic en la portada no abre el resumen) — el issue `noche-roja` #395 lleva la cuenta; se arreglan si caen otra noche (`.claude/rules/e2e.md`).
 
 ## Deuda técnica
 
@@ -160,6 +161,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `fase_mover` con `orden` repetido previo y ancla compartida deja la movida detrás de la otra fase — desempatar si molesta.
 - **[—]** `logistica/entities/dinero/reparto.test.ts` («para cualquier monto…», ~2700 casos) pasa de los 5 s de Vitest con la máquina cargada (`pnpm test` junto a `db:probar`) — menos casos o un `timeout` propio.
 - **[—]** `scripts/demo/sembrar.mjs` no siembra proyectos de repuestos, eventos ni tareas de la agenda, ni vehículos fuera de la primera fase del flujo: la demo muestra esas pantallas vacías.
+- **[—]** El log del orquestador, el aviso de ntfy y la sección «A arreglar» del resumen de la tanda dicen «El CI del PR #n cayó. Jobs en rojo:» sin nombrar ningún job: `a_arreglar` guarda sólo la primera línea del motivo — que esa línea nombre los jobs caídos (`motivo_ci` en `scripts/orquestador/orquestador.sh`).
 - **[—]** `bloquear-peligrosos.sh` lee el texto del comando: un agregar que no aparece en él (dentro de `bash guion.sh`, armado con `printf`/`base64`, un `.npmrc` o un `package.json` escritos con Write) no se mira — una guarda de CI que exija que toda dependencia nueva de `package.json` esté en `scripts/orquestador/dependencias-aprobadas.txt` y que el PR que suma a la lista lleve «Dependencias nuevas».
 - **[—]** `e2e/cotizaciones-listado.spec.ts` E6 y E8 fallan a veces en el CI y pasan en local: la tecla N abre `panel=nuevo-lead` en vez de la hoja, y «Ver todas» pierde `clase=preventa` — esperar la hidratación o el `href` ya filtrado antes de actuar.
 

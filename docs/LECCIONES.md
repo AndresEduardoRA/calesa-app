@@ -346,6 +346,12 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Un repo nuevo no declara `provee` ni `consume` antes del paso que publica o fija el contrato: sin `contratos/<id>@<n>.json` (o sin la copia fijada) los jobs `contrato` y `contrato-uso` caen desde el primer PR.
 - Protege main de un repo nuevo antes de encender su orquestador (`publicar-proyecto.mjs proteger`, tras el primer CI verde): sin protección, el auto-merge integra al instante.
 - Un repo recién creado vive en `z_<proyecto>/<rol>` y todavía no tiene remoto: el repo propio se busca también por su `rol`, o con un manifiesto de varios repos el orquestador no sabe quién es.
+- Una sesión de `claude -p` con la ventana de 1M casi no compacta: cada turno paga todo el contexto (500k–900k en una tarea larga), y
+  eso es la mayor parte de su costo. El tope de compactación va explícito al lanzarla (`--autocompact <tokens>`). (kit)
+- Un e2e que la rama no toca y que también cae en `main` no se arregla ni se rodea en la rama: va en su tarea urgente, y la rama espera
+  a que se integre, se pone al día y vuelve a correr el CI. (kit)
+- Lint, typecheck y la suite entera sobre el mismo árbol no verifican nada nuevo: corren una vez, al final y en paralelo; entre commits
+  alcanzan los hooks (lefthook y `Stop`) y las pruebas de lo tocado. (kit)
 
 ## Por módulo
 
