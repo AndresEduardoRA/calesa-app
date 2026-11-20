@@ -1,4 +1,4 @@
-// La fórmula de trabajo de un origen (docs/GLOSARIO.md): la que leen y escriben las pestañas de Configuración › Cotización. La activa o, si no hay, la más nueva
+// La fórmula de trabajo de un origen (docs/GLOSARIO.md): la que leen y escriben las sub-pestañas Fórmula, Hoja y Tarjeta de la página del origen. La activa o, si no hay, la más nueva
 // sin archivar: espejo de `_fdo_de_trabajo()`, que es la que usan las RPC cuando no reciben `p_formula_del_origen`. Sobre el cliente que recibe (las lecturas del
 // servidor pasan el de la sesión): la policy `formulas_del_origen: leer` deja ver sólo los orígenes donde tiene `cotizaciones.configurar`. Nula si el origen
 // todavía no tiene ninguna: la crea el primer guardado.
