@@ -413,7 +413,7 @@ la pide.
   nuevo hace 2 min.» o «El borrador que abriste ya no está: se publicó o se descartó.» (publicar mira antes la publicada). Sin hora toman el
   que haya («No hay borrador»). La app manda siempre las esperadas; la base acepta la nula (excepción aprobada a
   `.claude/rules/migraciones.md`).
-- **Dónde se ven:** pestaña «Fórmula» de Configuración › Cotización: publicada, borrador (atrasado si su versión de origen ya no es la
+- **Dónde se ven:** pestaña «Fórmula» de la página del origen: publicada, borrador (atrasado si su versión de origen ya no es la
   publicada) y versiones por cursor, sin lo oculto (`docs/UX.md` › «Cotización: fórmula (estados propios)»); ahí se publica con nota, se
   descarta (`<Confirmar>`) y se revierte.
 - **Carreras** (`scripts/carreras/tonos.mjs`, `formula-mixtas.mjs`): dos publicar, dos ⚙, el ⚙ contra publicar el borrador, revertir contra
@@ -471,7 +471,7 @@ sólo lee `cotizaciones` y escribe `cotizaciones_aprobadas` tras el candado de a
   «todos», «La lectura de la tarjeta (4.18-1)») y los montos con `cotizacion_leer`, y `validar_plantilla` rechaza un nodo que no sea del
   nivel «todos». El primer resultado de la aprobada (`totales.usd`) viaja a todo el que ve la cotización: es lo que la tarjeta del total dibuja a «todos». Un inventario (`cotizaciones-visibilidad.sql`) registra toda función que pueda devolver esas columnas o `formulas.*`.
 - **Límite:** un nodo restringido, único oculto de una suma visible, se deduce restando; el editor del diseño lo avisa.
-- **Pantalla:** `/configuracion/cotizacion/general/niveles` (`docs/UX.md`). `niveles_con_uso()` devuelve `{tope, niveles}` con
+- **Pantalla:** `/configuracion/catalogos/niveles` (`docs/UX.md`). `niveles_con_uso()` devuelve `{tope, niveles}` con
   banderas `se_renombra`, `se_retira`, `se_elimina` y `motivo_de_uso`: la UI no razona por nombre ni clave. En TS los permisos de un
   nivel se reconocen por su forma (`esClaveDeNivel()`), no están en `CLAVES_PERMISO`.
 
@@ -958,7 +958,7 @@ pierde los microsegundos) y pasan en serie por un candado por origen (`pg_adviso
 
 ### El editor de la plantilla
 
-- **La pestaña «Tarjeta»** (`/configuracion/cotizacion/<origen>/tarjeta`, `cotizaciones.configurar`, a todo el ancho) edita el **borrador** como un
+- **La pestaña «Tarjeta»** (`/configuracion/origenes/<id>/formula/tarjeta`, `cotizaciones.configurar`, a todo el ancho) edita el **borrador** como un
   Excel y escribe **sólo la forma 2**. El servidor arma `propsDelEditor()`: la cuadrícula de la que nace (`cuadriculaParaEditar()`: el borrador; si no se
   lee, la copia de la publicada; si no, la de por omisión), su procedencia, sus avisos y el contexto reducido. Una forma 2 se usa tal cual; una forma 1
   pasa por `alinearConLaFormula()` y `convertirPlantilla()` con «Se convirtió a cuadrícula: revisa y guarda.» (no se guarda sola); sin plantilla, la

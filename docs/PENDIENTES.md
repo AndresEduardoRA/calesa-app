@@ -141,6 +141,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Limpieza y código
 
+- **[T406]** `chore/quitar-plantillas-de-v1` también borra la ruta `src/app/(app)/configuracion/cotizacion/[origen]/plantillas-de-v1/` (lo único que
+  queda bajo `/configuracion/cotizacion` además de su `route.ts` de URL vieja) y «Empezar desde una plantilla» de `origenes/[id]/formula/cabeza-de-la-formula.tsx`.
 - **[—]** La vista previa del diseño de la hoja (Configuración › Hoja) no dibuja la variante en par (`hojaDeLaVistaPrevia()` no trae `par`); la planilla de la fórmula sí la muestra (sus dos opciones con «Se cotiza en par»).
 - **[—]** En la vista previa de las hermanas, «Copiar texto» copia sólo el de la tarjeta de la cotización abierta (no une los dos).
 - **[—]** `medir-cotizacion-crear.sql` y `medir-cotizacion-guardar.sql` no tienen un caso en par: crear y guardar en par llaman dos veces a lo que ya miden.
@@ -183,6 +185,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
+- **[—]** Con el texto al 200 % en el celular, Empresa › Monedas y tipos de cambio ensancha la página (522 px en 412): la tarjeta «Moneda base» con su «Cambiar» empuja el contenido; caen `configuracion-200.spec.ts` › «Monedas y tipos de cambio» y «se leen enteras las tarjetas» en `movil`.
 - **[—]** La imagen de la tarjeta quita el recuadro al cargar (`onLoad`) y la grande del resumen puede verse un instante como un marco gris vacío hasta que el
   navegador la decodifica: pasar a «lista» tras `img.decode()` (`imagen-de-la-tarjeta.tsx`, `useCargaDeLaImagen()`).
 - **[—]** En el celular, el buscador de la barra superior muestra «Bu» cortado contra «+ Nuevo»: dibujar sólo la lupa cuando no cabe la palabra.
@@ -192,7 +195,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T327]** En el celular, la burbuja del chat queda sobre la esquina derecha de la barra de cambios sin guardar; con la barra a la altura de
   la burbuja (Configuración › Leads › «Mensaje del portal») roza la esquina de «Guardar»: subirla mientras la barra está a la vista, como los
   avisos (`data-pie-de-panel`).
-- **[T323]** Configuración › Cotización › General › Colores y Niveles repiten el título de la página en el `h2` de su lista («Colores»,
+- **[T323]** Configuración › Catálogos › Colores y Niveles repiten el título de la página en el `h2` de su lista («Colores»,
   «Niveles de acceso», con «Nuevo color» y «Nuevo nivel»): llevar la acción principal junto al `h1` y quitar el `h2`.
 - **[T329]** En el menú de Configuración (10 rem) el motivo de una sub-sección apagada larga ocupa cinco renglones («Te falta el permiso
   «Gestionar los campos de los leads».»): acortarlo o mostrarlo al enfocar.
