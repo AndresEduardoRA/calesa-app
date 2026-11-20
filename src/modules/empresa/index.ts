@@ -9,7 +9,7 @@ export { getAjustes } from './composicion'
 
 // Configuración › Empresa: marca, datos legales, región y políticas
 export { leerAjustes, leerMonedasYTiposCambio } from './composicion'
-export { huellaDelFormulario, type PoliticaDeLimpieza } from './entities/ajustes-empresa'
+export { type PoliticaDeLimpieza } from './entities/ajustes-empresa'
 // La limpieza automática de vehículos de subasta: si está encendida y cuántos días de gracia. No
 // tumba la pantalla (sin poder leerla, se da por apagada).
 export { getPoliticaDeLimpieza } from './composicion'

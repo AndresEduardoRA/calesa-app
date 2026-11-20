@@ -12,3 +12,8 @@ export const ModalDeAnularDiferido = diferido(
   () => import('./modal-de-anular').then((modulo) => modulo.ModalDeAnular),
   { aviso: 'pantalla' },
 )
+
+export const ModalDeLaSerieDiferido = diferido(
+  () => import('./modal-de-la-serie').then((modulo) => modulo.ModalDeLaSerie),
+  { aviso: 'pantalla' },
+)

@@ -212,6 +212,10 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   (`ignoreDefaultArgs: ['--hide-scrollbars']`, `e2e/configuracion-tarjeta-arrastrar.spec.ts`): el Chromium de Playwright las esconde.
 - Dentro de una columna que se desplaza por dentro (la ficha en dos columnas), no uses `scrollIntoView` para dejar algo a la vista de una barra de costado (la tira de miniaturas): mueve también a la columna y la deja donde la persona no la puso; ajusta el `scrollLeft` de la barra. Y esa columna va `relative`: un `sr-only` (absoluto) de adentro, sin ancestro posicionado, no queda recortado y alarga el documento (la ventana se desplazaba 17 px).
 - Una columna que recupera su posición al volver a una pantalla (`usePosicionDeLasColumnas()`) insiste unos segundos: al mostrarse de nuevo el contenido se acomoda y el navegador achica el desplazamiento al tope de ese momento; reponer una sola vez deja la posición equivocada.
+- Un modal de formulario queda montado al cerrarse: lo tipeado sigue en su estado y, en un campo controlado, en el `value` del documento. Un secreto o una
+  clave se borra al cerrar (`useModalDeSecreto`), y el e2e que dice «la clave no vuelve» mira `page.content()` con el modal ya cerrado.
+- La cabecera de una tarjeta (título, estado, botones) lleva un `basis` en rem en el título: sin él, con el texto al 200 % el título se aplasta junto a los botones
+  en vez de partir la cabecera en dos líneas.
 
 ## Realtime y notificaciones
 

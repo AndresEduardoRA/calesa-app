@@ -6,6 +6,8 @@ import {
   esDireccionLocal,
   configDeApibara,
   configDeWebPublica,
+  ayudaDelInterruptorDeLaWeb,
+  estadoDeIntegracion,
   esquemaConfigApibara,
   integracionesDesde,
   puedeActivarse,
@@ -175,5 +177,61 @@ describe('configDeWebPublica', () => {
     })
     expect(configDeWebPublica({})).toEqual({ revalidar_url: null })
     expect(configDeWebPublica(null)).toEqual({ revalidar_url: null })
+  })
+})
+
+describe('estadoDeIntegracion', () => {
+  const con = (
+    clave: 'apibara' | 'web_publica' | 'push_web',
+    activa: boolean,
+    secreto: boolean,
+  ) => ({
+    clave,
+    activa,
+    secretoGuardadoEn: secreto ? '2026-10-12T14:00:00+00:00' : null,
+  })
+  const conClave = { sinClavePublica: false }
+
+  it('apibara sin clave falta la clave, activa o no', () => {
+    expect(estadoDeIntegracion(con('apibara', false, false), conClave)).toBe('falta_la_clave')
+    expect(estadoDeIntegracion(con('apibara', true, false), conClave)).toBe('falta_la_clave')
+  })
+
+  it('con clave, apibara está activa o apagada', () => {
+    expect(estadoDeIntegracion(con('apibara', true, true), conClave)).toBe('activa')
+    expect(estadoDeIntegracion(con('apibara', false, true), conClave)).toBe('apagada')
+  })
+
+  it('la web pública prendida sin secreto falta la clave; apagada, no importa', () => {
+    expect(estadoDeIntegracion(con('web_publica', true, false), conClave)).toBe('falta_la_clave')
+    expect(estadoDeIntegracion(con('web_publica', false, false), conClave)).toBe('apagada')
+    expect(estadoDeIntegracion(con('web_publica', true, true), conClave)).toBe('activa')
+  })
+
+  it('los avisos push prendidos sin la clave pública faltan la clave', () => {
+    expect(estadoDeIntegracion(con('push_web', true, false), { sinClavePublica: true })).toBe(
+      'falta_la_clave',
+    )
+    expect(estadoDeIntegracion(con('push_web', true, false), conClave)).toBe('activa')
+    expect(estadoDeIntegracion(con('push_web', false, false), { sinClavePublica: true })).toBe(
+      'apagada',
+    )
+  })
+})
+
+describe('ayudaDelInterruptorDeLaWeb', () => {
+  it('sin conteo o sin vehículos que cambien, dice la ayuda general', () => {
+    const general = 'Con la integración activa, los vehículos publicados se ven en el sitio.'
+    expect(ayudaDelInterruptorDeLaWeb(false, null, 'es-BO')).toBe(general)
+    expect(ayudaDelInterruptorDeLaWeb(true, { n: 0, hayMas: false }, 'es-BO')).toBe(general)
+  })
+
+  it('dice cuántos vehículos empiezan o dejan de verse, en singular y en plural', () => {
+    expect(ayudaDelInterruptorDeLaWeb(false, { n: 1, hayMas: false }, 'es-BO')).toBe(
+      'Al encenderla, 1 vehículo publicado empieza a verse en el sitio.',
+    )
+    expect(ayudaDelInterruptorDeLaWeb(true, { n: 3, hayMas: false }, 'es-BO')).toBe(
+      'Al apagarla, 3 vehículos dejan de verse en el sitio.',
+    )
   })
 })

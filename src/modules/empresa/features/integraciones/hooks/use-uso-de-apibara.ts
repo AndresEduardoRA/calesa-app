@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { consultarUso } from '../../../composicion.client'
 import type { UsoDeApibara } from '../../../entities/uso-apibara'
 
-type Estado =
+export type EstadoDelUso =
   | { tipo: 'sin_pedir' }
   | { tipo: 'pidiendo' }
   | { tipo: 'visto'; uso: UsoDeApibara }
@@ -12,7 +12,7 @@ type Estado =
 
 // El uso de la cuenta de apibara, sólo cuando la persona lo pide: nunca en automático.
 export function useUsoDeApibara() {
-  const [estado, setEstado] = useState<Estado>({ tipo: 'sin_pedir' })
+  const [estado, setEstado] = useState<EstadoDelUso>({ tipo: 'sin_pedir' })
   return {
     estado,
     pedir: async () => {
