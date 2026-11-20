@@ -66,7 +66,9 @@ export function GrupoCompacto({
         {leyenda}
       </p>
       {grupo.filas.length > 0 ? (
-        <ul className="grid grid-cols-[minmax(0,1fr)] gap-2">{children}</ul>
+        <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,16rem),1fr))] gap-2">
+          {children}
+        </ul>
       ) : null}
       {grupo.ocultos > 0 ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">
