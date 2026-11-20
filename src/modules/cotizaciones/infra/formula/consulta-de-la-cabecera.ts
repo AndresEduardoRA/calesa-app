@@ -22,13 +22,14 @@ export type CabeceraPublicada = {
 
 export const MENSAJE_SIN_LEER_LA_CABECERA = 'No pudimos leer la configuración por defecto.'
 
-// La publicada de la activa: las versiones del origen por `formulas_origen_id_formula_del_origen_id_idx`, unidas a su fórmula del origen por la FK compuesta; a lo
-// sumo una fila (una publicada por fórmula del origen, `formulas_publicada_unica`, y una activa por origen, `formulas_del_origen_activa_unica`).
+// La publicada de la activa: las versiones del origen por `formulas_origen_id_formula_del_origen_id_idx`, unidas a su fórmula del origen por la FK compuesta con
+// un embed vacío (filtra por `activa` y no viaja nada); a lo sumo una fila (una publicada por fórmula del origen, `formulas_publicada_unica`, y una activa por
+// origen, `formulas_del_origen_activa_unica`).
 export function consultaDeLaCabecera(cliente: Cliente, origenId: string) {
   return cliente
     .from('formulas')
     .select(
-      'id, version, cabecera:diseno->cabecera, formulas_del_origen!formulas_formula_del_origen_fkey!inner(activa)',
+      'id, version, cabecera:diseno->cabecera, formulas_del_origen!formulas_formula_del_origen_fkey!inner()',
     )
     .eq('origen_id', origenId)
     .eq('estado', 'publicada')
