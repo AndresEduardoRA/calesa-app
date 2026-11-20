@@ -113,6 +113,13 @@ const esquemaTramo = z.strictObject({
 // `calculo`, con la aridad de cada operación cerrada.
 const deCalculo = { ...deValor, ...sobrescribible, ...deTexto, tipo: z.literal('calculo') }
 const uno = z.tuple([esquemaId])
+
+// Cómo compara `comparar` sus dos términos y `es_opcion` la variante con una clave (docs/COTIZADOR.md › «Los nodos»).
+export const COMPARADORES = ['>', '<', '>=', '<=', '=', '<>'] as const
+export const COMPARADORES_DE_OPCION = ['=', '<>'] as const
+export type Comparador = (typeof COMPARADORES)[number]
+// Las operaciones que valen 1 o 0 y por eso sirven de condición (`prueba`) de un `elegir`, un `y` o un `o`; una bandera también sirve.
+export const OPS_DE_CONDICION = ['comparar', 'es_opcion', 'y', 'o'] as const
 const esquemaCalculo = z.discriminatedUnion('op', [
   z.strictObject({ ...deCalculo, op: z.literal('suma'), de: z.array(esquemaId).min(1) }),
   z.strictObject({
@@ -134,6 +141,30 @@ const esquemaCalculo = z.discriminatedUnion('op', [
     columna: esquemaId,
   }),
   z.strictObject({ ...deCalculo, op: z.literal('redondear'), de: uno, n: z.int().min(0).max(6) }),
+  // Las claves propias de las operaciones de condición van después de `de`, como sus checks en `_formula_forma_nodo()`.
+  z.strictObject({
+    ...deCalculo,
+    op: z.literal('comparar'),
+    de: z.tuple([esquemaId, esquemaId]),
+    cmp: z.enum(COMPARADORES),
+  }),
+  z.strictObject({
+    ...deCalculo,
+    op: z.literal('es_opcion'),
+    de: uno,
+    cmp: z.enum(COMPARADORES_DE_OPCION),
+    clave: esquemaId,
+  }),
+  z.strictObject({ ...deCalculo, op: z.literal('y'), de: z.array(esquemaId).min(2) }),
+  z.strictObject({ ...deCalculo, op: z.literal('o'), de: z.array(esquemaId).min(2) }),
+  z.strictObject({
+    ...deCalculo,
+    op: z.literal('elegir'),
+    de: z.array(esquemaId).min(1).max(2),
+    prueba: esquemaId,
+  }),
+  z.strictObject({ ...deCalculo, op: z.literal('max'), de: z.array(esquemaId).min(1) }),
+  z.strictObject({ ...deCalculo, op: z.literal('min'), de: z.array(esquemaId).min(1) }),
 ])
 
 export const esquemaNodo = z.discriminatedUnion('tipo', [
@@ -153,63 +184,18 @@ export type TipoDeNodo = Nodo['tipo']
 export type NodoCalculo = Extract<Nodo, { tipo: 'calculo' }>
 export type NodoOpcion = Extract<Nodo, { tipo: 'opcion' }>
 
-// Cómo un nodo nombra a otro. `match` puede nombrar un nodo o un campo del vehículo.
-export type PapelDeReferencia =
-  'de' | 'pct' | 'sobre' | 'condicion' | 'requerido_si' | 'sugerido_de' | 'match'
-export type Referencia = { id: string; papel: PapelDeReferencia }
+// Las operaciones que comparan: las de condición, `elegir` (toma una rama según su `prueba`) y `max`/`min` (el mayor y el menor de
+// sus términos). Lo que recorre las operaciones va en dos pasos: éstas y las de cuenta (`NodoDeCuenta`).
+export const OPS_DE_COMPARACION = [...OPS_DE_CONDICION, 'elegir', 'max', 'min'] as const
+export type NodoDeComparacion = Extract<NodoCalculo, { op: (typeof OPS_DE_COMPARACION)[number] }>
+export type NodoDeCuenta = Exclude<NodoCalculo, NodoDeComparacion>
+export const esDeComparacion = (n: NodoCalculo): n is NodoDeComparacion =>
+  (OPS_DE_COMPARACION as readonly string[]).includes(n.op)
 
-const refs = (papel: PapelDeReferencia, ids: readonly (string | undefined)[]): Referencia[] =>
-  ids.flatMap((id) => (id === undefined ? [] : [{ id, papel }]))
-
-function referenciasDeCalculo(n: NodoCalculo): Referencia[] {
-  const comunes = refs('condicion', [n.condicion])
-  switch (n.op) {
-    case 'porcentaje_de':
-      return [...refs('de', n.de), ...refs('pct', [n.pct]), ...comunes]
-    case 'depreciar':
-      return [...refs('de', n.de), ...refs('sobre', [n.sobre]), ...comunes]
-    case 'suma':
-    case 'multiplicar':
-    case 'restar':
-    case 'dividir':
-    case 'si':
-    case 'redondear':
-      return [...refs('de', n.de), ...comunes]
-    default: {
-      const _: never = n
-      return _
-    }
-  }
-}
-
-// Los nodos que este nodo lee, en el orden en que aparecen. Un nodo nuevo = un caso acá.
-export function referenciasDe(n: Nodo): Referencia[] {
-  switch (n.tipo) {
-    case 'input':
-      return [
-        ...refs('sugerido_de', [n.sugerido_de]),
-        ...refs('requerido_si', [n.requerido_si]),
-        ...refs('condicion', [n.condicion]),
-      ]
-    case 'constante':
-      return refs('condicion', [n.condicion])
-    case 'tipo_cambio':
-    case 'campo_vehiculo':
-    case 'bandera':
-    case 'opcion':
-      return []
-    case 'tabla':
-      return [...refs('match', Object.values(n.match)), ...refs('condicion', [n.condicion])]
-    case 'tramo':
-      return [...refs('sobre', [n.sobre]), ...refs('condicion', [n.condicion])]
-    case 'calculo':
-      return referenciasDeCalculo(n)
-    default: {
-      const _: never = n
-      return _
-    }
-  }
-}
+// Si un nodo vale 1 o 0 y sirve de condición: una bandera o una operación de condición.
+export const esCondicion = (n: Nodo): boolean =>
+  n.tipo === 'bandera' ||
+  (n.tipo === 'calculo' && (OPS_DE_CONDICION as readonly string[]).includes(n.op))
 
 // `formato` es opcional y vale `usd`, como el `coalesce` de la base. El Zod no pone el default:
 // lo que se guarda no cambia al validarlo.

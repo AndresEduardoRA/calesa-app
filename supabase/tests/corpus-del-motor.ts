@@ -17,6 +17,7 @@ import {
   type CasoDeRedondeo,
 } from './casos-de-aritmetica'
 import { CASOS_DE_BORDE } from './casos-de-borde'
+import { CASOS_DE_CONDICIONES } from './casos-de-condiciones'
 import { CASOS_DE_LO_QUE_FALTA } from './casos-de-lo-que-falta'
 import { CASOS_DE_FORMA } from './casos-de-forma'
 import { CASOS_DE_TEXTO } from './casos-de-texto'
@@ -304,6 +305,7 @@ export function generarCorpus(bases: readonly Base[], semilla: number = SEMILLA)
   mezclas(bases, azar, e)
   aMano(e, [
     ...CASOS_DE_BORDE,
+    ...CASOS_DE_CONDICIONES,
     ...CASOS_DE_LO_QUE_FALTA,
     ...CASOS_SIN_VALIDAR,
     ...CASOS_PEREZOSOS,

@@ -16,7 +16,12 @@ import {
 } from './motivos-del-compilador'
 import type { Nodo } from './nodos'
 
-export type { ContextoDeCompilacion, DestinoDeCompilacion } from './compilador-nombres'
+export type {
+  ContextoDeCompilacion,
+  DestinoDeCompilacion,
+  CatalogoDeTablas,
+  TablaDelCatalogo,
+} from './compilador-nombres'
 export type { ErrorDeCompilacion, Tramo } from './motivos-del-compilador'
 
 export type ResultadoDeCompilacion =

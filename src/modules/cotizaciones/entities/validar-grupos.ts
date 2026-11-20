@@ -1,7 +1,15 @@
 // Las reglas de los tipos de cambio, los buckets y los grupos (decisiones a y b de docs/DECISIONES.md, paso 4.05).
 import type { Grupo } from './formula'
 import { buscar, esta, recorrer } from './medidor'
-import { bucketDe, daMonto, esMonto, type Nodo } from './nodos'
+import {
+  bucketDe,
+  daMonto,
+  esDeComparacion,
+  esMonto,
+  type Nodo,
+  type NodoCalculo,
+  type NodoDeComparacion,
+} from './nodos'
 import { fallo, nodoDe, type Contexto, type Fallo } from './validar-contexto'
 
 export function revisarCambioYGrupos(ctx: Contexto): Fallo | undefined {
@@ -96,8 +104,9 @@ function revisarMiembros(ctx: Contexto, miembros: Map<string, number>): Fallo | 
 }
 
 // Doble conteo: una pasada hacia adelante marca lo que acumula un miembro (el miembro, un cálculo que
-// no es `porcentaje_de` y lee algo marcado, un `sugerido_de` de algo marcado). Un miembro sólo puede leer
-// lo marcado como base de un `porcentaje_de`: fees = 13 % del remate pasa; un `suma` del remate, no.
+// acumula lo que lee y lee algo marcado, un `sugerido_de` de algo marcado). Un miembro sólo puede leer
+// lo marcado como base de un `porcentaje_de` o en una condición: fees = 13 % del remate pasa, y
+// SI(remate>1000; 50; 0) también; un `suma` del remate, no.
 function revisarDobleConteo(ctx: Contexto): Fallo | undefined {
   const marcados = new Set<string>()
   for (const n of recorrer(ctx.nodos, ctx.m)) {
@@ -110,18 +119,42 @@ function revisarDobleConteo(ctx: Contexto): Fallo | undefined {
   return undefined
 }
 
+// Lo que un cálculo suma a su valor: `de`, salvo en un `porcentaje_de` (su base) y en las operaciones de condición, que valen 1 o 0
+// sin sumar lo que comparan. Un `elegir` acumula sus ramas y no su `prueba`. `_formula_cambio_y_grupos()` lo copia.
+function acumulaDeCalculo(n: NodoCalculo): readonly string[] {
+  if (esDeComparacion(n)) return acumulaDeComparacion(n)
+  return n.op === 'porcentaje_de' ? [] : n.de
+}
+
+function acumulaDeComparacion(n: NodoDeComparacion): readonly string[] {
+  switch (n.op) {
+    case 'comparar':
+    case 'es_opcion':
+    case 'y':
+    case 'o':
+      return []
+    case 'elegir':
+    case 'max':
+    case 'min':
+      return n.de
+    default: {
+      const _: never = n
+      return _
+    }
+  }
+}
+
+function acumulaDe(n: Nodo): readonly string[] {
+  if (n.tipo === 'calculo') return acumulaDeCalculo(n)
+  return n.tipo === 'input' && n.sugerido_de !== undefined ? [n.sugerido_de] : []
+}
+
 function marcadoQueAcumula(
   ctx: Contexto,
   n: Nodo,
   marcados: ReadonlySet<string>,
 ): string | undefined {
-  const acumula =
-    n.tipo === 'calculo' && n.op !== 'porcentaje_de'
-      ? n.de
-      : n.tipo === 'input' && n.sugerido_de !== undefined
-        ? [n.sugerido_de]
-        : []
-  for (const id of recorrer(acumula, ctx.m)) {
+  for (const id of recorrer(acumulaDe(n), ctx.m)) {
     if (esta(marcados, id, ctx.m)) return id
   }
   return undefined

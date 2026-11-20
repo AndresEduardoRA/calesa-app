@@ -43,6 +43,19 @@ const agrupada = (veces: number, miembros: number): string =>
 
 const sumas = (veces: number): string => Array.from({ length: veces }, () => 'SUMA(g)').join('+')
 
+// MAX(n0; n1; …): una sola función con muchos argumentos.
+const maximo = (largo: number, miembros: number): string =>
+  `MAX(${cadena(largo, miembros).split('+').join(';')})`
+
+// SI(n0>n1; n2; n3)+SI(…)+…: comparaciones, SI con su rama «si no» y una cadena.
+const condiciones = (veces: number, miembros: number): string =>
+  Array.from({ length: veces }, (_, i) => {
+    const n = (k: number) => `n${String((4 * i + k) % miembros)}`
+    return `SI(${n(0)}>${n(1)}; ${n(2)}; ${n(3)})`
+  }).join('+')
+
+const maximos = (veces: number): string => Array.from({ length: veces }, () => 'MAX(g)').join('+')
+
 type Familia = {
   nombre: string
   miembros: number
@@ -80,6 +93,30 @@ const FAMILIAS: Familia[] = [
     nombre: 'SUMA(g) de 1.000 miembros, repetida',
     miembros: 1000,
     texto: sumas,
+    chica: 9,
+    grande: 90,
+    expandidos: (n) => n * 1000,
+  },
+  {
+    nombre: 'MAX de 100.000 caracteres de argumentos',
+    miembros: 2000,
+    texto: (n) => maximo(n, 2000),
+    chica: 10_000,
+    grande: 100_000,
+    expandidos: () => 0,
+  },
+  {
+    nombre: 'SI con comparaciones, repetido',
+    miembros: 2000,
+    texto: (n) => condiciones(n, 2000),
+    chica: 500,
+    grande: 5000,
+    expandidos: () => 0,
+  },
+  {
+    nombre: 'MAX(g) de 1.000 miembros, repetida',
+    miembros: 1000,
+    texto: maximos,
     chica: 9,
     grande: 90,
     expandidos: (n) => n * 1000,
@@ -173,11 +210,15 @@ describe('el código del compilador', () => {
   const ARCHIVOS = [
     'compilador.ts',
     'compilador-arbol.ts',
+    'compilador-argumentos.ts',
+    'compilador-buscarv.ts',
+    'compilador-condiciones.ts',
     'compilador-emitir.ts',
     'compilador-estado.ts',
     'compilador-funciones.ts',
     'compilador-lexico.ts',
     'compilador-nombres.ts',
+    'compilador-numeros.ts',
     'compilador-reducir.ts',
     'compilador-sintaxis.ts',
     'motivos-del-compilador.ts',

@@ -51,14 +51,14 @@ export const esOp =
     texto(n, 'tipo') === 'calculo' && ops.includes(texto(n, 'op') ?? '')
 export const DE_VALOR = ['input', 'constante', 'tabla', 'tramo', 'calculo']
 
-// Una referencia de un nodo: dónde está (`de` con su índice, `pct`, `sobre`, `condicion`, `sugerido_de`, `requerido_si` o una
-// columna de `match`).
+// Una referencia de un nodo: dónde está (`de` con su índice, `pct`, `sobre`, `condicion`, `sugerido_de`, `requerido_si`, la
+// `prueba` de un `elegir` o una columna de `match`).
 type Ref = { campo: string; indice?: number; columna?: string }
 function refsDe(n: Objeto): Ref[] {
   const refs: Ref[] = []
   const de = n['de']
   if (Array.isArray(de)) de.forEach((_, indice) => refs.push({ campo: 'de', indice }))
-  for (const campo of ['pct', 'sobre', 'condicion', 'sugerido_de', 'requerido_si']) {
+  for (const campo of ['pct', 'sobre', 'condicion', 'sugerido_de', 'requerido_si', 'prueba']) {
     if (texto(n, campo) !== undefined) refs.push({ campo })
   }
   const match = n['match']

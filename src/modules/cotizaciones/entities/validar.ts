@@ -8,15 +8,15 @@ import {
   aceptaValor,
   condicionDe,
   daMonto,
+  esCondicion,
   esMonto,
   formatoDe,
-  referenciasDe,
   sobrescribibleDe,
   soloEnDe,
   type Nodo,
   type NodoCalculo,
-  type Referencia,
 } from './nodos'
+import { referenciasDe, type Referencia } from './nodos-referencias'
 import { esFallo, fallo, indexar, nodoDe, type Contexto, type Fallo } from './validar-contexto'
 import { revisarCambioYGrupos } from './validar-grupos'
 import { revisarCampos } from './validar-campos'
@@ -165,6 +165,9 @@ function revisarReferencia(ctx: Contexto, n: Nodo, i: number, ref: Referencia): 
   return revisarTipoDeReferencia(n, ref, ctx.nodos[j])
 }
 
+// La condición de un `elegir`, un `y` o un `o`: lo que vale 1 o 0 (`esCondicion`). `validar_formula()` dice lo mismo.
+const ESPERADO_PRUEBA = 'una condición (una bandera, una comparación, Y u O)'
+
 function revisarTipoDeReferencia(
   n: Nodo,
   ref: Referencia,
@@ -175,7 +178,13 @@ function revisarTipoDeReferencia(
   if ((ref.papel === 'condicion' || ref.papel === 'requerido_si') && destino.tipo !== 'bandera') {
     return fallo('referencia_de_tipo', { ...datos, esperado: 'una bandera' })
   }
-  if (destino.tipo === 'opcion' && ref.papel !== 'match') {
+  if (ref.papel === 'prueba' && !esCondicion(destino)) {
+    return fallo('referencia_de_tipo', { ...datos, esperado: ESPERADO_PRUEBA })
+  }
+  if (ref.papel === 'variante' && destino.tipo !== 'opcion') {
+    return fallo('referencia_de_tipo', { ...datos, esperado: 'la variante' })
+  }
+  if (destino.tipo === 'opcion' && ref.papel !== 'match' && ref.papel !== 'variante') {
     return fallo('referencia_de_tipo', {
       ...datos,
       esperado: 'un número (la variante se nombra en «solo_en» o en un «match»)',

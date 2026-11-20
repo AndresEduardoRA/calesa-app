@@ -500,6 +500,22 @@ las trampas, en `docs/LECCIONES.md`.
 
 - **Grafo versionado validado en SQL.** Lista de nodos con operaciones cerradas; `validar_formula()` y `evaluar_formula()` son espejo exacto de `validar.ts`/`evaluar()` con corpus de paridad; un borrador y una publicada por origen; snapshot por cotización. Se escribe como texto compilado al grafo.
 - **`HOY()` no se admite** (lo decidió la persona): el compilador da `hoy_no_soportado`. Si una fórmula real lo pide, compila a un nodo `fecha_cotizacion` congelado con la cotización, con paridad TS/SQL.
+- **El SI con condición es otra operación, `elegir`; el `si` de una bandera no cambia.** `si` depende de su `condicion`, que es una bandera y además el
+  interruptor del nodo: ampliarlo a una condición cualquiera y a una rama «si no» lo volvía de dos formas, con chequeos cruzados en Zod y en SQL y otro
+  orden del primer rechazo. `SI(bandera; x)` sigue compilando al `si` de siempre; `SI(condición; x[; y])` y `SI(bandera; x; y)` compilan a `elegir`, y la
+  persona escribe SI en los dos casos. Un `elegir` no es condición de otro (`SI(SI(…); …)` como prueba es un error): una condición vale 1 o 0 y un
+  `elegir` vale lo que valga su rama.
+- **La rama no elegida de un SI no esconde sus faltantes.** Las dos ramas son nodos del grafo y se evalúan siempre (una pasada, sin cortocircuito): el
+  valor es el de la rama elegida, pero el faltante de la otra queda en `faltantes`. Un SI no vuelve opcional un input; para eso están `condicion` y
+  `requerido_si`.
+- **Las comparaciones, Y y O auxiliares son `raw`** (valen 1 o 0, no un monto), y también la raíz de una fila nueva que es una de ellas; una fila que ya
+  existía conserva su formato. La validación no exige `raw`: es lo que escribe el compilador, no una regla de la base.
+- **BUSCARV compila a los nodos `tabla` y `tramo` que ya existen y se revisa contra el catálogo del origen.** No hay un nodo nuevo ni un cálculo nuevo en
+  la base: la exacta busca por la primera columna de la tabla y la de tramo por `desde`/`hasta`. El catálogo (clave y columnas de las tablas del origen
+  y las compartidas, con la del origen ganando como al calcular) lo lee el área `formula` en el servidor con su propia consulta, porque un área no
+  importa otra; si falla, sólo BUSCARV dice `tablas_sin_leer` y lo demás se edita igual.
+- **El ejemplo de un mensaje del compilador usa el nombre que la persona escribió** (`SI necesita una condición, por ejemplo remate>1000.`), nunca una
+  referencia A1: en la fórmula no hay celdas.
 - **Sin «Sugerido: X» junto a un valor modificado.** La celda muestra el override con anillo y ↺, que lo quita. Si se reabre, `evaluar()` y `evaluar_formula()` devuelven `sugeridos[id]` sólo de nodos con override.
 - **Publicar sin pisar el borrador.** El ⚙ y revertir publican la N+1 desde la publicada (`_publicar_version()`, candado por origen); publicar un borrador atrasado da PT409 con quién publicó; revertir a un nivel retirado se rechaza.
 - **Versión esperada del borrador.** `formula_guardar_borrador`, `_descartar_` y `_publicar` la llevan al final con `default null`, sin sobrecargas; en guardar, nula = crear. Guardar devuelve `{id, actualizado_en}` y el editor sigue sin releer.

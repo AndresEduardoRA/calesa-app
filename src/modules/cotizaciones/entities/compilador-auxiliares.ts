@@ -3,7 +3,8 @@
 // pide celda a una constante auxiliar. Su espejo en la base es `_diseno_auxiliares()`. Puro, sin I/O, lineal con el medidor.
 import { crearLexico, siguiente, T } from './compilador-lexico'
 import { recorrer, type Medidor } from './medidor'
-import { referenciasDe, type Nodo } from './nodos'
+import { type Nodo } from './nodos'
+import { referenciasDe } from './nodos-referencias'
 import type { Definicion } from './formula'
 
 // El id de la auxiliar n de una fila: la MISMA regla que `idAuxiliar()` de `compilador-emitir.ts:49-53` (que no se toca): si no cabe en

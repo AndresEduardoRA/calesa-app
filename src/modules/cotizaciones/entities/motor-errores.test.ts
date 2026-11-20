@@ -219,4 +219,30 @@ describe('la entrada y la fórmula', () => {
       codigo: 'formula_sin_validar',
     })
   })
+
+  it('es_opcion sobre un número, o un MAX que lee la variante, es una fórmula sin validar en ese nodo', () => {
+    const V = {
+      id: 'v',
+      tipo: 'opcion',
+      etiqueta: 'V',
+      opciones: [
+        { clave: 'x', etiqueta: 'X', titulo: 'X' },
+        { clave: 'y', etiqueta: 'Y', titulo: 'Y' },
+      ],
+      por_defecto: 'x',
+    }
+    const malo = (n: Record<string, unknown>) =>
+      conForma([TC, V, A, { etiqueta: 'M', tipo: 'calculo', ...n }, TOTAL])
+    const casos = [
+      malo({ id: 'm', op: 'es_opcion', de: ['a'], cmp: '=', clave: 'x' }),
+      malo({ id: 'm', op: 'max', de: ['a', 'v'] }),
+      malo({ id: 'm', op: 'elegir', de: ['v'], prueba: 'a' }),
+    ]
+    for (const f of casos) {
+      expect(lanzado(() => evaluar(f, entrada()))).toMatchObject({
+        codigo: 'formula_sin_validar',
+        donde: 'm',
+      })
+    }
+  })
 })

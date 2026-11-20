@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState, useTransition, type ComponentType } from 'react'
+import type { CatalogoDeTablas } from '../../../entities/compilador'
 import { mismaVersion, otraSesion, type SobreQueVersion } from '../../../entities/formula/sesion'
 import type { FormulaDelOrigen as Formula } from '../../../entities/formula/versiones'
 import type {
@@ -19,6 +20,8 @@ type Props = {
   origen: Origen
   formula: Formula
   tarjeta: LecturaDeLaTarjetaEnVivo
+  // Las tablas que BUSCARV puede nombrar; null si no se pudieron leer.
+  tablas: CatalogoDeTablas
   TarjetaEnVivo: ComponentType<PropsDeLaTarjetaEnVivo>
   puedeCambiarTiposDeCambio: boolean
 }
@@ -40,6 +43,7 @@ export function FormulaDelOrigen({
   origen,
   formula,
   tarjeta,
+  tablas,
   TarjetaEnVivo,
   puedeCambiarTiposDeCambio,
 }: Props) {
@@ -88,6 +92,7 @@ export function FormulaDelOrigen({
           alRecargar={recargar}
           alCambiarPendientes={setPendientes}
           tarjeta={tarjeta}
+          tablas={tablas}
           TarjetaEnVivo={TarjetaEnVivo}
           puedeCambiarTiposDeCambio={puedeCambiarTiposDeCambio}
         />

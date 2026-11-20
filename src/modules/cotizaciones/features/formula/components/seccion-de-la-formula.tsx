@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react'
 import { datosO } from '@/shared/lib/errores'
-import { leerFormulaDelOrigen } from '../../../areas/formula/composicion'
+import { leerCatalogoDeTablas, leerFormulaDelOrigen } from '../../../areas/formula/composicion'
 import type {
   LecturaDeLaTarjetaEnVivo,
   PropsDeLaTarjetaEnVivo,
@@ -21,7 +21,7 @@ type Props = {
 }
 
 // La pestaña «Fórmula» de un origen en Configuración › Cotización (4.20-2a), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: la
-// publicada, el borrador y la primera página de versiones, y la tarjeta de trabajo, a la vez. La base vuelve a decidir (policy `formulas: leer`). Una lectura de la
+// publicada, el borrador y la primera página de versiones, la tarjeta de trabajo y el catálogo de tablas (BUSCARV; null si no se leyó), a la vez. La base vuelve a decidir (policy `formulas: leer`). Una lectura de la
 // fórmula que falla sube al `error.tsx` de la ruta, que ofrece «Reintentar».
 export async function SeccionDeLaFormula({
   origen,
@@ -29,12 +29,17 @@ export async function SeccionDeLaFormula({
   TarjetaEnVivo,
   puedeCambiarTiposDeCambio,
 }: Props) {
-  const [leida, deLaTarjeta] = await Promise.all([leerFormulaDelOrigen(origen.id), tarjeta])
+  const [leida, deLaTarjeta, tablas] = await Promise.all([
+    leerFormulaDelOrigen(origen.id),
+    tarjeta,
+    leerCatalogoDeTablas(origen.id),
+  ])
   return (
     <FormulaDelOrigen
       origen={origen}
       formula={datosO(leida)}
       tarjeta={deLaTarjeta}
+      tablas={tablas}
       TarjetaEnVivo={TarjetaEnVivo}
       puedeCambiarTiposDeCambio={puedeCambiarTiposDeCambio}
     />

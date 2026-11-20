@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest'
 import type { Formula } from './formula'
 import { evaluar } from './motor'
 import type { Entrada } from './motor-entrada'
-import { referenciasDe, soloEnDe } from './nodos'
+import { soloEnDe } from './nodos'
+import { referenciasDe } from './nodos-referencias'
 import { validarFormula } from './validar'
 
 const FILAS = 50

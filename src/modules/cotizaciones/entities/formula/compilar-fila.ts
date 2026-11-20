@@ -44,7 +44,11 @@ export function compilarFila(
   const r = compilarFilaBase(formula, pedido, m)
   const destino = pedido.destino
   if (!r.ok || pedido.confirmaPisar === true || !('existente' in destino)) return r
-  if (textoVigente(formula, destino.existente, m).estado !== 'no_manda') return r
+  if (
+    textoVigente(formula, destino.existente, { medidor: m, tablas: pedido.tablas }).estado !==
+    'no_manda'
+  )
+    return r
   const fila = filasDe(formula.definicion, m).find((f) => f.nodo.id === destino.existente)
   const cambios = fila === undefined ? [] : cambiosQueSePisan(formula, fila, r)
   if (cambios.length === 0) return r

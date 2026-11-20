@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { formulaSintetica, type FormulaSintetica } from './formula-sintetica'
-import { referenciasDe, soloEnDe } from './nodos'
+import { soloEnDe } from './nodos'
+import { referenciasDe } from './nodos-referencias'
 import { validarFormula } from './validar'
 
 // Lo que mide una fórmula: nodos, aristas (referencias y claves de `solo_en`), grupos, opciones y params.

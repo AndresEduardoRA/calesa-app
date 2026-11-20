@@ -5,7 +5,15 @@
 import { formatearNumero, formatearPorcentaje } from '@/shared/lib/formato'
 import type { Formula } from '../formula'
 import { buscar, recorrer, type Medidor } from '../medidor'
-import { formatoDe, type Nodo, type NodoCalculo } from '../nodos'
+import {
+  esDeComparacion,
+  formatoDe,
+  type Comparador,
+  type Nodo,
+  type NodoCalculo,
+  type NodoDeComparacion,
+  type NodoDeCuenta,
+} from '../nodos'
 import { filasDe } from './filas'
 
 export type ContextoDeDondeSale = {
@@ -53,8 +61,15 @@ function operando(id: string, p: Paso): string {
   if (n === undefined) return FALTA
   if (!p.ctx.auxiliares.has(id) || p.hondo >= PROFUNDIDAD_MAXIMA) return n.etiqueta
   if (n.tipo === 'constante') return valorDeConstante(n, p.ctx)
+  if (n.tipo === 'tabla' || n.tipo === 'tramo') return enLaTabla(n, { ...p, hondo: p.hondo + 1 })
   if (n.tipo !== 'calculo') return n.etiqueta
   return `(${calculo(n, { ...p, hondo: p.hondo + 1 })})`
+}
+
+// Una búsqueda auxiliar (BUSCARV) en línea: la tabla, por su clave, y lo que se busca en ella.
+function enLaTabla(n: Extract<Nodo, { tipo: 'tabla' | 'tramo' }>, p: Paso): string {
+  const por = n.tipo === 'tramo' ? [n.sobre] : Object.values(n.match)
+  return `de la tabla ${n.tabla} por ${lista(por, 'y', p)}`
 }
 
 const unidos = (ids: readonly string[], separador: string, p: Paso): string =>
@@ -64,10 +79,79 @@ const unidos = (ids: readonly string[], separador: string, p: Paso): string =>
 const sumaDe = (ids: readonly string[], p: Paso): string =>
   ids.length === 1 ? unidos(ids, ' + ', p) : `(${unidos(ids, ' + ', p)})`
 
+// Una lista dicha en castellano: «a», «a y b», «a, b y c».
+function enLista(partes: readonly string[], y: string): string {
+  const ultima = partes[partes.length - 1] ?? ''
+  return partes.length < 2 ? ultima : `${partes.slice(0, -1).join(', ')} ${y} ${ultima}`
+}
+const lista = (ids: readonly string[], y: string, p: Paso, decir = operando): string =>
+  enLista(
+    Array.from(recorrer(ids, p.m), (id) => decir(id, p)),
+    y,
+  )
+
+const SIMBOLOS: Record<Comparador, string> = {
+  '>': '>',
+  '<': '<',
+  '>=': '≥',
+  '<=': '≤',
+  '=': '=',
+  '<>': '≠',
+}
+
+// Una condición: una bandera «está encendida», como en el `si`; una comparación auxiliar se dice sin paréntesis («50 si Remate > 1.000,
+// si no 0»); un Y u O auxiliar, con ellos.
+function condicion(id: string, p: Paso): string {
+  const n = buscar(p.ctx.nodos, id, p.m)
+  if (n?.tipo === 'bandera') return `${n.etiqueta} está encendida`
+  const simple = n?.tipo === 'calculo' && (n.op === 'comparar' || n.op === 'es_opcion')
+  if (n === undefined || !simple || !p.ctx.auxiliares.has(id) || p.hondo >= PROFUNDIDAD_MAXIMA)
+    return operando(id, p)
+  return calculo(n, { ...p, hondo: p.hondo + 1 })
+}
+
+// La etiqueta de la opción que nombra un `es_opcion` (su clave, si la variante no la tiene).
+function etiquetaDeOpcion(varianteId: string, clave: string, p: Paso): string {
+  const v = buscar(p.ctx.nodos, varianteId, p.m)
+  const o = v?.tipo === 'opcion' ? v.opciones.find((x) => x.clave === clave) : undefined
+  return o?.etiqueta ?? clave
+}
+
+function deComparacion(n: NodoDeComparacion, p: Paso): string {
+  switch (n.op) {
+    case 'comparar':
+      return `${operando(n.de[0], p)} ${SIMBOLOS[n.cmp]} ${operando(n.de[1], p)}`
+    case 'es_opcion': {
+      const es = n.cmp === '=' ? 'es' : 'no es'
+      return `${operando(n.de[0], p)} ${es} «${etiquetaDeOpcion(n.de[0], n.clave, p)}»`
+    }
+    case 'y':
+      return lista(n.de, 'y', p, condicion)
+    case 'o':
+      return lista(n.de, 'o', p, condicion)
+    case 'elegir': {
+      const [si = '', no] = n.de
+      return `${operando(si, p)} si ${condicion(n.prueba, p)}, si no ${no === undefined ? '0' : operando(no, p)}`
+    }
+    case 'max':
+      return `el mayor de ${lista(n.de, 'y', p)}`
+    case 'min':
+      return `el menor de ${lista(n.de, 'y', p)}`
+    default: {
+      const _: never = n
+      return _
+    }
+  }
+}
+
 const decimales = (n: number) =>
   n === 0 ? 'sin decimales' : n === 1 ? 'a 1 decimal' : `a ${String(n)} decimales`
 
 function calculo(n: NodoCalculo, p: Paso): string {
+  return esDeComparacion(n) ? deComparacion(n, p) : deCuenta(n, p)
+}
+
+function deCuenta(n: NodoDeCuenta, p: Paso): string {
   switch (n.op) {
     case 'suma':
       return unidos(n.de, ' + ', p)

@@ -1,7 +1,8 @@
-// El parser del compilador de fórmulas como texto (docs/COTIZADOR.md › «Fórmulas como texto»): precedencia usual, todo
-// asociativo a la izquierda. Es una máquina de dos pilas (operandos y operadores) con una pila de marcos para los paréntesis y las
-// llamadas a una función: nada recursivo, así que ni diez mil paréntesis ni treinta mil operadores revientan la pila. Una cadena
-// `a+b+c` (`-`, `*`) se aplana al reducir en UN nodo, en el orden del texto; un paréntesis o una función corta el aplanado.
+// El parser del compilador de fórmulas como texto (docs/COTIZADOR.md › «Fórmulas como texto»): precedencia usual, con las
+// comparaciones por debajo de + y -, todo asociativo a la izquierda. Es una máquina de dos pilas (operandos y operadores) con una
+// pila de marcos para los paréntesis y las llamadas a una función: nada recursivo, así que ni diez mil paréntesis ni treinta mil
+// operadores revientan la pila. Una cadena `a+b+c` (`-`, `*`) se aplana al reducir en UN nodo, en el orden del texto; un
+// paréntesis o una función corta el aplanado.
 import {
   error,
   esError,
@@ -10,7 +11,6 @@ import {
   type Arbol,
   type ErrorCrudo,
   type Marco,
-  type Numero,
 } from './compilador-arbol'
 import {
   contar,
@@ -22,62 +22,16 @@ import {
   type Manejador,
 } from './compilador-estado'
 import { cerrarFuncion, FUNCIONES } from './compilador-funciones'
-import { crearLexico, T, valorDeNumero, type Token } from './compilador-lexico'
+import { menosUnario, numero, porciento } from './compilador-numeros'
+import { crearLexico, T, type Token } from './compilador-lexico'
 import { resolverNombre, type Nombres } from './compilador-nombres'
-import { PRECEDENCIA, reducir } from './compilador-reducir'
-import type { Medidor } from './medidor'
+import { esIgualdad, PRECEDENCIA, reducir } from './compilador-reducir'
+import { esta, type Medidor } from './medidor'
 import { MAXIMO_DE_PROFUNDIDAD } from './motivos-del-compilador'
 
 export type ResultadoDeSintaxis = { ok: true; raiz: Arbol } | { ok: false; error: ErrorCrudo }
 
 // --- los tokens -------------------------------------------------------------------------------------
-
-function empujarNumero(
-  e: Estado,
-  t: Token,
-  desde: number,
-  negativo: boolean,
-): ErrorCrudo | undefined {
-  const v = valorDeNumero(e.lex, t, false)
-  if (v === null)
-    return error('numero_fuera_de_rango', desde, t.hasta, {
-      texto: textoDe(e, { desde, hasta: t.hasta }),
-    })
-  const valor = negativo ? -v : v
-  const n: Numero = {
-    k: 'num',
-    valor: valor === 0 ? 0 : valor,
-    pct: false,
-    comoPct: false,
-    negativo,
-    numDesde: t.desde,
-    numHasta: t.hasta,
-    paren: false,
-    desde,
-    hasta: t.hasta,
-  }
-  e.operandos.push(n)
-  e.esperaValor = false
-  e.ultimaNum = true
-  return undefined
-}
-
-function numero(e: Estado, t: Token): ErrorCrudo | undefined {
-  if (!e.esperaValor) return enToken(t, 'falta_un_operador')
-  return empujarNumero(e, t, t.desde, false)
-}
-
-// El signo menos sólo se pega a un número: «-5», «a - -5». No hay negación de un nombre ni de un paréntesis.
-function menosUnario(e: Estado, t: Token): ErrorCrudo | undefined {
-  if (t.t === T.MENOS) {
-    const sig = mirar(e)
-    if (sig.t === T.NUM && sig.desde === t.hasta) {
-      tomar(e)
-      return empujarNumero(e, sig, t.desde, true)
-    }
-  }
-  return enToken(t, 'operador_suelto', { texto: textoDe(e, t) })
-}
 
 function operador(e: Estado, t: Token): ErrorCrudo | undefined {
   if (e.esperaValor) return menosUnario(e, t)
@@ -131,8 +85,30 @@ function pideEsteArgumento(e: Estado): string | undefined {
   if (e.operandos.length !== marco.baseOperandos || e.operadores.length !== marco.baseOperadores)
     return undefined
   // Un argumento de más no se resuelve: la cuenta de argumentos es el error que importa.
-  return marco.spec.args[marco.args.length] ?? 'clave'
+  return marco.spec.args[marco.args.length] ?? marco.spec.resto ?? 'clave'
 }
+
+// La variante entra como operando sólo para compararla con `=` o `<>`: si la sigue uno, o si es lo que viene después de uno.
+function comparaLaVariante(e: Estado): boolean {
+  const sig = mirar(e)
+  if (sig.t === T.COMPARA && esIgualdad(textoDe(e, sig))) return true
+  const base = e.marcos[e.marcos.length - 1]?.baseOperadores ?? 0
+  const o = e.operadores[e.operadores.length - 1]
+  return e.operadores.length > base && o !== undefined && esIgualdad(o.op)
+}
+
+// Donde va un valor o un grupo (MAX, MIN), un grupo es el argumento entero: su nombre solo y la función que se cierra.
+const esGrupoSolo = (e: Estado, texto: string) =>
+  esta(e.nombres.grupos, texto, e.m) && mirar(e).t === T.CIERRA
+
+// Donde la función pide un grupo, un id, un texto o VERDADERO/FALSO, el nombre no se resuelve: lo revisa la función al cerrarse.
+const COMO_CLAVE = new Set<string>(['grupo', 'clave', 'texto', 'logico'])
+const esClave = (e: Estado, pide: string | undefined, texto: string) =>
+  pide !== undefined &&
+  (COMO_CLAVE.has(pide) || (pide === 'valor_o_grupo' && esGrupoSolo(e, texto)))
+// La variante: donde va una condición, el valor que BUSCARV busca, o al compararla.
+const admiteVariante = (e: Estado, pide: string | undefined) =>
+  pide === 'condicion' || pide === 'buscado' || comparaLaVariante(e)
 
 function nombre(e: Estado, t: Token): ErrorCrudo | undefined {
   if (!e.esperaValor) return enToken(t, 'falta_un_operador')
@@ -140,13 +116,22 @@ function nombre(e: Estado, t: Token): ErrorCrudo | undefined {
   const texto = textoDe(e, t)
   const pide = pideEsteArgumento(e)
   e.esperaValor = false
-  if (pide === 'grupo' || pide === 'clave') {
+  if (esClave(e, pide, texto)) {
     e.operandos.push({ k: 'clave', texto, paren: false, desde: t.desde, hasta: t.hasta })
     return undefined
   }
-  const r = resolverNombre(e.nombres, texto, pide === 'bandera')
+  const r = resolverNombre(e.nombres, texto, admiteVariante(e, pide))
   if ('codigo' in r) return enToken(t, r.codigo, r.datos)
   e.operandos.push({ k: 'ref', nodo: r.nodo, paren: false, desde: t.desde, hasta: t.hasta })
+  return undefined
+}
+
+// Un texto entre comillas es un operando más: dónde vale lo deciden la comparación y la función que lo reciben.
+function entreComillas(e: Estado, t: Token): ErrorCrudo | undefined {
+  if (!e.esperaValor) return enToken(t, 'falta_un_operador')
+  const contenido = e.lex.texto.slice(t.desde + 1, t.hasta - 1)
+  e.operandos.push({ k: 'texto', texto: contenido, paren: false, desde: t.desde, hasta: t.hasta })
+  e.esperaValor = false
   return undefined
 }
 
@@ -186,24 +171,6 @@ function puntoYComa(e: Estado, t: Token): ErrorCrudo | undefined {
   return undefined
 }
 
-function porciento(e: Estado, t: Token): ErrorCrudo | undefined {
-  const ultimo = e.operandos[e.operandos.length - 1]
-  if (e.esperaValor || !e.numPrevio || ultimo?.k !== 'num')
-    return enToken(t, 'porcentaje_sin_numero')
-  // Correr el punto a la izquierda achica el número: el texto pudo caber solo y redondearse a 0 con el «%» (`1e-323%`).
-  const v = valorDeNumero(e.lex, { desde: ultimo.numDesde, hasta: ultimo.numHasta }, true)
-  if (v === null)
-    return error('numero_fuera_de_rango', ultimo.desde, t.hasta, {
-      texto: textoDe(e, { desde: ultimo.desde, hasta: t.hasta }),
-    })
-  const valor = ultimo.negativo ? -v : v
-  ultimo.valor = valor === 0 ? 0 : valor
-  ultimo.pct = true
-  ultimo.hasta = t.hasta
-  e.ultimaNum = false
-  return undefined
-}
-
 const MANEJADORES = new Map<number, Manejador>([
   [T.NUM, numero],
   [T.NOMBRE, nombre],
@@ -211,6 +178,8 @@ const MANEJADORES = new Map<number, Manejador>([
   [T.MENOS, operador],
   [T.POR, operador],
   [T.ENTRE, operador],
+  [T.COMPARA, operador],
+  [T.TEXTO, entreComillas],
   [T.ABRE, abre],
   [T.CIERRA, cierra],
   [T.PUNTO_Y_COMA, puntoYComa],

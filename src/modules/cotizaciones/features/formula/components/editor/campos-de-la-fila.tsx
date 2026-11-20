@@ -1,6 +1,12 @@
 'use client'
 
-import type { Nodo, NodoCalculo } from '../../../../entities/nodos'
+import {
+  esDeComparacion,
+  type Nodo,
+  type NodoCalculo,
+  type NodoDeComparacion,
+  type NodoDeCuenta,
+} from '../../../../entities/nodos'
 import { ValorDeConstante } from './valor-de-constante'
 
 type Props = {
@@ -18,10 +24,41 @@ const OPERACIONES: Record<NodoCalculo['op'], string> = {
   si: 'si',
   redondear: 'redondea',
   depreciar: 'deprecia',
+  comparar: 'compara',
+  es_opcion: 'mira la opción elegida en',
+  y: 'se cumplen todas',
+  o: 'se cumple alguna',
+  elegir: 'elige entre',
+  max: 'el mayor de',
+  min: 'el menor de',
 }
 
 // Los campos propios de la operación, en palabras.
 function propiosDe(nodo: NodoCalculo): string[] {
+  return esDeComparacion(nodo) ? propiosDeComparacion(nodo) : propiosDeCuenta(nodo)
+}
+
+function propiosDeComparacion(nodo: NodoDeComparacion): string[] {
+  switch (nodo.op) {
+    case 'comparar':
+      return [`comparador: ${nodo.cmp}`]
+    case 'es_opcion':
+      return [`${nodo.cmp === '=' ? 'es' : 'no es'} la opción ${nodo.clave}`]
+    case 'elegir':
+      return [`condición: ${nodo.prueba}`]
+    case 'y':
+    case 'o':
+    case 'max':
+    case 'min':
+      return []
+    default: {
+      const _: never = nodo
+      return _
+    }
+  }
+}
+
+function propiosDeCuenta(nodo: NodoDeCuenta): string[] {
   switch (nodo.op) {
     case 'porcentaje_de':
       return [`porcentaje: ${nodo.pct}`]

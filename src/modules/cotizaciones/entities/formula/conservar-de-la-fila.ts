@@ -13,21 +13,24 @@ const ESTRUCTURALES = new Set([
   'columna',
   'match',
   'clave',
+  'cmp',
+  'prueba',
   'campo',
   'opciones',
   'por_defecto',
 ])
-const esSi = (n: Nodo) => n.tipo === 'calculo' && n.op === 'si'
+// El `si` de una bandera (`SI(bandera; x)`): su `condicion` es la bandera. Un SI con condición o con «si no» es un `elegir`, con su `prueba`.
+const esSiDeBandera = (n: Nodo) => n.tipo === 'calculo' && n.op === 'si'
 const sePierde = (v: unknown) => v !== undefined && v !== false
 
-// `seccion` y `color`, siempre (los admite todo tipo); `sobrescribible`, si la nueva es un cálculo; `condicion` sólo como interruptor: en un SI (el
-// viejo o el nuevo) es la bandera y la decide el texto, nunca pasa de interruptor a bandera ni al revés.
+// `seccion` y `color`, siempre (los admite todo tipo); `sobrescribible`, si la nueva es un cálculo; `condicion` sólo como interruptor: en un SI de una
+// bandera (el viejo o el nuevo) es la bandera y la decide el texto, nunca pasa de interruptor a bandera ni al revés.
 function conservados(raiz: Nodo, v: Record<string, unknown>, viejo: Nodo): Record<string, unknown> {
   const dejar: Record<string, unknown> = {}
   for (const k of ['seccion', 'color']) if (v[k] !== undefined) dejar[k] = v[k]
   if (raiz.tipo === 'calculo' && v['sobrescribible'] !== undefined)
     dejar['sobrescribible'] = v['sobrescribible']
-  if (!esSi(raiz) && !esSi(viejo) && v['condicion'] !== undefined)
+  if (!esSiDeBandera(raiz) && !esSiDeBandera(viejo) && v['condicion'] !== undefined)
     dejar['condicion'] = v['condicion']
   return dejar
 }
@@ -41,10 +44,11 @@ function soltadosDe(
   viejo: Nodo,
 ): string[] {
   const soltados: string[] = []
-  if (esSi(raiz) && !esSi(viejo) && v['condicion'] !== undefined) soltados.push('condicion')
+  if (esSiDeBandera(raiz) && !esSiDeBandera(viejo) && v['condicion'] !== undefined)
+    soltados.push('condicion')
   for (const k of Object.keys(v)) {
     const sigue = k in nodo || k === 'id' || k === 'tipo' || ESTRUCTURALES.has(k)
-    if (sigue || (k === 'condicion' && esSi(viejo))) continue
+    if (sigue || (k === 'condicion' && esSiDeBandera(viejo))) continue
     if (sePierde(v[k])) soltados.push(k)
   }
   return soltados

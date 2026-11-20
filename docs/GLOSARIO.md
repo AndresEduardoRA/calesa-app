@@ -552,6 +552,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `_nodos_en_par()`: la hoja no dibuja sus chips y lo que cambia según la opción va en dos celdas («Transporte · 20 pies» | «Transporte · 40 pies»); guardar crea
   dos **cotizaciones hermanas**. No es el **Par porcentaje-monto**.
 - **Fórmula como texto** — `compilarExpresion()` (`entities/compilador.ts`): `=(remate+fees)*4%`, `=SUMA(aduana)`; se compila a nodos.
+- **Condición (de la fórmula)** — lo que decide un SI, un Y o un O: una bandera o un `calculo` `comparar` (`remate>1000`), `es_opcion`
+  (`variante="b"`), `y` u `o`; vale 1 o 0 (`OPS_DE_CONDICION`, `NodoDeComparacion` en `entities/nodos.ts`). Un SI con condición es el nodo
+  `elegir`, con la condición en su `prueba`. No es la `condicion` de un nodo (el **interruptor** que lo apaga) ni el `si` de una bandera.
+- **BUSCARV** — la función de la fórmula como texto que busca en una tabla de referencia del origen (`compilador-buscarv.ts`): exacta (por la
+  primera columna de la tabla, compila a un nodo `tabla`) o por tramo (`VERDADERO`: `desde` ≤ valor ≤ `hasta`, compila a un nodo `tramo`). La
+  tabla y la columna se revisan contra el **catálogo de tablas** del origen (`CatalogoDeTablas`, `leerCatalogoDeTablas()`). No: «lookup».
 - **Nodo auxiliar** — `<fila>__<n>` en `compilarExpresion()`: cada operación anidada o número de una fórmula como texto, numerado en
   post-orden; cuáles lo son, `auxiliaresDe()` (`compilador-auxiliares.ts`). La constante auxiliar no pide celda en el diseño.
 - **Fila (de la fórmula)** — `Fila`, `filasDe()` (`entities/formula/filas.ts`): un nodo que no es auxiliar de otro, con sus auxiliares y su

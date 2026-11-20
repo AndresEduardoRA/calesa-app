@@ -1,7 +1,7 @@
 // Las reglas de la variante (decisión e de docs/DECISIONES.md, paso 4.05): a lo sumo un nodo `opcion`, sus
 // claves sin repetir, dos opciones si se cotiza en par, y `solo_en` después de él y con claves que existen.
 import { esta, recorrer } from './medidor'
-import { soloEnDe, type NodoOpcion } from './nodos'
+import { soloEnDe, type Nodo, type NodoOpcion } from './nodos'
 import { esFallo, fallo, type Contexto, type Fallo } from './validar-contexto'
 
 type Variante = { nodo: NodoOpcion; pos: number; claves: ReadonlySet<string> }
@@ -42,20 +42,42 @@ function clavesDe(ctx: Contexto, n: NodoOpcion): Set<string> | Fallo {
   return claves
 }
 
-// `solo_en` lee la variante: va después de ella, como toda referencia, y nombra opciones que tiene.
+// `solo_en` lee la variante: va después de ella, como toda referencia, y nombra opciones que tiene. En la misma pasada, un `es_opcion`
+// compara con una opción que la variante tiene (que nombra la variante ya lo dijo `referencia_de_tipo`).
 function revisarSoloEn(ctx: Contexto, variante: Variante | undefined): Fallo | undefined {
   let i = -1
   for (const n of recorrer(ctx.nodos, ctx.m)) {
     i += 1
-    const soloEn = soloEnDe(n)
-    if (soloEn === undefined) continue
-    if (variante === undefined) return fallo('solo_en_sin_opcion', { donde: n.id })
-    if (variante.pos > i)
-      return fallo('referencia_hacia_adelante', { donde: n.id, ref: variante.nodo.id })
-    for (const clave of recorrer(soloEn, ctx.m)) {
-      if (!esta(variante.claves, clave, ctx.m))
-        return fallo('solo_en_opcion_inexistente', { donde: n.id, clave })
-    }
+    const r = revisarSoloEnDe(ctx, n, i, variante) ?? revisarClaveDeOpcion(ctx, n, variante)
+    if (r !== undefined) return r
   }
   return undefined
+}
+
+function revisarSoloEnDe(
+  ctx: Contexto,
+  n: Nodo,
+  i: number,
+  variante: Variante | undefined,
+): Fallo | undefined {
+  const soloEn = soloEnDe(n)
+  if (soloEn === undefined) return undefined
+  if (variante === undefined) return fallo('solo_en_sin_opcion', { donde: n.id })
+  if (variante.pos > i)
+    return fallo('referencia_hacia_adelante', { donde: n.id, ref: variante.nodo.id })
+  for (const clave of recorrer(soloEn, ctx.m)) {
+    if (!esta(variante.claves, clave, ctx.m))
+      return fallo('solo_en_opcion_inexistente', { donde: n.id, clave })
+  }
+  return undefined
+}
+
+function revisarClaveDeOpcion(
+  ctx: Contexto,
+  n: Nodo,
+  variante: Variante | undefined,
+): Fallo | undefined {
+  if (n.tipo !== 'calculo' || n.op !== 'es_opcion' || variante === undefined) return undefined
+  if (esta(variante.claves, n.clave, ctx.m)) return undefined
+  return fallo('clave_de_opcion_inexistente', { donde: n.id, clave: n.clave })
 }

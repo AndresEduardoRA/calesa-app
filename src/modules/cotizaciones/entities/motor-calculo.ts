@@ -3,12 +3,17 @@
 // vuelve null el resultado, sin faltante nuevo: el faltante es de donde nació.
 import { recorrer } from './medidor'
 import { anotar, leer, type Evaluacion, type Valor } from './motor-contexto'
+import { valorDeComparacion } from './motor-condiciones'
 import { valorDeTramo } from './motor-tablas'
-import type { NodoCalculo } from './nodos'
+import { esDeComparacion, type NodoCalculo, type NodoDeCuenta } from './nodos'
 import { redondear } from './redondeo'
 
 // La condición apagada (también la del `si`) ya la resolvió `valorDeNodo`: acá llega encendida o sin condición.
 export function valorDeCalculo(ev: Evaluacion, n: NodoCalculo): Valor {
+  return esDeComparacion(n) ? valorDeComparacion(ev, n) : valorDeCuenta(ev, n)
+}
+
+function valorDeCuenta(ev: Evaluacion, n: NodoDeCuenta): Valor {
   switch (n.op) {
     case 'suma':
       return sumar(ev, n.id, n.de)
