@@ -1054,4 +1054,6 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tarjeta de ajustes** — `<TarjetaDeAjustes>`, `<TarjetasDeAjustes>` (`@/shared/ui/tarjetas-de-ajustes`): cada bloque de una página de ajustes de
   Configuración, con su título, los valores guardados a la vista (texto, muestras, el logo; no campos), la acción principal («Editar», «Configurar») y su «⋯»;
   se edita en un modal (`?panel=<tarjeta>`). No es la «tarjeta de la lista» ni la «tarjeta de la cotización».
+- **Estado de un documento legal** — `estadoDeLegal()` (`web`): `publicada` (hay un texto guardado: es el que muestra el sitio) · `sin-publicar` (nunca se escribió);
+  es el badge de la tarjeta de cada documento de «Legales». Guardar publica: no hay «Borrador» ni «Programada» (son de las guías). No: «versión», «borrador».
 - **Estado de la integración** — `estadoDeIntegracion()` (`empresa`): `activa` · `apagada` · `falta_la_clave`; es el badge de la tarjeta de cada integración.

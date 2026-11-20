@@ -41,7 +41,7 @@ type Props = {
   alCerrar: () => void
   titulo: string
   descripcion?: string
-  ancho?: 'normal' | 'amplio'
+  ancho?: 'normal' | 'amplio' | 'grande'
   focoInicial?: () => HTMLElement | null
   focoAlCerrar?: () => HTMLElement | boolean
   formulario: FormularioDelModal

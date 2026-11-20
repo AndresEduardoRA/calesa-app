@@ -39,8 +39,8 @@ export type LegalesDelSitio = {
   actualizadoEn: string
 }
 
-// Lo que hay en pantalla de cada documento.
-export type ValoresDeLegales = Record<ClaveDeLegal, { titulo: string; doc: unknown }>
+// Lo que hay en pantalla de cada documento. Un modal edita uno solo: el otro no viaja (la base conserva lo guardado y su fecha).
+export type ValoresDeLegales = Partial<Record<ClaveDeLegal, { titulo: string; doc: unknown }>>
 
 // Quita las imágenes de primer nivel: `legales` las rechaza.
 export function sinImagenes(documento: DocumentoDelSitio): DocumentoDelSitio {
@@ -89,9 +89,10 @@ export type CambiosDeLegales = Partial<
 export function cambiosDeLegales(valores: ValoresDeLegales): CambiosDeLegales {
   const cambios: CambiosDeLegales = {}
   for (const clave of CLAVES_DE_LEGALES) {
-    const doc = documentoDeLegal(valores[clave].doc)
-    if (doc !== null) {
-      cambios[clave] = { titulo: valores[clave].titulo.trim(), doc }
+    const valor = valores[clave]
+    const doc = valor === undefined ? null : documentoDeLegal(valor.doc)
+    if (valor !== undefined && doc !== null) {
+      cambios[clave] = { titulo: valor.titulo.trim(), doc }
     }
   }
   return cambios
@@ -105,14 +106,18 @@ export function legalesInvalidos(
 ): Partial<Record<ClaveDeLegal | `${ClaveDeLegal}Titulo`, string>> {
   const motivos: Partial<Record<ClaveDeLegal | `${ClaveDeLegal}Titulo`, string>> = {}
   for (const clave of CLAVES_DE_LEGALES) {
-    const conTexto = documentoDeLegal(valores[clave].doc) !== null
+    const valor = valores[clave]
+    if (valor === undefined) {
+      continue
+    }
+    const conTexto = documentoDeLegal(valor.doc) !== null
     if (!conTexto) {
       if (guardados[clave] !== null) {
         motivos[clave] = TEXTOS_DE_LEGALES[clave].sinTexto
       }
       continue
     }
-    const titulo = valores[clave].titulo.trim()
+    const titulo = valor.titulo.trim()
     if (titulo === '') {
       motivos[`${clave}Titulo`] = 'Escribe el título.'
     } else if (titulo.length > MAXIMO_DEL_TITULO_LEGAL) {
@@ -121,4 +126,50 @@ export function legalesInvalidos(
     }
   }
   return motivos
+}
+
+// El estado de un documento legal: lo guardado es lo que el sitio muestra (no hay borrador ni programación: guardar publica), y uno que aún no
+// se escribió no está en el sitio.
+export type EstadoDeLegal = 'publicada' | 'sin-publicar'
+
+export const ETIQUETA_DEL_ESTADO_DE_LEGAL: Record<EstadoDeLegal, string> = {
+  publicada: 'Publicada',
+  'sin-publicar': 'Sin publicar',
+}
+
+export function estadoDeLegal(legal: LegalGuardado | null): EstadoDeLegal {
+  return legal === null ? 'sin-publicar' : 'publicada'
+}
+
+export const LARGO_DEL_EXTRACTO_DE_LEGAL = 140
+
+function textoDeNodo(nodo: unknown): string {
+  if (!esObjeto(nodo)) {
+    return ''
+  }
+  if (nodo['type'] === 'text') {
+    return typeof nodo['text'] === 'string' ? nodo['text'] : ''
+  }
+  const hijos = Array.isArray(nodo['content']) ? (nodo['content'] as unknown[]) : []
+  const textos = hijos.map(textoDeNodo).filter((texto) => texto !== '')
+  return textos.join(nodo['type'] === 'paragraph' || nodo['type'] === 'heading' ? '' : ' ')
+}
+
+// Las primeras palabras del texto, para que la tarjeta diga de qué trata: una sola línea, cortada en una palabra entera y con «…» si siguió.
+export function extractoDeLegal(
+  documento: DocumentoDelSitio,
+  largo: number = LARGO_DEL_EXTRACTO_DE_LEGAL,
+): string {
+  const plano = documento.content
+    .map(textoDeNodo)
+    .filter((texto) => texto !== '')
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (plano.length <= largo) {
+    return plano
+  }
+  const corte = plano.slice(0, largo)
+  const espacio = corte.lastIndexOf(' ')
+  return `${(espacio > largo / 2 ? corte.slice(0, espacio) : corte).trimEnd()}…`
 }

@@ -11,10 +11,12 @@ vista y un modal para editar. Sólo dibuja: no lee la base ni guarda nada.
     acción principal y el «⋯» a la derecha. Las acciones llegan como **nodos** (`<BotonDeLaTarjeta>`, `<MasAcciones>`): la tarjeta es sólo texto y viaja en frío.
   - `<ValoresDeLaTarjeta filas>`: el `dl` con «etiqueta, valor»; `valor: null` dice «Sin dato».
   - `<MuestraDeColor color>`: un color como cuadrito y su hex en texto.
+  - `<TarjetaEditable titulo panel motivo abrir estado? extra?>`: `'use client'`; la tarjeta de lo que se edita en un modal: «Editar» a la vista y como primera
+    línea del «⋯» (apagada, dice el `motivo`), con `extra` después. La usan Empresa, Sitio web y Legales.
   - `<BotonDeLaTarjeta panel etiqueta deshabilitado?>`: `'use client'`; abre `?panel=<panel>` con `usePanelPorUrl()`.
 - Aparte, en `src/shared/ui/`: `use-envio-con-version.ts` (`useEnvioConVersion()`, el guardado de un modal con versión) y
   `esqueletos/esqueleto-tarjetas.tsx` (`<EsqueletoTarjetas tarjetas>`, la misma grilla para `loading.tsx`).
-- Lo usan las páginas de Empresa, Integraciones y Comprobantes; Monedas (con la tarjeta de cada tipo de cambio); después, Sitio web y el perfil. No lo importan `layout.tsx` ni `_shell`.
+- Lo usan las páginas de Empresa, Integraciones, Comprobantes y Sitio web (Ajustes y Legales); Monedas (con la tarjeta de cada tipo de cambio); después, el perfil. No lo importan `layout.tsx` ni `_shell`.
 
 ## No se rompe
 
