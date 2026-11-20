@@ -3,6 +3,7 @@
 // vive en Vault; de él la app sólo sabe cuándo se guardó (docs/DECISIONES.md).
 import { z } from 'zod'
 import { PLATAFORMAS_APIBARA, type PlataformaApibara } from '@/shared/lib/apibara'
+import { conteoEnFrase, type ConteoAcotado } from '@/shared/lib/conteo'
 import type { Tables } from '@/shared/types/database.types'
 
 export const CLAVES_INTEGRACION = ['apibara', 'push_web', 'web_publica'] as const
@@ -172,4 +173,56 @@ export const LARGO_MAXIMO_SECRETO = 500
 // apibara no se activa sin su clave: prendida sin ella, cada alta por link fallaría.
 export function puedeActivarse(integracion: Pick<Integracion, 'clave' | 'secretoGuardadoEn'>) {
   return integracion.clave !== 'apibara' || integracion.secretoGuardadoEn !== null
+}
+
+// --- Estado de cada integración, el que dice su tarjeta ---------------------------------------
+
+export type EstadoDeIntegracion = 'activa' | 'apagada' | 'falta_la_clave'
+
+export const ETIQUETA_DEL_ESTADO = {
+  activa: 'Activa',
+  apagada: 'Apagada',
+  falta_la_clave: 'Falta la clave',
+} as const satisfies Record<EstadoDeIntegracion, string>
+
+// «Falta la clave»: apibara sin su clave guardada (no se puede activar); la web pública prendida sin secreto (la base no avisa al sitio);
+// los avisos push prendidos sin la clave pública (nadie puede activarlos en su navegador). Lo demás es prendida o apagada.
+export function estadoDeIntegracion(
+  integracion: Pick<Integracion, 'clave' | 'activa' | 'secretoGuardadoEn'>,
+  { sinClavePublica }: { sinClavePublica: boolean },
+): EstadoDeIntegracion {
+  if (integracion.clave === 'apibara' && integracion.secretoGuardadoEn === null) {
+    return 'falta_la_clave'
+  }
+  if (!integracion.activa) {
+    return 'apagada'
+  }
+  if (integracion.clave === 'web_publica' && integracion.secretoGuardadoEn === null) {
+    return 'falta_la_clave'
+  }
+  return integracion.clave === 'push_web' && sinClavePublica ? 'falta_la_clave' : 'activa'
+}
+
+const AYUDA_GENERAL_DE_LA_WEB =
+  'Con la integración activa, los vehículos publicados se ven en el sitio.'
+
+// Lo que dice el interruptor de la web pública: cuántos vehículos publicados empiezan o dejan de verse al cambiarlo (de 0 a 51; más, «más de 50»).
+export function ayudaDelInterruptorDeLaWeb(
+  activa: boolean,
+  conteo: ConteoAcotado | null,
+  locale: string,
+): string {
+  if (!conteo || conteo.n === 0) {
+    return AYUDA_GENERAL_DE_LA_WEB
+  }
+  const cuantos = conteoEnFrase(conteo, { locale })
+  const uno = conteo.n === 1 && !conteo.hayMas
+  if (activa) {
+    return uno
+      ? `Al apagarla, ${cuantos} vehículo deja de verse en el sitio.`
+      : `Al apagarla, ${cuantos} vehículos dejan de verse en el sitio.`
+  }
+  return uno
+    ? `Al encenderla, ${cuantos} vehículo publicado empieza a verse en el sitio.`
+    : `Al encenderla, ${cuantos} vehículos publicados empiezan a verse en el sitio.`
 }

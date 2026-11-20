@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { esquemaAjustes, type EntradaDeAjustes } from './ajustes'
+import {
+  esquemaAjustes,
+  esquemaCambiosDeAjustes,
+  esquemaDeLaTarjeta,
+  type EntradaDeAjustes,
+} from './ajustes'
 
 const valida: EntradaDeAjustes = {
   nombre: '  Importadora Andina ',
@@ -108,5 +113,67 @@ describe('esquemaAjustes', () => {
   it('la moneda base puede no viajar (con datos cargados no se cambia)', () => {
     const { monedaBase: _sinMoneda, ...sinMoneda } = valida
     expect(esquemaAjustes.parse(sinMoneda).monedaBase).toBeUndefined()
+  })
+})
+
+describe('esquemaCambiosDeAjustes (lo que guarda una tarjeta)', () => {
+  const version = '2026-10-12T14:00:00+00:00'
+
+  it('acepta sólo las claves que cambiaron, con su versión, y las limpia como el esquema entero', () => {
+    const leida = esquemaCambiosDeAjustes.parse({
+      nit: ' 1020304050 ',
+      colorAcento: '',
+      actualizadoEnEsperado: version,
+    })
+    expect(leida).toEqual({ nit: '1020304050', colorAcento: null, actualizadoEnEsperado: version })
+    expect('nombre' in leida).toBe(false)
+  })
+
+  it('sin la versión no pasa', () => {
+    expect(esquemaCambiosDeAjustes.safeParse({ nit: '1' }).success).toBe(false)
+  })
+
+  it('sin ningún cambio no pasa: guardar vacío no mueve la versión', () => {
+    expect(esquemaCambiosDeAjustes.safeParse({ actualizadoEnEsperado: version }).success).toBe(
+      false,
+    )
+  })
+
+  it('una clave desconocida no pasa', () => {
+    expect(
+      esquemaCambiosDeAjustes.safeParse({ nit: '1', raro: 'x', actualizadoEnEsperado: version })
+        .success,
+    ).toBe(false)
+  })
+
+  it('cada campo sigue con su regla: una zona inexistente o un color sin contraste se rechazan', () => {
+    const zona = esquemaCambiosDeAjustes.safeParse({
+      zonaHoraria: 'Marte/Olimpo',
+      actualizadoEnEsperado: version,
+    })
+    expect(zona.success).toBe(false)
+    const color = esquemaCambiosDeAjustes.safeParse({
+      colorAcento: '#ff0000',
+      actualizadoEnEsperado: version,
+    })
+    expect(color.success).toBe(false)
+  })
+})
+
+describe('esquemaDeLaTarjeta', () => {
+  it('valida sólo los campos de su tarjeta y acepta que falten los que no cambiaron', () => {
+    const politicas = esquemaDeLaTarjeta('politicas')
+    expect(politicas.safeParse({ papeleraDias: 45 }).success).toBe(true)
+    expect(politicas.safeParse({ papeleraDias: 0 }).success).toBe(false)
+    expect(politicas.safeParse({ papeleraDias: Number.NaN }).success).toBe(false)
+    // Una clave de otra tarjeta no entra al esquema de ésta.
+    expect(Object.keys(politicas.parse({ papeleraDias: 45, nit: 'x' }))).toEqual(['papeleraDias'])
+  })
+
+  it('el código de país de Región dice su motivo', () => {
+    const leida = esquemaDeLaTarjeta('region').safeParse({ telefonoCc: '591' })
+    expect(leida.success ? null : leida.error.issues[0]?.message).toBe(
+      'El código de país lleva un «+» y de 1 a 3 dígitos.',
+    )
   })
 })

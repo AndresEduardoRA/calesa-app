@@ -183,6 +183,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** La imagen de la tarjeta quita el recuadro al cargar (`onLoad`) y la grande del resumen puede verse un instante como un marco gris vacío hasta que el
   navegador la decodifica: pasar a «lista» tras `img.decode()` (`imagen-de-la-tarjeta.tsx`, `useCargaDeLaImagen()`).
 - **[—]** En el celular, el buscador de la barra superior muestra «Bu» cortado contra «+ Nuevo»: dibujar sólo la lupa cuando no cabe la palabra.
+- **[T428]** Con el texto al 200 % en el celular, la burbuja del chat tapa el borde derecho del valor de una tarjeta de ajustes (la dirección de apibara, «Sin dato»): reservar su lugar en el borde de la página o subirla mientras se lee una tarjeta.
 - **[—]** El selector de embudo de la vista de embudo no se cierra al elegir otro (`DropdownMenuRadioItem` de Base UI no cierra al hacer clic): en el
   celular el menú queda sobre las pestañas de etapas hasta tocar afuera (`selector-de-embudo.tsx`; `closeOnClick` en el ítem).
 - **[T327]** En el celular, la burbuja del chat queda sobre la esquina derecha de la barra de cambios sin guardar; con la barra a la altura de
