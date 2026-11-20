@@ -15,8 +15,15 @@ Primero entiende el estado: `git log --oneline origin/main..HEAD`, `git status -
 - **CI en rojo:** lee el log de lo que cayó (`gh run view <id> --log-failed`, sólo los jobs caídos), reproduce en local el mismo comando
   y arregla **la causa**. Cambiar una prueba sólo si la prueba está mal, y se justifica en el PR. Un e2e que falla a veces y otras no
   no se reintenta hasta que pase: diagnostica con sus artefactos (`e2e-fallos/`, la traza) y arregla el producto o la prueba con
-  evidencia. Si lo que cae no tiene nada que ver con esta rama (también cae en `main`), no lo arregles aquí: `RESULTADO: TRABADA —`
-  con el job y la evidencia.
+  evidencia.
+- **Un e2e ajeno que también cae en `main`:** si lo que cae es un spec que la rama no toca (`gh pr diff {{PR}} --name-only`) y también
+  cae en `main` (la noche, otro PR, o el mismo spec corrido sobre `origin/main`: la evidencia es obligatoria), no lo arregles aquí ni te
+  traba: tu última línea es `RESULTADO: AJENO — <spec>:<línea> [<proyecto>] — <evidencia>` (por ejemplo
+  `RESULTADO: AJENO — e2e/menu-de-la-fila.spec.ts:281 [movil] — cae igual sobre origin/main, y esta rama no lo toca`). El orquestador abre
+  la tarea urgente que lo arregla, deja esta tarea esperándola y la pone al día con main cuando se integre, sin abrir otra sesión.
+  Si cae más de un spec ajeno, nombra el primero y los demás en la evidencia. Sólo vale con un spec y una línea reales y con el PR sin
+  nada propio en rojo: si además cae algo de esta rama, arréglalo y publica (el ajeno lo verá la próxima vuelta). Lo que no es un
+  e2e (lint, tipos, un servicio de afuera) sigue siendo `RESULTADO: TRABADA —` con el job y la evidencia.
 - **Una dependencia** que el arreglo necesite sigue la misma regla que la tarea: entra si está en
   `scripts/orquestador/dependencias-aprobadas.txt`; si no, como último recurso, se suma a esa lista en el mismo PR con la sección
   «Dependencias nuevas» en el cuerpo (por qué no alcanza lo que hay, peso gzip, licencia, mantenimiento, versión verificada hoy con
@@ -31,7 +38,8 @@ No hagas: preguntar · empujar `main` o forzar · desactivar una regla de lint o
 `docs/DESPLIEGUE.md` › «La base remota»; b_ip nunca).
 
 {{PERMITE}}
-Tu última línea, siempre: `RESULTADO: PUBLICADO #{{PR}}` o `RESULTADO: TRABADA — <motivo>`.
+Tu última línea, siempre: `RESULTADO: PUBLICADO #{{PR}}`, `RESULTADO: TRABADA — <motivo>` o, sólo para un e2e ajeno que también cae en `main`,
+`RESULTADO: AJENO — <spec>:<línea> [<proyecto>] — <evidencia>`.
 
 ---
 

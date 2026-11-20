@@ -22,6 +22,11 @@ las trampas, en `docs/LECCIONES.md`.
   Un PR en verde entra aunque `main` haya avanzado; el PR con migraciones nuevas entra al día
   (sin auto-merge, lo integran `publicar.sh` o el orquestador) y `main` en rojo frena lo nuevo hasta la urgente que lo arregla
   (`scripts/orquestador/main-en-tanda.sh`). La cola de GitHub (merge queue) lo haría mejor, pero pide un repo de una organización.
+- **Un e2e que cae en `main` y no es de la rama se espera, no se arregla ni se traba.** La sesión de arreglo termina en `RESULTADO: AJENO — <spec>:<línea> [<proyecto>] — <evidencia>`:
+  el orquestador crea una sola urgente por `<spec>:<línea>` (`plantillas/e2e-roto-en-main.md`), la tarea que lo encontró la suma a su `depende` y sigue
+  `esperando_ci` (sin estado nuevo, sin retener sus llaves de área, sin gastar `MAX_ARREGLOS`), y al integrarse la urgente se pone al día con main sin
+  sesión. Sólo vale desde un arreglo con PR y con un spec y línea válidos; `MAX_AJENOS` (3) corta el ciclo si el spec sigue cayendo
+  (`scripts/orquestador/ajeno-de-main.sh`).
 
 ## Base de datos y permisos
 
