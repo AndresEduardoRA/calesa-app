@@ -167,7 +167,9 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
 - **La fórmula** (área `formula`; `/configuracion/cotizacion/<origen>/formula`, `cotizaciones.configurar`, a ancho completo): arriba la publicada, el
   borrador y las versiones (`VistaDeLaFormula`) y abajo la sesión de edición (`SesionDeLaFormula` por `diferido()`: lee la versión desde el navegador y
   llama **una vez** a `useEditorDeLaFormula`), que dibuja la planilla (`components/planilla/`, por `diferido()`; lo que arma, `usePlanilla()`) o, con
-  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula de trabajo. La unidad
+  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula de trabajo. El
+  catálogo de tablas del origen (`leerCatalogoDeTablas()`: clave y columnas de las `tablas_referencia` activas del origen y las compartidas, la del origen
+  gana; tope 100; nulo si falla) lo lee la sección en paralelo con la fórmula y llega a la sesión para revisar BUSCARV al compilar. La unidad
   de ejemplo y el modo viven en la sesión; «Publicar…» espera con cambios aplicados sin guardar (`alCambiarPendientes`, en `useLayoutEffect`). La `key` de la
   sesión es `<origen>:<vuelta>:<sesión>` (`otraSesion()`). La página pasa `tarjeta` (la promesa de `leerLaTarjetaDeTrabajo()`), `TarjetaEnVivo` y
   `puedeCambiarTiposDeCambio`. Las celdas editables usan `BOTON_DEL_VALOR` y `ENTRADA` de `@/shared/ui/xcell`; los colores de las bandas, `leerTonosDelCatalogo()`

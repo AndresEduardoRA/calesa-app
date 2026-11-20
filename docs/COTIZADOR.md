@@ -28,7 +28,11 @@ Común: `id` (`^[a-z][a-z0-9_]{0,40}$`), `tipo`, `etiqueta`; `formato?` (`usd` p
   `condicion?`. `tramo`: `tabla`, `sobre` (un nodo), `columna`, `sobrescribible?`, `condicion?`: la fila con `desde ≤ sobre ≤ hasta`.
 - `calculo`: `op`, `sobrescribible?`, `condicion?`, `texto?`. Operaciones: `suma(de ≥ 1)`, `porcentaje_de(de ≥ 1, pct)` = Σde × pct,
   `multiplicar(de ≥ 2)`, `restar(de[0] − de[1…])`, `dividir(de[0] / de[1])`, `si(condicion, de[0])`,
-  `depreciar(de[0], tabla, sobre, columna)`, `redondear(de[0], n de 0 a 6)`.
+  `depreciar(de[0], tabla, sobre, columna)`, `redondear(de[0], n de 0 a 6)`. **Condiciones y extremos** (glosario: «Condición (de la
+  fórmula)»): `comparar(de: [a, b], cmp)` con `cmp` `>` `<` `>=` `<=` `=` `<>` = 1 o 0; `es_opcion(de: [la variante], cmp '='|'<>', clave)` =
+  1 o 0 según la clave elegida; `y(de ≥ 2)` y `o(de ≥ 2)` = 1 o 0 (distinto de 0 es verdadero); `elegir(prueba, de: [si_verdadero,
+si_falso?])` = `de[0]` si la prueba es distinta de 0, si no `de[1]` o 0; `max(de ≥ 1)` y `min(de ≥ 1)`. El `si` de una bandera sigue
+  siendo `si`; una condición cualquiera o una rama «si no» es `elegir`.
 
 Un nodo nuevo lleva su tipo en el Zod de `nodos.ts`, su caso en `referenciasDe()` y en `validar_formula()`, y el juego de prueba.
 
@@ -83,15 +87,18 @@ en **cada** origen que la usa.
 
 ## Las reglas
 
-**Primero la forma (`forma`):** el Zod de `nodos.ts` y `formula.ts`. **Después, 31 reglas cruzadas** con código estable (contrato con la
+**Primero la forma (`forma`):** el Zod de `nodos.ts` y `formula.ts`. **Después, 32 reglas cruzadas** con código estable (contrato con la
 base; lista y textos de cada lado en `entities/motivos-de-formula.ts`); `donde` es el id del nodo, grupo o clave donde se rompe (en la
 base, `hint`): `nodo_duplicado`, `referencia_inexistente` (un `match` sin nodo es un campo del vehículo), `ciclo`,
-`referencia_hacia_adelante` (también `solo_en` antes del `opcion`), `referencia_de_tipo`, `total_unico`, `total_fijo`,
+`referencia_hacia_adelante` (también `solo_en` antes del `opcion`), `referencia_de_tipo` (la `prueba` de un `elegir` y los términos de
+`y`/`o` son una bandera o un `comparar`, `es_opcion`, `y` u `o` —nunca un `elegir`—; el `de` de un `es_opcion`, la variante), `total_unico`, `total_fijo`,
 `total_no_es_monto`, `constante_sin_valor`, `param_sin_constante`, `par_mal_tipado`, `pct_compartido`, `tipo_de_cambio_repetido`,
 `tipo_de_cambio_inexistente`, `bucket_inexistente`, `total_sin_tipo_de_cambio`, `grupos_sin_total_en`, `grupo_duplicado`,
 `grupo_inexistente`, `grupo_vacio`, `bucket_con_grupos`, `miembro_no_es_monto` (sólo `input`, `constante`, `tabla`, `tramo`, `calculo`,
-en usd o moneda), `miembro_con_salida`, `doble_conteo` (un miembro que acumula otro), `opcion_repetida`, `opcion_clave_repetida`,
-`opcion_por_defecto_inexistente`, `par_sin_dos_opciones` (`en_par` con otra cantidad de opciones que dos), `solo_en_sin_opcion`, `solo_en_opcion_inexistente`, `campo_con_punto` (un campo de vehículo con punto:
+en usd o moneda), `miembro_con_salida`, `doble_conteo` (un miembro que acumula otro: `elegir` acumula sus ramas y no su prueba, `max` y
+`min` su `de`, una comparación, `y` u `o` nada), `opcion_repetida`, `opcion_clave_repetida`,
+`opcion_por_defecto_inexistente`, `par_sin_dos_opciones` (`en_par` con otra cantidad de opciones que dos), `solo_en_sin_opcion`, `solo_en_opcion_inexistente`,
+`clave_de_opcion_inexistente` (un `es_opcion` con una clave que la variante no tiene), `campo_con_punto` (un campo de vehículo con punto:
 es una columna o la clave de un campo del origen).
 
 El validador **devuelve el primer rechazo**, en orden fijo, y es **lineal** (todo bucle y toda búsqueda pasan por `medidor.ts`).
@@ -164,7 +171,11 @@ sugerido no lo cumple; un input inactivo no exige nada.
 ### La aritmética
 
 Dobles (float8), de izquierda a derecha: `suma` = ((d0 + d1) + d2)…; `restar` = ((d0 − d1) − d2)…, nunca d0 − Σresto; `multiplicar`
-igual; `porcentaje_de` = (Σde) × pct. −0 se guarda como 0; lo no finito, null con `fuera_de_rango`. **`redondear(x, n)` =
+igual; `porcentaje_de` = (Σde) × pct. **Condiciones y extremos:** un término null da null (`comparar`, `y`, `o`, `max`, `min`; en la base,
+nunca `greatest` ni `least`, que saltan los NULL); la igualdad es exacta en float8; `max` y `min` recorren de izquierda a derecha con `>` y
+`<`; `es_opcion` compara la clave elegida como texto (sin variante, null). `elegir` con la prueba null es null y si no vale su rama elegida
+(un null de la otra no la alcanza); las dos ramas son nodos y se evalúan igual, así que el faltante de la rama no elegida sigue en
+`faltantes`: un SI no vuelve opcional un input (para eso, `condicion` y `requerido_si`). −0 se guarda como 0; lo no finito, null con `fuera_de_rango`. **`redondear(x, n)` =
 `round(x::float8::numeric, n)::float8`:** 15 cifras significativas y mitad lejos de cero, como el ROUND del Excel (2,675 da 2,68);
 `redondeo.ts` lo hace exacto con BigInt.
 
@@ -208,10 +219,27 @@ recursión, lineal, profundidad máxima 64. Se compila **al configurar**; al cot
 `constante` y `calculo`): el editor guarda `{ ...raíz compilada, texto }`, de 1 a 2.000 caracteres (`MAXIMO_DE_TEXTO` en `nodos.ts`); el
 motor lo ignora; otro nodo con `texto` es `forma`.
 
-- **Gramática:** números, `4%` (÷ 100, constante `pct`), `+ - * /` y `( )`; un nombre es sólo el id de un nodo anterior. Funciones
-  (argumentos con `;`): `SUMA(grupo)`, `SI(bandera; x)`, `REDONDEAR(x; n)`, `PORCENTAJE_DE(x; pct)`,
-  `DEPRECIAR(x; tabla; sobre; columna)`. No hay `MULTIPLICAR`/`RESTAR`/`DIVIDIR`, referencias A1 ni `HOY()`. Un literal es una
-  `constante` en `params`.
+- **Gramática:** números (con punto: `0,1` es el error `coma`), `4%` (÷ 100, constante `pct`), `+ - * /`, las comparaciones
+  `> < >= <= = <>` y `( )`; un nombre es sólo el id de un nodo anterior. Precedencia: `* /`, después `+ -`, después las comparaciones,
+  todo asociativo a la izquierda; `a<b<c` es `comparacion_encadenada`. Un texto entre comillas (`"fletes"`) sólo va en BUSCARV o frente a
+  la variante con `=`/`<>` (`variante="b"`); en otro lugar, `texto_fuera_de_lugar`. No hay `MULTIPLICAR`/`RESTAR`/`DIVIDIR`, referencias
+  A1 ni `HOY()`. Un literal es una `constante` en `params`.
+- **Las diez funciones** (argumentos con `;`, el nombre en mayúsculas o minúsculas): `SUMA(grupo)`; `SI(condición; x[; y])` (con una
+  bandera y dos argumentos es el `si` de siempre; si no, `elegir`); `Y(c1; c2; …)` y `O(…)` (dos o más condiciones); `MAX(a; b; …)` y
+  `MIN(…)` (un argumento solo tiene que ser un grupo, que se expande en sus miembros); `BUSCARV(valor; "tabla"; "columna"[; VERDADERO|
+FALSO])`; `REDONDEAR(x; n)`; `PORCENTAJE_DE(x; pct)`; `DEPRECIAR(x; tabla; sobre; columna)`. Una condición es una bandera, una
+  comparación, `variante="clave"`, Y u O; otra cosa es `no_es_condicion`, con un ejemplo armado con el nombre que se escribió.
+- **BUSCARV** compila a los nodos de siempre: exacta (sin el cuarto argumento o con `FALSO`) es una auxiliar `tabla` con `match:
+{<primera columna de la tabla>: valor}`; con `VERDADERO`, una auxiliar `tramo` con `sobre: valor` (la tabla necesita `desde` y `hasta`:
+  `tabla_sin_tramos`). Un valor que no es un nombre va antes a su propia auxiliar; BUSCARV en la raíz deja la fila como `suma` de la
+  búsqueda (sólo una `constante` o un `calculo` llevan `texto`). La variante es valor sólo de la exacta (`variante_en_calculo` en la de
+  tramo). La tabla y la columna se revisan contra **el catálogo del origen** (`ContextoDeCompilacion.tablas`: clave y columnas de las
+  tablas activas del origen y las compartidas; con la misma clave manda la del origen, como al calcular): `tabla_inexistente`,
+  `tabla_sin_columnas`, `columna_inexistente`. Sin catálogo (la lectura falló), `tablas_sin_leer`: lo demás compila igual. El área
+  `formula` lo lee en el servidor (`leerCatalogoDeTablas()`, `tablas_referencia` por `tablas_referencia_origen_id_clave_key`, tope
+  `TOPE_DE_TABLAS_DEL_CATALOGO` = 100). Publicar no cambia: la tabla viva se lee al calcular y la congelada manda.
+- **Formato:** una comparación, `es_opcion`, Y u O auxiliar es `raw` (vale 1 o 0), y también la raíz de una fila nueva; una fila que ya
+  existía conserva su formato.
 - **Grafo:** `a+b+c` es UN `suma` (igual `restar` y `multiplicar`); un paréntesis, función o cambio de operación cortan el aplanado;
   `/` nunca se aplana. Cada operación anidada y número es un auxiliar `<destino>__<n>`, `n` desde 1 en **post-orden**; la fila es la raíz
   y no se numera; un id existente es `auxiliar_ocupado`.
@@ -233,8 +261,9 @@ Lo puro en `entities/formula/`: nunca lanza, no toca lo que recibe y es lineal c
   **reescribe en su tramo** (`escribirLiteral()`: con `%` se corre el punto, nunca `v * 100`) y la fila queda `reescrito`; si no (no
   compila, otra estructura, un negativo, un `-0`), `no_manda` con su motivo. Recompilar una fila `no_manda` que cambia o quita una
   constante da `pisa_un_valor` hasta `confirmaPisar`: nunca se deshace un ⚙ en silencio.
-- **Las filas sembradas** no traen texto: `textoDeNodo()` lo escribe (`a+b+c`, `SI(b; x)`, sin «=») sólo si compilarlo da exactamente ese
-  nodo; si no, `null` y la fila se muestra por sus campos.
+- **Las filas sembradas** no traen texto: `textoDeNodo()` lo escribe (`a+b+c`, `SI(b; x)`, `a>b`, `v<>"b"`, `Y(a; b)`, `SI(p; x; y)`,
+  `MAX(a; b)`, sin «=») sólo si compilarlo da exactamente ese nodo; si no, `null` y la fila se muestra por sus campos. Una búsqueda no se
+  escribe: la fila con BUSCARV nació de su texto.
 - **La pantalla:** la **planilla** (`features/formula/components/planilla/`, la vista por defecto) y el **Modo avanzado** (`components/editor/`,
   `?panel=editar-formula`), sobre una sola fórmula de trabajo que tiene la sesión (`components/sesion/`, `useEditorDeLaFormula` una vez): compila al
   aplicar con `compilarFila()` (sin `validarFormula()` si la fila da error), valida la fórmula de trabajo tras cada cambio (el rechazo, en su fila) y
@@ -243,7 +272,8 @@ Lo puro en `entities/formula/`: nunca lanza, no toca lo que recibe y es lineal c
 - **La planilla:** `bandasDeLaPlanilla()` (`planilla.ts`) reparte las filas en bandas (tipo de cambio, unidad de ejemplo, variante, un grupo por banda
   y «Sin grupo»; cada fila una vez, numeradas en el orden en que se dibujan); `celdaB()` y `editableEnC()` dicen qué celdas se editan.
   `deDondeSale()` (`de-donde-sale.ts`) dice cada fila en palabras con las etiquetas (nunca ids): una frase por tipo de nodo y por operación, las
-  auxiliares en línea (una constante con su valor, un cálculo entre paréntesis), nunca lanza y es lineal. `cambiarValorDeConstante()`
+  auxiliares en línea (una constante con su valor, un cálculo entre paréntesis, una comparación auxiliar sin ellos, una búsqueda como «de la
+  tabla `<clave>` por …», con la clave de la tabla y no su nombre), nunca lanza y es lineal. `cambiarValorDeConstante()`
   (`valor-en-la-planilla.ts`) escribe `params[id]` como el ⚙ y reescribe el texto de la fila que la contiene (`textoVigente()`); si el texto no
   puede decirlo queda `no_manda`. La **unidad de ejemplo** (`unidad-de-ejemplo.ts`: `inputs`, `banderas`, `vehiculo` por campo y la variante) se
   calcula con `calcularLaVistaPrevia(formula, terreno, unidad, modo)`: `entradaDeLaUnidad()` suelta lo que la fórmula ya no tiene, `modoDelMotor()`
