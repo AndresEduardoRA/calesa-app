@@ -412,6 +412,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Cotización aprobada** — `cotizaciones_aprobadas`, `cotizacion_aprobar()`, `cotizaciones.aprobar` (por origen): la elegida de un vehículo, una sola por
   vehículo (la clave primaria es el vehículo). Nace aprobada la primera activa; si la aprobada se invalida o va a la papelera pasa a la más antigua que sigue
   activa. No es la **Final** (marcar una no aprueba ni al revés). Se ve como la insignia «Aprobada» y, en `/vehiculos`, como el **Costo estimado**.
+- **Cotización privada** — `cotizaciones.privada`, `cotizacion_privada_cambiar()`, `cotizaciones.privadas.ver` (por origen; `entities/privada.ts`): la que ven sólo
+  quien la creó y quien tiene `cotizaciones.privadas.ver` de su origen; para el resto no existe. La marca la pone y la quita sólo quien la creó (el
+  interruptor «Privada» al guardar, o «Hacer privada» / «Hacer pública» en su «⋯»); aprobarla o marcarla final la hace pública. Se ve como la insignia
+  «Privada» con candado. No: «oculta», «borrador», «personal».
 - **Costo estimado** — `ROTULO_DEL_COSTO_ESTIMADO`, `costoEstimadoDe()` (`vehiculos/entities/cotizacion-aprobada-de-la-fila.ts`), `cotizaciones_aprobadas_de_vehiculos()`:
   la cotización aprobada de un vehículo en `/vehiculos` (columna de la tabla y fila de la tarjeta de la lista): su primer resultado con su moneda y el modo de tipo
   de cambio de la cotización («US$27.999 · Unificado»), en un botón que abre «Compartir la cotización» de la aprobada sin salir de la lista. No son los campos de apibara «Costo estimado desde / hasta / mediano (USD)».

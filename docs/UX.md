@@ -1275,6 +1275,26 @@ qué no se elimina viene de la base**.
 - **Dónde se nota:** cada nivel son **dos permisos por origen** (`Ver el nivel «X»`, `Editar el nivel «X»`) en Roles; el dueño los recibe
   al nacer.
 
+### Cotización: privada (estados propios)
+
+La marca de una cotización que sólo ven quien la creó y quien puede ver las privadas de su origen (glosario: «Cotización privada»). Quién la ve lo decide
+la base; la pantalla sólo ofrece la marca a quien la creó y la dibuja.
+
+- **Al guardar una nueva:** sobre el pie del resumen de la hoja, el interruptor «Privada» con «Sólo la ves tú y quien puede ver las privadas de este
+  origen.» debajo (`aria-describedby`), apagado mientras guarda. Vive en la URL (`?privada=si`); al guardar sale de la URL y «Cotizar otra» nace pública.
+- **En una guardada:** el «⋯» de la guardada y el de la fila del listado ofrecen «Hacer privada» o «Hacer pública», sólo a quien la creó (con «Ver como»,
+  decide la persona real). Apagada con su motivo: «Una final no se hace privada.», «Es la aprobada de su vehículo: no se hace privada.» o, en la guardada
+  con algo sin guardar, «Guarda los cambios primero.». Entra con el toast «La n.º N es privada.» (o «… es pública.») y la página se vuelve a leer.
+  Conflicto (`PT409`): el texto de la base y «Recargar»; sin red: «Sin conexión: no se cambió. Reintenta cuando vuelva.».
+- **La insignia:** «Privada» con un candado (que no se lee), en la tabla, la tarjeta, la línea de un grupo, el resumen y la cabecera de la guardada.
+- **Aprobar una privada:** el botón dice «Aprobar…» y pregunta antes (`?panel=aprobar-privada&para=<id>&desde=…`): «Aprobar la cotización n.º N» con «Al
+  aprobarla deja de ser privada: la verá todo el que ve las cotizaciones de su origen.» (en la guardada suma que lo no guardado se pierde). Entra con el
+  toast de siempre más «Ya no es privada.» y su «Deshacer» (que no la vuelve privada). Si no entra, el diálogo sigue abierto con el motivo y, si otra
+  persona la cambió, «Recargar».
+- **Marcarla final:** la pregunta de siempre suma «Al marcarla final deja de ser privada: la verá todo el que ve las cotizaciones de su origen.».
+- **Sin permiso:** la privada ajena no existe: no está en el listado, la búsqueda, el buscador, «De este vehículo» ni los relacionados, y su URL dice
+  «Esta cotización ya no está disponible: no existe o ya no tienes acceso.».
+
 ### Cotización: quién crea y quién ve (estados propios)
 
 Configuración › Catálogos › Quién crea y quién ve (`/configuracion/catalogos/quien-crea-y-quien-ve`): por rol, si crea cotizaciones y cuáles ve. Son tres

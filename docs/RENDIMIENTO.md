@@ -796,6 +796,8 @@ fallar.
   bloques de `cotizaciones`; con 250.000 ≤ 1,2 × los bloques de 50.000 + 20 y ≤ máx(1,5 × t; t + 3 ms); `mis_leads()` 1 vez si va la cartera
   (ninguna con `p_lead`), `origenes_con_alcance()` ≤ 2 + 2 por ruta, `en_cartera()` ≤ una por fila leída de la cartera o del vehículo,
   ninguna a `alcance_de` ni a `_bajas_en_curso`; los índices de cada caso por nombre y ningún otro con bloques. Máximo de la base: 100 (la pantalla pide hasta 50, `MAXIMO_DE_PAGINA_DE_COTIZACIONES`).
+  Una privada ajena (glosario: «Cotización privada») se descarta como filtro sobre la fila que la ruta ya leyó, sin índice que la salte: quien ve «todos» sin
+  `cotizaciones.privadas.ver` lee de más en proporción a las privadas ajenas. La siembra de volumen no tiene privadas (`docs/PENDIENTES.md`).
   El bloque «Cotizaciones» de la ficha del lead (PostgREST, `lead_id = …`, 3 + 1 por `cotizaciones_lead_creado_idx`, mismo archivo): la dueña ≤ 10 ms, Ana
   ≤ 50 con su cartera y ≤ 100 con el ajeno. Se lee al acercarse a la vista, con `diferido()` en su `diferidos.tsx`; lo demás, en «Ver todas»
   (`/cotizaciones?lead=`); `e2e/leads-cotizaciones.spec.ts`: la respuesta ≤ 1.500 B.

@@ -319,6 +319,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - En un DOM grande busca por texto, no por rol (con un CPU pasa los 5 s), y llega al tope con pocas filas; un test que corre un script entero lleva su tope con el motivo.
 - Mockea `server-only` en el test de un `client.ts` que reexporta una Server Action: la arrastra transitivamente.
 - Prueba un registro por área con el área simulada, nunca con el archivo real: la prueba cae en cuanto alguien registra algo.
+- Un componente que empieza a usar `useRouter()` o un hook de nuqs rompe los tests de todo lo que lo dibuja («invariant expected app router to be mounted»,
+  «nuqs requires an adapter»): esos tests montan con `withNuqsTestingAdapter()` y mockean `next/navigation`; lo que la URL escribe llega tarde (`waitFor`).
 
 ## CI, entorno y herramientas
 
