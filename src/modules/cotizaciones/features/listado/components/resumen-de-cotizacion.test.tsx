@@ -211,9 +211,12 @@ describe('ResumenDeCotizacion con «De este vehículo»', () => {
       {JSON.stringify(props.aprobarEn)}
     </p>
   )
-  const Pestanas: NonNullable<HuecosDelResumen['Pestanas']> = () => <p data-testid="pestanas" />
+  // Las pestañas dibujan el bloque que les pasa el resumen (la quinta pestaña).
+  const Pestanas: NonNullable<HuecosDelResumen['Pestanas']> = (props) => (
+    <div data-testid="pestanas">{props.deEsteVehiculo}</div>
+  )
 
-  it('va entre los datos y las pestañas, con el vehículo, «Esta» y dónde aprueba quien mira', () => {
+  it('va dentro de las pestañas, después de la cabecera, con el vehículo, «Esta» y dónde aprueba quien mira', () => {
     dibujar({
       busqueda: `?cotizacion=${ID}`,
       filas: [cotizacion({ vehiculoId: VEHICULO, vehiculo: 'Toyota Hilux' })],
@@ -225,7 +228,7 @@ describe('ResumenDeCotizacion con «De este vehículo»', () => {
     const datos = screen.getByText('Cliente')
     const pestanas = screen.getByTestId('pestanas')
     expect(datos.compareDocumentPosition(bloque) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(bloque.compareDocumentPosition(pestanas) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(pestanas.contains(bloque)).toBe(true)
   })
 
   it('sin vehículo, o con uno que quien mira no ve (sin nombre), no hay bloque; sin saber dónde aprueba, en ninguno', () => {
@@ -235,14 +238,14 @@ describe('ResumenDeCotizacion con «De este vehículo»', () => {
     dibujar({
       busqueda: `?cotizacion=${ID}`,
       filas: [cotizacion({ vehiculoId: VEHICULO, vehiculo: null })],
-      huecos: { DeEsteVehiculo },
+      huecos: { Pestanas, DeEsteVehiculo },
     })
     expect(screen.queryByTestId('de-este-vehiculo')).toBeNull()
     cleanup()
     dibujar({
       busqueda: `?cotizacion=${ID}`,
       filas: [cotizacion({ vehiculoId: VEHICULO, vehiculo: 'Hilux' })],
-      huecos: { DeEsteVehiculo },
+      huecos: { Pestanas, DeEsteVehiculo },
     })
     expect(screen.getByTestId('de-este-vehiculo').textContent).toContain(':[]')
   })

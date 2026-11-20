@@ -6,6 +6,7 @@ import {
   type TerrenoDeLaFinal,
 } from './soporte/cotizaciones-final'
 import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { esMovil } from './soporte/inventario'
 import { capturar, sinScrollHorizontal } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
@@ -208,6 +209,55 @@ test('E2E la barra: «Abrir», «Compartir» y el «⋯» en ese orden, antes de
   await expect(page).toHaveURL(new RegExp(`/cotizaciones/${suelta}$`))
 })
 
+async function abrirElResumenDeLaSegunda(page: Page) {
+  const [, segunda = ''] = grupo.ids
+  await abrir(page, deLaPrueba(`&cotizacion=${segunda}`))
+  return esElResumenDe(page, segunda)
+}
+
+test('E2E la cabecera es resumida: miniatura a la izquierda, datos a la derecha y ≤ 120 px', async ({
+  page,
+}) => {
+  const drawer = await abrirElResumenDeLaSegunda(page)
+  const cabecera = drawer.locator('[data-cabecera-del-resumen]')
+  const miniatura = cabecera.locator('[data-miniatura-del-resumen]')
+  await expect(miniatura).toBeVisible()
+  await expect(cabecera.getByText('Preventa')).toBeVisible()
+  await expect(cabecera).toContainText('Vale hasta el')
+  const [caja, foto, texto] = await Promise.all([
+    cabecera.boundingBox(),
+    miniatura.boundingBox(),
+    cabecera.locator('dl').boundingBox(),
+  ])
+  // Miniatura a la izquierda y el texto a su derecha (en escritorio y en celular).
+  expect((foto?.x ?? 0) + (foto?.width ?? 0)).toBeLessThanOrEqual((texto?.x ?? 0) + 1)
+  // ≤ 120 px de alto con el texto al 100 % (el celular parte el texto en más líneas: no se mide).
+  if (!esMovil(page)) {
+    expect(caja?.height ?? 0).toBeLessThanOrEqual(120)
+  }
+})
+
+test('E2E las pestañas ocupan todo el ancho y el resto del alto, y el panel se desplaza solo', async ({
+  page,
+}, info) => {
+  const drawer = await abrirElResumenDeLaSegunda(page)
+  const lista = drawer.getByRole('tablist')
+  const [cuerpo, filaDePestanas] = await Promise.all([
+    drawer.locator('[data-cabecera-del-resumen]').evaluate((e) => {
+      const marco = e.parentElement?.parentElement?.getBoundingClientRect()
+      return { x: marco?.x ?? 0, ancho: marco?.width ?? 0 }
+    }),
+    lista.boundingBox(),
+  ])
+  expect(Math.abs((filaDePestanas?.width ?? 0) - cuerpo.ancho)).toBeLessThanOrEqual(2)
+  const panel = drawer.getByRole('tabpanel')
+  expect(await panel.evaluate((e) => getComputedStyle(e).overflowY)).toBe('auto')
+  expect((await panel.boundingBox())?.height ?? 0).toBeGreaterThan(150)
+  // Lo único que se desplaza de costado es la lista de pestañas, no el panel.
+  expect(await drawer.evaluate((e) => e.scrollWidth <= e.clientWidth + 1)).toBe(true)
+  await capturar(page, info, 'cabecera-y-pestanas')
+})
+
 test('E2E «Aprobar esta» de «De este vehículo» cambia la insignia en el resumen y en la cabeza del grupo, sin recargar', async ({
   page,
 }) => {
@@ -219,6 +269,8 @@ test('E2E «Aprobar esta» de «De este vehículo» cambia la insignia en el res
   })
   const drawer = await esElResumenDe(page, tercera)
   await expect(drawer.getByText('Aprobada', { exact: true })).toHaveCount(0)
+  // «De este vehículo» es la quinta pestaña.
+  await drawer.getByRole('tab', { name: 'De este vehículo' }).click()
   const esta = drawer.locator('[data-esta]')
   await esta.scrollIntoViewIfNeeded()
   await esta.getByRole('button', { name: 'Aprobar esta' }).click()
