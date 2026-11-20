@@ -1,12 +1,10 @@
 'use client'
 
 import Image from 'next/image'
-import type { ReactNode } from 'react'
 import { Aviso } from '@/shared/ui/aviso'
-import { MasAcciones, type AccionDeMenu } from '@/shared/ui/lista'
+import type { AccionDeMenu } from '@/shared/ui/lista'
 import {
-  BotonDeLaTarjeta,
-  TarjetaDeAjustes,
+  TarjetaEditable,
   TarjetasDeAjustes,
   ValoresDeLaTarjeta,
 } from '@/shared/ui/tarjetas-de-ajustes'
@@ -42,47 +40,6 @@ type Props = {
   conDatosCargados: boolean
   // Sin `empresa.ajustes.gestionar` se ve todo, con «Editar» apagado y el motivo.
   puedeEditar: boolean
-}
-
-// «Editar» en el «⋯»: la primera línea, la principal; apagada dice por qué.
-function accionesDeEditar(abrir: () => void, motivo: string | null, extra: AccionDeMenu[] = []) {
-  return [
-    {
-      tipo: 'accion',
-      clave: 'editar',
-      etiqueta: 'Editar',
-      principal: true,
-      deshabilitada: motivo !== null,
-      despuesDeCerrar: true,
-      alElegir: abrir,
-    },
-    ...(motivo === null ? [] : [{ tipo: 'nota', clave: 'motivo', texto: motivo } as const]),
-    ...extra,
-  ] satisfies AccionDeMenu[]
-}
-
-type Editable = { titulo: string; panel: string; motivo: string | null; abrir: () => void }
-
-function TarjetaEditable({
-  titulo,
-  panel,
-  motivo,
-  abrir,
-  children,
-  extra,
-}: Editable & {
-  children: ReactNode
-  extra?: AccionDeMenu[]
-}) {
-  return (
-    <TarjetaDeAjustes
-      titulo={titulo}
-      accion={<BotonDeLaTarjeta panel={panel} etiqueta="Editar" deshabilitado={motivo !== null} />}
-      acciones={<MasAcciones nombre={titulo} acciones={accionesDeEditar(abrir, motivo, extra)} />}
-    >
-      {children}
-    </TarjetaDeAjustes>
-  )
 }
 
 // La tarjeta de los íconos: el ícono en uso y, si ya se dibujaron, «Volver a los íconos neutros» en el «⋯».

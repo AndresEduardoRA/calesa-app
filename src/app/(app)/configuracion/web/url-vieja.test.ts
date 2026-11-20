@@ -17,6 +17,12 @@ describe('las URLs de cuando Sitio web tenía pestañas', () => {
     expect(destinoDeLaUrlVieja({ seccion: 'guias', panel: 'categorias', q: 'seguro' })).toBe(
       '/configuracion/web/guias?panel=categorias&q=seguro',
     )
+    expect(destinoDeLaUrlVieja({ seccion: 'ajustes', panel: 'seo' })).toBe(
+      '/configuracion/web/ajustes?panel=seo',
+    )
+    expect(destinoDeLaUrlVieja({ seccion: 'legales', panel: 'terminos' })).toBe(
+      '/configuracion/web/legales?panel=terminos',
+    )
     expect(destinoDeLaUrlVieja({ seccion: 'testimonios', panel: undefined })).toBe(
       '/configuracion/web/testimonios',
     )

@@ -8,14 +8,14 @@ import { SeccionAjustes } from './seccion'
 
 export const metadata: Metadata = { title: AJUSTES_DEL_SITIO.titulo }
 
-// Configuración › Sitio web › Ajustes (`web.ajustes.gestionar`): la fila única del sitio, con la barra de cambios sin guardar.
+// Configuración › Sitio web › Ajustes (`web.ajustes.gestionar`): la fila única del sitio en cinco tarjetas que se editan en un modal cada una.
 export default async function PaginaDeAjustesDelSitio() {
   const { permisos } = await requerirSesion()
   if (entrarASubseccion(permisos, AJUSTES_DEL_SITIO) === 'sin-permiso') {
     return <EstadoSinPermiso />
   }
   return (
-    <div className="grid max-w-3xl gap-4">
+    <div className="grid max-w-6xl gap-4">
       <EncabezadoDeConfiguracion {...AJUSTES_DEL_SITIO} />
       <SeccionAjustes />
     </div>
