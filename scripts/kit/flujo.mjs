@@ -59,16 +59,30 @@ export const esFlujo = (ruta, patrones) =>
   !rutaProhibida(ruta) && patrones.some((p) => coincide(ruta, p))
 
 /**
- * Las líneas agregadas de un parche (el `patch` de `pulls/<n>/files`) que terminan en `(kit)` o `(semilla)`, sin el `+`. Puro.
+ * Las lecciones agregadas en un parche (el `patch` de `pulls/<n>/files`) que terminan en `(kit)` o `(semilla)`, sin el `+`. Una
+ * lección que sigue en varias líneas (la viñeta `- …` y debajo las que empiezan con espacios) se junta en una: si no, sólo subía su
+ * última línea. Puro.
  * @param {string} patch
  */
 export function leccionesDelParche(patch) {
   /** @type {{ kit: string[], semilla: string[] }} */
   const out = { kit: [], semilla: [] }
+  /** @type {string[]} */
+  let vineta = []
   for (const l of patch.split('\n')) {
-    if (!l.startsWith('+') || l.startsWith('+++')) continue
+    if (!l.startsWith('+') || l.startsWith('+++')) {
+      vineta = []
+      continue
+    }
+    const texto = l.slice(1)
+    if (texto.startsWith('- ')) vineta = [texto.trim()]
+    else if (/^\s+\S/.test(texto) && vineta.length) vineta.push(texto.trim())
+    else vineta = [texto.trim()]
     const m = LECCION_QUE_SUBE.exec(l)
-    if (m) out[/** @type {'kit' | 'semilla'} */ (m[1])].push(l.slice(1).trim())
+    if (m) {
+      out[/** @type {'kit' | 'semilla'} */ (m[1])].push(vineta.join(' '))
+      vineta = []
+    }
   }
   return out
 }
@@ -99,7 +113,7 @@ export function tocaFlujo(archivos, patrones) {
 
 // Lo que llega al issue del kit sale de un PR, no del kit: una lección queda en una línea con tope, y una ruta con caracteres de
 // control o comillas invertidas (que romperían su `código`) no se lista.
-const TOPE_DE_LECCION = 300
+const TOPE_DE_LECCION = 600
 const RUTA_RARA = /[\u0000-\u001f\u007f`]/
 /** @param {string} l */
 function vineta(l) {
@@ -142,7 +156,17 @@ export function specAlKit(plantilla, { repoGh, nombre, pr, toca }) {
       .trim() || 'Ninguna.'
   /** @type {Record<string, string>} */
   const valores = { REPO_GH: repoGh, REPO: nombre, PR: pr, RUTAS: rutas, LECCIONES: lecciones }
-  return plantilla.replace(/\{\{(REPO_GH|REPO|PR|RUTAS|LECCIONES)\}\}/g, (_, k) => valores[k] ?? '')
+  // Los comentarios del frontmatter nombran los marcadores para quien lee la plantilla: no se reemplazan. Una lista de varias líneas
+  // metida en un comentario se salía de él y quedaba como una clave más del yaml de la tarea.
+  let enFrontmatter = false
+  return plantilla
+    .split('\n')
+    .map((l, i) => {
+      if (l === '---' && (i === 0 || enFrontmatter)) enFrontmatter = i === 0
+      if (enFrontmatter && l.startsWith('#')) return l
+      return l.replace(/\{\{(REPO_GH|REPO|PR|RUTAS|LECCIONES)\}\}/g, (_, k) => valores[k] ?? '')
+    })
+    .join('\n')
 }
 
 // ---------- la CLI, para el aviso al kit del orquestador (kit.sh) ----------
