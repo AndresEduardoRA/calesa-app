@@ -3,10 +3,7 @@
 import { useRef, useState } from 'react'
 import type { ErrorApp } from '@/shared/lib/errores'
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
-import {
-  leerArchivadas,
-  type CursorDeArchivadas,
-} from '../../../areas/formulas-del-origen/composicion.client'
+import type { CursorDeArchivadas } from '../../../areas/formulas-del-origen/composicion.client'
 import type { FormulaDeLaLista } from '../../../entities/formulas-del-origen/lista'
 
 type Estado =
@@ -31,6 +28,8 @@ export function useArchivadas(origenId: string) {
     turnos.current += 1
     const turno = turnos.current
     setEstado({ tipo: 'cargando', formulas: antes })
+    // La lectura (y con ella el cliente de Supabase del navegador, ≈ 68 KB gz) se pide al abrir la sección: la lista no la paga en frío.
+    const { leerArchivadas } = await import('../../../areas/formulas-del-origen/composicion.client')
     const leida = await leerArchivadas(origenId, desde)
     if (turno !== turnos.current) return
     setEstado(
