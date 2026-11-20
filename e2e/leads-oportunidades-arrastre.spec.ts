@@ -42,35 +42,14 @@ const columna = (page: Page, nombre: string): Locator =>
 const tarjeta = (page: Page, titulo: string): Locator =>
   aLaVista(bloque(page).getByRole('article', { name: titulo }))
 
-// La caja de algo en pantalla (falla si no está).
-async function caja(l: Locator) {
-  const c = await l.boundingBox()
-  if (!c) {
-    throw new Error('No se encontró en pantalla.')
-  }
-  return c
-}
-
-// Con el mouse: tomar la tarjeta, llevarla al borde de la fila si la columna de destino queda fuera de la vista (el arrastre desplaza la fila solo), pasar
-// por encima de la columna y soltar (varios pasos: el arrastre arranca a los 5 px).
+// Con el mouse: tomar la tarjeta y pasar por encima de la columna de destino (`hover` la trae a la vista si la fila hay que desplazarla; el segundo paso
+// da al arrastre el movimiento que necesita para ver sobre qué columna está), y soltar.
 async function arrastrarA(page: Page, titulo: string, destino: string) {
-  const origen = await caja(tarjeta(page, titulo))
-  const fila = await caja(bloque(page))
-  const borde = fila.x + fila.width
-  const y = origen.y + 14
-  await page.mouse.move(origen.x + 20, y - 4)
+  await tarjeta(page, titulo).hover({ position: { x: 20, y: 10 } })
   await page.mouse.down()
-  await page.mouse.move(origen.x + 40, y, { steps: 4 })
-  const aLaVistaLaMeta = async () => {
-    const c = await columna(page, destino).boundingBox()
-    return c !== null && c.x + c.width / 2 < borde - 24
-  }
-  if (!(await aLaVistaLaMeta())) {
-    await page.mouse.move(borde - 8, y, { steps: 8 })
-    await expect.poll(aLaVistaLaMeta, { timeout: 8000 }).toBe(true)
-  }
-  const meta = await caja(columna(page, destino))
-  await page.mouse.move(meta.x + meta.width / 2, meta.y + 40, { steps: 12 })
+  const meta = columna(page, destino)
+  await meta.hover({ position: { x: 40, y: 40 } })
+  await meta.hover({ position: { x: 44, y: 42 } })
   await page.mouse.up()
 }
 

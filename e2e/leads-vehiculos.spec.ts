@@ -315,7 +315,6 @@ test('lo que aporta la ficha entera con un vehículo vinculado', async ({ page }
   expect(vehiculos - base).toBeLessThan(PRESUPUESTO_DE_LA_FICHA_EN_KB * 1024)
 })
 
-// @sin-celular: mide el ancho de una pantalla grande (1920 px): el celular no tiene hueco que medir
 test('a 1920 px el grupo con vehículos llena el ancho del bloque, sin hueco a la derecha', async ({
   page,
 }, info) => {
