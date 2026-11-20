@@ -462,7 +462,7 @@ comment on function public._tabla_referencia_usos(uuid) is
 comment on function public._tabla_referencia_frase_de_usos(uuid, text[]) is
   '«la fórmula publicada de X y el borrador de Y»: hasta tres usos de la tabla (o de esas columnas), sin total. docs/COTIZADOR.md › «Crear, columnas y desactivar».';
 comment on function public._tabla_referencia_permiso_de_quienes_la_usan(uuid) is
-  '42501 si falta cotizaciones.configurar de algún origen cuya publicada usa la tabla, con su nombre. docs/COTIZADOR.md › «Crear, columnas y desactivar».';
+  '42501 si falta cotizaciones.configurar de algún origen cuya publicada o borrador usa la tabla, con su nombre. docs/COTIZADOR.md › «Crear, columnas y desactivar».';
 comment on function public._tabla_referencia_tomar(uuid, integer) is
   'Lo común de cambiar las columnas y desactivar: permiso, la tabla for update, formulas:<origen> en orden, permiso de quienes la usan y PT409. docs/COTIZADOR.md › «Crear, columnas y desactivar».';
 comment on function public.tabla_referencia_crear(uuid, uuid, text, jsonb) is
