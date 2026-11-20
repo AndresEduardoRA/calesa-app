@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { MenuMovil } from './menu-movil'
+import { RecargarEnElMenu, RecargarLaPagina } from '@/shared/ui/recargar-la-pagina'
 import { HuecoBuscador } from './huecos/buscador'
 import { ConmutadorLive } from './conmutador-live'
 import { Flotantes } from './flotantes'
@@ -70,7 +71,10 @@ export function Marco({
                 {tipoCambio}
               </div>
             ) : null}
+            {/* Con la barra angosta «Recargar la página» no entra en ella: queda acá. */}
+            <RecargarEnElMenu />
           </MenuMovil>
+          <RecargarLaPagina />
           {buscador}
           <div className="ml-auto flex shrink-0 items-center gap-1">
             {altaDeLead}
