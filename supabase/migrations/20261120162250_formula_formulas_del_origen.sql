@@ -804,7 +804,7 @@ declare
   v_yo uuid := (select auth.uid());
   c public.cotizaciones;
   a record;
-  v_formula uuid; v_uso uuid; v_vuelta int := 0; v_version int; v_fdo uuid;
+  v_formula uuid; v_uso uuid; v_vuelta int := 0; v_version int; v_fdo uuid; v_otra text;
   v_ab_formula uuid; v_ab_en timestamptz; v_ab_huella text;
   v_veh uuid := p_vehiculo;
   v_modo jsonb;
@@ -951,6 +951,12 @@ begin
   if v_ab_formula is distinct from v_formula then
     select f.version into v_version from public.formulas f where f.id = v_formula;
     if not p_con_la_abierta then
+      -- La abierta es de otra fórmula del origen: mientras cotizaba se activó la de ahora (formulas_pkey y formulas_del_origen_pkey).
+      select d.nombre into v_otra from public.formulas ab, public.formulas_del_origen d
+       where ab.id = v_ab_formula and ab.formula_del_origen_id is distinct from v_fdo and d.id = v_fdo;
+      if v_otra is not null then
+        raise exception 'Se activó la fórmula «%» mientras cotizabas: ahora se cotiza con su versión %.', v_otra, v_version using errcode = 'PT409', detail = 'desactualizada', hint = 'formula';
+      end if;
       raise exception 'Se publicó la versión % de la hoja mientras cotizabas.', v_version using errcode = 'PT409', detail = 'desactualizada', hint = 'formula';
     end if;
     perform public._cotizacion_abierta(p_origen, v_ab_formula, v_ab_en);

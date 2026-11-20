@@ -123,7 +123,9 @@ begin
   if r #>> '{publicada,id}' is distinct from fb::text then raise exception 'la hoja guardada no ofrece la publicada de la activa: %', r -> 'publicada'; end if;
   -- Con la hoja abierta sobre la de «Fórmula»: sin «Guardar con la N», desactualizada; con ella, se guarda con esa versión.
   r := pg_temp.fcla_corre(q, pg_temp.fcla_crear(c2, o, l, v, fa, now() - interval '1 minute', false));
-  if r ->> 'error' is distinct from 'PT409' or r ->> 'detail' is distinct from 'desactualizada' then raise exception 'cambiar la activa con la hoja abierta no dio desactualizada: %', r; end if;
+  if r ->> 'error' is distinct from 'PT409' or r ->> 'detail' is distinct from 'desactualizada' or coalesce(r ->> 'mensaje', '') not like 'Se activó la fórmula «B» mientras cotizabas: ahora se cotiza con su versión %.' then
+    raise exception 'cambiar la activa con la hoja abierta no dio desactualizada con la fórmula activada: %', r;
+  end if;
   r := pg_temp.fcla_corre(q, pg_temp.fcla_crear(c2, o, l, v, fa, now() - interval '1 minute', true));
   if r ? 'error' then raise exception '«Guardar con la N» recién desactivada: %', r; end if;
   if (select formula_id from public.cotizaciones where id = c2) is distinct from fa then raise exception '«Guardar con la N» no guardó la versión abierta'; end if;
