@@ -421,7 +421,8 @@ begin
   values (p_origen, p_formula_del_origen, v_ver, 'publicada', p_def, p_params, p_diseno, v_vis, p_nota, v_pub, (select auth.uid()), (select auth.uid()), now())
   returning id into v_id;
   perform public.registrar_actividad('formula.publicada', 'formulas', v_id::text, jsonb_build_object('anterior', v_pub),
-                                     jsonb_build_object('version', v_ver, 'nota', p_nota) || coalesce(p_detalle, '{}'::jsonb));
+                                     jsonb_build_object('version', v_ver, 'nota', p_nota) || coalesce(p_detalle, '{}'::jsonb),
+                                     jsonb_build_object('formula_del_origen_id', p_formula_del_origen));
   return v_id;
 end;
 $$;
