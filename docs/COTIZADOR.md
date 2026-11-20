@@ -295,7 +295,7 @@ Lo puro en `entities/formula/`: nunca lanza, no toca lo que recibe y es lineal c
   `MAX(a; b)`, sin «=») sólo si compilarlo da exactamente ese nodo; si no, `null` y la fila se muestra por sus campos. Una búsqueda no se
   escribe: la fila con BUSCARV nació de su texto.
 - **La pantalla:** la **planilla** (`features/formula/components/planilla/`, la vista por defecto) y el **Modo avanzado** (`components/editor/`,
-  `?panel=editar-formula`), sobre una sola fórmula de trabajo que tiene la sesión (`components/sesion/`, `useEditorDeLaFormula` una vez): compila al
+  `?panel=editar-formula`), sobre la fórmula del origen de la URL, una sola copia de trabajo que tiene la sesión (`components/sesion/`, `useEditorDeLaFormula` una vez): compila al
   aplicar con `compilarFila()` (sin `validarFormula()` si la fila da error), valida la fórmula de trabajo tras cada cambio (el rechazo, en su fila) y
   la guarda con `formula_guardar_borrador()`. La sesión se vuelve a montar con «Recargar» o si la versión cambia por algo que no hizo ella
   (`otraSesion()`: publicar, descartar, revertir); guardar sobre la publicada no la vuelve a montar.
