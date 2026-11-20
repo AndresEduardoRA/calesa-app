@@ -1,6 +1,7 @@
 -- Las funciones de Excel de la fórmula (docs/COTIZADOR.md › «Los nodos» y «Fórmulas como texto»): siete operaciones nuevas de
--- `calculo` —`comparar`, `es_opcion`, `y`, `o`, `elegir`, `max` y `min`— en la forma, la validación y el motor, espejo de
--- `nodos.ts`, `validar*.ts` y `motor-condiciones.ts`. Sin tablas, columnas, índices, policies ni grants nuevos: sólo
+-- `calculo` —`comparar`, `es_opcion`, `y`, `o`, `elegir`, `max` y `min`— en la forma, la validación, el motor, las auxiliares del
+-- diseño y la variante en par, espejo de `nodos.ts`, `validar*.ts`, `motor-condiciones.ts`, `compilador-auxiliares.ts` y
+-- `en-par.ts`. Sin tablas, columnas, índices, policies ni grants nuevos: sólo
 -- `create or replace` de funciones que ya existen (conservan su dueño y sus privilegios).
 
 CREATE OR REPLACE FUNCTION "public"."_formula_forma_nodo"("p_n" "jsonb") RETURNS "text"
@@ -1480,3 +1481,162 @@ begin
 end;
 $$;
 
+
+
+-- Los otros dos espejos de `referenciasDe()`: la `prueba` de un `elegir` es una referencia. Sin ella, `_diseno_auxiliares()` no reconoce la cadena
+-- de auxiliares de un texto con SI y una condición (y publicar pide una celda para cada una), y `_nodos_en_par()` no marca el `elegir` cuya
+-- prueba depende de la variante en par.
+CREATE OR REPLACE FUNCTION "public"."_diseno_auxiliares"("p_def" "jsonb") RETURNS "jsonb"
+    LANGUAGE "plpgsql" STABLE
+    SET "search_path" TO ''
+    AS $_$
+declare
+  v_ids text[];
+  v_tx text[];        -- el texto de una constante o un cálculo (nulo: no lleva)
+  v_refs jsonb[];     -- los ids que lee cada nodo, sin repetir (referenciasDe)
+  v_n int;
+  v_tomada boolean[];
+  v_lista text[] := '{}';  -- los ids de las auxiliares; el objeto se arma al final (concatenar un jsonb en el bucle sería cuadrático)
+  v_raiz text;
+  v_suf text;
+  v_k int;
+  v_ok boolean;
+  v_cuenta jsonb;
+  v_r text;
+  v_ri jsonb;
+  v_texto text;
+  v_nombres jsonb;
+begin
+  select coalesce(array_agg(x.value ->> 'id' order by x.pos), '{}'),
+         coalesce(array_agg(case when x.value ->> 'tipo' in ('constante', 'calculo') then x.value ->> 'texto' end order by x.pos), '{}'),
+         coalesce(array_agg(
+           (select coalesce(jsonb_agg(distinct r.id), '[]'::jsonb)
+              from (select x.value ->> 'sugerido_de' where x.value ->> 'tipo' = 'input'
+                    union all select x.value ->> 'requerido_si' where x.value ->> 'tipo' = 'input'
+                    union all select x.value ->> 'condicion' where x.value ->> 'tipo' in ('input', 'constante', 'tabla', 'tramo', 'calculo')
+                    union all select d.value
+                                from jsonb_array_elements_text(case when x.value ->> 'tipo' = 'calculo' and jsonb_typeof(x.value -> 'de') = 'array'
+                                                                    then x.value -> 'de' else '[]'::jsonb end) d
+                    union all select x.value ->> 'pct' where x.value ->> 'tipo' = 'calculo' and x.value ->> 'op' = 'porcentaje_de'
+                    union all select x.value ->> 'prueba' where x.value ->> 'tipo' = 'calculo' and x.value ->> 'op' = 'elegir'
+                    union all select x.value ->> 'sobre'
+                               where (x.value ->> 'tipo' = 'calculo' and x.value ->> 'op' = 'depreciar') or x.value ->> 'tipo' = 'tramo'
+                    union all select m.value
+                                from jsonb_each_text(case when x.value ->> 'tipo' = 'tabla' and jsonb_typeof(x.value -> 'match') = 'object'
+                                                          then x.value -> 'match' else '{}'::jsonb end) m) r(id)
+             where r.id is not null)
+           order by x.pos), '{}')
+    into v_ids, v_tx, v_refs
+    from jsonb_array_elements(coalesce(p_def -> 'nodos', '[]'::jsonb)) with ordinality as x(value, pos);
+  v_n := coalesce(array_length(v_ids, 1), 0);
+  v_tomada := array_fill(false, array[greatest(v_n, 1)]);
+
+  for p in 2 .. v_n loop
+    v_raiz := v_ids[p];
+    continue when v_tx[p] is null;
+    -- (a) el k del de justo antes.
+    v_suf := substring(v_ids[p - 1] from '__([1-9][0-9]*)$');
+    continue when v_suf is null or length(v_suf) > 9;
+    v_k := v_suf::int;
+    continue when v_k > p - 1;
+    -- (b) y (c): los extremos primero (O(1)), después la cadena entera.
+    continue when v_ids[p - v_k] is distinct from left(v_raiz, 41 - length('__1')) || '__1'
+               or v_ids[p - 1] is distinct from left(v_raiz, 41 - length('__' || v_k)) || '__' || v_k;
+    v_ok := true;
+    for i in 1 .. v_k loop
+      if v_ids[p - v_k + i - 1] is distinct from left(v_raiz, 41 - length('__' || i)) || '__' || i or v_tx[p - v_k + i - 1] is not null then
+        v_ok := false;
+        exit;
+      end if;
+    end loop;
+    continue when not v_ok;
+    -- (d) cuántos nodos de la cadena y la raíz nombran a cada id (cada nodo, una vez).
+    v_cuenta := '{}'::jsonb;
+    -- Sin consultas que nombren un arreglo: cada una lo recibiría entero como parámetro (O(nodos) por fila). El elemento va antes a una variable.
+    for i in p - v_k .. p loop
+      v_ri := v_refs[i];
+      for j in 0 .. jsonb_array_length(v_ri) - 1 loop
+        v_r := v_ri ->> j;
+        v_cuenta := v_cuenta || jsonb_build_object(v_r, coalesce((v_cuenta ->> v_r)::int, 0) + 1);
+      end loop;
+    end loop;
+    for i in p - v_k .. p - 1 loop
+      if (v_cuenta ->> v_ids[i]) is distinct from '1' then
+        v_ok := false;
+        exit;
+      end if;
+    end loop;
+    continue when not v_ok;
+    -- (e) el texto de la raíz no nombra a ninguno. Si ningún id aparece como subcadena, no aparece como nombre; si alguno aparece, los nombres
+    -- salen del patrón, que da los mismos que el léxico (lo prueba `compilador-auxiliares.test.ts`, T1b, y que este texto lo copie, T1c).
+    for i in p - v_k .. p - 1 loop
+      if strpos(v_tx[p], v_ids[i]) > 0 then
+        v_ok := false;
+        exit;
+      end if;
+    end loop;
+    if not v_ok then
+      v_texto := v_tx[p];
+      select coalesce(jsonb_object_agg(t.nombre, true), '{}'::jsonb)
+        into v_nombres
+        from (select m[1] as nombre
+                from regexp_matches(v_texto, '[0123456789.][ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_$.]*|[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_$][ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_$]*', 'g') as m) t
+       where left(t.nombre, 1) not in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.');
+      v_ok := true;
+      for i in p - v_k .. p - 1 loop
+        if v_nombres ? v_ids[i] then
+          v_ok := false;
+          exit;
+        end if;
+      end loop;
+      continue when not v_ok;
+    end if;
+    -- (f) ninguna posición tomada (no se alcanza: ver arriba).
+    for i in p - v_k .. p - 1 loop
+      if v_tomada[i] then
+        v_ok := false;
+        exit;
+      end if;
+    end loop;
+    continue when not v_ok;
+    for i in p - v_k .. p - 1 loop
+      v_tomada[i] := true;
+      v_lista := array_append(v_lista, v_ids[i]);
+    end loop;
+  end loop;
+  return (select coalesce(jsonb_object_agg(a, true), '{}'::jsonb) from unnest(v_lista) a);
+end;
+$_$;
+
+CREATE OR REPLACE FUNCTION "public"."_nodos_en_par"("p_def" "jsonb") RETURNS "text"[]
+    LANGUAGE "plpgsql" STABLE
+    SET "search_path" TO ''
+    AS $$
+declare
+  v_variante text := public._variante_en_par(p_def);
+  v_marcados jsonb;
+  v_salida text[] := '{}'::text[];
+  v_n jsonb;
+  v_refs text[];
+  v_va boolean;
+begin
+  if v_variante is null then
+    return v_salida;
+  end if;
+  v_marcados := jsonb_build_object(v_variante, true);
+  -- Una sola pasada en el orden de la lista: un nodo sólo nombra lo anterior (`referencia_hacia_adelante`), así que lo que nombra ya está decidido.
+  for v_n in select x.value from jsonb_array_elements(p_def -> 'nodos') with ordinality x (value, ord) order by x.ord loop
+    continue when v_n ->> 'tipo' in ('opcion', 'tipo_cambio');
+    -- Lo que nombra, como `referenciasDe()`: de, pct, sobre, prueba, condicion, requerido_si, sugerido_de y los valores del match (un valor que
+    -- no es un nodo no está marcado).
+    v_refs := array(select jsonb_array_elements_text(case when jsonb_typeof(v_n -> 'de') = 'array' then v_n -> 'de' else '[]'::jsonb end))
+           || array[v_n ->> 'pct', v_n ->> 'sobre', v_n ->> 'prueba', v_n ->> 'condicion', v_n ->> 'requerido_si', v_n ->> 'sugerido_de']
+           || array(select e.value from jsonb_each_text(case when jsonb_typeof(v_n -> 'match') = 'object' then v_n -> 'match' else '{}'::jsonb end) e);
+    v_va := v_n ? 'solo_en' or exists (select 1 from unnest(v_refs) r where r is not null and v_marcados ? r);
+    if v_va then
+      v_marcados := v_marcados || jsonb_build_object(v_n ->> 'id', true);
+      v_salida := v_salida || (v_n ->> 'id');
+    end if;
+  end loop;
+  return v_salida;
+end $$;

@@ -379,6 +379,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Valida una plantilla de la tarjeta contra la visibilidad que compila la base (`_compilar_visibilidad()`, `visibilidadDeLaPlantilla()`), nunca con «todo del nivel «todos»»: lo que la hoja no dibuja no figura, y un `tc_nombre` cuyo tipo de cambio no tiene celda da `tipo_de_cambio_restringido` recién al publicar.
 - Una guarda que sigue los imports de un `'use client'` corta en un archivo `'use server'`: el bundler cambia la Server Action por una referencia y lo que importa no viaja.
 - Un espejo de una regex entre JS y Postgres va en ASCII (`[!-~]`), sin `\S` ni la bandera `u`: con Unicode las dos clases no coinciden (la URL de un enlace de la ayuda, `URL_DE_ENLACE`).
+- Una clave de referencia nueva en un nodo (la `prueba` de `elegir`) se suma a todos los espejos de `referenciasDe()` en la base, no sólo a `validar_formula()`: `_diseno_auxiliares()` (si no, publicar pide celda a las auxiliares del texto) y `_nodos_en_par()`. Cada uno lleva su caso en el juego espejo (`casos-de-en-par.json`) o su prueba SQL con los nodos que compila TS.
 
 ### vehiculos
 
