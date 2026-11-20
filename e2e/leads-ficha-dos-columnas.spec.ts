@@ -2,22 +2,17 @@ import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { formatearNumero } from '../src/shared/lib/formato'
 import { entrar } from './soporte/alta'
 import { esMovil } from './soporte/inventario'
-import { idDe, marcarInteres, vincular } from './soporte/leads'
-import { completoCon, nacional } from './soporte/leads-ficha-telefonos'
 import {
   esperarFichaHidratada,
   irAFicha,
-  nuevoLead,
   panelDeEdicion,
   tituloDeLaFicha,
 } from './soporte/leads-ficha'
-import { limpiarListado, prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
-import { embudoPorDefecto, etapa, oportunidadesPorSql } from './soporte/leads-oportunidades'
-import { otorgarComo } from './soporte/leads-portal'
+import { leadCompleto, limpiarLeadsCompletos } from './soporte/leads-ficha-completa'
+import { prepararListado, type TerrenoDelListado } from './soporte/leads-listado'
 import { drawerDeTodos, verTodosLosSeguimientos } from './soporte/leads-seguimientos'
 import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
 import { capturar } from './soporte/recorrido'
-import { literal, sql } from './soporte/sql'
 
 // La ficha del lead en dos columnas (T33): todo a la vista sin un clic (sin pestañas ni acordeones), el índice que salta a cada bloque y
 // marca el actual, los enlaces de siempre (`?seccion=`, `?panel=`) que llevan a su bloque o abren lo suyo, la forma en escritorio (dos
@@ -26,7 +21,6 @@ test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDelListado
 const MARCA = 'E2E 2col'
-const ORIGEN = "(select id from public.origenes where clave = 'subasta_usa')"
 
 test.beforeAll(async ({}, info) => {
   test.setTimeout(180_000)
@@ -34,95 +28,8 @@ test.beforeAll(async ({}, info) => {
 })
 
 test.afterAll(async () => {
-  sql(`
-    begin;
-    create temporary table de_la_prueba on commit drop as
-      select id from public.leads where nombre like ${literal(`%${MARCA}%`)};
-    set local session_replication_role = replica;
-    delete from public.seguimientos where lead_id in (select id from de_la_prueba);
-    delete from public.recordatorios where lead_id in (select id from de_la_prueba);
-    delete from public.oportunidades where lead_id in (select id from de_la_prueba);
-    delete from public.vehiculos_interesados where lead_id in (select id from de_la_prueba);
-    delete from public.vehiculos_vinculos where lead_id in (select id from de_la_prueba);
-    set local session_replication_role = origin;
-    delete from public.vehiculos where titulo like ${literal(`${MARCA}%`)};
-    commit;
-  `)
-  await limpiarListado(t)
+  await limpiarLeadsCompletos(t, MARCA)
 })
-
-// Seguimientos de la dueña con un detalle de verdad (cada 30 minutos hacia atrás), recordatorios pendientes (la mitad vencidos) y
-// oportunidades, por SQL: con 10 o con 1.000, el documento de la ficha pesa lo mismo (lo que crece va por «Ver todos» o «Ver más»).
-async function sembrar(leadId: string, cuantos: number): Promise<void> {
-  const duena = await idDe(t.personas.duena)
-  const lead = literal(leadId)
-  const persona = literal(duena)
-  sql(`
-    begin;
-    set local session_replication_role = replica;
-    insert into public.seguimientos (lead_id, usuario_id, tipo_id, titulo, detalle_doc, detalle_texto, ocurrido_en)
-    select ${lead}, ${persona},
-           (select id from public.tipos_seguimiento where activo order by orden limit 1),
-           'Llamada ' || g,
-           jsonb_build_object('type', 'doc', 'content', jsonb_build_array(jsonb_build_object('type', 'paragraph',
-             'content', jsonb_build_array(jsonb_build_object('type', 'text',
-               'text', 'Habló del vehículo, pidió el precio puesto en La Paz y quedó en volver a llamar el jueves, nota ' || g))))),
-           'Habló del vehículo, pidió el precio puesto en La Paz y quedó en volver a llamar el jueves, nota ' || g,
-           now() - make_interval(mins => g * 30)
-      from generate_series(1, ${String(cuantos)}) g;
-    insert into public.recordatorios (usuario_id, lead_id, titulo, recordar_en)
-    select ${persona}, ${lead}, 'Mandarle la cotización ' || g,
-           case when g % 2 = 0 then now() - make_interval(hours => g) else now() + make_interval(hours => g) end
-      from generate_series(1, ${String(cuantos)}) g;
-    set local session_replication_role = origin;
-    update public.leads set ultimo_seguimiento_en = now() - interval '30 minutes' where id = ${lead};
-    commit;
-  `)
-  const embudo = await embudoPorDefecto(t.personas.duena)
-  oportunidadesPorSql({
-    usuarioId: duena,
-    leadId,
-    embudoId: embudo.id,
-    etapaAbierta: etapa(embudo, 'Nuevo'),
-    etapaCerrada: etapa(embudo, 'Ganado'),
-    abiertas: Math.ceil(cuantos * 0.6),
-    cerradas: Math.floor(cuantos * 0.4),
-  })
-}
-
-// Un vehículo vinculado y cuatro interesados de la subasta de la semilla.
-async function conVehiculos(leadId: string, corto: string): Promise<void> {
-  const titulos = [0, 1, 2, 3, 4].map((n) => `${MARCA} ${corto} ${String(n)}`)
-  sql(
-    `insert into public.vehiculos (origen_id, titulo) select ${ORIGEN}, unnest(array[${titulos.map(literal).join(', ')}])`,
-  )
-  const ids = sql(
-    `select id from public.vehiculos where titulo like ${literal(`${MARCA} ${corto} %`)} order by titulo`,
-  ).split('\n')
-  const [vinculado, ...interesados] = ids
-  await vincular(vinculado ?? '', leadId)
-  for (const vehiculoId of interesados) {
-    await marcarInteres({
-      vehiculoId,
-      leadId,
-      quien: t.personas.duena,
-      nota: 'Lo quiere en blanco',
-    })
-  }
-}
-
-// Un lead de la dueña con todo: seguimientos, recordatorios, oportunidades, vehículos y el portal otorgado.
-async function leadCompleto(corto: string, cuantos: number) {
-  const lead = await nuevoLead({
-    corto: `${MARCA} ${corto}`,
-    telefono: completoCon(t, nacional()),
-    deQuien: t.personas.duena,
-  })
-  await sembrar(lead.id, cuantos)
-  await conVehiculos(lead.id, corto)
-  await otorgarComo(t.personas.duena, lead.id, 'clave-de-la-prueba-1')
-  return lead
-}
 
 let completo: Awaited<ReturnType<typeof leadCompleto>>
 
@@ -140,7 +47,7 @@ test('todo a la vista sin un clic: la izquierda, el índice y los cuatro bloques
   page,
 }, info) => {
   test.setTimeout(90_000)
-  completo = await leadCompleto(`Completo ${info.project.name}`, 10)
+  completo = await leadCompleto(t, MARCA, `Completo ${info.project.name}`, 10)
   await entrar(page, t.personas.duena)
   await irAFicha(page, completo.id)
   await expect(tituloDeLaFicha(page, completo.nombre)).toBeVisible()
@@ -273,7 +180,7 @@ test('el documento de la ficha entera pesa lo mismo con 10 que con 1.000 seguimi
   page,
 }, info) => {
   test.setTimeout(120_000)
-  const conMil = await leadCompleto(`Mil ${info.project.name}`, 1000)
+  const conMil = await leadCompleto(t, MARCA, `Mil ${info.project.name}`, 1000)
   await entrar(page, t.personas.duena)
   const documento = async (ruta: string) =>
     ((await (await page.goto(ruta))?.body())?.length ?? 0) as number

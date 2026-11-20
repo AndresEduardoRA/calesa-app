@@ -109,7 +109,7 @@ for (const zoom of ['100', '200'] as const) {
     // El de apibara: la web pública tiene el suyo.
     await page.goto('/configuracion/empresa/integraciones')
     const activaDeApibara = page
-      .locator('details', { has: page.getByText('apibara', { exact: true }) })
+      .getByRole('region', { name: 'apibara', exact: true })
       .getByRole('switch', { name: 'Activa' })
     await expect(activaDeApibara).toBeVisible()
     await activaDeApibara.scrollIntoViewIfNeeded()

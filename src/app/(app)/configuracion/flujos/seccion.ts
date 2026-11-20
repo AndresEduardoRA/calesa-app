@@ -9,6 +9,16 @@ export const SECCION_DE_FLUJOS = {
   titulo: 'Flujos',
   descripcion:
     'Las fases de cada origen y del flujo de repuestos: quién las mueve, qué piden para entrar y sus reglas.',
+  palabras: [
+    'fases',
+    'etapas',
+    'proceso',
+    'estados',
+    'reglas',
+    'tipos de documento',
+    'transporte',
+    'mover',
+  ],
   ruta: RUTAS.configuracionDeFlujos,
   Icono: WorkflowIcon,
   permisos: ['flujos.configurar', 'repuestos.configurar', 'logistica.catalogos.gestionar'],

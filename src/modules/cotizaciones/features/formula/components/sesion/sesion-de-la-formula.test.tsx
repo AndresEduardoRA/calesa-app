@@ -61,6 +61,7 @@ const props = (extra: Partial<PropsDeLaSesion> = {}): PropsDeLaSesion => ({
   alRecargar: vi.fn(),
   alCambiarPendientes: vi.fn(),
   tarjeta: { estado: 'sin_tarjeta' },
+  tablas: [],
   TarjetaEnVivo: () => null,
   puedeCambiarTiposDeCambio: false,
   ...extra,

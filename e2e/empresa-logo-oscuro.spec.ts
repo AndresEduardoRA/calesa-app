@@ -1,8 +1,9 @@
 // @sin-celular-archivo: el formulario de la empresa y la marca del marco son los mismos en celular; la marca del marco en celular la recorre el primer caso de empresa.spec.ts, que corre en los dos anchos
-import { expect, test, type Page } from './soporte/prueba'
+import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { borrarPersonasDePrueba, correoDePrueba, crearDuenaDePrueba } from './soporte/base'
 import {
   ajustesGuardados,
+  editarTarjeta,
   restaurarEmpresa,
   tomarInstantaneaDeEmpresa,
   type InstantaneaDeEmpresa,
@@ -36,17 +37,18 @@ test.afterAll(async () => {
   await borrarPersonasDePrueba()
 })
 
-function elegir(page: Page, etiqueta: string, nombre: string, svg: string) {
-  return page.getByLabel(etiqueta, { exact: true }).setInputFiles({
+function elegir(dialogo: Locator, etiqueta: string, nombre: string, svg: string) {
+  return dialogo.getByLabel(etiqueta, { exact: true }).setInputFiles({
     name: nombre,
     mimeType: 'image/svg+xml',
     buffer: Buffer.from(svg),
   })
 }
 
-async function guardar(page: Page) {
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
+async function guardar(page: Page, dialogo: Locator) {
+  await dialogo.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
+  await expect(dialogo).toBeHidden()
 }
 
 test('la dueña carga el logo para el tema oscuro y cada tema dibuja el suyo', async ({ page }) => {
@@ -57,10 +59,13 @@ test('la dueña carga el logo para el tema oscuro y cada tema dibuja el suyo', a
   await page.goto('/configuracion/empresa')
 
   // Los dos logos se eligen y viajan en un solo guardado.
-  await elegir(page, 'Elegir el logo de la empresa', 'claro.svg', LOGO_CLARO)
-  await elegir(page, 'Elegir el logo para el tema oscuro', 'oscuro.svg', LOGO_OSCURO)
-  await expect(page.getByRole('button', { name: 'Cambiar logo oscuro', exact: true })).toBeVisible()
-  await guardar(page)
+  const identidad = await editarTarjeta(page, 'Identidad')
+  await elegir(identidad, 'Elegir el logo de la empresa', 'claro.svg', LOGO_CLARO)
+  await elegir(identidad, 'Elegir el logo para el tema oscuro', 'oscuro.svg', LOGO_OSCURO)
+  await expect(
+    identidad.getByRole('button', { name: 'Cambiar logo oscuro', exact: true }),
+  ).toBeVisible()
+  await guardar(page, identidad)
   const guardados = await ajustesGuardados()
   expect(guardados.logo_ruta).toMatch(RUTA_DE_LOGO)
   expect(guardados.logo_oscuro_ruta).toMatch(RUTA_DE_LOGO)
@@ -77,14 +82,14 @@ test('la dueña carga el logo para el tema oscuro y cada tema dibuja el suyo', a
   await expect(oscuro).toHaveAttribute('src', new RegExp(guardados.logo_oscuro_ruta ?? '-'))
   await expect(claro).toBeHidden()
 
-  // Quitar el oscuro lo deja en null, sin tocar el normal, y el marco vuelve a un solo logo. Antes,
-  // el formulario tiene que haber vuelto a armarse con lo guardado (la vista previa ya es la de
-  // Storage, no la del archivo elegido): si no, ese reinicio se llevaría el «Quitar».
+  // Quitar el oscuro lo deja en null, sin tocar el normal, y el marco vuelve a un solo logo. Cada apertura del modal parte de lo
+  // guardado: la vista previa ya es la de Storage, no la del archivo elegido.
+  const otra = await editarTarjeta(page, 'Identidad')
   await expect(
-    page.getByRole('img', { name: 'Logo de la empresa para el tema oscuro', exact: true }),
+    otra.getByRole('img', { name: 'Logo de la empresa para el tema oscuro', exact: true }),
   ).toHaveAttribute('src', new RegExp(guardados.logo_oscuro_ruta ?? '-'))
-  await page.getByRole('button', { name: 'Quitar el logo oscuro', exact: true }).click()
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await otra.getByRole('button', { name: 'Quitar el logo oscuro', exact: true }).click()
+  await otra.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect.poll(async () => (await ajustesGuardados()).logo_oscuro_ruta).toBeNull()
   expect((await ajustesGuardados()).logo_ruta).toBe(guardados.logo_ruta)
   await expect(oscuro).toHaveCount(0)

@@ -1,6 +1,7 @@
 // «Sumar fila» del editor de la fórmula (4.21-3a-2, P4 y P6): una fila nueva debajo de otra, cálculo o constante, con su etiqueta y un nombre (id) propuesto desde ella que
 // se puede cambiar antes de crearla. Puro: el id y el pedido se resuelven aquí; compilar el texto es de `compilarFila()` (4.21-1). Una fila con otro nombre es una fila
 // nueva, nunca el cambio de id de una que ya existe (P4).
+import type { CatalogoDeTablas } from '../compilador'
 import type { Formula } from '../formula'
 import { compilarFila, type ErrorDeFila } from './compilar-fila'
 
@@ -18,6 +19,8 @@ export type PedidoDeFilaNueva = {
   id: string
   tipo: TipoDeFilaNueva
   texto: string
+  // El catálogo de tablas del origen, para BUSCARV.
+  tablas?: CatalogoDeTablas
 }
 
 export type ErrorDeFilaNueva = {
@@ -95,6 +98,7 @@ export function sumarFila(formula: Formula, pedido: PedidoDeFilaNueva): Resultad
   const r = compilarFila(formula, {
     destino: { id: pedido.id, etiqueta, despuesDe: pedido.despuesDe },
     texto: pedido.texto,
+    ...(pedido.tablas === undefined ? {} : { tablas: pedido.tablas }),
   })
   if (!r.ok) {
     const mensaje =

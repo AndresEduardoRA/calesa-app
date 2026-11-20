@@ -162,7 +162,9 @@ test('ordenar con el teclado: subir y bajar, el foco sigue y el lector oye el lu
   const subir = page.getByRole('button', { name: `Subir ${dos.nombre}`, exact: true })
   await subir.focus()
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('status')).toContainText(`«${dos.nombre}» quedó en el lugar`)
+  await expect(page.getByRole('status').filter({ hasText: 'quedó en el lugar' })).toContainText(
+    `«${dos.nombre}» quedó en el lugar`,
+  )
   const despues = await nombresDeSeguimientoEnPantalla(page)
   expect(despues.indexOf(dos.nombre)).toBeLessThan(despues.indexOf(uno.nombre))
   await expect(subir).toBeFocused()

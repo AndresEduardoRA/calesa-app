@@ -19,6 +19,10 @@ import type { PermisoDeVitrina } from '../../../entities/vitrina'
 import { BotonNuevoVehiculo, ID_DEL_MOTIVO_DE_ALTA } from '../../alta/components/botones'
 import type { DisponibilidadDeApibara } from '../../../entities/apibara'
 import { PanelDeVehiculo } from '../../alta/components/panel-de-vehiculo'
+import {
+  ProveedorDeCompartirLaAprobada,
+  type CompartirLaAprobada,
+} from '../hooks/compartir-de-la-aprobada'
 import { useVistaDelInventario } from '../hooks/use-vista-del-inventario'
 import { AtajoSinResolver } from './atajo-sin-resolver'
 import { PestanasDeOrigen } from './pestanas-de-origen'
@@ -78,6 +82,8 @@ type Props = DatosDelOrigen & {
   vistaPreferida: VistaDeLista | null
   // Cuántas subastas esperan resolverse en este origen (hasta el tope), para el atajo «Sin resolver»; null = el origen no tiene subasta o no se pudo leer.
   sinResolver: ConteoAcotado | null
+  // Qué hace el botón del «Costo estimado»: abrir «Compartir la cotización» de la aprobada sin salir de la lista (lo da `src/app`: el diálogo es de `cotizaciones`). Sin él, el costo es texto.
+  compartirAprobada?: CompartirLaAprobada
 }
 
 // Por qué «Nuevo» está apagado (el origen está desactivado), arriba de la lista.
@@ -161,48 +167,50 @@ function rutaDeAltaEnLaHoja(para: ParaCotizar): string {
 export function ListadoDeVehiculos(props: Props) {
   const { origenes, esquema, vistas: _v, puedeConfigurarCampos, permisoDeAlta, ...demas } = props
   const { verPapelera: _p, enEdicion, apibara, paraCotizar, porPagina, ...otros } = demas
-  const { vistaPreferida, ...resto } = otros
+  const { vistaPreferida, compartirAprobada, ...resto } = otros
   const vista = useVistaDelInventario(vistaPreferida)
   const opciones = useOpcionesDelListado({ ...props, origenId: props.origen.id, vista })
   const { origen, campos, categorias } = resto
   const nuevo = <BotonNuevoVehiculo origen={origen} permiso={permisoDeAlta} />
   return (
-    <div className="grid gap-4">
-      {/* El título de la página para quien lee en voz alta: la barra de filtros ocupa la cabecera (como en `/leads`). */}
-      <h1 className="sr-only">Vehículos</h1>
-      <PestanasDeOrigen origenes={origenes} actual={origen.id} />
-      <MotivoDeAlta permiso={permisoDeAlta} paraCotizar={paraCotizar} />
-      {/* Los filtros salen del layout de cada origen: al cambiar de pestaña se arma otro. */}
-      <FilterShell
-        key={origen.id}
-        esquema={esquema}
-        porPagina={porPagina}
-        opciones={opciones}
-        acciones={nuevo}
-        pieDelPanel={
-          <PieDeFiltros
-            origen={origen}
-            filtrables={camposFiltrables(campos).length}
-            puedeConfigurar={puedeConfigurarCampos}
-          />
-        }
-      >
-        <CuerpoDelListado
-          {...resto}
+    <ProveedorDeCompartirLaAprobada compartir={compartirAprobada ?? null}>
+      <div className="grid gap-4">
+        {/* El título de la página para quien lee en voz alta: la barra de filtros ocupa la cabecera (como en `/leads`). */}
+        <h1 className="sr-only">Vehículos</h1>
+        <PestanasDeOrigen origenes={origenes} actual={origen.id} />
+        <MotivoDeAlta permiso={permisoDeAlta} paraCotizar={paraCotizar} />
+        {/* Los filtros salen del layout de cada origen: al cambiar de pestaña se arma otro. */}
+        <FilterShell
+          key={origen.id}
           esquema={esquema}
-          vista={vista.vista}
-          paraCotizar={paraCotizar}
-          accionDeVacio={permisoDeAlta.estado === 'habilitado' ? nuevo : undefined}
+          porPagina={porPagina}
+          opciones={opciones}
+          acciones={nuevo}
+          pieDelPanel={
+            <PieDeFiltros
+              origen={origen}
+              filtrables={camposFiltrables(campos).length}
+              puedeConfigurar={puedeConfigurarCampos}
+            />
+          }
+        >
+          <CuerpoDelListado
+            {...resto}
+            esquema={esquema}
+            vista={vista.vista}
+            paraCotizar={paraCotizar}
+            accionDeVacio={permisoDeAlta.estado === 'habilitado' ? nuevo : undefined}
+          />
+        </FilterShell>
+        <PanelDeVehiculo
+          origen={origen}
+          campos={campos}
+          categorias={categorias}
+          puedeCrear={permisoDeAlta.estado === 'habilitado'}
+          enEdicion={enEdicion}
+          apibara={apibara}
         />
-      </FilterShell>
-      <PanelDeVehiculo
-        origen={origen}
-        campos={campos}
-        categorias={categorias}
-        puedeCrear={permisoDeAlta.estado === 'habilitado'}
-        enEdicion={enEdicion}
-        apibara={apibara}
-      />
-    </div>
+      </div>
+    </ProveedorDeCompartirLaAprobada>
   )
 }

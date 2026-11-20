@@ -12,6 +12,7 @@ export {
 // `UNA`: el tamaño de la lectura de UNA cotización (el resumen fuera de la página, la referencia del lienzo de la tarjeta); no es un tamaño de página.
 export {
   CLAVE_DE_AGRUPAR,
+  PANEL_DE_COTIZACIONES_DEL_VEHICULO,
   agruparDelListado,
   agruparLaPagina,
   cotizacionDeLaEntrada,

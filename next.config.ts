@@ -42,8 +42,11 @@ const nextConfig: NextConfig = {
   // Configuración › Cotización: `/general` y `/<origen>` solos no dibujan nada. Van a su primera parte (Colores, que redirige sola a la primera
   // que la persona abre; «Fórmula» del origen, que comprueba el origen y el permiso) con su consulta. Aquí y no en un `page.tsx`: una página que
   // sólo redirige pide su `loading.tsx`, y el esqueleto de cada nivel viaja en el HTML de todas las páginas de debajo. `general` va primero.
+  // `/configuracion` solo no dibuja nada: el inicio vive en `/configuracion/inicio` (308, con su consulta). `/configuracion/inicio` no choca con
+  // ninguna sección: ninguna se llama «inicio».
   redirects() {
     return Promise.resolve([
+      { source: '/configuracion', destination: '/configuracion/inicio', permanent: true },
       {
         source: '/configuracion/cotizacion/general',
         destination: '/configuracion/cotizacion/general/colores',

@@ -50,14 +50,16 @@ test('E1 la dueña cambia la serie: el aviso y «Próximo comprobante» dicen el
   await expect(page.getByRole('heading', { name: 'Comprobantes', level: 1 })).toBeVisible()
   await expect(page.locator('[data-serie-vigente]')).toHaveText(antes.serie)
 
-  await page.getByLabel('Serie', { exact: true }).fill('e2e-serie')
-  const barra = page.getByRole('region', { name: 'Cambios sin guardar' })
-  await barra.getByRole('button', { name: 'Guardar' }).click()
+  const tarjeta = page.getByRole('region', { name: 'Serie de comprobantes' })
+  await tarjeta.getByRole('button', { name: 'Cambiar serie' }).click()
+  const dialogo = page.getByRole('dialog', { name: 'Cambiar serie' })
+  await dialogo.getByLabel('Serie', { exact: true }).fill('e2e-serie')
+  await dialogo.getByRole('button', { name: 'Guardar' }).click()
   await expect(
     page.getByText(`La serie vigente es ${SERIE}: el próximo comprobante es ${SERIE}-1.`),
   ).toBeVisible()
+  await expect(dialogo).toBeHidden()
   await expect(page.locator('[data-serie-vigente]')).toHaveText(SERIE)
   await expect(page.locator('[data-proximo-comprobante]')).toHaveText(`${SERIE}-1`)
-  await expect(barra).toHaveCount(0)
   expect(serieVigente()).toBe(SERIE)
 })

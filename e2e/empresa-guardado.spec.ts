@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { borrarPersonasDePrueba, correoDePrueba, crearDuenaDePrueba } from './soporte/base'
 import {
+  editarTarjeta,
   restaurarEmpresa,
   tomarInstantaneaDeEmpresa,
   type InstantaneaDeEmpresa,
@@ -36,24 +37,22 @@ async function entrar(page: Page, correo: string) {
   await expect(page).toHaveURL('/')
 }
 
-const barra = (page: Page) => page.getByRole('region', { name: 'Cambios sin guardar' })
-
 // Con cambios sin guardar, recargar pregunta (`beforeunload`): aquí se acepta, para ver lo que el borrador repone.
 async function recargarConCambios(page: Page) {
   page.once('dialog', (dialogo) => void dialogo.accept())
   await page.reload()
 }
 
-// Sin prueba con el freno de CPU: pasaba también sin el arreglo (0 de 33), no discriminaba; la barandilla es la determinista de abajo.
-
-// El orden de los eventos, fijo: el servidor responde cuando la prueba quiere. Mientras guarda, el
-// formulario que se ve es el viejo y está a punto de reemplazarse con lo guardado: no se puede teclear
-// en él (una tecla ahí iría a un campo que desaparece). Al llegar lo guardado, el formulario nuevo se
-// edita, y lo que se teclea en él sobrevive a recargar.
-test('mientras guarda no se puede teclear, y al llegar lo guardado sí', async ({ page }) => {
+// El orden de los eventos, fijo: el servidor responde cuando la prueba quiere. Mientras guarda, el modal no se puede teclear ni cerrar
+// por descuido; al llegar lo guardado, se cierra y la tarjeta muestra lo nuevo.
+test('mientras guarda no se puede teclear, y al llegar lo guardado el modal se cierra', async ({
+  page,
+}) => {
   await entrar(page, duena)
   await page.goto('/configuracion/empresa')
-  await page.getByLabel('Razón social').fill(`Demora ${Date.now()} SRL`)
+  const razon = `Demora ${Date.now()} SRL`
+  const legales = await editarTarjeta(page, 'Datos legales y de contacto')
+  await legales.getByLabel('Razón social').fill(razon)
 
   let soltar = () => {}
   const retenida = new Promise<void>((resolver) => {
@@ -69,22 +68,28 @@ test('mientras guarda no se puede teclear, y al llegar lo guardado sí', async (
     },
   )
   try {
-    await barra(page).getByRole('button', { name: 'Guardar', exact: true }).click()
-    await expect(barra(page).getByRole('button', { name: 'Guardar', exact: true })).toBeDisabled()
-    await expect(page.getByLabel('NIT')).toBeDisabled()
-    await expect(page.getByLabel('Razón social')).toBeDisabled()
+    await legales.getByRole('button', { name: /^Guard/ }).click()
+    await expect(legales.getByRole('button', { name: 'Guardando…' })).toBeDisabled()
+    await expect(legales.getByLabel('NIT')).toBeDisabled()
+    await expect(legales.getByLabel('Razón social')).toBeDisabled()
   } finally {
     soltar()
   }
   await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
-  await expect(barra(page)).toHaveCount(0)
-  await expect(page.getByLabel('NIT')).toBeEnabled()
+  await expect(legales).toBeHidden()
+  await expect(
+    page.getByRole('region', { name: 'Datos legales y de contacto', exact: true }),
+  ).toContainText(razon)
 
-  await page.getByLabel('NIT').fill('7070707070')
-  await expect(page.getByLabel('NIT')).toHaveValue('7070707070')
+  // Lo que se teclea después y no se guarda sobrevive a recargar.
+  const otra = await editarTarjeta(page, 'Datos legales y de contacto')
+  await otra.getByLabel('NIT').fill('7070707070')
+  await expect(otra.getByLabel('NIT')).toHaveValue('7070707070')
   await recargarConCambios(page)
   await expect(page.getByText('Recuperamos lo que habías escrito')).toBeVisible()
-  await expect(page.getByLabel('NIT')).toHaveValue('7070707070')
+  await expect(
+    page.getByRole('dialog', { name: 'Datos legales y de contacto' }).getByLabel('NIT'),
+  ).toHaveValue('7070707070')
 })
 
 // Un aviso es de paso: no puede tapar lo que la persona acaba de usar. Tras guardar, el pie del panel
@@ -142,7 +147,8 @@ test('los avisos no tapan los botones del panel, y su acción se pulsa', async (
 
   // Un aviso con acción sigue pulsable: lo tipeado y sin guardar se recupera, y se puede descartar.
   await page.goto('/configuracion/empresa')
-  await page.getByLabel('NIT').fill('9090909090')
+  const legales = await editarTarjeta(page, 'Datos legales y de contacto')
+  await legales.getByLabel('NIT').fill('9090909090')
   await recargarConCambios(page)
   const recuperado = page.locator('[data-sonner-toast]').filter({ hasText: 'Recuperamos' })
   await expect(recuperado).toBeVisible()
@@ -150,37 +156,31 @@ test('los avisos no tapan los botones del panel, y su acción se pulsa', async (
   const descartar = recuperado.getByRole('button', { name: 'Descartar' })
   expect(await recibeElClic(descartar)).toBe(true)
   await descartar.click()
-  await expect(page.getByLabel('NIT')).toHaveValue('')
+  await expect(
+    page.getByRole('dialog', { name: 'Datos legales y de contacto' }).getByLabel('NIT'),
+  ).toHaveValue('')
 })
 
-test('la barra aparece al cambiar algo, salir pregunta, y «Descartar» o «Guardar» la quitan', async ({
+test('Esc con cambios pregunta, «Seguir editando» conserva y «Descartar» cierra sin guardar', async ({
   page,
 }) => {
   await entrar(page, duena)
   await page.goto('/configuracion/empresa')
-  const nombre = page.getByLabel('Nombre de la empresa')
+  const identidad = await editarTarjeta(page, 'Identidad')
+  const nombre = identidad.getByLabel('Nombre de la empresa')
   const guardado = await nombre.inputValue()
-  await expect(barra(page)).toHaveCount(0)
 
-  await nombre.fill(`${guardado} Barra`)
-  await expect(barra(page)).toContainText('Tienes cambios sin guardar')
+  await nombre.fill(`${guardado} Modal`)
+  await page.keyboard.press('Escape')
+  await expect(identidad.getByRole('button', { name: 'Seguir editando' })).toBeVisible()
+  await identidad.getByRole('button', { name: 'Seguir editando' }).click()
+  await expect(nombre).toHaveValue(`${guardado} Modal`)
 
-  // Salir por «‹ Configuración» pregunta en la barra; «Seguir editando» se queda con lo tipeado.
-  await page.getByRole('main').getByRole('link', { name: 'Configuración', exact: true }).click()
-  await expect(barra(page)).toContainText('Tienes cambios sin guardar.')
-  await barra(page).getByRole('button', { name: 'Seguir editando' }).click()
+  await page.keyboard.press('Escape')
+  await identidad.getByRole('button', { name: 'Descartar' }).click()
+  await expect(identidad).toBeHidden()
   await expect(page).toHaveURL('/configuracion/empresa')
-  await expect(nombre).toHaveValue(`${guardado} Barra`)
-
-  // «Descartar» repone lo guardado y la barra se va.
-  await barra(page).getByRole('button', { name: 'Descartar' }).click()
-  await expect(barra(page)).toHaveCount(0)
-  await expect(nombre).toHaveValue(guardado)
-
-  // Cambiar y «Guardar» guarda y la barra se va.
-  await nombre.fill(`${guardado} Guardada`)
-  await barra(page).getByRole('button', { name: 'Guardar', exact: true }).click()
-  await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
-  await expect(barra(page)).toHaveCount(0)
-  await expect(nombre).toHaveValue(`${guardado} Guardada`)
+  await expect(page.getByRole('region', { name: 'Identidad', exact: true })).not.toContainText(
+    'Modal',
+  )
 })

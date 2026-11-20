@@ -18,6 +18,10 @@ export const T = {
   PORCIENTO: 11,
   FIN: 12,
   ERROR: 13,
+  // `>`, `<`, `>=`, `<=`, `=` y `<>`: cuál es lo dice su texto.
+  COMPARA: 14,
+  // Un texto entre comillas, con ellas.
+  TEXTO: 15,
 } as const
 
 export type Token = { t: number; desde: number; hasta: number; codigo?: CodigoDeCompilacion }
@@ -94,6 +98,39 @@ function leerNumero(lex: Lexico, desde: number): Token {
   return { t: T.NUM, desde, hasta: i }
 }
 
+// `<` y `>` miran un carácter más: `<=`, `<>` y `>=` son un solo comparador.
+function comparador(lex: Lexico, desde: number, c: number): Token {
+  const sig = lex.texto.charCodeAt(desde + 1)
+  const doble = (c === 60 && (sig === 61 || sig === 62)) || (c === 62 && sig === 61)
+  lex.pos = desde + (doble ? 2 : 1)
+  return { t: T.COMPARA, desde, hasta: lex.pos }
+}
+
+// Hasta la comilla que cierra; sin ella, el error señala la que abre.
+function leerTexto(lex: Lexico, desde: number): Token {
+  let i = desde + 1
+  while (i < lex.texto.length && lex.texto.charCodeAt(i) !== 34) {
+    lex.m.visitas += 1
+    i += 1
+  }
+  if (i >= lex.texto.length) {
+    lex.pos = i
+    return { t: T.ERROR, desde, hasta: desde + 1, codigo: 'texto_sin_cerrar' }
+  }
+  lex.pos = i + 1
+  return { t: T.TEXTO, desde, hasta: lex.pos }
+}
+
+// Un operador, un comparador, un paréntesis, un separador o un texto entre comillas; undefined si no es ninguno.
+function signo(lex: Lexico, desde: number, c: number): Token | undefined {
+  if (c === 60 || c === 61 || c === 62) return comparador(lex, desde, c)
+  if (c === 34) return leerTexto(lex, desde)
+  const t = SIGNOS.get(c)
+  if (t === undefined) return undefined
+  lex.pos = desde + 1
+  return { t, desde, hasta: desde + 1 }
+}
+
 export function siguiente(lex: Lexico): Token {
   saltarEspacios(lex)
   const { texto } = lex
@@ -107,11 +144,8 @@ export function siguiente(lex: Lexico): Token {
     lex.pos = pasar(lex, desde, esDeNombre)
     return { t: T.NOMBRE, desde, hasta: lex.pos }
   }
-  const signo = SIGNOS.get(c)
-  if (signo !== undefined) {
-    lex.pos = desde + 1
-    return { t: signo, desde, hasta: desde + 1 }
-  }
+  const s = signo(lex, desde, c)
+  if (s !== undefined) return s
   // Un carácter fuera de la gramática; un par de sustitutos (un emoji) se nombra entero.
   const par = c >= 0xd800 && c <= 0xdbff && (texto.charCodeAt(desde + 1) & 0xfc00) === 0xdc00
   lex.pos = desde + (par ? 2 : 1)

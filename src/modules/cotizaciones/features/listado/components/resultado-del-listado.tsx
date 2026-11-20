@@ -3,22 +3,25 @@
 import type { Route } from 'next'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { CLAVE_DE_CURSOR } from '@/shared/lib/filtros'
 import { ubicacionDeLaPagina } from '@/shared/lib/paginacion'
 import type { VistaDeLista } from '@/shared/lib/vista-de-lista'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
 import { UnaSolaVista } from '@/shared/ui/lista'
 import { Paginacion, UbicacionDeLaPagina } from '@/shared/ui/paginacion'
+import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
+import { useUltimo } from '@/shared/ui/use-ultimo'
 import type { PaginaAgrupada, PedidoDelGrupo } from '../../../entities/listado/grupos-del-listado'
+import { tituloDelModalDelGrupo } from '../../../entities/listado/grupos-del-listado'
 import { TOPE_DE_COINCIDENCIAS } from '../../../entities/listado/listado'
-import { DespliegueDelGrupoDiferido } from './grupo'
+import { useModalDelGrupo } from '../hooks/use-modal-del-grupo'
+import { ModalDelGrupoDiferido } from './grupo'
 import { SinFilas } from './sin-filas'
 import { TablaDeCotizaciones } from './tabla-de-cotizaciones'
 import { TarjetasDeCotizaciones } from './tarjetas-de-cotizaciones'
 import type {
   CompartirDe,
-  EntradaDeLaLista,
   FilaDeCotizacion,
   HuecosDeLaLista,
   MenuDeFila,
@@ -38,12 +41,10 @@ type Props = {
   compartirDe?: CompartirDe | undefined
   huecos?: HuecosDeLaLista | undefined
   rutaDeClientes: string | null
-  // Los filtros de la página, para el despliegue de un grupo (las del vehículo que coinciden).
+  // Los filtros de la página, para el modal de un grupo (las del vehículo que coinciden).
   filtrosDelGrupo: Omit<PedidoDelGrupo, 'vehiculoId' | 'cursor'>
   acotada: boolean
 }
-
-const idDelDespliegue = (ordenId: string) => `grupo-${ordenId}`
 
 // «Seguir buscando»: la misma URL con el cursor de donde quedó la base.
 function SeguirBuscando({ cursor }: { cursor: string }) {
@@ -65,41 +66,55 @@ function SeguirBuscando({ cursor }: { cursor: string }) {
   )
 }
 
-// Qué grupos están desplegados (por la cotización que los ordena: no son de la URL) y cómo se despliega uno.
-function useGruposDesplegados({
+// Lo que el modal sabe de su grupo: con él en la página, su cabeza (primera, con el nombre del vehículo) y el orden; sin él (un enlace a un grupo que no está), sólo lo que lee.
+function datosDelGrupo(
+  pagina: Props['pagina'],
+  filtros: Props['filtrosDelGrupo'],
+  vehiculoId: string,
+) {
+  const entrada = pagina.filas.find((una) => una.tipo === 'grupo' && una.vehiculoId === vehiculoId)
+  const grupo = entrada?.tipo === 'grupo' ? entrada : undefined
+  return {
+    titulo: tituloDelModalDelGrupo(grupo?.cabeza.vehiculo),
+    cabeza: grupo?.cabeza ?? null,
+    pedido: { ...filtros, vehiculoId },
+    ordenId: filtros.texto === undefined ? (grupo?.ordenId ?? null) : null,
+  }
+}
+
+// El modal de las cotizaciones de un vehículo: abierto en la URL (`useModalDelGrupo`), llega recién al primer clic (`diferido()`) y, una vez visto, queda montado para irse con
+// su animación. Elegir una línea lo cierra y abre su resumen en el mismo paso.
+function useGrupoEnElModal({
+  pagina,
   filtrosDelGrupo,
   huecos,
   alAbrir,
-  abierta,
-}: Pick<Props, 'filtrosDelGrupo' | 'huecos' | 'alAbrir' | 'abierta'>) {
-  const [desplegados, setDesplegados] = useState<ReadonlySet<string>>(new Set())
-  const alternar = (ordenId: string) => {
-    setDesplegados((antes) => {
-      const despues = new Set(antes)
-      if (!despues.delete(ordenId)) {
-        despues.add(ordenId)
-      }
-      return despues
-    })
+}: Pick<Props, 'pagina' | 'filtrosDelGrupo' | 'huecos' | 'alAbrir'>) {
+  const modal = useModalDelGrupo()
+  const montado = useAbiertoAlgunaVez(modal.abierto)
+  // Lo último que nombró la URL se conserva mientras el modal se cierra.
+  const vehiculoId = useUltimo(modal.abierto ? modal.vehiculoId : null)
+  return {
+    abrirGrupo: modal.abrir,
+    modal:
+      montado && vehiculoId !== null ? (
+        <ModalDelGrupoDiferido
+          key={modal.apertura}
+          abierto={modal.abierto}
+          alCerrar={modal.cerrar}
+          {...datosDelGrupo(pagina, filtrosDelGrupo, vehiculoId)}
+          Comparar={huecos?.Comparar}
+          alAbrir={(id) => {
+            modal.cerrar()
+            alAbrir(id)
+          }}
+        />
+      ) : null,
   }
-  // El bloque lleva el id que nombra `aria-controls` desde el primer cuadro (mientras llega su código, el esqueleto).
-  const despliegue = (entrada: Extract<EntradaDeLaLista, { tipo: 'grupo' }>) => (
-    <div id={idDelDespliegue(entrada.ordenId)}>
-      <DespliegueDelGrupoDiferido
-        cabeza={entrada.cabeza}
-        pedido={{ ...filtrosDelGrupo, vehiculoId: entrada.vehiculoId }}
-        ordenId={filtrosDelGrupo.texto === undefined ? entrada.ordenId : null}
-        Comparar={huecos?.Comparar}
-        alAbrir={alAbrir}
-        abierta={abierta}
-      />
-    </div>
-  )
-  return { desplegados, alternar, despliegue, idDelDespliegue }
 }
 
 // La lista o el estado que corresponda (`SinFilas`). Una sola vista (`<UnaSolaVista preferida>`): la tabla sólo en escritorio y si la persona la eligió; si no, las
-// tarjetas. Agrupada, cada grupo se despliega en el lugar (lo desplegado vive aquí: no es de la URL). Sin total ni «Página N de M»: dónde estás y Anterior o
+// tarjetas. Agrupada, «N cotizaciones de este vehículo» abre un modal con las del vehículo (`?panel=cotizaciones-del-vehiculo&vehiculo=`). Sin total ni «Página N de M»: dónde estás y Anterior o
 // Siguiente; si la base recorrió su tope sin completar la página, «Seguir buscando».
 export function ResultadoDelListado({
   pagina,
@@ -116,12 +131,17 @@ export function ResultadoDelListado({
   filtrosDelGrupo,
   acotada,
 }: Props) {
-  const grupos = useGruposDesplegados({ filtrosDelGrupo, huecos, alAbrir, abierta })
+  const grupos = useGrupoEnElModal({ pagina, filtrosDelGrupo, huecos, alAbrir })
   if (pagina.filas.length === 0) {
-    return pagina.cortada === null ? (
-      <SinFilas accionDeVacio={accionDeVacio} vacioDeLoFiltrado={vacioDeLoFiltrado} />
-    ) : (
-      <SeguirBuscando cursor={pagina.cortada} />
+    return (
+      <>
+        {pagina.cortada === null ? (
+          <SinFilas accionDeVacio={accionDeVacio} vacioDeLoFiltrado={vacioDeLoFiltrado} />
+        ) : (
+          <SeguirBuscando cursor={pagina.cortada} />
+        )}
+        {grupos.modal}
+      </>
     )
   }
   const ubicacion = ubicacionDeLaPagina({
@@ -140,7 +160,7 @@ export function ResultadoDelListado({
             alAbrir={alAbrir}
             abierta={abierta}
             menuDeFila={menuDeFila}
-            {...grupos}
+            abrirGrupo={grupos.abrirGrupo}
           />
         )}
         tarjetas={() => (
@@ -153,7 +173,7 @@ export function ResultadoDelListado({
             compartirDe={compartirDe}
             huecos={huecos}
             rutaDeClientes={rutaDeClientes}
-            {...grupos}
+            abrirGrupo={grupos.abrirGrupo}
           />
         )}
       />
@@ -165,6 +185,7 @@ export function ResultadoDelListado({
       ) : null}
       {pagina.cortada === null ? null : <SeguirBuscando cursor={pagina.cortada} />}
       <Paginacion siguiente={pagina.siguiente} anterior={pagina.anterior} />
+      {grupos.modal}
     </div>
   )
 }

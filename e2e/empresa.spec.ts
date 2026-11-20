@@ -12,6 +12,7 @@ import {
 } from './soporte/base'
 import {
   ajustesGuardados,
+  editarTarjeta,
   estadoDeApibara,
   pedirSecreto,
   restaurarEmpresa,
@@ -30,9 +31,6 @@ test.describe.configure({ mode: 'serial' })
 const CLAVE = 'una-clave-de-prueba-9'
 const DUENA = 'Dalia Prueba'
 const CAMBISTA = 'Carla Cambios'
-// Sólo `viewBox`, sin ancho ni alto: el caso que hay que saber dibujar.
-const LOGO_SVG =
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 60"><rect width="120" height="60" rx="8" fill="#0b7285"/><circle cx="30" cy="30" r="14" fill="#fff"/></svg>'
 const MOTIVO_SIN_PERMISO =
   'Puedes ver los ajustes de la empresa, pero no tienes permiso para cambiarlos.'
 
@@ -92,19 +90,26 @@ test('la dueña cambia el nombre y la zona horaria y se ven en el shell', async 
   // Llega por su menú: Configuración → Empresa.
   await page.getByRole('button', { name: `Menú de ${DUENA}` }).click()
   await page.getByRole('menuitem', { name: 'Configuración' }).click()
-  await page.getByRole('link', { name: /Empresa/ }).click()
+  await page.getByRole('region').getByRole('link', { name: 'Empresa', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Datos de la empresa', level: 1 })).toBeVisible()
 
-  await page.getByLabel('Nombre de la empresa').fill(nombre)
-  await page.getByLabel('Zona horaria').fill('Asia/Tokyo')
-  // El código de país de los teléfonos de los leads: con la forma de un código o vacío.
-  await page.getByLabel('Código de país de los teléfonos').fill('54')
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
-  await expect(page.getByText('El código de país lleva un «+» y de 1 a 3 dígitos.')).toBeVisible()
-  await expect(page.getByLabel('Código de país de los teléfonos')).toHaveValue('54')
-  await page.getByLabel('Código de país de los teléfonos').fill('+54')
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
+  const identidad = await editarTarjeta(page, 'Identidad')
+  await identidad.getByLabel('Nombre de la empresa').fill(nombre)
+  await identidad.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
+  await expect(identidad).toBeHidden()
+
+  // La región, en su propio modal: el código de país, con la forma de un código o vacío.
+  const region = await editarTarjeta(page, 'Región')
+  await region.getByLabel('Zona horaria').fill('Asia/Tokyo')
+  await region.getByLabel('Código de país de los teléfonos').fill('54')
+  await region.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(region.getByText('El código de país lleva un «+» y de 1 a 3 dígitos.')).toBeVisible()
+  await expect(region.getByLabel('Código de país de los teléfonos')).toHaveValue('54')
+  await region.getByLabel('Código de país de los teléfonos').fill('+54')
+  await region.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
+  await expect(region).toBeHidden()
 
   // El nombre, en la marca del marco: la barra lateral en escritorio, el menú en el celular.
   if (isMobile) {
@@ -131,12 +136,13 @@ test('la dueña cambia el nombre y la zona horaria y se ven en el shell', async 
   })
 
   // Una zona que no existe se rechaza con el motivo, y lo tipeado queda.
-  await page.getByLabel('Zona horaria').fill('Marte/Olympus')
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
-  await expect(page.getByText('Esa zona horaria no existe')).toBeVisible()
-  await expect(page.getByLabel('Zona horaria')).toHaveValue('Marte/Olympus')
+  const otraVez = await editarTarjeta(page, 'Región')
+  await otraVez.getByLabel('Zona horaria').fill('Marte/Olympus')
+  await otraVez.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(otraVez.getByText('Esa zona horaria no existe')).toBeVisible()
+  await expect(otraVez.getByLabel('Zona horaria')).toHaveValue('Marte/Olympus')
   // Y el foco va al campo con error: guardando el formulario estaba deshabilitado.
-  await expect(page.getByLabel('Zona horaria')).toBeFocused()
+  await expect(otraVez.getByLabel('Zona horaria')).toBeFocused()
   expect((await ajustesGuardados()).zona_horaria).toBe('Asia/Tokyo')
 })
 
@@ -182,13 +188,17 @@ test('sin el permiso de ajustes, Datos de la empresa sale deshabilitada con el m
   await entrar(suya, cambista)
 
   // La sección aparece en su Configuración: tiene uno de los dos permisos de la empresa.
-  await suya.goto('/configuracion')
-  await suya.getByRole('link', { name: /Empresa/ }).click()
+  await suya.goto('/configuracion/inicio')
+  await suya.getByRole('region').getByRole('link', { name: 'Empresa', exact: true }).click()
   await expect(suya.getByText(MOTIVO_SIN_PERMISO)).toBeVisible()
-  await expect(suya.getByLabel('Nombre de la empresa')).toBeDisabled()
-  await expect(suya.getByLabel('Zona horaria')).toBeDisabled()
-  await expect(suya.getByRole('button', { name: 'Subir logo', exact: true })).toBeDisabled()
-  await expect(suya.getByRole('button', { name: 'Guardar', exact: true })).toBeHidden()
+  for (const titulo of ['Identidad', 'Región', 'Datos legales y de contacto', 'Políticas']) {
+    const tarjeta = suya.getByRole('region', { name: titulo, exact: true })
+    await expect(tarjeta.getByRole('button', { name: 'Editar', exact: true })).toBeDisabled()
+  }
+  // Un `?panel=` a mano no abre el modal: se avisa y se limpia.
+  await suya.goto('/configuracion/empresa?panel=identidad')
+  await expect(suya.getByRole('dialog')).toBeHidden()
+  await expect(suya).toHaveURL('/configuracion/empresa')
 
   // Lo que sí gestiona, lo edita: los tipos de cambio, en su sub-ruta.
   const menu = suya.getByRole('navigation', { name: 'Secciones de Configuración' })
@@ -209,37 +219,51 @@ test('guarda la clave de apibara sin volver a mostrarla, y recién entonces la a
 
   // Sin clave guardada no se puede activar, y se dice por qué. La web pública tiene su propio
   // «Activa»: el de apibara es el de su tarjeta.
-  const tarjeta = page.locator('details', { has: page.getByText('apibara', { exact: true }) })
+  const tarjeta = page.getByRole('region', { name: 'apibara', exact: true })
   const activa = tarjeta.getByRole('switch', { name: 'Activa' })
   await expect(activa).toHaveAttribute('data-disabled', '')
   await expect(page.getByText('Guarda la clave antes de activarla.')).toBeVisible()
+  const alMenu = async (accion: string) => {
+    await tarjeta.getByRole('button', { name: 'Más acciones de apibara' }).click()
+    await page.getByRole('menuitem', { name: accion }).click()
+  }
 
-  await page.getByLabel('Clave', { exact: true }).fill(secreto)
-  await page.getByRole('button', { name: 'Guardar clave' }).click()
+  // La clave es su propia escritura, en su modal.
+  await alMenu('Cargar la clave')
+  const claveModal = page.getByRole('dialog', { name: 'Cargar la clave' })
+  await claveModal.getByLabel('Clave', { exact: true }).fill(secreto)
+  await claveModal.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Clave de apibara guardada')).toBeVisible()
+  await expect(claveModal).toBeHidden()
 
   // Queda dicho que está guardada; la clave no vuelve, ni a la vista ni en lo que manda el servidor.
-  await expect(page.getByText(/Guardada el .+ No se puede ver/)).toBeVisible()
-  await expect(page.getByLabel('Clave', { exact: true })).toBeHidden()
+  await expect(tarjeta.getByText(/Guardada el /)).toBeVisible()
+  await expect(tarjeta.getByText('No se puede ver: sólo reemplazar.')).toBeVisible()
   expect(await page.content()).not.toContain(secreto)
-  await page.getByRole('button', { name: 'Reemplazar' }).click()
-  await expect(page.getByLabel('Clave nueva')).toHaveValue('')
-  await page.getByRole('button', { name: 'Cancelar' }).click()
+  await alMenu('Reemplazar la clave')
+  const reemplazo = page.getByRole('dialog', { name: 'Reemplazar la clave' })
+  await expect(reemplazo.getByLabel('Clave nueva')).toHaveValue('')
+  await reemplazo.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(reemplazo).toBeHidden()
 
-  // Con la clave en Vault, ahora sí. Prender el interruptor no borra lo tipeado y sin guardar en
-  // la configuración, aunque las dos cosas sean la misma fila.
-  await page.getByLabel('Dirección del servicio').fill('https://api.apibara.tech/v2')
+  // Con la clave en Vault, ahora sí. Encender el interruptor guarda al instante.
   await activa.click()
   await expect(page.getByText('apibara activada')).toBeVisible()
   await expect(activa).toBeChecked()
-  await expect(page.getByLabel('Dirección del servicio')).toHaveValue('https://api.apibara.tech/v2')
 
   // La dirección no puede apuntar fuera de apibara.tech: ahí viaja la clave.
-  await page.getByLabel('Dirección del servicio').fill('https://atacante.example')
-  await page.getByRole('button', { name: 'Guardar configuración' }).click()
+  await alMenu('Configurar')
+  const configurar = page.getByRole('dialog', { name: 'Configurar apibara' })
+  await configurar.getByLabel('Dirección del servicio').fill('https://atacante.example')
+  await configurar.getByRole('button', { name: 'Guardar', exact: true }).click()
   // El error, no la ayuda: las dos dicen «ser de apibara.tech».
   await expect(page.locator('#endpoint-error')).toContainText('ser de apibara.tech')
   expect(await estadoDeApibara()).toEqual({ activa: true, conSecreto: true })
+  await configurar.getByLabel('Dirección del servicio').fill('https://api.apibara.tech/v2')
+  await configurar.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(page.getByText('Configuración de apibara guardada')).toBeVisible()
+  await expect(configurar).toBeHidden()
+  await expect(tarjeta.getByText('https://api.apibara.tech/v2')).toBeVisible()
 
   // Contra la base real: ni quien la guardó ni alguien sin sesión pueden pedir la clave.
   const rechazo = { codigo: '42501', dato: null }
@@ -255,112 +279,32 @@ test('guarda la clave de apibara sin volver a mostrarla, y recién entonces la a
 test('sin conexión, el formulario avisa y conserva lo tipeado', async ({ page, context }) => {
   await entrar(page, duena)
   await page.goto('/configuracion/empresa')
-  await page.getByLabel('Razón social').fill('Andina SRL')
+  const legales = await editarTarjeta(page, 'Datos legales y de contacto')
+  await legales.getByLabel('Razón social').fill('Andina SRL')
 
   await context.setOffline(true)
-  await expect(page.getByText('No hay conexión. Puedes seguir escribiendo')).toBeVisible()
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
-  await expect(page.getByText(/Lo que escribiste sigue acá/)).toBeVisible()
-  await expect(page.getByLabel('Razón social')).toHaveValue('Andina SRL')
+  await expect(legales.getByText('No hay conexión. Puedes seguir escribiendo')).toBeVisible()
+  await legales.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(legales.getByText(/Lo que escribiste sigue acá/)).toBeVisible()
+  await expect(legales.getByLabel('Razón social')).toHaveValue('Andina SRL')
 
-  // Vuelve la conexión: el mismo formulario, con lo mismo, se guarda.
+  // Vuelve la conexión: el mismo modal, con lo mismo, se guarda solo.
   await context.setOffline(false)
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
+  await expect(legales).toBeHidden()
 
   // Lo tipeado y no guardado sobrevive a recargar la pantalla, y se puede descartar.
-  await page.getByLabel('NIT').fill('1020304050')
-  // Lo primero: que lo tipeado haya llegado a un campo que siga ahí (no al formulario que se estaba
-  // reemplazando con lo guardado).
-  await expect(page.getByLabel('NIT')).toHaveValue('1020304050')
+  const otra = await editarTarjeta(page, 'Datos legales y de contacto')
+  await otra.getByLabel('NIT').fill('1020304050')
+  await expect(otra.getByLabel('NIT')).toHaveValue('1020304050')
+  page.once('dialog', (dialogo) => void dialogo.accept())
   await page.reload()
+  const recuperada = page.getByRole('dialog', { name: 'Datos legales y de contacto' })
   await expect(page.getByText('Recuperamos lo que habías escrito')).toBeVisible()
-  await expect(page.getByLabel('NIT')).toHaveValue('1020304050')
-  await expect(page.getByLabel('Razón social')).toHaveValue('Andina SRL')
+  await expect(recuperada.getByLabel('NIT')).toHaveValue('1020304050')
+  await expect(recuperada.getByLabel('Razón social')).toHaveValue('Andina SRL')
   await page.locator('[data-sonner-toast]').getByRole('button', { name: 'Descartar' }).click()
-  await expect(page.getByLabel('NIT')).toHaveValue('')
-})
-
-type Manifest = { name: string; icons: { src: string; purpose?: string }[] }
-
-// @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
-test('carga el logo al guardar, regenera los íconos y el manifest los sirve', async ({
-  page,
-  request,
-}) => {
-  await entrar(page, duena)
-  await page.goto('/configuracion/empresa')
-  const selector = page.getByLabel('Elegir el logo de la empresa')
-
-  // Sin logo no hay de dónde dibujarlos, y se dice.
-  await expect(page.getByRole('button', { name: 'Regenerar íconos' })).toBeDisabled()
-  await expect(page.getByText('Carga el logo y guarda')).toBeVisible()
-
-  // Un formato que no sirve se rechaza al elegirlo, con el motivo.
-  await selector.setInputFiles({
-    name: 'logo.gif',
-    mimeType: 'image/gif',
-    buffer: Buffer.from('GIF89a'),
-  })
-  await expect(page.getByText('El logo tiene que ser SVG, PNG, WebP o JPEG.')).toBeVisible()
-
-  // Elegir uno válido sólo lo muestra: todavía no hay nada en la base.
-  await selector.setInputFiles({
-    name: 'logo.svg',
-    mimeType: 'image/svg+xml',
-    buffer: Buffer.from(LOGO_SVG),
-  })
-  await expect(page.getByRole('button', { name: 'Cambiar logo', exact: true })).toBeVisible()
-  expect((await ajustesGuardados()).logo_ruta).toBeNull()
-
-  // Si el logo no sube, la fila no se guarda.
-  await page.route('**/storage/v1/object/marca/**', (ruta) => ruta.abort())
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
-  await expect(page.getByText('No se pudo subir el archivo')).toBeVisible()
-  expect((await ajustesGuardados()).logo_ruta).toBeNull()
-  await page.unroute('**/storage/v1/object/marca/**')
-
-  // Ahora sí: se sube al guardar.
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
-  await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
-  expect((await ajustesGuardados()).logo_ruta).toMatch(/^logos\/[0-9a-f]{64}\.svg$/)
-
-  // Regenerar los dibuja y los muestra; recién al confirmar se suben y se guardan.
-  await page.getByText('Blanco', { exact: true }).click()
-  await page.getByRole('button', { name: 'Regenerar íconos' }).click()
-  await expect(page.getByLabel('Vista previa de los íconos')).toBeVisible()
-  expect((await ajustesGuardados()).iconos).toBeNull()
-  await page.getByRole('button', { name: 'Guardar íconos' }).click()
-  await expect(page.getByText('Íconos de la app guardados')).toBeVisible()
-  expect(Object.keys((await ajustesGuardados()).iconos ?? {}).sort()).toEqual([
-    '180',
-    '192',
-    '32',
-    '512',
-    '512m',
-  ])
-
-  // El manifest (que se pide sin sesión) trae el nombre de la empresa y los íconos de Storage.
-  const manifest = (await (await request.get('/manifest.webmanifest')).json()) as Manifest
-  expect(manifest.name).toContain('Importadora Andina')
-  expect(manifest.icons).toHaveLength(3)
-  for (const icono of manifest.icons) {
-    expect(icono.src).toContain('/storage/v1/object/public/marca/iconos/')
-    const respuesta = await request.get(icono.src)
-    expect(respuesta.headers()['content-type']).toBe('image/png')
-  }
-  expect(manifest.icons.filter((icono) => icono.purpose === 'maskable')).toHaveLength(1)
-
-  // Y el <link rel="icon"> del documento redirige al generado.
-  const vigente = await request.get('/iconos/vigente/32', { maxRedirects: 0 })
-  expect(vigente.status()).toBe(307)
-  expect(vigente.headers()['location']).toContain('/marca/iconos/')
-
-  // Volver a los neutros deja el manifest como al instalar.
-  await page.getByRole('button', { name: 'Volver a los neutros' }).click()
-  await expect(page.getByText('La app vuelve a usar los íconos neutros')).toBeVisible()
-  const neutro = (await (await request.get('/manifest.webmanifest')).json()) as Manifest
-  expect(neutro.icons[0]?.src).toBe('/iconos/icono-192.png')
+  await expect(recuperada.getByLabel('NIT')).toHaveValue('')
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -377,10 +321,9 @@ test('la dueña abre el registro y otra persona crea su cuenta y entra, sin rol'
   await expect(suya.getByRole('link', { name: 'Crear cuenta' })).toBeHidden()
 
   await page.goto('/configuracion/empresa')
-  // Mientras la página llega en streaming el título puede estar dos veces: se toca el visible.
-  await page.getByText('Políticas', { exact: true }).filter({ visible: true }).click()
-  await page.getByRole('switch', { name: 'Registro abierto' }).click()
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
+  const politicas = await editarTarjeta(page, 'Políticas')
+  await politicas.getByRole('switch', { name: 'Registro abierto' }).click()
+  await politicas.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Ajustes de la empresa guardados')).toBeVisible()
 
   // Ahora sí: se registra, confirma su correo y queda adentro, sin ningún rol.

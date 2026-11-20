@@ -42,6 +42,7 @@ type Props = DatosDelOrigen & {
 export function TarjetasDeVehiculos(props: Props) {
   const { vehiculos, origen, campos, fases, vitrina, limpiezaHoy, menu, seleccion, aprobadas } =
     props
+  const { ahora } = props
   const identidadDe = useIdentidad(campos)
   const columnaCompra = columnaDeCompraDirecta(origen.tipo === 'subasta', campos)
   const filas: FilasDeLaTarjeta = {
@@ -49,6 +50,7 @@ export function TarjetasDeVehiculos(props: Props) {
     columnaCompra,
     campos: camposSinLaCompraDirecta(camposDeTarjeta(campos), columnaCompra),
     conCostoEstimado: aprobadas !== null,
+    cuentaRegresiva: origen.tipo === 'subasta' ? { ahora } : null,
   }
   return (
     <ul className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-3">

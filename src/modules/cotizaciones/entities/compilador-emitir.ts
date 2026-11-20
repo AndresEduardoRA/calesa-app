@@ -8,10 +8,11 @@ import {
   type Calculo,
   type ErrorCrudo,
   type Numero,
+  type OpDeArbol,
 } from './compilador-arbol'
 import type { Nombres } from './compilador-nombres'
 import { esta, type Medidor } from './medidor'
-import type { Nodo, NodoCalculo } from './nodos'
+import { OPS_DE_CONDICION, type Nodo, type NodoCalculo } from './nodos'
 
 export type Emitido = {
   nodos: Nodo[]
@@ -72,44 +73,60 @@ type Datos = {
   comunes: Comunes
 }
 
-// Las operaciones que sólo llevan `de` (y el pct de PORCENTAJE_DE).
-function calculoSimple({ id, a, de, pct, etiqueta, comunes }: Datos): Nodo | undefined {
-  const base = { id, tipo: 'calculo' as const, etiqueta, ...comunes }
-  const [x = '', y = ''] = de
-  switch (a.op) {
-    case 'suma':
-    case 'multiplicar':
-    case 'restar':
-      return { ...base, op: a.op, de }
-    case 'dividir':
-      return { ...base, op: 'dividir', de: [x, y] }
-    case 'porcentaje_de':
-      return { ...base, op: 'porcentaje_de', de, pct: pct ?? '' }
-    case 'si':
-    case 'redondear':
-    case 'depreciar':
-      return undefined
-  }
-}
+type Base = { id: string; tipo: 'calculo'; etiqueta: string } & Comunes
+type Armador = (base: Base, d: Datos) => Nodo
 
-// Las que traen campos propios.
-function calculoConCampos({ id, a, de, etiqueta, comunes }: Datos): Nodo {
-  const base = { id, tipo: 'calculo' as const, etiqueta, ...comunes }
-  const [x = ''] = de
-  const c = a.campos
-  if (a.op === 'si') return { ...base, op: 'si', de: [x], condicion: c.condicion ?? '' }
-  if (a.op === 'redondear') return { ...base, op: 'redondear', de: [x], n: c.n ?? 0 }
-  return {
+const variadica =
+  (op: 'suma' | 'restar' | 'multiplicar' | 'y' | 'o' | 'max' | 'min'): Armador =>
+  (base, { de }) => ({ ...base, op, de })
+const primero = (d: Datos) => d.de[0] ?? ''
+
+// El nodo de cada operación. La condición de `elegir` es su primer hijo.
+const ARMAR: Readonly<Record<OpDeArbol, Armador>> = {
+  suma: variadica('suma'),
+  restar: variadica('restar'),
+  multiplicar: variadica('multiplicar'),
+  y: variadica('y'),
+  o: variadica('o'),
+  max: variadica('max'),
+  min: variadica('min'),
+  dividir: (base, d) => ({ ...base, op: 'dividir', de: [primero(d), d.de[1] ?? ''] }),
+  porcentaje_de: (base, d) => ({ ...base, op: 'porcentaje_de', de: d.de, pct: d.pct ?? '' }),
+  si: (base, d) => ({ ...base, op: 'si', de: [primero(d)], condicion: d.a.campos.condicion ?? '' }),
+  redondear: (base, d) => ({ ...base, op: 'redondear', de: [primero(d)], n: d.a.campos.n ?? 0 }),
+  comparar: (base, d) => ({
+    ...base,
+    op: 'comparar',
+    de: [primero(d), d.de[1] ?? ''],
+    cmp: d.a.campos.cmp ?? '=',
+  }),
+  es_opcion: (base, d) => ({
+    ...base,
+    op: 'es_opcion',
+    de: [primero(d)],
+    cmp: d.a.campos.cmp === '<>' ? '<>' : '=',
+    clave: d.a.campos.clave ?? '',
+  }),
+  elegir: (base, d) => ({ ...base, op: 'elegir', de: d.de.slice(1), prueba: primero(d) }),
+  // BUSCARV no es un `calculo`: un `tabla` (exacta) o un `tramo`, con el valor como `match` o como `sobre`.
+  buscarv: ({ id, etiqueta }, d) => {
+    const { tabla = '', columna = '', buscarEn } = d.a.campos
+    return buscarEn === undefined
+      ? { id, tipo: 'tramo', etiqueta, tabla, sobre: primero(d), columna }
+      : { id, tipo: 'tabla', etiqueta, tabla, match: { [buscarEn]: primero(d) }, columna }
+  },
+  depreciar: (base, d) => ({
     ...base,
     op: 'depreciar',
-    de: [x],
-    tabla: c.tabla ?? '',
-    sobre: c.sobre ?? '',
-    columna: c.columna ?? '',
-  }
+    de: [primero(d)],
+    tabla: d.a.campos.tabla ?? '',
+    sobre: d.a.campos.sobre ?? '',
+    columna: d.a.campos.columna ?? '',
+  }),
 }
 
-const nodoDeCalculo = (d: Datos): Nodo => calculoSimple(d) ?? calculoConCampos(d)
+const nodoDeCalculo = (d: Datos): Nodo =>
+  ARMAR[d.a.op]({ id: d.id, tipo: 'calculo', etiqueta: d.etiqueta, ...d.comunes }, d)
 
 type Marca = { a: Arbol; i: number }
 
@@ -159,10 +176,20 @@ function emitirNumero(em: Emision, a: Numero, id: string, etiqueta: string) {
   })
 }
 
+const DE_CONDICION = new Set<string>(OPS_DE_CONDICION)
+
+// Una comparación, Y u O vale 1 o 0: su auxiliar es `raw`, y la raíz también si la fila no trae formato (una fila nueva).
+function comunesDeCalculo(em: Emision, a: Calculo): Comunes {
+  const raiz = a === em.raiz
+  const condicion = DE_CONDICION.has(a.op)
+  if (!condicion) return raiz ? em.comunes : {}
+  return raiz ? { ...em.comunes, formato: em.comunes.formato ?? 'raw' } : { formato: 'raw' }
+}
+
 function emitirCalculo(em: Emision, a: Calculo, id: string, etiqueta: string) {
   const pct = a.pct === undefined ? undefined : em.ids.pop()
   const de = em.ids.splice(em.ids.length - a.hijos.length, a.hijos.length)
-  const comunes = a === em.raiz ? em.comunes : {}
+  const comunes = comunesDeCalculo(em, a)
   em.salida.nodos.push(nodoDeCalculo({ id, a, de, pct, etiqueta, comunes }))
 }
 
@@ -201,7 +228,23 @@ function emitirNombreSolo(em: Emision, raiz: Arbol) {
   )
 }
 
-export function emitir(texto: string, raiz: Arbol, nombres: Nombres): Emitido | ErrorCrudo {
+// BUSCARV en la raíz: la fila es la suma de un auxiliar `tabla` o `tramo` (una fila con texto es una constante o un `calculo`).
+const raizDe = (a: Arbol): Arbol =>
+  a.k === 'calc' && a.op === 'buscarv'
+    ? {
+        k: 'calc',
+        op: 'suma',
+        hijos: [a],
+        campos: {},
+        deFuncion: false,
+        paren: false,
+        desde: a.desde,
+        hasta: a.hasta,
+      }
+    : a
+
+export function emitir(texto: string, arbol: Arbol, nombres: Nombres): Emitido | ErrorCrudo {
+  const raiz = raizDe(arbol)
   const em: Emision = {
     texto,
     raiz,
@@ -224,6 +267,7 @@ export function emitir(texto: string, raiz: Arbol, nombres: Nombres): Emitido | 
     pila.pop()
     const a = marca.a
     if (a.k === 'clave') return argumentoInvalido(a)
+    if (a.k === 'texto') return error('texto_fuera_de_lugar', a.desde, a.hasta)
     if (a.k === 'ref') {
       em.ids.push(a.nodo.id)
       continue

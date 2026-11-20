@@ -1,10 +1,8 @@
 // Expresiones al azar para probar el compilador (docs/COTIZADOR.md › «Fórmulas como texto»): un generador con semilla fija
-// que arma un árbol, lo escribe como texto (con espacios y paréntesis de más) y un oráculo que lo calcula directo en JS. El
-// oráculo usa la semántica del motor: un resultado que no es finito vale null y se propaga (JSON no guarda ∞ ni NaN), −0 vale 0,
-// y dividir por 0 es null. Sólo para las pruebas.
+// que arma un árbol y lo escribe como texto (con espacios y paréntesis de más). Lo calcula directo en JS `compilador-oraculo.ts`.
+// Sólo para las pruebas.
 import type { ContextoDeCompilacion } from './compilador-nombres'
-import type { Nodo } from './nodos'
-import { redondear } from './redondeo'
+import type { Comparador, Nodo } from './nodos'
 
 export type Azar = { entero: (hasta: number) => number }
 
@@ -31,6 +29,13 @@ export type Expr =
   | { t: 'si'; flag: string; x: Expr }
   | { t: 'red'; x: Expr; n: number }
   | { t: 'pct'; x: Expr; p: Expr }
+  // Las comparaciones y lo que las usa. `flag` sólo va como condición; la condición de `elegir` y de `yo` es `flag`, `cmp` o `yo`.
+  | { t: 'cmp'; op: Comparador; a: Expr; b: Expr }
+  | { t: 'flag'; id: string }
+  | { t: 'elegir'; c: Expr; x: Expr; y?: Expr }
+  | { t: 'yo'; op: 'Y' | 'O'; cs: Expr[] }
+  | { t: 'ext'; op: 'MAX' | 'MIN'; xs: Expr[] }
+  | { t: 'extg'; op: 'MAX' | 'MIN' }
 
 export const VALORES = [0.1, 0.2, 0.3, 0, -5, 1e-300, 1e-200, 1e308, 7, 3.5, 100, -0.1]
 // El valor de cada literal está escrito a mano, no calculado: es el doble que JS lee de ese decimal.
@@ -60,7 +65,7 @@ export const LITERALES: readonly { texto: string; valor: number }[] = [
 const INPUTS = ['x0', 'x1', 'x2', 'x3', 'x4']
 const CONSTANTES = ['c0', 'c1']
 const PORCENTAJES = ['k1', 'k2']
-const PARAMS: Record<string, number> = { c0: 1000, c1: 0.1, k1: 0.13, k2: 0.05, m2: 250 }
+export const PARAMS: Record<string, number> = { c0: 1000, c1: 0.1, k1: 0.13, k2: 0.05, m2: 250 }
 
 const nodo = (n: Nodo): Nodo => n
 // El contexto de las propiedades: inputs, constantes, porcentajes, dos banderas y un grupo `g` de dos miembros.
@@ -94,9 +99,39 @@ function hoja(azar: Azar): Expr {
   return { t: 'lit', ...elegir(azar, LITERALES) }
 }
 
+const COMPARADORES_AL_AZAR: readonly Comparador[] = ['>', '<', '>=', '<=', '=', '<>']
+
+// Una condición: una bandera, una comparación o Y/O de dos o tres condiciones.
+function condicion(azar: Azar, profundidad: number): Expr {
+  const k = profundidad <= 0 ? 0 : azar.entero(4)
+  if (k === 0) return { t: 'flag', id: elegir(azar, ['on', 'off']) }
+  if (k < 3) {
+    const op = elegir(azar, COMPARADORES_AL_AZAR)
+    return { t: 'cmp', op, a: generar(azar, profundidad - 1), b: generar(azar, profundidad - 1) }
+  }
+  const cs = Array.from({ length: 2 + azar.entero(2) }, () => condicion(azar, profundidad - 1))
+  return { t: 'yo', op: elegir(azar, ['Y', 'O'] as const), cs }
+}
+
+// SI con condición, MAX y MIN de dos o tres valores o del grupo, y una comparación usada como valor.
+function comparativa(azar: Azar, profundidad: number, k: number): Expr {
+  const sub = () => generar(azar, profundidad - 1)
+  if (k < 22) return { t: 'cmp', op: elegir(azar, COMPARADORES_AL_AZAR), a: sub(), b: sub() }
+  if (k < 25) {
+    const c = condicion(azar, profundidad - 1)
+    return azar.entero(2) === 0
+      ? { t: 'elegir', c, x: sub() }
+      : { t: 'elegir', c, x: sub(), y: sub() }
+  }
+  const op = elegir(azar, ['MAX', 'MIN'] as const)
+  if (k === 27) return { t: 'extg', op }
+  return { t: 'ext', op, xs: Array.from({ length: 2 + azar.entero(2) }, sub) }
+}
+
 export function generar(azar: Azar, profundidad: number): Expr {
   if (profundidad <= 0 || azar.entero(10) < 2) return hoja(azar)
-  const k = azar.entero(20)
+  const k = azar.entero(28)
+  if (k >= 20) return comparativa(azar, profundidad, k)
   if (k < 12) {
     const op = elegir(azar, ['+', '-', '*', '/'] as const)
     return { t: 'bin', op, a: generar(azar, profundidad - 1), b: generar(azar, profundidad - 1) }
@@ -113,7 +148,8 @@ export function generar(azar: Azar, profundidad: number): Expr {
 }
 
 const PREC = { '+': 1, '-': 1, '*': 2, '/': 2 }
-const precedenciaDe = (e: Expr) => (e.t === 'bin' ? PREC[e.op] : 3)
+// Una comparación va por debajo de todo: entre paréntesis dentro de una cuenta o de otra comparación.
+const precedenciaDe = (e: Expr) => (e.t === 'bin' ? PREC[e.op] : e.t === 'cmp' ? 0 : 3)
 const espacio = (azar: Azar) => elegir(azar, ['', ' ', '  ', '\n', '\t'])
 
 // El texto: los paréntesis que hacen falta, y a veces uno de más. Un `si` o un literal negativo van donde quepan.
@@ -122,12 +158,19 @@ export function imprimir(e: Expr, azar: Azar): string {
   return azar.entero(10) === 0 ? `(${s})` : s
 }
 
-function sinParentesis(e: Expr, azar: Azar): string {
+// Las familias de Expr, para repartir sin un switch de trece casos.
+export function esDe<T extends Expr['t']>(tipos: readonly T[]) {
+  const s = new Set<string>(tipos)
+  return (e: Expr): e is Extract<Expr, { t: T }> => s.has(e.t)
+}
+export const esDeFuncion = esDe(['suma', 'si', 'red', 'pct'] as const)
+export const esDeCondicion = esDe(['cmp', 'flag', 'elegir'] as const)
+
+const lista = (xs: readonly Expr[], azar: Azar) =>
+  xs.map((x) => imprimir(x, azar)).join(`;${espacio(azar)}`)
+
+function deFuncion(e: Extract<Expr, { t: 'suma' | 'si' | 'red' | 'pct' }>, azar: Azar): string {
   switch (e.t) {
-    case 'ref':
-      return e.id
-    case 'lit':
-      return e.texto
     case 'suma':
       return `SUMA${espacio(azar)}(g)`
     case 'si':
@@ -136,6 +179,38 @@ function sinParentesis(e: Expr, azar: Azar): string {
       return `REDONDEAR(${imprimir(e.x, azar)};${espacio(azar)}${String(e.n)})`
     case 'pct':
       return `PORCENTAJE_DE(${imprimir(e.x, azar)};${espacio(azar)}${imprimir(e.p, azar)})`
+  }
+}
+
+function deCondicion(e: Extract<Expr, { t: 'cmp' | 'flag' | 'elegir' }>, azar: Azar): string {
+  switch (e.t) {
+    case 'cmp': {
+      const lado = (x: Expr) => (x.t === 'cmp' ? `(${imprimir(x, azar)})` : imprimir(x, azar))
+      return `${lado(e.a)}${espacio(azar)}${e.op}${espacio(azar)}${lado(e.b)}`
+    }
+    case 'flag':
+      return e.id
+    case 'elegir': {
+      const otra = e.y === undefined ? '' : `;${espacio(azar)}${imprimir(e.y, azar)}`
+      return `SI(${imprimir(e.c, azar)};${espacio(azar)}${imprimir(e.x, azar)}${otra})`
+    }
+  }
+}
+
+function sinParentesis(e: Expr, azar: Azar): string {
+  if (esDeFuncion(e)) return deFuncion(e, azar)
+  if (esDeCondicion(e)) return deCondicion(e, azar)
+  switch (e.t) {
+    case 'ref':
+      return e.id
+    case 'lit':
+      return e.texto
+    case 'yo':
+      return `${e.op}(${lista(e.cs, azar)})`
+    case 'ext':
+      return `${e.op}(${lista(e.xs, azar)})`
+    case 'extg':
+      return `${e.op}${espacio(azar)}(g)`
     case 'bin': {
       const p = PREC[e.op]
       const a = imprimir(e.a, azar)
@@ -147,56 +222,13 @@ function sinParentesis(e: Expr, azar: Azar): string {
   }
 }
 
-const normal = (x: number): number | null => (Number.isFinite(x) ? (x === 0 ? 0 : x) : null)
-
-type Datos = { inputs: Record<string, number>; banderas: Record<string, boolean> }
-
-function oraculoBinario(e: Extract<Expr, { t: 'bin' }>, d: Datos): number | null {
-  const [a, b] = [oraculo(e.a, d.inputs, d.banderas), oraculo(e.b, d.inputs, d.banderas)]
-  if (a === null || b === null) return null
-  if (e.op === '/') return b === 0 ? null : normal(a / b)
-  return normal(e.op === '+' ? a + b : e.op === '-' ? a - b : a * b)
-}
-
-function oraculoDeFuncion(e: Exclude<Expr, { t: 'ref' | 'lit' | 'bin' }>, d: Datos): number | null {
-  const v = (x: Expr) => oraculo(x, d.inputs, d.banderas)
-  switch (e.t) {
-    case 'suma':
-      return MIEMBROS.reduce<number | null>(
-        (s, id) => (s === null ? null : normal(s + (d.inputs[id] ?? PARAMS[id] ?? 0))),
-        0,
-      )
-    case 'si':
-      return d.banderas[e.flag] === true ? v(e.x) : 0
-    case 'red': {
-      const x = v(e.x)
-      return x === null ? null : normal(redondear(x, e.n))
-    }
-    case 'pct': {
-      const [x, p] = [v(e.x), v(e.p)]
-      return x === null || p === null ? null : normal(x * p)
-    }
-  }
-}
-
-// El cálculo directo en JS, con la semántica del motor.
-export function oraculo(
-  e: Expr,
-  inputs: Record<string, number>,
-  banderas: Record<string, boolean>,
-): number | null {
-  if (e.t === 'ref') return inputs[e.id] ?? PARAMS[e.id] ?? 0
-  if (e.t === 'lit') return e.valor
-  return e.t === 'bin'
-    ? oraculoBinario(e, { inputs, banderas })
-    : oraculoDeFuncion(e, { inputs, banderas })
-}
-
 // Un caso entero: el árbol, su texto y los datos con que se calcula. Un `si` en la raíz no puede ser el total (un total no lleva
-// condición): se le suma 0.
+// condición): se le suma 0. `SI(bandera; x)` también es un `si`.
 export function casoAlAzar(azar: Azar): Caso {
   let expr = generar(azar, 4)
-  if (expr.t === 'si') expr = { t: 'bin', op: '+', a: expr, b: { t: 'lit', texto: '0', valor: 0 } }
+  const esSi =
+    expr.t === 'si' || (expr.t === 'elegir' && expr.c.t === 'flag' && expr.y === undefined)
+  if (esSi) expr = { t: 'bin', op: '+', a: expr, b: { t: 'lit', texto: '0', valor: 0 } }
   const inputs: Record<string, number> = {}
   for (const id of [...INPUTS, 'm1']) inputs[id] = elegir(azar, VALORES)
   const banderas = { on: true, off: false }

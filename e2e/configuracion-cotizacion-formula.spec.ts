@@ -76,8 +76,11 @@ test('quien sólo configura la fórmula de un origen entra por el hub y su tarje
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto('/configuracion')
-  await page.getByRole('link', { name: /Cotización/ }).click()
+  await page.goto('/configuracion/inicio')
+  await page
+    .getByRole('region')
+    .getByRole('link', { name: /Cotización/ })
+    .click()
   await expect(page).toHaveURL(/\/configuracion\/cotizacion$/)
   await page.getByRole('link', { name: chica.nombre, exact: true }).click()
   await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${chica.id}/formula$`))

@@ -296,7 +296,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   del historial era para filas de 3 nodos). Código: la isla al acercarse y la cáscara `diferido()` en su `diferidos.tsx`; el bloque, al acercarse (guardada) o
   al abrir el resumen. En frío, sólo la cáscara del hueco (el resumen ya es diferido).
 - **La barra del resumen** (`e2e/cotizaciones-drawer.spec.ts`): abrir el resumen no pide nada nuevo: el «⋯» y «Compartir» salen de lo que la página ya leyó. La
-  cotización del resumen que no está en la página (una línea de un grupo desplegado, otra página) suma su id a las tres lecturas por clave primaria de las marcas
+  cotización del resumen que no está en la página (una línea del modal de un grupo, otra página) suma su id a las tres lecturas por clave primaria de las marcas
   (`conLaDelResumen()`) y una llamada a `cotizaciones_modos_de([id])` dentro de `leerLaDelResumen()`, en el mismo pedido al servidor. La barra suma 3 botones al
   resumen y ninguno a la lista (los diálogos cerrados no dibujan). Código: `AccionesDelResumen` y `DatosDelResumen` viajan en el chunk diferido del resumen;
   en frío, unas líneas del listado.
@@ -637,11 +637,13 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
   (`scripts/guardas/xyflow-diferido.test.ts`). Una sola lectura del flujo (los topes de `leerFlujoParaConfigurar`); hasta 200 cajas y 500
   flechas, con `onlyRenderVisibleElements`.
-- Configuración (`/configuracion/*`), sin tope propio: el layout suma a cada página el menú de Configuración y la cabecera (Server Components) y
-  tres piezas de cliente chicas (la marca del enlace, la vuelta y el `<select>` del selector de sección, ≈ 2 KB); no importa `secciones.ts`, `permisos.ts` ni
-  ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
+- Configuración (`/configuracion/*`, el inicio incluido), sin tope propio: el layout suma a cada página el menú de Configuración y la cabecera (Server
+  Components) y las piezas de cliente chicas (la marca del enlace, la vuelta, el `<select>` del selector de sección y el buscador con su búsqueda, que
+  filtra lo que el menú ya recibe más las `palabras` del registro, ≈ 2 KB más en el HTML); los íconos de las secciones se dibujan en el servidor y no
+  cruzan como código; no importa `secciones.ts`, `permisos.ts` ni ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
   `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta. Las sub-secciones plantilla (las
   partes de un origen) suman al menú una pieza de cliente chica que las resuelve con la ruta (`subsecciones-del-menu.tsx`).
+- Configuración › Empresa (tarjetas de ajustes, cada modal con `diferido()` al abrirse por primera vez): JS en frío (KB gz, `.next-e2e`) `/empresa` 228,4, `/empresa/integraciones` 228,4, `/empresa/comprobantes` 358,9 (sin tope propio).
 - Configuración › Cotización: cada sub-ruta carga sólo su pantalla (`pantallas/formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
   JS en frío (KB gz, `.next-e2e`): inicio 352,4; `/<origen>/formula` 443,5, `/hoja` 359,1 (dnd-kit y el editor del diseño, en su `diferido()`),
   `/tarjeta` 364,9 (la pestaña dibuja en frío el aviso de menos de 1.024 px y arma la lectura del lienzo; el editor, 26,4, llega por `diferido()`), `/tablas` 361,5; `/general/colores` 359,1, `/niveles` 377,8, `/vigencia` 363,2. El inicio lee la tabla de orígenes

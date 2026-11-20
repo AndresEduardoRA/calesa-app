@@ -10,6 +10,7 @@ import { SECCION_DE_LEADS } from './leads/seccion'
 import { SECCION_DE_REPUESTOS } from './repuestos/seccion'
 import {
   GRUPOS,
+  ICONO_DE_SECCION,
   SECCIONES,
   conSubseccionesVisibles,
   gruposVisibles,
@@ -105,6 +106,26 @@ describe('secciones de configuración', () => {
   })
 })
 
+describe('palabras e íconos de configuración', () => {
+  it('cada sección declara sus palabras, y cada sub-sección fija también (las de logística salen de sus catálogos)', () => {
+    for (const seccion of SECCIONES as readonly SeccionDeConfiguracion[]) {
+      expect(seccion.palabras?.length, seccion.clave).toBeGreaterThan(0)
+      if (seccion.clave === 'logistica') {
+        continue
+      }
+      for (const sub of seccion.subsecciones) {
+        expect(sub.palabras?.length, sub.ruta).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('el ícono de cada sección sale por su clave', () => {
+    for (const seccion of SECCIONES as readonly SeccionDeConfiguracion[]) {
+      expect(ICONO_DE_SECCION[seccion.clave], seccion.clave).toBe(seccion.Icono)
+    }
+  })
+})
+
 describe('sub-secciones plantilla de configuración', () => {
   it('Orígenes trae sus tres partes como sub-secciones plantilla', () => {
     const origenes = SECCIONES.find(
@@ -195,7 +216,7 @@ describe('sub-secciones de configuración', () => {
     ])
   })
 
-  it('al navegador no viajan iconos, permisos ni frases, y el motivo sólo en la apagada', () => {
+  it('al navegador no viajan iconos, permisos ni frases, las palabras sí, y el motivo sólo en la apagada', () => {
     const [grupo] = paraElNavegador([
       {
         clave: 'operacion',
@@ -207,6 +228,7 @@ describe('sub-secciones de configuración', () => {
       clave: 'repuestos',
       titulo: 'Repuestos',
       ruta: '/configuracion/repuestos',
+      palabras: SECCION_DE_REPUESTOS.palabras,
       subsecciones: [
         { clave: 'a', titulo: 'A', ruta: '/configuracion/repuestos' },
         {

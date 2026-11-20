@@ -20,7 +20,7 @@ const opcionesDe = (n: Objeto): Objeto[] =>
 
 // Un nodo con `solo_en` y sin referencias, movido justo antes de la variante: lo rechaza `solo_en` (§7), no §2.
 const sinRefs = (n: Objeto) =>
-  ['de', 'pct', 'sobre', 'condicion', 'sugerido_de', 'requerido_si', 'match'].every(
+  ['de', 'pct', 'sobre', 'condicion', 'sugerido_de', 'requerido_si', 'match', 'prueba'].every(
     (k) => n[k] === undefined,
   )
 
@@ -134,6 +134,33 @@ export const MUTADORES_DE_VARIANTE: readonly Mutador[] = [
       if (!yo || !Array.isArray(yo.n['solo_en'])) return null
       yo.n['solo_en'].push('no_hay')
       return `solo_en_inexistente(${idDe(yo.n)})`
+    },
+  },
+  {
+    // Un `es_opcion` que compara con una opción que la variante no tiene: el que ya está, o uno nuevo justo después de la variante.
+    nombre: 'clave_de_opcion_mala',
+    aplicar: (f, azar) => {
+      const v = opcionDe(f)
+      if (!v) return null
+      const yo = elegir(
+        azar,
+        nodosDe(f, (n) => texto(n, 'op') === 'es_opcion'),
+      )
+      if (yo) {
+        yo.n['clave'] = 'no_hay'
+        return `clave_de_opcion_mala(${idDe(yo.n)})`
+      }
+      insertar(f, v.i + 1, {
+        id: 'mut_es_opcion',
+        tipo: 'calculo',
+        op: 'es_opcion',
+        etiqueta: 'Mutado',
+        formato: 'raw',
+        de: [idDe(v.n)],
+        cmp: azar.entero(2) === 0 ? '=' : '<>',
+        clave: 'no_hay',
+      })
+      return 'clave_de_opcion_mala(mut_es_opcion)'
     },
   },
   {

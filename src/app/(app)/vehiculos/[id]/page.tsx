@@ -142,7 +142,7 @@ function encabezadoDe(
   )
 }
 
-// La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda, pegajosa, lo que lo identifica (cabecera, aprobada, datos
+// La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda lo que lo identifica (cabecera, aprobada, datos
 // principales y subasta); a la derecha, el índice y sólo lo de ventas que quien mira ve (`bloques.ts`): cotizaciones, relacionados, actividad y
 // vitrina. `?seccion=` de un bloque y los paneles de «Relacionados» llevan a su bloque; los de un bloque que se fue redirigen (`llegada-de-la-ficha.ts`:
 // `fotos` y `ficha` antes de leer, `documentos`, `fase` y `repuestos` con el permiso de su página); `?editar=`, `?panel=vitrina`,

@@ -29,6 +29,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   íconos, con su nombre en `title` y para el lector y el contador de Chat como punto. Se alterna con «Plegar menú» / «Desplegar menú» o `Ctrl/Cmd+B`. No: «colapsado», «mini», «compacto» (la densidad es otra cosa).
 - **Zona de quien mira** — `preferencias_usuario.zona_horaria` / `useRegional().zonaDeLaPersona`: en qué zona ve cada persona las fechas de
   subasta (`/perfil` › «Zona horaria»); sin elegir, la de la empresa. Lo demás sigue en la zona de la empresa.
+- **Cuenta regresiva del cierre** — `cuentaDelCierre()` (`vehiculos/entities/cuenta-regresiva-del-cierre.ts`), `<CuentaRegresivaDelCierre>`: lo que le falta a una subasta
+  viva para cerrar, contado cada segundo («Cierra en 2 d 04:12:33»; ámbar con menos de 24 h, roja con menos de 1 h; «Cerrando…», «Cerró hace 3 min», «Sin fecha de
+  cierre»). La dibujan la tarjeta y la fila de la lista de vehículos en subasta y la ficha, con un solo temporizador por página. No es la **frase de subasta** de la ficha.
 - **Hora del patio** — `zonaDelPatio()` / `<FechaDeSubasta>`: la hora de una subasta en la zona de su patio, estimada por el estado de la
   ubicación (`ubicacion_estado`); un estado con dos zonas toma la de la mayoría.
 - **Densidad** — `useDensidad()` / `--fila` (`compacta` | `comoda`): altura de las filas; compacta con mouse, cómoda en táctil, o la elegida.
@@ -231,6 +234,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   (lead, vehículo, cotización, proyecto de repuestos, seguimiento, recordatorio, evento, tarea); `?panel=crear`. El mismo modal filtrado a lo que se agenda (evento, tarea,
   recordatorio: `CLAVES_DE_LA_AGENDA`, `delGrupo()`) lo abre «Nuevo» de la agenda por `?panel=nuevo-en-la-agenda`; un destino con `conservaLaPantalla` sólo escribe su `?panel=`
   si ya se está en esa ruta. No es «Nuevo lead» (la tecla `N` y el drawer, `<AltaDeLead>`).
+- **Buscador de Configuración** — `<BuscadorDeConfiguracion>`, `buscarEnConfiguracion()`, `palabras` de `secciones.ts` / `configuracion/_navegacion`: el campo «Buscar en
+  Configuración» (la tecla `/`) que filtra secciones y sub-secciones por nombre y por palabras clave y dice el camino de cada una; lee el registro, no la
+  base. No es el «Buscador» global (`src/modules/buscador`) ni la «Paleta».
 - **Paleta** — `<Paleta>`, `AccionDeLaPaleta` / `src/modules/buscador`: superposición `Ctrl/Cmd+K` que busca y ejecuta acciones; sin URL; sus
   acciones se ofrecen con `puede()`.
 - **Visto** — `vistos` / `visto_registrar()`, `vistos_de()`, `ProveedorDeMarcasDeVisto`, `MarcasDeVistoDeLaPagina`: un registro que la persona abrió (ficha,
@@ -389,7 +395,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   activa. No es la **Final** (marcar una no aprueba ni al revés). Se ve como la insignia «Aprobada» y, en `/vehiculos`, como el **Costo estimado**.
 - **Costo estimado** — `ROTULO_DEL_COSTO_ESTIMADO`, `costoEstimadoDe()` (`vehiculos/entities/cotizacion-aprobada-de-la-fila.ts`), `cotizaciones_aprobadas_de_vehiculos()`:
   la cotización aprobada de un vehículo en `/vehiculos` (columna de la tabla y fila de la tarjeta de la lista): su primer resultado con su moneda y el modo de tipo
-  de cambio de la cotización («US$27.999 · Unificado»), enlazado a ella. No son los campos de apibara «Costo estimado desde / hasta / mediano (USD)».
+  de cambio de la cotización («US$27.999 · Unificado»), en un botón que abre «Compartir la cotización» de la aprobada sin salir de la lista. No son los campos de apibara «Costo estimado desde / hasta / mediano (USD)».
 - **De este vehículo** — `cotizaciones_de_este_vehiculo()`, `pantallas/aprobada-de-este-vehiculo.ts` (`DeEsteVehiculo`): el bloque de una cotización (su
   página y su resumen en `/cotizaciones`) con las otras del mismo vehículo, la aprobada primero y «Aprobar esta» en cada una; la que se mira va marcada
   **«Esta»**. En la ficha del vehículo es el bloque «Cotizaciones de este vehículo» (todas, ninguna marcada). No es el historial del vehículo (el panel de
@@ -397,7 +403,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Comparar cotizaciones** — `/cotizaciones/comparar?ids=`, `entities/aprobada/comparar.ts` (`compararCotizaciones()`), `pantallas/aprobada-comparar.ts`
   (`TablaDeComparar`): 2 o 3 cotizaciones del mismo vehículo lado a lado, **lo guardado** de cada una (su versión, sus valores y su total, sin recálculo),
   una columna por cotización y una fila por nodo alineada por su id, con «Aprobar esta» al pie. Lo **distinto** se mide **contra la primera** columna (↑, ↓
-  o ≠). Se llega por las casillas de «De este vehículo» y por las de un **grupo de un vehículo** desplegado en `/cotizaciones`. No es la «Celda» de la hoja ni
+  o ≠). Se llega por las casillas de «De este vehículo» y por las del **modal del grupo** de un vehículo en `/cotizaciones`. No es la «Celda» de la hoja ni
   la «tarjeta de la cotización»: en la interfaz cada columna es «la cotización #N» y sus filas son de nodos.
 - **Tarjeta de la lista** — `<TarjetaDeLista>` (`@/shared/ui/lista`): cada ítem de la vista «Tarjetas» de un listado. La de `/cotizaciones` es
   `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): la **portada de la cotización** arriba (en miniatura) con el «⋯» encima, el
@@ -405,8 +411,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cotización** (la vista previa tipo Excel que la portada muestra).
 - **Grupo de un vehículo** — `EntradaDelListado` de `tipo: 'grupo'`, `cotizaciones_listado_por_vehiculo()`: en `/cotizaciones` agrupada («Agrupar por
   vehículo», `?agrupar=`, `cotizaciones.agrupar`), las cotizaciones de un vehículo que quien mira ve y coinciden con la búsqueda y los filtros, en una tarjeta o
-  fila con «N cotizaciones de este vehículo» que despliega las demás en el lugar. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
+  fila con «N cotizaciones de este vehículo» que abre el **modal del grupo**. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
   **Grupo (de la hoja)**, el **Grupo (de la bandeja del día)** ni el **Grupo (de transporte)**.
+- **Modal del grupo** — `ModalDelGrupo` (`?panel=cotizaciones-del-vehiculo&vehiculo=<id>`): el modal «Cotizaciones de <vehículo>» que abre «N cotizaciones de este vehículo»; lista las
+  cotizaciones del vehículo que coinciden con la búsqueda y los filtros (la aprobada primero), de a 10 con «Ver más» hasta 100, con «Comparar» en su pie. No es el
+  **resumen** (`?cotizacion=`) que abre una de sus líneas ni «De este vehículo» (el bloque de la ficha del vehículo).
 - **Cabeza del grupo** — `cabeza` de un grupo de un vehículo: la cotización que lo representa en su tarjeta o fila: su **aprobada** si quien mira la ve y
   coincide; si no, la más reciente que coincide. La lista ordena y pagina los grupos por su cotización más reciente (`ordenEn`, `ordenId`), no por la cabeza.
 - **Miniatura de la portada** — `?ancho=480` de `GET /cotizaciones/<id>/portada` (`ANCHOS_DE_LA_PORTADA`, `miniaturaDeLaPortada()`): la portada achicada a
@@ -551,6 +560,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `_nodos_en_par()`: la hoja no dibuja sus chips y lo que cambia según la opción va en dos celdas («Transporte · 20 pies» | «Transporte · 40 pies»); guardar crea
   dos **cotizaciones hermanas**. No es el **Par porcentaje-monto**.
 - **Fórmula como texto** — `compilarExpresion()` (`entities/compilador.ts`): `=(remate+fees)*4%`, `=SUMA(aduana)`; se compila a nodos.
+- **Condición (de la fórmula)** — lo que decide un SI, un Y o un O: una bandera o un `calculo` `comparar` (`remate>1000`), `es_opcion`
+  (`variante="b"`), `y` u `o`; vale 1 o 0 (`OPS_DE_CONDICION`, `NodoDeComparacion` en `entities/nodos.ts`). Un SI con condición es el nodo
+  `elegir`, con la condición en su `prueba`. No es la `condicion` de un nodo (el **interruptor** que lo apaga) ni el `si` de una bandera.
+- **BUSCARV** — la función de la fórmula como texto que busca en una tabla de referencia del origen (`compilador-buscarv.ts`): exacta (por la
+  primera columna de la tabla, compila a un nodo `tabla`) o por tramo (`VERDADERO`: `desde` ≤ valor ≤ `hasta`, compila a un nodo `tramo`). La
+  tabla y la columna se revisan contra el **catálogo de tablas** del origen (`CatalogoDeTablas`, `leerCatalogoDeTablas()`). No: «lookup».
 - **Nodo auxiliar** — `<fila>__<n>` en `compilarExpresion()`: cada operación anidada o número de una fórmula como texto, numerado en
   post-orden; cuáles lo son, `auxiliaresDe()` (`compilador-auxiliares.ts`). La constante auxiliar no pide celda en el diseño.
 - **Fila (de la fórmula)** — `Fila`, `filasDe()` (`entities/formula/filas.ts`): un nodo que no es auxiliar de otro, con sus auxiliares y su
@@ -841,7 +856,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Bloque (de una ficha)** — `<BloqueDeFicha>`, `#<ancla>` (`src/shared/ui/ficha-en-bloques`): una parte de una ficha en dos columnas, siempre a la
   vista (no se pliega), con su ancla, su título `h2` (con su única acción a la derecha: `<TituloDeBloqueConAccion>`) y su error propio. No es `<Bloque>`,
   el plegable.
-- **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra pegajosa arriba de la columna principal de una ficha en dos columnas, con un enlace de ancla
+- **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra arriba de la columna principal de una ficha en dos columnas (quieta mientras los bloques se desplazan por dentro; pegajosa en el celular), con un enlace de ancla
   por bloque y `aria-current="location"` en el que está a la vista. No navega: salta dentro de la misma página. No: «pestañas», «menú».
 - **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`, `Ctrl/Cmd+B`…); responde el panel de más arriba.
 - **Filtro** — `EsquemaDeFiltros`, `DefFiltro` / `<FilterShell>`: lo que acota un listado; cada uno declara los suyos y viven en la URL. Van en el botón
@@ -987,3 +1002,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Despliegue en seco** — `pnpm despliegue:en-seco` / `scripts/despliegue/en-seco.sh`, `revisar-base.mjs`: ensayo local de un despliegue
   (base, pruebas, advisors, jobs, buckets, Vault, funciones, variables, build) sin tocar la nube; termina en «listo» o con lo que falta y las
   líneas «Para la persona» (`docs/DESPLIEGUE.md`). No: «deploy de prueba».
+- **Tarjeta de ajustes** — `<TarjetaDeAjustes>`, `<TarjetasDeAjustes>` (`@/shared/ui/tarjetas-de-ajustes`): cada bloque de una página de ajustes de
+  Configuración, con su título, los valores guardados a la vista (texto, muestras, el logo; no campos), la acción principal («Editar», «Configurar») y su «⋯»;
+  se edita en un modal (`?panel=<tarjeta>`). No es la «tarjeta de la lista» ni la «tarjeta de la cotización».
+- **Estado de la integración** — `estadoDeIntegracion()` (`empresa`): `activa` · `apagada` · `falta_la_clave`; es el badge de la tarjeta de cada integración.

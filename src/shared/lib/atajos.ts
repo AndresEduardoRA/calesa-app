@@ -9,6 +9,7 @@ export const ATAJOS = {
   guardar: { combinacion: 'mod+s', descripcion: 'Guardar' },
   guardarYSeguir: { combinacion: 'mod+enter', descripcion: 'Guardar y seguir' },
   plegarMenu: { combinacion: 'mod+b', descripcion: 'Plegar o desplegar el menú lateral' },
+  buscarEnPantalla: { combinacion: '/', descripcion: 'Buscar dentro de Configuración' },
   ayuda: { combinacion: '?', descripcion: 'Ver la lista de atajos' },
 } as const satisfies Record<string, { combinacion: string; descripcion: string }>
 

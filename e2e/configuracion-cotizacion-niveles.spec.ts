@@ -51,8 +51,11 @@ test('de fábrica: «Todos» sólo se lee, «Costos» se renombra y retira pero 
   page,
 }, info) => {
   await entrar(page, duena)
-  await page.goto('/configuracion')
-  await page.getByRole('link', { name: /Cotización/ }).click()
+  await page.goto('/configuracion/inicio')
+  await page
+    .getByRole('region')
+    .getByRole('link', { name: /Cotización/ })
+    .click()
   await expect(page).toHaveURL(/\/configuracion\/cotizacion$/)
   await page
     .getByRole('list', { name: 'Partes generales' })

@@ -132,7 +132,7 @@ export const NAVEGACION = [
   {
     clave: 'configuracion',
     titulo: 'Configuración',
-    ruta: '/configuracion',
+    ruta: '/configuracion/inicio',
     Icono: SettingsIcon,
     zona: 'usuario',
     // El hub se abre con el permiso de cualquiera de sus secciones.

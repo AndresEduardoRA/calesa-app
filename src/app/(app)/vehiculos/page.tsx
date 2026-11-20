@@ -29,7 +29,6 @@ import {
   vitrinaDelOrigen,
   type Vehiculo,
 } from '@/modules/vehiculos'
-import { ListadoDeVehiculos } from '@/modules/vehiculos/pantallas/listado'
 import { datosO } from '@/shared/lib/errores'
 import { CLAVE_DE_CURSOR, CLAVE_DE_POR_PAGINA, leerFiltros } from '@/shared/lib/filtros'
 import type { Permisos } from '@/shared/lib/permisos'
@@ -38,6 +37,7 @@ import { redirigir } from '@/shared/lib/navegacion'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { aprobadasDeLaPagina } from './aprobadas'
+import { ListadoConCompartir } from './listado-con-compartir'
 import { vehiculoEnEdicion } from './edicion'
 import { panelesDeLaUrl } from './paneles'
 import { paraCotizarDe } from './para-cotizar'
@@ -149,11 +149,10 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
   redirigirElEnlaceViejo(parametros)
   const visibles = origenesVisibles(sesion.permisos, datosO(await getOrigenes(true)))
   const origen = origenElegido(visibles, unParametro(parametros['origen']))
-  if (!origen) {
+  if (!origen)
     return (
       <EstadoSinPermiso descripcion="No tienes permiso para ver vehículos en ningún origen. Pídeselo a quien administra los roles." />
     )
-  }
 
   // «En subasta», «Sin resolver» y «No ganadas» (el filtro y su atajo) sólo existen en un origen de subasta.
   const deSubasta = origen.tipo === 'subasta'
@@ -173,7 +172,6 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
   // apagada, no hay filtro ni insignias. «Hoy» es el de la zona de la empresa.
   const limpiezaActiva = deSubasta && politica.activa
   const hoy = hoyEnZona(ajustes.zonaHoraria)
-  // De a cuántos: lo que pide la URL, si no lo que eligió la persona (ya viene en la sesión: ninguna consulta de más).
   const tamano = tamanoDeLaPagina(parametros, sesion.preferencias.porPagina)
   const esquema = esquemaDeFiltros({
     ...fuentes,
@@ -201,12 +199,13 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
     pagina.filas,
   )
   return (
-    <ListadoDeVehiculos
+    <ListadoConCompartir
       origenes={visibles}
       origen={origen}
       {...fuentes}
       esquema={esquema}
       limpiezaHoy={limpiezaActiva ? hoy : null}
+      ahora={new Date().toISOString()}
       pagina={pagina}
       porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_VEHICULOS) }}
       vistas={vistasDeOrigenesVisibles(datosO(vistas), visibles)}

@@ -78,9 +78,9 @@ async function otraPersona(browser: Browser, page: Page): Promise<Page> {
 
 test('los campos de fábrica están, uno es privado y ninguno se elimina', async ({ page }) => {
   await entrar(page, duena)
-  await page.goto('/configuracion')
+  await page.goto('/configuracion/inicio')
   // La tarjeta del hub, no el ítem «Leads» del menú (que lleva al listado).
-  await page.locator('a[href="/configuracion/leads"]').click()
+  await page.getByRole('region').locator('a[href="/configuracion/leads"]').click()
   // La sección no tiene índice: abre su primera sub-ruta.
   await expect(page).toHaveURL('/configuracion/leads/campos')
   await expect(page.getByRole('heading', { name: 'Campos', level: 1 })).toBeVisible()
@@ -206,7 +206,7 @@ test('sin el permiso no se entra y la tarjeta no aparece', async ({ page }) => {
   await entrar(page, sinPermisos)
   await page.goto('/configuracion/leads')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
-  await page.goto('/configuracion')
+  await page.goto('/configuracion/inicio')
   await expect(page.locator('a[href="/configuracion/leads"]')).toHaveCount(0)
 })
 

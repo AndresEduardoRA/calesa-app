@@ -59,7 +59,7 @@ type Pantalla = {
 const DE_UN_ORIGEN = (seccion: string) => () => `/configuracion/origenes/${origen.id}/${seccion}`
 
 const PANTALLAS: Pantalla[] = [
-  { titulo: 'el centro de Configuración', url: () => '/configuracion' },
+  { titulo: 'el centro de Configuración', url: () => '/configuracion/inicio' },
   { titulo: 'Empresa › Datos de la empresa', url: () => '/configuracion/empresa' },
   {
     titulo: 'Empresa › Monedas y tipos de cambio',
@@ -183,23 +183,21 @@ test('al 200 %: en la ficha de un origen la clave interna cabe en su tarjeta y �
   ).toBe(true)
 })
 
-// 5a-28: el formulario de apibara (la dirección del servicio, las plataformas y «Guardar configuración», que era `nowrap`) no pasa del relleno del cuerpo de su
-// tarjeta con el texto al 200 % desde la carga.
-test('al 200 %: nada del formulario de apibara pasa del relleno de su tarjeta', async ({
-  page,
-}) => {
+// 5a-28: el modal de apibara (la dirección del servicio y las plataformas) no pasa del relleno de su cuerpo con el texto al 200 % desde la carga.
+test('al 200 %: nada del modal de apibara pasa del relleno de su cuerpo', async ({ page }) => {
   await textoGrandeAlCargar(page)
   await entrar(page)
   await page.goto('/configuracion/empresa/integraciones')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  const formulario = page.locator('form', { hasText: 'Dirección del servicio' })
-  await expect(formulario).toBeVisible()
-  const pasan = await formulario.evaluate((form) => {
-    const cuerpo = form.closest('[data-slot=bloque] > div')
-    if (!cuerpo) return ['sin cuerpo de tarjeta']
-    const estilo = getComputedStyle(cuerpo)
-    const limite = cuerpo.getBoundingClientRect().right - Number.parseFloat(estilo.paddingRight)
-    return [...form.querySelectorAll('*')].flatMap((e) => {
+  await page
+    .getByRole('region', { name: 'apibara', exact: true })
+    .getByRole('button', { name: 'Configurar', exact: true })
+    .click()
+  const dialogo = page.getByRole('dialog', { name: 'Configurar apibara' })
+  await expect(dialogo).toBeVisible()
+  const pasan = await dialogo.evaluate((modal) => {
+    const limite = modal.getBoundingClientRect().right
+    return [...modal.querySelectorAll('*')].flatMap((e) => {
       const c = e.getBoundingClientRect()
       return c.width > 0 && c.right > limite + 0.5
         ? [
@@ -208,7 +206,7 @@ test('al 200 %: nada del formulario de apibara pasa del relleno de su tarjeta', 
         : []
     })
   })
-  expect(pasan, 'descendientes que pasan del relleno del cuerpo de la tarjeta').toEqual([])
+  expect(pasan, 'descendientes que pasan del borde del modal').toEqual([])
 })
 
 // Empresa › Monedas: con el texto al 200 % en 412 px la fila de un tipo de cambio no aprieta su nombre («O…») ni deja el valor encima de

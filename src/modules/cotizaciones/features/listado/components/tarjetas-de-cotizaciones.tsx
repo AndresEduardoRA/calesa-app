@@ -1,6 +1,5 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import { cotizacionDeLaEntrada, textoDelConteo } from '../../../entities/listado/grupos-del-listado'
 import { BotonDelConteo } from './grupo'
 import { TarjetaEnLaLista } from './tarjeta-en-la-lista'
@@ -23,16 +22,13 @@ type Props = {
   compartirDe?: CompartirDe | undefined
   huecos?: HuecosDeLaLista | undefined
   rutaDeClientes: string | null
-  // Qué grupos están desplegados (por la cotización que los ordena) y cómo se despliega uno.
-  desplegados: ReadonlySet<string>
-  alternar: (ordenId: string) => void
-  despliegue: (entrada: Extract<EntradaDeLaLista, { tipo: 'grupo' }>) => ReactNode
-  idDelDespliegue: (ordenId: string) => string
+  // Abre el modal de las cotizaciones de un vehículo (por su id).
+  abrirGrupo: (vehiculoId: string) => void
 }
 
 // La lista en tarjetas (en el celular siempre; en escritorio, por defecto o si la persona las eligió): una por grupo (con los datos de su cabeza) o por
-// cotización. Una grilla de columnas de 17 rem que no ensancha la página (`min(100%, 17rem)`), sin `auto-rows-fr`: el despliegue de un grupo va justo después de su
-// tarjeta, a todo el ancho (`col-span-full`), y estiraría todas las filas; las tarjetas miden lo mismo por sus filas de alto fijo (`TarjetaEnLaLista`).
+// cotización. Una grilla de columnas de 17 rem que no ensancha la página (`min(100%, 17rem)`), sin `auto-rows-fr`: las tarjetas miden lo mismo
+// por sus filas de alto fijo (`TarjetaEnLaLista`).
 export function TarjetasDeCotizaciones({
   entradas,
   origenes,
@@ -42,18 +38,14 @@ export function TarjetasDeCotizaciones({
   compartirDe,
   huecos,
   rutaDeClientes,
-  desplegados,
-  alternar,
-  despliegue,
-  idDelDespliegue,
+  abrirGrupo,
 }: Props) {
   return (
     <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,17rem),1fr))] gap-3">
       {entradas.map((entrada) => {
         const cotizacion = cotizacionDeLaEntrada(entrada)
         const texto = entrada.tipo === 'grupo' ? textoDelConteo(entrada.conteo) : null
-        const abiertoElGrupo = entrada.tipo === 'grupo' && desplegados.has(entrada.ordenId)
-        return [
+        return (
           <TarjetaEnLaLista
             key={entrada.ordenId}
             cotizacion={cotizacion}
@@ -67,24 +59,17 @@ export function TarjetasDeCotizaciones({
             Portada={huecos?.Portada}
             rutaDeClientes={rutaDeClientes}
             conteo={
-              texto === null ? null : (
+              texto === null || entrada.tipo !== 'grupo' ? null : (
                 <BotonDelConteo
                   texto={texto}
-                  abierto={abiertoElGrupo}
-                  controla={idDelDespliegue(entrada.ordenId)}
-                  alAlternar={() => {
-                    alternar(entrada.ordenId)
+                  alAbrir={() => {
+                    abrirGrupo(entrada.vehiculoId)
                   }}
                 />
               )
             }
-          />,
-          entrada.tipo === 'grupo' && abiertoElGrupo ? (
-            <li key={`${entrada.ordenId}-despliegue`} className="col-span-full min-w-0">
-              {despliegue(entrada)}
-            </li>
-          ) : null,
-        ]
+          />
+        )
       })}
     </ul>
   )
