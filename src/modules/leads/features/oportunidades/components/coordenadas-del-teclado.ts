@@ -12,22 +12,32 @@ const PASO_DE_LA_FLECHA: Record<string, 1 | -1> = {
 }
 
 // El teclado del arrastre: cada flecha lleva la tarjeta a la columna vecina (centrada, arriba de ella), no 25 px como el de fábrica. En el borde no
-// se mueve. La etapa de la que se parte es la de la columna sobre la que está (o la suya, al tomarla).
-export function coordenadasDelTeclado(etapas: readonly EtapaGuardada[]): KeyboardCoordinateGetter {
-  return (evento, { context, currentCoordinates }) => {
-    const paso = PASO_DE_LA_FLECHA[evento.code]
-    const { active, collisionRect, droppableRects, over } = context
-    if (paso === undefined || !active || !collisionRect) {
-      return undefined
-    }
-    evento.preventDefault()
-    const propia: unknown = active.data.current?.['etapaId']
-    const desde = over ? String(over.id) : typeof propia === 'string' ? propia : null
-    const destino = desde === null ? null : etapaVecina(etapas, desde, paso)
-    const rect = destino ? droppableRects.get(destino.id) : undefined
-    if (!rect) {
-      return currentCoordinates
-    }
-    return { x: rect.left + (rect.width - collisionRect.width) / 2, y: rect.top + 8 }
+// se mueve. La etapa de la que se parte es la última a la que llevó una flecha (o la suya, al tomarla): `context.over` se actualiza con el dibujo, y
+// dos flechas seguidas, más rápido que eso, partirían las dos de la misma columna. `reiniciar()` al tomar, soltar o cancelar.
+export function crearTecladoDelArrastre() {
+  let ultima: string | null = null
+  return {
+    reiniciar: () => {
+      ultima = null
+    },
+    coordenadas:
+      (etapas: readonly EtapaGuardada[]): KeyboardCoordinateGetter =>
+      (evento, { context, currentCoordinates }) => {
+        const paso = PASO_DE_LA_FLECHA[evento.code]
+        const { active, collisionRect, droppableRects } = context
+        if (paso === undefined || !active || !collisionRect) {
+          return undefined
+        }
+        evento.preventDefault()
+        const propia: unknown = active.data.current?.['etapaId']
+        const desde = ultima ?? (typeof propia === 'string' ? propia : null)
+        const destino = desde === null ? null : etapaVecina(etapas, desde, paso)
+        const rect = destino ? droppableRects.get(destino.id) : undefined
+        if (!destino || !rect) {
+          return currentCoordinates
+        }
+        ultima = destino.id
+        return { x: rect.left + (rect.width - collisionRect.width) / 2, y: rect.top + 8 }
+      },
   }
 }

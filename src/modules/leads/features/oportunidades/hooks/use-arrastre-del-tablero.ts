@@ -9,7 +9,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { useState } from 'react'
-import { coordenadasDelTeclado } from '../components/coordenadas-del-teclado'
+import { crearTecladoDelArrastre } from '../components/coordenadas-del-teclado'
 import type { EtapaGuardada } from '../../../entities/embudo'
 import type { OportunidadDelLead } from '../../../entities/oportunidad'
 import { etapaDeDestino } from '../../../entities/tablero-del-lead'
@@ -27,20 +27,26 @@ type Entrada = {
 // estaba, o fuera de toda columna, nada.
 export function useArrastreDelTablero({ etapas, lista, alMover, alPedirMotivo }: Entrada) {
   const [tomada, setTomada] = useState<OportunidadDelLead | null>(null)
+  const [teclado] = useState(crearTecladoDelArrastre)
   const sensores = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: coordenadasDelTeclado(etapas) }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: teclado.coordenadas(etapas),
+    }),
   )
   return {
     sensores,
     tomada,
     alTomar: ({ active }: DragStartEvent) => {
+      teclado.reiniciar()
       setTomada(lista.find((o) => o.id === String(active.id)) ?? null)
     },
     alCancelar: () => {
+      teclado.reiniciar()
       setTomada(null)
     },
     alSoltar: ({ active, over }: DragEndEvent) => {
+      teclado.reiniciar()
       setTomada(null)
       const o = lista.find((x) => x.id === String(active.id))
       const destino = o ? etapaDeDestino(o, etapas, over ? String(over.id) : null) : null
