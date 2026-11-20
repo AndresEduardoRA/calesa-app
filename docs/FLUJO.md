@@ -72,7 +72,7 @@ una tarea por issue con la etiqueta `cola` (en espejo con `.orquestador/cola/`),
 PR, que cierra su issue. Una tarea nombra un nivel de modelo (`rapido`, `normal` o `capaz`), nunca un modelo. Desde el celular se
 cargan tareas, se responde a una trabada comentando y se escribe un pedido en texto libre (un issue con la etiqueta `pedido`), que una
 sesión redacta como spec con tus respuestas. Una vez al mes entra sola la actualización de dependencias, y el e2e que cae dos noches
-seguidas entra como tarea urgente. Al vaciarse la cola de una tanda, el orquestador verifica `main` con el e2e de escritorio y encola
+seguidas entra como tarea urgente; el e2e roto en `main` que una sesión de arreglo encuentra sin haberlo tocado también, y la tarea que lo encontró lo espera. Al vaciarse la cola de una tanda, el orquestador verifica `main` con el e2e de escritorio y encola
 el cierre de la tanda: docs aplastados, lo que sobra fuera y la retro, que abre las mejoras del flujo (`scripts/orquestador/README.md`
 › «El cierre de la tanda»). Es de este repo: el de otro proyecto corre a la vez sin cruzarse (comparten la RAM y, por máquina,
 los turnos de sesión y la pausa por el límite del plan).
