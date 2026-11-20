@@ -72,14 +72,15 @@ function restringido(
   })
 }
 
-const CON_NUMERO: ReadonlySet<string> = new Set(['cero', 'no_cero', 'mayor', 'menor', 'igual'])
+// Lo que pregunta por un número (también «es 0» y «no es 0»): no lo responde la variante.
+const NUMERICAS: ReadonlySet<string> = new Set(['cero', 'no_cero', 'mayor', 'menor', 'igual'])
 
 // Si un nodo no puede responder una condición: la opción, de la variante y con una clave suya; encendido o apagado, de una bandera; un número, de lo que no es la variante.
 function noResponde(d: DatoNombrado, nodo: NodoParaPlantilla | undefined): boolean {
   if (d.es === 'opcion')
     return nodo?.tipo !== 'opcion' || !(nodo.opciones ?? []).some((o) => o.clave === d.opcion)
   if (d.es === 'encendido' || d.es === 'apagado') return nodo?.tipo !== 'bandera'
-  return d.es !== null && CON_NUMERO.has(d.es) && nodo?.tipo === 'opcion'
+  return d.es !== null && NUMERICAS.has(d.es) && nodo?.tipo === 'opcion'
 }
 
 function condicionInvalida(
