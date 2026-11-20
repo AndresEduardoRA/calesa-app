@@ -98,7 +98,9 @@ describe('logoParaDibujar: qué logo dibujan el PDF y la imagen', () => {
         .toString('latin1'),
     ).toBe('PNG')
   })
+})
 
+describe('logoParaDibujar: un SVG que nombra otro archivo no se dibuja', () => {
   it.each([
     ['<image> de otro lado', '<image href="http://127.0.0.1:9/otro.png" width="40" height="10"/>'],
     ['<image> de un archivo', '<image xlink:href="otro.png" width="40" height="10"/>'],
@@ -111,6 +113,32 @@ describe('logoParaDibujar: qué logo dibujan el PDF y la imagen', () => {
     expect(llamadas).toEqual([URL_DEL_LOGO])
   })
 
+  it.each([
+    ['un comentario', '<!-- logo -->\n'],
+    ['un BOM', '\uFEFF'],
+    ['un DOCTYPE', '<!DOCTYPE svg>\n'],
+  ])('un SVG que nombra otro archivo no se dibuja aunque empiece con %s', async (_que, prologo) => {
+    con(svg('<image href="file:///etc/hostname" width="40" height="10"/>', prologo))
+    expect(await bajar()).toBeNull()
+  })
+
+  it('un SVG con una entidad o comprimido no se dibuja; uno simple tras un comentario va como PNG', async () => {
+    con(
+      svg(
+        '<rect width="40" height="10"/>',
+        '<!DOCTYPE svg [<!ENTITY a SYSTEM "file:///etc/hostname">]>\n',
+      ),
+    )
+    expect(await bajar()).toBeNull()
+    const { gzipSync } = await import('node:zlib')
+    con(comoBytes(gzipSync(Buffer.from(SVG_SIMPLE))))
+    expect(await bajar()).toBeNull()
+    con(svg('<rect width="40" height="10"/>', '<!-- logo -->\n'))
+    expect((await bajar())?.tipo).toBe('png')
+  })
+})
+
+describe('logoParaDibujar: un raster que no va tal cual se convierte a PNG', () => {
   it('un WebP se convierte a PNG con sus medidas', async () => {
     con(WEBP)
     const logo = await bajar()

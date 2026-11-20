@@ -8,8 +8,10 @@ import type { ContextoDeLaCotizacion } from '../../entities/tarjeta/contexto-de-
 // - un SVG que react-pdf (`@react-pdf/svg` 1.1.1) dibuja fiel, sin lo que se salta (`<style>` y las clases, `use`, `symbol`, `mask`, `filter`, `pattern`,
 //   `<image>`), tal cual: vector en el PDF;
 // - lo demás que `sharp` lee (el WebP con que se suben los logos, un SVG con estilos, un raster grande), convertido a PNG de hasta `LADO_MAXIMO` px.
-// Un SVG que nombra otro archivo (un `href` o un `url()` que no es `#…` ni `data:`) no se dibuja: leería algo sin tope ni espera. Un logo que no va, que tarda o
-// que pesa de más deja el dibujo sin logo y lo dice por consola, sin la URL; nunca rompe el dibujo.
+// Un SVG que nombra otro archivo (un `href` o un `url()` que no es `#…` ni `data:`, un `@import`, un `<!ENTITY`) no se dibuja: leería algo sin tope ni espera.
+// Por eso es SVG todo lo que tenga `<svg` en el texto, aunque empiece con un comentario, un DOCTYPE o un BOM, y no se dibuja lo comprimido (un `.svgz` esconde
+// su texto) ni lo que `sharp` lee como SVG sin que el texto lo dijera. Un logo que no va, que tarda o que pesa de más deja el dibujo sin logo y lo dice por
+// consola, sin la URL; nunca rompe el dibujo.
 export type LogoDeLaTarjeta = {
   datos: Buffer
   tipo: 'png' | 'jpg' | 'svg'
@@ -33,9 +35,9 @@ const PIXELES_MAXIMOS = 4096 * 4096
 const FIRMA_PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 const SVG_INFIEL = /<style\b|\sclass\s*=|<use\b|<symbol\b|<mask\b|<filter\b|<pattern\b|<image\b/i
 const SVG_CON_OTRO_ARCHIVO =
-  /\bhref\s*=\s*["']\s*(?!#|data:)|url\(\s*["']?\s*(?!#|data:)|@import\b/i
+  /\bhref\s*=\s*["']\s*(?!#|data:)|url\(\s*["']?\s*(?!#|data:)|@import\b|<!ENTITY\b/i
 
-type Tipo = 'png' | 'jpg' | 'svg' | 'svg_infiel' | 'svg_con_otro_archivo' | 'otro'
+type Tipo = 'png' | 'jpg' | 'svg' | 'svg_infiel' | 'svg_con_otro_archivo' | 'comprimido' | 'otro'
 
 function tipoDe(datos: Buffer): Tipo {
   if (datos.subarray(0, FIRMA_PNG.length).equals(FIRMA_PNG)) {
@@ -44,14 +46,17 @@ function tipoDe(datos: Buffer): Tipo {
   if (datos[0] === 0xff && datos[1] === 0xd8 && datos[2] === 0xff) {
     return 'jpg'
   }
+  if (datos[0] === 0x1f && datos[1] === 0x8b) {
+    return 'comprimido'
+  }
   const texto = datos.toString('utf8')
-  // react-pdf reconoce un SVG sólo si empieza así, sin espacios antes; `sharp` lee el que tenga espacios.
-  if (!/^\s*(<\?xml|<svg)/.test(texto)) {
+  if (!/<svg\b/i.test(texto)) {
     return 'otro'
   }
   if (SVG_CON_OTRO_ARCHIVO.test(texto)) {
     return 'svg_con_otro_archivo'
   }
+  // react-pdf reconoce un SVG sólo si empieza así, sin nada antes; el resto lo rasteriza `sharp`.
   return /^(<\?xml|<svg)/.test(texto) && !SVG_INFIEL.test(texto) ? 'svg' : 'svg_infiel'
 }
 
@@ -87,6 +92,9 @@ async function paraDibujar(datos: Buffer, tipo: Tipo): Promise<LogoDeLaTarjeta |
   const alto = medidas.height
   if (!ancho || !alto) {
     return 'una imagen sin medidas'
+  }
+  if (tipo === 'otro' && medidas.format === 'svg') {
+    return 'un SVG que no se pudo revisar'
   }
   if (
     tipo === 'svg' ||
@@ -129,7 +137,9 @@ export async function logoParaDibujar({
     const listo =
       tipo === 'svg_con_otro_archivo'
         ? 'un SVG que nombra otro archivo'
-        : await paraDibujar(bajado, tipo).catch(() => 'un formato que no se pudo leer')
+        : tipo === 'comprimido'
+          ? 'un archivo comprimido'
+          : await paraDibujar(bajado, tipo).catch(() => 'un formato que no se pudo leer')
     if (typeof listo !== 'string') {
       return listo
     }
