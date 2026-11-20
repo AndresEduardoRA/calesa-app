@@ -2,7 +2,7 @@
 
 import {
   ALTO_DE_FILA,
-  type OcultarSi,
+  type OcultarPorNodo,
   type PlantillaEnCuadricula,
 } from '../../../../../entities/cuadricula-de-la-tarjeta'
 import { nodosParaElegir } from '../../../../../entities/plantilla/edicion/datos-para-elegir'
@@ -20,7 +20,7 @@ type Props = {
   hacer: (accion: AccionDelEditor) => void
 }
 
-const OCULTAR: readonly { valor: OcultarSi; texto: string }[] = [
+const OCULTAR: readonly { valor: OcultarPorNodo; texto: string }[] = [
   { valor: 'nunca', texto: 'Nunca' },
   { valor: 'no_aplica', texto: 'Si no aplica' },
   { valor: 'no_aplica_o_cero', texto: 'Si no aplica o vale 0' },
@@ -32,6 +32,7 @@ export function PanelDeLaFila({ plantilla, fila, contexto, nombrados, hacer }: P
   if (f === undefined) return null
   const nodos = nodosParaElegir(contexto, nombrados).flatMap((g) => g.nodos)
   const nodo = f.nodo ?? null
+  const porNodo = f.ocultar_si === 'condiciones' ? null : f.ocultar_si
   return (
     <div className="grid min-w-0 gap-4" data-panel-de-la-fila={f.id}>
       <p className="font-medium">Fila {fila + 1}</p>
@@ -49,7 +50,7 @@ export function PanelDeLaFila({ plantilla, fila, contexto, nombrados, hacer }: P
       <SeccionDelPanel titulo="Ocultar si…">
         <Eleccion
           etiqueta="Ocultar la fila"
-          valor={f.ocultar_si}
+          valor={porNodo ?? ''}
           opciones={OCULTAR}
           alCambiar={(ocultar) => {
             hacer({
@@ -60,7 +61,7 @@ export function PanelDeLaFila({ plantilla, fila, contexto, nombrados, hacer }: P
             })
           }}
         />
-        {f.ocultar_si === 'nunca' ? null : (
+        {porNodo === null || porNodo === 'nunca' ? null : (
           <Eleccion
             etiqueta="El nodo que la decide"
             valor={nodo ?? ''}
@@ -69,7 +70,7 @@ export function PanelDeLaFila({ plantilla, fila, contexto, nombrados, hacer }: P
               texto: n.restringido ? `${n.etiqueta} (restringido)` : n.etiqueta,
             }))}
             alCambiar={(elegido) => {
-              hacer({ tipo: 'ocultarSi', fila, ocultar: f.ocultar_si, nodo: elegido })
+              hacer({ tipo: 'ocultarSi', fila, ocultar: porNodo, nodo: elegido })
             }}
           />
         )}

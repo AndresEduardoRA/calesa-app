@@ -5,6 +5,7 @@ import {
   ALTO_DE_FILA,
   ANCHO_DE_COLUMNA,
   type FilaDeLaTarjeta,
+  type OcultarPorNodo,
   type OcultarSi,
   type PlantillaEnCuadricula,
 } from '../../cuadricula-de-la-tarjeta'
@@ -50,13 +51,14 @@ const ANUNCIO_DE_OCULTAR: Readonly<Record<OcultarSi, string>> = {
   nunca: 'no se oculta',
   no_aplica: 'se oculta si no aplica',
   no_aplica_o_cero: 'se oculta si no aplica o vale 0',
+  condiciones: 'se oculta si se cumplen sus condiciones',
 }
 
 // Cuándo se oculta una fila. Con «nunca» la fila no lleva `nodo` (la base lo rechaza aunque sea nulo); con las otras dos, el nodo que la decide es obligatorio.
 export function ocultarSi(
   p: PlantillaEnCuadricula,
   f: number,
-  ocultar: OcultarSi,
+  ocultar: OcultarPorNodo,
   nodo: string | null,
 ): ResultadoDeEdicion {
   const fila = p.filas[f]

@@ -2,7 +2,7 @@
 // copiado, la celda en la que se escribe y lo que se anuncia. Sólo tipos y el estado inicial.
 import type {
   ContenidoDeLaCelda,
-  OcultarSi,
+  OcultarPorNodo,
   PlantillaEnCuadricula,
 } from '../../cuadricula-de-la-tarjeta'
 import type { CambioDeEstilo } from './estilo'
@@ -61,7 +61,7 @@ export type AccionDelEditor =
   | {
       readonly tipo: 'ocultarSi'
       readonly fila: number
-      readonly ocultar: OcultarSi
+      readonly ocultar: OcultarPorNodo
       readonly nodo: string | null
     }
   | { readonly tipo: 'moverFila'; readonly desde: number; readonly hasta: number }
