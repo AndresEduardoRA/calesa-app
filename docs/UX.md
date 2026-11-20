@@ -247,11 +247,11 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   en «<embudo>».» con «Ver todas». Un `lead=` que no se ve, no existe o no es un id se ignora y se quita de la URL. Con `?vista=embudo` un `?lead=` no
   redirige a la ficha, salvo con lo que trae un enlace viejo (`?pestana=`, sus modales, `?extra=`; ver «Enlace viejo (`/leads?lead=<id>`)»).
 - **Lead** — `/leads/[id]` (`leads.ver` y acceso): **dos columnas, todo a la vista, sin pestañas ni acordeones** (desde 56 rem de contenedor; por
-  debajo, y con el texto al 200 %, una sola en el mismo orden). **Izquierda**, pegajosa (se desplaza sola si no cabe): la cabecera (el nombre con el «⋯»
+  debajo, y con el texto al 200 %, una sola en el mismo orden). **Izquierda**, con su propio desplazamiento si no cabe (la ventana no se desplaza: cada columna lo hace por dentro): la cabecera (el nombre con el «⋯»
   arriba a la derecha, el de la lista con «Cotizar lead» y «Editar lead» —no hay botones sueltos—; debajo, quién lo tiene en una línea; números y marcas),
   «Datos» (los datos clave del lead y «Ver más», `?ver=datos`), «Quién lo tiene» («Compartir» y «Transferir» a todo el ancho) y «Acceso al portal» (la
-  cartera y `leads.portal.gestionar`). **Derecha**: el índice pegajoso («Índice de la
-  ficha», enlaces de ancla con `aria-current="location"`; en el celular se desplaza de costado) y los bloques en su orden, cada uno por su permiso:
+  cartera y `leads.portal.gestionar`). **Derecha**: el índice quieto arriba de la columna («Índice de la
+  ficha», enlaces de ancla con `aria-current="location"`; en el celular, pegajoso y desplazable de costado) y los bloques en su orden, con su propio desplazamiento, cada uno por su permiso:
   «Seguimiento» (`?panel=anotar-seguimiento`, `editar-seguimiento&seguimiento=<id>`, `agendar-recordatorio`, `editar-recordatorio&recordatorio=<id>`;
   «Ver todos» y «Ver tus recordatorios» en `?todos=seguimientos|recordatorios`), «Cotizaciones» (con `cotizaciones.ver` en algún origen; «Cotizar» en el título;
   ver «Cotizaciones del lead y del vehículo»), «Vehículos» (`vehiculos.ver`; el compacto de Relacionados con «Vincular o marcar» en el título y la gestión al pie:
@@ -280,7 +280,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   «—»); sin la clave no se dibuja ni se consulta. **«Compra directa»** (subasta): el campo del layout con la ruta de apibara `pricing.buy_now_usd`, en USD; sin
   ese campo activo o sin el dato, «—» (ese campo no se repite entre los «en tarjeta»).
   `/vehiculos/papelera` (por lote).
-- **Vehículo** — `/vehiculos/[id]` (según origen): **ficha en dos columnas**. **Izquierda** (pegajosa desde 56 rem de contenedor), sólo lo clave y
+- **Vehículo** — `/vehiculos/[id]` (según origen): **ficha en dos columnas**. **Izquierda** (desde 56 rem de contenedor la ventana no se desplaza: la columna lo hace por dentro si no cabe), sólo lo clave y
   pensada también para mostrarle el vehículo a un cliente: la foto con su **tira de miniaturas** debajo (desplazable de costado, la actual marcada; un clic
   abre el visor en esa foto, ← → la recorren y Enter la abre) y, sobre su esquina como en la tarjeta de la lista, la vitrina (el botón de la tarjeta, que
   abre `?panel=vitrina`; sin permiso, apagado con su motivo) y el «⋯» (el mismo de la lista, con «Editar» e «Editar imágenes»: no hay «Editar» suelto);
@@ -294,7 +294,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   origen, en dos columnas en la lateral y una en el celular y al 200 %, y «Ver más» a lo ancho, que abre la **ficha completa** en `?ver=ficha`: casi toda
   la pantalla en escritorio y entera en el celular, sólo lectura, las fotos con su tira, los datos comunes, «Precio» y todos los grupos del layout; Esc y
   «atrás» la cierran y el foco vuelve a «Ver más»).
-  **Derecha**: el índice pegajoso («Índice de la ficha») y sólo lo de ventas, los bloques que quien mira ve en este orden: **«Cotizaciones de este
+  **Derecha**: el índice quieto arriba de la columna («Índice de la ficha»; en el celular, pegajoso) y sólo lo de ventas, con su propio desplazamiento, los bloques que quien mira ve en este orden: **«Cotizaciones de este
   vehículo»** (`cotizaciones.ver` del origen: «De este vehículo» con las casillas y «Comparar» en su fila, al acercarse; «Cotizar» en el título, la hoja con
   este vehículo y la vuelta a la ficha, sólo con `cotizaciones.crear` del origen; aprobar ahí pone al día «Cotización aprobada» de la izquierda; ver
   «Cotizaciones del lead y del vehículo»), **«Relacionados»** compacto (`leads.ver`: el vinculado con «Desvincular» confirmado, los interesados y lo cotizado;

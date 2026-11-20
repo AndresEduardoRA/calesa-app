@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type RefObject } from 'react'
 import { bloqueALaVista } from '@/shared/lib/bloque-a-la-vista'
+import { columnaQueSeDesplaza } from './columnas-de-la-ficha'
 import { ATRIBUTO_DE_BLOQUE, ATRIBUTO_DE_LA_FICHA, EVENTO_DE_SALTO } from './estilos'
 
 // El margen bajo el índice que todavía cuenta como «llegué»: un bloque al que se saltó queda 1 rem por debajo (`scroll-mt`).
@@ -25,12 +26,20 @@ function medir(raiz: Element, indice: HTMLElement): string | null {
     arriba: bloque.getBoundingClientRect().top,
   }))
   const linea = indice.getBoundingClientRect().bottom + MARGEN_DE_LA_LINEA_PX
-  const doc = document.documentElement
-  const alFinal = window.scrollY + window.innerHeight >= doc.scrollHeight - 2
-  return bloqueALaVista(posiciones, linea, alFinal)
+  return bloqueALaVista(posiciones, linea, alFinal(raiz))
 }
 
-// Qué bloque de la columna principal está a la vista (`bloqueALaVista()`), medido al desplazar y al cambiar el tamaño. Tras un salto a
+// La página (o, en dos columnas, la columna principal) ya no baja más.
+function alFinal(raiz: Element): boolean {
+  const columna = columnaQueSeDesplaza(raiz, 'principal')
+  if (columna) {
+    return columna.scrollTop + columna.clientHeight >= columna.scrollHeight - 2
+  }
+  const doc = document.documentElement
+  return window.scrollY + window.innerHeight >= doc.scrollHeight - 2
+}
+
+// Qué bloque de la columna principal está a la vista (`bloqueALaVista()`), medido al desplazar (la página o la columna) y al cambiar el tamaño. Tras un salto a
 // propósito (`irAlBloque()`) marca ése hasta que la persona se desplace por su cuenta: el último bloque, si es corto, nunca llega a la
 // línea, y la página al final marcaría otro.
 export function useBloqueALaVista(indice: RefObject<HTMLElement | null>): string | null {
@@ -72,6 +81,8 @@ export function useBloqueALaVista(indice: RefObject<HTMLElement | null>): string
     leer()
     const opciones = { passive: true } as const
     window.addEventListener('scroll', pedir, opciones)
+    // El `scroll` de una columna no sube por el árbol: en dos columnas, la principal se desplaza por dentro.
+    raiz.addEventListener('scroll', pedir, { capture: true, passive: true })
     window.addEventListener('resize', pedir, opciones)
     window.addEventListener('wheel', soltar, opciones)
     window.addEventListener('touchmove', soltar, opciones)
@@ -82,6 +93,7 @@ export function useBloqueALaVista(indice: RefObject<HTMLElement | null>): string
     return () => {
       window.cancelAnimationFrame(marco)
       window.removeEventListener('scroll', pedir)
+      raiz.removeEventListener('scroll', pedir, { capture: true })
       window.removeEventListener('resize', pedir)
       window.removeEventListener('wheel', soltar)
       window.removeEventListener('touchmove', soltar)
