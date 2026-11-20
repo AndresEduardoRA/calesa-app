@@ -16,6 +16,7 @@ describe('preferenciasDesde', () => {
       vistaDeVehiculos: null,
       vistaDeCotizaciones: null,
       agruparCotizaciones: null,
+      menuPlegado: null,
     })
   })
 
@@ -30,6 +31,7 @@ describe('preferenciasDesde', () => {
       vistaDeVehiculos: null,
       vistaDeCotizaciones: null,
       agruparCotizaciones: null,
+      menuPlegado: null,
     }
     expect(preferenciasDesde({})).toEqual(sinElegir)
     expect(preferenciasDesde(null)).toEqual(sinElegir)
@@ -46,6 +48,7 @@ describe('preferenciasDesde', () => {
       vistaDeVehiculos: null,
       vistaDeCotizaciones: null,
       agruparCotizaciones: null,
+      menuPlegado: null,
     })
   })
 
@@ -183,5 +186,21 @@ describe('la lista de cotizaciones', () => {
     expect(
       esquemaPreferencia.safeParse({ clave: 'cotizaciones.agrupar', valor: 'no' }).success,
     ).toBe(false)
+  })
+})
+
+describe('«menu.plegado»', () => {
+  it('se lee si es un booleano y, si no, queda sin elegir', () => {
+    expect(preferenciasDesde({ 'menu.plegado': true }).menuPlegado).toBe(true)
+    expect(preferenciasDesde({ 'menu.plegado': false }).menuPlegado).toBe(false)
+    expect(preferenciasDesde({ 'menu.plegado': 'si' }).menuPlegado).toBeNull()
+    expect(preferenciasDesde({ 'menu.plegado': 1 }).menuPlegado).toBeNull()
+    expect(preferenciasDesde({}).menuPlegado).toBeNull()
+  })
+
+  it('se guarda como booleano o se borra con null', () => {
+    expect(esquemaPreferencia.safeParse({ clave: 'menu.plegado', valor: true }).success).toBe(true)
+    expect(esquemaPreferencia.safeParse({ clave: 'menu.plegado', valor: null }).success).toBe(true)
+    expect(esquemaPreferencia.safeParse({ clave: 'menu.plegado', valor: 'si' }).success).toBe(false)
   })
 })

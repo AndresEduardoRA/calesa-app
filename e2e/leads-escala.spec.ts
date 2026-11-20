@@ -67,8 +67,9 @@ const PRESUPUESTO_DE_NODOS = {
   // en la tabla y 2.920 en las tarjetas, tope +5 %.
   listadoDe100: { escritorio: 3_610, movil: 3_070 },
   // 9i: el «⋯» de cada tarjeta sumaba 6 nodos (3.000 en 500 tarjetas): 8.212 → 11.212 y el presupuesto, 11.800. 9j: el «⋯» es un
-  // `<svg>` con un `<use>` (3 nodos con el botón): 9.718 medidos, más un 5 %.
-  kanban: { escritorio: 10_250, movil: 6_000 },
+  // `<svg>` con un `<use>` (3 nodos con el botón): 9.718 medidos, más un 5 %. El menú lateral plegable suma a toda pantalla un `<span>` por entrada y su
+  // botón «Plegar menú» (unos 14 nodos): 10.252 medidos en escritorio, tope 10.300.
+  kanban: { escritorio: 10_300, movil: 6_000 },
 }
 // El «⋯» de cada tarjeta cuesta 3 nodos (`src/shared/ui/lista/simbolos-de-lista.tsx`) y una columna llega a `TOPE_DE_LO_CARGADO` (500) tarjetas.
 const NODOS_DEL_MENU = 3

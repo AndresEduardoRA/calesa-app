@@ -15,7 +15,10 @@ Autenticación, perfiles, roles y permisos (RBAC puro), invitaciones, bloqueo, b
 
 - `entities/sesion.ts` — `Sesion` desde `mi_sesion()` (permisos **efectivos**). `entities/preferencias.ts` — última escritura gana, sin versión. Las de una
   lista las lee su página, no `ProveedorPreferencias`: `vehiculos.vista`, `cotizaciones.vista` (tabla o tarjetas) y `cotizaciones.agrupar` (booleano), cada una
-  con su `check` en `preferencias_usuario` (`supabase/tests/areas/equipo/preferencias-de-cotizaciones.sql`).
+  con su `check` en `preferencias_usuario` (`supabase/tests/areas/equipo/preferencias-de-cotizaciones.sql`). `menu.plegado` (booleano, el menú lateral plegado) sí
+  viaja en `ProveedorPreferencias`: `<ProveedorDelMenuPlegado>` aplica el cambio al instante, lo guarda esperando la respuesta y, sin red, reenvía el último valor al volver
+  (`useReintentoAlVolver`); `useMenuPlegado()` (`shell.client.ts`) lo lee el menú lateral y deja su copia en la cookie `menu-plegado` para la cáscara (`@/shared/lib/menu-plegado`);
+  su `check` en `supabase/tests/areas/equipo/preferencia-del-menu-plegado.sql`.
 - `entities/dominancia.ts` — espejo de `concesion_dominada()` y `rol_dominado()`. `puede()` y el catálogo de claves: `@/shared/lib/permisos`.
 - `entities/vista.ts` — `RUTA_DE_PANTALLA`: un listado nuevo que guarda vistas se suma ahí (hoy leads, vehículos y cotizaciones; la columna `pantalla` es texto, sin migración).
 - `infra/invitaciones.ts` — **la excepción del cliente admin**: `conAdminDeAuth()` comprueba `equipo.usuarios.gestionar` y entrega sólo `auth.admin`

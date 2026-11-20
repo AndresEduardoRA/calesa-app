@@ -228,6 +228,12 @@ Cotizaciones · Logística · Agenda · Chat; Repuestos sólo con permiso. Confi
 `Ctrl/Cmd+K`, con «Mi perfil», «Instalar la app» (sólo si el navegador puede instalarla y aún no corre instalada; en iOS explica «Compartir ›
 Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cerrar sesión».
 
+**Menú lateral** (desde 768 px; en el celular es el menú del botón, sin cambios): desplegado muestra ícono y nombre; el botón «Plegar menú» (abajo, y `Ctrl/Cmd+B`) lo
+deja en una columna de sólo íconos (3,5 rem) y ahí el botón dice «Desplegar menú». Plegado, cada entrada lleva su nombre en `title` (tooltip) y como texto para el lector (el nombre accesible sigue siendo «Chat 1 sin leer»), la
+marca queda en su logo y el contador de Chat es un punto en la esquina de su ícono (el número sigue para el lector). Se recuerda por persona
+(`menu.plegado`, igual en todos sus dispositivos) y llega ya dibujado desde el servidor; sin elegir, desplegado. Sin conexión el cambio vale en la pantalla y se guarda
+al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` no responde mientras se escribe (en un editor es la negrita).
+
 - **Acceso** — `/ingreso`, `/registro`, `/recuperar` (sin sesión): `?returnTo=`, `?aviso=`; `/registro` sólo con registro abierto o sin
   equipo; `/auth/nueva-contrasena` tras el enlace del correo.
 - **Inicio** — `/` (todos): bandeja por rol + widgets opcionales; bloques por permiso; cada contador lleva a la lista filtrada. «Turnos de
@@ -681,7 +687,7 @@ descartar-plantilla` y `?referencia=ejemplo`, a todo el ancho.
   como ISO y se muestran en la zona de la empresa. **Modo Live** oculta cifras sensibles **y** símbolos de moneda. Voz: español neutro con
   tuteo. Densidad: compacta en escritorio (filas 36–40 px), cómoda en táctil (48 px), recordada por usuario.
 - **Atajos:** `Ctrl/Cmd+K` buscar/comandos · `N` nuevo, lo propio de la pantalla (vehículo en vehículos; si no hay, un lead) · `Shift+N` abre «Nuevo» (elegir qué crear;
-  no abre encima de otro diálogo ni mientras se escribe) · `Ctrl/Cmd+S` guardar · `Ctrl/Cmd+Enter` guardar y seguir · `Esc` cerrar panel o volver un paso · `?` abre «Atajos
+  no abre encima de otro diálogo ni mientras se escribe) · `Ctrl/Cmd+S` guardar · `Ctrl/Cmd+Enter` guardar y seguir · `Ctrl/Cmd+B` plegar o desplegar el menú lateral · `Esc` cerrar panel o volver un paso · `?` abre «Atajos
   de teclado» (la lista del catálogo; no se dispara mientras se escribe). En un alta de vehículo `Ctrl/Cmd+S` guarda y cierra; en «Nuevo
   lead» deja el drawer listo para el siguiente.
 - **Filtros:** panel lateral plegable si el listado mide 40 rem o más (si no, hoja inferior) + chips activos + «limpiar»; esquema
