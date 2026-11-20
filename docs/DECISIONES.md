@@ -342,7 +342,7 @@ las trampas, en `docs/LECCIONES.md`.
   `KeyboardSensor` con flechas que pasan a la columna vecina (`crearTecladoDelArrastre()`); no hay sensor táctil: en una pantalla que se desplaza con el dedo arrastrar
   pelearía con el desplazamiento, y «Mover a» del «⋯» ya existe. La tarjeta sigue siendo un `article` con su nombre (no un botón), enfocable para el teclado; soltar en una
   perdida abre el modal del motivo de siempre (`?panel=mover-oportunidad`) y la tarjeta se queda en su columna hasta confirmar. El selector de embudo sólo con más de uno; si
-  se crea una oportunidad en otro embudo que el que se ve, el bloque pasa a ése. Descartadas: arrastrar sólo desde un asa (un blanco más para un bloque angosto), «Mover a» como única
+  se crea una oportunidad en otro embudo que el que se ve, el bloque pasa a ése y lo recuerda como si lo hubiera elegido con el selector (se ve entrar lo que se creó, y la próxima vez se abre ahí). Descartadas: arrastrar sólo desde un asa (un blanco más para un bloque angosto), «Mover a» como única
   forma (no es lo pedido), conteos por columna (serían totales: la ficha lee 10).
 - **Los grupos de «Vehículos» llenan el ancho con `auto-fit`.** La grilla compacta de Relacionados usaba `auto-fill`: con un solo grupo en una pantalla grande quedaban pistas
   vacías a la derecha. `auto-fit` las colapsa, y las filas de cada grupo van en la misma grilla, así una fila sola o un grupo solo ocupan todo el bloque.
