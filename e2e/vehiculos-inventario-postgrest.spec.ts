@@ -12,7 +12,7 @@ import {
   prepararInventarioPostgrest,
   type TerrenoPostgrest,
 } from './soporte/inventario-postgrest'
-import { casosDeSituacion } from './soporte/inventario-situacion-casos'
+import { casosDeSituacion, casosDeSubasta } from './soporte/inventario-situacion-casos'
 import { sesionDe } from './soporte/leads-alta'
 
 // @sin-celular-archivo: no abre ninguna página: compara dos lecturas de la base por PostgREST
@@ -138,6 +138,7 @@ function casosDe({ fases, categorias, hasta }: TerrenoPostgrest): Caso[] {
       valores: ['sin_resolver', 'no_ganada'],
     }),
     ...casosDeSituacion(fases),
+    ...casosDeSubasta(fases),
     enCorea('opción: una', contiene({ [opcion]: 'nafta' })),
     enCorea('opción: varias', contiene({ [opcion]: 'nafta' }, { [opcion]: 'diesel' })),
     enCorea('multi_opcion', contiene({ [lista]: ['rojo'] })),
@@ -299,10 +300,10 @@ test('vehiculos_inventario() da las mismas páginas que lo de hoy por PostgREST,
   const todoCorea = [...unicas(de('la dueña', SIN_FILTROS)).values()]
   expect(todoCorea.filter((fila) => fila.portada !== null)).toHaveLength(3)
   const todaSubasta = [...unicas(de('la dueña', `${SIN_FILTROS} (subasta)`)).values()]
-  expect(todaSubasta).toHaveLength(11)
-  // Las tres situaciones que filtra el inventario están en el terreno.
+  expect(todaSubasta).toHaveLength(16)
+  // Las cuatro situaciones están en el terreno.
   expect(new Set(todaSubasta.map((fila) => fila.situacion))).toEqual(
-    new Set(['fase', 'sin_resolver', 'no_ganada']),
+    new Set(['fase', 'en_subasta', 'sin_resolver', 'no_ganada']),
   )
   expect(todaSubasta.filter((fila) => fila.limpiezaEl !== null).length).toBeGreaterThanOrEqual(3)
 

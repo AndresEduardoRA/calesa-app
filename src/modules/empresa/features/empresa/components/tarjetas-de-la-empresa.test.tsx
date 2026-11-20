@@ -2,9 +2,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { withNuqsTestingAdapter } from 'nuqs/adapters/testing'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { AjustesEmpresa } from '../../../entities/ajustes-empresa'
-import { MOTIVO_MONEDA_BASE_CON_DATOS, MOTIVO_SIN_PERMISO_AJUSTES } from '../../../entities/motivos'
+import { MOTIVO_SIN_PERMISO_AJUSTES } from '../../../entities/motivos'
 import { ModalDeIdentidad } from './modal-de-identidad'
-import { ModalDeRegion } from './modal-de-region'
 import { TarjetasDeLaEmpresa } from './tarjetas-de-la-empresa'
 
 // El campo del logo prepara archivos con el cliente de Storage; los íconos, la acción del servidor: acá no se sube ni se guarda nada.
@@ -43,10 +42,6 @@ const ajustes: AjustesEmpresa = {
   actualizadoEn: '2026-10-12T14:00:00+00:00',
 } as AjustesEmpresa
 
-const monedas = [
-  { codigo: 'USD', nombre: 'Dólar', simbolo: '$', decimales: 2, activa: true, actualizadoEn: 'v' },
-]
-
 afterEach(cleanup)
 
 describe('TarjetasDeLaEmpresa', () => {
@@ -59,9 +54,7 @@ describe('TarjetasDeLaEmpresa', () => {
           logoUrl={null}
           logoOscuroUrl={null}
           iconoActualUrl="/iconos/neutro-192.png"
-          monedas={monedas}
           zonas={['America/La_Paz']}
-          conDatosCargados={false}
           puedeEditar={puedeEditar}
         />
       </Con>,
@@ -90,29 +83,12 @@ describe('TarjetasDeLaEmpresa', () => {
 describe('Modales de los datos de la empresa', () => {
   const alCerrar = vi.fn()
 
-  it('con datos cargados la moneda base queda apagada y dice por qué', () => {
-    render(
-      <ModalDeRegion
-        abierto
-        alCerrar={alCerrar}
-        ajustes={ajustes}
-        conDatosCargados
-        monedas={monedas}
-        zonas={['America/La_Paz']}
-      />,
-    )
-    expect(screen.getByLabelText('Moneda base').matches(':disabled')).toBe(true)
-    expect(screen.getByText(MOTIVO_MONEDA_BASE_CON_DATOS)).toBeTruthy()
-    expect(screen.getByLabelText('Zona horaria').matches(':disabled')).toBe(false)
-  })
-
   it('un color sin contraste dice su motivo al tipearlo, antes de guardar', () => {
     render(
       <ModalDeIdentidad
         abierto
         alCerrar={alCerrar}
         ajustes={ajustes}
-        conDatosCargados={false}
         logoUrl={null}
         logoOscuroUrl={null}
       />,

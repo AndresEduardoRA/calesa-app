@@ -151,12 +151,12 @@ test('edita un tipo de cambio y aparece en la barra superior y en el historial',
 }) => {
   await entrar(page, duena)
   await page.goto('/configuracion/empresa/monedas')
-  await expect(page.getByRole('heading', { name: 'Tipos de cambio', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'USD a BOB', exact: true })).toBeVisible()
   const enLaBarra = page.getByRole('button', { name: 'Tipos de cambio' })
   await expect(enLaBarra).toContainText('11,68')
 
   // Tocar el tipo de cambio abre su panel, con el valor listo para cambiar.
-  await page.getByRole('button', { name: /^Oficial/ }).click()
+  await page.getByRole('button', { name: /^Abrir Oficial/ }).click()
   const panel = page.getByRole('dialog')
   await expect(panel.getByRole('heading', { name: 'Oficial' })).toBeVisible()
   await panel.getByLabel(/^Valor/).fill('7,13')
@@ -204,7 +204,7 @@ test('sin el permiso de ajustes, Datos de la empresa sale deshabilitada con el m
   const menu = suya.getByRole('navigation', { name: 'Secciones de Configuración' })
   await menu.getByRole('link', { name: 'Monedas y tipos de cambio' }).click()
   await expect(suya).toHaveURL('/configuracion/empresa/monedas')
-  await expect(suya.getByRole('button', { name: 'Nuevo tipo de cambio' })).toBeVisible()
+  await expect(suya.getByRole('button', { name: /^Nuevo tipo de cambio/ }).first()).toBeVisible()
   await suya.context().close()
 })
 

@@ -14,8 +14,9 @@ export const TARJETAS_DE_LA_EMPRESA = [
 
 export type TarjetaDeLaEmpresa = (typeof TARJETAS_DE_LA_EMPRESA)[number]
 
-// Las que se editan con campos de ajustes. Íconos tiene su propio modal (se dibujan desde el logo guardado).
-export type TarjetaConCampos = Exclude<TarjetaDeLaEmpresa, 'iconos'>
+// Las que se editan con campos de ajustes. Íconos tiene su propio modal (se dibujan desde el logo guardado). `moneda-base` no es una tarjeta de
+// Datos: es la de arriba de Monedas y tipos de cambio, que guarda lo mismo (la fila de ajustes, su versión y su RPC).
+export type TarjetaConCampos = Exclude<TarjetaDeLaEmpresa, 'iconos'> | 'moneda-base'
 
 // El `?panel=` de cada tarjeta: su nombre. No chocan con los de Monedas (`nuevo-tipo-cambio`, `nueva-moneda`) que `url-vieja.ts` redirige.
 export const PANEL_DE_LA_TARJETA: Record<TarjetaDeLaEmpresa, TarjetaDeLaEmpresa> = {
@@ -32,7 +33,8 @@ export function tarjetaDelPanel(panel: string | null): TarjetaDeLaEmpresa | null
 
 export const CAMPOS_DE_LA_TARJETA = {
   identidad: ['nombre', 'colorAcento'],
-  region: ['pais', 'locale', 'telefonoCc', 'zonaHoraria', 'monedaBase'],
+  region: ['pais', 'locale', 'telefonoCc', 'zonaHoraria'],
+  'moneda-base': ['monedaBase'],
   'datos-legales': ['razonSocial', 'nit', 'direccion', 'ciudad', 'telefono', 'whatsapp', 'email'],
   politicas: [
     'registroAbierto',

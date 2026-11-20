@@ -18,10 +18,11 @@ export default async function PaginaMonedasDeLaEmpresa({
     return <EstadoSinPermiso />
   }
   return (
-    <div className="grid max-w-3xl gap-4">
+    <div className="grid max-w-6xl gap-4">
       <EncabezadoDeConfiguracion {...MONEDAS_DE_LA_EMPRESA} />
       <SeccionMonedas
         puedeGestionar={puede(permisos, 'empresa.tipos_cambio.gestionar')}
+        puedeEditarAjustes={puede(permisos, 'empresa.ajustes.gestionar')}
         tipoCambioAbierto={unParametro(parametros['tc'])}
       />
     </div>

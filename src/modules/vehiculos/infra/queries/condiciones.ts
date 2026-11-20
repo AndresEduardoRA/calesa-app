@@ -77,10 +77,51 @@ function situacionEn<Consulta extends Filtrable<Consulta>>(
   return terminos.length === 0 ? consulta.in('id', []) : consulta.or(terminos.join(','))
 }
 
+// Una ventana de «Subasta» («Cierra hoy», «en 48 h», «esta semana») = viva y con el cierre en `[desde, hasta)`. Los instantes los calcula la página (no son texto de
+// la persona). La copia SQL es `_vehiculos_inventario_condicion` (`cierre_entre`), atadas por `e2e/vehiculos-inventario-postgrest.spec.ts`. Por la tabla, la
+// lee `vehiculos_situacion_idx` (la situación fija) y descarta las vivas que cierran fuera: son pocas (las subastas vivas, no el inventario).
+function cierreEntre<Consulta extends Filtrable<Consulta>>(
+  consulta: Consulta,
+  { desde, hasta }: Extract<Condicion, { tipo: 'cierre_entre' }>,
+): Consulta {
+  return consulta
+    .in('situacion', ['en_subasta'])
+    .gte('cierre_subasta_en', desde)
+    .lt('cierre_subasta_en', hasta)
+}
+
+// Las de la situación: la de siempre, la de «Subasta» y sus ventanas.
+type DeSituacion = Extract<
+  Condicion,
+  { tipo: 'situacion_fuera_de' | 'situacion_en' | 'cierre_entre' }
+>
+
+const esDeSituacion = (condicion: Condicion): condicion is DeSituacion =>
+  condicion.tipo === 'situacion_fuera_de' ||
+  condicion.tipo === 'situacion_en' ||
+  condicion.tipo === 'cierre_entre'
+
+function aplicarDeSituacion<Consulta extends Filtrable<Consulta>>(
+  consulta: Consulta,
+  condicion: DeSituacion,
+): Consulta {
+  switch (condicion.tipo) {
+    case 'situacion_fuera_de':
+      return situacionFueraDe(consulta, condicion)
+    case 'situacion_en':
+      return situacionEn(consulta, condicion)
+    case 'cierre_entre':
+      return cierreEntre(consulta, condicion)
+  }
+}
+
 function aplicarUna<Consulta extends Filtrable<Consulta>>(
   consulta: Consulta,
   condicion: Condicion,
 ): Consulta {
+  if (esDeSituacion(condicion)) {
+    return aplicarDeSituacion(consulta, condicion)
+  }
   switch (condicion.tipo) {
     case 'busqueda': {
       const patron = citar(patronContiene(condicion.texto))
@@ -88,20 +129,14 @@ function aplicarUna<Consulta extends Filtrable<Consulta>>(
     }
     case 'columna_en':
       return columnaEn(consulta, condicion)
-    case 'columna_rango':
-      return aplicarRango(consulta, {
-        columna: condicion.columna,
-        desde: condicion.min,
-        hasta: condicion.max,
-      })
+    case 'columna_rango': {
+      const { columna, min: desde, max: hasta } = condicion
+      return aplicarRango(consulta, { columna, desde, hasta })
+    }
     case 'en_vitrina':
       return enVitrina(consulta, condicion)
     case 'por_limpiar':
       return porLimpiar(consulta, condicion)
-    case 'situacion_fuera_de':
-      return situacionFueraDe(consulta, condicion)
-    case 'situacion_en':
-      return situacionEn(consulta, condicion)
     case 'atributos_contienen':
     case 'atributo_rango_numero':
     case 'atributo_rango_texto':

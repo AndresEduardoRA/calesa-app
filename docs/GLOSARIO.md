@@ -55,6 +55,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Moneda** — `monedas` / `Moneda`: moneda con la que trabaja la empresa (ISO, símbolo, decimales); no se borra, se desactiva.
 - **Tipo de cambio** — `tipos_cambio` (clave: oficial, paralelo…) / `TipoCambio`: valor nombrado entre dos monedas; uno vigente por clave; se
   congela en cada cotización.
+- **Par de monedas** — `claveDelPar()`, `gruposPorPar()` / `GrupoDePar`: las dos monedas de un tipo de cambio («USD → BOB»); en Configuración › Empresa › Monedas
+  cada par es un grupo con sus tipos de cambio como tarjetas, el de la base primero (`?par=` pide crear uno en ese par).
+- **Tarjeta de tipo de cambio** — `<TarjetaDeTipoCambio>`: un tipo de cambio dentro de su par: nombre, «★ Por defecto», el valor grande, quién y cuándo lo cambió y el
+  interruptor «En la barra»; abre su panel (`?tc=`).
 - **Tipo de cambio por defecto** — `tipos_cambio.es_default`: el que se usa entre dos monedas si no se elige otro; uno por par.
 - **Historial de un tipo de cambio** — `tipos_cambio_historial` / `CambioDeValor`: de cuánto a cuánto, quién y cuándo; lo escribe un trigger.
 - **En la barra** — `tipos_cambio.en_la_barra` / `TipoCambio.enLaBarra`, `tiposEnLaBarra()`: el tipo de cambio que la empresa eligió para verlo
@@ -916,10 +920,16 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Frase de la subasta** — `fraseDeSubasta()` (`entities/frase-de-subasta.ts`), `data-frase-de-subasta`: la línea grande con color y cuenta del bloque
   «Subasta» de la ficha, según la situación: «Se subasta en 2 días 4 h», «Cerró hace 3 h · sin resolver», «Ganada» (situación `fase` con el cierre
   vencido), «No ganada». El cierre es `subastaFinEn ?? subastaEn`; la puja se llama «Puja actual» mientras sigue viva y «Puja final» al cerrar.
-- **Situación (filtro)** — `?situacion=` / `FILTRO_SITUACION`, condición `situacion_en`: «Situación» en el panel de filtros del inventario. Reemplaza al filtro «Fase»: una fase
-  es una situación. Ofrece, en un origen de subasta, «En subasta», «Sin resolver» y «No ganadas» (`SITUACIONES_PROPIAS`) y, en todo origen, sus fases y «Sin fase»
-  (`ninguna`). Una fase sólo trae lo que tiene esa situación (`fase`): lo de la subasta figura por la suya. Pedir «No ganadas» es la única forma de verlas en el inventario.
-- **Atajo «Sin resolver»** — `<AtajoSinResolver>` / `sinResolverDe()`: botón arriba del inventario de un origen de subasta con las pendientes (hasta `TOPE_DE_SIN_RESOLVER`, «99+»); pone o quita «Situación: Sin resolver».
+- **Subasta (filtro)** — `?subasta=` / `FILTRO_SUBASTA` (`entities/filtros-de-subasta.ts`), condiciones `cierre_entre` y `situacion_en`: «Subasta» en el panel de filtros
+  del inventario, sólo en un origen de subasta, una opción a la vez: «Cualquiera» (`cualquiera`, por defecto: no filtra), «Cierra hoy» (`hoy`), «Cierra en 48 h» (`48h`),
+  «Cierra esta semana» (`semana`, hasta el lunes siguiente), «Todas las vivas» (`vivas`), «Sin resolver» (`sin_resolver`) y «No ganadas» (`no_ganadas`). Las tres
+  ventanas (`ventanaDelCierre()`) cuentan desde ahora en la zona de la empresa y sólo traen vivas. Pedir «No ganadas» es la única forma de verlas en el inventario.
+- **Fase (filtro)** — `?fase=` / `FILTRO_FASE`, condición `columna_en` sobre `fase_id`: «Fase» en el panel de filtros del inventario, varias a la vez: las fases del
+  origen y «Sin fase» (`ninguna`). Filtra la columna: la fase de la subasta trae todo lo que está en ella, viva, sin resolver o no.
+- **Cierre más próximo (orden)** — `?orden=cierre` / `FILTRO_ORDEN`, `OrdenDelInventario` (`reciente` | `cierre`): el orden «Cierre más próximo» del inventario de un
+  origen de subasta, el de siempre cuando «Subasta» tiene valor. Va por tramos (`TRAMOS_DEL_CIERRE`): las vivas por su cierre, las vivas sin fecha y el resto por
+  alta; el cursor lleva su tramo (`<tramo>~<cursor>`, `entities/cursor-del-cierre.ts`).
+- **Atajo «Sin resolver»** — `<AtajoSinResolver>` / `sinResolverDe()`: botón arriba del inventario de un origen de subasta con las pendientes (hasta `TOPE_DE_SIN_RESOLVER`, «99+»); pone o quita «Subasta: Sin resolver».
 - **Fase de subasta** — `fases.es_subasta` / «Es la subasta» (Datos de la fase): la fase que representa la subasta en el flujo de un origen
   de subasta; puede haber varias. Sin ninguna, «Revisar» avisa `sin_fase_de_subasta` y nada figura «Sin resolver».
 - **Resultado de la subasta** — `vehiculos.subasta_resultado` (`ganada` | `no_ganada`), con `subasta_resuelta_por` y `subasta_resuelta_en`:

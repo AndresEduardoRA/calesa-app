@@ -150,6 +150,7 @@ las trampas, en `docs/LECCIONES.md`.
 ## Empresa
 
 - **Empresa se escribe sólo por RPC.** `ajustes_empresa`, `monedas`, `tipos_cambio` e `integraciones` sin policies de escritura; cada edición es una RPC definer con permiso y versión. Monedas y tipos se desactivan, no se borran.
+- **Monedas se ordena por par de monedas.** Arriba la moneda base, luego un grupo por par (el de la base primero) con una tarjeta grande por tipo de cambio, y al pie, secundarias, las monedas activas y «Al compartir». Descartado el grupo por tipo (oficial, paralelo…): el par es lo que se compara. La moneda base salió del modal de Región a Monedas (un solo lugar; sigue con `empresa.ajustes.gestionar`, otro permiso que el de los tipos de cambio). «Quién y cuándo» sale de `tipos_cambio_vigentes()`, no del historial: lo ve toda persona activa. «En la barra» se guarda al tocar el interruptor de la tarjeta; el panel conserva el suyo. Una moneda abierta desde «Gestionar» cierra el modal y abre su panel (un modal no abre otro). La leyenda se edita en un modal: ya no usa la barra de cambios sin guardar.
 - **Lo que se ve sin sesión sale de `web.ajustes_acceso()`.** Nombre, logo, locale, moneda, registro abierto y `primer_registro`; lo que haga falta antes de ingresar se suma ahí.
 - **Secretos de la interfaz en Vault.** `integracion_guardar_secreto()` con permiso e `integracion_secreto()` sólo para `service_role`; la app lee `secreto_guardado_en`. La dirección de apibara sólo puede ser de `apibara.tech`.
 - **Color de marca con contraste.** Se rechaza el color sobre el que ni blanco ni tinta oscura llegan a 4,5:1; el mejor va a `--color-sobre-primario`. Entra por un `<style>`, no por `<html style>`.
@@ -198,10 +199,24 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Refrescar la subasta» del aviso pide un toque** porque cada consulta a apibara gasta cuota; «Reintentar» sólo se ofrece si el fallo es del
   momento (`sePuedeReintentar`), nunca con la cuota agotada. Las acciones del aviso (refrescar, resolver, cotizar igual) son botones locales:
   el patrón `AccionDelAviso` no tiene «refrescar» ni «cerrar» y ampliar `src/shared` por esto disparaba el e2e completo.
-- **El inventario filtra por «Situación» (`?situacion=`), no por fase.** Una fase es una situación (`fase`), y dos filtros que dicen casi lo mismo confunden;
-  un `?fase=` se ignora. Una fase filtra por `situacion = 'fase'` y su `fase_id`:
-  «En subasta» y «Sin resolver» salen sólo por su opción, no al elegir la fase de subasta. El atajo «Sin resolver» cuenta con `tope + 1` por `vehiculos_situacion_idx`
-  y lo dice «99+»; cambia sólo «Situación» y deja los demás filtros.
+- **El inventario filtra por «Subasta» y por «Fase», por separado.** Mezclados en una lista («Situación»), «En subasta» salía dos veces (la fase y la
+  situación) y no cabían las ventanas del cierre. «Subasta» es una a la vez (`eleccion`): cuándo cierra, las vivas, sin resolver o no ganadas; «Fase» son
+  casillas y filtra la columna `fase_id`, así que la fase de la subasta trae todo lo que está en ella (la situación la dice «Subasta»). Descartados: «Situación»
+  con subgrupos (seguía repitiendo «En subasta»), «Orden» en «Vista y opciones» (el orden cambia lo que se ve: va con los filtros, en la URL y en la vista
+  guardada) y «Subasta» como botones en la barra (no cabe en el celular junto al atajo). El atajo «Sin resolver» cuenta con `tope + 1` por
+  `vehiculos_situacion_idx`, lo dice «99+» y cambia sólo «Subasta».
+- **El por defecto de «Subasta» se llama «Cualquiera».** «Todas» se confundía con «Todas las vivas».
+- **Las ventanas del cierre empiezan ahora y sólo traen vivas.** Una subasta que ya cerró no «cierra hoy» aunque el job que la pasa a «Sin resolver» corra con
+  desfase; `cierre_entre` pide `situacion = 'en_subasta'`, así que una viva fuera del tramo (en una fase que no es la subasta) tampoco entra. «Esta semana» es
+  lunes a domingo en la zona de la empresa. La página calcula `ahora` una vez por pedido; la base sólo compara.
+- **«Cierre más próximo» va por tramos, en la base.** Primero las vivas por `cierre_subasta_en` (`vehiculos_subasta_viva_cierre_idx`), después las vivas sin
+  fecha y al final el resto por alta (las cerradas no tienen un cierre que ordenar: `cierre_subasta_en` es nula). PostgREST no puede ordenar por tramos: con
+  ese orden la página va siempre por `vehiculos_inventario()`, y si la base rechaza los filtros es un error con «Recarga», no la tabla. Es el orden de
+  siempre cuando «Subasta» tiene valor (el por defecto de «Orden» depende de «Subasta»: la página lo resuelve antes de armar el esquema).
+- **Un `?situacion=` viejo redirige con 308; las vistas guardadas se leen traducidas.** No se migran datos: `conSituacionTraducida()` al leerlas. Si venían
+  varias situaciones propias gana la primera (vivas › sin resolver › no ganadas), porque «Subasta» es una a la vez; el cursor se suelta.
+  El 308 lo responde `/vehiculos/enlace-viejo` (un route handler), adonde `src/proxy.ts` reescribe el pedido: desde la página saldría 200, y el proxy no importa
+  las reglas de un módulo (sólo su `index.ts`, que le arrastraría las lecturas del inventario a cada pedido).
 - **`situacion_en` arma una igualdad por situación propia, no un `= any`.** Una sola igualdad con el valor plegado deja que `vehiculos_situacion_idx` conduzca el orden; el
   arreglo de una subconsulta no (el planificador no sabe que trae uno). Por eso `_vehiculos_inventario_condicion` recibe la condición entera (`p_filtro`).
 - **Se escriben sólo por RPC.** `vehiculo_crear(p_id…)` idempotente con id del navegador y `vehiculo_guardar` con versión; el alta entra a la fase inicial sólo si no hay nada que decidir (si no, «Sin fase»).

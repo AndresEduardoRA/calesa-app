@@ -3,7 +3,6 @@ import Image from 'next/image'
 import { formatearNumero } from '@/shared/lib/formato'
 import { MuestraDeColor, type FilaDeValores } from '@/shared/ui/tarjetas-de-ajustes'
 import type { AjustesEmpresa } from '../../../entities/ajustes-empresa'
-import { MOTIVO_MONEDA_BASE_CON_DATOS } from '../../../entities/motivos'
 
 const dias = (n: number) => `${String(n)} ${n === 1 ? 'día' : 'días'}`
 
@@ -52,7 +51,7 @@ export function filasDeIdentidad(
   ]
 }
 
-export function filasDeRegion(ajustes: AjustesEmpresa, conDatosCargados: boolean): FilaDeValores[] {
+export function filasDeRegion(ajustes: AjustesEmpresa): FilaDeValores[] {
   return [
     { etiqueta: 'País', valor: ajustes.pais },
     {
@@ -62,11 +61,6 @@ export function filasDeRegion(ajustes: AjustesEmpresa, conDatosCargados: boolean
     },
     { etiqueta: 'Código de país de los teléfonos', valor: ajustes.telefonoCc },
     { etiqueta: 'Zona horaria', valor: ajustes.zonaHoraria },
-    {
-      etiqueta: 'Moneda base',
-      valor: ajustes.monedaBase,
-      nota: conDatosCargados ? MOTIVO_MONEDA_BASE_CON_DATOS : undefined,
-    },
   ]
 }
 

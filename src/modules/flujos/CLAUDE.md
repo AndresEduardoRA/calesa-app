@@ -130,7 +130,7 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
   (`entities/requisitos/vista-de-fase.ts`; en `scripts/guardas/areas-c/confirmar-con-url.ts`).
 - **Bloqueante:** `leerImpactoDeRequisito` (`requisito_impacto`) alimenta `useBloqueanteDeRequisito`; aviso en línea (`<ConfirmarBloqueo>`). **Fuera de regla:**
   `leerFueraDeRegla` (`flujo_fuera_de_regla`, `tope + 1`) sale por `areas/requisitos/index.ts`; lo lee `src/app/(app)/configuracion/flujos/requisitos/fuera-de-regla.tsx`
-  (títulos con `leerTitulosDeVehiculos` de `vehiculos`, `href` con `FILTRO_SITUACION`) y lo entrega a `PantallaDelFlujo` por `sobreLaLista`, una **prop de
+  (títulos con `leerTitulosDeVehiculos` de `vehiculos`, `href` con `FILTRO_FASE`) y lo entrega a `PantallaDelFlujo` por `sobreLaLista`, una **prop de
   servidor** tras su `<Suspense fallback={null}>`. `?panel=fuera-de-regla`, registrado `sinFormulario` en `scripts/guardas/areas-c/drawers-con-salida.ts`; las
   dos RPC en `areas-c/paginas-en-la-base.ts` (defecto 50).
 

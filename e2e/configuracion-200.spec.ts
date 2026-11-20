@@ -67,10 +67,10 @@ const PANTALLAS: Pantalla[] = [
     controles: (page) => [
       [
         page
-          .getByText(/^1 [A-Z]{3} = $/)
+          .getByText(/^1 [A-Z]{3} =$/)
           .first()
           .locator('..'),
-        'el tipo de cambio de la primera fila',
+        'el valor de la primera tarjeta de tipo de cambio',
       ],
     ],
   },
@@ -209,40 +209,22 @@ test('al 200 %: nada del modal de apibara pasa del relleno de su cuerpo', async 
   expect(pasan, 'descendientes que pasan del borde del modal').toEqual([])
 })
 
-// Empresa › Monedas: con el texto al 200 % en 412 px la fila de un tipo de cambio no aprieta su nombre («O…») ni deja el valor encima de
-// su insignia: el valor baja a otra línea cuando no cabe al lado. Se lee entero el nombre de cada tipo de cambio y de cada moneda.
-test('al 200 %: en Monedas se leen enteros el nombre y el valor de cada tipo de cambio, sin solaparse', async ({
+// Empresa › Monedas: con el texto al 200 % en 412 px cada tarjeta de tipo de cambio se lee entera (nombre, valor, quién y cuándo, «En la barra») y las
+// fichas de las monedas no se salen de su tarjeta.
+test('al 200 %: en Monedas se leen enteras las tarjetas de los tipos de cambio y las monedas', async ({
   page,
 }) => {
   await textoGrandeAlCargar(page)
   await entrar(page)
   await page.goto('/configuracion/empresa/monedas')
-  await expect(page.getByRole('heading', { name: 'Tipos de cambio', exact: true })).toBeVisible()
-  const filas = page.getByRole('list').filter({ has: page.getByText(/^1 [A-Z]{3} = $/) })
-  await sinTextoCortado(filas)
-  await sinTextoCortado(page.getByRole('list').filter({ hasText: 'Dólar estadounidense' }))
-  const cajas = await page.locator('li button').evaluateAll((botones) =>
-    botones
-      .filter((b) => /1 [A-Z]{3} =/.test(b.textContent))
-      .map((b) => {
-        const hijos = [...b.children].map((h) => h.getBoundingClientRect())
-        const [nombre, valor] = hijos
-        return {
-          texto: b.textContent.trim().slice(0, 30),
-          solapa:
-            !!nombre &&
-            !!valor &&
-            nombre.left < valor.right &&
-            valor.left < nombre.right &&
-            nombre.top < valor.bottom &&
-            valor.top < nombre.bottom,
-        }
-      }),
-  )
-  expect(cajas.length).toBeGreaterThan(0)
-  for (const caja of cajas) {
-    expect(caja.solapa, `el nombre y el valor de «${caja.texto}» se solapan`).toBe(false)
+  await expect(page.getByRole('heading', { name: /^[A-Z]{3} a [A-Z]{3}$/ }).first()).toBeVisible()
+  const tarjetas = page.getByRole('region').filter({ has: page.getByText(/^1 [A-Z]{3} =$/) })
+  expect(await tarjetas.count()).toBeGreaterThan(0)
+  for (const tarjeta of await tarjetas.all()) {
+    await sinTextoCortado(tarjeta)
   }
+  await sinTextoCortado(page.getByRole('region', { name: 'Monedas activas', exact: true }))
+  await sinTextoCortado(page.getByRole('region', { name: 'Moneda base', exact: true }))
 })
 
 // c.1: cada parte de Configuración › Leads es una sub-ruta. Con el texto al 200 % el menú pasa al selector de sección, que dice cuál se

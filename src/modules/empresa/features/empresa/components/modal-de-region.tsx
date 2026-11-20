@@ -2,16 +2,12 @@
 
 import { ModalDeFormulario } from '@/shared/ui/modal-de-formulario'
 import { useApertura } from '@/shared/ui/use-apertura'
-import { MOTIVO_MONEDA_BASE_CON_DATOS } from '../../../entities/motivos'
 import { LOCALES_SUGERIDOS } from '../../../entities/regional'
-import type { Moneda } from '../../../entities/tipos-cambio'
 import { useGuardarTarjeta } from '../hooks/use-guardar-tarjeta'
-import { CampoEscrito, SeleccionEscrita } from './campos-del-modal'
+import { CampoEscrito } from './campos-del-modal'
 import { CONFLICTO_DE_AJUSTES, type PropsDeModalDeAjustes } from './modal-de-identidad'
 
 type Props = PropsDeModalDeAjustes & {
-  // Las monedas activas: entre ellas se elige la base.
-  monedas: readonly Moneda[]
   // Las zonas horarias que conoce el servidor, para sugerir mientras se tipea.
   zonas: readonly string[]
 }
@@ -22,9 +18,8 @@ export function ModalDeRegion(props: Props) {
   return <FormularioDeRegion key={apertura} {...props} />
 }
 
-function FormularioDeRegion({ monedas, zonas, ...props }: Props) {
+function FormularioDeRegion({ zonas, ...props }: Props) {
   const formulario = useGuardarTarjeta({ tarjeta: 'region', ...props })
-  const { conDatosCargados } = props
   return (
     <ModalDeFormulario
       id="ajustes-region"
@@ -83,21 +78,6 @@ function FormularioDeRegion({ monedas, zonas, ...props }: Props) {
           <option key={zona} value={zona} />
         ))}
       </datalist>
-      <SeleccionEscrita
-        formulario={formulario}
-        campo="monedaBase"
-        etiqueta="Moneda base"
-        disabled={conDatosCargados || formulario.enCurso}
-        opciones={monedas.map((moneda) => ({
-          valor: moneda.codigo,
-          etiqueta: `${moneda.codigo} · ${moneda.nombre}`,
-        }))}
-        ayuda={
-          conDatosCargados
-            ? MOTIVO_MONEDA_BASE_CON_DATOS
-            : 'La moneda en la que se guardan los montos. Elígela antes de cargar datos: después no se cambia.'
-        }
-      />
     </ModalDeFormulario>
   )
 }

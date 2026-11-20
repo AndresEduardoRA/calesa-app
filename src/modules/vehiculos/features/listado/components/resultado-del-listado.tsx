@@ -14,7 +14,9 @@ import { BarraDeSeleccion } from '../../papelera/components/barra-de-seleccion'
 import { usePapeleraDelListado } from '../../papelera/hooks/use-papelera-del-listado'
 import { TablaDeVehiculos } from './tabla-de-vehiculos'
 import { TarjetasDeVehiculos } from './tarjetas-de-vehiculos'
+import { UbicacionPorCierre } from './ubicacion-por-cierre'
 import type { AlcanceDeAvisos } from '../../../entities/avisos-de-vehiculo'
+import type { OrdenDelInventario } from '../../../entities/filtros-de-subasta'
 import type { AprobadasDeLaPagina } from '../../../entities/cotizacion-aprobada-de-la-fila'
 import type { ParaCotizar } from '../../../entities/ruta-para-cotizar'
 import type { PermisoDeVitrina } from '../../../entities/vitrina'
@@ -52,6 +54,8 @@ type Props = DatosDelOrigen & {
   panelDeVitrina: DatosDelPanelDeVitrina | null
   // Tabla o tarjetas en escritorio (se elige en «Vista y opciones»).
   vista: VistaDeLista
+  // Cómo se ordenó la página: con «Cierre más próximo», arriba se dice eso y no hasta qué alta se llegó.
+  orden: OrdenDelInventario
 }
 
 const mayuscula = (texto: string) => texto.charAt(0).toUpperCase() + texto.slice(1)
@@ -83,7 +87,7 @@ function SinFilas({ origen, accionDeVacio }: { origen: OrigenResumen; accionDeVa
 // origen), vacío por filtro (con «Limpiar») o una página que se quedó sin filas. Una sola vista (`<UnaSolaVista>`, como el listado de
 // leads): la tabla desde `md` y las tarjetas por debajo, o las tarjetas en todo ancho si la persona las eligió.
 export function ResultadoDelListado(props: Props) {
-  const { pagina, accionDeVacio, vista, panelDeImagenes, panelDeVitrina, ...resto } = props
+  const { pagina, accionDeVacio, vista, panelDeImagenes, panelDeVitrina, orden, ...resto } = props
   const { editables, eliminables, leadsVisibles, alcance, editaEnElOrigen, ...demas } = resto
   const { publicar, aprobadas, paraCotizar, paraActividad, subasta, ...datos } = demas
   const { origen } = datos
@@ -106,7 +110,11 @@ export function ResultadoDelListado(props: Props) {
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
-      <UbicacionDeLaPagina ubicacion={ubicacionDeLaPagina(pagina)} />
+      {orden === 'cierre' ? (
+        <UbicacionPorCierre alPrincipio={pagina.anterior === null} />
+      ) : (
+        <UbicacionDeLaPagina ubicacion={ubicacionDeLaPagina(pagina)} />
+      )}
       <UnaSolaVista
         preferida={vista}
         tabla={() => (

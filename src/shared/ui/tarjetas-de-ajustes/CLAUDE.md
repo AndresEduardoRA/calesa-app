@@ -14,7 +14,7 @@ vista y un modal para editar. Sólo dibuja: no lee la base ni guarda nada.
   - `<BotonDeLaTarjeta panel etiqueta deshabilitado?>`: `'use client'`; abre `?panel=<panel>` con `usePanelPorUrl()`.
 - Aparte, en `src/shared/ui/`: `use-envio-con-version.ts` (`useEnvioConVersion()`, el guardado de un modal con versión) y
   `esqueletos/esqueleto-tarjetas.tsx` (`<EsqueletoTarjetas tarjetas>`, la misma grilla para `loading.tsx`).
-- Lo usan las páginas de Empresa, Integraciones y Comprobantes; después, Sitio web, el perfil y Monedas. No lo importan `layout.tsx` ni `_shell`.
+- Lo usan las páginas de Empresa, Integraciones y Comprobantes; Monedas (con la tarjeta de cada tipo de cambio); después, Sitio web y el perfil. No lo importan `layout.tsx` ni `_shell`.
 
 ## No se rompe
 

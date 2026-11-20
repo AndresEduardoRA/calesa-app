@@ -28,3 +28,9 @@ export const ModalDeIconosDiferido = diferido(
   () => import('../../iconos/components/modal-de-iconos').then((modulo) => modulo.ModalDeIconos),
   { aviso: 'pantalla' },
 )
+
+// Lo pide Monedas y tipos de cambio, la primera vez que se abre «Cambiar» la moneda base.
+export const ModalDeMonedaBaseDiferido = diferido(
+  () => import('./modal-de-moneda-base').then((modulo) => modulo.ModalDeMonedaBase),
+  { aviso: 'pantalla' },
+)

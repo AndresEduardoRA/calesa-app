@@ -8,7 +8,12 @@ import {
   MAXIMO_DE_PAGINA_DE_VEHICULOS,
   buscarVehiculos,
   condicionesDe,
+  conSituacionTraducida,
+  esSubastaElegida,
+  FILTRO_SUBASTA,
+  leerCursorDelCierre,
   MARCADOR_DE_VEHICULO,
+  ordenElegido,
   destinoDeLaVitrinaRapida,
   destinoDelEnlaceViejo,
   entradaDeRefresco,
@@ -141,6 +146,56 @@ function tamanoDeLaPagina(
   })
 }
 
+type FuentesDeLaPagina = Parameters<typeof esquemaDeFiltros>[0] & {
+  campos: Parameters<typeof condicionesDe>[0]
+  vitrina: NonNullable<Parameters<typeof condicionesDe>[2]>['vitrina']
+}
+
+// El esquema de los filtros (el por defecto del orden depende de «Subasta»: se mira antes), lo que pide la URL y el cursor de ese orden.
+function filtrosDeLaPagina(
+  parametros: Awaited<PageProps<'/vehiculos'>['searchParams']>,
+  {
+    fuentes,
+    deSubasta,
+    zona,
+    limpiezaHasta,
+    ahora,
+  }: {
+    fuentes: FuentesDeLaPagina
+    deSubasta: boolean
+    zona: string
+    limpiezaHasta: string | null
+    ahora: string
+  },
+) {
+  const esquema = esquemaDeFiltros({
+    ...fuentes,
+    ...(limpiezaHasta === null ? {} : { limpieza: { activa: true } }),
+    conSubasta: deSubasta,
+    subastaElegida: esSubastaElegida(unParametro(parametros[FILTRO_SUBASTA])),
+  })
+  const valores = leerFiltros(esquema, parametros)
+  const orden = ordenElegido(esquema, valores)
+  const textoDelCursor = unParametro(parametros[CLAVE_DE_CURSOR])
+  return {
+    esquema,
+    orden,
+    condiciones: condicionesDe(fuentes.campos, valores, {
+      zona,
+      vitrina: fuentes.vitrina,
+      ahora,
+      ...(limpiezaHasta === null ? {} : { limpieza: { hasta: limpiezaHasta } }),
+    }),
+    cursor: orden === 'cierre' ? leerCursorDelCierre(textoDelCursor) : leerCursor(textoDelCursor),
+  }
+}
+
+function SinOrigenes() {
+  return (
+    <EstadoSinPermiso descripcion="No tienes permiso para ver vehículos en ningún origen. Pídeselo a quien administra los roles." />
+  )
+}
+
 // El inventario, una pestaña por origen. Las pestañas son los orígenes donde la persona tiene
 // `vehiculos.ver` (también los desactivados); lo que ve adentro lo decide la RLS. El origen, los
 // filtros y la página vienen en la URL, y lo que no corresponde se ignora.
@@ -149,12 +204,9 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
   redirigirElEnlaceViejo(parametros)
   const visibles = origenesVisibles(sesion.permisos, datosO(await getOrigenes(true)))
   const origen = origenElegido(visibles, unParametro(parametros['origen']))
-  if (!origen)
-    return (
-      <EstadoSinPermiso descripcion="No tienes permiso para ver vehículos en ningún origen. Pídeselo a quien administra los roles." />
-    )
+  if (!origen) return <SinOrigenes />
 
-  // «En subasta», «Sin resolver» y «No ganadas» (el filtro y su atajo) sólo existen en un origen de subasta.
+  // «Subasta», el orden «Cierre más próximo» y el atajo «Sin resolver» sólo existen en un origen de subasta.
   const deSubasta = origen.tipo === 'subasta'
   const [layout, fases, vistas, ajustes, vitrina, apibaraActiva, politica] = await Promise.all([
     leerLayout(origen.id, { conUso: false }),
@@ -168,26 +220,26 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
   ])
   const { campos, categorias } = datosO(layout)
   const fuentes = { campos, categorias, fases: datosO(fases), vitrina }
-  // La limpieza automática sólo existe en un origen de subasta y con el interruptor encendido:
-  // apagada, no hay filtro ni insignias. «Hoy» es el de la zona de la empresa.
+  // La limpieza automática sólo existe en un origen de subasta y con el interruptor encendido: apagada, no hay filtro ni insignias. «Hoy» es el de la zona de la empresa.
   const limpiezaActiva = deSubasta && politica.activa
   const hoy = hoyEnZona(ajustes.zonaHoraria)
   const tamano = tamanoDeLaPagina(parametros, sesion.preferencias.porPagina)
-  const esquema = esquemaDeFiltros({
-    ...fuentes,
-    ...(limpiezaActiva ? { limpieza: { activa: true } } : {}),
-    conSubasta: deSubasta,
+  // El instante del pedido: desde él cuentan las ventanas de «Subasta» y la cuenta regresiva de cada fila.
+  const ahora = new Date().toISOString()
+  const { esquema, orden, condiciones, cursor } = filtrosDeLaPagina(parametros, {
+    fuentes,
+    deSubasta,
+    zona: ajustes.zonaHoraria,
+    limpiezaHasta: limpiezaActiva ? limiteDeAviso(hoy) : null,
+    ahora,
   })
   const [leida, paneles, sinResolver] = await Promise.all([
     buscarVehiculos({
-      fuente: fuenteDelInventario(sesion.permisos, origen.id),
+      fuente: fuenteDelInventario(sesion.permisos, origen.id, orden),
       origenId: origen.id,
-      condiciones: condicionesDe(campos, leerFiltros(esquema, parametros), {
-        zona: ajustes.zonaHoraria,
-        vitrina,
-        ...(limpiezaActiva ? { limpieza: { hasta: limiteDeAviso(hoy) } } : {}),
-      }),
-      cursor: leerCursor(unParametro(parametros[CLAVE_DE_CURSOR])),
+      condiciones,
+      orden,
+      cursor,
       tamano,
     }),
     panelesDeLaPagina(parametros, sesion, origen, deSubasta && apibaraActiva),
@@ -205,10 +257,11 @@ export default async function PaginaVehiculos({ searchParams }: PageProps<'/vehi
       {...fuentes}
       esquema={esquema}
       limpiezaHoy={limpiezaActiva ? hoy : null}
-      ahora={new Date().toISOString()}
+      ahora={ahora}
       pagina={pagina}
+      orden={orden}
       porPagina={{ valor: tamano, opciones: tamanosHasta(MAXIMO_DE_PAGINA_DE_VEHICULOS) }}
-      vistas={vistasDeOrigenesVisibles(datosO(vistas), visibles)}
+      vistas={vistasDeOrigenesVisibles(datosO(vistas).map(conSituacionTraducida), visibles)}
       puedeConfigurarCampos={puede(sesion.permisos, 'origenes.gestionar')}
       permisoDeAlta={permisoDeAlta(sesion.permisos, origen)}
       editables={[...editables]}
