@@ -76,7 +76,7 @@ declare
   v1 uuid := pg_temp.ccab_origen(q, 'cc_permiso', 'subasta_usa');
   o uuid := pg_temp.ccab_origen_de(v1);
   r text;
-  v_def text := pg_get_functiondef('public.formula_cambiar_cabecera(uuid,text,boolean,text[],uuid)'::regprocedure);
+  v_def text := pg_get_functiondef('public.formula_cambiar_cabecera(uuid,text,boolean,text[],uuid,uuid)'::regprocedure);
 begin
   perform pg_temp.ccab_persona(a, o, array['cotizaciones.ver', 'cotizaciones.crear']);
   r := pg_temp.ccab_corre(a, pg_temp.ccab_sql(o, 'unificado', false, array['paralelo', 'unificado'], v1));
@@ -236,12 +236,12 @@ rollback;
 
 -- @test cambiar cabecera: una sola firma, definer con search_path vacío, de authenticated y no de anon ni de PUBLIC
 do $$
-declare v_p regprocedure := to_regprocedure('public.formula_cambiar_cabecera(uuid,text,boolean,text[],uuid)');
+declare v_p regprocedure := to_regprocedure('public.formula_cambiar_cabecera(uuid,text,boolean,text[],uuid,uuid)');
 begin
   if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'formula_cambiar_cabecera') <> 1 then
     raise exception 'formula_cambiar_cabecera tiene más de una firma (o ninguna)';
   end if;
-  if v_p is null then raise exception 'no existe formula_cambiar_cabecera(uuid,text,boolean,text[],uuid)'; end if;
+  if v_p is null then raise exception 'no existe formula_cambiar_cabecera(uuid,text,boolean,text[],uuid,uuid)'; end if;
   if (select p.prosecdef and p.proconfig = array['search_path=""'] from pg_proc p where p.oid = v_p) is not true then
     raise exception 'formula_cambiar_cabecera no es definer con search_path vacío';
   end if;

@@ -205,7 +205,7 @@ begin
   if to_regprocedure('public.plantilla_guardar_borrador(uuid, jsonb, text)') is not null or to_regprocedure('public.plantilla_publicar(uuid, text)') is not null then
     raise exception 'siguen las firmas sin versión';
   end if;
-  for v_p in select * from (values ('public.plantilla_guardar_borrador(uuid, timestamptz, jsonb, text)', 1), ('public.plantilla_publicar(uuid, timestamptz, text)', 0), ('public.plantilla_descartar_borrador(uuid, timestamptz)', 0)) x (f, d) loop
+  for v_p in select * from (values ('public.plantilla_guardar_borrador(uuid, timestamptz, jsonb, text, uuid)', 2), ('public.plantilla_publicar(uuid, timestamptz, text, uuid)', 1), ('public.plantilla_descartar_borrador(uuid, timestamptz, uuid)', 1)) x (f, d) loop
     v_f := v_p.f;
     if to_regprocedure(v_f) is null then raise exception 'falta %', v_f; end if;
     if not has_function_privilege('authenticated', v_f, 'execute') or not has_function_privilege('service_role', v_f, 'execute')
@@ -218,7 +218,7 @@ begin
     if (select pronargdefaults from pg_proc where oid = v_f::regprocedure) <> v_p.d then raise exception 'los defaults de %', v_f; end if;
   end loop;
   -- La ayudante dice la versión y la hora de la publicada de un origen: sólo la llaman las RPC (definer) y service_role; nadie más.
-  v_f := 'public._plantilla_borrador_ausente(uuid, timestamptz)';
+  v_f := 'public._plantilla_borrador_ausente(uuid, timestamptz, uuid)';
   if has_function_privilege('authenticated', v_f, 'execute') or has_function_privilege('anon', v_f, 'execute') or has_function_privilege('public', v_f, 'execute')
      or not has_function_privilege('service_role', v_f, 'execute') then
     raise exception 'privilegios de %', v_f;

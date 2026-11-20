@@ -202,9 +202,9 @@ begin
     raise exception 'quedaron filas de antes'; end if;
   if (select array_agg(k order by k) from jsonb_object_keys(r) k) <> array['formulas', 'version'] or r -> 'version' <> '2'
      or jsonb_array_length(r -> 'formulas') <> 1
-     or (select array_agg(k order by k) from jsonb_object_keys(r -> 'formulas' -> 0) k) <> array['origen_id', 'version']
+     or (select array_agg(k order by k) from jsonb_object_keys(r -> 'formulas' -> 0) k) <> array['formula_del_origen_id', 'origen_id', 'version']
      or r -> 'formulas' -> 0 ->> 'origen_id' <> (select id::text from public.origenes where clave = 'prueba_tp') or r -> 'formulas' -> 0 -> 'version' <> '2' then
-    raise exception 'la respuesta no es {version, formulas: [{origen_id, version}]}: %', r; end if;
+    raise exception 'la respuesta no es {version, formulas: [{origen_id, formula_del_origen_id, version}]}: %', r; end if;
   if not exists (select 1 from public.actividad where accion = 'tabla_referencia.publicada' and registro_id = t::text and actor_id = a
                    and antes = '{"version": 1}' and despues -> 'version' = '2' and despues -> 'filas' = to_jsonb(jsonb_array_length(v_filas))) then
     raise exception 'publicar no dejó su actividad'; end if;

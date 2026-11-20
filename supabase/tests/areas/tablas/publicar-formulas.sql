@@ -137,7 +137,7 @@ begin
     raise exception 'la N+1 cambió los params, la definición o el diseño'; end if;
   if p1.nota <> 'Tabla «Comisión tf» versión 2: Prueba tf' then raise exception 'la nota de la N+1 es %', p1.nota; end if;
   if (select to_jsonb(f)::text from public.formulas f where origen_id = o and estado = 'borrador') <> b0 then raise exception 'publicar la tabla tocó el borrador'; end if;
-  if r -> 'formulas' <> jsonb_build_array(jsonb_build_object('origen_id', o, 'version', 2)) then raise exception 'la respuesta no nombra la N+1: %', r; end if;
+  if r -> 'formulas' <> jsonb_build_array(jsonb_build_object('origen_id', o, 'formula_del_origen_id', (select d.id from public.formulas_del_origen d where d.origen_id = o), 'version', 2)) then raise exception 'la respuesta no nombra la N+1: %', r; end if;
   if not exists (select 1 from public.actividad where accion = 'formula.publicada' and registro_id = p1.id::text
                    and despues @> '{"tabla": "tp_comision", "version_tabla": 2}') then raise exception 'la N+1 no dejó su actividad'; end if;
   -- La compartida y el otro origen, quietos.
@@ -153,7 +153,7 @@ do $$
 declare o uuid := pg_temp.tf_o('prueba_tf'); a uuid := '00000000-0000-4000-8000-00000000b00a'; r jsonb;
 begin
   r := pg_temp.tf_publicar(a, pg_temp.tf_t('tp_suelta', o), '[{"k": 2}]', 1);
-  if r -> 'formulas' <> jsonb_build_array(jsonb_build_object('origen_id', o, 'version', 2))
+  if r -> 'formulas' <> jsonb_build_array(jsonb_build_object('origen_id', o, 'formula_del_origen_id', (select d.id from public.formulas_del_origen d where d.origen_id = o), 'version', 2))
      or (pg_temp.tf_pub(o)).params -> 'tablas' -> 'tp_suelta' <> '[{"k": 2}]' then raise exception 'la congelada sin nodo no recibió la N+1: %', r; end if;
   r := pg_temp.tf_publicar(a, pg_temp.tf_t('tp_nadie', o), '[{"k": 2}]', 1);
   if r <> '{"version": 2, "formulas": []}' or (pg_temp.tf_pub(o)).version <> 2 then raise exception 'una tabla que nadie usa dio N+1: %', r; end if;
@@ -176,7 +176,7 @@ begin
      or (select jsonb_agg(to_jsonb(f) order by f.id)::text from public.formulas f where f.origen_id in (o, o2)) <> v_antes then
     raise exception 'el 42501 dejó algo cambiado'; end if;
   r := pg_temp.tf_publicar('00000000-0000-4000-8000-00000000b00a', ts, v_filas, 1);
-  if r -> 'formulas' <> jsonb_build_array(jsonb_build_object('origen_id', o2, 'version', 2)) then raise exception 'la compartida no dio la N+1 sólo en prueba_tf2: %', r; end if;
+  if r -> 'formulas' <> jsonb_build_array(jsonb_build_object('origen_id', o2, 'formula_del_origen_id', (select d.id from public.formulas_del_origen d where d.origen_id = o2), 'version', 2)) then raise exception 'la compartida no dio la N+1 sólo en prueba_tf2: %', r; end if;
   if (pg_temp.tf_pub(o2)).params -> 'tablas' -> 'tp_comision' <> v_filas then raise exception 'la N+1 de prueba_tf2 no congeló la compartida'; end if;
   if (pg_temp.tf_pub(o)).version <> 1 then raise exception 'la compartida dio N+1 en un origen con tabla propia'; end if;
 end $$;

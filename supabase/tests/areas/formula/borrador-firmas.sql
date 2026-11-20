@@ -7,8 +7,8 @@ declare v_p regprocedure; f text;
 begin
   if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'formula_guardar_borrador') <> 1 then
     raise exception 'formula_guardar_borrador tiene más de una firma (o ninguna)'; end if;
-  v_p := to_regprocedure('public.formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz)');
-  if v_p is null then raise exception 'no existe formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz)'; end if;
+  v_p := to_regprocedure('public.formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz,uuid)');
+  if v_p is null then raise exception 'no existe formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz,uuid)'; end if;
   if not has_function_privilege('authenticated', v_p, 'execute') or has_function_privilege('anon', v_p, 'execute') then
     raise exception 'los grants de formula_guardar_borrador'; end if;
   if (select p.prosecdef and p.proconfig = array['search_path=""'] and p.prorettype = 'jsonb'::regtype from pg_proc p where p.oid = v_p) is not true then
@@ -18,8 +18,8 @@ begin
   -- Descartar.
   if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'formula_descartar_borrador') <> 1 then
     raise exception 'formula_descartar_borrador tiene más de una firma (o ninguna)'; end if;
-  v_p := to_regprocedure('public.formula_descartar_borrador(uuid,timestamptz)');
-  if v_p is null then raise exception 'no existe formula_descartar_borrador(uuid,timestamptz)'; end if;
+  v_p := to_regprocedure('public.formula_descartar_borrador(uuid,timestamptz,uuid)');
+  if v_p is null then raise exception 'no existe formula_descartar_borrador(uuid,timestamptz,uuid)'; end if;
   if not has_function_privilege('authenticated', v_p, 'execute') or has_function_privilege('anon', v_p, 'execute') then
     raise exception 'los grants de formula_descartar_borrador'; end if;
   if (select p.prosecdef and p.proconfig = array['search_path=""'] from pg_proc p where p.oid = v_p) is not true then
@@ -29,16 +29,16 @@ begin
   -- Publicar, y `_publicar_formula`, que sigue siendo sólo de service_role.
   if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'formula_publicar') <> 1 then
     raise exception 'formula_publicar tiene más de una firma (o ninguna)'; end if;
-  v_p := to_regprocedure('public.formula_publicar(uuid,text,uuid,timestamptz)');
-  if v_p is null then raise exception 'no existe formula_publicar(uuid,text,uuid,timestamptz)'; end if;
+  v_p := to_regprocedure('public.formula_publicar(uuid,text,uuid,timestamptz,uuid)');
+  if v_p is null then raise exception 'no existe formula_publicar(uuid,text,uuid,timestamptz,uuid)'; end if;
   if not has_function_privilege('authenticated', v_p, 'execute') or has_function_privilege('anon', v_p, 'execute') then
     raise exception 'los grants de formula_publicar'; end if;
   if (select p.prosecdef and p.proconfig = array['search_path=""'] from pg_proc p where p.oid = v_p) is not true then
     raise exception 'formula_publicar no es definer con search_path vacío'; end if;
   if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = '_publicar_formula') <> 1 then
     raise exception '_publicar_formula tiene más de una firma (o ninguna)'; end if;
-  v_p := to_regprocedure('public._publicar_formula(uuid,text,uuid,boolean,timestamptz)');
-  if v_p is null then raise exception 'no existe _publicar_formula(uuid,text,uuid,boolean,timestamptz)'; end if;
+  v_p := to_regprocedure('public._publicar_formula(uuid,text,uuid,boolean,timestamptz,uuid)');
+  if v_p is null then raise exception 'no existe _publicar_formula(uuid,text,uuid,boolean,timestamptz,uuid)'; end if;
   if has_function_privilege('authenticated', v_p, 'execute') or has_function_privilege('anon', v_p, 'execute')
      or not has_function_privilege('service_role', v_p, 'execute') then
     raise exception 'los grants de _publicar_formula'; end if;

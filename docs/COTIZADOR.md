@@ -381,6 +381,27 @@ la pide.
 - **La fórmula sólo la lee quien la configura** (`cotizaciones.configurar` del origen), y `formula_auditar()` no copia `definicion`,
   `params`, `diseno` ni `visibilidad` a `actividad`. Semilla: `subasta_usa`, `planilla_usa`, `oficina` (`supabase/semillas/`).
 
+### Fórmulas del origen
+
+- **Un origen tiene una o más fórmulas con nombre** (`formulas_del_origen`, nombre de 1 a 60, único en el origen sin distinguir mayúsculas,
+  también entre las archivadas). Cada una tiene su borrador, sus versiones (`formulas.formula_del_origen_id`), su diseño y su plantilla de
+  tarjeta (`plantillas_tarjeta.formula_del_origen_id`). Las dos FK son compuestas, `(origen_id, formula_del_origen_id)`: una versión nunca
+  cuelga de la fórmula de otro origen. Se lee con `cotizaciones.configurar` del origen y se escribe sólo por RPC.
+- **La activa** (`activa`, a lo sumo una por origen: `formulas_del_origen_activa_unica`) es la que se cotiza: la hoja, el cálculo por
+  origen, `formula_para_cotizar()`, crear, cotizar encima y la publicada que ofrece una hoja guardada leen la publicada de la activa
+  (`_publicada_de_la_activa()`). Una activa siempre tiene publicada y no está archivada. Un origen sin activa se ve «sin publicar».
+- **La de trabajo** es la que editan las RPC de la fórmula y de la plantilla cuando no reciben `p_formula_del_origen`: la activa; si no hay,
+  la más nueva sin archivar; si no hay ninguna, guardar crea «Fórmula» («Fórmula 2»… si el nombre está tomado). Con el id, la de ese origen
+  (otro origen o una que no existe: el mismo 42501 del permiso; una archivada: 22023 «Esta fórmula está archivada.», hint
+  `formula_del_origen`).
+- **La primera publicada de un origen sin activa la activa** (`trg_fdo_asignar`, que también cuelga de la de trabajo una versión o una
+  plantilla insertada sin fórmula del origen: las pruebas y el e2e que insertan directo siguen igual; corre también con
+  `session_replication_role = replica`).
+- **«Guardar con la N»** vale mientras la versión abierta no lleve más de 24 h reemplazada: por una versión posterior de su fórmula o porque
+  su fórmula dejó de ser la activa (`desactivada_en`), lo primero que pasó.
+- **La tarjeta de una versión** se dibuja con la plantilla publicada de **su** fórmula del origen, y la huella de la imagen se mueve con esa
+  plantilla.
+
 ### Versiones
 
 - **Una serie por origen:** a lo sumo un borrador y una publicada; publicar archiva la publicada. Guardar, descartar y publicar el
