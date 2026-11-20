@@ -311,8 +311,9 @@ Si el servicio no encuentra `claude`, `pnpm` o `node`, agrega sus rutas a `PATH_
   máquina» y quién los ocupa, y el hijo que llegó tarde vuelve a su estado sin gastar intentos. Un `TURNOS_MAQUINA` inválido usa 3 y
   avisa una vez.
 - **Se pone al día solo**: al empezar cada vuelta, si la principal está en `main`, sin cambios y detrás de `origin/main`, hace
-  `git merge --ff-only origin/main` (nunca empuja). Si eso cambió `scripts/orquestador/`, se relanza con `exec` antes de lanzar nada
-  (mismo PID y mismo candado: las sesiones en curso siguen). En otra rama, con cambios o con commits que `origin/main` no tiene, no la
+  `git merge --ff-only origin/main` (nunca empuja). Si eso cambió `scripts/orquestador/`, o la principal ya tiene otra versión de
+  `scripts/orquestador/` que la que cargó al arrancar (alguien la trajo a mano), se relanza con `exec` antes de lanzar nada (mismo PID
+  y mismo candado: las sesiones en curso siguen). En otra rama, con cambios o con commits que `origin/main` no tiene, no la
   toca: lo dice una vez en el log y `plan` lo muestra en una línea. Sin red, lo reintenta en la vuelta siguiente.
 - **Publica** con `publicar.sh --sin-esperar`: el PR queda con auto-merge (salvo con migraciones nuevas) y el carril se suelta mientras
   corre el CI.
