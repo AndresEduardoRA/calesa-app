@@ -933,7 +933,8 @@ pierde los microsegundos) y pasan en serie por un candado por origen (`pg_adviso
   salida, descripción y el par `tipo`/`op`/`pct`, y el `{ver}` de la visibilidad. Nunca el cuerpo de un nodo ni la `definicion` entera.
 - **El lienzo es un hueco:** el área `plantilla` no importa la geometría (es del área `tarjeta`). La página pasa `LienzoDeLaPlantillaDiferido`
   (`pantallas/tarjeta-plantilla.ts`, tipos en `entities/vista-previa-de-la-plantilla.ts`): recibe la lectura de la cuadrícula de trabajo
-  (`lecturaEnCuadricula()`, recalculada en cada cambio), la referencia, «Ajustar | 100 %» y el margen de la capa; dibuja la tarjeta con
+  (`lecturaEnCuadricula()`, recalculada en cada cambio), la referencia, «Ajustar | 100 %» y el margen de la capa («Ajustar» mide el contenedor del marco,
+  `data-medida-del-lienzo` con `contain: inline-size`, y deja el margen de la capa a los dos lados); dibuja la tarjeta con
   `geometriaDeLaTarjeta()` y llama a `capa(g, escala)` (la grilla del editor, encima, sin escalar: multiplica por la escala) y a `debajo(g)` («Ocultas con
   esta referencia»). `GeometriaParaEditar` lleva el tamaño, las filas que se dibujan con su banda y las ocultas; la `x` de cada columna la saca la capa
   de los anchos de la plantilla, así no repite la regla de qué fila se oculta.

@@ -204,6 +204,11 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   aparecer, desplaza lo justo para dejarlo a la vista (`BarraDeCambiosSinGuardar`).
 - Un submenú de un menú (`DropdownMenuSubTrigger`) que se abre al pasar el puntero se vuelve a cerrar con el clic que le sigue: ponle `openOnHover={false}` y que lo abran el clic, el toque o el teclado.
 - Chrome ignora `autocomplete="off"` en un `type="password"` y el Chromium de Playwright no lo reproduce: eso sólo se comprueba a mano, no lo des por probado.
+- Lo que se escala al ancho de su contenedor (`useEscalaDeLaTarjeta`) mide un nodo que no se desplaza ni depende de su contenido (`contain: inline-size`),
+  con el ancho redondeado hacia abajo; lo que dibuja no desborda su marco (ni el borde que sobresale, ni el alto con fracciones, ni el texto de una fila
+  más baja que una línea), y la página reserva el lugar de su barra (`scrollbar-gutter: stable`). Si una barra que aparece cambia el ancho medido, la
+  escala, el alto y la barra entran en un ciclo de pocos píxeles que no deja elegir nada. Se prueba con las barras visibles
+  (`ignoreDefaultArgs: ['--hide-scrollbars']`, `e2e/configuracion-tarjeta-arrastrar.spec.ts`): el Chromium de Playwright las esconde.
 
 ## Realtime y notificaciones
 

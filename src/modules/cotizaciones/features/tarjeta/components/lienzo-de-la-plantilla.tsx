@@ -23,8 +23,9 @@ const SIN_MARGEN: MargenDelLienzo = { arriba: 0, izquierda: 0 }
 
 // El lienzo del editor de la plantilla (el hueco de `entities/vista-previa-de-la-plantilla.ts`): la cuadrícula de trabajo dibujada con **el mismo modelo de dibujo**
 // que el PDF, la imagen y la vista previa de cotizar (`geometriaDeLaTarjeta()` y `<CeldaDeLaTarjeta>`), con lo guardado de la cotización de referencia o con las
-// cifras de ejemplo. «Ajustar» achica la tarjeta para caber en su marco (nunca agranda; el margen de la capa no cuenta); «100 %» la deja a escala 1 y el marco se
-// desplaza de costado. Encima, sin escalar, la capa del editor (cabeceras, asas y la grilla accesible): por eso la tarjeta dibujada va `aria-hidden` cuando hay
+// cifras de ejemplo. «Ajustar» achica la tarjeta para caber en su lugar (nunca agranda; el margen de la capa, a los dos lados, no cuenta); «100 %» la deja a escala 1
+// y el marco se desplaza de costado. La escala mide el contenedor del marco (`data-medida-del-lienzo`, con `contain: inline-size`), no el marco: la barra del marco
+// no cambia el ancho medido (`useEscalaDeLaTarjeta`). Encima, sin escalar, la capa del editor (cabeceras, asas y la grilla accesible): por eso la tarjeta dibujada va `aria-hidden` cuando hay
 // capa. Sin capa es la tarjeta en sólo lectura. Debajo, fuera del marco que se desplaza, lo que el editor ponga (las filas ocultas con esta referencia). No lee ni
 // escribe.
 export function LienzoDeLaPlantilla({
@@ -52,7 +53,11 @@ export function LienzoDeLaPlantilla({
     }
   }, [lectura, leida, locale])
   const para = useMemo(() => paraEditar(geometria), [geometria])
-  const { ref, escala: ajustada } = useEscalaDeLaTarjeta(geometria.ancho, margen.izquierda)
+  const derecha = margen.derecha ?? 0
+  const { ref, escala: ajustada } = useEscalaDeLaTarjeta(
+    geometria.ancho,
+    margen.izquierda + derecha,
+  )
   const escala = modo === 'real' ? 1 : ajustada
   const lienzo = {
     width: geometria.ancho,
@@ -62,13 +67,14 @@ export function LienzoDeLaPlantilla({
     '--color-ink': COLOR_TINTA,
   } as CSSProperties
   return (
-    <div className="grid min-w-0 gap-3">
-      <div ref={ref} data-lienzo-marco="" className="w-full min-w-0 overflow-x-auto">
+    <div ref={ref} data-medida-del-lienzo="" className="grid min-w-0 gap-3 [contain:inline-size]">
+      <div data-lienzo-marco="" className="w-full min-w-0 overflow-x-auto">
         <div
           className="relative"
           style={{
-            width: margen.izquierda + geometria.ancho * escala,
-            height: margen.arriba + geometria.alto * escala,
+            width: margen.izquierda + geometria.ancho * escala + derecha,
+            // Entero hacia arriba: con una fracción, el marco ve un desborde de menos de 1 px y saca su barra vertical.
+            height: Math.ceil(margen.arriba + geometria.alto * escala),
           }}
         >
           <div

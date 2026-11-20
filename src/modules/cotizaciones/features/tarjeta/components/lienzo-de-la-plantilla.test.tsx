@@ -149,6 +149,69 @@ describe('LienzoDeLaPlantilla', () => {
   })
 })
 
+// jsdom no mide: sólo el contenedor sin barras (`data-medida-del-lienzo`) tiene ese ancho; cualquier otro nodo, uno enorme (si se midiera, la escala sería 1).
+function medidaDelContenedor(ancho: number) {
+  vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockImplementation(function (
+    this: HTMLElement,
+  ) {
+    return this.hasAttribute('data-medida-del-lienzo') ? ancho : 99_999
+  })
+}
+
+const MARGEN = { arriba: 40, izquierda: 44, derecha: 8 }
+
+describe('LienzoDeLaPlantilla: la escala no depende de las barras', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('mide el contenedor sin barras (con `contain: inline-size`), no el marco que se desplaza', () => {
+    medidaDelContenedor(200)
+    const { container } = render(
+      <LienzoDeLaPlantilla lectura={LECTURA} referencia={null} escala="ajustar" />,
+    )
+    const medido = container.querySelector<HTMLElement>('[data-medida-del-lienzo]')
+    expect(medido?.className).toContain('[contain:inline-size]')
+    expect(medido?.querySelector('[data-lienzo-marco]')).not.toBeNull()
+    const caja = container.querySelector<HTMLElement>('[data-tarjeta-de-cotizacion]')?.parentElement
+    expect(parseFloat(caja?.style.width ?? '')).toBeLessThanOrEqual(200)
+  })
+
+  it('con «Ajustar» y el margen a los dos lados, el contenido mide exactamente el ancho medido y un alto entero', () => {
+    medidaDelContenedor(200)
+    const { container } = render(
+      <LienzoDeLaPlantilla
+        lectura={LECTURA}
+        referencia={null}
+        escala="ajustar"
+        margen={MARGEN}
+        capa={() => null}
+      />,
+    )
+    const caja = container.querySelector<HTMLElement>('[data-tarjeta-de-cotizacion]')?.parentElement
+    expect(parseFloat(caja?.style.width ?? '')).toBeCloseTo(200, 6)
+    // El alto, entero hacia arriba (40 + 79 × 148 / 300 = 78,97): sin fracción, el marco no ve un desborde.
+    expect(caja?.style.height).toBe('79px')
+  })
+
+  it('«100 %» sigue a escala 1 con el margen derecho', () => {
+    medidaDelContenedor(200)
+    const capa = vi.fn((_g: GeometriaParaEditar, escala: number) => <i>{escala}</i>)
+    const { container } = render(
+      <LienzoDeLaPlantilla
+        lectura={LECTURA}
+        referencia={null}
+        escala="real"
+        margen={MARGEN}
+        capa={capa}
+      />,
+    )
+    expect(capa.mock.lastCall?.[1]).toBe(1)
+    const caja = container.querySelector<HTMLElement>('[data-tarjeta-de-cotizacion]')?.parentElement
+    expect(caja?.style.width).toBe(`${String(44 + 300 + 8)}px`)
+  })
+})
+
 describe('LienzoDeLaPlantilla con el tema oscuro', () => {
   it('la tarjeta se ve igual con el tema oscuro: el fondo y la tinta van en línea', () => {
     document.documentElement.classList.add('dark')
