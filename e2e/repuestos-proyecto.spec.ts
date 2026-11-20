@@ -173,7 +173,7 @@ test('si otra persona cambia el ítem, guardar otra celda sale como conflicto y 
   await expect(
     page.getByText('Otra persona cambió este ítem. Recarga para ver lo nuevo.'),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Recargar' }).click()
+  await page.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(page.getByLabel(`Descripción del ítem ${FARO}`)).toBeVisible()
   await expect(page.getByRole('group', { name: 'Precio al cliente' })).toContainText(/99/)
 })

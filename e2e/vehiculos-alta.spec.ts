@@ -196,7 +196,7 @@ test('dos personas editan el mismo vehículo: la segunda se entera de quién lo 
   await expect(panel.getByLabel('Marca')).toHaveValue('KIA Motors')
 
   // «Recargar» trae la versión de Sara; ahora sí puede guardar encima.
-  await panel.getByRole('button', { name: 'Recargar' }).click()
+  await panel.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(panel.getByLabel('Modelo')).toHaveValue('Seltos EX')
   await expect(panel.getByLabel('Marca')).toHaveValue('Kia')
   await expect(aviso).toBeHidden()
