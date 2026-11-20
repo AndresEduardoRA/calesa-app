@@ -816,7 +816,10 @@ privada.», para que una pantalla que no avisó abra el aviso; aprobar toma ella
 con su hermana antes de que vaya a la papelera). Una final nunca es privada (`cotizaciones_final_no_privada`) y la aprobada tampoco: `_aprobada_reponer()`
 elige sólo entre las públicas (un vehículo con sólo privadas no tiene aprobada; hacer pública una la vuelve candidata). Las hermanas comparten la marca
 (`trg_cotizaciones_hermanas`); cotizar encima la hereda (quien cotiza encima es el autor de la nueva). Una privada no mueve `vehiculos.cotizado_en`;
-hacerla pública sí. Pruebas: `supabase/tests/areas/cotizaciones/privadas.sql`, L2 de `cotizaciones-visibilidad.sql`, el caso de `humo.sql` y A4 de
+hacerla pública sí. En la papelera (la policy «leer» no la alcanza: exige `eliminado_en is null`) la regla va en `_cotizaciones_papelera_lote_json`,
+`cotizaciones_papelera_listar`, `cotizaciones_papelera_lote` y `papelera_listar`: la privada ajena no se lista ni se cuenta, y un lote con sólo privadas ajenas
+no aparece. Restaurar o purgar un lote lo hace entero, y lo que devuelven (`restaurados`, `purgados`, `bloqueados`) no la nombra. Pruebas:
+`supabase/tests/areas/cotizaciones/privadas.sql`, L2 de `cotizaciones-visibilidad.sql`, el caso de `humo.sql` y A4 de
 `scripts/carreras/cotizaciones-aprobada.mjs`.
 
 ## Cotizaciones hermanas (la variante en par)

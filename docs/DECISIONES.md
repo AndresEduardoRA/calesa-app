@@ -909,6 +909,15 @@ las trampas, en `docs/LECCIONES.md`.
 - **Una final o la aprobada nunca son privadas.** Marcar final o aprobar la hacen pública en el mismo paso: aprobar pide `p_hacerla_publica` (sin él, 22023 con
   `hint privada`) para que ninguna pantalla la publique sin decirlo, y la pantalla pregunta antes. «Deshacer» de aprobar no la vuelve privada. Crear una final
   privada es 22023. La aprobada automática se elige sólo entre las públicas: un vehículo con sólo privadas no tiene aprobada.
+- **Quien aprueba o marca final la hace pública aunque no la haya creado.** Aprobar y marcar final son de quien tiene ese permiso en el origen (y ve la
+  privada); la pregunta lo dice antes. Lo único reservado a quien la creó es hacerla privada o pública por sí sola.
+- **Donde una privada ajena frena algo, se sabe que existe y nada más.** Marcar o crear una final pide poder mandar a la papelera todas las preventas vivas del
+  vehículo: una privada que quien marca no ve lo frena con el 42501 de siempre («Este vehículo tiene preventas que no puedes mandar a la papelera»), como
+  frena una ajena a quien ve «propios», sin número, título ni monto. La marca quien ve las privadas del origen, o la autora la hace pública antes. Igual la
+  cadena de versiones (`_cotizacion_cadena`): la de encima, privada y ajena, sale como «oculta».
+- **La papelera no nombra una privada ajena, pero el lote se restaura y se purga entero.** El listado, el lote, sus conteos y `papelera_listar` la descartan
+  como la policy «leer»; un lote con sólo privadas ajenas no aparece. Restaurar o purgar ese lote la incluye (es todo o nada, como siempre) y lo que
+  devuelve no la nombra.
 - **Una privada no mueve `cotizado_en`** (delataría que se cotizó el vehículo); hacerla pública sí. El tablero y el resumen de orígenes la siguen contando:
   son conteos sin ids ni montos.
 - **El interruptor vive en la URL** (`?privada=si`, `replace`): la hoja nueva se vuelve a montar al elegir el cliente o el vehículo y un estado local se
@@ -920,6 +929,8 @@ las trampas, en `docs/LECCIONES.md`.
   `cotizaciones.privadas.ver` con las mismas RPC de Roles, en «Todos los orígenes» o en el origen de `?origen=` (no una grilla rol × origen completa: no cabe
   en el celular y la matriz ya es esa grilla). Suma «No ve» como cuarto escalón; «Sólo las suyas» es «lo propio», que incluye las de sus clientes, y la
   leyenda lo dice.
+- **El interruptor y la línea del «⋯» viajan con la hoja.** Son un `<Switch>`, una línea y una insignia: diferirlos haría parpadear el pie del resumen y el menú.
+  `/cotizaciones/nuevo` pasó de 465 a 470 KB (465,8 medidos, regla del 5 %, `docs/RENDIMIENTO.md`).
 
 ### Papelera
 
