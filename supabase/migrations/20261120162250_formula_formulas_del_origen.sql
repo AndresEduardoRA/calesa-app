@@ -2143,6 +2143,15 @@ declare
 begin
   perform public.assert_permiso('cotizaciones.configurar', p_origen);
   if p_id is null then raise exception 'Falta el id de la fórmula.' using errcode = '22023', hint = 'id'; end if;
+  -- El mismo intento otra vez, antes de mirar la fuente: lo mismo aunque la fuente ya no exista. Un id de otro origen da el 42501 de no tener el permiso.
+  select * into v_ya from public.formulas_del_origen d where d.id = p_id;   -- formulas_del_origen_pkey
+  if v_ya.id is not null then
+    if v_ya.origen_id <> p_origen then raise exception 'No tienes el permiso «cotizaciones.configurar».' using errcode = '42501'; end if;
+    if v_ya.nombre = public._fdo_nombre(p_nombre) then
+      return jsonb_build_object('id', v_ya.id, 'actualizado_en', v_ya.actualizado_en, 'avisos', '[]'::jsonb);
+    end if;
+    raise exception 'Esa fórmula ya se creó con otros datos.' using errcode = 'PT409';
+  end if;
   -- La fuente de una copia: también con configurar en su origen; la que no existe da el mismo 42501.
   if p_copia_de is not null then
     select * into v_fuente from public.formulas_del_origen d where d.id = p_copia_de;   -- formulas_del_origen_pkey
@@ -2162,10 +2171,11 @@ begin
 
   perform pg_advisory_xact_lock(hashtextextended('formulas:' || p_origen::text, 0));
   perform pg_advisory_xact_lock(hashtextextended('plantillas:' || p_origen::text, 0));
-  -- El mismo intento otra vez: lo mismo, sin avisos; con otros datos, PT409.
+  -- El mismo intento a la vez que otro: el segundo la ve al tener el candado y responde lo mismo que arriba.
   select * into v_ya from public.formulas_del_origen d where d.id = p_id;   -- formulas_del_origen_pkey
   if v_ya.id is not null then
-    if v_ya.origen_id = p_origen and v_ya.nombre = v_nombre then
+    if v_ya.origen_id <> p_origen then raise exception 'No tienes el permiso «cotizaciones.configurar».' using errcode = '42501'; end if;
+    if v_ya.nombre = v_nombre then
       return jsonb_build_object('id', v_ya.id, 'actualizado_en', v_ya.actualizado_en, 'avisos', '[]'::jsonb);
     end if;
     raise exception 'Esa fórmula ya se creó con otros datos.' using errcode = 'PT409';
@@ -2202,8 +2212,8 @@ begin
     if v_c = 'formulas_del_origen_nombre_unico' then
       raise exception 'Ya hay una fórmula «%» en este origen.', v_nombre using errcode = '23505', hint = 'nombre';
     end if;
-    -- El mismo id creado en otro origen mientras tanto.
-    raise exception 'Esa fórmula ya se creó con otros datos.' using errcode = 'PT409';
+    -- El mismo id creado en otro origen mientras tanto: lo mismo que arriba.
+    raise exception 'No tienes el permiso «cotizaciones.configurar».' using errcode = '42501';
   end;
 
   if v_otro then

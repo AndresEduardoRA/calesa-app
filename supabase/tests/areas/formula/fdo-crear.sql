@@ -211,6 +211,14 @@ begin
   r := pg_temp.fcr_crear(q, gen_random_uuid(), d, 'Copia de la traída', nid, 'borrador');
   if r ? 'error' or r -> 'avisos' is distinct from '[{"tipo": "campo", "nodo": "col", "campo": "odometro_millas"}]'::jsonb then raise exception 'la copia de la copia dio %', r; end if;
   if not (select copiada_de_otro_origen from public.formulas_del_origen where formulas_del_origen.id = (r ->> 'id')::uuid) then raise exception 'la copia de la copia no quedó marcada'; end if;
+  -- El mismo intento después de borrada la fuente: la que ya se creó, sin avisos.
+  delete from public.formulas where formula_del_origen_id = fuente;
+  delete from public.formulas_del_origen where formulas_del_origen.id = fuente;
+  r := pg_temp.fcr_crear(q, nid, d, 'Traída', fuente, 'borrador');
+  if r ? 'error' or r -> 'id' is distinct from to_jsonb(nid) or r -> 'avisos' is distinct from '[]'::jsonb then raise exception 'repetir la copia sin la fuente dio %', r; end if;
+  -- Ese id en otro origen: el mismo 42501 que no tener el permiso, sin decir que existe.
+  r := pg_temp.fcr_crear(q, nid, s, 'Traída');
+  if r ->> 'error' is distinct from '42501' or r ->> 'mensaje' is distinct from 'No tienes el permiso «cotizaciones.configurar».' then raise exception 'el id de otro origen dio %', r; end if;
 end $$;
 rollback;
 
