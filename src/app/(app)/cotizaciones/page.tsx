@@ -4,6 +4,7 @@ import { Suspense, type ReactNode } from 'react'
 import {
   CLAVE_DE_AGRUPAR,
   MAXIMO_DE_PAGINA_DE_COTIZACIONES,
+  PANEL_DE_COTIZACIONES_DEL_VEHICULO,
   agruparDelListado,
   esquemaDelListado,
   idDelResumen,
@@ -22,7 +23,12 @@ import { MarcasDeVistoDeLaPagina } from '@/modules/equipo/pantallas/marcas-de-vi
 import { getOrigenes } from '@/modules/origenes'
 import { leerVehiculo } from '@/modules/vehiculos'
 import { datosO } from '@/shared/lib/errores'
-import { CLAVE_DE_CURSOR, CLAVE_DE_POR_PAGINA, leerFiltros } from '@/shared/lib/filtros'
+import {
+  CLAVE_DE_CURSOR,
+  CLAVE_DE_PANEL,
+  CLAVE_DE_POR_PAGINA,
+  leerFiltros,
+} from '@/shared/lib/filtros'
 import { leerCursor, leerPorPagina, tamanoDePagina, tamanosHasta } from '@/shared/lib/paginacion'
 import { origenesCon, puede, type Permisos } from '@/shared/lib/permisos'
 import { RUTAS, unParametro } from '@/shared/lib/rutas'
@@ -84,7 +90,11 @@ function pedidoDeLaPagina(
   const pedido = pedidoDelListado(leerFiltros(esquema, parametros), {
     cursor: leerCursor(unParametro(parametros[CLAVE_DE_CURSOR])),
     tamano,
-    vehiculo: unParametro(parametros[CLAVE_DE_VEHICULO]),
+    // Con el modal de las cotizaciones de un vehículo abierto, `?vehiculo=` es del modal y no el filtro: la lista de atrás sigue agrupada.
+    vehiculo:
+      unParametro(parametros[CLAVE_DE_PANEL]) === PANEL_DE_COTIZACIONES_DEL_VEHICULO
+        ? undefined
+        : unParametro(parametros[CLAVE_DE_VEHICULO]),
     lead: unParametro(parametros[CLAVE_DE_LEAD]),
   })
   const agruparPedido = agruparDelListado({

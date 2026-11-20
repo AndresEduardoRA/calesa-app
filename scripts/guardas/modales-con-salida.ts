@@ -57,6 +57,11 @@ export const MODALES: Record<string, RegistroDeModal> = {
     tambien: ['src/modules/equipo/features/equipo/components/enlace-invitacion.tsx'],
   },
   // --- cotizaciones
+  'src/modules/cotizaciones/features/listado/components/grupo/modal-del-grupo.tsx': {
+    sinFormulario:
+      'lista las cotizaciones de un vehículo, de sólo lectura; las casillas de «Comparar» no se guardan y elegir una línea abre su resumen',
+    tambien: ['src/modules/cotizaciones/features/listado/components/grupo/linea-del-grupo.tsx'],
+  },
   'src/modules/cotizaciones/features/plantilla/components/plantillas-de-v1/modal-de-plantillas-de-v1.tsx':
     {
       sinFormulario:

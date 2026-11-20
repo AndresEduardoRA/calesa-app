@@ -43,6 +43,19 @@ type Props = {
   alTerminarDeCerrar?: () => void
   // Sin cierre por el clic afuera (Esc y la ✕ siguen): para el primer instante de un modal que se abre con un clic, que un doble clic no cerraría.
   sinCierreAfuera?: boolean
+  // En el celular (< `sm`) ocupa toda la pantalla, no una tarjeta con margen: para una lista que se recorre (las cotizaciones de un vehículo).
+  completoEnCelular?: boolean
+}
+
+// El tamaño del diálogo: el ancho elegido y, si se pide, toda la pantalla en el celular.
+function clasesDelModal(ancho: 'normal' | 'amplio' | 'grande', completoEnCelular: boolean): string {
+  return cn(
+    'flex max-h-[calc(100dvh-2rem)] flex-col gap-0 p-0 max-sm:top-4 max-sm:translate-y-0',
+    completoEnCelular &&
+      'max-sm:top-0 max-sm:left-0 max-sm:h-dvh max-sm:max-h-none max-sm:max-w-none max-sm:translate-x-0 max-sm:rounded-none',
+    ancho === 'amplio' && 'sm:max-w-lg',
+    ancho === 'grande' && 'sm:max-w-4xl',
+  )
 }
 
 // El cuerpo que se desplaza, con su descripción: lo que queda escondido arriba o abajo lo dice un degradado (5a-24), sólo mientras hay algo.
@@ -61,7 +74,7 @@ function CuerpoDelModal({
           una cuarta parte de la pantalla (cierre 5b, defecto 4.4). */}
       <div
         ref={cuerpo}
-        className="grid min-h-0 min-w-0 flex-1 gap-4 overflow-y-auto px-4 pt-0.5 pb-4"
+        className="grid min-h-0 min-w-0 flex-1 content-start gap-4 overflow-y-auto px-4 pt-0.5 pb-4"
       >
         {descripcion ? <DialogDescription>{descripcion}</DialogDescription> : null}
         {children}
@@ -88,6 +101,7 @@ export function Modal({
   focoAlCerrar,
   alTerminarDeCerrar,
   sinCierreAfuera = false,
+  completoEnCelular = false,
 }: Props) {
   // Esc lo atiende Base UI, que cierra sólo el diálogo de más arriba y detiene el evento: mientras
   // un diálogo está abierto, el atajo «cerrar» de la pila no lo ve (por eso el Modal no lo registra).
@@ -111,11 +125,7 @@ export function Modal({
         showCloseButton={false}
         initialFocus={focoInicial}
         finalFocus={focoAlCerrar}
-        className={cn(
-          'flex max-h-[calc(100dvh-2rem)] flex-col gap-0 p-0 max-sm:top-4 max-sm:translate-y-0',
-          ancho === 'amplio' && 'sm:max-w-lg',
-          ancho === 'grande' && 'sm:max-w-4xl',
-        )}
+        className={clasesDelModal(ancho, completoEnCelular)}
       >
         <DialogHeader className={cn('shrink-0 p-4 pr-12', descripcion || children ? 'pb-2' : '')}>
           <DialogTitle className="leading-snug">{titulo}</DialogTitle>

@@ -29,7 +29,7 @@ export type EntradaDelListado<F> =
 // Una página de la lista agrupada. `cortada`: la base recorrió su tope sin completar la página (el cursor codificado de dónde siguió, para «Seguir buscando»).
 export type PaginaAgrupada<F> = Pagina<EntradaDelListado<F>> & { cortada: string | null }
 
-// Lo que pide el despliegue de un grupo: las del vehículo con los mismos filtros (y la búsqueda) de la página, por cursor.
+// Lo que pide el modal de un grupo: las del vehículo con los mismos filtros (y la búsqueda) de la página, por cursor.
 export type PedidoDelGrupo = Pick<
   PedidoDelListado,
   'origenId' | 'clase' | 'mias' | 'leadId' | 'texto'
@@ -38,8 +38,31 @@ export type PedidoDelGrupo = Pick<
   cursor: Cursor | null
 }
 
-// Una cotización desplegada: la fila del listado con quién la hizo (la línea no lleva cliente ni «⋯»).
-export type LineaDelGrupo = FilaDelListado & { autor: string }
+// Una cotización del modal de un grupo: la fila del listado con quién la hizo y el nombre de su modo de tipo de cambio (nulo si no tiene o no se leyó); la línea no
+// lleva cliente ni «⋯».
+export type LineaDelGrupo = FilaDelListado & { autor: string; modo: string | null }
+
+// El modal de las cotizaciones de un vehículo de la lista agrupada vive en la URL: `?panel=cotizaciones-del-vehiculo&vehiculo=<id>`. Mientras ese panel está abierto, `?vehiculo=` es
+// del modal y no el filtro del listado (la página no lo lee como filtro: la lista de atrás sigue agrupada).
+export const PANEL_DE_COTIZACIONES_DEL_VEHICULO = 'cotizaciones-del-vehiculo'
+
+// Lo que se dice si el enlace nombra un vehículo que no es un id.
+export const MENSAJE_DEL_VEHICULO_NO_VALIDO = 'Ese enlace no nombra un vehículo.'
+
+const ES_GUID = z.guid()
+
+// El id del vehículo de `?vehiculo=`, en minúsculas, o null si no es un guid (o no hay): la única lectura de esa clave para el modal.
+export function idDelVehiculoDelModal(texto: string | null | undefined): string | null {
+  return texto === null || texto === undefined || !ES_GUID.safeParse(texto).success
+    ? null
+    : texto.toLowerCase()
+}
+
+// El título del modal: «Cotizaciones de <vehículo>»; sin su nombre (quien mira no ve vehículos o el grupo no está en la página), «Cotizaciones de este vehículo».
+export function tituloDelModalDelGrupo(vehiculo: string | null | undefined): string {
+  const nombre = vehiculo?.trim() ?? ''
+  return nombre === '' ? 'Cotizaciones de este vehículo' : `Cotizaciones de ${nombre}`
+}
 
 // Si la lista se agrupa: con `?vehiculo=` (las de un solo vehículo) nunca; si la URL lo dice, lo que dice; si no, la preferencia de la persona; sin elegir, sí.
 export function agruparDelListado({
@@ -101,7 +124,7 @@ export function agruparLaPagina<
   return entradas
 }
 
-// «3 cotizaciones de este vehículo» o «100+ cotizaciones de este vehículo»; con una sola, nada (no hay qué desplegar).
+// «3 cotizaciones de este vehículo» o «100+ cotizaciones de este vehículo»; con una sola, nada (no hay qué abrir).
 export function textoDelConteo(conteo: ConteoAcotado): string | null {
   if (!conteo.hayMas && conteo.n <= 1) {
     return null
@@ -114,7 +137,7 @@ export function conteoDelGrupo(leidas: number): ConteoAcotado {
   return conteoAcotado(leidas, TOPE_DE_ESTE_VEHICULO)
 }
 
-// La cabeza de un grupo ya no vale si la primera página de su despliegue (las del vehículo que coinciden, de la más nueva a la más vieja) no empieza por la
+// La cabeza de un grupo ya no vale si la primera página de su modal (las del vehículo que coinciden, de la más nueva a la más vieja) no empieza por la
 // cotización por la que se ordenó: se envió a la papelera, se invalidó o llegó una más nueva mientras se miraba. Entonces se relee la página de grupos.
 export function grupoQueCambio(
   grupo: { ordenId: string },
@@ -123,9 +146,13 @@ export function grupoQueCambio(
   return primeraPagina[0]?.id !== grupo.ordenId
 }
 
-// Lo que se dibuja al desplegar un grupo: la cabeza primero (la de la tarjeta, para poder compararla) y después las demás, en el orden en que llegaron.
-export function lineasDelGrupo<F extends { id: string }>(cabeza: F, leidas: readonly F[]): F[] {
-  return [cabeza, ...leidas.filter((fila) => fila.id !== cabeza.id)]
+// Lo que se dibuja en el modal de un grupo: la cabeza primero (su aprobada si quien mira la ve y coincide) y después las demás, en el orden en que llegaron. Sin cabeza
+// (el enlace abre un grupo que no está en la página), sólo las leídas.
+export function lineasDelGrupo<F extends { id: string }>(
+  cabeza: F | null,
+  leidas: readonly F[],
+): F[] {
+  return cabeza === null ? [...leidas] : [cabeza, ...leidas.filter((fila) => fila.id !== cabeza.id)]
 }
 
 // `?agrupar=` de la URL: sólo «si» o «no»; otra cosa es como no decir nada.

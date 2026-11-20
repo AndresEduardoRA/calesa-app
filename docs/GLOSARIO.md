@@ -395,7 +395,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Comparar cotizaciones** — `/cotizaciones/comparar?ids=`, `entities/aprobada/comparar.ts` (`compararCotizaciones()`), `pantallas/aprobada-comparar.ts`
   (`TablaDeComparar`): 2 o 3 cotizaciones del mismo vehículo lado a lado, **lo guardado** de cada una (su versión, sus valores y su total, sin recálculo),
   una columna por cotización y una fila por nodo alineada por su id, con «Aprobar esta» al pie. Lo **distinto** se mide **contra la primera** columna (↑, ↓
-  o ≠). Se llega por las casillas de «De este vehículo» y por las de un **grupo de un vehículo** desplegado en `/cotizaciones`. No es la «Celda» de la hoja ni
+  o ≠). Se llega por las casillas de «De este vehículo» y por las del **modal del grupo** de un vehículo en `/cotizaciones`. No es la «Celda» de la hoja ni
   la «tarjeta de la cotización»: en la interfaz cada columna es «la cotización #N» y sus filas son de nodos.
 - **Tarjeta de la lista** — `<TarjetaDeLista>` (`@/shared/ui/lista`): cada ítem de la vista «Tarjetas» de un listado. La de `/cotizaciones` es
   `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): la **portada de la cotización** arriba (en miniatura) con el «⋯» encima, el
@@ -403,8 +403,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cotización** (la vista previa tipo Excel que la portada muestra).
 - **Grupo de un vehículo** — `EntradaDelListado` de `tipo: 'grupo'`, `cotizaciones_listado_por_vehiculo()`: en `/cotizaciones` agrupada («Agrupar por
   vehículo», `?agrupar=`, `cotizaciones.agrupar`), las cotizaciones de un vehículo que quien mira ve y coinciden con la búsqueda y los filtros, en una tarjeta o
-  fila con «N cotizaciones de este vehículo» que despliega las demás en el lugar. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
+  fila con «N cotizaciones de este vehículo» que abre el **modal del grupo**. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
   **Grupo (de la hoja)**, el **Grupo (de la bandeja del día)** ni el **Grupo (de transporte)**.
+- **Modal del grupo** — `ModalDelGrupo` (`?panel=cotizaciones-del-vehiculo&vehiculo=<id>`): el modal «Cotizaciones de <vehículo>» que abre «N cotizaciones de este vehículo»; lista las
+  cotizaciones del vehículo que coinciden con la búsqueda y los filtros (la aprobada primero), de a 10 con «Ver más» hasta 100, con «Comparar» en su pie. No es el
+  **resumen** (`?cotizacion=`) que abre una de sus líneas ni «De este vehículo» (el bloque de la ficha del vehículo).
 - **Cabeza del grupo** — `cabeza` de un grupo de un vehículo: la cotización que lo representa en su tarjeta o fila: su **aprobada** si quien mira la ve y
   coincide; si no, la más reciente que coincide. La lista ordena y pagina los grupos por su cotización más reciente (`ordenEn`, `ordenId`), no por la cabeza.
 - **Miniatura de la portada** — `?ancho=480` de `GET /cotizaciones/<id>/portada` (`ANCHOS_DE_LA_PORTADA`, `miniaturaDeLaPortada()`): la portada achicada a

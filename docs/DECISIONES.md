@@ -471,14 +471,17 @@ las trampas, en `docs/LECCIONES.md`.
   `cotizaciones_vehiculo_creado_idx`, desde el cursor) y sin cursor ninguna; si la lectura llegó al final, el conteo sale de lo leído. Con 2.020 leídas sin llenar
   la página, `cortada` y «Seguir buscando».
 - **Con búsqueda, se agrupa la página.** `cotizaciones_buscar()` tiene sus propias fuentes y su tope: agrupar en la base duplicaría cada una. La página junta las de
-  su vehículo (la cabeza, la aprobada si está entre ellas) y el conteo es el de esa página; el despliegue busca con el mismo texto y el vehículo.
-- **El despliegue de un grupo son líneas compactas, no tarjetas.** La de la tarjeta primero («En la tarjeta», para poder compararla) y las demás con casilla,
-  número y título, «Final», total, autor y vigencia; sin cliente (es el mismo vehículo) ni «⋯» (las acciones están arriba de su resumen): no se paga un menú ni un
-  nombre de lead por línea. Se lee desde el navegador al desplegar (como «De este vehículo») con los filtros de la página. La insignia «Aprobada» no va en las
-  líneas: la aprobada que coincide ya es la cabeza.
+  su vehículo (la cabeza, la aprobada si está entre ellas) y el conteo es el de esa página; el modal del grupo busca con el mismo texto y el vehículo.
+- **Las cotizaciones de un grupo se abren en un modal, en líneas compactas, no desplegadas ni en tarjetas.** Lo pidió la persona: el despliegue en el lugar movía la
+  lista y la hacía larga. El modal (`?panel=cotizaciones-del-vehiculo&vehiculo=<id>`) lleva la aprobada primero (con su insignia «Aprobada»; es la cabeza del grupo) y las demás con casilla,
+  número y título, «Final», total con su modo, autor y vigencia; sin cliente (es el mismo vehículo) ni «⋯» (las acciones están arriba de su resumen): no se paga un menú ni un
+  nombre de lead por línea. Se lee desde el navegador al abrir (como «De este vehículo») con los filtros de la página; el modo, por `cotizaciones_modos_de()` (una llamada por página de 10).
+  `?vehiculo=` es también el filtro del listado: con ese panel la página no lo lee como filtro, para que la lista de atrás siga agrupada. «Comparar» va en el pie del modal: sus
+  elegidas viven en el hueco `Comparar`, que envuelve al modal; una línea lo cierra y abre su resumen en un solo paso. Sin la cabeza (el enlace abre un grupo que no está en la página)
+  el modal sale sin la aprobada primera y con el título genérico: leerla pediría otra lectura del servidor por un caso raro.
 - **El resumen de la cotización lleva arriba sus acciones.** «Abrir cotización» (la principal), «Compartir cotización» y el «⋯» con la lista única de la fila sin
   «Compartir» (ya está a la vista), los mismos `menuDeFila` y `compartirDe` de la tarjeta: una sola lista de acciones. La cotización del resumen que no está en la
-  página (una línea de un grupo desplegado, otra página) entra a los menús con `conLaDelResumen()`: un id más en las tres lecturas por clave primaria de las marcas.
+  página (una línea del modal de un grupo, otra página) entra a los menús con `conLaDelResumen()`: un id más en las tres lecturas por clave primaria de las marcas.
   Los diálogos del listado se dibujan dentro del Drawer mientras está abierto y su código ya llegó (un modal hermano cuenta como un clic afuera y lo cierra) y en el
   listado si no (así un `?panel=` de la URL no espera al chunk del resumen): un solo montaje a la vez. El panel es `ancho="amplio"`: con el normal (3/4 del celular) no caben «Abrir» y «Compartir» mitad y mitad con el «⋯» a 44 px. Barra pegajosa no:
   le quita alto a la portada en un panel corto. Enviar a la papelera desde ese «⋯» deja el resumen abierto: al refrescarse dice que ya no está disponible y

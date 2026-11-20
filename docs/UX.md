@@ -351,12 +351,15 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   una tarjeta o fila por vehículo (la **cabeza del grupo**: su aprobada si quien mira la ve y coincide; si no, la más reciente que coincide) y las sin vehículo
   sueltas, intercaladas por fecha; los grupos se ordenan por su cotización más reciente; la búsqueda y los filtros valen sobre las cotizaciones (un grupo existe si
   alguna coincide y sólo cuenta las que coinciden); con `?vehiculo=` no se agrupa y el aviso de arriba dice «…, sin agrupar.»; con `?q=` se agrupa cada página.
-  «N cotizaciones de este vehículo» (en la tarjeta, en su fila reservada; en la tabla, bajo el vehículo; tope «100+»; con una sola no está) despliega en el lugar
-  (`aria-expanded`) la de la tarjeta («En la tarjeta») y las demás en **líneas compactas** (casilla, «N.º n» con su título, «Final», el total, autor · «hace…» y la
-  vigencia; sin cliente ni «⋯»; el clic abre su resumen y la abierta queda marcada, como la fila y la tarjeta), de a 10 con «Ver más» hasta 100 y ahí «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`); 2 o 3
-  casillas habilitan «Comparar» («Elige 2 o 3 para comparar.»; con 3, «Puedes comparar hasta 3.»). Estados del despliegue: tres líneas de esqueleto, «No
-  pudimos cargar las cotizaciones de este vehículo.» o «No hay conexión.» con «Reintentar» (la lista sigue); si su cabeza ya no vale (papelera, invalidar, una
-  más nueva) la página se relee. Si la base recorre su tope sin completar la página: «Revisamos muchas cotizaciones sin completar la página.» con «Seguir
+  «N cotizaciones de este vehículo» (en la tarjeta, en su fila reservada; en la tabla, bajo el vehículo; tope «100+»; con una sola no está) **abre un modal**
+  (`?panel=cotizaciones-del-vehiculo&vehiculo=<id>`, se recarga, se comparte y «atrás» lo cierra; mientras está abierto `?vehiculo=` es del modal y no el filtro, así que la lista de atrás sigue agrupada;
+  el foco vuelve al botón; en el celular, a pantalla completa) titulado «Cotizaciones de <vehículo>» y con las cotizaciones del vehículo que coinciden con la búsqueda y los
+  filtros en **líneas compactas**: la aprobada primero (con su insignia «Aprobada»; sin ella, la cabeza del grupo) y después las más recientes (casilla, «N.º n» con su título, «Final», el
+  total con su modo, autor · «hace…» y la vigencia; sin cliente ni «⋯»). La lista ya no despliega nada. De a 10 con «Ver más» hasta 100 y ahí «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`); 2 o 3
+  casillas habilitan «Comparar» en el pie del modal («Elige 2 o 3 para comparar.»; con 3, «Puedes comparar hasta 3.»). Un clic en una línea cierra el modal y abre su resumen (el foco va al
+  resumen). Estados del modal: tres líneas de esqueleto, «No pudimos cargar las cotizaciones de este vehículo.» o «No hay conexión.» con «Reintentar» (la lista sigue); si su cabeza ya no vale (papelera,
+  invalidar, una más nueva) la página se relee. Un `vehiculo` que no es un id no abre nada, avisa y limpia la URL; si el grupo no está en la página del enlace, el modal se arma sólo con lo que lee
+  (título «Cotizaciones de este vehículo», sin la aprobada primera). Si la base recorre su tope sin completar la página: «Revisamos muchas cotizaciones sin completar la página.» con «Seguir
   buscando» (también en lugar del vacío). **La tarjeta de la lista:** la portada de la cotización arriba (miniatura de 480 px, 15:8, recortada desde arriba a la izquierda,
   perezosa; su clic abre el visor en `?visor=portada-de-la-lista-<id>`, así no se cruza con el del resumen abierto) con el «⋯» encima (sin «Compartir»), el título (dos líneas, entero en `title`), «N.º n» con «Aprobada», «Final» y el origen
   con su color en una línea, el total con su modo, «Cliente:» enlazado a su ficha (con `leads.ver`; si no, su nombre o «—»), autor · «hace…», la vigencia, la fila
@@ -365,7 +368,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   cotización…» primero. Y el resumen `?cotizacion=` (la fila, la tarjeta y el resumen nombran la cotización por su
   **título** —el suyo o, sin él, el de su vehículo—, en dos líneas como mucho y entero en `title`) (un panel ancho —a todo el ancho en el celular—; arriba, la
   **barra del resumen**: «Abrir cotización» (primario, a `/cotizaciones/<id>`), «Compartir cotización» (el mismo panel de la tarjeta; no en Modo Live ni sin la oferta)
-  y, al final, el «⋯» de la fila sin «Compartir» (también para una línea de un grupo desplegado o una de otra página); los dos botones crecen por igual: en el celular
+  y, al final, el «⋯» de la fila sin «Compartir» (también para una línea del modal de un grupo o una de otra página); los dos botones crecen por igual: en el celular
   mitad y mitad con el «⋯» a 44 px y, con el texto al 200 %, se parten en filas sin salirse; sin la cotización a la vista (no disponible, error, cargando) no hay barra;
   sus diálogos se abren sobre el resumen sin cerrarlo. Debajo, la
   **portada de la cotización** a todo el ancho del resumen, en un marco 15:8 con la imagen entera: mientras se arma o carga, un recuadro del mismo marco con el total y
