@@ -17,6 +17,8 @@ type Props = {
   referencia: ReferenciaDeLaTarjeta
   // El hueco del lienzo: lo pasa la página (el área `tarjeta` lo llena).
   Lienzo: ComponentType<PropsDelLienzoDeLaPlantilla>
+  // `empresa.ajustes.gestionar` de quien mira: el aviso del logo que no se dibuja abre Empresa.
+  puedeCambiarElLogo: boolean
 }
 
 // El editor se usa en una pantalla de al menos 1.024 px; por debajo, el aviso y la tarjeta en sólo lectura (y el código del editor no se pide).
@@ -41,7 +43,7 @@ function useClaveDelEditor(origen: string, esperada: string | null) {
 // El editor de la tarjeta con sus modales. El editor se remonta con una versión que no es la propia (`useClaveDelEditor`); los modales **no**: viven aquí, fuera de
 // esa `key`, para que «Recargar» tras un PT409 no los remonte y se conserve la nota escrita. Un rechazo de publicar con su `donde` («Ir a la celda») llega al editor
 // por `irA`. Antes de hidratar no se sabe el ancho: el esqueleto.
-export function PestanaDeLaTarjeta({ editor, referencia, Lienzo }: Props) {
+export function PestanaDeLaTarjeta({ editor, referencia, Lienzo, puedeCambiarElLogo }: Props) {
   const panel = usePanelDeLaTarjeta()
   const ancha = useConsultaDeMedios(ANCHO_DEL_EDITOR)
   const hidratada = useSyncExternalStore(
@@ -93,6 +95,7 @@ export function PestanaDeLaTarjeta({ editor, referencia, Lienzo }: Props) {
         alGuardar={clave.guardada}
         alPublicar={panel.abrirPublicar}
         alDescartar={panel.abrirDescartar}
+        puedeCambiarElLogo={puedeCambiarElLogo}
       />
       {acciones}
     </>
