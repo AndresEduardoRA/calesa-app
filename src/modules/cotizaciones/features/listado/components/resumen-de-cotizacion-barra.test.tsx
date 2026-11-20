@@ -85,17 +85,17 @@ function dibujar(opciones: {
 }
 
 describe('ResumenDeCotizacion: la barra de arriba (T320)', () => {
-  const Portada: NonNullable<HuecosDelResumen['Portada']> = () => <p data-testid="portada" />
+  const Imagen: NonNullable<HuecosDelResumen['Imagen']> = () => <p data-testid="imagen" />
   const sigue = (a: Node, b: Node) =>
     Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING)
 
-  it('arriba y en orden: «Abrir cotización», «Compartir cotización» y el «⋯» sin «Compartir», antes de la portada y los datos', () => {
+  it('arriba y en orden: «Abrir cotización», «Compartir cotización» y el «⋯» sin «Compartir», antes de la imagen y los datos', () => {
     const menuDeFila = vi.fn<MenuDeFila>(() => <button type="button">Más acciones</button>)
     const compartir = vi.fn()
     dibujar({
       busqueda: `?cotizacion=${ID}`,
       filas: [cotizacion()],
-      huecos: { Portada },
+      huecos: { Imagen },
       menuDeFila,
       compartirDe: () => compartir,
     })
@@ -108,7 +108,7 @@ describe('ResumenDeCotizacion: la barra de arriba (T320)', () => {
     const mas = screen.getByRole('button', { name: 'Más acciones' })
     expect(sigue(abrir, boton)).toBe(true)
     expect(sigue(boton, mas)).toBe(true)
-    expect(sigue(mas, screen.getByTestId('portada'))).toBe(true)
+    expect(sigue(mas, screen.getByTestId('imagen'))).toBe(true)
     expect(sigue(mas, screen.getByText('Cliente'))).toBe(true)
     fireEvent.click(boton)
     expect(compartir).toHaveBeenCalledTimes(1)
@@ -157,9 +157,11 @@ describe('ResumenDeCotizacion: la barra de arriba (T320)', () => {
     expect(screen.getByRole('dialog').contains(screen.getByTestId('dialogos'))).toBe(true)
   })
 
-  it('el total va con su modo; la vigencia es un dato', () => {
+  it('el total va con su modo; la vigencia va con la creación', () => {
     dibujar({ busqueda: `?cotizacion=${ID}`, filas: [cotizacion({ modo: 'Paralelo' })] })
     expect(document.querySelector('[data-modo-del-total]')?.textContent).toBe('Paralelo')
-    expect(screen.getByText('Vigencia').nextElementSibling?.textContent).toContain('Vale hasta el')
+    expect(document.querySelector('[data-cabecera-del-resumen]')?.textContent).toContain(
+      'Vale hasta el',
+    )
   })
 })

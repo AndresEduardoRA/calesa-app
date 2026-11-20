@@ -52,7 +52,7 @@ let esperasDeRepuestosAntes: string | null = null
 const delOrigen = fasesDelOrigen(ORIGEN)
 const idDeFase = (nombre: string): string => faseDe(ORIGEN, nombre)
 const urlDeFase = (nombre: string) =>
-  `/configuracion/flujos?origen=${origenId}&vista=lista&fase=${idDeFase(nombre)}`
+  `/configuracion/origenes/${origenId}/flujo?vista=lista&fase=${idDeFase(nombre)}`
 const comoDuena = (consulta: string): string => comoPersona(duena, consulta)
 
 test.beforeAll(async ({}, info) => {
@@ -86,11 +86,14 @@ test(`${P} la dueña crea un origen y arma 5 fases con sus salidas`, async ({ pa
   await panel.getByRole('button', { name: 'Crear origen' }).click()
   await expect(page.getByText(`Origen «${ORIGEN}» creado`)).toBeVisible()
 
-  // «Siguientes pasos» lleva al flujo del origen, que nace sin fases.
-  const pasos = page.getByRole('region', { name: `Siguientes pasos para ${ORIGEN}` })
-  await pasos.getByRole('link', { name: 'Abrir' }).first().click()
-  await expect(page).toHaveURL(/\/configuracion\/flujos\?origen=/)
-  origenId = new URL(page.url()).searchParams.get('origen') ?? ''
+  // Creado, abre su página; «Para cotizar y mover» lleva a la pestaña Flujo, que nace sin fases.
+  await expect(page.getByRole('heading', { name: ORIGEN, level: 1 })).toBeVisible()
+  await page
+    .getByRole('region', { name: 'Para cotizar y mover' })
+    .getByRole('link', { name: /Flujo/ })
+    .click()
+  await expect(page).toHaveURL(/\/configuracion\/origenes\/[^/]+\/flujo$/)
+  origenId = new URL(page.url()).pathname.split('/')[3] ?? ''
   expect(origenId).toBe(sql(`select id from public.origenes where nombre = ${literal(ORIGEN)}`))
   await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeVisible()
   await expect(nombresDeFases(page)).toHaveCount(0)
@@ -153,7 +156,7 @@ test(`${P} la dueña pide un documento, un dato y una espera; Revisar marca la f
   ).toBeVisible()
 
   // Desde el flujo de repuestos, esa fase espera a «Llegada»: las dos se esperan mutuamente.
-  const urlDeRepuestos = `/configuracion/flujos?ambito=repuestos&fase=${faseDeRepuestos}`
+  const urlDeRepuestos = `/configuracion/repuestos/flujo?fase=${faseDeRepuestos}`
   const deRepuestos = await inspectorDe(page, urlDeRepuestos, nombreDeRepuestos)
   const descripcionInversa = await agregarEsperaA(deRepuestos, LLEGADA)
   expect(descripcionInversa).not.toBe('')
@@ -219,7 +222,7 @@ test(`${P} un vehículo nuevo nace en la inicial, se mueve por SQL y jubilar su 
   expect(sql(`select fase_id from public.vehiculos where id = '${vehiculo}'`)).toBe(puerto)
 
   // Con historial y una unidad adentro, «Puerto» no se elimina: se jubila.
-  await page.goto(`/configuracion/flujos?origen=${origenId}&vista=lista`)
+  await page.goto(`/configuracion/origenes/${origenId}/flujo?vista=lista`)
   await elegirDelMenu(page, PUERTO, 'Jubilar o eliminar')
   const dialogo = page.getByRole('dialog', { name: new RegExp(`Jubilar fase «${PUERTO}»`) })
   await expect(dialogo).toContainText(`Se jubila «${PUERTO}»`)

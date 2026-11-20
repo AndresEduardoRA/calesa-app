@@ -1,5 +1,6 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   PREFIJO_ROL_E2E,
@@ -14,7 +15,7 @@ import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar
 import { sembrarVersiones } from './soporte/formula-versiones'
 import { crearAsesoraDeLaSemilla } from './soporte/recorrido'
 
-// La pestaña «Fórmula» de Configuración › Cotización (4.20-2a, `docs/UX.md` › «Cotización: fórmula (estados propios)»): entra quien tiene `cotizaciones.configurar` en algún origen,
+// La sub-pestaña «Fórmula» de la pestaña Fórmula de un origen (4.20-2a, `docs/UX.md` › «Cotización: fórmula (estados propios)»): entra quien tiene `cotizaciones.configurar` en algún origen,
 // también sin los permisos de los niveles; muestra la publicada, el borrador (atrasado si se publicó otra después) y las versiones de a 20 por cursor hasta 500, con
 // «Ir a la versión» como camino a lo antiguo. Publicar y revertir: `configuracion-cotizacion-formula-publicar.spec.ts` y `-revertir.spec.ts` (4.20-2b).
 test.describe.configure({ mode: 'serial' })
@@ -67,33 +68,38 @@ test.afterAll(async () => {
 const versiones = (page: Page) =>
   page.getByRole('list', { name: 'Versiones de la fórmula' }).getByRole('listitem')
 
+const menu = (page: Page) => page.getByRole('navigation', { name: 'Secciones de Configuración' })
+
 async function abrirFormula(page: Page, origenId: string) {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/formula`)
+  await enLaPestana(page, 'Fórmula')
 }
 
-test('quien sólo configura la fórmula de un origen entra por el hub y su tarjeta a «Fórmula», con un solo origen y sin los niveles', async ({
+test('quien sólo configura la fórmula de un origen entra por el hub y el menú a «Fórmula» de su origen, sin los otros ni los niveles', async ({
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
   await page.goto('/configuracion/inicio')
-  await page
-    .getByRole('region')
-    .getByRole('link', { name: /Cotización/ })
-    .click()
-  await expect(page).toHaveURL(/\/configuracion\/cotizacion$/)
-  await page.getByRole('link', { name: chica.nombre, exact: true }).click()
-  await expect(page).toHaveURL(new RegExp(`/configuracion/cotizacion/${chica.id}/formula$`))
-  await expect(page.getByRole('tab', { name: 'Fórmula' })).toHaveAttribute('aria-selected', 'true')
+  await page.getByRole('region').getByRole('link', { name: 'Orígenes', exact: true }).click()
+  await expect(page).toHaveURL(/\/configuracion\/origenes$/)
+  // En el menú, sólo su origen.
+  await expect(menu(page).getByRole('link', { name: grande.nombre, exact: true })).toHaveCount(0)
+  await menu(page).getByRole('link', { name: chica.nombre, exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${chica.id}/datos$`))
+  await expect(page.getByRole('heading', { name: chica.nombre, level: 1 })).toBeVisible()
+  await page.getByRole('tab', { name: 'Fórmula', exact: true }).first().click()
+  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${chica.id}/formula$`))
+  await enLaPestana(page, 'Fórmula')
   await expect(page.getByRole('heading', { name: 'Publicada: versión 26' })).toBeVisible()
-  await expect(page.getByRole('navigation', { name: 'Origen' }).getByRole('link')).toHaveCount(1)
-  // Los niveles tampoco se abren escribiendo la URL: van a la fórmula de su origen.
-  await page.goto('/configuracion/cotizacion?seccion=niveles')
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  // Los niveles tampoco se abren escribiendo la URL: van al primer catálogo que abre.
+  await page.goto('/configuracion/catalogos/niveles')
+  await expect(page).toHaveURL(/\/configuracion\/catalogos\/colores$/)
+  await expect(page.getByRole('heading', { name: 'Colores', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Niveles de acceso' })).toHaveCount(0)
-  // Un origen que no es suyo abre el suyo.
-  await abrirFormula(page, grande.id)
-  await expect(page.getByRole('heading', { name: 'Publicada: versión 26' })).toBeVisible()
+  // Un origen que no es suyo no se abre.
+  await page.goto(`/configuracion/origenes/${grande.id}/formula`)
+  await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Publicada: versión 26' })).toHaveCount(0)
 })
 
 test('la dueña ve la publicada, el borrador atrasado y las versiones de a 20 con quién las publicó', async ({
@@ -101,9 +107,7 @@ test('la dueña ve la publicada, el borrador atrasado y las versiones de a 20 co
 }) => {
   await entrar(page, duena)
   await abrirFormula(page, chica.id)
-  await expect(
-    page.getByRole('navigation', { name: 'Origen' }).getByRole('link', { name: chica.nombre }),
-  ).toHaveAttribute('aria-current', 'page')
+  await expect(page.getByRole('heading', { name: chica.nombre, level: 1 })).toBeVisible()
   const publicada = page.getByRole('region', { name: 'Publicada' })
   await expect(publicada).toContainText('Publicada: versión 26')
   await expect(publicada).toContainText('Publicada E2E')
@@ -191,6 +195,7 @@ test('la lista de versiones pesa lo medido: bytes de «Ver más» y nodos con 20
 
 test('la asesora, sin los niveles ni la fórmula, sigue sin entrar', async ({ page }) => {
   await entrar(page, asesora, { fresco: true })
-  await page.goto('/configuracion/cotizacion?seccion=formula')
-  await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
+  await page.goto(`/configuracion/origenes/${chica.id}/formula`)
+  await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Publicada: versión 26' })).toHaveCount(0)
 })

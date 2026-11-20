@@ -19,6 +19,8 @@ type Props = {
   abierto: boolean
   alCerrar: () => void
   origenId: string
+  // La fórmula del origen que la pestaña leyó: su borrador es el que se descarta.
+  formulaDelOrigenId: string | null
   // El que se descarta: se fija al abrir (mientras se cierra tras descartar, el texto no cambia).
   borrador: Pick<ConAutor<BorradorDelOrigen>, 'autor' | 'actualizadoEn'>
 }
@@ -28,7 +30,13 @@ const MENSAJE_DE_VALIDACION = 'No pudimos leer el pedido. Recarga y vuelve a int
 // «Descartar el borrador de <autor>» (`?panel=descartar-borrador`, 4.20-2c): lo irreversible se confirma nombrando el borrador. Lo que no entró queda dentro del
 // diálogo, que no se cierra; entró: «Se descartó el borrador.» y la pestaña se vuelve a leer sin él. Manda la hora del borrador que nombra (4.21-3b-1): si otra persona
 // lo guardó, el texto de la base con «Recargar», que trae el de ahora (el diálogo pasa a nombrarlo).
-export function DescartarBorrador({ abierto, alCerrar, origenId, borrador }: Props) {
+export function DescartarBorrador({
+  abierto,
+  alCerrar,
+  origenId,
+  formulaDelOrigenId,
+  borrador,
+}: Props) {
   const { zonaHoraria } = useRegional()
   const router = useRouter()
   const [recargando, recargarPagina] = useTransition()
@@ -37,7 +45,11 @@ export function DescartarBorrador({ abierto, alCerrar, origenId, borrador }: Pro
     version: borrador.actualizadoEn,
     pedir: () =>
       enviarAccion(
-        descartar.executeAsync({ origenId, actualizadoEsperado: borrador.actualizadoEn }),
+        descartar.executeAsync({
+          origenId,
+          formulaDelOrigenId,
+          actualizadoEsperado: borrador.actualizadoEn,
+        }),
         MENSAJE_DE_VALIDACION,
       ),
     alDescartar: () => {

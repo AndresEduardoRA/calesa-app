@@ -1,9 +1,9 @@
 import 'server-only'
 import { leerIntegraciones } from '@/modules/empresa'
-import { leerOrigenes, pasosDe } from '@/modules/origenes'
+import { leerOrigenes, pasosQueFaltan } from '@/modules/origenes'
 import { puede, type Permisos } from '@/shared/lib/permisos'
 import { puedeAbrirOrigenes } from './origenes/acceso'
-import { DESTINOS_DE_PASO, conDestino } from './origenes/pasos'
+import { conDestino } from './origenes/pasos'
 import { faltasPorSeccion, type FaltasPorSeccion } from './que-falta'
 
 // Lo que falta para el inicio de Configuración, con las lecturas que ya existen (sin RPC nueva). Nunca lanza: si algo falla, no falta
@@ -24,7 +24,7 @@ export async function leerFaltas(permisos: Permisos): Promise<FaltasPorSeccion> 
     let apibaraActiva = true
     if (
       activos.some((origen) => origen.tipo === 'subasta') &&
-      puede(permisos, DESTINOS_DE_PASO.apibara.permiso)
+      puede(permisos, 'empresa.ajustes.gestionar')
     ) {
       const integraciones = await leerIntegraciones()
       apibaraActiva =
@@ -33,7 +33,7 @@ export async function leerFaltas(permisos: Permisos): Promise<FaltasPorSeccion> 
     return faltasPorSeccion(
       activos.map((origen) => ({
         origen,
-        pasos: conDestino(pasosDe(origen, { apibaraActiva }), permisos, origen.id),
+        pasos: conDestino(pasosQueFaltan(origen, { apibaraActiva }), permisos, origen.id),
       })),
     )
   } catch (error) {

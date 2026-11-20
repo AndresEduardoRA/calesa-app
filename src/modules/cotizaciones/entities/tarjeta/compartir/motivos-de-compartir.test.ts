@@ -22,7 +22,7 @@ const CELULAR: Capacidades = { ...ESCRITORIO, compartirDelSistema: true, compart
 
 const base: EntradaDeLosMotivos = {
   opcion: 'cotizacion',
-  portada: 'listo',
+  imagen: 'listo',
   fotos: { marcadas: 0, listas: 0 },
   texto: 'listo',
   capacidades: ESCRITORIO,
@@ -42,15 +42,15 @@ describe('motivosDeCompartir', () => {
     })
   })
 
-  it('mientras llega la portada, lo de la imagen espera y lo dice una vez', () => {
-    const m = con({ portada: 'leyendo' })
+  it('mientras llega la imagen de la tarjeta, lo de la imagen espera y lo dice una vez', () => {
+    const m = con({ imagen: 'leyendo' })
     expect(m.copiarImagen).toBe(MOTIVO_SIN_IMAGEN)
     expect(m.descargarImagen).toBe(MOTIVO_SIN_IMAGEN)
     expect(m.aLaVista).toEqual([MOTIVO_SIN_IMAGEN])
   })
 
-  it('con la portada fallida, el menú del sistema manda sólo el texto', () => {
-    const m = con({ portada: 'error', capacidades: CELULAR })
+  it('con la imagen de la tarjeta fallida, el menú del sistema manda sólo el texto', () => {
+    const m = con({ imagen: 'error', capacidades: CELULAR })
     expect(m.compartir).toBeNull()
     expect(m.copiarImagen).toBe(MOTIVO_IMAGEN_FALLIDA)
   })
@@ -82,7 +82,7 @@ describe('motivosDeCompartir', () => {
     expect(m.descargarPdf).toBe(MOTIVO_SIN_RED)
     expect(m.copiarImagen).toBeNull()
     expect(m.copiarTexto).toBeNull()
-    expect(con({ enLinea: false, portada: 'leyendo' }).descargarImagen).toBe(MOTIVO_SIN_RED)
+    expect(con({ enLinea: false, imagen: 'leyendo' }).descargarImagen).toBe(MOTIVO_SIN_RED)
   })
 
   it('el navegador que no copia imágenes lo dice; en el celular ese botón no se ofrece', () => {

@@ -51,11 +51,17 @@ export type Preferencias = {
   vistaDeCotizaciones: VistaDeLista | null
   // Si ve la lista de cotizaciones agrupada por vehículo (`cotizaciones.agrupar`). null = nunca eligió: agrupada.
   agruparCotizaciones: boolean | null
+  // El embudo que dejó a la vista en el bloque «Oportunidades» de la ficha de un lead (`leads.embudo_de_la_ficha`): su id. null = nunca eligió: el por defecto.
+  embudoDeLaFicha: string | null
+  // Si ve el menú lateral plegado a sólo íconos en escritorio (`menu.plegado`). null = nunca eligió: desplegado.
+  menuPlegado: boolean | null
 }
 
 export const CLAVE_DE_VISTA_DE_VEHICULOS = 'vehiculos.vista'
 export const CLAVE_DE_VISTA_DE_COTIZACIONES = 'cotizaciones.vista'
 export const CLAVE_DE_AGRUPAR_COTIZACIONES = 'cotizaciones.agrupar'
+export const CLAVE_DE_EMBUDO_DE_LA_FICHA = 'leads.embudo_de_la_ficha'
+export const CLAVE_DEL_MENU_PLEGADO = 'menu.plegado'
 
 export const CLAVE_DE_ZONA_HORARIA = 'zona_horaria'
 
@@ -91,6 +97,8 @@ export function preferenciasDesde(crudo: unknown): Preferencias {
   const vista = esquemaVistaDeLista.safeParse(valores[CLAVE_DE_VISTA_DE_VEHICULOS])
   const vistaDeCotizaciones = esquemaVistaDeLista.safeParse(valores[CLAVE_DE_VISTA_DE_COTIZACIONES])
   const agrupar = z.boolean().safeParse(valores[CLAVE_DE_AGRUPAR_COTIZACIONES])
+  const embudo = z.guid().safeParse(valores[CLAVE_DE_EMBUDO_DE_LA_FICHA])
+  const menuPlegado = z.boolean().safeParse(valores[CLAVE_DEL_MENU_PLEGADO])
   return {
     densidad: densidad.success ? densidad.data : null,
     tema: tema.success ? tema.data : null,
@@ -101,6 +109,8 @@ export function preferenciasDesde(crudo: unknown): Preferencias {
     vistaDeVehiculos: vista.success ? vista.data : null,
     vistaDeCotizaciones: vistaDeCotizaciones.success ? vistaDeCotizaciones.data : null,
     agruparCotizaciones: agrupar.success ? agrupar.data : null,
+    embudoDeLaFicha: embudo.success ? embudo.data : null,
+    menuPlegado: menuPlegado.success ? menuPlegado.data : null,
   }
 }
 
@@ -127,6 +137,8 @@ export const esquemaPreferencia = z.discriminatedUnion('clave', [
     valor: esquemaVistaDeLista.nullable(),
   }),
   z.object({ clave: z.literal(CLAVE_DE_AGRUPAR_COTIZACIONES), valor: z.boolean().nullable() }),
+  z.object({ clave: z.literal(CLAVE_DE_EMBUDO_DE_LA_FICHA), valor: z.guid().nullable() }),
+  z.object({ clave: z.literal(CLAVE_DEL_MENU_PLEGADO), valor: z.boolean().nullable() }),
 ])
 
 export type Preferencia = z.infer<typeof esquemaPreferencia>

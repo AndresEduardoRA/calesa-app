@@ -1,5 +1,5 @@
 import 'server-only'
-import { errorDePostgrest, ok } from '@/shared/lib/errores'
+import { errorDePostgrest, fallo, ok } from '@/shared/lib/errores'
 import { armarPagina } from '@/shared/lib/paginacion'
 import { aplicarCursor } from '@/shared/lib/supabase/consultas'
 import { createClient } from '@/shared/lib/supabase/server'
@@ -10,8 +10,18 @@ import { FILTROS_RECHAZADOS, leerPorLaFuncion } from './inventario'
 
 // Una página del inventario de un origen, de lo más nuevo a lo más viejo. Lo que ve cada quien lo decide la RLS; la fuente (4.16-2b)
 // sólo elige el camino: quien ve «propios» lee por `vehiculos_inventario()` y el resto, por la tabla. Si la base rechaza los filtros de
-// la función, esa página se lee por la tabla, como antes (una ida más, que la URL no alcanza: `docs/DECISIONES.md`).
+// la función, esa página se lee por la tabla, como antes (una ida más, que la URL no alcanza: `docs/DECISIONES.md`). «Cierre más próximo» sólo existe en la
+// función: ahí un rechazo es un error (la tabla daría otra lista en silencio, y su cursor no se entiende con el del cierre).
 export const buscarVehiculos: BuscadorDeVehiculos = async (pedido) => {
+  if (pedido.orden === 'cierre') {
+    const porLaFuncion = await leerPorLaFuncion(pedido)
+    return porLaFuncion === FILTROS_RECHAZADOS
+      ? fallo(
+          'inesperado',
+          'No pudimos ordenar el inventario por el cierre. Recarga para volver a intentar.',
+        )
+      : porLaFuncion
+  }
   if (pedido.fuente === 'vehiculos_inventario') {
     const porLaFuncion = await leerPorLaFuncion(pedido)
     if (porLaFuncion !== FILTROS_RECHAZADOS) {

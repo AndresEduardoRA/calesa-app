@@ -25,7 +25,8 @@ export const crearTransicion = actionClient
     const hecho = comoResultado(await repositorioDeTransiciones.crear(pedido))
     if (hecho.ok) {
       // La pantalla relee el flujo: ninguna RPC lo devuelve.
-      revalidatePath(RUTAS.configuracionDeFlujos, 'layout')
+      revalidatePath(RUTAS.origenes, 'layout')
+      revalidatePath(RUTAS.configuracionDeRepuestos, 'layout')
     }
     return hecho
   })

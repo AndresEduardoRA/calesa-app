@@ -5,6 +5,8 @@ import { esquemaDeNota } from '../../../entities/formula/publicacion'
 // (4.21-3b-1), un ISO con zona tal cual lo da la base.
 export const esquemaDePublicar = z.object({
   origenId: z.guid(),
+  // La fórmula del origen que la pestaña leyó; nula, la de trabajo (la base resuelve).
+  formulaDelOrigenId: z.guid().nullable(),
   nota: esquemaDeNota,
   publicadaEsperada: z.guid().nullable(),
   actualizadoEsperado: z.iso.datetime({ offset: true }),
@@ -15,6 +17,7 @@ export type EntradaDePublicar = z.infer<typeof esquemaDePublicar>
 // Lo que manda «Revertir»: la versión archivada y la publicada leída, que no puede faltar.
 export const esquemaDeRevertir = z.object({
   origenId: z.guid(),
+  formulaDelOrigenId: z.guid().nullable(),
   versionId: z.guid(),
   nota: esquemaDeNota,
   publicadaEsperada: z.guid(),

@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Fragment, useId } from 'react'
 import { salirSinPerder } from '@/shared/ui/salida-con-cambios'
 import type { GrupoDelNavegador } from '../secciones'
-import { marcaDelEnlace, rutaDelMenu } from './marca'
+import { marcaDe, marcaDelEnlace } from './marca'
 
 // El selector de sección del celular y de las pantallas angostas: las mismas secciones que el menú, por grupo. Elegir navega; con una
 // barra de cambios sin guardar, antes pregunta (`salirSinPerder()`). El valor sale de la ruta: si se sigue editando, vuelve solo a la
@@ -15,24 +15,28 @@ export function SelectorDeSeccion({ grupos }: { grupos: readonly GrupoDelNavegad
   const actual = usePathname()
   const router = useRouter()
   const id = useId()
-  // Una sub-sección plantilla (las partes de un origen) se ofrece si resuelve con la ruta actual o si tiene respaldo.
-  const resueltas = (subsecciones: GrupoDelNavegador['secciones'][number]['subsecciones']) =>
-    subsecciones.flatMap((sub) => {
-      const ruta = rutaDelMenu(sub, actual)
-      return ruta === null ? [] : [{ ...sub, ruta }]
-    })
   const rutas = grupos.flatMap((grupo) =>
     grupo.secciones.flatMap((seccion) => [
-      { ruta: seccion.ruta, subrutas: seccion.subsecciones.map((sub) => sub.ruta), exacta: false },
-      ...resueltas(seccion.subsecciones)
+      {
+        valor: seccion.ruta,
+        ruta: seccion.ruta,
+        subrutas: seccion.subsecciones.map(marcaDe),
+        exacta: false,
+      },
+      ...seccion.subsecciones
         .filter((sub) => sub.motivo === undefined)
-        .map((sub) => ({ ruta: sub.ruta, subrutas: [], exacta: sub.ruta === seccion.ruta })),
+        .map((sub) => ({
+          valor: sub.ruta,
+          ruta: marcaDe(sub),
+          subrutas: [],
+          exacta: sub.ruta === seccion.ruta,
+        })),
     ]),
   )
   const valor =
     rutas.find(
       ({ ruta, subrutas, exacta }) => marcaDelEnlace(actual, ruta, subrutas, exacta) === 'page',
-    )?.ruta ?? ''
+    )?.valor ?? ''
   return (
     <div className="flex min-w-0 items-center gap-2">
       <label htmlFor={id} className="text-(length:--text-sm) text-(--color-ink-soft)">
@@ -57,7 +61,7 @@ export function SelectorDeSeccion({ grupos }: { grupos: readonly GrupoDelNavegad
                 {seccion.subsecciones.some((sub) => sub.ruta === seccion.ruta) ? null : (
                   <option value={seccion.ruta}>{seccion.titulo}</option>
                 )}
-                {resueltas(seccion.subsecciones).map((sub) =>
+                {seccion.subsecciones.map((sub) =>
                   sub.motivo === undefined ? (
                     <option key={sub.clave} value={sub.ruta}>
                       {`${seccion.titulo} › ${sub.titulo}`}

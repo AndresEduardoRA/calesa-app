@@ -37,16 +37,10 @@ export type {
   SeccionDeDiseno,
 } from '../../entities/diseno'
 
-// Configuración › Cotización › Niveles (4.09): la lectura de los niveles de acceso con el tope, lo que admite cada uno y por qué no se elimina.
+// Configuración › Catálogos › Niveles (4.09): la lectura de los niveles de acceso con el tope, lo que admite cada uno y por qué no se elimina.
 // Los componentes salen por `pantallas/configuracion.ts`. Sólo se importa desde un Server Component.
 export { leerNivelesDeAcceso } from './composicion'
 export type { ListaDeNiveles, NivelDeAcceso } from '../../entities/nivel'
-
-// El inicio de Configuración › Cotización: por origen, la versión de la fórmula publicada y si hay tarjeta publicada (a lo sumo
-// `TOPE_DE_ORIGENES_DEL_INICIO` orígenes). Sólo se importa desde un Server Component.
-export { leerPublicadasPorOrigen } from './composicion'
-export { TOPE_DE_ORIGENES_DEL_INICIO } from '../../entities/publicadas-por-origen'
-export type { PublicadoDelOrigen } from '../../entities/publicadas-por-origen'
 
 // La hoja de cotizar (4.13): UNA lectura al abrirla, con el diseño recortado al nivel de quien mira y la versión de la fórmula y la hora de la base para D2. Sólo se importa desde un Server Component.
 export { leerHojaParaCotizar } from './composicion'
@@ -104,7 +98,7 @@ export {
   CLAVE_DE_VEHICULO,
   CLAVE_DEL_ANCHO,
   RUTA_DE_LA_HOJA,
-  anchoDeLaPortada,
+  anchoDeLaImagen,
   rutaDeLaHoja,
   rutaDelListado,
 } from '../../entities/ruta-de-la-hoja'

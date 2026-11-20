@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { origenesConUsoDesde } from './origen'
-import { faltasDeLaTarjeta, pasosDe } from './pasos'
+import {
+  FRASE_DEL_PASO,
+  faltasDeLaTarjeta,
+  pasosParaCotizarYMover,
+  pasosQueFaltan,
+  type ParaCotizarYMover,
+} from './pasos'
 
 const FILA = {
   id: '00000000-0000-0000-0000-00000000000a',
@@ -16,6 +22,13 @@ const FILA = {
   actualizado_en: '2026-10-12T20:00:00+00:00',
 }
 
+const LISTO = {
+  fases: 3,
+  formula_publicada: true,
+  tarjeta_publicada: true,
+  campos_activos: 8,
+}
+
 function origen(fila: Record<string, unknown>, uso: Record<string, unknown> = {}) {
   const [resultado] = origenesConUsoDesde(
     [{ ...FILA, ...fila }],
@@ -29,6 +42,7 @@ function origen(fila: Record<string, unknown>, uso: Record<string, unknown> = {}
         fases: 0,
         formula_publicada: false,
         concesiones: 0,
+        tarjeta_publicada: false,
         ...uso,
       },
     ],
@@ -39,64 +53,107 @@ function origen(fila: Record<string, unknown>, uso: Record<string, unknown> = {}
   return resultado
 }
 
-const pendientes = (pasos: ReturnType<typeof pasosDe>) =>
-  pasos.filter((paso) => paso.pendiente).map((paso) => paso.clave)
+function estados(tira: ParaCotizarYMover) {
+  if (tira.inactivo) {
+    throw new Error('inactivo')
+  }
+  return tira.pasos.map((paso) => [paso.clave, paso.estado])
+}
 
-describe('pasosDe', () => {
-  it('un origen manual recién creado tiene pendientes el flujo, la fórmula y los permisos', () => {
-    expect(pendientes(pasosDe(origen({}), { apibaraActiva: false }))).toEqual([
-      'flujo',
-      'formula',
-      'permisos',
+describe('pasosParaCotizarYMover', () => {
+  it('son cinco pasos en su orden; con todo hecho, todos listos y con «Listo»', () => {
+    const tira = pasosParaCotizarYMover(origen({}, LISTO), { apibaraActiva: false })
+    expect(estados(tira)).toEqual([
+      ['datos', 'listo'],
+      ['campos', 'listo'],
+      ['flujo', 'listo'],
+      ['formula', 'listo'],
+      ['tarjeta', 'listo'],
+    ])
+    expect(!tira.inactivo && tira.pasos.every((paso) => paso.frase === 'Listo')).toBe(true)
+  })
+
+  it('un origen recién creado: el flujo y la fórmula bloquean, la tarjeta avisa', () => {
+    expect(estados(pasosParaCotizarYMover(origen({}), { apibaraActiva: false }))).toEqual([
+      ['datos', 'listo'],
+      ['campos', 'listo'],
+      ['flujo', 'bloquea'],
+      ['formula', 'bloquea'],
+      ['tarjeta', 'aviso'],
     ])
   })
 
-  it('uno de subasta suma activar apibara', () => {
-    const pasos = pasosDe(origen({ tipo: 'subasta' }), { apibaraActiva: false })
-    expect(pendientes(pasos)).toContain('apibara')
-  })
-
-  it('con apibara activa ese paso ya no está pendiente', () => {
-    const pasos = pasosDe(origen({ tipo: 'subasta' }), { apibaraActiva: true })
-    expect(pendientes(pasos)).not.toContain('apibara')
-  })
-
-  it('un origen manual no habla de apibara', () => {
-    const pasos = pasosDe(origen({}), { apibaraActiva: false })
-    expect(pasos.some((paso) => paso.clave === 'apibara')).toBe(false)
-  })
-
-  it('lo que ya está hecho no queda pendiente', () => {
-    const pasos = pasosDe(origen({}, { fases: 5, formula_publicada: true, concesiones: 2 }), {
+  it('cada paso que falla dice su frase', () => {
+    const tira = pasosParaCotizarYMover(origen({ tipo: 'subasta' }, { campos_activos: 0 }), {
       apibaraActiva: false,
     })
-    expect(pendientes(pasos)).toEqual([])
+    expect(tira.inactivo ? [] : tira.pasos.map((paso) => paso.frase)).toEqual([
+      FRASE_DEL_PASO.datos,
+      FRASE_DEL_PASO.campos,
+      FRASE_DEL_PASO.flujo,
+      FRASE_DEL_PASO.formula,
+      FRASE_DEL_PASO.tarjeta,
+    ])
+    expect(FRASE_DEL_PASO.flujo).toBe('Sin fases: sus vehículos no se pueden mover')
   })
 
-  it('nombra al origen en el detalle, sin texto fijo', () => {
-    const [flujo] = pasosDe(origen({ nombre: 'Japón' }), { apibaraActiva: false })
-    expect(flujo?.detalle).toContain('Japón')
+  it('sin campos activos, Campos avisa', () => {
+    const tira = pasosParaCotizarYMover(origen({}, { ...LISTO, campos_activos: 0 }), {
+      apibaraActiva: false,
+    })
+    expect(estados(tira)[1]).toEqual(['campos', 'aviso'])
+  })
+
+  it('una subasta sin apibara: Datos avisa; con apibara, listo; un manual nunca habla de apibara', () => {
+    const subasta = origen({ tipo: 'subasta' }, LISTO)
+    expect(estados(pasosParaCotizarYMover(subasta, { apibaraActiva: false }))[0]).toEqual([
+      'datos',
+      'aviso',
+    ])
+    expect(estados(pasosParaCotizarYMover(subasta, { apibaraActiva: true }))[0]).toEqual([
+      'datos',
+      'listo',
+    ])
+    expect(estados(pasosParaCotizarYMover(origen({}, LISTO), { apibaraActiva: false }))[0]).toEqual(
+      ['datos', 'listo'],
+    )
+  })
+
+  it('un origen inactivo no tiene pasos', () => {
+    expect(pasosParaCotizarYMover(origen({ activo: false }), { apibaraActiva: false })).toEqual({
+      inactivo: true,
+    })
+  })
+})
+
+describe('pasosQueFaltan', () => {
+  it('sólo los que no están listos, en su orden; inactivo, ninguno', () => {
+    expect(pasosQueFaltan(origen({}), { apibaraActiva: false }).map((p) => p.clave)).toEqual([
+      'flujo',
+      'formula',
+      'tarjeta',
+    ])
+    expect(pasosQueFaltan(origen({ activo: false }), { apibaraActiva: false })).toEqual([])
   })
 })
 
 describe('faltasDeLaTarjeta', () => {
-  it('dice en corto lo que falta, sin los permisos', () => {
-    expect(faltasDeLaTarjeta(origen({ tipo: 'subasta' }), { apibaraActiva: false })).toEqual([
-      'Sin fases',
-      'Falta publicar la fórmula',
-      'Falta activar apibara',
+  it('dice en corto lo que falta, con su estado', () => {
+    expect(
+      faltasDeLaTarjeta(origen({ tipo: 'subasta' }), { apibaraActiva: false }).map((f) => [
+        f.texto,
+        f.estado,
+      ]),
+    ).toEqual([
+      ['Falta activar apibara', 'aviso'],
+      ['Sin fases', 'bloquea'],
+      ['Falta publicar la fórmula', 'bloquea'],
+      ['Falta publicar la tarjeta', 'aviso'],
     ])
   })
 
-  it('sin nada pendiente, o con sólo los permisos, no dice nada', () => {
-    expect(
-      faltasDeLaTarjeta(origen({}, { fases: 3, formula_publicada: true }), {
-        apibaraActiva: false,
-      }),
-    ).toEqual([])
-  })
-
-  it('un origen inactivo no muestra faltas', () => {
+  it('sin nada pendiente no dice nada; un origen inactivo, tampoco', () => {
+    expect(faltasDeLaTarjeta(origen({}, LISTO), { apibaraActiva: false })).toEqual([])
     expect(faltasDeLaTarjeta(origen({ activo: false }), { apibaraActiva: false })).toEqual([])
   })
 })

@@ -70,8 +70,8 @@ export const CONFIRMAR_CON_URL_DEL_NUCLEO: Record<string, ConfirmarConUrl> = {
     abre: 'src/modules/vehiculos/features/papelera/hooks/use-purga-por-url.ts',
     senal: 'PANEL_PURGAR',
   },
-  'src/modules/origenes/features/origenes/components/estado-del-origen.tsx': {
-    abre: 'src/modules/origenes/features/origenes/components/estado-del-origen.tsx',
+  'src/modules/origenes/features/origenes/components/confirmar-eliminar-origen.tsx': {
+    abre: 'src/modules/origenes/features/origenes/components/menu-del-origen.tsx',
     senal: 'PANEL_ELIMINAR_ORIGEN',
   },
   // Con su URL desde antes de este cierre: `?baja=<persona>` y `?eliminar=<rol>`.

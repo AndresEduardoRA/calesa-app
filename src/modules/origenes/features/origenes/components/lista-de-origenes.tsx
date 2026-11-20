@@ -4,8 +4,11 @@ import { PlusIcon } from 'lucide-react'
 import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { parseAsString, useQueryStates } from 'nuqs'
-import { RUTAS } from '@/shared/lib/rutas'
+import { textoDelTope } from '@/shared/lib/conteo'
+import { TOPE_DE_LA_LISTA_DE_ORIGENES } from '@/shared/lib/paginacion'
+import { rutaDeParteDelOrigen } from '@/shared/lib/rutas'
 import { Aviso } from '@/shared/ui/aviso'
+import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
 import { Button } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { MOTIVO_SIN_PERMISO_ORIGENES } from '../../../entities/motivos'
@@ -16,7 +19,9 @@ import { PanelNuevoOrigen } from './panel-nuevo-origen'
 import { TarjetaDeOrigen } from './tarjeta-de-origen'
 
 type Props = {
+  // Los que la persona abre, ya cortados al tope (`TOPE_DE_LA_LISTA_DE_ORIGENES`); `hayMas` dice si quedaron otros.
   origenes: readonly OrigenConUso[]
+  hayMas: boolean
   puedeGestionar: boolean
   // Si la integración no se pudo leer, la página la da por activa: no se inventa una falta.
   apibaraActiva: boolean
@@ -33,9 +38,9 @@ function BotonNuevo({ puedeGestionar, alCrear }: { puedeGestionar: boolean; alCr
   )
 }
 
-// Los orígenes como tarjetas, también los desactivados, con su estado y lo que les falta. Abrir uno lleva a sus datos; crear abre un
-// panel con su URL (`?panel=nuevo`). Son decenas: se dibujan todos.
-export function ListaDeOrigenes({ origenes, puedeGestionar, apibaraActiva }: Props) {
+// Los orígenes que la persona abre como tarjetas, también los desactivados, con su estado y lo que les falta. Abrir uno lleva a su página;
+// crear abre un panel con su URL (`?panel=nuevo`). Son decenas: se dibujan hasta el tope, con su aviso.
+export function ListaDeOrigenes({ origenes, hayMas, puedeGestionar, apibaraActiva }: Props) {
   const router = useRouter()
   const ediciones = useOrigenes()
   const [{ panel }, setParametros] = useQueryStates({ panel: parseAsString }, { shallow: false })
@@ -56,7 +61,9 @@ export function ListaDeOrigenes({ origenes, puedeGestionar, apibaraActiva }: Pro
         />
       </div>
       {puedeGestionar ? null : <Aviso>{MOTIVO_SIN_PERMISO_ORIGENES}</Aviso>}
-      {origenes.length === 0 ? (
+      {origenes.length === 0 && !puedeGestionar ? (
+        <EstadoVacio titulo="No hay orígenes que puedas abrir." />
+      ) : origenes.length === 0 ? (
         <EstadoVacio
           titulo="Todavía no hay orígenes"
           descripcion="Un origen es de dónde vienen los vehículos. Al crearlo nacen su flujo de logística y sus campos."
@@ -79,6 +86,9 @@ export function ListaDeOrigenes({ origenes, puedeGestionar, apibaraActiva }: Pro
           ))}
         </ul>
       )}
+      {hayMas ? (
+        <AvisoDeTope texto={textoDelTope(TOPE_DE_LA_LISTA_DE_ORIGENES, { orden: 'primeros' })} />
+      ) : null}
       <PanelNuevoOrigen
         abierto={panel === PANEL_NUEVO && puedeGestionar}
         ediciones={ediciones}
@@ -86,7 +96,7 @@ export function ListaDeOrigenes({ origenes, puedeGestionar, apibaraActiva }: Pro
         alCrear={(id) => {
           // Sin `cerrar()` antes: el cambio de `?panel=` y la navegación se pisarían, y gana el
           // último en llegar. La pantalla del origen no trae el panel.
-          router.push(`${RUTAS.origenes}/${id}/datos` as Route)
+          router.push(rutaDeParteDelOrigen(id, 'datos') as Route)
         }}
       />
     </div>

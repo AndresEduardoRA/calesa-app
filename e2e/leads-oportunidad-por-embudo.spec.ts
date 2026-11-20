@@ -110,6 +110,12 @@ test('el panel de la ficha apaga el embudo con una abierta y crea en el elegido'
   await panel.getByLabel('Título').fill(`Repuestos ${info.project.name}`)
   await panel.getByRole('button', { name: 'Crear oportunidad' }).click()
   await expect(panel).toHaveCount(0)
+  // El bloque pasa al embudo donde se creó para que se la vea entrar.
+  await expect(
+    page
+      .getByRole('region', { name: 'Oportunidades', exact: true })
+      .getByRole('article', { name: `Repuestos ${info.project.name}` }),
+  ).toBeVisible()
   await expect
     .poll(
       async () =>

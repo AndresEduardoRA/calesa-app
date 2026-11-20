@@ -230,48 +230,47 @@ test('E2E «Vehículos»: «Vincular o marcar» en el título y los vínculos an
   await expect(panelAgregar(page)).toBeVisible()
 })
 
-test('E2E «Oportunidades»: las abiertas en filas de una línea, «Nueva» y «Ver todas» al embudo filtrado por el lead', async ({
+const tableroDelBloque = (bloque: Locator): Locator =>
+  bloque.getByRole('group', { name: /^Etapas de «/ })
+const columna = (bloque: Locator, etapa: string): Locator =>
+  tableroDelBloque(bloque).getByRole('region', { name: etapa, exact: true })
+
+test('E2E «Oportunidades»: el embudo del lead, una columna por etapa; el selector y su «⋯» con «Ver en el embudo»', async ({
   page,
-}) => {
+}, info) => {
   await abrirLaFicha(page, duena)
   const bloque = region(page, 'Oportunidades')
-  const filas = bloque.getByRole('list', { name: 'Oportunidades abiertas' }).getByRole('listitem')
   await bloque.scrollIntoViewIfNeeded()
-  await expect(filas).toHaveCount(3)
-  await expect(bloque.getByText('Ganada antes')).toHaveCount(0)
-  // Una línea: la fila no es más alta que su blanco táctil.
-  for (const caja of await filas.evaluateAll((es) =>
-    es.map((e) => e.getBoundingClientRect().height),
-  )) {
-    expect(caja).toBeLessThanOrEqual(48)
-  }
-  await expect(bloque.getByRole('link', { name: 'Ver todas' })).toHaveAttribute(
-    'href',
-    `/leads?vista=embudo&embudo=${flotas}&lead=${lead}`,
-  )
-  // Mover la primera a una etapa ganada desde su «⋯» la saca de la vista y entra la siguiente abierta.
-  await bloque.getByRole('button', { name: 'Más acciones de «Flota de cinco»' }).click()
-  await page.getByRole('menuitem', { name: 'Mover a' }).click()
-  // Un embudo creado nace con «Nueva», «Ganada» y «Perdida».
-  await page.getByRole('menuitem', { name: 'Ganada', exact: true }).click()
-  await expect(bloque.getByText('Flota de cinco')).toHaveCount(0)
-  await expect(filas).toHaveCount(3)
-  await expect(filas.first()).toContainText('Camioneta usada')
-  await bloque.getByRole('button', { name: 'Nueva oportunidad' }).click()
-  await expect(page).toHaveURL(/panel=nueva-oportunidad/)
+  await expect(tableroDelBloque(bloque).getByRole('article')).toHaveCount(3)
+  await expect(
+    columna(bloque, 'Nuevo').getByRole('article', { name: 'Camioneta usada' }),
+  ).toBeVisible()
+  await expect(columna(bloque, 'Ganado').getByRole('article')).toHaveCount(2)
+  await capturar(page, info, 'embudo-del-lead')
+  // Otro embudo: sus columnas; «Ver en el embudo» (en el «⋯» del bloque) lleva a ése, filtrado por el lead.
+  await bloque.getByRole('button', { name: /^Embudo: / }).click()
+  await page.getByRole('menuitemradio', { name: /^Flotas / }).click()
+  await expect(
+    columna(bloque, 'Nueva').getByRole('article', { name: 'Flota de cinco' }),
+  ).toBeVisible()
+  await bloque.getByRole('button', { name: 'Más acciones de «Oportunidades»' }).click()
+  await page.getByRole('menuitem', { name: 'Ver en el embudo' }).click()
+  await expect(page).toHaveURL(new RegExp(`/leads\\?vista=embudo&embudo=${flotas}&lead=${lead}`))
 })
 
-test('E2E «Oportunidades» sin abiertas: una línea y «Ver todas» al embudo por defecto', async ({
+test('E2E «Oportunidades» sin oportunidades en el embudo que se ve: lo dice y deja «Nueva» y «Ver en el embudo»', async ({
   page,
 }) => {
   await abrirLaFicha(page, duena, soloCerradas)
   const bloque = region(page, 'Oportunidades')
-  await expect(bloque.getByText('Sin oportunidades abiertas.')).toBeVisible()
+  // Su única oportunidad (cerrada) es de «Flotas»: en ese embudo la ve en su columna; en «Ventas» no tiene ninguna.
+  await bloque.getByRole('button', { name: /^Embudo: / }).click()
+  await page.getByRole('menuitemradio', { name: 'Ventas', exact: true }).click()
+  await expect(bloque.getByText('Sin oportunidades en «Ventas».')).toBeVisible()
   await expect(bloque.getByRole('button', { name: 'Nueva oportunidad' })).toBeVisible()
-  await expect(bloque.getByRole('link', { name: 'Ver todas' })).toHaveAttribute(
-    'href',
-    `/leads?vista=embudo&embudo=${porDefecto}&lead=${soloCerradas}`,
-  )
+  await bloque.getByRole('button', { name: 'Más acciones de «Oportunidades»' }).click()
+  await page.getByRole('menuitem', { name: 'Ver en el embudo' }).click()
+  await expect(page).toHaveURL(new RegExp(`vista=embudo&embudo=${porDefecto}&lead=${soloCerradas}`))
 })
 
 test('E2E fuera de la cartera y sin cotizar: se ve y no se edita', async ({ page }) => {

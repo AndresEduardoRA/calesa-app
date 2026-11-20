@@ -37,8 +37,15 @@ function estadoDelError(
 
 type Valores = { diseno: unknown }
 
-const baseDe = ({ id, estado, actualizadoEn, nota }: DisenoParaEditar): BaseDelDiseno => ({
+const baseDe = ({
   id,
+  formulaDelOrigenId,
+  estado,
+  actualizadoEn,
+  nota,
+}: DisenoParaEditar): BaseDelDiseno => ({
+  id,
+  formulaDelOrigenId,
   estado,
   actualizadoEn,
   nota,

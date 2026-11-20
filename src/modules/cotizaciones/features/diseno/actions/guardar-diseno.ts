@@ -24,7 +24,7 @@ export const guardarDiseno = actionClient
     }
     const hecho = await repositorioDelDiseno.guardarBorrador(parsedInput)
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeCotizacion, 'layout')
+      revalidatePath(RUTAS.origenes, 'layout')
     }
     return hecho
   })

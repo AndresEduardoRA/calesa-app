@@ -17,6 +17,7 @@ vi.mock('@/shared/ui/toasts', () => ({
 const HORA = '2026-11-07T15:00:00.123456+00:00'
 const OTRA = '2026-11-07T16:00:00.654321+00:00'
 const ORIGEN = { id: '00000000-0000-4000-8000-000000000001', nombre: 'Mini' }
+const FDO = '44444444-4444-4444-8444-444444444444'
 
 beforeEach(() => {
   descartarBorrador.mockReset()
@@ -30,6 +31,7 @@ function Prueba({ esperada = HORA as string | null, alCerrar = vi.fn() }) {
       abierto
       alCerrar={alCerrar}
       origen={ORIGEN}
+      formulaDelOrigenId={FDO}
       esperada={esperada}
       nombrado={HORA}
     />
@@ -48,7 +50,7 @@ describe('DescartarLaPlantilla', () => {
     ).toBeTruthy()
   })
 
-  it('confirmar llama con { origenId, esperada }, avisa y cierra', async () => {
+  it('confirmar llama con { origenId, formulaDelOrigenId, esperada }, avisa y cierra', async () => {
     descartarBorrador.mockResolvedValue({ data: { ok: true, data: null } })
     const alCerrar = vi.fn()
     render(<Prueba alCerrar={alCerrar} />)
@@ -56,7 +58,11 @@ describe('DescartarLaPlantilla', () => {
     await waitFor(() => {
       expect(alCerrar).toHaveBeenCalledTimes(1)
     })
-    expect(descartarBorrador).toHaveBeenCalledWith({ origenId: ORIGEN.id, esperada: HORA })
+    expect(descartarBorrador).toHaveBeenCalledWith({
+      origenId: ORIGEN.id,
+      formulaDelOrigenId: FDO,
+      esperada: HORA,
+    })
     expect(avisarExito).toHaveBeenCalledWith('Se descartó el borrador.')
   })
 

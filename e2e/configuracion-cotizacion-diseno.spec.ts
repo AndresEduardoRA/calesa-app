@@ -1,5 +1,6 @@
 // @sin-celular-archivo: pantalla de Configuración; en el celular se ve igual y el camino feliz va sólo en escritorio (e2e.md, 2026-11-08).
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -14,7 +15,7 @@ import {
   publicarFormulaDeTresSumandos,
 } from './soporte/diseno-editor'
 
-// La pestaña «Diseño» de Configuración › Cotización (4.22-2, `docs/UX.md` › «Cotización: hoja (estados propios)»): el camino feliz en escritorio. Se ven las secciones
+// La pestaña «Diseño» de la Fórmula de un origen, sub-pestaña «Hoja» (4.22-2, `docs/UX.md` › «Cotización: hoja (estados propios)»): el camino feliz en escritorio. Se ven las secciones
 // y las celdas; poner a una celda el nivel «Costos» avisa que se deduce restando (sin bloquear) y alinea quién la edita; una sección pasa a «Avanzado»; «Guardar el
 // borrador» crea el borrador con la definición y los `params` de la publicada tal cual; recargar vuelve a mostrar lo guardado.
 test.describe.configure({ mode: 'serial' })
@@ -46,8 +47,8 @@ const guardar = (page: Page) =>
 const estado = (page: Page) => page.locator('[data-guardado] [role="status"]')
 
 async function abrirElDiseno(page: Page) {
-  await page.goto(`/configuracion/cotizacion?seccion=diseno&origen=${origen.id}`)
-  await expect(page.getByRole('heading', { name: 'Hoja', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origen.id}/formula/hoja`)
+  await enLaPestana(page, 'Hoja')
   await expect(seccion(page, 'base')).toBeVisible()
 }
 

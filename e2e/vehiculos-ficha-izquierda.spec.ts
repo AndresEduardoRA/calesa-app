@@ -146,13 +146,13 @@ test('E2E ficha izquierda · los enlaces cortos a logística y repuestos', async
   ).toHaveAttribute('href', `/repuestos/${t.proyecto.id}`)
 })
 
-test('E2E ficha izquierda · «Cotización aprobada» con su portada, «Abrir» y «Compartir»; sin aprobada, «Cotizar»', async ({
+test('E2E ficha izquierda · «Cotización aprobada» con su imagen, «Abrir» y «Compartir»; sin aprobada, «Cotizar»', async ({
   page,
 }, info) => {
   await entrar(page, duena)
   await alaFicha(page, t.principal)
   const aprobada = region(page, 'Cotización aprobada')
-  await expect(aprobada.locator('[data-portada]')).toBeVisible()
+  await expect(aprobada.locator('[data-imagen-de-la-tarjeta]')).toBeVisible()
   await aprobada.scrollIntoViewIfNeeded()
   await capturar(page, info, 'aprobada')
   await expect(aprobada.getByRole('link', { name: 'Abrir' })).toHaveAttribute(

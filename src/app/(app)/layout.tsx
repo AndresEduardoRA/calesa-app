@@ -43,6 +43,18 @@ function nuevoDeLaBarra(permisos: Permisos): ReactNode {
   return opciones.length > 0 ? <NuevoDeLaBarraSuperior opciones={opciones} /> : undefined
 }
 
+// La marca de la barra lateral: plegada, el nombre queda sólo para el lector y se ve el logo.
+function marcaDeLaEmpresa(ajustes: Awaited<ReturnType<typeof getAjustes>>): ReactNode {
+  return (
+    <Marca
+      nombre={ajustes.nombre}
+      logoUrl={urlPublicaONull('marca', ajustes.logoRuta)}
+      logoOscuroUrl={urlPublicaONull('marca', ajustes.logoOscuroRuta)}
+      nombreClassName="group-data-plegado/lateral:sr-only"
+    />
+  )
+}
+
 // Todo lo que depende de quién entró: la sesión, sus permisos y los ajustes de la empresa. Acá se
 // leen una vez y se reparten por props a un marco que no sabe de dónde salen.
 async function Shell({ children }: { children: ReactNode }) {
@@ -80,13 +92,7 @@ async function Shell({ children }: { children: ReactNode }) {
             <ProveedorDeEscribirPorChat habilitado={puede(sesion.permisos, 'chat.participar')}>
               <Marco
                 nombreEmpresa={ajustes.nombre}
-                marca={
-                  <Marca
-                    nombre={ajustes.nombre}
-                    logoUrl={urlPublicaONull('marca', ajustes.logoRuta)}
-                    logoOscuroUrl={urlPublicaONull('marca', ajustes.logoOscuroRuta)}
-                  />
-                }
+                marca={marcaDeLaEmpresa(ajustes)}
                 navegacion={<BarraLateral permisos={sesion.permisos} />}
                 // Los que la empresa eligió para la barra (hasta 3; sin ninguno, el por defecto). Sin tipos de cambio vigentes el hueco no ocupa lugar.
                 tipoCambio={

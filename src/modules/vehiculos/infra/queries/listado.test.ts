@@ -95,6 +95,23 @@ describe('buscarVehiculos: por dónde lee', () => {
     expect(metodos).toEqual([])
   })
 
+  it('por el cierre: la función aunque la fuente sea la tabla, y un rechazo es un error (nunca la tabla)', async () => {
+    const r = await buscarVehiculos({ ...base, fuente: 'vehiculos', orden: 'cierre' })
+    expect(r.ok).toBe(true)
+    expect(rpcs.map(([nombre]) => nombre)).toEqual(['vehiculos_inventario'])
+    respuestaRpc = {
+      data: null,
+      error: {
+        code: '22023',
+        hint: 'filtros',
+        message: 'Los filtros del inventario no son válidos.',
+      },
+    }
+    const rechazada = await buscarVehiculos({ ...base, fuente: 'vehiculos', orden: 'cierre' })
+    expect(rechazada.ok).toBe(false)
+    expect(metodos).toEqual([])
+  })
+
   it('42501: sin permiso, sin leer la tabla', async () => {
     respuestaRpc = { data: null, error: { code: '42501', message: 'permission denied' } }
     const r = await buscarVehiculos({ ...base, fuente: 'vehiculos_inventario' })

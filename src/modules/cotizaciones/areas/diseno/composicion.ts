@@ -1,4 +1,4 @@
-// Composición del área `diseno` de `cotizaciones` en el servidor: la pestaña «Diseño» de Configuración › Cotización (4.22-2). Sale por la `composicion.ts` de la raíz.
+// Composición del área `diseno` de `cotizaciones` en el servidor: la pestaña «Diseño» de la página del origen (4.22-2). Sale por la `composicion.ts` de la raíz.
 import 'server-only'
 import type { RepositorioDeTonos } from '../../entities/diseno/respuesta-de-tonos'
 import type { RepositorioDelDiseno } from '../../entities/diseno/edicion-del-diseno'

@@ -67,10 +67,10 @@ const PANTALLAS: Pantalla[] = [
     controles: (page) => [
       [
         page
-          .getByText(/^1 [A-Z]{3} = $/)
+          .getByText(/^1 [A-Z]{3} =$/)
           .first()
           .locator('..'),
-        'el tipo de cambio de la primera fila',
+        'el valor de la primera tarjeta de tipo de cambio',
       ],
     ],
   },
@@ -78,14 +78,18 @@ const PANTALLAS: Pantalla[] = [
   { titulo: 'Empresa › Comprobantes', url: () => '/configuracion/empresa/comprobantes' },
   { titulo: 'Orígenes', url: () => '/configuracion/origenes' },
   {
-    titulo: 'la ficha de un origen › Datos',
+    titulo: 'la página de un origen › Datos',
     url: DE_UN_ORIGEN('datos'),
     controles: (page) => [
-      [page.getByRole('link', { name: /^Abrir/ }).first(), 'el primer «Abrir»'],
+      [page.getByRole('button', { name: `Más acciones de ${origen.nombre}` }), 'el «⋯» del origen'],
     ],
   },
-  { titulo: 'la ficha de un origen › Campos', url: DE_UN_ORIGEN('campos') },
-  { titulo: 'la ficha de un origen › Categorías', url: DE_UN_ORIGEN('categorias') },
+  { titulo: 'la página de un origen › Campos', url: DE_UN_ORIGEN('campos') },
+  { titulo: 'la página de un origen › Categorías', url: DE_UN_ORIGEN('categorias') },
+  { titulo: 'la página de un origen › Flujo', url: DE_UN_ORIGEN('flujo') },
+  { titulo: 'la página de un origen › Fórmula', url: DE_UN_ORIGEN('formula') },
+  { titulo: 'la página de un origen › Fórmula › Hoja', url: DE_UN_ORIGEN('formula/hoja') },
+  { titulo: 'la página de un origen › Tablas', url: DE_UN_ORIGEN('tablas') },
   { titulo: 'Leads › Campos', url: () => '/configuracion/leads/campos' },
   { titulo: 'Leads › Orígenes del lead', url: () => '/configuracion/leads/origenes' },
   { titulo: 'Leads › Tipos de lead', url: () => '/configuracion/leads/tipos' },
@@ -94,12 +98,20 @@ const PANTALLAS: Pantalla[] = [
     url: () => '/configuracion/leads/seguimientos',
   },
   {
-    titulo: 'Cotización › General › Niveles',
-    url: () => '/configuracion/cotizacion/general/niveles',
+    titulo: 'Catálogos › Niveles',
+    url: () => '/configuracion/catalogos/niveles',
     controles: (page) => [
       [page.getByRole('button', { name: /^Más acciones de / }).first(), 'el «⋯» del primer nivel'],
     ],
   },
+  { titulo: 'Catálogos › Colores', url: () => '/configuracion/catalogos/colores' },
+  { titulo: 'Catálogos › Puertos', url: () => '/configuracion/catalogos/puertos' },
+  {
+    titulo: 'Catálogos › Tipos de documento',
+    url: () => '/configuracion/catalogos/tipos-de-documento',
+  },
+  { titulo: 'Catálogos › Tablas compartidas', url: () => '/configuracion/catalogos/tablas' },
+  { titulo: 'Repuestos › Flujo de repuestos', url: () => '/configuracion/repuestos/flujo' },
   {
     titulo: 'Equipo',
     url: () => '/configuracion/equipo',
@@ -153,9 +165,9 @@ async function dentroDe(lugar: Locator, selector: string, que: string): Promise<
   )
 }
 
-// 5a-29 y 5a-30: la ficha de un origen al 200 %: la clave interna cabe en su tarjeta (se parte, no se corta) y el texto de un paso pendiente mide al menos
-// 12 rem o su «Abrir» pasa debajo, en vez de quedar en una columna de ~130 px.
-test('al 200 %: en la ficha de un origen la clave interna cabe en su tarjeta y «Abrir» no aprieta el texto del paso', async ({
+// 5a-29 y 5a-30: la página de un origen al 200 %: la clave interna cabe en su tarjeta (se parte, no se corta) y cada paso de «Para cotizar y mover»
+// cabe en la página y se lee entero (la tira se parte en dos columnas en vez de apretar su texto).
+test('al 200 %: en la página de un origen la clave interna y cada paso de «Para cotizar y mover» caben', async ({
   page,
 }, info) => {
   await textoGrandeAlCargar(page)
@@ -168,19 +180,13 @@ test('al 200 %: en la ficha de un origen la clave interna cabe en su tarjeta y �
   await page.goto(`/configuracion/origenes/${conClaveLarga.id}/datos`)
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   await dentroDe(page.locator('dd.font-mono').first(), 'main', 'la clave interna')
-  const abrir = page.getByRole('link', { name: /^Abrir/ }).first()
-  const paso = abrir.locator('xpath=ancestor::li[1]')
-  const texto = await paso.locator(':scope > div').first().boundingBox()
-  const boton = await abrir.boundingBox()
-  const raiz = await page.evaluate(() =>
-    Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
-  )
-  expect(texto && boton, 'el paso tiene texto y botón').toBeTruthy()
-  const debajo = (boton?.y ?? 0) >= (texto?.y ?? 0) + (texto?.height ?? 0) - 1
-  expect(
-    debajo || (texto?.width ?? 0) >= 12 * raiz - 1,
-    'el texto del paso mide 12 rem o «Abrir» pasa debajo',
-  ).toBe(true)
+  const tira = page.getByRole('region', { name: 'Para cotizar y mover' })
+  const pasos = tira.getByRole('listitem')
+  await expect(pasos).toHaveCount(5)
+  for (let i = 0; i < 5; i++) {
+    await dentroDe(pasos.nth(i), 'main', `el paso ${String(i + 1)}`)
+  }
+  await sinTextoCortado(tira)
 })
 
 // 5a-28: el modal de apibara (la dirección del servicio y las plataformas) no pasa del relleno de su cuerpo con el texto al 200 % desde la carga.
@@ -209,40 +215,22 @@ test('al 200 %: nada del modal de apibara pasa del relleno de su cuerpo', async 
   expect(pasan, 'descendientes que pasan del borde del modal').toEqual([])
 })
 
-// Empresa › Monedas: con el texto al 200 % en 412 px la fila de un tipo de cambio no aprieta su nombre («O…») ni deja el valor encima de
-// su insignia: el valor baja a otra línea cuando no cabe al lado. Se lee entero el nombre de cada tipo de cambio y de cada moneda.
-test('al 200 %: en Monedas se leen enteros el nombre y el valor de cada tipo de cambio, sin solaparse', async ({
+// Empresa › Monedas: con el texto al 200 % en 412 px cada tarjeta de tipo de cambio se lee entera (nombre, valor, quién y cuándo, «En la barra») y las
+// fichas de las monedas no se salen de su tarjeta.
+test('al 200 %: en Monedas se leen enteras las tarjetas de los tipos de cambio y las monedas', async ({
   page,
 }) => {
   await textoGrandeAlCargar(page)
   await entrar(page)
   await page.goto('/configuracion/empresa/monedas')
-  await expect(page.getByRole('heading', { name: 'Tipos de cambio', exact: true })).toBeVisible()
-  const filas = page.getByRole('list').filter({ has: page.getByText(/^1 [A-Z]{3} = $/) })
-  await sinTextoCortado(filas)
-  await sinTextoCortado(page.getByRole('list').filter({ hasText: 'Dólar estadounidense' }))
-  const cajas = await page.locator('li button').evaluateAll((botones) =>
-    botones
-      .filter((b) => /1 [A-Z]{3} =/.test(b.textContent))
-      .map((b) => {
-        const hijos = [...b.children].map((h) => h.getBoundingClientRect())
-        const [nombre, valor] = hijos
-        return {
-          texto: b.textContent.trim().slice(0, 30),
-          solapa:
-            !!nombre &&
-            !!valor &&
-            nombre.left < valor.right &&
-            valor.left < nombre.right &&
-            nombre.top < valor.bottom &&
-            valor.top < nombre.bottom,
-        }
-      }),
-  )
-  expect(cajas.length).toBeGreaterThan(0)
-  for (const caja of cajas) {
-    expect(caja.solapa, `el nombre y el valor de «${caja.texto}» se solapan`).toBe(false)
+  await expect(page.getByRole('heading', { name: /^[A-Z]{3} a [A-Z]{3}$/ }).first()).toBeVisible()
+  const tarjetas = page.getByRole('region').filter({ has: page.getByText(/^1 [A-Z]{3} =$/) })
+  expect(await tarjetas.count()).toBeGreaterThan(0)
+  for (const tarjeta of await tarjetas.all()) {
+    await sinTextoCortado(tarjeta)
   }
+  await sinTextoCortado(page.getByRole('region', { name: 'Monedas activas', exact: true }))
+  await sinTextoCortado(page.getByRole('region', { name: 'Moneda base', exact: true }))
 })
 
 // c.1: cada parte de Configuración › Leads es una sub-ruta. Con el texto al 200 % el menú pasa al selector de sección, que dice cuál se

@@ -5,8 +5,8 @@ import { cortarAlTope } from '@/shared/lib/conteo'
 export const TOPE_DE_LA_OFERTA = 200
 
 export const TEXTO_DE_OFERTA_VACIA = 'Vacío: se ofrecen todos.'
-export const SIN_PUERTOS = 'Todavía no hay puertos cargados. Se cargan en Logística.'
-export const SIN_NAVIERAS = 'Todavía no hay navieras cargadas. Se cargan en Logística.'
+export const SIN_PUERTOS = 'Todavía no hay puertos cargados. Se cargan en Catálogos.'
+export const SIN_NAVIERAS = 'Todavía no hay navieras cargadas. Se cargan en Catálogos.'
 
 export type ElementoDeOferta = { id: string; nombre: string; activo: boolean }
 

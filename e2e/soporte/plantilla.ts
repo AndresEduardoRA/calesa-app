@@ -23,6 +23,8 @@ import { literal, sql } from './sql'
 
 export type TerrenoDePlantilla = {
   origenId: string
+  // La fórmula del origen activa (la crea la primera publicada): la que leen y escriben las pruebas.
+  formulaDelOrigenId: string
   duena: SupabaseClient
   asesora: SupabaseClient
 }
@@ -60,6 +62,9 @@ export async function prepararTerrenoDePlantilla(
   publicarLaFormulaMini(origen.id)
   return {
     origenId: origen.id,
+    formulaDelOrigenId: sql(
+      `select id from public.formulas_del_origen where origen_id = ${literal(origen.id)}::uuid and activa`,
+    ),
     duena: await sesionDe(correoDuena, CONTRASENA),
     asesora: await sesionDe(asesora.email, CONTRASENA),
   }

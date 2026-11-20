@@ -12,11 +12,7 @@ import { gruposVisibles } from '../secciones'
 
 export const metadata: Metadata = { title: 'Configuración' }
 
-const CON_FALTAS: readonly string[] = [
-  'cotizacion',
-  'flujos',
-  'empresa',
-] satisfies SeccionConFaltas[]
+const CON_FALTAS: readonly string[] = ['origenes', 'empresa'] satisfies SeccionConFaltas[]
 
 function tieneFaltas(clave: string): clave is SeccionConFaltas {
   return CON_FALTAS.includes(clave)

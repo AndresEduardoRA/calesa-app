@@ -173,12 +173,9 @@ declare
     ('cotizacion_comentario_borrar(uuid,timestamp with time zone)', 'X'),
     ('cotizacion_adjuntar(uuid,text,text,text,integer)', 'X'),
     ('cotizacion_adjunto_quitar(uuid)', 'X'),
-    -- La portada de la cotización: reciben una cotización, no un lead, y piden verla (`puede_cotizacion`); el nombre del cliente sale sólo a quien ve el lead
-    -- (`puede_lead(…, 'leads.ver')`, `ve_todo`) y anotarla pide además poder guardarla; sus pruebas, `areas/tarjeta/portada.sql`.
-    ('cotizacion_portada(uuid)', 'L'),
-    ('cotizacion_portada_poner(uuid,text,text)', 'X'),
-    -- Lo pide la policy de leer del bucket para `portada/`: ver la cotización y, con un cliente vivo, `puede_lead(…, 'leads.ver')`; sólo un booleano.
-    ('cotizacion_portada_visible(uuid)', 'L'),
+    -- La huella de la imagen de la tarjeta: recibe una cotización, no un lead, y pide verla (`puede_cotizacion`); el nombre del cliente entra en el md5 sólo si
+    -- quien pide ve el lead (`puede_lead(…, 'leads.ver')`) y devuelve sólo el md5; sus pruebas, `areas/tarjeta/imagen.sql`.
+    ('cotizacion_imagen_huella(uuid)', 'L'),
     -- Marcas de quien mira: su reporte (retirar toma la cotización antes del reporte, como moderar) y su favorita.
     ('cotizacion_reportar(uuid,text)', 'M'),
     ('cotizacion_reporte_retirar(uuid)', 'M'),
@@ -201,7 +198,7 @@ declare
     ('cotizaciones_listado_por_vehiculo(integer,uuid,clase_cotizacion,boolean,uuid,timestamp with time zone,uuid,boolean)', 'L'),
     ('_cotizaciones_lote_del_listado(integer,uuid,clase_cotizacion,boolean,uuid,timestamp with time zone,uuid,boolean)', 'L'),
     -- El inventario por rutas (4.16-2a): invocadora, la RLS de vehiculos decide; devuelve el lead_id de cada vehículo y no recibe ninguno (la cartera la saca de mis_leads()).
-    ('vehiculos_inventario(uuid,integer,jsonb,timestamp with time zone,uuid,boolean)', 'L'),
+    ('vehiculos_inventario(uuid,integer,jsonb,timestamp with time zone,uuid,boolean,text,smallint)', 'L'),
     -- Crear una cotización (4.10-2): el lead es obligatorio y se pide visible (`leads.ver`, la regla de la policy de insert que se fue), no de la cartera: una cotización cuelga de un lead que quien
     -- cotiza ve (D3). Lo bloquea `for key share` entre dos comprobaciones, igual para el que no existe y el que no ve (`cotizacion-crear.sql` y `cotizaciones-visibilidad.sql`).
     -- Una final (4.25-1b), como marcar: el lead en la cartera con `leads.editar` antes de tomarlo y con todo tomado, y lo toma `for no key update` (`areas/final/crear.sql`).
@@ -300,6 +297,9 @@ declare
     -- El margen del mes (9.11-1): no recibe lead; lee pagos (sin su `lead_id`) y el total de la final, pide `logistica.margen.ver` y sólo sus
     -- orígenes, y devuelve sumas en moneda base que el panel de la unidad ya muestra (`areas/tablero/margen-y-cola.sql`).
     ('tablero_margen(date,date)', 'X'),
+    -- Eliminar una fórmula del origen: de `cotizaciones` sólo pregunta si alguna se hizo con una versión de esa fórmula, sin leer el lead ni
+    -- devolver nada de ella; pide `cotizaciones.configurar` del origen (`areas/formula/fdo-renombrar-archivar-eliminar.sql`).
+    ('formula_del_origen_eliminar(uuid,timestamp with time zone)', 'X'),
     ('storage_refcount(text,text)', 'X'),
     -- La policy de subir a Storage `repuestos`: no recibe lead; de `repuestos_proyectos` sólo mira si está vivo y abierto, y devuelve un booleano
     -- (`areas/repuestos/escritura-directa.sql`).

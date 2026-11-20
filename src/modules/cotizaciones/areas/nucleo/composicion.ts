@@ -26,7 +26,6 @@ import { getHojaParaCotizar } from '../../infra/queries/hoja'
 import { getHojaDeUnaGuardada } from '../../infra/queries/hoja-de-una-guardada'
 import { contarCotizacionesDelVehiculo as contarDeInfra } from '../../infra/queries/historial-del-vehiculo'
 import { getNivelesDeAcceso } from '../../infra/queries/niveles'
-import { getPublicadasPorOrigen } from '../../infra/queries/publicadas-por-origen'
 import {
   recalcularAlAbrir as recalcularAlAbrirDeInfra,
   recalcularAlAbrirEnPar as recalcularAlAbrirEnParDeInfra,
@@ -45,5 +44,3 @@ export const cotizadorEncima: CotizadorEncima = cotizarEncima
 export const creadorEnPar: CreadorEnPar = crearCotizacionesEnPar
 export const guardadorEnPar: GuardadorEnPar = guardarCotizacionesEnPar
 export const cotizadorEncimaEnPar: CotizadorEncimaEnPar = cotizarEncimaEnPar
-// El inicio de Configuración › Cotización: la fórmula y la tarjeta publicadas de cada origen.
-export const leerPublicadasPorOrigen = getPublicadasPorOrigen

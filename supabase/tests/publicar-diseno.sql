@@ -325,8 +325,8 @@ begin
               where n.nspname = 'public' and p.proname = 'formula_guardar_borrador' and pronargs = 4) then raise exception 'quedó la firma vieja de formula_guardar_borrador'; end if;
   if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'formula_guardar_borrador') <> 1 then
     raise exception 'formula_guardar_borrador tiene sobrecargas'; end if;
-  if not has_function_privilege('authenticated', 'public.formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz)', 'execute')
-     or has_function_privilege('anon', 'public.formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz)', 'execute') then
+  if not has_function_privilege('authenticated', 'public.formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz,uuid)', 'execute')
+     or has_function_privilege('anon', 'public.formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz,uuid)', 'execute') then
     raise exception 'los grants de formula_guardar_borrador'; end if;
   if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
               where n.nspname = 'public' and p.proname in ('_publicar_formula', '_preparar_publicacion', '_compilar_visibilidad', '_niveles_de_cotizacion', '_niveles_del_diseno', 'formula_auditar',
@@ -592,20 +592,20 @@ declare f text; v_p regprocedure;
 begin
   if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'formula_cambiar_constante') <> 1 then
     raise exception 'formula_cambiar_constante tiene más de una firma (o ninguna)'; end if;
-  v_p := to_regprocedure('public.formula_cambiar_constante(uuid,text,numeric,uuid)');
-  if v_p is null then raise exception 'no existe formula_cambiar_constante(uuid,text,numeric,uuid)'; end if;
+  v_p := to_regprocedure('public.formula_cambiar_constante(uuid,text,numeric,uuid,uuid)');
+  if v_p is null then raise exception 'no existe formula_cambiar_constante(uuid,text,numeric,uuid,uuid)'; end if;
   if not has_function_privilege('authenticated', v_p, 'execute') or has_function_privilege('anon', v_p, 'execute') then
     raise exception 'los grants de formula_cambiar_constante'; end if;
-  foreach f in array array['public._publicar_formula(uuid,text,uuid,boolean,timestamptz)', 'public._publicar_version(uuid,jsonb,jsonb,jsonb,text,uuid,jsonb,boolean)',
-                           'public._version_publicada_por(uuid)', 'public.formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz)',
-                           'public.formula_cambiar_constante(uuid,text,numeric,uuid)'] loop
+  foreach f in array array['public._publicar_formula(uuid,text,uuid,boolean,timestamptz,uuid)', 'public._publicar_version(uuid,jsonb,jsonb,jsonb,text,uuid,jsonb,boolean,uuid)',
+                           'public._version_publicada_por(uuid)', 'public.formula_guardar_borrador(uuid,jsonb,jsonb,jsonb,text,uuid,timestamptz,uuid)',
+                           'public.formula_cambiar_constante(uuid,text,numeric,uuid,uuid)'] loop
     v_p := to_regprocedure(f);
     if v_p is null then raise exception 'no existe %', f; end if;
     -- `is not true`: sin `set search_path`, `proconfig` es nulo y la comparación también.
     if (select p.prosecdef and p.proconfig = array['search_path=""'] from pg_proc p where p.oid = v_p) is not true then
       raise exception '% no es security definer con search_path vacío', f; end if;
   end loop;
-  foreach f in array array['public._publicar_formula(uuid,text,uuid,boolean,timestamptz)', 'public._publicar_version(uuid,jsonb,jsonb,jsonb,text,uuid,jsonb,boolean)'] loop
+  foreach f in array array['public._publicar_formula(uuid,text,uuid,boolean,timestamptz,uuid)', 'public._publicar_version(uuid,jsonb,jsonb,jsonb,text,uuid,jsonb,boolean,uuid)'] loop
     if position($c$pg_advisory_xact_lock(hashtextextended('formulas:'$c$ in pg_get_functiondef(to_regprocedure(f))) = 0 then
       raise exception '% no toma el candado del origen', f; end if;
   end loop;
@@ -617,8 +617,8 @@ declare v_p regprocedure;
 begin
   if (select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.proname = 'formula_revertir') <> 1 then
     raise exception 'formula_revertir tiene más de una firma (o ninguna)'; end if;
-  v_p := to_regprocedure('public.formula_revertir(uuid,uuid,text,uuid)');
-  if v_p is null then raise exception 'no existe formula_revertir(uuid,uuid,text,uuid)'; end if;
+  v_p := to_regprocedure('public.formula_revertir(uuid,uuid,text,uuid,uuid)');
+  if v_p is null then raise exception 'no existe formula_revertir(uuid,uuid,text,uuid,uuid)'; end if;
   if not has_function_privilege('authenticated', v_p, 'execute') or has_function_privilege('anon', v_p, 'execute') then
     raise exception 'los grants de formula_revertir'; end if;
   if (select p.prosecdef and p.proconfig = array['search_path=""'] from pg_proc p where p.oid = v_p) is not true then

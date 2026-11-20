@@ -10,6 +10,11 @@ const ve = (alcance: 'propios' | 'todos', origenId: string | null): Permisos => 
 ]
 
 describe('fuenteDelInventario', () => {
+  it('«Cierre más próximo»: por la función, también con «todos»', () => {
+    expect(fuenteDelInventario(ve('todos', COREA), COREA, 'cierre')).toBe('vehiculos_inventario')
+    expect(fuenteDelInventario(ve('todos', COREA), COREA, 'reciente')).toBe('vehiculos')
+  })
+
   it('«propios» en ese origen: por la función', () => {
     expect(fuenteDelInventario(ve('propios', COREA), COREA)).toBe('vehiculos_inventario')
   })

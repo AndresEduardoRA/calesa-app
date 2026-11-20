@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { FlujoConfigurable } from './flujo'
-import { armarSelector, elegirEntrada, type OrigenDelSelector } from './selector-de-flujos'
+import {
+  armarSelector,
+  entradaFija,
+  textoSinFlujo,
+  type OrigenDelSelector,
+} from './selector-de-flujos'
 
 const guid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
 
@@ -58,36 +63,32 @@ describe('armarSelector', () => {
   })
 })
 
-describe('elegirEntrada', () => {
+describe('entradaFija', () => {
   const entradas = armarSelector(
     [flujoDe(1, SUBASTA), flujoDe(2, OFICINA), flujoDe(0, null)],
     [SUBASTA, OFICINA],
   )
 
-  it('?ambito=repuestos gana sobre ?origen=', () => {
-    expect(elegirEntrada(entradas, { origen: OFICINA.id, ambito: 'repuestos' })?.clave).toBe(
-      'repuestos',
-    )
+  it('abre el flujo del origen pedido', () => {
+    expect(entradaFija(entradas, { origenId: OFICINA.id })?.clave).toBe(OFICINA.id)
   })
 
-  it('sin repuestos entre las entradas, ?ambito=repuestos cae a ?origen=', () => {
+  it('abre el de repuestos con el ámbito', () => {
+    expect(entradaFija(entradas, { ambito: 'repuestos' })?.clave).toBe('repuestos')
+  })
+
+  it('un origen sin flujo configurable da null: nunca cae en el de otro', () => {
+    expect(entradaFija(entradas, { origenId: AJENO.id })).toBeNull()
+    expect(entradaFija([], { origenId: SUBASTA.id })).toBeNull()
+  })
+
+  it('sin flujo de repuestos da null, aunque haya orígenes', () => {
     const sinRepuestos = entradas.filter((e) => e.clave !== 'repuestos')
-    expect(elegirEntrada(sinRepuestos, { origen: OFICINA.id, ambito: 'repuestos' })?.clave).toBe(
-      OFICINA.id,
-    )
+    expect(entradaFija(sinRepuestos, { ambito: 'repuestos' })).toBeNull()
   })
 
-  it('abre el origen pedido si es de los suyos', () => {
-    expect(elegirEntrada(entradas, { origen: OFICINA.id, ambito: null })?.clave).toBe(OFICINA.id)
-  })
-
-  it('un id inválido o ajeno abre el primero', () => {
-    expect(elegirEntrada(entradas, { origen: 'basura', ambito: null })?.clave).toBe(SUBASTA.id)
-    expect(elegirEntrada(entradas, { origen: AJENO.id, ambito: null })?.clave).toBe(SUBASTA.id)
-    expect(elegirEntrada(entradas, { origen: null, ambito: 'otra-cosa' })?.clave).toBe(SUBASTA.id)
-  })
-
-  it('sin entradas da null', () => {
-    expect(elegirEntrada([], { origen: SUBASTA.id, ambito: null })).toBeNull()
+  it('el texto sin flujo nombra el origen o el de repuestos', () => {
+    expect(textoSinFlujo({ origenId: SUBASTA.id })).toBe('Este origen todavía no tiene flujo.')
+    expect(textoSinFlujo({ ambito: 'repuestos' })).toBe('Todavía no hay flujo de repuestos.')
   })
 })

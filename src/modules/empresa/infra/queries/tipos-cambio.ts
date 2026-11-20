@@ -3,7 +3,16 @@ import { connection } from 'next/server'
 import { cache } from 'react'
 import { errorDePostgrest, ok, type Resultado } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/server'
-import type { LectorDeHistorial, LectorDeMonedasYTiposCambio } from '../../entities/repositorios'
+import type {
+  LectorDeHistorial,
+  LectorDeMonedasYTiposCambio,
+  LectorDeUltimosCambios,
+} from '../../entities/repositorios'
+import {
+  esquemaDeTipoCambioVigente,
+  TOPE_DEL_POPOVER,
+  type UltimoCambio,
+} from '../../entities/tipos-cambio-vigentes'
 import {
   historialDesde,
   monedasDesde,
@@ -98,4 +107,31 @@ export const getHistorial: LectorDeHistorial = async (tipoCambioId) => {
     }
   }
   return ok(historialDesde(filas, nombres))
+}
+
+const esquemaDeLaLectura = esquemaDeTipoCambioVigente.array()
+
+// Cuándo y quién cambió el valor de cada tipo de cambio activo, para sus tarjetas. Es `tipos_cambio_vigentes()` (definer, toda persona activa,
+// nunca el correo): el historial entero sólo lo ve quien gestiona, y esto no lo reemplaza. La tabla es un catálogo de decenas; el último cambio
+// de cada uno va por `tipos_cambio_historial_tipo_idx` y se cortan en `TOPE_DEL_POPOVER`.
+export const getUltimosCambios: LectorDeUltimosCambios = async () => {
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('tipos_cambio_vigentes').limit(TOPE_DEL_POPOVER)
+  if (error) {
+    return { ok: false, error: errorDePostgrest(error) }
+  }
+  const filas = esquemaDeLaLectura.safeParse(data)
+  if (!filas.success) {
+    return {
+      ok: false,
+      error: { codigo: 'inesperado', mensaje: 'No se pudieron leer los cambios.' },
+    }
+  }
+  const cambios: Record<string, UltimoCambio> = {}
+  for (const fila of filas.data) {
+    if (fila.valor_cambiado_en) {
+      cambios[fila.id] = { en: fila.valor_cambiado_en, por: fila.valor_cambiado_por }
+    }
+  }
+  return ok(cambios)
 }

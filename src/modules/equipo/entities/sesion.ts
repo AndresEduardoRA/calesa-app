@@ -109,6 +109,8 @@ export function sesionSinPerfil(usuarioId: string, email: string): Sesion {
       vistaDeVehiculos: null,
       vistaDeCotizaciones: null,
       agruparCotizaciones: null,
+      embudoDeLaFicha: null,
+      menuPlegado: null,
     },
   }
 }

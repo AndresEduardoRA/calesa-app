@@ -10,7 +10,13 @@ export const CONTEXTO_DE_EJEMPLO: ContextoDeLaCotizacion = {
   fecha: 'Fecha',
   numero: '123',
   titulo: 'Título de la cotización',
-  asesor: 'Nombre del asesor',
+  // La foto sin url: la celda dibuja la muestra punteada «Foto».
+  asesor: {
+    nombre: 'Nombre del asesor',
+    telefono: '+59170000000',
+    cargo: 'Cargo del asesor',
+    foto: '',
+  },
   cliente: 'Nombre del cliente',
   vehiculo: { titulo: 'Vehículo de la cotización', lote: 'Lote', vin: 'VIN' },
   venceEl: 'Fecha de vencimiento',

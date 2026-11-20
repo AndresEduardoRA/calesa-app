@@ -16,8 +16,9 @@ export type VistaDeGrupo = {
   uso: Record<string, UsoDeTipo> | null
 }
 
-// El grupo de toda la empresa siempre existe; el del flujo sólo si hay un flujo que quien mira pueda configurar.
-export type VistasDeGrupos = { empresa: VistaDeGrupo; flujo: VistaDeGrupo | null }
+// Cada página dibuja un grupo: Catálogos › Tipos de documento, el de toda la empresa; el panel del flujo, el de ese flujo (nulo si quien mira no lo
+// configura). El que la página no dibuja va nulo.
+export type VistasDeGrupos = { empresa: VistaDeGrupo | null; flujo: VistaDeGrupo | null }
 
 export const MOTIVO_SOLO_LECTURA_DE_EMPRESA =
   'Los tipos de documento de toda la empresa los cambia quien gestiona los catálogos de logística.'

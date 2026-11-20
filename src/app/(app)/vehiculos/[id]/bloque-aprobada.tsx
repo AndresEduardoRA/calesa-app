@@ -3,7 +3,7 @@ import { leerAprobadaDelVehiculo } from '@/modules/cotizaciones'
 import { AprobadaDelVehiculo } from '@/modules/cotizaciones/pantallas/aprobada-del-vehiculo'
 import {
   BotonDeCompartirDeLaFila,
-  PortadaDeLaCotizacionDiferida,
+  ImagenDeLaTarjetaDiferida,
 } from '@/modules/cotizaciones/pantallas/tarjeta-aprobada-del-vehiculo'
 import { datosO } from '@/shared/lib/errores'
 
@@ -14,7 +14,7 @@ type Props = {
 }
 
 // Lo de adentro de «Cotización aprobada» (sólo se monta con `cotizaciones.ver` del origen): la aprobada que quien mira ve, leída tras su `<Suspense>`.
-// Un fallo cae en el límite del bloque («No pudimos cargar «Cotización aprobada».» con «Reintentar»). La portada y «Compartir» son del área `tarjeta`:
+// Un fallo cae en el límite del bloque («No pudimos cargar «Cotización aprobada».» con «Reintentar»). La imagen de la tarjeta y «Compartir» son del área `tarjeta`:
 // los une la página.
 export async function BloqueAprobada({ vehiculo, cotizar }: Props) {
   await connection()
@@ -24,12 +24,17 @@ export async function BloqueAprobada({ vehiculo, cotizar }: Props) {
       fila={fila}
       tituloDelVehiculo={vehiculo.titulo}
       cotizar={cotizar}
-      portada={
+      imagen={
         fila === null ? null : (
-          <PortadaDeLaCotizacionDiferida
+          <ImagenDeLaTarjetaDiferida
             cotizacionId={fila.id}
             numero={fila.numero}
-            total={{ valor: fila.totalBase, moneda: fila.monedaMostrar }}
+            // Sin moneda, la base (como el total de la tarjeta); con `null`, `<Monto>` daría sólo el número.
+            total={
+              fila.monedaMostrar === null
+                ? { valor: fila.totalBase }
+                : { valor: fila.totalBase, moneda: fila.monedaMostrar }
+            }
           />
         )
       }

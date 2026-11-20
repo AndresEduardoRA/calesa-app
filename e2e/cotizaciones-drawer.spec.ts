@@ -6,13 +6,14 @@ import {
   type TerrenoDeLaFinal,
 } from './soporte/cotizaciones-final'
 import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { esMovil } from './soporte/inventario'
 import { capturar, sinScrollHorizontal } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
 // El drawer de la cotización (el resumen `?cotizacion=`, `docs/UX.md` › «Cotizaciones», T320): se abre igual desde la tabla, la tarjeta y la línea del modal de un
 // grupo (que se cierra al abrirlo), con la abierta marcada; arriba «Abrir cotización», «Compartir cotización» y el «⋯» sin «Compartir» (también para la línea del grupo, que no está en
 // la página); sus diálogos se abren sobre el resumen sin cerrarlo; «Aprobar esta» de «De este vehículo» cambia la insignia en el resumen y en la lista sin recargar;
-// las pestañas siguen; en Modo Live no hay «Compartir». La portada y su visor los recorre `cotizaciones-portada.spec.ts`.
+// las pestañas siguen; en Modo Live no hay «Compartir». La imagen de la tarjeta y su visor los recorre `cotizaciones-imagen-de-la-tarjeta.spec.ts`.
 test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDeLaFinal
@@ -70,19 +71,19 @@ async function esElResumenDe(page: Page, id: string): Promise<Locator> {
   return drawer
 }
 
-// El orden de la barra (los tres, antes de la portada) y que «Abrir» y «Compartir» crecen por igual en la misma fila (al 100 %, también en el celular).
+// El orden de la barra (los tres, antes de la imagen de la tarjeta) y que «Abrir» y «Compartir» crecen por igual en la misma fila (al 100 %, también en el celular).
 async function revisarLaBarra(drawer: Locator, botones: Locator[]): Promise<void> {
   const orden = await drawer.evaluate((d) => {
     const laBarra = d.querySelector('[data-acciones-del-resumen]')
-    const portada = d.querySelector('[data-portada]')
+    const imagen = d.querySelector('[data-imagen-de-la-tarjeta]')
     return {
       textos: [...(laBarra?.children ?? [])].map(
         (n) => n.getAttribute('aria-label') ?? n.textContent,
       ),
       antes:
-        portada === null ||
+        imagen === null ||
         laBarra === null ||
-        Boolean(laBarra.compareDocumentPosition(portada) & Node.DOCUMENT_POSITION_FOLLOWING),
+        Boolean(laBarra.compareDocumentPosition(imagen) & Node.DOCUMENT_POSITION_FOLLOWING),
     }
   })
   expect(orden.textos.slice(0, 2)).toEqual(['Abrir cotización', 'Compartir cotización'])
@@ -153,7 +154,7 @@ test('E2E desde la fila de la tabla se abre el mismo resumen y la fila queda mar
   await expect(page.locator(`tr[data-state="selected"]`)).toContainText(`N.º ${numeroDe(suelta)}`)
 })
 
-test('E2E la barra: «Abrir», «Compartir» y el «⋯» en ese orden, antes de la portada; sus diálogos no cierran el resumen', async ({
+test('E2E la barra: «Abrir», «Compartir» y el «⋯» en ese orden, antes de la imagen de la tarjeta; sus diálogos no cierran el resumen', async ({
   page,
 }, info) => {
   await abrir(page, deLaPrueba(`&cotizacion=${suelta}`))
@@ -208,6 +209,55 @@ test('E2E la barra: «Abrir», «Compartir» y el «⋯» en ese orden, antes de
   await expect(page).toHaveURL(new RegExp(`/cotizaciones/${suelta}$`))
 })
 
+async function abrirElResumenDeLaSegunda(page: Page) {
+  const [, segunda = ''] = grupo.ids
+  await abrir(page, deLaPrueba(`&cotizacion=${segunda}`))
+  return esElResumenDe(page, segunda)
+}
+
+test('E2E la cabecera es resumida: miniatura a la izquierda, datos a la derecha y ≤ 120 px', async ({
+  page,
+}) => {
+  const drawer = await abrirElResumenDeLaSegunda(page)
+  const cabecera = drawer.locator('[data-cabecera-del-resumen]')
+  const miniatura = cabecera.locator('[data-miniatura-del-resumen]')
+  await expect(miniatura).toBeVisible()
+  await expect(cabecera.getByText('Preventa')).toBeVisible()
+  await expect(cabecera).toContainText('Vale hasta el')
+  const [caja, foto, texto] = await Promise.all([
+    cabecera.boundingBox(),
+    miniatura.boundingBox(),
+    cabecera.locator('dl').boundingBox(),
+  ])
+  // Miniatura a la izquierda y el texto a su derecha (en escritorio y en celular).
+  expect((foto?.x ?? 0) + (foto?.width ?? 0)).toBeLessThanOrEqual((texto?.x ?? 0) + 1)
+  // ≤ 120 px de alto con el texto al 100 % (el celular parte el texto en más líneas: no se mide).
+  if (!esMovil(page)) {
+    expect(caja?.height ?? 0).toBeLessThanOrEqual(120)
+  }
+})
+
+test('E2E las pestañas ocupan todo el ancho y el resto del alto, y el panel se desplaza solo', async ({
+  page,
+}, info) => {
+  const drawer = await abrirElResumenDeLaSegunda(page)
+  const lista = drawer.getByRole('tablist')
+  const [cuerpo, filaDePestanas] = await Promise.all([
+    drawer.locator('[data-cabecera-del-resumen]').evaluate((e) => {
+      const marco = e.parentElement?.parentElement?.getBoundingClientRect()
+      return { x: marco?.x ?? 0, ancho: marco?.width ?? 0 }
+    }),
+    lista.boundingBox(),
+  ])
+  expect(Math.abs((filaDePestanas?.width ?? 0) - cuerpo.ancho)).toBeLessThanOrEqual(2)
+  const panel = drawer.getByRole('tabpanel')
+  expect(await panel.evaluate((e) => getComputedStyle(e).overflowY)).toBe('auto')
+  expect((await panel.boundingBox())?.height ?? 0).toBeGreaterThan(150)
+  // Lo único que se desplaza de costado es la lista de pestañas, no el panel.
+  expect(await drawer.evaluate((e) => e.scrollWidth <= e.clientWidth + 1)).toBe(true)
+  await capturar(page, info, 'cabecera-y-pestanas')
+})
+
 test('E2E «Aprobar esta» de «De este vehículo» cambia la insignia en el resumen y en la cabeza del grupo, sin recargar', async ({
   page,
 }) => {
@@ -219,6 +269,8 @@ test('E2E «Aprobar esta» de «De este vehículo» cambia la insignia en el res
   })
   const drawer = await esElResumenDe(page, tercera)
   await expect(drawer.getByText('Aprobada', { exact: true })).toHaveCount(0)
+  // «De este vehículo» es la quinta pestaña.
+  await drawer.getByRole('tab', { name: 'De este vehículo' }).click()
   const esta = drawer.locator('[data-esta]')
   await esta.scrollIntoViewIfNeeded()
   await esta.getByRole('button', { name: 'Aprobar esta' }).click()

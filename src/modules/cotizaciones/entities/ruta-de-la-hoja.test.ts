@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   rutaDeLaCotizacion,
   rutaDeLaHoja,
-  anchoDeLaPortada,
-  rutaDeLaPortada,
+  anchoDeLaImagen,
+  rutaDeLaImagen,
   rutaDelListado,
   rutaDelPdf,
 } from './ruta-de-la-hoja'
@@ -31,10 +31,10 @@ describe('rutaDelPdf', () => {
   })
 })
 
-describe('rutaDeLaPortada', () => {
-  it('es la portada de la cotización guardada, bajo su página', () => {
+describe('rutaDeLaImagen', () => {
+  it('es la imagen de la tarjeta de la cotización guardada, bajo su página', () => {
     const id = '00000000-0000-4000-8000-000000000001'
-    expect(rutaDeLaPortada(id)).toBe(`/cotizaciones/${id}/portada`)
+    expect(rutaDeLaImagen(id)).toBe(`/cotizaciones/${id}/imagen`)
   })
 })
 
@@ -56,17 +56,22 @@ describe('rutaDelListado', () => {
   })
 })
 
-describe('la miniatura de la portada', () => {
-  it('con ancho, la ruta pide la miniatura; sin él, la grande', () => {
+describe('la miniatura y el reintento de la imagen', () => {
+  it('con ancho, la ruta pide la miniatura; sin él, la grande; con intento, otra URL', () => {
     const id = '00000000-0000-4000-8000-000000000001'
-    expect(rutaDeLaPortada(id, { ancho: 480 })).toBe(`/cotizaciones/${id}/portada?ancho=480`)
-    expect(rutaDeLaPortada(id, {})).toBe(`/cotizaciones/${id}/portada`)
+    expect(rutaDeLaImagen(id, { ancho: 480 })).toBe(`/cotizaciones/${id}/imagen?ancho=480`)
+    expect(rutaDeLaImagen(id, {})).toBe(`/cotizaciones/${id}/imagen`)
+    expect(rutaDeLaImagen(id, { intento: 0 })).toBe(`/cotizaciones/${id}/imagen`)
+    expect(rutaDeLaImagen(id, { intento: 2 })).toBe(`/cotizaciones/${id}/imagen?intento=2`)
+    expect(rutaDeLaImagen(id, { ancho: 480, intento: 1 })).toBe(
+      `/cotizaciones/${id}/imagen?ancho=480&intento=1`,
+    )
   })
 
   it('`?ancho=` sólo entiende los anchos de la miniatura', () => {
-    expect(anchoDeLaPortada('480')).toBe(480)
-    expect(anchoDeLaPortada('481')).toBeNull()
-    expect(anchoDeLaPortada('1600')).toBeNull()
-    expect(anchoDeLaPortada(null)).toBeNull()
+    expect(anchoDeLaImagen('480')).toBe(480)
+    expect(anchoDeLaImagen('481')).toBeNull()
+    expect(anchoDeLaImagen('1600')).toBeNull()
+    expect(anchoDeLaImagen(null)).toBeNull()
   })
 })

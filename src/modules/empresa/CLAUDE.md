@@ -5,8 +5,8 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
 ## Entra y sale
 
 - Entra: Configuración › Empresa, cuatro sub-rutas (`src/app/(app)/configuracion/empresa/`): «Datos de la empresa» (`/configuracion/empresa`:
-  `TarjetasDeLaEmpresa`, cinco tarjetas: Identidad, Región, Datos legales y de contacto, Políticas, Íconos de la app), «Monedas y tipos de cambio» (`/monedas`: `MonedasYTiposCambio`), «Integraciones» (`/integraciones`:
-  `TarjetasDeIntegraciones`, una tarjeta por integración con su estado), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Cotización › General › Vigencia (`/configuracion/cotizacion/general/vigencia`,
+  `TarjetasDeLaEmpresa`, cinco tarjetas: Identidad, Región, Datos legales y de contacto, Políticas, Íconos de la app), «Monedas y tipos de cambio» (`/monedas`: `MonedasYTiposCambio`, tarjetas: la moneda base, un grupo por par con una `TarjetaDeTipoCambio` cada tipo, las monedas activas y «Al compartir»), «Integraciones» (`/integraciones`:
+  `TarjetasDeIntegraciones`, una tarjeta por integración con su estado), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Catálogos › Vigencia (`/configuracion/catalogos/vigencia`,
   con la barra de cambios sin guardar): la vigencia de las cotizaciones (si el vehículo y el lead son obligatorios se decide por rol y origen, en «Roles y permisos»).
 - Sale (`index.ts`, **sin componentes**):
   - `getAjustes()`: lo mínimo de la empresa (nombre, logos, color, íconos, formato regional, zona, moneda base, registro abierto, primer registro), una
@@ -16,7 +16,7 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
     `entities/marca.ts`): el PDF no baja un logo más pesado.
   - `getPoliticaDeLimpieza()` (sin poder leerla, apagada), `getTiposCambio()` (vigentes, el por defecto adelante; vacía si falla),
     `integracionActiva('apibara')` (si la base no responde, no).
-  - Pantalla: `leerMonedasYTiposCambio()`, `leerHistorial()`, `leerIntegraciones()`, `leerVehiculosQueCambian()` (conteo acotado de
+  - Pantalla: `leerMonedasYTiposCambio()`, `leerHistorial()`, `leerUltimosCambios()` (el último cambio de cada tipo por `tipos_cambio_vigentes()`, con tope; sin él la tarjeta cae a su fecha), `leerIntegraciones()`, `leerVehiculosQueCambian()` (conteo acotado de
     `web_publica_vehiculos_que_cambian()`, sólo con `empresa.ajustes.gestionar`), `zonasHorarias()`. Íconos: `iconosDelManifest()`, `urlDeIcono()`,
     `claveDeIconoVigente()` (para `app/manifest.ts` y `app/iconos/vigente/[tamano]`).
   - Ajustes de cotización: `leerAjustesDeCotizacion()` (con la versión; falla en vez de dar los de fábrica), `puedeCambiarAjustesDeCotizacion()`
@@ -27,7 +27,7 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
 - Compartir los tipos de cambio: `responderCompartirTiposCambio('texto' | 'imagen', ids)` (la usan las rutas `src/app/(app)/tipos-de-cambio/texto` e `imagen`,
   tras `requerirSesion()`: `ids` = guid separados por coma, de 1 a 30, validados por `idsParaCompartir()`; 400, 404 o 500 en `text/plain`, sin caché) y
   `leerLeyendaDeTiposCambio()` (con la versión de la fila; falla en vez de dar una vacía). La action `guardarLeyendaDeTiposCambio` la usa
-  `<LeyendaDeLosTiposCambio>` dentro de `<MonedasYTiposCambio>`.
+  `<ModalDeLeyenda>` (`?panel=leyenda`, desde la tarjeta «Al compartir» de `<MonedasYTiposCambio>`).
 - `shell.ts`: `getAjustes()`, `getTiposCambioDeLaBarra()` (los de la barra: hasta 3, sólo `{id, nombre, monedaA, valor}`, de la misma lectura
   por request), `<TiposCambioVigentes>` (el botón de la barra; el popover lee `tipos_cambio_vigentes()` al abrirse).
 - `client.ts`: `guardarTipoCambio` y `EntradaDeGuardarTipoCambio`, para el ⚙ de un tipo de cambio de la hoja (`cotizaciones`); la action exige
@@ -72,7 +72,7 @@ quien lo hizo, nunca el correo.
 - Datos de la empresa se edita en un modal por tarjeta (`?panel=identidad|region|datos-legales|politicas|iconos`, `usePanelesDeLaEmpresa()`), cada uno
   con su `useGuardarTarjeta()` sobre `useEnvioConVersion()`: sólo viaja lo que cambió respecto de lo guardado (`cambiosDeLaTarjeta()`), la
   RPC no toca lo ausente. Un `?panel=` sin permiso (o íconos sin logo) se avisa y se limpia. Datos legales (siete campos) guarda borrador en
-  `sessionStorage`. La «Leyenda al compartir» guarda con la barra de cambios sin guardar (hermana del formulario, `order-last`).
+  `sessionStorage`. La moneda base se edita en Monedas (`?panel=moneda-base`, tarjeta `moneda-base` de `CAMPOS_DE_LA_TARJETA`, con `empresa.ajustes.gestionar`). Monedas: `?panel=moneda-base|monedas|leyenda` (`usePanelesDeMonedas()`), `?par=USD-BOB` (el panel de crear con el par elegido), `?tc=` y `?moneda=`; «En la barra» de la tarjeta guarda al tocarlo; «Gestionar» y «Editar» piden `empresa.tipos_cambio.gestionar`.
 - Los íconos se dibujan desde el logo **guardado** y se suben al confirmar la vista previa; su dirección es el hash y cambia al regenerar.
 - El logo se sube al guardar: si la fila no se guarda, se descarta el subido; si se guarda, el anterior; siempre por `storage_refcount`. El logo oscuro
   viaja en el mismo guardado (`guardarConLogos()`): un subido que ya es uno de los guardados, o un anterior que pasa al otro espacio, no se descarta.

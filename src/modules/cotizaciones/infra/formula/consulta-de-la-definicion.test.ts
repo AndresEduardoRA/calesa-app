@@ -30,6 +30,7 @@ function clienteFalso(respuesta: {
 }
 
 const FORMULA = '22222222-2222-4222-8222-222222222222'
+const FDO = '44444444-4444-4444-8444-444444444444'
 const HORA = '2026-11-07T15:00:00.123456+00:00'
 const DEFINICION = {
   nodos: [
@@ -55,6 +56,7 @@ const DISENO = {
 // La fila como la devuelve la base: la publicada sin nota ni diseño, y lo que cada prueba cambia.
 const fila = (cambios: Record<string, unknown>): Record<string, unknown> => ({
   id: FORMULA,
+  formula_del_origen_id: FDO,
   estado: 'publicada',
   definicion: DEFINICION,
   params: {},
@@ -65,12 +67,15 @@ const fila = (cambios: Record<string, unknown>): Record<string, unknown> => ({
 })
 
 describe('consultaDeLaDefinicion', () => {
-  it('una fila por su id, con su estado, la definición, params, el diseño, la nota y la hora', () => {
+  it('una fila por su id, con su fórmula del origen, su estado, la definición, params, el diseño, la nota y la hora', () => {
     const { cliente, llamadas } = clienteFalso({ data: [], error: null })
     void consultaDeLaDefinicion(cliente, FORMULA)
     expect(llamadas).toEqual([
       ['from', 'formulas'],
-      ['select', 'id, estado, definicion, params, diseno, nota, actualizado_en'],
+      [
+        'select',
+        'id, formula_del_origen_id, estado, definicion, params, diseno, nota, actualizado_en',
+      ],
       ['eq', 'id', FORMULA],
       ['limit', 1],
     ])
@@ -87,6 +92,7 @@ describe('leerDefinicionSobre', () => {
       ok: true,
       data: {
         id: FORMULA,
+        formulaDelOrigenId: FDO,
         actualizadoEn: HORA,
         estado: 'borrador',
         diseno: null,

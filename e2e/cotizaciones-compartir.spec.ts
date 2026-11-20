@@ -21,7 +21,7 @@ import { sembrarFotos } from './soporte/vehiculos-lista'
 import { formatearDiaLargo, formatearHora } from '../src/shared/lib/fechas'
 
 // «Compartir la cotización» (`docs/GLOSARIO.md` › «Compartir la cotización»): desde el detalle y desde el «⋯» de la lista se abre el panel; «Imagen › Cotización»
-// muestra la portada, «Fotos» marca dos; «Texto» en «WhatsApp» con la hora del patio dice el título, el lote, el cierre de la subasta en esa zona y los montos;
+// muestra la imagen de la tarjeta, «Fotos» marca dos; «Texto» en «WhatsApp» con la hora del patio dice el título, el lote, el cierre de la subasta en esa zona y los montos;
 // «Copiar texto» copia y «Descargar PDF» baja el PDF; con el Modo Live no se ofrece; lo que un nivel esconde no viaja. La subasta de la semilla, con su plantilla.
 test.describe.configure({ mode: 'serial' })
 
@@ -84,7 +84,7 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-test('E2E desde el detalle: la portada, dos fotos marcadas y el texto de WhatsApp con la hora del patio; copiar el texto y bajar el PDF', async ({
+test('E2E desde el detalle: la imagen de la tarjeta, dos fotos marcadas y el texto de WhatsApp con la hora del patio; copiar el texto y bajar el PDF', async ({
   page,
   context,
   isMobile,
@@ -109,8 +109,8 @@ test('E2E desde el detalle: la portada, dos fotos marcadas y el texto de WhatsAp
   await expect(page).toHaveURL(/[?&]panel=compartir/)
   await expect(panel(page).getByText(`Creado por ${asesora.nombre}`)).toBeVisible()
 
-  // «Imagen › Cotización»: la portada, armada en el navegador desde su ruta.
-  await expect(panel(page).locator('img[data-compartir-portada]')).toHaveAttribute(
+  // «Imagen › Cotización»: la imagen de la tarjeta, armada en el navegador desde su ruta.
+  await expect(panel(page).locator('img[data-compartir-tarjeta]')).toHaveAttribute(
     'src',
     /^blob:/,
     { timeout: 30_000 },

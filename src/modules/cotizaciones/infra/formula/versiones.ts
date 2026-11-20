@@ -1,25 +1,55 @@
 import 'server-only'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
+import type { FormulaDelOrigen } from '../../entities/formula-del-origen'
 import {
   autoresDe,
   conAutores,
   nombreDelAutor,
-  type FormulaDelOrigen,
+  type LecturaDeLaFormula,
 } from '../../entities/formula/versiones'
 import { fallo, ok, type Resultado } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/server'
+import type { Database } from '@/shared/types/database.types'
+import { leerFormulaDeTrabajoSobre } from '../queries/formula-de-trabajo'
 import { leerAutores, leerEstado, leerPaginaSinAutores } from './consulta-de-versiones'
 
-// La pestaña «Fórmula» de un origen, en el servidor: la publicada, el borrador y la primera página de versiones (en paralelo), y los nombres de todos los que nombran
-// en una sola lectura de `perfiles`.
-export async function getFormulaDelOrigen(origenId: string): Promise<Resultado<FormulaDelOrigen>> {
+type Cliente = SupabaseClient<Database>
+
+// Un origen sin fórmula del origen todavía: sin publicada, sin borrador y sin versiones (el primer guardado la crea).
+const SIN_FORMULA: LecturaDeLaFormula = {
+  formulaDelOrigen: null,
+  publicada: null,
+  borrador: null,
+  versiones: { filas: [], siguiente: null },
+}
+
+// La pestaña «Fórmula» de un origen, en el servidor: primero su fórmula de trabajo y, si tiene, lo suyo (`leerLaFormulaDelOrigen()`).
+export async function getFormulaDelOrigen(
+  origenId: string,
+): Promise<Resultado<LecturaDeLaFormula>> {
   if (!z.guid().safeParse(origenId).success) {
     return fallo('validacion', 'Ese origen no es válido.')
   }
   const supabase = await createClient()
+  const deTrabajo = await leerFormulaDeTrabajoSobre(supabase, origenId)
+  if (!deTrabajo.ok) {
+    return deTrabajo
+  }
+  return deTrabajo.data === null
+    ? ok(SIN_FORMULA)
+    : leerLaFormulaDelOrigen(supabase, deTrabajo.data)
+}
+
+// La publicada, el borrador y la primera página de versiones de una fórmula del origen (en paralelo), y los nombres de todos los que nombran en una sola
+// lectura de `perfiles`.
+async function leerLaFormulaDelOrigen(
+  supabase: Cliente,
+  formulaDelOrigen: FormulaDelOrigen,
+): Promise<Resultado<LecturaDeLaFormula>> {
   const [estado, pagina] = await Promise.all([
-    leerEstado(supabase, origenId),
-    leerPaginaSinAutores(supabase, origenId, null),
+    leerEstado(supabase, formulaDelOrigen.id),
+    leerPaginaSinAutores(supabase, formulaDelOrigen.id, null),
   ])
   if (!estado.ok) {
     return estado
@@ -40,6 +70,7 @@ export async function getFormulaDelOrigen(origenId: string): Promise<Resultado<F
     return autores
   }
   return ok({
+    formulaDelOrigen,
     publicada: publicada && {
       ...publicada,
       autor: nombreDelAutor(autores.data, publicada.publicadoPor),

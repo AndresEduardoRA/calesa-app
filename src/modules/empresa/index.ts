@@ -16,10 +16,10 @@ export { getPoliticaDeLimpieza } from './composicion'
 export { zonasHorarias } from './entities/regional'
 
 // Monedas y tipos de cambio nombrados
-export { getTiposCambio, leerHistorial } from './composicion'
+export { getTiposCambio, leerHistorial, leerUltimosCambios } from './composicion'
 export type { TipoCambio } from './entities/tipos-cambio'
 
-// Configuración › Cotización › Ajustes (4.20-4b): la vigencia de las cotizaciones
+// Configuración › Catálogos › Vigencia (4.20-4b): la vigencia de las cotizaciones
 export { leerAjustesDeCotizacion } from './composicion'
 export { puedeCambiarAjustesDeCotizacion } from './entities/ajustes-de-cotizacion'
 export type { AjustesDeCotizacion } from './entities/ajustes-de-cotizacion'

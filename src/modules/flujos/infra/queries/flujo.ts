@@ -127,7 +127,7 @@ export const getFlujoParaConfigurar: LectorDeFlujo = cache(async (flujoId) => {
   )
 })
 
-// Los flujos que quien mira puede configurar (el selector de la pantalla): todos se leen, `flujosConfigurables()` filtra por sus permisos.
+// Los flujos que quien mira puede configurar (el flujo de cada origen y el de repuestos): todos se leen, `flujosConfigurables()` filtra por sus permisos.
 // Un flujo por origen más el de repuestos: decenas de filas, `flujos_origen_unico` y el orden por `ambito` y `nombre`.
 export const getFlujosConfigurables: LectorDeFlujosConfigurables = cache(async (permisos) => {
   const supabase = await createClient()

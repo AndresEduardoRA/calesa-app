@@ -58,7 +58,7 @@ test('E1: plazo y tono de un grupo; pasar «Con ayuda» a `gx` cambia «Total en
   if (!otroTono || !nombreDelOtro) throw new Error('el catálogo de colores está vacío')
 
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origen.id}`)
+  await page.goto(`/configuracion/origenes/${origen.id}/formula`)
   await abrirModoAvanzado(page)
   await expect(grupos(page)).toBeVisible()
   await expect(previa(page)).toContainText(enBs(5 * tipoDeCambio('oficial')))

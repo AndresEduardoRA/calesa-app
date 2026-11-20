@@ -14,7 +14,6 @@ export type PropsDeModalDeAjustes = {
   alCerrar: () => void
   // Lo guardado, con la versión de la fila: llega por props y nunca va en la `key`.
   ajustes: AjustesEmpresa
-  conDatosCargados: boolean
 }
 
 type Props = PropsDeModalDeAjustes & {

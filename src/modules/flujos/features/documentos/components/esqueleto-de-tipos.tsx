@@ -18,11 +18,10 @@ function Bloque() {
   )
 }
 
-// La forma de la pestaña «Documentos»: los dos grupos, cada uno con su encabezado y unas filas.
+// La forma de los tipos de documento: un grupo con su encabezado y unas filas.
 export function EsqueletoDeTipos() {
   return (
     <div className="grid gap-6" aria-busy="true" aria-label="Cargando los tipos de documento">
-      <Bloque />
       <Bloque />
     </div>
   )

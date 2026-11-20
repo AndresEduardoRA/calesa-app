@@ -32,30 +32,37 @@ function idPublicado({ data, error }: Respuesta): ResultadoDeAccion<string> {
   return leido.success ? ok(leido.data) : fallo('inesperado', NO_SE_LEYO)
 }
 
+// La fórmula del origen sólo si viene: sin ella la base escribe en la de trabajo (`p_formula_del_origen` tiene valor por omisión).
+const deLaFormulaDelOrigen = (id: string | null) =>
+  id === null ? {} : { p_formula_del_origen: id }
+
 export function plantillaSobre(cliente: SupabaseClient<Database>): RepositorioDeLaPlantilla {
   return {
     // Sin `p_nota`: el editor no escribe la nota del borrador (la de publicar la reemplaza). La esperada va siempre, nula para crear.
-    guardar: async ({ origenId, esperada, definicion }) =>
+    guardar: async ({ origenId, formulaDelOrigenId, esperada, definicion }) =>
       horaGuardada(
         await cliente.rpc('plantilla_guardar_borrador', {
           p_origen: origenId,
+          ...deLaFormulaDelOrigen(formulaDelOrigenId),
           p_actualizado_en_esperado: esperada ?? ESPERADA_NULA,
           // La acción ya revisó que sea un JSON que la base lee (`revisarTextoParaLaBase()`); su forma la juzga la base.
           p_def: definicion as Json,
         }),
       ),
-    publicar: async ({ origenId, esperada, nota }) =>
+    publicar: async ({ origenId, formulaDelOrigenId, esperada, nota }) =>
       idPublicado(
         await cliente.rpc('plantilla_publicar', {
           p_origen: origenId,
+          ...deLaFormulaDelOrigen(formulaDelOrigenId),
           p_actualizado_en_esperado: esperada,
           p_nota: nota,
         }),
       ),
     // `returns void`: sin error, entró.
-    descartar: async ({ origenId, esperada }) => {
+    descartar: async ({ origenId, formulaDelOrigenId, esperada }) => {
       const { error } = await cliente.rpc('plantilla_descartar_borrador', {
         p_origen: origenId,
+        ...deLaFormulaDelOrigen(formulaDelOrigenId),
         p_actualizado_en_esperado: esperada,
       })
       return error ? rechazoHaciaUnCampo(error) : ok(null)

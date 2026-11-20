@@ -1,5 +1,6 @@
 // Las tablas de referencia para editarlas (4.23-2), sobre el cliente que recibe (el del servidor, con la sesión de quien configura: la policy de lectura decide qué ve).
 //  - `leerTablasDeReferencia(origenId)`: las del origen y las compartidas, un pedido con tope (`tablas_referencia_origen_id_clave_key`).
+//  - `leerTablasCompartidas()`: sólo las compartidas (origen nulo), con el mismo tope y orden (Catálogos › Tablas compartidas).
 //  - `leerTablaParaEditar(tablaId)`: la tabla (su versión) y después **todas** sus filas por cursor `(orden, id)` (`tablas_referencia_filas_tabla_orden_idx`). Se para sólo con
 //    una página vacía o con el tope + 1: una página corta puede ser el `max_rows` del despliegue y no el final. Si alguien publica entre los pedidos, la versión leída es la
 //    vieja y publicar da PT409: nunca se pisan filas nuevas. Una fila que no se lee, o más de 2.000, y la tabla no se devuelve: publicarla a medias borraría lo que faltó.
@@ -67,6 +68,13 @@ export async function leerTablasDeReferencia(
     .order('origen_id', { nullsFirst: false })
     .limit(TOPE_DE_TABLAS + 1)
   if (error) return { ok: false, error: errorDePostgrest(error) }
+  return listaDeTablas(data)
+}
+
+// Las filas leídas con tope + 1, ya validadas y con las tapadas marcadas; una que no se lee tumba la lista.
+function listaDeTablas(
+  data: readonly unknown[],
+): Resultado<{ tablas: TablaDeReferencia[]; hayMas: boolean }> {
   const tablas: TablaSinMarca[] = []
   for (const crudo of data) {
     const tabla = deLaBase(crudo)
@@ -75,6 +83,21 @@ export async function leerTablasDeReferencia(
   }
   const { filas, hayMas } = cortarAlTope(tablas, TOPE_DE_TABLAS)
   return ok({ tablas: marcarTapadas(filas), hayMas })
+}
+
+// Las activas compartidas (origen nulo), por clave: `tablas_referencia_origen_id_clave_key`, `limit` tope + 1. Ninguna va tapada: no hay un origen que mirar.
+export async function leerTablasCompartidas(
+  cliente: Cliente,
+): Promise<Resultado<{ tablas: TablaDeReferencia[]; hayMas: boolean }>> {
+  const { data, error } = await cliente
+    .from('tablas_referencia')
+    .select(COLUMNAS_DE_LA_TABLA)
+    .eq('activa', true)
+    .is('origen_id', null)
+    .order('clave')
+    .limit(TOPE_DE_TABLAS + 1)
+  if (error) return { ok: false, error: errorDePostgrest(error) }
+  return listaDeTablas(data)
 }
 
 // Una página de filas activas en `(orden, id)` desde la última leída (sin cursor, la primera): `tablas_referencia_filas_tabla_orden_idx (tabla_id, orden, id)`.

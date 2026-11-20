@@ -8,17 +8,24 @@ import { CLAVE_DE_PREFERENCIA_POR_PAGINA, type TamanoDePagina } from '@/shared/l
 import { ProveedorDensidad, type Densidad } from '@/shared/ui/densidad'
 import { ProveedorPorPagina, type ResultadoDeGuardar } from '@/shared/ui/por-pagina'
 import { avisarError } from '@/shared/ui/toasts'
-import { TEMAS, type Preferencias, type Tema } from '../../../entities/preferencias'
+import {
+  CLAVE_DEL_MENU_PLEGADO,
+  TEMAS,
+  type Preferencias,
+  type Tema,
+} from '../../../entities/preferencias'
 import { ProveedorDeVistos } from '../../vistos/components/proveedor-de-vistos'
 import { guardarPreferencia } from '../actions/guardar-preferencia'
+import { ProveedorDelMenuPlegado } from './proveedor-del-menu-plegado'
 
 function esTema(valor: string | undefined): valor is Tema {
   return TEMAS.some((tema) => tema === valor)
 }
 
 // `widgetsDelTablero` no viaja a todo el árbol: sólo lo lee `/tablero`.
+// `menuPlegado` sí viaja: lo lee `<ProveedorDelMenuPlegado>`, que el menú lateral usa por `useMenuPlegado()`.
 // `zonaHoraria` va a `ProveedorRegional` (lo arma el layout), no a este proveedor; `vistaDeVehiculos` la lee `/vehiculos`, y `vistaDeCotizaciones` y
-// `agruparCotizaciones`, `/cotizaciones`.
+// `agruparCotizaciones`, `/cotizaciones`; `embudoDeLaFicha`, la ficha del lead.
 type Props = Omit<
   Preferencias,
   | 'widgetsDelTablero'
@@ -26,6 +33,7 @@ type Props = Omit<
   | 'vistaDeVehiculos'
   | 'vistaDeCotizaciones'
   | 'agruparCotizaciones'
+  | 'embudoDeLaFicha'
 > & {
   children: ReactNode
 }
@@ -33,7 +41,14 @@ type Props = Omit<
 // Envuelve la app con las preferencias de la persona. La densidad y el tema se cambian desde
 // cualquier lado (`useDensidad()`, `useTheme()`): acá se aplican las guardadas al entrar y se
 // guarda cada cambio, así la persona las encuentra igual en su otro dispositivo.
-export function ProveedorPreferencias({ densidad, tema, porPagina, vistos, children }: Props) {
+export function ProveedorPreferencias({
+  densidad,
+  tema,
+  porPagina,
+  vistos,
+  menuPlegado,
+  children,
+}: Props) {
   const { execute } = useAction(guardarPreferencia, {
     onError: ({ error }) => {
       // Sólo lo que la persona tiene que saber (su sesión venció). Si no se pudo guardar, la
@@ -56,6 +71,17 @@ export function ProveedorPreferencias({ densidad, tema, porPagina, vistos, child
         return { ok: true }
       }
       return { ok: false, sinRed: 'sinRed' in envio, mensaje: envio.error.mensaje }
+    },
+    [executeAsync],
+  )
+  // El menú plegado también espera la respuesta: sin red, el proveedor reenvía el último valor al volver.
+  const guardarMenu = useCallback(
+    async (plegado: boolean): Promise<boolean> => {
+      const envio = await enviarAccion(
+        executeAsync({ clave: CLAVE_DEL_MENU_PLEGADO, valor: plegado }),
+        'No se pudo guardar tu preferencia.',
+      )
+      return envio.ok
     },
     [executeAsync],
   )
@@ -90,7 +116,11 @@ export function ProveedorPreferencias({ densidad, tema, porPagina, vistos, child
   return (
     <ProveedorDensidad inicial={densidad} alCambiar={guardarDensidad}>
       <ProveedorPorPagina inicial={porPagina} alGuardar={guardarPorPagina}>
-        <ProveedorDeVistos preferencia={vistos}>{children}</ProveedorDeVistos>
+        <ProveedorDeVistos preferencia={vistos}>
+          <ProveedorDelMenuPlegado inicial={menuPlegado} alGuardar={guardarMenu}>
+            {children}
+          </ProveedorDelMenuPlegado>
+        </ProveedorDeVistos>
       </ProveedorPorPagina>
     </ProveedorDensidad>
   )

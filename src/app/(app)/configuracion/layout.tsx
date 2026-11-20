@@ -12,6 +12,7 @@ import { ICONO_DE_SECCION } from './secciones'
 // buscador es el de la página); arriba de la página, donde no se ve el menú, el selector de sección y el buscador y, dentro de una sección,
 // «‹ Configuración». Sin ninguna sección que abrir, nada de eso: la página dice «No tienes permiso». Las páginas no esperan a la sesión del
 // menú: su `loading.tsx` se ve igual que siempre. Mientras el menú y la cabecera llegan, su lugar queda reservado (la página no salta al llegar).
+// En el celular la página deja un respiro abajo: sin él, el «⋯» de la última fila de una lista corta queda bajo la burbuja del chat.
 // 10 rem: a 1280 px deja a Equipo el ancho para un correo de 38 letras entero (`equipo-200`); un título largo se parte en dos líneas.
 const CLASE_DEL_MENU = 'hidden w-40 shrink-0 lg:@min-[44rem]/configuracion:block'
 const RESERVA_DE_LA_CABECERA = 'min-h-[44px] md:min-h-9'
@@ -23,7 +24,7 @@ export default function LayoutDeConfiguracion({ children }: { children: ReactNod
       <Suspense fallback={<div className={CLASE_DEL_MENU} />}>
         <MenuLateral />
       </Suspense>
-      <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)] content-start gap-4">
+      <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)] content-start gap-4 pb-24 md:pb-0">
         <Suspense
           fallback={
             <MarcoSegunLaRuta

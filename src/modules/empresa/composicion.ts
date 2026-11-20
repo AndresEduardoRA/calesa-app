@@ -9,6 +9,7 @@ import type {
   LectorDeIntegraciones,
   LectorDeLeyendaDeTiposCambio,
   LectorDeMonedasYTiposCambio,
+  LectorDeUltimosCambios,
   LectorDeVehiculosQueCambian,
   ProbadorDeRevalidacion,
   RepositorioAjustesDeCotizacion,
@@ -36,6 +37,7 @@ import {
   getMonedasYTiposCambio,
   getTiposCambio,
   getTiposCambioDeLaBarra,
+  getUltimosCambios,
 } from './infra/queries/tipos-cambio'
 import { probarRevalidacion } from './infra/revalidacion-prueba'
 import { tiposCambioSupabase } from './infra/tipos-cambio'
@@ -56,6 +58,7 @@ export const probadorDeRevalidacion: ProbadorDeRevalidacion = probarRevalidacion
 export const leerAjustes: LectorDeAjustes = getAjustesParaEditar
 export const leerMonedasYTiposCambio: LectorDeMonedasYTiposCambio = getMonedasYTiposCambio
 export const leerHistorial: LectorDeHistorial = getHistorial
+export const leerUltimosCambios: LectorDeUltimosCambios = getUltimosCambios
 export const leerIntegraciones: LectorDeIntegraciones = getIntegraciones
 export const leerVehiculosQueCambian: LectorDeVehiculosQueCambian = getVehiculosQueCambian
 export const leerAjustesDeCotizacion: LectorDeAjustesDeCotizacion = getAjustesDeCotizacion

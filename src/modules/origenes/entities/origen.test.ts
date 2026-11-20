@@ -69,6 +69,7 @@ describe('origenesConUsoDesde', () => {
         fases: 5,
         formula_publicada: true,
         concesiones: 4,
+        tarjeta_publicada: true,
       },
     ]
     const [origen] = origenesConUsoDesde([FILA], usos)
@@ -82,6 +83,7 @@ describe('origenesConUsoDesde', () => {
       fases: 5,
       formulaPublicada: true,
       concesiones: 4,
+      tarjetaPublicada: true,
     })
   })
 
@@ -104,6 +106,7 @@ describe('origenesConUsoDesde', () => {
     const [origen] = origenesConUsoDesde([FILA], [])
     expect(origen?.uso.vehiculos).toBe(0)
     expect(origen?.uso.formulaPublicada).toBe(false)
+    expect(origen?.uso.tarjetaPublicada).toBe(false)
   })
 })
 

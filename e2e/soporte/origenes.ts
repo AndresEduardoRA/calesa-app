@@ -151,20 +151,25 @@ export async function flujoDelOrigen(
 
 // --- La pantalla --------------------------------------------------------------------------------------
 
-// Cada parte de un origen es su sub-ruta: se salta entre ellas por el menú de Configuración.
+// Cada parte de un origen es su sub-ruta y una pestaña de su página: se salta entre ellas por las pestañas. Las del origen van primero (la
+// pestaña Fórmula tiene debajo sus sub-pestañas, con otra «Fórmula»).
 export async function irAParte(page: Page, parte: string) {
-  const menu = page.getByRole('navigation', { name: 'Secciones de Configuración' })
-  await menu.getByRole('link', { name: parte, exact: true }).click()
-  await expect(menu.getByRole('link', { name: parte, exact: true })).toHaveAttribute(
-    'aria-current',
-    'page',
-  )
+  const pestana = page.getByRole('tab', { name: parte, exact: true }).first()
+  await pestana.click()
+  await expect(pestana).toHaveAttribute('aria-selected', 'true')
+}
+
+// La tarjeta de un origen en `/configuracion/origenes` (lleva la insignia de su tipo), no el sub-ítem del menú, que lleva sólo el nombre.
+export function tarjetaDelOrigen(page: Page, nombre: string) {
+  return page
+    .getByRole('link', { name: new RegExp(nombre) })
+    .filter({ has: page.getByText(/^(Subasta|Manual)$/) })
 }
 
 // Abre un origen desde la lista (su tarjeta lleva a «Datos») y, si se pide, otra de sus partes.
 export async function irADetalle(page: Page, nombre: string, seccion?: string) {
   await page.goto('/configuracion/origenes')
-  await page.getByRole('link', { name: new RegExp(nombre) }).click()
+  await tarjetaDelOrigen(page, nombre).click()
   await expect(page).toHaveURL(/\/datos$/)
   await expect(page.getByRole('heading', { name: nombre, level: 1 })).toBeVisible()
   if (seccion) {

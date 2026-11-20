@@ -6,16 +6,20 @@ import type { PaginaConAutores } from '../../../entities/formula/versiones'
 import { usePaginasDeVersiones } from './use-paginas-de-versiones'
 
 type Respuesta = Resultado<PaginaConAutores>
-type Pedido = { origenId: string; cursor: number | null; resolver: (r: Respuesta) => void }
+type Pedido = {
+  formulaDelOrigenId: string
+  cursor: number | null
+  resolver: (r: Respuesta) => void
+}
 const pedidos: Pedido[] = []
 vi.mock('../../../areas/formula/composicion.client', () => ({
-  leerPaginaDeVersiones: (pedido: { origenId: string; cursor: number | null }) =>
+  leerPaginaDeVersiones: (pedido: { formulaDelOrigenId: string; cursor: number | null }) =>
     new Promise<Respuesta>((resolver) => {
       pedidos.push({ ...pedido, resolver })
     }),
 }))
 
-const ORIGEN = '00000000-0000-4000-8000-0000000000aa'
+const FDO = '00000000-0000-4000-8000-0000000000aa'
 const idDe = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
 // `cuantas` versiones desde la `desde` hacia atrás; `siguiente` si hay más.
 const pagina = (desde: number, cuantas: number, hayMas = true): PaginaConAutores => ({
@@ -49,7 +53,7 @@ beforeEach(() => {
 
 describe('usePaginasDeVersiones', () => {
   it('empieza con la página del servidor y «Ver más» suma la siguiente por cursor', async () => {
-    const { result } = renderHook(() => usePaginasDeVersiones(ORIGEN, pagina(100, 20)))
+    const { result } = renderHook(() => usePaginasDeVersiones(FDO, pagina(100, 20)))
     expect(result.current.filas).toHaveLength(20)
     act(() => {
       result.current.verMas()
@@ -61,13 +65,13 @@ describe('usePaginasDeVersiones', () => {
     })
     await responder(1, ok(pagina(80, 20)))
     expect(pedidos).toHaveLength(1)
-    expect(pedidos[0]).toMatchObject({ origenId: ORIGEN, cursor: 81 })
+    expect(pedidos[0]).toMatchObject({ formulaDelOrigenId: FDO, cursor: 81 })
     expect(result.current.filas).toHaveLength(40)
     expect(result.current.filas.at(-1)?.version).toBe(61)
   })
 
   it('para en el tope y lo avisa', async () => {
-    const { result } = renderHook(() => usePaginasDeVersiones(ORIGEN, pagina(1000, 20)))
+    const { result } = renderHook(() => usePaginasDeVersiones(FDO, pagina(1000, 20)))
     for (let n = 1; n < TOPE_DE_LO_CARGADO / TAMANO_DE_VER_MAS; n += 1) {
       act(() => {
         result.current.verMas()
@@ -84,7 +88,7 @@ describe('usePaginasDeVersiones', () => {
   })
 
   it('el error deja lo cargado y «Reintentar» repite el pedido', async () => {
-    const { result } = renderHook(() => usePaginasDeVersiones(ORIGEN, pagina(100, 20)))
+    const { result } = renderHook(() => usePaginasDeVersiones(FDO, pagina(100, 20)))
     act(() => {
       result.current.verMas()
     })
@@ -101,7 +105,7 @@ describe('usePaginasDeVersiones', () => {
   })
 
   it('«Ir a la versión» reemplaza lo leído y descarta la respuesta vieja', async () => {
-    const { result } = renderHook(() => usePaginasDeVersiones(ORIGEN, pagina(100, 20)))
+    const { result } = renderHook(() => usePaginasDeVersiones(FDO, pagina(100, 20)))
     act(() => {
       result.current.verMas()
     })
@@ -120,7 +124,7 @@ describe('usePaginasDeVersiones', () => {
 
   it('«Volver a la más nueva» vuelve a la primera página sin pedirla', async () => {
     const inicial = pagina(100, 20)
-    const { result } = renderHook(() => usePaginasDeVersiones(ORIGEN, inicial))
+    const { result } = renderHook(() => usePaginasDeVersiones(FDO, inicial))
     act(() => {
       result.current.irA(11)
     })

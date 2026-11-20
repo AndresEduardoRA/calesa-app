@@ -35,6 +35,7 @@ const v = (extra: Partial<VersionDePlantilla> = {}): VersionDePlantilla => ({
   ...extra,
 })
 const lectura = (extra: Partial<PlantillaDelOrigen> = {}): PlantillaDelOrigen => ({
+  formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   publicada: null,
   borrador: null,
   formula: { id: 'f', version: 1 },
@@ -65,6 +66,8 @@ const origen = { id: 'o', nombre: 'Origen', activo: true } as { id: string; nomb
 describe('propsDelEditor', () => {
   it('sin fórmula, nada', () => {
     expect(propsDelEditor(lectura({ formula: null, contexto: null }), origen)).toBeNull()
+    // Sin fórmula del origen tampoco: las escrituras no sabrían en cuál escribir.
+    expect(propsDelEditor(lectura({ formulaDelOrigenId: null }), origen)).toBeNull()
   })
   it('con fórmula, sólo lo que dibuja el editor: ni la definición ni el cuerpo de un nodo', () => {
     const r = propsDelEditor(lectura({ borrador: v() }), origen)!
@@ -73,6 +76,7 @@ describe('propsDelEditor', () => {
       'contexto',
       'de',
       'esperada',
+      'formulaDelOrigenId',
       'guardada',
       'inicial',
       'origen',
@@ -84,6 +88,7 @@ describe('propsDelEditor', () => {
     expect(texto).not.toContain('"entradas"')
     expect(texto).not.toContain('"editar"')
     expect(r.origen).toEqual({ id: 'o', nombre: 'Origen' })
+    expect(r.formulaDelOrigenId).toBe('44444444-4444-4444-8444-444444444444')
   })
   it('la esperada es el actualizadoEn tal cual, o nula sin borrador', () => {
     expect(propsDelEditor(lectura({ borrador: v() }), origen)!.esperada).toBe(HORA)

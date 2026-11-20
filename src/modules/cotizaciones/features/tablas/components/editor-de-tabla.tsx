@@ -6,6 +6,7 @@ import { avisar, avisarConDeshacer } from '@/shared/ui/toasts'
 import type { FilaEditable } from '../../../entities/tablas/edicion'
 import type { TablaDeReferencia } from '../../../entities/tablas/lectura'
 import type { EstadoDelEditor } from '../../../entities/tablas/vista-del-editor'
+import type { DestinoDeLasTablas } from '../../../entities/tablas/rutas'
 import { useBorradorAlAbrir, useBorradorDeTabla } from '../hooks/use-borrador-de-tabla'
 import { useFilasDeTabla } from '../hooks/use-filas-de-tabla'
 import { AvisoDelPrimerError } from './aviso-del-primer-error'
@@ -20,7 +21,7 @@ type Props = {
   tabla: TablaDeReferencia
   // Todas sus filas activas, en su orden.
   filas: FilaEditable[]
-  origen: { id: string; nombre: string }
+  destino: DestinoDeLasTablas
 }
 
 const RECUPERADO = 'Recuperamos tus cambios sin publicar.'
@@ -28,7 +29,7 @@ const VIEJO = 'Esta tabla se publicó después de tus cambios sin publicar: no s
 
 // El editor de una tabla de referencia (4.23-3, C4–C8, C10): la tabla entera en memoria, de a 100 filas por página; nada se escribe hasta publicar. Lo hecho queda en
 // un borrador de la pestaña del navegador, por versión. Quien lo monta le da `key` con el id y la versión: publicar trae otra y lo vuelve a montar.
-export function EditorDeTabla({ tabla, filas, origen }: Props) {
+export function EditorDeTabla({ tabla, filas, destino }: Props) {
   const { locale } = useRegional()
   const recuperado = useBorradorAlAbrir(tabla.id, tabla.version)
   const leido: EstadoDelEditor = { filas, crudos: {} }
@@ -76,7 +77,7 @@ export function EditorDeTabla({ tabla, filas, origen }: Props) {
 
   return (
     <section aria-label={`Editar ${tabla.nombre}`} className="grid min-w-0 gap-3">
-      <EncabezadoDelEditor tabla={tabla} origen={origen} />
+      <EncabezadoDelEditor tabla={tabla} destino={destino} cambios={cambios} />
       {edicion.error ? (
         <AvisoDelPrimerError
           error={edicion.error}

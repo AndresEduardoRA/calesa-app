@@ -16,6 +16,7 @@ import {
   limpiarGuardado,
   prepararGuardado,
   tipearEnLaHoja,
+  NOMBRE_DE_LA_DUENA_DEL_GUARDADO,
 } from './soporte/cotizar-guardar'
 import { borrarLeadsDePrueba, crearLead } from './soporte/leads'
 import { telefonoAlAzar } from './soporte/leads-alta'
@@ -253,7 +254,7 @@ test('E2E un origen sin plantilla dibuja la tarjeta por omisión: el total, y lo
   await expect(t).not.toContainText('Este origen no tiene una plantilla')
 })
 
-test('E2E la tarjeta de una guardada nombra a quien la creó, su número y la fecha de su último guardado; vencida lo dice el modal y lo sin guardar no entra', async ({
+test('E2E la tarjeta de una guardada nombra a quien la mira (no a quien la creó), su número y la fecha de su último guardado; vencida lo dice el modal y lo sin guardar no entra', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
@@ -272,7 +273,9 @@ test('E2E la tarjeta de una guardada nombra a quien la creó, su número y la fe
   let t = await abrirLaVistaPrevia(page)
   await expect(t.getByText('Cotización n.º', { exact: true })).toBeVisible()
   await expect(variable(t, 'numero')).toHaveText(String(numeroDeLaCotizacion(id)))
-  await expect(variable(t, 'asesor_nombre')).toHaveText(asesora.nombre)
+  // El asesor de la tarjeta es quien la mira: la dueña, aunque la creó la asesora.
+  await expect(variable(t, 'asesor_nombre')).toHaveText(NOMBRE_DE_LA_DUENA_DEL_GUARDADO)
+  await expect(variable(t, 'asesor_nombre')).not.toHaveText(asesora.nombre)
   await expect(variable(t, 'fecha_larga')).toHaveText(formatearFecha(guardadaEl, { zona: zona() }))
   await expect(dialogo(page)).not.toContainText('venció')
   const guardado = await textoDe(total(t))

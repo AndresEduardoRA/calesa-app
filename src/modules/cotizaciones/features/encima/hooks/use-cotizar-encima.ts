@@ -3,12 +3,11 @@
 import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useAction } from 'next-safe-action/hooks'
-import { useContext, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
 import { avisarExito } from '@/shared/ui/toasts'
 import { avisoDeCreada, type ResultadoDeEncima } from '../../../entities/resultado-de-encima'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
-import { ContextoDeLaVistaPrevia } from '../../hoja/components/hueco-de-la-vista-previa'
 import { cotizarEncima } from '../actions/cotizar-encima'
 import { cotizarEncimaEnPar } from '../actions/cotizar-encima-en-par'
 
@@ -26,7 +25,7 @@ function segundoId(intento: string): string {
 
 // «Cotizar encima» de una guardada: un envío a la vez, con un intento (el id de la nueva) que **sólo se conserva tras una pérdida**: reintentar devuelve la misma y no crea otra. Cualquier
 // otra respuesta (también un rechazo) lo olvida, y el próximo toque lleva uno nuevo. Con la nueva creada avisa —lo descartado también, porque la página cambia— y navega a ella; el
-// botón queda ocupado hasta que la navegación lo desmonte. Con la nueva creada avisa también al área de la vista previa (`alGuardarLaCotizacion`: su portada), si la hay.
+// botón queda ocupado hasta que la navegación lo desmonte.
 // Con `enPar` (las dos hermanas en el orden de las opciones y la posición de la abierta: glosario «Cotizaciones hermanas»), crea el par nuevo en el acto.
 export function useCotizarEncima({
   anterior,
@@ -36,7 +35,6 @@ export function useCotizarEncima({
   enPar?: { anteriores: [string, string]; cual: 0 | 1 } | null
 }) {
   const router = useRouter()
-  const vistaPrevia = useContext(ContextoDeLaVistaPrevia)
   const ejecutar = useAction(cotizarEncima)
   const ejecutarEnPar = useAction(cotizarEncimaEnPar)
   const [enviando, setEnviando] = useState(false)
@@ -68,7 +66,6 @@ export function useCotizarEncima({
       intento.current = null
     }
     if (obtenido.tipo === 'creada') {
-      vistaPrevia?.alGuardarLaCotizacion?.(obtenido.id)
       avisarExito(avisoDeCreada(obtenido))
       router.push(rutaDeLaCotizacion(obtenido.id) as Route)
       return

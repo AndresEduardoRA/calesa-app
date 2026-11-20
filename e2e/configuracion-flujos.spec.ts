@@ -7,13 +7,14 @@ import {
   correoDePrueba,
   crearDuenaDePrueba,
 } from './soporte/base'
-import { borrarOrigenes, crearOrigenDePrueba } from './soporte/origenes'
+import { borrarOrigenes, crearOrigenDePrueba, tarjetaDelOrigen } from './soporte/origenes'
 import { crearAsesoraDeLaSemilla } from './soporte/recorrido'
 import { sql } from './soporte/sql'
 
-// Configuración › Flujos (5.02, `docs/UX.md` › «Flujos: configuración (estados propios)»): la dueña llega desde el hub, ve las fases de un origen en el orden de la
-// base, cambia a «Repuestos», abre el panel de una fase por la URL; un origen recién creado llega desde Orígenes y muestra el vacío; una asesora no ve la
-// pantalla. Sólo lectura: no escribe nada. Cuenta lo que dice la base, no números fijos de la semilla.
+// El flujo de un origen y el de repuestos (5.02, `docs/UX.md` › «Flujos: configuración (estados propios)»): la dueña abre la pestaña Flujo de un origen y
+// ve sus fases en el orden de la base, abre el flujo de repuestos en su sección, abre el panel de una fase por la URL; un origen recién creado llega desde
+// Orígenes por «Para cotizar y mover» y muestra el vacío; una asesora no los abre. Sólo lectura: no escribe nada. Cuenta lo que dice la base, no números
+// fijos de la semilla.
 test.describe.configure({ mode: 'serial' })
 
 const ORIGEN_NUEVO = 'E2E Flujo vacío'
@@ -57,10 +58,10 @@ function fasesDelFlujo(condicion: string): FaseEnLaBase[] {
 
 const nombreDelOrigen = (clave: string) =>
   sql(`select nombre from public.origenes where clave = '${clave}'`)
-const nombreDelFlujoDeRepuestos = () =>
-  sql("select nombre from public.flujos where ambito = 'repuestos'")
+const idDelOrigen = (clave: string) =>
+  sql(`select id from public.origenes where clave = '${clave}'`)
 
-test('la dueña ve las fases de un origen en orden, cambia a repuestos y abre una fase por la URL', async ({
+test('la dueña ve las fases de un origen en orden, abre el flujo de repuestos y una fase por la URL', async ({
   page,
 }) => {
   const subasta = nombreDelOrigen('subasta_usa')
@@ -72,25 +73,19 @@ test('la dueña ve las fases de un origen en orden, cambia a repuestos y abre un
   expect(repuestos.length).toBeGreaterThan(0)
 
   await entrar(page, duena, { fresco: true })
-  await page.goto('/configuracion/inicio')
-  await page
-    .getByRole('region')
-    .getByRole('link', { name: /Flujos/ })
-    .click()
-  await expect(page.getByRole('heading', { name: 'Flujos', level: 1 })).toBeVisible()
-  // Las fases abren primero, como diagrama; las reglas y los tipos de documento se abren desde la barra del flujo, en su panel (T38).
+  // La pestaña Flujo del origen: las fases abren primero, como diagrama; las reglas y los tipos de documento se abren desde la barra del flujo, en su panel.
+  await page.goto(`/configuracion/origenes/${idDelOrigen('subasta_usa')}/flujo`)
+  await expect(page.getByRole('heading', { name: subasta, level: 1 })).toBeVisible()
+  await expect(page.getByRole('tab', { name: 'Flujo', exact: true })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
   await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Reglas del flujo', exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Tipos de documento', exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Diagrama del flujo' })).toBeVisible()
 
-  // Un origen escrito a mano en la URL: lo que no es suyo abre el primero y no es un error.
-  await page.goto('/configuracion/flujos?origen=basura')
-  await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeVisible()
-
-  // Abre el de la subasta: las fases como las ordena la base (en la lista), con «Inicial» y «Final» donde corresponde.
-  await page.getByRole('tab', { name: subasta }).click()
-  await expect(page).toHaveURL(/origen=/)
+  // En la lista, las fases como las ordena la base, con «Inicial» y «Final» donde corresponde.
   await page.getByRole('button', { name: 'Ver como lista' }).click()
   await expect(page).toHaveURL(/vista=lista/)
   const nombres = page.locator('[data-abre-resumen]')
@@ -103,9 +98,9 @@ test('la dueña ve las fases de un origen en orden, cambia a repuestos y abre un
     if (fase.final) await expect(fila).toContainText('Final')
   }
 
-  // «Repuestos»: la URL lo dice y las fases son las del otro flujo.
-  await page.getByRole('tab', { name: nombreDelFlujoDeRepuestos() }).click()
-  await expect(page).toHaveURL(/ambito=repuestos/)
+  // Repuestos › Flujo de repuestos: las fases son las del otro flujo.
+  await page.goto('/configuracion/repuestos/flujo?vista=lista')
+  await expect(page.getByRole('heading', { name: 'Flujo de repuestos', level: 1 })).toBeVisible()
   await expect(nombres).toHaveText(repuestos.map((f) => f.nombre))
 
   // El inspector de una fase: por un clic, y también por la URL tras recargar.
@@ -130,7 +125,7 @@ test('la dueña ve las fases de un origen en orden, cambia a repuestos y abre un
 
   // Un id que no es de una fase del flujo no abre nada.
   await page.goto(
-    '/configuracion/flujos?ambito=repuestos&vista=lista&fase=00000000-0000-4000-8000-000000000000',
+    '/configuracion/repuestos/flujo?vista=lista&fase=00000000-0000-4000-8000-000000000000',
   )
   await expect(nombres).toHaveText(repuestos.map((f) => f.nombre))
   await expect(page.getByRole('dialog')).toBeHidden()
@@ -140,26 +135,28 @@ test('un origen recién creado llega desde Orígenes y su flujo está vacío', a
   const origen = await crearOrigenDePrueba(ORIGEN_NUEVO, 'flujo_vacio')
   await entrar(page, duena, { fresco: true })
   await page.goto('/configuracion/origenes')
-  await page.getByRole('link', { name: new RegExp(ORIGEN_NUEVO) }).click()
+  await tarjetaDelOrigen(page, ORIGEN_NUEVO).click()
   await expect(page.getByRole('heading', { name: ORIGEN_NUEVO, level: 1 })).toBeVisible()
 
-  const pasos = page.getByRole('region', { name: `Siguientes pasos para ${ORIGEN_NUEVO}` })
-  await pasos
-    .getByRole('listitem')
-    .filter({ hasText: 'Configura el flujo' })
-    .getByRole('link', { name: 'Abrir' })
+  // «Para cotizar y mover»: el paso Flujo bloquea (sin fases) y lleva a su pestaña.
+  await page
+    .getByRole('region', { name: 'Para cotizar y mover' })
+    .getByRole('link', { name: /Flujo/ })
     .click()
-  await expect(page).toHaveURL(new RegExp(`/configuracion/flujos\\?origen=${origen.id}`))
-  await expect(page.getByRole('tab', { name: ORIGEN_NUEVO })).toHaveAttribute(
+  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${origen.id}/flujo$`))
+  await expect(page.getByRole('tab', { name: 'Flujo', exact: true })).toHaveAttribute(
     'aria-selected',
     'true',
   )
   await expect(page.getByText(`El flujo de ${ORIGEN_NUEVO} todavía no tiene fases.`)).toBeVisible()
 })
 
-test('una asesora no ve la pantalla de flujos', async ({ page }) => {
+test('una asesora no abre el flujo de un origen ni el de repuestos', async ({ page }) => {
   await entrar(page, asesora, { fresco: true })
-  await page.goto('/configuracion/flujos')
+  await page.goto(`/configuracion/origenes/${idDelOrigen('subasta_usa')}/flujo`)
+  await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeHidden()
+  await page.goto('/configuracion/repuestos/flujo')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeHidden()
 })
