@@ -4,6 +4,7 @@ import path from 'node:path'
 import type { CSSProperties } from 'react'
 import { ImageResponse } from 'next/og'
 import { COLOR_TINTA } from '@/shared/config/app'
+import { cajaDelLogo } from '../../../entities/tarjeta/caja-del-logo'
 import { FONDO_AUTOMATICO, RELLENO_DE_LA_CELDA } from '../../../entities/tarjeta/estilo-de-la-celda'
 import type { CeldaDibujada, Geometria } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
 import {
@@ -11,11 +12,11 @@ import {
   FAMILIA_DE_LA_TARJETA,
   VARIANTES_DE_LAS_FUENTES,
 } from '../fuentes-de-la-tarjeta'
-import type { LogoDelPdf } from '../pdf/logo-del-pdf'
+import type { LogoDeLaTarjeta } from '../logo-de-la-tarjeta'
 
 // La tarjeta de una cotización como imagen PNG (`ImageResponse` de `next/og`, en el servidor: no suma JS a ninguna pantalla), al ancho de la tarjeta en px: la
 // misma geometría que la vista previa y el PDF, pintada con posiciones absolutas (satori no tiene `grid` y todo `div` con más de un hijo lleva `display: flex`).
-// Geist de la tarjeta; el logo, el que ya bajó y filtró `logoDelPdf()`, como `data:`. La usa la portada de la cotización: si cambias cómo se dibuja, sube
+// Geist de la tarjeta; el logo, el que ya bajó y convirtió `logoParaDibujar()`, como `data:`, en el rectángulo de `cajaDelLogo()`. La usa la portada de la cotización: si cambias cómo se dibuja, sube
 // `_portada_version_del_dibujo()` en una migración (si no, las portadas ya guardadas no se rehacen).
 
 type Fuente = { name: string; data: Buffer; weight: 400 | 600; style: 'normal' | 'italic' }
@@ -36,9 +37,8 @@ function leerFuentes(): Promise<Fuente[]> {
 const MIME = { png: 'image/png', jpg: 'image/jpeg', svg: 'image/svg+xml' } as const
 const JUSTIFICAR = { arriba: 'flex-start', centro: 'center', abajo: 'flex-end' } as const
 const ALINEAR = { izquierda: 'left', centro: 'center', derecha: 'right' } as const
-const ALINEAR_LOGO = { izquierda: 'flex-start', centro: 'center', derecha: 'flex-end' } as const
 
-const comoDatos = (logo: LogoDelPdf) =>
+const comoDatos = (logo: LogoDeLaTarjeta) =>
   `data:${MIME[logo.tipo]};base64,${logo.datos.toString('base64')}`
 
 function estiloDe(c: CeldaDibujada): CSSProperties {
@@ -74,10 +74,38 @@ function estiloDe(c: CeldaDibujada): CSSProperties {
   }
 }
 
-function Celda({ celda, logo }: { celda: CeldaDibujada; logo: string | null }) {
+type LogoEnDatos = { src: string; ancho: number; alto: number }
+
+// El logo en la caja interior de su celda: un `div` de ese tamaño y, adentro, el `<img>` en el rectángulo de `cajaDelLogo()` (satori no tiene un `object-position`
+// confiable).
+function LogoDeLaCelda({ celda, logo }: { celda: CeldaDibujada; logo: LogoEnDatos }) {
+  const caja = cajaDelLogo(celda, 1, logo)
+  if (caja === null) {
+    return null
+  }
+  return (
+    <div
+      style={{
+        display: 'flex',
+        position: 'relative',
+        width: caja.interior.ancho,
+        height: caja.interior.alto,
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse dibuja con satori: no hay next/image. */}
+      <img
+        src={logo.src}
+        alt=""
+        width={caja.logo.ancho}
+        height={caja.logo.alto}
+        style={{ position: 'absolute', left: caja.logo.x, top: caja.logo.y }}
+      />
+    </div>
+  )
+}
+
+function Celda({ celda, logo }: { celda: CeldaDibujada; logo: LogoEnDatos | null }) {
   const c = celda.contenido
-  const ancho = Math.max(1, Math.floor(celda.ancho - 8))
-  const alto = Math.max(1, Math.floor(celda.alto - 8))
   return (
     <div style={estiloDe(celda)}>
       {c.tipo === 'texto' && c.lineas.length > 0 ? (
@@ -87,19 +115,7 @@ function Celda({ celda, logo }: { celda: CeldaDibujada; logo: string | null }) {
       {c.tipo === 'monto' && c.segunda !== null ? (
         <div style={{ display: 'flex' }}>{c.segunda.texto}</div>
       ) : null}
-      {c.tipo === 'logo' && logo !== null ? (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: ALINEAR_LOGO[celda.estilo.alinear],
-            width: ancho,
-            height: alto,
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse dibuja con satori: no hay next/image. */}
-          <img src={logo} width={ancho} height={alto} alt="" style={{ objectFit: 'contain' }} />
-        </div>
-      ) : null}
+      {c.tipo === 'logo' && logo !== null ? <LogoDeLaCelda celda={celda} logo={logo} /> : null}
     </div>
   )
 }
@@ -110,11 +126,11 @@ export async function pngDeLaTarjeta({
   logo,
 }: {
   geometria: Geometria
-  logo: LogoDelPdf | null
+  logo: LogoDeLaTarjeta | null
 }): Promise<Uint8Array<ArrayBuffer>> {
   const ancho = Math.ceil(geometria.ancho)
   const alto = Math.ceil(geometria.alto)
-  const datos = logo === null ? null : comoDatos(logo)
+  const datos = logo === null ? null : { src: comoDatos(logo), ancho: logo.ancho, alto: logo.alto }
   const respuesta = new ImageResponse(
     <div
       style={{

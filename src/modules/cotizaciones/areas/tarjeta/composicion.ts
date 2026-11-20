@@ -19,7 +19,7 @@ import {
 import { lecturaRetocada } from '../../entities/tarjeta/retoques/aplicar-retoques'
 import { getAsesorDeLaCotizacion } from '../../infra/tarjeta/asesor-de-la-cotizacion'
 import { setRetoques } from '../../infra/tarjeta/retoques'
-import { logoDelPdf } from '../../infra/tarjeta/pdf/logo-del-pdf'
+import { logoParaDibujar } from '../../infra/tarjeta/logo-de-la-tarjeta'
 import {
   bajarLaPortada as bajar,
   getEstadoDeLaPortada,
@@ -110,7 +110,7 @@ export async function pdfDeUnaGuardada(
     hermana?.ok && entrada.hermana
       ? { geometria: hermana.data.geometria, antes: entrada.hermana.antes }
       : null
-  const logo = await logoDelPdf({
+  const logo = await logoParaDibujar({
     logo:
       conLogo(geometria) || (deLaHermana !== null && conLogo(deLaHermana.geometria))
         ? entrada.contexto.logo
@@ -144,7 +144,7 @@ export async function imagenDeUnaGuardada(
     return armada
   }
   const { geometria } = armada.data
-  const logo = await logoDelPdf({
+  const logo = await logoParaDibujar({
     logo: conLogo(geometria) ? entrada.contexto.logo : null,
     tope: entrada.topeDelLogo,
   })

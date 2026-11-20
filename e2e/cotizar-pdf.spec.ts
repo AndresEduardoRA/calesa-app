@@ -44,9 +44,10 @@ import {
   SVG_CON_ESTILO,
   SVG_SIMPLE,
   VERDE,
-  WEBP,
+  WEBP_ROTO,
   leerConElLogo,
 } from './soporte/cotizar-pdf-logo'
+import { logosDePrueba } from './soporte/cotizacion-tarjeta-logo'
 import { tomarInstantaneaDeEmpresa, restaurarEmpresa } from './soporte/empresa'
 import { borrarLeadsDePrueba, crearLead } from './soporte/leads'
 import { telefonoAlAzar } from './soporte/leads-alta'
@@ -274,7 +275,7 @@ test('E2E un origen sin plantilla da el PDF por omisión, sólo con «Total»; v
   expect(lineas.some((l) => /vencid|venció/i.test(l))).toBe(false)
 })
 
-test('E2E el logo: un PNG va como imagen, un SVG simple como vector, y un SVG con estilos o un WebP no van; las líneas no cambian', async ({
+test('E2E el logo: un PNG va como imagen, un SVG simple como vector, un SVG con estilos y un WebP van convertidos a PNG y uno roto no va; las líneas no cambian', async ({
   page,
 }) => {
   const antes = await tomarInstantaneaDeEmpresa()
@@ -292,10 +293,12 @@ test('E2E el logo: un PNG va como imagen, un SVG simple como vector, y un SVG co
     expect(simple.imagenes).toBe(0)
     expect(simple.rellenos).toContain(VERDE)
     const conEstilo = await conLogo(SVG_CON_ESTILO, 'svg', 'image/svg+xml')
-    expect(conEstilo.imagenes).toBe(0)
+    expect(conEstilo.imagenes).toBe(1)
     expect(conEstilo.rellenos).not.toContain(VERDE)
     expect(conEstilo.rellenos).not.toContain(ROSA)
-    expect((await conLogo(WEBP, 'webp', 'image/webp')).imagenes).toBe(0)
+    const { webp } = await logosDePrueba()
+    expect((await conLogo(webp.datos, webp.extension, webp.tipo)).imagenes).toBe(1)
+    expect((await conLogo(WEBP_ROTO, 'webp', 'image/webp')).imagenes).toBe(0)
   } finally {
     await restaurarEmpresa(antes)
   }

@@ -279,7 +279,7 @@ begin
   if v_tc is null then
     insert into public.tipos_cambio (clave, nombre, moneda_de, moneda_a, valor) values ('po_tc', 'PO', 'USD', 'BOB', 7) returning id into v_tc;
   end if;
-  if pg_temp.po_clave(c) !~ '^p1-[0-9a-f]{32}$' then raise exception 'la clave no tiene la forma p<versión>-md5: %', pg_temp.po_clave(c); end if;
+  if pg_temp.po_clave(c) !~ ('^p' || public._portada_version_del_dibujo() || '-[0-9a-f]{32}$') then raise exception 'la clave no tiene la forma p<versión>-md5: %', pg_temp.po_clave(c); end if;
 
   -- Cambia: cada entrada, por separado.
   v_antes := pg_temp.po_clave(c);
