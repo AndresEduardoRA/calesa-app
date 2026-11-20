@@ -25,8 +25,8 @@ const SIN_MARGEN: MargenDelLienzo = { arriba: 0, izquierda: 0 }
 // que el PDF, la imagen y la vista previa de cotizar (`geometriaDeLaTarjeta()` y `<CeldaDeLaTarjeta>`), con lo guardado de la cotización de referencia o con las
 // cifras de ejemplo. «Ajustar» achica la tarjeta para caber en su marco (nunca agranda; el margen de la capa no cuenta); «100 %» la deja a escala 1 y el marco se
 // desplaza de costado. Encima, sin escalar, la capa del editor (cabeceras, asas y la grilla accesible): por eso la tarjeta dibujada va `aria-hidden` cuando hay
-// capa. Sin capa es la tarjeta en sólo lectura. Debajo, fuera del marco que se desplaza, lo que el editor ponga (las filas ocultas con esta referencia). No lee ni
-// escribe.
+// capa. Sin capa es la tarjeta en sólo lectura. Debajo, fuera del marco que se desplaza, lo que el editor ponga (las filas ocultas con esta referencia). Si el
+// logo de la referencia no carga, `alFallarElLogo` (el editor lo avisa). No lee ni escribe.
 export function LienzoDeLaPlantilla({
   lectura,
   referencia,
@@ -34,6 +34,7 @@ export function LienzoDeLaPlantilla({
   margen = SIN_MARGEN,
   capa,
   debajo,
+  alFallarElLogo,
 }: PropsDelLienzoDeLaPlantilla) {
   const { locale } = useRegional()
   const leida = referencia?.estado === 'cotizacion' ? referencia : null
@@ -87,7 +88,12 @@ export function LienzoDeLaPlantilla({
           >
             <div className="relative origin-top-left" style={lienzo}>
               {geometria.celdas.map((c) => (
-                <CeldaDeLaTarjeta key={c.id} celda={c} logo={logo} />
+                <CeldaDeLaTarjeta
+                  key={c.id}
+                  celda={c}
+                  logo={logo}
+                  {...(alFallarElLogo ? { alFallarElLogo } : {})}
+                />
               ))}
             </div>
           </div>

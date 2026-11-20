@@ -13,9 +13,12 @@ import { CeldaDeLaTarjeta } from './celda-de-la-tarjeta'
 export function TarjetaDeCotizacion({
   geometria,
   logo,
+  alFallarElLogo,
 }: {
   geometria: Geometria
   logo: { nombre: string; url: string } | null
+  // El logo no cargó: la celda queda vacía y quien dibuja puede avisar.
+  alFallarElLogo?: () => void
 }) {
   const { ref, escala } = useEscalaDeLaTarjeta(geometria.ancho)
   const lienzo = {
@@ -37,7 +40,12 @@ export function TarjetaDeCotizacion({
     >
       <div className="relative origin-top-left" style={lienzo}>
         {geometria.celdas.map((c) => (
-          <CeldaDeLaTarjeta key={c.id} celda={c} logo={logo} />
+          <CeldaDeLaTarjeta
+            key={c.id}
+            celda={c}
+            logo={logo}
+            {...(alFallarElLogo ? { alFallarElLogo } : {})}
+          />
         ))}
       </div>
     </div>

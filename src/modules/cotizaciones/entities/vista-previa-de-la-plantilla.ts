@@ -47,4 +47,6 @@ export type PropsDelLienzoDeLaPlantilla = {
   readonly capa?: (g: GeometriaParaEditar, escala: number) => ReactNode
   // Lo que va debajo (las filas ocultas con esta referencia).
   readonly debajo?: (g: GeometriaParaEditar) => ReactNode
+  // El logo de la empresa no se pudo dibujar (la imagen no cargó): el editor lo avisa.
+  readonly alFallarElLogo?: () => void
 }
