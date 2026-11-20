@@ -46,7 +46,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 - **[T22]** «Documentos por aprobar» de Inicio sólo trae los documentos de vehículos (`_bandeja_por_aprobar`): quien sólo aprueba los de repuestos no ve el bloque. Sumar los de los ítems pide ampliar esa RPC y su medición.
 - **[T22]** Un bloque «Leads sin seguimiento» y «Personas sin rol» no llevan a una lista filtrada: ni `/leads` ni Equipo tienen ese filtro (cada fila abre su ficha o a la persona).
-- **[T02]** Un bloque «Subastas sin resolver» en Inicio — hoy es un grupo de la bandeja del día de `/logistica` y una opción de «Situación» en el inventario.
+- **[T02]** Un bloque «Subastas sin resolver» en Inicio — hoy es un grupo de la bandeja del día de `/logistica` y «Subasta: Sin resolver» en el inventario.
 - **[A1c]** Avisos sin salida: el bloqueo de eliminar una fase no enlaza «las fases que esperan» ni «las unidades en ella» (`ImpactoDeFase` sólo trae conteos; pide los ids); «Editar grupo» con más unidades de las que se muestran y «súbelo por partes» de documentos de un grupo de más de 100 no dicen el paso siguiente; «No pudimos leer los títulos» del panel de fuera de regla no ofrece «Reintentar».
 - **[6-2]** Publicar en la vitrina mueve la versión de la ficha (`vehiculo_vitrina` usa `vehiculos.actualizado_en`) — una columna `vitrina_actualizado_en` que la RPC exija y devuelva.
 - **[6-4]** Se puede pedir un requisito de dato cuya regla está apagada (`transporte.*`, `aduana.*`, `pagos.*`) y nadie puede cumplirlo, y «Qué falta» igual ofrece «Pedirlo» a quien no tiene la clave del hueco — que `revisar_flujo()` lo avise con un código propio o que la RPC lo rechace (saberlo en «Qué falta» exige leer las reglas).
@@ -99,6 +99,9 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Un `22023` de `_formula_rechazar` cuyo `hint` es un nodo llamado `valor` se pinta bajo el campo «Valor nuevo» del ⚙.
 - **[—]** Al descartar o publicar la fórmula, un error que no es PT409 ni falta de red muestra el mensaje de la base (guardar ya usa texto propio).
 - **[—]** Tras pasar a stock, el estado derivado de la cabecera del proyecto de repuestos (pendientes) sólo se actualiza al volver a entrar.
+- **[—]** Dos e2e de escritorio cayeron en la noche del 2026-11-19 sobre `c880e916`: `configuracion-cotizacion-tarjeta-excel.spec.ts:118` (ensanchar una columna arrastrando y mover una fila con el teclado) y `cotizaciones-tarjetas-y-grupos.spec.ts:184` (el clic en la portada no abre el resumen) — el issue `noche-roja` #395 lleva la cuenta; se arreglan si caen otra noche (`.claude/rules/e2e.md`).
+- **[—]** «Actividad reciente» de la ficha del vehículo escribe el cambio de lead con su id («Lead de …: — → dbe6287c-…»): va el nombre del lead,
+  o sin el id si quien mira no lo ve.
 - **[—]** Dos e2e de escritorio cayeron en la noche del 2026-11-19 sobre `c880e916`: `configuracion-cotizacion-tarjeta-excel.spec.ts:118` (ensanchar una columna arrastrando y mover una fila con el teclado) y `cotizaciones-tarjetas-y-grupos.spec.ts:184` (el clic en la imagen no abre el resumen) — el issue `noche-roja` #395 lleva la cuenta; se arreglan si caen otra noche (`.claude/rules/e2e.md`).
 
 ## Deuda técnica
@@ -168,7 +171,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Límites aceptados
 
-- **[T14]** Una fase rara (pocas unidades en un origen grande) del filtro «Situación» recorre el origen en orden por `vehiculos_origen_listado_idx`; un índice `(origen_id, fase_id, creado_en desc, id desc)` lo acotaría si llega a notarse.
+- **[T14]** Una fase rara (pocas unidades en un origen grande) del filtro «Fase» recorre el origen en orden por `vehiculos_origen_listado_idx`; un índice `(origen_id, fase_id, creado_en desc, id desc)` lo acotaría si llega a notarse.
 - **[T02]** Una no ganada en una fase de subasta que no es la inicial queda retenida de la limpieza por «fase» o «bloqueo», como hoy.
 - **[—]** Un aviso de limpieza no se repite tras quitar «Conservar» o restaurar; con `aviso_dias` > 90 un vencimiento puede avisar dos veces.
 - **[—]** Tablero: «Finales» cuenta por cohorte de creación, porque no hay fecha de marca final.
@@ -199,7 +202,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
   arreglo va en el marco del alta (no avisar «Lead creado» cuando vuelve a un formulario con `?elegir=`) o en el borrador (no avisar al reponer tras el alta).
 - **[T20]** Con «Ver como» la franja del aviso (≈ 2,25 rem) hace desplazar la página de la unidad de logística en escritorio: el alto fijo (`--alto-del-detalle`) no la descuenta.
 - **[T20]** Redimensionar la ventana cruzando los 1024 px remonta los huecos de la unidad (zonas ⇄ bloques) y se pierde lo escrito y no guardado; la forma se elige por el ancho de la pantalla.
-- **[—]** Con sólo no ganadas en un origen, el inventario sin filtros dice el vacío de primera vez (el filtro por defecto las oculta) — que diga que hay no ganadas y ofrezca verlas con «Situación».
+- **[—]** Con sólo no ganadas en un origen, el inventario sin filtros dice el vacío de primera vez (el filtro por defecto las oculta) — que diga que hay no ganadas y ofrezca verlas con «Subasta: No ganadas».
 - **[—]** «Nueva oportunidad…» del «⋯» no ofrece vehículo: haría falta una lectura de los vehículos del lead desde `src/app` (una Server Action de `vehiculos` pasada por props) — hoy se agrega con «Editar» en la ficha.
 - **[4-20]** Ancho contra altura del aviso de escritorio: a 22 rem, al 200 % tapa texto de la última fila de una lista — decidir (ancho, angosto o que se aparte) y afirmarlo en `e2e/avisos-con-descripcion.spec.ts` (`--ancho-del-aviso`; `avisosAbajo()` cambia con el ancho).
 - **[R7]** Blancos táctiles bajo 44 px en componentes de toda pantalla (`Tabs`, `Switch`, `Checkbox`, `Popover` de Roles, «Nuevo lead» del marco, «Saltar al contenido», «Abrir» de las listas, el botón de 32 px): 121 en `BLANCOS_CONOCIDOS` — rediseño; se cierra vaciando la lista.

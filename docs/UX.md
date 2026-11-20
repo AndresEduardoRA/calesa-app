@@ -259,7 +259,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   `editar-oportunidad&oportunidad=<id>`). `?seccion=seguimientos|vehiculos|oportunidades|cotizaciones|portal` lleva a su bloque (`vehiculos` y `#relacionados`
   a «Vehículos») y le da el foco al título; con un `?panel=` también abre lo suyo. Un bloque sin permiso no se dibuja ni está en el índice.
 - **Vehículos** — `/vehiculos` (`vehiculos.*`): tabla + panel de filtros. Pestaña por origen (`?origen=`); filtros en URL (`q`,
-  `situacion`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; la fila y la tarjeta son enlaces a la ficha `/vehiculos/<id>` (Ctrl o el
+  `subasta`, `orden`, `fase`, `categoria`, `anio.min`, `a.<campo>`…), `?cursor=`, vistas guardadas; la fila y la tarjeta son enlaces a la ficha `/vehiculos/<id>` (Ctrl o el
   botón del medio abren otra pestaña; la casilla, el «⋯», «Publicar» y la foto no navegan); un `?vehiculo=<id>` viejo redirige a la ficha (ver «Enlace viejo»);
   alta `?panel=nuevo` (sin el alta suelta pero con la de cotizar: «Nuevo» apagado con «Cotizar un vehículo nuevo», que abre la hoja con el panel
   del vehículo en alta); edición `?editar=`; `?vitrina=si|no`, `?limpieza=si|no`; el «⋯» de cada fila y tarjeta (el mismo de la ficha: ver «Vehículos
@@ -836,11 +836,15 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Entrar:** `vehiculos.ver` en algún origen; pestañas = orígenes donde lo tiene, también desactivados («Inactivo»); sin ninguno, «sin
   permiso» diciendo a quién pedírselo. Origen desactivado: se edita lo que hay; «Nuevo», `N` y `?panel=nuevo` no abren nada.
 - **Lista:** esqueleto; vacío de primera vez con la frase del origen y «Nuevo» si puede; vacío por filtro con «Limpiar filtros»; error.
-  Filtros: los «filtrables» del origen más situación, categoría y año; lo inválido en la URL se ignora; cambiar de pestaña suelta los filtros.
-  «Situación» (`?situacion=`, varias a la vez): en un origen de subasta, «En subasta», «Sin resolver» y «No ganadas», y en todo origen sus fases y «Sin fase»; sin
-  elegir, la lista no trae las no ganadas, y elegirlas es la forma de verlas. En un origen de subasta, un atajo «Sin resolver N» (hasta «99+») arriba de la lista
-  pone o quita ese filtro de un toque; sin ninguna pendiente y sin el filtro puesto, no se dibuja. «Subasta» (la fase) filtra a las que no están en subasta
-  ni sin resolver: las demás figuran por su situación.
+  Filtros: los «filtrables» del origen más subasta, fase, categoría y año; lo inválido en la URL se ignora; cambiar de pestaña suelta los filtros.
+  «Subasta» (`?subasta=`, una a la vez, sólo en un origen de subasta): «Cualquiera» (por defecto), «Cierra hoy», «Cierra en 48 h», «Cierra esta semana» (lunes a
+  domingo; las tres cuentan desde ahora en la zona de la empresa y sólo traen vivas), «Todas las vivas», «Sin resolver» y «No ganadas»; sin elegir, la lista no
+  trae las no ganadas, y elegirlas es la forma de verlas. Justo debajo, «Orden» (`?orden=`, sólo en un origen de subasta): «Más recientes» o «Cierre más
+  próximo», que es el de siempre cuando «Subasta» tiene valor; por cierre van primero las vivas por su cierre, después las vivas sin fecha y al final el resto
+  por alta, y sobre la lista dice «Cierre más próximo primero» (en otra página, «Volver al principio»). «Fase» (`?fase=`, varias a la vez): las fases del
+  origen y «Sin fase»; filtra la columna, así que la fase de la subasta trae todo lo que está en ella, viva o no. En un origen de subasta, un atajo «Sin
+  resolver N» (hasta «99+») arriba de la lista pone o quita `?subasta=sin_resolver` de un toque; sin ninguna pendiente y sin el filtro puesto, no se dibuja.
+  Un `?situacion=` viejo redirige (308) a su equivalente, y una vista guardada con él se lee traducida.
 - **Alta y edición (panel):** «Datos principales», «Precio» y un bloque por grupo del layout (con obligatorio nace abierto; con error se
   abre solo); rechazos junto al campo (VIN o lote repetido también). Conflicto: quién y cuándo, «Ver cómo quedó» y «Recargar».
 - **Fotos:** elegir (selector, soltar o cámara) las deja en una bandeja sin subir que dice lo que no entra y por qué (no es foto, > 25 MB,
@@ -1061,7 +1065,7 @@ Bloque del panel de la fase (`?fase=<id>`): el resumen («Datos: 1 (bloquea)»),
   confirma en línea (no destruye nada) diciendo cuántas y que no se mueven, quedan marcadas («Más de 50…»; si la base revisó 1.000, lo
   dice). Recargar descarta el aviso; el foco vuelve al interruptor.
 - **Fuera de regla** (`?panel=fuera-de-regla`): sobre la lista de fases, «N unidades fuera de regla» (acotado) con «Ver cuáles»: por fase,
-  el título y cuántos requisitos le faltan; «Verlas en el inventario» (`/vehiculos?origen=&situacion=<fase>`, no en repuestos). Lo oculto dice «Un
+  el título y cuántos requisitos le faltan; «Verlas en el inventario» (`/vehiculos?origen=&fase=<fase>`, no en repuestos). Lo oculto dice «Un
   vehículo que no puedes ver». Tope 50 con aviso. Sólo lista.
 - **Quitar** (`?eliminar=requisito&quitar=<id>`, `<Confirmar>`): irreversible.
 - **Estados:** sin requisitos, tope de 500 con aviso, error al leer los tipos, conflicto (el aviso del flujo), sin permiso (`42501`).

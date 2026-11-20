@@ -182,10 +182,9 @@ describe('las situaciones propias del filtro', () => {
   it('el atajo «Sin resolver» está puesto sólo con ese único valor', () => {
     expect(soloSinResolver(soloSinResolverComoFiltro())).toBe(true)
     expect(soloSinResolver(undefined)).toBe(false)
-    expect(soloSinResolver({ tipo: 'opciones', valores: ['sin_resolver', 'en_subasta'] })).toBe(
-      false,
-    )
-    expect(soloSinResolver({ tipo: 'opciones', valores: ['en_subasta'] })).toBe(false)
+    expect(soloSinResolverComoFiltro()).toEqual({ tipo: 'eleccion', valor: 'sin_resolver' })
+    expect(soloSinResolver({ tipo: 'eleccion', valor: 'hoy' })).toBe(false)
+    expect(soloSinResolver({ tipo: 'opciones', valores: ['sin_resolver'] })).toBe(false)
     expect(soloSinResolver({ tipo: 'booleano', valor: true })).toBe(false)
   })
 })
