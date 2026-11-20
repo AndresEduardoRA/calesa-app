@@ -107,7 +107,7 @@ function CampoDelNombre({ nueva }: { nueva: NuevaTabla }) {
 // «Nueva tabla» (`?panel=nueva-tabla`): el nombre (con la clave que sale de él y no cambia), para quién es (sólo en un origen) y las columnas. Quien lo monta le
 // da `key` por apertura: cada apertura es un intento nuevo, con su id. Al entrar se abre la tabla nueva para sumarle filas.
 export function PanelDeNuevaTabla({ abierto, alCerrar, origen }: Props) {
-  const nueva = useNuevaTabla({ origenId: origen?.id ?? null, alCerrar })
+  const nueva = useNuevaTabla({ origenId: origen?.id ?? null })
   const idFormulario = useId()
   const formulario = useRef<HTMLFormElement>(null)
   return (

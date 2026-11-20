@@ -22,7 +22,6 @@ export type ParaQuien = 'origen' | 'compartida'
 type Opciones = {
   // El origen de la pestaña (nulo en Catálogos, donde la tabla siempre es compartida).
   origenId: string | null
-  alCerrar: () => void
 }
 
 const MENSAJE_DE_VALIDACION = 'Revisa el nombre y las columnas.'
@@ -47,7 +46,7 @@ const tieneCampoALaVista = (porCampo: Record<string, string>) =>
 // «Nueva tabla» (`?panel=nueva-tabla`): el nombre (y la clave que sale de él), para quién es y las columnas. El id del intento nace con el panel (quien lo monta le
 // da `key` por apertura): repetir el envío tras una pérdida de red devuelve la misma tabla. Lo que la base rechaza vuelve junto a su campo; al entrar, abre la tabla
 // nueva para sumarle filas.
-export function useNuevaTabla({ origenId, alCerrar }: Opciones) {
+export function useNuevaTabla({ origenId }: Opciones) {
   const router = useRouter()
   const [id] = useState(() => crypto.randomUUID())
   const [nombre, setNombre] = useState('')
@@ -83,9 +82,9 @@ export function useNuevaTabla({ origenId, alCerrar }: Opciones) {
     if (hecho.ok) {
       setPorCampo({})
       setError(null)
-      alCerrar()
+      // La ruta de la tabla nueva ya no lleva `?panel=`: cierra el panel. Cerrarlo antes escribiría la URL después y pisaría esta.
       avisarExito(`Creaste «${recortado(nombre)}». Suma sus filas y publícala.`)
-      router.push(rutaDeLasTablas(origenId, hecho.data.id))
+      router.replace(rutaDeLasTablas(origenId, hecho.data.id))
       return true
     }
     if ('sinRed' in hecho) {

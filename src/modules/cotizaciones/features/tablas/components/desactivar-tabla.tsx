@@ -42,9 +42,9 @@ export function DesactivarTabla({ abierto, alCerrar, tabla, origenId }: Props) {
     if (hecho === null) return
     setSinRed(false)
     if (hecho.ok) {
-      alCerrar()
+      // La ruta nueva ya no lleva `?panel=`: cierra el diálogo. Cerrarlo antes escribiría la URL después y pisaría esta.
       avisarExito(`Desactivaste «${tabla.nombre}».`)
-      router.push(rutaDeLasTablas(origenId))
+      router.replace(rutaDeLasTablas(origenId))
       return
     }
     if ('sinRed' in hecho) {
