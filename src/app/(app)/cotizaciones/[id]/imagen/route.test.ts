@@ -80,7 +80,8 @@ const fallo = (codigo: string) => ({ ok: false, error: { codigo, mensaje: 'x' } 
 const etiqueta = (ancho: 480 | null = null) =>
   etiquetaDeLaImagen({ huella: HUELLA, usuarioId: YO, ancho })
 
-// Con qué pidió la ruta armar la imagen: el ancho y el contexto que devuelve su `contextoDe` con la hoja.
+// Con qué pidió la ruta armar la imagen: el ancho y lo que devuelve su `contextoDe` con la hoja (el contexto y si se leyó entero). El armado de prueba sale
+// `completa` si el contexto se leyó entero.
 let pedidoDeArmar: { ancho: unknown; contexto: unknown } | null = null
 
 const pedir = (id = ID, cabeceras: Record<string, string> = {}, consulta = '') =>
@@ -96,9 +97,16 @@ beforeEach(() => {
   sesion.mockResolvedValue(activa)
   leerHuella.mockResolvedValue({ ok: true, data: HUELLA })
   armar.mockImplementation(
-    async (_id: string, opciones: { ancho: unknown; contextoDe: (h: typeof hoja) => unknown }) => {
-      pedidoDeArmar = { ancho: opciones.ancho, contexto: await opciones.contextoDe(hoja) }
-      return { ok: true, data: { bytes: BYTES, conRecalculo: true } }
+    async (
+      _id: string,
+      opciones: {
+        ancho: unknown
+        contextoDe: (h: typeof hoja) => Promise<{ completo: boolean }>
+      },
+    ) => {
+      const leido = await opciones.contextoDe(hoja)
+      pedidoDeArmar = { ancho: opciones.ancho, contexto: leido }
+      return { ok: true, data: { bytes: BYTES, conRecalculo: true, completa: leido.completo } }
     },
   )
   leerAsesor.mockResolvedValue({
@@ -198,7 +206,21 @@ describe('GET /cotizaciones/[id]/imagen: la ETag', () => {
   })
 
   it('sin el primer recálculo se entrega con no-store y sin ETag', async () => {
-    armar.mockResolvedValue({ ok: true, data: { bytes: BYTES, conRecalculo: false } })
+    armar.mockResolvedValue({
+      ok: true,
+      data: { bytes: BYTES, conRecalculo: false, completa: true },
+    })
+    const r = await pedir()
+    expect(r.status).toBe(200)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(r.headers.get('etag')).toBeNull()
+  })
+
+  it('incompleta (el logo o la foto no llegaron) se entrega con no-store y sin ETag: un fallo de un momento no queda fijo', async () => {
+    armar.mockResolvedValue({
+      ok: true,
+      data: { bytes: BYTES, conRecalculo: true, completa: false },
+    })
     const r = await pedir()
     expect(r.status).toBe(200)
     expect(r.headers.get('cache-control')).toBe('private, no-store')
@@ -226,26 +248,41 @@ describe('GET /cotizaciones/[id]/imagen: lo que dibuja', () => {
   it('el asesor es quien mira; sin leads.ver, sin el cliente', async () => {
     await pedir()
     expect(pedidoDeArmar?.contexto).toEqual({
-      cliente: null,
-      vehiculo: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
-      asesor: ASESOR,
+      contexto: {
+        cliente: null,
+        vehiculo: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
+        asesor: ASESOR,
+      },
+      completo: true,
     })
     expect(leerCliente).not.toHaveBeenCalled()
     expect(leerVehiculo).toHaveBeenCalledWith(VEHICULO)
   })
 
-  it('con leads.ver nombra al cliente que ve; si una lectura falla, sale sin ese dato', async () => {
+  it('con leads.ver nombra al cliente que ve; si una lectura falla, sale sin ese dato, no-store y sin ETag', async () => {
     sesion.mockResolvedValue({
       ...activa,
       permisos: [{ clave: 'leads.ver', origenId: null, alcance: 'todos' }],
     })
     leerVehiculo.mockResolvedValue(fallo('inesperado'))
-    await pedir()
+    const r = await pedir()
     expect(leerCliente).toHaveBeenCalledWith(LEAD)
     expect(pedidoDeArmar?.contexto).toEqual({
-      cliente: 'Juan Pérez',
-      vehiculo: null,
-      asesor: ASESOR,
+      contexto: { cliente: 'Juan Pérez', vehiculo: null, asesor: ASESOR },
+      completo: false,
     })
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(r.headers.get('etag')).toBeNull()
+  })
+
+  it('si falla leer al asesor, sale sin él y no queda completa; sin perfil, sí', async () => {
+    leerAsesor.mockResolvedValue(fallo('inesperado'))
+    const sinLeer = await pedir()
+    expect(pedidoDeArmar?.contexto).toMatchObject({ contexto: { asesor: null }, completo: false })
+    expect(sinLeer.headers.get('etag')).toBeNull()
+    leerAsesor.mockResolvedValue({ ok: true, data: null })
+    const sinPerfil = await pedir()
+    expect(pedidoDeArmar?.contexto).toMatchObject({ contexto: { asesor: null }, completo: true })
+    expect(sinPerfil.headers.get('etag')).toBe(etiqueta())
   })
 })

@@ -671,6 +671,10 @@ las trampas, en `docs/LECCIONES.md`.
   `ImageResponse` sólo da PNG y `sharp` ya venía con Next. Lo que evita volver a dibujarla es la caché del navegador: `private, no-cache` con una ETag fuerte y
   un 304 que sólo lee la huella. Sin el primer recálculo (la tarjeta sólo con el total) se entrega con `no-store`. No depende del nivel de quien la arma: la
   tarjeta sólo nombra nodos del nivel «todos» y los totales viajan para todos.
+- **Una imagen de la tarjeta incompleta no se deja guardar.** Si al armarla falla leer el cliente, el vehículo o el asesor, o el logo o la foto que la tarjeta
+  dibuja no llegan (2 s, un error o un archivo que no se lee), sale sin eso y con `no-store`: la huella no cambia con un fallo, y con la ETag el navegador
+  seguiría recibiendo 304 de la imagen a medias. No se distingue un fallo de un momento de uno que se repite (un logo que no se lee): ese caso paga armarla en
+  cada pedido hasta que se cambie el logo, y nunca deja una imagen a medias fija.
 - **La ETag sale de una huella de la base y la versión del dibujo vive en TS.** `cotizacion_imagen_huella()` mira **lo que se dibuja** (el título, lote y VIN
   del vehículo y el nombre del cliente, sólo si quien pide los ve; el perfil de quien pide; clave y hex de los colores; nombre, activo y moneda de los tipos de
   cambio), no su `actualizado_en` ni el valor del día: una fase, una foto o el tipo de cambio de hoy invalidarían todas sin que cambiara nada de lo que se ve.

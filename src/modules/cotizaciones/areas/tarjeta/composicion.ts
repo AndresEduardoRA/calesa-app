@@ -92,20 +92,20 @@ export async function paraCompartirDeUnaGuardada(
   })
 }
 
-// El logo y la foto del asesor, sólo si alguna de las tarjetas los dibuja, y a la vez, nunca uno tras otro: cada uno espera hasta 2 s.
-function imagenesParaDibujar(geometrias: readonly Geometria[], entrada: EntradaDelPdf) {
+// El logo y la foto del asesor, sólo si alguna de las tarjetas los dibuja, y a la vez, nunca uno tras otro: cada uno espera hasta 2 s. `completas`: llegó lo que
+// se esperaba (si uno no llegó, la tarjeta sale sin él y la imagen no se deja guardar en el navegador).
+async function imagenesParaDibujar(geometrias: readonly Geometria[], entrada: EntradaDelPdf) {
   const lleva = (tipo: 'logo' | 'foto_del_asesor') =>
     geometrias.some((g) => g.celdas.some((c) => c.contenido.tipo === tipo))
-  return Promise.all([
-    logoParaDibujar({
-      logo: lleva('logo') ? entrada.contexto.logo : null,
-      tope: entrada.topeDelLogo,
-    }),
-    fotoParaDibujar({
-      foto: lleva('foto_del_asesor') ? (entrada.contexto.asesor?.foto ?? null) : null,
-      tope: entrada.topeDelLogo,
-    }),
+  const conLogo = lleva('logo') ? entrada.contexto.logo : null
+  const conFoto = lleva('foto_del_asesor') ? (entrada.contexto.asesor?.foto ?? null) : null
+  const [logo, foto] = await Promise.all([
+    logoParaDibujar({ logo: conLogo, tope: entrada.topeDelLogo }),
+    fotoParaDibujar({ foto: conFoto, tope: entrada.topeDelLogo }),
   ])
+  const falto = (pedida: unknown, llegada: unknown) =>
+    pedida !== null && pedida !== '' && llegada === null
+  return { logo, foto, completas: !falto(conLogo, logo) && !falto(conFoto, foto) }
 }
 
 // El PDF de una cotización guardada (4.18-3a): la geometría de lo guardado en A4. react-pdf se carga sólo aquí, con `import()` (C9). `sin_permiso` si la
@@ -125,7 +125,7 @@ export async function pdfDeUnaGuardada(
     hermana?.ok && entrada.hermana
       ? { geometria: hermana.data.geometria, antes: entrada.hermana.antes }
       : null
-  const [logo, foto] = await imagenesParaDibujar(
+  const { logo, foto } = await imagenesParaDibujar(
     deLaHermana ? [geometria, deLaHermana.geometria] : [geometria],
     entrada,
   )
@@ -147,20 +147,28 @@ export async function pdfDeUnaGuardada(
 }
 
 // La tarjeta de lo guardado como imagen PNG (`ImageResponse`, al ancho de la tarjeta en px): la misma geometría que el PDF. `next/og` se carga sólo aquí, con
-// `import()`, y nunca llega al navegador. La base de `webpDeUnaGuardada()`. `sin_permiso` si la tarjeta no se ve; lo demás, `inesperado`.
+// `import()`, y nunca llega al navegador. La base de `webpDeUnaGuardada()`. `completa`, con el logo y la foto que dibuja. `sin_permiso` si la tarjeta no se ve;
+// lo demás, `inesperado`.
 export async function imagenDeUnaGuardada(
   entrada: EntradaDelPdf,
-): Promise<Resultado<{ bytes: Uint8Array<ArrayBuffer>; ancho: number; alto: number }>> {
+): Promise<
+  Resultado<{ bytes: Uint8Array<ArrayBuffer>; ancho: number; alto: number; completa: boolean }>
+> {
   const armada = await geometriaDeUnaGuardada(entrada)
   if (!armada.ok) {
     return armada
   }
   const { geometria } = armada.data
-  const [logo, foto] = await imagenesParaDibujar([geometria], entrada)
+  const { logo, foto, completas } = await imagenesParaDibujar([geometria], entrada)
   try {
     const { pngDeLaTarjeta } = await import('../../infra/tarjeta/imagen/imagen-de-la-tarjeta')
     const bytes = await pngDeLaTarjeta({ geometria, logo, foto })
-    return ok({ bytes, ancho: Math.ceil(geometria.ancho), alto: Math.ceil(geometria.alto) })
+    return ok({
+      bytes,
+      ancho: Math.ceil(geometria.ancho),
+      alto: Math.ceil(geometria.alto),
+      completa: completas,
+    })
   } catch (error) {
     console.error('[imagen] No se pudo dibujar la tarjeta.', error)
     return fallo('inesperado', 'No se pudo armar la imagen de la tarjeta.')
@@ -168,18 +176,19 @@ export async function imagenDeUnaGuardada(
 }
 
 // La imagen de la tarjeta (`docs/COTIZADOR.md` › «La imagen de la tarjeta»): lo guardado (`imagenDeUnaGuardada()`) en WebP de hasta 1.600 px, o del ancho de la
-// miniatura que se pida, achicada del PNG. `sharp` se carga sólo aquí, con `import()`, y nunca llega al navegador.
+// miniatura que se pida, achicada del PNG, y si salió `completa`. `sharp` se carga sólo aquí, con `import()`, y nunca llega al navegador.
 export async function webpDeUnaGuardada(
   entrada: EntradaDelPdf,
   { ancho }: { ancho: AnchoDeLaImagen | null },
-): Promise<Resultado<Uint8Array<ArrayBuffer>>> {
+): Promise<Resultado<{ bytes: Uint8Array<ArrayBuffer>; completa: boolean }>> {
   const png = await imagenDeUnaGuardada(entrada)
   if (!png.ok) {
     return png
   }
   try {
     const { webpDeLaTarjeta } = await import('../../infra/tarjeta/imagen/webp-de-la-tarjeta')
-    return ok(await webpDeLaTarjeta(png.data.bytes, ancho === null ? {} : { ancho }))
+    const bytes = await webpDeLaTarjeta(png.data.bytes, ancho === null ? {} : { ancho })
+    return ok({ bytes, completa: png.data.completa })
   } catch (error) {
     console.error('[imagen] No se pudo pasar la tarjeta a WebP.', error)
     return fallo('inesperado', 'No se pudo armar la imagen.')

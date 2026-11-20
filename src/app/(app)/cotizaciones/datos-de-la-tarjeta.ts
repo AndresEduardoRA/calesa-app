@@ -24,15 +24,22 @@ export async function vehiculoDe(vehiculoId: string | null) {
   return vehiculoId === null ? null : datosO(await leerVehiculo(vehiculoId))
 }
 
-// El asesor de la tarjeta: quien la mira o la comparte (también en la hoja nueva y con «Ver como»), con su foto de `avatares` como URL pública.
-export async function asesorQueMira(): Promise<AsesorDeLaTarjeta | null> {
+// El asesor de la tarjeta: quien la mira o la comparte (también en la hoja nueva y con «Ver como»), con su foto de `avatares` como URL pública, y si se leyó
+// (`leido` falso: la lectura falló y la tarjeta sale sin él; la imagen, además, sin ETag).
+export async function asesorLeido(): Promise<{
+  asesor: AsesorDeLaTarjeta | null
+  leido: boolean
+}> {
   const lectura = await leerAsesorQueMira()
   if (!lectura.ok || lectura.data === null) {
-    return null
+    return { asesor: null, leido: lectura.ok }
   }
   const { fotoRuta, ...asesor } = lectura.data
-  return { ...asesor, foto: urlPublicaONull('avatares', fotoRuta) }
+  return { asesor: { ...asesor, foto: urlPublicaONull('avatares', fotoRuta) }, leido: true }
 }
+
+export const asesorQueMira = async (): Promise<AsesorDeLaTarjeta | null> =>
+  (await asesorLeido()).asesor
 
 // El autor de una guardada (quien la creó), para «Creado por» de «Compartir»; un error lo deja sin nombrar.
 export async function autorDe(id: string): Promise<string | null> {

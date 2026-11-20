@@ -11,12 +11,12 @@
 // pide `GET /cotizaciones/[id]/compartir`, que suma el vehículo y arma `DatosParaCompartir`. `leerVehiculoDeLaCotizacion(id)`: el vehículo por clave primaria, para
 // `GET /cotizaciones/[id]/compartir/fotos`.
 //
-// `imagenDeUnaGuardada(entrada)`: la misma tarjeta como PNG (`{ bytes, ancho, alto }`), la base de la imagen.
+// `imagenDeUnaGuardada(entrada)`: la misma tarjeta como PNG (`{ bytes, ancho, alto, completa }`), la base de la imagen.
 //
 // La imagen de la tarjeta (`docs/COTIZADOR.md` › «La imagen de la tarjeta»), para `GET /cotizaciones/[id]/imagen`: `leerHuellaDeLaImagen(id)` (la huella de lo que
 // dibuja para quien pide; lo que no ve, `no_encontrado`), `etiquetaDeLaImagen({ huella, usuarioId, ancho })` y `coincideLaEtiqueta(siNoneMatch, etiqueta)` (la
-// ETag y el 304), y `armarLaImagen(id, { contextoDe, ancho })` (el WebP de lo guardado con el contexto de quien mira; `conRecalculo` falso sin el primer
-// recálculo). El componente sale por `pantallas/tarjeta-imagen.ts`.
+// ETag y el 304), y `armarLaImagen(id, { contextoDe, ancho })` (el WebP de lo guardado con el contexto de quien mira, `ContextoLeido`; `conRecalculo` falso sin el
+// primer recálculo y `completa` falso si una lectura falló o el logo o la foto no llegaron). El componente sale por `pantallas/tarjeta-imagen.ts`.
 export {
   imagenDeUnaGuardada,
   leerAsesorQueMira,
@@ -34,7 +34,11 @@ export {
   type DatosParaCompartir,
   type FotoParaCompartir,
 } from '../../entities/tarjeta/compartir/datos-para-compartir'
-export { armarLaImagen, type ImagenArmada } from '../../features/tarjeta/armar-la-imagen'
+export {
+  armarLaImagen,
+  type ContextoLeido,
+  type ImagenArmada,
+} from '../../features/tarjeta/armar-la-imagen'
 export {
   contextoDeLaPagina,
   type AsesorDeLaTarjeta,

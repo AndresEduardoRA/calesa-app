@@ -6,17 +6,11 @@ import {
   coincideLaEtiqueta,
   etiquetaDeLaImagen,
   leerHuellaDeLaImagen,
-  type ContextoDeQuienMira,
+  type ContextoLeido,
 } from '@/modules/cotizaciones'
 import { requerirSesion } from '@/modules/equipo'
 import type { Permisos } from '@/shared/lib/permisos'
-import {
-  asesorQueMira,
-  clienteDe,
-  oNulo,
-  vehiculoDe,
-  vehiculoDeLaTarjeta,
-} from '../../datos-de-la-tarjeta'
+import { asesorLeido, clienteDe, vehiculoDe, vehiculoDeLaTarjeta } from '../../datos-de-la-tarjeta'
 
 // La imagen de la tarjeta de una cotización guardada (`docs/COTIZADOR.md` › «La imagen de la tarjeta»): lo guardado en WebP, armado al pedirlo para quien lo pide
 // (su asesor es esa persona; el cliente, sólo si lo ve), con su sesión (la base decide; nunca la secret key). No se guarda en ningún lado del servidor.
@@ -26,7 +20,8 @@ import {
 //
 // La ETag es la huella de lo que dibuja para quien pide (`cotizacion_imagen_huella()`), quien pide, la versión del dibujo y el ancho; con `private, no-cache` el
 // navegador pregunta cada vez y, si nada cambió, recibe un 304 sin que se arme nada. Con «Ver como» (la interfaz muestra los permisos de otro rol) o sin el primer
-// recálculo (la tarjeta sale sólo con el total), `no-store` y sin ETag. Lo que no existe, está en la papelera o no se ve es el mismo 404 que el PDF, nunca 403.
+// recálculo (la tarjeta sale sólo con el total) o incompleta (una lectura falló o el logo o la foto no llegaron: con la ETag quedaría fija), `no-store` y sin ETag.
+// Lo que no existe, está en la papelera o no se ve es el mismo 404 que el PDF, nunca 403.
 // Si armarla falla, 500 `no-store`: nunca una vieja. `/portada` redirige aquí (308, `next.config.ts`).
 const NO_DISPONIBLE = 'Esta cotización ya no está disponible: no existe o ya no tienes acceso.'
 const NO_SE_PUDO = 'No se pudo armar la imagen. Vuelve a intentarlo.'
@@ -57,17 +52,32 @@ const tiempos = (pasos: Record<string, number>) =>
     .map(([paso, ms]) => `${paso};dur=${String(Math.round(ms))}`)
     .join(', ')
 
-// Lo que dibuja la imagen de quien pide: lo que esa persona ve, como el PDF (el cliente sólo con `leads.ver`; un error al leerlo, sin ese dato) y ella como asesor.
+// Una lectura y si salió: un error deja el dato nulo.
+const leida = <T>(lectura: Promise<T>) =>
+  lectura.then(
+    (valor) => ({ valor, ok: true }),
+    () => ({ valor: null, ok: false }),
+  )
+
+// Lo que dibuja la imagen de quien pide: lo que esa persona ve, como el PDF (el cliente sólo con `leads.ver`; un error al leerlo, sin ese dato y sin que la imagen
+// quede `completa`) y ella como asesor.
 async function contextoDeQuienMira(
   permisos: Permisos,
   cotizacion: { leadId: string | null; vehiculoId: string | null },
-): Promise<ContextoDeQuienMira> {
+): Promise<ContextoLeido> {
   const [cliente, vehiculo, asesor] = await Promise.all([
-    oNulo(clienteDe(permisos, cotizacion.leadId)),
-    oNulo(vehiculoDe(cotizacion.vehiculoId)),
-    asesorQueMira(),
+    leida(clienteDe(permisos, cotizacion.leadId)),
+    leida(vehiculoDe(cotizacion.vehiculoId)),
+    asesorLeido(),
   ])
-  return { cliente: cliente?.nombre ?? null, vehiculo: vehiculoDeLaTarjeta(vehiculo), asesor }
+  return {
+    contexto: {
+      cliente: cliente.valor?.nombre ?? null,
+      vehiculo: vehiculoDeLaTarjeta(vehiculo.valor),
+      asesor: asesor.asesor,
+    },
+    completo: cliente.ok && vehiculo.ok && asesor.leido,
+  }
 }
 
 // La etiqueta de quien mira con sus permisos, o nula con «Ver como». Un fallo de la huella es la respuesta (404 o 500).
@@ -119,8 +129,9 @@ export async function GET(
   if (!armada.ok) {
     return falla(armada.error.codigo)
   }
+  const { conRecalculo, completa } = armada.data
   const cabeceras =
-    etiqueta !== null && armada.data.conRecalculo ? conEtiqueta(etiqueta) : SIN_GUARDAR
+    etiqueta !== null && conRecalculo && completa ? conEtiqueta(etiqueta) : SIN_GUARDAR
   return new Response(armada.data.bytes, {
     status: 200,
     headers: {

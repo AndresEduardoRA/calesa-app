@@ -1076,8 +1076,9 @@ objetos en el bucket. Lo que evita volver a dibujarla es la caché del navegador
   personas nunca compartan una; un cambio en cómo se dibuja sube `VERSION_DEL_DIBUJO` (`entities/tarjeta/etiqueta-de-la-imagen.ts`), sin migración.
 - **La ruta** `GET /cotizaciones/<id>/imagen` (`requerirSesion()`; `?ancho=480`, la miniatura; otro ancho se ignora): lo que no existe, está en la papelera
   o no se ve, el mismo 404 en texto que el PDF. Con un `If-None-Match` igual (también `W/` o en una lista), 304 sin dibujar nada; si no, la arma y la
-  entrega con la `ETag` y `Cache-Control: private, no-cache`. Con «Ver como» (la perspectiva cambia los permisos, no la persona) y sin el primer recálculo
-  (la tarjeta saldría sólo con el total), `no-store` y sin `ETag`. Si armarla falla, 500 en texto con `no-store`: nunca una vieja. `Server-Timing` dice
+  entrega con la `ETag` y `Cache-Control: private, no-cache`. Con «Ver como» (la perspectiva cambia los permisos, no la persona), sin el primer recálculo
+  (la tarjeta saldría sólo con el total) o incompleta (falló leer el cliente, el vehículo o el asesor, o no llegó el logo o la foto que la tarjeta dibuja:
+  `ImagenArmada.completa`), `no-store` y sin `ETag`: la huella no ve esos fallos y la ETag dejaría fija la imagen a medias. Si armarla falla, 500 en texto con `no-store`: nunca una vieja. `Server-Timing` dice
   cuánto tardaron la huella y el armado. La ruta vieja, `/cotizaciones/<id>/portada`, es un 308 a ésta con su consulta.
 - **En pantalla**, `<ImagenDeLaTarjeta>` (`pantallas/tarjeta-imagen.ts`; en el resumen del listado, por el hueco `Imagen`): la imagen con
   `object-contain` en un marco de la proporción que le dan (15:8 por omisión), pedida recién a la vista y con turno en la cola de la página (a lo sumo
