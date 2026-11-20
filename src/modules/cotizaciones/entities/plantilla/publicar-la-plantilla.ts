@@ -1,4 +1,4 @@
-// Publicar el borrador de la plantilla de la tarjeta desde Configuración › Cotización › «Tarjeta» (4.19-3c): el panel de la URL, por qué no se abre, por qué «Publicar…»
+// Publicar el borrador de la plantilla de la tarjeta desde la página del origen › «Tarjeta» (4.19-3c): el panel de la URL, por qué no se abre, por qué «Publicar…»
 // está apagado y los textos del modal. La regla de verdad (el permiso, la nota, la versión esperada, la validación contra la fórmula) es de `plantilla_publicar()`:
 // esto sólo evita pedir lo que la base va a rechazar y dice por qué con el modal a la vista.
 

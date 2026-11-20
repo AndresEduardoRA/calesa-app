@@ -15,14 +15,14 @@ type Props = {
 
 const SUFIJO_DEL_FLUJO = ' · de este flujo'
 
-// El selector del tipo de documento de un requisito. Con tipos de la empresa y del flujo a la vez, los del flujo lo dicen; sin tipos activos lleva a «Documentos».
+// El selector del tipo de documento de un requisito. Con tipos de la empresa y del flujo a la vez, los del flujo lo dicen; sin tipos activos lleva a Catálogos › Tipos de documento.
 export function CampoDeTipoDeDocumento({ tipos, valor, error, alElegir }: Props) {
   if (tipos !== null && tipos.length === 0) {
     return (
       <p className="text-(length:--text-sm) text-(--color-ink-soft)">
         No hay tipos de documento activos.{' '}
-        <Link className="underline" href={`${RUTAS.configuracionDeFlujos}?seccion=documentos`}>
-          Crear uno en Documentos
+        <Link className="underline" href={RUTAS.tiposDeDocumento}>
+          Crear uno en Tipos de documento
         </Link>
       </p>
     )

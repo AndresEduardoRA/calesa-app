@@ -143,7 +143,7 @@ function Ventanas({
   )
 }
 
-// Configuración › Cotización › Niveles: se crean, renombran, retiran y restauran; uno que alguna hoja nombra no se elimina, se retira (sigue
+// Configuración › Catálogos › Niveles: se crean, renombran, retiran y restauran; uno que alguna hoja nombra no se elimina, se retira (sigue
 // filtrando lo que ya lo usa y no se ofrece en un diseño nuevo). Hasta el tope que dice la base —contando los retirados—; la lista no se pagina.
 // Todo cambio lo hace la base por RPC con su versión, y cada respuesta trae la lista entera con el motivo de uso de cada nivel. Quien sólo lee
 // (`equipo.roles.ver`) ve la lista sin «Nuevo nivel» ni «⋯».

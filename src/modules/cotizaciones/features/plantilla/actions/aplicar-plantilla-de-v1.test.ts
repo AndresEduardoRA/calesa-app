@@ -111,7 +111,7 @@ describe('aplicarLaPlantillaDeV1', () => {
     expect(p?.pedido.tarjeta.celdas.find((c) => c.id === 'titulo')?.estilo?.fondo).toBe(
       'v1_usa_teal',
     )
-    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/cotizacion', 'layout')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/origenes', 'layout')
   })
 
   it('un PT409 llega tal cual y no revalida', async () => {

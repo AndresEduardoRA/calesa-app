@@ -41,7 +41,7 @@ export function CadenaSinFases({ enlaceAFlujos }: { enlaceAFlujos: boolean }) {
       accion={
         enlaceAFlujos ? (
           <Link
-            href={`${RUTAS.configuracionDeFlujos}?ambito=repuestos` as Route}
+            href={RUTAS.flujoDeRepuestos as Route}
             className={buttonVariants({ variant: 'outline' })}
           >
             Configurar el flujo

@@ -1,78 +1,77 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
+import type { PasoParaCotizar } from '@/modules/origenes'
 import type { Permisos } from '@/shared/lib/permisos'
 import { DESTINOS_DE_PASO, conDestino } from './pasos'
 
 const APP = path.join(process.cwd(), 'src/app/(app)')
+const ORIGEN = '00000000-0000-4000-8000-000000000001'
+const OTRO = '00000000-0000-4000-8000-000000000002'
 
-describe('destinos de los siguientes pasos', () => {
-  it('cada paso con enlace lleva a una pantalla que existe', () => {
+// Una ruta existe si tiene su `page.tsx` o su `route.ts` (las raíces que redirigen).
+const existe = (ruta: string) => {
+  const carpeta = path.join(APP, ruta.split('?')[0] ?? '').replace(ORIGEN, '[id]')
+  return existsSync(path.join(carpeta, 'page.tsx')) || existsSync(path.join(carpeta, 'route.ts'))
+}
+
+const paso = (clave: PasoParaCotizar['clave'], estado: PasoParaCotizar['estado']) =>
+  ({ clave, titulo: clave, estado, frase: 'x' }) satisfies PasoParaCotizar
+
+describe('destinos de «Para cotizar y mover»', () => {
+  it('cada paso lleva a una pantalla que existe', () => {
     for (const [clave, destino] of Object.entries(DESTINOS_DE_PASO)) {
-      if (destino.ruta === null) {
-        continue
-      }
-      const sinParametros = destino.ruta.split('?')[0] ?? ''
-      expect(existsSync(path.join(APP, sinParametros, 'page.tsx')), clave).toBe(true)
+      expect(existe(destino.ruta(ORIGEN)), clave).toBe(true)
     }
   })
 
-  it('el flujo lleva a su pantalla y la fórmula a Cotización › Fórmula', () => {
-    expect(DESTINOS_DE_PASO.flujo.ruta).toBe('/configuracion/flujos')
-    expect(DESTINOS_DE_PASO.formula.ruta).toBe('/configuracion/cotizacion/[origen]/formula')
-  })
-})
-
-describe('conDestino', () => {
-  const ORIGEN = '00000000-0000-4000-8000-000000000001'
-  const OTRO = '00000000-0000-4000-8000-000000000002'
-  const pasos = [
-    { clave: 'permisos', titulo: 'x', detalle: 'y', pendiente: true },
-    { clave: 'flujo', titulo: 'x', detalle: 'y', pendiente: true },
-    { clave: 'formula', titulo: 'x', detalle: 'y', pendiente: true },
-  ] as const
-  const configura = (origenId: string | null): Permisos => [
-    { clave: 'flujos.configurar', origenId, alcance: 'todos' },
-  ]
-
-  it('sin el permiso, el paso con enlace dice por qué no se puede', () => {
-    const [permisos, flujo, formula] = conDestino(pasos, [], ORIGEN)
-    expect(permisos?.motivoDeshabilitado).toContain('Gestionar roles')
-    expect(flujo?.motivoDeshabilitado).toContain('Configurar el flujo')
-    expect(formula?.motivoDeshabilitado).toContain('Configurar el cotizador')
+  it('cada paso lleva a su pestaña; la Tarjeta, a la sub-pestaña de Fórmula', () => {
+    const rutas = conDestino(
+      [
+        paso('datos', 'listo'),
+        paso('campos', 'aviso'),
+        paso('flujo', 'bloquea'),
+        paso('formula', 'bloquea'),
+        paso('tarjeta', 'aviso'),
+      ],
+      [],
+      ORIGEN,
+    ).map((uno) => uno.ruta)
+    const base = `/configuracion/origenes/${ORIGEN}`
+    expect(rutas).toEqual([
+      `${base}/datos`,
+      `${base}/campos`,
+      `${base}/flujo`,
+      `${base}/formula`,
+      `${base}/formula/tarjeta`,
+    ])
   })
 
-  it('con el permiso, el enlace queda habilitado', () => {
-    const gestiona: Permisos = [
-      { clave: 'equipo.roles.gestionar', origenId: null, alcance: 'todos' },
+  it('Datos con aviso lleva a Integraciones, con el permiso de la empresa', () => {
+    const [sin] = conDestino([paso('datos', 'aviso')], [], ORIGEN)
+    expect(sin?.ruta).toBe('/configuracion/empresa/integraciones')
+    expect(sin?.motivo).toContain('Ajustes de la empresa')
+    const ajustes: Permisos = [
+      { clave: 'empresa.ajustes.gestionar', origenId: null, alcance: 'todos' },
     ]
-    const [permisos] = conDestino(pasos, gestiona, ORIGEN)
-    expect(permisos?.ruta).toBe('/configuracion/roles')
-    expect(permisos?.motivoDeshabilitado).toBeNull()
+    expect(conDestino([paso('datos', 'aviso')], ajustes, ORIGEN)[0]?.motivo).toBeNull()
   })
 
-  it('el enlace del flujo lleva el origen en la URL', () => {
-    const [, flujo] = conDestino(pasos, configura(null), ORIGEN)
-    expect(flujo?.ruta).toBe(`/configuracion/flujos?origen=${ORIGEN}`)
-    expect(flujo?.motivoDeshabilitado).toBeNull()
-  })
-
-  it('configurar el flujo de otro origen no habilita el de éste; el de éste, sí', () => {
-    expect(conDestino(pasos, configura(OTRO), ORIGEN)[1]?.motivoDeshabilitado).toContain(
-      'Configurar el flujo',
-    )
-    expect(conDestino(pasos, configura(ORIGEN), ORIGEN)[1]?.motivoDeshabilitado).toBeNull()
-  })
-
-  it('la fórmula lleva a Cotización › Fórmula con su origen, y se mira el permiso en él', () => {
-    const cotiza = (origenId: string | null): Permisos => [
-      { clave: 'cotizaciones.configurar', origenId, alcance: 'todos' },
+  it('el permiso del flujo y de la fórmula se mira en este origen', () => {
+    const flujo = (origenId: string | null): Permisos => [
+      { clave: 'flujos.configurar', origenId, alcance: 'todos' },
     ]
-    const formula = conDestino(pasos, cotiza(ORIGEN), ORIGEN)[2]
-    expect(formula?.ruta).toBe(`/configuracion/cotizacion/${ORIGEN}/formula`)
-    expect(formula?.motivoDeshabilitado).toBeNull()
-    expect(conDestino(pasos, cotiza(OTRO), ORIGEN)[2]?.motivoDeshabilitado).toContain(
-      'Configurar el cotizador',
+    expect(conDestino([paso('flujo', 'bloquea')], flujo(OTRO), ORIGEN)[0]?.motivo).toBe(
+      'Lo configura quien tiene el permiso «Configurar el flujo».',
     )
+    expect(conDestino([paso('flujo', 'bloquea')], flujo(ORIGEN), ORIGEN)[0]?.motivo).toBeNull()
+    const formula = conDestino([paso('formula', 'bloquea')], flujo(ORIGEN), ORIGEN)[0]
+    expect(formula?.motivo).toBe('Lo configura quien tiene el permiso «Configurar el cotizador».')
+  })
+
+  it('Datos y Campos no piden permiso propio', () => {
+    for (const uno of conDestino([paso('datos', 'listo'), paso('campos', 'aviso')], [], ORIGEN)) {
+      expect(uno.motivo).toBeNull()
+    }
   })
 })

@@ -1,5 +1,6 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   PREFIJO_ROL_E2E,
@@ -11,18 +12,19 @@ import {
   darRolDePrueba,
 } from './soporte/base'
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
-import { literal, sql } from './soporte/sql'
 
-// Configuración › Cotización por origen (`docs/UX.md` › «Cotización (config)»): el inicio con una tarjeta por origen y «General», las cuatro
-// pestañas de un origen con los chips de origen, General con sus tres partes, los enlaces de antes y quién ve qué.
+// La cotización de cada origen en su página y lo de toda la empresa en Catálogos (`docs/UX.md` › «La página del origen» y «Catálogos»): la pestaña
+// Fórmula con sus sub-pestañas Fórmula · Hoja · Tarjeta y la pestaña Tablas, cada una su ruta; Colores, Niveles y Vigencia en Catálogos, por el
+// menú; y quién abre qué. Las redirecciones de las rutas de antes, la tira «Para cotizar y mover» y las pestañas apagadas por permiso:
+// `configuracion-origen-centro.spec.ts`.
 test.describe.configure({ mode: 'serial' })
 
-const BASE = '/configuracion/cotizacion'
+const ORIGENES = '/configuracion/origenes'
+const CATALOGOS = '/configuracion/catalogos'
 
 let proyecto = ''
 let conFormula = { id: '', nombre: '' }
 let sinFormula = { id: '', nombre: '' }
-let inactivo = { id: '', nombre: '' }
 let duena = ''
 let configuradora = ''
 let lectora = ''
@@ -37,8 +39,6 @@ test.beforeAll(async ({}, info) => {
   await crearDuenaDePrueba({ email: duena, contrasena: CONTRASENA, nombre: 'Olga Origen' })
   conFormula = await crearOrigenDeCotizar(proyecto, 'porconf', true)
   sinFormula = await crearOrigenDeCotizar(proyecto, 'porsinf', false)
-  inactivo = await crearOrigenDeCotizar(proyecto, 'porinac', false)
-  sql(`update public.origenes set activo = false where id = ${literal(inactivo.id)}::uuid`)
   configuradora = correoDePrueba(`configura-por-origen-${proyecto}`)
   await crearPersona({
     email: configuradora,
@@ -67,168 +67,96 @@ test.afterAll(async ({}, info) => {
   await borrarRolesDePrueba()
 })
 
-const tarjetaDe = (page: Page, nombre: string) =>
-  page
-    .getByRole('main')
-    .getByRole('listitem')
-    .filter({ has: page.getByRole('link', { name: nombre, exact: true }) })
+const menu = (page: Page) => page.getByRole('navigation', { name: 'Secciones de Configuración' })
 
-const chips = (page: Page) => page.getByRole('navigation', { name: 'Origen' })
-
-async function enLaPestana(page: Page, ruta: RegExp, titulo: string, frase: string) {
+async function enElCatalogo(page: Page, ruta: RegExp, titulo: string, frase: string) {
   await expect(page).toHaveURL(ruta)
   await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeVisible()
   await expect(page.getByRole('main').getByText(frase, { exact: true })).toBeVisible()
 }
 
-test('E2E escritorio · el inicio muestra cada origen con lo publicado y «General»', async ({
+test('E2E escritorio · la Fórmula de un origen en sus sub-pestañas, y su pestaña Tablas', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(BASE)
-  await expect(page.getByRole('heading', { name: 'Cotización', level: 1 })).toBeVisible()
-  const conF = tarjetaDe(page, conFormula.nombre)
-  await expect(conF).toContainText(/v\d+ publicada · Sin tarjeta/)
-  await expect(conF.getByRole('link', { name: 'Falta publicar la tarjeta' })).toHaveAttribute(
-    'href',
-    `${BASE}/${conFormula.id}/tarjeta`,
-  )
-  const sinF = tarjetaDe(page, sinFormula.nombre)
-  await expect(sinF).toContainText('Sin fórmula publicada · Sin tarjeta')
-  await expect(sinF.getByRole('link', { name: 'Falta publicar la fórmula' })).toHaveAttribute(
-    'href',
-    `${BASE}/${sinFormula.id}/formula`,
-  )
-  const inac = tarjetaDe(page, inactivo.nombre)
-  await expect(inac).toContainText('Inactivo')
-  await expect(inac.getByRole('link', { name: /^Falta publicar/ })).toHaveCount(0)
-  const general = page.getByRole('main').getByRole('list', { name: 'Partes generales' })
-  await expect(general.getByRole('link')).toHaveText([/^Colores/, /^Niveles/, /^Vigencia/])
-})
-
-test('E2E escritorio · un origen en sus cuatro pestañas; los chips cambian de origen y conservan la pestaña', async ({
-  page,
-}) => {
-  await entrar(page, duena)
-  await page.goto(BASE)
-  await page.getByRole('link', { name: conFormula.nombre, exact: true }).click()
   const id = conFormula.id
-  await enLaPestana(page, new RegExp(`${BASE}/${id}/formula$`), 'Fórmula', 'Qué se calcula.')
-  // «‹ Cotización» vuelve al inicio (el otro enlace con ese nombre es el del menú de Configuración).
-  await expect(
-    page.locator(`main a[href="${BASE}"]:not(nav a)`, { hasText: 'Cotización' }),
-  ).toBeVisible()
-  await expect(chips(page).getByRole('link', { name: conFormula.nombre })).toHaveAttribute(
-    'aria-current',
-    'page',
+  await page.goto(`${ORIGENES}/${id}/datos`)
+  await expect(page.getByRole('heading', { name: conFormula.nombre, level: 1 })).toBeVisible()
+  await page.getByRole('tab', { name: 'Fórmula', exact: true }).first().click()
+  await expect(page).toHaveURL(new RegExp(`${ORIGENES}/${id}/formula$`))
+  await enLaPestana(page, 'Fórmula')
+  await page.getByRole('tab', { name: 'Hoja', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`${ORIGENES}/${id}/formula/hoja$`))
+  await enLaPestana(page, 'Hoja')
+  // Las pestañas del origen siguen marcando «Fórmula» bajo cada sub-pestaña.
+  await expect(page.getByRole('tab', { name: 'Fórmula', exact: true }).first()).toHaveAttribute(
+    'aria-selected',
+    'true',
   )
-  await expect(chips(page).getByRole('link', { name: inactivo.nombre })).toContainText('(inactivo)')
-  await page.getByRole('tab', { name: 'Hoja' }).click()
-  await enLaPestana(
-    page,
-    new RegExp(`${BASE}/${id}/hoja$`),
-    'Hoja',
-    'Cómo se ve y se llena la cotización.',
-  )
-  await page.getByRole('tab', { name: 'Tarjeta' }).click()
-  await enLaPestana(
-    page,
-    new RegExp(`${BASE}/${id}/tarjeta$`),
-    'Tarjeta',
-    'La imagen que recibe el cliente.',
-  )
-  await page.getByRole('tab', { name: 'Tablas' }).click()
-  await enLaPestana(
-    page,
-    new RegExp(`${BASE}/${id}/tablas$`),
-    'Tablas',
-    'Valores de referencia: depreciación, transporte…',
-  )
-  await chips(page).getByRole('link', { name: sinFormula.nombre }).click()
-  await expect(page).toHaveURL(new RegExp(`${BASE}/${sinFormula.id}/tablas$`))
-  await expect(page.getByRole('tab', { name: 'Tablas' })).toHaveAttribute('aria-selected', 'true')
-  await expect(chips(page).getByRole('link', { name: sinFormula.nombre })).toHaveAttribute(
-    'aria-current',
-    'page',
-  )
+  await page.getByRole('tab', { name: 'Tarjeta', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`${ORIGENES}/${id}/formula/tarjeta$`))
+  await enLaPestana(page, 'Tarjeta')
+  await page.getByRole('tab', { name: 'Tablas', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`${ORIGENES}/${id}/tablas$`))
+  await enLaPestana(page, 'Tablas')
+  // El origen del spec no tiene tablas: la pestaña dibuja su vacío (con tablas, la lista; `configuracion-cotizacion-tablas.spec.ts`).
+  await expect(page.getByText(`${conFormula.nombre} no tiene tablas de referencia.`)).toBeVisible()
 })
 
-test('E2E escritorio · General › Colores, Niveles y Vigencia', async ({ page }) => {
+test('E2E escritorio · Catálogos › Colores, Niveles y Vigencia, por el menú', async ({ page }) => {
   await entrar(page, duena)
-  await page.goto(`${BASE}/general`)
-  await enLaPestana(
+  await page.goto(`${CATALOGOS}/colores`)
+  await enElCatalogo(
     page,
-    new RegExp(`${BASE}/general/colores$`),
+    new RegExp(`${CATALOGOS}/colores$`),
     'Colores',
     'Los colores de la hoja y de la tarjeta, para toda la empresa.',
   )
-  await expect(chips(page)).toHaveCount(0)
-  await page.getByRole('tab', { name: 'Niveles' }).click()
-  await enLaPestana(
+  await menu(page).getByRole('link', { name: 'Niveles', exact: true }).click()
+  await enElCatalogo(
     page,
-    new RegExp(`${BASE}/general/niveles$`),
+    new RegExp(`${CATALOGOS}/niveles$`),
     'Niveles',
     'Quién ve y edita qué celdas.',
   )
-  await page.getByRole('tab', { name: 'Vigencia' }).click()
-  await enLaPestana(
+  await menu(page).getByRole('link', { name: 'Vigencia', exact: true }).click()
+  await enElCatalogo(
     page,
-    new RegExp(`${BASE}/general/vigencia$`),
+    new RegExp(`${CATALOGOS}/vigencia$`),
     'Vigencia',
     'Cuántos días vale una cotización.',
   )
 })
 
-test('E2E escritorio · los enlaces de antes van a su sub-ruta, con el panel abierto', async ({
-  page,
-}) => {
-  await entrar(page, duena)
-  const casos: [string, RegExp][] = [
-    [`seccion=formula&origen=${sinFormula.id}`, new RegExp(`${BASE}/${sinFormula.id}/formula$`)],
-    [`seccion=diseno&origen=${sinFormula.id}`, new RegExp(`${BASE}/${sinFormula.id}/hoja$`)],
-    [`seccion=tarjeta&origen=${sinFormula.id}`, new RegExp(`${BASE}/${sinFormula.id}/tarjeta$`)],
-    [`seccion=tablas&origen=${sinFormula.id}`, new RegExp(`${BASE}/${sinFormula.id}/tablas$`)],
-    ['seccion=tonos', new RegExp(`${BASE}/general/colores$`)],
-    ['seccion=niveles', new RegExp(`${BASE}/general/niveles$`)],
-    ['seccion=ajustes', new RegExp(`${BASE}/general/vigencia$`)],
-  ]
-  for (const [consulta, destino] of casos) {
-    await page.goto(`${BASE}?${consulta}`)
-    await expect(page, consulta).toHaveURL(destino)
-  }
-  await page.goto(`${BASE}?seccion=formula&origen=${conFormula.id}&panel=editar-formula`)
-  await expect(page).toHaveURL(
-    new RegExp(`${BASE}/${conFormula.id}/formula\\?panel=editar-formula$`),
-  )
-  await expect(page.getByRole('list', { name: 'Filas de la fórmula' })).toBeVisible()
-})
-
-test('E2E escritorio · quien configura un origen va al suyo desde uno ajeno, y Niveles va apagada', async ({
+test('E2E escritorio · quien configura un origen no abre uno ajeno, y en Catálogos Niveles va apagada', async ({
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto(`${BASE}/${conFormula.id}/hoja`)
-  await expect(page).toHaveURL(new RegExp(`${BASE}/${sinFormula.id}/hoja$`))
-  await expect(chips(page).getByRole('link')).toHaveCount(1)
-  await page.goto(`${BASE}/no-es-un-origen/tablas`)
-  await expect(page).toHaveURL(new RegExp(`${BASE}/${sinFormula.id}/tablas$`))
-  await page.goto(`${BASE}/general/niveles`)
-  await expect(page).toHaveURL(new RegExp(`${BASE}/${sinFormula.id}/formula$`))
-  await page.goto(`${BASE}/general/colores`)
-  await expect(page.getByRole('tab', { name: 'Niveles' })).toBeDisabled()
-  await expect(page.getByText('Te falta el permiso «Ver roles».').first()).toBeVisible()
+  await page.goto(`${ORIGENES}/${conFormula.id}/formula/hoja`)
+  await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Ver los orígenes' })).toHaveAttribute(
+    'href',
+    ORIGENES,
+  )
+  await page.goto(`${ORIGENES}/${sinFormula.id}/formula/hoja`)
+  await enLaPestana(page, 'Hoja')
+  await page.goto(`${ORIGENES}/no-es-un-origen/tablas`)
+  await expect(page.getByRole('heading', { name: 'Esta página no existe' })).toBeVisible()
+  await page.goto(`${CATALOGOS}/niveles`)
+  await expect(page).toHaveURL(new RegExp(`${CATALOGOS}/colores$`))
+  await expect(page.getByRole('heading', { name: 'Colores', level: 1 })).toBeVisible()
+  await expect(menu(page).getByRole('link', { name: 'Niveles', exact: true })).toHaveCount(0)
+  await expect(menu(page).getByText('Te falta el permiso «Ver roles».')).toBeVisible()
 })
 
-test('E2E escritorio · quien sólo ve los roles ve sólo «General › Niveles»', async ({ page }) => {
+test('E2E escritorio · quien sólo ve los roles abre sólo Catálogos › Niveles', async ({ page }) => {
   await entrar(page, lectora, { fresco: true })
-  await page.goto(BASE)
-  await expect(page.getByText('No configuras ningún origen.')).toBeVisible()
-  await expect(
-    page.getByRole('main').getByRole('list', { name: 'Partes generales' }).getByRole('link'),
-  ).toHaveText([/^Niveles/])
-  await expect(page.getByText('Por origen', { exact: true })).toHaveCount(0)
-  await page.goto(`${BASE}/${conFormula.id}/formula`)
-  await expect(page).toHaveURL(new RegExp(`${BASE}/general/niveles$`))
+  await page.goto(CATALOGOS)
+  await expect(page).toHaveURL(new RegExp(`${CATALOGOS}/niveles$`))
   await expect(page.getByRole('heading', { name: 'Niveles', level: 1 })).toBeVisible()
-  await expect(page.getByRole('tab')).toHaveCount(0)
+  await expect(menu(page).getByRole('link', { name: 'Colores', exact: true })).toHaveCount(0)
+  await expect(menu(page).getByRole('link', { name: 'Vigencia', exact: true })).toHaveCount(0)
+  await page.goto(`${ORIGENES}/${conFormula.id}/formula`)
+  await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Ver los orígenes' })).toHaveCount(0)
 })

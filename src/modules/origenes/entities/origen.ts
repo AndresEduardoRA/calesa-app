@@ -67,6 +67,9 @@ export type UsoDeOrigen = {
   fases: number
   formulaPublicada: boolean
   concesiones: number
+  // La tarjeta de la cotización publicada (sin ella se usa la de siempre). La cuenta la base: la RLS de las plantillas la esconde a quien
+  // no configura el cotizador.
+  tarjetaPublicada: boolean
 }
 
 export type OrigenConUso = Origen & { uso: UsoDeOrigen }
@@ -94,6 +97,7 @@ const esquemaUso = z.object({
   fases: z.number(),
   formula_publicada: z.boolean(),
   concesiones: z.number(),
+  tarjeta_publicada: z.boolean(),
 })
 
 const USO_VACIO: UsoDeOrigen = {
@@ -104,6 +108,7 @@ const USO_VACIO: UsoDeOrigen = {
   fases: 0,
   formulaPublicada: false,
   concesiones: 0,
+  tarjetaPublicada: false,
 }
 
 // Las filas de `origenes` unidas a su uso (`origenes_resumen()`), en el orden en que llegaron las
@@ -123,6 +128,7 @@ export function origenesConUsoDesde(filas: unknown, usos: unknown): OrigenConUso
           fases: uso.fases,
           formulaPublicada: uso.formula_publicada,
           concesiones: uso.concesiones,
+          tarjetaPublicada: uso.tarjeta_publicada,
         } satisfies UsoDeOrigen,
       ]),
   )

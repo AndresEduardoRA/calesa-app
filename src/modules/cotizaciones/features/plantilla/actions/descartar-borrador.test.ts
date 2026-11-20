@@ -76,7 +76,7 @@ describe('descartarBorrador', () => {
     const respuesta = await descartarBorrador(pedido)
     expect(h.pedidos).toEqual([pedido])
     expect(respuesta.data).toEqual({ ok: true, data: null })
-    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/cotizacion', 'layout')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/origenes', 'layout')
   })
 
   it('un conflicto llega tal cual y no revalida', async () => {

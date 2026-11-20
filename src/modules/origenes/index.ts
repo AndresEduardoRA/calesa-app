@@ -35,11 +35,13 @@ export type { DatoClave, DatoClaveResuelto } from './entities/datos-clave'
 export { leerOrigenes } from './composicion'
 export type { OrigenConUso } from './entities/origen'
 
-// Qué le falta a un origen para funcionar
+// «Para cotizar y mover»: lo que le falta a un origen, en cinco pasos con su estado
 export {
-  faltasDeLaTarjeta,
-  pasosDe,
+  CLAVES_DE_PASO,
+  pasosParaCotizarYMover,
+  pasosQueFaltan,
   type ClaveDePaso,
-  type PasoConDestino,
-  type PasoSiguiente,
+  type EstadoDePaso,
+  type ParaCotizarYMover,
+  type PasoParaCotizar,
 } from './entities/pasos'

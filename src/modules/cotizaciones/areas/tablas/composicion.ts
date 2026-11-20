@@ -3,12 +3,15 @@ import 'server-only'
 import type { RepositorioDeTablas } from '../../entities/tablas/repositorio'
 import {
   getTablaParaEditar,
+  getTablasCompartidas,
   getTablasDeReferencia,
   publicacionDeTablasSupabase,
 } from '../../infra/tablas/servidor'
 
 // Las tablas activas de un origen y las compartidas, con tope (`hayMas`).
 export const leerTablasDeReferencia = getTablasDeReferencia
+// Sólo las compartidas (origen nulo), con tope (`hayMas`): Catálogos › Tablas compartidas.
+export const leerTablasCompartidas = getTablasCompartidas
 // Una tabla con todas sus filas para editarla, o por qué no se edita (no está, no se ve, pasa de 2.000 filas).
 export const leerTablaParaEditar = getTablaParaEditar
 // Publicar una tabla de referencia por `tabla_referencia_publicar()` (4.23-1). La action de `features/tablas/` lo usa.

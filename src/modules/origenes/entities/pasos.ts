@@ -1,76 +1,100 @@
-// Qué le falta a un origen para funcionar. Se deriva de lo que hay (fases, fórmula, concesiones,
-// integración), no de un «recién creado»: si alguien deshace algo, el paso vuelve a aparecer.
+// «Para cotizar y mover»: lo que le falta a un origen, en cinco pasos con su estado. Se deriva de lo que hay (campos, fases, fórmula,
+// tarjeta, integración), no de un «recién creado»: si alguien deshace algo, el paso vuelve a fallar. Una sola regla para la tira de la
+// página del origen, la tarjeta de la lista y el inicio de Configuración.
 import type { OrigenConUso } from './origen'
 
-export type ClaveDePaso = 'flujo' | 'formula' | 'permisos' | 'apibara'
+export const CLAVES_DE_PASO = ['datos', 'campos', 'flujo', 'formula', 'tarjeta'] as const
 
-export type PasoSiguiente = {
+export type ClaveDePaso = (typeof CLAVES_DE_PASO)[number]
+
+// `bloquea` (✗) sólo para lo que impide cotizar o mover; `aviso` (⚠), lo que se puede usar igual con lo de siempre.
+export type EstadoDePaso = 'listo' | 'aviso' | 'bloquea'
+
+export type PasoParaCotizar = {
   clave: ClaveDePaso
   titulo: string
-  detalle: string
-  pendiente: boolean
+  estado: EstadoDePaso
+  // Una frase corta: «Listo» o qué pasa sin él.
+  frase: string
 }
 
-// Un paso con a dónde lleva. La ruta la pone quien conoce las pantallas (`app/`): null = la
-// pantalla todavía no existe. `motivoDeshabilitado` = la persona no tiene el permiso.
-export type PasoConDestino = PasoSiguiente & {
-  ruta: string | null
-  motivoDeshabilitado: string | null
+// Un origen inactivo no recibe vehículos ni cotizaciones nuevos: no tiene pasos, sólo se dice «Inactivo».
+export type ParaCotizarYMover = { inactivo: true } | { inactivo: false; pasos: PasoParaCotizar[] }
+
+const TITULO: Record<ClaveDePaso, string> = {
+  datos: 'Datos',
+  campos: 'Campos',
+  flujo: 'Flujo',
+  formula: 'Fórmula',
+  tarjeta: 'Tarjeta',
 }
 
-export function pasosDe(
+const LISTO = 'Listo'
+
+// Lo que dice cada paso cuando no está listo.
+export const FRASE_DEL_PASO: Record<ClaveDePaso, string> = {
+  datos: 'Activa apibara para traer sus subastas',
+  campos: 'Sin campos activos: la ficha muestra sólo lo básico',
+  flujo: 'Sin fases: sus vehículos no se pueden mover',
+  formula: 'Sin publicar: no se puede cotizar',
+  tarjeta: 'Sin publicar: se usa la tarjeta de siempre',
+}
+
+function paso(clave: ClaveDePaso, falla: EstadoDePaso | null): PasoParaCotizar {
+  return {
+    clave,
+    titulo: TITULO[clave],
+    estado: falla ?? 'listo',
+    frase: falla === null ? LISTO : FRASE_DEL_PASO[clave],
+  }
+}
+
+export function pasosParaCotizarYMover(
   origen: OrigenConUso,
   contexto: { apibaraActiva: boolean },
-): PasoSiguiente[] {
-  const pasos: PasoSiguiente[] = [
-    {
-      clave: 'flujo',
-      titulo: 'Configura el flujo',
-      detalle: `El flujo de ${origen.nombre} nació sin fases: hasta que las tenga, sus vehículos no tienen por dónde avanzar.`,
-      pendiente: origen.uso.fases === 0,
-    },
-    {
-      clave: 'formula',
-      titulo: 'Publica la fórmula',
-      detalle: `Sin fórmula publicada no se puede cotizar un vehículo de ${origen.nombre}.`,
-      pendiente: !origen.uso.formulaPublicada,
-    },
-    {
-      clave: 'permisos',
-      titulo: 'Revisa los permisos',
-      detalle:
-        'Ningún rol tiene permisos acotados a este origen. Los roles con permisos para todos los orígenes ya lo alcanzan.',
-      pendiente: origen.uso.concesiones === 0,
-    },
-  ]
-  if (origen.tipo === 'subasta') {
-    pasos.push({
-      clave: 'apibara',
-      titulo: 'Activa apibara',
-      detalle:
-        'Sin la integración activa, un vehículo de subasta no se puede dar de alta pegando su enlace.',
-      pendiente: !contexto.apibaraActiva,
-    })
+): ParaCotizarYMover {
+  if (!origen.activo) {
+    return { inactivo: true }
   }
-  return pasos
+  const { uso } = origen
+  return {
+    inactivo: false,
+    pasos: [
+      paso('datos', origen.tipo === 'subasta' && !contexto.apibaraActiva ? 'aviso' : null),
+      paso('campos', uso.camposActivos === 0 ? 'aviso' : null),
+      paso('flujo', uso.fases === 0 ? 'bloquea' : null),
+      paso('formula', uso.formulaPublicada ? null : 'bloquea'),
+      paso('tarjeta', uso.tarjetaPublicada ? null : 'aviso'),
+    ],
+  }
 }
 
-const FALTA_EN_LA_TARJETA: Record<Exclude<ClaveDePaso, 'permisos'>, string> = {
+// Los pasos que no están listos, en su orden (vacío si el origen está inactivo o no le falta nada).
+export function pasosQueFaltan(
+  origen: OrigenConUso,
+  contexto: { apibaraActiva: boolean },
+): PasoParaCotizar[] {
+  const tira = pasosParaCotizarYMover(origen, contexto)
+  return tira.inactivo ? [] : tira.pasos.filter((uno) => uno.estado !== 'listo')
+}
+
+const FALTA_EN_LA_TARJETA: Record<ClaveDePaso, string> = {
+  datos: 'Falta activar apibara',
+  campos: 'Sin campos activos',
   flujo: 'Sin fases',
   formula: 'Falta publicar la fórmula',
-  apibara: 'Falta activar apibara',
+  tarjeta: 'Falta publicar la tarjeta',
 }
 
-// Lo que la tarjeta de un origen dice que le falta, en corto y en el orden de los pasos. «Revisa los permisos» no va (es un aviso blando,
-// como en el inicio de Configuración) y un origen inactivo no muestra faltas: no recibe vehículos ni cotizaciones nuevos.
+// Lo que la tarjeta de un origen en la lista dice que le falta, en corto y en el orden de los pasos, con su estado (el ícono). Un origen
+// inactivo no muestra faltas.
 export function faltasDeLaTarjeta(
   origen: OrigenConUso,
   contexto: { apibaraActiva: boolean },
-): string[] {
-  if (!origen.activo) {
-    return []
-  }
-  return pasosDe(origen, contexto).flatMap((paso) =>
-    paso.pendiente && paso.clave !== 'permisos' ? [FALTA_EN_LA_TARJETA[paso.clave]] : [],
-  )
+): { clave: ClaveDePaso; estado: EstadoDePaso; texto: string }[] {
+  return pasosQueFaltan(origen, contexto).map((uno) => ({
+    clave: uno.clave,
+    estado: uno.estado,
+    texto: FALTA_EN_LA_TARJETA[uno.clave],
+  }))
 }

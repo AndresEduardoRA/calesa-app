@@ -1,4 +1,4 @@
-// Lo que lee la pestaña «Diseño» de Configuración › Cotización (4.22-2) sobre el cliente que recibe: el diseño de un origen para editarlo y los niveles que el
+// Lo que lee la pestaña «Diseño» de la página del origen (4.22-2) sobre el cliente que recibe: el diseño de un origen para editarlo y los niveles que el
 // diseño puede nombrar. Sin `server-only`, para que una prueba la corra; `lectura.ts` la envuelve con el cliente de la sesión de quien mira. La policy `formulas: leer`
 // deja ver sólo los orígenes donde tiene `cotizaciones.configurar` (D7); `cotizaciones_niveles` la lee cualquier `authenticated`.
 import type { SupabaseClient } from '@supabase/supabase-js'

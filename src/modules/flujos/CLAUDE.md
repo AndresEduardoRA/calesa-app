@@ -6,7 +6,8 @@ Toda la configuración se escribe por RPC con la versión del flujo. Abiertos (`
 
 ## Entra y sale
 
-- Entra: configuración del dueño en `/configuracion/flujos` (un flujo por origen + el de repuestos); llamadas a mover desde `logistica` y `repuestos`.
+- Entra: configuración del dueño en la pestaña Flujo de cada origen (`/configuracion/origenes/<id>/flujo`) y en Repuestos › Flujo de repuestos
+  (`/configuracion/repuestos/flujo`), cada una con un **flujo fijo** (`FlujoFijo`: `{ origenId }` o `{ ambito: 'repuestos' }`); llamadas a mover desde `logistica` y `repuestos`.
 - Sale por `index.ts`: `leerFasesDeOrigen(origenId)` → `FaseResumen[]` (id, nombre, color, orden, inicial, final, activa; también las jubiladas), que usa
   `vehiculos` para mostrar y filtrar la fase. Del área `mover`: `leerFlujoDeOrigen(origenId)` → `FlujoDeOrigen | null` (`flujoId`, `reglasActivas` y por fase
   `notaObligatoria`, `permiteContenedor`, `permiteAduana`, `demoraDias`; error visible si una lista llega al tope) y `reglaActiva(flujo, regla)`. Por `client.ts`,
@@ -25,7 +26,8 @@ Toda la configuración se escribe por RPC con la versión del flujo. Abiertos (`
 ## Archivos clave
 
 - `entities/fase.ts` (`FaseResumen`, `fasesDesde()`), `infra/queries/fases.ts` (`getFasesDeOrigen()`), `areas/nucleo/composicion.ts`.
-- `features/configuracion/` (núcleo): `<PantallaDelFlujo>` (Server Component async, por `pantallas/configuracion.ts`), el selector, la barra del flujo,
+- `features/configuracion/` (núcleo): `<PantallaDelFlujo fijo>` (Server Component async, por `pantallas/configuracion.ts`; sin selector: abre la entrada
+  de `entradaFija()`, que nunca cae en otra, o «sin flujo» si quien mira no lo configura), la barra del flujo,
   las fases como **diagrama** (`components/diagrama/`, `diferido()`) o lista (`?vista=diagrama|lista`, `useVistaDelFlujo`, `shallow` + `replace`; debajo de
   768 px sólo la lista) y el **panel del flujo** (`panel-del-flujo.tsx`, `<Drawer alCostado>` desde 1024 px): una fase (`?fase=`, `ContenidoDeLaFase`, sus
   bloques a la vista con `<BloquesALaVista>`) o una sección (`?seccion=reglas|documentos`, lo que dibuja el servidor por `secciones`); gana `?seccion=`
@@ -35,13 +37,14 @@ Toda la configuración se escribe por RPC con la versión del flujo. Abiertos (`
   `centroParaVerLaFase`), puros y con test. **Sólo `components/diagrama/` importa `@xyflow/react`** y sólo `diferidos.tsx` llega ahí, por `import()`
   (`scripts/guardas/xyflow-diferido.test.ts`); el esqueleto va fuera. Sin posiciones guardadas. Cada caja es un `<button>` «Fase «X»» (React Flow sin
   teclado ni foco propios; sus textos en español); las salidas se agregan en el panel, no arrastrando.
-- `/configuracion/flujos` recibe de `src/app` los orígenes (`getOrigenes(true)`) y los roles (`leerRolesParaElegir()`): `flujos` no importa `origenes` ni
+- `<PantallaDelFlujo>` recibe de `src/app` los orígenes (`getOrigenes(true)`) y los roles (`leerRolesParaElegir()`): `flujos` no importa `origenes` ni
   `equipo`. `?fase=` lo lee `useFaseAbierta()` (un id ajeno al flujo se ignora). `useVersionDelFlujo()` (dentro de `<ProveedorDelFlujo>`) da la `version` y
   `avisarConflicto()`; no sale por `client.ts`.
 - **Huecos** (`HuecosDelFlujo`): `proveedorDeRevisar` (llena `ContextoDeMarcasDelDiagrama`), `franjaDeRevisar`, `ordenDeFases` (llena
   `ContextoDeOrdenDeFases`: arrastrar y «Mover antes/después»), `accionesDeLaLista` (en la barra), `accionesDeFila`, `salidasDeFila` y
   `bloques.acciones|datos|salidas|requisitos|reglas` del panel. Son componentes de cliente opcionales que se registran en
-  `src/app/(app)/configuracion/flujos/huecos.ts`; los dos contextos son del núcleo (el núcleo no importa áreas) y sin proveedor no marcan nada ni ordenan
+  `src/app/(app)/configuracion/_flujo/huecos.ts` (`_flujo/` es el editor que comparten las dos páginas: `editor-del-flujo.tsx`, los huecos, las secciones del
+  panel y lo fuera de regla); los dos contextos son del núcleo (el núcleo no importa áreas) y sin proveedor no marcan nada ni ordenan
   («No se puede ordenar desde aquí.»). El panel está en `drawers-con-salida.ts` con el formulario de «Datos» (`formulario-de-datos-de-la-fase.tsx`,
   mecanismo `contexto`).
 
@@ -81,13 +84,14 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
 
 ## Documentos
 
-- `?seccion=documentos` de `/configuracion/flujos`, en el panel del flujo (`pantallas/documentos.ts`: `<PantallaDeDocumentos enElPanel>`, sin su selector;
-  en la página para quien sólo gestiona los catálogos de logística; `<EsqueletoDeTipos>`): dos grupos de
+- `<PantallaDeDocumentos>` (`pantallas/documentos.ts`, `<EsqueletoDeTipos>`) dibuja **un** grupo de `tipos_documento` según `grupos`: `'flujo'` con su
+  `fijo`, en el panel del flujo (`?seccion=documentos`, `enElPanel`), y `'empresa'`, en la página Catálogos › Tipos de documento
+  (`/configuracion/catalogos/tipos-de-documento`). Los dos grupos de
   `tipos_documento`, los de la empresa (`flujo_id` nulo; `logistica.catalogos.gestionar`) y los del flujo (`flujos.configurar` o `repuestos.configurar`; el
   origen lo decide la base). Quien no puede cambiar un grupo lo ve con «Nuevo tipo», «Editar» y el orden apagados y el motivo.
 - `entities/documentos/` valida espejo de la base (probado contra PGlite); escriben `tipo_documento_crear|guardar|mover|eliminar`.
   `leerTiposDeDocumento` y `leerUsoDeTiposDeDocumento` salen por el `index.ts` del área.
-- **La lista se relee, no se siembra:** cada action comprueba `puede()` con el `flujoId` del grupo y revalida `RUTAS.configuracionDeFlujos`. El uso
+- **La lista se relee, no se siembra:** cada action comprueba `puede()` con el `flujoId` del grupo y revalida `RUTAS.origenes`, `RUTAS.configuracionDeRepuestos` y `RUTAS.catalogos` (con `'layout'`). El uso
   (`tipos_documento_con_uso`, acotado a 50) sólo se pide a quien puede cambiar el grupo (a los demás, `42501`).
 - URL: `?panel=nuevo-tipo&de=empresa|flujo`, `?panel=editar-tipo&tipo=<id>`, `?panel=eliminar-tipo&tipo=<id>`. Lo que la URL pide y no se puede abrir se avisa
   y se limpia. Con uso, «Eliminar» está apagado: se desactiva.
@@ -102,7 +106,7 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
 - **La lista:** `pantallas/fases.ts` da `<AccionesDeLaLista>` (en la barra del flujo) y `<AccionesDeFila>` (Subir/Bajar y Editar, Jubilar o eliminar,
   Reactivar). URL `?panel=nueva-fase` y
   `?panel=eliminar-fase&quitar=<id>` (en `scripts/guardas/areas-b/confirmar-con-url.ts`). La confirmación lee `fase_impacto` al abrirse; una bloqueada se
-  explica y no se confirma. `useListaDeFases` escribe una a la vez con la `version`; `PT409` → `avisarConflicto()`. El selector sólo ofrece flujos configurables.
+  explica y no se confirma. `useListaDeFases` escribe una a la vez con la `version`; `PT409` → `avisarConflicto()`. Sólo se abre un flujo que quien mira configura (`entradaFija()`).
 - **Ordenar:** `<ProveedorDeOrden>` (`ordenDeFases`) da `fase_mover` al diagrama (arrastrar: el orden se ve en el acto y vuelve atrás si falla) y a
   `<AccionesDelPanel>` (`bloques.acciones`: «Mover antes», «Mover después», «Jubilar o eliminar»). Con `truncado.fases` todo orden se apaga con
   `MOTIVO_LISTA_CORTADA` (`motivoSinOrdenDeFases`), también «Subir/Bajar» de la lista.
@@ -129,7 +133,7 @@ El módulo se parte por área (`scripts/guardas/areas-de-flujos.test.ts`): el **
 - URL: `?agregar=nuevo&forma=elegir|dato|documento|espera`, `?editar=requisito&requisito=<id>`, `?eliminar=requisito&quitar=<id>`
   (`entities/requisitos/vista-de-fase.ts`; en `scripts/guardas/areas-c/confirmar-con-url.ts`).
 - **Bloqueante:** `leerImpactoDeRequisito` (`requisito_impacto`) alimenta `useBloqueanteDeRequisito`; aviso en línea (`<ConfirmarBloqueo>`). **Fuera de regla:**
-  `leerFueraDeRegla` (`flujo_fuera_de_regla`, `tope + 1`) sale por `areas/requisitos/index.ts`; lo lee `src/app/(app)/configuracion/flujos/requisitos/fuera-de-regla.tsx`
+  `leerFueraDeRegla` (`flujo_fuera_de_regla`, `tope + 1`) sale por `areas/requisitos/index.ts`; lo lee `src/app/(app)/configuracion/_flujo/fuera-de-regla.tsx`
   (títulos con `leerTitulosDeVehiculos` de `vehiculos`, `href` con `FILTRO_FASE`) y lo entrega a `PantallaDelFlujo` por `sobreLaLista`, una **prop de
   servidor** tras su `<Suspense fallback={null}>`. `?panel=fuera-de-regla`, registrado `sinFormulario` en `scripts/guardas/areas-c/drawers-con-salida.ts`; las
   dos RPC en `areas-c/paginas-en-la-base.ts` (defecto 50).

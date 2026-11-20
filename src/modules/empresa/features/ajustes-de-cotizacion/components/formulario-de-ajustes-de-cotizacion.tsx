@@ -27,7 +27,7 @@ type Props = {
 const ID_DEL_FORMULARIO = 'formulario-de-la-vigencia'
 const CAMPOS = ['vigenciaDias'] as const
 
-// Configuración › Cotización › General › Vigencia: los días que vale una cotización, para todas. Un campo, con la barra de cambios sin guardar
+// Configuración › Catálogos › Vigencia: los días que vale una cotización, para todas. Un campo, con la barra de cambios sin guardar
 // («Descartar» · «Guardar»), que aparece al cambiarlo; salir con cambios pregunta. Quien lo usa le pone de `key` la versión de la fila, así que lo
 // guardado (aquí o por otra persona) lo vuelve a montar desde la base. En sólo lectura, el motivo y sin barra. El título y la frase los pone la página.
 export function FormularioDeAjustesDeCotizacion({ ajustes, puedeCambiar, puedeIrARoles }: Props) {

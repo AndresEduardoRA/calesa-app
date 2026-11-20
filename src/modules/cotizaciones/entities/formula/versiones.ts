@@ -1,4 +1,4 @@
-// Las versiones de la fórmula de un origen, como las lee Configuración › Cotización › «Fórmula» (4.20-2a): la publicada, el borrador y la lista de las publicadas y
+// Las versiones de la fórmula de un origen, como las lee la Fórmula de la página del origen (4.20-2a): la publicada, el borrador y la lista de las publicadas y
 // archivadas, de la más nueva a la más vieja, por cursor sobre `formulas_origen_id_version_key (origen_id, version)`. Lo oculto (`definicion`, `params`, `diseno`,
 // `visibilidad`) nunca viaja: los esquemas son estrictos y una fila con una columna de más es un error de lectura, no una fila.
 import { z } from 'zod'

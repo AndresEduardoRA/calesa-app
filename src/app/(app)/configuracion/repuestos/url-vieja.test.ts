@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest'
 import { destinoDeLaUrlVieja } from './url-vieja'
 
 describe('la URL vieja de Configuración › Repuestos', () => {
-  it('sin `seccion`, o con una ajena, abre Catálogos', () => {
-    expect(destinoDeLaUrlVieja({})).toBe('/configuracion/repuestos/catalogos')
+  it('sin nada, abre el flujo de repuestos', () => {
+    expect(destinoDeLaUrlVieja({})).toBe('/configuracion/repuestos/flujo')
+  })
+
+  it('con una `seccion` ajena, o la de catálogos, abre Catálogos', () => {
     expect(destinoDeLaUrlVieja({ seccion: 'basura' })).toBe('/configuracion/repuestos/catalogos')
     expect(destinoDeLaUrlVieja({ seccion: 'catalogos' })).toBe('/configuracion/repuestos/catalogos')
   })

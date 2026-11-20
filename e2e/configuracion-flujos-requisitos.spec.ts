@@ -32,7 +32,7 @@ import {
   vehiculosSinVinEnLaFase,
 } from './soporte/requisitos'
 
-// Configuración › Flujos › inspector de una fase › «Requisitos para entrar» (5.08-1, `docs/UX.md` › «Flujos: requisitos para entrar (estados propios)»): la
+// El flujo de un origen › inspector de una fase › «Requisitos para entrar» (5.08-1, `docs/UX.md` › «Flujos: requisitos para entrar (estados propios)»): la
 // dueña agrega un dato (con y sin porcentaje), lo ve «Informativo», sube uno y quita otro desde la URL; quien sólo configura el flujo también puede. Un solo
 // recorrido del camino feliz: la base ya tiene sus pruebas de cada regla (`supabase/tests/areas/flujos/requisitos.sql`).
 test.describe.configure({ mode: 'serial' })
@@ -284,7 +284,7 @@ test('la dueña vuelve bloqueante un dato, ve el impacto y las unidades fuera de
   await expect(interruptor).toBeChecked()
 
   // El aviso sobre la lista de fases, con su panel: los dos títulos, la fase y el camino al inventario.
-  await page.goto(`/configuracion/flujos?origen=${origenDeLaSubasta()}`)
+  await page.goto(`/configuracion/origenes/${origenDeLaSubasta()}/flujo`)
   await expect(page.getByText(/unidades? fuera de regla/).first()).toBeVisible()
   await page.getByRole('button', { name: 'Ver cuáles' }).click()
   await expect(page).toHaveURL(/panel=fuera-de-regla/)

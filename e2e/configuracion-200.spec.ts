@@ -78,14 +78,18 @@ const PANTALLAS: Pantalla[] = [
   { titulo: 'Empresa › Comprobantes', url: () => '/configuracion/empresa/comprobantes' },
   { titulo: 'Orígenes', url: () => '/configuracion/origenes' },
   {
-    titulo: 'la ficha de un origen › Datos',
+    titulo: 'la página de un origen › Datos',
     url: DE_UN_ORIGEN('datos'),
     controles: (page) => [
-      [page.getByRole('link', { name: /^Abrir/ }).first(), 'el primer «Abrir»'],
+      [page.getByRole('button', { name: `Más acciones de ${origen.nombre}` }), 'el «⋯» del origen'],
     ],
   },
-  { titulo: 'la ficha de un origen › Campos', url: DE_UN_ORIGEN('campos') },
-  { titulo: 'la ficha de un origen › Categorías', url: DE_UN_ORIGEN('categorias') },
+  { titulo: 'la página de un origen › Campos', url: DE_UN_ORIGEN('campos') },
+  { titulo: 'la página de un origen › Categorías', url: DE_UN_ORIGEN('categorias') },
+  { titulo: 'la página de un origen › Flujo', url: DE_UN_ORIGEN('flujo') },
+  { titulo: 'la página de un origen › Fórmula', url: DE_UN_ORIGEN('formula') },
+  { titulo: 'la página de un origen › Fórmula › Hoja', url: DE_UN_ORIGEN('formula/hoja') },
+  { titulo: 'la página de un origen › Tablas', url: DE_UN_ORIGEN('tablas') },
   { titulo: 'Leads › Campos', url: () => '/configuracion/leads/campos' },
   { titulo: 'Leads › Orígenes del lead', url: () => '/configuracion/leads/origenes' },
   { titulo: 'Leads › Tipos de lead', url: () => '/configuracion/leads/tipos' },
@@ -94,12 +98,20 @@ const PANTALLAS: Pantalla[] = [
     url: () => '/configuracion/leads/seguimientos',
   },
   {
-    titulo: 'Cotización › General › Niveles',
-    url: () => '/configuracion/cotizacion/general/niveles',
+    titulo: 'Catálogos › Niveles',
+    url: () => '/configuracion/catalogos/niveles',
     controles: (page) => [
       [page.getByRole('button', { name: /^Más acciones de / }).first(), 'el «⋯» del primer nivel'],
     ],
   },
+  { titulo: 'Catálogos › Colores', url: () => '/configuracion/catalogos/colores' },
+  { titulo: 'Catálogos › Puertos', url: () => '/configuracion/catalogos/puertos' },
+  {
+    titulo: 'Catálogos › Tipos de documento',
+    url: () => '/configuracion/catalogos/tipos-de-documento',
+  },
+  { titulo: 'Catálogos › Tablas compartidas', url: () => '/configuracion/catalogos/tablas' },
+  { titulo: 'Repuestos › Flujo de repuestos', url: () => '/configuracion/repuestos/flujo' },
   {
     titulo: 'Equipo',
     url: () => '/configuracion/equipo',
@@ -153,9 +165,9 @@ async function dentroDe(lugar: Locator, selector: string, que: string): Promise<
   )
 }
 
-// 5a-29 y 5a-30: la ficha de un origen al 200 %: la clave interna cabe en su tarjeta (se parte, no se corta) y el texto de un paso pendiente mide al menos
-// 12 rem o su «Abrir» pasa debajo, en vez de quedar en una columna de ~130 px.
-test('al 200 %: en la ficha de un origen la clave interna cabe en su tarjeta y «Abrir» no aprieta el texto del paso', async ({
+// 5a-29 y 5a-30: la página de un origen al 200 %: la clave interna cabe en su tarjeta (se parte, no se corta) y cada paso de «Para cotizar y mover»
+// cabe en la página y se lee entero (la tira se parte en dos columnas en vez de apretar su texto).
+test('al 200 %: en la página de un origen la clave interna y cada paso de «Para cotizar y mover» caben', async ({
   page,
 }, info) => {
   await textoGrandeAlCargar(page)
@@ -168,19 +180,13 @@ test('al 200 %: en la ficha de un origen la clave interna cabe en su tarjeta y �
   await page.goto(`/configuracion/origenes/${conClaveLarga.id}/datos`)
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   await dentroDe(page.locator('dd.font-mono').first(), 'main', 'la clave interna')
-  const abrir = page.getByRole('link', { name: /^Abrir/ }).first()
-  const paso = abrir.locator('xpath=ancestor::li[1]')
-  const texto = await paso.locator(':scope > div').first().boundingBox()
-  const boton = await abrir.boundingBox()
-  const raiz = await page.evaluate(() =>
-    Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
-  )
-  expect(texto && boton, 'el paso tiene texto y botón').toBeTruthy()
-  const debajo = (boton?.y ?? 0) >= (texto?.y ?? 0) + (texto?.height ?? 0) - 1
-  expect(
-    debajo || (texto?.width ?? 0) >= 12 * raiz - 1,
-    'el texto del paso mide 12 rem o «Abrir» pasa debajo',
-  ).toBe(true)
+  const tira = page.getByRole('region', { name: 'Para cotizar y mover' })
+  const pasos = tira.getByRole('listitem')
+  await expect(pasos).toHaveCount(5)
+  for (let i = 0; i < 5; i++) {
+    await dentroDe(pasos.nth(i), 'main', `el paso ${String(i + 1)}`)
+  }
+  await sinTextoCortado(tira)
 })
 
 // 5a-28: el modal de apibara (la dirección del servicio y las plataformas) no pasa del relleno de su cuerpo con el texto al 200 % desde la carga.

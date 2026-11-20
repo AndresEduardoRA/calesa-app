@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -58,8 +59,8 @@ test('V1: la vista previa va a 412, a 1.280 y a 200 %, sigue al diseño sin guar
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/cotizacion?seccion=diseno&origen=${origen.id}`)
-  await expect(page.getByRole('heading', { name: 'Hoja', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origen.id}/formula/hoja`)
+  await enLaPestana(page, 'Hoja')
   const boton = page.getByRole('button', { name: 'Vista previa', exact: true })
   await expect(boton).toHaveAttribute('aria-expanded', 'false')
   await expect(marco(page)).toHaveCount(0)

@@ -10,7 +10,12 @@ import {
   correoDePrueba,
   crearDuenaDePrueba,
 } from './soporte/base'
-import { borrarOrigenes, crearOrigenDePrueba, origenPorClave } from './soporte/origenes'
+import {
+  borrarOrigenes,
+  crearOrigenDePrueba,
+  origenPorClave,
+  tarjetaDelOrigen,
+} from './soporte/origenes'
 import { ingresar } from './soporte/pasos'
 
 // @sin-celular-archivo: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -49,12 +54,16 @@ test('eliminar un origen: su URL, Esc, atrás, recarga, sin red y un solo pedido
   await ingresar(page, duena, CLAVE_DE_PERSONA)
   await expect(page).toHaveURL('/')
   await page.goto('/configuracion/origenes')
-  await page.getByRole('link', { name: new RegExp(NOMBRE) }).click()
+  await tarjetaDelOrigen(page, NOMBRE).click()
   await expect(page.getByRole('heading', { name: NOMBRE, level: 1 })).toBeVisible()
-  const disparador = page.getByRole('button', { name: 'Eliminar origen' })
+  // «Eliminar origen» vive en el «⋯» del encabezado: el foco vuelve a él al cerrar la confirmación.
+  const disparador = page.getByRole('button', { name: `Más acciones de ${NOMBRE}` })
   const dialogo = page.getByRole('dialog')
   await cicloDeUnaConfirmacion(page, {
-    abrir: () => disparador.click(),
+    abrir: async () => {
+      await disparador.click()
+      await page.getByRole('menuitem', { name: 'Eliminar origen' }).click()
+    },
     dialogo,
     disparador,
     url: /panel=eliminar-origen/,

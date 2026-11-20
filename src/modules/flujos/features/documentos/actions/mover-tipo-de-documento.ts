@@ -20,7 +20,9 @@ export const moverTipoDeDocumento = actionClient
     const hecho = comoResultado(await repositorioDeTiposDeDocumento.mover(parsedInput))
     if (hecho.ok) {
       // La pantalla relee la lista: ninguna RPC la devuelve.
-      revalidatePath(RUTAS.configuracionDeFlujos, 'layout')
+      revalidatePath(RUTAS.origenes, 'layout')
+      revalidatePath(RUTAS.configuracionDeRepuestos, 'layout')
+      revalidatePath(RUTAS.catalogos, 'layout')
     }
     return hecho
   })

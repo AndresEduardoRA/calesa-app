@@ -73,7 +73,7 @@ function Ventanas({
   )
 }
 
-// Configuración › Cotización › Colores (la tabla `tonos`): el catálogo de la empresa, por nombre y hasta el tope que dice la base. Es de toda la empresa, no de un
+// Configuración › Catálogos › Colores (la tabla `tonos`): el catálogo de la empresa, por nombre y hasta el tope que dice la base. Es de toda la empresa, no de un
 // origen, y se guarda al instante (cada color es una escritura propia, no parte de «Guardar el borrador» del diseño). Cada escritura devuelve la lista entera y esa
 // reemplaza a la local: ningún pedido extra. Un título y una acción principal («Nuevo color») en él.
 export function ColoresDelCatalogo({ lista: inicial }: Props) {

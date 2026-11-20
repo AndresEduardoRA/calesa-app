@@ -77,7 +77,7 @@ describe('guardarBorrador: lo que entra', () => {
     const respuesta = await guardarBorrador(pedido)
     expect(h.pedidos).toEqual([pedido])
     expect(respuesta.data).toEqual({ ok: true, data: NUEVA })
-    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/cotizacion', 'layout')
+    expect(h.revalidatePath).toHaveBeenCalledWith('/configuracion/origenes', 'layout')
   })
 
   it('crear el primero: la esperada nula llega nula', async () => {
