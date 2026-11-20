@@ -1005,8 +1005,8 @@ una lista de respaldo da el primero de sus datos con valor (`tieneValor()`) o, s
 cuyas condiciones se cumplen todas o, si ninguna, el «si no». Una condición lee un nodo así: 0 si no aplica, su número si aplica y nulo sin valor (una
 comparación con nulo no se cumple; `encendido` es «distinto de 0»; `opcion` compara la clave elegida); un nodo que no está en la versión del cálculo deja la
 condición sin respuesta, que cuenta como que no se cumple (la rama se salta y la fila no se oculta). Así los tres dibujos y «Copiar texto» sólo ven un
-contenido simple. Esos
-motivos son sólo datos de las ocultas: el dibujo no cambia y `VERSION_DEL_DIBUJO` no sube. Una fila se oculta si su nodo no aplica (o vale 0) y
+contenido simple, y un cambio en cómo se resuelve sube `VERSION_DEL_DIBUJO`.
+Los motivos son sólo datos de las ocultas: no cambian el dibujo. Una fila se oculta si su nodo no aplica (o vale 0) y
 las celdas que la cruzan se acortan; un dato de un nodo que no aplica, en una fila que se dibuja, va vacío; un monto nulo, «—». El monto del total sale
 de los totales y, con «Ver total Bs», lleva la segunda línea en moneda local. Sin plantilla o sin estados, la tarjeta por omisión (`por-omision.ts`).
 Lo pintan tres dibujos con posiciones absolutas (satori no tiene `grid`): el HTML (escalado como una imagen, `min(1, ancho del contenedor / ancho)`),

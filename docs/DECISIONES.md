@@ -804,7 +804,8 @@ las trampas, en `docs/LECCIONES.md`.
   espacios de los bordes o un número (también el 0); un nulo no, y un nodo que no aplica tampoco.
 - **Nulo, 0 y «no aplica» en una condición.** Un nodo que no aplica vale 0 (lo que no aplica no suma: «es 0» se cumple con un nodo apagado por su interruptor); uno sin
   valor es nulo y una comparación con nulo no se cumple (ni «mayor», ni «menor», ni «igual», ni «es 0»). Así «Remate es menor que 1.000» no oculta una fila
-  de una cotización sin remate. `encendido` es «distinto de 0» y `opcion` compara la clave elegida.
+  de una cotización con el remate sin valor, y sí la de una donde el remate no aplica (vale 0); quien quiera verla también en ese caso suma la
+  condición «Remate no es 0». `encendido` es «distinto de 0» y `opcion` compara la clave elegida.
 - **Una condición sobre un nodo que no está en la versión de la cotización no tiene respuesta y su rama se salta.** La plantilla publicada hoy dibuja
   cotizaciones de versiones viejas: sin respuesta, la rama no gana por accidente y la fila no se oculta; si ninguna gana, el «si no». El editor lo dice junto
   al dato («Este dato ya no está en la fórmula: se salta.»).
