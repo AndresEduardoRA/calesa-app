@@ -40,13 +40,13 @@ const guardada = (): string =>
 
 const barra = (page: Page) => page.locator('[data-barra-lateral]').filter({ visible: true })
 const navegacion = (page: Page) => page.getByRole('navigation', { name: 'Principal' })
-const anchoDe = async (page: Page) => (await barra(page).boundingBox())?.width ?? 0
 
 test('E2E el botón pliega el menú a sólo íconos y lo despliega', async ({ page }) => {
   await entrar(page, t.ana.email)
   await page.goto('/leads')
   await expect(barra(page)).not.toHaveAttribute('data-plegado', '')
-  const desplegado = await anchoDe(page)
+  // 15,5 rem desplegada y 3,5 rem plegada (el texto de la prueba mide 16 px por rem).
+  await expect(barra(page)).toHaveCSS('width', '248px')
   const enlace = navegacion(page).getByRole('link', { name: 'Leads' })
   await expect(enlace).not.toHaveAttribute('aria-label', /.+/)
   await expect(enlace).toContainText('Leads')
@@ -54,20 +54,21 @@ test('E2E el botón pliega el menú a sólo íconos y lo despliega', async ({ pa
   await page.getByRole('button', { name: 'Plegar menú' }).click()
   await expect(barra(page)).toHaveAttribute('data-plegado', '')
   await expect(page.getByRole('button', { name: 'Desplegar menú' })).toBeVisible()
-  expect(await anchoDe(page)).toBeLessThan(desplegado / 3)
+  await expect(barra(page)).toHaveCSS('width', '56px')
   // Sólo el ícono a la vista: el nombre queda en el tooltip y en `aria-label`.
   for (const nombre of ['Inicio', 'Leads', 'Chat']) {
     const entrada = navegacion(page).getByRole('link', { name: nombre })
     await expect(entrada).toHaveAttribute('aria-label', nombre)
     await expect(entrada).toHaveAttribute('title', nombre)
-    expect((await entrada.boundingBox())?.width ?? 99).toBeLessThanOrEqual(48)
+    // El nombre queda sólo para el lector (1 px): a la vista, el ícono.
+    await expect(entrada.locator('span').first()).toHaveCSS('width', '1px')
   }
   await expect(enlace.locator('svg')).toBeVisible()
 
   await page.getByRole('button', { name: 'Desplegar menú' }).click()
   await expect(barra(page)).not.toHaveAttribute('data-plegado', '')
   await expect(enlace).not.toHaveAttribute('title', /.+/)
-  expect(await anchoDe(page)).toBe(desplegado)
+  await expect(barra(page)).toHaveCSS('width', '248px')
 })
 
 test('E2E Ctrl/Cmd+B pliega y despliega, pero no mientras se escribe', async ({ page }) => {
@@ -117,13 +118,11 @@ test('E2E plegado, el contador de Chat es un punto con su número para el lector
   sembrarMensaje(t.conLuis, t.luis.id, 'Ya llegó el contenedor')
   const contador = navegacion(page).locator('[data-no-leidos-de-la-barra]')
   await expect(contador).toHaveAccessibleName('1 sin leer', { timeout: 20_000 })
-  const caja = await contador.boundingBox()
-  expect(caja?.width ?? 99).toBeLessThanOrEqual(10)
-  expect(caja?.height ?? 99).toBeLessThanOrEqual(10)
+  await expect(contador).toHaveCSS('width', '8px')
+  await expect(contador).toHaveCSS('height', '8px')
 
   await page.getByRole('button', { name: 'Desplegar menú' }).click()
-  const ancho = (await contador.boundingBox())?.width ?? 0
-  expect(ancho).toBeGreaterThan(10)
+  await expect(contador).not.toHaveCSS('width', '8px')
 })
 
 test('E2E sin conexión cambia en la pantalla y se guarda al volver', async ({ page, context }) => {
