@@ -291,6 +291,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 
 - Si sumas algo al marco o al menú (entrada, campana, burbuja, pestaña), grepea `e2e/`: mueve paradas de Tab, pedidos contados, pestañas contadas, topes de JS y lo que tapa un `fixed`.
 - Marca `esDelMarco` todo pedido nuevo que haga el marco: los specs que cuentan pedidos de su pantalla los excluyen y si no, caen.
+- Una revalidación del navegador (un 304 contra su caché) Playwright la ve como un 200 sin bytes nuevos: el 304 se prueba con `page.request.get(url, { headers: { 'if-none-match': etag } })`, y lo del navegador se cuenta por pedidos y bytes, no por estado.
 - Mide la tarea de oro y todo recorrido que cruza el marco con teclas, toques y KLM con tope, nunca con reloj ni con la cuenta exacta de paradas de Tab: varias sesiones en una máquina dan rojos falsos y cada entrada nueva del marco pondría en rojo PR ajenos.
 
 ### Pruebas que prueban algo
