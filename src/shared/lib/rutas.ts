@@ -30,11 +30,12 @@ export const RUTAS = {
   plantillaDelEmbudo: '/configuracion/leads/embudo',
   mensajeDelPortal: '/configuracion/leads/portal',
   telefonosExtraDeLeads: '/configuracion/leads/telefonos',
-  // Catálogos: lo global de la empresa (los colores, los niveles y la vigencia de la cotización; los puertos, las navieras, las categorías
-  // de gasto y los tipos de documento de toda la empresa; las tablas compartidas). Lo de cada origen vive en su página.
+  // Catálogos: lo global de la empresa (los colores, los niveles, quién crea y quién ve y la vigencia de la cotización; los puertos, las
+  // navieras, las categorías de gasto y los tipos de documento de toda la empresa; las tablas compartidas). Lo de cada origen vive en su página.
   catalogos: '/configuracion/catalogos',
   coloresDeCotizacion: '/configuracion/catalogos/colores',
   nivelesDeCotizacion: '/configuracion/catalogos/niveles',
+  quienCreaYQuienVe: '/configuracion/catalogos/quien-crea-y-quien-ve',
   vigenciaDeCotizacion: '/configuracion/catalogos/vigencia',
   puertosDeLogistica: '/configuracion/catalogos/puertos',
   navierasDeLogistica: '/configuracion/catalogos/navieras',
