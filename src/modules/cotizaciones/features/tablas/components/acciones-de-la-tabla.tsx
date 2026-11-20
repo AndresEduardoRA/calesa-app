@@ -55,7 +55,7 @@ export function AccionesDelEditor({
     <>
       <EsquinaDeAcciones>
         <MasAcciones
-          nombre={`Más acciones de ${tabla.nombre}`}
+          nombre={tabla.nombre}
           id={`tabla-${tabla.id}`}
           conBorde
           acciones={menuDeTablaEnElEditor({
@@ -103,7 +103,7 @@ export function AccionesDeLaTablaEnLaLista({
   return (
     <EsquinaDeAcciones>
       <MasAcciones
-        nombre={`Más acciones de ${tabla.nombre}`}
+        nombre={tabla.nombre}
         acciones={menuDeTablaEnLaLista({
           alEditarFilas: () => {
             router.push(rutaDeLasTablas(origenId, tabla.id))
