@@ -39,7 +39,7 @@ empresa: {razon_social, nit}, valores, totales, tipos_cambio, etiquetas}`. El re
 - `features/comprobantes/`: las actions (`emitir`, `anular`, `cambiar-serie`, con la clave antes de llamar a la base); en la guardada, «Emitir comprobante…»
   (hueco `Acciones`, una línea del «⋯» de la cabecera, `emitir-comprobante-del-menu.tsx`; `<Confirmar>` diferido en `?panel=emitir-comprobante`, registrado en `scripts/guardas/areas-c/confirmar-con-url.ts`) y la sección
   «Comprobantes» (hueco `Debajo`, «Anular» con un `ModalDeFormulario` diferido en `?panel=anular-comprobante`); en Empresa, `SerieDeComprobantes`
-  (`pantallas/comprobantes-empresa.ts`), que dibuja la sub-ruta `/configuracion/empresa/comprobantes` (`src/app/(app)/configuracion/empresa/comprobantes/page.tsx`), con la barra de cambios sin guardar.
+  (`pantallas/comprobantes-empresa.ts`), que dibuja la sub-ruta `/configuracion/empresa/comprobantes` (`src/app/(app)/configuracion/empresa/comprobantes/page.tsx`), con una tarjeta (`TarjetaDeLaSerie`, `@/shared/ui/tarjetas-de-ajustes`) que muestra la serie vigente y el próximo comprobante, y «Cambiar serie» abre `ModalDeLaSerie` (diferido, `?panel=serie`, `useEnvioConVersion()`).
 - **En el resumen de `/cotizaciones`** (`pantallas/comprobantes-resumen.ts`, hueco `Comprobantes` bajo «Adjuntos»): `<ComprobantesDelResumen>` lee por el navegador
   (`infra/comprobantes/leer.client.ts`, `limit 21`) al abrir la pestaña y dibuja, de sólo lectura, lo mismo que la guardada con su regla `seVenLosComprobantes()`. El `select` y la
   forma de la fila son de `entities/comprobantes/lectura.ts`, comunes con la lectura del servidor.
