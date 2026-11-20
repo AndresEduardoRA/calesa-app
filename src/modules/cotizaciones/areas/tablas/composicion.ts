@@ -5,7 +5,7 @@ import {
   getTablaParaEditar,
   getTablasCompartidas,
   getTablasDeReferencia,
-  publicacionDeTablasSupabase,
+  tablasSupabase,
 } from '../../infra/tablas/servidor'
 
 // Las tablas activas de un origen y las compartidas, con tope (`hayMas`).
@@ -14,5 +14,6 @@ export const leerTablasDeReferencia = getTablasDeReferencia
 export const leerTablasCompartidas = getTablasCompartidas
 // Una tabla con todas sus filas para editarla, o por qué no se edita (no está, no se ve, pasa de 2.000 filas).
 export const leerTablaParaEditar = getTablaParaEditar
-// Publicar una tabla de referencia por `tabla_referencia_publicar()` (4.23-1). La action de `features/tablas/` lo usa.
-export const repositorioDeTablas: RepositorioDeTablas = publicacionDeTablasSupabase
+// Publicar, crear, cambiar las columnas y desactivar una tabla de referencia, cada una por su RPC (`tabla_referencia_publicar|crear|columnas|desactivar`). Las
+// actions de `features/tablas/` lo usan.
+export const repositorioDeTablas: RepositorioDeTablas = tablasSupabase

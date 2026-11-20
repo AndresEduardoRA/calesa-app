@@ -86,6 +86,35 @@ en **cada** origen que la usa.
 - **La base no congela al publicar una fórmula:** una versión anterior que leía la viva recalcula con las filas nuevas; una que congeló, con
   su copia; lo guardado de una cotización no cambia (manda su snapshot).
 
+### Crear, columnas y desactivar
+
+La estructura de una tabla (su existencia, sus columnas, si está activa) también se escribe sólo por RPC, con la misma clave de permiso
+(`cotizaciones.configurar` del origen; en una compartida, también la de cada origen cuya fórmula la usa) y la misma versión que publicar.
+
+- **`tabla_referencia_crear(p_id, p_origen, p_nombre, p_columnas)`** (origen nulo = compartida). La clave sale del nombre en la base
+  (`_tabla_referencia_clave()`: minúsculas ASCII, las letras con acento por su base, lo demás a `_`, `t_` si empieza con un dígito, hasta 40) y
+  no cambia; su espejo es `claveDeLaTabla()`. Toma `tablas_referencia:crear`: un `p_id` que ya existe con el mismo destino devuelve
+  `repetido: true` (idempotente), con otro destino 42501. Rechaza una clave tomada en el mismo destino, activa o desactivada, y una propia
+  con la clave de una compartida activa, que la taparía (23505, `hint` `nombre`); también un destino que ya recibe 100 tablas activas,
+  propias y compartidas (una compartida, en cualquier origen: 22023 con su nombre). Nace en la versión 1, sin filas. Devuelve
+  `{id, clave, version, repetido}`.
+- **`tabla_referencia_columnas(p_tabla, p_columnas, p_version_esperada)`** manda la lista entera, en orden: de 1 a 20, clave
+  `^[a-z][a-z0-9_]{0,40}$` única, etiqueta de hasta 60 sin repetir (sin distinguir mayúsculas ASCII) y tipo `numero`, `anio` o `texto` (uno de
+  antes se conserva si la columna sigue con el suyo). Una columna que sigue no cambia de tipo (22023); renombrar es cambiar la etiqueta, la
+  clave queda. Quitar una columna que nombra la publicada o el borrador de una fórmula del origen sin archivar (las archivadas no cuentan), en
+  un origen que recibe la tabla, da 23503 con quién
+  («La columna «País» la usa la fórmula publicada de Japón.»): la usa un nodo `tabla` por su `match` o su `columna`, y un `tramo` o un
+  `depreciar` por su `columna`, `desde` y `hasta`. Quitarla borra sus valores de todas las filas. Sube la versión con una nota automática
+  («Columnas: sumó «Recargo»; renombró «A» a «B»; quitó «C»; cambió el orden.») y no publica ninguna fórmula (no cambian filas). Devuelve
+  `{version}`.
+- **`tabla_referencia_desactivar(p_tabla, p_version_esperada)`**: sólo si ninguna fórmula publicada ni borrador la usa (23503 con quién, `hint`
+  `tabla`). Sus filas quedan y su clave no se vuelve a usar en ese destino; no se reactiva desde la pantalla. Devuelve `{id}`.
+- **Orden y candados** (los dos últimos, `_tabla_referencia_tomar()`, el mismo orden de publicar): 42501 igual para lo que no existe, está
+  desactivada o es ajena; esperada nula; la tabla `for update`; `formulas:<origen>` de cada origen que la recibe, en orden; el permiso de
+  quien la usa; PT409 con la versión. Un borrador que empieza a usar una columna mientras otro la quita: quien llega segundo ve al otro.
+- Los errores llegan tal cual a la pantalla (22023 con el campo en `hint`: `nombre`, `origen`, `version`, `columnas`, `columnas.<i>.clave|
+etiqueta|tipo`): nombran una fórmula y una columna, que la capa genérica cambiaría por un texto técnico.
+
 ## Las reglas
 
 **Primero la forma (`forma`):** el Zod de `nodos.ts` y `formula.ts`. **Después, 32 reglas cruzadas** con código estable (contrato con la

@@ -5,7 +5,9 @@ import type { Database, Json } from '@/shared/types/database.types'
 import { resultadoDePublicar } from '../../entities/tablas/publicacion'
 import type { RepositorioDeTablas } from '../../entities/tablas/repositorio'
 
-export function publicacionDeTablasSobre(cliente: SupabaseClient<Database>): RepositorioDeTablas {
+export function publicacionDeTablasSobre(
+  cliente: SupabaseClient<Database>,
+): Pick<RepositorioDeTablas, 'publicar'> {
   return {
     publicar: async ({ tablaId, filas, nota, versionEsperada }) =>
       resultadoDePublicar(
