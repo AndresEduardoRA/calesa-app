@@ -136,8 +136,15 @@ test('E2E ensanchar una columna arrastrando y mover una fila con el teclado sobr
   await asa.focus()
   await page.keyboard.press('Space')
   await expect(asa).toHaveAttribute('aria-pressed', 'true')
-  await page.keyboard.press('ArrowUp')
-  await expect(page.getByText('La fila 3 va en el lugar 2 de 5.', { exact: true })).toBeAttached()
+  // El sensor de teclado de dnd-kit escucha recién un momento después de tomar la fila: una flecha antes se pierde. Se insiste sólo
+  // mientras el anuncio siga en su lugar (una flecha que entró no se repite: la fila subiría dos).
+  const enSuLugar = page.getByText('La fila 3 va en el lugar 3 de 5.', { exact: true })
+  const subida = page.getByText('La fila 3 va en el lugar 2 de 5.', { exact: true })
+  await expect(enSuLugar).toBeAttached()
+  await expect(async () => {
+    if ((await enSuLugar.count()) > 0) await page.keyboard.press('ArrowUp')
+    await expect(subida).toBeAttached({ timeout: 1000 })
+  }).toPass()
   await page.keyboard.press('Space')
   await expect(page.getByText('Soltaste la fila 3 en el lugar 2.', { exact: true })).toBeAttached()
   await expect(asa).toHaveText('2')
