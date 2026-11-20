@@ -1952,12 +1952,9 @@ begin
     (select count(*)::int from public.fases f join public.flujos fl on fl.id = f.flujo_id where fl.origen_id = o.id and f.activa),
     exists (select 1 from public.formulas_del_origen fo where fo.origen_id = o.id and fo.activa),   -- formulas_del_origen_activa_unica
     (select count(*)::int from public.roles_permisos rp where rp.origen_id = o.id),
-    -- La de trabajo, como `_fdo_de_trabajo()` sin crear (la activa nunca está archivada): ≤ 50 por formulas_del_origen_origen_idx; su publicada, por plantillas_publicada_unica.
+    -- La de trabajo, sin crearla (`_fdo_de_trabajo()`, la misma regla que la pestaña Tarjeta); su publicada, por plantillas_publicada_unica.
     exists (select 1 from public.plantillas_tarjeta p
-             where p.estado = 'publicada'
-               and p.formula_del_origen_id = (select d.id from public.formulas_del_origen d
-                                               where d.origen_id = o.id and d.archivada_en is null
-                                               order by d.activa desc, d.creado_en desc, d.id desc limit 1))
+             where p.estado = 'publicada' and p.formula_del_origen_id = (select public._fdo_de_trabajo(o.id, false)))
   from public.origenes o
   order by o.orden, o.nombre;
 end;
