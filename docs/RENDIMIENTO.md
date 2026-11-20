@@ -860,8 +860,11 @@ pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACION
   de quien pide y los ajustes por PK, la plantilla por índice único, y los catálogos de colores y tipos de cambio, decenas de filas) y, con la ETag igual, 304
   sin nada más; si no, lo del PDF de una cotización más el WebP (`sharp`, sólo en el servidor), sin escribir nada. Una lista de N imágenes son N pedidos
   independientes, nunca una lectura por fila dentro de otra, y la página pide **a lo sumo cuatro a la vez** y sólo las que están a la vista (200 px antes;
-  `useCargaDeLaImagen()` sobre `crearCola()`; la que sale de la vista antes de su turno deja la fila): sin la cola, 50 tarjetas eran 50 armados en paralelo. `private, no-cache` con ETag: el navegador revalida con un 304. `Server-Timing` dice lo que
-  tardaron la huella y el armado.
+  `useCargaDeLaImagen()` sobre `crearCola()`; la que sale de la vista antes de su turno deja la fila): sin la cola, una página de 50 tarjetas serían 50
+  armados en paralelo. `private, no-cache` con ETag: el navegador revalida con un 304. `Server-Timing` dice lo que tardaron la huella y el armado. Medido
+  en `e2e/cotizaciones-imagen-de-la-tarjeta.spec.ts` (build de producción local, mediana de 5): el armado, 502 ms a 480 px (13.754 B) y 627 ms a 1.600
+  (35.222 B); el 304, sólo la huella (8 a 59 ms). La lista de 21 tarjetas en escritorio: nunca más de 4 en vuelo, y las miniaturas a la vista cargan en
+  2,9 s en frío (52.482 B) y en 0,8 s al volver (0 B: el navegador revalida y recibe 304).
 - Tarea de oro 2 (`e2e/cotizar-tarea-de-oro*.spec.ts`; deterministas: una parada nueva en el camino las rompe): robot < 30 s y KLM ≤ 90 s.
   Teclas de control: el tramo de la hoja hasta el PDF ≤ 29; con el panel del vehículo ≤ 29; con un enlace de subasta, exactamente 33; con
   el cliente, ≤ 29 si existe y ≤ 30 si es nuevo. Cada lado editable de la hoja y de «Avanzado» se alcanza con Tab, en orden.
