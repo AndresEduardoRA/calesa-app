@@ -130,7 +130,7 @@ function LateralConAcciones({ marcas, etiquetas, alGestionar, ...props }: PropsD
   )
 }
 
-// La ficha de un lead en dos columnas: a la izquierda (pegajosa) quién es, sus datos clave, quién lo tiene y el portal; a la derecha
+// La ficha de un lead en dos columnas: a la izquierda quién es, sus datos clave, quién lo tiene y el portal; a la derecha
 // el índice y cuatro bloques compactos en orden de uso —Seguimiento, Cotizaciones, Vehículos, Oportunidades—, cada uno con su título y su
 // única acción, sin pestañas ni acordeones. `?seccion=` lleva a su bloque y le da el foco a su título.
 export function FichaDeLead({

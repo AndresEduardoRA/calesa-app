@@ -14,6 +14,7 @@ const CONTEXTO: ContextoDeLaCotizacion = {
   cliente: 'Juan Pérez',
   vehiculo: { titulo: 'Toyota Hilux 2022', lote: '4455', vin: null },
   venceEl: null,
+  empresa: 'Calesa',
   logo: null,
 }
 
@@ -27,6 +28,8 @@ describe('las variables de la tarjeta', () => {
   it('cada variable con su valor; sin valor (o una que no existe), vacía', () => {
     const delCalculo = { tituloOpcion: 'COTIZACIÓN MOTO', modo: 'Paralelo' }
     const valor = (v: string) => valorDeLaVariable(v, CONTEXTO, delCalculo)
+    expect(valor('empresa_nombre')).toBe('Calesa')
+    expect(valorDeLaVariable('empresa_nombre', { ...CONTEXTO, empresa: null }, delCalculo)).toBe('')
     expect(valor('numero')).toBe('12')
     expect(valor('asesor_iniciales')).toBe('AM')
     expect(valor('vehiculo_lote')).toBe('4455')
@@ -48,10 +51,16 @@ describe('contextoDeLaPagina', () => {
       numero: 12,
       venceEl: '2026-12-04',
       guardadaEl: '2026-11-07T02:00:00.123456+00:00',
+      empresa: 'Calesa',
       logo: null,
     }
     const c = contextoDeLaPagina(pagina, { zona: 'America/La_Paz', hoy: '2026-11-18T12:00:00Z' })
-    expect(c).toMatchObject({ fecha: '6 nov 2026', numero: '12', venceEl: '4 dic 2026' })
+    expect(c).toMatchObject({
+      fecha: '6 nov 2026',
+      numero: '12',
+      venceEl: '4 dic 2026',
+      empresa: 'Calesa',
+    })
     expect(
       contextoDeLaPagina(
         { ...pagina, guardadaEl: null, numero: null, venceEl: null },

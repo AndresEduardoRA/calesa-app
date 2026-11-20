@@ -2,18 +2,20 @@
 // en una fila y la fórmula se vuelve a armar». Usa `compilarExpresion()` (4.07, que no se toca) con el contexto de la fila: lo que está antes de su
 // primera auxiliar. Puro, nunca lanza (errores como valores), no toca lo que recibe y lineal con el medidor. `compilar-fila.ts` suma la pregunta
 // antes de pisar un ⚙ (C10); `texto-vigente.ts` compila con esto el texto guardado.
-import { compilarExpresion, type ErrorDeCompilacion } from '../compilador'
+import { compilarExpresion, type CatalogoDeTablas, type ErrorDeCompilacion } from '../compilador'
 import type { Formula } from '../formula'
 import { inicioDeLineas, tramoDe, type Tramo } from '../motivos-del-compilador'
 import { recorrer, type Medidor } from '../medidor'
-import { MAXIMO_DE_TEXTO, referenciasDe, type Nodo } from '../nodos'
+import { MAXIMO_DE_TEXTO, type Nodo } from '../nodos'
+import { referenciasDe } from '../nodos-referencias'
 import { conservar } from './conservar-de-la-fila'
 import { filasDe, type Fila } from './filas'
 import { mismaEstructura } from './misma-estructura'
 import { sitioDe, type DestinoDeLaFila, type ErrorDeSitio, type Sitio } from './sitio-de-la-fila'
 
 export type { DestinoDeLaFila } from './sitio-de-la-fila'
-export type PedidoBase = { destino: DestinoDeLaFila; texto: string }
+// `tablas`: el catálogo de tablas del origen, para BUSCARV (sin él, BUSCARV no compila).
+export type PedidoBase = { destino: DestinoDeLaFila; texto: string; tablas?: CatalogoDeTablas }
 
 export type CambioQueSePisa = { id: string; guardado: number; nuevo: number | null }
 export type ErrorDeFila =
@@ -112,7 +114,12 @@ function auxiliarNombrada(p: Pedido, m: Medidor): ErrorDeFila | undefined {
 }
 
 // El contexto de la fila: los nodos anteriores a su primera auxiliar, los posteriores, los grupos y las constantes sin las de la fila.
-function contextoDe(formula: Formula, sitio: Sitio, m: Medidor) {
+function contextoDe(
+  formula: Formula,
+  sitio: Sitio,
+  tablas: CatalogoDeTablas | undefined,
+  m: Medidor,
+) {
   const nodos = formula.definicion.nodos
   const propias = new Set([...(sitio.fila?.auxiliares ?? []), String(sitio.destino['id'])])
   const constantes: Record<string, number> = {}
@@ -129,6 +136,7 @@ function contextoDe(formula: Formula, sitio: Sitio, m: Medidor) {
       grupos: (formula.definicion.grupos ?? []).map((g) => g.id),
       params: constantes,
       destino: sitio.destino as never,
+      ...(tablas === undefined ? {} : { tablas }),
     },
   }
 }
@@ -146,7 +154,7 @@ export function compilarFilaBase(
   const tope = errorDelTope(pedido.texto, m)
   if (tope !== undefined) return fallo(tope)
 
-  const { constantes, contexto } = contextoDe(formula, sitio, m)
+  const { constantes, contexto } = contextoDe(formula, sitio, pedido.tablas, m)
   const compilado = compilarExpresion(pedido.texto, contexto, m)
   const raiz = compilado.ok ? compilado.nodos[compilado.nodos.length - 1] : undefined
   if (!compilado.ok) return fallo(compilado.error)

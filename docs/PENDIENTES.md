@@ -25,6 +25,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[4-72]** Quien ve una cotización pero no su vehículo no puede recalcularla («No se pudo recalcular») — que el recálculo de una guardada no dependa del vehículo, o que la pantalla diga por qué.
 - **[T310]** Una plantilla de la forma 1 que ya no se convierte (un `{{` en una etiqueta, leyenda o nota, que la forma 1 admite como texto, o una fórmula con más de 120 filas convertidas) pasa a `sin_plantilla` sin aviso: la tarjeta va por omisión — que el editor o publicar la fórmula lo digan.
 - **[—]** Editor de la fórmula: sumar o quitar grupos y editar `buckets`, `total_en` y los modos — espera a que la plantilla de la tarjeta se edite junto con la fórmula.
+- **[T402]** Editor de la tarjeta: arrastrar el borde de una fila del lienzo para cambiar su alto (hoy, el campo «Alto» del panel) — sin tarea que lo tome.
+- **[T403]** Una bandera que sólo lee la `prueba` de un `elegir` o un término de `Y`/`O` (`SI(nuevo; 100; 50)`) no pide su interruptor en el diseño al publicar (§5 de `validar_diseno()` y `revisarCobertura()` sólo cuentan la `condicion`): decidir si una condición también lo exige.
 - **[—]** Editor del diseño: sumar y quitar secciones o ítems, y pasar un ítem de una sección a otra (hoy se ordena dentro de la suya) — sin tarea que lo tome.
 - **[—]** En la primera publicación de un origen (las dos esperadas nulas), el borrador puede nacer sobre una v1 que otra persona publicó entre medio — decidir si la esperada nula deja de valer.
 - **[T314]** «Compartir la cotización» sin el asistente de IA de V1 para reescribir el texto («hazlo más corto», «más profesional»…): decidir si vuelve y con qué proveedor.
@@ -153,7 +155,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[4-95]** El `creado_en` de una revisión es el `now()` de su transacción: «Ir a una fecha» puede dejar del lado equivocado una revisión de esa ventana — `clock_timestamp()` o saltar por `(creado_en, id)`, si alguna vez se ve.
 - **[4-74]** `schemas/edicion.ts` acota `notas` con `.max(2000)`, que cuenta unidades UTF-16 mientras la base cuenta caracteres (un emoji cerca del tope da distinto); `cotizar-guardada-guardar.spec.ts` usa `waitForTimeout(600)`.
 - **[T310]** La muestra de la tarjeta del modal de colores (`como-se-ve-el-color.tsx`) usa la tinta de `_color_tinta_de_la_tarjeta()` y la tarjeta de la cotización, `auto` (#1b2130 o blanco) — alinearla y retirar `_color_tinta_de_la_tarjeta()` si queda sin uso.
-- **[4-98]** El PDF sale sin logo si el logo es WebP o un SVG con estilos, `use`, `mask`, `filter` o `<image>` (`logo-del-pdf.ts`) — convertirlo a PNG al subirlo.
 - **[7-3]** El `aplicado_en` de `chat.participar` y `chat.moderar` en el catálogo dice «policy …» y no nombra las RPC que los exigen — dato de catálogo en una migración nueva.
 - **[5a-42]** `medir-bajas.sql` falla sin regresión cuando el disco tarda en `fsync` (topes de tiempo) — juzgar el trabajo (40 lotes, ≤ 16 M buffers) y los tiempos sólo con la ventana sana (`pg_stat_checkpointer`, `/proc/pressure/io`).
 - **[5a-43]** `medir-importacion-volumen.sql` falla si la segunda pasada es más rápida (banda 0,8–1,2) — tope de razón sólo por arriba y el mismo trabajo por fila en las dos pasadas.

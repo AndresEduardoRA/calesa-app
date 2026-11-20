@@ -7,7 +7,8 @@ import { leerElPdf } from './cotizar-pdf'
 import type { Page } from '@playwright/test'
 import { literal, sql } from './sql'
 
-// Un PNG de 1 × 1, un SVG que react-pdf dibuja fiel, uno que no (el color le llega por `<style>`, y su `<rect>` de color propio prueba que el filtro lo dejó fuera) y un WebP.
+// Un PNG de 1 × 1, un SVG que react-pdf dibuja fiel, uno que no (el color le llega por `<style>`: va convertido a PNG, y sus colores no quedan como rellenos del
+// vector) y un WebP roto (sólo la cabecera: `sharp` no lo lee). El WebP real sale de `logosDePrueba()` (`cotizacion-tarjeta-logo.ts`).
 export const PNG = Buffer.from(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
   'base64',
@@ -22,7 +23,7 @@ export const SVG_SIMPLE = svg(`<rect width="10" height="10" fill="${VERDE}"/>`)
 export const SVG_CON_ESTILO = svg(
   `<style>.a{fill:${VERDE}}</style><rect class="a" width="5" height="5"/><rect x="5" width="5" height="5" fill="${ROSA}"/>`,
 )
-export const WEBP = Buffer.from('RIFF\u0000\u0000\u0000\u0000WEBPVP8 ', 'latin1')
+export const WEBP_ROTO = Buffer.from('RIFF\u0000\u0000\u0000\u0000WEBPVP8 ', 'latin1')
 
 export async function ponerElLogo(datos: Buffer, extension: string, tipo: string) {
   const ruta = `logos/${createHash('sha256').update(datos).digest('hex')}.${extension}`

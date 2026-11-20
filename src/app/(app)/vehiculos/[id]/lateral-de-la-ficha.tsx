@@ -36,7 +36,7 @@ type Props = {
   aprobada: { cotizar: string | null } | null
 }
 
-// La columna izquierda de la ficha, pegajosa en escritorio: lo clave del vehículo, en este orden: la cabecera, «Cotización aprobada», «Subasta» (sólo en un
+// La columna izquierda de la ficha, con su desplazamiento en escritorio: lo clave del vehículo, en este orden: la cabecera, «Cotización aprobada», «Subasta» (sólo en un
 // origen de subasta) y «Datos principales». Cada bloque con su límite de error; ninguno entra al índice (el índice es de la derecha).
 export function LateralDeLaFicha({
   encabezado,

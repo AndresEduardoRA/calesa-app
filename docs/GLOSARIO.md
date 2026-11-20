@@ -398,7 +398,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Comparar cotizaciones** — `/cotizaciones/comparar?ids=`, `entities/aprobada/comparar.ts` (`compararCotizaciones()`), `pantallas/aprobada-comparar.ts`
   (`TablaDeComparar`): 2 o 3 cotizaciones del mismo vehículo lado a lado, **lo guardado** de cada una (su versión, sus valores y su total, sin recálculo),
   una columna por cotización y una fila por nodo alineada por su id, con «Aprobar esta» al pie. Lo **distinto** se mide **contra la primera** columna (↑, ↓
-  o ≠). Se llega por las casillas de «De este vehículo» y por las de un **grupo de un vehículo** desplegado en `/cotizaciones`. No es la «Celda» de la hoja ni
+  o ≠). Se llega por las casillas de «De este vehículo» y por las del **modal del grupo** de un vehículo en `/cotizaciones`. No es la «Celda» de la hoja ni
   la «tarjeta de la cotización»: en la interfaz cada columna es «la cotización #N» y sus filas son de nodos.
 - **Tarjeta de la lista** — `<TarjetaDeLista>` (`@/shared/ui/lista`): cada ítem de la vista «Tarjetas» de un listado. La de `/cotizaciones` es
   `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): la **portada de la cotización** arriba (en miniatura) con el «⋯» encima, el
@@ -406,8 +406,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   cotización** (la vista previa tipo Excel que la portada muestra).
 - **Grupo de un vehículo** — `EntradaDelListado` de `tipo: 'grupo'`, `cotizaciones_listado_por_vehiculo()`: en `/cotizaciones` agrupada («Agrupar por
   vehículo», `?agrupar=`, `cotizaciones.agrupar`), las cotizaciones de un vehículo que quien mira ve y coinciden con la búsqueda y los filtros, en una tarjeta o
-  fila con «N cotizaciones de este vehículo» que despliega las demás en el lugar. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
+  fila con «N cotizaciones de este vehículo» que abre el **modal del grupo**. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
   **Grupo (de la hoja)**, el **Grupo (de la bandeja del día)** ni el **Grupo (de transporte)**.
+- **Modal del grupo** — `ModalDelGrupo` (`?panel=cotizaciones-del-vehiculo&vehiculo=<id>`): el modal «Cotizaciones de <vehículo>» que abre «N cotizaciones de este vehículo»; lista las
+  cotizaciones del vehículo que coinciden con la búsqueda y los filtros (la aprobada primero), de a 10 con «Ver más» hasta 100, con «Comparar» en su pie. No es el
+  **resumen** (`?cotizacion=`) que abre una de sus líneas ni «De este vehículo» (el bloque de la ficha del vehículo).
 - **Cabeza del grupo** — `cabeza` de un grupo de un vehículo: la cotización que lo representa en su tarjeta o fila: su **aprobada** si quien mira la ve y
   coincide; si no, la más reciente que coincide. La lista ordena y pagina los grupos por su cotización más reciente (`ordenEn`, `ordenId`), no por la cabeza.
 - **Miniatura de la portada** — `?ancho=480` de `GET /cotizaciones/<id>/portada` (`ANCHOS_DE_LA_PORTADA`, `miniaturaDeLaPortada()`): la portada achicada a
@@ -468,15 +471,15 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   USA (subasta), China, Oficina y Compra dealer USA. Vive en el código, no en la base, y no publica. No es la **Plantilla de tarjeta** (sólo la tarjeta,
   versionada en la base).
 - **Celda de la tarjeta** — `CeldaDeLaTarjeta`, `definicion.celdas[]` de la forma 2: un rectángulo de la cuadrícula con su posición (`fila`,
-  `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo o vacío) y su estilo. No es la **Celda (de la
-  hoja)**.
+  `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo o vacío) y su estilo. La de logo dibuja sólo el logo
+  de la empresa, a la medida de la celda; su nombre es el dato «Nombre de la empresa» (`empresa_nombre`). No es la **Celda (de la hoja)**.
 - **Fila de la tarjeta** — `FilaDeLaTarjeta`, `definicion.filas[]` de la forma 2: una fila con su alto y su «Ocultar si…». No es la **Fila (de la
   fórmula)**.
 - **Ocultar si…** — `ocultar_si` de una fila de la tarjeta (`nunca`, `no_aplica`, `no_aplica_o_cero`): la fila no se dibuja si su nodo no aplica
   en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0; las celdas combinadas que la cruzan se acortan. El lienzo de
   Configuración dice cuáles y por qué con la referencia elegida: «Ocultas con esta referencia (N)».
-- **Dato de la tarjeta** — `{tipo: 'dato', …}` de una celda: una variable de la cotización (`VARIABLES_DE_LA_TARJETA`: `fecha_larga`, `numero`,
-  `asesor_nombre`…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
+- **Dato de la tarjeta** — `{tipo: 'dato', …}` de una celda: una variable de la cotización (`VARIABLES_DE_LA_TARJETA`: `empresa_nombre`, «Nombre de
+  la empresa»; `fecha_larga`, `numero`, `asesor_nombre`…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
   `plazo`). Un texto no mezcla texto y variables.
 - **Lienzo** — `LienzoDeLaPlantilla` (área `tarjeta`) con la capa del editor (`CapaDeEdicion`, `role="grid"`): la tarjeta de la cotización a escala
   que se edita en Configuración › Cotización › un origen › Tarjeta, como un Excel (cabeceras de columna, asas de fila, selección, atajos). La dibuja el
@@ -552,6 +555,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `_nodos_en_par()`: la hoja no dibuja sus chips y lo que cambia según la opción va en dos celdas («Transporte · 20 pies» | «Transporte · 40 pies»); guardar crea
   dos **cotizaciones hermanas**. No es el **Par porcentaje-monto**.
 - **Fórmula como texto** — `compilarExpresion()` (`entities/compilador.ts`): `=(remate+fees)*4%`, `=SUMA(aduana)`; se compila a nodos.
+- **Condición (de la fórmula)** — lo que decide un SI, un Y o un O: una bandera o un `calculo` `comparar` (`remate>1000`), `es_opcion`
+  (`variante="b"`), `y` u `o`; vale 1 o 0 (`OPS_DE_CONDICION`, `NodoDeComparacion` en `entities/nodos.ts`). Un SI con condición es el nodo
+  `elegir`, con la condición en su `prueba`. No es la `condicion` de un nodo (el **interruptor** que lo apaga) ni el `si` de una bandera.
+- **BUSCARV** — la función de la fórmula como texto que busca en una tabla de referencia del origen (`compilador-buscarv.ts`): exacta (por la
+  primera columna de la tabla, compila a un nodo `tabla`) o por tramo (`VERDADERO`: `desde` ≤ valor ≤ `hasta`, compila a un nodo `tramo`). La
+  tabla y la columna se revisan contra el **catálogo de tablas** del origen (`CatalogoDeTablas`, `leerCatalogoDeTablas()`). No: «lookup».
 - **Nodo auxiliar** — `<fila>__<n>` en `compilarExpresion()`: cada operación anidada o número de una fórmula como texto, numerado en
   post-orden; cuáles lo son, `auxiliaresDe()` (`compilador-auxiliares.ts`). La constante auxiliar no pide celda en el diseño.
 - **Fila (de la fórmula)** — `Fila`, `filasDe()` (`entities/formula/filas.ts`): un nodo que no es auxiliar de otro, con sus auxiliares y su
@@ -842,7 +851,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Bloque (de una ficha)** — `<BloqueDeFicha>`, `#<ancla>` (`src/shared/ui/ficha-en-bloques`): una parte de una ficha en dos columnas, siempre a la
   vista (no se pliega), con su ancla, su título `h2` (con su única acción a la derecha: `<TituloDeBloqueConAccion>`) y su error propio. No es `<Bloque>`,
   el plegable.
-- **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra pegajosa arriba de la columna principal de una ficha en dos columnas, con un enlace de ancla
+- **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra arriba de la columna principal de una ficha en dos columnas (quieta mientras los bloques se desplazan por dentro; pegajosa en el celular), con un enlace de ancla
   por bloque y `aria-current="location"` en el que está a la vista. No navega: salta dentro de la misma página. No: «pestañas», «menú».
 - **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`…); responde el panel de más arriba.
 - **Filtro** — `EsquemaDeFiltros`, `DefFiltro` / `<FilterShell>`: lo que acota un listado; cada uno declara los suyos y viven en la URL. Van en el botón

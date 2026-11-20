@@ -24,6 +24,7 @@ const pagina: PaginaDelModelo = {
   vencida: true,
   venceEl: '2026-10-20',
   guardadaEl: '2026-10-11T14:00:00.000000+00:00',
+  empresa: null,
   logo: null,
 }
 const entrada = {

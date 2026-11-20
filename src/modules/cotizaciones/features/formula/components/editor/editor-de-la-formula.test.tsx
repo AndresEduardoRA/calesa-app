@@ -72,6 +72,7 @@ const montar = (alVolver = vi.fn()) =>
       alRecargar={vi.fn()}
       alCambiarPendientes={vi.fn()}
       tarjeta={{ estado: 'sin_tarjeta' }}
+      tablas={[]}
       TarjetaEnVivo={() => null}
       puedeCambiarTiposDeCambio={false}
     />,

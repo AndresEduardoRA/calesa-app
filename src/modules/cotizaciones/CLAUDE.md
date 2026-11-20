@@ -41,11 +41,13 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   `conteo`, o `suelta`, con `cortada`); con texto, la búsqueda agrupada en la página (`agruparLaPagina()`); sin agrupar, `entradasSinAgrupar()`. Los nombres, el modo
   (`leerModosDeCotizaciones()`, `cotizaciones_modos_de()`), el «⋯» y lo visto van sobre las cotizaciones que se dibujan. La tarjeta (`TarjetaEnLaLista`) lleva la
   portada por el hueco `Portada` (`ancho={480}`, `recorte="cubrir"`, `lugar="lista"`: su visor es `?visor=portada-de-la-lista-<id>`), el «⋯» sin «Compartir» (`MenuDeFila(fila, { sinCompartir })`) y «Compartir» (`compartirDe`, nulo
-  sin la oferta o en Modo Live); la tabla, la columna «Título». Un grupo se despliega en el lugar (`BotonDelConteo`, `DespliegueDelGrupoDiferido`): lo lee
-  `useGrupoDelListado()` desde el navegador (`areas/listado/composicion.client.ts`, `leerGrupoDelListado()`: `cotizaciones_listado(p_vehiculo)` o
-  `cotizaciones_buscar(p_texto, p_vehiculo)` con los filtros de la página, de a `TAMANO_DE_ESTE_VEHICULO` hasta `TOPE_DE_ESTE_VEHICULO`, y los autores por
-  `perfiles`); si su primera página no empieza por `ordenId` (`grupoQueCambio()`), `router.refresh()`. Las casillas y «Comparar» llegan por el hueco `Comparar`. El clic abre el resumen `?cotizacion=` (por `diferido()`, `ancho="amplio"`; abrir o cerrar borra `?pestana=`; la abierta queda marcada en la tabla, la tarjeta y la
-  línea de un grupo desplegado). **La barra del resumen** (`AccionesDelResumen`): «Abrir cotización», «Compartir cotización» (`compartirDe`) y el «⋯»
+  sin la oferta o en Modo Live); la tabla, la columna «Título». «N cotizaciones de este vehículo» (`BotonDelConteo`) abre el modal del grupo (`ModalDelGrupoDiferido`, `features/listado/components/grupo/`; la URL `?panel=cotizaciones-del-vehiculo&vehiculo=<id>`
+  por `useModalDelGrupo()` con `usePanelPorUrl()`; `PANEL_DE_COTIZACIONES_DEL_VEHICULO`, `tituloDelModalDelGrupo()` y `idDelVehiculoDelModal()` del núcleo; con ese panel la página **no lee `?vehiculo=` como filtro**,
+  `pedidoDeLaPagina()`; `Modal` con `completoEnCelular`): lo lee `useGrupoDelListado()` desde el navegador (`areas/listado/composicion.client.ts`, `leerGrupoDelListado()`:
+  `cotizaciones_listado(p_vehiculo)` o `cotizaciones_buscar(p_texto, p_vehiculo)` con los filtros de la página, de a `TAMANO_DE_ESTE_VEHICULO` hasta `TOPE_DE_ESTE_VEHICULO`, y los autores por
+  `perfiles` y el modo por `cotizaciones_modos_de()` en paralelo); la cabeza va primero (`lineasDelGrupo()`; nula si el grupo no está en la página) y si su primera página no empieza por `ordenId`
+  (`grupoQueCambio()`), `router.refresh()`. Elegir una línea hace `cerrar()` + `abrir(id)` del resumen en un paso y el foco no vuelve al botón. Las casillas y «Comparar» llegan por el hueco `Comparar` (`PropsDeCompararDelGrupo`: guarda las elegidas, envuelve al modal y le da `casilla()` y `pie()`; «Comparar» va en el pie del modal). El clic abre el resumen `?cotizacion=` (por `diferido()`, `ancho="amplio"`; abrir o cerrar borra `?pestana=`; la abierta queda marcada en la tabla, la tarjeta y la
+  línea del modal de un grupo). **La barra del resumen** (`AccionesDelResumen`): «Abrir cotización», «Compartir cotización» (`compartirDe`) y el «⋯»
   (`menuDeFila(fila, { sinCompartir: true, conBorde: true })`), sólo con la cotización a la vista; debajo, `DatosDelResumen` (título, insignias, total con su modo,
   cliente, vehículo, creada y vigencia). Los `dialogos` del listado van dentro del Drawer mientras está abierto y montado (`alMontarse`; si no, abrirlos lo cerraría) y en el listado si no. La
   del resumen que no está en la página entra a los menús, a `quienesDelResumen()` y a los datos de los diálogos por `conLaDelResumen()`
@@ -165,7 +167,9 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
 - **La fórmula** (área `formula`; `/configuracion/cotizacion/<origen>/formula`, `cotizaciones.configurar`, a ancho completo): arriba la publicada, el
   borrador y las versiones (`VistaDeLaFormula`) y abajo la sesión de edición (`SesionDeLaFormula` por `diferido()`: lee la versión desde el navegador y
   llama **una vez** a `useEditorDeLaFormula`), que dibuja la planilla (`components/planilla/`, por `diferido()`; lo que arma, `usePlanilla()`) o, con
-  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula de trabajo. La unidad
+  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula de trabajo. El
+  catálogo de tablas del origen (`leerCatalogoDeTablas()`: clave y columnas de las `tablas_referencia` activas del origen y las compartidas, la del origen
+  gana; tope 100; nulo si falla) lo lee la sección en paralelo con la fórmula y llega a la sesión para revisar BUSCARV al compilar. La unidad
   de ejemplo y el modo viven en la sesión; «Publicar…» espera con cambios aplicados sin guardar (`alCambiarPendientes`, en `useLayoutEffect`). La `key` de la
   sesión es `<origen>:<vuelta>:<sesión>` (`otraSesion()`). La página pasa `tarjeta` (la promesa de `leerLaTarjetaDeTrabajo()`), `TarjetaEnVivo` y
   `puedeCambiarTiposDeCambio`. Las celdas editables usan `BOTON_DEL_VALOR` y `ENTRADA` de `@/shared/ui/xcell`; los colores de las bandas, `leerTonosDelCatalogo()`
@@ -261,14 +265,17 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
 - **La lista** (`HuecosDeLaLista`, `features/listado/components/tipos.ts`): `Portada` (la portada de cada tarjeta, en frío: `pantallas/tarjeta-portada.ts`) y
-  `Comparar` (las casillas y «Comparar» de un grupo desplegado, `CompararDelGrupoDiferido` de `pantallas/aprobada-listado.ts`); los une `listado-con-acciones.tsx`.
+  `Comparar` (las casillas y «Comparar» del modal de un grupo, `CompararDelGrupoDiferido` de `pantallas/aprobada-listado.ts`); los une `listado-con-acciones.tsx`.
 - **La vista previa de la tarjeta:** `ContextoDeLaVistaPrevia` (`features/hoja/components/hueco-de-la-vista-previa.tsx`) lleva `dibujar(props)`,
   `compartir()` (lo que la cabecera de una guardada dibuja a la vista: «Compartir») y `alGuardarLaCotizacion(id)` (lo llaman `useNucleoDelGuardado` y `useCotizarEncima` con la cotización guardada: la portada); la llena
   `<ProveedorDeLaTarjeta>` (`pantallas/tarjeta.ts`) con la cáscara del modal y lo que sabe la página (vehículo, asesor, número, logo). El modal lee
   `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `geometriaDeLaTarjeta()` (pura) con `<TarjetaDeCotizacion>`: un lienzo del ancho de
   la tarjeta con cada celda en posición absoluta (`<CeldaDeLaTarjeta>`, en orden de lectura, con `data-celda`, `data-fila`, `data-columna`, `data-nodo`,
   `data-mostrar`, `data-variable`, `data-color` y `data-total-usd`), escalado como una imagen (`useEscalaDeLaTarjeta()`, nunca agranda); la página manda título,
-  cliente, vehículo con lote y VIN, asesor, número, vencimiento y logo (`PaginaDeLaTarjeta`). «Vencida» va en los avisos del modal, no en la tarjeta. El pie:
+  cliente, vehículo con lote y VIN, asesor, número, vencimiento, nombre de la empresa y logo (`PaginaDeLaTarjeta`). La celda logo es `<LogoDeLaCelda>`: sólo
+  el logo (`next/image`, `data-logo-de-la-celda`), `contain` en la caja interior de la celda y alineado como ella; sin URL (las cifras de ejemplo), la muestra
+  punteada «Logo»; si no carga, la celda queda vacía y llama a `alFallarElLogo` (el editor de la tarjeta lo avisa, con «Abrir Empresa» si quien mira tiene
+  `empresa.ajustes.gestionar`, que baja de la página). «Vencida» va en los avisos del modal, no en la tarjeta. El pie:
   Live y «Copiar texto» (`textoDeLaTarjeta()`, de la misma geometría, apagado sin tarjeta, con «Total desactualizado.» o sin total) y, en una guardada,
   «Descargar PDF» (`pedirElPdf()`: `fetch` sin seguir la redirección ni caché; un 404, la sesión que no vale u otro fallo se dicen en el pie con «Reintentar»).
   **Los retoques** (`docs/COTIZADOR.md` › «Retoques de la tarjeta»): la página de una guardada pasa `DatosDeLaPagina.retoque` (`{ retoques, actualizadoEn,
@@ -287,7 +294,7 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
 
 ## Archivos clave
 
-- Motor y grafo (`docs/COTIZADOR.md`: léelo antes de tocar el motor): `entities/nodos.ts` (Zod por `tipo`, `referenciasDe()`), `formula.ts`, `motor.ts` y
+- Motor y grafo (`docs/COTIZADOR.md`: léelo antes de tocar el motor): `entities/nodos.ts` (Zod por `tipo`), `nodos-referencias.ts` (`referenciasDe()`), `formula.ts`, `motor.ts` y
   `motor-*.ts` (`evaluar()`, una pasada), `redondeo.ts` (`round(numeric)` de Postgres), `compilador*.ts` (texto a nodos, puro, nunca lanza),
   `casos-del-motor.json`.
 - Validación: `entities/validar*.ts` espeja `validar_formula()` (`docs/COTIZADOR.md` › «Las reglas») y `validar-diseno*.ts` a `validar_diseno()` (con el
@@ -370,7 +377,8 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
 - A lo sumo una final activa por vehículo. `cotizacion_marcar_final` toma lead → vehículo → la cotización y las vivas del vehículo (detalle:
   `areas/final/CLAUDE.md`). Al entrar a logística la final se congela; si sale, vuelve a preventa.
 - Sin motor de expresiones al cotizar: sólo las operaciones cerradas de `calculo`. La fórmula como texto se compila a nodos **al configurar**; lo que no
-  compila se rechaza. Un nodo nuevo = tipo discriminado (`nodos.ts`) + caso en `referenciasDe()` + caso en `validar_formula()` y en el juego.
+  compila se rechaza. Un nodo nuevo = tipo discriminado (`nodos.ts`) + caso en `referenciasDe()` (`nodos-referencias.ts`) + caso en `validar_formula()`, `_diseno_auxiliares()`,
+  `_nodos_en_par()` y en el juego.
 - **Toda copia de una versión lleva el diseño** (el ⚙, revertir y la N+1 de una tabla; publicar lo exige). Un color o nivel que una versión nombra no se
   elimina (`_tono_en_uso()`, `_nivel_uso()`; un nivel se retira). Colores y niveles salen de un solo punto (tabla `tonos`, `_niveles_de_cotizacion()`): nada
   escribe «costos» a mano ni razona por el nombre o la clave de un nivel. `formulas` y `plantillas_tarjeta` sólo las lee quien tiene
@@ -414,14 +422,17 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   publicar y descartar (`?panel=publicar-tarjeta|descartar-plantilla`) **viven fuera de la `key` del editor** para que «Recargar» tras un PT409 no pierda
   la nota; esa `key` cambia sólo con una versión que no es la que el editor acaba de guardar (`useClaveDelEditor()`): guardar no lo remonta y el historial sigue. El lienzo es un hueco: los tipos sin código de `entities/vista-previa-de-la-plantilla.ts` (`PropsDelLienzoDeLaPlantilla`,
   `GeometriaParaEditar`), que llena el área `tarjeta` (`LienzoDeLaPlantillaDiferido` por `pantallas/tarjeta-plantilla.ts`: dibuja con
-  `geometriaDeLaTarjeta()` y llama a `capa(g, escala)` y `debajo(g)`); la referencia (`entities/referencia-de-la-tarjeta.ts`, plana) llega recortada a los
+  `geometriaDeLaTarjeta()` y llama a `capa(g, escala)` y `debajo(g)`; «Ajustar» mide el contenedor del marco, `data-medida-del-lienzo` con `contain: inline-size`,
+  y deja el margen de la capa a los dos lados); la referencia (`entities/referencia-de-la-tarjeta.ts`, plana) llega recortada a los
   ids del contexto reducido (`recortarLaReferencia()`). Las operaciones se miden con los topes (manda el de 24 KiB) y la capa no toca el dibujo compartido.
 - **El PDF** dibuja la misma geometría que la tarjeta de esa guardada, en una página A4 escalada entera (`escalaDelPdf()`): lo guardado y sólo lo que la lectura nombra.
   El título de la cotización es la variable `titulo` (`PaginaDeLaTarjeta.titulo`, `tituloAparteDelNumero()`; nunca de `cotizacion_tarjeta`): en la hoja nueva, el que se
   está escribiendo (`useTituloDeLaCotizacion()`). Los montos van con `formatearMonto()` y siempre con
   cifras aunque Live esté encendido: es lo que se entrega al cliente (la excepción a `<Monto>`, `docs/DECISIONES.md`). react-pdf se carga sólo al pedir un
-  PDF (`import()` en `areas/tarjeta/composicion.ts`) y nunca llega al navegador. El logo lo baja `logo-del-pdf.ts` con tope (`PESO_MAXIMO_LOGO`) y 2 s y
-  llega como `Buffer`, nunca URL; un SVG con lo que react-pdf se salta o con `<image>`, y un WebP, dejan el PDF sin logo (`docs/PENDIENTES.md`, 4-98). Los
+  PDF (`import()` en `areas/tarjeta/composicion.ts`) y nunca llega al navegador. El logo del PDF y de la imagen lo baja `logoParaDibujar()`
+  (`infra/tarjeta/logo-de-la-tarjeta.ts`) con tope (`PESO_MAXIMO_LOGO`) y 2 s, y llega como `Buffer` con sus medidas, nunca URL: PNG y JPEG de hasta 1.024 px y
+  el SVG que react-pdf dibuja fiel, tal cual; lo demás que `sharp` lee (WebP, SVG con estilos, un raster grande), a PNG de hasta 1.024 px; un SVG que nombra
+  otro archivo o lo que no se lee, sin logo. Los dos lo ubican con `cajaDelLogo()` (`entities/tarjeta/caja-del-logo.ts`). Los
   metadatos no nombran al cliente, al asesor ni al vehículo. «Copiar texto» sale de la misma geometría. **La imagen** (`imagenDeUnaGuardada()`,
   `infra/tarjeta/imagen/`, `ImageResponse` con `import()`): la misma geometría como PNG al ancho de la tarjeta, la base de la portada (su ruta suma las fuentes
   de `infra/tarjeta/pdf/fuentes/` a `outputFileTracingIncludes`).

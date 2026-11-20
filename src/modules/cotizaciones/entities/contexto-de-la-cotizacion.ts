@@ -14,6 +14,8 @@ export type ContextoDeLaCotizacion = {
   vehiculo: { titulo: string; lote: string | null; vin: string | null } | null
   // «20 nov 2026»: el día en que vence; nulo sin vencimiento.
   venceEl: string | null
+  // El nombre de la empresa (la variable `empresa_nombre`); nulo si quien arma la página no lo leyó.
+  empresa: string | null
   // El logo de la empresa, si tiene uno.
   logo: { nombre: string; url: string } | null
 }

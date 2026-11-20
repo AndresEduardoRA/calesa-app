@@ -98,7 +98,8 @@ type PropsDelAsa = {
 }
 
 // El asa de una fila (`role="rowheader"`): se arrastra para ordenar o se toca para elegir la fila. Fuera del orden de Tab (la grilla lleva un solo `tabindex=0`): se llega
-// con ← desde la columna A.
+// con ← desde la columna A. Su número no desborda la banda (`overflow-hidden`): con la escala de «Ajustar» una fila mide menos que una línea, y lo que sobresale de
+// la última haría que el marco del lienzo sacara su barra.
 export function AsaDeLaFila({
   id,
   numero,
@@ -138,7 +139,7 @@ export function AsaDeLaFila({
           }
           oyentes?.['onKeyDown']?.(e)
         }}
-        className="flex size-full min-h-0 cursor-grab touch-none items-center justify-center gap-0.5 rounded-(--radius-sm) text-(length:--text-xs) text-(--color-ink-soft) tabular-nums outline-none hover:bg-(--color-surface-2) focus-visible:shadow-(--shadow-focus) active:cursor-grabbing aria-pressed:bg-(--color-primario-soft) data-elegida:bg-(--color-primario-soft) data-elegida:text-(--color-ink)"
+        className="flex size-full min-h-0 cursor-grab touch-none items-center justify-center gap-0.5 overflow-hidden rounded-(--radius-sm) text-(length:--text-xs) text-(--color-ink-soft) tabular-nums outline-none hover:bg-(--color-surface-2) focus-visible:shadow-(--shadow-focus) active:cursor-grabbing aria-pressed:bg-(--color-primario-soft) data-elegida:bg-(--color-primario-soft) data-elegida:text-(--color-ink)"
       >
         <GripVerticalIcon aria-hidden className="size-3 shrink-0" />
         {numero}

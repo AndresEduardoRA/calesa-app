@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { requerirSesion } from '@/modules/equipo'
 import { SeccionDeLaPlantilla } from '@/modules/cotizaciones/pantallas/plantilla'
 import { LienzoDeLaPlantillaDiferido } from '@/modules/cotizaciones/pantallas/tarjeta-plantilla'
+import { puede } from '@/shared/lib/permisos'
 import { PaginaPorOrigen } from '../pagina-por-origen'
 import { EsqueletoDeLaTarjeta } from './esqueleto-de-la-tarjeta'
 import { leerReferenciaDeLaTarjeta } from './referencia'
@@ -27,6 +28,7 @@ export default async function PaginaDeLaTarjeta({
             origen={origen}
             referencia={leerReferenciaDeLaTarjeta(origen.id, sesion.permisos)}
             Lienzo={LienzoDeLaPlantillaDiferido}
+            puedeCambiarElLogo={puede(sesion.permisos, 'empresa.ajustes.gestionar')}
           />
         </Suspense>
       )}

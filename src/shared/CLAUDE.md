@@ -58,8 +58,8 @@ locale)`, el único lector de un número tipeado.
 - `ui/monto.tsx` + `live.ts` + `guion-live.tsx` (Modo Live), `regional.tsx`, `densidad.tsx`, `marca.tsx`, `estilo-de-marca.tsx`.
 - `lib/acciones-del-aviso.ts` (las acciones de un aviso como datos: `AccionDelAviso`, `resolverAcciones()`, `pedidoDe()`, `hrefDePanel()`; `ErrorApp.causa`)
   y `ui/acciones-del-aviso.tsx` (`<AccionesDelAviso>`, todo `<Button>`: en un toast sólo los botones reciben el puntero).
-- `ui/ficha-en-bloques/`: `<FichaEnDosColumnas>` (desde 56 rem de contenedor, `@container/ficha`: la izquierda pegajosa hasta 24 rem, que se
-  desplaza sola si no cabe; por debajo una columna), `<IndiceDeBloques>` (barra pegajosa de enlaces `#ancla`, `aria-current="location"` del bloque a la
+- `ui/ficha-en-bloques/`: `<FichaEnDosColumnas>` (desde 56 rem de contenedor, `@container/ficha`: la página quieta con el alto de la ventana y cada columna con su desplazamiento por dentro —la izquierda hasta 24 rem, la derecha con el índice arriba—, `usePosicionDeLasColumnas()` que
+  las recuerda por ruta; por debajo una columna con el desplazamiento de la página), `<IndiceDeBloques>` (barra de enlaces `#ancla`, pegajosa en el celular, `aria-current="location"` del bloque a la
   vista por `lib/bloque-a-la-vista.ts`), `<BloqueDeFicha>` (ancla, título, límite de error y `alAcercarse`), `irAlBloque()` (desplaza y enfoca el `h2`),
   `useIrAlLlegar()` y `<EsqueletoDeFichaEnDosColumnas>` (el `loading.tsx` lo importa por su ruta, no por el barril). `ui/use-a-la-vista.ts`: si un nodo ya
   estuvo a 200 px de la vista (leer o pedir código recién ahí).

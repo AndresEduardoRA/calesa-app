@@ -10,12 +10,16 @@ export const CODIGOS_DE_COMPILACION = [
   'separador_fuera_de_funcion',
   'numero_mal_escrito',
   'numero_fuera_de_rango',
+  'texto_sin_cerrar',
+  'texto_fuera_de_lugar',
   'parentesis_sin_cerrar',
   'parentesis_de_mas',
   'operador_suelto',
   'falta_un_valor',
   'falta_un_operador',
   'porcentaje_sin_numero',
+  'comparacion_encadenada',
+  'comparar_texto_con_numero',
   'demasiado_profundo',
   'nombre_desconocido',
   'referencia_a1',
@@ -27,7 +31,13 @@ export const CODIGOS_DE_COMPILACION = [
   'hoy_no_soportado',
   'cantidad_de_argumentos',
   'argumento_invalido',
-  'no_es_bandera',
+  'no_es_condicion',
+  'opcion_inexistente',
+  'tabla_inexistente',
+  'columna_inexistente',
+  'tabla_sin_columnas',
+  'tabla_sin_tramos',
+  'tablas_sin_leer',
   'grupo_inexistente',
   'grupo_vacio',
   'auxiliar_ocupado',
@@ -43,6 +53,11 @@ export type DatosDeError = {
   cantidad?: number
   esperado?: string
   n?: number
+  // Cuántos argumentos lleva una función que no los lleva fijos: al menos `minimo` y, si tiene tope, a lo sumo `maximo`.
+  minimo?: number
+  maximo?: number
+  // La tabla de BUSCARV, cuando el error es de una de sus columnas.
+  tabla?: string
 }
 
 export type Tramo = { desde: number; largo: number; linea: number; columna: number }
@@ -58,16 +73,32 @@ export const MAXIMO_DE_TERMINOS = 100_000
 
 const q = (s: string | undefined) => `«${s ?? '?'}»`
 
+// «lleva 2 argumentos», «lleva entre 2 y 3 argumentos» o «lleva al menos 2 argumentos»; `esperado` suma la otra forma (MAX de un grupo).
+function cuantosArgumentos(d: DatosDeError): string {
+  const nombre = d.nombre ?? '?'
+  const cuantos =
+    d.minimo === undefined
+      ? `${String(d.cantidad ?? 0)} argumento${d.cantidad === 1 ? '' : 's'}`
+      : d.maximo === undefined
+        ? `al menos ${String(d.minimo)} argumentos`
+        : `entre ${String(d.minimo)} y ${String(d.maximo)} argumentos`
+  const otra = d.esperado === undefined ? '' : `, o ${d.esperado}`
+  return `${nombre} lleva ${cuantos}, separados con punto y coma (;)${otra}.`
+}
+
 const MENSAJES: Record<CodigoDeCompilacion, (d: DatosDeError) => string> = {
   texto_vacio: () => 'Escribe la fórmula: ahora no hay nada que calcular.',
   caracter_invalido: (d) =>
-    `No entiendo ${q(d.texto)}. Usa números, nombres, + - * / ( ) % y ; entre los argumentos.`,
+    `No entiendo ${q(d.texto)}. Usa números, nombres, + - * / ( ) %, > < =, textos entre comillas y ; entre los argumentos.`,
   coma: () =>
     'Separa los argumentos con punto y coma (;), no con coma. Los decimales llevan punto.',
   separador_fuera_de_funcion: () =>
     'El punto y coma (;) solo separa los argumentos de una función.',
   numero_mal_escrito: (d) => `${q(d.texto)} no es un número: escríbelo como 12, 0.5 o 1e3.`,
   numero_fuera_de_rango: (d) => `${q(d.texto)} es demasiado grande.`,
+  texto_sin_cerrar: () => 'Falta cerrar las comillas.',
+  texto_fuera_de_lugar: () =>
+    'Un texto entre comillas solo va en BUSCARV o al comparar la variante.',
   parentesis_sin_cerrar: () => 'Falta cerrar este paréntesis.',
   parentesis_de_mas: () => 'Este paréntesis cierra uno que no abriste.',
   operador_suelto: (d) =>
@@ -77,6 +108,8 @@ const MENSAJES: Record<CodigoDeCompilacion, (d: DatosDeError) => string> = {
   falta_un_valor: () => 'Falta un valor aquí.',
   falta_un_operador: () => 'Falta un operador (+ - * /) entre estos dos valores.',
   porcentaje_sin_numero: () => 'El % va pegado a un número, como 4%.',
+  comparacion_encadenada: () => 'Separa las comparaciones con Y u O, por ejemplo Y(a<b; b<c).',
+  comparar_texto_con_numero: (d) => `No se puede comparar un texto con un número: ${q(d.texto)}.`,
   demasiado_profundo: (d) =>
     `Hay demasiados paréntesis anidados: el máximo es ${String(d.n ?? 0)}.`,
   nombre_desconocido: (d) => `${q(d.nombre)} no es ningún nodo de la fórmula.`,
@@ -87,16 +120,25 @@ const MENSAJES: Record<CodigoDeCompilacion, (d: DatosDeError) => string> = {
   ciclo: (d) => `${q(d.nombre)} es esta misma fila: no puede usarse a sí misma.`,
   grupo_sin_suma: (d) =>
     `${q(d.nombre)} es un grupo: para sumarlo escribe SUMA(${d.nombre ?? '?'}).`,
+  // `texto`, una de sus opciones para el ejemplo.
   variante_en_calculo: (d) =>
-    `${q(d.nombre)} es la variante: se nombra en «solo en» de una fila, no en un cálculo.`,
+    `${q(d.nombre)} es la variante: no entra en un cálculo. Para preguntar por una opción, escribe ${d.nombre ?? '?'}="${d.texto ?? 'clave'}".`,
   funcion_desconocida: (d) =>
-    `${q(d.nombre)} no es una función. Puedes usar SUMA, SI, REDONDEAR, PORCENTAJE_DE y DEPRECIAR.`,
+    `${q(d.nombre)} no es una función. Puedes usar SUMA, SI, Y, O, MAX, MIN, BUSCARV, REDONDEAR, PORCENTAJE_DE y DEPRECIAR.`,
   hoy_no_soportado: () =>
     'HOY() todavía no existe: una fórmula no puede depender de la fecha de hoy.',
-  cantidad_de_argumentos: (d) =>
-    `${d.nombre ?? '?'} lleva ${String(d.cantidad ?? 0)} argumento${d.cantidad === 1 ? '' : 's'}, separados con punto y coma (;).`,
+  cantidad_de_argumentos: cuantosArgumentos,
   argumento_invalido: (d) => `Aquí va ${d.esperado ?? 'otro valor'}.`,
-  no_es_bandera: (d) => `${q(d.nombre)} no es una bandera: SI necesita un interruptor.`,
+  // `nombre`, la función; `texto`, el ejemplo armado con lo que escribió la persona.
+  no_es_condicion: (d) =>
+    `${d.nombre ?? 'SI'} necesita una condición, por ejemplo ${d.texto ?? 'remate>1000'}.`,
+  opcion_inexistente: (d) => `${q(d.nombre)} no tiene la opción ${q(d.texto)}.`,
+  tabla_inexistente: (d) => `La tabla ${q(d.texto)} no existe en este origen.`,
+  columna_inexistente: (d) => `La tabla ${q(d.tabla)} no tiene la columna ${q(d.texto)}.`,
+  tabla_sin_columnas: (d) => `La tabla ${q(d.texto)} no tiene columnas para buscar.`,
+  tabla_sin_tramos: (d) =>
+    `Para buscar por tramo, la tabla ${q(d.texto)} necesita las columnas desde y hasta.`,
+  tablas_sin_leer: () => 'No pudimos leer las tablas de este origen. Recarga para usar BUSCARV.',
   grupo_inexistente: (d) => `El grupo ${q(d.nombre)} no existe.`,
   grupo_vacio: (d) => `El grupo ${q(d.nombre)} no tiene filas antes de esta.`,
   auxiliar_ocupado: (d) =>

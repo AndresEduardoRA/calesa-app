@@ -32,17 +32,20 @@ export type PortadaDeLaFila = ComponentType<{
   lugar: 'lista'
 }>
 
-// Las casillas y «Comparar» de un grupo desplegado (las del área `aprobada`, por hueco). Lleva el estado de las elegidas: dibuja cada línea con su casilla
-// (`linea(fila, casilla)`) y, al pie, «Comparar» con su ayuda.
+// Lo que «Comparar» da al modal de un grupo: la casilla de cada línea y, para el pie del modal, «Comparar» con su ayuda (de las líneas que se ven).
+export type PartesDeComparar = {
+  casilla: (fila: { id: string; numero: number }) => ReactNode
+  pie: (filas: readonly { id: string; numero: number }[]) => ReactNode
+}
+// Las casillas y «Comparar» del modal de un grupo (las del área `aprobada`, por hueco). Lleva el estado de las elegidas y dibuja `children` con sus partes: el modal va
+// dentro, para poner «Comparar» en su pie.
 export type PropsDeCompararDelGrupo = {
-  filas: readonly { id: string; numero: number }[]
   // La página de donde se vino (`returnTo` de «Comparar cotizaciones»).
   volverA: string
-  linea: (fila: { id: string; numero: number }, casilla: ReactNode) => ReactNode
+  children: (partes: PartesDeComparar) => ReactNode
 }
 export type CompararDelGrupo = ComponentType<PropsDeCompararDelGrupo>
 
-// Lo que otras áreas llenan en la lista: la portada de cada tarjeta y «Comparar» de un grupo. Sin ellos, la tarjeta va sin portada y el grupo sin casillas.
 export type HuecosDeLaLista = {
   Portada?: PortadaDeLaFila | undefined
   Comparar?: CompararDelGrupo | undefined

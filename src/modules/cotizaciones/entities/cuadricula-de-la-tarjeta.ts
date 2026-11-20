@@ -7,6 +7,7 @@ export const FORMA_DE_LA_CUADRICULA = 2
 
 // Las variables que puede mostrar una celda: lo de la cotización que no es un nodo de la fórmula.
 export const VARIABLES_DE_LA_TARJETA = [
+  'empresa_nombre',
   'fecha_larga',
   'numero',
   'titulo',

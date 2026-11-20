@@ -4,88 +4,15 @@ import {
   bucketDe,
   condicionDe,
   daMonto,
+  esCondicion,
   esMonto,
   esquemaNodo,
   formatoDe,
-  referenciasDe,
   sobrescribibleDe,
   soloEnDe,
   type Nodo,
 } from './nodos'
-
-const nodo = (x: Record<string, unknown>): Nodo => esquemaNodo.parse({ etiqueta: 'X', ...x })
-
-// Un nodo de cada tipo (y de cada operación) con todo lo que puede nombrar, y lo que tiene que dar.
-const CASOS: [string, Record<string, unknown>, string[]][] = [
-  [
-    'input',
-    { id: 'a', tipo: 'input', sugerido_de: 'b', requerido_si: 'c', condicion: 'd' },
-    ['sugerido_de:b', 'requerido_si:c', 'condicion:d'],
-  ],
-  ['constante', { id: 'a', tipo: 'constante', condicion: 'd' }, ['condicion:d']],
-  ['tipo_cambio', { id: 'a', tipo: 'tipo_cambio', clave: 'oficial' }, []],
-  ['campo_vehiculo', { id: 'a', tipo: 'campo_vehiculo', campo: 'atributos.cilindrada' }, []],
-  ['bandera', { id: 'a', tipo: 'bandera' }, []],
-  [
-    'opcion',
-    {
-      id: 'a',
-      tipo: 'opcion',
-      opciones: [
-        { clave: 'x', etiqueta: 'X', titulo: 'X' },
-        { clave: 'y', etiqueta: 'Y', titulo: 'Y' },
-      ],
-    },
-    [],
-  ],
-  [
-    'tabla',
-    {
-      id: 'a',
-      tipo: 'tabla',
-      tabla: 't',
-      match: { anio: 'anio', tipo: 'tipo_vehiculo' },
-      columna: 'c',
-      condicion: 'd',
-    },
-    ['match:anio', 'match:tipo_vehiculo', 'condicion:d'],
-  ],
-  ['tramo', { id: 'a', tipo: 'tramo', tabla: 't', sobre: 'b', columna: 'c' }, ['sobre:b']],
-  [
-    'suma',
-    { id: 'a', tipo: 'calculo', op: 'suma', de: ['b', 'c'], condicion: 'd' },
-    ['de:b', 'de:c', 'condicion:d'],
-  ],
-  [
-    'porcentaje_de',
-    { id: 'a', tipo: 'calculo', op: 'porcentaje_de', de: ['b'], pct: 'p' },
-    ['de:b', 'pct:p'],
-  ],
-  [
-    'multiplicar',
-    { id: 'a', tipo: 'calculo', op: 'multiplicar', de: ['b', 'c'] },
-    ['de:b', 'de:c'],
-  ],
-  ['restar', { id: 'a', tipo: 'calculo', op: 'restar', de: ['b', 'c'] }, ['de:b', 'de:c']],
-  ['dividir', { id: 'a', tipo: 'calculo', op: 'dividir', de: ['b', 'c'] }, ['de:b', 'de:c']],
-  [
-    'si',
-    { id: 'a', tipo: 'calculo', op: 'si', de: ['b'], condicion: 'd' },
-    ['de:b', 'condicion:d'],
-  ],
-  [
-    'depreciar',
-    { id: 'a', tipo: 'calculo', op: 'depreciar', de: ['b'], tabla: 't', sobre: 'e', columna: 'c' },
-    ['de:b', 'sobre:e'],
-  ],
-  ['redondear', { id: 'a', tipo: 'calculo', op: 'redondear', de: ['b'], n: 2 }, ['de:b']],
-]
-
-describe('referenciasDe', () => {
-  it.each(CASOS)('%s nombra lo que lee, con su papel', (_, crudo, esperadas) => {
-    expect(referenciasDe(nodo(crudo)).map((r) => `${r.papel}:${r.id}`)).toEqual(esperadas)
-  })
-})
+import { CASOS, nodo } from './nodos.soporte'
 
 describe('esquemaNodo', () => {
   it('rechaza una clave mal escrita, un tipo o una operación que no existen y la aridad', () => {
@@ -99,6 +26,14 @@ describe('esquemaNodo', () => {
       { id: 'a', tipo: 'tipo_cambio', clave: 'oficial', solo_en: ['x'] },
       { id: 'a', tipo: 'input', sobrescribible: true },
       { id: 'tablas', tipo: 'constante' },
+      { id: 'a', tipo: 'calculo', op: 'comparar', de: ['b', 'c'], cmp: '=>' },
+      { id: 'a', tipo: 'calculo', op: 'comparar', de: ['b', 'c', 'd'], cmp: '>' },
+      { id: 'a', tipo: 'calculo', op: 'es_opcion', de: ['v'], cmp: '>', clave: 'x' },
+      { id: 'a', tipo: 'calculo', op: 'es_opcion', de: ['v'], cmp: '=', clave: 'X' },
+      { id: 'a', tipo: 'calculo', op: 'y', de: ['b'] },
+      { id: 'a', tipo: 'calculo', op: 'elegir', de: ['b', 'c', 'd'], prueba: 'p' },
+      { id: 'a', tipo: 'calculo', op: 'elegir', de: ['b'] },
+      { id: 'a', tipo: 'calculo', op: 'max', de: [] },
     ]
     for (const m of malos)
       expect(esquemaNodo.safeParse({ etiqueta: 'X', ...m }).success).toBe(false)
@@ -168,5 +103,26 @@ describe('lo que se lee de un nodo', () => {
       true,
     ])
     expect(sobrescribibleDe(input)).toBe(false)
+  })
+})
+
+describe('esCondicion', () => {
+  it('una bandera y las operaciones que valen 1 o 0 sirven de condición; un número o un SI, no', () => {
+    const si = ['bandera', 'comparar', 'es_opcion', 'y', 'o']
+    const no = [
+      'input',
+      'constante',
+      'tramo',
+      'opcion',
+      'suma',
+      'si',
+      'depreciar',
+      'elegir',
+      'max',
+      'min',
+    ]
+    const porNombre = new Map(CASOS.map(([nombre, crudo]) => [nombre, nodo(crudo)]))
+    for (const nombre of si) expect(esCondicion(porNombre.get(nombre) as Nodo), nombre).toBe(true)
+    for (const nombre of no) expect(esCondicion(porNombre.get(nombre) as Nodo), nombre).toBe(false)
   })
 })

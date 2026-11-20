@@ -1,3 +1,3 @@
-// El grupo de un vehículo en la lista agrupada: el botón del conteo (en frío) y su despliegue (diferido).
+// El grupo de un vehículo en la lista agrupada: el botón del conteo (en frío) y el modal de sus cotizaciones (diferido).
 export { BotonDelConteo } from './boton-del-conteo'
-export { DespliegueDelGrupoDiferido } from './diferidos'
+export { ModalDelGrupoDiferido } from './diferidos'

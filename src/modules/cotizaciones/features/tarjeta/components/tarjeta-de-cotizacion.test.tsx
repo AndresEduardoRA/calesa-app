@@ -99,7 +99,10 @@ describe('<TarjetaDeCotizacion>', () => {
     expect(celda(container, 'c_nota')?.textContent).toBe(
       'Precios sujetos a cambio.\nNo incluye reparación.',
     )
-    expect(celda(container, 'c_logo')?.textContent).toContain('Calesa')
+    // Sólo el logo, sin el nombre al lado.
+    const logo = celda(container, 'c_logo')
+    expect(logo?.querySelector('img[data-logo-de-la-celda]')?.getAttribute('alt')).toBe('Calesa')
+    expect(logo?.textContent).toBe('')
   })
 
   it('por omisión: `data-por-omision` y el total con «Total»', () => {

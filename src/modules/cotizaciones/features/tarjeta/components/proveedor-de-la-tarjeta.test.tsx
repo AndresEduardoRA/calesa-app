@@ -60,6 +60,7 @@ describe('<ProveedorDeLaTarjeta>', () => {
         vencida={false}
         venceEl={null}
         guardadaEl={null}
+        empresa={null}
         logo={null}
         cotizacionId="00000000-0000-4000-8000-0000000000bb"
       >
@@ -99,6 +100,7 @@ describe('<ProveedorDeLaTarjeta>', () => {
         vencida={false}
         venceEl={null}
         guardadaEl={null}
+        empresa={null}
         logo={null}
         cotizacionId={null}
       >
@@ -125,6 +127,7 @@ describe('<ProveedorDeLaTarjeta> y «Compartir»', () => {
       vencida: false,
       venceEl: null,
       guardadaEl: null,
+      empresa: null,
       logo: null,
     }
     render(

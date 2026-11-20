@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback } from 'react'
+import type { CatalogoDeTablas } from '../../../entities/compilador'
 import type { Formula } from '../../../entities/formula'
 import { compilarFila } from '../../../entities/formula/compilar-fila'
 import type { Aplicada, FilaAbierta } from './use-editor-de-la-formula'
@@ -9,6 +10,7 @@ import type { Aplicada, FilaAbierta } from './use-editor-de-la-formula'
 // otra fila nombra) deja la fila abierta con su error y la fórmula igual; `pisa_un_valor` (4-5) espera «Pisar el valor». Si entra, la fórmula de trabajo pasa a la nueva y la fila se cierra diciendo lo soltado.
 export function useAplicarFila({
   trabajo,
+  tablas,
   abierta,
   enCurso,
   setTrabajo,
@@ -16,6 +18,8 @@ export function useAplicarFila({
   setAplicada,
 }: {
   trabajo: Formula
+  // El catálogo de tablas del origen, para BUSCARV.
+  tablas: CatalogoDeTablas
   abierta: FilaAbierta | null
   enCurso: boolean
   // Los `set` de `useState` del editor: estables, para que `aplicar` no cambie en cada render (cada `FilaDelEditor` es `memo`).
@@ -30,6 +34,7 @@ export function useAplicarFila({
         destino: { existente: abierta.id },
         texto,
         confirmaPisar,
+        tablas,
       })
       if (!r.ok) {
         setAbierta({ id: abierta.id, error: r.error })
@@ -39,6 +44,6 @@ export function useAplicarFila({
       setAbierta(null)
       setAplicada({ id: abierta.id, soltados: r.soltados })
     },
-    [abierta, trabajo, enCurso, setTrabajo, setAbierta, setAplicada],
+    [abierta, trabajo, tablas, enCurso, setTrabajo, setAbierta, setAplicada],
   )
 }

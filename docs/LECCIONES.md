@@ -15,6 +15,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - En un bucle plpgsql asigna `v_arr[i]` a una variable antes de usarlo en una consulta (si no, cada vuelta recibe el arreglo entero) y arma el jsonb con `jsonb_object_agg`, no concatenando.
 - Rechaza `NaN` explícito junto a `monto > 0` en toda RPC de dinero: en Postgres `'NaN' > 0` es verdadero y `numeric(18,2)` lo guarda, así que el `check` no basta.
 - `db:lint` no admite avisos sin motivo: declara STABLE (no IMMUTABLE) una función que usa `jsonb_build_object` e inicia un `uuid[]` vacío con `array[]::uuid[]`, no con `'{}'`.
+- No declares la variable de un `for i in 1 .. n` de plpgsql: el `for` crea la suya. Declarada, `plpgsql_check` la marca sin uso y cada `for` nuevo suma una sombra, así que `db:lint` cae contra la cuenta de `supabase/tests/advisors-con-motivo.json`.
 - Un trigger `before insert` corre antes del `with check` de la policy: quien no puede recibe 23514 en vez de 42501. Ordena las defensas sabiéndolo.
 - Los triggers BEFORE corren en orden alfabético del nombre: el que depende de otros se nombra para ir último (`trg_lead_z_cliente_desde`).
 - Un borrado suave por `update` da 42501 si la policy de leer no admite la fila nueva (aun sin `returning`): borrar así pide una RPC `security definer`.
@@ -204,6 +205,13 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   aparecer, desplaza lo justo para dejarlo a la vista (`BarraDeCambiosSinGuardar`).
 - Un submenú de un menú (`DropdownMenuSubTrigger`) que se abre al pasar el puntero se vuelve a cerrar con el clic que le sigue: ponle `openOnHover={false}` y que lo abran el clic, el toque o el teclado.
 - Chrome ignora `autocomplete="off"` en un `type="password"` y el Chromium de Playwright no lo reproduce: eso sólo se comprueba a mano, no lo des por probado.
+- Lo que se escala al ancho de su contenedor (`useEscalaDeLaTarjeta`) mide un nodo que no se desplaza ni depende de su contenido (`contain: inline-size`),
+  con el ancho redondeado hacia abajo; lo que dibuja no desborda su marco (ni el borde que sobresale, ni el alto con fracciones, ni el texto de una fila
+  más baja que una línea), y la página reserva el lugar de su barra (`scrollbar-gutter: stable`). Si una barra que aparece cambia el ancho medido, la
+  escala, el alto y la barra entran en un ciclo de pocos píxeles que no deja elegir nada. Se prueba con las barras visibles
+  (`ignoreDefaultArgs: ['--hide-scrollbars']`, `e2e/configuracion-tarjeta-arrastrar.spec.ts`): el Chromium de Playwright las esconde.
+- Dentro de una columna que se desplaza por dentro (la ficha en dos columnas), no uses `scrollIntoView` para dejar algo a la vista de una barra de costado (la tira de miniaturas): mueve también a la columna y la deja donde la persona no la puso; ajusta el `scrollLeft` de la barra. Y esa columna va `relative`: un `sr-only` (absoluto) de adentro, sin ancestro posicionado, no queda recortado y alarga el documento (la ventana se desplazaba 17 px).
+- Una columna que recupera su posición al volver a una pantalla (`usePosicionDeLasColumnas()`) insiste unos segundos: al mostrarse de nuevo el contenido se acomoda y el navegador achica el desplazamiento al tope de ese momento; reponer una sola vez deja la posición equivocada.
 
 ## Realtime y notificaciones
 
@@ -294,6 +302,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Si un spec caído quedó en `/ingreso` (bajo carga o con el servidor recién levantado), es el inestable conocido del ingreso: repítelo solo antes de culpar al cambio.
 - Lo que depende de la hora (la marca de «ahora», un vencimiento) cambia el DOM según cuándo corre: un texto que la prueba busca exacto va en su propio elemento, y la prueba fija el reloj (`page.clock`) o no mira las filas que la hora puede tocar.
 - Si un e2e siembra fotos por SQL (`sembrarFotos()`) y después las edita, siembra también su fila en `vehiculos_imagenes_version`: sin versión, mover o fijar la portada no mandan nada y el clic pasa sin error.
+- El total de la tarjeta de la hoja es `totales.usd` (la suma de los grupos, cada uno en su bucket), no el valor del nodo total: con la fórmula de prueba (`cotizar-formula.ts`) un cambio en el nodo `total` no lo mueve. Afirma una cifra de la fórmula en la celda de un nodo que el diseño dibuja (`[data-nodo]`).
 
 ## Vitest
 
@@ -365,12 +374,16 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Para «difiere de lo guardado» compara valores y totales, no sólo el total: una celda puede cambiar sin moverlo.
 - Compara un `jsonb` leído de la base con lo que se edita sin mirar el orden de las claves (`mismoJson()`): la base las devuelve ordenadas por largo y un
   `JSON.stringify` dice «hay cambios» para siempre tras guardar (y `useBorradorDeEstado`, que compara el texto, guarda un «recuperado» falso).
-- react-pdf no dibuja WebP ni SVG con `<style>`, clases, `use`, `mask`, `filter` o `<image>`: una imagen para el PDF llega en PNG o JPG.
+- Un logo para un dibujo del servidor pasa por `logoParaDibujar()`: react-pdf y satori no leen WebP ni SVG con estilos, y `sharp` lo pasa a PNG.
+- Un filtro de SVG por su texto busca `<svg` en todo el texto, no al principio: `sharp` lee como SVG el que empieza con un comentario, un DOCTYPE o
+  un BOM, y el comprimido (`.svgz`) esconde el texto; lo que el filtro no revisó no se rasteriza.
+- Una celda de un dibujo compartido no reusa un componente del marco de la app (`<Marca>`: tamaño fijo y el nombre): dibuja desde la caja de la celda, y un e2e mide la imagen dentro de ese rectángulo en los tres dibujos.
 - Un dibujo que comparten el HTML, react-pdf y `next/og` va por posiciones absolutas desde una geometría pura: satori no tiene `grid` (ni `<table>`, que tampoco dibuja react-pdf) y todo `div` con más de un hijo lleva `display: flex`.
 - Una fuente de react-pdf que lee del disco y no se importa no la ve el trazado de archivos: cada ruta que la usa la suma a `outputFileTracingIncludes` de `next.config.ts`.
 - Valida una plantilla de la tarjeta contra la visibilidad que compila la base (`_compilar_visibilidad()`, `visibilidadDeLaPlantilla()`), nunca con «todo del nivel «todos»»: lo que la hoja no dibuja no figura, y un `tc_nombre` cuyo tipo de cambio no tiene celda da `tipo_de_cambio_restringido` recién al publicar.
 - Una guarda que sigue los imports de un `'use client'` corta en un archivo `'use server'`: el bundler cambia la Server Action por una referencia y lo que importa no viaja.
 - Un espejo de una regex entre JS y Postgres va en ASCII (`[!-~]`), sin `\S` ni la bandera `u`: con Unicode las dos clases no coinciden (la URL de un enlace de la ayuda, `URL_DE_ENLACE`).
+- Una clave de referencia nueva en un nodo (la `prueba` de `elegir`) se suma a todos los espejos de `referenciasDe()` en la base, no sólo a `validar_formula()`: `_diseno_auxiliares()` (si no, publicar pide celda a las auxiliares del texto) y `_nodos_en_par()`. Cada uno lleva su caso en el juego espejo (`casos-de-en-par.json`) o su prueba SQL con los nodos que compila TS.
 
 ### vehiculos
 

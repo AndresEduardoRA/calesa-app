@@ -9,8 +9,8 @@ import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { capturar, sinScrollHorizontal } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
-// El drawer de la cotización (el resumen `?cotizacion=`, `docs/UX.md` › «Cotizaciones», T320): se abre igual desde la tabla, la tarjeta y la línea de un grupo
-// desplegado, con la abierta marcada; arriba «Abrir cotización», «Compartir cotización» y el «⋯» sin «Compartir» (también para la línea del grupo, que no está en
+// El drawer de la cotización (el resumen `?cotizacion=`, `docs/UX.md` › «Cotizaciones», T320): se abre igual desde la tabla, la tarjeta y la línea del modal de un
+// grupo (que se cierra al abrirlo), con la abierta marcada; arriba «Abrir cotización», «Compartir cotización» y el «⋯» sin «Compartir» (también para la línea del grupo, que no está en
 // la página); sus diálogos se abren sobre el resumen sin cerrarlo; «Aprobar esta» de «De este vehículo» cambia la insignia en el resumen y en la lista sin recargar;
 // las pestañas siguen; en Modo Live no hay «Compartir». La portada y su visor los recorre `cotizaciones-portada.spec.ts`.
 test.describe.configure({ mode: 'serial' })
@@ -109,7 +109,7 @@ async function cerrar(page: Page, drawer: Locator): Promise<void> {
   await expect(drawer).toBeHidden()
 }
 
-test('E2E desde la tarjeta y desde la línea de un grupo desplegado se abre el mismo resumen, con la abierta marcada', async ({
+test('E2E desde la tarjeta y desde la línea del modal de un grupo se abre el mismo resumen; la tarjeta queda marcada y el modal se cierra', async ({
   page,
 }, info) => {
   await abrir(page, deLaPrueba())
@@ -129,11 +129,13 @@ test('E2E desde la tarjeta y desde la línea de un grupo desplegado se abre el m
 
   await tarjeta.getByRole('button', { name: '3 cotizaciones de este vehículo' }).click()
   const otra = grupo.ids[1] ?? ''
-  const linea = page.locator(`[data-linea-del-grupo="${otra}"]`)
+  const modal = page.getByRole('dialog', { name: /^Cotizaciones de / })
+  const linea = modal.locator(`[data-linea-del-grupo="${otra}"]`)
   await linea.getByRole('button', { name: `Abrir N.º ${numeroDe(otra)}` }).click()
   drawer = await esElResumenDe(page, otra)
-  await expect(linea).toHaveAttribute('data-state', 'selected')
-  await expect(linea).toHaveAttribute('aria-current', 'true')
+  // El modal se cerró al abrir el resumen: uno solo a la vista, y su URL se fue.
+  await expect(modal).toBeHidden()
+  expect(new URL(page.url()).searchParams.get('panel')).toBeNull()
   // No está en la página y aun así tiene su «⋯» (la leyó el servidor con sus marcas).
   await expect(
     barra(drawer).getByRole('button', { name: `Más acciones de N.º ${numeroDe(otra)}` }),

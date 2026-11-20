@@ -247,7 +247,7 @@ las trampas, en `docs/LECCIONES.md`.
   layout, sigue el precio. El campo se busca por su ruta de apibara, no por su clave (cada empresa la nombra).
 - **«Relacionados»: un mismo bloque arriba de cada detalle, leído con una `security definer` que copia el predicado de las policies.** Cuatro RPC (`vehiculo_relacionados()`, `lead_relacionados()` y sus `*_pagina()`) resuelven el alcance una vez: bajo RLS, cada fila de `vehiculos_interesados` paga dos `puede_*` y un recorrido con muchas ocultas no tiene tope. Una definer además **cuenta lo oculto sin devolver sus datos** («1 que no puedes ver»: ni id, ni nombre, ni nota, tampoco el uuid del lead de un vínculo oculto); su equivalencia con la RLS la ata `supabase/tests/areas/vehiculos/relacionados*.sql` (R1). Lo que está en una papelera no se relaciona ni se cuenta; un lead en limbo sí cuenta como oculto (sigue frenando vincular). «Cotizado» es una fila por contraparte, con su cotización activa visible más nueva (_activa_ = viva y `activa|reportada`); sin `cotizaciones.ver` el grupo no existe. Los cuatro llevan `set random_page_cost = 1.1`: con el costo por defecto el plan genérico prefería un bitmap y ordenar todo lo de un vehículo caliente. En la unidad de logística, lo que abre un panel o «Ver todos» lleva a la ficha con eso abierto, mientras «Quitar interés» y «Cotizar» se hacen en el lugar.
 - **«Relacionados» sin ruido: en una línea en los drawers y en logística, compacto en las fichas; un grupo vacío no se dibuja.** Dos presentaciones, que cada lugar nombra (`presentacion` sin valor por defecto): la línea de chips con un popover por grupo (página de la unidad de logística y drawer de gastos: ahí un bloque alto no cabe sin desplazar) y la compacta (las dos columnas de las fichas). Los chips y el popover son de `vehiculos`; `logistica` no los conoce. En la compacta la leyenda es el `title` del título y la descripción del grupo para el lector, sin ícono de ayuda (tres íconos son ruido y un popover de ayuda suma JS); las acciones del grupo, en su «⋯». Las de un grupo que no se dibuja van al «⋯» «Relacionados» (`accionesFueraDeLosGrupos()`); con todo vacío se ve la frase y una sola acción (la primera, vincular) y el resto va al «⋯». El popover de un chip conserva la leyenda y los botones: es a pedido. Descartadas: una pestaña propia (suma navegación y pierde el vistazo), una sección plegada (esconde los conteos y suma un toque), una barra lateral (no existe en el celular), chips también en las fichas (ahí hay lugar: las filas a la vista ahorran un toque) y tres tarjetas con los vacíos colapsados (siguen repitiendo leyendas y botones).
-- **La ficha del vehículo, en dos columnas: lo clave a la izquierda** (el marco y el criterio de la del lead). A la izquierda, pegajosa, sólo lo clave y
+- **La ficha del vehículo, en dos columnas: lo clave a la izquierda** (el marco y el criterio de la del lead). A la izquierda, con su propio desplazamiento (ver «La ficha en dos columnas: la página quieta, cada columna por dentro»), sólo lo clave y
   lo que sirve para mostrarle el vehículo a un cliente: la foto con su tira de miniaturas y, sobre su esquina, la vitrina y el «⋯» (como en la tarjeta de
   la lista; «Editar» va en el «⋯»), título, número, origen, situación y los enlaces cortos a logística y repuestos; después «Cotización aprobada»,
   «Subasta» (una frase con color y cuenta en vez de una tabla de datos) y «Datos principales» (sólo los datos clave del origen) con «Ver más», que abre la
@@ -340,7 +340,7 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### Listas, embudos y plantillas
 
-- **La ficha del lead en dos columnas: la izquierda, lo clave; la derecha, cuatro bloques compactos en orden de uso.** A la izquierda, pegajosa (`minmax(0, 24rem)`, se desplaza
+- **La ficha del lead en dos columnas: la izquierda, lo clave; la derecha, cuatro bloques compactos en orden de uso.** A la izquierda (`minmax(0, 24rem)`, se desplaza
   sola si no cabe), lo que identifica, como la ficha del vehículo: el nombre con el «⋯» arriba a la derecha (sin «Cotizar» ni «Editar» sueltos: están en
   el «⋯»), quién lo tiene en una línea bajo el nombre, los datos clave del lead (tipo, origen, país, teléfono principal y «Notas» a lo ancho) con «Ver más»
   (un modal por la URL, `?ver=datos`, con los grupos del layout y los teléfonos), «Quién lo tiene» con «Compartir» y «Transferir» a todo el ancho y
@@ -371,6 +371,7 @@ las trampas, en `docs/LECCIONES.md`.
   todas las acciones (vuelve el ruido de botones), un mini kanban de oportunidades (crece sin tope y repite el embudo), acordeones (esconden y suman toques), tres columnas
   (no entran a 1280 px con la lateral de la app), el índice a la izquierda (compite con la columna de datos), el portal al final de la derecha (alarga la
   tarea de oro: había que pasar por el índice o bajar) y un bloque «Vehículos» aparte de Relacionados (dibujaba lo mismo dos veces).
+- **La ficha en dos columnas: la página quieta, cada columna por dentro.** Desde 56 rem de contenedor (`@container/ficha`) la ficha mide el alto de la ventana bajo la barra superior y el relleno de `<main>` (`calc(100dvh - var(--topbar) - 3rem)`, `ALTO_DE_LA_FICHA`, con un mínimo de 28 rem: una ventana muy baja vuelve a desplazar la página antes que aplastar las columnas); lo que va arriba (volver, avisos) ocupa su alto natural y las dos columnas, el resto. La izquierda se desplaza sola si no cabe; la derecha lleva el índice quieto arriba y sus bloques se desplazan debajo. Cada columna con desborde recibe `tabindex="0"`, `role="region"`, su nombre y su pista de degradado (la derecha con el fondo de la página, la izquierda con el de la tarjeta). «Ir al bloque» (`irAlBloque()`, `?seccion=`) desplaza la columna que lleva el bloque (un bloque queda 1 rem bajo su borde: el índice ya no tapa nada) y el bloque a la vista se mide sobre esa columna. Cada columna recuerda su posición por ruta mientras dure la pestaña (se guarda al desplazar y se repone al montar o al volver a mostrarse la pantalla, insistiendo mientras llega el contenido, salvo que otro ya la moviera o la persona hiciera algo). Por debajo de 56 rem (el celular y el texto al 200 %) una sola columna con el desplazamiento de la página y el índice pegajoso, como antes. Reemplaza lo de «pegajosa»: la izquierda ya no se pega, porque la página no se mueve. Con el banner de «ver como» (que ocupa 2,25 rem en el flujo) la página se desplaza ese poco: es un aviso de quien se hace pasar por otra persona, no el uso normal. Descartado: columnas `sticky` con la página desplazándose (lo que había: la persona perdía la izquierda al bajar y el índice dependía de la ventana); un alto fijo en `src/app` como el de la unidad de logística (la ficha es un marco compartido: sabe su alto sin que cada pantalla lo repita).
 - **Los teléfonos de la ficha son de sólo lectura; se editan en el panel de edición.** Así no hay dos lugares para lo mismo y no se pierde ningún permiso:
   «Cambiar el principal» pasa al bloque de teléfonos del panel (sólo en la ficha; con algo escrito en el formulario se apaga: cambiar el número mueve la
   versión y dejaría la edición con la vieja) y quien sólo tiene `leads.telefonos_extra.editar` abre el mismo panel en «modo teléfonos». Un
@@ -473,14 +474,17 @@ las trampas, en `docs/LECCIONES.md`.
   `cotizaciones_vehiculo_creado_idx`, desde el cursor) y sin cursor ninguna; si la lectura llegó al final, el conteo sale de lo leído. Con 2.020 leídas sin llenar
   la página, `cortada` y «Seguir buscando».
 - **Con búsqueda, se agrupa la página.** `cotizaciones_buscar()` tiene sus propias fuentes y su tope: agrupar en la base duplicaría cada una. La página junta las de
-  su vehículo (la cabeza, la aprobada si está entre ellas) y el conteo es el de esa página; el despliegue busca con el mismo texto y el vehículo.
-- **El despliegue de un grupo son líneas compactas, no tarjetas.** La de la tarjeta primero («En la tarjeta», para poder compararla) y las demás con casilla,
-  número y título, «Final», total, autor y vigencia; sin cliente (es el mismo vehículo) ni «⋯» (las acciones están arriba de su resumen): no se paga un menú ni un
-  nombre de lead por línea. Se lee desde el navegador al desplegar (como «De este vehículo») con los filtros de la página. La insignia «Aprobada» no va en las
-  líneas: la aprobada que coincide ya es la cabeza.
+  su vehículo (la cabeza, la aprobada si está entre ellas) y el conteo es el de esa página; el modal del grupo busca con el mismo texto y el vehículo.
+- **Las cotizaciones de un grupo se abren en un modal, en líneas compactas, no desplegadas ni en tarjetas.** Lo pidió la persona: el despliegue en el lugar movía la
+  lista y la hacía larga. El modal (`?panel=cotizaciones-del-vehiculo&vehiculo=<id>`) lleva la aprobada primero (con su insignia «Aprobada»; es la cabeza del grupo) y las demás con casilla,
+  número y título, «Final», total con su modo, autor y vigencia; sin cliente (es el mismo vehículo) ni «⋯» (las acciones están arriba de su resumen): no se paga un menú ni un
+  nombre de lead por línea. Se lee desde el navegador al abrir (como «De este vehículo») con los filtros de la página; el modo, por `cotizaciones_modos_de()` (una llamada por página de 10).
+  `?vehiculo=` es también el filtro del listado: con ese panel la página no lo lee como filtro, para que la lista de atrás siga agrupada. «Comparar» va en el pie del modal: sus
+  elegidas viven en el hueco `Comparar`, que envuelve al modal; una línea lo cierra y abre su resumen en un solo paso. Sin la cabeza (el enlace abre un grupo que no está en la página)
+  el modal sale sin la aprobada primera y con el título genérico: leerla pediría otra lectura del servidor por un caso raro.
 - **El resumen de la cotización lleva arriba sus acciones.** «Abrir cotización» (la principal), «Compartir cotización» y el «⋯» con la lista única de la fila sin
   «Compartir» (ya está a la vista), los mismos `menuDeFila` y `compartirDe` de la tarjeta: una sola lista de acciones. La cotización del resumen que no está en la
-  página (una línea de un grupo desplegado, otra página) entra a los menús con `conLaDelResumen()`: un id más en las tres lecturas por clave primaria de las marcas.
+  página (una línea del modal de un grupo, otra página) entra a los menús con `conLaDelResumen()`: un id más en las tres lecturas por clave primaria de las marcas.
   Los diálogos del listado se dibujan dentro del Drawer mientras está abierto y su código ya llegó (un modal hermano cuenta como un clic afuera y lo cierra) y en el
   listado si no (así un `?panel=` de la URL no espera al chunk del resumen): un solo montaje a la vez. El panel es `ancho="amplio"`: con el normal (3/4 del celular) no caben «Abrir» y «Compartir» mitad y mitad con el «⋯» a 44 px. Barra pegajosa no:
   le quita alto a la portada en un panel corto. Enviar a la papelera desde ese «⋯» deja el resumen abierto: al refrescarse dice que ya no está disponible y
@@ -499,6 +503,22 @@ las trampas, en `docs/LECCIONES.md`.
 
 - **Grafo versionado validado en SQL.** Lista de nodos con operaciones cerradas; `validar_formula()` y `evaluar_formula()` son espejo exacto de `validar.ts`/`evaluar()` con corpus de paridad; un borrador y una publicada por origen; snapshot por cotización. Se escribe como texto compilado al grafo.
 - **`HOY()` no se admite** (lo decidió la persona): el compilador da `hoy_no_soportado`. Si una fórmula real lo pide, compila a un nodo `fecha_cotizacion` congelado con la cotización, con paridad TS/SQL.
+- **El SI con condición es otra operación, `elegir`; el `si` de una bandera no cambia.** `si` depende de su `condicion`, que es una bandera y además el
+  interruptor del nodo: ampliarlo a una condición cualquiera y a una rama «si no» lo volvía de dos formas, con chequeos cruzados en Zod y en SQL y otro
+  orden del primer rechazo. `SI(bandera; x)` sigue compilando al `si` de siempre; `SI(condición; x[; y])` y `SI(bandera; x; y)` compilan a `elegir`, y la
+  persona escribe SI en los dos casos. Un `elegir` no es condición de otro (`SI(SI(…); …)` como prueba es un error): una condición vale 1 o 0 y un
+  `elegir` vale lo que valga su rama.
+- **La rama no elegida de un SI no esconde sus faltantes.** Las dos ramas son nodos del grafo y se evalúan siempre (una pasada, sin cortocircuito): el
+  valor es el de la rama elegida, pero el faltante de la otra queda en `faltantes`. Un SI no vuelve opcional un input; para eso están `condicion` y
+  `requerido_si`.
+- **Las comparaciones, Y y O auxiliares son `raw`** (valen 1 o 0, no un monto), y también la raíz de una fila nueva que es una de ellas; una fila que ya
+  existía conserva su formato. La validación no exige `raw`: es lo que escribe el compilador, no una regla de la base.
+- **BUSCARV compila a los nodos `tabla` y `tramo` que ya existen y se revisa contra el catálogo del origen.** No hay un nodo nuevo ni un cálculo nuevo en
+  la base: la exacta busca por la primera columna de la tabla y la de tramo por `desde`/`hasta`. El catálogo (clave y columnas de las tablas del origen
+  y las compartidas, con la del origen ganando como al calcular) lo lee el área `formula` en el servidor con su propia consulta, porque un área no
+  importa otra; si falla, sólo BUSCARV dice `tablas_sin_leer` y lo demás se edita igual.
+- **El ejemplo de un mensaje del compilador usa el nombre que la persona escribió** (`SI necesita una condición, por ejemplo remate>1000.`), nunca una
+  referencia A1: en la fórmula no hay celdas.
 - **Sin «Sugerido: X» junto a un valor modificado.** La celda muestra el override con anillo y ↺, que lo quita. Si se reabre, `evaluar()` y `evaluar_formula()` devuelven `sugeridos[id]` sólo de nodos con override.
 - **Publicar sin pisar el borrador.** El ⚙ y revertir publican la N+1 desde la publicada (`_publicar_version()`, candado por origen); publicar un borrador atrasado da PT409 con quién publicó; revertir a un nivel retirado se rechaza.
 - **Versión esperada del borrador.** `formula_guardar_borrador`, `_descartar_` y `_publicar` la llevan al final con `default null`, sin sobrecargas; en guardar, nula = crear. Guardar devuelve `{id, actualizado_en}` y el editor sigue sin releer.
@@ -594,6 +614,11 @@ las trampas, en `docs/LECCIONES.md`.
   sola página A4 (1 px = 0,75 pt); ninguno agranda. El total de la tarjeta es el de los totales y, con «Ver total Bs», lleva la moneda local en un segundo
   renglón (no hay variable ni `ocultar_si` que exprese «Ver total Bs»). «Vencida» sale de la tarjeta: es un aviso de trabajo y va en los del modal.
   «Copiar texto» sale de la misma geometría.
+- **La celda logo dibuja sólo el logo, a la medida de la celda.** `contain` dentro de la celda menos su relleno, alineado por `alinear` y
+  `alinear_vertical`, igual en el HTML, el PDF y la imagen (`cajaDelLogo()`); el nombre de la empresa es otro dato, «Nombre de la empresa». Lo que react-pdf o
+  satori no leen (el WebP con que se suben los logos, un SVG con estilos) lo convierte a PNG el servidor con `sharp` al dibujar, hasta 1.024 px, como el tope
+  de un logo raster; un SVG que nombra otro archivo no se dibuja (leería algo sin tope ni espera). Convertir al dibujar y no al subir deja servir los logos
+  ya subidos sin migrarlos. Si el logo no carga en el lienzo del editor, el editor lo avisa con «Abrir Empresa».
 - **Con qué nace el editor de plantilla:** el borrador; si no hay (o no se lee), copia de la publicada; si no, la omisión. Una versión ilegible no se edita a
   medias. El editor escribe **sólo la forma 2**: una forma 1 se alinea con la fórmula y se convierte al abrirla, lo dice y no se guarda sola; si lo
   convertido no entra en la grilla (120 filas, 1.000 celdas), se toman los primeros 4 miembros de cada grupo y, si tampoco, sólo el total. El PT409 no dice
@@ -609,6 +634,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Publicar…» queda a la vista** junto a «Guardar borrador» (cambia la imagen que recibe el cliente, como en V1) y «Descartar borrador…» va al «⋯».
 - **El menú contextual del lienzo sale de `DropdownMenu`** con un disparador invisible sobre la celda: no se suma un `context-menu` a `shared/ui`.
 - **Un rechazo de publicar con su `donde`** (una celda, fila o columna) ofrece «Ir a la celda», que lo elige en el lienzo.
+- **Con el lienzo de la tarjeta a la vista, la página reserva el canal de su barra** (`html:has([data-lienzo-marco])`, sólo esa pantalla: en las demás no
+  hace falta y con barras clásicas restaría unos 15 px), y «Ajustar» deja 8 px a la derecha de la tarjeta para el borde de la última columna
+  (`MARGEN_DEL_LIENZO.derecha`). Sin `setTimeout` ni histéresis: un margen de escala dejaría la tarjeta desbordando al cambiar la ventana.
 - **Guardar la tarjeta no remonta el editor:** lo elegido y el historial de deshacer siguen; la `key` del editor cambia sólo con una versión que no es la
   que acaba de guardar (la de otra persona tras «Recargar», ninguna tras publicar o descartar). «Hay cambios» compara sin el orden de las claves.
 - **El tope del primer HTML de la pestaña «Tarjeta» se fija con la cuadrícula más grande** (16 × 120 y lo que entra en 24 KiB, con 500 miembros): el

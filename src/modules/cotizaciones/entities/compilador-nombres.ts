@@ -26,7 +26,13 @@ export type ContextoDeCompilacion = {
   // Las constantes que ya existen (sus claves reservan nombres).
   params: Readonly<Record<string, number>>
   destino: DestinoDeCompilacion
+  // Las tablas de referencia que BUSCARV puede nombrar (las del origen y las compartidas, la del origen antes), con las claves de sus
+  // columnas en su orden; null o sin dar si no se pudieron leer.
+  tablas?: CatalogoDeTablas
 }
+
+export type TablaDelCatalogo = { clave: string; columnas: readonly string[] }
+export type CatalogoDeTablas = readonly TablaDelCatalogo[] | null
 
 export type Nombres = {
   porId: ReadonlyMap<string, Nodo>
@@ -37,6 +43,8 @@ export type Nombres = {
   // Todo id que una fila nueva no puede tomar.
   ocupados: ReadonlySet<string>
   destino: DestinoDeCompilacion
+  // Las columnas de cada tabla, por clave; null sin catálogo.
+  tablas: ReadonlyMap<string, readonly string[]> | null
   m: Medidor
 }
 
@@ -62,6 +70,13 @@ export function crearNombres(ctx: ContextoDeCompilacion, m: Medidor): Nombres {
   }
   for (const clave of recorrer(Object.keys(ctx.params), m)) ocupados.add(clave)
   const grupos = new Set<string>(recorrer(ctx.grupos, m))
+  let tablas: Map<string, readonly string[]> | null = null
+  if (ctx.tablas !== undefined && ctx.tablas !== null) {
+    tablas = new Map()
+    // La primera con cada clave: el catálogo trae la del origen antes que la compartida.
+    for (const t of recorrer(ctx.tablas, m))
+      if (buscar(tablas, t.clave, m) === undefined) tablas.set(t.clave, t.columnas)
+  }
   return {
     porId,
     posteriores,
@@ -70,6 +85,7 @@ export function crearNombres(ctx: ContextoDeCompilacion, m: Medidor): Nombres {
     conMiembrosPosteriores,
     ocupados,
     destino: ctx.destino,
+    tablas,
     m,
   }
 }
@@ -89,8 +105,23 @@ function pareceA1(s: string): boolean {
   return i > digitos && i === s.length
 }
 
-// Qué es un nombre suelto del texto. `permiteVariante`: el primer argumento de SI, donde la variante es «no es una bandera»
-// y no «no se usa en un cálculo».
+// Lo que dice el error de la variante leída como un número: su id y una de sus opciones, para el ejemplo del mensaje.
+export const datosDeVariante = (nodo: Nodo): DatosDeError => ({
+  nombre: nodo.id,
+  ...(nodo.tipo === 'opcion' && nodo.opciones[0] !== undefined
+    ? { texto: nodo.opciones[0].clave }
+    : {}),
+})
+
+// Si la variante tiene una opción con esa clave.
+export function tieneOpcion(nodo: Nodo, clave: string, m: Medidor): boolean {
+  if (nodo.tipo !== 'opcion') return false
+  for (const o of recorrer(nodo.opciones, m)) if (o.clave === clave) return true
+  return false
+}
+
+// Qué es un nombre suelto del texto. `permiteVariante`: donde la variante se compara (`variante="a"`) o donde va una condición
+// (ahí el error es «no es una condición» y no «no se usa en un cálculo»).
 export function resolverNombre(
   nombres: Nombres,
   texto: string,
@@ -100,7 +131,8 @@ export function resolverNombre(
   if (texto === nombres.destino.id) return { codigo: 'ciclo', datos }
   const nodo = buscar(nombres.porId, texto, nombres.m)
   if (nodo !== undefined) {
-    if (nodo.tipo === 'opcion' && !permiteVariante) return { codigo: 'variante_en_calculo', datos }
+    if (nodo.tipo === 'opcion' && !permiteVariante)
+      return { codigo: 'variante_en_calculo', datos: datosDeVariante(nodo) }
     return { nodo }
   }
   if (esta(nombres.posteriores, texto, nombres.m))

@@ -6,10 +6,10 @@ import {
   casoAlAzar,
   CONTEXTO,
   imprimir,
-  oraculo,
   type Caso,
   type Expr,
 } from './compilador-generador'
+import { oraculo } from './compilador-oraculo'
 import { evaluar } from './motor'
 import { esquemaEntrada } from './motor-entrada'
 import { validarFormula } from './validar'

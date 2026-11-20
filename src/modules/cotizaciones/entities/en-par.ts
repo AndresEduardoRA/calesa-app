@@ -3,7 +3,8 @@
 // de la hoja no cambia al tipear. Una sola pasada en el orden de la lista (un nodo sólo nombra lo anterior). Espejo de `_nodos_en_par()` de la base, con el
 // juego `casos-de-en-par.json` (Vitest y `supabase/tests/areas/formula/en-par.sql`). Puro.
 import type { Definicion } from './formula'
-import { referenciasDe, soloEnDe, type Nodo, type NodoOpcion } from './nodos'
+import { soloEnDe, type Nodo, type NodoOpcion } from './nodos'
+import { referenciasDe } from './nodos-referencias'
 
 export const varianteEnPar = (definicion: Pick<Definicion, 'nodos'>): NodoOpcion | undefined =>
   definicion.nodos.find((n): n is NodoOpcion => n.tipo === 'opcion' && n.en_par === true)

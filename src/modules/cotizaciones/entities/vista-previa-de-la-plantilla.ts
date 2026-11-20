@@ -35,7 +35,12 @@ export type GeometriaParaEditar = {
 export type EscalaDelLienzo = 'ajustar' | 'real'
 
 // El espacio que la capa necesita alrededor de la tarjeta, en px sin escalar: arriba las cabeceras de columna y a la izquierda las asas de fila.
-export type MargenDelLienzo = { readonly arriba: number; readonly izquierda: number }
+export type MargenDelLienzo = {
+  readonly arriba: number
+  readonly izquierda: number
+  // A la derecha de la tarjeta: el lugar del borde de la última columna, que se arrastra (sin él, «Ajustar» desborda el marco de costado).
+  readonly derecha?: number
+}
 
 export type PropsDelLienzoDeLaPlantilla = {
   readonly lectura: LecturaEnCuadricula
@@ -47,4 +52,6 @@ export type PropsDelLienzoDeLaPlantilla = {
   readonly capa?: (g: GeometriaParaEditar, escala: number) => ReactNode
   // Lo que va debajo (las filas ocultas con esta referencia).
   readonly debajo?: (g: GeometriaParaEditar) => ReactNode
+  // El logo de la empresa no se pudo dibujar (la imagen no cargó): el editor lo avisa.
+  readonly alFallarElLogo?: () => void
 }

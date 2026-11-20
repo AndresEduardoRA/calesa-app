@@ -154,6 +154,7 @@ export const CONTEXTO_DE_PRUEBA = {
   cliente: null,
   vehiculo: { titulo: 'Toyota Hilux 2022', lote: null, vin: null },
   venceEl: null,
+  empresa: 'Calesa',
   logo: { nombre: 'Calesa', url: 'https://ejemplo.com/logo.png' },
 }
 

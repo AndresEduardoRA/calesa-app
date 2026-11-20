@@ -1,8 +1,9 @@
 'use client'
 
-import type { ComponentType } from 'react'
+import { useState, type ComponentType } from 'react'
 import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
 import type { PropsDelEditor } from '../../../../entities/plantilla/props-del-editor'
+import { referenciaUsada } from '../../../../entities/plantilla/referencia-del-lienzo'
 import type { ReferenciaDeLaTarjeta } from '../../../../entities/referencia-de-la-tarjeta'
 import type { PropsDelLienzoDeLaPlantilla } from '../../../../entities/vista-previa-de-la-plantilla'
 import { useEditorDeLaCuadricula } from '../../hooks/use-editor-de-la-cuadricula'
@@ -27,6 +28,25 @@ export type PropsDelEditorDeLaCuadricula = PropsDelEditor & {
   alGuardar: (esperada: string) => void
   alPublicar: () => void
   alDescartar: () => void
+  // `empresa.ajustes.gestionar`: el aviso del logo que no se dibuja abre Empresa.
+  puedeCambiarElLogo: boolean
+}
+
+// El logo de la referencia que no cargó: se avisa mientras el lienzo dibuja esa misma URL (con las cifras de ejemplo no hay imagen).
+function useLogoRoto(referencia: PropsDelEditorDeLaCuadricula['referencia'], ejemplo: boolean) {
+  const url = referenciaUsada(referencia, ejemplo)?.contexto.logo?.url ?? null
+  const [rota, setRota] = useState<string | null>(null)
+  return { roto: url !== null && rota === url, alFallar: () => setRota(url) }
+}
+
+// Lo que el editor anuncia al lector de pantalla; la misma frase dos veces seguidas se distingue con un espacio de ancho cero.
+function AnuncioDelEditor({ anuncio }: { anuncio: { texto: string; vez: number } }) {
+  return (
+    <p role="status" className="sr-only" data-anuncio-del-editor="">
+      {anuncio.texto}
+      {anuncio.vez % 2 === 1 ? '​' : ''}
+    </p>
+  )
 }
 
 // El editor de la tarjeta como Excel: el encabezado con las versiones, los avisos, la barra y el lienzo (la tarjeta a escala, dibujada por el área `tarjeta`, con la capa
@@ -51,6 +71,7 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
   })
   const ocupado = guardar.enCurso || guardar.entro || guardar.recargando
   const lienzo = useLienzoDelEditor({ editor, contexto, tonos, irA: props.irA })
+  const logo = useLogoRoto(props.referencia, props.ejemplo)
   return (
     <section
       aria-label="Editor de la tarjeta"
@@ -83,6 +104,8 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
         paraPublicar={editor.rechazoParaPublicar?.mensaje ?? null}
         guardar={guardar}
         hrefVer={rutaDeConfiguracionDeCotizacion(origen.id, 'tarjeta')}
+        logoRoto={logo.roto}
+        puedeCambiarElLogo={props.puedeCambiarElLogo}
       />
       <div className="grid min-w-0 gap-4 @[56rem]/editor:grid-cols-[minmax(0,1fr)_20rem]">
         <ZonaDelLienzo
@@ -94,6 +117,7 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
           ejemplo={props.ejemplo}
           alElegirReferencia={props.alElegirReferencia}
           Lienzo={props.Lienzo}
+          alFallarElLogo={logo.alFallar}
         />
         <PanelDelEditor
           editor={editor}
@@ -104,10 +128,7 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
           enfoque={lienzo.enfoque}
         />
       </div>
-      <p role="status" className="sr-only" data-anuncio-del-editor="">
-        {editor.estado.anuncio.texto}
-        {editor.estado.anuncio.vez % 2 === 1 ? '​' : ''}
-      </p>
+      <AnuncioDelEditor anuncio={editor.estado.anuncio} />
     </section>
   )
 }

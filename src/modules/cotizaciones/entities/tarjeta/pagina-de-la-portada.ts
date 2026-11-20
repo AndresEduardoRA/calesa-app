@@ -1,6 +1,6 @@
 // Lo que la portada de una guardada sabe de la página, como lo arman la página y la ruta del PDF: el título guardado (sin el de respaldo «Cotización n.º N»), el
 // cliente, el vehículo y el asesor del contexto (el de la compartida o el de quien pide), el número, el vencimiento, el último guardado (el texto de la base, sin
-// pasar por `Date`) y el logo. Sin I/O.
+// pasar por `Date`) y el nombre y el logo de la empresa. Sin I/O.
 import type { HojaDeUnaGuardada } from '../hoja-de-una-guardada'
 import { tituloAparteDelNumero, tituloDeLaCotizacion } from '../titulo-de-la-cotizacion'
 import type { PaginaDeLaTarjeta } from './contexto-de-la-cotizacion'
@@ -9,10 +9,12 @@ import type { ContextoCompartido } from './portada'
 export function paginaDeLaPortada({
   hoja,
   contexto,
+  empresa,
   logo,
 }: {
   hoja: Pick<HojaDeUnaGuardada, 'cotizacion' | 'venceEl'>
   contexto: ContextoCompartido
+  empresa: PaginaDeLaTarjeta['empresa']
   logo: PaginaDeLaTarjeta['logo']
 }): PaginaDeLaTarjeta {
   const { cotizacion } = hoja
@@ -30,6 +32,7 @@ export function paginaDeLaPortada({
     numero: cotizacion.numero,
     venceEl: hoja.venceEl,
     guardadaEl: cotizacion.actualizadoEn,
+    empresa,
     logo,
   }
 }

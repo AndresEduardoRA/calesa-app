@@ -38,7 +38,12 @@ export async function armarLaPortada(
     lectura: lectura.data,
     // El día del último guardado y el del vencimiento, en la zona de la empresa: lo mismo que la vista previa de esa guardada y que su PDF.
     contexto: contextoDeLaPagina(
-      paginaDeLaPortada({ hoja, contexto, logo: url === null ? null : { nombre, url } }),
+      paginaDeLaPortada({
+        hoja,
+        contexto,
+        empresa: nombre,
+        logo: url === null ? null : { nombre, url },
+      }),
       { zona: zonaHoraria, hoy: hoja.cotizacion.actualizadoEn },
     ),
     locale,

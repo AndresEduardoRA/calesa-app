@@ -52,6 +52,7 @@ async function leer(origenId: string, permisos: Permisos): Promise<ReferenciaDeL
       numero: hoja.cotizacion.numero,
       venceEl: hoja.venceEl,
       guardadaEl: hoja.cotizacion.actualizadoEn,
+      empresa: nombre,
       logo: url === null ? null : { nombre, url },
     },
     { zona: zonaHoraria, hoy: hoja.cotizacion.actualizadoEn },
