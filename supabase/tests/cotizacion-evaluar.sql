@@ -1,6 +1,6 @@
 -- cotizacion_evaluar() contra evaluar_formula() (paso 4.06, prompt 2; docs/COTIZADOR.md › «En la base»).
 -- `scripts/probar-schema.mjs` carga antes los JSON en tablas temporales (la base no lee archivos del repo):
---   _corpus_del_motor ← supabase/tests/corpus-del-motor.json (el juego de 84 casos, el corpus diferencial y las fórmulas)
+--   _corpus_del_motor ← supabase/tests/corpus-del-motor.json (el juego de 90 casos, el corpus diferencial y las fórmulas)
 -- La paridad: para cada caso REPRODUCIBLE se siembran en la base lo que `cotizacion_evaluar()` lee (la fórmula publicada del origen, sus
 -- tablas con `orden` = la posición de la fila, los tipos de cambio, el vehículo con sus campos) y se llama con lo que la persona tipea
 -- (inputs, banderas, overrides, variante). Tiene que dar EXACTAMENTE lo que `evaluar()` da con la entrada entera: el resultado, o el
@@ -170,7 +170,7 @@ begin
   return next;
 end $$;
 
--- @test cotizacion_evaluar: el juego de 84 casos y el corpus dan lo mismo que evaluar_formula() con la entrada entera
+-- @test cotizacion_evaluar: el juego de 90 casos y el corpus dan lo mismo que evaluar_formula() con la entrada entera
 begin;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
 do $$

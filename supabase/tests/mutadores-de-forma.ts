@@ -1,6 +1,7 @@
 // Los mutadores del corpus diferencial que rompen la forma (el Zod de nodos.ts y formula.ts; §0 de `validar_formula()`). Hay uno
-// por cada comprobación marcada `/*Fnn*/` en la migración `…004900`, y cada uno deja ese defecto solo en su nodo: así, con esa
-// comprobación apagada (la prueba de mutación), el caso cambia.
+// por cada comprobación marcada `/*Fnn*/` en `_formula_forma_nodo()` y `_formula_forma()`, y cada uno deja ese defecto solo en su
+// nodo: así, con esa comprobación apagada (la prueba de mutación), el caso cambia. Los de las operaciones de condición, en
+// `mutadores-de-forma-condiciones.ts`.
 import {
   definicionDe,
   elegir,
@@ -21,7 +22,7 @@ import {
 const DE_VALOR = esTipo('input', 'constante', 'tabla', 'tramo', 'calculo')
 
 // Cambia un nodo que cumple `filtro`.
-const enNodo = (
+export const enNodo = (
   nombre: string,
   filtro: (n: Objeto) => boolean,
   cambio: (n: Objeto) => void,
@@ -36,7 +37,7 @@ const enNodo = (
 })
 
 // Inserta un nodo con la forma completa salvo su defecto (sus referencias no importan: la forma va antes).
-const conNodo = (nombre: string, nodo: Objeto): Mutador => ({
+export const conNodo = (nombre: string, nodo: Objeto): Mutador => ({
   nombre,
   aplicar: (f, azar) => {
     if (listaDe(f).length === 0) return null
@@ -76,7 +77,7 @@ const opciones = [
   { clave: 'a', etiqueta: 'A', titulo: 'Opción A' },
   { clave: 'b', etiqueta: 'B', titulo: 'Opción B' },
 ]
-const calculo = (op: string, resto: Objeto): Objeto => ({
+export const calculo = (op: string, resto: Objeto): Objeto => ({
   id: `mut_${op}`,
   tipo: 'calculo',
   op,

@@ -67,9 +67,9 @@ describe('corpus-del-motor.json', () => {
     )
   })
 
-  it('el juego son los 84 casos de casos-del-motor.json, y todos se evalúan', () => {
+  it('el juego son los 90 casos de casos-del-motor.json, y todos se evalúan', () => {
     expect(corpus.juego.map((c) => c.nombre)).toEqual(juego.casos.map((c) => c.nombre))
-    expect(corpus.juego).toHaveLength(84)
+    expect(corpus.juego).toHaveLength(90)
     for (const c of corpus.juego) expect(Object.keys(c.esperado), c.nombre).toEqual(['resultado'])
   })
 
