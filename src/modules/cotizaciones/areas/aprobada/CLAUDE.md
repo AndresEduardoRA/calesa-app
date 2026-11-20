@@ -30,8 +30,8 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
   hoja (`Debajo`), Server Components tras `<Suspense>` que leen `leerOtrasDelVehiculo()` (las otras del vehículo con `limit 101` por PostgREST, `cache()`:
   la comparten); sin otras, sin vehículo visible o si falla, nada. La lista es una isla que pide su código y su primera página al acercarse
   (`al-acercarse.tsx` → `diferidos.tsx`) y lee desde el navegador por `composicion.client.ts` (`cotizaciones_de_este_vehiculo`, de a 10 hasta 100;
-  `useDeEsteVehiculo`, con `ultimo` como único guardián). En el resumen del listado entra por `pantallas/aprobada-resumen.ts` (sólo la cáscara) con
-  `conTitulo`. La aprobada va primero (`filasALaVista()`: la fijada, sin repetir), «Esta» la que se mira, y **«Aprobar esta»** en las demás: el servidor manda
+  `useDeEsteVehiculo`, con `ultimo` como único guardián). En el resumen entra por `pantallas/aprobada-resumen.ts` (sólo la cáscara) como la quinta pestaña «De este vehículo» (`?pestana=vehiculo`; sin `conTitulo`: la pestaña es el título;
+  con `vacio`, «Ésta es la única cotización de este vehículo.»). La aprobada va primero (`filasALaVista()`: la fijada, sin repetir), «Esta» la que se mira, y **«Aprobar esta»** en las demás: el servidor manda
   dónde aprueba quien mira (`aprobarEn`, de `origenesCon`) y `motivoParaNoAprobarEsta()` da el motivo (el permiso del origen y después inválida, como la base).
   Aprobar usa `aprobarLaCotizacion()` (su `alCambiar` recibe además el id que quedó aprobado); tras entrar o deshacer el bloque relee su primera página y
   avisa a las otras islas del vehículo (`hooks/aprobada-del-vehiculo.ts`: `avisarAprobada()`, `useAlCambiarLaAprobada()`), así «Aprobar» de la cabecera se

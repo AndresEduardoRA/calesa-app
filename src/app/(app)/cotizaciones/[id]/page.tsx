@@ -30,6 +30,7 @@ import { idDeUrl, type Quien } from '../vehiculo-de-la-hoja'
 import { HUECOS_DE_LA_GUARDADA, dibujarHuecos } from './huecos-de-la-guardada'
 import { HojaDeLaGuardada, LaHermana } from './hoja-de-la-guardada'
 import { esHermanaSola, leerElParDeLaGuardada } from './par-de-la-guardada'
+import { VolverALaFicha } from './volver-a-la-ficha'
 import { barraDeLaCabecera, ConElTituloDeLaGuardada } from './titulo-de-la-guardada'
 import { leerLoDelVehiculo } from './vehiculo-de-la-guardada'
 
@@ -172,6 +173,7 @@ async function Cotizacion({
     <>
       <RegistrarVisita tipo="cotizacion" id={hoja.cotizacion.id} />
       <RegistrarVisto modulo="cotizaciones" tipo="cotizacion" id={hoja.cotizacion.id} />
+      <VolverALaFicha parametros={url} />
       <ProveedorDelMenuDeLaGuardada>
         <ConElTituloDeLaGuardada
           hoja={hoja}

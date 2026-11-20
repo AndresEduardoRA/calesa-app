@@ -1,0 +1,80 @@
+'use client'
+
+import { useRouter } from 'next/navigation'
+import type { ReactNode } from 'react'
+import type {
+  CompartirDe,
+  MenuDeFila,
+  MenuDeUnaFila,
+} from '@/modules/cotizaciones/pantallas/listado'
+import { DialogosDeMarcasDeLaFila } from '@/modules/cotizaciones/pantallas/comentarios-listado'
+import { DialogoDeMarcarFinalDeLaFila } from '@/modules/cotizaciones/pantallas/final-listado'
+import {
+  DialogoDeCompartirDeLaFila,
+  useAbrirCompartirDeLaFila,
+} from '@/modules/cotizaciones/pantallas/tarjeta-compartir'
+import { useLive } from '@/shared/ui/live'
+import { MenuDeLaFila } from './menu-de-la-fila'
+import { useAccionesDeLaLista } from './use-acciones-de-la-lista'
+
+type Fila = { id: string; numero: number }
+
+// Lo que el listado y el resumen de una ficha comparten de las acciones de una cotización: el «⋯» de cada fila (`menuDeFila`), «Compartir» de la barra del resumen (`compartirDe`, nulo sin
+// la oferta del «⋯» o en Modo Live), el refresco tras aprobar desde «De este vehículo» y los diálogos del «⋯» montados una vez (compartir, marcar final, reportar y moderar:
+// `?panel=…&para=<id>`). `filas` son las cotizaciones sobre las que se ofrece algo; `menus`, lo que el servidor leyó de cada una.
+export function useMenusDeLasFilas(
+  filas: readonly Fila[],
+  menus: Readonly<Record<string, MenuDeUnaFila>>,
+): {
+  menuDeFila: MenuDeFila
+  compartirDe: CompartirDe
+  alCambiarLaAprobada: () => void
+  dialogos: ReactNode
+} {
+  const acciones = useAccionesDeLaLista(filas, menus)
+  const router = useRouter()
+  const { live } = useLive()
+  const abrirCompartir = useAbrirCompartirDeLaFila()
+  return {
+    // «Compartir» de la tarjeta: lo que ofrece su «⋯» (sin Modo Live), con el mismo panel.
+    compartirDe: (fila) =>
+      live || menus[fila.id]?.ofertas.compartir === undefined
+        ? null
+        : () => {
+            abrirCompartir(fila.id)
+          },
+    // Aprobar desde «De este vehículo» del resumen cambia la insignia de otras filas: la pantalla no tiene nada tipeado y se refresca (como «Aprobar» del «⋯»).
+    alCambiarLaAprobada: () => {
+      router.refresh()
+    },
+    menuDeFila: (fila, opciones) => {
+      const menu = menus[fila.id]
+      return menu === undefined ? null : (
+        <MenuDeLaFila
+          cotizacion={fila}
+          menu={menu}
+          sinCompartir={opciones?.sinCompartir === true}
+          conBorde={opciones?.conBorde === true}
+          favorita={acciones.esFavorita(fila.id)}
+          enCurso={acciones.enCurso(fila.id)}
+          acciones={acciones.accionesDe(fila, menu)}
+        />
+      )
+    },
+    dialogos: (
+      <>
+        <DialogoDeCompartirDeLaFila />
+        <DialogoDeMarcarFinalDeLaFila
+          de={(id) => {
+            const fila = filas.find((una) => una.id === id)
+            const oferta = menus[id]?.ofertas.final
+            return fila === undefined || oferta === undefined
+              ? null
+              : { numero: fila.numero, motivo: oferta.motivo }
+          }}
+        />
+        <DialogosDeMarcasDeLaFila datos={acciones.datosDeMarcas} />
+      </>
+    ),
+  }
+}
