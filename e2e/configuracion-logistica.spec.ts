@@ -78,9 +78,14 @@ test('quien gestiona los catálogos ve Puertos, Navieras y Categorías de gasto 
   await page.goto('/configuracion/logistica?seccion=basura')
   await expect(page).toHaveURL(/\/configuracion\/logistica\/puertos$/)
 
-  await page.goto('/configuracion')
+  await page.goto('/configuracion/inicio')
   // El hub es el `main`: la navegación del marco tiene su entrada «Logística» aparte.
-  await expect(page.getByRole('main').getByRole('link', { name: /^Logística/ })).toBeVisible()
+  await expect(
+    page
+      .getByRole('main')
+      .getByRole('region')
+      .getByRole('link', { name: /^Logística/ }),
+  ).toBeVisible()
 })
 
 test('crear, renombrar, desactivar y eliminar una categoría de gasto', async ({ page }) => {

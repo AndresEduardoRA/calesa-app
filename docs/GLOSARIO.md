@@ -229,6 +229,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   (lead, vehículo, cotización, proyecto de repuestos, seguimiento, recordatorio, evento, tarea); `?panel=crear`. El mismo modal filtrado a lo que se agenda (evento, tarea,
   recordatorio: `CLAVES_DE_LA_AGENDA`, `delGrupo()`) lo abre «Nuevo» de la agenda por `?panel=nuevo-en-la-agenda`; un destino con `conservaLaPantalla` sólo escribe su `?panel=`
   si ya se está en esa ruta. No es «Nuevo lead» (la tecla `N` y el drawer, `<AltaDeLead>`).
+- **Buscador de Configuración** — `<BuscadorDeConfiguracion>`, `buscarEnConfiguracion()`, `palabras` de `secciones.ts` / `configuracion/_navegacion`: el campo «Buscar en
+  Configuración» (la tecla `/`) que filtra secciones y sub-secciones por nombre y por palabras clave y dice el camino de cada una; lee el registro, no la
+  base. No es el «Buscador» global (`src/modules/buscador`) ni la «Paleta».
 - **Paleta** — `<Paleta>`, `AccionDeLaPaleta` / `src/modules/buscador`: superposición `Ctrl/Cmd+K` que busca y ejecuta acciones; sin URL; sus
   acciones se ofrecen con `puede()`.
 - **Visto** — `vistos` / `visto_registrar()`, `vistos_de()`, `ProveedorDeMarcasDeVisto`, `MarcasDeVistoDeLaPagina`: un registro que la persona abrió (ficha,

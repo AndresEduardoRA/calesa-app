@@ -13,7 +13,7 @@ import {
 } from './soporte/base'
 import { PREFIJO_CLAVE_E2E, crearOrigenDePrueba } from './soporte/origenes'
 
-// La navegación de Configuración: desde cada sección se vuelve al inicio con «‹ Configuración», el menú de Configuración marca la sección
+// La navegación de Configuración: desde cada sección se vuelve al inicio con «‹ Configuración», el menú de Configuración (también en el inicio) marca la sección
 // actual y salta a otra, quien sólo configura los leads ve sólo «Ventas › Leads», y el inicio dice lo que falta con su enlace al paso.
 
 let duena = ''
@@ -92,10 +92,10 @@ test('E2E desde cada sección del menú se vuelve al inicio de Configuración', 
     await page.goto(ruta)
     await expect(volver(page), ruta).toBeVisible()
     await volver(page).click()
-    await expect(page).toHaveURL('/configuracion')
+    await expect(page).toHaveURL('/configuracion/inicio')
     await expect(tituloDelInicio(page)).toBeVisible()
-    // En el inicio no van ni el menú ni la vuelta: las tarjetas son el menú.
-    await expect(menu(page)).toHaveCount(0)
+    // En el inicio el menú sigue a la vista; la vuelta no va: ya estás en el inicio.
+    await expect(menu(page)).toBeVisible()
     await expect(volver(page)).toHaveCount(0)
   }
 })
@@ -151,7 +151,7 @@ test('E2E el inicio dice qué falta: la fórmula de un origen nuevo, con su enla
 }) => {
   await page.context().clearCookies()
   await entrar(page, cotizadora, { fresco: true })
-  await page.goto('/configuracion')
+  await page.goto('/configuracion/inicio')
   const ventas = page.getByRole('main').getByRole('region', { name: 'Ventas' })
   const falta = ventas.getByRole('link', {
     name: `Falta publicar la fórmula de ${origen.nombre}`,

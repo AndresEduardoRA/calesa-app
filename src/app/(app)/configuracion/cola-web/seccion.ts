@@ -9,6 +9,7 @@ export const SECCION_DE_COLA_WEB = {
   titulo: 'Cola web',
   descripcion:
     'Quién recibe los turnos de la web, las solicitudes sin asignar y la política de la cola.',
+  palabras: ['turnos', 'solicitudes', 'asignar', 'asesores', 'política', 'rueda', 'atención'],
   ruta: RUTAS.configuracionDeColaWeb,
   Icono: HeadsetIcon,
   permisos: ['web.cola.gestionar'],

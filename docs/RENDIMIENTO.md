@@ -637,9 +637,10 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
   (`scripts/guardas/xyflow-diferido.test.ts`). Una sola lectura del flujo (los topes de `leerFlujoParaConfigurar`); hasta 200 cajas y 500
   flechas, con `onlyRenderVisibleElements`.
-- Configuración (`/configuracion/*`), sin tope propio: el layout suma a cada página el menú de Configuración y la cabecera (Server Components) y
-  tres piezas de cliente chicas (la marca del enlace, la vuelta y el `<select>` del selector de sección, ≈ 2 KB); no importa `secciones.ts`, `permisos.ts` ni
-  ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
+- Configuración (`/configuracion/*`, el inicio incluido), sin tope propio: el layout suma a cada página el menú de Configuración y la cabecera (Server
+  Components) y las piezas de cliente chicas (la marca del enlace, la vuelta, el `<select>` del selector de sección y el buscador con su búsqueda, que
+  filtra lo que el menú ya recibe más las `palabras` del registro, ≈ 2 KB más en el HTML); los íconos de las secciones se dibujan en el servidor y no
+  cruzan como código; no importa `secciones.ts`, `permisos.ts` ni ningún barril de módulo. El inicio lee además, por streaming y sólo para quien abre Orígenes, `origenes_resumen()` (decenas de filas; el mismo costo que
   `/configuracion/origenes`) y, con una subasta activa, las integraciones; lo que falta se dibuja hasta 3 por tarjeta. Las sub-secciones plantilla (las
   partes de un origen) suman al menú una pieza de cliente chica que las resuelve con la ruta (`subsecciones-del-menu.tsx`).
 - Configuración › Cotización: cada sub-ruta carga sólo su pantalla (`pantallas/formula|diseno|plantilla|tablas|diseno-colores|configuracion`).

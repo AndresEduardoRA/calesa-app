@@ -186,7 +186,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
   avisos (`data-pie-de-panel`).
 - **[T323]** Configuración › Cotización › General › Colores y Niveles repiten el título de la página en el `h2` de su lista («Colores»,
   «Niveles de acceso», con «Nuevo color» y «Nuevo nivel»): llevar la acción principal junto al `h1` y quitar el `h2`.
-- **[T329]** En el menú de Configuración (8 rem) el motivo de una sub-sección apagada larga ocupa cinco renglones («Te falta el permiso
+- **[T329]** En el menú de Configuración (10 rem) el motivo de una sub-sección apagada larga ocupa cinco renglones («Te falta el permiso
   «Gestionar los campos de los leads».»): acortarlo o mostrarlo al enfocar.
 - **[T344]** «Cotizar» del título de «Cotizaciones de este vehículo» (`src/app/(app)/vehiculos/[id]/bloque-cotizaciones.tsx`) se ve sin borde: `buttonVariants()` sin `cn()` deja ganar el `border-transparent` de la base.
 - **[T33]** Tras agregar un teléfono extra en el panel de edición de la ficha, el foco va a «Nombre» (la ficha se vuelve a leer y el panel se rearma) y no a «Agregar teléfono».

@@ -9,6 +9,7 @@ export const SUBSECCION_DE_COMPROBANTES = {
   clave: 'comprobantes',
   titulo: 'Comprobantes',
   descripcion: 'La serie de los comprobantes y el número del próximo.',
+  palabras: ['recibo', 'factura', 'serie', 'número', 'correlativo'],
   ruta: RUTAS.comprobantesDeEmpresa,
   permisos: ['empresa.ajustes.gestionar'],
   motivoSinPermiso: 'Pide el permiso «Ajustes de la empresa».',

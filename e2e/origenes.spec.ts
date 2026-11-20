@@ -100,7 +100,10 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
   // Llega por su menú: Configuración → Orígenes. Sin orígenes propios, los sembrados se ven.
   await page.getByRole('button', { name: `Menú de ${DUENA}` }).click()
   await page.getByRole('menuitem', { name: 'Configuración' }).click()
-  await page.getByRole('link', { name: /Orígenes/ }).click()
+  await page
+    .getByRole('region')
+    .getByRole('link', { name: /Orígenes/ })
+    .click()
   await expect(page.getByRole('heading', { name: 'Orígenes', level: 1 })).toBeVisible()
 
   // Manual: el género acompaña al sustantivo hasta que la persona lo elige.
