@@ -294,7 +294,7 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
 
 ## Archivos clave
 
-- Motor y grafo (`docs/COTIZADOR.md`: léelo antes de tocar el motor): `entities/nodos.ts` (Zod por `tipo`, `referenciasDe()`), `formula.ts`, `motor.ts` y
+- Motor y grafo (`docs/COTIZADOR.md`: léelo antes de tocar el motor): `entities/nodos.ts` (Zod por `tipo`), `nodos-referencias.ts` (`referenciasDe()`), `formula.ts`, `motor.ts` y
   `motor-*.ts` (`evaluar()`, una pasada), `redondeo.ts` (`round(numeric)` de Postgres), `compilador*.ts` (texto a nodos, puro, nunca lanza),
   `casos-del-motor.json`.
 - Validación: `entities/validar*.ts` espeja `validar_formula()` (`docs/COTIZADOR.md` › «Las reglas») y `validar-diseno*.ts` a `validar_diseno()` (con el
@@ -377,7 +377,8 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
 - A lo sumo una final activa por vehículo. `cotizacion_marcar_final` toma lead → vehículo → la cotización y las vivas del vehículo (detalle:
   `areas/final/CLAUDE.md`). Al entrar a logística la final se congela; si sale, vuelve a preventa.
 - Sin motor de expresiones al cotizar: sólo las operaciones cerradas de `calculo`. La fórmula como texto se compila a nodos **al configurar**; lo que no
-  compila se rechaza. Un nodo nuevo = tipo discriminado (`nodos.ts`) + caso en `referenciasDe()` + caso en `validar_formula()` y en el juego.
+  compila se rechaza. Un nodo nuevo = tipo discriminado (`nodos.ts`) + caso en `referenciasDe()` (`nodos-referencias.ts`) + caso en `validar_formula()`, `_diseno_auxiliares()`,
+  `_nodos_en_par()` y en el juego.
 - **Toda copia de una versión lleva el diseño** (el ⚙, revertir y la N+1 de una tabla; publicar lo exige). Un color o nivel que una versión nombra no se
   elimina (`_tono_en_uso()`, `_nivel_uso()`; un nivel se retira). Colores y niveles salen de un solo punto (tabla `tonos`, `_niveles_de_cotizacion()`): nada
   escribe «costos» a mano ni razona por el nombre o la clave de un nivel. `formulas` y `plantillas_tarjeta` sólo las lee quien tiene

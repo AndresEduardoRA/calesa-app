@@ -11,13 +11,12 @@ import {
   esCondicion,
   esMonto,
   formatoDe,
-  referenciasDe,
   sobrescribibleDe,
   soloEnDe,
   type Nodo,
   type NodoCalculo,
-  type Referencia,
 } from './nodos'
+import { referenciasDe, type Referencia } from './nodos-referencias'
 import { esFallo, fallo, indexar, nodoDe, type Contexto, type Fallo } from './validar-contexto'
 import { revisarCambioYGrupos } from './validar-grupos'
 import { revisarCampos } from './validar-campos'

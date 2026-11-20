@@ -34,7 +34,8 @@ Común: `id` (`^[a-z][a-z0-9_]{0,40}$`), `tipo`, `etiqueta`; `formato?` (`usd` p
 si_falso?])` = `de[0]` si la prueba es distinta de 0, si no `de[1]` o 0; `max(de ≥ 1)` y `min(de ≥ 1)`. El `si` de una bandera sigue
   siendo `si`; una condición cualquiera o una rama «si no» es `elegir`.
 
-Un nodo nuevo lleva su tipo en el Zod de `nodos.ts`, su caso en `referenciasDe()` y en `validar_formula()`, y el juego de prueba.
+Un nodo nuevo lleva su tipo en el Zod de `nodos.ts`, su caso en `referenciasDe()` (`nodos-referencias.ts`) y en sus espejos de la base (`validar_formula()`,
+`_diseno_auxiliares()` y `_nodos_en_par()`), y el juego de prueba.
 
 ### Grupos, buckets y el total
 
