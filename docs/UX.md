@@ -361,7 +361,7 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   invalidar, una más nueva) la página se relee. Un `vehiculo` que no es un id no abre nada, avisa y limpia la URL; si el grupo no está en la página del enlace, el modal se arma sólo con lo que lee
   (título «Cotizaciones de este vehículo», sin la aprobada primera). Si la base recorre su tope sin completar la página: «Revisamos muchas cotizaciones sin completar la página.» con «Seguir
   buscando» (también en lugar del vacío). **La tarjeta de la lista:** la imagen de la tarjeta arriba (miniatura de 480 px, 15:8, recortada desde arriba a la izquierda,
-  perezosa; su clic abre el visor en `?visor=imagen-de-la-lista-<id>`, así no se cruza con el del resumen abierto) con el «⋯» encima (sin «Compartir»), el título (dos líneas, entero en `title`), «N.º n» con «Aprobada», «Final» y el origen
+  pedida a la vista y de a cuatro por página; su clic abre el visor en `?visor=imagen-de-la-lista-<id>`, así no se cruza con el del resumen abierto) con el «⋯» encima (sin «Compartir»), el título (dos líneas, entero en `title`), «N.º n» con «Aprobada», «Final» y el origen
   con su color en una línea, el total con su modo, «Cliente:» enlazado a su ficha (con `leads.ver`; si no, su nombre o «—»), autor · «hace…», la vigencia, la fila
   del conteo y **«Compartir»** como acción principal a todo el ancho (no en Modo Live). Todas miden lo mismo (filas de alto fijo, sin `auto-rows-fr`: el despliegue va
   a todo el ancho). **La tabla:** «Cotización» (sólo «N.º n»), **«Título»**, cliente, vehículo, origen, clase, total, vigencia, creada y el «⋯» con «Compartir
@@ -371,8 +371,8 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
   y, al final, el «⋯» de la fila sin «Compartir» (también para una línea del modal de un grupo o una de otra página); los dos botones crecen por igual: en el celular
   mitad y mitad con el «⋯» a 44 px y, con el texto al 200 %, se parten en filas sin salirse; sin la cotización a la vista (no disponible, error, cargando) no hay barra;
   sus diálogos se abren sobre el resumen sin cerrarlo. Debajo, la
-  **imagen de la tarjeta** a todo el ancho del resumen, en un marco 15:8 con la imagen entera: mientras se arma o carga, un recuadro del mismo marco con el total y
-  «Preparando la imagen…»; si falla o no hay red, «No se pudo armar la imagen.» con «Reintentar»; el marco crece con el texto al 200 %; el clic la abre en el
+  **imagen de la tarjeta** a todo el ancho del resumen, en un marco 15:8 con la imagen entera: fuera de la vista, esperando su turno (a lo sumo cuatro a la vez) o mientras se arma, un recuadro del mismo marco
+  con el total y «Preparando la imagen…»; si falla o no hay red, «No se pudo armar la imagen.» con «Reintentar»; el marco crece con el texto al 200 %; el clic la abre en el
   visor de fotos (`?visor=imagen-<id>`, que cerrar el resumen borra; un enlace con la clave de antes, `portada-<id>`, también lo abre); en Modo Live, borrosa con «Oculto en Modo Live» encima y sin visor; luego lo de la fila (el título, la clase y «Aprobada», el total con su modo, cliente,
   vehículo, creada · autor y la vigencia; el número va en el título del panel), «De este vehículo» —ver
   «Cotizaciones del lead y del vehículo»; tras aprobar ahí se refresca el listado; sus casillas y «Comparar» abren «Comparar cotizaciones» y «Volver»

@@ -31,13 +31,17 @@ const montar = (
     </NuqsTestingAdapter>,
   )
 const imagen = () => screen.getByAltText(ALT)
-// La URL que pide la imagen (jsdom la vuelve absoluta).
-const pedida = () =>
-  new URL(imagen().getAttribute('src') ?? '', 'http://localhost').pathname +
-  new URL(imagen().getAttribute('src') ?? '', 'http://localhost').search
+// La imagen pone su `src` recién con su turno en la cola (una promesa: asíncrono). jsdom no tiene `IntersectionObserver`: está a la vista enseguida.
+const conTurno = () => screen.findByAltText(ALT)
+// La URL que pide una imagen (jsdom la vuelve absoluta).
+const urlDe = (img: HTMLElement) => {
+  const url = new URL(img.getAttribute('src') ?? '', 'http://localhost')
+  return url.pathname + url.search
+}
+const pedida = () => urlDe(imagen())
 // `next/image` avisa la carga tras decodificarla: asíncrono.
 const cargar = async () => {
-  fireEvent.load(imagen())
+  fireEvent.load(await conTurno())
   await waitFor(() => {
     expect(screen.queryByRole('status')).toBeNull()
   })
@@ -50,10 +54,11 @@ afterEach(() => {
 })
 
 describe('<ImagenDeLaTarjeta>', () => {
-  it('pide la imagen a su ruta, lazy; mientras carga, el recuadro con el total y «Preparando la imagen…»', () => {
+  it('con su turno pide la imagen a su ruta; mientras carga, el recuadro con el total y «Preparando la imagen…»', async () => {
     montar()
-    expect(pedida()).toBe(`/cotizaciones/${ID}/imagen`)
-    expect(imagen().getAttribute('loading')).toBe('lazy')
+    expect(screen.queryByAltText(ALT)).toBeNull()
+    expect(urlDe(await conTurno())).toBe(`/cotizaciones/${ID}/imagen`)
+    expect(imagen().getAttribute('loading')).toBe('eager')
     expect(screen.getByRole('status').textContent).toBe('Preparando la imagen…')
     // El total, con <Monto> (el formato regional lo prueba `formato.ts`).
     expect(document.querySelector('[data-monto-valor]')?.textContent).toMatch(/1.?234/)
@@ -66,16 +71,40 @@ describe('<ImagenDeLaTarjeta>', () => {
     expect(document.querySelector('[data-monto]')).toBeNull()
   })
 
-  it('si falla, lo dice con «Reintentar», que la vuelve a pedir con otra URL', () => {
+  it('si falla, lo dice con «Reintentar», que vuelve a la cola y la pide con otra URL', async () => {
     montar()
-    fireEvent.error(imagen())
+    fireEvent.error(await conTurno())
     expect(screen.getByText('No se pudo armar la imagen.')).toBeTruthy()
     expect(screen.queryByRole('status')).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
-    expect(pedida()).toBe(`/cotizaciones/${ID}/imagen?intento=1`)
     expect(screen.getByRole('status').textContent).toBe('Preparando la imagen…')
+    await waitFor(() => {
+      expect(pedida()).toBe(`/cotizaciones/${ID}/imagen?intento=1`)
+    })
   })
 
+  it('a lo sumo cuatro se piden a la vez: la quinta, cuando una termina', async () => {
+    const ids = [1, 2, 3, 4, 5].map((n) => `00000000-0000-4000-8000-00000000000${String(n)}`)
+    render(
+      <NuqsTestingAdapter>
+        {ids.map((id, i) => (
+          <ImagenDeLaTarjeta key={id} cotizacionId={id} numero={i + 1} total={null} />
+        ))}
+      </NuqsTestingAdapter>,
+    )
+    const pedidas = () => [...document.querySelectorAll('img')].map(urlDe)
+    await waitFor(() => {
+      expect(pedidas()).toHaveLength(4)
+    })
+    expect(pedidas()).not.toContain(`/cotizaciones/${ids[4] ?? ''}/imagen`)
+    fireEvent.load(screen.getByAltText('Imagen de la tarjeta de la cotización n.º 2'))
+    await waitFor(() => {
+      expect(pedidas()).toContain(`/cotizaciones/${ids[4] ?? ''}/imagen`)
+    })
+  })
+})
+
+describe('<ImagenDeLaTarjeta>: el visor y el Modo Live', () => {
   it('cargada, se ve sola y el clic la abre en el visor (que se monta recién ahí)', async () => {
     montar()
     await cargar()

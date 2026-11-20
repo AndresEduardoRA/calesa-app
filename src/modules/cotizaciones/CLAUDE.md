@@ -198,7 +198,7 @@ ancho })` (en `features/tarjeta/` porque cruza con `empresa`: la hoja de lo guar
   `import()`) con el contexto de quien pide (`datos-de-la-tarjeta.ts`, como el PDF: el cliente sólo con `leads.ver`, y él como asesor). Con la ETag, `private,
 no-cache`; con «Ver como» (sin leer la huella) o sin el primer recálculo, `no-store` y sin ETag; un fallo, 500 en texto. `Server-Timing` dice lo que tardó la
   huella y el armado. `/cotizaciones/[id]/portada` (la ruta vieja) es un 308 a `/imagen` con su consulta (`next.config.ts`). El componente `<ImagenDeLaTarjeta>` sale por
-  `pantallas/tarjeta-imagen.ts` (marco de la proporción que le den, recuadro con el total, visor por `diferido()` con la clave de
+  `pantallas/tarjeta-imagen.ts` (marco de la proporción que le den, pedida a la vista y de a cuatro por página con `useCargaDeLaImagen()`, recuadro con el total, visor por `diferido()` con la clave de
   `claveDelVisorDeLaImagen()`, que acepta también la de antes, `portada-…`; Modo Live por CSS en `globals.css`).
 - **El diseño** (la pestaña «Hoja»: `/configuracion/cotizacion/<origen>/hoja`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
   `cotizaciones_niveles` (no de `niveles_con_uso()`); edita secciones, celdas (ver y editar juntos con `ponerNiveles()`; `admiteNivel` apaga lo que la base

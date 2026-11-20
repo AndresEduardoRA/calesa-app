@@ -792,8 +792,8 @@ pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACION
   250.000 y páginas de 50 (igual con 50.000, bloques ≤ 1,2 × + 20): la dueña 5–12 ms (600–2.200 bloques), Teo 5–6, la «chica» 3, Ana 6–24 ms (≈ 9.000 bloques:
   la cartera de 1.000 leads en cada lote) y 57 ms con el lead del vehículo de 5.005 del que ve 5 (cuenta lo leído y salta las sondas repetidas).
   Topes: la dueña y la chica ≤ 30 ms, Ana y Teo ≤ 100; un lote por página en todos los casos.
-  **La miniatura de la imagen** (`?ancho=480`): la lista pide la imagen de la tarjeta achicada (`sharp`, al armarla), perezosa y con su propia ETag (304 al
-  volver). La grande, sólo en el visor.
+  **La miniatura de la imagen** (`?ancho=480`): la lista pide la imagen de la tarjeta achicada (`sharp`, al armarla), a la vista y de a cuatro, con su propia
+  ETag (304 al volver). La grande, sólo en el visor.
   **La cotización aprobada** (`cotizaciones_aprobadas`, una fila por vehículo; `medir-cotizaciones-aprobadas.sql`, `db:medir:volumen`): tres lecturas por página, todas
   de ≤ 100 ids y una consulta, en paralelo con lo que ya se lee: el «Costo estimado» de la lista de vehículos por la RPC `cotizaciones_aprobadas_de_vehiculos()`
   (invocadora: `cotizaciones_aprobadas_pkey (vehiculo_id)`, cada cotización por `cotizaciones_pkey` y `_nombre_del_modo()` una vez por versión y modo), el
@@ -856,10 +856,11 @@ pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACION
   `cotizacion_tarjeta`, asesor y vehículo por PK y `leerAjustes()` (una RPC más que `getAjustes()`); el logo ≤ 1 MB con 2 s de espera. Topes:
   150 KB y 1,5 s (40.406 B y 150 ms medidos con la cuadrícula: una página A4). La tarjeta de lo guardado lo ofrece con un `<a download>` sin JS.
   La imagen de la tarjeta (`imagenDeUnaGuardada()`) sale al ancho de la tarjeta (≤ 1.600 px) y carga `next/og` sólo con `import()` en el servidor.
-- Imagen de la tarjeta (`GET /cotizaciones/<id>/imagen`): una llamada a `cotizacion_imagen_huella()` (la cotización, el cliente, el vehículo, el perfil
+- **Imagen de la tarjeta** (`GET /cotizaciones/<id>/imagen`): una llamada a `cotizacion_imagen_huella()` (la cotización, el cliente, el vehículo, el perfil
   de quien pide y los ajustes por PK, la plantilla por índice único, y los catálogos de colores y tipos de cambio, decenas de filas) y, con la ETag igual, 304
   sin nada más; si no, lo del PDF de una cotización más el WebP (`sharp`, sólo en el servidor), sin escribir nada. Una lista de N imágenes son N pedidos
-  independientes, nunca una lectura por fila dentro de otra. `private, no-cache` con ETag: el navegador revalida con un 304. `Server-Timing` dice lo que
+  independientes, nunca una lectura por fila dentro de otra, y la página pide **a lo sumo cuatro a la vez** y sólo las que están a la vista (200 px antes;
+  `useCargaDeLaImagen()` sobre `crearCola()`; la que sale de la vista antes de su turno deja la fila): sin la cola, 50 tarjetas eran 50 armados en paralelo. `private, no-cache` con ETag: el navegador revalida con un 304. `Server-Timing` dice lo que
   tardaron la huella y el armado.
 - Tarea de oro 2 (`e2e/cotizar-tarea-de-oro*.spec.ts`; deterministas: una parada nueva en el camino las rompe): robot < 30 s y KLM ≤ 90 s.
   Teclas de control: el tramo de la hoja hasta el PDF ≤ 29; con el panel del vehículo ≤ 29; con un enlace de subasta, exactamente 33; con

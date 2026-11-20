@@ -1,17 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import { parseAsString, useQueryState } from 'nuqs'
-import { useState } from 'react'
-import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
+import { useALaVista } from '@/shared/ui/use-a-la-vista'
 import { useLive } from '@/shared/ui/live'
-import { CLAVE_DEL_VISOR } from '@/shared/ui/visor-de-imagenes'
 import { rutaDeLaImagen, type AnchoDeLaImagen } from '../../../../entities/ruta-de-la-hoja'
-import {
-  claveDelVisorDeLaImagen,
-  esClaveDelVisorDeLaImagen,
-  type LugarDeLaImagen,
-} from '../../../../entities/tarjeta/clave-del-visor-de-la-imagen'
+import type { LugarDeLaImagen } from '../../../../entities/tarjeta/clave-del-visor-de-la-imagen'
+import { useCargaDeLaImagen } from '../../hooks/use-carga-de-la-imagen'
+import { useVisorDeLaImagen } from '../../hooks/use-visor-de-la-imagen'
 import { VisorDeLaImagenDiferido } from './diferidos'
 import { RecuadroDeLaImagen } from './recuadro-de-la-imagen'
 
@@ -36,18 +31,17 @@ export type PropsDeLaImagen = {
   lugar?: LugarDeLaImagen
 }
 
-type Carga = 'cargando' | 'lista' | 'fallo'
-
 // La imagen (la miniatura, si se pidió un ancho) y la del visor (siempre la grande). «Reintentar» suma `?intento=`: otra URL (la anterior quedó fallida en el navegador).
 const urlsDeLaImagen = (id: string, ancho: AnchoDeLaImagen | undefined, intento: number) => ({
   url: rutaDeLaImagen(id, ancho === undefined ? { intento } : { ancho, intento }),
   urlDelVisor: rutaDeLaImagen(id, { intento }),
 })
 
-// La imagen de la tarjeta (`docs/COTIZADOR.md` › «La imagen de la tarjeta»), pedida a su ruta con `loading="lazy"` (la miniatura de una lista pide la misma: es una
-// por cotización y por quien mira). Mientras llega o si falla, el recuadro con el total en el mismo marco, que crece si el texto no cabe. El clic la abre en el visor
-// de fotos (su código llega al primer clic; un enlace con la clave de antes, `portada-…`, también lo abre). En Modo Live, borrosa con «Oculto en Modo Live» y sin
-// visor: lo hace el CSS de `globals.css` (`data-imagen`, `data-imagen-oculta`) antes de hidratar, y `useLive()` corta el clic.
+// La imagen de la tarjeta (`docs/COTIZADOR.md` › «La imagen de la tarjeta»), pedida a su ruta recién a la vista (200 px antes) y con turno en la cola de la página
+// (`useCargaDeLaImagen()`: a lo sumo cuatro a la vez; la que sale de la vista antes de su turno deja la fila). Mientras espera, llega o si falla, el recuadro con el
+// total en el mismo marco, que crece si el texto no cabe; con turno va `eager` (`lazy` podría no pedirla nunca si sale de la vista, y el turno quedaría tomado). El
+// clic la abre en el visor de fotos (su código llega al primer clic; un enlace con la clave de antes, `portada-…`, también lo abre). En Modo Live, borrosa con
+// «Oculto en Modo Live» y sin visor: lo hace el CSS de `globals.css` (`data-imagen`, `data-imagen-oculta`) antes de hidratar, y `useLive()` corta el clic.
 export function ImagenDeLaTarjeta({
   cotizacionId,
   numero,
@@ -58,21 +52,16 @@ export function ImagenDeLaTarjeta({
   lugar = 'resumen',
 }: PropsDeLaImagen) {
   const { live } = useLive()
-  const [carga, setCarga] = useState<Carga>('cargando')
-  const [intento, setIntento] = useState(0)
-  const [pedidos, setPedidos] = useState(0)
-  const [enLaUrl] = useQueryState(CLAVE_DEL_VISOR, parseAsString)
-  const laNombraLaUrl = esClaveDelVisorDeLaImagen(enLaUrl, cotizacionId, lugar)
-  // Con la de la URL si la nombra (la de hoy o la de antes): el visor se abre con la clave que dice `?visor=`.
-  const clave =
-    laNombraLaUrl && enLaUrl !== null ? enLaUrl : claveDelVisorDeLaImagen(cotizacionId, lugar)
-  const montarVisor = useAbiertoAlgunaVez(!live && (pedidos > 0 || laNombraLaUrl))
-  const { url, urlDelVisor } = urlsDeLaImagen(cotizacionId, ancho, intento)
+  const [observar, aLaVista] = useALaVista<HTMLDivElement>({ seguir: true })
+  const imagen = useCargaDeLaImagen(aLaVista)
+  const visor = useVisorDeLaImagen({ cotizacionId, lugar, live })
+  const { url, urlDelVisor } = urlsDeLaImagen(cotizacionId, ancho, imagen.intento)
   const texto = `Imagen de la tarjeta de la cotización n.º ${String(numero)}`
-  const lista = carga === 'lista'
+  const lista = imagen.carga === 'lista'
 
   return (
     <div
+      ref={observar}
       data-imagen-de-la-tarjeta
       className="relative grid w-full overflow-hidden rounded-(--radius-card) border border-(--color-line) bg-(--color-paper-dim)"
       style={{ aspectRatio: String(proporcion) }}
@@ -81,28 +70,24 @@ export function ImagenDeLaTarjeta({
         type="button"
         aria-label={`Ver la ${texto.toLocaleLowerCase('es')} en grande`}
         disabled={live || !lista}
-        onClick={() => {
-          setPedidos((n) => n + 1)
-        }}
+        onClick={visor.abrir}
         className="absolute inset-0 outline-none focus-visible:shadow-(--shadow-focus) enabled:cursor-zoom-in"
       >
-        <Image
-          key={url}
-          src={url}
-          alt={texto}
-          fill
-          unoptimized
-          loading="lazy"
-          sizes="(min-width: 48rem) 32rem, 100vw"
-          className={recorte === 'cubrir' ? 'object-cover object-left-top' : 'object-contain'}
-          data-imagen
-          onLoad={() => {
-            setCarga('lista')
-          }}
-          onError={() => {
-            setCarga('fallo')
-          }}
-        />
+        {imagen.conTurno ? (
+          <Image
+            key={url}
+            src={url}
+            alt={texto}
+            fill
+            unoptimized
+            loading="eager"
+            sizes="(min-width: 48rem) 32rem, 100vw"
+            className={recorte === 'cubrir' ? 'object-cover object-left-top' : 'object-contain'}
+            data-imagen
+            onLoad={imagen.alCargar}
+            onError={imagen.alFallar}
+          />
+        ) : null}
       </button>
       {lista ? (
         <p
@@ -114,15 +99,17 @@ export function ImagenDeLaTarjeta({
       ) : (
         <RecuadroDeLaImagen
           total={total}
-          fallo={carga === 'fallo'}
-          alReintentar={() => {
-            setCarga('cargando')
-            setIntento((n) => n + 1)
-          }}
+          fallo={imagen.carga === 'fallo'}
+          alReintentar={imagen.reintentar}
         />
       )}
-      {montarVisor ? (
-        <VisorDeLaImagenDiferido clave={clave} titulo={texto} url={urlDelVisor} pedidos={pedidos} />
+      {visor.montar ? (
+        <VisorDeLaImagenDiferido
+          clave={visor.clave}
+          titulo={texto}
+          url={urlDelVisor}
+          pedidos={visor.pedidos}
+        />
       ) : null}
     </div>
   )

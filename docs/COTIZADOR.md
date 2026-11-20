@@ -1080,7 +1080,8 @@ objetos en el bucket. Lo que evita volver a dibujarla es la caché del navegador
   (la tarjeta saldría sólo con el total), `no-store` y sin `ETag`. Si armarla falla, 500 en texto con `no-store`: nunca una vieja. `Server-Timing` dice
   cuánto tardaron la huella y el armado. La ruta vieja, `/cotizaciones/<id>/portada`, es un 308 a ésta con su consulta.
 - **En pantalla**, `<ImagenDeLaTarjeta>` (`pantallas/tarjeta-imagen.ts`; en el resumen del listado, por el hueco `Imagen`): la imagen con
-  `object-contain` y `loading="lazy"` en un marco de la proporción que le dan (15:8 por omisión); mientras carga, un recuadro del mismo tamaño con el
+  `object-contain` en un marco de la proporción que le dan (15:8 por omisión), pedida recién a la vista y con turno en la cola de la página (a lo sumo
+  cuatro a la vez: `useCargaDeLaImagen()`, `crearCola()`); mientras espera o carga, un recuadro del mismo tamaño con el
   total y «Preparando la imagen…»; si falla, «No se pudo armar la imagen.» con «Reintentar» (otra URL, `?intento=`); el clic la abre en el visor de
   fotos (`?visor=imagen-<id>`, o `imagen-de-la-lista-<id>` desde la tarjeta de la lista; las claves de antes, `portada-…`, también lo abren); en Modo
   Live, borrosa con «Oculto en Modo Live» y sin visor.

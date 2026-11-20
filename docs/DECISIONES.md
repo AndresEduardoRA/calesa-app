@@ -677,6 +677,10 @@ las trampas, en `docs/LECCIONES.md`.
   La ETag suma el usuario (dos personas nunca comparten una), `VERSION_DEL_DIBUJO` y el ancho: un cambio en cómo se dibuja es código, y subir la versión en
   el mismo archivo no pide una migración. Con «Ver como», `no-store` sin leer la huella: la perspectiva cambia lo que se ve, y una ETag de la persona real
   serviría lo de otro rol.
+- **La imagen de la tarjeta se pide a la vista y de a cuatro por página.** Armarla cuesta (satori, PNG y WebP en el servidor) y ya no hay una guardada que
+  servir: una lista de 50 tarjetas pediría 50 armados en paralelo. `useCargaDeLaImagen()` pide turno en una cola de la página (`crearCola(4)`) sólo con la
+  imagen a 200 px de la vista; la que sale antes de su turno deja la fila, y con turno va `eager` (una `lazy` que sale de la vista no se pediría y el turno
+  quedaría tomado). Al volver, las ETag dan 304 y la cola se vacía enseguida.
 - **La ruta vieja de la imagen sigue andando.** `/cotizaciones/<id>/portada` es un 308 a `/imagen` con su consulta (`next.config.ts`): un enlace o una caché
   del navegador que la nombre no da 404.
   Lo mismo el visor: `?visor=portada-<id>` y `?visor=portada-de-la-lista-<id>` lo siguen abriendo (`esClaveDelVisorDeLaImagen()`), aunque las claves de hoy
