@@ -11,6 +11,7 @@ import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
 import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
 import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
+import { InsigniaPrivada } from '../../privada/components/insignia-privada'
 import {
   PROPORCION_EN_LA_LISTA,
   SIN_NOMBRE,
@@ -99,6 +100,7 @@ function NumeroConInsignias({ cotizacion, origen }: Pick<Props, 'cotizacion' | '
       {/* Fuera del botón: su `aria-label` tapa a los hijos. */}
       <SufijoDeVisto id={cotizacion.id} />
       {cotizacion.aprobada ? <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge> : null}
+      {cotizacion.privada ? <InsigniaPrivada /> : null}
       {cotizacion.clase === 'final' ? (
         <Badge variant="secondary">{ETIQUETA_DE_CLASE.final}</Badge>
       ) : null}

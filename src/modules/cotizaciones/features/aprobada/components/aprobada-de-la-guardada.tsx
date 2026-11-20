@@ -30,6 +30,7 @@ async function Marca({ cotizacion, permisos }: PropsDeUnHuecoDeLaGuardada) {
       aprobada={marca?.aprobada === true}
       motivo={motivoParaNoAprobar(cotizacion, marca)}
       vehiculoId={cotizacion.vehiculoId}
+      privada={cotizacion.privada === true}
     />
   )
 }

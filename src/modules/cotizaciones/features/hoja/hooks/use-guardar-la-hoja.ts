@@ -44,6 +44,7 @@ export function useGuardarLaHoja({
   elecciones,
   guardado,
   raiz,
+  privada = false,
 }: {
   h: ReturnType<typeof useHoja>
   contexto: ContextoDeHoja
@@ -56,6 +57,8 @@ export function useGuardarLaHoja({
   // Nulo: la hoja no guarda (una guardada de sólo lectura, o todavía sin «Guardar»): ni botón ni `Ctrl/Cmd+S`.
   guardado: Guardado | null
   raiz: RefObject<HTMLDivElement | null>
+  // El interruptor «Privada» (`usePrivadaDeLaNueva()`, del marco): va en el pedido sólo encendido.
+  privada?: boolean
 }) {
   const titulo = delTitulo(useTituloDeLaCotizacion())
   // Sin ellos (una guardada, o una hoja que no los trae) la hoja no pide nada; sin vehículo, el título sí.
@@ -96,26 +99,36 @@ export function useGuardarLaHoja({
               modoTc: r.entradas.modoTc,
               verTotalBs: ofreceVerTotalBs(hoja.cabecera) && h.verTotalBs,
               ...titulo.paraGuardar,
+              ...(privada ? { privada: true } : {}),
             }
           : null,
       )
     })
   }
   const alGuardar = useAlGuardar({ guardado, motivo, armar, raiz })
-  const total = totalDelResumen(contexto)
-  const boton: BotonDeGuardar | null =
-    guardado === null
-      ? null
-      : {
-          motivo,
-          motivoYaDicho: total.tipo === 'faltante',
-          ocupado: guardado.ocupado,
-          alGuardar,
-          // Con un pendiente no hay motivo (se reenvía tal cual): nada que elegir.
-          paraElegir:
-            motivo !== null && falta !== null
-              ? { que: falta, eleccion: (elecciones ?? SIN_ELECCIONES)[falta] }
-              : null,
-        }
+  const boton =
+    guardado === null ? null : botonDe({ guardado, motivo, falta, elecciones, alGuardar, contexto })
   return { boton }
+}
+
+// «Guardar» con su motivo y, si falta algo que se elige, cómo elegirlo.
+function botonDe(p: {
+  guardado: Guardado
+  motivo: string | null
+  falta: ReturnType<typeof loQueFalta>
+  elecciones: EleccionesDeLaHoja | undefined
+  alGuardar: () => void
+  contexto: ContextoDeHoja
+}): BotonDeGuardar {
+  return {
+    motivo: p.motivo,
+    motivoYaDicho: totalDelResumen(p.contexto).tipo === 'faltante',
+    ocupado: p.guardado.ocupado,
+    alGuardar: p.alGuardar,
+    // Con un pendiente no hay motivo (se reenvía tal cual): nada que elegir.
+    paraElegir:
+      p.motivo !== null && p.falta !== null
+        ? { que: p.falta, eleccion: (p.elecciones ?? SIN_ELECCIONES)[p.falta] }
+        : null,
+  }
 }

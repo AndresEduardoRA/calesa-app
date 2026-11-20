@@ -5,6 +5,7 @@ import { useState, type ComponentProps } from 'react'
 import { Aviso } from '@/shared/ui/aviso'
 import { Button } from '@/shared/ui/button'
 import { Confirmar } from '@/shared/ui/confirmar'
+import { AVISO_AL_MARCAR_FINAL } from '../../../entities/privada'
 import { marcarLaFinal, type FalloDeMarcar } from '../hooks/marcar-la-final'
 
 type Props = {
@@ -12,6 +13,8 @@ type Props = {
   alCerrar: () => void
   id: string
   numero: number
+  // Una privada (glosario: «Cotización privada»): marcarla final la hace pública, y se dice.
+  privada: boolean
   focoAlCerrar: ComponentProps<typeof Confirmar>['focoAlCerrar']
 }
 
@@ -47,7 +50,14 @@ function AvisoDeMarcar(props: { fallo: FalloDeMarcar | null; alRecargar: () => v
 // La confirmación de «Marcar final» (4.25-2): nombra la cotización y dice qué pasa con el vehículo, el lead y las demás cotizaciones. Mientras actúa no se
 // cierra ni vuelve a enviar. Cuando entra no toca su estado: la página se vuelve a dibujar sin el botón y esto se desmonta (`marcarLaFinal()` ya cerró la URL
 // y avisó). Cuando no entra, sigue abierto con el motivo.
-export function ConfirmarMarcarFinal({ abierto, alCerrar, id, numero, focoAlCerrar }: Props) {
+export function ConfirmarMarcarFinal({
+  abierto,
+  alCerrar,
+  id,
+  numero,
+  privada,
+  focoAlCerrar,
+}: Props) {
   const router = useRouter()
   const [enCurso, setEnCurso] = useState(false)
   const [fallo, setFallo] = useState<FalloDeMarcar | null>(null)
@@ -73,7 +83,7 @@ export function ConfirmarMarcarFinal({ abierto, alCerrar, id, numero, focoAlCerr
       alCerrar={cerrar}
       alConfirmar={confirmar}
       titulo={`Marcar como final la cotización n.º ${String(numero)}`}
-      descripcion={DESCRIPCION}
+      descripcion={privada ? `${DESCRIPCION} ${AVISO_AL_MARCAR_FINAL}` : DESCRIPCION}
       etiquetaConfirmar={enCurso ? 'Marcando…' : 'Marcar final'}
       enCurso={enCurso}
       deshabilitado={fallo?.recargar === true}

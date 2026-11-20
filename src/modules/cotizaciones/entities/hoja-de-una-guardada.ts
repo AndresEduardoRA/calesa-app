@@ -24,6 +24,9 @@ export type CotizacionDeLaHoja = {
   // Los retoques de su tarjeta (los textos y las filas ocultas sólo de esta cotización); nulo, la tarjeta tal cual la plantilla.
   tarjetaRetoques: RetoquesDeLaTarjeta | null
   creadoEn: string
+  // Quien la creó y si es privada (glosario: «Cotización privada»): sólo quien la creó ve «Hacer privada / Hacer pública». Sin la clave (una prueba), pública y de nadie.
+  creadoPor?: string
+  privada?: boolean
   // La hermana (glosario: «Cotizaciones hermanas»): la otra opción de una variante en par; sin la clave, ninguna.
   hermanaId?: string | null
   // **El texto de la base, tal cual** (con sus microsegundos): es la versión que `cotizacion_guardar` compara. Nunca pasa por `Date`; sólo se muestra formateado.

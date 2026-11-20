@@ -30,6 +30,8 @@ const esquemaDeLaCotizacion = z.object({
   creado_en: z.string().min(1),
   actualizado_en: z.string().min(1),
   hermana_id: z.guid().nullable().optional(),
+  creado_por: z.guid().optional(),
+  privada: z.boolean().optional(),
 })
 
 const esquemaDeUnaVersion = z.object({ id: z.guid(), numero: z.int(), version: z.int().positive() })
@@ -73,6 +75,31 @@ const hermanaDe = (
     : { id: h.id, disponible: false }
 }
 
+type CotizacionCruda = z.infer<typeof esquemaDeUnaGuardada>['cotizacion']
+
+const cotizacionDe = (c: CotizacionCruda): HojaDeUnaGuardada['cotizacion'] => {
+  return {
+    id: c.id,
+    numero: c.numero,
+    clase: c.clase,
+    version: c.version,
+    origenId: c.origen_id,
+    leadId: c.lead_id,
+    vehiculoId: c.vehiculo_id,
+    modoTc: c.modo_tc,
+    verTotalBs: c.ver_total_bs,
+    titulo: c.titulo,
+    tituloManual: c.titulo_manual,
+    notas: c.notas,
+    tarjetaRetoques: c.tarjeta_retoques ?? null,
+    creadoEn: c.creado_en,
+    actualizadoEn: c.actualizado_en,
+    ...(c.hermana_id ? { hermanaId: c.hermana_id } : {}),
+    ...(c.creado_por ? { creadoPor: c.creado_por } : {}),
+    ...(c.privada === undefined ? {} : { privada: c.privada }),
+  }
+}
+
 // La respuesta de la base ya en la forma que usa la página, o nulo si no es lo que la base promete.
 export function hojaDeUnaGuardadaDesde(crudo: unknown): HojaDeUnaGuardada | null {
   const leida = esquemaDeUnaGuardada.safeParse(crudo)
@@ -80,27 +107,9 @@ export function hojaDeUnaGuardadaDesde(crudo: unknown): HojaDeUnaGuardada | null
     return null
   }
   const h = leida.data
-  const c = h.cotizacion
   return {
     diseno: disenoDe(h),
-    cotizacion: {
-      id: c.id,
-      numero: c.numero,
-      clase: c.clase,
-      version: c.version,
-      origenId: c.origen_id,
-      leadId: c.lead_id,
-      vehiculoId: c.vehiculo_id,
-      modoTc: c.modo_tc,
-      verTotalBs: c.ver_total_bs,
-      titulo: c.titulo,
-      tituloManual: c.titulo_manual,
-      notas: c.notas,
-      tarjetaRetoques: c.tarjeta_retoques ?? null,
-      creadoEn: c.creado_en,
-      actualizadoEn: c.actualizado_en,
-      ...(c.hermana_id ? { hermanaId: c.hermana_id } : {}),
-    },
+    cotizacion: cotizacionDe(h.cotizacion),
     guardado: {
       valores: new Map(Object.entries(h.valores)),
       fuentes: new Map(Object.entries(h.fuentes)),

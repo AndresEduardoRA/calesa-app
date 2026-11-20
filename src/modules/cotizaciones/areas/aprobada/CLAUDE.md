@@ -17,7 +17,13 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
   `cotizaciones_aprobadas`, `cache()`). Todos los que ven la cotización ven la insignia «Aprobada» (`insignia-aprobada.tsx`: un `<span>` con `badgeVariants`, sin
   `<Badge>` de Base UI); quien tiene la clave en el origen ve «Aprobar» (`boton-aprobar.tsx`, una isla que al entrar pasa a la insignia). Sin vehículo, inválida o
   sin la lectura de la marca, el botón queda apagado con su motivo (`motivoParaNoAprobar`, `aria-describedby`); sin lectura nunca se inventa una marca.
-- **No hay `<Confirmar>`:** aprobar es reversible. `aprobarLaCotizacion()` (función, no hook; sin `useAction`: el JS en frío de la guardada está al tope) llama a la
+- **Una privada pregunta antes** (glosario: «Cotización privada»): aprobarla la hace pública y «Deshacer» no la vuelve privada. «Aprobar…» (con puntos: abre algo) abre
+  `<DialogoDeAprobarPrivada>` en `?panel=aprobar-privada&para=<id>&desde=fila|guardada|vehiculo|comparar` (`useAprobarPrivadaPorUrl(desde)`, `entities/aprobada/url.ts`;
+  `desde` evita que el listado y «De este vehículo» dentro del resumen abran dos), con `AVISO_AL_APROBAR` y, en la guardada, que lo no guardado se pierde. Confirmar
+  llama a `aprobarHaciendolaPublica()` (`hacerlaPublica`, `p_hacerla_publica`); en la guardada, al entrar, `router.refresh()` (la versión cambió). «De este vehículo» y
+  Comparar no leen la marca: la base rechaza sin `p_hacerla_publica` (22023, `hint privada` → `causa: CAUSA_PRIVADA`) y `alSerPrivada` abre la misma pregunta.
+  Registrado en `scripts/guardas/confirmar-con-url-papelera.ts`.
+- **No hay `<Confirmar>` para una pública:** aprobar es reversible. `aprobarLaCotizacion()` (función, no hook; sin `useAction`: el JS en frío de la guardada está al tope) llama a la
   action, aplica lo devuelto con `alCambiar` y avisa con «Deshacer» 10 s si llegó `anterior` (aprueba la anterior con su versión). **La action no revalida ni
   refresca** (`.claude/rules/acciones.md`: remontaría lo tipeado en la hoja).
 - Errores: el texto de la base (PT409 con quién y cuándo + «Recargar», 42501, 22023, 23514); sin red, «Sin conexión: no se aprobó…»; inesperado tras llegar,

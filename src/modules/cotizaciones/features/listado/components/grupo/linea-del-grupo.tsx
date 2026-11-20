@@ -15,6 +15,7 @@ import {
   tituloAparteDelNumero,
   tituloDeLaCotizacion,
 } from '../../../../entities/titulo-de-la-cotizacion'
+import { InsigniaPrivada } from '../../../privada/components/insignia-privada'
 import { Vigencia } from '../vigencia'
 
 type Props = {
@@ -62,6 +63,7 @@ export function LineaDelGrupo({ linea, aprobada, casilla, alAbrir }: Props) {
             </span>
           )}
           {aprobada ? <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge> : null}
+          {linea.privada ? <InsigniaPrivada /> : null}
           {linea.clase === 'final' ? (
             <Badge variant="secondary">{ETIQUETA_DE_CLASE.final}</Badge>
           ) : null}

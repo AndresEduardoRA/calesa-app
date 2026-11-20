@@ -1,4 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { withNuqsTestingAdapter } from 'nuqs/adapters/testing'
+import type { ReactElement } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Resultado } from '@/shared/lib/errores'
 import { codificarCursor, TOPE_DE_ESTE_VEHICULO } from '@/shared/lib/paginacion'
@@ -16,9 +18,16 @@ vi.mock('../../../../areas/aprobada/composicion.client', () => ({
       pedidos.push({ cursor: pedido.cursor, resolver })
     }),
 }))
-vi.mock('../../hooks/aprobar-la-cotizacion', () => ({ aprobarLaCotizacion: h.aprobar }))
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
+vi.mock('../../hooks/aprobar-la-cotizacion', () => ({
+  aprobarLaCotizacion: h.aprobar,
+  aprobarHaciendolaPublica: vi.fn(),
+}))
 
 import { DeEsteVehiculo } from './de-este-vehiculo'
+
+// La pregunta de aprobar una privada vive en la URL (nuqs).
+const pintar = (ui: ReactElement) => render(ui, { wrapper: withNuqsTestingAdapter() })
 
 const VEHICULO = '00000000-0000-4000-8000-0000000000aa'
 const ORIGEN = '00000000-0000-4000-8000-0000000000a1'
@@ -54,7 +63,7 @@ beforeEach(() => {
 afterEach(cleanup)
 
 const montar = (aprobarEn: 'todos' | readonly string[] = 'todos', actual = idDe(2)) =>
-  render(
+  pintar(
     <DeEsteVehiculo
       vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }}
       cotizacionActual={actual}
@@ -195,7 +204,7 @@ describe('DeEsteVehiculo, estados', () => {
   })
 
   it('con `vacio`, sin ninguna dice ese texto; sin él, no dibuja nada', async () => {
-    render(
+    pintar(
       <DeEsteVehiculo
         vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }}
         aprobarEn="todos"
@@ -205,7 +214,7 @@ describe('DeEsteVehiculo, estados', () => {
     await responder(1, leida([]))
     expect(await screen.findByText('Sin cotizaciones que puedas ver.')).toBeTruthy()
     cleanup()
-    const { container } = render(
+    const { container } = pintar(
       <DeEsteVehiculo vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }} aprobarEn="todos" />,
     )
     await responder(2, leida([]))
@@ -232,7 +241,7 @@ describe('DeEsteVehiculo, estados', () => {
 
 describe('DeEsteVehiculo, las casillas de comparar', () => {
   const montarConCasillas = () =>
-    render(
+    pintar(
       <DeEsteVehiculo
         vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }}
         cotizacionActual={idDe(2)}
@@ -265,7 +274,7 @@ describe('DeEsteVehiculo, las casillas de comparar', () => {
     const ranura = document.createElement('div')
     ranura.id = 'ranura-de-prueba'
     document.body.append(ranura)
-    render(
+    pintar(
       <DeEsteVehiculo
         vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }}
         cotizacionActual={idDe(2)}

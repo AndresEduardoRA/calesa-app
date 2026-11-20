@@ -43,6 +43,8 @@ export function argumentosDeCrearEnPar(p: PedidoDeCrearEnPar) {
     p_ver_total_bs: p.verTotalBs,
     ...(p.titulo === null ? {} : { p_titulo: p.titulo }),
     p_titulo_manual: p.tituloManual,
+    // Las dos hermanas comparten la marca (`docs/COTIZADOR.md` › «Cotizaciones privadas»).
+    ...(p.privada === true ? { p_privada: true } : {}),
   }
 }
 
@@ -80,6 +82,8 @@ const esquemaDeCrear = z.object({
   conLaAbierta: z.boolean(),
   titulo: z.string().nullable(),
   tituloManual: z.boolean(),
+  // Uno de antes de las privadas no lo traía: se reenvía pública, como salió.
+  privada: z.boolean().optional(),
 })
 const esquemaDeGuardar = z.object({
   ids: dos(z.string().min(1)),

@@ -164,3 +164,16 @@ describe('cambiosDeLaRevision › el cambio de vehículo con sus nombres (T315)'
     ])
   })
 })
+
+describe('cambiosDeLaRevision › la marca de privada', () => {
+  it('«La hizo privada» o «La hizo pública», según cómo quedó', () => {
+    expect(cambios({ privada: { de: false, a: true } }).vistos).toEqual(['La hizo privada'])
+    expect(cambios({ privada: { de: true, a: false } }).vistos).toEqual(['La hizo pública'])
+  })
+
+  it('aprobarla la hace pública: la revisión dice las dos cosas que cambiaron', () => {
+    expect(
+      cambios({ privada: { de: true, a: false }, clase: { de: 'preventa', a: 'final' } }).vistos,
+    ).toEqual(['Pasó a final', 'La hizo pública'])
+  })
+})

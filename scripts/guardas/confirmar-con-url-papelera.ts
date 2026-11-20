@@ -1,4 +1,4 @@
-// Los `<Confirmar>` de la papelera (4.24-2b) y de la final (4.25-2) en `cotizaciones`: parte del registro de `CONFIRMAR_CON_URL`
+// Los `<Confirmar>` de la papelera (4.24-2b), de la final (4.25-2) y de aprobar una privada en `cotizaciones`: parte del registro de `CONFIRMAR_CON_URL`
 // (`confirmar-con-url.ts`), que los suma tras los del núcleo y los de la fórmula.
 import type { ConfirmarConUrl } from './confirmar-con-url'
 
@@ -13,4 +13,10 @@ export const CONFIRMAR_CON_URL_DE_LA_PAPELERA: Record<string, ConfirmarConUrl> =
     abre: 'src/modules/cotizaciones/features/final/components/marcar-final-del-menu.tsx',
     senal: 'PANEL_MARCAR_FINAL',
   },
+  // Aprobar una privada (la guardada, el listado, «De este vehículo» y comparar): `?panel=aprobar-privada&para=<id>&desde=<pantalla>`.
+  'src/modules/cotizaciones/features/aprobada/components/aprobar-privada/confirmar-aprobar-privada.tsx':
+    {
+      abre: 'src/modules/cotizaciones/features/aprobada/hooks/use-aprobar-privada-por-url.ts',
+      senal: 'PANEL_APROBAR_PRIVADA',
+    },
 }

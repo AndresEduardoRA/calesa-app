@@ -22,6 +22,7 @@ import {
 import { rutaDelListado } from '../../../../entities/ruta-de-la-hoja'
 import { useAlCambiarLaAprobada } from '../../hooks/aprobada-del-vehiculo'
 import { useAprobarEsta } from '../../hooks/use-aprobar-esta'
+import { DialogoDeAprobarPrivada } from '../aprobar-privada/dialogo-de-aprobar-privada'
 import { useDeEsteVehiculo, type DeEsteVehiculoLeido } from '../../hooks/use-de-este-vehiculo'
 import { useFocoAlLlegar } from '../../hooks/use-foco-al-llegar'
 import { ID_DE_ESTE_VEHICULO } from './ancla'
@@ -64,25 +65,13 @@ export function DeEsteVehiculo({
   ranuraDeComparar,
   vacio,
 }: PropsDeEsteVehiculo) {
-  const lista = useDeEsteVehiculo(vehiculo.id)
-  const fuente = useId()
+  const { lista, enCurso, aprobar, pedidoDe } = useIsla(vehiculo.id, conTitulo, alCambiar)
   const idDelTitulo = useId()
   const idDelAviso = useId()
   // Las marcadas; las que se ven elegidas son las que siguen en la lista (tras aprobar o releer se sueltan las que ya no están).
   const [marcadas, setMarcadas] = useState<readonly string[]>([])
   const ranura = useRanura(ranuraDeComparar)
   const elegidas = elegidasEnLaLista(marcadas, lista.aLaVista)
-  const leerAlMontar = useEffectEvent(lista.leerLaPrimera)
-  useEffect(() => {
-    leerAlMontar()
-  }, [])
-  // El «Ver» de la línea salta al título del servidor; el resumen dibuja el suyo y no escucha.
-  useFocoAlLlegar(ID_DE_ESTE_VEHICULO, !conTitulo)
-  useAlCambiarLaAprobada(vehiculo.id, fuente, lista.releer)
-  const { enCurso, aprobar } = useAprobarEsta(vehiculo.id, fuente, () => {
-    lista.releer()
-    alCambiar?.()
-  })
 
   if (!lista.leido) {
     return <SinLeer lista={lista} />
@@ -134,8 +123,38 @@ export function DeEsteVehiculo({
         ))}
       </ul>
       <Pie lista={lista} vehiculoId={vehiculo.id} />
+      <DialogoDeAprobarPrivada
+        desde="vehiculo"
+        de={(id) => {
+          const fila = lista.aLaVista.find((f) => f.id === id)
+          return fila === undefined ? null : pedidoDe(fila)
+        }}
+      />
     </section>
   )
+}
+
+// La lista (leída al montarse), al día con las otras islas del vehículo, y aprobar una fila (tras aprobar o deshacer relee la primera página).
+function useIsla(vehiculoId: string, conTitulo: boolean, alCambiar: (() => void) | undefined) {
+  const lista = useDeEsteVehiculo(vehiculoId)
+  const fuente = useId()
+  const leerAlMontar = useEffectEvent(lista.leerLaPrimera)
+  useEffect(() => {
+    leerAlMontar()
+  }, [])
+  // El «Ver» de la línea salta al título del servidor; el resumen dibuja el suyo y no escucha.
+  useFocoAlLlegar(ID_DE_ESTE_VEHICULO, !conTitulo)
+  useAlCambiarLaAprobada(vehiculoId, fuente, lista.releer)
+  const aprobacion = useAprobarEsta(
+    vehiculoId,
+    fuente,
+    () => {
+      lista.releer()
+      alCambiar?.()
+    },
+    'vehiculo',
+  )
+  return { lista, ...aprobacion }
 }
 
 // El lugar del servidor donde va «Comparar», leído una vez al montarse: la isla sólo se dibuja en el navegador (`diferido()`) y la ranura ya está en el documento.
