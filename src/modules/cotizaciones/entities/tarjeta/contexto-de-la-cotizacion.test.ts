@@ -10,7 +10,12 @@ const CONTEXTO: ContextoDeLaCotizacion = {
   fecha: '6 nov 2026',
   numero: '12',
   titulo: 'Toyota para Ana',
-  asesor: 'ana maría lópez',
+  asesor: {
+    nombre: 'ana maría lópez',
+    telefono: '+59170000001',
+    cargo: 'Asesora comercial',
+    foto: 'https://x.test/avatares/ana.webp',
+  },
   cliente: 'Juan Pérez',
   vehiculo: { titulo: 'Toyota Hilux 2022', lote: '4455', vin: null },
   venceEl: null,
@@ -39,6 +44,24 @@ describe('las variables de la tarjeta', () => {
     expect(valor('modo_tc')).toBe('Paralelo')
     expect(valor('constructor')).toBe('')
   })
+
+  it('el asesor es quien mira: su nombre, sus iniciales, su WhatsApp tal cual se guardó y su cargo', () => {
+    const delCalculo = { tituloOpcion: null, modo: null }
+    const valor = (v: string, c = CONTEXTO) => valorDeLaVariable(v, c, delCalculo)
+    expect(valor('asesor_nombre')).toBe('ana maría lópez')
+    expect(valor('asesor_telefono')).toBe('+59170000001')
+    expect(valor('asesor_cargo')).toBe('Asesora comercial')
+    const sinFicha = {
+      ...CONTEXTO,
+      asesor: { nombre: 'Luis', telefono: null, cargo: null, foto: null },
+    }
+    expect(valor('asesor_iniciales', sinFicha)).toBe('L')
+    expect(valor('asesor_telefono', sinFicha)).toBe('')
+    expect(valor('asesor_cargo', sinFicha)).toBe('')
+    const sinAsesor = { ...CONTEXTO, asesor: null }
+    for (const v of ['asesor_nombre', 'asesor_iniciales', 'asesor_telefono', 'asesor_cargo'])
+      expect(valor(v, sinAsesor)).toBe('')
+  })
 })
 
 describe('contextoDeLaPagina', () => {
@@ -47,7 +70,7 @@ describe('contextoDeLaPagina', () => {
       titulo: null,
       cliente: null,
       vehiculo: null,
-      asesor: 'Ana',
+      asesor: { nombre: 'Ana', telefono: null, cargo: null, foto: null },
       numero: 12,
       venceEl: '2026-12-04',
       guardadaEl: '2026-11-07T02:00:00.123456+00:00',

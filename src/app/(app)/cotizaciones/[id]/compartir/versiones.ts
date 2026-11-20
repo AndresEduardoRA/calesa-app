@@ -4,6 +4,7 @@ import {
   leerHojaDeUnaGuardada,
   paraCompartirDeUnaGuardada,
   tituloBaseDeLaHermana,
+  type AsesorDeLaTarjeta,
   type DatosParaCompartir,
   type HojaDeUnaGuardada,
 } from '@/modules/cotizaciones'
@@ -12,7 +13,7 @@ type Lectura = Parameters<typeof paraCompartirDeUnaGuardada>[0]['lectura']
 type Cifras = Pick<DatosParaCompartir, 'conceptos' | 'total'>
 type Comun = {
   vehiculo: Parameters<typeof contextoDeLaPagina>[0]['vehiculo']
-  asesor: string | null
+  asesor: AsesorDeLaTarjeta | null
   zona: string
   locale: string
 }

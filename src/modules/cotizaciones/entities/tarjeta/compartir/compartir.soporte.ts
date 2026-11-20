@@ -5,6 +5,7 @@ export const DATOS_DE_PRUEBA = {
   numero: 12,
   titulo: { texto: 'Hilux para Juan', fuente: 'titulo' },
   autor: 'Ana Pérez',
+  asesor: { nombre: 'Luis Rojas', cargo: 'Asesor comercial', telefono: '+59170000002' },
   vehiculo: {
     titulo: 'Toyota Hilux 2022',
     lote: '4455',

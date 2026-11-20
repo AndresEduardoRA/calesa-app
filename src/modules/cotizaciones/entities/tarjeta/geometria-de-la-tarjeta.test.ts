@@ -3,6 +3,7 @@ import { geometriaDeLaTarjeta, type CeldaDibujada, type Geometria } from './geom
 import { tarjetaDesde, type LecturaDeLaTarjeta } from './lectura-de-la-tarjeta'
 import { calculoDePrueba, CONTEXTO_DE_PRUEBA, crudaDeLaTarjeta } from './tarjeta.soporte'
 import type { CalculoDeLaTarjeta } from '../calculo-de-la-tarjeta'
+import type { ContextoDeLaCotizacion } from '../contexto-de-la-cotizacion'
 
 const LOCALE = 'es-BO'
 const lectura = (mas: Record<string, unknown> = {}): LecturaDeLaTarjeta => {
@@ -154,6 +155,57 @@ describe('geometriaDeLaTarjeta: el contenido y el estilo', () => {
   })
 })
 
+describe('geometriaDeLaTarjeta: el asesor es quien mira', () => {
+  // La fila del asesor con su WhatsApp, su cargo y su foto en lugar del rótulo, el nombre y el logo.
+  const conElAsesor = () => {
+    const definicion = crudaDeLaTarjeta().definicion
+    const celdas = definicion.celdas.map((c) =>
+      c.id === 'c_asesor_rotulo'
+        ? { ...c, contenido: { tipo: 'dato', variable: 'asesor_telefono' } }
+        : c.id === 'c_asesor'
+          ? { ...c, contenido: { tipo: 'dato', variable: 'asesor_cargo' } }
+          : c.id === 'c_logo'
+            ? { ...c, contenido: { tipo: 'foto_del_asesor' } }
+            : c,
+    )
+    return lectura({ definicion: { ...definicion, celdas } })
+  }
+  const conContexto = (asesor: ContextoDeLaCotizacion['asesor']) =>
+    geometriaDeLaTarjeta({
+      lectura: conElAsesor(),
+      calculo: calculoDePrueba(),
+      contexto: { ...CONTEXTO_DE_PRUEBA, asesor },
+      monedaBs: 'BOB',
+      locale: LOCALE,
+    })
+
+  it('su WhatsApp tal cual, su cargo y su foto con sus iniciales; sin foto, la URL nula (el círculo)', () => {
+    const g = conContexto({
+      nombre: 'Luis Rojas',
+      telefono: '+59170000002',
+      cargo: 'Asesor comercial',
+      foto: 'https://x.test/avatares/luis.webp',
+    })
+    expect(textoDe(celda(g, 'c_asesor_rotulo'))).toBe('+59170000002')
+    expect(textoDe(celda(g, 'c_asesor'))).toBe('Asesor comercial')
+    expect(celda(g, 'c_asesor').marca).toMatchObject({ variable: 'asesor_cargo' })
+    expect(celda(g, 'c_logo').contenido).toEqual({
+      tipo: 'foto_del_asesor',
+      url: 'https://x.test/avatares/luis.webp',
+      iniciales: 'LR',
+      nombre: 'Luis Rojas',
+    })
+    const sinFicha = conContexto({ nombre: 'Luis', telefono: null, cargo: null, foto: null })
+    expect(celda(sinFicha, 'c_asesor_rotulo').contenido).toEqual({ tipo: 'texto', lineas: [] })
+    expect(celda(sinFicha, 'c_asesor').contenido).toEqual({ tipo: 'texto', lineas: [] })
+    expect(celda(sinFicha, 'c_logo').contenido).toMatchObject({ url: null, iniciales: 'L' })
+  })
+
+  it('sin asesor (su perfil no se leyó), la foto queda vacía', () => {
+    expect(celda(conContexto(null), 'c_logo').contenido).toEqual({ tipo: 'vacio' })
+  })
+})
+
 describe('geometriaDeLaTarjeta: los colores y la de por omisión', () => {
   it('los colores: el hex del catálogo, `auto` (blanco) con el texto de más contraste, y un color que ya no está se dibuja `auto`', () => {
     const g = geometria()
@@ -184,7 +236,7 @@ describe('geometriaDeLaTarjeta: los colores y la de por omisión', () => {
     })
   })
 
-  it('no depende de lo que la hoja de quien mira trae de más: la portada compartida es la misma para todo nivel', () => {
+  it('no depende de lo que la hoja de quien mira trae de más: la imagen compartida es la misma para todo nivel', () => {
     // Quien tiene un nivel mayor recibe valores y estados de nodos que la tarjeta no nombra (sólo nombra los del nivel «todos», K4 de
     // `cotizacion-tarjeta.sql`): la geometría no los lee.
     const base = calculoDePrueba()

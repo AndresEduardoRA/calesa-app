@@ -62,7 +62,9 @@ locale)`, el único lector de un número tipeado.
   las recuerda por ruta; por debajo una columna con el desplazamiento de la página), `<IndiceDeBloques>` (barra de enlaces `#ancla`, pegajosa en el celular, `aria-current="location"` del bloque a la
   vista por `lib/bloque-a-la-vista.ts`), `<BloqueDeFicha>` (ancla, título, límite de error y `alAcercarse`), `irAlBloque()` (desplaza y enfoca el `h2`),
   `useIrAlLlegar()` y `<EsqueletoDeFichaEnDosColumnas>` (el `loading.tsx` lo importa por su ruta, no por el barril). `ui/use-a-la-vista.ts`: si un nodo ya
-  estuvo a 200 px de la vista (leer o pedir código recién ahí).
+  estuvo a 200 px de la vista (leer o pedir código recién ahí; con `seguir`, si lo está ahora).
+- `lib/cola.ts`: `crearCola(maximo)`, a lo sumo `maximo` turnos a la vez en el orden en que se pidieron (`pedir()` → `{ turno, soltar }`; soltar antes
+  del turno deja la fila): las imágenes de la tarjeta de una lista.
 - `ui/barra-de-cambios-sin-guardar.tsx`: `<BarraDeCambiosSinGuardar>` (la barra pegada abajo de un formulario de página) sobre
   `ui/use-salida-con-cambios.ts` (`useSalidaConCambios()`: enlaces frenados en la captura según `lib/destino-de-un-clic.ts`, `beforeunload` y
   `anotarCambiosSinGuardar()` de `ui/salida-con-cambios.ts`; el «atrás» no se frena).

@@ -5,7 +5,7 @@ import type { RecalculoInicial } from '../../entities/apertura'
 import { calculoDeLoGuardado } from '../../entities/calculo-de-la-tarjeta'
 import { nombreDelModo } from '../../entities/cabecera-de-la-hoja'
 import type { HojaDeUnaGuardada } from '../../entities/hoja-de-una-guardada'
-import type { AnchoDeLaPortada } from '../../entities/ruta-de-la-hoja'
+import type { AnchoDeLaImagen } from '../../entities/ruta-de-la-hoja'
 import { archivoDelPdf } from '../../entities/tarjeta/archivo-del-pdf'
 import {
   lineasDeLaTarjeta,
@@ -17,20 +17,22 @@ import {
   type Geometria,
 } from '../../entities/tarjeta/geometria-de-la-tarjeta'
 import { lecturaRetocada } from '../../entities/tarjeta/retoques/aplicar-retoques'
-import { getAsesorDeLaCotizacion } from '../../infra/tarjeta/asesor-de-la-cotizacion'
+import { getAsesorQueMira } from '../../infra/tarjeta/asesor-que-mira'
+import { getAutorDeLaCotizacion } from '../../infra/tarjeta/autor-de-la-cotizacion'
+import { getHuellaDeLaImagen } from '../../infra/tarjeta/huella-de-la-imagen'
 import { setRetoques } from '../../infra/tarjeta/retoques'
-import { logoParaDibujar } from '../../infra/tarjeta/logo-de-la-tarjeta'
-import {
-  bajarLaPortada as bajar,
-  getEstadoDeLaPortada,
-  ponerLaPortada,
-  subirLaPortada,
-} from '../../infra/tarjeta/portada'
+import { fotoParaDibujar, logoParaDibujar } from '../../infra/tarjeta/logo-de-la-tarjeta'
 import { getTarjeta } from '../../infra/tarjeta/tarjeta'
 import { getVehiculoDeLaCotizacion } from '../../infra/tarjeta/vehiculo-de-la-cotizacion'
 
-// A quien creó una cotización guardada, para «Asesor:» de su tarjeta (4.18-2, P2 a).
-export const leerAsesorDeLaCotizacion = getAsesorDeLaCotizacion
+// El asesor de la tarjeta: quien la mira o la comparte (su nombre, su WhatsApp, su cargo y la ruta de su foto), con `cache()` por request.
+export const leerAsesorQueMira = getAsesorQueMira
+
+// El autor de una cotización guardada (quien la creó), para «Creado por» de «Compartir».
+export const leerAutorDeLaCotizacion = getAutorDeLaCotizacion
+
+// La huella de la imagen de la tarjeta para quien la pide (`cotizacion_imagen_huella()`): la base de su ETag. Lo que no se ve, `no_encontrado`.
+export const leerHuellaDeLaImagen = getHuellaDeLaImagen
 
 // El vehículo de una cotización guardada (por clave primaria, sin la papelera), para las fotos de «Compartir la cotización».
 export const leerVehiculoDeLaCotizacion = getVehiculoDeLaCotizacion
@@ -54,7 +56,7 @@ export type EntradaDelPdf = {
 type EntradaDeLaGeometria = Pick<EntradaDelPdf, 'lectura' | 'contexto' | 'locale'>
 
 // La geometría de la tarjeta de **lo guardado** de una cotización (`calculoDeLoGuardado()`, como «Vista previa» de esa guardada; nunca lo de hoy), con la lectura
-// de la tarjeta de SU versión como quien pide y SUS retoques (los que aplican: `lecturaRetocada()`). El PDF, compartir y la portada salen de aquí. `sin_permiso`
+// de la tarjeta de SU versión como quien pide y SUS retoques (los que aplican: `lecturaRetocada()`). El PDF, compartir y la imagen salen de aquí. `sin_permiso`
 // si la tarjeta no se ve.
 async function geometriaDeUnaGuardada(
   entrada: EntradaDeLaGeometria,
@@ -90,8 +92,21 @@ export async function paraCompartirDeUnaGuardada(
   })
 }
 
-// El logo, sólo si la tarjeta lo dibuja.
-const conLogo = (geometria: Geometria) => geometria.celdas.some((c) => c.contenido.tipo === 'logo')
+// El logo y la foto del asesor, sólo si alguna de las tarjetas los dibuja, y a la vez, nunca uno tras otro: cada uno espera hasta 2 s. `completas`: llegó lo que
+// se esperaba (si uno no llegó, la tarjeta sale sin él y la imagen no se deja guardar en el navegador).
+async function imagenesParaDibujar(geometrias: readonly Geometria[], entrada: EntradaDelPdf) {
+  const lleva = (tipo: 'logo' | 'foto_del_asesor') =>
+    geometrias.some((g) => g.celdas.some((c) => c.contenido.tipo === tipo))
+  const conLogo = lleva('logo') ? entrada.contexto.logo : null
+  const conFoto = lleva('foto_del_asesor') ? (entrada.contexto.asesor?.foto ?? null) : null
+  const [logo, foto] = await Promise.all([
+    logoParaDibujar({ logo: conLogo, tope: entrada.topeDelLogo }),
+    fotoParaDibujar({ foto: conFoto, tope: entrada.topeDelLogo }),
+  ])
+  const falto = (pedida: unknown, llegada: unknown) =>
+    pedida !== null && pedida !== '' && llegada === null
+  return { logo, foto, completas: !falto(conLogo, logo) && !falto(conFoto, foto) }
+}
 
 // El PDF de una cotización guardada (4.18-3a): la geometría de lo guardado en A4. react-pdf se carga sólo aquí, con `import()` (C9). `sin_permiso` si la
 // tarjeta no se ve; lo demás que falle, `inesperado`.
@@ -110,19 +125,17 @@ export async function pdfDeUnaGuardada(
     hermana?.ok && entrada.hermana
       ? { geometria: hermana.data.geometria, antes: entrada.hermana.antes }
       : null
-  const logo = await logoParaDibujar({
-    logo:
-      conLogo(geometria) || (deLaHermana !== null && conLogo(deLaHermana.geometria))
-        ? entrada.contexto.logo
-        : null,
-    tope: entrada.topeDelLogo,
-  })
+  const { logo, foto } = await imagenesParaDibujar(
+    deLaHermana ? [geometria, deLaHermana.geometria] : [geometria],
+    entrada,
+  )
   try {
     const { pdfDeLaTarjeta } = await import('../../infra/tarjeta/pdf/pdf-de-la-tarjeta')
     const bytes = await pdfDeLaTarjeta({
       geometria,
       numero: hoja.cotizacion.numero,
       logo,
+      foto,
       empresa: entrada.empresa,
       ...(deLaHermana ? { hermana: deLaHermana } : {}),
     })
@@ -134,85 +147,50 @@ export async function pdfDeUnaGuardada(
 }
 
 // La tarjeta de lo guardado como imagen PNG (`ImageResponse`, al ancho de la tarjeta en px): la misma geometría que el PDF. `next/og` se carga sólo aquí, con
-// `import()`, y nunca llega al navegador. La usa la portada de la cotización; esta área no le da ruta. `sin_permiso` si la tarjeta no se ve; lo demás,
-// `inesperado`.
+// `import()`, y nunca llega al navegador. La base de `webpDeUnaGuardada()`. `completa`, con el logo y la foto que dibuja. `sin_permiso` si la tarjeta no se ve;
+// lo demás, `inesperado`.
 export async function imagenDeUnaGuardada(
   entrada: EntradaDelPdf,
-): Promise<Resultado<{ bytes: Uint8Array<ArrayBuffer>; ancho: number; alto: number }>> {
+): Promise<
+  Resultado<{ bytes: Uint8Array<ArrayBuffer>; ancho: number; alto: number; completa: boolean }>
+> {
   const armada = await geometriaDeUnaGuardada(entrada)
   if (!armada.ok) {
     return armada
   }
   const { geometria } = armada.data
-  const logo = await logoParaDibujar({
-    logo: conLogo(geometria) ? entrada.contexto.logo : null,
-    tope: entrada.topeDelLogo,
-  })
+  const { logo, foto, completas } = await imagenesParaDibujar([geometria], entrada)
   try {
     const { pngDeLaTarjeta } = await import('../../infra/tarjeta/imagen/imagen-de-la-tarjeta')
-    const bytes = await pngDeLaTarjeta({ geometria, logo })
-    return ok({ bytes, ancho: Math.ceil(geometria.ancho), alto: Math.ceil(geometria.alto) })
+    const bytes = await pngDeLaTarjeta({ geometria, logo, foto })
+    return ok({
+      bytes,
+      ancho: Math.ceil(geometria.ancho),
+      alto: Math.ceil(geometria.alto),
+      completa: completas,
+    })
   } catch (error) {
     console.error('[imagen] No se pudo dibujar la tarjeta.', error)
     return fallo('inesperado', 'No se pudo armar la imagen de la tarjeta.')
   }
 }
 
-// La portada de la cotización (`docs/COTIZADOR.md` › «La portada de la cotización»): el estado para quien pide y la guardada, con su sesión.
-export const leerLaPortada = getEstadoDeLaPortada
-export const bajarLaPortada = bajar
-
-// La portada: la imagen de lo guardado (`imagenDeUnaGuardada()`) en WebP de hasta 1.600 px. `sharp` se carga sólo aquí, con `import()`, y nunca llega al navegador.
-export async function imagenDeLaPortada(
+// La imagen de la tarjeta (`docs/COTIZADOR.md` › «La imagen de la tarjeta»): lo guardado (`imagenDeUnaGuardada()`) en WebP de hasta 1.600 px, o del ancho de la
+// miniatura que se pida, achicada del PNG, y si salió `completa`. `sharp` se carga sólo aquí, con `import()`, y nunca llega al navegador.
+export async function webpDeUnaGuardada(
   entrada: EntradaDelPdf,
-): Promise<Resultado<Uint8Array<ArrayBuffer>>> {
+  { ancho }: { ancho: AnchoDeLaImagen | null },
+): Promise<Resultado<{ bytes: Uint8Array<ArrayBuffer>; completa: boolean }>> {
   const png = await imagenDeUnaGuardada(entrada)
   if (!png.ok) {
     return png
   }
   try {
     const { webpDeLaTarjeta } = await import('../../infra/tarjeta/imagen/webp-de-la-tarjeta')
-    return ok(await webpDeLaTarjeta(png.data.bytes))
+    const bytes = await webpDeLaTarjeta(png.data.bytes, ancho === null ? {} : { ancho })
+    return ok({ bytes, completa: png.data.completa })
   } catch (error) {
-    console.error('[portada] No se pudo pasar la tarjeta a WebP.', error)
-    return fallo('inesperado', 'No se pudo armar la vista previa.')
+    console.error('[imagen] No se pudo pasar la tarjeta a WebP.', error)
+    return fallo('inesperado', 'No se pudo armar la imagen.')
   }
-}
-
-// La miniatura de la portada (`?ancho=`, la de las listas): la grande achicada con `sharp`, que se carga sólo aquí, con `import()`. Si no se pudo, un fallo (la ruta
-// responde 500 y la portada ofrece «Reintentar»).
-export async function miniaturaDeLaPortada(
-  bytes: Uint8Array,
-  ancho: AnchoDeLaPortada,
-): Promise<Resultado<Uint8Array<ArrayBuffer>>> {
-  try {
-    const { miniaturaDeLaPortada: achicar } =
-      await import('../../infra/tarjeta/imagen/webp-de-la-tarjeta')
-    return ok(await achicar(bytes, ancho))
-  } catch (error) {
-    console.error('[portada] No se pudo achicar la portada.', error)
-    return fallo('inesperado', 'No se pudo armar la vista previa.')
-  }
-}
-
-// Guarda la portada armada con la clave que se leyó **antes** de leer la hoja: sube el objeto y lo anota. Si la clave cambió mientras se armaba (PT409), no se
-// guarda y no es un error (`guardada: false`): quien la pidió ya tiene la suya.
-export async function guardarLaPortada({
-  id,
-  bytes,
-  clave,
-}: {
-  id: string
-  bytes: Uint8Array<ArrayBuffer>
-  clave: string
-}): Promise<Resultado<{ guardada: boolean }>> {
-  const subida = await subirLaPortada(id, bytes)
-  if (!subida.ok) {
-    return subida
-  }
-  const puesta = await ponerLaPortada(id, subida.data, clave)
-  if (!puesta.ok) {
-    return puesta.error.codigo === 'conflicto' ? ok({ guardada: false }) : puesta
-  }
-  return ok({ guardada: true })
 }

@@ -12,7 +12,7 @@ import { literal, sql } from './soporte/sql'
 // El drawer de la cotización (el resumen `?cotizacion=`, `docs/UX.md` › «Cotizaciones», T320): se abre igual desde la tabla, la tarjeta y la línea del modal de un
 // grupo (que se cierra al abrirlo), con la abierta marcada; arriba «Abrir cotización», «Compartir cotización» y el «⋯» sin «Compartir» (también para la línea del grupo, que no está en
 // la página); sus diálogos se abren sobre el resumen sin cerrarlo; «Aprobar esta» de «De este vehículo» cambia la insignia en el resumen y en la lista sin recargar;
-// las pestañas siguen; en Modo Live no hay «Compartir». La portada y su visor los recorre `cotizaciones-portada.spec.ts`.
+// las pestañas siguen; en Modo Live no hay «Compartir». La imagen de la tarjeta y su visor los recorre `cotizaciones-imagen-de-la-tarjeta.spec.ts`.
 test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDeLaFinal
@@ -70,19 +70,19 @@ async function esElResumenDe(page: Page, id: string): Promise<Locator> {
   return drawer
 }
 
-// El orden de la barra (los tres, antes de la portada) y que «Abrir» y «Compartir» crecen por igual en la misma fila (al 100 %, también en el celular).
+// El orden de la barra (los tres, antes de la imagen de la tarjeta) y que «Abrir» y «Compartir» crecen por igual en la misma fila (al 100 %, también en el celular).
 async function revisarLaBarra(drawer: Locator, botones: Locator[]): Promise<void> {
   const orden = await drawer.evaluate((d) => {
     const laBarra = d.querySelector('[data-acciones-del-resumen]')
-    const portada = d.querySelector('[data-portada]')
+    const imagen = d.querySelector('[data-imagen-de-la-tarjeta]')
     return {
       textos: [...(laBarra?.children ?? [])].map(
         (n) => n.getAttribute('aria-label') ?? n.textContent,
       ),
       antes:
-        portada === null ||
+        imagen === null ||
         laBarra === null ||
-        Boolean(laBarra.compareDocumentPosition(portada) & Node.DOCUMENT_POSITION_FOLLOWING),
+        Boolean(laBarra.compareDocumentPosition(imagen) & Node.DOCUMENT_POSITION_FOLLOWING),
     }
   })
   expect(orden.textos.slice(0, 2)).toEqual(['Abrir cotización', 'Compartir cotización'])
@@ -153,7 +153,7 @@ test('E2E desde la fila de la tabla se abre el mismo resumen y la fila queda mar
   await expect(page.locator(`tr[data-state="selected"]`)).toContainText(`N.º ${numeroDe(suelta)}`)
 })
 
-test('E2E la barra: «Abrir», «Compartir» y el «⋯» en ese orden, antes de la portada; sus diálogos no cierran el resumen', async ({
+test('E2E la barra: «Abrir», «Compartir» y el «⋯» en ese orden, antes de la imagen de la tarjeta; sus diálogos no cierran el resumen', async ({
   page,
 }, info) => {
   await abrir(page, deLaPrueba(`&cotizacion=${suelta}`))

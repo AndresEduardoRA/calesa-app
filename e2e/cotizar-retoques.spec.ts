@@ -27,7 +27,7 @@ import {
 } from './soporte/tarjeta-cuadricula'
 
 // Los retoques de la tarjeta (`docs/COTIZADOR.md` › «Retoques de la tarjeta», `docs/UX.md` › «Cotización guardada»): en la vista previa de una guardada, quien la
-// puede guardar entra en «Retocar», cambia un texto y oculta una fila; «Listo» lo guarda y vale en la vista previa, el PDF, «Revisiones» y la portada; «Volver a
+// puede guardar entra en «Retocar», cambia un texto y oculta una fila; «Listo» lo guarda y vale en la vista previa, el PDF, «Revisiones» y la imagen de la tarjeta (otra ETag); «Volver a
 // la plantilla» lo deshace. Quien sólo ve no tiene «Retocar», y tras publicar una plantilla sin esa celda el modo dice que el retoque ya no aplica. Un origen
 // propio con la fórmula de la subasta y la réplica de V1 publicada: nunca la plantilla de la semilla.
 test.describe.configure({ mode: 'serial' })
@@ -54,10 +54,9 @@ const retoquesGuardados = () =>
   sql(
     `select coalesce(tarjeta_retoques::text, '') from public.cotizaciones where id = ${literal(guardada)}::uuid`,
   )
-const claveDeLaPortada = () =>
-  sql(
-    `select coalesce(clave, '') from public.cotizaciones_portadas where cotizacion_id = ${literal(guardada)}::uuid`,
-  )
+// La ETag de la imagen de la tarjeta para quien mira: cambia con los retoques (la huella mira todo lo que el dibujo lee).
+const etiquetaDeLaImagen = async (page: Page) =>
+  (await page.request.get(`/cotizaciones/${guardada}/imagen`)).headers()['etag'] ?? ''
 
 function borrarLoDeEsteSpec(): void {
   const mios = `select id from public.origenes where clave like '${PREFIJO_CLAVE_E2E}${RAIZ}%'`
@@ -130,8 +129,8 @@ test('E2E retocar, ver en el PDF y en Revisiones, y volver a la plantilla', asyn
   await tipearEnLaHoja(page, 'remate', '9500')
   await alDia(page)
   guardada = await guardarLaHojaAbierta(page)
-  await expect.poll(claveDeLaPortada, { timeout: 20_000 }).toMatch(/^p\d+-[0-9a-f]{32}$/)
-  const claveAntes = claveDeLaPortada()
+  const etiquetaAntes = await etiquetaDeLaImagen(page)
+  expect(etiquetaAntes).toMatch(/^"i-[0-9a-f]{32}\./)
 
   await abrirLaVistaPreviaDeLaGuardada(page)
   await capturar(page, info, 'retoques-antes')
@@ -163,9 +162,7 @@ test('E2E retocar, ver en el PDF y en Revisiones, y volver a la plantilla', asyn
   const pdf = (await leerElPdf(page, guardada)).lineas.join('\n')
   expect(pdf).toContain('Para Juan')
   expect(pdf).not.toContain(NOTA)
-  await expect.poll(claveDeLaPortada, { timeout: 20_000 }).not.toBe(claveAntes)
-  const portada = await page.request.get(`/cotizaciones/${guardada}/portada`)
-  expect(portada.headers()['etag']).toBe(`"${claveDeLaPortada()}"`)
+  expect(await etiquetaDeLaImagen(page)).not.toBe(etiquetaAntes)
 
   await page.goto(`/cotizaciones/${guardada}?panel=revisiones`)
   await expect(page.getByText('Retocó la tarjeta').first()).toBeVisible({ timeout: 15_000 })

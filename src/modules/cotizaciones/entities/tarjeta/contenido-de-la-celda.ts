@@ -1,10 +1,14 @@
 // Lo que muestra una celda de la tarjeta, resuelto en texto: un texto literal por renglones, una variable de la cotización, un dato de un nodo (su monto,
-// etiqueta, descripción, porcentaje, tipo de cambio o plazo, D6, D8, D17 y D18 de T310), el logo o nada. Un dato de un nodo que no aplica queda vacío; un monto
+// etiqueta, descripción, porcentaje, tipo de cambio o plazo, D6, D8, D17 y D18 de T310), el logo, la foto del asesor (quien mira) o nada. Un dato de un nodo que no aplica queda vacío; un monto
 // nulo, «—». Los montos con `formatearMonto()` (el texto de `<Monto>` y del PDF); en pantalla los tapa `<Monto>` en Modo Live.
 import { formatearMonto, formatearNumero, formatearPorcentaje } from '@/shared/lib/formato'
 import type { CalculoDeLaTarjeta } from '../calculo-de-la-tarjeta'
 import type { ContenidoDeLaCelda, Mostrar } from '../cuadricula-de-la-tarjeta'
-import { valorDeLaVariable, type ContextoDeLaCotizacion } from './contexto-de-la-cotizacion'
+import {
+  inicialesDe,
+  valorDeLaVariable,
+  type ContextoDeLaCotizacion,
+} from './contexto-de-la-cotizacion'
 import type { TarjetaLista, TipoDeCambioDeLaTarjeta } from './lectura-de-la-tarjeta'
 
 export const SIN_DATO = '—'
@@ -14,6 +18,8 @@ export type ContenidoDibujado =
   | { tipo: 'texto'; lineas: string[] }
   | ({ tipo: 'monto'; segunda: MontoDibujado | null } & MontoDibujado)
   | { tipo: 'logo' }
+  // La foto del asesor: su URL (nula sin foto: el círculo con las iniciales; `''` en las cifras de ejemplo: la muestra punteada «Foto»), sus iniciales y su nombre.
+  | { tipo: 'foto_del_asesor'; url: string | null; iniciales: string; nombre: string }
   | { tipo: 'vacio' }
 
 export type EntradaDelContenido = {
@@ -114,6 +120,17 @@ export function contenidoDibujado(
       return { tipo: 'vacio' }
     case 'logo':
       return e.contexto.logo === null ? { tipo: 'vacio' } : { tipo: 'logo' }
+    case 'foto_del_asesor': {
+      const asesor = e.contexto.asesor
+      return asesor === null
+        ? { tipo: 'vacio' }
+        : {
+            tipo: 'foto_del_asesor',
+            url: asesor.foto,
+            iniciales: inicialesDe(asesor.nombre),
+            nombre: asesor.nombre,
+          }
+    }
     case 'dato':
       if ('variable' in c) {
         const modo =

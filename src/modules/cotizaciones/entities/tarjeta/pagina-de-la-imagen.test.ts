@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { HojaDeUnaGuardada } from '../hoja-de-una-guardada'
-import { paginaDeLaPortada } from './pagina-de-la-portada'
+import { paginaDeLaImagen } from './pagina-de-la-imagen'
 
 const GUARDADA_EL = '2026-11-07T02:30:00.123456+00:00'
 const hoja = (titulo: string | null) =>
@@ -11,12 +11,16 @@ const hoja = (titulo: string | null) =>
 const LOGO = { nombre: 'Importadora', url: 'https://almacen.test/marca/logo.png' }
 const VEHICULO = { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null }
 
-describe('paginaDeLaPortada', () => {
+describe('paginaDeLaImagen', () => {
   it('arma la página con el título guardado, el contexto, el número, el vencimiento, el último guardado tal cual y la empresa', () => {
     expect(
-      paginaDeLaPortada({
+      paginaDeLaImagen({
         hoja: hoja('Hilux para Juan'),
-        contexto: { cliente: 'Juan', vehiculo: VEHICULO, asesor: 'Ana' },
+        contexto: {
+          cliente: 'Juan',
+          vehiculo: VEHICULO,
+          asesor: { nombre: 'Ana', telefono: null, cargo: null, foto: null },
+        },
         empresa: 'Calesa',
         logo: LOGO,
       }),
@@ -24,7 +28,7 @@ describe('paginaDeLaPortada', () => {
       titulo: 'Hilux para Juan',
       cliente: 'Juan',
       vehiculo: VEHICULO,
-      asesor: 'Ana',
+      asesor: { nombre: 'Ana', telefono: null, cargo: null, foto: null },
       numero: 12,
       venceEl: '2026-11-20',
       guardadaEl: GUARDADA_EL,
@@ -35,7 +39,7 @@ describe('paginaDeLaPortada', () => {
 
   it('sin título propio, el del vehículo que ve; sin ninguno, nada (el número ya va al lado)', () => {
     expect(
-      paginaDeLaPortada({
+      paginaDeLaImagen({
         hoja: hoja(null),
         contexto: { cliente: null, vehiculo: VEHICULO, asesor: null },
         empresa: 'Calesa',
@@ -43,7 +47,7 @@ describe('paginaDeLaPortada', () => {
       }).titulo,
     ).toBe('Toyota Hilux 2020')
     expect(
-      paginaDeLaPortada({
+      paginaDeLaImagen({
         hoja: hoja(null),
         contexto: { cliente: null, vehiculo: null, asesor: null },
         empresa: 'Calesa',

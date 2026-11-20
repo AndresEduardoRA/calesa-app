@@ -43,7 +43,7 @@ export function useResumenDeCotizacion() {
         id === idDelResumen(cotizacionId),
       )
     },
-    // Cerrar se lleva también el visor de la portada (`?visor=&foto=`): si no, reabrir la misma cotización lo volvería a abrir.
+    // Cerrar se lleva también el visor de la imagen (`?visor=&foto=`): si no, reabrir la misma cotización lo volvería a abrir.
     cerrar: () => {
       void setParametros({
         [CLAVE_DE_RESUMEN_DE_COTIZACION]: null,

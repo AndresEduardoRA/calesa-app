@@ -4,7 +4,7 @@ import { DATOS_DE_PRUEBA } from '../../entities/tarjeta/compartir/compartir.sopo
 import {
   MENSAJE_SESION_QUE_NO_VALE,
   MENSAJE_SIN_ACCESO,
-  pedirLaPortadaParaCompartir,
+  pedirLaImagenParaCompartir,
   pedirLasFotos,
   pedirLosDatos,
 } from './compartir.client'
@@ -60,22 +60,22 @@ describe('pedirLosDatos', () => {
   })
 })
 
-describe('pedirLasFotos y la portada', () => {
+describe('pedirLasFotos y la imagen de la tarjeta', () => {
   it('las fotos llegan como lista', async () => {
     responder(json({ fotos: [] }))
     expect(await pedirLasFotos(ID)).toEqual({ ok: true, data: [] })
   })
 
-  it('la portada se pide con la caché del navegador (su ETag) y llega como blob', async () => {
+  it('la imagen se pide a su ruta con la caché del navegador (su ETag) y llega como blob', async () => {
     const espia = responder(
       new Response(new Uint8Array([1, 2]), {
         status: 200,
         headers: { 'Content-Type': 'image/webp' },
       }),
     )
-    const portada = await pedirLaPortadaParaCompartir(ID)
-    expect(portada.ok).toBe(true)
-    expect(espia).toHaveBeenCalledWith(`/cotizaciones/${ID}/portada`, {
+    const imagen = await pedirLaImagenParaCompartir(ID)
+    expect(imagen.ok).toBe(true)
+    expect(espia).toHaveBeenCalledWith(`/cotizaciones/${ID}/imagen`, {
       redirect: 'manual',
       cache: 'default',
     })

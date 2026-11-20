@@ -4,7 +4,7 @@ import { PESO_MAXIMO_LOGO, leerAjustes } from '@/modules/empresa'
 import { requerirSesion } from '@/modules/equipo'
 import { urlPublicaONull } from '@/shared/lib/almacen'
 import {
-  asesorDe,
+  asesorQueMira,
   clienteDe,
   oNulo,
   tituloDeLaTarjeta,
@@ -48,7 +48,7 @@ export async function GET(_peticion: Request, { params }: RouteContext<'/cotizac
   const [cliente, vehiculo, asesor, ajustes] = await Promise.all([
     oNulo(clienteDe(sesion.permisos, hoja.cotizacion.leadId)),
     oNulo(vehiculoDe(hoja.cotizacion.vehiculoId)),
-    asesorDe(id),
+    asesorQueMira(),
     leerAjustes(),
   ])
   if (!ajustes.ok) {
@@ -61,6 +61,7 @@ export async function GET(_peticion: Request, { params }: RouteContext<'/cotizac
   // La hermana disponible va en otra página del mismo PDF (glosario: «Cotizaciones hermanas»).
   const hermana = await hermanaDelPdf(hoja, {
     cliente: nombreDelCliente,
+    asesor,
     vehiculo,
     empresa: nombre,
     logo,
