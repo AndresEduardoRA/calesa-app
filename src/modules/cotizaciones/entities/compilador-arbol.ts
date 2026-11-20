@@ -23,6 +23,7 @@ export type OpDeArbol =
   | 'elegir'
   | 'max'
   | 'min'
+  | 'buscarv'
 
 export type Numero = Rango & {
   k: 'num'
@@ -52,6 +53,8 @@ export type Campos = {
   // El comparador de `comparar` y `es_opcion`, y la opción con la que `es_opcion` compara la variante.
   cmp?: Comparador
   clave?: string
+  // BUSCARV exacta: la columna de la tabla donde se busca el valor (la primera). Sin ella, BUSCARV es por tramo.
+  buscarEn?: string
 }
 export type Calculo = Rango & {
   k: 'calc'
@@ -89,8 +92,19 @@ export const funcionDesconocida = (a: Rango, nombre: string) =>
 export const esError = (x: object): x is ErrorCrudo => 'codigo' in x
 
 // `condicion`: una bandera, una comparación, Y u O. `valor_o_grupo`: un valor o, si es el único argumento, un grupo entero.
+// `buscado`: el valor que BUSCARV busca (también la variante); `texto`, entre comillas; `logico`, VERDADERO o FALSO.
 export type TipoDeArgumento =
-  'valor' | 'condicion' | 'valor_o_grupo' | 'nodo' | 'grupo' | 'clave' | 'entero' | 'pct'
+  | 'valor'
+  | 'condicion'
+  | 'valor_o_grupo'
+  | 'buscado'
+  | 'texto'
+  | 'logico'
+  | 'nodo'
+  | 'grupo'
+  | 'clave'
+  | 'entero'
+  | 'pct'
 // `args`, lo que pide cada posición; `resto`, lo que piden las que siguen (sin tope); `minimo`, cuántos hacen falta como mínimo
 // (sin él, todos los de `args`).
 export type EspecDeFuncion = {

@@ -33,6 +33,11 @@ export const CODIGOS_DE_COMPILACION = [
   'argumento_invalido',
   'no_es_condicion',
   'opcion_inexistente',
+  'tabla_inexistente',
+  'columna_inexistente',
+  'tabla_sin_columnas',
+  'tabla_sin_tramos',
+  'tablas_sin_leer',
   'grupo_inexistente',
   'grupo_vacio',
   'auxiliar_ocupado',
@@ -51,6 +56,8 @@ export type DatosDeError = {
   // Cuántos argumentos lleva una función que no los lleva fijos: al menos `minimo` y, si tiene tope, a lo sumo `maximo`.
   minimo?: number
   maximo?: number
+  // La tabla de BUSCARV, cuando el error es de una de sus columnas.
+  tabla?: string
 }
 
 export type Tramo = { desde: number; largo: number; linea: number; columna: number }
@@ -82,7 +89,7 @@ function cuantosArgumentos(d: DatosDeError): string {
 const MENSAJES: Record<CodigoDeCompilacion, (d: DatosDeError) => string> = {
   texto_vacio: () => 'Escribe la fórmula: ahora no hay nada que calcular.',
   caracter_invalido: (d) =>
-    `No entiendo ${q(d.texto)}. Usa números, nombres, + - * / ( ) %, > < = y ; entre los argumentos.`,
+    `No entiendo ${q(d.texto)}. Usa números, nombres, + - * / ( ) %, > < =, textos entre comillas y ; entre los argumentos.`,
   coma: () =>
     'Separa los argumentos con punto y coma (;), no con coma. Los decimales llevan punto.',
   separador_fuera_de_funcion: () =>
@@ -91,7 +98,7 @@ const MENSAJES: Record<CodigoDeCompilacion, (d: DatosDeError) => string> = {
   numero_fuera_de_rango: (d) => `${q(d.texto)} es demasiado grande.`,
   texto_sin_cerrar: () => 'Falta cerrar las comillas.',
   texto_fuera_de_lugar: () =>
-    'Un texto entre comillas solo va al comparar la variante, como variante="a".',
+    'Un texto entre comillas solo va en BUSCARV o al comparar la variante.',
   parentesis_sin_cerrar: () => 'Falta cerrar este paréntesis.',
   parentesis_de_mas: () => 'Este paréntesis cierra uno que no abriste.',
   operador_suelto: (d) =>
@@ -117,7 +124,7 @@ const MENSAJES: Record<CodigoDeCompilacion, (d: DatosDeError) => string> = {
   variante_en_calculo: (d) =>
     `${q(d.nombre)} es la variante: no entra en un cálculo. Para preguntar por una opción, escribe ${d.nombre ?? '?'}="${d.texto ?? 'clave'}".`,
   funcion_desconocida: (d) =>
-    `${q(d.nombre)} no es una función. Puedes usar SUMA, SI, Y, O, MAX, MIN, REDONDEAR, PORCENTAJE_DE y DEPRECIAR.`,
+    `${q(d.nombre)} no es una función. Puedes usar SUMA, SI, Y, O, MAX, MIN, BUSCARV, REDONDEAR, PORCENTAJE_DE y DEPRECIAR.`,
   hoy_no_soportado: () =>
     'HOY() todavía no existe: una fórmula no puede depender de la fecha de hoy.',
   cantidad_de_argumentos: cuantosArgumentos,
@@ -126,6 +133,12 @@ const MENSAJES: Record<CodigoDeCompilacion, (d: DatosDeError) => string> = {
   no_es_condicion: (d) =>
     `${d.nombre ?? 'SI'} necesita una condición, por ejemplo ${d.texto ?? 'remate>1000'}.`,
   opcion_inexistente: (d) => `${q(d.nombre)} no tiene la opción ${q(d.texto)}.`,
+  tabla_inexistente: (d) => `La tabla ${q(d.texto)} no existe en este origen.`,
+  columna_inexistente: (d) => `La tabla ${q(d.tabla)} no tiene la columna ${q(d.texto)}.`,
+  tabla_sin_columnas: (d) => `La tabla ${q(d.texto)} no tiene columnas para buscar.`,
+  tabla_sin_tramos: (d) =>
+    `Para buscar por tramo, la tabla ${q(d.texto)} necesita las columnas desde y hasta.`,
+  tablas_sin_leer: () => 'No pudimos leer las tablas de este origen. Recarga para usar BUSCARV.',
   grupo_inexistente: (d) => `El grupo ${q(d.nombre)} no existe.`,
   grupo_vacio: (d) => `El grupo ${q(d.nombre)} no tiene filas antes de esta.`,
   auxiliar_ocupado: (d) =>

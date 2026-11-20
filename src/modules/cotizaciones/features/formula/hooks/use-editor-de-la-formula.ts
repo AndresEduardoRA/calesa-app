@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { useUnEnvioALaVez } from '@/shared/ui/use-un-envio-a-la-vez'
+import type { CatalogoDeTablas } from '../../../entities/compilador'
 import type { Formula } from '../../../entities/formula'
 import type { ErrorDeFila } from '../../../entities/formula/compilar-fila'
 import type { FormulaParaEditar } from '../../../entities/formula/edicion'
@@ -34,25 +35,27 @@ const siEstaLibre =
     abrir(id)
   }
 
-export function useEditorDeLaFormula({
-  origenId,
-  leida,
-}: {
+type PropsDelEditor = {
   origenId: string
   leida: FormulaParaEditar
-}) {
+  // El catálogo de tablas del origen (BUSCARV); null si no se pudo leer.
+  tablas?: CatalogoDeTablas
+}
+
+export function useEditorDeLaFormula({ origenId, leida, tablas = null }: PropsDelEditor) {
   const [trabajo, setTrabajo] = useState<Formula>(leida.formula)
   const [abierta, setAbierta] = useState<FilaAbierta | null>(null)
   const [aplicada, setAplicada] = useState<Aplicada | null>(null)
   const envio = useUnEnvioALaVez()
 
-  const filas = useMemo(() => filasParaDibujar(trabajo), [trabajo])
+  const filas = useMemo(() => filasParaDibujar(trabajo, undefined, tablas), [trabajo, tablas])
   const previa = useVistaPrevia({ origenId, trabajo, filas })
   // Los grupos (4.21-3c): lo aplicado cambia la fórmula de trabajo como el «Aplicar» de una fila.
   const grupos = useGruposDelEditor({ trabajo, enCurso: envio.enCurso, alAplicar: setTrabajo })
   // «Sumar fila» (4.21-3a-2): una sola cosa abierta a la vez, esta fila en edición, un grupo o el formulario.
   const nueva = useSumarFila({
     trabajo,
+    tablas,
     hayAbierta: abierta !== null || grupos.abierto !== null || envio.enCurso,
     alCrear: (formula, creada) => {
       setTrabajo(formula)
@@ -79,6 +82,7 @@ export function useEditorDeLaFormula({
 
   const aplicar = useAplicarFila({
     trabajo,
+    tablas,
     abierta,
     enCurso: envio.enCurso,
     setTrabajo,

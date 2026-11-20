@@ -26,9 +26,11 @@ const NECESITA: Record<string, string> = {
   clave: 'un id en minúsculas (letras, números y _)',
   entero: 'un número entero de 0 a 6',
   pct: 'un porcentaje: un nodo con formato pct o un número como 4%',
+  texto: 'un nombre entre comillas, como "fletes"',
+  logico: 'VERDADERO (buscar por tramo) o FALSO (buscar el valor exacto)',
 }
 
-export const invalido = (a: Arbol, tipo: string) => argumentoInvalido(a, NECESITA[tipo])
+export const invalido = (a: Rango, tipo: string) => argumentoInvalido(a, NECESITA[tipo])
 
 export const calculo = (
   op: OpDeArbol,

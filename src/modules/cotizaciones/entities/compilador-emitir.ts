@@ -108,6 +108,13 @@ const ARMAR: Readonly<Record<OpDeArbol, Armador>> = {
     clave: d.a.campos.clave ?? '',
   }),
   elegir: (base, d) => ({ ...base, op: 'elegir', de: d.de.slice(1), prueba: primero(d) }),
+  // BUSCARV no es un `calculo`: un `tabla` (exacta) o un `tramo`, con el valor como `match` o como `sobre`.
+  buscarv: ({ id, etiqueta }, d) => {
+    const { tabla = '', columna = '', buscarEn } = d.a.campos
+    return buscarEn === undefined
+      ? { id, tipo: 'tramo', etiqueta, tabla, sobre: primero(d), columna }
+      : { id, tipo: 'tabla', etiqueta, tabla, match: { [buscarEn]: primero(d) }, columna }
+  },
   depreciar: (base, d) => ({
     ...base,
     op: 'depreciar',
@@ -221,7 +228,23 @@ function emitirNombreSolo(em: Emision, raiz: Arbol) {
   )
 }
 
-export function emitir(texto: string, raiz: Arbol, nombres: Nombres): Emitido | ErrorCrudo {
+// BUSCARV en la raíz: la fila es la suma de un auxiliar `tabla` o `tramo` (una fila con texto es una constante o un `calculo`).
+const raizDe = (a: Arbol): Arbol =>
+  a.k === 'calc' && a.op === 'buscarv'
+    ? {
+        k: 'calc',
+        op: 'suma',
+        hijos: [a],
+        campos: {},
+        deFuncion: false,
+        paren: false,
+        desde: a.desde,
+        hasta: a.hasta,
+      }
+    : a
+
+export function emitir(texto: string, arbol: Arbol, nombres: Nombres): Emitido | ErrorCrudo {
+  const raiz = raizDe(arbol)
   const em: Emision = {
     texto,
     raiz,

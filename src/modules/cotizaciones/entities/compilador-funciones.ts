@@ -13,6 +13,7 @@ import {
   type Rango,
 } from './compilador-arbol'
 import { calculo, expandirGrupo, invalido, type Contar } from './compilador-argumentos'
+import { cerrarBuscarv } from './compilador-buscarv'
 import { cerrarExtremo, cerrarLogica, cerrarSi } from './compilador-condiciones'
 import type { Token } from './compilador-lexico'
 import type { Nombres } from './compilador-nombres'
@@ -31,6 +32,7 @@ export const FUNCIONES: ReadonlyMap<string, EspecDeFuncion> = new Map(
       { nombre: 'O', args: [], resto: 'condicion', minimo: 2 },
       { nombre: 'MAX', args: ['valor_o_grupo'], resto: 'valor', minimo: 1 },
       { nombre: 'MIN', args: ['valor_o_grupo'], resto: 'valor', minimo: 1 },
+      { nombre: 'BUSCARV', args: ['buscado', 'texto', 'texto', 'logico'], minimo: 3 },
       { nombre: 'REDONDEAR', args: ['valor', 'entero'] },
       { nombre: 'PORCENTAJE_DE', args: ['valor', 'pct'] },
       { nombre: 'DEPRECIAR', args: ['valor', 'clave', 'nodo', 'clave'] },
@@ -97,10 +99,18 @@ function cuantos(spec: EspecDeFuncion, minimo: number, maximo: number | undefine
     : { nombre: spec.nombre, minimo, maximo }
 }
 
-// Ningún argumento de estas funciones es un texto entre comillas.
-function textoFueraDeLugar(args: Arbol[], nombres: Nombres): ErrorCrudo | undefined {
-  for (const a of recorrer(args, nombres.m))
-    if (a.k === 'texto') return errorEn(a, 'texto_fuera_de_lugar')
+// Un texto entre comillas sólo va donde la función pide un texto (la tabla y la columna de BUSCARV).
+function textoFueraDeLugar(
+  spec: EspecDeFuncion,
+  args: Arbol[],
+  nombres: Nombres,
+): ErrorCrudo | undefined {
+  let i = 0
+  for (const a of recorrer(args, nombres.m)) {
+    const pide = spec.args[i] ?? spec.resto
+    i += 1
+    if (a.k === 'texto' && pide !== 'texto') return errorEn(a, 'texto_fuera_de_lugar')
+  }
   return undefined
 }
 
@@ -121,7 +131,7 @@ export function cerrarFuncion(
   if (n < minimo || (maximo !== undefined && n > maximo)) {
     return errorEn(nombreRango, 'cantidad_de_argumentos', cuantos(spec, minimo, maximo))
   }
-  const fuera = textoFueraDeLugar(marco.args, nombres)
+  const fuera = textoFueraDeLugar(spec, marco.args, nombres)
   if (fuera !== undefined) return fuera
   const rango = { desde: nombreRango.desde, hasta: cierre.hasta }
   return porNombre(spec.nombre, marco.args, { rango, nombreRango }, { nombres, contar })
@@ -154,6 +164,8 @@ function porNombre(
       return cerrarRedondear(args, rango)
     case 'PORCENTAJE_DE':
       return cerrarPorcentaje(args, rango, ctx.contar)
+    case 'BUSCARV':
+      return cerrarBuscarv(args, rango, ctx.nombres)
     default:
       return cerrarDepreciar(args, rango)
   }

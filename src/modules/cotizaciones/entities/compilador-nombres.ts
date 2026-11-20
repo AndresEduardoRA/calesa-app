@@ -26,7 +26,13 @@ export type ContextoDeCompilacion = {
   // Las constantes que ya existen (sus claves reservan nombres).
   params: Readonly<Record<string, number>>
   destino: DestinoDeCompilacion
+  // Las tablas de referencia que BUSCARV puede nombrar (las del origen y las compartidas, la del origen antes), con las claves de sus
+  // columnas en su orden; null o sin dar si no se pudieron leer.
+  tablas?: CatalogoDeTablas
 }
+
+export type TablaDelCatalogo = { clave: string; columnas: readonly string[] }
+export type CatalogoDeTablas = readonly TablaDelCatalogo[] | null
 
 export type Nombres = {
   porId: ReadonlyMap<string, Nodo>
@@ -37,6 +43,8 @@ export type Nombres = {
   // Todo id que una fila nueva no puede tomar.
   ocupados: ReadonlySet<string>
   destino: DestinoDeCompilacion
+  // Las columnas de cada tabla, por clave; null sin catálogo.
+  tablas: ReadonlyMap<string, readonly string[]> | null
   m: Medidor
 }
 
@@ -62,6 +70,13 @@ export function crearNombres(ctx: ContextoDeCompilacion, m: Medidor): Nombres {
   }
   for (const clave of recorrer(Object.keys(ctx.params), m)) ocupados.add(clave)
   const grupos = new Set<string>(recorrer(ctx.grupos, m))
+  let tablas: Map<string, readonly string[]> | null = null
+  if (ctx.tablas !== undefined && ctx.tablas !== null) {
+    tablas = new Map()
+    // La primera con cada clave: el catálogo trae la del origen antes que la compartida.
+    for (const t of recorrer(ctx.tablas, m))
+      if (buscar(tablas, t.clave, m) === undefined) tablas.set(t.clave, t.columnas)
+  }
   return {
     porId,
     posteriores,
@@ -70,6 +85,7 @@ export function crearNombres(ctx: ContextoDeCompilacion, m: Medidor): Nombres {
     conMiembrosPosteriores,
     ocupados,
     destino: ctx.destino,
+    tablas,
     m,
   }
 }

@@ -74,7 +74,25 @@
       "id": "total",
       "etiqueta": "Total",
       "salida": "total"
-    }
+    },
+    "tablas": [
+      {
+        "clave": "fletes",
+        "columnas": ["desde", "hasta", "monto"]
+      },
+      {
+        "clave": "tasas",
+        "columnas": ["anio", "tasa"]
+      },
+      {
+        "clave": "recargos",
+        "columnas": ["variante", "recargo"]
+      },
+      {
+        "clave": "vacia",
+        "columnas": []
+      }
+    ]
   },
   "casos": [
     {
@@ -3927,6 +3945,452 @@
           "largo": 6,
           "linea": 1,
           "columna": 5
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV exacta: un nodo tabla que casa el valor con la primera columna",
+      "texto": "BUSCARV(anio; \"tasas\"; \"tasa\"; FALSO)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "tabla",
+            "etiqueta": "BUSCARV(anio; \"tasas\"; \"tasa\"; FALSO)",
+            "tabla": "tasas",
+            "match": {
+              "anio": "anio"
+            },
+            "columna": "tasa"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "suma",
+            "de": ["total__1"]
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "BUSCARV sin cuarto argumento es exacta",
+      "texto": "BUSCARV(anio; \"tasas\"; \"tasa\")",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "tabla",
+            "etiqueta": "BUSCARV(anio; \"tasas\"; \"tasa\")",
+            "tabla": "tasas",
+            "match": {
+              "anio": "anio"
+            },
+            "columna": "tasa"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "suma",
+            "de": ["total__1"]
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "BUSCARV con VERDADERO es un tramo; en la raíz, la fila suma su auxiliar",
+      "texto": "BUSCARV(remate; \"fletes\"; \"monto\"; VERDADERO)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "tramo",
+            "etiqueta": "BUSCARV(remate; \"fletes\"; \"monto\"; VERDADERO)",
+            "tabla": "fletes",
+            "sobre": "remate",
+            "columna": "monto"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "suma",
+            "de": ["total__1"]
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "VERDADERO se lee en minúsculas también",
+      "texto": "BUSCARV(remate; \"fletes\"; \"monto\"; verdadero)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "tramo",
+            "etiqueta": "BUSCARV(remate; \"fletes\"; \"monto\"; verdadero)",
+            "tabla": "fletes",
+            "sobre": "remate",
+            "columna": "monto"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "suma",
+            "de": ["total__1"]
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "BUSCARV de una cuenta: la cuenta va antes a su auxiliar",
+      "texto": "BUSCARV(remate*2; \"fletes\"; \"monto\"; VERDADERO)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "2",
+            "formato": "raw"
+          },
+          {
+            "id": "total__2",
+            "tipo": "calculo",
+            "etiqueta": "remate*2",
+            "op": "multiplicar",
+            "de": ["remate", "total__1"]
+          },
+          {
+            "id": "total__3",
+            "tipo": "tramo",
+            "etiqueta": "BUSCARV(remate*2; \"fletes\"; \"monto\"; VERDADERO)",
+            "tabla": "fletes",
+            "sobre": "total__2",
+            "columna": "monto"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "suma",
+            "de": ["total__3"]
+          }
+        ],
+        "params": {
+          "total__1": 2
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV de un número: el número es una constante auxiliar",
+      "texto": "BUSCARV(1500; \"fletes\"; \"monto\"; VERDADERO)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "1500",
+            "formato": "raw"
+          },
+          {
+            "id": "total__2",
+            "tipo": "tramo",
+            "etiqueta": "BUSCARV(1500; \"fletes\"; \"monto\"; VERDADERO)",
+            "tabla": "fletes",
+            "sobre": "total__1",
+            "columna": "monto"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "suma",
+            "de": ["total__2"]
+          }
+        ],
+        "params": {
+          "total__1": 1500
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV dentro de una cuenta",
+      "texto": "fees + BUSCARV(remate; \"fletes\"; \"monto\"; VERDADERO)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "tramo",
+            "etiqueta": "BUSCARV(remate; \"fletes\"; \"monto\"; VERDADERO)",
+            "tabla": "fletes",
+            "sobre": "remate",
+            "columna": "monto"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "suma",
+            "de": ["fees", "total__1"]
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "BUSCARV exacta de la variante",
+      "texto": "BUSCARV(variante; \"recargos\"; \"recargo\")",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "tabla",
+            "etiqueta": "BUSCARV(variante; \"recargos\"; \"recargo\")",
+            "tabla": "recargos",
+            "match": {
+              "variante": "variante"
+            },
+            "columna": "recargo"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "suma",
+            "de": ["total__1"]
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "SI con MAX y BUSCARV",
+      "texto": "SI(remate>1000; MAX(remate*0.1; 150); BUSCARV(remate; \"fletes\"; \"monto\"; VERDADERO))",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "1000",
+            "formato": "raw"
+          },
+          {
+            "id": "total__2",
+            "tipo": "calculo",
+            "etiqueta": "remate>1000",
+            "formato": "raw",
+            "op": "comparar",
+            "de": ["remate", "total__1"],
+            "cmp": ">"
+          },
+          {
+            "id": "total__3",
+            "tipo": "constante",
+            "etiqueta": "0.1",
+            "formato": "raw"
+          },
+          {
+            "id": "total__4",
+            "tipo": "calculo",
+            "etiqueta": "remate*0.1",
+            "op": "multiplicar",
+            "de": ["remate", "total__3"]
+          },
+          {
+            "id": "total__5",
+            "tipo": "constante",
+            "etiqueta": "150",
+            "formato": "raw"
+          },
+          {
+            "id": "total__6",
+            "tipo": "calculo",
+            "etiqueta": "MAX(remate*0.1; 150)",
+            "op": "max",
+            "de": ["total__4", "total__5"]
+          },
+          {
+            "id": "total__7",
+            "tipo": "tramo",
+            "etiqueta": "BUSCARV(remate; \"fletes\"; \"monto\"; VERDADERO)",
+            "tabla": "fletes",
+            "sobre": "remate",
+            "columna": "monto"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "etiqueta": "Total",
+            "salida": "total",
+            "op": "elegir",
+            "de": ["total__6", "total__7"],
+            "prueba": "total__2"
+          }
+        ],
+        "params": {
+          "total__1": 1000,
+          "total__3": 0.1,
+          "total__5": 150
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV de una tabla que no está en el catálogo",
+      "texto": "BUSCARV(remate; \"no_existe\"; \"monto\")",
+      "esperado": {
+        "error": {
+          "codigo": "tabla_inexistente",
+          "desde": 16,
+          "largo": 11,
+          "linea": 1,
+          "columna": 17
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV de una columna que la tabla no tiene",
+      "texto": "BUSCARV(remate; \"fletes\"; \"precio\"; VERDADERO)",
+      "esperado": {
+        "error": {
+          "codigo": "columna_inexistente",
+          "desde": 26,
+          "largo": 8,
+          "linea": 1,
+          "columna": 27
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV de una tabla sin columnas",
+      "texto": "BUSCARV(remate; \"vacia\"; \"monto\")",
+      "esperado": {
+        "error": {
+          "codigo": "tabla_sin_columnas",
+          "desde": 16,
+          "largo": 7,
+          "linea": 1,
+          "columna": 17
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV por tramo en una tabla sin desde y hasta",
+      "texto": "BUSCARV(remate; \"tasas\"; \"tasa\"; VERDADERO)",
+      "esperado": {
+        "error": {
+          "codigo": "tabla_sin_tramos",
+          "desde": 16,
+          "largo": 7,
+          "linea": 1,
+          "columna": 17
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV sin el catálogo de tablas",
+      "texto": "BUSCARV(remate; \"fletes\"; \"monto\")",
+      "contexto": {
+        "tablas": null
+      },
+      "esperado": {
+        "error": {
+          "codigo": "tablas_sin_leer",
+          "desde": 16,
+          "largo": 8,
+          "linea": 1,
+          "columna": 17
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV con la tabla sin comillas",
+      "texto": "BUSCARV(remate; fletes; \"monto\")",
+      "esperado": {
+        "error": {
+          "codigo": "argumento_invalido",
+          "desde": 16,
+          "largo": 6,
+          "linea": 1,
+          "columna": 17
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV con un cuarto argumento que no es VERDADERO ni FALSO",
+      "texto": "BUSCARV(remate; \"fletes\"; \"monto\"; 1)",
+      "esperado": {
+        "error": {
+          "codigo": "argumento_invalido",
+          "desde": 35,
+          "largo": 1,
+          "linea": 1,
+          "columna": 36
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV por tramo de la variante",
+      "texto": "BUSCARV(variante; \"fletes\"; \"monto\"; VERDADERO)",
+      "esperado": {
+        "error": {
+          "codigo": "variante_en_calculo",
+          "desde": 8,
+          "largo": 8,
+          "linea": 1,
+          "columna": 9
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV con dos argumentos",
+      "texto": "BUSCARV(remate; \"fletes\")",
+      "esperado": {
+        "error": {
+          "codigo": "cantidad_de_argumentos",
+          "desde": 0,
+          "largo": 7,
+          "linea": 1,
+          "columna": 1
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV de un texto",
+      "texto": "BUSCARV(\"a\"; \"fletes\"; \"monto\")",
+      "esperado": {
+        "error": {
+          "codigo": "texto_fuera_de_lugar",
+          "desde": 8,
+          "largo": 3,
+          "linea": 1,
+          "columna": 9
+        }
+      }
+    },
+    {
+      "nombre": "BUSCARV con VERDADERO entre comillas",
+      "texto": "BUSCARV(remate; \"fletes\"; \"monto\"; \"VERDADERO\")",
+      "esperado": {
+        "error": {
+          "codigo": "texto_fuera_de_lugar",
+          "desde": 35,
+          "largo": 11,
+          "linea": 1,
+          "columna": 36
         }
       }
     }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useMemo, useState } from 'react'
+import type { CatalogoDeTablas } from '../../../entities/compilador'
 import type { Formula } from '../../../entities/formula'
 import {
   ocupadosDe,
@@ -16,10 +17,13 @@ export type FilaSumando = { tras: string; error: ErrorDeFilaNueva | null }
 // qué fila nació, para llevarle el foco y no esconderla con «Buscar fila».
 export function useSumarFila({
   trabajo,
+  tablas,
   hayAbierta,
   alCrear,
 }: {
   trabajo: Formula
+  // El catálogo de tablas del origen, para BUSCARV.
+  tablas: CatalogoDeTablas
   hayAbierta: boolean
   alCrear: (formula: Formula, creada: { id: string; soltados: string[] }) => void
 }) {
@@ -30,7 +34,7 @@ export function useSumarFila({
   const crear = useCallback(
     (pedido: Omit<PedidoDeFilaNueva, 'despuesDe'>) => {
       if (sumando === null) return
-      const r = sumarFila(trabajo, { ...pedido, despuesDe: sumando.tras })
+      const r = sumarFila(trabajo, { ...pedido, despuesDe: sumando.tras, tablas })
       if (!r.ok) {
         setSumando({ tras: sumando.tras, error: r.error })
         return
@@ -39,7 +43,7 @@ export function useSumarFila({
       setSumando(null)
       setCreada(pedido.id)
     },
-    [sumando, trabajo, alCrear],
+    [sumando, trabajo, tablas, alCrear],
   )
 
   // Abre el formulario sin mirar lo abierto: lo llama quien ya cerró lo suyo en el mismo manejador (`sumarDebajo` del editor), donde `hayAbierta` aún es el del

@@ -3,6 +3,7 @@
 // (`texto-vigente.ts`, `texto-de-nodo.ts`): aquí sólo se junta. Calcular las filas es O(filas × nodos) —cada fila compila contra la fórmula entera— y se hace
 // una vez por fórmula de trabajo; filtrar corta la lista ya calculada.
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
+import type { CatalogoDeTablas } from '../../../entities/compilador'
 import type { Formula } from '../../../entities/formula'
 import { filasDe } from '../../../entities/formula/filas'
 import { textoDeNodo } from '../../../entities/formula/texto-de-nodo'
@@ -51,9 +52,18 @@ type Formatos = ReadonlyMap<string, Formato | undefined>
 const conFormato = (cambios: readonly CambioDeLiteral[], formatos: Formatos): CambioEnLaFila[] =>
   cambios.map((c) => ({ ...c, formato: formatos.get(c.id) }))
 
-function textoDe(formula: Formula, nodo: Nodo, formatos: Formatos, m: Medidor): TextoDeLaFila {
+type DeLaFormula = { formatos: Formatos; m: Medidor; tablas: CatalogoDeTablas | undefined }
+
+function textoDe(
+  formula: Formula,
+  nodo: Nodo,
+  { formatos, m, tablas }: DeLaFormula,
+): TextoDeLaFila {
   if (nodo.tipo !== 'calculo' && nodo.tipo !== 'constante') return { modo: 'solo_lectura' }
-  const vigente = textoVigente(formula, nodo.id, m)
+  const vigente = textoVigente(formula, nodo.id, {
+    medidor: m,
+    ...(tablas === undefined ? {} : { tablas }),
+  })
   switch (vigente.estado) {
     case 'al_dia':
       return { modo: 'texto', texto: vigente.texto }
@@ -81,7 +91,12 @@ function textoDe(formula: Formula, nodo: Nodo, formatos: Formatos, m: Medidor): 
   }
 }
 
-export function filasParaDibujar(formula: Formula, medidor?: Medidor): FilaParaDibujar[] {
+// `tablas`: el catálogo de tablas del origen, con el que se compila una fila con BUSCARV.
+export function filasParaDibujar(
+  formula: Formula,
+  medidor?: Medidor,
+  tablas?: CatalogoDeTablas,
+): FilaParaDibujar[] {
   const m = medidor ?? { visitas: 0 }
   const formatos: Formatos = new Map(formula.definicion.nodos.map((n) => [n.id, n.formato]))
   return filasDe(formula.definicion, m).map((fila) => ({
@@ -95,7 +110,7 @@ export function filasParaDibujar(formula: Formula, medidor?: Medidor): FilaParaD
     formatos: Object.fromEntries(
       [...fila.auxiliares, fila.nodo.id].map((id) => [id, formatos.get(id)]),
     ),
-    texto: textoDe(formula, fila.nodo, formatos, m),
+    texto: textoDe(formula, fila.nodo, { formatos, m, tablas }),
   }))
 }
 
