@@ -25,7 +25,7 @@ Leads (prospectos y clientes) con teléfono principal único y enmascarado salvo
   (`prepararFilas`, `preparadorDeFilas` por tramos con el mismo resultado que una pasada, `emparejarColumnas`, `convertir*`, `fecha*`, `usePaises`…):
   la importación total no tiene otras reglas.
 - `shell.ts`: `<AltaDeLead>` (el drawer y la tecla `N`; el botón es «Nuevo» de la barra, `src/app/(app)/_shell/nuevo/`), `<ProveedorDeEscribirPorChat>`; `shell.client.ts`: `useAbrirNuevoLead()` (paleta y «Nuevo»; no `usePanelDeAlta()`) y `rutaDeAccionSobreUnLead()` (la ficha con su modal de seguimiento o recordatorio abierto, a donde «Nuevo» lleva tras elegir un lead).
-- Rutas: `/leads`, `/leads/[id]` (`leads.ver`; la ficha en dos columnas, `FichaEnDosColumnas` de `shared`: a la izquierda, pegajosa, la cabecera (el «⋯» a
+- Rutas: `/leads`, `/leads/[id]` (`leads.ver`; la ficha en dos columnas, `FichaEnDosColumnas` de `shared`: a la izquierda, con su desplazamiento, la cabecera (el «⋯» a
   la derecha del nombre y `textoDeLaCartera()` debajo; `useCartera` vive en `lateral-de-la-ficha.tsx` y alimenta la línea y «Quién lo tiene»), «Datos» (los
   datos clave del lead, `entities/datos-clave-del-lead.ts`, y «Ver más» en `?ver=datos`: `modal-de-datos-del-lead.tsx`, diferido, con los grupos y los
   teléfonos de sólo lectura), «Quién lo tiene» y «Acceso al portal» (`accionesDelPortal()`: un botón principal y el resto en su «⋯»); a la derecha el índice y los cuatro bloques compactos de

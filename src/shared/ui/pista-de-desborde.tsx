@@ -25,10 +25,14 @@ export function PistaDeDesborde({ izquierda, derecha }: Desborde) {
 }
 
 // Lo mismo hacia arriba y hacia abajo, para un cuerpo que se desplaza (el de un `<Modal>`, 5a-24): un degradado hacia el color de su fondo, sólo
-// por donde queda algo escondido. Alto en rem: con el texto al 200 % crece con él. Va dentro de un contenedor `relative` que envuelve al cuerpo.
-export function PistaVerticalDeDesborde({ arriba, abajo }: DesbordeVertical) {
-  const base =
-    'pointer-events-none absolute inset-x-0 h-6 from-popover to-transparent transition-opacity motion-reduce:transition-none'
+// por donde queda algo escondido (`fondo`: el de la tarjeta o modal, o el de la página). Alto en rem: con el texto al 200 % crece con él. Va dentro de un contenedor `relative` que envuelve al cuerpo.
+export function PistaVerticalDeDesborde({
+  arriba,
+  abajo,
+  fondo = 'tarjeta',
+}: DesbordeVertical & { fondo?: 'tarjeta' | 'pagina' }) {
+  const desde = fondo === 'pagina' ? 'from-(--color-paper)' : 'from-popover'
+  const base = `pointer-events-none absolute inset-x-0 h-6 ${desde} to-transparent transition-opacity motion-reduce:transition-none`
   return (
     <>
       <span

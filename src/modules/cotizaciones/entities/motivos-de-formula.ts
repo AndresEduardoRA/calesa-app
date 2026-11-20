@@ -34,6 +34,7 @@ export const REGLAS_DE_FORMULA = [
   'par_sin_dos_opciones',
   'solo_en_sin_opcion',
   'solo_en_opcion_inexistente',
+  'clave_de_opcion_inexistente',
   'campo_con_punto',
 ] as const
 
@@ -112,6 +113,8 @@ const MENSAJES: Record<ReglaDeFormula, (d: DatosDeRechazo) => string> = {
     `${q(d.donde)} dice en qué variantes vale, y la fórmula no tiene variante.`,
   solo_en_opcion_inexistente: (d) =>
     `${q(d.donde)} nombra la opción ${q(d.clave)}, que la variante no tiene.`,
+  clave_de_opcion_inexistente: (d) =>
+    `${q(d.donde)} compara con la opción ${q(d.clave)}, que la variante no tiene.`,
   campo_con_punto: (d) =>
     `${q(d.donde)} nombra el campo ${q(d.campo)}: un campo del vehículo es una columna o la clave de un campo del origen, sin puntos (escribe, por ejemplo, «cilindrada»).`,
 }

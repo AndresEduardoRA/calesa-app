@@ -494,6 +494,100 @@
         ]
       },
       "en_par": ["x", "total"]
+    },
+    {
+      "nombre": "por el término de es_opcion, de Y y por la prueba de un elegir; un elegir cuya prueba no cambia, no",
+      "definicion": {
+        "nodos": [
+          {
+            "id": "contenedor",
+            "tipo": "opcion",
+            "etiqueta": "Contenedor",
+            "opciones": [
+              {
+                "clave": "c20",
+                "etiqueta": "c20",
+                "titulo": "c20"
+              },
+              {
+                "clave": "c40",
+                "etiqueta": "c40",
+                "titulo": "c40"
+              }
+            ],
+            "en_par": true
+          },
+          {
+            "id": "tc",
+            "tipo": "tipo_cambio",
+            "clave": "oficial",
+            "etiqueta": "TC",
+            "formato": "raw"
+          },
+          {
+            "id": "precio",
+            "tipo": "input",
+            "etiqueta": "Precio"
+          },
+          {
+            "id": "umbral",
+            "tipo": "constante",
+            "etiqueta": "Umbral"
+          },
+          {
+            "id": "caro",
+            "tipo": "calculo",
+            "op": "comparar",
+            "de": ["precio", "umbral"],
+            "cmp": ">",
+            "etiqueta": "Caro",
+            "formato": "raw"
+          },
+          {
+            "id": "es40",
+            "tipo": "calculo",
+            "op": "es_opcion",
+            "de": ["contenedor"],
+            "cmp": "=",
+            "clave": "c40",
+            "etiqueta": "Es c40",
+            "formato": "raw"
+          },
+          {
+            "id": "ambos",
+            "tipo": "calculo",
+            "op": "y",
+            "de": ["caro", "es40"],
+            "etiqueta": "Ambos",
+            "formato": "raw"
+          },
+          {
+            "id": "recargo",
+            "tipo": "calculo",
+            "op": "elegir",
+            "prueba": "es40",
+            "de": ["precio"],
+            "etiqueta": "Recargo"
+          },
+          {
+            "id": "fijo",
+            "tipo": "calculo",
+            "op": "elegir",
+            "prueba": "caro",
+            "de": ["precio", "umbral"],
+            "etiqueta": "Fijo"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["precio", "recargo"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ]
+      },
+      "en_par": ["es40", "ambos", "recargo", "total"]
     }
   ]
 }

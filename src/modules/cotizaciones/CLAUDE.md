@@ -167,7 +167,9 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
 - **La fórmula** (área `formula`; `/configuracion/cotizacion/<origen>/formula`, `cotizaciones.configurar`, a ancho completo): arriba la publicada, el
   borrador y las versiones (`VistaDeLaFormula`) y abajo la sesión de edición (`SesionDeLaFormula` por `diferido()`: lee la versión desde el navegador y
   llama **una vez** a `useEditorDeLaFormula`), que dibuja la planilla (`components/planilla/`, por `diferido()`; lo que arma, `usePlanilla()`) o, con
-  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula de trabajo. La unidad
+  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula de trabajo. El
+  catálogo de tablas del origen (`leerCatalogoDeTablas()`: clave y columnas de las `tablas_referencia` activas del origen y las compartidas, la del origen
+  gana; tope 100; nulo si falla) lo lee la sección en paralelo con la fórmula y llega a la sesión para revisar BUSCARV al compilar. La unidad
   de ejemplo y el modo viven en la sesión; «Publicar…» espera con cambios aplicados sin guardar (`alCambiarPendientes`, en `useLayoutEffect`). La `key` de la
   sesión es `<origen>:<vuelta>:<sesión>` (`otraSesion()`). La página pasa `tarjeta` (la promesa de `leerLaTarjetaDeTrabajo()`), `TarjetaEnVivo` y
   `puedeCambiarTiposDeCambio`. Las celdas editables usan `BOTON_DEL_VALOR` y `ENTRADA` de `@/shared/ui/xcell`; los colores de las bandas, `leerTonosDelCatalogo()`
@@ -292,7 +294,7 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
 
 ## Archivos clave
 
-- Motor y grafo (`docs/COTIZADOR.md`: léelo antes de tocar el motor): `entities/nodos.ts` (Zod por `tipo`, `referenciasDe()`), `formula.ts`, `motor.ts` y
+- Motor y grafo (`docs/COTIZADOR.md`: léelo antes de tocar el motor): `entities/nodos.ts` (Zod por `tipo`), `nodos-referencias.ts` (`referenciasDe()`), `formula.ts`, `motor.ts` y
   `motor-*.ts` (`evaluar()`, una pasada), `redondeo.ts` (`round(numeric)` de Postgres), `compilador*.ts` (texto a nodos, puro, nunca lanza),
   `casos-del-motor.json`.
 - Validación: `entities/validar*.ts` espeja `validar_formula()` (`docs/COTIZADOR.md` › «Las reglas») y `validar-diseno*.ts` a `validar_diseno()` (con el
@@ -375,7 +377,8 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
 - A lo sumo una final activa por vehículo. `cotizacion_marcar_final` toma lead → vehículo → la cotización y las vivas del vehículo (detalle:
   `areas/final/CLAUDE.md`). Al entrar a logística la final se congela; si sale, vuelve a preventa.
 - Sin motor de expresiones al cotizar: sólo las operaciones cerradas de `calculo`. La fórmula como texto se compila a nodos **al configurar**; lo que no
-  compila se rechaza. Un nodo nuevo = tipo discriminado (`nodos.ts`) + caso en `referenciasDe()` + caso en `validar_formula()` y en el juego.
+  compila se rechaza. Un nodo nuevo = tipo discriminado (`nodos.ts`) + caso en `referenciasDe()` (`nodos-referencias.ts`) + caso en `validar_formula()`, `_diseno_auxiliares()`,
+  `_nodos_en_par()` y en el juego.
 - **Toda copia de una versión lleva el diseño** (el ⚙, revertir y la N+1 de una tabla; publicar lo exige). Un color o nivel que una versión nombra no se
   elimina (`_tono_en_uso()`, `_nivel_uso()`; un nivel se retira). Colores y niveles salen de un solo punto (tabla `tonos`, `_niveles_de_cotizacion()`): nada
   escribe «costos» a mano ni razona por el nombre o la clave de un nivel. `formulas` y `plantillas_tarjeta` sólo las lee quien tiene

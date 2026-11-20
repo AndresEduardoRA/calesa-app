@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useState, type ComponentType } from 'react'
 import { modoInicial } from '../../../../entities/cabecera-de-la-hoja'
+import type { CatalogoDeTablas } from '../../../../entities/compilador'
 import type { FormulaParaEditar } from '../../../../entities/formula/edicion'
 import {
   UNIDAD_EN_CEROS,
@@ -36,6 +37,8 @@ export type PropsDeLaSesion = {
   alCambiarPendientes: (hay: boolean) => void
   // La tarjeta en vivo de la planilla: la lectura del servidor y el dibujo del área `tarjeta` (este módulo no la importa).
   tarjeta: LecturaDeLaTarjetaEnVivo
+  // El catálogo de tablas del origen, con el que se compila BUSCARV; null si no se pudo leer.
+  tablas: CatalogoDeTablas
   TarjetaEnVivo: ComponentType<PropsDeLaTarjetaEnVivo>
   puedeCambiarTiposDeCambio: boolean
 }
@@ -43,7 +46,7 @@ export type PropsDeLaSesion = {
 // Con la versión leída: la fórmula de trabajo, una sola para los dos modos, y la unidad de ejemplo y el modo elegido de la planilla (sobreviven al ir y volver del
 // Modo avanzado; recargar vuelve a ceros).
 function SesionLista({ leida, ...p }: PropsDeLaSesion & { leida: FormulaParaEditar }) {
-  const editor = useEditorDeLaFormula({ origenId: p.origen.id, leida })
+  const editor = useEditorDeLaFormula({ origenId: p.origen.id, leida, tablas: p.tablas })
   const [unidad, setUnidad] = useState<UnidadDeEjemplo>(UNIDAD_EN_CEROS)
   const cabecera = leida.diseno?.cabecera
   const [modo, setModo] = useState(() =>

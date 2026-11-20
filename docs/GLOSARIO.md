@@ -555,6 +555,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `_nodos_en_par()`: la hoja no dibuja sus chips y lo que cambia según la opción va en dos celdas («Transporte · 20 pies» | «Transporte · 40 pies»); guardar crea
   dos **cotizaciones hermanas**. No es el **Par porcentaje-monto**.
 - **Fórmula como texto** — `compilarExpresion()` (`entities/compilador.ts`): `=(remate+fees)*4%`, `=SUMA(aduana)`; se compila a nodos.
+- **Condición (de la fórmula)** — lo que decide un SI, un Y o un O: una bandera o un `calculo` `comparar` (`remate>1000`), `es_opcion`
+  (`variante="b"`), `y` u `o`; vale 1 o 0 (`OPS_DE_CONDICION`, `NodoDeComparacion` en `entities/nodos.ts`). Un SI con condición es el nodo
+  `elegir`, con la condición en su `prueba`. No es la `condicion` de un nodo (el **interruptor** que lo apaga) ni el `si` de una bandera.
+- **BUSCARV** — la función de la fórmula como texto que busca en una tabla de referencia del origen (`compilador-buscarv.ts`): exacta (por la
+  primera columna de la tabla, compila a un nodo `tabla`) o por tramo (`VERDADERO`: `desde` ≤ valor ≤ `hasta`, compila a un nodo `tramo`). La
+  tabla y la columna se revisan contra el **catálogo de tablas** del origen (`CatalogoDeTablas`, `leerCatalogoDeTablas()`). No: «lookup».
 - **Nodo auxiliar** — `<fila>__<n>` en `compilarExpresion()`: cada operación anidada o número de una fórmula como texto, numerado en
   post-orden; cuáles lo son, `auxiliaresDe()` (`compilador-auxiliares.ts`). La constante auxiliar no pide celda en el diseño.
 - **Fila (de la fórmula)** — `Fila`, `filasDe()` (`entities/formula/filas.ts`): un nodo que no es auxiliar de otro, con sus auxiliares y su
@@ -845,7 +851,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Bloque (de una ficha)** — `<BloqueDeFicha>`, `#<ancla>` (`src/shared/ui/ficha-en-bloques`): una parte de una ficha en dos columnas, siempre a la
   vista (no se pliega), con su ancla, su título `h2` (con su única acción a la derecha: `<TituloDeBloqueConAccion>`) y su error propio. No es `<Bloque>`,
   el plegable.
-- **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra pegajosa arriba de la columna principal de una ficha en dos columnas, con un enlace de ancla
+- **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra arriba de la columna principal de una ficha en dos columnas (quieta mientras los bloques se desplazan por dentro; pegajosa en el celular), con un enlace de ancla
   por bloque y `aria-current="location"` en el que está a la vista. No navega: salta dentro de la misma página. No: «pestañas», «menú».
 - **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`…); responde el panel de más arriba.
 - **Filtro** — `EsquemaDeFiltros`, `DefFiltro` / `<FilterShell>`: lo que acota un listado; cada uno declara los suyos y viven en la URL. Van en el botón

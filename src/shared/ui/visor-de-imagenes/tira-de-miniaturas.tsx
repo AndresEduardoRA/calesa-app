@@ -53,10 +53,21 @@ export function TiraDeMiniaturas({
   const lista = useRef<HTMLOListElement>(null)
   const total = imagenes.length
 
-  // La actual, siempre a la vista dentro de la tira (sin mover la página).
+  // La actual, siempre a la vista dentro de la tira: se mueve sólo la tira. `scrollIntoView` movía también lo que la contiene (la página o, en
+  // la ficha en dos columnas, la columna de la izquierda, que quedaba desplazada al montarse).
   useEffect(() => {
-    const boton = lista.current?.querySelectorAll('button')[actual]
-    boton?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    const barra = lista.current
+    const boton = barra?.querySelectorAll('button')[actual]
+    if (!barra || !boton) {
+      return
+    }
+    const caja = barra.getBoundingClientRect()
+    const miniatura = boton.getBoundingClientRect()
+    if (miniatura.left < caja.left) {
+      barra.scrollLeft -= caja.left - miniatura.left
+    } else if (miniatura.right > caja.right) {
+      barra.scrollLeft += miniatura.right - caja.right
+    }
   }, [actual])
 
   if (total < 2) return null

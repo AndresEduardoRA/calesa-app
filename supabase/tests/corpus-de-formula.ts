@@ -6,7 +6,8 @@
 // Las claves de cada objeto se guardan en el orden de jsonb (largo en bytes y después bytes): es lo que la base ve, y el primer
 // rechazo depende del orden cuando un mismo `params`, `buckets` o `match` trae dos errores (docs/COTIZADOR.md › «Las reglas»).
 import { validarFormula } from '@/modules/cotizaciones/entities/validar'
-import { MUTADORES_DE_FORMA } from './mutadores-de-forma'
+import { MUTADORES_DE_FORMA as MUTADORES_DE_FORMA_BASICOS } from './mutadores-de-forma'
+import { MUTADORES_DE_FORMA_DE_CONDICIONES } from './mutadores-de-forma-condiciones'
 import {
   MUTADORES_BASICOS,
   clonar,
@@ -33,7 +34,10 @@ export const MUTADORES_CRUZADOS: readonly Mutador[] = [
   ...MUTADORES_DE_CAMPOS,
   ...MUTADORES_DE_TEXTO,
 ]
-export { MUTADORES_DE_FORMA }
+export const MUTADORES_DE_FORMA: readonly Mutador[] = [
+  ...MUTADORES_DE_FORMA_BASICOS,
+  ...MUTADORES_DE_FORMA_DE_CONDICIONES,
+]
 
 // Cuántas veces se aplica solo cada mutador cruzado (rotando por las bases donde se aplica, con otra elección al azar cada vez), y
 // cuántas mezclas se arman.

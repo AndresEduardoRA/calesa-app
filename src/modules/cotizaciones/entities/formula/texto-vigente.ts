@@ -2,6 +2,7 @@
 // `params || {nodo: valor}` y no toca `texto`, así que el texto guardado dice lo de antes. Al abrir la fila, el texto se compila y se compara con lo guardado:
 // si sólo cambió el valor de una constante, el valor vuelve a escribirse en su tramo del texto y la fila manda otra vez. Si no se puede, el texto «ya no manda»
 // y recompilar pregunta antes de pisar el ⚙ (`compilar-fila.ts`). Puro, nunca lanza, no toca lo que recibe.
+import type { CatalogoDeTablas } from '../compilador'
 import type { Formula } from '../formula'
 import type { Medidor } from '../medidor'
 import type { Nodo } from '../nodos'
@@ -79,7 +80,31 @@ function cambiosDeValor(
   return cambios
 }
 
-export function textoVigente(formula: Formula, filaId: string, medidor?: Medidor): TextoVigente {
+type Compilar = (texto: string) => ReturnType<typeof compilarFilaBase>
+
+// La verificación no es decorativa: `-0` pasa el «no negativo» y `String(-0)` es «0»; sólo `Object.is` ve que recompilar da otro valor.
+function recompilaIgual(
+  formula: Formula,
+  compilar: Compilar,
+  nuevo: string,
+  r: Extract<ReturnType<Compilar>, { ok: true }>,
+): boolean {
+  const otra = compilar(nuevo)
+  return (
+    otra.ok &&
+    mismosNodos(otra.nodos, r.nodos) &&
+    Object.entries(r.params).every(([id]) =>
+      Object.is(otra.params[id], formula.params.constantes[id]),
+    )
+  )
+}
+
+// `tablas`: el catálogo de tablas del origen; sin él, una fila con BUSCARV no compila y su texto no manda.
+export function textoVigente(
+  formula: Formula,
+  filaId: string,
+  { medidor, tablas }: { medidor?: Medidor; tablas?: CatalogoDeTablas } = {},
+): TextoVigente {
   const m = medidor ?? { visitas: 0 }
   const fila = filasDe(formula.definicion, m).find((f) => f.nodo.id === filaId)
   if (fila?.texto === undefined) return { estado: 'sin_texto' }
@@ -91,9 +116,14 @@ export function textoVigente(formula: Formula, filaId: string, medidor?: Medidor
     cambios,
   })
   // Sin mirar las auxiliares que otra fila nombra: si el ⚙ las cambió, reescribir el texto es justo lo que lo arregla.
-  const r = compilarFilaBase(formula, { destino: { existente: filaId }, texto }, m, {
-    sinAuxiliarNombrada: true,
-  })
+  const compilar: Compilar = (t) =>
+    compilarFilaBase(
+      formula,
+      { destino: { existente: filaId }, texto: t, ...(tablas === undefined ? {} : { tablas }) },
+      m,
+      { sinAuxiliarNombrada: true },
+    )
+  const r = compilar(texto)
   if (!r.ok) return noManda('no_compila')
   const guardados = formula.definicion.nodos.slice(fila.desde, fila.posicion + 1)
   if (!mismosNodos(r.nodos, guardados)) return noManda('otra_estructura')
@@ -102,17 +132,7 @@ export function textoVigente(formula: Formula, filaId: string, medidor?: Medidor
   if (cambios.length === 0) return { estado: 'al_dia', texto, cambios: [] }
 
   const nuevo = reescribir(texto, cambios, r.tramos)
-  if (nuevo === null) return noManda('valor_no_escribible', cambios)
-  // La verificación no es decorativa: `-0` pasa el «no negativo» y `String(-0)` es «0»; sólo `Object.is` ve que recompilar da otro valor.
-  const otra = compilarFilaBase(formula, { destino: { existente: filaId }, texto: nuevo }, m, {
-    sinAuxiliarNombrada: true,
-  })
-  const igual =
-    otra.ok &&
-    mismosNodos(otra.nodos, r.nodos) &&
-    Object.entries(r.params).every(([id]) =>
-      Object.is(otra.params[id], formula.params.constantes[id]),
-    )
-  if (!igual) return noManda('valor_no_escribible', cambios)
+  if (nuevo === null || !recompilaIgual(formula, compilar, nuevo, r))
+    return noManda('valor_no_escribible', cambios)
   return { estado: 'reescrito', texto: nuevo, cambios }
 }

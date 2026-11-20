@@ -239,8 +239,8 @@
     },
     {
       "patron": "public.evaluar_formula",
-      "avisos": 15,
-      "motivo": "Una asignación con conversión implícita entre tipos (jsonb, text, numeric, un enum), la buscada; la cubren las pruebas de su área; variables de un FOR (i, k, g) que plpgsql_check ve como sombra de otra o sin uso: cosmético, no cambia el resultado."
+      "avisos": 6,
+      "motivo": "Una asignación con conversión implícita entre tipos (text a text[], al iniciar sus arreglos), la buscada; la cubren las pruebas de su área; el FOR de g que plpgsql_check ve como sombra de la g que acumula los grupos: cosmético, no cambia el resultado. Los FOR de i y k no tienen una variable declarada que tapar."
     },
     {
       "patron": "public.fase_eliminar",
