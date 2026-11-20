@@ -1,3 +1,4 @@
+import { leerFormulaDeTrabajo } from '@/modules/cotizaciones'
 import { EmpezarDesdeUnaPlantilla } from '@/modules/cotizaciones/pantallas/plantilla-de-v1'
 import { LienzoDeLaPlantillaDiferido } from '@/modules/cotizaciones/pantallas/tarjeta-plantilla'
 import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
@@ -17,6 +18,8 @@ export async function CabezaDeLaFormula({ id }: { id: string }) {
     return null
   }
   const { origen } = abierto
+  const deTrabajo = await leerFormulaDeTrabajo(origen.id)
+  const formula = deTrabajo.ok ? deTrabajo.data : null
   return (
     <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
@@ -29,10 +32,13 @@ export async function CabezaDeLaFormula({ id }: { id: string }) {
           }))}
         />
       </div>
-      <EmpezarDesdeUnaPlantilla
-        origen={{ id: origen.id, nombre: origen.nombre }}
-        Lienzo={LienzoDeLaPlantillaDiferido}
-      />
+      {formula ? (
+        <EmpezarDesdeUnaPlantilla
+          origen={{ id: origen.id, nombre: origen.nombre }}
+          formula={{ id: formula.id, nombre: formula.nombre }}
+          Lienzo={LienzoDeLaPlantillaDiferido}
+        />
+      ) : null}
     </div>
   )
 }

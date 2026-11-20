@@ -30,14 +30,15 @@ export async function leerLaTarjetaDeTrabajo(origen: {
   }
 }
 
-// Las plantillas de V1 para el modal «Empezar desde una plantilla» de un origen (la ruta `GET …/<origen>/plantillas-de-v1` de `src/app`, que suma lo que esta área
+// Las plantillas de V1 para el modal «Empezar desde una plantilla» de una fórmula del origen (la ruta `GET …/<origen>/plantillas-de-v1` de `src/app`, que suma lo que esta área
 // no lee: los tipos de cambio de la empresa y los campos del origen). Los borradores y el catálogo, con la sesión de quien configura.
 export async function leerPlantillasDeV1(
   origen: { id: string; nombre: string },
+  formulaDelOrigenId: string,
   hay: { tiposDeCambio: readonly string[]; campos: readonly string[] },
   usuarioId: string,
 ): Promise<Resultado<DatosDePlantillasDeV1>> {
-  const estado = await plantillasDeV1Supabase.leerEstado(origen.id)
+  const estado = await plantillasDeV1Supabase.leerEstado(formulaDelOrigenId)
   if (!estado.ok) return estado
   const { formula, tarjeta, catalogo } = estado.data
   return ok(

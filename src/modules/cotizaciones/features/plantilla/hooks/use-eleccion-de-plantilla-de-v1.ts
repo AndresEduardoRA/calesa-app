@@ -15,16 +15,19 @@ export type PasoDeLaEleccion = 'elegir' | 'confirmar'
 
 // El modal «Empezar desde una plantilla» como modelo: la lectura al abrir, la plantilla elegida, el paso (elegir o confirmar, sólo si hay borradores o avisos) y
 // aplicar. Al aplicar avisa y lleva a la Fórmula del origen (la action ya revalidó la página); un rechazo queda en el modal con su salida.
-export function useEleccionDePlantillaDeV1(origen: { id: string; nombre: string }) {
+export function useEleccionDePlantillaDeV1(
+  origen: { id: string; nombre: string },
+  formula: { id: string; nombre: string },
+) {
   const router = useRouter()
   const { zonaHoraria } = useRegional()
-  const { lectura, recargar } = usePlantillasDeV1(origen.id)
+  const { lectura, recargar } = usePlantillasDeV1(origen.id, formula.id)
   const [elegida, setElegida] = useState<ClaveDePlantillaDeV1 | null>(null)
   const [paso, setPaso] = useState<PasoDeLaEleccion>('elegir')
   const datos = lectura.estado === 'lista' ? lectura.datos : null
   const plantilla: PlantillaDeV1ParaElegir | null =
     datos?.plantillas.find((p) => p.clave === elegida) ?? null
-  const aplicacion = useAplicarPlantillaDeV1(origen.id, () => {
+  const aplicacion = useAplicarPlantillaDeV1(origen.id, formula.id, () => {
     avisarExito(
       `Se crearon los borradores de la fórmula y de la tarjeta desde «${plantilla?.nombre ?? ''}». Revísalos y publícalos.`,
     )
@@ -33,7 +36,7 @@ export function useEleccionDePlantillaDeV1(origen: { id: string; nombre: string 
   const pregunta =
     plantilla === null || lectura.estado !== 'lista'
       ? null
-      : preguntaDeReemplazo(origen.nombre, plantilla.nombre, lectura.datos.borradores, {
+      : preguntaDeReemplazo(`«${formula.nombre}»`, plantilla.nombre, lectura.datos.borradores, {
           ahora: lectura.leidoEn,
           zona: zonaHoraria,
         })
