@@ -13,7 +13,7 @@ import {
 } from '../../../../entities/contenido/legales'
 import { esquemaGuardarLegales } from '../schemas/legales'
 
-// Guarda los dos legales de una vez (comparten la versión de `ajustes_web`): sólo los que tienen texto y sólo la clave `legales`. Un legal ya
+// Guarda los legales que llegan (uno por modal; comparten la versión de `ajustes_web`): sólo los que tienen texto y sólo la clave `legales`. Un legal ya
 // guardado al que se le vació el texto, o un título que no cabe, vuelven por campo sin tocar la base. La base repite el permiso.
 export const guardarLegales = actionClient
   .inputSchema(esquemaGuardarLegales)

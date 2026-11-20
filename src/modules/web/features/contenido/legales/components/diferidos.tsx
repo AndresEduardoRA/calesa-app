@@ -1,12 +1,10 @@
 'use client'
 
 import { diferido } from '@/shared/ui/diferido'
-import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
-import type { PropsDeLegales } from './formulario-de-legales'
+import type { PropsDeModalDeLegal } from './modal-de-legal'
 
-// El formulario de «Legales» se pide al abrir la pestaña: el hueco (`pantallas/sitio-legales.ts`) lo importa `pestanas.ts`, y por él el hub de
-// Configuración; con el componente directo, el formulario, Tiptap y su action viajarían en el hub.
-export const FormularioDeLegales = diferido<PropsDeLegales>(
-  () => import('./formulario-de-legales').then((modulo) => modulo.FormularioDeLegales),
-  { esqueleto: <EsqueletoFormulario bloques={2} campos={2} />, aviso: 'aqui' },
+// El modal con el editor (Tiptap) se pide la primera vez que se abre (`useAbiertoAlgunaVez()`): la página dibuja sólo texto y el editor no viaja en frío.
+export const ModalDeLegalDiferido = diferido<PropsDeModalDeLegal>(
+  () => import('./modal-de-legal').then((modulo) => modulo.ModalDeLegal),
+  { aviso: 'pantalla' },
 )

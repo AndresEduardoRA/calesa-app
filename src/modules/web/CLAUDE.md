@@ -25,9 +25,10 @@ sólo `web.cola.participar`), en `docs/PENDIENTES.md`.
   `sitio-legales|guias|faqs|testimonios` → `contenido`) va en `PANTALLAS_DE_AREA` de la guarda.
 - **Sub-rutas de Configuración › Sitio web**: una por parte (`/configuracion/web/{ajustes,legales,guias,faqs,testimonios}`), registradas en
   `src/app/(app)/configuracion/web/seccion.ts` (menú, frase y permisos); cada una importa su pantalla de `pantallas/sitio-{ajustes,legales,guias,faqs,testimonios}.ts`.
-  `/configuracion/web` abre la primera que la persona puede y traduce `?seccion=` a su sub-ruta (`web/url-vieja.ts`). Ajustes, Legales y la política de la
-  cola se guardan con la barra de cambios sin guardar (`BarraDeCambiosSinGuardar`, hermana del formulario con `order-last`); Ajustes y Legales comparten
-  la versión de `ajustes_web`: cada action revalida las dos rutas.
+  `/configuracion/web` abre la primera que la persona puede y traduce `?seccion=` a su sub-ruta (`web/url-vieja.ts`). Ajustes y Legales son tarjetas con lo
+  guardado a la vista y un modal por tarjeta (`?panel=`; `@/shared/ui/tarjetas-de-ajustes`, `useEnvioConVersion()`); la política de la cola se guarda con la
+  barra de cambios sin guardar (`BarraDeCambiosSinGuardar`, hermana del formulario con `order-last`). Ajustes y Legales comparten la versión de
+  `ajustes_web`: cada action revalida las dos rutas.
 - `turnos`: `infra/turnos/mis-turnos.ts` lee `limit 6` **filtrado por `usuario_id` a mano** (la RLS deja ver todas a quien gestiona la cola); el título sale
   de `web.vehiculos` (un vehículo que dejó de ser público va sin título). «Contacté» va en un toque sin «Deshacer»; «Vincular a lead» por
   `?panel=vincular-turno&turno=`, montado en `src/app/(app)/_inicio/vincular-turno.tsx` con el panel de `leads`. En `/perfil` (`pantallas/perfil.ts`):
@@ -43,7 +44,7 @@ sólo `web.cola.participar`), en `docs/PENDIENTES.md`.
   `web.guias.publicar`, que la action comprueba antes). `infra/contenido/guias-escritura.ts`: `update … where actualizado_en = <esperado>` (cero filas =
   conflicto o «ya no existe»), nunca manda `cuerpo_html` ni `minutos_lectura`. Al guardar o eliminar se quitan del bucket `web` las imágenes y la portada
   que ya no están (`quitarSiHuerfano`); una subida nunca guardada queda huérfana (deuda aceptada). Categorías: panel `?panel=categorias` de «Guías»;
-  legales: `/configuracion/web/legales` (`web.ajustes.gestionar`, `guardarLegales`).
+  legales: `/configuracion/web/legales` (`web.ajustes.gestionar`, `guardarLegales`: uno o los dos documentos; cada modal manda el suyo).
 - `contenido` › FAQs y testimonios: lecturas con tope 100 + 1; actions con `web.contenido.gestionar`. La foto de un testimonio
   (`foto-de-testimonio.client.ts`) va a WebP, sube por hash al bucket `web` y se limpia con `quitarSiHuerfano`.
 - `cola`: `/configuracion/cola-web` (`pantallas/cola.ts`): una página con «Sin asignar», «En la rueda» (con «Agregar a la rueda» y, dentro, los grupos de las
@@ -87,10 +88,13 @@ precio, precio_hasta, precio_nota, destacado, atributos` (sólo los campos `publ
   `max_abiertas_default`, `max_intentos`) `web.cola.gestionar` o `web.ajustes.gestionar`; `PT409`; errores 22023 con la clave en `hint`. `legales` =
   `{terminos|privacidad: {titulo, doc, html, actualizado_en}}`: `trg_web_ajustes_legales` rehace `html` y `actualizado_en`, escriba quien escriba.
 - Cada formulario manda sólo sus claves y comparten la versión de la fila (guardar en otra pestaña da conflicto y «Recargar»): **la política de la cola**,
-  siempre sus cinco y ninguna del sitio (`cambiosDePolitica`: con sólo `web.cola.gestionar`, una clave del sitio daría 42501); **los legales**, sólo
-  `legales`, con los documentos que tienen texto; **«Ajustes»**, sólo las del sitio y todas las que edita, conservando un origen visible inactivo
-  (`origenesAGuardar`). En «Ajustes», el `PT409` va con `<AvisoDeConflicto>` y «Recargar» borra el borrador (sólo textos; la versión es la `key`); el aviso
-  de un origen apagado cuenta de `web.vehiculos` (`limit 51`: con la web apagada no avisa); el formulario viaja diferido porque el hub importa el hueco.
+  siempre sus cinco y ninguna del sitio (`cambiosDePolitica`: con sólo `web.cola.gestionar`, una clave del sitio daría 42501); **cada legal**, sólo
+  `legales` y sólo su documento (el otro no viaja: la base conserva su texto y su fecha; un documento ya guardado no se puede vaciar); **cada tarjeta de
+  «Ajustes»**, todas las claves del sitio (`entradaDeAjustes()` parte de lo guardado y la tarjeta cambia lo suyo: la base reemplaza `redes` y `seo`
+  enteras), conservando un origen visible inactivo (`origenesAGuardar`). Una tarjeta sin cambios no escribe: guardar cierra. La versión llega por props al
+  abrir el modal y nunca va en su `key`; el `PT409` deja «Recargar» (`useEnvioConVersion`) y conserva lo tipeado. El aviso de un origen apagado (Vitrina)
+  cuenta de `web.vehiculos` (`limit 51`: con la web apagada no avisa). Los legales guardan borrador en `sessionStorage` (un texto largo). Un legal está
+  «Publicada» al guardarse y «Sin publicar» si nunca se escribió: no hay borrador ni programación (las guías sí).
 - «Agregar a la rueda» relee `puede_estar_en_la_rueda` tras `cola_web_configurar` para avisar «Quedó habilitada, pero su rol no recibe turnos de la web.»
 - El **orden de las categorías** reescribe `orden` 0..n−1 con un `upsert` sin versión (la última gana); borrar una categoría con guías lo impide la action,
   no la base (`on delete set null`).

@@ -91,6 +91,32 @@ describe('guardarLegales: permisos antes de escribir', () => {
   })
 })
 
+describe('guardarLegales: un documento por modal', () => {
+  beforeEach(() => {
+    h.permisos = [concede('web.ajustes.gestionar')]
+  })
+
+  it('manda sólo el documento que llega: el otro, ya guardado, no se toca', async () => {
+    h.legales = {
+      ...NINGUNO,
+      privacidad: { titulo: 'P', doc: doc(parrafo('Antes.')), actualizadoEn: VERSION },
+    }
+    const respuesta = await guardarLegales({
+      actualizadoEnEsperado: VERSION,
+      terminos: { titulo: 'Términos y condiciones', doc: doc(parrafo('Pagas al recibir.')) },
+    })
+    expect(respuesta.data).toEqual({ ok: true, data: { actualizadoEn: VERSION } })
+    const pedido = h.guardados[0] as { cambios: Record<string, unknown> }
+    expect(Object.keys(pedido.cambios)).toEqual(['terminos'])
+  })
+
+  it('sin ningún documento no pasa el esquema ni llega a la base', async () => {
+    const respuesta = await guardarLegales({ actualizadoEnEsperado: VERSION })
+    expect(respuesta.validationErrors).toBeDefined()
+    expect(h.guardados).toHaveLength(0)
+  })
+})
+
 describe('guardarLegales: lo que no llega a la base', () => {
   beforeEach(() => {
     h.permisos = [concede('web.ajustes.gestionar')]

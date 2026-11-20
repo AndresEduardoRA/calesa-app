@@ -16,6 +16,15 @@ export const REDES_DEL_SITIO = [
 ] as const
 export type RedDelSitio = (typeof REDES_DEL_SITIO)[number]
 
+export const ETIQUETA_DE_RED: Record<RedDelSitio, string> = {
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+  x: 'X',
+  linkedin: 'LinkedIn',
+}
+
 export type AjustesDelSitio = {
   nombreSitio: string | null
   lema: string | null
@@ -90,6 +99,26 @@ export type EntradaDeCambios = Record<
   | 'seoDescripcion',
   string
 > & { mostrarMonedaSecundaria: boolean; origenesVisibles: readonly string[] }
+
+// Lo guardado como lo escribe la persona: cada tarjeta parte de aquí y cambia sólo lo suyo (la base reemplaza `redes` y `seo` enteras, así que
+// siempre viajan completas).
+export function entradaDeAjustes(ajustes: AjustesDelSitio): EntradaDeCambios {
+  const redes = Object.fromEntries(
+    REDES_DEL_SITIO.map((red) => [red, ajustes.redes[red] ?? '']),
+  ) as Record<RedDelSitio, string>
+  return {
+    nombreSitio: ajustes.nombreSitio ?? '',
+    lema: ajustes.lema ?? '',
+    direccionPublica: ajustes.direccionPublica ?? '',
+    whatsappRespaldo: ajustes.whatsappRespaldo ?? '',
+    horario: ajustes.horario ?? '',
+    ...redes,
+    seoTitulo: ajustes.seo.titulo ?? '',
+    seoDescripcion: ajustes.seo.descripcion ?? '',
+    mostrarMonedaSecundaria: ajustes.mostrarMonedaSecundaria,
+    origenesVisibles: ajustes.origenesVisibles,
+  }
+}
 
 export type CambiosDeAjustes = {
   nombre_sitio: string | null
