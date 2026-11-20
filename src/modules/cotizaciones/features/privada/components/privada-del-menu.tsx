@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { HojaDeUnaGuardada } from '../../../entities/hoja-de-una-guardada'
 import { MOTIVO_PRIVADA_SIN_GUARDAR, ofertaDePrivada } from '../../../entities/privada'
 import { useAporteAlMenu } from '../../hoja/components/menu-de-la-guardada/use-aporte-al-menu'
+import { useAprobadaAnotada } from '../hooks/aprobada-anotada'
 import { cambiarLaPrivada } from '../hooks/cambiar-la-privada'
 
 type Props = {
@@ -15,12 +16,14 @@ type Props = {
   hayCambios: boolean
 }
 
-// «Hacer privada» / «Hacer pública» del «⋯» de la guardada (glosario: «Cotización privada»): sólo para quien la creó (`ofertaDePrivada()`). Si es la aprobada lo dice la
-// base al intentarlo (la guardada no lee la marca de la aprobada en el núcleo). Entró: vuelve a leer la página, que trae la versión nueva. No dibuja nada.
+// «Hacer privada» / «Hacer pública» del «⋯» de la guardada (glosario: «Cotización privada»): sólo para quien la creó (`ofertaDePrivada()`). Si es la aprobada lo sabe por
+// lo que anota el área `aprobada` (`useAprobadaAnotada()`); sin anotación, lo dice la base al intentarlo. Entró: vuelve a leer la página, que trae la versión nueva. No
+// dibuja nada.
 export function PrivadaDelMenu({ hoja, personaId, hayCambios }: Props) {
   const router = useRouter()
   const [enCurso, setEnCurso] = useState(false)
   const c = hoja.cotizacion
+  const aprobada = useAprobadaAnotada(c.id)
   const oferta =
     c.creadoPor === undefined
       ? null
@@ -28,7 +31,7 @@ export function PrivadaDelMenu({ hoja, personaId, hayCambios }: Props) {
           creadoPor: c.creadoPor,
           usuarioId: personaId,
           clase: c.clase,
-          aprobada: null,
+          aprobada,
           privada: c.privada === true,
         })
   async function alElegir() {

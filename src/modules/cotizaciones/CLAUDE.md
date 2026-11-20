@@ -105,7 +105,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   «Privada» de la hoja nueva y en par (`useMarcaDeLaNueva()` de `features/privada/`, en el resumen sobre «Guardar»; el valor vive en `?privada=si`, sobrevive a que la
   hoja se vuelva a montar y se borra al guardar; el pedido lleva `privada` sólo encendido, `p_privada`); «Hacer privada» / «Hacer pública» en el «⋯» de la guardada
   (`<PrivadaDelMenu>`, por `encima`) y del listado (`cambiarLaPrivada()` de `pantallas/listado.ts`) sólo a quien la creó (`ofertaDePrivada()`: apagada con su motivo en
-  una final o la aprobada), con la action `cambiarPrivadaDeLaCotizacion` (`cotizacion_privada_cambiar`, con la versión; al entrar, `router.refresh()`); y la insignia
+  una final o la aprobada; en la guardada, si es la aprobada lo anota el área `aprobada` en `useAprobadaAnotada()`, y sin anotación decide la base), con la action `cambiarPrivadaDeLaCotizacion` (`cotizacion_privada_cambiar`, con la versión; al entrar, `router.refresh()`); y la insignia
   «Privada» con candado (`<InsigniaPrivada>`: tabla, tarjeta, resumen y cabecera de la guardada). Aprobarla (área `aprobada`) o marcarla final (área `final`) la hace
   pública: las dos lo dicen antes.
 - **`/cotizaciones/comparar?ids=a,b[,c]&returnTo=`** (pide sesión; `cotizaciones.ver` de cada una lo decide la base): «Comparar cotizaciones», del área

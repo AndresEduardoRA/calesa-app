@@ -16,7 +16,9 @@ No es la **Final**. `client.ts` vacío; `index.ts` sólo lleva las lecturas por 
   `aprobada-de-la-guardada.tsx` (Server Component tras `<Suspense fallback={null}>`) lee `leerMarcaDeLaGuardada()` (`cotizaciones` con el embebido por el único de
   `cotizaciones_aprobadas`, `cache()`). Todos los que ven la cotización ven la insignia «Aprobada» (`insignia-aprobada.tsx`: un `<span>` con `badgeVariants`, sin
   `<Badge>` de Base UI); quien tiene la clave en el origen ve «Aprobar» (`boton-aprobar.tsx`, una isla que al entrar pasa a la insignia). Sin vehículo, inválida o
-  sin la lectura de la marca, el botón queda apagado con su motivo (`motivoParaNoAprobar`, `aria-describedby`); sin lectura nunca se inventa una marca.
+  sin la lectura de la marca, el botón queda apagado con su motivo (`motivoParaNoAprobar`, `aria-describedby`); sin lectura nunca se inventa una marca. Lo leído se
+  le anota al núcleo (`anotar-aprobada.tsx` → `anotarAprobada()` de `features/privada/hooks/aprobada-anotada.ts`) y se pone al día con los avisos entre islas: «Hacer
+  privada» del «⋯» sale apagada en la aprobada.
 - **Una privada pregunta antes** (glosario: «Cotización privada»): aprobarla la hace pública y «Deshacer» no la vuelve privada. «Aprobar…» (con puntos: abre algo) abre
   `<DialogoDeAprobarPrivada>` en `?panel=aprobar-privada&para=<id>&desde=fila|guardada|vehiculo|comparar` (`useAprobarPrivadaPorUrl(desde)`, `entities/aprobada/url.ts`;
   `desde` evita que el listado y «De este vehículo» dentro del resumen abran dos), con `AVISO_AL_APROBAR` y, en la guardada, que lo no guardado se pierde. Confirmar
