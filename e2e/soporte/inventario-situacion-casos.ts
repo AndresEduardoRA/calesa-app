@@ -59,7 +59,7 @@ export function casosDeSituacion({
 }
 
 // Los casos de «Subasta» y «Fase»: `cierre_entre` con las tres ventanas de verdad, calculadas ahora en la zona de la empresa (sólo las vivas: la «abierta» con el
-// cierre pasado no entra), y la fase como columna (`columna_en fase_id`) en Corea: una, sólo «Sin fase» y las dos con «Sin fase».
+// cierre pasado no entra), y la fase como columna (`columna_en fase_id`) en Corea: una, sólo «Sin fase» y otra con «Sin fase».
 export function casosDeSubasta({
   publica,
   interna,
@@ -93,6 +93,6 @@ export function casosDeSubasta({
     },
     fase('una', [publica], false),
     fase('sin fase', [], true),
-    fase('las dos y sin fase', [publica, interna], true),
+    fase('la otra y sin fase', [interna], true),
   ]
 }

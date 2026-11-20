@@ -188,7 +188,7 @@ test('E2E subasta filtro · «Cierre más próximo» ordena por tramos y pagina 
 
   const paginas = page.getByRole('navigation', { name: 'Páginas' })
   await aLaVista(paginas.getByRole('link', { name: 'Siguiente' })).click()
-  await expect(page).toHaveURL(/cursor=2~/)
+  await expect(page).toHaveURL(/cursor=2(~|%7E)/)
   // Siete «sin filtrar» (sin la no ganada) más el relleno: las que faltan, sin repetir ninguna.
   await expect(filas(page)).toHaveCount(SIN_FILTRAR.length + RELLENO - 10)
   const segunda = await ordenDeLaLista(page)
@@ -274,7 +274,7 @@ test('E2E subasta filtro · una vista guardada vuelve a poner «Subasta», y una
   await exigirLista(page, ['noGanada'])
   await expect(chips(page).getByText('Subasta: No ganadas')).toBeVisible()
   await abrirVistaYOpciones(page)
-  const actual = page.getByRole('button', { name: /Perdidas de antes/ })
+  const actual = page.getByRole('button', { name: /^Perdidas de antes/ })
   await expect(actual).toHaveAttribute('aria-current', 'true')
   await expect(actual).toContainText('la de ahora')
 })
