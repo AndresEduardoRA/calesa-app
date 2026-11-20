@@ -147,7 +147,7 @@ describe('faltasDeLaTarjeta', () => {
     ).toEqual([
       ['Falta activar apibara', 'aviso'],
       ['Sin fases', 'bloquea'],
-      ['Falta publicar la fórmula', 'bloquea'],
+      ['Falta activar una fórmula', 'bloquea'],
       ['Falta publicar la tarjeta', 'aviso'],
     ])
   })

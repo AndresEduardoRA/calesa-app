@@ -22,7 +22,7 @@ export type PasosDeUnOrigen = {
 const LO_QUE_FALTA: Record<Exclude<ClaveDePaso, 'datos'>, string> = {
   campos: 'activar sus campos',
   flujo: 'configurar el flujo',
-  formula: 'publicar la fórmula',
+  formula: 'activar una fórmula',
   tarjeta: 'publicar la tarjeta',
 }
 
