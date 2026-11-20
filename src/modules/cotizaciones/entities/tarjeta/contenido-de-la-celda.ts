@@ -1,7 +1,6 @@
 // Lo que muestra una celda de la tarjeta, resuelto en texto: un texto literal por renglones, un dato (`valor-del-dato.ts`), el logo, la foto del asesor (quien
 // mira) o nada. Una lista de respaldo o unas condiciones se resuelven antes con la cotización (`condiciones-de-la-celda.ts`).
-import type { ContenidoDeLaCelda } from '../cuadricula-de-la-tarjeta'
-import { resolverElContenido } from './condiciones-de-la-celda'
+import type { ContenidoResuelto } from './condiciones-de-la-celda'
 import { inicialesDe } from './contexto-de-la-cotizacion'
 import {
   datoDibujado,
@@ -20,11 +19,8 @@ export {
   type MontoDibujado,
 } from './valor-del-dato'
 
-export function contenidoDibujado(
-  e: EntradaDelContenido,
-  contenido: ContenidoDeLaCelda,
-): ContenidoDibujado {
-  const c = resolverElContenido(e, contenido)
+// Recibe la celda ya resuelta (`resolverElContenido()`): la geometría la resuelve una vez y la usa también para su marca.
+export function contenidoDibujado(e: EntradaDelContenido, c: ContenidoResuelto): ContenidoDibujado {
   switch (c.tipo) {
     case 'texto':
       return textoDibujado(c.texto)

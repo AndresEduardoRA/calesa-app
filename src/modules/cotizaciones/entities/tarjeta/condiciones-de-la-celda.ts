@@ -65,11 +65,14 @@ export const seCumplen = (e: EntradaDelContenido, si: readonly CondicionDeLaTarj
 
 const VACIO: ContenidoSimple = { tipo: 'vacio' }
 
+// Lo que queda de una celda tras resolverla: nunca una lista de respaldo ni unas condiciones.
+export type ContenidoResuelto = Exclude<ContenidoDeLaCelda, { tipo: 'respaldo' | 'condiciones' }>
+
 // El contenido que se dibuja: el mismo, salvo una lista de respaldo o unas condiciones, que se resuelven con la cotización.
 export function resolverElContenido(
   e: EntradaDelContenido,
   c: ContenidoDeLaCelda,
-): Exclude<ContenidoDeLaCelda, { tipo: 'respaldo' | 'condiciones' }> {
+): ContenidoResuelto {
   if (c.tipo === 'respaldo') return c.datos.find((d) => tieneValor(e, d)) ?? VACIO
   if (c.tipo === 'condiciones') return c.ramas.find((r) => seCumplen(e, r.si))?.contenido ?? c.si_no
   return c
