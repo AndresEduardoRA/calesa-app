@@ -79,6 +79,13 @@ describe('cuentaDelCierre', () => {
       tono: 'urgente',
     })
   })
+
+  it('con menos movimiento, el tono mide lo que dice el texto', () => {
+    expect(cuentaDelCierre(CIERRE, antes(59 * MIN + 30 * SEG), false)).toEqual({
+      texto: 'Cierra en 1 h',
+      tono: 'aviso',
+    })
+  })
 })
 
 describe('periodoDeLaCuenta', () => {

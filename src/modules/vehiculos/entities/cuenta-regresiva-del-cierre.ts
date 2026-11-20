@@ -49,6 +49,16 @@ function relojSinSegundos(faltan: number): string {
     .join(' ')
 }
 
+// Lo que falta, hacia arriba: «00:00:01» es el último segundo y el 0 es el cierre. El tono mide lo mismo que dice el texto (sin segundos, los minutos
+// redondeados).
+function cuentaQueFalta(faltan: number, conSegundos: boolean): CuentaDelCierre {
+  const unidad = conSegundos ? SEGUNDO : MINUTO
+  const entero = Math.ceil(faltan / unidad) * unidad
+  const tono: TonoDeLaCuenta =
+    entero < UMBRAL_DE_URGENCIA ? 'urgente' : entero < UMBRAL_DE_AVISO ? 'aviso' : 'normal'
+  return { texto: `Cierra en ${conSegundos ? reloj(entero) : relojSinSegundos(faltan)}`, tono }
+}
+
 // Lo que dice la cuenta al instante `ahora` (ms). Sin fecha (o una que no se entiende): «Sin fecha de cierre». En 0: «Cerrando…» y, pasado el margen,
 // «Cerró hace 3 min». Con `conSegundos` falso (menos movimiento), sin segundos: no se cuenta lo que no se va a mover.
 export function cuentaDelCierre(
@@ -61,13 +71,7 @@ export function cuentaDelCierre(
     return { texto: SIN_FECHA_DE_CIERRE, tono: 'sin_fecha' }
   }
   const faltan = instante - ahora
-  if (faltan > 0) {
-    // Hacia arriba: «00:00:01» es el último segundo y el 0 es el cierre.
-    const entero = Math.ceil(faltan / SEGUNDO) * SEGUNDO
-    const tono: TonoDeLaCuenta =
-      entero < UMBRAL_DE_URGENCIA ? 'urgente' : entero < UMBRAL_DE_AVISO ? 'aviso' : 'normal'
-    return { texto: `Cierra en ${conSegundos ? reloj(entero) : relojSinSegundos(faltan)}`, tono }
-  }
+  if (faltan > 0) return cuentaQueFalta(faltan, conSegundos)
   if (-faltan < MARGEN_DEL_CIERRE) {
     return { texto: CERRANDO, tono: 'cerrando' }
   }
