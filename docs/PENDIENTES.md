@@ -25,7 +25,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[4-72]** Quien ve una cotización pero no su vehículo no puede recalcularla («No se pudo recalcular») — que el recálculo de una guardada no dependa del vehículo, o que la pantalla diga por qué.
 - **[T310]** Una plantilla de la forma 1 que ya no se convierte (un `{{` en una etiqueta, leyenda o nota, que la forma 1 admite como texto, o una fórmula con más de 120 filas convertidas) pasa a `sin_plantilla` sin aviso: la tarjeta va por omisión — que el editor o publicar la fórmula lo digan.
 - **[—]** Editor de la fórmula: sumar o quitar grupos y editar `buckets`, `total_en` y los modos — espera a que la plantilla de la tarjeta se edite junto con la fórmula.
-- **[—]** Editor del diseño: sumar y quitar secciones o ítems quedó sin dueño, y pasar un ítem de una sección a otra (hoy se ordena dentro de la suya).
+- **[—]** Editor del diseño: sumar y quitar secciones o ítems, y pasar un ítem de una sección a otra (hoy se ordena dentro de la suya) — sin tarea que lo tome.
 - **[—]** En la primera publicación de un origen (las dos esperadas nulas), el borrador puede nacer sobre una v1 que otra persona publicó entre medio — decidir si la esperada nula deja de valer.
 - **[T314]** «Compartir la cotización» sin el asistente de IA de V1 para reescribir el texto («hazlo más corto», «más profesional»…): decidir si vuelve y con qué proveedor.
 - **[T314]** «Compartir la cotización» sin el editor de imagen 9:16 de V1 (la historia de WhatsApp o Instagram con la foto y la cotización): hoy se comparte la portada o las fotos tal cual.
@@ -45,7 +45,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T22]** «Documentos por aprobar» de Inicio sólo trae los documentos de vehículos (`_bandeja_por_aprobar`): quien sólo aprueba los de repuestos no ve el bloque. Sumar los de los ítems pide ampliar esa RPC y su medición.
 - **[T22]** Un bloque «Leads sin seguimiento» y «Personas sin rol» no llevan a una lista filtrada: ni `/leads` ni Equipo tienen ese filtro (cada fila abre su ficha o a la persona).
 - **[T02]** Un bloque «Subastas sin resolver» en Inicio — hoy es un grupo de la bandeja del día de `/logistica` y una opción de «Situación» en el inventario.
-- **[A1c]** Avisos sin salida que quedaron: el bloqueo de eliminar una fase no enlaza «las fases que esperan» ni «las unidades en ella» (`ImpactoDeFase` sólo trae conteos; pide los ids); «Editar grupo» con más unidades de las que se muestran y «súbelo por partes» de documentos de un grupo de más de 100 no dicen el paso siguiente; «No pudimos leer los títulos» del panel de fuera de regla no ofrece «Reintentar».
+- **[A1c]** Avisos sin salida: el bloqueo de eliminar una fase no enlaza «las fases que esperan» ni «las unidades en ella» (`ImpactoDeFase` sólo trae conteos; pide los ids); «Editar grupo» con más unidades de las que se muestran y «súbelo por partes» de documentos de un grupo de más de 100 no dicen el paso siguiente; «No pudimos leer los títulos» del panel de fuera de regla no ofrece «Reintentar».
 - **[6-2]** Publicar en la vitrina mueve la versión de la ficha (`vehiculo_vitrina` usa `vehiculos.actualizado_en`) — una columna `vitrina_actualizado_en` que la RPC exija y devuelva.
 - **[6-4]** Se puede pedir un requisito de dato cuya regla está apagada (`transporte.*`, `aduana.*`, `pagos.*`) y nadie puede cumplirlo, y «Qué falta» igual ofrece «Pedirlo» a quien no tiene la clave del hueco — que `revisar_flujo()` lo avise con un código propio o que la RPC lo rechace (saberlo en «Qué falta» exige leer las reglas).
 - **[—]** «Qué falta» no marca un requisito «ya pedido»: pedirlo dos veces da dos tareas (el id del intento sólo evita el doble clic). Marcarlo pide una lectura nueva.
@@ -97,17 +97,15 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Un `22023` de `_formula_rechazar` cuyo `hint` es un nodo llamado `valor` se pinta bajo el campo «Valor nuevo» del ⚙.
 - **[—]** Al descartar o publicar la fórmula, un error que no es PT409 ni falta de red muestra el mensaje de la base (guardar ya usa texto propio).
 - **[—]** Tras pasar a stock, el estado derivado de la cabecera del proyecto de repuestos (pendientes) sólo se actualiza al volver a entrar.
-- **[—]** En el celular, `menu-de-la-fila.spec.ts` › «el «⋯» de un vehículo… tarjeta compacta» cae: el «⋯» queda a 18 px del borde de arriba de la tarjeta (tope 8) desde
-  que la tarjeta del inventario es la de V1; la prueba mide contra la tarjeta y no contra la foto, como la de escritorio.
+- **[—]** Dos e2e de escritorio cayeron en la noche del 2026-11-19 sobre `c880e916`: `configuracion-cotizacion-tarjeta-excel.spec.ts:118` (ensanchar una columna arrastrando y mover una fila con el teclado) y `cotizaciones-tarjetas-y-grupos.spec.ts:184` (el clic en la portada no abre el resumen) — el issue `noche-roja` #395 lleva la cuenta; se arreglan si caen otra noche (`.claude/rules/e2e.md`).
 
 ## Deuda técnica
 
 ### Rendimiento y escala
 
-- **[—]** El listado de cotizaciones de la dueña con 100 filas mide 50.003 B comprimidos con la siembra de volumen, sobre su tope de 49.500 (`e2e/listas-por-pagina-volumen.spec.ts`), ya en `main` (`a5dd0fe9`) — medir qué lo subió (la portada de la lista, #369, es candidata) y recortar o subir el tope con la regla del 5 %.
-- **[T17]** Retirar `vehiculo_interesados()`: la app ya no la llama (el bloque «Relacionados» lee `vehiculo_relacionados()`); `humo.sql` y `numero-global.sql` la siguen probando — migración que la quite y sus sondas.
-- **[T322]** El inicio de Configuración lee lo que falta con `origenes_resumen()`, que cuenta vehículos y cotizaciones que no usa — una lectura de los pasos sin contar si con volumen pesa.
-- **[4-79]** `origenes_resumen()` cuenta con `count(*)` exacto vehículos y cotizaciones por origen, contra la regla de escala — `limit n + 1` por origen con `conteoCorto()`, o quitar el número.
+- **[—]** El listado de cotizaciones de la dueña con 100 filas mide 50.003 B comprimidos con la siembra de volumen, sobre su tope de 49.500 (`e2e/listas-por-pagina-volumen.spec.ts`) — medir qué lo sube (la portada de la lista, #369, es candidata) y recortar o subir el tope con la regla del 5 %.
+- **[T17]** Retirar `vehiculo_interesados()`: la app no la llama (el bloque «Relacionados» lee `vehiculo_relacionados()`); `humo.sql` y `numero-global.sql` la siguen probando — migración que la quite y sus sondas.
+- **[4-79]** `origenes_resumen()` cuenta con `count(*)` exacto vehículos y cotizaciones por origen, contra la regla de escala, y el inicio de Configuración (T322) la lee para lo que falta sin usar esos conteos — `limit n + 1` por origen con `conteoCorto()` o quitar el número; para el inicio, una lectura de los pasos sin contar si con volumen pesa.
 - **[4-67]** El conteo de exportar (`contarLeadsHasta`) de una cartera recién sembrada de 5.001 elige `Seq Scan on leads` tras `analyze` (≈ 3 s) — cierre: páginas sin seq scan, que no crecen y bajo 50 ms en `db:medir:volumen`.
 - **[4-77]** Cada lectura con la policy de `cotizaciones` paga ≈ 160–240 buffers fijos (`mis_permisos()`), sin reproducir — causa sin medir; arreglarlo toca una `security definer` de todas las policies.
 - **[4-78]** Las listas del panel del vehículo de la hoja («Últ. cotización», «Cierre subasta» y su búsqueda) leen `from('vehiculos')` y recorren el origen para quien ve «propios» — pasarlas a rutas tipo `vehiculos_inventario()`.
@@ -117,37 +115,36 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[5a-40]** La baja de 200.000 leads tarda 9 corridas y 15 s porque ningún update de `cartera` es HOT (11 btree) — un índice que sostenga lo ajeno sin nombrar la cartera, sin romper `medir-escala.sql`; la persona aceptó el número actual.
 - **[6-5]** Medir `gastos_listar` y `pagos_listar` con volumen (≈ 50.000 filas, dueña con «todos» y una persona con «propios»): el filtro `en_cartera` por fila puede ir descartando al profundizar.
 - **[8-13c]** Índice `(fase_id, fase_desde, id)` en `repuestos_items` si la Cadena de repuestos y los bloques de Inicio llegan a miles — hoy alcanza `repuestos_items_fase_id_idx`.
-- **[—]** La planilla y el editor de la fórmula tardan ≈ 1 s en abrir con 600 filas y ≈ 2 s con 2.000 (O(filas × nodos), ahora al abrir la pestaña) — una versión por lote de `textoVigente()`/`textoDeNodo()`.
+- **[—]** La planilla y el editor de la fórmula tardan ≈ 1 s en abrir con 600 filas y ≈ 2 s con 2.000 (O(filas × nodos), al abrir la pestaña) — una versión por lote de `textoVigente()`/`textoDeNodo()`.
 - **[—]** El job de la papelera toma siempre los 50 lotes vencidos más viejos: 50 que no se pueden purgar del todo (pago, portal, comprobante) frenan para siempre a los nuevos; vale para los tres tipos.
 - **[—]** `vehiculos_papelera_listar()` y `leads_papelera_listar()` usan el mismo `exists` por lote: sin medir si con poco volumen leen el índice entero.
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
 - **[—]** El bloque «Leads sin seguimiento» de Inicio cuesta lo que pesa la cartera de quien mira; no se midió con volumen.
-- **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 467 nodos de 500, JS de `/cotizaciones/nuevo` 460,4 de 465 y de `/cotizaciones/[id]` 472,2 de 480 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
-- **[T33]** «Vincular o marcar un vehículo» de la ficha del lead (`?panel=agregar-vehiculo`, `shallow: false`) y cada cambio de un recordatorio (`router.refresh()`) releen todos los bloques de la ficha: con todo a la vista cuesta más que antes; se acota cuando moleste (que cada bloque relea lo suyo).
+- **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 467 nodos de 500, JS de `/cotizaciones/nuevo` 462,6 de 465, de `/cotizaciones/[id]` 475,0 de 480 y de `/cotizaciones` 386,9 de 390 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
+- **[T33]** «Vincular o marcar un vehículo» de la ficha del lead (`?panel=agregar-vehiculo`, `shallow: false`) y cada cambio de un recordatorio (`router.refresh()`) releen todos los bloques de la ficha, todos a la vista; se acota cuando moleste (que cada bloque relea lo suyo).
 - **[—]** Tope de 40 ítems por diseño: `subasta_usa` tiene 39 — para crecer, subir `_diseno_maximo_de_items()` y la constante midiendo la hoja, o partir la hoja.
 
 ### Archivos y funciones sobre el tope
 
 - **[4-39]** `vehiculos/entities/vitrina.ts` (358), `leads/entities/alta.ts` (331) y `leads/entities/oportunidad.ts` (307) — partir por responsabilidad.
-- **[4-43]** `e2e/leads-ficha-edicion.spec.ts` (331) — por tema: edición, borrador, sin red, permisos.
-- **[4-46]** `supabase/tests/cotizacion-hoja.sql` (735) y `cotizacion-hoja-dato-del-vehiculo.sql` (340) — los ayudantes `pg_temp.ch_*` a un archivo que `probar-schema.mjs` cargue antes, y que `SOLO` sepa cargarlos.
+- **[4-43]** `e2e/leads-ficha-edicion.spec.ts` (336) — por tema: edición, borrador, sin red, permisos.
+- **[4-46]** `supabase/tests/cotizacion-hoja.sql` (736) y `cotizacion-hoja-dato-del-vehiculo.sql` (340) — los ayudantes `pg_temp.ch_*` a un archivo que `probar-schema.mjs` cargue antes, y que `SOLO` sepa cargarlos.
 - **[4-52]** `supabase/tests/medir-cotizacion-guardar.sql` (319) — en terreno/funciones y casos.
 - **[4-56]** `e2e/soporte/cotizar-formula.ts` (332) — la fórmula de prueba, los orígenes y su limpieza, lo que se mira en la base.
-- **[4-64]** En `supabase/tests/`: `cotizaciones-visibilidad` 1.931, `medir-escala` 1.047, `cotizacion-guardar` 764, `cotizacion-crear` 730, `publicar-diseno` 626, `derivados-leads` 493, `medir-publicar` 420, `medir-cotizaciones-lectura` 348; además `scripts/carreras.mjs` 422 y `eslint.config.mjs` 396.
+- **[4-64]** En `supabase/tests/`: `cotizaciones-visibilidad` 1.945, `medir-escala` 1.044, `cotizacion-guardar` 766, `cotizacion-crear` 729, `publicar-diseno` 626, `derivados-leads` 496, `medir-publicar` 424, `medir-cotizaciones-lectura` 348; además `scripts/carreras.mjs` 447 y `eslint.config.mjs` 400.
 - **[4-64]** Funciones SQL de más de 80 líneas: `cotizaciones_listado()`, `cotizacion_guardar`, `_cotizacion_hoja`, `cotizacion_encima`, `importacion_procesar_lote`, `lead_campo_guardar`, `origen_campo_guardar`, `_web_doc_nodo`, `_web_ajustes_objeto` — al tocarlas; partir una `security definer` mueve su inventario y carreras.
 
 ### Limpieza y código
 
-- La vista previa del diseño de la hoja (Configuración › Hoja) no dibuja la variante en par (`hojaDeLaVistaPrevia()` no trae `par`); la planilla de la fórmula sí la muestra (sus dos opciones con «Se cotiza en par»).
-- En la vista previa de las hermanas, «Copiar texto» copia sólo el de la tarjeta de la cotización abierta (no une los dos).
-- `medir-cotizacion-crear.sql` y `medir-cotizacion-guardar.sql` no tienen un caso en par: crear y guardar en par llaman dos veces a lo que ya miden.
-
+- **[—]** La vista previa del diseño de la hoja (Configuración › Hoja) no dibuja la variante en par (`hojaDeLaVistaPrevia()` no trae `par`); la planilla de la fórmula sí la muestra (sus dos opciones con «Se cotiza en par»).
+- **[—]** En la vista previa de las hermanas, «Copiar texto» copia sólo el de la tarjeta de la cotización abierta (no une los dos).
+- **[—]** `medir-cotizacion-crear.sql` y `medir-cotizacion-guardar.sql` no tienen un caso en par: crear y guardar en par llaman dos veces a lo que ya miden.
 - **[4-45]** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso real (`moneda_mostrar` sólo viaja por `cotizaciones_listado()`) — migración que la recree sin ellas, con su medición y `db:types`.
-- **[—]** `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` siguen en `esquemaDelServidor` (`src/shared/config/esquemas.ts`) y en `.env.example`, pero sólo los lee la función `push` — dejarlos sólo en `esquemaDeLasFunciones`.
+- **[—]** `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` están en `esquemaDelServidor` (`src/shared/config/esquemas.ts`) y en `.env.example`, pero sólo los lee la función `push` — dejarlos sólo en `esquemaDeLasFunciones`.
 - **[—]** Copias que deberían subir al núcleo o a `shared`: el esquema de la nota de publicar, `FILAS_POR_PEDIDO`, `MARCAS_DE_GESTORES`, `valorTipeado`, `diasParaLaPurga`/`textoDePurga`, las lecturas de tonos, `normalizar` de la XCell y la subida por hash a bucket privado.
 - **[—]** «Ver comprobante» duplicado en repuestos y logística (`ver-comprobante.ts` y `useComprobante.ver`); `XCell` no tiene `emptyLabel`.
 - **[—]** Las guardas de áreas (`areas-de-cotizaciones`, `-flujos`, `-logistica`, `areas-b/areas-de-web`, `areas-c/areas-de-repuestos`) son cinco copias de la misma lógica, y los registros de `<Confirmar>`, `<Drawer>` y RPC paginadas están partidos en `areas-b/`, `areas-c/`, `*-formula.ts` y `*-papelera.ts` — unificar en una guarda parametrizada y un registro por módulo.
-- **[T340]** `lead_telefonos_leer()` no tiene uso en la app (la leía el resumen de la lista de leads) — quitarla en una migración con sus pruebas SQL.
+- **[T340]** `lead_telefonos_leer()` no tiene uso en la app — quitarla en una migración con sus pruebas SQL.
 - **[—]** Repuestos sube imágenes con `subirPorHash` desde el hook — debería ir a `infra/items/imagenes.client.ts`.
 - **[—]** Huérfanos de Storage: `storage_gc_encolar_huerfanos` sólo barre `vehiculos`; quedan los de `repuestos` y `cotizaciones` (subidas cuyo registro falló), imágenes de guías y fotos de testimonios web subidas y nunca guardadas.
 - **[—]** El CSV de una importación que el job deja `fallida` tras 24 h sin avance no se borra (ni el objeto de un borrado fallido en el navegador), y un error que se repite reintenta cada 2 min esas 24 h.
@@ -155,7 +152,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** Las ramas `p_repuesto` de las RPC de logística sólo se prueban con filas sembradas por SQL (ninguna pantalla las usa); el e2e de compras no sube un comprobante.
 - **[4-95]** El `creado_en` de una revisión es el `now()` de su transacción: «Ir a una fecha» puede dejar del lado equivocado una revisión de esa ventana — `clock_timestamp()` o saltar por `(creado_en, id)`, si alguna vez se ve.
 - **[4-74]** `schemas/edicion.ts` acota `notas` con `.max(2000)`, que cuenta unidades UTF-16 mientras la base cuenta caracteres (un emoji cerca del tope da distinto); `cotizar-guardada-guardar.spec.ts` usa `waitForTimeout(600)`.
-- **[T310]** La muestra de la tarjeta del modal de colores (`como-se-ve-el-color.tsx`) sigue con la tinta de `_color_tinta_de_la_tarjeta()`, y la tarjeta de la cotización ya usa `auto` (#1b2130 o blanco) — alinearla y retirar `_color_tinta_de_la_tarjeta()` si queda sin uso.
+- **[T310]** La muestra de la tarjeta del modal de colores (`como-se-ve-el-color.tsx`) usa la tinta de `_color_tinta_de_la_tarjeta()` y la tarjeta de la cotización, `auto` (#1b2130 o blanco) — alinearla y retirar `_color_tinta_de_la_tarjeta()` si queda sin uso.
 - **[4-98]** El PDF sale sin logo si el logo es WebP o un SVG con estilos, `use`, `mask`, `filter` o `<image>` (`logo-del-pdf.ts`) — convertirlo a PNG al subirlo.
 - **[7-3]** El `aplicado_en` de `chat.participar` y `chat.moderar` en el catálogo dice «policy …» y no nombra las RPC que los exigen — dato de catálogo en una migración nueva.
 - **[5a-42]** `medir-bajas.sql` falla sin regresión cuando el disco tarda en `fsync` (topes de tiempo) — juzgar el trabajo (40 lotes, ≤ 16 M buffers) y los tiempos sólo con la ventana sana (`pg_stat_checkpointer`, `/proc/pressure/io`).
@@ -164,13 +161,13 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `fase_mover` con `orden` repetido previo y ancla compartida deja la movida detrás de la otra fase — desempatar si molesta.
 - **[—]** `logistica/entities/dinero/reparto.test.ts` («para cualquier monto…», ~2700 casos) pasa de los 5 s de Vitest con la máquina cargada (`pnpm test` junto a `db:probar`) — menos casos o un `timeout` propio.
 - **[—]** `scripts/demo/sembrar.mjs` no siembra proyectos de repuestos, eventos ni tareas de la agenda, ni vehículos fuera de la primera fase del flujo: la demo muestra esas pantallas vacías.
+- **[—]** El log del orquestador, el aviso de ntfy y la sección «A arreglar» del resumen de la tanda dicen «El CI del PR #n cayó. Jobs en rojo:» sin nombrar ningún job: `a_arreglar` guarda sólo la primera línea del motivo — que esa línea nombre los jobs caídos (`motivo_ci` en `scripts/orquestador/orquestador.sh`).
 - **[—]** `bloquear-peligrosos.sh` lee el texto del comando: un agregar que no aparece en él (dentro de `bash guion.sh`, armado con `printf`/`base64`, un `.npmrc` o un `package.json` escritos con Write) no se mira — una guarda de CI que exija que toda dependencia nueva de `package.json` esté en `scripts/orquestador/dependencias-aprobadas.txt` y que el PR que suma a la lista lleve «Dependencias nuevas».
-- **[—]** `e2e/leads-oportunidades.spec.ts` «crear desde el panel» cae también en `main`: el lead del spec nace sin oportunidad (el bloque dice «Todavía no tienes oportunidades…») y «Nueva oportunidad» del vacío no abre `?panel=nueva-oportunidad`; serial, deja sin correr las otras 4 del archivo.
 - **[—]** `e2e/cotizaciones-listado.spec.ts` E6 y E8 fallan a veces en el CI y pasan en local: la tecla N abre `panel=nuevo-lead` en vez de la hoja, y «Ver todas» pierde `clase=preventa` — esperar la hidratación o el `href` ya filtrado antes de actuar.
 
 ### Límites aceptados
 
-- **[T14]** Una fase rara (pocas unidades en un origen grande) del filtro «Situación» recorre el origen en orden por `vehiculos_origen_listado_idx`, como el filtro de fase de antes; un índice `(origen_id, fase_id, creado_en desc, id desc)` lo acotaría si llega a notarse.
+- **[T14]** Una fase rara (pocas unidades en un origen grande) del filtro «Situación» recorre el origen en orden por `vehiculos_origen_listado_idx`; un índice `(origen_id, fase_id, creado_en desc, id desc)` lo acotaría si llega a notarse.
 - **[T02]** Una no ganada en una fase de subasta que no es la inicial queda retenida de la limpieza por «fase» o «bloqueo», como hoy.
 - **[—]** Un aviso de limpieza no se repite tras quitar «Conservar» o restaurar; con `aviso_dias` > 90 un vencimiento puede avisar dos veces.
 - **[—]** Tablero: «Finales» cuenta por cohorte de creación, porque no hay fecha de marca final.
@@ -202,7 +199,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[4-20]** Ancho contra altura del aviso de escritorio: a 22 rem, al 200 % tapa texto de la última fila de una lista — decidir (ancho, angosto o que se aparte) y afirmarlo en `e2e/avisos-con-descripcion.spec.ts` (`--ancho-del-aviso`; `avisosAbajo()` cambia con el ancho).
 - **[R7]** Blancos táctiles bajo 44 px en componentes de toda pantalla (`Tabs`, `Switch`, `Checkbox`, `Popover` de Roles, «Nuevo lead» del marco, «Saltar al contenido», «Abrir» de las listas, el botón de 32 px): 121 en `BLANCOS_CONOCIDOS` — rediseño; se cierra vaciando la lista.
 - **[R7]** R7 sólo es dura en `RUTAS_DE_LAS_FASES_5_A_9` (`e2e/soporte/accesibilidad-conocidos.ts`); fuera quedan 5 blancos (`/`, `/leads` ×2, `/leads/[id]` → `tel:`, las partes de `/configuracion/origenes/[id]/…`) — se cierra ampliándola a toda la app.
-- **[4-50]** El resumen fijo de la hoja no cabe entero al 200 % con la página arriba (empeoró con la barra del cliente).
+- **[4-50]** El resumen fijo de la hoja no cabe entero al 200 % con la página arriba (con la barra del cliente a la vista).
 - **[T312]** En una celda angosta de la hoja (media sección con el resumen al costado, 1280 px) el % y el ⚙ de un par bajan a la fila de abajo, a la
   derecha del monto; V1 los dejaba en la misma fila. Medir si con la caja del valor más angosta (hoy `min-w-[6rem]`) entran sin encimarse.
 - **[—]** La barra del vehículo de la hoja desborda la página al 200 % en el celular cuando dice «Obligatorio»: la insignia es `shrink-0` junto a «Selecciona
