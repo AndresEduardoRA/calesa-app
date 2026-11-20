@@ -16,6 +16,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Rechaza `NaN` explícito junto a `monto > 0` en toda RPC de dinero: en Postgres `'NaN' > 0` es verdadero y `numeric(18,2)` lo guarda, así que el `check` no basta.
 - `db:lint` no admite avisos sin motivo: declara STABLE (no IMMUTABLE) una función que usa `jsonb_build_object` e inicia un `uuid[]` vacío con `array[]::uuid[]`, no con `'{}'`.
 - No declares la variable de un `for i in 1 .. n` de plpgsql: el `for` crea la suya. Declarada, `plpgsql_check` la marca sin uso y cada `for` nuevo suma una sombra, así que `db:lint` cae contra la cuenta de `supabase/tests/advisors-con-motivo.json`.
+- Al sumar una columna de salida a una función que llena sus OUT con `return query execute` (`cotizaciones_buscar`, `vehiculos_inventario`), sube su cuenta en `supabase/tests/advisors-con-motivo.json`: `plpgsql_check` da un «maybe unmodified» por columna. `pnpm db:lint` sale 0 igual; la cuenta la compara `pnpm db:lint > f.txt; pnpm exec tsx scripts/despliegue/revisar-base.mjs db-lint f.txt` (el job Base del CI).
 - Un trigger `before insert` corre antes del `with check` de la policy: quien no puede recibe 23514 en vez de 42501. Ordena las defensas sabiéndolo.
 - Los triggers BEFORE corren en orden alfabético del nombre: el que depende de otros se nombra para ir último (`trg_lead_z_cliente_desde`).
 - Un borrado suave por `update` da 42501 si la policy de leer no admite la fila nueva (aun sin `returning`): borrar así pide una RPC `security definer`.
