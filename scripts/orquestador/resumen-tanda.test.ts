@@ -26,6 +26,20 @@ const resultadoDe = (id: string, ts: string) =>
     timestamp: ts,
     message: { content: [{ type: 'tool_result', tool_use_id: id }] },
   })
+/** Un mensaje del asistente con su `usage`: el contexto del turno es la suma de entrada, escritura y lectura de caché. */
+const turnoCon = (id: string, contexto: number) =>
+  linea({
+    type: 'assistant',
+    message: {
+      id,
+      content: [],
+      usage: {
+        input_tokens: 10,
+        cache_creation_input_tokens: 90,
+        cache_read_input_tokens: contexto - 100,
+      },
+    },
+  })
 const final = (ms: number, usd: number, turnos: number, modelos: Record<string, number>) =>
   linea({
     type: 'result',
@@ -71,10 +85,13 @@ function juguete() {
   writeFileSync(
     join(est, 'T1/sesion-1-tarea.jsonl'),
     [
+      turnoCon('m1', 100_000),
       usoDeBash('a', 'cd /x/.orquestador/worktrees/T1 && pnpm test', '2026-11-16T10:10:00Z'),
       resultadoDe('a', '2026-11-16T10:12:00Z'),
       usoDeBash('b', 'pnpm test', '2026-11-16T10:13:00Z'),
       resultadoDe('b', '2026-11-16T10:13:30Z'),
+      turnoCon('m2', 400_000),
+      linea({ type: 'system', subtype: 'compact_boundary' }),
       // Dos tramos (siguió tras una tarea en segundo plano): minutos y turnos se suman; costo y modelos, el último.
       final(1_500_000, 5, 35, { opus: 2.5, sonnet: 2.5 }),
       usoDeBash('c', 'git status', '2026-11-16T10:14:00Z'),
@@ -100,11 +117,11 @@ it('por tarea: el ciclo, el plan y cada sesión con minutos, costo y turnos, las
   const { est, cola } = juguete()
   const r = correr('--estado', est, '--cola', cola, 'T1', 'T2', 'T3')
   expect(r).toContain(
-    '| T1 hacer lo primero | #7 | 11-16 10:00 → 11:15 (1 h 15) | 10 min · $2.00 · 10 t | tarea 30 min · $6.00 · 40 t | 0/1 |  |',
+    '| T1 hacer lo primero | #7 | 11-16 10:00 → 11:15 (1 h 15) | 10 min · $2.00 · 10 t · ctx — | tarea 30 min · $6.00 · 40 t · ctx 250k/400k · 1 comp | 0/1 |  |',
   )
   // Sin evento final: «—»; trabada, con su motivo sin la coletilla del aviso.
   expect(r).toContain(
-    '| T2 hacer lo segundo | #8 | 11-16 10:05 → 12:05 (2 h 00) | — | tarea — · — | 2/0 | trabada |',
+    '| T2 hacer lo segundo | #8 | 11-16 10:05 → 12:05 (2 h 00) | — | tarea — · — · ctx — | 2/0 | trabada |',
   )
   expect(r).toContain('- T2: /tmp sin inodos\n')
   expect(r).toContain('- T1: El CI del PR #7 cayó. Jobs en rojo:')
@@ -112,6 +129,9 @@ it('por tarea: el ciclo, el plan y cada sesión con minutos, costo y turnos, las
   expect(r).toContain('| T3 | — | — → — | — | — | 0/0 |  |')
   expect(r).toContain('- 3 tareas · reloj de la tanda 2 h 05 · 40 min de sesiones · $8.00')
   expect(r).toContain('- Por modelo: opus 63 % · sonnet 38 %')
+  expect(r).toContain(
+    '- Contexto por turno: medio 250k · 50 % de los turnos sobre 300k · compactaciones 1',
+  )
   expect(r).toContain('- Retomas 2 · arreglos 1 · trabadas 1 (lo que gastó un intento)')
   expect(r).toContain(
     '- Sesiones: 2 de tarea ($6.00) · 0 de retomar ($0.00) · 0 de arreglar ($0.00)',

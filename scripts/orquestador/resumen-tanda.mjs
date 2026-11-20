@@ -11,7 +11,7 @@
 import { existsSync, lstatSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { leerSesion } from './resumen-sesion.mjs'
+import { leerSesion, UMBRAL_CONTEXTO } from './resumen-sesion.mjs'
 
 export const TOPE = 6000
 
@@ -78,11 +78,34 @@ export function duracion(min) {
 /** @param {number | undefined} usd */
 const dolares = (usd) => (usd === undefined ? '—' : `$${usd.toFixed(2)}`)
 
-/** Una sesión en una celda: «tarea 58 min · $9.08 · 145 t». Puro. @param {Sesion} s */
+/** Tokens en miles: «480k». Puro. @param {number} n */
+const miles = (n) => `${Math.round(n / 1000)}k`
+
+/** El contexto de una sesión: «ctx 480k/876k» (promedio/máximo por turno) y las compactaciones; «ctx —» si no hubo `usage`. Puro.
+ * @param {Sesion} s */
+function celdaDeContexto(s) {
+  const c = s.contexto
+  const comp = s.compactaciones ? ` · ${s.compactaciones} comp` : ''
+  return `ctx ${c ? `${miles(c.suma / c.turnos)}/${miles(c.max)}` : '—'}${comp}`
+}
+
+/** Una sesión en una celda: «tarea 58 min · $9.08 · 145 t · ctx 480k/876k». Puro. @param {Sesion} s */
 function celdaDeSesion(s) {
   const nombre = s.nombre.replace(/^sesion-\d+-/, '')
   const turnos = s.turnos === undefined ? '' : ` · ${s.turnos} t`
-  return `${nombre} ${s.minutos === undefined ? '—' : duracion(s.minutos)} · ${dolares(s.costo)}${turnos}`
+  return `${nombre} ${s.minutos === undefined ? '—' : duracion(s.minutos)} · ${dolares(s.costo)}${turnos} · ${celdaDeContexto(s)}`
+}
+
+/** La línea de totales del contexto: promedio por turno, turnos sobre el umbral y compactaciones, de todas las sesiones. Puro.
+ * @param {Sesion[]} todas */
+function lineaDeContexto(todas) {
+  const con = todas.flatMap((s) => (s.contexto ? [s.contexto] : []))
+  const turnos = con.reduce((a, c) => a + c.turnos, 0)
+  const compactaciones = todas.reduce((a, s) => a + s.compactaciones, 0)
+  if (!turnos) return `- Contexto: — · compactaciones ${compactaciones}`
+  const medio = con.reduce((a, c) => a + c.suma, 0) / turnos
+  const sobre = con.reduce((a, c) => a + c.sobre, 0)
+  return `- Contexto por turno: medio ${miles(medio)} · ${Math.round((100 * sobre) / turnos)} % de los turnos sobre ${miles(UMBRAL_CONTEXTO)} · compactaciones ${compactaciones}`
 }
 
 /** «11-16 17:59 → 19:28 (1 h 29)». Puro. @param {DelLog} l */
@@ -173,6 +196,7 @@ export function armarResumen(tareas) {
     `- Por modelo: ${modelos.length ? modelos.map(([m, v]) => `${m} ${Math.round((100 * v) / (sumaModelos || 1))} %`).join(' · ') : '—'}`,
     `- Retomas ${tareas.reduce((a, t) => a + t.retomas, 0)} · arreglos ${tareas.reduce((a, t) => a + t.arreglos, 0)} · trabadas ${tareas.filter((t) => t.log.trabas.length).length} (lo que gastó un intento)`,
     `- Sesiones: ${sesionesDe('tarea')} · ${sesionesDe('retomar')} · ${sesionesDe('arreglar')}`,
+    lineaDeContexto(todas),
     '',
     '### Trabadas',
     '',
@@ -192,7 +216,7 @@ export function armarResumen(tareas) {
     '',
     '### Tareas, de la más cara a la más barata',
     '',
-    'Plan y sesiones: minutos · costo · turnos. RET/ARR: retomas y arreglos.',
+    'Plan y sesiones: minutos · costo · turnos · contexto (promedio/máximo por turno) y compactaciones. RET/ARR: retomas y arreglos.',
     '',
     '| Tarea | PR | Lanzada → integrada | Plan | Sesiones | RET/ARR | |',
     '| --- | --- | --- | --- | --- | --- | --- |',
