@@ -23,6 +23,8 @@ export type DatosDelOrigen = {
   // El día de hoy en la zona de la empresa, si la limpieza automática aplica a este origen y está
   // encendida: con él cada fila dice «Se limpia el dd/mm». null = no hay nada que decir.
   limpiezaHoy: string | null
+  // El instante (ISO) con el que el servidor dibujó la lista: la cuenta regresiva de la subasta empieza en él (el mismo texto al hidratar) y sigue con el reloj de la página.
+  ahora: string
 }
 
 export type FilaDeVehiculo = Vehiculo

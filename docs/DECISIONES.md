@@ -300,7 +300,13 @@ las trampas, en `docs/LECCIONES.md`.
   sobre cualquier foto (el par entra en `design/tokens.test.ts` sobre blanco). Va abajo a la izquierda sin recibir el puntero (el carrusel sigue siendo de la
   foto) y, en la tarjeta, los puntos del carrusel van a la derecha (`puntos="derecha"`) para que nunca se toquen.
 - **«Costo estimado» es la cotización aprobada con otro nombre en la lista.** El mismo dato (el primer resultado con su moneda), con el modo de tipo de cambio de
-  su cotización dentro del mismo enlace; los tipos siguen llamándose «aprobada» y sólo cambia el rótulo de la UI (`ROTULO_DEL_COSTO_ESTIMADO`).
+  su cotización dentro del mismo botón; los tipos siguen llamándose «aprobada» y sólo cambia el rótulo de la UI (`ROTULO_DEL_COSTO_ESTIMADO`). No enlaza a la
+  cotización: abre «Compartir la cotización» de la aprobada sobre la lista (`?panel=compartir&para=<id>`); en Modo Live es texto. `vehiculos` no conoce
+  `cotizaciones`: el diálogo y el hook que lo abre los une `src/app/(app)/vehiculos/listado-con-compartir.tsx` y llegan a cada dato por contexto.
+- **La cuenta regresiva de la lista sale de `vehiculos_inventario()` y de la tabla, no de otra consulta.** Esas dos lecturas traen `cierre_subasta_en` (la columna
+  generada de la base) y la lista cuenta con un solo temporizador por página (módulo `use-cuenta-del-cierre.ts`: cada segundo, o cada minuto con
+  `prefers-reduced-motion`, y entonces sin segundos). Pasadas las 0, «Cerrando…» un minuto y después «Cerró hace…». Sólo en un vehículo en subasta de un origen
+  de subasta. El servidor manda su instante (`ahora`) para que el primer texto sea el mismo al hidratar.
 - **«Compra directa» se busca por la ruta de apibara (`pricing.buy_now_usd`), no por la clave del campo**, como la puja: un origen puede tener ese campo con
   otra clave. Sólo en un origen de subasta, en USD, y ese campo sale de los «en tarjeta» del layout (sería el mismo dato dos veces); la puja no cambia.
 

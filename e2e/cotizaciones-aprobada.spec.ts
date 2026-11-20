@@ -10,7 +10,7 @@ import { expect, test, type Page } from './soporte/prueba'
 import { literal, sql } from './soporte/sql'
 
 // La cotización aprobada de un vehículo (B4, `docs/UX.md` › «Cotización guardada», «Vehículos» y «Cotizaciones»): la primera activa nace aprobada y su primer
-// resultado sale en el «Costo estimado» de `/vehiculos` (la columna, o la fila de la tarjeta), enlazado a ella. Quien aprueba en el origen elige la segunda desde
+// resultado sale en el «Costo estimado» de `/vehiculos` (la columna, o la fila de la tarjeta), un botón que abre «Compartir» de ella. Quien aprueba en el origen elige la segunda desde
 // su guardada («Aprobar» pasa a la insignia «Aprobada»), y la lista de vehículos pasa a mostrar su monto y su enlace; el listado de cotizaciones la marca. Quien no aprueba
 // ve la insignia y no el botón. El terreno lo arma `soporte/cotizaciones-final.ts`; la siembra escribe sin triggers (como el resto), así que el relleno de la aprobada se
 // llama a mano, como lo hace la siembra de volumen.
@@ -81,10 +81,8 @@ test('E2E aprobar la segunda cotización cambia la columna de la lista de vehíc
   await abrir(page, t.duena, rutaDelInventario(s.titulo))
   const fila = filas(page).filter({ hasText: s.titulo })
   await expect(fila).toHaveCount(1)
-  await expect(fila.getByRole('link', { name: /1\D?111/ })).toHaveAttribute(
-    'href',
-    `/cotizaciones/${s.primera}`,
-  )
+  await fila.getByRole('button', { name: /Compartir la cotización aprobada.*1\D?111/ }).click()
+  await expect(page).toHaveURL(new RegExp(`panel=compartir.*para=${s.primera}`))
 
   // La segunda: «Aprobar» en su guardada pasa a la insignia, sin refrescar la página.
   await page.goto(`/cotizaciones/${s.segunda}`)
@@ -97,11 +95,11 @@ test('E2E aprobar la segunda cotización cambia la columna de la lista de vehíc
 
   // La lista pasa a mostrar la segunda.
   await page.goto(rutaDelInventario(s.titulo))
-  await expect(
-    filas(page)
-      .filter({ hasText: s.titulo })
-      .getByRole('link', { name: /2\D?222/ }),
-  ).toHaveAttribute('href', `/cotizaciones/${s.segunda}`)
+  await filas(page)
+    .filter({ hasText: s.titulo })
+    .getByRole('button', { name: /Compartir la cotización aprobada.*2\D?222/ })
+    .click()
+  await expect(page).toHaveURL(new RegExp(`panel=compartir.*para=${s.segunda}`))
 
   // El listado de cotizaciones la marca, sólo a ella.
   await page.goto(`/cotizaciones?vehiculo=${s.vehiculoId}`)

@@ -47,6 +47,8 @@ export type Vehiculo = {
   estadoSubasta: EstadoDeSubasta | null
   // La situación real (la calcula la base): en subasta, sin resolver, no ganada o su fase.
   situacion: Situacion
+  // Cuándo cierra la subasta viva (ISO; la calcula la base: `cierre_subasta_en`); null = sin subasta viva o sin fecha. La cuenta regresiva de la lista la cuenta.
+  cierreSubastaEn: string | null
   creadoPor: string | null
   creadoEn: string
   // La versión de la fila: toda edición la manda.
@@ -61,7 +63,7 @@ export const MAXIMO_DE_PAGINA_DE_VEHICULOS = 100
 // vienen embebidas en la misma consulta; quien consulta las acota a la portada con
 // `FILTRO_DE_PORTADA` (sin ese filtro vendrían las 24).
 export const COLUMNAS_DE_VEHICULO =
-  'id, numero, origen_id, titulo, marca, modelo, anio, vin, lote, plataforma, url_origen, precio, precio_negociable, acepta_permuta, placado, kilometraje, categoria_id, fase_id, atributos, lead_id, publicado_web, destacado_web, precio_web, precio_web_hasta, precio_web_nota, creado_por, creado_en, actualizado_en, limpieza_el, estado_subasta, situacion, vehiculos_imagenes(ruta_miniatura)'
+  'id, numero, origen_id, titulo, marca, modelo, anio, vin, lote, plataforma, url_origen, precio, precio_negociable, acepta_permuta, placado, kilometraje, categoria_id, fase_id, atributos, lead_id, publicado_web, destacado_web, precio_web, precio_web_hasta, precio_web_nota, creado_por, creado_en, actualizado_en, limpieza_el, estado_subasta, situacion, cierre_subasta_en, vehiculos_imagenes(ruta_miniatura)'
 
 export const FILTRO_DE_PORTADA = { columna: 'vehiculos_imagenes.es_portada', valor: true } as const
 
@@ -98,6 +100,8 @@ const columnasDeVehiculo = {
   // Un estado que la app no conoce no tumba la lista: queda como sin subasta.
   estado_subasta: z.string().nullable().catch(null),
   situacion: esquemaDeSituacion,
+  // Una fecha que no se entiende no tumba la lista: queda sin cierre.
+  cierre_subasta_en: z.string().nullable().catch(null),
   creado_por: z.guid().nullable(),
   creado_en: z.string(),
   actualizado_en: z.string(),
@@ -150,6 +154,7 @@ function vehiculoDesde(
     portadaRuta,
     estadoSubasta: esEstadoDeSubasta(fila.estado_subasta) ? fila.estado_subasta : null,
     situacion: fila.situacion,
+    cierreSubastaEn: fila.cierre_subasta_en,
     creadoPor: fila.creado_por,
     creadoEn: fila.creado_en,
     actualizadoEn: fila.actualizado_en,

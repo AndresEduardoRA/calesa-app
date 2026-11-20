@@ -1,13 +1,13 @@
 // La cotización aprobada de cada vehículo de una página del inventario, como la dibuja el «Costo estimado» (la columna de la tabla y la fila de la tarjeta de la
-// lista). La arma `src/app` con lo que lee `cotizaciones` (este módulo no lo importa): una `ruta` ya resuelta, el primer resultado congelado con su moneda y el
+// lista). La arma `src/app` con lo que lee `cotizaciones` (este módulo no lo importa): su id (lo que abre «Compartir la cotización»), el primer resultado congelado con su moneda y el
 // nombre del modo de tipo de cambio de la cotización. Sin I/O.
 
 export const ROTULO_DEL_COSTO_ESTIMADO = 'Costo estimado'
 export const SIN_TOTAL = 'Sin total'
 
 export type CotizacionAprobadaDeLaFila = {
-  // A dónde lleva el enlace: la guardada de esa cotización.
-  ruta: string
+  // La cotización aprobada: el botón del «Costo estimado» abre «Compartir la cotización» de ésta (`?panel=compartir&para=<id>`).
+  cotizacionId: string
   // El primer resultado como texto (`numeric`): nulo si la cotización no traía total.
   monto: string | null
   // La moneda congelada con el monto.
@@ -35,22 +35,33 @@ export function montoDeLaAprobada(aprobada: CotizacionAprobadaDeLaFila): number 
   return Number.isFinite(valor) ? valor : null
 }
 
-// Lo que dice el «Costo estimado»: «Sin total» (sin modo) o el monto con su moneda y, si lo hay, el modo. Siempre enlazado a la cotización.
+// Lo que dice el «Costo estimado»: «Sin total» (sin modo) o el monto con su moneda y, si lo hay, el modo. Siempre es el botón que comparte esa cotización.
 export type CostoEstimado =
-  | { tipo: 'sin_total'; ruta: string }
-  | { tipo: 'monto'; ruta: string; valor: number; moneda: string; modo: string | null }
+  | { tipo: 'sin_total'; cotizacionId: string }
+  | { tipo: 'monto'; cotizacionId: string; valor: number; moneda: string; modo: string | null }
 
 export function costoEstimadoDe(aprobada: CotizacionAprobadaDeLaFila): CostoEstimado {
   const valor = montoDeLaAprobada(aprobada)
   if (valor === null) {
-    return { tipo: 'sin_total', ruta: aprobada.ruta }
+    return { tipo: 'sin_total', cotizacionId: aprobada.cotizacionId }
   }
   const modo = aprobada.modo?.trim() ?? ''
   return {
     tipo: 'monto',
-    ruta: aprobada.ruta,
+    cotizacionId: aprobada.cotizacionId,
     valor,
     moneda: aprobada.moneda,
     modo: modo === '' ? null : modo,
   }
+}
+
+// El nombre accesible del botón: «Compartir la cotización aprobada (US$27.999 · Unificado)». `monto` es el monto ya formateado (lo da `formatearMonto`, como `<Monto>`).
+export function nombreDeCompartirLaAprobada(costo: CostoEstimado, monto: string): string {
+  const detalle =
+    costo.tipo === 'sin_total'
+      ? SIN_TOTAL
+      : costo.modo === null
+        ? monto
+        : `${monto} · ${costo.modo}`
+  return `Compartir la cotización aprobada (${detalle})`
 }
