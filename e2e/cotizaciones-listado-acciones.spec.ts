@@ -172,13 +172,14 @@ test('E2E cada rol ve en el «⋯» sólo lo suyo: quien sólo ve, compartir, fa
   expect((await lineasDelMenu(menu)).toSorted()).toEqual(['Favorita', 'Reportar…'])
   await cerrarElMenu(page)
 
-  // Ana ve y edita lo suyo: puede mandar su cotización a la papelera, pero no aprobar, marcar final ni moderar.
+  // Ana ve y edita lo suyo: puede mandar su cotización a la papelera y hacerla privada (la creó ella), pero no aprobar, marcar final ni moderar.
   await page.context().clearCookies()
   await entrar(page, terreno.t.ana, { fresco: true })
   menu = await menuDe(page, terreno.numeroDeAna)
   expect((await lineasDelMenu(menu)).toSorted()).toEqual([
     'Enviar a la papelera',
     'Favorita',
+    'Hacer privada',
     'Reportar…',
   ])
   await cerrarElMenu(page)
