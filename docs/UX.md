@@ -229,8 +229,8 @@ Cotizaciones · Logística · Agenda · Chat; Repuestos sólo con permiso. Confi
 Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cerrar sesión».
 
 **Menú lateral** (desde 768 px; en el celular es el menú del botón, sin cambios): desplegado muestra ícono y nombre; el botón «Plegar menú» (abajo, y `Ctrl/Cmd+B`) lo
-deja en una columna de sólo íconos (3,5 rem) y ahí el botón dice «Desplegar menú». Plegado, cada entrada lleva su nombre en `title` (tooltip) y en `aria-label`, la
-marca queda en su logo y el contador de Chat es un punto en la esquina de su ícono (el número sigue en su `aria-label`). Se recuerda por persona
+deja en una columna de sólo íconos (3,5 rem) y ahí el botón dice «Desplegar menú». Plegado, cada entrada lleva su nombre en `title` (tooltip) y como texto para el lector (el nombre accesible sigue siendo «Chat 1 sin leer»), la
+marca queda en su logo y el contador de Chat es un punto en la esquina de su ícono (el número sigue para el lector). Se recuerda por persona
 (`menu.plegado`, igual en todos sus dispositivos) y llega ya dibujado desde el servidor; sin elegir, desplegado. Sin conexión el cambio vale en la pantalla y se guarda
 al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` no responde mientras se escribe (en un editor es la negrita).
 

@@ -5,7 +5,7 @@ import { limpiarChat, prepararChat, sembrarMensaje, type TerrenoDelChat } from '
 import { sql } from './soporte/sql'
 
 // El menú lateral plegable (T426): en escritorio se pliega a sólo íconos con su botón y con Ctrl/Cmd+B, se recuerda por persona (`menu.plegado`) y
-// llega ya dibujado como quedó, sin saltar al cargar. Plegado, cada entrada lleva su nombre en `title` y `aria-label` y el contador de Chat es un punto.
+// llega ya dibujado como quedó, sin saltar al cargar. Plegado, cada entrada lleva su nombre en `title` y como nombre accesible y el contador de Chat es un punto.
 test.describe.configure({ mode: 'serial' })
 
 let t: TerrenoDelChat
@@ -48,17 +48,17 @@ test('E2E el botón pliega el menú a sólo íconos y lo despliega', async ({ pa
   // 15,5 rem desplegada y 3,5 rem plegada (el texto de la prueba mide 16 px por rem).
   await expect(barra(page)).toHaveCSS('width', '248px')
   const enlace = navegacion(page).getByRole('link', { name: 'Leads' })
-  await expect(enlace).not.toHaveAttribute('aria-label', /.+/)
   await expect(enlace).toContainText('Leads')
 
   await page.getByRole('button', { name: 'Plegar menú' }).click()
   await expect(barra(page)).toHaveAttribute('data-plegado', '')
   await expect(page.getByRole('button', { name: 'Desplegar menú' })).toBeVisible()
   await expect(barra(page)).toHaveCSS('width', '56px')
-  // Sólo el ícono a la vista: el nombre queda en el tooltip y en `aria-label`.
+  // Sólo el ícono a la vista: el nombre queda en el tooltip y para el lector.
   for (const nombre of ['Inicio', 'Leads', 'Chat']) {
     const entrada = navegacion(page).getByRole('link', { name: nombre })
-    await expect(entrada).toHaveAttribute('aria-label', nombre)
+    await expect(entrada).toHaveAccessibleName(nombre)
+    await expect(entrada).not.toHaveAttribute('aria-label', /.+/)
     await expect(entrada).toHaveAttribute('title', nombre)
     // El nombre queda sólo para el lector (1 px): a la vista, el ícono.
     await expect(entrada.locator('span').first()).toHaveCSS('width', '1px')
@@ -118,6 +118,10 @@ test('E2E plegado, el contador de Chat es un punto con su número para el lector
   sembrarMensaje(t.conLuis, t.luis.id, 'Ya llegó el contenedor')
   const contador = navegacion(page).locator('[data-no-leidos-de-la-barra]')
   await expect(contador).toHaveAccessibleName('1 sin leer', { timeout: 20_000 })
+  // El número no se pierde: el nombre accesible del enlace lo sigue diciendo.
+  await expect(navegacion(page).getByRole('link', { name: /^Chat/ })).toHaveAccessibleName(
+    'Chat 1 sin leer',
+  )
   await expect(contador).toHaveCSS('width', '8px')
   await expect(contador).toHaveCSS('height', '8px')
 

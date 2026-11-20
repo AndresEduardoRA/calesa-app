@@ -71,7 +71,7 @@
 }
 
 /*
- * Con la barra lateral plegada, el contador de Chat (`NoLeidosDeLaBarra`) es un punto en la esquina de su ícono. El número sigue en su `aria-label`.
+ * Con la barra lateral plegada, el contador de Chat (`NoLeidosDeLaBarra`) es un punto en la esquina de su ícono. El número sigue en el nombre accesible del enlace.
  * Los avisos no se mueven: siguen abajo a la izquierda con el ancho de siempre.
  */
 [data-barra-lateral][data-plegado] [data-no-leidos-de-la-barra] {

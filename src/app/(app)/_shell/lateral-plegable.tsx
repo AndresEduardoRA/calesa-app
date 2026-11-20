@@ -14,7 +14,7 @@ type Props = {
 
 // La barra lateral de escritorio (desde 768 px): desplegada con su nombre y plegada a sólo íconos. El estado es la preferencia `menu.plegado`, que
 // el servidor ya leyó: llega dibujada como la dejó la persona. El ancho no se anima: la página de al lado se reacomoda en cada cuadro y el lienzo de la
-// tarjeta recalcula su escala. Plegada, cada entrada lleva su nombre en `title` y `aria-label` (`EnlaceNav`) y los contadores son un punto (`globals.css`).
+// tarjeta recalcula su escala. Plegada, cada entrada lleva su nombre en `title` y como texto para el lector (`EnlaceNav`) y los contadores son un punto (`globals.css`).
 export function LateralPlegable({ marca, navegacion }: Props) {
   const { plegado, alternar } = useMenuPlegado()
   // `Ctrl/Cmd+B`; en el celular no hay barra que plegar.
@@ -40,6 +40,7 @@ export function LateralPlegable({ marca, navegacion }: Props) {
         <div className="shrink-0 border-t border-(--color-line) p-2">
           <button
             type="button"
+            aria-keyshortcuts="Control+B Meta+B"
             onClick={alternar}
             title={plegado ? nombre : undefined}
             className="flex h-(--fila) min-h-9 w-full items-center gap-2.5 rounded-(--radius-md) px-2.5 text-(length:--text-sm) text-(--color-ink-soft) outline-none group-data-plegado/lateral:justify-center group-data-plegado/lateral:px-0 hover:bg-(--color-surface-3) hover:text-(--color-ink) focus-visible:shadow-(--shadow-focus) [&_svg]:size-4 [&_svg]:shrink-0"

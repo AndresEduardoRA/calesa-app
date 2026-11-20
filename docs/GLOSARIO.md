@@ -26,7 +26,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Perfil** — `perfiles` / `/perfil`: lo que cada persona edita de sí misma: nombre, foto y preferencias.
 - **Preferencia** — `preferencias_usuario` / `Preferencias`: elección de interfaz por persona (densidad, tema), igual en todos sus dispositivos.
 - **Menú plegado** — `menu.plegado` / `Preferencias.menuPlegado`, `useMenuPlegado()`, `<LateralPlegable>` (`_shell/`): el menú lateral de escritorio reducido a una columna de sólo
-  íconos, con su nombre en `title` y `aria-label` y el contador de Chat como punto. Se alterna con «Plegar menú» / «Desplegar menú» o `Ctrl/Cmd+B`. No: «colapsado», «mini», «compacto» (la densidad es otra cosa).
+  íconos, con su nombre en `title` y para el lector y el contador de Chat como punto. Se alterna con «Plegar menú» / «Desplegar menú» o `Ctrl/Cmd+B`. No: «colapsado», «mini», «compacto» (la densidad es otra cosa).
 - **Zona de quien mira** — `preferencias_usuario.zona_horaria` / `useRegional().zonaDeLaPersona`: en qué zona ve cada persona las fechas de
   subasta (`/perfil` › «Zona horaria»); sin elegir, la de la empresa. Lo demás sigue en la zona de la empresa.
 - **Hora del patio** — `zonaDelPatio()` / `<FechaDeSubasta>`: la hora de una subasta en la zona de su patio, estimada por el estado de la
