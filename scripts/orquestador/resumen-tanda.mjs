@@ -1,7 +1,8 @@
 // El resumen de una tanda en Markdown (≤ 6 KB), para que la sesión del cierre (plantillas/cerrar-tanda.md) encuentre las falencias con
-// datos: por tarea, cuándo se lanzó y se integró, los minutos y el costo del plan y de cada sesión, las retomas y los arreglos con su
-// motivo, y si se trabó; los totales; y los comandos de Bash que más se repitieron y los más lentos. Lo arma cierre-tanda.sh al
-// publicar el cierre (README.md › «El cierre de la tanda»).
+// datos: los totales (con las sesiones de retomar y de arreglar, gasten o no un intento), las trabas, los arreglos y los choques con
+// su motivo, los comandos de Bash que más se repitieron y los más lentos y, al final, cada tarea de la más cara a la más barata. Lo
+// que se recorta al pasar el tope es la cola de esa tabla, nunca los totales. Lo arma cierre-tanda.sh al publicar el cierre
+// (README.md › «El cierre de la tanda»).
 //
 //   node scripts/orquestador/resumen-tanda.mjs --estado <.orquestador/estado> --cola <.orquestador/cola> T21 T22 …
 //
@@ -16,7 +17,7 @@ export const TOPE = 6000
 
 /**
  * @typedef {import('./resumen-sesion.mjs').Sesion} Sesion
- * @typedef {{ lanzada?: string, integrada?: string, arreglos: string[], trabas: string[] }} DelLog
+ * @typedef {{ lanzada?: string, integrada?: string, arreglos: string[], choques: string[], trabas: string[] }} DelLog
  * @typedef {{ id: string, titulo: string, pr: string, retomas: number, arreglos: number, sesiones: Sesion[], log: DelLog }} Tarea
  */
 
@@ -29,12 +30,13 @@ const leer = (f) => {
   }
 }
 
-/** Lo que el log dice de cada tarea: la primera vez que se lanzó, cuándo se integró, cada «a arreglar» y cada traba. Puro.
+/** Lo que el log dice de cada tarea: la primera vez que se lanzó, cuándo se integró, cada «a arreglar» (un choque con main, aparte)
+ * y cada traba. Lee las dos formas del «a arreglar»: «(intento 2)» y «(arreglos: 2)» o «(choques: 1)». Puro.
  * @param {string} texto  @returns {Record<string, DelLog>} */
 export function leerLog(texto) {
   /** @type {Record<string, DelLog>} */
   const por = {}
-  const de = (/** @type {string} */ id) => (por[id] ??= { arreglos: [], trabas: [] })
+  const de = (/** @type {string} */ id) => (por[id] ??= { arreglos: [], choques: [], trabas: [] })
   for (const linea of texto.split('\n')) {
     const m = /^(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d) (.*)$/.exec(linea)
     if (!m) continue
@@ -42,8 +44,13 @@ export function leerLog(texto) {
     let x
     if ((x = /^(T\d+): lanzada /.exec(resto))) de(x[1] ?? '').lanzada ??= cuando
     else if ((x = /^AVISO · (T\d+) integrada /.exec(resto))) de(x[1] ?? '').integrada = cuando
-    else if ((x = /^(T\d+): a arreglar \(intento \d+\): (.*)$/.exec(resto)))
-      de(x[1] ?? '').arreglos.push(recortar(x[2] ?? '', 140))
+    else if (
+      (x = /^(T\d+): a arreglar \((?:intento \d+|(arreglos|choques): \d+)\): (.*)$/.exec(resto))
+    )
+      // Antes de contarse aparte, un choque se escribía como un intento más: lo delata su motivo.
+      de(x[1] ?? '')[
+        x[2] === 'choques' || / choca con main/.test(x[3] ?? '') ? 'choques' : 'arreglos'
+      ].push(recortar(x[3] ?? '', 200))
     else if ((x = /^AVISO · (T\d+) trabada · (.*)$/.exec(resto)))
       de(x[1] ?? '').trabas.push(
         recortar(
@@ -111,14 +118,31 @@ function repetidos(tareas) {
   return lineas
 }
 
-/** El resumen entero, recortado a TOPE bytes. Puro. @param {Tarea[]} tareas */
-export function armarResumen(tareas) {
-  const filas = tareas.map((t) => {
-    const plan = t.sesiones.find((s) => s.nombre === 'plan')
-    const otras = t.sesiones.filter((s) => s.nombre !== 'plan')
-    const trabada = t.log.trabas.length ? 'trabada' : ''
-    return `| ${t.id}${t.titulo ? ` ${recortar(t.titulo, 34)}` : ''} | ${t.pr ? `#${t.pr}` : '—'} | ${ciclo(t.log)} | ${plan ? celdaDeSesion(plan).replace(/^plan /, '') : '—'} | ${otras.map(celdaDeSesion).join('; ') || '—'} | ${t.retomas}/${t.arreglos} | ${trabada} |`
+/** Los motivos de una lista por tarea, con los repetidos juntos: «- T3 (×2): …». Puro.
+ * @param {Tarea[]} tareas  @param {(l: DelLog) => string[]} de */
+function motivos(tareas, de) {
+  return tareas.flatMap((t) => {
+    /** @type {Map<string, number>} */
+    const cuenta = new Map()
+    for (const m of de(t.log)) cuenta.set(m, (cuenta.get(m) ?? 0) + 1)
+    return [...cuenta].map(([m, n]) => `- ${t.id}${n > 1 ? ` (×${n})` : ''}: ${m}`)
   })
+}
+
+/** @param {Tarea} t */
+const costoDe = (t) => t.sesiones.reduce((a, s) => a + (s.costo ?? 0), 0)
+
+/** El resumen entero, recortado a TOPE bytes: primero lo de toda la tanda y al final la tabla por tarea (lo que se recorta). Puro.
+ * @param {Tarea[]} tareas */
+export function armarResumen(tareas) {
+  const filas = [...tareas]
+    .sort((a, b) => costoDe(b) - costoDe(a))
+    .map((t) => {
+      const plan = t.sesiones.find((s) => s.nombre === 'plan')
+      const otras = t.sesiones.filter((s) => s.nombre !== 'plan')
+      const trabada = t.log.trabas.length ? 'trabada' : ''
+      return `| ${t.id}${t.titulo ? ` ${recortar(t.titulo, 34)}` : ''} | ${t.pr ? `#${t.pr}` : '—'} | ${ciclo(t.log)} | ${plan ? celdaDeSesion(plan).replace(/^plan /, '') : '—'} | ${otras.map(celdaDeSesion).join('; ') || '—'} | ${t.retomas}/${t.arreglos} | ${trabada} |`
+    })
   const todas = tareas.flatMap((t) => t.sesiones)
   const costo = todas.reduce((a, s) => a + (s.costo ?? 0), 0)
   /** @type {Record<string, number>} */
@@ -132,34 +156,47 @@ export function armarResumen(tareas) {
   const reloj =
     inicios.length && fines.length ? (Math.max(...fines) - Math.min(...inicios)) / 60000 : NaN
   const minutos = todas.reduce((a, s) => a + (s.minutos ?? 0), 0)
-  const arreglos = tareas.flatMap((t) => t.log.arreglos.map((m) => `- ${t.id}: ${m}`))
+  // Las sesiones por su nombre (sesion-<n>-<tipo>): cuentan también las que no gastaron un intento (un reinicio, el límite del plan,
+  // un choque con main), que los contadores de estado/ no ven.
+  const deTipo = (/** @type {string} */ tipo) => todas.filter((s) => s.nombre.endsWith(`-${tipo}`))
+  const sesionesDe = (/** @type {string} */ tipo) => {
+    const l = deTipo(tipo)
+    return `${l.length} de ${tipo} (${dolares(l.reduce((a, s) => a + (s.costo ?? 0), 0))})`
+  }
+  const arreglos = motivos(tareas, (l) => l.arreglos)
+  const choques = motivos(tareas, (l) => l.choques)
   const trabas = tareas.flatMap((t) => t.log.trabas.map((m) => `- ${t.id}: ${m}`))
   const texto = [
-    '### Tareas',
+    '### Totales',
+    '',
+    `- ${tareas.length} tareas · reloj de la tanda ${duracion(reloj)} · ${duracion(minutos)} de sesiones · ${dolares(costo)}`,
+    `- Por modelo: ${modelos.length ? modelos.map(([m, v]) => `${m} ${Math.round((100 * v) / (sumaModelos || 1))} %`).join(' · ') : '—'}`,
+    `- Retomas ${tareas.reduce((a, t) => a + t.retomas, 0)} · arreglos ${tareas.reduce((a, t) => a + t.arreglos, 0)} · trabadas ${tareas.filter((t) => t.log.trabas.length).length} (lo que gastó un intento)`,
+    `- Sesiones: ${sesionesDe('tarea')} · ${sesionesDe('retomar')} · ${sesionesDe('arreglar')}`,
+    '',
+    '### Trabadas',
+    '',
+    ...(trabas.length ? trabas : ['(ninguna)']),
+    '',
+    '### A arreglar',
+    '',
+    ...(arreglos.length ? arreglos : ['(ninguna)']),
+    '',
+    '### Choques con main',
+    '',
+    ...(choques.length ? choques : ['(ninguno)']),
+    '',
+    '### Lo que más se repitió',
+    '',
+    ...repetidos(tareas),
+    '',
+    '### Tareas, de la más cara a la más barata',
     '',
     'Plan y sesiones: minutos · costo · turnos. RET/ARR: retomas y arreglos.',
     '',
     '| Tarea | PR | Lanzada → integrada | Plan | Sesiones | RET/ARR | |',
     '| --- | --- | --- | --- | --- | --- | --- |',
     ...filas,
-    '',
-    '### Totales',
-    '',
-    `- ${tareas.length} tareas · reloj de la tanda ${duracion(reloj)} · ${duracion(minutos)} de sesiones · ${dolares(costo)}`,
-    `- Por modelo: ${modelos.length ? modelos.map(([m, v]) => `${m} ${Math.round((100 * v) / (sumaModelos || 1))} %`).join(' · ') : '—'}`,
-    `- Retomas ${tareas.reduce((a, t) => a + t.retomas, 0)} · arreglos ${tareas.reduce((a, t) => a + t.arreglos, 0)} · trabadas ${tareas.filter((t) => t.log.trabas.length).length}`,
-    '',
-    '### A arreglar',
-    '',
-    ...(arreglos.length ? arreglos : ['(ninguna)']),
-    '',
-    '### Trabadas',
-    '',
-    ...(trabas.length ? trabas : ['(ninguna)']),
-    '',
-    '### Lo que más se repitió',
-    '',
-    ...repetidos(tareas),
     '',
   ].join('\n')
   return aTope(texto)
@@ -200,7 +237,7 @@ function leerTarea(est, cola, id, log) {
     retomas: numero('retomas'),
     arreglos: numero('arreglos'),
     sesiones,
-    log: log[id] ?? { arreglos: [], trabas: [] },
+    log: log[id] ?? { arreglos: [], choques: [], trabas: [] },
   }
 }
 
