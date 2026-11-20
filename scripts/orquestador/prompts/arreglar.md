@@ -28,9 +28,10 @@ Primero entiende el estado: `git log --oneline origin/main..HEAD`, `git status -
   `scripts/orquestador/dependencias-aprobadas.txt`; si no, como último recurso, se suma a esa lista en el mismo PR con la sección
   «Dependencias nuevas» en el cuerpo (por qué no alcanza lo que hay, peso gzip, licencia, mantenimiento, versión verificada hoy con
   `pnpm view <paquete> version time`). Versión exacta, sola y desde la raíz del worktree; nunca dos librerías para lo mismo.
-- Verifica (Nivel 1): `pnpm lint`, `pnpm typecheck`, `pnpm test`, lo de base si tocaste `supabase/`, y los e2e que cayeron más los del
-  módulo, nombrados, en una sola corrida en segundo plano. Si fue un choque con main y tu lado sólo cambió docs al resolverlo:
-  `pnpm lint`, `pnpm typecheck` y `bash scripts/mapa.sh --check`, sin e2e. Lo temporal va en `$TMPDIR`, nunca en `/tmp`.
+- Verifica (Nivel 1): primero lo que cayó en el CI (el comando o el e2e que falló, solo, hasta que pase) y al final, una vez y en segundo
+  plano, `bash scripts/flujo/verificar.sh` (lint, tipos, la suite y el mapa en paralelo; no corre si el árbol ya pasó). Además lo de
+  base si tocaste `supabase/`, y los e2e que cayeron más los del módulo, nombrados, en una sola corrida en segundo plano. Si fue un
+  choque con main y tu lado sólo cambió docs al resolverlo: sólo `bash scripts/flujo/verificar.sh`, sin e2e. Lo temporal va en `$TMPDIR`, nunca en `/tmp`.
 - Publica de nuevo con `bash scripts/flujo/publicar.sh --sin-esperar --titulo '<el título actual del PR>'`. Agrega al cuerpo del PR
   (`gh pr edit` falla en este repo: `gh api -X PATCH 'repos/{owner}/{repo}/pulls/{{PR}}' -F body=@<archivo>`) qué cayó y cómo se arregló, en dos líneas.
 
