@@ -1359,7 +1359,8 @@ Excel. Edita el **borrador** de la plantilla (sólo la forma 2, la cuadrícula),
   alinearla con la fórmula), «Todavía no hay tarjeta: nace de la de por omisión.», «La fórmula tiene más filas de las que entran en una tarjeta: se tomaron
   las primeras 4 de cada grupo. Revisa y guarda.» (o «quedó sólo el total») y una versión ilegible con su motivo (se parte de la que sigue)—; nada se guarda
   solo. Después, «Con esto no se podría publicar: <motivo>» (un nodo restringido que la plantilla ya nombra, un color fuera del catálogo; no apaga
-  «Guardar borrador») y lo que pasó al guardar.
+  «Guardar borrador»), «El logo de la empresa no se pudo dibujar: súbelo de nuevo en Empresa.» (el logo de la referencia no cargó; con «Abrir Empresa» o, sin
+  `empresa.ajustes.gestionar`, a quién pedírselo) y lo que pasó al guardar.
 - **La barra del lienzo:** «Deshacer» y «Rehacer» (su `title` dice qué: «Deshacer: combinar (Ctrl+Z)»), «Combinar», «Separar», «Insertar ▾» (fila arriba,
   fila abajo, columna a la izquierda, columna a la derecha) y «Eliminar ▾» (filas, columnas). Lo que no se puede queda apagado sin perder el foco y, al
   tocarlo, dice por qué; en los menús, el motivo va bajo cada opción («Elige más de una celda para combinar.», «Ya hay 16 columnas.», «Ya hay 120 filas.»,

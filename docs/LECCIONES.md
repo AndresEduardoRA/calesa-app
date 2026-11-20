@@ -365,7 +365,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Para «difiere de lo guardado» compara valores y totales, no sólo el total: una celda puede cambiar sin moverlo.
 - Compara un `jsonb` leído de la base con lo que se edita sin mirar el orden de las claves (`mismoJson()`): la base las devuelve ordenadas por largo y un
   `JSON.stringify` dice «hay cambios» para siempre tras guardar (y `useBorradorDeEstado`, que compara el texto, guarda un «recuperado» falso).
-- react-pdf no dibuja WebP ni SVG con `<style>`, clases, `use`, `mask`, `filter` o `<image>`: una imagen para el PDF llega en PNG o JPG.
+- Un logo para un dibujo del servidor pasa por `logoParaDibujar()`: react-pdf y satori no leen WebP ni SVG con estilos, y `sharp` lo pasa a PNG.
+- Una celda de un dibujo compartido no reusa un componente del marco de la app (`<Marca>`: tamaño fijo y el nombre): dibuja desde la caja de la celda, y un e2e mide la imagen dentro de ese rectángulo en los tres dibujos.
 - Un dibujo que comparten el HTML, react-pdf y `next/og` va por posiciones absolutas desde una geometría pura: satori no tiene `grid` (ni `<table>`, que tampoco dibuja react-pdf) y todo `div` con más de un hijo lleva `display: flex`.
 - Una fuente de react-pdf que lee del disco y no se importa no la ve el trazado de archivos: cada ruta que la usa la suma a `outputFileTracingIncludes` de `next.config.ts`.
 - Valida una plantilla de la tarjeta contra la visibilidad que compila la base (`_compilar_visibilidad()`, `visibilidadDeLaPlantilla()`), nunca con «todo del nivel «todos»»: lo que la hoja no dibuja no figura, y un `tc_nombre` cuyo tipo de cambio no tiene celda da `tipo_de_cambio_restringido` recién al publicar.
