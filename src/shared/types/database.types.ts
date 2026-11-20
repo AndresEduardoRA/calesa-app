@@ -8299,10 +8299,13 @@ export type Database = {
         }
         Returns: undefined
       }
+      _fdo_activada_por: { Args: { p_fdo: string }; Returns: string }
       _fdo_campos_que_faltan: { Args: { p_def: Json; p_origen: string }; Returns: Json }
       _fdo_de_trabajo: { Args: { p_crear: boolean; p_origen: string }; Returns: string }
       _fdo_exigir_campos: { Args: { p_def: Json; p_origen: string }; Returns: undefined }
       _fdo_formula_en_blanco: { Args: Record<PropertyKey, never>; Returns: Json }
+      _fdo_nombre: { Args: { p_nombre: string }; Returns: string }
+      _fdo_origen_con_permiso: { Args: { p_id: string }; Returns: string }
       _fdo_resolver: {
         Args: { p_crear: boolean; p_formula_del_origen: string; p_origen: string }
         Returns: {
@@ -8328,6 +8331,30 @@ export type Database = {
         }
       }
       _fdo_tarjeta_en_blanco: { Args: Record<PropertyKey, never>; Returns: Json }
+      _fdo_tomar: {
+        Args: { p_esperada: string; p_id: string; p_origen: string }
+        Returns: {
+          activa: boolean
+          activada_en: string | null
+          activada_por: string | null
+          actualizado_en: string
+          archivada_en: string | null
+          archivada_por: string | null
+          copiada_de_otro_origen: boolean
+          creado_en: string
+          creado_por: string | null
+          desactivada_en: string | null
+          id: string
+          nombre: string
+          origen_id: string
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'formulas_del_origen'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       _final_aplicar: {
         Args: {
           c: Omit<
@@ -10770,6 +10797,41 @@ export type Database = {
           p_publicada_esperada?: string
           p_valor: number
         }
+        Returns: string
+      }
+      formula_del_origen_activar: {
+        Args: {
+          p_activa_esperada: string
+          p_actualizado_en_esperado: string
+          p_borrador_esperado: string
+          p_id: string
+          p_nota: string
+          p_plantilla_borrador_esperado: string
+          p_plantilla_publicada_esperada: string
+          p_publicada_esperada: string
+        }
+        Returns: Json
+      }
+      formula_del_origen_archivar: {
+        Args: { p_actualizado_en_esperado: string; p_id: string }
+        Returns: string
+      }
+      formula_del_origen_crear: {
+        Args: {
+          p_copia_de?: string
+          p_id: string
+          p_nombre: string
+          p_origen: string
+          p_pieza?: string
+        }
+        Returns: Json
+      }
+      formula_del_origen_eliminar: {
+        Args: { p_actualizado_en_esperado: string; p_id: string }
+        Returns: undefined
+      }
+      formula_del_origen_renombrar: {
+        Args: { p_actualizado_en_esperado: string; p_id: string; p_nombre: string }
         Returns: string
       }
       formula_descartar_borrador: {

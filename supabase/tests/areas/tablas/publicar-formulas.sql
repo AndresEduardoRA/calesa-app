@@ -146,6 +146,37 @@ begin
 end $$;
 rollback;
 
+-- @test tablas: con dos fórmulas del origen que la usan, cada una recibe su N+1 (docs/COTIZADOR.md › «Fórmulas del origen»); la archivada no, y la activa sigue
+begin;
+select pg_temp.tf_preparar();
+do $$
+declare o uuid := pg_temp.tf_o('prueba_tf'); t uuid; d0 uuid; d1 uuid; d2 uuid; p0 public.formulas; v_filas jsonb; r jsonb;
+begin
+  t := pg_temp.tf_t('tp_comision', o);
+  select * into p0 from public.formulas where id = '00000000-0000-4000-8000-00000000b001';
+  d0 := p0.formula_del_origen_id;
+  insert into public.formulas_del_origen (origen_id, nombre, creado_en) values (o, 'Otra', now() + interval '1 second') returning id into d1;
+  insert into public.formulas_del_origen (origen_id, nombre, archivada_en) values (o, 'Archivada', now()) returning id into d2;
+  insert into public.formulas (origen_id, formula_del_origen_id, version, estado, definicion, params, diseno, visibilidad, nota, publicado_en)
+  select o, x, 1, 'publicada', p0.definicion, p0.params, p0.diseno, p0.visibilidad, 'v1', now() from unnest(array[d1, d2]) x;
+  v_filas := pg_temp.tf_filas(t, 452);
+  r := pg_temp.tf_publicar('00000000-0000-4000-8000-00000000b00a', t, v_filas, 1);
+  if r -> 'formulas' is distinct from jsonb_build_array(jsonb_build_object('origen_id', o, 'formula_del_origen_id', d0, 'version', 2),
+                                                        jsonb_build_object('origen_id', o, 'formula_del_origen_id', d1, 'version', 2)) then
+    raise exception 'las dos no recibieron su N+1: %', r;
+  end if;
+  if (select params -> 'tablas' -> 'tp_comision' from public.formulas where formula_del_origen_id = d1 and estado = 'publicada') is distinct from v_filas
+     or (select params -> 'tablas' -> 'tp_comision' from public.formulas where formula_del_origen_id = d0 and estado = 'publicada') is distinct from v_filas then
+    raise exception 'una N+1 no congeló las filas nuevas';
+  end if;
+  if (select version from public.formulas where formula_del_origen_id = d2 and estado = 'publicada') is distinct from 1
+     or (select count(*) from public.formulas where formula_del_origen_id = d2) <> 1 then
+    raise exception 'la archivada recibió la N+1';
+  end if;
+  if not (select activa from public.formulas_del_origen where id = d0) or (select activa from public.formulas_del_origen where id = d1) then raise exception 'la N+1 cambió la activa'; end if;
+end $$;
+rollback;
+
 -- @test tablas: recibe la N+1 la publicada que sólo la congeló (sin nodo); no la recibe la que ni la nombra ni la congeló
 begin;
 select pg_temp.tf_preparar();

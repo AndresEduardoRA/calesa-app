@@ -2030,3 +2030,388 @@ begin
   end, false);
 end;
 $_$;
+
+
+-- Las RPC de las fórmulas del origen: crear (en blanco o como copia), renombrar, archivar, eliminar y activar. Todas piden cotizaciones.configurar
+-- del origen antes de mirar nada (lo que no existe da el mismo 42501) y toman los candados `formulas:` y después `plantillas:` del origen antes de
+-- leer el estado. docs/COTIZADOR.md › «Fórmulas del origen».
+
+-- El origen de una fórmula del origen, con el permiso de configurarlo: lo que no existe da lo mismo que no poder.
+create function public._fdo_origen_con_permiso(p_id uuid) returns uuid
+  language plpgsql stable security definer set search_path = '' as $$
+declare v_origen uuid;
+begin
+  perform public.assert_activo();
+  select d.origen_id into v_origen from public.formulas_del_origen d where d.id = p_id;   -- formulas_del_origen_pkey
+  if v_origen is null then
+    raise exception 'No tienes el permiso «cotizaciones.configurar».' using errcode = '42501';
+  end if;
+  perform public.assert_permiso('cotizaciones.configurar', v_origen);
+  return v_origen;
+end $$;
+revoke all on function public._fdo_origen_con_permiso(uuid) from public, anon, authenticated;
+grant execute on function public._fdo_origen_con_permiso(uuid) to service_role;
+comment on function public._fdo_origen_con_permiso(uuid) is 'Interna: el origen de una fórmula del origen tras exigir cotizaciones.configurar en él; la que no existe da el mismo 42501.';
+
+-- Los candados del origen y la fila de la fórmula, comparada con la que se tenía en pantalla (PT409 con quién y cuándo).
+create function public._fdo_tomar(p_id uuid, p_origen uuid, p_esperada timestamptz) returns public.formulas_del_origen
+  language plpgsql security definer set search_path = '' as $$
+declare v public.formulas_del_origen;
+begin
+  perform pg_advisory_xact_lock(hashtextextended('formulas:' || p_origen::text, 0));
+  perform pg_advisory_xact_lock(hashtextextended('plantillas:' || p_origen::text, 0));
+  select * into v from public.formulas_del_origen d where d.id = p_id for no key update;   -- formulas_del_origen_pkey
+  if v.id is null then
+    raise exception 'No tienes el permiso «cotizaciones.configurar».' using errcode = '42501';
+  end if;
+  if v.actualizado_en is distinct from p_esperada then
+    perform public._conflicto_de_edicion('formulas_del_origen', p_id, v.actualizado_en, 'esta fórmula');
+  end if;
+  return v;
+end $$;
+revoke all on function public._fdo_tomar(uuid, uuid, timestamptz) from public, anon, authenticated;
+grant execute on function public._fdo_tomar(uuid, uuid, timestamptz) to service_role;
+comment on function public._fdo_tomar(uuid, uuid, timestamptz) is 'Interna: toma los candados formulas: y plantillas: del origen y la fila de la fórmula del origen; PT409 (_conflicto_de_edicion) si su actualizado_en no es la esperada.';
+
+-- El nombre de una fórmula del origen, sin espacios de más y de 1 a 60.
+create function public._fdo_nombre(p_nombre text) returns text
+  language plpgsql immutable set search_path = '' as $$
+declare v text := btrim(p_nombre);
+begin
+  if v is null or char_length(v) not between 1 and 60 then
+    raise exception 'El nombre lleva de 1 a 60 caracteres.' using errcode = '22023', hint = 'nombre';
+  end if;
+  return v;
+end $$;
+revoke all on function public._fdo_nombre(text) from public, anon, authenticated;
+grant execute on function public._fdo_nombre(text) to service_role;
+comment on function public._fdo_nombre(text) is 'Interna: el nombre de una fórmula del origen sin espacios de más; 22023 (hint nombre) si no tiene de 1 a 60 caracteres.';
+
+-- Quién activó la activa de hoy y cuándo: «Ana activó «Planilla» hace 2 min.», «Activaste…» u «Otra persona activó…».
+create function public._fdo_activada_por(p_fdo uuid) returns text
+  language plpgsql stable security definer set search_path = '' as $$
+declare v public.formulas_del_origen; v_sujeto text;
+begin
+  select * into v from public.formulas_del_origen d where d.id = p_fdo;   -- formulas_del_origen_pkey
+  if v.id is null then return null; end if;
+  if v.activada_por is not null and v.activada_por = (select auth.uid()) then
+    v_sujeto := 'Activaste';
+  else
+    select nullif(btrim(p.nombre), '') || ' activó' into v_sujeto from public.perfiles p where p.id = v.activada_por;
+    v_sujeto := coalesce(v_sujeto, 'Otra persona activó');
+  end if;
+  return v_sujeto || ' «' || v.nombre || '»' || case when v.activada_en is null then '' else ' ' || public._hace(v.activada_en) end || '.';
+end $$;
+revoke all on function public._fdo_activada_por(uuid) from public, anon, authenticated;
+grant execute on function public._fdo_activada_por(uuid) to service_role;
+comment on function public._fdo_activada_por(uuid) is 'Interna: «Ana activó «Planilla» hace 2 min.»: el PT409 de activar cuando la activa no es la que se vio.';
+
+-- Crear una fórmula del origen: en blanco, o copia de la publicada o del borrador de otra (del mismo origen o de otro). Nace como borradores, sin
+-- versión: nunca toca lo que se cotiza. Idempotente por p_id.
+create function public.formula_del_origen_crear(p_id uuid, p_origen uuid, p_nombre text, p_copia_de uuid default null, p_pieza text default 'publicada')
+  returns jsonb language plpgsql security definer set search_path = '' as $$
+declare
+  v_yo uuid := (select auth.uid());
+  v_nombre text;
+  v_fuente public.formulas_del_origen;
+  v_ya public.formulas_del_origen;
+  v_d public.formulas_del_origen;
+  v_pieza public.formulas;
+  v_def jsonb; v_params jsonb; v_diseno jsonb; v_nota text; v_tarjeta jsonb; v_blanco jsonb;
+  v_otro boolean := false;
+  v_marcada boolean := false;
+  v_avisos jsonb := '[]'::jsonb;
+  v_n int; v_c text; v_clave text; v_tf public.tablas_referencia; v_nueva uuid; v_filas jsonb; v_origen_fuente text;
+begin
+  perform public.assert_permiso('cotizaciones.configurar', p_origen);
+  if p_id is null then raise exception 'Falta el id de la fórmula.' using errcode = '22023', hint = 'id'; end if;
+  -- La fuente de una copia: también con configurar en su origen; la que no existe da el mismo 42501.
+  if p_copia_de is not null then
+    select * into v_fuente from public.formulas_del_origen d where d.id = p_copia_de;   -- formulas_del_origen_pkey
+    if v_fuente.id is null or not public.tiene_permiso('cotizaciones.configurar', v_fuente.origen_id) then
+      raise exception 'No tienes el permiso «cotizaciones.configurar».' using errcode = '42501';
+    end if;
+    if p_pieza is null or p_pieza not in ('publicada', 'borrador') then
+      raise exception 'Se copia la versión publicada o el borrador.' using errcode = '22023', hint = 'pieza';
+    end if;
+    v_otro := v_fuente.origen_id <> p_origen;
+    -- La copia de una copia de otro origen sigue marcada: D9 vale para las dos.
+    v_marcada := v_otro or v_fuente.copiada_de_otro_origen;
+  end if;
+  v_nombre := public._fdo_nombre(p_nombre);
+  -- En blanco pide un tipo de cambio: se valida antes de tomar los candados.
+  if p_copia_de is null then v_blanco := public._fdo_formula_en_blanco(); end if;
+
+  perform pg_advisory_xact_lock(hashtextextended('formulas:' || p_origen::text, 0));
+  perform pg_advisory_xact_lock(hashtextextended('plantillas:' || p_origen::text, 0));
+  -- El mismo intento otra vez: lo mismo, sin avisos; con otros datos, PT409.
+  select * into v_ya from public.formulas_del_origen d where d.id = p_id;   -- formulas_del_origen_pkey
+  if v_ya.id is not null then
+    if v_ya.origen_id = p_origen and v_ya.nombre = v_nombre then
+      return jsonb_build_object('id', v_ya.id, 'actualizado_en', v_ya.actualizado_en, 'avisos', '[]'::jsonb);
+    end if;
+    raise exception 'Esa fórmula ya se creó con otros datos.' using errcode = 'PT409';
+  end if;
+  -- El tope: 50 sin archivar (formulas_del_origen_origen_idx), contado con uno de más.
+  select count(*) into v_n from (select 1 from public.formulas_del_origen d where d.origen_id = p_origen and d.archivada_en is null limit 51) x;
+  if v_n >= 50 then
+    raise exception 'Este origen ya tiene 50 fórmulas: archiva o elimina alguna.' using errcode = '22023', hint = 'formulas';
+  end if;
+
+  if p_copia_de is null then
+    v_def := v_blanco -> 'definicion'; v_params := v_blanco -> 'params'; v_diseno := v_blanco -> 'diseno';
+    v_tarjeta := public._fdo_tarjeta_en_blanco();
+  else
+    select * into v_pieza from public.formulas f where f.formula_del_origen_id = v_fuente.id and f.estado = p_pieza::public.estado_version;   -- formulas_borrador_unico / formulas_publicada_unica
+    if v_pieza.id is null then
+      raise exception '%', case p_pieza when 'borrador' then 'Esa fórmula no tiene borrador.' else 'Esa fórmula no tiene versión publicada.' end
+        using errcode = '22023', hint = 'pieza';
+    end if;
+    v_def := v_pieza.definicion; v_params := v_pieza.params; v_diseno := v_pieza.diseno; v_nota := v_pieza.nota;
+    -- La tarjeta de la misma pieza; si no hay, la otra; si no, la de omisión.
+    select p.definicion into v_tarjeta from public.plantillas_tarjeta p
+     where p.formula_del_origen_id = v_fuente.id and p.estado in ('publicada', 'borrador')                       -- plantillas_publicada_unica / plantillas_borrador_unico
+     order by (p.estado::text = p_pieza) desc limit 1;
+    v_tarjeta := coalesce(v_tarjeta, public._fdo_tarjeta_en_blanco());
+  end if;
+
+  begin
+    insert into public.formulas_del_origen (id, origen_id, nombre, copiada_de_otro_origen, creado_por)
+    values (p_id, p_origen, v_nombre, v_marcada, v_yo)
+    returning * into v_d;
+  exception when unique_violation then
+    get stacked diagnostics v_c = constraint_name;
+    if v_c = 'formulas_del_origen_nombre_unico' then
+      raise exception 'Ya hay una fórmula «%» en este origen.', v_nombre using errcode = '23505', hint = 'nombre';
+    end if;
+    -- El mismo id creado en otro origen mientras tanto.
+    raise exception 'Esa fórmula ya se creó con otros datos.' using errcode = 'PT409';
+  end;
+
+  if v_otro then
+    select o.nombre into v_origen_fuente from public.origenes o where o.id = v_fuente.origen_id;   -- origenes_pkey
+    -- Las tablas que usa (las que congeló y las que nombra un nodo): la del destino si la tiene (sin la copia congelada, para leer la suya); si no
+    -- y la de la fuente es de su origen, se crea en el destino con las filas de la copia (las congeladas o, si no congeló, las vivas). Una
+    -- compartida ya la ven los dos.
+    for v_clave in
+      select x.c from (
+        select jsonb_object_keys(case when jsonb_typeof(v_params -> 'tablas') = 'object' then v_params -> 'tablas' else '{}'::jsonb end) as c
+        union
+        select n ->> 'tabla' from jsonb_array_elements(case when jsonb_typeof(v_def -> 'nodos') = 'array' then v_def -> 'nodos' else '[]'::jsonb end) n
+         where n ->> 'tabla' is not null) x
+       order by x.c collate "C"
+    loop
+      if exists (select 1 from public.tablas_referencia r where r.origen_id = p_origen and r.clave = v_clave) then   -- tablas_referencia_origen_id_clave_key
+        if jsonb_typeof(v_params -> 'tablas') = 'object' and (v_params -> 'tablas') ? v_clave then
+          v_params := jsonb_set(v_params, '{tablas}', (v_params -> 'tablas') - v_clave);
+        end if;
+        v_avisos := v_avisos || jsonb_build_array(jsonb_build_object('tipo', 'tabla_del_destino', 'clave', v_clave));
+        continue;
+      end if;
+      select * into v_tf from public.tablas_referencia r where r.origen_id = v_fuente.origen_id and r.clave = v_clave;   -- tablas_referencia_origen_id_clave_key
+      if v_tf.id is null then continue; end if;
+      if jsonb_typeof(v_params -> 'tablas' -> v_clave) = 'array' then
+        v_filas := v_params -> 'tablas' -> v_clave;
+      else
+        select coalesce(jsonb_agg(f.valores order by f.orden, f.id), '[]'::jsonb) into v_filas
+          from public.tablas_referencia_filas f where f.tabla_id = v_tf.id and f.activa;   -- tablas_referencia_filas_tabla_orden_idx
+      end if;
+      insert into public.tablas_referencia (origen_id, clave, nombre, descripcion, columnas, version, nota, publicado_por, publicado_en)
+      values (p_origen, v_clave, v_tf.nombre, v_tf.descripcion, v_tf.columnas, 1, 'Copiada de ' || coalesce(v_origen_fuente, 'otro origen'), v_yo, now())
+      returning id into v_nueva;
+      insert into public.tablas_referencia_filas (tabla_id, valores, orden)
+      select v_nueva, f.fila, (f.n - 1)::smallint from jsonb_array_elements(v_filas) with ordinality f (fila, n);
+      v_avisos := v_avisos || jsonb_build_array(jsonb_build_object('tipo', 'tabla_creada', 'clave', v_clave));
+    end loop;
+  end if;
+  if v_marcada then
+    -- Los datos del vehículo que el destino no tiene: quedan marcados hasta arreglarlos (publicar y activar los exigen).
+    v_avisos := v_avisos || (select coalesce(jsonb_agg(jsonb_build_object('tipo', 'campo', 'nodo', c ->> 'nodo', 'campo', c ->> 'campo')), '[]'::jsonb)
+                               from jsonb_array_elements(public._fdo_campos_que_faltan(v_def, p_origen)) c);
+  end if;
+
+  insert into public.formulas (origen_id, formula_del_origen_id, estado, definicion, params, diseno, nota, creado_por)
+  values (p_origen, v_d.id, 'borrador', v_def, coalesce(v_params, '{}'::jsonb), v_diseno, v_nota, v_yo);
+  insert into public.plantillas_tarjeta (origen_id, formula_del_origen_id, estado, definicion, creado_por)
+  values (p_origen, v_d.id, 'borrador', v_tarjeta, v_yo);
+  perform public.registrar_actividad('formula_del_origen.crear', 'formulas_del_origen', v_d.id::text, null, to_jsonb(v_d),
+                                     jsonb_build_object('copia_de', p_copia_de, 'pieza', case when p_copia_de is not null then p_pieza end, 'avisos', v_avisos));
+  return jsonb_build_object('id', v_d.id, 'actualizado_en', v_d.actualizado_en, 'avisos', v_avisos);
+end $$;
+revoke all on function public.formula_del_origen_crear(uuid, uuid, text, uuid, text) from public, anon;
+grant execute on function public.formula_del_origen_crear(uuid, uuid, text, uuid, text) to authenticated, service_role;
+comment on function public.formula_del_origen_crear(uuid, uuid, text, uuid, text) is 'Crea una fórmula del origen (cotizaciones.configurar; copiar de otro origen lo pide también en el de la fuente): en blanco, o copia de la publicada o del borrador (p_pieza) de otra, como borradores de la fórmula y de la tarjeta. Una copia de otro origen trae o reusa sus tablas y avisa los datos del vehículo que faltan. Tope de 50 sin archivar; nombre único (23505). Idempotente por p_id. Devuelve {id, actualizado_en, avisos}. docs/COTIZADOR.md › «Fórmulas del origen».';
+
+create function public.formula_del_origen_renombrar(p_id uuid, p_actualizado_en_esperado timestamptz, p_nombre text) returns timestamptz
+  language plpgsql security definer set search_path = '' as $$
+declare v_origen uuid; v public.formulas_del_origen; v_d public.formulas_del_origen; v_nombre text; v_c text;
+begin
+  v_origen := public._fdo_origen_con_permiso(p_id);
+  if p_actualizado_en_esperado is null then perform public._exigir_version(null, null, null); end if;
+  v_nombre := public._fdo_nombre(p_nombre);
+  v := public._fdo_tomar(p_id, v_origen, p_actualizado_en_esperado);
+  begin
+    update public.formulas_del_origen set nombre = v_nombre where id = p_id returning * into v_d;
+  exception when unique_violation then
+    get stacked diagnostics v_c = constraint_name;
+    if v_c = 'formulas_del_origen_nombre_unico' then
+      raise exception 'Ya hay una fórmula «%» en este origen.', v_nombre using errcode = '23505', hint = 'nombre';
+    end if;
+    raise;
+  end;
+  perform public.registrar_actividad('formula_del_origen.renombrar', 'formulas_del_origen', p_id::text, to_jsonb(v), to_jsonb(v_d), null);
+  return v_d.actualizado_en;
+end $$;
+revoke all on function public.formula_del_origen_renombrar(uuid, timestamptz, text) from public, anon;
+grant execute on function public.formula_del_origen_renombrar(uuid, timestamptz, text) to authenticated, service_role;
+comment on function public.formula_del_origen_renombrar(uuid, timestamptz, text) is 'Renombra una fórmula del origen, también archivada (cotizaciones.configurar). PT409 si cambió desde p_actualizado_en_esperado; 23505 si el nombre ya está en el origen. Devuelve la actualizado_en nueva. docs/COTIZADOR.md › «Fórmulas del origen».';
+
+create function public.formula_del_origen_archivar(p_id uuid, p_actualizado_en_esperado timestamptz) returns timestamptz
+  language plpgsql security definer set search_path = '' as $$
+declare v_origen uuid; v public.formulas_del_origen; v_d public.formulas_del_origen;
+begin
+  v_origen := public._fdo_origen_con_permiso(p_id);
+  if p_actualizado_en_esperado is null then perform public._exigir_version(null, null, null); end if;
+  v := public._fdo_tomar(p_id, v_origen, p_actualizado_en_esperado);
+  if v.archivada_en is not null then
+    raise exception 'Esta fórmula está archivada.' using errcode = '22023', hint = 'formula_del_origen';
+  end if;
+  if v.activa then
+    raise exception 'La fórmula activa no se archiva ni se elimina: activa otra primero.' using errcode = '22023', hint = 'activa';
+  end if;
+  update public.formulas_del_origen set archivada_en = now(), archivada_por = (select auth.uid()) where id = p_id returning * into v_d;
+  perform public.registrar_actividad('formula_del_origen.archivar', 'formulas_del_origen', p_id::text, to_jsonb(v), to_jsonb(v_d), null);
+  return v_d.actualizado_en;
+end $$;
+revoke all on function public.formula_del_origen_archivar(uuid, timestamptz) from public, anon;
+grant execute on function public.formula_del_origen_archivar(uuid, timestamptz) to authenticated, service_role;
+comment on function public.formula_del_origen_archivar(uuid, timestamptz) is 'Archiva una fórmula del origen que no es la activa (cotizaciones.configurar): deja de ofrecerse y no se edita; sus versiones quedan. PT409 si cambió desde p_actualizado_en_esperado. docs/COTIZADOR.md › «Fórmulas del origen».';
+
+create function public.formula_del_origen_eliminar(p_id uuid, p_actualizado_en_esperado timestamptz) returns void
+  language plpgsql security definer set search_path = '' as $$
+declare v_origen uuid; v public.formulas_del_origen;
+begin
+  v_origen := public._fdo_origen_con_permiso(p_id);
+  if p_actualizado_en_esperado is null then perform public._exigir_version(null, null, null); end if;
+  v := public._fdo_tomar(p_id, v_origen, p_actualizado_en_esperado);
+  if v.activa then
+    raise exception 'La fórmula activa no se archiva ni se elimina: activa otra primero.' using errcode = '22023', hint = 'activa';
+  end if;
+  -- Lo que se cotizó o se cotizaba con ella se conserva (cotizaciones_formula_id_idx y formulas_formula_del_origen_id_version_key).
+  if v.activada_en is not null
+     or exists (select 1 from public.formulas f join public.cotizaciones c on c.formula_id = f.id where f.formula_del_origen_id = p_id) then
+    raise exception 'Esta fórmula ya se usó para cotizar o estuvo activa: archívala.' using errcode = '23503', hint = 'formula_del_origen';
+  end if;
+  delete from public.formulas_del_origen where id = p_id;
+  perform public.registrar_actividad('formula_del_origen.eliminar', 'formulas_del_origen', p_id::text, to_jsonb(v), null, null);
+end $$;
+revoke all on function public.formula_del_origen_eliminar(uuid, timestamptz) from public, anon;
+grant execute on function public.formula_del_origen_eliminar(uuid, timestamptz) to authenticated, service_role;
+comment on function public.formula_del_origen_eliminar(uuid, timestamptz) is 'Elimina una fórmula del origen que nunca estuvo activa ni se usó para cotizar, con sus versiones y su tarjeta (cotizaciones.configurar); si no, 23503: se archiva. PT409 si cambió desde p_actualizado_en_esperado. docs/COTIZADOR.md › «Fórmulas del origen».';
+
+-- Activar: publica lo pendiente de la fórmula y de su tarjeta (con una nota), comprueba que la tarjeta calce con la publicada y la vuelve la
+-- que se cotiza en su origen. Cada pieza con su esperada. Activar la activa sólo publica lo pendiente.
+create function public.formula_del_origen_activar(p_id uuid, p_actualizado_en_esperado timestamptz, p_nota text, p_activa_esperada uuid,
+                                                 p_borrador_esperado timestamptz, p_publicada_esperada uuid,
+                                                 p_plantilla_borrador_esperado timestamptz, p_plantilla_publicada_esperada uuid)
+  returns jsonb language plpgsql security definer set search_path = '' as $$
+declare
+  v_yo uuid := (select auth.uid());
+  v_origen uuid; v public.formulas_del_origen; v_d public.formulas_del_origen; v_vieja public.formulas_del_origen;
+  v_activa uuid; v_b public.formulas; v_pub uuid; v_pb public.plantillas_tarjeta; v_pp public.plantillas_tarjeta;
+  v_formula uuid; v_plantilla uuid; fo public.formulas; v_f text;
+begin
+  v_origen := public._fdo_origen_con_permiso(p_id);
+  if coalesce(btrim(p_nota), '') = '' then raise exception 'Activar pide una nota.' using errcode = '22023', hint = 'nota'; end if;
+  if p_actualizado_en_esperado is null then perform public._exigir_version(null, null, null); end if;
+  v := public._fdo_tomar(p_id, v_origen, p_actualizado_en_esperado);
+  if v.archivada_en is not null then
+    raise exception 'Esta fórmula está archivada.' using errcode = '22023', hint = 'formula_del_origen';
+  end if;
+
+  -- La activa que se vio (nula: ninguna).
+  select d.id into v_activa from public.formulas_del_origen d where d.origen_id = v_origen and d.activa;   -- formulas_del_origen_activa_unica
+  if v_activa is distinct from p_activa_esperada then
+    if v_activa is null then
+      raise exception 'La fórmula que viste activa ya no lo está, y el origen no tiene otra.' using errcode = 'PT409';
+    end if;
+    raise exception '%', public._fdo_activada_por(v_activa) using errcode = 'PT409';
+  end if;
+  -- El borrador de la fórmula: sin esperada, que no haya; con ella, que sea ése.
+  select * into v_b from public.formulas f where f.formula_del_origen_id = p_id and f.estado = 'borrador' for update;   -- formulas_borrador_unico
+  if p_borrador_esperado is null and v_b.id is not null then
+    raise exception 'Ya hay un borrador: % y se guardó %.', public._borrador_formula_empezado_por(v_b.creado_por), public._hace(v_b.actualizado_en)
+      using errcode = 'PT409';
+  end if;
+  perform public._exigir_borrador_formula(v_b, p_borrador_esperado);
+  -- La publicada.
+  select f.id into v_pub from public.formulas f where f.formula_del_origen_id = p_id and f.estado = 'publicada';   -- formulas_publicada_unica
+  if v_pub is distinct from p_publicada_esperada then
+    if v_pub is null then
+      raise exception 'La versión que tenías ya no es la publicada, y el origen no tiene otra.' using errcode = 'PT409';
+    end if;
+    v_f := public._version_publicada_por(v_pub);
+    raise exception '%.', upper(left(v_f, 1)) || substr(v_f, 2) using errcode = 'PT409';
+  end if;
+  -- El borrador de la tarjeta: lo mismo.
+  select * into v_pb from public.plantillas_tarjeta p where p.formula_del_origen_id = p_id and p.estado = 'borrador' for update;   -- plantillas_borrador_unico
+  if p_plantilla_borrador_esperado is null then
+    if v_pb.id is not null then
+      raise exception 'Ya hay un borrador de esta plantilla, guardado %.', public._hace(v_pb.actualizado_en) using errcode = 'PT409';
+    end if;
+  else
+    if v_pb.id is null then perform public._plantilla_borrador_ausente(v_origen, p_plantilla_borrador_esperado, p_id); end if;
+    perform public._exigir_version(v_pb.actualizado_en, p_plantilla_borrador_esperado,
+      'El borrador de esta plantilla cambió ' || public._hace(v_pb.actualizado_en) || ', mientras lo editabas.');
+  end if;
+  -- La tarjeta publicada.
+  select * into v_pp from public.plantillas_tarjeta p where p.formula_del_origen_id = p_id and p.estado = 'publicada';   -- plantillas_publicada_unica
+  if v_pp.id is distinct from p_plantilla_publicada_esperada then
+    if v_pp.id is null then
+      raise exception 'La tarjeta que tenías ya no es la publicada, y la fórmula no tiene otra.' using errcode = 'PT409';
+    end if;
+    raise exception 'Se publicó la versión % de la tarjeta%.', v_pp.version, coalesce(' ' || public._hace(v_pp.publicado_en), '') using errcode = 'PT409';
+  end if;
+
+  if v_pub is null and v_b.id is null then
+    raise exception 'Esta fórmula no tiene una versión que se pueda publicar.' using errcode = '22023', hint = 'formula';
+  end if;
+  if v_pp.id is null and v_pb.id is null then
+    raise exception 'Esta fórmula no tiene tarjeta: guarda una antes de activarla.' using errcode = '22023', hint = 'tarjeta';
+  end if;
+
+  -- Lo pendiente, con sus validaciones de siempre (y la de los datos del vehículo en una copia de otro origen): un error corta todo.
+  v_formula := v_pub;
+  if v_b.id is not null then
+    v_formula := public._publicar_formula(v_origen, p_nota, v_pub, false, v_b.actualizado_en, p_id);
+  elsif v.copiada_de_otro_origen then
+    perform public._fdo_exigir_campos((select f.definicion from public.formulas f where f.id = v_formula), v_origen);
+  end if;
+  if v_pb.id is not null then
+    -- Valida el borrador contra la publicada de esta fórmula (la recién publicada, si la hubo).
+    v_plantilla := public._plantilla_publicar_en(v_origen, p_id, p_nota, v_pb.actualizado_en);
+  else
+    -- La tarjeta publicada tiene que calzar con la versión que se va a cotizar (como la dibuja cotizacion_tarjeta: sin el catálogo de colores).
+    select * into fo from public.formulas f where f.id = v_formula;   -- formulas_pkey
+    perform public.validar_plantilla(v_pp.definicion, fo.definicion, fo.diseno, fo.visibilidad, null);
+    v_plantilla := v_pp.id;
+  end if;
+
+  -- La vieja se apaga antes de prender la nueva (formulas_del_origen_activa_unica), y queda dicho quién y cuándo.
+  if v_activa is distinct from p_id then
+    if v_activa is not null then
+      select * into v_vieja from public.formulas_del_origen d where d.id = v_activa;
+      update public.formulas_del_origen set activa = false, desactivada_en = now() where id = v_activa;
+      perform public.registrar_actividad('formula_del_origen.desactivar', 'formulas_del_origen', v_activa::text, to_jsonb(v_vieja),
+                                         (select to_jsonb(d) from public.formulas_del_origen d where d.id = v_activa), jsonb_build_object('nueva', p_id));
+    end if;
+    update public.formulas_del_origen set activa = true, activada_en = now(), activada_por = v_yo, desactivada_en = null where id = p_id;
+  end if;
+  select * into v_d from public.formulas_del_origen d where d.id = p_id;
+  perform public.registrar_actividad('formula_del_origen.activar', 'formulas_del_origen', p_id::text, to_jsonb(v), to_jsonb(v_d),
+                                     jsonb_build_object('nota', p_nota, 'anterior', v_activa, 'formula', v_formula, 'plantilla', v_plantilla));
+  return jsonb_build_object('activa', p_id, 'formula', v_formula, 'plantilla', v_plantilla, 'actualizado_en', v_d.actualizado_en);
+end $$;
+revoke all on function public.formula_del_origen_activar(uuid, timestamptz, text, uuid, timestamptz, uuid, timestamptz, uuid) from public, anon;
+grant execute on function public.formula_del_origen_activar(uuid, timestamptz, text, uuid, timestamptz, uuid, timestamptz, uuid) to authenticated, service_role;
+comment on function public.formula_del_origen_activar(uuid, timestamptz, text, uuid, timestamptz, uuid, timestamptz, uuid) is 'Activa una fórmula del origen (cotizaciones.configurar): publica con p_nota su borrador y el de su tarjeta, exige que la tarjeta calce con la publicada y la vuelve la que se cotiza en su origen (la anterior queda sin activar, con desactivada_en). PT409 si cambió cualquiera de las esperadas (la fila, la activa que se vio, el borrador y la publicada de la fórmula y de la tarjeta). Devuelve {activa, formula, plantilla, actualizado_en}. docs/COTIZADOR.md › «Fórmulas del origen».';
