@@ -42,6 +42,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Cambiar argumentos o tipo de retorno es `drop` + `create` (parámetro nuevo al final, con default si hay llamadas posicionales): `create or replace` deja dos sobrecargas.
 - Repite siempre `revoke`/`grant` explícitos (también `anon` en `web.*`), aunque `create or replace` conserve privilegios, y pruébalo con una mutación que conceda a `anon` o PUBLIC.
 - Prefiere una función de lectura aparte a cambiar el tipo de retorno de una existente: el `drop` rompe pruebas, infra y la definición que otros recrean.
+- Al traer `main`, cruza las funciones que redefine tu migración con las de las migraciones nuevas de `main` (con y sin comillas: el volcado escribe `"public"."x"`): git no ve el choque y tu `create or replace`, que corre después, borra lo de la otra. Rehazla desde la definición de `main`.
 - Parte un trigger si su `when` nombra `old`: ese `when` no puede ir en un trigger de `insert`.
 - Al crear un permiso o cambiar su `aplicado_en`, cámbialo también en `supabase/seed.sql` y prueba la migración re-ejecutándola sobre la base sembrada: el seed corre después con `on conflict … do update` y la pisa, y antes del seed la tabla está vacía.
 - Valida en la RPC el texto que la nube puede tener con otros valores; un `check` nuevo sobre una tabla con datos nace `not valid` y se valida en otra sentencia sólo si ninguna fila lo rompe (si no, `raise notice`): la migración no debe caer en la nube.
