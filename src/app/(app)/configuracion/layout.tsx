@@ -67,8 +67,8 @@ async function Cabecera() {
   return (
     <MarcoSegunLaRuta
       inicio={RUTAS.inicioDeConfiguracion}
-      claseEnElInicio={`grid gap-2 ${OCULTA_CON_MENU}`}
-      claseEnUnaSeccion="grid gap-2"
+      claseEnElInicio={`grid grid-cols-[minmax(0,1fr)] gap-2 ${OCULTA_CON_MENU}`}
+      claseEnUnaSeccion="grid grid-cols-[minmax(0,1fr)] gap-2"
     >
       <CabeceraDeConfiguracion grupos={grupos} />
     </MarcoSegunLaRuta>
