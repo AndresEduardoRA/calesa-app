@@ -1,22 +1,21 @@
 'use client'
 
-import { useState } from 'react'
 import { COLOR_TEMA } from '@/shared/config/app'
 import { tokensDeMarca } from '@/shared/lib/color'
 import { Campo } from '@/shared/ui/campo'
 import { validarColorDeMarca } from '../../../entities/marca'
 
 type Props = {
-  // El color guardado, o null si la empresa usa el neutro.
-  guardado: string | null
-  // El error que devolvió el servidor para este campo, si hubo.
+  // Lo escrito: vacío = el color neutro.
+  valor: string
+  alCambiar: (valor: string) => void
+  // El motivo que dijo el envío para este campo, si hubo.
   error?: string
 }
 
-// El color de la marca: se tipea o se elige, y mientras tanto se ve cómo queda un botón con él.
+// El color de la marca (controlado: el modal sabe qué se escribió): se tipea o se elige, y mientras tanto se ve cómo queda un botón con él.
 // Si no da contraste, el motivo aparece al momento, antes de guardar.
-export function CampoColor({ guardado, error }: Props) {
-  const [valor, setValor] = useState(guardado ?? '')
+export function CampoColor({ valor, alCambiar, error }: Props) {
   const revisado = valor.trim() === '' ? null : validarColorDeMarca(valor)
   const marca = tokensDeMarca(revisado?.ok ? revisado.color : COLOR_TEMA)
 
@@ -30,7 +29,7 @@ export function CampoColor({ guardado, error }: Props) {
           // `mt-5`: arranca a la altura del campo de texto, no de su etiqueta.
           className="mt-5 h-11 w-12 shrink-0 cursor-pointer rounded-(--radius-md) border border-(--color-line-strong) bg-(--color-surface) p-1 disabled:cursor-not-allowed disabled:opacity-50 md:h-9"
           onChange={(evento) => {
-            setValor(evento.target.value)
+            alCambiar(evento.target.value)
           }}
         />
         <div className="min-w-0 flex-1">
@@ -44,7 +43,7 @@ export function CampoColor({ guardado, error }: Props) {
             value={valor}
             error={revisado && !revisado.ok ? revisado.motivo : error}
             onChange={(evento) => {
-              setValor(evento.target.value)
+              alCambiar(evento.target.value)
             }}
           />
         </div>

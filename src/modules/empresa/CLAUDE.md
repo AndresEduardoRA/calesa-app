@@ -5,7 +5,7 @@ Ajustes de la empresa (marca, datos legales, país, formato regional, zona horar
 ## Entra y sale
 
 - Entra: Configuración › Empresa, cuatro sub-rutas (`src/app/(app)/configuracion/empresa/`): «Datos de la empresa» (`/configuracion/empresa`:
-  `FormularioEmpresa` e `IconosDeLaApp`), «Monedas y tipos de cambio» (`/monedas`: `MonedasYTiposCambio`), «Integraciones» (`/integraciones`:
+  `TarjetasDeLaEmpresa`, cinco tarjetas: Identidad, Región, Datos legales y de contacto, Políticas, Íconos de la app), «Monedas y tipos de cambio» (`/monedas`: `MonedasYTiposCambio`), «Integraciones» (`/integraciones`:
   `Integraciones`), todas de `pantallas/configuracion-empresa.ts`, y «Comprobantes» (`/comprobantes`, del módulo `cotizaciones`). Configuración › Cotización › General › Vigencia (`/configuracion/cotizacion/general/vigencia`,
   con la barra de cambios sin guardar): la vigencia de las cotizaciones (si el vehículo y el lead son obligatorios se decide por rol y origen, en «Roles y permisos»).
 - Sale (`index.ts`, **sin componentes**):
@@ -65,19 +65,21 @@ quien lo hizo, nunca el correo.
 
 ## No se rompe
 
-- Toda edición manda `actualizado_en`; otra es `PT409`. La fila de ajustes la editan el formulario, los íconos y los ajustes de cotización con la
-  misma versión (guardar en una deja con `PT409` a la otra), y la de apibara también tres partes: la versión llega por props y cada parte lleva de
-  `key` lo que muestra (`huellaDelFormulario()`).
-- Datos de la empresa y la «Leyenda al compartir» guardan con la barra de cambios sin guardar (hermana del formulario, `order-last`); mientras guarda la
-  barra no mide (el `<fieldset>` apagado vacía `FormData`) y vuelve a medir al terminar.
+- Toda edición manda `actualizado_en`; otra es `PT409`. La fila de ajustes la editan los modales de Datos, los íconos y los ajustes de cotización con la
+  misma versión (guardar en uno deja con `PT409` al otro): la versión llega por props al abrir el modal y nunca va en su `key`; cada apertura
+  (`useApertura()`) empieza de lo guardado.
+- Datos de la empresa se edita en un modal por tarjeta (`?panel=identidad|region|datos-legales|politicas|iconos`, `usePanelesDeLaEmpresa()`), cada uno
+  con su `useGuardarTarjeta()` sobre `useEnvioConVersion()`: sólo viaja lo que cambió respecto de lo guardado (`cambiosDeLaTarjeta()`), la
+  RPC no toca lo ausente. Un `?panel=` sin permiso (o íconos sin logo) se avisa y se limpia. Datos legales (siete campos) guarda borrador en
+  `sessionStorage`. La «Leyenda al compartir» guarda con la barra de cambios sin guardar (hermana del formulario, `order-last`).
 - Los íconos se dibujan desde el logo **guardado** y se suben al confirmar la vista previa; su dirección es el hash y cambia al regenerar.
 - El logo se sube al guardar: si la fila no se guarda, se descarta el subido; si se guarda, el anterior; siempre por `storage_refcount`. El logo oscuro
   viaja en el mismo guardado (`guardarConLogos()`): un subido que ya es uno de los guardados, o un anterior que pasa al otro espacio, no se descarta.
   Un logo no pasa por `comprimirImagen()`: el SVG sube tal cual; un raster > 1024 px se reduce a PNG.
 - Un color sin contraste AA con el texto de los botones se rechaza con el motivo, en el campo y en el servidor. Locale y zona se validan contra
   `Intl`; con uno inválido, `formato.ts` usa el de fábrica.
-- El borrador guarda sólo lo cambiado; quien no puede editar no tiene borrador.
-- **Mientras guarda, el formulario no se edita** (`enCurso` apaga el `<fieldset>`): el `key` reemplazaría el formulario y lo tecleado se perdería.
+- El borrador de Datos legales guarda sólo lo cambiado; quien no puede editar no tiene borrador.
+- **Mientras guarda, el modal no se edita** (`enCurso` apaga los campos): lo tecleado en ese momento se perdería al llegar lo guardado.
 - La moneda base no se cambia con datos cargados (UI deshabilitada y `empresa_guardar_ajustes()` lo rechaza).
 - Un valor vigente por clave; el historial lo escribe `tipos_cambio_historial_trg`; **no** altera cotizaciones guardadas (snapshot). Entre dos
   monedas un solo por defecto (único parcial; marcar otro desmarca el anterior en la misma RPC); el por defecto, la moneda base y las que usa un tipo
