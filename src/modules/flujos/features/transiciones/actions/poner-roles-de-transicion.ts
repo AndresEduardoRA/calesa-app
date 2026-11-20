@@ -24,7 +24,8 @@ export const ponerRolesDeTransicion = actionClient
     const { ambito: _ambito, ...pedido } = parsedInput
     const hecho = comoResultado(await repositorioDeTransiciones.ponerRolesDeTransicion(pedido))
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeFlujos, 'layout')
+      revalidatePath(RUTAS.origenes, 'layout')
+      revalidatePath(RUTAS.configuracionDeRepuestos, 'layout')
     }
     return hecho
   })

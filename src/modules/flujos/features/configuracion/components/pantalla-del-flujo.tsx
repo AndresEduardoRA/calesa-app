@@ -7,12 +7,13 @@ import type { FlujoParaConfigurar } from '../../../entities/flujo'
 import { leerFlujoParaConfigurar, leerFlujosConfigurables } from '../../../areas/nucleo/composicion'
 import {
   armarSelector,
-  elegirEntrada,
+  entradaFija,
+  textoSinFlujo,
+  type FlujoFijo,
   type OrigenDelSelector,
 } from '../../../entities/selector-de-flujos'
 import { FlujoAbierto } from './flujo-abierto'
 import type { HuecosDelFlujo, SeccionesDelPanel } from './huecos'
-import { SelectorDeFlujo } from './selector-de-flujo'
 
 type Props = {
   permisos: Permisos
@@ -20,9 +21,8 @@ type Props = {
   origenes: Promise<Resultado<readonly OrigenDelSelector[]>>
   // Los roles para nombrarlos en el panel (los compone la página: `flujos` no importa `equipo`).
   roles: Promise<Resultado<{ roles: readonly { id: string; nombre: string }[]; hayMas: boolean }>>
-  // `?origen=` y `?ambito=`: una URL que no es de los suyos abre el primero.
-  origenPedido: string | undefined
-  ambitoPedido: string | undefined
+  // El flujo que abre la página: el del origen de la pestaña o el de repuestos. Nunca otro.
+  fijo: FlujoFijo
   huecos: HuecosDelFlujo
   // Lo que va sobre las fases del flujo abierto (5.08: el aviso de «fuera de regla»). Una función de servidor, no un hueco de cliente: se llama con el
   // flujo ya leído y puede leer lo suyo; va detrás de su propio `<Suspense>` sin esqueleto (lo común es que no haya nada que mostrar).
@@ -31,14 +31,13 @@ type Props = {
   secciones?: SeccionesDelPanel
 }
 
-// Configuración › Flujos (5.02), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: los flujos que puede configurar, el elegido entero
-// y los roles para nombrarlos. La base vuelve a decidir cada escritura. Una lectura que falla sube al `error.tsx` de `(app)`, que ofrece «Reintentar».
+// El editor de un flujo (5.02): la pestaña Flujo de un origen o Repuestos › Flujo de repuestos, leído en el servidor con la sesión de quien mira y detrás
+// de `<Suspense>`: el flujo fijo entero y los roles para nombrarlos. La base vuelve a decidir cada escritura. Una lectura que falla sube al `error.tsx` de `(app)`, que ofrece «Reintentar».
 export async function PantallaDelFlujo({
   permisos,
   origenes,
   roles,
-  origenPedido,
-  ambitoPedido,
+  fijo,
   huecos,
   sobreLaLista,
   secciones,
@@ -49,14 +48,9 @@ export async function PantallaDelFlujo({
     roles,
   ])
   const entradas = armarSelector(datosO(flujos), datosO(listaDeOrigenes))
-  const entrada = elegirEntrada(entradas, {
-    origen: origenPedido ?? null,
-    ambito: ambitoPedido ?? null,
-  })
+  const entrada = entradaFija(entradas, fijo)
   if (!entrada) {
-    return (
-      <EstadoVacio Icono={WorkflowIcon} titulo="No hay flujos que puedas configurar." compacto />
-    )
+    return <EstadoVacio Icono={WorkflowIcon} titulo={textoSinFlujo(fijo)} compacto />
   }
   const flujo = datosO(await leerFlujoParaConfigurar(entrada.flujo.id))
   const Franja = huecos.franjaDeRevisar
@@ -64,10 +58,6 @@ export async function PantallaDelFlujo({
   const contenido = (
     <div className="grid min-w-0 gap-4">
       {flujo && Franja ? <Franja flujo={flujo} /> : null}
-      <SelectorDeFlujo
-        entradas={entradas.map(({ clave, titulo }) => ({ clave, titulo }))}
-        valor={entrada.clave}
-      />
       {flujo && sobreLaLista ? <Suspense fallback={null}>{sobreLaLista(flujo)}</Suspense> : null}
       {flujo ? (
         <FlujoAbierto

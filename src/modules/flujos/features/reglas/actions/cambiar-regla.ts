@@ -30,7 +30,8 @@ export const cambiarRegla = actionClient
     }
     const hecho = await repositorioDeReglas.cambiar({ flujoId, version, regla, activa })
     if (hecho.ok) {
-      revalidatePath(RUTAS.configuracionDeFlujos, 'layout')
+      revalidatePath(RUTAS.origenes, 'layout')
+      revalidatePath(RUTAS.configuracionDeRepuestos, 'layout')
       return { ok: true, data: { estado: 'cambiada', version: hecho.data } }
     }
     if (!activa && hecho.error.codigo === 'regla') {
