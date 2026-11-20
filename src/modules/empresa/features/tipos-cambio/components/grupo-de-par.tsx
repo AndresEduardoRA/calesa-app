@@ -13,6 +13,8 @@ type Props = {
   tipos: readonly TipoCambio[]
   ultimosCambios: Readonly<Record<string, UltimoCambio>>
   puedeGestionar: boolean
+  // Quien gestiona y hay al menos dos monedas activas: sin ellas el panel de crear no tiene entre qué elegir.
+  puedeSumar: boolean
   enCurso: boolean
   alAbrir: (id: string) => void
   alCrear: (par: GrupoDePar) => void
@@ -22,7 +24,7 @@ type Props = {
 
 // Un par de monedas (USD → BOB) con sus tipos de cambio como tarjetas y «+ Tipo de cambio» para sumar otro entre las mismas dos.
 export function GrupoDePar(props: Props) {
-  const { grupo, tipos, ultimosCambios, puedeGestionar, enCurso } = props
+  const { grupo, tipos, ultimosCambios, puedeGestionar, puedeSumar, enCurso } = props
   const titulo = `grupo-${grupo.clave}`
   return (
     <section aria-labelledby={titulo} className="grid gap-3">
@@ -35,7 +37,7 @@ export function GrupoDePar(props: Props) {
           <ArrowRightIcon aria-label="a" className="size-4 text-(--color-ink-faint)" />
           {grupo.monedaA}
         </h2>
-        {puedeGestionar ? (
+        {puedeSumar ? (
           <Button
             variant="outline"
             className="h-11 md:h-8"

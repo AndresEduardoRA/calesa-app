@@ -61,6 +61,7 @@ export function ParesDeMonedas({ grupos, puedeSumar, alCrear, ...resto }: Props)
           tipos={resto.tipos}
           ultimosCambios={resto.ultimosCambios}
           puedeGestionar={resto.puedeGestionar}
+          puedeSumar={puedeSumar}
           enCurso={resto.enCurso}
           alAbrir={resto.alAbrir}
           alCrear={alCrear}

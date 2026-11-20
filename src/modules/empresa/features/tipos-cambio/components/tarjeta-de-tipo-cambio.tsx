@@ -25,7 +25,13 @@ type Props = {
   alCambiarEnLaBarra: (enLaBarra: boolean) => void
 }
 
-function accionesDe({ tipo, puedeGestionar, alAbrir, alUsarPorDefecto }: Props): AccionDeMenu[] {
+function accionesDe({
+  tipo,
+  puedeGestionar,
+  enCurso,
+  alAbrir,
+  alUsarPorDefecto,
+}: Props): AccionDeMenu[] {
   const motivo = puedeGestionar ? null : MOTIVO_SIN_PERMISO_TIPOS_CAMBIO
   return [
     {
@@ -43,7 +49,7 @@ function accionesDe({ tipo, puedeGestionar, alAbrir, alUsarPorDefecto }: Props):
             tipo: 'accion',
             clave: 'por-defecto',
             etiqueta: 'Usar por defecto',
-            deshabilitada: motivo !== null || !tipo.activo,
+            deshabilitada: motivo !== null || !tipo.activo || enCurso,
             alElegir: alUsarPorDefecto,
           },
         ] satisfies AccionDeMenu[])),
