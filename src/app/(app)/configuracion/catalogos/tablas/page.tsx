@@ -9,8 +9,9 @@ import { MarcoDelCatalogo } from '../marco-del-catalogo'
 
 export const metadata: Metadata = { title: 'Tablas compartidas' }
 
-// Configuración › Catálogos › Tablas compartidas: las tablas de referencia sin origen, que usa cada origen que no tiene la propia, y con
-// `?tabla=` su editor. Pide `cotizaciones.configurar`; la base vuelve a exigirlo al publicar.
+// Configuración › Catálogos › Tablas compartidas: las tablas de referencia sin origen, que usa cada origen que no tiene la propia, con «Nueva tabla»
+// (`?panel=nueva-tabla`), y con `?tabla=` su editor (`?panel=publicar-tabla`, `columnas-de-tabla`, `desactivar-tabla`). Pide `cotizaciones.configurar`; la base
+// vuelve a exigirlo al escribir.
 export default async function PaginaDeLasTablasCompartidas({
   searchParams,
 }: PageProps<'/configuracion/catalogos/tablas'>) {

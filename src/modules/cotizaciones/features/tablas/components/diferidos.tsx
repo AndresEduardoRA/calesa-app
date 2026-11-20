@@ -12,3 +12,16 @@ export const EditorDeTablaDiferido = diferido(
 export const ModalDePublicarTablaDiferido = diferido(() =>
   import('./modal-de-publicar-tabla').then((modulo) => modulo.ModalDePublicarTabla),
 )
+
+// «Nueva tabla» (`?panel=nueva-tabla`), «Columnas» y «Desactivar» se piden recién al abrirse; se montan con `useAbiertoAlgunaVez()`.
+export const PanelDeNuevaTablaDiferido = diferido(() =>
+  import('./panel-de-nueva-tabla').then((modulo) => modulo.PanelDeNuevaTabla),
+)
+
+export const PanelDeColumnasDiferido = diferido(() =>
+  import('./panel-de-columnas').then((modulo) => modulo.PanelDeColumnas),
+)
+
+export const DesactivarTablaDiferido = diferido(() =>
+  import('./desactivar-tabla').then((modulo) => modulo.DesactivarTabla),
+)

@@ -33,6 +33,10 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T314]** «Compartir la cotización» sin el editor de imagen 9:16 de V1 (la historia de WhatsApp o Instagram con la foto y la cotización): hoy se comparte la imagen de la tarjeta o las fotos tal cual.
 - **[T326]** Plantillas de V1: la `usa_moto` de V1 guarda porcentajes enteros (5 … 30) que su motor multiplica tal cual como factor DP; la plantilla los congela como 5 % … 30 % (0,05 … 0,30): confirmar qué cálculo es el bueno para una moto.
 - **[T326]** Plantillas de V1: Compra dealer USA no cotiza Moto ni USA → Chile (V1 sí): la fórmula admite una sola variante y la suya es el contenedor en par — decidir si hacen falta.
+- **[T417]** Tablas de referencia: reactivar una tabla desactivada (hoy no se deshace y su clave queda tomada) — sin tarea que lo tome.
+- **[T417]** Tablas de referencia: hacer propia una compartida (copiarla al origen con sus filas) — hoy se crea una propia vacía con otra clave.
+- **[T417]** Tablas de referencia: renombrar una tabla (su nombre; la clave no cambia) — sin tarea que lo tome.
+- **[T417]** Publicar una fórmula no revisa en la base que existan su tabla y sus columnas (BUSCARV lo revisa al compilar, con el catálogo del origen) — decidir si `formula_publicar()` lo exige.
 - **[—]** Sin hacer: el filtro «Favoritas» y la insignia en el listado, quién reportó en la lista de reportes, el tiempo real en comentarios y el motivo de lo bloqueado en la fila de un lote de la papelera.
 
 ### Leads y web

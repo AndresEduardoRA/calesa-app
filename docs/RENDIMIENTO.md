@@ -655,8 +655,8 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - La página de un origen y Catálogos: cada pestaña y cada catálogo carga sólo su pantalla (`pantallas/origen-*`, `formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
   JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formula` 470,6,
   `/formula/hoja` 387,3 (dnd-kit y el editor del diseño, en su `diferido()`), `/formula/tarjeta` 392,6 (la pestaña dibuja en frío el aviso de menos de 1.024 px
-  y arma la lectura del lienzo; el editor, 26,4, llega por `diferido()`), `/tablas` 388,3; `/configuracion/catalogos/colores` 356,8, `/niveles` 366,7,
-  `/vigencia` 359,3, `/puertos`, `/navieras` y `/categorias-de-gasto` 356,4, `/tipos-de-documento` 370,4, `/tablas` 359,1. El marco del origen (encabezado,
+  y arma la lectura del lienzo; el editor, 26,4, llega por `diferido()`), `/tablas` 392,5 («Nueva tabla» y el «⋯» de cada tabla en frío; sus paneles, por `diferido()`); `/configuracion/catalogos/colores` 356,8, `/niveles` 366,7,
+  `/vigencia` 359,3, `/puertos`, `/navieras` y `/categorias-de-gasto` 356,4, `/tipos-de-documento` 370,4, `/tablas` 368,1. El marco del origen (encabezado,
   «Para cotizar y mover» y las pestañas) lee `origenes_resumen()` una vez por pedido (`leerElOrigen`, con `cache()`, la comparten el marco y la pestaña) y,
   en un origen de subasta, si apibara está activa: nada cuenta ni crece con las cotizaciones. `/configuracion/origenes/<id>` y `/formula` solos redirigen
   con `route.ts` (308), sin `page.tsx` ni `loading.tsx` intermedios.
