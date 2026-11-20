@@ -156,7 +156,17 @@ export function specAlKit(plantilla, { repoGh, nombre, pr, toca }) {
       .trim() || 'Ninguna.'
   /** @type {Record<string, string>} */
   const valores = { REPO_GH: repoGh, REPO: nombre, PR: pr, RUTAS: rutas, LECCIONES: lecciones }
-  return plantilla.replace(/\{\{(REPO_GH|REPO|PR|RUTAS|LECCIONES)\}\}/g, (_, k) => valores[k] ?? '')
+  // Los comentarios del frontmatter nombran los marcadores para quien lee la plantilla: no se reemplazan. Una lista de varias líneas
+  // metida en un comentario se salía de él y quedaba como una clave más del yaml de la tarea.
+  let enFrontmatter = false
+  return plantilla
+    .split('\n')
+    .map((l, i) => {
+      if (l === '---' && (i === 0 || enFrontmatter)) enFrontmatter = i === 0
+      if (enFrontmatter && l.startsWith('#')) return l
+      return l.replace(/\{\{(REPO_GH|REPO|PR|RUTAS|LECCIONES)\}\}/g, (_, k) => valores[k] ?? '')
+    })
+    .join('\n')
 }
 
 // ---------- la CLI, para el aviso al kit del orquestador (kit.sh) ----------

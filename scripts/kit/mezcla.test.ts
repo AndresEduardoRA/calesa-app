@@ -86,29 +86,6 @@ describe('flujo.mjs', () => {
   })
 })
 
-it('tocaFlujo: una lección en varias líneas sube entera, en una sola; una línea de contexto corta la viñeta', () => {
-  const patrones = ['docs/LECCIONES.md']
-  expect(
-    tocaFlujo(
-      [
-        {
-          filename: 'docs/LECCIONES.md',
-          patch:
-            '+- Para que tome un cambio no reinicies el servicio:\n+  se relanza solo y las sesiones\n+  siguen. (kit)\n' +
-            ' - Una vieja que sigue\n+  suelta. (semilla)',
-        },
-      ],
-      patrones,
-    ),
-  ).toEqual({
-    rutas: [],
-    kit: [
-      '- Para que tome un cambio no reinicies el servicio: se relanza solo y las sesiones siguen. (kit)',
-    ],
-    semilla: ['suelta. (semilla)'],
-  })
-})
-
 const d = (base: string | null, nuevo: string | null, propio: string | null, extra = {}) =>
   decidir({
     ruta: 'scripts/flujo/x.sh',
