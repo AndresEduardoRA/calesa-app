@@ -2,7 +2,6 @@
 
 import { useAction } from 'next-safe-action/hooks'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { ErrorApp } from '@/shared/lib/errores'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
@@ -21,6 +20,7 @@ import {
 import { destinoDelRechazoDeActivar } from '../../../entities/formulas-del-origen/destino-del-rechazo'
 import type { FormulaDeLaLista } from '../../../entities/formulas-del-origen/lista'
 import { activarFormulaDelOrigen } from '../actions/activar-formula'
+import { useCerrarYReleer } from '../hooks/use-cerrar-y-releer'
 import { LARGO_DE_LA_NOTA } from '../schemas/formulas-del-origen'
 
 type Props = {
@@ -121,7 +121,7 @@ function CampoDeLaNota({
 // «Activar «<nombre>»» (`?panel=activar-formula&formula=<id>`): qué se publica (los borradores de la planilla y de la tarjeta), qué cambia para cotizar y la nota.
 // Lleva lo que se vio de cada pieza: si algo cambió, PT409 con «Recargar». Un rechazo que nombra una fila, un lugar de la tarjeta o una sub-pestaña ofrece ir ahí.
 export function ModalDeActivar({ abierto, alCerrar, origen, formula, activa }: Props) {
-  const router = useRouter()
+  const cerrarYReleer = useCerrarYReleer()
   const [nota, setNota] = useState('')
   const [rechazo, setRechazo] = useState<ErrorApp | null>(null)
   const activar = useAction(activarFormulaDelOrigen)
@@ -142,8 +142,7 @@ export function ModalDeActivar({ abierto, alCerrar, origen, formula, activa }: P
     },
     alGuardar: () => {
       avisarExito(`«${formula.nombre}» es la fórmula activa de ${origen.nombre}.`)
-      alCerrar()
-      router.refresh()
+      cerrarYReleer()
     },
   })
   const destino = destinoDelRechazoDeActivar(rechazo?.causa, origen.id, formula.id)

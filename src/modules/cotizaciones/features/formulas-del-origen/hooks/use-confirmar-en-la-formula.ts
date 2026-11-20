@@ -7,6 +7,7 @@ import type { Envio } from '@/shared/lib/enviar-accion'
 import { rutaDeLasFormulas } from '@/shared/lib/rutas'
 import { avisarError, avisarExito, type OpcionesDeError } from '@/shared/ui/toasts'
 import { useUnEnvioALaVez } from '@/shared/ui/use-un-envio-a-la-vez'
+import { useCerrarYReleer } from './use-cerrar-y-releer'
 
 type Args = {
   origenId: string
@@ -31,6 +32,7 @@ export function useConfirmarEnLaFormula({
   accionesDelRechazo,
 }: Args) {
   const router = useRouter()
+  const cerrarYReleer = useCerrarYReleer()
   const { mandar, enCurso } = useUnEnvioALaVez()
   const [conflicto, setConflicto] = useState<string | null>(null)
   const [sinRed, setSinRed] = useState(false)
@@ -50,8 +52,7 @@ export function useConfirmarEnLaFormula({
         router.replace(rutaDeLasFormulas(origenId))
         return
       }
-      alCerrar()
-      router.refresh()
+      cerrarYReleer()
       return
     }
     if ('sinRed' in hecho) {
@@ -74,8 +75,7 @@ export function useConfirmarEnLaFormula({
     recargando,
     recargar: () => {
       recargarPagina(() => {
-        alCerrar()
-        router.refresh()
+        cerrarYReleer()
       })
     },
   }

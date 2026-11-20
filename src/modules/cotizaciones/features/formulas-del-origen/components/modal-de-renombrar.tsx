@@ -1,7 +1,6 @@
 'use client'
 
 import { useAction } from 'next-safe-action/hooks'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
 import { Campo } from '@/shared/ui/campo'
@@ -11,6 +10,7 @@ import { useEnvioConVersion } from '@/shared/ui/use-envio-con-version'
 import { LARGO_DEL_NOMBRE, nombreDeLaFormula } from '../../../entities/formula-del-origen'
 import type { FormulaDeLaLista } from '../../../entities/formulas-del-origen/lista'
 import { renombrarFormulaDelOrigen } from '../actions/renombrar-formula'
+import { useCerrarYReleer } from '../hooks/use-cerrar-y-releer'
 
 type Props = {
   abierto: boolean
@@ -22,7 +22,7 @@ type Props = {
 // «Renombrar «<nombre>»» (`?panel=renombrar-formula&formula=<id>`): con la versión que se leyó. Un nombre repetido se dice junto al campo; un PT409, con
 // «Recargar» (trae la versión de ahora y deja lo escrito).
 export function ModalDeRenombrar({ abierto, alCerrar, origenId, formula }: Props) {
-  const router = useRouter()
+  const cerrarYReleer = useCerrarYReleer()
   const [nombre, setNombre] = useState(formula.nombre)
   const renombrar = useAction(renombrarFormulaDelOrigen)
   const envio = useEnvioConVersion({
@@ -45,8 +45,7 @@ export function ModalDeRenombrar({ abierto, alCerrar, origenId, formula }: Props
       ),
     alGuardar: () => {
       avisarExito(`Ahora se llama «${nombre.trim()}».`)
-      alCerrar()
-      router.refresh()
+      cerrarYReleer()
     },
   })
   return (

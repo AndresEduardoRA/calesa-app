@@ -1,7 +1,6 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { useApertura } from '@/shared/ui/use-apertura'
 import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
 import { useRevisionAlAbrir } from '@/shared/ui/use-revision-al-abrir'
@@ -26,7 +25,7 @@ import {
 export const MOTIVO_NO_ESTA = 'Esa fórmula ya no está en la lista: recarga para ver cómo quedó.'
 
 // Un panel de una fórmula del origen por la URL (`?panel=<panel>&formula=<id>`): se revisa al llegar (una fórmula que no está en lo leído no se abre: se avisa y
-// se limpia la URL) y cada apertura aceptada empieza de cero (`apertura`, la `key` de lo de adentro). Se monta recién al abrirse por primera vez.
+// se limpia la URL) y cada apertura aceptada empieza de cero (`apertura`, la `key` de lo de adentro).
 function usePanelDeLaFormula(panel: string, formulas: readonly FormulaDeLaLista[]) {
   const url = usePanelPorUrl(panel, [CLAVE_DE_LA_FORMULA])
   const id = url.valor(CLAVE_DE_LA_FORMULA)
@@ -41,10 +40,10 @@ function usePanelDeLaFormula(panel: string, formulas: readonly FormulaDeLaLista[
   // Mientras se va (cerrado), conserva la fórmula que mostraba.
   const mostrada = useUltimo(abierto ? formula : null)
   return {
+    nombre: panel,
     abierto,
     formula: mostrada,
     apertura,
-    montado: useAbiertoAlgunaVez(abierto),
     abrir: (formulaId: string) => {
       url.abrir({ [CLAVE_DE_LA_FORMULA]: formulaId })
     },
@@ -65,7 +64,7 @@ type Args = {
   volverALaLista: boolean
 }
 
-// Los cuatro paneles de una fórmula (Renombrar, Activar, Archivar y Eliminar), montados una vez por pantalla y abiertos por la URL, y el «⋯» de cada fórmula que
+// Los cuatro paneles de una fórmula (Renombrar, Activar, Archivar y Eliminar), abiertos por la URL y montados de a uno (el último que se abrió), y el «⋯» de cada fórmula que
 // los abre (`menuDeLaFormulaDelOrigen()`): el mismo en la fila de la lista y en la cabeza del editor.
 export function usePanelesDeLaFormula({
   origen,
@@ -82,6 +81,11 @@ export function usePanelesDeLaFormula({
   const activar = usePanelDeLaFormula(PANEL_ACTIVAR_FORMULA, formulas)
   const archivar = usePanelDeLaFormula(PANEL_ARCHIVAR_FORMULA, formulas)
   const eliminar = usePanelDeLaFormula(PANEL_ELIMINAR_FORMULA, formulas)
+  // Sólo el último panel que se abrió queda montado: un Confirmar cerrado que sigue montado deja trabado el siguiente que se abre en la misma
+  // pantalla (Base UI no lo cierra al entrar). El último se conserva para que termine de irse.
+  const ultimo = useUltimo(
+    [renombrar, activar, archivar, eliminar].find((p) => p.abierto)?.nombre ?? null,
+  )
   const menuDe = (formula: FormulaDeLaLista) =>
     menuDeLaFormulaDelOrigen(formula, {
       alRenombrar: () => renombrar.abrir(formula.id),
@@ -92,7 +96,7 @@ export function usePanelesDeLaFormula({
     })
   const paneles = (
     <>
-      {renombrar.montado && renombrar.formula ? (
+      {ultimo === renombrar.nombre && renombrar.formula ? (
         <ModalDeRenombrarDiferido
           key={renombrar.apertura}
           abierto={renombrar.abierto}
@@ -101,7 +105,7 @@ export function usePanelesDeLaFormula({
           formula={renombrar.formula}
         />
       ) : null}
-      {activar.montado && activar.formula ? (
+      {ultimo === activar.nombre && activar.formula ? (
         <ModalDeActivarDiferido
           key={activar.apertura}
           abierto={activar.abierto}
@@ -111,7 +115,7 @@ export function usePanelesDeLaFormula({
           activa={activa}
         />
       ) : null}
-      {archivar.montado && archivar.formula ? (
+      {ultimo === archivar.nombre && archivar.formula ? (
         <ConfirmarArchivarDiferido
           key={archivar.apertura}
           abierto={archivar.abierto}
@@ -121,7 +125,7 @@ export function usePanelesDeLaFormula({
           volverALaLista={volverALaLista}
         />
       ) : null}
-      {eliminar.montado && eliminar.formula ? (
+      {ultimo === eliminar.nombre && eliminar.formula ? (
         <ConfirmarEliminarDiferido
           key={eliminar.apertura}
           abierto={eliminar.abierto}
