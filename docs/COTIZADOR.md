@@ -860,10 +860,14 @@ filas de 16 a 240 px (hasta 120) con `ocultar_si` `nunca` | `no_aplica` | `no_ap
 posición sin celda es una celda vacía sin estilo. **Contenido:** `{tipo: 'texto', texto}` (0 a 300 caracteres, sin `{{`: un texto no mezcla texto y
 variables), `{tipo: 'dato', variable}` (`empresa_nombre` —el nombre de la empresa de sus ajustes—, `fecha_larga`, `numero`, `titulo` —el título de la cotización sin el de respaldo «Cotización n.º N»,
 `tituloAparteDelNumero()`; en la hoja nueva, el que se está escribiendo—, `titulo_opcion`, `asesor_nombre`, `asesor_iniciales`, `cliente_nombre`,
-`vehiculo_titulo`, `vehiculo_lote`, `vehiculo_vin`, `vence_el`, `modo_tc`), `{tipo: 'dato', nodo, mostrar}` (`monto`, `etiqueta`, `descripcion`,
+`vehiculo_titulo`, `vehiculo_lote`, `vehiculo_vin`, `vence_el`, `modo_tc`, `asesor_telefono` —el WhatsApp del asesor tal como lo guardó en su perfil—,
+`asesor_cargo`), `{tipo: 'dato', nodo, mostrar}` (`monto`, `etiqueta`, `descripcion`,
 `porcentaje` —de un nodo de un par: el `porcentaje_de` o su `pct`—, `tc_nombre`, `tc_valor` y `plazo` —del grupo del nodo—), `{tipo: 'logo'}` (sólo el
-logo de la empresa, sin el nombre, entero en la celda menos su relleno y alineado por `alinear` y `alinear_vertical`, en el HTML, el PDF y la imagen) o
-`{tipo: 'vacio'}`. **Estilo** (todo opcional): `fondo` y `texto` (una clave del catálogo de colores o `auto`, por omisión), `negrita`, `cursiva`,
+logo de la empresa, sin el nombre, entero en la celda menos su relleno y alineado por `alinear` y `alinear_vertical`, en el HTML, el PDF y la imagen),
+`{tipo: 'foto_del_asesor'}` (la foto de perfil del asesor, ubicada como el logo; sin foto, o si no carga, sus iniciales en un círculo del lado menor de la
+caja, con borde de 1,5 px y letra de 0,4 × el diámetro en el color del texto de la celda: `circuloDeLasIniciales()`) o `{tipo: 'vacio'}`. **El asesor** de
+las variables `asesor_*` y de la foto es **quien mira o comparte la tarjeta** (`leerAsesorQueMira()`: `perfiles` por PK; con «Ver como», la persona real),
+nunca quien la creó, que es el autor («Creado por» de «Compartir»): la misma guardada dice «Ana» si la mira Ana y «Luis» si la mira Luis. **Estilo** (todo opcional): `fondo` y `texto` (una clave del catálogo de colores o `auto`, por omisión), `negrita`, `cursiva`,
 `tamano` (10, 11, 12, 14, 16, 18, 22 o 28 px; 12 por omisión), `alinear` (izquierda por omisión), `alinear_vertical` (centro por omisión) y `bordes`
 (`{todos?, arriba?, derecha?, abajo?, izquierda?}`, cada lado `ninguno` | `fino` | `grueso`; un lado gana sobre `todos`). Nunca un hex: `fondo: auto`
 es blanco y `texto: auto`, #1b2130 o blanco, el de más contraste sobre el fondo; un color borrado del catálogo se dibuja `auto`. **Tope: 24 KiB
@@ -972,7 +976,7 @@ pierde los microsegundos) y pasan en serie por un candado por origen (`pg_adviso
   de los anchos de la plantilla, así no repite la regla de qué fila se oculta.
 - **La referencia** (`ReferenciaDeLaTarjeta`, núcleo): la compone `src/app` (`[origen]/tarjeta/referencia.ts`, `server-only`, nunca lanza) como el PDF:
   `leerListadoDeCotizaciones()` con `UNA` (la más reciente que quien configura ve, sin papelera, por `cotizaciones_origen_creado_idx`), la hoja guardada
-  con su primer recálculo, el cliente, el vehículo y el asesor por PK y los ajustes, y `referenciaPlana(calculoDeLoGuardado(…))`. Sin estados (el
+  con su primer recálculo, el cliente y el vehículo por PK, el asesor (quien configura) y los ajustes, y `referenciaPlana(calculoDeLoGuardado(…))`. Sin estados (el
   recálculo falló) es `no_se_leyo`: la tarjeta caería a la de por omisión. La página la pide sin esperarla y `SeccionDeLaPlantilla` la espera en paralelo
   con la plantilla, y la recorta a los ids del contexto reducido (`recortarLaReferencia()`). Sin cotización o ilegible, las cifras de ejemplo: la fila
   n-ésima con nodo vale `(n mod 8 + 1) × 250` USD, cada `pct` 5 %, cada tipo de cambio 6,96 y el total es la suma de los miembros. `?referencia=ejemplo`

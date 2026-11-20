@@ -21,18 +21,18 @@ vi.mock('@/shared/lib/supabase/server', () => ({
   ),
 }))
 
-import { getAsesorDeLaCotizacion } from './asesor-de-la-cotizacion'
+import { getAutorDeLaCotizacion } from './autor-de-la-cotizacion'
 
 const ID = '2f1c3a4b-5d6e-4f70-8a9b-0c1d2e3f4a5b'
 
-describe('getAsesorDeLaCotizacion: a quien creó la cotización', () => {
+describe('getAutorDeLaCotizacion: a quien creó la cotización', () => {
   beforeEach(() => {
     lecturas.length = 0
     fila = { data: [], error: null }
   })
 
   it('pide la columna embebida del autor por clave primaria con limit(1)', async () => {
-    await getAsesorDeLaCotizacion(ID)
+    await getAutorDeLaCotizacion(ID)
     expect(lecturas).toEqual([
       ['cotizaciones', 'perfiles!cotizaciones_creado_por_fkey(nombre, email)', 'id', ID, 1],
     ])
@@ -40,21 +40,21 @@ describe('getAsesorDeLaCotizacion: a quien creó la cotización', () => {
 
   it('da el nombre o, sin él, la parte local del correo', async () => {
     fila = { data: [{ perfiles: { nombre: 'Ana Pérez', email: 'ana@x.test' } }], error: null }
-    expect(await getAsesorDeLaCotizacion(ID)).toEqual({ ok: true, data: 'Ana Pérez' })
+    expect(await getAutorDeLaCotizacion(ID)).toEqual({ ok: true, data: 'Ana Pérez' })
     fila = { data: [{ perfiles: { nombre: ' ', email: 'ana@x.test' } }], error: null }
-    expect(await getAsesorDeLaCotizacion(ID)).toEqual({ ok: true, data: 'ana' })
+    expect(await getAutorDeLaCotizacion(ID)).toEqual({ ok: true, data: 'ana' })
   })
 
   it('sin fila o sin autor, nulo', async () => {
-    expect(await getAsesorDeLaCotizacion(ID)).toEqual({ ok: true, data: null })
+    expect(await getAutorDeLaCotizacion(ID)).toEqual({ ok: true, data: null })
     fila = { data: [{ perfiles: null }], error: null }
-    expect(await getAsesorDeLaCotizacion(ID)).toEqual({ ok: true, data: null })
+    expect(await getAutorDeLaCotizacion(ID)).toEqual({ ok: true, data: null })
   })
 
   it('un error de la base o una forma rara es un fallo, sin su mensaje', async () => {
     fila = { data: null, error: { message: 'boom', code: 'XX000', details: '', hint: '' } }
-    expect((await getAsesorDeLaCotizacion(ID)).ok).toBe(false)
+    expect((await getAutorDeLaCotizacion(ID)).ok).toBe(false)
     fila = { data: [{ otra: 1 }], error: null }
-    expect((await getAsesorDeLaCotizacion(ID)).ok).toBe(false)
+    expect((await getAutorDeLaCotizacion(ID)).ok).toBe(false)
   })
 })

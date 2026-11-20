@@ -17,7 +17,8 @@ import {
   type Geometria,
 } from '../../entities/tarjeta/geometria-de-la-tarjeta'
 import { lecturaRetocada } from '../../entities/tarjeta/retoques/aplicar-retoques'
-import { getAsesorDeLaCotizacion } from '../../infra/tarjeta/asesor-de-la-cotizacion'
+import { getAsesorQueMira } from '../../infra/tarjeta/asesor-que-mira'
+import { getAutorDeLaCotizacion } from '../../infra/tarjeta/autor-de-la-cotizacion'
 import { setRetoques } from '../../infra/tarjeta/retoques'
 import { fotoParaDibujar, logoParaDibujar } from '../../infra/tarjeta/logo-de-la-tarjeta'
 import {
@@ -29,8 +30,11 @@ import {
 import { getTarjeta } from '../../infra/tarjeta/tarjeta'
 import { getVehiculoDeLaCotizacion } from '../../infra/tarjeta/vehiculo-de-la-cotizacion'
 
-// A quien creó una cotización guardada, para «Asesor:» de su tarjeta (4.18-2, P2 a).
-export const leerAsesorDeLaCotizacion = getAsesorDeLaCotizacion
+// El asesor de la tarjeta: quien la mira o la comparte (su nombre, su WhatsApp, su cargo y la ruta de su foto), con `cache()` por request.
+export const leerAsesorQueMira = getAsesorQueMira
+
+// El autor de una cotización guardada (quien la creó), para «Creado por» de «Compartir».
+export const leerAutorDeLaCotizacion = getAutorDeLaCotizacion
 
 // El vehículo de una cotización guardada (por clave primaria, sin la papelera), para las fotos de «Compartir la cotización».
 export const leerVehiculoDeLaCotizacion = getVehiculoDeLaCotizacion

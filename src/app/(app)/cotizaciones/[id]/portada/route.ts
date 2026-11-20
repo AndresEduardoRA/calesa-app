@@ -15,7 +15,7 @@ import {
 import { requerirSesion } from '@/modules/equipo'
 import type { Permisos } from '@/shared/lib/permisos'
 import {
-  asesorDe,
+  asesorQueMira,
   clienteDe,
   oNulo,
   vehiculoDe,
@@ -78,13 +78,12 @@ async function imagen(bytes: Uint8Array<ArrayBuffer>, clave: string | null, anch
 // Lo que dibuja la portada de quien no ve todo: lo que esa persona ve, como el PDF (el cliente sólo con `leads.ver`; un error al leerlo, sin ese dato).
 async function contextoPropio(
   permisos: Permisos,
-  id: string,
   cotizacion: { leadId: string | null; vehiculoId: string | null },
 ): Promise<ContextoCompartido> {
   const [cliente, vehiculo, asesor] = await Promise.all([
     oNulo(clienteDe(permisos, cotizacion.leadId)),
     oNulo(vehiculoDe(cotizacion.vehiculoId)),
-    asesorDe(id),
+    asesorQueMira(),
   ])
   return { cliente: cliente?.nombre ?? null, vehiculo: vehiculoDeLaTarjeta(vehiculo), asesor }
 }
@@ -103,7 +102,7 @@ async function entregarArmada(
   const compartido = que.contexto
   const armada = await armarLaPortada(
     id,
-    (hoja) => compartido ?? contextoPropio(permisos, id, hoja.cotizacion),
+    (hoja) => compartido ?? contextoPropio(permisos, hoja.cotizacion),
   )
   if (!armada.ok) {
     return falla(armada.error.codigo)

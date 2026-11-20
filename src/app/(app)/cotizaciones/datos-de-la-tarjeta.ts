@@ -1,17 +1,19 @@
 import {
-  leerAsesorDeLaCotizacion,
+  leerAsesorQueMira,
+  leerAutorDeLaCotizacion,
   tituloAparteDelNumero,
   tituloDeLaCotizacion,
   type AsesorDeLaTarjeta,
 } from '@/modules/cotizaciones'
 import { leerClienteElegido } from '@/modules/leads'
 import { leerVehiculo } from '@/modules/vehiculos'
+import { urlPublicaONull } from '@/shared/lib/almacen'
 import { datosO } from '@/shared/lib/errores'
 import { puede, type Permisos } from '@/shared/lib/permisos'
 
 // Lo que una guardada lee para su tarjeta y la comparten su página y la ruta de su PDF: el cliente (sólo con `leads.ver`, y si quien mira lo ve), el vehículo (si
-// lo ve) y quien la creó. Un error al leer el cliente o el vehículo sube (la página lo lleva a su `error.tsx`); la ruta del PDF lo pasa por `oNulo()` y el PDF
-// sale sin ese dato. Un error al leer el asesor lo deja sin nombrar.
+// lo ve) y el asesor, que es quien mira. Un error al leer el cliente o el vehículo sube (la página lo lleva a su `error.tsx`); la ruta del PDF lo pasa por `oNulo()`
+// y el PDF sale sin ese dato. Un error al leer el asesor lo deja sin nombrar.
 export async function clienteDe(permisos: Permisos, leadId: string | null) {
   return leadId === null || !puede(permisos, 'leads.ver')
     ? null
@@ -22,11 +24,20 @@ export async function vehiculoDe(vehiculoId: string | null) {
   return vehiculoId === null ? null : datosO(await leerVehiculo(vehiculoId))
 }
 
-export async function asesorDe(id: string): Promise<AsesorDeLaTarjeta | null> {
-  const lectura = await leerAsesorDeLaCotizacion(id)
-  return lectura.ok && lectura.data !== null
-    ? { nombre: lectura.data, telefono: null, cargo: null, foto: null }
-    : null
+// El asesor de la tarjeta: quien la mira o la comparte (también en la hoja nueva y con «Ver como»), con su foto de `avatares` como URL pública.
+export async function asesorQueMira(): Promise<AsesorDeLaTarjeta | null> {
+  const lectura = await leerAsesorQueMira()
+  if (!lectura.ok || lectura.data === null) {
+    return null
+  }
+  const { fotoRuta, ...asesor } = lectura.data
+  return { ...asesor, foto: urlPublicaONull('avatares', fotoRuta) }
+}
+
+// El autor de una guardada (quien la creó), para «Creado por» de «Compartir»; un error lo deja sin nombrar.
+export async function autorDe(id: string): Promise<string | null> {
+  const lectura = await leerAutorDeLaCotizacion(id)
+  return lectura.ok ? lectura.data : null
 }
 
 // El título de la tarjeta y del PDF de una guardada: el guardado (la tarjeta dibuja lo guardado), sin el de respaldo «Cotización n.º N», que ya escribe el número.

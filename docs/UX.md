@@ -1443,7 +1443,9 @@ tarjetas, el resumen y la ficha del vehículo). Lo abre toda persona que ve la c
   completa en segundo plano; una que no baja se desmarca con «No se pudo bajar la foto N.»; una miniatura que no carga deja el hueco con el auto. Si la lista no
   llega: «No se pudieron leer las fotos.» con «Reintentar».
 - **«Texto»:** formato «Simple | WhatsApp | Facebook | TikTok» (por defecto «Simple») y, sólo con un patio conocido y subasta, «Hora de <ciudad de la
-  empresa> | Hora del patio»; el texto de sólo lectura («Armando el texto…» mientras llega; si falla, «No se pudo armar el texto.» con «Reintentar»).
+  empresa> | Hora del patio»; el texto de sólo lectura («Armando el texto…» mientras llega; si falla, «No se pudo armar el texto.» con «Reintentar»). El texto
+  termina con la firma de quien comparte: «Asesor: <nombre>, <cargo>» y «WhatsApp: <número tal como lo guardó>»; sin cargo, sólo el nombre; sin WhatsApp, sin
+  esa línea; si su perfil no se leyó, sin firma. La imagen y el PDF también lo nombran a él.
 - **Pie:** «Creado por <autor>» (sin autor, no va) y los botones. Celular con el menú del sistema (que comparte archivos): «Compartir» (principal; la portada o
   las fotos marcadas y el texto), «Copiar texto» y «Descargar PDF», en columna a lo ancho y a 44 px. Escritorio: «Copiar imagen» (una sola imagen: con fotos,
   una marcada), «Descargar imagen» (la portada en PNG o cada foto marcada), «Copiar texto» y «Descargar PDF», en una fila que se parte. Lo apagado dice su

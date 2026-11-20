@@ -15,7 +15,7 @@ export function tarjetaDeLaHojaNueva({
 }: {
   elegido: { vehiculo: { titulo: string; lote: string | null; vin: string | null } } | null
   cliente: { nombre: string } | null
-  asesor: AsesorDeLaTarjeta
+  asesor: AsesorDeLaTarjeta | null
 }) {
   return {
     vehiculo: vehiculoDeLaTarjeta(elegido === null ? null : elegido.vehiculo),

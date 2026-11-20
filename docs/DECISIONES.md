@@ -617,6 +617,14 @@ las trampas, en `docs/LECCIONES.md`.
   satori no leen (el WebP con que se suben los logos, un SVG con estilos) lo convierte a PNG el servidor con `sharp` al dibujar, hasta 1.024 px, como el tope
   de un logo raster; un SVG que nombra otro archivo no se dibuja (leería algo sin tope ni espera). Convertir al dibujar y no al subir deja servir los logos
   ya subidos sin migrarlos. Si el logo no carga en el lienzo del editor, el editor lo avisa con «Abrir Empresa».
+- **El asesor de la tarjeta es quien la mira o la comparte, no quien la creó.** Una cotización la comparte cualquiera que la ve, y el cliente escribe a quien
+  se la mandó: la tarjeta, el PDF, la imagen y el texto de «Compartir» nombran a quien los pide, con su WhatsApp, su cargo y su foto de perfil
+  (`leerAsesorQueMira()`: `perfiles` por PK, legible para todo usuario activo; `cotizaciones` no importa `web`, que ya leía esos campos). Quien la creó es el
+  autor («Creado por»). Con «Ver como», la persona real: la perspectiva cambia permisos, no quién comparte. El teléfono va tal cual lo guardó (E.164,
+  «+591…»): es lo que valida su ficha y lo que abre WhatsApp. En el texto va al final, como firma («Asesor: nombre, cargo» y «WhatsApp: …»).
+- **La foto del asesor es un contenido de celda, no una variable de texto.** Se encaja como el logo (`contain`, alineada como la celda, con la misma bajada con
+  tope y 2 s y el mismo paso a PNG de `sharp`: satori no dibuja WebP); sin foto, o si no carga, sus iniciales en un círculo del lado menor de la caja, con
+  borde de 1,5 px y letra de 0,4 × el diámetro en el color del texto de la celda. Una silueta genérica diría menos que las iniciales.
 - **Con qué nace el editor de plantilla:** el borrador; si no hay (o no se lee), copia de la publicada; si no, la omisión. Una versión ilegible no se edita a
   medias. El editor escribe **sólo la forma 2**: una forma 1 se alinea con la fórmula y se convierte al abrirla, lo dice y no se guarda sola; si lo
   convertido no entra en la grilla (120 filas, 1.000 celdas), se toman los primeros 4 miembros de cada grupo y, si tampoco, sólo el total. El PT409 no dice

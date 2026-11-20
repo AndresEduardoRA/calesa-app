@@ -24,7 +24,7 @@ const pdf = vi.fn()
 // `contextoDeLaPagina()` devuelve lo que recibe: lo que se prueba es qué le pasa la ruta (el formato lo prueba su entidad).
 vi.mock('@/modules/cotizaciones', () => ({
   leerHojaDeUnaGuardada: (id: string) => leerHoja(id),
-  leerAsesorDeLaCotizacion: (id: string) => leerAsesor(id),
+  leerAsesorQueMira: () => leerAsesor(),
   pdfDeUnaGuardada: (entrada: unknown) => pdf(entrada),
   contextoDeLaPagina: (pagina: unknown, opciones: unknown) => ({ pagina, opciones }),
   // La regla del título que se muestra, en corto (la prueba de verdad es la de `entities/`): el título, el vehículo o el número; junto al número, sin el número.
@@ -92,7 +92,10 @@ beforeEach(() => {
   vi.setSystemTime(new Date('2026-12-25T15:00:00Z'))
   sesion.mockResolvedValue(activa)
   leerHoja.mockResolvedValue({ ok: true, data: { hoja, inicial } })
-  leerAsesor.mockResolvedValue({ ok: true, data: 'Ana Pérez' })
+  leerAsesor.mockResolvedValue({
+    ok: true,
+    data: { nombre: 'Ana Pérez', telefono: '+59170000001', cargo: 'Asesora', fotoRuta: null },
+  })
   leerVehiculo.mockResolvedValue({
     ok: true,
     data: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
@@ -171,7 +174,7 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
   it('arma el contexto: el título, el vehículo con lote y VIN, el asesor, el vencimiento, la empresa, el logo y las fechas en la zona de la empresa (el último guardado, no hoy)', async () => {
     await pedir()
     expect(leerHoja).toHaveBeenCalledWith(ID)
-    expect(leerAsesor).toHaveBeenCalledWith(ID)
+    expect(leerAsesor).toHaveBeenCalled()
     expect(leerVehiculo).toHaveBeenCalledWith(VEHICULO)
     expect(pdf).toHaveBeenCalledWith({
       lectura: { hoja, inicial },
@@ -181,7 +184,7 @@ describe('GET /cotizaciones/[id]/pdf: el PDF', () => {
           // Sin `leads.ver`, el cliente no se lee ni se nombra.
           cliente: null,
           vehiculo: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
-          asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
+          asesor: { nombre: 'Ana Pérez', telefono: '+59170000001', cargo: 'Asesora', foto: null },
           numero: 12,
           empresa: 'Importadora Prueba',
           venceEl: '2026-11-20',

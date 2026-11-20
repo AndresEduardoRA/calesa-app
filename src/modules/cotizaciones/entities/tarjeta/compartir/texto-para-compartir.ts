@@ -1,9 +1,9 @@
 // El texto de «Compartir la cotización», listo para pegar, armado en el navegador con lo que mandó el servidor (`DatosParaCompartir`): cambiar de formato o de zona
 // no vuelve a pedir nada. En el orden de V1: el título de la cotización; del vehículo, su título (si el de la cotización no es ese mismo), el lote, el año, el
-// kilometraje, el VIN, el enlace y el cierre de la subasta en la zona elegida (sólo si todavía no pasó); los conceptos de la tarjeta con su monto; y el total con su
-// modo. Lo que falta no deja una línea. Los formatos:
+// kilometraje, el VIN, el enlace y el cierre de la subasta en la zona elegida (sólo si todavía no pasó); los conceptos de la tarjeta con su monto; el total con su
+// modo; y, como firma, el asesor (quien comparte: «Asesor: nombre, cargo» y «WhatsApp: …», tal como lo guardó). Lo que falta no deja una línea. Los formatos:
 // - «Simple»: sin marcas y sin líneas en blanco;
-// - «Facebook» y «TikTok»: sin marcas, una línea en blanco entre bloques (título · vehículo · conceptos · total);
+// - «Facebook» y «TikTok»: sin marcas, una línea en blanco entre bloques (título · vehículo · conceptos · total · asesor);
 // - «WhatsApp»: como Facebook, con el título y la línea del total en negrita (`*…*`; un texto que ya trae `*` va sin marca).
 import { ciudadDeLaZona, formatearDiaLargo, formatearHora } from '@/shared/lib/fechas'
 import { formatearNumero } from '@/shared/lib/formato'
@@ -103,6 +103,16 @@ function bloquesDeLasVersiones(datos: DatosParaCompartir, formato: FormatoDeText
   ]
 }
 
+// La firma: quien comparte, con su cargo, y su WhatsApp.
+function bloqueDelAsesor(datos: DatosParaCompartir): string[] {
+  const a = datos.asesor
+  if (a === null) return []
+  return [
+    a.cargo === null ? `Asesor: ${a.nombre}` : `Asesor: ${a.nombre}, ${a.cargo}`,
+    a.telefono === null ? null : `WhatsApp: ${a.telefono}`,
+  ].filter((l): l is string => l !== null)
+}
+
 export function textoParaCompartir(datos: DatosParaCompartir, opciones: Opciones): string {
   const { formato } = opciones
   const cifras = datos.versiones
@@ -112,6 +122,7 @@ export function textoParaCompartir(datos: DatosParaCompartir, opciones: Opciones
     [negrita(datos.titulo.texto, formato)],
     bloqueDelVehiculo(datos, opciones),
     ...cifras,
+    bloqueDelAsesor(datos),
   ].filter((b) => b.length > 0)
   return bloques.map((b) => b.join('\n')).join(formato === 'simple' ? '\n' : '\n\n')
 }

@@ -470,6 +470,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Celda de la tarjeta** — `CeldaDeLaTarjeta`, `definicion.celdas[]` de la forma 2: un rectángulo de la cuadrícula con su posición (`fila`,
   `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo, foto del asesor o vacío) y su estilo. La de logo dibuja
   sólo el logo de la empresa, a la medida de la celda; su nombre es el dato «Nombre de la empresa» (`empresa_nombre`). No es la **Celda (de la hoja)**.
+- **Asesor (de la tarjeta)** — `AsesorDeLaTarjeta` (`ContextoDeLaCotizacion.asesor`: nombre, teléfono, cargo y foto), `leerAsesorQueMira()`, variables
+  `asesor_*`: quien mira o comparte la tarjeta, su PDF o su texto, nunca quien creó la cotización (ese es el **autor**, «Creado por»). Con «Ver como», la
+  persona real. Sus datos salen de su perfil: `whatsapp_web`, `cargo_web` y `avatar_ruta`.
+- **Autor (de una cotización)** — `cotizaciones.creado_por`, `leerAutorDeLaCotizacion()`: quien la creó; «Creado por» del panel de compartir, de la lista y
+  del historial. No es el asesor de la tarjeta.
 - **Foto del asesor** — `{tipo: 'foto_del_asesor'}` de una celda de la tarjeta, `<FotoDelAsesorDeLaCelda>`, `circuloDeLasIniciales()`: la foto de perfil
   del **asesor de la tarjeta** (quien la mira o la comparte), entera (`contain`) en la celda y alineada como ella; sin foto, o si no carga, sus iniciales
   en un círculo. En el editor, un contenido más («Foto del asesor»), como el logo.
@@ -515,7 +520,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `…/compartir/fotos`, `?panel=compartir` (en el detalle) y `?panel=compartir&para=<id>` (fuera de él), pestaña en `?compartir=texto`: el panel «Compartir
   cotización» para mandarle la cotización a un cliente. La pestaña **«Imagen»** ofrece **«Cotización»** (la portada de la cotización) o **«Fotos»** (las del
   vehículo, para marcar); la pestaña **«Texto»**, un **formato** («Simple», «WhatsApp», «Facebook», «TikTok») y una **zona** («Hora de <la ciudad de la
-  empresa>» o «Hora del patio»). Botones: «Compartir» (el menú del sistema del celular), «Copiar imagen», «Descargar imagen», «Copiar texto» y «Descargar PDF».
+  empresa>» o «Hora del patio»); el texto firma con el asesor (quien comparte: «Asesor: nombre, cargo» y «WhatsApp: …»). Botones: «Compartir» (el menú del sistema del celular), «Copiar imagen», «Descargar imagen», «Copiar texto» y «Descargar PDF».
   Sólo lleva lo del nivel «todos» (lo que dibuja la tarjeta de la cotización). No es el **Compartir** de un lead ni **Compartir los tipos de cambio**.
 - **Revisión** — `cotizaciones_revisiones`: diff de cada edición.
 - **Reporte** — `cotizaciones_reportes` / `cotizacion_reportar()`, `cotizacion_reporte_retirar()`: marca de problema, uno por persona, con

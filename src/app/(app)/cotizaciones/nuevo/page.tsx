@@ -17,13 +17,14 @@ import {
   ProveedorDelTitulo,
 } from '@/modules/cotizaciones/pantallas/cotizar'
 import { HUECOS_DE_FORMULA_EN_LA_HOJA } from '@/modules/cotizaciones/pantallas/formula-hoja'
-import { nombreVisible, requerirSesion } from '@/modules/equipo'
+import { requerirSesion } from '@/modules/equipo'
 import { getOrigenes, type OrigenResumen } from '@/modules/origenes'
 import { datosO } from '@/shared/lib/errores'
 import type { Permisos } from '@/shared/lib/permisos'
 import { unParametro } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
 import { ConProveedorDeLaHoja } from '../con-proveedor-de-la-hoja'
+import { asesorQueMira, oNulo } from '../datos-de-la-tarjeta'
 import { idDeUrl, type Quien, type VehiculoDeLaUrl } from '../vehiculo-de-la-hoja'
 import { BarrasDeLaHoja } from './barras-de-la-hoja'
 import { PantallaDeLaHoja } from './pantalla-de-la-hoja'
@@ -61,6 +62,8 @@ async function Hoja({
   parametros: PageProps<'/cotizaciones/nuevo'>['searchParams']
 }) {
   await connection()
+  // El asesor de la tarjeta (quien cotiza) se pide ya y se espera junto a las lecturas de la hoja: nunca antes que ellas.
+  const asesor = oNulo(asesorQueMira())
   const [sesion, url] = await Promise.all([requerirSesion(), parametros])
   const origenes = origenesParaCotizar(sesion.permisos, datosO(await getOrigenes()))
   const origen = origenElegido(origenes, unParametro(url[CLAVE_DE_ORIGEN]))
@@ -70,13 +73,7 @@ async function Hoja({
     )
   }
   return (
-    <HojaDelOrigen
-      sesion={sesion}
-      asesor={{ nombre: nombreVisible(sesion), telefono: null, cargo: null, foto: null }}
-      url={url}
-      origenes={origenes}
-      origen={origen}
-    />
+    <HojaDelOrigen sesion={sesion} asesor={asesor} url={url} origenes={origenes} origen={origen} />
   )
 }
 
@@ -171,16 +168,18 @@ async function HojaDelOrigen({
   origen,
 }: {
   sesion: Quien & { permisos: Permisos }
-  // «Asesor:» de la tarjeta: quien cotiza.
-  asesor: AsesorDeLaTarjeta
+  // El asesor de la tarjeta: quien cotiza (su nombre, su WhatsApp, su cargo y su foto), ya pedido.
+  asesor: Promise<AsesorDeLaTarjeta | null>
   url: Awaited<PageProps<'/cotizaciones/nuevo'>['searchParams']>
   origenes: readonly OrigenResumen[]
   origen: OrigenResumen
 }) {
   const lead = idDeUrl(url[CLAVE_DE_LEAD])
   const vehiculo = idDeUrl(url[CLAVE_DE_VEHICULO])
-  const { apertura, vehiculoSoltado, leido, conteo, alta, layout, cliente, inicialDeLaSegunda } =
-    await leerLoDeLaHoja(sesion, origen, { lead, vehiculo })
+  const [
+    { apertura, vehiculoSoltado, leido, conteo, alta, layout, cliente, inicialDeLaSegunda },
+    elAsesor,
+  ] = await Promise.all([leerLoDeLaHoja(sesion, origen, { lead, vehiculo }), asesor])
   // Un lead que no se ve se suelta, como el vehículo: ni la hoja ni las pestañas de origen lo llevan.
   const leadUsado = cliente?.id ?? null
   const dePestanas = { origenes, actual: origen.id, leadId: leadUsado, volverA: volverDe(url) }
@@ -214,7 +213,7 @@ async function HojaDelOrigen({
           origenId={origen.id}
           cotizacionId={null}
           permisos={sesion.permisos}
-          tarjeta={tarjetaDeLaHojaNueva({ elegido, cliente, asesor })}
+          tarjeta={tarjetaDeLaHojaNueva({ elegido, cliente, asesor: elAsesor })}
         >
           <PantallaDeLaHoja
             key={`${origen.id}:${leadUsado ?? '-'}:${vehiculoUsado ?? '-'}`}

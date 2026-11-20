@@ -187,7 +187,8 @@ consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|tablas`) y las action
   el Modo Live ni el botón ni la línea del «⋯»; por URL, el aviso. Lee `GET /cotizaciones/[id]/compartir` (`DatosParaCompartir`: `paraCompartirDeUnaGuardada()`
   da los montos de la tarjeta de lo guardado con `lineasDeLaTarjeta()`; `src/app` suma el vehículo con `zonaDelPatioDe()` de `vehiculos` y la subasta) y, al
   elegir «Fotos», `…/compartir/fotos` (`leerVehiculoDeLaCotizacion()` por `cotizaciones_pkey` y `leerGaleria()`); la portada, por su ruta con la caché del
-  navegador, pasada a PNG en el navegador. El texto lo arma `textoParaCompartir()` (puro); los motivos de los botones, `motivosDeCompartir()`. Desde el navegador,
+  navegador, pasada a PNG en el navegador. El texto lo arma `textoParaCompartir()` (puro), con la firma del asesor (quien comparte: `DatosParaCompartir.asesor`; «Creado por» es `autor`, de
+  `leerAutorDeLaCotizacion()`); los motivos de los botones, `motivosDeCompartir()`. Desde el navegador,
   por `areas/tarjeta/composicion-compartir.client.ts` (la importa sólo el panel). Lo genérico del navegador, `src/shared/lib/compartir.ts`.
 - **La portada de la cotización** (área `tarjeta`; `docs/COTIZADOR.md` › «La portada de la cotización»): `GET /cotizaciones/[id]/portada` (`rutaDeLaPortada(id)`,
   el mismo 404 que el PDF) lee `leerLaPortada()` (`cotizacion_portada`) y `queHacerConLaPortada()` decide: 304 con la ETag de hoy, bajar la guardada al día
@@ -272,7 +273,12 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   `cotizacion_tarjeta(p_formula)` al abrirse (5 min por versión) y dibuja `geometriaDeLaTarjeta()` (pura) con `<TarjetaDeCotizacion>`: un lienzo del ancho de
   la tarjeta con cada celda en posición absoluta (`<CeldaDeLaTarjeta>`, en orden de lectura, con `data-celda`, `data-fila`, `data-columna`, `data-nodo`,
   `data-mostrar`, `data-variable`, `data-color` y `data-total-usd`), escalado como una imagen (`useEscalaDeLaTarjeta()`, nunca agranda); la página manda título,
-  cliente, vehículo con lote y VIN, asesor, número, vencimiento, nombre de la empresa y logo (`PaginaDeLaTarjeta`). La celda logo es `<LogoDeLaCelda>`: sólo
+  cliente, vehículo con lote y VIN, asesor, número, vencimiento, nombre de la empresa y logo (`PaginaDeLaTarjeta`). **El asesor** (`AsesorDeLaTarjeta`: nombre,
+  teléfono, cargo y foto) es **quien mira o comparte**, nunca quien la creó (el autor): lo lee `leerAsesorQueMira()` (`perfiles` por PK con `cache()`; con «Ver
+  como», la persona real) y `src/app` lo arma con `asesorQueMira()` de `datos-de-la-tarjeta.ts` (la foto, URL pública de `avatares`) para la página de una
+  guardada, la hoja nueva (en paralelo con sus lecturas), el PDF (también el de la hermana), «Compartir» y la referencia del editor. La celda «Foto del
+  asesor» es `<FotoDelAsesorDeLaCelda>` (como el logo; sin URL o si no carga, `circuloDeLasIniciales()`; con `''`, las cifras de ejemplo, la muestra punteada
+  «Foto»). La celda logo es `<LogoDeLaCelda>`: sólo
   el logo (`next/image`, `data-logo-de-la-celda`), `contain` en la caja interior de la celda y alineado como ella; sin URL (las cifras de ejemplo), la muestra
   punteada «Logo»; si no carga, la celda queda vacía y llama a `alFallarElLogo` (el editor de la tarjeta lo avisa, con «Abrir Empresa» si quien mira tiene
   `empresa.ajustes.gestionar`, que baja de la página). «Vencida» va en los avisos del modal, no en la tarjeta. El pie:
@@ -429,7 +435,8 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   El título de la cotización es la variable `titulo` (`PaginaDeLaTarjeta.titulo`, `tituloAparteDelNumero()`; nunca de `cotizacion_tarjeta`): en la hoja nueva, el que se
   está escribiendo (`useTituloDeLaCotizacion()`). Los montos van con `formatearMonto()` y siempre con
   cifras aunque Live esté encendido: es lo que se entrega al cliente (la excepción a `<Monto>`, `docs/DECISIONES.md`). react-pdf se carga sólo al pedir un
-  PDF (`import()` en `areas/tarjeta/composicion.ts`) y nunca llega al navegador. El logo del PDF y de la imagen lo baja `logoParaDibujar()`
+  PDF (`import()` en `areas/tarjeta/composicion.ts`) y nunca llega al navegador. El logo y la foto del asesor del PDF y de la imagen los bajan a la vez
+  `logoParaDibujar()` y `fotoParaDibujar()` (sobre `imagenParaDibujar()`), sólo si la tarjeta los dibuja; el logo, `logoParaDibujar()`
   (`infra/tarjeta/logo-de-la-tarjeta.ts`) con tope (`PESO_MAXIMO_LOGO`) y 2 s, y llega como `Buffer` con sus medidas, nunca URL: PNG y JPEG de hasta 1.024 px y
   el SVG que react-pdf dibuja fiel, tal cual; lo demás que `sharp` lee (WebP, SVG con estilos, un raster grande), a PNG de hasta 1.024 px; un SVG que nombra
   otro archivo o lo que no se lee, sin logo. Los dos lo ubican con `cajaDelLogo()` (`entities/tarjeta/caja-del-logo.ts`). Los

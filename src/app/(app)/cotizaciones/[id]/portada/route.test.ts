@@ -43,7 +43,7 @@ vi.mock('@/modules/cotizaciones', async () => {
     bajarLaPortada: (ruta: string) => bajar(ruta),
     armarLaPortada: (id: string, contextoDe: unknown) => armar(id, contextoDe),
     guardarLaPortada: (entrada: unknown) => guardar(entrada),
-    leerAsesorDeLaCotizacion: (id: string) => leerAsesor(id),
+    leerAsesorQueMira: () => leerAsesor(),
     tituloDeLaCotizacion: () => null,
     tituloAparteDelNumero: () => null,
   }
@@ -113,7 +113,10 @@ beforeEach(() => {
     return { ok: true, data: { bytes: BYTES, guardable: true } }
   })
   guardar.mockResolvedValue({ ok: true, data: { guardada: true } })
-  leerAsesor.mockResolvedValue({ ok: true, data: 'Ana Pérez' })
+  leerAsesor.mockResolvedValue({
+    ok: true,
+    data: { nombre: 'Ana Pérez', telefono: '+59170000001', cargo: 'Asesora', fotoRuta: null },
+  })
   achicar.mockResolvedValue({ ok: true, data: CHICA })
   leerVehiculo.mockResolvedValue({
     ok: true,
@@ -259,7 +262,7 @@ describe('GET /cotizaciones/[id]/portada: la propia', () => {
     expect(contextoArmado).toEqual({
       cliente: null,
       vehiculo: { titulo: 'Toyota Hilux 2020', lote: '4455', vin: null },
-      asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
+      asesor: { nombre: 'Ana Pérez', telefono: '+59170000001', cargo: 'Asesora', foto: null },
     })
     expect(leerCliente).not.toHaveBeenCalled()
     expect(leerVehiculo).toHaveBeenCalledWith(VEHICULO)
@@ -279,7 +282,7 @@ describe('GET /cotizaciones/[id]/portada: la propia', () => {
     expect(contextoArmado).toEqual({
       cliente: 'Juan Pérez',
       vehiculo: null,
-      asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
+      asesor: { nombre: 'Ana Pérez', telefono: '+59170000001', cargo: 'Asesora', foto: null },
     })
   })
 
