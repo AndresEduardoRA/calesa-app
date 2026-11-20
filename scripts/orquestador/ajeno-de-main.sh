@@ -26,7 +26,7 @@ ajeno_slug() {
   local s=${1#./}
   s=${s#e2e/}
   s=${s%.spec.ts}
-  s=$(tr 'A-Z' 'a-z' <<<"$s" | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g')
+  s=$(tr '[:upper:]' '[:lower:]' <<<"$s" | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g')
   echo "${s:-spec}-$2"
 }
 
