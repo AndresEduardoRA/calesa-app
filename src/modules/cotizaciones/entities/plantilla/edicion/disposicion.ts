@@ -129,8 +129,9 @@ export function casillaEnElPunto(d: Disposicion, x: number, y: number): Pos | nu
   return fila === undefined || k < 0 ? null : { f: fila.indice, k }
 }
 
-// El espacio de la capa alrededor de la tarjeta, en px sin escalar: arriba las cabeceras de columna, a la izquierda las asas de fila.
-export const MARGEN_DEL_LIENZO = { arriba: 40, izquierda: 44 } as const
+// El espacio de la capa alrededor de la tarjeta, en px sin escalar: arriba las cabeceras de columna, a la izquierda las asas de fila y a la derecha el borde de la
+// última columna (sobresale 6 px).
+export const MARGEN_DEL_LIENZO = { arriba: 40, izquierda: 44, derecha: 8 } as const
 
 // Una caja de la tarjeta llevada a la capa: escalada y con el margen de las cabeceras y las asas.
 export const enLaCapa = (c: Caja, escala: number): Caja => ({

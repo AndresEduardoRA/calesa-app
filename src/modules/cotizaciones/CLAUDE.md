@@ -417,7 +417,8 @@ quien pide, anotar la subida y, para la policy del bucket, si se puede bajar), `
   publicar y descartar (`?panel=publicar-tarjeta|descartar-plantilla`) **viven fuera de la `key` del editor** para que «Recargar» tras un PT409 no pierda
   la nota; esa `key` cambia sólo con una versión que no es la que el editor acaba de guardar (`useClaveDelEditor()`): guardar no lo remonta y el historial sigue. El lienzo es un hueco: los tipos sin código de `entities/vista-previa-de-la-plantilla.ts` (`PropsDelLienzoDeLaPlantilla`,
   `GeometriaParaEditar`), que llena el área `tarjeta` (`LienzoDeLaPlantillaDiferido` por `pantallas/tarjeta-plantilla.ts`: dibuja con
-  `geometriaDeLaTarjeta()` y llama a `capa(g, escala)` y `debajo(g)`); la referencia (`entities/referencia-de-la-tarjeta.ts`, plana) llega recortada a los
+  `geometriaDeLaTarjeta()` y llama a `capa(g, escala)` y `debajo(g)`; «Ajustar» mide el contenedor del marco, `data-medida-del-lienzo` con `contain: inline-size`,
+  y deja el margen de la capa a los dos lados); la referencia (`entities/referencia-de-la-tarjeta.ts`, plana) llega recortada a los
   ids del contexto reducido (`recortarLaReferencia()`). Las operaciones se miden con los topes (manda el de 24 KiB) y la capa no toca el dibujo compartido.
 - **El PDF** dibuja la misma geometría que la tarjeta de esa guardada, en una página A4 escalada entera (`escalaDelPdf()`): lo guardado y sólo lo que la lectura nombra.
   El título de la cotización es la variable `titulo` (`PaginaDeLaTarjeta.titulo`, `tituloAparteDelNumero()`; nunca de `cotizacion_tarjeta`): en la hoja nueva, el que se
