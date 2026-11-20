@@ -8302,6 +8302,7 @@ export type Database = {
       _fdo_activada_por: { Args: { p_fdo: string }; Returns: string }
       _fdo_campos_que_faltan: { Args: { p_def: Json; p_origen: string }; Returns: Json }
       _fdo_de_trabajo: { Args: { p_crear: boolean; p_origen: string }; Returns: string }
+      _fdo_de_trabajo_leida: { Args: { p_origen: string }; Returns: string }
       _fdo_exigir_campos: { Args: { p_def: Json; p_origen: string }; Returns: undefined }
       _fdo_formula_en_blanco: { Args: Record<PropertyKey, never>; Returns: Json }
       _fdo_nombre: { Args: { p_nombre: string }; Returns: string }

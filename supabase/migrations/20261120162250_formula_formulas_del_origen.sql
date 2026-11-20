@@ -106,19 +106,26 @@ comment on column public.formulas.formula_del_origen_id is 'La fórmula del orig
 comment on column public.plantillas_tarjeta.formula_del_origen_id is 'La fórmula del origen de esta plantilla. Nula al insertar: la pone trg_fdo_asignar (la de trabajo del origen).';
 
 
--- La fórmula de trabajo de un origen: la activa o, si no hay, la más nueva sin archivar. Con `p_crear`, si el origen no tiene ninguna, crea
--- «Fórmula» (o «Fórmula 2»… si una archivada tiene el nombre). La llaman las RPC con el candado del origen tomado y el trigger de las
--- inserciones directas; dos que crean a la vez chocan en el nombre y la segunda relee la de la primera.
+-- La fórmula de trabajo de un origen, sin crearla: la activa o, si no hay, la más nueva sin archivar (la activa nunca está archivada). Estable:
+-- la leen `_fdo_de_trabajo()` y `origenes_resumen()`.
+create function public._fdo_de_trabajo_leida(p_origen uuid) returns uuid
+  language sql stable security definer set search_path = '' as $$
+  select coalesce(
+    (select d.id from public.formulas_del_origen d where d.origen_id = p_origen and d.activa),   -- formulas_del_origen_activa_unica
+    (select d.id from public.formulas_del_origen d                                              -- formulas_del_origen_origen_idx
+      where d.origen_id = p_origen and d.archivada_en is null order by d.creado_en desc, d.id desc limit 1));
+$$;
+comment on function public._fdo_de_trabajo_leida(uuid) is 'Interna: la fórmula de trabajo del origen sin crearla (la activa; si no hay, la más nueva sin archivar). docs/COTIZADOR.md › «Fórmulas del origen».';
+
+-- La fórmula de trabajo de un origen (`_fdo_de_trabajo_leida()`). Con `p_crear`, si el origen no tiene ninguna, crea «Fórmula» (o «Fórmula 2»…
+-- si una archivada tiene el nombre). La llaman las RPC con el candado del origen tomado y el trigger de las inserciones directas; dos que crean
+-- a la vez chocan en el nombre y la segunda relee la de la primera.
 create function public._fdo_de_trabajo(p_origen uuid, p_crear boolean) returns uuid
   language plpgsql security definer set search_path = '' as $$
 declare
   v_id uuid;
 begin
-  select d.id into v_id from public.formulas_del_origen d where d.origen_id = p_origen and d.activa;   -- formulas_del_origen_activa_unica
-  if v_id is null then
-    select d.id into v_id from public.formulas_del_origen d                                            -- formulas_del_origen_origen_idx
-     where d.origen_id = p_origen and d.archivada_en is null order by d.creado_en desc, d.id desc limit 1;
-  end if;
+  v_id := public._fdo_de_trabajo_leida(p_origen);
   if v_id is not null or not coalesce(p_crear, false) or p_origen is null then
     return v_id;
   end if;
@@ -261,6 +268,8 @@ alter table public.plantillas_tarjeta enable always trigger trg_fdo_asignar;
 
 revoke all on function public._fdo_de_trabajo(uuid, boolean) from public, anon, authenticated;
 grant execute on function public._fdo_de_trabajo(uuid, boolean) to service_role;
+revoke all on function public._fdo_de_trabajo_leida(uuid) from public, anon, authenticated;
+grant execute on function public._fdo_de_trabajo_leida(uuid) to service_role;
 revoke all on function public._fdo_resolver(uuid, uuid, boolean) from public, anon, authenticated;
 grant execute on function public._fdo_resolver(uuid, uuid, boolean) to service_role;
 revoke all on function public._publicada_de_la_activa(uuid) from public, anon, authenticated;
@@ -486,7 +495,7 @@ begin
   perform public.assert_permiso('cotizaciones.configurar', p_origen);
   -- Sin esperada, la publicada leída antes del candado (lo que quien llama tenía a la vista): si alguien publicó o activó mientras tanto, PT409.
   v_esperada := coalesce(p_publicada_esperada, (select f.id from public.formulas f
-                                                 where f.formula_del_origen_id = coalesce(p_formula_del_origen, public._fdo_de_trabajo(p_origen, false))
+                                                 where f.formula_del_origen_id = coalesce(p_formula_del_origen, public._fdo_de_trabajo_leida(p_origen))
                                                    and f.origen_id = p_origen and f.estado = 'publicada'));   -- formulas_publicada_unica
   perform pg_advisory_xact_lock(hashtextextended('formulas:' || p_origen::text, 0));
   v_fdo := public._fdo_resolver(p_origen, p_formula_del_origen, false);
@@ -537,7 +546,7 @@ begin
   end if;
   -- Sin esperada, la publicada leída antes del candado (lo que quien llama tenía a la vista): si alguien publicó o activó mientras tanto, PT409.
   v_esperada := coalesce(p_publicada_esperada, (select f.id from public.formulas f
-                                                 where f.formula_del_origen_id = coalesce(p_formula_del_origen, public._fdo_de_trabajo(p_origen, false))
+                                                 where f.formula_del_origen_id = coalesce(p_formula_del_origen, public._fdo_de_trabajo_leida(p_origen))
                                                    and f.origen_id = p_origen and f.estado = 'publicada'));   -- formulas_publicada_unica
   perform pg_advisory_xact_lock(hashtextextended('formulas:' || p_origen::text, 0));
   v_fdo := public._fdo_resolver(p_origen, p_formula_del_origen, false);
@@ -1952,9 +1961,9 @@ begin
     (select count(*)::int from public.fases f join public.flujos fl on fl.id = f.flujo_id where fl.origen_id = o.id and f.activa),
     exists (select 1 from public.formulas_del_origen fo where fo.origen_id = o.id and fo.activa),   -- formulas_del_origen_activa_unica
     (select count(*)::int from public.roles_permisos rp where rp.origen_id = o.id),
-    -- La de trabajo, sin crearla (`_fdo_de_trabajo()`, la misma regla que la pestaña Tarjeta); su publicada, por plantillas_publicada_unica.
+    -- La de trabajo (`_fdo_de_trabajo_leida()`, la misma regla que la pestaña Tarjeta); su publicada, por plantillas_publicada_unica.
     exists (select 1 from public.plantillas_tarjeta p
-             where p.estado = 'publicada' and p.formula_del_origen_id = (select public._fdo_de_trabajo(o.id, false)))
+             where p.estado = 'publicada' and p.formula_del_origen_id = (select public._fdo_de_trabajo_leida(o.id)))
   from public.origenes o
   order by o.orden, o.nombre;
 end;
