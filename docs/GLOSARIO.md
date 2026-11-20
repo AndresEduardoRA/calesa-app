@@ -481,6 +481,16 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tabla de referencia** — `tablas_referencia`, `_filas`: alimentan nodos tabla/tramo (impuestos, tramos, tarifas, depreciación).
 - **Publicar una tabla de referencia** — `tabla_referencia_publicar()`: reemplaza sus filas, sube `tablas_referencia.version` y publica la
   N+1 de cada fórmula que la usa con la copia congelada.
+- **Columna de una tabla de referencia** — un elemento de `tablas_referencia.columnas`: clave (no cambia), etiqueta (su nombre) y tipo número, año
+  o texto (no cambia).
+- **Crear una tabla de referencia** — `tabla_referencia_crear()`: nombre (de él sale la clave, que no cambia), para un origen o compartida, y sus
+  columnas; nace en la versión 1 sin filas. «Nueva tabla» en la pestaña Tablas o en Catálogos › Tablas compartidas.
+- **Cambiar las columnas** — `tabla_referencia_columnas()`: renombrar, ordenar, sumar y quitar columnas de una tabla; sube su versión sin
+  publicar la N+1 de ninguna fórmula y borra de las filas la clave quitada.
+- **Tabla desactivada** — `tablas_referencia.activa = false` (`tabla_referencia_desactivar()`): sale de las listas y de BUSCARV; no se deshace
+  desde la app y su clave queda tomada.
+- **Tabla o columna en uso** — `_tabla_referencia_usos()`: la nombra la fórmula publicada o el borrador de un origen que recibe la tabla. Una
+  tabla en uso no se desactiva y una columna en uso no se quita.
 - **Tabla compartida** — tabla de referencia con `origen_id` nulo: la usan los orígenes sin una propia de esa clave; la propia la **tapa** (va
   `tapada` en la lista de ese origen). Se edita en Catálogos › Tablas compartidas o desde la pestaña Tablas de un origen que la usa, con el aviso
   de a quién le cambia; publicarla pide `cotizaciones.configurar` en cada origen que la usa.

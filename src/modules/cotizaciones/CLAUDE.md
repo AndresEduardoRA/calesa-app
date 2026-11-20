@@ -167,7 +167,16 @@ tablas` → `/configuracion/origenes/<id>/formula|formula/hoja|formula/tarjeta|t
   `leerTablaParaEditar()` lee **todas** las filas por cursor `(orden, id)` hasta 2.001: con una fila que no se lee o más de 2.000 no devuelve nada, porque
   publicar reemplaza todas. Se edita en memoria y se valida con el espejo de la base (`entities/tablas/validacion.ts`, `TOPE_DE_FILAS` = 2.000); el
   borrador va por versión en `sessionStorage` (pausado mientras publica) y el editor lleva `key` id:versión. «Publicar» (`?panel=publicar-tabla`,
-  `tabla_referencia_publicar()`): el PT409 y el 22023 con `hint` llegan tal cual (`porCampo` con el camino de la celda).
+  `tabla_referencia_publicar()`): el PT409 y el 22023 con `hint` llegan tal cual (`porCampo` con el camino de la celda). **La estructura** (glosario:
+  «Crear una tabla de referencia», «Cambiar las columnas», «Tabla desactivada»): «Nueva tabla» (`BotonDeNuevaTabla`, `?panel=nueva-tabla`, `PANEL_NUEVA_TABLA`;
+  apagado en el tope con su motivo) abre `PanelDeNuevaTabla` (nombre, clave que sale de él, «Sólo <Origen>» o «Compartida» sólo con origen, y las columnas
+  de `EditorDeColumnas`); el id del intento nace con el panel (`key` por apertura) y al entrar lleva a `?tabla=<id>`. Abierta una tabla, el «⋯» del encabezado
+  (`AccionesDelEditor`) da «Columnas» (`?panel=columnas-de-tabla`, `PanelDeColumnas`, `ancho="amplio"`: renombrar, ordenar, sumar y quitar con «Se quita»; la
+  clave y el tipo de una existente no se cambian) y «Desactivar» (`?panel=desactivar-tabla`, `<Confirmar>`), los dos apagados con cambios sin publicar en las
+  filas (`menuDeTablaEnElEditor()`); el «⋯» de cada fila de la lista (`menuDeTablaEnLaLista()`) lleva a la tabla con su panel. Las reglas, en
+  `entities/tablas/` (`edicion-de-columnas.ts`, el reductor; `validacion-de-columnas.ts`, espejo de `_tabla_referencia_columnas_validas()`; `estructura.ts`,
+  `claveDeLaTabla()` y los topes; `resultado-de-estructura.ts`, los rechazos de las tres RPC). Los dos paneles preguntan al cerrar con cambios
+  (`<CambiosSinGuardar preguntaAlCerrar>`).
 - **La fórmula** (área `formula`; `/configuracion/origenes/<id>/formula`, `cotizaciones.configurar`, a ancho completo): arriba la publicada, el
   borrador y las versiones (`VistaDeLaFormula`) y abajo la sesión de edición (`SesionDeLaFormula` por `diferido()`: lee la versión desde el navegador y
   llama **una vez** a `useEditorDeLaFormula`), que dibuja la planilla (`components/planilla/`, por `diferido()`; lo que arma, `usePlanilla()`) o, con
@@ -349,6 +358,8 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
 
 RPC: `formula_guardar_borrador`, `formula_publicar`, `formula_descartar_borrador`, `formula_cambiar_constante`, `formula_cambiar_cabecera` (el ⚙ de la
 cabecera: modo por defecto, «Ver total» por defecto y modos visibles) y `formula_revertir` (publican la N+1 desde la publicada sin pisar el borrador), `tabla_referencia_publicar` (reemplaza las filas, sube la versión y publica la N+1 de cada fórmula que la usa),
+`tabla_referencia_crear` (con el id del intento), `tabla_referencia_columnas` (sube la versión sin N+1 y borra de las filas la clave quitada) y
+`tabla_referencia_desactivar`,
 `tono_crear|guardar|eliminar` (los colores), `nivel_crear|renombrar|retirar|restaurar|eliminar`, `niveles_con_uso`, `validar_formula`, `validar_diseno`,
 `validar_plantilla`, `evaluar_formula`, `cotizacion_evaluar`, `cotizacion_hoja`, `cotizacion_tabla`, `cotizacion_tarjeta`, `cotizacion_crear`,
 `cotizacion_guardar` (`p_titulo_manual` al final), `cotizacion_crear_en_par`, `cotizacion_guardar_en_par` y `cotizacion_encima_en_par` (las cotizaciones hermanas, sobre las de siempre con
@@ -450,9 +461,11 @@ la pide: la base de su ETag), `comprobante_emitir|anular`, `comprobantes_serie_c
   metadatos no nombran al cliente, al asesor ni al vehículo. «Copiar texto» sale de la misma geometría. **La imagen** (`imagenDeUnaGuardada()`,
   `infra/tarjeta/imagen/`, `ImageResponse` con `import()`): la misma geometría como PNG al ancho de la tarjeta, la base de la imagen de la tarjeta (`webpDeUnaGuardada()`; su ruta suma las fuentes
   de `infra/tarjeta/pdf/fuentes/` a `outputFileTracingIncludes`).
-- **Las tablas de referencia se escriben sólo con `tabla_referencia_publicar()`** (sin insert, update ni delete para `authenticated`). Candados: la tabla
-  (`for update`) y después `formulas:<origen>` en orden de origen, como el ⚙ y revertir. Pruebas: `supabase/tests/areas/tablas/`,
-  `scripts/carreras/tablas*.mjs`.
+- **Las tablas de referencia se escriben sólo por RPC: crear, columnas, desactivar y publicar** (`tabla_referencia_crear|columnas|desactivar|publicar`;
+  sin insert, update ni delete para `authenticated`). Todas con versión esperada entera salvo crear (intento por id). Candados: la tabla (`for update`) y
+  después `formulas:<origen>` en orden de origen, como el ⚙ y revertir; crear toma el candado `tablas_referencia:crear` (el tope de 100 y la clave entre propias y compartidas). Una columna o tabla
+  **en uso** (`_tabla_referencia_usos()`: una fórmula publicada o un borrador que la nombra) no se quita ni se desactiva. Pruebas:
+  `supabase/tests/areas/tablas/` (`crear.sql`, `columnas.sql`, `desactivar.sql`), `scripts/carreras/tablas*.mjs` (`tablas-estructura.mjs`).
 - **Comentarios, adjuntos, reportes y favoritas se escriben sólo por RPC.** Todas piden ver la cotización; adjuntar pide lo que pide guardarla, igual que
   las policies del bucket `cotizaciones` (`cotizacion_puede_adjuntar`, 4-69). Candados: la raíz antes que la respuesta (comentar la toma `for share`,
   borrar `for update`); la cotización antes que sus reportes. Borrar no deja respuestas eliminadas ni raíces eliminadas sin respuestas

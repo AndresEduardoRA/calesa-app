@@ -560,7 +560,7 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   sin «Eliminar»: se desactivan) y «Categorías de gasto» (`/categorias-de-gasto`: nombre, propósito de la lista fija de la base, orden y activa; una con
   gastos no se elimina), con `logistica.catalogos.gestionar` y sólo si algún área llena el catálogo, y «Tipos de documento» (`/tipos-de-documento`: los
   de la empresa; los cambia quien gestiona los catálogos de logística y los leen quien configura un flujo o los repuestos); y, sin rótulo,
-  **«Tablas compartidas»** (`/tablas`, `cotizaciones.configurar`; `?tabla=<id>`, `?panel=publicar-tabla`): las tablas de referencia sin origen, con el
+  **«Tablas compartidas»** (`/tablas`, `cotizaciones.configurar`; `?tabla=<id>`, `?panel=publicar-tabla|nueva-tabla|columnas-de-tabla|desactivar-tabla`): las tablas de referencia sin origen, con el
   aviso de a qué orígenes les cambia. Sin título de bloque ni segunda frase: «Nuevo …» arriba a la derecha y la lista. Ver «Logística: estados propios».
 - **Repuestos (config)** — `/configuracion/repuestos` (`repuestos.configurar`) abre `/flujo`. **Flujo de repuestos** (`/configuracion/repuestos/flujo`):
   el editor del flujo (el de la pestaña Flujo de un origen) sobre el flujo de los repuestos, sin selector. **Catálogos** (`/configuracion/repuestos/catalogos`):
@@ -599,7 +599,7 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
     llena la cotización.»): `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe el cliente.»): `?panel=publicar-tarjeta|
 descartar-plantilla` y `?referencia=ejemplo`, a todo el ancho.
   - **Tablas** (`/tablas`, `cotizaciones.configurar` en el origen): las del origen y las compartidas que usa (una compartida tapada por una propia va
-    «Tapada por la de <origen>»); `?tabla=<id>` (el editor) y `?panel=publicar-tabla`. Una compartida se edita ahí con el aviso de a quién le cambia.
+    «Tapada por la de <origen>»); `?tabla=<id>` (el editor) y `?panel=publicar-tabla|nueva-tabla|columnas-de-tabla|desactivar-tabla`. Una compartida se edita ahí con el aviso de a quién le cambia.
   - `/<id>` sola abre (308) la primera pestaña que la persona abre, y `/<id>?seccion=…` su parte, conservando `?campo=`, `?categoria=` y `?panel=`. Una
     pestaña que no abre, por URL: «No puedes abrir esta pestaña», su motivo e «Ir a <la primera que abre>»; un origen ajeno, «No puedes abrir este
     origen» (con «Ver los orígenes» si abre otros), sin decirle si existe; a quien sí podría abrirlo, uno que no existe es un 404.
@@ -1519,13 +1519,29 @@ El modo «Retocar la tarjeta» de «Vista previa» en una guardada (`/cotizacion
 
 ### Cotización: tablas (estados propios)
 
-Configuración › Orígenes › un origen › Tablas (`/configuracion/origenes/<id>/tablas`; las compartidas, también en Catálogos › Tablas compartidas, `/configuracion/catalogos/tablas`): editar y publicar las filas de las tablas de referencia
-(`tabla_referencia_publicar()`).
+Configuración › Orígenes › un origen › Tablas (`/configuracion/origenes/<id>/tablas`; las compartidas, también en Catálogos › Tablas compartidas, `/configuracion/catalogos/tablas`): crear tablas de referencia, cambiar sus columnas, desactivarlas y editar y publicar sus filas
+(`tabla_referencia_crear|columnas|desactivar|publicar()`).
 
 - **Quién entra y origen:** como «Fórmula»; cambiar de origen con los chips suelta `?tabla=`.
 - **Lista:** las tablas activas del origen y las compartidas, por clave: nombre como enlace a `?tabla=<id>`, clave, «Compartida» y
-  «Tapada por la de <Origen>» (`<Badge>`) y «Versión N · <persona> · <cuándo>». Vacía: «<Origen> no tiene tablas de referencia.» y «Las
-  tablas nuevas y sus columnas todavía no se crean desde aquí.». Tope 100 con aviso. Esqueleto y error de la ruta.
+  «Tapada por la de <Origen>» (`<Badge>`) y «Versión N · <persona> · <cuándo>», y su «⋯» («Editar filas», «Columnas», «Desactivar»: lleva a la
+  tabla con ese panel). «Nueva tabla» arriba a la derecha; vacía: «<Origen> no tiene tablas de referencia.» con «Nueva tabla» en el mismo bloque. Tope
+  100 con aviso y «Nueva tabla» apagado con su motivo. Esqueleto y error de la ruta.
+- **Nueva tabla** (`?panel=nueva-tabla`, un `<Drawer>`): «Nombre» (debajo, «Clave: `x` · no cambia después»), para quién (sólo con origen: «Sólo
+  <Origen>» o «Compartida: la usan los orígenes sin una propia»; en Catálogos siempre compartida) y las columnas (nombre, tipo número, año o texto y
+  clave, que sigue al nombre hasta tocarla; «Subir», «Bajar», «Quitar»; «Sumar una columna» hasta 20, apagado en el tope con su motivo). «Crear tabla» /
+  «Creando…»; un rechazo de la base va junto a su campo con el foco (la clave tomada, junto al nombre) y uno sin campo, arriba. Sin conexión, el aviso
+  arriba y lo escrito queda (repetir devuelve la misma tabla). Entró: «Creaste «X». Suma sus filas y publícala.» y abre la tabla. Cerrar con algo escrito
+  pregunta.
+- **Columnas** (`?tabla=<id>&panel=columnas-de-tabla`, `<Drawer>` amplio; «Columnas» del «⋯» del encabezado del editor, apagado con cambios sin publicar
+  en las filas): renombrar, ordenar, sumar y quitar. La clave y el tipo de una existente se ven y no se cambian; quitar la marca «Se quita» con «No
+  quitar» y avisa que su valor se borra de cada fila. Al pie, el resumen («Se renombra 1 · se quita 1») o «Sin cambios en las columnas.»; «Guardar
+  columnas» apagado sin cambios. Una columna que usa una fórmula (publicada o borrador): el texto de la base arriba, con quién la usa. Conflicto: el
+  texto de la base con «Recargar» (lo cambiado no vuelve). Entró: «Guardaste las columnas de «X».» y el editor se vuelve a montar con la versión nueva.
+  Si es compartida, a qué orígenes les cambia.
+- **Desactivar** (`?tabla=<id>&panel=desactivar-tabla`, `<Confirmar>` «Desactivar «X»»; apagado con cambios sin publicar): no se deshace y la clave
+  queda tomada. En uso: el texto de la base con las fórmulas que la usan. Sin conexión, el aviso dentro y queda abierto; conflicto, «Recargar» dentro.
+  Entró: «Desactivaste «X».» y vuelve a la lista.
 - **Abrir una:** sólo si está en la lista del origen elegido; si no, o si ya no está o pasa de 2.000 filas, su motivo con «Volver a las
   tablas». El editor (con `diferido()`) ocupa el lugar de la lista: «Volver a las tablas» (no pregunta: el borrador conserva lo hecho),
   versión y, si es compartida o tapada, a quién le cambia publicarla.
