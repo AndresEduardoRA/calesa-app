@@ -137,6 +137,7 @@ describe('PanelNuevoTipoCambio', () => {
         abierto
         monedas={[bolivianos, dolares]}
         monedaBase="BOB"
+        par={null}
         ediciones={ediciones}
         alCerrar={vi.fn()}
       />,

@@ -3,31 +3,47 @@
 import { PlusIcon } from 'lucide-react'
 import { Badge } from '@/shared/ui/badge'
 import { Button } from '@/shared/ui/button'
+import { Modal } from '@/shared/ui/modal'
 import type { Moneda } from '../../../entities/tipos-cambio'
 
 type Props = {
+  abierto: boolean
+  alCerrar: () => void
+  // Todas, también las inactivas.
   monedas: readonly Moneda[]
   monedaBase: string
-  puedeGestionar: boolean
   alAbrir: (codigo: string) => void
   alCrear: () => void
 }
 
-// Las monedas con las que trabaja la empresa. La base se elige en la pestaña «Empresa».
-export function ListaMonedas({ monedas, monedaBase, puedeGestionar, alAbrir, alCrear }: Props) {
+// «Gestionar» las monedas (`?panel=monedas`): la lista de hoy. Tocar una abre su panel (`?moneda=`) y «Nueva moneda» el de crear.
+export function ModalDeMonedas({
+  abierto,
+  alCerrar,
+  monedas,
+  monedaBase,
+  alAbrir,
+  alCrear,
+}: Props) {
   return (
-    <section aria-labelledby="monedas-titulo" className="grid gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="monedas-titulo" className="text-(length:--text-lg) font-medium text-(--color-ink)">
-          Monedas
-        </h2>
-        {puedeGestionar ? (
-          <Button variant="outline" className="h-11 md:h-8" onClick={alCrear}>
+    <Modal
+      abierto={abierto}
+      alCerrar={alCerrar}
+      titulo="Monedas"
+      descripcion="No se borran: se desactivan."
+      ancho="amplio"
+      pie={
+        <>
+          <Button variant="ghost" onClick={alCerrar}>
+            Cerrar
+          </Button>
+          <Button onClick={alCrear}>
             <PlusIcon aria-hidden />
             Nueva moneda
           </Button>
-        ) : null}
-      </div>
+        </>
+      }
+    >
       <ul className="divide-y divide-(--color-line) overflow-hidden rounded-(--radius-card) border border-(--color-line) bg-(--color-surface)">
         {monedas.map((moneda) => (
           <li key={moneda.codigo}>
@@ -56,6 +72,6 @@ export function ListaMonedas({ monedas, monedaBase, puedeGestionar, alAbrir, alC
           </li>
         ))}
       </ul>
-    </section>
+    </Modal>
   )
 }

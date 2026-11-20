@@ -90,6 +90,11 @@ export const MODALES: Record<string, RegistroDeModal> = {
     sinFormulario:
       'dibuja celdas tipeables de la hoja, que confirman en la hoja y su borrador; cerrar o «atrás» las desmonta sin confirmar: un número abierto se confirma al perder el foco, lo demás se descarta, y Esc con una celda abierta cancela sólo la celda',
   },
+  // --- empresa
+  'src/modules/empresa/features/tipos-cambio/components/modal-de-monedas.tsx': {
+    sinFormulario:
+      'sólo lista las monedas de hoy: elegir una cierra el modal y abre su panel (con su propio aviso de cambios); nada tipeado',
+  },
   // --- chat
   'src/modules/chat/features/conversaciones/components/modal-de-directa.tsx': {
     sinFormulario:

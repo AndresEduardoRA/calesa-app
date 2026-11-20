@@ -32,8 +32,8 @@ type Opciones = {
   tarjeta: TarjetaConCampos
   // Lo guardado al abrir el modal, con su versión: llega por props y nunca va en la `key`.
   ajustes: AjustesEmpresa
-  // Con datos cargados la moneda base no viaja: el campo está apagado.
-  conDatosCargados: boolean
+  // Sólo la moneda base: con datos cargados no viaja (el campo está apagado).
+  conDatosCargados?: boolean
   abierto: boolean
   alCerrar: () => void
   // Los logos que se eligieron (sólo Identidad): se suben recién al guardar.
@@ -102,7 +102,14 @@ async function guardarConLosLogos(
 // (`empresa_guardar_ajustes()` no toca lo ausente). Sin diferencias, guardar cierra. Lo tipeado queda siempre: si algo falla, el motivo
 // va junto al campo.
 export function useGuardarTarjeta(opciones: Opciones) {
-  const { tarjeta, ajustes, conDatosCargados, abierto, alCerrar, logos = SIN_LOGOS } = opciones
+  const {
+    tarjeta,
+    ajustes,
+    conDatosCargados = false,
+    abierto,
+    alCerrar,
+    logos = SIN_LOGOS,
+  } = opciones
   const [escrito, setEscrito] = useState<Escrito>(() => borradorDeLaTarjeta(tarjeta, ajustes))
   const cambios = cambiosDeLaTarjeta(tarjeta, ajustes, escrito, { conDatosCargados })
   const hayLogos = logos.claro.tipo !== 'igual' || logos.oscuro.tipo !== 'igual'
