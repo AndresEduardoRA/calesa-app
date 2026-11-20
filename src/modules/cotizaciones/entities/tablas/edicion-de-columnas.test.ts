@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ColumnaDeTabla } from '../tabla-de-ayuda'
 import {
+  caminosDeLasColumnas,
   columnasParaEnviar,
   edicionDeLasColumnas,
   edicionDeUnaTablaNueva,
@@ -154,5 +155,10 @@ describe('las columnas de una tabla que existe', () => {
       etiqueta: ' País ',
     })
     expect(hayCambios(fin, ORIGINALES)).toBe(false)
+  })
+
+  it('el camino de los errores cuenta sólo las que se mandan', () => {
+    const quitada = aplicar(inicio, { tipo: 'quitar', llave: llaveDe(inicio, 'pais') })
+    expect([...caminosDeLasColumnas(quitada).values()]).toEqual([null, 'columnas.0', 'columnas.1'])
   })
 })

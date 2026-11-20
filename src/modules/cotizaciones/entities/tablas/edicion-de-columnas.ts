@@ -154,6 +154,19 @@ export function columnasParaEnviar(edicion: EdicionDeColumnas): ColumnaDeTabla[]
   }))
 }
 
+// El camino de los errores de cada fila (`columnas.<i>`): su lugar en lo que se manda, sin las que se quitan (que no tienen).
+export function caminosDeLasColumnas(
+  edicion: EdicionDeColumnas,
+): ReadonlyMap<string, string | null> {
+  const caminos = new Map<string, string | null>()
+  let enviadas = 0
+  for (const c of edicion.columnas) {
+    caminos.set(c.llave, c.seQuita ? null : `columnas.${String(enviadas)}`)
+    if (!c.seQuita) enviadas += 1
+  }
+  return caminos
+}
+
 const igualesEnOrden = (a: readonly ColumnaDeTabla[], b: readonly ColumnaDeTabla[]) =>
   a.length === b.length &&
   a.every((c, i) => {

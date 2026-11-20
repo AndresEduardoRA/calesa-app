@@ -77,7 +77,7 @@ export function EditorDeTabla({ tabla, filas, destino }: Props) {
 
   return (
     <section aria-label={`Editar ${tabla.nombre}`} className="grid min-w-0 gap-3">
-      <EncabezadoDelEditor tabla={tabla} destino={destino} />
+      <EncabezadoDelEditor tabla={tabla} destino={destino} cambios={cambios} />
       {edicion.error ? (
         <AvisoDelPrimerError
           error={edicion.error}
