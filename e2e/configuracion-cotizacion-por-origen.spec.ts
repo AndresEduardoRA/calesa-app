@@ -145,8 +145,13 @@ test('E2E escritorio · quien configura un origen no abre uno ajeno, y en Catál
   await page.goto(`${CATALOGOS}/niveles`)
   await expect(page).toHaveURL(new RegExp(`${CATALOGOS}/colores$`))
   await expect(page.getByRole('heading', { name: 'Colores', level: 1 })).toBeVisible()
-  await expect(menu(page).getByRole('link', { name: 'Niveles', exact: true })).toHaveCount(0)
-  await expect(menu(page).getByText('Te falta el permiso «Ver roles».')).toBeVisible()
+  // Niveles y Quién crea y quién ve van apagadas con el mismo motivo: cada renglón lo declara por `aria-describedby`.
+  for (const titulo of ['Niveles', 'Quién crea y quién ve']) {
+    await expect(menu(page).getByRole('link', { name: titulo, exact: true })).toHaveCount(0)
+    await expect(menu(page).getByText(titulo, { exact: true })).toHaveAccessibleDescription(
+      'Te falta el permiso «Ver roles».',
+    )
+  }
 })
 
 test('E2E escritorio · quien sólo ve los roles abre sólo Catálogos › Niveles', async ({ page }) => {
