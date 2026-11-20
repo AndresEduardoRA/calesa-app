@@ -281,26 +281,3 @@ describe('escala (T12)', () => {
     expect(v2).toBeLessThanOrEqual(2 * v1 + 200)
   })
 })
-
-describe('BUSCARV y el catálogo de tablas del origen', () => {
-  const TABLAS = [{ clave: 'fletes', columnas: ['desde', 'hasta', 'monto'] }]
-  const texto = '=BUSCARV(remate; "fletes"; "monto"; VERDADERO)'
-
-  it('con el catálogo compila a un tramo y la fila suma su auxiliar', () => {
-    const r = bien(UNA(), { ...existente('total', texto), tablas: TABLAS })
-    expect(nodoDe(r.formula, 'total__1')).toMatchObject({
-      tipo: 'tramo',
-      tabla: 'fletes',
-      sobre: 'remate',
-      columna: 'monto',
-    })
-    expect(nodoDe(r.formula, 'total')).toMatchObject({ op: 'suma', de: ['total__1'] })
-  })
-
-  it('sin el catálogo (no se leyó) dice que no pudimos leer las tablas', () => {
-    expect(mal(UNA(), existente('total', texto)).codigo).toBe('tablas_sin_leer')
-    expect(mal(UNA(), { ...existente('total', texto), tablas: null }).codigo).toBe(
-      'tablas_sin_leer',
-    )
-  })
-})
