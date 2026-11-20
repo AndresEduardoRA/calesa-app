@@ -668,7 +668,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `loading` y el de `page`); por eso existe `pantallas/esqueleto-de-hoja.ts`. Se ve comparando `entryJSFiles` de
   `page_client-reference-manifest.js` entre dos builds.
 - react-pdf no llega al navegador, pero estar en el grafo del servidor suma ≈ 0,45 KB al runtime de Turbopack de **todas** las rutas.
-- El marco (shell): en el JS de toda pantalla viajan el menú lateral plegable (`LateralPlegable`, `ProveedorDelMenuPlegado`: un botón, un contexto y `Ctrl/Cmd+B`; sin librería nueva), el botón de la burbuja del chat, `usePathname`, el store del contador y
+- El marco (shell): en el JS de toda pantalla viajan el menú lateral plegable (`LateralPlegable`, `ProveedorDelMenuPlegado`: un botón, un contexto y `Ctrl/Cmd+B`; sin librería nueva), el botón de la burbuja del chat, los botones «Recargar la página» y «Copiar el enlace de esta página» (el modal del enlace va con `diferido()`), `usePathname`, el store del contador y
   `useAlDescansar`; el cliente de Supabase, la suscripción, el panel, la lista, el hilo y el redactor van con `diferido()`. La campana: su
   contador con Realtime y su popover van con `diferido()` (sin eso `/cotizaciones` subía ≈ 66 KB). Una `chat_no_leidos` al montar y otra por
   ráfaga de señales (≥ 250 ms). Los tipos de cambio de la barra: en frío sólo el botón con los de la barra (≤ 3, `{id, nombre, monedaA, valor}`
@@ -676,7 +676,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `diferido()` y su código se adelanta al pasar el puntero. Al abrirlo, una `tipos_cambio_vigentes()` de ≤ 31 filas (un `limit 1` por tipo
   sobre `tipos_cambio_historial_tipo_idx` y dos búsquedas por `perfiles_pkey`), sin caché; tras guardar se relee sin esqueleto. Es una
   tabla de configuración: sin medición de volumen.
-- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 121 KB (medido: 120,5) (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
+- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 124 KB (medido: 123,3; subido desde 121 por los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, un 2,5 %) (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
   semilla y con 100 + 100 + 100 catálogos (± 1 KB): lo paga toda pantalla del marco. Las ≈ 30 acciones de la paleta viajan como props del
   hueco del buscador; el formulario de «Tu ficha en la web» se monta y se pide con `diferido()` al abrirla. El layout `(app)` no manda
   catálogos al alta: `<AltaDeLead>` no recibe nada y los lee del navegador (`infra/contexto-de-alta.client.ts`, memoria de 60 s en

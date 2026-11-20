@@ -1056,7 +1056,8 @@ las trampas, en `docs/LECCIONES.md`.
 - **Mensaje con tarea o evento: primero la RPC de agenda y luego la del chat, en una transacción**; id del mensaje del navegador, el de la tarea del servidor, candado consultivo por id.
 - **Envío optimista, de a uno y en orden.** Reintentar reusa id y cuerpo; la cita se lee en otra consulta por pk (el embed `mensajes→mensajes` da 400).
 - **«Purgado» y «no lo veo» no se distinguen en una mención**: distinguirlo filtraría existencia.
-- **El widget guarda su estado en local, no en la URL** (abrirlo no cambia la pantalla de atrás). En el celular la burbuja es un enlace a `/chat`; va `fixed` sobre el marco, con `z-40`.
+- **El widget guarda su estado en local, no en la URL** (abrirlo no cambia la pantalla de atrás). En el celular la burbuja es un enlace a `/chat`; va abajo a la derecha del marco, con `z-40`, dentro de `<Flotantes>` (`src/app/(app)/_shell/flotantes.tsx`: una fila `fixed` con «Copiar el enlace de esta página» a su izquierda, que queda sola donde el chat no está).
+- **Recargar y copiar el enlace: sin librería y sin tocar el aviso de cambios sin guardar.** Recargar es `location.reload()` (el `beforeunload` de `useSalidaConCambios()` ya pregunta). Copiar usa `copiarTexto()`; si falla, un modal diferido con el enlace seleccionado en vez de un aviso de error: la persona igual puede copiarlo. En una barra de menos de 28 rem (el celular de 412 px) «Recargar la página» pasa al pie del menú: con el ícono en la barra desbordaba (440 px de 413) o dejaba el buscador en 22 px, y el tipo de cambio y el buscador ya tienen su lugar fijado por pruebas.
 - **`/chat?con=` se resuelve en el render con `chat_directa`**, no con una action: un enlace plano sirve con «atrás» y sin JS extra.
 
 ## Notificaciones
