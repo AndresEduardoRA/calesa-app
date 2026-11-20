@@ -565,8 +565,9 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
     y con otros parámetros, o con una desconocida, la primera de antes que abre; una que no abre, la primera sin parámetros.
     Estados en las secciones «Cotización: …».
 - **Empresa** — `/configuracion/empresa` (`empresa.*`), cuatro sub-rutas en el menú de Configuración (`configuracion/empresa/seccion.ts`):
-  «Datos de la empresa» (la índice, `/configuracion/empresa`: el formulario y los íconos), «Monedas y tipos de cambio» (`/monedas`: tipos de
-  cambio, «Leyenda al compartir» y monedas; `?tc=`, `?moneda=`, crear en `?panel=`), «Integraciones» (`/integraciones`) y «Comprobantes»
+  «Datos de la empresa» (la índice, `/configuracion/empresa`: el formulario y los íconos), «Monedas y tipos de cambio» (`/monedas`: la **moneda base** arriba con «Cambiar»,
+  un grupo por **par de monedas** con sus tipos de cambio como tarjetas —valor, quién y cuándo, «En la barra» con su tope de 3— y «Tipo de cambio» por par, y abajo
+  las monedas activas con «Gestionar» y «Al compartir» con «Editar»; modales `?panel=moneda-base|monedas|leyenda`, paneles `?tc=`, `?moneda=`, crear en `?panel=`/`?par=`), «Integraciones» (`/integraciones`) y «Comprobantes»
   (`/comprobantes`, con `empresa.ajustes.gestionar`: la serie vigente, el próximo comprobante y el campo para cambiarla, con versión; sin el
   permiso, apagada con «Pide el permiso «Ajustes de la empresa».» y su URL abre Datos). Las URLs viejas redirigen en el servidor
   (`url-vieja.ts`): `?seccion=` a su sub-ruta, y `?tc=`, `?moneda=` y los `?panel=` de crear (con o sin `?seccion=`) a Monedas con ellos.
@@ -811,15 +812,18 @@ Agregar a inicio»), «Ver como» (quien gestiona roles), tema, densidad y «Cer
 - **Datos de la empresa:** cinco **tarjetas de ajustes** (Identidad, Región, Datos legales y de contacto, Políticas, Íconos de la app) que muestran
   lo guardado («Sin dato» si falta); «Editar» (y la primera línea del «⋯») abre su modal (`?panel=identidad|region|datos-legales|politicas|iconos`),
   con «Cancelar» y «Guardar»: sin cambios guardar cierra; con cambios, Esc pregunta «Seguir editando» o «Descartar». Mientras guarda, el modal
-  se apaga. Color sin contraste, logo inválido, zona inexistente y moneda base con datos: motivo junto al campo. Sin conexión, lo tipeado
+  se apaga. Color sin contraste, logo inválido y zona inexistente: motivo junto al campo. Sin conexión, lo tipeado
   queda y se guarda solo al volver; Datos legales repone su borrador con el «Descartar» de su aviso. Sin `empresa.ajustes.gestionar`, se ve todo con
   «Editar» apagado y el motivo; «Íconos de la app» sin logo, apagado con su motivo; «Volver a los íconos neutros» va en el «⋯». PT409: «Recargar».
-- **Tipos de cambio:** cada uno abre su panel con el valor listo y su historial. El por defecto no se desactiva; nada se borra. El
-  interruptor «En la barra superior» va en el mismo «Guardar»: apagado con su motivo si el tipo está inactivo o ya hay 3 («quita uno para
-  sumar este»); quitarlo siempre se puede; sin ninguno marcado, avisa que la barra muestra el por defecto. La lista dice el tope y lleva
-  el badge «En la barra» en los que se ven. Debajo, «Leyenda al compartir»: la leyenda de lo que se comparte (un campo, «n de 120»
-  sin `maxLength`, con la barra de cambios sin guardar al final de la página; sin `empresa.tipos_cambio.gestionar`, apagado con su motivo y sin
-  barra; `PT409` con «Recargar»). **Comprobantes:** una tarjeta «Serie de comprobantes» con la serie vigente y el próximo comprobante; «Cambiar serie» abre su modal (`?panel=serie`) y guarda con su versión (`PT409` con «Recargar»).
+- **Monedas y tipos de cambio:** arriba la **moneda base** (código, nombre y símbolo) con «Cambiar», que abre su modal (`?panel=moneda-base`): con datos cargados
+  el campo queda apagado con su motivo; sin `empresa.ajustes.gestionar`, «Cambiar» apagado. Debajo, un grupo por **par de monedas** (el de la base primero) con una
+  tarjeta por tipo de cambio: nombre, «★ Por defecto» o «Inactivo», el valor grande, «Cambiado por X · fecha» y el interruptor «En la barra», que guarda al
+  tocarlo (apagado con su motivo si el tipo está inactivo o ya hay 3: «quita uno para sumar este»). La tarjeta abre su panel (`?tc=`: el valor y su historial; el
+  por defecto no se desactiva; nada se borra); el «⋯» lleva «Cambiar el valor» y «Usar por defecto». «Tipo de cambio» de cada par abre el panel de crear con
+  las dos monedas elegidas (`?par=`); con un solo par o ninguno, la pantalla dice cómo empezar. Al pie, secundarias: «Monedas activas» (chips) con «Gestionar»
+  (la lista de hoy en un modal; una moneda se abre en su panel) y «Al compartir» con la leyenda y «Editar» (modal con «n de 120»; vacía, no se muestra;
+  `PT409` con «Recargar»). Sin `empresa.tipos_cambio.gestionar`, todo a la vista y «Gestionar», «Editar» e interruptores apagados con su motivo.
+  **Comprobantes:** una tarjeta «Serie de comprobantes» con la serie vigente y el próximo comprobante; «Cambiar serie» abre su modal (`?panel=serie`) y guarda con su versión (`PT409` con «Recargar»).
   **Integraciones:** una tarjeta por integración (apibara, Web pública, Avisos push) con su estado («Activa», «Apagada» o «Falta la clave») junto al
   título, lo guardado como texto (la clave sólo dice «Guardada el …»: no se muestra nunca) y el interruptor, que guarda al instante. «Configurar»
   (dirección y plataformas de apibara, dirección de revalidación) y la clave o el secreto («Cargar la clave», «Reemplazar la clave») son modales

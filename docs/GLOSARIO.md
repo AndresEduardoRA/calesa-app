@@ -53,6 +53,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Moneda** — `monedas` / `Moneda`: moneda con la que trabaja la empresa (ISO, símbolo, decimales); no se borra, se desactiva.
 - **Tipo de cambio** — `tipos_cambio` (clave: oficial, paralelo…) / `TipoCambio`: valor nombrado entre dos monedas; uno vigente por clave; se
   congela en cada cotización.
+- **Par de monedas** — `claveDelPar()`, `gruposPorPar()` / `GrupoDePar`: las dos monedas de un tipo de cambio («USD → BOB»); en Configuración › Empresa › Monedas
+  cada par es un grupo con sus tipos de cambio como tarjetas, el de la base primero (`?par=` pide crear uno en ese par).
+- **Tarjeta de tipo de cambio** — `<TarjetaDeTipoCambio>`: un tipo de cambio dentro de su par: nombre, «★ Por defecto», el valor grande, quién y cuándo lo cambió y el
+  interruptor «En la barra»; abre su panel (`?tc=`).
 - **Tipo de cambio por defecto** — `tipos_cambio.es_default`: el que se usa entre dos monedas si no se elige otro; uno por par.
 - **Historial de un tipo de cambio** — `tipos_cambio_historial` / `CambioDeValor`: de cuánto a cuánto, quién y cuándo; lo escribe un trigger.
 - **En la barra** — `tipos_cambio.en_la_barra` / `TipoCambio.enLaBarra`, `tiposEnLaBarra()`: el tipo de cambio que la empresa eligió para verlo
