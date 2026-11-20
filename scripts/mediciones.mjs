@@ -152,6 +152,11 @@ export const MEDICIONES_CON_VOLUMEN = [
     UNA,
   ],
   [
+    'supabase/tests/medir-vehiculos-inventario-cierre.sql',
+    'El orden «Cierre más próximo» y las ventanas de «Subasta» (cierre_entre) del inventario con 50.000 y con 250.000 vivos, como la dueña con el plan normal: el tramo 0 por vehiculos_subasta_viva_cierre_idx bajo su Limit, ninguna rama que ordene sin Limit ni recorra vehiculos, la dueña ≤ 10 ms y los bloques de vehiculos sin crecer con N',
+    UNA,
+  ],
+  [
     'supabase/tests/medir-vehiculos-inventario-costo-fijo.sql',
     'El costo fijo de cada llamada al inventario (4-77): origenes_con_alcance() de una persona con una concesión y de otra con una por cada permiso y origen, sin volumen (ms y buffers del EXPLAIN, bloques de perfiles, usuarios_roles y roles_permisos, y las filas de mis_permisos())',
     'mediana de 5 de 7 corridas',
