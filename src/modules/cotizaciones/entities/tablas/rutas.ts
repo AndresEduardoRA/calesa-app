@@ -12,14 +12,27 @@ export function origenIdDelDestino(destino: DestinoDeLasTablas): string | null {
   return destino === 'compartidas' ? null : destino.origen.id
 }
 
-// `/configuracion/origenes/<origen>/tablas` o, sin origen, `/configuracion/catalogos/tablas`; con `tablaId`, `?tabla=<id>` (abre su editor).
-export function rutaDeLasTablas(origenId: string | null, tablaId?: string): Route {
-  const consulta = tablaId ? { tabla: tablaId } : undefined
+// Los paneles de la pestaña (`?panel=`): «Nueva tabla», «Columnas» y «Desactivar» (los dos últimos con `?tabla=<id>`).
+export const PANEL_NUEVA_TABLA = 'nueva-tabla'
+export const PANEL_COLUMNAS_DE_TABLA = 'columnas-de-tabla'
+export const PANEL_DESACTIVAR_TABLA = 'desactivar-tabla'
+export type PanelDeLasTablas =
+  typeof PANEL_NUEVA_TABLA | typeof PANEL_COLUMNAS_DE_TABLA | typeof PANEL_DESACTIVAR_TABLA
+
+// `/configuracion/origenes/<origen>/tablas` o, sin origen, `/configuracion/catalogos/tablas`; con `tablaId`, `?tabla=<id>` (abre su editor); con `panel`,
+// `&panel=` (o `?panel=` sin tabla).
+export function rutaDeLasTablas(
+  origenId: string | null,
+  tablaId?: string,
+  panel?: PanelDeLasTablas,
+): Route {
+  const consulta = { ...(tablaId ? { tabla: tablaId } : {}), ...(panel ? { panel } : {}) }
+  const conConsulta = Object.keys(consulta).length > 0 ? consulta : undefined
   if (origenId === null) {
-    const parametros = new URLSearchParams(consulta).toString()
+    const parametros = new URLSearchParams(conConsulta).toString()
     return (
       parametros === '' ? RUTAS.tablasCompartidas : `${RUTAS.tablasCompartidas}?${parametros}`
     ) as Route
   }
-  return rutaDeConfiguracionDeCotizacion(origenId, 'tablas', consulta)
+  return rutaDeConfiguracionDeCotizacion(origenId, 'tablas', conConsulta)
 }
