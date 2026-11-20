@@ -60,6 +60,7 @@ const VEHICULO: Vehiculo = {
   portadaRuta: null,
   estadoSubasta: null,
   situacion: 'fase',
+  cierreSubastaEn: null,
   creadoPor: null,
   creadoEn: '2026-10-13T12:00:00+00:00',
   actualizadoEn: '2026-10-13T12:00:00+00:00',

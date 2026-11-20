@@ -95,8 +95,14 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 - **«Costo estimado»** (la cotización aprobada; columna de la tabla y fila de la tarjeta de la lista): `ListadoDeVehiculos` recibe `aprobadas` (`AprobadasDeLaPagina`,
   por id de vehículo: `{ ruta, monto, moneda, modo }`, o `null` si quien mira no tiene `cotizaciones.ver` en algún origen: ni columna ni fila) y lo arma
   `src/app/(app)/vehiculos/aprobadas.ts` con `leerAprobadasDeVehiculos()` de `cotizaciones` (este módulo no la importa; el modo llega en la misma lectura).
-  `entities/cotizacion-aprobada-de-la-fila.ts` (`ROTULO_DEL_COSTO_ESTIMADO`, `costoEstimadoDe()`); `costo-estimado.tsx` dibuja `<Monto valor moneda>` y « · modo»
-  en el mismo enlace (`data-no-abre`; el modo se corta, el monto no), «Sin total» sin monto ni modo y «—» sin aprobada. El monto cruza como texto.
+  `entities/cotizacion-aprobada-de-la-fila.ts` (`ROTULO_DEL_COSTO_ESTIMADO`, `costoEstimadoDe()`, `nombreDeCompartirLaAprobada()`); `costo-estimado.tsx` dibuja `<Monto valor moneda>` y « · modo»
+  en un botón (`data-no-abre`; el modo se corta, el monto no) que abre «Compartir la cotización» de la aprobada (`cotizacionId`), «Sin total» sin monto ni modo y «—» sin aprobada; en Modo Live o sin
+  `compartirAprobada` es texto. El botón llama a `useCompartirLaAprobada()` (contexto de `features/listado/hooks/compartir-de-la-aprobada.tsx`, que pone `ListadoDeVehiculos` con su prop `compartirAprobada`):
+  `src/app/(app)/vehiculos/listado-con-compartir.tsx` la une con `useAbrirCompartirDeLaFila()` y monta `DialogoDeCompartirDeLaFila` una vez. El monto cruza como texto.
+- **Cuenta regresiva del cierre** (`entities/cuenta-regresiva-del-cierre.ts`: `cuentaDelCierre(cierre, ahora, conSegundos)`, tonos y textos; `features/subasta/components/cuenta-regresiva-del-cierre.tsx`,
+  que reusa la ficha en «Cierre» y que la tarjeta (`datos-de-la-tarjeta.tsx`, arriba del `<dl>`) y la fila (`CeldaDeFase`, bajo la insignia) dibujan sólo con `origen.tipo === 'subasta'` y situación
+  `en_subasta`). La hora es `Vehiculo.cierreSubastaEn` (`cierre_subasta_en`, que traen `vehiculos_inventario()` y la tabla). Un solo temporizador por página: `features/subasta/hooks/use-cuenta-del-cierre.ts`
+  (`useSyncExternalStore` sobre un reloj de módulo; cada segundo, o cada minuto con `prefers-reduced-motion`). `DatosDelOrigen.ahora` (ISO del servidor) es el primer instante: el mismo texto al hidratar.
 - **«Compra directa»** (subasta): `entities/compra-directa-de-la-fila.ts` (`columnaDeCompraDirecta()`: el campo activo con `claveApibara` = `pricing.buy_now_usd`,
   nunca por su clave; `compraDirectaDeLaFila()`, `camposSinLaCompraDirecta()`: ese campo no se repite entre los «en tarjeta»), `compra-directa.tsx` (USD o «—»).
 - **Tarjeta de la lista** (`tarjeta-vehiculo.tsx`, la misma en escritorio y celular): `TarjetaDeLista estirada` en una `<ul>` con `auto-rows-fr` (todas del alto de

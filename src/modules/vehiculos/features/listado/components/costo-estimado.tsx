@@ -1,20 +1,45 @@
 'use client'
 
-import type { Route } from 'next'
-import Link from 'next/link'
+import type { ReactNode } from 'react'
 import { cn } from 'cn'
+import { formatearMonto } from '@/shared/lib/formato'
+import { useLive } from '@/shared/ui/live'
 import { Monto } from '@/shared/ui/monto'
+import { useRegional } from '@/shared/ui/regional'
 import {
   costoEstimadoDe,
+  nombreDeCompartirLaAprobada,
   SIN_TOTAL,
+  type CostoEstimado as Costo,
   type CotizacionAprobadaDeLaFila,
 } from '../../../entities/cotizacion-aprobada-de-la-fila'
+import { useCompartirLaAprobada } from '../hooks/compartir-de-la-aprobada'
 
 const VACIO = <span className="text-(--color-ink-faint)">—</span>
 
-// El primer resultado de la aprobada con su moneda congelada y, si lo hay, el modo de tipo de cambio («US$27.999 · Unificado»), todo dentro del enlace a la
-// cotización (`data-no-abre`: el clic no abre la ficha del vehículo). Sin total, lo dice (sin modo). El monto nunca se corta: lo que se corta con «…» es el modo.
-function Enlace({
+const TITULO_DEL_BOTON = 'Compartir la cotización aprobada'
+
+// El primer resultado de la aprobada con su moneda congelada y, si lo hay, el modo de tipo de cambio («US$27.999 · Unificado»). Sin total, lo dice (sin modo). El monto nunca se corta:
+// lo que se corta con «…» es el modo.
+function Contenido({ costo }: { costo: Costo }) {
+  if (costo.tipo === 'sin_total') {
+    return SIN_TOTAL
+  }
+  return (
+    <>
+      <Monto valor={costo.valor} moneda={costo.moneda} className="shrink-0" />
+      {costo.modo === null ? null : (
+        <span className="min-w-0 truncate text-(--color-ink-soft)">{` · ${costo.modo}`}</span>
+      )}
+    </>
+  )
+}
+
+const BASE = 'inline-flex max-w-full min-w-0 items-baseline'
+
+// Todo el costo es un botón que abre «Compartir la cotización» de la aprobada, sin salir de la lista (`data-no-abre`: el clic no abre la ficha del vehículo). En el celular su zona
+// de toque se estira (44 px) sin mover nada. En Modo Live no se comparte: queda como texto, con el monto oculto por `<Monto>`.
+function Costo({
   aprobada,
   className,
 }: {
@@ -22,26 +47,32 @@ function Enlace({
   className?: string
 }) {
   const costo = costoEstimadoDe(aprobada)
+  const { live } = useLive()
+  const compartir = useCompartirLaAprobada()
+  const { locale } = useRegional()
+  const contenido: ReactNode = <Contenido costo={costo} />
+  if (live || compartir === null) {
+    return <span className={cn(BASE, 'text-(--color-ink)', className)}>{contenido}</span>
+  }
+  const monto =
+    costo.tipo === 'monto' ? formatearMonto(costo.valor, { moneda: costo.moneda, locale }) : ''
   return (
-    <Link
-      href={costo.ruta as Route}
+    <button
+      type="button"
       data-no-abre=""
+      title={TITULO_DEL_BOTON}
+      aria-label={nombreDeCompartirLaAprobada(costo, monto)}
+      onClick={() => {
+        compartir(costo.cotizacionId)
+      }}
       className={cn(
-        'inline-flex max-w-full min-w-0 items-baseline rounded-(--radius-sm) text-(--color-ink) underline-offset-2 hover:underline',
+        BASE,
+        "relative cursor-pointer rounded-(--radius-sm) text-left text-(--color-ink) underline decoration-(--color-ink-faint) decoration-dotted underline-offset-4 hover:decoration-solid max-md:after:absolute max-md:after:inset-x-0 max-md:after:-inset-y-3 max-md:after:content-['']",
         className,
       )}
     >
-      {costo.tipo === 'sin_total' ? (
-        SIN_TOTAL
-      ) : (
-        <>
-          <Monto valor={costo.valor} moneda={costo.moneda} className="shrink-0" />
-          {costo.modo === null ? null : (
-            <span className="min-w-0 truncate text-(--color-ink-soft)">{` · ${costo.modo}`}</span>
-          )}
-        </>
-      )}
-    </Link>
+      {contenido}
+    </button>
   )
 }
 
@@ -51,10 +82,10 @@ export function CeldaDeCostoEstimado({
 }: {
   aprobada: CotizacionAprobadaDeLaFila | null
 }) {
-  return aprobada === null ? VACIO : <Enlace aprobada={aprobada} className="max-w-64" />
+  return aprobada === null ? VACIO : <Costo aprobada={aprobada} className="max-w-64" />
 }
 
 // El dato de la tarjeta de la lista (su rótulo lo pone la fila): lo mismo, o «—».
 export function CostoEstimado({ aprobada }: { aprobada: CotizacionAprobadaDeLaFila | null }) {
-  return aprobada === null ? VACIO : <Enlace aprobada={aprobada} />
+  return aprobada === null ? VACIO : <Costo aprobada={aprobada} />
 }
