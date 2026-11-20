@@ -12,8 +12,8 @@ import {
 } from '../../../entities/historial-del-vehiculo'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
 
-// Una cotización del historial en una línea: el enlace (N.º · cuándo · quién) y, fuera de él, la clase y «Aprobada». La comparten la lista larga
-// (`ListaDelHistorial`) y las más recientes del lead (`CotizacionesRecientesDelLead`).
+// Una cotización del historial en una línea: el enlace (N.º · cuándo · quién) y, fuera de él, la clase y «Aprobada». La dibuja la lista larga
+// (`ListaDelHistorial`).
 export function FilaDelHistorial({ cotizacion }: { cotizacion: CotizacionDelHistorial }) {
   const { zonaHoraria } = useRegional()
   return (
