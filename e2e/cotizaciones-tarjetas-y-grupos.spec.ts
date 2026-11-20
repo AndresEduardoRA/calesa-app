@@ -186,8 +186,17 @@ test('E2E el clic en la portada no abre el resumen y el de la tarjeta sí; el vi
 }) => {
   await abrir(page, deLaPrueba())
   const tarjeta = tarjetaDe(page, suelta)
-  await tarjeta.locator('[data-portada]').click({ position: { x: 10, y: 10 } })
+  // La portada abre su visor recién al hidratar (antes, el clic no hace nada): se insiste hasta que abre, sin volver a pulsar con
+  // el visor ya pedido. Abierto tapa la lista: se cierra antes del clic en la tarjeta.
+  const visor = page.getByRole('dialog', { name: /^Vista previa de la cotización/ })
+  await expect(async () => {
+    if (!page.url().includes(`visor=portada-de-la-lista-${suelta}`))
+      await tarjeta.locator('[data-portada]').click({ position: { x: 10, y: 10 } })
+    await expect(visor).toBeVisible({ timeout: 1000 })
+  }).toPass()
   await expect(page).not.toHaveURL(/cotizacion=/)
+  await page.keyboard.press('Escape')
+  await expect(visor).toBeHidden()
   await tarjeta.locator('[data-titulo-de-la-cotizacion]').click()
   await expect(page).toHaveURL(new RegExp(`cotizacion=${suelta}`))
 })
