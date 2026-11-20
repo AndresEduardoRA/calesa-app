@@ -200,7 +200,7 @@ export function OportunidadesDelLead(props: Props) {
       />
       {embudo && embudos.length > 1 ? (
         <div>
-          <SelectorDeEmbudo embudos={embudos} actual={embudo.id} alElegir={elegir} />
+          <SelectorDeEmbudo embudos={embudos} actual={embudo.id} alElegir={elegir} cerrarAlElegir />
         </div>
       ) : null}
       <CuerpoDelTablero
