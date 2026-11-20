@@ -70,8 +70,24 @@ beforeEach(() => {
   respuesta = { data: [], error: null }
 })
 
+const DE_ORIGEN = { origenId: ORIGEN, condiciones: [] }
+
+async function exigirQueNoLleganALaBase(
+  pedidos: Parameters<typeof leerPorLaFuncion>[0][],
+): Promise<void> {
+  for (const pedido of pedidos) {
+    const r = await leerPorLaFuncion(pedido)
+    expect(r === FILTROS_RECHAZADOS, JSON.stringify(pedido)).toBe(false)
+    if (r !== FILTROS_RECHAZADOS) {
+      expect(r.ok, JSON.stringify(pedido)).toBe(false)
+      if (!r.ok) expect(r.error.codigo).toBe('validacion')
+    }
+  }
+  expect(llamadas).toEqual([])
+}
+
 describe('leerPorLaFuncion: lo que le pide a la base', () => {
-  it('sin cursor: una sola llamada a vehiculos_inventario, con los seis argumentos', async () => {
+  it('sin cursor: una sola llamada a vehiculos_inventario, con los ocho argumentos', async () => {
     await leerPorLaFuncion({ origenId: ORIGEN, condiciones: [], cursor: null, tamano: 25 })
     expect(llamadas).toHaveLength(1)
     expect(llamadas[0]?.[0]).toBe('vehiculos_inventario')
@@ -82,6 +98,8 @@ describe('leerPorLaFuncion: lo que le pide a la base', () => {
       p_cursor_en: undefined,
       p_cursor_id: undefined,
       p_hacia_atras: false,
+      p_orden: 'reciente',
+      p_cursor_tramo: undefined,
     })
   })
 
@@ -99,6 +117,8 @@ describe('leerPorLaFuncion: lo que le pide a la base', () => {
       p_cursor_en: INSTANTE,
       p_cursor_id: ORIGEN,
       p_hacia_atras: false,
+      p_orden: 'reciente',
+      p_cursor_tramo: undefined,
     })
   })
 
@@ -115,53 +135,62 @@ describe('leerPorLaFuncion: lo que le pide a la base', () => {
   it('un pedido que no vale no llega a la base', async () => {
     const pedidos = [
       { origenId: 'uno', condiciones: [], cursor: null, tamano: 10 },
-      { origenId: ORIGEN, condiciones: [], cursor: null, tamano: 0 },
+      { ...DE_ORIGEN, cursor: null, tamano: 0 },
+      { ...DE_ORIGEN, cursor: null, tamano: MAXIMO_DE_PAGINA_DE_VEHICULOS + 1 },
       {
-        origenId: ORIGEN,
-        condiciones: [],
-        cursor: null,
-        tamano: MAXIMO_DE_PAGINA_DE_VEHICULOS + 1,
-      },
-      {
-        origenId: ORIGEN,
-        condiciones: [],
+        ...DE_ORIGEN,
         cursor: { instante: INSTANTE, id: 'dos', sentido: 'siguiente' as const },
         tamano: 10,
       },
     ]
-    for (const pedido of pedidos) {
-      const r = await leerPorLaFuncion(pedido)
-      expect(r === FILTROS_RECHAZADOS, JSON.stringify(pedido)).toBe(false)
-      if (r !== FILTROS_RECHAZADOS) {
-        expect(r.ok, JSON.stringify(pedido)).toBe(false)
-        if (!r.ok) expect(r.error.codigo).toBe('validacion')
-      }
-    }
-    expect(llamadas).toEqual([])
+    await exigirQueNoLleganALaBase(pedidos)
+  })
+})
+
+describe('leerPorLaFuncion: el orden por cierre', () => {
+  it('por el cierre: el orden y el tramo del cursor', async () => {
+    await leerPorLaFuncion({
+      ...DE_ORIGEN,
+      orden: 'cierre',
+      cursor: { instante: INSTANTE, id: ORIGEN, sentido: 'siguiente', tramo: 1 },
+      tamano: 10,
+    })
+    expect(llamadas[0]?.[1]).toMatchObject({ p_orden: 'cierre', p_cursor_tramo: 1 })
+  })
+
+  it('un cursor del cierre sin su tramo, o uno de siempre con tramo, no llega a la base', async () => {
+    await exigirQueNoLleganALaBase([
+      {
+        ...DE_ORIGEN,
+        orden: 'cierre' as const,
+        cursor: { instante: INSTANTE, id: ORIGEN, sentido: 'siguiente' as const },
+        tamano: 10,
+      },
+      {
+        ...DE_ORIGEN,
+        cursor: {
+          instante: INSTANTE,
+          id: ORIGEN,
+          sentido: 'siguiente' as const,
+          tramo: 0 as const,
+        },
+        tamano: 10,
+      },
+    ])
   })
 })
 
 describe('leerPorLaFuncion: lo que devuelve', () => {
   it('con una fila de más hay siguiente; con las justas, no', async () => {
     respuesta = { data: [fila(1), fila(2), fila(3)], error: null }
-    const con = await leerPorLaFuncion({
-      origenId: ORIGEN,
-      condiciones: [],
-      cursor: null,
-      tamano: 2,
-    })
+    const con = await leerPorLaFuncion({ ...DE_ORIGEN, cursor: null, tamano: 2 })
     if (con === FILTROS_RECHAZADOS || !con.ok) throw new Error('debía leer')
     expect(con.data.filas.map((f) => f.numero)).toEqual([101, 102])
     expect(con.data.siguiente).not.toBeNull()
     expect(con.data.anterior).toBeNull()
 
     respuesta = { data: [fila(1), fila(2)], error: null }
-    const sin = await leerPorLaFuncion({
-      origenId: ORIGEN,
-      condiciones: [],
-      cursor: null,
-      tamano: 2,
-    })
+    const sin = await leerPorLaFuncion({ ...DE_ORIGEN, cursor: null, tamano: 2 })
     if (sin === FILTROS_RECHAZADOS || !sin.ok) throw new Error('debía leer')
     expect(sin.data.siguiente).toBeNull()
   })
@@ -169,8 +198,7 @@ describe('leerPorLaFuncion: lo que devuelve', () => {
   it('hacia atrás la base devuelve lo más viejo primero y la página sale dada vuelta', async () => {
     respuesta = { data: [fila(3), fila(2), fila(1)], error: null }
     const r = await leerPorLaFuncion({
-      origenId: ORIGEN,
-      condiciones: [],
+      ...DE_ORIGEN,
       cursor: { instante: INSTANTE, id: ORIGEN, sentido: 'anterior' },
       tamano: 2,
     })
@@ -182,14 +210,14 @@ describe('leerPorLaFuncion: lo que devuelve', () => {
 
   it('la portada llega como portadaRuta', async () => {
     respuesta = { data: [fila(1, { portada_ruta: 'a/b.webp' })], error: null }
-    const r = await leerPorLaFuncion({ origenId: ORIGEN, condiciones: [], cursor: null, tamano: 5 })
+    const r = await leerPorLaFuncion({ ...DE_ORIGEN, cursor: null, tamano: 5 })
     if (r === FILTROS_RECHAZADOS || !r.ok) throw new Error('debía leer')
     expect(r.data.filas[0]?.portadaRuta).toBe('a/b.webp')
   })
 
   it('filas que no valen: «inesperado», sin romper', async () => {
     respuesta = { data: [{ id: 'no' }], error: null }
-    const r = await leerPorLaFuncion({ origenId: ORIGEN, condiciones: [], cursor: null, tamano: 5 })
+    const r = await leerPorLaFuncion({ ...DE_ORIGEN, cursor: null, tamano: 5 })
     if (r === FILTROS_RECHAZADOS || r.ok) throw new Error('debía fallar')
     expect(r.error.codigo).toBe('inesperado')
   })
@@ -257,6 +285,7 @@ const TIPOS = {
   atributo_texto: true,
   situacion_fuera_de: true,
   situacion_en: true,
+  cierre_entre: true,
 } satisfies Record<Condicion['tipo'], true>
 
 // Los tipos de los `when '<tipo>' then` de un trozo de la definición de la base: desde `desde` hasta `hasta` (el final, si no hay).

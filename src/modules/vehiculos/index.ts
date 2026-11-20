@@ -72,7 +72,17 @@ export { editablesDe, eliminablesDe, leadsVisiblesDe } from './features/permisos
 
 // Los filtros de un origen, desde su layout: el esquema que dibuja FilterShell y las condiciones
 // que entiende `buscarVehiculos()`
-export { FILTRO_SITUACION, condicionesDe, esquemaDeFiltros } from './entities/filtros'
+export { FILTRO_FASE, condicionesDe, esquemaDeFiltros } from './entities/filtros'
+// «Subasta» y el orden (sólo en un origen de subasta): si la URL pide una, el orden por defecto es el cierre; con él, el cursor lleva su tramo
+export {
+  FILTRO_SUBASTA,
+  esSubastaElegida,
+  ordenElegido,
+  type OrdenDelInventario,
+} from './entities/filtros-de-subasta'
+export { leerCursorDelCierre } from './entities/cursor-del-cierre'
+// El `?situacion=` viejo: 308 al equivalente, y las vistas guardadas leídas con las claves nuevas
+export { conSituacionTraducida, destinoDeLaSituacionVieja } from './entities/situacion-vieja'
 
 // La vitrina: qué se ve en la web pública y quién publica. Las dos lecturas no tumban la pantalla
 export {

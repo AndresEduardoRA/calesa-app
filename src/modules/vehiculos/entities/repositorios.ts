@@ -3,7 +3,9 @@
 import type { ErrorApp, Resultado } from '@/shared/lib/errores'
 import type { Cursor, Pagina } from '@/shared/lib/paginacion'
 import type { DatosDeVehiculo } from './esquema'
+import type { TramoDelCierre } from './cursor-del-cierre'
 import type { Condicion } from './filtros'
+import type { OrdenDelInventario } from './filtros-de-subasta'
 import type { ConteoAcotado } from '@/shared/lib/conteo'
 import type { ResolucionDeSubasta, Situacion } from './situacion'
 import type { FuenteDelInventario } from './fuente-del-inventario'
@@ -39,13 +41,15 @@ import type {
 import type { DatosDeVitrina, VistaPreviaDeVitrina, VitrinaDelOrigen } from './vitrina'
 import type { ContextoDeAlta } from './permisos'
 
-// Una página del inventario de un origen, de lo más nuevo a lo más viejo. La RLS decide qué ve
-// quien llama: acá no se filtra por permiso. `fuente` sólo elige el camino de la lectura (`fuenteDelInventario()`).
+// Una página del inventario de un origen, de lo más nuevo a lo más viejo (o, con `orden: 'cierre'`, por tramos: `cursor-del-cierre.ts`). La RLS decide qué ve
+// quien llama: acá no se filtra por permiso. `fuente` sólo elige el camino de la lectura (`fuenteDelInventario()`). Con `cierre`, el cursor lleva su tramo.
 export type BuscadorDeVehiculos = (pedido: {
   fuente: FuenteDelInventario
   origenId: string
   condiciones: readonly Condicion[]
-  cursor: Cursor | null
+  // Sin orden, el de siempre (`reciente`).
+  orden?: OrdenDelInventario
+  cursor: (Cursor & { tramo?: TramoDelCierre }) | null
   tamano: number
 }) => Promise<Resultado<Pagina<Vehiculo>>>
 

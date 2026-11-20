@@ -138,4 +138,18 @@ describe('situación', () => {
       'or=(and(situacion.eq.fase,fase_id.is.null))',
     ])
   })
+
+  it('una ventana del cierre: viva y con el cierre desde (inclusive) hasta (exclusive)', () => {
+    expect(
+      pedidosDe({
+        tipo: 'cierre_entre',
+        desde: '2026-11-20T14:00:00.000Z',
+        hasta: '2026-11-21T04:00:00.000Z',
+      }),
+    ).toEqual([
+      'situacion=in.(en_subasta)',
+      'cierre_subasta_en=gte.2026-11-20T14:00:00.000Z',
+      'cierre_subasta_en=lt.2026-11-21T04:00:00.000Z',
+    ])
+  })
 })
