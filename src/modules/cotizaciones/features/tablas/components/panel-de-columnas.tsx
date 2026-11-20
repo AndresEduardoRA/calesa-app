@@ -47,7 +47,7 @@ export function PanelDeColumnas({ abierto, alCerrar, tabla, origenId }: Props) {
         />
       }
     >
-      <CambiosSinGuardar hayCambios={panel.hayCambios} />
+      <CambiosSinGuardar hayCambios={panel.hayCambios} preguntaAlCerrar />
       <form
         ref={formulario}
         id={idFormulario}

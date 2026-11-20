@@ -131,7 +131,7 @@ export function PanelDeNuevaTabla({ abierto, alCerrar, origen }: Props) {
         />
       }
     >
-      <CambiosSinGuardar hayCambios={nueva.hayCambios} />
+      <CambiosSinGuardar hayCambios={nueva.hayCambios} preguntaAlCerrar />
       <form
         ref={formulario}
         id={idFormulario}
