@@ -124,6 +124,15 @@ const tarjeta = (page: Page, titulo: string): Locator =>
 const dato = (lugar: Locator, rotulo: string): Locator =>
   lugar.locator(`xpath=.//dt[normalize-space()="${rotulo}"]/following-sibling::dd[1]`)
 
+// El diálogo de «Compartir» se carga al pedirlo: se espera a que esté antes de cerrarlo con Esc, y a que se vaya antes de mirar la URL.
+async function cerrarElCompartir(page: Page): Promise<void> {
+  const panel = page.getByRole('dialog', { name: 'Compartir cotización' })
+  await expect(panel).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(panel).toBeHidden()
+  await expect(page).not.toHaveURL(/panel=compartir/)
+}
+
 async function alOrigen(page: Page, origenId: string, vista: 'tabla' | 'tarjetas'): Promise<void> {
   await page.goto(`/vehiculos?origen=${origenId}&vista=${vista}`)
   await expect(page.locator('tbody tr, li article').filter({ visible: true }).first()).toBeVisible()
@@ -173,8 +182,7 @@ test('E2E las tarjetas miden lo mismo, con el lote sobre la foto, el costo estim
   await costo.click()
   await expect(page).toHaveURL(new RegExp(`panel=compartir.*para=${cotizacionId}`))
   expect(new URL(page.url()).pathname).toBe('/vehiculos')
-  await page.keyboard.press('Escape')
-  await expect(page).not.toHaveURL(/panel=compartir/)
+  await cerrarElCompartir(page)
 
   // «Compra directa»: el valor de `pricing.buy_now_usd`, o «—»; el campo no se repite entre los «en tarjeta».
   await expect(dato(corta, 'Compra directa')).toHaveText(/12[.,]500/)
@@ -203,8 +211,7 @@ test('E2E la tabla suma el lote, la compra directa y el costo estimado', async (
   await fila.getByRole('button', { name: /Compartir la cotización aprobada.*Unificado/ }).click()
   await expect(page).toHaveURL(new RegExp(`panel=compartir.*para=${cotizacionId}`))
   expect(new URL(page.url()).pathname).toBe('/vehiculos')
-  await page.keyboard.press('Escape')
-  await expect(page).not.toHaveURL(/panel=compartir/)
+  await cerrarElCompartir(page)
   await expect(page.getByRole('columnheader', { name: 'Compra inmediata (USD)' })).toHaveCount(0)
   await capturar(page, info, 'tabla-con-lote-y-montos')
 })
