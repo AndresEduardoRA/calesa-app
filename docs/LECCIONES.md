@@ -311,7 +311,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - No nombres `<Confirmar>` con sus signos en un comentario: `scripts/guardas/confirmar-con-url.test.ts` busca el texto crudo (comentarios incluidos) y pide registrar un diálogo que no existe; escribe el nombre sin `<…>`.
 - Usa `set -o pipefail` en los arneses: el código de salida de una tubería es el del último comando y una mutación «cae» o «pasa» en falso.
 - Antes de culpar al código por e2e que caen, mira que la base del carril tenga las migraciones (`pnpm db:reset` tras traer main; `supabase_migrations.schema_migrations`): dos worktrees con la misma letra en `.env.carril` comparten la pila y se pisan; `bash scripts/worktree/preparar.sh <letra libre>` pasa el worktree a otra.
-- El hook de Bash lee el texto entero del comando, heredocs incluidos: un guion que nombre un push, la bandera de saltar hooks o una orden remota de Supabase se escribe en un archivo (Write) y se corre desde ahí. Lo mismo un mensaje de commit que nombre una orden de pnpm: va por `git commit -F <archivo>`.
+- El hook de Bash lee el texto entero del comando, heredocs incluidos, y lo parte también por comillas invertidas y paréntesis: un guion que nombre un push, la bandera de saltar hooks o una orden remota de Supabase se escribe en un archivo (Write) y se corre desde ahí. Lo mismo un texto que nombre un comando bloqueado, aunque sea entre `` ` `` (un doc, un mensaje de commit que nombre una orden de pnpm): se escribe con Write o va por `git commit -F <archivo>`.
 - En un hook, busca el subcomando saltando las opciones globales (`pnpm -C x up`, `pnpm --filter web …`): mirar el primer argumento deja pasar la orden con una opción delante.
 - Con dos cuentas en `gh`, no cambies la activa: pide el token de la dueña del repo por llamada (`GH_TOKEN=$(gh auth token --user <dueña>)`), como hace `scripts/flujo/publicar.sh`.
 - `gh pr merge --auto` sin protección en `main` integra en el acto, antes del CI: el auto-merge sólo espera lo que la rama exige («Listo · todo en verde»).
@@ -332,6 +332,20 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   integrada) no gasta un intento de arreglo: lo mecánico va sin sesión (`scripts/orquestador/sin-sesion.sh`) y el choque cuenta aparte. (kit)
 - `claude -p` en un worktree pide el trust de la principal en `~/.claude.json` (`projects[<principal>].hasTrustDialogAccepted`): sin él
   ignora los `permissions.allow` del proyecto. `orquestador.sh verificar` lo revisa. (kit)
+- Un fd abierto con `exec 9>lock` para `flock` lo heredan todos los hijos, y con él el candado: cierra el fd (`9>&-`) al lanzar lo que pueda sobrevivir al proceso (una sesión, un `pnpm dev`), o un huérfano lo retiene para siempre.
+- `exec` conserva los fds abiertos: un bucle que se relanza con `exec` no reabre su candado (`exec 8>lock` soltaría el que comparten sus hijos y el `flock -n` nuevo chocaría con ellos).
+- Una prueba que crea una carpeta temporal la borra al terminar (`carpetaTemporal()` de `scripts/lib/temporal.mjs` con `node --test`, `rmSync` en `afterAll` con Vitest): `/tmp` es un tmpfs con tope de archivos que comparten todos los proyectos de la máquina, y lo que queda se acumula corrida tras corrida hasta trabarlos. Se comprueba corriendo las pruebas con `TMPDIR` en una carpeta vacía: al terminar sigue vacía.
+- En el CI git no tiene autor: una prueba que commitea pasa `-c user.name=… -c user.email=…` en cada `git commit`.
+- Una versión de modelo escrita en un archivo versionado envejece sin aviso: va el alias (`opus`) o el nivel (`capaz`), y `orquestador.sh verificar` dice qué modelo es hoy (`scripts/guardas/versiones-de-modelo.test.ts`).
+- Un `deny` de `.claude/settings.json` vale en todo modo y le gana al hook: lo que el hook deja pasar con `ORQ_PERMITE` (`pnpm update` en la tarea de dependencias) no puede estar en el deny.
+- Un issue que abre un workflow con `GITHUB_TOKEN` es de `github-actions[bot]`, sin asociación de escritura (`author_association: NONE`): el espejo de la cola lo acepta por su usuario sólo con la etiqueta `noche-roja`, y ningún comentario de un bot cuenta como respuesta.
+- Ancla con `/` en `.prettierignore` una carpeta de la raíz (`/contratos/`): sin la barra, la regla de gitignore vale para toda carpeta con ese nombre y `scripts/contratos/` dejaba de formatearse.
+- Un `.ts` generado dentro del repo pasa por el `typecheck` con `noUnusedLocals`: no declares un ayudante que puede quedar sin uso (el `Json` de los tipos de un contrato) y pruébalo compilando con las opciones de `tsconfig.json`.
+- Con `@types/node` 20, `fs.globSync` (Node 22+) no tipa aunque Node 24 lo tenga: recorre con `readdirSync(dir, { recursive: true })`.
+- Nombra la pila de un carril con el repo (`<proyecto>-<rol>-<carril>`), no con el proyecto: con el slug solo, el carril «a» de app y el de web de un mismo proyecto compartían contenedores.
+- Un repo nuevo no declara `provee` ni `consume` antes del paso que publica o fija el contrato: sin `contratos/<id>@<n>.json` (o sin la copia fijada) los jobs `contrato` y `contrato-uso` caen desde el primer PR.
+- Protege main de un repo nuevo antes de encender su orquestador (`publicar-proyecto.mjs proteger`, tras el primer CI verde): sin protección, el auto-merge integra al instante.
+- Un repo recién creado vive en `z_<proyecto>/<rol>` y todavía no tiene remoto: el repo propio se busca también por su `rol`, o con un manifiesto de varios repos el orquestador no sabe quién es.
 
 ## Por módulo
 
@@ -350,20 +364,3 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 ### vehiculos
 
 - Mira el tipo del blob que devuelve el canvas y usa JPEG si hace falta: Safari devuelve PNG aunque pidas WebP.
-  que la pila local, no de las migraciones. Fíltralos; un trigger propio llama a una función de `public`.
-- Un fd abierto con `exec 9>lock` para `flock` lo heredan todos los hijos, y con él el candado: cierra el fd (`9>&-`) al lanzar lo que pueda sobrevivir al proceso (una sesión, un `pnpm dev`), o un huérfano lo retiene para siempre.
-- `exec` conserva los fds abiertos: un bucle que se relanza con `exec` no reabre su candado (`exec 8>lock` soltaría el que comparten sus hijos y el `flock -n` nuevo chocaría con ellos).
-- Una prueba que crea una carpeta temporal la borra al terminar (`carpetaTemporal()` de `scripts/lib/temporal.mjs` con `node --test`, `rmSync` en `afterAll` con Vitest): `/tmp` es un tmpfs con tope de archivos que comparten todos los proyectos de la máquina, y lo que queda se acumula corrida tras corrida hasta trabarlos. Se comprueba corriendo las pruebas con `TMPDIR` en una carpeta vacía: al terminar sigue vacía.
-- En el CI git no tiene autor: una prueba que commitea pasa `-c user.name=… -c user.email=…` en cada `git commit`.
-- Una versión de modelo escrita en un archivo versionado envejece sin aviso: va el alias (`opus`) o el nivel (`capaz`), y `orquestador.sh verificar` dice qué modelo es hoy (`scripts/guardas/versiones-de-modelo.test.ts`).
-- No dejes que Prettier formatee una plantilla con marcadores `{{X}}`: en un frontmatter YAML los reescribe como `{ { X } }` y el reemplazo deja de encontrarlos. Va en `.prettierignore` y con una prueba que use la plantilla real (`scripts/orquestador/orquestador.test.ts`).
-- Un `deny` de `.claude/settings.json` vale en todo modo y le gana al hook: lo que el hook deja pasar con `ORQ_PERMITE` (`pnpm update` en la tarea de dependencias) no puede estar en el deny.
-- Un issue que abre un workflow con `GITHUB_TOKEN` es de `github-actions[bot]`, sin asociación de escritura (`author_association: NONE`): el espejo de la cola lo acepta por su usuario sólo con la etiqueta `noche-roja`, y ningún comentario de un bot cuenta como respuesta.
-- Ancla con `/` en `.prettierignore` una carpeta de la raíz (`/contratos/`): sin la barra, la regla de gitignore vale para toda carpeta con ese nombre y `scripts/contratos/` dejaba de formatearse.
-- Un `.ts` generado dentro del repo pasa por el `typecheck` con `noUnusedLocals`: no declares un ayudante que puede quedar sin uso (el `Json` de los tipos de un contrato) y pruébalo compilando con las opciones de `tsconfig.json`.
-- Con `@types/node` 20, `fs.globSync` (Node 22+) no tipa aunque Node 24 lo tenga: recorre con `readdirSync(dir, { recursive: true })`.
-- Nombra la pila de un carril con el repo (`<proyecto>-<rol>-<carril>`), no con el proyecto: con el slug solo, el carril «a» de app y el de web de un mismo proyecto compartían contenedores.
-- Un repo nuevo no declara `provee` ni `consume` antes del paso que publica o fija el contrato: sin `contratos/<id>@<n>.json` (o sin la copia fijada) los jobs `contrato` y `contrato-uso` caen desde el primer PR.
-- Protege main de un repo nuevo antes de encender su orquestador (`publicar-proyecto.mjs proteger`, tras el primer CI verde): sin protección, el auto-merge integra al instante.
-- Un repo recién creado vive en `z_<proyecto>/<rol>` y todavía no tiene remoto: el repo propio se busca también por su `rol`, o con un manifiesto de varios repos el orquestador no sabe quién es.
-- El hook de Bash parte también por comillas invertidas y paréntesis: un texto que nombre un comando bloqueado entre `` ` `` (un doc, un mensaje de commit) se escribe con Write o va en `git commit -F <archivo>`.
