@@ -1,5 +1,6 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   PREFIJO_ROL_E2E,
@@ -14,7 +15,7 @@ import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar
 import { sembrarBorrador, sembrarVersiones } from './soporte/formula-versiones'
 import { literal, sql } from './soporte/sql'
 
-// Descartar el borrador de la fórmula desde Configuración › Cotización › «Fórmula» (4.20-2c, `docs/UX.md` › «Cotización: fórmula (estados propios)»): un `<Confirmar>`
+// Descartar el borrador de la fórmula desde la Fórmula de un origen (Configuración › Orígenes) (4.20-2c, `docs/UX.md` › «Cotización: fórmula (estados propios)»): un `<Confirmar>`
 // con su URL (`?panel=descartar-borrador`) que nombra el borrador, por `formula_descartar_borrador()`; lo descarta todo el que configura el origen (P2 del 4.20-2c),
 // también uno atrasado, y la publicada no cambia.
 test.describe.configure({ mode: 'serial' })
@@ -63,8 +64,8 @@ test.afterAll(async () => {
 })
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}${resto}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/formula${resto}`)
+  await enLaPestana(page, 'Fórmula')
 }
 
 const dialogo = (page: Page) =>
@@ -136,7 +137,7 @@ test('un borrador atrasado no se publica pero se descarta', async ({ page }) => 
 
 test('la URL no abre descartar sin borrador', async ({ page }) => {
   await entrar(page, configuradora)
-  await abrirFormula(page, sinBorrador.id, '&panel=descartar-borrador')
+  await abrirFormula(page, sinBorrador.id, '?panel=descartar-borrador')
   await expect(page.getByText('No hay borrador para descartar.')).toBeVisible()
   await expect(page).not.toHaveURL(/panel=/)
   await expect(page.getByRole('dialog')).toHaveCount(0)

@@ -1,6 +1,7 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { formatearMonto } from '../src/shared/lib/formato'
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -95,8 +96,8 @@ test('la comisión con SI, MAX y BUSCARV se escribe en la planilla, se publica y
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/cotizacion/${origen.id}/formula`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origen.id}/formula`)
+  await enLaPestana(page, 'Fórmula')
 
   // (1) Una tabla que el origen no tiene: el error en la barra y la fila igual.
   await planilla(page).getByRole('button', { name: 'Elegir Comisión' }).click()

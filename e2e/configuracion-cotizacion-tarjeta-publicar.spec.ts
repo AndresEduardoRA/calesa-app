@@ -49,7 +49,7 @@ test.beforeEach(() => {
   borrarLasPlantillasDelOrigen(origenId())
 })
 
-const URL_DE_LA_TARJETA = () => `/configuracion/cotizacion?seccion=tarjeta&origen=${origenId()}`
+const URL_DE_LA_TARJETA = () => `/configuracion/origenes/${origenId()}/formula/tarjeta`
 
 async function abrirTarjeta(page: Page, extra = '') {
   await entrar(page, configuradora, { fresco: true })
@@ -185,7 +185,7 @@ test('E4: un PT409 porque otra persona publicó dice que el borrador ya no está
 test('E5: por la URL, sin borrador no abre, avisa y limpia; con borrador abre y «atrás» lo cierra', async ({
   page,
 }) => {
-  await abrirTarjeta(page, '&panel=publicar-tarjeta')
+  await abrirTarjeta(page, '?panel=publicar-tarjeta')
   await expect(page.getByText('No hay borrador para publicar.')).toBeVisible()
   await expect(enElModal(page)).toHaveCount(0)
   await expect(page).not.toHaveURL(/panel=/)

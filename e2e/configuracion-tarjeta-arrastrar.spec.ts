@@ -62,7 +62,7 @@ const asa = (page: Page, id: string) => page.locator(`[data-asa-de-fila="${id}"]
 
 async function abrirElEditor(page: Page) {
   await entrar(page, t().configuradora, { fresco: true })
-  await page.goto(`/configuracion/cotizacion/${t().origen.id}/tarjeta`)
+  await page.goto(`/configuracion/origenes/${t().origen.id}/formula/tarjeta`)
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(lienzo(page)).toBeVisible()
 }

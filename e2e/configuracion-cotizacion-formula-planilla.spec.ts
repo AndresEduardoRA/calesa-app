@@ -1,6 +1,7 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { formatearMonto } from '../src/shared/lib/formato'
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -68,8 +69,8 @@ test('la planilla: constante, barra de fórmula, unidad de ejemplo, guardar, pub
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/cotizacion/${origen.id}/formula`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origen.id}/formula`)
+  await enLaPestana(page, 'Fórmula')
 
   // (1) La planilla con sus cuatro columnas y la frase.
   for (const columna of ['A · concepto', 'B · %', 'C · valor', 'D · de dónde sale']) {

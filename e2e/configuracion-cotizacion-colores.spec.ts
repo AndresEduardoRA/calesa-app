@@ -70,11 +70,8 @@ const fila = (page: Page, nombre: string) =>
   page.locator('li[data-color]').filter({ has: page.getByText(nombre, { exact: true }) })
 
 async function abrirColores(page: Page) {
-  await page.goto('/configuracion/cotizacion?seccion=tonos')
-  await expect(page.getByRole('tab', { name: 'Colores', exact: true })).toHaveAttribute(
-    'aria-selected',
-    'true',
-  )
+  await page.goto('/configuracion/catalogos/colores')
+  await expect(page.getByRole('heading', { name: 'Colores', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Colores', level: 2 })).toBeVisible()
 }
 

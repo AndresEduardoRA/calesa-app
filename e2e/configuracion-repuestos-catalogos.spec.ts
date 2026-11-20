@@ -16,8 +16,8 @@ import {
 import { crearAsesoraDeLaSemilla } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
-// Configuración › Repuestos (8.08-3): quien tiene `repuestos.configurar` entra a los cuatro catálogos (la pestaña por defecto de las dos) y la sección figura en el
-// hub; la asesora de la semilla no tiene la clave y no entra. Se agrega, renombra, desactiva y elimina un tipo de pieza propio; el de la prueba se limpia por
+// Configuración › Repuestos (8.08-3): quien tiene `repuestos.configurar` entra por la sección al flujo de repuestos (su primera sub-sección) y a los cuatro
+// catálogos, y la sección figura en el hub; la asesora de la semilla no tiene la clave y no entra. Se agrega, renombra, desactiva y elimina un tipo de pieza propio; el de la prueba se limpia por
 // su nombre. Que uno en uso no se elimine lo prueba `supabase/tests/areas/repuestos/catalogos.sql` (K1, D31).
 test.describe.configure({ mode: 'serial' })
 
@@ -44,23 +44,30 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-test('quien configura repuestos entra a los cuatro catálogos y el hub lista Repuestos', async ({
+test('quien configura repuestos entra al flujo y a los cuatro catálogos y el hub lista Repuestos', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto('/configuracion/repuestos')
-  // La sección abre «Catálogos», con su frase; «Cotizador de repuestos» está en el menú.
+  // La sección abre «Flujo de repuestos»; «Cotizador de repuestos» y los catálogos están en el menú.
+  await expect(page).toHaveURL(/\/configuracion\/repuestos\/flujo$/)
+  await expect(page.getByRole('heading', { name: 'Flujo de repuestos', level: 1 })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeVisible()
+  const menu = page.getByRole('navigation', { name: 'Secciones de Configuración' })
+  await expect(menu.getByRole('link', { name: 'Flujo de repuestos' })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
+  await expect(menu.getByRole('link', { name: 'Cotizador de repuestos' })).toBeVisible()
+  // Los catálogos de repuestos: el renglón del menú (la sección Catálogos de la empresa también se llama así).
+  const catalogos = menu.locator('a[href="/configuracion/repuestos/catalogos"]')
+  await catalogos.click()
   await expect(page).toHaveURL(/\/configuracion\/repuestos\/catalogos$/)
   await expect(page.getByRole('heading', { name: 'Catálogos', level: 1 })).toBeVisible()
   await expect(
     page.getByText('Tipo de pieza, condición, vía de transporte y país de origen.'),
   ).toBeVisible()
-  const menu = page.getByRole('navigation', { name: 'Secciones de Configuración' })
-  await expect(menu.getByRole('link', { name: 'Catálogos' })).toHaveAttribute(
-    'aria-current',
-    'page',
-  )
-  await expect(menu.getByRole('link', { name: 'Cotizador de repuestos' })).toBeVisible()
+  await expect(catalogos).toHaveAttribute('aria-current', 'page')
   for (const catalogo of ['Tipo de pieza', 'Condición', 'Vía de transporte', 'País de origen']) {
     await expect(page.getByRole('heading', { name: catalogo, level: 2 })).toBeVisible()
   }
@@ -79,15 +86,6 @@ test('quien configura repuestos entra a los cuatro catálogos y el hub lista Rep
       .getByRole('region')
       .getByRole('link', { name: /^Repuestos/ }),
   ).toBeVisible()
-})
-
-test('el enlace de Configuración › Repuestos lleva al flujo de repuestos', async ({ page }) => {
-  await entrar(page, duena, { fresco: true })
-  await page.goto('/configuracion/repuestos/cotizador')
-  await page.getByRole('link', { name: 'Configurar el flujo de repuestos' }).click()
-  await expect(page).toHaveURL(/\/configuracion\/flujos\?ambito=repuestos/)
-  await expect(page.getByRole('heading', { name: 'Flujos', level: 1 })).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Repuestos', selected: true })).toBeVisible()
 })
 
 test('agregar, renombrar, desactivar y eliminar un tipo de pieza', async ({ page }) => {

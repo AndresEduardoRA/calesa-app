@@ -1,4 +1,4 @@
-// Lo que el e2e de Configuración › Flujos › Requisitos para entrar prepara y mira en la base del Supabase LOCAL. Todo requisito que crea un e2e lleva este
+// Lo que el e2e de los requisitos para entrar de una fase prepara y mira en la base del Supabase LOCAL. Todo requisito que crea un e2e lleva este
 // prefijo en sus notas: es lo único que la limpieza borra.
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
@@ -96,7 +96,7 @@ export function borrarRequisitosDePrueba(): void {
 }
 
 export async function abrirInspector(page: Page, faseId: string): Promise<Locator> {
-  await page.goto(`/configuracion/flujos?origen=${origenDeLaSubasta()}&fase=${faseId}`)
+  await page.goto(`/configuracion/origenes/${origenDeLaSubasta()}/flujo?fase=${faseId}`)
   const inspector = page.getByRole('dialog').filter({ hasText: 'Requisitos para entrar' })
   await expect(inspector).toBeVisible()
   return inspector

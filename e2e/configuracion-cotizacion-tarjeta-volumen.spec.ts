@@ -25,9 +25,10 @@ import { borrarPersonasDePrueba, borrarRolesDePrueba } from './soporte/base'
 // posición vacía del lienzo es un solo nodo sin hijos; con 600 miembros, «Dato» dibuja 50 y halla el que falta al escribir.
 test.describe.configure({ mode: 'serial' })
 
-// Lo medido en escritorio con 500 miembros y la cuadrícula más grande (T325: 213.199 B y 4.000 nodos con el build de `.next-e2e`), más un 5 %: va a
-// docs/RENDIMIENTO.md. Crece contra el editor de bloques (183.947 B): el contexto reducido lleva todos los nodos del nivel «todos» y la cuadrícula viaja entera.
-const TOPE_DE_BYTES_DEL_HTML = 223_900
+// Lo medido en escritorio con 500 miembros y la cuadrícula más grande (254.607 B y 4.000 nodos con el build de `.next-e2e`), más un 5 %: va a
+// docs/RENDIMIENTO.md. Crece contra el editor de bloques (183.947 B): el contexto reducido lleva todos los nodos del nivel «todos» y la cuadrícula viaja entera; y
+// la página del origen suma su marco (encabezado, «Para cotizar y mover», pestañas y sub-pestañas), fijo: no crece con los miembros ni con la cuadrícula.
+const TOPE_DE_BYTES_DEL_HTML = 267_400
 const TOPE_DE_NODOS_CON_500 = 5_000
 
 let configuradora = ''
@@ -101,7 +102,7 @@ test.afterAll(async ({}, info) => {
 })
 
 async function abrir(page: Page, id: string) {
-  await page.goto(`/configuracion/cotizacion/${id}/tarjeta`)
+  await page.goto(`/configuracion/origenes/${id}/formula/tarjeta`)
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(page.getByRole('grid', { name: 'Lienzo de la tarjeta' })).toBeVisible()
 }
@@ -110,7 +111,7 @@ test('E7: el primer HTML no lleva un nodo restringido que la plantilla no nombra
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  const respuesta = await page.request.get(`/configuracion/cotizacion/${mini.id}/tarjeta`)
+  const respuesta = await page.request.get(`/configuracion/origenes/${mini.id}/formula/tarjeta`)
   expect(respuesta.ok()).toBe(true)
   const html = await respuesta.text()
   // El valor CIF es de «costos» y la plantilla no lo nombra: no viaja. La descripción de un nodo del nivel «todos» sí (el selector de «Dato» la ofrece).
@@ -122,7 +123,7 @@ test('E7: con 500 miembros y la cuadrícula más grande se miden los bytes del p
   page,
 }, info) => {
   await entrar(page, configuradora, { fresco: true })
-  const respuesta = await page.request.get(`/configuracion/cotizacion/${con500.id}/tarjeta`)
+  const respuesta = await page.request.get(`/configuracion/origenes/${con500.id}/formula/tarjeta`)
   const bytes = Buffer.byteLength(await respuesta.text())
   await abrir(page, con500.id)
   const lienzo = page.getByRole('grid', { name: 'Lienzo de la tarjeta' })
@@ -137,7 +138,10 @@ test('E7: con 500 miembros y la cuadrícula más grande se miden los bytes del p
     }
   })
   // El JS en frío de la ruta (con el build de `.next-e2e`; el editor llega después por `diferido()`): se anota, la ruta no tiene presupuesto.
-  const js = await medirJsEnFrio(page.context(), `/configuracion/cotizacion/${con500.id}/tarjeta`)
+  const js = await medirJsEnFrio(
+    page.context(),
+    `/configuracion/origenes/${con500.id}/formula/tarjeta`,
+  )
   const medido = `${String(bytes)} B, ${String(nodos)} nodos (${String(celdas)} celdas, ${String(vacias)} casillas vacías), JS en frío ${String(enKB(js.bytes))} KB gz en ${String(js.chunks)} chunks`
   info.annotations.push({ type: 'medido', description: medido })
   console.warn(

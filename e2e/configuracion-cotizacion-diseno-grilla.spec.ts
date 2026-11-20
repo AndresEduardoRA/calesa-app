@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -147,8 +148,8 @@ test('G1: el ancho de 8 de 12, el orden arrastrando y con el teclado, la densida
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/cotizacion?seccion=diseno&origen=${editor.id}`)
-  await expect(page.getByRole('heading', { name: 'Hoja', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${editor.id}/formula/hoja`)
+  await enLaPestana(page, 'Hoja')
 
   // «Base» a lo ancho (12 columnas) y «Precio» en 8 de 12.
   const base = seccionDelEditor(page, 'base')

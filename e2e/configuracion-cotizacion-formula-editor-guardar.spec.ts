@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   borrarPersonasDePrueba,
@@ -82,8 +83,8 @@ const guardar = (page: Page) =>
 const estado = (page: Page) => editor(page).locator('[data-guardado] [role="status"]')
 
 async function abrirFormula(page: Page, origenId: string) {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/formula`)
+  await enLaPestana(page, 'Fórmula')
 }
 
 async function abrirSobreLaPublicada(page: Page, origenId: string) {

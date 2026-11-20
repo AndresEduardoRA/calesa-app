@@ -23,7 +23,7 @@ import {
 } from './soporte/niveles'
 import { capturar, crearAsesoraDeLaSemilla } from './soporte/recorrido'
 
-// Quién ve qué en Configuración › Cotización › Niveles (paso 4.09-2): quien sólo lee los roles (`equipo.roles.ver`) ve la lista sin «Nuevo nivel» ni
+// Quién ve qué en Configuración › Catálogos › Niveles (paso 4.09-2): quien sólo lee los roles (`equipo.roles.ver`) ve la lista sin «Nuevo nivel» ni
 // «⋯» y la base no le deja escribir; la asesora, sin ninguno de los dos permisos, no ve la pantalla ni la tarjeta en Configuración.
 test.describe.configure({ mode: 'serial' })
 
@@ -70,7 +70,9 @@ test('quien sólo lee los roles ve la lista sin «Nuevo nivel» ni «⋯», y la
   await page.context().clearCookies()
   await entrar(page, lectora, { fresco: true })
   await page.goto('/configuracion/inicio')
-  await expect(page.getByRole('region').getByRole('link', { name: /Cotización/ })).toBeVisible()
+  await expect(
+    page.getByRole('region').getByRole('link', { name: 'Catálogos', exact: true }),
+  ).toBeVisible()
   await abrirNiveles(page)
   await expect(filaDeNivel(page, visible.nombre)).toBeVisible()
   await expect(page.getByText(/de 10 niveles posibles\./)).toBeVisible()
@@ -81,7 +83,7 @@ test('quien sólo lee los roles ve la lista sin «Nuevo nivel» ni «⋯», y la
   // Escribiendo la URL tampoco abre un formulario.
   await noAbre(
     page,
-    '/configuracion/cotizacion?seccion=niveles&panel=nuevo-nivel',
+    '/configuracion/catalogos/niveles?panel=nuevo-nivel',
     'No tienes permiso para cambiar los niveles de acceso.',
     /panel=nuevo-nivel/,
   )
@@ -104,9 +106,9 @@ test('la asesora sin permisos de roles no ve la pantalla, ni la tarjeta en Confi
 }, info) => {
   await page.context().clearCookies()
   await entrar(page, asesora, { fresco: true })
-  await page.goto('/configuracion/cotizacion')
+  await page.goto('/configuracion/catalogos/niveles')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Niveles', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Niveles de acceso' })).toHaveCount(0)
   await capturar(page, info, 'niveles-asesora-sin-permiso')
   const cliente = await sesionDe(asesora, CONTRASENA)
   const uso = await cliente.rpc('niveles_con_uso')

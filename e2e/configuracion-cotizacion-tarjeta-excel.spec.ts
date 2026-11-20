@@ -45,7 +45,7 @@ const tarjeta = (page: Page) => page.locator('[data-tarjeta-de-cotizacion]')
 const anuncio = (page: Page) => page.locator('[data-anuncio-del-editor]')
 
 async function abrirElEditor(page: Page, origenId: string) {
-  await page.goto(`/configuracion/cotizacion/${origenId}/tarjeta`)
+  await page.goto(`/configuracion/origenes/${origenId}/formula/tarjeta`)
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(lienzo(page)).toBeVisible()
 }

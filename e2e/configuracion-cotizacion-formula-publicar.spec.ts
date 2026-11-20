@@ -1,5 +1,6 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { expect, test, type Page } from './soporte/prueba'
+import { enLaPestana } from './soporte/pestanas-del-origen'
 import { CONTRASENA, entrar } from './soporte/alta'
 import {
   PREFIJO_ROL_E2E,
@@ -17,7 +18,7 @@ import {
 } from './soporte/cotizar-formula'
 import { sembrarBorrador } from './soporte/formula-versiones'
 
-// Publicar el borrador de la fórmula con nota desde Configuración › Cotización › «Fórmula» (4.20-2b, `docs/UX.md` › «Cotización: fórmula (estados propios)»): por
+// Publicar el borrador de la fórmula con nota desde la Fórmula de un origen (Configuración › Orígenes) (4.20-2b, `docs/UX.md` › «Cotización: fórmula (estados propios)»): por
 // `formula_publicar()` con la publicada que se leyó; la nota vacía se rechaza antes de pedir; el PT409 de la base se muestra tal cual (sin «Recargá», 4.20-1) con
 // «Recargar»; la URL (`?panel=publicar-formula`) se revisa al llegar.
 test.describe.configure({ mode: 'serial' })
@@ -68,8 +69,8 @@ test.afterAll(async () => {
 })
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
-  await page.goto(`/configuracion/cotizacion?seccion=formula&origen=${origenId}${resto}`)
-  await expect(page.getByRole('heading', { name: 'Fórmula', level: 1 })).toBeVisible()
+  await page.goto(`/configuracion/origenes/${origenId}/formula${resto}`)
+  await enLaPestana(page, 'Fórmula')
 }
 
 const modal = (page: Page) => page.getByRole('dialog', { name: 'Publicar el borrador' })
@@ -135,7 +136,7 @@ test('la URL no abre publicar sin borrador, y un borrador sin diseño dice por q
   page,
 }) => {
   await entrar(page, configuradora)
-  await abrirFormula(page, sinBorrador.id, '&panel=publicar-formula')
+  await abrirFormula(page, sinBorrador.id, '?panel=publicar-formula')
   await expect(page.getByText('No hay borrador para publicar.')).toBeVisible()
   await expect(page).not.toHaveURL(/panel=/)
   await expect(modal(page)).toHaveCount(0)
