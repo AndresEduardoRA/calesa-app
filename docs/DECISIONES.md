@@ -526,13 +526,17 @@ las trampas, en `docs/LECCIONES.md`.
   `?vehiculo=` es también el filtro del listado: con ese panel la página no lo lee como filtro, para que la lista de atrás siga agrupada. «Comparar» va en el pie del modal: sus
   elegidas viven en el hueco `Comparar`, que envuelve al modal; una línea lo cierra y abre su resumen en un solo paso. Sin la cabeza (el enlace abre un grupo que no está en la página)
   el modal sale sin la aprobada primera y con el título genérico: leerla pediría otra lectura del servidor por un caso raro.
-- **El resumen de la cotización lleva arriba sus acciones.** «Abrir cotización» (la principal), «Compartir cotización» y el «⋯» con la lista única de la fila sin
-  «Compartir» (ya está a la vista), los mismos `menuDeFila` y `compartirDe` de la tarjeta: una sola lista de acciones. La cotización del resumen que no está en la
+- **El resumen de la cotización lleva arriba sus acciones y una cabecera fija; lo principal son las pestañas.** Arriba, fija, la barra: «Abrir cotización» (la principal), «Compartir cotización» y el «⋯» con la lista única de la fila sin
+  «Compartir» (ya está a la vista), los mismos `menuDeFila` y `compartirDe` de la tarjeta: una sola lista de acciones; debajo, la cabecera resumida (miniatura de la imagen de la tarjeta y los datos de la fila, ≤ 120 px)
+  y, con el resto del alto, las pestañas, que se desplazan por su cuenta (`Drawer desplazamiento="propio"`: un panel que se desplaza entero movería la barra y la cabecera). La cotización del resumen que no está en la
   página (una línea del modal de un grupo, otra página) entra a los menús con `conLaDelResumen()`: un id más en las tres lecturas por clave primaria de las marcas.
   Los diálogos del listado se dibujan dentro del Drawer mientras está abierto y su código ya llegó (un modal hermano cuenta como un clic afuera y lo cierra) y en el
   listado si no (así un `?panel=` de la URL no espera al chunk del resumen): un solo montaje a la vez. El panel es `ancho="amplio"`: con el normal (3/4 del celular) no caben «Abrir» y «Compartir» mitad y mitad con el «⋯» a 44 px. Barra pegajosa no:
-  le quita alto a la imagen de la tarjeta en un panel corto. Enviar a la papelera desde ese «⋯» deja el resumen abierto: al refrescarse dice que ya no está disponible y
-  «Deshacer» la devuelve.
+  le quita alto a lo de abajo en un panel corto. Enviar a la papelera desde ese «⋯» deja el resumen abierto: al refrescarse dice que ya no está disponible y
+  «Deshacer» la devuelve. **Fuera del listado** (la ficha del lead y la del vehículo, `?cotizacion=`): `src/app/(app)/cotizaciones/resumen-de-la-pagina.tsx` lee sólo esa cotización y monta `ResumenFueraDelListado` (`pantallas/listado-resumen.ts`) con las mismas acciones
+  (`use-menus-de-las-filas.tsx`, compartido con el listado). La lectura vive en `src/app` y no en el módulo porque nombra al cliente y al vehículo con `leads` y `vehiculos`, que `cotizaciones` no importa (los ciclos); el componente sí es del módulo.
+  «Abrir cotización» desde una ficha lleva `returnTo` (la ficha con su consulta, sin las claves del resumen) y la página de la cotización dibuja «Volver» con `returnToSeguro()`. «De este vehículo» es la quinta pestaña y no un bloque entre los datos y
+  las pestañas: la lista de otras cotizaciones empujaba las pestañas fuera de la vista; sin otras dice que ésta es la única, para que la pestaña no sea un hueco.
 - **La lista de cotizaciones lleva en frío sólo lo que se ve al llegar.** La imagen de la tarjeta (`next/image`, el recuadro y la cáscara del visor), el
   conmutador y «Agrupar» con su action; lo que no se ve al llegar (el despliegue de un grupo, sus líneas y «Comparar») va con `diferido()`. El tope de
   `/cotizaciones`, en `docs/RENDIMIENTO.md`.
@@ -823,7 +827,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Qué congela un comprobante.** El recorte del nivel «todos», la cotización, el origen, la razón social y el NIT; del cliente y del vehículo sólo los ids. Emitir pide la versión. Una cotización con comprobante, anulado o no, no va a la papelera.
 - **Reportar no mueve la versión.** «Descartar los reportes» modera a `activa`; las marcas de reporte se leen en el servidor (tras `<Suspense>`, con `cache()`). Tope de 20 adjuntos sin candado (pueden quedar 21; aceptado).
 - **Adjuntos sin miniaturas.** La URL firmada se pide al hacer clic (60 s), nunca al leer la lista.
-- **Las pestañas del resumen.** «Todo» mezcla una página de cada fuente (comentarios, revisiones, adjuntos) y sólo dibuja hasta donde llegó la que menos retrocedió: mezclar sin ese borde saltaría lo que aún no se leyó. «Adjuntos» son los archivos (`cotizaciones_adjuntos`); un comprobante no es un archivo sino un documento emitido por la base, y va bajo los adjuntos, de sólo lectura, con la regla de la guardada. Las cuatro piden sólo ver la cotización (como la guardada): ninguna se esconde, y si la base niega una lectura (papelera, acceso perdido) esa pestaña lo dice. Adjuntar y moderar salen de las mismas reglas del «⋯» sobre la fila (`puedeGuardarDesdeElListado()`: sin ellas el resumen no pregunta a la base); un alcance «propios» sobre una cotización ajena que la cartera sí deja editar queda sin «Adjuntar» en el resumen y se adjunta desde la guardada.
+- **Las pestañas del resumen.** «Todo» mezcla una página de cada fuente (comentarios, revisiones, adjuntos) y sólo dibuja hasta donde llegó la que menos retrocedió: mezclar sin ese borde saltaría lo que aún no se leyó. «Adjuntos» son los archivos (`cotizaciones_adjuntos`); un comprobante no es un archivo sino un documento emitido por la base, y va bajo los adjuntos, de sólo lectura, con la regla de la guardada. Las cuatro primeras piden sólo ver la cotización (como la guardada): ninguna se esconde, y si la base niega una lectura (papelera, acceso perdido) esa pestaña lo dice. Adjuntar y moderar salen de las mismas reglas del «⋯» sobre la fila (`puedeGuardarDesdeElListado()`: sin ellas el resumen no pregunta a la base); un alcance «propios» sobre una cotización ajena que la cartera sí deja editar queda sin «Adjuntar» en el resumen y se adjunta desde la guardada.
 
 ### La cotización aprobada
 

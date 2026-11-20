@@ -44,7 +44,7 @@ locale)`, el único lector de un número tipeado.
 - `config/esquemas.ts`: el entorno en Zod (`entornoPublico()`, `entornoDelServidor()`, `pnpm env:check`; lectores en `scripts/lib/entornos/`).
   `config/app.ts`: nombre y colores.
 - `ui/diferido.tsx`: `diferido()` (con `aviso: 'aqui'`, `respaldo(props)` se dibuja bajo «Sin conexión» si el código no llega). `ui/modal.tsx`, `ui/drawer.tsx`, `ui/confirmar.tsx`: diálogos por URL; `ui/modal-de-formulario.tsx`,
-  `ui/use-envio-de-modal.ts` (envío sin versión). `<Drawer alCostado>`: no modal y sin fondo (lo de atrás se sigue usando; tocar afuera no
+  `ui/use-envio-de-modal.ts` (envío sin versión). `<Drawer desplazamiento="propio">`: el cuerpo no se desplaza y lo de adentro llena su alto (el resumen de una cotización: cabecera fija y pestañas). `<Drawer alCostado>`: no modal y sin fondo (lo de atrás se sigue usando; tocar afuera no
   cierra, Esc y la ✕ sí), para el panel que acompaña a una pantalla ancha. `ui/bloque.tsx`: `<Bloque>` es un `<details>`;
   dentro de `<BloquesALaVista>` (`ui/bloques-a-la-vista.tsx`) es una `<section>` a la vista con su `h3` (`h4` anidado) y `onAbrir` una vez al montarse.
 - `ui/vuelta-del-foco.ts`: `abrirConVuelta()` y `useVueltaDelFoco()`: tras recargar con un panel por URL, «atrás» devuelve el foco a quien lo abrió
@@ -54,7 +54,7 @@ locale)`, el único lector de un número tipeado.
   chico), `<CarruselConTira>` (el de una ficha: pide al montarse y dibuja `<TiraDeMiniaturas>` debajo; `sobreLaFoto` para lo que va en su esquina),
   `<TiraDeMiniaturas>` (con `conTeclado`, ← → Home End marcan y Enter elige), `useImagenes()` y `useVisorDeGaleria()` (una galería ya leída); el visor vive en `?visor=<clave>&foto=<n>` (la foto cambia con `replace`).
 - `ui/lista/`: `UnaSolaVista` (con `preferida`), `ConmutadorDeVista` («Tabla | Tarjetas», `lib/vista-de-lista.ts`; va en «Vista y opciones»), `TablaDeLista`,
-  `FilaDeLista`, `TarjetaDeLista`, `EsquinaDeAcciones` (el lugar del «⋯» en la tarjeta; `sobreImagen` sobre una foto), `MasAcciones`, `AbrirResumen`, `EnlaceDeLaFila` (el nombre como enlace a la ficha en una lista sin resumen: la fila y la tarjeta reciben `href` en vez de `alAbrir`, `ir-desde-la-fila.ts`), `SimbolosDeLista`, `PestanasDelResumen` (con `alto="lleno"` ocupa el alto de su contenedor y cada pestaña se desplaza en su marco).
+  `FilaDeLista`, `TarjetaDeLista`, `EsquinaDeAcciones` (el lugar del «⋯» en la tarjeta; `sobreImagen` sobre una foto), `MasAcciones`, `AbrirResumen`, `EnlaceDeLaFila` (el nombre como enlace a la ficha en una lista sin resumen: la fila y la tarjeta reciben `href` en vez de `alAbrir`, `ir-desde-la-fila.ts`), `SimbolosDeLista`, `PestanasDelResumen` (con `alto="lleno"` ocupa el alto de su contenedor; `panelDesplazable` hace que cada pestaña se desplace en su marco; `reparto="igual"`: toda la fila en partes iguales, con desplazamiento de costado si no caben).
 - `ui/monto.tsx` + `live.ts` + `guion-live.tsx` (Modo Live), `regional.tsx`, `densidad.tsx`, `marca.tsx`, `estilo-de-marca.tsx`.
 - `lib/acciones-del-aviso.ts` (las acciones de un aviso como datos: `AccionDelAviso`, `resolverAcciones()`, `pedidoDe()`, `hrefDePanel()`; `ErrorApp.causa`)
   y `ui/acciones-del-aviso.tsx` (`<AccionesDelAviso>`, todo `<Button>`: en un toast sólo los botones reciben el puntero).
