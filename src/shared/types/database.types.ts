@@ -11927,6 +11927,7 @@ export type Database = {
           anio: number
           atributos: Json
           categoria_id: string
+          cierre_subasta_en: string
           creado_en: string
           creado_por: string
           destacado_web: boolean

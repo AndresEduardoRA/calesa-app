@@ -8,6 +8,7 @@ export const ATAJOS = {
   abrirNuevo: { combinacion: 'shift+n', descripcion: 'Abrir «Nuevo»: elegir qué crear' },
   guardar: { combinacion: 'mod+s', descripcion: 'Guardar' },
   guardarYSeguir: { combinacion: 'mod+enter', descripcion: 'Guardar y seguir' },
+  buscarEnPantalla: { combinacion: '/', descripcion: 'Buscar dentro de Configuración' },
   ayuda: { combinacion: '?', descripcion: 'Ver la lista de atajos' },
 } as const satisfies Record<string, { combinacion: string; descripcion: string }>
 

@@ -72,8 +72,11 @@ test('la dueña ve las fases de un origen en orden, cambia a repuestos y abre un
   expect(repuestos.length).toBeGreaterThan(0)
 
   await entrar(page, duena, { fresco: true })
-  await page.goto('/configuracion')
-  await page.getByRole('link', { name: /Flujos/ }).click()
+  await page.goto('/configuracion/inicio')
+  await page
+    .getByRole('region')
+    .getByRole('link', { name: /Flujos/ })
+    .click()
   await expect(page.getByRole('heading', { name: 'Flujos', level: 1 })).toBeVisible()
   // Las fases abren primero, como diagrama; las reglas y los tipos de documento se abren desde la barra del flujo, en su panel (T38).
   await expect(page.getByRole('heading', { name: 'Fases', level: 2 })).toBeVisible()

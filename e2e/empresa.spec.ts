@@ -92,7 +92,7 @@ test('la dueña cambia el nombre y la zona horaria y se ven en el shell', async 
   // Llega por su menú: Configuración → Empresa.
   await page.getByRole('button', { name: `Menú de ${DUENA}` }).click()
   await page.getByRole('menuitem', { name: 'Configuración' }).click()
-  await page.getByRole('link', { name: /Empresa/ }).click()
+  await page.getByRole('region').getByRole('link', { name: 'Empresa', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Datos de la empresa', level: 1 })).toBeVisible()
 
   await page.getByLabel('Nombre de la empresa').fill(nombre)
@@ -182,8 +182,8 @@ test('sin el permiso de ajustes, Datos de la empresa sale deshabilitada con el m
   await entrar(suya, cambista)
 
   // La sección aparece en su Configuración: tiene uno de los dos permisos de la empresa.
-  await suya.goto('/configuracion')
-  await suya.getByRole('link', { name: /Empresa/ }).click()
+  await suya.goto('/configuracion/inicio')
+  await suya.getByRole('region').getByRole('link', { name: 'Empresa', exact: true }).click()
   await expect(suya.getByText(MOTIVO_SIN_PERMISO)).toBeVisible()
   await expect(suya.getByLabel('Nombre de la empresa')).toBeDisabled()
   await expect(suya.getByLabel('Zona horaria')).toBeDisabled()

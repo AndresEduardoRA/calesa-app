@@ -62,8 +62,11 @@ test('la dueña cambia la vigencia desde el hub y queda guardada; la línea de �
 }) => {
   sql('update public.ajustes_empresa set vigencia_dias = 15')
   await entrar(page, duena, { fresco: true })
-  await page.goto('/configuracion')
-  await page.getByRole('link', { name: /Cotización/ }).click()
+  await page.goto('/configuracion/inicio')
+  await page
+    .getByRole('region')
+    .getByRole('link', { name: /Cotización/ })
+    .click()
   await page
     .getByRole('list', { name: 'Partes generales' })
     .getByRole('link', { name: /Vigencia/ })

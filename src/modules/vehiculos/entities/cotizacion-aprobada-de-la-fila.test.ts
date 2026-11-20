@@ -2,15 +2,17 @@ import { describe, expect, it } from 'vitest'
 import {
   aprobadaDeLaFila,
   costoEstimadoDe,
+  nombreDeCompartirLaAprobada,
   montoDeLaAprobada,
   type CotizacionAprobadaDeLaFila,
 } from './cotizacion-aprobada-de-la-fila'
 
 const V1 = '11111111-1111-4111-8111-111111111111'
 const V2 = '22222222-2222-4222-8222-222222222222'
+const C1 = '33333333-3333-4333-8333-333333333333'
 
 const con = (monto: string | null, modo: string | null = null): CotizacionAprobadaDeLaFila => ({
-  ruta: '/cotizaciones/x',
+  cotizacionId: C1,
   monto,
   moneda: 'USD',
   modo,
@@ -43,10 +45,10 @@ describe('montoDeLaAprobada', () => {
 })
 
 describe('costoEstimadoDe', () => {
-  it('el monto con su moneda, el modo y la ruta de la cotización', () => {
+  it('el monto con su moneda, el modo y el id de la cotización', () => {
     expect(costoEstimadoDe(con('27999', 'Unificado'))).toEqual({
       tipo: 'monto',
-      ruta: '/cotizaciones/x',
+      cotizacionId: C1,
       valor: 27999,
       moneda: 'USD',
       modo: 'Unificado',
@@ -59,14 +61,31 @@ describe('costoEstimadoDe', () => {
     expect(costoEstimadoDe(con('27999', ' Paralelo '))).toMatchObject({ modo: 'Paralelo' })
   })
 
-  it('sin total, «Sin total» enlazado y sin modo aunque lo traiga; un monto que no es número tampoco es total', () => {
+  it('sin total, «Sin total» sin modo aunque lo traiga; un monto que no es número tampoco es total', () => {
     expect(costoEstimadoDe(con(null, 'Unificado'))).toEqual({
       tipo: 'sin_total',
-      ruta: '/cotizaciones/x',
+      cotizacionId: C1,
     })
     expect(costoEstimadoDe(con('abc', 'Unificado'))).toEqual({
       tipo: 'sin_total',
-      ruta: '/cotizaciones/x',
+      cotizacionId: C1,
     })
+  })
+})
+
+describe('nombreDeCompartirLaAprobada', () => {
+  it('el monto con su modo entre paréntesis', () => {
+    expect(
+      nombreDeCompartirLaAprobada(costoEstimadoDe(con('27999', 'Unificado')), 'US$27.999'),
+    ).toBe('Compartir la cotización aprobada (US$27.999 · Unificado)')
+  })
+
+  it('sin modo, sólo el monto; sin total, «Sin total»', () => {
+    expect(nombreDeCompartirLaAprobada(costoEstimadoDe(con('27999')), 'US$27.999')).toBe(
+      'Compartir la cotización aprobada (US$27.999)',
+    )
+    expect(nombreDeCompartirLaAprobada(costoEstimadoDe(con(null, 'Unificado')), '')).toBe(
+      'Compartir la cotización aprobada (Sin total)',
+    )
   })
 })

@@ -73,9 +73,10 @@ test('la dueña guarda el lema y la dirección pública desde el hub, y quedan g
   page,
 }) => {
   await entrar(page, duena)
-  await page.goto('/configuracion')
+  await page.goto('/configuracion/inicio')
   await page
     .getByRole('main')
+    .getByRole('region')
     .getByRole('link', { name: /^Sitio web/ })
     .click()
   // `/configuracion/web` abre la primera sub-sección que la dueña puede: Ajustes.

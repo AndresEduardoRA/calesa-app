@@ -42,9 +42,12 @@ const nextConfig: NextConfig = {
   // Configuración › Cotización: `/general` y `/<origen>` solos no dibujan nada. Van a su primera parte (Colores, que redirige sola a la primera
   // que la persona abre; «Fórmula» del origen, que comprueba el origen y el permiso) con su consulta. Aquí y no en un `page.tsx`: una página que
   // sólo redirige pide su `loading.tsx`, y el esqueleto de cada nivel viaja en el HTML de todas las páginas de debajo. `general` va primero.
-  // La ruta vieja de la imagen de la tarjeta va a la de hoy con su consulta (308: un enlace o una caché del navegador que la nombre sigue andando).
+  // `/configuracion` solo no dibuja nada: el inicio vive en `/configuracion/inicio` (308, con su consulta). `/configuracion/inicio` no choca con
+  // ninguna sección: ninguna se llama «inicio». La ruta vieja de la imagen de la tarjeta va a la de hoy con su consulta (308: un enlace o una
+  // caché del navegador que la nombre sigue andando).
   redirects() {
     return Promise.resolve([
+      { source: '/configuracion', destination: '/configuracion/inicio', permanent: true },
       {
         source: '/cotizaciones/:id/portada',
         destination: '/cotizaciones/:id/imagen',

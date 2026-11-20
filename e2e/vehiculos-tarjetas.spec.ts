@@ -8,7 +8,7 @@ import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
 // Las tarjetas de la lista de `/vehiculos` (T337, `docs/UX.md` › «Vehículos»): todas miden lo mismo aunque el título ocupe una línea o no quepa en dos y
-// falten datos; el chip «Lote N» va abajo a la izquierda de la foto (sin lote, no está); «Costo estimado» es la aprobada con su modo, enlazada a ella;
+// falten datos; el chip «Lote N» va abajo a la izquierda de la foto (sin lote, no está); «Costo estimado» es la aprobada con su modo y abre «Compartir la cotización»;
 // «Compra directa» es el campo de `pricing.buy_now_usd` o «—». La tabla suma «Lote», «Compra directa» y «Costo estimado». En un origen manual no hay
 // lote ni compra directa. Sin llamadas a apibara.
 test.describe.configure({ mode: 'serial' })
@@ -51,6 +51,12 @@ test.beforeAll(async ({}, info) => {
   sql(
     `update public.origenes_campos set activo = true where origen_id = ${literal(subasta.id)}::uuid and clave_apibara = 'pricing.buy_now_usd'`,
   )
+  // Un vehículo sin fase está «En subasta» sólo si el flujo del origen tiene una fase de subasta: sin ella la base lo deja en «fase» y no hay cuenta regresiva.
+  sql(`
+    insert into public.fases (flujo_id, nombre, orden, es_inicial, es_subasta)
+    select fl.id, 'Subasta', 1, true, true
+      from public.flujos fl
+     where fl.ambito = 'vehiculos' and fl.origen_id = ${literal(subasta.id)}::uuid`)
   const filas = [
     {
       titulo: T.corta,
@@ -118,6 +124,15 @@ const tarjeta = (page: Page, titulo: string): Locator =>
 const dato = (lugar: Locator, rotulo: string): Locator =>
   lugar.locator(`xpath=.//dt[normalize-space()="${rotulo}"]/following-sibling::dd[1]`)
 
+// El diálogo de «Compartir» se carga al pedirlo: se espera a que esté antes de cerrarlo con Esc, y a que se vaya antes de mirar la URL.
+async function cerrarElCompartir(page: Page): Promise<void> {
+  const panel = page.getByRole('dialog', { name: 'Compartir cotización' })
+  await expect(panel).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(panel).toBeHidden()
+  await expect(page).not.toHaveURL(/panel=compartir/)
+}
+
 async function alOrigen(page: Page, origenId: string, vista: 'tabla' | 'tarjetas'): Promise<void> {
   await page.goto(`/vehiculos?origen=${origenId}&vista=${vista}`)
   await expect(page.locator('tbody tr, li article').filter({ visible: true }).first()).toBeVisible()
@@ -157,11 +172,17 @@ test('E2E las tarjetas miden lo mismo, con el lote sobre la foto, el costo estim
   }
   await expect(larga.locator('[data-chip-del-lote]')).toHaveCount(0)
 
-  // «Costo estimado»: el monto con su modo, enlazado a la aprobada; «—» sin aprobada.
-  const costo = dato(corta, 'Costo estimado').getByRole('link')
+  // «Costo estimado»: el monto con su modo, en un botón que abre «Compartir la cotización» de la aprobada sin salir de la lista; «—» sin aprobada.
+  const costo = dato(corta, 'Costo estimado').getByRole('button', {
+    name: /^Compartir la cotización aprobada \(.*1[.,]234.* · Unificado\)$/,
+  })
   await expect(costo).toHaveText(/1[.,]234.*·\s*Unificado/)
-  await expect(costo).toHaveAttribute('href', `/cotizaciones/${cotizacionId}`)
   await expect(dato(larga, 'Costo estimado')).toHaveText('—')
+  await expect(dato(larga, 'Costo estimado').getByRole('button')).toHaveCount(0)
+  await costo.click()
+  await expect(page).toHaveURL(new RegExp(`panel=compartir.*para=${cotizacionId}`))
+  expect(new URL(page.url()).pathname).toBe('/vehiculos')
+  await cerrarElCompartir(page)
 
   // «Compra directa»: el valor de `pricing.buy_now_usd`, o «—»; el campo no se repite entre los «en tarjeta».
   await expect(dato(corta, 'Compra directa')).toHaveText(/12[.,]500/)
@@ -187,10 +208,10 @@ test('E2E la tabla suma el lote, la compra directa y el costo estimado', async (
   const fila = aLaVista(page.getByRole('row').filter({ hasText: T.corta }))
   await expect(fila).toContainText(LOTE)
   await expect(fila).toContainText(/12[.,]500/)
-  await expect(fila.getByRole('link', { name: /Unificado/ })).toHaveAttribute(
-    'href',
-    `/cotizaciones/${cotizacionId}`,
-  )
+  await fila.getByRole('button', { name: /Compartir la cotización aprobada.*Unificado/ }).click()
+  await expect(page).toHaveURL(new RegExp(`panel=compartir.*para=${cotizacionId}`))
+  expect(new URL(page.url()).pathname).toBe('/vehiculos')
+  await cerrarElCompartir(page)
   await expect(page.getByRole('columnheader', { name: 'Compra inmediata (USD)' })).toHaveCount(0)
   await capturar(page, info, 'tabla-con-lote-y-montos')
 })
@@ -212,4 +233,50 @@ test('E2E en un origen manual no hay lote ni compra directa', async ({ page }, i
   await expect(page.getByRole('columnheader', { name: 'Compra directa', exact: true })).toHaveCount(
     0,
   )
+})
+
+// La cuenta regresiva del cierre (T421): arriba de la línea de datos de la tarjeta y debajo de «En subasta» en la tabla; avanza con el reloj de la página (un solo temporizador).
+// El cierre se fija en la base y el reloj del navegador se pone a esa distancia; sin fecha, «Sin fecha de cierre».
+test('E2E la cuenta regresiva del cierre avanza cada segundo en la tarjeta y en la tabla', async ({
+  page,
+}) => {
+  const ahora = Math.floor(Date.now() / 1000) * 1000
+  const faltan = ((2 * 24 + 4) * 60 * 60 + 12 * 60 + 33) * 1000
+  sql(
+    `update public.vehiculos set subasta_fin_en = ${literal(new Date(ahora + faltan).toISOString())}::timestamptz
+      where origen_id = ${literal(subasta.id)}::uuid and titulo = ${literal(T.corta)}`,
+  )
+  // «Cierra en 2 d 04:11:33» a esa hora del reloj de la página.
+  const textoA = (hora: number): string => {
+    const total = Math.ceil((ahora + faltan - hora) / 1000)
+    const dos = (n: number): string => String(n).padStart(2, '0')
+    return `Cierra en ${Math.floor(total / 86400)} d ${dos(Math.floor((total % 86400) / 3600))}:${dos(Math.floor((total % 3600) / 60))}:${dos(total % 60)}`
+  }
+  await page.clock.install({ time: ahora })
+  await entrar(page, duena)
+  for (const vista of esMovil(page) ? (['tarjetas'] as const) : (['tarjetas', 'tabla'] as const)) {
+    await alOrigen(page, subasta.id, vista)
+    const lugar =
+      vista === 'tabla'
+        ? aLaVista(page.getByRole('row').filter({ hasText: T.corta }))
+        : tarjeta(page, T.corta)
+    const cuenta = lugar.locator('[data-cuenta-regresiva]')
+    // Con el reloj corriendo, la primera vez que el texto cambia la página ya hidrató y el temporizador late: recién ahí se pausa.
+    const inicial = (await cuenta.textContent()) ?? ''
+    await expect(cuenta).not.toHaveText(inicial)
+    const pausa = (await page.evaluate(() => Date.now())) + 60_000
+    await page.clock.pauseAt(pausa)
+    await expect(cuenta).toHaveText(textoA(pausa))
+    await expect(cuenta).toHaveAttribute('data-cuenta-regresiva', 'normal')
+    await page.clock.runFor(3000)
+    await expect(cuenta).toHaveText(textoA(pausa + 3000))
+    // Sin fecha de cierre, lo dice.
+    await expect(
+      (vista === 'tabla'
+        ? aLaVista(page.getByRole('row').filter({ hasText: T.larga }))
+        : tarjeta(page, T.larga)
+      ).locator('[data-cuenta-regresiva]'),
+    ).toHaveText('Sin fecha de cierre')
+    await page.clock.resume()
+  }
 })

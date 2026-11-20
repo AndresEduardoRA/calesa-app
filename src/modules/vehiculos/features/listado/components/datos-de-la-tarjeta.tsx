@@ -17,6 +17,7 @@ import {
 } from '../../../entities/cotizacion-aprobada-de-la-fila'
 import { precioDeLaFila, type ColumnaDePrecio } from '../../../entities/precio-de-la-fila'
 import type { Vehiculo } from '../../../entities/vehiculo'
+import { CuentaRegresivaDelCierre } from '../../subasta/components/cuenta-regresiva-del-cierre'
 import { CeldaDeCompraDirecta } from './compra-directa'
 import { CostoEstimado } from './costo-estimado'
 import { RotuloDePrecioDeTarjeta, ValorDePrecioDeTarjeta } from './precio-de-la-fila'
@@ -29,10 +30,15 @@ export type FilasDeLaTarjeta = {
   campos: readonly CampoDeVehiculo[]
   // Quien mira ve cotizaciones en algún origen: la fila «Costo estimado» existe.
   conCostoEstimado: boolean
+  // En un origen de subasta, la cuenta regresiva del cierre de cada vehículo en subasta, con el instante del servidor; nulo = no aplica.
+  cuentaRegresiva: { ahora: string } | null
 }
 
 type Props = FilasDeLaTarjeta & {
-  vehiculo: Pick<Vehiculo, 'precio' | 'atributos' | 'estadoSubasta'>
+  vehiculo: Pick<
+    Vehiculo,
+    'precio' | 'atributos' | 'estadoSubasta' | 'situacion' | 'cierreSubastaEn'
+  >
   aprobada: CotizacionAprobadaDeLaFila | null
 }
 
@@ -76,6 +82,7 @@ function Celdas({ dato, columna }: { dato: Dato; columna: 1 | 2 }) {
 // «en tarjeta» de a dos.
 export function DatosDeLaTarjeta(props: Props) {
   const { vehiculo, aprobada, columnaPrecio, columnaCompra, campos, conCostoEstimado } = props
+  const { cuentaRegresiva } = props
   const { locale, zonaHoraria } = useRegional()
   const precio = precioDeLaFila(vehiculo, columnaPrecio)
   const compra = compraDirectaDeLaFila(vehiculo.atributos, columnaCompra)
@@ -118,12 +125,28 @@ export function DatosDeLaTarjeta(props: Props) {
   // El costo estimado va después de la primera fila de a dos.
   const datos = costo === null ? deDos : [...deDos.slice(0, 2), costo, ...deDos.slice(2)]
   let enFila = 0
+  // Arriba de la línea que separa los datos, la cuenta del cierre (sólo en un vehículo en subasta); ella o, si no hay, los datos van pegados abajo.
+  const conCuenta = cuentaRegresiva !== null && vehiculo.situacion === 'en_subasta'
   return (
-    <dl className="mt-auto grid grid-flow-row-dense grid-cols-2 gap-x-3 border-t border-(--color-line) pt-1.5">
-      {datos.map((dato) => {
-        const columna = dato.ancho ? 1 : (((enFila++ % 2) + 1) as 1 | 2)
-        return <Celdas key={dato.clave} dato={dato} columna={columna} />
-      })}
-    </dl>
+    <>
+      {conCuenta ? (
+        <CuentaRegresivaDelCierre
+          cierre={vehiculo.cierreSubastaEn}
+          ahora={cuentaRegresiva.ahora}
+          className="mt-auto"
+        />
+      ) : null}
+      <dl
+        className={cn(
+          conCuenta ? 'mt-1' : 'mt-auto',
+          'grid grid-flow-row-dense grid-cols-2 gap-x-3 border-t border-(--color-line) pt-1.5',
+        )}
+      >
+        {datos.map((dato) => {
+          const columna = dato.ancho ? 1 : (((enFila++ % 2) + 1) as 1 | 2)
+          return <Celdas key={dato.clave} dato={dato} columna={columna} />
+        })}
+      </dl>
+    </>
   )
 }

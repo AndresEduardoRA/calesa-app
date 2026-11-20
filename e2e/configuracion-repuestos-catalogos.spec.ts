@@ -71,9 +71,14 @@ test('quien configura repuestos entra a los cuatro catálogos y el hub lista Rep
   await expect(page).toHaveURL(/\/configuracion\/repuestos\/cotizador\?panel=tramo/)
   await expect(page.getByRole('dialog', { name: 'Agregar tramo en USD' })).toBeVisible()
 
-  await page.goto('/configuracion')
+  await page.goto('/configuracion/inicio')
   // El hub es el `main`: el menú del marco tiene su entrada «Repuestos» aparte.
-  await expect(page.getByRole('main').getByRole('link', { name: /^Repuestos/ })).toBeVisible()
+  await expect(
+    page
+      .getByRole('main')
+      .getByRole('region')
+      .getByRole('link', { name: /^Repuestos/ }),
+  ).toBeVisible()
 })
 
 test('el enlace de Configuración › Repuestos lleva al flujo de repuestos', async ({ page }) => {

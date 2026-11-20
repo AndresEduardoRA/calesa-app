@@ -24,6 +24,7 @@ import type { Situacion } from '../../../entities/situacion'
 import type { SubastaDeVehiculo } from '../../../entities/subasta-vehiculo'
 import { estaDesactualizada } from '../../../entities/subasta-tiempo'
 import { CLAVE_DEL_ESTADO_DEL_PATIO } from '../../../entities/zona-del-patio'
+import { CuentaRegresivaDelCierre } from './cuenta-regresiva-del-cierre'
 import { FechaDeSubasta } from './fecha-de-subasta'
 import { MenuDeLaSubasta } from './menu-de-la-subasta'
 
@@ -107,6 +108,31 @@ function Cifras({
   )
 }
 
+// El cierre en la zona de quien mira y, con `cuenta` (el «ahora» del servidor), la cuenta regresiva viva debajo; sin fecha lo dice.
+function DelCierre({
+  cierre,
+  estadoDelPatio,
+  cuenta,
+}: {
+  cierre: string | null
+  estadoDelPatio: unknown
+  cuenta: string | null
+}) {
+  if (cierre === null) return 'Sin fecha de cierre'
+  return (
+    <>
+      <FechaDeSubasta iso={cierre} estadoDelPatio={estadoDelPatio} detalle />
+      {cuenta === null ? null : (
+        <CuentaRegresivaDelCierre
+          cierre={cierre}
+          ahora={cuenta}
+          className="mt-0.5 text-(length:--text-sm)"
+        />
+      )}
+    </>
+  )
+}
+
 // «Subasta» en la columna izquierda de la ficha, fácil de leer: una frase con color y cuenta según la situación («Se subasta en 2 días 4 h», «Cerró
 // hace 3 h · sin resolver», «Ganada», «No ganada»), el cierre en la zona de quien mira (y, más chicas, la del patio y la de la empresa), la puja y la
 // compra directa. «Editar fechas» va en su «⋯»; consultar de nuevo es «Actualizar los datos» del «⋯» del vehículo.
@@ -154,15 +180,11 @@ export function BloqueDeSubasta({
       </p>
       <dl className="grid gap-3">
         <Dato etiqueta="Cierre">
-          {cierre === null ? (
-            'Sin fecha de cierre'
-          ) : (
-            <FechaDeSubasta
-              iso={cierre}
-              estadoDelPatio={vehiculo.atributos[CLAVE_DEL_ESTADO_DEL_PATIO]}
-              detalle
-            />
-          )}
+          <DelCierre
+            cierre={cierre}
+            estadoDelPatio={vehiculo.atributos[CLAVE_DEL_ESTADO_DEL_PATIO]}
+            cuenta={situacion === 'en_subasta' ? ahora : null}
+          />
         </Dato>
       </dl>
       <Cifras

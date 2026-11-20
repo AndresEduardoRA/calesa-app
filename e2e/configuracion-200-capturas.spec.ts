@@ -58,7 +58,7 @@ test.afterAll(async () => {
 })
 
 const PANTALLAS = [
-  ['hub', () => '/configuracion'],
+  ['hub', () => '/configuracion/inicio'],
   ['empresa-datos', () => '/configuracion/empresa'],
   ['empresa-monedas', () => '/configuracion/empresa/monedas'],
   ['empresa-integraciones', () => '/configuracion/empresa/integraciones'],
