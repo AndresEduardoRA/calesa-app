@@ -46,6 +46,9 @@ begin
       return concat_ws(' and ', 'true', case when c ->> 'desde' is not null then format('%s >= %L', v_txt, c ->> 'desde') end, case when c ->> 'antesDe' is not null then format('%s < %L', v_txt, c ->> 'antesDe') end);
     when 'atributo_texto' then return format('%s ilike %s', v_txt, v_pat);
     -- `not.in.(…)`
+    -- `eq.en_subasta` + `gte` + `lt` sobre el cierre.
+    when 'cierre_entre' then
+      return format('(v.situacion = ''en_subasta'' and v.cierre_subasta_en >= %L::timestamptz and v.cierre_subasta_en < %L::timestamptz)', c ->> 'desde', c ->> 'hasta');
     when 'situacion_fuera_de' then
       return format('not (v.situacion = any (%L::text[]))', (select array_agg(x)::text from jsonb_array_elements_text(c -> 'valores') x));
     -- `or(situacion.in.(…),and(situacion.eq.fase,fase_id.in.(…)),and(situacion.eq.fase,fase_id.is.null))`: cada parte que hay, un término.
@@ -151,6 +154,15 @@ begin
    where origen_id = o and titulo in ('Toyota ABC grande', 'xzy sin asterisco', 'Toyota abc chica');
   -- Y una en subasta: su subasta sigue viva en la fase de subasta.
   update public.vehiculos set estado_subasta = 'abierta', subasta_fin_en = now() + interval '5 days' where origen_id = o and titulo = 'Rebaja 500 mañana';
+  -- Para las ventanas del cierre: otra viva (sin fase, en un origen con fase de subasta) que cierra en 2 h; una viva fuera del tramo (en «VL publica») que cierra en 3 h; y
+  -- una «abierta» con el cierre pasado (sin resolver: no es viva aunque tenga cierre).
+  update public.vehiculos set estado_subasta = 'abierta', subasta_fin_en = now() + interval '2 hours' where origen_id = o and titulo = 'axb parecido';
+  update public.vehiculos set estado_subasta = 'abierta', subasta_fin_en = now() + interval '3 hours' where origen_id = o and titulo = 'Ñandú CAMIÓN';
+  update public.vehiculos set estado_subasta = 'abierta', subasta_fin_en = now() - interval '1 hour' where origen_id = o and titulo = 'barra \ invertida';
+  if (select array_agg(situacion order by titulo) from public.vehiculos where origen_id = o and titulo in ('axb parecido', 'Ñandú CAMIÓN', 'barra \ invertida'))
+     is distinct from array['en_subasta', 'sin_resolver', 'fase'] then
+    raise exception 'L5: las subastas de las ventanas no quedaron en su situación';
+  end if;
   if (select count(distinct situacion) from public.vehiculos where origen_id = o) <> 4 then raise exception 'L5: el terreno no tiene las cuatro situaciones'; end if;
   v_todos := pg_temp.vl_referencia(d, o, '[]');
   v_casos := array[
@@ -193,6 +205,10 @@ begin
     -- Varias ramas (una por situación propia y el resto): las tres propias con una fase, y dos propias con «sin fase» y otro filtro.
     jsonb_build_array(jsonb_build_object('tipo', 'situacion_en', 'situaciones', '["en_subasta", "sin_resolver", "no_ganada"]'::jsonb, 'fases', jsonb_build_array(f_pub), 'sinFase', false)),
     jsonb_build_array(jsonb_build_object('tipo', 'busqueda', 'texto', 'o'), jsonb_build_object('tipo', 'situacion_en', 'situaciones', '["no_ganada", "en_subasta"]'::jsonb, 'fases', '[]'::jsonb, 'sinFase', true)),
+    -- Las ventanas del cierre: la próxima sola; las dos vivas del tramo (ni la de fuera del tramo ni la del cierre pasado); con la de siempre.
+    jsonb_build_array(jsonb_build_object('tipo', 'cierre_entre', 'desde', to_jsonb(now()), 'hasta', to_jsonb(now() + interval '4 hours'))),
+    jsonb_build_array(jsonb_build_object('tipo', 'cierre_entre', 'desde', to_jsonb(now() - interval '2 hours'), 'hasta', to_jsonb(now() + interval '6 days')),
+                      jsonb_build_object('tipo', 'situacion_fuera_de', 'valores', '["no_ganada"]'::jsonb)),
     -- Tres combinaciones.
     jsonb_build_array(jsonb_build_object('tipo', 'busqueda', 'texto', 'rebaja'), jsonb_build_object('tipo', 'columna_rango', 'columna', 'anio', 'min', 2000, 'max', null),
                       jsonb_build_object('tipo', 'atributos_contienen', 'alternativas', '[{"color": "azul"}, {"usado": true}]'::jsonb)),

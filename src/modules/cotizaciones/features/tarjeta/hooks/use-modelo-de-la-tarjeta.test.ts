@@ -19,7 +19,7 @@ const pagina: PaginaDelModelo = {
   titulo: null,
   cliente: null,
   vehiculo: { titulo: 'Toyota Hilux 2020', lote: null, vin: null },
-  asesor: 'Ana Pérez',
+  asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
   numero: 7,
   vencida: true,
   venceEl: '2026-10-20',
@@ -48,7 +48,7 @@ describe('useModeloDeLaTarjeta', () => {
     })
     expect(result.current.lectura).toBe(lectura)
     expect(result.current.contexto).toMatchObject({
-      asesor: 'Ana Pérez',
+      asesor: { nombre: 'Ana Pérez', telefono: null, cargo: null, foto: null },
       numero: '7',
       fecha: '11 oct 2026',
       venceEl: '20 oct 2026',

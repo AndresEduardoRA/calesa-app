@@ -128,6 +128,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Tras una action pon lo devuelto en la pantalla cargada, sin revalidar ni `router.refresh()`: en Next 16 `revalidatePath`, `revalidateTag`, `updateTag` y `refresh` vuelven a dibujar la página que llama (se pierde lo tipeado y lo cargado vuelve a la primera página).
 - Tras un `router.refresh()` inevitable, mantén los controles apagados hasta que la pantalla se redibuje: un cambio de URL en medio pierde el refresco.
 - Suelta el aviso de guardado o el cierre de panel al terminar el envío (`useTrasElEnvio`) y encola lo que sale al desmontarse: el refresco remonta el panel antes de que `isPending` baje.
+- Responde una redirección permanente (308) desde `src/proxy.ts` o un route handler, nunca desde una página: bajo el `<Suspense>` del layout y con
+  `loading.tsx`, `permanentRedirect()` llega ya mandado el esqueleto y sale 200 con un meta refresh. Pruébala con `page.request.get(…, { maxRedirects: 0 })`.
 - Mide el peor caso de lo que manda una Server Action: el tope es 1 MB por pedido y una fórmula de 2.000 nodos pesa ≈ 400 KB.
 - En un route handler, `await connection()` va antes de cualquier rama (también el 503 sin secreto): con `cacheComponents`, `next build` lo prerenderiza y lo sirve fijo.
 - Renueva el id idempotente del navegador por intento (tras el éxito o al reabrir, `key` = la apertura): la pantalla conserva su estado y el mismo id devolvería lo ya creado.
@@ -212,6 +214,10 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   (`ignoreDefaultArgs: ['--hide-scrollbars']`, `e2e/configuracion-tarjeta-arrastrar.spec.ts`): el Chromium de Playwright las esconde.
 - Dentro de una columna que se desplaza por dentro (la ficha en dos columnas), no uses `scrollIntoView` para dejar algo a la vista de una barra de costado (la tira de miniaturas): mueve también a la columna y la deja donde la persona no la puso; ajusta el `scrollLeft` de la barra. Y esa columna va `relative`: un `sr-only` (absoluto) de adentro, sin ancestro posicionado, no queda recortado y alarga el documento (la ventana se desplazaba 17 px).
 - Una columna que recupera su posición al volver a una pantalla (`usePosicionDeLasColumnas()`) insiste unos segundos: al mostrarse de nuevo el contenido se acomoda y el navegador achica el desplazamiento al tope de ese momento; reponer una sola vez deja la posición equivocada.
+- Un modal de formulario queda montado al cerrarse: lo tipeado sigue en su estado y, en un campo controlado, en el `value` del documento. Un secreto o una
+  clave se borra al cerrar (`useModalDeSecreto`), y el e2e que dice «la clave no vuelve» mira `page.content()` con el modal ya cerrado.
+- La cabecera de una tarjeta (título, estado, botones) lleva un `basis` en rem en el título: sin él, con el texto al 200 % el título se aplasta junto a los botones
+  en vez de partir la cabecera en dos líneas.
 
 ## Realtime y notificaciones
 
@@ -237,6 +243,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Mide el costo en altas e importación antes de un índice de n-gramas (duplica el tiempo) y prefiere un mínimo de 3 caracteres.
 - Mide como corre: sentencia preparada con parámetros (no literales), el `EXPLAIN` de una `security definer` como dueño de la tabla, y con volumen y fondo realista (el plan genérico estima por promedio): si no, el planificador elige otro plan.
 - Antes de medir crecimiento de bloques deja la base limpia: vacía con `truncate … cascade` dentro de la transacción (con guarda de que quedó vacía), no con `delete`, y pasa `vacuum (full, analyze)`: entradas de índice y tuplas muertas dejan espacio que la sonda reusa y suma 0.
+- Exige la forma de un plan sólo en el volumen donde el índice gana: entre dos índices parciales que sirven a la misma rama (las vivas sin fecha por el suyo o por
+  `vehiculos_situacion_idx`), con 50.000 el planificador elige el más chico y con 250.000 el dedicado; una guarda de forma en los dos volúmenes cae sin que haya nada roto.
 - Juzga «no crece con N» por bloques por relación (`pg_stat_get_xact_blocks_fetched`), no en ms ni en buffers totales: el autovacuum y el WAL mueven los tiempos.
 - Comprueba que la medición mide: la guarda «no crece con N» debe caer al quitar el índice y cada ruta medida devolver sus `n + 1` filas (con la sesión equivocada la policy la vacía y el assert pasa sin medir).
 - Escribe un «fuera de estos valores» sobre un arreglo no constante como `col = any (<complemento>)`, nunca `col <> all (…)`: con una columna casi de un solo valor el planificador estima selectividad ≈ 0 y deja de leer la ruta en orden por su índice.
@@ -291,6 +299,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 
 - Si sumas algo al marco o al menú (entrada, campana, burbuja, pestaña), grepea `e2e/`: mueve paradas de Tab, pedidos contados, pestañas contadas, topes de JS y lo que tapa un `fixed`.
 - Marca `esDelMarco` todo pedido nuevo que haga el marco: los specs que cuentan pedidos de su pantalla los excluyen y si no, caen.
+- Una revalidación del navegador (un 304 contra su caché) Playwright la ve como un 200 sin bytes nuevos: el 304 se prueba con `page.request.get(url, { headers: { 'if-none-match': etag } })`, y lo del navegador se cuenta por pedidos y bytes, no por estado.
 - Mide la tarea de oro y todo recorrido que cruza el marco con teclas, toques y KLM con tope, nunca con reloj ni con la cuenta exacta de paradas de Tab: varias sesiones en una máquina dan rojos falsos y cada entrada nueva del marco pondría en rojo PR ajenos.
 
 ### Pruebas que prueban algo

@@ -4,7 +4,7 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 
 ## Entra y sale
 
-- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?situacion=`—, `?cursor=`, `?vitrina=si|no`; cada fila y cada tarjeta es un enlace a la ficha, con `href` y `EnlaceDeLaFila` de `shared/ui/lista`; un `?vehiculo=<id>` viejo
+- Entra: `/vehiculos` (`?origen=`, filtros —entre ellos `?subasta=`, `?orden=` y `?fase=`; un `?situacion=` viejo redirige con 308: `src/proxy.ts` lo reescribe a `/vehiculos/enlace-viejo`, que responde con `destinoDeLaSituacionVieja()`—, `?cursor=`, `?vitrina=si|no`; cada fila y cada tarjeta es un enlace a la ficha, con `href` y `EnlaceDeLaFila` de `shared/ui/lista`; un `?vehiculo=<id>` viejo
   redirige a la ficha con su panel, su visor y su edición: `destinoDelEnlaceViejo()`, de `index.ts`, que llama la página con `redirigir()`; un
   `?panel=vitrina-rapida&para=<id>` viejo, a `?panel=vitrina&para=<id>`: `destinoDeLaVitrinaRapida()`; los paneles del «⋯» `?panel=imagenes|vitrina|actualizar-datos&para=<id>`),
   `/vehiculos/papelera`, `/vehiculos/[id]` (la ficha en dos columnas. A la izquierda, lo clave: `CabeceraDeVehiculo` con `FotosDeLaFicha` (el carrusel con
@@ -75,7 +75,14 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 - `client.ts`: `<BadgeDeSituacion>` (la situación real; con `fase` delega en `<BadgeDeFase>`. Lo importa `logistica`: nada pesado puede colgar de ahí),
   `Situacion`, `SITUACIONES`, `esquemaDeSituacion`, `etiquetaDeSituacion`, `Vehiculo`; para la importación de `datos`, `validarVehiculo`, `camposComunes`, `camposActivos`,
   `claveDeAtributo` y sus tipos (cada fila se valida con el esquema del alta).
-- **Filtro «Situación»** (`entities/filtros.ts`, `FILTRO_SITUACION`, condición `situacion_en`): sus fases y «Sin fase» en todo origen y, en uno de subasta (`conSubasta`), «En subasta», «Sin resolver» y «No ganadas» (`SITUACIONES_PROPIAS`); reemplaza al de «Fase». `condicionesDe()` suelta `CONDICION_POR_DEFECTO` si se pide «No ganadas». `<AtajoSinResolver>` (`features/listado/`) recibe `sinResolver` (`ConteoAcotado | null`, de `sinResolverDe()`: `tope + 1` por `vehiculos_situacion_idx`, «99+») y pone o quita ese filtro.
+- **Filtros «Subasta» y «Fase», y el orden** (`entities/filtros.ts`, `entities/filtros-de-subasta.ts`): en un origen de subasta (`conSubasta`), «Subasta» (`FILTRO_SUBASTA`,
+  `eleccion`: «Cualquiera», las tres ventanas de `ventana-del-cierre.ts` como `cierre_entre`, y «Todas las vivas», «Sin resolver» y «No ganadas» como `situacion_en`) y,
+  justo después, «Orden» (`FILTRO_ORDEN`: `reciente` | `cierre`; su por defecto es `cierre` si «Subasta» tiene valor: `esSubastaElegida()` antes del esquema y
+  `ordenElegido()` después). «Fase» (`FILTRO_FASE`) en todo origen: las fases y «Sin fase» como `columna_en` sobre `fase_id`. `condicionesDe(…, { ahora })` suelta
+  `CONDICION_POR_DEFECTO` si se pide «No ganadas»; sin `ahora` las ventanas no filtran. Con `cierre`, `fuenteDelInventario()` va siempre por la función, el cursor es
+  `cursor-del-cierre.ts` (`<tramo>~<cursor>`) y `<UbicacionPorCierre>` dice «Cierre más próximo primero» o «Volver al principio». Las vistas guardadas con
+  `situacion` se leen con `conSituacionTraducida()`. `<AtajoSinResolver>` (`features/listado/`) recibe `sinResolver` (`ConteoAcotado | null`, de `sinResolverDe()`:
+  `tope + 1` por `vehiculos_situacion_idx`, «99+») y pone o quita `?subasta=sin_resolver`.
 - **Situación en la ficha** (`features/situacion/`, `pantallas/ficha.ts` › `<AvisoDeSituacion>`): «Sin resolver» con «La ganamos» (el `href` lo
   arma `src/app`: `vehiculos` no conoce `logistica`) y «No la ganamos» (`marcarNoGanada`, con «Deshacer» 10 s); «No ganada» con quién y cuándo
   (`resolucionDeSubasta`, de `index.ts`) y «Deshacer». `puedeResolverLaSubasta(permisos, origen)`: `flujos.mover` o `.cualquiera` y `logistica.ver`. `useNoGanada({ vehiculoId, origenId, alLograrlo })` sale por `client.ts`: `logistica` lo usa en la fila de «Subastas sin resolver» de su bandeja del día (con `router.refresh()` al lograrlo).
@@ -138,9 +145,10 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
 `vehiculos`, `vehiculos_imagenes`, `vehiculos_imagenes_version`, `vehiculos_interesados`, `vehiculos_vinculos`, `vehiculos_conservados`,
 `apibara_consultas` y `limpieza_corridas` (sólo `service_role`), `cola_gc_*` (cola de Storage de todos los buckets), `lotes_papelera` (compartida).
 Columnas de la situación: `situacion` (derivada), `subasta_resultado`, `subasta_resuelta_por`, `subasta_resuelta_en`; índice
-`vehiculos_situacion_idx (origen_id, situacion, creado_en desc, id desc)` sin las que son su fase. Job `situacion-al-cerrar`
+`vehiculos_situacion_idx (origen_id, situacion, creado_en desc, id desc)` sin las que son su fase; el orden por cierre, `vehiculos_subasta_viva_cierre_idx
+(origen_id, cierre_subasta_en, id)` y `vehiculos_subasta_viva_sin_fecha_idx (origen_id, creado_en desc, id desc)`, parciales de las vivas. Job `situacion-al-cerrar`
 (`vehiculos_situacion_al_cerrar()`, 500 por corrida). Lectura `vehiculos_inventario` (una página por rutas con los filtros del layout en
-SQL; la usa `buscarVehiculos()` para «propios», por `fuenteDelInventario()`). Escritura: `vehiculo_crear|guardar|subasta_refrescar|vincular|vitrina|conservar`, `vehiculo_fotos_agregar`,
+SQL y, con `p_orden = 'cierre'`, por tramos con `p_cursor_tramo`; la usa `buscarVehiculos()` para «propios», por `fuenteDelInventario()`). Escritura: `vehiculo_crear|guardar|subasta_refrescar|vincular|vitrina|conservar`, `vehiculo_fotos_agregar`,
 `vehiculo_foto_mover|portada|eliminar`, `vehiculo_subasta_no_ganada` («No la ganamos» y su «Deshacer»; «La ganamos» es
 `vehiculo_subasta_ganada`, que llama `flujos`), `vehiculo_interesado_marcar|quitar`, `vehiculos_papelera_enviar|restaurar|purgar`. `vehiculos`,
 `vehiculos_imagenes` y `vehiculos_interesados` son de sólo lectura para la app.
@@ -198,7 +206,8 @@ SQL; la usa `buscarVehiculos()` para «propios», por `fuenteDelInventario()`). 
 ## Ojo
 
 - Bajo RLS los filtros sobre `atributos` no usan el GIN: lo barato es `vehiculos_origen_listado_idx`. Keyset `(creado_en, id)`; el cursor viaja como
-  texto (`Date` pierde microsegundos).
+  texto (`Date` pierde microsegundos). Por cierre, el keyset es `(cierre_subasta_en, id)` ascendente en el tramo 0 y `(creado_en, id)` descendente en los otros
+  dos; el cursor nombra su tramo y, al cruzar de tramo, la página sigue con el siguiente.
 - El VIN es único entre todos los vivos (puede chocar con uno que no ves); el lote, por origen y plataforma. El `id` del alta lo genera el navegador.
 - En plpgsql nunca `if not (lead_id in (select mis_leads()))` (con nulo no levanta): `puede_vehiculo()`.
 - `cotizacion_marcar_final` toma vehículo y luego lead, al revés que vincular: cuidar el orden de locks. Desvincular con cotización final no se frena.

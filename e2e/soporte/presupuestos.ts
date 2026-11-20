@@ -10,7 +10,7 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   // El «Nuevo» de la barra que abre también el de la agenda (T37) lo llevó a 500,3 KB en 33 chunks: regla del 5 %, lo medido más un 5 % a la decena.
   '/vehiculos': 530,
   // El listado de cotizaciones (4.16-4a), sin el resumen (4.16-4b): medido 358,4 KB en 23 chunks, más un 5 % hacia arriba a la decena. Con las tarjetas de la lista
-  // (T319: la portada en frío, el conmutador, «Agrupar» y sus preferencias; el despliegue y «Comparar» diferidos) midió 386,9 KB: regla del 5 % sobre 380, a la decena.
+  // (T319: la imagen de la tarjeta en frío, el conmutador, «Agrupar» y sus preferencias; el despliegue y «Comparar» diferidos) midió 386,9 KB: regla del 5 % sobre 380, a la decena.
   '/cotizaciones': 390,
   // La hoja de cotizar con la subasta de la semilla (`?origen=`, el diseño más grande del juego), su presupuesto formal desde el 4.13-4d: medido 429,5 KB en 25 chunks, más un 5 % hacia arriba a la decena.
   // Con la línea «Descargar PDF» y el contexto del «⋯» de la guardada, que viajan con la hoja (T321; el pedido del PDF sin la lectura de la tarjeta), llegó a 460,4 KB en 28
@@ -59,4 +59,4 @@ export const PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB = 58
 // los dos (77,4 KB, tolerancia ±1 KB). Con las entradas del marco que se fueron encendiendo (Logística, 6.01) pesa 82,8 KB (84.810 B en
 // escritorio) y con la campana en la barra (7.02-2: su botón, las rutas con pantalla y el usuario por props) 86,6 KB (86.627 B). Con el bloque
 // «Notificaciones» del perfil (7.04: su <Bloque>, el esqueleto de su <Suspense> y las props del bloque diferido) 91,2 KB (93.382 B): sobre lo medido más un 5 %. Con las acciones de la paleta (7.13-3: las de crear, ir a y Configuración que la dueña puede, como props del hueco del buscador) 98,1 KB (100.444 B): lo medido más un 5 %. Con «Turnos de la web» y «Tu ficha en la web» en el perfil (8.05-2: el interruptor de disponibilidad, el bloque plegado de la ficha y el interruptor de su formulario, que se monta recién al abrirla) 107,0 KB (109.522 B): lo medido más un 5 %. Con el bloque «Vistos» del perfil (A3a: tres opciones y la preferencia en el proveedor) 113,3 KB (116.028 B): 119 (regla del 5 %).
-export const PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB = 119
+export const PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB = 121

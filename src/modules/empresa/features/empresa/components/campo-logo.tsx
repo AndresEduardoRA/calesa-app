@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/shared/ui/button'
 import { prepararLogo } from '../../../composicion.client'
 import { TIPOS_DE_LOGO } from '../../../entities/marca'
-import type { LogoElegido } from '../hooks/use-guardar-ajustes'
+import type { LogoElegido } from '../hooks/use-guardar-tarjeta'
 
 // El logo normal o el del tema oscuro: los dos campos conviven en la pantalla, así que cada uno
 // tiene sus textos, su nombre accesible y sus ids.

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useContext, useEffect, useRef, useState, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 import type { Envio } from '@/shared/lib/enviar-accion'
 import { useReintentoAlVolver } from '@/shared/ui/use-reintento-al-volver'
 import type {
@@ -10,7 +10,6 @@ import type {
 } from '../../../entities/guardado'
 import { queEnviar, trasElEnvio } from '../../../entities/intento-de-guardado'
 import type { PedidoDeGuardado } from '../../../entities/pedido-de-guardado'
-import { ContextoDeLaVistaPrevia } from '../components/hueco-de-la-vista-previa'
 import type { usePendienteEnLaPestana } from './pendiente-en-la-pestana'
 
 // Lo que la hoja arma para guardar, cuando el total está al día; nulo si no hay que guardar (el recálculo falló, el total quedó nulo, la hoja se fue).
@@ -58,8 +57,7 @@ export const RESPUESTA_PERDIDA: TextoDelAviso = {
 }
 type Pendiente<P> = ReturnType<typeof usePendienteEnLaPestana<P>>
 
-// Manda un pedido ya anotado y pone el estado con lo que vuelva: lo anota como pendiente antes de salir y lo suelta con toda respuesta que trae SQLSTATE. Con la cotización
-// guardada avisa al área de la vista previa (`alGuardarLaCotizacion`: la portada), si la hay.
+// Manda un pedido ya anotado y pone el estado con lo que vuelva: lo anota como pendiente antes de salir y lo suelta con toda respuesta que trae SQLSTATE.
 function useMandar<P>({
   pendiente,
   enviar,
@@ -76,11 +74,8 @@ function useMandar<P>({
   ocupadoRef: RefObject<boolean>
 }) {
   const alGuardarRef = useRef(alGuardar)
-  const vistaPrevia = useContext(ContextoDeLaVistaPrevia)
-  const vistaPreviaRef = useRef(vistaPrevia)
   useEffect(() => {
     alGuardarRef.current = alGuardar
-    vistaPreviaRef.current = vistaPrevia
   })
   return useCallback(
     async (pedido: P, esReenvio: boolean) => {
@@ -93,7 +88,6 @@ function useMandar<P>({
       ocupadoRef.current = false
       if (envio.ok && envio.data.tipo === 'guardada') {
         setEstado({ tipo: 'guardada', cotizacion: envio.data.cotizacion, fueReenvio: esReenvio })
-        vistaPreviaRef.current?.alGuardarLaCotizacion?.(envio.data.cotizacion.id)
         alGuardarRef.current()
         return
       }

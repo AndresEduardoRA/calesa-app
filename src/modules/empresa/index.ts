@@ -9,14 +9,14 @@ export { getAjustes } from './composicion'
 
 // Configuración › Empresa: marca, datos legales, región y políticas
 export { leerAjustes, leerMonedasYTiposCambio } from './composicion'
-export { huellaDelFormulario, type PoliticaDeLimpieza } from './entities/ajustes-empresa'
+export { type PoliticaDeLimpieza } from './entities/ajustes-empresa'
 // La limpieza automática de vehículos de subasta: si está encendida y cuántos días de gracia. No
 // tumba la pantalla (sin poder leerla, se da por apagada).
 export { getPoliticaDeLimpieza } from './composicion'
 export { zonasHorarias } from './entities/regional'
 
 // Monedas y tipos de cambio nombrados
-export { getTiposCambio, leerHistorial } from './composicion'
+export { getTiposCambio, leerHistorial, leerUltimosCambios } from './composicion'
 export type { TipoCambio } from './entities/tipos-cambio'
 
 // Configuración › Cotización › Ajustes (4.20-4b): la vigencia de las cotizaciones

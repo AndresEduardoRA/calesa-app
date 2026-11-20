@@ -1,90 +1,132 @@
 'use client'
 
-import { parseAsString, useQueryStates } from 'nuqs'
 import { Aviso } from '@/shared/ui/aviso'
+import { TarjetasDeAjustes } from '@/shared/ui/tarjetas-de-ajustes'
+import type { AjustesEmpresa } from '../../../entities/ajustes-empresa'
 import type { LeyendaDeTiposCambio } from '../../../entities/compartir-tipos-cambio'
-import { MOTIVO_SIN_PERMISO_TIPOS_CAMBIO } from '../../../entities/motivos'
-import type { CambioDeValor, Moneda, TipoCambio } from '../../../entities/tipos-cambio'
+import {
+  MOTIVO_SIN_PERMISO_AJUSTES,
+  MOTIVO_SIN_PERMISO_TIPOS_CAMBIO,
+} from '../../../entities/motivos'
+import {
+  claveDelPar,
+  gruposPorPar,
+  type CambioDeValor,
+  type GrupoDePar,
+  type Moneda,
+  type TipoCambio,
+} from '../../../entities/tipos-cambio'
+import type { UltimoCambio } from '../../../entities/tipos-cambio-vigentes'
+import { useNavegacionDeMonedas } from '../hooks/use-navegacion-de-monedas'
+import { usePanelesDeMonedas } from '../hooks/use-paneles-de-monedas'
 import { useTiposCambio } from '../hooks/use-tipos-cambio'
-import { LeyendaDeLosTiposCambio } from './leyenda-de-los-tipos-cambio'
-import { ListaMonedas } from './lista-monedas'
-import { ListaTiposCambio } from './lista-tipos-cambio'
-import { PanelMoneda } from './panel-moneda'
-import { PanelNuevoTipoCambio } from './panel-nuevo-tipo-cambio'
-import { PanelTipoCambio } from './panel-tipo-cambio'
+import { ModalesDeMonedas } from './modales-de-monedas'
+import { PANEL_MONEDA, PANEL_TIPO, PanelesDeMonedas } from './paneles-de-monedas'
+import { ParesDeMonedas } from './pares-de-monedas'
+import { TarjetaDeMonedaBase } from './tarjeta-de-moneda-base'
+import { TarjetaAlCompartir, TarjetaDeMonedasActivas } from './tarjetas-secundarias'
 
 type Props = {
   // Todos, también los inactivos.
   tipos: readonly TipoCambio[]
   monedas: readonly Moneda[]
-  monedaBase: string
+  // Lo guardado de la empresa, con la versión de la fila: el modal de la moneda base lo recibe por props al abrir.
+  ajustes: AjustesEmpresa
+  // Con vehículos, cotizaciones o gastos cargados la base ya no se cambia.
+  conDatosCargados: boolean
   // El historial del tipo de cambio de `?tc=`, ya leído en el servidor. null si no hay panel
   // abierto o si quien mira no puede verlo.
   historial: readonly CambioDeValor[] | null
+  // Quién y cuándo cambió el valor de cada tipo de cambio activo.
+  ultimosCambios: Readonly<Record<string, UltimoCambio>>
+  // `empresa.tipos_cambio.gestionar`: los tipos de cambio, las monedas y la leyenda.
   puedeGestionar: boolean
+  // `empresa.ajustes.gestionar`: la moneda base.
+  puedeEditarAjustes: boolean
   // La leyenda de lo que se comparte, con la versión de la fila.
   leyenda: LeyendaDeTiposCambio
 }
 
-const PANEL_TIPO = 'nuevo-tipo-cambio'
-const PANEL_MONEDA = 'nueva-moneda'
-
-// La pestaña «Monedas»: tipos de cambio con su valor vigente y su historial, y las monedas. Cada
-// panel tiene su URL (`?tc=`, `?moneda=`, `?panel=`).
+// Monedas y tipos de cambio: arriba la moneda base; debajo, un grupo por par de monedas (USD → BOB) con sus tipos de cambio como tarjetas; abajo, las
+// monedas activas y la leyenda al compartir. Cada panel tiene su URL (`?tc=`, `?moneda=`, `?panel=`).
 export function MonedasYTiposCambio(props: Props) {
-  const { tipos, monedas, monedaBase, historial, puedeGestionar, leyenda } = props
-  const [{ tc, moneda, panel }, setParametros] = useQueryStates(
-    { tc: parseAsString, moneda: parseAsString, panel: parseAsString },
-    { shallow: false },
-  )
+  const { tipos, monedas, ajustes, puedeGestionar, leyenda } = props
+  const monedaBase = ajustes.monedaBase
+  const navegacion = useNavegacionDeMonedas()
   const ediciones = useTiposCambio()
-  const cerrar = () => void setParametros({ tc: null, moneda: null, panel: null })
+  const modales = usePanelesDeMonedas({
+    'moneda-base': props.puedeEditarAjustes ? null : MOTIVO_SIN_PERMISO_AJUSTES,
+    monedas: puedeGestionar ? null : MOTIVO_SIN_PERMISO_TIPOS_CAMBIO,
+    leyenda: puedeGestionar ? null : MOTIVO_SIN_PERMISO_TIPOS_CAMBIO,
+  })
   const activas = monedas.filter((una) => una.activa)
-  const monedaAbierta =
-    panel === PANEL_MONEDA ? 'nueva' : (monedas.find((una) => una.codigo === moneda) ?? null)
+
+  const crear = (de: GrupoDePar | null) =>
+    navegacion.ir({ panel: PANEL_TIPO, par: de ? claveDelPar(de.monedaDe, de.monedaA) : undefined })
+  const guardar = (tipo: TipoCambio, cambio: { esDefault: true } | { enLaBarra: boolean }) =>
+    void ediciones.guardar(
+      { id: tipo.id, actualizadoEnEsperado: tipo.actualizadoEn, ...cambio },
+      tipo.nombre,
+    )
 
   return (
     <div className="grid gap-6">
       {puedeGestionar ? null : <Aviso>{MOTIVO_SIN_PERMISO_TIPOS_CAMBIO}</Aviso>}
-      <ListaTiposCambio
+      <TarjetasDeAjustes etiqueta="Moneda base">
+        <TarjetaDeMonedaBase
+          codigo={monedaBase}
+          moneda={monedas.find((una) => una.codigo === monedaBase) ?? null}
+          conDatosCargados={props.conDatosCargados}
+          puedeEditar={props.puedeEditarAjustes}
+          alCambiar={modales.base.abrir}
+        />
+      </TarjetasDeAjustes>
+      <ParesDeMonedas
+        grupos={gruposPorPar(tipos, monedaBase)}
         tipos={tipos}
+        ultimosCambios={props.ultimosCambios}
         puedeGestionar={puedeGestionar}
-        alAbrir={(id) => void setParametros({ tc: id, moneda: null, panel: null })}
-        alCrear={() => void setParametros({ tc: null, moneda: null, panel: PANEL_TIPO })}
+        puedeSumar={puedeGestionar && activas.length >= 2}
+        enCurso={ediciones.enCurso}
+        alAbrir={(id) => {
+          navegacion.ir({ tc: id })
+        }}
+        alCrear={crear}
+        alGuardar={guardar}
       />
-      <LeyendaDeLosTiposCambio
-        key={leyenda.actualizadoEn}
-        leyenda={leyenda}
-        puedeGestionar={puedeGestionar}
-      />
-      <ListaMonedas
+      <TarjetasDeAjustes etiqueta="Monedas y leyenda">
+        <TarjetaDeMonedasActivas
+          monedas={activas}
+          monedaBase={monedaBase}
+          puedeGestionar={puedeGestionar}
+          alGestionar={modales.monedas.abrir}
+          alCrear={() => {
+            navegacion.ir({ panel: PANEL_MONEDA })
+          }}
+        />
+        <TarjetaAlCompartir
+          leyenda={leyenda}
+          puedeGestionar={puedeGestionar}
+          alEditar={modales.leyenda.abrir}
+        />
+      </TarjetasDeAjustes>
+      <ModalesDeMonedas
+        modales={modales}
+        ajustes={ajustes}
         monedas={monedas}
-        monedaBase={monedaBase}
-        puedeGestionar={puedeGestionar}
-        alAbrir={(codigo) => void setParametros({ tc: null, moneda: codigo, panel: null })}
-        alCrear={() => void setParametros({ tc: null, moneda: null, panel: PANEL_MONEDA })}
+        conDatosCargados={props.conDatosCargados}
+        leyenda={leyenda}
+        ir={navegacion.ir}
       />
-      <PanelTipoCambio
-        tipo={tipos.find((tipo) => tipo.id === tc) ?? null}
+      <PanelesDeMonedas
+        navegacion={navegacion}
         tipos={tipos}
-        historial={puedeGestionar ? (historial ?? []) : null}
+        monedas={monedas}
+        activas={activas}
+        monedaBase={monedaBase}
+        historial={props.historial}
         puedeGestionar={puedeGestionar}
         ediciones={ediciones}
-        alCerrar={cerrar}
-      />
-      <PanelNuevoTipoCambio
-        abierto={panel === PANEL_TIPO && puedeGestionar}
-        monedas={activas}
-        monedaBase={monedaBase}
-        ediciones={ediciones}
-        alCerrar={cerrar}
-      />
-      <PanelMoneda
-        moneda={monedaAbierta === 'nueva' && !puedeGestionar ? null : monedaAbierta}
-        monedaBase={monedaBase}
-        puedeGestionar={puedeGestionar}
-        ediciones={ediciones}
-        alCerrar={cerrar}
       />
     </div>
   )

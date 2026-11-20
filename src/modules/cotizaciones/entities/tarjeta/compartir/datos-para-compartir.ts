@@ -26,7 +26,12 @@ export const esquemaDeLosDatos = z.object({
   numero: z.number().int(),
   // El título que se muestra y de dónde sale (`tituloDeLaCotizacion()`): con `vehiculo`, el texto no repite el título del vehículo.
   titulo: z.object({ texto: z.string(), fuente: z.enum(['titulo', 'vehiculo', 'numero']) }),
+  // Quien la creó: «Creado por» del panel.
   autor: z.string().nullable(),
+  // El asesor (quien comparte): su nombre, su cargo y su WhatsApp tal como se guardó, para la firma del texto; nulo si su perfil no se leyó.
+  asesor: z
+    .object({ nombre: z.string(), cargo: z.string().nullable(), telefono: z.string().nullable() })
+    .nullable(),
   vehiculo: z
     .object({
       titulo: z.string(),
@@ -50,7 +55,7 @@ export const esquemaDeLosDatos = z.object({
   zonaDeLaEmpresa: z.string(),
   locale: z.string(),
   // Las cotizaciones hermanas (glosario: «Cotizaciones hermanas»): los conceptos y el total de cada opción, en el orden de las opciones (con su cotización, para su
-  // portada). Sin ellas, la cotización sola.
+  // imagen). Sin ellas, la cotización sola.
   versiones: z.tuple([esquemaDeLaVersion, esquemaDeLaVersion]).optional(),
 })
 

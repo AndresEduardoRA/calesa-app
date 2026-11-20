@@ -19,20 +19,20 @@ import {
   type FaseDeVehiculo,
 } from './campo'
 import {
-  CONDICION_POR_DEFECTO,
-  esPropia,
-  etiquetaDeSituacion,
-  SITUACIONES_PROPIAS,
-  type Situacion,
-  type SituacionPropia,
-} from './situacion'
+  condicionDeSubasta,
+  FILTRO_SUBASTA,
+  filtroDeOrden,
+  filtroDeSubasta,
+  type CondicionDeSubasta,
+} from './filtros-de-subasta'
+import { CONDICION_POR_DEFECTO, type Situacion } from './situacion'
 import { VITRINA_CERRADA, vitrinaAbierta, type VitrinaDelOrigen } from './vitrina'
 
 // Las claves de URL de los fijos. Las de los campos del layout van con el prefijo `a.`: una clave
 // de campo no lleva punto, así que nunca choca con `origen`, `panel`, `cursor` ni con un fijo.
-// «Situación» (lo que la app muestra en todos lados, `entities/situacion.ts`): las situaciones propias de la subasta («En subasta», «Sin resolver»,
-// «No ganadas») y las fases del origen. Reemplaza al filtro «Fase»: una fase es una situación, y no hay dos filtros que digan casi lo mismo.
-export const FILTRO_SITUACION = 'situacion'
+// «Fase»: la columna `fase_id` (sus fases y «Sin fase»), no la situación. Así se combina con «Subasta» (`filtros-de-subasta.ts`) con un Y que tiene
+// sentido: «Sin resolver» y la fase de subasta son las sin resolver que siguen en esa fase.
+export const FILTRO_FASE = 'fase'
 export const FILTRO_CATEGORIA = 'categoria'
 export const FILTRO_ANIO = 'anio'
 // Sí = se ve hoy en la web pública; no = todo lo demás (sin publicar, o publicado y no visible).
@@ -41,7 +41,7 @@ export const FILTRO_VITRINA = 'vitrina'
 // regla son de la base y de `entities/limpieza.ts`); no = todo lo demás. Sólo existe en un origen de
 // subasta con la limpieza encendida.
 export const FILTRO_LIMPIEZA = 'limpieza'
-// En el filtro de situación: lo que todavía no entró al flujo (y no está en un tramo de subasta).
+// En el filtro «Fase»: lo que todavía no entró al flujo (`fase_id` nulo).
 export const SIN_FASE = 'ninguna'
 
 const BUSQUEDA = {
@@ -57,39 +57,34 @@ type Fuentes = {
   // La limpieza automática de este origen: con `activa` el filtro «Se limpiará pronto» existe. La
   // página lo resuelve (sólo un origen de subasta con el interruptor encendido).
   limpieza?: { activa: boolean }
-  // Un origen de subasta: sólo ahí existen «En subasta», «Sin resolver» y «No ganadas».
+  // Un origen de subasta: sólo ahí existen «Subasta» y el orden.
   conSubasta?: boolean
+  // La URL trae un valor de «Subasta» que filtra (`esSubastaElegida()`): entonces el orden por defecto es «Cierre más próximo».
+  subastaElegida?: boolean
 }
 
 // Los campos del layout que hoy se pueden filtrar.
 export { camposFiltrables }
 
-// Las situaciones propias, en el orden del filtro. «No ganadas» en plural: el filtro habla de vehículos, y la insignia («No ganada») concuerda con la subasta.
-const ETIQUETA_DE_FILTRO: Record<SituacionPropia, string> = {
-  en_subasta: etiquetaDeSituacion('en_subasta', null).texto,
-  sin_resolver: etiquetaDeSituacion('sin_resolver', null).texto,
-  no_ganada: 'No ganadas',
-}
-
-function opcionesDeSituacion({ fases, conSubasta }: Fuentes): OpcionDeFiltro[] {
+function opcionesDeFase(fases: readonly FaseDeVehiculo[]): OpcionDeFiltro[] {
   return [
-    ...(conSubasta
-      ? SITUACIONES_PROPIAS.map((valor) => ({ valor, etiqueta: ETIQUETA_DE_FILTRO[valor] }))
-      : []),
     ...fases.map((fase) => ({ valor: fase.id, etiqueta: fase.nombre, color: fase.color })),
     { valor: SIN_FASE, etiqueta: 'Sin fase' },
   ]
 }
 
 function filtrosFijos(fuentes: Fuentes): DefFiltro[] {
-  const { fases, categorias, limpieza, conSubasta } = fuentes
+  const { fases, categorias, limpieza, conSubasta, subastaElegida } = fuentes
   const fijos: DefFiltro[] = []
-  if (fases.length > 0 || conSubasta) {
+  if (conSubasta) {
+    fijos.push(filtroDeSubasta(), filtroDeOrden(subastaElegida ?? false))
+  }
+  if (fases.length > 0) {
     fijos.push({
       tipo: 'opciones',
-      clave: FILTRO_SITUACION,
-      etiqueta: 'Situación',
-      opciones: opcionesDeSituacion(fuentes),
+      clave: FILTRO_FASE,
+      etiqueta: 'Fase',
+      opciones: opcionesDeFase(fases),
     })
   }
   const activas = categorias.filter((categoria) => categoria.activa)
@@ -147,16 +142,28 @@ export type Condicion =
   // La situación real (`vehiculos.situacion`, la calcula la base) no es ninguna de esas. Por defecto, sin las no ganadas.
   | { tipo: 'situacion_fuera_de'; valores: Situacion[] }
   // Está en alguna de esas situaciones propias, o en alguna de esas fases (con la situación `fase`: su fase es su situación), o sin fase (y sin tramo de subasta
-  // que decida): lo que eligió la persona en «Situación». Cada parte puede estar vacía.
-  | { tipo: 'situacion_en'; situaciones: SituacionPropia[]; fases: string[]; sinFase: boolean }
+  // que decida). «Subasta» la arma con una sola situación y sin fases; cada parte puede estar vacía.
+  // `cierre_entre`: la subasta está viva (situación `en_subasta`) y cierra en `[desde, hasta)` (instantes ISO que calcula la página: las ventanas de «Subasta»).
+  | CondicionDeSubasta
   | CondicionDeAtributo
+
+type OpcionesDeCondiciones = {
+  zona?: string
+  vitrina?: VitrinaDelOrigen
+  limpieza?: { hasta: string }
+  // El instante del pedido (ISO): desde ahí cuentan las ventanas de «Subasta». Sin él, «Cierra hoy» y las otras no filtran.
+  ahora?: string
+}
 
 function condicionFija(
   clave: string,
   valor: ValorDeFiltro,
-  vitrina: VitrinaDelOrigen,
-  limpieza: { hasta: string } | undefined,
+  opciones: OpcionesDeCondiciones,
 ): Condicion | null {
+  const { vitrina = VITRINA_CERRADA, limpieza } = opciones
+  if (clave === FILTRO_SUBASTA) {
+    return condicionDeSubasta(valor, opciones)
+  }
   if (clave === FILTRO_ANIO && valor.tipo === 'rango_numero') {
     return { tipo: 'columna_rango', columna: 'anio', min: valor.min, max: valor.max }
   }
@@ -171,22 +178,24 @@ function condicionFija(
     // Sin la limpieza encendida el filtro ni existe en el esquema: una URL vieja no filtra nada.
     return limpieza ? { tipo: 'por_limpiar', valor: valor.valor, hasta: limpieza.hasta } : null
   }
-  if (valor.tipo !== 'opciones') {
-    return null
-  }
-  if (clave === FILTRO_SITUACION) {
+  return valor.tipo === 'opciones' ? condicionDeOpciones(clave, valor.valores) : null
+}
+
+// Las de casillas: «Fase» (la columna, con «Sin fase» como nulo) y «Categoría».
+function condicionDeOpciones(clave: string, valores: readonly string[]): Condicion | null {
+  if (clave === FILTRO_FASE) {
     return {
-      tipo: 'situacion_en',
-      situaciones: SITUACIONES_PROPIAS.filter((situacion) => valor.valores.includes(situacion)),
-      fases: valor.valores.filter((uno) => uno !== SIN_FASE && !esPropia(uno)),
-      sinFase: valor.valores.includes(SIN_FASE),
+      tipo: 'columna_en',
+      columna: 'fase_id',
+      valores: valores.filter((uno) => uno !== SIN_FASE),
+      incluirNulo: valores.includes(SIN_FASE),
     }
   }
   if (clave === FILTRO_CATEGORIA) {
     return {
       tipo: 'columna_en',
       columna: 'categoria_id',
-      valores: valor.valores,
+      valores: [...valores],
       incluirNulo: false,
     }
   }
@@ -198,7 +207,7 @@ function condicionFija(
 export function condicionesDe(
   campos: readonly CampoDeVehiculo[],
   valores: ValoresDeFiltros,
-  opciones: { zona?: string; vitrina?: VitrinaDelOrigen; limpieza?: { hasta: string } } = {},
+  opciones: OpcionesDeCondiciones = {},
 ): Condicion[] {
   const condiciones: Condicion[] = []
   if (valores.busqueda !== '') {
@@ -211,7 +220,7 @@ export function condicionesDe(
     const campo = porClave.get(clave)
     const condicion = campo
       ? condicionDeCampo(campo, valor, opciones.zona)
-      : condicionFija(clave, valor, opciones.vitrina ?? VITRINA_CERRADA, opciones.limpieza)
+      : condicionFija(clave, valor, opciones)
     if (condicion) {
       condiciones.push(condicion)
     }

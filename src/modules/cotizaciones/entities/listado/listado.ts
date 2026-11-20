@@ -2,7 +2,7 @@ import type { Cursor, Pagina } from '@/shared/lib/paginacion'
 import type { Database } from '@/shared/types/database.types'
 
 // El máximo de filas (o grupos) por página del listado `/cotizaciones` (el selector ofrece hasta acá), el mismo en tabla y en tarjetas, agrupada o no (la vista cambia
-// en el cliente sin releer): con la tarjeta de la lista (su portada y sus filas) 100 no caben en los nodos ni en los bytes del listado (`docs/RENDIMIENTO.md`), como en
+// en el cliente sin releer): con la tarjeta de la lista (su imagen y sus filas) 100 no caben en los nodos ni en los bytes del listado (`docs/RENDIMIENTO.md`), como en
 // leads. La base admite hasta 100 en `cotizaciones_listado()` y `cotizaciones_buscar()` (medido con 250.000 en `supabase/tests/medir-cotizaciones-listado.sql`) y da
 // este sin pedido; `cotizaciones_listado_por_vehiculo()`, hasta este.
 export const MAXIMO_DE_PAGINA_DE_COTIZACIONES = 50

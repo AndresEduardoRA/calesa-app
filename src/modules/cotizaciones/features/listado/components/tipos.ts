@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react'
 import type { CotizacionDelListado } from '../../../entities/listado/filas-del-listado'
 import type { EntradaDelListado } from '../../../entities/listado/grupos-del-listado'
-import type { AnchoDeLaPortada } from '../../../entities/ruta-de-la-hoja'
+import type { AnchoDeLaImagen } from '../../../entities/ruta-de-la-hoja'
 
 export type FilaDeCotizacion = CotizacionDelListado
 
@@ -22,12 +22,12 @@ export type CompartirDe = (fila: FilaDeCotizacion) => (() => void) | null
 // Un origen con el que se nombra a una fila (los de `cotizaciones.ver` de quien mira), con su color (la insignia de la tarjeta).
 export type OrigenDelListado = { id: string; nombre: string; color: string | null }
 
-// La portada de una cotización en la tarjeta de la lista (la del área `tarjeta`, por hueco: el listado no la importa).
-export type PortadaDeLaFila = ComponentType<{
+// La imagen de la tarjeta de una cotización en la tarjeta de la lista (la del área `tarjeta`, por hueco: el listado no la importa).
+export type ImagenDeLaFila = ComponentType<{
   cotizacionId: string
   numero: number
   total: { valor: number; moneda?: string | null } | null
-  ancho: AnchoDeLaPortada
+  ancho: AnchoDeLaImagen
   recorte: 'cubrir'
   lugar: 'lista'
 }>
@@ -47,11 +47,11 @@ export type PropsDeCompararDelGrupo = {
 export type CompararDelGrupo = ComponentType<PropsDeCompararDelGrupo>
 
 export type HuecosDeLaLista = {
-  Portada?: PortadaDeLaFila | undefined
+  Imagen?: ImagenDeLaFila | undefined
   Comparar?: CompararDelGrupo | undefined
 }
 
-// La proporción del marco de la portada en la tarjeta de la lista: la de la tarjeta de la cotización (960 × 512), la misma que `PROPORCION_DE_LA_PORTADA` del área
+// La proporción del marco de la imagen en la tarjeta de la lista: la de la tarjeta de la cotización (960 × 512), la misma que `PROPORCION_DE_LA_IMAGEN` del área
 // `tarjeta` (el listado no la importa).
 export const PROPORCION_EN_LA_LISTA = 15 / 8
 

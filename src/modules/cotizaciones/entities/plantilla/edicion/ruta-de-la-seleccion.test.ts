@@ -77,6 +77,7 @@ describe('nombreDelContenido', () => {
       'Dato: Fecha',
     )
     expect(nombreDelContenido({ tipo: 'logo' }, nombres)).toBe('Logo')
+    expect(nombreDelContenido({ tipo: 'foto_del_asesor' }, nombres)).toBe('Foto del asesor')
     expect(nombreDelContenido({ tipo: 'vacio' }, nombres)).toBe('Vacía')
     expect(nombreDelContenido(null, nombres)).toBe('Vacía')
   })

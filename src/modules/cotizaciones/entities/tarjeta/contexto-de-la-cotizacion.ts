@@ -1,15 +1,15 @@
 // Lo que se hace con el contexto de la cotización (`entities/contexto-de-la-cotizacion.ts`): el valor de cada variable de una celda y el contexto armado desde lo
 // que sabe la página, con las fechas en la zona de la empresa.
 import { formatearFecha, inicioDelDia } from '@/shared/lib/fechas'
-import type { ContextoDeLaCotizacion } from '../contexto-de-la-cotizacion'
+import type { AsesorDeLaTarjeta, ContextoDeLaCotizacion } from '../contexto-de-la-cotizacion'
 import type { VariableDeLaTarjeta } from '../cuadricula-de-la-tarjeta'
 
 // El tipo vive en el núcleo (lo nombra también la referencia del editor de la plantilla); aquí, lo que se hace con él.
-export type { ContextoDeLaCotizacion }
+export type { AsesorDeLaTarjeta, ContextoDeLaCotizacion }
 
 // Las iniciales de las dos primeras palabras, en mayúsculas: «Ana María López» → «AM».
-export function inicialesDe(nombre: string | null): string {
-  if (nombre === null) return ''
+export function inicialesDe(nombre: string | null | undefined): string {
+  if (nombre == null) return ''
   return nombre
     .trim()
     .split(/\s+/)
@@ -31,14 +31,16 @@ export function valorDeLaVariable(
     numero: contexto.numero,
     titulo: contexto.titulo,
     titulo_opcion: delCalculo.tituloOpcion,
-    asesor_nombre: contexto.asesor,
-    asesor_iniciales: inicialesDe(contexto.asesor),
+    asesor_nombre: contexto.asesor?.nombre,
+    asesor_iniciales: inicialesDe(contexto.asesor?.nombre),
     cliente_nombre: contexto.cliente,
     vehiculo_titulo: contexto.vehiculo?.titulo,
     vehiculo_lote: contexto.vehiculo?.lote,
     vehiculo_vin: contexto.vehiculo?.vin,
     vence_el: contexto.venceEl,
     modo_tc: delCalculo.modo,
+    asesor_telefono: contexto.asesor?.telefono,
+    asesor_cargo: contexto.asesor?.cargo,
   }
   return (Object.hasOwn(valores, variable) ? valores[variable as VariableDeLaTarjeta] : null) ?? ''
 }
@@ -48,7 +50,7 @@ export type PaginaDeLaTarjeta = {
   titulo: string | null
   cliente: string | null
   vehiculo: ContextoDeLaCotizacion['vehiculo']
-  asesor: string | null
+  asesor: AsesorDeLaTarjeta | null
   numero: number | null
   // El último día en que vale (`YYYY-MM-DD` de la zona de la empresa) de una guardada; nulo en la hoja nueva.
   venceEl: string | null

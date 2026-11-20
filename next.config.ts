@@ -22,8 +22,8 @@ const nextConfig: NextConfig = {
   // Las fuentes del PDF de una cotización (4.18-3a): react-pdf las lee del disco por su ruta, y el trazado de archivos no las ve en un import.
   outputFileTracingIncludes: {
     '/cotizaciones/[id]/pdf': ['./src/modules/cotizaciones/infra/tarjeta/pdf/fuentes/*'],
-    // La portada de la cotización: `ImageResponse` lee las mismas fuentes de la tarjeta del disco.
-    '/cotizaciones/[id]/portada': ['./src/modules/cotizaciones/infra/tarjeta/pdf/fuentes/*'],
+    // La imagen de la tarjeta: `ImageResponse` lee las mismas fuentes de la tarjeta del disco.
+    '/cotizaciones/[id]/imagen': ['./src/modules/cotizaciones/infra/tarjeta/pdf/fuentes/*'],
     // La fuente de la imagen de los tipos de cambio para compartir: se lee del disco por su ruta.
     '/tipos-de-cambio/imagen': ['./src/modules/empresa/infra/compartir/fuentes/*.ttf'],
   },
@@ -43,10 +43,16 @@ const nextConfig: NextConfig = {
   // que la persona abre; «Fórmula» del origen, que comprueba el origen y el permiso) con su consulta. Aquí y no en un `page.tsx`: una página que
   // sólo redirige pide su `loading.tsx`, y el esqueleto de cada nivel viaja en el HTML de todas las páginas de debajo. `general` va primero.
   // `/configuracion` solo no dibuja nada: el inicio vive en `/configuracion/inicio` (308, con su consulta). `/configuracion/inicio` no choca con
-  // ninguna sección: ninguna se llama «inicio».
+  // ninguna sección: ninguna se llama «inicio». La ruta vieja de la imagen de la tarjeta va a la de hoy con su consulta (308: un enlace o una
+  // caché del navegador que la nombre sigue andando).
   redirects() {
     return Promise.resolve([
       { source: '/configuracion', destination: '/configuracion/inicio', permanent: true },
+      {
+        source: '/cotizaciones/:id/portada',
+        destination: '/cotizaciones/:id/imagen',
+        permanent: true,
+      },
       {
         source: '/configuracion/cotizacion/general',
         destination: '/configuracion/cotizacion/general/colores',

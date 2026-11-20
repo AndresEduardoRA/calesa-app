@@ -1,4 +1,4 @@
-// Los montos de la tarjeta de una cotización como líneas de texto, para «Compartir la cotización»: de la misma geometría que dibujan el HTML, el PDF y la portada
+// Los montos de la tarjeta de una cotización como líneas de texto, para «Compartir la cotización»: de la misma geometría que dibujan el HTML, el PDF y la imagen
 // (sólo lo del nivel «todos»: `cotizacion_tarjeta`, K4), nunca de lo guardado suelto. Por cada celda con un monto, en orden de lectura, su concepto (el texto de la
 // celda de antes en su fila, si lo hay), el monto y su segunda línea (el total en moneda local). El monto del total (`marca.total`) va aparte. Las filas sin monto
 // (la cabecera: cliente, asesor, fecha) no salen.

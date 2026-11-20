@@ -3,6 +3,7 @@ import 'server-only'
 import { Document, Image as ImagenDelPdf, Page, Text, View } from '@react-pdf/renderer'
 import { COLOR_TINTA } from '@/shared/config/app'
 import { cajaDelLogo } from '../../../entities/tarjeta/caja-del-logo'
+import { circuloDeLasIniciales } from '../../../entities/tarjeta/circulo-de-las-iniciales'
 import { escalarGeometria } from '../../../entities/tarjeta/escalar-geometria'
 import { RELLENO_DE_LA_CELDA } from '../../../entities/tarjeta/estilo-de-la-celda'
 import type { CeldaDibujada, Geometria } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
@@ -14,6 +15,8 @@ export type PropsDelDocumento = {
   // El número de la guardada: el título del PDF.
   numero: number | null
   logo: LogoDeLaTarjeta | null
+  // La foto del asesor (quien pide el PDF); nula, sus iniciales en un círculo.
+  foto: LogoDeLaTarjeta | null
   // El nombre de la empresa: el autor del PDF.
   empresa: string
   // La tarjeta de la cotización hermana (glosario: «Cotizaciones hermanas»): otra página, antes o después según el orden de las opciones.
@@ -107,14 +110,63 @@ function LogoDeLaCelda({
   )
 }
 
+// Las iniciales del asesor en su círculo (el de `circuloDeLasIniciales()`), en un hijo del tamaño de la caja interior.
+function InicialesDeLaCelda({
+  celda,
+  k,
+  iniciales,
+}: {
+  celda: CeldaDibujada
+  k: number
+  iniciales: string
+}) {
+  const c = circuloDeLasIniciales(celda, k)
+  if (c === null) {
+    return null
+  }
+  return (
+    <View style={{ position: 'relative', width: c.interior.ancho, height: c.interior.alto }}>
+      <View
+        style={{
+          position: 'absolute',
+          left: c.x,
+          top: c.y,
+          width: c.diametro,
+          height: c.diametro,
+          borderWidth: c.borde,
+          borderColor: celda.estilo.texto,
+          borderRadius: c.diametro / 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Text
+          style={{
+            color: celda.estilo.texto,
+            fontSize: c.letra,
+            fontWeight: 600,
+            fontStyle: 'normal',
+            lineHeight: 1,
+          }}
+        >
+          {iniciales}
+        </Text>
+      </View>
+    </View>
+  )
+}
+
 function Celda({
   celda,
   k,
   logo,
+  foto,
 }: {
   celda: CeldaDibujada
   k: number
   logo: LogoDeLaTarjeta | null
+  foto: LogoDeLaTarjeta | null
 }) {
   const c = celda.contenido
   return (
@@ -133,6 +185,12 @@ function Celda({
       {c.tipo === 'logo' && logo !== null ? (
         <LogoDeLaCelda celda={celda} k={k} logo={logo} />
       ) : null}
+      {c.tipo === 'foto_del_asesor' && foto !== null ? (
+        <LogoDeLaCelda celda={celda} k={k} logo={foto} />
+      ) : null}
+      {c.tipo === 'foto_del_asesor' && foto === null ? (
+        <InicialesDeLaCelda celda={celda} k={k} iniciales={c.iniciales} />
+      ) : null}
     </View>
   )
 }
@@ -144,6 +202,7 @@ export function DocumentoDeLaTarjeta({
   geometria,
   numero,
   logo,
+  foto,
   empresa,
   hermana,
 }: PropsDelDocumento) {
@@ -159,7 +218,7 @@ export function DocumentoDeLaTarjeta({
       creator={empresa}
     >
       {paginas.map((una, i) => (
-        <PaginaDeLaTarjeta key={String(i)} geometria={una} logo={logo} />
+        <PaginaDeLaTarjeta key={String(i)} geometria={una} logo={logo} foto={foto} />
       ))}
     </Document>
   )
@@ -169,9 +228,11 @@ export function DocumentoDeLaTarjeta({
 function PaginaDeLaTarjeta({
   geometria,
   logo,
+  foto,
 }: {
   geometria: Geometria
   logo: PropsDelDocumento['logo']
+  foto: PropsDelDocumento['foto']
 }) {
   const k = escalaDelPdf(geometria)
   const g = escalarGeometria(geometria, PT_POR_PX * k)
@@ -179,7 +240,7 @@ function PaginaDeLaTarjeta({
     <Page size="A4" style={estilos.pagina}>
       <View style={{ position: 'relative', width: g.ancho, height: g.alto }} wrap={false}>
         {g.celdas.map((c) => (
-          <Celda key={c.id} celda={c} k={PT_POR_PX * k} logo={logo} />
+          <Celda key={c.id} celda={c} k={PT_POR_PX * k} logo={logo} foto={foto} />
         ))}
       </View>
     </Page>

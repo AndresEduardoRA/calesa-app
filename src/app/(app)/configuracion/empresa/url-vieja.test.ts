@@ -36,6 +36,12 @@ describe('destinoDeLaUrlVieja', () => {
     expect(destinoDeLaUrlVieja({ panel: 'otro' })).toBeNull()
   })
 
+  it('los paneles de las tarjetas de Datos son de la raíz: no redirigen', () => {
+    for (const panel of ['identidad', 'region', 'datos-legales', 'politicas', 'iconos']) {
+      expect(destinoDeLaUrlVieja({ panel })).toBeNull()
+    }
+  })
+
   it('sin nada viejo, o con una pestaña que no existe, no redirige', () => {
     expect(destinoDeLaUrlVieja({})).toBeNull()
     expect(destinoDeLaUrlVieja({ seccion: 'otra' })).toBeNull()

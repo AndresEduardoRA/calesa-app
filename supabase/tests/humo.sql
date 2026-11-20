@@ -6891,48 +6891,41 @@ begin
 end $$;
 rollback;
 
--- @test cotizaciones: la portada de una cotización la lee quien ve esa cotización (propios: la suya) y no quien no la ve; nadie la escribe directo (policy «cotizaciones_portadas: leer»)
+-- @test cotizaciones: lo del bucket `cotizaciones` lo lee quien ve esa cotización (propios: la suya) y no quien no la ve (policy «cotizaciones: leer» de storage.objects)
 begin;
 do $$
 declare
   v_ana uuid := '00000000-0000-4000-8000-000000140001'; v_otra uuid := '00000000-0000-4000-8000-000000140002';
-  v_rol uuid; v_o uuid; v_f uuid; v_c uuid; v_n integer; v_codigo text;
+  v_rol uuid; v_o uuid; v_f uuid; v_c uuid; v_n integer;
 begin
-  insert into auth.users (id, email, raw_app_meta_data) values (v_ana, 'humo.portada.ana@ejemplo.com', '{"invitado": true}'), (v_otra, 'humo.portada.otra@ejemplo.com', '{"invitado": true}');
+  insert into auth.users (id, email, raw_app_meta_data) values (v_ana, 'humo.bucket.ana@ejemplo.com', '{"invitado": true}'), (v_otra, 'humo.bucket.otra@ejemplo.com', '{"invitado": true}');
   delete from public.usuarios_roles where usuario_id in (v_ana, v_otra);
-  insert into public.roles (clave, nombre) values ('humo_portada', 'Humo portada') returning id into v_rol;
+  insert into public.roles (clave, nombre) values ('humo_bucket_cot', 'Humo bucket de cotizaciones') returning id into v_rol;
   insert into public.usuarios_roles (usuario_id, rol_id, es_principal) values (v_ana, v_rol, true), (v_otra, v_rol, true);
   insert into public.roles_permisos (rol_id, permiso_clave, alcance) values (v_rol, 'cotizaciones.ver', 'propios');
-  insert into public.origenes (clave, nombre) values ('humo_portada', 'Humo portada') returning id into v_o;
+  insert into public.origenes (clave, nombre) values ('humo_bucket_cot', 'Humo bucket de cotizaciones') returning id into v_o;
   insert into public.formulas (origen_id, version, estado, definicion, params, diseno, visibilidad)
   values (v_o, 1, 'publicada', '{"nodos": []}', '{}', '{}', '{}') returning id into v_f;
   insert into public.cotizaciones (origen_id, creado_por, formula_id, valores, fuentes, tipos_cambio, totales, total_base)
   values (v_o, v_ana, v_f, '{}', '{}', '{}', '{"usd": 10}', 10) returning id into v_c;
-  insert into public.cotizaciones_portadas (cotizacion_id, ruta, clave) values (v_c, v_c || '/portada/' || repeat('a', 64) || '.webp', 'p1-humo');
+  -- Un adjunto y un objeto bajo `portada/` (de cuando se guardaba): los dos, como lo demás de la cotización.
+  insert into storage.objects (bucket_id, name, metadata) values
+    ('cotizaciones', v_c || '/' || repeat('a', 64) || '.pdf', '{"mimetype": "application/pdf", "size": 10}'),
+    ('cotizaciones', v_c || '/portada/' || repeat('b', 64) || '.webp', '{"mimetype": "image/webp", "size": 10}');
   perform set_config('request.jwt.claim.sub', v_ana::text, true);
   perform set_config('request.jwt.claim.role', 'authenticated', true);
   set local role authenticated;
-  select count(*) into v_n from public.cotizaciones_portadas where cotizacion_id = v_c and clave = 'p1-humo';
-  if v_n <> 1 then raise exception 'quien creó la cotización no leyó su portada (%)', v_n; end if;
-  begin
-    update public.cotizaciones_portadas set clave = 'p1-otra' where cotizacion_id = v_c;
-    v_codigo := 'sin error';
-  exception when others then v_codigo := sqlstate;
-  end;
-  if v_codigo <> '42501' then raise exception 'el update directo de cotizaciones_portadas dio %', v_codigo; end if;
+  select count(*) into v_n from storage.objects where bucket_id = 'cotizaciones' and name like v_c || '/%';
+  if v_n <> 2 then raise exception 'quien creó la cotización no leyó lo suyo del bucket (%)', v_n; end if;
   reset role;
   perform set_config('request.jwt.claim.sub', v_otra::text, true);
   set local role authenticated;
-  select count(*) into v_n from public.cotizaciones_portadas where cotizacion_id = v_c;
-  if v_n <> 0 then raise exception 'quien no ve la cotización leyó su portada (%)', v_n; end if;
+  select count(*) into v_n from storage.objects where bucket_id = 'cotizaciones' and name like v_c || '/%';
+  if v_n <> 0 then raise exception 'quien no ve la cotización leyó del bucket (%)', v_n; end if;
   reset role;
   set local role anon;
-  begin
-    perform 1 from public.cotizaciones_portadas limit 1;
-    v_codigo := 'sin error';
-  exception when others then v_codigo := sqlstate;
-  end;
-  if v_codigo <> '42501' then raise exception 'anon leyó cotizaciones_portadas (%)', v_codigo; end if;
+  select count(*) into v_n from storage.objects where bucket_id = 'cotizaciones' and name like v_c || '/%';
+  if v_n <> 0 then raise exception 'anon leyó del bucket de cotizaciones (%)', v_n; end if;
   reset role;
 end $$;
 rollback;

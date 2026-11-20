@@ -3036,7 +3036,9 @@
           { "id": "f9", "alto": 24, "ocultar_si": "nunca" },
           { "id": "f10", "alto": 24, "ocultar_si": "nunca" },
           { "id": "f11", "alto": 24, "ocultar_si": "nunca" },
-          { "id": "f12", "alto": 24, "ocultar_si": "nunca" }
+          { "id": "f12", "alto": 24, "ocultar_si": "nunca" },
+          { "id": "f13", "alto": 24, "ocultar_si": "nunca" },
+          { "id": "f14", "alto": 24, "ocultar_si": "nunca" }
         ],
         "celdas": [
           {
@@ -3116,6 +3118,18 @@
             "fila": "f12",
             "columna": "a",
             "contenido": { "tipo": "dato", "variable": "empresa_nombre" }
+          },
+          {
+            "id": "v13",
+            "fila": "f13",
+            "columna": "a",
+            "contenido": { "tipo": "dato", "variable": "asesor_telefono" }
+          },
+          {
+            "id": "v14",
+            "fila": "f14",
+            "columna": "a",
+            "contenido": { "tipo": "dato", "variable": "asesor_cargo" }
           }
         ]
       },
@@ -8510,6 +8524,294 @@
             "fila": "cabecera",
             "columna": "plazo",
             "contenido": { "tipo": "logo", "texto": "Logo" }
+          },
+          {
+            "id": "titulo_compra",
+            "fila": "remate",
+            "columna": "grupo",
+            "abarca_filas": 2,
+            "contenido": { "tipo": "texto", "texto": "Compra" },
+            "estilo": {
+              "fondo": "verde",
+              "negrita": true,
+              "alinear_vertical": "arriba",
+              "bordes": { "todos": "fino" }
+            }
+          },
+          {
+            "id": "remate_concepto",
+            "fila": "remate",
+            "columna": "concepto",
+            "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "etiqueta" },
+            "estilo": { "fondo": "verde" }
+          },
+          {
+            "id": "remate_monto",
+            "fila": "remate",
+            "columna": "monto",
+            "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "monto" },
+            "estilo": {
+              "fondo": "verde",
+              "negrita": true,
+              "alinear": "derecha",
+              "bordes": { "todos": "fino", "izquierda": "ninguno" }
+            }
+          },
+          {
+            "id": "tc_compra",
+            "fila": "remate",
+            "columna": "tc",
+            "abarca_filas": 2,
+            "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "tc_nombre" },
+            "estilo": { "alinear": "centro", "texto": "auto" }
+          },
+          {
+            "id": "plazo_compra",
+            "fila": "remate",
+            "columna": "plazo",
+            "abarca_filas": 2,
+            "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "plazo" },
+            "estilo": { "alinear": "centro" }
+          },
+          {
+            "id": "fees_concepto",
+            "fila": "fees",
+            "columna": "concepto",
+            "contenido": { "tipo": "dato", "nodo": "fees", "mostrar": "descripcion" },
+            "estilo": { "cursiva": true, "tamano": 10 }
+          },
+          {
+            "id": "fees_monto",
+            "fila": "fees",
+            "columna": "monto",
+            "contenido": { "tipo": "dato", "nodo": "fees", "mostrar": "monto" },
+            "estilo": { "alinear": "derecha" }
+          },
+          {
+            "id": "total_etiqueta",
+            "fila": "total",
+            "columna": "grupo",
+            "abarca_columnas": 2,
+            "contenido": { "tipo": "texto", "texto": "TOTAL DÓLARES" },
+            "estilo": {
+              "tamano": 16,
+              "negrita": true,
+              "fondo": "amarillo",
+              "bordes": { "arriba": "grueso" }
+            }
+          },
+          {
+            "id": "total_monto",
+            "fila": "total",
+            "columna": "monto",
+            "contenido": { "tipo": "dato", "nodo": "total", "mostrar": "monto" },
+            "estilo": {
+              "tamano": 16,
+              "negrita": true,
+              "alinear": "derecha",
+              "alinear_vertical": "abajo"
+            }
+          },
+          {
+            "id": "comision_pct",
+            "fila": "total",
+            "columna": "tc",
+            "contenido": { "tipo": "dato", "nodo": "comision", "mostrar": "porcentaje" }
+          },
+          { "id": "vacio", "fila": "total", "columna": "plazo", "contenido": { "tipo": "vacio" } }
+        ]
+      },
+      "motivo": { "regla": "forma", "donde": "celdas[3].contenido" }
+    },
+    {
+      "nombre": "cuadrícula: una foto del asesor",
+      "formula": "mini",
+      "plantilla": {
+        "forma": 2,
+        "columnas": [
+          { "id": "grupo", "ancho": 100 },
+          { "id": "concepto", "ancho": 190 },
+          { "id": "monto", "ancho": 110 },
+          { "id": "tc", "ancho": 90 },
+          { "id": "plazo", "ancho": 90 }
+        ],
+        "filas": [
+          { "id": "cabecera", "alto": 24, "ocultar_si": "nunca" },
+          { "id": "remate", "alto": 24, "ocultar_si": "no_aplica", "nodo": "remate" },
+          { "id": "fees", "alto": 24, "ocultar_si": "no_aplica_o_cero", "nodo": "fees" },
+          { "id": "total", "alto": 32, "ocultar_si": "nunca" }
+        ],
+        "celdas": [
+          {
+            "id": "fecha",
+            "fila": "cabecera",
+            "columna": "grupo",
+            "abarca_columnas": 2,
+            "contenido": { "tipo": "dato", "variable": "fecha_larga" }
+          },
+          {
+            "id": "asesor",
+            "fila": "cabecera",
+            "columna": "monto",
+            "contenido": { "tipo": "texto", "texto": "Asesor:" },
+            "estilo": { "alinear": "derecha" }
+          },
+          {
+            "id": "iniciales",
+            "fila": "cabecera",
+            "columna": "tc",
+            "contenido": { "tipo": "dato", "variable": "asesor_iniciales" },
+            "estilo": { "negrita": true }
+          },
+          {
+            "id": "foto",
+            "fila": "cabecera",
+            "columna": "plazo",
+            "contenido": { "tipo": "foto_del_asesor" }
+          },
+          {
+            "id": "titulo_compra",
+            "fila": "remate",
+            "columna": "grupo",
+            "abarca_filas": 2,
+            "contenido": { "tipo": "texto", "texto": "Compra" },
+            "estilo": {
+              "fondo": "verde",
+              "negrita": true,
+              "alinear_vertical": "arriba",
+              "bordes": { "todos": "fino" }
+            }
+          },
+          {
+            "id": "remate_concepto",
+            "fila": "remate",
+            "columna": "concepto",
+            "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "etiqueta" },
+            "estilo": { "fondo": "verde" }
+          },
+          {
+            "id": "remate_monto",
+            "fila": "remate",
+            "columna": "monto",
+            "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "monto" },
+            "estilo": {
+              "fondo": "verde",
+              "negrita": true,
+              "alinear": "derecha",
+              "bordes": { "todos": "fino", "izquierda": "ninguno" }
+            }
+          },
+          {
+            "id": "tc_compra",
+            "fila": "remate",
+            "columna": "tc",
+            "abarca_filas": 2,
+            "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "tc_nombre" },
+            "estilo": { "alinear": "centro", "texto": "auto" }
+          },
+          {
+            "id": "plazo_compra",
+            "fila": "remate",
+            "columna": "plazo",
+            "abarca_filas": 2,
+            "contenido": { "tipo": "dato", "nodo": "remate", "mostrar": "plazo" },
+            "estilo": { "alinear": "centro" }
+          },
+          {
+            "id": "fees_concepto",
+            "fila": "fees",
+            "columna": "concepto",
+            "contenido": { "tipo": "dato", "nodo": "fees", "mostrar": "descripcion" },
+            "estilo": { "cursiva": true, "tamano": 10 }
+          },
+          {
+            "id": "fees_monto",
+            "fila": "fees",
+            "columna": "monto",
+            "contenido": { "tipo": "dato", "nodo": "fees", "mostrar": "monto" },
+            "estilo": { "alinear": "derecha" }
+          },
+          {
+            "id": "total_etiqueta",
+            "fila": "total",
+            "columna": "grupo",
+            "abarca_columnas": 2,
+            "contenido": { "tipo": "texto", "texto": "TOTAL DÓLARES" },
+            "estilo": {
+              "tamano": 16,
+              "negrita": true,
+              "fondo": "amarillo",
+              "bordes": { "arriba": "grueso" }
+            }
+          },
+          {
+            "id": "total_monto",
+            "fila": "total",
+            "columna": "monto",
+            "contenido": { "tipo": "dato", "nodo": "total", "mostrar": "monto" },
+            "estilo": {
+              "tamano": 16,
+              "negrita": true,
+              "alinear": "derecha",
+              "alinear_vertical": "abajo"
+            }
+          },
+          {
+            "id": "comision_pct",
+            "fila": "total",
+            "columna": "tc",
+            "contenido": { "tipo": "dato", "nodo": "comision", "mostrar": "porcentaje" }
+          },
+          { "id": "vacio", "fila": "total", "columna": "plazo", "contenido": { "tipo": "vacio" } }
+        ]
+      },
+      "valida": true
+    },
+    {
+      "nombre": "cuadrícula: una foto del asesor con texto",
+      "formula": "mini",
+      "plantilla": {
+        "forma": 2,
+        "columnas": [
+          { "id": "grupo", "ancho": 100 },
+          { "id": "concepto", "ancho": 190 },
+          { "id": "monto", "ancho": 110 },
+          { "id": "tc", "ancho": 90 },
+          { "id": "plazo", "ancho": 90 }
+        ],
+        "filas": [
+          { "id": "cabecera", "alto": 24, "ocultar_si": "nunca" },
+          { "id": "remate", "alto": 24, "ocultar_si": "no_aplica", "nodo": "remate" },
+          { "id": "fees", "alto": 24, "ocultar_si": "no_aplica_o_cero", "nodo": "fees" },
+          { "id": "total", "alto": 32, "ocultar_si": "nunca" }
+        ],
+        "celdas": [
+          {
+            "id": "fecha",
+            "fila": "cabecera",
+            "columna": "grupo",
+            "abarca_columnas": 2,
+            "contenido": { "tipo": "dato", "variable": "fecha_larga" }
+          },
+          {
+            "id": "asesor",
+            "fila": "cabecera",
+            "columna": "monto",
+            "contenido": { "tipo": "texto", "texto": "Asesor:" },
+            "estilo": { "alinear": "derecha" }
+          },
+          {
+            "id": "iniciales",
+            "fila": "cabecera",
+            "columna": "tc",
+            "contenido": { "tipo": "dato", "variable": "asesor_iniciales" },
+            "estilo": { "negrita": true }
+          },
+          {
+            "id": "foto",
+            "fila": "cabecera",
+            "columna": "plazo",
+            "contenido": { "tipo": "foto_del_asesor", "texto": "Foto" }
           },
           {
             "id": "titulo_compra",

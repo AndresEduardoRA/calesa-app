@@ -4,7 +4,7 @@ import type { OpcionDeImagen } from '../../../../entities/tarjeta/compartir/moti
 import type { useCompartirLaCotizacion } from '../../hooks/use-compartir-la-cotizacion'
 import { GrillaDeFotos } from './grilla-de-fotos'
 import { GrupoDeOpciones } from './grupo-de-opciones'
-import { PortadaParaCompartir } from './portada-para-compartir'
+import { TarjetaParaCompartir } from './tarjeta-para-compartir'
 
 const OPCIONES_DE_IMAGEN = [
   { clave: 'cotizacion', etiqueta: 'Cotización' },
@@ -18,7 +18,7 @@ type Props = {
   numero: number
 }
 
-// La pestaña «Imagen»: «Cotización» (la portada) o «Fotos» (las del vehículo, para marcar), que sólo se ofrece si el vehículo tiene fotos y quien mira lo ve.
+// La pestaña «Imagen»: «Cotización» (la imagen de la tarjeta) o «Fotos» (las del vehículo, para marcar), que sólo se ofrece si el vehículo tiene fotos y quien mira lo ve.
 export function ImagenParaCompartir({ c, opcion, conFotos, numero }: Props) {
   return (
     <>
@@ -38,10 +38,10 @@ export function ImagenParaCompartir({ c, opcion, conFotos, numero }: Props) {
           alReintentar={c.fotos.reintentar}
         />
       ) : (
-        <PortadaParaCompartir
-          portada={c.portada.parte}
+        <TarjetaParaCompartir
+          imagen={c.imagen.parte}
           numero={numero}
-          alReintentar={c.portada.reintentar}
+          alReintentar={c.imagen.reintentar}
         />
       )}
     </>

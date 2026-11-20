@@ -231,6 +231,16 @@ function sembrarSubasta(ids: Record<string, string>): string {
   return hasta
 }
 
+// Las vivas, sin fase (en el tramo: el origen tiene «Inv subasta»): una que cierra dentro de una hora (o a mitad de camino de la medianoche de La Paz, si
+// falta menos: siempre «hoy»), otra en 5 días, una de Pía en 5 días y una sin fecha. Una «abierta» con el cierre pasado es «Sin resolver» y no cae en ninguna
+// ventana. (título, min, de, cierre: `hoy` | `semana` | `pasado` | null).
+const VIVAS = `
+  ('Subasta viva hoy', 11, :duena, 'hoy'),
+  ('Subasta viva en 5 días', 12, :duena, 'semana'),
+  ('Subasta viva de Pía', 13, :pia, 'semana'),
+  ('Subasta viva sin fecha', 14, :duena, null),
+  ('Subasta abierta vencida', 15, :duena, 'pasado')`
+
 function sembrarSituaciones(ids: Record<string, string>): void {
   sql(`insert into public.fases (flujo_id, nombre, orden, es_subasta)
     select id, 'Inv subasta', 90, true from public.flujos where origen_id = ${literal(ids['subasta'] ?? '')}`)
@@ -239,6 +249,20 @@ function sembrarSituaciones(ids: Record<string, string>): void {
      select :subasta, t.titulo, t.de, timestamptz '2026-10-01 12:00:00+00' - make_interval(mins => t.min), 'terminada', now() - interval '3 days',
        case when t.no then 'no_ganada' end, case when t.no then now() end
      from (values ${SITUACIONES}) t (titulo, min, de, no)
+     returning id, titulo`,
+    ids,
+  )
+  sembrar(
+    `with hoy as (
+       select least(now() + interval '1 hour',
+         now() + ((date_trunc('day', now() at time zone 'America/La_Paz') + interval '1 day') at time zone 'America/La_Paz' - now()) / 2) as cierre
+     )
+     insert into public.vehiculos (origen_id, titulo, creado_por, creado_en, estado_subasta, subasta_en, subasta_fin_en)
+     select :subasta, t.titulo, t.de, timestamptz '2026-10-01 12:00:00+00' - make_interval(mins => t.min), 'abierta', c.cierre, c.cierre
+     from (values ${VIVAS}) t (titulo, min, de, cierre)
+     cross join hoy
+     cross join lateral (select case t.cierre when 'hoy' then hoy.cierre when 'semana' then now() + interval '5 days'
+       when 'pasado' then now() - interval '2 days' end as cierre) c
      returning id, titulo`,
     ids,
   )

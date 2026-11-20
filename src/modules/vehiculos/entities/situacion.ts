@@ -12,7 +12,7 @@ export const SITUACIONES = ['en_subasta', 'sin_resolver', 'no_ganada', 'fase'] a
 
 export type Situacion = (typeof SITUACIONES)[number]
 
-// Las que no son una fase: las que el filtro «Situación» nombra aparte, en su orden.
+// Las que no son una fase, en su orden (el de «Subasta» y el de la traducción del `?situacion=` viejo).
 export const SITUACIONES_PROPIAS = ['en_subasta', 'sin_resolver', 'no_ganada'] as const
 
 export type SituacionPropia = (typeof SITUACIONES_PROPIAS)[number]
@@ -76,15 +76,13 @@ export function accionesDeSituacion({
 // El atajo «Sin resolver» del inventario cuenta hasta acá y lo dice «99+»: es trabajo pendiente, no un total exacto.
 export const TOPE_DE_SIN_RESOLVER = 99
 
-// El valor del filtro «Situación» que pone el atajo, y si el filtro está puesto así (sólo «Sin resolver»: el atajo se prende y se apaga, no suma).
+// El valor del filtro «Subasta» que pone el atajo, y si el filtro está puesto así (el atajo se prende y se apaga).
 export function soloSinResolverComoFiltro(): ValorDeFiltro {
-  return { tipo: 'opciones', valores: ['sin_resolver'] }
+  return { tipo: 'eleccion', valor: 'sin_resolver' }
 }
 
 export function soloSinResolver(valor: ValorDeFiltro | undefined): boolean {
-  return (
-    valor?.tipo === 'opciones' && valor.valores.length === 1 && valor.valores[0] === 'sin_resolver'
-  )
+  return valor?.tipo === 'eleccion' && valor.valor === 'sin_resolver'
 }
 
 // Lo que el inventario pide siempre: sin las no ganadas (el filtro para verlas es aparte).

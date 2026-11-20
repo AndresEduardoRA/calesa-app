@@ -3,6 +3,7 @@ import { COLOR_TINTA } from '@/shared/config/app'
 import { Monto } from '@/shared/ui/monto'
 import { RELLENO_DE_LA_CELDA } from '../../../entities/tarjeta/estilo-de-la-celda'
 import type { CeldaDibujada } from '../../../entities/tarjeta/geometria-de-la-tarjeta'
+import { FotoDelAsesorDeLaCelda } from './foto-del-asesor-de-la-celda'
 import { LogoDeLaCelda } from './logo-de-la-celda'
 
 const JUSTIFICAR = { arriba: 'flex-start', centro: 'center', abajo: 'flex-end' } as const
@@ -82,13 +83,16 @@ function Contenido({
           {...(alFallarElLogo ? { alFallar: alFallarElLogo } : {})}
         />
       )
+    case 'foto_del_asesor':
+      return <FotoDelAsesorDeLaCelda celda={celda} foto={c} />
     case 'vacio':
       return null
   }
 }
 
 // Una celda de la tarjeta, con sus `data-*` para las pruebas (la fila, la columna, el nodo y qué muestra, la variable, el color y el total). Los montos van con
-// `<Monto>`: el Modo Live los tapa. La celda logo dibuja sólo el logo, a la medida de la celda (`<LogoDeLaCelda>`); si no carga, `alFallarElLogo`.
+// `<Monto>`: el Modo Live los tapa. La celda logo dibuja sólo el logo, a la medida de la celda (`<LogoDeLaCelda>`); si no carga, `alFallarElLogo`. La foto del
+// asesor, `<FotoDelAsesorDeLaCelda>` (sin foto, sus iniciales en un círculo).
 export function CeldaDeLaTarjeta({
   celda,
   logo,

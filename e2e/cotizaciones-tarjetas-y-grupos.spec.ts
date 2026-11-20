@@ -11,9 +11,9 @@ import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
 // La lista de cotizaciones en tarjetas y agrupada por vehículo (`docs/UX.md` › «Cotizaciones», T319 y T415): por defecto tarjetas y agrupada; un vehículo con cuatro
-// cotizaciones es una tarjeta con la portada de su aprobada (la miniatura) y «4 cotizaciones de este vehículo», que abre un modal (`?panel=cotizaciones-del-vehiculo&vehiculo=`)
+// cotizaciones es una tarjeta con la imagen de la tarjeta de su aprobada (la miniatura) y «4 cotizaciones de este vehículo», que abre un modal (`?panel=cotizaciones-del-vehiculo&vehiculo=`)
 // con la aprobada primero, sus casillas y «Comparar» en el pie, de a 10 con «Ver más»; elegir una línea lo cierra y abre su resumen; la lista no despliega nada; una sin vehículo va suelta; «Compartir» de la tarjeta abre su panel y el «⋯» de la tarjeta no lo repite (en la tabla va primero, con la columna
-// «Título»); «Tabla | Tarjetas» y «Agrupar por vehículo» se recuerdan; «Mías» deja en el grupo sólo las suyas; las tarjetas miden lo mismo; la portada abre el visor y
+// «Título»); «Tabla | Tarjetas» y «Agrupar por vehículo» se recuerdan; «Mías» deja en el grupo sólo las suyas; las tarjetas miden lo mismo; la imagen abre el visor y
 // la tarjeta el resumen; en Modo Live no hay «Compartir». El terreno es el de `soporte/cotizaciones-final.ts` (sembrado sin triggers: la aprobada se rellena a mano).
 test.describe.configure({ mode: 'serial' })
 
@@ -58,8 +58,9 @@ test.afterAll(async () => {
 })
 
 const deLaPrueba = (resto = ''): string => `/cotizaciones?origen=${t.origen.id}${resto}`
+// Por el marco de su imagen, que lleva el id (la imagen se pide recién a la vista).
 const tarjetaDe = (page: Page, id: string) =>
-  page.locator('article').filter({ has: page.locator(`[data-portada] img[src*="${id}"]`) })
+  page.locator('article').filter({ has: page.locator(`[data-imagen-de-la-tarjeta="${id}"]`) })
 const conteo = (page: Page) => page.getByRole('button', { name: /cotizaciones de este vehículo$/ })
 
 async function abrir(page: Page, ruta: string): Promise<void> {
@@ -72,15 +73,19 @@ const modalDelGrupo = (page: Page) => page.getByRole('dialog', { name: /^Cotizac
 const panelDe = (page: Page) => new URL(page.url()).searchParams.get('panel')
 const vehiculoDe = (page: Page) => new URL(page.url()).searchParams.get('vehiculo')
 
-test('E2E por defecto, tarjetas agrupadas: el grupo con la portada de su aprobada y su conteo abre el modal del vehículo, con la aprobada primero y «Comparar» en el pie; la suelta va sola', async ({
+test('E2E por defecto, tarjetas agrupadas: el grupo con la imagen de su aprobada y su conteo abre el modal del vehículo, con la aprobada primero y «Comparar» en el pie; la suelta va sola', async ({
   page,
 }, info) => {
   await abrir(page, deLaPrueba())
   expect(grupo.ids).toHaveLength(4)
   const delGrupo = tarjetaDe(page, aprobada)
   await expect(delGrupo).toHaveCount(1)
-  // La miniatura de la portada de la aprobada.
-  await expect(delGrupo.locator('[data-portada] img')).toHaveAttribute('src', /portada\?ancho=480/)
+  // La miniatura de la imagen de la aprobada: se pide al llegar a la vista.
+  await delGrupo.scrollIntoViewIfNeeded()
+  await expect(delGrupo.locator('[data-imagen-de-la-tarjeta] img')).toHaveAttribute(
+    'src',
+    /imagen\?ancho=480/,
+  )
   const boton = delGrupo.getByRole('button', { name: '4 cotizaciones de este vehículo' })
   // La suelta: su tarjeta, sin conteo; los dos grupos (el de 4 y el de 12), con el suyo.
   await expect(tarjetaDe(page, suelta)).toHaveCount(1)
@@ -262,17 +267,17 @@ test('E2E todas las tarjetas miden lo mismo', async ({ page }, info) => {
   await capturar(page, info, 'tarjetas-al-200')
 })
 
-test('E2E el clic en la portada no abre el resumen y el de la tarjeta sí; el visor de la tarjeta es suyo', async ({
+test('E2E el clic en la imagen no abre el resumen y el de la tarjeta sí; el visor de la tarjeta es suyo', async ({
   page,
 }) => {
   await abrir(page, deLaPrueba())
   const tarjeta = tarjetaDe(page, suelta)
-  // La portada abre su visor recién al hidratar (antes, el clic no hace nada): se insiste hasta que abre, sin volver a pulsar con
+  // La imagen abre su visor recién al hidratar (antes, el clic no hace nada): se insiste hasta que abre, sin volver a pulsar con
   // el visor ya pedido. Abierto tapa la lista: se cierra antes del clic en la tarjeta.
-  const visor = page.getByRole('dialog', { name: /^Vista previa de la cotización/ })
+  const visor = page.getByRole('dialog', { name: /^Imagen de la tarjeta de la cotización/ })
   await expect(async () => {
-    if (!page.url().includes(`visor=portada-de-la-lista-${suelta}`))
-      await tarjeta.locator('[data-portada]').click({ position: { x: 10, y: 10 } })
+    if (!page.url().includes(`visor=imagen-de-la-lista-${suelta}`))
+      await tarjeta.locator('[data-imagen-de-la-tarjeta]').click({ position: { x: 10, y: 10 } })
     await expect(visor).toBeVisible({ timeout: 1000 })
   }).toPass()
   await expect(page).not.toHaveURL(/cotizacion=/)
@@ -282,7 +287,7 @@ test('E2E el clic en la portada no abre el resumen y el de la tarjeta sí; el vi
   await expect(page).toHaveURL(new RegExp(`cotizacion=${suelta}`))
 })
 
-test('E2E en Modo Live la tarjeta no ofrece «Compartir» y la portada va oculta', async ({
+test('E2E en Modo Live la tarjeta no ofrece «Compartir» y la imagen va oculta', async ({
   page,
 }, info) => {
   await entrar(page, t.duena, { fresco: true })

@@ -94,6 +94,17 @@ las trampas, en `docs/LECCIONES.md`.
 - **Lo que falta en el inicio de Configuración: sólo lo accionable, donde se resuelve.** Los siguientes pasos de cada origen activo van a la tarjeta de la sección que los resuelve (la fórmula a Cotización, el flujo a Flujos, apibara una vez a Empresa) y sólo si la persona puede hacerlos (`conDestino()` sin motivo). El paso de los permisos no va: es un aviso blando (los roles para todos los orígenes ya alcanzan) y queda en la página del origen. Si la integración no se puede leer, apibara cuenta como activa: no se inventa una falta.
 - **La barra de cambios sin guardar no frena el «atrás» del navegador.** Frena los enlaces (en la fase de captura), las salidas por `salirSinPerder()` y, con la pregunta del navegador, recargar y cerrar. El App Router no ofrece cómo frenar el «atrás» sin parchear el historial, y parchearlo rompe la vuelta del foco.
 - **PWA.** `id: '/'` igual que `start_url` (cambiarlo reinstala la app a todos); sin aviso que invite a instalar; los atajos del manifest no se filtran por permiso (se pide sin sesión). Íconos, tarjeta y PDF salen del logo normal; el oscuro lo elige el CSS.
+- **El menú lateral se pliega a sólo íconos, por persona y sin animar.** El botón «Plegar menú» va abajo de la barra (no junto a la marca: ahí compite con el logo y, plegada, el logo es lo único que cabe) y `Ctrl/Cmd+B` hace lo mismo; la tecla no responde mientras se escribe (en un editor es la negrita) ni en el celular. El tooltip es el `title` nativo: un tooltip propio se recortaría contra el desplazamiento de la barra y suma JS a toda pantalla. Plegar mueve el ancho de la columna (15,5 → 3,5 rem) de golpe: animarlo reacomoda la página de al lado en cada cuadro y el lienzo de la tarjeta recalcula su escala. La preferencia `menu.plegado` (booleano, con su `check`) la lee el servidor, así que la barra llega dibujada como quedó; una cookie `menu-plegado` es sólo su copia para la cáscara estática de carga, que no ve la sesión. Los avisos no se mueven con la barra: siguen abajo a la izquierda con su ancho de siempre. El menú plegable suma ≈ 1,5 KB al documento de toda pantalla (el árbol de la barra se repite en el escritorio y en el menú del celular): el tope del documento de `/perfil` sube de 119 a 121 KB (+1,7 %, regla del 5 %). Descartadas: plegar al pasar el puntero (se abre sola y tapa), un ancho que se arrastra (otra preferencia y otro control para algo que son dos estados) y plegar también el menú del celular (ya está plegado detrás de su botón).
+- **Las páginas de ajustes son tarjetas resumen que se editan en un modal.** Empresa, Integraciones y Comprobantes (y después Sitio web, el perfil y
+  Monedas) muestran lo guardado como texto en `<TarjetaDeAjustes>` y editan en un `ModalDeFormulario` por tarjeta (`?panel=<tarjeta>`), sin acordeones ni
+  barra de cambios sin guardar: de un vistazo se ve qué está configurado y la página entra sin desplazar. Mampostería con columnas CSS (`columns-1
+@2xl:columns-2 @5xl:columns-3`, `break-inside-avoid`) sobre un contenedor con nombre: sin JavaScript, sin huecos, y manda el ancho de la página, no el de la
+  pantalla (el menú de Configuración se lo quita). **Una escritura por modal** (la clave de una integración no va con su dirección: las dos usan la
+  misma versión de la fila y encadenadas la segunda chocaría consigo misma). La versión llega por props al abrir y nunca va en la `key` (guardar
+  remontaría el modal y borraría lo tipeado); la `key` es por apertura. `useEnvioConVersion()` (`@/shared/ui`): el conflicto deja «Recargar» y
+  «Guardar» apagado hasta que llega la versión nueva; sin red espera y reenvía al volver. Los interruptores de una tarjeta guardan al instante.
+  Descartados: el formulario largo en bloques plegables, la edición en el lugar (sin versión por campo), un drawer al costado (tapa lo que se
+  edita) y la mampostería con JavaScript (suma bytes en frío y parpadea). En esas páginas reemplaza la regla de los bloques plegables.
 
 ## Equipo
 
@@ -139,6 +150,7 @@ las trampas, en `docs/LECCIONES.md`.
 ## Empresa
 
 - **Empresa se escribe sólo por RPC.** `ajustes_empresa`, `monedas`, `tipos_cambio` e `integraciones` sin policies de escritura; cada edición es una RPC definer con permiso y versión. Monedas y tipos se desactivan, no se borran.
+- **Monedas se ordena por par de monedas.** Arriba la moneda base, luego un grupo por par (el de la base primero) con una tarjeta grande por tipo de cambio, y al pie, secundarias, las monedas activas y «Al compartir». Descartado el grupo por tipo (oficial, paralelo…): el par es lo que se compara. La moneda base salió del modal de Región a Monedas (un solo lugar; sigue con `empresa.ajustes.gestionar`, otro permiso que el de los tipos de cambio). «Quién y cuándo» sale de `tipos_cambio_vigentes()`, no del historial: lo ve toda persona activa. «En la barra» se guarda al tocar el interruptor de la tarjeta; el panel conserva el suyo. Una moneda abierta desde «Gestionar» cierra el modal y abre su panel (un modal no abre otro). La leyenda se edita en un modal: ya no usa la barra de cambios sin guardar.
 - **Lo que se ve sin sesión sale de `web.ajustes_acceso()`.** Nombre, logo, locale, moneda, registro abierto y `primer_registro`; lo que haga falta antes de ingresar se suma ahí.
 - **Secretos de la interfaz en Vault.** `integracion_guardar_secreto()` con permiso e `integracion_secreto()` sólo para `service_role`; la app lee `secreto_guardado_en`. La dirección de apibara sólo puede ser de `apibara.tech`.
 - **Color de marca con contraste.** Se rechaza el color sobre el que ni blanco ni tinta oscura llegan a 4,5:1; el mejor va a `--color-sobre-primario`. Entra por un `<style>`, no por `<html style>`.
@@ -147,6 +159,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **La barra la elige la empresa.** «En la barra» es una columna de `tipos_cambio` escrita por `tipo_cambio_guardar(p_en_la_barra)` (un solo «Guardar» y una versión por fila, no una RPC gemela que daría PT409 contra el panel), con tope de 3 activos tras un candado consultivo tomado antes que la fila. Desactivar no desmarca y la barra filtra activos: reactivar uno marcado con 3 ya a la vista no se rechaza ni lo desmarca; la barra corta en 3 por el orden de `vigentes()` (el por defecto, `orden`, `nombre`) y el panel del que queda afuera lo dice. Sin ninguno, el por defecto. El último cambio de cada tipo (del historial, no de `actualizado_*`) lo ve toda persona activa por `tipos_cambio_vigentes()` (definer); el historial entero sigue siendo de quien gestiona. El conflicto del popover se arma en el cliente con lo releído, porque el monto va por `<Monto>`; el PT409 de la RPC no cambia. Con el Modo Live el popover no ofrece cambiar el valor.
 - **Compartir los tipos de cambio sale del servidor.** El texto y la imagen (`ImageResponse` de `next/og`, Geist en `infra/compartir/fuentes/`, sin `html-to-image` ni JS en el marco) los arman `/tipos-de-cambio/texto` e `/imagen` con la sesión de quien pide, de la misma lectura (`tipos_cambio_vigentes()` y la fila de `ajustes_empresa`): la zona, el locale, el logo y la leyenda son los de la empresa, no los del navegador, y las dos salidas dicen lo mismo. Las pide el panel diferido al elegir los tipos (con 250 ms de espera) y guarda el resultado: copiar, descargar y el menú del sistema son síncronos con el gesto (Safari no deja escribir el portapapeles tras un `await`). No hay permiso de «ver»: lo comparte toda persona activa, como ve el popover. Con el Modo Live no se ofrece (llevan cifras). El logo se baja en el servidor (hasta `PESO_MAXIMO_LOGO`, PNG, JPEG, GIF o SVG); uno que no se puede traer deja sólo el nombre. La leyenda comparte la versión de la fila de `ajustes_empresa` con el formulario de Empresa (como la vigencia): guardar una deja con `PT409` a la otra.
 - **Ajustes de cotización aparte.** La vigencia la cambia sólo `cotizaciones.configurar` concedida sin origen, por `empresa_guardar_ajustes_de_cotizacion` (dos permisos no se mezclan en una RPC; el vehículo y el lead obligatorios no son ajuste de empresa sino por rol y origen: Cotizaciones › La hoja); comparte versión con Empresa y revalida las dos pantallas.
+- **Datos de la empresa: un modal por tarjeta, sólo lo que cambió.** Cada tarjeta guarda con `empresa_guardar_ajustes()` mandando únicamente las claves distintas de lo guardado (la RPC no toca lo ausente), así que dos modales sucesivos no se pisan salvo por la versión de la fila, que viaja por props al abrir. Sin cambios, guardar cierra. La moneda base con datos cargados no viaja. Los logos se suben al guardar y los íconos se dibujan desde el logo guardado en su propio modal.
 
 ## Orígenes
 
@@ -186,10 +199,24 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Refrescar la subasta» del aviso pide un toque** porque cada consulta a apibara gasta cuota; «Reintentar» sólo se ofrece si el fallo es del
   momento (`sePuedeReintentar`), nunca con la cuota agotada. Las acciones del aviso (refrescar, resolver, cotizar igual) son botones locales:
   el patrón `AccionDelAviso` no tiene «refrescar» ni «cerrar» y ampliar `src/shared` por esto disparaba el e2e completo.
-- **El inventario filtra por «Situación» (`?situacion=`), no por fase.** Una fase es una situación (`fase`), y dos filtros que dicen casi lo mismo confunden;
-  un `?fase=` se ignora. Una fase filtra por `situacion = 'fase'` y su `fase_id`:
-  «En subasta» y «Sin resolver» salen sólo por su opción, no al elegir la fase de subasta. El atajo «Sin resolver» cuenta con `tope + 1` por `vehiculos_situacion_idx`
-  y lo dice «99+»; cambia sólo «Situación» y deja los demás filtros.
+- **El inventario filtra por «Subasta» y por «Fase», por separado.** Mezclados en una lista («Situación»), «En subasta» salía dos veces (la fase y la
+  situación) y no cabían las ventanas del cierre. «Subasta» es una a la vez (`eleccion`): cuándo cierra, las vivas, sin resolver o no ganadas; «Fase» son
+  casillas y filtra la columna `fase_id`, así que la fase de la subasta trae todo lo que está en ella (la situación la dice «Subasta»). Descartados: «Situación»
+  con subgrupos (seguía repitiendo «En subasta»), «Orden» en «Vista y opciones» (el orden cambia lo que se ve: va con los filtros, en la URL y en la vista
+  guardada) y «Subasta» como botones en la barra (no cabe en el celular junto al atajo). El atajo «Sin resolver» cuenta con `tope + 1` por
+  `vehiculos_situacion_idx`, lo dice «99+» y cambia sólo «Subasta».
+- **El por defecto de «Subasta» se llama «Cualquiera».** «Todas» se confundía con «Todas las vivas».
+- **Las ventanas del cierre empiezan ahora y sólo traen vivas.** Una subasta que ya cerró no «cierra hoy» aunque el job que la pasa a «Sin resolver» corra con
+  desfase; `cierre_entre` pide `situacion = 'en_subasta'`, así que una viva fuera del tramo (en una fase que no es la subasta) tampoco entra. «Esta semana» es
+  lunes a domingo en la zona de la empresa. La página calcula `ahora` una vez por pedido; la base sólo compara.
+- **«Cierre más próximo» va por tramos, en la base.** Primero las vivas por `cierre_subasta_en` (`vehiculos_subasta_viva_cierre_idx`), después las vivas sin
+  fecha y al final el resto por alta (las cerradas no tienen un cierre que ordenar: `cierre_subasta_en` es nula). PostgREST no puede ordenar por tramos: con
+  ese orden la página va siempre por `vehiculos_inventario()`, y si la base rechaza los filtros es un error con «Recarga», no la tabla. Es el orden de
+  siempre cuando «Subasta» tiene valor (el por defecto de «Orden» depende de «Subasta»: la página lo resuelve antes de armar el esquema).
+- **Un `?situacion=` viejo redirige con 308; las vistas guardadas se leen traducidas.** No se migran datos: `conSituacionTraducida()` al leerlas. Si venían
+  varias situaciones propias gana la primera (vivas › sin resolver › no ganadas), porque «Subasta» es una a la vez; el cursor se suelta.
+  El 308 lo responde `/vehiculos/enlace-viejo` (un route handler), adonde `src/proxy.ts` reescribe el pedido: desde la página saldría 200, y el proxy no importa
+  las reglas de un módulo (sólo su `index.ts`, que le arrastraría las lecturas del inventario a cada pedido).
 - **`situacion_en` arma una igualdad por situación propia, no un `= any`.** Una sola igualdad con el valor plegado deja que `vehiculos_situacion_idx` conduzca el orden; el
   arreglo de una subconsulta no (el planificador no sabe que trae uno). Por eso `_vehiculos_inventario_condicion` recibe la condición entera (`p_filtro`).
 - **Se escriben sólo por RPC.** `vehiculo_crear(p_id…)` idempotente con id del navegador y `vehiculo_guardar` con versión; el alta entra a la fase inicial sólo si no hay nada que decidir (si no, «Sin fase»).
@@ -470,7 +497,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **Listado por rutas e invocador.** `cotizaciones_listado()` deja decidir a la RLS; «Mías» = `creado_por`; salen todas las versiones; `p_lead`/`p_vehiculo` filtran fuera del esquema de filtros. Máx. 50 en la pantalla (la base admite hasta 100). Lead no visible = «—».
 - **La lista nace en tarjetas y agrupada por vehículo.** Lo pidió la persona (como V1): `cotizaciones.vista` y `cotizaciones.agrupar` sin elegir son tarjetas y
   agrupada; la URL manda y elegir guarda. La vista cambia en el cliente sin releer (las mismas filas); la agrupación relee (es otra lectura) y vuelve a la primera
-  página. Por eso el máximo de la página es uno solo para tabla, tarjetas, agrupada o no (`MAXIMO_DE_PAGINA_DE_COTIZACIONES`), de 50: con la portada
+  página. Por eso el máximo de la página es uno solo para tabla, tarjetas, agrupada o no (`MAXIMO_DE_PAGINA_DE_COTIZACIONES`), de 50: con la imagen de la tarjeta
   y sus filas cada tarjeta suma ≈ 40 nodos y 100 no caben en el presupuesto del listado (2.700 nodos, 49.500 B), como en leads. `cotizaciones_listado()` y
   `cotizaciones_buscar()` dan 50 sin pedido y admiten 100 (lo medido).
 - **La agrupada pagina por la cabeza de cada grupo, no por `vehiculos.cotizado_en`.** `cotizaciones_listado_por_vehiculo()` recorre las cotizaciones por las
@@ -494,17 +521,17 @@ las trampas, en `docs/LECCIONES.md`.
   página (una línea del modal de un grupo, otra página) entra a los menús con `conLaDelResumen()`: un id más en las tres lecturas por clave primaria de las marcas.
   Los diálogos del listado se dibujan dentro del Drawer mientras está abierto y su código ya llegó (un modal hermano cuenta como un clic afuera y lo cierra) y en el
   listado si no (así un `?panel=` de la URL no espera al chunk del resumen): un solo montaje a la vez. El panel es `ancho="amplio"`: con el normal (3/4 del celular) no caben «Abrir» y «Compartir» mitad y mitad con el «⋯» a 44 px. Barra pegajosa no:
-  le quita alto a la portada en un panel corto. Enviar a la papelera desde ese «⋯» deja el resumen abierto: al refrescarse dice que ya no está disponible y
+  le quita alto a la imagen de la tarjeta en un panel corto. Enviar a la papelera desde ese «⋯» deja el resumen abierto: al refrescarse dice que ya no está disponible y
   «Deshacer» la devuelve.
-- **La lista de cotizaciones lleva en frío sólo lo que se ve al llegar.** La portada de la tarjeta (`next/image`, el recuadro y la cáscara del visor), el
+- **La lista de cotizaciones lleva en frío sólo lo que se ve al llegar.** La imagen de la tarjeta (`next/image`, el recuadro y la cáscara del visor), el
   conmutador y «Agrupar» con su action; lo que no se ve al llegar (el despliegue de un grupo, sus líneas y «Comparar») va con `diferido()`. El tope de
   `/cotizaciones`, en `docs/RENDIMIENTO.md`.
 - **«Vencida» una sola vez en la tarjeta.** La de la vigencia, al pie; las insignias de arriba son «Aprobada», «Final» y el origen con su color (menos ruido). El
   origen va como insignia y no repetido en «N.º n · origen».
 - **La tarjeta de la lista no repite el vehículo ni dice «Preventa».** Su título es el del vehículo (el automático) o el que se escribió, y un subtítulo con el
   mismo nombre sería ruido; la clase sólo se marca cuando es «Final». El vehículo («—» si quien mira no lo ve) va en la tabla y en el resumen.
-- **La portada de la lista en miniatura, achicada al responder.** `?ancho=480` de la ruta de la portada, con su propia ETag; el bucket guarda sólo la grande (la
-  del visor y la que se comparte): guardar las dos duplicaría la escritura y el refcount por una lectura que el navegador revalida con 304.
+- **La imagen de la lista en miniatura, achicada al responder.** `?ancho=480` de la ruta de la imagen, con su propia ETag: se achica del mismo PNG (nunca de
+  un WebP ya armado, que pasaría dos veces por la compresión). El visor y «Compartir» piden la grande.
 
 ### La fórmula
 
@@ -565,7 +592,7 @@ las trampas, en `docs/LECCIONES.md`.
   distinto, manda lo de la que se abrió (con aviso) y al guardar queda en las dos; una hermana sin cambios no se reescribe. Los atajos, interruptores, el modo y
   «Ver total Bs» son comunes. La papelera trata el par como un lote (enviar una manda la otra al mismo lote; restaurar o purgar algunas suma su hermana del
   mismo lote, nunca cruza lotes ni purga una viva). «Cotizar encima» de una hermana crea un par nuevo en el acto. El PDF lleva una página A4 por tarjeta (una
-  tarjeta encogida a la mitad no se lee); la imagen de «Compartir» apila las dos portadas en el navegador (la portada sigue siendo una por cotización).
+  tarjeta encogida a la mitad no se lee); la imagen de «Compartir» apila las dos imágenes de la tarjeta en el navegador (la ruta sigue dando una por cotización).
 - **Vehículo y lead obligatorios: dos libertades por rol y origen.** `cotizaciones.crear.sin_vehiculo` y `cotizaciones.crear.sin_lead` (por origen, sin alcance; se suman, sin deny): sin la clave en ese origen el vínculo es obligatorio. Una final pide siempre los dos y cotizar encima aplica las mismas claves a la anterior (una anterior sin lead se cotiza encima sólo con `sin_lead` de su origen). Las hace cumplir la base (`cotizacion_crear`, `cotizacion_encima`, `_cotizacion_cadena`); la hoja decide con `sesion.permisos` (con «Ver como», los del rol elegido, un subconjunto de los reales: nunca afloja). El rol dueño las tiene sin origen: sin ellas nadie podría concederlas (`concesion_dominada()`) ni editar un rol que las tenga (`rol_dominado()`), y el dueño es «todo el catálogo».
 - **La hoja abierta la firma la base.** `cotizacion_hoja()` devuelve `abierta` con HMAC (clave en Vault); crear, evaluar y la ayuda de tabla reciben `p_abierta` y calculan con esa versión. Firma también la huella de las tarifas de la apertura, no sus valores: `crear` la compara con las que reconstruye del historial, porque un `cambiado_en` anterior a la apertura puede confirmar después. Cotizar pide `crear` y `ver` del origen.
 - **Cotizar encima.** La N+1 nace al tocar (`cotizacion_encima`), siempre preventa, con lo guardado de la última de la cadena; índice parcial `cotizaciones_encima_unica`. Quien no ve la N+1 sólo sabe que existe.
@@ -626,6 +653,14 @@ las trampas, en `docs/LECCIONES.md`.
   satori no leen (el WebP con que se suben los logos, un SVG con estilos) lo convierte a PNG el servidor con `sharp` al dibujar, hasta 1.024 px, como el tope
   de un logo raster; un SVG que nombra otro archivo no se dibuja (leería algo sin tope ni espera). Convertir al dibujar y no al subir deja servir los logos
   ya subidos sin migrarlos. Si el logo no carga en el lienzo del editor, el editor lo avisa con «Abrir Empresa».
+- **El asesor de la tarjeta es quien la mira o la comparte, no quien la creó.** Una cotización la comparte cualquiera que la ve, y el cliente escribe a quien
+  se la mandó: la tarjeta, el PDF, la imagen y el texto de «Compartir» nombran a quien los pide, con su WhatsApp, su cargo y su foto de perfil
+  (`leerAsesorQueMira()`: `perfiles` por PK, legible para todo usuario activo; `cotizaciones` no importa `web`, que ya leía esos campos). Quien la creó es el
+  autor («Creado por»). Con «Ver como», la persona real: la perspectiva cambia permisos, no quién comparte. El teléfono va tal cual lo guardó (E.164,
+  «+591…»): es lo que valida su ficha y lo que abre WhatsApp. En el texto va al final, como firma («Asesor: nombre, cargo» y «WhatsApp: …»).
+- **La foto del asesor es un contenido de celda, no una variable de texto.** Se encaja como el logo (`contain`, alineada como la celda, con la misma bajada con
+  tope y 2 s y el mismo paso a PNG de `sharp`: satori no dibuja WebP); sin foto, o si no carga, sus iniciales en un círculo del lado menor de la caja, con
+  borde de 1,5 px y letra de 0,4 × el diámetro en el color del texto de la celda. Una silueta genérica diría menos que las iniciales.
 - **Con qué nace el editor de plantilla:** el borrador; si no hay (o no se lee), copia de la publicada; si no, la omisión. Una versión ilegible no se edita a
   medias. El editor escribe **sólo la forma 2**: una forma 1 se alinea con la fórmula y se convierte al abrirla, lo dice y no se guarda sola; si lo
   convertido no entra en la grilla (120 filas, 1.000 celdas), se toman los primeros 4 miembros de cada grupo y, si tampoco, sólo el total. El PT409 no dice
@@ -667,28 +702,37 @@ las trampas, en `docs/LECCIONES.md`.
   `Geist-SemiBold.ttf` `01923aa148e5202ae70a2e11b2ab4dc41b80bcc374aedccc913d47bb2f591c06`, `Geist-Italic.ttf`
   `14b65c2dce6eb81a68bee916fed0e63f6d8526400b364cabf166f58e49c71b14` y `Geist-SemiBoldItalic.ttf`
   `5434c3634179082d63c80a4748df2d4ef2632d69c445cf47f2ef2ac101a582b3`.
-- **La portada de la cotización se arma en el servidor y se guarda una sola vez por clave.** WebP con `sharp` (calidad 80, ≤ 1.600 px): `ImageResponse` sólo
-  da PNG y `sharp` ya venía con Next. La clave mira **lo que se dibuja** (el título, lote y VIN del vehículo; el nombre del cliente y del asesor; clave y hex de
-  los colores; nombre, activo y moneda de los tipos de cambio), no su `actualizado_en` ni el valor del día: una fase, una foto o el tipo de cambio de hoy
-  rehacían todas las portadas sin que cambiara nada de lo que se ve. Un cambio en cómo se dibuja sube `_portada_version_del_dibujo()`.
-- **La portada guardada es una sola para todos, y la guarda quien ve todo lo que dibuja.** Lleva el cliente y el vehículo: sólo se sirve o se guarda para quien
-  los ve (`ve_todo`) y mira con sus permisos (sin «Ver como»); los demás reciben una armada con lo suyo, como el PDF, sin ETag ni guardar. Guardarla pide
-  además poder guardar la cotización (subir al bucket ya lo pedía), y bajarla del bucket, ver lo que dibuja (la policy «cotizaciones: leer» pide
-  `cotizacion_portada_visible()` en `portada/`: con sólo `cotizaciones.ver` se listaría y bajaría). El contexto de la compartida sale de la base
-  (`cotizacion_portada`), así clave y contenido no se separan. No depende del nivel de quien la arma: la tarjeta sólo nombra nodos del nivel «todos» y los
-  totales viajan para todos. Sin el primer recálculo (la tarjeta sólo con el total) se entrega pero no se guarda.
-- **La portada se pide al guardar con un `fetch` a su ruta, no con una Server Action en `after()`.** Las actions de guardar son del núcleo y no importan
-  el área: el núcleo avisa por el hueco de la vista previa (`alGuardarLaCotizacion`) y la tarjeta pide la ruta sin esperarla. No es una action porque el
-  router las corre de a una (una de 1–2 s demoraría el próximo guardado), ni trabaja en `after()`: leer con la sesión después de responder puede rotar el
-  refresh token y cerrar la sesión. Por lo mismo la ruta guarda la portada **antes** de responder (cuesta una subida y una RPC, sólo cuando falta o quedó vieja).
-- **El barrido del bucket `cotizaciones` tiene su rama, como `vehiculos`.** `not exists` sobre adjuntos y portadas, por el índice de `ruta` de cada una: la
+- **La imagen de la tarjeta se arma al pedirla, para quien la pide, y no se guarda.** Lleva el asesor (quien mira) y lo que esa persona ve: una guardada sería
+  una por persona y cotización, crecería sin tope y habría que invalidarla con cada cambio de perfil o de permisos. WebP con `sharp` (calidad 80, ≤ 1.600 px):
+  `ImageResponse` sólo da PNG y `sharp` ya venía con Next. Lo que evita volver a dibujarla es la caché del navegador: `private, no-cache` con una ETag fuerte y
+  un 304 que sólo lee la huella. Sin el primer recálculo (la tarjeta sólo con el total) se entrega con `no-store`. No depende del nivel de quien la arma: la
+  tarjeta sólo nombra nodos del nivel «todos» y los totales viajan para todos.
+- **Una imagen de la tarjeta incompleta no se deja guardar.** Si al armarla falla leer el cliente, el vehículo o el asesor, o el logo o la foto que la tarjeta
+  dibuja no llegan (2 s, un error o un archivo que no se lee), sale sin eso y con `no-store`: la huella no cambia con un fallo, y con la ETag el navegador
+  seguiría recibiendo 304 de la imagen a medias. No se distingue un fallo de un momento de uno que se repite (un logo que no se lee): ese caso paga armarla en
+  cada pedido hasta que se cambie el logo, y nunca deja una imagen a medias fija.
+- **La ETag sale de una huella de la base y la versión del dibujo vive en TS.** `cotizacion_imagen_huella()` mira **lo que se dibuja** (el título, lote y VIN
+  del vehículo y el nombre del cliente, sólo si quien pide los ve; el perfil de quien pide; clave y hex de los colores; nombre, activo y moneda de los tipos de
+  cambio), no su `actualizado_en` ni el valor del día: una fase, una foto o el tipo de cambio de hoy invalidarían todas sin que cambiara nada de lo que se ve.
+  La ETag suma el usuario (dos personas nunca comparten una), `VERSION_DEL_DIBUJO` y el ancho: un cambio en cómo se dibuja es código, y subir la versión en
+  el mismo archivo no pide una migración. Con «Ver como», `no-store` sin leer la huella: la perspectiva cambia lo que se ve, y una ETag de la persona real
+  serviría lo de otro rol.
+- **La imagen de la tarjeta se pide a la vista y de a cuatro por página.** Armarla cuesta (satori, PNG y WebP en el servidor) y ya no hay una guardada que
+  servir: una lista de 50 tarjetas pediría 50 armados en paralelo. `useCargaDeLaImagen()` pide turno en una cola de la página (`crearCola(4)`) sólo con la
+  imagen a 200 px de la vista; la que sale antes de su turno deja la fila, y con turno va `eager` (una `lazy` que sale de la vista no se pediría y el turno
+  quedaría tomado). Al volver, las ETag dan 304 y la cola se vacía enseguida.
+- **La ruta vieja de la imagen sigue andando.** `/cotizaciones/<id>/portada` es un 308 a `/imagen` con su consulta (`next.config.ts`): un enlace o una caché
+  del navegador que la nombre no da 404.
+  Lo mismo el visor: `?visor=portada-<id>` y `?visor=portada-de-la-lista-<id>` lo siguen abriendo (`esClaveDelVisorDeLaImagen()`), aunque las claves de hoy
+  son `imagen-<id>` e `imagen-de-la-lista-<id>`.
+- **El barrido del bucket `cotizaciones` tiene su rama, como `vehiculos`.** `not exists` sobre los adjuntos, por el índice de `ruta`: la
   rama genérica llama a `storage_refcount()` por objeto y una ventana de 10.000 costaba ≈ 0,9 s (≈ 0,2 s así). Una tabla nueva con rutas de ese bucket va en
   las dos; si falta en la rama, `storage_gc_reclamar()` igual la descarta al ver el refcount.
 - **Los retoques de la tarjeta son de una cotización, sólo textos y filas ocultas.** Se guardan en `cotizaciones.tarjeta_retoques` (por id de celda y de
   fila) y se aplican a la cuadrícula antes de la geometría, así todo lo que dibuja esa tarjeta los sigue solo; nunca cifras, colores, el logo, tamaños,
   columnas ni combinaciones (la plantilla del origen sigue mandando en la forma). Cotizar encima se los lleva, como el título y las notas. Un `{{` se dibuja
   tal cual: en la cuadrícula nada interpola. Retocar pide lo que pide guardar, sin permiso propio, y es guardar la cotización: mueve `actualizado_en` (la
-  fecha del último guardado de la tarjeta, la de la cabecera y la clave de la portada).
+  fecha del último guardado de la tarjeta, la de la cabecera y la huella de su imagen).
 - **La base valida los retoques contra lo que se dibuja hoy.** `cotizacion_retocar_tarjeta()` toma la cuadrícula de `cotizacion_tarjeta()` (la publicada,
   convertida y validada contra la versión de esa cotización); los que dejaron de aplicar (otra plantilla publicada) se ignoran al dibujar y el modo dice que se
   quitarán al guardar. La versión se compara antes que nada, sin intento: un reenvío tras una respuesta perdida da el PT409 «desde otra ventana».
@@ -697,7 +741,7 @@ las trampas, en `docs/LECCIONES.md`.
   caduca a los 14 días, no es lo oculto por nivel y su diff muestra qué texto cambió.
 - **«Retocar» se apaga con la hoja sin guardar, y guardar los retoques revalida la página.** La hoja necesita la versión nueva para su próximo «Guardar» (si
   no, daría PT409 contra uno mismo), así que la action revalida y la hoja se vuelve a montar por su `key`; es seguro porque no hay nada tipeado en la hoja
-  que perder. La portada se pide desde el navegador tras «Listo», como al guardar, nunca en `after()`.
+  que perder.
 - **«Volver a la plantilla» pregunta en el pie del modal, no con `<Confirmar>`**: sería un modal sobre otro. Confirmar guarda en el acto (es irreversible).
 - **El campo de una celda va encima de ella sólo si se escribe cómodo.** Con la tarjeta casi a su tamaño (escala ≥ 0,75), la celda escalada de ≥ 160 px y la
   letra sin agrandar; si no (el celular, el texto al 200 %), a lo ancho del modal bajo la tarjeta. Las filas se ocultan desde un canal de 44 px a la derecha
@@ -719,7 +763,7 @@ las trampas, en `docs/LECCIONES.md`.
   «todos», K4) con el formato del PDF, nunca de `valores` sueltos; el vehículo, sólo si quien pide lo ve. `textoParaCompartir()` (puro) arma el texto en cada
   formato y zona sin volver a pedir. Las fotos tienen su ruta (`…/compartir/fotos`), que se pide al elegir «Fotos». Sin migración ni clave propia: quien ve la
   cotización la comparte, como el PDF.
-- **La imagen que se copia es la portada pasada a PNG en el navegador.** La portada se guarda en WebP y el portapapeles pide `image/png`: armar otro PNG en el
+- **La imagen que se copia es la imagen de la tarjeta pasada a PNG en el navegador.** La ruta da WebP y el portapapeles pide `image/png`: armar otro PNG en el
   servidor costaría un `ImageResponse` por pedido. Se pide con la caché del navegador (su ETag da un 304) y el PNG queda listo **antes** del toque, porque
   Safari pierde el gesto si se espera algo antes de escribir o compartir. Las fotos se comparten a tamaño completo (≤ 1.600 px) y se bajan al marcarlas; con
   fotos, «Copiar imagen» pide una sola (el portapapeles lleva una imagen) y «Descargar imagen» baja cada marcada como está guardada.

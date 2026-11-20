@@ -13,9 +13,9 @@ export function BarraLateral({ permisos }: { permisos: Permisos }) {
       <ul className="grid gap-0.5">
         {entradas.map(({ clave, ruta, titulo, Icono }) => (
           <li key={clave}>
-            <EnlaceNav ruta={ruta}>
+            <EnlaceNav ruta={ruta} titulo={titulo}>
               <Icono aria-hidden />
-              {titulo}
+              <span className="truncate group-data-plegado/lateral:sr-only">{titulo}</span>
               {clave === 'chat' ? <NoLeidosDeLaBarra /> : null}
             </EnlaceNav>
           </li>

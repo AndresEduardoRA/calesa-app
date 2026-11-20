@@ -117,12 +117,14 @@ describe('acotarDatos', () => {
 
 describe('los nombres', () => {
   it('cada variable cerrada y cada «qué mostrar» en español; lo desconocido, tal cual', () => {
-    expect(VARIABLES_PARA_ELEGIR).toHaveLength(13)
+    expect(VARIABLES_PARA_ELEGIR).toHaveLength(15)
     expect(VARIABLES_PARA_ELEGIR[0]).toEqual({
       clave: 'empresa_nombre',
       nombre: 'Nombre de la empresa',
     })
     expect(nombreDeLaVariable('fecha_larga')).toBe('Fecha')
+    expect(nombreDeLaVariable('asesor_telefono')).toBe('WhatsApp del asesor')
+    expect(nombreDeLaVariable('asesor_cargo')).toBe('Cargo del asesor')
     expect(nombreDeLaVariable('__proto__')).toBe('__proto__')
     expect(nombreDeMostrar('tc_valor')).toBe('Valor del tipo de cambio')
     expect(nombreDeMostrar('otro')).toBe('otro')

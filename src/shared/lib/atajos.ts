@@ -8,6 +8,7 @@ export const ATAJOS = {
   abrirNuevo: { combinacion: 'shift+n', descripcion: 'Abrir «Nuevo»: elegir qué crear' },
   guardar: { combinacion: 'mod+s', descripcion: 'Guardar' },
   guardarYSeguir: { combinacion: 'mod+enter', descripcion: 'Guardar y seguir' },
+  plegarMenu: { combinacion: 'mod+b', descripcion: 'Plegar o desplegar el menú lateral' },
   buscarEnPantalla: { combinacion: '/', descripcion: 'Buscar dentro de Configuración' },
   ayuda: { combinacion: '?', descripcion: 'Ver la lista de atajos' },
 } as const satisfies Record<string, { combinacion: string; descripcion: string }>
@@ -45,8 +46,11 @@ export function atajoDe(tecla: Tecla): ClaveAtajo | null {
 }
 
 // Los de una sola tecla (`N`, `?`) no se disparan mientras la persona escribe; los que llevan
-// `mod` y `Esc` sí, que para eso existen.
+// `mod` y `Esc` sí, que para eso existen. Salvo `Ctrl+B`: en un campo de texto enriquecido es la negrita.
 export function valeMientrasSeEscribe(clave: ClaveAtajo): boolean {
+  if (clave === 'plegarMenu') {
+    return false
+  }
   const { combinacion } = ATAJOS[clave]
   return combinacion.startsWith('mod+') || combinacion === 'escape'
 }

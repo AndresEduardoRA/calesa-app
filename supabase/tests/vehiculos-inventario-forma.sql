@@ -8,8 +8,8 @@ begin;
 do $$
 declare
   v_firmas constant jsonb := jsonb_build_object(
-    'vehiculos_inventario', 'p_origen uuid, p_tamano integer, p_filtros jsonb, p_cursor_en timestamp with time zone, p_cursor_id uuid, p_hacia_atras boolean',
-    '_vehiculos_inventario_sql', 'p_filtros jsonb, p_rutas text, p_sentido text',
+    'vehiculos_inventario', 'p_origen uuid, p_tamano integer, p_filtros jsonb, p_cursor_en timestamp with time zone, p_cursor_id uuid, p_hacia_atras boolean, p_orden text, p_cursor_tramo smallint',
+    '_vehiculos_inventario_sql', 'p_filtros jsonb, p_rutas text, p_sentido text, p_orden text, p_tramo smallint',
     '_vehiculos_inventario_validar', 'p_filtros jsonb',
     '_vehiculos_inventario_condicion', 'p_tipo text, p_columna text, p_i integer, p_filtro jsonb',
     '_vehiculos_inventario_patron', 'p_i integer');
@@ -136,6 +136,57 @@ begin
 end $$;
 rollback;
 
+-- @test vehiculos_inventario: L1d por el cierre: un tramo por rama con su limit, su índice literal y su cursor; los que poda cada filtro; ningún valor en el texto
+begin;
+do $$
+declare
+  v_ventana constant jsonb := '[{"tipo": "cierre_entre", "desde": "2031-01-01T00:00:00Z", "hasta": "2031-01-02T00:00:00Z"}, {"tipo": "busqueda", "texto": "zq9"}]';
+  v_vivas constant jsonb := '[{"tipo": "situacion_en", "situaciones": ["en_subasta"], "fases": [], "sinFase": false}]';
+  v_sin_resolver constant jsonb := '[{"tipo": "situacion_en", "situaciones": ["sin_resolver"], "fases": [], "sinFase": false}]';
+  t0 constant text := 'v.situacion = ''en_subasta'' and v.cierre_subasta_en is not null order by v.cierre_subasta_en';
+  t1 constant text := 'v.situacion = ''en_subasta'' and v.cierre_subasta_en is null order by v.creado_en';
+  t2 constant text := 'v.situacion = any (array[''sin_resolver'', ''no_ganada'', ''fase'']) order by v.creado_en';
+  v_txt text; r text;
+begin
+  -- (a) Sin filtros: los tres tramos desde su comienzo; hacia adelante desde el 1, el 1 (con su cursor de alta) y el 2; hacia atrás desde el 1, el 1 y el 0 (sin cursor).
+  v_txt := public._vehiculos_inventario_sql('[]', 'origen', 'primera', 'cierre');
+  if position(t0 || ' asc' in v_txt) = 0 or position(t1 || ' desc' in v_txt) = 0 or position(t2 || ' desc' in v_txt) = 0 or position('$5' in v_txt) > 0
+     or (select count(*) from regexp_matches(v_txt, 'limit \$3', 'g')) <> 4 then
+    raise exception 'L1d (a): la primera página por el cierre no tiene sus tres tramos';
+  end if;
+  v_txt := public._vehiculos_inventario_sql('[]', 'origen', 'siguiente', 'cierre', 1::smallint);
+  if position(t0 in v_txt) > 0 or position('(v.creado_en, v.id) < ($5, $6) and v.situacion = ''en_subasta'' and v.cierre_subasta_en is null' in v_txt) = 0
+     or position('v.eliminado_en is null and v.situacion = any' in v_txt) = 0 or (select count(*) from regexp_matches(v_txt, '\$5', 'g')) <> 1 then
+    raise exception 'L1d (a): hacia adelante desde el tramo 1 no son el 1 con cursor y el 2 sin él';
+  end if;
+  v_txt := public._vehiculos_inventario_sql('[]', 'origen', 'anterior', 'cierre', 1::smallint);
+  if position(t2 in v_txt) > 0 or position(t0 || ' desc' in v_txt) = 0 or position(t1 || ' asc' in v_txt) = 0 or (select count(*) from regexp_matches(v_txt, '\$5', 'g')) <> 1 then
+    raise exception 'L1d (a): hacia atrás desde el tramo 1 no son el 1 con cursor y el 0 al revés';
+  end if;
+  v_txt := public._vehiculos_inventario_sql('[]', 'origen', 'siguiente', 'cierre', 0::smallint);
+  if position('(v.cierre_subasta_en, v.id) > ($5, $6)' in v_txt) = 0 then raise exception 'L1d (a): el cursor del tramo 0 no es el cierre'; end if;
+  v_txt := public._vehiculos_inventario_sql('[]', 'origen', 'anterior', 'cierre', 0::smallint);
+  if position('(v.cierre_subasta_en, v.id) < ($5, $6)' in v_txt) = 0 or position(t1 in v_txt) > 0 then raise exception 'L1d (a): hacia atrás desde el tramo 0 no es sólo el 0'; end if;
+  -- (b) La poda: una ventana, sólo el 0; «Todas las vivas», el 0 y el 1; «Sin resolver», el 2. Con «propios», R2 y R3 por tramo.
+  v_txt := public._vehiculos_inventario_sql(v_ventana, 'origen', 'primera', 'cierre');
+  if position(t0 in v_txt) = 0 or position(t1 in v_txt) > 0 or position(t2 in v_txt) > 0 then raise exception 'L1d (b): la ventana no es sólo el tramo 0'; end if;
+  v_txt := public._vehiculos_inventario_sql(v_vivas, 'origen', 'primera', 'cierre');
+  if position(t0 in v_txt) = 0 or position(t1 in v_txt) = 0 or position(t2 in v_txt) > 0 then raise exception 'L1d (b): «Todas las vivas» no son los tramos 0 y 1'; end if;
+  v_txt := public._vehiculos_inventario_sql(v_sin_resolver, 'origen', 'primera', 'cierre');
+  if position(t0 in v_txt) > 0 or position(t1 in v_txt) > 0 or position(t2 in v_txt) = 0 then raise exception 'L1d (b): «Sin resolver» no es sólo el tramo 2'; end if;
+  v_txt := public._vehiculos_inventario_sql(v_vivas, 'propios', 'primera', 'cierre');
+  if (select count(*) from regexp_matches(v_txt, 'limit \$3', 'g')) <> 5 then raise exception 'L1d (b): «Todas las vivas» por «propios» no son R2 y R3 por tramo'; end if;
+  -- Todo podado: una ventana hacia adelante desde el tramo 2 no trae nada (y es una consulta válida).
+  v_txt := public._vehiculos_inventario_sql(v_ventana, 'origen', 'siguiente', 'cierre', 2::smallint);
+  if position('where false' in v_txt) = 0 then raise exception 'L1d (b): lo podado entero no es una rama vacía'; end if;
+  -- (c) Ningún valor entra al texto.
+  foreach r in array array['origen', 'propios'] loop
+    v_txt := public._vehiculos_inventario_sql(v_ventana, r, 'siguiente', 'cierre', 0::smallint);
+    if position('2031' in v_txt) > 0 or position('zq' in v_txt) > 0 then raise exception 'L1d (c): un valor entró al texto (%)', r; end if;
+  end loop;
+end $$;
+rollback;
+
 -- @test vehiculos_inventario: L1c la validación de los filtros (cada falla y sus bordes), la forma, el cursor y el origen, por la función y por el armador, como authenticated
 begin;
 -- El sqlstate y el hint de correr `p_sql` (con `$1` = `p_f`) como la dueña (authenticated); 'ok' si no falla.
@@ -186,6 +237,14 @@ declare
     '[{"tipo": "situacion_en", "situaciones": ["no_ganada", "no_ganada"], "fases": [], "sinFase": false}]',
     '[{"tipo": "situacion_en", "situaciones": ["no_ganada"], "fases": [], "sinFase": false}, {"tipo": "situacion_en", "situaciones": ["sin_resolver"], "fases": [], "sinFase": false}]',
     '[{"tipo": "situacion_en", "situaciones": [], "fases": ["x"], "sinFase": false}]', '[{"tipo": "situacion_en", "situaciones": [], "fases": {}, "sinFase": false}]',
+    -- La ventana del cierre: instantes ISO con zona, `desde < hasta`, y a lo sumo una (contada con «Situación»).
+    '[{"tipo": "cierre_entre", "desde": "2026-11-20T10:00:00Z"}]', '[{"tipo": "cierre_entre", "desde": "2026-11-20", "hasta": "2026-11-21T00:00:00Z"}]',
+    '[{"tipo": "cierre_entre", "desde": "2026-11-20T10:00:00", "hasta": "2026-11-21T00:00:00Z"}]', '[{"tipo": "cierre_entre", "desde": 5, "hasta": "2026-11-21T00:00:00Z"}]',
+    '[{"tipo": "cierre_entre", "desde": "2026-02-30T10:00:00Z", "hasta": "2026-03-21T00:00:00Z"}]', '[{"tipo": "cierre_entre", "desde": "2026-11-20T25:00:00Z", "hasta": "2026-11-21T00:00:00Z"}]',
+    '[{"tipo": "cierre_entre", "desde": "2026-11-21T00:00:00Z", "hasta": "2026-11-21T00:00:00Z"}]', '[{"tipo": "cierre_entre", "desde": "2026-11-21T00:00:00Z", "hasta": "2026-11-20T00:00:00-04:00"}]',
+    '[{"tipo": "cierre_entre", "desde": "2026-11-20T00:00:00Z", "hasta": "2026-11-21T00:00:00Z"}, {"tipo": "cierre_entre", "desde": "2026-11-20T00:00:00Z", "hasta": "2026-11-22T00:00:00Z"}]',
+    '[{"tipo": "cierre_entre", "desde": "2026-11-20T00:00:00Z", "hasta": "2026-11-21T00:00:00Z"}, {"tipo": "situacion_en", "situaciones": ["en_subasta"], "fases": [], "sinFase": false}]',
+    '[{"tipo": "cierre_entre", "desde": "2026-11-20T00:00:00+99:99", "hasta": "2026-11-21T00:00:00Z"}]',
     -- Los topes: 501 por arreglo, 1.001 sumando todo el pedido, 1.001 caracteres por texto y por alternativa.
     jsonb_build_array(jsonb_build_object('tipo', 'columna_en', 'columna', 'fase_id', 'valores', u500 || to_jsonb(gen_random_uuid()), 'incluirNulo', false)),
     jsonb_build_array(jsonb_build_object('tipo', 'en_vitrina', 'valor', true, 'fases', u500 || to_jsonb(gen_random_uuid()))),
@@ -201,6 +260,8 @@ declare
     '[{"tipo": "situacion_en", "situaciones": [], "fases": [], "sinFase": false}]', '[{"tipo": "situacion_en", "situaciones": ["en_subasta", "sin_resolver", "no_ganada"], "fases": [], "sinFase": true}]',
     '[{"tipo": "atributos_contienen", "alternativas": [{"color": "rojo"}, {"usado": true}, {"extras": ["techo", "gps"]}]}]',
     '[{"tipo": "por_limpiar", "valor": false, "hasta": "2028-02-29"}, {"tipo": "atributo_rango_numero", "clave": "km", "min": null, "max": -3.25}]',
+    '[{"tipo": "cierre_entre", "desde": "2026-11-20T09:41:36.123Z", "hasta": "2026-11-21T04:00:00.000Z"}, {"tipo": "situacion_fuera_de", "valores": ["no_ganada"]}]',
+    '[{"tipo": "cierre_entre", "desde": "2026-11-20T09:41:36.123456-04:00", "hasta": "2026-11-20T09:41:36.123457-04:00"}]',
     jsonb_build_array(jsonb_build_object('tipo', 'columna_en', 'columna', 'fase_id', 'valores', u500, 'incluirNulo', false)),
     jsonb_build_array(jsonb_build_object('tipo', 'columna_en', 'columna', 'fase_id', 'valores', u500, 'incluirNulo', false), jsonb_build_object('tipo', 'en_vitrina', 'valor', false, 'fases', u500)),
     jsonb_build_array(jsonb_build_object('tipo', 'atributos_contienen', 'alternativas', a500)),
@@ -234,6 +295,27 @@ begin
     'select public._vehiculos_inventario_condicion(''situacion_en'', ''columna'', 0, ''{"situaciones": ["no_ganada"], "fases": [], "sinFase": false}'')',
     'select public._vehiculos_inventario_condicion(''busqueda'', null, -1)', 'select public._vehiculos_inventario_condicion(''busqueda'', null, null)'] loop
     if pg_temp.vf_error(r) <> '22023/forma' then raise exception 'L1c: «%» da % (debía 22023/forma)', r, pg_temp.vf_error(r); end if;
+  end loop;
+  -- El orden fuera de su lista, y el tramo del cursor: sólo con un cursor del cierre, y ahí obligatorio y entre 0 y 2.
+  foreach r in array array[
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', null, null, false, ''otro'')', o),
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', null, null, false, null)', o),
+    'select public._vehiculos_inventario_sql(''[]'', ''origen'', ''primera'', ''alfabetico'')'] loop
+    if pg_temp.vf_error(r) <> '22023/orden' then raise exception 'L1c: «%» da % (debía 22023/orden)', r, pg_temp.vf_error(r); end if;
+  end loop;
+  foreach r in array array[
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', now(), gen_random_uuid(), false, ''cierre'')', o),
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', now(), gen_random_uuid(), true, ''cierre'', 3::smallint)', o),
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', now(), gen_random_uuid(), false, ''cierre'', (-1)::smallint)', o),
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', null, null, false, ''cierre'', 0::smallint)', o),
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', now(), gen_random_uuid(), false, ''reciente'', 1::smallint)', o)] loop
+    if pg_temp.vf_error(r) <> '22023/cursor' then raise exception 'L1c: «%» da % (debía 22023/cursor)', r, pg_temp.vf_error(r); end if;
+  end loop;
+  foreach r in array array[
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', null, null, false, ''cierre'')', o),
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', now(), gen_random_uuid(), true, ''cierre'', 2::smallint)', o),
+    format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', now(), gen_random_uuid(), false, ''cierre'', 0::smallint)', o)] loop
+    if pg_temp.vf_error(r) <> 'ok' then raise exception 'L1c: «%» da %', r, pg_temp.vf_error(r); end if;
   end loop;
   -- El cursor incompleto y el origen nulo.
   r := pg_temp.vf_error(format('select count(*) from public.vehiculos_inventario(%L, null, ''[]'', now(), null)', o));

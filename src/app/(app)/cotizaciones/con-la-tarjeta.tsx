@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactNode } from 'react'
 import { ProveedorDeLaTarjeta } from '@/modules/cotizaciones/pantallas/tarjeta'
+import type { AsesorDeLaTarjeta } from '@/modules/cotizaciones'
 import { getAjustes } from '@/modules/empresa'
 import { urlPublicaONull } from '@/shared/lib/almacen'
 
@@ -7,7 +8,7 @@ export type PropsDeLaTarjeta = {
   // El vehículo (título, lote y VIN) si quien mira lo ve.
   vehiculo: { titulo: string; lote: string | null; vin: string | null } | null
   // «Asesor:» de la tarjeta: quien cotiza en la hoja nueva y quien creó la cotización en una guardada (P2 a); nulo, no va.
-  asesor: string | null
+  asesor: AsesorDeLaTarjeta | null
   // El nombre del cliente, sólo si quien mira lo ve.
   cliente?: string | null
   // Una guardada: su número, si venció y hasta cuándo vale, y el último guardado (la fecha del encabezado, P3 a). La hoja nueva: nulos.

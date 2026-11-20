@@ -25,6 +25,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Estado de la cuenta** — `EstadoCuenta` (`activa` | `bloqueada` | `baja`): si puede operar; bloqueada o de baja no se queda adentro.
 - **Perfil** — `perfiles` / `/perfil`: lo que cada persona edita de sí misma: nombre, foto y preferencias.
 - **Preferencia** — `preferencias_usuario` / `Preferencias`: elección de interfaz por persona (densidad, tema), igual en todos sus dispositivos.
+- **Menú plegado** — `menu.plegado` / `Preferencias.menuPlegado`, `useMenuPlegado()`, `<LateralPlegable>` (`_shell/`): el menú lateral de escritorio reducido a una columna de sólo
+  íconos, con su nombre en `title` y para el lector y el contador de Chat como punto. Se alterna con «Plegar menú» / «Desplegar menú» o `Ctrl/Cmd+B`. No: «colapsado», «mini», «compacto» (la densidad es otra cosa).
 - **Zona de quien mira** — `preferencias_usuario.zona_horaria` / `useRegional().zonaDeLaPersona`: en qué zona ve cada persona las fechas de
   subasta (`/perfil` › «Zona horaria»); sin elegir, la de la empresa. Lo demás sigue en la zona de la empresa.
 - **Cuenta regresiva del cierre** — `cuentaDelCierre()` (`vehiculos/entities/cuenta-regresiva-del-cierre.ts`), `<CuentaRegresivaDelCierre>`: lo que le falta a una subasta
@@ -53,6 +55,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Moneda** — `monedas` / `Moneda`: moneda con la que trabaja la empresa (ISO, símbolo, decimales); no se borra, se desactiva.
 - **Tipo de cambio** — `tipos_cambio` (clave: oficial, paralelo…) / `TipoCambio`: valor nombrado entre dos monedas; uno vigente por clave; se
   congela en cada cotización.
+- **Par de monedas** — `claveDelPar()`, `gruposPorPar()` / `GrupoDePar`: las dos monedas de un tipo de cambio («USD → BOB»); en Configuración › Empresa › Monedas
+  cada par es un grupo con sus tipos de cambio como tarjetas, el de la base primero (`?par=` pide crear uno en ese par).
+- **Tarjeta de tipo de cambio** — `<TarjetaDeTipoCambio>`: un tipo de cambio dentro de su par: nombre, «★ Por defecto», el valor grande, quién y cuándo lo cambió y el
+  interruptor «En la barra»; abre su panel (`?tc=`).
 - **Tipo de cambio por defecto** — `tipos_cambio.es_default`: el que se usa entre dos monedas si no se elige otro; uno por par.
 - **Historial de un tipo de cambio** — `tipos_cambio_historial` / `CambioDeValor`: de cuánto a cuánto, quién y cuándo; lo escribe un trigger.
 - **En la barra** — `tipos_cambio.en_la_barra` / `TipoCambio.enLaBarra`, `tiposEnLaBarra()`: el tipo de cambio que la empresa eligió para verlo
@@ -404,9 +410,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   o ≠). Se llega por las casillas de «De este vehículo» y por las del **modal del grupo** de un vehículo en `/cotizaciones`. No es la «Celda» de la hoja ni
   la «tarjeta de la cotización»: en la interfaz cada columna es «la cotización #N» y sus filas son de nodos.
 - **Tarjeta de la lista** — `<TarjetaDeLista>` (`@/shared/ui/lista`): cada ítem de la vista «Tarjetas» de un listado. La de `/cotizaciones` es
-  `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): la **portada de la cotización** arriba (en miniatura) con el «⋯» encima, el
+  `TarjetaEnLaLista` (`features/listado/components/tarjeta-en-la-lista.tsx`): la **imagen de la tarjeta** arriba (en miniatura) con el «⋯» encima, el
   título, «N.º n» con sus insignias, el total con su modo, el cliente, el autor, la vigencia, el conteo de su grupo y «Compartir». No es la **tarjeta de la
-  cotización** (la vista previa tipo Excel que la portada muestra).
+  cotización** (la vista previa tipo Excel que esa imagen muestra).
 - **Grupo de un vehículo** — `EntradaDelListado` de `tipo: 'grupo'`, `cotizaciones_listado_por_vehiculo()`: en `/cotizaciones` agrupada («Agrupar por
   vehículo», `?agrupar=`, `cotizaciones.agrupar`), las cotizaciones de un vehículo que quien mira ve y coinciden con la búsqueda y los filtros, en una tarjeta o
   fila con «N cotizaciones de este vehículo» que abre el **modal del grupo**. Una cotización sin vehículo va **suelta** (`tipo: 'suelta'`). No es el
@@ -416,8 +422,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   **resumen** (`?cotizacion=`) que abre una de sus líneas ni «De este vehículo» (el bloque de la ficha del vehículo).
 - **Cabeza del grupo** — `cabeza` de un grupo de un vehículo: la cotización que lo representa en su tarjeta o fila: su **aprobada** si quien mira la ve y
   coincide; si no, la más reciente que coincide. La lista ordena y pagina los grupos por su cotización más reciente (`ordenEn`, `ordenId`), no por la cabeza.
-- **Miniatura de la portada** — `?ancho=480` de `GET /cotizaciones/<id>/portada` (`ANCHOS_DE_LA_PORTADA`, `miniaturaDeLaPortada()`): la portada achicada a
-  480 px que piden las listas, con su propia ETag; el bucket guarda sólo la grande, que pide el visor.
+- **Miniatura de la imagen** — `?ancho=480` de `GET /cotizaciones/<id>/imagen` (`ANCHOS_DE_LA_IMAGEN`, `webpDeLaTarjeta()`): la imagen de la tarjeta
+  achicada a 480 px que piden las listas, con su propia ETag; el visor pide la grande.
 - **Primer resultado** — `entities/primer-resultado.ts`, `cotizaciones_aprobadas.monto` y `moneda`: lo que la hoja dibuja primero en la tarjeta del total
   (`totales.usd`, en USD). La aprobada lo lleva congelado para que la lista de vehículos lo lea sin unir cotizaciones.
 - **Papelera de cotizaciones** — `cotizaciones_papelera_*`, `cotizaciones.papelera.purgar`, `/cotizaciones/papelera`: borrado reversible por
@@ -474,15 +480,23 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   USA (subasta), China, Oficina y Compra dealer USA. Vive en el código, no en la base, y no publica. No es la **Plantilla de tarjeta** (sólo la tarjeta,
   versionada en la base).
 - **Celda de la tarjeta** — `CeldaDeLaTarjeta`, `definicion.celdas[]` de la forma 2: un rectángulo de la cuadrícula con su posición (`fila`,
-  `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo o vacío) y su estilo. La de logo dibuja sólo el logo
-  de la empresa, a la medida de la celda; su nombre es el dato «Nombre de la empresa» (`empresa_nombre`). No es la **Celda (de la hoja)**.
+  `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo, foto del asesor o vacío) y su estilo. La de logo dibuja
+  sólo el logo de la empresa, a la medida de la celda; su nombre es el dato «Nombre de la empresa» (`empresa_nombre`). No es la **Celda (de la hoja)**.
+- **Asesor (de la tarjeta)** — `AsesorDeLaTarjeta` (`ContextoDeLaCotizacion.asesor`: nombre, teléfono, cargo y foto), `leerAsesorQueMira()`, variables
+  `asesor_*`: quien mira o comparte la tarjeta, su imagen, su PDF o su texto, nunca quien creó la cotización (ese es el **autor**, «Creado por»). Con «Ver como», la
+  persona real. Sus datos salen de su perfil: `whatsapp_web`, `cargo_web` y `avatar_ruta`.
+- **Autor (de una cotización)** — `cotizaciones.creado_por`, `leerAutorDeLaCotizacion()`: quien la creó; «Creado por» del panel de compartir, de la lista y
+  del historial. No es el asesor de la tarjeta.
+- **Foto del asesor** — `{tipo: 'foto_del_asesor'}` de una celda de la tarjeta, `<FotoDelAsesorDeLaCelda>`, `circuloDeLasIniciales()`: la foto de perfil
+  del **asesor de la tarjeta** (quien la mira o la comparte), entera (`contain`) en la celda y alineada como ella; sin foto, o si no carga, sus iniciales
+  en un círculo. En el editor, un contenido más («Foto del asesor»), como el logo.
 - **Fila de la tarjeta** — `FilaDeLaTarjeta`, `definicion.filas[]` de la forma 2: una fila con su alto y su «Ocultar si…». No es la **Fila (de la
   fórmula)**.
 - **Ocultar si…** — `ocultar_si` de una fila de la tarjeta (`nunca`, `no_aplica`, `no_aplica_o_cero`): la fila no se dibuja si su nodo no aplica
   en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0; las celdas combinadas que la cruzan se acortan. El lienzo de
   Configuración dice cuáles y por qué con la referencia elegida: «Ocultas con esta referencia (N)».
 - **Dato de la tarjeta** — `{tipo: 'dato', …}` de una celda: una variable de la cotización (`VARIABLES_DE_LA_TARJETA`: `empresa_nombre`, «Nombre de
-  la empresa»; `fecha_larga`, `numero`, `asesor_nombre`…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
+  la empresa»; `fecha_larga`, `numero`, `asesor_nombre`, `asesor_telefono` «WhatsApp del asesor», `asesor_cargo` «Cargo del asesor»…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
   `plazo`). Un texto no mezcla texto y variables.
 - **Lienzo** — `LienzoDeLaPlantilla` (área `tarjeta`) con la capa del editor (`CapaDeEdicion`, `role="grid"`): la tarjeta de la cotización a escala
   que se edita en Configuración › Cotización › un origen › Tarjeta, como un Excel (cabeceras de columna, asas de fila, selección, atajos). La dibuja el
@@ -503,22 +517,22 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `geometriaDeLaTarjeta()`) como la vería el cliente, escalada como una imagen; en una guardada, lo guardado.
 - **Retoque de la tarjeta** — `cotizaciones.tarjeta_retoques`, `RetoquesDeLaTarjeta`, `cotizacion_retocar_tarjeta()`, `aplicarRetoques()`: el texto
   de una celda de texto cambiado o una fila oculta en la tarjeta de **una** cotización guardada, sin tocar la plantilla del origen; vale en la vista
-  previa, el PDF, «Copiar texto», compartir y la portada, y cotizar encima se lo lleva. Nunca una cifra, un color ni el logo. Un retoque de una celda o
+  previa, el PDF, «Copiar texto», compartir y la imagen de la tarjeta, y cotizar encima se lo lleva. Nunca una cifra, un color ni el logo. Un retoque de una celda o
   fila que la plantilla de hoy ya no tiene **no aplica**: se ignora al dibujar y se quita al guardar.
 - **Retocar (modo)** — «Retocar» en el pie de la vista previa de una guardada (quien la puede guardar): el modal pasa a «Retocar la tarjeta», donde
   tocar un texto lo edita y el ojo de cada fila la oculta o la muestra; «Listo» guarda todo junto, «Cancelar» lo descarta y «Volver a la plantilla»
   quita los retoques.
-- **Portada de la cotización** — `cotizaciones_portadas`, `<PortadaDeLaCotizacion>`, `GET /cotizaciones/<id>/portada`: la imagen de la tarjeta de lo
-  guardado de una cotización, en WebP por hash en el bucket `cotizaciones`, con la **clave de la portada** (`_cotizacion_portada_clave()`: de qué está
-  hecha; distinta de la vigente, quedó vieja). La **compartida** es la guardada, para quien ve todo lo que dibuja; los demás reciben una armada con lo suyo.
-  No es la **Portada** de un vehículo.
+- **Imagen de la tarjeta** — `GET /cotizaciones/<id>/imagen`, `armarLaImagen()`, `rutaDeLaImagen()`, `<ImagenDeLaTarjeta>`: la tarjeta de lo guardado de una cotización en WebP,
+  armada al pedirla **para quien la pide** (lo que esa persona ve y ella como asesor) y nunca guardada; la caché del navegador la reusa con su ETag, que sale
+  de la **huella de la imagen** (`cotizacion_imagen_huella()`: de qué está hecha para quien pide). En la lista, el resumen y la ficha del vehículo; «Compartir»
+  la manda. No es la **Portada** de un vehículo ni la **Vista previa** (el modal con la tarjeta en HTML).
 - **PDF de la cotización** — `GET /cotizaciones/<id>/pdf`, `pdfDeUnaGuardada()`: la tarjeta de lo guardado en A4; lo descarga quien la ve
   («Descargar PDF», junto a «Copiar texto» y en «Compartir la cotización»). No es el **Compartir** de un lead.
 - **Compartir la cotización** — `PanelDeCompartir`, `DatosParaCompartir`, `textoParaCompartir()`, rutas `GET /cotizaciones/<id>/compartir` y
   `…/compartir/fotos`, `?panel=compartir` (en el detalle) y `?panel=compartir&para=<id>` (fuera de él), pestaña en `?compartir=texto`: el panel «Compartir
-  cotización» para mandarle la cotización a un cliente. La pestaña **«Imagen»** ofrece **«Cotización»** (la portada de la cotización) o **«Fotos»** (las del
+  cotización» para mandarle la cotización a un cliente. La pestaña **«Imagen»** ofrece **«Cotización»** (la imagen de la tarjeta) o **«Fotos»** (las del
   vehículo, para marcar); la pestaña **«Texto»**, un **formato** («Simple», «WhatsApp», «Facebook», «TikTok») y una **zona** («Hora de <la ciudad de la
-  empresa>» o «Hora del patio»). Botones: «Compartir» (el menú del sistema del celular), «Copiar imagen», «Descargar imagen», «Copiar texto» y «Descargar PDF».
+  empresa>» o «Hora del patio»); el texto firma con el asesor (quien comparte: «Asesor: nombre, cargo» y «WhatsApp: …»). Botones: «Compartir» (el menú del sistema del celular), «Copiar imagen», «Descargar imagen», «Copiar texto» y «Descargar PDF».
   Sólo lleva lo del nivel «todos» (lo que dibuja la tarjeta de la cotización). No es el **Compartir** de un lead ni **Compartir los tipos de cambio**.
 - **Revisión** — `cotizaciones_revisiones`: diff de cada edición.
 - **Reporte** — `cotizaciones_reportes` / `cotizacion_reportar()`, `cotizacion_reporte_retirar()`: marca de problema, uno por persona, con
@@ -856,7 +870,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   el plegable.
 - **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra arriba de la columna principal de una ficha en dos columnas (quieta mientras los bloques se desplazan por dentro; pegajosa en el celular), con un enlace de ancla
   por bloque y `aria-current="location"` en el que está a la vista. No navega: salta dentro de la misma página. No: «pestañas», «menú».
-- **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`…); responde el panel de más arriba.
+- **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`, `Ctrl/Cmd+B`…); responde el panel de más arriba.
 - **Filtro** — `EsquemaDeFiltros`, `DefFiltro` / `<FilterShell>`: lo que acota un listado; cada uno declara los suyos y viven en la URL. Van en el botón
   «Filtros»; lo que cambia cómo se ve la lista (vista, alcance, ítems por página), en «Vista y opciones».
 - **Vista y opciones** — `<VistaYOpciones>`, `GrupoDeVistaYOpciones` (`src/shared/ui/vista-y-opciones`): el botón de la barra de un listado que agrupa
@@ -1782,10 +1796,16 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Frase de la subasta** — `fraseDeSubasta()` (`entities/frase-de-subasta.ts`), `data-frase-de-subasta`: la línea grande con color y cuenta del bloque
   «Subasta» de la ficha, según la situación: «Se subasta en 2 días 4 h», «Cerró hace 3 h · sin resolver», «Ganada» (situación `fase` con el cierre
   vencido), «No ganada». El cierre es `subastaFinEn ?? subastaEn`; la puja se llama «Puja actual» mientras sigue viva y «Puja final» al cerrar.
-- **Situación (filtro)** — `?situacion=` / `FILTRO_SITUACION`, condición `situacion_en`: «Situación» en el panel de filtros del inventario. Reemplaza al filtro «Fase»: una fase
-  es una situación. Ofrece, en un origen de subasta, «En subasta», «Sin resolver» y «No ganadas» (`SITUACIONES_PROPIAS`) y, en todo origen, sus fases y «Sin fase»
-  (`ninguna`). Una fase sólo trae lo que tiene esa situación (`fase`): lo de la subasta figura por la suya. Pedir «No ganadas» es la única forma de verlas en el inventario.
-- **Atajo «Sin resolver»** — `<AtajoSinResolver>` / `sinResolverDe()`: botón arriba del inventario de un origen de subasta con las pendientes (hasta `TOPE_DE_SIN_RESOLVER`, «99+»); pone o quita «Situación: Sin resolver».
+- **Subasta (filtro)** — `?subasta=` / `FILTRO_SUBASTA` (`entities/filtros-de-subasta.ts`), condiciones `cierre_entre` y `situacion_en`: «Subasta» en el panel de filtros
+  del inventario, sólo en un origen de subasta, una opción a la vez: «Cualquiera» (`cualquiera`, por defecto: no filtra), «Cierra hoy» (`hoy`), «Cierra en 48 h» (`48h`),
+  «Cierra esta semana» (`semana`, hasta el lunes siguiente), «Todas las vivas» (`vivas`), «Sin resolver» (`sin_resolver`) y «No ganadas» (`no_ganadas`). Las tres
+  ventanas (`ventanaDelCierre()`) cuentan desde ahora en la zona de la empresa y sólo traen vivas. Pedir «No ganadas» es la única forma de verlas en el inventario.
+- **Fase (filtro)** — `?fase=` / `FILTRO_FASE`, condición `columna_en` sobre `fase_id`: «Fase» en el panel de filtros del inventario, varias a la vez: las fases del
+  origen y «Sin fase» (`ninguna`). Filtra la columna: la fase de la subasta trae todo lo que está en ella, viva, sin resolver o no.
+- **Cierre más próximo (orden)** — `?orden=cierre` / `FILTRO_ORDEN`, `OrdenDelInventario` (`reciente` | `cierre`): el orden «Cierre más próximo» del inventario de un
+  origen de subasta, el de siempre cuando «Subasta» tiene valor. Va por tramos (`TRAMOS_DEL_CIERRE`): las vivas por su cierre, las vivas sin fecha y el resto por
+  alta; el cursor lleva su tramo (`<tramo>~<cursor>`, `entities/cursor-del-cierre.ts`).
+- **Atajo «Sin resolver»** — `<AtajoSinResolver>` / `sinResolverDe()`: botón arriba del inventario de un origen de subasta con las pendientes (hasta `TOPE_DE_SIN_RESOLVER`, «99+»); pone o quita «Subasta: Sin resolver».
 - **Fase de subasta** — `fases.es_subasta` / «Es la subasta» (Datos de la fase): la fase que representa la subasta en el flujo de un origen
   de subasta; puede haber varias. Sin ninguna, «Revisar» avisa `sin_fase_de_subasta` y nada figura «Sin resolver».
 - **Resultado de la subasta** — `vehiculos.subasta_resultado` (`ganada` | `no_ganada`), con `subasta_resuelta_por` y `subasta_resuelta_en`:
@@ -1876,3 +1896,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Despliegue en seco** — `pnpm despliegue:en-seco` / `scripts/despliegue/en-seco.sh`, `revisar-base.mjs`: ensayo local de un despliegue
   (base, pruebas, advisors, jobs, buckets, Vault, funciones, variables, build) sin tocar la nube; termina en «listo» o con lo que falta y las
   líneas «Para la persona» (`docs/DESPLIEGUE.md`). No: «deploy de prueba».
+- **Tarjeta de ajustes** — `<TarjetaDeAjustes>`, `<TarjetasDeAjustes>` (`@/shared/ui/tarjetas-de-ajustes`): cada bloque de una página de ajustes de
+  Configuración, con su título, los valores guardados a la vista (texto, muestras, el logo; no campos), la acción principal («Editar», «Configurar») y su «⋯»;
+  se edita en un modal (`?panel=<tarjeta>`). No es la «tarjeta de la lista» ni la «tarjeta de la cotización».
+- **Estado de la integración** — `estadoDeIntegracion()` (`empresa`): `activa` · `apagada` · `falta_la_clave`; es el badge de la tarjeta de cada integración.
