@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { MenuMovil } from './menu-movil'
 import { HuecoBuscador } from './huecos/buscador'
 import { ConmutadorLive } from './conmutador-live'
+import { Flotantes } from './flotantes'
 import { LateralPlegable } from './lateral-plegable'
 
 type Props = {
@@ -24,7 +25,7 @@ type Props = {
   campana?: ReactNode
   // El buscador global (`huecos/buscador.tsx`); sin él, el botón con la paleta y sin acciones (sólo busca).
   buscador?: ReactNode
-  // Lo que flota sobre toda pantalla, como la burbuja del chat (`huecos/chat.tsx`).
+  // Lo que flota sobre toda pantalla, como la burbuja del chat (`huecos/chat.tsx`): va a la derecha de «Copiar el enlace de esta página» (`flotantes.tsx`).
   flotante?: ReactNode
   children: ReactNode
 }
@@ -90,7 +91,7 @@ export function Marco({
           {children}
         </main>
       </div>
-      {flotante}
+      <Flotantes>{flotante}</Flotantes>
     </div>
   )
 }
