@@ -45,6 +45,7 @@ const version = (
 })
 
 const lectura = (extra: Partial<PlantillaDelOrigen> = {}): PlantillaDelOrigen => ({
+  formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   publicada: null,
   borrador: null,
   formula: { id: 'f', version: 1 },

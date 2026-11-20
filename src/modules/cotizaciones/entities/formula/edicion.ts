@@ -7,8 +7,10 @@ export const PANEL_EDITAR_FORMULA = 'editar-formula'
 
 // Sobre qué guarda el editor (4.21-3b-1): la versión leída, con su `actualizado_en` (el texto de la base: nunca pasa por `Date`), su estado, su diseño y su nota.
 // Sobre la publicada, guardar crea el borrador con su diseño; sobre el borrador, lo pisa con su hora, su diseño y su nota (la RPC los escribe tal cual).
+// `formulaDelOrigenId`, la fórmula del origen de esa versión (la misma fila lo dice): guardar escribe en ella aunque otra pase a ser la de trabajo.
 export type BaseDelEditor = {
   id: string
+  formulaDelOrigenId: string
   actualizadoEn: string
   estado: 'borrador' | 'publicada'
   diseno: Diseno | null

@@ -30,6 +30,7 @@ describe('publicacionSobre › publicar', () => {
     const { cliente, llamadas } = clienteFalso({ data: NUEVA, error: null })
     const hecho = await publicacionSobre(cliente).publicar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       nota: 'Subo el flete',
       actualizadoEsperado: HORA,
       publicadaEsperada: PUBLICADA,
@@ -52,6 +53,7 @@ describe('publicacionSobre › publicar', () => {
     const { cliente, llamadas } = clienteFalso({ data: NUEVA, error: null })
     await publicacionSobre(cliente).publicar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       nota: 'Primera',
       actualizadoEsperado: HORA,
       publicadaEsperada: null,
@@ -71,6 +73,7 @@ describe('publicacionSobre › publicar', () => {
     })
     const hecho = await publicacionSobre(cliente).publicar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       nota: 'x',
       actualizadoEsperado: HORA,
       publicadaEsperada: PUBLICADA,
@@ -91,6 +94,7 @@ describe('publicacionSobre › publicar: los errores', () => {
     expect(
       await publicacionSobre(regla.cliente).publicar({
         origenId: ORIGEN,
+        formulaDelOrigenId: null,
         nota: 'x',
         actualizadoEsperado: HORA,
         publicadaEsperada: null,
@@ -102,6 +106,7 @@ describe('publicacionSobre › publicar: los errores', () => {
     const permiso = clienteFalso({ data: null, error: { code: '42501', message: '' } })
     const sinPermiso = await publicacionSobre(permiso.cliente).publicar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       nota: 'x',
       actualizadoEsperado: HORA,
       publicadaEsperada: null,
@@ -113,6 +118,7 @@ describe('publicacionSobre › publicar: los errores', () => {
     const { cliente } = clienteFalso({ data: 'no-es-un-uuid', error: null })
     const hecho = await publicacionSobre(cliente).publicar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       nota: 'x',
       actualizadoEsperado: HORA,
       publicadaEsperada: null,
@@ -128,6 +134,7 @@ describe('publicacionSobre › revertir', () => {
     const { cliente, llamadas } = clienteFalso({ data: NUEVA, error: null })
     const hecho = await publicacionSobre(cliente).revertir({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       versionId: ARCHIVADA,
       nota: 'Vuelve a la versión 1.',
       publicadaEsperada: PUBLICADA,
@@ -154,6 +161,7 @@ describe('publicacionSobre › revertir', () => {
     expect(
       await publicacionSobre(choque.cliente).revertir({
         origenId: ORIGEN,
+        formulaDelOrigenId: null,
         versionId: ARCHIVADA,
         nota: 'x',
         publicadaEsperada: PUBLICADA,
@@ -169,6 +177,7 @@ describe('publicacionSobre › revertir', () => {
     expect(
       await publicacionSobre(regla.cliente).revertir({
         origenId: ORIGEN,
+        formulaDelOrigenId: null,
         versionId: ARCHIVADA,
         nota: 'x',
         publicadaEsperada: PUBLICADA,
@@ -182,6 +191,7 @@ describe('publicacionSobre › descartar', () => {
     const { cliente, llamadas } = clienteFalso({ data: null, error: null })
     const hecho = await publicacionSobre(cliente).descartar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       actualizadoEsperado: HORA,
     })
     expect(llamadas).toEqual([
@@ -194,7 +204,11 @@ describe('publicacionSobre › descartar', () => {
     const mensaje = 'El borrador cambió después de que lo abriste: se guardó de nuevo hace 1 min.'
     const { cliente } = clienteFalso({ data: null, error: { code: 'PT409', message: mensaje } })
     expect(
-      await publicacionSobre(cliente).descartar({ origenId: ORIGEN, actualizadoEsperado: HORA }),
+      await publicacionSobre(cliente).descartar({
+        origenId: ORIGEN,
+        formulaDelOrigenId: null,
+        actualizadoEsperado: HORA,
+      }),
     ).toEqual({ ok: false, error: { codigo: 'conflicto', mensaje } })
   })
 
@@ -205,119 +219,9 @@ describe('publicacionSobre › descartar', () => {
     })
     const hecho = await publicacionSobre(cliente).descartar({
       origenId: ORIGEN,
+      formulaDelOrigenId: null,
       actualizadoEsperado: HORA,
     })
     expect(hecho.ok ? null : hecho.error.codigo).toBe('sin_permiso')
-  })
-})
-
-describe('publicacionSobre › cambiarConstante', () => {
-  const pedido = { origenId: ORIGEN, nodo: 'flete', valor: 0.13, publicadaEsperada: PUBLICADA }
-
-  it('llama formula_cambiar_constante con el origen, el nodo, el valor y la publicada esperada, siempre', async () => {
-    const { cliente, llamadas } = clienteFalso({ data: NUEVA, error: null })
-    const hecho = await publicacionSobre(cliente).cambiarConstante(pedido)
-    expect(llamadas).toEqual([
-      [
-        'formula_cambiar_constante',
-        { p_origen: ORIGEN, p_nodo: 'flete', p_valor: 0.13, p_publicada_esperada: PUBLICADA },
-      ],
-    ])
-    expect(hecho).toEqual({ ok: true, data: NUEVA })
-  })
-
-  it('el PT409 es un conflicto con el mensaje de la base intacto, sin campo', async () => {
-    const { cliente } = clienteFalso({
-      data: null,
-      error: { code: 'PT409', message: 'Ana publicó la versión 3 hace 2 min.' },
-    })
-    expect(await publicacionSobre(cliente).cambiarConstante(pedido)).toEqual({
-      ok: false,
-      error: { codigo: 'conflicto', mensaje: 'Ana publicó la versión 3 hace 2 min.' },
-    })
-  })
-
-  it('el 22023 con hint «valor» va al campo «valor»', async () => {
-    const { cliente } = clienteFalso({
-      data: null,
-      error: { code: '22023', message: 'La constante ya tiene ese valor.', hint: 'valor' },
-    })
-    expect(await publicacionSobre(cliente).cambiarConstante(pedido)).toEqual({
-      ok: false,
-      error: { codigo: 'regla', mensaje: 'La constante ya tiene ese valor.' },
-      campo: 'valor',
-    })
-  })
-
-  it('otro 22023 (el hint de un nodo de _formula_rechazar, o sin hint) es una regla sin campo', async () => {
-    const delNodo = clienteFalso({
-      data: null,
-      error: { code: '22023', message: 'El flete no puede ser negativo.', hint: 'flete' },
-    })
-    expect(await publicacionSobre(delNodo.cliente).cambiarConstante(pedido)).toEqual({
-      ok: false,
-      error: { codigo: 'regla', mensaje: 'El flete no puede ser negativo.' },
-    })
-    const sinHint = clienteFalso({
-      data: null,
-      error: { code: '22023', message: 'El origen no tiene fórmula publicada.' },
-    })
-    expect(await publicacionSobre(sinHint.cliente).cambiarConstante(pedido)).toEqual({
-      ok: false,
-      error: { codigo: 'regla', mensaje: 'El origen no tiene fórmula publicada.' },
-    })
-  })
-
-  it('una respuesta que no es un id es inesperada', async () => {
-    const { cliente } = clienteFalso({ data: 'otra cosa', error: null })
-    const hecho = await publicacionSobre(cliente).cambiarConstante(pedido)
-    expect(hecho.ok ? null : hecho.error.codigo).toBe('inesperado')
-  })
-})
-
-describe('publicacionSobre › cambiarCabecera', () => {
-  const pedido = {
-    origenId: ORIGEN,
-    modoPorDefecto: 'unificado',
-    verTotalBsPorDefecto: true,
-    modosVisibles: ['unificado'],
-    publicadaEsperada: PUBLICADA,
-  }
-
-  it('llama formula_cambiar_cabecera con las tres claves y la publicada esperada, siempre', async () => {
-    const { cliente, llamadas } = clienteFalso({ data: NUEVA, error: null })
-    const hecho = await publicacionSobre(cliente).cambiarCabecera(pedido)
-    expect(llamadas).toEqual([
-      [
-        'formula_cambiar_cabecera',
-        {
-          p_origen: ORIGEN,
-          p_modo_por_defecto: 'unificado',
-          p_ver_total_bs_por_defecto: true,
-          p_modos_visibles: ['unificado'],
-          p_publicada_esperada: PUBLICADA,
-        },
-      ],
-    ])
-    expect(hecho).toEqual({ ok: true, data: NUEVA })
-  })
-
-  it('el PT409 es un conflicto con el mensaje de la base; los mismos valores, una regla sin campo', async () => {
-    const conflicto = clienteFalso({
-      data: null,
-      error: { code: 'PT409', message: 'Ana publicó la versión 3 hace 2 min.' },
-    })
-    expect(await publicacionSobre(conflicto.cliente).cambiarCabecera(pedido)).toEqual({
-      ok: false,
-      error: { codigo: 'conflicto', mensaje: 'Ana publicó la versión 3 hace 2 min.' },
-    })
-    const mismos = clienteFalso({
-      data: null,
-      error: { code: '22023', message: 'La cabecera ya tiene esos valores.', hint: 'cabecera' },
-    })
-    expect(await publicacionSobre(mismos.cliente).cambiarCabecera(pedido)).toEqual({
-      ok: false,
-      error: { codigo: 'regla', mensaje: 'La cabecera ya tiene esos valores.' },
-    })
   })
 })

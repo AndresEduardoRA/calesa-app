@@ -22,7 +22,7 @@ function clienteFalso(porTabla: Record<string, Respuesta>) {
   return { cliente: cliente as unknown as SupabaseClient<Database>, tablas }
 }
 
-const ORIGEN = '11111111-1111-4111-8111-111111111111'
+const FDO = '11111111-1111-4111-8111-111111111111'
 const BORRADOR = '22222222-2222-4222-8222-222222222222'
 const PUBLICADA = '33333333-3333-4333-8333-333333333333'
 const FORMULA = '44444444-4444-4444-8444-444444444444'
@@ -96,14 +96,31 @@ const TONOS = [
 const ok = (data: unknown): Respuesta => ({ data, error: null })
 
 describe('leerPlantillaSobre', () => {
-  it('un origen que no es guid no llama a la base', async () => {
+  it('una fórmula del origen que no es guid no llama a la base', async () => {
     const { cliente, tablas } = clienteFalso({})
     const r = await leerPlantillaSobre(cliente, 'no-es-guid')
     expect(r).toEqual({
       ok: false,
-      error: { codigo: 'validacion', mensaje: 'Ese origen no es válido.' },
+      error: { codigo: 'validacion', mensaje: 'Esa fórmula no es válida.' },
     })
     expect(tablas).toEqual([])
+  })
+
+  it('un origen sin fórmula del origen (nula) lee sólo los tonos: sin plantillas ni fórmula', async () => {
+    const { cliente, tablas } = clienteFalso({ tonos: ok(FILAS_DE_TONOS) })
+    const r = await leerPlantillaSobre(cliente, null)
+    expect(tablas).toEqual(['tonos'])
+    expect(r).toEqual({
+      ok: true,
+      data: {
+        formulaDelOrigenId: null,
+        publicada: null,
+        borrador: null,
+        formula: null,
+        contexto: null,
+        tonos: TONOS,
+      },
+    })
   })
 
   it('lee las tres tablas, y el borrador y la publicada con sus horas tal cual (6 decimales)', async () => {
@@ -112,9 +129,10 @@ describe('leerPlantillaSobre', () => {
       formulas: ok([filaFormula]),
       tonos: ok(FILAS_DE_TONOS),
     })
-    const r = await leerPlantillaSobre(cliente, ORIGEN)
+    const r = await leerPlantillaSobre(cliente, FDO)
     if (!r.ok) throw new Error(r.error.mensaje)
     expect([...tablas].sort()).toEqual(['formulas', 'plantillas_tarjeta', 'tonos'])
+    expect(r.data.formulaDelOrigenId).toBe(FDO)
     expect(r.data.borrador?.actualizadoEn).toBe(HORA)
     expect(r.data.borrador?.contenido).toEqual({ forma: 1, plantilla: PLANTILLA })
     expect(r.data.publicada).toMatchObject({
@@ -133,10 +151,17 @@ describe('leerPlantillaSobre', () => {
 describe('leerPlantillaSobre: lo que no se esperaba', () => {
   it('lo que la policy no deja ver vuelve vacío: sin plantillas ni fórmula, y los tonos siguen', async () => {
     const { cliente } = clienteFalso({ tonos: ok(FILAS_DE_TONOS) })
-    const r = await leerPlantillaSobre(cliente, ORIGEN)
+    const r = await leerPlantillaSobre(cliente, FDO)
     expect(r).toEqual({
       ok: true,
-      data: { publicada: null, borrador: null, formula: null, contexto: null, tonos: TONOS },
+      data: {
+        formulaDelOrigenId: FDO,
+        publicada: null,
+        borrador: null,
+        formula: null,
+        contexto: null,
+        tonos: TONOS,
+      },
     })
   })
 
@@ -147,7 +172,7 @@ describe('leerPlantillaSobre: lo que no se esperaba', () => {
       [{ ...filaBorrador, extra: 1 }],
     ]) {
       const { cliente } = clienteFalso({ plantillas_tarjeta: ok(filas) })
-      const r = await leerPlantillaSobre(cliente, ORIGEN)
+      const r = await leerPlantillaSobre(cliente, FDO)
       expect(r).toEqual({
         ok: false,
         error: { codigo: 'inesperado', mensaje: 'No pudimos leer la plantilla.' },
@@ -159,7 +184,7 @@ describe('leerPlantillaSobre: lo que no se esperaba', () => {
     const { cliente } = clienteFalso({
       formulas: ok([{ ...filaFormula, definicion: { nodos: 'no' } }]),
     })
-    const r = await leerPlantillaSobre(cliente, ORIGEN)
+    const r = await leerPlantillaSobre(cliente, FDO)
     expect(r).toEqual({
       ok: false,
       error: { codigo: 'inesperado', mensaje: 'No pudimos leer la fórmula.' },
@@ -170,7 +195,7 @@ describe('leerPlantillaSobre: lo que no se esperaba', () => {
     const { cliente } = clienteFalso({
       plantillas_tarjeta: ok([{ ...filaBorrador, definicion: { grupos: 3 } }]),
     })
-    const r = await leerPlantillaSobre(cliente, ORIGEN)
+    const r = await leerPlantillaSobre(cliente, FDO)
     if (!r.ok) throw new Error(r.error.mensaje)
     expect(r.data.borrador?.contenido).toEqual({
       motivo: 'La plantilla no tiene la forma esperada.',
@@ -182,7 +207,7 @@ describe('leerPlantillaSobre: lo que no se esperaba', () => {
       plantillas_tarjeta: { data: null, error: { code: '42501', message: 'sin permiso' } },
       formulas: { data: null, error: { code: 'PT409', message: 'otro' } },
     })
-    const r = await leerPlantillaSobre(cliente, ORIGEN)
+    const r = await leerPlantillaSobre(cliente, FDO)
     expect(r).toEqual({ ok: false, error: { codigo: 'sin_permiso', mensaje: 'sin permiso' } })
   })
 })

@@ -15,7 +15,7 @@ vi.mock('../../../areas/formula/composicion.client', () => ({
 
 afterEach(cleanup)
 
-const ORIGEN = '00000000-0000-4000-8000-0000000000aa'
+const FDO = '00000000-0000-4000-8000-0000000000aa'
 const fila = (version: number, estado: 'publicada' | 'archivada', nota: string | null) => ({
   id: `00000000-0000-4000-8000-${String(version).padStart(12, '0')}`,
   version,
@@ -32,7 +32,7 @@ describe('ListaDeVersiones', () => {
       filas: [fila(2, 'publicada', 'Flete nuevo'), fila(1, 'archivada', null)],
       siguiente: null,
     }
-    render(<ListaDeVersiones origenId={ORIGEN} inicial={inicial} />)
+    render(<ListaDeVersiones formulaDelOrigenId={FDO} inicial={inicial} />)
     const items = screen.getAllByRole('listitem')
     expect(items).toHaveLength(2)
     expect(items[0]?.textContent).toContain('Versión 2')
@@ -45,21 +45,21 @@ describe('ListaDeVersiones', () => {
   })
 
   it('sin versiones, lo dice', () => {
-    render(<ListaDeVersiones origenId={ORIGEN} inicial={{ filas: [], siguiente: null }} />)
+    render(<ListaDeVersiones formulaDelOrigenId={FDO} inicial={{ filas: [], siguiente: null }} />)
     expect(screen.getByText('Todavía no hay versiones.')).toBeTruthy()
   })
 
   it('«Ver más» se apaga mientras lee', () => {
     render(
       <ListaDeVersiones
-        origenId={ORIGEN}
+        formulaDelOrigenId={FDO}
         inicial={{ filas: [fila(30, 'publicada', null)], siguiente: 30 }}
       />,
     )
     fireEvent.click(screen.getByRole('button', { name: 'Ver más' }))
     const boton = screen.getByRole('button', { name: 'Cargando…' })
     expect(boton.hasAttribute('disabled')).toBe(true)
-    expect(pedidos).toEqual([{ origenId: ORIGEN, cursor: 30 }])
+    expect(pedidos).toEqual([{ formulaDelOrigenId: FDO, cursor: 30 }])
   })
 })
 
@@ -72,7 +72,12 @@ describe('ListaDeVersiones › «Revertir»', () => {
   it('en cada archivada, no en la publicada; entrega su fila', () => {
     const alRevertir = vi.fn()
     render(
-      <ListaDeVersiones origenId={ORIGEN} inicial={inicial} conPublicada alRevertir={alRevertir} />,
+      <ListaDeVersiones
+        formulaDelOrigenId={FDO}
+        inicial={inicial}
+        conPublicada
+        alRevertir={alRevertir}
+      />,
     )
     const items = screen.getAllByRole('listitem')
     expect(within(items[0] as HTMLElement).queryByRole('button')).toBeNull()
@@ -84,7 +89,7 @@ describe('ListaDeVersiones › «Revertir»', () => {
   it('sin publicada, o sin quien abra, ninguno', () => {
     render(
       <ListaDeVersiones
-        origenId={ORIGEN}
+        formulaDelOrigenId={FDO}
         inicial={inicial}
         conPublicada={false}
         alRevertir={vi.fn()}
@@ -92,7 +97,7 @@ describe('ListaDeVersiones › «Revertir»', () => {
     )
     expect(screen.queryByRole('button', { name: /^Revertir/ })).toBeNull()
     cleanup()
-    render(<ListaDeVersiones origenId={ORIGEN} inicial={inicial} conPublicada />)
+    render(<ListaDeVersiones formulaDelOrigenId={FDO} inicial={inicial} conPublicada />)
     expect(screen.queryByRole('button', { name: /^Revertir/ })).toBeNull()
   })
 
@@ -102,7 +107,7 @@ describe('ListaDeVersiones › «Revertir»', () => {
     const alRevertir = vi.fn()
     render(
       <ListaDeVersiones
-        origenId={ORIGEN}
+        formulaDelOrigenId={FDO}
         inicial={{ filas: [fila(30, 'publicada', null)], siguiente: 30 }}
         conPublicada
         alRevertir={alRevertir}

@@ -68,6 +68,8 @@ test('E3: un PT409 se dice con el mensaje de la base, conserva lo escrito, no en
   if (!terreno) throw new Error('No hay terreno.')
   const otra = await plantillaSobre(terreno.duena).guardar({
     origenId: origenId(),
+    // La otra persona escribe en la fórmula de trabajo, la única del origen.
+    formulaDelOrigenId: null,
     esperada,
     definicion: cuadriculaValida('de la otra persona'),
   })

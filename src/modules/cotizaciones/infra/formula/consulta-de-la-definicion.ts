@@ -15,7 +15,7 @@ type Cliente = SupabaseClient<Database>
 export function consultaDeLaDefinicion(cliente: Cliente, formulaId: string) {
   return cliente
     .from('formulas')
-    .select('id, estado, definicion, params, diseno, nota, actualizado_en')
+    .select('id, formula_del_origen_id, estado, definicion, params, diseno, nota, actualizado_en')
     .eq('id', formulaId)
     .limit(1)
 }
@@ -23,6 +23,7 @@ export function consultaDeLaDefinicion(cliente: Cliente, formulaId: string) {
 // El editor abre el borrador o, sin borrador, la publicada: otro estado no se edita. El diseño se lee por su esquema (sólo la forma, como lo guarda la base).
 const esquemaDeLaFila = z.strictObject({
   id: z.guid(),
+  formula_del_origen_id: z.guid(),
   estado: z.enum(['borrador', 'publicada']),
   definicion: z.unknown(),
   params: z.unknown(),
@@ -54,6 +55,14 @@ export async function leerDefinicionSobre(
   if (!fila.success || !formula?.success) {
     return fallo('inesperado', 'No pudimos leer la fórmula.')
   }
-  const { id, estado, diseno, nota, actualizado_en } = fila.data
-  return ok({ id, actualizadoEn: actualizado_en, estado, diseno, nota, formula: formula.data })
+  const { id, formula_del_origen_id, estado, diseno, nota, actualizado_en } = fila.data
+  return ok({
+    id,
+    formulaDelOrigenId: formula_del_origen_id,
+    actualizadoEn: actualizado_en,
+    estado,
+    diseno,
+    nota,
+    formula: formula.data,
+  })
 }

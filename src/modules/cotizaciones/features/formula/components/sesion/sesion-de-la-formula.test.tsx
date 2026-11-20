@@ -42,6 +42,7 @@ const leida: Respuesta = {
   ok: true,
   data: {
     id: '22222222-2222-4222-8222-222222222222',
+    formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
     actualizadoEn: '2026-11-07T15:00:00.123456+00:00',
     estado: 'borrador',
     diseno: null,

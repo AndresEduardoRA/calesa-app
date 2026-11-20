@@ -52,7 +52,10 @@ export function PestanaDeLaTarjeta({ editor, referencia, Lienzo, puedeCambiarElL
     () => false,
   )
   const [irA, setIrA] = useState<{ donde: string; vez: number } | null>(null)
-  const clave = useClaveDelEditor(editor.origen.id, editor.esperada)
+  const clave = useClaveDelEditor(
+    `${editor.origen.id}:${editor.formulaDelOrigenId}`,
+    editor.esperada,
+  )
   const { ejemplo, elegir } = useReferenciaDelLienzo()
   const lectura = useMemo(
     () => lecturaEnCuadricula(editor.inicial, editor.contexto, editor.tonos),
@@ -62,6 +65,7 @@ export function PestanaDeLaTarjeta({ editor, referencia, Lienzo, puedeCambiarElL
     <AccionesDeLaPlantilla
       panel={panel}
       origen={editor.origen}
+      formulaDelOrigenId={editor.formulaDelOrigenId}
       esperada={editor.esperada}
       alIrA={(donde) => {
         setIrA((antes) => ({ donde, vez: (antes?.vez ?? 0) + 1 }))

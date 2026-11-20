@@ -39,8 +39,8 @@ const notaDe = (v: VersionDePlantilla | null) =>
     : undefined
 
 async function leer() {
-  const { origenId, duena } = terreno()
-  const r = await leerPlantillaSobre(duena, origenId)
+  const { formulaDelOrigenId, duena } = terreno()
+  const r = await leerPlantillaSobre(duena, formulaDelOrigenId)
   if (!r.ok) throw new Error(r.error.mensaje)
   return r.data
 }
@@ -48,7 +48,7 @@ async function leer() {
 const repositorio = () => plantillaSobre(terreno().duena)
 
 test('E1: crear con la esperada nula, leer la misma hora con sus microsegundos y guardar con ella', async () => {
-  const { origenId } = terreno()
+  const { origenId, formulaDelOrigenId } = terreno()
   const antes = await leer()
   expect(antes.borrador).toBeNull()
   expect(antes.publicada).toBeNull()
@@ -57,6 +57,7 @@ test('E1: crear con la esperada nula, leer la misma hora con sus microsegundos y
 
   const creado = await repositorio().guardar({
     origenId,
+    formulaDelOrigenId,
     esperada: null,
     definicion: plantillaValida('uno'),
   })
@@ -69,6 +70,7 @@ test('E1: crear con la esperada nula, leer la misma hora con sus microsegundos y
 
   const guardado = await repositorio().guardar({
     origenId,
+    formulaDelOrigenId,
     esperada: creado.data,
     definicion: plantillaValida('dos'),
   })
@@ -78,7 +80,7 @@ test('E1: crear con la esperada nula, leer la misma hora con sus microsegundos y
 })
 
 test('E2: guardar con la esperada vieja, o crear otra vez con nula, es un conflicto que no pisa nada', async () => {
-  const { origenId } = terreno()
+  const { origenId, formulaDelOrigenId } = terreno()
   const antes = await leer()
   const vigente = antes.borrador?.actualizadoEn ?? ''
   const vieja = vigente.replace(/\.\d+/, '.000001')
@@ -86,6 +88,7 @@ test('E2: guardar con la esperada vieja, o crear otra vez con nula, es un confli
 
   const viejaR = await repositorio().guardar({
     origenId,
+    formulaDelOrigenId,
     esperada: vieja,
     definicion: plantillaValida('pisa'),
   })
@@ -94,6 +97,7 @@ test('E2: guardar con la esperada vieja, o crear otra vez con nula, es un confli
 
   const nulaR = await repositorio().guardar({
     origenId,
+    formulaDelOrigenId,
     esperada: null,
     definicion: plantillaValida('pisa'),
   })
@@ -106,7 +110,7 @@ test('E2: guardar con la esperada vieja, o crear otra vez con nula, es un confli
 })
 
 test('E3: un rechazo va al campo que dice la base: la forma al guardar, lo de la fórmula al publicar, la nota en blanco al campo nota', async () => {
-  const { origenId } = terreno()
+  const { origenId, formulaDelOrigenId } = terreno()
   const antes = await leer()
   let vigente = antes.borrador?.actualizadoEn ?? ''
   const buena = plantillaValida('tres')
@@ -117,7 +121,12 @@ test('E3: un rechazo va al campo que dice la base: la forma al guardar, lo de la
   ]) {
     const esperado = validarPlantilla(definicion, null)
     if (esperado.ok) throw new Error('El caso tenía que ser inválido.')
-    const r = await repositorio().guardar({ origenId, esperada: vigente, definicion })
+    const r = await repositorio().guardar({
+      origenId,
+      formulaDelOrigenId,
+      esperada: vigente,
+      definicion,
+    })
     expect(r).toMatchObject({ ok: false, error: { codigo: 'regla' } })
     // Lo mismo que dice TS: el `donde` y el mensaje de la base son los de `validarPlantilla()`.
     expect(!r.ok && r.porCampo).toEqual({ [esperado.error.donde]: esperado.error.mensaje })
@@ -129,28 +138,44 @@ test('E3: un rechazo va al campo que dice la base: la forma al guardar, lo de la
   if (esperado.ok) throw new Error('El caso tenía que ser inválido.')
   const guardado = await repositorio().guardar({
     origenId,
+    formulaDelOrigenId,
     esperada: vigente,
     definicion: conGrupoAjeno,
   })
   if (!guardado.ok) throw new Error(guardado.error.mensaje)
   vigente = guardado.data
-  const alPublicar = await repositorio().publicar({ origenId, esperada: vigente, nota: 'Va' })
+  const alPublicar = await repositorio().publicar({
+    origenId,
+    formulaDelOrigenId,
+    esperada: vigente,
+    nota: 'Va',
+  })
   expect(alPublicar).toMatchObject({ ok: false, error: { codigo: 'regla' } })
   expect(!alPublicar.ok && alPublicar.porCampo).toEqual({
     [esperado.error.donde]: esperado.error.mensaje,
   })
 
   // Se deja un borrador bueno, y publicar con la nota en blanco la pide en su campo.
-  const bueno = await repositorio().guardar({ origenId, esperada: vigente, definicion: buena })
+  const bueno = await repositorio().guardar({
+    origenId,
+    formulaDelOrigenId,
+    esperada: vigente,
+    definicion: buena,
+  })
   if (!bueno.ok) throw new Error(bueno.error.mensaje)
-  const sinNota = await repositorio().publicar({ origenId, esperada: bueno.data, nota: '' })
+  const sinNota = await repositorio().publicar({
+    origenId,
+    formulaDelOrigenId,
+    esperada: bueno.data,
+    nota: '',
+  })
   expect(sinNota).toMatchObject({ ok: false, porCampo: { nota: 'Publicar pide una nota.' } })
 })
 
 test('E5: una persona que no configura el origen no lee nada de la plantilla y no puede escribirla', async () => {
-  const { origenId, asesora } = terreno()
+  const { origenId, formulaDelOrigenId, asesora } = terreno()
   const vigente = (await leer()).borrador?.actualizadoEn ?? ''
-  const r = await leerPlantillaSobre(asesora, origenId)
+  const r = await leerPlantillaSobre(asesora, formulaDelOrigenId)
   if (!r.ok) throw new Error(r.error.mensaje)
   expect(r.data.borrador).toBeNull()
   expect(r.data.publicada).toBeNull()
@@ -161,9 +186,9 @@ test('E5: una persona que no configura el origen no lee nada de la plantilla y n
   const suya = plantillaSobre(asesora)
   const definicion = plantillaValida('ajena')
   for (const hecho of [
-    await suya.guardar({ origenId, esperada: vigente, definicion }),
-    await suya.publicar({ origenId, esperada: vigente, nota: 'No debería' }),
-    await suya.descartar({ origenId, esperada: vigente }),
+    await suya.guardar({ origenId, formulaDelOrigenId, esperada: vigente, definicion }),
+    await suya.publicar({ origenId, formulaDelOrigenId, esperada: vigente, nota: 'No debería' }),
+    await suya.descartar({ origenId, formulaDelOrigenId, esperada: vigente }),
   ]) {
     expect(hecho).toMatchObject({ ok: false, error: { codigo: 'sin_permiso' } })
   }
@@ -171,24 +196,34 @@ test('E5: una persona que no configura el origen no lee nada de la plantilla y n
 })
 
 test('E4: publicar con nota entra y deja la publicada sin borrador; descartar con la esperada vieja es un conflicto', async () => {
-  const { origenId } = terreno()
+  const { origenId, formulaDelOrigenId } = terreno()
   const vigente = (await leer()).borrador?.actualizadoEn ?? ''
-  const publicada = await repositorio().publicar({ origenId, esperada: vigente, nota: 'Primera' })
+  const publicada = await repositorio().publicar({
+    origenId,
+    formulaDelOrigenId,
+    esperada: vigente,
+    nota: 'Primera',
+  })
   if (!publicada.ok) throw new Error(publicada.error.mensaje)
   const despues = await leer()
   expect(despues.borrador).toBeNull()
   expect(despues.publicada).toMatchObject({ id: publicada.data, version: 1, nota: 'Primera' })
 
-  const descartar = await repositorio().descartar({ origenId, esperada: vigente })
+  const descartar = await repositorio().descartar({
+    origenId,
+    formulaDelOrigenId,
+    esperada: vigente,
+  })
   expect(descartar).toMatchObject({ ok: false, error: { codigo: 'conflicto' } })
   expect(!descartar.ok && descartar.error.mensaje).toContain('El borrador ya no está')
 })
 
 test('E6: sin la guarda, un surrogate suelto y un `\\u0000` llegan a la base y vuelven como «inesperado»', async () => {
-  const { origenId } = terreno()
+  const { origenId, formulaDelOrigenId } = terreno()
   for (const nota of ['medio emoji \uD83D', 'un nulo \u0000 adentro']) {
     const r = await repositorio().guardar({
       origenId,
+      formulaDelOrigenId,
       esperada: null,
       definicion: { ...plantillaValida('x'), nota },
     })

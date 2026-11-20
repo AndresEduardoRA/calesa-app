@@ -1,5 +1,6 @@
-// La cabecera de la publicada de un origen (el ⚙ de la cabecera de la hoja), sobre el cliente que recibe: el del navegador, con la sesión de quien lo abre. La policy
-// `formulas: leer` deja ver sólo los orígenes donde tiene `cotizaciones.configurar`. Nombra sus columnas: del diseño, sólo la cabecera (`diseno->cabecera`).
+// La cabecera de la publicada de la fórmula activa de un origen (el ⚙ de la cabecera de la hoja: el que la base cambia), sobre el cliente que recibe: el del
+// navegador, con la sesión de quien lo abre. Las policies `formulas: leer` y `formulas_del_origen: leer` dejan ver sólo los orígenes donde tiene
+// `cotizaciones.configurar`. Nombra sus columnas: del diseño, sólo la cabecera (`diseno->cabecera`).
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errores'
@@ -21,13 +22,17 @@ export type CabeceraPublicada = {
 
 export const MENSAJE_SIN_LEER_LA_CABECERA = 'No pudimos leer la configuración por defecto.'
 
-// La publicada de un origen: a lo sumo una fila, por `formulas_publicada_unica (origen_id) where estado = 'publicada'` (índice único parcial).
+// La publicada de la activa: las versiones del origen por `formulas_origen_id_formula_del_origen_id_idx`, unidas a su fórmula del origen por la FK compuesta; a lo
+// sumo una fila (una publicada por fórmula del origen, `formulas_publicada_unica`, y una activa por origen, `formulas_del_origen_activa_unica`).
 export function consultaDeLaCabecera(cliente: Cliente, origenId: string) {
   return cliente
     .from('formulas')
-    .select('id, version, cabecera:diseno->cabecera')
+    .select(
+      'id, version, cabecera:diseno->cabecera, formulas_del_origen!formulas_formula_del_origen_fkey!inner(activa)',
+    )
     .eq('origen_id', origenId)
     .eq('estado', 'publicada')
+    .eq('formulas_del_origen.activa', true)
     .limit(1)
 }
 

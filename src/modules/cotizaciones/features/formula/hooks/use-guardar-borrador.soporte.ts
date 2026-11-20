@@ -30,6 +30,7 @@ export function pedidoDeGuardar(
 ): PedidoDeGuardar {
   const comun = {
     origenId,
+    formulaDelOrigenId: base.formulaDelOrigenId,
     definicion: guardable.definicion,
     params: paramsPlanos(guardable),
     diseno: base.diseno,

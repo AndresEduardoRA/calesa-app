@@ -1,4 +1,5 @@
-// Las lecturas de la fórmula de un origen para la Fórmula del origen › «Fórmula» (4.20-2a), sobre el cliente que recibe: el del servidor (la primera página y el
+// Las lecturas de la fórmula de trabajo de un origen (una fórmula del origen) para la pestaña Fórmula › «Fórmula» de la página del origen (4.20-2a), sobre el
+// cliente que recibe: el del servidor (la primera página y el
 // estado) y el del navegador («Ver más» e «Ir a la versión»). Corren con la sesión de quien mira: la policy `formulas: leer` deja ver sólo los orígenes donde tiene
 // `cotizaciones.configurar`, y `perfiles: leer`, a todo usuario activo. Nombran sus columnas: lo oculto (`definicion`, `params`, `diseno`, `visibilidad`) no viaja.
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -24,12 +25,13 @@ import type { Database } from '@/shared/types/database.types'
 
 type Cliente = SupabaseClient<Database>
 
-// La publicada y el borrador de un origen: a lo sumo dos filas (`formulas_publicada_unica` y `formulas_borrador_unico`, índices únicos parciales por `origen_id`).
-export function consultaDelEstado(cliente: Cliente, origenId: string) {
+// La publicada y el borrador de una fórmula del origen: a lo sumo dos filas (`formulas_publicada_unica` y `formulas_borrador_unico`, índices únicos parciales por
+// `formula_del_origen_id`).
+export function consultaDelEstado(cliente: Cliente, formulaDelOrigenId: string) {
   return cliente
     .from('formulas')
     .select(COLUMNAS_DEL_ESTADO)
-    .eq('origen_id', origenId)
+    .eq('formula_del_origen_id', formulaDelOrigenId)
     .in('estado', ['borrador', 'publicada'])
     .limit(2)
 }
@@ -39,14 +41,18 @@ export function consultaDeUnaVersion(cliente: Cliente, id: string) {
   return cliente.from('formulas').select('version').eq('id', id).maybeSingle()
 }
 
-// Una página de las versiones publicadas y archivadas de un origen, de la más nueva a la más vieja, y una de más para saber si hay otra. La sostiene
-// `formulas_origen_id_version_key (origen_id, version)` recorrido hacia atrás; el cursor (`version < n`) es condición del índice
+// Una página de las versiones publicadas y archivadas de una fórmula del origen, de la más nueva a la más vieja, y una de más para saber si hay otra. La sostiene
+// `formulas_formula_del_origen_id_version_key (formula_del_origen_id, version)` recorrido hacia atrás; el cursor (`version < n`) es condición del índice
 // (`supabase/tests/areas/formula/versiones-por-cursor.sql`).
-export function consultaDeVersiones(cliente: Cliente, origenId: string, cursor: number | null) {
+export function consultaDeVersiones(
+  cliente: Cliente,
+  formulaDelOrigenId: string,
+  cursor: number | null,
+) {
   const base = cliente
     .from('formulas')
     .select(COLUMNAS_DE_VERSION)
-    .eq('origen_id', origenId)
+    .eq('formula_del_origen_id', formulaDelOrigenId)
     .not('version', 'is', null)
   return (cursor === null ? base : base.lt('version', cursor))
     .order('version', { ascending: false })
@@ -89,9 +95,9 @@ export async function leerAutores(
 
 export async function leerEstado(
   cliente: Cliente,
-  origenId: string,
+  formulaDelOrigenId: string,
 ): Promise<Resultado<EstadoDeLaFormula>> {
-  const { data, error } = await consultaDelEstado(cliente, origenId)
+  const { data, error } = await consultaDelEstado(cliente, formulaDelOrigenId)
   if (error) {
     return { ok: false, error: errorDePostgrest(error) }
   }
@@ -119,10 +125,10 @@ export async function leerEstado(
 // Una página sin los nombres: el servidor junta los autores de la página y del estado en una sola lectura.
 export async function leerPaginaSinAutores(
   cliente: Cliente,
-  origenId: string,
+  formulaDelOrigenId: string,
   cursor: number | null,
 ): Promise<Resultado<PaginaDeVersiones>> {
-  const { data, error } = await consultaDeVersiones(cliente, origenId, cursor)
+  const { data, error } = await consultaDeVersiones(cliente, formulaDelOrigenId, cursor)
   if (error) {
     return { ok: false, error: errorDePostgrest(error) }
   }
@@ -135,10 +141,10 @@ export async function leerPaginaSinAutores(
 // Una página con sus autores: dos lecturas, la de la página y la de sus nombres.
 export async function leerPaginaConAutores(
   cliente: Cliente,
-  origenId: string,
+  formulaDelOrigenId: string,
   cursor: number | null,
 ): Promise<Resultado<PaginaConAutores>> {
-  const pagina = await leerPaginaSinAutores(cliente, origenId, cursor)
+  const pagina = await leerPaginaSinAutores(cliente, formulaDelOrigenId, cursor)
   if (!pagina.ok) {
     return pagina
   }
