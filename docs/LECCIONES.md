@@ -210,6 +210,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   más baja que una línea), y la página reserva el lugar de su barra (`scrollbar-gutter: stable`). Si una barra que aparece cambia el ancho medido, la
   escala, el alto y la barra entran en un ciclo de pocos píxeles que no deja elegir nada. Se prueba con las barras visibles
   (`ignoreDefaultArgs: ['--hide-scrollbars']`, `e2e/configuracion-tarjeta-arrastrar.spec.ts`): el Chromium de Playwright las esconde.
+- Dentro de una columna que se desplaza por dentro (la ficha en dos columnas), no uses `scrollIntoView` para dejar algo a la vista de una barra de costado (la tira de miniaturas): mueve también a la columna y la deja donde la persona no la puso; ajusta el `scrollLeft` de la barra. Y esa columna va `relative`: un `sr-only` (absoluto) de adentro, sin ancestro posicionado, no queda recortado y alarga el documento (la ventana se desplazaba 17 px).
+- Una columna que recupera su posición al volver a una pantalla (`usePosicionDeLasColumnas()`) insiste unos segundos: al mostrarse de nuevo el contenido se acomoda y el navegador achica el desplazamiento al tope de ese momento; reponer una sola vez deja la posición equivocada.
 
 ## Realtime y notificaciones
 

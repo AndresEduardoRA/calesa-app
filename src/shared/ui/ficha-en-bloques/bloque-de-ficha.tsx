@@ -12,7 +12,7 @@ type Props = {
   titulo: string
   // El marco dibuja el `h2` (el bloque no trae el suyo). Sin esto, el bloque trae su propia región con su `h2`.
   conTitulo?: boolean
-  // La columna: «principal» (bajo el índice) o «lateral» (la pegajosa de la izquierda, sin índice encima).
+  // La columna: «principal» (bajo el índice) o «lateral» (la de la izquierda, sin índice encima).
   lado?: 'principal' | 'lateral'
   // Lo de adentro se pide recién al acercarse (200 px antes de entrar a la vista): hasta entonces, `esqueleto`.
   alAcercarse?: boolean
@@ -20,10 +20,11 @@ type Props = {
   children: ReactNode
 }
 
-// El margen con el que un bloque queda al saltar a él: bajo la barra superior y el índice pegajoso (en la principal), o pegado al
-// borde de su columna (en la lateral, que se desplaza sola).
+// El margen con el que un bloque queda al saltar a él: en dos columnas, 1 rem bajo el borde de su columna, que se desplaza sola (el índice
+// no tapa nada: queda arriba de ella); en el celular la página se desplaza, y el bloque queda bajo la barra superior y el índice pegajoso.
 const MARGEN_DEL_SALTO = {
-  principal: 'scroll-mt-[calc(var(--topbar)+var(--alto-del-indice)+1rem)]',
+  principal:
+    'scroll-mt-[calc(var(--topbar)+var(--alto-del-indice)+1rem)] @[56rem]/ficha:scroll-mt-4',
   lateral: 'scroll-mt-4',
 } as const
 

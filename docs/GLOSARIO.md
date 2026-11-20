@@ -848,7 +848,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Bloque (de una ficha)** — `<BloqueDeFicha>`, `#<ancla>` (`src/shared/ui/ficha-en-bloques`): una parte de una ficha en dos columnas, siempre a la
   vista (no se pliega), con su ancla, su título `h2` (con su única acción a la derecha: `<TituloDeBloqueConAccion>`) y su error propio. No es `<Bloque>`,
   el plegable.
-- **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra pegajosa arriba de la columna principal de una ficha en dos columnas, con un enlace de ancla
+- **Índice (de una ficha)** — `<IndiceDeBloques>`: la barra arriba de la columna principal de una ficha en dos columnas (quieta mientras los bloques se desplazan por dentro; pegajosa en el celular), con un enlace de ancla
   por bloque y `aria-current="location"` en el que está a la vista. No navega: salta dentro de la misma página. No: «pestañas», «menú».
 - **Atajo** — `ATAJOS` / `useAtajo()`: tecla global (`Esc`, `N`, `Ctrl/Cmd+K`…); responde el panel de más arriba.
 - **Filtro** — `EsquemaDeFiltros`, `DefFiltro` / `<FilterShell>`: lo que acota un listado; cada uno declara los suyos y viven en la URL. Van en el botón
