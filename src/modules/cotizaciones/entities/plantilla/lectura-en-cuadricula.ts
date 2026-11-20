@@ -2,6 +2,7 @@
 // reducido y el catálogo. Se recalcula en cada cambio. Los nombres de los tipos de cambio son la etiqueta de su nodo (la base nombra el de `tipos_cambio`). La variante
 // va siempre que es del nivel «todos»: dice qué opción hace que una fila no aplique. Pura y plana. Todo por id va por `Map`.
 import type { LecturaEnCuadricula, PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
+import { conNodoYMostrar, datosNombrados } from './datos-de-la-cuadricula'
 import type { TonoDelCatalogo } from './lectura-de-la-plantilla'
 import { pctDelPar, pctsDeLosPares } from './nodos-de-cuadricula'
 import { esDeTodos, type NodoParaPlantilla } from './nodos-de-plantilla'
@@ -9,19 +10,11 @@ import type { ContextoDePlantilla } from './validar-plantilla'
 
 type DatoDeNodo = { nodo: string; mostrar: string }
 
-function datosDe(p: PlantillaEnCuadricula): DatoDeNodo[] {
-  return p.celdas.flatMap((c) =>
-    c.contenido.tipo === 'dato' && 'nodo' in c.contenido
-      ? [{ nodo: c.contenido.nodo, mostrar: c.contenido.mostrar }]
-      : [],
-  )
-}
+// Lo que la cuadrícula muestra de un nodo: en una celda, en su lista de respaldo, en sus condiciones (sobre un dato) o en una rama.
+const datosDe = (p: PlantillaEnCuadricula): DatoDeNodo[] => conNodoYMostrar(datosNombrados(p))
 
 const usaLaVariable = (p: PlantillaEnCuadricula, variable: string) =>
-  p.celdas.some(
-    (c) =>
-      c.contenido.tipo === 'dato' && 'variable' in c.contenido && c.contenido.variable === variable,
-  )
+  datosNombrados(p).some((d) => d.variable === variable)
 
 function tiposDeCambio(
   datos: readonly DatoDeNodo[],
@@ -67,7 +60,8 @@ function varianteDe(
   }
 }
 
-// Los nodos que nombran las filas y las celdas, con lo que la tarjeta dibuja de ellos (el `pct` de su par sólo si se muestra su porcentaje).
+// Los nodos que nombran las filas y las celdas (también los de sus condiciones), con lo que la tarjeta dibuja de ellos (el `pct` de su par sólo si se muestra su
+// porcentaje).
 function nodosNombrados(
   p: PlantillaEnCuadricula,
   nodos: ReadonlyMap<string, NodoParaPlantilla>,
@@ -75,10 +69,7 @@ function nodosNombrados(
 ): LecturaEnCuadricula['nodos'] {
   const datos = datosDe(p)
   const conPorcentaje = new Set(datos.filter((d) => d.mostrar === 'porcentaje').map((d) => d.nodo))
-  const ids = new Set([
-    ...p.filas.flatMap((f) => (f.nodo === undefined ? [] : [f.nodo])),
-    ...datos.map((d) => d.nodo),
-  ])
+  const ids = new Set(datosNombrados(p).flatMap((d) => (d.nodo === null ? [] : [d.nodo])))
   return [...ids].map((id) => {
     const n = nodos.get(id)
     return {

@@ -1,15 +1,18 @@
 // Las reglas de la forma 2 que no miran la fórmula, espejo del final de `_plantilla_cuadricula_forma()`, en su orden: los conteos (`demasiadas_columnas`,
 // `demasiadas_filas`, `demasiadas_celdas`), los repetidos (la segunda aparición, en el orden del arreglo), `ancho_total`, `celda_fuera_de_la_grilla`,
-// `celdas_se_pisan` (la primera celda, en orden, que ocupa una casilla ya ocupada) y `variable_inexistente`. Todo lo que se busca por id va con `Map`/`Set`:
-// `constructor` y `__proto__` son ids válidos.
+// `celdas_se_pisan` (la primera celda, en orden, que ocupa una casilla ya ocupada), `variable_inexistente` (el primer dato con una variable que no existe, en el
+// orden de `datosNombrados()`: puede ser de una fila, por sus condiciones) y `respaldo_vacio` (la primera lista de respaldo con menos de dos datos). Todo lo que se
+// busca por id va con `Map`/`Set`: `constructor` y `__proto__` son ids válidos.
 import {
   ANCHO_TOTAL_MAXIMO,
+  DATOS_DEL_RESPALDO,
   MAXIMO_DE_CELDAS,
   MAXIMO_DE_COLUMNAS,
   MAXIMO_DE_FILAS,
   VARIABLES_DE_LA_TARJETA,
   type PlantillaEnCuadricula,
 } from '../cuadricula-de-la-tarjeta'
+import { datosNombrados, dondeDelDato } from './datos-de-la-cuadricula'
 import { rechazoDePlantilla, type RechazoDePlantilla } from './motivos-de-plantilla'
 
 const VARIABLES: ReadonlySet<string> = new Set(VARIABLES_DE_LA_TARJETA)
@@ -82,13 +85,13 @@ export function revisarLaGrilla(p: PlantillaEnCuadricula): RechazoDePlantilla | 
     return rechazoDePlantilla('ancho_total', 'columnas')
   const posicion = posiciones(p)
   if (posicion !== null) return posicion
-  const sinVariable = p.celdas.find(
-    (c) =>
-      c.contenido.tipo === 'dato' &&
-      'variable' in c.contenido &&
-      !VARIABLES.has(c.contenido.variable),
+  const sinVariable = datosNombrados(p).find(
+    (d) => d.variable !== null && !VARIABLES.has(d.variable),
   )
-  return sinVariable === undefined
-    ? null
-    : rechazoDePlantilla('variable_inexistente', `celdas.${sinVariable.id}`)
+  if (sinVariable !== undefined)
+    return rechazoDePlantilla('variable_inexistente', dondeDelDato(sinVariable))
+  const corta = p.celdas.find(
+    (c) => c.contenido.tipo === 'respaldo' && c.contenido.datos.length < DATOS_DEL_RESPALDO.minimo,
+  )
+  return corta === undefined ? null : rechazoDePlantilla('respaldo_vacio', `celdas.${corta.id}`)
 }
