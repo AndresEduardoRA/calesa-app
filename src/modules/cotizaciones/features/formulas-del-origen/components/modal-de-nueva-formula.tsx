@@ -46,7 +46,7 @@ export function ModalDeNuevaFormula({
       abierto={abierto}
       alCerrar={alCerrar}
       titulo="Nueva fórmula"
-      descripcion={`Una fórmula más de ${origen.nombre}. No se cotiza con ella hasta que la actives.`}
+      descripcion={`Una fórmula más de «${origen.nombre}»: no se cotiza con ella hasta que la actives.`}
       formulario={formulario}
       guardar={{ etiqueta: 'Crear fórmula', enCurso: 'Creando…' }}
     >
