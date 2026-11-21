@@ -65,13 +65,16 @@ microdecisiones sola (`.claude/rules/ui.md`).
   verde (`scripts/orquestador/main-en-tanda.sh`, la red de seguridad). El repo sólo admite squash, con auto-merge y borrado de la rama
   al integrar. La persona, como administradora, puede saltarse la protección; una sesión no empuja `main`
   (`.claude/hooks/bloquear-peligrosos.sh`).
-- La cuenta es la dueña del repo aunque la activa de la máquina sea otra: `publicar.sh` pide su token (`gh auth token --user <dueña>`)
-  y nunca cambia la cuenta activa (`gh auth switch` es de la persona). Una organización no tiene sesión de `gh`: vale la de la máquina.
+- El orquestador y sus sesiones actúan como la app `imandresalpiri-orquestador[bot]` (token de instalación de 1 h,
+  `scripts/orquestador/token-app.sh`; `scripts/orquestador/README.md` › «Como la app de GitHub»); sin la clave, con la sesión de la
+  persona. `publicar.sh` a mano: el token de la dueña aunque la activa de la máquina sea otra (`gh auth token --user <dueña>`), sin
+  cambiar nunca la cuenta activa (`gh auth switch` es de la persona); una organización no tiene sesión de `gh`: vale la de la máquina.
+  La app no va en ningún bypass de la protección de `main`.
 - Un e2e que pasa al reintentar en CI no pone el PR en rojo; queda anotado en el PR (`e2e/soporte/reporter-de-inestables.ts`). Sólo
   se arregla si cae dos noches seguidas en el completo: el job `aviso-noche` lleva la cuenta en el issue `noche-roja` y a la segunda
   noche lo vuelve una tarea de la cola (`scripts/flujo/noche.mjs`). Es el único job con un permiso de escritura (`issues: write`).
 - Disparar un workflow a mano (`gh workflow run`, el Nivel 3, las carreras) es de la persona. La única excepción es del orquestador: el
-  e2e de escritorio sobre `main` antes de cerrar una tanda.
+  e2e de escritorio sobre `main` antes de cerrar una tanda, que sale de la app.
 
 ## En paralelo
 
