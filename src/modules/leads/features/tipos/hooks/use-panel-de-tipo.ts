@@ -4,6 +4,7 @@ import { parseAsString, useQueryStates } from 'nuqs'
 import { CLAVE_DE_PANEL } from '@/shared/lib/filtros'
 import { abrirConVuelta, useVueltaDelFoco } from '@/shared/ui/vuelta-del-foco'
 import { CLAVE_DE_TIPO, PANEL_EDITAR_TIPO, PANEL_NUEVO_TIPO } from '../../../entities/tipo-de-lead'
+import { PANEL_DE_TIPOS } from '../../../entities/paneles-de-la-configuracion'
 
 const PARAMETROS = {
   [CLAVE_DE_PANEL]: parseAsString,
@@ -12,7 +13,7 @@ const PARAMETROS = {
 
 // El modal de un tipo, en la URL: `?panel=nuevo-tipo` o `?panel=editar-tipo&tipo=<id>`. Abrir
 // suma al historial («atrás» lo cierra; tras recargar, devuelve el foco a quien lo abrió: `vuelta-del-foco.ts`);
-// cerrar quita las dos claves. Sin `shallow: false`: abrirlo no necesita al servidor, la lista ya está.
+// cerrar quita el id y vuelve a la lista de su tarjeta (una sola escritura): en la familia hay un solo modal abierto a la vez. Sin `shallow: false`: abrirlo no necesita al servidor, la lista ya está.
 export function usePanelDeTipo() {
   const [url, setUrl] = useQueryStates(PARAMETROS)
   const panel = url[CLAVE_DE_PANEL]
@@ -46,7 +47,7 @@ export function usePanelDeTipo() {
       )
     },
     cerrar: () => {
-      void setUrl({ [CLAVE_DE_PANEL]: null, [CLAVE_DE_TIPO]: null })
+      void setUrl({ [CLAVE_DE_PANEL]: PANEL_DE_TIPOS, [CLAVE_DE_TIPO]: null })
     },
   }
 }

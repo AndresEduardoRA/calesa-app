@@ -1,12 +1,14 @@
 'use client'
 
 import { PlusIcon } from 'lucide-react'
+import type { Route } from 'next'
 import Link from 'next/link'
 import { useRef } from 'react'
 import { RUTAS } from '@/shared/lib/rutas'
 import { Button } from '@/shared/ui/button'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import { useApertura } from '@/shared/ui/use-apertura'
+import { PANEL_DE_TELEFONOS } from '../../../entities/paneles-de-la-configuracion'
 import type { LeadDeTelefonos } from '../../../entities/telefonos'
 import { useTelefonosExtra } from '../hooks/use-telefonos-extra'
 import { ModalDeExtraDiferido } from './diferidos'
@@ -79,7 +81,7 @@ export function TelefonosExtra({
                   <>
                     {' '}
                     <Link
-                      href={RUTAS.telefonosExtraDeLeads}
+                      href={`${RUTAS.configuracionDeLeads}?panel=${PANEL_DE_TELEFONOS}` as Route}
                       className="font-medium underline underline-offset-2"
                     >
                       Cambiar el máximo

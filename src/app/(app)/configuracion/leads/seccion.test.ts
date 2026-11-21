@@ -7,7 +7,6 @@ const con = (...claves: ClavePermiso[]): Permisos =>
   claves.map((clave) => ({ clave, origenId: null, alcance: 'todos' as const }))
 
 const MOTIVO_CAMPOS = 'Te falta el permiso «Gestionar los campos de los leads».'
-const MOTIVO_LEADS = 'Te falta el permiso «Configurar leads».'
 
 const comoLasVe = (permisos: Permisos) =>
   conSubseccionesVisibles(SECCION_DE_LEADS, permisos).subsecciones.map((sub) => [
@@ -16,19 +15,11 @@ const comoLasVe = (permisos: Permisos) =>
   ])
 
 describe('las sub-secciones de Leads', () => {
-  it('los tipos de seguimiento siguen a los tipos de lead; después, las dos plantillas y los teléfonos', () => {
-    expect(SUBSECCIONES_DE_LEADS.map((sub) => sub.clave)).toEqual([
-      'campos',
-      'origenes',
-      'tipos',
-      'seguimientos',
-      'embudo',
-      'portal',
-      'telefonos',
-    ])
+  it('sólo «Campos» es una sub-ruta: lo demás son las tarjetas de la raíz', () => {
+    expect(SUBSECCIONES_DE_LEADS.map((sub) => sub.clave)).toEqual(['campos'])
   })
 
-  it('cada una vive debajo de la sección, que no tiene índice', () => {
+  it('«Campos» vive debajo de la sección', () => {
     for (const sub of SUBSECCIONES_DE_LEADS) {
       expect(sub.ruta.startsWith(`${SECCION_DE_LEADS.ruta}/`), sub.ruta).toBe(true)
     }
@@ -38,42 +29,30 @@ describe('las sub-secciones de Leads', () => {
     expect(PERMISOS_DE_LEADS).toEqual(['leads.campos.gestionar', 'leads.configurar'])
     expect(SECCION_DE_LEADS.permisos).toBe(PERMISOS_DE_LEADS)
   })
+
+  it('el buscador de Configuración sigue encontrando cada tarjeta por lo que se escribía', () => {
+    for (const palabra of ['orígenes', 'prospecto', 'llamada', 'etapas', 'whatsapp', 'celular']) {
+      expect(SECCION_DE_LEADS.palabras, palabra).toContain(palabra)
+    }
+  })
 })
 
 describe('qué abre cada combinación de permisos', () => {
-  it('con los dos, ninguna apagada, y abre «Campos»', () => {
+  it('con los dos, «Campos» abierta', () => {
     const permisos = con('leads.configurar', 'leads.campos.gestionar')
-    expect(comoLasVe(permisos)).toEqual(SUBSECCIONES_DE_LEADS.map((sub) => [sub.clave, undefined]))
+    expect(comoLasVe(permisos)).toEqual([['campos', undefined]])
     expect(primeraSubseccionAbierta(SECCION_DE_LEADS, permisos)).toBe('/configuracion/leads/campos')
   })
 
-  it('con sólo leads.configurar, «Campos» apagada con su motivo, y abre «Orígenes del lead»', () => {
+  it('con sólo leads.configurar, «Campos» apagada con su motivo', () => {
     const permisos = con('leads.configurar')
-    expect(comoLasVe(permisos)).toEqual([
-      ['campos', MOTIVO_CAMPOS],
-      ['origenes', undefined],
-      ['tipos', undefined],
-      ['seguimientos', undefined],
-      ['embudo', undefined],
-      ['portal', undefined],
-      ['telefonos', undefined],
-    ])
-    expect(primeraSubseccionAbierta(SECCION_DE_LEADS, permisos)).toBe(
-      '/configuracion/leads/origenes',
-    )
+    expect(comoLasVe(permisos)).toEqual([['campos', MOTIVO_CAMPOS]])
+    expect(primeraSubseccionAbierta(SECCION_DE_LEADS, permisos)).toBeNull()
   })
 
-  it('con sólo leads.campos.gestionar, al revés', () => {
+  it('con sólo leads.campos.gestionar, «Campos» abierta', () => {
     const permisos = con('leads.campos.gestionar')
-    expect(comoLasVe(permisos)).toEqual([
-      ['campos', undefined],
-      ['origenes', MOTIVO_LEADS],
-      ['tipos', MOTIVO_LEADS],
-      ['seguimientos', MOTIVO_LEADS],
-      ['embudo', MOTIVO_LEADS],
-      ['portal', MOTIVO_LEADS],
-      ['telefonos', MOTIVO_LEADS],
-    ])
+    expect(comoLasVe(permisos)).toEqual([['campos', undefined]])
     expect(primeraSubseccionAbierta(SECCION_DE_LEADS, permisos)).toBe('/configuracion/leads/campos')
   })
 

@@ -1,7 +1,6 @@
-import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
+import { EsqueletoTarjetas } from '@/shared/ui/esqueletos'
 
-// Mientras la raíz de la sección decide a qué sub-ruta ir (`page.tsx`): la forma de «Campos», la primera para quien tiene los dos permisos.
-
+// Sin importar `@/modules/leads`: el esqueleto no carga el barril de pantallas. Las seis tarjetas de Configuración › Leads.
 export default function CargandoLeads() {
-  return <EsqueletoFormulario bloques={2} campos={4} />
+  return <EsqueletoTarjetas tarjetas={6} />
 }

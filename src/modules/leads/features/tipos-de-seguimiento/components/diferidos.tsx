@@ -12,3 +12,11 @@ export const ModalDeTipoDeSeguimientoDiferido = diferido(() =>
 export const EliminarTipoDeSeguimientoDiferido = diferido(() =>
   import('./eliminar-tipo-de-seguimiento').then((modulo) => modulo.EliminarTipoDeSeguimiento),
 )
+
+// El editor de tipos de seguimiento (la lista en su modal, con el estado de todo lo que se hace en ella) se pide la primera vez que se abre algún
+// panel de su familia (`useFamiliaDelPanel().montar`): la tarjeta sólo dibuja el resumen.
+export const EditorDeTiposDeSeguimientoDiferido = diferido(
+  () =>
+    import('./editor-de-tipos-de-seguimiento').then((modulo) => modulo.EditorDeTiposDeSeguimiento),
+  { aviso: 'pantalla' },
+)

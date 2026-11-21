@@ -37,13 +37,13 @@ describe('buscarEnConfiguracion', () => {
 
   it('encuentra por nombre, sin acentos ni mayúsculas, y lo que más se parece va primero', () => {
     expect(caminos('ORIGENES')[0]).toBe('Orígenes')
-    expect(caminos('portal')).toEqual(['Leads › Mensaje del portal', 'Leads'])
+    expect(caminos('portal')).toEqual(['Leads'])
   })
 
   it('encuentra por las palabras clave que declara el registro', () => {
     expect(caminos('logo')[0]).toBe('Empresa › Datos de la empresa')
-    expect(caminos('whatsapp')).toContain('Leads › Mensaje del portal')
-    expect(caminos('código')).toContain('Leads › Mensaje del portal')
+    expect(caminos('whatsapp')).toContain('Leads')
+    expect(caminos('código')).toContain('Leads')
   })
 
   it('la sección y su sub-sección índice, que abren lo mismo, se ven como la sub-sección', () => {
@@ -53,7 +53,7 @@ describe('buscarEnConfiguracion', () => {
   })
 
   it('varias palabras: todas tienen que estar, en el título con el de su sección o en sus palabras', () => {
-    expect(caminos('leads portal')[0]).toBe('Leads › Mensaje del portal')
+    expect(caminos('leads portal')[0]).toBe('Leads')
     expect(caminos('empresa zzz')).toEqual([])
   })
 
@@ -67,7 +67,7 @@ describe('buscarEnConfiguracion', () => {
     )
     expect(caminos('campos', soloLeads)).toEqual([])
     expect(caminos('empresa', soloLeads)).toEqual([])
-    expect(caminos('portal', soloLeads)).toContain('Leads › Mensaje del portal')
+    expect(caminos('portal', soloLeads)).toContain('Leads')
     expect(caminos('portal', [])).toEqual([])
   })
 

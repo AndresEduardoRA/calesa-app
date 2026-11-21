@@ -157,20 +157,12 @@ describe('grupos visibles de configuración', () => {
     expect(gruposVisibles([])).toEqual([])
   })
 
-  it('con sólo leads.configurar, al navegador va «Campos» con su motivo y las otras seis sin él', () => {
+  it('con sólo leads.configurar, al navegador va «Campos», la única sub-ruta, con su motivo', () => {
     const leads: Permisos = [{ clave: 'leads.configurar', origenId: null, alcance: 'todos' }]
     const [ventas] = paraElNavegador(gruposVisibles(leads))
     expect(
       ventas?.secciones[0]?.subsecciones.map((sub) => [sub.clave, sub.motivo !== undefined]),
-    ).toEqual([
-      ['campos', true],
-      ['origenes', false],
-      ['tipos', false],
-      ['seguimientos', false],
-      ['embudo', false],
-      ['portal', false],
-      ['telefonos', false],
-    ])
+    ).toEqual([['campos', true]])
   })
 })
 

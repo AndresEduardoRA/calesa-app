@@ -1,23 +1,35 @@
 import type { Metadata } from 'next'
-import { requerirSesion } from '@/modules/equipo'
+import { puede, requerirSesion } from '@/modules/equipo'
+import { destinoDeLaSeccionVieja } from '@/modules/leads'
 import { redirigir } from '@/shared/lib/navegacion'
+import { RUTAS } from '@/shared/lib/rutas'
 import { EstadoSinPermiso } from '@/shared/ui/estados'
-import { conSubseccionesVisibles } from '../secciones'
-import { SECCION_DE_LEADS } from './seccion'
-import { comoBusqueda, destinoDeLeads } from './url-vieja'
+import { EncabezadoDeConfiguracion } from '../_navegacion/encabezado-de-configuracion'
+import { CAMPOS_DE_LEADS, PERMISO_DE_LAS_TARJETAS, SECCION_DE_LEADS } from './seccion'
+import { SeccionDeLeads } from './tarjetas-de-leads'
+import { comoBusqueda } from './url-vieja'
 
-export const metadata: Metadata = { title: 'Configurar leads' }
+export const metadata: Metadata = { title: SECCION_DE_LEADS.titulo }
 
-// Configuración › Leads no tiene sub-sección índice: esta ruta abre la primera sub-ruta que la persona puede abrir, y las URLs de cuando
-// había pestañas (`?seccion=`, con sus paneles) van a la suya (`url-vieja.ts`). Sin ninguno de los dos permisos, «sin permiso».
+// Configuración › Leads: seis tarjetas, cada una con su modal por `?panel=` (`leads.configurar`). Las URLs de cuando había pestañas
+// (`?seccion=`, con sus paneles) van primero a su lugar (`destinoDeLaSeccionVieja()`). Quien sólo gestiona los campos va a «Campos»; sin ninguno de los dos
+// permisos, «No tienes permiso».
 export default async function PaginaDeLeads({ searchParams }: PageProps<'/configuracion/leads'>) {
-  const [{ permisos }, parametros] = await Promise.all([requerirSesion(), searchParams])
-  const abiertas = conSubseccionesVisibles(SECCION_DE_LEADS, permisos)
-    .subsecciones.filter((sub) => !sub.apagada)
-    .map((sub) => sub.ruta)
-  const destino = destinoDeLeads(comoBusqueda(parametros), abiertas)
-  if (destino === null) {
-    return <EstadoSinPermiso />
+  const viejo = destinoDeLaSeccionVieja(comoBusqueda(await searchParams))
+  if (viejo !== null) {
+    redirigir(viejo)
   }
-  redirigir(destino)
+  const { permisos } = await requerirSesion()
+  if (puede(permisos, PERMISO_DE_LAS_TARJETAS)) {
+    return (
+      <div className="grid max-w-6xl gap-4">
+        <EncabezadoDeConfiguracion {...SECCION_DE_LEADS} />
+        <SeccionDeLeads />
+      </div>
+    )
+  }
+  if (CAMPOS_DE_LEADS.permisos.some((permiso) => puede(permisos, permiso))) {
+    redirigir(RUTAS.camposDeLeads)
+  }
+  return <EstadoSinPermiso />
 }

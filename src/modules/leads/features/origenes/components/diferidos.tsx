@@ -12,3 +12,10 @@ export const ModalDeOrigenDiferido = diferido(() =>
 export const EliminarOrigenDiferido = diferido(() =>
   import('./eliminar-origen').then((modulo) => modulo.EliminarOrigen),
 )
+
+// El editor de orígenes (la lista en su modal, con el estado de todo lo que se hace en ella) se pide la primera vez que se abre algún panel de su
+// familia (`useFamiliaDelPanel().montar`): la tarjeta sólo dibuja el resumen.
+export const EditorDeOrigenesDiferido = diferido(
+  () => import('./editor-de-origenes').then((modulo) => modulo.EditorDeOrigenes),
+  { aviso: 'pantalla' },
+)

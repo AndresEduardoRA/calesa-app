@@ -8,6 +8,7 @@ import {
   PANEL_EDITAR_ORIGEN,
   PANEL_NUEVO_ORIGEN,
 } from '../../../entities/origen-de-lead'
+import { PANEL_DE_ORIGENES } from '../../../entities/paneles-de-la-configuracion'
 
 const PARAMETROS = {
   [CLAVE_DE_PANEL]: parseAsString,
@@ -16,7 +17,7 @@ const PARAMETROS = {
 
 // El modal de un origen, en la URL: `?panel=nuevo-origen` o `?panel=editar-origen&origen=<id>`. Abrir
 // suma al historial («atrás» lo cierra; tras recargar, devuelve el foco a quien lo abrió: `vuelta-del-foco.ts`);
-// cerrar quita las dos claves. Sin `shallow: false`: abrirlo no necesita al servidor, la lista ya está.
+// cerrar quita el id y vuelve a la lista de su tarjeta (una sola escritura): en la familia hay un solo modal abierto a la vez. Sin `shallow: false`: abrirlo no necesita al servidor, la lista ya está.
 export function usePanelDeOrigen() {
   const [url, setUrl] = useQueryStates(PARAMETROS)
   const panel = url[CLAVE_DE_PANEL]
@@ -53,7 +54,7 @@ export function usePanelDeOrigen() {
       )
     },
     cerrar: () => {
-      void setUrl({ [CLAVE_DE_PANEL]: null, [CLAVE_DE_ORIGEN]: null })
+      void setUrl({ [CLAVE_DE_PANEL]: PANEL_DE_ORIGENES, [CLAVE_DE_ORIGEN]: null })
     },
   }
 }

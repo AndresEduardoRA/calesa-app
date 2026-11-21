@@ -106,7 +106,7 @@ const ENTIDADES: Readonly<Record<string, Entidad>> = {
   origenes_lead: {
     icono: 'configuracion',
     enFrase: 'un origen del lead',
-    configuracion: RUTAS.origenesDeLeads,
+    configuracion: `${RUTAS.configuracionDeLeads}?panel=origenes`,
   },
   plantillas_tarjeta: {
     icono: 'configuracion',
@@ -122,12 +122,12 @@ const ENTIDADES: Readonly<Record<string, Entidad>> = {
   tipos_lead: {
     icono: 'configuracion',
     enFrase: 'un tipo de lead',
-    configuracion: RUTAS.tiposDeLead,
+    configuracion: `${RUTAS.configuracionDeLeads}?panel=tipos`,
   },
   tipos_seguimiento: {
     icono: 'configuracion',
     enFrase: 'un tipo de seguimiento',
-    configuracion: RUTAS.tiposDeSeguimiento,
+    configuracion: `${RUTAS.configuracionDeLeads}?panel=seguimientos`,
   },
   usuarios_roles: {
     icono: 'configuracion',

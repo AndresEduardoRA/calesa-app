@@ -42,11 +42,11 @@ export const CONFIRMAR_CON_URL_DEL_NUCLEO: Record<string, ConfirmarConUrl> = {
     abre: 'src/modules/leads/features/tipos-de-seguimiento/hooks/use-eliminar-tipo-de-seguimiento-por-url.ts',
     senal: 'PANEL_ELIMINAR_TIPO_DE_SEGUIMIENTO',
   },
-  'src/modules/leads/features/plantillas/components/plantilla-del-embudo.tsx': {
+  'src/modules/leads/features/plantillas/components/restablecer-del-embudo.tsx': {
     abre: 'src/modules/leads/features/plantillas/hooks/use-restablecer-plantilla-del-embudo.ts',
     senal: 'PANEL_RESTABLECER_EMBUDO',
   },
-  'src/modules/leads/features/plantillas/components/mensaje-del-portal.tsx': {
+  'src/modules/leads/features/plantillas/components/restablecer-del-portal.tsx': {
     abre: 'src/modules/leads/features/plantillas/hooks/use-restablecer-mensaje-del-portal.ts',
     senal: 'PANEL_RESTABLECER_PORTAL',
   },

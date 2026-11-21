@@ -8,6 +8,7 @@ import {
   PANEL_EDITAR_TIPO_DE_SEGUIMIENTO,
   PANEL_NUEVO_TIPO_DE_SEGUIMIENTO,
 } from '../../../entities/tipo-de-seguimiento'
+import { PANEL_DE_SEGUIMIENTOS } from '../../../entities/paneles-de-la-configuracion'
 
 const PARAMETROS = {
   [CLAVE_DE_PANEL]: parseAsString,
@@ -16,7 +17,7 @@ const PARAMETROS = {
 
 // El modal de un tipo de seguimiento, en la URL: `?panel=nuevo-tipo-de-seguimiento` o `?panel=editar-tipo-de-seguimiento&tipo-de-seguimiento=<id>`. Abrir
 // suma al historial («atrás» lo cierra; tras recargar, devuelve el foco a quien lo abrió: `vuelta-del-foco.ts`);
-// cerrar quita las dos claves. Sin `shallow: false`: abrirlo no necesita al servidor, la lista ya está.
+// cerrar quita el id y vuelve a la lista de su tarjeta (una sola escritura): en la familia hay un solo modal abierto a la vez. Sin `shallow: false`: abrirlo no necesita al servidor, la lista ya está.
 export function usePanelDeTipoDeSeguimiento() {
   const [url, setUrl] = useQueryStates(PARAMETROS)
   const panel = url[CLAVE_DE_PANEL]
@@ -60,7 +61,7 @@ export function usePanelDeTipoDeSeguimiento() {
       )
     },
     cerrar: () => {
-      void setUrl({ [CLAVE_DE_PANEL]: null, [CLAVE_DE_TIPO_DE_SEGUIMIENTO]: null })
+      void setUrl({ [CLAVE_DE_PANEL]: PANEL_DE_SEGUIMIENTOS, [CLAVE_DE_TIPO_DE_SEGUIMIENTO]: null })
     },
   }
 }

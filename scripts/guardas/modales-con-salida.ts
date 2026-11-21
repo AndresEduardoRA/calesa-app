@@ -15,6 +15,22 @@ export const MODALES: Record<string, RegistroDeModal> = {
   // --- leads
   'src/modules/leads/features/etiquetas/components/dialogo-de-etiquetas.tsx': { propio: true },
   'src/modules/leads/features/portal/components/dialogo-de-otorgar.tsx': { propio: true },
+  'src/modules/leads/features/origenes/components/editor-de-origenes.tsx': {
+    sinFormulario:
+      'la lista de los orígenes del lead: «Nuevo», «Editar» y «Eliminar» abren su propio modal (con su aviso de cambios); nada tipeado en éste',
+  },
+  'src/modules/leads/features/tipos/components/editor-de-tipos.tsx': {
+    sinFormulario:
+      'la lista de los tipos de lead: «Nuevo», «Editar» y «Eliminar» abren su propio modal (con su aviso de cambios); nada tipeado en éste',
+  },
+  'src/modules/leads/features/tipos-de-seguimiento/components/editor-de-tipos-de-seguimiento.tsx': {
+    sinFormulario:
+      'la lista de los tipos de seguimiento: «Nuevo», «Editar» y «Eliminar» abren su propio modal (con su aviso de cambios); nada tipeado en éste',
+  },
+  'src/modules/leads/features/plantillas/components/modal-de-numeros-repetidos.tsx': {
+    sinFormulario:
+      'sólo lee los números repetidos de los leads (la lista y «Ver más»); nada tipeado que se pierda al cerrar',
+  },
   'src/modules/leads/features/exportar/components/dialogo-de-exportar.tsx': {
     sinFormulario:
       'elige el separador del archivo y descarga: un selector, nada tipeado que se pierda al cerrar',
