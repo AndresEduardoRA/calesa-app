@@ -43,8 +43,8 @@ const nextConfig: NextConfig = {
     ],
   },
   // Las URL fijas de la vieja Configuración › Cotización y › Logística van a la página del origen y a Catálogos, con su consulta. Aquí y no en un
-  // `page.tsx`: una página que sólo redirige pide su `loading.tsx` y la redirección es del navegador. `general` va antes que `:origen`, y `:origen`
-  // es un uuid de un solo segmento (no se traga `plantillas-de-v1`). Las que dependen de la consulta o de la persona son `route.ts`.
+  // `page.tsx`: una página que sólo redirige pide su `loading.tsx` y la redirección es del navegador. `general` va antes que `:origen`, y
+  // `:origen` es un uuid de un solo segmento. Las que dependen de la consulta o de la persona son `route.ts`.
   // `/configuracion` solo no dibuja nada: el inicio vive en `/configuracion/inicio` (308, con su consulta). `/configuracion/inicio` no choca con
   // ninguna sección: ninguna se llama «inicio». La ruta vieja de la imagen de la tarjeta va a la de hoy con su consulta (308: un enlace o una
   // caché del navegador que la nombre sigue andando).
@@ -66,7 +66,6 @@ const nextConfig: NextConfig = {
       },
       // Las páginas de Configuración › Cotización y Logística que se mudaron a la página de cada origen y a Catálogos (308, con su
       // consulta). Las raíces (`/configuracion/cotizacion`, `/flujos`, `/logistica`) dependen de la consulta o del permiso: son `route.ts`.
-      // `:origen` es un id: `[origen]/plantillas-de-v1` (dos segmentos) sigue en su `route.ts`.
       {
         source: '/cotizaciones/:id/portada',
         destination: '/cotizaciones/:id/imagen',

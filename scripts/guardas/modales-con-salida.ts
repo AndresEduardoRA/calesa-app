@@ -96,17 +96,6 @@ export const MODALES: Record<string, RegistroDeModal> = {
       'lista las cotizaciones de un vehículo, de sólo lectura; las casillas de «Comparar» no se guardan y elegir una línea abre su resumen',
     tambien: ['src/modules/cotizaciones/features/listado/components/grupo/linea-del-grupo.tsx'],
   },
-  'src/modules/cotizaciones/features/plantilla/components/plantillas-de-v1/modal-de-plantillas-de-v1.tsx':
-    {
-      sinFormulario:
-        'elige una de las cuatro plantillas de V1 (un grupo de opciones) y confirma: nada tipeado que se pierda al cerrar; aplicar es todo o nada',
-      tambien: [
-        'src/modules/cotizaciones/features/plantilla/components/plantillas-de-v1/cuerpo-de-las-plantillas.tsx',
-        'src/modules/cotizaciones/features/plantilla/components/plantillas-de-v1/lista-de-plantillas.tsx',
-        'src/modules/cotizaciones/features/plantilla/components/plantillas-de-v1/paso-de-confirmar.tsx',
-        'src/modules/cotizaciones/features/plantilla/components/plantillas-de-v1/pie-de-las-plantillas.tsx',
-      ],
-    },
   // El modo «Retocar» de la vista previa pregunta en el pie (useCierreConCambios, ConfirmarDescarte) y no se cierra mientras guarda.
   'src/modules/cotizaciones/features/tarjeta/components/vista-previa-de-la-tarjeta.tsx': {
     propio: true,

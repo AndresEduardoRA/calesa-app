@@ -189,10 +189,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **Campo principal.** Marcar otro desmarca el anterior en la misma llamada; un campo `moneda` no puede ser principal. Acompaña al título en logística y lo reemplaza en fila, tarjeta y resumen; la página del vehículo, el PDF, la web, la hoja y la bandeja siguen con el título.
 - **Orden de candados origen → campo (`for no key update`)** al guardar, crear, mover y eliminar campos: sin 40P01 y sin frenar el `key share` de las FK.
 - **Los datos clave son del origen.** Hasta 4, en orden, en `origenes.datos_clave` (`{"comun": columna}` o `{"campo": clave}`), con la versión del origen; los escribe sólo `origen_datos_clave_guardar()`. Los de fábrica de cada tipo los pone un trigger `before insert` (no `origen_crear()`: el seed, los e2e y las pruebas insertan directo) y una lista vacía se guarda vacía (la lectura devuelve los de fábrica). Desactivar o eliminar un campo que es dato clave lo quita en la misma llamada; reactivarlo no lo vuelve a sumar. En «Campos» se guardan al instante, de a un cambio, con «Subir/Bajar/Quitar» (sin arrastrar: menos JS y mejor con teclado). Las claves comunes viven espejadas en `origenes` (no depende de `vehiculos`) con un test en `src/app` contra `camposComunes()`.
-- **Las redirecciones que dependen de la consulta o de la persona van en un `route.ts` con 308.** Las fijas, en `next.config.ts` (`:origen` restringido a un uuid, para no tragarse `general` ni `plantillas-de-v1`); las de las raíces sin índice (`/configuracion/catalogos`, `/configuracion/origenes/<id>`) y las URL viejas (`/configuracion/cotizacion|flujos|logistica`), en un `route.ts` con su `url-vieja.ts` puro y probado, que conserva la consulta salvo lo que la ruta nueva ya dice (`seccion`, `origen`, `ambito`). Una que depende de los permisos lleva `Cache-Control: private, no-store` (`redireccionPermanente(destino, { porPersona: true })`): un 308 se cachea y otra persona en el mismo navegador iría al destino de la primera. Lo que no se resuelve va a la lista de orígenes o al inicio de Configuración, nunca a un error.
+- **Las redirecciones que dependen de la consulta o de la persona van en un `route.ts` con 308.** Las fijas, en `next.config.ts` (`:origen` restringido a un uuid, para no tragarse `general`); las de las raíces sin índice (`/configuracion/catalogos`, `/configuracion/origenes/<id>`) y las URL viejas (`/configuracion/cotizacion|flujos|logistica`), en un `route.ts` con su `url-vieja.ts` puro y probado, que conserva la consulta salvo lo que la ruta nueva ya dice (`seccion`, `origen`, `ambito`). Una que depende de los permisos lleva `Cache-Control: private, no-store` (`redireccionPermanente(destino, { porPersona: true })`): un 308 se cachea y otra persona en el mismo navegador iría al destino de la primera. Lo que no se resuelve va a la lista de orígenes o al inicio de Configuración, nunca a un error.
 - **Catálogos: lo de toda la empresa, en tramos del menú y sin pestañas.** Colores, Niveles y Vigencia (de las cotizaciones), Puertos, Navieras, Categorías de gasto y Tipos de documento (de la logística) y las Tablas compartidas, cada uno su sub-ruta `/configuracion/catalogos/<clave>`; el menú los agrupa con un rótulo por tramo («Cotizaciones», «Logística») y las Tablas compartidas van sin rótulo (uno de un solo ítem repite el nombre). Tipos de documento conserva sus tres permisos: los cambia quien gestiona los catálogos de logística y los leen quien configura un flujo o los repuestos. Las tablas compartidas se editan también desde la pestaña Tablas de un origen que las usa, con el aviso de a quién le cambian.
 - **El flujo de repuestos se configura en Repuestos.** `/configuracion/repuestos/flujo`, primera sub-sección de la sección (sin `?seccion=` ni panel, la raíz abre ahí), con el mismo editor que la pestaña Flujo de un origen (`fijo`, sin selector: una página nunca abre otro flujo).
-- **`plantillas-de-v1` se queda en `/configuracion/cotizacion/<origen>/plantillas-de-v1` hasta su chore.** Es un `GET` que pide el modal, no una página: moverlo sólo para borrarlo después no aporta (`docs/PENDIENTES.md`).
 - **La lista de orígenes son tarjetas con lo que les falta.** Tipo, activo o inactivo y las faltas en corto (`faltasDeLaTarjeta()`): sin el paso de los permisos (aviso blando, como en el inicio) y nada en un origen inactivo. Descartada una tabla compacta: no deja ver las faltas sin ruido.
 - **La puesta en marcha es una página por paso, derivada de lo que hay** (sin preguntar). «Nuevo origen» abre `/configuracion/origenes/nuevo` (el drawer
   se quita; `?panel=nuevo` responde 308) y, creado, cada paso es `/<id>/puesta-en-marcha/<paso>` con el mismo editor de su pestaña: un solo editor por
@@ -643,8 +642,6 @@ las trampas, en `docs/LECCIONES.md`.
 - **Copiar de otro origen copia su publicada; si no tiene, su borrador** (sin preguntar): lo publicado es lo probado. El modal lo dice al elegir la fórmula.
 - **La activa no ofrece «Activar…»** (sin preguntar): lo pendiente en ella se publica desde su planilla o su tarjeta; activar de nuevo no cambiaría qué se
   cotiza.
-- **«Empezar desde una plantilla» va en la cabeza del editor y escribe en esa fórmula** (sin preguntar; `cotizacion_paquete_aplicar(…, p_formula_del_origen)`):
-  la plantilla reemplaza el borrador y la tarjeta de una fórmula, y la que se ve es la que cambia.
 - **Una archivada no se edita** (sin preguntar): su «⋯» ofrece sólo Renombrar y Copiar, y abierta por URL muestra la cabeza con el aviso y «Copiar», sin
   Planilla, Hoja ni Tarjeta. Para seguir con ella se copia.
 - **Archivar pide confirmar** (sin preguntar): no hay desarchivar. Eliminar también, y sólo se ofrece a la que nunca estuvo activa.
@@ -657,6 +654,7 @@ las trampas, en `docs/LECCIONES.md`.
   ningún texto. No hay editor en texto aparte (`?panel=editar-formula` responde 308 a la planilla). Una sola copia de trabajo, la de la sesión; las
   tarjetas de la publicada y del borrador no llevan «Editar». La sesión se vuelve a montar con «Recargar» o si la versión cambia por algo que no hizo
   ella (publicar, descartar, revertir), nunca al guardar.
+- **Un panel que ya no existe responde 308 desde el proxy, sin ese panel.** `?panel=editar-formula` (el Modo avanzado) y `?panel=plantillas-de-v1` («Empezar desde una plantilla») en planilla, hoja o tarjeta de una fórmula van a la misma parte con el resto de la consulta (`src/shared/lib/paneles-que-ya-no-existen.ts`); las rutas cortas y las URL viejas de Configuración › Cotización los quitan en su propio salto. Para empezar una fórmula está «+ Nueva fórmula»; lo creado con las plantillas (fórmulas, tarjetas y colores `v1_*`) se queda.
 - **Orden único** (sin preguntar): la planilla dibuja las filas en el orden de `definicion.nodos`, numeradas de 1 a n. Una banda es un tramo de filas
   seguidas con el mismo `grupo`, con su cabecera sin número (un grupo partido lleva una por tramo); las filas sin grupo no llevan cabecera. No hay
   seudobandas «Tipo de cambio», «Unidad de ejemplo» ni «Variante»: el tipo de la fila lo dice el color de su celda. Así «una fórmula sólo usa filas de
@@ -914,32 +912,6 @@ las trampas, en `docs/LECCIONES.md`.
   la de la empresa (por su ciudad, «Hora de La Paz») o la del patio, sólo si se conoce.
 - **«Compartir cotización…» lleva «…» y va primero y solo en el «⋯»** (abre algo encima, como las demás que abren un diálogo). La pestaña va en
   `?compartir=texto` y no en `?pestana=`, que es del resumen del listado. Un `?para=` que no es un guid ni se pide: el panel dice que no hay acceso.
-- **Las plantillas de V1 viven en el código, no en la base.** Son cuatro paquetes fijos (`entities/plantillas-de-v1/*.json`, del núcleo: los usan el área
-  `plantilla` y las pruebas), que sólo importa el servidor (`solo-del-servidor.test.ts`): el navegador manda la clave y la action toma el paquete del código.
-  Así una plantilla no es un dato que alguien edite o borre, la prueba SQL los carga como juego y los publica con los validadores de verdad, y no tocan la
-  semilla. Llevan **congeladas** en `params.tablas` las tablas que su fórmula lee (la depreciación de V1); no crean tablas de referencia.
-- **Aplicar una plantilla de V1 es una RPC invocadora con un ayudante definer.** `cotizacion_paquete_aplicar()` llama a las RPC de siempre
-  (`formula_guardar_borrador`, `plantilla_guardar_borrador`, `tono_crear`), que vuelven a pedir el permiso; lo que necesita privilegios (el candado del
-  catálogo de colores, que `authenticated` no puede tomar) va en `_paquete_colores_preparar()`, que comprueba el reuso y el tope bajo ese candado. El orden es
-  el de publicar (`formulas:` → `plantillas:` → `tonos`) y los borradores van primero: el permiso del origen y los PT409 salen antes de tocar el catálogo. La
-  publicada esperada va nula: el paquete no sale de la publicada, así que publicar otra versión mientras se elige no cambia lo que se crea.
-- **Los colores de una plantilla de V1 se llaman «V1 <nombre>» y su clave es `v1_<nombre>`.** El mismo hex lleva el mismo nombre en los cuatro paquetes (el
-  segundo reusa los del primero). Una clave que ya existe con otro hex no se pisa: va `v1_<paquete>_<nombre>`; si también choca, no se crea nada. La elección
-  es pura y en el servidor de Next (la base la vuelve a mirar y compara la clave que da `_tono_clave()`, que sumaría `_2` en silencio).
-- **Lo que una plantilla de V1 toma de V1 y lo que no.** Los modos: «Aduana» = la suma de los dólares (los dos buckets al oficial), «Paralelo» = la fórmula
-  (lo de afuera al paralelo y la aduana al oficial, ÷ paralelo) y «Unificado» = un solo dólar, el paralelo (`engineOfficialDollar` de V1); los dólares de
-  «Aduana» son los de V1, sus bolivianos van todos al oficial. Por defecto, Unificado en USA y China y Paralelo en Oficina y Compra dealer USA (el
-  `quote_exchange_mode_dealer` de V1 es `blue`). China no congela las comisiones por categoría: su fórmula de V1 no las lee (la comisión de logística es la
-  constante de 1.000) y sumarlas cambiaría sus totales. La `usa_moto` de V1 guarda porcentajes enteros (5 es el 5 %): se congela como factor (0,05). Compra
-  dealer USA cotiza como Auto gasolina o, con el interruptor, Híbrido / eléctrico (la variante única es el contenedor en par: Moto y USA → Chile no entran) y su
-  factor DP es una constante (no tiene vehículo del que leer el año). V1 suma las líneas a dólar entero: los paquetes redondean la nacionalización (la póliza en
-  China), que con los impuestos siempre lleva decimales, y no los fees ni la transferencia, que son el par porcentaje-monto de su celda (redondearlos pediría
-  otra celda por línea; con montos enteros la diferencia con V1 es de centavos). La
-  tarjeta no lleva «TOTAL BOLIVIANOS»: la forma 2 no tiene un monto en moneda local (con «Ver total Bs», el total lleva la segunda línea). La columna del
-  monto mide 140 px (la de V1, 110): el monto de V2 lleva «USD» y centavos y en 110 px se partía en dos renglones; la descripción cede esos 30 px.
-- **«Empezar desde una plantilla» es una acción de la fórmula, no de una pestaña.** Va en la cabeza del editor de una fórmula del origen, secundaria (cada pestaña ya tiene su
-  primaria) y en `?panel=plantillas-de-v1` de las tres. Un modal, no una página: es un clic y no se pierde la pestaña. La tarjeta de cada plantilla la
-  dibuja el lienzo de la pestaña Tarjeta con cifras de ejemplo (no una imagen del servidor: sus colores todavía no están en el catálogo).
 
 ### Tablas de referencia
 

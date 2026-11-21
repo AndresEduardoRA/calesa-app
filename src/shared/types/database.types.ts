@@ -9087,7 +9087,6 @@ export type Database = {
         Args: { p_tipo: Database['public']['Enums']['tipo_lote_papelera'] }
         Returns: undefined
       }
-      _paquete_colores_preparar: { Args: { p_crear: number; p_reusar: Json }; Returns: undefined }
       _personas_dominadas: { Args: { p_ids: string[] }; Returns: string[] }
       _plantilla_alto_de_texto: {
         Args: { p_ancho: number; p_renglones: number; p_tamano: number; p_texto: string }
@@ -10406,16 +10405,6 @@ export type Database = {
           p_actualizado_en_esperado: string
           p_cotizacion: string
           p_estado: Database['public']['Enums']['estado_cotizacion']
-        }
-        Returns: Json
-      }
-      cotizacion_paquete_aplicar: {
-        Args: {
-          p_formula_del_origen?: string
-          p_formula_esperada: string
-          p_origen: string
-          p_paquete: Json
-          p_plantilla_esperada: string
         }
         Returns: Json
       }
