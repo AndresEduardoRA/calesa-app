@@ -23,12 +23,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Sesión** — `Sesion` / `mi_sesion()` / `requerirSesion()`: la persona del request: estado de la cuenta, perfil, roles reales, permisos
   efectivos y preferencias.
 - **Estado de la cuenta** — `EstadoCuenta` (`activa` | `bloqueada` | `baja`): si puede operar; bloqueada o de baja no se queda adentro.
-- **Perfil** — `perfiles` / `/perfil`: lo que cada persona edita de sí misma: nombre, foto y preferencias.
+- **Perfil** — `perfiles` / `/perfil`: lo que cada persona edita de sí misma, en cinco tarjetas de ajustes: Tú (nombre y foto), Preferencias, Turnos de la web, Tu ficha en la web y Notificaciones.
 - **Preferencia** — `preferencias_usuario` / `Preferencias`: elección de interfaz por persona (densidad, tema), igual en todos sus dispositivos.
 - **Menú plegado** — `menu.plegado` / `Preferencias.menuPlegado`, `useMenuPlegado()`, `<LateralPlegable>` (`_shell/`): el menú lateral de escritorio reducido a una columna de sólo
   íconos, con su nombre en `title` y para el lector y el contador de Chat como punto. Se alterna con «Plegar menú» / «Desplegar menú» o `Ctrl/Cmd+B`. No: «colapsado», «mini», «compacto» (la densidad es otra cosa).
 - **Zona de quien mira** — `preferencias_usuario.zona_horaria` / `useRegional().zonaDeLaPersona`: en qué zona ve cada persona las fechas de
-  subasta (`/perfil` › «Zona horaria»); sin elegir, la de la empresa. Lo demás sigue en la zona de la empresa.
+  subasta (`/perfil` › Preferencias › «Zona horaria»); sin elegir, la de la empresa. Lo demás sigue en la zona de la empresa.
 - **Cuenta regresiva del cierre** — `cuentaDelCierre()` (`vehiculos/entities/cuenta-regresiva-del-cierre.ts`), `<CuentaRegresivaDelCierre>`: lo que le falta a una subasta
   viva para cerrar, contado cada segundo («Cierra en 2 d 04:12:33»; ámbar con menos de 24 h, roja con menos de 1 h; «Cerrando…», «Cerró hace 3 min», «Sin fecha de
   cierre»). La dibujan la tarjeta y la fila de la lista de vehículos en subasta y la ficha, con un solo temporizador por página. No es la **frase de subasta** de la ficha.
@@ -257,7 +257,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Visto** — `vistos` / `visto_registrar()`, `vistos_de()`, `ProveedorDeMarcasDeVisto`, `MarcasDeVistoDeLaPagina`: un registro que la persona abrió (ficha,
   resumen o panel) en _ese_ módulo (su contexto: abrir un vehículo en Vehículos no lo marca en Logística); su nombre va en peso normal; el de lo que aún no abrió (**no visto**, `MarcaDeVisto` `nuevo`) va en negrita, como un
   correo sin leer; sin marca (con «Vistos» apagado o antes de leer) queda en su peso de siempre. Por
-  persona; se recuerda 7, 30, 90 o 365 días (`/perfil` › «Vistos»).
+  persona; se recuerda 7, 30, 90 o 365 días (`/perfil` › Preferencias › «Marcar lo que abrí»).
 - **Último visto** — `vistos_de().ultimo` / `<SufijoDeVisto>`: el registro más reciente del módulo, de cualquiera de sus tipos (en la agenda, un evento o una
   tarea: uno solo); borde de acento y un ojo chico junto al nombre (tooltip y texto para el lector «Último visto»; sin texto a la vista), en peso normal como lo visto.
 - **Últimos abiertos** — `visitados` / `visita_registrar()`, `visitados_usuario_visto_idx`: lo último que cada persona abrió (lead, vehículo o

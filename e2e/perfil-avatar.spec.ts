@@ -9,6 +9,7 @@ import {
   entorno,
 } from './soporte/base'
 import { ingresar } from './soporte/pasos'
+import { editarTarjeta } from './soporte/empresa'
 import { capturar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
 
@@ -91,24 +92,25 @@ test('una foto enorme se guarda en 512 y en 96 px; un archivo roto lo dice y no 
 }, info) => {
   await entrar(page)
   await page.goto('/perfil')
+  const tu = await editarTarjeta(page, 'Tú')
   // Un archivo que no es una imagen.
-  await page.getByLabel('Elegir una foto de perfil').setInputFiles({
+  await tu.getByLabel('Elegir una foto de perfil').setInputFiles({
     name: 'foto.png',
     mimeType: 'image/png',
     buffer: Buffer.from('esto no es una imagen'),
   })
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await tu.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(
-    page.getByText('No se pudo leer esa imagen. Prueba con otra (JPG, PNG o WebP).'),
+    tu.getByText('No se pudo leer esa imagen. Prueba con otra (JPG, PNG o WebP).'),
   ).toBeVisible()
   expect(rutasDe(duena)[0]).toBe('')
   // Una de 20 MP.
-  await page.getByLabel('Elegir una foto de perfil').setInputFiles({
+  await tu.getByLabel('Elegir una foto de perfil').setInputFiles({
     name: 'enorme.png',
     mimeType: 'image/png',
     buffer: await imagen(page, 5000, 4000, 'image/png'),
   })
-  await page.getByRole('button', { name: 'Guardar' }).click()
+  await tu.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Perfil guardado')).toBeVisible({ timeout: 30_000 })
   const [grande, chica] = rutasDe(duena)
   expect(grande).not.toBe('')

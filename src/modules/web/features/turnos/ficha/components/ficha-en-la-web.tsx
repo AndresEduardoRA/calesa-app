@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
-import { Bloque } from '@/shared/ui/bloque'
+import { Badge } from '@/shared/ui/badge'
+import { TarjetaEditable, ValoresDeLaTarjeta } from '@/shared/ui/tarjetas-de-ajustes'
+import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
+import { usePanelPorUrl } from '@/shared/ui/use-panel-por-url'
 import type { MiFichaEnLaWeb } from '../../../../entities/turnos/ficha'
-import { FormularioDeFichaDiferido } from './diferidos'
+import { TEXTO_VER_COMO } from '../../../../entities/turnos/rueda'
+import { ModalDeFichaDiferido } from './diferidos'
 
-// «Tu ficha en la web» en Mi perfil (8.05-2): cómo te presenta la web y cómo te escriben los clientes. Nace plegada y su formulario se monta (y su código se pide) la
-// primera vez que se abre: así no pesa en el documento de `/perfil` de quien no la toca. El formulario lleva de `key` la versión del perfil: lo guardado (aquí, en «Tus datos»
-// o por quien administra el equipo) lo vuelve a montar desde la base sin cerrar el bloque.
+// «Tu ficha en la web» en Mi perfil: lo guardado a la vista (con «Se usa en lo que compartes»: la tarjeta de la cotización lleva estos datos) y «Editar» abre
+// su modal (`?panel=ficha`). Mirando otro rol («Ver como») «Editar» queda apagado: escribiría en la cuenta real (D12).
 export function FichaEnLaWeb({
   ficha,
   miraOtroRol,
@@ -15,23 +17,42 @@ export function FichaEnLaWeb({
   ficha: MiFichaEnLaWeb
   miraOtroRol: boolean
 }) {
-  const [abierta, setAbierta] = useState(false)
+  const { abierto, abrir, cerrar } = usePanelPorUrl('ficha')
+  const montar = useAbiertoAlgunaVez(abierto)
   return (
-    <Bloque
-      titulo="Tu ficha en la web"
-      descripcion="Cómo te presenta la web y cómo te escriben los clientes."
-      plegado
-      onAbrir={() => {
-        setAbierta(true)
-      }}
-    >
-      {abierta ? (
-        <FormularioDeFichaDiferido
-          key={ficha.actualizadoEn}
-          ficha={ficha}
-          miraOtroRol={miraOtroRol}
+    <>
+      <TarjetaEditable
+        titulo="Tu ficha en la web"
+        panel="ficha"
+        motivo={miraOtroRol ? TEXTO_VER_COMO : null}
+        abrir={abrir}
+        estado={
+          <Badge variant={ficha.publicoWeb ? 'default' : 'secondary'}>
+            {ficha.publicoWeb ? 'Visible' : 'Oculta'}
+          </Badge>
+        }
+      >
+        <ValoresDeLaTarjeta
+          filas={[
+            { etiqueta: 'WhatsApp', valor: ficha.whatsapp },
+            { etiqueta: 'Cargo', valor: ficha.cargo },
+            { etiqueta: 'Identificador', valor: ficha.handle },
+            {
+              etiqueta: 'Especialidades',
+              valor: ficha.especialidades.length === 0 ? null : ficha.especialidades.join(', '),
+            },
+          ]}
         />
-      ) : null}
-    </Bloque>
+        {ficha.presentacion ? (
+          <p className="line-clamp-3 text-(length:--text-sm) text-(--color-ink-soft)">
+            {ficha.presentacion}
+          </p>
+        ) : null}
+        <p className="text-(length:--text-xs) text-(--color-ink-faint)">
+          Se usa en lo que compartes.
+        </p>
+      </TarjetaEditable>
+      {montar ? <ModalDeFichaDiferido ficha={ficha} abierto={abierto} alCerrar={cerrar} /> : null}
+    </>
   )
 }

@@ -145,7 +145,7 @@ test('una ruta protegida manda al ingreso y después vuelve a donde iba', async 
   await ingresar(page, email, CLAVE)
   await expect(page).toHaveURL('/perfil?desde=e2e')
   await expect(page.getByRole('heading', { name: 'Mi perfil' })).toBeVisible()
-  await expect(page.getByLabel('Nombre y apellido')).toHaveValue(NOMBRE)
+  await expect(page.getByRole('region', { name: 'Tú', exact: true })).toContainText(NOMBRE)
 
   // Con sesión, el ingreso ya no se muestra: devuelve al inicio.
   await page.goto('/ingreso')
