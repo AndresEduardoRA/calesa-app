@@ -18,8 +18,11 @@ export type HuecosDelFlujo = {
   franjaDeRevisar?: ComponentType<DelFlujo>
   // Envuelve el flujo abierto: ordenar las fases arrastrando o con «Mover antes/después» (`ContextoDeOrdenDeFases`).
   ordenDeFases?: ComponentType<DelFlujoConHijos>
-  // En la barra del flujo («Nueva fase» y sus modales, 5.04).
+  // En la barra del flujo («Nueva fase» y sus modales, 5.04; también el de «Empezar con las fases de…»).
   accionesDeLaLista?: ComponentType<DelFlujo>
+  // En lugar del vacío de un flujo sin fases: «Empezar con las fases de…» y «Empezar en blanco». Sin él, el vacío de siempre. De dónde copiar lo da
+  // `useFlujosParaCopiar()`.
+  sinFases?: ComponentType<DelFlujo & { nombreDelFlujo: string }>
   // El «⋯» de cada fila de la lista (5.04).
   accionesDeFila?: ComponentType<DeUnaFase>
   // Bajo el nombre de cada fila: las salidas como chips (5.06).

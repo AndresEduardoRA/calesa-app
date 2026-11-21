@@ -637,8 +637,9 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   completa), «Cotizaciones de este vehículo» (11 por página, de a 10 hasta 100) y «Actividad reciente» (`actividad_listar` por registro, ≤ 6 filas por
   su índice) al acercarse, y el layout activo al abrir la ficha completa. Sin caché de
   cliente: `router.refresh()` (también tras aprobar desde el bloque) y `revalidarVinculo()` vuelven a dibujar todos los bloques.
-- El flujo (la pestaña «Flujo» de un origen, `/configuracion/origenes/<id>/flujo`, 427,6 KB en frío en 30 chunks, y
-  `/configuracion/repuestos/flujo`, 406,3 en 27), sin tope propio. El diagrama (`@xyflow/react` y lo suyo) llega
+- El flujo (la pestaña «Flujo» de un origen, `/configuracion/origenes/<id>/flujo`, 431,8 KB en frío en 31 chunks, y
+  `/configuracion/repuestos/flujo`, 410,4 en 28), sin tope propio. El vacío de un flujo sin fases («Empezar con las fases de…») viaja con la
+  página; su modal, con `diferido()`. De dónde copiar se lee sólo con el flujo vacío: una consulta por `fases` con tope de flujos. El diagrama (`@xyflow/react` y lo suyo) llega
   al dibujarse, con `diferido()`: un chunk de 62,6 KB gz (194,8 crudo) y 2,0 KB gz de CSS; ninguna otra ruta ni el marco lo nombran
   (`scripts/guardas/xyflow-diferido.test.ts`). Una sola lectura del flujo (los topes de `leerFlujoParaConfigurar`); hasta 200 cajas y 500
   flechas, con `onlyRenderVisibleElements`.

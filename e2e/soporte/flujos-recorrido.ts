@@ -66,7 +66,8 @@ export async function crearFase(
   nombre: string,
   tipo: 'Intermedia' | 'Inicial' | 'Final',
 ): Promise<void> {
-  await page.getByRole('button', { name: 'Nueva fase' }).click()
+  // Sin fases, el vacío ofrece «Empezar en blanco» (si hay otro origen con fases de donde copiar) en lugar de «Nueva fase».
+  await page.getByRole('button', { name: /^(Nueva fase|Empezar en blanco)$/ }).click()
   const modal = page.getByRole('dialog', { name: 'Nueva fase' })
   await modal.getByLabel('Nombre').fill(nombre)
   await modal.getByLabel(tipo, { exact: false }).check()

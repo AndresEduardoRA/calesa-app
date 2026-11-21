@@ -11,3 +11,8 @@ export const ModalDeNuevaFaseDiferido = diferido(() =>
 export const ConfirmarEliminarFaseDiferido = diferido(() =>
   import('./confirmar-eliminar-fase').then((modulo) => modulo.ConfirmarEliminarFase),
 )
+
+// «Empezar con las fases de…» se pide al abrirse (`useAbiertoAlgunaVez()`): un flujo con fases nunca lo carga.
+export const ModalDeCopiarFasesDiferido = diferido(() =>
+  import('./modal-de-copiar-fases').then((modulo) => modulo.ModalDeCopiarFases),
+)

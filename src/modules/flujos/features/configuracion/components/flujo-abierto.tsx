@@ -4,8 +4,10 @@ import { Fragment, useMemo, type ReactNode } from 'react'
 import { useAbiertoAlgunaVez } from '@/shared/ui/use-abierto-alguna-vez'
 import type { FlujoParaConfigurar } from '../../../entities/flujo'
 import type { RolLeido } from '../../../entities/lectura-de-fase'
+import type { FlujoParaCopiar } from '../../../entities/selector-de-flujos'
 import { SECCIONES_DEL_PANEL } from '../../../entities/panel-del-flujo'
 import { useContenidoDelPanel } from '../hooks/use-contenido-del-panel'
+import { ContextoDeFlujosParaCopiar } from '../hooks/use-flujos-para-copiar'
 import { ContextoDeSeccionesDelPanel } from '../hooks/use-panel-del-flujo'
 import { BarraDelFlujo } from './barra-del-flujo'
 import { PanelDelFlujoDiferido } from './diferidos'
@@ -21,28 +23,42 @@ type Props = {
   secciones: SeccionesDelPanel
 }
 
+type PropsDelFlujoAbierto = Props & {
+  // De dónde copiar las fases si el flujo está vacío (`ContextoDeFlujosParaCopiar`); en los demás, vacío.
+  desde: readonly FlujoParaCopiar[]
+}
+
 const SinOrden = ({ children }: { flujo: FlujoParaConfigurar; children: ReactNode }) => (
   <Fragment>{children}</Fragment>
 )
 
 // El flujo abierto: su proveedor de versión, el orden de las fases (hueco del área `fases`), la barra, las fases (diagrama o lista) y, montado la primera vez
 // que se abre, el panel al costado con la fase de `?fase=` o la sección de `?seccion=`.
-export function FlujoAbierto({ flujo, nombreDelFlujo, roles, huecos, secciones }: Props) {
+export function FlujoAbierto({
+  flujo,
+  nombreDelFlujo,
+  roles,
+  huecos,
+  secciones,
+  desde,
+}: PropsDelFlujoAbierto) {
   const disponibles = useMemo(
     () => SECCIONES_DEL_PANEL.filter((clave) => secciones[clave] !== undefined),
     [secciones],
   )
   return (
     <ContextoDeSeccionesDelPanel value={disponibles}>
-      <ProveedorDelFlujo flujoId={flujo.id} version={flujo.version}>
-        <Abierto
-          flujo={flujo}
-          nombreDelFlujo={nombreDelFlujo}
-          roles={roles}
-          huecos={huecos}
-          secciones={secciones}
-        />
-      </ProveedorDelFlujo>
+      <ContextoDeFlujosParaCopiar value={desde}>
+        <ProveedorDelFlujo flujoId={flujo.id} version={flujo.version}>
+          <Abierto
+            flujo={flujo}
+            nombreDelFlujo={nombreDelFlujo}
+            roles={roles}
+            huecos={huecos}
+            secciones={secciones}
+          />
+        </ProveedorDelFlujo>
+      </ContextoDeFlujosParaCopiar>
     </ContextoDeSeccionesDelPanel>
   )
 }

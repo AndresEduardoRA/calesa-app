@@ -10831,6 +10831,10 @@ export type Database = {
         Args: { p_actualizado_en_esperado: string; p_fase: string; p_roles: string[] }
         Returns: string
       }
+      flujo_copiar_fases: {
+        Args: { p_actualizado_en_esperado: string; p_desde: string; p_flujo: string }
+        Returns: Json
+      }
       flujo_de_fase: { Args: { p_fase: string }; Returns: string }
       flujo_fuera_de_regla: {
         Args: { p_flujo: string; p_tope?: number }

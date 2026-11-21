@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import type { FlujoConfigurable } from './flujo'
 import {
   armarSelector,
+  candidatosParaCopiar,
   entradaFija,
+  flujosParaCopiar,
   textoSinFlujo,
   type OrigenDelSelector,
 } from './selector-de-flujos'
@@ -90,5 +92,36 @@ describe('entradaFija', () => {
   it('el texto sin flujo nombra el origen o el de repuestos', () => {
     expect(textoSinFlujo({ origenId: SUBASTA.id })).toBe('Este origen todavía no tiene flujo.')
     expect(textoSinFlujo({ ambito: 'repuestos' })).toBe('Todavía no hay flujo de repuestos.')
+  })
+})
+
+describe('flujosParaCopiar', () => {
+  // Las entradas ya vienen filtradas por permisos: un origen que quien mira no configura no llega (AJENO no está en la lista de orígenes).
+  const entradas = armarSelector(
+    [flujoDe(1, SUBASTA), flujoDe(2, OFICINA), flujoDe(3, AJENO), flujoDe(0, null)],
+    [SUBASTA, OFICINA],
+  )
+  const conFases = new Set([guid(101), guid(102), guid(103), guid(100)])
+
+  it('ofrece los de vehículos con fases, menos el propio, en el orden de las entradas', () => {
+    expect(flujosParaCopiar(entradas, guid(102), conFases)).toEqual([
+      { flujoId: guid(101), origenId: SUBASTA.id, titulo: 'Subasta', color: '#111111' },
+    ])
+  })
+
+  it('deja fuera los que no tienen fases activas', () => {
+    expect(
+      flujosParaCopiar(entradas, guid(999), new Set([guid(102)])).map((f) => f.flujoId),
+    ).toEqual([guid(102)])
+  })
+
+  it('nunca ofrece el de repuestos ni un origen que quien mira no configura', () => {
+    const ids = flujosParaCopiar(entradas, guid(999), conFases).map((f) => f.flujoId)
+    expect(ids).not.toContain(guid(100))
+    expect(ids).not.toContain(guid(103))
+  })
+
+  it('pregunta las fases sólo de los de vehículos, menos el propio', () => {
+    expect(candidatosParaCopiar(entradas, guid(101))).toEqual([guid(102)])
   })
 })

@@ -16,3 +16,8 @@ export type LectorDeFlujo = (flujoId: string) => Promise<Resultado<FlujoParaConf
 export type LectorDeFlujosConfigurables = (
   permisos: Permisos,
 ) => Promise<Resultado<FlujoConfigurable[]>>
+
+// De estos flujos, cuáles tienen al menos una fase activa (para ofrecer copiarlos a un flujo vacío). Una sola lectura, acotada a `TOPE_DE_FLUJOS`.
+export type LectorDeFlujosConFases = (
+  ids: readonly string[],
+) => Promise<Resultado<ReadonlySet<string>>>

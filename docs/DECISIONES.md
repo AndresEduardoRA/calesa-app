@@ -1029,6 +1029,12 @@ las trampas, en `docs/LECCIONES.md`.
 - **Reglas.** Encender una fuera del catálogo del ámbito da 22023; apagarla se permite siempre. La action pregunta el impacto antes de escribir (`en_uso`); los nombres humanos viven en TS, la base da mensajes genéricos.
 - **La oferta de transporte es de `flujos`, sin PK** (unicidad por parciales; el INFO `no_primary_key` es esperado). Exige «transporte» encendida al guardar; apagarla no la borra.
 - **«Revisar» avisa y nunca frena.** Quien no configura recibe cero filas, no 42501; una invitación sin aceptar cuenta como persona activa.
+- **Copiar las fases sólo hacia un flujo vacío y entre vehículos** (`flujo_copiar_fases`): el destino sin ninguna fila en `fases` (tampoco
+  jubiladas), `flujos.configurar` en los dos orígenes y candados en orden de uuid (el origen `for share`). Se copia lo activo: las jubiladas y las
+  salidas hacia ellas no, sin decirlo; la marca de subasta hacia un origen que no es de subasta, las esperas que no caben y los tipos de
+  documento que ya existían con ese nombre (se reusan) sí se dicen (≤ 50). `bloqueante` va tal cual: el destino no tiene unidades. La oferta de
+  transporte no se copia (es del flujo y de logística). El modal vive en la URL y lo monta la barra, que sigue montada cuando el flujo se llena y
+  la página se relee; el 42501 del origen lleva hint `desde`.
 - **Crear fase no es idempotente por id** (repetir da 23505): la interfaz usa un id por apertura y relee antes de reintentar. Una transición sí toma «ya existe» como hecho.
 - **Transiciones.** No cambian origen ni destino (cambiar el destino es eliminar y crear); poner roles no exige dominancia (no otorga nada); lista vacía hereda la de la fase destino.
 - **`flujos.activo` no se edita ni se quita**: nadie lo lee ni lo escribe.

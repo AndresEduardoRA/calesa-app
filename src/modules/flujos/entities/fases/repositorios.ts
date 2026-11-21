@@ -1,5 +1,6 @@
 // Lo que las fases necesitan de afuera, dicho como interfaces. La implementación (Supabase) vive en `infra/fases/` y la une `areas/fases/composicion.ts`.
 import type { ErrorApp, Resultado } from '@/shared/lib/errores'
+import type { RespuestaDeCopiarFases } from './copiar-fases'
 import type { CambiosDeFase } from './formulario-de-fase'
 import type { RespuestaDeEliminarFase, RespuestaDeFase } from './respuestas'
 import type { CampoDeFase } from './reglas-de-fase'
@@ -41,3 +42,10 @@ export type RepositorioDeFases = {
     actualizadoEnEsperado: string
   }) => Promise<ResultadoDeFase<RespuestaDeFase>>
 }
+
+// `flujo_copiar_fases`: copia las fases activas de `desdeFlujoId` al flujo `flujoId`, que no tiene ninguna. Todo o nada; el rechazo ya trae su frase.
+export type CopiadorDeFases = (pedido: {
+  flujoId: string
+  actualizadoEnEsperado: string
+  desdeFlujoId: string
+}) => Promise<Resultado<RespuestaDeCopiarFases>>

@@ -80,6 +80,11 @@ export const MODALES: Record<string, RegistroDeModal> = {
     sinFormulario:
       '«Preferencias» del perfil: cada opción se aplica y se guarda al elegirla; no hay nada tipeado que se pierda al cerrar («Listo» sólo cierra)',
   },
+  // --- flujos
+  'src/modules/flujos/features/fases/components/resultado-de-la-copia.tsx': {
+    sinFormulario:
+      'lo que no se copió tras «Empezar con las fases de…»: de sólo lectura, la copia ya se hizo («Listo» sólo cierra)',
+  },
   // --- notificaciones
   'src/modules/notificaciones/features/push/components/modal-de-notificaciones.tsx': {
     sinFormulario:
