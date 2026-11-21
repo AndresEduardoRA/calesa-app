@@ -41,7 +41,7 @@ export function ListaDelRol(props: Props) {
       </div>
       {grupos.map((grupo) => (
         <section key={grupo.modulo} aria-label={grupo.titulo} className="min-w-0">
-          <h2 className="bg-(--color-paper-dim) px-4 py-2 text-(length:--text-xs) font-semibold tracking-wide text-(--color-ink-soft)">
+          <h2 className="sticky top-[calc(var(--topbar)+var(--alto-barra-rol,0px))] z-10 bg-(--color-paper-dim) px-4 py-2 text-(length:--text-xs) font-semibold tracking-wide text-(--color-ink-soft)">
             {grupo.titulo}
           </h2>
           <ul className="grid grid-cols-[minmax(0,1fr)]">

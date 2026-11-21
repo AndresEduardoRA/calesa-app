@@ -65,7 +65,7 @@ export function MatrizDeRoles({ roles, grupos, origenes, misPermisos, puedeGesti
         valor={aLaVista.id}
         alCambiar={(rol) => void setParametros({ rol })}
       />
-      <div className="overflow-hidden rounded-(--radius-card) border border-(--color-line) bg-(--color-surface)">
+      <div className="min-w-0 overflow-clip rounded-(--radius-card) border border-(--color-line) bg-(--color-surface)">
         {enTabla || !columnaALaVista ? (
           <TablaDeRoles
             grupos={grupos}
