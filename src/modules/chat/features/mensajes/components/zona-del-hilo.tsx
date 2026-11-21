@@ -26,7 +26,8 @@ type Props = {
 }
 
 // El lado derecho de `/chat`: el encabezado y el hilo de la conversación abierta. El `key` de quien lo usa lo reinicia al cambiar de
-// conversación y el foco pasa al encabezado.
+// conversación y el foco pasa al encabezado, salvo que ya esté dentro del hilo: el efecto corre al hidratar, y quien entró pudo haber
+// empezado a escribir en el campo antes.
 export function ZonaDelHilo({
   idSolicitado,
   lectura,
@@ -37,10 +38,11 @@ export function ZonaDelHilo({
   puedePublicar,
 }: Props) {
   const router = useRouter()
+  const seccion = useRef<HTMLElement>(null)
   const encabezado = useRef<HTMLHeadingElement>(null)
   const hayHilo = lectura?.ok === true && lectura.data !== null
   useEffect(() => {
-    if (hayHilo) {
+    if (hayHilo && !seccion.current?.contains(document.activeElement)) {
       encabezado.current?.focus()
     }
   }, [hayHilo])
@@ -68,7 +70,11 @@ export function ZonaDelHilo({
     return <EstadoSinConversacion />
   }
   return (
-    <section aria-labelledby="titulo-del-hilo" className="flex min-h-0 flex-1 flex-col">
+    <section
+      ref={seccion}
+      aria-labelledby="titulo-del-hilo"
+      className="flex min-h-0 flex-1 flex-col"
+    >
       <header className="flex items-center gap-2 border-b border-(--color-line) px-3 py-3">
         <Link
           href="/chat"

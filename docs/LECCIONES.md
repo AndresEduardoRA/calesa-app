@@ -208,6 +208,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   destino: al cerrarse, el menú le devuelve el foco a su botón y pisa el salto.
 - Un título del servidor al que salta un ancla (`#…` con el foco) no se le pasa a una isla diferida para que lo dibuje: al cambiar de árbol se vuelve a
   montar y pierde el foco. Se queda en el servidor con una ranura vacía al lado y la isla pone lo suyo ahí con `createPortal`.
+- Un foco que se da al montar (el encabezado de la conversación abierta) no se lo quita a lo que ya está enfocado dentro de su zona: el efecto
+  corre al hidratar, y quien entró pudo haber empezado a escribir antes en el campo (`ZonaDelHilo`).
 - Una barra pegada abajo que aparece con la primera tecla (`sticky bottom-0`) tapa el campo donde se escribe si estaba en el borde de la pantalla: al
   aparecer, desplaza lo justo para dejarlo a la vista (`BarraDeCambiosSinGuardar`).
 - Un submenú de un menú (`DropdownMenuSubTrigger`) que se abre al pasar el puntero se vuelve a cerrar con el clic que le sigue: ponle `openOnHover={false}` y que lo abran el clic, el toque o el teclado.
