@@ -3,8 +3,8 @@ import { Suspense } from 'react'
 import { SeccionDeLasTablas } from '@/modules/cotizaciones/pantallas/tablas'
 import { unParametro } from '@/shared/lib/rutas'
 import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
-import { abrirOrigen } from '../abrir-origen'
-import { NoSeAbre } from '../no-se-abre'
+import { abrirOrigen } from '../../abrir-origen'
+import { NoSeAbre } from '../../no-se-abre'
 
 export const metadata: Metadata = { title: 'Tablas del origen' }
 

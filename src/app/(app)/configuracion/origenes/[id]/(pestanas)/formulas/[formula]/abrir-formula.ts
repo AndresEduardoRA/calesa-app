@@ -7,7 +7,7 @@ import {
   type FormulaDelOrigen,
 } from '@/modules/cotizaciones'
 import { datosO } from '@/shared/lib/errores'
-import { abrirOrigen, type OrigenAbierto } from '../../abrir-origen'
+import { abrirOrigen, type OrigenAbierto } from '../../../abrir-origen'
 
 export type FormulaAbiertaEnLaRuta =
   | Exclude<OrigenAbierto, { tipo: 'abierto' }>

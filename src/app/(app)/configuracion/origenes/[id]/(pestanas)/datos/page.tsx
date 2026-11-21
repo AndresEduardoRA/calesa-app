@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { DatosDelOrigen } from '@/modules/origenes/pantallas/origen-datos'
-import { abrirOrigen } from '../abrir-origen'
-import { NoSeAbre } from '../no-se-abre'
+import { abrirOrigen } from '../../abrir-origen'
+import { NoSeAbre } from '../../no-se-abre'
 
 export const metadata: Metadata = { title: 'Datos del origen' }
 

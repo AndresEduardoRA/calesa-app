@@ -4,8 +4,8 @@ import { leerOrigenes } from '@/modules/origenes'
 import { SeccionDeLasFormulas } from '@/modules/cotizaciones/pantallas/formulas-del-origen'
 import { datosO } from '@/shared/lib/errores'
 import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
-import { abrirOrigen } from '../abrir-origen'
-import { NoSeAbre } from '../no-se-abre'
+import { abrirOrigen } from '../../abrir-origen'
+import { NoSeAbre } from '../../no-se-abre'
 
 export const metadata: Metadata = { title: 'Fórmulas del origen' }
 

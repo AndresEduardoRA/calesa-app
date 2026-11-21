@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { unParametro } from '@/shared/lib/rutas'
-import { EditorDelFlujo } from '../../../_flujo/editor-del-flujo'
-import { abrirOrigen } from '../abrir-origen'
-import { NoSeAbre } from '../no-se-abre'
+import { EditorDelFlujo } from '../../../../_flujo/editor-del-flujo'
+import { abrirOrigen } from '../../abrir-origen'
+import { NoSeAbre } from '../../no-se-abre'
 
 export const metadata: Metadata = { title: 'Flujo del origen' }
 

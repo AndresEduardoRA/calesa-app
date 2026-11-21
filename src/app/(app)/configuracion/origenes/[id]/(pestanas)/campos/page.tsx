@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { leerDatosNuevosDeApibara, leerLayout } from '@/modules/origenes'
 import { DatosNuevosDeApibara, EditorDeCampos } from '@/modules/origenes/pantallas/origen-campos'
 import { datosO } from '@/shared/lib/errores'
-import { abrirOrigen } from '../abrir-origen'
-import { NoSeAbre } from '../no-se-abre'
+import { abrirOrigen } from '../../abrir-origen'
+import { NoSeAbre } from '../../no-se-abre'
 
 export const metadata: Metadata = { title: 'Campos del origen' }
 

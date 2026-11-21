@@ -19,7 +19,7 @@ import {
   tituloDeLaTarjeta,
   vehiculoDe,
   vehiculoDeLaTarjeta,
-} from '../../../../../../cotizaciones/datos-de-la-tarjeta'
+} from '../../../../../../../cotizaciones/datos-de-la-tarjeta'
 
 const NO_SE_LEYO: ReferenciaDeLaTarjeta = { estado: 'no_se_leyo' }
 

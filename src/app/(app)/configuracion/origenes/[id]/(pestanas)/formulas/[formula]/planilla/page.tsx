@@ -6,7 +6,7 @@ import { SeccionDeLaFormula } from '@/modules/cotizaciones/pantallas/formula'
 import { TarjetaEnVivoDiferida } from '@/modules/cotizaciones/pantallas/tarjeta-formula'
 import { puede } from '@/shared/lib/permisos'
 import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
-import { NoSeAbre } from '../../../no-se-abre'
+import { NoSeAbre } from '../../../../no-se-abre'
 import { abrirFormula } from '../abrir-formula'
 
 export const metadata: Metadata = { title: 'Planilla de la fórmula' }

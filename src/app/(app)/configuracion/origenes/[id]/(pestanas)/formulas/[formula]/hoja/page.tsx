@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { SeccionDelDiseno } from '@/modules/cotizaciones/pantallas/diseno'
 import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
-import { NoSeAbre } from '../../../no-se-abre'
+import { NoSeAbre } from '../../../../no-se-abre'
 import { abrirFormula } from '../abrir-formula'
 
 export const metadata: Metadata = { title: 'Hoja de la fórmula' }

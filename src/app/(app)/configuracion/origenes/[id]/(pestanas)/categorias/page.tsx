@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import { leerLayout } from '@/modules/origenes'
 import { ArbolDeCategorias } from '@/modules/origenes/pantallas/origen-categorias'
 import { datosO } from '@/shared/lib/errores'
-import { abrirOrigen } from '../abrir-origen'
-import { NoSeAbre } from '../no-se-abre'
+import { abrirOrigen } from '../../abrir-origen'
+import { NoSeAbre } from '../../no-se-abre'
 
 export const metadata: Metadata = { title: 'Categorías del origen' }
 

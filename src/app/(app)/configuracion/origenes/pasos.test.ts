@@ -1,19 +1,23 @@
-import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { PasoParaCotizar } from '@/modules/origenes'
 import type { Permisos } from '@/shared/lib/permisos'
+import { existeLaRuta } from './existe-la-ruta'
 import { DESTINOS_DE_PASO, conDestino } from './pasos'
 
 const APP = path.join(process.cwd(), 'src/app/(app)')
 const ORIGEN = '00000000-0000-4000-8000-000000000001'
 const OTRO = '00000000-0000-4000-8000-000000000002'
 
-// Una ruta existe si tiene su `page.tsx` o su `route.ts` (las raíces que redirigen).
-const existe = (ruta: string) => {
-  const carpeta = path.join(APP, ruta.split('?')[0] ?? '').replace(ORIGEN, '[id]')
-  return existsSync(path.join(carpeta, 'page.tsx')) || existsSync(path.join(carpeta, 'route.ts'))
-}
+// Una ruta existe si tiene su `page.tsx` o su `route.ts` (las raíces que redirigen), también dentro de un grupo de rutas.
+const existe = (ruta: string) =>
+  existeLaRuta(
+    APP,
+    (ruta.split('?')[0] ?? '')
+      .split('/')
+      .filter(Boolean)
+      .map((segmento) => (segmento === ORIGEN ? '[id]' : segmento)),
+  )
 
 const paso = (clave: PasoParaCotizar['clave'], estado: PasoParaCotizar['estado']) =>
   ({ clave, titulo: clave, estado, frase: 'x' }) satisfies PasoParaCotizar
