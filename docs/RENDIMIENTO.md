@@ -627,7 +627,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 501,9 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
   «Cotizaciones de este vehículo» y «Actividad reciente» (las cáscaras de sus islas), la ficha completa (`?ver=ficha`, con `useAbiertoAlgunaVez`), la imagen de la aprobada y
   «Compartir» van con `diferido()`; la tira es la del visor; «Vitrina» es de cliente y su vista previa ya viajaba con el panel. El documento de la ficha
-  aporta 58,3 KB sobre `/perfil` con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 61;
+  aporta 69,3 KB sobre `/perfil` (el perfil en tarjetas pesa unos 11 KB menos) con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 73;
   `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Lecturas por pedido, tras su `<Suspense>` y en paralelo: `vehiculo_relacionados` (≤ 9 filas), la
   subasta y sus ajustes, la aprobada (`cotizaciones_de_este_vehiculo` con `TAMANO_DE_LA_APROBADA`: la fijada por `cotizaciones_aprobadas_pkey` y ≤ 2
   filas por `cotizaciones_vehiculo_creado_idx`), los datos clave (`leerDatosClave`, 1 o 2 lecturas por PK; al documento viajan sólo sus ≤ 4 campos), la
