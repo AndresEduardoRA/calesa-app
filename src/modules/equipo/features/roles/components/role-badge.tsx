@@ -21,7 +21,9 @@ export function RoleBadge({ rol, className }: Props) {
         className="size-2 shrink-0 rounded-full"
         style={{ backgroundColor: rol.color ?? 'var(--color-ink-faint)' }}
       />
-      <span className="truncate">{rol.nombre}</span>
+      <span className="truncate" title={rol.nombre}>
+        {rol.nombre}
+      </span>
     </span>
   )
 }

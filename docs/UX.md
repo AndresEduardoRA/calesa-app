@@ -642,7 +642,9 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   resuelven en el servidor («jose» encuentra «José»); dibuja las 100 primeras por nombre y lo dice al pie; la persona se gestiona desde su
   «⋯», sin resumen. `?panel=invitar`; `?persona=`; `?baja=`.
 - **Roles** — `/configuracion/roles` (`equipo.roles.*`): matriz roles × permisos por módulo; desde 768 px la columna «Permiso» queda pegada
-  a la izquierda; cada celda guarda sola. En móvil, un rol a la vez (`?rol=`) y como lista (permiso, explicación y control debajo).
+  a la izquierda y la fila con los nombres de los roles arriba (la tarjeta se desplaza por dentro), con el título del módulo pegado debajo; cada
+  celda guarda sola. En móvil, un rol a la vez (`?rol=`) y como lista (permiso, explicación y control debajo): la barra «Rol a la vista» queda
+  pegada bajo la barra superior y el título del módulo en curso, debajo de ella.
   `?panel=nuevo-rol`, `?eliminar=`.
 - **Datos** — `/datos` (todos: «Mis leads»; todo: `datos.exportar.todo`): `?seccion=exportar|importar`, con la barra siempre; sin permiso
   para importar nada (`leads.crear`, `datos.importar.todo` o `vehiculos.crear` en algún origen), «Importar» apagada con su motivo y
