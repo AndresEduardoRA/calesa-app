@@ -18,6 +18,8 @@ export type PedidoDeGuardado = {
   // El título de la cotización (T307): el texto sólo si es manual (`tituloParaGuardar()`); automático, la base pone el del vehículo. Sin vehículo, la base lo exige.
   titulo: string | null
   tituloManual: boolean
+  // La cotización privada (glosario): sólo la ven quien la crea y quien tiene `cotizaciones.privadas.ver` del origen. Sin el campo (un pendiente de antes), pública.
+  privada?: boolean
 }
 
 export function argumentosDeCrear(p: PedidoDeGuardado) {
@@ -35,5 +37,6 @@ export function argumentosDeCrear(p: PedidoDeGuardado) {
     p_con_la_abierta: p.conLaAbierta,
     ...(p.titulo === null ? {} : { p_titulo: p.titulo }),
     p_titulo_manual: p.tituloManual,
+    ...(p.privada === true ? { p_privada: true } : {}),
   }
 }

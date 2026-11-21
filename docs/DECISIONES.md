@@ -967,6 +967,42 @@ las trampas, en `docs/LECCIONES.md`.
 - **Dónde aprueba quien mira lo manda el servidor.** `aprobarEn` (`origenesCon(permisos, 'cotizaciones.aprobar')`), no los permisos: con «Ver como» respeta el
   rol elegido y la base vuelve a decidir al aprobar. El motivo dice primero el permiso y después la inválida, en el orden de la base.
 
+### Cotizaciones privadas
+
+- **La marca en la fila, la regla en la base.** `cotizaciones.privada` y una condición más en la policy «cotizaciones: leer», en `puede_cotizacion()` y en las
+  copias de la policy de las funciones definer (los títulos de la búsqueda, el buscador, los relacionados, la actividad): la privada ajena no existe para
+  ninguna lectura, ni como «oculta» en los relacionados. Las lecturas invocadoras no cambian de rutas: la RLS la descarta sobre la fila que cada ruta ya leyó.
+  La pantalla nunca decide quién la ve; con «Ver como», decide la persona real.
+- **Sólo quien la creó la cambia, por RPC con la versión** (`cotizacion_privada_cambiar()`, revisión `{privada: {de, a}}`). Las hermanas comparten la marca;
+  cotizar encima la hereda (quien cotiza encima es la autora y puede hacerla pública); la baja con traspaso de cartera la conserva.
+- **Una final o la aprobada nunca son privadas.** Marcar final o aprobar la hacen pública en el mismo paso: aprobar pide `p_hacerla_publica` (sin él, 22023 con
+  `hint privada`) para que ninguna pantalla la publique sin decirlo, y la pantalla pregunta antes. «Deshacer» de aprobar no la vuelve privada. Crear una final
+  privada es 22023. La aprobada automática se elige sólo entre las públicas: un vehículo con sólo privadas no tiene aprobada.
+- **Quien aprueba o marca final la hace pública aunque no la haya creado.** Aprobar y marcar final son de quien tiene ese permiso en el origen (y ve la
+  privada); la pregunta lo dice antes. Lo único reservado a quien la creó es hacerla privada o pública por sí sola.
+- **Donde una privada ajena frena algo, se sabe que existe y nada más.** Marcar o crear una final pide poder mandar a la papelera todas las preventas vivas del
+  vehículo: una privada que quien marca no ve lo frena con el 42501 de siempre («Este vehículo tiene preventas que no puedes mandar a la papelera»), como
+  frena una ajena a quien ve «propios», sin número, título ni monto. La marca quien ve las privadas del origen, o la autora la hace pública antes. Igual la
+  cadena de versiones (`_cotizacion_cadena`): la de encima, privada y ajena, sale como «oculta».
+- **La papelera no nombra una privada ajena, pero el lote se restaura y se purga entero.** El listado, el lote, sus conteos y `papelera_listar` la descartan
+  como la policy «leer»; un lote con sólo privadas ajenas no aparece. Restaurar o purgar ese lote la incluye (es todo o nada, como siempre) y lo que
+  devuelve no la nombra.
+- **Una privada no mueve `cotizado_en`** (delataría que se cotizó el vehículo); hacerla pública sí. El tablero y el resumen de orígenes la siguen contando:
+  son conteos sin ids ni montos.
+- **El interruptor vive en la URL** (`?privada=si`, `replace`): la hoja nueva se vuelve a montar al elegir el cliente o el vehículo y un estado local se
+  perdería; se borra al guardar. El pedido manda `privada` sólo encendido: un pendiente de antes, sin el campo, se guarda pública.
+- **Aprobar una privada, una pregunta por URL con `desde`** (`?panel=aprobar-privada&para=<id>&desde=…`): el listado, o las tarjetas de la ficha del vehículo,
+  y «De este vehículo» dentro del resumen montan la misma pregunta y `desde` evita que abran dos. «De este vehículo», las tarjetas de la ficha y Comparar no
+  preguntan por la marca leída (la de la tarjeta es sólo la insignia y pudo cambiar): abren la pregunta con el rechazo de la base. En la
+  guardada, hacerla privada o pública y aprobar una privada esperan a que se guarden los cambios, y al entrar la página se vuelve a leer (la versión cambió).
+- **«Quién crea y quién ve», un cuadro sobre la matriz, no otro permiso.** Escribe `cotizaciones.crear`, `cotizaciones.ver` (propios o todos) y
+  `cotizaciones.privadas.ver` con las mismas RPC de Roles, en «Todos los orígenes» o en el origen de `?origen=` (no una grilla rol × origen completa: no cabe
+  en el celular y la matriz ya es esa grilla). Suma «No ve» como cuarto escalón; «Sólo las suyas» es «lo propio», que incluye las de sus clientes, y la
+  leyenda lo dice.
+- **El interruptor y la línea del «⋯» viajan con la hoja.** Son un `<Switch>`, una línea y una insignia: diferirlos haría parpadear el pie del resumen y el menú.
+  `/cotizaciones/nuevo` pasó de 465 a 470 KB, `/cotizaciones/[id]` de 480 a 490 y `/vehiculos/[id]` de 530 a 540 (466,6, 480,1 y 530,7 medidos con los
+  botones del marco, regla del 5 %, `docs/RENDIMIENTO.md`).
+
 ### Papelera
 
 - **Papelera con permiso propio.** `cotizaciones.papelera.purgar`, global, aparte de la de vehículos; la policy de lotes tiene una rama por tipo sin `else` (un tipo nuevo no hereda claves).

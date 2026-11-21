@@ -9,6 +9,7 @@ import { useRegional } from '@/shared/ui/regional'
 import { TableCell } from '@/shared/ui/table'
 import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
 import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
+import { InsigniaPrivada } from '../../privada/components/insignia-privada'
 import { nombreDelOrigen, SIN_NOMBRE, type FilaDeCotizacion, type OrigenDelListado } from './tipos'
 import { Vigencia } from './vigencia'
 
@@ -88,6 +89,7 @@ export function FilaDeLaCotizacion({
         <span className="flex flex-wrap gap-1">
           <Badge variant="secondary">{ETIQUETA_DE_CLASE[cotizacion.clase]}</Badge>
           {cotizacion.aprobada ? <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge> : null}
+          {cotizacion.privada ? <InsigniaPrivada /> : null}
         </span>
       </TableCell>
       <TableCell className="text-right tabular-nums">

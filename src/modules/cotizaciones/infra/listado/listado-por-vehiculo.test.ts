@@ -40,6 +40,7 @@ const cabeza = (i: number, extra: Record<string, unknown> = {}) => ({
   creado_en: instante(i),
   vence_el: '2026-03-08',
   vencida: false,
+  privada: false,
   ...extra,
 })
 const grupo = (i: number, n: number, extra: Record<string, unknown> = {}) => ({
@@ -72,6 +73,7 @@ const cortada = (i: number) => ({
       'creado_en',
       'vence_el',
       'vencida',
+      'privada',
       'grupo_n',
     ].map((k) => [k, null]),
   ),

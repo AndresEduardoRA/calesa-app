@@ -103,7 +103,8 @@ begin
   if src ~* 'update\s+public\.vehiculos' then raise exception 'marcar escribe el vehículo: eso es del ayudante, con todo tomado'; end if;
   if ayu ~* 'for\s+(update|no\s+key\s+update|share|key\s+share)' then raise exception 'el ayudante toma candados'; end if;
   for s in select m[1] from regexp_matches(ayu, '(update\s+public\.cotizaciones[^;]*;)', 'gi') m loop
-    if s ~* 'vehiculo_id' or not (s ~* 'id\s*=\s*c\.id' or s ~* '=\s*any\s*\(') then raise exception 'el ayudante escribe cotizaciones sin ir por id: %', s; end if;
+    -- La hermana, también por id: comparte la marca privada y deja de ser privada con la final, aunque esté en la papelera (T413).
+    if s ~* 'vehiculo_id' or not (s ~* 'id\s*=\s*c\.(id|hermana_id)' or s ~* '=\s*any\s*\(') then raise exception 'el ayudante escribe cotizaciones sin ir por id: %', s; end if;
   end loop;
   foreach s in array array[src, ayu] loop
     if s ~* 'public\.(leads|vehiculos)[^;]*for\s+update' then raise exception 'se toma un lead o un vehículo for update'; end if;

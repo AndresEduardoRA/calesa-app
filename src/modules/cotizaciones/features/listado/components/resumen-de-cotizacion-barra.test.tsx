@@ -52,6 +52,7 @@ const cotizacion = (extra: Partial<CotizacionDelListado> = {}): CotizacionDelLis
   creadoEn: '2026-03-01T12:00:00.123456+00:00',
   venceEl: '2026-04-01',
   vencida: false,
+  privada: false,
   cliente: null,
   vehiculo: null,
   autor: 'Ana',

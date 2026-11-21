@@ -14,7 +14,7 @@
 --   - el presupuesto de una página: ≤ 10 ms y ≤ 300 buffers (medido: 0,5 a 0,7 ms y 102 a 153 buffers; los topes dejan una vuelta de margen para una máquina ocupada);
 --   - que no crece con N: con 250.000 el tiempo es a lo sumo `greatest(1,5 × el de 50.000, el de 50.000 + 3 ms)` y los buffers a lo sumo 1,2 × los de 50.000 + 20;
 --   - que la policy no pregunta por fila lo que ya sabe: ninguna llamada a `alcance_de()`, a `mis_leads()` ni a `en_cartera()` en esas páginas (Mías: ser la creadora ya
---     decide), y `origenes_con_alcance()` a lo sumo dos veces (los dos InitPlan);
+--     decide), y `origenes_con_alcance()` a lo sumo tres veces (los tres InitPlan: ver «todos», ver «propios» y las privadas);
 --   - la guarda: la policy de antes (`lead_id in (select mis_leads())` y `alcance_de()` por fila) con los mismos datos llama a `alcance_de()` por fila (101 y 202 veces por página) y no
 --     pasa esta prueba. Su costo en ms con los datos de arriba es de 3 a 6 ms: lo que crecía con la cartera de quien mira era el arreglo de `mis_leads()`, que sólo se arma en lo ajeno.
 -- «Todas las que veo» de quien ve «propios» (Ana, la «chica») no se lee así: va por `cotizaciones_listado()` y su medición, `medir-cotizaciones-listado.sql` (4.16-1, 4-14).
@@ -295,8 +295,8 @@ begin
     if r.llamadas ? 'alcance_de' or r.llamadas ? 'mis_leads' or r.llamadas ? 'en_cartera' then
       v_fallas := v_fallas || format(E'\n  %s · %s · %s pregunta por fila lo que ya sabe: %s', r.fase, r.ruta, r.quien, r.llamadas);
     end if;
-    if coalesce((r.llamadas ->> 'origenes_con_alcance')::int, 0) > 2 then
-      v_fallas := v_fallas || format(E'\n  %s · %s · %s calcula los orígenes más de dos veces: %s', r.fase, r.ruta, r.quien, r.llamadas);
+    if coalesce((r.llamadas ->> 'origenes_con_alcance')::int, 0) > 3 then
+      v_fallas := v_fallas || format(E'\n  %s · %s · %s calcula los orígenes más de tres veces: %s', r.fase, r.ruta, r.quien, r.llamadas);
     end if;
   end loop;
   -- No crece con N.

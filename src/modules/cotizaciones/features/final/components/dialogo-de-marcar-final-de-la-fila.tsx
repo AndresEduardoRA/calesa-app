@@ -12,7 +12,7 @@ import { ConfirmarMarcarFinalDiferido } from './diferidos'
 
 type Props = {
   // Lo que se sabe de la cotización nombrada en `?para=`: su número y, si la acción está apagada, por qué. Nulo si no está en la página o no se ofrece.
-  de: (id: string) => { numero: number; motivo: string | null } | null
+  de: (id: string) => { numero: number; motivo: string | null; privada: boolean } | null
 }
 
 // La confirmación de «Marcar final» del listado: uno por pantalla, en `?panel=marcar-final&para=<id>`. Se revisa una vez al llegar (una cotización que no está en la página, que ya
@@ -24,6 +24,7 @@ export function DialogoDeMarcarFinalDeLaFila({ de }: Props) {
     return cotizacion === null ? MENSAJE_DE_LA_FILA_NO_DISPONIBLE : cotizacion.motivo
   })
   const numero = panel.fila === null ? null : (de(panel.fila)?.numero ?? null)
+  const privada = panel.fila === null ? false : de(panel.fila)?.privada === true
   // Lo último nombrado se conserva mientras el diálogo se cierra (valores primitivos: `useUltimo` pide un dato estable).
   const idMostrado = useUltimo(panel.abierto ? panel.fila : null)
   const numeroMostrado = useUltimo(panel.abierto ? numero : null)
@@ -37,6 +38,7 @@ export function DialogoDeMarcarFinalDeLaFila({ de }: Props) {
       alCerrar={panel.cerrar}
       id={idMostrado}
       numero={numeroMostrado}
+      privada={privada}
       focoAlCerrar={() => menuDeLaFila(idMostrado)}
     />
   )

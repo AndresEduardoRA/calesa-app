@@ -7,6 +7,7 @@ import type {
   MenuDeFila,
   MenuDeUnaFila,
 } from '@/modules/cotizaciones/pantallas/listado'
+import { DialogoDeAprobarPrivada } from '@/modules/cotizaciones/pantallas/aprobada-listado'
 import { DialogosDeMarcasDeLaFila } from '@/modules/cotizaciones/pantallas/comentarios-listado'
 import { DialogoDeMarcarFinalDeLaFila } from '@/modules/cotizaciones/pantallas/final-listado'
 import {
@@ -70,11 +71,28 @@ export function useMenusDeLasFilas(
             const oferta = menus[id]?.ofertas.final
             return fila === undefined || oferta === undefined
               ? null
-              : { numero: fila.numero, motivo: oferta.motivo }
+              : { numero: fila.numero, motivo: oferta.motivo, privada: menus[id]?.privada === true }
           }}
         />
         <DialogosDeMarcasDeLaFila datos={acciones.datosDeMarcas} />
+        <DialogoDeAprobarPrivada
+          desde="fila"
+          de={(id) => {
+            const fila = filas.find((una) => una.id === id)
+            const menu = menus[id]
+            return fila === undefined || menu?.ofertas.aprobar === undefined
+              ? null
+              : acciones.pedidoDeAprobar(fila, menu)
+          }}
+          focoAlCerrar={menuDeLaFila}
+        />
       </>
     ),
   }
+}
+
+// El «⋯» de esa fila (la tabla y las tarjetas lo dibujan las dos: se busca el que se ve): a él vuelve el foco al cerrar la pregunta de aprobar una privada.
+function menuDeLaFila(id: string): HTMLElement | boolean {
+  const menus = document.querySelectorAll<HTMLElement>(`[data-mas-acciones="${id}"]`)
+  return Array.from(menus).find((menu) => menu.offsetParent !== null) ?? true
 }

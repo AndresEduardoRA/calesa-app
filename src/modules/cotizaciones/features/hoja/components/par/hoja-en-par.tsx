@@ -54,6 +54,8 @@ export type PropsDeLaHojaEnPar = {
   // La columna de la cotización que se abrió (la primera en la hoja nueva).
   abierta?: 0 | 1
   pasos?: PasosDeLaPagina
+  // La marca de privada de la hoja nueva y su interruptor (como `HojaDeCotizar`): las dos hermanas nacen con la misma. Sin ella, públicas.
+  privada?: { valor: boolean; interruptor: ReactNode }
 }
 
 function useContextoDe(c: ColumnaDeLaHoja, seEligen: ReadonlySet<string> | undefined) {
@@ -103,6 +105,7 @@ function useLaHojaDelPar(p: PropsDeLaHojaEnPar) {
     guardado: p.guardado,
     edicion: p.edicion ?? null,
     raiz,
+    privada: p.privada?.valor === true,
   })
   return { raiz, vista, h, columnas, ca, cb, delPar, boton, hayCambios }
 }

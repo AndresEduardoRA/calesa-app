@@ -562,7 +562,8 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   tiene página propia ni pestañas: la raíz abre (308, por persona) la primera sub-sección que la persona puede abrir, o el inicio de Configuración.
   Cada catálogo es una sub-ruta con su `h1` y su frase, en tres tramos del menú: **«Cotizaciones»** — «Colores» (`/colores`, `cotizaciones.configurar`;
   `?panel=nuevo-tono|editar-tono|eliminar-tono&tono=<id>`), «Niveles» (`/niveles`, `equipo.roles.ver|gestionar`; `?panel=nuevo-nivel|renombrar-nivel|
-eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con «Te falta el permiso «Ver roles».») y «Vigencia» (`/vigencia`,
+eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con «Te falta el permiso «Ver roles».»), «Quién crea y quién ve»
+  (`/quien-crea-y-quien-ve`, los mismos permisos y el mismo motivo; `?origen=<id>`) y «Vigencia» (`/vigencia`,
   `cotizaciones.configurar`); **«Logística»** — «Puertos» (`/puertos`: nombre, país, código, orden y activo), «Navieras» (`/navieras`: nombre y activa;
   sin «Eliminar»: se desactivan) y «Categorías de gasto» (`/categorias-de-gasto`: nombre, propósito de la lista fija de la base, orden y activa; una con
   gastos no se elimina), con `logistica.catalogos.gestionar` y sólo si algún área llena el catálogo, y «Tipos de documento» (`/tipos-de-documento`: los
@@ -1289,6 +1290,47 @@ qué no se elimina viene de la base**.
   10 contando «todos» y retirados. Estados: esqueleto, error con «Reintentar», lista llena.
 - **Dónde se nota:** cada nivel son **dos permisos por origen** (`Ver el nivel «X»`, `Editar el nivel «X»`) en Roles; el dueño los recibe
   al nacer.
+
+### Cotización: privada (estados propios)
+
+La marca de una cotización que sólo ven quien la creó y quien puede ver las privadas de su origen (glosario: «Cotización privada»). Quién la ve lo decide
+la base; la pantalla sólo ofrece la marca a quien la creó y la dibuja.
+
+- **Al guardar una nueva:** sobre el pie del resumen de la hoja, el interruptor «Privada» con «Sólo la ves tú y quien puede ver las privadas de este
+  origen.» debajo (`aria-describedby`), apagado mientras guarda. Vive en la URL (`?privada=si`); al guardar sale de la URL y «Cotizar otra» nace pública.
+- **En una guardada:** el «⋯» de la guardada y el de la fila del listado ofrecen «Hacer privada» o «Hacer pública», sólo a quien la creó (con «Ver como»,
+  decide la persona real). Apagada con su motivo: «Una final no se hace privada.», «Es la aprobada de su vehículo: no se hace privada.» o, en la guardada
+  con algo sin guardar, «Guarda los cambios primero.». Entra con el toast «La n.º N es privada.» (o «… es pública.») y la página se vuelve a leer.
+  Conflicto (`PT409`): el texto de la base y «Recargar»; sin red: «Sin conexión: no se cambió. Reintenta cuando vuelva.».
+- **La insignia:** «Privada» con un candado (que no se lee), en la tabla, la tarjeta, la línea de un grupo, el resumen y la cabecera de la guardada.
+- **Aprobar una privada:** el botón dice «Aprobar…» y pregunta antes (`?panel=aprobar-privada&para=<id>&desde=…`): «Aprobar la cotización n.º N» con «Al
+  aprobarla deja de ser privada: la verá todo el que ve las cotizaciones de su origen.» (en la guardada suma que lo no guardado se pierde). Entra con el
+  toast de siempre más «Ya no es privada.» y su «Deshacer» (que no la vuelve privada). Si no entra, el diálogo sigue abierto con el motivo y, si otra
+  persona la cambió, «Recargar».
+- **Marcarla final:** la pregunta de siempre suma «Al marcarla final deja de ser privada: la verá todo el que ve las cotizaciones de su origen.».
+- **Sin permiso:** la privada ajena no existe: no está en el listado, la búsqueda, el buscador, «De este vehículo» ni los relacionados, y su URL dice
+  «Esta cotización ya no está disponible: no existe o ya no tienes acceso.».
+
+### Cotización: quién crea y quién ve (estados propios)
+
+Configuración › Catálogos › Quién crea y quién ve (`/configuracion/catalogos/quien-crea-y-quien-ve`): por rol, si crea cotizaciones y cuáles ve. Son tres
+permisos de la matriz de Roles (`cotizaciones.crear`, `cotizaciones.ver`, `cotizaciones.privadas.ver`) dichos en un cuadro; cada cambio guarda solo, por
+las mismas RPC que la matriz.
+
+- **Quién entra:** `equipo.roles.ver` o `equipo.roles.gestionar`; sin ninguno, «No tienes permiso para ver esto» (en el menú, apagada con «Te falta el
+  permiso «Ver roles».»). Sin `gestionar` se lee: los valores en texto y, arriba, «Para cambiarlo te falta el permiso «Gestionar roles».».
+- **Lugar:** «Origen» (`?origen=<id>`) con «Todos los orígenes» y cada origen (los desactivados con «(inactivo)»), sólo con dos orígenes o más o si algún
+  rol ya tiene uno de los tres permisos en un origen suelto; sin él, «Todos los orígenes». En un origen vale también lo de «Todos los orígenes»: lo que
+  está por debajo de eso queda apagado con «Lo tiene en «Todos los orígenes»: para quitarlo, cámbialo ahí.».
+- **El cuadro:** desde 768 px una tabla Rol | Crea | Ve; por debajo, un renglón por rol en la misma tarjeta. «Crea» es un interruptor (`Crea: <rol>`);
+  «Ve», un `<select>` nativo (`Ve: <rol>`) con «No ve» · «Sólo las suyas» · «Todas menos las privadas» · «Todas, también las privadas»; debajo, una
+  leyenda de cada escalón. Lo que quien mira no tiene no se da: la opción queda apagada con «No puedes dar un permiso que no tienes.». Un rol con permisos
+  que quien mira no tiene se lee, con el motivo de la matriz bajo su nombre.
+- **Guardar:** una elección puede ser dos RPC sobre el rol (dar «ver» y después las privadas; al bajar, al revés), en orden y con la versión que devolvió
+  la anterior; mientras viajan, la fila muestra lo elegido y espera. Conflicto (`PT409`): `AvisoDeConflicto` con lo que dice la base y «Recargar». Si cae
+  después de guardar una parte: «Se guardó sólo una parte: recarga para ver cómo quedó.» con «Recargar». Otro error, el toast con su mensaje.
+- **Estados:** esqueleto de tabla (`loading.tsx` y el `Suspense`); error de lectura, el de la pantalla con «Reintentar»; sin roles, «Todavía no hay
+  roles».
 
 ### Cotización: comentarios (estados propios)
 

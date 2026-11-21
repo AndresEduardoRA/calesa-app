@@ -289,7 +289,7 @@ rollback;
 begin;
 do $$
 declare
-  v_legible_c constant text := 'id, numero, origen_id, lead_id, vehiculo_id, creado_por, clase, estado, titulo, titulo_manual, formula_id, plantilla_id, total_base, moneda_mostrar, modo_tc, ver_total_bs, notas, tarjeta_retoques, version, creado_en, actualizado_en';
+  v_legible_c constant text := 'id, numero, origen_id, lead_id, vehiculo_id, creado_por, clase, estado, titulo, titulo_manual, formula_id, plantilla_id, total_base, moneda_mostrar, modo_tc, ver_total_bs, notas, tarjeta_retoques, version, creado_en, actualizado_en, privada';
 begin
   perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-000000000001', true);
   set local role authenticated;
@@ -485,7 +485,8 @@ rollback;
 
 -- @test visibilidad: la policy de lectura y la de edición de cotizaciones, puede_cotizacion(), el listado (con cada filtro) y la regla escrita a mano dan lo mismo por persona, y siguen a un lead transferido
 -- La regla (D2/D3 y «Confirmado de lo escrito»): «propios» = las que creé o las de un lead de mi cartera vigente; «todos», todas las del origen; la papelera no se ve; una cuenta
--- bloqueada no ve nada. Editar: una preventa por el alcance de `cotizaciones.editar`, o cualquier clase con `cotizaciones.final.gestionar` del origen. La regla de abajo se
+-- bloqueada no ve nada; una privada, sólo su autor o quien tiene `cotizaciones.privadas.ver` de su origen (T413). Editar: una preventa por el alcance de
+-- `cotizaciones.editar`, o cualquier clase con `cotizaciones.final.gestionar` del origen. La regla de abajo se
 -- escribió aparte, desde `usuarios_roles`, `roles_permisos` y `leads_asesores`, sin mirar la policy, `puede_cotizacion()` ni `mis_permisos()`.
 begin;
 create temp table cv_c (nombre text primary key, id uuid not null);
@@ -599,6 +600,10 @@ create or replace function pg_temp.cv_regla(p_quien uuid, p_clave text) returns 
            and (c.creado_por = p_quien
                 or c.lead_id in (select la.lead_id from public.leads_asesores la where la.usuario_id = p_quien and la.revocado_en is null)))
      )
+     -- Una privada (T413): sólo su autor o quien tiene cotizaciones.privadas.ver de su origen, con cualquier clave.
+     and (not c.privada or c.creado_por = p_quien
+          or exists (select 1 from public.usuarios_roles ur join public.roles_permisos rp on rp.rol_id = ur.rol_id
+                      where ur.usuario_id = p_quien and rp.permiso_clave = 'cotizaciones.privadas.ver' and (rp.origen_id is null or rp.origen_id = c.origen_id)))
 $f$;
 
 create or replace function pg_temp.cv_nombres(p_ids uuid[]) returns text[] language sql as $f$
@@ -610,6 +615,7 @@ declare
   a constant uuid := '00000000-0000-0000-0000-000000000ca1'; b constant uuid := '00000000-0000-0000-0000-000000000cb1'; t constant uuid := '00000000-0000-0000-0000-000000000cc1';
   c constant uuid := '00000000-0000-0000-0000-000000000cd1'; l constant uuid := '00000000-0000-0000-0000-000000000ce1'; x constant uuid := '00000000-0000-0000-0000-000000000cf1';
   f constant uuid := '00000000-0000-0000-0000-000000000c01'; s constant uuid := '00000000-0000-0000-0000-000000000c02'; r constant uuid := '00000000-0000-0000-0000-000000000c03';
+  p constant uuid := '00000000-0000-0000-0000-000000000c05';
   v_web uuid := (select id from public.origenes_lead where clave = 'web');
   o1 uuid; o2 uuid; f1 uuid; f2 uuid; la uuid; lb uuid; l3 uuid; l4 uuid; v uuid; asesor uuid := (select id from public.roles where clave = 'asesor');
 begin
@@ -623,6 +629,8 @@ begin
   perform pg_temp.cv_persona(c, jsonb_build_array(jsonb_build_object('clave', 'cotizaciones.ver', 'origen', o2, 'alcance', 'propios'), jsonb_build_object('clave', 'cotizaciones.editar', 'origen', o2, 'alcance', 'propios')));
   perform pg_temp.cv_persona(f, jsonb_build_array(jsonb_build_object('clave', 'cotizaciones.ver', 'origen', o1), jsonb_build_object('clave', 'cotizaciones.final.gestionar', 'origen', o1)));
   perform pg_temp.cv_persona(r, jsonb_build_array(jsonb_build_object('clave', 'cotizaciones.ver'), jsonb_build_object('clave', 'cotizaciones.editar', 'alcance', 'propios')));
+  -- P: ve «todos» y las privadas sólo en el origen 1 (T413).
+  perform pg_temp.cv_persona(p, jsonb_build_array(jsonb_build_object('clave', 'cotizaciones.ver'), jsonb_build_object('clave', 'cotizaciones.privadas.ver', 'origen', o1)));
   insert into auth.users (id, email, raw_app_meta_data) values
     (a, 'cv-a@ejemplo.com', '{"invitado": true}'), (b, 'cv-b@ejemplo.com', '{"invitado": true}'), (l, 'cv-l@ejemplo.com', '{"invitado": true}'),
     (x, 'cv-x@ejemplo.com', '{"invitado": true}'), (s, 'cv-s@ejemplo.com', '{"invitado": true}');
@@ -639,8 +647,8 @@ begin
   update public.leads_asesores set revocado_en = now(), revocado_por = b where lead_id = l3;
   update public.leads set eliminado_en = now() where id = l4;
   insert into public.vehiculos (origen_id, titulo, marca) values (o1, 'CV final', 'toyota') returning id into v;
-  insert into public.cotizaciones (origen_id, creado_por, formula_id, lead_id, vehiculo_id, clase, titulo, valores, tipos_cambio, totales, total_base, eliminado_en)
-  select z.o, z.quien, case when z.o = o1 then f1 else f2 end, z.lead, z.veh, z.clase::public.clase_cotizacion, z.nombre, '{}', '{}', '{}', 0, z.borrada
+  insert into public.cotizaciones (origen_id, creado_por, formula_id, lead_id, vehiculo_id, clase, titulo, valores, tipos_cambio, totales, total_base, eliminado_en, privada)
+  select z.o, z.quien, case when z.o = o1 then f1 else f2 end, z.lead, z.veh, z.clase::public.clase_cotizacion, z.nombre, '{}', '{}', '{}', 0, z.borrada, z.nombre like '%priv%'
     from (values
       ('a_la', o1, a, la, null::uuid, 'preventa', null::timestamptz),
       ('b_la', o1, b, la, null, 'preventa', null),
@@ -654,9 +662,14 @@ begin
       ('a_final', o1, a, la, v, 'final', null),
       ('c_o2', o2, c, null, null, 'preventa', null),
       ('c_o1', o1, c, null, null, 'preventa', null),
-      ('r_o1', o1, r, null, null, 'preventa', null)) z (nombre, o, quien, lead, veh, clase, borrada);
-  insert into cv_c select titulo, id from public.cotizaciones where titulo in ('a_la', 'b_la', 'b_lb', 'b_sin_lead', 'a_o2', 'b_limbo', 'b_lead_borrado', 'a_papelera', 'x_bloqueada', 'a_final', 'c_o2', 'c_o1', 'r_o1');
-  if (select count(*) from cv_c) <> 13 then raise exception 'la prueba esperaba 13 cotizaciones y hay %', (select count(*) from cv_c); end if;
+      ('r_o1', o1, r, null, null, 'preventa', null),
+      -- Las privadas (T413): de B sobre el lead de A (A la tendría por su cartera), de A en el origen 2 y de C en el origen 2.
+      ('b_priv_la', o1, b, la, null, 'preventa', null),
+      ('a_priv_o2', o2, a, null, null, 'preventa', null),
+      ('c_priv_o2', o2, c, null, null, 'preventa', null)) z (nombre, o, quien, lead, veh, clase, borrada);
+  insert into cv_c select titulo, id from public.cotizaciones where titulo in ('a_la', 'b_la', 'b_lb', 'b_sin_lead', 'a_o2', 'b_limbo', 'b_lead_borrado', 'a_papelera', 'x_bloqueada', 'a_final', 'c_o2', 'c_o1', 'r_o1',
+                                                                                'b_priv_la', 'a_priv_o2', 'c_priv_o2');
+  if (select count(*) from cv_c) <> 16 then raise exception 'la prueba esperaba 16 cotizaciones y hay %', (select count(*) from cv_c); end if;
 end $$;
 
 -- Cada persona, lo que ve: tres caminos (policy, puede_cotizacion, regla a mano) y los nombres concretos. Y lo que alcanza con `cotizaciones.editar` según
@@ -715,27 +728,33 @@ declare
   a constant uuid := '00000000-0000-0000-0000-000000000ca1'; b constant uuid := '00000000-0000-0000-0000-000000000cb1'; t constant uuid := '00000000-0000-0000-0000-000000000cc1';
   c constant uuid := '00000000-0000-0000-0000-000000000cd1'; l constant uuid := '00000000-0000-0000-0000-000000000ce1'; x constant uuid := '00000000-0000-0000-0000-000000000cf1';
   f constant uuid := '00000000-0000-0000-0000-000000000c01'; s constant uuid := '00000000-0000-0000-0000-000000000c02'; r constant uuid := '00000000-0000-0000-0000-000000000c03'; d constant uuid := '00000000-0000-0000-0000-000000000001';
-  q constant uuid := '00000000-0000-0000-0000-000000000c04';
+  q constant uuid := '00000000-0000-0000-0000-000000000c04'; p constant uuid := '00000000-0000-0000-0000-000000000c05';
+  -- Todas las públicas vivas; las privadas, aparte (T413).
   v_todas constant text[] := array['a_la', 'b_la', 'b_lb', 'b_sin_lead', 'a_o2', 'b_limbo', 'b_lead_borrado', 'x_bloqueada', 'a_final', 'c_o2', 'c_o1', 'r_o1'];
+  v_privadas constant text[] := array['b_priv_la', 'a_priv_o2', 'c_priv_o2'];
   la uuid := (select id from public.leads where nombre = 'CV lead de A'); v_r jsonb;
 begin
   -- A: las que creó y las de leads de su cartera (también una cuyo lead está en la papelera, como `mis_leads()`). Lo que edita con `cotizaciones.editar` (propios) es lo mismo, de cualquier clase.
-  perform pg_temp.cv_verificar(a, 'A (propios)', array['a_la', 'b_la', 'a_o2', 'b_lead_borrado', 'a_final']);
-  perform pg_temp.cv_verificar(b, 'B (propios)', array['b_la', 'b_lb', 'b_sin_lead', 'b_limbo', 'b_lead_borrado']);
+  -- La privada de B sobre su lead no la ve: es ajena y no tiene cotizaciones.privadas.ver. La suya, sí.
+  perform pg_temp.cv_verificar(a, 'A (propios)', array['a_la', 'b_la', 'a_o2', 'b_lead_borrado', 'a_final', 'a_priv_o2']);
+  perform pg_temp.cv_verificar(b, 'B (propios)', array['b_la', 'b_lb', 'b_sin_lead', 'b_limbo', 'b_lead_borrado', 'b_priv_la']);
+  -- «Todos» sin cotizaciones.privadas.ver: todas menos las privadas de otros.
   perform pg_temp.cv_verificar(t, 'T (todos)', v_todas);
   -- R ve todo y edita sólo lo suyo: ver «todos» no da editar «todos» (la regla de editar la compara `cv_verificar`).
   perform pg_temp.cv_verificar(r, 'R (ve todos, edita propios)', v_todas);
   -- C: «propios» sólo en el origen 2: lo suyo de ahí, y nada de lo que creó en el 1.
-  perform pg_temp.cv_verificar(c, 'C (propios sólo en el origen 2)', array['c_o2']);
+  perform pg_temp.cv_verificar(c, 'C (propios sólo en el origen 2)', array['c_o2', 'c_priv_o2']);
   perform pg_temp.cv_verificar(l, 'L (logística, sin cotizaciones.ver)', '{}');
   perform pg_temp.cv_verificar(x, 'X (bloqueada)', '{}');
   perform pg_temp.cv_verificar(s, 'S (sin leads ni cotizaciones propias)', '{}');
   -- F: ve todo el origen 1 y cierra finales ahí (no edita preventas con `cotizaciones.editar`: no la tiene).
   perform pg_temp.cv_verificar(f, 'F (ve todo el origen 1 y gestiona finales ahí)', array['a_la', 'b_la', 'b_lb', 'b_sin_lead', 'b_limbo', 'b_lead_borrado', 'x_bloqueada', 'a_final', 'c_o1', 'r_o1']);
-  perform pg_temp.cv_verificar(d, 'la dueña', v_todas);
+  -- La dueña tiene cotizaciones.privadas.ver en todos los orígenes; P, sólo en el origen 1 (T413).
+  perform pg_temp.cv_verificar(d, 'la dueña', v_todas || v_privadas);
+  perform pg_temp.cv_verificar(p, 'P (todos, y las privadas del origen 1)', v_todas || array['b_priv_la']);
 
   -- El listado con cada filtro (4.16-1, L2): la regla filtrada a mano, para cada persona.
-  perform pg_temp.cv_filtros(p, n) from (values (a, 'A'), (b, 'B'), (t, 'T'), (c, 'C'), (f, 'F'), (r, 'R'), (x, 'X'), (s, 'S'), (d, 'la dueña')) z (p, n);
+  perform pg_temp.cv_filtros(z.p, z.n) from (values (a, 'A'), (b, 'B'), (t, 'T'), (c, 'C'), (f, 'F'), (r, 'R'), (x, 'X'), (s, 'S'), (d, 'la dueña'), (p, 'P')) z (p, n);
   -- Q ve cotizaciones «propios» y no tiene `leads.ver`: ve por su cartera lo del lead de B que le compartieron (la ruta de la cartera sale de `mis_leads()`, no de
   -- `leads_asesores` leída como ella, que pasaría por la RLS de `leads`).
   perform pg_temp.cv_persona(q, jsonb_build_array(jsonb_build_object('clave', 'cotizaciones.ver', 'alcance', 'propios')));
@@ -749,16 +768,16 @@ begin
   set local role authenticated;
   v_r := public.lead_transferir(la, b, a);
   reset role;
-  perform pg_temp.cv_verificar(b, 'B (dueña de lo transferido)', array['a_la', 'a_final', 'b_la', 'b_lb', 'b_sin_lead', 'b_limbo', 'b_lead_borrado']);
-  perform pg_temp.cv_verificar(a, 'A (que queda como compartida)', array['a_la', 'b_la', 'a_o2', 'b_lead_borrado', 'a_final']);
+  perform pg_temp.cv_verificar(b, 'B (dueña de lo transferido)', array['a_la', 'a_final', 'b_la', 'b_lb', 'b_sin_lead', 'b_limbo', 'b_lead_borrado', 'b_priv_la']);
+  perform pg_temp.cv_verificar(a, 'A (que queda como compartida)', array['a_la', 'b_la', 'a_o2', 'b_lead_borrado', 'a_final', 'a_priv_o2']);
   perform pg_temp.cv_verificar(s, 'S (sin relación con el lead)', '{}');
   -- B le quita el acceso a A: A pierde lo que sólo veía por el lead (b_la) y conserva lo que creó (a_la, a_final).
   perform pg_temp.cv_como(b);
   set local role authenticated;
   v_r := public.lead_revocar_acceso(la, a);
   reset role;
-  perform pg_temp.cv_verificar(a, 'A (sin acceso al lead)', array['a_la', 'a_o2', 'b_lead_borrado', 'a_final']);
-  perform pg_temp.cv_verificar(b, 'B (sigue siendo la dueña)', array['a_la', 'a_final', 'b_la', 'b_lb', 'b_sin_lead', 'b_limbo', 'b_lead_borrado']);
+  perform pg_temp.cv_verificar(a, 'A (sin acceso al lead)', array['a_la', 'a_o2', 'b_lead_borrado', 'a_final', 'a_priv_o2']);
+  perform pg_temp.cv_verificar(b, 'B (sigue siendo la dueña)', array['a_la', 'a_final', 'b_la', 'b_lb', 'b_sin_lead', 'b_limbo', 'b_lead_borrado', 'b_priv_la']);
   perform pg_temp.cv_filtros(a, 'A (sin acceso al lead)');
   perform pg_temp.cv_filtros(b, 'B (dueña de lo transferido)');
 end $$;

@@ -128,7 +128,7 @@ begin
   if p.provolatile <> 's' then raise exception 'L1: cotizaciones_listado no es stable (%)', p.provolatile; end if;
   if not coalesce(p.proconfig @> array['search_path=""'], false) then raise exception 'L1: search_path: %', p.proconfig; end if;
   v_cols := pg_get_function_result(p.oid);
-  if v_cols is distinct from 'TABLE(id uuid, numero bigint, origen_id uuid, lead_id uuid, vehiculo_id uuid, creado_por uuid, clase clase_cotizacion, estado estado_cotizacion, titulo text, total_base numeric, moneda_mostrar character, creado_en timestamp with time zone, vence_el date, vencida boolean)' then
+  if v_cols is distinct from 'TABLE(id uuid, numero bigint, origen_id uuid, lead_id uuid, vehiculo_id uuid, creado_por uuid, clase clase_cotizacion, estado estado_cotizacion, titulo text, total_base numeric, moneda_mostrar character, creado_en timestamp with time zone, vence_el date, vencida boolean, privada boolean)' then
     raise exception 'L1: las columnas no son las del listado: %', v_cols;
   end if;
   if v_cols ~ '(valores|fuentes|totales|tipos_cambio)' then raise exception 'L1: devuelve el snapshot: %', v_cols; end if;

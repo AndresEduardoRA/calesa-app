@@ -2,7 +2,8 @@
 # puertos de `supabase/config.toml` (los heredados de este repo, 546xx, sin bloque, y los 543xx que la CLI usa por defecto) caen en el
 # rango efímero de Linux (32768–60999): mientras `supabase start` baja sus imágenes en paralelo, una conexión saliente puede tomar uno
 # y el contenedor cae con «address already in use». Reservados en `ip_local_reserved_ports`, el kernel no los da como puerto de origen
-# (vale también para IPv6).
+# (vale también para IPv6). Aun así cayó dos veces el 2026-11-20 (54624 y 54622): si la reserva no alcanza, `supabase start` deja
+# quién tenía el puerto y se reintenta una sola vez, y sólo ante «address already in use»; cualquier otro error cae a la primera.
 name: pila
 description: Supabase local con sus puertos reservados
 inputs:
@@ -19,4 +20,15 @@ runs:
       shell: bash
       env:
         SIN: ${{ inputs.sin }}
-      run: pnpm exec supabase start -x "$SIN"
+      run: |
+        registro="$RUNNER_TEMP/supabase-start.log"
+        if pnpm exec supabase start -x "$SIN" 2>&1 | tee "$registro"; then
+          exit 0
+        fi
+        if ! grep -q "address already in use" "$registro"; then
+          exit 1
+        fi
+        echo "::warning::supabase start: un puerto de la pila estaba ocupado; quién lo tiene:"
+        sudo ss -tanp | grep -E ':(543|546)[0-9]{2}\b' || true
+        pnpm exec supabase stop --no-backup || true
+        pnpm exec supabase start -x "$SIN"

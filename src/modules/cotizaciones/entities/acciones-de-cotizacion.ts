@@ -13,6 +13,8 @@ export type ClaveDeAccionDeCotizacion =
   | 'final'
   | 'comprobante'
   | 'encima'
+  | 'hacer-privada'
+  | 'hacer-publica'
   | 'favorita'
   | 'reportar'
   | 'invalidar'
@@ -32,6 +34,8 @@ export const ETIQUETA_DE_ACCION_DE_COTIZACION: Readonly<Record<ClaveDeAccionDeCo
     final: 'Marcar final…',
     comprobante: 'Emitir comprobante…',
     encima: 'Cotizar encima',
+    'hacer-privada': 'Hacer privada',
+    'hacer-publica': 'Hacer pública',
     favorita: 'Favorita',
     reportar: 'Reportar…',
     invalidar: 'Invalidar…',
@@ -43,13 +47,13 @@ export const ETIQUETA_DE_ACCION_DE_COTIZACION: Readonly<Record<ClaveDeAccionDeCo
 export const ETIQUETA_DE_REPORTAR_SI_YA_REPORTO = 'Reportaste esta cotización…'
 
 // El orden, en bloques: compartir primero y solo (lo que más se hace con una cotización: mandársela al cliente), lo que se mira (vista previa, PDF, revisiones), lo que se hace
-// seguido (aprobar, marcar final, emitir el comprobante, cotizar encima), lo que se marca (favorita y reportar), moderar (invalidar, descartar los reportes o reactivar: la base
+// seguido (aprobar, marcar final, emitir el comprobante, cotizar encima), lo que se marca (privada o pública, sólo para quien la creó; favorita y reportar), moderar (invalidar, descartar los reportes o reactivar: la base
 // ofrece una u otras) y lo destructivo al final y separado (la papelera). Entre dos bloques con algo va un separador. El listado no ofrece las que sólo tiene el detalle.
 export const BLOQUES_DEL_MENU_DE_COTIZACION: readonly (readonly ClaveDeAccionDeCotizacion[])[] = [
   ['compartir'],
   ['vista-previa', 'pdf', 'revisiones'],
   ['aprobar', 'final', 'comprobante', 'encima'],
-  ['favorita', 'reportar'],
+  ['hacer-privada', 'hacer-publica', 'favorita', 'reportar'],
   ['invalidar', 'descartar', 'reactivar'],
   ['papelera'],
 ]

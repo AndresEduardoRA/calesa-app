@@ -5,7 +5,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Para desplegar (sólo la persona)
 
-- **[—]** Actualizar Next (hoy `16.4.3`): `next build` avisa de una vulnerabilidad conocida (`SecurityFatalError`, que corta el primer build de cada sesión de IA y `scripts/compilar-e2e.sh` repite) — la actualización con la versión verificada el día y el e2e completo; la decide la persona antes de desplegar.
+- **[—]** Actualizar Next (hoy `16.4.3`): `next build` avisa de una vulnerabilidad conocida (`SecurityFatalError`, que corta el primer build de cada sesión de IA y `scripts/compilar-e2e.sh` repite) — la actualización con la versión verificada el día y el e2e completo; la decide la persona antes de desplegar. Mientras tanto, el reintento de `scripts/compilar-e2e.sh` cae si el primer build pasó de 5 minutos (`docs/LECCIONES.md`): que el reintento no dependa de cuánto tarda el build.
 - **[—]** Producción: variables, secretos, el primer `db push` y la lista de `docs/DESPLIEGUE.md` — el ensayo en seco está en `listo`.
 - **[9-6]** Las dos corridas de `db:carreras` por `workflow_dispatch` que faltan (cuenta 3 de 5) para pasarlas al job `base` — una sesión no puede disparar un workflow; comandos en `docs/DESPLIEGUE.md` › «Lo que sólo una persona comprueba».
 - **[9-11]** El dispatch con un spec que cae a propósito debe dejar en `e2e-fallos/` los cinco archivos de `scripts/ci/volcar-base.sh` — el resto está hecho; misma lista.
@@ -131,6 +131,9 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** El bloque «Leads sin seguimiento» de Inicio cuesta lo que pesa la cartera de quien mira; no se midió con volumen.
 - **[4-73]** Presupuestos al borde (`docs/ESTADO.md` › «Al borde»): la hoja 467 nodos de 500, JS de `/cotizaciones/nuevo` 462,6 de 465, de `/cotizaciones/[id]` 475,0 de 480 y de `/cotizaciones` 386,9 de 390 KB — lo nuevo se carga con `diferido()`; con la regla del 5 % se sube el tope.
 - **[T33]** «Vincular o marcar un vehículo» de la ficha del lead (`?panel=agregar-vehiculo`, `shallow: false`) y cada cambio de un recordatorio (`router.refresh()`) releen todos los bloques de la ficha, todos a la vista; se acota cuando moleste (que cada bloque relea lo suyo).
+- **[T413]** Las lecturas de cotizaciones de quien ve «todos» sin `cotizaciones.privadas.ver` descartan las privadas ajenas sobre las rutas de siempre: leen de más en proporción a ellas, y la siembra de volumen no tiene privadas — sembrar un 10 % de privadas ajenas y una persona con «todos» sin el permiso en `medir-cotizaciones-listado.sql`, `medir-cotizaciones-buscar.sql`, `medir-cotizaciones-de-este-vehiculo.sql` (también las tarjetas de la ficha del vehículo) y `medir-relacionados.sql`; cierre: sin `Seq Scan`, bloques con 250.000 ≤ 1,2 × los de 50.000 + 20 y ≤ 50 ms.
+- **[T413]** `_cotizacion_cadena` devuelve `{"oculta": true}` cuando la versión de encima es una privada ajena: delata que existe (`docs/DECISIONES.md` › «Cotizaciones privadas») — si molesta, saltarla en la cadena como si no existiera; cierre: un caso en `supabase/tests/areas/cotizaciones/privadas.sql`.
+- **[T413]** `medir-cotizaciones-de-este-vehiculo.sql` a veces no lee `cotizaciones_origen_creado_idx` ni `cotizaciones_aprobadas_pkey`: el plan depende de cuándo se tomaron las estadísticas de `cotizaciones_aprobadas` (otra corrida pasa) — un `analyze` de `cotizaciones_aprobadas` tras sembrar, antes de medir.
 - **[—]** Tope de 40 ítems por diseño: `subasta_usa` tiene 39 — para crecer, subir `_diseno_maximo_de_items()` y la constante midiendo la hoja, o partir la hoja.
 
 ### Archivos y funciones sobre el tope

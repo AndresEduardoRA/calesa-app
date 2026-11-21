@@ -9,7 +9,7 @@ Autenticación, perfiles, roles y permisos (RBAC puro), invitaciones, bloqueo, b
   equipo (`leerEquipo(filtro)`: 100 primeras por nombre; `leerPersona`, `leerMatriz`, `leerVistas`…), y para `tablero` `leerPersonasSinRol({ tope })`.
 - `client.ts`: `usePerspectiva()`, `<RoleBadge>`, `<VistasGuardadas>` (una sección de «Vista y opciones»), `guardarPreferencia`. `shell.ts` / `shell.client.ts`: sesión, proveedores y
   `<BannerPerspectiva>`.
-- Lo consumen todos. Depende de `empresa`. **Nunca de `origenes`**: la página pasa los orígenes a la matriz por props.
+- Lo consumen todos. Depende de `empresa`. **Nunca de `origenes`**: la página pasa los orígenes a la matriz y al cuadro «Quién crea y quién ve» por props.
 
 ## Archivos clave
 
@@ -21,6 +21,12 @@ Autenticación, perfiles, roles y permisos (RBAC puro), invitaciones, bloqueo, b
   (`useReintentoAlVolver`); `useMenuPlegado()` (`shell.client.ts`) lo lee el menú lateral y deja su copia en la cookie `menu-plegado` para la cáscara (`@/shared/lib/menu-plegado`);
   su `check` en `supabase/tests/areas/equipo/preferencia-del-menu-plegado.sql`.
 - `entities/dominancia.ts` — espejo de `concesion_dominada()` y `rol_dominado()`. `puede()` y el catálogo de claves: `@/shared/lib/permisos`.
+- «Quién crea y quién ve» (glosario; `pantallas/quien-crea-y-quien-ve.ts`, la página en `src/app/(app)/configuracion/catalogos/`): el cuadro rol × lugar sobre
+  `cotizaciones.crear`, `.ver` y `.privadas.ver`. Las reglas en `entities/cuadro-de-cotizaciones.ts`: `celdaDelCuadro()` (en un origen suma lo de «Todos los
+  orígenes», como la base), `cambiosDelCuadro()` (mínimos y en orden: quitar las privadas, cambiar `ver`, dar las privadas; `null` si lo heredado ya da más),
+  `opcionesDelCuadro()` y `filaDelCuadro()` (dominancia y sólo lectura), `conSelectorDeLugar()`. Escribe con las actions de la matriz (`otorgar`, `revocar`, que
+  revalidan las dos rutas) en secuencia por `features/roles/hooks/use-cuadro.ts` (la versión en un ref; PT409 en la primera, `AvisoDeConflicto`; después,
+  «Se guardó sólo una parte»). `CambioDeConcesion` vive en `entities/matriz.ts`.
 - `entities/vista.ts` — `RUTA_DE_PANTALLA`: un listado nuevo que guarda vistas se suma ahí (hoy leads, vehículos y cotizaciones; la columna `pantalla` es texto, sin migración).
 - `infra/invitaciones.ts` — **la excepción del cliente admin**: `conAdminDeAuth()` comprueba `equipo.usuarios.gestionar` y entrega sólo `auth.admin`
   (lo cuida el lint). Crear rol o invitar no es idempotente.

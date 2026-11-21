@@ -53,6 +53,13 @@ describe('los pedidos en par', () => {
     })
   })
 
+  it('las dos hermanas nacen privadas con p_privada; sin la marca, no se manda', () => {
+    expect(argumentosDeCrearEnPar({ ...crear, privada: true }).p_privada).toBe(true)
+    expect('p_privada' in argumentosDeCrearEnPar(crear)).toBe(false)
+    const privada = { ...crear, privada: true }
+    expect(leerPendienteDeCrearEnPar(serializarPendienteEnPar(privada))).toEqual(privada)
+  })
+
   it('guardar manda cada versión como el texto de la base y las notas de cada una', () => {
     const a = argumentosDeGuardarEnPar(guardar)
     expect(a.p_actualizados_en_esperados).toEqual(guardar.actualizadosEn)

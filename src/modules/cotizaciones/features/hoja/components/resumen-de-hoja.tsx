@@ -38,6 +38,8 @@ type Props = {
   vistaPrevia?: ReactNode
   // La hoja en par (glosario: «Variante en par»): los dos totales, cada uno con lo suyo, en vez del total, sus avisos y el detalle.
   totales?: ReactNode
+  // El interruptor «Privada» de la hoja nueva (`InterruptorPrivada`): va sobre el pie, a la vista aunque el resumen esté plegado. Nulo, no se dibuja.
+  interruptor?: ReactNode
 }
 
 export type BotonDeGuardar = {
@@ -134,6 +136,7 @@ export function ResumenDeHoja({
   avisoDeGuardado,
   vistaPrevia = null,
   totales = null,
+  interruptor,
 }: Props) {
   const total = totalDelResumen(contexto)
   const viejo = estado.tipo !== 'al_dia'
@@ -182,6 +185,7 @@ export function ResumenDeHoja({
         )}
         {avisoDeGuardado}
       </div>
+      {interruptor}
       <PieDelResumen guardar={guardar} soloLectura={soloLectura} vistaPrevia={vistaPrevia} />
     </aside>
   )

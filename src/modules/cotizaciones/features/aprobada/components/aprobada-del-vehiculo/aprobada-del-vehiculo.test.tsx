@@ -22,6 +22,7 @@ const FILA: FilaDeEsteVehiculo = {
   vencida: false,
   venceEl: '2026-11-27',
   aprobada: true,
+  privada: false,
 }
 
 const montar = (fila: FilaDeEsteVehiculo | null, cotizar: string | null) =>

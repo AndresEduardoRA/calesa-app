@@ -105,6 +105,8 @@ function useGuardarLaNuevaEnPar(p: {
   elecciones: EleccionesDeLaHoja | undefined
   guardado: GuardadoEnPar | null
   raiz: RefObject<HTMLDivElement | null>
+  // El interruptor «Privada» del marco: las dos hermanas nacen con la misma marca.
+  privada?: boolean
 }): BotonDeGuardar | null {
   const titulo = useTituloDeLaCotizacion()
   const elegido = titulo === null ? {} : { titulo: titulo.mostrado }
@@ -131,6 +133,7 @@ function useGuardarLaNuevaEnPar(p: {
         modoTc: r[0].entradas.modoTc,
         verTotalBs: ofreceVerTotalBs(p.hoja.cabecera) && p.columnas[0].verTotalBs,
         ...paraGuardar,
+        ...(p.privada === true ? { privada: true } : {}),
       })
     })
   }
@@ -266,6 +269,7 @@ export function useGuardarElPar(p: {
   guardado: GuardadoEnPar | null
   edicion: EdicionDelPar | null
   raiz: RefObject<HTMLDivElement | null>
+  privada?: boolean
 }) {
   const deLaNueva = useGuardarLaNuevaEnPar(p)
   const deLaGuardada = useGuardarElParGuardado(p)

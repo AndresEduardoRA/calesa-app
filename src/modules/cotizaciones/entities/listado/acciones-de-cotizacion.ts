@@ -9,6 +9,8 @@ export type MenuDeUnaFila = {
   favorita: boolean
   // El motivo del reporte de quien mira; nulo si no la reportó.
   miMotivo: string | null
+  // Una privada (glosario: «Cotización privada»): «Aprobar…» pregunta antes, porque deja de serlo.
+  privada: boolean
   ofertas: OfertasDelMenuDeCotizacion
 }
 

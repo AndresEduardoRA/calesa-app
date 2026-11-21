@@ -16,6 +16,8 @@ export type AccionesDeLaFila = {
   compartir: () => void
   aprobar: () => void
   marcarFinal: () => void
+  // Hacerla privada (`true`) o pública (`false`): sólo la ofrece a quien la creó.
+  cambiarPrivada: (privada: boolean) => void
   favorita: (valor: boolean) => void
   reportar: () => void
   moderar: (accion: 'invalidar' | 'descartar' | 'reactivar') => void
@@ -61,6 +63,22 @@ function conDialogo(clave: ClaveDeAccionDeCotizacion, alElegir: () => void): Con
   ]
 }
 
+// «Hacer privada» / «Hacer pública»: sin diálogo; apagada mientras algo de la fila está en vuelo o con el motivo que la base daría (una final, la aprobada).
+function lineaDePrivada(clave: 'hacer-privada' | 'hacer-publica', c: Contexto): AccionDeMenu[] {
+  return [
+    {
+      tipo: 'accion',
+      clave,
+      etiqueta: ETIQUETA_DE_ACCION_DE_COTIZACION[clave],
+      deshabilitada: c.enCurso.general || c.motivo(clave) !== null,
+      alElegir: () => {
+        c.acciones.cambiarPrivada(clave === 'hacer-privada')
+      },
+    },
+    ...nota(clave, c.motivo(clave)),
+  ]
+}
+
 // Las que el listado ofrece: las demás de la lista única (vista previa, PDF, revisiones, comprobante, cotizar encima) son sólo del «⋯» de la guardada.
 type ClaveDeLaFila = Exclude<
   ClaveDeAccionDeCotizacion,
@@ -70,17 +88,21 @@ type ClaveDeLaFila = Exclude<
 // Cada acción de la lista (`accionesDeCotizacion()`), con lo que hace en esta superficie.
 const LINEAS: Readonly<Record<ClaveDeLaFila, Constructor>> = {
   compartir: (c) => conDialogo('compartir', c.acciones.compartir)(c),
+  // Una privada abre la pregunta de que deja de serlo: «Aprobar…» y, como todo lo que abre un diálogo, después de cerrar el menú.
   aprobar: (c) => [
     {
       tipo: 'accion',
       clave: 'aprobar',
-      etiqueta: ETIQUETA_DE_ACCION_DE_COTIZACION.aprobar,
+      etiqueta: `${ETIQUETA_DE_ACCION_DE_COTIZACION.aprobar}${c.menu.privada ? '…' : ''}`,
+      ...(c.menu.privada ? { despuesDeCerrar: true } : {}),
       deshabilitada: c.enCurso.general || c.motivo('aprobar') !== null,
       alElegir: c.acciones.aprobar,
     },
     ...nota('aprobar', c.motivo('aprobar')),
   ],
   final: (c) => conDialogo('final', c.acciones.marcarFinal)(c),
+  'hacer-privada': (c) => lineaDePrivada('hacer-privada', c),
+  'hacer-publica': (c) => lineaDePrivada('hacer-publica', c),
   favorita: (c) => [
     {
       tipo: 'casilla',

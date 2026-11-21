@@ -50,6 +50,7 @@ const fila = (id: string) => ({
   creado_en: INSTANTE,
   vence_el: '2026-03-08',
   vencida: true,
+  privada: false,
 })
 
 describe('getUnaDelListado', () => {

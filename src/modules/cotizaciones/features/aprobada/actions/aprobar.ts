@@ -16,5 +16,9 @@ export const aprobarCotizacion = actionClient
     if (!puedeAprobarAlguna(ctx.permisos)) {
       return fallo('sin_permiso', 'No tienes permiso para aprobar cotizaciones.')
     }
-    return repositorioDeAprobada.aprobar(parsedInput.id, parsedInput.actualizadoEn)
+    return repositorioDeAprobada.aprobar(
+      parsedInput.id,
+      parsedInput.actualizadoEn,
+      parsedInput.hacerlaPublica === true,
+    )
   })

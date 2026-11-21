@@ -63,6 +63,7 @@ export async function leerTarjetasDelLead(leadId: string): Promise<Resultado<Tar
       vencida: fila.vencida,
       cliente: null,
       leadId: fila.leadId,
+      privada: fila.privada,
     })),
     hayMas: filas.length > TARJETAS_EN_LA_FICHA,
   })

@@ -6,8 +6,9 @@ import { CATALOGOS_DE_LOGISTICA } from './catalogos-de-logistica'
 
 // La entrada de Configuración › Catálogos en el registro: lo que es de toda la empresa y no de un origen, una sub-ruta por catálogo
 // (`/configuracion/catalogos/<clave>`), en tres tramos del menú:
-// - «Cotizaciones»: Colores y Vigencia con `cotizaciones.configurar` en algún origen; Niveles con los permisos de la matriz de Roles (cada nivel es
-//   un permiso) y, para quien configura sin ver los roles, apagada con su motivo.
+// - «Cotizaciones»: Colores y Vigencia con `cotizaciones.configurar` en algún origen; Niveles y Quién crea y quién ve con los permisos de la matriz de
+//   Roles (cada nivel es un permiso; el cuadro escribe `cotizaciones.crear`, `.ver` y `.privadas.ver`) y, para quien configura sin ver los roles,
+//   apagadas con su motivo.
 // - «Logística»: los catálogos que llena el módulo (`catalogos-de-logistica.ts`), cada uno con su permiso, y Tipos de documento: los cambia quien
 //   gestiona los catálogos de logística y los lee quien configura un flujo.
 // - Tablas compartidas, sin rótulo: las tablas de referencia sin origen, con `cotizaciones.configurar`.
@@ -32,6 +33,16 @@ const DE_COTIZACIONES = [
     descripcion: 'Quién ve y edita qué celdas.',
     palabras: ['permisos', 'celdas', 'editar', 'ver', 'cotización'],
     ruta: RUTAS.nivelesDeCotizacion,
+    permisos: ['equipo.roles.ver', 'equipo.roles.gestionar'],
+    motivoSinPermiso: MOTIVO_SIN_VER_ROLES,
+    grupo: 'Cotizaciones',
+  },
+  {
+    clave: 'quien-crea-y-quien-ve',
+    titulo: 'Quién crea y quién ve',
+    descripcion: 'Qué rol crea cotizaciones y cuáles ve, por origen.',
+    palabras: ['permisos', 'roles', 'crear', 'ver', 'privadas', 'origen', 'cotización'],
+    ruta: RUTAS.quienCreaYQuienVe,
     permisos: ['equipo.roles.ver', 'equipo.roles.gestionar'],
     motivoSinPermiso: MOTIVO_SIN_VER_ROLES,
     grupo: 'Cotizaciones',
@@ -93,10 +104,11 @@ export const SECCION_DE_CATALOGOS: SeccionDeConfiguracion = {
   clave: 'catalogos',
   titulo: 'Catálogos',
   descripcion:
-    'Lo que es de toda la empresa: colores, niveles y vigencia de las cotizaciones, puertos, navieras, gastos, documentos y tablas compartidas.',
+    'Lo que es de toda la empresa: colores, niveles, quién crea y quién ve y vigencia de las cotizaciones, puertos, navieras, gastos, documentos y tablas compartidas.',
   palabras: [
     'colores',
     'niveles',
+    'quién crea y quién ve',
     'vigencia',
     'puertos',
     'navieras',

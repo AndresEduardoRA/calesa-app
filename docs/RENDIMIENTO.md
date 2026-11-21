@@ -343,7 +343,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   dígitos, 0 pedidos con 1 o 2 (`e2e/equipo-busqueda-minima.spec.ts`); `lista-equipo.tsx` no llama a `setParametros` si `q` no cambia.
   Miniatura de 96 px. `medir-equipo.sql` (10.000 y 100.000 personas; no crece más de 1,5 veces, piso 60 buffers).
 - Roles: `roles_personas()` hasta 1.001 por rol («más de 1.000 personas»), `usuarios_roles_rol_idx`, ≤ 150 buffers. La matriz no pagina:
-  72 filas de catálogo + hasta 18 de niveles (`_niveles_tope()` = 10; 9 que generan permisos × 2) (`e2e/roles-niveles.spec.ts`).
+  80 filas de catálogo + hasta 18 de niveles (`_niveles_tope()` = 10; 9 que generan permisos × 2) (`e2e/roles-niveles.spec.ts`).
 
 ### Baja de una persona
 
@@ -604,15 +604,15 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 ## JS en frío (con gzip, lo que el documento nombra)
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB` de `e2e/soporte/presupuestos.ts`, lo medido más un 5 % a la decena; uno pasado por ≤ 5 % se sube con la regla del 5 %):
-  `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 400 (con las tarjetas de la lista, la imagen de la tarjeta en frío y el hook de los menús de las filas que comparte con las fichas),
-  `/cotizaciones/nuevo` 470 (465,4 medidos con los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, un 1 % sobre los 465 de antes; con la subasta, `?origen=`; la línea «Descargar PDF» y el contexto del «⋯» de la guardada viajan con la hoja), `/cotizaciones/[id]` 480
-  (el título de la cotización y la cabecera compacta, con el menú de Base UI del «⋯» en frío), `/cotizaciones/comparar` 380, `/logistica` 390,
+  `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 540 (530,7 medidos con la cotización privada y los dos botones del marco, sobre los 530 de antes), `/cotizaciones` 400 (con las tarjetas de la lista, la imagen de la tarjeta en frío y el hook de los menús de las filas que comparte con las fichas),
+  `/cotizaciones/nuevo` 470 (466,6 medidos con el interruptor «Privada» y los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, sobre los 465 de antes; con la subasta, `?origen=`; la línea «Descargar PDF», el contexto del «⋯» de la guardada y el interruptor «Privada» viajan con la hoja), `/cotizaciones/[id]` 490
+  (el título de la cotización y la cabecera compacta, con el menú de Base UI del «⋯» en frío; 480,1 medidos con «Hacer privada», la insignia y los dos botones del marco, sobre los 480 de antes), `/cotizaciones/comparar` 380, `/logistica` 390,
   `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470; `/cotizaciones/papelera` 440 (en su spec).
 - Medido: `/leads` 526,5 KB en 36 chunks y `/leads/[id]` 558,3 KB (el «+» y los «⋯» de los bloques de la derecha van en frío: `DropdownMenu` y `MasAcciones` ya
   viajaban con el «⋯» de la cabecera). Al borde: `/cotizaciones` 386,9 de 390 (el despliegue de un grupo y «Comparar» van con `diferido()`; con `<MenuDeVistas>` en
   frío serían 450: va con `diferido()`; la imagen del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de
-  `use-carrusel`), `/cotizaciones/[id]` 475,0 de 480 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
-  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 462,6 de 465 (lo de la hoja en par va con `diferido()`; el
+  `use-carrusel`), `/cotizaciones/[id]` 480,1 de 490 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 466,6 de 470 (lo de la hoja en par va con `diferido()`; el
   pedido del PDF va en su propia composición, sin la lectura de la tarjeta; el campo del título va con `diferido()` dentro del panel; los pasos de la hoja y el botón del ⚙ de la cabecera viajan en frío, su panel, los campos por defecto y los enlaces de la ayuda con
   `diferido()`) (`docs/PENDIENTES.md`).
 - La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada
@@ -624,7 +624,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   «Actualizar los datos» no pesan en frío. Abrir «Editar imágenes» o la vitrina (`?panel=…&para=<id>`, `shallow: false`) vuelve a pedir la página de la
   lista al servidor, como `?editar=`; la página lee sólo el panel nombrado (la galería ≤ 24 con la subasta en un origen de subasta, o el vehículo por pk y,
   si se abre, `vehiculo_vitrina_previa`). «Actualizar los datos» es una consulta a apibara por confirmación, nunca al abrir el menú.
-- `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 501,9 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
+- `/vehiculos/[id]` (la ficha del vehículo): ≤ 540 KB, medido 530,7 en 35 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
   «Cotizaciones de este vehículo» y «Actividad reciente» (las cáscaras de sus islas), la ficha completa (`?ver=ficha`, con `useAbiertoAlgunaVez`), la imagen de la aprobada y
   «Compartir» van con `diferido()`; la tira es la del visor; «Vitrina» es de cliente y su vista previa ya viajaba con el panel. El documento de la ficha
   aporta 69,3 KB sobre `/perfil` (el perfil en tarjetas pesa unos 11 KB menos) con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 73;
@@ -802,6 +802,8 @@ fallar.
   bloques de `cotizaciones`; con 250.000 ≤ 1,2 × los bloques de 50.000 + 20 y ≤ máx(1,5 × t; t + 3 ms); `mis_leads()` 1 vez si va la cartera
   (ninguna con `p_lead`), `origenes_con_alcance()` ≤ 2 + 2 por ruta, `en_cartera()` ≤ una por fila leída de la cartera o del vehículo,
   ninguna a `alcance_de` ni a `_bajas_en_curso`; los índices de cada caso por nombre y ningún otro con bloques. Máximo de la base: 100 (la pantalla pide hasta 50, `MAXIMO_DE_PAGINA_DE_COTIZACIONES`).
+  Una privada ajena (glosario: «Cotización privada») se descarta como filtro sobre la fila que la ruta ya leyó, sin índice que la salte: quien ve «todos» sin
+  `cotizaciones.privadas.ver` lee de más en proporción a las privadas ajenas. La siembra de volumen no tiene privadas (`docs/PENDIENTES.md`).
   El bloque «Cotizaciones» de la ficha del lead (`cotizaciones_listado(p_lead)`, 10 + 1 por `cotizaciones_lead_creado_idx`, más los autores por la PK de `perfiles`, los modos por `cotizaciones_modos_de()`
   y las aprobadas por `cotizaciones_aprobadas`, sólo de las 10): la fila de tarjetas. Se lee al acercarse a la vista, con `diferido()` en su `diferidos.tsx`; lo demás, en la tarjeta «Ver más»
   (`/cotizaciones?lead=`); `e2e/leads-cotizaciones.spec.ts`: la respuesta del listado ≤ 6.500 B.

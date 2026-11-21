@@ -139,6 +139,7 @@ export function ResumenDelPar({
         />
       }
       avisoDeGuardado={avisoDe(vista, boton, { hoja, props, alRecargar })}
+      interruptor={props.privada?.interruptor ?? null}
     />
   )
 }

@@ -35,7 +35,7 @@ vi.mock('@/shared/lib/supabase/browser', () => ({
 import { leerTarjetasDelLead } from './tarjetas-del-lead.client'
 
 const LEAD = '00000000-0000-4000-8000-0000000000bb'
-function fila(i: number) {
+function fila(i: number, privada = false) {
   return {
     id: `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`,
     numero: 100 - i,
@@ -51,6 +51,7 @@ function fila(i: number) {
     creado_en: `2026-10-29T08:${String(59 - i).padStart(2, '0')}:00.123456+00:00`,
     vence_el: '2026-11-28',
     vencida: false,
+    privada,
   }
 }
 
@@ -78,6 +79,13 @@ describe('leerTarjetasDelLead', () => {
       venceEl: '2026-11-28',
     })
     expect(leido.data.filas[1]?.aprobada).toBe(true)
+  })
+
+  it('cada tarjeta lleva la marca de privada que dio el listado', async () => {
+    respuesta = { data: [fila(0, true), fila(1)], error: null }
+    const leido = await leerTarjetasDelLead(LEAD)
+    if (!leido.ok) throw new Error('debía leer')
+    expect(leido.data.filas.map((f) => f.privada)).toEqual([true, false])
   })
 
   it('con menos de once no hay «Ver más»', async () => {

@@ -59,6 +59,8 @@ type Props = {
   deLoGuardado?: { calculo: CalculoDeLaTarjeta; difiere: boolean }
   // Los pasos de la hoja (debajo de los modos): los paneles del vehículo y del cliente que la página sabe abrir. Sin ellos, no hay pasos.
   pasos?: PasosDeLaPagina
+  // La marca de privada de la hoja nueva (glosario: «Cotización privada»): lo que va en el pedido y su interruptor, que el marco pone sobre el pie del resumen. Sin ella, pública.
+  privada?: { valor: boolean; interruptor: ReactNode }
 }
 
 // Las salidas del aviso de guardado: las de la hoja nueva o, en una guardada, «Escribir el título» y, si puede cambiarlo, «Elegir otro vehículo» (abren el panel del vehículo).
@@ -98,6 +100,7 @@ function useContextoDeLaHoja(
 }
 
 type PropsDelResumen = Pick<Props, 'hoja' | 'totalGuardado' | 'alRecargar'> & {
+  interruptor: ReactNode
   // Lo de una guardada para «Vista previa»: lo guardado que dibuja la tarjeta (nulo en la hoja nueva), si lo de hoy difiere y si hay cambios sin guardar.
   laTarjeta: Partial<NonNullable<Props['deLoGuardado']>> & { hayCambios: boolean }
   guardado: VistaDelGuardado | null
@@ -125,6 +128,7 @@ function ResumenDeLaHoja({
   totalGuardado,
   alRecargar,
   laTarjeta,
+  interruptor,
 }: PropsDelResumen) {
   const router = useRouter()
   const recargar = alRecargar ?? router.refresh
@@ -142,6 +146,7 @@ function ResumenDeLaHoja({
       soloLectura={soloLectura}
       totalGuardado={totalGuardado}
       vistaPrevia={<VistaPreviaDeLaHojaViva hoja={hoja} h={h} {...laTarjeta} />}
+      interruptor={interruptor}
       avisoDeGuardado={
         guardado === null || boton === null ? null : (
           <AvisoDelGuardado
@@ -198,6 +203,7 @@ function useArmadoDeLaHoja(p: Props) {
     guardado: p.guardado,
     edicion: p.edicion,
     raiz,
+    privada: p.privada?.valor === true,
   })
   return { raiz, vista, h, contexto, boton, hayCambios }
 }
@@ -207,7 +213,7 @@ function useArmadoDeLaHoja(p: Props) {
 // entradas que ese recálculo calculó y la misma hoja abierta. Mientras guarda no se toca (`inert`): lo guardado la reemplaza y lo tecleado en el medio se perdería sin aviso. Los iconos y los tonos se montan una sola vez por hoja.
 export function HojaDeCotizar(props: Props) {
   const { hoja, vehiculoSoltado, elecciones, edicion, soloLectura = false } = props
-  const { totalGuardado, alRecargar, encima, deLoGuardado, pasos } = props
+  const { totalGuardado, alRecargar, encima, deLoGuardado, pasos, privada } = props
   const recargar = useRecargar(alRecargar)
   const { raiz, vista, h, contexto, boton, hayCambios } = useArmadoDeLaHoja(props)
   const guardando = vista?.estado.tipo === 'guardando'
@@ -243,6 +249,7 @@ export function HojaDeCotizar(props: Props) {
           totalGuardado={totalGuardado}
           alRecargar={alRecargar}
           laTarjeta={{ ...deLoGuardado, hayCambios }}
+          interruptor={privada?.interruptor ?? null}
         />
       </div>
     </div>

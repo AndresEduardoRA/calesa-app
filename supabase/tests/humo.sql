@@ -298,6 +298,46 @@ reset role;
 delete from public.leads_asesores la using public.cotizaciones c
  where c.id = current_setting('humo.cotizacion')::uuid and la.lead_id = c.lead_id and la.usuario_id = '00000000-0000-0000-0000-000000000001' and la.tipo_acceso = 'compartido';
 
+-- @test cotización privada: la policy la esconde a quien ve todas sin cotizaciones.privadas.ver y la muestra con él (lo demás: areas/cotizaciones/privadas.sql)
+begin;
+create or replace function pg_temp.humo_priv_persona(p_concesiones text[]) returns uuid language plpgsql as $f$
+declare v_id uuid := gen_random_uuid(); v_rol uuid; c text;
+begin
+  insert into auth.users (id, email, raw_app_meta_data) values (v_id, v_id || '@ejemplo.com', '{"invitado": true}');
+  insert into public.roles (clave, nombre) values ('hpriv_' || substr(v_id::text, 1, 8), 'HPRIV ' || substr(v_id::text, 1, 8)) returning id into v_rol;
+  insert into public.usuarios_roles (usuario_id, rol_id, es_principal) values (v_id, v_rol, true);
+  foreach c in array p_concesiones loop insert into public.roles_permisos (rol_id, permiso_clave, alcance) values (v_rol, c, 'todos'); end loop;
+  return v_id;
+end $f$;
+-- Cuántas filas de esa cotización lee la persona de la tabla, como authenticated.
+create or replace function pg_temp.humo_priv_lee(p_quien uuid, p_cot uuid) returns int language plpgsql as $f$
+declare n int;
+begin
+  perform set_config('request.jwt.claim.sub', p_quien::text, true);
+  perform set_config('request.jwt.claim.role', 'authenticated', true);
+  set local role authenticated;
+  select count(*) into n from public.cotizaciones where id = p_cot;
+  reset role;
+  return n;
+end $f$;
+do $$
+declare
+  base record;
+  p uuid := gen_random_uuid();
+  todas uuid := pg_temp.humo_priv_persona(array['cotizaciones.ver']);
+  con_privadas uuid := pg_temp.humo_priv_persona(array['cotizaciones.ver', 'cotizaciones.privadas.ver']);
+begin
+  -- Una preventa privada sin vehículo de quien creó la del humo, en su mismo lead y fórmula (como postgres: nadie escribe la tabla directo).
+  select c.origen_id, c.lead_id, c.creado_por, c.formula_id into base from public.cotizaciones c where c.id = current_setting('humo.cotizacion')::uuid;
+  insert into public.cotizaciones (id, origen_id, lead_id, creado_por, clase, formula_id, valores, fuentes, tipos_cambio, totales, total_base, privada)
+  values (p, base.origen_id, base.lead_id, base.creado_por, 'preventa', base.formula_id, '{"a": 10}', '{"a": "input"}', '{"oficial": 6.96}', '{"usd": 10}', 10, true);
+  if pg_temp.humo_priv_lee(base.creado_por, p) <> 1 then raise exception 'quien creó la privada debía leerla'; end if;
+  if pg_temp.humo_priv_lee(todas, p) <> 0 then raise exception 'quien ve todas sin cotizaciones.privadas.ver no debía leer la privada ajena'; end if;
+  if pg_temp.humo_priv_lee(con_privadas, p) <> 1 then raise exception 'con cotizaciones.privadas.ver debía leer la privada ajena'; end if;
+end $$;
+reset role;
+rollback;
+
 -- @test cola web: sin asesores → respaldo; con asesora habilitada → turno asignado y notificación; contacté
 select set_config('request.jwt.claim.sub', '', false);
 select set_config('request.jwt.claim.role', 'anon', false);
