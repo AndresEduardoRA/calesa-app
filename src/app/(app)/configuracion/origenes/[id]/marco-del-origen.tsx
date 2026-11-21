@@ -13,9 +13,10 @@ import { pestanasDelOrigen, puedeAbrirElOrigen } from '../acceso'
 import { conDestino } from '../pasos'
 import { leerElOrigen } from './abrir-origen'
 import { PestanasDeLaRuta } from './pestanas-de-la-ruta'
+import { puestaEnMarchaEnLaTira } from './puesta-en-marcha-en-la-tira'
 
 // El encabezado de la página de un origen, común a sus seis pestañas: la vuelta a la lista; el punto de color, el nombre, «Activo» o
-// «Inactivo» y, para quien gestiona orígenes, el «⋯» arriba a la derecha; «Para cotizar y mover» con un paso por pestaña (o «Inactivo»);
+// «Inactivo» y, para quien gestiona orígenes, el «⋯» arriba a la derecha; «Para cotizar y mover» con un paso por pestaña (o «Inactivo»; sin fórmula activa, con el paso «Pendiente» y «Seguir la puesta en marcha»);
 // y las pestañas, con las que no abre apagadas y su motivo. Para quien no abre el origen no dibuja nada: la pestaña dice por qué.
 export async function MarcoDelOrigen({ id }: { id: string }) {
   // Sin esto, el armado del cascarón de un origen nuevo lee la sesión al prerenderizar (`Date.now()` de supabase-js).
@@ -25,7 +26,10 @@ export async function MarcoDelOrigen({ id }: { id: string }) {
     return null
   }
   const origen = await leerElOrigen(id)
-  const apibaraActiva = origen.tipo === 'subasta' ? await integracionActiva('apibara') : false
+  const [apibaraActiva, puestaEnMarcha] = await Promise.all([
+    origen.tipo === 'subasta' ? integracionActiva('apibara') : false,
+    puestaEnMarchaEnLaTira(sesion.permisos, origen),
+  ])
   const tira = pasosParaCotizarYMover(origen, { apibaraActiva })
   return (
     <div className="grid min-w-0 gap-4">
@@ -57,7 +61,11 @@ export async function MarcoDelOrigen({ id }: { id: string }) {
       {tira.inactivo ? (
         <ParaCotizarYMover inactivo />
       ) : (
-        <ParaCotizarYMover pasos={conDestino(tira.pasos, sesion.permisos, origen.id)} />
+        <ParaCotizarYMover
+          pasos={conDestino(tira.pasos, sesion.permisos, origen.id)}
+          pendiente={puestaEnMarcha.pendiente}
+          seguir={puestaEnMarcha.seguir}
+        />
       )}
       <PestanasDeLaRuta
         pestanas={pestanasDelOrigen(sesion.permisos, origen.id)}

@@ -3,6 +3,7 @@
 // paso cuenta igual, y si alguien deshace algo, el paso vuelve a faltar. Los permisos llegan ya resueltos para este origen (los calcula `src/app`).
 import { PASOS_DE_LA_PUESTA_EN_MARCHA, type PasoDeLaPuestaEnMarcha } from '@/shared/lib/rutas'
 import type { OrigenConUso } from './origen'
+import type { ClaveDePaso } from './pasos'
 
 export { PASOS_DE_LA_PUESTA_EN_MARCHA, type PasoDeLaPuestaEnMarcha }
 
@@ -85,6 +86,16 @@ export function pasoPendiente(estado: EstadoDeLaPuestaEnMarcha): PasoDeLaPuestaE
 // Mientras el origen no tenga fórmula activa, la página del origen ofrece seguir la puesta en marcha.
 export function enMarcha(estado: EstadoDeLaPuestaEnMarcha): boolean {
   return estado.some((paso) => paso.clave === 'publicar' && !paso.hecho)
+}
+
+// El paso de «Para cotizar y mover» que dice «Pendiente» en la página del origen: el que toca en la puesta en marcha, mientras siga (Publicar es el
+// paso Fórmula de la tira, que mira la fórmula activa). Nulo sin puesta en marcha o sin nada que la persona pueda hacer.
+export function pendienteEnLaTira(estado: EstadoDeLaPuestaEnMarcha): ClaveDePaso | null {
+  const pendiente = pasoPendiente(estado)
+  if (!enMarcha(estado) || pendiente === 'listo') {
+    return null
+  }
+  return pendiente === 'publicar' ? 'formula' : pendiente
 }
 
 // «Seguir»: el próximo paso que la persona puede hacer, hecho o no (se sigue con lo de por omisión), o `listo`.

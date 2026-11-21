@@ -56,6 +56,7 @@ export {
   estadoDelPaso,
   pasoAnterior,
   pasoPendiente,
+  pendienteEnLaTira,
   pasoSiguiente,
   type EstadoDeLaPuestaEnMarcha,
   type EstadoDelPaso,
